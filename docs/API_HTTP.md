@@ -6,8 +6,10 @@ roadmap («inventariar el API HTTP heredado») y fundamenta el diseño del
 puente ([`bridge/`](../bridge/), [`FOUNDRY.md`](FOUNDRY.md)).
 
 Código fuente: `src/httpScriptAccess.cpp` (clase `EEHttpServer`, servidor de
-`sp::io::http::Server` de SeriousProton). Verificado sobre `main` en
-2026-07-12.
+`sp::io::http::Server` de SeriousProton). Inventario por inspección de código
+(2026-07-12); el comportamiento de los tres endpoints está además confirmado
+en vivo contra un servidor headless local — véase la sección «Seguridad
+obligatoria» de [`FOUNDRY.md`](FOUNDRY.md) (PR #9).
 
 ## Endpoints
 

@@ -25,6 +25,7 @@
 
 import { BridgeClient, BridgeError } from "./bridge-client.mjs";
 import { processBridgeEvents } from "./event-journal.mjs";
+import { prepareRoute } from "./ship-view.mjs";
 
 const MODULE_ID = "espaciokoop-lagunak";
 const POLL_MIN_S = 1;
@@ -219,6 +220,7 @@ function crearClaseV2() {
         conexionConectando: this.conexion === "conectando",
         detalleError: this.detalleError,
         nave,
+        ruta: prepareRoute(nave, game.i18n),
         sistemas: nave
           ? Object.entries(nave.systems ?? {}).map(([nombre, s]) => ({
               nombre,
@@ -368,6 +370,7 @@ function crearClaseV1() {
         conexionConectando: this.conexion === "conectando",
         detalleError: this.detalleError,
         nave,
+        ruta: prepareRoute(nave, game.i18n),
         sistemas: nave
           ? Object.entries(nave.systems ?? {}).map(([nombre, s]) => ({
               nombre,

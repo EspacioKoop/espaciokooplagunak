@@ -87,11 +87,11 @@ El roadmap refleja intención, no promesas. Los cambios se concretarán mediante
 
 ### Fase 1 — Primera iteración jugable
 
-- [ ] Arrancar una partida local con una compilación propia.
-- [ ] Crear un escenario Lua mínimo, claramente identificado como propio.
+- [x] Arrancar una partida local con una compilación propia ([`docs/SESION-FASE1.md`](docs/SESION-FASE1.md)).
+- [x] Crear un escenario Lua mínimo, claramente identificado como propio (`scripts/scenario_90_lagunak_primera_guardia.lua`, PR #15).
 - [x] Añadir identidad visible de Espaciokoop Lagunak sin eliminar créditos originales (PR #13; menú, título de ventana y log verificados en la review).
-- [ ] Probar conexión de al menos dos puestos de tripulación.
-- [ ] Documentar instalación, arranque y resultado de la sesión de prueba.
+- [x] Probar conexión de al menos dos puestos de tripulación (timón + armas, [`docs/SESION-FASE1.md`](docs/SESION-FASE1.md)).
+- [x] Documentar instalación, arranque y resultado de la sesión de prueba ([`docs/SESION-FASE1.md`](docs/SESION-FASE1.md)).
 
 **Criterio de salida:** una persona nueva puede compilar o instalar el juego siguiendo la documentación, iniciar el escenario del fork y conectar dos estaciones sin instrucciones privadas.
 
@@ -104,7 +104,7 @@ El roadmap refleja intención, no promesas. Los cambios se concretarán mediante
 - [x] Implementar un puente que solo permita operaciones autorizadas y nunca exponga `/exec.lua` directamente.
 - [x] Añadir autenticación, validación de mensajes, límites y comprobaciones de salud.
 
-**Criterio de salida:** el servidor arranca de forma reproducible y el puente puede leer un estado seguro sin permitir ejecución Lua arbitraria desde Foundry. **Cumplido y verificado en local (2026-07-12)**; queda pendiente reproducirlo en un segundo entorno y en CI.
+**Criterio de salida:** el servidor arranca de forma reproducible y el puente puede leer un estado seguro sin permitir ejecución Lua arbitraria desde Foundry. **Cumplido y verificado (2026-07-12)**, reproducido en más de un entorno (nativo Ubuntu 24.04 y Arch/CachyOS — issue #14 —, y en contenedor vía compose); queda pendiente publicar imágenes y añadir el smoke test en CI.
 
 ### Fase 3 — Integración prioritaria con Foundry VTT
 

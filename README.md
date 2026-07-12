@@ -17,6 +17,8 @@ Espaciokoop Lagunak conserva el código y el historial de EmptyEpsilon y añade,
 | Licencia GPL-2.0 | Conservada | Véase [`LICENSE`](LICENSE) |
 | Normas de colaboración | Hecho | [`CONTRIBUTING.md`](CONTRIBUTING.md) y [`AGENTS.md`](AGENTS.md) |
 | Compilación reproducible | Pendiente de validar | Véase [`docs/BUILDING.md`](docs/BUILDING.md) |
+| Ejecución con Docker | Planificada | Servidor y puente reproducibles, todavía no implementados |
+| Integración con Foundry VTT | Prioridad estratégica | Diseño inicial en [`docs/FOUNDRY.md`](docs/FOUNDRY.md) |
 | Cambios jugables propios | No iniciados | Primera iteración propuesta en el roadmap |
 | Lanzamientos propios | No disponibles | Se crearán solo tras validar compilación y pruebas |
 
@@ -37,6 +39,7 @@ EmptyEpsilon es un simulador libre y multiplataforma de puente de mando espacial
 3. Facilitar que varias personas y agentes de IA colaboren sin duplicar trabajo ni introducir cambios opacos.
 4. Documentar claramente qué procede de upstream y qué desarrolla este fork.
 5. Priorizar cambios pequeños, revisables y compatibles con partidas reales.
+6. Integrar la simulación con Foundry VTT para representar trayectos espaciales, gestión de nave y trabajo de tripulación dentro de campañas de rol como *Spelljammer*.
 
 ## Características
 
@@ -55,6 +58,8 @@ Estas características son obra del proyecto EmptyEpsilon y sus contribuidores. 
 ### Propias de Espaciokoop Lagunak
 
 Aún no hay características jugables propias publicadas. Esta sección se actualizará únicamente cuando un cambio esté integrado en `main` y tenga una verificación documentada.
+
+La ejecución con Docker y la integración con Foundry VTT son objetivos prioritarios, pero aún no son características disponibles.
 
 ## Roadmap
 
@@ -79,14 +84,40 @@ El roadmap refleja intención, no promesas. Los cambios se concretarán mediante
 
 **Criterio de salida:** una persona nueva puede compilar o instalar el juego siguiendo la documentación, iniciar el escenario del fork y conectar dos estaciones sin instrucciones privadas.
 
-### Fase 2 — Experiencia cooperativa
+### Fase 2 — Docker y API segura
+
+- [ ] Validar el modo servidor o sin interfaz de EmptyEpsilon.
+- [ ] Crear una imagen Docker reproducible y un `compose.yaml` documentado.
+- [ ] Mantener la simulación y el puente de integración en servicios separados y una red privada.
+- [ ] Inventariar el API HTTP heredado y definir un contrato propio y versionado.
+- [ ] Implementar un puente que solo permita operaciones autorizadas y nunca exponga `/exec.lua` directamente.
+- [ ] Añadir autenticación, validación de mensajes, límites y comprobaciones de salud.
+
+**Criterio de salida:** el servidor arranca de forma reproducible y el puente puede leer un estado seguro sin permitir ejecución Lua arbitraria desde Foundry.
+
+### Fase 3 — Integración prioritaria con Foundry VTT
+
+- [ ] Crear un módulo de Foundry VTT para el director de juego y la tripulación.
+- [ ] Representar trayectos en tiempo real, con pausa y aceleración controladas por el director de juego.
+- [ ] Sincronizar mapa, posición, rumbo, velocidad, destino y tiempo estimado de llegada.
+- [ ] Gestionar motores, combustible o energía, temperatura, daños, reparaciones y recursos de la nave.
+- [ ] Modelar puestos, permisos, turnos y acciones de la tripulación.
+- [ ] Permitir al director de juego introducir encuentros, anomalías, averías y cambios narrativos.
+- [ ] Enviar a Foundry eventos y resultados normalizados para diarios, escenas y fichas.
+- [ ] Probar una sesión completa de *Spelljammer* con director de juego y varios puestos conectados.
+
+**Criterio de salida:** una mesa de Foundry puede iniciar un trayecto, jugar su gestión operativa en Espaciokoop Lagunak y recibir el resultado en la campaña sin acceso directo a la API insegura heredada.
+
+Diseño inicial: [`docs/FOUNDRY.md`](docs/FOUNDRY.md).
+
+### Fase 4 — Experiencia cooperativa
 
 - [ ] Recoger feedback de partidas mediante issues.
 - [ ] Diseñar una campaña o conjunto de escenarios cooperativos.
 - [ ] Mejorar accesibilidad, localización y experiencia de incorporación.
 - [ ] Definir compatibilidad de red y política de versiones.
 
-### Fase 3 — Distribución mantenible
+### Fase 5 — Distribución mantenible
 
 - [ ] Automatizar artefactos reproducibles para plataformas validadas.
 - [ ] Publicar notas de versión que separen cambios propios y de upstream.
@@ -154,4 +185,5 @@ Espaciokoop Lagunak no está afiliado ni respaldado oficialmente por el equipo d
 - [Web y manual oficial](https://daid.github.io/EmptyEpsilon/)
 - [Guía de contribución del fork](CONTRIBUTING.md)
 - [Compilación](docs/BUILDING.md)
+- [Integración con Foundry VTT y gestión de nave](docs/FOUNDRY.md)
 - [Relación y sincronización con upstream](docs/UPSTREAM.md)

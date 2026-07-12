@@ -145,6 +145,12 @@ Por tanto:
 
 Antes de programar el módulo se acordarán eventos y comandos versionados.
 
+**Alcance v0 — una sola nave de jugador.** El contrato v0 asume una única nave
+(la nave de la party), que es el modelo de una mesa de *Spelljammer*. El puente
+opera sobre `getPlayerShip(-1)`; escenarios con varias `PlayerSpaceship` (flota o
+PvP) quedan fuera de contrato v0. Esto es una decisión de alcance deliberada, no
+una limitación a resolver.
+
 ### Lecturas
 
 - identidad y versión de la sesión;

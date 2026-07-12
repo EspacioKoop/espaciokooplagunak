@@ -21,6 +21,13 @@ heredado: [`docs/API_HTTP.md`](../docs/API_HTTP.md).
 
 \* La documentación no expone datos de partida; los endpoints que lista sí requieren token.
 
+**Supuesto de una sola nave (v0).** Todo el Lua del puente opera sobre
+`getPlayerShip(-1)` — «la nave de la party», que es exactamente el modelo de una
+mesa de *Spelljammer* (una tripulación, un spelljammer). Cargar un escenario con
+varios `PlayerSpaceship` deja a `-1` eligiendo una nave arbitraria y queda
+**fuera de contrato v0**: el indexado multi-nave (flota o PvP) no es un objetivo
+de esta integración.
+
 ### Órdenes permitidas (`POST /v1/command`)
 
 ```json

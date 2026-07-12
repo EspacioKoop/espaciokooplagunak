@@ -1,0 +1,294 @@
+# Scenario name
+msgid ""
+msgstr ""
+"Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
+"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"PO-Revision-Date: 2026-07-12 00:00+0200\n"
+"Last-Translator: Espaciokoop Lagunak contributors\n"
+"Language-Team: Espaciokoop Lagunak\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
+
+msgid "Locust Swarm"
+msgstr "Locust Swarm"
+
+# Scenario description
+msgid ""
+"What happens when you're attacked by a swarm of locusts?\n"
+"\n"
+"Designed to run with one or more player ships with different terrain each time.\n"
+"\n"
+"Version 1\n"
+"\n"
+"USN Discord: https://discord.gg/PntGG3a where you can join a game online. There's one every weekend. All experience levels are welcome."
+msgstr "¿Qué sucede cuando te ataca un enjambre de langostas? Diseñado para correr con uno o más barcos de jugadores con diferentes terrenos cada vez. Versión 1 USN Discord: https://discord.gg/PntG3a donde puedes unirte a un juego en línea. Hay uno cada fin de semana. Todos los niveles de experiencia son bienvenidos."
+
+# Scenario setting
+msgctxt "setting"
+msgid "Swarm"
+msgstr "Swarm"
+
+msgctxt "setting"
+msgid "Configures the size of the swarm"
+msgstr "Configura el tamaño del enjambre"
+
+msgctxt "Swarm"
+msgid "Tiny"
+msgstr "Tiny"
+
+msgctxt "Swarm"
+msgid "Tiny sized swarm"
+msgstr "Enjambre pequeño de tamaño"
+
+msgctxt "Swarm"
+msgid "Small"
+msgstr "Pequeñas"
+
+msgctxt "Swarm"
+msgid "Small sized swarm"
+msgstr "Enjambre de tamaño pequeño"
+
+msgctxt "Swarm"
+msgid "Normal"
+msgstr "Normal"
+
+msgctxt "Swarm"
+msgid "Normal sized swarm"
+msgstr "Enjambre de tamaño normal"
+
+msgctxt "Swarm"
+msgid "Large"
+msgstr "Grande"
+
+msgctxt "Swarm"
+msgid "Large sized swarm"
+msgstr "Enjambre de gran tamaño"
+
+msgctxt "Swarm"
+msgid "Huge"
+msgstr "Enorme"
+
+msgctxt "Swarm"
+msgid "Huge sized swarm"
+msgstr "Enjambre de gran tamaño"
+
+# Scenario setting
+msgctxt "setting"
+msgid "Basis"
+msgstr "Basis"
+
+msgctxt "setting"
+msgid "Configures the ship that serves as the basis for the locusts"
+msgstr "Configura el barco que sirve como base para las langostas"
+
+msgctxt "Basis"
+msgid "Fighter"
+msgstr "Fighter"
+
+msgctxt "Basis"
+msgid "The Fighter is the basis for the locusts"
+msgstr "El Combatiente es la base para las langostas"
+
+msgctxt "Basis"
+msgid "Hornet"
+msgstr "Hornet"
+
+msgctxt "Basis"
+msgid "The Hornet is the basis for the locusts"
+msgstr "El Hornet es la base para las langostas"
+
+msgctxt "Basis"
+msgid "Drone"
+msgstr "Drone"
+
+msgctxt "Basis"
+msgid "The Ktlitan Drone is the basis for the locusts"
+msgstr "El Ktlitan Drone es la base para las langostas"
+
+#: scripts/scenario_39_locusts.lua:38
+msgctxt "orders-comms"
+msgid "thirty"
+msgstr "30"
+
+#: scripts/scenario_39_locusts.lua:39
+msgctxt "orders-comms"
+msgid "fifty"
+msgstr "50"
+
+#: scripts/scenario_39_locusts.lua:40
+msgctxt "orders-comms"
+msgid "eighty"
+msgstr "80y"
+
+#: scripts/scenario_39_locusts.lua:41
+msgctxt "orders-comms"
+msgid "one hundred"
+msgstr "Cien"
+
+#: scripts/scenario_39_locusts.lua:42
+msgctxt "orders-comms"
+msgid "one hundred and fifty"
+msgstr "ciento cincuenta"
+
+#: scripts/scenario_39_locusts.lua:48
+msgctxt "orders-comms"
+msgid "fighter"
+msgstr "luchador"
+
+#: scripts/scenario_39_locusts.lua:49
+msgctxt "orders-comms"
+msgid "hornet"
+msgstr "hornet"
+
+#: scripts/scenario_39_locusts.lua:50
+msgctxt "orders-comms"
+msgid "drone"
+msgstr "drones"
+
+#: scripts/scenario_39_locusts.lua:906
+msgctxt "buttonRelay"
+msgid "Locust Status"
+msgstr "Estado de la carga"
+
+#: scripts/scenario_39_locusts.lua:911
+msgctxt "buttonOperations"
+msgid "Locust Status"
+msgstr "Estado de la carga"
+
+#: scripts/scenario_39_locusts.lua:931
+#, lua-format
+msgctxt "msgRelay"
+msgid "%i Locusts remain."
+msgstr "%i Quedan las lacustas."
+
+#: scripts/scenario_39_locusts.lua:933
+#, lua-format
+msgctxt "msgRelay"
+msgid "One Locust remains in sector %s"
+msgstr "Queda una Locust en el sector %s"
+
+#: scripts/scenario_39_locusts.lua:935
+#, lua-format
+msgctxt "msgRelay"
+msgid ""
+"%s\n"
+"The closest is in sector %s"
+msgstr ""
+"%s\n"
+"Lo más cercano es en el sector %s"
+
+#: scripts/scenario_39_locusts.lua:1175
+#, lua-format
+msgctxt "orders-comms"
+msgid ""
+"Hello %s,\n"
+"Our sensors have picked up numerous Exuari ships."
+msgstr "Hola. %s, Nuestros sensores han recogido numerosas naves Exuari."
+
+#: scripts/scenario_39_locusts.lua:1176
+msgctxt "orders-comms"
+msgid "How many is numerous?"
+msgstr "¿Cuántos son numerosos?"
+
+#: scripts/scenario_39_locusts.lua:1177
+#, lua-format
+msgctxt "orders-comms"
+msgid "Approximately %s"
+msgstr "Aproximadamente %s"
+
+#: scripts/scenario_39_locusts.lua:1178
+msgctxt "orders-comms"
+msgid "That's quite a few. What kind of ships?"
+msgstr "Son unos pocos. ¿Qué clase de naves?"
+
+#: scripts/scenario_39_locusts.lua:1179
+#, lua-format
+msgctxt "orders-comms"
+msgid "They look like %ss. The computer calls them locusts. They're very fast."
+msgstr "Parecen %sLa computadora los llama langostas, son muy rápidos."
+
+#: scripts/scenario_39_locusts.lua:1180
+msgctxt "orders-comms"
+msgid "Should we be worried?"
+msgstr "¿Deberíamos estar preocupados?"
+
+#: scripts/scenario_39_locusts.lua:1181
+msgctxt "orders-comms"
+msgid "Individually, they should be easy to handle. As a group, they could be a problem."
+msgstr "En forma individual, deben ser fáciles de manejar. Como grupo, podrían ser un problema."
+
+#: scripts/scenario_39_locusts.lua:1182
+msgctxt "orders-comms"
+msgid "What do you want us to do about them?"
+msgstr "¿Qué quieres que hagamos con ellos?"
+
+#: scripts/scenario_39_locusts.lua:1183
+msgctxt "orders-comms"
+msgid "Get rid of them. Every last one of them."
+msgstr "Deshazte de ellos, cada uno de ellos."
+
+#: scripts/scenario_39_locusts.lua:1194
+#, lua-format
+msgctxt "orders-comms"
+msgid ""
+"Greetings %s,\n"
+"We've got an update for you on those Exuari Locusts."
+msgstr "Saludos %sTenemos una actualización para ti en esos Exuari Locusts."
+
+#: scripts/scenario_39_locusts.lua:1195
+msgctxt "orders-comms"
+msgid "Tell us about it."
+msgstr "Cuéntanoslo."
+
+#: scripts/scenario_39_locusts.lua:1196
+msgctxt "orders-comms"
+msgid "All the Exuari on our sensors have started moving."
+msgstr "Todos los Exuari de nuestros sensores han comenzado a moverse."
+
+#: scripts/scenario_39_locusts.lua:1197
+msgctxt "orders-comms"
+msgid "Where are they going?"
+msgstr "¿Adónde van?"
+
+#: scripts/scenario_39_locusts.lua:1198
+msgctxt "orders-comms"
+msgid "We are not quite sure, but they seem to be converging on a central location."
+msgstr "No estamos muy seguros, pero parecen estar convergendo en una ubicación central."
+
+#: scripts/scenario_39_locusts.lua:1199
+msgctxt "orders-comms"
+msgid "That could make it harder for us to get rid of them."
+msgstr "Eso podría hacer que sea más difícil para nosotros deshacernos de ellos."
+
+#: scripts/scenario_39_locusts.lua:1200
+msgctxt "orders-comms"
+msgid "How perceptive of you! We are so glad you are out there working to rid us of these Locusts. Keep up the good work!"
+msgstr "¡Qué perceptivo eres! Estamos tan contentos de que estés trabajando para librarnos de estas Locusts. ¡Mantén el buen trabajo!"
+
+#: scripts/scenario_39_locusts.lua:1383
+msgctxt "msgMainscreen"
+msgid "Scenario needs the 'Per-system damage' option under 'Extra settings'"
+msgstr "Escenario necesita la opción 'Daño per-sistema' bajo 'Configuración extra'"
+
+#: scripts/scenario_39_locusts.lua:1442
+#, lua-format
+msgctxt "msgMainscreen"
+msgid ""
+"Surviving stations: %i\n"
+"Friendly: %i out of %i\n"
+"Neutral: %i out of %i\n"
+"Enemy: %i out of %i"
+msgstr ""
+"Estaciones de supervivencia: %i\n"
+"Amistoso: %i fuera de %i\n"
+"Neutral: %i fuera de %i\n"
+"Enemigo: %i fuera de %i"
+
+#: scripts/scenario_39_locusts.lua:1465
+msgctxt "msgMainscreen"
+msgid "All friendly stations have been destroyed."
+msgstr "Todas las estaciones amistosas han sido destruidas."

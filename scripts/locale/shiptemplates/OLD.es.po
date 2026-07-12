@@ -1,0 +1,238 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
+"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"PO-Revision-Date: 2026-07-12 00:00+0200\n"
+"Last-Translator: Espaciokoop Lagunak contributors\n"
+"Language-Team: Espaciokoop Lagunak\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
+
+#: scripts/shiptemplates/OLD.lua:6
+msgctxt "playerShip"
+msgid "Player Cruiser"
+msgstr "Player Cruiser"
+
+#: scripts/shiptemplates/OLD.lua:63
+msgctxt "playerShip"
+msgid "Player Missile Cr."
+msgstr "Jugador Misile Cr."
+
+#: scripts/shiptemplates/OLD.lua:118
+msgctxt "playerShip"
+msgid "Player Fighter"
+msgstr "Jugador de luchador"
+
+#: scripts/shiptemplates/OLD.lua:159
+msgctxt "ship"
+msgid "Tug"
+msgstr "Tug"
+
+#: scripts/shiptemplates/OLD.lua:168
+msgid "The tugboat is a reliable, but small and un-armed transport ship. Due to it's low cost, it is a favourite ship to teach the ropes to fledgeling captains, without risking friendly fire."
+msgstr "El remolcador es un barco de transporte confiable, pero pequeño y no armado. Debido a su bajo costo, es un barco favorito para enseñar las cuerdas a los capitanes huyendo, sin arriesgar fuego amistoso."
+
+#: scripts/shiptemplates/OLD.lua:176
+msgctxt "playerShip"
+msgid "Nautilus"
+msgstr "Nautilus"
+
+#: scripts/shiptemplates/OLD.lua:176 scripts/shiptemplates/OLD.lua:239 scripts/shiptemplates/OLD.lua:264 scripts/shiptemplates/OLD.lua:275 scripts/shiptemplates/OLD.lua:387 scripts/shiptemplates/OLD.lua:475
+msgctxt "class"
+msgid "Frigate"
+msgstr "Frigate"
+
+#: scripts/shiptemplates/OLD.lua:176
+msgctxt "subclass"
+msgid "Mine Layer"
+msgstr "Minera"
+
+#: scripts/shiptemplates/OLD.lua:177
+msgid "Small mine laying vessel with minimal armament, shields and hull"
+msgstr "Pequeño buque de colocación de minas con armamento mínimo, escudos y casco"
+
+#: scripts/shiptemplates/OLD.lua:223
+msgctxt "ship"
+msgid "Fighter"
+msgstr "Fighter"
+
+#: scripts/shiptemplates/OLD.lua:226
+msgid "Fighters are quick agile ships that do not do a lot of damage, but usually come in larger groups. They are easy to take out, but should not be underestimated."
+msgstr "Los combatientes son barcos ágiles rápidos que no hacen mucho daño, pero generalmente vienen en grupos más grandes. Son fáciles de sacar, pero no deben ser subestimados."
+
+#: scripts/shiptemplates/OLD.lua:239
+msgctxt "ship"
+msgid "Karnack"
+msgstr "Karnack"
+
+#: scripts/shiptemplates/OLD.lua:239
+msgctxt "subclass"
+msgid "Cruiser"
+msgstr "Cruiser"
+
+#: scripts/shiptemplates/OLD.lua:241
+msgid "Fabricated by: Repulse shipyards. Due to it's versatility, this ship has found wide adaptation in most factions. Most factions have extensively retrofitted these ships to suit their combat doctrines. Because it's an older model, most factions have been selling stripped versions. This practice has led to this ship becoming an all time favorite with smugglers and other civilian parties. However, they have used it's adaptable nature to re-fit them with (illegal) weaponry."
+msgstr "Fabricado por: Astilleros de repulsión. Debido a su versatilidad, este barco ha encontrado una amplia adaptación en la mayoría de las facciones. La mayoría de las facciones han reacondicionado ampliamente estos barcos para adaptarse a sus doctrinas de combate. Debido a que es un modelo antiguo, la mayoría de las facciones han estado vendiendo versiones despojadas. Esta práctica ha llevado a este barco a convertirse en un favorito de todo el tiempo con los contrabandistas y otros partidos civiles. Sin embargo, han utilizado la naturaleza adaptable para reacomodarlos con armamento (ilegal)."
+
+#: scripts/shiptemplates/OLD.lua:253
+msgctxt "ship"
+msgid "Karnack MK2"
+msgstr "Karnack MK2"
+
+#: scripts/shiptemplates/OLD.lua:254
+msgid "Fabricated by: Repulse shipyards. The successor to the widely successful mark I Karnack cruiser. This ship has several notable improvements over the original ship, including better armor, slightly improved weaponry and customization by the shipyards. The latter improvement was the most requested feature by several factions once they realized that their old surplus mark I ships were used for less savory purposes."
+msgstr "Fabricado por: Astilleros Repulse. El sucesor del crucero I Karnack de marca ampliamente exitoso. Este barco tiene varias mejoras notables sobre el buque original, incluyendo una mejor armadura, armamento ligeramente mejorado y personalización por los astilleros. Esta última mejora fue la característica más solicitada por varias facciones una vez que se dieron cuenta de que sus barcos de marca I antiguo excedente fueron utilizados para fines menos sabrosos."
+
+#: scripts/shiptemplates/OLD.lua:264
+msgctxt "ship"
+msgid "Missile Cruiser"
+msgstr "Missile Cruiser"
+
+#: scripts/shiptemplates/OLD.lua:264
+msgctxt "subclass"
+msgid "Cruiser: Missile"
+msgstr "Crucero: misiles"
+
+#: scripts/shiptemplates/OLD.lua:266
+msgid "Polaris missile cruiser mark I. Fabricated by: Repulse shipyards. This missile cruiser is a long range missile firing platform. It cannot handle a lot of damage, but can do a lot of damage if not dealt with properly."
+msgstr "Marca de cruceros de misiles Polaris I. Fabricado por: Astilleros de repulsión. Este crucero de misiles es una plataforma de disparo de misiles de largo alcance. No puede manejar mucho daño, pero puede hacer mucho daño si no se trata correctamente."
+
+#: scripts/shiptemplates/OLD.lua:275
+msgctxt "ship"
+msgid "Gunship"
+msgstr "Gunship"
+
+#: scripts/shiptemplates/OLD.lua:275
+msgctxt "subclass"
+msgid "Gunship"
+msgstr "Gunship"
+
+#: scripts/shiptemplates/OLD.lua:277
+msgid "The gunship is a ship equipped with a homing missile tube to do initial damage and then take out the enemy with 2 front firing beams. It's designed to quickly take out the enemies weaker then itself."
+msgstr "El buque armado es un barco equipado con un tubo de misiles homing para hacer daño inicial y luego sacar al enemigo con 2 rayos de fuego frontal. Está diseñado para sacar rápidamente a los enemigos más débiles entonces mismo."
+
+#: scripts/shiptemplates/OLD.lua:288
+msgctxt "ship"
+msgid "Adv. Gunship"
+msgstr "Adv. Gunship"
+
+#: scripts/shiptemplates/OLD.lua:289
+msgid "The advanced gunship is a ship equipped with 2 homing missiles to do initial damage and then take out the enemy with 2 front firing beams. It's designed to quickly take out the enemies weaker then itself."
+msgstr "El buque armado avanzado es un barco equipado con 2 misiles homing para hacer daño inicial y luego sacar al enemigo con 2 rayos de fuego frontal. Está diseñado para sacar rápidamente a los enemigos más débiles entonces mismo."
+
+#: scripts/shiptemplates/OLD.lua:293
+msgctxt "ship"
+msgid "Strikeship"
+msgstr "Strikeship"
+
+#: scripts/shiptemplates/OLD.lua:293 scripts/shiptemplates/OLD.lua:305 scripts/shiptemplates/OLD.lua:387
+msgctxt "class"
+msgid "Starfighter"
+msgstr "Starfighter"
+
+#: scripts/shiptemplates/OLD.lua:293
+msgctxt "subclass"
+msgid "Strike"
+msgstr "Strike"
+
+#: scripts/shiptemplates/OLD.lua:295
+msgid "The Strikeship is a warp-drive equipped fighter build for quick strikes, it's fast, it's agile, but does not do an extreme amount of damage, and lacks in rear shields."
+msgstr "El Strikeship es un luchador equipado con tracción warp que construye para huelgas rápidas, es rápido, es ágil, pero no hace una cantidad extrema de daño, y carece de escudos traseros."
+
+#: scripts/shiptemplates/OLD.lua:305
+msgctxt "ship"
+msgid "Adv. Striker"
+msgstr "Adv."
+
+#: scripts/shiptemplates/OLD.lua:305
+msgctxt "subclass"
+msgid "Patrol"
+msgstr "Patrol"
+
+#: scripts/shiptemplates/OLD.lua:307
+msgid "The Advanced Striker is a jump-drive equipped fighter build for quick strikes, it's slow but very agile, but does not do an extreme amount of damage, and lacks in shields. However, due to the jump drive, it's quick to get into the action."
+msgstr "El Avanzado Striker es un luchador equipado con saltos construido para huelgas rápidas, es lento pero muy ágil, pero no hace una cantidad extrema de daño, y carece de escudos. Sin embargo, debido a la unidad de salto, es rápido entrar en la acción."
+
+#: scripts/shiptemplates/OLD.lua:316
+msgctxt "playerShip"
+msgid "Striker"
+msgstr "Striker"
+
+#: scripts/shiptemplates/OLD.lua:317
+msgid "The Striker is the predecessor to the advanced striker, slow but agile, but does not do an extreme amount of damage, and lacks in shields"
+msgstr "El Striker es el predecesor del huelguista avanzado, lento pero ágil, pero no hace una cantidad extrema de daño, y falta en escudos"
+
+#: scripts/shiptemplates/OLD.lua:352
+msgctxt "ship"
+msgid "Dreadnought"
+msgstr "Dreadnought"
+
+#: scripts/shiptemplates/OLD.lua:352 scripts/shiptemplates/OLD.lua:367
+msgctxt "class"
+msgid "Dreadnought"
+msgstr "Dreadnought"
+
+#: scripts/shiptemplates/OLD.lua:352
+msgctxt "subclass"
+msgid "Assault"
+msgstr "Agresión"
+
+#: scripts/shiptemplates/OLD.lua:354
+msgid "The Dreadnought is a flying fortress, it's slow, slow to turn, but packs a huge amount of beam weapons in the front. Taking it head-on is suicide."
+msgstr "El Dreadnought es una fortaleza voladora, es lento, lento para girar, pero empaca una gran cantidad de armas de vigas en la parte delantera."
+
+#: scripts/shiptemplates/OLD.lua:367
+msgctxt "ship"
+msgid "Battlestation"
+msgstr "Batallatación"
+
+#: scripts/shiptemplates/OLD.lua:367
+msgctxt "subclass"
+msgid "Battlecruiser"
+msgstr "Battlecruiser"
+
+#: scripts/shiptemplates/OLD.lua:369
+msgid "The battle station is a huge ship with many defensive features. It can be docked by smaller ships."
+msgstr "La estación de batalla es un barco enorme con muchas características defensivas. Se puede atracar por naves más pequeñas."
+
+#: scripts/shiptemplates/OLD.lua:387
+msgctxt "class"
+msgid "Corvette"
+msgstr "Corvette"
+
+#: scripts/shiptemplates/OLD.lua:390
+msgctxt "playerShip"
+msgid "Ender"
+msgstr "Ender"
+
+#: scripts/shiptemplates/OLD.lua:391
+msgid "Player version of the battle station. Only half es much shield strength, but more speed and maneuverability, so it is surprisingly agile - for a capital ship, of course. Piloting this colossus still feels very different compared to other ships. It also has two additional missile tubes."
+msgstr "Versión de jugador de la estación de batalla. Sólo la mitad es mucha fuerza de escudo, pero más velocidad y maniobrabilidad, por lo que es sorprendentemente ágil - para un barco de capital, por supuesto. Pilotar este coloso todavía se siente muy diferente en comparación con otros barcos. También tiene dos tubos de misiles adicionales."
+
+#: scripts/shiptemplates/OLD.lua:460
+msgctxt "ship"
+msgid "Weapons platform"
+msgstr "Plataforma de armas"
+
+#: scripts/shiptemplates/OLD.lua:462
+msgid "The weapons-platform is a stationary platform with beam-weapons. It's extremely slow to turn, but it's beam weapons do a huge amount of damage."
+msgstr "El arma-plataforma es una plataforma estacionaria con armas de vigas. Es extremadamente lento para girar, pero las armas de vigas hacen una gran cantidad de daño."
+
+#: scripts/shiptemplates/OLD.lua:475
+msgctxt "ship"
+msgid "Blockade Runner"
+msgstr "Blockade Runner"
+
+#: scripts/shiptemplates/OLD.lua:475
+msgctxt "subclass"
+msgid "High Punch"
+msgstr "High Punch"
+
+#: scripts/shiptemplates/OLD.lua:477
+msgid "Blockade runner is a reasonably fast, high shield, slow on weapons ship designed to break through defense lines and deliver goods."
+msgstr "Blockade runner es un escudo razonablemente rápido y alto, lento en el barco de armas diseñado para romper las líneas de defensa y entregar bienes."

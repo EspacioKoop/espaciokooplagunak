@@ -1,0 +1,88 @@
+# Scenario name
+msgid ""
+msgstr ""
+"Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
+"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"PO-Revision-Date: 2026-07-12 00:00+0200\n"
+"Last-Translator: Espaciokoop Lagunak contributors\n"
+"Language-Team: Espaciokoop Lagunak\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
+
+msgid "Training: Cruiser"
+msgstr "Formación: Crucero"
+
+# Scenario description
+msgid ""
+"Basic Training Course\n"
+"\n"
+"Objective: Destroy all enemy ships in the area.\n"
+"\n"
+"Description:\n"
+"During this training you will learn to coordinate the actions of your crew and destroy an Exuari training ground.\n"
+"\n"
+"Your ship is a Phobos light cruiser - the most common vessel in the navy.\n"
+"\n"
+"This is a short mission for inexperienced players."
+msgstr "Curso de Formación Básica Objetivo: Destruir todos los barcos enemigos en la zona. Descripción: Durante este entrenamiento aprenderás a coordinar las acciones de tu tripulación y destruir un campo de entrenamiento Exuari. Tu barco es un crucero ligero Phobos - el barco más común en la marina. Esta es una misión corta para los jugadores inexpertos."
+
+#: scripts/scenario_20_training1.lua:36
+msgctxt "scienceDescription-shipname"
+msgid "Exuari transport"
+msgstr "Transporte exuari"
+
+#: scripts/scenario_20_training1.lua:40
+msgctxt "scienceDescription-shipname"
+msgid "Exuari freighter"
+msgstr "Carguero exuari"
+
+#: scripts/scenario_20_training1.lua:44
+msgctxt "scienceDescription-shipname"
+msgid "Exuari shuttle"
+msgstr "Transporte aéreo"
+
+#: scripts/scenario_20_training1.lua:79
+msgctxt "goal-incCall"
+msgid ""
+"This is Commander Saberhagen.\n"
+"\n"
+"In this training mission, you will practice the basic controls of a Phobos light cruiser.\n"
+"Since this is not a tutorial, you will be on your own to decide how to destroy all enemy targets in an Exuari training ground.\n"
+"There will be not much resistance, so you can try different approaches and tactics safely.\n"
+"\n"
+"Here's your chance to beat up some helpless opponents.\n"
+"Commander Saberhagen out."
+msgstr "Este es el Comandante Saberhagen. En esta misión de entrenamiento, usted practicará los controles básicos de un crucero de luz Phobos. Ya que esto no es un tutorial, usted estará en su propio para decidir cómo destruir todos los objetivos enemigos en un campo de entrenamiento Exuari. No habrá mucha resistencia, así que usted puede probar diferentes enfoques y tácticas de forma segura. Aquí está su oportunidad de golpear a algunos oponentes indefensos."
+
+#: scripts/scenario_20_training1.lua:97
+msgctxt "msgMainscreen-bonusTarget"
+msgid "escaped."
+msgstr "escapó."
+
+#: scripts/scenario_20_training1.lua:99
+msgctxt "msgMainscreen-bonusTarget"
+msgid "destroyed."
+msgstr "destruido."
+
+#: scripts/scenario_20_training1.lua:101
+#, lua-format
+msgctxt "msgMainscreen"
+msgid ""
+"Mission Complete.\n"
+"Your Time: %d\n"
+"Bonus target %s\n"
+"\n"
+"If you feel ready for combat, play scenario 'Basic Battle'.\n"
+"If you want to try another ship, play the next training mission.\n"
+"\n"
+"If you need more practice, play this training again\n"
+"with different stations assigned to your crew members."
+msgstr ""
+"Misión completa. %d\n"
+"Objetivo del bono %s\n"
+"\n"
+"Si te sientes listo para el combate, juega el escenario 'Basic Battle'. Si quieres probar otro barco, juega la siguiente misión de entrenamiento. Si necesitas más práctica, vuelve a jugar este entrenamiento con diferentes estaciones asignadas a tus miembros de la tripulación."

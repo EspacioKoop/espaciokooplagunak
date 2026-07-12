@@ -1,0 +1,90 @@
+# Scenario name
+msgid ""
+msgstr ""
+"Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
+"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"PO-Revision-Date: 2026-07-12 00:00+0200\n"
+"Last-Translator: Espaciokoop Lagunak contributors\n"
+"Language-Team: Espaciokoop Lagunak\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
+
+msgid "Waves"
+msgstr "Olas"
+
+# Scenario description
+msgid ""
+"Waves of increasingly difficult enemies attack friendly stations. There is no victory. How many waves can you destroy?\n"
+"\n"
+"Spawn the player ships you want. The strength of enemy ships is independent of the number and type of player ships."
+msgstr "Las olas de enemigos cada vez más difíciles atacan estaciones amigables. No hay victoria. ¿Cuántas olas puedes destruir? Apague las naves jugadoras que quieras. La fuerza de las naves enemigas es independiente del número y tipo de barcos de jugadores."
+
+# Scenario setting
+msgctxt "setting"
+msgid "Enemies"
+msgstr "Enemigos"
+
+msgctxt "setting"
+msgid "Configures the amount of enemies spawned in the scenario."
+msgstr "Configura la cantidad de enemigos que se despertó en el escenario."
+
+msgctxt "Enemies"
+msgid "Easy"
+msgstr "Fácil"
+
+msgctxt "Enemies"
+msgid "Decreases the number of ships in each wave. Good for new players, but takes longer for the players to be overwhelmed."
+msgstr "Disminuye el número de barcos en cada onda. Bien para nuevos jugadores, pero tarda más tiempo para que los jugadores estén abrumados."
+
+msgctxt "Enemies"
+msgid "Normal"
+msgstr "Normal"
+
+msgctxt "Enemies"
+msgid "Normal amount of enemies. Recommended for a normal crew."
+msgstr "Cantidad normal de enemigos. Recomendado para una tripulación normal."
+
+msgctxt "Enemies"
+msgid "Hard"
+msgstr "Duro"
+
+msgctxt "Enemies"
+msgid "Difficulty starts at wave 5 and increases by 1.5 after the players defeat each wave. Players are overwhelmed more quickly, leading to shorter games."
+msgstr "La dificultad comienza en la onda 5 y aumenta en 1,5 después de que los jugadores derrotan cada onda. Los jugadores están abrumados más rápidamente, lo que conduce a juegos más cortos."
+
+#: scripts/scenario_03_waves.lua:45
+msgctxt "goal-shipLog"
+msgid ""
+"At least one friendly base must survive.\n"
+"\n"
+"Destroy all enemy ships. After a short delay, the next wave will appear. And so on ...\n"
+"\n"
+"How many waves can you destroy?"
+msgstr "Al menos una base amistosa debe sobrevivir. Destruir todas las naves enemigas. Después de un breve retraso, la siguiente ola aparecerá. Y así sucesivamente ... ¿Cuántas olas pueden destruir?"
+
+#: scripts/scenario_03_waves.lua:127
+#, lua-format
+msgctxt "shipLog"
+msgid "Wave %d"
+msgstr "Wave %d"
+
+#: scripts/scenario_03_waves.lua:220
+#, lua-format
+msgctxt "msgMainscreen"
+msgid "Wave %d"
+msgstr "Wave %d"
+
+#: scripts/scenario_03_waves.lua:253
+msgctxt "msgMainscreen"
+msgid "Wave cleared!"
+msgstr "¡Oja despejada!"
+
+#: scripts/scenario_03_waves.lua:254
+#, lua-format
+msgctxt "shipLog"
+msgid "Wave %d cleared."
+msgstr "Wave %d aclarado."

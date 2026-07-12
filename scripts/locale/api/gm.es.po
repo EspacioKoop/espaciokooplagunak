@@ -1,0 +1,84 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
+"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"PO-Revision-Date: 2026-07-12 00:00+0200\n"
+"Last-Translator: Espaciokoop Lagunak contributors\n"
+"Language-Team: Espaciokoop Lagunak\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
+
+#: scripts/api/gm.lua:3
+msgctxt "create"
+msgid "Artifact"
+msgstr "Artifact"
+
+#: scripts/api/gm.lua:3 scripts/api/gm.lua:4 scripts/api/gm.lua:5 scripts/api/gm.lua:6 scripts/api/gm.lua:7 scripts/api/gm.lua:8 scripts/api/gm.lua:9 scripts/api/gm.lua:10 scripts/api/gm.lua:11 scripts/api/gm.lua:12 scripts/api/gm.lua:13
+msgctxt "create"
+msgid "Various"
+msgstr "Varios"
+
+#: scripts/api/gm.lua:4
+msgctxt "create"
+msgid "Warp Jammer"
+msgstr "Warp Jammer"
+
+#: scripts/api/gm.lua:5 scripts/api/gm.lua:7
+msgctxt "create"
+msgid "Mine"
+msgstr "Mina"
+
+#: scripts/api/gm.lua:6
+msgctxt "create"
+msgid "Supply Drop"
+msgstr "Abastecimiento"
+
+#: scripts/api/gm.lua:8
+msgctxt "create"
+msgid "Asteroid"
+msgstr "Asteroid"
+
+#: scripts/api/gm.lua:9
+msgctxt "create"
+msgid "Visual Asteroid"
+msgstr "Asteroid visual"
+
+#: scripts/api/gm.lua:10
+msgctxt "create"
+msgid "Planet"
+msgstr "Planeta"
+
+#: scripts/api/gm.lua:11
+msgctxt "create"
+msgid "BlackHole"
+msgstr "BlackHole"
+
+#: scripts/api/gm.lua:12
+msgctxt "create"
+msgid "Nebula"
+msgstr "Nebula"
+
+#: scripts/api/gm.lua:13
+msgctxt "create"
+msgid "Worm Hole"
+msgstr "Worm Hole"
+
+#: scripts/api/gm.lua:18
+msgctxt "create"
+msgid "player ship"
+msgstr "barco"
+
+#: scripts/api/gm.lua:20
+msgctxt "create"
+msgid "station"
+msgstr "estación"
+
+#: scripts/api/gm.lua:22
+msgctxt "create"
+msgid "cpu ship"
+msgstr "cpu ship"

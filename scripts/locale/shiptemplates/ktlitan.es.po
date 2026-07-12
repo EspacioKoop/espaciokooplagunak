@@ -1,0 +1,54 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
+"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"PO-Revision-Date: 2026-07-12 00:00+0200\n"
+"Last-Translator: Espaciokoop Lagunak contributors\n"
+"Language-Team: Espaciokoop Lagunak\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
+
+#: scripts/shiptemplates/ktlitan.lua:2
+msgctxt "ship"
+msgid "Ktlitan Fighter"
+msgstr "Ktlitan Fighter"
+
+#: scripts/shiptemplates/ktlitan.lua:9
+msgctxt "ship"
+msgid "Ktlitan Breaker"
+msgstr "Ktlitan Breaker"
+
+#: scripts/shiptemplates/ktlitan.lua:19
+msgctxt "ship"
+msgid "Ktlitan Worker"
+msgstr "Ktlitan Worker"
+
+#: scripts/shiptemplates/ktlitan.lua:26
+msgctxt "ship"
+msgid "Ktlitan Drone"
+msgstr "Ktlitan Drone"
+
+#: scripts/shiptemplates/ktlitan.lua:32
+msgctxt "ship"
+msgid "Ktlitan Feeder"
+msgstr "Ktlitan Feeder"
+
+#: scripts/shiptemplates/ktlitan.lua:42
+msgctxt "ship"
+msgid "Ktlitan Scout"
+msgstr "Ktlitan Scout"
+
+#: scripts/shiptemplates/ktlitan.lua:48
+msgctxt "ship"
+msgid "Ktlitan Destroyer"
+msgstr "Ktlitan Destroyer"
+
+#: scripts/shiptemplates/ktlitan.lua:59
+msgctxt "ship"
+msgid "Ktlitan Queen"
+msgstr "Ktlitan Queen"

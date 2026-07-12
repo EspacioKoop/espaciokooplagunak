@@ -1,0 +1,46 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
+"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"PO-Revision-Date: 2026-07-12 00:00+0200\n"
+"Last-Translator: Espaciokoop Lagunak contributors\n"
+"Language-Team: Espaciokoop Lagunak\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
+
+#: scripts/shiptemplates/stations.lua:5
+msgid "Small Station"
+msgstr "Estación pequeña"
+
+#: scripts/shiptemplates/stations.lua:6
+msgid "Stations of this size are often used as research outposts, listening stations, and security checkpoints. Crews turn over frequently in a small station's cramped accommodatations, but they are small enough to look like ships on many long-range sensors, and organized raiders sometimes take advantage of this by placing small stations in nebulae to serve as raiding bases. They are lightly shielded and vulnerable to swarming assaults."
+msgstr "Estaciones de este tamaño se utilizan a menudo como puestos de investigación, estaciones de escucha y puestos de control de seguridad. Los crews giran con frecuencia en los alojamientos de una pequeña estación, pero son lo suficientemente pequeños como para parecer barcos en muchos sensores de largo alcance, y los raiders organizados a veces aprovechan esto colocando estaciones pequeñas en nebulosas para servir como bases de redada. Son ligeramente blindados y vulnerables a ataques en pugna."
+
+#: scripts/shiptemplates/stations.lua:11
+msgid "Medium Station"
+msgstr "Estación media"
+
+#: scripts/shiptemplates/stations.lua:12
+msgid "Large enough to accommodate small crews for extended periods of times, stations of this size are often trading posts, refuelling bases, mining operations, and forward military bases. While their shields are strong, concerted attacks by many ships can bring them down quickly."
+msgstr "Lo suficientemente grande como para acomodar a pequeñas tripulaciones durante largos períodos de tiempo, las estaciones de este tamaño son a menudo puestos de comercio, bases de reabastecimiento, operaciones mineras y bases militares avanzadas. Mientras que sus escudos son fuertes, ataques concertados por muchos barcos pueden reducirlos rápidamente."
+
+#: scripts/shiptemplates/stations.lua:17
+msgid "Large Station"
+msgstr "Estación grande"
+
+#: scripts/shiptemplates/stations.lua:18
+msgid "These spaceborne communities often represent permanent bases in a sector. Stations of this size can be military installations, commercial hubs, deep-space settlements, and small shipyards. Only a concentrated attack can penetrate a large station's shields, and its hull can withstand all but the most powerful weaponry."
+msgstr "Estas comunidades espaciales representan a menudo bases permanentes en un sector. Las estaciones de este tamaño pueden ser instalaciones militares, centros comerciales, asentamientos profundos y pequeños astilleros. Sólo un ataque concentrado puede penetrar los escudos de una estación grande, y su casco puede soportar todo menos el armamento más poderoso."
+
+#: scripts/shiptemplates/stations.lua:23
+msgid "Huge Station"
+msgstr "Huge Station"
+
+#: scripts/shiptemplates/stations.lua:24
+msgid "The size of a sprawling town, stations at this scale represent a faction's center of spaceborne power in a region. They serve many functions at once and represent an extensive investment of time, money, and labor. A huge station's shields and thick hull can keep it intact long enough for reinforcements to arrive, even when faced with an ongoing siege or massive, perfectly coordinated assault."
+msgstr "El tamaño de una ciudad espeluznante, las estaciones de esta escala representan el centro de poder espacial de una facción en una región. Sirven muchas funciones a la vez y representan una amplia inversión de tiempo, dinero y mano de obra. Los escudos de una estación enorme y casco grueso pueden mantenerlo intacto lo suficiente para que lleguen refuerzos, incluso cuando se enfrentan a un asedio continuo o asalto masivo y perfectamente coordinado."

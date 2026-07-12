@@ -1,0 +1,26 @@
+# Scenario name
+msgid ""
+msgstr ""
+"Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
+"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"PO-Revision-Date: 2026-07-12 00:00+0200\n"
+"Last-Translator: Espaciokoop Lagunak contributors\n"
+"Language-Team: Espaciokoop Lagunak\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
+
+msgid "utils_customElements"
+msgstr "utils_customElements"
+
+# Scenario description
+msgid ""
+"Wrapper upon different stations, so mission author can add button/information to station Operator,\n"
+"abstracting the position through which the operator fulfills his duties.\n"
+"This module should remove multiple boilerplate to accomodate 6/5 and 4/3 station categories.\n"
+"Operator in context of this module means player fulfilling specific duties aboard the ship\n"
+"(for example Engineer can use \"Engineering\" or \"Engineering+\")."
+msgstr "En diferentes estaciones, el autor de la misión puede añadir botones/información a la estación Operador, abstrayendo la posición a través de la cual el operador cumple sus deberes. Este módulo debe eliminar múltiples placas de caldera para acomodar 6/5 y 4/3 categorías de estaciones. Operador en contexto de este módulo significa que el jugador cumple deberes específicos a bordo del buque (por ejemplo, el ingeniero puede usar \"Engineering\" o \"Engineering+\")."

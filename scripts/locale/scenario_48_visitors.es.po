@@ -1,0 +1,4095 @@
+# Scenario name
+msgid ""
+msgstr ""
+"Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
+"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"PO-Revision-Date: 2026-07-12 00:00+0200\n"
+"Last-Translator: Espaciokoop Lagunak contributors\n"
+"Language-Team: Espaciokoop Lagunak\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
+
+msgid "Unwanted Visitors"
+msgstr "Visitantes no deseadas"
+
+# Scenario description
+msgid ""
+"Get rid of the unwanted visitors. Other missions follow. Check friendly stations for mission orders. Dispatch office provides new missions. Continue or stand down after each mission.\n"
+"\n"
+"Each mission takes 15 - 50 minutes. That can add up. Four missions in the first area, three in the second area and in the third area, one open ended mission, chosen from three possibilities.\n"
+"\n"
+"When returning to this scenario, choose \"selectable\" to perform missions you have not yet completed. Choose \"Random\" to be surprised at the missions selected.\n"
+"\n"
+"GM buttons slow or speed celestial body orbits, turn on or off server voices, insert unique player ships or end the mission.\n"
+"\n"
+"USN Discord: https://discord.gg/PntGG3a where you can join a game online.\n"
+"\n"
+"Voice Actors:\n"
+"Admiral U. E.\n"
+"David Priddy\n"
+"Jordy Kruijer\n"
+"Kilted Klingon\n"
+"Kristen Priddy\n"
+"Nick Mercier\n"
+"Peter Priddy\n"
+"Slate https://www.amazon.com/T.-L.-Ford/e/B0034Q6Q2S\n"
+"Stephen Priddy\n"
+"\n"
+"Version 2"
+msgstr ""
+"Deshacerse de los visitantes no deseados. Otras misiones siguen. Check friendly stations for mission orders. Dispatch office provides new missions. Continue or stand down after each mission. Cada misión lleva 15 - 50 minutos. Eso puede agregar. Cuatro misiones en la primera área, tres en la segunda área y en la tercera área, una misión abierta, elegida de tres posibilidades.\n"
+"\n"
+"Al regresar a este escenario, elija \"seleccionable\" para realizar misiones que aún no haya completado. Elija \"Random\" para ser sorprendido en las misiones seleccionadas. Botones GM lentas o velocidades órbitas corporales celestiales, encender o apagar las voces del servidor, insertar barcos de jugador únicos o poner fin a la misión. USN Discord: https://discord.gg/PntG3a donde puede unirse a un juego en línea.\n"
+"Kilted Klingon Kristen Priddy Nick Mercier Peter Priddy Slate https://www.amazon.com/T.-L.-Ford/e/B0034Q6Q2S Stephen Priddy Version 2"
+
+# Scenario setting
+msgctxt "setting"
+msgid "Enemies"
+msgstr "Enemigos"
+
+msgctxt "setting"
+msgid "Configures the strength of the enemies"
+msgstr "Configura la fuerza de los enemigos"
+
+msgctxt "Enemies"
+msgid "Easy"
+msgstr "Fácil"
+
+msgctxt "Enemies"
+msgid "Enemies are weaker or fewer than normal"
+msgstr "Los enemigos son más débiles o menos de lo normal"
+
+msgctxt "Enemies"
+msgid "Normal"
+msgstr "Normal"
+
+msgctxt "Enemies"
+msgid "Enemies are normal strength"
+msgstr "Los enemigos son fuerza normal"
+
+msgctxt "Enemies"
+msgid "Hard"
+msgstr "Duro"
+
+msgctxt "Enemies"
+msgid "Enemies are stronger or more numerous than normal"
+msgstr "Los enemigos son más fuertes o más numerosos de lo normal"
+
+msgctxt "Enemies"
+msgid "Extreme"
+msgstr "Extremo"
+
+msgctxt "Enemies"
+msgid "Much stronger, many more enemies"
+msgstr "Mucho más fuerte, muchos más enemigos"
+
+msgctxt "Enemies"
+msgid "Quixotic"
+msgstr "Quijote"
+
+msgctxt "Enemies"
+msgid "Insanely strong and/or inordinately large numbers of enemies"
+msgstr "Insanely strong and/or inordinately large numbers of enemigos"
+
+# Scenario setting
+msgctxt "setting"
+msgid "Murphy"
+msgstr "Murphy"
+
+msgctxt "setting"
+msgid "Configures the perversity of the universe according to Murphy's law"
+msgstr "Configura la perversidad del universo según la ley de Murphy"
+
+msgctxt "Murphy"
+msgid "Easy"
+msgstr "Fácil"
+
+msgctxt "Murphy"
+msgid "Random factors are more in your favor"
+msgstr "Los factores aleatorios son más a su favor"
+
+msgctxt "Murphy"
+msgid "Normal"
+msgstr "Normal"
+
+msgctxt "Murphy"
+msgid "Random factors are normal"
+msgstr "Los factores aleatorios son normales"
+
+msgctxt "Murphy"
+msgid "Hard"
+msgstr "Duro"
+
+msgctxt "Murphy"
+msgid "Random factors are more against you"
+msgstr "Los factores aleatorios son más contra ti"
+
+# Scenario setting
+msgctxt "setting"
+msgid "Mission"
+msgstr "Misión"
+
+msgctxt "setting"
+msgid "Configures the scenario missions. There are different regions with missions. The default setting lets the players choose to move to the next region. The players must always complete the first mission."
+msgstr "Configura las misiones de escenario. Hay diferentes regiones con misiones. El ajuste por defecto permite a los jugadores elegir moverse a la siguiente región. Los jugadores siempre deben completar la primera misión."
+
+msgctxt "Mission"
+msgid "Random"
+msgstr "Aleatorio"
+
+msgctxt "Mission"
+msgid "The next mission is randomly selected"
+msgstr "La siguiente misión es seleccionada aleatoriamente"
+
+msgctxt "Mission"
+msgid "Region"
+msgstr "Región"
+
+msgctxt "Mission"
+msgid "Players may skip to the next region of missions"
+msgstr "Los jugadores pueden saltar a la siguiente región de las misiones"
+
+msgctxt "Mission"
+msgid "Selectable"
+msgstr "Seleccionable"
+
+msgctxt "Mission"
+msgid "Players may choose each individual mission in each region"
+msgstr "Los jugadores pueden elegir cada misión individual en cada región"
+
+#: scripts/scenario_48_visitors.lua:99
+msgctxt "buttonGM"
+msgid "+Player ships"
+msgstr "+ Naves de jugador"
+
+#: scripts/scenario_48_visitors.lua:100
+msgctxt "buttonGM"
+msgid "+Adjust speed"
+msgstr "+ Velocidad ajustada"
+
+#: scripts/scenario_48_visitors.lua:101
+msgctxt "buttonGM"
+msgid "+End Mission"
+msgstr "+End Mission"
+
+#: scripts/scenario_48_visitors.lua:102
+msgctxt "buttonGM"
+msgid "+Voices"
+msgstr "+Voices"
+
+#: scripts/scenario_48_visitors.lua:103
+msgctxt "buttonGM"
+msgid "+Spawn Ship(s)"
+msgstr "+Spawn Ship(s)"
+
+#: scripts/scenario_48_visitors.lua:104
+msgctxt "buttonGM"
+msgid "+Control Codes"
+msgstr "+ Códigos de control"
+
+#: scripts/scenario_48_visitors.lua:109 scripts/scenario_48_visitors.lua:253 scripts/scenario_48_visitors.lua:266 scripts/scenario_48_visitors.lua:285 scripts/scenario_48_visitors.lua:304 scripts/scenario_48_visitors.lua:323 scripts/scenario_48_visitors.lua:340 scripts/scenario_48_visitors.lua:369 scripts/scenario_48_visitors.lua:398 scripts/scenario_48_visitors.lua:417 scripts/scenario_48_visitors.lua:446 scripts/scenario_48_visitors.lua:488 scripts/scenario_48_visitors.lua:501
+msgctxt "buttonGM"
+msgid "-Main"
+msgstr "-Main"
+
+#: scripts/scenario_48_visitors.lua:111
+msgctxt "buttonGM"
+msgid "Narsil"
+msgstr "Narsil"
+
+#: scripts/scenario_48_visitors.lua:114
+msgctxt "buttonGM"
+msgid "Headhunter"
+msgstr "Headhunter"
+
+#: scripts/scenario_48_visitors.lua:117
+msgctxt "buttonGM"
+msgid "Blazon"
+msgstr "Blazon"
+
+#: scripts/scenario_48_visitors.lua:120
+msgctxt "buttonGM"
+msgid "Sting"
+msgstr "Sting"
+
+#: scripts/scenario_48_visitors.lua:250
+#, lua-format
+msgctxt "msgGM"
+msgid ""
+"Primus is the planet closest to the sun. Secondus is the next planet out from the sun. Tertius is the third planet out from the sun. Sol Belt 1 is the belt of asteroids and stations closest to the sun. Sol Belt 2 is the next one out. Tertius moon belt is the asteroid, moon and station belt orbiting Tertius. Tertius belt 2 is the next one out from Tertius.\n"
+"--- Celestial Body Names ---\n"
+"Sun: %s\n"
+"Primus: %s\n"
+"Secondus: %s\n"
+"Tertius: %s"
+msgstr ""
+"Primus es el planeta más cercano al sol. Secondus es el siguiente planeta fuera del sol. Tertius es el tercer planeta fuera del sol. Sol Belt 1 es el cinturón de asteroides y estaciones más cercanas al sol. Sol Belt 2 es el siguiente fuera. El cinturón de la luna Tertius es el asteroide, la luna y el cinturón de la estación que orbita Tertius. %s\n"
+"Primus: %s\n"
+"Segundo: %s\n"
+"Tercio: %s"
+
+#: scripts/scenario_48_visitors.lua:254
+msgctxt "buttonGM"
+msgid "Primus"
+msgstr "Primus"
+
+#: scripts/scenario_48_visitors.lua:255
+msgctxt "buttonGM"
+msgid "Primus Moon"
+msgstr "Primus Moon"
+
+#: scripts/scenario_48_visitors.lua:256
+msgctxt "buttonGM"
+msgid "Secondus"
+msgstr "Secondus"
+
+#: scripts/scenario_48_visitors.lua:257
+msgctxt "buttonGM"
+msgid "Secondus Station"
+msgstr "Secondus Station"
+
+#: scripts/scenario_48_visitors.lua:258
+msgctxt "buttonGM"
+msgid "Sol Belt 1"
+msgstr "Sol Belt 1"
+
+#: scripts/scenario_48_visitors.lua:259
+msgctxt "buttonGM"
+msgid "Sol Belt 2"
+msgstr "Sol Belt 2"
+
+#: scripts/scenario_48_visitors.lua:260
+msgctxt "buttonGM"
+msgid "Tertius"
+msgstr "Tertius"
+
+#: scripts/scenario_48_visitors.lua:261
+msgctxt "buttonGM"
+msgid "Tertius Moon Belt"
+msgstr "Tertius Moon Belt"
+
+#: scripts/scenario_48_visitors.lua:262
+msgctxt "buttonGM"
+msgid "Tertius Belt 2"
+msgstr "Tertius Belt 2"
+
+#: scripts/scenario_48_visitors.lua:267
+msgctxt "buttonGM"
+msgid "-From Primus"
+msgstr "-De Primus"
+
+#: scripts/scenario_48_visitors.lua:268 scripts/scenario_48_visitors.lua:287 scripts/scenario_48_visitors.lua:306 scripts/scenario_48_visitors.lua:325 scripts/scenario_48_visitors.lua:342 scripts/scenario_48_visitors.lua:371 scripts/scenario_48_visitors.lua:400 scripts/scenario_48_visitors.lua:419 scripts/scenario_48_visitors.lua:448
+msgctxt "buttonGM"
+msgid "Slower"
+msgstr "Más lento"
+
+#: scripts/scenario_48_visitors.lua:269 scripts/scenario_48_visitors.lua:276
+#, lua-format
+msgctxt "msgGM"
+msgid "Current Primus speed: %.1f"
+msgstr "Velocidad actual de Primus: %.1f"
+
+#: scripts/scenario_48_visitors.lua:272
+#, lua-format
+msgctxt "msgGM"
+msgid ""
+"%s\n"
+"New slower Primus speed: %.1f"
+msgstr ""
+"%s\n"
+"Nueva velocidad de Primus más lenta: %.1f"
+
+#: scripts/scenario_48_visitors.lua:275 scripts/scenario_48_visitors.lua:294 scripts/scenario_48_visitors.lua:313 scripts/scenario_48_visitors.lua:331 scripts/scenario_48_visitors.lua:354 scripts/scenario_48_visitors.lua:383 scripts/scenario_48_visitors.lua:407 scripts/scenario_48_visitors.lua:431 scripts/scenario_48_visitors.lua:466
+msgctxt "buttonGM"
+msgid "Faster"
+msgstr "Más rápido."
+
+#: scripts/scenario_48_visitors.lua:279
+#, lua-format
+msgctxt "msgGM"
+msgid ""
+"%s\n"
+"New faster Primus speed: %.1f"
+msgstr ""
+"%s\n"
+"Nueva velocidad de Primus más rápida: %.1f"
+
+#: scripts/scenario_48_visitors.lua:286
+msgctxt "buttonGM"
+msgid "-From Primus Moon"
+msgstr "-De la Luna de Primus"
+
+#: scripts/scenario_48_visitors.lua:288 scripts/scenario_48_visitors.lua:295
+#, lua-format
+msgctxt "msgGM"
+msgid "Current Primus moon speed: %.1f"
+msgstr "Velocidad actual de la luna Primus: %.1f"
+
+#: scripts/scenario_48_visitors.lua:291
+#, lua-format
+msgctxt "msgGM"
+msgid ""
+"%s\n"
+"New slower Primus moon speed: %.1f"
+msgstr ""
+"%s\n"
+"Nueva velocidad de luna Primus más lenta: %.1f"
+
+#: scripts/scenario_48_visitors.lua:298
+#, lua-format
+msgctxt "msgGM"
+msgid ""
+"%s\n"
+"New faster Primus moon speed: %.1f"
+msgstr ""
+"%s\n"
+"Nueva velocidad de luna Primus más rápida: %.1f"
+
+#: scripts/scenario_48_visitors.lua:305
+msgctxt "buttonGM"
+msgid "-From Secondus"
+msgstr "-Desde Secondus"
+
+#: scripts/scenario_48_visitors.lua:307 scripts/scenario_48_visitors.lua:314
+#, lua-format
+msgctxt "msgGM"
+msgid "Current Secondus speed: %.1f"
+msgstr "Velocidad actual de Secondus: %.1f"
+
+#: scripts/scenario_48_visitors.lua:310
+#, lua-format
+msgctxt "msgGM"
+msgid ""
+"%s\n"
+"New slower Secondus speed: %.1f"
+msgstr ""
+"%s\n"
+"Nuevo más lento Segunda velocidad: %.1f"
+
+#: scripts/scenario_48_visitors.lua:317
+#, lua-format
+msgctxt "msgGM"
+msgid ""
+"%s\n"
+"New faster Secondus speed: %.1f"
+msgstr ""
+"%s\n"
+"Nuevo rápido Segunda velocidad: %.1f"
+
+#: scripts/scenario_48_visitors.lua:324
+msgctxt "buttonGM"
+msgid "-From Secondus Stn"
+msgstr "-De Secondus Stn"
+
+#: scripts/scenario_48_visitors.lua:326 scripts/scenario_48_visitors.lua:332
+#, lua-format
+msgctxt "msgGM"
+msgid "Current Secondus station speed: %.3f"
+msgstr "Velocidad actual de la estación Secondus: %.3f"
+
+#: scripts/scenario_48_visitors.lua:328
+#, lua-format
+msgctxt "msgGM"
+msgid ""
+"%s\n"
+"New slower Secondus station speed: %.3f"
+msgstr ""
+"%s\n"
+"Nueva velocidad de estación de Secondus: %.3f"
+
+#: scripts/scenario_48_visitors.lua:334
+#, lua-format
+msgctxt "msgGM"
+msgid ""
+"%s\n"
+"New faster Secondus station speed: %.3f"
+msgstr ""
+"%s\n"
+"Nueva velocidad de estación de Secondus más rápida: %.3f"
+
+#: scripts/scenario_48_visitors.lua:341
+msgctxt "buttonGM"
+msgid "-From Sol Belt 1"
+msgstr "-De Sol Belt 1"
+
+#: scripts/scenario_48_visitors.lua:343 scripts/scenario_48_visitors.lua:355
+#, lua-format
+msgctxt "msgGM"
+msgid "Current Sol Belt 1 speed: %.3f"
+msgstr "Corriente de Sol 1 velocidad: %.3f"
+
+#: scripts/scenario_48_visitors.lua:351
+#, lua-format
+msgctxt "msgGM"
+msgid ""
+"%s\n"
+"New slower Sol Belt 1 speed: %.3f"
+msgstr ""
+"%s\n"
+"Nuevo más lento Sol Belt 1 velocidad: %.3f"
+
+#: scripts/scenario_48_visitors.lua:363
+#, lua-format
+msgctxt "msgGM"
+msgid ""
+"%s\n"
+"New faster Sol Belt 1 speed: %.3f"
+msgstr ""
+"%s\n"
+"Nuevo más rápido Sol Belt 1 velocidad: %.3f"
+
+#: scripts/scenario_48_visitors.lua:370
+msgctxt "buttonGM"
+msgid "-From Sol Belt 2"
+msgstr "-De Sol Belt 2"
+
+#: scripts/scenario_48_visitors.lua:372 scripts/scenario_48_visitors.lua:384
+#, lua-format
+msgctxt "msgGM"
+msgid "Current Sol Belt 2 speed: %.3f"
+msgstr "Corriente de Sol 2 velocidades: %.3f"
+
+#: scripts/scenario_48_visitors.lua:380
+#, lua-format
+msgctxt "msgGM"
+msgid ""
+"%s\n"
+"New slower Sol Belt 2 speed: %.3f"
+msgstr ""
+"%s\n"
+"Nuevo más lento Sol Belt 2 velocidad: %.3f"
+
+#: scripts/scenario_48_visitors.lua:392
+#, lua-format
+msgctxt "msgGM"
+msgid ""
+"%s\n"
+"New faster Sol Belt 2 speed: %.3f"
+msgstr ""
+"%s\n"
+"Nuevo más rápido Sol Belt 2 velocidad: %.3f"
+
+#: scripts/scenario_48_visitors.lua:399
+msgctxt "buttonGM"
+msgid "-From Tertius"
+msgstr "-De Tercio"
+
+#: scripts/scenario_48_visitors.lua:401 scripts/scenario_48_visitors.lua:408
+#, lua-format
+msgctxt "msgGM"
+msgid "Current Tertius speed: %.1f"
+msgstr "Velocidad de Tercio actual: %.1f"
+
+#: scripts/scenario_48_visitors.lua:404
+#, lua-format
+msgctxt "msgGM"
+msgid ""
+"%s\n"
+"New slower Tertius speed: %.1f"
+msgstr ""
+"%s\n"
+"Nueva velocidad más lenta Tertius: %.1f"
+
+#: scripts/scenario_48_visitors.lua:411
+#, lua-format
+msgctxt "msgGM"
+msgid ""
+"%s\n"
+"New faster Tertius speed: %.1f"
+msgstr ""
+"%s\n"
+"Nuevo más rápido Tertius velocidad: %.1f"
+
+#: scripts/scenario_48_visitors.lua:418
+msgctxt "buttonGM"
+msgid "-From Tertius Moon"
+msgstr "-De Tertius Moon"
+
+#: scripts/scenario_48_visitors.lua:420 scripts/scenario_48_visitors.lua:432
+#, lua-format
+msgctxt "msgGM"
+msgid "Current Tertius Moon Belt speed: %.3f"
+msgstr "Velocidad actual del cinturón de la luna Tertius: %.3f"
+
+#: scripts/scenario_48_visitors.lua:428
+#, lua-format
+msgctxt "msgGM"
+msgid ""
+"%s\n"
+"New slower Tertius Moon Belt speed: %.3f"
+msgstr ""
+"%s\n"
+"Nuevo más lento Tertius Moon Belt velocidad: %.3f"
+
+#: scripts/scenario_48_visitors.lua:440
+#, lua-format
+msgctxt "msgGM"
+msgid ""
+"%s\n"
+"New faster Tertius Moon Belt speed: %.3f"
+msgstr ""
+"%s\n"
+"Nuevo más rápido Tertius Moon Belt velocidad: %.3f"
+
+#: scripts/scenario_48_visitors.lua:447
+msgctxt "buttonGM"
+msgid "-From Tertius Belt 2"
+msgstr "-De Tertius Belt 2"
+
+#: scripts/scenario_48_visitors.lua:449 scripts/scenario_48_visitors.lua:467
+#, lua-format
+msgctxt "msgGM"
+msgid "Current Tertius Belt 2 speed: %.3f"
+msgstr "Corriente Tertius Belt 2 velocidad: %.3f"
+
+#: scripts/scenario_48_visitors.lua:463
+#, lua-format
+msgctxt "msgGM"
+msgid ""
+"%s\n"
+"New slower Tertius Belt 2 speed: %.3f"
+msgstr ""
+"%s\n"
+"Nuevo más lento Tertius Belt 2 velocidad: %.3f"
+
+#: scripts/scenario_48_visitors.lua:481
+#, lua-format
+msgctxt "msgGM"
+msgid ""
+"%s\n"
+"New faster Tertius Belt 2 speed: %.3f"
+msgstr ""
+"%s\n"
+"Nuevo más rápido Tertius Belt 2 velocidad: %.3f"
+
+#: scripts/scenario_48_visitors.lua:489
+msgctxt "buttonGM"
+msgid "Human victory"
+msgstr "Victoria humana"
+
+#: scripts/scenario_48_visitors.lua:493
+msgctxt "buttonGM"
+msgid "Exuari victory"
+msgstr "Victoria de exuari"
+
+#: scripts/scenario_48_visitors.lua:502
+msgctxt "buttonGM"
+msgid "Voices On"
+msgstr "Voces sobre"
+
+#: scripts/scenario_48_visitors.lua:510
+msgctxt "buttonGM"
+msgid "Voices Off"
+msgstr "Voces apagadas"
+
+#: scripts/scenario_48_visitors.lua:1475
+msgctxt "scienceDescription-artifact"
+msgid "Sensor readings change as the object orbits with the asteroid belt"
+msgstr "Las lecturas de sensores cambian a medida que el objeto orbita con el cinturón de asteroides"
+
+#: scripts/scenario_48_visitors.lua:1475
+msgctxt "scienceDescription-artifact"
+msgid "Object exhibits periodic spikes of chroniton particles"
+msgstr "Objeto exhibe picos periódicos de partículas cronitonas"
+
+#: scripts/scenario_48_visitors.lua:2389
+msgctxt "characterInfo-comms"
+msgid "He dabbles in ship system innovations. He's been working on improving beam weapons by reducing the amount of time between firing. I hear he's already installed some improvements on ships that have docked here previously"
+msgstr "Ha estado trabajando en mejorar las armas de vigas reduciendo la cantidad de tiempo entre disparos. He oído que ya ha instalado algunas mejoras en los barcos que han atracado aquí anteriormente."
+
+#: scripts/scenario_48_visitors.lua:2396
+#, lua-format
+msgctxt "characterInfo-comms"
+msgid "I heard there's a guy named %s that can fix ship beam systems up so that they shoot faster. He lives out on %s in %s. He won't charge you much, but it won't be free."
+msgstr "Escuché que hay un tipo llamado %s que puede arreglar sistemas de rayos de nave para que disparen más rápido. %s en el interior %sNo te cobrará mucho, pero no será gratis."
+
+#: scripts/scenario_48_visitors.lua:2400
+msgctxt "characterInfo-comms"
+msgid "She tinkers with ship systems like engines and thrusters. She's consulted with the military on tuning spin time by increasing thruster power. She's got prototypes that are awaiting formal military approval before installation"
+msgstr "Ha consultado con los militares en el tiempo de la rotación aumentando el poder del impulsor. Tiene prototipos que esperan aprobación militar formal antes de la instalación."
+
+#: scripts/scenario_48_visitors.lua:2407
+#, lua-format
+msgctxt "characterInfo-comms"
+msgid "My friend, %s recently quit her job as a ship maintenance technician to set up this side gig. She's been improving ship systems and she's pretty good at it. She set up shop on %s in %s. I hear she's even lining up a contract with the navy for her improvements."
+msgstr "Mi amigo, %s recientemente dejó su trabajo como técnico de mantenimiento de buques para establecer este concierto lateral. Ha estado mejorando los sistemas de naves y es bastante buena en él. %s en el interior %s. He oído que incluso está forzando un contrato con la marina para sus mejoras."
+
+#: scripts/scenario_48_visitors.lua:2411
+msgctxt "characterInfo-comms"
+msgid "He specializes in miniaturization of weapons systems. He's come up with a way to add a missile tube and some missiles to any ship regardless of size or configuration"
+msgstr "Se especializa en la miniaturización de sistemas de armas. Ha surgido con una manera de añadir un tubo de misiles y algunos misiles a cualquier nave, independientemente del tamaño o la configuración"
+
+#: scripts/scenario_48_visitors.lua:2418
+#, lua-format
+msgctxt "characterInfo-comms"
+msgid "There's this guy, %s out on %s in %s that can add a missile tube to your ship. He even added one to my cousin's souped up freighter. You should see the new paint job: amusingly phallic"
+msgstr "Ahí está este tipo, %s fuera %s en el interior %s que puede agregar un tubo de misiles a su nave. Incluso añadió uno al carguero sopado de mi primo. Usted debe ver el nuevo trabajo de pintura: divertidamente fálico"
+
+#: scripts/scenario_48_visitors.lua:2422
+msgctxt "characterInfo-comms"
+msgid "She developed this technique for cooling beam systems so that they can be fired more often without burning out"
+msgstr "Desarrolló esta técnica para enfriar sistemas de vigas para que puedan ser despedidos más a menudo sin quemarse."
+
+#: scripts/scenario_48_visitors.lua:2429
+#, lua-format
+msgctxt "characterInfo-comms"
+msgid "There's this girl on %s in %s. She is hot. Her name is %s. When I say she is hot, I mean she has a way of keeping your beam weapons from excessive heat."
+msgstr "Hay una chica encendida %s en el interior %sElla está caliente, se llama %sCuando digo que está caliente, quiero decir que tiene una manera de mantener tus armas de haz de un calor excesivo."
+
+#: scripts/scenario_48_visitors.lua:2433
+msgctxt "characterInfo-comms"
+msgid "He knows how to modify beam systems to extend their range"
+msgstr "Él sabe cómo modificar sistemas de vigas para ampliar su rango"
+
+#: scripts/scenario_48_visitors.lua:2440
+#, lua-format
+msgctxt "characterInfo-comms"
+msgid "Do you know about %s? He can extend the range of your beam weapons. He's on %s in %s"
+msgstr "¿Sabes algo? %sPuede extender la gama de sus armas de rayos. %s en el interior %s"
+
+#: scripts/scenario_48_visitors.lua:2444
+msgctxt "characterInfo-comms"
+msgid "She can make your beams hit harder"
+msgstr "Ella puede hacer que tus vigas golpeen más fuerte"
+
+#: scripts/scenario_48_visitors.lua:2451
+#, lua-format
+msgctxt "characterInfo-comms"
+msgid "You should visit %s in %s. There's a specialist in beam technology that can increase the damage done by your beams. Her name is %s"
+msgstr "Deberías visitarlo. %s en el interior %sHay un especialista en tecnología de vigas que puede aumentar el daño causado por sus vigas. %s"
+
+#: scripts/scenario_48_visitors.lua:2455
+msgctxt "characterInfo-comms"
+msgid "He can fit more missiles aboard your ship"
+msgstr "Puede encajar más misiles a bordo de su nave."
+
+#: scripts/scenario_48_visitors.lua:2462
+#, lua-format
+msgctxt "characterInfo-comms"
+msgid "Want to store more missiles on your ship? Talk to %s on station %s in %s. He can retrain your missile loaders and missile storage automation such that you will be able to store more missiles"
+msgstr "¿Quieres almacenar más misiles en tu nave? %s en la estación %s en el interior %s. Él puede volver a entrenar sus cargadores de misiles y la automatización de almacenamiento de misiles de tal manera que usted será capaz de almacenar más misiles"
+
+#: scripts/scenario_48_visitors.lua:2466
+msgctxt "characterInfo-comms"
+msgid "She can soup up your impulse engines"
+msgstr "Ella puede sopar sus motores de impulso"
+
+#: scripts/scenario_48_visitors.lua:2473
+#, lua-format
+msgctxt "characterInfo-comms"
+msgid "%s, an engineer/mechanic who knows propulsion systems backwards and forwards has a bay at the shipyard on %s in %s. She can give your impulse engines a significant boost to their top speed"
+msgstr "%s, un ingeniero/mecánico que conoce los sistemas de propulsión hacia atrás y hacia adelante tiene una bahía en el astillero en %s en el interior %s. Ella puede dar a sus motores de impulso un impulso significativo a su velocidad superior"
+
+#: scripts/scenario_48_visitors.lua:2477
+msgctxt "characterInfo-comms"
+msgid "He can strengthen your hull"
+msgstr "Él puede fortalecer su casco"
+
+#: scripts/scenario_48_visitors.lua:2484
+#, lua-format
+msgctxt "characterInfo-comms"
+msgid "I know of a materials specialist on %s in %s named %s. He can strengthen the hull on your ship"
+msgstr "Conozco a un especialista en materiales. %s en el interior %s llamado %sPuede fortalecer el casco en su nave"
+
+#: scripts/scenario_48_visitors.lua:2488
+msgctxt "characterInfo-comms"
+msgid "She knows how to increase your maximum energy capacity by improving battery efficiency"
+msgstr "Ella sabe cómo aumentar su capacidad máxima de energía mejorando la eficiencia de la batería"
+
+#: scripts/scenario_48_visitors.lua:2495
+#, lua-format
+msgctxt "characterInfo-comms"
+msgid "Have you heard about %s? She's on %s in %s and she can give your ship greater energy capacity by improving your battery efficiency"
+msgstr "¿Has oído hablar de algo? %sElla está en %s en el interior %s y puede darle a su barco mayor capacidad de energía mejorando su eficiencia de batería"
+
+#: scripts/scenario_48_visitors.lua:2499
+msgctxt "characterInfo-comms"
+msgid "He can strengthen your shields"
+msgstr "Él puede fortalecer sus escudos"
+
+#: scripts/scenario_48_visitors.lua:2506
+#, lua-format
+msgctxt "characterInfo-comms"
+msgid "If you stop at %s in %s, you should talk to %s. He can strengthen your shields. Trust me, it's always good to have stronger shields"
+msgstr "Si te detienes %s en el interior %s, deberías hablar con %sPuede fortalecer sus escudos. Créeme, siempre es bueno tener escudos más fuertes"
+
+#: scripts/scenario_48_visitors.lua:2548
+msgctxt "upgrade-comms"
+msgid "Reduce beam cycle time"
+msgstr "Reducir el tiempo del ciclo del haz"
+
+#: scripts/scenario_48_visitors.lua:2571
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "After accepting your gift, he reduced your Beam cycle time by 25%%"
+msgstr "Después de aceptar su regalo, redujo su tiempo de ciclo de Beam en 25%%"
+
+#: scripts/scenario_48_visitors.lua:2573 scripts/scenario_48_visitors.lua:2739 scripts/scenario_48_visitors.lua:2790
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "%s requires %s for the upgrade"
+msgstr "%s Requisitos %s para la actualización"
+
+#: scripts/scenario_48_visitors.lua:2588
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "%s reduced your Beam cycle time by 25%% at no cost in trade with the message, 'Go get those Exuari.'"
+msgstr "%s redujo su tiempo de ciclo de Beam en 25%% sin costo en el comercio con el mensaje, 'Ve a buscar a los Exuari.'"
+
+#: scripts/scenario_48_visitors.lua:2591 scripts/scenario_48_visitors.lua:2702 scripts/scenario_48_visitors.lua:2758 scripts/scenario_48_visitors.lua:2808
+msgctxt "upgrade-comms"
+msgid "Your ship type does not support a beam weapon upgrade."
+msgstr "Su tipo de nave no soporta una actualización de arma de haz."
+
+#: scripts/scenario_48_visitors.lua:2598
+msgctxt "upgrade-comms"
+msgid "Increase spin speed"
+msgstr "Aumentar la velocidad de la columna"
+
+#: scripts/scenario_48_visitors.lua:2611
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "Ship spin speed increased by 50%% after you gave %s to %s"
+msgstr "Velocidad de giro de la nave aumentada en 50%% después de que te dieras %s a %s"
+
+#: scripts/scenario_48_visitors.lua:2613
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "%s requires %s for the spin upgrade"
+msgstr "%s Requisitos %s para la actualización de la columna"
+
+#: scripts/scenario_48_visitors.lua:2619
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "%s: I increased the speed your ship spins by 50%%. Normally, I'd require %s, but seeing as you're going out to take on the Exuari, we worked it out"
+msgstr "%s: Aumenté la velocidad que su barco gira en 50%%Normalmente, necesitaría %s, pero viendo como vas a tomar en el Exuari, lo arreglamos"
+
+#: scripts/scenario_48_visitors.lua:2626
+msgctxt "upgrade-comms"
+msgid "Add missile tube"
+msgstr "Agregar tubo de misiles"
+
+#: scripts/scenario_48_visitors.lua:2649
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "%s thanks you for the %s and the luxury and installs a homing missile tube for you"
+msgstr "%s gracias por el %s y el lujo e instala un tubo de misiles homing para usted"
+
+#: scripts/scenario_48_visitors.lua:2651
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "%s requires %s and luxury for the missile tube"
+msgstr "%s Requisitos %s y lujo para el tubo de misiles"
+
+#: scripts/scenario_48_visitors.lua:2662
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "%s installs a homing missile tube for you. The %s required was requisitioned from emergency contingency supplies"
+msgstr "%s instala un tubo de misiles homing para usted. %s se requisó de suministros para emergencias"
+
+#: scripts/scenario_48_visitors.lua:2669
+msgctxt "upgrade-comms"
+msgid "Reduce beam heat"
+msgstr "Reducir el haz de calor"
+
+#: scripts/scenario_48_visitors.lua:2687
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "Beam heat generation reduced by 50%%"
+msgstr "Generación de calor de haz reducido en 50%%"
+
+#: scripts/scenario_48_visitors.lua:2689
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "%s says she needs %s before she can cool your beams"
+msgstr "%s dice que necesita %s antes de que pueda enfriar tus vigas"
+
+#: scripts/scenario_48_visitors.lua:2699
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "%s: Beam heat generation reduced by 50%%, no %s necessary. Go shoot some Exuari for me"
+msgstr "%s: Generación de calor de haz reducido en 50%%No. %s necesario, ve a dispararme un exuari"
+
+#: scripts/scenario_48_visitors.lua:2709
+msgctxt "upgrade-comms"
+msgid "Extend beam range"
+msgstr "Amplia gama de vigas"
+
+#: scripts/scenario_48_visitors.lua:2737
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "%s extended your beam range by 25%% and says thanks for the %s"
+msgstr "%s extendió su rango de vigas por 25%% y dice gracias por el %s"
+
+#: scripts/scenario_48_visitors.lua:2755
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "%s increased your beam range by 25%% without the usual %s from your ship"
+msgstr "%s aumentar su rango de vigas en 25%% sin lo habitual %s de su nave"
+
+#: scripts/scenario_48_visitors.lua:2765
+msgctxt "upgrade-comms"
+msgid "Increase beam damage"
+msgstr "Aumentar el daño de la viga"
+
+#: scripts/scenario_48_visitors.lua:2788
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "%s increased your beam damage by 20%% and stores away the %s"
+msgstr "%s aumentó el daño de la viga en 20%% y almacena lejos el %s"
+
+#: scripts/scenario_48_visitors.lua:2805
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "%s increased your beam damage by 20%%, waiving the usual %s requirement"
+msgstr "%s aumentó el daño de la viga en 20%%, renunciando a lo habitual %s requisito"
+
+#: scripts/scenario_48_visitors.lua:2815
+msgctxt "upgrade-comms"
+msgid "Increase missile storage capacity"
+msgstr "Aumento de la capacidad de almacenamiento de misiles"
+
+#: scripts/scenario_48_visitors.lua:2832
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "%s: You can now store at least 25%% more missiles. I appreciate the %s"
+msgstr "%s: Ahora puedes almacenar al menos 25%% más misiles. Aprecio los misiles %s"
+
+#: scripts/scenario_48_visitors.lua:2834
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "%s needs %s for the upgrade"
+msgstr "%s necesidades %s para la actualización"
+
+#: scripts/scenario_48_visitors.lua:2843
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "%s: You can now store at least 25%% more missiles. I found some spare %s on the station. Go launch those missiles at those perfidious Exuari"
+msgstr "%s: Ahora puedes almacenar al menos 25%% Encontré más misiles. %s en la estación, ve a lanzar esos misiles en esos perfidos Exuari"
+
+#: scripts/scenario_48_visitors.lua:2846
+msgctxt "upgrade-comms"
+msgid "Your ship type does not support a missile storage capacity upgrade."
+msgstr "Su tipo de nave no admite una mejora de la capacidad de almacenamiento de misiles."
+
+#: scripts/scenario_48_visitors.lua:2853
+msgctxt "upgrade-comms"
+msgid "Speed up impulse engines"
+msgstr "Acelerar los motores de impulso"
+
+#: scripts/scenario_48_visitors.lua:2866
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "%s: Your impulse engines now push you up to 25%% faster. Thanks for the %s"
+msgstr "%s: Tus motores de impulso ahora te empujan hasta 25%% Gracias por el %s"
+
+#: scripts/scenario_48_visitors.lua:2868
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "You need to bring %s to %s for the upgrade"
+msgstr "Tienes que traer %s a %s para la actualización"
+
+#: scripts/scenario_48_visitors.lua:2874
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "%s: Your impulse engines now push you up to 25%% faster. I didn't need %s after all. Go run circles around those blinking Exuari"
+msgstr "%s: Tus motores de impulso ahora te empujan hasta 25%% No necesitaba más. %s y luego de todo, vamos a correr círculos alrededor de esos parpadeantes Exuari"
+
+#: scripts/scenario_48_visitors.lua:2881
+msgctxt "upgrade-comms"
+msgid "Strengthen hull"
+msgstr "Fortalecer el casco"
+
+#: scripts/scenario_48_visitors.lua:2895
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "%s: Thank you for the %s. Your hull is 50%% stronger"
+msgstr "%s: Gracias por el %sTu casco es 50%% más fuerte"
+
+#: scripts/scenario_48_visitors.lua:2897
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "%s: I need %s before I can increase your hull strength"
+msgstr "%s- Necesito %s antes de que pueda aumentar su fuerza de casco"
+
+#: scripts/scenario_48_visitors.lua:2904
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "%s: I made your hull 50%% stronger. I scrounged some %s from around here since you are on the Exuari offense team"
+msgstr "%sHe hecho tu casco 50%% más fuerte. %s desde aquí desde que estás en el equipo de la ofensiva Exuari"
+
+#: scripts/scenario_48_visitors.lua:2911
+msgctxt "upgrade-comms"
+msgid "Increase battery efficiency"
+msgstr "Aumentar la eficiencia de la batería"
+
+#: scripts/scenario_48_visitors.lua:2925
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "%s: I appreciate the %s. You have a 25%% greater energy capacity due to increased battery efficiency"
+msgstr "%s: Aprecio el %sTienes 25 años%% mayor capacidad energética debido al aumento de la eficiencia de la batería"
+
+#: scripts/scenario_48_visitors.lua:2927
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "%s: You need to bring me some %s before I can increase your battery efficiency"
+msgstr "%sTienes que traerme algo %s antes de que pueda aumentar la eficiencia de la batería"
+
+#: scripts/scenario_48_visitors.lua:2934
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "%s increased your battery efficiency by 25%% without the need for %s due to the pressing military demands on your ship"
+msgstr "%s aumentar la eficiencia de la batería en 25%% sin la necesidad de %s debido a las apremiantes demandas militares en su barco"
+
+#: scripts/scenario_48_visitors.lua:2941
+msgctxt "upgrade-comms"
+msgid "Strengthen shields"
+msgstr "Fortalecer los escudos"
+
+#: scripts/scenario_48_visitors.lua:2958
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "%s: I've raised your shield maximum by 20%%, %s. Thanks for bringing the %s"
+msgstr "%s: He levantado su escudo máximo para 20%%, %sGracias por traer %s"
+
+#: scripts/scenario_48_visitors.lua:2960
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "%s: You need to provide %s before I can raise your shield strength"
+msgstr "%s: Usted necesita proporcionar %s antes de que pueda aumentar su fuerza de escudo"
+
+#: scripts/scenario_48_visitors.lua:2970
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "%s: Congratulations, %s, your shields are 20%% stronger. Don't worry about the %s. Go kick those Exuari outta here"
+msgstr "%sFelicitaciones, %s, tus escudos son 20%% No te preocupes por lo más fuerte. %s. Go kick those Exuari fuera de aquí"
+
+#: scripts/scenario_48_visitors.lua:3000
+msgctxt "inventory-buttonRelay"
+msgid "Inventory"
+msgstr "Inventario"
+
+#: scripts/scenario_48_visitors.lua:3005
+msgctxt "inventory-buttonOperations"
+msgid "Inventory"
+msgstr "Inventario"
+
+#: scripts/scenario_48_visitors.lua:3013
+#, lua-format
+msgctxt "inventory-shipLog"
+msgid "%s Current cargo:"
+msgstr "%s Carga actual:"
+
+#: scripts/scenario_48_visitors.lua:3018
+#, lua-format
+msgctxt "inventory-shipLog"
+msgid "     %s: %i"
+msgstr "     %s: %i"
+
+#: scripts/scenario_48_visitors.lua:3024
+msgctxt "inventory-shipLog"
+msgid "     Empty\n"
+msgstr "     Vacío\n"
+
+#: scripts/scenario_48_visitors.lua:3026
+#, lua-format
+msgctxt "inventory-shipLog"
+msgid "Available space: %i"
+msgstr "Espacio disponible: %i"
+
+#: scripts/scenario_48_visitors.lua:3084
+msgctxt "station-comms"
+msgid "We are under attack! No time for chatting!"
+msgstr "¡No hay tiempo para charlar!"
+
+#: scripts/scenario_48_visitors.lua:3100
+#, lua-format
+msgctxt "station-comms"
+msgid ""
+"Greetings %s!\n"
+"How may we help you today?"
+msgstr "Saludos %s¿Cómo podemos ayudarle hoy?"
+
+#: scripts/scenario_48_visitors.lua:3102
+msgctxt "station-comms"
+msgid ""
+"Good day, officer!\n"
+"What can we do for you today?"
+msgstr "Buenos días, oficial. ¿Qué podemos hacer por usted hoy?"
+
+#: scripts/scenario_48_visitors.lua:3104
+msgctxt "station-comms"
+msgid "Hello, may I help you?"
+msgstr "Hola, ¿puedo ayudarte?"
+
+#: scripts/scenario_48_visitors.lua:3107
+msgctxt "station-comms"
+msgid "Welcome to our lovely station."
+msgstr "Bienvenido a nuestra hermosa estación."
+
+#: scripts/scenario_48_visitors.lua:3110
+msgctxt "station-comms"
+msgid "Forgive us if we seem a little distracted. We are carefully monitoring the enemies nearby."
+msgstr "Perdónenos si parecemos un poco distraídos. Estamos monitoreando cuidadosamente a los enemigos cercanos."
+
+#: scripts/scenario_48_visitors.lua:3124
+msgctxt "ammo-comms"
+msgid "I need ordnance restocked"
+msgstr "Necesito la artillería restablecida"
+
+#: scripts/scenario_48_visitors.lua:3125
+msgctxt "ammo-comms"
+msgid "What type of ordnance do you need?"
+msgstr "¿Qué tipo de municiones necesitas?"
+
+#: scripts/scenario_48_visitors.lua:3128
+msgctxt "ammo-comms"
+msgid "Can you supply us with some nukes?"
+msgstr "¿Nos puedes dar unos nukes?"
+
+#: scripts/scenario_48_visitors.lua:3129
+msgctxt "ammo-comms"
+msgid "We really need some nukes."
+msgstr "Realmente necesitamos algunos nukes."
+
+#: scripts/scenario_48_visitors.lua:3130
+msgctxt "ammo-comms"
+msgid "Can you restock our nuclear missiles?"
+msgstr "¿Puede restaurar nuestros misiles nucleares?"
+
+#: scripts/scenario_48_visitors.lua:3133
+msgctxt "ammo-comms"
+msgid "Please restock our EMP missiles."
+msgstr "Por favor, recupere nuestros misiles EMP."
+
+#: scripts/scenario_48_visitors.lua:3134
+msgctxt "ammo-comms"
+msgid "Got any EMPs?"
+msgstr "¿Tienes alguna EMP?"
+
+#: scripts/scenario_48_visitors.lua:3135
+msgctxt "ammo-comms"
+msgid "We need Electro-Magnetic Pulse missiles."
+msgstr "Necesitamos misiles de pulso electromagnético."
+
+#: scripts/scenario_48_visitors.lua:3138
+msgctxt "ammo-comms"
+msgid "Do you have spare homing missiles for us?"
+msgstr "¿Tiene misiles de homenaje por nosotros?"
+
+#: scripts/scenario_48_visitors.lua:3139
+msgctxt "ammo-comms"
+msgid "Do you have extra homing missiles?"
+msgstr "¿Tienes misiles de homenaje extra?"
+
+#: scripts/scenario_48_visitors.lua:3140
+msgctxt "ammo-comms"
+msgid "Please replenish our homing missiles."
+msgstr "Por favor reponer nuestros misiles homing."
+
+#: scripts/scenario_48_visitors.lua:3143
+msgctxt "ammo-comms"
+msgid "We could use some mines."
+msgstr "Podríamos usar algunas minas."
+
+#: scripts/scenario_48_visitors.lua:3144
+msgctxt "ammo-comms"
+msgid "How about mines?"
+msgstr "¿Qué hay de las minas?"
+
+#: scripts/scenario_48_visitors.lua:3145
+msgctxt "ammo-comms"
+msgid "Got mines for us?"
+msgstr "¿Tienes minas para nosotros?"
+
+#: scripts/scenario_48_visitors.lua:3148
+msgctxt "ammo-comms"
+msgid "What about HVLI?"
+msgstr "¿Qué hay de HVLI?"
+
+#: scripts/scenario_48_visitors.lua:3149
+msgctxt "ammo-comms"
+msgid "Could you provide HVLI?"
+msgstr "¿Podrías proporcionar HVLI?"
+
+#: scripts/scenario_48_visitors.lua:3150
+msgctxt "ammo-comms"
+msgid "We need High Velocity Lead Impactors."
+msgstr "Necesitamos impactos de plomo de alta velocidad."
+
+#: scripts/scenario_48_visitors.lua:3155
+#, lua-format
+msgctxt "ammo-comms"
+msgid "%s (%d rep each)"
+msgstr "%s (G)%d rep cada uno)"
+
+#: scripts/scenario_48_visitors.lua:3161 scripts/scenario_48_visitors.lua:3233 scripts/scenario_48_visitors.lua:3236 scripts/scenario_48_visitors.lua:3299 scripts/scenario_48_visitors.lua:3308 scripts/scenario_48_visitors.lua:3323 scripts/scenario_48_visitors.lua:3333 scripts/scenario_48_visitors.lua:3344 scripts/scenario_48_visitors.lua:3352 scripts/scenario_48_visitors.lua:3360 scripts/scenario_48_visitors.lua:3362 scripts/scenario_48_visitors.lua:3370 scripts/scenario_48_visitors.lua:3380 scripts/scenario_48_visitors.lua:3406 scripts/scenario_48_visitors.lua:3416 scripts/scenario_48_visitors.lua:3444 scripts/scenario_48_visitors.lua:3446 scripts/scenario_48_visitors.lua:3456 scripts/scenario_48_visitors.lua:3475 scripts/scenario_48_visitors.lua:3491 scripts/scenario_48_visitors.lua:3506 scripts/scenario_48_visitors.lua:3508 scripts/scenario_48_visitors.lua:3520 scripts/scenario_48_visitors.lua:3543 scripts/scenario_48_visitors.lua:3556 scripts/scenario_48_visitors.lua:3572 scripts/scenario_48_visitors.lua:3574 scripts/scenario_48_visitors.lua:3587 scripts/scenario_48_visitors.lua:3589 scripts/scenario_48_visitors.lua:3607 scripts/scenario_48_visitors.lua:3617 scripts/scenario_48_visitors.lua:3631 scripts/scenario_48_visitors.lua:3645 scripts/scenario_48_visitors.lua:3654 scripts/scenario_48_visitors.lua:3656 scripts/scenario_48_visitors.lua:3665 scripts/scenario_48_visitors.lua:3667 scripts/scenario_48_visitors.lua:3676 scripts/scenario_48_visitors.lua:3678 scripts/scenario_48_visitors.lua:3687 scripts/scenario_48_visitors.lua:3689 scripts/scenario_48_visitors.lua:3715 scripts/scenario_48_visitors.lua:3718 scripts/scenario_48_visitors.lua:3743 scripts/scenario_48_visitors.lua:3746 scripts/scenario_48_visitors.lua:3771 scripts/scenario_48_visitors.lua:3774 scripts/scenario_48_visitors.lua:3799 scripts/scenario_48_visitors.lua:3802 scripts/scenario_48_visitors.lua:3811 scripts/scenario_48_visitors.lua:3816 scripts/scenario_48_visitors.lua:3824 scripts/scenario_48_visitors.lua:3866 scripts/scenario_48_visitors.lua:3982 scripts/scenario_48_visitors.lua:3993 scripts/scenario_48_visitors.lua:4008 scripts/scenario_48_visitors.lua:4024 scripts/scenario_48_visitors.lua:4043 scripts/scenario_48_visitors.lua:4059 scripts/scenario_48_visitors.lua:4077 scripts/scenario_48_visitors.lua:4105 scripts/scenario_48_visitors.lua:4131 scripts/scenario_48_visitors.lua:4136 scripts/scenario_48_visitors.lua:4171 scripts/scenario_48_visitors.lua:4179 scripts/scenario_48_visitors.lua:4220 scripts/scenario_48_visitors.lua:4227 scripts/scenario_48_visitors.lua:4232 scripts/scenario_48_visitors.lua:4241 scripts/scenario_48_visitors.lua:4243 scripts/scenario_48_visitors.lua:4302 scripts/scenario_48_visitors.lua:4315 scripts/scenario_48_visitors.lua:4339 scripts/scenario_48_visitors.lua:4362 scripts/scenario_48_visitors.lua:4385 scripts/scenario_48_visitors.lua:4389 scripts/scenario_48_visitors.lua:4393 scripts/scenario_48_visitors.lua:4437 scripts/scenario_48_visitors.lua:4446 scripts/scenario_48_visitors.lua:4495 scripts/scenario_48_visitors.lua:4498 scripts/scenario_48_visitors.lua:4543 scripts/scenario_48_visitors.lua:4556 scripts/scenario_48_visitors.lua:4569 scripts/scenario_48_visitors.lua:4582 scripts/scenario_48_visitors.lua:4595 scripts/scenario_48_visitors.lua:4604 scripts/scenario_48_visitors.lua:4606 scripts/scenario_48_visitors.lua:4644 scripts/scenario_48_visitors.lua:4672 scripts/scenario_48_visitors.lua:4676 scripts/scenario_48_visitors.lua:4679 scripts/scenario_48_visitors.lua:4703 scripts/scenario_48_visitors.lua:4729 scripts/scenario_48_visitors.lua:4741 scripts/scenario_48_visitors.lua:4777 scripts/scenario_48_visitors.lua:4795 scripts/scenario_48_visitors.lua:4850 scripts/scenario_48_visitors.lua:4858 scripts/scenario_48_visitors.lua:4863 scripts/scenario_48_visitors.lua:4870 scripts/scenario_48_visitors.lua:4874 scripts/scenario_48_visitors.lua:4888 scripts/scenario_48_visitors.lua:4910 scripts/scenario_48_visitors.lua:4914 scripts/scenario_48_visitors.lua:4933 scripts/scenario_48_visitors.lua:4937 scripts/scenario_48_visitors.lua:4954 scripts/scenario_48_visitors.lua:4958 scripts/scenario_48_visitors.lua:4975 scripts/scenario_48_visitors.lua:4979 scripts/scenario_48_visitors.lua:5336 scripts/scenario_48_visitors.lua:5343 scripts/scenario_48_visitors.lua:5352 scripts/scenario_48_visitors.lua:5375 scripts/scenario_48_visitors.lua:5382 scripts/scenario_48_visitors.lua:5411 scripts/scenario_48_visitors.lua:5431 scripts/scenario_48_visitors.lua:5440 scripts/scenario_48_visitors.lua:5445 scripts/scenario_48_visitors.lua:5456 scripts/scenario_48_visitors.lua:5482 scripts/scenario_48_visitors.lua:5506 scripts/scenario_48_visitors.lua:5531 scripts/scenario_48_visitors.lua:5553 scripts/scenario_48_visitors.lua:5579 scripts/scenario_48_visitors.lua:5604 scripts/scenario_48_visitors.lua:5708 scripts/scenario_48_visitors.lua:5730 scripts/scenario_48_visitors.lua:5754 scripts/scenario_48_visitors.lua:5776 scripts/scenario_48_visitors.lua:5800
+msgid "Back"
+msgstr "Volver"
+
+#: scripts/scenario_48_visitors.lua:3164
+#, lua-format
+msgctxt "ammo-comms"
+msgid ""
+"%s\n"
+"We don't have ordnance for you."
+msgstr ""
+"%s\n"
+"No tenemos municiones para ti."
+
+#: scripts/scenario_48_visitors.lua:3168 scripts/scenario_48_visitors.lua:3240 scripts/scenario_48_visitors.lua:3312
+msgctxt "DispatchOffice-comms"
+msgid "Visit dispatch office"
+msgstr "Visite la oficina de despachos"
+
+#: scripts/scenario_48_visitors.lua:3169
+#, lua-format
+msgctxt "DispatchOffice-comms"
+msgid "Excellent work on your last assignment, %s. You may stand down or take another assignment"
+msgstr "Excelente trabajo en su última asignación, %s. Usted puede ponerse de pie o tomar otra asignación"
+
+#: scripts/scenario_48_visitors.lua:3171 scripts/scenario_48_visitors.lua:3302 scripts/scenario_48_visitors.lua:3364
+msgctxt "DispatchOffice-comms"
+msgid "Stand down"
+msgstr "¡Arriba!"
+
+#: scripts/scenario_48_visitors.lua:3172 scripts/scenario_48_visitors.lua:3303 scripts/scenario_48_visitors.lua:3365
+msgctxt "DispatchOffice-comms"
+msgid "Congratulations and thank you"
+msgstr "Felicitaciones y gracias"
+
+#: scripts/scenario_48_visitors.lua:3178
+msgctxt "DispatchOffice-comms"
+msgid "Move to next region of available missions"
+msgstr "Mover a la siguiente región de las misiones disponibles"
+
+#: scripts/scenario_48_visitors.lua:3179 scripts/scenario_48_visitors.lua:3218
+#, lua-format
+msgctxt "DispatchOffice-comms"
+msgid "Dock with station %s for the details of your next assignment. Beware the asteroids"
+msgstr "Puerta con estación %s para los detalles de su próxima asignación. Cuidado con los asteroides"
+
+#: scripts/scenario_48_visitors.lua:3183 scripts/scenario_48_visitors.lua:3222 scripts/scenario_48_visitors.lua:3249 scripts/scenario_48_visitors.lua:3288
+#, lua-format
+msgctxt "DispatchOffice-comms"
+msgid "Dock with station %s"
+msgstr "Puerta con estación %s"
+
+#: scripts/scenario_48_visitors.lua:3187 scripts/scenario_48_visitors.lua:3216 scripts/scenario_48_visitors.lua:3253 scripts/scenario_48_visitors.lua:3282
+msgctxt "DispatchOffice-comms"
+msgid "Request next assignment"
+msgstr "Solicitar próxima asignación"
+
+#: scripts/scenario_48_visitors.lua:3241
+#, lua-format
+msgctxt "DispatchOffice-comms"
+msgid "Welcome to %s station, %s. We're glad you're here. These are your choices for assignments"
+msgstr "Bienvenido a %s estación, %sEstamos contentos de que estés aquí."
+
+#: scripts/scenario_48_visitors.lua:3244
+#, lua-format
+msgctxt "DispatchOffice-comms"
+msgid "Move on to missions in %s area"
+msgstr "Muévanse a las misiones en %s zona"
+
+#: scripts/scenario_48_visitors.lua:3245 scripts/scenario_48_visitors.lua:3284
+#, lua-format
+msgctxt "DispatchOffice-comms"
+msgid "Dock with station %s for your next assignment"
+msgstr "Puerta con estación %s para su próxima asignación"
+
+#: scripts/scenario_48_visitors.lua:3313
+#, lua-format
+msgctxt "DispatchOffice-comms"
+msgid "Welcome, %s. Everything is bigger at %s station. We could use your help with one of these mission options"
+msgstr "Bienvenida. %sTodo es más grande %s Estacion. Podríamos usar tu ayuda con una de estas opciones de misión"
+
+#: scripts/scenario_48_visitors.lua:3315
+msgctxt "Exuari1-comms"
+msgid "Exuari Exterminates Extraterrestrials"
+msgstr "Exuari Extermina Extraterrestres"
+
+#: scripts/scenario_48_visitors.lua:3316
+msgctxt "Exuari1-comms"
+msgid "The Exuari have unlimited resources and continually send more ships of greater and greater power and nastier surprises. No victory condition exists"
+msgstr "El Exuari tiene recursos ilimitados y envía continuamente más barcos de mayor y mayor poder y sorpresas más grandes. No existe condición de victoria"
+
+#: scripts/scenario_48_visitors.lua:3318 scripts/scenario_48_visitors.lua:3328
+msgctxt "DispatchOfficeOrders-comms"
+msgid "Confirm"
+msgstr "Confirmación"
+
+#: scripts/scenario_48_visitors.lua:3320
+#, lua-format
+msgctxt "Exuari1-comms"
+msgid "The Exuari are on their way. They will target you and the assets in and around %s"
+msgstr "El Exuari está en camino. Ellos te atacarán y los activos dentro y alrededor %s"
+
+#: scripts/scenario_48_visitors.lua:3325
+msgctxt "Exuari2-comms"
+msgid "Eliminate Exuari stronghold"
+msgstr "Eliminar la fortaleza de Exuari"
+
+#: scripts/scenario_48_visitors.lua:3326
+msgctxt "Exuari2-comms"
+msgid "The Exuari have unlimited resources, but they are constrained to funnel them through their stronghold. Obtain victory by finding and destroying the Exuari stronghold."
+msgstr "El Exuari tiene recursos ilimitados, pero se ven obligados a embriagarlos a través de su fortaleza. Obtenga la victoria encontrando y destruyendo la fortaleza de Exuari."
+
+#: scripts/scenario_48_visitors.lua:3330
+msgctxt "Exuari2-comms"
+msgid "Good luck"
+msgstr "Buena suerte."
+
+#: scripts/scenario_48_visitors.lua:3335
+msgctxt "Exuari3-comms"
+msgid "Survive Exuari offensive"
+msgstr "Survive Exuari ofensiva"
+
+#: scripts/scenario_48_visitors.lua:3336
+msgctxt "Exuari3-comms"
+msgid "The Exuari launch their invasion offensive. You must survive their attack. You will have a limited amount of time during which you must survive"
+msgstr "El Exuari lanzará su ofensiva de invasión. Usted debe sobrevivir a su ataque. Usted tendrá una cantidad limitada de tiempo durante el cual usted debe sobrevivir"
+
+#: scripts/scenario_48_visitors.lua:3338
+msgctxt "Exuari3-comms"
+msgid "15 minutes"
+msgstr "15 minutos"
+
+#: scripts/scenario_48_visitors.lua:3342 scripts/scenario_48_visitors.lua:3350 scripts/scenario_48_visitors.lua:3358
+msgctxt "Exuari3-comms"
+msgid "The countdown has begun"
+msgstr "La cuenta regresiva ha comenzado"
+
+#: scripts/scenario_48_visitors.lua:3346
+msgctxt "Exuari3-comms"
+msgid "30 minutes"
+msgstr "30 minutos"
+
+#: scripts/scenario_48_visitors.lua:3354
+msgctxt "Exuari3-comms"
+msgid "45 minutes"
+msgstr "45 minutos"
+
+#: scripts/scenario_48_visitors.lua:3374
+msgctxt "Polly-comms"
+msgid "Pick up astronomer Polly Hobbs"
+msgstr "Recoge al astrónomo Polly Hobbs"
+
+#: scripts/scenario_48_visitors.lua:3375
+msgctxt "Polly-comms"
+msgid "[Polly Hobbs] Thank you for picking me up. I found the source of the anomalous readings near the end of the inner solar asteroid belt. I've brought specialized scanning instruments, but they must be closer than 1 unit to be effective. Also, we will need baseline scan data from your ship's instruments"
+msgstr "[Polly Hobbs] Gracias por recogerme. He encontrado la fuente de las lecturas anómalas cerca del final del cinturón de asteroides solares internos. He traído instrumentos especializados de escaneo, pero deben estar más cerca de 1 unidad para ser efectivas. Además, necesitaremos datos de escaneo de base de los instrumentos de su barco"
+
+#: scripts/scenario_48_visitors.lua:3377
+msgctxt "Polly-comms"
+msgid "Bring astronomer Polly Hobbs close to artifact for additional sensor readings"
+msgstr "Traiga al astrónomo Polly Hobbs cerca del artefacto para lecturas de sensores adicionales"
+
+#: scripts/scenario_48_visitors.lua:3384
+msgctxt "planetologist-comms"
+msgid "Pick up planetologist"
+msgstr "Recoge el planetaólogo"
+
+#: scripts/scenario_48_visitors.lua:3385
+msgctxt "planetologist-comms"
+msgid "I'm not sure he's ready. He's not at the dock ready to board or in the transporter room. Our station is undergoing repairs, so several systems are offline"
+msgstr "No estoy seguro de que esté listo, no está en el muelle listo para abordar o en la sala del transportador."
+
+#: scripts/scenario_48_visitors.lua:3386
+msgctxt "planetologist-comms"
+msgid "Look for planetologist"
+msgstr "Busca a un planetaólogo"
+
+#: scripts/scenario_48_visitors.lua:3387
+msgctxt "planetologist-comms"
+msgid "The likeliest places to find him are his quarters, the lab or the observation lounge"
+msgstr "Los lugares más agradables para encontrarlo son sus habitaciones, el laboratorio o el salón de observación"
+
+#: scripts/scenario_48_visitors.lua:3388
+msgctxt "planetologist-comms"
+msgid "Try his quarters"
+msgstr "Pruebe sus cuartos"
+
+#: scripts/scenario_48_visitors.lua:3395
+msgctxt "planetologist-comms"
+msgid "[Enrique Flogistan] Yes? What can I do for you? Please be quick about it, I'm in a bit of a hurry"
+msgstr "¿Qué puedo hacer por ti?"
+
+#: scripts/scenario_48_visitors.lua:3397
+#, lua-format
+msgctxt "planetologist-comms"
+msgid "Ready to begin your observations of %s?"
+msgstr "Listo para comenzar sus observaciones de %s?"
+
+#: scripts/scenario_48_visitors.lua:3405
+#, lua-format
+msgctxt "planetologist-comms"
+msgid "[Enrique Flogistan] Almost. Let me grab something from %s"
+msgstr "[Enrique Flogistan] Casi. %s"
+
+#: scripts/scenario_48_visitors.lua:3408
+#, lua-format
+msgctxt "planetologist-comms"
+msgid "We are here to transport you to %s"
+msgstr "Estamos aquí para transportarlo a %s"
+
+#: scripts/scenario_48_visitors.lua:3414
+#, lua-format
+msgctxt "planetologist-comms"
+msgid ""
+"[Enrique Flogistan] You're not my normal transport representative. Besides, I still need to pack a few things.\n"
+"\n"
+"He heads off down the corridor towards %s"
+msgstr "No eres mi representante de transporte normal, además, tengo que empacar algunas cosas. %s"
+
+#: scripts/scenario_48_visitors.lua:3418
+#, lua-format
+msgctxt "planetologist-comms"
+msgid "My ship, %s, is here to transport you"
+msgstr "Mi nave, %s, está aquí para transportarte"
+
+#: scripts/scenario_48_visitors.lua:3419
+msgctxt "planetologist-comms"
+msgid "Is your ship armed?"
+msgstr "¿Está armado tu nave?"
+
+#: scripts/scenario_48_visitors.lua:3421
+msgctxt "planetologist-comms"
+msgid "Yes, we can handle any Exuari in the area"
+msgstr "Sí, podemos manejar cualquier Exuari en la zona"
+
+#: scripts/scenario_48_visitors.lua:3430 scripts/scenario_48_visitors.lua:3705
+msgctxt "planetologist-comms"
+msgid "He's already boarded a ship"
+msgstr "Ya ha subido a un barco."
+
+#: scripts/scenario_48_visitors.lua:3432
+msgctxt "planetologist-comms"
+msgid ""
+"Good. Let's go\n"
+"\n"
+"He joins you as you go back to the ship"
+msgstr "Bien, vamos, él se une a ti mientras regresas a la nave."
+
+#: scripts/scenario_48_visitors.lua:3437
+#, lua-format
+msgctxt "planetologist-comms"
+msgid "Good. I still need a couple of items from %s"
+msgstr "Bien, todavía necesito un par de artículos de %s"
+
+#: scripts/scenario_48_visitors.lua:3454
+#, lua-format
+msgctxt "planetologist-comms"
+msgid "He's not in his quarters. His digital room assistant predicts he went to %s"
+msgstr "No está en sus cuartos, su asistente de la sala digital predice que fue a %s"
+
+#: scripts/scenario_48_visitors.lua:3458
+msgctxt "planetologist-comms"
+msgid "Try the lab"
+msgstr "Prueba el laboratorio."
+
+#: scripts/scenario_48_visitors.lua:3465
+msgctxt "planetologist-comms"
+msgid "[Enrique Flogistan] Hello, welcome to the planetology lab. Can I help you?"
+msgstr "Hola, bienvenido al laboratorio de planetaología. ¿Puedo ayudarle?"
+
+#: scripts/scenario_48_visitors.lua:3467
+#, lua-format
+msgctxt "planetologist-comms"
+msgid "Ready to go observe %s?"
+msgstr "Listo para ir a observar %s?"
+
+#: scripts/scenario_48_visitors.lua:3473
+#, lua-format
+msgctxt "planetologist-comms"
+msgid ""
+"[Enrique Flogistan] Almost. Let me get one more thing.\n"
+"\n"
+"He leaves the lab for %s"
+msgstr "[Enrique Flogistan] Casi. Déjame conseguir una cosa más. %s"
+
+#: scripts/scenario_48_visitors.lua:3477
+#, lua-format
+msgctxt "planetologist-comms"
+msgid "We're ready to transport you to %s"
+msgstr "Estamos listos para transportarlo a %s"
+
+#: scripts/scenario_48_visitors.lua:3484
+#, lua-format
+msgctxt "planetologist-comms"
+msgid ""
+"[Enrique Flogistan] Already?!\n"
+"\n"
+"He quickly leaves the lab. The lab technician looks over as he leaves\n"
+"\n"
+"[Lab technician] I think he's going to %s"
+msgstr "[Enrique Flogistan] Ya?! Él rápidamente sale del laboratorio. El técnico del laboratorio mira mientras deja [Lab técnico] Creo que va a %s"
+
+#: scripts/scenario_48_visitors.lua:3493
+#, lua-format
+msgctxt "planetologist-comms"
+msgid "%s has docked and is waiting on you"
+msgstr "%s ha atracado y te está esperando"
+
+#: scripts/scenario_48_visitors.lua:3494
+msgctxt "planetologist-comms"
+msgid "Are you aware of the Exuari that have been spotted in the area?"
+msgstr "¿Está consciente del Exuari que ha sido visto en la zona?"
+
+#: scripts/scenario_48_visitors.lua:3496
+msgctxt "planetologist-comms"
+msgid "Yes, don't worry about them"
+msgstr "Sí, no te preocupes por ellos."
+
+#: scripts/scenario_48_visitors.lua:3498
+msgctxt "planetologist-comms"
+msgid "[Enrique Flogistan] Good to know. I need to finishing packing in my quarters"
+msgstr "[Enrique Flogistan] Me alegro de saberlo."
+
+#: scripts/scenario_48_visitors.lua:3502
+msgctxt "planetologist-comms"
+msgid "[Enrique Flogistan] Good to know. I left some notes in the observation lounge"
+msgstr "[Enrique Flogistan] Me alegro de saberlo. Dejé algunas notas en el salón de observación"
+
+#: scripts/scenario_48_visitors.lua:3518
+#, lua-format
+msgctxt "planetologist-comms"
+msgid "[Lab technician] You just missed him. I think he said he was going to %s"
+msgstr "Creo que él dijo que iba a ir a casa. %s"
+
+#: scripts/scenario_48_visitors.lua:3522
+msgctxt "planetologist-comms"
+msgid "Try observation lounge"
+msgstr "Prueba salón de observación"
+
+#: scripts/scenario_48_visitors.lua:3532
+#, lua-format
+msgctxt "planetologist-comms"
+msgid "[Enrique Flogistan] Just take in the gorgeous view of %s from here"
+msgstr "[Enrique Flogistan] Sólo tienes que tomar en la hermosa vista de %s de aquí"
+
+#: scripts/scenario_48_visitors.lua:3534
+#, lua-format
+msgctxt "planetologist-comms"
+msgid "Ready for a closer view of %s?"
+msgstr "Listo para una vista más cercana %s?"
+
+#: scripts/scenario_48_visitors.lua:3541
+#, lua-format
+msgctxt "planetologist-comms"
+msgid ""
+"[Enrique Flogistan] Just about. I forgot to pack something.\n"
+"\n"
+"He leaves the observation lounge to go to %s"
+msgstr "Me olvidé de empacar algo, deja el salón de observación para ir a %s"
+
+#: scripts/scenario_48_visitors.lua:3545
+#, lua-format
+msgctxt "planetologist-comms"
+msgid "We're ready to take you to %s"
+msgstr "Estamos listos para llevarte a %s"
+
+#: scripts/scenario_48_visitors.lua:3548
+msgctxt "planetologist-comms"
+msgid "[Enrique Flogistan] Well I'm not. I just need a few more items from my quarters"
+msgstr "[Enrique Flogistan] Bueno no lo soy. Sólo necesito unos cuantos más artículos de mis trimestres"
+
+#: scripts/scenario_48_visitors.lua:3552
+msgctxt "planetologist-comms"
+msgid "[Enrique Flogistan] Well I'm not. I just need a few more items from the lab"
+msgstr "[Enrique Flogistan] Bueno no lo soy. Sólo necesito algunos artículos más del laboratorio"
+
+#: scripts/scenario_48_visitors.lua:3558
+#, lua-format
+msgctxt "planetologist-comms"
+msgid "%s has been ordered to get you to %s"
+msgstr "%s ha sido ordenado para conseguir que usted %s"
+
+#: scripts/scenario_48_visitors.lua:3560
+msgctxt "planetologist-comms"
+msgid "I heard about your encounter with the Exuari. You know they could come back, right?"
+msgstr "Me enteré de tu encuentro con el Exuari. ¿Sabes que podrían volver, verdad?"
+
+#: scripts/scenario_48_visitors.lua:3562
+msgctxt "planetologist-comms"
+msgid "Certainly. We'll be ready, don't worry"
+msgstr "Estaremos listos, no te preocupes."
+
+#: scripts/scenario_48_visitors.lua:3564
+msgctxt "planetologist-comms"
+msgid "[Enrique Flogistan] I admire your confidence. I'll get my things from my quarters"
+msgstr "[Enrique Flogistan] Admiro su confianza."
+
+#: scripts/scenario_48_visitors.lua:3568
+msgctxt "planetologist-comms"
+msgid "[Enrique Flogistan] I admire your confidence. I'll get my research material from the lab"
+msgstr "[Enrique Flogistan] Admiro su confianza. Voy a conseguir mi material de investigación del laboratorio"
+
+#: scripts/scenario_48_visitors.lua:3585
+#, lua-format
+msgctxt "planetologist-comms"
+msgid "[Station repair crewman] He just left for %s"
+msgstr "Acaba de salir para %s"
+
+#: scripts/scenario_48_visitors.lua:3591
+msgctxt "planetologist-comms"
+msgid "Contact planetologist directly"
+msgstr "Contacte con el planetaólogo directamente"
+
+#: scripts/scenario_48_visitors.lua:3592
+msgctxt "planetologist-comms"
+msgid "Repair work prevents contact with individual"
+msgstr "Trabajo de reparación evita el contacto con el individuo"
+
+#: scripts/scenario_48_visitors.lua:3593
+msgctxt "planetologist-comms"
+msgid "Contact Enrique Flogistan's quarters"
+msgstr "Contactar con Enrique Flogistan's quarters"
+
+#: scripts/scenario_48_visitors.lua:3595
+msgctxt "planetologist-comms"
+msgid "[Enrique Flogistan] Who is it?"
+msgstr "¿Quién es?"
+
+#: scripts/scenario_48_visitors.lua:3598
+#, lua-format
+msgctxt "planetologist-comms"
+msgid "This is %s. We are your transportation to %s"
+msgstr "Esto es... %sSomos su transporte a %s"
+
+#: scripts/scenario_48_visitors.lua:3606
+#, lua-format
+msgctxt "planetologist-comms"
+msgid "I'm going to %s before we leave"
+msgstr "Voy a ir %s antes de que nos vayamos"
+
+#: scripts/scenario_48_visitors.lua:3615
+msgctxt "planetologist-comms"
+msgid "No reply from Enrique Flogistan's quarters"
+msgstr "No hay respuesta de los barrios de Enrique Flogistan"
+
+#: scripts/scenario_48_visitors.lua:3619
+msgctxt "planetologist-comms"
+msgid "Contact planetology lab"
+msgstr "Contactar laboratorio de planetaología"
+
+#: scripts/scenario_48_visitors.lua:3630
+#, lua-format
+msgctxt "planetologist-comms"
+msgid "A lab technician answers and tells you Enrique Flogistan is probably going to %s"
+msgstr "Un técnico de laboratorio responde y le dice que Enrique Flogistan probablemente va a %s"
+
+#: scripts/scenario_48_visitors.lua:3633
+msgctxt "planetologist-comms"
+msgid "Contact observation lounge"
+msgstr "Salón de observación de contacto"
+
+#: scripts/scenario_48_visitors.lua:3644
+#, lua-format
+msgctxt "planetologist-comms"
+msgid "A repair crewman answers and tells you Enrique Flogistan is probably going to %s"
+msgstr "Un tripulante de reparación responde y le dice que Enrique Flogistan probablemente va a %s"
+
+#: scripts/scenario_48_visitors.lua:3647
+msgctxt "planetologist-comms"
+msgid "Contact station galley"
+msgstr "Estación de contacto galera"
+
+#: scripts/scenario_48_visitors.lua:3649
+msgctxt "planetologist-comms"
+msgid "[Cook] Hello, who's there?"
+msgstr "Hola, ¿quién está ahí?"
+
+#: scripts/scenario_48_visitors.lua:3651
+#, lua-format
+msgctxt "planetologist-comms"
+msgid "I'm from %s. I'm looking for Enrique Flogistan"
+msgstr "Soy de %sEstoy buscando a Enrique Flogistan"
+
+#: scripts/scenario_48_visitors.lua:3652
+msgctxt "planetologist-comms"
+msgid "He was here about an hour ago. You might try his quarters, the observation lounge or the lab"
+msgstr "Estaba aquí hace una hora, podrías probar sus habitaciones, el salón de observación o el laboratorio."
+
+#: scripts/scenario_48_visitors.lua:3658
+msgctxt "planetologist-comms"
+msgid "Contact station security office"
+msgstr "Oficina de seguridad de la estación de contacto"
+
+#: scripts/scenario_48_visitors.lua:3660
+msgctxt "planetologist-comms"
+msgid "[Security officer] May I help you?"
+msgstr "¿Puedo ayudarle?"
+
+#: scripts/scenario_48_visitors.lua:3662
+msgctxt "planetologist-comms"
+msgid "I'm looking for Enrique Flogistan"
+msgstr "Estoy buscando a Enrique Flogistan"
+
+#: scripts/scenario_48_visitors.lua:3664
+msgctxt "planetologist-comms"
+msgid "He's not here in the security office. Our records show he often frequents his quarters, the observation lounge and the planetology lab"
+msgstr "No está aquí en la oficina de seguridad. Nuestros registros muestran que a menudo frecuenta sus habitaciones, el salón de observación y el laboratorio de planetaología."
+
+#: scripts/scenario_48_visitors.lua:3669
+msgctxt "planetologist-comms"
+msgid "Contact station maintenance office"
+msgstr "Oficina de mantenimiento de la estación de contacto"
+
+#: scripts/scenario_48_visitors.lua:3671
+msgctxt "planetologist-comms"
+msgid "[Maintenance technician] Hi, what's broken?"
+msgstr "Hola, ¿qué está roto?"
+
+#: scripts/scenario_48_visitors.lua:3673
+msgctxt "planetologist-comms"
+msgid "Nothing. I'm looking for Enrique Flogistan"
+msgstr "Nada, estoy buscando a Enrique Flogistan."
+
+#: scripts/scenario_48_visitors.lua:3675
+msgctxt "planetologist-comms"
+msgid "He's not here. Good luck finding him"
+msgstr "No está aquí."
+
+#: scripts/scenario_48_visitors.lua:3680
+msgctxt "planetologist-comms"
+msgid "Contact station operations office"
+msgstr "Oficina de operaciones de estación de contacto"
+
+#: scripts/scenario_48_visitors.lua:3682
+msgctxt "planetologist-comms"
+msgid "[Operations manager] Yes?"
+msgstr "¿Sí?"
+
+#: scripts/scenario_48_visitors.lua:3684
+msgctxt "planetologist-comms"
+msgid "Can you help me find Enrique Flogistan?"
+msgstr "¿Puedes ayudarme a encontrar a Enrique Flogistan?"
+
+#: scripts/scenario_48_visitors.lua:3686
+msgctxt "planetologist-comms"
+msgid "He's not here in operations. We are short handed right now with all the repairs going on. I'm afraid you'll have to find him yourself"
+msgstr "No está aquí en operaciones, estamos cortos ahora mismo con todas las reparaciones."
+
+#: scripts/scenario_48_visitors.lua:3692
+msgctxt "planetologist-comms"
+msgid "Scan for planetologist"
+msgstr "Escáner para el planetaólogo"
+
+#: scripts/scenario_48_visitors.lua:3701
+#, lua-format
+msgctxt "planetologist-comms"
+msgid "Sensors show him in %s"
+msgstr "Los sensores le muestran %s"
+
+#: scripts/scenario_48_visitors.lua:3702
+#, lua-format
+msgctxt "planetologist-comms"
+msgid "Beam him over from %s"
+msgstr "Lo atrapó de %s"
+
+#: scripts/scenario_48_visitors.lua:3707
+msgctxt "planetologist-comms"
+msgid "He has been beamed aboard"
+msgstr "Ha sido a bordo."
+
+#: scripts/scenario_48_visitors.lua:3712
+msgctxt "planetologist-comms"
+msgid "Interference from station repairs prevents a transporter lock"
+msgstr "Interferencia de las reparaciones de la estación previene una cerradura del transportador"
+
+#: scripts/scenario_48_visitors.lua:3722
+msgctxt "satellites-comms"
+msgid "Satellite problems?"
+msgstr "¿Problemas por satélite?"
+
+#: scripts/scenario_48_visitors.lua:3723
+#, lua-format
+msgctxt "satellites-comms"
+msgid "Yes. Our technicians have tracked back the problem to a faulty relay module. However, They are unable to fix it with available parts. They need %s. They've requested delivery, but hear it will take weeks before the next delivery cycle. I don't suppose you could bring us what we need?"
+msgstr "Sí. Nuestros técnicos han rastreado el problema a un módulo de relé defectuoso. Sin embargo, no pueden arreglarlo con partes disponibles. %sHan solicitado la entrega, pero escuchan que tardará semanas antes del próximo ciclo de entrega. ¿No supongo que puedan traernos lo que necesitamos?"
+
+#: scripts/scenario_48_visitors.lua:3736 scripts/scenario_48_visitors.lua:3792
+#, lua-format
+msgctxt "satellites-comms"
+msgid "Provide %s"
+msgstr "Proporción %s"
+
+#: scripts/scenario_48_visitors.lua:3740
+msgctxt "satellites-comms"
+msgid "Thanks. With your help, we fixed the faulty relay module"
+msgstr "Gracias, con tu ayuda, arreglamos el módulo de relé defectuoso"
+
+#: scripts/scenario_48_visitors.lua:3750
+msgctxt "satellites-comms"
+msgid "Having satellite trouble?"
+msgstr "¿Teniendo problemas por satélite?"
+
+#: scripts/scenario_48_visitors.lua:3752
+#, lua-format
+msgctxt "satellites-comms"
+msgid "It seems we've got an outdated servo motor. Replacement will take time. Our repairman says he can fix it with %s, so we don't have to wait. Do you have any?"
+msgstr "Parece que tenemos un motor de servo anticuado. %sAsí que no tenemos que esperar. ¿Tienes alguno?"
+
+#: scripts/scenario_48_visitors.lua:3764
+#, lua-format
+msgctxt "satellites-comms"
+msgid "Give %s to %s"
+msgstr "Dale. %s a %s"
+
+#: scripts/scenario_48_visitors.lua:3769
+msgctxt "satellites-comms"
+msgid "That worked. Thanks"
+msgstr "Eso funcionó."
+
+#: scripts/scenario_48_visitors.lua:3778
+msgctxt "satellites-comms"
+msgid "Can we help with your satellite?"
+msgstr "¿Podemos ayudar con su satélite?"
+
+#: scripts/scenario_48_visitors.lua:3780
+#, lua-format
+msgctxt "satellites-comms"
+msgid "Only if you've got %s aboard your ship. Otherwise, we're stuck"
+msgstr "Sólo si tienes %s A bordo de su nave, de lo contrario, estamos atrapados"
+
+#: scripts/scenario_48_visitors.lua:3797
+msgctxt "satellites-comms"
+msgid "You have saved us a tremendous headache. We thought we'd have to wait two months before we could fix the problem. Thanks"
+msgstr "Nos has salvado un tremendo dolor de cabeza, pensamos que tendríamos que esperar dos meses antes de que pudiéramos arreglar el problema."
+
+#: scripts/scenario_48_visitors.lua:3807 scripts/scenario_48_visitors.lua:4853
+msgctxt "station-comms"
+msgid "Tell me more about your station"
+msgstr "Cuéntame más sobre tu estación."
+
+#: scripts/scenario_48_visitors.lua:3808 scripts/scenario_48_visitors.lua:4855
+msgctxt "station-comms"
+msgid "What would you like to know?"
+msgstr "¿Qué quieres saber?"
+
+#: scripts/scenario_48_visitors.lua:3809 scripts/scenario_48_visitors.lua:4856
+msgctxt "stationGeneralInfo-comms"
+msgid "General information"
+msgstr "Información general"
+
+#: scripts/scenario_48_visitors.lua:3814 scripts/scenario_48_visitors.lua:4861
+msgctxt "stationStory-comms"
+msgid "Station history"
+msgstr "Historia de la estación"
+
+#: scripts/scenario_48_visitors.lua:3822 scripts/scenario_48_visitors.lua:4868
+msgctxt "gossip-comms"
+msgid "Gossip"
+msgstr "Gossip"
+
+#: scripts/scenario_48_visitors.lua:3833 scripts/scenario_48_visitors.lua:4712
+#, lua-format
+msgctxt "characterInfo-comms"
+msgid "Tell me about %s"
+msgstr "Háblame de %s"
+
+#: scripts/scenario_48_visitors.lua:3839 scripts/scenario_48_visitors.lua:4718
+#, lua-format
+msgctxt "characterInfo-comms"
+msgid "Never heard of %s"
+msgstr "Nunca he oído hablar de %s"
+
+#: scripts/scenario_48_visitors.lua:3840 scripts/scenario_48_visitors.lua:4719
+#, lua-format
+msgctxt "characterInfo-comms"
+msgid "%s died last week. The funeral was yesterday"
+msgstr "%s El funeral fue ayer."
+
+#: scripts/scenario_48_visitors.lua:3841 scripts/scenario_48_visitors.lua:4720
+#, lua-format
+msgctxt "characterInfo-comms"
+msgid "%s? Who's %s? There's nobody here named %s"
+msgstr "%s¿Quién es? %sNo hay nadie aquí llamado %s"
+
+#: scripts/scenario_48_visitors.lua:3842 scripts/scenario_48_visitors.lua:4721
+#, lua-format
+msgctxt "characterInfo-comms"
+msgid "We don't talk about %s. They are gone and good riddance"
+msgstr "No hablamos de eso. %s. Se han ido y se han librado"
+
+#: scripts/scenario_48_visitors.lua:3843 scripts/scenario_48_visitors.lua:4722
+#, lua-format
+msgctxt "characterInfo-comms"
+msgid "I think %s moved away"
+msgstr "Creo %s Se fue."
+
+#: scripts/scenario_48_visitors.lua:3844 scripts/scenario_48_visitors.lua:4723
+#, lua-format
+msgctxt "characterInfo-comms"
+msgid "My aunt's neighbor's second cousin is named %s. However, %s lives far away from here."
+msgstr "El segundo primo del vecino de mi tía se llama %sSin embargo, %s vive lejos de aquí."
+
+#: scripts/scenario_48_visitors.lua:3873
+msgctxt "station-comms"
+msgid "Request access to isolated transporter pad"
+msgstr "Solicitar acceso a la almohadilla de transporte aislado"
+
+#: scripts/scenario_48_visitors.lua:3874
+msgctxt "station-comms"
+msgid "That will damage your reputation. Do you wish to proceed?"
+msgstr "Eso dañará su reputación. ¿Desea proceder?"
+
+#: scripts/scenario_48_visitors.lua:3875
+msgctxt "station-comms"
+msgid "Proceed regardless of the reputation cost"
+msgstr "Proceda independientemente del costo de la reputación"
+
+#: scripts/scenario_48_visitors.lua:3878
+msgctxt "station-comms"
+msgid "You are transported to an unknown location. A small man in front of a vast array of virtual monitors showing constantly changing pictures of different planetary systems asks you what you want"
+msgstr "Usted es transportado a una ubicación desconocida. Un hombre pequeño frente a una gran variedad de monitores virtuales que muestran constantemente cambiantes imágenes de diferentes sistemas planetarios le pregunta lo que usted quiere"
+
+#: scripts/scenario_48_visitors.lua:3879 scripts/scenario_48_visitors.lua:3893 scripts/scenario_48_visitors.lua:3930
+#, lua-format
+msgctxt "station-comms"
+msgid "Slow orbital speed of %s"
+msgstr "Velocidad orbital lenta %s"
+
+#: scripts/scenario_48_visitors.lua:3883
+msgctxt "station-comms"
+msgid "He twists a small dial and says, 'Done.'"
+msgstr "Retorce un pequeño dial y dice, 'Done.'"
+
+#: scripts/scenario_48_visitors.lua:3886
+#, lua-format
+msgctxt "station-comms"
+msgid "Slow orbital speed of the moon orbiting %s"
+msgstr "Velocidad orbital lenta de la luna orbitando %s"
+
+#: scripts/scenario_48_visitors.lua:3890
+msgctxt "station-comms"
+msgid "He moves a slider and says, 'Ok.'"
+msgstr "Se mueve un deslizador y dice, 'Ok.'"
+
+#: scripts/scenario_48_visitors.lua:3897
+msgctxt "station-comms"
+msgid "He types in a couple of numbers and says, 'Happy?'"
+msgstr "Escribe en un par de números y dice: \"¿Feliz?\""
+
+#: scripts/scenario_48_visitors.lua:3900
+#, lua-format
+msgctxt "station-comms"
+msgid "Slow orbital speed of stations orbiting %s"
+msgstr "Velocidad orbital lenta de las estaciones en órbita %s"
+
+#: scripts/scenario_48_visitors.lua:3903
+msgctxt "station-comms"
+msgid "He flips a couple of switches and says, 'I love programmable stations'"
+msgstr "Da un par de interruptores y dice: \"Me encantan las estaciones programables\""
+
+#: scripts/scenario_48_visitors.lua:3906 scripts/scenario_48_visitors.lua:3937
+#, lua-format
+msgctxt "station-comms"
+msgid "Slow orbital speed of the inner belt around %s"
+msgstr "Velocidad orbital lenta de la correa interna alrededor %s"
+
+#: scripts/scenario_48_visitors.lua:3915
+msgctxt "station-comms"
+msgid "He rubs one of the monitors a bit and says 'that should do it.'"
+msgstr "Se frota un poco a uno de los monitores y dice \"que debería hacerlo\"."
+
+#: scripts/scenario_48_visitors.lua:3918 scripts/scenario_48_visitors.lua:3949
+#, lua-format
+msgctxt "station-comms"
+msgid "Slow orbital speed of the outer belt around %s"
+msgstr "Velocidad orbital lenta del cinturón exterior alrededor %s"
+
+#: scripts/scenario_48_visitors.lua:3927
+msgctxt "station-comms"
+msgid "He says, 'if you insist' and opens a small panel in the wall and enters a code on a keypad."
+msgstr "Dice, \"si insistes\" y abre un pequeño panel en la pared e introduce un código en un teclado."
+
+#: scripts/scenario_48_visitors.lua:3934
+msgctxt "station-comms"
+msgid "He sighs, stands up, grabs a large lever and pulls it about two inches towards him then says, 'there.'"
+msgstr "Suspira, se levanta, agarra una palanca grande y la tira de dos pulgadas hacia él entonces dice, 'hay'."
+
+#: scripts/scenario_48_visitors.lua:3946
+msgctxt "station-comms"
+msgid "He pulls a keyboard out from under his desk, types a couple of things and says, 'Alright.'"
+msgstr "Saca un teclado desde debajo de su escritorio, escribe un par de cosas y dice, 'De acuerdo.'"
+
+#: scripts/scenario_48_visitors.lua:3964
+msgctxt "station-comms"
+msgid "He dons a couple of purple haptic gloves, makes a couple of arcane gestures and says, 'You asked for it.'"
+msgstr "Él hace un par de guantes hapticos púrpuras, hace un par de gestos arcanos y dice, \"Tú lo pediste\"."
+
+#: scripts/scenario_48_visitors.lua:3972
+#, lua-format
+msgctxt "station-comms"
+msgid "Where is %s? (cost 10 reputation)"
+msgstr "Donde está %s? (coste 10 reputación)"
+
+#: scripts/scenario_48_visitors.lua:3975
+#, lua-format
+msgctxt "station-comms"
+msgid "%s is near %s"
+msgstr "%s está cerca %s"
+
+#: scripts/scenario_48_visitors.lua:3977
+#, lua-format
+msgctxt "station-comms"
+msgid "%s is along the inner solar asteroid belt"
+msgstr "%s está a lo largo del cinturón de asteroides solares"
+
+#: scripts/scenario_48_visitors.lua:3980
+msgctxt "needRep-comms"
+msgid "Not enough reputation"
+msgstr "No es suficiente reputación."
+
+#: scripts/scenario_48_visitors.lua:3985 scripts/scenario_48_visitors.lua:4733
+msgctxt "orders-comms"
+msgid "What are my current orders?"
+msgstr "¿Cuáles son mis órdenes actuales?"
+
+#: scripts/scenario_48_visitors.lua:3990 scripts/scenario_48_visitors.lua:4738
+#, lua-format
+msgctxt "orders-comms"
+msgid ""
+"\n"
+"   %i Minutes remain in game"
+msgstr ""
+"\n"
+"   %i Minutos permanecen en juego"
+
+#: scripts/scenario_48_visitors.lua:4001 scripts/scenario_48_visitors.lua:4036
+#, lua-format
+msgctxt "trade-comms"
+msgid "Recruit repair crew member for %i reputation"
+msgstr "Contratación de tripulante de reparación %i reputación"
+
+#: scripts/scenario_48_visitors.lua:4003 scripts/scenario_48_visitors.lua:4019 scripts/scenario_48_visitors.lua:4038 scripts/scenario_48_visitors.lua:4054 scripts/scenario_48_visitors.lua:4103 scripts/scenario_48_visitors.lua:4129 scripts/scenario_48_visitors.lua:4134 scripts/scenario_48_visitors.lua:4230 scripts/scenario_48_visitors.lua:4501 scripts/scenario_48_visitors.lua:4908 scripts/scenario_48_visitors.lua:4931 scripts/scenario_48_visitors.lua:4952 scripts/scenario_48_visitors.lua:4973 scripts/scenario_48_visitors.lua:5706 scripts/scenario_48_visitors.lua:5728 scripts/scenario_48_visitors.lua:5752 scripts/scenario_48_visitors.lua:5774 scripts/scenario_48_visitors.lua:5798
+msgctxt "needRep-comms"
+msgid "Insufficient reputation"
+msgstr "Insuficiente reputación"
+
+#: scripts/scenario_48_visitors.lua:4006 scripts/scenario_48_visitors.lua:4041
+msgctxt "trade-comms"
+msgid "Repair crew member hired"
+msgstr "Reparación de miembros del equipo contratados"
+
+#: scripts/scenario_48_visitors.lua:4017 scripts/scenario_48_visitors.lua:4052
+#, lua-format
+msgctxt "trade-comms"
+msgid "Purchase coolant for %i reputation"
+msgstr "Refrigerador de compra para %i reputación"
+
+#: scripts/scenario_48_visitors.lua:4022 scripts/scenario_48_visitors.lua:4057
+msgctxt "trade-comms"
+msgid "Additional coolant purchased"
+msgstr "Refrigerante adicional adquirido"
+
+#: scripts/scenario_48_visitors.lua:4064
+msgctxt "cartographyOffice-comms"
+msgid "Visit cartography office"
+msgstr "Oficina de cartografía"
+
+#: scripts/scenario_48_visitors.lua:4067
+msgctxt "cartographyOffice-comms"
+msgid "The clerk behind the desk looks up briefly at you then goes back to filing her nails."
+msgstr "El empleado detrás del escritorio te mira brevemente y luego vuelve a presentar sus uñas."
+
+#: scripts/scenario_48_visitors.lua:4068
+msgctxt "cartographyOffice-comms"
+msgid "The clerk behind the desk examines you then returns to grooming her tentacles."
+msgstr "El empleado detrás del escritorio te examina y luego vuelve a acopiar sus tentáculos."
+
+#: scripts/scenario_48_visitors.lua:4069
+msgctxt "cartographyOffice-comms"
+msgid "The clerk behind the desk glances at you then returns to preening her feathers."
+msgstr "El empleado detrás del escritorio te mira y luego vuelve a prender sus plumas."
+
+#: scripts/scenario_48_visitors.lua:4070
+msgctxt "cartographyOffice-comms"
+msgid "The clerk behind the desk pauses, points a cluster of antennae at you, then continues manipulating an elaborate keyboard."
+msgstr "El empleado detrás de la mesa pausa, apunta un grupo de antenas a usted, y luego sigue manipulando un teclado elaborado."
+
+#: scripts/scenario_48_visitors.lua:4074
+#, lua-format
+msgctxt "cartographyOffice-comms"
+msgid ""
+"%s\n"
+"\n"
+"You can examine the brochure on the coffee table, talk to the apprentice cartographer or talk to the master cartographer"
+msgstr ""
+"%s\n"
+"\n"
+"Puede examinar el folleto sobre la mesa de café, hablar con el cartógrafo del aprendiz o hablar con el cartógrafo maestro"
+
+#: scripts/scenario_48_visitors.lua:4075
+msgctxt "cartographyOffice-comms"
+msgid "What's the difference between the apprentice and the master?"
+msgstr "¿Cuál es la diferencia entre el aprendiz y el maestro?"
+
+#: scripts/scenario_48_visitors.lua:4076
+msgctxt "cartographyOffice-comms"
+msgid "The clerk responds in a bored voice, 'The apprentice knows the local area and is learning the broader area. The master knows the local and the broader area but can't be bothered with the local area'"
+msgstr "El empleado responde en voz aburrida, \"El aprendiz conoce el área local y está aprendiendo el área más amplia. El maestro conoce el área local y el área más amplia, pero no se puede molestar con el área local\"."
+
+#: scripts/scenario_48_visitors.lua:4079
+#, lua-format
+msgctxt "cartographyOffice-comms"
+msgid "Examine brochure (%i reputation)"
+msgstr "Examinar folleto (en inglés)%i reputación)"
+
+#: scripts/scenario_48_visitors.lua:4081
+msgctxt "cartographyOffice-comms"
+msgid "The brochure has a list of nearby stations and has a list of goods nearby"
+msgstr "El folleto tiene una lista de estaciones cercanas y tiene una lista de mercancías cercanas"
+
+#: scripts/scenario_48_visitors.lua:4082
+#, lua-format
+msgctxt "cartographyOffice-comms"
+msgid "Examine station list (%i reputation)"
+msgstr "Examinar la lista de estaciones (%i reputación)"
+
+#: scripts/scenario_48_visitors.lua:4091 scripts/scenario_48_visitors.lua:4151 scripts/scenario_48_visitors.lua:4200
+#, lua-format
+msgctxt "cartographyOffice-comms"
+msgid "%s %s %s"
+msgstr "%s %s %s"
+
+#: scripts/scenario_48_visitors.lua:4093
+#, lua-format
+msgctxt "cartographyOffice-comms"
+msgid ""
+"%s\n"
+"%s %s %s"
+msgstr ""
+"%s\n"
+"%s %s %s"
+
+#: scripts/scenario_48_visitors.lua:4096 scripts/scenario_48_visitors.lua:4153 scripts/scenario_48_visitors.lua:4202 scripts/scenario_48_visitors.lua:4413 scripts/scenario_48_visitors.lua:4471
+#, lua-format
+msgctxt "cartographyOffice-comms"
+msgid "%s %s"
+msgstr "%s %s"
+
+#: scripts/scenario_48_visitors.lua:4107
+#, lua-format
+msgctxt "cartographyOffice-comms"
+msgid "Examine goods list (%i reputation)"
+msgstr "Examinar la lista de bienes (en inglés)%i reputación)"
+
+#: scripts/scenario_48_visitors.lua:4118
+#, lua-format
+msgctxt "cartographyOffice-comms"
+msgid ""
+"Good, quantity, cost, station:\n"
+"%s, %i, %i, %s"
+msgstr ""
+"Bien, cantidad, costo, estación:\n"
+"%s, %i, %i, %s"
+
+#: scripts/scenario_48_visitors.lua:4120
+#, lua-format
+msgctxt "cartographyOffice-comms"
+msgid ""
+"%s\n"
+"%s, %i, %i, %s"
+msgstr ""
+"%s\n"
+"%s, %i, %i, %s"
+
+#: scripts/scenario_48_visitors.lua:4138
+#, lua-format
+msgctxt "cartographyOffice-comms"
+msgid "Talk to apprentice cartographer (%i reputation)"
+msgstr "Charla con el cartógrafo de aprendiz (consulta)%i reputación)"
+
+#: scripts/scenario_48_visitors.lua:4140
+msgctxt "cartographyOffice-comms"
+msgid "Hi, would you like for me to locate a station or some goods for you?"
+msgstr "Hola, ¿quieres que busque una estación o algo para ti?"
+
+#: scripts/scenario_48_visitors.lua:4141
+msgctxt "cartographyOffice-comms"
+msgid "Locate station"
+msgstr "Estación de localización"
+
+#: scripts/scenario_48_visitors.lua:4142
+msgctxt "cartographyOffice-comms"
+msgid "These are stations I have learned about"
+msgstr "Estas son las estaciones que he aprendido sobre"
+
+#: scripts/scenario_48_visitors.lua:4156 scripts/scenario_48_visitors.lua:4205 scripts/scenario_48_visitors.lua:4416 scripts/scenario_48_visitors.lua:4474
+#, lua-format
+msgctxt "cartographyOffice-comms"
+msgid ""
+"%s\n"
+"Good, quantity, cost"
+msgstr ""
+"%s\n"
+"Bien, cantidad, costo"
+
+#: scripts/scenario_48_visitors.lua:4158 scripts/scenario_48_visitors.lua:4207 scripts/scenario_48_visitors.lua:4418 scripts/scenario_48_visitors.lua:4476
+#, lua-format
+msgctxt "cartographyOffice-comms"
+msgid ""
+"%s\n"
+"   %s, %i, %i"
+msgstr ""
+"%s\n"
+"   %s, %i, %i"
+
+#: scripts/scenario_48_visitors.lua:4162 scripts/scenario_48_visitors.lua:4211 scripts/scenario_48_visitors.lua:4422 scripts/scenario_48_visitors.lua:4480
+#, lua-format
+msgctxt "stationGeneralInfo-comms"
+msgid ""
+"%s\n"
+"General Information:\n"
+"   %s"
+msgstr ""
+"%s\n"
+"Información general:\n"
+"   %s"
+
+#: scripts/scenario_48_visitors.lua:4165 scripts/scenario_48_visitors.lua:4214 scripts/scenario_48_visitors.lua:4425 scripts/scenario_48_visitors.lua:4483
+#, lua-format
+msgctxt "stationStory-comms"
+msgid ""
+"%s\n"
+"History:\n"
+"   %s"
+msgstr ""
+"%s\n"
+"Historia:\n"
+"   %s"
+
+#: scripts/scenario_48_visitors.lua:4168 scripts/scenario_48_visitors.lua:4217 scripts/scenario_48_visitors.lua:4428 scripts/scenario_48_visitors.lua:4486
+#, lua-format
+msgctxt "gossip-comms"
+msgid ""
+"%s\n"
+"Gossip:\n"
+"   %s"
+msgstr ""
+"%s\n"
+"Gossip:\n"
+"   %s"
+
+#: scripts/scenario_48_visitors.lua:4177
+msgctxt "cartographyOffice-comms"
+msgid "I have learned of no stations yet"
+msgstr "Aún no he aprendido de ninguna estación."
+
+#: scripts/scenario_48_visitors.lua:4181
+msgctxt "cartographyOffice-comms"
+msgid "Locate goods"
+msgstr "Localizar las mercancías"
+
+#: scripts/scenario_48_visitors.lua:4182
+msgctxt "cartographyOffice-comms"
+msgid "These are the goods I know about"
+msgstr "Estos son los bienes que conozco."
+
+#: scripts/scenario_48_visitors.lua:4234
+#, lua-format
+msgctxt "cartographyOffice-comms"
+msgid "Talk to master cartographer (%i reputation)"
+msgstr "Hablar con el cartógrafo maestro (en inglés)%i reputación)"
+
+#: scripts/scenario_48_visitors.lua:4236
+msgctxt "cartographyOffice-comms"
+msgid ""
+"The clerk clears her throat:\n"
+"\n"
+"My indicators show you have zero available waypoints. To get the most from the master cartographer, you should delete one or more so that he can update your systems appropriately.\n"
+"\n"
+"I just want you to get the maximum benefit for the time you spend with him"
+msgstr "El clerk aclara su garganta: Mis indicadores muestran que tiene cero puntos de referencia disponibles. Para sacar el máximo provecho del cartógrafo maestro, debe eliminar uno o más para que pueda actualizar sus sistemas adecuadamente. Sólo quiero que obtenga el máximo beneficio para el tiempo que pasa con él"
+
+#: scripts/scenario_48_visitors.lua:4237
+msgctxt "cartographyOffice-comms"
+msgid "Continue to Master Cartographer"
+msgstr "Continúe con el cartógrafo maestro"
+
+#: scripts/scenario_48_visitors.lua:4250
+msgctxt "trade-comms"
+msgid "Buy, sell, trade"
+msgstr "Compra, venta, comercio"
+
+#: scripts/scenario_48_visitors.lua:4252
+#, lua-format
+msgctxt "trade-comms"
+msgid ""
+"Station %s:\n"
+"Goods or components available for sale: quantity, cost in reputation\n"
+msgstr "Estación %s: Mercancías o componentes disponibles para la venta: cantidad, costo en reputación\n"
+
+#: scripts/scenario_48_visitors.lua:4254
+#, lua-format
+msgctxt "trade-comms"
+msgid "     %s: %i, %i\n"
+msgstr "     %s: %i, %i\n"
+
+#: scripts/scenario_48_visitors.lua:4257
+msgctxt "trade-comms"
+msgid "Goods or components station will buy: price in reputation\n"
+msgstr "La estación de bienes o componentes comprará: precio en la reputación\n"
+
+#: scripts/scenario_48_visitors.lua:4259 scripts/scenario_48_visitors.lua:4268
+#, lua-format
+msgctxt "trade-comms"
+msgid "     %s: %i\n"
+msgstr "     %s: %i\n"
+
+#: scripts/scenario_48_visitors.lua:4262
+#, lua-format
+msgctxt "trade-comms"
+msgid "Current cargo aboard %s:\n"
+msgstr "Carga corriente a bordo %s:\n"
+
+#: scripts/scenario_48_visitors.lua:4272
+msgctxt "trade-comms"
+msgid "     Empty\n"
+msgstr "     Vacío\n"
+
+#: scripts/scenario_48_visitors.lua:4274
+#, lua-format
+msgctxt "trade-comms"
+msgid "Available Space: %i, Available Reputation: %i\n"
+msgstr "Espacio disponible: %i, Reputación disponible: %i\n"
+
+#: scripts/scenario_48_visitors.lua:4277 scripts/scenario_48_visitors.lua:5491 scripts/scenario_48_visitors.lua:5516 scripts/scenario_48_visitors.lua:5538 scripts/scenario_48_visitors.lua:5564 scripts/scenario_48_visitors.lua:5693 scripts/scenario_48_visitors.lua:5715 scripts/scenario_48_visitors.lua:5739 scripts/scenario_48_visitors.lua:5761 scripts/scenario_48_visitors.lua:5785
+#, lua-format
+msgctxt "trade-comms"
+msgid "Buy one %s for %i reputation"
+msgstr "Comprar uno %s para %i reputación"
+
+#: scripts/scenario_48_visitors.lua:4278
+#, lua-format
+msgctxt "trade-comms"
+msgid "Type: %s, Quantity: %i, Reputation: %i"
+msgstr "Tipo: %s, Cantidad %i, Reputación: %i"
+
+#: scripts/scenario_48_visitors.lua:4280
+msgctxt "trade-comms"
+msgid ""
+"\n"
+"Insufficient cargo space for purchase"
+msgstr ""
+"\n"
+"Espacio de carga insuficiente para la compra"
+
+#: scripts/scenario_48_visitors.lua:4282 scripts/scenario_48_visitors.lua:4298
+msgctxt "needRep-comms"
+msgid ""
+"\n"
+"Insufficient reputation for purchase"
+msgstr ""
+"\n"
+"Insuficiente reputación de compra"
+
+#: scripts/scenario_48_visitors.lua:4284 scripts/scenario_48_visitors.lua:4325 scripts/scenario_48_visitors.lua:4348 scripts/scenario_48_visitors.lua:4371
+msgctxt "trade-comms"
+msgid ""
+"\n"
+"Insufficient station inventory"
+msgstr ""
+"\n"
+"Insuficiente inventario de estaciones"
+
+#: scripts/scenario_48_visitors.lua:4296
+msgctxt "trade-comms"
+msgid ""
+"\n"
+"purchased"
+msgstr ""
+"\n"
+"adquiridos"
+
+#: scripts/scenario_48_visitors.lua:4308
+#, lua-format
+msgctxt "trade-comms"
+msgid "Sell one %s for %i reputation"
+msgstr "Vender uno %s para %i reputación"
+
+#: scripts/scenario_48_visitors.lua:4309
+#, lua-format
+msgctxt "trade-comms"
+msgid "Type: %s,  Reputation price: %i"
+msgstr "Tipo: %s, Precio de Reputación: %i"
+
+#: scripts/scenario_48_visitors.lua:4312
+msgctxt "trade-comms"
+msgid ""
+"\n"
+"One sold"
+msgstr ""
+"\n"
+"Uno vendido"
+
+#: scripts/scenario_48_visitors.lua:4322
+#, lua-format
+msgctxt "trade-comms"
+msgid "Trade food for %s"
+msgstr "Comida comercial para %s"
+
+#: scripts/scenario_48_visitors.lua:4323 scripts/scenario_48_visitors.lua:4346 scripts/scenario_48_visitors.lua:4369
+#, lua-format
+msgctxt "trade-comms"
+msgid "Type: %s,  Quantity: %i"
+msgstr "Tipo: %s, Cantidad %i"
+
+#: scripts/scenario_48_visitors.lua:4336 scripts/scenario_48_visitors.lua:4359 scripts/scenario_48_visitors.lua:4382
+msgctxt "trade-comms"
+msgid ""
+"\n"
+"Traded"
+msgstr ""
+"\n"
+"Traded"
+
+#: scripts/scenario_48_visitors.lua:4345
+#, lua-format
+msgctxt "trade-comms"
+msgid "Trade medicine for %s"
+msgstr "Medicina comercial %s"
+
+#: scripts/scenario_48_visitors.lua:4368 scripts/scenario_48_visitors.lua:5471
+#, lua-format
+msgctxt "trade-comms"
+msgid "Trade luxury for %s"
+msgstr "Lujo comercial para %s"
+
+#: scripts/scenario_48_visitors.lua:4391
+msgctxt "explainGoods-comms"
+msgid "No tutorial covered goods or cargo. Explain"
+msgstr "No hay ningún tutorial cubierto mercancías o cargamento. Explicar"
+
+#: scripts/scenario_48_visitors.lua:4392
+msgctxt "explainGoods-comms"
+msgid "Different types of cargo or goods may be obtained from stations, freighters or other sources. They go by one word descriptions such as dilithium, optic, warp, etc. Certain mission goals may require a particular type or types of cargo. Each player ship differs in cargo carrying capacity. Goods may be obtained by spending reputation points or by trading other types of cargo (typically food, medicine or luxury)"
+msgstr "Se pueden obtener diferentes tipos de carga o mercancías de estaciones, fletes u otras fuentes. Se pasan por una palabra descripciones tales como dilitio, óptica, warp, etc. Ciertos objetivos de la misión pueden requerir un tipo o tipos particulares de carga. Cada barco de jugadores difiere en la capacidad de carga. Los bienes pueden obtenerse mediante el gasto de puntos de reputación o el comercio de otros tipos de carga (alimentos, medicinas o lujos)."
+
+#: scripts/scenario_48_visitors.lua:4399
+msgctxt "cartographyOffice-comms"
+msgid ""
+"Greetings,\n"
+"May I help you find a station or goods?"
+msgstr "Saludos, ¿puedo ayudarle a encontrar una estación o bienes?"
+
+#: scripts/scenario_48_visitors.lua:4400
+msgctxt "cartographyOffice-comms"
+msgid "Find station"
+msgstr "Encontrar estación"
+
+#: scripts/scenario_48_visitors.lua:4401
+msgctxt "cartographyOffice-comms"
+msgid "What station?"
+msgstr "¿Qué estación?"
+
+#: scripts/scenario_48_visitors.lua:4411 scripts/scenario_48_visitors.lua:4469
+#, lua-format
+msgctxt "cartographyOffice-comms"
+msgid "%s %s %s Distance:%.1fU"
+msgstr "%s %s %s Distancia:%.1fU"
+
+#: scripts/scenario_48_visitors.lua:4432 scripts/scenario_48_visitors.lua:4490
+#, lua-format
+msgctxt "cartographyOffice-comms"
+msgid ""
+"%s\n"
+"Added waypoint %i to your navigation system for %s"
+msgstr ""
+"%s\n"
+"Punto de referencia añadido %i a su sistema de navegación para %s"
+
+#: scripts/scenario_48_visitors.lua:4434 scripts/scenario_48_visitors.lua:4492
+#, lua-format
+msgctxt "cartographyOffice-comms"
+msgid ""
+"%s\n"
+"Note: this waypoint will be out of date shortly since %s is in motion"
+msgstr ""
+"%s\n"
+"Nota: este punto de vista estará fuera de lugar poco después %s está en movimiento"
+
+#: scripts/scenario_48_visitors.lua:4444
+msgctxt "cartographyOffice-comms"
+msgid "Try the apprentice, I'm tired"
+msgstr "Pruebe el aprendiz, estoy cansado"
+
+#: scripts/scenario_48_visitors.lua:4448
+msgctxt "cartographyOffice-comms"
+msgid "Find Goods"
+msgstr "Encontrar bienes"
+
+#: scripts/scenario_48_visitors.lua:4449
+msgctxt "cartographyOffice-comms"
+msgid "What goods are you looking for?"
+msgstr "¿Qué bienes estás buscando?"
+
+#: scripts/scenario_48_visitors.lua:4531
+msgctxt "statistics-comms"
+msgid "Show me the current statistics, please"
+msgstr "Muéstrame las estadísticas actuales, por favor."
+
+#: scripts/scenario_48_visitors.lua:4532
+msgctxt "statistics-comms"
+msgid "What would you like statistics on?"
+msgstr "¿En qué te gustarían las estadísticas?"
+
+#: scripts/scenario_48_visitors.lua:4534
+msgctxt "statistics-comms"
+msgid "Human Stations Destroyed"
+msgstr "Estaciones humanas destruidas"
+
+#: scripts/scenario_48_visitors.lua:4541 scripts/scenario_48_visitors.lua:4554
+#, lua-format
+msgctxt "statistics-comms"
+msgid ""
+"Count: %i, Total strength: %i\n"
+"   Station Name, Strength"
+msgstr ""
+"Cuenta: %i, Total de efectivos: %i\n"
+"   Nombre de la estación, fuerza"
+
+#: scripts/scenario_48_visitors.lua:4547
+msgctxt "statistics-comms"
+msgid "Neutral Stations Destroyed"
+msgstr "Estaciones neutrales destruidas"
+
+#: scripts/scenario_48_visitors.lua:4560
+msgctxt "statistics-comms"
+msgid "Kraylor Vessels Destroyed"
+msgstr "Kraylor Vessels Destruyed"
+
+#: scripts/scenario_48_visitors.lua:4567 scripts/scenario_48_visitors.lua:4580 scripts/scenario_48_visitors.lua:4593
+#, lua-format
+msgctxt "statistics-comms"
+msgid ""
+"Count: %i, Total strength: %i\n"
+"   Vessel Name, Type, Strength"
+msgstr ""
+"Cuenta: %i, Total de efectivos: %i\n"
+"   Nombre del vaso, tipo, fuerza"
+
+#: scripts/scenario_48_visitors.lua:4573
+msgctxt "statistics-comms"
+msgid "Exuari Vessels Destroyed"
+msgstr "Exuari Vessels Destruyed"
+
+#: scripts/scenario_48_visitors.lua:4586
+msgctxt "statistics-comms"
+msgid "Arlenian Vessels Destroyed"
+msgstr "Arlenian Vessels Destruyed"
+
+#: scripts/scenario_48_visitors.lua:4598
+msgctxt "statistics-comms"
+msgid "Missions completed"
+msgstr "Misiones terminadas"
+
+#: scripts/scenario_48_visitors.lua:4600
+#, lua-format
+msgctxt "statistics-comms"
+msgid "Missions completed so far: %i"
+msgstr "Las misiones terminadas hasta la fecha: %i"
+
+#: scripts/scenario_48_visitors.lua:4602
+msgctxt "statistics-comms"
+msgid "No missions completed yet"
+msgstr "No se han completado misiones"
+
+#: scripts/scenario_48_visitors.lua:4627
+msgctxt "station-comms"
+msgid "You need to stay docked for that action."
+msgstr "Tienes que permanecer atracado para esa acción."
+
+#: scripts/scenario_48_visitors.lua:4631
+msgctxt "ammo-comms"
+msgid "We do not deal in weapons of mass destruction."
+msgstr "No tratamos armas de destrucción en masa."
+
+#: scripts/scenario_48_visitors.lua:4632
+msgctxt "ammo-comms"
+msgid "We do not deal in weapons of mass disruption."
+msgstr "No nos ocupamos de las armas de perturbación masiva."
+
+#: scripts/scenario_48_visitors.lua:4633
+msgctxt "ammo-comms"
+msgid "We do not deal in those weapons."
+msgstr "No nos ocupamos de esas armas."
+
+#: scripts/scenario_48_visitors.lua:4640
+msgctxt "ammo-comms"
+msgid "All nukes are charged and primed for destruction."
+msgstr "Todos los desnudos están cargados y preparados para la destrucción."
+
+#: scripts/scenario_48_visitors.lua:4642
+msgctxt "ammo-comms"
+msgid "Sorry, sir, but you are as fully stocked as I can allow."
+msgstr "Lo siento, señor, pero usted está tan lleno como puedo permitir."
+
+#: scripts/scenario_48_visitors.lua:4650 scripts/scenario_48_visitors.lua:4665
+msgctxt "ammo-comms"
+msgid "You are fully loaded and ready to explode things."
+msgstr "Estás completamente cargado y listo para explotar cosas."
+
+#: scripts/scenario_48_visitors.lua:4652
+msgctxt "ammo-comms"
+msgid ""
+"We generously resupplied you with some weapon charges.\n"
+"Put them to good use."
+msgstr "generosamente te resucitamos con algunos cargos de arma, ponlos a buen uso."
+
+#: scripts/scenario_48_visitors.lua:4655 scripts/scenario_48_visitors.lua:4670 scripts/scenario_48_visitors.lua:4675
+msgctxt "needRep-comms"
+msgid "Not enough reputation."
+msgstr "No es suficiente reputación."
+
+#: scripts/scenario_48_visitors.lua:4660
+msgctxt "ammo-comms"
+msgid "You can't afford as much as I'd like to give you"
+msgstr "No puedes pagar tanto como me gustaría darte"
+
+#: scripts/scenario_48_visitors.lua:4661
+msgctxt "ammo-comms"
+msgid "Get just one"
+msgstr "Consigue uno."
+
+#: scripts/scenario_48_visitors.lua:4667
+msgctxt "ammo-comms"
+msgid ""
+"We generously resupplied you with one weapon charge.\n"
+"Put it to good use."
+msgstr "generosamente te resucitamos con una carga de arma."
+
+#: scripts/scenario_48_visitors.lua:4691
+msgctxt "station-comms"
+msgid ""
+"Good day, officer.\n"
+"If you need supplies, please dock with us first."
+msgstr "Buen día, oficial, si necesita provisiones, por favor, atraque con nosotros primero."
+
+#: scripts/scenario_48_visitors.lua:4693
+msgctxt "station-comms"
+msgid ""
+"Greetings.\n"
+"If you want to do business, please dock with us first."
+msgstr "Saludos, si quieres hacer negocios, por favor, haz lo primero con nosotros."
+
+#: scripts/scenario_48_visitors.lua:4696
+msgctxt "station-comms"
+msgid ""
+"\n"
+"Be aware that if enemies in the area get much closer, we will be too busy to conduct business with you."
+msgstr ""
+"\n"
+"Tenga en cuenta que si los enemigos en la zona se acercan mucho más, estaremos demasiado ocupados para llevar a cabo negocios con usted."
+
+#: scripts/scenario_48_visitors.lua:4700
+msgctxt "Polly-comms"
+msgid "Contact astronomer Polly Hobbs"
+msgstr "Contactar con el astrónomo Polly Hobbs"
+
+#: scripts/scenario_48_visitors.lua:4701
+msgctxt "Polly-comms"
+msgid "[Polly Hobbs] I've constructed a sensitive scanning device to gather additional data. However, the device needs to be much closer. Can you transport me closer to the location of the readings?"
+msgstr "[Polly Hobbs] He construido un dispositivo de escaneo sensible para reunir datos adicionales. Sin embargo, el dispositivo necesita estar mucho más cerca. ¿Puedes transportarme más cerca de la ubicación de las lecturas?"
+
+#: scripts/scenario_48_visitors.lua:4706
+msgctxt "station-comms"
+msgid "I need information"
+msgstr "Necesito información"
+
+#: scripts/scenario_48_visitors.lua:4707
+msgctxt "station-comms"
+msgid "What kind of information do you need?"
+msgstr "¿Qué tipo de información necesita?"
+
+#: scripts/scenario_48_visitors.lua:4745
+msgctxt "ammo-comms"
+msgid "What ordnance do you have available for restock?"
+msgstr "¿Qué artefacto tiene disponible para el reinstalamiento?"
+
+#: scripts/scenario_48_visitors.lua:4751
+msgctxt "ammo-comms"
+msgid ""
+"\n"
+"   Nuke"
+msgstr ""
+"\n"
+"   Nuke"
+
+#: scripts/scenario_48_visitors.lua:4755
+msgctxt "ammo-comms"
+msgid ""
+"\n"
+"   EMP"
+msgstr ""
+"\n"
+"   EMP"
+
+#: scripts/scenario_48_visitors.lua:4759
+msgctxt "ammo-comms"
+msgid ""
+"\n"
+"   Homing"
+msgstr ""
+"\n"
+"   Homing"
+
+#: scripts/scenario_48_visitors.lua:4763
+msgctxt "ammo-comms"
+msgid ""
+"\n"
+"   Mine"
+msgstr ""
+"\n"
+"   Mina"
+
+#: scripts/scenario_48_visitors.lua:4767
+msgctxt "ammo-comms"
+msgid ""
+"\n"
+"   HVLI"
+msgstr ""
+"\n"
+"   HVLI"
+
+#: scripts/scenario_48_visitors.lua:4770
+msgctxt "ammo-comms"
+msgid "We have no ordnance available for restock"
+msgstr "No tenemos ningún artefacto disponible para restaurar"
+
+#: scripts/scenario_48_visitors.lua:4772
+#, lua-format
+msgctxt "ammo-comms"
+msgid "We have the following type of ordnance available for restock:%s"
+msgstr "Tenemos el siguiente tipo de artefactos disponibles para la restauración:%s"
+
+#: scripts/scenario_48_visitors.lua:4774
+#, lua-format
+msgctxt "ammo-comms"
+msgid "We have the following types of ordnance available for restock:%s"
+msgstr "Tenemos los siguientes tipos de artefactos disponibles para restaurar:%s"
+
+#: scripts/scenario_48_visitors.lua:4788
+msgctxt "trade-comms"
+msgid "What goods do you have available for sale or trade?"
+msgstr "¿Qué bienes tiene disponible para la venta o el comercio?"
+
+#: scripts/scenario_48_visitors.lua:4790
+#, lua-format
+msgctxt "trade-comms"
+msgid ""
+"Station %s:\n"
+"Goods or components available: quantity, cost in reputation"
+msgstr "Estación %s: Mercancías o componentes disponibles: cantidad, costo en la reputación"
+
+#: scripts/scenario_48_visitors.lua:4792
+#, lua-format
+msgctxt "trade-comms"
+msgid ""
+"\n"
+"   %14s: %2i, %3i"
+msgstr ""
+"\n"
+"   %14s: %2i, %3i"
+
+#: scripts/scenario_48_visitors.lua:4798
+msgctxt "trade-comms"
+msgid "Where can I find particular goods?"
+msgstr "¿Dónde puedo encontrar bienes particulares?"
+
+#: scripts/scenario_48_visitors.lua:4800
+msgctxt "trade-comms"
+msgid "Friendly stations often have food or medicine or both. Neutral stations may trade their goods for food, medicine or luxury."
+msgstr "Las estaciones amistosas a menudo tienen alimentos o medicinas o ambas. Las estaciones neutrales pueden intercambiar sus productos para alimentos, medicinas o lujo."
+
+#: scripts/scenario_48_visitors.lua:4840
+#, lua-format
+msgctxt "trade-comms"
+msgid "Station %s in sector %s has %s for %i reputation"
+msgstr "Estación %s en el sector %s ha tenido %s para %i reputación"
+
+#: scripts/scenario_48_visitors.lua:4845
+msgctxt "trade-comms"
+msgid ""
+"\n"
+"\n"
+"What goods are you interested in?\n"
+"I've heard about these:"
+msgstr ""
+"\n"
+"\n"
+"¿En qué mercaderías estás interesado?"
+
+#: scripts/scenario_48_visitors.lua:4847
+msgctxt "trade-comms"
+msgid " Beyond that, I have no knowledge of specific stations"
+msgstr " Más allá de eso, no tengo conocimiento de estaciones específicas"
+
+#: scripts/scenario_48_visitors.lua:4877
+msgctxt "stationAssist-comms"
+msgid "Report status"
+msgstr "Situación de los informes"
+
+#: scripts/scenario_48_visitors.lua:4878
+#, lua-format
+msgctxt "stationAssist-comms"
+msgid "Hull: %d%%\n"
+msgstr "Hull: %d%%\n"
+
+#: scripts/scenario_48_visitors.lua:4881
+#, lua-format
+msgctxt "stationpAssist-comms"
+msgid "Shield: %d%%\n"
+msgstr "Escudo: %d%%\n"
+
+#: scripts/scenario_48_visitors.lua:4884
+#, lua-format
+msgctxt "stationAssist-comms"
+msgid "Shield %s: %d%%\n"
+msgstr "Escudo %s: %d%%\n"
+
+#: scripts/scenario_48_visitors.lua:4892
+#, lua-format
+msgctxt "stationAssist-comms"
+msgid "Can you send a supply drop? (%s reputation)"
+msgstr "¿Puedes enviar una gota de suministro?%s reputación)"
+
+#: scripts/scenario_48_visitors.lua:4894
+msgctxt "stationAssist-comms"
+msgid "You need to set a waypoint before you can request backup."
+msgstr "Necesitas establecer un punto de referencia antes de que puedas solicitar refuerzos."
+
+#: scripts/scenario_48_visitors.lua:4896
+msgctxt "stationAssist-comms"
+msgid "To which waypoint should we deliver your supplies?"
+msgstr "¿A qué punto deberíamos entregar tus suministros?"
+
+#: scripts/scenario_48_visitors.lua:4898 scripts/scenario_48_visitors.lua:4924 scripts/scenario_48_visitors.lua:4945 scripts/scenario_48_visitors.lua:4966
+#, lua-format
+msgctxt "stationAssist-comms"
+msgid "Waypoint %s"
+msgstr "Waypoint %s"
+
+#: scripts/scenario_48_visitors.lua:4906
+#, lua-format
+msgctxt "stationAssist-comms"
+msgid "We have dispatched a supply ship toward waypoint %s"
+msgstr "Hemos enviado un barco de suministro hacia el punto de embarque %s"
+
+#: scripts/scenario_48_visitors.lua:4918
+#, lua-format
+msgctxt "stationAssist-comms"
+msgid "Please send Adder MK5 reinforcements! (%s reputation)"
+msgstr "¡Por favor envíe refuerzos Adder MK5!%s reputación)"
+
+#: scripts/scenario_48_visitors.lua:4920 scripts/scenario_48_visitors.lua:4941 scripts/scenario_48_visitors.lua:4962
+msgctxt "stationAssist-comms"
+msgid "You need to set a waypoint before you can request reinforcements."
+msgstr "Necesitas establecer un punto de referencia antes de que puedas solicitar refuerzos."
+
+#: scripts/scenario_48_visitors.lua:4922 scripts/scenario_48_visitors.lua:4943 scripts/scenario_48_visitors.lua:4964
+msgctxt "stationAssist-comms"
+msgid "To which waypoint should we dispatch the reinforcements?"
+msgstr "¿A qué punto deberíamos enviar los refuerzos?"
+
+#: scripts/scenario_48_visitors.lua:4929 scripts/scenario_48_visitors.lua:4950 scripts/scenario_48_visitors.lua:4971
+#, lua-format
+msgctxt "stationAssist-comms"
+msgid "We have dispatched %s to assist at waypoint %s"
+msgstr "Hemos enviado %s para ayudar en el punto de vista %s"
+
+#: scripts/scenario_48_visitors.lua:4939
+#, lua-format
+msgctxt "stationAssist-comms"
+msgid "Please send Phobos T3 reinforcements! (%s reputation)"
+msgstr "¡Por favor envíe refuerzos Phobos T3!%s reputación)"
+
+#: scripts/scenario_48_visitors.lua:4960
+#, lua-format
+msgctxt "stationAssist-comms"
+msgid "Please send Stalker Q7 reinforcements! (%s reputation)"
+msgstr "¡Por favor envíe refuerzos Stalker Q7!%s reputación)"
+
+#: scripts/scenario_48_visitors.lua:5010
+msgctxt "trade-comms"
+msgid " and will trade it for medicine"
+msgstr " y lo cambiará por medicina"
+
+#: scripts/scenario_48_visitors.lua:5015
+msgctxt "trade-comms"
+msgid " or food"
+msgstr " o alimentos"
+
+#: scripts/scenario_48_visitors.lua:5017
+msgctxt "trade-comms"
+msgid " and will trade it for food"
+msgstr " y lo cambiará por comida"
+
+#: scripts/scenario_48_visitors.lua:5023
+msgctxt "trade-comms"
+msgid " or luxury"
+msgstr " o lujo"
+
+#: scripts/scenario_48_visitors.lua:5025
+msgctxt "trade-comms"
+msgid " and will trade it for luxury"
+msgstr " y lo cambiará por el lujo"
+
+#: scripts/scenario_48_visitors.lua:5048
+msgctxt "scienceDB"
+msgid "Stations"
+msgstr "Estaciones"
+
+#: scripts/scenario_48_visitors.lua:5058
+msgctxt "scienceDB"
+msgid "Friendly"
+msgstr "Aliado"
+
+#: scripts/scenario_48_visitors.lua:5063
+msgctxt "scienceDB"
+msgid "Friendly stations share their short range telemetry with your ship on the Relay and Strategic Map consoles. These are the known friendly stations."
+msgstr "Las estaciones amistosas comparten su telemetría de corto alcance con su barco en las consolas Relay y Strategic Map. Estas son las estaciones amigables conocidas."
+
+#: scripts/scenario_48_visitors.lua:5077
+msgctxt "scienceDB"
+msgid "Neutral stations don't share their short range telemetry with your ship, but they do allow for docking. These are the known neutral stations."
+msgstr "Las estaciones neutrales no comparten su telemetría de corto alcance con su barco, pero sí permiten el atraco. Estas son las estaciones neutrales conocidas."
+
+#: scripts/scenario_48_visitors.lua:5093
+#, lua-format
+msgctxt "scienceDB"
+msgid ""
+"%s\n"
+"\n"
+"General Information: %s"
+msgstr ""
+"%s\n"
+"\n"
+"Información general: %s"
+
+#: scripts/scenario_48_visitors.lua:5096
+#, lua-format
+msgctxt "scienceDB"
+msgid ""
+"%s\n"
+"\n"
+"History: %s"
+msgstr ""
+"%s\n"
+"\n"
+"Historia: %s"
+
+#: scripts/scenario_48_visitors.lua:5104
+msgctxt "scienceDB"
+msgid "Small Station"
+msgstr "Estación pequeña"
+
+#: scripts/scenario_48_visitors.lua:5105
+msgctxt "scienceDB"
+msgid "Medium Station"
+msgstr "Estación media"
+
+#: scripts/scenario_48_visitors.lua:5106
+msgctxt "scienceDB"
+msgid "Large Station"
+msgstr "Estación grande"
+
+#: scripts/scenario_48_visitors.lua:5107
+msgctxt "scienceDB"
+msgid "Huge Station"
+msgstr "Huge Station"
+
+#: scripts/scenario_48_visitors.lua:5109
+msgctxt "scienceDB"
+msgid "Small"
+msgstr "Pequeñas"
+
+#: scripts/scenario_48_visitors.lua:5116
+msgctxt "scienceDB"
+msgid "Medium"
+msgstr "Mediana"
+
+#: scripts/scenario_48_visitors.lua:5123
+msgctxt "scienceDB"
+msgid "Large"
+msgstr "Grande"
+
+#: scripts/scenario_48_visitors.lua:5130
+msgctxt "scienceDB"
+msgid "Huge"
+msgstr "Enorme"
+
+#: scripts/scenario_48_visitors.lua:5138
+msgctxt "scienceDB"
+msgid "Size"
+msgstr "Tamaño"
+
+#: scripts/scenario_48_visitors.lua:5166 scripts/scenario_48_visitors.lua:5171 scripts/scenario_48_visitors.lua:5176 scripts/scenario_48_visitors.lua:5183 scripts/scenario_48_visitors.lua:5190
+msgctxt "scienceDB"
+msgid "Faction"
+msgstr "Facción"
+
+#: scripts/scenario_48_visitors.lua:5168 scripts/scenario_48_visitors.lua:5173
+msgctxt "scienceDB"
+msgid "Orbit around"
+msgstr "Orbit alrededor"
+
+#: scripts/scenario_48_visitors.lua:5169
+#, lua-format
+msgctxt "scienceDB"
+msgid "Star %s in inner asteroid belt"
+msgstr "Star %s en el cinturón interior de asteroides"
+
+#: scripts/scenario_48_visitors.lua:5174
+#, lua-format
+msgctxt "scienceDB"
+msgid "Star %s in outer asteroid belt"
+msgstr "Star %s en el cinturón de asteroides externos"
+
+#: scripts/scenario_48_visitors.lua:5178 scripts/scenario_48_visitors.lua:5185 scripts/scenario_48_visitors.lua:5192
+msgctxt "scienceDB"
+msgid "Primary orbit"
+msgstr "Órbita primaria"
+
+#: scripts/scenario_48_visitors.lua:5179 scripts/scenario_48_visitors.lua:5186 scripts/scenario_48_visitors.lua:5193
+#, lua-format
+msgctxt "scienceDB"
+msgid "Around planet %s"
+msgstr "Alrededor del planeta %s"
+
+#: scripts/scenario_48_visitors.lua:5180 scripts/scenario_48_visitors.lua:5187 scripts/scenario_48_visitors.lua:5194
+msgctxt "scienceDB"
+msgid "Secondary orbit"
+msgstr "Órbita secundaria"
+
+#: scripts/scenario_48_visitors.lua:5181 scripts/scenario_48_visitors.lua:5188 scripts/scenario_48_visitors.lua:5195
+#, lua-format
+msgctxt "scienceDB"
+msgid "Planet %s orbits star %s"
+msgstr "Planeta %s estrella de órbitas %s"
+
+#: scripts/scenario_48_visitors.lua:5197
+msgctxt "scienceDB"
+msgid "Location, Faction"
+msgstr "Ubicación, Facción"
+
+#: scripts/scenario_48_visitors.lua:5198
+#, lua-format
+msgctxt "scienceDB"
+msgid "%s, %s"
+msgstr "%s, %s"
+
+#: scripts/scenario_48_visitors.lua:5204
+msgctxt "scienceDB"
+msgid "share energy"
+msgstr "compartir energía"
+
+#: scripts/scenario_48_visitors.lua:5209
+msgctxt "scienceDB"
+msgid "repair hull"
+msgstr "reparación de casco"
+
+#: scripts/scenario_48_visitors.lua:5211
+#, lua-format
+msgctxt "scienceDB"
+msgid "%s, repair hull"
+msgstr "%s, reparación de casco"
+
+#: scripts/scenario_48_visitors.lua:5217
+msgctxt "scienceDB"
+msgid "replenish probes"
+msgstr "sondas de reposición"
+
+#: scripts/scenario_48_visitors.lua:5219
+#, lua-format
+msgctxt "scienceDB"
+msgid "%s, replenish probes"
+msgstr "%s, sondas de reposición"
+
+#: scripts/scenario_48_visitors.lua:5224
+msgctxt "scienceDB"
+msgid "Docking Services"
+msgstr "Docking Services"
+
+#: scripts/scenario_48_visitors.lua:5226
+msgctxt "scienceDB"
+msgid "Docking Service"
+msgstr "Docking Service"
+
+#: scripts/scenario_48_visitors.lua:5248
+msgctxt "scienceDB"
+msgid "Restock Homing"
+msgstr "Restock Homing"
+
+#: scripts/scenario_48_visitors.lua:5249
+msgctxt "scienceDB"
+msgid "Restock HVLI"
+msgstr "Restock HVLI"
+
+#: scripts/scenario_48_visitors.lua:5250
+msgctxt "scienceDB"
+msgid "Restock Mine"
+msgstr "Restock Mine"
+
+#: scripts/scenario_48_visitors.lua:5251
+msgctxt "scienceDB"
+msgid "Restock Nuke"
+msgstr "Restock Nuke"
+
+#: scripts/scenario_48_visitors.lua:5252
+msgctxt "scienceDB"
+msgid "Restock EMP"
+msgstr "Restock EMP"
+
+#: scripts/scenario_48_visitors.lua:5257
+#, lua-format
+msgctxt "scienceDB"
+msgid "%i reputation each"
+msgstr "%i reputación cada"
+
+#: scripts/scenario_48_visitors.lua:5265
+msgctxt "scienceDB"
+msgid "Drop supplies"
+msgstr "Suministros de goteo"
+
+#: scripts/scenario_48_visitors.lua:5266
+msgctxt "scienceDB"
+msgid "Standard reinforcements"
+msgstr "Refuerzos estándar"
+
+#: scripts/scenario_48_visitors.lua:5267
+msgctxt "scienceDB"
+msgid "Hornet reinforcements"
+msgstr "Refuerzos de hornet"
+
+#: scripts/scenario_48_visitors.lua:5268
+msgctxt "scienceDB"
+msgid "Phobos reinforcements"
+msgstr "Refuerzos de Phobos"
+
+#: scripts/scenario_48_visitors.lua:5269
+msgctxt "scienceDB"
+msgid "Adder3 reinforcements"
+msgstr "Refuerzos Adder3"
+
+#: scripts/scenario_48_visitors.lua:5270
+msgctxt "scienceDB"
+msgid "Adder8 reinforcements"
+msgstr "Refuerzos Adder8"
+
+#: scripts/scenario_48_visitors.lua:5271
+msgctxt "scienceDB"
+msgid "Shield overcharge"
+msgstr "Sobrecarga de escudo"
+
+#: scripts/scenario_48_visitors.lua:5276
+#, lua-format
+msgctxt "scienceDB"
+msgid "%s reputation"
+msgstr "%s reputación"
+
+#: scripts/scenario_48_visitors.lua:5285
+#, lua-format
+msgctxt "scienceDB"
+msgid "Sells %s"
+msgstr "Sells %s"
+
+#: scripts/scenario_48_visitors.lua:5286
+#, lua-format
+msgctxt "scienceDB"
+msgid "for %s reputation each"
+msgstr "para %s reputación cada"
+
+#: scripts/scenario_48_visitors.lua:5329
+msgctxt "shipAssist-comms"
+msgid "What do you want?"
+msgstr "¿Qué quieres?"
+
+#: scripts/scenario_48_visitors.lua:5331
+msgctxt "shipAssist-comms"
+msgid "Sir, how can we assist?"
+msgstr "Señor, ¿cómo podemos ayudar?"
+
+#: scripts/scenario_48_visitors.lua:5333 scripts/scenario_48_visitors.lua:5442
+msgctxt "shipAssist-comms"
+msgid "Defend a waypoint"
+msgstr "Defender un waypoint"
+
+#: scripts/scenario_48_visitors.lua:5335 scripts/scenario_48_visitors.lua:5444
+msgctxt "shipAssist-comms"
+msgid "No waypoints set. Please set a waypoint first."
+msgstr "No hay puntos de vista. Por favor, ponga un punto de vista primero."
+
+#: scripts/scenario_48_visitors.lua:5338 scripts/scenario_48_visitors.lua:5447
+msgctxt "shipAssist-comms"
+msgid "Which waypoint should we defend?"
+msgstr "¿Cuál es el punto de partida que debemos defender?"
+
+#: scripts/scenario_48_visitors.lua:5340 scripts/scenario_48_visitors.lua:5449
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "Defend waypoint %s"
+msgstr "Defender el punto de vista %s"
+
+#: scripts/scenario_48_visitors.lua:5342 scripts/scenario_48_visitors.lua:5455
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "We are heading to assist at waypoint %s."
+msgstr "Nos dirigimos a ayudar en el punto de partida %s."
+
+#: scripts/scenario_48_visitors.lua:5349 scripts/scenario_48_visitors.lua:5433
+msgctxt "shipAssist-comms"
+msgid "Assist me"
+msgstr "Ayúdame."
+
+#: scripts/scenario_48_visitors.lua:5350
+msgctxt "shipAssist-comms"
+msgid "Heading toward you to assist."
+msgstr "Dirigiéndose hacia ti para asistir."
+
+#: scripts/scenario_48_visitors.lua:5355
+msgctxt "shipAssist-comms"
+msgid "Report status"
+msgstr "Situación de los informes"
+
+#: scripts/scenario_48_visitors.lua:5356
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "Hull: %d%%\n"
+msgstr "Hull: %d%%\n"
+
+#: scripts/scenario_48_visitors.lua:5359
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "Shield: %d%%\n"
+msgstr "Escudo: %d%%\n"
+
+#: scripts/scenario_48_visitors.lua:5361
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "Front Shield: %d%%\n"
+msgstr "Escudo frontal: %d%%\n"
+
+#: scripts/scenario_48_visitors.lua:5362
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "Rear Shield: %d%%\n"
+msgstr "Rear Shield: %d%%\n"
+
+#: scripts/scenario_48_visitors.lua:5365
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "Shield %s: %d%%\n"
+msgstr "Escudo %s: %d%%\n"
+
+#: scripts/scenario_48_visitors.lua:5371
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "%s Missiles: %d/%d\n"
+msgstr "%s Misiles: %d/%d\n"
+
+#: scripts/scenario_48_visitors.lua:5379
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "Dock at %s"
+msgstr "Dock at %s"
+
+#: scripts/scenario_48_visitors.lua:5380
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "Docking at %s."
+msgstr "Docking at %s."
+
+#: scripts/scenario_48_visitors.lua:5387
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "Direct %s"
+msgstr "Direct %s"
+
+#: scripts/scenario_48_visitors.lua:5388
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "What command should be given to %s?"
+msgstr "¿Qué comando se debe dar a %s?"
+
+#: scripts/scenario_48_visitors.lua:5389
+msgctxt "shipAssist-comms"
+msgid "Report hull and shield status"
+msgstr "Reporte de casco y estado de escudo"
+
+#: scripts/scenario_48_visitors.lua:5390
+msgctxt "shipAssist-comms"
+msgid "Fleet status:"
+msgstr "Estado de la flota:"
+
+#: scripts/scenario_48_visitors.lua:5393 scripts/scenario_48_visitors.lua:5417
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid ""
+"\n"
+" %s:"
+msgstr ""
+"\n"
+" %s:"
+
+#: scripts/scenario_48_visitors.lua:5394
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid ""
+"\n"
+"    Hull: %d%%"
+msgstr ""
+"\n"
+"    Hull: %d%%"
+
+#: scripts/scenario_48_visitors.lua:5397
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid ""
+"\n"
+"    Shield: %d%%"
+msgstr ""
+"\n"
+"    Escudo: %d%%"
+
+#: scripts/scenario_48_visitors.lua:5399
+msgctxt "shipAssist-comms"
+msgid ""
+"\n"
+"    Shields: "
+msgstr ""
+"\n"
+"    Escudos: "
+
+#: scripts/scenario_48_visitors.lua:5401
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "Front: %d%% Rear: %d%%"
+msgstr "Frente: %d%% Rear: %d%%"
+
+#: scripts/scenario_48_visitors.lua:5404
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid " %d:%d%%"
+msgstr " %d:%d%%"
+
+#: scripts/scenario_48_visitors.lua:5413
+msgctxt "shipAssist-comms"
+msgid "Report missile status"
+msgstr "Informe sobre el estado de los misiles"
+
+#: scripts/scenario_48_visitors.lua:5414
+msgctxt "shipAssist-comms"
+msgid "Fleet missile status:"
+msgstr "Estado de los misiles de flota:"
+
+#: scripts/scenario_48_visitors.lua:5422
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid ""
+"\n"
+"      %s: %d/%d"
+msgstr ""
+"\n"
+"      %s: %d/%d"
+
+#: scripts/scenario_48_visitors.lua:5426
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid ""
+"\n"
+"    Missiles: %s"
+msgstr ""
+"\n"
+"    Misiles: %s"
+
+#: scripts/scenario_48_visitors.lua:5439
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "%s heading toward you to assist"
+msgstr "%s dirigiéndose hacia usted para ayudar"
+
+#: scripts/scenario_48_visitors.lua:5481
+#, lua-format
+msgctxt "trade-comms"
+msgid "Traded your luxury for %s from %s"
+msgstr "Comercio de su lujo para %s desde %s"
+
+#: scripts/scenario_48_visitors.lua:5502 scripts/scenario_48_visitors.lua:5527 scripts/scenario_48_visitors.lua:5549 scripts/scenario_48_visitors.lua:5575 scripts/scenario_48_visitors.lua:5704 scripts/scenario_48_visitors.lua:5726 scripts/scenario_48_visitors.lua:5750 scripts/scenario_48_visitors.lua:5772 scripts/scenario_48_visitors.lua:5796
+#, lua-format
+msgctxt "trade-comms"
+msgid "Purchased %s from %s"
+msgstr "Comprado %s desde %s"
+
+#: scripts/scenario_48_visitors.lua:5504 scripts/scenario_48_visitors.lua:5529 scripts/scenario_48_visitors.lua:5551 scripts/scenario_48_visitors.lua:5577
+msgctxt "needRep-comms"
+msgid "Insufficient reputation for purchase"
+msgstr "Insuficiente reputación de compra"
+
+#: scripts/scenario_48_visitors.lua:5587 scripts/scenario_48_visitors.lua:5669
+msgctxt "trade-comms"
+msgid "Do you have cargo you might sell?"
+msgstr "¿Tiene cargamento que podría vender?"
+
+#: scripts/scenario_48_visitors.lua:5589 scripts/scenario_48_visitors.lua:5671
+msgctxt "trade-comms"
+msgid "We've got "
+msgstr "Tenemos "
+
+#: scripts/scenario_48_visitors.lua:5593 scripts/scenario_48_visitors.lua:5675
+msgctxt "trade-comms"
+msgid ", "
+msgstr ", "
+
+#: scripts/scenario_48_visitors.lua:5601 scripts/scenario_48_visitors.lua:5683
+msgctxt "trade-comms"
+msgid "nothing"
+msgstr "nada"
+
+#: scripts/scenario_48_visitors.lua:5614
+msgctxt "shipEnemy-comms"
+msgid ""
+"Ktzzzsss.\n"
+"You will DIEEee weaklingsss!"
+msgstr "Ktzzzss. ¡Usted va a DIEEee débil!"
+
+#: scripts/scenario_48_visitors.lua:5615
+msgctxt "shipEnemy-comms"
+msgid ""
+"We wish you no harm, but will harm you if we must.\n"
+"End of transmission."
+msgstr "No le deseamos ningún daño, pero le dañaremos si es necesario."
+
+#: scripts/scenario_48_visitors.lua:5616
+msgctxt "shipEnemy-comms"
+msgid "Stay out of our way, or your death will amuse us extremely!"
+msgstr "¡No te acerques a nosotros, o tu muerte nos diluirá extremadamente!"
+
+#: scripts/scenario_48_visitors.lua:5617
+msgctxt "shipEnemy-comms"
+msgid ""
+"One zero one.\n"
+"No binary communication detected.\n"
+"Switching to universal speech.\n"
+"Generating appropriate response for target from human language archives.\n"
+":Do not cross us:\n"
+"Communication halted."
+msgstr "Uno cero. Ninguna comunicación binaria detectada. Intercambiando al discurso universal. Generando la respuesta adecuada para el objetivo de los archivos de lenguaje humano. :No nos cruzamos: La comunicación se detuvo."
+
+#: scripts/scenario_48_visitors.lua:5618
+msgctxt "shipEnemy-comms"
+msgid ""
+"The hive suffers no threats. Opposition to any of us is opposition to us all.\n"
+"Stand down or prepare to donate your corpses toward our nutrition."
+msgstr "La colmena no sufre amenazas. La oposición a cualquiera de nosotros es oposición a todos nosotros. Bajar o prepararse para donar sus cadáveres hacia nuestra nutrición."
+
+#: scripts/scenario_48_visitors.lua:5619
+msgctxt "shipEnemy-comms"
+msgid "State your business"
+msgstr "Diga su negocio"
+
+#: scripts/scenario_48_visitors.lua:5620
+msgctxt "shipEnemy-comms"
+msgid "What do you want? (not that we care)"
+msgstr "¿Qué quieres?"
+
+#: scripts/scenario_48_visitors.lua:5621
+msgctxt "shipEnemy-comms"
+msgid "Don't waste our time"
+msgstr "No pierdas nuestro tiempo."
+
+#: scripts/scenario_48_visitors.lua:5622
+msgctxt "shipEnemy-comms"
+msgid "Mind your own business!"
+msgstr "¡Cuidado con tu propio negocio!"
+
+#: scripts/scenario_48_visitors.lua:5631
+msgctxt "shipEnemy-comms"
+msgid "We will destroy you"
+msgstr "Te destruiremos."
+
+#: scripts/scenario_48_visitors.lua:5631
+msgctxt "shipEnemy-comms"
+msgid "We think not. It is you who will experience destruction!"
+msgstr "Creemos que no. ¡Eres tú quien experimentará la destrucción!"
+
+#: scripts/scenario_48_visitors.lua:5631 scripts/scenario_48_visitors.lua:5644
+msgctxt "shipEnemy-comms"
+msgid "Your feeble threats are meaningless."
+msgstr "Sus amenazas débiles no tienen sentido."
+
+#: scripts/scenario_48_visitors.lua:5632
+msgctxt "shipEnemy-comms"
+msgid "You have no honor"
+msgstr "No tienes honor."
+
+#: scripts/scenario_48_visitors.lua:5632
+msgctxt "shipEnemy-comms"
+msgid "Your insult has brought our wrath upon you. Prepare to die."
+msgstr "Tu insulto ha traído nuestra ira sobre ti. Prepárate para morir."
+
+#: scripts/scenario_48_visitors.lua:5632
+msgctxt "shipEnemy-comms"
+msgid "Your comments about honor have no meaning to us"
+msgstr "Sus comentarios sobre el honor no tienen significado para nosotros"
+
+#: scripts/scenario_48_visitors.lua:5633
+msgctxt "shipEnemy-comms"
+msgid "We pity your pathetic race"
+msgstr "Nos compadecemos de tu patética carrera"
+
+#: scripts/scenario_48_visitors.lua:5633
+msgctxt "shipEnemy-comms"
+msgid "Pathetic? You will regret your disparagement!"
+msgstr "¡Te arrepentirás de tu desprecio!"
+
+#: scripts/scenario_48_visitors.lua:5633
+msgctxt "shipEnemy-comms"
+msgid "We don't care what you think of us"
+msgstr "No nos importa lo que pienses de nosotros."
+
+#: scripts/scenario_48_visitors.lua:5636
+msgctxt "shipEnemy-comms"
+msgid "EXECUTE: SELFDESTRUCT"
+msgstr "EXECUTE: SELFDESTRUCT"
+
+#: scripts/scenario_48_visitors.lua:5636
+msgctxt "shipEnemy-comms"
+msgid "Rogue command received. Targeting source."
+msgstr "Recibido el comando Rogue, fuente de orientación."
+
+#: scripts/scenario_48_visitors.lua:5636
+msgctxt "shipEnemy-comms"
+msgid "External command ignored."
+msgstr "El comando externo ignorado."
+
+#: scripts/scenario_48_visitors.lua:5637
+msgctxt "shipEnemy-comms"
+msgid "EXECUTE: AUTOSHUTDOWN"
+msgstr "EXECUTE: AUTOSHUTDOWN"
+
+#: scripts/scenario_48_visitors.lua:5637
+msgctxt "shipEnemy-comms"
+msgid "Target source of rogue command."
+msgstr "Fuente de destino del comando rogue."
+
+#: scripts/scenario_48_visitors.lua:5637
+msgctxt "shipEnemy-comms"
+msgid "External command failed security check."
+msgstr "El comando externo falló el control de seguridad."
+
+#: scripts/scenario_48_visitors.lua:5640
+msgctxt "shipEnemy-comms"
+msgid "<Transmit 'The Itsy-Bitsy Spider' on all wavelengths>"
+msgstr "<Transmit 'The Itsy-Bitsy Spider' on all wavelengths>"
+
+#: scripts/scenario_48_visitors.lua:5640
+msgctxt "shipEnemy-comms"
+msgid "We do not need permission to pluck apart such an insignificant threat."
+msgstr "No necesitamos permiso para separar una amenaza tan insignificante."
+
+#: scripts/scenario_48_visitors.lua:5640
+msgctxt "shipEnemy-comms"
+msgid "The hive has greater priorities than exterminating pests."
+msgstr "La colmena tiene mayores prioridades que exterminar plagas."
+
+#: scripts/scenario_48_visitors.lua:5641
+msgctxt "shipEnemy-comms"
+msgid "Your queen tastes like elderberries"
+msgstr "Tu reina sabe como las ancianas"
+
+#: scripts/scenario_48_visitors.lua:5641
+msgctxt "shipEnemy-comms"
+msgid "You will be destroyed for the honor of the hive."
+msgstr "Serás destruido por el honor de la colmena."
+
+#: scripts/scenario_48_visitors.lua:5641
+msgctxt "shipEnemy-comms"
+msgid "Maggots are beneath our notice."
+msgstr "Los gusanos están bajo nuestro aviso."
+
+#: scripts/scenario_48_visitors.lua:5644
+msgctxt "shipEnemy-comms"
+msgid "We will see to your destruction!"
+msgstr "¡Vamos a ver su destrucción!"
+
+#: scripts/scenario_48_visitors.lua:5644
+msgctxt "shipEnemy-comms"
+msgid "Your bloodline will end here!"
+msgstr "¡Tu linaje terminará aquí!"
+
+#: scripts/scenario_48_visitors.lua:5668
+msgctxt "trade-comms"
+msgid "Yes?"
+msgstr "¿Sí?"
+
+#: scripts/scenario_48_visitors.lua:5810
+msgctxt "ship-comms"
+msgid ""
+"Sorry, we have no time to chat with you.\n"
+"We are on an important mission."
+msgstr "Lo siento, no tenemos tiempo para charlar contigo, estamos en una misión importante."
+
+#: scripts/scenario_48_visitors.lua:5812
+msgctxt "ship-comms"
+msgid ""
+"We have nothing for you.\n"
+"Good day."
+msgstr "No tenemos nada para ti."
+
+#: scripts/scenario_48_visitors.lua:6104
+msgctxt "repairCrew-msgEngineer"
+msgid "Medical team has revived one of your repair crew"
+msgstr "El equipo médico ha reavivado a uno de sus equipos de reparación"
+
+#: scripts/scenario_48_visitors.lua:6108
+msgctxt "repairCrew-msgEngineer+"
+msgid "Medical team has revived one of your repair crew"
+msgstr "El equipo médico ha reavivado a uno de sus equipos de reparación"
+
+#: scripts/scenario_48_visitors.lua:6112
+msgctxt "repairCrew-msgDamageControl"
+msgid "Medical team has revived one of your repair crew"
+msgstr "El equipo médico ha reavivado a uno de sus equipos de reparación"
+
+#: scripts/scenario_48_visitors.lua:6150 scripts/scenario_48_visitors.lua:6165
+msgctxt "repairCrew-msgEngineer"
+msgid "One of your repair crew has perished"
+msgstr "Uno de sus equipos de reparación ha muerto"
+
+#: scripts/scenario_48_visitors.lua:6154 scripts/scenario_48_visitors.lua:6169
+msgctxt "repairCrew-msgEngineer+"
+msgid "One of your repair crew has perished"
+msgstr "Uno de sus equipos de reparación ha muerto"
+
+#: scripts/scenario_48_visitors.lua:6158 scripts/scenario_48_visitors.lua:6173
+msgctxt "repairCrew-msgDamageControl"
+msgid "One of your repair crew has perished"
+msgstr "Uno de sus equipos de reparación ha muerto"
+
+#: scripts/scenario_48_visitors.lua:6184
+msgctxt "coolant-msgEngineer"
+msgid "Damage has caused a loss of coolant"
+msgstr "El daño ha causado una pérdida de refrigerante"
+
+#: scripts/scenario_48_visitors.lua:6188
+msgctxt "coolant-msgEngineer+"
+msgid "Damage has caused a loss of coolant"
+msgstr "El daño ha causado una pérdida de refrigerante"
+
+#: scripts/scenario_48_visitors.lua:6192
+msgctxt "coolant-msgDamageControl"
+msgid "Damage has caused a loss of coolant"
+msgstr "El daño ha causado una pérdida de refrigerante"
+
+#: scripts/scenario_48_visitors.lua:6217
+msgctxt "coolant-buttonEngineer"
+msgid "Get Coolant"
+msgstr "Trae a Coolant"
+
+#: scripts/scenario_48_visitors.lua:6222
+msgctxt "coolant-buttonEngineer+"
+msgid "Get Coolant"
+msgstr "Trae a Coolant"
+
+#: scripts/scenario_48_visitors.lua:6227
+msgctxt "coolant-buttonDamageControl"
+msgid "Get Coolant"
+msgstr "Trae a Coolant"
+
+#: scripts/scenario_48_visitors.lua:6259
+#, lua-format
+msgctxt "coolant-tabEngineer"
+msgid "Configuring Collectors %i"
+msgstr "Configuración de coleccionistas %i"
+
+#: scripts/scenario_48_visitors.lua:6264
+#, lua-format
+msgctxt "coolant-tabEngineer"
+msgid "Deploying Collectors %i"
+msgstr "Despliegue de los coleccionistas %i"
+
+#: scripts/scenario_48_visitors.lua:6266
+msgctxt "coolant-tabEngineer"
+msgid "Gathering Coolant"
+msgstr "Reunir Coolant"
+
+#: scripts/scenario_48_visitors.lua:6295
+#, lua-format
+msgctxt "marauders-shipLog"
+msgid "[%s orbiting %s currently in %s] We could use help taking care of nearby Exuari"
+msgstr "[%s orbitando %s en la actualidad %s] Podríamos usar ayuda cuidando de Exuari cercano"
+
+#: scripts/scenario_48_visitors.lua:6298
+#, lua-format
+msgctxt "marauders-comms"
+msgid "Remove Exuari near %s"
+msgstr "Quitar Exuari cerca %s"
+
+#: scripts/scenario_48_visitors.lua:6380
+#, lua-format
+msgctxt "DispatchOffice-shipLog"
+msgid "[%s] All station personnel thank you for your assistance. Dock with us for further orders"
+msgstr "[%sTodo el personal de la estación le agradece su ayuda."
+
+#: scripts/scenario_48_visitors.lua:6383 scripts/scenario_48_visitors.lua:6542 scripts/scenario_48_visitors.lua:6700 scripts/scenario_48_visitors.lua:6863 scripts/scenario_48_visitors.lua:7089 scripts/scenario_48_visitors.lua:7142 scripts/scenario_48_visitors.lua:7242 scripts/scenario_48_visitors.lua:7392
+#, lua-format
+msgctxt "orders-comms"
+msgid "Dock with %s"
+msgstr "Dock con %s"
+
+#: scripts/scenario_48_visitors.lua:6419
+msgctxt "Polly-buttonRelay"
+msgid "Polly Scan Time"
+msgstr "Polly Scan Time"
+
+#: scripts/scenario_48_visitors.lua:6422
+msgctxt "Polly-shipLog"
+msgid "Scan complete"
+msgstr "Escáner completo"
+
+#: scripts/scenario_48_visitors.lua:6424
+#, lua-format
+msgctxt "Polly-shipLog"
+msgid "%.1f seconds remain to be scanned"
+msgstr "%.1f segundos quedan para ser escaneados"
+
+#: scripts/scenario_48_visitors.lua:6428
+msgctxt "Polly-tabHelmTactical"
+msgid "Range"
+msgstr "Rango"
+
+#: scripts/scenario_48_visitors.lua:6430
+#, lua-format
+msgctxt "Polly-tabHelmTactical"
+msgid "In %s"
+msgstr "In %s"
+
+#: scripts/scenario_48_visitors.lua:6433
+#, lua-format
+msgctxt "Polly-shipLog"
+msgid "[Polly Hobbs] We are in range for additional sensor readings. Gathering data now. We will need to stay in range for %s seconds to complete the sensor readings"
+msgstr "[Polly Hobbs] Estamos en rango para lecturas de sensores adicionales. Reunir datos ahora. Necesitaremos permanecer en el rango para %s segundos para completar las lecturas del sensor"
+
+#: scripts/scenario_48_visitors.lua:6440
+msgctxt "Polly-shipLog"
+msgid "[Polly Hobbs] The data gathering phase is complete. Analyzing data."
+msgstr "[Polly Hobbs] La fase de reunión de datos está completa."
+
+#: scripts/scenario_48_visitors.lua:6446
+#, lua-format
+msgctxt "Polly-tabHelms&Tactical"
+msgid "Out of %s"
+msgstr "Fuera de %s"
+
+#: scripts/scenario_48_visitors.lua:6451
+#, lua-format
+msgctxt "Polly-shipLog"
+msgid "[Polly Hobbs] %.1f seconds remain to be scanned"
+msgstr "[Polly Hobbs] %.1f segundos quedan para ser escaneados"
+
+#: scripts/scenario_48_visitors.lua:6455
+#, lua-format
+msgctxt "Polly-tabHelms&Tactical"
+msgid "%s: %i"
+msgstr "%s: %i"
+
+#: scripts/scenario_48_visitors.lua:6486
+msgctxt "Polly-shipLog"
+msgid "[Polly Hobbs] Readings indicate that not only does this object not belong here physically, it seems to not belong here temporally either. Portions of it are phasing in and out of our time continuum"
+msgstr "[Polly Hobbs] Las lecturas indican que no sólo este objeto no pertenece físicamente aquí, parece no pertenecer temporalmente tampoco. Porciones de él están fingiendo dentro y fuera de nuestro tiempo continuo"
+
+#: scripts/scenario_48_visitors.lua:6521
+msgctxt "Polly-shipLog"
+msgid "[Polly Hobbs] There was a surge of chroniton particles from the artifact just before those Independent ships appeared. I think they were somehow released or transported by the artifact"
+msgstr "[Polly Hobbs] Había una oleada de partículas de croniton del artefacto justo antes de que aparecieran esas naves independientes. Creo que de alguna manera fueron liberados o transportados por el artefacto"
+
+#: scripts/scenario_48_visitors.lua:6533
+msgctxt "Polly-shipLog"
+msgid "[Polly Hobbs] Those ships show time signatures from history. I'm not sure why such old ships have suddenly appeared. I have gathered as much data as I can on this phenomenon. Thank you for your assistance"
+msgstr "[Polly Hobbs] Esas naves muestran firmas de tiempo de la historia. No estoy seguro de por qué tan viejos barcos han aparecido de repente. He recopilado tantos datos como puedo en este fenómeno. Gracias por su ayuda"
+
+#: scripts/scenario_48_visitors.lua:6688
+#, lua-format
+msgctxt "planetologist-comms"
+msgid "Transport planetologist by docking with %s"
+msgstr "Planetaólogo de transporte por acoplamiento con %s"
+
+#: scripts/scenario_48_visitors.lua:6704
+msgctxt "planetologist-shipLog"
+msgid "Enrique Flogistan profusely thanked you as he dashed to his observation laboratory. He discussed his research on some unique properties of dilithium with your engineer before he left. Consequently, engineering has improved battery efficiency by ten percent"
+msgstr "Enrique Flogistan le agradeció profusamente mientras despedazaba su laboratorio de observación. Discutió su investigación sobre algunas propiedades únicas del dilitio con su ingeniero antes de irse. En consecuencia, la ingeniería ha mejorado la eficiencia de la batería en un diez por ciento."
+
+#: scripts/scenario_48_visitors.lua:6710
+msgctxt "planetologist-msgMainscreen"
+msgid "Planetologist perished"
+msgstr "Planetaólogo pereció"
+
+#: scripts/scenario_48_visitors.lua:6854
+msgctxt "satellites-shipLog"
+msgid "[Engineering Technician] For helping to fix their satellites, the satellite station technicians have doubled our impulse engine's top speed"
+msgstr "Para ayudar a arreglar sus satélites, los técnicos de la estación satélite han duplicado la velocidad máxima de nuestro motor de impulso"
+
+#: scripts/scenario_48_visitors.lua:6855 scripts/scenario_48_visitors.lua:7081
+#, lua-format
+msgctxt "orders-shipLog"
+msgid "Dock with %s"
+msgstr "Dock con %s"
+
+#: scripts/scenario_48_visitors.lua:6924
+#, lua-format
+msgctxt "marauders-comms"
+msgid "Protect %s from marauding Exuari"
+msgstr "Proteger %s de Marauding Exuari"
+
+#: scripts/scenario_48_visitors.lua:6940 scripts/scenario_48_visitors.lua:6968 scripts/scenario_48_visitors.lua:7024 scripts/scenario_48_visitors.lua:7043 scripts/scenario_48_visitors.lua:7092
+#, lua-format
+msgctxt "marauders-msgMainscreen"
+msgid "Station %s destroyed"
+msgstr "Estación %s destruidos"
+
+#: scripts/scenario_48_visitors.lua:6982 scripts/scenario_48_visitors.lua:6997
+#, lua-format
+msgctxt "marauders-shipLog"
+msgid "[%s in %s] The Exuari are coming! We detected them on bearing %.1f from us."
+msgstr "[%s en el interior %s¡El Exuari está llegando! %.1f de nosotros."
+
+#: scripts/scenario_48_visitors.lua:7080
+#, lua-format
+msgctxt "marauders-shipLog"
+msgid "[Engineering Technician] For helping against the Exuari marauders, %s has provided us details on improving our maneuvering speed."
+msgstr "Por ayudar contra los marauderos del Exuari, %s nos ha proporcionado detalles sobre la mejora de nuestra velocidad de maniobra."
+
+#: scripts/scenario_48_visitors.lua:7107
+#, lua-format
+msgctxt "pirates-shipLog"
+msgid "%s in %s reports Exuari pirates threatening them."
+msgstr "%s en el interior %s informes Los piratas exuari los amenazan."
+
+#: scripts/scenario_48_visitors.lua:7109
+#, lua-format
+msgctxt "pirates-comms"
+msgid "Protect %s from Exuari pirates. Last reported in %s"
+msgstr "Proteger %s de los piratas de Exuari. %s"
+
+#: scripts/scenario_48_visitors.lua:7119
+msgctxt "pirates-msgMainscreen"
+msgid "Transport destroyed"
+msgstr "Transporte destruido"
+
+#: scripts/scenario_48_visitors.lua:7136
+#, lua-format
+msgctxt "pirates-shipLog"
+msgid "[%s] Thanks for dealing with those Exuari pirates"
+msgstr "[%s] Gracias por tratar con esos piratas exuari"
+
+#: scripts/scenario_48_visitors.lua:7173
+#, lua-format
+msgctxt "virus-shipLog"
+msgid "[%s medical quartermaster] Anti-virus loaded aboard your ship"
+msgstr "[%s anti-virus cargado a bordo de su barco"
+
+#: scripts/scenario_48_visitors.lua:7179
+msgctxt "virus-buttonRelay"
+msgid "Virus status"
+msgstr "Situación del virus"
+
+#: scripts/scenario_48_visitors.lua:7184
+msgctxt "virus-buttonOperations"
+msgid "Virus status"
+msgstr "Situación del virus"
+
+#: scripts/scenario_48_visitors.lua:7191
+#, lua-format
+msgctxt "virus-shipLog"
+msgid "[%s Medical Team] Received Anti-virus. Administering to station personnel. Thanks %s"
+msgstr "[%s Equipo Médico] Recibido Antivirus. Administrar al personal de estación. Gracias %s"
+
+#: scripts/scenario_48_visitors.lua:7205
+msgctxt "virus-msgMainscreen"
+msgid "Pandemic"
+msgstr "Pandemia"
+
+#: scripts/scenario_48_visitors.lua:7225
+msgctxt "virus-tabScience&Operations"
+msgid "Virus Fatality"
+msgstr "Fatalidad del virus"
+
+#: scripts/scenario_48_visitors.lua:7227
+#, lua-format
+msgctxt "virus-tabScience&Operations"
+msgid "%s: %i"
+msgstr "%s: %i"
+
+#: scripts/scenario_48_visitors.lua:7229
+#, lua-format
+msgctxt "virus-tabScience&Operations"
+msgid "%s: %i:%.2i"
+msgstr "%s: %i:%.2i"
+
+#: scripts/scenario_48_visitors.lua:7245
+#, lua-format
+msgctxt "virus-shipLog"
+msgid "Stations have been saved from the virus outbreak. Dock with %s for further orders"
+msgstr "Las estaciones han sido salvadas del brote del virus. %s para nuevas órdenes"
+
+#: scripts/scenario_48_visitors.lua:7273
+msgctxt "virus-shipLog"
+msgid "First virus fatality in"
+msgstr "Primera fatalidad del virus en"
+
+#: scripts/scenario_48_visitors.lua:7275
+#, lua-format
+msgctxt "virus-shipLog"
+msgid "%s %.f seconds."
+msgstr "%s %.f segundos."
+
+#: scripts/scenario_48_visitors.lua:7277
+#, lua-format
+msgctxt "virus-shipLog"
+msgid "%s %i minutes."
+msgstr "%s %i minutos."
+
+#: scripts/scenario_48_visitors.lua:7279
+msgctxt "virus-shipLog"
+msgid ". Stations needing anti-virus:"
+msgstr "Estaciones que necesitan antivirus:"
+
+#: scripts/scenario_48_visitors.lua:7282
+#, lua-format
+msgctxt "virus-shipLog"
+msgid "%s %s"
+msgstr "%s %s"
+
+#: scripts/scenario_48_visitors.lua:7314
+#, lua-format
+msgctxt "targetInt-comms"
+msgid "Dock with %s in %s for Exuari intelligence"
+msgstr "Dock con %s en el interior %s para la inteligencia de Exuari"
+
+#: scripts/scenario_48_visitors.lua:7316
+#, lua-format
+msgctxt "targetInt-shipLog"
+msgid "Dock with %s in %s for Exuari intelligence"
+msgstr "Dock con %s en el interior %s para la inteligencia de Exuari"
+
+#: scripts/scenario_48_visitors.lua:7321 scripts/scenario_48_visitors.lua:7334
+msgctxt "targetInt-msgMainscreen"
+msgid "Exuari destroyed station"
+msgstr "Estación destruida de Exuari"
+
+#: scripts/scenario_48_visitors.lua:7341
+#, lua-format
+msgctxt "targetInt-shipLog"
+msgid "Intelligence report: the Exuari have chosen %s in %s as their next target for attack. Make sure they do not succeed"
+msgstr "Informe de inteligencia: el Exuari ha elegido %s en el interior %s como su próximo objetivo para el ataque. Asegúrese de que no tienen éxito"
+
+#: scripts/scenario_48_visitors.lua:7345
+#, lua-format
+msgctxt "targetInt-shipLog"
+msgid "Added waypoint %i to your navigation system for %s"
+msgstr "Punto de referencia añadido %i a su sistema de navegación para %s"
+
+#: scripts/scenario_48_visitors.lua:7389
+msgctxt "targetInt-shipLog"
+msgid "Looks like you thwarted that Exuari attack"
+msgstr "Parece que frustraste ese ataque de Exuari."
+
+#: scripts/scenario_48_visitors.lua:7399
+msgctxt "Exuari1-comms"
+msgid "Make a good showing for the Human Navy against the Exuari invasion"
+msgstr "Hacer una buena demostración para la Armada Humana contra la invasión Exuari"
+
+#: scripts/scenario_48_visitors.lua:7479
+msgctxt "Exuari2-comms"
+msgid "Find and eliminate the Exuari station that is sending all these ships after us"
+msgstr "Encontrar y eliminar la estación Exuari que está enviando todas estas naves después de nosotros"
+
+#: scripts/scenario_48_visitors.lua:7509
+msgctxt "Exuari2-msgMainscreen"
+msgid "Exuari stronghold destroyed"
+msgstr "Exuari basurero destruido"
+
+#: scripts/scenario_48_visitors.lua:7545
+msgctxt "Exuari3-comms"
+msgid "Survive until the game time runs out"
+msgstr "Sobrevivir hasta que el tiempo de juego se agote"
+
+#: scripts/scenario_48_visitors.lua:7569
+msgctxt "Exuari3-msgMainscreen"
+msgid "Survived Exuari Attacks"
+msgstr "Ataques de exuari sobrevividos"
+
+#: scripts/scenario_48_visitors.lua:7636
+#, lua-format
+msgctxt "satellites-comms"
+msgid "Satellite stations %s, %s and %s orbiting %s have been reporting periodic problems. See what you can do to help them out"
+msgstr "Estaciones de satélite %s, %s y %s orbitando %s han estado reportando problemas periódicos. Vea lo que puede hacer para ayudarlos"
+
+#: scripts/scenario_48_visitors.lua:7636
+#, lua-format
+msgctxt "orders-comms"
+msgid "Fix satellites orbiting %s"
+msgstr "Satélites fijos orbitando %s"
+
+#: scripts/scenario_48_visitors.lua:7637
+#, lua-format
+msgctxt "planetologist-comms"
+msgid "Planetologist Enrique Flogistan plans to study %s. However, his transport refuses to travel in the area due to increased Exuari activity. Dock with %s and transport the planetologist to %s"
+msgstr "El Planetaólogo Enrique Flogista planea estudiar %s. Sin embargo, su transporte se niega a viajar en la zona debido al aumento de la actividad Exuari. %s y transportar al planetaólogo a %s"
+
+#: scripts/scenario_48_visitors.lua:7637
+#, lua-format
+msgctxt "orders-comms"
+msgid "Transport planetologist from %s to %s"
+msgstr "Planetaólogo de transporte de %s a %s"
+
+#: scripts/scenario_48_visitors.lua:7638
+#, lua-format
+msgctxt "Polly-comms"
+msgid "Analysis of sightings and readings taken by civilian astronmer Polly Hobbs shows anomalous readings in this area. She lives on station %s according to her published research. Find her, get the source data and investigate. Solicit her assistance if she's willing"
+msgstr "Análisis de avistamientos y lecturas tomadas por el astrónomo civil Polly Hobbs muestra lecturas anómalas en esta área. Vive en la estación %s Según su investigación publicada. Encuéntrenla, obtengan los datos de origen e investiguen. Solicite su ayuda si está dispuesta"
+
+#: scripts/scenario_48_visitors.lua:7638
+#, lua-format
+msgctxt "orders-comms"
+msgid "Dock with %s to investigate astronomer's unusual data"
+msgstr "Dock con %s para investigar los datos inusuales del astrónomo"
+
+#: scripts/scenario_48_visitors.lua:7639
+msgctxt "marauders-comms"
+msgid "Intelligence indicates an imminent attack by the Exuari on a station in the area. Your mission is to protect the station"
+msgstr "Inteligencia indica un ataque inminente por el Exuari en una estación en la zona. Su misión es proteger la estación"
+
+#: scripts/scenario_48_visitors.lua:7639
+msgctxt "orders-comms"
+msgid "Defend station from Exuari attack"
+msgstr "Estación de defensa del ataque de Exuari"
+
+#: scripts/scenario_48_visitors.lua:7647
+msgctxt "pirates-comms"
+msgid "A transport reports Exuari pirates threatening them"
+msgstr "Un transporte reporta a los piratas exuari que los amenazan"
+
+#: scripts/scenario_48_visitors.lua:7647
+msgctxt "orders-comms"
+msgid "Protect transport from Exuari pirates"
+msgstr "Proteger el transporte de piratas exuari"
+
+#: scripts/scenario_48_visitors.lua:7648
+#, lua-format
+msgctxt "virus-comms"
+msgid "Stations %s, %s, %s, %s and %s all report outbreaks of a variant of Rathgar's space virus. %s has developed an effective anti-virus, but it needs to be delivered to all the stations quickly"
+msgstr "Estaciones %s, %s, %s, %s y %s todos reportan brotes de una variante del virus espacial de Rathgar. %s ha desarrollado un antivirus eficaz, pero necesita ser entregado rápidamente a todas las estaciones"
+
+#: scripts/scenario_48_visitors.lua:7648
+#, lua-format
+msgctxt "orders-comms"
+msgid "Dock with %s to pick up anti-virus"
+msgstr "Dock con %s para recoger el antivirus"
+
+#: scripts/scenario_48_visitors.lua:7649
+msgctxt "targetInt-comms"
+msgid "We've picked up intelligence on the next Exuari attack. Check your ship log for details. Protect the target station."
+msgstr "Hemos recogido inteligencia en el próximo ataque de Exuari. Revise su registro de buques para obtener detalles. Protege la estación de destino."
+
+#: scripts/scenario_48_visitors.lua:7649
+msgctxt "orders-comms"
+msgid "Dock with designated station for Exuari intelligence"
+msgstr "Dock con estación designada para la inteligencia de Exuari"
+
+#: scripts/scenario_48_visitors.lua:7674
+msgctxt "msgMainscreen"
+msgid "Critical station destroyed"
+msgstr "Estación crítica destruida"
+
+#: scripts/scenario_48_visitors.lua:7687
+msgctxt "msgMainscreen"
+msgid "Human stations destroyed: "
+msgstr "Las estaciones humanas destruidas: "
+
+#: scripts/scenario_48_visitors.lua:7698 scripts/scenario_48_visitors.lua:7713 scripts/scenario_48_visitors.lua:7728 scripts/scenario_48_visitors.lua:7743 scripts/scenario_48_visitors.lua:7758
+#, lua-format
+msgctxt "msgMainscreen"
+msgid " (total strength: %i)"
+msgstr " (fuerza total: %i)"
+
+#: scripts/scenario_48_visitors.lua:7700 scripts/scenario_48_visitors.lua:7715 scripts/scenario_48_visitors.lua:7730 scripts/scenario_48_visitors.lua:7745 scripts/scenario_48_visitors.lua:7760
+msgctxt "msgMainscreen"
+msgid "none"
+msgstr "ninguno"
+
+#: scripts/scenario_48_visitors.lua:7702
+msgctxt "msgMainscreen"
+msgid ""
+"\n"
+"Neutral stations destroyed: "
+msgstr ""
+"\n"
+"Las estaciones neutrales destruidas: "
+
+#: scripts/scenario_48_visitors.lua:7717
+msgctxt "msgMainscreen"
+msgid ""
+"\n"
+"Kraylor vessels destroyed: "
+msgstr ""
+"\n"
+"Los buques de Kraylor destruidos: "
+
+#: scripts/scenario_48_visitors.lua:7732
+msgctxt "msgMainscreen"
+msgid ""
+"\n"
+"Exuari vessels destroyed: "
+msgstr ""
+"\n"
+"Naves exuari destruidos: "
+
+#: scripts/scenario_48_visitors.lua:7747
+msgctxt "msgMainscreen"
+msgid ""
+"\n"
+"Arlenian vessels destroyed: "
+msgstr ""
+"\n"
+"Los buques de Arlenian destruyeron: "
+
+#: scripts/scenario_48_visitors.lua:7762
+#, lua-format
+msgctxt "msgMainscreen"
+msgid ""
+"\n"
+"Missions completed: %i"
+msgstr ""
+"\n"
+"Misiones terminadas: %i"
+
+#: scripts/scenario_48_visitors.lua:7768
+#, lua-format
+msgctxt "msgMainscreen"
+msgid "Optional missions completed: %s:%i"
+msgstr "Misiones opcionales terminadas: %s:%i"
+
+#: scripts/scenario_48_visitors.lua:7770
+#, lua-format
+msgctxt "msgMainscreen"
+msgid "%s, %s:%i"
+msgstr "%s, %s:%i"
+
+#: scripts/scenario_48_visitors.lua:7775
+#, lua-format
+msgctxt "msgMainscreen"
+msgid ""
+"%s\n"
+"%s"
+msgstr ""
+"%s\n"
+"%s"

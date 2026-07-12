@@ -1,1407 +1,1252 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
+"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"PO-Revision-Date: 2026-07-12 00:00+0200\n"
+"Last-Translator: Espaciokoop Lagunak contributors\n"
+"Language-Team: Espaciokoop Lagunak\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
+
 #: /home/varo/proyectos/espaciokolagunak/src/components/player.cpp:23
 msgctxt "alert"
 msgid "RED ALERT"
-msgstr ""
+msgstr "ALERTA ROJA"
 
 #: /home/varo/proyectos/espaciokolagunak/src/components/player.cpp:24
 msgctxt "alert"
 msgid "YELLOW ALERT"
-msgstr ""
+msgstr "ALERTA AMARILLA"
 
 #: /home/varo/proyectos/espaciokolagunak/src/components/player.cpp:25
 msgctxt "alert"
 msgid "Normal"
-msgstr ""
+msgstr "normales"
 
 #: /home/varo/proyectos/espaciokolagunak/src/components/shipsystem.cpp:115
 msgctxt "system"
 msgid "Reactor"
-msgstr ""
+msgstr "reactor"
 
 #: /home/varo/proyectos/espaciokolagunak/src/components/shipsystem.cpp:116
 msgctxt "system"
 msgid "Beam Weapons"
-msgstr ""
+msgstr "Armas de haz"
 
 #: /home/varo/proyectos/espaciokolagunak/src/components/shipsystem.cpp:117
 msgctxt "system"
 msgid "Missile System"
-msgstr ""
+msgstr "Sistema de misiles"
 
 #: /home/varo/proyectos/espaciokolagunak/src/components/shipsystem.cpp:118
 msgctxt "system"
 msgid "Maneuvering"
-msgstr ""
+msgstr "maniobrar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/components/shipsystem.cpp:119
 msgctxt "system"
 msgid "Impulse Engines"
-msgstr ""
+msgstr "Motores de impulso"
 
 #: /home/varo/proyectos/espaciokolagunak/src/components/shipsystem.cpp:120
 msgctxt "system"
 msgid "Warp Drive"
-msgstr ""
+msgstr "Motor de curvatura"
 
 #: /home/varo/proyectos/espaciokolagunak/src/components/shipsystem.cpp:121
 msgctxt "system"
 msgid "Jump Drive"
-msgstr ""
+msgstr "Salto de conducción"
 
 #: /home/varo/proyectos/espaciokolagunak/src/components/shipsystem.cpp:122
 msgctxt "system"
 msgid "Front Shield Generator"
-msgstr ""
+msgstr "Generador de escudo frontal"
 
 #: /home/varo/proyectos/espaciokolagunak/src/components/shipsystem.cpp:123
 msgctxt "system"
 msgid "Rear Shield Generator"
-msgstr ""
+msgstr "Generador de escudo trasero"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyBinder.cpp:36
 msgid "[New input]"
-msgstr ""
+msgstr "[Nueva entrada]"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:30
 msgctxt "hotkey_menu"
 msgid "Cinematic view"
-msgstr ""
+msgstr "Vista cinematográfica"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:31
 msgctxt "hotkey_Cinematic"
 msgid "Toggle UI"
-msgstr ""
+msgstr "Alternar interfaz de usuario"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:32
 msgctxt "hotkey_Cinematic"
 msgid "Toggle callsigns"
-msgstr ""
+msgstr "Alternar indicativos"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:33
 msgctxt "hotkey_Cinematic"
 msgid "Camera lock"
-msgstr ""
+msgstr "Bloqueo de cámara"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:34
 msgctxt "hotkey_Cinematic"
 msgid "Camera cycle"
-msgstr ""
+msgstr "Ciclo de cámara"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:35
 msgctxt "hotkey_Cinematic"
 msgid "Cycle previous player ship"
-msgstr ""
+msgstr "Ciclo de nave del jugador anterior"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:36
 msgctxt "hotkey_Cinematic"
 msgid "Cycle next player ship"
-msgstr ""
+msgstr "Ciclo de barco del siguiente jugador"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:37
 msgctxt "hotkey_Cinematic"
 msgid "Move forward"
-msgstr ""
+msgstr "avanzar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:38
 msgctxt "hotkey_Cinematic"
 msgid "Move backward"
-msgstr ""
+msgstr "retroceder"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:39
 msgctxt "hotkey_Cinematic"
 msgid "Strafe left"
-msgstr ""
+msgstr "ametrallar a la izquierda"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:40
 msgctxt "hotkey_Cinematic"
 msgid "Strafe right"
-msgstr ""
+msgstr "ametrallar a la derecha"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:41
 msgctxt "hotkey_Cinematic"
 msgid "Move up"
-msgstr ""
+msgstr "Subir"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:42
 msgctxt "hotkey_Cinematic"
 msgid "Move down"
-msgstr ""
+msgstr "Bajar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:43
 msgctxt "hotkey_Cinematic"
 msgid "Rotate left"
-msgstr ""
+msgstr "Girar a la izquierda"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:44
 msgctxt "hotkey_Cinematic"
 msgid "Rotate right"
-msgstr ""
+msgstr "Girar a la derecha"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:45
 msgctxt "hotkey_Cinematic"
 msgid "Tilt down"
-msgstr ""
+msgstr "inclinar hacia abajo"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:46
 msgctxt "hotkey_Cinematic"
 msgid "Tilt up"
-msgstr ""
+msgstr "inclinar hacia arriba"
 
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:64
-#: /home/varo/proyectos/espaciokolagunak/src/screens/spectatorScreen.cpp:110
+#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:64 /home/varo/proyectos/espaciokolagunak/src/screens/spectatorScreen.cpp:110
 msgctxt "hotkey_menu"
 msgid "Top-down view"
-msgstr ""
+msgstr "Vista de arriba hacia abajo"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:65
 msgctxt "hotkey_Topdown"
 msgid "Toggle UI"
-msgstr ""
+msgstr "Alternar interfaz de usuario"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:66
 msgctxt "hotkey_Topdown"
 msgid "Toggle callsigns"
-msgstr ""
+msgstr "Alternar indicativos"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:67
 msgctxt "hotkey_Topdown"
 msgid "Camera lock"
-msgstr ""
+msgstr "Bloqueo de cámara"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:68
 msgctxt "hotkey_Topdown"
 msgid "Cycle previous player ship"
-msgstr ""
+msgstr "Ciclo de nave del jugador anterior"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:69
 msgctxt "hotkey_Topdown"
 msgid "Cycle next player ship"
-msgstr ""
+msgstr "Ciclo de barco del siguiente jugador"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:70
 msgctxt "hotkey_Topdown"
 msgid "Pan up"
-msgstr ""
+msgstr "Panorámica"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:71
 msgctxt "hotkey_Topdown"
 msgid "Pan down"
-msgstr ""
+msgstr "Panorámica hacia abajo"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:72
 msgctxt "hotkey_Topdown"
 msgid "Pan left"
-msgstr ""
+msgstr "Panorámica hacia la izquierda"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:73
 msgctxt "hotkey_Topdown"
 msgid "Pan right"
-msgstr ""
+msgstr "Panorámica hacia la derecha"
 
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:349
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:350
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:351
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:352
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:353
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:354
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:355
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:356
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:357
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:358
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:360
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:365
-#: /home/varo/proyectos/espaciokolagunak/src/menus/luaConsole.cpp:22
-#: /home/varo/proyectos/espaciokolagunak/src/screens/crewStationScreen.cpp:73
-#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:359
-#: /home/varo/proyectos/espaciokolagunak/src/screens/mainScreen.cpp:62
+#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:349 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:350 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:351 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:352 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:353 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:354 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:355 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:356 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:357 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:358 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:360 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:365 /home/varo/proyectos/espaciokolagunak/src/menus/luaConsole.cpp:22 /home/varo/proyectos/espaciokolagunak/src/screens/crewStationScreen.cpp:73 /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:359 /home/varo/proyectos/espaciokolagunak/src/screens/mainScreen.cpp:62
 msgctxt "hotkey_menu"
 msgid "General"
-msgstr ""
+msgstr "generales"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:349
 msgctxt "hotkey_General"
 msgid "Pause game"
-msgstr ""
+msgstr "pausar el juego"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:350
 msgctxt "hotkey_General"
 msgid "Show in-game help"
-msgstr ""
+msgstr "Mostrar ayuda en el juego"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:351
 msgctxt "hotkey_General"
 msgid "Return to ship options menu"
-msgstr ""
+msgstr "Volver al menú de opciones de envío"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:352
 msgctxt "hotkey_General"
 msgid "Zoom in on zoomable screens"
-msgstr ""
+msgstr "Acercar en pantallas ampliables"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:353
 msgctxt "hotkey_General"
 msgid "Zoom out on zoomable screens"
-msgstr ""
+msgstr "Alejar en pantallas ampliables"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:354
 msgctxt "hotkey_General"
 msgid "Broadcast voice chat to server"
-msgstr ""
+msgstr "Transmitir chat de voz al servidor"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:355
 msgctxt "hotkey_General"
 msgid "Broadcast voice chat to ship"
-msgstr ""
+msgstr "Transmitir chat de voz al envío"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:356
 msgctxt "hotkey_General"
 msgid "Fullscreen toggle"
-msgstr ""
+msgstr "Alternar pantalla completa"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:357
 msgctxt "hotkey_General"
 msgid "Show FPS"
-msgstr ""
+msgstr "Mostrar FPS"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:358
 msgctxt "hotkey_General"
 msgid "Show debug timing"
-msgstr ""
+msgstr "Mostrar tiempo de depuración"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:360
 msgctxt "hotkey_General"
 msgid "Show debug colliders"
-msgstr ""
+msgstr "Mostrar colisionadores de depuración"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:365
 msgctxt "hotkey_General"
 msgid "Custom button slot {number}"
-msgstr ""
+msgstr "Ranura para botones personalizada {number}"
 
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:369
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:370
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:371
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:372
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:373
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:374
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:375
+#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:369 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:370 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:371 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:372 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:373 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:374 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:375
 msgctxt "hotkey_menu"
 msgid "Crew screens"
-msgstr ""
+msgstr "Pantallas de tripulación"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:369
 msgctxt "hotkey_CrewScreen"
 msgid "Switch to next crew screen"
-msgstr ""
+msgstr "Cambiar a la siguiente pantalla de tripulación"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:370
 msgctxt "hotkey_CrewScreen"
 msgid "Switch to previous crew screen"
-msgstr ""
+msgstr "Cambiar a la pantalla de tripulación anterior"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:371
 msgctxt "hotkey_CrewScreen"
 msgid "Switch to helms screen"
-msgstr ""
+msgstr "Cambiar a la pantalla de timones"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:372
 msgctxt "hotkey_CrewScreen"
 msgid "Switch to weapons screen"
-msgstr ""
+msgstr "Cambiar a la pantalla de armas"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:373
 msgctxt "hotkey_CrewScreen"
 msgid "Switch to engineering screen"
-msgstr ""
+msgstr "Cambiar a la pantalla de ingeniería"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:374
 msgctxt "hotkey_CrewScreen"
 msgid "Switch to science screen"
-msgstr ""
+msgstr "Cambiar a la pantalla de ciencias"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:375
 msgctxt "hotkey_CrewScreen"
 msgid "Switch to relay screen"
-msgstr ""
+msgstr "Cambiar a la pantalla de retransmisión"
 
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:378
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:379
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:380
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:381
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:382
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:383
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:384
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:385
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:386
-#: /home/varo/proyectos/espaciokolagunak/src/screens/mainScreen.cpp:62
+#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:378 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:379 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:380 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:381 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:382 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:383 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:384 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:385 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:386 /home/varo/proyectos/espaciokolagunak/src/screens/mainScreen.cpp:62
 msgctxt "hotkey_menu"
 msgid "Main screen"
-msgstr ""
+msgstr "Pantalla principal"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:378
 msgctxt "hotkey_MainScreen"
 msgid "View forward"
-msgstr ""
+msgstr "Ver hacia adelante"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:379
 msgctxt "hotkey_MainScreen"
 msgid "View left"
-msgstr ""
+msgstr "Ver izquierda"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:380
 msgctxt "hotkey_MainScreen"
 msgid "View right"
-msgstr ""
+msgstr "Ver a la derecha"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:381
 msgctxt "hotkey_MainScreen"
 msgid "View backward"
-msgstr ""
+msgstr "Ver hacia atrás"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:382
 msgctxt "hotkey_MainScreen"
 msgid "Lock view on weapons target"
-msgstr ""
+msgstr "Bloquear vista en objetivo de armas"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:383
 msgctxt "hotkey_MainScreen"
 msgid "View tactical radar"
-msgstr ""
+msgstr "Ver radar táctico"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:384
 msgctxt "hotkey_MainScreen"
 msgid "View long-range radar"
-msgstr ""
+msgstr "Ver radar de largo alcance"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:385
 msgctxt "hotkey_MainScreen"
 msgid "View strategic map"
-msgstr ""
+msgstr "Ver mapa estratégico"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:386
 msgctxt "hotkey_MainScreen"
 msgid "Toggle first-person view"
-msgstr ""
+msgstr "Alternar vista en primera persona"
 
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:389
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:390
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:391
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:392
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:393
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:394
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:395
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:396
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:397
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:398
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:399
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:400
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:401
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:402
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:403
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:404
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:405
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:406
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:407
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:408
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:409
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:410
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:411
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:412
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:413
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:414
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:415
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:416
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:417
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:418
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:419
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:420
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:421
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:422
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:423
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:424
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:425
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:426
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:427
+#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:389 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:390 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:391 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:392 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:393 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:394 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:395 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:396 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:397 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:398 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:399 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:400 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:401 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:402 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:403 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:404 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:405 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:406 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:407 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:408 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:409 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:410 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:411 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:412 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:413 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:414 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:415 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:416 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:417 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:418 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:419 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:420 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:421 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:422 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:423 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:424 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:425 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:426 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:427
 msgctxt "hotkey_menu"
 msgid "Helms"
-msgstr ""
+msgstr "Timón"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:389
 msgctxt "hotkey_Helms"
 msgid "Increase impulse"
-msgstr ""
+msgstr "aumentar el impulso"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:390
 msgctxt "hotkey_Helms"
 msgid "Increase impulse 1%"
-msgstr ""
+msgstr "Aumentar impulso 1%"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:391
 msgctxt "hotkey_Helms"
 msgid "Increase impulse 10%"
-msgstr ""
+msgstr "Aumentar el impulso 10%"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:392
 msgctxt "hotkey_Helms"
 msgid "Decrease impulse"
-msgstr ""
+msgstr "Disminuir impulso"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:393
 msgctxt "hotkey_Helms"
 msgid "Decrease impulse 1%"
-msgstr ""
+msgstr "Disminución impulso 1%"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:394
 msgctxt "hotkey_Helms"
 msgid "Decrease impulse 10%"
-msgstr ""
+msgstr "Disminuir impulso 10%"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:395
 msgctxt "hotkey_Helms"
 msgid "Set impulse (joystick)"
-msgstr ""
+msgstr "Establecer impulso (joystick)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:396
 msgctxt "hotkey_Helms"
 msgid "Zero impulse"
-msgstr ""
+msgstr "Impulso cero"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:397
 msgctxt "hotkey_Helms"
 msgid "Max impulse"
-msgstr ""
+msgstr "impulso máximo"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:398
 msgctxt "hotkey_Helms"
 msgid "Max reverse impulse"
-msgstr ""
+msgstr "Impulso inverso máximo"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:399
 msgctxt "hotkey_Helms"
 msgid "Turn left"
-msgstr ""
+msgstr "Gira a la izquierda"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:400
 msgctxt "hotkey_Helms"
 msgid "Turn right"
-msgstr ""
+msgstr "Gira a la derecha"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:401
 msgctxt "hotkey_Helms"
 msgid "Zero warp"
-msgstr ""
+msgstr "Deformación cero"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:402
 msgctxt "hotkey_Helms"
 msgid "Request warp 1"
-msgstr ""
+msgstr "Solicitar deformación 1"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:403
 msgctxt "hotkey_Helms"
 msgid "Request warp 2"
-msgstr ""
+msgstr "Solicitar deformación 2"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:404
 msgctxt "hotkey_Helms"
 msgid "Request warp 3"
-msgstr ""
+msgstr "Solicitar deformación 3"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:405
 msgctxt "hotkey_Helms"
 msgid "Request warp 4"
-msgstr ""
+msgstr "Solicitar deformación 4"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:406
 msgctxt "hotkey_Helms"
 msgid "Request max warp"
-msgstr ""
+msgstr "Solicitar deformación máxima"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:407
 msgctxt "hotkey_Helms"
 msgid "Increase warp request"
-msgstr ""
+msgstr "Aumentar la solicitud de deformación"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:408
 msgctxt "hotkey_Helms"
 msgid "Decrease warp request"
-msgstr ""
+msgstr "Disminuir solicitud de deformación"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:409
 msgctxt "hotkey_Helms"
 msgid "Set warp request (joystick)"
-msgstr ""
+msgstr "Establecer solicitud de deformación (joystick)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:410
 msgctxt "hotkey_Helms"
 msgid "Dock request/abort/undock"
-msgstr ""
+msgstr "Solicitud de acoplamiento/abortar/desacoplar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:411
 msgctxt "hotkey_Helms"
 msgid "Initiate docking"
-msgstr ""
+msgstr "Iniciar atraque"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:412
 msgctxt "hotkey_Helms"
 msgid "Abort docking"
-msgstr ""
+msgstr "Cancelar acoplamiento"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:413
 msgctxt "hotkey_Helms"
 msgid "Undock"
-msgstr ""
+msgstr "Desatracar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:414
 msgctxt "hotkey_Helms"
 msgid "Increase jump distance"
-msgstr ""
+msgstr "Aumentar la distancia de salto"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:415
 msgctxt "hotkey_Helms"
 msgid "Decrease jump distance"
-msgstr ""
+msgstr "Disminuir la distancia del salto"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:416
 msgctxt "hotkey_Helms"
 msgid "Increase jump distance 0.1U"
-msgstr ""
+msgstr "Aumentar la distancia de salto 0.1U"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:417
 msgctxt "hotkey_Helms"
 msgid "Increase jump distance 1U"
-msgstr ""
+msgstr "Aumentar la distancia de salto 1U"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:418
 msgctxt "hotkey_Helms"
 msgid "Decrease jump distance 0.1U"
-msgstr ""
+msgstr "Disminuir la distancia del salto 0.1U"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:419
 msgctxt "hotkey_Helms"
 msgid "Decrease jump distance 1U"
-msgstr ""
+msgstr "Disminuir la distancia de salto 1U"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:420
 msgctxt "hotkey_Helms"
 msgid "Set jump distance (joystick)"
-msgstr ""
+msgstr "Establecer distancia de salto (joystick)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:421
 msgctxt "hotkey_Helms"
 msgid "Maximize jump distance"
-msgstr ""
+msgstr "Maximizar la distancia de salto"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:422
 msgctxt "hotkey_Helms"
 msgid "Minimize jump distance"
-msgstr ""
+msgstr "Minimizar la distancia de salto"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:423
 msgctxt "hotkey_Helms"
 msgid "Initiate jump"
-msgstr ""
+msgstr "Iniciar salto"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:424
 msgctxt "hotkey_Helms"
 msgid "Abort jump"
-msgstr ""
+msgstr "Abortar salto"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:425
 msgctxt "hotkey_Helms"
 msgid "Combat boost left"
-msgstr ""
+msgstr "Impulso de combate restante"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:426
 msgctxt "hotkey_Helms"
 msgid "Combat boost right"
-msgstr ""
+msgstr "Impulso de combate correcto"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:427
 msgctxt "hotkey_Helms"
 msgid "Combat boost forwards"
-msgstr ""
+msgstr "Impulso de combate hacia adelante"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:430
 msgctxt "hotkey_Weapons"
 msgid "Select homing"
-msgstr ""
+msgstr "Seleccionar referencia"
 
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:430
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:431
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:432
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:433
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:434
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:437
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:438
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:439
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:441
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:442
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:443
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:444
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:445
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:446
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:447
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:448
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:449
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:450
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:451
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:452
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:453
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:454
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:455
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:456
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:457
+#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:430 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:431 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:432 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:433 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:434 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:437 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:438 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:439 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:441 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:442 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:443 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:444 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:445 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:446 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:447 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:448 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:449 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:450 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:451 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:452 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:453 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:454 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:455 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:456 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:457
 msgctxt "hotkey_menu"
 msgid "Weapons"
-msgstr ""
+msgstr "Armas"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:431
 msgctxt "hotkey_Weapons"
 msgid "Select nuke"
-msgstr ""
+msgstr "Seleccionar arma nuclear"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:432
 msgctxt "hotkey_Weapons"
 msgid "Select mine"
-msgstr ""
+msgstr "Selecciona el mio"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:433
 msgctxt "hotkey_Weapons"
 msgid "Select EMP"
-msgstr ""
+msgstr "Seleccione EMP"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:434
 msgctxt "hotkey_Weapons"
 msgid "Select HVLI"
-msgstr ""
+msgstr "Seleccione HVLI"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:437
 msgctxt "hotkey_Weapons"
 msgid "Load tube {number}"
-msgstr ""
+msgstr "tubo de carga {number}"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:438
 msgctxt "hotkey_Weapons"
 msgid "Unload tube {number}"
-msgstr ""
+msgstr "tubo de descarga {number}"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:439
 msgctxt "hotkey_Weapons"
 msgid "Fire tube {number}"
-msgstr ""
+msgstr "tubo de fuego {number}"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:441
 msgctxt "hotkey_Weapons"
 msgid "Select next hostile target"
-msgstr ""
+msgstr "Selecciona el siguiente objetivo hostil"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:442
 msgctxt "hotkey_Weapons"
 msgid "Select next target (any)"
-msgstr ""
+msgstr "Seleccione el siguiente objetivo (cualquiera)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:443
 msgctxt "hotkey_Weapons"
 msgid "Toggle shields"
-msgstr ""
+msgstr "Escudos de palanca"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:444
 msgctxt "hotkey_Weapons"
 msgid "Enable shields"
-msgstr ""
+msgstr "Habilitar escudos"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:445
 msgctxt "hotkey_Weapons"
 msgid "Disable shields"
-msgstr ""
+msgstr "Desactivar escudos"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:446
 msgctxt "hotkey_Weapons"
 msgid "Increase shield frequency target"
-msgstr ""
+msgstr "Aumentar el objetivo de frecuencia del escudo"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:447
 msgctxt "hotkey_Weapons"
 msgid "Decrease shield frequency target"
-msgstr ""
+msgstr "Disminuir el objetivo de frecuencia del escudo"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:448
 msgctxt "hotkey_Weapons"
 msgid "Start shield calibration"
-msgstr ""
+msgstr "Iniciar calibración del escudo"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:449
 msgctxt "hotkey_Weapons"
 msgid "Next beam subsystem target type"
-msgstr ""
+msgstr "Tipo de objetivo del subsistema de siguiente haz"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:450
 msgctxt "hotkey_Weapons"
 msgid "Previous beam subsystem target type"
-msgstr ""
+msgstr "Tipo de objetivo del subsistema de haz anterior"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:451
 msgctxt "hotkey_Weapons"
 msgid "Increase beam frequency"
-msgstr ""
+msgstr "Aumentar la frecuencia del haz"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:452
 msgctxt "hotkey_Weapons"
 msgid "Decrease beam frequency"
-msgstr ""
+msgstr "Disminuir la frecuencia del haz"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:453
 msgctxt "hotkey_Weapons"
 msgid "Toggle missile aim lock"
-msgstr ""
+msgstr "Alternar bloqueo de puntería de misil"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:454
 msgctxt "hotkey_Weapons"
 msgid "Enable missile aim lock"
-msgstr ""
+msgstr "Habilitar bloqueo de puntería de misil"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:455
 msgctxt "hotkey_Weapons"
 msgid "Disable missile aim lock"
-msgstr ""
+msgstr "Desactivar el bloqueo de puntería del misil"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:456
 msgctxt "hotkey_Weapons"
 msgid "Turn missile aim to the left"
-msgstr ""
+msgstr "Girar el objetivo del misil hacia la izquierda."
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:457
 msgctxt "hotkey_Weapons"
 msgid "Turn missile aim to the right"
-msgstr ""
+msgstr "Girar el objetivo del misil hacia la derecha."
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:460
 msgctxt "hotkey_Science"
 msgid "Scan object"
-msgstr ""
+msgstr "Objeto de escaneo"
 
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:460
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:461
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:462
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:465
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:466
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:467
+#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:460 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:461 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:462 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:465 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:466 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:467
 msgctxt "hotkey_menu"
 msgid "Science"
-msgstr ""
+msgstr "Ciencia"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:461
 msgctxt "hotkey_Science"
 msgid "Abort scan"
-msgstr ""
+msgstr "Cancelar escaneo"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:462
 msgctxt "hotkey_Science"
 msgid "Select next scannable object"
-msgstr ""
+msgstr "Seleccione el siguiente objeto escaneable"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:465
 msgctxt "hotkey_Science"
 msgid "Scanning parameter {number} increase"
-msgstr ""
+msgstr "Parámetro de escaneo {number} aumentar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:466
 msgctxt "hotkey_Science"
 msgid "Scanning parameter {number} decrease"
-msgstr ""
+msgstr "Parámetro de escaneo {number} disminuir"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:467
 msgctxt "hotkey_Science"
 msgid "Set scanning parameter {number} (joystick)"
-msgstr ""
+msgstr "Establecer parámetro de escaneo {number} (palanca de mando)"
 
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:471
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:472
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:473
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:474
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:475
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:476
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:477
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:478
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:479
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:480
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:481
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:482
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:483
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:484
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:485
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:486
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:487
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:488
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:489
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:490
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:491
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:492
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:493
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:494
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:495
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:496
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:497
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:498
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:499
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:500
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:501
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:502
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:503
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:505
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:506
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:507
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:508
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:509
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:510
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:511
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:512
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:513
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:515
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:516
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:517
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:518
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:519
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:520
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:521
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:522
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:523
+#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:471 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:472 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:473 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:474 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:475 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:476 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:477 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:478 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:479 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:480 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:481 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:482 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:483 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:484 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:485 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:486 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:487 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:488 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:489 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:490 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:491 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:492 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:493 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:494 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:495 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:496 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:497 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:498 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:499 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:500 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:501 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:502 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:503 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:505 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:506 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:507 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:508 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:509 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:510 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:511 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:512 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:513 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:515 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:516 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:517 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:518 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:519 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:520 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:521 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:522 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:523
 msgctxt "hotkey_menu"
 msgid "Engineering"
-msgstr ""
+msgstr "Ingeniería"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:471
 msgctxt "hotkey_Engineering"
 msgid "Select reactor system"
-msgstr ""
+msgstr "Seleccionar sistema de reactor"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:472
 msgctxt "hotkey_Engineering"
 msgid "Select beam weapon system"
-msgstr ""
+msgstr "Seleccionar sistema de arma de haz"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:473
 msgctxt "hotkey_Engineering"
 msgid "Select missile weapon system"
-msgstr ""
+msgstr "Seleccionar sistema de armas de misiles"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:474
 msgctxt "hotkey_Engineering"
 msgid "Select maneuvering system"
-msgstr ""
+msgstr "Seleccionar sistema de maniobra"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:475
 msgctxt "hotkey_Engineering"
 msgid "Select impulse system"
-msgstr ""
+msgstr "Seleccionar sistema de impulso"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:476
 msgctxt "hotkey_Engineering"
 msgid "Select warp system"
-msgstr ""
+msgstr "Seleccionar sistema de deformación"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:477
 msgctxt "hotkey_Engineering"
 msgid "Select jump drive system"
-msgstr ""
+msgstr "Seleccione el sistema de accionamiento de salto"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:478
 msgctxt "hotkey_Engineering"
 msgid "Select front shields system"
-msgstr ""
+msgstr "Seleccionar sistema de escudos frontales"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:479
 msgctxt "hotkey_Engineering"
 msgid "Select rear shields system"
-msgstr ""
+msgstr "Seleccionar sistema de escudos traseros"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:480
 msgctxt "hotkey_Engineering"
 msgid "Select next system"
-msgstr ""
+msgstr "Seleccione el siguiente sistema"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:481
 msgctxt "hotkey_Engineering"
 msgid "Select previous system"
-msgstr ""
+msgstr "Seleccionar sistema anterior"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:482
 msgctxt "hotkey_Engineering"
 msgid "Set system power to 0%"
-msgstr ""
+msgstr "Establezca la potencia del sistema en 0%"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:483
 msgctxt "hotkey_Engineering"
 msgid "Set system power to 30%"
-msgstr ""
+msgstr "Establezca la potencia del sistema al 30%"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:484
 msgctxt "hotkey_Engineering"
 msgid "Set system power to 50%"
-msgstr ""
+msgstr "Establezca la potencia del sistema al 50%"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:485
 msgctxt "hotkey_Engineering"
 msgid "Set system power to 100%"
-msgstr ""
+msgstr "Establezca la potencia del sistema al 100%"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:486
 msgctxt "hotkey_Engineering"
 msgid "Set system power to 150%"
-msgstr ""
+msgstr "Establezca la potencia del sistema al 150%"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:487
 msgctxt "hotkey_Engineering"
 msgid "Set system power to 200%"
-msgstr ""
+msgstr "Establezca la potencia del sistema al 200%"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:488
 msgctxt "hotkey_Engineering"
 msgid "Set system power to 250%"
-msgstr ""
+msgstr "Establezca la potencia del sistema al 250%"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:489
 msgctxt "hotkey_Engineering"
 msgid "Set system power to 300%"
-msgstr ""
+msgstr "Establezca la potencia del sistema al 300%"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:490
 msgctxt "hotkey_Engineering"
 msgid "Increase system power"
-msgstr ""
+msgstr "Aumentar la potencia del sistema"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:491
 msgctxt "hotkey_Engineering"
 msgid "Decrease system power"
-msgstr ""
+msgstr "Disminuir la potencia del sistema"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:492
 msgctxt "hotkey_Engineering"
 msgid "Set system power (joystick)"
-msgstr ""
+msgstr "Configurar la potencia del sistema (joystick)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:493
 msgctxt "hotkey_Engineering"
 msgid "Increase system coolant"
-msgstr ""
+msgstr "Aumentar el refrigerante del sistema"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:494
 msgctxt "hotkey_Engineering"
 msgid "Decrease system coolant"
-msgstr ""
+msgstr "Disminuir el refrigerante del sistema."
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:495
 msgctxt "hotkey_Engineering"
 msgid "Set system coolant (joystick)"
-msgstr ""
+msgstr "Ajustar el refrigerante del sistema (joystick)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:496
 msgctxt "hotkey_Engineering"
 msgid "Next repair crew"
-msgstr ""
+msgstr "Próximo equipo de reparación"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:497
 msgctxt "hotkey_Engineering"
 msgid "Crew move up"
-msgstr ""
+msgstr "La tripulación sube"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:498
 msgctxt "hotkey_Engineering"
 msgid "Crew move down"
-msgstr ""
+msgstr "La tripulación baja"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:499
 msgctxt "hotkey_Engineering"
 msgid "Crew move left"
-msgstr ""
+msgstr "La tripulación se mueve hacia la izquierda"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:500
 msgctxt "hotkey_Engineering"
 msgid "Crew move right"
-msgstr ""
+msgstr "La tripulación se mueve a la derecha"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:501
 msgctxt "hotkey_Engineering"
 msgid "Start self-destruct"
-msgstr ""
+msgstr "Iniciar la autodestrucción"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:502
 msgctxt "hotkey_Engineering"
 msgid "Confirm self-destruct"
-msgstr ""
+msgstr "Confirmar autodestrucción"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:503
 msgctxt "hotkey_Engineering"
 msgid "Cancel self-destruct"
-msgstr ""
+msgstr "Cancelar la autodestrucción"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:505
 msgctxt "hotkey_Engineering"
 msgid "Set reactor power (joystick)"
-msgstr ""
+msgstr "Establecer la potencia del reactor (joystick)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:506
 msgctxt "hotkey_Engineering"
 msgid "Set beam weapon power (joystick)"
-msgstr ""
+msgstr "Establecer la potencia del arma de haz (joystick)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:507
 msgctxt "hotkey_Engineering"
 msgid "Set missile weapon power (joystick)"
-msgstr ""
+msgstr "Establecer la potencia del arma de misiles (joystick)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:508
 msgctxt "hotkey_Engineering"
 msgid "Set maneuvering power (joystick)"
-msgstr ""
+msgstr "Establecer potencia de maniobra (joystick)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:509
 msgctxt "hotkey_Engineering"
 msgid "Set impulse power (joystick)"
-msgstr ""
+msgstr "Establecer potencia de impulso (joystick)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:510
 msgctxt "hotkey_Engineering"
 msgid "Set warp power (joystick)"
-msgstr ""
+msgstr "Establecer potencia de deformación (joystick)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:511
 msgctxt "hotkey_Engineering"
 msgid "Set jump drive power (joystick)"
-msgstr ""
+msgstr "Establecer la potencia del impulsor de salto (joystick)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:512
 msgctxt "hotkey_Engineering"
 msgid "Set front shields power (joystick)"
-msgstr ""
+msgstr "Configurar la potencia de los escudos delanteros (joystick)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:513
 msgctxt "hotkey_Engineering"
 msgid "Set rear shields power (joystick)"
-msgstr ""
+msgstr "Configurar potencia escudos traseros (joystick)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:515
 msgctxt "hotkey_Engineering"
 msgid "Set reactor coolant (joystick)"
-msgstr ""
+msgstr "Establecer refrigerante del reactor (joystick)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:516
 msgctxt "hotkey_Engineering"
 msgid "Set beam weapon coolant (joystick)"
-msgstr ""
+msgstr "Establecer refrigerante de arma de haz (joystick)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:517
 msgctxt "hotkey_Engineering"
 msgid "Set missile weapon coolant (joystick)"
-msgstr ""
+msgstr "Establecer refrigerante para arma de misiles (joystick)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:518
 msgctxt "hotkey_Engineering"
 msgid "Set maneuvering coolant (joystick)"
-msgstr ""
+msgstr "Conjunto de refrigerante de maniobra (joystick)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:519
 msgctxt "hotkey_Engineering"
 msgid "Set impulse coolant (joystick)"
-msgstr ""
+msgstr "Establecer refrigerante por impulso (joystick)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:520
 msgctxt "hotkey_Engineering"
 msgid "Set warp coolant (joystick)"
-msgstr ""
+msgstr "Establecer refrigerante warp (joystick)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:521
 msgctxt "hotkey_Engineering"
 msgid "Set jump drive coolant (joystick)"
-msgstr ""
+msgstr "Establecer refrigerante de accionamiento de salto (joystick)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:522
 msgctxt "hotkey_Engineering"
 msgid "Set front shields coolant (joystick)"
-msgstr ""
+msgstr "Conjunto escudos delanteros refrigerante (joystick)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:523
 msgctxt "hotkey_Engineering"
 msgid "Set rear shields coolant (joystick)"
-msgstr ""
+msgstr "Conjunto escudos traseros refrigerante (joystick)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:526
 msgctxt "hotkey_Relay"
 msgid "Alert level: Normal"
-msgstr ""
+msgstr "Nivel de alerta: Normal"
 
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:526
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:527
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:528
+#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:526 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:527 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:528
 msgctxt "hotkey_menu"
 msgid "Relay"
-msgstr ""
+msgstr "Comunicaciones"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:527
 msgctxt "hotkey_Relay"
 msgid "Alert level: Yellow"
-msgstr ""
+msgstr "Nivel de alerta: Amarillo"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:528
 msgctxt "hotkey_Relay"
 msgid "Alert level: Red"
-msgstr ""
+msgstr "Nivel de alerta: rojo"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:537
 msgctxt "hotkey_GM"
 msgid "Delete"
-msgstr ""
+msgstr "Eliminar"
 
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:537
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:538
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:539
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:540
-#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:359
+#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:537 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:538 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:539 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:540 /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:359
 msgctxt "hotkey_menu"
 msgid "GM screen"
-msgstr ""
+msgstr "pantalla GM"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:538
 msgctxt "hotkey_GM"
 msgid "Copy to clipboard"
-msgstr ""
+msgstr "Copiar al portapapeles"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:539
 msgctxt "hotkey_GM"
 msgid "Show callsigns (GM)"
-msgstr ""
+msgstr "Mostrar indicativos (GM)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:540
 msgctxt "hotkey_GM"
 msgid "Show health bars (GM)"
-msgstr ""
+msgstr "Mostrar barras de salud (GM)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:543
 msgctxt "hotkey_Spectator"
 msgid "Show callsigns (spectator)"
-msgstr ""
+msgstr "Mostrar indicativos (espectador)"
 
-#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:543
-#: /home/varo/proyectos/espaciokolagunak/src/screens/spectatorScreen.cpp:110
+#: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:543 /home/varo/proyectos/espaciokolagunak/src/screens/spectatorScreen.cpp:110
 msgctxt "hotkey_menu"
 msgid "Spectator view"
-msgstr ""
+msgstr "Vista de espectador"
 
-#: /home/varo/proyectos/espaciokolagunak/src/menus/autoConnectScreen.cpp:31
-#: /home/varo/proyectos/espaciokolagunak/src/menus/autoConnectScreen.cpp:108
+#: /home/varo/proyectos/espaciokolagunak/src/menus/autoConnectScreen.cpp:31 /home/varo/proyectos/espaciokolagunak/src/menus/autoConnectScreen.cpp:108
 msgid "Searching for server..."
-msgstr ""
+msgstr "Buscando servidor..."
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/autoConnectScreen.cpp:87
 msgid "Using autoconnect server "
-msgstr ""
+msgstr "Usando el servidor de conexión automática "
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/autoConnectScreen.cpp:99
 msgid "Found server "
-msgstr ""
+msgstr "Servidor encontrado "
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/autoConnectScreen.cpp:116
 msgid "Connecting: "
-msgstr ""
+msgstr "Conectando: "
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/autoConnectScreen.cpp:118
 msgid "Connecting..."
-msgstr ""
+msgstr "Conectando..."
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/autoConnectScreen.cpp:146
 msgid "Waiting for ship on "
-msgstr ""
+msgstr "Esperando el envío "
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/autoConnectScreen.cpp:148
 msgid "Waiting for ship..."
-msgstr ""
+msgstr "Esperando el barco..."
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/autoConnectScreen.cpp:179
 msgid "Connected, waiting for game data..."
-msgstr ""
+msgstr "Conectado, esperando datos del juego..."
 
-#: /home/varo/proyectos/espaciokolagunak/src/menus/autoConnectScreen.cpp:290
-#: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:797
+#: /home/varo/proyectos/espaciokolagunak/src/menus/autoConnectScreen.cpp:290 /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:797
 msgid "Ship window"
-msgstr ""
+msgstr "Ventana de barco"
 
-#: /home/varo/proyectos/espaciokolagunak/src/menus/autoConnectScreen.cpp:293
-#: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:786
-#: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:899
+#: /home/varo/proyectos/espaciokolagunak/src/menus/autoConnectScreen.cpp:293 /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:786 /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:899
 msgid "Main screen"
-msgstr ""
+msgstr "Pantalla principal"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/hotkeyMenu.cpp:41
 msgid "Configure Keyboard/Joystick"
-msgstr ""
+msgstr "Configurar teclado/joystick"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/hotkeyMenu.cpp:80
 msgid ""
 "Left Click: Assign input. Middle Click: Add input. Right Click: Delete inputs.\n"
 "Possible inputs: Keyboard keys, joystick buttons, joystick axes."
 msgstr ""
+"Clic izquierdo: asignar entrada. Clic central: Agregar entrada. Clic derecho: eliminar entradas.\n"
+"Posibles entradas: Teclas del teclado, botones del joystick, ejes del joystick."
 
-#: /home/varo/proyectos/espaciokolagunak/src/menus/hotkeyMenu.cpp:81
-#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:86
-#: /home/varo/proyectos/espaciokolagunak/src/menus/serverBrowseMenu.cpp:52
-#: /home/varo/proyectos/espaciokolagunak/src/menus/tutorialMenu.cpp:67
+#: /home/varo/proyectos/espaciokolagunak/src/menus/hotkeyMenu.cpp:81 /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:86 /home/varo/proyectos/espaciokolagunak/src/menus/serverBrowseMenu.cpp:52 /home/varo/proyectos/espaciokolagunak/src/menus/tutorialMenu.cpp:67
 msgctxt "button"
 msgid "Back"
-msgstr ""
+msgstr "Volver"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/hotkeyMenu.cpp:90
 msgid "Bindings reset to defaults"
-msgstr ""
+msgstr "Enlaces restablecidos a los valores predeterminados"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/hotkeyMenu.cpp:94
 msgctxt "button"
 msgid "Reset"
-msgstr ""
+msgstr "Reiniciar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/joinServerMenu.cpp:19
 msgctxt "connectserver"
 msgid "Connecting..."
-msgstr ""
+msgstr "Conectando..."
 
-#: /home/varo/proyectos/espaciokolagunak/src/menus/joinServerMenu.cpp:21
-#: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:65
-#: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:852
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/commsOverlay.cpp:30
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/scanningDialog.cpp:41
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/selfDestructButton.cpp:24
-#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:244
-#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/globalMessageEntryView.cpp:19
-#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/objectCreationView.cpp:167
+#: /home/varo/proyectos/espaciokolagunak/src/menus/joinServerMenu.cpp:21 /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:65 /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:852 /home/varo/proyectos/espaciokolagunak/src/screenComponents/commsOverlay.cpp:30 /home/varo/proyectos/espaciokolagunak/src/screenComponents/scanningDialog.cpp:41 /home/varo/proyectos/espaciokolagunak/src/screenComponents/selfDestructButton.cpp:24 /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:244 /home/varo/proyectos/espaciokolagunak/src/screens/gm/globalMessageEntryView.cpp:19 /home/varo/proyectos/espaciokolagunak/src/screens/gm/objectCreationView.cpp:167
 msgctxt "button"
 msgid "Cancel"
-msgstr ""
+msgstr "Cancelar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/joinServerMenu.cpp:64
 msgid "Please enter the server password:"
-msgstr ""
+msgstr "Por favor ingrese la contraseña del servidor:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/luaConsole.cpp:22
 msgctxt "hotkey_General"
 msgid "Open Lua console"
-msgstr ""
+msgstr "Abrir la consola Lua"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/mainMenus.cpp:34
 msgctxt "Credits"
 msgid "Version: {version}"
-msgstr ""
+msgstr "Versión: {version}"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/mainMenus.cpp:37
 msgctxt "mainMenu"
 msgid "Your name:"
-msgstr ""
+msgstr "Tu nombre:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/mainMenus.cpp:42
 msgctxt "mainMenu"
 msgid "Start server"
-msgstr ""
+msgstr "Iniciar servidor"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/mainMenus.cpp:47
 msgctxt "mainMenu"
 msgid "Start client"
-msgstr ""
+msgstr "Iniciar cliente"
 
-#: /home/varo/proyectos/espaciokolagunak/src/menus/mainMenus.cpp:52
-#: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:330
+#: /home/varo/proyectos/espaciokolagunak/src/menus/mainMenus.cpp:52 /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:330
 msgctxt "mainMenu"
 msgid "Options"
-msgstr ""
+msgstr "Opciones"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/mainMenus.cpp:57
 msgctxt "mainMenu"
 msgid "Quit"
-msgstr ""
+msgstr "dejar de fumar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/mainMenus.cpp:61
 msgctxt "mainMenu"
 msgid "Tutorials"
-msgstr ""
+msgstr "Tutoriales"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/mainMenus.cpp:67
 msgctxt "Credits"
 msgid "Credits"
-msgstr ""
+msgstr "Créditos"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/mainMenus.cpp:68
 msgctxt "Credits"
 msgid "Programming:"
-msgstr ""
+msgstr "Programación:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/mainMenus.cpp:75
 msgctxt "Credits"
 msgid "Graphics:"
-msgstr ""
+msgstr "Gráficos:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/mainMenus.cpp:78
 msgctxt "Credits"
 msgid "Localization:"
-msgstr ""
+msgstr "Localización:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/mainMenus.cpp:82
 msgctxt "Credits"
 msgid "Music:"
-msgstr ""
+msgstr "Música:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/mainMenus.cpp:89
 msgctxt "Credits"
 msgid "Models:"
-msgstr ""
+msgstr "Modelos:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/mainMenus.cpp:93
 msgctxt "Credits"
 msgid "Crew sprites:"
-msgstr ""
+msgstr "Sprites de la tripulación:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/mainMenus.cpp:96
 msgctxt "Credits"
 msgid "Special thanks:"
-msgstr ""
+msgstr "Agradecimiento especial:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:45
 msgid "Graphics options"
-msgstr ""
+msgstr "Opciones gráficas"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:54
 msgid "Audio options"
-msgstr ""
+msgstr "Opciones de audio"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:63
 msgid "Interface options"
-msgstr ""
+msgstr "Opciones de interfaz"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:97
 msgctxt "options"
 msgid "Save"
-msgstr ""
+msgstr "Guardar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:136
 msgid "Interface language"
-msgstr ""
+msgstr "Idioma de la interfaz"
 
-#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:171
-#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:226
+#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:171 /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:226
 msgid "Click Back to apply change"
-msgstr ""
+msgstr "Pulsa Volver para aplicar el cambio"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:217
 msgid "Interface theme"
-msgstr ""
+msgstr "Tema de la interfaz"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:234
 msgid "Control options"
-msgstr ""
+msgstr "Opciones de control"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:239
 msgid "Configure keyboard/joystick"
-msgstr ""
+msgstr "Configurar teclado/mando"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:255
 msgid "Radar rotation lock"
-msgstr ""
+msgstr "Bloqueo de rotación del radar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:268
 msgctxt "radar_locks"
@@ -1409,42 +1254,33 @@ msgid ""
 "Helms, Tactical,\n"
 "Single Pilot"
 msgstr ""
+"Yelmos, Tácticos,\n"
+"Piloto único"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:272
 msgctxt "radar_locks"
 msgid "Lock to 0"
-msgstr ""
+msgstr "Bloquear a 0"
 
-#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:279
-#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:283
-#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:303
-#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:307
-#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:328
-#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:332
+#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:279 /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:283 /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:303 /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:307 /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:328 /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:332
 msgctxt "radar_locks"
 msgid "Radar rotates"
-msgstr ""
+msgstr "El radar gira"
 
-#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:279
-#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:283
-#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:303
-#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:307
-#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:328
-#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:332
+#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:279 /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:283 /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:303 /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:307 /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:328 /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:332
 msgctxt "radar_locks"
 msgid "Ship rotates"
-msgstr ""
+msgstr "El barco gira"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:294
 msgctxt "radar_locks"
 msgid "Weapons"
-msgstr ""
+msgstr "Armas"
 
-#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:298
-#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:322
+#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:298 /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:322
 msgctxt "radar_locks"
 msgid "Lock"
-msgstr ""
+msgstr "Bloquear"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:318
 msgctxt "radar_locks"
@@ -1452,696 +1288,673 @@ msgid ""
 "Science,\n"
 "Operations"
 msgstr ""
+"ciencia,\n"
+"Operaciones"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:340
 msgid "Fullscreen toggle"
-msgstr ""
+msgstr "Alternar pantalla completa"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:370
 msgid "Restart EmptyEpsilon to apply FSAA change"
-msgstr ""
+msgstr "Reinicie EmptyEpsilon para aplicar el cambio FSAA"
 
-#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:379
-#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:384
+#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:379 /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:384
 msgid "FoV: {fov}"
-msgstr ""
+msgstr "Campo de visión: {fov}"
 
-#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:400
-#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:405
+#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:400 /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:405
 msgid "Sound Volume: {volume}%"
-msgstr ""
+msgstr "Volumen de sonido: {volume}%"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:409
 msgid "Music Playback"
-msgstr ""
+msgstr "Reproducción de música"
 
-#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:419
-#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:444
+#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:419 /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:444
 msgid "Disabled"
-msgstr ""
+msgstr "Desactivado"
 
-#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:419
-#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:444
+#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:419 /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:444
 msgid "Enabled"
-msgstr ""
+msgstr "Activado"
 
-#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:419
-#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:444
+#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:419 /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:444
 msgid "Main Screen only"
-msgstr ""
+msgstr "Sólo pantalla principal"
 
-#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:425
-#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:430
+#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:425 /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:430
 msgid "Music Volume: {volume}%"
-msgstr ""
+msgstr "Volumen de música: {volume}%"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:434
 msgid "Impulse Engine sound"
-msgstr ""
+msgstr "Sonido del motor de impulso"
 
-#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:450
-#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:455
+#: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:450 /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:455
 msgid "Impulse Volume: {volume}%"
-msgstr ""
+msgstr "Volumen de impulso: {volume}%"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:467
 msgid "Preview Soundtracks"
-msgstr ""
+msgstr "Vista previa de bandas sonoras"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverBrowseMenu.cpp:24
 msgctxt "game_client_disconnect_reason"
 msgid "still connected"
-msgstr ""
+msgstr "todavía conectado"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverBrowseMenu.cpp:26
 msgctxt "game_client_disconnect_reason"
 msgid "failed to connect to server"
-msgstr ""
+msgstr "no se pudo conectar al servidor"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverBrowseMenu.cpp:28
 msgctxt "game_client_disconnect_reason"
 msgid "bad credentials"
-msgstr ""
+msgstr "malas credenciales"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverBrowseMenu.cpp:30
 msgctxt "game_client_disconnect_reason"
 msgid "closed by server"
-msgstr ""
+msgstr "cerrado por el servidor"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverBrowseMenu.cpp:32
 msgctxt "game_client_disconnect_reason"
 msgid "timed out"
-msgstr ""
+msgstr "tiempo agotado"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverBrowseMenu.cpp:34
 msgctxt "game_client_disconnect_reason"
 msgid "unknown"
-msgstr ""
+msgstr "desconocido"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverBrowseMenu.cpp:36
 msgctxt "game_client_disconnect_reason"
 msgid "version mismatch"
-msgstr ""
+msgstr "la versión no coincide"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverBrowseMenu.cpp:38
 msgctxt "game_client_disconnect_reason"
 msgid "unspecified error {error}"
-msgstr ""
+msgstr "error no especificado {error}"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverBrowseMenu.cpp:59
 msgid "Connection error: {message}"
-msgstr ""
+msgstr "Error de conexión: {message}"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverBrowseMenu.cpp:64
 msgctxt "screenLan"
 msgid "Connect"
-msgstr ""
+msgstr "Conectar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverBrowseMenu.cpp:112
 msgid "Last Session ({last})"
-msgstr ""
+msgstr "Última sesión ({last})"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:38
 msgid "Server configuration"
-msgstr ""
+msgstr "Configuración del servidor"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:43
 msgid "Server name: "
-msgstr ""
+msgstr "Nombre del servidor: "
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:50
 msgid "Server password: "
-msgstr ""
+msgstr "Contraseña del servidor: "
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:57
 msgid "GM control code: "
-msgstr ""
+msgstr "Código de control GM: "
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:64
 msgid "List on master server: "
-msgstr ""
+msgstr "Lista en el servidor maestro: "
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:66
 msgid "No"
-msgstr ""
+msgstr "No"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:66
 msgid "Yes"
-msgstr ""
+msgstr "Sí"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:70
 msgid "Server port: "
-msgstr ""
+msgstr "Puerto del servidor: "
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:75
 msgid "Server info"
-msgstr ""
+msgstr "información del servidor"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:85
 msgid "Server was configured to connect to reverse proxy:"
-msgstr ""
+msgstr "El servidor se configuró para conectarse al proxy inverso:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:98
 msgid "Server IP: "
-msgstr ""
+msgstr "IP del servidor: "
 
-#: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:115
-#: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:152
-#: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:251
-#: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:379
+#: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:115 /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:152 /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:251 /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:379
 msgid "Close"
-msgstr ""
+msgstr "Cerrar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:122
 msgid "Start server"
-msgstr ""
+msgstr "Iniciar servidor"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:159
 msgid "Continue"
-msgstr ""
+msgstr "Continuar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:221
 msgid "Category"
-msgstr ""
+msgstr "Categoría"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:228
 msgid "Scenario"
-msgstr ""
+msgstr "Escenario"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:238
 msgid "Description"
-msgstr ""
+msgstr "Descripción"
 
-#: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:239
-#: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:319
+#: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:239 /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:319
 msgid "Select a scenario..."
-msgstr ""
+msgstr "Seleccione un escenario..."
 
-#: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:259
-#: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:423
+#: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:259 /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:423
 msgid "Start scenario"
-msgstr ""
+msgstr "Escenario de inicio"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:416
 msgid "Back"
-msgstr ""
+msgstr "Volver"
 
-#: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:49
-#: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:680
+#: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:49 /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:680
 msgid "Enter this ship's control code:"
-msgstr ""
+msgstr "Ingrese el código de control de este barco:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:74
 msgid "Ok"
-msgstr ""
+msgstr "Ok"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:81
 msgid "OK"
-msgstr ""
+msgstr "bien"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:113
 msgid ""
 "Control code accepted.\n"
 "Granting access."
 msgstr ""
+"Código de control aceptado.\n"
+"Concesión de acceso."
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:122
 msgid "Incorrect control code. Re-enter code:"
-msgstr ""
+msgstr "Código de control incorrecto. Vuelva a ingresar el código:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:174
 msgid "Additional views and options"
-msgstr ""
+msgstr "Vistas y opciones adicionales"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:178
 msgid "Game master"
-msgstr ""
+msgstr "Director de juego"
 
-#: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:185
-#: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:224
-#: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:262
-#: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:300
+#: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:185 /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:224 /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:262 /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:300
 msgid "Enter the GM control code:"
-msgstr ""
+msgstr "Ingrese el código de control de GM:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:217
 msgid "Spectator map (view all)"
-msgstr ""
+msgstr "Mapa de espectadores (ver todo)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:255
 msgid "Cinematic view"
-msgstr ""
+msgstr "Vista cinematográfica"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:293
 msgid "Top-down 3D view"
-msgstr ""
+msgstr "Vista 3D de arriba hacia abajo"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:347
 msgid "Scan complexity: "
-msgstr ""
+msgstr "Complejidad del escaneo: "
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:350
 msgctxt "scanning"
 msgid "Advanced"
-msgstr ""
+msgstr "Avanzado"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:350
 msgctxt "scanning"
 msgid "None (delay)"
-msgstr ""
+msgstr "Ninguno (retraso)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:350
 msgctxt "scanning"
 msgid "Normal"
-msgstr ""
+msgstr "normales"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:350
 msgctxt "scanning"
 msgid "Simple"
-msgstr ""
+msgstr "Sencillo"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:355
 msgid "Hacking difficulty: "
-msgstr ""
+msgstr "Dificultad de pirateo: "
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:358
 msgctxt "hacking"
 msgid "Difficult"
-msgstr ""
+msgstr "Difícil"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:358
 msgctxt "hacking"
 msgid "Fiendish"
-msgstr ""
+msgstr "diabólico"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:358
 msgctxt "hacking"
 msgid "Normal"
-msgstr ""
+msgstr "normales"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:358
 msgctxt "hacking"
 msgid "Simple"
-msgstr ""
+msgstr "Sencillo"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:363
 msgid "Hacking type: "
-msgstr ""
+msgstr "Tipo de piratería: "
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:366
 msgctxt "hacking"
 msgid "All"
-msgstr ""
+msgstr "Todos"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:366
 msgctxt "hacking"
 msgid "Lights"
-msgstr ""
+msgstr "Luces"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:366
 msgctxt "hacking"
 msgid "Mine"
-msgstr ""
+msgstr "Mina"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:371
 msgid "Beam/shield frequencies"
-msgstr ""
+msgstr "Frecuencias de haces y escudos"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:375
 msgid "Per-system damage"
-msgstr ""
+msgstr "Daño por sistema"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:386
 msgid "Extra settings"
-msgstr ""
+msgstr "Configuraciones adicionales"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:399
 msgid "Connected players"
-msgstr ""
+msgstr "Jugadores conectados"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:401
 msgid "No players connected"
-msgstr ""
+msgstr "No hay jugadores conectados"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:422
 msgid "No information for the selected ship type"
-msgstr ""
+msgstr "No hay información para el tipo de barco seleccionado"
 
-#: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:428
-#: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:435
+#: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:428 /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:435
 msgid "Create player ship"
-msgstr ""
+msgstr "Crear barco de jugador"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:449
 msgid "Create"
-msgstr ""
+msgstr "crear"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:466
 msgid "No description provided"
-msgstr ""
+msgstr "No se proporciona descripción"
 
-#: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:480
-#: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:555
+#: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:480 /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:555
 msgid "Player ship description"
-msgstr ""
+msgstr "Descripción del barco del jugador"
 
-#: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:481
-#: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:554
+#: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:481 /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:554
 msgid "No player ship description available"
-msgstr ""
+msgstr "No hay descripción del barco del jugador disponible"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:483
 msgid "Join ship"
-msgstr ""
+msgstr "Unirse al barco"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:489
 msgid "Select ship"
-msgstr ""
+msgstr "Seleccionar barco"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:490
 msgid "Waiting for server to spawn a ship"
-msgstr ""
+msgstr "Esperando que el servidor genere un barco"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:509
 msgid "Scenario selection"
-msgstr ""
+msgstr "Selección de escenario"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:518
 msgid "Disconnect"
-msgstr ""
+msgstr "Desconectar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:577
 msgid "{type} description"
-msgstr ""
+msgstr "{type} descripción"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:746
 msgid "4/3/1 player crew"
-msgstr ""
+msgstr "Equipo de 4/3/1 jugador"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:749
 msgid "6/5 player crew"
-msgstr ""
+msgstr "Equipo de 6/5 jugadores"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:782
 msgid "3D screens"
-msgstr ""
+msgstr "pantallas 3D"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:820
 msgid "Alternative options"
-msgstr ""
+msgstr "Opciones alternativas"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:823
 msgid "Main screen controls"
-msgstr ""
+msgstr "Controles de la pantalla principal"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:837
 msgid ""
 "You can select multiple stations and switch between them during the game.\n"
 "If mainscreen is selected alongside stations, it will be shown next to the current station (if the total screen size is wide enough)."
 msgstr ""
+"Puedes seleccionar varias estaciones y cambiar entre ellas durante el juego.\n"
+"Si se selecciona la pantalla principal junto a las estaciones, se mostrará junto a la estación actual (si el tamaño total de la pantalla es lo suficientemente ancho)."
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:841
 msgid "Crew assignments"
-msgstr ""
+msgstr "Asignaciones de tripulación"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:854
 msgctxt "button"
 msgid "Ready"
-msgstr ""
+msgstr "Listo"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:898
 msgid "No crew members assigned"
-msgstr ""
+msgstr "No hay tripulantes asignados"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:899
 msgid "Main screen (split)"
-msgstr ""
+msgstr "Pantalla principal (dividida)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/tutorialMenu.cpp:30
 msgctxt "title"
 msgid "Tutorials"
-msgstr ""
+msgstr "Tutoriales"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/tutorialMenu.cpp:60
 msgid "Start Tutorial"
-msgstr ""
+msgstr "Iniciar tutorial"
 
 #: /home/varo/proyectos/espaciokolagunak/src/missileWeaponData.cpp:110
 msgctxt "missile"
 msgid "Homing"
-msgstr ""
+msgstr "hogar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/missileWeaponData.cpp:112
 msgctxt "missile"
 msgid "Nuke"
-msgstr ""
+msgstr "bomba nuclear"
 
 #: /home/varo/proyectos/espaciokolagunak/src/missileWeaponData.cpp:114
 msgctxt "missile"
 msgid "Mine"
-msgstr ""
+msgstr "Mina"
 
 #: /home/varo/proyectos/espaciokolagunak/src/missileWeaponData.cpp:116
 msgctxt "missile"
 msgid "EMP"
-msgstr ""
+msgstr "PEM"
 
 #: /home/varo/proyectos/espaciokolagunak/src/missileWeaponData.cpp:118
 msgctxt "missile"
 msgid "HVLI"
-msgstr ""
+msgstr "HVLI"
 
 #: /home/varo/proyectos/espaciokolagunak/src/playerInfo.cpp:1148
 msgctxt "station"
 msgid "Helms"
-msgstr ""
+msgstr "Timón"
 
 #: /home/varo/proyectos/espaciokolagunak/src/playerInfo.cpp:1149
 msgctxt "station"
 msgid "Weapons"
-msgstr ""
+msgstr "Armas"
 
 #: /home/varo/proyectos/espaciokolagunak/src/playerInfo.cpp:1150
 msgctxt "station"
 msgid "Engineering"
-msgstr ""
+msgstr "Ingeniería"
 
 #: /home/varo/proyectos/espaciokolagunak/src/playerInfo.cpp:1151
 msgctxt "station"
 msgid "Science"
-msgstr ""
+msgstr "Ciencia"
 
 #: /home/varo/proyectos/espaciokolagunak/src/playerInfo.cpp:1152
 msgctxt "station"
 msgid "Relay"
-msgstr ""
+msgstr "Comunicaciones"
 
 #: /home/varo/proyectos/espaciokolagunak/src/playerInfo.cpp:1153
 msgctxt "station"
 msgid "Tactical"
-msgstr ""
+msgstr "Táctica"
 
 #: /home/varo/proyectos/espaciokolagunak/src/playerInfo.cpp:1154
 msgctxt "station"
 msgid "Engineering+"
-msgstr ""
+msgstr "Ingeniería+"
 
 #: /home/varo/proyectos/espaciokolagunak/src/playerInfo.cpp:1155
 msgctxt "station"
 msgid "Operations"
-msgstr ""
+msgstr "Operaciones"
 
 #: /home/varo/proyectos/espaciokolagunak/src/playerInfo.cpp:1156
 msgctxt "station"
 msgid "Single Pilot"
-msgstr ""
+msgstr "Piloto único"
 
 #: /home/varo/proyectos/espaciokolagunak/src/playerInfo.cpp:1157
 msgctxt "station"
 msgid "Damage Control"
-msgstr ""
+msgstr "Control de daños"
 
 #: /home/varo/proyectos/espaciokolagunak/src/playerInfo.cpp:1158
 msgctxt "station"
 msgid "Power Management"
-msgstr ""
+msgstr "Gestión de energía"
 
 #: /home/varo/proyectos/espaciokolagunak/src/playerInfo.cpp:1159
 msgctxt "station"
 msgid "Database"
-msgstr ""
+msgstr "Base de datos"
 
 #: /home/varo/proyectos/espaciokolagunak/src/playerInfo.cpp:1160
 msgctxt "station"
 msgid "Strategic Map"
-msgstr ""
+msgstr "Mapa Estratégico"
 
 #: /home/varo/proyectos/espaciokolagunak/src/playerInfo.cpp:1161
 msgctxt "station"
 msgid "Comms"
-msgstr ""
+msgstr "Comunicaciones"
 
 #: /home/varo/proyectos/espaciokolagunak/src/playerInfo.cpp:1162
 msgctxt "station"
 msgid "Ship's Log"
-msgstr ""
+msgstr "Bitácora del barco"
 
-#: /home/varo/proyectos/espaciokolagunak/src/scenarioInfo.cpp:104
-#: /home/varo/proyectos/espaciokolagunak/src/scenarioInfo.cpp:105
+#: /home/varo/proyectos/espaciokolagunak/src/scenarioInfo.cpp:104 /home/varo/proyectos/espaciokolagunak/src/scenarioInfo.cpp:105
 msgid "setting"
-msgstr ""
+msgstr "ajuste"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/aimLock.cpp:12
 msgctxt "missile"
 msgid "Lock"
-msgstr ""
+msgstr "Bloquear"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/alertLevelButton.cpp:12
 msgid "Alert level"
-msgstr ""
+msgstr "Nivel de alerta"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/beamTargetSelector.cpp:11
 msgctxt "target"
 msgid "Hull"
-msgstr ""
+msgstr "Casco"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/combatManeuver.cpp:19
 msgid "Combat maneuver"
-msgstr ""
+msgstr "maniobra de combate"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/commsOverlay.cpp:25
 msgid "Opening communications..."
-msgstr ""
+msgstr "Abriendo comunicaciones..."
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/commsOverlay.cpp:44
 msgid "Answer"
-msgstr ""
+msgstr "respuesta"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/commsOverlay.cpp:50
 msgid "Ignore"
-msgstr ""
+msgstr "ignorar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/commsOverlay.cpp:59
 msgid "No reply..."
-msgstr ""
+msgstr "Sin respuesta..."
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/commsOverlay.cpp:70
 msgid "Communications were suddenly cut"
-msgstr ""
+msgstr "Las comunicaciones se cortaron repentinamente"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/commsOverlay.cpp:81
 msgid "Communications channel closed"
-msgstr ""
+msgstr "Canal de comunicación cerrado"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/commsOverlay.cpp:107
-#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/globalMessageEntryView.cpp:23
+#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/commsOverlay.cpp:107 /home/varo/proyectos/espaciokolagunak/src/screens/gm/globalMessageEntryView.cpp:23
 msgctxt "button"
 msgid "Send"
-msgstr ""
+msgstr "enviar"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/commsOverlay.cpp:115
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/commsOverlay.cpp:145
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/hackingDialog.cpp:47
-#: /home/varo/proyectos/espaciokolagunak/src/screens/crewStationScreen.cpp:56
-#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:347
-#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:537
+#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/commsOverlay.cpp:115 /home/varo/proyectos/espaciokolagunak/src/screenComponents/commsOverlay.cpp:145 /home/varo/proyectos/espaciokolagunak/src/screenComponents/hackingDialog.cpp:47 /home/varo/proyectos/espaciokolagunak/src/screens/crewStationScreen.cpp:56 /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:347 /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:537
 msgctxt "button"
 msgid "Close"
-msgstr ""
+msgstr "Cerrar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/commsOverlay.cpp:162
 msgid "Hailed by {name}"
-msgstr ""
+msgstr "Llamada entrante de {name}"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/databaseView.cpp:29
 msgctxt "databaseView"
 msgid "Back"
-msgstr ""
+msgstr "Volver"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/dockingButton.cpp:24
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/dockingButton.cpp:159
+#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/dockingButton.cpp:24 /home/varo/proyectos/espaciokolagunak/src/screenComponents/dockingButton.cpp:159
 msgid "Request dock"
-msgstr ""
+msgstr "Solicitar muelle"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/dockingButton.cpp:132
 msgid "Unknown"
-msgstr ""
+msgstr "Desconocido"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/dockingButton.cpp:137
-#: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/relayScreen.cpp:138
+#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/dockingButton.cpp:137 /home/varo/proyectos/espaciokolagunak/src/screens/crew6/relayScreen.cpp:138
 msgid "Cancel"
-msgstr ""
+msgstr "Cancelar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/dockingButton.cpp:164
 msgid "Cancel docking"
-msgstr ""
+msgstr "Cancelar acoplamiento"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/dockingButton.cpp:169
 msgid "Undock"
-msgstr ""
+msgstr "Desatracar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/frequencyCurve.cpp:65
 msgctxt "scienceFrequencyGraph"
 msgid "Damage with your beams"
-msgstr ""
+msgstr "Daño con tus rayos"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/frequencyCurve.cpp:67
 msgctxt "scienceFrequencyGraph"
 msgid "Damage on your shields"
-msgstr ""
+msgstr "Daño en tus escudos"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/frequencyCurve.cpp:73
 msgctxt "scienceFrequencyGraph"
 msgid "No enemy beams"
-msgstr ""
+msgstr "Sin rayos enemigos"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/frequencyCurve.cpp:75
 msgctxt "scienceFrequencyGraph"
 msgid "No enemy shields"
-msgstr ""
+msgstr "Sin escudos enemigos"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/frequencyCurve.cpp:78
 msgctxt "scienceFrequencyGraph"
 msgid "No data"
-msgstr ""
+msgstr "Sin datos"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/hackingDialog.cpp:41
 msgctxt "hacking"
 msgid "Reset"
-msgstr ""
+msgstr "Reiniciar"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/hackingDialog.cpp:67
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/hackingDialog.cpp:91
+#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/hackingDialog.cpp:67 /home/varo/proyectos/espaciokolagunak/src/screenComponents/hackingDialog.cpp:91
 msgctxt "hacking"
 msgid "Target system"
-msgstr ""
+msgstr "Sistema de destino"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/hackingDialog.cpp:81
 msgid "Select a system in the targeted ship to begin a remote intrusion attempt, or hack. If successful, you reduce that system's effectiveness for a short period of time. Continue hacking systems on hostile targets to give your crew and allies a tactical advantage against it."
-msgstr ""
+msgstr "Selecciona un sistema en el barco objetivo para iniciar un intento de intrusión remota o hackearlo. Si tiene éxito, reducirá la eficacia de ese sistema durante un corto período de tiempo. Continúe pirateando sistemas en objetivos hostiles para darle a su tripulación y a sus aliados una ventaja táctica contra ellos."
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/hackingDialog.cpp:91
 msgctxt "hacking"
 msgid "Instructions"
-msgstr ""
+msgstr "Instrucciones"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/hackingDialog.cpp:138
 msgctxt "hacking"
 msgid "Hacking in Progress: {percent}%"
-msgstr ""
+msgstr "Hackeo en progreso: {percent}%"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/hackingDialog.cpp:144
 msgctxt "hacking"
 msgid "{target}: hacked {percent}%"
-msgstr ""
+msgstr "{target}: pirateado {percent}%"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/hackingDialog.cpp:158
 msgid "Hacking FAILURE!"
-msgstr ""
+msgstr "¡FALLO de piratería!"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/hackingDialog.cpp:158
 msgid "Hacking SUCCESS!"
-msgstr ""
+msgstr "Hackear ¡ÉXITO!"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/hackingDialog.cpp:169
 msgid ""
@@ -2153,6 +1966,13 @@ msgid ""
 "\n"
 "Click the Reset button to reset the field, or select a system to attempt a different intrusion method."
 msgstr ""
+"Para piratear este sistema con éxito, debe iluminar completamente todos los nodos binarios de contramedida.\n"
+"\n"
+"Seleccione un nodo en la cuadrícula para alternar su estado entre activado y desactivado. Al hacerlo, también se alterna el estado de los nodos adyacentes inmediatamente encima, debajo y a los lados del nodo seleccionado. Continúe alternando nodos hasta que todos los nodos estén iluminados.\n"
+"\n"
+"Puedes realizar una cantidad ilimitada de movimientos, pero busca soluciones eficientes para ayudar mejor a tus compañeros de tripulación. Los piratas informáticos sin experiencia pueden perseguir nodos oscuros desde la fila superior hasta la inferior seleccionando el nodo inmediatamente debajo de cada nodo oscuro. Los especialistas en intrusiones más experimentados podrían identificar soluciones más eficientes.\n"
+"\n"
+"Haga clic en el botón Restablecer para restablecer el campo o seleccione un sistema para intentar un método de intrusión diferente."
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/hackingDialog.cpp:170
 msgid ""
@@ -2166,1649 +1986,1606 @@ msgid ""
 "\n"
 "Click the Reset button to reset the field, or select a system to attempt a different intrusion method."
 msgstr ""
+"Para piratear este sistema con éxito, debe aplicar un proceso sistemático de eliminación para identificar nodos de datos confidenciales dentro de una red sin alterarlos.\n"
+"\n"
+"Seleccione un nodo en la cuadrícula para revelarlo. Si revela un nodo sensible, la interfaz de piratería lo marca con una X. Puede revelar de forma segura un nodo sensible, pero revelar un segundo nodo sensible alerta al sistema que está siendo pirateado y desconecta su intento de intrusión.\n"
+"\n"
+"Un nodo vacío se ilumina y, si no hay ningún nodo sensible a su alrededor, cualquier otro nodo adyacente que también carezca de un nodo sensible cercano se revela automáticamente.\n"
+"\n"
+"Si un nodo sensible está inmediatamente adyacente o en diagonal al nodo revelado, un número indica cuántos de los nodos circundantes son sensibles. Busque patrones en los números que rodean los nodos no revelados para determinar qué nodos no revelados son sensibles.\n"
+"\n"
+"Haga clic en el botón Restablecer para restablecer el campo o seleccione un sistema para intentar un método de intrusión diferente."
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/helpOverlay.cpp:24
 msgctxt "hotkey_F1"
 msgid "Close"
-msgstr ""
+msgstr "Cerrar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/impulseControls.cpp:21
 msgctxt "slider"
 msgid "Impulse"
-msgstr ""
+msgstr "Impulso"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/indicatorOverlays.cpp:30
 msgid "Game Paused"
-msgstr ""
+msgstr "Juego pausado"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/indicatorOverlays.cpp:33
 msgid "Unpause"
-msgstr ""
+msgstr "Reanudar la pausa"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/indicatorOverlays.cpp:147
 msgid "Defeat!"
-msgstr ""
+msgstr "¡Derrota!"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/indicatorOverlays.cpp:150
 msgid "Victory!"
-msgstr ""
+msgstr "¡Victoria!"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/indicatorOverlays.cpp:153
 msgid "{faction} wins"
-msgstr ""
+msgstr "{faction} gana"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/infoDisplay.cpp:18
-#: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/weaponsScreen.cpp:93
-#: /home/varo/proyectos/espaciokolagunak/src/screens/extra/powerManagement.cpp:22
+#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/infoDisplay.cpp:18 /home/varo/proyectos/espaciokolagunak/src/screens/crew6/weaponsScreen.cpp:93 /home/varo/proyectos/espaciokolagunak/src/screens/extra/powerManagement.cpp:22
 msgid "Energy"
-msgstr ""
+msgstr "Energía"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/infoDisplay.cpp:47
-#: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:422
+#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/infoDisplay.cpp:47 /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:422
 msgid "{energy}/min"
-msgstr ""
+msgstr "{energy}/min"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/infoDisplay.cpp:59
 msgid "Heading"
-msgstr ""
+msgstr "rumbo"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/infoDisplay.cpp:77
 msgid "Speed"
-msgstr ""
+msgstr "Velocidad"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/infoDisplay.cpp:88
 msgid "{value} {unit}/min"
-msgstr ""
+msgstr "{value} {unit}/min"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/infoDisplay.cpp:93
 msgctxt "health"
 msgid "Hull"
-msgstr ""
+msgstr "Casco"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/infoDisplay.cpp:113
 msgid "Shields"
-msgstr ""
+msgstr "Escudos"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/infoDisplay.cpp:149
 msgctxt "total"
 msgid "Coolant"
-msgstr ""
+msgstr "Refrigerante"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/jumpControls.cpp:25
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/jumpControls.cpp:111
+#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/jumpControls.cpp:25 /home/varo/proyectos/espaciokolagunak/src/screenComponents/jumpControls.cpp:111
 msgctxt "jumpcontrol"
 msgid "Distance"
-msgstr ""
+msgstr "Distancia"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/jumpControls.cpp:28
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/jumpControls.cpp:56
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/jumpControls.cpp:68
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/jumpControls.cpp:99
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/jumpControls.cpp:118
+#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/jumpControls.cpp:28 /home/varo/proyectos/espaciokolagunak/src/screenComponents/jumpControls.cpp:56 /home/varo/proyectos/espaciokolagunak/src/screenComponents/jumpControls.cpp:68 /home/varo/proyectos/espaciokolagunak/src/screenComponents/jumpControls.cpp:99 /home/varo/proyectos/espaciokolagunak/src/screenComponents/jumpControls.cpp:118
 msgctxt "jumpcontrol"
 msgid "Jump"
-msgstr ""
+msgstr "Salto"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/jumpControls.cpp:69
 msgctxt "jumpcontrol"
 msgid "delayed"
-msgstr ""
+msgstr "retrasado"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/jumpControls.cpp:75
 msgctxt "jumpcontrol"
 msgid "Jump in"
-msgstr ""
+msgstr "Saltar en"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/jumpControls.cpp:76
-#: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:477
+#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/jumpControls.cpp:76 /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:477
 msgctxt "jumpcontrol"
 msgid "{delay} sec."
-msgstr ""
+msgstr "{delay} seg."
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/jumpControls.cpp:83
 msgctxt "jumpcontrol"
 msgid "Abort"
-msgstr ""
+msgstr "Abortar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/jumpControls.cpp:93
 msgctxt "jumpcontrol"
 msgid "Charging"
-msgstr ""
+msgstr "Cargando"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/jumpIndicator.cpp:28
 msgctxt "jumpcontrol"
 msgid "Jump delayed"
-msgstr ""
+msgstr "Salto retrasado"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/jumpIndicator.cpp:30
 msgctxt "jumpcontrol"
 msgid " sec."
-msgstr ""
+msgstr " seg."
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/jumpIndicator.cpp:30
 msgid "Jump in: {delay}"
-msgstr ""
+msgstr "Salta: {delay}"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/mainScreenControls.cpp:22
 msgctxt "controlbutton"
 msgid "Main screen"
-msgstr ""
+msgstr "Pantalla principal"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/mainScreenControls.cpp:78
 msgctxt "mainscreen"
 msgid "Front"
-msgstr ""
+msgstr "Frontal"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/mainScreenControls.cpp:88
 msgctxt "mainscreen"
 msgid "Back"
-msgstr ""
+msgstr "Volver"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/mainScreenControls.cpp:98
 msgctxt "mainscreen"
 msgid "Left"
-msgstr ""
+msgstr "Izquierda"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/mainScreenControls.cpp:108
 msgctxt "mainscreen"
 msgid "Right"
-msgstr ""
+msgstr "Derecha"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/mainScreenControls.cpp:124
 msgctxt "mainscreen"
 msgid "Target lock"
-msgstr ""
+msgstr "Bloqueo de objetivo"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/mainScreenControls.cpp:136
 msgctxt "mainscreen"
 msgid "Tactical radar"
-msgstr ""
+msgstr "radar táctico"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/mainScreenControls.cpp:147
 msgctxt "mainscreen"
 msgid "Long-range radar"
-msgstr ""
+msgstr "radar de largo alcance"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/mainScreenControls.cpp:158
 msgctxt "mainscreen"
 msgid "Strategic map"
-msgstr ""
+msgstr "Mapa estratégico"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/mainScreenControls.cpp:175
 msgctxt "mainscreen"
 msgid "Comms overlay"
-msgstr ""
+msgstr "Superposición de comunicaciones"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/mineSweeper.cpp:223
 msgctxt "minesweeper"
 msgid "Attempts: "
-msgstr ""
+msgstr "Intentos: "
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/missileTubeControls.cpp:51
 msgctxt "tube"
 msgid "Front"
-msgstr ""
+msgstr "Frontal"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/missileTubeControls.cpp:53
 msgctxt "tube"
 msgid "Right"
-msgstr ""
+msgstr "Derecha"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/missileTubeControls.cpp:55
 msgctxt "tube"
 msgid "Left"
-msgstr ""
+msgstr "Izquierda"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/missileTubeControls.cpp:57
 msgctxt "tube"
 msgid "Rear"
-msgstr ""
+msgstr "Popa"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/missileTubeControls.cpp:95
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/missileTubeControls.cpp:116
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/missileTubeControls.cpp:134
+#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/missileTubeControls.cpp:95 /home/varo/proyectos/espaciokolagunak/src/screenComponents/missileTubeControls.cpp:116 /home/varo/proyectos/espaciokolagunak/src/screenComponents/missileTubeControls.cpp:134
 msgctxt "missile"
 msgid "Load"
-msgstr ""
+msgstr "Cargar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/missileTubeControls.cpp:99
 msgctxt "missile"
 msgid "Empty"
-msgstr ""
+msgstr "vacio"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/missileTubeControls.cpp:103
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/missileTubeControls.cpp:125
+#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/missileTubeControls.cpp:103 /home/varo/proyectos/espaciokolagunak/src/screenComponents/missileTubeControls.cpp:125
 msgctxt "missile"
 msgid "Unload"
-msgstr ""
+msgstr "descargar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/missileTubeControls.cpp:121
 msgctxt "missile"
 msgid "Loading"
-msgstr ""
+msgstr "Cargando"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/missileTubeControls.cpp:130
 msgctxt "missile"
 msgid "Unloading"
-msgstr ""
+msgstr "Descarga"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/missileTubeControls.cpp:136
 msgctxt "missile"
 msgid "Firing"
-msgstr ""
+msgstr "Disparando"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/openCommsButton.cpp:31
-#: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/relayScreen.cpp:149
+#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/openCommsButton.cpp:31 /home/varo/proyectos/espaciokolagunak/src/screens/crew6/relayScreen.cpp:149
 msgid "Link to comms"
-msgstr ""
+msgstr "Enlace a comunicaciones"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/openCommsButton.cpp:31
-#: /home/varo/proyectos/espaciokolagunak/src/screens/crew4/operationsScreen.cpp:89
-#: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/relayScreen.cpp:149
+#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/openCommsButton.cpp:31 /home/varo/proyectos/espaciokolagunak/src/screens/crew4/operationsScreen.cpp:89 /home/varo/proyectos/espaciokolagunak/src/screens/crew6/relayScreen.cpp:149
 msgid "Open comms"
-msgstr ""
+msgstr "Comunicaciones abiertas"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/openCommsButton.cpp:33
 msgid "No comms target"
-msgstr ""
+msgstr "Sin objetivo de comunicaciones"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/openCommsButton.cpp:35
 msgid "Transmitting..."
-msgstr ""
+msgstr "Transmitiendo..."
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/powerDamageIndicator.cpp:56
 msgctxt "systems"
 msgid "DAMAGED"
-msgstr ""
+msgstr "DAÑADO"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/powerDamageIndicator.cpp:61
 msgctxt "systems"
 msgid "DOCKED"
-msgstr ""
+msgstr "ATRACADO"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/powerDamageIndicator.cpp:61
 msgctxt "systems"
 msgid "DOCKING"
-msgstr ""
+msgstr "ATRAQUE"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/powerDamageIndicator.cpp:66
 msgctxt "systems"
 msgid "JAMMED"
-msgstr ""
+msgstr "ATASCADO"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/powerDamageIndicator.cpp:71
 msgctxt "systems"
 msgid "NO POWER"
-msgstr ""
+msgstr "SIN ENERGÍA"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/powerDamageIndicator.cpp:76
 msgctxt "systems"
 msgid "LOW ENERGY"
-msgstr ""
+msgstr "BAJA ENERGÍA"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/powerDamageIndicator.cpp:81
 msgctxt "systems"
 msgid "LOW POWER"
-msgstr ""
+msgstr "BAJA POTENCIA"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/powerDamageIndicator.cpp:86
 msgctxt "systems"
 msgid "OVERHEATING"
-msgstr ""
+msgstr "SOBRECALENTAMIENTO"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/powerDamageIndicator.cpp:91
 msgctxt "systems"
 msgid "HACKED"
-msgstr ""
+msgstr "HACKED"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/radarZoomSlider.cpp:14
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/radarZoomSlider.cpp:19
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/radarZoomSlider.cpp:29
+#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/radarZoomSlider.cpp:14 /home/varo/proyectos/espaciokolagunak/src/screenComponents/radarZoomSlider.cpp:19 /home/varo/proyectos/espaciokolagunak/src/screenComponents/radarZoomSlider.cpp:29
 msgid "Zoom: {zoom}x"
-msgstr ""
+msgstr "Zoom: {zoom}x"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/scanTargetButton.cpp:15
 msgctxt "scienceButton"
 msgid "Scan"
-msgstr ""
+msgstr "Escanear"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/scanningDialog.cpp:27
-#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/scanningDialog.cpp:144
+#: /home/varo/proyectos/espaciokolagunak/src/screenComponents/scanningDialog.cpp:27 /home/varo/proyectos/espaciokolagunak/src/screenComponents/scanningDialog.cpp:144
 msgctxt "scanning"
 msgid "Electric signature"
-msgstr ""
+msgstr "Firma electrica"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/scanningDialog.cpp:33
 msgctxt "scanning"
 msgid "LOCKED"
-msgstr ""
+msgstr "BLOQUEADO"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/scanningDialog.cpp:145
 msgctxt "scanning"
 msgid "Biomass frequency"
-msgstr ""
+msgstr "Frecuencia de biomasa"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/scanningDialog.cpp:146
 msgctxt "scanning"
 msgid "Gravity well signature"
-msgstr ""
+msgstr "Firma del pozo de gravedad"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/scanningDialog.cpp:147
 msgctxt "scanning"
 msgid "Radiation halftime"
-msgstr ""
+msgstr "Medio tiempo de radiación"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/scanningDialog.cpp:148
 msgctxt "scanning"
 msgid "Radio profile"
-msgstr ""
+msgstr "Perfil radiofónico"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/scanningDialog.cpp:149
 msgctxt "scanning"
 msgid "Ionic phase shift"
-msgstr ""
+msgstr "cambio de fase iónica"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/scanningDialog.cpp:150
 msgctxt "scanning"
 msgid "Infra-red color shift"
-msgstr ""
+msgstr "Cambio de color infrarrojo"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/scanningDialog.cpp:151
 msgctxt "scanning"
 msgid "Doppler stability"
-msgstr ""
+msgstr "Estabilidad Doppler"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/scanningDialog.cpp:152
 msgctxt "scanning"
 msgid "Raspberry jam prevention"
-msgstr ""
+msgstr "Prevención de mermelada de frambuesa"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/scanningDialog.cpp:153
 msgctxt "scanning"
 msgid "Infinity impropability"
-msgstr ""
+msgstr "Improbabilidad infinita"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/scanningDialog.cpp:154
 msgctxt "scanning"
 msgid "Zerospace audio frequency"
-msgstr ""
+msgstr "Frecuencia de audio del espacio cero"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/selfDestructButton.cpp:11
 msgid "Self destruct"
-msgstr ""
+msgstr "autodestrucción"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/selfDestructButton.cpp:18
 msgctxt "selfdestruct"
 msgid "Confirm!"
-msgstr ""
+msgstr "¡Confirma!"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/selfDestructEntry.cpp:17
 msgid "Self destruct activated!"
-msgstr ""
+msgstr "¡Autodestrucción activada!"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/selfDestructEntry.cpp:63
 msgid "Code [{letter}]: {self_destruct_code}"
-msgstr ""
+msgstr "Código [{letter}]: {self_destruct_code}"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/selfDestructEntry.cpp:76
 msgctxt "selfdestruct"
 msgid "Enter [{letter}]"
-msgstr ""
+msgstr "Introduzca [{letter}]"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/selfDestructIndicator.cpp:16
 msgid "SELF DESTRUCT ACTIVATED"
-msgstr ""
+msgstr "AUTODESTRUCCIÓN ACTIVADA"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/selfDestructIndicator.cpp:38
 msgid "Waiting for authorization input: {codes} left"
-msgstr ""
+msgstr "Esperando entrada de autorización: {codes} izquierda"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/selfDestructIndicator.cpp:42
 msgid "Have a nice day."
-msgstr ""
+msgstr "Que tengas un buen día."
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/selfDestructIndicator.cpp:46
 msgid "This ship will self-destruct in {seconds} seconds."
-msgstr ""
+msgstr "Esta nave se autodestruirá en {seconds} segundos."
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/shieldFreqencySelect.cpp:24
 msgctxt "shields"
 msgid "Calibrate"
-msgstr ""
+msgstr "Calibrar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/shieldsEnableButton.cpp:27
 msgctxt "shields"
 msgid "Calibrating"
-msgstr ""
+msgstr "Calibración"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/shieldsEnableButton.cpp:53
 msgctxt "shields"
 msgid "OFF"
-msgstr ""
+msgstr "APAGADO"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/shieldsEnableButton.cpp:53
 msgctxt "shields"
 msgid "ON"
-msgstr ""
+msgstr "ENCENDIDO"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/shieldsEnableButton.cpp:55
 msgid "{frequency} Shields: {status}"
-msgstr ""
+msgstr "{frequency} Escudos: {status}"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/shieldsEnableButton.cpp:57
 msgid "Shields: {status}"
-msgstr ""
+msgstr "Escudos: {status}"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/shipDestroyedPopup.cpp:20
 msgid "SHIP DESTROYED!"
-msgstr ""
+msgstr "¡NAVE DESTRUIDA!"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/shipDestroyedPopup.cpp:21
 msgctxt "shipdestroyed"
 msgid "Return"
-msgstr ""
+msgstr "Regresar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/warpControls.cpp:40
 msgctxt "slider"
 msgid "Warp"
-msgstr ""
+msgstr "Curvatura"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screens/cinematicViewScreen.cpp:51
-#: /home/varo/proyectos/espaciokolagunak/src/screens/topDownScreen.cpp:39
+#: /home/varo/proyectos/espaciokolagunak/src/screens/cinematicViewScreen.cpp:51 /home/varo/proyectos/espaciokolagunak/src/screens/topDownScreen.cpp:39
 msgctxt "button"
 msgid "Lock camera on ship"
-msgstr ""
+msgstr "Bloquear cámara en barco"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/cinematicViewScreen.cpp:54
 msgctxt "button"
 msgid "Lock camera on ship's target"
-msgstr ""
+msgstr "Bloquear la cámara en el objetivo del barco."
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/cinematicViewScreen.cpp:57
 msgctxt "button"
 msgid "Cycle through ships"
-msgstr ""
+msgstr "Recorrer barcos en bicicleta"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screens/cinematicViewScreen.cpp:65
-#: /home/varo/proyectos/espaciokolagunak/src/screens/crewStationScreen.cpp:71
-#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:356
-#: /home/varo/proyectos/espaciokolagunak/src/screens/mainScreen.cpp:58
-#: /home/varo/proyectos/espaciokolagunak/src/screens/spectatorScreen.cpp:106
-#: /home/varo/proyectos/espaciokolagunak/src/screens/topDownScreen.cpp:46
+#: /home/varo/proyectos/espaciokolagunak/src/screens/cinematicViewScreen.cpp:65 /home/varo/proyectos/espaciokolagunak/src/screens/crewStationScreen.cpp:71 /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:356 /home/varo/proyectos/espaciokolagunak/src/screens/mainScreen.cpp:58 /home/varo/proyectos/espaciokolagunak/src/screens/spectatorScreen.cpp:106 /home/varo/proyectos/espaciokolagunak/src/screens/topDownScreen.cpp:46
 msgctxt "hotkey_F1"
 msgid "Keyboard Shortcuts"
-msgstr ""
+msgstr "Atajos de teclado"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screens/cinematicViewScreen.cpp:69
-#: /home/varo/proyectos/espaciokolagunak/src/screens/crewStationScreen.cpp:76
-#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:363
-#: /home/varo/proyectos/espaciokolagunak/src/screens/topDownScreen.cpp:50
+#: /home/varo/proyectos/espaciokolagunak/src/screens/cinematicViewScreen.cpp:69 /home/varo/proyectos/espaciokolagunak/src/screens/crewStationScreen.cpp:76 /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:363 /home/varo/proyectos/espaciokolagunak/src/screens/topDownScreen.cpp:50
 msgctxt "hotkey_F1"
 msgid "{label}: {button}\n"
-msgstr ""
+msgstr "{label}: {button}\n"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screens/crew1/singlePilotScreen.cpp:121
-#: /home/varo/proyectos/espaciokolagunak/src/screens/crew4/tacticalScreen.cpp:109
+#: /home/varo/proyectos/espaciokolagunak/src/screens/crew1/singlePilotScreen.cpp:121 /home/varo/proyectos/espaciokolagunak/src/screens/crew4/tacticalScreen.cpp:109
 msgid "Beams"
-msgstr ""
+msgstr "Haces"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew1/singlePilotScreen.cpp:136
 msgid "Open Comms"
-msgstr ""
+msgstr "Comunicaciones abiertas"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screens/crew4/operationsScreen.cpp:93
-#: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/relayScreen.cpp:174
+#: /home/varo/proyectos/espaciokolagunak/src/screens/crew4/operationsScreen.cpp:93 /home/varo/proyectos/espaciokolagunak/src/screens/crew6/relayScreen.cpp:174
 msgid "Place waypoint"
-msgstr ""
+msgstr "Colocar punto de referencia"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screens/crew4/operationsScreen.cpp:98
-#: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/relayScreen.cpp:180
+#: /home/varo/proyectos/espaciokolagunak/src/screens/crew4/operationsScreen.cpp:98 /home/varo/proyectos/espaciokolagunak/src/screens/crew6/relayScreen.cpp:180
 msgid "Delete waypoint"
-msgstr ""
+msgstr "Eliminar punto de referencia"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screens/crew4/operationsScreen.cpp:111
-#: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/relayScreen.cpp:204
+#: /home/varo/proyectos/espaciokolagunak/src/screens/crew4/operationsScreen.cpp:111 /home/varo/proyectos/espaciokolagunak/src/screens/crew6/relayScreen.cpp:204
 msgid "Reputation"
-msgstr ""
+msgstr "Reputación"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screens/crew4/operationsScreen.cpp:116
-#: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/relayScreen.cpp:208
-#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:275
-#: /home/varo/proyectos/espaciokolagunak/src/screens/spectatorScreen.cpp:80
+#: /home/varo/proyectos/espaciokolagunak/src/screens/crew4/operationsScreen.cpp:116 /home/varo/proyectos/espaciokolagunak/src/screens/crew6/relayScreen.cpp:208 /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:275 /home/varo/proyectos/espaciokolagunak/src/screens/spectatorScreen.cpp:80
 msgid "Clock"
-msgstr ""
+msgstr "Reloj"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:242
 msgctxt "slider"
 msgid "Power"
-msgstr ""
+msgstr "poder"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:248
 msgctxt "slider"
 msgid "Coolant"
-msgstr ""
+msgstr "Refrigerante"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:386
 msgctxt "slider"
 msgid "Power: {current_level}% / {requested}%"
-msgstr ""
+msgstr "Poder: {current_level}% / {requested}%"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:402
 msgctxt "slider"
 msgid "Coolant: {current_level}% / {requested}%"
-msgstr ""
+msgstr "Refrigerante: {current_level}% / {requested}%"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:416
 msgctxt "Engineer"
 msgid "Maximal health"
-msgstr ""
+msgstr "salud maxima"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:422
 msgid "Energy production"
-msgstr ""
+msgstr "Producción de energía"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:427
 msgid "Firing rate"
-msgstr ""
+msgstr "Velocidad de disparo"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:436
 msgctxt "Engineer"
 msgid "Turret rotation rate"
-msgstr ""
+msgstr "Velocidad de rotación de la torreta"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:443
 msgctxt "missile"
 msgid "Reload rate"
-msgstr ""
+msgstr "Tasa de recarga"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:447
 msgid "Turning speed"
-msgstr ""
+msgstr "Velocidad de giro"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:453
-#: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:465
+#: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:453 /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:465
 msgid "Combat recharge rate"
-msgstr ""
+msgstr "Tasa de recarga de combate"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:459
 msgid "Impulse speed"
-msgstr ""
+msgstr "velocidad de impulso"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:470
 msgid "Warp drive speed"
-msgstr ""
+msgstr "Velocidad de deformación"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:477
 msgid "Time to jump activation"
-msgstr ""
+msgstr "Hora de saltar la activación"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:481
 msgid "Jump drive recharge rate"
-msgstr ""
+msgstr "Tasa de recarga de la unidad de salto"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:496
 msgctxt "shields"
 msgid "Calibration speed"
-msgstr ""
+msgstr "Velocidad de calibración"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:499
 msgctxt "shields"
 msgid "Charge rate"
-msgstr ""
+msgstr "Tasa de carga"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:504
 msgid "Extra damage"
-msgstr ""
+msgstr "Daño adicional"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:506
 msgid "Damage negate"
-msgstr ""
+msgstr "Negar el daño"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/relayScreen.cpp:122
 msgid "Callsign"
-msgstr ""
+msgstr "indicativo de llamada"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/relayScreen.cpp:125
 msgid "Faction"
-msgstr ""
+msgstr "facción"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/relayScreen.cpp:152
 msgid "Start hacking"
-msgstr ""
+msgstr "Empezar a hackear"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/relayScreen.cpp:161
 msgid "Link to science"
-msgstr ""
+msgstr "Enlace a la ciencia"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/relayScreen.cpp:177
 msgid "Cancel waypoint"
-msgstr ""
+msgstr "Cancelar punto de referencia"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/relayScreen.cpp:189
 msgid "Launch probe"
-msgstr ""
+msgstr "Lanzar sonda"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/relayScreen.cpp:192
 msgid "Cancel probe"
-msgstr ""
+msgstr "Cancelar sonda"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/relayScreen.cpp:197
 msgid "Center on ship"
-msgstr ""
+msgstr "Centro en barco"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/relayScreen.cpp:340
 msgid "Launch probe ({stock})"
-msgstr ""
+msgstr "Lanzar sonda ({stock})"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/scienceScreen.cpp:98
 msgctxt "scienceTab"
 msgid "Other"
-msgstr ""
+msgstr "Otro"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/scienceScreen.cpp:98
 msgctxt "scienceTab"
 msgid "Scanning"
-msgstr ""
+msgstr "Escaneo"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/scienceScreen.cpp:115
 msgctxt "science"
 msgid "Callsign"
-msgstr ""
+msgstr "indicativo de llamada"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/scienceScreen.cpp:117
 msgctxt "science"
 msgid "Distance"
-msgstr ""
+msgstr "Distancia"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/scienceScreen.cpp:119
 msgctxt "science"
 msgid "Bearing"
-msgstr ""
+msgstr "Rodamiento"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/scienceScreen.cpp:121
 msgctxt "science"
 msgid "Rel. Speed"
-msgstr ""
+msgstr "Rel. Velocidad"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/scienceScreen.cpp:123
 msgctxt "science"
 msgid "Faction"
-msgstr ""
+msgstr "facción"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/scienceScreen.cpp:125
 msgctxt "science"
 msgid "Type"
-msgstr ""
+msgstr "Tipo"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/scienceScreen.cpp:127
 msgctxt "scienceButton"
 msgid "DB"
-msgstr ""
+msgstr "DB"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/scienceScreen.cpp:141
 msgctxt "science"
 msgid "Shields"
-msgstr ""
+msgstr "Escudos"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/scienceScreen.cpp:143
 msgctxt "science"
 msgid "Hull"
-msgstr ""
+msgstr "Casco"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/scienceScreen.cpp:155
 msgctxt "scienceTab"
 msgid "Tactical"
-msgstr ""
+msgstr "Táctica"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/scienceScreen.cpp:159
 msgctxt "scienceTab"
 msgid "Systems"
-msgstr ""
+msgstr "Sistemas"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/scienceScreen.cpp:162
 msgctxt "scienceTab"
 msgid "Description"
-msgstr ""
+msgstr "Descripción"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/scienceScreen.cpp:213
 msgctxt "scienceButton"
 msgid "Probe View"
-msgstr ""
+msgstr "Vista de sonda"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/scienceScreen.cpp:250
 msgctxt "scienceButton"
 msgid "Database"
-msgstr ""
+msgstr "Base de datos"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/scienceScreen.cpp:250
 msgctxt "scienceButton"
 msgid "Radar"
-msgstr ""
+msgstr "Radar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/weaponsScreen.cpp:78
 msgid "Beam info"
-msgstr ""
+msgstr "Información de haces"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/weaponsScreen.cpp:95
 msgctxt "shields"
 msgid "Front"
-msgstr ""
+msgstr "Frontal"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/weaponsScreen.cpp:97
 msgctxt "shields"
 msgid "Rear"
-msgstr ""
+msgstr "Popa"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crewStationScreen.cpp:73
 msgctxt "hotkey_menu"
 msgid "Crew screen"
-msgstr ""
+msgstr "Pantalla de tripulación"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screens/crewStationScreen.cpp:217
-#: /home/varo/proyectos/espaciokolagunak/src/screens/mainScreen.cpp:74
-#: /home/varo/proyectos/espaciokolagunak/src/screens/spectatorScreen.cpp:122
+#: /home/varo/proyectos/espaciokolagunak/src/screens/crewStationScreen.cpp:217 /home/varo/proyectos/espaciokolagunak/src/screens/mainScreen.cpp:74 /home/varo/proyectos/espaciokolagunak/src/screens/spectatorScreen.cpp:122
 msgid "More shortcuts available in settings"
-msgstr ""
+msgstr "Más atajos disponibles en configuración"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/extra/damcon.cpp:22
 msgctxt "damagecontrol"
 msgid "Hull"
-msgstr ""
+msgstr "Casco"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/extra/powerManagement.cpp:24
 msgid "Coolant"
-msgstr ""
+msgstr "Refrigerante"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/extra/powerManagement.cpp:42
 msgctxt "button"
 msgid "Power"
-msgstr ""
+msgstr "poder"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/extra/powerManagement.cpp:43
 msgctxt "button"
 msgid "Coolant"
-msgstr ""
+msgstr "Refrigerante"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/extra/powerManagement.cpp:49
 msgctxt "button"
 msgid "Heat"
-msgstr ""
+msgstr "Calor"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/chatDialog.cpp:44
 msgid "Use comms script"
-msgstr ""
+msgstr "Usar script de comunicaciones"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/chatDialog.cpp:56
 msgctxt "chatGM"
 msgid "Target - Using scripted comms"
-msgstr ""
+msgstr "Objetivo: uso de comunicaciones con secuencias de comandos"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/chatDialog.cpp:77
 msgctxt "chatGM"
 msgid "Target - Destroyed"
-msgstr ""
+msgstr "Objetivo - Destruido"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/chatDialog.cpp:82
 msgctxt "chatGM"
 msgid "Target - No Transmitter"
-msgstr ""
+msgstr "Objetivo: sin transmisor"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/chatDialog.cpp:97
 msgctxt "chatGM"
 msgid "Channel not open, enter name to hail as to hail target."
-msgstr ""
+msgstr "El canal está cerrado; introduce el nombre con el que quieres contactar al objetivo."
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/chatDialog.cpp:98
 msgctxt "chatGM"
 msgid "{callsign} - Inactive"
-msgstr ""
+msgstr "{callsign} - Inactivo"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/chatDialog.cpp:102
 msgctxt "chatGM"
 msgid "{callsign} - Opening communications with {target}"
-msgstr ""
+msgstr "{callsign} - Apertura de comunicaciones con {target}"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/chatDialog.cpp:105
 msgctxt "chatGM"
 msgid "{callsign} - Hailing as {target}"
-msgstr ""
+msgstr "{callsign} - Saludando como {target}"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/chatDialog.cpp:109
 msgctxt "chatGM"
 msgid "{callsign} - Communicating with {target}"
-msgstr ""
+msgstr "{callsign} - Comunicarse con {target}"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/chatDialog.cpp:113
 msgctxt "chatGM"
 msgid "**{callsign} - Communicating as {target}**"
-msgstr ""
+msgstr "**{callsign} - Comunicarse como {target}**"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/chatDialog.cpp:115
 msgctxt "chatGM"
 msgid "{callsign} - Communicating as {target}"
-msgstr ""
+msgstr "{callsign} - Comunicarse como {target}"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:43
-#: /home/varo/proyectos/espaciokolagunak/src/screens/spectatorScreen.cpp:258
+#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:43 /home/varo/proyectos/espaciokolagunak/src/screens/spectatorScreen.cpp:258
 msgctxt "gm_info"
 msgid "Callsign"
-msgstr ""
+msgstr "indicativo de llamada"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:45
-#: /home/varo/proyectos/espaciokolagunak/src/screens/spectatorScreen.cpp:262
+#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:45 /home/varo/proyectos/espaciokolagunak/src/screens/spectatorScreen.cpp:262
 msgctxt "gm_info"
 msgid "Faction"
-msgstr ""
+msgstr "facción"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:47
-#: /home/varo/proyectos/espaciokolagunak/src/screens/spectatorScreen.cpp:265
+#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:47 /home/varo/proyectos/espaciokolagunak/src/screens/spectatorScreen.cpp:265
 msgctxt "gm_info"
 msgid "Type"
-msgstr ""
+msgstr "Tipo"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:50
 msgctxt "gm_info"
 msgid "Shield {n}"
-msgstr ""
+msgstr "Escudo {n}"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:52
-#: /home/varo/proyectos/espaciokolagunak/src/screens/spectatorScreen.cpp:274
+#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:52 /home/varo/proyectos/espaciokolagunak/src/screens/spectatorScreen.cpp:274
 msgctxt "gm_info"
 msgid "Hull"
-msgstr ""
+msgstr "Casco"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:177
 msgctxt "button"
 msgid "Pause"
-msgstr ""
+msgstr "Pausa"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:185
 msgctxt "button"
 msgid "Intercept all comms"
-msgstr ""
+msgstr "Intercepta todas las comunicaciones"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:201
 msgctxt "button"
 msgid "Global message"
-msgstr ""
+msgstr "Mensaje global"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:216
 msgctxt "button"
 msgid "Create..."
-msgstr ""
+msgstr "Crear..."
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:228
 msgctxt "button"
 msgid "Copy scenario"
-msgstr ""
+msgstr "Copiar escenario"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:236
 msgctxt "button"
 msgid "Copy selected"
-msgstr ""
+msgstr "Copiar seleccionado"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:250
 msgctxt "button"
 msgid "Tweak"
-msgstr ""
+msgstr "retocar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:259
 msgctxt "button"
 msgid "Hail ship"
-msgstr ""
+msgstr "Granizo"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:298
 msgid "Right click to issue movement/target orders"
-msgstr ""
+msgstr "Haga clic derecho para emitir órdenes de movimiento/objetivo"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:299
 msgid "Defend location"
-msgstr ""
+msgstr "Defender la ubicación"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:309
 msgid "Stand ground"
-msgstr ""
+msgstr "Mantenerse firme"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:315
 msgid "Roaming"
-msgstr ""
+msgstr "itinerancia"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:323
 msgid "Idle"
-msgstr ""
+msgstr "inactivo"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:329
 msgid "Orders"
-msgstr ""
+msgstr "Órdenes"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:486
 msgctxt "gm_info"
 msgid "Position"
-msgstr ""
+msgstr "Posición"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:511
 msgid "*mixed*"
-msgstr ""
+msgstr "*mixto*"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:527
-#: /home/varo/proyectos/espaciokolagunak/src/screens/spectatorScreen.cpp:291
+#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:527 /home/varo/proyectos/espaciokolagunak/src/screens/spectatorScreen.cpp:291
 msgid "gm_info"
-msgstr ""
+msgstr "información_gm"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:270
 msgctxt "tweak-text"
 msgid "Health:"
-msgstr ""
+msgstr "Salud:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:271
 msgctxt "tweak-text"
 msgid "Health max:"
-msgstr ""
+msgstr "Salud máxima:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:272
 msgctxt "tweak-text"
 msgid "Heat:"
-msgstr ""
+msgstr "Calor:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:273
 msgctxt "tweak-text"
 msgid "Can be hacked:"
-msgstr ""
+msgstr "Puede ser pirateado:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:274
 msgctxt "tweak-text"
 msgid "Power factor:"
-msgstr ""
+msgstr "Factor de potencia:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:275
 msgctxt "tweak-text"
 msgid "Heat rate:"
-msgstr ""
+msgstr "Tasa de calor:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:276
 msgctxt "tweak-text"
 msgid "Coolant change rate:"
-msgstr ""
+msgstr "Tasa de cambio de refrigerante:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:277
 msgctxt "tweak-text"
 msgid "Power change rate:"
-msgstr ""
+msgstr "Tasa de cambio de potencia:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:278
 msgctxt "tweak-text"
 msgid "Auto repair rate:"
-msgstr ""
+msgstr "Tasa de reparación de automóviles:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:305
 msgctxt "tweak-tab"
 msgid "Transform"
-msgstr ""
+msgstr "transformar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:312
 msgctxt "tweak-text"
 msgid "Position X:"
-msgstr ""
+msgstr "Posición X:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:334
 msgctxt "tweak-text"
 msgid "Position Y:"
-msgstr ""
+msgstr "Posición Y:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:356
 msgctxt "tweak-text"
 msgid "Rotation:"
-msgstr ""
+msgstr "Rotación:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:377
 msgctxt "tweak-tab"
 msgid "Physics"
-msgstr ""
+msgstr "Física"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:380
 msgctxt "tweak-tab"
 msgid "Callsign"
-msgstr ""
+msgstr "indicativo de llamada"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:381
 msgctxt "tweak-text"
 msgid "Callsign:"
-msgstr ""
+msgstr "Indicativo de llamada:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:383
 msgctxt "tweak-tab"
 msgid "Type name"
-msgstr ""
+msgstr "Nombre del tipo"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:384
 msgctxt "tweak-text"
 msgid "Type name:"
-msgstr ""
+msgstr "Nombre del tipo:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:385
 msgctxt "tweak-text"
 msgid "Localized:"
-msgstr ""
+msgstr "Localizado:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:387
 msgctxt "tweak-tab"
 msgid "Coolant"
-msgstr ""
+msgstr "Refrigerante"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:388
-#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:394
-#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:466
+#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:388 /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:394 /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:466
 msgctxt "tweak-text"
 msgid "Max:"
-msgstr ""
+msgstr "Máximo:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:389
 msgctxt "tweak-text"
 msgid "Max per system:"
-msgstr ""
+msgstr "Máximo por sistema:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:390
 msgctxt "tweak-text"
 msgid "Auto levels:"
-msgstr ""
+msgstr "Niveles automáticos:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:392
 msgctxt "tweak-tab"
 msgid "Hull"
-msgstr ""
+msgstr "Casco"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:393
 msgctxt "tweak-text"
 msgid "Current:"
-msgstr ""
+msgstr "Actual:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:395
 msgctxt "tweak-text"
 msgid "Allow destruction:"
-msgstr ""
+msgstr "Permitir la destrucción:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:397
 msgctxt "tweak-tab"
 msgid "Impulse engine"
-msgstr ""
+msgstr "motor de impulso"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:398
 msgctxt "tweak-text"
 msgid "Speed forward:"
-msgstr ""
+msgstr "Velocidad de avance:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:399
 msgctxt "tweak-text"
 msgid "Speed reverse:"
-msgstr ""
+msgstr "Velocidad inversa:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:400
 msgctxt "tweak-text"
 msgid "Acceleration forward:"
-msgstr ""
+msgstr "Aceleración hacia adelante:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:401
 msgctxt "tweak-text"
 msgid "Acceleration reverse:"
-msgstr ""
+msgstr "Aceleración inversa:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:402
 msgctxt "tweak-text"
 msgid "Impulse engine system"
-msgstr ""
+msgstr "Sistema de motor de impulso"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:405
 msgctxt "tweak-tab"
 msgid "Maneuvering thrusters"
-msgstr ""
+msgstr "Propulsores de maniobra"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:406
 msgctxt "tweak-text"
 msgid "Rotational speed:"
-msgstr ""
+msgstr "Velocidad de rotación:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:407
 msgctxt "tweak-text"
 msgid "Maneuvering thrusters system"
-msgstr ""
+msgstr "Sistema de propulsores de maniobra."
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:410
 msgctxt "tweak-tab"
 msgid "Combat thrusters"
-msgstr ""
+msgstr "Propulsores de combate"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:411
 msgctxt "tweak-text"
 msgid "Charge available:"
-msgstr ""
+msgstr "Cargo disponible:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:412
 msgctxt "tweak-text"
 msgid "Seconds to full recharge from 0:"
-msgstr ""
+msgstr "Segundos para recarga completa desde 0:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:414
 msgctxt "tweak-tab"
 msgid "Beam system"
-msgstr ""
+msgstr "Sistema de vigas"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:415
-#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:462
+#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:415 /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:462
 msgctxt "tweak-text"
 msgid "Frequency:"
-msgstr ""
+msgstr "Frecuencia:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:416
 msgctxt "tweak-text"
 msgid "Beam weapons system"
-msgstr ""
+msgstr "Sistema de armas de haz"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:419
 msgctxt "tweak-tab"
 msgid "Beam mounts"
-msgstr ""
+msgstr "Soportes para vigas"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:420
-#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:445
+#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:420 /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:445
 msgctxt "tweak-vector"
 msgid "Mounts"
-msgstr ""
+msgstr "monturas"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:421
 msgctxt "tweak-text"
 msgid "Arc:"
-msgstr ""
+msgstr "Arco:"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:422
-#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:446
+#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:422 /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:446
 msgctxt "tweak-text"
 msgid "Direction:"
-msgstr ""
+msgstr "Dirección:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:423
 msgctxt "tweak-text"
 msgid "Range:"
-msgstr ""
+msgstr "Rango:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:424
 msgctxt "tweak-text"
 msgid "Cycle time:"
-msgstr ""
+msgstr "Tiempo de ciclo:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:425
 msgctxt "tweak-text"
 msgid "Damage:"
-msgstr ""
+msgstr "Daño:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:426
 msgctxt "tweak-text"
 msgid "Turret arc:"
-msgstr ""
+msgstr "Arco de torreta:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:427
 msgctxt "tweak-text"
 msgid "Turret direction:"
-msgstr ""
+msgstr "Dirección de la torreta:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:428
 msgctxt "tweak-text"
 msgid "Turret rotation rate:"
-msgstr ""
+msgstr "Tasa de rotación de la torreta:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:430
 msgctxt "tweak-tab"
 msgid "Missile system"
-msgstr ""
+msgstr "sistema de misiles"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:431
 msgctxt "tweak-text"
 msgid "Homing missiles:"
-msgstr ""
+msgstr "Misiles guiados:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:432
 msgctxt "tweak-text"
 msgid "Homing capacity:"
-msgstr ""
+msgstr "Capacidad de referencia:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:433
 msgctxt "tweak-text"
 msgid "Nuke missiles:"
-msgstr ""
+msgstr "Misiles nucleares:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:434
 msgctxt "tweak-text"
 msgid "Nuke capacity:"
-msgstr ""
+msgstr "Capacidad nuclear:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:435
 msgctxt "tweak-text"
 msgid "EMP missiles:"
-msgstr ""
+msgstr "Misiles EMP:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:436
 msgctxt "tweak-text"
 msgid "EMP capacity:"
-msgstr ""
+msgstr "Capacidad PEM:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:437
 msgctxt "tweak-text"
 msgid "HVLI missiles:"
-msgstr ""
+msgstr "Misiles HVLI:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:438
 msgctxt "tweak-text"
 msgid "HVLI capacity:"
-msgstr ""
+msgstr "Capacidad HVLI:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:439
 msgctxt "tweak-text"
 msgid "Mines:"
-msgstr ""
+msgstr "Minas:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:440
 msgctxt "tweak-text"
 msgid "Mines capacity:"
-msgstr ""
+msgstr "Capacidad de minas:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:441
 msgctxt "tweak-text"
 msgid "Missile weapons system"
-msgstr ""
+msgstr "sistema de armas de misiles"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:444
 msgctxt "tweak-tab"
 msgid "Missile mounts"
-msgstr ""
+msgstr "Montajes de misiles"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:447
 msgctxt "tweak-text"
 msgid "Load time:"
-msgstr ""
+msgstr "Tiempo de carga:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:448
 msgctxt "tweak-text"
 msgid "Size:"
-msgstr ""
+msgstr "Tamaño:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:449
 msgctxt "tweak-text"
 msgid "Allow homing:"
-msgstr ""
+msgstr "Permitir retorno a casa:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:450
 msgctxt "tweak-text"
 msgid "Allow nuke:"
-msgstr ""
+msgstr "Permitir armas nucleares:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:451
 msgctxt "tweak-text"
 msgid "Allow mine:"
-msgstr ""
+msgstr "Permitir el mío:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:452
 msgctxt "tweak-text"
 msgid "Allow EMP:"
-msgstr ""
+msgstr "Permitir EMP:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:453
 msgctxt "tweak-text"
 msgid "Allow HVLI:"
-msgstr ""
+msgstr "Permitir HVLI:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:455
 msgctxt "tweak-tab"
 msgid "Shields"
-msgstr ""
+msgstr "Escudos"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:460
-#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:515
+#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:460 /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:515
 msgctxt "tweak-text"
 msgid "Active:"
-msgstr ""
+msgstr "Activo:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:461
 msgctxt "tweak-text"
 msgid "Seconds to recalibrate:"
-msgstr ""
+msgstr "Segundos para recalibrar:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:463
 msgctxt "tweak-text"
 msgid "Energy use per second:"
-msgstr ""
+msgstr "Consumo de energía por segundo:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:464
 msgctxt "tweak-vector"
 msgid "Shields"
-msgstr ""
+msgstr "Escudos"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:465
 msgctxt "tweak-text"
 msgid "Level:"
-msgstr ""
+msgstr "Nivel:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:468
 msgctxt "tweak-tab"
 msgid "Warp drive"
-msgstr ""
+msgstr "unidad de deformación"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:469
 msgctxt "tweak-text"
 msgid "Max level:"
-msgstr ""
+msgstr "Nivel máximo:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:470
 msgctxt "tweak-text"
 msgid "Speed per level:"
-msgstr ""
+msgstr "Velocidad por nivel:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:471
 msgctxt "tweak-text"
 msgid "Energy per second:"
-msgstr ""
+msgstr "Energía por segundo:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:472
 msgctxt "tweak-text"
 msgid "Warp drive system"
-msgstr ""
+msgstr "Sistema de accionamiento por deformación"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:475
 msgctxt "tweak-tab"
 msgid "Jump drive"
-msgstr ""
+msgstr "unidad de salto"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:476
 msgctxt "tweak-text"
 msgid "Min distance:"
-msgstr ""
+msgstr "Distancia mínima:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:477
 msgctxt "tweak-text"
 msgid "Max distance:"
-msgstr ""
+msgstr "Distancia máxima:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:478
 msgctxt "tweak-text"
 msgid "Jump drive system"
-msgstr ""
+msgstr "Sistema de salto"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:485
 msgctxt "tweak-tab"
 msgid "Player ship"
-msgstr ""
+msgstr "Nave del jugador"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:486
 msgctxt "tweak-text"
 msgid "Control code:"
-msgstr ""
+msgstr "Código de control:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:488
 msgctxt "tweak-tab"
 msgid "Reactor"
-msgstr ""
+msgstr "reactor"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:489
 msgctxt "tweak-text"
 msgid "Energy:"
-msgstr ""
+msgstr "Energía:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:490
 msgctxt "tweak-text"
 msgid "Max energy:"
-msgstr ""
+msgstr "Energía máxima:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:491
 msgctxt "tweak-text"
 msgid "Explode on overload:"
-msgstr ""
+msgstr "Explotar por sobrecarga:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:492
 msgctxt "tweak-text"
 msgid "Reactor system"
-msgstr ""
+msgstr "sistema de reactores"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:495
 msgctxt "tweak-tab"
 msgid "Radar"
-msgstr ""
+msgstr "Radar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:496
 msgctxt "tweak-text"
 msgid "Short-range radar range:"
-msgstr ""
+msgstr "Alcance del radar de corto alcance:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:497
 msgctxt "tweak-text"
 msgid "Long-range radar range:"
-msgstr ""
+msgstr "Alcance del radar de largo alcance:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:499
 msgctxt "tweak-tab"
 msgid "Scanner"
-msgstr ""
+msgstr "Escáner"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:500
 msgctxt "tweak-text"
 msgid "Countdown delay:"
-msgstr ""
+msgstr "Retraso de cuenta regresiva:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:501
 msgctxt "tweak-text"
 msgid "Max delay:"
-msgstr ""
+msgstr "Retraso máximo:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:503
 msgctxt "tweak-tab"
 msgid "Comms receiver"
-msgstr ""
+msgstr "Receptor de comunicaciones"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:504
 msgctxt "tweak-tab"
 msgid "Comms transmitter"
-msgstr ""
+msgstr "Transmisor de comunicaciones"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:506
 msgctxt "tweak-tab"
 msgid "Scan probe launcher"
-msgstr ""
+msgstr "Lanzador de sonda de escaneo"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:507
 msgctxt "tweak-text"
 msgid "Stored probes:"
-msgstr ""
+msgstr "Sondas almacenadas:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:508
 msgctxt "tweak-text"
 msgid "Max probe storage:"
-msgstr ""
+msgstr "Almacenamiento máximo de sonda:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:509
 msgctxt "tweak-text"
 msgid "Probe restocking delay:"
-msgstr ""
+msgstr "Retraso en la reposición de la sonda:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:511
 msgctxt "tweak-tab"
 msgid "Hacking"
-msgstr ""
+msgstr "Hackear"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:512
 msgctxt "tweak-text"
 msgid "Effectiveness:"
-msgstr ""
+msgstr "Efectividad:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:514
 msgctxt "tweak-tab"
 msgid "Self-destruct"
-msgstr ""
+msgstr "Autodestrucción"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:516
 msgctxt "tweak-text"
 msgid "Countdown:"
-msgstr ""
+msgstr "Cuenta regresiva:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:517
 msgctxt "tweak-text"
 msgid "Blast damage:"
-msgstr ""
+msgstr "Daños por explosión:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:518
 msgctxt "tweak-text"
 msgid "Blast radius:"
-msgstr ""
+msgstr "Radio de explosión:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:520
 msgctxt "tweak-tab"
 msgid "Radar obstruction"
-msgstr ""
+msgstr "Obstrucción de radar"
 
-#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:521
-#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:525
+#: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:521 /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:525
 msgctxt "tweak-text"
 msgid "Radius:"
-msgstr ""
+msgstr "Radio:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:522
 msgctxt "tweak-text"
 msgid "Obstructs radar behind:"
-msgstr ""
+msgstr "Obstruye el radar detrás:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:524
 msgctxt "tweak-tab"
 msgid "Gravity"
-msgstr ""
+msgstr "gravedad"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:526
 msgctxt "tweak-text"
 msgid "Force:"
-msgstr ""
+msgstr "Fuerza:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:527
 msgctxt "tweak-text"
 msgid "Black hole damage:"
-msgstr ""
+msgstr "Daño del agujero negro:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:574
 msgctxt "tweak-button"
 msgid "Remove component"
-msgstr ""
+msgstr "Quitar componente"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:577
 msgctxt "tweak-button"
 msgid "Create component"
-msgstr ""
+msgstr "Crear componente"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/spectatorScreen.cpp:51
 msgctxt "spectator"
 msgid "Select player ship as target"
-msgstr ""
+msgstr "Selecciona el barco del jugador como objetivo."
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/spectatorScreen.cpp:78
 msgctxt "spectate"
 msgid "Sector"
-msgstr ""
+msgstr "Sector"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/spectatorScreen.cpp:83
 msgctxt "gmTweak"
 msgid "Position"
-msgstr ""
+msgstr "Posición"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/spectatorScreen.cpp:86
 msgctxt "spectate"
 msgid "Follow"
-msgstr ""
+msgstr "Seguir"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/spectatorScreen.cpp:242
 msgctxt "spectator"
 msgid "{sector}"
-msgstr ""
+msgstr "{sector}"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/spectatorScreen.cpp:271
 msgctxt "gm_info"
 msgid "Shields"
-msgstr ""
+msgstr "Escudos"
 
-#: /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:91
-#: /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:173
+#: /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:91 /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:173
 msgctxt "chatdialog"
 msgid "Opened comms with {name}"
-msgstr ""
+msgstr "Comunicaciones abiertas con {name}"
 
 #: /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:94
 msgctxt "shiplog"
 msgid "Hailing: {name}"
-msgstr ""
+msgstr "Saludando: {name}"
 
-#: /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:116
-#: /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:117
+#: /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:116 /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:117
 msgctxt "chatdialog"
 msgid "Opened comms to {callsign}"
-msgstr ""
+msgstr "Comunicaciones abiertas para {callsign}"
 
-#: /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:119
-#: /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:121
+#: /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:119 /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:121
 msgctxt "shiplog"
 msgid "Opened communication channel to {callsign}"
-msgstr ""
+msgstr "Canal de comunicación abierto para {callsign}"
 
 #: /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:124
 msgctxt "shiplog"
 msgid "Refused communications from {callsign}"
-msgstr ""
+msgstr "Comunicaciones rechazadas de {callsign}"
 
 #: /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:126
 msgctxt "shiplog"
 msgid "Refused communications to {callsign}"
-msgstr ""
+msgstr "Comunicaciones rechazadas a {callsign}"
 
 #: /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:136
 msgctxt "shiplog"
 msgid "Hail suddenly went dead."
-msgstr ""
+msgstr "El granizo de repente se apagó."
 
 #: /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:140
 msgctxt "shiplog"
 msgid "Accepted hail from {callsign}"
-msgstr ""
+msgstr "Aceptado granizo de {callsign}"
 
 #: /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:159
 msgctxt "shiplog"
 msgid "Refused hail from {callsign}"
-msgstr ""
+msgstr "Rechazado granizo de {callsign}"
 
 #: /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:172
 msgctxt "shiplog"
 msgid "Opened communication channel to {name}"
-msgstr ""
+msgstr "Canal de comunicación abierto para {name}"
 
 #: /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:176
 msgctxt "shiplog"
 msgid "Refused hail from {name}"
-msgstr ""
+msgstr "Rechazado granizo de {name}"
 
 #: /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:196
 msgctxt "shiplog"
 msgid "Communication channel closed by other side"
-msgstr ""
+msgstr "Canal de comunicación cerrado por otro lado"
 
 #: /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:207
 msgctxt "shiplog"
 msgid "Hailing from {callsign} stopped"
-msgstr ""
+msgstr "Proveniente de {callsign} detenido"
 
 #: /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:212
 msgctxt "shiplog"
 msgid "Communication channel closed"
-msgstr ""
+msgstr "Canal de comunicación cerrado"
 
 #: /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:232
 msgctxt "shiplog"
 msgid "Hailed by {name}"
-msgstr ""
+msgstr "Llamada entrante de {name}"
 
 #: /home/varo/proyectos/espaciokolagunak/src/tutorialGame.cpp:92
 msgid "Next"
-msgstr ""
+msgstr "Siguiente"
 
 #: /home/varo/proyectos/espaciokolagunak/src/tutorialGame.cpp:99
 msgid "Reset"
-msgstr ""
+msgstr "Reiniciar"

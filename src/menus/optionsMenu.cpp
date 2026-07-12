@@ -145,6 +145,13 @@ void OptionsMenu::setupInterfaceOptions(OptionsMenu::ReturnTo return_to)
         }
         std::sort(languages.begin(), languages.end());
 
+        // Keep locale codes as selector values for preferences and resource
+        // lookup, while presenting a human-friendly name for es-ES.
+        std::vector<string> language_names = languages;
+        auto spanish = std::find(languages.begin(), languages.end(), "es");
+        if (spanish != languages.end())
+            language_names[static_cast<size_t>(spanish - languages.begin())] = "Español (España)";
+
         int default_index = 0;
         auto default_elem = std::find(languages.begin(), languages.end(), PreferencesManager::get("language", "en"));
         if(default_elem != languages.end())
@@ -157,7 +164,7 @@ void OptionsMenu::setupInterfaceOptions(OptionsMenu::ReturnTo return_to)
             PreferencesManager::set("language", value);
             keys.init(); // Reinit keyboard shortcut labels
         }))
-            ->setOptions(languages)
+            ->setOptions(language_names, languages)
             ->setSelectionIndex(default_index)
             ->setSize(GuiElement::GuiSizeMax, 50.0f);
 

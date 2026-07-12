@@ -1,0 +1,57 @@
+# Scenario name
+msgid ""
+msgstr ""
+"Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
+"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"PO-Revision-Date: 2026-07-12 00:00+0200\n"
+"Last-Translator: Espaciokoop Lagunak contributors\n"
+"Language-Team: Espaciokoop Lagunak\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
+
+msgid "Battlefield"
+msgstr "Battlefield"
+
+# Scenario description
+msgid ""
+"More than 60 Human Navy and Exuari ships face off in all-out war near a neutral station.\n"
+"\n"
+"(This scenario is designed for performance testing.)"
+msgstr "Más de 60 buques de la Armada Humana y Exuari se enfrentan en guerra total cerca de una estación neutral. (Este escenario está diseñado para pruebas de rendimiento.)"
+
+# Scenario setting
+msgctxt "setting"
+msgid "Enemies"
+msgstr "Enemigos"
+
+msgctxt "setting"
+msgid "Configures the amount of enemies spawned in the scenario."
+msgstr "Configura la cantidad de enemigos que se despertó en el escenario."
+
+msgctxt "Enemies"
+msgid "Large"
+msgstr "Grande"
+
+msgctxt "Enemies"
+msgid "Larger battle. This increases the fleet sizes to 100 ships per side."
+msgstr "Batalla más grande. Esto aumenta el tamaño de la flota a 100 barcos por lado."
+
+msgctxt "Enemies"
+msgid "Medium"
+msgstr "Mediana"
+
+msgctxt "Enemies"
+msgid "Medium battle. 60 ships per side."
+msgstr "Una batalla mediana. 60 naves por lado."
+
+msgctxt "Enemies"
+msgid "Huge"
+msgstr "Enorme"
+
+msgctxt "Enemies"
+msgid "Huge battle. This increases the fleet sizes to 500 ships per side."
+msgstr "Gran batalla. Esto aumenta el tamaño de la flota a 500 barcos por lado."

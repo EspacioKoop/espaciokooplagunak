@@ -1,0 +1,36 @@
+# Scenario name
+msgid ""
+msgstr ""
+"Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
+"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"PO-Revision-Date: 2026-07-12 00:00+0200\n"
+"Last-Translator: Espaciokoop Lagunak contributors\n"
+"Language-Team: Espaciokoop Lagunak\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
+
+msgid "Empty space"
+msgstr "Espacio vacío"
+
+# Scenario description
+msgid "Empty scenario, no enemies, no friendlies. Can be used by a GM player to setup a scenario in the GM screen. The F5 key can be used to copy the current layout to the clipboard for use in scenario scripts."
+msgstr "Escenario vacío, ningún enemigo, ningún amigo. Puede ser utilizado por un jugador GM para configurar un escenario en la pantalla GM. La tecla F5 se puede utilizar para copiar el diseño actual en el portapapeles para usar en scripts de escenario."
+
+#: scripts/scenario_10_empty.lua:30
+msgctxt "buttonGM"
+msgid "Random asteroid field"
+msgstr "Campo de asteroides aleatorios"
+
+#: scripts/scenario_10_empty.lua:40
+msgctxt "buttonGM"
+msgid "Random nebula field"
+msgstr "Campo de nebulosa aleatoria"
+
+#: scripts/scenario_10_empty.lua:49
+msgctxt "buttonGM"
+msgid "Delete unselected"
+msgstr "Suprímase sin elección"

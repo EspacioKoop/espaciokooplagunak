@@ -1,0 +1,232 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
+"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"PO-Revision-Date: 2026-07-12 00:00+0200\n"
+"Last-Translator: Espaciokoop Lagunak contributors\n"
+"Language-Team: Espaciokoop Lagunak\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
+
+#: scripts/shiptemplates/corvette.lua:14
+msgctxt "ship"
+msgid "Atlantis X23"
+msgstr "Atlantis X23"
+
+#: scripts/shiptemplates/corvette.lua:14 scripts/shiptemplates/corvette.lua:83 scripts/shiptemplates/corvette.lua:101 scripts/shiptemplates/corvette.lua:157 scripts/shiptemplates/corvette.lua:217 scripts/shiptemplates/corvette.lua:235 scripts/shiptemplates/corvette.lua:248 scripts/shiptemplates/corvette.lua:261 scripts/shiptemplates/corvette.lua:274 scripts/shiptemplates/corvette.lua:287 scripts/shiptemplates/corvette.lua:301 scripts/shiptemplates/corvette.lua:310 scripts/shiptemplates/corvette.lua:315 scripts/shiptemplates/corvette.lua:360
+msgctxt "class"
+msgid "Corvette"
+msgstr "Corvette"
+
+#: scripts/shiptemplates/corvette.lua:14 scripts/shiptemplates/corvette.lua:83
+msgctxt "subclass"
+msgid "Destroyer"
+msgstr "Destructor"
+
+#: scripts/shiptemplates/corvette.lua:15
+msgid "The Atlantis X23 is the smallest model of destroyer, and its combination of frigate-like size and corvette-like power makes it an excellent escort ship when defending larger ships against multiple smaller enemies. Because the Atlantis X23 is fitted with a jump drive, it can also serve as an intersystem patrol craft."
+msgstr "El Atlantis X23 es el modelo más pequeño de destructor, y su combinación de tamaño de fragata y potencia similar a la corbeta lo convierte en un excelente barco de escolta cuando defiende barcos más grandes contra múltiples enemigos más pequeños. Debido a que la Atlantis X23 está equipada con una unidad de salto, también puede servir como una nave de patrulla intersistema."
+
+#: scripts/shiptemplates/corvette.lua:33
+msgctxt "playerShip"
+msgid "Atlantis"
+msgstr "Atlantis"
+
+#: scripts/shiptemplates/corvette.lua:34
+msgid "A refitted Atlantis X23 for more general tasks. The large shield system has been replaced with an advanced combat maneuvering systems and improved impulse engines. Its missile loadout is also more diverse. Mistaking the modified Atlantis for an Atlantis X23 would be a deadly mistake."
+msgstr "Una Atlantis X23 refitted para tareas más generales. El gran sistema de escudos ha sido reemplazado por sistemas avanzados de maniobra de combate y motores de impulso mejorados. Su carga de misiles también es más diversa. Malinterpretar la Atlantis modificada para una Atlantis X23 sería un error mortal."
+
+#: scripts/shiptemplates/corvette.lua:83
+msgctxt "ship"
+msgid "Starhammer II"
+msgstr "Starhammer II"
+
+#: scripts/shiptemplates/corvette.lua:84
+msgid "Contrary to its predecessor, the Starhammer II lives up to its name. By resolving the original Starhammer's power and heat management issues, the updated model makes for a phenomenal frontal assault ship. Its low speed makes it difficult to position, but when in the right place at the right time, even the strongest shields can't withstand a Starhammer's assault for long."
+msgstr "Contrariamente a su predecesor, el Starhammer II vive hasta su nombre. Al resolver los problemas originales de gestión de energía y calor de Starhammer, el modelo actualizado hace que un barco de asalto frontal fenomenal. Su baja velocidad hace difícil posicionarse, pero cuando en el lugar correcto en el momento adecuado, incluso los escudos más fuertes no pueden soportar el asalto de un Starhammer por mucho tiempo."
+
+#: scripts/shiptemplates/corvette.lua:101
+msgctxt "playerShip"
+msgid "Crucible"
+msgstr "Crucible"
+
+#: scripts/shiptemplates/corvette.lua:101
+msgctxt "subclass"
+msgid "Popper"
+msgstr "Popper"
+
+#: scripts/shiptemplates/corvette.lua:102
+msgid "A number of missile tubes range around this ship. Beams were deemed lower priority, though they are still present. Stronger defenses than a frigate, but not as strong as the Atlantis"
+msgstr "Una serie de tubos de misiles van alrededor de este barco. Los embutidos se consideraron de menor prioridad, aunque todavía están presentes. Defensas más fuertes que una fragata, pero no tan fuerte como la Atlántida"
+
+#: scripts/shiptemplates/corvette.lua:157
+msgctxt "playerShip"
+msgid "Maverick"
+msgstr "Maverick"
+
+#: scripts/shiptemplates/corvette.lua:157
+msgctxt "subclass"
+msgid "Gunner"
+msgstr "Gunner"
+
+#: scripts/shiptemplates/corvette.lua:158
+msgid "A number of beams bristle from various points on this gunner. Missiles were deemed lower priority, though they are still present. Stronger defenses than a frigate, but not as strong as the Atlantis"
+msgstr "Una serie de vigas brinden desde varios puntos en este arma. Misiles se consideraron menor prioridad, aunque todavía están presentes. defensas más fuertes que una fragata, pero no tan fuerte como la Atlántida"
+
+#: scripts/shiptemplates/corvette.lua:217
+msgctxt "ship"
+msgid "Defense platform"
+msgstr "Plataforma de defensa"
+
+#: scripts/shiptemplates/corvette.lua:217
+msgctxt "subclass"
+msgid "Support"
+msgstr "Apoyo"
+
+#: scripts/shiptemplates/corvette.lua:218
+msgid "This stationary defense platform operates like a station, with docking and resupply functions, but is armed with powerful beam weapons and can slowly rotate. Larger systems often use these platforms to resupply patrol ships."
+msgstr "Esta plataforma de defensa estacionaria opera como una estación, con funciones de atraque y reaprovisionamiento, pero está armada con poderosas armas de haz y puede girar lentamente. Los sistemas más grandes a menudo utilizan estas plataformas para reabastecer naves de patrullaje."
+
+#: scripts/shiptemplates/corvette.lua:223 scripts/shiptemplates/corvette.lua:311 scripts/shiptemplates/corvette.lua:369
+msgctxt "class"
+msgid "Starfighter"
+msgstr "Starfighter"
+
+#: scripts/shiptemplates/corvette.lua:223 scripts/shiptemplates/corvette.lua:310 scripts/shiptemplates/corvette.lua:368
+msgctxt "class"
+msgid "Frigate"
+msgstr "Frigate"
+
+#: scripts/shiptemplates/corvette.lua:235
+#, lua-format
+msgctxt "ship"
+msgid "Personnel Freighter %d"
+msgstr "Personal Freighter %d"
+
+#: scripts/shiptemplates/corvette.lua:235 scripts/shiptemplates/corvette.lua:248 scripts/shiptemplates/corvette.lua:261 scripts/shiptemplates/corvette.lua:274 scripts/shiptemplates/corvette.lua:287 scripts/shiptemplates/corvette.lua:301
+msgctxt "subclass"
+msgid "Freighter"
+msgstr "Cargador"
+
+#: scripts/shiptemplates/corvette.lua:236
+msgid "These freighters are designed to transport armed troops, military support personnel, and combat gear."
+msgstr "Estos fletadores están diseñados para transportar tropas armadas, personal de apoyo militar y equipo de combate."
+
+#: scripts/shiptemplates/corvette.lua:244
+#, lua-format
+msgctxt "ship"
+msgid "Personnel Jump Freighter %d"
+msgstr "Personal Jump Freighter %d"
+
+#: scripts/shiptemplates/corvette.lua:248
+#, lua-format
+msgctxt "ship"
+msgid "Goods Freighter %d"
+msgstr "Goods Freighter %d"
+
+#: scripts/shiptemplates/corvette.lua:249
+msgid "Cargo freighters haul large loads of cargo across long distances on impulse power. Their cargo bays include climate control and stabilization systems that keep the cargo in good condition."
+msgstr "Los cargueros transportan grandes cargas de carga a largas distancias con potencia de impulso. Sus bahías de carga incluyen sistemas de control climático y estabilización que mantienen la carga en buenas condiciones."
+
+#: scripts/shiptemplates/corvette.lua:257
+#, lua-format
+msgctxt "ship"
+msgid "Goods Jump Freighter %d"
+msgstr "Goods Jump Freighter %d"
+
+#: scripts/shiptemplates/corvette.lua:261
+#, lua-format
+msgctxt "ship"
+msgid "Garbage Freighter %d"
+msgstr "Garbage Freighter %d"
+
+#: scripts/shiptemplates/corvette.lua:262
+msgid "These freighters are specially designed to haul garbage and waste. They are fitted with a trash compactor and fewer stabilzation systems than cargo freighters."
+msgstr "Estos cargueros están especialmente diseñados para transportar basura y residuos. Están equipados con un compactador de basura y menos sistemas de estabilización que los cargueros de carga."
+
+#: scripts/shiptemplates/corvette.lua:270
+#, lua-format
+msgctxt "ship"
+msgid "Garbage Jump Freighter %d"
+msgstr "Cargador de salto de basura %d"
+
+#: scripts/shiptemplates/corvette.lua:274
+#, lua-format
+msgctxt "ship"
+msgid "Equipment Freighter %d"
+msgstr "Equipo Freighter %d"
+
+#: scripts/shiptemplates/corvette.lua:275
+msgid "Equipment freighters have specialized environmental and stabilization systems to safely carry delicate machinery and complex instruments."
+msgstr "Los fletadores de equipo disponen de sistemas especializados de medio ambiente y estabilización para llevar con seguridad maquinaria delicada e instrumentos complejos."
+
+#: scripts/shiptemplates/corvette.lua:283
+#, lua-format
+msgctxt "ship"
+msgid "Equipment Jump Freighter %d"
+msgstr "Equipo Jump Freighter %d"
+
+#: scripts/shiptemplates/corvette.lua:287
+#, lua-format
+msgctxt "ship"
+msgid "Fuel Freighter %d"
+msgstr "Freighter de combustible %d"
+
+#: scripts/shiptemplates/corvette.lua:288
+msgid "Fuel freighters have massive tanks for hauling fuel, and delicate internal sensors that watch for any changes to their cargo's potentially volatile state."
+msgstr "Los cargueros de combustible tienen tanques masivos para transportar combustible, y sensores internos delicados que velan por cualquier cambio en el estado potencialmente volátil de su carga."
+
+#: scripts/shiptemplates/corvette.lua:296
+#, lua-format
+msgctxt "ship"
+msgid "Fuel Jump Freighter %d"
+msgstr "Freighter de salto de combustible %d"
+
+#: scripts/shiptemplates/corvette.lua:301
+msgctxt "ship"
+msgid "Jump Carrier"
+msgstr "Jump Carrier"
+
+#: scripts/shiptemplates/corvette.lua:302
+msgid ""
+"The Jump Carrier is a specialized Freighter. It does not carry any cargo, as it's cargo bay is taken up by a specialized jump drive and the energy storage required to run this jump drive.\n"
+"It is designed to carry other ships deep into space. So it has special docking parameters, allowing other ships to attach themselves to this ship."
+msgstr "El Jump Carrier es un Freighter especializado. No lleva ningún cargamento, ya que su bahía de carga es absorbida por una unidad de salto especializada y el almacenamiento energético requerido para ejecutar esta unidad de salto. Está diseñado para llevar a otros barcos de profundidad en el espacio. Por lo tanto, tiene parámetros especiales de acoplamiento, permitiendo que otros barcos se adhieran a este barco."
+
+#: scripts/shiptemplates/corvette.lua:315
+msgctxt "playerShip"
+msgid "Benedict"
+msgstr "Benedict"
+
+#: scripts/shiptemplates/corvette.lua:315
+msgctxt "subclass"
+msgid "Freighter/Carrier"
+msgstr "Cargador/Carrera"
+
+#: scripts/shiptemplates/corvette.lua:316
+msgid "Benedict is an improved version of the Jump Carrier"
+msgstr "Benedict es una versión mejorada del operador de saltos"
+
+#: scripts/shiptemplates/corvette.lua:349
+msgctxt "playerShip"
+msgid "Kiriya"
+msgstr "Kiriya"
+
+#: scripts/shiptemplates/corvette.lua:350
+msgid "Kiriya is an improved warp drive version of the Jump Carrier"
+msgstr "Kiriya es una versión mejorada de la unidad warp del operador de saltos"
+
+#: scripts/shiptemplates/corvette.lua:360
+msgctxt "playerShip"
+msgid "Saipan"
+msgstr "Saipan"
+
+#: scripts/shiptemplates/corvette.lua:360
+msgctxt "subclass"
+msgid "Carrier"
+msgstr "Carrier"

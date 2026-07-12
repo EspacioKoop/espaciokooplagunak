@@ -1,0 +1,64 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
+"PO-Revision-Date: 2026-07-12 00:00+0200\n"
+"Last-Translator: Espaciokoop Lagunak contributors\n"
+"Language-Team: Espaciokoop Lagunak\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. Scenario name
+msgid "Lagunak: Primera guardia"
+msgstr "Lagunak: Primera guardia"
+
+#. Scenario description
+msgid "Primer escenario propio de Espaciokoop Lagunak. Escolta corta para tripulaciones novatas: llevad la nave desde la estacion Lagunak hasta el puesto avanzado Argia. Asaltantes Exuari merodean el corredor a mitad de ruta; combatir o esquivarlos es decision de la tripulacion. Victoria al llegar a Argia; derrota si perdeis la nave."
+msgstr "Primer escenario propio de Espaciokoop Lagunak. Escolta corta para tripulaciónes novatas: llevad la nave desde la estación Lagunak hasta el puesto avanzado Argia. Asaltantes Exuari merodean el corredor a mitad de ruta; combatir o esquivarlos es decisión de la tripulación. Victoria al llegar a Argia; derrota si perdéis la nave."
+
+#: /home/varo/proyectos/espaciokolagunak/scripts/scenario_90_lagunak_primera_guardia.lua:60
+msgctxt "goal-incCall"
+msgid ""
+"Aqui control de Lagunak.\n"
+"\n"
+"Primera guardia de esta tripulacion: llevad la Itsaso 1 hasta el puesto avanzado Argia, rumbo aproximado 120, a unas 32U de aqui.\n"
+"\n"
+"Aviso de trafico: naves Exuari merodean el corredor a mitad de ruta. No teneis orden de limpiarlo  llegar enteros ES la mision. Combatir o esquivar, decision vuestra.\n"
+"\n"
+"Control de Lagunak, corto."
+msgstr ""
+"Aquí control de Lagunak.\n"
+"\n"
+"Primera guardia de esta tripulación: llevad la Itsaso 1 hasta el puesto avanzado Argia, rumbo aproximado 120, a unas 32U de aquí.\n"
+"\n"
+"Aviso de tráfico: naves Exuari merodean el corredor a mitad de ruta. No tenéis orden de limpiarlo  llegar enteros ES la misión. Combatir o esquivar, decisión vuestra.\n"
+"\n"
+"Control de Lagunak, corto."
+
+#: /home/varo/proyectos/espaciokolagunak/scripts/scenario_90_lagunak_primera_guardia.lua:76
+#, lua-format
+msgctxt "msgMainscreen"
+msgid ""
+"Guardia completada.\n"
+"La Itsaso 1 ha llegado al puesto avanzado Argia.\n"
+"Tiempo de guardia: %s\n"
+"\n"
+"Espaciokoop Lagunak  primera guardia superada."
+msgstr ""
+"Guardia completada.\n"
+"La Itsaso 1 ha llegado al puesto avanzado Argia.\n"
+"Tiempo de guardia: %s\n"
+"\n"
+"Espaciokoop Lagunak  primera guardia superada."
+
+#: /home/varo/proyectos/espaciokolagunak/scripts/scenario_90_lagunak_primera_guardia.lua:94
+msgctxt "msgMainscreen"
+msgid ""
+"La Itsaso 1 se ha perdido con toda su tripulacion.\n"
+"La primera guardia termina aqui."
+msgstr ""
+"La Itsaso 1 se ha perdido con toda su tripulación.\n"
+"La primera guardia termina aqui."

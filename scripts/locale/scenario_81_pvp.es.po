@@ -1,0 +1,262 @@
+# Scenario name
+msgid ""
+msgstr ""
+"Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
+"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"PO-Revision-Date: 2026-07-12 00:00+0200\n"
+"Last-Translator: Espaciokoop Lagunak contributors\n"
+"Language-Team: Espaciokoop Lagunak\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
+
+msgid "Clash in Shangri-La (PVP)"
+msgstr "Choque en Shangri-La (PVP)"
+
+# Scenario description
+msgid ""
+"Since its creation, the Shangri-La station was governed by a multi-ethnic consortium that assured the station's independence across the conflicts that shook the sector.\n"
+"\n"
+"However, the station's tranquility came to an abrupt end when most of the governing consortium's members were assassinated under a Exuari false flag operation.\n"
+"\n"
+"Now the station is in a state of civil war, with infighting breaking out between warring factions.\n"
+"\n"
+"Both the neighboring Human Navy and Kraylor are worried that the breakdown of order in Shangri-La could tilt the balance of power in their opponent's favor, and sent \"peacekeepers\" to shift the situation to their own advantage.\n"
+"\n"
+"The Human Navy's HNS Gallipoli and Kraylor's Crusader Naa'Tvek face off in an all-out battle for Shangri-La."
+msgstr ""
+"Desde su creación, la estación de Shangri-La fue gobernada por un consorcio multiétnico que aseguraba la independencia de la estación a través de los conflictos que sacudían el sector. Sin embargo, la tranquilidad de la estación llegó a un final abrupto cuando la mayoría de los miembros del consorcio gobernante fueron asesinados bajo una operación de bandera falsa Exuari.\n"
+"\n"
+"Ahora la estación está en estado de guerra civil, con luchas incendiarias entre facciones beligerantes. Tanto la Armada Humana vecina como Kraylor están preocupados de que el desglose del orden en Shangri-La pueda inclinar el equilibrio del poder a favor de su oponente, y envió \"pacíficos\" para cambiar la situación a su propia ventaja.\n"
+"\n"
+"El HNS Gallipoli de la Armada Humana y el cruzado de Kraylor Naa'Tvek se enfrentan en una batalla total por Shangri-La."
+
+#: scripts/scenario_81_pvp.lua:90
+msgctxt "goal-incCall"
+msgid ""
+"Captain, it seems that the Kraylor are moving to take the Shangri-La station in sector F5!\n"
+"\n"
+"Provide cover while our troop transports board the station to reclaim it.\n"
+"\n"
+"Good luck, and stay safe."
+msgstr "Capitán, parece que el Kraylor se está moviendo para tomar la estación de Shangri-La en el sector F5! Proporcionar cobertura mientras que nuestra tropa transporta a bordo de la estación para recuperarla. Buena suerte, y mantenerse a salvo."
+
+#: scripts/scenario_81_pvp.lua:99
+msgctxt "goal-incCall"
+msgid ""
+"Greetings, Crusader.\n"
+"\n"
+"Your mission is to secure the Shangri-La station in sector F5. The feeble humans think it's theirs for the taking.\n"
+"\n"
+"Support our glorious soldiers by preventing the heretics from harming our transports, and cleanse all enemy opposition!"
+msgstr "Saludos, cruzado. Su misión es asegurar la estación de Shangri-La en el sector F5. Los humanos débiles piensan que es suyo para la toma. Apoyar a nuestros gloriosos soldados al impedir que los herejes hagan daño a nuestros transportes, y limpiar toda oposición enemiga!"
+
+#: scripts/scenario_81_pvp.lua:130
+msgctxt "situationReport-comms"
+msgid "Here's the latest news from the front."
+msgstr "Aquí están las últimas noticias del frente."
+
+#: scripts/scenario_81_pvp.lua:131
+#, lua-format
+msgctxt "situationReport-comms"
+msgid "Human dominance: %d"
+msgstr "Predominio humano: %d"
+
+#: scripts/scenario_81_pvp.lua:132
+#, lua-format
+msgctxt "situationReport-comms"
+msgid "Kraylor dominance: %d"
+msgstr "Predominio Kraylor: %d"
+
+#: scripts/scenario_81_pvp.lua:133
+#, lua-format
+msgctxt "situationReport-comms"
+msgid "Time elapsed: %.0f"
+msgstr "Tiempo transcurrido: %.0f"
+
+#: scripts/scenario_81_pvp.lua:143
+msgctxt "station-comms"
+msgid ""
+"Your faction's militia commander picks up:\n"
+"\n"
+"What can we do for you, Captain?"
+msgstr "El comandante de la milicia de su facción recoge: ¿Qué podemos hacer por usted, Capitán?"
+
+#: scripts/scenario_81_pvp.lua:147
+msgctxt "situationReport-comms"
+msgid "Give us a status report."
+msgstr "Danos un informe de estado."
+
+#: scripts/scenario_81_pvp.lua:161
+msgctxt "station-comms"
+msgid ""
+"A dispatcher responds:\n"
+"\n"
+"Greetings, Captain. If you want supplies, please dock with us."
+msgstr "Un despachador responde: Saludos, Capitán. Si quiere suministros, por favor, agáchese con nosotros."
+
+#: scripts/scenario_81_pvp.lua:165
+msgctxt "station-comms"
+msgid ""
+"A dispatcher responds:\n"
+"\n"
+"Greetings, Captain. What can we do for you?"
+msgstr "Un despachador responde: Saludos, Capitán. ¿Qué podemos hacer por usted?"
+
+#: scripts/scenario_81_pvp.lua:171
+msgctxt "situationReport-comms"
+msgid "I need a status report."
+msgstr "Necesito un informe de estado."
+
+#: scripts/scenario_81_pvp.lua:178
+msgctxt "reinforcements-comms"
+msgid "Send in more troops. (100 reputation)"
+msgstr "Envía más tropas. (100 reputación)"
+
+#: scripts/scenario_81_pvp.lua:181 scripts/scenario_81_pvp.lua:203 scripts/scenario_81_pvp.lua:233
+msgctxt "needRep-comms"
+msgid "Not enough reputation."
+msgstr "No es suficiente reputación."
+
+#: scripts/scenario_81_pvp.lua:184
+msgctxt "reinforcements-comms"
+msgid "Aye, Captain. We've deployed a squad with fighter escort to support the assault on Shangri-La."
+msgstr "Hemos desplegado un equipo con escolta de caza para apoyar el asalto a Shangri-La."
+
+#: scripts/scenario_81_pvp.lua:200
+msgctxt "reinforcements-comms"
+msgid "We need some space-based firepower. (150 reputation)"
+msgstr "Necesitamos algo de potencia de fuego espacial. (150 reputación)"
+
+#: scripts/scenario_81_pvp.lua:206
+msgctxt "reinforcements-comms"
+msgid "Confirmed. We've dispatched a strike wing to support space superiority around Shangri-La."
+msgstr "Hemos enviado un ala de huelga para apoyar la superioridad espacial alrededor de Shangri-La."
+
+#: scripts/scenario_81_pvp.lua:214
+msgctxt "ammo-comms"
+msgid "We need supplies."
+msgstr "Necesitamos suministros."
+
+#: scripts/scenario_81_pvp.lua:217
+msgctxt "shipEnemy-comms"
+msgid "We'll bring your destruction!"
+msgstr "¡Traeremos tu destrucción!"
+
+#: scripts/scenario_81_pvp.lua:226
+#, lua-format
+msgctxt "ammo-comms"
+msgid "(%d rep each)"
+msgstr "(G)%d rep cada uno)"
+
+#: scripts/scenario_81_pvp.lua:229
+msgctxt "station-comms"
+msgid "You need to stay docked for that action."
+msgstr "Tienes que permanecer atracado para esa acción."
+
+#: scripts/scenario_81_pvp.lua:238 scripts/scenario_81_pvp.lua:242
+msgid "Back"
+msgstr "Volver"
+
+#: scripts/scenario_81_pvp.lua:250
+msgctxt "ammo-comms"
+msgid "What supplies do you need?"
+msgstr "¿Qué suministros necesitas?"
+
+#: scripts/scenario_81_pvp.lua:255
+msgctxt "ammo-comms"
+msgid "Do you have spare homing missiles for us?"
+msgstr "¿Tiene misiles de homenaje por nosotros?"
+
+#: scripts/scenario_81_pvp.lua:256
+msgctxt "ammo-comms"
+msgid "Sorry, Captain, but you are fully stocked with homing missiles."
+msgstr "Lo siento, capitán, pero está lleno de misiles de homing."
+
+#: scripts/scenario_81_pvp.lua:257
+msgctxt "ammo-comms"
+msgid "We've replenished your homing missile supply."
+msgstr "Hemos replendido su suministro de misiles homing."
+
+#: scripts/scenario_81_pvp.lua:263
+msgctxt "ammo-comms"
+msgid "Please re-stock our mines."
+msgstr "Por favor, re-encargue nuestras minas."
+
+#: scripts/scenario_81_pvp.lua:264
+msgctxt "ammo-comms"
+msgid "Captain, you already have all the mines you can fit in that ship."
+msgstr "Capitán, ya tiene todas las minas que puede caber en esa nave."
+
+#: scripts/scenario_81_pvp.lua:265
+msgctxt "ammo-comms"
+msgid "These mines are yours."
+msgstr "Estas minas son tuyas."
+
+#: scripts/scenario_81_pvp.lua:271
+msgctxt "ammo-comms"
+msgid "Can you supply us with some nukes?"
+msgstr "¿Nos puedes dar unos nukes?"
+
+#: scripts/scenario_81_pvp.lua:272
+msgctxt "ammo-comms"
+msgid "Your nukes are already charged and primed for destruction."
+msgstr "Tus nukes ya están cargados y preparados para la destrucción."
+
+#: scripts/scenario_81_pvp.lua:273
+msgctxt "ammo-comms"
+msgid "You are fully loaded and ready to explode things."
+msgstr "Estás completamente cargado y listo para explotar cosas."
+
+#: scripts/scenario_81_pvp.lua:279
+msgctxt "ammo-comms"
+msgid "Please re-stock our EMP missiles."
+msgstr "Por favor, vuelva a surtir nuestros misiles EMP."
+
+#: scripts/scenario_81_pvp.lua:280
+msgctxt "ammo-comms"
+msgid "All storage for EMP missiles is already full, Captain."
+msgstr "Todo el almacenamiento para misiles EMP ya está lleno, Capitán."
+
+#: scripts/scenario_81_pvp.lua:281
+msgctxt "ammo-comms"
+msgid "We've recalibrated the electronics and fitted you with all the EMP missiles you can carry."
+msgstr "Hemos recalibrado la electrónica y te hemos equipado con todos los misiles EMP que puedas llevar."
+
+#: scripts/scenario_81_pvp.lua:287
+msgctxt "ammo-comms"
+msgid "Can you restock us with HVLI?"
+msgstr "¿Puedes restaurarnos con HVLI?"
+
+#: scripts/scenario_81_pvp.lua:288
+msgctxt "ammo-comms"
+msgid "Sorry, Captain, but you are fully stocked with HVLIs."
+msgstr "Lo siento, capitán, pero está lleno de HVLIs."
+
+#: scripts/scenario_81_pvp.lua:289
+msgctxt "ammo-comms"
+msgid "We've replenished your HVLI supply."
+msgstr "Hemos reponer su suministro de HVLI."
+
+#: scripts/scenario_81_pvp.lua:292
+msgid "Back to main menu"
+msgstr "Volver al menú principal"
+
+#: scripts/scenario_81_pvp.lua:341
+msgctxt "incCall"
+msgid ""
+"Well done, Crusader!\n"
+"\n"
+"The pathetic Human flagship has been disabled. Go for the victory!"
+msgstr "El patético buque insignia humana ha sido desactivado. ¡Ve por la victoria!"
+
+#: scripts/scenario_81_pvp.lua:353
+msgctxt "incCall"
+msgid ""
+"Good job, Captain!\n"
+"\n"
+"With the Kraylor flagship out of the way, we can land the final blow!"
+msgstr "¡Buen trabajo, capitán! ¡Con el buque insignia Kraylor fuera del camino, podemos aterrizar el golpe final!"

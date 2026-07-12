@@ -1,0 +1,2729 @@
+# Scenario name
+msgid ""
+msgstr ""
+"Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
+"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"PO-Revision-Date: 2026-07-12 00:00+0200\n"
+"Last-Translator: Espaciokoop Lagunak contributors\n"
+"Language-Team: Espaciokoop Lagunak\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
+
+msgid "Defender Hunter"
+msgstr "Defender Hunter"
+
+# Scenario description
+msgid ""
+"Defend home station and hunt down enemies\n"
+"\n"
+"Initially, you're tasked with defending your home base.  Over time, you'll discover more about the enemies harassing you and you'll be ordered to find and destroy the enemies responsible.  There may be various missions given along the way, but the enemy harassment will continue.  You must balance your two missions.\n"
+"\n"
+"Designed for any number of cooperating player ships. Randomization makes many details different for each game, but the primary goals remain the same. Untimed variations can take an hour or longer for full mission completion. Different sub-missions may be chosen by the players or will be chosen at random. Achieving victory in a timed hunter variation is quite a challenge. Like the Waves scenario, the enemies get harder over time.\n"
+"\n"
+"Version 11\n"
+"\n"
+"USN Discord: https://discord.gg/PntGG3a where you can join a game online. There's one almost every weekend. All experience levels are welcome."
+msgstr ""
+"Defender la estación de casa y cazar enemigos Inicialmente, se le encarga de defender su base de origen. Con el tiempo, descubrirás más sobre los enemigos que te acosan y se te ordena encontrar y destruir a los enemigos responsables. Puede haber varias misiones dadas a lo largo del camino, pero el acoso enemigo continuará. Debes equilibrar tus dos misiones. Diseñado para cualquier número de barcos de jugadores cooperantes. La azarización hace que muchos detalles sean diferentes para cada juego, pero las metas primarias siguen siendo las mismas. Variaciones intemporales pueden tardar una hora o más para completar la misión. Diferentes submisiones pueden ser elegidas por los jugadores o serán elegidas al azar. Alcanzar la victoria en una variación de cazadores templados es un reto. Como el escenario de las Olas, los enemigos se vuelven más difíciles con el tiempo.\n"
+"\n"
+"USN Discord: https://discord.gg/PntGG3a donde puedes unirte a un juego online. Hay uno casi todos los fines de semana. Todos los niveles de experiencia son bienvenidos."
+
+# Scenario setting
+msgctxt "setting"
+msgid "Enemies"
+msgstr "Enemigos"
+
+msgctxt "setting"
+msgid "Configures the number and type of enemies"
+msgstr "Configura el número y tipo de enemigos"
+
+msgctxt "Enemies"
+msgid "Easy"
+msgstr "Fácil"
+
+msgctxt "Enemies"
+msgid "Fewer and/or weaker enemy ships"
+msgstr "Menos y/o más débiles barcos enemigos"
+
+msgctxt "Enemies"
+msgid "Normal"
+msgstr "Normal"
+
+msgctxt "Enemies"
+msgid "Normal difficulty"
+msgstr "Dificultades normales"
+
+msgctxt "Enemies"
+msgid "Hard"
+msgstr "Duro"
+
+msgctxt "Enemies"
+msgid "More and/or stronger enemy ships"
+msgstr "naves enemigas más fuertes o más fuertes"
+
+msgctxt "Enemies"
+msgid "Extreme"
+msgstr "Extremo"
+
+msgctxt "Enemies"
+msgid "Many more or much stronger enemy ships"
+msgstr "Muchos barcos enemigos más o mucho más fuertes"
+
+msgctxt "Enemies"
+msgid "Quixotic"
+msgstr "Quijote"
+
+msgctxt "Enemies"
+msgid "Enemies likely to overwhelm you"
+msgstr "Los enemigos probablemente te abruman"
+
+# Scenario setting
+msgctxt "setting"
+msgid "Time"
+msgstr "Hora"
+
+msgctxt "setting"
+msgid "Sets the length of time for the scenario"
+msgstr "Establece la duración del tiempo para el escenario"
+
+msgctxt "Time"
+msgid "Unlimited"
+msgstr "Ilimitados"
+
+msgctxt "Time"
+msgid "No time limit. Protect home station and hunt and destroy designated enemy station."
+msgstr "Protege la estación de casa y caza y destruye la estación enemiga designada."
+
+msgctxt "Time"
+msgid "30min"
+msgstr "30min"
+
+msgctxt "Time"
+msgid "Scenario ends in 30 minutes"
+msgstr "Escenario termina en 30 minutos"
+
+msgctxt "Time"
+msgid "35min"
+msgstr "35min"
+
+msgctxt "Time"
+msgid "Scenario ends in 35 minutes"
+msgstr "Escenario termina en 35 minutos"
+
+msgctxt "Time"
+msgid "40min"
+msgstr "40min"
+
+msgctxt "Time"
+msgid "Scenario ends in 40 minutes"
+msgstr "Escenario termina en 40 minutos"
+
+msgctxt "Time"
+msgid "45min"
+msgstr "45min"
+
+msgctxt "Time"
+msgid "Scenario ends in 45 minutes"
+msgstr "Escenario termina en 45 minutos"
+
+msgctxt "Time"
+msgid "50min"
+msgstr "50min"
+
+msgctxt "Time"
+msgid "Scenario ends in 50 minutes"
+msgstr "Escenario termina en 50 minutos"
+
+msgctxt "Time"
+msgid "55min"
+msgstr "55min"
+
+msgctxt "Time"
+msgid "Scenario ends in 55 minutes"
+msgstr "Escenario termina en 55 minutos"
+
+msgctxt "Time"
+msgid "60min"
+msgstr "60min"
+
+msgctxt "Time"
+msgid "Scenario ends in 60 minutes"
+msgstr "Escenario termina en 60 minutos"
+
+# Scenario setting
+msgctxt "setting"
+msgid "Goal"
+msgstr "Objetivo"
+
+msgctxt "setting"
+msgid "Sets primary goal. Pertinent to timed scenario"
+msgstr "Es el objetivo principal. Pertinente al escenario de tiempo"
+
+msgctxt "Goal"
+msgid "Defender"
+msgstr "Defender"
+
+msgctxt "Goal"
+msgid "Protect home station. If timed scenario, victory after time runs out if home station survives."
+msgstr "Protege la estación de casa. Si es un escenario temporizado, la victoria después de que el tiempo se agote si la estación de casa sobrevive."
+
+msgctxt "Goal"
+msgid "Hunter"
+msgstr "Hunter"
+
+msgctxt "Goal"
+msgid "Protect home station and hunt down designated enemy station. If timed scenario, defeat after time runs out if designated enemy station survives."
+msgstr "Protege la estación de casa y caza la estación enemiga designada. Si el escenario temporal, derrota después de que el tiempo se agote si la estación enemiga designada sobrevive."
+
+# Scenario setting
+msgctxt "setting"
+msgid "Murphy"
+msgstr "Murphy"
+
+msgctxt "setting"
+msgid "Configures the perversity of the universe according to Murphy's law"
+msgstr "Configura la perversidad del universo según la ley de Murphy"
+
+msgctxt "Murphy"
+msgid "Easy"
+msgstr "Fácil"
+
+msgctxt "Murphy"
+msgid "Random factors are more in your favor"
+msgstr "Los factores aleatorios son más a su favor"
+
+msgctxt "Murphy"
+msgid "Normal"
+msgstr "Normal"
+
+msgctxt "Murphy"
+msgid "Random factors are normal"
+msgstr "Los factores aleatorios son normales"
+
+msgctxt "Murphy"
+msgid "Hard"
+msgstr "Duro"
+
+msgctxt "Murphy"
+msgid "Random factors are more against you"
+msgstr "Los factores aleatorios son más contra ti"
+
+#: scripts/scenario_55_defenderHunter.lua:80 scripts/scenario_55_defenderHunter.lua:508
+msgctxt "buttonGM"
+msgid "Turn On Diagnostic"
+msgstr "Activa el diagnóstico"
+
+#: scripts/scenario_55_defenderHunter.lua:84
+msgctxt "buttonGM"
+msgid "Delay normal to slow"
+msgstr "Retraso normal para lento"
+
+#: scripts/scenario_55_defenderHunter.lua:85
+msgctxt "buttonGM"
+msgid "Delay slow to fast"
+msgstr "Dilatación lenta a rápido"
+
+#: scripts/scenario_55_defenderHunter.lua:86
+msgctxt "buttonGM"
+msgid "Delay fast to normal"
+msgstr "Retraso rápido a normal"
+
+#: scripts/scenario_55_defenderHunter.lua:169
+msgctxt "gossip-comms"
+msgid "I hear the head of operations has a thing for his administrative assistant"
+msgstr "He oído que el jefe de operaciones tiene algo para su asistente administrativo"
+
+#: scripts/scenario_55_defenderHunter.lua:170
+msgctxt "gossip-comms"
+msgid "My mining friends tell me Krak or Kruk is about to strike it rich"
+msgstr "Mis amigos mineros me dicen que Krak o Kruk está a punto de golpearlo rico"
+
+#: scripts/scenario_55_defenderHunter.lua:171
+msgctxt "gossip-comms"
+msgid "Did you know you can usually hire replacement repair crew cheaper at friendly stations?"
+msgstr "¿Sabías que normalmente puedes contratar equipo de reparación de reemplazo más barato en estaciones amigables?"
+
+#: scripts/scenario_55_defenderHunter.lua:172
+msgctxt "gossip-comms"
+msgid "Under their uniforms, the Kraylors have an extra appendage. I wonder what they use it for"
+msgstr "Bajo sus uniformes, los Kraylors tienen un apéndice extra."
+
+#: scripts/scenario_55_defenderHunter.lua:173
+msgctxt "gossip-comms"
+msgid "The Kraylors may be human navy enemies, but they make some mighty fine BBQ Mynock"
+msgstr "Los Kraylors pueden ser enemigos de la marina humana, pero hacen un buen BBQ Mynock"
+
+#: scripts/scenario_55_defenderHunter.lua:174
+msgctxt "gossip-comms"
+msgid "The Kraylors and the Ktlitans may be nearing a cease fire from what I hear. That'd be bad news for us"
+msgstr "Los Kraylors y los Ktlitan pueden estar cerca de un alto fuego de lo que oigo."
+
+#: scripts/scenario_55_defenderHunter.lua:175
+msgctxt "gossip-comms"
+msgid "Docking bay 7 has interesting mind altering substances for sale, but they're monitored between 1900 and 2300"
+msgstr "Docking bay 7 tiene interesantes sustancias de alteración mental para la venta, pero son monitoreadas entre 1900 y 2300"
+
+#: scripts/scenario_55_defenderHunter.lua:176
+msgctxt "gossip-comms"
+msgid "Watch the sky tonight in quadrant J around 2243. It should be spectacular"
+msgstr "Mira el cielo esta noche en cuadrante J alrededor de 2243. Debe ser espectacular"
+
+#: scripts/scenario_55_defenderHunter.lua:177
+msgctxt "gossip-comms"
+msgid "I think the shuttle pilot has a tame miniature Ktlitan caged in his quarters. Sometimes I hear it at night"
+msgstr "Creo que el piloto del transbordador tiene una pequeña caja de Ktlitan en sus cuartos."
+
+#: scripts/scenario_55_defenderHunter.lua:178
+msgctxt "gossip-comms"
+msgid "Did you hear the screaming chase in the corridors on level 4 last night? Three Kraylors were captured and put in the brig"
+msgstr "¿Oíste la persecución gritando en los pasillos en el nivel 4 anoche? Tres Kraylors fueron capturados y puestos en el calabozo"
+
+#: scripts/scenario_55_defenderHunter.lua:179
+msgctxt "gossip-comms"
+msgid "Rumor has it that the two Lichten brothers are on the verge of a new discovery. And it's not another wine flavor either"
+msgstr "Se rumorea que los dos hermanos Lichten están al borde de un nuevo descubrimiento. Y no es otro sabor al vino tampoco"
+
+#: scripts/scenario_55_defenderHunter.lua:503
+msgctxt "buttonGM"
+msgid "Turn Off Diagnostic"
+msgstr "Apaga el diagnóstico"
+
+#: scripts/scenario_55_defenderHunter.lua:756
+msgctxt "scienceDescription-planet"
+msgid "Lush planet with only mild seasonal variations"
+msgstr "Planeta de malla con variaciones estacionales leves"
+
+#: scripts/scenario_55_defenderHunter.lua:758
+msgctxt "scienceDescription-station"
+msgid "Alderaan communications network hub"
+msgstr "Centro de la red de comunicaciones de Aldera"
+
+#: scripts/scenario_55_defenderHunter.lua:1736
+msgctxt "station-comms"
+msgid "We are under attack! No time for chatting!"
+msgstr "¡No hay tiempo para charlar!"
+
+#: scripts/scenario_55_defenderHunter.lua:1748
+msgctxt "station-comms"
+msgid ""
+"Good day, officer!\n"
+"What can we do for you today?\n"
+msgstr "Buenos días, oficial. ¿Qué podemos hacer por usted hoy?\n"
+
+#: scripts/scenario_55_defenderHunter.lua:1750
+msgctxt "station-comms"
+msgid "Welcome to our lovely station.\n"
+msgstr "Bienvenido a nuestra hermosa estación.\n"
+
+#: scripts/scenario_55_defenderHunter.lua:1753
+msgctxt "station-comms"
+msgid "Forgive us if we seem a little distracted. We are carefully monitoring the enemies nearby."
+msgstr "Perdónenos si parecemos un poco distraídos. Estamos monitoreando cuidadosamente a los enemigos cercanos."
+
+#: scripts/scenario_55_defenderHunter.lua:1790
+msgctxt "ammo-comms"
+msgid "I need ordnance restocked"
+msgstr "Necesito la artillería restablecida"
+
+#: scripts/scenario_55_defenderHunter.lua:1791
+msgctxt "ammo-comms"
+msgid "What type of ordnance?"
+msgstr "¿Qué tipo de municiones?"
+
+#: scripts/scenario_55_defenderHunter.lua:1795
+msgctxt "ammo-comms"
+msgid "Can you supply us with some nukes? ("
+msgstr "¿Nos puedes dar unos nukes?"
+
+#: scripts/scenario_55_defenderHunter.lua:1797
+msgctxt "ammo-comms"
+msgid "We really need some nukes ("
+msgstr "Realmente necesitamos algunos desnudos ("
+
+#: scripts/scenario_55_defenderHunter.lua:1799 scripts/scenario_55_defenderHunter.lua:1811 scripts/scenario_55_defenderHunter.lua:1823 scripts/scenario_55_defenderHunter.lua:1835 scripts/scenario_55_defenderHunter.lua:1847
+#, lua-format
+msgctxt "ammo-comms"
+msgid "%s%d rep each)"
+msgstr "%s%d rep cada uno)"
+
+#: scripts/scenario_55_defenderHunter.lua:1807
+msgctxt "ammo-comms"
+msgid "Please re-stock our EMP missiles. ("
+msgstr "Por favor, vuelva a surtir nuestros misiles EMP. ("
+
+#: scripts/scenario_55_defenderHunter.lua:1809
+msgctxt "ammo-comms"
+msgid "Got any EMPs? ("
+msgstr "¿Tienes alguna EMP?"
+
+#: scripts/scenario_55_defenderHunter.lua:1819
+msgctxt "ammo-comms"
+msgid "Do you have spare homing missiles for us? ("
+msgstr "¿Tiene misiles de homenaje por nosotros?"
+
+#: scripts/scenario_55_defenderHunter.lua:1821
+msgctxt "ammo-comms"
+msgid "Do you have extra homing missiles? ("
+msgstr "¿Tienes misiles de homenaje extra?"
+
+#: scripts/scenario_55_defenderHunter.lua:1831
+msgctxt "ammo-comms"
+msgid "We could use some mines. ("
+msgstr "Podríamos usar algunas minas."
+
+#: scripts/scenario_55_defenderHunter.lua:1833
+msgctxt "ammo-comms"
+msgid "How about mines? ("
+msgstr "¿Qué hay de las minas?"
+
+#: scripts/scenario_55_defenderHunter.lua:1843
+msgctxt "ammo-comms"
+msgid "What about HVLI? ("
+msgstr "¿Qué hay de HVLI?"
+
+#: scripts/scenario_55_defenderHunter.lua:1845
+msgctxt "ammo-comms"
+msgid "Could you provide HVLI? ("
+msgstr "¿Podrías proporcionar HVLI?"
+
+#: scripts/scenario_55_defenderHunter.lua:1855 scripts/scenario_55_defenderHunter.lua:2927
+msgctxt "stationServices-comms"
+msgid "Docking services status"
+msgstr "Situación de los servicios de limpieza"
+
+#: scripts/scenario_55_defenderHunter.lua:1856 scripts/scenario_55_defenderHunter.lua:2929
+#, lua-format
+msgctxt "stationServices-comms"
+msgid "Station %s docking services status:"
+msgstr "Estación %s estado de los servicios de docking:"
+
+#: scripts/scenario_55_defenderHunter.lua:1858 scripts/scenario_55_defenderHunter.lua:2931
+#, lua-format
+msgctxt "stationServices-comms"
+msgid ""
+"%s\n"
+"Replenish scan probes."
+msgstr ""
+"%s\n"
+"Reponer sondas de escaneo."
+
+#: scripts/scenario_55_defenderHunter.lua:1862 scripts/scenario_55_defenderHunter.lua:2935
+msgctxt "stationServices-comms"
+msgid "Cannot replenish scan probes due to fabrication unit failure."
+msgstr "No se puede reponer sondas de escaneo debido a la falla de unidad de fabricación."
+
+#: scripts/scenario_55_defenderHunter.lua:1863 scripts/scenario_55_defenderHunter.lua:2936
+msgctxt "stationServices-comms"
+msgid "Parts shortage prevents scan probe replenishment."
+msgstr "La escasez de piezas evita la reposición de sonda de escaneo."
+
+#: scripts/scenario_55_defenderHunter.lua:1864 scripts/scenario_55_defenderHunter.lua:2937
+msgctxt "stationServices-comms"
+msgid "Station management has curtailed scan probe replenishment for cost cutting reasons."
+msgstr "La administración de la estación ha reducido la reposición de la sonda del escaneo por razones de corte de costos."
+
+#: scripts/scenario_55_defenderHunter.lua:1868 scripts/scenario_55_defenderHunter.lua:1881 scripts/scenario_55_defenderHunter.lua:1894 scripts/scenario_55_defenderHunter.lua:2941 scripts/scenario_55_defenderHunter.lua:2954 scripts/scenario_55_defenderHunter.lua:2967
+#, lua-format
+msgctxt "stationServices-comms"
+msgid ""
+"%s\n"
+"%s"
+msgstr ""
+"%s\n"
+"%s"
+
+#: scripts/scenario_55_defenderHunter.lua:1871 scripts/scenario_55_defenderHunter.lua:2944
+#, lua-format
+msgctxt "stationServices-comms"
+msgid ""
+"%s\n"
+"Ship hull repair."
+msgstr ""
+"%s\n"
+"Reparación de casco de barco."
+
+#: scripts/scenario_55_defenderHunter.lua:1875 scripts/scenario_55_defenderHunter.lua:2948
+msgctxt "stationServices-comms"
+msgid "We're out of the necessary materials and supplies for hull repair."
+msgstr "Estamos fuera de los materiales y suministros necesarios para la reparación de cascos."
+
+#: scripts/scenario_55_defenderHunter.lua:1876
+msgctxt "stationServices-comms"
+msgid "Hull repair automation unavailable while it is undergoing maintenance."
+msgstr "Automatización de reparación de casco no disponible mientras se está llevando a cabo mantenimiento."
+
+#: scripts/scenario_55_defenderHunter.lua:1877 scripts/scenario_55_defenderHunter.lua:2950
+msgctxt "stationServices-comms"
+msgid "All hull repair technicians quarantined to quarters due to illness."
+msgstr "Todos los técnicos de reparación de cascos cuarentenados a trimestres debido a la enfermedad."
+
+#: scripts/scenario_55_defenderHunter.lua:1884 scripts/scenario_55_defenderHunter.lua:2957
+#, lua-format
+msgctxt "stationServices-comms"
+msgid ""
+"%s\n"
+"Recharge ship energy stores."
+msgstr ""
+"%s\n"
+"Recargar las tiendas de energía de los buques."
+
+#: scripts/scenario_55_defenderHunter.lua:1888 scripts/scenario_55_defenderHunter.lua:2961
+msgctxt "stationServices-comms"
+msgid "A recent reactor failure has put us on auxiliary power, so we cannot recharge ships."
+msgstr "Una falla reciente del reactor nos ha puesto en energía auxiliar, por lo que no podemos recargar naves."
+
+#: scripts/scenario_55_defenderHunter.lua:1889 scripts/scenario_55_defenderHunter.lua:2962
+msgctxt "stationServices-comms"
+msgid "A damaged power coupling makes it too dangerous to recharge ships."
+msgstr "Un acoplamiento de energía dañado hace que sea demasiado peligroso para recargar barcos."
+
+#: scripts/scenario_55_defenderHunter.lua:1890 scripts/scenario_55_defenderHunter.lua:2963
+msgctxt "stationServices-comms"
+msgid "An asteroid strike damaged our solar cells and we are short on power, so we can't recharge ships right now."
+msgstr "Un ataque de asteroides dañó nuestras células solares y estamos cortos de energía, así que no podemos recargar los barcos ahora mismo."
+
+#: scripts/scenario_55_defenderHunter.lua:1897 scripts/scenario_55_defenderHunter.lua:2970
+#, lua-format
+msgctxt "stationServices-comms"
+msgid ""
+"%s\n"
+"May overcharge jump drive"
+msgstr ""
+"%s\n"
+"Unidad de salto de sobrecarga"
+
+#: scripts/scenario_55_defenderHunter.lua:1900 scripts/scenario_55_defenderHunter.lua:2973
+#, lua-format
+msgctxt "stationServices-comms"
+msgid ""
+"%s\n"
+"May repair probe launch system"
+msgstr ""
+"%s\n"
+"Sistema de lanzamiento de sonda de reparación"
+
+#: scripts/scenario_55_defenderHunter.lua:1903 scripts/scenario_55_defenderHunter.lua:2976
+#, lua-format
+msgctxt "stationServices-comms"
+msgid ""
+"%s\n"
+"May repair hacking system"
+msgstr ""
+"%s\n"
+"Puede reparar el sistema de piratería"
+
+#: scripts/scenario_55_defenderHunter.lua:1906 scripts/scenario_55_defenderHunter.lua:2979
+#, lua-format
+msgctxt "stationServices-comms"
+msgid ""
+"%s\n"
+"May repair scanners"
+msgstr ""
+"%s\n"
+"Escáneres de reparación de mayo"
+
+#: scripts/scenario_55_defenderHunter.lua:1909 scripts/scenario_55_defenderHunter.lua:2982
+#, lua-format
+msgctxt "stationServices-comms"
+msgid ""
+"%s\n"
+"May repair combat maneuver"
+msgstr ""
+"%s\n"
+"Maniobra de combate de reparación"
+
+#: scripts/scenario_55_defenderHunter.lua:1912 scripts/scenario_55_defenderHunter.lua:2985
+#, lua-format
+msgctxt "stationServices-comms"
+msgid ""
+"%s\n"
+"May repair self destruct system"
+msgstr ""
+"%s\n"
+"Puede reparar el sistema de autodestrucción"
+
+#: scripts/scenario_55_defenderHunter.lua:1915 scripts/scenario_55_defenderHunter.lua:1931 scripts/scenario_55_defenderHunter.lua:1964 scripts/scenario_55_defenderHunter.lua:1977 scripts/scenario_55_defenderHunter.lua:1990 scripts/scenario_55_defenderHunter.lua:2003 scripts/scenario_55_defenderHunter.lua:2016 scripts/scenario_55_defenderHunter.lua:2020 scripts/scenario_55_defenderHunter.lua:2031 scripts/scenario_55_defenderHunter.lua:2061 scripts/scenario_55_defenderHunter.lua:2079 scripts/scenario_55_defenderHunter.lua:2093 scripts/scenario_55_defenderHunter.lua:2139 scripts/scenario_55_defenderHunter.lua:2174 scripts/scenario_55_defenderHunter.lua:2180 scripts/scenario_55_defenderHunter.lua:2188 scripts/scenario_55_defenderHunter.lua:2251 scripts/scenario_55_defenderHunter.lua:2264 scripts/scenario_55_defenderHunter.lua:2293 scripts/scenario_55_defenderHunter.lua:2321 scripts/scenario_55_defenderHunter.lua:2349 scripts/scenario_55_defenderHunter.lua:2353 scripts/scenario_55_defenderHunter.lua:2370 scripts/scenario_55_defenderHunter.lua:2374 scripts/scenario_55_defenderHunter.lua:2379 scripts/scenario_55_defenderHunter.lua:2426 scripts/scenario_55_defenderHunter.lua:2435 scripts/scenario_55_defenderHunter.lua:2438 scripts/scenario_55_defenderHunter.lua:2440 scripts/scenario_55_defenderHunter.lua:2450 scripts/scenario_55_defenderHunter.lua:2459 scripts/scenario_55_defenderHunter.lua:2462 scripts/scenario_55_defenderHunter.lua:2464 scripts/scenario_55_defenderHunter.lua:2474 scripts/scenario_55_defenderHunter.lua:2484 scripts/scenario_55_defenderHunter.lua:2487 scripts/scenario_55_defenderHunter.lua:2490 scripts/scenario_55_defenderHunter.lua:2497 scripts/scenario_55_defenderHunter.lua:2507 scripts/scenario_55_defenderHunter.lua:2516 scripts/scenario_55_defenderHunter.lua:2519 scripts/scenario_55_defenderHunter.lua:2521 scripts/scenario_55_defenderHunter.lua:2541 scripts/scenario_55_defenderHunter.lua:2597 scripts/scenario_55_defenderHunter.lua:2611 scripts/scenario_55_defenderHunter.lua:2613 scripts/scenario_55_defenderHunter.lua:2629 scripts/scenario_55_defenderHunter.lua:2631 scripts/scenario_55_defenderHunter.lua:2653 scripts/scenario_55_defenderHunter.lua:2655 scripts/scenario_55_defenderHunter.lua:2676 scripts/scenario_55_defenderHunter.lua:2717 scripts/scenario_55_defenderHunter.lua:2818 scripts/scenario_55_defenderHunter.lua:2830 scripts/scenario_55_defenderHunter.lua:2907 scripts/scenario_55_defenderHunter.lua:2924 scripts/scenario_55_defenderHunter.lua:2988 scripts/scenario_55_defenderHunter.lua:3009 scripts/scenario_55_defenderHunter.lua:3013 scripts/scenario_55_defenderHunter.lua:3057 scripts/scenario_55_defenderHunter.lua:3066 scripts/scenario_55_defenderHunter.lua:3071 scripts/scenario_55_defenderHunter.lua:3083 scripts/scenario_55_defenderHunter.lua:3148 scripts/scenario_55_defenderHunter.lua:3170 scripts/scenario_55_defenderHunter.lua:3174 scripts/scenario_55_defenderHunter.lua:3191 scripts/scenario_55_defenderHunter.lua:3195 scripts/scenario_55_defenderHunter.lua:3239 scripts/scenario_55_defenderHunter.lua:3246 scripts/scenario_55_defenderHunter.lua:3255 scripts/scenario_55_defenderHunter.lua:3279 scripts/scenario_55_defenderHunter.lua:3286 scripts/scenario_55_defenderHunter.lua:3338 scripts/scenario_55_defenderHunter.lua:3358 scripts/scenario_55_defenderHunter.lua:3362 scripts/scenario_55_defenderHunter.lua:3373 scripts/scenario_55_defenderHunter.lua:3399 scripts/scenario_55_defenderHunter.lua:3416 scripts/scenario_55_defenderHunter.lua:3441 scripts/scenario_55_defenderHunter.lua:3467 scripts/scenario_55_defenderHunter.lua:3498
+msgid "Back"
+msgstr "Volver"
+
+#: scripts/scenario_55_defenderHunter.lua:1924
+msgctxt "stationServices-comms"
+msgid "Overcharge Jump Drive (10 Rep)"
+msgstr "Overcharge Jump Drive (10 Rep)"
+
+#: scripts/scenario_55_defenderHunter.lua:1927
+#, lua-format
+msgctxt "stationServices-comms"
+msgid "Your jump drive has been overcharged to %ik"
+msgstr "Tu unidad de salto ha sido sobrecargada %ik"
+
+#: scripts/scenario_55_defenderHunter.lua:1929 scripts/scenario_55_defenderHunter.lua:1962 scripts/scenario_55_defenderHunter.lua:1975 scripts/scenario_55_defenderHunter.lua:1988 scripts/scenario_55_defenderHunter.lua:2001 scripts/scenario_55_defenderHunter.lua:2014 scripts/scenario_55_defenderHunter.lua:2041 scripts/scenario_55_defenderHunter.lua:2056 scripts/scenario_55_defenderHunter.lua:2074 scripts/scenario_55_defenderHunter.lua:2091 scripts/scenario_55_defenderHunter.lua:3412
+msgctxt "needRep-comms"
+msgid "Insufficient reputation"
+msgstr "Insuficiente reputación"
+
+#: scripts/scenario_55_defenderHunter.lua:1953
+msgctxt "stationServices-comms"
+msgid "Repair ship system"
+msgstr "Sistema de reparación de buques"
+
+#: scripts/scenario_55_defenderHunter.lua:1954
+msgctxt "stationServices-comms"
+msgid "What system would you like repaired?"
+msgstr "¿Qué sistema le gustaría reparar?"
+
+#: scripts/scenario_55_defenderHunter.lua:1957
+msgctxt "stationServices-comms"
+msgid "Repair probe launch system (5 Rep)"
+msgstr "Sistema de lanzamiento de sonda de reparación (5 Rep)"
+
+#: scripts/scenario_55_defenderHunter.lua:1960
+msgctxt "stationServices-comms"
+msgid "Your probe launch system has been repaired"
+msgstr "Su sistema de lanzamiento de sonda ha sido reparado"
+
+#: scripts/scenario_55_defenderHunter.lua:1970
+msgctxt "stationServices-comms"
+msgid "Repair hacking system (5 Rep)"
+msgstr "Reparación del sistema de piratería (5 Rep)"
+
+#: scripts/scenario_55_defenderHunter.lua:1973
+msgctxt "stationServices-comms"
+msgid "Your hack system has been repaired"
+msgstr "Tu sistema de hackeo ha sido reparado"
+
+#: scripts/scenario_55_defenderHunter.lua:1983
+msgctxt "stationServices-comms"
+msgid "Repair scanners (5 Rep)"
+msgstr "Reparación de escáneres (5 Rep)"
+
+#: scripts/scenario_55_defenderHunter.lua:1986
+msgctxt "stationServices-comms"
+msgid "Your scanners have been repaired"
+msgstr "Sus escáneres han sido reparados"
+
+#: scripts/scenario_55_defenderHunter.lua:1996
+msgctxt "stationServices-comms"
+msgid "Repair combat maneuver (5 Rep)"
+msgstr "Maniobra de combate de reparación (5 Rep)"
+
+#: scripts/scenario_55_defenderHunter.lua:1999
+msgctxt "stationServices-comms"
+msgid "Your combat maneuver has been repaired"
+msgstr "Tu maniobra de combate ha sido reparada"
+
+#: scripts/scenario_55_defenderHunter.lua:2009
+msgctxt "stationServices-comms"
+msgid "Repair self destruct system (5 Rep)"
+msgstr "Reparar el sistema de autodestrucción (5 Rep)"
+
+#: scripts/scenario_55_defenderHunter.lua:2012
+msgctxt "stationServices-comms"
+msgid "Your self destruct system has been repaired"
+msgstr "Su sistema de autodestrucción ha sido reparado"
+
+#: scripts/scenario_55_defenderHunter.lua:2024 scripts/scenario_55_defenderHunter.lua:3076
+msgctxt "orders-comms"
+msgid "What are my current orders?"
+msgstr "¿Cuáles son mis órdenes actuales?"
+
+#: scripts/scenario_55_defenderHunter.lua:2028 scripts/scenario_55_defenderHunter.lua:3080
+#, lua-format
+msgctxt "orders-comms"
+msgid ""
+"\n"
+"   %i Minutes remain in game"
+msgstr ""
+"\n"
+"   %i Minutos permanecen en juego"
+
+#: scripts/scenario_55_defenderHunter.lua:2039 scripts/scenario_55_defenderHunter.lua:2072
+#, lua-format
+msgctxt "trade-comms"
+msgid "Recruit repair crew member for %i reputation"
+msgstr "Contratación de tripulante de reparación %i reputación"
+
+#: scripts/scenario_55_defenderHunter.lua:2044 scripts/scenario_55_defenderHunter.lua:2077
+msgctxt "trade-comms"
+msgid "Repair crew member hired"
+msgstr "Reparación de miembros del equipo contratados"
+
+#: scripts/scenario_55_defenderHunter.lua:2054
+#, lua-format
+msgctxt "trade-comms"
+msgid "Purchase coolant for %i reputation"
+msgstr "Refrigerador de compra para %i reputación"
+
+#: scripts/scenario_55_defenderHunter.lua:2059
+msgctxt "trade-comms"
+msgid "Additional coolant purchased"
+msgstr "Refrigerante adicional adquirido"
+
+#: scripts/scenario_55_defenderHunter.lua:2086
+#, lua-format
+msgctxt "defTelemetry-comms"
+msgid "Establish defensive system telemetry (%i rep)"
+msgstr "Establecer la telemetría del sistema defensivo%i rep)"
+
+#: scripts/scenario_55_defenderHunter.lua:2088
+#, lua-format
+msgctxt "defTelemetry-comms"
+msgid ""
+"Defensive telemetry established with station %s.\n"
+"Damage should show on Relay when it occurs"
+msgstr "Telemetría defensiva establecida con estación %s. Los daños deben mostrar en Relay cuando se produce"
+
+#: scripts/scenario_55_defenderHunter.lua:2108
+msgctxt "-comms"
+msgid "Provide cargo"
+msgstr "Proveer carga"
+
+#: scripts/scenario_55_defenderHunter.lua:2109
+msgctxt "-comms"
+msgid "Do you have something for us?"
+msgstr "¿Tienes algo para nosotros?"
+
+#: scripts/scenario_55_defenderHunter.lua:2122
+msgctxt "upgrade-comms"
+msgid "Request promised information"
+msgstr "Solicitud de información prometida"
+
+#: scripts/scenario_55_defenderHunter.lua:2123
+msgctxt "upgrade-comms"
+msgid "Remind me what information I promised"
+msgstr "Recuérdame qué información prometí"
+
+#: scripts/scenario_55_defenderHunter.lua:2169
+msgctxt "station-comms"
+msgid "Tell me more about your station"
+msgstr "Cuéntame más sobre tu estación."
+
+#: scripts/scenario_55_defenderHunter.lua:2170
+msgctxt "station-comms"
+msgid "What would you like to know?"
+msgstr "¿Qué quieres saber?"
+
+#: scripts/scenario_55_defenderHunter.lua:2172
+msgctxt "stationGeneralInfo-comms"
+msgid "General information"
+msgstr "Información general"
+
+#: scripts/scenario_55_defenderHunter.lua:2178
+msgctxt "stationStory-comms"
+msgid "Station history"
+msgstr "Historia de la estación"
+
+#: scripts/scenario_55_defenderHunter.lua:2186
+msgctxt "gossip-comms"
+msgid "Gossip"
+msgstr "Gossip"
+
+#: scripts/scenario_55_defenderHunter.lua:2200
+msgctxt "trade-comms"
+msgid "Buy, sell, trade"
+msgstr "Compra, venta, comercio"
+
+#: scripts/scenario_55_defenderHunter.lua:2201
+#, lua-format
+msgctxt "trade-comms"
+msgid ""
+"Station %s:\n"
+"Goods or components available for sale: quantity, cost in reputation\n"
+msgstr "Estación %s: Mercancías o componentes disponibles para la venta: cantidad, costo en reputación\n"
+
+#: scripts/scenario_55_defenderHunter.lua:2203
+#, lua-format
+msgctxt "trade-comms"
+msgid "     %s: %i, %i\n"
+msgstr "     %s: %i, %i\n"
+
+#: scripts/scenario_55_defenderHunter.lua:2206
+msgctxt "trade-comms"
+msgid "Goods or components station will buy: price in reputation\n"
+msgstr "La estación de bienes o componentes comprará: precio en la reputación\n"
+
+#: scripts/scenario_55_defenderHunter.lua:2208 scripts/scenario_55_defenderHunter.lua:2217
+#, lua-format
+msgctxt "trade-comms"
+msgid "     %s: %i\n"
+msgstr "     %s: %i\n"
+
+#: scripts/scenario_55_defenderHunter.lua:2211
+#, lua-format
+msgctxt "trade-comms"
+msgid "Current cargo aboard %s:\n"
+msgstr "Carga corriente a bordo %s:\n"
+
+#: scripts/scenario_55_defenderHunter.lua:2221
+msgctxt "trade-comms"
+msgid "     Empty\n"
+msgstr "     Vacío\n"
+
+#: scripts/scenario_55_defenderHunter.lua:2223
+#, lua-format
+msgctxt "trade-comms"
+msgid "Available Space: %i, Available Reputation: %i\n"
+msgstr "Espacio disponible: %i, Reputación disponible: %i\n"
+
+#: scripts/scenario_55_defenderHunter.lua:2226 scripts/scenario_55_defenderHunter.lua:3384 scripts/scenario_55_defenderHunter.lua:3426 scripts/scenario_55_defenderHunter.lua:3452 scripts/scenario_55_defenderHunter.lua:3483
+#, lua-format
+msgctxt "trade-comms"
+msgid "Buy one %s for %i reputation"
+msgstr "Comprar uno %s para %i reputación"
+
+#: scripts/scenario_55_defenderHunter.lua:2227
+#, lua-format
+msgctxt "trade-comms"
+msgid "Type: %s, Quantity: %i, Rep: %i"
+msgstr "Tipo: %s, Cantidad %i, Rep: %i"
+
+#: scripts/scenario_55_defenderHunter.lua:2229
+msgctxt "trade-comms"
+msgid ""
+"\n"
+"Insufficient cargo space for purchase"
+msgstr ""
+"\n"
+"Espacio de carga insuficiente para la compra"
+
+#: scripts/scenario_55_defenderHunter.lua:2231 scripts/scenario_55_defenderHunter.lua:2247
+msgctxt "needRep-comms"
+msgid ""
+"\n"
+"Insufficient reputation for purchase"
+msgstr ""
+"\n"
+"Insuficiente reputación de compra"
+
+#: scripts/scenario_55_defenderHunter.lua:2233 scripts/scenario_55_defenderHunter.lua:2279 scripts/scenario_55_defenderHunter.lua:2307 scripts/scenario_55_defenderHunter.lua:2335
+msgctxt "trade-comms"
+msgid ""
+"\n"
+"Insufficient station inventory"
+msgstr ""
+"\n"
+"Insuficiente inventario de estaciones"
+
+#: scripts/scenario_55_defenderHunter.lua:2245
+msgctxt "trade-comms"
+msgid ""
+"\n"
+"purchased"
+msgstr ""
+"\n"
+"adquiridos"
+
+#: scripts/scenario_55_defenderHunter.lua:2257
+#, lua-format
+msgctxt "trade-comms"
+msgid "Sell one %s for %i reputation"
+msgstr "Vender uno %s para %i reputación"
+
+#: scripts/scenario_55_defenderHunter.lua:2258
+#, lua-format
+msgctxt "trade-comms"
+msgid "Type: %s,  Reputation price: %i"
+msgstr "Tipo: %s, Precio de Reputación: %i"
+
+#: scripts/scenario_55_defenderHunter.lua:2261
+msgctxt "trade-comms"
+msgid ""
+"\n"
+"One sold"
+msgstr ""
+"\n"
+"Uno vendido"
+
+#: scripts/scenario_55_defenderHunter.lua:2276
+#, lua-format
+msgctxt "trade-comms"
+msgid "Trade food for %s"
+msgstr "Comida comercial para %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2277 scripts/scenario_55_defenderHunter.lua:2305 scripts/scenario_55_defenderHunter.lua:2333
+#, lua-format
+msgctxt "trade-comms"
+msgid "Type: %s,  Quantity: %i"
+msgstr "Tipo: %s, Cantidad %i"
+
+#: scripts/scenario_55_defenderHunter.lua:2290 scripts/scenario_55_defenderHunter.lua:2318 scripts/scenario_55_defenderHunter.lua:2346
+msgctxt "trade-comms"
+msgid ""
+"\n"
+"Traded"
+msgstr ""
+"\n"
+"Traded"
+
+#: scripts/scenario_55_defenderHunter.lua:2304
+#, lua-format
+msgctxt "trade-comms"
+msgid "Trade medicine for %s"
+msgstr "Medicina comercial %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2332 scripts/scenario_55_defenderHunter.lua:3368
+#, lua-format
+msgctxt "trade-comms"
+msgid "Trade luxury for %s"
+msgstr "Lujo comercial para %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2362 scripts/scenario_55_defenderHunter.lua:3350
+msgctxt "trade-comms"
+msgid "Jettison cargo"
+msgstr "Jettison cargo"
+
+#: scripts/scenario_55_defenderHunter.lua:2363 scripts/scenario_55_defenderHunter.lua:3351
+#, lua-format
+msgctxt "trade-comms"
+msgid ""
+"Available space: %i\n"
+"What would you like to jettison?"
+msgstr ""
+"Espacio disponible: %i\n"
+"¿Qué te gustaría Jetison?"
+
+#: scripts/scenario_55_defenderHunter.lua:2369 scripts/scenario_55_defenderHunter.lua:3357
+#, lua-format
+msgctxt "trade-comms"
+msgid "One %s jettisoned"
+msgstr "Uno %s Jetisoned"
+
+#: scripts/scenario_55_defenderHunter.lua:2377
+msgctxt "explainGoods-comms"
+msgid "No tutorial covered goods or cargo. Explain"
+msgstr "No hay ningún tutorial cubierto mercancías o cargamento. Explicar"
+
+#: scripts/scenario_55_defenderHunter.lua:2378
+msgctxt "explainGoods-comms"
+msgid "Different types of cargo or goods may be obtained from stations, freighters or other sources. They go by one word descriptions such as dilithium, optic, warp, etc. Certain mission goals may require a particular type or types of cargo. Each player ship differs in cargo carrying capacity. Goods may be obtained by spending reputation points or by trading other types of cargo (typically food, medicine or luxury)"
+msgstr "Se pueden obtener diferentes tipos de carga o mercancías de estaciones, fletes u otras fuentes. Se pasan por una palabra descripciones tales como dilitio, óptica, warp, etc. Ciertos objetivos de la misión pueden requerir un tipo o tipos particulares de carga. Cada barco de jugadores difiere en la capacidad de carga. Los bienes pueden obtenerse mediante el gasto de puntos de reputación o el comercio de otros tipos de carga (alimentos, medicinas o lujos)."
+
+#: scripts/scenario_55_defenderHunter.lua:2384
+#, lua-format
+msgctxt "trade-comms"
+msgid "Provide %s as requested"
+msgstr "Proporción %s solicitado"
+
+#: scripts/scenario_55_defenderHunter.lua:2388
+msgctxt "trade-comms"
+msgid ""
+"Thanks, we really needed that.\n"
+"\n"
+"I have some information for you. Decide which one you want"
+msgstr "Gracias, realmente necesitábamos eso. Tengo información para usted."
+
+#: scripts/scenario_55_defenderHunter.lua:2389
+msgctxt "upgrade-comms"
+msgid "Ship maneuver upgrade"
+msgstr "Actualización de maniobra de nave"
+
+#: scripts/scenario_55_defenderHunter.lua:2391 scripts/scenario_55_defenderHunter.lua:2395
+msgctxt "upgrade-comms"
+msgid "Check back shortly and I'll tell you all about it"
+msgstr "Regresa pronto y te lo contaré todo."
+
+#: scripts/scenario_55_defenderHunter.lua:2393
+msgctxt "intelligence-comms"
+msgid "Intelligence"
+msgstr "Inteligencia"
+
+#: scripts/scenario_55_defenderHunter.lua:2400
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "Give %s as requested"
+msgstr "Dale. %s solicitado"
+
+#: scripts/scenario_55_defenderHunter.lua:2404
+#, lua-format
+msgctxt "upgrade-comms"
+msgid ""
+"Thanks, we needed that %s.\n"
+"\n"
+"I have information for you. Decide which one you want"
+msgstr "Gracias, necesitábamos que %s. Tengo información para usted. Decidir cuál es el que desea"
+
+#: scripts/scenario_55_defenderHunter.lua:2405 scripts/scenario_55_defenderHunter.lua:2583
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "Upgrade %s to auto-rotate"
+msgstr "Actualización %s a auto-rotación"
+
+#: scripts/scenario_55_defenderHunter.lua:2407 scripts/scenario_55_defenderHunter.lua:2411 scripts/scenario_55_defenderHunter.lua:2415
+msgctxt "upgrade-comms"
+msgid "Check back in a bit and I'll tell you all about it"
+msgstr "Regresa un poco y te lo contaré todo."
+
+#: scripts/scenario_55_defenderHunter.lua:2409
+msgctxt "upgrade-comms"
+msgid "Upgrade beam weapon cycle time"
+msgstr "Tiempo de ciclo del arma de haz degradado"
+
+#: scripts/scenario_55_defenderHunter.lua:2413 scripts/scenario_55_defenderHunter.lua:2662
+msgctxt "upgrade-comms"
+msgid "Upgrade hull damage capacity"
+msgstr "Capacidad de daño de casco de grado"
+
+#: scripts/scenario_55_defenderHunter.lua:2420
+msgctxt "upgrade-comms"
+msgid "What about that maneuver upgrade information you promised?"
+msgstr "¿Qué hay de la información de actualización de maniobra que prometiste?"
+
+#: scripts/scenario_55_defenderHunter.lua:2421
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "I hear %s can upgrade your maneuverability, but they need %s to do the job"
+msgstr "Escuché %s puede mejorar su maniobrabilidad, pero necesitan %s para hacer el trabajo"
+
+#: scripts/scenario_55_defenderHunter.lua:2423
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "Where is %s?"
+msgstr "Donde está %s?"
+
+#: scripts/scenario_55_defenderHunter.lua:2424 scripts/scenario_55_defenderHunter.lua:2505
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "%s is in sector %s"
+msgstr "%s en el sector %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2428
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "Where might I find some %s?"
+msgstr "¿Dónde puedo encontrar algo? %s?"
+
+#: scripts/scenario_55_defenderHunter.lua:2429
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "I think %s might have some"
+msgstr "Creo %s podría tener algunos"
+
+#: scripts/scenario_55_defenderHunter.lua:2432
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "And where the heck is %s?"
+msgstr "Y donde está el calcetín %s?"
+
+#: scripts/scenario_55_defenderHunter.lua:2433
+#, lua-format
+msgctxt "upgrade-comms"
+msgid ""
+"My, my, you're quite inquisitive.\n"
+"%s is in sector %s"
+msgstr ""
+"Eres muy inquisitivo.\n"
+"%s en el sector %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2444
+msgctxt "upgrade-comms"
+msgid "You mentioned a beam weapon cycle time upgrade..."
+msgstr "Mencionaste una actualización del tiempo del ciclo de armas de haz..."
+
+#: scripts/scenario_55_defenderHunter.lua:2445
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "Station %s can do that for %s"
+msgstr "Estación %s puede hacer eso por %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2447
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "I've never heard of %s. Where is %s?"
+msgstr "Nunca he oído hablar de %s. Dónde está %s?"
+
+#: scripts/scenario_55_defenderHunter.lua:2448
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "You haven't? I'm surprised. %s is in %s"
+msgstr "Me sorprende. %s está dentro. %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2452
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "Can you direct me to a station with %s?"
+msgstr "¿Puedes dirigirme a una estación con %s?"
+
+#: scripts/scenario_55_defenderHunter.lua:2453
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "%s has %s *and* they have the best indigenous Kraylor honey you've ever tasted"
+msgstr "%s ha tenido %s *y* tienen la mejor miel de Kraylor indígena que has probado"
+
+#: scripts/scenario_55_defenderHunter.lua:2456
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "Sounds tasty. Where is %s?"
+msgstr "Suena sabroso. %s?"
+
+#: scripts/scenario_55_defenderHunter.lua:2457
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "It's in %s"
+msgstr "Está dentro. %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2468
+msgctxt "upgrade-comms"
+msgid "Where's that station rotation upgrade information?"
+msgstr "¿Dónde está la información de actualización de rotación de la estación?"
+
+#: scripts/scenario_55_defenderHunter.lua:2469
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "station %s has the technical knowledge but lacks the %s"
+msgstr "estación %s tiene el conocimiento técnico pero carece de %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2471
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "Where is station %s?"
+msgstr "Donde esta la estación %s?"
+
+#: scripts/scenario_55_defenderHunter.lua:2472
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "%s is in %s"
+msgstr "%s está dentro. %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2477
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "Where could I get %s?"
+msgstr "¿Dónde puedo conseguirlo? %s?"
+
+#: scripts/scenario_55_defenderHunter.lua:2478
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "%s should have %s"
+msgstr "%s debería haber %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2481
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "Do you know where %s is located?"
+msgstr "¿Sabes dónde? %s ¿Está localizado?"
+
+#: scripts/scenario_55_defenderHunter.lua:2482
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "Yes, it's in %s"
+msgstr "Sí, está dentro. %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2494
+msgctxt "intelligence-comms"
+msgid "What about that intelligence information you promised?"
+msgstr "¿Qué hay de esa información de inteligencia que prometiste?"
+
+#: scripts/scenario_55_defenderHunter.lua:2495
+#, lua-format
+msgctxt "intelligence-comms"
+msgid "I hear Marcy Sorenson just got back from an enemy scouting expedition. She was talking about enemy bases. She can probably tell you where some of these bases are located. She's based on %s"
+msgstr "Oí que Marcy Sorenson acaba de regresar de una expedición de exploradores enemigas. %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2496 scripts/scenario_55_defenderHunter.lua:2607
+#, lua-format
+msgctxt "intelligence-comms"
+msgid "Talk with Marcy Sorenson on %s"
+msgstr "Habla con Marcy Sorenson. %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2501
+msgctxt "upgrade-comms"
+msgid "Remember, you promised some ship hull upgrade information?"
+msgstr "¿Recuerdas, prometiste información de actualización de casco de barco?"
+
+#: scripts/scenario_55_defenderHunter.lua:2502
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "Oh yes, %s can upgrade your hull, but they want %s to do the job"
+msgstr "Oh, sí. %s puede mejorar su casco, pero quieren %s para hacer el trabajo"
+
+#: scripts/scenario_55_defenderHunter.lua:2504
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "So, where is %s?"
+msgstr "Entonces, ¿dónde está? %s?"
+
+#: scripts/scenario_55_defenderHunter.lua:2509
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "Where could I find some %s?"
+msgstr "¿Dónde puedo encontrar algo? %s?"
+
+#: scripts/scenario_55_defenderHunter.lua:2510
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "I think %s may have some"
+msgstr "Creo %s puede tener algunos"
+
+#: scripts/scenario_55_defenderHunter.lua:2513
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "And just where is %s?"
+msgstr "Y justo donde está %s?"
+
+#: scripts/scenario_55_defenderHunter.lua:2514
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "If you must know, %s is in sector %s"
+msgstr "Si usted debe saber, %s en el sector %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2527
+msgctxt "upgrade-comms"
+msgid "Upgrade maneuverability"
+msgstr "Maniobrabilidad de actualización"
+
+#: scripts/scenario_55_defenderHunter.lua:2537
+msgctxt "upgrade-comms"
+msgid "Upgraded maneuverability"
+msgstr "Maniobra de grado"
+
+#: scripts/scenario_55_defenderHunter.lua:2539 scripts/scenario_55_defenderHunter.lua:2595
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "You need to bring some %s for the upgrade"
+msgstr "Necesitas traer algo %s para la actualización"
+
+#: scripts/scenario_55_defenderHunter.lua:2549
+msgctxt "upgrade-comms"
+msgid "Upgrade beam cycle time"
+msgstr "Tiempo de ciclo de haz de actualización"
+
+#: scripts/scenario_55_defenderHunter.lua:2551
+msgctxt "upgrade-comms"
+msgid "Your ship type does not support a beam weapon upgrade."
+msgstr "Su tipo de nave no soporta una actualización de arma de haz."
+
+#: scripts/scenario_55_defenderHunter.lua:2571
+msgctxt "upgrade-comms"
+msgid "Beam cycle time reduced by 20%"
+msgstr "El tiempo del ciclo del haz reducido en un 20%"
+
+#: scripts/scenario_55_defenderHunter.lua:2573
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "We require %s before we can upgrade your beam weapons"
+msgstr "Requerimos %s antes de que podamos mejorar sus armas de haz"
+
+#: scripts/scenario_55_defenderHunter.lua:2592
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "%s was just what we needed. The technical details have been transmitted to %s. The auto-rotation has begun"
+msgstr "%s lo que necesitábamos, los detalles técnicos se han transmitido %s. La auto-rotación ha comenzado"
+
+#: scripts/scenario_55_defenderHunter.lua:2603
+msgctxt "intelligence-comms"
+msgid "May I speak with Marcy Sorenson?"
+msgstr "¿Puedo hablar con Marcy Sorenson?"
+
+#: scripts/scenario_55_defenderHunter.lua:2606
+#, lua-format
+msgctxt "intelligence-comms"
+msgid "She transferred to %s"
+msgstr "Se transfirió a %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2608
+#, lua-format
+msgctxt "intelligence-comms"
+msgid "Where exactly is %s?"
+msgstr "¿Dónde está exactamente? %s?"
+
+#: scripts/scenario_55_defenderHunter.lua:2609
+#, lua-format
+msgctxt "intelligence-comms"
+msgid "%s is in %s"
+msgstr "%s está dentro. %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2610
+#, lua-format
+msgctxt "intelligence-comms"
+msgid "Talk with Marcy Sorenson on %s in %s"
+msgstr "Habla con Marcy Sorenson. %s en el interior %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2615 scripts/scenario_55_defenderHunter.lua:2638
+msgctxt "intelligence-comms"
+msgid "This is Marcy. Whatcha want?"
+msgstr "Soy Marcy. ¿Qué quieres?"
+
+#: scripts/scenario_55_defenderHunter.lua:2616 scripts/scenario_55_defenderHunter.lua:2639
+msgctxt "intelligence-comms"
+msgid "Please tell me about the enemy bases found"
+msgstr "Por favor, háblame de las bases enemigas encontradas"
+
+#: scripts/scenario_55_defenderHunter.lua:2627
+#, lua-format
+msgctxt "intelligence-comms"
+msgid "Sure. We found a couple of enemy stations in %s and %s"
+msgstr "Seguro, encontramos un par de estaciones enemigas. %s y %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2628
+#, lua-format
+msgctxt "intelligence-comms"
+msgid "Investigate enemy bases in %s and %s"
+msgstr "Investigar bases enemigas en %s y %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2637
+msgctxt "intelligence-comms"
+msgid "May I speak with Marcy Sorenson, please?"
+msgstr "¿Puedo hablar con Marcy Sorenson, por favor?"
+
+#: scripts/scenario_55_defenderHunter.lua:2651
+#, lua-format
+msgctxt "intelligence-comms"
+msgid "Sure. We found some enemy stations in %s, %s and %s"
+msgstr "Seguro, encontramos algunas estaciones enemigas. %s, %s y %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2652
+#, lua-format
+msgctxt "intelligence-comms"
+msgid "Investigate enemy bases in %s, %s and %s"
+msgstr "Investigar bases enemigas en %s, %s y %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2672
+msgctxt "upgrade-comms"
+msgid "Upgraded hull capacity for damage by 20%"
+msgstr "Capacidad de casco degradada para el daño en un 20%"
+
+#: scripts/scenario_55_defenderHunter.lua:2674
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "We won't upgrade your hull until we have %s"
+msgstr "No mejoraremos tu casco hasta que tengamos %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2683
+msgctxt "Maria-comms"
+msgid "Offer gift on behalf of Maria Shrivner"
+msgstr "Oferta regalo en nombre de Maria Shrivner"
+
+#: scripts/scenario_55_defenderHunter.lua:2713
+msgctxt "Maria-comms"
+msgid "Thanks. He's impressed with the gift to such a degree that he's speechless"
+msgstr "Está impresionado con el regalo de tal grado que no tiene palabras."
+
+#: scripts/scenario_55_defenderHunter.lua:2715
+msgctxt "Maria-comms"
+msgid "I know this couple (or former couple). Only gold, platinum, dilithium, tritanium or cobolt will work as a gift"
+msgstr "Conozco esta pareja (o pareja anterior). Sólo oro, platino, dilitio, tritanio o cobolt funcionará como un regalo"
+
+#: scripts/scenario_55_defenderHunter.lua:2725
+msgctxt "upgradeOrders-comms"
+msgid "Get ship maneuver upgrade"
+msgstr "Consiga la maniobra de la nave actualización"
+
+#: scripts/scenario_55_defenderHunter.lua:2727 scripts/scenario_55_defenderHunter.lua:2738 scripts/scenario_55_defenderHunter.lua:2746
+msgctxt "upgradeOrders-comms"
+msgid ""
+"\n"
+"Optional:\n"
+msgstr ""
+"\n"
+"Opcional:\n"
+
+#: scripts/scenario_55_defenderHunter.lua:2729
+#, lua-format
+msgctxt "upgradeOrders-comms"
+msgid ""
+"\n"
+"Optional:\n"
+"Get ship maneuver upgrade from %s for %s"
+msgstr ""
+"\n"
+"Opcional: Obtener la maniobra de la nave actualización de %s para %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2731
+#, lua-format
+msgctxt "upgradeOrders-comms"
+msgid ""
+"\n"
+"Optional:\n"
+"Get ship maneuver upgrade from %s in sector %s for %s"
+msgstr ""
+"\n"
+"Opcional: Obtener la maniobra de la nave actualización de %s en el sector %s para %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2733
+#, lua-format
+msgctxt "upgradeOrders-comms"
+msgid ""
+"\n"
+"Optional:\n"
+"Get ship maneuver upgrade from %s in sector %s for %s.\n"
+"    You might find %s at %s"
+msgstr ""
+"\n"
+"Opcional: Obtener la maniobra de la nave actualización de %s en el sector %s para %s. Podría encontrar %s en %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2735
+#, lua-format
+msgctxt "upgradeOrders-comms"
+msgid ""
+"\n"
+"Optional:\n"
+"Get ship maneuver upgrade from %s in sector %s for %s.\n"
+"    You might find %s at %s in sector %s"
+msgstr ""
+"\n"
+"Opcional: Obtener la maniobra de la nave actualización de %s en el sector %s para %s. Podría encontrar %s en %s en el sector %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2749
+#, lua-format
+msgctxt "upgradeOrders-comms"
+msgid "Upgrade %s to rotate"
+msgstr "Actualización %s para rotar"
+
+#: scripts/scenario_55_defenderHunter.lua:2753
+#, lua-format
+msgctxt "upgradeOrders-comms"
+msgid "Upgrade %s to auto-rotate by taking %s to %s"
+msgstr "Actualización %s a auto-rotación tomando %s a %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2755
+#, lua-format
+msgctxt "upgradeOrders-comms"
+msgid "Upgrade %s to auto-rotate by taking %s to %s in %s"
+msgstr "Actualización %s a auto-rotación tomando %s a %s en el interior %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2757
+#, lua-format
+msgctxt "upgradeOrders-comms"
+msgid ""
+"Upgrade %s to auto-rotate by taking %s to %s in %s.\n"
+"    %s may have %s"
+msgstr ""
+"Actualización %s a auto-rotación tomando %s a %s en el interior %s.\n"
+"    %s puede haber %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2759
+#, lua-format
+msgctxt "upgradeOrders-comms"
+msgid ""
+"Upgrade %s to auto-rotate by taking %s to %s in %s.\n"
+"    %s in %s may have %s"
+msgstr ""
+"Actualización %s a auto-rotación tomando %s a %s en el interior %s.\n"
+"    %s en el interior %s puede haber %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2761
+msgctxt "upgradeOrders-comms"
+msgid "Get beam cycle time upgrade"
+msgstr "Mejorar el tiempo del ciclo del haz"
+
+#: scripts/scenario_55_defenderHunter.lua:2765
+#, lua-format
+msgctxt "upgradeOrders-comms"
+msgid "Get beam cycle time upgrade from %s for %s"
+msgstr "Obtenga el tiempo del ciclo del haz %s para %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2767
+#, lua-format
+msgctxt "upgradeOrders-comms"
+msgid "Get beam cycle time upgrade from %s in %s for %s"
+msgstr "Obtenga el tiempo del ciclo del haz %s en el interior %s para %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2769
+#, lua-format
+msgctxt "upgradeOrders-comms"
+msgid ""
+"Get beam cycle time upgrade from %s in %s for %s\n"
+"    You might find %s at %s"
+msgstr ""
+"Obtenga el tiempo del ciclo del haz %s en el interior %s para %s\n"
+"    Podrías encontrarlo. %s en %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2771
+#, lua-format
+msgctxt "upgradeOrders-comms"
+msgid ""
+"Get beam cycle time upgrade from %s in %s for %s\n"
+"    You might find %s at %s in %s"
+msgstr ""
+"Obtenga el tiempo del ciclo del haz %s en el interior %s para %s\n"
+"    Podrías encontrarlo. %s en %s en el interior %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2773
+msgctxt "upgradeOrders-comms"
+msgid "Get hull upgrade"
+msgstr "Mejorar el casco"
+
+#: scripts/scenario_55_defenderHunter.lua:2777
+#, lua-format
+msgctxt "upgradeOrders-comms"
+msgid "Get %s to upgrade hull for %s"
+msgstr "¡Vamos! %s para mejorar el casco %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2779
+#, lua-format
+msgctxt "upgradeOrders-comms"
+msgid "Get %s in %s to upgrade hull for %s"
+msgstr "¡Vamos! %s en el interior %s para mejorar el casco %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2781
+#, lua-format
+msgctxt "upgradeOrders-comms"
+msgid ""
+"Get %s in %s to upgrade hull for %s\n"
+"    %s might have %s"
+msgstr ""
+"¡Vamos! %s en el interior %s para mejorar el casco %s\n"
+"    %s podría haber sido %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2783
+#, lua-format
+msgctxt "upgradeOrders-comms"
+msgid ""
+"Get %s in %s to upgrade hull for %s\n"
+"    %s in %s might have %s"
+msgstr ""
+"¡Vamos! %s en el interior %s para mejorar el casco %s\n"
+"    %s en el interior %s podría haber sido %s"
+
+#: scripts/scenario_55_defenderHunter.lua:2801
+msgctxt "station-comms"
+msgid "You need to stay docked for that action."
+msgstr "Tienes que permanecer atracado para esa acción."
+
+#: scripts/scenario_55_defenderHunter.lua:2805
+msgctxt "ammo-comms"
+msgid "We do not deal in weapons of mass destruction."
+msgstr "No tratamos armas de destrucción en masa."
+
+#: scripts/scenario_55_defenderHunter.lua:2806
+msgctxt "ammo-comms"
+msgid "We do not deal in weapons of mass disruption."
+msgstr "No nos ocupamos de las armas de perturbación masiva."
+
+#: scripts/scenario_55_defenderHunter.lua:2807
+msgctxt "ammo-comms"
+msgid "We do not deal in those weapons."
+msgstr "No nos ocupamos de esas armas."
+
+#: scripts/scenario_55_defenderHunter.lua:2814
+msgctxt "ammo-comms"
+msgid "All nukes are charged and primed for destruction."
+msgstr "Todos los desnudos están cargados y preparados para la destrucción."
+
+#: scripts/scenario_55_defenderHunter.lua:2816
+msgctxt "ammo-comms"
+msgid "Sorry, sir, but you are as fully stocked as I can allow."
+msgstr "Lo siento, señor, pero usted está tan lleno como puedo permitir."
+
+#: scripts/scenario_55_defenderHunter.lua:2821
+msgctxt "needRep-comms"
+msgid "Not enough reputation."
+msgstr "No es suficiente reputación."
+
+#: scripts/scenario_55_defenderHunter.lua:2826
+msgctxt "ammo-comms"
+msgid "You are fully loaded and ready to explode things."
+msgstr "Estás completamente cargado y listo para explotar cosas."
+
+#: scripts/scenario_55_defenderHunter.lua:2828
+msgctxt "ammo-comms"
+msgid ""
+"We generously resupplied you with some weapon charges.\n"
+"Put them to good use."
+msgstr "generosamente te resucitamos con algunos cargos de arma, ponlos a buen uso."
+
+#: scripts/scenario_55_defenderHunter.lua:2839
+msgctxt "station-comms"
+msgid ""
+"Good day, officer.\n"
+"If you need supplies, please dock with us first."
+msgstr "Buen día, oficial, si necesita provisiones, por favor, atraque con nosotros primero."
+
+#: scripts/scenario_55_defenderHunter.lua:2841
+msgctxt "station-comms"
+msgid ""
+"Greetings.\n"
+"If you want to do business, please dock with us first."
+msgstr "Saludos, si quieres hacer negocios, por favor, haz lo primero con nosotros."
+
+#: scripts/scenario_55_defenderHunter.lua:2844
+msgctxt "station-comms"
+msgid ""
+"\n"
+"Be aware that if enemies in the area get much closer, we will be too busy to conduct business with you."
+msgstr ""
+"\n"
+"Tenga en cuenta que si los enemigos en la zona se acercan mucho más, estaremos demasiado ocupados para llevar a cabo negocios con usted."
+
+#: scripts/scenario_55_defenderHunter.lua:2874
+msgctxt "station-comms"
+msgid "I need information"
+msgstr "Necesito información"
+
+#: scripts/scenario_55_defenderHunter.lua:2875
+msgctxt "station-comms"
+msgid "What kind of information do you need?"
+msgstr "¿Qué tipo de información necesita?"
+
+#: scripts/scenario_55_defenderHunter.lua:2876
+msgctxt "ammo-comms"
+msgid "What ordnance do you have available for restock?"
+msgstr "¿Qué artefacto tiene disponible para el reinstalamiento?"
+
+#: scripts/scenario_55_defenderHunter.lua:2881
+msgctxt "ammo-comms"
+msgid ""
+"\n"
+"   Nuke"
+msgstr ""
+"\n"
+"   Nuke"
+
+#: scripts/scenario_55_defenderHunter.lua:2885
+msgctxt "ammo-comms"
+msgid ""
+"\n"
+"   EMP"
+msgstr ""
+"\n"
+"   EMP"
+
+#: scripts/scenario_55_defenderHunter.lua:2889
+msgctxt "ammo-comms"
+msgid ""
+"\n"
+"   Homing"
+msgstr ""
+"\n"
+"   Homing"
+
+#: scripts/scenario_55_defenderHunter.lua:2893
+msgctxt "ammo-comms"
+msgid ""
+"\n"
+"   Mine"
+msgstr ""
+"\n"
+"   Mina"
+
+#: scripts/scenario_55_defenderHunter.lua:2897
+msgctxt "ammo-comms"
+msgid ""
+"\n"
+"   HVLI"
+msgstr ""
+"\n"
+"   HVLI"
+
+#: scripts/scenario_55_defenderHunter.lua:2900
+msgctxt "ammo-comms"
+msgid "We have no ordnance available for restock"
+msgstr "No tenemos ningún artefacto disponible para restaurar"
+
+#: scripts/scenario_55_defenderHunter.lua:2902
+#, lua-format
+msgctxt "ammo-comms"
+msgid "We have the following type of ordnance available for restock:%s"
+msgstr "Tenemos el siguiente tipo de artefactos disponibles para la restauración:%s"
+
+#: scripts/scenario_55_defenderHunter.lua:2904
+#, lua-format
+msgctxt "ammo-comms"
+msgid "We have the following types of ordnance available for restock:%s"
+msgstr "Tenemos los siguientes tipos de artefactos disponibles para restaurar:%s"
+
+#: scripts/scenario_55_defenderHunter.lua:2918
+msgctxt "trade-comms"
+msgid "What goods do you have available for sale or trade?"
+msgstr "¿Qué bienes tiene disponible para la venta o el comercio?"
+
+#: scripts/scenario_55_defenderHunter.lua:2919
+#, lua-format
+msgctxt "trade-comms"
+msgid ""
+"Station %s:\n"
+"Goods or components available: quantity, cost in reputation"
+msgstr "Estación %s: Mercancías o componentes disponibles: cantidad, costo en la reputación"
+
+#: scripts/scenario_55_defenderHunter.lua:2921
+#, lua-format
+msgctxt "trade-comms"
+msgid ""
+"\n"
+"   %14s: %2i, %3i"
+msgstr ""
+"\n"
+"   %14s: %2i, %3i"
+
+#: scripts/scenario_55_defenderHunter.lua:2949
+msgctxt "stationServices-comms"
+msgid "Hull repair automation unavailable whie it is undergoing maintenance."
+msgstr "Automatización de reparación de casco sin disponibilidad que está siendo sometido a mantenimiento."
+
+#: scripts/scenario_55_defenderHunter.lua:2990
+msgctxt "helpfullWarning-comms"
+msgid "See any enemies in your area?"
+msgstr "¿Ves enemigos en tu área?"
+
+#: scripts/scenario_55_defenderHunter.lua:3000
+#, lua-format
+msgctxt "helpfullWarning-comms"
+msgid "Yes, we see %i enemies within 30U"
+msgstr "Sí, ya vemos. %i enemigos dentro de 30U"
+
+#: scripts/scenario_55_defenderHunter.lua:3002
+msgctxt "helpfullWarning-comms"
+msgid "Yes, we see one enemy within 30U"
+msgstr "Sí, vemos a un enemigo dentro de 30U"
+
+#: scripts/scenario_55_defenderHunter.lua:3006
+msgctxt "helpfullWarning-comms"
+msgid "No enemies within 30U"
+msgstr "Ningún enemigo dentro de 30U"
+
+#: scripts/scenario_55_defenderHunter.lua:3011
+msgctxt "helpfullWarning-comms"
+msgid "Not really"
+msgstr "No realmente."
+
+#: scripts/scenario_55_defenderHunter.lua:3016
+msgctxt "trade-comms"
+msgid "Where can I find particular goods?"
+msgstr "¿Dónde puedo encontrar bienes particulares?"
+
+#: scripts/scenario_55_defenderHunter.lua:3017
+msgctxt "trade-comms"
+msgid "Friendly stations often have food or medicine or both. Neutral stations may trade their goods for food, medicine or luxury."
+msgstr "Las estaciones amistosas a menudo tienen alimentos o medicinas o ambas. Las estaciones neutrales pueden intercambiar sus productos para alimentos, medicinas o lujo."
+
+#: scripts/scenario_55_defenderHunter.lua:3056
+#, lua-format
+msgctxt "trade-comms"
+msgid "Station %s in sector %s has %s for %i reputation"
+msgstr "Estación %s en el sector %s ha tenido %s para %i reputación"
+
+#: scripts/scenario_55_defenderHunter.lua:3061
+msgctxt "trade-comms"
+msgid ""
+"\n"
+"\n"
+"What goods are you interested in?\n"
+"I've heard about these:"
+msgstr ""
+"\n"
+"\n"
+"¿En qué mercaderías estás interesado?"
+
+#: scripts/scenario_55_defenderHunter.lua:3063
+msgctxt "trade-comms"
+msgid " Beyond that, I have no knowledge of specific stations"
+msgstr " Más allá de eso, no tengo conocimiento de estaciones específicas"
+
+#: scripts/scenario_55_defenderHunter.lua:3069
+msgctxt "stationGeneralInfo-comms"
+msgid "General station information"
+msgstr "Información general de la estación"
+
+#: scripts/scenario_55_defenderHunter.lua:3152
+#, lua-format
+msgctxt "stationAssist-comms"
+msgid "Can you send a supply drop? (%d rep)"
+msgstr "¿Puedes enviar una gota de suministro?%d rep)"
+
+#: scripts/scenario_55_defenderHunter.lua:3154
+msgctxt "stationAssist-comms"
+msgid "You need to set a waypoint before you can request backup."
+msgstr "Necesitas establecer un punto de referencia antes de que puedas solicitar refuerzos."
+
+#: scripts/scenario_55_defenderHunter.lua:3156
+msgctxt "stationAssist-comms"
+msgid "To which waypoint should we deliver your supplies?"
+msgstr "¿A qué punto deberíamos entregar tus suministros?"
+
+#: scripts/scenario_55_defenderHunter.lua:3158 scripts/scenario_55_defenderHunter.lua:3184
+#, lua-format
+msgctxt "stationAssist-comms"
+msgid "WP %d"
+msgstr "WP %d"
+
+#: scripts/scenario_55_defenderHunter.lua:3166
+#, lua-format
+msgctxt "stationAssist-comms"
+msgid "We have dispatched a supply ship toward WP %d"
+msgstr "Hemos enviado un barco de suministro hacia WP %d"
+
+#: scripts/scenario_55_defenderHunter.lua:3168 scripts/scenario_55_defenderHunter.lua:3189
+msgctxt "needRep-comms"
+msgid "Not enough reputation!"
+msgstr "¡No es suficiente reputación!"
+
+#: scripts/scenario_55_defenderHunter.lua:3178
+#, lua-format
+msgctxt "stationAssist-comms"
+msgid "Please send reinforcements! (%d rep)"
+msgstr "¡Por favor envíe refuerzos!%d rep)"
+
+#: scripts/scenario_55_defenderHunter.lua:3180
+msgctxt "stationAssist-comms"
+msgid "You need to set a waypoint before you can request reinforcements."
+msgstr "Necesitas establecer un punto de referencia antes de que puedas solicitar refuerzos."
+
+#: scripts/scenario_55_defenderHunter.lua:3182
+msgctxt "stationAssist-comms"
+msgid "To which waypoint should we dispatch the reinforcements?"
+msgstr "¿A qué punto deberíamos enviar los refuerzos?"
+
+#: scripts/scenario_55_defenderHunter.lua:3187
+#, lua-format
+msgctxt "stationAssist-comms"
+msgid "We have dispatched %s to assist at WP %d"
+msgstr "Hemos enviado %s para ayudar en WP %d"
+
+#: scripts/scenario_55_defenderHunter.lua:3232 scripts/scenario_55_defenderHunter.lua:3407
+msgctxt "shipAssist-comms"
+msgid "What do you want?"
+msgstr "¿Qué quieres?"
+
+#: scripts/scenario_55_defenderHunter.lua:3234
+msgctxt "shipAssist-comms"
+msgid "Sir, how can we assist?"
+msgstr "Señor, ¿cómo podemos ayudar?"
+
+#: scripts/scenario_55_defenderHunter.lua:3236
+msgctxt "shipAssist-comms"
+msgid "Defend a waypoint"
+msgstr "Defender un waypoint"
+
+#: scripts/scenario_55_defenderHunter.lua:3238
+msgctxt "shipAssist-comms"
+msgid "No waypoints set. Please set a waypoint first."
+msgstr "No hay puntos de vista. Por favor, ponga un punto de vista primero."
+
+#: scripts/scenario_55_defenderHunter.lua:3241
+msgctxt "shipAssist-comms"
+msgid "Which waypoint should we defend?"
+msgstr "¿Cuál es el punto de partida que debemos defender?"
+
+#: scripts/scenario_55_defenderHunter.lua:3243
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "Defend WP %d"
+msgstr "Defender a WP %d"
+
+#: scripts/scenario_55_defenderHunter.lua:3245
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "We are heading to assist at WP %d."
+msgstr "Nos dirigimos a ayudar en el WP %d."
+
+#: scripts/scenario_55_defenderHunter.lua:3252
+msgctxt "shipAssist-comms"
+msgid "Assist me"
+msgstr "Ayúdame."
+
+#: scripts/scenario_55_defenderHunter.lua:3253
+msgctxt "shipAssist-comms"
+msgid "Heading toward you to assist."
+msgstr "Dirigiéndose hacia ti para asistir."
+
+#: scripts/scenario_55_defenderHunter.lua:3258
+msgctxt "shipAssist-comms"
+msgid "Report status"
+msgstr "Situación de los informes"
+
+#: scripts/scenario_55_defenderHunter.lua:3259
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "Hull: %d%%\n"
+msgstr "Hull: %d%%\n"
+
+#: scripts/scenario_55_defenderHunter.lua:3262
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "Shield: %d%%\n"
+msgstr "Escudo: %d%%\n"
+
+#: scripts/scenario_55_defenderHunter.lua:3264
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "Front Shield: %d%%\n"
+msgstr "Escudo frontal: %d%%\n"
+
+#: scripts/scenario_55_defenderHunter.lua:3265
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "Rear Shield: %d%%\n"
+msgstr "Rear Shield: %d%%\n"
+
+#: scripts/scenario_55_defenderHunter.lua:3268
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "Shield %s: %d%%\n"
+msgstr "Escudo %s: %d%%\n"
+
+#: scripts/scenario_55_defenderHunter.lua:3274
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "%s Missiles: %d/%d\n"
+msgstr "%s Misiles: %d/%d\n"
+
+#: scripts/scenario_55_defenderHunter.lua:3283
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "Dock at %s"
+msgstr "Dock at %s"
+
+#: scripts/scenario_55_defenderHunter.lua:3284
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "Docking at %s."
+msgstr "Docking at %s."
+
+#: scripts/scenario_55_defenderHunter.lua:3295
+msgctxt "shipEnemy-comms"
+msgid "We will see to your destruction!"
+msgstr "¡Vamos a ver su destrucción!"
+
+#: scripts/scenario_55_defenderHunter.lua:3296
+msgctxt "shipEnemy-comms"
+msgid "Your bloodline will end here!"
+msgstr "¡Tu linaje terminará aquí!"
+
+#: scripts/scenario_55_defenderHunter.lua:3297
+msgctxt "shipEnemy-comms"
+msgid "Your feeble threats are meaningless."
+msgstr "Sus amenazas débiles no tienen sentido."
+
+#: scripts/scenario_55_defenderHunter.lua:3299
+msgctxt "shipEnemy-comms"
+msgid ""
+"Ktzzzsss.\n"
+"You will DIEEee weaklingsss!"
+msgstr "Ktzzzss. ¡Usted va a DIEEee débil!"
+
+#: scripts/scenario_55_defenderHunter.lua:3301
+msgctxt "shipEnemy-comms"
+msgid ""
+"We wish you no harm, but will harm you if we must.\n"
+"End of transmission."
+msgstr "No le deseamos ningún daño, pero le dañaremos si es necesario."
+
+#: scripts/scenario_55_defenderHunter.lua:3303
+msgctxt "shipEnemy-comms"
+msgid "Stay out of our way, or your death will amuse us extremely!"
+msgstr "¡No te acerques a nosotros, o tu muerte nos diluirá extremadamente!"
+
+#: scripts/scenario_55_defenderHunter.lua:3305
+msgctxt "shipEnemy-comms"
+msgid ""
+"One zero one.\n"
+"No binary communication detected.\n"
+"Switching to universal speech.\n"
+"Generating appropriate response for target from human language archives.\n"
+":Do not cross us:\n"
+"Communication halted."
+msgstr "Uno cero. Ninguna comunicación binaria detectada. Intercambiando al discurso universal. Generando la respuesta adecuada para el objetivo de los archivos de lenguaje humano. :No nos cruzamos: La comunicación se detuvo."
+
+#: scripts/scenario_55_defenderHunter.lua:3306
+msgctxt "shipEnemy-comms"
+msgid "EXECUTE: SELFDESTRUCT"
+msgstr "EXECUTE: SELFDESTRUCT"
+
+#: scripts/scenario_55_defenderHunter.lua:3307
+msgctxt "shipEnemy-comms"
+msgid "Rogue command received. Targeting source."
+msgstr "Recibido el comando Rogue, fuente de orientación."
+
+#: scripts/scenario_55_defenderHunter.lua:3308
+msgctxt "shipEnemy-comms"
+msgid "External command ignored."
+msgstr "El comando externo ignorado."
+
+#: scripts/scenario_55_defenderHunter.lua:3310
+msgctxt "shipEnemy-comms"
+msgid ""
+"The hive suffers no threats. Opposition to any of us is opposition to us all.\n"
+"Stand down or prepare to donate your corpses toward our nutrition."
+msgstr "La colmena no sufre amenazas. La oposición a cualquiera de nosotros es oposición a todos nosotros. Bajar o prepararse para donar sus cadáveres hacia nuestra nutrición."
+
+#: scripts/scenario_55_defenderHunter.lua:3311
+msgctxt "shipEnemy-comms"
+msgid "<Transmit 'The Itsy-Bitsy Spider' on all wavelengths>"
+msgstr "<Transmit 'The Itsy-Bitsy Spider' on all wavelengths>"
+
+#: scripts/scenario_55_defenderHunter.lua:3312
+msgctxt "shipEnemy-comms"
+msgid "We do not need permission to pluck apart such an insignificant threat."
+msgstr "No necesitamos permiso para separar una amenaza tan insignificante."
+
+#: scripts/scenario_55_defenderHunter.lua:3313
+msgctxt "shipEnemy-comms"
+msgid "The hive has greater priorities than exterminating pests."
+msgstr "La colmena tiene mayores prioridades que exterminar plagas."
+
+#: scripts/scenario_55_defenderHunter.lua:3315
+msgctxt "shipEnemy-comms"
+msgid "Mind your own business!"
+msgstr "¡Cuidado con tu propio negocio!"
+
+#: scripts/scenario_55_defenderHunter.lua:3334
+msgctxt "trade-comms"
+msgid "Yes?"
+msgstr "¿Sí?"
+
+#: scripts/scenario_55_defenderHunter.lua:3336
+msgctxt "trade-comms"
+msgid "Where are you headed?"
+msgstr "¿A dónde vas?"
+
+#: scripts/scenario_55_defenderHunter.lua:3372
+#, lua-format
+msgctxt "trade-comms"
+msgid "Traded luxury for %s"
+msgstr "Lujo comercial para %s"
+
+#: scripts/scenario_55_defenderHunter.lua:3395
+#, lua-format
+msgctxt "trade-comms"
+msgid "Purchased %s from %s"
+msgstr "Comprado %s desde %s"
+
+#: scripts/scenario_55_defenderHunter.lua:3397 scripts/scenario_55_defenderHunter.lua:3433 scripts/scenario_55_defenderHunter.lua:3459 scripts/scenario_55_defenderHunter.lua:3490
+msgctxt "needRep-comms"
+msgid "Insufficient reputation for purchase"
+msgstr "Insuficiente reputación de compra"
+
+#: scripts/scenario_55_defenderHunter.lua:3410
+#, lua-format
+msgctxt "trade-comms"
+msgid "Where are you headed? (cost: %f reputation)"
+msgstr "¿A dónde vas? %f reputación)"
+
+#: scripts/scenario_55_defenderHunter.lua:3428 scripts/scenario_55_defenderHunter.lua:3454 scripts/scenario_55_defenderHunter.lua:3485
+msgctxt "trade-comms"
+msgid "Insufficient cargo space for purchase"
+msgstr "Espacio de carga insuficiente para la compra"
+
+#: scripts/scenario_55_defenderHunter.lua:3430 scripts/scenario_55_defenderHunter.lua:3456 scripts/scenario_55_defenderHunter.lua:3487
+msgctxt "trade-comms"
+msgid "Insufficient inventory on freighter"
+msgstr "Insuficiente inventario del flete"
+
+#: scripts/scenario_55_defenderHunter.lua:3438 scripts/scenario_55_defenderHunter.lua:3464 scripts/scenario_55_defenderHunter.lua:3495
+msgctxt "trade-comms"
+msgid "Purchased"
+msgstr "Comprado"
+
+#: scripts/scenario_55_defenderHunter.lua:3474
+msgctxt "trade-comms"
+msgid "Why are you bothering me?"
+msgstr "¿Por qué me estás molestando?"
+
+#: scripts/scenario_55_defenderHunter.lua:3507
+msgctxt "ship-comms"
+msgid ""
+"Sorry, we have no time to chat with you.\n"
+"We are on an important mission."
+msgstr "Lo siento, no tenemos tiempo para charlar contigo, estamos en una misión importante."
+
+#: scripts/scenario_55_defenderHunter.lua:3509
+msgctxt "ship-comms"
+msgid ""
+"We have nothing for you.\n"
+"Good day."
+msgstr "No tenemos nada para ti."
+
+#: scripts/scenario_55_defenderHunter.lua:3567
+#, lua-format
+msgctxt "goalAudio-shipLog"
+msgid "You are to protect your home base, %s, against enemy attack. Respond to other requests as you see fit"
+msgstr "Usted debe proteger su base de casa, %sResponda a otras peticiones que considere convenientes"
+
+#: scripts/scenario_55_defenderHunter.lua:3568
+#, lua-format
+msgctxt "goal-comms"
+msgid "Protect %s"
+msgstr "Proteger %s"
+
+#: scripts/scenario_55_defenderHunter.lua:3850
+#, lua-format
+msgctxt "intelligenceOrdersAudio-shipLog"
+msgid "[%s] We need some goods of type %s. Can you help? I hear %s has some"
+msgstr "[%s] Necesitamos algunos bienes de tipo %s. ¿Puedes ayudar? %s tiene algunos"
+
+#: scripts/scenario_55_defenderHunter.lua:3851
+#, lua-format
+msgctxt "intelligenceOrders-comms"
+msgid "Bring %s to %s. Possible source: %s"
+msgstr "Trae. %s a %s. Posible fuente: %s"
+
+#: scripts/scenario_55_defenderHunter.lua:3863
+msgctxt "upgrade-comms"
+msgid "Get ship maneuver upgrade"
+msgstr "Consiga la maniobra de la nave actualización"
+
+#: scripts/scenario_55_defenderHunter.lua:4093
+#, lua-format
+msgctxt "intelligenceOrders-comms"
+msgid "The enemy activity has been traced back to enemy bases nearby. Find these bases and stop these incursions. Threat Assessment: %.1f"
+msgstr "La actividad enemiga ha sido trazada de nuevo a bases enemigas cercanas. Encuentre estas bases y detenga estas incursiones. Evaluación de amenazas: %.1f"
+
+#: scripts/scenario_55_defenderHunter.lua:4100
+#, lua-format
+msgctxt "intelligenceOrders-comms"
+msgid "Find enemy bases. Stop enemy incursions. TA:%.1f"
+msgstr "Encuentra bases enemigas, detengan incursiones enemigas.%.1f"
+
+#: scripts/scenario_55_defenderHunter.lua:4129
+#, lua-format
+msgctxt "intelligenceOrdersAudio-shipLog"
+msgid "Kraylor prefect Ghalontor has moved to one of the enemy stations. Destroy that station and the Kraylor incursion will crumble. Threat Assessment: %.1f"
+msgstr "Kraylor prefect Ghalontor se ha trasladado a una de las estaciones enemigas. Destruir esa estación y la incursión Kraylor se desmoronarán. Evaluación de amenazas: %.1f"
+
+#: scripts/scenario_55_defenderHunter.lua:4137
+#, lua-format
+msgctxt "intelligenceOrders-comms"
+msgid "Destroy enemy base with Prefect Ghalontor aboard. TA:%.1f"
+msgstr "Base enemigo destructiva con el prefecto Ghalontor a bordo.%.1f"
+
+#: scripts/scenario_55_defenderHunter.lua:4175
+#, lua-format
+msgctxt "intelligenceOrders-comms"
+msgid "Enemy base located in %s. Others expected nearby. Threat Assessment: %.1f"
+msgstr "Enemigo base situado en %s. Otros esperados cerca. Evaluación de amenazas: %.1f"
+
+#: scripts/scenario_55_defenderHunter.lua:4182
+#, lua-format
+msgctxt "intelligenceOrders-comms"
+msgid "Destroy enemy base possibly near %s with Prefect Ghalontor aboard. TA:%.1f"
+msgstr "Base enemigo destructiva posiblemente cerca %s con el prefecto Ghalontor a bordo.%.1f"
+
+#: scripts/scenario_55_defenderHunter.lua:4220 scripts/scenario_55_defenderHunter.lua:4265
+#, lua-format
+msgctxt "intelligenceOrders-comms"
+msgid "Another enemy base located in %s. Others expected nearby. Threat Assessment: %.1f"
+msgstr "Otra base enemiga situada en %s. Otros esperados cerca. Evaluación de amenazas: %.1f"
+
+#: scripts/scenario_55_defenderHunter.lua:4227
+#, lua-format
+msgctxt "intelligenceOrders-comms"
+msgid "Destroy enemy base possibly near %s or %s with Prefect Ghalontor aboard. TA:%.1f"
+msgstr "Base enemigo destructiva posiblemente cerca %s o %s con el prefecto Ghalontor a bordo.%.1f"
+
+#: scripts/scenario_55_defenderHunter.lua:4272
+#, lua-format
+msgctxt "IntelligenceOrders-comms"
+msgid "Destroy enemy base possibly near %s, %s or %s with Prefect Ghalontor aboard. TA:%.1f"
+msgstr "Base enemigo destructiva posiblemente cerca %s, %s o %s con el prefecto Ghalontor a bordo.%.1f"
+
+#: scripts/scenario_55_defenderHunter.lua:4299
+#, lua-format
+msgctxt "intelligenceOrders-comms"
+msgid "Another enemy base located in %s. Others expected nearby: Threat Assessment: %.1f"
+msgstr "Otra base enemiga situada en %s. Otros que se esperan cerca: Evaluación de la amenaza: %.1f"
+
+#: scripts/scenario_55_defenderHunter.lua:4306
+#, lua-format
+msgctxt "intelligenceOrders-comms"
+msgid "Destroy enemy base possibly near %s, %s, %s or %s with Prefect Ghalontor aboard. TA:%.1f"
+msgstr "Base enemigo destructiva posiblemente cerca %s, %s, %s o %s con el prefecto Ghalontor a bordo.%.1f"
+
+#: scripts/scenario_55_defenderHunter.lua:4333
+#, lua-format
+msgctxt "intelligenceOrders-comms"
+msgid "We confirmed Prefect Ghalontor is aboard enemy station %s in %s. Threat Assessment: %.1f"
+msgstr "Confirmamos que el Prefecto Ghalontor está a bordo de la estación enemiga. %s en el interior %s. Evaluación de amenazas: %.1f"
+
+#: scripts/scenario_55_defenderHunter.lua:4340
+#, lua-format
+msgctxt "intelligenceOrders-comms"
+msgid "Destroy enemy base %s in %s. TA:%.1f"
+msgstr "Base enemigo destructiva %s en el interior %s. TA:%.1f"
+
+#: scripts/scenario_55_defenderHunter.lua:4424
+#, lua-format
+msgctxt "upgradeOrdersAudio-shipLog"
+msgid "[%s] We are running low on goods of type %s. Can you help? %s in %s should have some"
+msgstr "[%s] Estamos corriendo bajo en mercancías de tipo %s¿Puedes ayudar? %s en el interior %s debería haber algo"
+
+#: scripts/scenario_55_defenderHunter.lua:4425
+#, lua-format
+msgctxt "upgradeOrders-comms"
+msgid "Bring %s to %s. Possible source: %s in %s"
+msgstr "Trae. %s a %s. Posible fuente: %s en el interior %s"
+
+#: scripts/scenario_55_defenderHunter.lua:4437
+#, lua-format
+msgctxt "upgrade-comms"
+msgid "Upgrade %s to rotate"
+msgstr "Actualización %s para rotar"
+
+#: scripts/scenario_55_defenderHunter.lua:4492
+msgctxt "upgrade-comms"
+msgid "Get beam cycle time upgrade"
+msgstr "Mejorar el tiempo del ciclo del haz"
+
+#: scripts/scenario_55_defenderHunter.lua:4564
+msgctxt "upgrade-comms"
+msgid "Get hull upgrade"
+msgstr "Mejorar el casco"
+
+#: scripts/scenario_55_defenderHunter.lua:4691
+#, lua-format
+msgctxt "PaulOrders-shiplog"
+msgid "Agent Paul Straight has information on enemies in the area and a proposal. Pick him and his equipment up at station %s"
+msgstr "El agente Paul Straight tiene información sobre enemigos en la zona y una propuesta. Elija él y su equipo en la estación %s"
+
+#: scripts/scenario_55_defenderHunter.lua:4692
+#, lua-format
+msgctxt "PaulOrders-comms"
+msgid "Get Paul Straight at station %s"
+msgstr "Pon a Paul Straight en la estación %s"
+
+#: scripts/scenario_55_defenderHunter.lua:4712
+#, lua-format
+msgctxt "PaulOrders-shiplog"
+msgid "[Paul Straight] I've been studying enemy station %s in %s: traffic patterns, communication traffic, energy signature, etc. I've built a specialized short range transporter that should be able to beam me onto the station through their shields. I need to get refined readings from 20 units or closer for final calibration. Please take me to within 20 units of %s"
+msgstr "He estado estudiando la estación enemiga %s en el interior %s: patrones de tráfico, tráfico de comunicación, firma de energía, etc. He construido un transportador especializado de corta distancia que debe ser capaz de transportarme a la estación a través de sus escudos. Necesito conseguir lecturas refinadas de 20 unidades o más cerca para la calibración final. Por favor, llévame a dentro de 20 unidades de %s"
+
+#: scripts/scenario_55_defenderHunter.lua:4713
+#, lua-format
+msgctxt "PaulOrders-comms"
+msgid "Take Paul Straight to within 20U of %s in %s"
+msgstr "Lleve a Paul Straight a 20U de %s en el interior %s"
+
+#: scripts/scenario_55_defenderHunter.lua:4727
+msgctxt "Paul-shiplog"
+msgid "[Paul Straight] I've got my readings. Let me calibrate the transporter"
+msgstr "Tengo mis lecturas, déjame calibrar el transportador"
+
+#: scripts/scenario_55_defenderHunter.lua:4730
+msgctxt "Paul-msgHelms"
+msgid "[Paul Straight] The ship is in range. I completed my scans. Thank you"
+msgstr "La nave está en rango. He completado mis escaneos. Gracias"
+
+#: scripts/scenario_55_defenderHunter.lua:4734
+msgctxt "Paul-msgTactical"
+msgid "[Paul Straight] The ship is in range. I completed my scans. Thank you"
+msgstr "La nave está en rango. He completado mis escaneos. Gracias"
+
+#: scripts/scenario_55_defenderHunter.lua:4744 scripts/scenario_55_defenderHunter.lua:4769 scripts/scenario_55_defenderHunter.lua:4802
+msgctxt "Paul-shiplog"
+msgid "[Paul Straight] It's too bad the station was destroyed"
+msgstr "[Paul Straight] Es muy malo que la estación fuera destruida"
+
+#: scripts/scenario_55_defenderHunter.lua:4759
+#, lua-format
+msgctxt "PaulOrders-shiplog"
+msgid "[Paul Straight] My transporter is ready. I've disguised myself as a Kraylor technician. I need you to take the ship within 2.5U of %s. You don't need to defeat any patrols, but there might be some enemy interest in your ship flying so close to the station. After I am aboard %s, I will gether intelligence and transmit it back. I'm ready to proceed"
+msgstr "Mi transportador está listo. Me he disfrazado como técnico de Kraylor. %sNo necesitas derrotar a ninguna patrulla, pero podría haber algún interés enemigo en tu nave volando tan cerca de la estación. %sVoy a conseguir su inteligencia y la transmitiré de nuevo."
+
+#: scripts/scenario_55_defenderHunter.lua:4760
+#, lua-format
+msgctxt "PaulOrders-comms"
+msgid "Get ship within 2.5U of %s in %s to secretly transport Paul Straight"
+msgstr "Obtener el barco dentro de 2.5U de %s en el interior %s para transportar secretamente a Paul Straight"
+
+#: scripts/scenario_55_defenderHunter.lua:4786
+#, lua-format
+msgctxt "Paul-msgScience"
+msgid "Paul Straight has transported aboard %s"
+msgstr "Paul Straight ha transportado a bordo %s"
+
+#: scripts/scenario_55_defenderHunter.lua:4790
+#, lua-format
+msgctxt "Paul-msgOperations"
+msgid "Paul Straight has transported aboard %s"
+msgstr "Paul Straight ha transportado a bordo %s"
+
+#: scripts/scenario_55_defenderHunter.lua:4793
+#, lua-format
+msgctxt "Paul-comms"
+msgid "Await intelligence results from Paul Straight on %s"
+msgstr "Aguarde los resultados de inteligencia de Paul Straight en %s"
+
+#: scripts/scenario_55_defenderHunter.lua:4814
+msgctxt "Paul-comms"
+msgid "[Paul Straight] I discovered the location of the enemy bases in the area:"
+msgstr "[Paul Straight] Descubrí la ubicación de las bases enemigas en la zona:"
+
+#: scripts/scenario_55_defenderHunter.lua:4817
+#, lua-format
+msgctxt "Paul-comms"
+msgid ""
+"\n"
+"%s in %s"
+msgstr ""
+"\n"
+"%s en el interior %s"
+
+#: scripts/scenario_55_defenderHunter.lua:4831 scripts/scenario_55_defenderHunter.lua:4858 scripts/scenario_55_defenderHunter.lua:4885 scripts/scenario_55_defenderHunter.lua:4906 scripts/scenario_55_defenderHunter.lua:4922
+msgctxt "Paul-msgScience"
+msgid "Lifesign telemetry from Paul Straight's equipment has ceased"
+msgstr "La telemetría de Lifesign del equipo de Paul Straight ha cesado"
+
+#: scripts/scenario_55_defenderHunter.lua:4835 scripts/scenario_55_defenderHunter.lua:4862 scripts/scenario_55_defenderHunter.lua:4889 scripts/scenario_55_defenderHunter.lua:4910 scripts/scenario_55_defenderHunter.lua:4926
+msgctxt "Paul-msgOperations"
+msgid "Lifesign telemetry from Paul Straight's equipment has ceased"
+msgstr "La telemetría de Lifesign del equipo de Paul Straight ha cesado"
+
+#: scripts/scenario_55_defenderHunter.lua:4848
+#, lua-format
+msgctxt "Paul-shipLog"
+msgid "[Paul Straight] Prefect Ghalantor is on station %s. Wait, someone is coming..."
+msgstr "El Prefecto Ghalantor está en la estación. %sEspera, alguien viene..."
+
+#: scripts/scenario_55_defenderHunter.lua:4875
+msgctxt "Paul-incCall"
+msgid "We discovered your perfidious spy aboard our station. He will be executed for his treasonous activities"
+msgstr "Descubrimos a su espía perverso a bordo de nuestra estación. Él será ejecutado por sus actividades traición"
+
+#: scripts/scenario_55_defenderHunter.lua:4946
+#, lua-format
+msgctxt "HMSBounty-shipLog"
+msgid "[HMS Bounty] We stole a Kraylor ship, but were damaged during the escape. Can you help? We are in %s"
+msgstr "Robamos una nave Kraylor, pero fueron dañados durante la fuga. ¿Puedes ayudar? %s"
+
+#: scripts/scenario_55_defenderHunter.lua:4947
+#, lua-format
+msgctxt "HMSBounty-comms"
+msgid "Help HMS Bounty in %s"
+msgstr "Ayuda HMS Bounty en %s"
+
+#: scripts/scenario_55_defenderHunter.lua:4960
+msgctxt "HMSBounty-shipLog"
+msgid "[HMS Bounty] Please ask your engineer to transport a spare repair technician to help with repairs"
+msgstr "[HMS Bounty] Por favor, pida a su ingeniero que transporte a un técnico de reparación de repuesto para ayudar con reparaciones"
+
+#: scripts/scenario_55_defenderHunter.lua:4963
+msgctxt "crewTransfer-buttonEngineer"
+msgid "Transport technician"
+msgstr "Técnico de transporte"
+
+#: scripts/scenario_55_defenderHunter.lua:4967
+msgctxt "crewTransfer-buttonEngineer+"
+msgid "Transport technician"
+msgstr "Técnico de transporte"
+
+#: scripts/scenario_55_defenderHunter.lua:4973
+msgctxt "HMSBounty-shipLog"
+msgid "HMS Bounty has been destroyed"
+msgstr "HMS Bounty ha sido destruido"
+
+#: scripts/scenario_55_defenderHunter.lua:4992
+msgctxt "HMSBounty-shipLog"
+msgid "[HMS Bounty] Our engines have been repaired. We stand ready to assist"
+msgstr "[HMS Bounty] Nuestros motores han sido reparados."
+
+#: scripts/scenario_55_defenderHunter.lua:5011
+#, lua-format
+msgctxt "MariaOrdersAudio-shipLog"
+msgid "Intelligence analysis shows research on the network that could double the shield strength of station %s. The analysis shows that the technical expert can be found on station %s in sector %s"
+msgstr "El análisis de inteligencia muestra investigación en la red que podría duplicar la fuerza de escudo de la estación %s. El análisis muestra que el experto técnico puede encontrarse en la estación %s en el sector %s"
+
+#: scripts/scenario_55_defenderHunter.lua:5015
+#, lua-format
+msgctxt "MariaOrders-comms"
+msgid "Find shield expert at station %s in %s"
+msgstr "Encuentra a un experto en escudos en la estación %s en el interior %s"
+
+#: scripts/scenario_55_defenderHunter.lua:5034
+#, lua-format
+msgctxt "MariaOrdersAudio-shipLog"
+msgid "We heard you were looking for our former shield maintenance technician, Maria Shrivner who's been publishing hints about advances in shield technology. We've been looking for her. We only just found out that she left the station after a severe romantic breakup with her supervisor. She took a job on a freighter %s which was last reported in %s"
+msgstr "Oímos que estabas buscando a nuestro antiguo técnico de mantenimiento de escudos, María Shrivner que ha estado publicando indicios de avances en tecnología de escudos. La hemos estado buscando. Sólo descubrimos que se fue de la estación después de una ruptura romántica severa con su supervisor. %s , que se informó por última vez en %s"
+
+#: scripts/scenario_55_defenderHunter.lua:5036 scripts/scenario_55_defenderHunter.lua:5048
+#, lua-format
+msgctxt "MariaOrders-comms"
+msgid "Meet transport %s last reported in %s to find Maria Shrivner"
+msgstr "Conoce el transporte %s último reportado en %s para encontrar a María Shrivner"
+
+#: scripts/scenario_55_defenderHunter.lua:5046
+#, lua-format
+msgctxt "Maria-shipLog"
+msgid "We received word that station %s has been destroyed. However, in some of their final records we see that Maria Shrivner left the station to take a job on freighter %s which was last reported in %s"
+msgstr "Recibimos noticias de esa estación. %s Sin embargo, en algunos de sus registros finales vemos que María Shrivner abandonó la estación para hacer un trabajo en el carguero %s , que se informó por última vez en %s"
+
+#: scripts/scenario_55_defenderHunter.lua:5055
+#, lua-format
+msgctxt "Maria-shipLog"
+msgid "Station %s has been destroyed leaving no hints for shield upgrade followup"
+msgstr "Estación %s ha sido destruido sin dejar rastros para el seguimiento de la actualización del escudo"
+
+#: scripts/scenario_55_defenderHunter.lua:5070
+#, lua-format
+msgctxt "MariaOrdersAudio-shipLog"
+msgid "[Maria Shrivner] It was tragic that %s was destroyed. Bring me to %s and I'll double %s's shield effectiveness"
+msgstr "Fue trágico que %s Me destruí. %s y me doblaré %sEs la eficacia del escudo"
+
+#: scripts/scenario_55_defenderHunter.lua:5073 scripts/scenario_55_defenderHunter.lua:5111 scripts/scenario_55_defenderHunter.lua:5126
+msgctxt "MariaOrders-comms"
+msgid "Return to home base with Maria Shrivner to double shield capacity"
+msgstr "Volver a la base de casa con Maria Shrivner para doble capacidad de escudo"
+
+#: scripts/scenario_55_defenderHunter.lua:5088
+#, lua-format
+msgctxt "MariaOrdersAudio-shipLog"
+msgid "[Maria Shrivner] I should not have broken up with him, it was all a misunderstanding. Help me get him some rare material as a gift and I'll double %s's shield effectiveness"
+msgstr "[Maria Shrivner] No debería haber roto con él, fue todo un malentendido. Ayúdame a conseguirle un poco de material raro como un regalo y me duplicaré %sEs la eficacia del escudo"
+
+#: scripts/scenario_55_defenderHunter.lua:5092
+#, lua-format
+msgctxt "MariaOrders-comms"
+msgid "Get gold, platinum, dilithium, tritanium or cobalt and bring it and Maria Shrivner to %s"
+msgstr "Obtenga oro, platino, dilitio, tritanio o cobalto y tráigalo y María Shrivner a %s"
+
+#: scripts/scenario_55_defenderHunter.lua:5108
+#, lua-format
+msgctxt "MariaOrdersAudio-shipLog"
+msgid "[Maria Shrivner] Well, he's at least thinking about it. He liked the gift. Take me to %s and let's get those shields upgraded"
+msgstr "Bueno, al menos está pensando en ello, le gustó el regalo. %s y vamos a conseguir esos escudos actualizados"
+
+#: scripts/scenario_55_defenderHunter.lua:5121
+#, lua-format
+msgctxt "Maria-shipLog"
+msgid "We were just notified that station %s has been destroyed"
+msgstr "Nos acaban de notificar esa estación. %s ha sido destruido"
+
+#: scripts/scenario_55_defenderHunter.lua:5123
+#, lua-format
+msgctxt "MariaOrdersAudio-shipLog"
+msgid "[Maria Shrivner] Oh no! I'm too late! Now we'll never be reconciled. *sniff* Well, the least I can do is upgrade %s's shields. Take me there and I'll double %s's shield capacity"
+msgstr "¡Oh no! ¡Estoy demasiado tarde! %sLlévame allí y me doble %s's capacidad de escudo"
+
+#: scripts/scenario_55_defenderHunter.lua:5151
+#, lua-format
+msgctxt "MariaAudio-shipLog"
+msgid "[Maria Shrivner] %s's shield capacity has been doubled. They should charge up to their new capacity eventually"
+msgstr "[Maria Shrivner] %sSu capacidad de escudo se ha duplicado, deben cargar hasta su nueva capacidad eventualmente"
+
+#: scripts/scenario_55_defenderHunter.lua:5184
+#, lua-format
+msgctxt "helpfullWarning-shipLog"
+msgid "[%s] Our sensors detect enemies nearby"
+msgstr "[%sNuestros sensores detectan enemigos cerca"
+
+#: scripts/scenario_55_defenderHunter.lua:5186
+#, lua-format
+msgctxt "helpfullWarning-shipLog"
+msgid " - Type: %s"
+msgstr " - Tipo: %s"
+
+#: scripts/scenario_55_defenderHunter.lua:5202
+#, lua-format
+msgctxt "helpfullWarning-shipLog"
+msgid "   Shield: %.1f%% (%.1f/%.1f) "
+msgstr "   Escudo: %.1f%% (G)%.1f/%.1f) "
+
+#: scripts/scenario_55_defenderHunter.lua:5207
+#, lua-format
+msgctxt "helpfullWarning-shipLog"
+msgid "   Shield count: %i "
+msgstr "   El escudo cuenta: %i "
+
+#: scripts/scenario_55_defenderHunter.lua:5218
+#, lua-format
+msgctxt "helpfullWarning-shipLog"
+msgid "      Shield %i: %i%% (%.1f/%i) "
+msgstr "      Escudo %i: %i%% (G)%.1f/%i) "
+
+#: scripts/scenario_55_defenderHunter.lua:5225 scripts/scenario_55_defenderHunter.lua:5242
+msgctxt "helpfullWarning-shipLog"
+msgid "Station Status:"
+msgstr "Estado de la estación:"
+
+#: scripts/scenario_55_defenderHunter.lua:5244
+#, lua-format
+msgctxt "helpfullWarning-shipLog"
+msgid "   Hull: %i%% (%.1f/%i)"
+msgstr "   Hull: %i%% (G)%.1f/%i)"
+
+#: scripts/scenario_55_defenderHunter.lua:5284
+msgctxt "scienceDescription-artifact"
+msgid "sprightly unassuming object"
+msgstr "objeto siniestro"
+
+#: scripts/scenario_55_defenderHunter.lua:5284
+msgctxt "scienceDescription-artifact"
+msgid "Object shows rapidly building energy"
+msgstr "El objeto muestra una rápida construcción de energía"
+
+#: scripts/scenario_55_defenderHunter.lua:5857
+msgctxt "repairCrew-msgEngineer"
+msgid "Medical team has revived one of your repair crew"
+msgstr "El equipo médico ha reavivado a uno de sus equipos de reparación"
+
+#: scripts/scenario_55_defenderHunter.lua:5861
+msgctxt "repairCrew-msgEngineer+"
+msgid "Medical team has revived one of your repair crew"
+msgstr "El equipo médico ha reavivado a uno de sus equipos de reparación"
+
+#: scripts/scenario_55_defenderHunter.lua:5880
+msgctxt "coolant-msgEngineer"
+msgid "Automated systems have recovered some coolant"
+msgstr "Los sistemas automatizados han recuperado algunos refrigerantes"
+
+#: scripts/scenario_55_defenderHunter.lua:5884
+msgctxt "coolant-msgEngineer+"
+msgid "Automated systems have recovered some coolant"
+msgstr "Los sistemas automatizados han recuperado algunos refrigerantes"
+
+#: scripts/scenario_55_defenderHunter.lua:5948
+msgctxt "repairCrew-msgEngineer"
+msgid "One of your repair crew has perished"
+msgstr "Uno de sus equipos de reparación ha muerto"
+
+#: scripts/scenario_55_defenderHunter.lua:5952
+msgctxt "repairCrew-msgEngineer+"
+msgid "One of your repair crew has perished"
+msgstr "Uno de sus equipos de reparación ha muerto"
+
+#: scripts/scenario_55_defenderHunter.lua:5969
+msgctxt "coolant-msgEngineer"
+msgid "Damage has caused a loss of coolant"
+msgstr "El daño ha causado una pérdida de refrigerante"
+
+#: scripts/scenario_55_defenderHunter.lua:5973
+msgctxt "coolant-msgEngineer+"
+msgid "Damage has caused a loss of coolant"
+msgstr "El daño ha causado una pérdida de refrigerante"
+
+#: scripts/scenario_55_defenderHunter.lua:5980
+msgctxt "damage-msgEngineer"
+msgid "The probe launch system has been damaged"
+msgstr "El sistema de lanzamiento de sonda ha sido dañado"
+
+#: scripts/scenario_55_defenderHunter.lua:5983
+msgctxt "damage-msgEngineer+"
+msgid "The probe launch system has been damaged"
+msgstr "El sistema de lanzamiento de sonda ha sido dañado"
+
+#: scripts/scenario_55_defenderHunter.lua:5986
+msgctxt "damage-msgRelay"
+msgid "The probe launch system has been damaged"
+msgstr "El sistema de lanzamiento de sonda ha sido dañado"
+
+#: scripts/scenario_55_defenderHunter.lua:5989
+msgctxt "damage-msgOperations"
+msgid "The probe launch system has been damaged"
+msgstr "El sistema de lanzamiento de sonda ha sido dañado"
+
+#: scripts/scenario_55_defenderHunter.lua:5994
+msgctxt "damage-msgEngineer"
+msgid "The hacking system has been damaged"
+msgstr "El sistema de piratería ha sido dañado"
+
+#: scripts/scenario_55_defenderHunter.lua:5997
+msgctxt "damage-msgEngineer+"
+msgid "The hacking system has been damaged"
+msgstr "El sistema de piratería ha sido dañado"
+
+#: scripts/scenario_55_defenderHunter.lua:6000
+msgctxt "damage-msgRelay"
+msgid "The hacking system has been damaged"
+msgstr "El sistema de piratería ha sido dañado"
+
+#: scripts/scenario_55_defenderHunter.lua:6003
+msgctxt "damage-msgOperations"
+msgid "The hacking system has been damaged"
+msgstr "El sistema de piratería ha sido dañado"
+
+#: scripts/scenario_55_defenderHunter.lua:6008
+msgctxt "damage-msgEngineer"
+msgid "The scanners have been damaged"
+msgstr "Los escáneres han sido dañados"
+
+#: scripts/scenario_55_defenderHunter.lua:6011
+msgctxt "damage-msgEngineer+"
+msgid "The scanners have been damaged"
+msgstr "Los escáneres han sido dañados"
+
+#: scripts/scenario_55_defenderHunter.lua:6014
+msgctxt "damage-msgScience"
+msgid "The scanners have been damaged"
+msgstr "Los escáneres han sido dañados"
+
+#: scripts/scenario_55_defenderHunter.lua:6017
+msgctxt "damage-msgOperations"
+msgid "The scanners have been damaged"
+msgstr "Los escáneres han sido dañados"
+
+#: scripts/scenario_55_defenderHunter.lua:6022
+msgctxt "damage-msgEngineer"
+msgid "Combat maneuver has been damaged"
+msgstr "Maniobra de combate ha sido dañada"
+
+#: scripts/scenario_55_defenderHunter.lua:6025
+msgctxt "damage-msgEngineer+"
+msgid "Combat maneuver has been damaged"
+msgstr "Maniobra de combate ha sido dañada"
+
+#: scripts/scenario_55_defenderHunter.lua:6028
+msgctxt "damage-msgHelms"
+msgid "Combat maneuver has been damaged"
+msgstr "Maniobra de combate ha sido dañada"
+
+#: scripts/scenario_55_defenderHunter.lua:6031
+msgctxt "damage-msgTactical"
+msgid "Combat maneuver has been damaged"
+msgstr "Maniobra de combate ha sido dañada"
+
+#: scripts/scenario_55_defenderHunter.lua:6036
+msgctxt "damage-msgEngineer"
+msgid "Self destruct system has been damaged"
+msgstr "El sistema de autodestrucción ha sido dañado"
+
+#: scripts/scenario_55_defenderHunter.lua:6039
+msgctxt "damage-msgEngineer+"
+msgid "Self destruct system has been damaged"
+msgstr "El sistema de autodestrucción ha sido dañado"
+
+#: scripts/scenario_55_defenderHunter.lua:6053
+msgctxt "coolant-buttonEngineer"
+msgid "Auto cool"
+msgstr "Auto cool"
+
+#: scripts/scenario_55_defenderHunter.lua:6060
+msgctxt "coolant-buttonEngineer"
+msgid "Manual cool"
+msgstr "Fresco manual"
+
+#: scripts/scenario_55_defenderHunter.lua:6072
+msgctxt "coolant-buttonEngineer+"
+msgid "Auto cool"
+msgstr "Auto cool"
+
+#: scripts/scenario_55_defenderHunter.lua:6079
+msgctxt "coolant-buttonEngineer+"
+msgid "Manual cool"
+msgstr "Fresco manual"
+
+#: scripts/scenario_55_defenderHunter.lua:6104
+msgctxt "coolant-tabEngineer"
+msgid "Gathering Coolant"
+msgstr "Reunir Coolant"
+
+#: scripts/scenario_55_defenderHunter.lua:6121
+#, lua-format
+msgctxt "coolant-tabEngineer"
+msgid "Deploying Collectors %i"
+msgstr "Despliegue de los coleccionistas %i"
+
+#: scripts/scenario_55_defenderHunter.lua:6124
+#, lua-format
+msgctxt "coolant-tabEngineer"
+msgid "Configuring Collectors %i"
+msgstr "Configuración de coleccionistas %i"
+
+#: scripts/scenario_55_defenderHunter.lua:6184
+#, lua-format
+msgctxt "msgMainscreen"
+msgid "Stations: %i\t survived: %i\t destroyed: %i"
+msgstr "Estaciones: %i\t sobrevivió: %i\t destruido: %i"
+
+#: scripts/scenario_55_defenderHunter.lua:6185
+#, lua-format
+msgctxt "msgMainscreen"
+msgid ""
+"\n"
+"Friendly Stations: %i\t survived: %i\t destroyed: %i"
+msgstr ""
+"\n"
+"Estaciones amistosas: %i\t sobrevivió: %i\t destruido: %i"
+
+#: scripts/scenario_55_defenderHunter.lua:6186
+#, lua-format
+msgctxt "msgMainscreen"
+msgid ""
+"\n"
+"Neutral Stations: %i\t survived: %i\t destroyed: %i"
+msgstr ""
+"\n"
+"Estaciones neutrales: %i\t sobrevivió: %i\t destruido: %i"
+
+#: scripts/scenario_55_defenderHunter.lua:6187
+#, lua-format
+msgctxt "msgMainscreen"
+msgid ""
+"\n"
+"\n"
+"\n"
+"\n"
+"Enemy Stations: %i\t survived: %i\t destroyed: %i"
+msgstr ""
+"\n"
+"\n"
+"\n"
+"\n"
+"Enemy Stations: %i\t sobrevivió: %i\t destruido: %i"
+
+#: scripts/scenario_55_defenderHunter.lua:6192 scripts/scenario_55_defenderHunter.lua:6205
+msgctxt "msgMainscreen"
+msgid "Ensign"
+msgstr "Alférez"
+
+#: scripts/scenario_55_defenderHunter.lua:6194 scripts/scenario_55_defenderHunter.lua:6207
+msgctxt "msgMainscreen"
+msgid "Lieutenant"
+msgstr "Teniente"
+
+#: scripts/scenario_55_defenderHunter.lua:6196 scripts/scenario_55_defenderHunter.lua:6209
+msgctxt "msgMainscreen"
+msgid "Commander"
+msgstr "Comandante"
+
+#: scripts/scenario_55_defenderHunter.lua:6198 scripts/scenario_55_defenderHunter.lua:6211
+msgctxt "msgMainscreen"
+msgid "Captain"
+msgstr "Capitán"
+
+#: scripts/scenario_55_defenderHunter.lua:6200 scripts/scenario_55_defenderHunter.lua:6213
+msgctxt "msgMainscreen"
+msgid "Admiral"
+msgstr "Almirante"
+
+#: scripts/scenario_55_defenderHunter.lua:6202
+#, lua-format
+msgctxt "msgMainscreen"
+msgid ""
+"\n"
+"Earned rank:  %s"
+msgstr ""
+"\n"
+"Nivel ganado:  %s"
+
+#: scripts/scenario_55_defenderHunter.lua:6216
+#, lua-format
+msgctxt "msgMainscreen"
+msgid ""
+"\n"
+"Post Target Enemy Base Survival Rank: %s"
+msgstr ""
+"\n"
+"Post Target Enemy Base Survival Rank: %s"
+
+#: scripts/scenario_55_defenderHunter.lua:6218
+#, lua-format
+msgctxt "msgMainscreen"
+msgid ""
+"\n"
+"Post Home Base Destruction Rank: %s"
+msgstr ""
+"\n"
+"Post Home Base Destruction Rank: %s"
+
+#: scripts/scenario_55_defenderHunter.lua:6248
+#, lua-format
+msgctxt "homeStationHealth-tabRelay&Operations"
+msgid "%s %s:%i%% H:%i%%"
+msgstr "%s %s:%i%% H:%i%%"
+
+#: scripts/scenario_55_defenderHunter.lua:6314
+msgctxt "coolant-buttonEngineer"
+msgid "Get Coolant"
+msgstr "Trae a Coolant"
+
+#: scripts/scenario_55_defenderHunter.lua:6322
+msgctxt "coolant-buttonEngineer+"
+msgid "Get Coolant"
+msgstr "Trae a Coolant"
+
+#: scripts/scenario_55_defenderHunter.lua:6372
+msgctxt "buttonGM"
+msgid "Spawn Enemies"
+msgstr "Enemigos despachados"

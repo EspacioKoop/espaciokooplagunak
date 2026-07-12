@@ -1,0 +1,26 @@
+# Scenario name
+msgid ""
+msgstr ""
+"Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
+"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"PO-Revision-Date: 2026-07-12 00:00+0200\n"
+"Last-Translator: Espaciokoop Lagunak contributors\n"
+"Language-Team: Espaciokoop Lagunak\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
+
+msgid "Surrounded"
+msgstr "Rodeado"
+
+# Scenario description
+msgid ""
+"You are surrounded by asteroids, enemies, and mines.\n"
+"\n"
+"Spawn the player ships you want. The strength of enemy ships is independent of the number and type of player ships.\n"
+"\n"
+"(The scenario can be won with a single Atlantis.)"
+msgstr "Usted está rodeado de asteroides, enemigos y minas. Arrojó los barcos de jugador que desea. La fuerza de los barcos enemigos es independiente del número y tipo de barcos de jugadores. (El escenario se puede ganar con una sola Atlántida.)"

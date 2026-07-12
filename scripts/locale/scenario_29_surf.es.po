@@ -1,0 +1,597 @@
+# Scenario name
+msgid ""
+msgstr ""
+"Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
+"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"PO-Revision-Date: 2026-07-12 00:00+0200\n"
+"Last-Translator: Espaciokoop Lagunak contributors\n"
+"Language-Team: Espaciokoop Lagunak\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
+
+msgid "Surf's Up!"
+msgstr "Surf está arriba!"
+
+# Scenario description
+msgid ""
+"Wave after wave of enemy ships attack, each wave harder than the previous wave. Single or multiple player ships may participate. Scenario is over when the friendly bases are destroyed. Loosely based on the Waves scenario. The differences between Waves and Surf's Up: Initial configuration options (faster moving enemy ships, set the start wave), random wave type (normal, hunt enemy base, formation flying, asteroid storm), services split between friendly stations, side missions to enhance stations, enemies may drop deadly warp jammers.\n"
+"\n"
+"No victory condition. How many waves can you complete?\n"
+"\n"
+"Version 1\n"
+"\n"
+"USN Discord: https://discord.gg/PntGG3a where you can join a game online. There's one almost every weekend. All experience levels are welcome."
+msgstr ""
+"Ola tras ola de ataque de barcos enemigos, cada onda más fuerte que la ola anterior. Los barcos de jugador individuales o múltiples pueden participar. Escenario se acaba cuando las bases amigables son destruidas. Las diferencias entre Waves y Surf's Up: Opciones de configuración iniciales (las naves enemigas más rápidas, establecer la onda de inicio), tipo de onda aleatoria (normal, base enemiga de caza, formación voladora, tormenta de asteroides), servicios divididos entre estaciones amigables, misiones laterales para mejorar estaciones, enemigos pueden caer mortíferas jammers warp.\n"
+"\n"
+"USN Discord: https://discord.gg/PntGG3a donde puedes unirte a un juego online. Hay uno casi todos los fines de semana. Todos los niveles de experiencia son bienvenidos."
+
+# Scenario setting
+msgctxt "setting"
+msgid "Enemies"
+msgstr "Enemigos"
+
+msgctxt "setting"
+msgid "Configures strength and/or number of enemies in this scenario"
+msgstr "Configura fuerza y/o número de enemigos en este escenario"
+
+msgctxt "Enemies"
+msgid "Easy"
+msgstr "Fácil"
+
+msgctxt "Enemies"
+msgid "Fewer or weaker enemies"
+msgstr "Menores o más débiles enemigos"
+
+msgctxt "Enemies"
+msgid "Normal"
+msgstr "Normal"
+
+msgctxt "Enemies"
+msgid "Normal number or strength of enemies"
+msgstr "Número normal o fuerza de enemigos"
+
+msgctxt "Enemies"
+msgid "Hard"
+msgstr "Duro"
+
+msgctxt "Enemies"
+msgid "More or stronger enemies"
+msgstr "Más enemigos o más fuertes"
+
+msgctxt "Enemies"
+msgid "Extreme"
+msgstr "Extremo"
+
+msgctxt "Enemies"
+msgid "Much stronger, many more enemies"
+msgstr "Mucho más fuerte, muchos más enemigos"
+
+msgctxt "Enemies"
+msgid "Quixotic"
+msgstr "Quijote"
+
+msgctxt "Enemies"
+msgid "Insanely strong and/or inordinately large numbers of enemies"
+msgstr "Insanely strong and/or inordinately large numbers of enemigos"
+
+# Scenario setting
+msgctxt "setting"
+msgid "Prototype"
+msgstr "Prototipo"
+
+msgctxt "setting"
+msgid "Use alternative player ship or not"
+msgstr "Usar el barco de jugador alternativo o no"
+
+msgctxt "Prototype"
+msgid "None"
+msgstr "Ninguno"
+
+msgctxt "Prototype"
+msgid "Select a normal player ship from the next screen"
+msgstr "Seleccione un barco de jugador normal de la siguiente pantalla"
+
+msgctxt "Prototype"
+msgid "Cruiser"
+msgstr "Cruiser"
+
+msgctxt "Prototype"
+msgid "Spawn a player cruiser"
+msgstr "Un crucero por el jugador"
+
+msgctxt "Prototype"
+msgid "Missile Cruiser"
+msgstr "Missile Cruiser"
+
+msgctxt "Prototype"
+msgid "Spawn a player missile cruiser (no beams)"
+msgstr "Arrojó un crucero de misiles de jugador (sin vigas)"
+
+msgctxt "Prototype"
+msgid "Fighter"
+msgstr "Fighter"
+
+msgctxt "Prototype"
+msgid "Spawn a player fighter (no warp or jump)"
+msgstr "Arrojó a un jugador luchador (sin warp o salto)"
+
+# Scenario setting
+msgctxt "setting"
+msgid "Pace"
+msgstr "Pace"
+
+msgctxt "setting"
+msgid "Configures how fast the enemy ships move"
+msgstr "Configura lo rápido que los barcos enemigos se mueven"
+
+msgctxt "Pace"
+msgid "Normal"
+msgstr "Normal"
+
+msgctxt "Pace"
+msgid "Enemy ships move at their normal speed"
+msgstr "Los buques enemigos se mueven a su velocidad normal"
+
+msgctxt "Pace"
+msgid "10"
+msgstr "10"
+
+msgctxt "Pace"
+msgid "Enemy ships move ten percent faster than normal"
+msgstr "Los buques enemigos mueven un diez por ciento más rápido de lo normal"
+
+msgctxt "Pace"
+msgid "20"
+msgstr "20"
+
+msgctxt "Pace"
+msgid "Enemy ships move twenty percent faster than normal"
+msgstr "Los buques enemigos mueven un veinte por ciento más rápido de lo normal"
+
+msgctxt "Pace"
+msgid "30"
+msgstr "30"
+
+msgctxt "Pace"
+msgid "Enemy ships move thirty percent faster than normal"
+msgstr "Los buques enemigos mueven un treinta por ciento más rápido de lo normal"
+
+msgctxt "Pace"
+msgid "40"
+msgstr "40"
+
+msgctxt "Pace"
+msgid "Enemy ships move forty percent faster than normal"
+msgstr "Los buques enemigos mueven un cuarenta por ciento más rápido de lo normal"
+
+msgctxt "Pace"
+msgid "50"
+msgstr "50"
+
+msgctxt "Pace"
+msgid "Enemy ships move fifty percent faster than normal"
+msgstr "Los barcos enemigos mueven cincuenta por ciento más rápido que lo normal"
+
+# Scenario setting
+msgctxt "setting"
+msgid "Advance"
+msgstr "Avance"
+
+msgctxt "setting"
+msgid "Configure the simulated wave level. Default is one"
+msgstr "Configure el nivel de onda simulada. Default es uno"
+
+msgctxt "Advance"
+msgid "1"
+msgstr "1"
+
+msgctxt "Advance"
+msgid "Normal wave start point"
+msgstr "Punto de inicio de onda normal"
+
+msgctxt "Advance"
+msgid "2"
+msgstr "2"
+
+msgctxt "Advance"
+msgid "Advance wave start to 2"
+msgstr "La onda de avance comienza a 2"
+
+msgctxt "Advance"
+msgid "3"
+msgstr "3"
+
+msgctxt "Advance"
+msgid "Advance wave start to 3"
+msgstr "La onda de avance comienza a 3"
+
+msgctxt "Advance"
+msgid "4"
+msgstr "4"
+
+msgctxt "Advance"
+msgid "Advance wave start to 4"
+msgstr "La onda de avance comienza a 4"
+
+msgctxt "Advance"
+msgid "5"
+msgstr "5"
+
+msgctxt "Advance"
+msgid "Advance wave start to 5"
+msgstr "La onda de avance comienza a 5"
+
+msgctxt "Advance"
+msgid "6"
+msgstr "6"
+
+msgctxt "Advance"
+msgid "Advance wave start to 6"
+msgstr "La onda de avance comienza a 6"
+
+msgctxt "Advance"
+msgid "7"
+msgstr "7"
+
+msgctxt "Advance"
+msgid "Advance wave start to 7"
+msgstr "La onda de avance comienza a 7"
+
+msgctxt "Advance"
+msgid "8"
+msgstr "8"
+
+msgctxt "Advance"
+msgid "Advance wave start to 8"
+msgstr "La onda de avance comienza a 8"
+
+msgctxt "Advance"
+msgid "9"
+msgstr "9"
+
+msgctxt "Advance"
+msgid "Advance wave start to 9"
+msgstr "La onda de avance comienza a 9"
+
+#: scripts/scenario_29_surf.lua:65
+msgctxt "orders-comms"
+msgid "Defend friendly stations."
+msgstr "Defender estaciones amistosas."
+
+#: scripts/scenario_29_surf.lua:99 scripts/scenario_29_surf.lua:159
+msgctxt "situationReport-comms"
+msgid "A recent reactor failure has put us on auxiliary power, so we cannot recharge ships."
+msgstr "Una falla reciente del reactor nos ha puesto en energía auxiliar, por lo que no podemos recargar naves."
+
+#: scripts/scenario_29_surf.lua:102 scripts/scenario_29_surf.lua:160
+msgctxt "situationReport-comms"
+msgid "A damaged power coupling makes it too dangerous to recharge ships."
+msgstr "Un acoplamiento de energía dañado hace que sea demasiado peligroso para recargar barcos."
+
+#: scripts/scenario_29_surf.lua:105 scripts/scenario_29_surf.lua:161
+msgctxt "situationReport-comms"
+msgid "An asteroid strike damaged our solar cells and we are short on power, so we can't recharge ships right now."
+msgstr "Un ataque de asteroides dañó nuestras células solares y estamos cortos de energía, así que no podemos recargar los barcos ahora mismo."
+
+#: scripts/scenario_29_surf.lua:110 scripts/scenario_29_surf.lua:148
+msgctxt "situationReport-comms"
+msgid "We're out of the necessary materials and supplies for hull repair."
+msgstr "Estamos fuera de los materiales y suministros necesarios para la reparación de cascos."
+
+#: scripts/scenario_29_surf.lua:113 scripts/scenario_29_surf.lua:149
+msgctxt "situationReport-comms"
+msgid "Hull repair automation unavailable while it is undergoing maintenance."
+msgstr "Automatización de reparación de casco no disponible mientras se está llevando a cabo mantenimiento."
+
+#: scripts/scenario_29_surf.lua:116 scripts/scenario_29_surf.lua:150
+msgctxt "situationReport-comms"
+msgid "All hull repair technicians quarantined to quarters due to illness."
+msgstr "Todos los técnicos de reparación de cascos cuarentenados a trimestres debido a la enfermedad."
+
+#: scripts/scenario_29_surf.lua:121 scripts/scenario_29_surf.lua:137
+msgctxt "situationReport-comms"
+msgid "Cannot replenish scan probes due to fabrication unit failure."
+msgstr "No se puede reponer sondas de escaneo debido a la falla de unidad de fabricación."
+
+#: scripts/scenario_29_surf.lua:124 scripts/scenario_29_surf.lua:138
+msgctxt "situationReport-comms"
+msgid "Parts shortage prevents scan probe replenishment."
+msgstr "La escasez de piezas evita la reposición de sonda de escaneo."
+
+#: scripts/scenario_29_surf.lua:127 scripts/scenario_29_surf.lua:139
+msgctxt "situationReport-comms"
+msgid "Station management has curtailed scan probe replenishment for cost cutting reasons."
+msgstr "La administración de la estación ha reducido la reposición de la sonda del escaneo por razones de corte de costos."
+
+#: scripts/scenario_29_surf.lua:198
+msgctxt "msgMainscreen"
+msgid "Easy"
+msgstr "Fácil"
+
+#: scripts/scenario_29_surf.lua:199
+msgctxt "msgMainscreen"
+msgid "Normal"
+msgstr "Normal"
+
+#: scripts/scenario_29_surf.lua:200
+msgctxt "msgMainscreen"
+msgid "Hard"
+msgstr "Duro"
+
+#: scripts/scenario_29_surf.lua:201
+msgctxt "msgMainscreen"
+msgid "Extreme"
+msgstr "Extremo"
+
+#: scripts/scenario_29_surf.lua:202
+msgctxt "msgMainscreen"
+msgid "Quixotic"
+msgstr "Quijote"
+
+#: scripts/scenario_29_surf.lua:701
+#, lua-format
+msgctxt "msgMainscreen"
+msgid "%s hours, %s minutes and %s seconds"
+msgstr "%s horas, %s minutos y %s segundos"
+
+#: scripts/scenario_29_surf.lua:703
+#, lua-format
+msgctxt "msgMainscreen"
+msgid "%s hours, %s minutes and %s second"
+msgstr "%s horas, %s minutos y %s segundo segundo"
+
+#: scripts/scenario_29_surf.lua:707
+#, lua-format
+msgctxt "msgMainscreen"
+msgid "%s hours, %s minute and %s seconds"
+msgstr "%s horas, %s minuto y minuto %s segundos"
+
+#: scripts/scenario_29_surf.lua:709
+#, lua-format
+msgctxt "msgMainscreen"
+msgid "%s hours, %s minute and %s second"
+msgstr "%s horas, %s minuto y minuto %s segundo segundo"
+
+#: scripts/scenario_29_surf.lua:715
+#, lua-format
+msgctxt "msgMainscreen"
+msgid "%s hour, %s minutes and %s seconds"
+msgstr "%s hora, %s minutos y %s segundos"
+
+#: scripts/scenario_29_surf.lua:717
+#, lua-format
+msgctxt "msgMainscreen"
+msgid "%s hour, %s minutes and %s second"
+msgstr "%s hora, %s minutos y %s segundo segundo"
+
+#: scripts/scenario_29_surf.lua:721
+#, lua-format
+msgctxt "msgMainscreen"
+msgid "%s hour, %s minute and %s seconds"
+msgstr "%s hora, %s minuto y minuto %s segundos"
+
+#: scripts/scenario_29_surf.lua:723
+#, lua-format
+msgctxt "msgMainscreen"
+msgid "%s hour, %s minute and %s second"
+msgstr "%s hora, %s minuto y minuto %s segundo segundo"
+
+#: scripts/scenario_29_surf.lua:729
+#, lua-format
+msgctxt "msgMainscreen"
+msgid "%s minutes and %s seconds"
+msgstr "%s minutos y %s segundos"
+
+#: scripts/scenario_29_surf.lua:731
+#, lua-format
+msgctxt "msgMainscreen"
+msgid "%s minutes and %s second"
+msgstr "%s minutos y %s segundo segundo"
+
+#: scripts/scenario_29_surf.lua:735
+#, lua-format
+msgctxt "msgMainscreen"
+msgid "%s minute and %s seconds"
+msgstr "%s minuto y minuto %s segundos"
+
+#: scripts/scenario_29_surf.lua:738
+#, lua-format
+msgctxt "msgMainscreen"
+msgid "%s seconds"
+msgstr "%s segundos"
+
+#: scripts/scenario_29_surf.lua:743
+#, lua-format
+msgctxt "name-tab"
+msgid "%s in %s"
+msgstr "%s en el interior %s"
+
+#: scripts/scenario_29_surf.lua:760
+msgctxt "buttonGM"
+msgid "End with Odin"
+msgstr "Fin con Odin"
+
+#: scripts/scenario_29_surf.lua:762
+msgctxt "shipLog"
+msgid "We picked up an anomalous chroniton particle reading nearby. Encoded within the anomalous reading is a designated point along the timeline in the future. We are still working on the decoding rest of the information, but initial efforts hint at some major military action being taken by the Ghosts. We have placed countdown timers on some of your consoles indicating when this event is supposed to occur."
+msgstr "Recogimos una anomalous chroniton partícula lectura cercana. Encoded within the anomalous reading is a designated point along the timeline in the future. Todavía estamos trabajando en el decodificador de la información, pero los esfuerzos iniciales sugieren que algunas de las principales acciones militares que están tomando los Fantasmas. Hemos colocado temporizadores de cuenta atrás en algunas de sus consolas indicando cuándo se supone que este evento ocurra."
+
+#: scripts/scenario_29_surf.lua:766
+msgctxt "msgGM"
+msgid "30 second countdown to Odin spawn has begun."
+msgstr "Ha comenzado la cuenta atrás de 30 segundos a Odin."
+
+#: scripts/scenario_29_surf.lua:820
+#, lua-format
+msgctxt "timer-tab"
+msgid "Anomalous Time:%s"
+msgstr "Tiempo anómalo:%s"
+
+#: scripts/scenario_29_surf.lua:838
+msgctxt "orders-comms"
+msgid "What are my current orders?"
+msgstr "¿Cuáles son mis órdenes actuales?"
+
+#: scripts/scenario_29_surf.lua:841
+msgid "Back"
+msgstr "Volver"
+
+#: scripts/scenario_29_surf.lua:872 scripts/scenario_29_surf.lua:873
+#, lua-format
+msgctxt "shipLog"
+msgid "Wave %i. Hunt down enemy base."
+msgstr "Wave %iCaza bajo la base enemiga."
+
+#: scripts/scenario_29_surf.lua:874 scripts/scenario_29_surf.lua:875
+#, lua-format
+msgctxt "shipLog"
+msgid "Wave %i."
+msgstr "Wave %i."
+
+#: scripts/scenario_29_surf.lua:888
+msgctxt "orders-comms"
+msgid "Hunt down enemy base."
+msgstr "Caza base enemiga."
+
+#: scripts/scenario_29_surf.lua:894
+#, lua-format
+msgctxt "shipLog"
+msgid "%s Asteroid storm reported."
+msgstr "%s La tormenta de asteroides informó."
+
+#: scripts/scenario_29_surf.lua:899
+#, lua-format
+msgctxt "tabRelay&Ops"
+msgid "Wave %i"
+msgstr "Wave %i"
+
+#: scripts/scenario_29_surf.lua:1006
+msgctxt "shipLog"
+msgid "Defense platform self destruct activated."
+msgstr "Plataforma de defensa autodestrucción activada."
+
+#: scripts/scenario_29_surf.lua:1650
+msgctxt "msgScience"
+msgid "In addition to jamming our FTL drive, there's a warp jammer that is damaging our beam weapons"
+msgstr "Además de atascar nuestra unidad FTL, hay un martillo warp que daña nuestras armas de haz"
+
+#: scripts/scenario_29_surf.lua:1652
+msgctxt "msgOperations"
+msgid "In addition to jamming our FTL drive, there's a warp jammer that is damaging our beam weapons"
+msgstr "Además de atascar nuestra unidad FTL, hay un martillo warp que daña nuestras armas de haz"
+
+#: scripts/scenario_29_surf.lua:1669
+msgctxt "msgScience"
+msgid "In addition to jamming our FTL drive, there's a warp jammer that is damaging our missile systems"
+msgstr "Además de atascar nuestra unidad FTL, hay un martillo warp que daña nuestros sistemas de misiles"
+
+#: scripts/scenario_29_surf.lua:1671
+msgctxt "msgOperations"
+msgid "In addition to jamming our FTL drive, there's a warp jammer that is damaging our missile systems"
+msgstr "Además de atascar nuestra unidad FTL, hay un martillo warp que daña nuestros sistemas de misiles"
+
+#: scripts/scenario_29_surf.lua:1738
+msgctxt "msgMainscreen"
+msgid "Surf's up! Let the waves begin."
+msgstr "Surf está arriba, deja que empiecen las olas."
+
+#: scripts/scenario_29_surf.lua:1740
+msgctxt "msgMainscreen"
+msgid "Wave cleared!"
+msgstr "¡Oja despejada!"
+
+#: scripts/scenario_29_surf.lua:1742
+#, lua-format
+msgctxt "msgMainscreen"
+msgid "Wave %i cleared."
+msgstr "Wave %i aclarado."
+
+#: scripts/scenario_29_surf.lua:1754
+msgctxt "msgMainscreen"
+msgid "All friendly bases destroyed."
+msgstr "Todas las bases amistosas destruidas."
+
+#: scripts/scenario_29_surf.lua:1756
+#, lua-format
+msgctxt "msgMainscreen"
+msgid ""
+"%s\n"
+"%i player ships deployed."
+msgstr ""
+"%s\n"
+"%i naves de jugador desplegados."
+
+#: scripts/scenario_29_surf.lua:1758
+#, lua-format
+msgctxt "msgMainscreen"
+msgid ""
+"%s\n"
+"One player ship deployed."
+msgstr ""
+"%s\n"
+"Un barco de jugador desplegado."
+
+#: scripts/scenario_29_surf.lua:1761
+#, lua-format
+msgctxt "msgMainscreen"
+msgid ""
+"%s\n"
+"%i waves completed at the %s setting."
+msgstr ""
+"%s\n"
+"%i olas terminadas en el %s - ¿Qué pasa?"
+
+#: scripts/scenario_29_surf.lua:1763
+#, lua-format
+msgctxt "msgMainscreen"
+msgid ""
+"%s\n"
+"One wave completed at the %s setting."
+msgstr ""
+"%s\n"
+"Una ola completada en el %s - ¿Qué pasa?"
+
+#: scripts/scenario_29_surf.lua:1765
+#, lua-format
+msgctxt "msgMainscreen"
+msgid ""
+"%s\n"
+"No waves completed at the %s setting."
+msgstr ""
+"%s\n"
+"No hay olas completadas en el %s - ¿Qué pasa?"
+
+#: scripts/scenario_29_surf.lua:1768
+#, lua-format
+msgctxt "msgMainscreen"
+msgid ""
+"%s\n"
+"Duration: %s."
+msgstr ""
+"%s\n"
+"Duración: %s."
+
+#: scripts/scenario_29_surf.lua:1770
+#, lua-format
+msgctxt "msgMainscreen"
+msgid ""
+"%s\n"
+"Wave advance setting: %s"
+msgstr ""
+"%s\n"
+"Ajuste de avance de onda: %s"
+
+#: scripts/scenario_29_surf.lua:1773
+#, lua-format
+msgctxt "msgMainscreen"
+msgid ""
+"%s\n"
+"Pace setting: %s"
+msgstr ""
+"%s\n"
+"Ajuste de los ratones: %s"

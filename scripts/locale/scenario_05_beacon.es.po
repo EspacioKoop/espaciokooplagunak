@@ -1,0 +1,205 @@
+# Scenario name
+msgid ""
+msgstr ""
+"Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
+"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"PO-Revision-Date: 2026-07-12 00:00+0200\n"
+"Last-Translator: Espaciokoop Lagunak contributors\n"
+"Language-Team: Espaciokoop Lagunak\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
+
+msgid "Beacon of Light series"
+msgstr "Beacon de la serie Light"
+
+# Scenario description
+msgid ""
+"The Beacon of Light scenario, based on the tutorial from https://daid.github.io/EmptyEpsilon/#tabs=4.\n"
+"\n"
+"Near the far outpost of Orion-5, Exuari attacks are increasing. A diplomat went missing, and your first mission is to recover him.\n"
+"\n"
+"This scenario is limited to one player ship: the Atlantis Epsilon. Estimated duration: 1 hour"
+msgstr "El escenario Beacon of Light, basado en el tutorial de https://daid.github.io/EmptyEpsilon/#tabs=4. Cerca del puesto de avanzada de Orion-5, los ataques Exuari están aumentando. Un diplomático desapareció, y su primera misión es recuperarlo. Este escenario está limitado a un barco de jugador: el Epsilon Atlantis. Duración estimada: 1 hora"
+
+#: scripts/scenario_05_beacon.lua:69
+msgctxt "goal-incCall"
+msgid ""
+"Epsilon, please come in.\n"
+"\n"
+"We lost contact with one of our transports, callsign RT-4, transporting the diplomat named J.J. Johnson. They were heading from our research station to Orion-5.\n"
+"\n"
+"Our last contact with RT-4 was before it entered the nebula at sector G5. The nebula is blocking our long-range scans, so we're asking you to investigate and recover RT-4 if possible."
+msgstr "Epsilon, por favor, entra. Perdimos contacto con uno de nuestros transportes, el callsign RT-4, transportando al diplomático llamado J.J. Johnson. Se dirigían de nuestra estación de investigación a Orion-5. Nuestro último contacto con RT-4 fue antes de entrar en la nebulosa en el sector G5. La nebulosa está bloqueando nuestros escaneos de largo alcance, así que le pedimos que investigue y recupere RT-4 si es posible."
+
+#: scripts/scenario_05_beacon.lua:90 scripts/scenario_05_beacon.lua:103
+msgctxt "scienceDescription-lifepod"
+msgid "Life Pod"
+msgstr "Life Pod"
+
+#: scripts/scenario_05_beacon.lua:90 scripts/scenario_05_beacon.lua:103
+msgctxt "scienceDescription-lifepod"
+msgid "J. J. Johnson in Life Pod"
+msgstr "J. J. Johnson en Life Pod"
+
+#: scripts/scenario_05_beacon.lua:94 scripts/scenario_05_beacon.lua:107
+msgctxt "incCall"
+msgid ""
+"RT-4 has been destroyed, but not before it launched an escape pod.\n"
+"\n"
+"Life signs are detected in the pod. Please retrieve the pod to see if J.J. Johnson survived. His death would be a great blow to the region's peace negotiations."
+msgstr "RT-4 ha sido destruido, pero no antes de lanzar una cápsula de escape. Se detectan signos de vida en la cápsula. Por favor, recuperen la cápsula para ver si J.J. Johnson sobrevivió. Su muerte sería un gran golpe para las negociaciones de paz de la región."
+
+#: scripts/scenario_05_beacon.lua:96
+msgctxt "incCall"
+msgid "And destroy those Exuari scum while you are at it!"
+msgstr "¡Y destruir esa escoria Exuari mientras estás en ella!"
+
+#: scripts/scenario_05_beacon.lua:123
+msgctxt "incCall"
+msgid ""
+"J.J. Johnson seems to have suffocated. This is a great loss for our cause of peace.\n"
+"\n"
+"Please deliver his body back to Research-1. We will arrange for you to take over his mission."
+msgstr "J.J. Johnson parece haber sofocado. Esto es una gran pérdida para nuestra causa de paz. Por favor, devuelva su cuerpo a la Investigación-1. Arreglaremos para que usted tome el control de su misión."
+
+#: scripts/scenario_05_beacon.lua:133
+msgctxt "incCall"
+msgid ""
+"Just received message that Sir Johnson is safely aboard your ship! Great job!\n"
+"\n"
+"Please deliver the diplomat to Orion-5 in sector G3. Do this by docking with the station."
+msgstr "Acaba de recibir el mensaje de que Sir Johnson está a bordo de su barco con seguridad! Gran trabajo! Por favor, entregar el diplomático a Orion-5 en el sector G3. Hacer esto por atracar con la estación."
+
+#: scripts/scenario_05_beacon.lua:146
+msgctxt "incCall"
+msgid ""
+"J.J. Johnson thanks you for rescuing him and tells you about his mission.\n"
+"\n"
+msgstr ""
+"J.J. Johnson te agradece por rescatarlo y contarte sobre su misión.\n"
+"\n"
+
+#: scripts/scenario_05_beacon.lua:148 scripts/scenario_05_beacon.lua:161
+msgctxt "incCall"
+msgid ""
+"He just returned from a mission from the Refugee-X station, a neutral station in the area known to house anyone regardless of their history.\n"
+"\n"
+"Refugee-X has recently been attacked by Exuari ships, and some criminals living there have offered to give themselves up in exchange for better protection of the station.\n"
+"\n"
+"The officers at Orion-5 will gladly make this trade, and they ask that you retrieve the criminals for them at Refugee-X in sector D5.\n"
+"\n"
+"To ensure Refugee-X is aware of your peaceful intentions, we have stripped you of nukes and EMPs. You will get them back once you deliver the criminals."
+msgstr ""
+"Acaba de regresar de una misión de la estación de refugiados-X, una estación neutral en la zona conocida para albergar a cualquiera independientemente de su historia. Refugio-X ha sido atacado recientemente por buques Exuari, y algunos criminales que viven allí se han ofrecido a entregarse a cambio de una mejor protección de la estación.\n"
+"\n"
+"Los oficiales de Orion-5 harán con gusto este comercio, y piden que recuperen a los criminales para ellos en el sector de refugiados-X D5. Para asegurar que el refugiado-X es consciente de sus intenciones pacíficas, le hemos despojado de nukes y EMPs. Los recuperarás una vez que entregues a los criminales."
+
+#: scripts/scenario_05_beacon.lua:159
+msgctxt "incCall"
+msgid ""
+"J.J. Johnson's message toward Orion-5 is clear:\n"
+"\n"
+msgstr ""
+"El mensaje de J.J. Johnson hacia Orion-5 es claro:\n"
+"\n"
+
+#: scripts/scenario_05_beacon.lua:185
+msgctxt "incCall"
+msgid "J.J. Johnson transmitted his mission details to Orion-5 before he passed away. Head to Orion-5 for details."
+msgstr "J.J. Johnson transmitió sus datos de misión a Orion-5 antes de que falleciera. Diríjase a Orion-5 para obtener detalles."
+
+#: scripts/scenario_05_beacon.lua:195
+msgctxt "incCall"
+msgid ""
+"Two tough-looking criminals board your ship. They are already cuffed and do not look too happy about the situation.\n"
+"\n"
+"One of them is a human pirate, who is blind in one eye and has clearly seen his fair share of battles. The other is Exuari who hisses what you presume is a curse in their native language.\n"
+"\n"
+"How voluntary is this exchange?\n"
+"\n"
+"Head back to Orion-5 to deliver the criminals."
+msgstr "Dos criminales de aspecto duro a bordo de su barco. Ellos ya están esposados y no se ven muy contentos con la situación. Uno de ellos es un pirata humano, que está ciego en un ojo y ha visto claramente su parte justa de batallas. El otro es Exuari quien se jacta de lo que usted presume es una maldición en su lengua nativa. ¿Qué voluntario es este intercambio?"
+
+#: scripts/scenario_05_beacon.lua:210
+msgctxt "scienceDescription-artifact"
+msgid "High powered field generator"
+msgstr "Generador de campo de alta potencia"
+
+#: scripts/scenario_05_beacon.lua:210
+msgctxt "scienceDescription-artifact"
+msgid "Warp/Jump Jammer. Radius visible if jammer visible"
+msgstr "Warp/Jump Jammer. Radius visible si el martillo visible"
+
+#: scripts/scenario_05_beacon.lua:218
+msgctxt "incCall"
+msgid ""
+"Sllaaami graa kully fartsy!\n"
+"\n"
+"Your translator has difficulty translating the message, but it seems to come down to the fact that they want you dead and that your death will bring them great fun."
+msgstr "Sllaaami graa kully fartsy! Tu traductor tiene dificultad para traducir el mensaje, pero parece descender al hecho de que te quieren muerto y que tu muerte les traerá una gran diversión."
+
+#: scripts/scenario_05_beacon.lua:239
+msgctxt "incCall"
+msgid ""
+"Good job dealing with those Exuari scum. The criminals are safely in our custody, and we'll send a protection detail to Refugee-X.\n"
+"\n"
+"We extracted some vital info from the Exuari. In the next transport convoy toward Research-1, an Exuari death squad is hiding in one of the ships. The transport detail is heading in from sector D7. Seek them out and scan the ships to find the Exuari transport."
+msgstr "Buen trabajo con la escoria Exuari. Los criminales están a salvo en nuestra custodia, y enviaremos un detalle de protección a los refugiados-X. Hemos extraído una información vital del Exuari. En el próximo convoy de transporte hacia la Investigación-1, un escuadrón de la muerte Exuari se esconde en uno de los barcos. El detalle de transporte se dirige desde el sector D7."
+
+#: scripts/scenario_05_beacon.lua:243 scripts/scenario_05_beacon.lua:270
+msgctxt "incCall"
+msgid "We have refitted your nukes and EMPs."
+msgstr "Hemos reacondicionado sus nukes y EMPs."
+
+#: scripts/scenario_05_beacon.lua:243
+msgctxt "incCall"
+msgid "Awesome job taking out the Exuari without those."
+msgstr "Un trabajo increíble sacando el Exuari sin esos."
+
+#: scripts/scenario_05_beacon.lua:270
+msgctxt "incCall"
+msgid "Now to get those Exuari!"
+msgstr "¡Ahora para conseguir a esos Exuari!"
+
+#: scripts/scenario_05_beacon.lua:280
+msgctxt "incCall"
+msgid ""
+"Scan the transports to identify the Exuari one. When you have identified it, do NOT destroy it.\n"
+"\n"
+"Target its impulse engines with your beam weapons to halt its progress."
+msgstr "Escríbete los transportes para identificar el Exuari. Cuando lo hayas identificado, NO lo destruyas. Apunte sus motores de impulso con tus armas de haz para detener su progreso."
+
+#: scripts/scenario_05_beacon.lua:299 scripts/scenario_05_beacon.lua:316 scripts/scenario_05_beacon.lua:340
+msgctxt "incCall"
+msgid "What the hell? I told you NOT to destroy the transport."
+msgstr "Te dije que no destruyeras el transporte."
+
+#: scripts/scenario_05_beacon.lua:305
+msgctxt "incCall"
+msgid "Transport identified. Take out their impulse engines so we can capture it."
+msgstr "Transporte identificado. Saque sus motores de impulso para que podamos capturarlo."
+
+#: scripts/scenario_05_beacon.lua:322
+msgctxt "incCall"
+msgid "The transport is disabled. We're dispatching a recovery team and need you to defend the transport from the Exuari, who will likely destroy it rather then let it fall into our hands."
+msgstr "El transporte está desactivado. Estamos despachando un equipo de recuperación y necesitamos que defiendas el transporte del Exuari, que probablemente lo destruirá más bien que luego lo deje caer en nuestras manos."
+
+#: scripts/scenario_05_beacon.lua:371
+msgctxt "incCall"
+msgid ""
+"Transport recovery team coming in:\n"
+"\n"
+"\"We succesfully captured the Exuari transport. Taking it back to Orion-5. Please head to Orion-5 for debriefing.\""
+msgstr "Equipo de recuperación de transporte entrando: \"Asumimos el transporte Exuari con éxito, llevándolo de vuelta a Orion-5. Por favor, diríjase a Orion-5 para el desvío\"."
+
+#: scripts/scenario_05_beacon.lua:383
+msgctxt "incCall"
+msgid ""
+"Thanks to the captured Exuari death squad, we now know the location of the Exuari base in the area.\n"
+"\n"
+"Lead the assault on the Exuari base in sector E2. Expect heavy resistance."
+msgstr "Gracias al escuadrón de la muerte de Exuari capturado, ahora conocemos la ubicación de la base Exuari en la zona. Lideramos el asalto a la base Exuari en el sector E2."

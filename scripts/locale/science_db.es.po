@@ -1,0 +1,368 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
+"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"PO-Revision-Date: 2026-07-12 00:00+0200\n"
+"Last-Translator: Espaciokoop Lagunak contributors\n"
+"Language-Team: Espaciokoop Lagunak\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
+
+#: scripts/science_db.lua:8
+msgid "Natural"
+msgstr "Natural"
+
+#: scripts/science_db.lua:9
+msgid ""
+"This database covers naturally occurring phenomena that spaceborne crews might encounter.\n"
+"\n"
+"While ship captains are encouraged to avoid unnecessary interactions with these phenomena, knowing their properties can offer an advantage in conflicts near them."
+msgstr "Esta base de datos cubre fenómenos naturales que pueden encontrar las tripulaciones espaciales. Mientras se alienta a los capitanes de los buques a evitar interacciones innecesarias con estos fenómenos, sabiendo que sus propiedades pueden ofrecer una ventaja en conflictos cercanos a ellos."
+
+#: scripts/science_db.lua:13
+msgid "Asteroid"
+msgstr "Asteroid"
+
+#: scripts/science_db.lua:14
+msgid "An asteroid is a minor planet, usually smaller than a few kilometers. Larger variants are sometimes referred to as planetoids."
+msgstr "Un asteroide es un planeta menor, generalmente más pequeño que unos pocos kilómetros. Las variantes más grandes se denominan a veces planetaoides."
+
+#: scripts/science_db.lua:16
+msgid "Black hole"
+msgstr "Agujero negro"
+
+#: scripts/science_db.lua:17
+msgid ""
+"A black hole is a point of supercondensed mass with a gravitational pull so powerful that not even light can escape it. It has no locally detectable features, and can only be seen indirectly by blocking the view and distorting its surroundings, creating a strange circular mirror image of the galaxy. The black disc in the middle marks the event horizon, the boundary where even light can't escape it anymore. \n"
+"\t\n"
+"On the sensors, a black hole appears as a disc indicating the zone where the gravitational pull is getting dangerous, and soon will be stronger then the ship's impulse engines. An object that crosses a black hole is drawn toward its center and quickly ripped apart by the gravitational forces."
+msgstr ""
+"Un agujero negro es un punto de masa supercondenada con un tirón gravitacional tan poderoso que ni siquiera la luz puede escapar de ella. No tiene características localmente detectables, y sólo se puede ver indirectamente bloqueando la vista y distorsionando su entorno, creando una extraña imagen de espejo circular de la galaxia. El disco negro en el centro marca el horizonte del evento, el límite donde incluso la luz no puede escapar más. \n"
+"\t\n"
+"En los sensores, un agujero negro aparece como un disco que indica la zona donde el tirón gravitacional se está poniendo peligroso, y pronto será más fuerte entonces los motores de impulso del barco. Un objeto que cruza un agujero negro se dibuja hacia su centro y rápidamente se desgarra por las fuerzas gravitacionales."
+
+#: scripts/science_db.lua:21
+msgid "Nebula"
+msgstr "Nebula"
+
+#: scripts/science_db.lua:22
+msgid ""
+"Nebulae are the birthing places of new stars. These gas fields, usually created by the death of an old star, slowly form new stars due to the gravitational pull of its gas molecules.\n"
+"\n"
+"Because of the ever-changing nature of gas nebulae, most radar and scanning technologies are unable to penetrate them. Science officers are therefore advised to rely on probes and visual observations."
+msgstr "Nebulosa son los lugares de nacimiento de nuevas estrellas. Estos campos de gas, generalmente creados por la muerte de una vieja estrella, forman lentamente nuevas estrellas debido a la atracción gravitacional de sus moléculas de gas. Debido a la naturaleza siempre cambiante de las nebulosas de gas, la mayoría de las tecnologías de radar y escaneado son incapaces de penetrarlas."
+
+#: scripts/science_db.lua:26
+msgid "Planet"
+msgstr "Planeta"
+
+#: scripts/science_db.lua:27
+msgid ""
+"A planetary-mass object is large, dense, near-spherical astronomical body comprised of various forms of matter. Most planets are either terrestrial, like Earth, or giants, like the gas giant Jupiter or ice giant Neptune.\n"
+"\n"
+"Planets often have gaseous atmospheres, and some are orbited by one or more large planetoids typically called moons."
+msgstr "Un objeto de masa planetaria es un cuerpo astronómico grande, denso, cercano a la esférica compuesto de diversas formas de materia. La mayoría de los planetas son terrestres, como la Tierra, o gigantes, como el gigante de gas Júpiter o el gigante de hielo Neptuno. Los planetas a menudo tienen atmósferas gaseosas, y algunos son orbitados por uno o más grandes planetaoides típicamente llamados lunas."
+
+#: scripts/science_db.lua:31
+msgid "Wormhole"
+msgstr "Persiana"
+
+#: scripts/science_db.lua:32
+msgid ""
+"A wormhole, also known as an Einstein-Rosen bridge, is a phenomena that connects two points of spacetime. Jump drives operate in a similar fashion, but instead of being created at will, a wormhole occupies a specific location in space. Objects that enter a wormhole instantaneously emerge from the other end, which might be anywhere from a few feet to thousands of light years away. \n"
+"\n"
+"Wormholes are rare, and most can move objects in only one direction. Traversable wormholes, which are stable and allow for movement in both directions, are even rarer. All wormholes generate tremendous sensor activity, which an astute science officer can detect even through disruptions such as nebulae."
+msgstr ""
+"Un agujero de gusano, también conocido como un puente Einstein-Rosen, es un fenómeno que conecta dos puntos de tiempo espacial. Los discos de salto funcionan de una manera similar, pero en lugar de ser creado a voluntad, un agujero de gusano ocupa una ubicación específica en el espacio. Objetos que entran en un agujero de gusano emergen instantáneamente del otro extremo, que puede ser en cualquier lugar de unos pocos pies a miles de años luz lejos. \n"
+"\n"
+"Los agujeros de gusano son raros, y la mayoría puede mover objetos en una sola dirección. Los agujeros de gusanos, que son estables y permiten el movimiento en ambas direcciones, son incluso más raros. Todos los agujeros de gusano generan una actividad de sensor tremenda, que un oficial de ciencia astuto puede detectar incluso a través de las perturbaciones como nebulosas."
+
+#: scripts/science_db.lua:37
+msgid "Technologies"
+msgstr "Tecnología"
+
+#: scripts/science_db.lua:38
+msgid ""
+"This database covers ship systems and technologically created phenomena that spacefaring crews might encounter in densely populated regions of space.\n"
+"\n"
+"This reference is intended only as a primer. Refer to your ship's technical manuals and training materials for details on maintaining and operating your craft."
+msgstr "Esta base de datos cubre sistemas navales y fenómenos tecnológicos que las tripulaciones espaciales pueden encontrar en regiones densamente pobladas del espacio. Esta referencia se pretende sólo como una imprenta. Consulte los manuales técnicos y materiales de capacitación de su nave para obtener detalles sobre el mantenimiento y funcionamiento de su embarcación."
+
+#: scripts/science_db.lua:42
+msgid "Beam/shield frequencies"
+msgstr "Frecuencias de vapor/shield"
+
+#: scripts/science_db.lua:43
+msgid "Unit"
+msgstr "Dependencia"
+
+#: scripts/science_db.lua:43
+msgid "Terahertz"
+msgstr "Terahertz"
+
+#: scripts/science_db.lua:44
+msgid ""
+"Ships with shield and beam systems can often configure their terahertz-frequency radiation. By manipulating these frequencies, savvy ship crews can maximize their beam weapon efficiency while reducing their enemies'.\n"
+"\n"
+"A beam frequency that's resonant with a target's shield frequency can do considerably more damage, and beam frequencies can be quickly modulated. Shield frequencies require time to recalibrate.\n"
+"\n"
+"If your Science officer fully scans a target, your ship's computer presents them with a detailed analysis of beam and shield frequencies and suggests optimal values for each."
+msgstr ""
+"Las naves con sistemas de escudo y vigas pueden configurar a menudo su radiación de frecuencia de terahercios. Al manipular estas frecuencias, los equipos de naves astutos pueden maximizar su eficiencia de arma de haz al reducir la frecuencia de sus enemigos. Una frecuencia de haz que resonante con la frecuencia de escudo de un objetivo puede hacer considerablemente más daño, y las frecuencias de haz pueden ser moduladas rápidamente.\n"
+"\n"
+"Si su oficial de ciencias escanea completamente un objetivo, el equipo de su nave los presenta con un análisis detallado de frecuencias de viga y escudo y sugiere valores óptimos para cada uno."
+
+#: scripts/science_db.lua:50
+msgid "Hacking measure"
+msgstr "Medida de Hacking"
+
+#: scripts/science_db.lua:51 scripts/science_db.lua:72 scripts/science_db.lua:85 scripts/science_db.lua:93
+msgid "Interaction"
+msgstr "Interacción"
+
+#: scripts/science_db.lua:51
+msgid "Long-range transmission"
+msgstr "Transmisión de largo alcance"
+
+#: scripts/science_db.lua:52
+msgid ""
+"Thanks to our covert operations teams, we've acquired enough information about our enemies' computer systems to repurpose our long-range communications systems into intrusion and exploitation tools.\n"
+"\n"
+"While we've managed to create algorithmic attack vectors that you can deploy at range to target and degrade specific ship systems, these exploits still require active human intervention to fully function.\n"
+"\n"
+"To facilitate successful operations in the field, our software engineers have abstracted the required inputs into common puzzles that even a Relay crew member can successfully complete."
+msgstr ""
+"Gracias a nuestros equipos de operaciones encubiertas, hemos adquirido suficiente información sobre los sistemas informáticos de nuestros enemigos para reutilizar nuestros sistemas de comunicaciones de largo alcance en las herramientas de intrusión y explotación. Mientras hemos logrado crear vectores de ataque algorítmico que usted puede desplegar a distancia para apuntar y degradar sistemas de buques específicos, estas explotaciones todavía requieren una intervención humana activa para funcionar completamente.\n"
+"\n"
+"Para facilitar las operaciones exitosas en el campo, nuestros ingenieros de software han abstraído los insumos necesarios en rompecabezas comunes que incluso un miembro de la tripulación de Relay puede completar con éxito."
+
+#: scripts/science_db.lua:58
+msgid "Radar signature"
+msgstr "Firma de radar"
+
+#: scripts/science_db.lua:59
+msgid "Signature"
+msgstr "Firma"
+
+#: scripts/science_db.lua:59
+msgid "Related color bands"
+msgstr "Bandas de color relacionadas"
+
+#: scripts/science_db.lua:60
+msgid "Biological"
+msgstr "Biológica"
+
+#: scripts/science_db.lua:60
+msgid "Red, green"
+msgstr "Rojo, verde"
+
+#: scripts/science_db.lua:61
+msgid "Electrical"
+msgstr "Electrical"
+
+#: scripts/science_db.lua:61
+msgid "Red, blue"
+msgstr "Rojo, azul"
+
+#: scripts/science_db.lua:62
+msgid "Gravitational"
+msgstr "Gravitacional"
+
+#: scripts/science_db.lua:62
+msgid "Green, blue"
+msgstr "Verde, azul"
+
+#: scripts/science_db.lua:63
+msgid ""
+"The outer ring of long-range Science radar screens contain three colored bands that represent raw sensor inputs monitored on that heading. Ships and space phenomena emit energies or exhibit characteristics that your sensor suite translates into icons on your radar, but these raw rings can provide more information to a well-trained eye.\n"
+"\n"
+"For tactical purposes, heat generated by ship systems is registered in raw thermal sensor data in a similar manner as biological (red, green) sources. If a ship's systems are under- or over-powered, its electrical (red, blue) readings change accordingly.\n"
+"\n"
+"A ship warping or preparing to jump exponentially increases its gravitational (green, blue) output. After completing a jump a ship performs a massive power transfer that raw sensor data reads as an electrical spike."
+msgstr ""
+"El anillo exterior de las pantallas de radar de ciencias de largo alcance contiene tres bandas de colores que representan entradas de sensores crudos monitoreadas en ese encabezado. Los buques y fenómenos espaciales emiten energías o características de exposición que su suite sensor traduce en iconos en su radar, pero estos anillos crudos pueden proporcionar más información a un ojo bien entrenado.\n"
+"\n"
+"Para fines tácticos, el calor generado por los sistemas navales se registra en datos de sensores térmicos brutos de una manera similar a fuentes biológicas (rojo, verdes). Si los sistemas de un barco están bajo o sobrepoderados, sus lecturas eléctricas (rojo, azul) cambian en consecuencia. Un sistema de navegación o preparación para saltar aumenta exponencialmente su producción gravitacional (verde, azul). Después de completar un salto un barco realiza una transferencia de energía masiva que los datos de sensores crudos leen como un pico eléctrico."
+
+#: scripts/science_db.lua:69
+msgid "Scan probe"
+msgstr "Sonda de escaneo"
+
+#: scripts/science_db.lua:70
+msgid "Radar range"
+msgstr "Rango de radar"
+
+#: scripts/science_db.lua:71
+msgid "Typical lifetime"
+msgstr "Vida típica"
+
+#: scripts/science_db.lua:71
+msgid "10 minutes"
+msgstr "10 minutos"
+
+#: scripts/science_db.lua:72
+msgid "Systems link"
+msgstr "Enlace de sistemas"
+
+#: scripts/science_db.lua:75
+msgid ""
+"Whether your mission involves scientific investigation, deep-space exploration, or military operations, remember to take advantage of any scan probes distributed for your ship.\n"
+"\n"
+"Your Relay officer can launch a probe to any coordinates in their sector map, which fires its payload at high velocity directly toward the target coordinates. Upon arrival, Relay can then link the probe to the Science officer, who can switch their long-range radar to the probe's short-range radar.\n"
+"\n"
+"This allows the Science officer to scan objects well outside of your ship's long-range radar range, including regions obfuscated by phenomena like nebulae that occlude your sensors.\n"
+"\n"
+"Scan probes have a limited energy supply and expire within minutes, and your ship carries a limited number of them that only some stations can or will replenish."
+msgstr ""
+"Si su misión implica investigación científica, exploración en el espacio profundo o operaciones militares, recuerde aprovechar cualquier sonda de escaneo distribuida para su barco. Su oficial de Relay puede lanzar una sonda a cualquier coordenadas en su mapa del sector, que dispara su carga útil a alta velocidad directamente hacia las coordenadas de destino. A su llegada, Relay puede conectar la sonda con el oficial de ciencias, que puede cambiar su radar de largo alcance al radar de corto alcance de la sonda. Esto permite al oficial de ciencias analizar objetos fuera del rango de radar de largo alcance de su nave, incluyendo regiones obfuscadas por fenómenos como nebulosas que oculten sus sensores.\n"
+"\n"
+"Las sondas de escaneo tienen un suministro limitado de energía y caducan en minutos, y su barco lleva un número limitado de ellas que sólo algunas estaciones pueden o reponerán."
+
+#: scripts/science_db.lua:83
+msgid "Supply drop"
+msgstr "Reducción de la oferta"
+
+#: scripts/science_db.lua:84
+msgid "Contents"
+msgstr "Índice"
+
+#: scripts/science_db.lua:84
+msgid "Weapons, energy"
+msgstr "Armas, energía"
+
+#: scripts/science_db.lua:85
+msgid "Close-range retrieval"
+msgstr "Retrieval de cerca"
+
+#: scripts/science_db.lua:88
+msgid ""
+"To expedite resupply actions, our engineers have standardized containers for weapons and energy that can be automatically and quickly integrated into your ship's systems.\n"
+"\n"
+"Commonly known as a supply drop, your ship needs only to enter near-contact range with one of these containers to automatically engage your ship's acquisition and integration systems. Supply drops are cryptographically keyed to respond only to ships of the same faction, so theft isn't possible."
+msgstr "Para acelerar las acciones de reaprovisionamiento, nuestros ingenieros tienen contenedores estandarizados para armas y energía que pueden integrarse automáticamente y rápidamente en los sistemas de su nave. Comúnmente conocido como una gota de suministro, su nave sólo necesita entrar en rango de contacto cercano con uno de estos contenedores para involucrar automáticamente los sistemas de adquisición e integración de su nave. Las gotas de suministro son claves criptográficamente para responder sólo a los barcos de la misma facción, por lo que el robo no es posible."
+
+#: scripts/science_db.lua:92
+msgid "Warp jammer"
+msgstr "Commer Warp"
+
+#: scripts/science_db.lua:93
+msgid "Short-range encounter"
+msgstr "Encuentro de corto alcance"
+
+#: scripts/science_db.lua:96
+msgid ""
+"Warp and jump technologies rely on technological manipulation of gravitational forces to achieve long-range travel. However, these manipulative forces can be nullified or interdicted by devices that generate electromagnetically simulated gravitational wells. Such devices are colloquially known as warp jammers, even though they can also prevent jumps.\n"
+"\n"
+"A warping ship that enters a jammer's radius is interdicted and slowed to impulse speeds. A jumping ship is unable to engage its jump drive while within a jammer's radius.\n"
+"\n"
+"Ship captains who value the option of retreat are advised to either give warp jammers a wide berth or prioritize their destruction."
+msgstr ""
+"Las tecnologías Warp y Jump dependen de la manipulación tecnológica de las fuerzas gravitatorias para lograr un viaje de largo alcance. Sin embargo, estas fuerzas manipuladoras pueden ser anuladas o interdictas por dispositivos que generan pozos gravitatorios simulados electromagnéticamente. Tales dispositivos son coloquialmente conocidos como martillos de warp, aunque también pueden prevenir saltos.\n"
+"\n"
+"Un barco de caza que entra en el radio de un martillo es interceptado y se ralentiza a velocidades de impulso. Un barco de salto no puede comprometer su unidad de salto mientras que dentro del radio de un martillo. Los capitanes de barco que valoran la opción de retiro se recomiendan para dar a los jammers warp una gran profundidad o priorizar su destrucción."
+
+#: scripts/science_db.lua:103
+msgid "Weapons"
+msgstr "Armas"
+
+#: scripts/science_db.lua:104
+msgid ""
+"This database covers only the basic versions of missile weapons used throughout the galaxy.\n"
+"\n"
+"It has been reported that some battleships started using larger variations of those missiles. Small fighters and even frigates should not have too much trouble dodging them, but space captains of bigger ships should be wary of their doubled damage potential.\n"
+"\n"
+"Smaller variations of these missiles have become common in the galaxy, too. Fighter pilots praise their speed and maneuverability, because it gives them an edge against small and fast-moving targets. They only deal half the damage of their basic counterparts, but what good is a missile if it does not hit its target."
+msgstr ""
+"Esta base de datos solo cubre las versiones básicas de las armas de misiles utilizadas a lo largo de la galaxia. Se ha informado de que algunos buques de combate comenzaron a utilizar variaciones más grandes de esos misiles. Los pequeños combatientes e incluso las fragatas no deberían tener demasiados problemas para esquivarlos, pero los capitanes espaciales de los buques más grandes deberían ser cuidadosos de su potencial de doble daño.\n"
+"\n"
+"Las variaciones más pequeñas de estos misiles también se han vuelto comunes en la galaxia. Los pilotos de combate elogian su velocidad y maniobrabilidad, porque les da un borde contra objetivos pequeños y rápidos. Sólo tratan la mitad del daño de sus contrapartes básicas, pero lo bueno es un misil si no golpea su objetivo."
+
+#: scripts/science_db.lua:110
+msgid "Homing missile"
+msgstr "Misil Homing"
+
+#: scripts/science_db.lua:111 scripts/science_db.lua:116 scripts/science_db.lua:135 scripts/science_db.lua:142
+msgid "Range"
+msgstr "Rango"
+
+#: scripts/science_db.lua:112 scripts/science_db.lua:143
+msgid "Damage"
+msgstr "Daños"
+
+#: scripts/science_db.lua:113
+msgid "This target-seeking missile is the workhorse of many space combat arsenals. It's compact enough to be fitted on frigates, and packs enough punch to be used on larger ships, though usually in more than a single missile tube."
+msgstr "Este misil de búsqueda de objetivos es el caballo de trabajo de muchos arsenales de combate espacial. Es lo suficientemente compacto para ser instalado en fragatas, y empaqueta suficiente golpe para ser utilizado en buques más grandes, aunque generalmente en más de un solo tubo de misiles."
+
+#: scripts/science_db.lua:115
+msgid "Nuke"
+msgstr "Nuke"
+
+#: scripts/science_db.lua:117 scripts/science_db.lua:127 scripts/science_db.lua:136
+msgid "Blast radius"
+msgstr "Radius de la explosión"
+
+#: scripts/science_db.lua:118 scripts/science_db.lua:128 scripts/science_db.lua:137
+msgid "Damage at center"
+msgstr "Daños en el centro"
+
+#: scripts/science_db.lua:119 scripts/science_db.lua:129 scripts/science_db.lua:138
+msgid "Damage at edge"
+msgstr "Daños en el borde"
+
+#: scripts/science_db.lua:120
+msgid ""
+"A nuclear missile is similar to a homing missile in that it can seek a target, but it moves and turns more slowly and explodes a greatly increased payload. Its nuclear explosion spans 1U of space and can take out multiple ships in a single shot.\n"
+"\n"
+"Some captains oppose the use of nuclear weapons because their large explosions can lead to 'fragging', or unintentional friendly fire. Shields should protect crews from harmful radiation, but because these weapons are often used in the thick of battle, there's no way of knowing if hull plating or shields can provide enough protection."
+msgstr "Un misil nuclear es similar a un misil de homenaje en el que puede buscar un objetivo, pero se mueve y se vuelve más lentamente y explota una carga útil mucho mayor. Su explosión nuclear abarca 1U del espacio y puede sacar múltiples barcos en un solo tiro. Algunos capitanes se oponen al uso de armas nucleares porque sus grandes explosiones pueden conducir a 'fragging', o un fuego amigable involuntario. Los escudos deben proteger a las tripulaciones de la radiación dañina, pero debido a que estas armas son usadas a menudo en el grueso de la batalla, no hay forma de saber si el revestimiento de casco o los escudos pueden proporcionar suficiente protección."
+
+#: scripts/science_db.lua:124
+msgid "Mine"
+msgstr "Mina"
+
+#: scripts/science_db.lua:125
+msgid "Drop distance"
+msgstr "Distancia de gota"
+
+#: scripts/science_db.lua:126
+msgid "Trigger distance"
+msgstr "Distancia del truco"
+
+#: scripts/science_db.lua:130
+msgid ""
+"Mines are often placed in defensive perimeters around stations. There are also old minefields scattered around the galaxy from older wars.\n"
+"\n"
+"Some fearless captains use mines as offensive weapons, but their delayed detonation and blast radius make this use risky at best."
+msgstr "Las minas se colocan a menudo en perímetros defensivos alrededor de las estaciones. También hay viejos campos de minas diseminados alrededor de la galaxia de guerras antiguas. Algunos capitanes sin miedo utilizan las minas como armas ofensivas, pero su detonación retardada y radio de explosión hacen que este uso sea arriesgado en el mejor de los casos."
+
+#: scripts/science_db.lua:134
+msgid "EMP"
+msgstr "EMP"
+
+#: scripts/science_db.lua:139
+msgid "The electromagnetic pulse missile (EMP) reproduces the disruptive effects of a nuclear explosion, but without the destructive properties. This causes it to only affect shields within its blast radius, leaving their hulls intact. The EMP missile is also smaller and easier to store than heavy nukes. Many captains (and pirates) prefer EMPs over nukes for these reasons, and use them to knock out targets' shields before closing to disable them with focused beam fire."
+msgstr "El misil de pulso electromagnético (EMP) reproduce los efectos disruptivos de una explosión nuclear, pero sin las propiedades destructivas. Esto hace que sólo afecte los escudos dentro de su radio de explosión, dejando intactos sus cascos. El misil EMP también es más pequeño y más fácil de almacenar que las bombas pesadas. Muchos capitanes (y piratas) prefieren los EMPs sobre las armas nucleares por estas razones, y los usan para eliminar los escudos de los blancos antes de cerrar para deshabilitarlos con fuego de haz concentrado."
+
+#: scripts/science_db.lua:141
+msgid "HVLI"
+msgstr "HVLI"
+
+#: scripts/science_db.lua:143
+msgid "10 each, 50 total"
+msgstr "10 cada uno, 50 total"
+
+#: scripts/science_db.lua:144
+msgid "Burst"
+msgstr "Burst"
+
+#: scripts/science_db.lua:145
+msgid ""
+"A high-velocity lead impactor (HVLI) fires a simple slug of lead at a high velocity. This weapon is usually found in simpler ships since it does not require guidance computers. This also means its projectiles fly in a straight line from its tube and can't pursue a target.\n"
+"\n"
+"Each shot from an HVLI fires a burst of 5 projectiles, which increases the chance to hit but requires precision aiming to be effective. It reaches its full damage potential at a range of 2u."
+msgstr "Un impactor de plomo de alta velocidad (HVLI) dispara un simple golpe de plomo a una alta velocidad. Este arma se encuentra generalmente en naves más simples ya que no requiere ordenadores de orientación. Esto también significa que sus proyectiles vuelan en una línea recta desde su tubo y no pueden perseguir un objetivo. Cada disparo de un HVLI dispara una explosión de 5 proyectiles, lo que aumenta la oportunidad de golpear pero requiere una precisión con el objetivo de ser eficaz. Alcanza su potencial de daño total en una gama de 2u."

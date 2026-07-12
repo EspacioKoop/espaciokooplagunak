@@ -1,0 +1,33 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
+"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"PO-Revision-Date: 2026-07-12 00:00+0200\n"
+"Last-Translator: Espaciokoop Lagunak contributors\n"
+"Language-Team: Espaciokoop Lagunak\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
+
+#: scripts/shiptemplates/satellites.lua:1
+msgctxt "ship"
+msgid "ANT 615"
+msgstr "ANT 615"
+
+#: scripts/shiptemplates/satellites.lua:1
+msgctxt "class"
+msgid "Satellite"
+msgstr "Satélite"
+
+#: scripts/shiptemplates/satellites.lua:1
+msgctxt "subclass"
+msgid "Sentry Series"
+msgstr "Serie de centinelas"
+
+#: scripts/shiptemplates/satellites.lua:2
+msgid "Military satellite from the old days, back when the earth's population was much more divided than today. Its original purpose was probably to take out other satellites."
+msgstr "Satélite militar de los viejos tiempos, cuando la población de la tierra estaba mucho más dividida que hoy. Su propósito original era probablemente sacar otros satélites."

@@ -1,0 +1,42 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
+"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"PO-Revision-Date: 2026-07-12 00:00+0200\n"
+"Last-Translator: Espaciokoop Lagunak contributors\n"
+"Language-Team: Espaciokoop Lagunak\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
+
+#: scripts/shiptemplates/dreadnaught.lua:9
+msgctxt "ship"
+msgid "Odin"
+msgstr "Odin"
+
+#: scripts/shiptemplates/dreadnaught.lua:9
+msgctxt "class"
+msgid "Dreadnought"
+msgstr "Dreadnought"
+
+#: scripts/shiptemplates/dreadnaught.lua:9
+msgctxt "subclass"
+msgid "Odin"
+msgstr "Odin"
+
+#: scripts/shiptemplates/dreadnaught.lua:11
+msgid ""
+"The Odin is a \"ship\" so large and unique that it's almost a class of its own.\n"
+"\n"
+"The ship is often nicknamed the \"all-father\", a name that aptly describes the many roles this ship can fulfill. It's both a supply station and an extremely heavily armored and shielded weapon station capable of annihilating small fleets on its own.\n"
+"\n"
+"Odin's core contains the largest jump drive ever created. About 150 support crew are needed to operate the jump drive alone, and it takes 5 days of continuous operation to power it.\n"
+"\n"
+"Due to the enormous cost of this Dreadnought, only the richest star systems are able to build and maintain ships like the Odin.\n"
+"\n"
+"This machine's primary tactic is to jump into an unsuspecting enemy system and destroy everything before they know what hit them. It's effective and destructive, but extremely expensive."
+msgstr "El Odin es una \" nave\" tan grande y única que es casi una clase propia. El barco es a menudo apodado el \"padre entero\", un nombre que describe correctamente los muchos papeles que este barco puede cumplir. Es una estación de suministro y una estación de arma extremadamente blindada y blindada capaz de aniquilar pequeñas flotas por su cuenta. El núcleo de Odin contiene el mayor impulso de salto jamás creado. Aproximadamente 150 equipos de apoyo son necesarios para operar el salto solo, y toma 5 días de funcionamiento continuo para poderlo. Debido al enorme costo de este Dreadnought, sólo los sistemas estrella más ricos son capaces de construir y mantener barcos como el Odin. La táctica principal de esta máquina es saltar en un sistema enemigo insospechado y destruir todo antes de saber qué les golpeó. Es eficaz y destructivo, pero muy caro."

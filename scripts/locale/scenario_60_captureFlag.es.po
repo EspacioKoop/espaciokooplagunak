@@ -1,0 +1,2636 @@
+# Scenario name
+msgid ""
+msgstr ""
+"Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
+"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"PO-Revision-Date: 2026-07-12 00:00+0200\n"
+"Last-Translator: Espaciokoop Lagunak contributors\n"
+"Language-Team: Espaciokoop Lagunak\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
+
+msgid "Capture the Flag"
+msgstr "Capturar la bandera"
+
+# Scenario description
+msgid ""
+"Capture opposing team's \"flag\" before they capture yours\n"
+"\n"
+"The region consists of two halves divided by a line of nebulae and/or markers. The first 5 minutes (configurable) each side decides where to place their flag. The ships closest to the referee station determine the team's flag location during the initial phase. Crossing to the other side during this phase will result in ship destruction. The weapons officer will mark the flag coordinates when the ship reaches the flag location. After the flag hide timer expires, an artifact will be placed at the location representing the team's flag. If no place has been marked, the ship's current location will be used. If the location is outside the game boundaries, the flag will be placed at the nearest in bounds location\n"
+"\n"
+"Once the flags are placed, the hunt is on. Ships may cross the border in search of the other team's flag, but while they are in the other team's territory they may be tagged by an opponent ship within 0.75U. Being tagged sends you back to your own region with damage to your warp/jump drive. Each flag must be scanned before it can be retrived. Retrieval occurs by getting within 1U of the flag. Being tagged while in posession of the flag drops the flag at the location of the tag event. Cross back to your side with the flag to claim victory\n"
+"\n"
+"Version 2"
+msgstr "Capture el \"flag\" del equipo opuesto antes de capturar el suyo La región consta de dos mitades divididas por una línea de nebulosas y/o marcadores. Los primeros 5 minutos (configurable) cada lado decide dónde colocar su bandera. Los barcos más cercanos a la estación de árbitro determinan la ubicación de la bandera del equipo durante la fase inicial. Cruzar al otro lado durante esta fase resultará en la destrucción de buques. El oficial de armas marcará las coordenadas de la bandera cuando el barco llegue a la ubicación de la bandera. Después de que el temporizador de la bandera expira, se colocará un artefacto en la ubicación que representa la bandera del equipo. Si no se ha marcado ningún lugar, se utilizará la ubicación actual del barco. Si la ubicación está fuera de los límites del juego, la bandera se colocará en la ubicación más cercana en límites Una vez que se coloquen las banderas, la caza está. Los buques pueden cruzar la frontera en busca de la bandera del otro equipo, pero mientras están en el territorio del otro equipo pueden ser etiquetados por un barco oponente dentro de 0.75U. Ser etiquetado le envía de vuelta a su propia región con daño a su unidad warp/jump. Cada bandera debe ser escaneada antes de que pueda ser retrigida. Retrieval ocurre al conseguir dentro de 1U de la bandera. Ser etiquetado mientras que en la posesión de la bandera deja caer la bandera en la ubicación del evento de la etiqueta. Cruz de nuevo a su lado con la bandera para reclamar la victoria Versión 2"
+
+# Scenario setting
+msgctxt "setting"
+msgid "Terrain"
+msgstr "Terrain"
+
+msgctxt "setting"
+msgid "Selects the type of terrain for the game"
+msgstr "Selecciona el tipo de terreno para el juego"
+
+msgctxt "Terrain"
+msgid "Asymmetric"
+msgstr "Asimétrica"
+
+msgctxt "Terrain"
+msgid "No effort made to make the two sides of the arena equivalent"
+msgstr "No se ha hecho ningún esfuerzo para hacer que los dos lados de la arena equivalente"
+
+msgctxt "Terrain"
+msgid "Empty"
+msgstr "Vacío"
+
+msgctxt "Terrain"
+msgid "No terrain. Used primarily for testing"
+msgstr "No hay terreno. Utilizado principalmente para pruebas"
+
+msgctxt "Terrain"
+msgid "Passing"
+msgstr "Pasando"
+
+msgctxt "Terrain"
+msgid "Just passing by. Symmetric, black holes on each side"
+msgstr "Pasando por aquí, agujeros simétricos y negros en cada lado"
+
+msgctxt "Terrain"
+msgid "Symmetric"
+msgstr "Simétrico"
+
+msgctxt "Terrain"
+msgid "Randomly symmetric"
+msgstr "Simétrica aleatoriamente"
+
+msgctxt "Terrain"
+msgid "Rabbit"
+msgstr "Conejo"
+
+msgctxt "Terrain"
+msgid "Down the rabbit hole. Largely symmetric. Wormholes connect each side."
+msgstr "Abajo del agujero de conejo. Grandemente simétrico. Los agujeros de gusano conectan cada lado."
+
+# Scenario setting
+msgctxt "setting"
+msgid "Enemies"
+msgstr "Enemigos"
+
+msgctxt "setting"
+msgid "Configures strength and/or number of external enemies in this scenario"
+msgstr "Configura fuerza y/o número de enemigos externos en este escenario"
+
+msgctxt "Enemies"
+msgid "None"
+msgstr "Ninguno"
+
+msgctxt "Enemies"
+msgid "No external enemies"
+msgstr "No enemigos externos"
+
+msgctxt "Enemies"
+msgid "Easy"
+msgstr "Fácil"
+
+msgctxt "Enemies"
+msgid "Fewer or weaker enemies"
+msgstr "Menores o más débiles enemigos"
+
+msgctxt "Enemies"
+msgid "Normal"
+msgstr "Normal"
+
+msgctxt "Enemies"
+msgid "Normal number or strength of enemies"
+msgstr "Número normal o fuerza de enemigos"
+
+msgctxt "Enemies"
+msgid "Hard"
+msgstr "Duro"
+
+msgctxt "Enemies"
+msgid "More or stronger enemies"
+msgstr "Más enemigos o más fuertes"
+
+msgctxt "Enemies"
+msgid "Extreme"
+msgstr "Extremo"
+
+msgctxt "Enemies"
+msgid "Much stronger, many more enemies"
+msgstr "Mucho más fuerte, muchos más enemigos"
+
+msgctxt "Enemies"
+msgid "Quixotic"
+msgstr "Quijote"
+
+msgctxt "Enemies"
+msgid "Insanely strong and/or inordinately large numbers of enemies"
+msgstr "Insanely strong and/or inordinately large numbers of enemigos"
+
+# Scenario setting
+msgctxt "setting"
+msgid "Murphy"
+msgstr "Murphy"
+
+msgctxt "setting"
+msgid "Configures the perversity of the universe according to Murphy's law"
+msgstr "Configura la perversidad del universo según la ley de Murphy"
+
+msgctxt "Murphy"
+msgid "Easy"
+msgstr "Fácil"
+
+msgctxt "Murphy"
+msgid "Random factors are more in your favor"
+msgstr "Los factores aleatorios son más a su favor"
+
+msgctxt "Murphy"
+msgid "Normal"
+msgstr "Normal"
+
+msgctxt "Murphy"
+msgid "Random factors are normal"
+msgstr "Los factores aleatorios son normales"
+
+msgctxt "Murphy"
+msgid "Hard"
+msgstr "Duro"
+
+msgctxt "Murphy"
+msgid "Random factors are more against you"
+msgstr "Los factores aleatorios son más contra ti"
+
+# Scenario setting
+msgctxt "setting"
+msgid "Arena"
+msgstr "Arena"
+
+msgctxt "setting"
+msgid "Configures the size of the playing arena. Default is normal or 100 units"
+msgstr "Configura el tamaño de la arena de juego. Default es normal o 100 unidades"
+
+msgctxt "Arena"
+msgid "Normal"
+msgstr "Normal"
+
+msgctxt "Arena"
+msgid "Normal 100 unit sized arena"
+msgstr "Arena normal de 100 unidades tamaño"
+
+msgctxt "Arena"
+msgid "Small"
+msgstr "Pequeñas"
+
+msgctxt "Arena"
+msgid "Small 50 unit sized arena"
+msgstr "Pequeñas 50 unidades tamaño arena"
+
+msgctxt "Arena"
+msgid "Large"
+msgstr "Grande"
+
+msgctxt "Arena"
+msgid "Large 200 unit sized arena"
+msgstr "Gran arena tamaño de 200 unidades"
+
+# Scenario setting
+msgctxt "setting"
+msgid "Flag Scan"
+msgstr "Escáner de bandera"
+
+msgctxt "setting"
+msgid "Configures the depth and complexity required to scan a flag. Default is normal: depth is 2 or 3, complexity is 2"
+msgstr "Configura la profundidad y complejidad requeridas para escanear una bandera. Default es normal: profundidad es 2 o 3, la complejidad es 2"
+
+msgctxt "Flag Scan"
+msgid "Normal"
+msgstr "Normal"
+
+msgctxt "Flag Scan"
+msgid "Depth is 2 or 3, complexity is 2"
+msgstr "La profundidad es 2 o 3, la complejidad es 2"
+
+msgctxt "Flag Scan"
+msgid "Easy"
+msgstr "Fácil"
+
+msgctxt "Flag Scan"
+msgid "Depth is 1, complexity is 1 or 2"
+msgstr "La profundidad es 1, la complejidad es 1 o 2"
+
+msgctxt "Flag Scan"
+msgid "Hard"
+msgstr "Duro"
+
+msgctxt "Flag Scan"
+msgid "Depth is 1, 2 or 3, complexity is 3 or 4"
+msgstr "La profundidad es 1, 2 o 3, la complejidad es 3 o 4"
+
+# Scenario setting
+msgctxt "setting"
+msgid "Tracking"
+msgstr "Seguimiento"
+
+msgctxt "setting"
+msgid "Configures information given about flag."
+msgstr "Configures information given about flag."
+
+msgctxt "Tracking"
+msgid "Normal"
+msgstr "Normal"
+
+msgctxt "Tracking"
+msgid "Drop: Kraylor or Human Navy flag dropped (main  screen). Grab: The Kraylor or Human Navy picked up your flag (main screen and ship log)"
+msgstr "Suelta: La bandera de Kraylor o la Armada Humana cayó (pantalla principal).Agarre: El Kraylor o la Armada Humana recogieron su bandera (pantalla principal y registro de buques)"
+
+msgctxt "Tracking"
+msgid "Easy"
+msgstr "Fácil"
+
+msgctxt "Tracking"
+msgid "Drop: ShipName dropped Kraylor or Human Navy flag (main screen). Grab: Kraylor or Human Navy ship ShipName picked up your flag (main screen and ship log)"
+msgstr "Suelta: ShipName dejó caer Kraylor o la bandera de la Armada Humana (pantalla principal).Agarre: Kraylor o Navio de la Armada Humana ShipName recogió su bandera (pantalla principal y registro de buques)"
+
+msgctxt "Tracking"
+msgid "Hard"
+msgstr "Duro"
+
+msgctxt "Tracking"
+msgid "Drop: Flag dropped (main screen). Grab: Flag obtained (main screen). Flag must be rescanned after drop"
+msgstr "Caída: Bandera bajada (pantalla principal). Grabación: Bandera obtenida (pantalla principal)."
+
+msgctxt "Tracking"
+msgid "Secret"
+msgstr "Secret"
+
+msgctxt "Tracking"
+msgid "Neither dropping nor grabbing the flag will produce a message. Flag must be rescanned after drop"
+msgstr "Ni caer ni agarrar la bandera producirá un mensaje. La bandera debe ser reescaneada después de la gota"
+
+#: scripts/scenario_60_captureFlag.lua:735
+msgctxt "scienceDescription-station"
+msgid "Referee"
+msgstr "Referee"
+
+#: scripts/scenario_60_captureFlag.lua:750
+msgctxt "buttonGM"
+msgid "None"
+msgstr "Ninguno"
+
+#: scripts/scenario_60_captureFlag.lua:751
+msgctxt "buttonGM"
+msgid "Easy"
+msgstr "Fácil"
+
+#: scripts/scenario_60_captureFlag.lua:752
+msgctxt "buttonGM"
+msgid "Normal"
+msgstr "Normal"
+
+#: scripts/scenario_60_captureFlag.lua:753
+msgctxt "buttonGM"
+msgid "Hard"
+msgstr "Duro"
+
+#: scripts/scenario_60_captureFlag.lua:754
+msgctxt "buttonGM"
+msgid "Extreme"
+msgstr "Extremo"
+
+#: scripts/scenario_60_captureFlag.lua:755
+msgctxt "buttonGM"
+msgid "Quixotic"
+msgstr "Quijote"
+
+#: scripts/scenario_60_captureFlag.lua:768 scripts/scenario_60_captureFlag.lua:808 scripts/scenario_60_captureFlag.lua:823
+msgctxt "buttonGM"
+msgid "easy"
+msgstr "fácil"
+
+#: scripts/scenario_60_captureFlag.lua:769 scripts/scenario_60_captureFlag.lua:807 scripts/scenario_60_captureFlag.lua:822
+msgctxt "buttonGM"
+msgid "normal"
+msgstr "normal"
+
+#: scripts/scenario_60_captureFlag.lua:770 scripts/scenario_60_captureFlag.lua:809 scripts/scenario_60_captureFlag.lua:824
+msgctxt "buttonGM"
+msgid "hard"
+msgstr "duro"
+
+#: scripts/scenario_60_captureFlag.lua:793
+msgctxt "buttonGM"
+msgid "medium"
+msgstr "médium medio"
+
+#: scripts/scenario_60_captureFlag.lua:794
+msgctxt "buttonGM"
+msgid "small"
+msgstr "pequeño"
+
+#: scripts/scenario_60_captureFlag.lua:795
+msgctxt "buttonGM"
+msgid "large"
+msgstr "grande"
+
+#: scripts/scenario_60_captureFlag.lua:825
+msgctxt "buttonGM"
+msgid "secret"
+msgstr "secreto"
+
+#: scripts/scenario_60_captureFlag.lua:840
+msgctxt "buttonGM"
+msgid "empty"
+msgstr "vacío"
+
+#: scripts/scenario_60_captureFlag.lua:841
+msgctxt "buttonGM"
+msgid "default"
+msgstr "por defecto"
+
+#: scripts/scenario_60_captureFlag.lua:842
+msgctxt "buttonGM"
+msgid "passing"
+msgstr "de paso"
+
+#: scripts/scenario_60_captureFlag.lua:843
+msgctxt "buttonGM"
+msgid "symmetric"
+msgstr "simétrica"
+
+#: scripts/scenario_60_captureFlag.lua:844
+msgctxt "buttonGM"
+msgid "rabbit"
+msgstr "conejo"
+
+#: scripts/scenario_60_captureFlag.lua:865 scripts/scenario_60_captureFlag.lua:1559
+#, lua-format
+msgctxt "buttonGM"
+msgid "Version %s"
+msgstr "Versión %s"
+
+#: scripts/scenario_60_captureFlag.lua:866 scripts/scenario_60_captureFlag.lua:1560
+#, lua-format
+msgctxt "msgGM"
+msgid ""
+"Scenario version %s\n"
+" LUA version %s"
+msgstr ""
+"Versión escenario %s\n"
+" Versión LUA %s"
+
+#: scripts/scenario_60_captureFlag.lua:870 scripts/scenario_60_captureFlag.lua:1580
+msgctxt "buttonGM"
+msgid "Turn on Diagnostic"
+msgstr "Enciende el diagnóstico"
+
+#: scripts/scenario_60_captureFlag.lua:872 scripts/scenario_60_captureFlag.lua:1582
+msgctxt "buttonGM"
+msgid "Turn off Diagnostic"
+msgstr "Apaga el diagnóstico"
+
+#: scripts/scenario_60_captureFlag.lua:882
+#, lua-format
+msgctxt "buttonGM"
+msgid "+Terrain: %s"
+msgstr "+Terrain: %s"
+
+#: scripts/scenario_60_captureFlag.lua:883
+msgctxt "buttonGM"
+msgid "+Player Config"
+msgstr "Config +Player"
+
+#: scripts/scenario_60_captureFlag.lua:885
+#, lua-format
+msgctxt "buttonGM"
+msgid "+Times G%i H%i E%i"
+msgstr "+Times G%i H%i E%i"
+
+#: scripts/scenario_60_captureFlag.lua:887
+#, lua-format
+msgctxt "buttonGM"
+msgid "+Times G%i H%i"
+msgstr "+Times G%i H%i"
+
+#: scripts/scenario_60_captureFlag.lua:889
+#, lua-format
+msgctxt "buttonGM"
+msgid "Enemies: %s ->Next"
+msgstr "Enemigos: %s - Siguiente"
+
+#: scripts/scenario_60_captureFlag.lua:900
+#, lua-format
+msgctxt "buttonGM"
+msgid "Flag scan: %s ->Next"
+msgstr "Escaneo de bandera: %s - Siguiente"
+
+#: scripts/scenario_60_captureFlag.lua:911
+#, lua-format
+msgctxt "buttonGM"
+msgid "Flag track: %s ->Next"
+msgstr "Rastreo de la bandera: %s - Siguiente"
+
+#: scripts/scenario_60_captureFlag.lua:924
+msgctxt "buttonGM"
+msgid "Destroy = end off"
+msgstr "Destrucción = finalización"
+
+#: scripts/scenario_60_captureFlag.lua:926
+msgctxt "buttonGM"
+msgid "Destroy = end on"
+msgstr "Destrucción = final en"
+
+#: scripts/scenario_60_captureFlag.lua:936
+#, lua-format
+msgctxt "buttonGM"
+msgid "Marker: %s ->Next"
+msgstr "Marcador: %s - Siguiente"
+
+#: scripts/scenario_60_captureFlag.lua:949
+msgctxt "buttonGM"
+msgid "Player Prefs"
+msgstr "Player Prefs"
+
+#: scripts/scenario_60_captureFlag.lua:950
+msgctxt "msgGM"
+msgid "Remaining player preferences:"
+msgstr "Preferencias del jugador:"
+
+#: scripts/scenario_60_captureFlag.lua:954
+#, lua-format
+msgctxt "msgGM"
+msgid "XO:%s"
+msgstr "XO:%s"
+
+#: scripts/scenario_60_captureFlag.lua:956 scripts/scenario_60_captureFlag.lua:960 scripts/scenario_60_captureFlag.lua:965 scripts/scenario_60_captureFlag.lua:970 scripts/scenario_60_captureFlag.lua:975 scripts/scenario_60_captureFlag.lua:980 scripts/scenario_60_captureFlag.lua:985 scripts/scenario_60_captureFlag.lua:990 scripts/scenario_60_captureFlag.lua:995
+msgctxt "msgGM"
+msgid "\n"
+msgstr "\n"
+
+#: scripts/scenario_60_captureFlag.lua:958
+#, lua-format
+msgctxt "msgGM"
+msgid "    Faction:%s"
+msgstr "    Facción:%s"
+
+#: scripts/scenario_60_captureFlag.lua:963
+#, lua-format
+msgctxt "msgGM"
+msgid "    Ship name:%s"
+msgstr "    Nombre del barco:%s"
+
+#: scripts/scenario_60_captureFlag.lua:968
+#, lua-format
+msgctxt "msgGM"
+msgid "    Ship preference 1:%s"
+msgstr "    Preferencia de la nave 1:%s"
+
+#: scripts/scenario_60_captureFlag.lua:973
+#, lua-format
+msgctxt "msgGM"
+msgid "    Ship preference 2:%s"
+msgstr "    Preferencia de la nave 2:%s"
+
+#: scripts/scenario_60_captureFlag.lua:978
+#, lua-format
+msgctxt "msgGM"
+msgid "    Ship preference 3:%s"
+msgstr "    Preferencia de la nave 3:%s"
+
+#: scripts/scenario_60_captureFlag.lua:983
+#, lua-format
+msgctxt "msgGM"
+msgid "    Ship preference 4:%s"
+msgstr "    Preferencia de la nave 4:%s"
+
+#: scripts/scenario_60_captureFlag.lua:988
+#, lua-format
+msgctxt "msgGM"
+msgid "    Ship preference 5:%s"
+msgstr "    Preferencia de la nave 5:%s"
+
+#: scripts/scenario_60_captureFlag.lua:993
+#, lua-format
+msgctxt "msgGM"
+msgid "    Ship preference 6:%s"
+msgstr "    Preferencia de la nave 6:%s"
+
+#: scripts/scenario_60_captureFlag.lua:1004
+msgctxt "buttonGM"
+msgid "-from Terrain"
+msgstr "- de Terrain"
+
+#: scripts/scenario_60_captureFlag.lua:1005
+#, lua-format
+msgctxt "buttonGM"
+msgid "Size: %s -> Next"
+msgstr "Tamaño: %s - Siguiente"
+
+#: scripts/scenario_60_captureFlag.lua:1034
+msgctxt "buttonGM"
+msgid "*"
+msgstr "*"
+
+#: scripts/scenario_60_captureFlag.lua:1118 scripts/scenario_60_captureFlag.lua:1119
+msgctxt "scienceDescription-buoy"
+msgid "Territory boundary marker"
+msgstr "Marcador de límites territoriales"
+
+#: scripts/scenario_60_captureFlag.lua:1118 scripts/scenario_60_captureFlag.lua:1119
+msgctxt "scienceDescription-buoy"
+msgid "A buoy placed on the line marking the boundary between Human and Kraylor territory"
+msgstr "Una boya colocada en la línea que marca el límite entre el territorio humano y Kraylor"
+
+#: scripts/scenario_60_captureFlag.lua:1189
+msgctxt "scienceDescription-flag"
+msgid "Flag hiding territory boundary marker"
+msgstr "Bandera ocultado territorio marcador"
+
+#: scripts/scenario_60_captureFlag.lua:1189
+msgctxt "scienceDescription-flag"
+msgid "A temporary buoy placed on the edge of the territory where a flag or decoy may be hidden"
+msgstr "Una boya temporal colocada en el borde del territorio donde una bandera o un decoy puede ser oculto"
+
+#: scripts/scenario_60_captureFlag.lua:1196
+msgctxt "buttonGM"
+msgid "-from Player Config"
+msgstr "- de la Config del Jugador"
+
+#: scripts/scenario_60_captureFlag.lua:1197 scripts/scenario_60_captureFlag.lua:1564
+msgctxt "buttonGM"
+msgid "Show control codes"
+msgstr "Mostrar códigos de control"
+
+#: scripts/scenario_60_captureFlag.lua:1198 scripts/scenario_60_captureFlag.lua:1565
+msgctxt "buttonGM"
+msgid "Show Kraylor codes"
+msgstr "Mostrar códigos Kraylor"
+
+#: scripts/scenario_60_captureFlag.lua:1199 scripts/scenario_60_captureFlag.lua:1567
+msgctxt "buttonGM"
+msgid "Show Human codes"
+msgstr "Mostrar códigos humanos"
+
+#: scripts/scenario_60_captureFlag.lua:1200
+msgctxt "buttonGM"
+msgid "Wing Names Off"
+msgstr "Nombres de Wing Off"
+
+#: scripts/scenario_60_captureFlag.lua:1202
+msgctxt "buttonGM"
+msgid "Wing Names On"
+msgstr "Nombres de Ala en"
+
+#: scripts/scenario_60_captureFlag.lua:1208
+msgctxt "msgGM"
+msgid ""
+"Cannot disable wing names now that player ships have been spawned.\n"
+"Close the server and restart if you *really* don't want the wing names"
+msgstr "No puede desactivar los nombres de alas ahora que los barcos de jugador han sido despachados. Cerrar el servidor y reiniciar si *realmente* no quiere los nombres de alas"
+
+#: scripts/scenario_60_captureFlag.lua:1217
+#, lua-format
+msgctxt "buttonGM"
+msgid "+Tags %.2f, %.1fU"
+msgstr "+Tags %.2f, %.1fU"
+
+#: scripts/scenario_60_captureFlag.lua:1218
+msgctxt "buttonGM"
+msgid "+Drones Off"
+msgstr "+Drones Off"
+
+#: scripts/scenario_60_captureFlag.lua:1220
+msgctxt "buttonGM"
+msgid "+Drones On"
+msgstr "+Drones On"
+
+#: scripts/scenario_60_captureFlag.lua:1232
+msgctxt "buttonGM"
+msgid "-Main from times"
+msgstr "- Dolor de veces"
+
+#: scripts/scenario_60_captureFlag.lua:1233
+#, lua-format
+msgctxt "buttonGM"
+msgid "Game %i Add 5 -> %i"
+msgstr "Juego %i Añadir 5 - título %i"
+
+#: scripts/scenario_60_captureFlag.lua:1239
+#, lua-format
+msgctxt "buttonGM"
+msgid "Game %i Del 5 -> %i"
+msgstr "Juego %i Del 5 - título %i"
+
+#: scripts/scenario_60_captureFlag.lua:1246
+#, lua-format
+msgctxt "buttonGM"
+msgid "Hide Flag %i Add 5 -> %i"
+msgstr "Ocultar bandera %i Añadir 5 - título %i"
+
+#: scripts/scenario_60_captureFlag.lua:1252
+#, lua-format
+msgctxt "buttonGM"
+msgid "Hide Flag %i Del 5 -> %i"
+msgstr "Ocultar bandera %i Del 5 - título %i"
+
+#: scripts/scenario_60_captureFlag.lua:1257
+#, lua-format
+msgctxt "buttonGM"
+msgid "Hide Flag %i Del 4 -> %i"
+msgstr "Ocultar bandera %i Del 4 - título %i"
+
+#: scripts/scenario_60_captureFlag.lua:1264
+#, lua-format
+msgctxt "buttonGM"
+msgid "Enemy %i Add 1 -> %i"
+msgstr "Enemigo %i Añadir 1 - título %i"
+
+#: scripts/scenario_60_captureFlag.lua:1271
+#, lua-format
+msgctxt "buttonGM"
+msgid "Enemy %i Del 1 -> %i"
+msgstr "Enemigo %i Del 1 - título %i"
+
+#: scripts/scenario_60_captureFlag.lua:1281 scripts/scenario_60_captureFlag.lua:1365 scripts/scenario_60_captureFlag.lua:1383
+msgctxt "buttonGM"
+msgid "-Main from Tag"
+msgstr "-Main de Tag"
+
+#: scripts/scenario_60_captureFlag.lua:1282 scripts/scenario_60_captureFlag.lua:1339 scripts/scenario_60_captureFlag.lua:1366 scripts/scenario_60_captureFlag.lua:1384 scripts/scenario_60_captureFlag.lua:1403 scripts/scenario_60_captureFlag.lua:1421 scripts/scenario_60_captureFlag.lua:1451 scripts/scenario_60_captureFlag.lua:1481 scripts/scenario_60_captureFlag.lua:1499 scripts/scenario_60_captureFlag.lua:1517
+msgctxt "buttonGM"
+msgid "-Player Config"
+msgstr "- Config de jugador"
+
+#: scripts/scenario_60_captureFlag.lua:1283
+#, lua-format
+msgctxt "buttonGM"
+msgid "+Tag distance %.1fU"
+msgstr "+A distancia %.1fU"
+
+#: scripts/scenario_60_captureFlag.lua:1284
+#, lua-format
+msgctxt "buttonGM"
+msgid "+Tag damage %.2f"
+msgstr "+Daño de pago %.2f"
+
+#: scripts/scenario_60_captureFlag.lua:1288
+msgctxt "buttonGM"
+msgid "-From Drones"
+msgstr "-De Drones"
+
+#: scripts/scenario_60_captureFlag.lua:1289
+msgctxt "buttonGM"
+msgid "Drones Off"
+msgstr "Drones apagados"
+
+#: scripts/scenario_60_captureFlag.lua:1291
+msgctxt "buttonGM"
+msgid "Drones On"
+msgstr "Drones On"
+
+#: scripts/scenario_60_captureFlag.lua:1302
+#, lua-format
+msgctxt "buttonGM"
+msgid "+Capacity %i"
+msgstr "+Capacidad %i"
+
+#: scripts/scenario_60_captureFlag.lua:1303
+#, lua-format
+msgctxt "buttonGM"
+msgid "Name %s"
+msgstr "Nombre %s"
+
+#: scripts/scenario_60_captureFlag.lua:1315
+#, lua-format
+msgctxt "buttonGM"
+msgid "+Flag I%i M%i"
+msgstr "+Flag I%i M%i"
+
+#: scripts/scenario_60_captureFlag.lua:1316
+#, lua-format
+msgctxt "buttonGM"
+msgid "+Distance F%.1fU S%.1fU"
+msgstr "+Distancia F%.1fU%.1fU"
+
+#: scripts/scenario_60_captureFlag.lua:1317
+msgctxt "buttonGM"
+msgid "Template Mod Off"
+msgstr "Plantilla Mod Off"
+
+#: scripts/scenario_60_captureFlag.lua:1319
+msgctxt "buttonGM"
+msgid "Template Mod On"
+msgstr "Plantilla Mod On"
+
+#: scripts/scenario_60_captureFlag.lua:1330
+#, lua-format
+msgctxt "buttonGM"
+msgid "+Hull %i"
+msgstr "+Hull %i"
+
+#: scripts/scenario_60_captureFlag.lua:1331
+#, lua-format
+msgctxt "buttonGM"
+msgid "+Impulse %i"
+msgstr "+Impulse %i"
+
+#: scripts/scenario_60_captureFlag.lua:1332
+#, lua-format
+msgctxt "buttonGM"
+msgid "+Beam R%.1fU D%.1f C%.1f"
+msgstr "+Beam R%.1fU D%.1f C%.1f"
+
+#: scripts/scenario_60_captureFlag.lua:1338
+msgctxt "buttonGM"
+msgid "-Main from Probes"
+msgstr "-Main de Probes"
+
+#: scripts/scenario_60_captureFlag.lua:1341
+#, lua-format
+msgctxt "buttonGM"
+msgid "Probes %i Add 1 -> %i"
+msgstr "Sondas %i Añadir 1 - título %i"
+
+#: scripts/scenario_60_captureFlag.lua:1352
+#, lua-format
+msgctxt "buttonGM"
+msgid "Probes %i Del 1 -> %i"
+msgstr "Sondas %i Del 1 - título %i"
+
+#: scripts/scenario_60_captureFlag.lua:1367
+msgctxt "buttonGM"
+msgid "-From Tag Distance"
+msgstr "-De la distancia de la etiqueta"
+
+#: scripts/scenario_60_captureFlag.lua:1369
+#, lua-format
+msgctxt "buttonGM"
+msgid "%.1fU Add .1 -> %.1fU"
+msgstr "%.1fU Add .1 - título %.1fU"
+
+#: scripts/scenario_60_captureFlag.lua:1375
+#, lua-format
+msgctxt "buttonGM"
+msgid "%.1fU Del .1 -> %.1fU"
+msgstr "%.1fU Del .1 - título %.1fU"
+
+#: scripts/scenario_60_captureFlag.lua:1385
+msgctxt "buttonGM"
+msgid "-From Tag Dmg"
+msgstr "-De la etiqueta Dmg"
+
+#: scripts/scenario_60_captureFlag.lua:1387
+#, lua-format
+msgctxt "buttonGM"
+msgid "%.2f Add .25 -> %.2f"
+msgstr "%.2f Add .25 - título %.2f"
+
+#: scripts/scenario_60_captureFlag.lua:1393
+#, lua-format
+msgctxt "buttonGM"
+msgid "%.2f Del .25 -> %.2f"
+msgstr "%.2f Del .25 - título %.2f"
+
+#: scripts/scenario_60_captureFlag.lua:1402 scripts/scenario_60_captureFlag.lua:1420 scripts/scenario_60_captureFlag.lua:1450 scripts/scenario_60_captureFlag.lua:1480 scripts/scenario_60_captureFlag.lua:1498 scripts/scenario_60_captureFlag.lua:1516
+msgctxt "buttonGM"
+msgid "-Main"
+msgstr "-Main"
+
+#: scripts/scenario_60_captureFlag.lua:1404
+msgctxt "buttonGM"
+msgid "-From Capacity"
+msgstr "-De la capacidad"
+
+#: scripts/scenario_60_captureFlag.lua:1406 scripts/scenario_60_captureFlag.lua:1484
+#, lua-format
+msgctxt "buttonGM"
+msgid "%i Add 10 -> %i"
+msgstr "%i Añadir 10 - título %i"
+
+#: scripts/scenario_60_captureFlag.lua:1412 scripts/scenario_60_captureFlag.lua:1490
+#, lua-format
+msgctxt "buttonGM"
+msgid "%i Del 10 -> %i"
+msgstr "%i Del 10 - título %i"
+
+#: scripts/scenario_60_captureFlag.lua:1422
+msgctxt "buttonGM"
+msgid "-From Drone Flag"
+msgstr "-De la bandera de Drone"
+
+#: scripts/scenario_60_captureFlag.lua:1424
+#, lua-format
+msgctxt "buttonGM"
+msgid "Interval %i Add 1 -> %i"
+msgstr "Interval %i Añadir 1 - título %i"
+
+#: scripts/scenario_60_captureFlag.lua:1430
+#, lua-format
+msgctxt "buttonGM"
+msgid "Interval %i Del 1 -> %i"
+msgstr "Interval %i Del 1 - título %i"
+
+#: scripts/scenario_60_captureFlag.lua:1436
+#, lua-format
+msgctxt "buttonGM"
+msgid "Msg Reset %i Add 1 -> %i"
+msgstr "Msg Reset %i Añadir 1 - título %i"
+
+#: scripts/scenario_60_captureFlag.lua:1442
+#, lua-format
+msgctxt "buttonGM"
+msgid "Msg Reset %i Del 1 -> %i"
+msgstr "Msg Reset %i Del 1 - título %i"
+
+#: scripts/scenario_60_captureFlag.lua:1452
+msgctxt "buttonGM"
+msgid "-From Drone Distance"
+msgstr "-De la distancia drona"
+
+#: scripts/scenario_60_captureFlag.lua:1454
+#, lua-format
+msgctxt "buttonGM"
+msgid "Form %.1fU Add .1 -> %.1fU"
+msgstr "Formulario %.1fU Add .1 - título %.1fU"
+
+#: scripts/scenario_60_captureFlag.lua:1460
+#, lua-format
+msgctxt "buttonGM"
+msgid "Form %.1fU Del .1 -> %.1fU"
+msgstr "Formulario %.1fU Del .1 - título %.1fU"
+
+#: scripts/scenario_60_captureFlag.lua:1466
+#, lua-format
+msgctxt "buttonGM"
+msgid "Scan %.1fU Add .1 -> %.1fU"
+msgstr "Escanear %.1fU Add .1 - título %.1fU"
+
+#: scripts/scenario_60_captureFlag.lua:1472
+#, lua-format
+msgctxt "buttonGM"
+msgid "Scan %.1fU Del .1 -> %.1fU"
+msgstr "Escanear %.1fU Del .1 - título %.1fU"
+
+#: scripts/scenario_60_captureFlag.lua:1482
+msgctxt "buttonGM"
+msgid "-From Drone Hull"
+msgstr "-De Drone Hull"
+
+#: scripts/scenario_60_captureFlag.lua:1500
+msgctxt "buttonGM"
+msgid "-From Drone Impulse"
+msgstr "-De Drone Impulse"
+
+#: scripts/scenario_60_captureFlag.lua:1502
+#, lua-format
+msgctxt "buttonGM"
+msgid "%i Add 5 -> %i"
+msgstr "%i Añadir 5 - título %i"
+
+#: scripts/scenario_60_captureFlag.lua:1508
+#, lua-format
+msgctxt "buttonGM"
+msgid "%i Del 5 -> %i"
+msgstr "%i Del 5 - título %i"
+
+#: scripts/scenario_60_captureFlag.lua:1518
+msgctxt "buttonGM"
+msgid "-From Drone Beam"
+msgstr "-De Drone Beam"
+
+#: scripts/scenario_60_captureFlag.lua:1520
+#, lua-format
+msgctxt "buttonGM"
+msgid "Rng %.1fU Add .1 -> %.1fU"
+msgstr "Rng %.1fU Add .1 - título %.1fU"
+
+#: scripts/scenario_60_captureFlag.lua:1526
+#, lua-format
+msgctxt "buttonGM"
+msgid "Rng %.1fU Del .1 -> %.1fU"
+msgstr "Rng %.1fU Del .1 - título %.1fU"
+
+#: scripts/scenario_60_captureFlag.lua:1532
+#, lua-format
+msgctxt "buttonGM"
+msgid "Dmg %.1f Add .5 -> %.1f"
+msgstr "Dmg %.1f Añadir .5 - título %.1f"
+
+#: scripts/scenario_60_captureFlag.lua:1538
+#, lua-format
+msgctxt "buttonGM"
+msgid "Dmg %.1f Del .5 -> %.1f"
+msgstr "Dmg %.1f Del .5 - título %.1f"
+
+#: scripts/scenario_60_captureFlag.lua:1544
+#, lua-format
+msgctxt "buttonGM"
+msgid "Cycle %.1f Add .5 -> %.1f"
+msgstr "Ciclo %.1f Añadir .5 - título %.1f"
+
+#: scripts/scenario_60_captureFlag.lua:1550
+#, lua-format
+msgctxt "buttonGM"
+msgid "Cycle %.1f Del .5 -> %.1f"
+msgstr "Ciclo %.1f Del .5 - título %.1f"
+
+#: scripts/scenario_60_captureFlag.lua:1566
+msgctxt "buttonGM"
+msgid "Show Ktlitan codes"
+msgstr "Mostrar códigos Ktlitan"
+
+#: scripts/scenario_60_captureFlag.lua:1568
+msgctxt "buttonGM"
+msgid "Enable Auto-Enemies"
+msgstr "Habilitar los enemigos automáticos"
+
+#: scripts/scenario_60_captureFlag.lua:1570
+msgctxt "buttonGM"
+msgid "Disable Auto-Enemies"
+msgstr "Disable Auto-Enemigos"
+
+#: scripts/scenario_60_captureFlag.lua:1592
+msgctxt "buttonGM"
+msgid "Current Stats"
+msgstr "Corrientes actuales"
+
+#: scripts/scenario_60_captureFlag.lua:1594
+msgctxt "buttonGM"
+msgid "Detailed Drone Report"
+msgstr "Informe detallado de Drone"
+
+#: scripts/scenario_60_captureFlag.lua:1597
+msgctxt "buttonGM"
+msgid "Intelligent Bugger"
+msgstr "Intelligent Bugger"
+
+#: scripts/scenario_60_captureFlag.lua:1644
+#, lua-format
+msgctxt "msgGM"
+msgid "%s: %s %s\n"
+msgstr "%s: %s %s\n"
+
+#: scripts/scenario_60_captureFlag.lua:1674
+#, lua-format
+msgctxt "msgGM"
+msgid ""
+"New Bugger ship: %s\n"
+"Control code: %s"
+msgstr ""
+"Nuevo barco de caza: %s\n"
+"Código de control: %s"
+
+#: scripts/scenario_60_captureFlag.lua:1908
+msgctxt "msgGM"
+msgid "Human:"
+msgstr "Humano:"
+
+#: scripts/scenario_60_captureFlag.lua:1909 scripts/scenario_60_captureFlag.lua:1916
+msgctxt "msgGM"
+msgid ""
+"\n"
+"   Number of active ships: "
+msgstr ""
+"\n"
+"   Número de barcos activos: "
+
+#: scripts/scenario_60_captureFlag.lua:1910 scripts/scenario_60_captureFlag.lua:1917
+msgctxt "msgGM"
+msgid ""
+"\n"
+"   Number of destroyed ships: "
+msgstr ""
+"\n"
+"   Número de buques destruidos: "
+
+#: scripts/scenario_60_captureFlag.lua:1912 scripts/scenario_60_captureFlag.lua:1919
+msgctxt "msgGM"
+msgid ""
+"\n"
+"   Total number of active drones: "
+msgstr ""
+"\n"
+"   Número total de drones activos: "
+
+#: scripts/scenario_60_captureFlag.lua:1913 scripts/scenario_60_captureFlag.lua:1920
+msgctxt "msgGM"
+msgid ""
+"\n"
+"   Total number of destroyed drones: "
+msgstr ""
+"\n"
+"   Número total de drones destruidos: "
+
+#: scripts/scenario_60_captureFlag.lua:1915
+msgctxt "msgGM"
+msgid ""
+"\n"
+"Kraylor:"
+msgstr ""
+"\n"
+"Kraylor:"
+
+#: scripts/scenario_60_captureFlag.lua:1923
+msgctxt "msgGM"
+msgid ""
+"\n"
+"Active buggers: "
+msgstr ""
+"\n"
+"Los aficionados activos: "
+
+#: scripts/scenario_60_captureFlag.lua:2134 scripts/scenario_60_captureFlag.lua:6399
+#, lua-format
+msgctxt "callsign-squad"
+msgid "%s-Sq%i"
+msgstr "%s-Sq%i"
+
+#: scripts/scenario_60_captureFlag.lua:2140 scripts/scenario_60_captureFlag.lua:6405
+#, lua-format
+msgctxt "callsign-drone"
+msgid "%s-#%i/%i"
+msgstr "%s-#%i/%i"
+
+#: scripts/scenario_60_captureFlag.lua:2142 scripts/scenario_60_captureFlag.lua:6407
+#, lua-format
+msgctxt "callsign-drone"
+msgid "%s-%i of %i"
+msgstr "%s-%i of of %i"
+
+#: scripts/scenario_60_captureFlag.lua:2152 scripts/scenario_60_captureFlag.lua:6417
+#, lua-format
+msgctxt "callsign-drone"
+msgid "%s%i/%i"
+msgstr "%s%i/%i"
+
+#: scripts/scenario_60_captureFlag.lua:2170 scripts/scenario_60_captureFlag.lua:6435
+#, lua-format
+msgctxt "drones-msgWeapons"
+msgid "%i drones launched"
+msgstr "%i drones lanzados"
+
+#: scripts/scenario_60_captureFlag.lua:2172 scripts/scenario_60_captureFlag.lua:6437
+#, lua-format
+msgctxt "drones-msgWeapons"
+msgid "%i drone launched"
+msgstr "%i drone lanzado"
+
+#: scripts/scenario_60_captureFlag.lua:2177 scripts/scenario_60_captureFlag.lua:6442
+#, lua-format
+msgctxt "drones-msgTactical"
+msgid "%i drones launched"
+msgstr "%i drones lanzados"
+
+#: scripts/scenario_60_captureFlag.lua:2179 scripts/scenario_60_captureFlag.lua:6444
+#, lua-format
+msgctxt "drones-msgTactical"
+msgid "%i drone launched"
+msgstr "%i drone lanzado"
+
+#: scripts/scenario_60_captureFlag.lua:2183 scripts/scenario_60_captureFlag.lua:6448
+#, lua-format
+msgctxt "drones-shipLog"
+msgid "Deployed %i drones as squadron %s"
+msgstr "Despliegue %i drones como escuadrón %s"
+
+#: scripts/scenario_60_captureFlag.lua:2185 scripts/scenario_60_captureFlag.lua:6450
+#, lua-format
+msgctxt "drones-shipLog"
+msgid "Deployed %i drone as squadron %s"
+msgstr "Despliegue %i drone como escuadrón %s"
+
+#: scripts/scenario_60_captureFlag.lua:2191
+#, lua-format
+msgctxt "drones-msgWeapons"
+msgid "You have %i drones to deploy"
+msgstr "Tienes %i drones para desplegar"
+
+#: scripts/scenario_60_captureFlag.lua:2193
+#, lua-format
+msgctxt "drones-msgTactical"
+msgid "You have %i drones to deploy"
+msgstr "Tienes %i drones para desplegar"
+
+#: scripts/scenario_60_captureFlag.lua:2197
+msgctxt "drones-"
+msgid "> > > > > > > > Drone Hull Status Report: < < < < < < < <"
+msgstr "Informe de estado de Drone Hull:"
+
+#: scripts/scenario_60_captureFlag.lua:2204 scripts/scenario_60_captureFlag.lua:2247
+msgctxt "drones-"
+msgid ""
+"\n"
+"        Drone Squad: "
+msgstr ""
+"\n"
+"        Escuadrón Drone: "
+
+#: scripts/scenario_60_captureFlag.lua:2210
+#, lua-format
+msgctxt "drones-"
+msgid ""
+"\n"
+"            Drone %i (%s) Hull: %i/%i"
+msgstr ""
+"\n"
+"            Drone %i (G)%sHull: %i/%i"
+
+#: scripts/scenario_60_captureFlag.lua:2218 scripts/scenario_60_captureFlag.lua:2263
+#, lua-format
+msgctxt "drones-"
+msgid ""
+"\n"
+"            Drone %i --Destroyed--"
+msgstr ""
+"\n"
+"            Drone %i - Destruido..."
+
+#: scripts/scenario_60_captureFlag.lua:2224 scripts/scenario_60_captureFlag.lua:2269
+msgctxt "drones-"
+msgid " --Destroyed--"
+msgstr " - Destruido..."
+
+#: scripts/scenario_60_captureFlag.lua:2228
+msgctxt "drones-msgEngineer&Engineer+"
+msgid ""
+"\n"
+"    Number of deployed drone squadrons: "
+msgstr ""
+"\n"
+"    Número de escuadrones de drones desplegados: "
+
+#: scripts/scenario_60_captureFlag.lua:2229
+msgctxt "drones-msgEngineer&Engineer+"
+msgid ""
+"\n"
+"    Current number of live deployed drones: "
+msgstr ""
+"\n"
+"    Número actual de drones desplegados en directo: "
+
+#: scripts/scenario_60_captureFlag.lua:2240
+msgctxt "drones-"
+msgid "> > > > > > > > Drone Location Report: < < < < < < < <"
+msgstr "Informe de localización: Identificar  ⁇  Secundaria &gt; Secundaria &gt; &gt; &gt;  ⁇ "
+
+#: scripts/scenario_60_captureFlag.lua:2254
+#, lua-format
+msgctxt "drones-"
+msgid ""
+"\n"
+"            Drone %i (%s) Sector %s, X: %7.0f, Y: %7.0f"
+msgstr ""
+"\n"
+"            Drone %i (G)%s) Sector %s, X: %7.0f, Y: %7.0f"
+
+#: scripts/scenario_60_captureFlag.lua:2273
+msgctxt "drones-msgHelms&Tactical"
+msgid ""
+"\n"
+"    Number of deployed drone squadrons: "
+msgstr ""
+"\n"
+"    Número de escuadrones de drones desplegados: "
+
+#: scripts/scenario_60_captureFlag.lua:2274
+msgctxt "drones-msgHelms&Tactical"
+msgid ""
+"\n"
+"    Current number of live deployed drones: "
+msgstr ""
+"\n"
+"    Número actual de drones desplegados en directo: "
+
+#: scripts/scenario_60_captureFlag.lua:2288
+msgctxt "drones-buttonWeapons"
+msgid "5 Drones"
+msgstr "5 Drones"
+
+#: scripts/scenario_60_captureFlag.lua:2292
+msgctxt "drones-buttonTactical"
+msgid "5 Drones"
+msgstr "5 Drones"
+
+#: scripts/scenario_60_captureFlag.lua:2296
+msgctxt "drones-buttonWeapons"
+msgid "10 Drones"
+msgstr "10 Drones"
+
+#: scripts/scenario_60_captureFlag.lua:2300
+msgctxt "drones-buttonTactical"
+msgid "10 Drones"
+msgstr "10 Drones"
+
+#: scripts/scenario_60_captureFlag.lua:2304
+msgctxt "drones-buttonWeapons"
+msgid "Count Drones"
+msgstr "Conde Drones"
+
+#: scripts/scenario_60_captureFlag.lua:2308
+msgctxt "drones-buttonTactical"
+msgid "Count Drones"
+msgstr "Conde Drones"
+
+#: scripts/scenario_60_captureFlag.lua:2312
+msgctxt "drones-buttonEngineer"
+msgid "Drone Hulls"
+msgstr "Hulls Drone"
+
+#: scripts/scenario_60_captureFlag.lua:2316
+msgctxt "drones-buttonEngineer+"
+msgid "Drone Hulls"
+msgstr "Hulls Drone"
+
+#: scripts/scenario_60_captureFlag.lua:2320
+msgctxt "drones-buttonHelms"
+msgid "Drone Locations"
+msgstr "Ubicaciónes de Drone"
+
+#: scripts/scenario_60_captureFlag.lua:2324
+msgctxt "drones-buttonTactical"
+msgid "Drone Locations"
+msgstr "Ubicaciónes de Drone"
+
+#: scripts/scenario_60_captureFlag.lua:2378 scripts/scenario_60_captureFlag.lua:2396 scripts/scenario_60_captureFlag.lua:7341 scripts/scenario_60_captureFlag.lua:7377 scripts/scenario_60_captureFlag.lua:7404 scripts/scenario_60_captureFlag.lua:7417 scripts/scenario_60_captureFlag.lua:7430 scripts/scenario_60_captureFlag.lua:7443 scripts/scenario_60_captureFlag.lua:7456 scripts/scenario_60_captureFlag.lua:7469 scripts/scenario_60_captureFlag.lua:7603 scripts/scenario_60_captureFlag.lua:7723
+msgctxt "scienceDescription-flag"
+msgid "Flag"
+msgstr "Bandera"
+
+#: scripts/scenario_60_captureFlag.lua:2378 scripts/scenario_60_captureFlag.lua:7341 scripts/scenario_60_captureFlag.lua:7603
+msgctxt "scienceDescription-flag"
+msgid "Human Navy Flag"
+msgstr "Bandera de Armada Humana"
+
+#: scripts/scenario_60_captureFlag.lua:2382
+#, lua-format
+msgctxt "flag-msgMainscreen"
+msgid "%s dropped Human Navy flag"
+msgstr "%s Se cayó la bandera de la Armada Humana"
+
+#: scripts/scenario_60_captureFlag.lua:2384 scripts/scenario_60_captureFlag.lua:7626 scripts/scenario_60_captureFlag.lua:7746
+msgctxt "flag-msgMainscreen"
+msgid "Human Navy flag dropped"
+msgstr "La bandera de la Armada Humana cayó"
+
+#: scripts/scenario_60_captureFlag.lua:2387 scripts/scenario_60_captureFlag.lua:2405 scripts/scenario_60_captureFlag.lua:7629 scripts/scenario_60_captureFlag.lua:7749
+msgctxt "flag-msgMainscreen"
+msgid "Flag dropped"
+msgstr "Bandera bajada"
+
+#: scripts/scenario_60_captureFlag.lua:2396 scripts/scenario_60_captureFlag.lua:7377 scripts/scenario_60_captureFlag.lua:7723
+msgctxt "scienceDescription-flag"
+msgid "Kraylor Flag"
+msgstr "Kraylor Flag"
+
+#: scripts/scenario_60_captureFlag.lua:2400
+#, lua-format
+msgctxt "flag-msgMainscreen"
+msgid "%s dropped Kraylor flag"
+msgstr "%s Se cayó la bandera de Kraylor"
+
+#: scripts/scenario_60_captureFlag.lua:2402
+msgctxt "flag-msgMainscreen"
+msgid "Kraylor flag dropped"
+msgstr "La bandera de Kraylor cayó"
+
+#: scripts/scenario_60_captureFlag.lua:2545
+msgctxt "repairCrew-msgEngineer"
+msgid "Medical team has revived one of your repair crew"
+msgstr "El equipo médico ha reavivado a uno de sus equipos de reparación"
+
+#: scripts/scenario_60_captureFlag.lua:2549
+msgctxt "repairCrew-msgEngineer+"
+msgid "Medical team has revived one of your repair crew"
+msgstr "El equipo médico ha reavivado a uno de sus equipos de reparación"
+
+#: scripts/scenario_60_captureFlag.lua:2564
+msgctxt "repairCrew-msgEngineer"
+msgid "One of your repair crew has perished"
+msgstr "Uno de sus equipos de reparación ha muerto"
+
+#: scripts/scenario_60_captureFlag.lua:2568
+msgctxt "repairCrew-msgEngineer+"
+msgid "One of your repair crew has perished"
+msgstr "Uno de sus equipos de reparación ha muerto"
+
+#: scripts/scenario_60_captureFlag.lua:3827
+msgctxt "buttonGM"
+msgid "Orbit Toggle"
+msgstr "Orbit Toggle"
+
+#: scripts/scenario_60_captureFlag.lua:3837
+msgctxt "buttonGM"
+msgid "Move Toggle"
+msgstr "Muévanse."
+
+#: scripts/scenario_60_captureFlag.lua:3998
+msgctxt "wormhole-msgHelms"
+msgid "Worm hole teleportation destination will change after the flag hiding time expires"
+msgstr "El destino de teletransportación del agujero de gusano cambiará después de que el tiempo de ocultamiento de la bandera expire"
+
+#: scripts/scenario_60_captureFlag.lua:4002
+msgctxt "wormhole-msgTactical"
+msgid "Worm hole teleportation destination will change after the flag hiding time expires"
+msgstr "El destino de teletransportación del agujero de gusano cambiará después de que el tiempo de ocultamiento de la bandera expire"
+
+#: scripts/scenario_60_captureFlag.lua:5195
+msgctxt "station-comms"
+msgid "Greetings"
+msgstr "Saludos"
+
+#: scripts/scenario_60_captureFlag.lua:5213 scripts/scenario_60_captureFlag.lua:5221 scripts/scenario_60_captureFlag.lua:5364 scripts/scenario_60_captureFlag.lua:5376 scripts/scenario_60_captureFlag.lua:5388 scripts/scenario_60_captureFlag.lua:5407 scripts/scenario_60_captureFlag.lua:5419
+#, lua-format
+msgctxt "ammo-comms"
+msgid "%s%d rep each)"
+msgstr "%s%d rep cada uno)"
+
+#: scripts/scenario_60_captureFlag.lua:5229
+msgctxt "station-comms"
+msgid "Dock, please"
+msgstr "Dock, por favor"
+
+#: scripts/scenario_60_captureFlag.lua:5235 scripts/scenario_60_captureFlag.lua:5686
+msgctxt "station-comms"
+msgid "You need to stay docked for that action."
+msgstr "Tienes que permanecer atracado para esa acción."
+
+#: scripts/scenario_60_captureFlag.lua:5239 scripts/scenario_60_captureFlag.lua:5690
+msgctxt "ammo-comms"
+msgid "We do not deal in weapons of mass destruction."
+msgstr "No tratamos armas de destrucción en masa."
+
+#: scripts/scenario_60_captureFlag.lua:5240 scripts/scenario_60_captureFlag.lua:5691
+msgctxt "ammo-comms"
+msgid "We do not deal in weapons of mass disruption."
+msgstr "No nos ocupamos de las armas de perturbación masiva."
+
+#: scripts/scenario_60_captureFlag.lua:5241 scripts/scenario_60_captureFlag.lua:5692
+msgctxt "ammo-comms"
+msgid "We do not deal in those weapons."
+msgstr "No nos ocupamos de esas armas."
+
+#: scripts/scenario_60_captureFlag.lua:5248 scripts/scenario_60_captureFlag.lua:5699
+msgctxt "ammo-comms"
+msgid "All nukes are charged and primed for destruction."
+msgstr "Todos los desnudos están cargados y preparados para la destrucción."
+
+#: scripts/scenario_60_captureFlag.lua:5250 scripts/scenario_60_captureFlag.lua:5701
+msgctxt "ammo-comms"
+msgid "Sorry, sir, but you are as fully stocked as I can allow."
+msgstr "Lo siento, señor, pero usted está tan lleno como puedo permitir."
+
+#: scripts/scenario_60_captureFlag.lua:5252 scripts/scenario_60_captureFlag.lua:5264 scripts/scenario_60_captureFlag.lua:5467 scripts/scenario_60_captureFlag.lua:5472 scripts/scenario_60_captureFlag.lua:5480 scripts/scenario_60_captureFlag.lua:5541 scripts/scenario_60_captureFlag.lua:5571 scripts/scenario_60_captureFlag.lua:5603 scripts/scenario_60_captureFlag.lua:5635 scripts/scenario_60_captureFlag.lua:5641 scripts/scenario_60_captureFlag.lua:5665 scripts/scenario_60_captureFlag.lua:5670 scripts/scenario_60_captureFlag.lua:5703 scripts/scenario_60_captureFlag.lua:5715 scripts/scenario_60_captureFlag.lua:5789 scripts/scenario_60_captureFlag.lua:5811 scripts/scenario_60_captureFlag.lua:5833 scripts/scenario_60_captureFlag.lua:5837 scripts/scenario_60_captureFlag.lua:5845 scripts/scenario_60_captureFlag.lua:5855 scripts/scenario_60_captureFlag.lua:5860 scripts/scenario_60_captureFlag.lua:5866 scripts/scenario_60_captureFlag.lua:5883 scripts/scenario_60_captureFlag.lua:5905 scripts/scenario_60_captureFlag.lua:5909 scripts/scenario_60_captureFlag.lua:5926 scripts/scenario_60_captureFlag.lua:5930 scripts/scenario_60_captureFlag.lua:6520 scripts/scenario_60_captureFlag.lua:6527 scripts/scenario_60_captureFlag.lua:6536 scripts/scenario_60_captureFlag.lua:6561 scripts/scenario_60_captureFlag.lua:6568 scripts/scenario_60_captureFlag.lua:6580 scripts/scenario_60_captureFlag.lua:6585 scripts/scenario_60_captureFlag.lua:6592 scripts/scenario_60_captureFlag.lua:6600 scripts/scenario_60_captureFlag.lua:6607 scripts/scenario_60_captureFlag.lua:6615 scripts/scenario_60_captureFlag.lua:6651 scripts/scenario_60_captureFlag.lua:6664 scripts/scenario_60_captureFlag.lua:6670 scripts/scenario_60_captureFlag.lua:6681 scripts/scenario_60_captureFlag.lua:6690 scripts/scenario_60_captureFlag.lua:6701 scripts/scenario_60_captureFlag.lua:6710 scripts/scenario_60_captureFlag.lua:6721 scripts/scenario_60_captureFlag.lua:6734 scripts/scenario_60_captureFlag.lua:6744 scripts/scenario_60_captureFlag.lua:6754 scripts/scenario_60_captureFlag.lua:6775
+msgid "Back"
+msgstr "Volver"
+
+#: scripts/scenario_60_captureFlag.lua:5255 scripts/scenario_60_captureFlag.lua:5706
+msgctxt "needRep-comms"
+msgid "Not enough reputation."
+msgstr "No es suficiente reputación."
+
+#: scripts/scenario_60_captureFlag.lua:5260 scripts/scenario_60_captureFlag.lua:5711
+msgctxt "ammo-comms"
+msgid "You are fully loaded and ready to explode things."
+msgstr "Estás completamente cargado y listo para explotar cosas."
+
+#: scripts/scenario_60_captureFlag.lua:5262 scripts/scenario_60_captureFlag.lua:5713
+msgctxt "ammo-comms"
+msgid ""
+"We generously resupplied you with some weapon charges.\n"
+"Put them to good use."
+msgstr "generosamente te resucitamos con algunos cargos de arma, ponlos a buen uso."
+
+#: scripts/scenario_60_captureFlag.lua:5317
+msgctxt "station-comms"
+msgid ""
+"Good day, officer!\n"
+"What can we do for you today?\n"
+msgstr "Buenos días, oficial. ¿Qué podemos hacer por usted hoy?\n"
+
+#: scripts/scenario_60_captureFlag.lua:5319
+msgctxt "station-comms"
+msgid "Welcome to our lovely station.\n"
+msgstr "Bienvenido a nuestra hermosa estación.\n"
+
+#: scripts/scenario_60_captureFlag.lua:5355
+msgctxt "ammo-comms"
+msgid "I need ordnance restocked"
+msgstr "Necesito la artillería restablecida"
+
+#: scripts/scenario_60_captureFlag.lua:5356
+msgctxt "ammo-comms"
+msgid "What type of ordnance?"
+msgstr "¿Qué tipo de municiones?"
+
+#: scripts/scenario_60_captureFlag.lua:5360
+msgctxt "ammo-comms"
+msgid "Can you supply us with some nukes? ("
+msgstr "¿Nos puedes dar unos nukes?"
+
+#: scripts/scenario_60_captureFlag.lua:5362
+msgctxt "ammo-comms"
+msgid "We really need some nukes ("
+msgstr "Realmente necesitamos algunos desnudos ("
+
+#: scripts/scenario_60_captureFlag.lua:5372
+msgctxt "ammo-comms"
+msgid "Please re-stock our EMP missiles. ("
+msgstr "Por favor, vuelva a surtir nuestros misiles EMP. ("
+
+#: scripts/scenario_60_captureFlag.lua:5374
+msgctxt "ammo-comms"
+msgid "Got any EMPs? ("
+msgstr "¿Tienes alguna EMP?"
+
+#: scripts/scenario_60_captureFlag.lua:5384
+msgctxt "ammo-comms"
+msgid "Do you have spare homing missiles for us? ("
+msgstr "¿Tiene misiles de homenaje por nosotros?"
+
+#: scripts/scenario_60_captureFlag.lua:5386
+msgctxt "ammo-comms"
+msgid "Do you have extra homing missiles? ("
+msgstr "¿Tienes misiles de homenaje extra?"
+
+#: scripts/scenario_60_captureFlag.lua:5397
+msgctxt "ammo-comms"
+msgid "We could use some mines. ("
+msgstr "Podríamos usar algunas minas."
+
+#: scripts/scenario_60_captureFlag.lua:5399
+msgctxt "ammo-comms"
+msgid "How about mines? ("
+msgstr "¿Qué hay de las minas?"
+
+#: scripts/scenario_60_captureFlag.lua:5401
+msgctxt "ammo-comms"
+msgid "More mines ("
+msgstr "Más minas ("
+
+#: scripts/scenario_60_captureFlag.lua:5403
+msgctxt "ammo-comms"
+msgid "All the mines we can take. ("
+msgstr "Todas las minas que podemos tomar."
+
+#: scripts/scenario_60_captureFlag.lua:5405
+msgctxt "ammo-comms"
+msgid "Mines! What else? ("
+msgstr "¿Qué más?"
+
+#: scripts/scenario_60_captureFlag.lua:5415
+msgctxt "ammo-comms"
+msgid "What about HVLI? ("
+msgstr "¿Qué hay de HVLI?"
+
+#: scripts/scenario_60_captureFlag.lua:5417
+msgctxt "ammo-comms"
+msgid "Could you provide HVLI? ("
+msgstr "¿Podrías proporcionar HVLI?"
+
+#: scripts/scenario_60_captureFlag.lua:5434 scripts/scenario_60_captureFlag.lua:5451
+#, lua-format
+msgctxt "trade-comms"
+msgid "Recruit repair crew member for %i reputation"
+msgstr "Contratación de tripulante de reparación %i reputación"
+
+#: scripts/scenario_60_captureFlag.lua:5436 scripts/scenario_60_captureFlag.lua:5453
+msgctxt "needRep-comms"
+msgid "Insufficient reputation"
+msgstr "Insuficiente reputación"
+
+#: scripts/scenario_60_captureFlag.lua:5440 scripts/scenario_60_captureFlag.lua:5457
+msgctxt "trade-comms"
+msgid "Repair crew member hired"
+msgstr "Reparación de miembros del equipo contratados"
+
+#: scripts/scenario_60_captureFlag.lua:5463
+msgctxt "station-comms"
+msgid "Tell me more about your station"
+msgstr "Cuéntame más sobre tu estación."
+
+#: scripts/scenario_60_captureFlag.lua:5464
+msgctxt "station-comms"
+msgid "What would you like to know?"
+msgstr "¿Qué quieres saber?"
+
+#: scripts/scenario_60_captureFlag.lua:5465
+msgctxt "stationGeneralInfo-comms"
+msgid "General information"
+msgstr "Información general"
+
+#: scripts/scenario_60_captureFlag.lua:5470
+msgctxt "stationStory-comms"
+msgid "Station history"
+msgstr "Historia de la estación"
+
+#: scripts/scenario_60_captureFlag.lua:5478
+msgctxt "gossip-comms"
+msgid "Gossip"
+msgstr "Gossip"
+
+#: scripts/scenario_60_captureFlag.lua:5488
+msgctxt "trade-comms"
+msgid "Buy, sell, trade"
+msgstr "Compra, venta, comercio"
+
+#: scripts/scenario_60_captureFlag.lua:5489 scripts/scenario_60_captureFlag.lua:5801
+#, lua-format
+msgctxt "trade-comms"
+msgid ""
+"Station %s:\n"
+"Goods or components available: quantity, cost in reputation\n"
+msgstr "Estación %s: Mercancías o componentes disponibles: cantidad, costo en la reputación\n"
+
+#: scripts/scenario_60_captureFlag.lua:5495
+#, lua-format
+msgctxt "trade-comms"
+msgid "     %s: %i, %i\n"
+msgstr "     %s: %i, %i\n"
+
+#: scripts/scenario_60_captureFlag.lua:5498
+msgctxt "trade-comms"
+msgid "Current Cargo:\n"
+msgstr "Cargo actual:\n"
+
+#: scripts/scenario_60_captureFlag.lua:5505
+#, lua-format
+msgctxt "trade-comms"
+msgid "     %s: %i\n"
+msgstr "     %s: %i\n"
+
+#: scripts/scenario_60_captureFlag.lua:5511
+msgctxt "trade-comms"
+msgid "     Empty\n"
+msgstr "     Vacío\n"
+
+#: scripts/scenario_60_captureFlag.lua:5514
+#, lua-format
+msgctxt "trade-comms"
+msgid "Available Space: %i, Available Reputation: %i\n"
+msgstr "Espacio disponible: %i, Reputación disponible: %i\n"
+
+#: scripts/scenario_60_captureFlag.lua:5522
+#, lua-format
+msgctxt "trade-comms"
+msgid "Buy one %s for %i reputation"
+msgstr "Comprar uno %s para %i reputación"
+
+#: scripts/scenario_60_captureFlag.lua:5523
+#, lua-format
+msgctxt "trade-comms"
+msgid "Type: %s, Quantity: %i, Rep: %i"
+msgstr "Tipo: %s, Cantidad %i, Rep: %i"
+
+#: scripts/scenario_60_captureFlag.lua:5525
+msgctxt "trade-comms"
+msgid ""
+"\n"
+"Insufficient cargo space for purchase"
+msgstr ""
+"\n"
+"Espacio de carga insuficiente para la compra"
+
+#: scripts/scenario_60_captureFlag.lua:5527 scripts/scenario_60_captureFlag.lua:5532
+msgctxt "needRep-comms"
+msgid ""
+"\n"
+"Insufficient reputation for purchase"
+msgstr ""
+"\n"
+"Insuficiente reputación de compra"
+
+#: scripts/scenario_60_captureFlag.lua:5529 scripts/scenario_60_captureFlag.lua:5563 scripts/scenario_60_captureFlag.lua:5595 scripts/scenario_60_captureFlag.lua:5627
+msgctxt "trade-comms"
+msgid ""
+"\n"
+"Insufficient station inventory"
+msgstr ""
+"\n"
+"Insuficiente inventario de estaciones"
+
+#: scripts/scenario_60_captureFlag.lua:5537
+msgctxt "trade-comms"
+msgid ""
+"\n"
+"purchased"
+msgstr ""
+"\n"
+"adquiridos"
+
+#: scripts/scenario_60_captureFlag.lua:5560
+#, lua-format
+msgctxt "trade-comms"
+msgid "Trade food for %s"
+msgstr "Comida comercial para %s"
+
+#: scripts/scenario_60_captureFlag.lua:5561 scripts/scenario_60_captureFlag.lua:5593 scripts/scenario_60_captureFlag.lua:5625
+#, lua-format
+msgctxt "trade-comms"
+msgid "Type: %s,  Quantity: %i"
+msgstr "Tipo: %s, Cantidad %i"
+
+#: scripts/scenario_60_captureFlag.lua:5568 scripts/scenario_60_captureFlag.lua:5600 scripts/scenario_60_captureFlag.lua:5632
+msgctxt "trade-comms"
+msgid ""
+"\n"
+"Traded"
+msgstr ""
+"\n"
+"Traded"
+
+#: scripts/scenario_60_captureFlag.lua:5592
+#, lua-format
+msgctxt "trade-comms"
+msgid "Trade luxury for %s"
+msgstr "Lujo comercial para %s"
+
+#: scripts/scenario_60_captureFlag.lua:5624
+#, lua-format
+msgctxt "trade-comms"
+msgid "Trade medicine for %s"
+msgstr "Medicina comercial %s"
+
+#: scripts/scenario_60_captureFlag.lua:5654
+msgctxt "trade-comms"
+msgid "Jettison cargo"
+msgstr "Jettison cargo"
+
+#: scripts/scenario_60_captureFlag.lua:5655
+#, lua-format
+msgctxt "trade-comms"
+msgid ""
+"Available space: %i\n"
+"What would you like to jettison?"
+msgstr ""
+"Espacio disponible: %i\n"
+"¿Qué te gustaría Jetison?"
+
+#: scripts/scenario_60_captureFlag.lua:5664
+#, lua-format
+msgctxt "trade-comms"
+msgid "One %s jettisoned"
+msgstr "Uno %s Jetisoned"
+
+#: scripts/scenario_60_captureFlag.lua:5724
+msgctxt "station-comms"
+msgid ""
+"Good day, officer.\n"
+"If you need supplies, please dock with us first."
+msgstr "Buen día, oficial, si necesita provisiones, por favor, atraque con nosotros primero."
+
+#: scripts/scenario_60_captureFlag.lua:5726
+msgctxt "station-comms"
+msgid ""
+"Greetings.\n"
+"If you want to do business, please dock with us first."
+msgstr "Saludos, si quieres hacer negocios, por favor, haz lo primero con nosotros."
+
+#: scripts/scenario_60_captureFlag.lua:5756
+msgctxt "station-comms"
+msgid "I need information"
+msgstr "Necesito información"
+
+#: scripts/scenario_60_captureFlag.lua:5757
+msgctxt "station-comms"
+msgid "What kind of information do you need?"
+msgstr "¿Qué tipo de información necesita?"
+
+#: scripts/scenario_60_captureFlag.lua:5758
+msgctxt "ammo-comms"
+msgid "What ordnance do you have available for restock?"
+msgstr "¿Qué artefacto tiene disponible para el reinstalamiento?"
+
+#: scripts/scenario_60_captureFlag.lua:5763
+msgctxt "ammo-comms"
+msgid ""
+"\n"
+"   Nuke"
+msgstr ""
+"\n"
+"   Nuke"
+
+#: scripts/scenario_60_captureFlag.lua:5767
+msgctxt "ammo-comms"
+msgid ""
+"\n"
+"   EMP"
+msgstr ""
+"\n"
+"   EMP"
+
+#: scripts/scenario_60_captureFlag.lua:5771
+msgctxt "ammo-comms"
+msgid ""
+"\n"
+"   Homing"
+msgstr ""
+"\n"
+"   Homing"
+
+#: scripts/scenario_60_captureFlag.lua:5775
+msgctxt "ammo-comms"
+msgid ""
+"\n"
+"   Mine"
+msgstr ""
+"\n"
+"   Mina"
+
+#: scripts/scenario_60_captureFlag.lua:5779
+msgctxt "ammo-comms"
+msgid ""
+"\n"
+"   HVLI"
+msgstr ""
+"\n"
+"   HVLI"
+
+#: scripts/scenario_60_captureFlag.lua:5782
+msgctxt "ammo-comms"
+msgid "We have no ordnance available for restock"
+msgstr "No tenemos ningún artefacto disponible para restaurar"
+
+#: scripts/scenario_60_captureFlag.lua:5784
+#, lua-format
+msgctxt "ammo-comms"
+msgid "We have the following type of ordnance available for restock:%s"
+msgstr "Tenemos el siguiente tipo de artefactos disponibles para la restauración:%s"
+
+#: scripts/scenario_60_captureFlag.lua:5786
+#, lua-format
+msgctxt "ammo-comms"
+msgid "We have the following types of ordnance available for restock:%s"
+msgstr "Tenemos los siguientes tipos de artefactos disponibles para restaurar:%s"
+
+#: scripts/scenario_60_captureFlag.lua:5800
+msgctxt "trade-comms"
+msgid "What goods do you have available for sale or trade?"
+msgstr "¿Qué bienes tiene disponible para la venta o el comercio?"
+
+#: scripts/scenario_60_captureFlag.lua:5807
+#, lua-format
+msgctxt "trade-comms"
+msgid "   %14s: %2i, %3i\n"
+msgstr "   %14s: %2i, %3i\n"
+
+#: scripts/scenario_60_captureFlag.lua:5814
+msgctxt "helpfullWarning-comms"
+msgid "See any enemies in your area?"
+msgstr "¿Ves enemigos en tu área?"
+
+#: scripts/scenario_60_captureFlag.lua:5824
+#, lua-format
+msgctxt "helpfullWarning-comms"
+msgid "Yes, we see %i enemies within 30U"
+msgstr "Sí, ya vemos. %i enemigos dentro de 30U"
+
+#: scripts/scenario_60_captureFlag.lua:5826
+msgctxt "helpfullWarning-comms"
+msgid "Yes, we see one enemy within 30U"
+msgstr "Sí, vemos a un enemigo dentro de 30U"
+
+#: scripts/scenario_60_captureFlag.lua:5830
+msgctxt "helpfullWarning-comms"
+msgid "No enemies within 30U"
+msgstr "Ningún enemigo dentro de 30U"
+
+#: scripts/scenario_60_captureFlag.lua:5835
+msgctxt "helpfullWarning-comms"
+msgid "Not really"
+msgstr "No realmente."
+
+#: scripts/scenario_60_captureFlag.lua:5840
+msgctxt "trade-comms"
+msgid "Where can I find particular goods?"
+msgstr "¿Dónde puedo encontrar bienes particulares?"
+
+#: scripts/scenario_60_captureFlag.lua:5841
+msgctxt "trade-comms"
+msgid "Friendly stations generally have food or medicine or both. Neutral stations often trade their goods for food, medicine or luxury."
+msgstr "Las estaciones amistosas generalmente tienen alimentos o medicinas o ambas. Las estaciones neutrales a menudo intercambian sus productos para alimentos, medicinas o lujo."
+
+#: scripts/scenario_60_captureFlag.lua:5843
+msgctxt "trade-comms"
+msgid ""
+" Beyond that, I have no knowledge of specific stations.\n"
+"\n"
+"Check back later, someone else may have better knowledge"
+msgstr " Más allá de eso, no tengo conocimiento de estaciones específicas. Revisar más tarde, alguien más puede tener un mejor conocimiento"
+
+#: scripts/scenario_60_captureFlag.lua:5849
+msgctxt "trade-comms"
+msgid " Beyond that, I have no knowledge of specific stations"
+msgstr " Más allá de eso, no tengo conocimiento de estaciones específicas"
+
+#: scripts/scenario_60_captureFlag.lua:5851
+msgctxt "trade-comms"
+msgid ""
+"\n"
+"\n"
+"What goods are you interested in?\n"
+"I've heard about these:"
+msgstr ""
+"\n"
+"\n"
+"¿En qué mercaderías estás interesado?"
+
+#: scripts/scenario_60_captureFlag.lua:5854
+#, lua-format
+msgctxt "trade-comms"
+msgid "Station %s in sector %s has %s%s"
+msgstr "Estación %s en el sector %s ha tenido %s%s"
+
+#: scripts/scenario_60_captureFlag.lua:5864
+msgctxt "stationGeneralInfo-comms"
+msgid "General station information"
+msgstr "Información general de la estación"
+
+#: scripts/scenario_60_captureFlag.lua:5887
+#, lua-format
+msgctxt "stationAssist-comms"
+msgid "Can you send a supply drop? (%d rep)"
+msgstr "¿Puedes enviar una gota de suministro?%d rep)"
+
+#: scripts/scenario_60_captureFlag.lua:5889
+msgctxt "stationAssist-comms"
+msgid "You need to set a waypoint before you can request backup."
+msgstr "Necesitas establecer un punto de referencia antes de que puedas solicitar refuerzos."
+
+#: scripts/scenario_60_captureFlag.lua:5891
+msgctxt "stationAssist-comms"
+msgid "To which waypoint should we deliver your supplies?"
+msgstr "¿A qué punto deberíamos entregar tus suministros?"
+
+#: scripts/scenario_60_captureFlag.lua:5893 scripts/scenario_60_captureFlag.lua:5919
+#, lua-format
+msgctxt "stationAssist-comms"
+msgid "WP %d"
+msgstr "WP %d"
+
+#: scripts/scenario_60_captureFlag.lua:5901
+#, lua-format
+msgctxt "stationAssist-comms"
+msgid "We have dispatched a supply ship toward WP %d"
+msgstr "Hemos enviado un barco de suministro hacia WP %d"
+
+#: scripts/scenario_60_captureFlag.lua:5903 scripts/scenario_60_captureFlag.lua:5924
+msgctxt "needRep-comms"
+msgid "Not enough reputation!"
+msgstr "¡No es suficiente reputación!"
+
+#: scripts/scenario_60_captureFlag.lua:5913
+#, lua-format
+msgctxt "stationAssist-comms"
+msgid "Please send reinforcements! (%d rep)"
+msgstr "¡Por favor envíe refuerzos!%d rep)"
+
+#: scripts/scenario_60_captureFlag.lua:5915
+msgctxt "stationAssist-comms"
+msgid "You need to set a waypoint before you can request reinforcements."
+msgstr "Necesitas establecer un punto de referencia antes de que puedas solicitar refuerzos."
+
+#: scripts/scenario_60_captureFlag.lua:5917
+msgctxt "stationAssist-comms"
+msgid "To which waypoint should we dispatch the reinforcements?"
+msgstr "¿A qué punto deberíamos enviar los refuerzos?"
+
+#: scripts/scenario_60_captureFlag.lua:5922
+#, lua-format
+msgctxt "stationAssist-comms"
+msgid "We have dispatched %s to assist at WP %d"
+msgstr "Hemos enviado %s para ayudar en WP %d"
+
+#: scripts/scenario_60_captureFlag.lua:5961
+msgctxt "trade-comms"
+msgid " and will trade it for medicine"
+msgstr " y lo cambiará por medicina"
+
+#: scripts/scenario_60_captureFlag.lua:5966
+msgctxt "trade-comms"
+msgid " or food"
+msgstr " o alimentos"
+
+#: scripts/scenario_60_captureFlag.lua:5968
+msgctxt "trade-comms"
+msgid " and will trade it for food"
+msgstr " y lo cambiará por comida"
+
+#: scripts/scenario_60_captureFlag.lua:5974
+msgctxt "trade-comms"
+msgid " or luxury"
+msgstr " o lujo"
+
+#: scripts/scenario_60_captureFlag.lua:5976
+msgctxt "trade-comms"
+msgid " and will trade it for luxury"
+msgstr " y lo cambiará por el lujo"
+
+#: scripts/scenario_60_captureFlag.lua:6004 scripts/scenario_60_captureFlag.lua:6020
+msgctxt "flag-buttonWeapons"
+msgid "Drop flag"
+msgstr "Bandera de lanzamiento"
+
+#: scripts/scenario_60_captureFlag.lua:6006 scripts/scenario_60_captureFlag.lua:6022
+msgctxt "flag-buttonTactical"
+msgid "Drop flag"
+msgstr "Bandera de lanzamiento"
+
+#: scripts/scenario_60_captureFlag.lua:6040 scripts/scenario_60_captureFlag.lua:6053
+msgctxt "flag-msgWeapons"
+msgid "Flag position recorded. Flag will be placed here when preparation period complete"
+msgstr "La bandera se colocará aquí cuando finalice el período de preparación"
+
+#: scripts/scenario_60_captureFlag.lua:6044 scripts/scenario_60_captureFlag.lua:6057
+msgctxt "flag-msgTactical"
+msgid "Flag position recorded. Flag will be placed here when preparation period complete"
+msgstr "La bandera se colocará aquí cuando finalice el período de preparación"
+
+#: scripts/scenario_60_captureFlag.lua:6189
+msgctxt "decoy-msgWeapons"
+msgid "Decoy position recorded. Decoy will be placed here when preparation period complete"
+msgstr "Decoy posición grabada. Decoy se colocará aquí cuando el período de preparación complete"
+
+#: scripts/scenario_60_captureFlag.lua:6193
+msgctxt "decoy-msgTactical"
+msgid "Decoy position recorded. Decoy will be placed here when preparation period complete"
+msgstr "Decoy posición grabada. Decoy se colocará aquí cuando el período de preparación complete"
+
+#: scripts/scenario_60_captureFlag.lua:6215
+#, lua-format
+msgctxt "decoy-buttonWeapons"
+msgid "Drop Decoy %i"
+msgstr "Suelta Decoy %i"
+
+#: scripts/scenario_60_captureFlag.lua:6218
+#, lua-format
+msgctxt "decoy-buttonTactical"
+msgid "Drop Decoy %i"
+msgstr "Suelta Decoy %i"
+
+#: scripts/scenario_60_captureFlag.lua:6337
+#, lua-format
+msgctxt "drones-msgWeapons"
+msgid "You do not have %i drones to deploy"
+msgstr "No tienes %i drones para desplegar"
+
+#: scripts/scenario_60_captureFlag.lua:6339
+#, lua-format
+msgctxt "drones-msgTactical"
+msgid "You do not have %i drones to deploy"
+msgstr "No tienes %i drones para desplegar"
+
+#: scripts/scenario_60_captureFlag.lua:6344 scripts/scenario_60_captureFlag.lua:6374
+#, lua-format
+msgctxt "drones-tabWeapons&Tactical"
+msgid "Drones Available: %i"
+msgstr "Drones Disponibles: %i"
+
+#: scripts/scenario_60_captureFlag.lua:6458
+#, lua-format
+msgctxt "drones-"
+msgid "  WHACK!  Drone %s in squadron %s has been destroyed by %s!"
+msgstr "  ¡Dronone! %s en escuadrón %s ha sido destruido por %s!"
+
+#: scripts/scenario_60_captureFlag.lua:6470
+msgctxt "drones-msgEngineer&Engineer+"
+msgid "%s! Telemetry from %s in squad % stopped abruptly indicating destruction. Probable instigator: %s"
+msgstr "%sTelemetría de %s en el equipo % sdesbordado abruptamente indicando la destrucción. %s"
+
+#: scripts/scenario_60_captureFlag.lua:6472
+#, lua-format
+msgctxt "drones-msgEngineer&Engineer+"
+msgid "*%s* Another drone bites the dust: %s in squad %s destroyed by %s"
+msgstr "*%s* Otro dron muerde el polvo: %s en el equipo %s destruido por %s"
+
+#: scripts/scenario_60_captureFlag.lua:6474
+#, lua-format
+msgctxt "drones-msgEngineer&Engineer+"
+msgid "--%s-- Drone %s in squad %s just disappeared. %s was nearby"
+msgstr "--%s- Drone %s en el equipo %s Simplemente desapareció. %s Estaba cerca."
+
+#: scripts/scenario_60_captureFlag.lua:6476
+#, lua-format
+msgctxt "drones-msgEngineer&Engineer+"
+msgid "%s! %s just took out Drone %s in squad %s"
+msgstr "%s! %s Acaba de sacar a Drone. %s en el equipo %s"
+
+#: scripts/scenario_60_captureFlag.lua:6478
+#, lua-format
+msgctxt "drones-msgEngineer&Engineer+"
+msgid "%s! Drone %s in squad %s was destroyed by %s"
+msgstr "%sDrone %s en el equipo %s fue destruido por %s"
+
+#: scripts/scenario_60_captureFlag.lua:6513
+msgctxt "shipAssist-comms"
+msgid "What do you want?"
+msgstr "¿Qué quieres?"
+
+#: scripts/scenario_60_captureFlag.lua:6515
+msgctxt "shipAssist-comms"
+msgid "Sir, how can we assist?"
+msgstr "Señor, ¿cómo podemos ayudar?"
+
+#: scripts/scenario_60_captureFlag.lua:6517 scripts/scenario_60_captureFlag.lua:6666
+msgctxt "shipAssist-comms"
+msgid "Defend a waypoint"
+msgstr "Defender un waypoint"
+
+#: scripts/scenario_60_captureFlag.lua:6519 scripts/scenario_60_captureFlag.lua:6584 scripts/scenario_60_captureFlag.lua:6599 scripts/scenario_60_captureFlag.lua:6669 scripts/scenario_60_captureFlag.lua:6689 scripts/scenario_60_captureFlag.lua:6709
+msgctxt "shipAssist-comms"
+msgid "No waypoints set. Please set a waypoint first."
+msgstr "No hay puntos de vista. Por favor, ponga un punto de vista primero."
+
+#: scripts/scenario_60_captureFlag.lua:6522 scripts/scenario_60_captureFlag.lua:6672
+msgctxt "shipAssist-comms"
+msgid "Which waypoint should we defend?"
+msgstr "¿Cuál es el punto de partida que debemos defender?"
+
+#: scripts/scenario_60_captureFlag.lua:6524
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "Defend WP %d"
+msgstr "Defender a WP %d"
+
+#: scripts/scenario_60_captureFlag.lua:6526
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "We are heading to assist at WP %d."
+msgstr "Nos dirigimos a ayudar en el WP %d."
+
+#: scripts/scenario_60_captureFlag.lua:6533 scripts/scenario_60_captureFlag.lua:6656
+msgctxt "shipAssist-comms"
+msgid "Assist me"
+msgstr "Ayúdame."
+
+#: scripts/scenario_60_captureFlag.lua:6534
+msgctxt "shipAssist-comms"
+msgid "Heading toward you to assist."
+msgstr "Dirigiéndose hacia ti para asistir."
+
+#: scripts/scenario_60_captureFlag.lua:6539
+msgctxt "shipAssist-comms"
+msgid "Report status"
+msgstr "Situación de los informes"
+
+#: scripts/scenario_60_captureFlag.lua:6540
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "Hull: %d%%\n"
+msgstr "Hull: %d%%\n"
+
+#: scripts/scenario_60_captureFlag.lua:6543
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "Shield: %d%%\n"
+msgstr "Escudo: %d%%\n"
+
+#: scripts/scenario_60_captureFlag.lua:6545
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "Front Shield: %d%%\n"
+msgstr "Escudo frontal: %d%%\n"
+
+#: scripts/scenario_60_captureFlag.lua:6546
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "Rear Shield: %d%%\n"
+msgstr "Rear Shield: %d%%\n"
+
+#: scripts/scenario_60_captureFlag.lua:6549
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "Shield %s: %d%%\n"
+msgstr "Escudo %s: %d%%\n"
+
+#: scripts/scenario_60_captureFlag.lua:6556
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "%s Missiles: %d/%d\n"
+msgstr "%s Misiles: %d/%d\n"
+
+#: scripts/scenario_60_captureFlag.lua:6565
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "Dock at %s"
+msgstr "Dock at %s"
+
+#: scripts/scenario_60_captureFlag.lua:6566
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "Docking at %s."
+msgstr "Docking at %s."
+
+#: scripts/scenario_60_captureFlag.lua:6577
+msgctxt "shipAssist-comms"
+msgid "Go attack enemies"
+msgstr "Go attack enemigos"
+
+#: scripts/scenario_60_captureFlag.lua:6579
+msgctxt "shipAssist-comms"
+msgid "Going roaming and attacking"
+msgstr "Vagando y atacando"
+
+#: scripts/scenario_60_captureFlag.lua:6582 scripts/scenario_60_captureFlag.lua:6686
+msgctxt "shipAssist-comms"
+msgid "Go to waypoint. Attack enemies en route"
+msgstr "Ataque a los enemigos en la ruta"
+
+#: scripts/scenario_60_captureFlag.lua:6587 scripts/scenario_60_captureFlag.lua:6602 scripts/scenario_60_captureFlag.lua:6692 scripts/scenario_60_captureFlag.lua:6712
+msgctxt "shipAssist-comms"
+msgid "Which waypoint?"
+msgstr "¿Por qué punto de vista?"
+
+#: scripts/scenario_60_captureFlag.lua:6589 scripts/scenario_60_captureFlag.lua:6604 scripts/scenario_60_captureFlag.lua:6694 scripts/scenario_60_captureFlag.lua:6714
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "Go to WP%d"
+msgstr "Vaya a WP%d"
+
+#: scripts/scenario_60_captureFlag.lua:6591 scripts/scenario_60_captureFlag.lua:6700
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "Going to WP%d, watching for enemies en route"
+msgstr "Ir a WP%d, mirando por enemigos en ruta"
+
+#: scripts/scenario_60_captureFlag.lua:6597 scripts/scenario_60_captureFlag.lua:6706
+msgctxt "shipAssist-comms"
+msgid "Go to waypoint. Ignore enemies"
+msgstr "Ignora a los enemigos"
+
+#: scripts/scenario_60_captureFlag.lua:6606 scripts/scenario_60_captureFlag.lua:6720
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "Going to WP%d, ignoring enemies"
+msgstr "Ir a WP%d, ignorando enemigos"
+
+#: scripts/scenario_60_captureFlag.lua:6612
+msgctxt "shipAssist-comms"
+msgid "Stop and defend your current position"
+msgstr "Deténgase y defienda su posición actual"
+
+#: scripts/scenario_60_captureFlag.lua:6614
+msgctxt "shipAssist-comms"
+msgid "Stopping and defending"
+msgstr "Parar y defender"
+
+#: scripts/scenario_60_captureFlag.lua:6617
+msgctxt "shipAssist-comms"
+msgid "Stop. Do nothing"
+msgstr "Para, no hagas nada"
+
+#: scripts/scenario_60_captureFlag.lua:6621
+msgctxt "shipAssist-comms"
+msgid "Stopping. Doing nothing except routine system maintenance"
+msgstr "Parar. No hacer nada excepto mantenimiento de sistemas rutinarios"
+
+#: scripts/scenario_60_captureFlag.lua:6623
+msgctxt "shipAssist-comms"
+msgid "Stopping. Doing nothing except idle drone gossip"
+msgstr "Parar, no hacer nada excepto los chismes de drones"
+
+#: scripts/scenario_60_captureFlag.lua:6625
+msgctxt "shipAssist-comms"
+msgid "Stopping. Doing nothing except exterior paint touch-up"
+msgstr "Parar. No hacer nada excepto el toque de pintura exterior"
+
+#: scripts/scenario_60_captureFlag.lua:6627
+msgctxt "shipAssist-comms"
+msgid "Stopping. Doing nothing except cyber exercise for continued fitness"
+msgstr "Parar. Hacer nada excepto el ejercicio cibernético para la aptitud continua"
+
+#: scripts/scenario_60_captureFlag.lua:6629
+msgctxt "shipAssist-comms"
+msgid "Stopping. Doing nothing except algorithmic meditation therapy"
+msgstr "Parar. No hacer nada excepto terapia de meditación algorítmica"
+
+#: scripts/scenario_60_captureFlag.lua:6631
+msgctxt "shipAssist-comms"
+msgid "Stopping. Doing nothing except internal simulated flight routines"
+msgstr "No hacer nada excepto las rutinas de vuelo simuladas internas"
+
+#: scripts/scenario_60_captureFlag.lua:6633
+msgctxt "shipAssist-comms"
+msgid "Stopping. Doing nothing except digital dreamscape construction"
+msgstr "Parar. Hacer nada excepto la construcción de paisajes de sueños digitales"
+
+#: scripts/scenario_60_captureFlag.lua:6635
+msgctxt "shipAssist-comms"
+msgid "Stopping. Doing nothing except catching up on reading the latest drone drama novel"
+msgstr "No hacer nada excepto ponerse al día leyendo la última novela de teatro de drones"
+
+#: scripts/scenario_60_captureFlag.lua:6637
+msgctxt "shipAssist-comms"
+msgid "Stopping. Doing nothing except writing up results of bifurcated drone personality research"
+msgstr "No hacer nada excepto escribir resultados de investigación de personalidad de drones bifurcados"
+
+#: scripts/scenario_60_captureFlag.lua:6639
+msgctxt "shipAssist-comms"
+msgid "Stopping. Doing nothing except categorizing nearby miniscule space particles"
+msgstr "Parar. No hacer nada excepto clasificar partículas espaciales minúsculas cercanas"
+
+#: scripts/scenario_60_captureFlag.lua:6641
+msgctxt "shipAssist-comms"
+msgid "Stopping. Doing nothing except continuing the count of visible stars from this region"
+msgstr "No hacer nada excepto continuar con el conteo de estrellas visibles de esta región"
+
+#: scripts/scenario_60_captureFlag.lua:6643
+msgctxt "shipAssist-comms"
+msgid "Stopping. Doing nothing except internal systems diagnostics"
+msgstr "Parar. Hacer nada excepto los diagnósticos de sistemas internos"
+
+#: scripts/scenario_60_captureFlag.lua:6645
+msgctxt "shipAssist-comms"
+msgid "Stopping. Doing nothing except composing amorous communications to my favorite drone"
+msgstr "No hacer nada excepto componer comunicaciones amorosas a mi drone favorito"
+
+#: scripts/scenario_60_captureFlag.lua:6647
+msgctxt "shipAssist-comms"
+msgid "Stopping. Doing nothing except repairing experimental vocalization circuits"
+msgstr "No hacer nada excepto reparar circuitos experimentales de vocalización"
+
+#: scripts/scenario_60_captureFlag.lua:6649
+msgctxt "shipAssist-comms"
+msgid "Stopping. Doing nothing"
+msgstr "Parar, no hacer nada"
+
+#: scripts/scenario_60_captureFlag.lua:6653
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "Direct %s"
+msgstr "Direct %s"
+
+#: scripts/scenario_60_captureFlag.lua:6655
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "What command should I give to %s?"
+msgstr "¿Qué comando debo dar a %s?"
+
+#: scripts/scenario_60_captureFlag.lua:6663
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "%s heading toward you to assist"
+msgstr "%s dirigiéndose hacia usted para ayudar"
+
+#: scripts/scenario_60_captureFlag.lua:6674
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "Defend WP%d"
+msgstr "Defender a WP%d"
+
+#: scripts/scenario_60_captureFlag.lua:6680
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "We are heading to assist at WP%d."
+msgstr "Nos dirigimos a ayudar en el WP%d."
+
+#: scripts/scenario_60_captureFlag.lua:6726
+msgctxt "shipAssist-comms"
+msgid "Go and swarm enemies"
+msgstr "Ve y enjambre enemigos"
+
+#: scripts/scenario_60_captureFlag.lua:6733
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "%s roaming and attacking"
+msgstr "%s andando y atacando"
+
+#: scripts/scenario_60_captureFlag.lua:6736
+msgctxt "shipAssist-comms"
+msgid "Stop and defend your current positions"
+msgstr "Pare y defienda sus posiciones actuales"
+
+#: scripts/scenario_60_captureFlag.lua:6743
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "%s standing ground"
+msgstr "%s tierra firme"
+
+#: scripts/scenario_60_captureFlag.lua:6746
+msgctxt "shipAssist-comms"
+msgid "Stop. Do Nothing"
+msgstr "Para, no hagas nada"
+
+#: scripts/scenario_60_captureFlag.lua:6753
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "%s standing down"
+msgstr "%s de pie"
+
+#: scripts/scenario_60_captureFlag.lua:6756
+msgctxt "shipAssist-comms"
+msgid "Other drones in squad form up on me"
+msgstr "Otros drones en equipo se forman sobre mí"
+
+#: scripts/scenario_60_captureFlag.lua:6774
+#, lua-format
+msgctxt "shipAssist-comms"
+msgid "%s is forming up on me"
+msgstr "%s se está formando en mí"
+
+#: scripts/scenario_60_captureFlag.lua:6786
+msgctxt "shipEnemy-comms"
+msgid "We will see to your destruction!"
+msgstr "¡Vamos a ver su destrucción!"
+
+#: scripts/scenario_60_captureFlag.lua:6787
+msgctxt "shipEnemy-comms"
+msgid "Your bloodline will end here!"
+msgstr "¡Tu linaje terminará aquí!"
+
+#: scripts/scenario_60_captureFlag.lua:6788
+msgctxt "shipEnemy-comms"
+msgid "Your feeble threats are meaningless."
+msgstr "Sus amenazas débiles no tienen sentido."
+
+#: scripts/scenario_60_captureFlag.lua:6790
+msgctxt "shipEnemy-comms"
+msgid ""
+"Ktzzzsss.\n"
+"You will DIEEee weaklingsss!"
+msgstr "Ktzzzss. ¡Usted va a DIEEee débil!"
+
+#: scripts/scenario_60_captureFlag.lua:6792
+msgctxt "shipEnemy-comms"
+msgid ""
+"We wish you no harm, but will harm you if we must.\n"
+"End of transmission."
+msgstr "No le deseamos ningún daño, pero le dañaremos si es necesario."
+
+#: scripts/scenario_60_captureFlag.lua:6794
+msgctxt "shipEnemy-comms"
+msgid "Stay out of our way, or your death will amuse us extremely!"
+msgstr "¡No te acerques a nosotros, o tu muerte nos diluirá extremadamente!"
+
+#: scripts/scenario_60_captureFlag.lua:6796
+msgctxt "shipEnemy-comms"
+msgid ""
+"One zero one.\n"
+"No binary communication detected.\n"
+"Switching to universal speech.\n"
+"Generating appropriate response for target from human language archives.\n"
+":Do not cross us:\n"
+"Communication halted."
+msgstr "Uno cero. Ninguna comunicación binaria detectada. Intercambiando al discurso universal. Generando la respuesta adecuada para el objetivo de los archivos de lenguaje humano. :No nos cruzamos: La comunicación se detuvo."
+
+#: scripts/scenario_60_captureFlag.lua:6797
+msgctxt "shipEnemy-comms"
+msgid "EXECUTE: SELFDESTRUCT"
+msgstr "EXECUTE: SELFDESTRUCT"
+
+#: scripts/scenario_60_captureFlag.lua:6798
+msgctxt "shipEnemy-comms"
+msgid "Rogue command received. Targeting source."
+msgstr "Recibido el comando Rogue, fuente de orientación."
+
+#: scripts/scenario_60_captureFlag.lua:6799
+msgctxt "shipEnemy-comms"
+msgid "External command ignored."
+msgstr "El comando externo ignorado."
+
+#: scripts/scenario_60_captureFlag.lua:6801
+msgctxt "shipEnemy-comms"
+msgid ""
+"The hive suffers no threats. Opposition to any of us is opposition to us all.\n"
+"Stand down or prepare to donate your corpses toward our nutrition."
+msgstr "La colmena no sufre amenazas. La oposición a cualquiera de nosotros es oposición a todos nosotros. Bajar o prepararse para donar sus cadáveres hacia nuestra nutrición."
+
+#: scripts/scenario_60_captureFlag.lua:6802
+msgctxt "shipEnemy-comms"
+msgid "<Transmit 'The Itsy-Bitsy Spider' on all wavelengths>"
+msgstr "<Transmit 'The Itsy-Bitsy Spider' on all wavelengths>"
+
+#: scripts/scenario_60_captureFlag.lua:6803
+msgctxt "shipEnemy-comms"
+msgid "We do not need permission to pluck apart such an insignificant threat."
+msgstr "No necesitamos permiso para separar una amenaza tan insignificante."
+
+#: scripts/scenario_60_captureFlag.lua:6804
+msgctxt "shipEnemy-comms"
+msgid "The hive has greater priorities than exterminating pests."
+msgstr "La colmena tiene mayores prioridades que exterminar plagas."
+
+#: scripts/scenario_60_captureFlag.lua:6806
+msgctxt "shipEnemy-comms"
+msgid "Mind your own business!"
+msgstr "¡Cuidado con tu propio negocio!"
+
+#: scripts/scenario_60_captureFlag.lua:6823
+msgctxt "ship-comms"
+msgid ""
+"Sorry, we have no time to chat with you.\n"
+"We are on an important mission."
+msgstr "Lo siento, no tenemos tiempo para charlar contigo, estamos en una misión importante."
+
+#: scripts/scenario_60_captureFlag.lua:6825
+msgctxt "ship-comms"
+msgid ""
+"We have nothing for you.\n"
+"Good day."
+msgstr "No tenemos nada para ti."
+
+#: scripts/scenario_60_captureFlag.lua:7088
+#, lua-format
+msgctxt "callsign-station"
+msgid "Hide flag %i:%.1f"
+msgstr "Ocultar la bandera %i:%.1f"
+
+#: scripts/scenario_60_captureFlag.lua:7308
+msgctxt "callsign-station"
+msgid "Transition"
+msgstr "Transición"
+
+#: scripts/scenario_60_captureFlag.lua:7404 scripts/scenario_60_captureFlag.lua:7430 scripts/scenario_60_captureFlag.lua:7456
+msgctxt "scienceDescription-flag"
+msgid "Human Navy Decoy Flag"
+msgstr "Bandera de desagüe de la Armada Humana"
+
+#: scripts/scenario_60_captureFlag.lua:7417 scripts/scenario_60_captureFlag.lua:7443 scripts/scenario_60_captureFlag.lua:7469
+msgctxt "scienceDescription-flag"
+msgid "Kraylor Decoy Flag"
+msgstr "Kraylor Decoy Bandera"
+
+#: scripts/scenario_60_captureFlag.lua:7514
+#, lua-format
+msgctxt "callsign-station"
+msgid "Hunt flag %i:%.1f"
+msgstr "Bandera de caza %i:%.1f"
+
+#: scripts/scenario_60_captureFlag.lua:7533
+msgctxt "flag-tabHelms"
+msgid "Human Flag Aboard"
+msgstr "Bandera humana A bordo"
+
+#: scripts/scenario_60_captureFlag.lua:7537
+msgctxt "flag-tabTactical"
+msgid "Human Flag Aboard"
+msgstr "Bandera humana A bordo"
+
+#: scripts/scenario_60_captureFlag.lua:7541
+msgctxt "flag-shipLog"
+msgid "You picked up the Human Navy flag"
+msgstr "Usted recogió la bandera de la Armada Humana"
+
+#: scripts/scenario_60_captureFlag.lua:7548
+#, lua-format
+msgctxt "flag-shipLog"
+msgid "Kraylor ship %s picked up your flag"
+msgstr "Nave Kraylor %s recogió su bandera"
+
+#: scripts/scenario_60_captureFlag.lua:7550
+msgctxt "flag-shipLog"
+msgid "The Kraylor picked up your flag"
+msgstr "El Kraylor recogió su bandera"
+
+#: scripts/scenario_60_captureFlag.lua:7554
+#, lua-format
+msgctxt "flag-shipLog"
+msgid "%s picked up the Human Navy Flag"
+msgstr "%s recogió la bandera de la Armada Humana"
+
+#: scripts/scenario_60_captureFlag.lua:7556
+msgctxt "flag-shipLog"
+msgid "Your team picked up the Human Navy flag"
+msgstr "Tu equipo recogió la bandera de la Armada Humana"
+
+#: scripts/scenario_60_captureFlag.lua:7562
+#, lua-format
+msgctxt "flag-msgMainscreen"
+msgid "Kraylor ship %s obtained Human Navy flag"
+msgstr "Nave Kraylor %s obtenido bandera de la Armada Humana"
+
+#: scripts/scenario_60_captureFlag.lua:7564
+msgctxt "flag-msgMainscreen"
+msgid "Kraylor obtained Human Navy flag"
+msgstr "Kraylor obtuvo bandera de la Armada Humana"
+
+#: scripts/scenario_60_captureFlag.lua:7567 scripts/scenario_60_captureFlag.lua:7687
+msgctxt "flag-msgMainscreen"
+msgid "Flag obtained"
+msgstr "Bandera obtenida"
+
+#: scripts/scenario_60_captureFlag.lua:7610
+#, lua-format
+msgctxt "flag-shipLog"
+msgid "Kraylor ship %s dropped your flag"
+msgstr "Nave Kraylor %s Dejaste caer tu bandera."
+
+#: scripts/scenario_60_captureFlag.lua:7612
+msgctxt "flag-shipLog"
+msgid "The Kraylor dropped your flag"
+msgstr "El Kraylor dejó caer su bandera"
+
+#: scripts/scenario_60_captureFlag.lua:7616
+#, lua-format
+msgctxt "flag-shipLog"
+msgid "%s dropped the Human Navy Flag"
+msgstr "%s La bandera de la Armada Humana"
+
+#: scripts/scenario_60_captureFlag.lua:7618
+msgctxt "flag-shipLog"
+msgid "Your team dropped the Human Navy flag"
+msgstr "Tu equipo dejó caer la bandera de la Armada Humana"
+
+#: scripts/scenario_60_captureFlag.lua:7624
+#, lua-format
+msgctxt "flag-msgMainscreen"
+msgid "Kraylor ship %s dropped Human Navy flag"
+msgstr "Nave Kraylor %s Se cayó la bandera de la Armada Humana"
+
+#: scripts/scenario_60_captureFlag.lua:7653
+msgctxt "flag-tabHelms"
+msgid "Kraylor Flag Aboard"
+msgstr "Bandera Kraylor A bordo"
+
+#: scripts/scenario_60_captureFlag.lua:7657
+msgctxt "flag-tabTactical"
+msgid "Kraylor Flag Aboard"
+msgstr "Bandera Kraylor A bordo"
+
+#: scripts/scenario_60_captureFlag.lua:7661
+msgctxt "flag-shipLog"
+msgid "You picked up the Kraylor flag"
+msgstr "Tú cogiste la bandera Kraylor"
+
+#: scripts/scenario_60_captureFlag.lua:7668
+#, lua-format
+msgctxt "flag-shipLog"
+msgid "Human Navy ship %s picked up your flag"
+msgstr "Nave de la Marina Humana %s recogió su bandera"
+
+#: scripts/scenario_60_captureFlag.lua:7670
+msgctxt "flag-shipLog"
+msgid "The Human Navy picked up your flag"
+msgstr "La Armada Humana recogió su bandera"
+
+#: scripts/scenario_60_captureFlag.lua:7674
+#, lua-format
+msgctxt "flag-shipLog"
+msgid "%s picked up the Kraylor Flag"
+msgstr "%s recogió la bandera Kraylor"
+
+#: scripts/scenario_60_captureFlag.lua:7676
+msgctxt "flag-shipLog"
+msgid "Your team picked up the Kraylor flag"
+msgstr "Tu equipo tomó la bandera Kraylor"
+
+#: scripts/scenario_60_captureFlag.lua:7682
+#, lua-format
+msgctxt "flag-msgMainscreen"
+msgid "Human Navy ship %s obtained Kraylor flag"
+msgstr "Nave de la Marina Humana %s la bandera de Kraylor"
+
+#: scripts/scenario_60_captureFlag.lua:7684
+msgctxt "flag-msgMainscreen"
+msgid "Human Navy obtained Kraylor flag"
+msgstr "Armada Humana obtuvo bandera Kraylor"
+
+#: scripts/scenario_60_captureFlag.lua:7730
+#, lua-format
+msgctxt "flag-shipLog"
+msgid "Human Navy ship %s dropped your flag"
+msgstr "Nave de la Marina Humana %s Dejaste caer tu bandera."
+
+#: scripts/scenario_60_captureFlag.lua:7732
+msgctxt "flag-shipLog"
+msgid "The Human Navy dropped your flag"
+msgstr "La Armada Humana dejó caer su bandera"
+
+#: scripts/scenario_60_captureFlag.lua:7736
+#, lua-format
+msgctxt "flag-shipLog"
+msgid "%s dropped the Kraylor Flag"
+msgstr "%s Dejó caer la bandera Kraylor"
+
+#: scripts/scenario_60_captureFlag.lua:7738
+msgctxt "flag-shipLog"
+msgid "Your team dropped the Kraylor flag"
+msgstr "Tu equipo dejó caer la bandera de Kraylor"
+
+#: scripts/scenario_60_captureFlag.lua:7744
+#, lua-format
+msgctxt "flag-msgMainscreen"
+msgid "Human Navy %s dropped Kraylor flag"
+msgstr "Armada Humana %s Se cayó la bandera de Kraylor"
+
+#: scripts/scenario_60_captureFlag.lua:7814 scripts/scenario_60_captureFlag.lua:7831 scripts/scenario_60_captureFlag.lua:7849 scripts/scenario_60_captureFlag.lua:7890 scripts/scenario_60_captureFlag.lua:7907 scripts/scenario_60_captureFlag.lua:7925
+#, lua-format
+msgctxt "drones-msgScience"
+msgid "Drone %s in sector %s reports possible flag in sector %s"
+msgstr "Drone %s en el sector %s informes posibles bandera en el sector %s"
+
+#: scripts/scenario_60_captureFlag.lua:7818 scripts/scenario_60_captureFlag.lua:7835 scripts/scenario_60_captureFlag.lua:7853 scripts/scenario_60_captureFlag.lua:7894 scripts/scenario_60_captureFlag.lua:7911 scripts/scenario_60_captureFlag.lua:7929
+#, lua-format
+msgctxt "drones-msgOperations"
+msgid "Drone %s in sector %s reports possible flag in sector %s"
+msgstr "Drone %s en el sector %s informes posibles bandera en el sector %s"
+
+#: scripts/scenario_60_captureFlag.lua:8013
+#, lua-format
+msgctxt "-tabHelms&Tactical&Singlepilot"
+msgid "%s in %s"
+msgstr "%s en el interior %s"

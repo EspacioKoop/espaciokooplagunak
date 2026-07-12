@@ -24,6 +24,7 @@
  */
 
 import { BridgeClient, BridgeError } from "./bridge-client.mjs";
+import { processBridgeEvents } from "./event-journal.mjs";
 
 const MODULE_ID = "espaciokoop-lagunak";
 const POLL_MIN_S = 1;
@@ -173,6 +174,12 @@ function crearClaseV2() {
         const cliente = this.#cliente();
         await cliente.healthz();
         this.ultimoEstado = await cliente.state();
+        await processBridgeEvents({
+          payload: await cliente.events(),
+          game,
+          JournalEntry,
+          ui,
+        });
         this.conexion = "ok";
         this.detalleError = "";
         this.#fallosSeguidos = 0;
@@ -311,6 +318,12 @@ function crearClaseV1() {
         const cliente = this.#cliente();
         await cliente.healthz();
         this.ultimoEstado = await cliente.state();
+        await processBridgeEvents({
+          payload: await cliente.events(),
+          game,
+          JournalEntry,
+          ui,
+        });
         this.conexion = "ok";
         this.detalleError = "";
         this.#fallosSeguidos = 0;

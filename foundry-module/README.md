@@ -54,6 +54,9 @@ El token no aparece en logs ni en mensajes de error.
    60 s) y se recupera solo al volver el puente.
 4. «Anotar estado» escribe una página con el estado actual en el diario
    «Bitácora de la nave» (lo crea si no existe).
+5. Al llegar a Argia en «Primera Guardia», el módulo recibe por polling un
+   evento normalizado y crea automáticamente una página de llegada. El flag
+   `eventId` evita duplicados al reabrir la ventana o reconectar.
 
 ## Estado de verificación
 
@@ -62,6 +65,8 @@ El token no aparece en logs ni en mensajes de error.
 - `bridge-client.mjs` ejercitado desde Node contra el puente real del compose
   (healthz, state, 401 sin token, timeout y error de red) — es ESM puro sin
   dependencias de Foundry precisamente para eso.
+- Tests Node cubren `/v1/events`, validación cerrada del evento y
+  deduplicación persistente en Journal.
 - **Manifiesto validado con el propio parser de Foundry v11.302**
   (`BaseModule`, modo estricto): sin errores de contenido. Foundry v11.302
   arranca limpio con el módulo instalado (symlink en `Data/modules`), sin

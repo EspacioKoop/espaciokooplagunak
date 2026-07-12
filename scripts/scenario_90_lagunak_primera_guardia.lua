@@ -19,6 +19,7 @@ function init()
     timer = 0
     briefEnviado = false
     cierreTimer = 5.0
+    eventoLlegadaId = string.format("%06d", math.random(0, 999999))
 
     estacionLagunak = SpaceStation()
         :setTemplate("Medium Station")
@@ -54,6 +55,15 @@ function init()
         :setPosition(15000, -7500):orderDefendLocation(14000, -8000))
 
     fase = "guardia"
+end
+
+function publicarEventoLlegada()
+    local x, y = player:getPosition()
+    marcadorEventoLlegada = Artifact()
+        :setPosition(x, y)
+        :setCallSign("LAGUNAK_EVT_arrival_s90_" .. eventoLlegadaId)
+        :setRadarSignatureInfo(0, 0, 0)
+        :allowPickup(false)
 end
 
 function enviarBrief()
@@ -95,6 +105,7 @@ function update(delta)
             victory("Exuari")
         elseif distance(player, estacionArgia) < 1500 then
             fase = "completada"
+            publicarEventoLlegada()
         end
     elseif fase == "completada" then
         finCompletada(delta)

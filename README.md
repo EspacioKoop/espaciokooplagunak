@@ -13,9 +13,11 @@
 
 ## Estado del proyecto
 
-**Fase actual: 0 — preparación del fork.**
+**Fase actual: 3 — integración prioritaria con Foundry VTT.**
 
-Espaciokoop Lagunak conserva el código y el historial de EmptyEpsilon y añade, por ahora, la base documental y colaborativa del fork. Todavía no se han publicado funcionalidades jugables propias ni se ha certificado una compilación local de este fork.
+Espaciokoop Lagunak conserva el código y el historial de EmptyEpsilon y ya
+dispone de escenario propio, compilación reproducible, servidor Docker, puente
+seguro y módulo Foundry en desarrollo. Las fases 0, 1 y 2 están completadas.
 
 | Área | Estado | Evidencia / siguiente paso |
 |---|---|---|
@@ -24,8 +26,8 @@ Espaciokoop Lagunak conserva el código y el historial de EmptyEpsilon y añade,
 | Normas de colaboración | Hecho | [`CONTRIBUTING.md`](CONTRIBUTING.md) y [`AGENTS.md`](AGENTS.md) |
 | Compilación reproducible | Verificada en Linux | Nativa ([`docs/BUILDING.md`](docs/BUILDING.md)) y en imagen Docker (SeriousProton fijado por commit) |
 | Ejecución con Docker | Verificada en local | Servidor headless + puente vía compose ([`docker/README.md`](docker/README.md)) |
-| Integración con Foundry VTT | Base implementada (puente v0) | Contrato seguro verificado ([`bridge/README.md`](bridge/README.md)); módulo Foundry pendiente |
-| Cambios jugables propios | No iniciados | Primera iteración propuesta en el roadmap |
+| Integración con Foundry VTT | Vertical en desarrollo | Puente v0 + módulo GM + llegada deduplicada en Journal ([`docs/FOUNDRY.md`](docs/FOUNDRY.md)) |
+| Cambios jugables propios | Primera iteración disponible | «Lagunak: Primera guardia» (`scenario_90`) |
 | Lanzamientos propios | No disponibles | Se crearán solo tras validar compilación y pruebas |
 
 ## Qué es
@@ -63,14 +65,21 @@ Estas características son obra del proyecto EmptyEpsilon y sus contribuidores. 
 
 ### Propias de Espaciokoop Lagunak
 
-Aún no hay características **jugables** propias publicadas. Esta sección se actualiza únicamente cuando un cambio está integrado en `main` y tiene una verificación documentada.
+Características propias integradas y verificadas:
+
+- escenario cooperativo «Lagunak: Primera guardia»;
+- identidad visual del fork y localización Español (España);
+- servidor headless y puente seguro reproducibles;
+- módulo Foundry para lectura del estado y bitácora del GM.
 
 Infraestructura propia disponible:
 
 - **Servidor headless en Docker** con imagen reproducible y `compose.yaml` ([`docker/README.md`](docker/README.md)).
 - **Puente de integración con contrato v0** para Foundry VTT: lecturas de estado y órdenes de lista blanca con autenticación, sin exponer la API heredada insegura ([`bridge/README.md`](bridge/README.md)).
 
-El módulo de Foundry VTT (la otra mitad de la integración) todavía no existe; véase el issue #8.
+El módulo Foundry consume el puente por polling autenticado y mantiene los
+secretos fuera del mundo compartido; véase
+[`foundry-module/README.md`](foundry-module/README.md).
 
 ## Roadmap
 
@@ -107,6 +116,13 @@ El roadmap refleja intención, no promesas. Los cambios se concretarán mediante
 **Criterio de salida:** el servidor arranca de forma reproducible y el puente puede leer un estado seguro sin permitir ejecución Lua arbitraria desde Foundry. **Cumplido y verificado (2026-07-12)**, reproducido en más de un entorno (nativo Ubuntu 24.04 y Arch/CachyOS — issue #14 —, y en contenedor vía compose); queda pendiente publicar imágenes y añadir el smoke test en CI.
 
 ### Fase 3 — Integración prioritaria con Foundry VTT
+
+Hitos verticales:
+
+- [x] Estado de nave visible para el GM mediante polling autenticado.
+- [x] Llegada de «Primera guardia» normalizada y deduplicada en Journal.
+- [ ] Destino y ETA legibles en `/v1/state`.
+- [ ] Una orden de tempo del GM (pausa o factor temporal) de extremo a extremo.
 
 - [ ] Crear un módulo de Foundry VTT para el director de juego y la tripulación.
 - [ ] Representar trayectos en tiempo real, con pausa y aceleración controladas por el director de juego.

@@ -24,6 +24,12 @@ un Foundry real está pendiente de verificación humana (la licencia de Foundry
 impide probarlo en CI). El resto de este documento describe la visión
 completa, de la que está construida esa base.
 
+El transporte del contrato v0 queda fijado en **polling HTTP** (issue #6). El
+primer evento vertical es la llegada de «Primera Guardia»: el escenario crea
+un marcador interno acotado, el puente lo normaliza en `GET /v1/events` y el
+módulo lo escribe una sola vez en Journal mediante un `eventId` persistente.
+WebSocket queda aplazado hasta que haya una necesidad de latencia medida.
+
 ## Visión de juego
 
 Foundry conserva personajes, fichas, mapas narrativos, diarios, reglas y estado general de la campaña. Espaciokoop Lagunak ejecuta la vida operativa de la nave: trayectos, navegación, sistemas, recursos, averías, encuentros y coordinación de la tripulación.
@@ -203,12 +209,9 @@ La primera integración debe demostrar valor sin intentar cubrir toda una campa�
 
 ## Decisiones pendientes
 
-- versión mínima y máxima de Foundry VTT;
-- sistema y versión usados para la campaña de *Spelljammer*;
 - capacidades reales del modo servidor o sin interfaz de EmptyEpsilon;
 - escala temporal y reglas de aceleración;
 - modelo de motores, combustible, energía y recursos;
-- protocolo entre puente y Foundry: HTTP con eventos, WebSocket o ambos;
 - autenticación para red local y posibles despliegues remotos;
 - persistencia, copias de seguridad y migraciones del estado de viaje.
 

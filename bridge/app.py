@@ -11,6 +11,7 @@ Contrato v0 (ver docs/FOUNDRY.md):
   GET  /healthz      — estado del puente y del juego (sin auth).
   GET  /v1/state     — estado seguro de la nave del jugador (auth).
   GET  /v1/scenario  — tiempo de escenario y metadatos (auth).
+  GET  /v1/events    — eventos normalizados presentes en la sesión (auth).
   POST /v1/command   — órdenes de una lista blanca cerrada (auth).
 
 Configuración por variables de entorno:
@@ -159,6 +160,27 @@ _HEALTH_LUA = """
 return '{"ok":true}'
 """
 
+_EVENTS_LUA = """
+local ship = getPlayerShip(-1)
+if ship == nil then
+    return '{"events":[]}'
+end
+local x, y = ship:getPosition()
+local events = {}
+for _, object in ipairs(getObjectsInRadius(x, y, 5000)) do
+    local call_sign = object:getCallSign() or ""
+    local suffix = string.match(call_sign, "^LAGUNAK_EVT_arrival_s90_(%d+)$")
+    if suffix ~= nil then
+        events[#events + 1] = string.format(
+            '{"id":"arrival-s90-%s","type":"arrival",'
+            .. '"scenario":"scenario_90_lagunak_primera_guardia",'
+            .. '"destination":"Argia","scenario_time":%.1f}',
+            suffix, getScenarioTime())
+    end
+end
+return '{"events":[' .. table.concat(events, ",") .. ']}'
+"""
+
 
 # --- Órdenes de lista blanca -------------------------------------------------
 
@@ -255,6 +277,11 @@ async def state() -> Any:
 @app.get("/v1/scenario", dependencies=[Depends(_require_auth)])
 async def scenario() -> Any:
     return await _run_lua(_SCENARIO_LUA)
+
+
+@app.get("/v1/events", dependencies=[Depends(_require_auth)])
+async def events() -> Any:
+    return await _run_lua(_EVENTS_LUA)
 
 
 @app.post("/v1/command", dependencies=[Depends(_require_auth)])

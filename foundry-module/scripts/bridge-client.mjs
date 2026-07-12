@@ -54,6 +54,11 @@ export class BridgeClient {
     return this.#get("/v1/scenario", { auth: true });
   }
 
+  /** GET /v1/events — eventos normalizados presentes (Bearer). */
+  async events() {
+    return this.#get("/v1/events", { auth: true });
+  }
+
   async #get(path, { auth }) {
     const headers = { Accept: "application/json" };
     if (auth) {

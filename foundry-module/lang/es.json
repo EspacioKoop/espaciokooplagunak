@@ -27,6 +27,9 @@
   "LAGUNAK.Diario.PaginaPrefijo": "Estado",
   "LAGUNAK.Diario.Boton": "Anotar estado",
   "LAGUNAK.Diario.Anotado": "Estado anotado en la bitácora.",
+  "LAGUNAK.Eventos.Llegada.Titulo": "Llegada a {destination}",
+  "LAGUNAK.Eventos.Llegada.Resumen": "La nave ha llegado a {destination}. Tiempo de escenario: {elapsed} s.",
+  "LAGUNAK.Eventos.Anotados": "Nuevo evento anotado en la bitácora.",
   "LAGUNAK.Errores.SinEstado": "No hay estado de la nave que anotar.",
   "LAGUNAK.Errores.Desconocido": "Error inesperado consultando el puente."
 }

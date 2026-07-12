@@ -1,4 +1,4 @@
-"""Tests de los endpoints de lectura: /healthz, /v1/state, /v1/scenario."""
+"""Tests de los endpoints de lectura: healthz, state, scenario y events."""
 
 from __future__ import annotations
 
@@ -56,3 +56,38 @@ def test_state_envia_lua_de_estado_al_juego(client, juego, auth):
 def test_scenario_requiere_auth(client, juego):
     r = client.get("/v1/scenario")
     assert r.status_code == 401
+
+
+def test_events_devuelve_lista_vacia(client, juego, auth):
+    juego.text = '{"events":[]}'
+    r = client.get("/v1/events", headers=auth)
+    assert r.status_code == 200
+    assert r.json() == {"events": []}
+
+
+def test_events_devuelve_llegada_normalizada(client, juego, auth):
+    juego.text = (
+        '{"events":[{"id":"arrival-s90-123456","type":"arrival",'
+        '"scenario":"scenario_90_lagunak_primera_guardia",'
+        '"destination":"Argia","scenario_time":42.5}]}'
+    )
+    r = client.get("/v1/events", headers=auth)
+    assert r.status_code == 200
+    assert r.json()["events"][0] == {
+        "id": "arrival-s90-123456",
+        "type": "arrival",
+        "scenario": "scenario_90_lagunak_primera_guardia",
+        "destination": "Argia",
+        "scenario_time": 42.5,
+    }
+
+
+def test_events_requiere_auth(client, juego):
+    assert client.get("/v1/events").status_code == 401
+
+
+def test_events_envia_solo_lua_fijo_al_juego(client, juego, auth):
+    juego.text = '{"events":[]}'
+    client.get("/v1/events", headers=auth)
+    assert "getObjectsInRadius" in juego.ultimo_lua
+    assert "LAGUNAK_EVT_arrival_s90_" in juego.ultimo_lua

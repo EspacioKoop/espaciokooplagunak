@@ -15,9 +15,14 @@ verificada en local** (2026-07-12, x86-64):
   reales del escenario → orden `set_impulse` con efecto observable en la
   simulación → `/exec.lua` inaccesible desde el host.
 
-**Todavía no existe el módulo de Foundry VTT**; el contrato v0 es la base
-para construirlo (issue #8). El resto de este documento describe la visión
-completa, de la que solo está construida esa base.
+**El módulo de Foundry VTT existe como esqueleto** (issue #8, solo director
+de juego, sin órdenes de vuelta): muestra el estado en vivo de la nave vía
+polling del puente y permite anotarlo en un diario. Instalación,
+configuración y estado de verificación en
+[`foundry-module/README.md`](../foundry-module/README.md) — la activación en
+un Foundry real está pendiente de verificación humana (la licencia de Foundry
+impide probarlo en CI). El resto de este documento describe la visión
+completa, de la que está construida esa base.
 
 ## Visión de juego
 

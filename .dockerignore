@@ -1,0 +1,16 @@
+.git
+.github
+_build_*
+build
+SeriousProton
+android
+osx
+netboot
+discordBot
+logs
+logo.icns
+logo.ico
+docker/compose.yaml
+docker/.env
+docker/.env.example
+bridge

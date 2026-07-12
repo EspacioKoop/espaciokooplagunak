@@ -1,6 +1,6 @@
 -- Name: Lagunak: Primera guardia
 -- Description: Primer escenario propio de Espaciokoop Lagunak. Escolta corta para tripulaciones novatas: llevad la nave desde la estacion Lagunak hasta el puesto avanzado Argia. Asaltantes Exuari merodean el corredor a mitad de ruta; combatir o esquivarlos es decision de la tripulacion. Victoria al llegar a Argia; derrota si perdeis la nave.
--- Type: Mission
+-- Type: Basic
 
 --- Scenario
 -- @script scenario_90_lagunak_primera_guardia
@@ -32,6 +32,10 @@ function init()
         :setCallSign("Argia")
         :setPosition(28000, -16000)
 
+    -- Spawn deliberadamente dentro del rango de atraque de Lagunak: la
+    -- guardia zarpa de puerto y desatracar es la primera decision de la
+    -- tripulacion (y un sitio seguro donde practicar el atraque antes de
+    -- que otro escenario lo exija). No es un descuido.
     player = PlayerSpaceship()
         :setTemplate("Phobos M3P")
         :setFaction("Human Navy")

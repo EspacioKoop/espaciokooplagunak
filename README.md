@@ -83,13 +83,13 @@ El roadmap refleja intención, no promesas. Los cambios se concretarán mediante
 - [x] Añadir documentación para personas y agentes de IA.
 - [x] Definir ramas, issues, pull requests y sincronización con upstream.
 - [x] Ejecutar y documentar una compilación limpia en Linux ([`docs/BUILDING.md`](docs/BUILDING.md), PR #3).
-- [ ] Activar CI del fork y corregir cualquier incompatibilidad real.
+- [x] Activar CI del fork y corregir cualquier incompatibilidad real (CI heredada y `docker.yml` en verde sobre `main` y PRs #10, #13).
 
 ### Fase 1 — Primera iteración jugable
 
 - [ ] Arrancar una partida local con una compilación propia.
 - [ ] Crear un escenario Lua mínimo, claramente identificado como propio.
-- [ ] Añadir identidad visible de Espaciokoop Lagunak sin eliminar créditos originales.
+- [x] Añadir identidad visible de Espaciokoop Lagunak sin eliminar créditos originales (PR #13; menú, título de ventana y log verificados en la review).
 - [ ] Probar conexión de al menos dos puestos de tripulación.
 - [ ] Documentar instalación, arranque y resultado de la sesión de prueba.
 

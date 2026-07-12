@@ -59,8 +59,25 @@ export class BridgeClient {
     return this.#get("/v1/events", { auth: true });
   }
 
+  /** POST /v1/command — pausa o reanuda la simulación (Bearer). */
+  async setPause(paused) {
+    if (typeof paused !== "boolean") {
+      throw new BridgeError("El estado de pausa debe ser booleano", { kind: "parse" });
+    }
+    return this.#request("/v1/command", {
+      auth: true,
+      method: "POST",
+      body: JSON.stringify({ op: "set_pause", paused }),
+    });
+  }
+
   async #get(path, { auth }) {
+    return this.#request(path, { auth, method: "GET" });
+  }
+
+  async #request(path, { auth, method, body = undefined }) {
     const headers = { Accept: "application/json" };
+    if (body !== undefined) headers["Content-Type"] = "application/json";
     if (auth) {
       if (!this.token) throw new BridgeError("Token del puente no configurado", { kind: "http", status: 401 });
       headers.Authorization = `Bearer ${this.token}`;
@@ -70,7 +87,12 @@ export class BridgeClient {
     const timer = setTimeout(() => controller.abort(), this.timeoutMs);
     let response;
     try {
-      response = await this.fetchImpl(`${this.url}${path}`, { headers, signal: controller.signal });
+      response = await this.fetchImpl(`${this.url}${path}`, {
+        method,
+        headers,
+        body,
+        signal: controller.signal,
+      });
     } catch (err) {
       if (err?.name === "AbortError") {
         throw new BridgeError(`Tiempo de espera agotado en ${path}`, { kind: "timeout" });

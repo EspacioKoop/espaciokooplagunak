@@ -26,6 +26,7 @@
 import { BridgeClient, BridgeError } from "./bridge-client.mjs";
 import { processBridgeEvents } from "./event-journal.mjs";
 import { prepareRoute } from "./ship-view.mjs";
+import { setSimulationPaused } from "./tempo-control.mjs";
 
 const MODULE_ID = "espaciokoop-lagunak";
 const POLL_MIN_S = 1;
@@ -142,6 +143,8 @@ function crearClaseV2() {
       position: { width: 440, height: "auto" },
       actions: {
         anotar: EstadoNaveApp.onAnotar,
+        pausar: EstadoNaveApp.onPausar,
+        reanudar: EstadoNaveApp.onReanudar,
       },
     };
 
@@ -219,6 +222,7 @@ function crearClaseV2() {
         conexionError: this.conexion === "error",
         conexionConectando: this.conexion === "conectando",
         detalleError: this.detalleError,
+        esGM: Boolean(game.user?.isGM),
         nave,
         ruta: prepareRoute(nave, game.i18n),
         sistemas: nave
@@ -230,6 +234,33 @@ function crearClaseV2() {
             }))
           : [],
       };
+    }
+
+    async _cambiarPausa(paused) {
+      try {
+        const changed = await setSimulationPaused({
+          paused,
+          isGM: Boolean(game.user?.isGM),
+          client: this.#cliente(),
+        });
+        if (changed) {
+          const key = paused ? "LAGUNAK.Tempo.Pausado" : "LAGUNAK.Tempo.Reanudado";
+          ui.notifications.info(game.i18n.localize(key));
+        }
+      } catch (err) {
+        const message = err instanceof BridgeError
+          ? err.message
+          : game.i18n.localize("LAGUNAK.Errores.Desconocido");
+        ui.notifications.error(message);
+      }
+    }
+
+    static async onPausar() {
+      return this._cambiarPausa(true);
+    }
+
+    static async onReanudar() {
+      return this._cambiarPausa(false);
     }
 
     /** Acción del botón «Anotar estado»: escribe el estado actual en el diario. */
@@ -359,6 +390,8 @@ function crearClaseV1() {
     activateListeners(html) {
       super.activateListeners(html);
       html.find('[data-action="anotar"]').on("click", () => this.#anotar());
+      html.find('[data-action="pausar"]').on("click", () => this.#cambiarPausa(true));
+      html.find('[data-action="reanudar"]').on("click", () => this.#cambiarPausa(false));
     }
 
     getData(_options) {
@@ -369,6 +402,7 @@ function crearClaseV1() {
         conexionError: this.conexion === "error",
         conexionConectando: this.conexion === "conectando",
         detalleError: this.detalleError,
+        esGM: Boolean(game.user?.isGM),
         nave,
         ruta: prepareRoute(nave, game.i18n),
         sistemas: nave
@@ -380,6 +414,25 @@ function crearClaseV1() {
             }))
           : [],
       };
+    }
+
+    async #cambiarPausa(paused) {
+      try {
+        const changed = await setSimulationPaused({
+          paused,
+          isGM: Boolean(game.user?.isGM),
+          client: this.#cliente(),
+        });
+        if (changed) {
+          const key = paused ? "LAGUNAK.Tempo.Pausado" : "LAGUNAK.Tempo.Reanudado";
+          ui.notifications.info(game.i18n.localize(key));
+        }
+      } catch (err) {
+        const message = err instanceof BridgeError
+          ? err.message
+          : game.i18n.localize("LAGUNAK.Errores.Desconocido");
+        ui.notifications.error(message);
+      }
     }
 
     async #anotar() {

@@ -15,9 +15,9 @@ verificada en local** (2026-07-12, x86-64):
   reales del escenario → orden `set_impulse` con efecto observable en la
   simulación → `/exec.lua` inaccesible desde el host.
 
-**El módulo de Foundry VTT existe como esqueleto** (issue #8, solo director
-de juego, sin órdenes de vuelta): muestra el estado en vivo de la nave vía
-polling del puente y permite anotarlo en un diario. Instalación,
+**El módulo de Foundry VTT existe como vertical para el director de juego**:
+muestra el estado en vivo vía polling, permite anotarlo en un diario y envía
+la orden cerrada de pausa/reanudación. Instalación,
 configuración y estado de verificación en
 [`foundry-module/README.md`](../foundry-module/README.md) — la activación en
 un Foundry real está pendiente de verificación humana (la licencia de Foundry
@@ -34,6 +34,11 @@ El trayecto inicial publica Argia como destino mediante un marcador interno de
 la sesión. `/v1/state` calcula distancia restante y ETA a partir de la posición
 y velocidad reales; la ETA es nula cuando la nave está detenida. El módulo
 formatea estos datos para el GM sin asumir que otros escenarios tengan ruta.
+
+El control de tempo inicial es binario: `pauseGame()` / `unpauseGame()` son las
+únicas APIs verificadas en headless. No se ofrece aceleración ni se inventa un
+estado consultable porque `setGameSpeed`, `getGameSpeed` y un getter de pausa no
+existen en la API Lua observada.
 
 ## Visión de juego
 

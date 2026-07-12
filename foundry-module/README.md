@@ -52,11 +52,13 @@ El token no aparece en logs ni en mensajes de error.
    (`/v1/state`): posición, rumbo, destino, distancia, ETA, casco, energía,
    escudos y sistemas. Con la nave detenida la ETA se muestra como no
    disponible, sin dividir por cero.
-3. Si el puente se cae, el módulo reintenta con backoff exponencial (hasta
+3. El GM puede pausar o reanudar la simulación con los botones de tempo. No se
+   muestra un estado de pausa inferido porque EmptyEpsilon no ofrece un getter.
+4. Si el puente se cae, el módulo reintenta con backoff exponencial (hasta
    60 s) y se recupera solo al volver el puente.
-4. «Anotar estado» escribe una página con el estado actual en el diario
+5. «Anotar estado» escribe una página con el estado actual en el diario
    «Bitácora de la nave» (lo crea si no existe).
-5. Al llegar a Argia en «Primera Guardia», el módulo recibe por polling un
+6. Al llegar a Argia en «Primera Guardia», el módulo recibe por polling un
    evento normalizado y crea automáticamente una página de llegada. El flag
    `eventId` evita duplicados al reabrir la ventana o reconectar.
 

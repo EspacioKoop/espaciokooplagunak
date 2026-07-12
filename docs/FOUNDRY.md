@@ -106,7 +106,12 @@ Esta separación evita bucles de sincronización donde ambos sistemas intentan s
 
 ## Seguridad obligatoria
 
-La implementación heredada contiene el endpoint HTTP `/exec.lua`, que ejecuta contenido Lua recibido por la red. Los endpoints `/get.lua` y `/set.lua` están además marcados como incompletos en el código inspeccionado.
+La implementación heredada contiene el endpoint HTTP `/exec.lua`, que ejecuta contenido Lua recibido por la red. Estado verificado en vivo (2026-07-12, servidor headless local con `httpserver=<puerto>`):
+
+- `POST /exec.lua` es funcional: ejecuta el cuerpo de la petición en un subentorno Lua y devuelve su `return` como texto, o `{"ERROR": "Script error: ..."}` si el chunk falla (`src/httpScriptAccess.cpp:12-27`).
+- `GET /get.lua` y `GET /set.lua` no están implementados: su lógica está comentada dentro de bloques `/*TODO*/` y ambos responden el literal `TODO` (`src/httpScriptAccess.cpp:99` y `:164`).
+
+En consecuencia, hoy **toda** interacción con el API heredado pasa por ejecución de Lua arbitrario vía `/exec.lua` — no existe un canal de solo lectura.
 
 Por tanto:
 

@@ -1,0 +1,39 @@
+name: Decisión técnica
+description: Propón y registra una decisión de arquitectura, API o integración
+title: "[Decisión]: "
+labels: ["decision", "triage"]
+body:
+  - type: textarea
+    id: context
+    attributes:
+      label: Contexto
+      description: Qué hay que decidir y por qué ahora. Enlaza el documento afectado (p. ej. docs/FOUNDRY.md).
+    validations:
+      required: true
+  - type: textarea
+    id: options
+    attributes:
+      label: Opciones consideradas
+      placeholder: |
+        A) ...  — ventajas / inconvenientes
+        B) ...  — ventajas / inconvenientes
+    validations:
+      required: true
+  - type: textarea
+    id: recommendation
+    attributes:
+      label: Recomendación
+      description: Opción propuesta y justificación breve.
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impacto
+      description: Qué código, documentación o contratos habrá que actualizar al decidir.
+  - type: checkboxes
+    id: closure
+    attributes:
+      label: Cierre
+      options:
+        - label: Al resolverse, la decisión quedará reflejada en la documentación afectada (no solo en este issue).

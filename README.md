@@ -1,75 +1,157 @@
-![EmptyEpsilon logo](https://raw.githubusercontent.com/daid/EmptyEpsilon/master/resources/logo_full.png)
+# Espaciokoop Lagunak
 
-Started as a cross-platform, open-source "clone" of [Artemis Spaceship Bridge Simulator](https://www.artemisspaceshipbridge.com/), **EmptyEpsilon** has already deviated from Artemis with new features and gameplay, including a Game Master mode and multiple AI factions. We strive to get EmptyEpsilon working on several platforms, and Windows, Linux, and Android are fully supported.
+> Fork colaborativo de [EmptyEpsilon](https://github.com/daid/EmptyEpsilon) para juego, experimentación y desarrollo cooperativo entre personas y agentes de IA.
 
-The game is written in C++ with the [SeriousProton](https://github.com/daid/SeriousProton) engine and uses [SDL2](http://www.libsdl.org/) for most of the heavy lifting.
+[![Licencia: GPL-2.0](https://img.shields.io/badge/licencia-GPL--2.0-blue.svg)](LICENSE)
+[![Base upstream](https://img.shields.io/badge/upstream-EmptyEpsilon-informational.svg)](https://github.com/daid/EmptyEpsilon)
 
-## Download and install
+## Estado del proyecto
 
-Official releases for Windows, Linux (as a .deb package), and Android (beta quality) are available from the [EmptyEpsilon website](https://daid.github.io/EmptyEpsilon/#tabs=5) or [GitHub releases](https://github.com/daid/EmptyEpsilon/releases). Make sure the host and all players run the same version number of EmptyEpsilon; otherwise, players won't be able to connect.
+**Fase actual: 0 — preparación del fork.**
 
--   Windows releases are distributed as self-contained ZIP archives that don't need installation. You can expand the ZIP archive and launch EmptyEpsilon directly from the expanded folder.
--   The .deb package requires freetype and SDL2 packages to be installed on your Linux distribution.
--   The Android APK is built for the `armeabi-v7a` ABI and should launch on most Android phones and tablets with ARM processors. (For ARM v8, see [the wiki](https://github.com/daid/EmptyEpsilon/wiki/Build%5CAndroid#build-for-64-bit-arm-v8).) The official ARM APK won't install on Intel x86 or x86_64 devices running Android, but is compatible with [Android Emulator system images that support ARM ABIs](https://android-developers.googleblog.com/2020/03/run-arm-apps-on-android-emulator.html). To build a 32- or 64-bit x86 APK, see [the wiki](https://github.com/daid/EmptyEpsilon/wiki/Build%5CAndroid#build-for-x86).
+Espaciokoop Lagunak conserva el código y el historial de EmptyEpsilon y añade, por ahora, la base documental y colaborativa del fork. Todavía no se han publicado funcionalidades jugables propias ni se ha certificado una compilación local de este fork.
 
-### Configuration files
+| Área | Estado | Evidencia / siguiente paso |
+|---|---|---|
+| Historial y atribución de EmptyEpsilon | Hecho | `main` parte de `upstream/master` sin reescribir historial |
+| Licencia GPL-2.0 | Conservada | Véase [`LICENSE`](LICENSE) |
+| Normas de colaboración | Hecho | [`CONTRIBUTING.md`](CONTRIBUTING.md) y [`AGENTS.md`](AGENTS.md) |
+| Compilación reproducible | Pendiente de validar | Véase [`docs/BUILDING.md`](docs/BUILDING.md) |
+| Cambios jugables propios | No iniciados | Primera iteración propuesta en el roadmap |
+| Lanzamientos propios | No disponibles | Se crearán solo tras validar compilación y pruebas |
 
-EmptyEpsilon settings are stored in an `options.ini` file located in either the `.emptyepsilon` directory of your user home or the same directory as the EmptyEpsilon launcher. For details, see [this repository's wiki](https://github.com/daid/EmptyEpsilon/wiki/Preferences-file).
+## Qué es
 
-### Build from source
+EmptyEpsilon es un simulador libre y multiplataforma de puente de mando espacial, escrito en C++17, construido con CMake y basado en el motor [SeriousProton](https://github.com/daid/SeriousProton) y SDL2. Permite que una tripulación reparta puestos —como mando, ingeniería, ciencia, comunicaciones o armas— entre varias pantallas.
 
-See this repository's wiki for guidance on [building EmptyEpsilon from source](https://github.com/daid/EmptyEpsilon/wiki/Build). Several Build subpages on the wiki provide steps for building on specific operating systems, distributions, or hardware.
+**Espaciokoop Lagunak no es el proyecto oficial EmptyEpsilon.** Es un fork comunitario independiente mantenido por Varo y sus colaboradores. El código anterior a este fork, sus recursos y gran parte de su documentación pertenecen a sus autores originales. La web, documentación y versiones oficiales están en:
 
-## Community
+- Proyecto original: <https://github.com/daid/EmptyEpsilon>
+- Web oficial: <https://daid.github.io/EmptyEpsilon/>
+- Historial de cambios original: [`CHANGELOG.md`](CHANGELOG.md)
 
-For information on EmptyEpsilon's Discord and forums communities, and regularly planned hosted game sessions, see the [EmptyEpsilon website](https://daid.github.io/EmptyEpsilon/#tabs=6). If you run public EmptyEpsilon games or use it in your gaming projects, [file an issue](https://github.com/daid/EmptyEpsilon/issues) to request to be added to that page.
+## Objetivos
 
-## Contribute
+1. Mantener una base jugable sincronizable con EmptyEpsilon.
+2. Construir una experiencia cooperativa propia de forma incremental y verificable.
+3. Facilitar que varias personas y agentes de IA colaboren sin duplicar trabajo ni introducir cambios opacos.
+4. Documentar claramente qué procede de upstream y qué desarrolla este fork.
+5. Priorizar cambios pequeños, revisables y compatibles con partidas reales.
 
-If you want to contribute, we're mostly looking for awesome models, sound effects, and music. The game is tested regulary by some of our trusty colleagues.
+## Características
 
-Some general contribution rules:
+### Heredadas de EmptyEpsilon
 
-1.  This project is a dictatorship. Yes, it's open source, but we'd much rather spend time on building what we like than arguing with people.
+El fork recibe de upstream, entre otras capacidades:
 
-2.  Be precise when filing issues. Explain why you posted the issue, what you expect, what is happening, why is your feature worth the time to develop it, what operating system is affected, etc. Unclear issues are subject to rule 1 with extreme prejudice.
+- Juego cooperativo con puestos de tripulación especializados.
+- Partidas en red y distintos modos de pantalla.
+- Escenarios y lógica de misiones en Lua.
+- Game Master y múltiples facciones controladas por IA.
+- Soporte original para Linux, Windows, macOS y Android.
 
-3.  Despite the above two, we very much value input, feedback, and suggestions from people playing EmptyEpsilon. If you have ideas or want to donate beer, drop us a line.
+Estas características son obra del proyecto EmptyEpsilon y sus contribuidores. Su presencia en upstream no implica que todas hayan sido verificadas todavía por el equipo de Espaciokoop Lagunak en cada plataforma.
 
-### Donate
+### Propias de Espaciokoop Lagunak
 
-If you don't have the skills to help code or create models but want to give something back, you can always donate a bit. All donations go directly toward buying better assets for the game (in this case, more and better 3D models). You can find the instructions on the [EmptyEpsilon website](http://daid.github.io/EmptyEpsilon/).
+Aún no hay características jugables propias publicadas. Esta sección se actualizará únicamente cuando un cambio esté integrado en `main` y tenga una verificación documentada.
 
-### Write code
+## Roadmap
 
-If you are a coder and want to contribute, there are a few things to take into account.
+El roadmap refleja intención, no promesas. Los cambios se concretarán mediante issues y pull requests.
 
-1.  The code is a undocumented mess at this point. We're working on fixing that.
+### Fase 0 — Base colaborativa
 
-2.  We use the following conventions:
+- [x] Conservar historial, autoría y licencia de EmptyEpsilon.
+- [x] Establecer `main` como rama principal del fork.
+- [x] Añadir documentación para personas y agentes de IA.
+- [x] Definir ramas, issues, pull requests y sincronización con upstream.
+- [ ] Ejecutar y documentar una compilación limpia en Linux.
+- [ ] Activar CI del fork y corregir cualquier incompatibilidad real.
 
-    -   Member values use underscores to separate words (`zoom_level`).
-    -   Classes use HighCamelCase (`GuiSlider`).
-    -   Functions use lowCamelCase (`getZoomLevel`).
+### Fase 1 — Primera iteración jugable
 
-3.  Use a single pull request to change a single thing. Want to change multiple things? File multiple requests.
+- [ ] Arrancar una partida local con una compilación propia.
+- [ ] Crear un escenario Lua mínimo, claramente identificado como propio.
+- [ ] Añadir identidad visible de Espaciokoop Lagunak sin eliminar créditos originales.
+- [ ] Probar conexión de al menos dos puestos de tripulación.
+- [ ] Documentar instalación, arranque y resultado de la sesión de prueba.
 
-### Provide art
+**Criterio de salida:** una persona nueva puede compilar o instalar el juego siguiendo la documentación, iniciar el escenario del fork y conectar dos estaciones sin instrucciones privadas.
 
-There is no clear goal where this game is going. This means that there is no formal game, art, or asset design. If you have something that you would like to see in this game (or want to make something), drop us a line. We'd love to see what you can do and how you can help improve the game.
+### Fase 2 — Experiencia cooperativa
 
-For details on how EmptyEpsilon uses 3D models, see [this repository's wiki](https://github.com/daid/EmptyEpsilon/wiki/Adding-3D-models).
+- [ ] Recoger feedback de partidas mediante issues.
+- [ ] Diseñar una campaña o conjunto de escenarios cooperativos.
+- [ ] Mejorar accesibilidad, localización y experiencia de incorporación.
+- [ ] Definir compatibilidad de red y política de versiones.
 
-### Translate and localize
+### Fase 3 — Distribución mantenible
 
-For a guide to translating EmptyEpsilon and its scenarios, see [this repository's wiki](https://github.com/daid/EmptyEpsilon/wiki/Translation-and-Localization).
+- [ ] Automatizar artefactos reproducibles para plataformas validadas.
+- [ ] Publicar notas de versión que separen cambios propios y de upstream.
+- [ ] Establecer una cadencia segura de sincronización con EmptyEpsilon.
 
-## Documentation
+## Estructura del repositorio
 
-Basic documentation for setting up and running games is available on the [EmptyEpsilon website](https://daid.github.io/EmptyEpsilon/#tabs=2).
+| Ruta | Procedencia / propósito |
+|---|---|
+| `src/`, `scripts/`, `resources/`, `packs/` | Código, escenarios y recursos heredados principalmente de EmptyEpsilon |
+| `CMakeLists.txt`, `cmake/` | Sistema de compilación original |
+| `CHANGELOG.md` | Historial de cambios original de EmptyEpsilon |
+| `LICENSE` | Licencia GNU GPL v2 conservada del proyecto original |
+| `docs/` | Documentación específica del fork |
+| `CONTRIBUTING.md` | Flujo colaborativo de Espaciokoop Lagunak |
+| `AGENTS.md` | Reglas operativas para agentes de IA |
 
-To learn EmptyEpsilon gameplay fundamentals, read the [website's stations profiles](https://daid.github.io/EmptyEpsilon/#tabs=3) and play through the game's built-in tutorial mode available from the main menu, which covers each crew member's interface and responsibilities.
+Para conocer con precisión la relación con upstream, consulta [`docs/UPSTREAM.md`](docs/UPSTREAM.md).
 
-For guidance in scripting scenarios, see the [website's mission scripting guide](https://daid.github.io/EmptyEpsilon/#tabs=4). For a scripting API reference, open the `script_reference.html` file included in your version's downloaded archive, which is specific to that version of EmptyEpsilon.
+## Compilación y desarrollo
 
-For documentation on the game's preferences file and command-line options, hardware and DMX support, more complex internet play configurations like headless and proxy servers, enabling and using EmptyEpsilon's HTTP API server, or adding ship templates and models, see [this repository's wiki](https://github.com/daid/EmptyEpsilon/wiki).
+La compilación necesita, como mínimo, un compilador C++17, CMake, SDL2 y una copia compatible de SeriousProton. No se incluye SeriousProton como submódulo: normalmente se clona junto a este repositorio y se indica su ruta a CMake.
+
+Las instrucciones y el estado de validación están en [`docs/BUILDING.md`](docs/BUILDING.md). No interpretes estas instrucciones como garantía de compatibilidad en una plataforma no probada.
+
+## Cómo colaborar
+
+1. Lee [`CONTRIBUTING.md`](CONTRIBUTING.md).
+2. Busca o crea un issue con alcance y criterio de aceptación claros.
+3. Crea una rama desde `main`: `feature/<tema>`, `fix/<tema>` o `docs/<tema>`.
+4. Haz un cambio pequeño y verificable.
+5. Actualiza documentación y estado del roadmap si corresponde.
+6. Abre un pull request; no hagas push directo a `main` tras el bootstrap.
+
+Los agentes de IA deben leer además [`AGENTS.md`](AGENTS.md) antes de modificar archivos.
+
+## Principios de colaboración humano–IA
+
+- El issue y el pull request son la fuente compartida de contexto; no dependemos de conversaciones privadas.
+- Nadie, humano o IA, afirma que algo funciona sin indicar cómo se comprobó.
+- Una tarea debe declarar alcance, archivos afectados, pruebas y riesgos.
+- No se mezclan objetivos independientes en un mismo pull request.
+- No se fuerza `main` ni se reescribe trabajo ajeno.
+- Los secretos nunca se copian a prompts, archivos, commits, logs o capturas.
+- Una IA no debe realizar cambios destructivos, masivos o ambiguos sin autorización humana explícita.
+
+## Ramas y remotos
+
+- `origin`: fork de Espaciokoop Lagunak.
+- `upstream`: repositorio oficial de EmptyEpsilon.
+- `main`: rama estable e integrable del fork.
+- Ramas de trabajo: cambios aislados, revisados mediante pull request.
+
+La incorporación de cambios de EmptyEpsilon se realiza de forma explícita y sin `push --force`. Procedimiento completo: [`docs/UPSTREAM.md`](docs/UPSTREAM.md).
+
+## Licencia y atribución
+
+Este repositorio deriva de EmptyEpsilon y conserva su licencia **GNU General Public License, versión 2**. Consulta [`LICENSE`](LICENSE). Los autores originales mantienen la autoría de sus contribuciones; los cambios del fork pertenecen a sus respectivos contribuidores bajo la misma licencia aplicable.
+
+Espaciokoop Lagunak no está afiliado ni respaldado oficialmente por el equipo de EmptyEpsilon.
+
+## Recursos
+
+- [EmptyEpsilon oficial](https://github.com/daid/EmptyEpsilon)
+- [Web y manual oficial](https://daid.github.io/EmptyEpsilon/)
+- [Guía de contribución del fork](CONTRIBUTING.md)
+- [Compilación](docs/BUILDING.md)
+- [Relación y sincronización con upstream](docs/UPSTREAM.md)

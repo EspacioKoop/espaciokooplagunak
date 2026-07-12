@@ -1,0 +1,47 @@
+name: Error
+description: Informa de un comportamiento reproducible
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: "Gracias por ayudar a mejorar Espaciokoop Lagunak. No incluyas secretos ni datos personales."
+  - type: textarea
+    id: description
+    attributes:
+      label: Descripción
+      description: ¿Qué ocurre y cuál es el impacto?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Pasos para reproducirlo
+      placeholder: "1. ...\n2. ...\n3. ..."
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Resultado esperado
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Commit o versión
+      placeholder: "SHA de commit o versión"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Plataforma
+      placeholder: "Sistema operativo, arquitectura y modo servidor/cliente"
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidencia adicional
+      description: Logs mínimos, capturas o contexto relevante, sin credenciales.

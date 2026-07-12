@@ -27,18 +27,27 @@
 # OS temp files
 thumbs.db
 .DS_Store
+Desktop.ini
+*~
 
 # output directory
 .bin
 
 # vim
 *.swp
+*.swo
+
+# IDEs (keep shared project settings only when explicitly agreed)
+.idea/
 
 # gettext temp files
 *.po~
 
 options.ini
 keybindings.json
+.env
+.env.*
+!.env.example
 
 
 .vscode
@@ -46,6 +55,8 @@ logs
 *.log
 build*/
 _build*/
+CMakeUserPresets.json
+compile_commands.json
 cmake/_win32/
 cmake/android/
 script_docs/__pycache__/

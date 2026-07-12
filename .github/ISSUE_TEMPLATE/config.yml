@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: EmptyEpsilon oficial
+    url: https://github.com/daid/EmptyEpsilon/issues
+    about: Usa el tracker original para problemas exclusivos de EmptyEpsilon no introducidos por este fork.

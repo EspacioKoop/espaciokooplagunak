@@ -1,0 +1,40 @@
+name: Propuesta
+description: Propón una mejora o una nueva capacidad
+title: "[Propuesta]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema u oportunidad
+      description: Explica la necesidad antes de describir una solución.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Propuesta
+      description: Describe comportamiento, experiencia y alcance.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Criterios de aceptación
+      placeholder: "- [ ] Resultado observable y comprobable"
+    validations:
+      required: true
+  - type: textarea
+    id: out_of_scope
+    attributes:
+      label: Fuera de alcance
+      description: Indica qué no debería incluir esta iteración.
+  - type: textarea
+    id: upstream
+    attributes:
+      label: Relación con EmptyEpsilon
+      description: ¿Es específico del fork o tendría sentido también en upstream?
+  - type: textarea
+    id: risks
+    attributes:
+      label: Riesgos o alternativas

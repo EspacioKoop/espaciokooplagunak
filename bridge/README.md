@@ -1,0 +1,61 @@
+# Puente Espaciokoop Lagunak ↔ Foundry VTT
+
+Servicio HTTP que expone un contrato **cerrado y versionado** sobre el
+servidor headless. Es la única pieza autorizada a hablar con el endpoint
+heredado `/exec.lua` (que ejecuta Lua arbitrario): todo el Lua vive en
+`app.py`, y las entradas del cliente solo rellenan valores tipados,
+validados y acotados. **Nunca se reenvía Lua recibido por la red.**
+
+Diseño completo: [`docs/FOUNDRY.md`](../docs/FOUNDRY.md) · Inventario del API
+heredado: [`docs/API_HTTP.md`](../docs/API_HTTP.md).
+
+## Contrato v0
+
+| Método | Ruta | Auth | Descripción |
+|---|---|---|---|
+| GET | `/healthz` | No | Estado del puente y alcance del juego |
+| GET | `/v1/state` | Bearer | Nave del jugador: posición, rumbo, velocidad, casco, energía, escudos, sistemas |
+| GET | `/v1/scenario` | Bearer | Tiempo de escenario |
+| POST | `/v1/command` | Bearer | Órdenes de lista blanca (ver abajo) |
+| GET | `/docs` | No* | OpenAPI interactiva generada por FastAPI |
+
+\* La documentación no expone datos de partida; los endpoints que lista sí requieren token.
+
+### Órdenes permitidas (`POST /v1/command`)
+
+```json
+{"op": "set_impulse",        "value": 0.5}
+{"op": "set_warp",           "level": 2}
+{"op": "set_target_heading", "heading": 90.0}
+{"op": "set_shields",        "active": true}
+{"op": "set_system_power",   "system": "impulse", "level": 1.5}
+```
+
+Cualquier otra operación devuelve `422`. Añadir una orden nueva implica
+añadir un modelo validado en `app.py` y documentarla aquí — nunca un
+passthrough genérico.
+
+## Seguridad aplicada
+
+- Bearer token obligatorio (`BRIDGE_TOKEN`), comparación en tiempo constante.
+- Lista blanca cerrada de operaciones con validación de esquema (Pydantic).
+- Límite de frecuencia global (10 req/s, ráfaga 20).
+- Timeout (5 s) y tamaño máximo de respuesta del juego (64 KiB).
+- Los errores del juego se traducen a `502` genéricos sin filtrar contenido.
+- El token no aparece en logs ni respuestas.
+
+## Desarrollo local
+
+```bash
+cd bridge
+python3 -m venv .venv && . .venv/bin/activate
+pip install -r requirements.txt
+EE_URL=http://localhost:8080 BRIDGE_TOKEN=dev uvicorn app:app --port 8090
+```
+
+## Pendiente (v1)
+
+- Idempotencia y deduplicación de eventos tras reconexión.
+- Flujo de eventos hacia Foundry (polling o WebSocket — decisión abierta).
+- Permisos diferenciados por puesto y para el director de juego.
+- Órdenes de trayecto (destino, pausa, factor temporal).

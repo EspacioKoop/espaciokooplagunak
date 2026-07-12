@@ -1,0 +1,51 @@
+# Espaciokoop Lagunak — servidor headless + puente Foundry VTT.
+#
+# Uso:
+#   cd docker
+#   cp .env.example .env   # y define BRIDGE_TOKEN
+#   docker compose up -d --build
+#
+# Seguridad: el puerto HTTP del juego (8080, /exec.lua) NO se publica jamás.
+# Solo el puente puede alcanzarlo a través de la red interna. Ver
+# docs/FOUNDRY.md y SECURITY.md antes de cambiar esto.
+
+name: espaciokooplagunak
+
+services:
+  game:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: espaciokooplagunak-server:0.1.0-dev
+    restart: unless-stopped
+    environment:
+      EE_SCENARIO: ${EE_SCENARIO:-scenario_00_basic.lua}
+      EE_SERVER_NAME: ${EE_SERVER_NAME:-Espaciokoop Lagunak}
+      EE_SERVER_PASSWORD: ${EE_SERVER_PASSWORD:-}
+    ports:
+      # Clientes del puente de mando (LAN).
+      - "${EE_SERVER_PORT:-35666}:35666/tcp"
+      - "${EE_SERVER_PORT:-35666}:35666/udp"
+    networks: [espaciokoop]
+    stop_grace_period: 15s
+
+  bridge:
+    build:
+      context: ../bridge
+    image: espaciokooplagunak-bridge:0.1.0-dev
+    restart: unless-stopped
+    environment:
+      EE_URL: http://game:8080
+      BRIDGE_TOKEN: ${BRIDGE_TOKEN:?Define BRIDGE_TOKEN en docker/.env}
+      BRIDGE_PORT: "8090"
+    ports:
+      # API del puente para el módulo de Foundry VTT.
+      - "${BRIDGE_PORT:-8090}:8090"
+    depends_on:
+      game:
+        condition: service_healthy
+    networks: [espaciokoop]
+
+networks:
+  espaciokoop:
+    driver: bridge

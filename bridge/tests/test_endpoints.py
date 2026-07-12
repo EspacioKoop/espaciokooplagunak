@@ -24,12 +24,27 @@ def test_healthz_reporta_juego_inalcanzable(client, juego):
 
 def test_state_devuelve_la_nave(client, juego, auth):
     juego.text = (
-        '{"ship":{"callsign":"Itsaso 1","hull":200.0,"hull_max":200.0,'
+        '{"ship":{"callsign":"Itsaso 1","destination":null,'
+        '"distance_to_destination":null,"eta_seconds":null,'
+        '"hull":200.0,"hull_max":200.0,'
         '"systems":{"impulse":{"health":1.0,"heat":0.0,"power":1.0}}}}'
     )
     r = client.get("/v1/state", headers=auth)
     assert r.status_code == 200
     assert r.json()["ship"]["callsign"] == "Itsaso 1"
+    assert r.json()["ship"]["destination"] is None
+
+
+def test_state_devuelve_destino_distancia_y_eta(client, juego, auth):
+    juego.text = (
+        '{"ship":{"callsign":"Itsaso 1",'
+        '"destination":{"name":"Argia","position":{"x":28000.0,"y":-16000.0}},'
+        '"distance_to_destination":1000.0,"eta_seconds":20.0}}'
+    )
+    ship = client.get("/v1/state", headers=auth).json()["ship"]
+    assert ship["destination"]["name"] == "Argia"
+    assert ship["distance_to_destination"] == 1000.0
+    assert ship["eta_seconds"] == 20.0
 
 
 def test_state_sin_nave(client, juego, auth):
@@ -51,6 +66,9 @@ def test_state_envia_lua_de_estado_al_juego(client, juego, auth):
     client.get("/v1/state", headers=auth)
     assert "getPlayerShip(-1)" in juego.ultimo_lua
     assert "getSystemHealth" in juego.ultimo_lua
+    assert "LAGUNAK_ROUTE_s90_argia" in juego.ultimo_lua
+    assert "math.sqrt(vx * vx + vy * vy)" in juego.ultimo_lua
+    assert "speed > 0.01" in juego.ultimo_lua
 
 
 def test_scenario_requiere_auth(client, juego):

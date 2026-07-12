@@ -14,7 +14,7 @@ heredado: [`docs/API_HTTP.md`](../docs/API_HTTP.md).
 | Método | Ruta | Auth | Descripción |
 |---|---|---|---|
 | GET | `/healthz` | No | Estado del puente y alcance del juego |
-| GET | `/v1/state` | Bearer | Nave del jugador: posición, rumbo, velocidad, casco, energía, escudos, sistemas |
+| GET | `/v1/state` | Bearer | Nave: posición, rumbo, velocidad, destino, distancia, ETA, casco, energía, escudos y sistemas |
 | GET | `/v1/scenario` | Bearer | Tiempo de escenario |
 | GET | `/v1/events` | Bearer | Eventos normalizados presentes; inicialmente llegada de Primera Guardia |
 | POST | `/v1/command` | Bearer | Órdenes de lista blanca (ver abajo) |

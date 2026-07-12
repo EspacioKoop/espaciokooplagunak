@@ -22,9 +22,9 @@ Espaciokoop Lagunak conserva el código y el historial de EmptyEpsilon y añade,
 | Historial y atribución de EmptyEpsilon | Hecho | `main` parte de `upstream/master` sin reescribir historial |
 | Licencia GPL-2.0 | Conservada | Véase [`LICENSE`](LICENSE) |
 | Normas de colaboración | Hecho | [`CONTRIBUTING.md`](CONTRIBUTING.md) y [`AGENTS.md`](AGENTS.md) |
-| Compilación reproducible | Pendiente de validar | Véase [`docs/BUILDING.md`](docs/BUILDING.md) |
-| Ejecución con Docker | Planificada | Servidor y puente reproducibles, todavía no implementados |
-| Integración con Foundry VTT | Prioridad estratégica | Diseño inicial en [`docs/FOUNDRY.md`](docs/FOUNDRY.md) |
+| Compilación reproducible | Verificada en Linux | Nativa ([`docs/BUILDING.md`](docs/BUILDING.md)) y en imagen Docker (SeriousProton fijado por commit) |
+| Ejecución con Docker | Verificada en local | Servidor headless + puente vía compose ([`docker/README.md`](docker/README.md)) |
+| Integración con Foundry VTT | Base implementada (puente v0) | Contrato seguro verificado ([`bridge/README.md`](bridge/README.md)); módulo Foundry pendiente |
 | Cambios jugables propios | No iniciados | Primera iteración propuesta en el roadmap |
 | Lanzamientos propios | No disponibles | Se crearán solo tras validar compilación y pruebas |
 
@@ -63,9 +63,14 @@ Estas características son obra del proyecto EmptyEpsilon y sus contribuidores. 
 
 ### Propias de Espaciokoop Lagunak
 
-Aún no hay características jugables propias publicadas. Esta sección se actualizará únicamente cuando un cambio esté integrado en `main` y tenga una verificación documentada.
+Aún no hay características **jugables** propias publicadas. Esta sección se actualiza únicamente cuando un cambio está integrado en `main` y tiene una verificación documentada.
 
-La ejecución con Docker y la integración con Foundry VTT son objetivos prioritarios, pero aún no son características disponibles.
+Infraestructura propia disponible:
+
+- **Servidor headless en Docker** con imagen reproducible y `compose.yaml` ([`docker/README.md`](docker/README.md)).
+- **Puente de integración con contrato v0** para Foundry VTT: lecturas de estado y órdenes de lista blanca con autenticación, sin exponer la API heredada insegura ([`bridge/README.md`](bridge/README.md)).
+
+El módulo de Foundry VTT (la otra mitad de la integración) todavía no existe; véase el issue #8.
 
 ## Roadmap
 
@@ -77,7 +82,7 @@ El roadmap refleja intención, no promesas. Los cambios se concretarán mediante
 - [x] Establecer `main` como rama principal del fork.
 - [x] Añadir documentación para personas y agentes de IA.
 - [x] Definir ramas, issues, pull requests y sincronización con upstream.
-- [ ] Ejecutar y documentar una compilación limpia en Linux.
+- [x] Ejecutar y documentar una compilación limpia en Linux ([`docs/BUILDING.md`](docs/BUILDING.md), PR #3).
 - [ ] Activar CI del fork y corregir cualquier incompatibilidad real.
 
 ### Fase 1 — Primera iteración jugable
@@ -92,14 +97,14 @@ El roadmap refleja intención, no promesas. Los cambios se concretarán mediante
 
 ### Fase 2 — Docker y API segura
 
-- [ ] Validar el modo servidor o sin interfaz de EmptyEpsilon.
-- [ ] Crear una imagen Docker reproducible y un `compose.yaml` documentado.
-- [ ] Mantener la simulación y el puente de integración en servicios separados y una red privada.
-- [ ] Inventariar el API HTTP heredado y definir un contrato propio y versionado.
-- [ ] Implementar un puente que solo permita operaciones autorizadas y nunca exponga `/exec.lua` directamente.
-- [ ] Añadir autenticación, validación de mensajes, límites y comprobaciones de salud.
+- [x] Validar el modo servidor o sin interfaz de EmptyEpsilon (nativo en PR #3; en contenedor en esta fase).
+- [x] Crear una imagen Docker reproducible y un `compose.yaml` documentado ([`docker/README.md`](docker/README.md)).
+- [x] Mantener la simulación y el puente de integración en servicios separados y una red privada.
+- [x] Inventariar el API HTTP heredado ([`docs/API_HTTP.md`](docs/API_HTTP.md)) y definir un contrato propio y versionado (v0, [`bridge/README.md`](bridge/README.md)).
+- [x] Implementar un puente que solo permita operaciones autorizadas y nunca exponga `/exec.lua` directamente.
+- [x] Añadir autenticación, validación de mensajes, límites y comprobaciones de salud.
 
-**Criterio de salida:** el servidor arranca de forma reproducible y el puente puede leer un estado seguro sin permitir ejecución Lua arbitraria desde Foundry.
+**Criterio de salida:** el servidor arranca de forma reproducible y el puente puede leer un estado seguro sin permitir ejecución Lua arbitraria desde Foundry. **Cumplido y verificado en local (2026-07-12)**; queda pendiente reproducirlo en un segundo entorno y en CI.
 
 ### Fase 3 — Integración prioritaria con Foundry VTT
 

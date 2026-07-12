@@ -4,7 +4,20 @@ Este documento define la dirección inicial para usar Espaciokoop Lagunak como s
 
 ## Estado real
 
-La integración está **planificada y todavía no implementada**. Actualmente no existe un módulo de Foundry VTT, una imagen Docker validada ni un contrato API propio de Espaciokoop Lagunak.
+La base técnica de la integración (Fase 2 del roadmap) está **implementada y
+verificada en local** (2026-07-12, x86-64):
+
+- Imagen Docker reproducible del servidor headless y `compose.yaml` con red
+  interna ([`docker/README.md`](../docker/README.md)).
+- Puente con contrato v0 — lecturas seguras y órdenes de lista blanca, sin
+  ejecución de Lua arbitrario ([`bridge/README.md`](../bridge/README.md)).
+- Verificación end-to-end: `compose up` → `/healthz` → `/v1/state` con datos
+  reales del escenario → orden `set_impulse` con efecto observable en la
+  simulación → `/exec.lua` inaccesible desde el host.
+
+**Todavía no existe el módulo de Foundry VTT**; el contrato v0 es la base
+para construirlo (issue #8). El resto de este documento describe la visión
+completa, de la que solo está construida esa base.
 
 ## Visión de juego
 

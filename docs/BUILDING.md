@@ -4,6 +4,21 @@ Este documento describe el sistema de compilación heredado de EmptyEpsilon y se
 
 ## Estado de validación
 
+**Compilación limpia verificada en Linux (2026-07-12).** Entorno: Ubuntu 24.04 (x86-64), g++ 13.3.0,
+CMake 3.28.3, Ninja 1.11.1, libsdl2-dev 2.30.0, lua5.3; SeriousProton en `master` (`e6f10ae`) como
+repositorio hermano; commit del fork `d433a2b2`. Resultado:
+
+- Configuración con `-DSERIOUS_PROTON_DIR=../SeriousProton -DWARNING_IS_ERROR=1`: correcta.
+- Compilación: 539/539 objetivos sin warnings; binario `build/EmptyEpsilon` (ELF x86-64, ~20 MB).
+- Validación Lua (`luac -p` sobre todo `scripts/`): sin errores.
+- Prueba de humo headless: `./build/EmptyEpsilon headless=scenario_10_empty.lua` arranca, carga los
+  packs y el escenario, y escucha en TCP y UDP 35666 (puerto multijugador por defecto). En este modo
+  la entrada estándar actúa como consola Lua y la configuración se guarda en `~/.emptyepsilon`.
+
+Esto valida **una** plataforma y **un** entorno concretos; otras distribuciones o versiones de
+dependencias pueden requerir ajustes. Queda pendiente la prueba manual con interfaz gráfica y la
+conexión de dos estaciones (fase 1 del roadmap).
+
 En el bootstrap inicial se inspeccionaron `CMakeLists.txt`, `.github/workflows/cicd.yml` y la estructura de upstream. El host de bootstrap disponía de `g++`, pero no de `cmake`, `ninja`, `lua/luac`, cabeceras SDL2 ni una copia hermana de SeriousProton. Por ello, en ese momento **no se pudo configurar, compilar ni validar los scripts Lua localmente**.
 
 La CI heredada contiene trabajos Linux, macOS, compilación cruzada para Windows y validación sintáctica de Lua. Que existan esos trabajos no equivale a una ejecución correcta en este fork; el estado deberá confirmarse en GitHub Actions.

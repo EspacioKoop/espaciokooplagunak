@@ -76,6 +76,28 @@ cmake --build build --parallel
 
 No ejecutes instalaciones del sistema desde un agente sin autorización humana. La lista anterior procede de la configuración original y debe ajustarse si CMake informa de una dependencia adicional.
 
+### Arch / CachyOS
+
+Compilación verificada el 2026-07-12 (GCC 16.1; evidencia y detalle en el issue #14). Dependencias base con pacman:
+
+```bash
+sudo pacman -S --needed cmake ninja
+```
+
+(`sdl2-compat` y `freetype2` suelen estar ya presentes como dependencias de otros paquetes; instálalos si faltan.)
+
+**Incompatibilidad conocida**: con la glm del sistema (1.0.3), SeriousProton falla con `glm::vec2 does not name a type` en `vectorUtils.h` — glm 1.0.x ya no expone los tipos de forma transitiva. Solución verificada: desactivar la detección de la glm del sistema para que SeriousProton use su copia vendorizada:
+
+```bash
+cmake -S . -B build -G Ninja \
+  -DSERIOUS_PROTON_DIR=../SeriousProton \
+  -DWARNING_IS_ERROR=1 \
+  -DCMAKE_DISABLE_FIND_PACKAGE_glm=TRUE
+cmake --build build --parallel
+```
+
+La configuración debe informar `GLM version used: BUNDLED`. En Docker y en la CI no ocurre porque esas imágenes no tienen glm de sistema.
+
 ## Validación Lua
 
 Equivalente portable al objetivo de CI heredado:

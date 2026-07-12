@@ -101,7 +101,11 @@ function abrirEstadoNave() {
   // reparto de pantallas del juego fragmenta a propósito.
   if (!game.user?.isGM) return;
   estadoApp ??= new (claseEstadoNave())();
-  estadoApp.render(true); // ApplicationV2 acepta el booleano `force` por compatibilidad
+  if (foundry.applications?.api?.ApplicationV2) {
+    estadoApp.render({ force: true });
+  } else {
+    estadoApp.render(true);
+  }
 }
 
 /**

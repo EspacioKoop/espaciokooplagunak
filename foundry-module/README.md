@@ -7,11 +7,13 @@ estado en vivo de la nave simulada en Espaciokoop Lagunak, consultando el
 
 ## Requisitos
 
-- Foundry VTT **v11–v13**. Mínimo verificado **v11.302** (la mesa real, issue
-  #7). El módulo es adaptativo: usa la ventana clásica `Application` en v11 y,
-  si el anfitrión ofrece `ApplicationV2` (v12+), la ventana moderna
-  automáticamente. Solo importa la versión del **anfitrión** que hospeda la
-  partida: los jugadores se conectan por navegador y no ejecutan Foundry.
+- Foundry VTT **v11.302 verificado** (la mesa real, issue #7). El módulo es
+  adaptativo: usa la ventana clásica `Application` en v11 y, si el anfitrión
+  ofrece `ApplicationV2`, la ventana moderna automáticamente. Incluye la forma
+  de controles de escena de v13, pero v12/v13 siguen pendientes de prueba en
+  una instalación real antes de declararlas verificadas. Solo importa la
+  versión del **anfitrión** que hospeda la partida: los jugadores se conectan
+  por navegador y no ejecutan Foundry.
 - El puente de integración en marcha (`docker/README.md`): juego + puente vía
   compose, con `BRIDGE_TOKEN` definido.
 

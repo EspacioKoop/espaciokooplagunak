@@ -11,8 +11,7 @@
   ],
   "compatibility": {
     "minimum": "11",
-    "verified": "11",
-    "maximum": "13"
+    "verified": "11"
   },
   "esmodules": ["scripts/main.mjs"],
   "styles": ["styles/lagunak.css"],

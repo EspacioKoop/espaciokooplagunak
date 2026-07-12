@@ -1,9 +1,15 @@
+<p align="center">
+  <img src="docs/assets/banner.svg" alt="Espaciokoop Lagunak — simulador de puente de mando cooperativo" width="900"/>
+</p>
+
 # Espaciokoop Lagunak
 
 > Fork colaborativo de [EmptyEpsilon](https://github.com/daid/EmptyEpsilon) para juego, experimentación y desarrollo cooperativo entre personas y agentes de IA.
 
 [![Licencia: GPL-2.0](https://img.shields.io/badge/licencia-GPL--2.0-blue.svg)](LICENSE)
 [![Base upstream](https://img.shields.io/badge/upstream-EmptyEpsilon-informational.svg)](https://github.com/daid/EmptyEpsilon)
+[![Docker](https://img.shields.io/badge/docker-servidor%20%2B%20puente-2496ed.svg?logo=docker&logoColor=white)](docker/README.md)
+[![Foundry VTT](https://img.shields.io/badge/foundry%20vtt-integraci%C3%B3n%20en%20curso-ff6400.svg)](docs/FOUNDRY.md)
 
 ## Estado del proyecto
 
@@ -132,8 +138,11 @@ Diseño inicial: [`docs/FOUNDRY.md`](docs/FOUNDRY.md).
 | `CHANGELOG.md` | Historial de cambios original de EmptyEpsilon |
 | `LICENSE` | Licencia GNU GPL v2 conservada del proyecto original |
 | `docs/` | Documentación específica del fork |
+| `docker/` | Imagen del servidor headless y `compose.yaml` ([guía](docker/README.md)) |
+| `bridge/` | Puente de integración con Foundry VTT ([contrato v0](bridge/README.md)) |
 | `CONTRIBUTING.md` | Flujo colaborativo de Espaciokoop Lagunak |
 | `AGENTS.md` | Reglas operativas para agentes de IA |
+| `SECURITY.md` | Riesgos conocidos y cómo informar de vulnerabilidades |
 
 Para conocer con precisión la relación con upstream, consulta [`docs/UPSTREAM.md`](docs/UPSTREAM.md).
 
@@ -185,5 +194,8 @@ Espaciokoop Lagunak no está afiliado ni respaldado oficialmente por el equipo d
 - [Web y manual oficial](https://daid.github.io/EmptyEpsilon/)
 - [Guía de contribución del fork](CONTRIBUTING.md)
 - [Compilación](docs/BUILDING.md)
+- [Despliegue con Docker](docker/README.md)
 - [Integración con Foundry VTT y gestión de nave](docs/FOUNDRY.md)
+- [Puente de integración — contrato v0](bridge/README.md)
+- [Inventario del API HTTP heredado](docs/API_HTTP.md)
 - [Relación y sincronización con upstream](docs/UPSTREAM.md)

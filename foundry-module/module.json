@@ -1,0 +1,34 @@
+{
+  "id": "espaciokoop-lagunak",
+  "title": "Espaciokoop Lagunak — Puente de mando",
+  "description": "Muestra en Foundry VTT el estado en vivo de la nave simulada en Espaciokoop Lagunak, a través del puente de integración (contrato v0). Solo director de juego; sin órdenes de vuelta en esta iteración.",
+  "version": "0.1.0",
+  "authors": [
+    {
+      "name": "Espaciokoop Lagunak",
+      "url": "https://github.com/VaroTv7/espaciokooplagunak"
+    }
+  ],
+  "compatibility": {
+    "minimum": "12",
+    "verified": "12"
+  },
+  "esmodules": ["scripts/main.mjs"],
+  "styles": ["styles/lagunak.css"],
+  "languages": [
+    {
+      "lang": "es",
+      "name": "Español",
+      "path": "lang/es.json"
+    },
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "url": "https://github.com/VaroTv7/espaciokooplagunak",
+  "readme": "https://github.com/VaroTv7/espaciokooplagunak/blob/main/foundry-module/README.md",
+  "bugs": "https://github.com/VaroTv7/espaciokooplagunak/issues",
+  "license": "GPL-2.0"
+}

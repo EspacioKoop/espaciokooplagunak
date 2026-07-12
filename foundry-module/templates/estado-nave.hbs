@@ -1,0 +1,43 @@
+<div class="lagunak-estado-cuerpo">
+  <p class="lagunak-conexion lagunak-conexion-{{conexion}}">
+    <span class="lagunak-punto"></span>
+    {{#if conexionOk}}{{localize "LAGUNAK.Conexion.Ok"}}{{/if}}
+    {{#if conexionError}}{{localize "LAGUNAK.Conexion.Error"}} — {{detalleError}}{{/if}}
+    {{#if conexionConectando}}{{localize "LAGUNAK.Conexion.Conectando"}}{{/if}}
+  </p>
+
+  {{#if nave}}
+  <h3>{{nave.callsign}}</h3>
+  <table class="lagunak-tabla">
+    <tr><th>{{localize "LAGUNAK.EstadoNave.Posicion"}}</th><td>{{nave.position.x}}, {{nave.position.y}}</td></tr>
+    <tr><th>{{localize "LAGUNAK.EstadoNave.Rumbo"}}</th><td>{{nave.heading}}°</td></tr>
+    <tr><th>{{localize "LAGUNAK.EstadoNave.Casco"}}</th><td>{{nave.hull}} / {{nave.hull_max}}</td></tr>
+    <tr><th>{{localize "LAGUNAK.EstadoNave.Energia"}}</th><td>{{nave.energy}} / {{nave.energy_max}}</td></tr>
+    <tr><th>{{localize "LAGUNAK.EstadoNave.Escudos"}}</th><td>{{#if nave.shields_active}}{{localize "LAGUNAK.EstadoNave.EscudosActivos"}}{{else}}{{localize "LAGUNAK.EstadoNave.EscudosInactivos"}}{{/if}}</td></tr>
+  </table>
+
+  <h4>{{localize "LAGUNAK.EstadoNave.Sistemas"}}</h4>
+  <table class="lagunak-tabla lagunak-sistemas">
+    <tr>
+      <th>{{localize "LAGUNAK.EstadoNave.Sistema"}}</th>
+      <th>{{localize "LAGUNAK.EstadoNave.Salud"}}</th>
+      <th>{{localize "LAGUNAK.EstadoNave.Calor"}}</th>
+      <th>{{localize "LAGUNAK.EstadoNave.Potencia"}}</th>
+    </tr>
+    {{#each sistemas}}
+    <tr>
+      <td>{{this.nombre}}</td>
+      <td>{{this.salud}}%</td>
+      <td>{{this.calor}}%</td>
+      <td>{{this.potencia}}%</td>
+    </tr>
+    {{/each}}
+  </table>
+
+  <button type="button" data-action="anotar">
+    <i class="fa-solid fa-book"></i> {{localize "LAGUNAK.Diario.Boton"}}
+  </button>
+  {{else}}
+  <p class="lagunak-sin-datos">{{localize "LAGUNAK.EstadoNave.SinDatos"}}</p>
+  {{/if}}
+</div>

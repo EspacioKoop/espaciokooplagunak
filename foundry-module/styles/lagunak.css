@@ -1,0 +1,52 @@
+.lagunak-estado-cuerpo {
+  padding: 0.5rem;
+}
+
+.lagunak-conexion {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin: 0 0 0.5rem 0;
+}
+
+.lagunak-punto {
+  width: 0.7em;
+  height: 0.7em;
+  border-radius: 50%;
+  background: #888;
+  flex: 0 0 auto;
+}
+
+.lagunak-conexion-ok .lagunak-punto {
+  background: #3fa34d;
+}
+
+.lagunak-conexion-error .lagunak-punto {
+  background: #c0392b;
+}
+
+.lagunak-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 0.5rem;
+}
+
+.lagunak-tabla th {
+  text-align: left;
+  padding-right: 0.5em;
+}
+
+.lagunak-sistemas td,
+.lagunak-sistemas th {
+  text-align: right;
+}
+
+.lagunak-sistemas td:first-child,
+.lagunak-sistemas th:first-child {
+  text-align: left;
+}
+
+.lagunak-sin-datos {
+  opacity: 0.7;
+  font-style: italic;
+}

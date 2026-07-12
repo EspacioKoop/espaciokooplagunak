@@ -27,6 +27,9 @@
   "LAGUNAK.Diario.PaginaPrefijo": "Status",
   "LAGUNAK.Diario.Boton": "Log status",
   "LAGUNAK.Diario.Anotado": "Status written to the ship's log.",
+  "LAGUNAK.Eventos.Llegada.Titulo": "Arrival at {destination}",
+  "LAGUNAK.Eventos.Llegada.Resumen": "The ship has arrived at {destination}. Scenario time: {elapsed} s.",
+  "LAGUNAK.Eventos.Anotados": "New event written to the ship's log.",
   "LAGUNAK.Errores.SinEstado": "There is no ship state to log.",
   "LAGUNAK.Errores.Desconocido": "Unexpected error querying the bridge."
 }

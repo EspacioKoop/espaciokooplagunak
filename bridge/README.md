@@ -16,6 +16,7 @@ heredado: [`docs/API_HTTP.md`](../docs/API_HTTP.md).
 | GET | `/healthz` | No | Estado del puente y alcance del juego |
 | GET | `/v1/state` | Bearer | Nave del jugador: posición, rumbo, velocidad, casco, energía, escudos, sistemas |
 | GET | `/v1/scenario` | Bearer | Tiempo de escenario |
+| GET | `/v1/events` | Bearer | Eventos normalizados presentes; inicialmente llegada de Primera Guardia |
 | POST | `/v1/command` | Bearer | Órdenes de lista blanca (ver abajo) |
 | GET | `/docs` | No* | OpenAPI interactiva generada por FastAPI |
 
@@ -65,7 +66,8 @@ EE_URL=http://localhost:8080 BRIDGE_TOKEN=dev uvicorn app:app --port 8090
 Suite `pytest` que simula el `/exec.lua` del juego (no necesita un
 EmptyEpsilon en marcha) y cubre auth, límite de frecuencia, traducción de
 errores a 502, la lista blanca de órdenes y los intentos de inyección por los
-campos tipados.
+campos tipados. También cubre el endpoint de eventos vacío y con una llegada
+normalizada.
 
 ```bash
 cd bridge
@@ -80,7 +82,7 @@ workflows.
 
 ## Pendiente (v1)
 
-- Idempotencia y deduplicación de eventos tras reconexión.
-- Flujo de eventos hacia Foundry (polling o WebSocket — decisión abierta).
+- Más tipos de evento y persistencia después de reiniciar completamente el juego.
+- WebSocket solo si métricas futuras demuestran que el polling v0 no basta.
 - Permisos diferenciados por puesto y para el director de juego.
 - Órdenes de trayecto (destino, pausa, factor temporal).

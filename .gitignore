@@ -60,3 +60,8 @@ compile_commands.json
 cmake/_win32/
 cmake/android/
 script_docs/__pycache__/
+
+# Python
+__pycache__/
+*.pyc
+bridge/.venv/

@@ -7,8 +7,11 @@ estado en vivo de la nave simulada en Espaciokoop Lagunak, consultando el
 
 ## Requisitos
 
-- Foundry VTT **v12** (mínimo provisional; la decisión definitiva de versiones
-  es el issue #7).
+- Foundry VTT **v11–v13**. Mínimo verificado **v11.302** (la mesa real, issue
+  #7). El módulo es adaptativo: usa la ventana clásica `Application` en v11 y,
+  si el anfitrión ofrece `ApplicationV2` (v12+), la ventana moderna
+  automáticamente. Solo importa la versión del **anfitrión** que hospeda la
+  partida: los jugadores se conectan por navegador y no ejecutan Foundry.
 - El puente de integración en marcha (`docker/README.md`): juego + puente vía
   compose, con `BRIDGE_TOKEN` definido.
 
@@ -52,11 +55,28 @@ El token no aparece en logs ni en mensajes de error.
 
 ## Estado de verificación
 
-- Verificado sin Foundry (2026-07-12): sintaxis de todos los archivos,
-  manifiesto y traducciones válidos, y `bridge-client.mjs` ejercitado desde
-  Node contra el puente real del compose (healthz, state, 401 sin token,
-  timeout y error de red) — es ESM puro sin dependencias de Foundry
-  precisamente para eso.
-- **Pendiente de verificación humana en un Foundry real**: activación del
-  módulo, ventana, botón de escena y escritura en el diario. La licencia de
-  Foundry no permite incluirlo en CI; véase el criterio de aceptación de #8.
+- Sintaxis de todos los archivos, `module.json` y traducciones válidos;
+  cobertura i18n completa (es/en).
+- `bridge-client.mjs` ejercitado desde Node contra el puente real del compose
+  (healthz, state, 401 sin token, timeout y error de red) — es ESM puro sin
+  dependencias de Foundry precisamente para eso.
+- **Manifiesto validado con el propio parser de Foundry v11.302**
+  (`BaseModule`, modo estricto): sin errores de contenido. Foundry v11.302
+  arranca limpio con el módulo instalado (symlink en `Data/modules`), sin
+  rechazo del manifiesto.
+- **Pendiente de verificación humana en un Foundry real con partida activa**:
+  render de la ventana, botón de escena y escritura en el diario. Requiere una
+  sesión de GM autenticada en el navegador; la licencia de Foundry no permite
+  incluirlo en CI. Véase el criterio de aceptación de #8.
+
+## Instalación para desarrollo (symlink)
+
+Para trabajar el módulo contra tu instalación de Foundry, enlaza esta carpeta
+en el directorio de módulos con el nombre del id del módulo:
+
+```bash
+ln -s /ruta/a/espaciokooplagunak/foundry-module \
+      ~/.local/share/FoundryVTT/Data/modules/espaciokoop-lagunak
+```
+
+Los cambios en el repo se reflejan al recargar Foundry (F5 en el mundo).

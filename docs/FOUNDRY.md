@@ -30,6 +30,11 @@ un marcador interno acotado, el puente lo normaliza en `GET /v1/events` y el
 módulo lo escribe una sola vez en Journal mediante un `eventId` persistente.
 WebSocket queda aplazado hasta que haya una necesidad de latencia medida.
 
+El trayecto inicial publica Argia como destino mediante un marcador interno de
+la sesión. `/v1/state` calcula distancia restante y ETA a partir de la posición
+y velocidad reales; la ETA es nula cuando la nave está detenida. El módulo
+formatea estos datos para el GM sin asumir que otros escenarios tengan ruta.
+
 ## Visión de juego
 
 Foundry conserva personajes, fichas, mapas narrativos, diarios, reglas y estado general de la campaña. Espaciokoop Lagunak ejecuta la vida operativa de la nave: trayectos, navegación, sistemas, recursos, averías, encuentros y coordinación de la tripulación.

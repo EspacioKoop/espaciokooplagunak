@@ -11,6 +11,11 @@
   <table class="lagunak-tabla">
     <tr><th>{{localize "LAGUNAK.EstadoNave.Posicion"}}</th><td>{{nave.position.x}}, {{nave.position.y}}</td></tr>
     <tr><th>{{localize "LAGUNAK.EstadoNave.Rumbo"}}</th><td>{{nave.heading}}°</td></tr>
+    {{#if ruta}}
+    <tr><th>{{localize "LAGUNAK.EstadoNave.Destino"}}</th><td>{{ruta.name}}</td></tr>
+    <tr><th>{{localize "LAGUNAK.EstadoNave.Distancia"}}</th><td>{{ruta.distanceLabel}}</td></tr>
+    <tr><th>{{localize "LAGUNAK.EstadoNave.Eta"}}</th><td>{{ruta.etaLabel}}</td></tr>
+    {{/if}}
     <tr><th>{{localize "LAGUNAK.EstadoNave.Casco"}}</th><td>{{nave.hull}} / {{nave.hull_max}}</td></tr>
     <tr><th>{{localize "LAGUNAK.EstadoNave.Energia"}}</th><td>{{nave.energy}} / {{nave.energy_max}}</td></tr>
     <tr><th>{{localize "LAGUNAK.EstadoNave.Escudos"}}</th><td>{{#if nave.shields_active}}{{localize "LAGUNAK.EstadoNave.EscudosActivos"}}{{else}}{{localize "LAGUNAK.EstadoNave.EscudosInactivos"}}{{/if}}</td></tr>

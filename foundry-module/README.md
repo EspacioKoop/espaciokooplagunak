@@ -49,7 +49,9 @@ El token no aparece en logs ni en mensajes de error.
 1. En los controles de escena (grupo de fichas), pulsa el botón «Estado de la
    nave (Espaciokoop Lagunak)» — solo visible para el GM.
 2. La ventana muestra el estado de conexión (`/healthz`), y la nave
-   (`/v1/state`): posición, rumbo, casco, energía, escudos y sistemas.
+   (`/v1/state`): posición, rumbo, destino, distancia, ETA, casco, energía,
+   escudos y sistemas. Con la nave detenida la ETA se muestra como no
+   disponible, sin dividir por cero.
 3. Si el puente se cae, el módulo reintenta con backoff exponencial (hasta
    60 s) y se recupera solo al volver el puente.
 4. «Anotar estado» escribe una página con el estado actual en el diario

@@ -135,6 +135,30 @@ if ship == nil then
 end
 local x, y = ship:getPosition()
 local vx, vy = ship:getVelocity()
+local destination = nil
+for _, object in ipairs(getObjectsInRadius(x, y, 1000000)) do
+    if (object:getCallSign() or "") == "LAGUNAK_ROUTE_s90_argia" then
+        local destination_x, destination_y = object:getPosition()
+        destination = {name = "Argia", x = destination_x, y = destination_y}
+        break
+    end
+end
+local destination_json = "null"
+local distance_json = "null"
+local eta_json = "null"
+if destination ~= nil then
+    local dx = destination.x - x
+    local dy = destination.y - y
+    local distance = math.sqrt(dx * dx + dy * dy)
+    local speed = math.sqrt(vx * vx + vy * vy)
+    destination_json = string.format(
+        '{"name":"Argia","position":{"x":%%.1f,"y":%%.1f}}',
+        destination.x, destination.y)
+    distance_json = string.format("%%.1f", distance)
+    if speed > 0.01 then
+        eta_json = string.format("%%.1f", distance / speed)
+    end
+end
 local systems = {}
 for _, name in ipairs({%s}) do
     systems[#systems + 1] = string.format(
@@ -144,9 +168,12 @@ for _, name in ipairs({%s}) do
 end
 return string.format(
     '{"ship":{"callsign":%%q,"position":{"x":%%.1f,"y":%%.1f},"heading":%%.2f,'
-    .. '"velocity":{"x":%%.2f,"y":%%.2f},"hull":%%.1f,"hull_max":%%.1f,'
-    .. '"energy":%%.1f,"energy_max":%%.1f,"shields_active":%%s,"systems":{%%s}}}',
+    .. '"velocity":{"x":%%.2f,"y":%%.2f},"destination":%%s,'
+    .. '"distance_to_destination":%%s,"eta_seconds":%%s,'
+    .. '"hull":%%.1f,"hull_max":%%.1f,"energy":%%.1f,"energy_max":%%.1f,'
+    .. '"shields_active":%%s,"systems":{%%s}}}',
     ship:getCallSign() or "?", x, y, ship:getHeading(), vx, vy,
+    destination_json, distance_json, eta_json,
     ship:getHull(), ship:getHullMax(),
     ship:getEnergyLevel(), ship:getEnergyLevelMax(),
     tostring(ship:getShieldsActive()), table.concat(systems, ","))

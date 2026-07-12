@@ -33,6 +33,12 @@ function init()
         :setCallSign("Argia")
         :setPosition(28000, -16000)
 
+    marcadorDestino = Artifact()
+        :setPosition(28000, -16000)
+        :setCallSign("LAGUNAK_ROUTE_s90_argia")
+        :setRadarSignatureInfo(0, 0, 0)
+        :allowPickup(false)
+
     -- Spawn deliberadamente dentro del rango de atraque de Lagunak: la
     -- guardia zarpa de puerto y desatracar es la primera decision de la
     -- tripulacion (y un sitio seguro donde practicar el atraque antes de

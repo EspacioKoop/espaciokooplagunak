@@ -121,7 +121,7 @@ Hitos verticales:
 
 - [x] Estado de nave visible para el GM mediante polling autenticado.
 - [x] Llegada de «Primera guardia» normalizada y deduplicada en Journal.
-- [ ] Destino y ETA legibles en `/v1/state`.
+- [x] Destino y ETA legibles en `/v1/state` y en la ventana Foundry (#32).
 - [ ] Una orden de tempo del GM (pausa o factor temporal) de extremo a extremo.
 
 - [ ] Crear un módulo de Foundry VTT para el director de juego y la tripulación.

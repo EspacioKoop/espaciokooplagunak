@@ -53,6 +53,24 @@ pip install -r requirements.txt
 EE_URL=http://localhost:8080 BRIDGE_TOKEN=dev uvicorn app:app --port 8090
 ```
 
+## Tests
+
+Suite `pytest` que simula el `/exec.lua` del juego (no necesita un
+EmptyEpsilon en marcha) y cubre auth, límite de frecuencia, traducción de
+errores a 502, la lista blanca de órdenes y los intentos de inyección por los
+campos tipados.
+
+```bash
+cd bridge
+python3 -m venv .venv && . .venv/bin/activate
+pip install -r requirements-dev.txt
+pytest
+```
+
+Están pensados para correr también en CI: el PR de #22 propone un job `pytest`
+para `.github/workflows/docker.yml`, a añadir por alguien con permiso sobre
+workflows.
+
 ## Pendiente (v1)
 
 - Idempotencia y deduplicación de eventos tras reconexión.

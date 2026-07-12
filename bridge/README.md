@@ -37,6 +37,7 @@ de esta integración.
 {"op": "set_target_heading", "heading": 90.0}
 {"op": "set_shields",        "active": true}
 {"op": "set_system_power",   "system": "impulse", "level": 1.5}
+{"op": "set_pause",          "paused": true}
 ```
 
 Cualquier otra operación devuelve `422`. Añadir una orden nueva implica
@@ -85,4 +86,4 @@ workflows.
 - Más tipos de evento y persistencia después de reiniciar completamente el juego.
 - WebSocket solo si métricas futuras demuestran que el polling v0 no basta.
 - Permisos diferenciados por puesto y para el director de juego.
-- Órdenes de trayecto (destino, pausa, factor temporal).
+- Órdenes de trayecto (destino y factor temporal; pausa/reanudación ya disponible).

@@ -50,6 +50,25 @@ def test_set_system_power_genera_lua(client, juego, auth):
     assert 'commandSetSystemPowerRequest("impulse", 1.500)' in juego.ultimo_lua
 
 
+def test_set_pause_genera_solo_lua_fijo(client, juego, auth):
+    r = client.post(CMD, headers=auth, json={"op": "set_pause", "paused": True})
+    assert r.status_code == 200
+    assert juego.ultimo_lua == "pauseGame()\nreturn '{\"ok\":true}'"
+
+
+def test_set_pause_false_reanuda(client, juego, auth):
+    r = client.post(CMD, headers=auth, json={"op": "set_pause", "paused": False})
+    assert r.status_code == 200
+    assert juego.ultimo_lua == "unpauseGame()\nreturn '{\"ok\":true}'"
+
+
+@pytest.mark.parametrize("valor", ["true", "false", 0, 1, None])
+def test_set_pause_exige_booleano_estricto(client, juego, auth, valor):
+    r = client.post(CMD, headers=auth, json={"op": "set_pause", "paused": valor})
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
 # --- Rechazos: fuera de la lista o fuera de rango -> 422 -----------------------
 
 

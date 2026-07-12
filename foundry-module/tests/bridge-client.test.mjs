@@ -43,3 +43,40 @@ test("events falla cerrado sin token", async () => {
     (error) => error instanceof BridgeError && error.status === 401,
   );
 });
+
+test("setPause envía únicamente la orden cerrada con Bearer", async () => {
+  const calls = [];
+  const client = new BridgeClient({
+    url: "http://bridge.test",
+    token: "secreto-operativo",
+    fetchImpl: async (url, options) => {
+      calls.push({ url, options });
+      return response({ op: "set_pause", result: { ok: true } });
+    },
+  });
+
+  await client.setPause(true);
+  assert.equal(calls[0].url, "http://bridge.test/v1/command");
+  assert.equal(calls[0].options.method, "POST");
+  assert.equal(calls[0].options.headers.Authorization, "Bearer secreto-operativo");
+  assert.equal(calls[0].options.headers["Content-Type"], "application/json");
+  assert.deepEqual(JSON.parse(calls[0].options.body), {
+    op: "set_pause",
+    paused: true,
+  });
+});
+
+test("setPause rechaza valores no booleanos antes de tocar red", async () => {
+  let calls = 0;
+  const client = new BridgeClient({
+    url: "http://bridge.test",
+    token: "x",
+    fetchImpl: async () => {
+      calls += 1;
+      return response({});
+    },
+  });
+
+  await assert.rejects(client.setPause("true"), BridgeError);
+  assert.equal(calls, 0);
+});

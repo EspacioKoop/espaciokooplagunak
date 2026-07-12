@@ -6,6 +6,17 @@
     {{#if conexionConectando}}{{localize "LAGUNAK.Conexion.Conectando"}}{{/if}}
   </p>
 
+  {{#if esGM}}
+  <div class="lagunak-tempo">
+    <button type="button" data-action="pausar">
+      <i class="fa-solid fa-pause"></i> {{localize "LAGUNAK.Tempo.Pausar"}}
+    </button>
+    <button type="button" data-action="reanudar">
+      <i class="fa-solid fa-play"></i> {{localize "LAGUNAK.Tempo.Reanudar"}}
+    </button>
+  </div>
+  {{/if}}
+
   {{#if nave}}
   <h3>{{nave.callsign}}</h3>
   <table class="lagunak-tabla">

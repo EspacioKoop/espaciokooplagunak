@@ -102,6 +102,7 @@ int main(int argc, char** argv)
 #endif
 
     LOG(Info, "Starting...");
+    LOG(Info, "Espaciokoop Lagunak - fork comunitario de EmptyEpsilon");
     new Engine();
     initSystemsAndComponents();
 

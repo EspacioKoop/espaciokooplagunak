@@ -32,6 +32,7 @@ MainMenu::MainMenu()
 
     (new GuiImage(this, "LOGO", "logo_full.png"))->setPosition(0, title_y, sp::Alignment::TopCenter)->setSize(logo_size_x, logo_size_y);
     (new GuiLabel(this, "VERSION", tr("Credits", "Version: {version}").format({{"version", string(VERSION_NUMBER)}}), 20))->setPosition(0, title_y + logo_size, sp::Alignment::TopCenter)->setSize(0, 20);
+    (new GuiLabel(this, "FORK_IDENTITY", "Espaciokoop Lagunak - fork comunitario de EmptyEpsilon", 20))->setPosition(0, title_y + logo_size + 24, sp::Alignment::TopCenter)->setSize(0, 20);
 
     (new GuiLabel(this, "", tr("mainMenu", "Your name:"), 30))->setAlignment(sp::Alignment::CenterLeft)->setPosition({50, -400}, sp::Alignment::BottomLeft)->setSize(300, 50);
     (new GuiTextEntry(this, "USERNAME", PreferencesManager::get("username")))->callback([](string text) {

@@ -86,9 +86,9 @@ bool createDisplayWindows()
         if (n > 0)
             postfix = " - " + string(int(n));
         if (PreferencesManager::get("instance_name") != "")
-            window->setTitle("EmptyEpsilon - " + PreferencesManager::get("instance_name") + postfix);
+            window->setTitle("Espaciokoop Lagunak (EmptyEpsilon) - " + PreferencesManager::get("instance_name") + postfix);
         else
-            window->setTitle("EmptyEpsilon" + postfix);
+            window->setTitle("Espaciokoop Lagunak (EmptyEpsilon)" + postfix);
         window->setIcon("logo_icon.png");
     }
 

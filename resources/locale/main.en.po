@@ -4112,3 +4112,8 @@ msgstr ""
 msgctxt "content_editor"
 msgid "Scenario file must be a safe scenario_*.lua filename."
 msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Imported document contains duplicate JSON keys."
+msgstr ""

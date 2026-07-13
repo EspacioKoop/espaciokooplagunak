@@ -3890,3 +3890,8 @@ msgstr "El número de jugadores recomendado debe estar entre 1 y 64."
 msgctxt "content_editor"
 msgid "Scenario file must be a safe scenario_*.lua filename."
 msgstr "El archivo de escenario debe ser un nombre seguro scenario_*.lua."
+
+
+msgctxt "content_editor"
+msgid "Imported document contains duplicate JSON keys."
+msgstr "El documento importado contiene claves JSON duplicadas."

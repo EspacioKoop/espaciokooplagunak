@@ -54,8 +54,8 @@ Tipos y campos específicos:
 
 `id` admite de 1 a 64 caracteres ASCII en minúsculas: letras, números, `_` y
 `-`; debe empezar por letra o número. El importador limita el documento a 64
-KiB, rechaza claves desconocidas, versiones no soportadas, tipos incorrectos y
-campos excesivamente largos.
+KiB, rechaza claves desconocidas o duplicadas, versiones no soportadas, tipos
+incorrectos y campos excesivamente largos.
 
 ## Seguridad
 
@@ -71,5 +71,9 @@ campos excesivamente largos.
 
 El editor crea, valida e intercambia metadatos declarativos de los cuatro tipos.
 Los objetos del mapa se siguen colocando y ajustando visualmente desde Game
-Master. La siguiente fase conectará los recursos `map` y `ship` con el mapa vivo
-y las plantillas/spawn del juego, manteniendo la misma envoltura versionada.
+Master. Las siguientes fases mantendrán la misma envoltura versionada:
+
+- persistencia local atómica e importación desde archivos ([#53](https://github.com/VaroTv7/espaciokooplagunak/issues/53));
+- conexión con el editor visual de mapas ([#54](https://github.com/VaroTv7/espaciokooplagunak/issues/54));
+- plantillas, previsualización y spawn de naves ([#55](https://github.com/VaroTv7/espaciokooplagunak/issues/55));
+- campañas y personajes vinculados a mapas, naves y puestos ([#56](https://github.com/VaroTv7/espaciokooplagunak/issues/56)).

@@ -10,6 +10,7 @@
 #include "gui/gui2_textentry.h"
 #include <algorithm>
 #include <cctype>
+#include <map>
 #include <set>
 #include <sstream>
 
@@ -196,6 +197,28 @@ bool readString(
     return true;
 }
 
+bool hasDuplicateJsonKeys(const string& input)
+{
+    bool duplicate = false;
+    std::map<int, std::set<std::string>> keys_by_depth;
+    auto callback = [&duplicate, &keys_by_depth](
+        int depth,
+        nlohmann::json::parse_event_t event,
+        nlohmann::json& parsed
+    ) {
+        if (event == nlohmann::json::parse_event_t::object_start)
+            keys_by_depth[depth + 1].clear();
+        else if (event == nlohmann::json::parse_event_t::key)
+        {
+            const auto key = parsed.get<std::string>();
+            if (!keys_by_depth[depth].insert(key).second) duplicate = true;
+        }
+        return true;
+    };
+    auto checked = nlohmann::json::parse(std::string(input), callback, false, false);
+    return duplicate || checked.is_discarded();
+}
+
 bool parseResource(const string& input, ContentResource& resource, string& error)
 {
     if (input.size() > MAX_IMPORT_BYTES)
@@ -209,6 +232,11 @@ bool parseResource(const string& input, ContentResource& resource, string& error
     if (!parsed || !parsed->is_object())
     {
         error = tr("content_editor", "Clipboard does not contain valid content JSON.");
+        return false;
+    }
+    if (hasDuplicateJsonKeys(input))
+    {
+        error = tr("content_editor", "Imported document contains duplicate JSON keys.");
         return false;
     }
     const auto& document = *parsed;

@@ -61,8 +61,9 @@ Los títulos deben traducirse por sentido y género del juego, no palabra por pa
 2. Preservar exactamente placeholders (`%s`, `%d`, `%02d`, `{name}`), etiquetas y saltos de línea funcionales.
 3. No traducir identificadores internos, nombres de plantilla o valores usados para filtrar sin comprobar el código consumidor.
 4. Mantener sincronizados los catálogos `.en.po` y `.es.po` cuando cambia un `msgid` del código o del encabezado Lua.
-5. Validar los catálogos españoles con `msgfmt --check --check-format` y con `tools/i18n_es.py --validate-only`.
-6. Probar visualmente menús y textos largos: una traducción válida puede desbordar el espacio disponible.
+5. Comprobar la sincronía de metadatos Lua con `python3 tools/check_scenario_header_locale.py .`. Mientras se corrige deuda existente, `--report-only` genera el inventario sin devolver error.
+6. Validar los catálogos españoles con `msgfmt --check --check-format` y con `tools/i18n_es.py --validate-only`.
+7. Probar visualmente menús y textos largos: una traducción válida puede desbordar el espacio disponible.
 
 ## Criterio de terminado
 

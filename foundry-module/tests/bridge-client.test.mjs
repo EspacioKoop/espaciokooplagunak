@@ -30,6 +30,22 @@ test("events consulta /v1/events con Bearer sin filtrar el token", async () => {
   assert.equal(calls[0].options.headers.Authorization, "Bearer secreto-operativo");
 });
 
+test("contacts consulta /v1/contacts con Bearer", async () => {
+  const calls = [];
+  const client = new BridgeClient({
+    url: "http://bridge.test/",
+    token: "secreto-operativo",
+    fetchImpl: async (url, options) => {
+      calls.push({ url, options });
+      return response({ contacts: [] });
+    },
+  });
+
+  assert.deepEqual(await client.contacts(), { contacts: [] });
+  assert.equal(calls[0].url, "http://bridge.test/v1/contacts");
+  assert.equal(calls[0].options.headers.Authorization, "Bearer secreto-operativo");
+});
+
 test("events falla cerrado sin token", async () => {
   const client = new BridgeClient({
     url: "http://bridge.test",

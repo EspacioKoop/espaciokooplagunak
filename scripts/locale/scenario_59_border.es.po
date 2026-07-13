@@ -5061,7 +5061,7 @@ msgstr "Escudo frontal: %d%%\n"
 #, lua-format
 msgctxt "shipAssist-comms"
 msgid "Rear Shield: %d%%\n"
-msgstr "Rear Shield: %d%%\n"
+msgstr "Escudo trasero: %d%%\n"
 
 #: scripts/scenario_59_border.lua:9832 scripts/scenario_59_border.lua:9983
 #, lua-format
@@ -5217,13 +5217,13 @@ msgstr "Dirigiéndose hacia ti para asistir."
 #, lua-format
 msgctxt "shipAssist-comms"
 msgid "Dock at %s"
-msgstr "Dock at %s"
+msgstr "Atracar en %s"
 
 #: scripts/scenario_59_border.lua:9998
 #, lua-format
 msgctxt "shipAssist-comms"
 msgid "Docking at %s."
-msgstr "Docking at %s."
+msgstr "Atracando en %s."
 
 #: scripts/scenario_59_border.lua:10005
 #, lua-format

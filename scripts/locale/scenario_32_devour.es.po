@@ -2172,7 +2172,7 @@ msgstr "Escudo frontal: %d%%\n"
 #, lua-format
 msgctxt "shipAssist-comms"
 msgid "Rear Shield: %d%%\n"
-msgstr "Rear Shield: %d%%\n"
+msgstr "Escudo trasero: %d%%\n"
 
 #: scripts/scenario_32_devour.lua:3821 scripts/scenario_32_devour.lua:4760 scripts/scenario_32_devour.lua:4797
 #, lua-format
@@ -2210,13 +2210,13 @@ msgstr ""
 #, lua-format
 msgctxt "shipAssist-comms"
 msgid "Dock at %s"
-msgstr "Dock at %s"
+msgstr "Atracar en %s"
 
 #: scripts/scenario_32_devour.lua:3848 scripts/scenario_32_devour.lua:4770
 #, lua-format
 msgctxt "shipAssist-comms"
 msgid "Docking at %s."
-msgstr "Docking at %s."
+msgstr "Atracando en %s."
 
 #: scripts/scenario_32_devour.lua:3895
 #, lua-format

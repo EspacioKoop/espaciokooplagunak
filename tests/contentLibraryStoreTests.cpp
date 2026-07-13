@@ -271,6 +271,10 @@ void testManagedImportExportAndSymlinks()
         "non-json filename is rejected");
     expect(store.importFromInbox("CON.json", imported) == ContentStoreError::InvalidFilename,
         "reserved Windows device filename is rejected portably");
+    expect(store.importFromInbox("CON.foo.json", imported) == ContentStoreError::InvalidFilename,
+        "reserved Windows device filename with extra extension is rejected");
+    expect(store.importFromInbox("lpt9.backup.json", imported) == ContentStoreError::InvalidFilename,
+        "reserved Windows device filename is rejected case-insensitively");
 
     writeAll(store.rootPath() / "inbox" / "oversized.json",
         std::string(CONTENT_RESOURCE_MAX_IMPORT_BYTES + 1, 'x'));

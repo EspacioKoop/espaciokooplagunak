@@ -133,8 +133,8 @@ bool portableFilename(const std::string& value)
         return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
             || (c >= '0' && c <= '9') || c == '_' || c == '-' || c == '.';
     })) return false;
-    auto stem = fs::path(value).stem().string();
-    std::transform(stem.begin(), stem.end(), stem.begin(), [](unsigned char c) {
+    auto device_name = value.substr(0, value.find('.'));
+    std::transform(device_name.begin(), device_name.end(), device_name.begin(), [](unsigned char c) {
         return static_cast<char>(std::toupper(c));
     });
     static const std::set<std::string> reserved = {
@@ -142,7 +142,7 @@ bool portableFilename(const std::string& value)
         "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5",
         "LPT6", "LPT7", "LPT8", "LPT9",
     };
-    return reserved.count(stem) == 0;
+    return reserved.count(device_name) == 0;
 }
 
 fs::path normalizedRoot(const fs::path& input, bool& invalid)

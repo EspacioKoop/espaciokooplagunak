@@ -1,36 +1,15 @@
 #include "contentEditor.h"
 #include "clipboard.h"
 #include "i18n.h"
-#include "io/json.h"
 #include "gui/gui2_button.h"
 #include "gui/gui2_label.h"
 #include "gui/gui2_listbox.h"
 #include "gui/gui2_panel.h"
 #include "gui/gui2_selector.h"
 #include "gui/gui2_textentry.h"
-#include <algorithm>
-#include <cctype>
-#include <map>
-#include <set>
-#include <sstream>
 
 namespace
 {
-constexpr int CONTENT_SCHEMA_VERSION = 1;
-constexpr size_t MAX_IMPORT_BYTES = 64 * 1024;
-
-string typeId(ContentResourceType type)
-{
-    switch(type)
-    {
-    case ContentResourceType::Campaign: return "campaign";
-    case ContentResourceType::Map: return "map";
-    case ContentResourceType::Character: return "character";
-    case ContentResourceType::Ship: return "ship";
-    }
-    return "";
-}
-
 string typeLabel(ContentResourceType type)
 {
     switch(type)
@@ -41,16 +20,6 @@ string typeLabel(ContentResourceType type)
     case ContentResourceType::Ship: return tr("content_editor", "Ship");
     }
     return "";
-}
-
-bool parseType(const std::string& value, ContentResourceType& type)
-{
-    if (value == "campaign") type = ContentResourceType::Campaign;
-    else if (value == "map") type = ContentResourceType::Map;
-    else if (value == "character") type = ContentResourceType::Character;
-    else if (value == "ship") type = ContentResourceType::Ship;
-    else return false;
-    return true;
 }
 
 std::pair<string, string> fieldLabels(ContentResourceType type)
@@ -68,245 +37,6 @@ std::pair<string, string> fieldLabels(ContentResourceType type)
     }
     return {"", ""};
 }
-
-bool validId(const string& value)
-{
-    if (value.empty() || value.size() > 64) return false;
-    for (char c : value)
-        if (!(std::islower(static_cast<unsigned char>(c))
-            || std::isdigit(static_cast<unsigned char>(c))
-            || c == '_' || c == '-')) return false;
-    return std::isalnum(static_cast<unsigned char>(value.front()));
-}
-
-bool validIdList(const string& value)
-{
-    if (value.empty()) return true;
-    std::stringstream stream(value);
-    std::string item;
-    while (std::getline(stream, item, ','))
-    {
-        const auto first = item.find_first_not_of(" \t");
-        const auto last = item.find_last_not_of(" \t");
-        if (first == std::string::npos || !validId(item.substr(first, last - first + 1)))
-            return false;
-    }
-    return true;
-}
-
-bool validScenarioFile(const string& value)
-{
-    if (!value.startswith("scenario_") || !value.endswith(".lua") || value.find("..") >= 0)
-        return false;
-    return std::all_of(value.begin(), value.end(), [](unsigned char c) {
-        return std::isalnum(c) || c == '_' || c == '-' || c == '.';
-    });
-}
-
-bool validPlayerCount(const string& value)
-{
-    if (value.empty()) return true;
-    if (!std::all_of(value.begin(), value.end(), [](unsigned char c) { return std::isdigit(c); }))
-        return false;
-    try
-    {
-        int count = std::stoi(value);
-        return count >= 1 && count <= 64;
-    }
-    catch (...)
-    {
-        return false;
-    }
-}
-
-string validateResource(const ContentResource& resource)
-{
-    if (!validId(resource.id))
-        return tr("content_editor", "ID must use 1-64 lowercase letters, numbers, '_' or '-'.");
-    if (resource.name.empty() || resource.name.size() > 120)
-        return tr("content_editor", "Name is required and must be at most 120 characters.");
-    if (resource.description.size() > 4000)
-        return tr("content_editor", "Description is too long (maximum 4000 characters).");
-    if (resource.primary.size() > 1000 || resource.secondary.size() > 1000)
-        return tr("content_editor", "A type-specific field is too long.");
-    if (resource.type != ContentResourceType::Campaign && resource.primary.empty())
-        return tr("content_editor", "The first type-specific field is required.");
-    if (resource.type == ContentResourceType::Campaign
-        && (!validIdList(resource.primary)
-            || (!resource.secondary.empty() && !validId(resource.secondary))))
-        return tr("content_editor", "Campaign map IDs are invalid.");
-    if (resource.type == ContentResourceType::Map && !validScenarioFile(resource.primary))
-        return tr("content_editor", "Scenario file must be a safe scenario_*.lua filename.");
-    if (resource.type == ContentResourceType::Map && !validPlayerCount(resource.secondary))
-        return tr("content_editor", "Recommended player count must be between 1 and 64.");
-    return "";
-}
-
-nlohmann::json serializeResource(const ContentResource& resource)
-{
-    auto labels = fieldLabels(resource.type);
-    (void)labels;
-    nlohmann::json fields;
-    switch(resource.type)
-    {
-    case ContentResourceType::Campaign:
-        fields = {{"map_ids", resource.primary}, {"starting_map_id", resource.secondary}};
-        break;
-    case ContentResourceType::Map:
-        fields = {{"scenario_file", resource.primary}, {"recommended_players", resource.secondary}};
-        break;
-    case ContentResourceType::Character:
-        fields = {{"role", resource.primary}, {"callsign", resource.secondary}};
-        break;
-    case ContentResourceType::Ship:
-        fields = {{"template", resource.primary}, {"faction", resource.secondary}};
-        break;
-    }
-    return {
-        {"format", "espaciokoop-content"},
-        {"version", CONTENT_SCHEMA_VERSION},
-        {"type", typeId(resource.type)},
-        {"id", resource.id},
-        {"name", resource.name},
-        {"description", resource.description},
-        {"fields", fields},
-    };
-}
-
-bool readString(
-    const nlohmann::json& object,
-    const char* key,
-    string& output,
-    size_t maximum,
-    string& error
-)
-{
-    auto it = object.find(key);
-    if (it == object.end() || !it->is_string())
-    {
-        error = tr("content_editor", "Imported document has a missing or invalid text field.");
-        return false;
-    }
-    std::string value = it->get<std::string>();
-    if (value.size() > maximum)
-    {
-        error = tr("content_editor", "Imported text exceeds the allowed size.");
-        return false;
-    }
-    output = value;
-    return true;
-}
-
-bool hasDuplicateJsonKeys(const string& input)
-{
-    bool duplicate = false;
-    std::map<int, std::set<std::string>> keys_by_depth;
-    auto callback = [&duplicate, &keys_by_depth](
-        int depth,
-        nlohmann::json::parse_event_t event,
-        nlohmann::json& parsed
-    ) {
-        if (event == nlohmann::json::parse_event_t::object_start)
-            keys_by_depth[depth + 1].clear();
-        else if (event == nlohmann::json::parse_event_t::key)
-        {
-            const auto key = parsed.get<std::string>();
-            if (!keys_by_depth[depth].insert(key).second) duplicate = true;
-        }
-        return true;
-    };
-    auto checked = nlohmann::json::parse(std::string(input), callback, false, false);
-    return duplicate || checked.is_discarded();
-}
-
-bool parseResource(const string& input, ContentResource& resource, string& error)
-{
-    if (input.size() > MAX_IMPORT_BYTES)
-    {
-        error = tr("content_editor", "Import is larger than 64 KiB.");
-        return false;
-    }
-
-    std::string parse_error;
-    auto parsed = sp::json::parse(std::string(input), parse_error);
-    if (!parsed || !parsed->is_object())
-    {
-        error = tr("content_editor", "Clipboard does not contain valid content JSON.");
-        return false;
-    }
-    if (hasDuplicateJsonKeys(input))
-    {
-        error = tr("content_editor", "Imported document contains duplicate JSON keys.");
-        return false;
-    }
-    const auto& document = *parsed;
-    const std::set<std::string> allowed = {
-        "format", "version", "type", "id", "name", "description", "fields"
-    };
-    for (auto it = document.begin(); it != document.end(); ++it)
-        if (!allowed.count(it.key()))
-        {
-            error = tr("content_editor", "Imported document contains unknown fields.");
-            return false;
-        }
-
-    auto format_it = document.find("format");
-    auto version_it = document.find("version");
-    if (format_it == document.end() || !format_it->is_string()
-        || format_it->get<std::string>() != "espaciokoop-content"
-        || version_it == document.end() || !version_it->is_number_integer()
-        || version_it->get<int>() != CONTENT_SCHEMA_VERSION)
-    {
-        error = tr("content_editor", "Unsupported content format or version.");
-        return false;
-    }
-
-    auto type_it = document.find("type");
-    if (type_it == document.end() || !type_it->is_string()
-        || !parseType(type_it->get<std::string>(), resource.type))
-    {
-        error = tr("content_editor", "Unknown content type.");
-        return false;
-    }
-    if (!readString(document, "id", resource.id, 64, error)
-        || !readString(document, "name", resource.name, 120, error)
-        || !readString(document, "description", resource.description, 4000, error))
-        return false;
-
-    auto fields_it = document.find("fields");
-    if (fields_it == document.end() || !fields_it->is_object())
-    {
-        error = tr("content_editor", "Imported document has invalid type-specific fields.");
-        return false;
-    }
-
-    const char* primary_key = "";
-    const char* secondary_key = "";
-    switch(resource.type)
-    {
-    case ContentResourceType::Campaign:
-        primary_key = "map_ids"; secondary_key = "starting_map_id"; break;
-    case ContentResourceType::Map:
-        primary_key = "scenario_file"; secondary_key = "recommended_players"; break;
-    case ContentResourceType::Character:
-        primary_key = "role"; secondary_key = "callsign"; break;
-    case ContentResourceType::Ship:
-        primary_key = "template"; secondary_key = "faction"; break;
-    }
-    const std::set<std::string> allowed_fields = {primary_key, secondary_key};
-    for (auto it = fields_it->begin(); it != fields_it->end(); ++it)
-        if (!allowed_fields.count(it.key()))
-        {
-            error = tr("content_editor", "Imported document contains unknown type-specific fields.");
-            return false;
-        }
-    if (!readString(*fields_it, primary_key, resource.primary, 1000, error)
-        || !readString(*fields_it, secondary_key, resource.secondary, 1000, error))
-        return false;
-
-    error = validateResource(resource);
-    return error.empty();
-}
 }
 
 GuiContentEditor::GuiContentEditor(GuiContainer* owner)
@@ -320,20 +50,20 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
 
     type_selector = new GuiSelector(box, "TYPE", [this](int, string value) {
         ContentResourceType type;
-        if (parseType(value, type)) setType(type);
+        if (parseContentResourceType(value, type)) requestSetType(type);
     });
     for (auto type : {ContentResourceType::Campaign, ContentResourceType::Map,
                       ContentResourceType::Character, ContentResourceType::Ship})
-        type_selector->addEntry(typeLabel(type), typeId(type));
+        type_selector->addEntry(typeLabel(type), contentResourceTypeId(type));
     type_selector->setSelectionIndex(0)->setPosition(30, 70, sp::Alignment::TopLeft)->setSize(300, 45);
 
     resource_list = new GuiListbox(box, "RESOURCES", [this](int index, string) {
         if (index >= 0 && index < int(visible_indices.size()))
-            loadResource(visible_indices[index]);
+            requestLoadResource(visible_indices[index]);
     });
     resource_list->setPosition(30, 125, sp::Alignment::TopLeft)->setSize(300, 430);
 
-    (new GuiButton(box, "NEW", tr("content_editor", "New"), [this]() { clearForm(); }))
+    (new GuiButton(box, "NEW", tr("content_editor", "New"), [this]() { requestClearForm(); }))
         ->setPosition(30, 570, sp::Alignment::TopLeft)->setSize(140, 45);
     (new GuiButton(box, "DELETE", tr("content_editor", "Delete"), [this]() { deleteResource(); }))
         ->setPosition(190, 570, sp::Alignment::TopLeft)->setSize(140, 45);
@@ -369,13 +99,19 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
         ->setPosition(x + 360, 445)->setSize(160, 45);
 
     status_label = new GuiLabel(box, "STATUS", "", 18);
-    status_label->setPosition(x, 510)->setSize(690, 80);
+    status_label->setPosition(x, 510)->setSize(690, 70);
 
-    (new GuiButton(box, "CLOSE", tr("button", "Close"), [this]() { hide(); }))
+    (new GuiLabel(
+        box,
+        "SESSION_WARNING",
+        tr("content_editor", "Session-only library: export important resources before closing."),
+        16
+    ))->setPosition(x, 585)->setSize(690, 35);
+
+    (new GuiButton(box, "CLOSE", tr("button", "Close"), [this]() { requestClose(); }))
         ->setPosition(-30, -25, sp::Alignment::BottomRight)->setSize(180, 45);
 
     setType(ContentResourceType::Campaign);
-    clearForm();
 }
 
 bool GuiContentEditor::onMouseDown(sp::io::Pointer::Button, glm::vec2, sp::io::Pointer::ID)
@@ -383,9 +119,25 @@ bool GuiContentEditor::onMouseDown(sp::io::Pointer::Button, glm::vec2, sp::io::P
     return true;
 }
 
+void GuiContentEditor::requestSetType(ContentResourceType type)
+{
+    if (type == current_type)
+    {
+        type_selector->setSelectionIndex(static_cast<int>(current_type));
+        return;
+    }
+    if (!confirmDiscard("type:" + contentResourceTypeId(type)))
+    {
+        type_selector->setSelectionIndex(static_cast<int>(current_type));
+        return;
+    }
+    setType(type);
+}
+
 void GuiContentEditor::setType(ContentResourceType type)
 {
     current_type = type;
+    type_selector->setSelectionIndex(static_cast<int>(type));
     auto labels = fieldLabels(type);
     primary_label->setText(labels.first);
     secondary_label->setText(labels.second);
@@ -403,6 +155,20 @@ void GuiContentEditor::refreshList()
         visible_indices.push_back(index);
         resource_list->addEntry(resources[index].name, resources[index].id);
     }
+    syncListSelection();
+}
+
+void GuiContentEditor::syncListSelection()
+{
+    int visible_selection = -1;
+    for (int index = 0; index < int(visible_indices.size()); ++index)
+        if (visible_indices[index] == selected_index) visible_selection = index;
+    resource_list->setSelectionIndex(visible_selection);
+}
+
+void GuiContentEditor::requestClearForm()
+{
+    if (confirmDiscard("new")) clearForm();
 }
 
 void GuiContentEditor::clearForm()
@@ -411,12 +177,25 @@ void GuiContentEditor::clearForm()
     pending_import = "";
     pending_save = "";
     pending_delete_key = "";
+    discard_guard.reset();
     id_entry->setText("");
     name_entry->setText("");
     description_entry->setText("");
     primary_entry->setText("");
     secondary_entry->setText("");
+    clean_snapshot = formResource();
+    syncListSelection();
     setStatus(tr("content_editor", "Create a resource or import one from the clipboard."));
+}
+
+void GuiContentEditor::requestLoadResource(int index)
+{
+    if (!confirmDiscard("load:" + string(index)))
+    {
+        syncListSelection();
+        return;
+    }
+    loadResource(index);
 }
 
 void GuiContentEditor::loadResource(int index)
@@ -424,16 +203,32 @@ void GuiContentEditor::loadResource(int index)
     if (index < 0 || index >= int(resources.size())) return;
     selected_index = index;
     const auto& resource = resources[index];
-    current_type = resource.type;
+    if (current_type != resource.type)
+    {
+        current_type = resource.type;
+        type_selector->setSelectionIndex(static_cast<int>(resource.type));
+        auto labels = fieldLabels(resource.type);
+        primary_label->setText(labels.first);
+        secondary_label->setText(labels.second);
+        refreshList();
+    }
     id_entry->setText(resource.id);
     name_entry->setText(resource.name);
     description_entry->setText(resource.description);
     primary_entry->setText(resource.primary);
     secondary_entry->setText(resource.secondary);
+    clean_snapshot = resource;
     pending_import = "";
     pending_save = "";
     pending_delete_key = "";
+    discard_guard.reset();
+    syncListSelection();
     setStatus(tr("content_editor", "Resource loaded."));
+}
+
+void GuiContentEditor::requestClose()
+{
+    if (confirmDiscard("close")) hide();
 }
 
 ContentResource GuiContentEditor::formResource() const
@@ -448,16 +243,28 @@ ContentResource GuiContentEditor::formResource() const
     };
 }
 
+bool GuiContentEditor::isFormDirty() const
+{
+    return formResource() != clean_snapshot;
+}
+
+bool GuiContentEditor::confirmDiscard(const string& action)
+{
+    if (discard_guard.confirm(action, formResource(), clean_snapshot)) return true;
+    setStatus(tr("content_editor", "Unsaved changes. Repeat the action to discard them."));
+    return false;
+}
+
 void GuiContentEditor::saveResource()
 {
     auto resource = formResource();
-    auto error = validateResource(resource);
-    if (!error.empty()) return setStatus(error);
+    auto error = validateContentResource(resource);
+    if (error != ContentResourceError::None) return setStatus(errorText(error));
 
     int existing = findResource(resource.type, resource.id);
     const bool selected = selected_index >= 0 && selected_index < int(resources.size());
     const bool replacing_other = existing >= 0 && existing != selected_index;
-    const string save_signature = serializeResource(resource).dump();
+    const string save_signature = serializeContentResource(resource);
     if (replacing_other && pending_save != save_signature)
     {
         pending_save = save_signature;
@@ -487,9 +294,11 @@ void GuiContentEditor::saveResource()
         selected_index = int(resources.size()) - 1;
         setStatus(tr("content_editor", "Resource created."));
     }
+    clean_snapshot = resource;
     pending_import = "";
     pending_save = "";
     pending_delete_key = "";
+    discard_guard.reset();
     refreshList();
 }
 
@@ -497,7 +306,8 @@ void GuiContentEditor::deleteResource()
 {
     if (selected_index < 0 || selected_index >= int(resources.size()))
         return setStatus(tr("content_editor", "Select a saved resource first."));
-    string key = typeId(resources[selected_index].type) + ":" + resources[selected_index].id;
+    string key = contentResourceTypeId(resources[selected_index].type)
+        + ":" + resources[selected_index].id + "\n" + serializeContentResource(formResource());
     if (pending_delete_key != key)
     {
         pending_delete_key = key;
@@ -512,18 +322,18 @@ void GuiContentEditor::deleteResource()
 void GuiContentEditor::exportResource()
 {
     auto resource = formResource();
-    auto error = validateResource(resource);
-    if (!error.empty()) return setStatus(error);
-    Clipboard::setClipboard(serializeResource(resource).dump(2));
+    auto error = validateContentResource(resource);
+    if (error != ContentResourceError::None) return setStatus(errorText(error));
+    Clipboard::setClipboard(serializeContentResource(resource, 2));
     setStatus(tr("content_editor", "Resource exported to the clipboard."));
 }
 
 void GuiContentEditor::importResource()
 {
-    string input = Clipboard::readClipboard();
+    const string input = Clipboard::readClipboard();
     ContentResource resource;
-    string error;
-    if (!parseResource(input, resource, error)) return setStatus(error);
+    const auto error = parseContentResource(input, resource);
+    if (error != ContentResourceError::None) return setStatus(errorText(error));
 
     int existing = findResource(resource.type, resource.id);
     if (existing >= 0 && pending_import != input)
@@ -531,6 +341,7 @@ void GuiContentEditor::importResource()
         pending_import = input;
         return setStatus(tr("content_editor", "This ID already exists. Press Import again to replace it."));
     }
+    if (!confirmDiscard("import:" + input)) return;
 
     if (existing >= 0)
     {
@@ -544,6 +355,9 @@ void GuiContentEditor::importResource()
     }
     current_type = resource.type;
     type_selector->setSelectionIndex(static_cast<int>(resource.type));
+    auto labels = fieldLabels(resource.type);
+    primary_label->setText(labels.first);
+    secondary_label->setText(labels.second);
     refreshList();
     loadResource(selected_index);
     pending_import = "";
@@ -558,6 +372,51 @@ int GuiContentEditor::findResource(ContentResourceType type, const string& id) c
     for (int index = 0; index < int(resources.size()); ++index)
         if (resources[index].type == type && resources[index].id == id) return index;
     return -1;
+}
+
+string GuiContentEditor::errorText(ContentResourceError error) const
+{
+    switch(error)
+    {
+    case ContentResourceError::None: return "";
+    case ContentResourceError::ImportTooLarge:
+        return tr("content_editor", "Import is larger than 64 KiB.");
+    case ContentResourceError::InvalidJson:
+        return tr("content_editor", "Clipboard does not contain valid content JSON.");
+    case ContentResourceError::DuplicateJsonKeys:
+        return tr("content_editor", "Imported document contains duplicate JSON keys.");
+    case ContentResourceError::UnknownFields:
+        return tr("content_editor", "Imported document contains unknown fields.");
+    case ContentResourceError::UnsupportedFormatOrVersion:
+        return tr("content_editor", "Unsupported content format or version.");
+    case ContentResourceError::UnknownType:
+        return tr("content_editor", "Unknown content type.");
+    case ContentResourceError::MissingOrInvalidText:
+        return tr("content_editor", "Imported document has a missing or invalid text field.");
+    case ContentResourceError::TextTooLong:
+        return tr("content_editor", "Imported text exceeds the allowed size.");
+    case ContentResourceError::InvalidTypeFields:
+        return tr("content_editor", "Imported document has invalid type-specific fields.");
+    case ContentResourceError::UnknownTypeFields:
+        return tr("content_editor", "Imported document contains unknown type-specific fields.");
+    case ContentResourceError::InvalidId:
+        return tr("content_editor", "ID must use 1-64 lowercase letters, numbers, '_' or '-'.");
+    case ContentResourceError::InvalidName:
+        return tr("content_editor", "Name is required and must be at most 120 characters.");
+    case ContentResourceError::DescriptionTooLong:
+        return tr("content_editor", "Description is too long (maximum 4000 characters).");
+    case ContentResourceError::TypeFieldTooLong:
+        return tr("content_editor", "A type-specific field is too long.");
+    case ContentResourceError::MissingPrimaryField:
+        return tr("content_editor", "The first type-specific field is required.");
+    case ContentResourceError::InvalidCampaignMapIds:
+        return tr("content_editor", "Campaign map IDs are invalid.");
+    case ContentResourceError::UnsafeScenarioFile:
+        return tr("content_editor", "Scenario file must be a safe scenario_*.lua filename.");
+    case ContentResourceError::InvalidPlayerCount:
+        return tr("content_editor", "Recommended player count must be between 1 and 64.");
+    }
+    return tr("content_editor", "Clipboard does not contain valid content JSON.");
 }
 
 void GuiContentEditor::setStatus(const string& text)

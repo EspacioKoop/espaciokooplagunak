@@ -54,6 +54,7 @@ else()
     set(WITH_DISCORD OFF)
     option(APK_WITH_PACKS "Build APK with pack files (3D assets)" ON)
 endif()
+option(BUILD_CONTENT_RESOURCE_TESTS "Build content resource codec tests" OFF)
 
 message(STATUS "EmptyEpsilon Version = ${PROJECT_VERSION}")
 
@@ -272,6 +273,8 @@ set(MAIN_SOURCES
     src/screens/extra/databaseScreen.cpp
     src/screens/extra/commsScreen.cpp
     src/screens/extra/shipLogScreen.cpp
+    src/content/contentResource.cpp
+    src/content/contentResource.h
     src/screens/gm/gameMasterScreen.cpp
     src/screens/gm/contentEditor.cpp
     src/screens/gm/contentEditor.h
@@ -705,6 +708,19 @@ target_link_libraries(${PROJECT_NAME}
         "$<$<BOOL:${WITH_DISCORD}>:discord_h>"
         "$<$<PLATFORM_ID:Darwin>:-framework Foundation>"
 )
+
+if(BUILD_CONTENT_RESOURCE_TESTS)
+    enable_testing()
+    add_executable(content_resource_tests
+        tests/contentResourceTests.cpp
+        src/content/contentResource.cpp
+        src/content/contentResource.h)
+    target_include_directories(content_resource_tests PRIVATE
+        "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>")
+    target_link_libraries(content_resource_tests PRIVATE seriousproton)
+    add_test(NAME content_resource_codec COMMAND content_resource_tests)
+endif()
+
 if(WIN32)
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
         target_link_libraries(${PROJECT_NAME} PUBLIC "-mconsole")

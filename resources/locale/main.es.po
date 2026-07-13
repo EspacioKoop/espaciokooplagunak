@@ -125,12 +125,12 @@ msgstr "retroceder"
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:39
 msgctxt "hotkey_Cinematic"
 msgid "Strafe left"
-msgstr "ametrallar a la izquierda"
+msgstr "Desplazarse lateralmente a la izquierda"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:40
 msgctxt "hotkey_Cinematic"
 msgid "Strafe right"
-msgstr "ametrallar a la derecha"
+msgstr "Desplazarse lateralmente a la derecha"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:41
 msgctxt "hotkey_Cinematic"
@@ -230,7 +230,7 @@ msgstr "Mostrar ayuda en el juego"
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:351
 msgctxt "hotkey_General"
 msgid "Return to ship options menu"
-msgstr "Volver al menú de opciones de envío"
+msgstr "Volver al menú de opciones de la nave"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:352
 msgctxt "hotkey_General"
@@ -250,7 +250,7 @@ msgstr "Transmitir chat de voz al servidor"
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:355
 msgctxt "hotkey_General"
 msgid "Broadcast voice chat to ship"
-msgstr "Transmitir chat de voz al envío"
+msgstr "Transmitir el chat de voz a la nave"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:356
 msgctxt "hotkey_General"
@@ -555,12 +555,12 @@ msgstr "Abortar salto"
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:425
 msgctxt "hotkey_Helms"
 msgid "Combat boost left"
-msgstr "Impulso de combate restante"
+msgstr "Impulso de combate a la izquierda"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:426
 msgctxt "hotkey_Helms"
 msgid "Combat boost right"
-msgstr "Impulso de combate correcto"
+msgstr "Impulso de combate a la derecha"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:427
 msgctxt "hotkey_Helms"
@@ -570,7 +570,7 @@ msgstr "Impulso de combate hacia adelante"
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:430
 msgctxt "hotkey_Weapons"
 msgid "Select homing"
-msgstr "Seleccionar referencia"
+msgstr "Seleccionar misil guiado"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:430 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:431 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:432 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:433 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:434 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:437 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:438 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:439 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:441 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:442 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:443 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:444 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:445 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:446 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:447 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:448 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:449 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:450 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:451 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:452 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:453 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:454 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:455 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:456 /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:457
 msgctxt "hotkey_menu"
@@ -585,7 +585,7 @@ msgstr "Seleccionar arma nuclear"
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:432
 msgctxt "hotkey_Weapons"
 msgid "Select mine"
-msgstr "Selecciona el mio"
+msgstr "Seleccionar mina"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:433
 msgctxt "hotkey_Weapons"
@@ -600,17 +600,17 @@ msgstr "Seleccione HVLI"
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:437
 msgctxt "hotkey_Weapons"
 msgid "Load tube {number}"
-msgstr "tubo de carga {number}"
+msgstr "Cargar tubo {number}"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:438
 msgctxt "hotkey_Weapons"
 msgid "Unload tube {number}"
-msgstr "tubo de descarga {number}"
+msgstr "Descargar tubo {number}"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:439
 msgctxt "hotkey_Weapons"
 msgid "Fire tube {number}"
-msgstr "tubo de fuego {number}"
+msgstr "Disparar tubo {number}"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:441
 msgctxt "hotkey_Weapons"
@@ -625,7 +625,7 @@ msgstr "Seleccione el siguiente objetivo (cualquiera)"
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:443
 msgctxt "hotkey_Weapons"
 msgid "Toggle shields"
-msgstr "Escudos de palanca"
+msgstr "Alternar escudos"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:444
 msgctxt "hotkey_Weapons"
@@ -1069,7 +1069,7 @@ msgstr "Conectando..."
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/autoConnectScreen.cpp:146
 msgid "Waiting for ship on "
-msgstr "Esperando el envío "
+msgstr "Esperando a la nave en "
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/autoConnectScreen.cpp:148
 msgid "Waiting for ship..."
@@ -1762,7 +1762,7 @@ msgstr "Iniciar tutorial"
 #: /home/varo/proyectos/espaciokolagunak/src/missileWeaponData.cpp:110
 msgctxt "missile"
 msgid "Homing"
-msgstr "hogar"
+msgstr "Guiado"
 
 #: /home/varo/proyectos/espaciokolagunak/src/missileWeaponData.cpp:112
 msgctxt "missile"
@@ -2062,7 +2062,7 @@ msgstr "Juego pausado"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/indicatorOverlays.cpp:33
 msgid "Unpause"
-msgstr "Reanudar la pausa"
+msgstr "Reanudar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/indicatorOverlays.cpp:147
 msgid "Defeat!"
@@ -2172,7 +2172,7 @@ msgstr "Frontal"
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/mainScreenControls.cpp:88
 msgctxt "mainscreen"
 msgid "Back"
-msgstr "Volver"
+msgstr "Trasera"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/mainScreenControls.cpp:98
 msgctxt "mainscreen"
@@ -2270,7 +2270,7 @@ msgstr "Enlace a comunicaciones"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/openCommsButton.cpp:31 /home/varo/proyectos/espaciokolagunak/src/screens/crew4/operationsScreen.cpp:89 /home/varo/proyectos/espaciokolagunak/src/screens/crew6/relayScreen.cpp:149
 msgid "Open comms"
-msgstr "Comunicaciones abiertas"
+msgstr "Abrir comunicaciones"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/openCommsButton.cpp:33
 msgid "No comms target"
@@ -2422,7 +2422,7 @@ msgstr "AUTODESTRUCCIÓN ACTIVADA"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/selfDestructIndicator.cpp:38
 msgid "Waiting for authorization input: {codes} left"
-msgstr "Esperando entrada de autorización: {codes} izquierda"
+msgstr "Esperando códigos de autorización: quedan {codes}"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/selfDestructIndicator.cpp:42
 msgid "Have a nice day."
@@ -2487,7 +2487,7 @@ msgstr "Bloquear la cámara en el objetivo del barco."
 #: /home/varo/proyectos/espaciokolagunak/src/screens/cinematicViewScreen.cpp:57
 msgctxt "button"
 msgid "Cycle through ships"
-msgstr "Recorrer barcos en bicicleta"
+msgstr "Recorrer las naves"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/cinematicViewScreen.cpp:65 /home/varo/proyectos/espaciokolagunak/src/screens/crewStationScreen.cpp:71 /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:356 /home/varo/proyectos/espaciokolagunak/src/screens/mainScreen.cpp:58 /home/varo/proyectos/espaciokolagunak/src/screens/spectatorScreen.cpp:106 /home/varo/proyectos/espaciokolagunak/src/screens/topDownScreen.cpp:46
 msgctxt "hotkey_F1"
@@ -2505,7 +2505,7 @@ msgstr "Haces"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew1/singlePilotScreen.cpp:136
 msgid "Open Comms"
-msgstr "Comunicaciones abiertas"
+msgstr "Abrir comunicaciones"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew4/operationsScreen.cpp:93 /home/varo/proyectos/espaciokolagunak/src/screens/crew6/relayScreen.cpp:174
 msgid "Place waypoint"
@@ -2526,7 +2526,7 @@ msgstr "Reloj"
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:242
 msgctxt "slider"
 msgid "Power"
-msgstr "poder"
+msgstr "Potencia"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:248
 msgctxt "slider"
@@ -2536,7 +2536,7 @@ msgstr "Refrigerante"
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:386
 msgctxt "slider"
 msgid "Power: {current_level}% / {requested}%"
-msgstr "Poder: {current_level}% / {requested}%"
+msgstr "Potencia: {current_level}% / {requested}%"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:402
 msgctxt "slider"
@@ -2667,7 +2667,7 @@ msgstr "Distancia"
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/scienceScreen.cpp:119
 msgctxt "science"
 msgid "Bearing"
-msgstr "Rodamiento"
+msgstr "Demora"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/scienceScreen.cpp:121
 msgctxt "science"
@@ -2764,7 +2764,7 @@ msgstr "Refrigerante"
 #: /home/varo/proyectos/espaciokolagunak/src/screens/extra/powerManagement.cpp:42
 msgctxt "button"
 msgid "Power"
-msgstr "poder"
+msgstr "Potencia"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/extra/powerManagement.cpp:43
 msgctxt "button"
@@ -2813,7 +2813,7 @@ msgstr "{callsign} - Apertura de comunicaciones con {target}"
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/chatDialog.cpp:105
 msgctxt "chatGM"
 msgid "{callsign} - Hailing as {target}"
-msgstr "{callsign} - Saludando como {target}"
+msgstr "{callsign} - Contactando como {target}"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/chatDialog.cpp:109
 msgctxt "chatGM"
@@ -2893,7 +2893,7 @@ msgstr "retocar"
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:259
 msgctxt "button"
 msgid "Hail ship"
-msgstr "Granizo"
+msgstr "Contactar con la nave"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/gameMasterScreen.cpp:298
 msgid "Right click to issue movement/target orders"
@@ -2975,7 +2975,7 @@ msgstr "Tasa de cambio de potencia:"
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:278
 msgctxt "tweak-text"
 msgid "Auto repair rate:"
-msgstr "Tasa de reparación de automóviles:"
+msgstr "Tasa de autorreparación:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:305
 msgctxt "tweak-tab"
@@ -3115,7 +3115,7 @@ msgstr "Propulsores de combate"
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:411
 msgctxt "tweak-text"
 msgid "Charge available:"
-msgstr "Cargo disponible:"
+msgstr "Carga disponible:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:412
 msgctxt "tweak-text"
@@ -3200,7 +3200,7 @@ msgstr "Misiles guiados:"
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:432
 msgctxt "tweak-text"
 msgid "Homing capacity:"
-msgstr "Capacidad de referencia:"
+msgstr "Capacidad de misiles guiados:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:433
 msgctxt "tweak-text"
@@ -3265,7 +3265,7 @@ msgstr "Tamaño:"
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:449
 msgctxt "tweak-text"
 msgid "Allow homing:"
-msgstr "Permitir retorno a casa:"
+msgstr "Permitir misiles guiados:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:450
 msgctxt "tweak-text"
@@ -3275,7 +3275,7 @@ msgstr "Permitir armas nucleares:"
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:451
 msgctxt "tweak-text"
 msgid "Allow mine:"
-msgstr "Permitir el mío:"
+msgstr "Permitir minas:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:452
 msgctxt "tweak-text"
@@ -3565,7 +3565,7 @@ msgstr "Comunicaciones abiertas con {name}"
 #: /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:94
 msgctxt "shiplog"
 msgid "Hailing: {name}"
-msgstr "Saludando: {name}"
+msgstr "Contactando con {name}"
 
 #: /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:116 /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:117
 msgctxt "chatdialog"
@@ -3590,17 +3590,17 @@ msgstr "Comunicaciones rechazadas a {callsign}"
 #: /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:136
 msgctxt "shiplog"
 msgid "Hail suddenly went dead."
-msgstr "El granizo de repente se apagó."
+msgstr "La llamada se interrumpió de repente."
 
 #: /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:140
 msgctxt "shiplog"
 msgid "Accepted hail from {callsign}"
-msgstr "Aceptado granizo de {callsign}"
+msgstr "Llamada de {callsign} aceptada"
 
 #: /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:159
 msgctxt "shiplog"
 msgid "Refused hail from {callsign}"
-msgstr "Rechazado granizo de {callsign}"
+msgstr "Llamada de {callsign} rechazada"
 
 #: /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:172
 msgctxt "shiplog"
@@ -3610,7 +3610,7 @@ msgstr "Canal de comunicación abierto para {name}"
 #: /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:176
 msgctxt "shiplog"
 msgid "Refused hail from {name}"
-msgstr "Rechazado granizo de {name}"
+msgstr "Llamada de {name} rechazada"
 
 #: /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:196
 msgctxt "shiplog"
@@ -3620,7 +3620,7 @@ msgstr "Canal de comunicación cerrado por otro lado"
 #: /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:207
 msgctxt "shiplog"
 msgid "Hailing from {callsign} stopped"
-msgstr "Proveniente de {callsign} detenido"
+msgstr "La llamada de {callsign} se ha interrumpido"
 
 #: /home/varo/proyectos/espaciokolagunak/src/systems/comms.cpp:212
 msgctxt "shiplog"

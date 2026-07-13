@@ -356,7 +356,7 @@ msgid ""
 "Medical research station: %s in sector %s\n"
 "Plague station %s in %s"
 msgstr ""
-"Esta información contiene destripes. Piénsatelo bien antes de revelársela al resto de los jugadores. Si crees que debes hacerlo, te sugiero que selecciones la nave de jugadores con el selector situado a la derecha del botón «Mensaje global», pulses el botón «Llamar a la nave», te presentes como un personaje del juego, por ejemplo, el técnico de cartografía estelar de la sede regional, y escribas la información como si ese personaje estuviera ayudándoles con la misión.\n"
+"Esta información contiene destripes. Piénsatelo bien antes de revelársela al resto de los jugadores. Si crees que debes hacerlo, te sugiero que selecciones la nave de jugadores con el selector situado a la derecha del botón «Mensaje global», pulses el botón «Contactar con la nave», te presentes como un personaje del juego, por ejemplo, el técnico de cartografía estelar de la sede regional, y escribas la información como si ese personaje estuviera ayudándoles con la misión.\n"
 "\n"
 "Estación de investigación médica: %s en el sector %s\n"
 "Estación de la plaga: %s en %s"
@@ -3019,7 +3019,7 @@ msgstr "Sus escáneres han sido reparados"
 #: scripts/scenario_74_omicron.lua:6141
 msgctxt "shipServices-comms"
 msgid "Repair combat maneuver"
-msgstr "Maniobra de combate de reparación"
+msgstr "Reparar la maniobra de combate"
 
 #: scripts/scenario_74_omicron.lua:6144
 msgctxt "shipServices-comms"

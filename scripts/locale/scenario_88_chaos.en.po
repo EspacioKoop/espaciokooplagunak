@@ -3133,3 +3133,12 @@ msgid ""
 "\n"
 "Weapon tube load time degraded"
 msgstr ""
+
+# Scenario description
+msgid "Two, three or four species battle for ultimate dominion. Designed as a replayable player versus player (PVP) scenario for individuals or teams. Terrain is randomly symmetrically generated for every game.\n\nUse Gamemaster (GM) screen to adjust parameters. The GM screen covers all of the parameters on the next page plus a variety of others.\n\nGet the player ship access codes from the GM screen after you generate the terrain\n\nVersion 2.2"
+msgstr ""
+
+# Scenario setting
+msgctxt "setting"
+msgid "Determines how long the game will last. Default: 50 minutes"
+msgstr ""

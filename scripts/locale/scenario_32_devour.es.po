@@ -3011,3 +3011,7 @@ msgstr "%s %s en el interior %s"
 msgctxt "mission-tabTactical"
 msgid "%s %s in %s"
 msgstr "%s %s en el interior %s"
+
+# Scenario description
+msgid "Stop the Planet Devourer before all the planets are gone\n\nWritten for EE games on May 4th, 2023 = \"May the 4th be with you\"\n\nVersion 1\n\nUSN Discord: https://discord.gg/PntGG3a where you can join a game online. There's one every weekend. All experience levels are welcome."
+msgstr "Detén al Devorador de planetas antes de que desaparezcan todos los planetas\n\nEscrito para partidas de EE el 4 de mayo de 2023 = «Que el 4 de mayo te acompañe»\n\nVersión 1\n\nDiscord de USN: https://discord.gg/PntGG3a, donde puedes unirte a una partida en línea. Hay una cada fin de semana. Todos los niveles de experiencia son bienvenidos."

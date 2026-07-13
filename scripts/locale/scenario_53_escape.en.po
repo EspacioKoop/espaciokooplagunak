@@ -2444,3 +2444,7 @@ msgstr ""
 msgctxt "ZoneLabelDescription-junk"
 msgid "Boris Junk Yard"
 msgstr ""
+
+# Scenario description
+msgid "Escape imprisonment and return home.\nMission consists of one ship with a full crew. Engineer and Science will be busy.\n\nVersion 5\n\nUSN Discord: https://discord.gg/PntGG3a where you can join a game online. There's one every weekend. All experience levels are welcome."
+msgstr ""

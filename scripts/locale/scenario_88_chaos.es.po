@@ -3070,3 +3070,12 @@ msgid ""
 msgstr ""
 "\n"
 "Tiempo de carga de tubo de armamento degradado"
+
+# Scenario description
+msgid "Two, three or four species battle for ultimate dominion. Designed as a replayable player versus player (PVP) scenario for individuals or teams. Terrain is randomly symmetrically generated for every game.\n\nUse Gamemaster (GM) screen to adjust parameters. The GM screen covers all of the parameters on the next page plus a variety of others.\n\nGet the player ship access codes from the GM screen after you generate the terrain\n\nVersion 2.2"
+msgstr "Dos, tres o cuatro especies luchan por el dominio absoluto. Diseñado como un escenario rejugable de jugador contra jugador (JcJ) para participantes individuales o equipos. El terreno se genera de forma aleatoria y simétrica en cada partida.\n\nUsa la pantalla del director de juego (DJ) para ajustar los parámetros. La pantalla del DJ incluye todos los parámetros de la página siguiente, además de muchos otros.\n\nObtén los códigos de acceso de las naves de jugadores en la pantalla del DJ después de generar el terreno\n\nVersión 2.2"
+
+# Scenario setting
+msgctxt "setting"
+msgid "Determines how long the game will last. Default: 50 minutes"
+msgstr "Determina cuánto durará la partida. Predeterminado: 50 minutos"

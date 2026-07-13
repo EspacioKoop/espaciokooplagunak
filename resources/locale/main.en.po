@@ -4243,3 +4243,75 @@ msgstr ""
 msgctxt "content_editor"
 msgid "This ID already exists. Repeat the import action to replace it."
 msgstr ""
+
+msgctxt "content_editor"
+msgid "Map IDs (ordered, comma separated)"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Character IDs (comma separated)"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Ship IDs (comma separated)"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Transitions (from>to, comma separated)"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Crew position ID"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Tags (comma separated)"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Ship ID (optional)"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Resource exported with missing dependencies listed in its manifest."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Resource exported to the clipboard with its dependency manifest."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Resource exported to managed file with its dependency manifest: {filename}"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Campaign map IDs or starting map are invalid."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Campaign character or ship IDs are invalid."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Campaign transitions must use map-id>map-id and reference campaign maps."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Campaign transitions contain a cycle."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Crew position must use a canonical game identifier."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Character tags must be unique lowercase IDs."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Character ship ID is invalid."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "A referenced map, character or ship is missing from the library."
+msgstr ""

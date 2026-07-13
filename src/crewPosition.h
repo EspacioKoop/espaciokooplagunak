@@ -1,6 +1,7 @@
 #pragma once
 
 #include <optional>
+#include <string>
 #include <stdint.h>
 #include <io/dataBuffer.h>
 
@@ -32,6 +33,7 @@ enum class CrewPosition
 
 string crewPositionToString(CrewPosition value);
 std::optional<CrewPosition> tryParseCrewPosition(string value);
+bool isCanonicalCrewPositionId(const std::string& value);
 
 static_assert(static_cast<int>(CrewPosition::MAX) <= 64);
 class CrewPositions

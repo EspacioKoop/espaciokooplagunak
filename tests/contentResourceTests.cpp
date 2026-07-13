@@ -1,5 +1,6 @@
 #include "content/contentResource.h"
 
+#include <algorithm>
 #include <cstdlib>
 #include <cstdint>
 #include <iostream>
@@ -28,13 +29,15 @@ ContentResource validResource(ContentResourceType type)
     switch(type)
     {
     case ContentResourceType::Campaign:
-        return {type, "campaign-1", "Campaign", "Description", "map-1, map-2", "map-1"};
+        return {type, "campaign-1", "Campaign", "Description", "map-1, map-2", "map-1",
+                "character-1", "ship-1", "map-1>map-2"};
     case ContentResourceType::Map:
-        return {type, "map-1", "Map", "Description", "scenario_00_basic.lua", "4"};
+        return {type, "map-1", "Map", "Description", "scenario_00_basic.lua", "4", "", "", ""};
     case ContentResourceType::Character:
-        return {type, "character-1", "Character", "Description", "helms", "Pilot"};
+        return {type, "character-1", "Character", "Description", "helms", "Pilot",
+                "captain, veteran", "ship-1", ""};
     case ContentResourceType::Ship:
-        return {type, "ship-1", "Ship", "Description", "Phobos M3P", "Human Navy"};
+        return {type, "ship-1", "Ship", "Description", "Phobos M3P", "Human Navy", "", "", ""};
     }
     std::abort();
 }
@@ -99,7 +102,7 @@ int main()
         "unknown top-level field is rejected");
 
     document = nlohmann::json::parse(compact);
-    document["version"] = 2;
+    document["version"] = 3;
     expect(parseJson(document, parsed) == ContentResourceError::UnsupportedFormatOrVersion,
         "future version is rejected");
     document["version"] = 1.0;
@@ -169,6 +172,61 @@ int main()
     expect(parseContentResource("{broken", unchanged) == ContentResourceError::InvalidJson,
         "failed parse reports an error");
     expect(unchanged == before, "failed parse does not partially mutate output");
+
+    auto campaign = validResource(ContentResourceType::Campaign);
+    campaign.quinary = "map-1>map-2,map-2>map-1";
+    expect(validateContentResource(campaign) == ContentResourceError::CampaignTransitionCycle,
+        "campaign transition cycles are rejected");
+    campaign.quinary = "map-1>missing";
+    expect(validateContentResource(campaign) == ContentResourceError::InvalidCampaignTransitions,
+        "campaign transitions cannot reference maps outside the campaign");
+
+    auto character = validResource(ContentResourceType::Character);
+    character.primary = "helmsofficer";
+    expect(validateContentResource(character) == ContentResourceError::InvalidCrewPosition,
+        "crew position aliases are rejected in favor of canonical IDs");
+    character.primary = "helms";
+    character.tertiary = "captain,captain";
+    expect(validateContentResource(character) == ContentResourceError::InvalidCharacterTags,
+        "duplicate character tags are rejected");
+
+    const auto map_one = validResource(ContentResourceType::Map);
+    auto map_two = map_one;
+    map_two.id = "map-2";
+    const auto ship = validResource(ContentResourceType::Ship);
+    character = validResource(ContentResourceType::Character);
+    campaign = validResource(ContentResourceType::Campaign);
+    const std::vector<ContentResource> complete_library{map_one, map_two, ship, character, campaign};
+    expect(validateContentLibrary(complete_library) == ContentResourceError::None,
+        "campaign and character references resolve in a complete library");
+    expect(validateContentLibrary({map_one, map_two, character, campaign}) == ContentResourceError::MissingDependency,
+        "missing campaign or character dependency blocks library validation");
+
+    const auto exported = nlohmann::json::parse(serializeContentResourceExport(campaign, complete_library, 2));
+    expect(exported["dependencies"].is_array() && exported["dependencies"].size() == 4,
+        "individual campaign export has a closed dependency manifest");
+    expect(std::none_of(exported["dependencies"].begin(), exported["dependencies"].end(),
+                        [](const nlohmann::json& dependency) { return dependency["missing"].get<bool>(); }),
+        "complete export manifest marks no dependencies missing");
+    const auto incomplete_export = nlohmann::json::parse(serializeContentResourceExport(campaign, {map_one}, 2));
+    expect(std::any_of(incomplete_export["dependencies"].begin(), incomplete_export["dependencies"].end(),
+                       [](const nlohmann::json& dependency) { return dependency["missing"].get<bool>(); }),
+        "incomplete export manifest warns about missing dependencies");
+    expect(parseContentResource(exported.dump(), parsed) == ContentResourceError::None && parsed == campaign,
+        "resource with a valid dependency manifest imports without executable callbacks");
+    auto tampered_manifest = exported;
+    tampered_manifest["dependencies"].erase(tampered_manifest["dependencies"].begin());
+    expect(parseJson(tampered_manifest, parsed) == ContentResourceError::InvalidTypeFields,
+        "dependency manifest must match declarative references");
+
+    nlohmann::json legacy_character = {
+        {"format", "espaciokoop-content"}, {"version", 1}, {"type", "character"},
+        {"id", "legacy-character"}, {"name", "Legacy"}, {"description", ""},
+        {"fields", {{"role", "helms"}, {"callsign", "Old"}}},
+    };
+    expect(parseJson(legacy_character, parsed) == ContentResourceError::None
+            && parsed.primary == "helms" && parsed.tertiary.empty() && parsed.quaternary.empty(),
+        "v1 character imports migrate in memory to the extended model");
 
     ContentDiscardGuard guard;
     auto clean = valid_map;

@@ -46,10 +46,17 @@ private:
     GuiTextEntry* primary_entry;
     GuiLabel* secondary_label;
     GuiTextEntry* secondary_entry;
+    GuiLabel* tertiary_label;
+    GuiTextEntry* tertiary_entry;
+    GuiLabel* quaternary_label;
+    GuiTextEntry* quaternary_entry;
+    GuiLabel* quinary_label;
+    GuiTextEntry* quinary_entry;
     GuiLabel* status_label;
 
     void requestSetType(ContentResourceType type);
     void setType(ContentResourceType type);
+    void updateFieldPresentation(ContentResourceType type);
     void refreshList();
     ContentStoreError refreshInbox();
     void syncListSelection();

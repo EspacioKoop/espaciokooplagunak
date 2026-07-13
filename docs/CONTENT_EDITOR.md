@@ -51,14 +51,16 @@ lista en cada acción. Para mantener el selector accesible muestra como máximo
 los primeros 16 nombres ordenados; hay que mover o borrar los ya procesados para
 acceder a los siguientes.
 
-## Formato `espaciokoop-content` v1
+## Formato `espaciokoop-content` v2
 
-Todos los documentos tienen esta envoltura:
+La versión 2 mantiene la envoltura de v1 y amplía campañas y personajes. El
+importador sigue aceptando documentos v1; al volver a guardarlos o exportarlos
+se escriben como v2.
 
 ```json
 {
   "format": "espaciokoop-content",
-  "version": 1,
+  "version": 2,
   "type": "ship",
   "id": "itsaso-1",
   "name": "Itsaso 1",
@@ -72,12 +74,25 @@ Todos los documentos tienen esta envoltura:
 
 Tipos y campos específicos:
 
-| Tipo | Campo principal | Campo secundario |
-|---|---|---|
-| `campaign` | `map_ids` | `starting_map_id` |
-| `map` | `scenario_file` | `recommended_players` |
-| `character` | `role` | `callsign` |
-| `ship` | `template` | `faction` |
+| Tipo | Campos |
+|---|---|
+| `campaign` | `map_ids` ordenados, `starting_map_id`, `character_ids`, `ship_ids`, `transitions` |
+| `map` | `scenario_file`, `recommended_players` |
+| `character` | `crew_position_id`, `callsign`, `tags`, `ship_id` opcional |
+| `ship` | `template`, `faction` |
+
+Las listas se editan separadas por comas. Las transiciones son aristas
+declarativas `mapa-origen>mapa-destino`: ambos extremos deben pertenecer a
+`map_ids`, no pueden formar ciclos y nunca contienen callbacks o Lua importado.
+`crew_position_id` solo admite los identificadores canónicos del juego (por
+ejemplo `helms`, `engineering`, `science`, `tactical` o `operations`). Antes de
+persistir se comprueba que los mapas, personajes y naves referenciados existan
+en la biblioteca; borrar un recurso aún referenciado también queda bloqueado.
+
+Cada exportación individual añade `dependencies`, un manifiesto cerrado con
+tipo, ID y el booleano `missing`. Así puede transportarse un recurso aislado y
+ver qué dependencias faltan sin incluirlas ni ejecutar contenido. El importador
+verifica que el manifiesto coincide exactamente con las referencias del recurso.
 
 `id` admite de 1 a 64 caracteres ASCII en minúsculas: letras, números, `_` y
 `-`; debe empezar por letra o número. El importador limita el documento a 64
@@ -135,5 +150,8 @@ Los objetos del mapa se siguen colocando y ajustando visualmente desde Game
 Master. Las siguientes fases mantendrán la misma envoltura versionada:
 
 - conexión con el editor visual de mapas ([#54](https://github.com/VaroTv7/espaciokooplagunak/issues/54));
-- plantillas, previsualización y spawn de naves ([#55](https://github.com/VaroTv7/espaciokooplagunak/issues/55));
-- campañas y personajes vinculados a mapas, naves y puestos ([#56](https://github.com/VaroTv7/espaciokooplagunak/issues/56)).
+- plantillas, previsualización y spawn de naves ([#55](https://github.com/VaroTv7/espaciokooplagunak/issues/55)).
+
+Las campañas y personajes ya se enlazan de forma declarativa con mapas, naves
+y puestos canónicos. Aplicar esos documentos a una sesión viva queda separado
+de la edición y persistencia de metadatos.

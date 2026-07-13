@@ -1,56 +1,110 @@
 #include "content/contentResource.h"
+#include "crewPosition.h"
 
 #include <algorithm>
 #include <cstdint>
+#include <functional>
 #include <map>
 #include <set>
 #include <sstream>
+#include <utility>
+#include <vector>
 #include <nlohmann/json.hpp>
 
 namespace
 {
-bool asciiLower(char c)
-{
-    return c >= 'a' && c <= 'z';
-}
-
-bool asciiDigit(char c)
-{
-    return c >= '0' && c <= '9';
-}
+bool asciiLower(char c) { return c >= 'a' && c <= 'z'; }
+bool asciiDigit(char c) { return c >= '0' && c <= '9'; }
 
 bool validId(const std::string& value)
 {
     if (value.empty() || value.size() > 64) return false;
     for (char c : value)
-        if (!(asciiLower(c) || asciiDigit(c) || c == '_' || c == '-'))
-            return false;
+        if (!(asciiLower(c) || asciiDigit(c) || c == '_' || c == '-')) return false;
     return asciiLower(value.front()) || asciiDigit(value.front());
 }
 
-bool validIdList(const std::string& value)
+std::string trim(const std::string& value)
 {
-    if (value.empty()) return true;
+    const auto first = value.find_first_not_of(" \t");
+    if (first == std::string::npos) return {};
+    return value.substr(first, value.find_last_not_of(" \t") - first + 1);
+}
+
+bool parseIdList(const std::string& value, std::vector<std::string>& output, bool allow_empty = true)
+{
+    output.clear();
+    if (value.empty()) return allow_empty;
+    std::set<std::string> unique;
     std::stringstream stream(value);
     std::string item;
     while (std::getline(stream, item, ','))
     {
-        const auto first = item.find_first_not_of(" \t");
-        const auto last = item.find_last_not_of(" \t");
-        if (first == std::string::npos || !validId(item.substr(first, last - first + 1)))
+        item = trim(item);
+        if (!validId(item) || !unique.insert(item).second) return false;
+        output.push_back(item);
+    }
+    return !output.empty();
+}
+
+bool validIdList(const std::string& value, bool allow_empty = true)
+{
+    std::vector<std::string> ignored;
+    return parseIdList(value, ignored, allow_empty);
+}
+
+using Transition = std::pair<std::string, std::string>;
+
+bool parseTransitions(const std::string& value, std::vector<Transition>& output)
+{
+    output.clear();
+    if (value.empty()) return true;
+    std::set<Transition> unique;
+    std::stringstream stream(value);
+    std::string item;
+    while (std::getline(stream, item, ','))
+    {
+        item = trim(item);
+        const auto separator = item.find('>');
+        if (separator == std::string::npos || item.find('>', separator + 1) != std::string::npos)
             return false;
+        Transition transition{trim(item.substr(0, separator)), trim(item.substr(separator + 1))};
+        if (!validId(transition.first) || !validId(transition.second)
+            || transition.first == transition.second || !unique.insert(transition).second)
+            return false;
+        output.push_back(std::move(transition));
     }
     return true;
+}
+
+bool transitionCycle(const std::vector<Transition>& transitions)
+{
+    std::map<std::string, std::vector<std::string>> graph;
+    for (const auto& transition : transitions) graph[transition.first].push_back(transition.second);
+    std::map<std::string, int> state;
+    std::function<bool(const std::string&)> visit = [&](const std::string& node) {
+        if (state[node] == 1) return true;
+        if (state[node] == 2) return false;
+        state[node] = 1;
+        for (const auto& next : graph[node]) if (visit(next)) return true;
+        state[node] = 2;
+        return false;
+    };
+    for (const auto& entry : graph) if (visit(entry.first)) return true;
+    return false;
+}
+
+bool validCrewPosition(const std::string& value)
+{
+    return isCanonicalCrewPositionId(value);
 }
 
 bool validScenarioFile(const std::string& value)
 {
     constexpr const char* prefix = "scenario_";
     constexpr const char* suffix = ".lua";
-    if (value.rfind(prefix, 0) != 0
-        || value.size() < 4
-        || value.compare(value.size() - 4, 4, suffix) != 0
-        || value.find("..") != std::string::npos)
+    if (value.rfind(prefix, 0) != 0 || value.size() < 4
+        || value.compare(value.size() - 4, 4, suffix) != 0 || value.find("..") != std::string::npos)
         return false;
     return std::all_of(value.begin(), value.end(), [](unsigned char c) {
         return asciiLower(static_cast<char>(c)) || asciiDigit(static_cast<char>(c))
@@ -61,30 +115,22 @@ bool validScenarioFile(const std::string& value)
 bool validPlayerCount(const std::string& value)
 {
     if (value.empty()) return true;
-    if (!std::all_of(value.begin(), value.end(), [](char c) { return asciiDigit(c); }))
-        return false;
+    if (!std::all_of(value.begin(), value.end(), [](char c) { return asciiDigit(c); })) return false;
     try
     {
         const auto count = std::stoll(value);
         return count >= 1 && count <= 64;
     }
-    catch (...)
-    {
-        return false;
-    }
+    catch (...) { return false; }
 }
 
 bool hasDuplicateJsonKeys(const std::string& input)
 {
     bool duplicate = false;
     std::map<int, std::set<std::string>> keys_by_depth;
-    auto callback = [&duplicate, &keys_by_depth](
-        int depth,
-        nlohmann::json::parse_event_t event,
-        nlohmann::json& parsed
-    ) {
-        if (event == nlohmann::json::parse_event_t::object_start)
-            keys_by_depth[depth + 1].clear();
+    auto callback = [&duplicate, &keys_by_depth](int depth, nlohmann::json::parse_event_t event,
+                                                 nlohmann::json& parsed) {
+        if (event == nlohmann::json::parse_event_t::object_start) keys_by_depth[depth + 1].clear();
         else if (event == nlohmann::json::parse_event_t::key)
         {
             const auto key = parsed.get<std::string>();
@@ -96,30 +142,83 @@ bool hasDuplicateJsonKeys(const std::string& input)
     return duplicate;
 }
 
-ContentResourceError readString(
-    const nlohmann::json& object,
-    const char* key,
-    std::string& output,
-    std::size_t maximum
-)
+ContentResourceError readString(const nlohmann::json& object, const char* key,
+                                std::string& output, std::size_t maximum)
 {
     const auto it = object.find(key);
-    if (it == object.end() || !it->is_string())
-        return ContentResourceError::MissingOrInvalidText;
+    if (it == object.end() || !it->is_string()) return ContentResourceError::MissingOrInvalidText;
     const auto value = it->get<std::string>();
-    if (value.size() > maximum)
-        return ContentResourceError::TextTooLong;
+    if (value.size() > maximum) return ContentResourceError::TextTooLong;
     output = value;
     return ContentResourceError::None;
 }
 
-bool supportedVersion(const nlohmann::json& version)
+bool readVersion(const nlohmann::json& version, int& output)
 {
+    std::int64_t value = -1;
     if (version.is_number_unsigned())
-        return version.get<std::uint64_t>() == CONTENT_RESOURCE_SCHEMA_VERSION;
-    if (version.is_number_integer())
-        return version.get<std::int64_t>() == CONTENT_RESOURCE_SCHEMA_VERSION;
-    return false;
+    {
+        const auto unsigned_value = version.get<std::uint64_t>();
+        if (unsigned_value > static_cast<std::uint64_t>(CONTENT_RESOURCE_SCHEMA_VERSION)) return false;
+        value = static_cast<std::int64_t>(unsigned_value);
+    }
+    else if (version.is_number_integer()) value = version.get<std::int64_t>();
+    else return false;
+    if (value < 1 || value > CONTENT_RESOURCE_SCHEMA_VERSION) return false;
+    output = static_cast<int>(value);
+    return true;
+}
+
+std::vector<std::pair<ContentResourceType, std::string>> dependencies(const ContentResource& resource)
+{
+    std::vector<std::pair<ContentResourceType, std::string>> result;
+    std::vector<std::string> ids;
+    if (resource.type == ContentResourceType::Campaign)
+    {
+        parseIdList(resource.primary, ids);
+        for (const auto& id : ids) result.emplace_back(ContentResourceType::Map, id);
+        parseIdList(resource.tertiary, ids);
+        for (const auto& id : ids) result.emplace_back(ContentResourceType::Character, id);
+        parseIdList(resource.quaternary, ids);
+        for (const auto& id : ids) result.emplace_back(ContentResourceType::Ship, id);
+    }
+    else if (resource.type == ContentResourceType::Character && !resource.quaternary.empty())
+        result.emplace_back(ContentResourceType::Ship, resource.quaternary);
+    return result;
+}
+
+bool resourceExists(const std::vector<ContentResource>& resources, ContentResourceType type,
+                    const std::string& id)
+{
+    return std::any_of(resources.begin(), resources.end(), [&](const ContentResource& item) {
+        return item.type == type && item.id == id;
+    });
+}
+
+nlohmann::json resourceDocument(const ContentResource& resource)
+{
+    nlohmann::json fields;
+    switch(resource.type)
+    {
+    case ContentResourceType::Campaign:
+        fields = {{"map_ids", resource.primary}, {"starting_map_id", resource.secondary},
+                  {"character_ids", resource.tertiary}, {"ship_ids", resource.quaternary},
+                  {"transitions", resource.quinary}};
+        break;
+    case ContentResourceType::Map:
+        fields = {{"scenario_file", resource.primary}, {"recommended_players", resource.secondary}};
+        break;
+    case ContentResourceType::Character:
+        fields = {{"crew_position_id", resource.primary}, {"callsign", resource.secondary},
+                  {"tags", resource.tertiary}, {"ship_id", resource.quaternary}};
+        break;
+    case ContentResourceType::Ship:
+        fields = {{"template", resource.primary}, {"faction", resource.secondary}};
+        break;
+    }
+    return {{"format", "espaciokoop-content"}, {"version", CONTENT_RESOURCE_SCHEMA_VERSION},
+            {"type", contentResourceTypeId(resource.type)}, {"id", resource.id},
+            {"name", resource.name}, {"description", resource.description}, {"fields", fields}};
 }
 }
 
@@ -150,72 +249,105 @@ ContentResourceError validateContentResource(const ContentResource& resource)
     if (!validId(resource.id)) return ContentResourceError::InvalidId;
     if (resource.name.empty() || resource.name.size() > 120) return ContentResourceError::InvalidName;
     if (resource.description.size() > 4000) return ContentResourceError::DescriptionTooLong;
-    if (resource.primary.size() > 1000 || resource.secondary.size() > 1000)
-        return ContentResourceError::TypeFieldTooLong;
+    if (resource.primary.size() > 1000 || resource.secondary.size() > 1000
+        || resource.tertiary.size() > 1000 || resource.quaternary.size() > 1000
+        || resource.quinary.size() > 1000) return ContentResourceError::TypeFieldTooLong;
     if (resource.type != ContentResourceType::Campaign && resource.primary.empty())
         return ContentResourceError::MissingPrimaryField;
-    if (resource.type == ContentResourceType::Campaign
-        && (!validIdList(resource.primary)
-            || (!resource.secondary.empty() && !validId(resource.secondary))))
-        return ContentResourceError::InvalidCampaignMapIds;
+    if ((resource.type == ContentResourceType::Map || resource.type == ContentResourceType::Ship)
+        && (!resource.tertiary.empty() || !resource.quaternary.empty() || !resource.quinary.empty()))
+        return ContentResourceError::UnknownTypeFields;
+    if (resource.type == ContentResourceType::Character && !resource.quinary.empty())
+        return ContentResourceError::UnknownTypeFields;
+    if (resource.type == ContentResourceType::Campaign)
+    {
+        std::vector<std::string> maps;
+        if (!parseIdList(resource.primary, maps)
+            || (!resource.secondary.empty() && !validId(resource.secondary)))
+            return ContentResourceError::InvalidCampaignMapIds;
+        if ((!resource.secondary.empty()
+             && std::find(maps.begin(), maps.end(), resource.secondary) == maps.end())
+            || !validIdList(resource.tertiary) || !validIdList(resource.quaternary))
+            return ContentResourceError::InvalidCampaignReferences;
+        std::vector<Transition> transitions;
+        if (!parseTransitions(resource.quinary, transitions))
+            return ContentResourceError::InvalidCampaignTransitions;
+        for (const auto& transition : transitions)
+            if (std::find(maps.begin(), maps.end(), transition.first) == maps.end()
+                || std::find(maps.begin(), maps.end(), transition.second) == maps.end())
+                return ContentResourceError::InvalidCampaignTransitions;
+        if (transitionCycle(transitions)) return ContentResourceError::CampaignTransitionCycle;
+    }
     if (resource.type == ContentResourceType::Map && !validScenarioFile(resource.primary))
         return ContentResourceError::UnsafeScenarioFile;
     if (resource.type == ContentResourceType::Map && !validPlayerCount(resource.secondary))
         return ContentResourceError::InvalidPlayerCount;
+    if (resource.type == ContentResourceType::Character)
+    {
+        if (!validCrewPosition(resource.primary)) return ContentResourceError::InvalidCrewPosition;
+        if (!validIdList(resource.tertiary)) return ContentResourceError::InvalidCharacterTags;
+        if (!resource.quaternary.empty() && !validId(resource.quaternary))
+            return ContentResourceError::InvalidCharacterShipId;
+    }
     return ContentResourceError::None;
+}
+
+ContentResourceError validateContentLibrary(const std::vector<ContentResource>& resources)
+{
+    for (const auto& resource : resources)
+    {
+        const auto validation = validateContentResource(resource);
+        if (validation != ContentResourceError::None) return validation;
+        for (const auto& dependency : dependencies(resource))
+            if (!resourceExists(resources, dependency.first, dependency.second))
+                return ContentResourceError::MissingDependency;
+    }
+    return ContentResourceError::None;
+}
+
+bool contentResourceHasMissingDependencies(const ContentResource& resource,
+                                           const std::vector<ContentResource>& library)
+{
+    for (const auto& dependency : dependencies(resource))
+        if (!resourceExists(library, dependency.first, dependency.second)) return true;
+    return false;
 }
 
 std::string serializeContentResource(const ContentResource& resource, int indent)
 {
-    nlohmann::json fields;
-    switch(resource.type)
-    {
-    case ContentResourceType::Campaign:
-        fields = {{"map_ids", resource.primary}, {"starting_map_id", resource.secondary}};
-        break;
-    case ContentResourceType::Map:
-        fields = {{"scenario_file", resource.primary}, {"recommended_players", resource.secondary}};
-        break;
-    case ContentResourceType::Character:
-        fields = {{"role", resource.primary}, {"callsign", resource.secondary}};
-        break;
-    case ContentResourceType::Ship:
-        fields = {{"template", resource.primary}, {"faction", resource.secondary}};
-        break;
-    }
-    return nlohmann::json{
-        {"format", "espaciokoop-content"},
-        {"version", CONTENT_RESOURCE_SCHEMA_VERSION},
-        {"type", contentResourceTypeId(resource.type)},
-        {"id", resource.id},
-        {"name", resource.name},
-        {"description", resource.description},
-        {"fields", fields},
-    }.dump(indent);
+    return resourceDocument(resource).dump(indent);
+}
+
+std::string serializeContentResourceExport(const ContentResource& resource,
+                                           const std::vector<ContentResource>& library, int indent)
+{
+    auto document = resourceDocument(resource);
+    nlohmann::json manifest = nlohmann::json::array();
+    for (const auto& dependency : dependencies(resource))
+        manifest.push_back({{"type", contentResourceTypeId(dependency.first)}, {"id", dependency.second},
+                            {"missing", !resourceExists(library, dependency.first, dependency.second)}});
+    document["dependencies"] = std::move(manifest);
+    return document.dump(indent);
 }
 
 ContentResourceError parseContentResource(const std::string& input, ContentResource& resource)
 {
-    if (input.size() > CONTENT_RESOURCE_MAX_IMPORT_BYTES)
-        return ContentResourceError::ImportTooLarge;
-
+    if (input.size() > CONTENT_RESOURCE_MAX_IMPORT_BYTES) return ContentResourceError::ImportTooLarge;
     const auto document = nlohmann::json::parse(input, nullptr, false, false);
-    if (document.is_discarded() || !document.is_object())
-        return ContentResourceError::InvalidJson;
-    if (hasDuplicateJsonKeys(input))
-        return ContentResourceError::DuplicateJsonKeys;
-
+    if (document.is_discarded() || !document.is_object()) return ContentResourceError::InvalidJson;
+    if (hasDuplicateJsonKeys(input)) return ContentResourceError::DuplicateJsonKeys;
     const std::set<std::string> allowed = {
-        "format", "version", "type", "id", "name", "description", "fields"
+        "format", "version", "type", "id", "name", "description", "fields", "dependencies"
     };
     for (auto it = document.begin(); it != document.end(); ++it)
         if (!allowed.count(it.key())) return ContentResourceError::UnknownFields;
 
     const auto format_it = document.find("format");
     const auto version_it = document.find("version");
+    int version = 0;
     if (format_it == document.end() || !format_it->is_string()
         || format_it->get<std::string>() != "espaciokoop-content"
-        || version_it == document.end() || !supportedVersion(*version_it))
+        || version_it == document.end() || !readVersion(*version_it, version))
         return ContentResourceError::UnsupportedFormatOrVersion;
 
     ContentResource candidate;
@@ -223,68 +355,78 @@ ContentResourceError parseContentResource(const std::string& input, ContentResou
     if (type_it == document.end() || !type_it->is_string()
         || !parseContentResourceType(type_it->get<std::string>(), candidate.type))
         return ContentResourceError::UnknownType;
-
-    for (const auto result : {
-        readString(document, "id", candidate.id, 64),
-        readString(document, "name", candidate.name, 120),
-        readString(document, "description", candidate.description, 4000),
-    })
+    for (const auto result : {readString(document, "id", candidate.id, 64),
+                              readString(document, "name", candidate.name, 120),
+                              readString(document, "description", candidate.description, 4000)})
         if (result != ContentResourceError::None) return result;
 
     const auto fields_it = document.find("fields");
     if (fields_it == document.end() || !fields_it->is_object())
         return ContentResourceError::InvalidTypeFields;
-
-    const char* primary_key = "";
-    const char* secondary_key = "";
+    std::vector<const char*> keys;
     switch(candidate.type)
     {
     case ContentResourceType::Campaign:
-        primary_key = "map_ids"; secondary_key = "starting_map_id"; break;
-    case ContentResourceType::Map:
-        primary_key = "scenario_file"; secondary_key = "recommended_players"; break;
+        keys = version == 1
+            ? std::vector<const char*>{"map_ids", "starting_map_id"}
+            : std::vector<const char*>{"map_ids", "starting_map_id", "character_ids", "ship_ids", "transitions"};
+        break;
+    case ContentResourceType::Map: keys = {"scenario_file", "recommended_players"}; break;
     case ContentResourceType::Character:
-        primary_key = "role"; secondary_key = "callsign"; break;
-    case ContentResourceType::Ship:
-        primary_key = "template"; secondary_key = "faction"; break;
+        keys = version == 1
+            ? std::vector<const char*>{"role", "callsign"}
+            : std::vector<const char*>{"crew_position_id", "callsign", "tags", "ship_id"};
+        break;
+    case ContentResourceType::Ship: keys = {"template", "faction"}; break;
     }
-    const std::set<std::string> allowed_fields = {primary_key, secondary_key};
+    std::set<std::string> allowed_fields(keys.begin(), keys.end());
     for (auto it = fields_it->begin(); it != fields_it->end(); ++it)
         if (!allowed_fields.count(it.key())) return ContentResourceError::UnknownTypeFields;
+    std::string* outputs[] = {&candidate.primary, &candidate.secondary, &candidate.tertiary,
+                              &candidate.quaternary, &candidate.quinary};
+    for (std::size_t index = 0; index < keys.size(); ++index)
+    {
+        const auto result = readString(*fields_it, keys[index], *outputs[index], 1000);
+        if (result != ContentResourceError::None) return result;
+    }
 
-    auto result = readString(*fields_it, primary_key, candidate.primary, 1000);
-    if (result != ContentResourceError::None) return result;
-    result = readString(*fields_it, secondary_key, candidate.secondary, 1000);
-    if (result != ContentResourceError::None) return result;
+    if (document.contains("dependencies"))
+    {
+        if (!document["dependencies"].is_array()) return ContentResourceError::InvalidTypeFields;
+        std::set<std::pair<std::string, std::string>> declared;
+        for (const auto& dependency : document["dependencies"])
+        {
+            if (!dependency.is_object() || dependency.size() != 3
+                || !dependency.contains("type") || !dependency["type"].is_string()
+                || !dependency.contains("id") || !dependency["id"].is_string()
+                || !dependency.contains("missing") || !dependency["missing"].is_boolean())
+                return ContentResourceError::InvalidTypeFields;
+            ContentResourceType dependency_type;
+            const auto type = dependency["type"].get<std::string>();
+            const auto id = dependency["id"].get<std::string>();
+            if (!parseContentResourceType(type, dependency_type) || !validId(id)
+                || !declared.insert({type, id}).second) return ContentResourceError::InvalidTypeFields;
+        }
+        std::set<std::pair<std::string, std::string>> expected;
+        for (const auto& dependency : dependencies(candidate))
+            expected.insert({contentResourceTypeId(dependency.first), dependency.second});
+        if (declared != expected) return ContentResourceError::InvalidTypeFields;
+    }
 
-    result = validateContentResource(candidate);
+    const auto result = validateContentResource(candidate);
     if (result != ContentResourceError::None) return result;
     resource = std::move(candidate);
     return ContentResourceError::None;
 }
 
-bool ContentDiscardGuard::confirm(
-    const std::string& action,
-    const ContentResource& current,
-    const ContentResource& clean_snapshot
-)
+bool ContentDiscardGuard::confirm(const std::string& action, const ContentResource& current,
+                                  const ContentResource& clean_snapshot)
 {
-    if (current == clean_snapshot)
-    {
-        reset();
-        return true;
-    }
+    if (current == clean_snapshot) { reset(); return true; }
     const auto signature = action + "\n" + serializeContentResource(current);
-    if (pending_signature != signature)
-    {
-        pending_signature = signature;
-        return false;
-    }
+    if (pending_signature != signature) { pending_signature = signature; return false; }
     reset();
     return true;
 }
 
-void ContentDiscardGuard::reset()
-{
-    pending_signature.clear();
-}
+void ContentDiscardGuard::reset() { pending_signature.clear(); }

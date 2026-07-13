@@ -66,7 +66,12 @@ public:
 
     ContentStoreError listInbox(std::vector<std::string>& filenames);
     ContentStoreError importFromInbox(const std::string& filename, ContentResource& resource);
-    ContentStoreError exportResource(const ContentResource& resource, bool overwrite, std::string& filename);
+    ContentStoreError exportResource(
+        const ContentResource& resource,
+        const std::vector<ContentResource>& library,
+        bool overwrite,
+        std::string& filename
+    );
 
     const std::filesystem::path& rootPath() const { return root; }
     void setTestFault(ContentStoreFault value) { fault = value; }

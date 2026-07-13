@@ -716,7 +716,8 @@ if(BUILD_CONTENT_RESOURCE_TESTS)
     add_executable(content_resource_tests
         tests/contentResourceTests.cpp
         src/content/contentResource.cpp
-        src/content/contentResource.h)
+        src/crewPosition.cpp
+    )
     target_include_directories(content_resource_tests PRIVATE
         "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>")
     target_link_libraries(content_resource_tests PRIVATE seriousproton)
@@ -726,6 +727,7 @@ if(BUILD_CONTENT_RESOURCE_TESTS)
         tests/contentLibraryStoreTests.cpp
         src/content/contentLibraryStore.cpp
         src/content/contentResource.cpp
+        src/crewPosition.cpp
     )
     target_include_directories(content_library_store_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
     target_link_libraries(content_library_store_tests PRIVATE seriousproton)

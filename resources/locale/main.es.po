@@ -3895,3 +3895,13 @@ msgstr "El archivo de escenario debe ser un nombre seguro scenario_*.lua."
 msgctxt "content_editor"
 msgid "Imported document contains duplicate JSON keys."
 msgstr "El documento importado contiene claves JSON duplicadas."
+
+
+msgctxt "content_editor"
+msgid "This ID already exists. Press Save again to replace it."
+msgstr "Este ID ya existe. Pulsa Guardar de nuevo para sustituirlo."
+
+
+msgctxt "content_editor"
+msgid "Resource replaced after confirmation."
+msgstr "Recurso sustituido tras confirmación."

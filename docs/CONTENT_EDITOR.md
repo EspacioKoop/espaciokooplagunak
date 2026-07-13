@@ -13,11 +13,13 @@ tipos de recursos sin editar Lua:
 1. Abre **Game Master → Content editor…**.
 2. Selecciona el tipo de recurso.
 3. Pulsa **New**, rellena el formulario y guarda.
-4. **Export** copia únicamente el recurso visible al portapapeles como JSON.
-5. **Import** lee un recurso JSON del portapapeles y valida todos sus campos.
-6. Si ya existe el mismo par `type + id`, hay que pulsar **Import** por segunda
+4. **Save** actualiza el recurso seleccionado aunque cambie su ID. Si ese ID ya
+   pertenece a otro recurso, exige una segunda pulsación antes de sustituirlo.
+5. **Export** copia únicamente el recurso visible al portapapeles como JSON.
+6. **Import** lee un recurso JSON del portapapeles y valida todos sus campos.
+7. Si ya existe el mismo par `type + id`, hay que pulsar **Import** por segunda
    vez para confirmar la sustitución.
-7. **Delete** también requiere una segunda pulsación.
+8. **Delete** también requiere una segunda pulsación.
 
 La biblioteca permanece disponible durante la sesión Game Master. Para conservar
 un recurso entre sesiones, expórtalo y guárdalo como archivo `.json`. Una fase
@@ -61,7 +63,7 @@ incorrectos y campos excesivamente largos.
 
 - Importar **nunca ejecuta Lua**, comandos ni rutas incluidas en el documento.
 - El JSON se analiza en modo estricto y solo acepta una lista cerrada de claves.
-- La sustitución y el borrado requieren confirmación explícita.
+- Guardar o importar sobre otro ID y borrar requieren confirmación explícita.
 - Cada recurso se importa/exporta por separado; no se mezclan campañas, mapas,
   personajes y naves accidentalmente.
 - Los documentos no deben contener secretos ni datos privados que no deban

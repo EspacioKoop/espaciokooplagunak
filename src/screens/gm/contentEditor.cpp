@@ -409,6 +409,7 @@ void GuiContentEditor::clearForm()
 {
     selected_index = -1;
     pending_import = "";
+    pending_save = "";
     pending_delete_key = "";
     id_entry->setText("");
     name_entry->setText("");
@@ -430,6 +431,7 @@ void GuiContentEditor::loadResource(int index)
     primary_entry->setText(resource.primary);
     secondary_entry->setText(resource.secondary);
     pending_import = "";
+    pending_save = "";
     pending_delete_key = "";
     setStatus(tr("content_editor", "Resource loaded."));
 }
@@ -453,10 +455,30 @@ void GuiContentEditor::saveResource()
     if (!error.empty()) return setStatus(error);
 
     int existing = findResource(resource.type, resource.id);
-    if (existing >= 0)
+    const bool selected = selected_index >= 0 && selected_index < int(resources.size());
+    const bool replacing_other = existing >= 0 && existing != selected_index;
+    const string save_signature = serializeResource(resource).dump();
+    if (replacing_other && pending_save != save_signature)
+    {
+        pending_save = save_signature;
+        return setStatus(tr("content_editor", "This ID already exists. Press Save again to replace it."));
+    }
+
+    if (replacing_other)
     {
         resources[existing] = resource;
+        if (selected)
+        {
+            const int original = selected_index;
+            resources.erase(resources.begin() + original);
+            if (original < existing) --existing;
+        }
         selected_index = existing;
+        setStatus(tr("content_editor", "Resource replaced after confirmation."));
+    }
+    else if (selected)
+    {
+        resources[selected_index] = resource;
         setStatus(tr("content_editor", "Resource updated."));
     }
     else
@@ -466,6 +488,7 @@ void GuiContentEditor::saveResource()
         setStatus(tr("content_editor", "Resource created."));
     }
     pending_import = "";
+    pending_save = "";
     pending_delete_key = "";
     refreshList();
 }
@@ -524,6 +547,7 @@ void GuiContentEditor::importResource()
     refreshList();
     loadResource(selected_index);
     pending_import = "";
+    pending_save = "";
     setStatus(existing >= 0
         ? tr("content_editor", "Imported resource replaced after confirmation.")
         : tr("content_editor", "Resource imported."));

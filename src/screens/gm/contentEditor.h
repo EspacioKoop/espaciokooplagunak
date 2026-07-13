@@ -44,6 +44,7 @@ private:
     ContentResourceType current_type = ContentResourceType::Campaign;
     int selected_index = -1;
     string pending_import;
+    string pending_save;
     string pending_delete_key;
 
     GuiSelector* type_selector;

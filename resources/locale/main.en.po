@@ -4117,3 +4117,13 @@ msgstr ""
 msgctxt "content_editor"
 msgid "Imported document contains duplicate JSON keys."
 msgstr ""
+
+
+msgctxt "content_editor"
+msgid "This ID already exists. Press Save again to replace it."
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Resource replaced after confirmation."
+msgstr ""

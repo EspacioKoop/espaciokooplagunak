@@ -14,7 +14,7 @@ msgstr ""
 "X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
 
 msgid "Chaos of War"
-msgstr "Caos de Guerra"
+msgstr "Caos de guerra"
 
 # Scenario description
 msgid ""

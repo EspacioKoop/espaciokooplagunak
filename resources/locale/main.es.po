@@ -1125,7 +1125,7 @@ msgstr "Cancelar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/joinServerMenu.cpp:64
 msgid "Please enter the server password:"
-msgstr "Por favor ingrese la contraseña del servidor:"
+msgstr "Introduce la contraseña del servidor:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/luaConsole.cpp:22
 msgctxt "hotkey_General"
@@ -1444,6 +1444,26 @@ msgstr "Cerrar"
 msgid "Start server"
 msgstr "Iniciar servidor"
 
+#: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:189
+msgid "Not connecting to masterserver?"
+msgstr "No se conectará al servidor maestro."
+
+#: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:193
+msgid "Connecting to master server"
+msgstr "Conectando con el servidor maestro"
+
+#: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:197
+msgid "Master server connection successful"
+msgstr "Conexión con el servidor maestro establecida"
+
+#: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:201
+msgid "Failed to reach the master server."
+msgstr "No se ha podido contactar con el servidor maestro."
+
+#: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:205
+msgid "Port forwarding check failed."
+msgstr "Ha fallado la comprobación del reenvío de puertos."
+
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:159
 msgid "Continue"
 msgstr "Continuar"
@@ -1451,6 +1471,36 @@ msgstr "Continuar"
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:221
 msgid "Category"
 msgstr "Categoría"
+
+#: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:23
+msgctxt "scenario-category"
+msgid "Replayable Mission"
+msgstr "Misión rejugable"
+
+#: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:25
+msgctxt "scenario-category"
+msgid "Mission"
+msgstr "Misión"
+
+#: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:27
+msgctxt "scenario-category"
+msgid "Basic"
+msgstr "Básico"
+
+#: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:29
+msgctxt "scenario-category"
+msgid "PvP"
+msgstr "JcJ"
+
+#: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:31
+msgctxt "scenario-category"
+msgid "Development"
+msgstr "Desarrollo"
+
+#: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:33
+msgctxt "scenario-category"
+msgid "Race"
+msgstr "Carrera"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:228
 msgid "Scenario"
@@ -1462,11 +1512,11 @@ msgstr "Descripción"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:239 /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:319
 msgid "Select a scenario..."
-msgstr "Seleccione un escenario..."
+msgstr "Selecciona un escenario..."
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:259 /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:423
 msgid "Start scenario"
-msgstr "Escenario de inicio"
+msgstr "Iniciar escenario"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:416
 msgid "Back"
@@ -1474,15 +1524,15 @@ msgstr "Volver"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:49 /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:680
 msgid "Enter this ship's control code:"
-msgstr "Ingrese el código de control de este barco:"
+msgstr "Introduce el código de control de esta nave:"
 
-#: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:74
+#: /home/varo/proyectos/espaciokolagunak/src/menus/joinServerMenu.cpp:39 /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:74
 msgid "Ok"
-msgstr "Ok"
+msgstr "Aceptar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:81
 msgid "OK"
-msgstr "bien"
+msgstr "Aceptar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:113
 msgid ""
@@ -1490,11 +1540,11 @@ msgid ""
 "Granting access."
 msgstr ""
 "Código de control aceptado.\n"
-"Concesión de acceso."
+"Concediendo acceso."
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:122
 msgid "Incorrect control code. Re-enter code:"
-msgstr "Código de control incorrecto. Vuelva a ingresar el código:"
+msgstr "Código de control incorrecto. Vuelve a introducirlo:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:174
 msgid "Additional views and options"
@@ -1506,7 +1556,7 @@ msgstr "Director de juego"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:185 /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:224 /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:262 /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:300
 msgid "Enter the GM control code:"
-msgstr "Ingrese el código de control de GM:"
+msgstr "Introduce el código de control del DJ:"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:217
 msgid "Spectator map (view all)"
@@ -2273,7 +2323,7 @@ msgstr "SOBRECALENTAMIENTO"
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/powerDamageIndicator.cpp:91
 msgctxt "systems"
 msgid "HACKED"
-msgstr "HACKED"
+msgstr "SABOTEADO"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/radarZoomSlider.cpp:14 /home/varo/proyectos/espaciokolagunak/src/screenComponents/radarZoomSlider.cpp:19 /home/varo/proyectos/espaciokolagunak/src/screenComponents/radarZoomSlider.cpp:29
 msgid "Zoom: {zoom}x"

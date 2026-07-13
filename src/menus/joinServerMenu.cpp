@@ -36,7 +36,7 @@ JoinServerScreen::JoinServerScreen(const ServerScanner::ServerInfo& target)
         password_focused = false;
         game_client->sendPassword(entry.upper());
     });
-    (new GuiButton(password_entry_box, "PASSWORD_ENTRY_OK", "Ok", [this]()
+    (new GuiButton(password_entry_box, "PASSWORD_ENTRY_OK", tr("Ok"), [this]()
     {
         password_entry_box->hide();
         password_focused = false;

@@ -14,7 +14,7 @@ msgstr ""
 "X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
 
 msgid "Push The Payload"
-msgstr "Empuja la carga de pago"
+msgstr "Empuja la carga"
 
 # Scenario description
 msgid ""

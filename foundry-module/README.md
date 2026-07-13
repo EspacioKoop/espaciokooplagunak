@@ -1,9 +1,9 @@
 # Módulo de Foundry VTT — Espaciokoop Lagunak
 
-Esqueleto del módulo de integración (issue #8): muestra al director de juego el
-estado en vivo de la nave simulada en Espaciokoop Lagunak, consultando el
-[puente de integración](../bridge/README.md) (contrato v0) por polling. **Sin
-órdenes de vuelta en esta iteración.**
+Módulo de integración (issue #8): muestra al director de juego el estado en
+vivo de la nave simulada en Espaciokoop Lagunak y ofrece controles GM cerrados,
+consultando el [puente de integración](../bridge/README.md) (contrato v0) por
+polling.
 
 ## Requisitos
 
@@ -43,6 +43,11 @@ En *Configuración → Ajustes del módulo*:
 Los tres ajustes son de ámbito **client**: viven en el navegador del GM, no
 entran en la base de datos del mundo y no se sincronizan con los jugadores.
 El token no aparece en logs ni en mensajes de error.
+
+El **token Bearer es la autoridad efectiva del puente** y debe entregarse solo
+al GM. Las comprobaciones `game.user.isGM` ocultan la interfaz y evitan órdenes
+accidentales desde un usuario jugador, pero no acreditan el rol ante el puente:
+cualquier cliente que obtenga el token puede invocar las órdenes autorizadas.
 
 ## Uso
 

@@ -1,9 +1,9 @@
 /**
- * Espaciokoop Lagunak — módulo de Foundry VTT (esqueleto, issue #8).
+ * Espaciokoop Lagunak — módulo de integración Foundry VTT (issue #8).
  *
  * Muestra al director de juego el estado en vivo de la nave simulada,
- * consultando el puente de integración (contrato v0) por polling. Sin
- * órdenes de vuelta en esta iteración.
+ * consultando el puente de integración (contrato v0) por polling. El GM
+ * dispone además de órdenes cerradas y tipadas como pausa/reanudación.
  *
  * Compatibilidad v11–v13 (issue #7: la mesa hostea con versiones mixtas —
  * v11.302 en un lado, más moderna en otro; en Foundry solo cuenta la
@@ -21,6 +21,8 @@
  * Seguridad: la URL y el token del puente son ajustes de ámbito "client"
  * (localStorage del navegador del GM) — nunca entran en la base de datos
  * del mundo ni se sincronizan con los jugadores, y no se escriben en logs.
+ * El token Bearer es la autoridad del puente; `game.user.isGM` protege la UI,
+ * pero el navegador no puede acreditar por sí solo un rol ante el servidor.
  */
 
 import { BridgeClient, BridgeError } from "./bridge-client.mjs";

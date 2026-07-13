@@ -215,6 +215,7 @@ Espaciokoop Lagunak no está afiliado ni respaldado oficialmente por el equipo d
 - [Web y manual oficial](https://daid.github.io/EmptyEpsilon/)
 - [Guía de contribución del fork](CONTRIBUTING.md)
 - [Compilación](docs/BUILDING.md)
+- [Prueba individual de «Primera guardia»](docs/PRUEBA-INDIVIDUAL.md)
 - [Despliegue con Docker](docker/README.md)
 - [Integración con Foundry VTT y gestión de nave](docs/FOUNDRY.md)
 - [Puente de integración — contrato v0](bridge/README.md)

@@ -39,7 +39,17 @@ marca esas casillas como `N/A` en vez de asumir un resultado.
      /ruta/a/FoundryVTT/Data/modules/espaciokoop-lagunak
    ```
 
-4. Prepara el puente sin mostrar el secreto en comandos, capturas ni logs:
+4. Elige el transporte antes de arrancar el puente:
+
+   - **Mismo host:** conserva `BRIDGE_BIND=127.0.0.1` y configura Foundry con
+     `http://127.0.0.1:8090`.
+   - **Host remoto:** usa un túnel SSH, una VPN confiable o un proxy HTTPS con
+     certificado válido. No publiques `8090` directamente en Internet ni
+     envíes el Bearer en claro por una LAN no confiable.
+   - Si Foundry se sirve por HTTPS, usa HTTPS también para el puente: el
+     navegador puede bloquear `https://` → `http://` por contenido mixto.
+
+5. Prepara el puente sin mostrar el secreto en comandos, capturas ni logs:
 
    ```bash
    cd /ruta/a/espaciokooplagunak/docker
@@ -49,9 +59,9 @@ marca esas casillas como `N/A` en vez de asumir un resultado.
    docker compose ps
    ```
 
-5. Entra al mundo como GM, activa «Espaciokoop Lagunak — Puente de mando» y recarga el mundo.
-6. En *Configuración → Ajustes del módulo*, configura la URL del puente, el token y un intervalo de 2 segundos. El token es una credencial provisional guardada en el navegador del GM: no lo copies a un ajuste de mundo, Journal, issue o captura.
-7. Abre las herramientas de desarrollo del navegador, limpia la consola y evita capturar paneles de red que muestren cabeceras `Authorization`.
+6. Entra al mundo como GM, activa «Espaciokoop Lagunak — Puente de mando» y recarga el mundo.
+7. En *Configuración → Ajustes del módulo*, configura la URL segura elegida, el token y un intervalo de 2 segundos. El token es una credencial provisional guardada en el navegador del GM: no lo copies a un ajuste de mundo, Journal, issue o captura.
+8. Abre las herramientas de desarrollo del navegador, limpia la consola y evita capturar paneles de red que muestren cabeceras `Authorization`.
 
 ## Identificación del anfitrión
 

@@ -35,6 +35,15 @@ Reglas de este proyecto:
   logs o capturas. Si un secreto se filtra, se rota inmediatamente y se
   registra en el issue correspondiente.
 
+## Transporte del puente Foundry
+
+El puente autentica con un token Bearer, pero su endpoint directo usa HTTP. Por
+defecto compose lo publica solo en `127.0.0.1`. Para acceder desde otro host,
+protege el trayecto mediante túnel SSH, VPN confiable o proxy HTTPS con
+certificado válido. No publiques el puerto `8090` directamente en Internet ni
+envíes el Bearer en claro por una red no confiable. Foundry servido por HTTPS
+debe consumir también un endpoint HTTPS para evitar contenido mixto.
+
 ## Alcance
 
 Espaciokoop Lagunak está pensado para LAN doméstica y mesas de juego

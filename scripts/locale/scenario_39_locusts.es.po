@@ -14,7 +14,7 @@ msgstr ""
 "X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
 
 msgid "Locust Swarm"
-msgstr "Locust Swarm"
+msgstr "Enjambre de langostas"
 
 # Scenario description
 msgid ""

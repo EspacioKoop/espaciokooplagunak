@@ -14,7 +14,7 @@ msgstr ""
 "X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
 
 msgid "Beacon of Light series"
-msgstr "Beacon de la serie Light"
+msgstr "Serie «Faro de luz»"
 
 # Scenario description
 msgid ""

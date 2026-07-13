@@ -14,7 +14,7 @@ msgstr ""
 "X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
 
 msgid "Delta quadrant patrol duty"
-msgstr "Delta quadrant patrol duty"
+msgstr "Patrulla del cuadrante Delta"
 
 # Scenario description
 msgid ""

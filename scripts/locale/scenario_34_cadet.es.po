@@ -14,7 +14,7 @@ msgstr ""
 "X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
 
 msgid "Cadet Patrol"
-msgstr "Cadet Patrol"
+msgstr "Patrulla de cadetes"
 
 # Scenario description
 msgid ""

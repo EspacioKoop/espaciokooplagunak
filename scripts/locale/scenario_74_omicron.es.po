@@ -14,7 +14,7 @@ msgstr ""
 "X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
 
 msgid "The Omicron Plague"
-msgstr "El Plague Omicron"
+msgstr "La plaga Ómicron"
 
 # Scenario description
 msgid ""

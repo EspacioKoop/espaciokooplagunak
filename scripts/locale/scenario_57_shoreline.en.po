@@ -1,5 +1,5 @@
 # Scenario name
-msgid "Shoreline Version 2"
+msgid "Shoreline"
 msgstr ""
 
 # Scenario description

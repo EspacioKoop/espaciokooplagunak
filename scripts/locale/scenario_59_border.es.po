@@ -14,7 +14,7 @@ msgstr ""
 "X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
 
 msgid "Borderline Fever"
-msgstr "Borderline Fever"
+msgstr "Fiebre fronteriza"
 
 # Scenario description
 msgid ""

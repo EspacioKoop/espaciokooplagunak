@@ -1616,12 +1616,62 @@ msgstr ""
 msgid "Start server"
 msgstr ""
 
+#: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:189
+msgid "Not connecting to masterserver?"
+msgstr ""
+
+#: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:193
+msgid "Connecting to master server"
+msgstr ""
+
+#: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:197
+msgid "Master server connection successful"
+msgstr ""
+
+#: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:201
+msgid "Failed to reach the master server."
+msgstr ""
+
+#: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:205
+msgid "Port forwarding check failed."
+msgstr ""
+
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:159
 msgid "Continue"
 msgstr ""
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:221
 msgid "Category"
+msgstr ""
+
+#: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:23
+msgctxt "scenario-category"
+msgid "Replayable Mission"
+msgstr ""
+
+#: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:25
+msgctxt "scenario-category"
+msgid "Mission"
+msgstr ""
+
+#: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:27
+msgctxt "scenario-category"
+msgid "Basic"
+msgstr ""
+
+#: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:29
+msgctxt "scenario-category"
+msgid "PvP"
+msgstr ""
+
+#: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:31
+msgctxt "scenario-category"
+msgid "Development"
+msgstr ""
+
+#: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:33
+msgctxt "scenario-category"
+msgid "Race"
 msgstr ""
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/serverCreationScreen.cpp:228
@@ -1651,7 +1701,7 @@ msgstr ""
 msgid "Enter this ship's control code:"
 msgstr ""
 
-#: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:74
+#: /home/varo/proyectos/espaciokolagunak/src/menus/joinServerMenu.cpp:39 /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:74
 msgid "Ok"
 msgstr ""
 

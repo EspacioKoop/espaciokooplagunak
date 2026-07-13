@@ -14,7 +14,7 @@ msgstr ""
 "X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
 
 msgid "Liberation Day"
-msgstr "Día de Liberación"
+msgstr "Día de la liberación"
 
 # Scenario description
 msgid ""

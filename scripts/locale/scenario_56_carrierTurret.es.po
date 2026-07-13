@@ -13,8 +13,8 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
 
-msgid "Carriers and turrets"
-msgstr "Transportadores y torretas"
+msgid "Carrier and Fighters"
+msgstr "Portanaves y cazas"
 
 # Scenario description
 msgid ""

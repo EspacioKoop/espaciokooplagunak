@@ -14,7 +14,7 @@ msgstr ""
 "X-Generator: tools/i18n_es.py (machine-assisted; human review required)\n"
 
 msgid "Surf's Up!"
-msgstr "Surf está arriba!"
+msgstr "¡A surfear!"
 
 # Scenario description
 msgid ""

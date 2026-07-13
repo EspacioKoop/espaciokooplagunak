@@ -17,6 +17,24 @@
 #include "main.h"
 
 
+static string getLocalizedScenarioCategory(const string& category)
+{
+    if (category == "Replayable Mission")
+        return tr("scenario-category", "Replayable Mission");
+    if (category == "Mission")
+        return tr("scenario-category", "Mission");
+    if (category == "Basic")
+        return tr("scenario-category", "Basic");
+    if (category == "PvP")
+        return tr("scenario-category", "PvP");
+    if (category == "Development")
+        return tr("scenario-category", "Development");
+    if (category == "Race")
+        return tr("scenario-category", "Race");
+    return category;
+}
+
+
 ServerSetupScreen::ServerSetupScreen()
 {
     // Background elements.
@@ -168,23 +186,23 @@ void ServerSetupMasterServerRegistrationScreen::update(float delta)
     switch(game_server->getMasterServerState())
     {
     case GameServer::MasterServerState::Disabled:
-        info_label->setText("Not connecting to masterserver?");
+        info_label->setText(tr("Not connecting to masterserver?"));
         continue_button->enable();
         break;
     case GameServer::MasterServerState::Registering:
-        info_label->setText("Connecting to master server");
+        info_label->setText(tr("Connecting to master server"));
         continue_button->disable();
         break;
     case GameServer::MasterServerState::Success:
-        info_label->setText("Master server connection successful");
+        info_label->setText(tr("Master server connection successful"));
         continue_button->enable();
         break;
     case GameServer::MasterServerState::FailedToReachMasterServer:
-        info_label->setText("Failed to reach the master server.");
+        info_label->setText(tr("Failed to reach the master server."));
         continue_button->disable();
         break;
     case GameServer::MasterServerState::FailedPortForwarding:
-        info_label->setText("Port forwarding check failed.");
+        info_label->setText(tr("Port forwarding check failed."));
         continue_button->disable();
         break;
     }
@@ -240,7 +258,7 @@ ServerScenarioSelectionScreen::ServerScenarioSelectionScreen()
     description_text->setSize(GuiElement::GuiSizeMax, GuiElement::GuiSizeMax);
 
     for(const auto& category : ScenarioInfo::getCategories())
-        category_list->addEntry(category, category);
+        category_list->addEntry(getLocalizedScenarioCategory(category), category);
 
     // Bottom buttons.
     GuiElement* row = new GuiElement(container, "");

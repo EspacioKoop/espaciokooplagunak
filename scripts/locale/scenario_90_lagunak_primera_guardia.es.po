@@ -17,7 +17,7 @@ msgstr "Lagunak: Primera guardia"
 
 #. Scenario description
 msgid "Primer escenario propio de Espaciokoop Lagunak. Escolta corta para tripulaciones novatas: llevad la nave desde la estacion Lagunak hasta el puesto avanzado Argia. Asaltantes Exuari merodean el corredor a mitad de ruta; combatir o esquivarlos es decision de la tripulacion. Victoria al llegar a Argia; derrota si perdeis la nave."
-msgstr "Primer escenario propio de Espaciokoop Lagunak. Escolta corta para tripulaciónes novatas: llevad la nave desde la estación Lagunak hasta el puesto avanzado Argia. Asaltantes Exuari merodean el corredor a mitad de ruta; combatir o esquivarlos es decisión de la tripulación. Victoria al llegar a Argia; derrota si perdéis la nave."
+msgstr "Primer escenario propio de Espaciokoop Lagunak. Escolta corta para tripulaciones novatas: llevad la nave desde la estación Lagunak hasta el puesto avanzado Argia. Asaltantes Exuari merodean el corredor a mitad de ruta; combatir o esquivarlos es decisión de la tripulación. Victoria al llegar a Argia; derrota si perdéis la nave."
 
 #: /home/varo/proyectos/espaciokolagunak/scripts/scenario_90_lagunak_primera_guardia.lua:60
 msgctxt "goal-incCall"
@@ -34,7 +34,7 @@ msgstr ""
 "\n"
 "Primera guardia de esta tripulación: llevad la Itsaso 1 hasta el puesto avanzado Argia, rumbo aproximado 120, a unas 32U de aquí.\n"
 "\n"
-"Aviso de tráfico: naves Exuari merodean el corredor a mitad de ruta. No tenéis orden de limpiarlo  llegar enteros ES la misión. Combatir o esquivar, decisión vuestra.\n"
+"Aviso de tráfico: naves Exuari merodean el corredor a mitad de ruta. No tenéis orden de limpiarlo: llegar enteros es la misión. Combatir o esquivar, decisión vuestra.\n"
 "\n"
 "Control de Lagunak, corto."
 
@@ -52,7 +52,7 @@ msgstr ""
 "La Itsaso 1 ha llegado al puesto avanzado Argia.\n"
 "Tiempo de guardia: %s\n"
 "\n"
-"Espaciokoop Lagunak  primera guardia superada."
+"Espaciokoop Lagunak: primera guardia superada."
 
 #: /home/varo/proyectos/espaciokolagunak/scripts/scenario_90_lagunak_primera_guardia.lua:94
 msgctxt "msgMainscreen"
@@ -61,4 +61,4 @@ msgid ""
 "La primera guardia termina aqui."
 msgstr ""
 "La Itsaso 1 se ha perdido con toda su tripulación.\n"
-"La primera guardia termina aqui."
+"La primera guardia termina aquí."

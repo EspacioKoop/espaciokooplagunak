@@ -65,3 +65,6 @@ script_docs/__pycache__/
 __pycache__/
 *.pyc
 bridge/.venv/
+
+# Artefactos locales de distribución
+/dist/

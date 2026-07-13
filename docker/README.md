@@ -30,8 +30,10 @@ Comprobación:
 # Salud del puente y del juego
 curl http://localhost:8090/healthz
 
-# Estado seguro de la nave (requiere el token de .env)
-curl -H "Authorization: Bearer $BRIDGE_TOKEN" http://localhost:8090/v1/state
+# Estado seguro de la nave (requiere el token de .env; la entrada no se muestra)
+read -rsp "BRIDGE_TOKEN: " BRIDGE_TOKEN && printf '\n'
+curl -H "Authorization: Bearer ${BRIDGE_TOKEN}" http://127.0.0.1:8090/v1/state
+unset BRIDGE_TOKEN
 ```
 
 Los clientes del puente de mando (EmptyEpsilon/Espaciokoop Lagunak de
@@ -42,12 +44,20 @@ escritorio) se conectan al puerto `35666` del host.
 | Puerto | Servicio | Publicado | Notas |
 |---|---|---|---|
 | 35666/tcp+udp | juego | Sí | Clientes de la tripulación en LAN |
-| 8090/tcp | puente | Sí | API para el módulo de Foundry, con token |
+| 8090/tcp | puente | Solo loopback por defecto | API HTTP con token para el módulo de Foundry |
 | 8080/tcp | juego (HTTP heredado) | **No** | `/exec.lua` ejecuta Lua arbitrario; solo accesible por el puente dentro de la red de compose |
 
 **Nunca añadas el puerto 8080 a `ports:`.** Es el vector de ataque descrito en
 [`SECURITY.md`](../SECURITY.md) y en el inventario
 [`docs/API_HTTP.md`](../docs/API_HTTP.md).
+
+El puente también usa HTTP sin TLS. El valor seguro por defecto
+`BRIDGE_BIND=127.0.0.1` exige que el navegador del GM y compose compartan host.
+Para usarlo desde otro equipo, no cambies el bind a `0.0.0.0` sin proteger el
+trayecto: utiliza un túnel SSH, una VPN confiable o un proxy HTTPS con
+certificado válido. No publiques `8090` directamente en Internet. Un Foundry
+servido por HTTPS puede bloquear una URL `http://` por contenido mixto; en ese
+caso usa HTTPS también para el puente.
 
 ## Variables de entorno del servidor
 
@@ -58,6 +68,7 @@ escritorio) se conectan al puerto `35666` del host.
 | `EE_SERVER_PASSWORD` | vacío | Contraseña para clientes |
 | `EE_SERVER_PORT` | `35666` | Puerto publicado para clientes |
 | `BRIDGE_TOKEN` | — (obligatorio) | Token Bearer del puente |
+| `BRIDGE_BIND` | `127.0.0.1` | Dirección del host donde se publica el puente |
 | `BRIDGE_PORT` | `8090` | Puerto publicado del puente |
 
 Argumentos extra al contenedor `game` se pasan tal cual al binario, p. ej.

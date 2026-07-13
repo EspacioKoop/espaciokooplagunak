@@ -39,8 +39,9 @@ services:
       BRIDGE_TOKEN: ${BRIDGE_TOKEN:?Define BRIDGE_TOKEN en docker/.env}
       BRIDGE_PORT: "8090"
     ports:
-      # API del puente para el módulo de Foundry VTT.
-      - "${BRIDGE_PORT:-8090}:8090"
+      # API del puente para Foundry. Loopback por defecto: ampliar el bind
+      # requiere una decisión explícita y un transporte confiable.
+      - "${BRIDGE_BIND:-127.0.0.1}:${BRIDGE_PORT:-8090}:8090"
     depends_on:
       game:
         condition: service_healthy

@@ -273,6 +273,8 @@ set(MAIN_SOURCES
     src/screens/extra/commsScreen.cpp
     src/screens/extra/shipLogScreen.cpp
     src/screens/gm/gameMasterScreen.cpp
+    src/screens/gm/contentEditor.cpp
+    src/screens/gm/contentEditor.h
     src/screens/gm/objectCreationView.cpp
     src/screens/gm/globalMessageEntryView.cpp
     src/screens/gm/chatDialog.cpp

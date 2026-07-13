@@ -5,6 +5,7 @@
 #include "multiplayer_server.h"
 #include "gameGlobalInfo.h"
 #include "objectCreationView.h"
+#include "contentEditor.h"
 #include "globalMessageEntryView.h"
 #include "tweak.h"
 #include "clipboard.h"
@@ -218,6 +219,11 @@ GameMasterScreen::GameMasterScreen(RenderLayer* render_layer)
     });
     create_button->setPosition(20, -70, sp::Alignment::BottomLeft)->setSize(250, 50);
 
+    content_editor_button = new GuiButton(this, "CONTENT_EDITOR_BUTTON", tr("button", "Content editor..."), [this]() {
+        content_editor->show();
+    });
+    content_editor_button->setPosition(20, -120, sp::Alignment::BottomLeft)->setSize(250, 50);
+
     zoom_slider = new GuiRadarZoomSlider(this, "ZOOM_SLIDER", MIN_ZOOM_DISTANCE, MAX_ZOOM_DISTANCE, LONG_RANGE_DISTANCE, main_radar);
     zoom_slider
         ->setZoomReference(LONG_RANGE_DISTANCE)
@@ -254,7 +260,7 @@ GameMasterScreen::GameMasterScreen(RenderLayer* render_layer)
             break;
         }
     });
-    tweak_button->setPosition(20, -120, sp::Alignment::BottomLeft)->setSize(250, 50)->hide();
+    tweak_button->setPosition(20, -170, sp::Alignment::BottomLeft)->setSize(250, 50)->hide();
 
     player_comms_hail = new GuiButton(this, "HAIL_PLAYER", tr("button", "Hail ship"), [this]() {
         for(auto obj : targets.getTargets())
@@ -267,7 +273,7 @@ GameMasterScreen::GameMasterScreen(RenderLayer* render_layer)
             }
         }
     });
-    player_comms_hail->setPosition(20, -170, sp::Alignment::BottomLeft)->setSize(250, 50)->hide();
+    player_comms_hail->setPosition(20, -220, sp::Alignment::BottomLeft)->setSize(250, 50)->hide();
 
     info_layout = new GuiElement(this, "INFO_LAYOUT");
     info_layout->setPosition(-20, 20, sp::Alignment::TopRight)->setSize(300, GuiElement::GuiSizeMax)->setAttribute("layout", "vertical");
@@ -338,6 +344,8 @@ GameMasterScreen::GameMasterScreen(RenderLayer* render_layer)
     global_message_entry->hide();
     object_creation_view = new GuiObjectCreationView(this);
     object_creation_view->hide();
+    content_editor = new GuiContentEditor(this);
+    content_editor->hide();
 
     message_frame = new GuiPanel(this, "");
     message_frame->setPosition(0, 0, sp::Alignment::TopCenter)->setSize(900, 230)->hide();

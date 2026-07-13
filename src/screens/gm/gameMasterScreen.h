@@ -22,6 +22,7 @@ class GuiTextEntry;
 class GameMasterChatDialog;
 class GuiObjectCreationView;
 class GuiGlobalMessageEntryView;
+class GuiContentEditor;
 class GuiHelpOverlay;
 class GuiPanel;
 
@@ -43,6 +44,7 @@ private:
     std::vector<GameMasterChatDialog*> chat_dialog_per_ship;
     GuiGlobalMessageEntryView* global_message_entry;
     GuiObjectCreationView* object_creation_view;
+    GuiContentEditor* content_editor;
     GuiEntityTweak* tweak_dialog;
 
     GuiElement* info_layout;
@@ -58,6 +60,7 @@ private:
     GuiRadarZoomSlider* zoom_slider;
     GuiButton* copy_scenario_button;
     GuiButton* copy_selected_button;
+    GuiButton* content_editor_button;
     GuiSelector* player_ship_selector;
 
     GuiPanel* message_frame;

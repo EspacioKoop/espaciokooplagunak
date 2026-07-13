@@ -3639,3 +3639,254 @@ msgstr "Siguiente"
 #: /home/varo/proyectos/espaciokolagunak/src/tutorialGame.cpp:99
 msgid "Reset"
 msgstr "Reiniciar"
+
+
+msgctxt "button"
+msgid "Content editor..."
+msgstr "Editor de contenido..."
+
+
+msgctxt "content_editor"
+msgid "A type-specific field is too long."
+msgstr "Un campo específico del tipo es demasiado largo."
+
+
+msgctxt "content_editor"
+msgid "Callsign"
+msgstr "Distintivo"
+
+
+msgctxt "content_editor"
+msgid "Campaign"
+msgstr "Campaña"
+
+
+msgctxt "content_editor"
+msgid "Character"
+msgstr "Personaje"
+
+
+msgctxt "content_editor"
+msgid "Clipboard does not contain valid content JSON."
+msgstr "El portapapeles no contiene un JSON de contenido válido."
+
+
+msgctxt "content_editor"
+msgid "Content editor"
+msgstr "Editor de contenido"
+
+
+msgctxt "content_editor"
+msgid "Create a resource or import one from the clipboard."
+msgstr "Crea un recurso o importa uno desde el portapapeles."
+
+
+msgctxt "content_editor"
+msgid "Delete"
+msgstr "Eliminar"
+
+
+msgctxt "content_editor"
+msgid "Description"
+msgstr "Descripción"
+
+
+msgctxt "content_editor"
+msgid "Description is too long (maximum 4000 characters)."
+msgstr "La descripción es demasiado larga (máximo 4000 caracteres)."
+
+
+msgctxt "content_editor"
+msgid "Export"
+msgstr "Exportar"
+
+
+msgctxt "content_editor"
+msgid "Faction"
+msgstr "Facción"
+
+
+msgctxt "content_editor"
+msgid "ID"
+msgstr "ID"
+
+
+msgctxt "content_editor"
+msgid "ID must use 1-64 lowercase letters, numbers, '_' or '-'."
+msgstr "El ID debe usar entre 1 y 64 letras minúsculas, números, '_' o '-'."
+
+
+msgctxt "content_editor"
+msgid "Import"
+msgstr "Importar"
+
+
+msgctxt "content_editor"
+msgid "Import is larger than 64 KiB."
+msgstr "La importación supera los 64 KiB."
+
+
+msgctxt "content_editor"
+msgid "Imported document contains unknown fields."
+msgstr "El documento importado contiene campos desconocidos."
+
+
+msgctxt "content_editor"
+msgid "Imported document contains unknown type-specific fields."
+msgstr "El documento importado contiene campos específicos desconocidos."
+
+
+msgctxt "content_editor"
+msgid "Imported document has a missing or invalid text field."
+msgstr ""
+"Al documento importado le falta un campo de texto o contiene uno no válido."
+
+
+msgctxt "content_editor"
+msgid "Imported document has invalid type-specific fields."
+msgstr "El documento importado contiene campos específicos no válidos."
+
+
+msgctxt "content_editor"
+msgid "Imported resource replaced after confirmation."
+msgstr "Recurso importado y sustituido tras la confirmación."
+
+
+msgctxt "content_editor"
+msgid "Imported text exceeds the allowed size."
+msgstr "El texto importado supera el tamaño permitido."
+
+
+msgctxt "content_editor"
+msgid "Map"
+msgstr "Mapa"
+
+
+msgctxt "content_editor"
+msgid "Map IDs (comma separated)"
+msgstr "ID de mapas (separados por comas)"
+
+
+msgctxt "content_editor"
+msgid "Name"
+msgstr "Nombre"
+
+
+msgctxt "content_editor"
+msgid "Name is required and must be at most 120 characters."
+msgstr "El nombre es obligatorio y debe tener como máximo 120 caracteres."
+
+
+msgctxt "content_editor"
+msgid "New"
+msgstr "Nuevo"
+
+
+msgctxt "content_editor"
+msgid "Press Delete again to confirm."
+msgstr "Pulsa Eliminar de nuevo para confirmar."
+
+
+msgctxt "content_editor"
+msgid "Recommended player count"
+msgstr "Número de jugadores recomendado"
+
+
+msgctxt "content_editor"
+msgid "Resource created."
+msgstr "Recurso creado."
+
+
+msgctxt "content_editor"
+msgid "Resource deleted."
+msgstr "Recurso eliminado."
+
+
+msgctxt "content_editor"
+msgid "Resource exported to the clipboard."
+msgstr "Recurso exportado al portapapeles."
+
+
+msgctxt "content_editor"
+msgid "Resource imported."
+msgstr "Recurso importado."
+
+
+msgctxt "content_editor"
+msgid "Resource loaded."
+msgstr "Recurso cargado."
+
+
+msgctxt "content_editor"
+msgid "Resource updated."
+msgstr "Recurso actualizado."
+
+
+msgctxt "content_editor"
+msgid "Role"
+msgstr "Rol"
+
+
+msgctxt "content_editor"
+msgid "Save"
+msgstr "Guardar"
+
+
+msgctxt "content_editor"
+msgid "Scenario file"
+msgstr "Archivo de escenario"
+
+
+msgctxt "content_editor"
+msgid "Select a saved resource first."
+msgstr "Selecciona primero un recurso guardado."
+
+
+msgctxt "content_editor"
+msgid "Ship"
+msgstr "Nave"
+
+
+msgctxt "content_editor"
+msgid "Ship template"
+msgstr "Plantilla de nave"
+
+
+msgctxt "content_editor"
+msgid "Starting map ID"
+msgstr "ID del mapa inicial"
+
+
+msgctxt "content_editor"
+msgid "The first type-specific field is required."
+msgstr "El primer campo específico del tipo es obligatorio."
+
+
+msgctxt "content_editor"
+msgid "This ID already exists. Press Import again to replace it."
+msgstr "Este ID ya existe. Pulsa Importar de nuevo para sustituirlo."
+
+
+msgctxt "content_editor"
+msgid "Unknown content type."
+msgstr "Tipo de contenido desconocido."
+
+
+msgctxt "content_editor"
+msgid "Unsupported content format or version."
+msgstr "Formato o versión de contenido no compatible."
+
+
+msgctxt "content_editor"
+msgid "Campaign map IDs are invalid."
+msgstr "Los ID de mapas de la campaña no son válidos."
+
+
+msgctxt "content_editor"
+msgid "Recommended player count must be between 1 and 64."
+msgstr "El número de jugadores recomendado debe estar entre 1 y 64."
+
+
+msgctxt "content_editor"
+msgid "Scenario file must be a safe scenario_*.lua filename."
+msgstr "El archivo de escenario debe ser un nombre seguro scenario_*.lua."

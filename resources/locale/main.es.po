@@ -1160,7 +1160,7 @@ msgstr "Opciones"
 #: /home/varo/proyectos/espaciokolagunak/src/menus/mainMenus.cpp:57
 msgctxt "mainMenu"
 msgid "Quit"
-msgstr "dejar de fumar"
+msgstr "Salir"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/mainMenus.cpp:61
 msgctxt "mainMenu"

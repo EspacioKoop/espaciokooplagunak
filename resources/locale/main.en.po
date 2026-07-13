@@ -3862,3 +3862,268 @@ msgstr ""
 #: /home/varo/proyectos/espaciokolagunak/src/tutorialGame.cpp:99
 msgid "Reset"
 msgstr ""
+
+
+msgctxt "button"
+msgid "Content editor..."
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "A type-specific field is too long."
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Callsign"
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Campaign"
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Character"
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Clipboard does not contain valid content JSON."
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Content editor"
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Create a resource or import one from the clipboard."
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Delete"
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Description"
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Description is too long (maximum 4000 characters)."
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Export"
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Faction"
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "ID"
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "ID must use 1-64 lowercase letters, numbers, '_' or '-'."
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Import"
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Import is larger than 64 KiB."
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Imported document contains unknown fields."
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Imported document contains unknown type-specific fields."
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Imported document has a missing or invalid text field."
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Imported document has invalid type-specific fields."
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Imported resource replaced after confirmation."
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Imported text exceeds the allowed size."
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Map"
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Map IDs (comma separated)"
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Name"
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Name is required and must be at most 120 characters."
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "New"
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Press Delete again to confirm."
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Recommended player count"
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Resource created."
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Resource deleted."
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Resource exported to the clipboard."
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Resource imported."
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Resource loaded."
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Resource updated."
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Role"
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Save"
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Scenario file"
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Select a saved resource first."
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Ship"
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Ship template"
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Starting map ID"
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "The first type-specific field is required."
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "This ID already exists. Press Import again to replace it."
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Unknown content type."
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Unsupported content format or version."
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Campaign map IDs are invalid."
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Recommended player count must be between 1 and 64."
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Scenario file must be a safe scenario_*.lua filename."
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Imported document contains duplicate JSON keys."
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "This ID already exists. Press Save again to replace it."
+msgstr ""
+
+
+msgctxt "content_editor"
+msgid "Resource replaced after confirmation."
+msgstr ""

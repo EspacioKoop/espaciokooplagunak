@@ -71,6 +71,9 @@ Características propias integradas y verificadas:
 - identidad visual del fork y localización Español (España);
 - servidor headless y puente seguro reproducibles;
 - módulo Foundry para lectura del estado y bitácora del GM.
+- primera fase del editor integrado de campañas, mapas, personajes y naves,
+  con intercambio JSON individual desde Game Master
+  ([guía](docs/CONTENT_EDITOR.md)).
 
 Infraestructura propia disponible:
 
@@ -141,6 +144,8 @@ Diseño inicial: [`docs/FOUNDRY.md`](docs/FOUNDRY.md).
 
 - [ ] Recoger feedback de partidas mediante issues.
 - [ ] Diseñar una campaña o conjunto de escenarios cooperativos.
+- [ ] Completar el editor visual integrado y conectar mapas/naves declarativos
+      con el mapa vivo y las plantillas del juego.
 - [ ] Mejorar accesibilidad, localización y experiencia de incorporación.
 - [ ] Definir compatibilidad de red y política de versiones.
 
@@ -218,6 +223,7 @@ Espaciokoop Lagunak no está afiliado ni respaldado oficialmente por el equipo d
 - [Prueba individual de «Primera guardia»](docs/PRUEBA-INDIVIDUAL.md)
 - [Despliegue con Docker](docker/README.md)
 - [Integración con Foundry VTT y gestión de nave](docs/FOUNDRY.md)
+- [Editor integrado de contenido](docs/CONTENT_EDITOR.md)
 - [Puente de integración — contrato v0](bridge/README.md)
 - [Inventario del API HTTP heredado](docs/API_HTTP.md)
 - [Relación y sincronización con upstream](docs/UPSTREAM.md)

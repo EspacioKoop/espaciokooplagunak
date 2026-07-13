@@ -70,8 +70,10 @@ Configura sin modificar el árbol fuente:
 cd espaciokooplagunak
 cmake -S . -B build -G Ninja \
   -DSERIOUS_PROTON_DIR=../SeriousProton \
-  -DWARNING_IS_ERROR=1
+  -DWARNING_IS_ERROR=1 \
+  -DBUILD_CONTENT_RESOURCE_TESTS=ON
 cmake --build build --parallel
+ctest --test-dir build --output-on-failure
 ```
 
 No ejecutes instalaciones del sistema desde un agente sin autorización humana. La lista anterior procede de la configuración original y debe ajustarse si CMake informa de una dependencia adicional.

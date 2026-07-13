@@ -3903,6 +3903,14 @@ msgctxt "content_editor"
 msgid "Create a resource or import one from the clipboard."
 msgstr ""
 
+msgctxt "content_editor"
+msgid "Session-only library: export important resources before closing."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Unsaved changes. Repeat the action to discard them."
+msgstr ""
+
 
 msgctxt "content_editor"
 msgid "Delete"

@@ -3680,6 +3680,14 @@ msgctxt "content_editor"
 msgid "Create a resource or import one from the clipboard."
 msgstr "Crea un recurso o importa uno desde el portapapeles."
 
+msgctxt "content_editor"
+msgid "Session-only library: export important resources before closing."
+msgstr "Biblioteca solo para esta sesión: exporta los recursos importantes antes de cerrar."
+
+msgctxt "content_editor"
+msgid "Unsaved changes. Repeat the action to discard them."
+msgstr "Hay cambios sin guardar. Repite la acción para descartarlos."
+
 
 msgctxt "content_editor"
 msgid "Delete"

@@ -20,11 +20,16 @@ tipos de recursos sin editar Lua:
 7. Si ya existe el mismo par `type + id`, hay que pulsar **Import** por segunda
    vez para confirmar la sustitución.
 8. **Delete** también requiere una segunda pulsación.
+9. Si el formulario cambió desde la última carga o guardado, **New**, cambiar de
+   tipo, cargar otro recurso, importar o cerrar requieren repetir la acción. La
+   confirmación se invalida si cambia el formulario o se elige otra acción.
 
 La biblioteca permanece disponible durante la sesión Game Master. Para conservar
 un recurso entre sesiones, expórtalo y guárdalo como archivo `.json`. Una fase
 posterior añadirá selector de archivos y almacenamiento local gestionado por el
 juego; el portapapeles es el transporte inicial multiplataforma.
+El propio modal muestra esta limitación para evitar confundir **Save** con
+persistencia duradera.
 
 ## Formato `espaciokoop-content` v1
 
@@ -64,10 +69,26 @@ incorrectos y campos excesivamente largos.
 - Importar **nunca ejecuta Lua**, comandos ni rutas incluidas en el documento.
 - El JSON se analiza en modo estricto y solo acepta una lista cerrada de claves.
 - Guardar o importar sobre otro ID y borrar requieren confirmación explícita.
+- Una sola acción de navegación o cierre no descarta un formulario modificado.
 - Cada recurso se importa/exporta por separado; no se mezclan campañas, mapas,
   personajes y naves accidentalmente.
 - Los documentos no deben contener secretos ni datos privados que no deban
   compartirse.
+
+## Pruebas del formato
+
+El codec y el guard de descarte tienen un ejecutable C++ independiente. En un
+build configurado con `-DBUILD_CONTENT_RESOURCE_TESTS=ON` se ejecuta con:
+
+```bash
+ctest --test-dir build --output-on-failure -R content_resource_codec
+```
+
+El test cubre los cuatro tipos, round-trip, límite de 64 KiB, claves duplicadas
+en raíz y objetos anidados, tipos y claves desconocidos, versiones futuras,
+rutas de escenario inseguras, rangos numéricos y la doble confirmación ligada
+al contenido exacto del formulario. `docker/build.sh` activa y ejecuta esta
+prueba en el job Linux.
 
 ## Alcance de esta primera fase
 

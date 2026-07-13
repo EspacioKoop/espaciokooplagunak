@@ -39,6 +39,7 @@ git clone --depth=1 -b "${SERIOUS_PROTON_BRANCH}" https://github.com/Daid/Seriou
 
 mkdir build
 cd build
-cmake .. -DSERIOUS_PROTON_DIR=$PROJECT_DIR/SeriousProton/
+cmake .. -DSERIOUS_PROTON_DIR=$PROJECT_DIR/SeriousProton/ -DBUILD_CONTENT_RESOURCE_TESTS=ON
 make
+ctest --output-on-failure
 

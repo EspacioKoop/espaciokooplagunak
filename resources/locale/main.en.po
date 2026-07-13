@@ -4135,3 +4135,111 @@ msgstr ""
 msgctxt "content_editor"
 msgid "Resource replaced after confirmation."
 msgstr ""
+
+msgctxt "content_editor"
+msgid "A symbolic link was rejected inside managed content storage."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Export file"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Export file already exists. Press Export file again to replace it."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Import file"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Import inbox"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Import preview: {type} {id} from {filename}. Press Import file again."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Managed content entry is not a regular file."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Managed content file exceeds the allowed size."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Managed content file is invalid."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Managed content file was not found."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Managed export already exists."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Managed import filename is invalid."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "No managed import files are available."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Private content storage has an invalid managed directory."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Private content storage is not configured."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Private library I/O failed; the previous committed data was kept."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Private library commit was interrupted and will be recovered on next load."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Private library contains a duplicate type and ID."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Private library could not be written because permission was denied."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Private library could not be written because storage is full."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Private library loaded."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Private library migrated to the current format."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Private library recovered after an interrupted write."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Private library was created by a newer version and was not changed."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Private library: managed files stay inside the game configuration directory."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Resource exported to managed file: {filename}"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "This ID already exists. Repeat the import action to replace it."
+msgstr ""

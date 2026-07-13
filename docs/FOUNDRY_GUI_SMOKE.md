@@ -13,10 +13,14 @@ Cada pasada comprueba:
 - render de la ventana de estado;
 - lectura autenticada del puente;
 - creación de una página en la bitácora;
+- pausa y reanudación desde Foundry cuando el commit probado incluya controles
+  de tempo;
 - fallo cerrado y recuperación tras interrumpir el puente;
 - ausencia del token en consola, notificaciones, Journal y evidencias.
 
-No valida todavía órdenes desde Foundry, varios clientes ni una sesión completa de juego.
+No valida todavía otras órdenes desde Foundry, varios clientes ni una sesión
+completa de juego. Si el commit probado es anterior a los controles de tempo,
+marca esas casillas como `N/A` en vez de asumir un resultado.
 
 ## Preparación segura
 
@@ -75,7 +79,25 @@ Ejecuta la secuencia completa en cada anfitrión:
 - [ ] Los valores cambian cuando cambia el estado real de la simulación.
 - [ ] «Anotar estado» crea o reutiliza el Journal «Bitácora de la nave» y añade una página con el estado visible.
 - [ ] La página contiene datos de nave, pero no URL del puente, token ni cabeceras HTTP.
-- [ ] Un usuario no-GM no ve el botón ni obtiene la vista agregada de la nave.
+- [ ] En otro navegador autenticado como usuario no-GM, no aparece el botón y
+      no queda abierta una ventana agregada de la nave.
+
+### Pausa y reanudación (si están incluidas en el commit)
+
+1. Pon la nave en movimiento para que posición y tiempo de escenario avancen.
+2. Pulsa «Pausar» desde la ventana Foundry.
+
+- [ ] Foundry muestra confirmación localizada sin revelar URL ni token.
+- [ ] La posición/tiempo dejan de avanzar durante al menos dos intervalos de
+      sondeo, sin cerrar la ventana.
+
+3. Pulsa «Reanudar».
+
+- [ ] Foundry muestra confirmación localizada.
+- [ ] La posición/tiempo vuelven a avanzar.
+- [ ] Un usuario no-GM no ve estos controles y no puede abrir la ventana desde
+      su navegador. Esta comprobación valida la UI; la autoridad del puente
+      sigue siendo el token Bearer entregado al GM.
 
 ### Interrupción y recuperación
 
@@ -105,12 +127,17 @@ Antes de compartir resultados:
 1. Revisa consola, notificaciones y las páginas creadas en «Bitácora de la nave».
 2. No publiques capturas del ajuste del token, `docker/.env`, almacenamiento del navegador ni cabeceras de red.
 3. Si una captura contiene una credencial, no basta con difuminarla: descártala y rota el token.
-4. Adjunta solo:
+4. Recorta o sustituye datos que identifiquen el entorno o la campaña: nombres
+   de usuario/host, rutas locales, IDs de mundo, nombres narrativos, callsign,
+   destino, extensiones del navegador y metadatos de la imagen.
+5. Prefiere un mundo desechable con nombres ficticios y elimina los metadatos
+   de las capturas antes de adjuntarlas.
+6. Adjunta solo:
    - versiones del anfitrión, sistema y módulo;
    - commit probado;
    - captura de la ventana conectada sin información sensible;
    - captura o descripción de la página de Journal;
-   - errores exactos sin credenciales;
+   - errores reproducibles ya saneados, sin credenciales ni datos privados;
    - resultado de interrupción y recuperación.
 
 ## Registro de resultados
@@ -128,9 +155,11 @@ Copia esta plantilla en el issue #29 por cada anfitrión:
 - Activación y consola: OK / FALLA
 - Botón GM y bloqueo no-GM: OK / FALLA
 - Render y estado vivo: OK / FALLA
+- Pausa/reanudación y efecto observable: OK / FALLA / N/A
 - Escritura en Journal: OK / FALLA
 - Caída y recuperación del puente: OK / FALLA
 - Token ausente de logs/Journal/evidencias: OK / FALLA
+- Evidencias saneadas de datos de entorno/campaña: OK / FALLA
 - Evidencias: <enlaces o descripción>
 - Incidencias: <ninguna o detalle reproducible>
 ```

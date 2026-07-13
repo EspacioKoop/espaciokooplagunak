@@ -143,7 +143,7 @@ CONTEXT_OVERRIDES: dict[tuple[str | None, str], str] = {
     ("Enemies", "Empty"): "Sin enemigos",
     ("Enemies", "Hard"): "Difícil",
     ("Time", "Unlimited"): "Sin límite",
-    ("systems", "HACKED"): "SABOTEADO",
+    ("systems", "HACKED"): "HACKEADO",
     ("database direction", "Rear"): "Trasera",
     ("database direction", "Front"): "Frontal",
     ("station", "Helms"): "Timón",

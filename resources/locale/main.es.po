@@ -2323,7 +2323,7 @@ msgstr "SOBRECALENTAMIENTO"
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/powerDamageIndicator.cpp:91
 msgctxt "systems"
 msgid "HACKED"
-msgstr "SABOTEADO"
+msgstr "HACKEADO"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/radarZoomSlider.cpp:14 /home/varo/proyectos/espaciokolagunak/src/screenComponents/radarZoomSlider.cpp:19 /home/varo/proyectos/espaciokolagunak/src/screenComponents/radarZoomSlider.cpp:29
 msgid "Zoom: {zoom}x"

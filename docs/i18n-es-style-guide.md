@@ -30,7 +30,7 @@ Esta guía define el criterio humano para los catálogos españoles de Espacioko
 | wave (enemies) | oleada | onda |
 | friendly (entity) | aliado | amigo, amable |
 | time left | tiempo restante | hora izquierda |
-| hacked (system) | saboteado | hackeado cuando es un estado técnico de sistema |
+| hacked (system) | hackeado | saboteado, que oculta la causa técnica |
 
 Se conservan siglas asentadas como `HVLI` y nombres propios como `Atlantis`, `Fermi 500`, `Kessler` y `Lagunak`.
 

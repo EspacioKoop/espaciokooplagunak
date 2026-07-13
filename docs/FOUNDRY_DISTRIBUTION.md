@@ -28,10 +28,14 @@ Falla cerrado si falta cualquiera de esas rutas.
 El ZIP contiene `module.json` en la raíz, `LICENSE`, `README.md` y los
 directorios de runtime `lang/`, `scripts/`, `styles/` y `templates/`.
 No incluye tests, caches, configuración local, tokens ni el resto del código
-del juego.
+del juego. El empaquetador rechaza enlaces simbólicos, rutas absolutas y rutas
+con `..`; ningún archivo declarado puede resolverse fuera de
+`foundry-module/`.
 
 Los nombres se ordenan y todos los timestamps/permisos del ZIP se normalizan.
-Dos builds del mismo commit producen los mismos bytes y SHA-256.
+Dos builds del mismo commit con la misma versión de Python/zlib producen los
+mismos bytes y SHA-256. La publicación futura deberá fijar ese entorno de build
+para hacer comparable el artefacto entre máquinas.
 
 Comprobación:
 

@@ -22,7 +22,35 @@ def _manifest_paths(manifest: dict) -> set[str]:
     return paths
 
 
+def _safe_manifest_file(source: Path, relative: str) -> Path:
+    """Resuelve una ruta del manifiesto sin permitir salir del módulo."""
+    if not isinstance(relative, str) or not relative:
+        raise ValueError("module.json contiene una ruta declarada inválida")
+    pure = PurePosixPath(relative)
+    if pure.is_absolute() or ".." in pure.parts or pure == PurePosixPath("."):
+        raise ValueError(f"ruta declarada insegura: {relative}")
+
+    candidate = source.joinpath(*pure.parts)
+    current = source
+    for part in pure.parts:
+        current /= part
+        if current.is_symlink():
+            raise ValueError(f"ruta declarada mediante enlace simbólico: {relative}")
+
+    try:
+        resolved = candidate.resolve(strict=True)
+        resolved.relative_to(source)
+    except (FileNotFoundError, ValueError):
+        if not candidate.exists():
+            raise FileNotFoundError(f"ruta declarada ausente: {relative}")
+        raise ValueError(f"ruta declarada fuera del módulo: {relative}")
+    if not resolved.is_file():
+        raise FileNotFoundError(f"ruta declarada ausente: {relative}")
+    return resolved
+
+
 def validate_module(source: Path) -> tuple[dict, list[Path]]:
+    source = source.resolve(strict=True)
     manifest_path = source / "module.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     if manifest.get("id") != "espaciokoop-lagunak":
@@ -32,25 +60,33 @@ def validate_module(source: Path) -> tuple[dict, list[Path]]:
         raise ValueError("module.json no contiene una versión semántica válida")
 
     for relative in sorted(_manifest_paths(manifest)):
-        path = source / relative
-        if not path.is_file():
-            raise FileNotFoundError(f"ruta declarada ausente: {relative}")
+        _safe_manifest_file(source, relative)
 
     files: set[Path] = set()
     for relative in MODULE_FILES:
         path = source / relative
+        if path.is_symlink():
+            raise ValueError(f"enlace simbólico no permitido: {relative}")
         if path.is_file():
             files.add(path)
     for dirname in MODULE_DIRS:
         root = source / dirname
+        if root.is_symlink():
+            raise ValueError(f"enlace simbólico no permitido: {dirname}")
         if root.is_dir():
-            files.update(
-                path for path in root.rglob("*")
-                if path.is_file() and "__pycache__" not in path.parts and path.suffix != ".pyc"
-            )
+            for path in root.rglob("*"):
+                if path.is_symlink():
+                    relative = path.relative_to(source).as_posix()
+                    raise ValueError(f"enlace simbólico no permitido: {relative}")
+                if (
+                    path.is_file()
+                    and "__pycache__" not in path.parts
+                    and path.suffix != ".pyc"
+                ):
+                    files.add(path)
 
     license_path = source.parent / "LICENSE"
-    if not license_path.is_file():
+    if license_path.is_symlink() or not license_path.is_file():
         raise FileNotFoundError("falta LICENSE en la raíz del repositorio")
     files.add(license_path)
     return manifest, sorted(files, key=lambda path: _archive_name(path, source))

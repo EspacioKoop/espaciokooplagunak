@@ -52,6 +52,50 @@ class FoundryPackageTests(unittest.TestCase):
             with self.assertRaisesRegex(FileNotFoundError, "scripts/ausente.mjs"):
                 validate_module(source)
 
+    def test_symlink_to_external_file_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="hermes-verify-foundry-symlink-") as tmp:
+            root = Path(tmp)
+            source = root / "foundry-module"
+            shutil.copytree(REPO / "foundry-module", source)
+            shutil.copy2(REPO / "LICENSE", root / "LICENSE")
+            external = root / "external.txt"
+            external.write_text("contenido externo", encoding="utf-8")
+            (source / "scripts" / "external.txt").symlink_to(external)
+
+            with self.assertRaisesRegex(ValueError, "enlace simbólico"):
+                validate_module(source)
+
+    def test_manifest_absolute_path_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="hermes-verify-foundry-absolute-") as tmp:
+            root = Path(tmp)
+            source = root / "foundry-module"
+            shutil.copytree(REPO / "foundry-module", source)
+            shutil.copy2(REPO / "LICENSE", root / "LICENSE")
+            external = root / "external.mjs"
+            external.write_text("export {};", encoding="utf-8")
+            manifest_path = source / "module.json"
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            manifest["esmodules"].append(str(external))
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+            with self.assertRaisesRegex(ValueError, "ruta declarada insegura"):
+                validate_module(source)
+
+    def test_manifest_parent_traversal_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="hermes-verify-foundry-traversal-") as tmp:
+            root = Path(tmp)
+            source = root / "foundry-module"
+            shutil.copytree(REPO / "foundry-module", source)
+            shutil.copy2(REPO / "LICENSE", root / "LICENSE")
+            (root / "external.mjs").write_text("export {};", encoding="utf-8")
+            manifest_path = source / "module.json"
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            manifest["esmodules"].append("../external.mjs")
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+            with self.assertRaisesRegex(ValueError, "ruta declarada insegura"):
+                validate_module(source)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -23,6 +23,12 @@ function esModoPruebaIndividual()
         and getScenarioSetting("Modo") == "Prueba individual"
 end
 
+function pruebaIndividualDisponible()
+    return modoPruebaIndividual == true
+        and player ~= nil
+        and player:isValid()
+end
+
 function init()
     timer = 0
     briefEnviado = false
@@ -76,11 +82,13 @@ function init()
 end
 
 function mostrarMensajePruebaIndividual(mensaje)
+    if not pruebaIndividualDisponible() then return false end
     player:addCustomMessage("Tactical", "lagunak_qa_mensaje", mensaje)
+    return true
 end
 
 function mostrarEstadoPruebaIndividual()
-    if not player:isValid() then return end
+    if not pruebaIndividualDisponible() then return false end
     mostrarMensajePruebaIndividual(string.format(
         "QA individual\nFase: %s\nTiempo: %s\nDistancia a Argia: %.1fU\nCasco: %.0f/%.0f\nEnergia: %.0f/%.0f",
         fase,
@@ -91,10 +99,11 @@ function mostrarEstadoPruebaIndividual()
         player:getEnergyLevel(),
         player:getEnergyLevelMax()
     ))
+    return true
 end
 
 function restaurarNavePruebaIndividual()
-    if not player:isValid() then return end
+    if not pruebaIndividualDisponible() then return false end
     local escudos = {}
     for indice = 0, player:getShieldCount() - 1 do
         table.insert(escudos, player:getShieldMax(indice))
@@ -103,33 +112,39 @@ function restaurarNavePruebaIndividual()
     player:setEnergyLevel(player:getEnergyLevelMax())
     player:setShields(table.unpack(escudos))
     mostrarMensajePruebaIndividual("QA individual: casco, escudos y energia restaurados.")
+    return true
 end
 
 function detenerNavePruebaIndividual()
+    if not pruebaIndividualDisponible() then return false end
     player:commandImpulse(0)
     player:commandWarp(0)
     player:commandAbortJump()
+    return true
 end
 
 function saltarEncuentroPruebaIndividual()
-    if fase ~= "guardia" or not player:isValid() then return end
+    if not pruebaIndividualDisponible() or fase ~= "guardia" then return false end
     detenerNavePruebaIndividual()
     player:setPosition(9500, -5500):setHeading(120)
     mostrarMensajePruebaIndividual(
         "QA individual: situada antes del encuentro. Los Exuari siguen activos; combate o esquiva."
     )
+    return true
 end
 
 function prepararLlegadaPruebaIndividual()
-    if fase ~= "guardia" or not player:isValid() then return end
+    if not pruebaIndividualDisponible() or fase ~= "guardia" then return false end
     detenerNavePruebaIndividual()
     player:setPosition(26400, -16000):setHeading(90)
     mostrarMensajePruebaIndividual(
         "QA individual: Argia esta a 1.6U. Avanza para activar la llegada normal."
     )
+    return true
 end
 
 function instalarControlesPruebaIndividual()
+    if not pruebaIndividualDisponible() then return false end
     player:addCustomInfo(
         "Tactical",
         "lagunak_qa_info",
@@ -148,6 +163,7 @@ function instalarControlesPruebaIndividual()
     player:addCustomButton(
         "Tactical", "lagunak_qa_llegada", "QA: preparar llegada", prepararLlegadaPruebaIndividual, 3
     )
+    return true
 end
 
 function publicarEventoLlegada()

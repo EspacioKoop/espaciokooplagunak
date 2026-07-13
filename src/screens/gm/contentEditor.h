@@ -1,6 +1,6 @@
 #pragma once
 
-#include "content/contentResource.h"
+#include "content/contentLibraryStore.h"
 #include "gui/gui2_overlay.h"
 #include "stringImproved.h"
 #include <vector>
@@ -22,17 +22,22 @@ public:
     ) override;
 
 private:
+    ContentLibraryStore store;
     std::vector<ContentResource> resources;
     std::vector<int> visible_indices;
+    std::vector<std::string> inbox_files;
     ContentResourceType current_type = ContentResourceType::Campaign;
     ContentResource clean_snapshot;
     int selected_index = -1;
     string pending_import;
     string pending_save;
     string pending_delete_key;
+    string pending_file_import;
+    string pending_file_export;
     ContentDiscardGuard discard_guard;
 
     GuiSelector* type_selector;
+    GuiSelector* inbox_selector;
     GuiListbox* resource_list;
     GuiTextEntry* id_entry;
     GuiTextEntry* name_entry;
@@ -46,6 +51,7 @@ private:
     void requestSetType(ContentResourceType type);
     void setType(ContentResourceType type);
     void refreshList();
+    ContentStoreError refreshInbox();
     void syncListSelection();
     void requestClearForm();
     void clearForm();
@@ -57,9 +63,13 @@ private:
     bool confirmDiscard(const string& action);
     void saveResource();
     void deleteResource();
-    void exportResource();
-    void importResource();
+    void exportToClipboard();
+    void importFromClipboard();
+    void exportToManagedFile();
+    void importFromManagedFile();
+    bool applyImportedResource(const ContentResource& resource, const string& import_key);
     int findResource(ContentResourceType type, const string& id) const;
     string errorText(ContentResourceError error) const;
+    string storeErrorText(ContentStoreError error) const;
     void setStatus(const string& text);
 };

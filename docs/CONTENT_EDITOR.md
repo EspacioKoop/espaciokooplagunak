@@ -23,13 +23,33 @@ tipos de recursos sin editar Lua:
 9. Si el formulario cambió desde la última carga o guardado, **New**, cambiar de
    tipo, cargar otro recurso, importar o cerrar requieren repetir la acción. La
    confirmación se invalida si cambia el formulario o se elige otra acción.
+10. **Export file** escribe el recurso en la carpeta de exportaciones gestionada.
+    Si el archivo ya existe, exige una segunda pulsación.
+11. **Import inbox** permite elegir un JSON depositado en la bandeja gestionada.
+    **Import file** muestra primero tipo, ID y nombre de archivo; una segunda
+    pulsación confirma la importación y una sustitución exige confirmación propia.
 
-La biblioteca permanece disponible durante la sesión Game Master. Para conservar
-un recurso entre sesiones, expórtalo y guárdalo como archivo `.json`. Una fase
-posterior añadirá selector de archivos y almacenamiento local gestionado por el
-juego; el portapapeles es el transporte inicial multiplataforma.
-El propio modal muestra esta limitación para evitar confundir **Save** con
-persistencia duradera.
+**Save**, **Delete** e importación persisten la biblioteca entre sesiones. El
+portapapeles continúa disponible como transporte multiplataforma, pero no es
+necesario para el uso local.
+
+## Almacenamiento gestionado
+
+La raíz privada se deriva del directorio de configuración que ya calcula el
+juego. El backend crea bajo `content-editor/` únicamente estas carpetas:
+
+- `library/`: documento canónico de la biblioteca;
+- `exports/`: recursos exportados con nombre derivado de `type + id`;
+- `inbox/`: única bandeja desde la que la UI admite archivos;
+- `backups/`: última generación confirmada y backups de exportación;
+- `quarantine/`: documentos parciales o dañados apartados durante recuperación.
+
+La UI y Lua no reciben rutas ni primitivas generales de filesystem. Para importar
+un archivo, hay que copiarlo externamente a `inbox/`; el selector solo muestra
+archivos `.json` normales con nombres portables. **Import file** refresca la
+lista en cada acción. Para mantener el selector accesible muestra como máximo
+los primeros 16 nombres ordenados; hay que mover o borrar los ya procesados para
+acceder a los siguientes.
 
 ## Formato `espaciokoop-content` v1
 
@@ -68,6 +88,17 @@ incorrectos y campos excesivamente largos.
 
 - Importar **nunca ejecuta Lua**, comandos ni rutas incluidas en el documento.
 - El JSON se analiza en modo estricto y solo acepta una lista cerrada de claves.
+- La biblioteca usa documento versionado, escritura temporal sincronizada,
+  rotación de backup y sustitución atómica. Tras una interrupción conserva el
+  canónico válido o recupera el temporal/backup completo. Las exportaciones
+  gestionadas aplican el mismo protocolo y se reparan al inicializar el store.
+- Se rechazan traversal, rutas absolutas, enlaces simbólicos o reparse points en
+  cualquier componente gestionado, entradas que no sean archivos normales y
+  tamaños fuera de límite. La lectura valida el handle abierto y está acotada a
+  `límite + 1`, evitando carreras entre comprobación y lectura.
+- Un lock privado serializa recuperación, guardados e import/export entre procesos,
+  evitando colisiones sobre temporales y backups.
+- Una versión futura no se migra hacia atrás ni se modifica.
 - Guardar o importar sobre otro ID y borrar requieren confirmación explícita.
 - Una sola acción de navegación o cierre no descarta un formulario modificado.
 - Cada recurso se importa/exporta por separado; no se mezclan campañas, mapas,
@@ -77,26 +108,28 @@ incorrectos y campos excesivamente largos.
 
 ## Pruebas del formato
 
-El codec y el guard de descarte tienen un ejecutable C++ independiente. En un
-build configurado con `-DBUILD_CONTENT_RESOURCE_TESTS=ON` se ejecuta con:
+El codec/guard y el store tienen ejecutables C++ independientes. En un build
+configurado con `-DBUILD_CONTENT_RESOURCE_TESTS=ON` se ejecutan con:
 
 ```bash
-ctest --test-dir build --output-on-failure -R content_resource_codec
+ctest --test-dir build --output-on-failure \
+  -R 'content_resource_codec|content_library_store'
 ```
 
-El test cubre los cuatro tipos, round-trip, límite de 64 KiB, claves duplicadas
-en raíz y objetos anidados, tipos y claves desconocidos, versiones futuras,
-rutas de escenario inseguras, rangos numéricos y la doble confirmación ligada
-al contenido exacto del formulario. `docker/build.sh` activa y ejecuta esta
-prueba en el job Linux.
+El test del codec cubre los cuatro tipos, round-trip, límite de 64 KiB, claves
+duplicadas en raíz y objetos anidados, tipos y claves desconocidos, versiones
+futuras, rutas de escenario inseguras, rangos numéricos y la doble confirmación
+ligada al contenido exacto del formulario. El store cubre traversal, symlinks,
+ENOSPC, permisos, interrupciones antes y después de rotar el backup, recuperación,
+migración secuencial, versión futura y export-import-export equivalente.
+`docker/build.sh` activa y ejecuta ambas pruebas en el job Linux.
 
 ## Alcance de esta primera fase
 
-El editor crea, valida e intercambia metadatos declarativos de los cuatro tipos.
+El editor crea, valida, persiste e intercambia metadatos declarativos de los cuatro tipos.
 Los objetos del mapa se siguen colocando y ajustando visualmente desde Game
 Master. Las siguientes fases mantendrán la misma envoltura versionada:
 
-- persistencia local atómica e importación desde archivos ([#53](https://github.com/VaroTv7/espaciokooplagunak/issues/53));
 - conexión con el editor visual de mapas ([#54](https://github.com/VaroTv7/espaciokooplagunak/issues/54));
 - plantillas, previsualización y spawn de naves ([#55](https://github.com/VaroTv7/espaciokooplagunak/issues/55));
 - campañas y personajes vinculados a mapas, naves y puestos ([#56](https://github.com/VaroTv7/espaciokooplagunak/issues/56)).

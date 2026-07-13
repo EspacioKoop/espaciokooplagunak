@@ -3913,3 +3913,111 @@ msgstr "Este ID ya existe. Pulsa Guardar de nuevo para sustituirlo."
 msgctxt "content_editor"
 msgid "Resource replaced after confirmation."
 msgstr "Recurso sustituido tras confirmación."
+
+msgctxt "content_editor"
+msgid "A symbolic link was rejected inside managed content storage."
+msgstr "Se ha rechazado un enlace simbólico dentro del almacenamiento de contenido gestionado."
+
+msgctxt "content_editor"
+msgid "Export file"
+msgstr "Exportar archivo"
+
+msgctxt "content_editor"
+msgid "Export file already exists. Press Export file again to replace it."
+msgstr "El archivo de exportación ya existe. Pulsa Exportar archivo de nuevo para sustituirlo."
+
+msgctxt "content_editor"
+msgid "Import file"
+msgstr "Importar archivo"
+
+msgctxt "content_editor"
+msgid "Import inbox"
+msgstr "Bandeja de importación"
+
+msgctxt "content_editor"
+msgid "Import preview: {type} {id} from {filename}. Press Import file again."
+msgstr "Vista previa: {type} {id} desde {filename}. Pulsa Importar archivo de nuevo."
+
+msgctxt "content_editor"
+msgid "Managed content entry is not a regular file."
+msgstr "La entrada de contenido gestionado no es un archivo normal."
+
+msgctxt "content_editor"
+msgid "Managed content file exceeds the allowed size."
+msgstr "El archivo de contenido gestionado supera el tamaño permitido."
+
+msgctxt "content_editor"
+msgid "Managed content file is invalid."
+msgstr "El archivo de contenido gestionado no es válido."
+
+msgctxt "content_editor"
+msgid "Managed content file was not found."
+msgstr "No se ha encontrado el archivo de contenido gestionado."
+
+msgctxt "content_editor"
+msgid "Managed export already exists."
+msgstr "La exportación gestionada ya existe."
+
+msgctxt "content_editor"
+msgid "Managed import filename is invalid."
+msgstr "El nombre del archivo de importación gestionada no es válido."
+
+msgctxt "content_editor"
+msgid "No managed import files are available."
+msgstr "No hay archivos disponibles en la bandeja de importación."
+
+msgctxt "content_editor"
+msgid "Private content storage has an invalid managed directory."
+msgstr "El almacenamiento privado de contenido contiene un directorio gestionado no válido."
+
+msgctxt "content_editor"
+msgid "Private content storage is not configured."
+msgstr "El almacenamiento privado de contenido no está configurado."
+
+msgctxt "content_editor"
+msgid "Private library I/O failed; the previous committed data was kept."
+msgstr "Ha fallado la E/S de la biblioteca privada; se han conservado los datos confirmados anteriores."
+
+msgctxt "content_editor"
+msgid "Private library commit was interrupted and will be recovered on next load."
+msgstr "La confirmación de la biblioteca privada se ha interrumpido y se recuperará en la próxima carga."
+
+msgctxt "content_editor"
+msgid "Private library contains a duplicate type and ID."
+msgstr "La biblioteca privada contiene un tipo e ID duplicados."
+
+msgctxt "content_editor"
+msgid "Private library could not be written because permission was denied."
+msgstr "No se ha podido escribir la biblioteca privada porque se ha denegado el permiso."
+
+msgctxt "content_editor"
+msgid "Private library could not be written because storage is full."
+msgstr "No se ha podido escribir la biblioteca privada porque el almacenamiento está lleno."
+
+msgctxt "content_editor"
+msgid "Private library loaded."
+msgstr "Biblioteca privada cargada."
+
+msgctxt "content_editor"
+msgid "Private library migrated to the current format."
+msgstr "Biblioteca privada migrada al formato actual."
+
+msgctxt "content_editor"
+msgid "Private library recovered after an interrupted write."
+msgstr "Biblioteca privada recuperada tras una escritura interrumpida."
+
+msgctxt "content_editor"
+msgid "Private library was created by a newer version and was not changed."
+msgstr "La biblioteca privada fue creada por una versión más reciente y no se ha modificado."
+
+msgctxt "content_editor"
+msgid "Private library: managed files stay inside the game configuration directory."
+msgstr "Biblioteca privada: los archivos gestionados permanecen dentro del directorio de configuración del juego."
+
+msgctxt "content_editor"
+msgid "Resource exported to managed file: {filename}"
+msgstr "Recurso exportado al archivo gestionado: {filename}"
+
+msgctxt "content_editor"
+msgid "This ID already exists. Repeat the import action to replace it."
+msgstr "Este ID ya existe. Repite la acción de importación para sustituirlo."

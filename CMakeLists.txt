@@ -273,6 +273,8 @@ set(MAIN_SOURCES
     src/screens/extra/databaseScreen.cpp
     src/screens/extra/commsScreen.cpp
     src/screens/extra/shipLogScreen.cpp
+    src/content/contentLibraryStore.cpp
+    src/content/contentLibraryStore.h
     src/content/contentResource.cpp
     src/content/contentResource.h
     src/screens/gm/gameMasterScreen.cpp
@@ -719,6 +721,15 @@ if(BUILD_CONTENT_RESOURCE_TESTS)
         "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>")
     target_link_libraries(content_resource_tests PRIVATE seriousproton)
     add_test(NAME content_resource_codec COMMAND content_resource_tests)
+
+    add_executable(content_library_store_tests
+        tests/contentLibraryStoreTests.cpp
+        src/content/contentLibraryStore.cpp
+        src/content/contentResource.cpp
+    )
+    target_include_directories(content_library_store_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+    target_link_libraries(content_library_store_tests PRIVATE seriousproton)
+    add_test(NAME content_library_store COMMAND content_library_store_tests)
 endif()
 
 if(WIN32)

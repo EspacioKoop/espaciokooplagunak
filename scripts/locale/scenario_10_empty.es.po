@@ -34,3 +34,7 @@ msgstr "Campo de nebulosa aleatoria"
 msgctxt "buttonGM"
 msgid "Delete unselected"
 msgstr "Suprímase sin elección"
+
+# Scenario description
+msgid "Empty scenario with no ships or terrain. Game masters can use this to set up a scenario in the GM screen. Use the F5 key or \"Copy scenario\" and \"Copy selection\" buttons on the GM screen to copy Lua code of the layout to the clipboard for use in scenario scripts."
+msgstr "Escenario vacío sin naves ni terreno. Los directores de juego pueden usarlo para preparar un escenario en la pantalla del DJ. Usa la tecla F5 o los botones «Copiar escenario» y «Copiar selección» de la pantalla del DJ para copiar al portapapeles el código Lua de la disposición y utilizarlo en scripts de escenario."

@@ -3180,3 +3180,7 @@ msgstr ""
 msgctxt "mission-tabTactical"
 msgid "%s %s in %s"
 msgstr ""
+
+# Scenario description
+msgid "Stop the Planet Devourer before all the planets are gone\n\nWritten for EE games on May 4th, 2023 = \"May the 4th be with you\"\n\nVersion 1\n\nUSN Discord: https://discord.gg/PntGG3a where you can join a game online. There's one every weekend. All experience levels are welcome."
+msgstr ""

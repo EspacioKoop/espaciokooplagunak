@@ -2437,7 +2437,7 @@ msgstr "Escudo frontal: "
 #: scripts/scenario_33_early.lua:4579
 msgctxt "shipAssist-comms"
 msgid "Rear Shield: "
-msgstr "Rear Shield: "
+msgstr "Escudo trasero: "
 
 #: scripts/scenario_33_early.lua:4582
 msgctxt "shipAssist-comms"
@@ -2473,13 +2473,13 @@ msgstr ""
 #, lua-format
 msgctxt "shipAssist-comms"
 msgid "Dock at %s"
-msgstr "Dock at %s"
+msgstr "Atracar en %s"
 
 #: scripts/scenario_33_early.lua:4609
 #, lua-format
 msgctxt "shipAssist-comms"
 msgid "Docking at %s."
-msgstr "Docking at %s."
+msgstr "Atracando en %s."
 
 #: scripts/scenario_33_early.lua:4626 scripts/scenario_33_early.lua:5368
 msgctxt "trade-comms"

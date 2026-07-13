@@ -1509,7 +1509,7 @@ msgstr "Escudo frontal: %d%%\n"
 #, lua-format
 msgctxt "shipAssist-comms"
 msgid "Rear Shield: %d%%\n"
-msgstr "Rear Shield: %d%%\n"
+msgstr "Escudo trasero: %d%%\n"
 
 #: scripts/scenario_56_carrierTurret.lua:4012
 #, lua-format
@@ -1527,13 +1527,13 @@ msgstr "%s Misiles: %d/%d\n"
 #, lua-format
 msgctxt "shipAssist-comms"
 msgid "Dock at %s"
-msgstr "Dock at %s"
+msgstr "Atracar en %s"
 
 #: scripts/scenario_56_carrierTurret.lua:4029
 #, lua-format
 msgctxt "shipAssist-comms"
 msgid "Docking at %s."
-msgstr "Docking at %s."
+msgstr "Atracando en %s."
 
 #: scripts/scenario_56_carrierTurret.lua:4043
 msgctxt "shipAssist-comms"

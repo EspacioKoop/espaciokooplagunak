@@ -1,12 +1,14 @@
 #include "content/contentLibraryStore.h"
 
 #include <algorithm>
+#include <atomic>
 #include <chrono>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <thread>
 #include <vector>
 #include <nlohmann/json.hpp>
 
@@ -267,6 +269,8 @@ void testManagedImportExportAndSymlinks()
         "absolute import path is rejected");
     expect(store.importFromInbox("hidden", imported) == ContentStoreError::InvalidFilename,
         "non-json filename is rejected");
+    expect(store.importFromInbox("CON.json", imported) == ContentStoreError::InvalidFilename,
+        "reserved Windows device filename is rejected portably");
 
     writeAll(store.rootPath() / "inbox" / "oversized.json",
         std::string(CONTENT_RESOURCE_MAX_IMPORT_BYTES + 1, 'x'));
@@ -299,6 +303,9 @@ void testManagedImportExportAndSymlinks()
     ContentLibraryStore intermediate_symlink_store(linked_parent / "managed");
     expect(intermediate_symlink_store.initialize() == ContentStoreError::SymlinkRejected,
         "intermediate managed path symlink is rejected");
+    ContentLibraryStore lexical_bypass_store(linked_parent / ".." / "managed-bypass");
+    expect(lexical_bypass_store.initialize() == ContentStoreError::InvalidRoot,
+        "dot-dot component is rejected before lexical normalization");
 
     ContentLibraryStore temp_symlink_store(temporary.path / "temp-symlink-store");
     expect(temp_symlink_store.initialize() == ContentStoreError::None,
@@ -343,6 +350,21 @@ void testInboxLimitAndConcurrentWriters()
             && inbox.size() == ContentLibraryStore::MAX_INBOX_ENTRIES,
         "managed inbox is capped to selector-safe entry count");
     expect(std::is_sorted(inbox.begin(), inbox.end()), "limited inbox remains deterministic");
+
+    std::atomic<bool> thread_writes_ok{true};
+    const auto thread_writer = [&](const char* id, const char* name) {
+        for (int iteration = 0; iteration < 8; ++iteration)
+            if (store.save({campaign(id, name)}) != ContentStoreError::None) thread_writes_ok = false;
+    };
+    std::thread first_thread(thread_writer, "thread-a", "Thread A");
+    std::thread second_thread(thread_writer, "thread-b", "Thread B");
+    first_thread.join();
+    second_thread.join();
+    expect(thread_writes_ok, "same store instance serializes concurrent threads");
+    std::vector<ContentResource> thread_loaded;
+    expect(store.load(thread_loaded).error == ContentStoreError::None && thread_loaded.size() == 1
+            && (thread_loaded[0].id == "thread-a" || thread_loaded[0].id == "thread-b"),
+        "threaded final generation is complete and parseable");
 
 #if !defined(_WIN32)
     const auto writer = [&](const char* id, const char* name) {

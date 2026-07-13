@@ -89,15 +89,19 @@ incorrectos y campos excesivamente largos.
 - Importar **nunca ejecuta Lua**, comandos ni rutas incluidas en el documento.
 - El JSON se analiza en modo estricto y solo acepta una lista cerrada de claves.
 - La biblioteca usa documento versionado, escritura temporal sincronizada,
-  rotación de backup y sustitución atómica. Tras una interrupción conserva el
-  canónico válido o recupera el temporal/backup completo. Las exportaciones
-  gestionadas aplican el mismo protocolo y se reparan al inicializar el store.
+  rotación de backup y sustitución atómica. En POSIX sincroniza también los
+  directorios destino y origen; en Windows usa `FlushFileBuffers` y renombres
+  `MOVEFILE_WRITE_THROUGH` (la persistencia de la creación inicial de carpetas
+  depende del filesystem). Tras una interrupción conserva el canónico válido o
+  recupera el temporal/backup completo. Las exportaciones gestionadas aplican el
+  mismo protocolo y se reparan al inicializar el store.
 - Se rechazan traversal, rutas absolutas, enlaces simbólicos o reparse points en
   cualquier componente gestionado, entradas que no sean archivos normales y
   tamaños fuera de límite. La lectura valida el handle abierto y está acotada a
   `límite + 1`, evitando carreras entre comprobación y lectura.
-- Un lock privado serializa recuperación, guardados e import/export entre procesos,
-  evitando colisiones sobre temporales y backups.
+- Un lock privado serializa recuperación, guardados e import/export entre hilos y
+  procesos cooperantes, evitando colisiones sobre temporales y backups. Si dos
+  editores guardan snapshots distintos, se aplica explícitamente último escritor gana.
 - Una versión futura no se migra hacia atrás ni se modifica.
 - Guardar o importar sobre otro ID y borrar requieren confirmación explícita.
 - Una sola acción de navegación o cierre no descarta un formulario modificado.

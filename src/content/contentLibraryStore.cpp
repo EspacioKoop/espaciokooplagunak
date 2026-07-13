@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cerrno>
+#include <cctype>
 #include <cstdint>
 #include <map>
 #include <set>
@@ -30,7 +31,8 @@ class ContentStoreLockGuard
 {
 public:
     explicit ContentStoreLockGuard(ContentLibraryStore& store)
-    : store(store), result(store.acquireLock()), acquired(result == ContentStoreError::None)
+    : store(store), thread_lock(store.operation_mutex), result(store.acquireLock()),
+      acquired(result == ContentStoreError::None)
     {
     }
 
@@ -43,6 +45,7 @@ public:
 
 private:
     ContentLibraryStore& store;
+    std::unique_lock<std::recursive_mutex> thread_lock;
     ContentStoreError result;
     bool acquired;
 };
@@ -50,6 +53,7 @@ private:
 namespace
 {
 fs::path configured_root;
+bool configured_root_invalid = false;
 
 ContentStoreError errorFromCode(const std::error_code& error)
 {
@@ -82,6 +86,18 @@ ContentStoreError errorFromWindows(DWORD value)
 }
 #endif
 
+void renamePath(const fs::path& source, const fs::path& destination, std::error_code& error)
+{
+#if defined(_WIN32)
+    if (MoveFileExW(source.wstring().c_str(), destination.wstring().c_str(), MOVEFILE_WRITE_THROUGH))
+        error.clear();
+    else
+        error = std::error_code(static_cast<int>(GetLastError()), std::system_category());
+#else
+    fs::rename(source, destination, error);
+#endif
+}
+
 bool hasDuplicateJsonKeys(const std::string& input)
 {
     std::map<int, std::set<std::string>> keys_by_depth;
@@ -113,10 +129,35 @@ bool portableFilename(const std::string& value)
 {
     if (value.empty() || value.size() > 128 || value.front() == '.') return false;
     if (value.size() < 6 || value.compare(value.size() - 5, 5, ".json") != 0) return false;
-    return std::all_of(value.begin(), value.end(), [](char c) {
+    if (!std::all_of(value.begin(), value.end(), [](char c) {
         return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
             || (c >= '0' && c <= '9') || c == '_' || c == '-' || c == '.';
+    })) return false;
+    auto stem = fs::path(value).stem().string();
+    std::transform(stem.begin(), stem.end(), stem.begin(), [](unsigned char c) {
+        return static_cast<char>(std::toupper(c));
     });
+    static const std::set<std::string> reserved = {
+        "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5",
+        "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5",
+        "LPT6", "LPT7", "LPT8", "LPT9",
+    };
+    return reserved.count(stem) == 0;
+}
+
+fs::path normalizedRoot(const fs::path& input, bool& invalid)
+{
+    invalid = input.empty();
+    for (const auto& component : input)
+        if (component == "." || component == "..") invalid = true;
+    std::error_code error;
+    const auto absolute = fs::absolute(input, error);
+    if (error)
+    {
+        invalid = true;
+        return {};
+    }
+    return absolute.lexically_normal();
 }
 
 ContentStoreError validatePathComponents(const fs::path& path)
@@ -151,13 +192,13 @@ std::string resourceKey(const ContentResource& resource)
 }
 
 ContentLibraryStore::ContentLibraryStore()
-: root(configured_root)
+: root(configured_root), invalid_root_path(configured_root_invalid)
 {
 }
 
 ContentLibraryStore::ContentLibraryStore(fs::path root)
-: root(std::move(root))
 {
+    this->root = normalizedRoot(root, invalid_root_path);
 }
 
 ContentLibraryStore::~ContentLibraryStore()
@@ -167,7 +208,7 @@ ContentLibraryStore::~ContentLibraryStore()
 
 void ContentLibraryStore::configureDefaultRoot(const fs::path& configuration_root)
 {
-    configured_root = configuration_root / "content-editor";
+    configured_root = normalizedRoot(configuration_root / "content-editor", configured_root_invalid);
 }
 
 fs::path ContentLibraryStore::libraryDirectory() const { return root / "library"; }
@@ -229,7 +270,7 @@ ContentStoreError ContentLibraryStore::acquireLock()
     const auto path = root / ".store.lock";
 #if defined(_WIN32)
     const HANDLE handle = CreateFileW(path.wstring().c_str(), GENERIC_READ | GENERIC_WRITE,
-        FILE_SHARE_READ, nullptr, OPEN_ALWAYS, FILE_FLAG_OPEN_REPARSE_POINT, nullptr);
+        FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_ALWAYS, FILE_FLAG_OPEN_REPARSE_POINT, nullptr);
     if (handle == INVALID_HANDLE_VALUE) return errorFromWindows(GetLastError());
     BY_HANDLE_FILE_INFORMATION information{};
     if (!GetFileInformationByHandle(handle, &information))
@@ -289,6 +330,8 @@ void ContentLibraryStore::releaseLock()
 
 ContentStoreError ContentLibraryStore::initialize()
 {
+    std::lock_guard<std::recursive_mutex> thread_lock(operation_mutex);
+    if (invalid_root_path) return ContentStoreError::InvalidRoot;
     if (root.empty()) return ContentStoreError::NotConfigured;
     auto result = ensureManagedDirectory(root);
     if (result != ContentStoreError::None) return result;
@@ -355,7 +398,7 @@ ContentStoreError ContentLibraryStore::recoverManagedExports()
             && parseContentResource(data, resource) == ContentResourceError::None)
         {
             error.clear();
-            fs::rename(temporary, destination, error);
+            renamePath(temporary, destination, error);
             if (error) return errorFromCode(error);
             result = syncDirectory(exportsDirectory());
             if (result != ContentStoreError::None) return result;
@@ -372,7 +415,7 @@ ContentStoreError ContentLibraryStore::recoverManagedExports()
         {
             if (!fs::is_regular_file(backup_status)) return ContentStoreError::NotRegularFile;
             error.clear();
-            fs::rename(backup, destination, error);
+            renamePath(backup, destination, error);
             if (error) return errorFromCode(error);
             result = syncDirectory(exportsDirectory());
             if (result != ContentStoreError::None) return result;
@@ -404,7 +447,7 @@ ContentStoreError ContentLibraryStore::recoverManagedExports()
         if (fs::exists(destination_status)) continue;
 
         error.clear();
-        fs::rename(backup, destination, error);
+        renamePath(backup, destination, error);
         if (error) return errorFromCode(error);
         result = syncDirectory(exportsDirectory());
         if (result != ContentStoreError::None) return result;
@@ -418,6 +461,58 @@ ContentStoreError ContentLibraryStore::writeSynced(const fs::path& path, const s
 {
     if (fault == ContentStoreFault::PermissionBeforeWrite) return ContentStoreError::PermissionDenied;
 
+#if defined(_WIN32)
+    const HANDLE handle = CreateFileW(path.wstring().c_str(), GENERIC_READ | GENERIC_WRITE,
+        FILE_SHARE_READ, nullptr, OPEN_ALWAYS,
+        FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_WRITE_THROUGH, nullptr);
+    if (handle == INVALID_HANDLE_VALUE) return errorFromWindows(GetLastError());
+    BY_HANDLE_FILE_INFORMATION information{};
+    if (!GetFileInformationByHandle(handle, &information))
+    {
+        const auto error = errorFromWindows(GetLastError());
+        CloseHandle(handle);
+        return error;
+    }
+    if ((information.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0)
+    {
+        CloseHandle(handle);
+        return ContentStoreError::SymlinkRejected;
+    }
+    if ((information.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0)
+    {
+        CloseHandle(handle);
+        return ContentStoreError::NotRegularFile;
+    }
+    LARGE_INTEGER beginning{};
+    if (!SetFilePointerEx(handle, beginning, nullptr, FILE_BEGIN) || !SetEndOfFile(handle))
+    {
+        const auto error = errorFromWindows(GetLastError());
+        CloseHandle(handle);
+        return error;
+    }
+    const std::size_t limit = fault == ContentStoreFault::NoSpaceDuringWrite ? data.size() / 2 : data.size();
+    std::size_t offset = 0;
+    while (offset < limit)
+    {
+        const DWORD chunk = static_cast<DWORD>(std::min<std::size_t>(limit - offset, 1U << 20));
+        DWORD count = 0;
+        if (!WriteFile(handle, data.data() + offset, chunk, &count, nullptr) || count == 0)
+        {
+            const auto error = errorFromWindows(GetLastError());
+            CloseHandle(handle);
+            return error;
+        }
+        offset += count;
+    }
+    if (!FlushFileBuffers(handle))
+    {
+        const auto error = errorFromWindows(GetLastError());
+        CloseHandle(handle);
+        return error;
+    }
+    if (!CloseHandle(handle)) return ContentStoreError::IoError;
+    if (fault == ContentStoreFault::NoSpaceDuringWrite) return ContentStoreError::NoSpace;
+#else
     std::error_code status_error;
     const auto status = fs::symlink_status(path, status_error);
     if (status_error && status_error != std::errc::no_such_file_or_directory)
@@ -425,54 +520,26 @@ ContentStoreError ContentLibraryStore::writeSynced(const fs::path& path, const s
     if (fs::is_symlink(status)) return ContentStoreError::SymlinkRejected;
     if (fs::exists(status) && !fs::is_regular_file(status)) return ContentStoreError::NotRegularFile;
 
-#if defined(_WIN32)
-    const int descriptor = _wopen(path.wstring().c_str(), _O_WRONLY | _O_CREAT | _O_TRUNC | _O_BINARY, _S_IREAD | _S_IWRITE);
-#else
     const int descriptor = open(path.c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC | O_NOFOLLOW, 0600);
-#endif
-    if (descriptor < 0) return errorFromErrno(errno);
-
+    if (descriptor < 0)
+    {
+        if (errno == ELOOP) return ContentStoreError::SymlinkRejected;
+        return errorFromErrno(errno);
+    }
     const std::size_t limit = fault == ContentStoreFault::NoSpaceDuringWrite ? data.size() / 2 : data.size();
     std::size_t offset = 0;
     while (offset < limit)
     {
-#if defined(_WIN32)
-        const int count = _write(descriptor, data.data() + offset, static_cast<unsigned int>(std::min<std::size_t>(limit - offset, 1U << 20)));
-#else
         const auto count = write(descriptor, data.data() + offset, limit - offset);
-#endif
+        if (count < 0 && errno == EINTR) continue;
         if (count <= 0)
         {
             const int saved_errno = errno;
-#if defined(_WIN32)
-            _close(descriptor);
-#else
             close(descriptor);
-#endif
             return errorFromErrno(saved_errno);
         }
         offset += static_cast<std::size_t>(count);
     }
-
-    if (fault == ContentStoreFault::NoSpaceDuringWrite)
-    {
-#if defined(_WIN32)
-        _close(descriptor);
-#else
-        close(descriptor);
-#endif
-        return ContentStoreError::NoSpace;
-    }
-
-#if defined(_WIN32)
-    if (_commit(descriptor) != 0)
-    {
-        const int saved_errno = errno;
-        _close(descriptor);
-        return errorFromErrno(saved_errno);
-    }
-    if (_close(descriptor) != 0) return ContentStoreError::IoError;
-#else
     if (fsync(descriptor) != 0)
     {
         const int saved_errno = errno;
@@ -480,6 +547,7 @@ ContentStoreError ContentLibraryStore::writeSynced(const fs::path& path, const s
         return errorFromErrno(saved_errno);
     }
     if (close(descriptor) != 0) return ContentStoreError::IoError;
+    if (fault == ContentStoreFault::NoSpaceDuringWrite) return ContentStoreError::NoSpace;
 #endif
     return ContentStoreError::None;
 }
@@ -687,7 +755,7 @@ ContentStoreError ContentLibraryStore::commitDocument(const std::string& data)
     }
     if (fs::exists(current_status))
     {
-        fs::rename(libraryPath(), backupPath(), error);
+        renamePath(libraryPath(), backupPath(), error);
         if (error) return errorFromCode(error);
         result = syncDirectory(backupPath().parent_path());
         if (result != ContentStoreError::None) return result;
@@ -698,7 +766,7 @@ ContentStoreError ContentLibraryStore::commitDocument(const std::string& data)
     }
     if (fault == ContentStoreFault::InterruptAfterBackup) return ContentStoreError::Interrupted;
 
-    fs::rename(tempPath(), libraryPath(), error);
+    renamePath(tempPath(), libraryPath(), error);
     if (error)
     {
         const auto promotion_error = error;
@@ -709,7 +777,7 @@ ContentStoreError ContentLibraryStore::commitDocument(const std::string& data)
         if (restore_error) return errorFromCode(restore_error);
         if (!library_exists && backup_exists)
         {
-            fs::rename(backupPath(), libraryPath(), restore_error);
+            renamePath(backupPath(), libraryPath(), restore_error);
             if (restore_error) return errorFromCode(restore_error);
             result = syncDirectory(libraryDirectory());
             if (result != ContentStoreError::None) return result;
@@ -808,7 +876,7 @@ ContentStoreLoadResult ContentLibraryStore::load(std::vector<ContentResource>& r
         if (destination.empty()) return ContentStoreError::IoError;
 
         error.clear();
-        fs::rename(source, destination, error);
+        renamePath(source, destination, error);
         if (error) return errorFromCode(error);
         auto sync_result = syncDirectory(quarantineDirectory());
         if (sync_result != ContentStoreError::None) return sync_result;
@@ -951,7 +1019,7 @@ ContentStoreError ContentLibraryStore::exportResource(
     error.clear();
     if (fs::exists(destination_status))
     {
-        fs::rename(destination, backup, error);
+        renamePath(destination, backup, error);
         if (error) return errorFromCode(error);
         result = syncDirectory(root / "backups");
         if (result != ContentStoreError::None) return result;
@@ -961,7 +1029,7 @@ ContentStoreError ContentLibraryStore::exportResource(
         if (result != ContentStoreError::None) return result;
     }
     if (fault == ContentStoreFault::InterruptAfterBackup) return ContentStoreError::Interrupted;
-    fs::rename(temporary, destination, error);
+    renamePath(temporary, destination, error);
     if (error)
     {
         const auto promotion_error = error;
@@ -972,7 +1040,7 @@ ContentStoreError ContentLibraryStore::exportResource(
         if (ignored) return errorFromCode(ignored);
         if (!destination_exists && backup_exists)
         {
-            fs::rename(backup, destination, ignored);
+            renamePath(backup, destination, ignored);
             if (ignored) return errorFromCode(ignored);
             result = syncDirectory(exportsDirectory());
             if (result != ContentStoreError::None) return result;

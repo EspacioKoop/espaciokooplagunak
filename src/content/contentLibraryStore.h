@@ -3,6 +3,7 @@
 #include "content/contentResource.h"
 
 #include <filesystem>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -73,7 +74,9 @@ public:
 private:
     friend class ContentStoreLockGuard;
     std::filesystem::path root;
+    bool invalid_root_path = false;
     ContentStoreFault fault = ContentStoreFault::None;
+    std::recursive_mutex operation_mutex;
     unsigned int lock_depth = 0;
 #if defined(_WIN32)
     void* lock_handle = nullptr;

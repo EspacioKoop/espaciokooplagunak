@@ -83,20 +83,30 @@ def active_catalog_keys(path: Path) -> set[LocaleKey]:
     return {(entry.msgctxt, entry.msgid) for entry in catalog if not entry.obsolete}
 
 
+def catalog_path(root: Path, script: Path, language: str) -> Path:
+    """Map a Lua script to the catalog path used by update_locale.py."""
+    relative_script = script.relative_to(root / "scripts")
+    return root / "scripts/locale" / relative_script.with_suffix(f".{language}.po")
+
+
 def audit(root: Path, languages: Iterable[str]) -> dict[str, Any]:
-    scripts = sorted((root / "scripts").glob("scenario_*.lua"))
+    scripts_with_keys = []
+    for script in sorted((root / "scripts").rglob("*.lua")):
+        expected = expected_header_keys(parse_header(script))
+        if expected:
+            scripts_with_keys.append((script, expected))
+
     missing_catalogs: list[str] = []
     missing: dict[str, list[dict[str, str | None]]] = {}
     expected_total = 0
     catalogs_checked = 0
 
-    for script in scripts:
-        expected = expected_header_keys(parse_header(script))
+    for script, expected in scripts_with_keys:
         expected_total += len(expected)
 
         for language in languages:
-            relative_catalog = Path("scripts/locale") / f"{script.stem}.{language}.po"
-            catalog = root / relative_catalog
+            catalog = catalog_path(root, script, language)
+            relative_catalog = catalog.relative_to(root)
             if not catalog.exists():
                 missing_catalogs.append(relative_catalog.as_posix())
                 continue
@@ -113,7 +123,7 @@ def audit(root: Path, languages: Iterable[str]) -> dict[str, Any]:
 
     missing_keys = sum(len(entries) for entries in missing.values())
     return {
-        "scenarios": len(scripts),
+        "scenarios": len(scripts_with_keys),
         "catalogs_checked": catalogs_checked,
         "expected_keys": expected_total,
         "missing_catalogs": missing_catalogs,

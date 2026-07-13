@@ -76,7 +76,7 @@ msgstr "Quijote"
 
 msgctxt "Enemies"
 msgid "Insanely strong and/or inordinately large numbers of enemies"
-msgstr "Insanely strong and/or inordinately large numbers of enemigos"
+msgstr "Enemigos increíblemente fuertes o en cantidades desmesuradas"
 
 # Scenario setting
 msgctxt "setting"
@@ -236,7 +236,7 @@ msgstr "100 reputación - usted es bien conocido por casi todos como una fuerza 
 
 msgctxt "Reputation"
 msgid "Super Hero"
-msgstr "Super Hero"
+msgstr "Superhéroe"
 
 msgctxt "Reputation"
 msgid "200 reputation - everyone knows you and relies on you for help"
@@ -245,7 +245,7 @@ msgstr "200 reputación - todo el mundo te conoce y depende de ti para ayuda"
 # Scenario setting
 msgctxt "setting"
 msgid "Unique Ship"
-msgstr "Unique Ship"
+msgstr "Nave especial"
 
 msgctxt "setting"
 msgid "Choose player ship outside of standard player ship list"
@@ -356,18 +356,20 @@ msgid ""
 "Medical research station: %s in sector %s\n"
 "Plague station %s in %s"
 msgstr ""
-"Esto es información de spoiler. Considere cuidadosamente antes de revelar esto al resto de los jugadores. Si usted siente que tiene que revelar esta información, le sugiero que seleccione el barco de jugador utilizando el widget a la derecha del botón 'Mensaje global', luego haga clic en el botón 'Navega de alta', identifiquese como un personaje en el juego como el técnico de cartografía estelar de la sede regional, escriba la información como si fuera ese personaje ayudándolos en su misión. %s en el sector %s\n"
-"Plague station %s en el interior %s"
+"Esta información contiene destripes. Piénsatelo bien antes de revelársela al resto de los jugadores. Si crees que debes hacerlo, te sugiero que selecciones la nave de jugadores con el selector situado a la derecha del botón «Mensaje global», pulses el botón «Llamar a la nave», te presentes como un personaje del juego, por ejemplo, el técnico de cartografía estelar de la sede regional, y escribas la información como si ese personaje estuviera ayudándoles con la misión.\n"
+"\n"
+"Estación de investigación médica: %s en el sector %s\n"
+"Estación de la plaga: %s en %s"
 
 #: scripts/scenario_74_omicron.lua:950
 msgctxt "buttonGM"
 msgid "+Test Non-DB Ships"
-msgstr "+Test Non-DB Ships"
+msgstr "+Probar naves ajenas a la BD"
 
 #: scripts/scenario_74_omicron.lua:954
 msgctxt "buttonGM"
 msgid "-From Enemy Power"
-msgstr "-De Enemy Power"
+msgstr "-Poder enemigo"
 
 #: scripts/scenario_74_omicron.lua:956 scripts/scenario_74_omicron.lua:977
 msgctxt "buttonGM"
@@ -449,7 +451,7 @@ msgstr "Mayor Hero"
 #: scripts/scenario_74_omicron.lua:1030
 msgctxt "buttonGM"
 msgid "Super Hero"
-msgstr "Super Hero"
+msgstr "Superhéroe"
 
 #: scripts/scenario_74_omicron.lua:1033
 #, lua-format
@@ -460,7 +462,7 @@ msgstr "%s %i"
 #: scripts/scenario_74_omicron.lua:1045 scripts/scenario_74_omicron.lua:1130
 msgctxt "buttonGM"
 msgid "-Main"
-msgstr "-Main"
+msgstr "-Principal"
 
 #: scripts/scenario_74_omicron.lua:1053
 #, lua-format
@@ -482,7 +484,7 @@ msgid ""
 "Shares Energy: %s,  Repairs Hull: %s,  Restocks Scan Probes: %s"
 msgstr ""
 "%s\n"
-"Shares Energy: %s, Reparaciones Hull: %s, Restocks Scan Probes: %s"
+"Comparte energía: %s,  repara el casco: %s,  repone sondas de escaneo: %s"
 
 #: scripts/scenario_74_omicron.lua:1056
 #, lua-format
@@ -1149,7 +1151,7 @@ msgstr ""
 #: scripts/scenario_74_omicron.lua:3704
 msgctxt "stationServices-comms"
 msgid "Overcharge Jump Drive (10 Rep)"
-msgstr "Overcharge Jump Drive (10 Rep)"
+msgstr "Sobrecargar propulsor de salto (10 Rep)"
 
 #: scripts/scenario_74_omicron.lua:3707
 #, lua-format
@@ -1213,7 +1215,7 @@ msgstr "Sus escáneres han sido reparados"
 #, lua-format
 msgctxt "stationServices-comms"
 msgid "Repair combat maneuver (%s Rep)"
-msgstr "Maniobra de combate de reparación%s Rep)"
+msgstr "Reparar la maniobra de combate (%s Rep)"
 
 #: scripts/scenario_74_omicron.lua:3779
 msgctxt "stationServices-comms"
@@ -1423,7 +1425,7 @@ msgstr "Lujo comercial para %s"
 #: scripts/scenario_74_omicron.lua:4021 scripts/scenario_74_omicron.lua:5164 scripts/scenario_74_omicron.lua:5848
 msgctxt "trade-comms"
 msgid "Jettison cargo"
-msgstr "Jettison cargo"
+msgstr "Expulsar carga"
 
 #: scripts/scenario_74_omicron.lua:4022 scripts/scenario_74_omicron.lua:5165 scripts/scenario_74_omicron.lua:5849
 #, lua-format

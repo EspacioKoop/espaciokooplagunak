@@ -17,6 +17,7 @@ heredado: [`docs/API_HTTP.md`](../docs/API_HTTP.md).
 | GET | `/v1/state` | Bearer | Nave: posición, rumbo, velocidad, destino, distancia, ETA, casco, energía, escudos y sistemas |
 | GET | `/v1/scenario` | Bearer | Tiempo de escenario |
 | GET | `/v1/events` | Bearer | Eventos normalizados presentes; inicialmente llegada de Primera Guardia |
+| GET | `/v1/contacts` | Bearer | Objetos cercanos a la nave (indicativo, posición, facción, si es el jugador) para un mapa vivo en Foundry |
 | POST | `/v1/command` | Bearer | Órdenes de lista blanca (ver abajo) |
 | GET | `/docs` | No* | OpenAPI interactiva generada por FastAPI |
 
@@ -68,7 +69,10 @@ Suite `pytest` que simula el `/exec.lua` del juego (no necesita un
 EmptyEpsilon en marcha) y cubre auth, límite de frecuencia, traducción de
 errores a 502, la lista blanca de órdenes y los intentos de inyección por los
 campos tipados. También cubre el endpoint de eventos vacío y con una llegada
-normalizada.
+normalizada, y el de contactos (lista vacía, objetos normalizados y objetos sin
+facción). El Lua fijo de `/v1/contacts` se validó además contra un EmptyEpsilon
+headless real (`luac -p` + ejecución vía `httpserver`, con nave, nave IA y un
+asteroide sin facción).
 
 ```bash
 cd bridge

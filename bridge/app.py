@@ -12,6 +12,7 @@ Contrato v0 (ver docs/FOUNDRY.md):
   GET  /v1/state     — estado seguro de la nave del jugador (auth).
   GET  /v1/scenario  — tiempo de escenario y metadatos (auth).
   GET  /v1/events    — eventos normalizados presentes en la sesión (auth).
+  GET  /v1/contacts  — objetos cercanos a la nave, para un mapa vivo (auth).
   POST /v1/command   — órdenes de una lista blanca cerrada (auth).
 
 Configuración por variables de entorno:
@@ -208,6 +209,40 @@ end
 return '{"events":[' .. table.concat(events, ",") .. ']}'
 """
 
+# Contactos cercanos a la nave del jugador: base de datos para un mapa vivo en
+# Foundry (starfield + puntos). Solo lectura, radio y número acotados para
+# limitar el tamaño de la respuesta. Cada accesor opcional va en pcall: objetos
+# como asteroides o nebulosas no responden a getFaction y no deben romper la
+# lista. El jugador se marca comparando indicativos, sin depender de la
+# igualdad de userdata entre manejadores de objeto.
+_CONTACTS_LUA = """
+local ship = getPlayerShip(-1)
+if ship == nil then
+    return '{"contacts":[]}'
+end
+local x, y = ship:getPosition()
+local player_callsign = ship:getCallSign() or "?"
+local contacts = {}
+local limite = 60
+for _, object in ipairs(getObjectsInRadius(x, y, 30000)) do
+    if #contacts >= limite then break end
+    local ox, oy = object:getPosition()
+    local ok_cs, callsign = pcall(function() return object:getCallSign() end)
+    if not ok_cs or callsign == nil then callsign = "?" end
+    local faction_json = "null"
+    local ok_f, faction = pcall(function() return object:getFaction() end)
+    if ok_f and faction ~= nil and faction ~= "" then
+        faction_json = string.format("%q", faction)
+    end
+    local es_jugador = "false"
+    if callsign == player_callsign then es_jugador = "true" end
+    contacts[#contacts + 1] = string.format(
+        '{"callsign":%q,"position":{"x":%.1f,"y":%.1f},"faction":%s,"is_player":%s}',
+        callsign, ox, oy, faction_json, es_jugador)
+end
+return '{"contacts":[' .. table.concat(contacts, ",") .. ']}'
+"""
+
 
 # --- Órdenes de lista blanca -------------------------------------------------
 
@@ -318,6 +353,11 @@ async def scenario() -> Any:
 @app.get("/v1/events", dependencies=[Depends(_require_auth)])
 async def events() -> Any:
     return await _run_lua(_EVENTS_LUA)
+
+
+@app.get("/v1/contacts", dependencies=[Depends(_require_auth)])
+async def contacts() -> Any:
+    return await _run_lua(_CONTACTS_LUA)
 
 
 @app.post("/v1/command", dependencies=[Depends(_require_auth)])

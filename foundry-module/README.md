@@ -1,9 +1,9 @@
 # Módulo de Foundry VTT — Espaciokoop Lagunak
 
-Esqueleto del módulo de integración (issue #8): muestra al director de juego el
-estado en vivo de la nave simulada en Espaciokoop Lagunak, consultando el
-[puente de integración](../bridge/README.md) (contrato v0) por polling. **Sin
-órdenes de vuelta en esta iteración.**
+Módulo de integración (issue #8): muestra al director de juego el estado en
+vivo de la nave simulada en Espaciokoop Lagunak y ofrece controles GM cerrados,
+consultando el [puente de integración](../bridge/README.md) (contrato v0) por
+polling.
 
 ## Requisitos
 
@@ -44,6 +44,11 @@ Los tres ajustes son de ámbito **client**: viven en el navegador del GM, no
 entran en la base de datos del mundo y no se sincronizan con los jugadores.
 El token no aparece en logs ni en mensajes de error.
 
+El **token Bearer es la autoridad efectiva del puente** y debe entregarse solo
+al GM. Las comprobaciones `game.user.isGM` ocultan la interfaz y evitan órdenes
+accidentales desde un usuario jugador, pero no acreditan el rol ante el puente:
+cualquier cliente que obtenga el token puede invocar las órdenes autorizadas.
+
 ## Uso
 
 1. En los controles de escena (grupo de fichas), pulsa el botón «Estado de la
@@ -52,11 +57,13 @@ El token no aparece en logs ni en mensajes de error.
    (`/v1/state`): posición, rumbo, destino, distancia, ETA, casco, energía,
    escudos y sistemas. Con la nave detenida la ETA se muestra como no
    disponible, sin dividir por cero.
-3. Si el puente se cae, el módulo reintenta con backoff exponencial (hasta
+3. El GM puede pausar o reanudar la simulación con los botones de tempo. No se
+   muestra un estado de pausa inferido porque EmptyEpsilon no ofrece un getter.
+4. Si el puente se cae, el módulo reintenta con backoff exponencial (hasta
    60 s) y se recupera solo al volver el puente.
-4. «Anotar estado» escribe una página con el estado actual en el diario
+5. «Anotar estado» escribe una página con el estado actual en el diario
    «Bitácora de la nave» (lo crea si no existe).
-5. Al llegar a Argia en «Primera Guardia», el módulo recibe por polling un
+6. Al llegar a Argia en «Primera Guardia», el módulo recibe por polling un
    evento normalizado y crea automáticamente una página de llegada. El flag
    `eventId` evita duplicados al reabrir la ventana o reconectar.
 
@@ -67,8 +74,8 @@ El token no aparece en logs ni en mensajes de error.
 - `bridge-client.mjs` ejercitado desde Node contra el puente real del compose
   (healthz, state, 401 sin token, timeout y error de red) — es ESM puro sin
   dependencias de Foundry precisamente para eso.
-- Tests Node cubren `/v1/events`, validación cerrada del evento y
-  deduplicación persistente en Journal.
+- Tests Node cubren `/v1/events`, validación y deduplicación persistente del
+  Journal, formato destino/ETA, POST cerrado de pausa y bloqueo no-GM.
 - **Manifiesto validado con el propio parser de Foundry v11.302**
   (`BaseModule`, modo estricto): sin errores de contenido. Foundry v11.302
   arranca limpio con el módulo instalado (symlink en `Data/modules`), sin

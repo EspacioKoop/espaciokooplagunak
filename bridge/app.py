@@ -33,7 +33,7 @@ from typing import Annotated, Any, Literal, Union
 import httpx
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, StrictBool
 
 EE_URL = os.environ.get("EE_URL", "http://game:8080")
 BRIDGE_TOKEN = os.environ.get("BRIDGE_TOKEN", "")
@@ -268,8 +268,17 @@ class SetSystemPower(BaseModel):
         )
 
 
+class SetPause(BaseModel):
+    op: Literal["set_pause"]
+    paused: StrictBool
+
+    def lua(self) -> str:
+        call = "pauseGame()" if self.paused else "unpauseGame()"
+        return f"{call}\nreturn '{{\"ok\":true}}'"
+
+
 Command = Annotated[
-    Union[SetImpulse, SetWarp, SetTargetHeading, SetShields, SetSystemPower],
+    Union[SetImpulse, SetWarp, SetTargetHeading, SetShields, SetSystemPower, SetPause],
     Field(discriminator="op"),
 ]
 

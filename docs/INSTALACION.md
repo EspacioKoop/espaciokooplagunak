@@ -70,3 +70,22 @@ fuera de rango antes de escribir nada.
 ```bash
 python3 -m pytest tools/tests/test_instalar.py
 ```
+
+## Mantenimiento
+
+El asistente se apoya en partes que cambian; si se quedan desincronizadas, engaña
+en silencio a quien instala por primera vez (justo lo que pretende evitar).
+**Actualiza `tools/instalar.py` y este documento en el mismo cambio** cuando toques:
+
+| Si cambia… | Actualiza en `tools/instalar.py` |
+|---|---|
+| Dependencias de compilación o nombres de paquetes | `_PAQUETES_NATIVOS`, `REQUISITOS_NATIVO` |
+| Comandos de compilación (CMake, flags) | `_accion_nativa` (y [`docs/BUILDING.md`](BUILDING.md)) |
+| Claves o puertos de `docker/.env.example` | `OPCIONES_EDITABLES` y sus validadores |
+| Estructura de arranque de Docker | `_accion_docker` |
+| Ruta de módulos de Foundry o forma de instalarlo | `ruta_modulos_foundry`, `enlazar_modulo` |
+| Gestores de paquetes / distribuciones soportadas | `_DISTRO_A_GESTOR` |
+
+Mantén además sincronizada la tabla de banderas no interactivas de arriba con las
+opciones reales del `argparse`, y añade una prueba en `tools/tests/test_instalar.py`
+para cualquier lógica nueva.

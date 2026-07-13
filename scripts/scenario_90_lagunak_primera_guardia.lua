@@ -1,6 +1,9 @@
 -- Name: Lagunak: Primera guardia
 -- Description: Primer escenario propio de Espaciokoop Lagunak. Escolta corta para tripulaciones novatas: llevad la nave desde la estacion Lagunak hasta el puesto avanzado Argia. Asaltantes Exuari merodean el corredor a mitad de ruta; combatir o esquivarlos es decision de la tripulacion. Victoria al llegar a Argia; derrota si perdeis la nave.
 -- Type: Basic
+-- Setting[Modo]: Elige la experiencia normal o una ayuda opt-in para probar la mision en solitario desde Tactical.
+-- Modo[Normal|Default]: Partida cooperativa sin controles de QA.
+-- Modo[Prueba individual]: Anade controles de estado, restauracion y saltos de prueba en Tactical.
 
 --- Scenario
 -- @script scenario_90_lagunak_primera_guardia
@@ -15,11 +18,17 @@ require("utils.lua")
 -- consola Lua del modo headless o via /exec.lua en QA local.
 fase = "preparacion"
 
+function esModoPruebaIndividual()
+    return getScenarioSetting ~= nil
+        and getScenarioSetting("Modo") == "Prueba individual"
+end
+
 function init()
     timer = 0
     briefEnviado = false
     cierreTimer = 5.0
     eventoLlegadaId = string.format("%06d", math.random(0, 999999))
+    modoPruebaIndividual = esModoPruebaIndividual()
 
     estacionLagunak = SpaceStation()
         :setTemplate("Medium Station")
@@ -61,6 +70,84 @@ function init()
         :setPosition(15000, -7500):orderDefendLocation(14000, -8000))
 
     fase = "guardia"
+    if modoPruebaIndividual then
+        instalarControlesPruebaIndividual()
+    end
+end
+
+function mostrarMensajePruebaIndividual(mensaje)
+    player:addCustomMessage("Tactical", "lagunak_qa_mensaje", mensaje)
+end
+
+function mostrarEstadoPruebaIndividual()
+    if not player:isValid() then return end
+    mostrarMensajePruebaIndividual(string.format(
+        "QA individual\nFase: %s\nTiempo: %s\nDistancia a Argia: %.1fU\nCasco: %.0f/%.0f\nEnergia: %.0f/%.0f",
+        fase,
+        formatTime(timer),
+        distance(player, estacionArgia) / 1000,
+        player:getHull(),
+        player:getHullMax(),
+        player:getEnergyLevel(),
+        player:getEnergyLevelMax()
+    ))
+end
+
+function restaurarNavePruebaIndividual()
+    if not player:isValid() then return end
+    local escudos = {}
+    for indice = 0, player:getShieldCount() - 1 do
+        table.insert(escudos, player:getShieldMax(indice))
+    end
+    player:setHull(player:getHullMax())
+    player:setEnergyLevel(player:getEnergyLevelMax())
+    player:setShields(table.unpack(escudos))
+    mostrarMensajePruebaIndividual("QA individual: casco, escudos y energia restaurados.")
+end
+
+function detenerNavePruebaIndividual()
+    player:commandImpulse(0)
+    player:commandWarp(0)
+    player:commandAbortJump()
+end
+
+function saltarEncuentroPruebaIndividual()
+    if fase ~= "guardia" or not player:isValid() then return end
+    detenerNavePruebaIndividual()
+    player:setPosition(9500, -5500):setHeading(120)
+    mostrarMensajePruebaIndividual(
+        "QA individual: situada antes del encuentro. Los Exuari siguen activos; combate o esquiva."
+    )
+end
+
+function prepararLlegadaPruebaIndividual()
+    if fase ~= "guardia" or not player:isValid() then return end
+    detenerNavePruebaIndividual()
+    player:setPosition(26400, -16000):setHeading(90)
+    mostrarMensajePruebaIndividual(
+        "QA individual: Argia esta a 1.6U. Avanza para activar la llegada normal."
+    )
+end
+
+function instalarControlesPruebaIndividual()
+    player:addCustomInfo(
+        "Tactical",
+        "lagunak_qa_info",
+        "PRUEBA INDIVIDUAL ACTIVA — ayudas excluidas del modo normal.",
+        -10
+    )
+    player:addCustomButton(
+        "Tactical", "lagunak_qa_estado", "QA: estado", mostrarEstadoPruebaIndividual, 0
+    )
+    player:addCustomButton(
+        "Tactical", "lagunak_qa_restaurar", "QA: restaurar nave", restaurarNavePruebaIndividual, 1
+    )
+    player:addCustomButton(
+        "Tactical", "lagunak_qa_encuentro", "QA: ir al encuentro", saltarEncuentroPruebaIndividual, 2
+    )
+    player:addCustomButton(
+        "Tactical", "lagunak_qa_llegada", "QA: preparar llegada", prepararLlegadaPruebaIndividual, 3
+    )
 end
 
 function publicarEventoLlegada()

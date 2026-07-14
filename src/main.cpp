@@ -4,6 +4,7 @@
 #include <string.h>
 #include <i18n.h>
 #include <multiplayer_proxy.h>
+#include "content/contentLibraryStore.h"
 #ifdef _MSC_VER
 #include <direct.h>
 #else
@@ -107,6 +108,8 @@ int main(int argc, char** argv)
     initSystemsAndComponents();
 
     auto configuration_path = initConfiguration(argc, argv);
+    ContentLibraryStore::configureDefaultRoot(
+        std::filesystem::path(configuration_path.c_str()));
 
     if (PreferencesManager::get("headless") == "")
     {

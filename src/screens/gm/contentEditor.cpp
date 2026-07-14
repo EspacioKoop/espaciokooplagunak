@@ -8,6 +8,8 @@
 #include "gui/gui2_selector.h"
 #include "gui/gui2_textentry.h"
 
+#include <utility>
+
 namespace
 {
 string typeLabel(ContentResourceType type)
@@ -61,7 +63,17 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
         if (index >= 0 && index < int(visible_indices.size()))
             requestLoadResource(visible_indices[index]);
     });
-    resource_list->setPosition(30, 125, sp::Alignment::TopLeft)->setSize(300, 430);
+    resource_list->setPosition(30, 125, sp::Alignment::TopLeft)->setSize(300, 300);
+
+    (new GuiLabel(box, "INBOX_LABEL", tr("content_editor", "Import inbox"), 18))
+        ->setPosition(30, 435, sp::Alignment::TopLeft)->setSize(300, 30);
+    inbox_selector = new GuiSelector(box, "INBOX", [this](int, string) {
+        pending_file_import = "";
+    });
+    inbox_selector->setPosition(30, 465, sp::Alignment::TopLeft)->setSize(300, 40);
+    (new GuiButton(box, "IMPORT_FILE", tr("content_editor", "Import file"), [this]() {
+        importFromManagedFile();
+    }))->setPosition(30, 515, sp::Alignment::TopLeft)->setSize(300, 40);
 
     (new GuiButton(box, "NEW", tr("content_editor", "New"), [this]() { requestClearForm(); }))
         ->setPosition(30, 570, sp::Alignment::TopLeft)->setSize(140, 45);
@@ -92,11 +104,14 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
     secondary_entry->setPosition(x + 190, 375)->setSize(500, 35);
 
     (new GuiButton(box, "SAVE", tr("content_editor", "Save"), [this]() { saveResource(); }))
-        ->setPosition(x, 445)->setSize(160, 45);
-    (new GuiButton(box, "EXPORT", tr("content_editor", "Export"), [this]() { exportResource(); }))
-        ->setPosition(x + 180, 445)->setSize(160, 45);
-    (new GuiButton(box, "IMPORT", tr("content_editor", "Import"), [this]() { importResource(); }))
-        ->setPosition(x + 360, 445)->setSize(160, 45);
+        ->setPosition(x, 445)->setSize(150, 45);
+    (new GuiButton(box, "EXPORT", tr("content_editor", "Export"), [this]() { exportToClipboard(); }))
+        ->setPosition(x + 165, 445)->setSize(150, 45);
+    (new GuiButton(box, "IMPORT", tr("content_editor", "Import"), [this]() { importFromClipboard(); }))
+        ->setPosition(x + 330, 445)->setSize(150, 45);
+    (new GuiButton(box, "EXPORT_FILE", tr("content_editor", "Export file"), [this]() {
+        exportToManagedFile();
+    }))->setPosition(x + 495, 445)->setSize(195, 45);
 
     status_label = new GuiLabel(box, "STATUS", "", 18);
     status_label->setPosition(x, 510)->setSize(690, 70);
@@ -104,7 +119,7 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
     (new GuiLabel(
         box,
         "SESSION_WARNING",
-        tr("content_editor", "Session-only library: export important resources before closing."),
+        tr("content_editor", "Private library: managed files stay inside the game configuration directory."),
         16
     ))->setPosition(x, 585)->setSize(690, 35);
 
@@ -112,6 +127,17 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
         ->setPosition(-30, -25, sp::Alignment::BottomRight)->setSize(180, 45);
 
     setType(ContentResourceType::Campaign);
+    const auto load_result = store.load(resources);
+    refreshList();
+    refreshInbox();
+    if (load_result.error != ContentStoreError::None)
+        setStatus(storeErrorText(load_result.error));
+    else if (load_result.recovered)
+        setStatus(tr("content_editor", "Private library recovered after an interrupted write."));
+    else if (load_result.migrated)
+        setStatus(tr("content_editor", "Private library migrated to the current format."));
+    else
+        setStatus(tr("content_editor", "Private library loaded."));
 }
 
 bool GuiContentEditor::onMouseDown(sp::io::Pointer::Button, glm::vec2, sp::io::Pointer::ID)
@@ -158,6 +184,29 @@ void GuiContentEditor::refreshList()
     syncListSelection();
 }
 
+ContentStoreError GuiContentEditor::refreshInbox()
+{
+    string selected_filename;
+    const int previous_selection = inbox_selector->getSelectionIndex();
+    if (previous_selection >= 0 && previous_selection < int(inbox_files.size()))
+        selected_filename = inbox_files[previous_selection];
+    inbox_selector->clear();
+    inbox_files.clear();
+    const auto result = store.listInbox(inbox_files);
+    if (result != ContentStoreError::None)
+    {
+        setStatus(storeErrorText(result));
+        return result;
+    }
+    for (const auto& filename : inbox_files)
+        inbox_selector->addEntry(filename, filename);
+    int selection = inbox_files.empty() ? -1 : 0;
+    for (int index = 0; index < int(inbox_files.size()); ++index)
+        if (inbox_files[index] == selected_filename) selection = index;
+    inbox_selector->setSelectionIndex(selection);
+    return ContentStoreError::None;
+}
+
 void GuiContentEditor::syncListSelection()
 {
     int visible_selection = -1;
@@ -177,6 +226,8 @@ void GuiContentEditor::clearForm()
     pending_import = "";
     pending_save = "";
     pending_delete_key = "";
+    pending_file_import = "";
+    pending_file_export = "";
     discard_guard.reset();
     id_entry->setText("");
     name_entry->setText("");
@@ -221,6 +272,7 @@ void GuiContentEditor::loadResource(int index)
     pending_import = "";
     pending_save = "";
     pending_delete_key = "";
+    pending_file_export = "";
     discard_guard.reset();
     syncListSelection();
     setStatus(tr("content_editor", "Resource loaded."));
@@ -271,35 +323,45 @@ void GuiContentEditor::saveResource()
         return setStatus(tr("content_editor", "This ID already exists. Press Save again to replace it."));
     }
 
+    auto candidate = resources;
+    int target_index = selected_index;
+    string success;
     if (replacing_other)
     {
-        resources[existing] = resource;
+        candidate[existing] = resource;
         if (selected)
         {
             const int original = selected_index;
-            resources.erase(resources.begin() + original);
+            candidate.erase(candidate.begin() + original);
             if (original < existing) --existing;
         }
-        selected_index = existing;
-        setStatus(tr("content_editor", "Resource replaced after confirmation."));
+        target_index = existing;
+        success = tr("content_editor", "Resource replaced after confirmation.");
     }
     else if (selected)
     {
-        resources[selected_index] = resource;
-        setStatus(tr("content_editor", "Resource updated."));
+        candidate[selected_index] = resource;
+        target_index = selected_index;
+        success = tr("content_editor", "Resource updated.");
     }
     else
     {
-        resources.push_back(resource);
-        selected_index = int(resources.size()) - 1;
-        setStatus(tr("content_editor", "Resource created."));
+        candidate.push_back(resource);
+        target_index = int(candidate.size()) - 1;
+        success = tr("content_editor", "Resource created.");
     }
+    const auto store_error = store.save(candidate);
+    if (store_error != ContentStoreError::None) return setStatus(storeErrorText(store_error));
+    resources = std::move(candidate);
+    selected_index = target_index;
     clean_snapshot = resource;
     pending_import = "";
     pending_save = "";
     pending_delete_key = "";
+    pending_file_export = "";
     discard_guard.reset();
     refreshList();
+    setStatus(success);
 }
 
 void GuiContentEditor::deleteResource()
@@ -313,13 +375,17 @@ void GuiContentEditor::deleteResource()
         pending_delete_key = key;
         return setStatus(tr("content_editor", "Press Delete again to confirm."));
     }
-    resources.erase(resources.begin() + selected_index);
+    auto candidate = resources;
+    candidate.erase(candidate.begin() + selected_index);
+    const auto store_error = store.save(candidate);
+    if (store_error != ContentStoreError::None) return setStatus(storeErrorText(store_error));
+    resources = std::move(candidate);
     clearForm();
     refreshList();
     setStatus(tr("content_editor", "Resource deleted."));
 }
 
-void GuiContentEditor::exportResource()
+void GuiContentEditor::exportToClipboard()
 {
     auto resource = formResource();
     auto error = validateContentResource(resource);
@@ -328,31 +394,43 @@ void GuiContentEditor::exportResource()
     setStatus(tr("content_editor", "Resource exported to the clipboard."));
 }
 
-void GuiContentEditor::importResource()
+void GuiContentEditor::importFromClipboard()
 {
     const string input = Clipboard::readClipboard();
     ContentResource resource;
     const auto error = parseContentResource(input, resource);
     if (error != ContentResourceError::None) return setStatus(errorText(error));
+    applyImportedResource(resource, "clipboard:" + input);
+}
 
+bool GuiContentEditor::applyImportedResource(const ContentResource& resource, const string& import_key)
+{
     int existing = findResource(resource.type, resource.id);
-    if (existing >= 0 && pending_import != input)
+    const bool replacing = existing >= 0;
+    if (replacing && pending_import != import_key)
     {
-        pending_import = input;
-        return setStatus(tr("content_editor", "This ID already exists. Press Import again to replace it."));
+        pending_import = import_key;
+        setStatus(tr("content_editor", "This ID already exists. Repeat the import action to replace it."));
+        return false;
     }
-    if (!confirmDiscard("import:" + input)) return;
+    if (!confirmDiscard("import:" + import_key)) return false;
 
-    if (existing >= 0)
-    {
-        resources[existing] = resource;
-        selected_index = existing;
-    }
+    auto candidate = resources;
+    if (replacing)
+        candidate[existing] = resource;
     else
     {
-        resources.push_back(resource);
-        selected_index = int(resources.size()) - 1;
+        candidate.push_back(resource);
+        existing = int(candidate.size()) - 1;
     }
+    const auto store_error = store.save(candidate);
+    if (store_error != ContentStoreError::None)
+    {
+        setStatus(storeErrorText(store_error));
+        return false;
+    }
+    resources = std::move(candidate);
+    selected_index = existing;
     current_type = resource.type;
     type_selector->setSelectionIndex(static_cast<int>(resource.type));
     auto labels = fieldLabels(resource.type);
@@ -362,9 +440,58 @@ void GuiContentEditor::importResource()
     loadResource(selected_index);
     pending_import = "";
     pending_save = "";
-    setStatus(existing >= 0
+    setStatus(replacing
         ? tr("content_editor", "Imported resource replaced after confirmation.")
         : tr("content_editor", "Resource imported."));
+    return true;
+}
+
+void GuiContentEditor::exportToManagedFile()
+{
+    const auto resource = formResource();
+    const auto validation_error = validateContentResource(resource);
+    if (validation_error != ContentResourceError::None) return setStatus(errorText(validation_error));
+    const string signature = serializeContentResource(resource);
+    const bool overwrite = pending_file_export == signature;
+    std::string filename;
+    const auto result = store.exportResource(resource, overwrite, filename);
+    if (result == ContentStoreError::AlreadyExists)
+    {
+        pending_file_export = signature;
+        return setStatus(tr("content_editor", "Export file already exists. Press Export file again to replace it."));
+    }
+    if (result != ContentStoreError::None) return setStatus(storeErrorText(result));
+    pending_file_export = "";
+    setStatus(tr("content_editor", "Resource exported to managed file: {filename}")
+        .format({{"filename", filename}}));
+}
+
+void GuiContentEditor::importFromManagedFile()
+{
+    if (refreshInbox() != ContentStoreError::None) return;
+    const int selection = inbox_selector->getSelectionIndex();
+    if (selection < 0 || selection >= int(inbox_files.size()))
+        return setStatus(tr("content_editor", "No managed import files are available."));
+    const auto& filename = inbox_files[selection];
+    ContentResource resource;
+    const auto result = store.importFromInbox(filename, resource);
+    if (result != ContentStoreError::None)
+    {
+        refreshInbox();
+        return setStatus(storeErrorText(result));
+    }
+    const string preview_key = filename + "\n" + serializeContentResource(resource);
+    if (pending_file_import != preview_key)
+    {
+        pending_file_import = preview_key;
+        return setStatus(tr("content_editor", "Import preview: {type} {id} from {filename}. Press Import file again.")
+            .format({{"type", typeLabel(resource.type)}, {"id", resource.id}, {"filename", filename}}));
+    }
+    if (applyImportedResource(resource, "file:" + preview_key))
+    {
+        pending_file_import = "";
+        refreshInbox();
+    }
 }
 
 int GuiContentEditor::findResource(ContentResourceType type, const string& id) const
@@ -417,6 +544,45 @@ string GuiContentEditor::errorText(ContentResourceError error) const
         return tr("content_editor", "Recommended player count must be between 1 and 64.");
     }
     return tr("content_editor", "Clipboard does not contain valid content JSON.");
+}
+
+string GuiContentEditor::storeErrorText(ContentStoreError error) const
+{
+    switch(error)
+    {
+    case ContentStoreError::None: return "";
+    case ContentStoreError::NotConfigured:
+        return tr("content_editor", "Private content storage is not configured.");
+    case ContentStoreError::InvalidRoot:
+        return tr("content_editor", "Private content storage has an invalid managed directory.");
+    case ContentStoreError::SymlinkRejected:
+        return tr("content_editor", "A symbolic link was rejected inside managed content storage.");
+    case ContentStoreError::NotRegularFile:
+        return tr("content_editor", "Managed content entry is not a regular file.");
+    case ContentStoreError::NotFound:
+        return tr("content_editor", "Managed content file was not found.");
+    case ContentStoreError::InvalidFilename:
+        return tr("content_editor", "Managed import filename is invalid.");
+    case ContentStoreError::FileTooLarge:
+        return tr("content_editor", "Managed content file exceeds the allowed size.");
+    case ContentStoreError::InvalidData:
+        return tr("content_editor", "Managed content file is invalid.");
+    case ContentStoreError::DuplicateResource:
+        return tr("content_editor", "Private library contains a duplicate type and ID.");
+    case ContentStoreError::FutureVersion:
+        return tr("content_editor", "Private library was created by a newer version and was not changed.");
+    case ContentStoreError::PermissionDenied:
+        return tr("content_editor", "Private library could not be written because permission was denied.");
+    case ContentStoreError::NoSpace:
+        return tr("content_editor", "Private library could not be written because storage is full.");
+    case ContentStoreError::IoError:
+        return tr("content_editor", "Private library I/O failed; the previous committed data was kept.");
+    case ContentStoreError::AlreadyExists:
+        return tr("content_editor", "Managed export already exists.");
+    case ContentStoreError::Interrupted:
+        return tr("content_editor", "Private library commit was interrupted and will be recovered on next load.");
+    }
+    return tr("content_editor", "Private library I/O failed; the previous committed data was kept.");
 }
 
 void GuiContentEditor::setStatus(const string& text)

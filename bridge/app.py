@@ -12,6 +12,7 @@ Contrato v0 (ver docs/FOUNDRY.md):
   GET  /v1/state     — estado seguro de la nave del jugador (auth).
   GET  /v1/scenario  — tiempo de escenario y metadatos (auth).
   GET  /v1/events    — eventos normalizados presentes en la sesión (auth).
+  GET  /v1/contacts  — objetos cercanos a la nave, para un mapa vivo (auth).
   POST /v1/command   — órdenes de una lista blanca cerrada (auth).
 
 Configuración por variables de entorno:
@@ -208,6 +209,70 @@ end
 return '{"events":[' .. table.concat(events, ",") .. ']}'
 """
 
+# Contactos cercanos a la nave del jugador: base de datos para un mapa vivo en
+# Foundry (starfield + puntos). VISTA GM OMNISCIENTE, no de sensores: publica
+# indicativo y facción de todo objeto en radio sin filtrar por detección
+# (isScannedBy / nivel de identificación). Es deliberado — la consume la
+# ventana de mapa vivo, solo-GM, detrás del Bearer que solo tiene el GM — y NO
+# debe reutilizarse como contrato para jugadores sin añadir ese filtrado.
+#
+# Solo lectura, radio y número acotados para limitar el tamaño de la
+# respuesta. El truncamiento es honesto: se ordenan TODOS los objetos del
+# radio por distancia y se devuelven los `limite` más cercanos (el índice
+# espacial de getObjectsInRadius no garantiza orden), con el jugador SIEMPRE
+# incluido (se separa por identidad de objeto — __eq del binding de
+# SeriousProton — y encabeza la lista), y `truncated`/`total` en la respuesta
+# para que el consumidor sepa si hay más. Cada accesor opcional va en pcall:
+# objetos como asteroides o nebulosas no responden a getFaction y no deben
+# romper la lista. json_escape serializa cada string como JSON válido
+# (comillas, barra inversa y controles como \\u00XX); %q de Lua escapa para
+# Lua, no para JSON. Cadena "raw" de Python para que las barras invertidas
+# lleguen intactas a Lua.
+_CONTACTS_LUA = r"""
+local function json_escape(s)
+    s = string.gsub(s, '[%c"\\]', function(c)
+        if c == '"' then return '\\"' end
+        if c == '\\' then return '\\\\' end
+        return string.format('\\u%04x', string.byte(c))
+    end)
+    return '"' .. s .. '"'
+end
+local ship = getPlayerShip(-1)
+if ship == nil then
+    return '{"contacts":[],"truncated":false,"total":0}'
+end
+local x, y = ship:getPosition()
+local limite = 60
+local otros = {}
+for _, object in ipairs(getObjectsInRadius(x, y, 30000)) do
+    if object ~= ship then
+        local ox, oy = object:getPosition()
+        local dx = ox - x
+        local dy = oy - y
+        otros[#otros + 1] = {obj = object, ox = ox, oy = oy, d2 = dx * dx + dy * dy}
+    end
+end
+table.sort(otros, function(a, b) return a.d2 < b.d2 end)
+local function entrada(object, ox, oy, es_jugador)
+    local ok_cs, callsign = pcall(function() return object:getCallSign() end)
+    if not ok_cs or callsign == nil then callsign = "?" end
+    local faction_json = "null"
+    local ok_f, faction = pcall(function() return object:getFaction() end)
+    if ok_f and faction ~= nil and faction ~= "" then
+        faction_json = json_escape(faction)
+    end
+    return string.format(
+        '{"callsign":%s,"position":{"x":%.1f,"y":%.1f},"faction":%s,"is_player":%s}',
+        json_escape(callsign), ox, oy, faction_json, es_jugador)
+end
+local contacts = {entrada(ship, x, y, "true")}
+for i = 1, math.min(#otros, limite - 1) do
+    contacts[#contacts + 1] = entrada(otros[i].obj, otros[i].ox, otros[i].oy, "false")
+end
+return string.format('{"contacts":[%s],"truncated":%s,"total":%d}',
+    table.concat(contacts, ","), tostring(#otros > limite - 1), #otros + 1)
+"""
+
 
 # --- Órdenes de lista blanca -------------------------------------------------
 
@@ -318,6 +383,11 @@ async def scenario() -> Any:
 @app.get("/v1/events", dependencies=[Depends(_require_auth)])
 async def events() -> Any:
     return await _run_lua(_EVENTS_LUA)
+
+
+@app.get("/v1/contacts", dependencies=[Depends(_require_auth)])
+async def contacts() -> Any:
+    return await _run_lua(_CONTACTS_LUA)
 
 
 @app.post("/v1/command", dependencies=[Depends(_require_auth)])

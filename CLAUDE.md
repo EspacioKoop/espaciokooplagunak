@@ -27,11 +27,14 @@ escenarios/lógica de misión en Lua.
 **Fase actual: 3 — integración prioritaria con Foundry VTT** (fases 0–2 completadas; roadmap completo
 en el README, fases 0–5). Ya hay: escenario propio (`scenario_90_lagunak_primera_guardia.lua`),
 compilación reproducible (nativa y Docker), puente seguro con contrato v0 (`bridge/`), módulo Foundry
-adaptativo v11/v12/v13 (`foundry-module/`) y editor de contenido del GM. En desarrollo, aún SIN
-fusionar: el asistente de instalación (`tools/instalar.py` + `docs/INSTALACION.md`, rama
-`feature/asistente-instalacion`, PR #68 — no existen en `main` todavía) y el **mapa vivo** (ventana GM
-Neo Geo: starfield parallax + blips de `/v1/contacts`; PR #73, rama `feature/mapa-vivo-nave`, que
-depende de #69, `/v1/contacts` en el puente, ya fusionado). Patrón del mapa vivo: lógica pura en
+adaptativo v11/v12/v13 (`foundry-module/`), editor de contenido del GM, asistente de instalación
+(`tools/instalar.py` + `docs/INSTALACION.md`, PR #68) y publicación de imágenes en GHCR con cada tag
+`v*` (`docker-publish.yml`, PR #83 — el primer tag aún no existe, así que aún no hay imagen publicada).
+En desarrollo, aún SIN fusionar: el **mapa vivo** (ventana GM Neo Geo: starfield parallax + blips de
+`/v1/contacts`; PR #73, rama `feature/mapa-vivo-nave`, bloqueantes de review resueltos, esperando la
+entrada de #72 para el merge de compatibilidad) y la **avería como palanca del GM**
+(`set_system_health` más coolant/repair_crew en `/v1/state`; PR #81, rama
+`feature/80-averia-palanca-gm`, esperando re-review). Patrón del mapa vivo: lógica pura en
 `ventana-nave.mjs` (testeable en Node, incl. `componerFrame` con tween SIN extrapolación entre muestras
 confirmadas), pintor acoplado a canvas en `mapa-render.mjs` (verificación humana), ventanas V1/V2
 aisladas en `main.mjs`. Pendiente en fase 3: gestión de motores/combustible/daños, puestos y permisos,
@@ -78,17 +81,21 @@ cmake -S . -B build -G Ninja ... -DBUILD_CONTENT_RESOURCE_TESTS=ON
 ninja -C build content_resource_tests content_library_store_tests && ctest --test-dir build -R content
 
 # Python (pytest): el puente, con el juego mockeado — no necesita EmptyEpsilon vivo.
-# Solo local hoy; su job de CI está en PR (#74).
+# EN CI: job pytest del workflow Docker (.github/workflows/docker.yml, PR #74).
 cd bridge && pip install -r requirements-dev.txt && pytest
 
 # Node (node --test): lógica pura del módulo Foundry (sin Foundry real).
-# Solo local hoy; su workflow de CI está en PR (#77).
+# EN CI: .github/workflows/foundry-module.yml (PR #77).
 node --test foundry-module/tests/*.test.mjs
 ```
 
-La CI actual (`.github/workflows/cicd.yml`) ejecuta: builds Linux (con el CTest anterior
-dentro de `docker/build.sh`) / macOS / Windows-cross, más `luac -p` sobre `scripts/` (job
-LuaTest). Lo que ninguna suite cubre se prueba a mano tras compilar: localizar el binario
+La CI actual: `cicd.yml` ejecuta builds Linux (con el CTest anterior dentro de
+`docker/build.sh`) / macOS / Windows-cross, más `luac -p` sobre `scripts/` (job LuaTest);
+`docker.yml` construye ambas imágenes y corre el pytest del puente; `foundry-module.yml`
+corre la suite Node; `tools.yml` prueba los scripts de `tools/`; `codeql.yml` analiza;
+`docker-publish.yml` publica en GHCR solo con tag `v*` o dispatch (actions fijadas por SHA
+— mantén ese fijado al actualizar versiones). Lo que ninguna suite cubre se prueba a mano
+tras compilar: localizar el binario
 bajo `build/`, crear partida local y, si el cambio toca red/multijugador, conectar al menos
 dos estaciones — documentando escenario, pasos y resultado en el PR.
 

@@ -116,7 +116,7 @@ El roadmap refleja intención, no promesas. Los cambios se concretarán mediante
 - [x] Implementar un puente que solo permita operaciones autorizadas y nunca exponga `/exec.lua` directamente.
 - [x] Añadir autenticación, validación de mensajes, límites y comprobaciones de salud.
 
-**Criterio de salida:** el servidor arranca de forma reproducible y el puente puede leer un estado seguro sin permitir ejecución Lua arbitraria desde Foundry. **Cumplido y verificado (2026-07-12)**, reproducido en más de un entorno (nativo Ubuntu 24.04 y Arch/CachyOS — issue #14 —, y en contenedor vía compose); queda pendiente publicar imágenes y añadir el smoke test en CI.
+**Criterio de salida:** el servidor arranca de forma reproducible y el puente puede leer un estado seguro sin permitir ejecución Lua arbitraria desde Foundry. **Cumplido y verificado (2026-07-12)**, reproducido en más de un entorno (nativo Ubuntu 24.04 y Arch/CachyOS — issue #14 —, y en contenedor vía compose). Los dos flecos posteriores quedaron cerrados el 2026-07-14: el puente se prueba en CI (job pytest del workflow Docker, PR #74) y las imágenes del servidor y del puente se publican en GHCR con cada tag `v*` o lanzamiento manual (`docker-publish.yml`, PR #83 / issue #82).
 
 ### Fase 3 — Integración prioritaria con Foundry VTT
 

@@ -27,15 +27,28 @@
 
 import { BridgeClient, BridgeError } from "./bridge-client.mjs";
 import { processBridgeEvents } from "./event-journal.mjs";
+import { dibujarFrame } from "./mapa-render.mjs";
 import { prepareRoute } from "./ship-view.mjs";
 import { setSimulationPaused } from "./tempo-control.mjs";
+import {
+  colorFaccion,
+  componerFrame,
+  crearCampoEstrellas,
+  debeDibujar,
+} from "./ventana-nave.mjs";
 
 const MODULE_ID = "espaciokoop-lagunak";
 const POLL_MIN_S = 1;
 const POLL_MAX_S = 30;
 const BACKOFF_MAX_MS = 60000;
+// Mapa vivo: mismo radio que el Lua fijo de /v1/contacts en el puente, fps del
+// pintor y semilla fija del campo de estrellas ("LAG" — mismo cielo siempre).
+const MAPA_RADIO_MUNDO = 30000;
+const MAPA_FPS = 30;
+const MAPA_SEMILLA = 0x4c4147;
 
 let estadoApp = null;
+let mapaApp = null;
 
 Hooks.once("init", () => {
   game.settings.register(MODULE_ID, "bridgeUrl", {
@@ -84,6 +97,13 @@ Hooks.on("getSceneControlButtons", (controls) => {
       button: true,
       onClick: () => abrirEstadoNave(),
     });
+    tokenControls.tools.push({
+      name: "lagunak-mapa",
+      title: "LAGUNAK.Controles.AbrirMapa",
+      icon: "fa-solid fa-satellite-dish",
+      button: true,
+      onClick: () => abrirMapaVivo(),
+    });
     return;
   }
 
@@ -96,6 +116,14 @@ Hooks.on("getSceneControlButtons", (controls) => {
       button: true,
       onClick: () => abrirEstadoNave(),
       onChange: () => abrirEstadoNave(),
+    };
+    grupo.tools["lagunak-mapa"] = {
+      name: "lagunak-mapa",
+      title: "LAGUNAK.Controles.AbrirMapa",
+      icon: "fa-solid fa-satellite-dish",
+      button: true,
+      onClick: () => abrirMapaVivo(),
+      onChange: () => abrirMapaVivo(),
     };
   }
 });
@@ -113,6 +141,18 @@ function abrirEstadoNave() {
   }
 }
 
+function abrirMapaVivo() {
+  // Mismo candado que el estado de nave: el mapa agrega los contactos de los
+  // sensores sin filtrar por puesto — es una vista de GM.
+  if (!game.user?.isGM) return;
+  mapaApp ??= new (claseMapaVivo())();
+  if (foundry.applications?.api?.ApplicationV2) {
+    mapaApp.render({ force: true });
+  } else {
+    mapaApp.render(true);
+  }
+}
+
 /**
  * Elige la ventana según lo que ofrezca el ANFITRIÓN: `ApplicationV2`
  * moderna (v12+) o la clásica `Application` (v11). Se construye al primer
@@ -120,6 +160,11 @@ function abrirEstadoNave() {
  */
 function claseEstadoNave() {
   return foundry.applications?.api?.ApplicationV2 ? crearClaseV2() : crearClaseV1();
+}
+
+/** Misma regla de selección perezosa para la ventana del mapa vivo. */
+function claseMapaVivo() {
+  return foundry.applications?.api?.ApplicationV2 ? crearClaseMapaV2() : crearClaseMapaV1();
 }
 
 /* ================================================================== */
@@ -471,6 +516,325 @@ function crearClaseV1() {
         },
       ]);
       ui.notifications.info(game.i18n.localize("LAGUNAK.Diario.Anotado"));
+    }
+  };
+}
+
+/* ================================================================== */
+/* Mapa vivo (ApplicationV2, v12+). Ventana solo-vista: starfield en   */
+/* parallax + blips de contactos de /v1/contacts, con el movimiento    */
+/* propio tweeneado entre las dos últimas muestras confirmadas del     */
+/* puente (nunca extrapola: el mapa es una vista, no un simulador).    */
+/* Sondeo de datos cada pollSeconds con backoff; dibujo por rAF a      */
+/* MAPA_FPS. NO llama a processBridgeEvents: el diario es asunto de la */
+/* ventana de estado (evita anotaciones duplicadas). Misma disciplina  */
+/* de aislamiento V2/V1 que el estado de nave.                         */
+/* ================================================================== */
+function crearClaseMapaV2() {
+  const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
+
+  return class MapaVivoApp extends HandlebarsApplicationMixin(ApplicationV2) {
+    static DEFAULT_OPTIONS = {
+      id: "lagunak-mapa-vivo",
+      classes: ["lagunak-mapa"],
+      window: {
+        title: "LAGUNAK.MapaVivo.Titulo",
+        icon: "fa-solid fa-satellite-dish",
+      },
+      position: { width: 480, height: "auto" },
+    };
+
+    static PARTS = {
+      main: { template: `modules/${MODULE_ID}/templates/mapa-vivo.hbs` },
+    };
+
+    /** Estado interno: sondeo + animación. */
+    #timer = null;
+    #fallosSeguidos = 0;
+    #rafId = null;
+    #ultimoDibujoMs = null;
+    #campo = crearCampoEstrellas(MAPA_SEMILLA);
+    #muestraPrev = null;
+    #muestraActual = null;
+    contactos = [];
+    conexion = "conectando";
+    detalleError = "";
+
+    #cliente() {
+      return new BridgeClient({
+        url: game.settings.get(MODULE_ID, "bridgeUrl"),
+        token: game.settings.get(MODULE_ID, "bridgeToken"),
+      });
+    }
+
+    #intervaloMs() {
+      const base = game.settings.get(MODULE_ID, "pollSeconds") * 1000;
+      if (this.#fallosSeguidos === 0) return base;
+      return Math.min(base * 2 ** this.#fallosSeguidos, BACKOFF_MAX_MS);
+    }
+
+    async #sondear() {
+      try {
+        const cliente = this.#cliente();
+        await cliente.healthz();
+        const estado = await cliente.state();
+        const nave = estado?.ship ?? null;
+        if (nave) {
+          // Rotación de muestras confirmadas: el tween del frame interpola
+          // SOLO entre estas dos; sin nave nueva se conserva la última.
+          this.#muestraPrev = this.#muestraActual;
+          this.#muestraActual = {
+            tMs: Date.now(),
+            centro: { x: nave.position?.x ?? 0, y: nave.position?.y ?? 0 },
+            rumboDeg: nave.heading ?? 0,
+          };
+        }
+        this.contactos = (await cliente.contacts())?.contacts ?? [];
+        this.conexion = "ok";
+        this.detalleError = "";
+        this.#fallosSeguidos = 0;
+      } catch (err) {
+        this.conexion = "error";
+        this.detalleError = err instanceof BridgeError ? err.message : game.i18n.localize("LAGUNAK.Errores.Desconocido");
+        this.#fallosSeguidos = Math.min(this.#fallosSeguidos + 1, 10);
+      }
+      if (this.rendered) this.render();
+      this.#programar();
+    }
+
+    #programar() {
+      clearTimeout(this.#timer);
+      this.#timer = setTimeout(() => this.#sondear(), this.#intervaloMs());
+    }
+
+    #animar() {
+      // Sin rAF global (p. ej. arnés de pruebas) la animación se auto-inhibe;
+      // el mapa sigue funcionando a golpe de re-render del sondeo.
+      if (!this.rendered || typeof requestAnimationFrame !== "function") {
+        this.#rafId = null;
+        return;
+      }
+      this.#rafId = requestAnimationFrame(() => this.#animar());
+      const ahora = Date.now();
+      if (!debeDibujar(this.#ultimoDibujoMs, ahora, MAPA_FPS)) return;
+      // El re-render del sondeo reemplaza el DOM del part (canvas incluido):
+      // el lienzo se busca en cada tick, nunca se cachea.
+      const canvas = this.element?.querySelector?.(".lagunak-mapa-canvas");
+      const ctx = canvas?.getContext?.("2d");
+      if (!ctx) return;
+      this.#ultimoDibujoMs = ahora;
+      const frame = componerFrame({
+        muestraPrev: this.#muestraPrev,
+        muestraActual: this.#muestraActual,
+        contactos: this.contactos,
+        campo: this.#campo,
+        tMs: ahora,
+        ancho: canvas.width,
+        alto: canvas.height,
+        radioMundo: MAPA_RADIO_MUNDO,
+      });
+      dibujarFrame(ctx, frame, { ancho: canvas.width, alto: canvas.height });
+    }
+
+    _onFirstRender(context, options) {
+      super._onFirstRender?.(context, options);
+      this.#sondear();
+      this.#animar();
+    }
+
+    _onClose(options) {
+      clearTimeout(this.#timer);
+      this.#timer = null;
+      if (this.#rafId != null && typeof cancelAnimationFrame === "function") {
+        cancelAnimationFrame(this.#rafId);
+      }
+      this.#rafId = null;
+      this.#ultimoDibujoMs = null;
+      this.#fallosSeguidos = 0;
+      this.conexion = "conectando";
+      super._onClose?.(options);
+    }
+
+    async _prepareContext(_options) {
+      const centro = this.#muestraActual?.centro ?? null;
+      return {
+        conexion: this.conexion,
+        conexionOk: this.conexion === "ok",
+        conexionError: this.conexion === "error",
+        conexionConectando: this.conexion === "conectando",
+        detalleError: this.detalleError,
+        esGM: Boolean(game.user?.isGM),
+        sinDatos: !this.#muestraActual,
+        alcanceLabel: game.i18n.format("LAGUNAK.MapaVivo.Alcance", { radio: MAPA_RADIO_MUNDO }),
+        contactos: this.contactos.map((c) => {
+          const dx = (c.position?.x ?? 0) - (centro?.x ?? 0);
+          const dy = (c.position?.y ?? 0) - (centro?.y ?? 0);
+          const distancia = Math.hypot(dx, dy);
+          return {
+            callsign: c.callsign ?? "?",
+            color: colorFaccion(c.faction ?? null, Boolean(c.is_player)),
+            esJugador: Boolean(c.is_player),
+            distanciaLabel: game.i18n.format("LAGUNAK.EstadoNave.DistanciaUnidades", {
+              distance: Math.round(distancia),
+            }),
+            fuera: distancia > MAPA_RADIO_MUNDO,
+          };
+        }),
+      };
+    }
+  };
+}
+
+/* ================================================================== */
+/* Mapa vivo clásico (Application v1, solo v11): réplica equivalente y */
+/* AISLADA de la ventana anterior, sin código compartido — mismo       */
+/* criterio que EstadoNaveAppV1. `this.element` es jQuery en v1: el    */
+/* canvas se busca vía `this.element?.[0]`.                            */
+/* ================================================================== */
+function crearClaseMapaV1() {
+  return class MapaVivoAppV1 extends Application {
+    #timer = null;
+    #fallosSeguidos = 0;
+    #sondeando = false;
+    #rafId = null;
+    #ultimoDibujoMs = null;
+    #campo = crearCampoEstrellas(MAPA_SEMILLA);
+    #muestraPrev = null;
+    #muestraActual = null;
+    contactos = [];
+    conexion = "conectando";
+    detalleError = "";
+
+    static get defaultOptions() {
+      return foundry.utils.mergeObject(super.defaultOptions, {
+        id: "lagunak-mapa-vivo",
+        classes: ["lagunak-mapa"],
+        template: `modules/${MODULE_ID}/templates/mapa-vivo.hbs`,
+        width: 480,
+        height: "auto",
+        resizable: true,
+      });
+    }
+
+    get title() {
+      return game.i18n.localize("LAGUNAK.MapaVivo.Titulo");
+    }
+
+    #cliente() {
+      return new BridgeClient({
+        url: game.settings.get(MODULE_ID, "bridgeUrl"),
+        token: game.settings.get(MODULE_ID, "bridgeToken"),
+      });
+    }
+
+    #intervaloMs() {
+      const base = game.settings.get(MODULE_ID, "pollSeconds") * 1000;
+      if (this.#fallosSeguidos === 0) return base;
+      return Math.min(base * 2 ** this.#fallosSeguidos, BACKOFF_MAX_MS);
+    }
+
+    async #sondear() {
+      try {
+        const cliente = this.#cliente();
+        await cliente.healthz();
+        const estado = await cliente.state();
+        const nave = estado?.ship ?? null;
+        if (nave) {
+          this.#muestraPrev = this.#muestraActual;
+          this.#muestraActual = {
+            tMs: Date.now(),
+            centro: { x: nave.position?.x ?? 0, y: nave.position?.y ?? 0 },
+            rumboDeg: nave.heading ?? 0,
+          };
+        }
+        this.contactos = (await cliente.contacts())?.contacts ?? [];
+        this.conexion = "ok";
+        this.detalleError = "";
+        this.#fallosSeguidos = 0;
+      } catch (err) {
+        this.conexion = "error";
+        this.detalleError = err instanceof BridgeError ? err.message : game.i18n.localize("LAGUNAK.Errores.Desconocido");
+        this.#fallosSeguidos = Math.min(this.#fallosSeguidos + 1, 10);
+      }
+      if (this.rendered) this.render(false);
+      clearTimeout(this.#timer);
+      this.#timer = setTimeout(() => this.#sondear(), this.#intervaloMs());
+    }
+
+    #animar() {
+      if (!this.rendered || typeof requestAnimationFrame !== "function") {
+        this.#rafId = null;
+        return;
+      }
+      this.#rafId = requestAnimationFrame(() => this.#animar());
+      const ahora = Date.now();
+      if (!debeDibujar(this.#ultimoDibujoMs, ahora, MAPA_FPS)) return;
+      const canvas = this.element?.[0]?.querySelector?.(".lagunak-mapa-canvas");
+      const ctx = canvas?.getContext?.("2d");
+      if (!ctx) return;
+      this.#ultimoDibujoMs = ahora;
+      const frame = componerFrame({
+        muestraPrev: this.#muestraPrev,
+        muestraActual: this.#muestraActual,
+        contactos: this.contactos,
+        campo: this.#campo,
+        tMs: ahora,
+        ancho: canvas.width,
+        alto: canvas.height,
+        radioMundo: MAPA_RADIO_MUNDO,
+      });
+      dibujarFrame(ctx, frame, { ancho: canvas.width, alto: canvas.height });
+    }
+
+    async _render(force, options) {
+      await super._render(force, options);
+      if (!this.#sondeando) {
+        this.#sondeando = true;
+        this.#sondear();
+        this.#animar();
+      }
+    }
+
+    async close(options) {
+      clearTimeout(this.#timer);
+      this.#timer = null;
+      this.#sondeando = false;
+      if (this.#rafId != null && typeof cancelAnimationFrame === "function") {
+        cancelAnimationFrame(this.#rafId);
+      }
+      this.#rafId = null;
+      this.#ultimoDibujoMs = null;
+      this.#fallosSeguidos = 0;
+      this.conexion = "conectando";
+      return super.close(options);
+    }
+
+    getData(_options) {
+      const centro = this.#muestraActual?.centro ?? null;
+      return {
+        conexion: this.conexion,
+        conexionOk: this.conexion === "ok",
+        conexionError: this.conexion === "error",
+        conexionConectando: this.conexion === "conectando",
+        detalleError: this.detalleError,
+        esGM: Boolean(game.user?.isGM),
+        sinDatos: !this.#muestraActual,
+        alcanceLabel: game.i18n.format("LAGUNAK.MapaVivo.Alcance", { radio: MAPA_RADIO_MUNDO }),
+        contactos: this.contactos.map((c) => {
+          const dx = (c.position?.x ?? 0) - (centro?.x ?? 0);
+          const dy = (c.position?.y ?? 0) - (centro?.y ?? 0);
+          const distancia = Math.hypot(dx, dy);
+          return {
+            callsign: c.callsign ?? "?",
+            color: colorFaccion(c.faction ?? null, Boolean(c.is_player)),
+            esJugador: Boolean(c.is_player),
+            distanciaLabel: game.i18n.format("LAGUNAK.EstadoNave.DistanciaUnidades", {
+              distance: Math.round(distancia),
+            }),
+            fuera: distancia > MAPA_RADIO_MUNDO,
+          };
+        }),
+      };
     }
   };
 }

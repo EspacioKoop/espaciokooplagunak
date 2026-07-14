@@ -55,6 +55,16 @@ class ReferenceBuilder:
         else:
             print(tag, params)
 
+    def write_inline_asset(self, params):
+        # Incrusta un asset local (script_docs/vendor/...) en la salida, para que
+        # script_reference.html siga siendo un fichero único sin dependencias de CDN (issue #87).
+        wrappers = {"css": ("<style>", "</style>"), "js": ("<script>", "</script>")}
+        (kind, path), = params.items()
+        content = open(os.path.join(os.path.dirname(__file__), path), "rt").read()
+        assert "</script" not in content and "{{" not in content, f"contenido inseguro para inline: {path}"
+        open_tag, close_tag = wrappers[kind]
+        self.output_file.write(f"{open_tag}\n{content}\n{close_tag}")
+
     def process(self):
         input_file = open(os.path.join(os.path.dirname(__file__), "template.html"), "rt").read()
         tags = list(re.finditer(r"{{([a-z]+) *([^{]*)}}", input_file))
@@ -66,6 +76,11 @@ class ReferenceBuilder:
                 self.output_file.write(input_file[start:m.start()])
                 start = m.end()
                 start_tag = m
+            elif tag == "inline" and start_tag is None:
+                self.output_file.write(input_file[start:m.start()])
+                params = {p.partition("=")[0]: p.partition("=")[2] for p in m.group(2).split()}
+                self.write_inline_asset(params)
+                start = m.end()
             elif tag == "end":
                 params = start_tag.group(2)
                 params = {p.partition("=")[0]: p.partition("=")[2] for p in params.split()}

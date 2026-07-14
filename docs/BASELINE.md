@@ -38,6 +38,12 @@ Baseline normativa: [SECURITY.md](../SECURITY.md) (no se duplica aquí).
 - [ ] **Protección de rama en `main`** exigiendo los checks existentes
       (cicd, pytest del puente, foundry-module, guardia-exec-lua). Hoy "todo
       por PR" es solo convención. *Propietario: Varo (requiere admin).*
+- [ ] **Dependabot alerts** (Settings → Security): las actualizaciones
+      programadas de `dependabot.yml` no avisan de un CVE en una dependencia
+      ya pinneada hasta el bump semanal; las alertas sí. Pedido en #88.
+      *Propietario: Varo (requiere admin).*
+- [x] Private vulnerability reporting activado y verificado por API
+      (issue #86, Varo, 2026-07-14).
 - [ ] CODEOWNERS (opcional con 2 humanos; decidir si aporta o estorba).
       *Propietario: Varo (requiere admin para hacerlo obligatorio).*
 - [ ] SHA-pinning de actions en los workflows con permisos ampliados que aún

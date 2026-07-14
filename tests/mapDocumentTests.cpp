@@ -100,6 +100,16 @@ int main()
     expect(parseMapDocumentObjects(nlohmann::json::array({future}), parsed) == MapDocumentError::OpaqueTooLarge,
         "opaque future object size is bounded");
 
+    MapDocument duplicate_opaque;
+    MapObject duplicate_object;
+    duplicate_object.id = "future-duplicate";
+    duplicate_object.kind = MapObjectKind::Unsupported;
+    duplicate_object.opaque_json =
+        R"({"id":"future-duplicate","kind":"comet","payload":1,"payload":2})";
+    duplicate_opaque.objects.push_back(duplicate_object);
+    expect(validateMapDocument(duplicate_opaque) == MapDocumentError::DuplicateJsonKeys,
+        "programmatic unsupported object rejects duplicate JSON keys before canonicalization");
+
     nlohmann::json oversized_document = nlohmann::json::array();
     for (int index = 0; index < 14; ++index)
     {

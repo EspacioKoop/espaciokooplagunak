@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <map>
 #include <set>
 #include <utility>
 #include <nlohmann/json.hpp>
@@ -47,10 +48,29 @@ bool exactKeys(const nlohmann::json& object, const std::set<std::string>& allowe
     return true;
 }
 
+bool hasDuplicateJsonKeys(const std::string& input)
+{
+    bool duplicate = false;
+    std::map<int, std::set<std::string>> keys_by_depth;
+    auto callback = [&duplicate, &keys_by_depth](int depth, nlohmann::json::parse_event_t event,
+                                                 nlohmann::json& parsed) {
+        if (event == nlohmann::json::parse_event_t::object_start) keys_by_depth[depth + 1].clear();
+        else if (event == nlohmann::json::parse_event_t::key)
+        {
+            const auto key = parsed.get<std::string>();
+            if (!keys_by_depth[depth].insert(key).second) duplicate = true;
+        }
+        return true;
+    };
+    [[maybe_unused]] const auto checked = nlohmann::json::parse(input, callback, false, false);
+    return duplicate;
+}
+
 MapDocumentError validateUnsupported(const MapObject& object)
 {
     if (object.opaque_json.empty() || object.opaque_json.size() > MAP_OBJECT_MAX_OPAQUE_BYTES)
         return MapDocumentError::OpaqueTooLarge;
+    if (hasDuplicateJsonKeys(object.opaque_json)) return MapDocumentError::DuplicateJsonKeys;
     const auto opaque = nlohmann::json::parse(object.opaque_json, nullptr, false, false);
     if (opaque.is_discarded() || !opaque.is_object()) return MapDocumentError::InvalidStructure;
     const auto id = opaque.find("id");

@@ -66,6 +66,7 @@ enum class MapDocumentError
     InvalidNumber,
     InvalidProperties,
     OpaqueTooLarge,
+    DuplicateJsonKeys,
     TooLarge,
 };
 

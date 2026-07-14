@@ -101,6 +101,19 @@ int main()
             && !invalid_history.isDirty() && !invalid_history.canUndo(),
         "invalid operation creates no history entry");
 
+    MapEditSession duplicate_opaque_session;
+    MapObject duplicate_opaque;
+    duplicate_opaque.id = "future-duplicate";
+    duplicate_opaque.kind = MapObjectKind::Unsupported;
+    duplicate_opaque.opaque_json =
+        R"({"id":"future-duplicate","kind":"comet","payload":1,"payload":2})";
+    expect(duplicate_opaque_session.addObject(duplicate_opaque) == MapEditError::InvalidDocument,
+        "staging rejects duplicate keys in a programmatic unsupported object");
+    expect(duplicate_opaque_session.document().objects.empty()
+            && !duplicate_opaque_session.isDirty() && !duplicate_opaque_session.canUndo()
+            && !duplicate_opaque_session.canRedo(),
+        "rejected opaque object leaves document, dirty state and history untouched");
+
     MapDocument history_base;
     history_base.objects.push_back(asteroid("history"));
     MapEditSession bounded(history_base);

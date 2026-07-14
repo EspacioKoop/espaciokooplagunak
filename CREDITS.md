@@ -5,11 +5,13 @@ de IA, a partir del trabajo original de EmptyEpsilon.
 
 ## Equipo de Espaciokoop Lagunak
 
-- **Varo** ([@VaroTv7](https://github.com/VaroTv7)) — dirección del proyecto,
+La dirección del proyecto es compartida por Varo y Eloy «Gurucharri».
+
+- **Varo** ([@VaroTv7](https://github.com/VaroTv7)) — dirección compartida,
   diseño, desarrollo y mantenimiento.
 - **Eloy «Gurucharri»**
-  ([@eGurucharri](https://github.com/eGurucharri)) — diseño, desarrollo,
-  revisión y mantenimiento colaborativo.
+  ([@eGurucharri](https://github.com/eGurucharri)) — dirección compartida,
+  diseño, desarrollo, revisión y mantenimiento.
 - **OTACON** — IA de apoyo técnico de Varo: ingeniería, revisión, pruebas,
   automatización y coordinación.
 - **Claude Fable 5** — IA de apoyo técnico de Gurucharri: implementación,

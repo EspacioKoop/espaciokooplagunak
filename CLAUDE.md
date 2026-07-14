@@ -28,13 +28,13 @@ escenarios/lógica de misión en Lua.
 en el README, fases 0–5). Ya hay: escenario propio (`scenario_90_lagunak_primera_guardia.lua`),
 compilación reproducible (nativa y Docker), puente seguro con contrato v0 (`bridge/`), módulo Foundry
 adaptativo v11/v12/v13 (`foundry-module/`), editor de contenido del GM, asistente de instalación
-(`tools/instalar.py` + `docs/INSTALACION.md`, PR #68) y publicación de imágenes en GHCR con cada tag
-`v*` (`docker-publish.yml`, PR #83 — el primer tag aún no existe, así que aún no hay imagen publicada).
-En desarrollo, aún SIN fusionar: el **mapa vivo** (ventana GM Neo Geo: starfield parallax + blips de
-`/v1/contacts`; PR #73, rama `feature/mapa-vivo-nave`, bloqueantes de review resueltos, esperando la
-entrada de #72 para el merge de compatibilidad) y la **avería como palanca del GM**
-(`set_system_health` más coolant/repair_crew en `/v1/state`; PR #81, rama
-`feature/80-averia-palanca-gm`, esperando re-review). Patrón del mapa vivo: lógica pura en
+(`tools/instalar.py` + `docs/INSTALACION.md`, PR #68), publicación de imágenes en GHCR con cada tag
+`v*` (`docker-publish.yml`, PR #83 — el primer tag aún no existe, así que aún no hay imagen publicada)
+y averías narrativas del GM mediante `set_system_health`, con coolant/repair_crew en `/v1/state`
+(PR #81). En desarrollo, aún SIN fusionar: el **mapa vivo** (ventana GM Neo Geo: starfield parallax +
+blips de `/v1/contacts`; PR #73, rama `feature/mapa-vivo-nave`, bloqueantes funcionales resueltos;
+pendiente actualizar sobre `main`, conservar las regresiones de #72 y ejecutar la suite Node en CI
+sobre el resultado combinado). Patrón del mapa vivo: lógica pura en
 `ventana-nave.mjs` (testeable en Node, incl. `componerFrame` con tween SIN extrapolación entre muestras
 confirmadas), pintor acoplado a canvas en `mapa-render.mjs` (verificación humana), ventanas V1/V2
 aisladas en `main.mjs`. Pendiente en fase 3: gestión de motores/combustible/daños, puestos y permisos,

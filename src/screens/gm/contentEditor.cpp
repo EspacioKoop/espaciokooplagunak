@@ -7,6 +7,7 @@
 #include "gui/gui2_panel.h"
 #include "gui/gui2_selector.h"
 #include "gui/gui2_textentry.h"
+#include "gui/gui2_togglebutton.h"
 
 #include <array>
 #include <utility>
@@ -129,6 +130,14 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
     quinary_entry = new GuiTextEntry(box, "QUINARY", "");
     quinary_entry->setPosition(x + 190, 440)->setSize(500, 30);
 
+    preview_toggle = new GuiToggleButton(
+        box,
+        "MAP_PREVIEW",
+        tr("content_editor", "Preview on radar"),
+        [this](bool value) { preview_enabled = value; }
+    );
+    preview_toggle->setPosition(x, 360)->setSize(250, 40)->hide();
+
     (new GuiButton(box, "SAVE", tr("content_editor", "Save"), [this]() { saveResource(); }))
         ->setPosition(x, 490)->setSize(150, 45);
     (new GuiButton(box, "EXPORT", tr("content_editor", "Export"), [this]() { exportToClipboard(); }))
@@ -171,6 +180,12 @@ bool GuiContentEditor::onMouseDown(sp::io::Pointer::Button, glm::vec2, sp::io::P
     return true;
 }
 
+const MapDocument* GuiContentEditor::previewDocument() const
+{
+    if (!preview_enabled || current_type != ContentResourceType::Map) return nullptr;
+    return &clean_snapshot.map_document;
+}
+
 void GuiContentEditor::requestSetType(ContentResourceType type)
 {
     if (type == current_type)
@@ -209,6 +224,13 @@ void GuiContentEditor::updateFieldPresentation(ContentResourceType type)
         field_labels[index]->setText(labels[index]);
         field_labels[index]->setVisible(!labels[index].empty());
         field_entries[index]->setVisible(!labels[index].empty());
+    }
+    const bool is_map = type == ContentResourceType::Map;
+    preview_toggle->setVisible(is_map);
+    if (!is_map)
+    {
+        preview_enabled = false;
+        preview_toggle->setValue(false);
     }
 }
 
@@ -278,6 +300,7 @@ void GuiContentEditor::clearForm()
     tertiary_entry->setText("");
     quaternary_entry->setText("");
     quinary_entry->setText("");
+    clean_snapshot = ContentResource{};
     clean_snapshot = formResource();
     syncListSelection();
     setStatus(tr("content_editor", "Create a resource or import one from the clipboard."));
@@ -330,17 +353,19 @@ void GuiContentEditor::requestClose()
 
 ContentResource GuiContentEditor::formResource() const
 {
-    return {
-        current_type,
-        id_entry->getText(),
-        name_entry->getText(),
-        description_entry->getText(),
-        primary_entry->getText(),
-        secondary_entry->getText(),
-        tertiary_entry->getText(),
-        quaternary_entry->getText(),
-        quinary_entry->getText(),
-    };
+    ContentResource resource;
+    resource.type = current_type;
+    resource.id = id_entry->getText();
+    resource.name = name_entry->getText();
+    resource.description = description_entry->getText();
+    resource.primary = primary_entry->getText();
+    resource.secondary = secondary_entry->getText();
+    resource.tertiary = tertiary_entry->getText();
+    resource.quaternary = quaternary_entry->getText();
+    resource.quinary = quinary_entry->getText();
+    if (current_type == ContentResourceType::Map && clean_snapshot.type == ContentResourceType::Map)
+        resource.map_document = clean_snapshot.map_document;
+    return resource;
 }
 
 bool GuiContentEditor::isFormDirty() const
@@ -616,6 +641,8 @@ string GuiContentEditor::errorText(ContentResourceError error) const
         return tr("content_editor", "Scenario file must be a safe scenario_*.lua filename.");
     case ContentResourceError::InvalidPlayerCount:
         return tr("content_editor", "Recommended player count must be between 1 and 64.");
+    case ContentResourceError::InvalidMapDocument:
+        return tr("content_editor", "Imported document has invalid type-specific fields.");
     }
     return tr("content_editor", "Clipboard does not contain valid content JSON.");
 }

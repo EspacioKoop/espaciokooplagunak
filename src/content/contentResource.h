@@ -1,5 +1,7 @@
 #pragma once
 
+#include "content/mapDocument.h"
+
 #include <cstddef>
 #include <string>
 #include <vector>
@@ -25,6 +27,8 @@ struct ContentResource
     std::string tertiary;
     std::string quaternary;
     std::string quinary;
+    // Declarative map staging data. It never stores ECS handles or executable Lua.
+    MapDocument map_document;
 };
 
 inline bool operator==(const ContentResource& lhs, const ContentResource& rhs)
@@ -37,7 +41,8 @@ inline bool operator==(const ContentResource& lhs, const ContentResource& rhs)
         && lhs.secondary == rhs.secondary
         && lhs.tertiary == rhs.tertiary
         && lhs.quaternary == rhs.quaternary
-        && lhs.quinary == rhs.quinary;
+        && lhs.quinary == rhs.quinary
+        && lhs.map_document == rhs.map_document;
 }
 
 inline bool operator!=(const ContentResource& lhs, const ContentResource& rhs)
@@ -73,9 +78,10 @@ enum class ContentResourceError
     MissingDependency,
     UnsafeScenarioFile,
     InvalidPlayerCount,
+    InvalidMapDocument,
 };
 
-constexpr int CONTENT_RESOURCE_SCHEMA_VERSION = 2;
+constexpr int CONTENT_RESOURCE_SCHEMA_VERSION = 3;
 constexpr std::size_t CONTENT_RESOURCE_MAX_IMPORT_BYTES = 64 * 1024;
 
 std::string contentResourceTypeId(ContentResourceType type);

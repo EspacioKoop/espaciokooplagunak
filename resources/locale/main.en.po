@@ -4217,6 +4217,10 @@ msgid "Private library could not be written because storage is full."
 msgstr ""
 
 msgctxt "content_editor"
+msgid "Preview on radar"
+msgstr ""
+
+msgctxt "content_editor"
 msgid "Private library loaded."
 msgstr ""
 

@@ -202,7 +202,7 @@ msgstr "DJ"
 #: scripts/scenario_00_basic.lua:261
 msgctxt "buttonGM"
 msgid "Random"
-msgstr "Aleatorio"
+msgstr "Aleatoria"
 
 #: scripts/scenario_00_basic.lua:274
 msgctxt "buttonGM"

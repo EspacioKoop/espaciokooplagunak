@@ -64,6 +64,28 @@ ContentResource campaign(const std::string& id, const std::string& name)
     return result;
 }
 
+ContentResource visualMap()
+{
+    ContentResource result;
+    result.type = ContentResourceType::Map;
+    result.id = "visual-map";
+    result.name = "Visual Map";
+    result.primary = "scenario_00_basic.lua";
+    result.secondary = "4";
+    MapObject asteroid;
+    asteroid.id = "asteroid-1";
+    asteroid.kind = MapObjectKind::Asteroid;
+    asteroid.transform = {1200.0f, -300.0f, 45.0f};
+    asteroid.size = 150.0f;
+    result.map_document.objects.push_back(asteroid);
+    MapObject unsupported;
+    unsupported.id = "future-1";
+    unsupported.kind = MapObjectKind::Unsupported;
+    unsupported.opaque_json = R"({"id":"future-1","kind":"comet","properties":{"tail":10}})";
+    result.map_document.objects.push_back(unsupported);
+    return result;
+}
+
 std::string readAll(const fs::path& path)
 {
     std::ifstream input(path, std::ios::binary);
@@ -155,6 +177,24 @@ void testRoundTripAndAtomicFailures()
     load_result = recovered_after_backup.load(loaded);
     expect(load_result.error == ContentStoreError::None && load_result.recovered && loaded == new_resources,
         "startup promotes temp when canonical was rotated");
+}
+
+void testMapDocumentRoundTrip()
+{
+    TemporaryDirectory temporary("map-document");
+    ContentLibraryStore store(temporary.path / "managed");
+    const auto source = visualMap();
+    expect(store.save({source}) == ContentStoreError::None,
+        "v3 map document saves through the atomic store");
+    std::vector<ContentResource> loaded;
+    const auto result = store.load(loaded);
+    expect(result.error == ContentStoreError::None && loaded == std::vector<ContentResource>{source},
+        "supported and opaque map objects survive atomic save/load");
+    const auto canonical = nlohmann::json::parse(
+        readAll(store.rootPath() / "library/library.json"));
+    expect(canonical["resources"][0]["version"] == 3
+            && canonical["resources"][0]["fields"]["objects"].size() == 2,
+        "library stores canonical v3 resources without changing its envelope version");
 }
 
 void testCorruptionMigrationAndFutureVersion()
@@ -422,6 +462,7 @@ void testSchemaGuards()
 int main()
 {
     testRoundTripAndAtomicFailures();
+    testMapDocumentRoundTrip();
     testCorruptionMigrationAndFutureVersion();
     testManagedImportExportAndSymlinks();
     testInboxLimitAndConcurrentWriters();

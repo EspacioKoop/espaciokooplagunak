@@ -1659,15 +1659,15 @@ msgstr "No hay jugadores conectados"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:422
 msgid "No information for the selected ship type"
-msgstr "No hay información para el tipo de barco seleccionado"
+msgstr "No hay información para el tipo de nave seleccionado"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:428 /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:435
 msgid "Create player ship"
-msgstr "Crear barco de jugador"
+msgstr "Crear nave de jugador"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:449
 msgid "Create"
-msgstr "crear"
+msgstr "Crear"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:466
 msgid "No description provided"
@@ -1675,23 +1675,23 @@ msgstr "No se proporciona descripción"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:480 /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:555
 msgid "Player ship description"
-msgstr "Descripción del barco del jugador"
+msgstr "Descripción de la nave del jugador"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:481 /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:554
 msgid "No player ship description available"
-msgstr "No hay descripción del barco del jugador disponible"
+msgstr "No hay ninguna descripción disponible para la nave del jugador"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:483
 msgid "Join ship"
-msgstr "Unirse al barco"
+msgstr "Unirse a la nave"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:489
 msgid "Select ship"
-msgstr "Seleccionar barco"
+msgstr "Seleccionar nave"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:490
 msgid "Waiting for server to spawn a ship"
-msgstr "Esperando que el servidor genere un barco"
+msgstr "Esperando a que el servidor genere una nave"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:509
 msgid "Scenario selection"
@@ -1703,7 +1703,7 @@ msgstr "Desconectar"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:577
 msgid "{type} description"
-msgstr "{type} descripción"
+msgstr "Descripción de {type}"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:746
 msgid "4/3/1 player crew"
@@ -3993,6 +3993,10 @@ msgstr "No se ha podido escribir la biblioteca privada porque se ha denegado el 
 msgctxt "content_editor"
 msgid "Private library could not be written because storage is full."
 msgstr "No se ha podido escribir la biblioteca privada porque el almacenamiento está lleno."
+
+msgctxt "content_editor"
+msgid "Preview on radar"
+msgstr "Previsualizar en el radar"
 
 msgctxt "content_editor"
 msgid "Private library loaded."

@@ -23,9 +23,13 @@ tipos de recursos sin editar Lua:
 9. Si el formulario cambió desde la última carga o guardado, **New**, cambiar de
    tipo, cargar otro recurso, importar o cerrar requieren repetir la acción. La
    confirmación se invalida si cambia el formulario o se elige otra acción.
-10. **Export file** escribe el recurso en la carpeta de exportaciones gestionada.
+10. En mapas, **Preview on radar** activa una capa read-only sobre el radar GM.
+    Asteroides y nebulosas se muestran semitransparentes; los tipos futuros se
+    conservan pero no se interpretan ni dibujan. El preview persiste al cerrar el
+    modal y sigue el pan/zoom del radar.
+11. **Export file** escribe el recurso en la carpeta de exportaciones gestionada.
     Si el archivo ya existe, exige una segunda pulsación.
-11. **Import inbox** permite elegir un JSON depositado en la bandeja gestionada.
+12. **Import inbox** permite elegir un JSON depositado en la bandeja gestionada.
     **Import file** muestra primero tipo, ID y nombre de archivo; una segunda
     pulsación confirma la importación y una sustitución exige confirmación propia.
 
@@ -51,23 +55,32 @@ lista en cada acción. Para mantener el selector accesible muestra como máximo
 los primeros 16 nombres ordenados; hay que mover o borrar los ya procesados para
 acceder a los siguientes.
 
-## Formato `espaciokoop-content` v2
+## Formato `espaciokoop-content` v3
 
-La versión 2 mantiene la envoltura de v1 y amplía campañas y personajes. El
-importador sigue aceptando documentos v1; al volver a guardarlos o exportarlos
-se escriben como v2.
+La versión 3 mantiene la envoltura de v1/v2 y añade objetos declarativos a los
+mapas. El importador sigue aceptando documentos v1 y v2; al volver a guardarlos
+o exportarlos se escriben como v3. Un mapa antiguo migra a `objects: []`.
 
 ```json
 {
   "format": "espaciokoop-content",
-  "version": 2,
-  "type": "ship",
-  "id": "itsaso-1",
-  "name": "Itsaso 1",
-  "description": "Nave de la primera guardia",
+  "version": 3,
+  "type": "map",
+  "id": "sector-uno",
+  "name": "Sector uno",
+  "description": "Terreno inicial",
   "fields": {
-    "template": "Phobos M3P",
-    "faction": "Human Navy"
+    "scenario_file": "scenario_00_basic.lua",
+    "recommended_players": "4",
+    "objects": [
+      {
+        "id": "asteroid-1",
+        "kind": "asteroid",
+        "position": [1200.0, -300.0],
+        "rotation": 45.0,
+        "properties": {"size": 150.0}
+      }
+    ]
   }
 }
 ```
@@ -77,7 +90,7 @@ Tipos y campos específicos:
 | Tipo | Campos |
 |---|---|
 | `campaign` | `map_ids` ordenados, `starting_map_id`, `character_ids`, `ship_ids`, `transitions` |
-| `map` | `scenario_file`, `recommended_players` |
+| `map` | `scenario_file`, `recommended_players`, `objects` |
 | `character` | `crew_position_id`, `callsign`, `tags`, `ship_id` opcional, `legacy_role` para migración v1 |
 | `ship` | `template`, `faction` |
 
@@ -94,7 +107,13 @@ ID canónico. Un `role` histórico de texto libre se conserva íntegro en
 `legacy_role` y deja vacío `crew_position_id`, en vez de inventar una asignación
 operativa. El editor muestra ambos campos para que el GM pueda elegir un puesto
 canónico y borrar después el valor histórico; mientras tanto el documento sigue
-siendo válido y puede guardarse o exportarse como v2 sin perder el rol original.
+siendo válido y puede guardarse o exportarse como v3 sin perder el rol original.
+
+`objects` admite inicialmente `asteroid` (posición, rotación y tamaño) y `nebula`
+(posición y rotación). Los IDs son únicos y las coordenadas, rotaciones, tamaños
+y número de objetos están acotados. Un `kind` futuro se conserva como JSON opaco
+canónico: no se interpreta, no se ejecuta y no puede editarse mediante la
+allowlist actual, pero tampoco desaparece en un round-trip.
 
 Cada exportación individual añade `dependencies`, un manifiesto cerrado con
 tipo, ID y el booleano `missing`. Así puede transportarse un recurso aislado y
@@ -139,7 +158,7 @@ configurado con `-DBUILD_CONTENT_RESOURCE_TESTS=ON` se ejecutan con:
 
 ```bash
 ctest --test-dir build --output-on-failure \
-  -R 'content_resource_codec|content_library_store'
+  -R 'content_resource_codec|content_library_store|map_document_codec|map_edit_session|map_preview_projection'
 ```
 
 El test del codec cubre los cuatro tipos, round-trip, límite de 64 KiB, claves
@@ -148,15 +167,19 @@ futuras, rutas de escenario inseguras, rangos numéricos y la doble confirmació
 ligada al contenido exacto del formulario. El store cubre traversal, symlinks,
 ENOSPC, permisos, interrupciones antes y después de rotar el backup, recuperación,
 migración secuencial, versión futura y export-import-export equivalente.
-`docker/build.sh` activa y ejecuta ambas pruebas en el job Linux.
+`docker/build.sh` activa y ejecuta estas pruebas en el job Linux.
 
-## Alcance de esta primera fase
+## Alcance de esta fase
 
 El editor crea, valida, persiste e intercambia metadatos declarativos de los cuatro tipos.
-Los objetos del mapa se siguen colocando y ajustando visualmente desde Game
-Master. Las siguientes fases mantendrán la misma envoltura versionada:
+Los mapas tienen modelo separado del ECS, sesión transaccional de staging con undo,
+redo, dirty state y rollback, y preview read-only sobre el radar GM. El preview no
+crea ni modifica entidades: solo proyecta asteroides y nebulosas de la allowlist;
+los tipos futuros opacos se omiten visualmente sin perderse. La siguiente fase
+mantendrá la misma envoltura versionada:
 
-- conexión con el editor visual de mapas ([#54](https://github.com/VaroTv7/espaciokooplagunak/issues/54));
+- aplicación tipada al mundo con autorización GM y rollback, sin Lua importado
+  ([#54](https://github.com/VaroTv7/espaciokooplagunak/issues/54));
 - plantillas, previsualización y spawn de naves ([#55](https://github.com/VaroTv7/espaciokooplagunak/issues/55)).
 
 Las campañas y personajes ya se enlazan de forma declarativa con mapas, naves

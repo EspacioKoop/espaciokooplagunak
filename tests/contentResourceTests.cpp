@@ -26,20 +26,42 @@ void expect(bool condition, const char* message)
 
 ContentResource validResource(ContentResourceType type)
 {
+    ContentResource resource;
+    resource.type = type;
+    resource.description = "Description";
     switch(type)
     {
     case ContentResourceType::Campaign:
-        return {type, "campaign-1", "Campaign", "Description", "map-1, map-2", "map-1",
-                "character-1", "ship-1", "map-1>map-2"};
+        resource.id = "campaign-1";
+        resource.name = "Campaign";
+        resource.primary = "map-1, map-2";
+        resource.secondary = "map-1";
+        resource.tertiary = "character-1";
+        resource.quaternary = "ship-1";
+        resource.quinary = "map-1>map-2";
+        break;
     case ContentResourceType::Map:
-        return {type, "map-1", "Map", "Description", "scenario_00_basic.lua", "4", "", "", ""};
+        resource.id = "map-1";
+        resource.name = "Map";
+        resource.primary = "scenario_00_basic.lua";
+        resource.secondary = "4";
+        break;
     case ContentResourceType::Character:
-        return {type, "character-1", "Character", "Description", "helms", "Pilot",
-                "captain, veteran", "ship-1", ""};
+        resource.id = "character-1";
+        resource.name = "Character";
+        resource.primary = "helms";
+        resource.secondary = "Pilot";
+        resource.tertiary = "captain, veteran";
+        resource.quaternary = "ship-1";
+        break;
     case ContentResourceType::Ship:
-        return {type, "ship-1", "Ship", "Description", "Phobos M3P", "Human Navy", "", "", ""};
+        resource.id = "ship-1";
+        resource.name = "Ship";
+        resource.primary = "Phobos M3P";
+        resource.secondary = "Human Navy";
+        break;
     }
-    std::abort();
+    return resource;
 }
 
 ContentResourceError parseJson(const nlohmann::json& document, ContentResource& output)
@@ -85,6 +107,11 @@ int main()
     expect(parseContentResource(duplicate_nested, parsed) == ContentResourceError::DuplicateJsonKeys,
         "duplicate nested key is rejected");
 
+    const std::string duplicate_map_object =
+        R"({"format":"espaciokoop-content","version":3,"type":"map","id":"map-1","name":"Map","description":"","fields":{"scenario_file":"scenario_00_basic.lua","recommended_players":"4","objects":[{"id":"asteroid-1","id":"asteroid-2","kind":"asteroid","position":[0,0],"rotation":0,"properties":{"size":120}}]}})";
+    expect(parseContentResource(duplicate_map_object, parsed) == ContentResourceError::DuplicateJsonKeys,
+        "duplicate key inside a v3 map object is rejected before canonicalization");
+
     auto sibling_keys = nlohmann::json::parse(compact);
     sibling_keys["extra_a"] = {{"same", 1}};
     sibling_keys["extra_b"] = {{"same", 2}};
@@ -102,7 +129,7 @@ int main()
         "unknown top-level field is rejected");
 
     document = nlohmann::json::parse(compact);
-    document["version"] = 3;
+    document["version"] = 4;
     expect(parseJson(document, parsed) == ContentResourceError::UnsupportedFormatOrVersion,
         "future version is rejected");
     document["version"] = 1.0;
@@ -111,6 +138,55 @@ int main()
     document["version"] = std::numeric_limits<std::uint64_t>::max();
     expect(parseJson(document, parsed) == ContentResourceError::UnsupportedFormatOrVersion,
         "out-of-range unsigned version is rejected without throwing");
+
+    auto visual_map = valid_map;
+    MapObject visual_asteroid;
+    visual_asteroid.id = "asteroid-1";
+    visual_asteroid.kind = MapObjectKind::Asteroid;
+    visual_asteroid.transform = {1200.0f, -300.0f, 45.0f};
+    visual_asteroid.size = 150.0f;
+    visual_map.map_document.objects.push_back(visual_asteroid);
+    const auto visual_json = nlohmann::json::parse(serializeContentResource(visual_map, 2));
+    expect(visual_json["version"] == 3 && visual_json["fields"]["objects"].size() == 1,
+        "map serialization writes v3 object documents");
+    expect(parseJson(visual_json, parsed) == ContentResourceError::None && parsed == visual_map,
+        "v3 map object document round-trips through ContentResource");
+
+    auto future_visual = visual_json;
+    const nlohmann::json future_object = {
+        {"id", "future-1"}, {"kind", "comet"}, {"position", {0, 0}},
+        {"rotation", 0}, {"properties", {{"tail", 10}}}, {"callback", "never()"},
+    };
+    future_visual["fields"]["objects"].push_back(future_object);
+    expect(parseJson(future_visual, parsed) == ContentResourceError::None
+            && parsed.map_document.objects.back().kind == MapObjectKind::Unsupported,
+        "v3 resource preserves a future object without interpreting it");
+    const auto future_reserialized = nlohmann::json::parse(serializeContentResource(parsed));
+    expect(future_reserialized["fields"]["objects"].back() == future_object,
+        "future object survives the complete resource round-trip");
+
+    auto legacy_map = visual_json;
+    legacy_map["version"] = 2;
+    legacy_map["fields"].erase("objects");
+    expect(parseJson(legacy_map, parsed) == ContentResourceError::None
+            && parsed.map_document.objects.empty(),
+        "v2 map migrates in memory to an empty object document");
+    const auto migrated_map = nlohmann::json::parse(serializeContentResource(parsed));
+    expect(migrated_map["version"] == 3 && migrated_map["fields"]["objects"].empty(),
+        "saving a migrated map emits canonical v3");
+
+    auto invalid_visual = visual_json;
+    invalid_visual["fields"]["objects"][0]["lua"] = "Asteroid()";
+    const auto output_before_invalid_map = parsed;
+    expect(parseJson(invalid_visual, parsed) == ContentResourceError::InvalidMapDocument,
+        "supported map object rejects executable-looking extra fields");
+    expect(parsed == output_before_invalid_map,
+        "invalid map document does not partially mutate ContentResource output");
+
+    auto non_map_with_objects = validResource(ContentResourceType::Ship);
+    non_map_with_objects.map_document.objects.push_back(visual_asteroid);
+    expect(validateContentResource(non_map_with_objects) == ContentResourceError::InvalidMapDocument,
+        "non-map resource cannot carry a map document");
 
     document = nlohmann::json::parse(compact);
     document["type"] = "planet";

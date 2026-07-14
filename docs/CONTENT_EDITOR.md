@@ -78,7 +78,7 @@ Tipos y campos específicos:
 |---|---|
 | `campaign` | `map_ids` ordenados, `starting_map_id`, `character_ids`, `ship_ids`, `transitions` |
 | `map` | `scenario_file`, `recommended_players` |
-| `character` | `crew_position_id`, `callsign`, `tags`, `ship_id` opcional |
+| `character` | `crew_position_id`, `callsign`, `tags`, `ship_id` opcional, `legacy_role` para migración v1 |
 | `ship` | `template`, `faction` |
 
 Las listas se editan separadas por comas. Las transiciones son aristas
@@ -88,6 +88,13 @@ declarativas `mapa-origen>mapa-destino`: ambos extremos deben pertenecer a
 ejemplo `helms`, `engineering`, `science`, `tactical` o `operations`). Antes de
 persistir se comprueba que los mapas, personajes y naves referenciados existan
 en la biblioteca; borrar un recurso aún referenciado también queda bloqueado.
+
+Al importar un personaje v1, los alias de puesto conocidos se normalizan a su
+ID canónico. Un `role` histórico de texto libre se conserva íntegro en
+`legacy_role` y deja vacío `crew_position_id`, en vez de inventar una asignación
+operativa. El editor muestra ambos campos para que el GM pueda elegir un puesto
+canónico y borrar después el valor histórico; mientras tanto el documento sigue
+siendo válido y puede guardarse o exportarse como v2 sin perder el rol original.
 
 Cada exportación individual añade `dependencies`, un manifiesto cerrado con
 tipo, ID y el booleano `missing`. Así puede transportarse un recurso aislado y

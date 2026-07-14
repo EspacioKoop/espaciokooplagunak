@@ -4043,6 +4043,10 @@ msgid "Crew position ID"
 msgstr "ID del puesto de tripulación"
 
 msgctxt "content_editor"
+msgid "Legacy role (clear after assigning a crew position)"
+msgstr "Rol anterior (borrar tras asignar un puesto de tripulación)"
+
+msgctxt "content_editor"
 msgid "Tags (comma separated)"
 msgstr "Etiquetas (separadas por comas)"
 

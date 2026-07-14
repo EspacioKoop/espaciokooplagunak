@@ -4265,6 +4265,10 @@ msgid "Crew position ID"
 msgstr ""
 
 msgctxt "content_editor"
+msgid "Legacy role (clear after assigning a crew position)"
+msgstr ""
+
+msgctxt "content_editor"
 msgid "Tags (comma separated)"
 msgstr ""
 

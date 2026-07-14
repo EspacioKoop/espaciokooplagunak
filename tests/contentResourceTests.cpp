@@ -228,6 +228,20 @@ int main()
             && parsed.primary == "helms" && parsed.tertiary.empty() && parsed.quaternary.empty(),
         "v1 character imports migrate in memory to the extended model");
 
+    legacy_character["fields"]["role"] = "helmsofficer";
+    expect(parseJson(legacy_character, parsed) == ContentResourceError::None
+            && parsed.primary == "helms" && parsed.quinary.empty(),
+        "v1 crew position aliases migrate to their canonical ID");
+
+    legacy_character["fields"]["role"] = "captain";
+    expect(parseJson(legacy_character, parsed) == ContentResourceError::None
+            && parsed.primary.empty() && parsed.quinary == "captain",
+        "free-form v1 roles remain importable without inventing a crew position");
+    ContentResource reparsed_legacy;
+    expect(parseContentResource(serializeContentResource(parsed), reparsed_legacy) == ContentResourceError::None
+            && reparsed_legacy == parsed,
+        "free-form v1 roles survive migration and a v2 round-trip");
+
     ContentDiscardGuard guard;
     auto clean = valid_map;
     auto dirty = clean;

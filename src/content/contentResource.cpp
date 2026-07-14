@@ -210,7 +210,8 @@ nlohmann::json resourceDocument(const ContentResource& resource)
         break;
     case ContentResourceType::Character:
         fields = {{"crew_position_id", resource.primary}, {"callsign", resource.secondary},
-                  {"tags", resource.tertiary}, {"ship_id", resource.quaternary}};
+                  {"tags", resource.tertiary}, {"ship_id", resource.quaternary},
+                  {"legacy_role", resource.quinary}};
         break;
     case ContentResourceType::Ship:
         fields = {{"template", resource.primary}, {"faction", resource.secondary}};
@@ -252,13 +253,13 @@ ContentResourceError validateContentResource(const ContentResource& resource)
     if (resource.primary.size() > 1000 || resource.secondary.size() > 1000
         || resource.tertiary.size() > 1000 || resource.quaternary.size() > 1000
         || resource.quinary.size() > 1000) return ContentResourceError::TypeFieldTooLong;
-    if (resource.type != ContentResourceType::Campaign && resource.primary.empty())
+    if (resource.type != ContentResourceType::Campaign && resource.primary.empty()
+        && !(resource.type == ContentResourceType::Character && !resource.quinary.empty()))
         return ContentResourceError::MissingPrimaryField;
     if ((resource.type == ContentResourceType::Map || resource.type == ContentResourceType::Ship)
         && (!resource.tertiary.empty() || !resource.quaternary.empty() || !resource.quinary.empty()))
         return ContentResourceError::UnknownTypeFields;
-    if (resource.type == ContentResourceType::Character && !resource.quinary.empty())
-        return ContentResourceError::UnknownTypeFields;
+
     if (resource.type == ContentResourceType::Campaign)
     {
         std::vector<std::string> maps;
@@ -284,7 +285,8 @@ ContentResourceError validateContentResource(const ContentResource& resource)
         return ContentResourceError::InvalidPlayerCount;
     if (resource.type == ContentResourceType::Character)
     {
-        if (!validCrewPosition(resource.primary)) return ContentResourceError::InvalidCrewPosition;
+        if (!resource.primary.empty() && !validCrewPosition(resource.primary))
+            return ContentResourceError::InvalidCrewPosition;
         if (!validIdList(resource.tertiary)) return ContentResourceError::InvalidCharacterTags;
         if (!resource.quaternary.empty() && !validId(resource.quaternary))
             return ContentResourceError::InvalidCharacterShipId;
@@ -375,7 +377,7 @@ ContentResourceError parseContentResource(const std::string& input, ContentResou
     case ContentResourceType::Character:
         keys = version == 1
             ? std::vector<const char*>{"role", "callsign"}
-            : std::vector<const char*>{"crew_position_id", "callsign", "tags", "ship_id"};
+            : std::vector<const char*>{"crew_position_id", "callsign", "tags", "ship_id", "legacy_role"};
         break;
     case ContentResourceType::Ship: keys = {"template", "faction"}; break;
     }
@@ -388,6 +390,18 @@ ContentResourceError parseContentResource(const std::string& input, ContentResou
     {
         const auto result = readString(*fields_it, keys[index], *outputs[index], 1000);
         if (result != ContentResourceError::None) return result;
+    }
+
+    if (version == 1 && candidate.type == ContentResourceType::Character)
+    {
+        const auto crew_position = tryParseCrewPosition(candidate.primary.c_str());
+        if (crew_position)
+            candidate.primary = crewPositionToString(*crew_position).c_str();
+        else
+        {
+            candidate.quinary = candidate.primary;
+            candidate.primary.clear();
+        }
     }
 
     if (document.contains("dependencies"))

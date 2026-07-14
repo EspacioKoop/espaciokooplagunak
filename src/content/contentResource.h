@@ -21,7 +21,7 @@ struct ContentResource
     std::string primary;
     std::string secondary;
     // Campaign: character IDs, ship IDs and declarative map transitions.
-    // Character: tags, optional ship ID and unused.
+    // Character: tags, optional ship ID and a legacy v1 role awaiting canonical migration.
     std::string tertiary;
     std::string quaternary;
     std::string quinary;

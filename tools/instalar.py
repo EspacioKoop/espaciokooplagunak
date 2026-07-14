@@ -114,7 +114,8 @@ def gestor_de_paquetes(system: str, datos_os: dict[str, str], which=shutil.which
     reconoce ninguno (p. ej. Windows).
     """
     if system == "Darwin":
-        return "brew"
+        # Homebrew no viene con macOS: solo se anuncia si está instalado.
+        return "brew" if which("brew") else None
     if system == "Linux":
         for candidato in _distros_candidatas(datos_os):
             if candidato in _DISTRO_A_GESTOR:
@@ -481,17 +482,52 @@ def _accion_docker(info: dict) -> None:
             print(f"    {_si(False)} {r.nombre} ({r.ejecutable})")
         print("  Instala Docker y vuelve a ejecutar el asistente.")
         return
-    resultado = asegurar_env()
-    if resultado.creado:
+    # Compose es prerrequisito REAL de esta vía: sin el plugin v2 no hay nada
+    # que levantar, así que se corta aquí, antes de mutar nada.
+    if not info.get("docker_compose"):
+        print(_c("  Docker está, pero falta el plugin Compose (`docker compose version` falla).", "33"))
+        print("  Instala docker-compose-plugin (o Docker Desktop) y vuelve a ejecutar el asistente.")
+        return
+    # La confirmación PRECEDE a la mutación: crear docker/.env ya es tocar el
+    # equipo. Si el .env existe no se toca en absoluto por esta ruta.
+    if ENV_DESTINO.exists():
+        print(f"  Se conserva {ENV_DESTINO.relative_to(RAIZ)} (no se toca; edítalo desde «Modificar opciones»).")
+    else:
+        if not _confirmar(
+            f"No existe {ENV_DESTINO.relative_to(RAIZ)}. ¿Crearlo ahora (incluye generar un token nuevo)?",
+            defecto=True,
+        ):
+            print("  Sin docker/.env la pila no puede arrancar; se omite.")
+            return
+        resultado = asegurar_env()
         token = resultado.cambios.get("BRIDGE_TOKEN", "")
         print(f"  Creado {resultado.ruta.relative_to(RAIZ)} con un token nuevo: {_ocultar_token(token)}")
-    else:
-        print(f"  Se conserva {resultado.ruta.relative_to(RAIZ)} (no se toca el token existente).")
     print("  Comando para levantar la pila:")
     print(_c("    cd docker && docker compose up -d --build", "1"))
     if _confirmar("¿Ejecutarlo ahora?", defecto=False):
-        subprocess.run(["docker", "compose", "up", "-d", "--build"],
-                       cwd=str(RAIZ / "docker"), check=False)
+        proceso = subprocess.run(["docker", "compose", "up", "-d", "--build"],
+                                 cwd=str(RAIZ / "docker"), check=False)
+        # El resultado se comunica siempre: un fallo de compose no puede
+        # quedar silencioso tras un "ejecutado".
+        if proceso.returncode == 0:
+            print(_c("  Pila levantada (docker compose terminó con código 0).", "1;32"))
+        else:
+            print(_c(f"  docker compose falló (código {proceso.returncode}). Revisa la salida anterior.", "31"))
+
+
+def comando_cmake(gestor: str | None) -> str:
+    """Comando de configuración de CMake ajustado a la plataforma.
+
+    En Arch y derivadas (gestor pacman), la glm 1.0.x del sistema rompe a
+    SeriousProton (`glm::vec2 does not name a type`): hay que desactivar su
+    detección para usar la copia vendorizada — requisito vivo documentado y
+    verificado en docs/BUILDING.md.
+    """
+    base = ("cmake -S . -B build -G Ninja -DSERIOUS_PROTON_DIR=../SeriousProton "
+            "-DWARNING_IS_ERROR=1 -DBUILD_CONTENT_RESOURCE_TESTS=ON")
+    if gestor == "pacman":
+        base += " -DCMAKE_DISABLE_FIND_PACKAGE_glm=TRUE"
+    return base
 
 
 def _accion_nativa(info: dict) -> None:
@@ -508,9 +544,10 @@ def _accion_nativa(info: dict) -> None:
         print(f"  Falta SeriousProton como repo hermano en {hermano}. Clónalo:")
         print(_c("    git clone https://github.com/daid/SeriousProton.git", "1"))
     print("  Configuración y compilación:")
-    print(_c("    cmake -S . -B build -G Ninja -DSERIOUS_PROTON_DIR=../SeriousProton "
-             "-DWARNING_IS_ERROR=1 -DBUILD_CONTENT_RESOURCE_TESTS=ON", "1"))
+    print(_c(f"    {comando_cmake(info['gestor_paquetes'])}", "1"))
     print(_c("    cmake --build build --parallel", "1"))
+    if info["gestor_paquetes"] == "pacman":
+        print("  (El flag de glm evita la glm 1.0.x del sistema en Arch/CachyOS; ver docs/BUILDING.md.)")
     print("  (Ver docs/BUILDING.md para detalles por distribución.)")
 
 

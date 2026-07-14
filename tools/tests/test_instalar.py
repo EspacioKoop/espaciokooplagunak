@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 import os
 import subprocess
@@ -7,6 +9,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from tools import instalar
 
@@ -25,10 +28,21 @@ class DeteccionTests(unittest.TestCase):
                                         which=lambda _: None),
             "pacman",
         )
+        # En macOS solo se anuncia brew si Homebrew está realmente instalado.
         self.assertEqual(
-            instalar.gestor_de_paquetes("Darwin", {}, which=lambda _: None),
+            instalar.gestor_de_paquetes(
+                "Darwin", {}, which=lambda cmd: "/opt/homebrew/bin/brew" if cmd == "brew" else None
+            ),
             "brew",
         )
+        self.assertIsNone(instalar.gestor_de_paquetes("Darwin", {}, which=lambda _: None))
+
+    def test_comando_cmake_incluye_glm_solo_en_pacman(self) -> None:
+        # Arch/CachyOS: la glm 1.0.x del sistema rompe SeriousProton; el
+        # comando sugerido debe llevar el flag documentado en BUILDING.md.
+        self.assertIn("-DCMAKE_DISABLE_FIND_PACKAGE_glm=TRUE", instalar.comando_cmake("pacman"))
+        self.assertNotIn("glm", instalar.comando_cmake("apt"))
+        self.assertNotIn("glm", instalar.comando_cmake(None))
 
     def test_gestor_por_id_like_cuando_id_desconocido(self) -> None:
         # Una distro derivada desconocida cae en su ID_LIKE.
@@ -213,6 +227,72 @@ class ModuloTests(unittest.TestCase):
             self.assertEqual(
                 (baks[0] / "datos_usuario.txt").read_text(encoding="utf-8"), "no borrar"
             )
+
+
+class AccionDockerTests(unittest.TestCase):
+    """La ruta Docker no puede mutar el equipo sin confirmar ni ocultar fallos."""
+
+    def _info(self, compose: bool = True) -> dict:
+        return {"docker_compose": compose}
+
+    def _requisitos_ok(self):
+        return mock.patch.object(instalar, "comprobar_requisitos", return_value=[])
+
+    def test_sin_compose_se_corta_antes_de_mutar(self) -> None:
+        # Compose es prerrequisito real: sin él ni se crea .env ni se pregunta.
+        with self._requisitos_ok(), \
+             mock.patch.object(instalar, "asegurar_env") as env, \
+             mock.patch.object(instalar, "_confirmar") as confirmar, \
+             contextlib.redirect_stdout(io.StringIO()) as salida:
+            instalar._accion_docker(self._info(compose=False))
+        env.assert_not_called()
+        confirmar.assert_not_called()
+        self.assertIn("Compose", salida.getvalue())
+
+    def test_no_crea_env_si_no_se_confirma(self) -> None:
+        # La confirmación PRECEDE a crear docker/.env.
+        with tempfile.TemporaryDirectory() as tmp:
+            destino = Path(tmp) / "docker" / ".env"
+            with self._requisitos_ok(), \
+                 mock.patch.object(instalar, "ENV_DESTINO", destino), \
+                 mock.patch.object(instalar, "RAIZ", Path(tmp)), \
+                 mock.patch.object(instalar, "asegurar_env") as env, \
+                 mock.patch.object(instalar, "_confirmar", return_value=False), \
+                 contextlib.redirect_stdout(io.StringIO()):
+                instalar._accion_docker(self._info())
+            env.assert_not_called()
+            self.assertFalse(destino.exists())
+
+    def test_env_existente_no_se_reescribe(self) -> None:
+        # Con .env presente, esta ruta no lo toca en absoluto.
+        with tempfile.TemporaryDirectory() as tmp:
+            destino = Path(tmp) / ".env"
+            destino.write_text("BRIDGE_TOKEN=fijado\n", encoding="utf-8")
+            antes = destino.stat().st_mtime_ns
+            with self._requisitos_ok(), \
+                 mock.patch.object(instalar, "ENV_DESTINO", destino), \
+                 mock.patch.object(instalar, "RAIZ", Path(tmp)), \
+                 mock.patch.object(instalar, "asegurar_env") as env, \
+                 mock.patch.object(instalar, "_confirmar", return_value=False), \
+                 contextlib.redirect_stdout(io.StringIO()):
+                instalar._accion_docker(self._info())
+            env.assert_not_called()
+            self.assertEqual(destino.stat().st_mtime_ns, antes)
+
+    def test_fallo_de_compose_se_comunica(self) -> None:
+        # Un exit code != 0 de `docker compose up` no queda silencioso.
+        with tempfile.TemporaryDirectory() as tmp:
+            destino = Path(tmp) / ".env"
+            destino.write_text("BRIDGE_TOKEN=fijado\n", encoding="utf-8")
+            with self._requisitos_ok(), \
+                 mock.patch.object(instalar, "ENV_DESTINO", destino), \
+                 mock.patch.object(instalar, "RAIZ", Path(tmp)), \
+                 mock.patch.object(instalar, "_confirmar", return_value=True), \
+                 mock.patch.object(instalar.subprocess, "run",
+                                   return_value=subprocess.CompletedProcess([], 17)), \
+                 contextlib.redirect_stdout(io.StringIO()) as salida:
+                instalar._accion_docker(self._info())
+            self.assertIn("código 17", salida.getvalue())
 
 
 class CliTests(unittest.TestCase):

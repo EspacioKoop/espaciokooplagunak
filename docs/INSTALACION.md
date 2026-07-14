@@ -17,13 +17,20 @@ de paquetes (apt, dnf, pacman, zypper o brew), arquitectura, si Docker y
 para tu SO. Después ofrece un menú:
 
 1. **Instalar con Docker (servidor + puente)** — la vía recomendada. Comprueba
-   los requisitos, crea `docker/.env` a partir de `docker/.env.example` con un
-   `BRIDGE_TOKEN` aleatorio si aún no existe, y ofrece levantar la pila con
-   `docker compose up -d --build`. Ver [`docker/README.md`](../docker/README.md).
+   los requisitos — **incluido el plugin `docker compose` (v2), que es
+   prerrequisito real: sin él la acción se corta antes de tocar nada** —,
+   pide confirmación **antes** de crear `docker/.env` (a partir de
+   `docker/.env.example`, con un `BRIDGE_TOKEN` aleatorio; si el `.env` ya
+   existe, esta ruta no lo toca), y ofrece levantar la pila con
+   `docker compose up -d --build`, **informando siempre del código de salida**
+   (éxito o fallo). Ver [`docker/README.md`](../docker/README.md).
 2. **Compilar de forma nativa** — muestra el comando exacto de dependencias
    para tu gestor de paquetes, verifica que SeriousProton esté como repositorio
-   hermano y te da los comandos de configuración y compilación de CMake. Ver
-   [`docs/BUILDING.md`](BUILDING.md).
+   hermano y te da los comandos de configuración y compilación de CMake,
+   **ajustados a tu plataforma**: en Arch/CachyOS (pacman) añade
+   `-DCMAKE_DISABLE_FIND_PACKAGE_glm=TRUE` (la glm 1.0.x del sistema rompe
+   SeriousProton — ver [`docs/BUILDING.md`](BUILDING.md)), y en macOS solo se
+   anuncia Homebrew si está instalado.
 3. **Instalar el módulo de Foundry VTT** — enlaza (o copia, en Windows) la
    carpeta `foundry-module/` dentro de `Data/modules/espaciokoop-lagunak` de tu
    instalación de Foundry. Ver [`foundry-module/README.md`](../foundry-module/README.md).
@@ -81,6 +88,11 @@ anterior renombrándolo a `…espaciokoop-lagunak.bak-<fecha>` antes de reinstal
 ```bash
 python3 -m pytest tools/tests/test_instalar.py
 ```
+
+En CI corren con el resto de tests de `tools/` en el workflow
+[`tools.yml`](../.github/workflows/tools.yml) (job Python ligero sobre Linux;
+la ruta nativa de Windows del instalador queda declarada como límite: no se
+ejercita en CI).
 
 ## Mantenimiento
 

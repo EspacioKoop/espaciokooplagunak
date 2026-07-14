@@ -167,6 +167,42 @@ export function debeDibujar(ultimoMs, ahoraMs, fpsMax = 30) {
 }
 
 /**
+ * Rota las muestras del sondeo creando una VENTANA DE REPRODUCCIÓN. El dibujo
+ * ocurre siempre en tiempos posteriores a la recepción, así que timestampear
+ * la muestra nueva con "ahora" dejaría el tween clavado en t=1 (ningún frame
+ * intermedio). En su lugar, al recibir una muestra el tween se programa hacia
+ * delante: `prev` (la posición confirmada ANTERIOR) se ancla en `ahoraMs` y
+ * `actual` (la recién confirmada) en `ahoraMs + ventana`, donde `ventana` es
+ * el tiempo real transcurrido entre recepciones (acotado por `ventanaMaxMs`,
+ * para que un hueco de backoff no produzca un tween de un minuto). Los frames
+ * de ese intervalo interpolan 0→1 y después el clamp deja el mapa clavado en
+ * la última muestra confirmada: se REPRODUCE movimiento ya confirmado con un
+ * intervalo de retardo — nunca se extrapola.
+ *
+ * @param {object|null} muestraActual la muestra `actual` vigente (null si es la primera)
+ * @param {{centro:{x:number,y:number}, rumboDeg:number}} nueva datos confirmados del puente
+ * @param {number} ahoraMs instante de recepción (misma base de tiempo que el dibujo)
+ * @returns {{prev: object|null, actual: object}}
+ */
+export function rotarMuestras(muestraActual, nueva, ahoraMs, ventanaMaxMs = 4000) {
+  const entrante = {
+    centro: { x: nueva.centro?.x ?? 0, y: nueva.centro?.y ?? 0 },
+    rumboDeg: nueva.rumboDeg ?? 0,
+    recibidaMs: ahoraMs,
+  };
+  if (!muestraActual) {
+    // Primera muestra: se pinta directa, sin tween (no hay "anterior").
+    return { prev: null, actual: { ...entrante, tMs: ahoraMs } };
+  }
+  const transcurrido = ahoraMs - (muestraActual.recibidaMs ?? ahoraMs);
+  const ventana = Math.min(Math.max(transcurrido, 0), ventanaMaxMs);
+  return {
+    prev: { tMs: ahoraMs, centro: muestraActual.centro, rumboDeg: muestraActual.rumboDeg },
+    actual: { ...entrante, tMs: ahoraMs + ventana },
+  };
+}
+
+/**
  * Compone el «frame» del mapa vivo: TODO lo que el pintor de canvas necesita,
  * calculado de forma pura y determinista (mismas entradas → mismo frame). El
  * movimiento propio se tweenea entre las dos últimas muestras del puente

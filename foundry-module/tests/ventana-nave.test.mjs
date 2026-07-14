@@ -13,6 +13,7 @@ import {
   offsetParallax,
   proyectarContactos,
   rngSemilla,
+  rotarMuestras,
 } from "../scripts/ventana-nave.mjs";
 
 test("colorFaccion reserva colores para jugador y sin facción", () => {
@@ -189,4 +190,43 @@ test("componerFrame es determinista y el parpadeo depende solo de la fase tempor
   const off = componerFrame({ ...base, tMs: 400 }).blips[0].parpadeo;
   assert.equal(on, true);
   assert.equal(off, false);
+});
+
+test("ciclo sondeo→frames: la ventana de reproducción produce frames intermedios reales", () => {
+  // El caso que la revisión reprodujo: el dibujo ocurre SIEMPRE en tiempos
+  // posteriores a la recepción de la muestra. Con rotarMuestras el tween se
+  // ancla hacia delante, así que los frames intermedios existen de verdad.
+
+  // Primera muestra recibida en t=1000: se pinta directa, sin tween.
+  const r1 = rotarMuestras(null, { centro: { x: 0, y: 0 }, rumboDeg: 0 }, 1000);
+  assert.equal(r1.prev, null);
+  const inicial = componerFrame({ muestraPrev: r1.prev, muestraActual: r1.actual, campo: [], tMs: 1000 });
+  assert.deepEqual(inicial.centro, { x: 0, y: 0 });
+
+  // Segunda muestra recibida en t=3000 (2 s después): ventana de 2 s por delante.
+  const r2 = rotarMuestras(r1.actual, { centro: { x: 100, y: 200 }, rumboDeg: 90 }, 3000);
+  const frame = (tMs) => componerFrame({ muestraPrev: r2.prev, muestraActual: r2.actual, campo: [], tMs });
+
+  // En el instante de recepción arranca en lo confirmado ANTERIOR…
+  assert.deepEqual(frame(3000).centro, { x: 0, y: 0 });
+  // …a mitad de ventana hay un frame intermedio real (el bug lo hacía imposible)…
+  assert.deepEqual(frame(4000).centro, { x: 50, y: 100 });
+  assert.equal(frame(4000).rumboDeg, 45);
+  // …al agotar la ventana llega a lo recién confirmado…
+  assert.deepEqual(frame(5000).centro, { x: 100, y: 200 });
+  assert.equal(frame(5000).rumboDeg, 90);
+  // …y después queda clavado ahí: nunca extrapola.
+  assert.deepEqual(frame(99999).centro, { x: 100, y: 200 });
+});
+
+test("rotarMuestras acota la ventana de reproducción (huecos de backoff)", () => {
+  const r1 = rotarMuestras(null, { centro: { x: 0, y: 0 }, rumboDeg: 0 }, 1000);
+  // La siguiente muestra llega 60 s después (backoff): el tween NO dura un
+  // minuto — la ventana se acota al máximo (4 s por defecto).
+  const r2 = rotarMuestras(r1.actual, { centro: { x: 100, y: 0 }, rumboDeg: 0 }, 61000);
+  assert.equal(r2.actual.tMs - r2.prev.tMs, 4000);
+  // Y la cadena continúa: una tercera muestra usa la recepción real de la
+  // segunda (recibidaMs), no su timestamp de reproducción.
+  const r3 = rotarMuestras(r2.actual, { centro: { x: 200, y: 0 }, rumboDeg: 0 }, 63000);
+  assert.equal(r3.actual.tMs - r3.prev.tMs, 2000);
 });

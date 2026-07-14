@@ -67,6 +67,25 @@ cualquier cliente que obtenga el token puede invocar las órdenes autorizadas.
    evento normalizado y crea automáticamente una página de llegada. El flag
    `eventId` evita duplicados al reabrir la ventana o reconectar.
 
+## Mapa vivo
+
+El botón «Mapa vivo (Espaciokoop Lagunak)» (junto al de estado, solo GM) abre
+un visor retro tipo Neo Geo: campo de estrellas en parallax, la nave propia en
+el centro (morro arriba) y los objetos cercanos como blips pixelados
+coloreados por facción, con leyenda de indicativos y distancias.
+
+- **Datos**: `/v1/state` (posición y rumbo propios) y **`/v1/contacts`** del
+  puente. Este último endpoint llega con el PR #69 del puente: contra un
+  puente anterior la ventana muestra el estado de error y reintenta con
+  backoff, sin romper nada.
+- **Movimiento**: la posición propia se interpola entre las dos últimas
+  muestras confirmadas del puente (nunca se extrapola: el mapa es una vista,
+  no un simulador — con la simulación en pausa, el mapa se congela). Los
+  contactos se pintan en su última posición conocida.
+- **Dibujo**: canvas interno de 320×320 escalado con `image-rendering:
+  pixelated`, ~30 fps, con scanlines por CSS. El bucle de animación se detiene
+  al cerrar la ventana.
+
 ## Estado de verificación
 
 - Sintaxis de todos los archivos, `module.json` y traducciones válidos;
@@ -76,6 +95,11 @@ cualquier cliente que obtenga el token puede invocar las órdenes autorizadas.
   dependencias de Foundry precisamente para eso.
 - Tests Node cubren `/v1/events`, validación y deduplicación persistente del
   Journal, formato destino/ETA, POST cerrado de pausa y bloqueo no-GM.
+- Del mapa vivo, los tests Node cubren SOLO la lógica pura (proyección,
+  interpolación sin extrapolar, throttle de fps, composición del frame) y la
+  compatibilidad del botón/ventana v11 y v13; el pintado real sobre `<canvas>`
+  (`mapa-render.mjs`) queda dentro del punto pendiente de verificación humana
+  de abajo.
 - **Manifiesto validado con el propio parser de Foundry v11.302**
   (`BaseModule`, modo estricto): sin errores de contenido. Foundry v11.302
   arranca limpio con el módulo instalado (symlink en `Data/modules`), sin

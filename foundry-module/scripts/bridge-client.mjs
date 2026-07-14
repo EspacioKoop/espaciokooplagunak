@@ -59,6 +59,11 @@ export class BridgeClient {
     return this.#get("/v1/events", { auth: true });
   }
 
+  /** GET /v1/contacts — objetos cercanos a la nave para el mapa vivo (Bearer). */
+  async contacts() {
+    return this.#get("/v1/contacts", { auth: true });
+  }
+
   /** POST /v1/command — pausa o reanuda la simulación (Bearer). */
   async setPause(paused) {
     if (typeof paused !== "boolean") {

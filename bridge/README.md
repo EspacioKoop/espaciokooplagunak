@@ -69,6 +69,8 @@ passthrough genérico.
 ## Seguridad aplicada
 
 - Bearer token obligatorio (`BRIDGE_TOKEN`), comparación en tiempo constante.
+- CORS desactivado por defecto y allowlist explícita mediante
+  `BRIDGE_ALLOWED_ORIGINS`; no se admite el comodín `*`.
 - Lista blanca cerrada de operaciones con validación de esquema (Pydantic).
 - Límite de frecuencia global (10 req/s, ráfaga 20).
 - Timeout (5 s) y tamaño máximo de respuesta del juego (64 KiB).
@@ -83,6 +85,17 @@ python3 -m venv .venv && . .venv/bin/activate
 pip install -r requirements.txt
 EE_URL=http://localhost:8080 BRIDGE_TOKEN=dev uvicorn app:app --port 8090
 ```
+
+Para que el módulo pueda consultar el puente desde el navegador, configura el
+origen **exacto** de Foundry (esquema, host y puerto; sin barra final):
+
+```bash
+BRIDGE_ALLOWED_ORIGINS=http://localhost:30000
+```
+
+Se pueden indicar varios orígenes separados por comas. Si la variable está
+vacía, el puente no añade cabeceras CORS. Solo se aceptan orígenes `http` y
+`https`, y nunca `*`; CORS no sustituye al Bearer ni a TLS.
 
 ## Tests
 

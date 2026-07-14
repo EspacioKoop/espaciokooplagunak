@@ -793,7 +793,8 @@ if(Python3_Interpreter_FOUND)
         "${CMAKE_SOURCE_DIR}/src/script/*.cpp"
         "${CMAKE_SOURCE_DIR}/scripts/api/*.lua"
         "${CMAKE_SOURCE_DIR}/script_docs/*.py"
-        "${CMAKE_SOURCE_DIR}/script_docs/template.html")
+        "${CMAKE_SOURCE_DIR}/script_docs/template.html"
+        "${CMAKE_SOURCE_DIR}/script_docs/vendor/*")
     add_custom_command(
         OUTPUT "${SCRIPT_REFERENCE_HTML}"
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/script_docs/main.py "${SCRIPT_REFERENCE_HTML}"

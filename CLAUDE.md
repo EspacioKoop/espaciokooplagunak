@@ -112,6 +112,11 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
   NO está implementado — devuelve el literal `TODO`, verificado 2026-07-12).
 - `scripts/` — escenarios Lua (`scenario_*.lua`), la API Lua expuesta a misiones en `scripts/api/`,
   y utilidades reutilizables (`comms_*.lua`, `*_scenario_utility.lua`).
+- `script_docs/` — generador de `script_reference.html` (heredado de upstream) con una divergencia
+  propia (issue #87): highlight.js va vendorizado en `script_docs/vendor/` y `main.py` lo incrusta
+  inline vía la etiqueta `{{inline ...}}` en vez de cargarlo de un CDN sin `integrity` (alertas
+  CodeQL 8/9); la salida sigue siendo un único HTML autocontenido que funciona offline. Vigila esta
+  divergencia al mergear cambios de upstream que toquen `script_docs/`.
 - `resources/` y `packs/` — assets heredados de upstream.
 - La versión se calcula por fecha (`AAAA.MM.DD`) en `CMakeLists.txt` salvo override explícito.
 - `docs/` — documentación propia del fork: [`BUILDING.md`](docs/BUILDING.md),

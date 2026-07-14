@@ -35,6 +35,7 @@ import {
   componerFrame,
   crearCampoEstrellas,
   debeDibujar,
+  rotarMuestras,
 } from "./ventana-nave.mjs";
 
 const MODULE_ID = "espaciokoop-lagunak";
@@ -551,6 +552,7 @@ function crearClaseMapaV2() {
     /** Estado interno: sondeo + animación. */
     #timer = null;
     #fallosSeguidos = 0;
+    #generacion = 0;
     #rafId = null;
     #ultimoDibujoMs = null;
     #campo = crearCampoEstrellas(MAPA_SEMILLA);
@@ -574,28 +576,44 @@ function crearClaseMapaV2() {
     }
 
     async #sondear() {
+      // La generación se captura al entrar: si la ventana se cierra (o se
+      // reabre) con esta petición en vuelo, la respuesta tardía no puede
+      // tocar estado, renderizar ni rearmar el polling.
+      const generacion = this.#generacion;
+      let rotadas = null;
+      let contactos = null;
+      let fallo = null;
       try {
         const cliente = this.#cliente();
         await cliente.healthz();
         const estado = await cliente.state();
         const nave = estado?.ship ?? null;
         if (nave) {
-          // Rotación de muestras confirmadas: el tween del frame interpola
-          // SOLO entre estas dos; sin nave nueva se conserva la última.
-          this.#muestraPrev = this.#muestraActual;
-          this.#muestraActual = {
-            tMs: Date.now(),
+          // Ventana de reproducción: rotarMuestras ancla el tween hacia
+          // delante (los frames van DETRÁS de la recepción — sin esto, t
+          // quedaría clavado en 1 y no habría frames intermedios).
+          rotadas = rotarMuestras(this.#muestraActual, {
             centro: { x: nave.position?.x ?? 0, y: nave.position?.y ?? 0 },
             rumboDeg: nave.heading ?? 0,
-          };
+          }, Date.now());
         }
-        this.contactos = (await cliente.contacts())?.contacts ?? [];
+        contactos = (await cliente.contacts())?.contacts ?? [];
+      } catch (err) {
+        fallo = err;
+      }
+      if (generacion !== this.#generacion) return;
+      if (fallo === null) {
+        if (rotadas) {
+          this.#muestraPrev = rotadas.prev;
+          this.#muestraActual = rotadas.actual;
+        }
+        this.contactos = contactos;
         this.conexion = "ok";
         this.detalleError = "";
         this.#fallosSeguidos = 0;
-      } catch (err) {
+      } else {
         this.conexion = "error";
-        this.detalleError = err instanceof BridgeError ? err.message : game.i18n.localize("LAGUNAK.Errores.Desconocido");
+        this.detalleError = fallo instanceof BridgeError ? fallo.message : game.i18n.localize("LAGUNAK.Errores.Desconocido");
         this.#fallosSeguidos = Math.min(this.#fallosSeguidos + 1, 10);
       }
       if (this.rendered) this.render();
@@ -643,6 +661,9 @@ function crearClaseMapaV2() {
     }
 
     _onClose(options) {
+      // Invalida cualquier #sondear en vuelo: su respuesta tardía morirá en
+      // la comparación de generación sin rearmar el polling.
+      this.#generacion += 1;
       clearTimeout(this.#timer);
       this.#timer = null;
       if (this.#rafId != null && typeof cancelAnimationFrame === "function") {
@@ -696,6 +717,7 @@ function crearClaseMapaV1() {
     #timer = null;
     #fallosSeguidos = 0;
     #sondeando = false;
+    #generacion = 0;
     #rafId = null;
     #ultimoDibujoMs = null;
     #campo = crearCampoEstrellas(MAPA_SEMILLA);
@@ -734,26 +756,43 @@ function crearClaseMapaV1() {
     }
 
     async #sondear() {
+      // Misma disciplina que la ruta V2 (réplica aislada): la generación se
+      // captura al entrar y una respuesta tardía tras cerrar muere sin tocar
+      // estado, renderizar ni rearmar el polling.
+      const generacion = this.#generacion;
+      let rotadas = null;
+      let contactos = null;
+      let fallo = null;
       try {
         const cliente = this.#cliente();
         await cliente.healthz();
         const estado = await cliente.state();
         const nave = estado?.ship ?? null;
         if (nave) {
-          this.#muestraPrev = this.#muestraActual;
-          this.#muestraActual = {
-            tMs: Date.now(),
+          // Ventana de reproducción (ver rotarMuestras): el tween se ancla
+          // hacia delante para que existan frames intermedios reales.
+          rotadas = rotarMuestras(this.#muestraActual, {
             centro: { x: nave.position?.x ?? 0, y: nave.position?.y ?? 0 },
             rumboDeg: nave.heading ?? 0,
-          };
+          }, Date.now());
         }
-        this.contactos = (await cliente.contacts())?.contacts ?? [];
+        contactos = (await cliente.contacts())?.contacts ?? [];
+      } catch (err) {
+        fallo = err;
+      }
+      if (generacion !== this.#generacion) return;
+      if (fallo === null) {
+        if (rotadas) {
+          this.#muestraPrev = rotadas.prev;
+          this.#muestraActual = rotadas.actual;
+        }
+        this.contactos = contactos;
         this.conexion = "ok";
         this.detalleError = "";
         this.#fallosSeguidos = 0;
-      } catch (err) {
+      } else {
         this.conexion = "error";
-        this.detalleError = err instanceof BridgeError ? err.message : game.i18n.localize("LAGUNAK.Errores.Desconocido");
+        this.detalleError = fallo instanceof BridgeError ? fallo.message : game.i18n.localize("LAGUNAK.Errores.Desconocido");
         this.#fallosSeguidos = Math.min(this.#fallosSeguidos + 1, 10);
       }
       if (this.rendered) this.render(false);
@@ -796,6 +835,8 @@ function crearClaseMapaV1() {
     }
 
     async close(options) {
+      // Invalida cualquier #sondear en vuelo (ver comentario en #sondear).
+      this.#generacion += 1;
       clearTimeout(this.#timer);
       this.#timer = null;
       this.#sondeando = false;

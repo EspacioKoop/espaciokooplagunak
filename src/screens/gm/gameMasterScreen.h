@@ -44,7 +44,7 @@ private:
     std::vector<GameMasterChatDialog*> chat_dialog_per_ship;
     GuiGlobalMessageEntryView* global_message_entry;
     GuiObjectCreationView* object_creation_view;
-    GuiContentEditor* content_editor;
+    GuiContentEditor* content_editor = nullptr;
     GuiEntityTweak* tweak_dialog;
 
     GuiElement* info_layout;

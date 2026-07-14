@@ -7,6 +7,7 @@
 #include "gui/gui2_panel.h"
 #include "gui/gui2_selector.h"
 #include "gui/gui2_textentry.h"
+#include "gui/gui2_togglebutton.h"
 
 #include <array>
 #include <utility>
@@ -129,6 +130,14 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
     quinary_entry = new GuiTextEntry(box, "QUINARY", "");
     quinary_entry->setPosition(x + 190, 440)->setSize(500, 30);
 
+    preview_toggle = new GuiToggleButton(
+        box,
+        "MAP_PREVIEW",
+        tr("content_editor", "Preview on radar"),
+        [this](bool value) { preview_enabled = value; }
+    );
+    preview_toggle->setPosition(x, 360)->setSize(250, 40)->hide();
+
     (new GuiButton(box, "SAVE", tr("content_editor", "Save"), [this]() { saveResource(); }))
         ->setPosition(x, 490)->setSize(150, 45);
     (new GuiButton(box, "EXPORT", tr("content_editor", "Export"), [this]() { exportToClipboard(); }))
@@ -171,6 +180,12 @@ bool GuiContentEditor::onMouseDown(sp::io::Pointer::Button, glm::vec2, sp::io::P
     return true;
 }
 
+const MapDocument* GuiContentEditor::previewDocument() const
+{
+    if (!preview_enabled || current_type != ContentResourceType::Map) return nullptr;
+    return &clean_snapshot.map_document;
+}
+
 void GuiContentEditor::requestSetType(ContentResourceType type)
 {
     if (type == current_type)
@@ -209,6 +224,13 @@ void GuiContentEditor::updateFieldPresentation(ContentResourceType type)
         field_labels[index]->setText(labels[index]);
         field_labels[index]->setVisible(!labels[index].empty());
         field_entries[index]->setVisible(!labels[index].empty());
+    }
+    const bool is_map = type == ContentResourceType::Map;
+    preview_toggle->setVisible(is_map);
+    if (!is_map)
+    {
+        preview_enabled = false;
+        preview_toggle->setValue(false);
     }
 }
 
@@ -278,6 +300,7 @@ void GuiContentEditor::clearForm()
     tertiary_entry->setText("");
     quaternary_entry->setText("");
     quinary_entry->setText("");
+    clean_snapshot = ContentResource{};
     clean_snapshot = formResource();
     syncListSelection();
     setStatus(tr("content_editor", "Create a resource or import one from the clipboard."));

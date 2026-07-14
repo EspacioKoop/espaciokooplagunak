@@ -6,6 +6,7 @@
 #include "gameGlobalInfo.h"
 #include "objectCreationView.h"
 #include "contentEditor.h"
+#include "content/mapPreview.h"
 #include "globalMessageEntryView.h"
 #include "tweak.h"
 #include "clipboard.h"
@@ -36,6 +37,8 @@
 #include "gui/gui2_panel.h"
 #include "gui/gui2_keyvaluedisplay.h"
 #include "gui/gui2_textentry.h"
+
+#include <cmath>
 
 static std::vector<std::pair<string, string>> getGMInfo(sp::ecs::Entity entity)
 {
@@ -88,6 +91,39 @@ GameMasterScreen::GameMasterScreen(RenderLayer* render_layer)
         ->setOverlayCallback(
             [this](sp::RenderTarget& renderer)
             {
+                if (content_editor)
+                {
+                    if (const auto* document = content_editor->previewDocument())
+                    {
+                        std::vector<MapPreviewMarker> markers;
+                        if (buildMapPreviewMarkers(*document, main_radar->getScale(), markers)
+                            == MapDocumentError::None)
+                        {
+                            constexpr float degrees_to_radians = 0.017453292519943295769f;
+                            for (const auto& marker : markers)
+                            {
+                                const auto position = main_radar->worldToScreen({marker.x, marker.y});
+                                if (marker.kind == MapPreviewMarkerKind::Nebula)
+                                {
+                                    renderer.fillCircle(position, marker.radius_pixels, glm::u8vec4(120, 80, 255, 36));
+                                    renderer.drawCircleOutline(position, marker.radius_pixels, 2.0f, glm::u8vec4(180, 150, 255, 160));
+                                    continue;
+                                }
+
+                                renderer.fillCircle(position, marker.radius_pixels, glm::u8vec4(255, 190, 60, 48));
+                                renderer.drawCircleOutline(position, marker.radius_pixels, 2.0f, glm::u8vec4(255, 220, 120, 200));
+                                const float angle = marker.rotation * degrees_to_radians;
+                                const glm::vec2 direction(std::cos(angle), std::sin(angle));
+                                renderer.drawLine(
+                                    position,
+                                    position + direction * marker.radius_pixels,
+                                    glm::u8vec4(255, 240, 180, 200)
+                                );
+                            }
+                        }
+                    }
+                }
+
                 const bool is_short_range = main_radar->getDistance() <= SHORT_RANGE_DISTANCE;
                 float bar_width = is_short_range ? 60.0f : 30.0f;
                 float bar_height = is_short_range ? 5.0f : 2.0f;

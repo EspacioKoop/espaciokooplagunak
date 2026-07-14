@@ -71,6 +71,15 @@ def test_state_envia_lua_de_estado_al_juego(client, juego, auth):
     assert "speed > 0.01" in juego.ultimo_lua
 
 
+def test_state_pide_coolant_y_dotacion_de_reparacion(client, juego, auth):
+    juego.text = '{"ship":null}'
+    client.get("/v1/state", headers=auth)
+    assert "getSystemCoolant" in juego.ultimo_lua
+    assert "getRepairCrewCount" in juego.ultimo_lua
+    assert '"coolant"' in juego.ultimo_lua
+    assert '"repair_crew"' in juego.ultimo_lua
+
+
 def test_scenario_requiere_auth(client, juego):
     r = client.get("/v1/scenario")
     assert r.status_code == 401

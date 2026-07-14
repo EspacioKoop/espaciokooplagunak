@@ -50,6 +50,23 @@ def test_set_system_power_genera_lua(client, juego, auth):
     assert 'commandSetSystemPowerRequest("impulse", 1.500)' in juego.ultimo_lua
 
 
+def test_set_system_health_genera_lua(client, juego, auth):
+    r = client.post(
+        CMD, headers=auth, json={"op": "set_system_health", "system": "impulse", "value": -1.0}
+    )
+    assert r.status_code == 200
+    assert 'setSystemHealth("impulse", -1.000)' in juego.ultimo_lua
+    assert "getPlayerShip(-1)" in juego.ultimo_lua
+
+
+def test_set_system_health_repara_a_tope(client, juego, auth):
+    r = client.post(
+        CMD, headers=auth, json={"op": "set_system_health", "system": "warp", "value": 1.0}
+    )
+    assert r.status_code == 200
+    assert 'setSystemHealth("warp", 1.000)' in juego.ultimo_lua
+
+
 def test_set_pause_genera_solo_lua_fijo(client, juego, auth):
     r = client.post(CMD, headers=auth, json={"op": "set_pause", "paused": True})
     assert r.status_code == 200
@@ -104,6 +121,23 @@ def test_heading_fuera_de_rango_rechazado(client, juego, auth):
 def test_sistema_no_permitido_rechazado(client, juego, auth):
     r = client.post(
         CMD, headers=auth, json={"op": "set_system_power", "system": "warpcore", "level": 1.0}
+    )
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+@pytest.mark.parametrize("valor", [-1.001, 1.001, 5, -100])
+def test_system_health_fuera_de_rango_rechazado(client, juego, auth, valor):
+    r = client.post(
+        CMD, headers=auth, json={"op": "set_system_health", "system": "impulse", "value": valor}
+    )
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+def test_system_health_sistema_no_permitido_rechazado(client, juego, auth):
+    r = client.post(
+        CMD, headers=auth, json={"op": "set_system_health", "system": "hull", "value": -1.0}
     )
     assert r.status_code == 422
     assert not juego.llamadas

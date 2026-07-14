@@ -163,21 +163,22 @@ end
 local systems = {}
 for _, name in ipairs({%s}) do
     systems[#systems + 1] = string.format(
-        '"%%s":{"health":%%.3f,"heat":%%.3f,"power":%%.3f}',
+        '"%%s":{"health":%%.3f,"heat":%%.3f,"power":%%.3f,"coolant":%%.3f}',
         name, ship:getSystemHealth(name), ship:getSystemHeat(name),
-        ship:getSystemPower(name))
+        ship:getSystemPower(name), ship:getSystemCoolant(name))
 end
 return string.format(
     '{"ship":{"callsign":%%q,"position":{"x":%%.1f,"y":%%.1f},"heading":%%.2f,'
     .. '"velocity":{"x":%%.2f,"y":%%.2f},"destination":%%s,'
     .. '"distance_to_destination":%%s,"eta_seconds":%%s,'
     .. '"hull":%%.1f,"hull_max":%%.1f,"energy":%%.1f,"energy_max":%%.1f,'
-    .. '"shields_active":%%s,"systems":{%%s}}}',
+    .. '"shields_active":%%s,"repair_crew":%%d,"systems":{%%s}}}',
     ship:getCallSign() or "?", x, y, ship:getHeading(), vx, vy,
     destination_json, distance_json, eta_json,
     ship:getHull(), ship:getHullMax(),
     ship:getEnergyLevel(), ship:getEnergyLevelMax(),
-    tostring(ship:getShieldsActive()), table.concat(systems, ","))
+    tostring(ship:getShieldsActive()), ship:getRepairCrewCount(),
+    table.concat(systems, ","))
 """ % ", ".join(f'"{name}"' for name in _SYSTEMS)
 
 _SCENARIO_LUA = """
@@ -333,6 +334,28 @@ class SetSystemPower(BaseModel):
         )
 
 
+class SetSystemHealth(BaseModel):
+    """Avería (o reparación) directa de un sistema: palanca narrativa del GM.
+
+    Rango -1.0..1.0, el del propio juego (`setSystemHealth` en
+    scripts/api/entity/spaceship.lua): bajo 0.0 el sistema queda inutilizado.
+    Es una escritura GM sobre la verdad de la nave — la REPARACIÓN normal
+    sigue siendo trabajo de la tripulación en su estación de ingeniería; el
+    puente solo publica el progreso vía health/coolant/repair_crew en /v1/state.
+    """
+
+    op: Literal["set_system_health"]
+    system: SystemName
+    # strict=True: sin coacción de booleanos (true → 1.0 sería una reparación
+    # total silenciosa); acepta enteros/decimales JSON, rechaza bool y cadenas.
+    value: Annotated[float, Field(strict=True, ge=-1.0, le=1.0)]
+
+    def lua(self) -> str:
+        return _command_lua(
+            f'ship:setSystemHealth("{self.system.value}", {self.value:.3f})'
+        )
+
+
 class SetPause(BaseModel):
     op: Literal["set_pause"]
     paused: StrictBool
@@ -343,7 +366,15 @@ class SetPause(BaseModel):
 
 
 Command = Annotated[
-    Union[SetImpulse, SetWarp, SetTargetHeading, SetShields, SetSystemPower, SetPause],
+    Union[
+        SetImpulse,
+        SetWarp,
+        SetTargetHeading,
+        SetShields,
+        SetSystemPower,
+        SetSystemHealth,
+        SetPause,
+    ],
     Field(discriminator="op"),
 ]
 

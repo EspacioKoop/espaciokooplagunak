@@ -129,7 +129,8 @@ Hitos verticales:
 
 - [ ] Crear un módulo de Foundry VTT para el director de juego y la tripulación.
 - [ ] Representar trayectos en tiempo real, con pausa y aceleración controladas por el director de juego.
-- [ ] Sincronizar mapa, posición, rumbo, velocidad, destino y tiempo estimado de llegada.
+- [x] Sincronizar mapa, posición, rumbo, velocidad, destino y tiempo estimado de llegada
+      (#33, #69 y #73).
 - [ ] Gestionar motores, combustible o energía, temperatura, daños, reparaciones y recursos de la nave.
 - [ ] Modelar puestos, permisos, turnos y acciones de la tripulación.
 - [ ] Permitir al director de juego introducir encuentros, anomalías, averías y cambios narrativos.

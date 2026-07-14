@@ -39,6 +39,23 @@ unset BRIDGE_TOKEN
 Los clientes del puente de mando (EmptyEpsilon/Espaciokoop Lagunak de
 escritorio) se conectan al puerto `35666` del host.
 
+## Imágenes publicadas (GHCR)
+
+El workflow [`docker-publish.yml`](../.github/workflows/docker-publish.yml)
+publica ambas imágenes en GitHub Container Registry al crear un tag `v*` (o
+por lanzamiento manual), etiquetadas con la versión y el SHA corto — nunca
+`latest` (ver «Reproducibilidad»):
+
+```bash
+docker pull ghcr.io/varotv7/espaciokooplagunak-server:<versión>
+docker pull ghcr.io/varotv7/espaciokooplagunak-bridge:<versión>
+```
+
+Para usarlas con `compose` sin compilar en local, sustituye los bloques
+`build:` de `compose.yaml` por esas referencias `image:` (o define un
+`compose.override.yaml`). El resto de la configuración (`.env`, puertos,
+healthchecks) no cambia.
+
 ## Puertos y superficie de exposición
 
 | Puerto | Servicio | Publicado | Notas |

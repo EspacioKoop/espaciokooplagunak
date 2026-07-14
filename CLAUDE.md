@@ -68,10 +68,29 @@ cmake --build build --parallel
 find scripts -type f -iname '*.lua' -print0 | xargs -0 -n 1 luac -p
 ```
 
-No hay suite de tests unitarios: la CI (`.github/workflows/cicd.yml`) son builds Linux/macOS/
-Windows-cross más el `luac -p` anterior. Tras compilar, la prueba es manual: localizar el binario
-bajo `build/`, crear partida local y, si el cambio toca red/multijugador, conectar al menos dos
-estaciones — documentando escenario, pasos y resultado en el PR.
+Hay TRES suites de tests propias del fork — ejecútalas siempre que toques su área, y no
+confundas «no está en CI todavía» con «no existe»:
+
+```bash
+# C++ (CTest): codec y almacén del editor de contenido. EN CI: docker/build.sh
+# configura BUILD_CONTENT_RESOURCE_TESTS=ON y ejecuta ctest en el job Linux.
+cmake -S . -B build -G Ninja ... -DBUILD_CONTENT_RESOURCE_TESTS=ON
+ninja -C build content_resource_tests content_library_store_tests && ctest --test-dir build -R content
+
+# Python (pytest): el puente, con el juego mockeado — no necesita EmptyEpsilon vivo.
+# Solo local hoy; su job de CI está en PR (#74).
+cd bridge && pip install -r requirements-dev.txt && pytest
+
+# Node (node --test): lógica pura del módulo Foundry (sin Foundry real).
+# Solo local hoy; su workflow de CI está en PR (#77).
+node --test foundry-module/tests/*.test.mjs
+```
+
+La CI actual (`.github/workflows/cicd.yml`) ejecuta: builds Linux (con el CTest anterior
+dentro de `docker/build.sh`) / macOS / Windows-cross, más `luac -p` sobre `scripts/` (job
+LuaTest). Lo que ninguna suite cubre se prueba a mano tras compilar: localizar el binario
+bajo `build/`, crear partida local y, si el cambio toca red/multijugador, conectar al menos
+dos estaciones — documentando escenario, pasos y resultado en el PR.
 
 No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios de build.
 

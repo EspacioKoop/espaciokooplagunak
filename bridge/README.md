@@ -97,9 +97,11 @@ pip install -r requirements-dev.txt
 pytest
 ```
 
-Están pensados para correr también en CI: el PR de #22 propone un job `pytest`
-para `.github/workflows/docker.yml`, a añadir por alguien con permiso sobre
-workflows.
+En CI corren en el job «Tests del puente (pytest)» de
+[`.github/workflows/docker.yml`](../.github/workflows/docker.yml), que instala
+`lua5.3` (el mismo intérprete del job LuaTest) para que la parte adversarial
+ejecute el Lua fijo real; si faltara el intérprete, esos tests se saltan
+limpiamente en vez de fallar.
 
 ## Pendiente (v1)
 

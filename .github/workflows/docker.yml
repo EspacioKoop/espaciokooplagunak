@@ -18,7 +18,31 @@ on:
       - ".github/workflows/docker.yml"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
+  # Suite pytest del puente (simula /exec.lua; no necesita el juego): auth,
+  # límite de frecuencia, lista blanca de órdenes, eventos y contactos. Se
+  # instala lua5.3 (el mismo intérprete del job LuaTest) porque parte de la
+  # suite ejecuta el Lua fijo del puente con un intérprete real; los tests
+  # que lo requieren se saltan limpiamente si faltara.
+  pytest:
+    name: Tests del puente (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Instalar Lua
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+      - name: Instalar dependencias
+        run: python3 -m pip install -r bridge/requirements-dev.txt
+      - name: Ejecutar pytest
+        working-directory: bridge
+        run: python3 -m pytest
+
   bridge:
     name: Imagen del puente
     runs-on: ubuntu-latest

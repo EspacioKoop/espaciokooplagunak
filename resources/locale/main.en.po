@@ -4221,6 +4221,10 @@ msgid "Preview on radar"
 msgstr ""
 
 msgctxt "content_editor"
+msgid "Omitted objects (preserved): {count}"
+msgstr ""
+
+msgctxt "content_editor"
 msgid "Private library loaded."
 msgstr ""
 

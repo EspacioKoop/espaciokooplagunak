@@ -3999,6 +3999,10 @@ msgid "Preview on radar"
 msgstr "Previsualizar en el radar"
 
 msgctxt "content_editor"
+msgid "Omitted objects (preserved): {count}"
+msgstr "Objetos omitidos (conservados): {count}"
+
+msgctxt "content_editor"
 msgid "Private library loaded."
 msgstr "Biblioteca privada cargada."
 

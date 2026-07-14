@@ -2,6 +2,7 @@
 
 #include "mapDocument.h"
 
+#include <cstddef>
 #include <vector>
 
 enum class MapPreviewMarkerKind
@@ -23,6 +24,8 @@ struct MapPreviewMarker
 constexpr float MAP_PREVIEW_ASTEROID_MIN_RADIUS_PIXELS = 3.0f;
 constexpr float MAP_PREVIEW_ASTEROID_MAX_RADIUS_PIXELS = 64.0f;
 constexpr float MAP_PREVIEW_NEBULA_RADIUS_PIXELS = 28.0f;
+
+std::size_t countUnsupportedMapPreviewObjects(const MapDocument& document);
 
 MapDocumentError buildMapPreviewMarkers(
     const MapDocument& document,

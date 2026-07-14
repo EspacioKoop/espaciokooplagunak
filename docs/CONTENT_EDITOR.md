@@ -25,8 +25,9 @@ tipos de recursos sin editar Lua:
    confirmación se invalida si cambia el formulario o se elige otra acción.
 10. En mapas, **Preview on radar** activa una capa read-only sobre el radar GM.
     Asteroides y nebulosas se muestran semitransparentes; los tipos futuros se
-    conservan pero no se interpretan ni dibujan. El preview persiste al cerrar el
-    modal y sigue el pan/zoom del radar.
+    conservan pero no se interpretan ni dibujan. Si existen, el editor muestra
+    junto al toggle cuántos objetos se omiten sin dejar de conservarlos. El
+    preview persiste al cerrar el modal y sigue el pan/zoom del radar.
 11. **Export file** escribe el recurso en la carpeta de exportaciones gestionada.
     Si el archivo ya existe, exige una segunda pulsación.
 12. **Import inbox** permite elegir un JSON depositado en la bandeja gestionada.
@@ -175,8 +176,8 @@ El editor crea, valida, persiste e intercambia metadatos declarativos de los cua
 Los mapas tienen modelo separado del ECS, sesión transaccional de staging con undo,
 redo, dirty state y rollback, y preview read-only sobre el radar GM. El preview no
 crea ni modifica entidades: solo proyecta asteroides y nebulosas de la allowlist;
-los tipos futuros opacos se omiten visualmente sin perderse. La siguiente fase
-mantendrá la misma envoltura versionada:
+los tipos futuros opacos se omiten visualmente sin perderse y su recuento queda
+visible en el editor. La siguiente fase mantendrá la misma envoltura versionada:
 
 - aplicación tipada al mundo con autorización GM y rollback, sin Lua importado
   ([#54](https://github.com/VaroTv7/espaciokooplagunak/issues/54));

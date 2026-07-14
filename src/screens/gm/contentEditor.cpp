@@ -1,5 +1,6 @@
 #include "contentEditor.h"
 #include "clipboard.h"
+#include "content/mapPreview.h"
 #include "i18n.h"
 #include "gui/gui2_button.h"
 #include "gui/gui2_label.h"
@@ -137,6 +138,8 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
         [this](bool value) { preview_enabled = value; }
     );
     preview_toggle->setPosition(x, 360)->setSize(250, 40)->hide();
+    preview_status_label = new GuiLabel(box, "MAP_PREVIEW_STATUS", "", 16);
+    preview_status_label->setPosition(x + 270, 360)->setSize(420, 40)->hide();
 
     (new GuiButton(box, "SAVE", tr("content_editor", "Save"), [this]() { saveResource(); }))
         ->setPosition(x, 490)->setSize(150, 45);
@@ -232,6 +235,7 @@ void GuiContentEditor::updateFieldPresentation(ContentResourceType type)
         preview_enabled = false;
         preview_toggle->setValue(false);
     }
+    updatePreviewStatus();
 }
 
 void GuiContentEditor::refreshList()
@@ -302,6 +306,7 @@ void GuiContentEditor::clearForm()
     quinary_entry->setText("");
     clean_snapshot = ContentResource{};
     clean_snapshot = formResource();
+    updatePreviewStatus();
     syncListSelection();
     setStatus(tr("content_editor", "Create a resource or import one from the clipboard."));
 }
@@ -337,6 +342,7 @@ void GuiContentEditor::loadResource(int index)
     quaternary_entry->setText(resource.quaternary);
     quinary_entry->setText(resource.quinary);
     clean_snapshot = resource;
+    updatePreviewStatus();
     pending_import = "";
     pending_save = "";
     pending_delete_key = "";
@@ -430,6 +436,7 @@ void GuiContentEditor::saveResource()
     resources = std::move(candidate);
     selected_index = target_index;
     clean_snapshot = resource;
+    updatePreviewStatus();
     pending_import = "";
     pending_save = "";
     pending_delete_key = "";
@@ -689,4 +696,17 @@ string GuiContentEditor::storeErrorText(ContentStoreError error) const
 void GuiContentEditor::setStatus(const string& text)
 {
     status_label->setText(text);
+}
+
+void GuiContentEditor::updatePreviewStatus()
+{
+    const auto count = current_type == ContentResourceType::Map
+        ? countUnsupportedMapPreviewObjects(clean_snapshot.map_document)
+        : 0;
+    preview_status_label->setVisible(count > 0);
+    if (count > 0)
+        preview_status_label->setText(
+            tr("content_editor", "Omitted objects (preserved): {count}")
+                .format({{"count", string(static_cast<unsigned int>(count))}})
+        );
 }

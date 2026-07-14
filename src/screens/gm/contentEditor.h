@@ -58,6 +58,7 @@ private:
     GuiTextEntry* quinary_entry;
     GuiLabel* status_label;
     GuiToggleButton* preview_toggle;
+    GuiLabel* preview_status_label;
 
     void requestSetType(ContentResourceType type);
     void setType(ContentResourceType type);
@@ -84,4 +85,5 @@ private:
     string errorText(ContentResourceError error) const;
     string storeErrorText(ContentStoreError error) const;
     void setStatus(const string& text);
+    void updatePreviewStatus();
 };

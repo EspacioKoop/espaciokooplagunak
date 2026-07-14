@@ -41,6 +41,9 @@ int main()
     future.opaque_json = R"({"id":"future-a","kind":"future","payload":{"safe":true}})";
     document.objects.push_back(std::move(future));
 
+    expect(countUnsupportedMapPreviewObjects(document) == 1,
+        "unsupported objects are counted for an explicit preview warning");
+
     std::vector<MapPreviewMarker> markers;
     expect(buildMapPreviewMarkers(document, 0.5f, markers) == MapDocumentError::None,
         "valid document projects");
@@ -57,6 +60,8 @@ int main()
 
     MapDocument tiny;
     tiny.objects.push_back(object("tiny", MapObjectKind::Asteroid, 0.0f, 0.0f, MAP_ASTEROID_MIN_SIZE));
+    expect(countUnsupportedMapPreviewObjects(tiny) == 0,
+        "supported-only documents do not produce a warning count");
     expect(buildMapPreviewMarkers(tiny, 0.0001f, markers) == MapDocumentError::None
             && markers[0].radius_pixels == MAP_PREVIEW_ASTEROID_MIN_RADIUS_PIXELS,
         "asteroid marker clamps minimum pixel radius");

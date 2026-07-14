@@ -4,6 +4,15 @@
 #include <cmath>
 #include <utility>
 
+std::size_t countUnsupportedMapPreviewObjects(const MapDocument& document)
+{
+    return static_cast<std::size_t>(std::count_if(
+        document.objects.begin(),
+        document.objects.end(),
+        [](const MapObject& object) { return object.kind == MapObjectKind::Unsupported; }
+    ));
+}
+
 MapDocumentError buildMapPreviewMarkers(
     const MapDocument& document,
     float world_to_screen_scale,

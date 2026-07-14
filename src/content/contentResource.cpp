@@ -206,7 +206,8 @@ nlohmann::json resourceDocument(const ContentResource& resource)
                   {"transitions", resource.quinary}};
         break;
     case ContentResourceType::Map:
-        fields = {{"scenario_file", resource.primary}, {"recommended_players", resource.secondary}};
+        fields = {{"scenario_file", resource.primary}, {"recommended_players", resource.secondary},
+                  {"objects", mapDocumentObjectsJson(resource.map_document)}};
         break;
     case ContentResourceType::Character:
         fields = {{"crew_position_id", resource.primary}, {"callsign", resource.secondary},
@@ -259,6 +260,8 @@ ContentResourceError validateContentResource(const ContentResource& resource)
     if ((resource.type == ContentResourceType::Map || resource.type == ContentResourceType::Ship)
         && (!resource.tertiary.empty() || !resource.quaternary.empty() || !resource.quinary.empty()))
         return ContentResourceError::UnknownTypeFields;
+    if (resource.type != ContentResourceType::Map && !resource.map_document.objects.empty())
+        return ContentResourceError::InvalidMapDocument;
 
     if (resource.type == ContentResourceType::Campaign)
     {
@@ -283,6 +286,9 @@ ContentResourceError validateContentResource(const ContentResource& resource)
         return ContentResourceError::UnsafeScenarioFile;
     if (resource.type == ContentResourceType::Map && !validPlayerCount(resource.secondary))
         return ContentResourceError::InvalidPlayerCount;
+    if (resource.type == ContentResourceType::Map
+        && validateMapDocument(resource.map_document) != MapDocumentError::None)
+        return ContentResourceError::InvalidMapDocument;
     if (resource.type == ContentResourceType::Character)
     {
         if (!resource.primary.empty() && !validCrewPosition(resource.primary))
@@ -382,6 +388,8 @@ ContentResourceError parseContentResource(const std::string& input, ContentResou
     case ContentResourceType::Ship: keys = {"template", "faction"}; break;
     }
     std::set<std::string> allowed_fields(keys.begin(), keys.end());
+    if (candidate.type == ContentResourceType::Map && version >= 3)
+        allowed_fields.insert("objects");
     for (auto it = fields_it->begin(); it != fields_it->end(); ++it)
         if (!allowed_fields.count(it.key())) return ContentResourceError::UnknownTypeFields;
     std::string* outputs[] = {&candidate.primary, &candidate.secondary, &candidate.tertiary,
@@ -390,6 +398,13 @@ ContentResourceError parseContentResource(const std::string& input, ContentResou
     {
         const auto result = readString(*fields_it, keys[index], *outputs[index], 1000);
         if (result != ContentResourceError::None) return result;
+    }
+    if (candidate.type == ContentResourceType::Map && version >= 3)
+    {
+        const auto objects_it = fields_it->find("objects");
+        if (objects_it == fields_it->end()
+            || parseMapDocumentObjects(*objects_it, candidate.map_document) != MapDocumentError::None)
+            return ContentResourceError::InvalidMapDocument;
     }
 
     if (version == 1 && candidate.type == ContentResourceType::Character)

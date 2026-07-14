@@ -616,6 +616,8 @@ string GuiContentEditor::errorText(ContentResourceError error) const
         return tr("content_editor", "Scenario file must be a safe scenario_*.lua filename.");
     case ContentResourceError::InvalidPlayerCount:
         return tr("content_editor", "Recommended player count must be between 1 and 64.");
+    case ContentResourceError::InvalidMapDocument:
+        return tr("content_editor", "Imported document has invalid type-specific fields.");
     }
     return tr("content_editor", "Clipboard does not contain valid content JSON.");
 }

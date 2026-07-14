@@ -1,0 +1,66 @@
+name: Publicar imágenes Docker
+
+# Publica en GHCR las dos imágenes del despliegue (docker/README.md):
+#   ghcr.io/<owner>/espaciokooplagunak-server  — servidor headless (build
+#     reproducible contra el SERIOUS_PROTON_REF fijado en docker/Dockerfile)
+#   ghcr.io/<owner>/espaciokooplagunak-bridge  — puente Foundry VTT
+#
+# Solo con tag v* o lanzamiento manual: la imagen del servidor compila todo el
+# juego, y publicar por commit sería caro y sin semántica de versión. Nunca se
+# etiqueta `latest` (convención de docker/README.md: despliegues estables
+# siempre con versión explícita).
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    name: ${{ matrix.image.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image:
+          - name: server
+            dockerfile: docker/Dockerfile
+            context: .
+          - name: bridge
+            dockerfile: bridge/Dockerfile
+            context: bridge
+    # Todas las actions fijadas a SHA completo: este job tiene un token con
+    # `packages: write`, y un tag móvil (vN) permitiría a una action alterada
+    # leerlo o publicar imágenes sustituidas.
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: meta
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/espaciokooplagunak-${{ matrix.image.name }}
+          # Sin `latest`: versión del tag git (o `manual` en dispatch) + SHA corto.
+          flavor: |
+            latest=false
+          tags: |
+            type=semver,pattern={{version}}
+            type=raw,value=manual,enable=${{ github.event_name == 'workflow_dispatch' }}
+            type=sha
+      - uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: ${{ matrix.image.context }}
+          file: ${{ matrix.image.dockerfile }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.image.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image.name }}

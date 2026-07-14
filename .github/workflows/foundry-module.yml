@@ -1,0 +1,38 @@
+name: Foundry module
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "foundry-module/**"
+      - ".github/workflows/foundry-module.yml"
+  pull_request:
+    paths:
+      - "foundry-module/**"
+      - ".github/workflows/foundry-module.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Tests del módulo Foundry (Node)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Comprobar sintaxis JavaScript
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s globstar nullglob
+          files=(foundry-module/scripts/**/*.mjs foundry-module/tests/**/*.mjs)
+          ((${#files[@]} > 0))
+          for file in "${files[@]}"; do
+            node --check "$file"
+          done
+      - name: Ejecutar tests del módulo
+        run: node --test foundry-module/tests/*.test.mjs

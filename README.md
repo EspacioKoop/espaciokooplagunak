@@ -219,6 +219,7 @@ Espaciokoop Lagunak no está afiliado ni respaldado oficialmente por el equipo d
 - [EmptyEpsilon oficial](https://github.com/daid/EmptyEpsilon)
 - [Web y manual oficial](https://daid.github.io/EmptyEpsilon/)
 - [Guía de contribución del fork](CONTRIBUTING.md)
+- [Asistente de instalación](docs/INSTALACION.md)
 - [Compilación](docs/BUILDING.md)
 - [Prueba individual de «Primera guardia»](docs/PRUEBA-INDIVIDUAL.md)
 - [Despliegue con Docker](docker/README.md)

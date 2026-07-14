@@ -51,10 +51,33 @@ docker pull ghcr.io/varotv7/espaciokooplagunak-server:<versión>
 docker pull ghcr.io/varotv7/espaciokooplagunak-bridge:<versión>
 ```
 
-Para usarlas con `compose` sin compilar en local, sustituye los bloques
-`build:` de `compose.yaml` por esas referencias `image:` (o define un
-`compose.override.yaml`). El resto de la configuración (`.env`, puertos,
-healthchecks) no cambia.
+Para usarlas con `compose` sin compilar en local no basta con sobrescribir
+`image:` en un override: Compose fusiona los ficheros y **conserva** el bloque
+`build:` del fichero base, así que `docker compose up` seguiría pudiendo
+compilar. Hay que anular `build:` explícitamente con el tag YAML
+[`!reset`](https://docs.docker.com/reference/compose-file/merge/#reset-value)
+de la sintaxis de fusión (Docker Compose v2 moderno; probado con v5.3.1 —
+la documentación oficial no publica una versión mínima explícita):
+
+```yaml
+# docker/compose.override.yaml
+services:
+  game:
+    image: ghcr.io/varotv7/espaciokooplagunak-server:<versión>
+    build: !reset null
+  bridge:
+    image: ghcr.io/varotv7/espaciokooplagunak-bridge:<versión>
+    build: !reset null
+```
+
+Comprueba el modelo resultante antes de levantar nada — no debe quedar ningún
+bloque `build:` y ambas `image:` deben apuntar a GHCR:
+
+```bash
+docker compose config | grep -E "build:|image:"
+```
+
+El resto de la configuración (`.env`, puertos, healthchecks) no cambia.
 
 ## Puertos y superficie de exposición
 

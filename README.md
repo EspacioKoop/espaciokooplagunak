@@ -116,7 +116,7 @@ El roadmap refleja intención, no promesas. Los cambios se concretarán mediante
 - [x] Implementar un puente que solo permita operaciones autorizadas y nunca exponga `/exec.lua` directamente.
 - [x] Añadir autenticación, validación de mensajes, límites y comprobaciones de salud.
 
-**Criterio de salida:** el servidor arranca de forma reproducible y el puente puede leer un estado seguro sin permitir ejecución Lua arbitraria desde Foundry. **Cumplido y verificado (2026-07-12)**, reproducido en más de un entorno (nativo Ubuntu 24.04 y Arch/CachyOS — issue #14 —, y en contenedor vía compose); queda pendiente publicar imágenes y añadir el smoke test en CI.
+**Criterio de salida:** el servidor arranca de forma reproducible y el puente puede leer un estado seguro sin permitir ejecución Lua arbitraria desde Foundry. **Cumplido y verificado (2026-07-12)**, reproducido en más de un entorno (nativo Ubuntu 24.04 y Arch/CachyOS — issue #14 —, y en contenedor vía compose). Los dos flecos posteriores quedaron cerrados el 2026-07-14: el puente se prueba en CI (job pytest del workflow Docker, PR #74) y las imágenes del servidor y del puente se publican en GHCR con cada tag `v*` o lanzamiento manual (`docker-publish.yml`, PR #83 / issue #82).
 
 ### Fase 3 — Integración prioritaria con Foundry VTT
 
@@ -208,6 +208,13 @@ Los agentes de IA deben leer además [`AGENTS.md`](AGENTS.md) antes de modificar
 
 La incorporación de cambios de EmptyEpsilon se realiza de forma explícita y sin `push --force`. Procedimiento completo: [`docs/UPSTREAM.md`](docs/UPSTREAM.md).
 
+## Créditos del fork
+
+Espaciokoop Lagunak cuenta con un equipo colaborativo humano–IA formado por
+**Varo**, **Eloy «Gurucharri»**, **OTACON** y **Claude Fable 5**, la IA de apoyo
+técnico de Gurucharri. Funciones, atribución y reconocimiento del proyecto
+original: [`CREDITS.md`](CREDITS.md).
+
 ## Licencia y atribución
 
 Este repositorio deriva de EmptyEpsilon y conserva su licencia **GNU General Public License, versión 2**. Consulta [`LICENSE`](LICENSE). Los autores originales mantienen la autoría de sus contribuciones; los cambios del fork pertenecen a sus respectivos contribuidores bajo la misma licencia aplicable.
@@ -219,6 +226,7 @@ Espaciokoop Lagunak no está afiliado ni respaldado oficialmente por el equipo d
 - [EmptyEpsilon oficial](https://github.com/daid/EmptyEpsilon)
 - [Web y manual oficial](https://daid.github.io/EmptyEpsilon/)
 - [Guía de contribución del fork](CONTRIBUTING.md)
+- [Asistente de instalación](docs/INSTALACION.md)
 - [Compilación](docs/BUILDING.md)
 - [Prueba individual de «Primera guardia»](docs/PRUEBA-INDIVIDUAL.md)
 - [Despliegue con Docker](docker/README.md)

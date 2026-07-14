@@ -50,8 +50,17 @@ objetos había realmente en radio.
 {"op": "set_target_heading", "heading": 90.0}
 {"op": "set_shields",        "active": true}
 {"op": "set_system_power",   "system": "impulse", "level": 1.5}
+{"op": "set_system_health",  "system": "impulse", "value": -0.75}
 {"op": "set_pause",          "paused": true}
 ```
+
+**`set_system_health` es la palanca de avería del GM**, no un panel de
+ingeniería: escribe la salud real de un sistema (rango del juego `-1.0..1.0`;
+bajo `0.0` el sistema queda inutilizado) para infligir una avería como
+encuentro narrativo — o revertirla. La reparación normal sigue siendo trabajo
+de la tripulación en su estación de ingeniería; el GM la *observa* por
+`/v1/state`, que publica `coolant` por sistema y `repair_crew` global además
+de `health`/`heat`/`power`.
 
 Cualquier otra operación devuelve `422`. Añadir una orden nueva implica
 añadir un modelo validado en `app.py` y documentarla aquí — nunca un
@@ -97,9 +106,11 @@ pip install -r requirements-dev.txt
 pytest
 ```
 
-Están pensados para correr también en CI: el PR de #22 propone un job `pytest`
-para `.github/workflows/docker.yml`, a añadir por alguien con permiso sobre
-workflows.
+En CI corren en el job «Tests del puente (pytest)» de
+[`.github/workflows/docker.yml`](../.github/workflows/docker.yml), que instala
+`lua5.3` (el mismo intérprete del job LuaTest) para que la parte adversarial
+ejecute el Lua fijo real; si faltara el intérprete, esos tests se saltan
+limpiamente en vez de fallar.
 
 ## Pendiente (v1)
 

@@ -716,7 +716,8 @@ if(BUILD_CONTENT_RESOURCE_TESTS)
     add_executable(content_resource_tests
         tests/contentResourceTests.cpp
         src/content/contentResource.cpp
-        src/content/contentResource.h)
+        src/crewPosition.cpp
+    )
     target_include_directories(content_resource_tests PRIVATE
         "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>")
     target_link_libraries(content_resource_tests PRIVATE seriousproton)
@@ -726,6 +727,7 @@ if(BUILD_CONTENT_RESOURCE_TESTS)
         tests/contentLibraryStoreTests.cpp
         src/content/contentLibraryStore.cpp
         src/content/contentResource.cpp
+        src/crewPosition.cpp
     )
     target_include_directories(content_library_store_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
     target_link_libraries(content_library_store_tests PRIVATE seriousproton)
@@ -791,7 +793,8 @@ if(Python3_Interpreter_FOUND)
         "${CMAKE_SOURCE_DIR}/src/script/*.cpp"
         "${CMAKE_SOURCE_DIR}/scripts/api/*.lua"
         "${CMAKE_SOURCE_DIR}/script_docs/*.py"
-        "${CMAKE_SOURCE_DIR}/script_docs/template.html")
+        "${CMAKE_SOURCE_DIR}/script_docs/template.html"
+        "${CMAKE_SOURCE_DIR}/script_docs/vendor/*")
     add_custom_command(
         OUTPUT "${SCRIPT_REFERENCE_HTML}"
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/script_docs/main.py "${SCRIPT_REFERENCE_HTML}"

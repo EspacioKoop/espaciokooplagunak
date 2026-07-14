@@ -62,3 +62,12 @@ std::optional<CrewPosition> tryParseCrewPosition(string value) {
     else
         return {};
 }
+
+bool isCanonicalCrewPositionId(const std::string& value)
+{
+    for (int index = 0; index < static_cast<int>(CrewPosition::MAX); ++index)
+    {
+        if (crewPositionToString(static_cast<CrewPosition>(index)) == value.c_str()) return true;
+    }
+    return false;
+}

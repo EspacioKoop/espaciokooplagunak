@@ -792,6 +792,8 @@ ContentStoreError ContentLibraryStore::commitDocument(const std::string& data)
 ContentStoreError ContentLibraryStore::save(const std::vector<ContentResource>& resources)
 {
     if (resources.size() > MAX_RESOURCES) return ContentStoreError::FileTooLarge;
+    if (validateContentLibrary(resources) != ContentResourceError::None)
+        return ContentStoreError::InvalidData;
     std::vector<ContentResource> sorted = resources;
     std::sort(sorted.begin(), sorted.end(), [](const ContentResource& left, const ContentResource& right) {
         return resourceKey(left) < resourceKey(right);
@@ -982,7 +984,10 @@ ContentStoreError ContentLibraryStore::importFromInbox(const std::string& filena
 }
 
 ContentStoreError ContentLibraryStore::exportResource(
-    const ContentResource& resource, bool overwrite, std::string& filename)
+    const ContentResource& resource,
+    const std::vector<ContentResource>& library,
+    bool overwrite,
+    std::string& filename)
 {
     if (validateContentResource(resource) != ContentResourceError::None)
         return ContentStoreError::InvalidData;
@@ -1004,7 +1009,7 @@ ContentStoreError ContentLibraryStore::exportResource(
         if (!fs::is_regular_file(destination_status)) return ContentStoreError::NotRegularFile;
         if (!overwrite) return ContentStoreError::AlreadyExists;
     }
-    result = writeSynced(temporary, serializeContentResource(resource, 2) + "\n");
+    result = writeSynced(temporary, serializeContentResourceExport(resource, library, 2) + "\n");
     if (result != ContentStoreError::None) return result;
     if (fault == ContentStoreFault::InterruptAfterTempSync) return ContentStoreError::Interrupted;
 

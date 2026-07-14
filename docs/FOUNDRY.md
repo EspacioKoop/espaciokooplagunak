@@ -221,8 +221,25 @@ La primera integración debe demostrar valor sin intentar cubrir toda una campa�
 
 - capacidades reales del modo servidor o sin interfaz de EmptyEpsilon;
 - escala temporal y reglas de aceleración;
-- modelo de motores, combustible, energía y recursos;
 - autenticación para red local y posibles despliegues remotos;
 - persistencia, copias de seguridad y migraciones del estado de viaje.
 
 Estas decisiones se resolverán mediante issues antes de fijar una API estable.
+
+### Resuelta: motores, combustible, energía y recursos (issue #80)
+
+- **La energía de EmptyEpsilon es el recurso consumible v0**: la batería del
+  reactor (`energy`/`energy_max` en `/v1/state`) ya se drena con warp, salto y
+  sistemas. No se inventa un «combustible» paralelo mientras ninguna mesa haya
+  sentido su falta.
+- Si una campaña exige un recurso distinto de la batería, su hogar será
+  **estado del escenario Lua** (un contador que el escenario posee y publica) —
+  nunca del puente (traduce, no posee estado) ni de Foundry (no manda sobre la
+  verdad de la nave).
+- **Las averías son la palanca narrativa del GM**: la orden de lista blanca
+  `set_system_health` inflige o revierte una avería desde Foundry. La
+  **reparación es de la tripulación** en su estación real de ingeniería; el GM
+  la observa por `/v1/state` (`health`, `coolant` por sistema y `repair_crew`).
+  No habrá botón de «reparar» en Foundry.
+- Órdenes de refrigeración/energía por puesto de jugador quedan para cuando
+  existan permisos por puesto (fase 3 tardía / fase 4).

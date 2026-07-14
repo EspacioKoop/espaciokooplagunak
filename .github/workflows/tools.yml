@@ -1,0 +1,36 @@
+# Tests de las herramientas de Python (tools/): asistente de instalación,
+# empaquetador del módulo de Foundry y auditor de cabeceras i18n. Job ligero
+# y separado de los builds C++: solo Python y polib (el único import de
+# terceros de estos tests; el resto de requirements-i18n son pesados y no
+# hacen falta aquí). Límite declarado: cubre Linux — la ruta nativa de
+# Windows del instalador no se ejercita en CI.
+name: Tools
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "tools/**"
+      - ".github/workflows/tools.yml"
+  pull_request:
+    paths:
+      - "tools/**"
+      - ".github/workflows/tools.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: tools/tests (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Instalar dependencias de test
+        run: python3 -m pip install pytest polib==1.2.0
+      - name: Ejecutar tests de tools/
+        run: python3 -m pytest tools/tests/ -q

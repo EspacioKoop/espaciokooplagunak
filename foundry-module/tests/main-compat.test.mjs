@@ -3,9 +3,11 @@ import test from "node:test";
 
 let importNonce = 0;
 
-async function loadModule({ modern = false, isGM = true } = {}) {
+async function loadModule({ modern = false, isGM = true, fetchImpl } = {}) {
   const hooks = {};
   const instances = [];
+  const notifications = { info: [], warn: [], error: [] };
+  const fetchCalls = [];
 
   class BaseApplication {
     static get defaultOptions() {
@@ -52,10 +54,15 @@ async function loadModule({ modern = false, isGM = true } = {}) {
   globalThis.JournalEntry = { create: async () => null };
   globalThis.ui = {
     notifications: {
-      info() {},
-      warn() {},
-      error() {},
+      info(message) { notifications.info.push(message); },
+      warn(message) { notifications.warn.push(message); },
+      error(message) { notifications.error.push(message); },
     },
+  };
+  globalThis.fetch = async (...args) => {
+    fetchCalls.push(args);
+    if (fetchImpl) return fetchImpl(...args);
+    return { ok: true, status: 200, async json() { return { ok: true }; } };
   };
   globalThis.foundry = {
     utils: {
@@ -76,11 +83,15 @@ async function loadModule({ modern = false, isGM = true } = {}) {
   }
 
   await import(`../scripts/main.mjs?compat-test=${importNonce++}`);
-  return { hooks, instances };
+  return { hooks, instances, notifications, fetchCalls };
 }
 
-test("v11 abre Application clásica y registra listeners de tempo", async () => {
-  const { hooks, instances } = await loadModule();
+function pauseValues(fetchCalls) {
+  return fetchCalls.map(([, options]) => JSON.parse(options.body).paused);
+}
+
+test("v11 conecta los listeners de pausa y reanudación con el puente", async () => {
+  const { hooks, instances, notifications, fetchCalls } = await loadModule();
   const controls = [{ name: "token", tools: [] }];
 
   hooks.getSceneControlButtons(controls);
@@ -107,12 +118,16 @@ test("v11 abre Application clásica y registra listeners de tempo", async () => 
 
   assert.equal(bindings.get('[data-action="pausar"]').event, "click");
   assert.equal(bindings.get('[data-action="reanudar"]').event, "click");
-  assert.equal(typeof bindings.get('[data-action="pausar"]').callback, "function");
-  assert.equal(typeof bindings.get('[data-action="reanudar"]').callback, "function");
+  await bindings.get('[data-action="pausar"]').callback();
+  await bindings.get('[data-action="reanudar"]').callback();
+
+  assert.deepEqual(pauseValues(fetchCalls), [true, false]);
+  assert.deepEqual(notifications.info, ["LAGUNAK.Tempo.Pausado", "LAGUNAK.Tempo.Reanudado"]);
+  assert.deepEqual(notifications.error, []);
 });
 
-test("host moderno abre ApplicationV2 y registra acciones de tempo", async () => {
-  const { hooks, instances } = await loadModule({ modern: true });
+test("host moderno conecta las acciones de pausa y reanudación con el puente", async () => {
+  const { hooks, instances, notifications, fetchCalls } = await loadModule({ modern: true });
   const controls = { tokens: { tools: {} } };
 
   hooks.getSceneControlButtons(controls);
@@ -124,6 +139,87 @@ test("host moderno abre ApplicationV2 y registra acciones de tempo", async () =>
   const actions = instances[0].constructor.DEFAULT_OPTIONS.actions;
   assert.equal(typeof actions.pausar, "function");
   assert.equal(typeof actions.reanudar, "function");
+  await actions.pausar.call(instances[0]);
+  await actions.reanudar.call(instances[0]);
+
+  assert.deepEqual(pauseValues(fetchCalls), [true, false]);
+  assert.deepEqual(notifications.info, ["LAGUNAK.Tempo.Pausado", "LAGUNAK.Tempo.Reanudado"]);
+  assert.deepEqual(notifications.error, []);
+});
+
+test("v11 muestra el error del puente sin emitir una confirmación falsa", async () => {
+  const { hooks, instances, notifications, fetchCalls } = await loadModule({
+    fetchImpl: async () => ({ ok: false, status: 503, async json() { return {}; } }),
+  });
+  const controls = [{ name: "token", tools: [] }];
+  hooks.getSceneControlButtons(controls);
+  controls[0].tools[0].onClick();
+
+  const bindings = new Map();
+  instances[0].activateListeners({
+    find(selector) {
+      return { on(_event, callback) { bindings.set(selector, callback); } };
+    },
+  });
+  await bindings.get('[data-action="pausar"]')();
+
+  assert.deepEqual(pauseValues(fetchCalls), [true]);
+  assert.deepEqual(notifications.info, []);
+  assert.deepEqual(notifications.error, ["El puente respondió 503 en /v1/command"]);
+});
+
+test("ApplicationV2 muestra el error del puente sin emitir una confirmación falsa", async () => {
+  const { hooks, instances, notifications, fetchCalls } = await loadModule({
+    modern: true,
+    fetchImpl: async () => ({ ok: false, status: 503, async json() { return {}; } }),
+  });
+  const controls = { tokens: { tools: {} } };
+  hooks.getSceneControlButtons(controls);
+  controls.tokens.tools["lagunak-estado"].onClick();
+
+  const actions = instances[0].constructor.DEFAULT_OPTIONS.actions;
+  await actions.reanudar.call(instances[0]);
+
+  assert.deepEqual(pauseValues(fetchCalls), [false]);
+  assert.deepEqual(notifications.info, []);
+  assert.deepEqual(notifications.error, ["El puente respondió 503 en /v1/command"]);
+});
+
+test("v11 bloquea la orden si el usuario deja de ser GM", async () => {
+  const { hooks, instances, notifications, fetchCalls } = await loadModule();
+  const controls = [{ name: "token", tools: [] }];
+  hooks.getSceneControlButtons(controls);
+  controls[0].tools[0].onClick();
+
+  const bindings = new Map();
+  instances[0].activateListeners({
+    find(selector) {
+      return { on(_event, callback) { bindings.set(selector, callback); } };
+    },
+  });
+  game.user.isGM = false;
+  await bindings.get('[data-action="pausar"]')();
+  await bindings.get('[data-action="reanudar"]')();
+
+  assert.deepEqual(fetchCalls, []);
+  assert.deepEqual(notifications.info, []);
+  assert.deepEqual(notifications.error, []);
+});
+
+test("ApplicationV2 bloquea la orden si el usuario deja de ser GM", async () => {
+  const { hooks, instances, notifications, fetchCalls } = await loadModule({ modern: true });
+  const controls = { tokens: { tools: {} } };
+  hooks.getSceneControlButtons(controls);
+  controls.tokens.tools["lagunak-estado"].onClick();
+  game.user.isGM = false;
+
+  const actions = instances[0].constructor.DEFAULT_OPTIONS.actions;
+  await actions.pausar.call(instances[0]);
+  await actions.reanudar.call(instances[0]);
+
+  assert.deepEqual(fetchCalls, []);
+  assert.deepEqual(notifications.info, []);
+  assert.deepEqual(notifications.error, []);
 });
 
 test("un jugador no GM no recibe ningún control", async () => {

@@ -213,15 +213,27 @@ return '{"events":[' .. table.concat(events, ",") .. ']}'
 # Foundry (starfield + puntos). Solo lectura, radio y número acotados para
 # limitar el tamaño de la respuesta. Cada accesor opcional va en pcall: objetos
 # como asteroides o nebulosas no responden a getFaction y no deben romper la
-# lista. El jugador se marca comparando indicativos, sin depender de la
-# igualdad de userdata entre manejadores de objeto.
-_CONTACTS_LUA = """
+# lista. El jugador se marca por identidad de objeto (object == ship, con __eq
+# definido en el binding de SeriousProton y usado así en los escenarios), no por
+# indicativo: dos naves con el mismo callsign no se confunden. json_escape
+# serializa cada string como JSON válido (comillas, barra inversa y caracteres
+# de control como \\u00XX); %q de Lua escapa para Lua, no para JSON, y rompía
+# la respuesta con caracteres de control. Cadena "raw" de Python para que las
+# barras invertidas lleguen intactas a Lua.
+_CONTACTS_LUA = r"""
+local function json_escape(s)
+    s = string.gsub(s, '[%c"\\]', function(c)
+        if c == '"' then return '\\"' end
+        if c == '\\' then return '\\\\' end
+        return string.format('\\u%04x', string.byte(c))
+    end)
+    return '"' .. s .. '"'
+end
 local ship = getPlayerShip(-1)
 if ship == nil then
     return '{"contacts":[]}'
 end
 local x, y = ship:getPosition()
-local player_callsign = ship:getCallSign() or "?"
 local contacts = {}
 local limite = 60
 for _, object in ipairs(getObjectsInRadius(x, y, 30000)) do
@@ -232,13 +244,13 @@ for _, object in ipairs(getObjectsInRadius(x, y, 30000)) do
     local faction_json = "null"
     local ok_f, faction = pcall(function() return object:getFaction() end)
     if ok_f and faction ~= nil and faction ~= "" then
-        faction_json = string.format("%q", faction)
+        faction_json = json_escape(faction)
     end
     local es_jugador = "false"
-    if callsign == player_callsign then es_jugador = "true" end
+    if object == ship then es_jugador = "true" end
     contacts[#contacts + 1] = string.format(
-        '{"callsign":%q,"position":{"x":%.1f,"y":%.1f},"faction":%s,"is_player":%s}',
-        callsign, ox, oy, faction_json, es_jugador)
+        '{"callsign":%s,"position":{"x":%.1f,"y":%.1f},"faction":%s,"is_player":%s}',
+        json_escape(callsign), ox, oy, faction_json, es_jugador)
 end
 return '{"contacts":[' .. table.concat(contacts, ",") .. ']}'
 """

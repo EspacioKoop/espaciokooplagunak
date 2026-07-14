@@ -18,6 +18,9 @@ on:
       - ".github/workflows/tools.yml"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   tests:
     name: tools/tests (Linux)

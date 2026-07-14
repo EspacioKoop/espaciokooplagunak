@@ -42,7 +42,11 @@ Coherente con [`AGENTS.md`](../AGENTS.md) y [`SECURITY.md`](../SECURITY.md):
 - Las acciones que modifican tu equipo (crear `docker/.env`, enlazar el módulo,
   levantar Docker) **se confirman** antes de ejecutarse.
 - El `BRIDGE_TOKEN` **nunca se imprime entero** ni en el menú ni en la salida:
-  se enmascara (`7a22…9e05`). `docker/.env` está ignorado por git.
+  se enmascara (`7a22…9e05`). La única excepción es `--generar-token`, que
+  imprime un token nuevo **completo** por stdout —es su función explícita, para
+  poder capturarlo—, así que redirige su salida a donde toque y no la dejes en
+  un log compartido. `docker/.env` está ignorado por git y se escribe con
+  permisos `0600` (solo tu usuario), de forma atómica.
 
 ## Uso no interactivo
 
@@ -52,7 +56,7 @@ Coherente con [`AGENTS.md`](../AGENTS.md) y [`SECURITY.md`](../SECURITY.md):
 |---|---|
 | `python3 tools/instalar.py --detectar` | Imprime la detección del entorno en JSON. |
 | `python3 tools/instalar.py --diagnostico` | Requisitos de cada vía. |
-| `python3 tools/instalar.py --generar-token` | Un token Bearer nuevo. |
+| `python3 tools/instalar.py --generar-token` | Imprime un token Bearer nuevo **completo** por stdout (única salida que no enmascara el token). |
 | `python3 tools/instalar.py --imprimir-config` | `docker/.env` con el token oculto. |
 | `python3 tools/instalar.py --set CLAVE=VALOR …` | Aplica cambios a `docker/.env` (lo crea si falta). |
 
@@ -62,8 +66,15 @@ Ejemplo:
 python3 tools/instalar.py --set EE_SERVER_PORT=36000 BRIDGE_PORT=8091
 ```
 
-Las claves con validación (`EE_SERVER_PORT`, `BRIDGE_PORT`) rechazan valores
-fuera de rango antes de escribir nada.
+`--set` solo admite las claves de la lista blanca (las que ofrece el menú de
+opciones) y rechaza valores con saltos de línea: no puede añadir claves
+arbitrarias ni inyectar líneas sueltas en el `.env`. Las claves con validación
+(`EE_SERVER_PORT`, `BRIDGE_PORT`) rechazan además valores fuera de rango antes
+de escribir nada.
+
+Al enlazar el módulo de Foundry, si en la ruta ya hay un **directorio real**
+(no un enlace nuestro) el asistente no lo borra: pide confirmación y conserva el
+anterior renombrándolo a `…espaciokoop-lagunak.bak-<fecha>` antes de reinstalar.
 
 ## Pruebas
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -109,6 +110,23 @@ class EnvTests(unittest.TestCase):
             self.assertEqual(valores["BRIDGE_TOKEN"], "fijado")
             self.assertEqual(valores["EE_SERVER_PORT"], "36000")
 
+    @unittest.skipUnless(os.name == "posix", "los permisos 0600 son de POSIX")
+    def test_asegurar_env_escribe_con_permisos_privados(self) -> None:
+        # El .env lleva secretos: nunca debe quedar legible por otros usuarios,
+        # ni al crearlo ni al actualizar uno que estuviera con permisos amplios.
+        with tempfile.TemporaryDirectory() as tmp:
+            ejemplo = Path(tmp) / ".env.example"
+            ejemplo.write_text("BRIDGE_TOKEN=\n", encoding="utf-8")
+            destino = Path(tmp) / ".env"
+
+            instalar.asegurar_env(ejemplo=ejemplo, destino=destino)
+            self.assertEqual(destino.stat().st_mode & 0o777, 0o600)
+
+            os.chmod(destino, 0o644)  # simula un .env ya expuesto
+            instalar.asegurar_env({"EE_SERVER_PORT": "36000"},
+                                  ejemplo=ejemplo, destino=destino)
+            self.assertEqual(destino.stat().st_mode & 0o777, 0o600)
+
 
 class ValidacionTests(unittest.TestCase):
     def test_puerto_valido(self) -> None:
@@ -156,6 +174,46 @@ class ModuloTests(unittest.TestCase):
             destino = instalar.enlazar_modulo(modules, origen=origen)
             self.assertTrue(destino.is_symlink())
 
+    def test_enlazar_modulo_rechaza_directorio_real_sin_sobrescribir(self) -> None:
+        # Un directorio real en la ruta puede ser del usuario: sin permiso
+        # explícito no se toca, y su contenido sobrevive intacto.
+        with tempfile.TemporaryDirectory() as tmp:
+            origen = Path(tmp) / "modulo"
+            origen.mkdir()
+            modules = Path(tmp) / "modules"
+            previo = modules / instalar.ID_MODULO
+            previo.mkdir(parents=True)
+            (previo / "datos_usuario.txt").write_text("no borrar", encoding="utf-8")
+
+            with self.assertRaises(FileExistsError):
+                instalar.enlazar_modulo(modules, origen=origen, copiar=True)
+            # El fichero del usuario sigue ahí (OLD_USER_DATA_SURVIVES True).
+            self.assertEqual(
+                (previo / "datos_usuario.txt").read_text(encoding="utf-8"), "no borrar"
+            )
+
+    def test_enlazar_modulo_sobrescribir_conserva_datos_en_bak(self) -> None:
+        # Con sobrescribir se reinstala, pero el directorio anterior no se borra:
+        # se renombra a un .bak- y su contenido sigue existiendo.
+        with tempfile.TemporaryDirectory() as tmp:
+            origen = Path(tmp) / "modulo"
+            origen.mkdir()
+            (origen / "module.json").write_text("{}", encoding="utf-8")
+            modules = Path(tmp) / "modules"
+            previo = modules / instalar.ID_MODULO
+            previo.mkdir(parents=True)
+            (previo / "datos_usuario.txt").write_text("no borrar", encoding="utf-8")
+
+            destino = instalar.enlazar_modulo(
+                modules, origen=origen, copiar=True, sobrescribir=True
+            )
+            self.assertTrue((destino / "module.json").exists())
+            baks = list(modules.glob(f"{instalar.ID_MODULO}.bak-*"))
+            self.assertEqual(len(baks), 1)
+            self.assertEqual(
+                (baks[0] / "datos_usuario.txt").read_text(encoding="utf-8"), "no borrar"
+            )
+
 
 class CliTests(unittest.TestCase):
     def _ejecutar(self, *args: str) -> subprocess.CompletedProcess:
@@ -179,6 +237,18 @@ class CliTests(unittest.TestCase):
     def test_set_rechaza_puerto_invalido(self) -> None:
         salida = self._ejecutar("--set", "EE_SERVER_PORT=70000")
         self.assertNotEqual(salida.returncode, 0)
+
+    def test_set_rechaza_clave_desconocida(self) -> None:
+        # --set no puede añadir claves fuera de la lista blanca.
+        salida = self._ejecutar("--set", "CLAVE_ARBITRARIA=x")
+        self.assertNotEqual(salida.returncode, 0)
+        self.assertIn("desconocida", salida.stderr)
+
+    def test_set_rechaza_salto_de_linea(self) -> None:
+        # Un valor con \n inyectaría líneas nuevas en el .env.
+        salida = self._ejecutar("--set", "EE_SERVER_NAME=uno\nINYECTADA=1")
+        self.assertNotEqual(salida.returncode, 0)
+        self.assertIn("saltos de línea", salida.stderr)
 
 
 if __name__ == "__main__":

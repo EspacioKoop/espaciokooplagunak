@@ -41,6 +41,8 @@ import secrets
 import shutil
 import subprocess
 import sys
+import tempfile
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -325,13 +327,40 @@ class ResultadoEnv:
     cambios: dict[str, str] = field(default_factory=dict)
 
 
+def _escribir_privado(destino: Path, contenido: str) -> None:
+    """Escribe ``contenido`` en ``destino`` de forma atómica y privada.
+
+    El ``.env`` contiene secretos (``BRIDGE_TOKEN`` y la contraseña del
+    servidor), así que no puede quedar con permisos de umask (típicamente
+    ``0644``, legible por otros) ni truncado a medias si algo falla. Se escribe
+    primero a un temporal en el MISMO directorio —``mkstemp`` lo crea ya con
+    modo ``0600``—, se sincroniza a disco y se reemplaza atómicamente con
+    ``os.replace``; el fichero final hereda el ``0600`` del temporal en POSIX.
+    """
+    destino.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp_nombre = tempfile.mkstemp(dir=str(destino.parent), prefix=".env-", suffix=".tmp")
+    tmp = Path(tmp_nombre)
+    try:
+        if os.name == "posix":
+            os.fchmod(fd, 0o600)
+        with os.fdopen(fd, "w", encoding="utf-8") as fichero:
+            fichero.write(contenido)
+            fichero.flush()
+            os.fsync(fichero.fileno())
+        os.replace(tmp, destino)
+    except BaseException:
+        tmp.unlink(missing_ok=True)
+        raise
+
+
 def asegurar_env(cambios: dict[str, str] | None = None,
                  ejemplo: Path = ENV_EJEMPLO,
                  destino: Path = ENV_DESTINO) -> ResultadoEnv:
     """Crea ``docker/.env`` desde el ejemplo si falta y aplica ``cambios``.
 
     Si el destino no existe y no se fija ``BRIDGE_TOKEN``, se genera uno: un
-    ``.env`` recién creado nunca queda sin token (el puente no arrancaría).
+    ``.env`` recién creado nunca queda sin token (el puente no arrancaría). La
+    escritura es atómica y con permisos ``0600`` (contiene secretos).
     """
     cambios = dict(cambios or {})
     creado = not destino.exists()
@@ -341,25 +370,45 @@ def asegurar_env(cambios: dict[str, str] | None = None,
         if not existente:
             cambios["BRIDGE_TOKEN"] = token_nuevo()
     nuevo = fusionar_env(base, cambios)
-    destino.parent.mkdir(parents=True, exist_ok=True)
-    destino.write_text(nuevo, encoding="utf-8")
+    _escribir_privado(destino, nuevo)
     return ResultadoEnv(creado=creado, ruta=destino, cambios=cambios)
+
+
+def _ruta_respaldo(destino: Path) -> Path:
+    """Ruta ``<destino>.bak-<fecha>`` libre para conservar contenido previo."""
+    marca = time.strftime("%Y%m%d-%H%M%S")
+    candidato = destino.with_name(f"{destino.name}.bak-{marca}")
+    contador = 1
+    while candidato.exists() or candidato.is_symlink():
+        candidato = destino.with_name(f"{destino.name}.bak-{marca}-{contador}")
+        contador += 1
+    return candidato
 
 
 def enlazar_modulo(directorio_modulos: Path,
                    origen: Path = MODULO_FOUNDRY,
-                   copiar: bool = False) -> Path:
-    """Enlaza (o copia) el módulo en ``<Data>/modules/espaciokoop-lagunak``."""
+                   copiar: bool = False,
+                   sobrescribir: bool = False) -> Path:
+    """Enlaza (o copia) el módulo en ``<Data>/modules/espaciokoop-lagunak``.
+
+    Un ``symlink`` previo es nuestra propia instalación: se reemplaza sin más,
+    porque quitar el enlace no borra su destino. Pero un DIRECTORIO REAL en esa
+    ruta puede ser contenido del usuario y NUNCA se borra. Sin ``sobrescribir``
+    la función se niega (``FileExistsError``); con ``sobrescribir`` el
+    directorio anterior se CONSERVA renombrándolo a ``<destino>.bak-<fecha>``
+    antes de instalar. Devuelve la ruta del módulo instalado.
+    """
     directorio_modulos.mkdir(parents=True, exist_ok=True)
     destino = directorio_modulos / ID_MODULO
-    if destino.is_symlink() or destino.exists():
-        if destino.is_symlink() or destino.is_dir():
-            if destino.is_symlink():
-                destino.unlink()
-            elif copiar:
-                shutil.rmtree(destino)
-            else:
-                raise FileExistsError(f"ya existe un directorio real en {destino}")
+    if destino.is_symlink():
+        destino.unlink()  # quitar el enlace no toca su destino
+    elif destino.exists():
+        if not sobrescribir:
+            raise FileExistsError(
+                f"ya existe contenido real en {destino}; no se sobrescribe sin "
+                "confirmación (se conservaría en un .bak antes de reinstalar)"
+            )
+        destino.rename(_ruta_respaldo(destino))
     if copiar:
         shutil.copytree(origen, destino)
     else:
@@ -473,11 +522,24 @@ def _accion_foundry(info: dict) -> None:
         print("  Ruta vacía; se omite.")
         return
     copiar = info["sistema"] == "Windows"
+    modulos = Path(ruta).expanduser()
+    previo = modulos / ID_MODULO
+    sobrescribir = False
+    # Un directorio real (no nuestro symlink) puede ser contenido del usuario:
+    # no se toca sin permiso explícito, y aun así se conserva en un .bak.
+    if previo.exists() and not previo.is_symlink():
+        print(_c(f"  Ya existe un directorio real en {previo}.", "33"))
+        if not _confirmar("¿Conservar una copia (.bak) y reinstalar encima?", defecto=False):
+            print("  Se omite; no se ha tocado nada.")
+            return
+        sobrescribir = True
     try:
-        destino = enlazar_modulo(Path(ruta).expanduser(), copiar=copiar)
+        destino = enlazar_modulo(modulos, copiar=copiar, sobrescribir=sobrescribir)
     except (OSError, FileExistsError) as err:
         print(_c(f"  No se pudo instalar el módulo: {err}", "31"))
         return
+    if sobrescribir:
+        print("  El directorio anterior se conservó con sufijo .bak- en la misma carpeta.")
     verbo = "Copiado" if copiar else "Enlazado"
     print(f"  {verbo} el módulo en {destino}")
     print("  Reinicia Foundry, activa «Espaciokoop Lagunak — Puente de mando» y entra como GM.")
@@ -554,13 +616,20 @@ def menu_interactivo() -> int:
 
 def _aplicar_set(pares: list[str]) -> dict[str, str]:
     cambios: dict[str, str] = {}
-    validadores = {op.clave: op.validador for op in OPCIONES_EDITABLES}
+    opciones = {op.clave: op for op in OPCIONES_EDITABLES}
     for par in pares:
         if "=" not in par:
             raise SystemExit(f"--set espera CLAVE=VALOR, no {par!r}")
         clave, _, valor = par.partition("=")
         clave = clave.strip()
-        validador = validadores.get(clave)
+        # Lista blanca cerrada: --set nunca añade claves arbitrarias al .env.
+        if clave not in opciones:
+            permitidas = ", ".join(op.clave for op in OPCIONES_EDITABLES)
+            raise SystemExit(f"--set: clave desconocida {clave!r}; permitidas: {permitidas}")
+        # Un salto de línea en el valor inyectaría líneas nuevas en el .env.
+        if "\n" in valor or "\r" in valor:
+            raise SystemExit(f"{clave}: el valor no puede contener saltos de línea")
+        validador = opciones[clave].validador
         if validador is not None:
             try:
                 validador(valor)

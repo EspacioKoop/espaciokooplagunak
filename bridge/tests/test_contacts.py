@@ -8,10 +8,10 @@ def test_contacts_requiere_auth(client, juego):
 
 
 def test_contacts_sin_nave_devuelve_lista_vacia(client, juego, auth):
-    juego.text = '{"contacts":[]}'
+    juego.text = '{"contacts":[],"truncated":false,"total":0}'
     r = client.get("/v1/contacts", headers=auth)
     assert r.status_code == 200
-    assert r.json() == {"contacts": []}
+    assert r.json() == {"contacts": [], "truncated": False, "total": 0}
 
 
 def test_contacts_devuelve_objetos_normalizados(client, juego, auth):
@@ -23,9 +23,10 @@ def test_contacts_devuelve_objetos_normalizados(client, juego, auth):
         '"faction":"Kraylor","is_player":false},'
         '{"callsign":"?","position":{"x":5000.0,"y":5000.0},'
         '"faction":null,"is_player":false}'
-        ']}'
+        '],"truncated":false,"total":3}'
     )
-    contactos = client.get("/v1/contacts", headers=auth).json()["contacts"]
+    payload = client.get("/v1/contacts", headers=auth).json()
+    contactos = payload["contacts"]
     assert len(contactos) == 3
     assert contactos[0]["is_player"] is True
     assert contactos[0]["faction"] == "Human Navy"
@@ -33,17 +34,24 @@ def test_contacts_devuelve_objetos_normalizados(client, juego, auth):
     # Un objeto sin facción (asteroide/nebulosa) no rompe la lista.
     assert contactos[2]["faction"] is None
     assert contactos[2]["is_player"] is False
+    # El truncamiento es visible en el contrato.
+    assert payload["truncated"] is False
+    assert payload["total"] == 3
 
 
 def test_contacts_envia_solo_lua_fijo_al_juego(client, juego, auth):
-    juego.text = '{"contacts":[]}'
+    juego.text = '{"contacts":[],"truncated":false,"total":0}'
     client.get("/v1/contacts", headers=auth)
     lua = juego.ultimo_lua
     # Reutiliza el patrón seguro: Lua definido en el servidor, radio y número
-    # acotados, accesores opcionales protegidos con pcall.
+    # acotados, accesores opcionales protegidos con pcall. Los contactos se
+    # ordenan por distancia (el índice espacial no garantiza orden) y el
+    # jugador encabeza la lista por identidad de objeto.
     assert "getPlayerShip(-1)" in lua
     assert "getObjectsInRadius(x, y, 30000)" in lua
-    assert "#contacts >= limite" in lua
+    assert "table.sort(otros, function(a, b) return a.d2 < b.d2 end)" in lua
+    assert "math.min(#otros, limite - 1)" in lua
+    assert '"truncated":%s' in lua
     assert "pcall(function() return object:getFaction() end)" in lua
 
 

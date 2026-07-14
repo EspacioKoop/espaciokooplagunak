@@ -10,7 +10,11 @@ simulado en Lua, y comprobamos:
   barras invertidas en indicativos y facciones (el bug de ``%q``, que escapa
   para Lua y no para JSON);
 - que el jugador se marca por identidad de objeto y no por indicativo, de modo
-  que una nave NPC con el mismo callsign no queda marcada como el jugador.
+  que una nave NPC con el mismo callsign no queda marcada como el jugador;
+- que con más objetos que el límite se devuelven los MÁS CERCANOS ordenados
+  (el índice espacial no garantiza orden), el jugador siempre entra aunque el
+  índice lo devuelva el último, y el truncamiento queda declarado con
+  ``truncated``/``total``.
 
 Requiere un intérprete Lua (el mismo que la CI usa para ``luac -p``). Si no hay
 ninguno, la prueba se salta en vez de fallar.
@@ -56,6 +60,31 @@ function getObjectsInRadius(x, y, r) return mundo end
 """
 
 
+# Mundo grande: 80 objetos y la nave del jugador la ÚLTIMA de la lista (el
+# índice espacial real no garantiza orden — este es el peor caso que la
+# revisión pidió cubrir: sin ordenación, un `break` a 60 dejaría fuera al
+# jugador y devolvería los 60 primeros del índice, no los más cercanos). Las
+# distancias crecen con el índice (NPC-i a x=i*100), así "más cercano" es
+# verificable: los 59 acompañantes deben ser los de índice más bajo, en orden.
+_MUNDO_GRANDE_LUA = r"""
+local function obj(cs, fac, x, y)
+    local o = {}
+    function o:getCallSign() return cs end
+    function o:getPosition() return x, y end
+    function o:getFaction() return fac end
+    return o
+end
+local ship_obj = obj("Itsaso 1", "Human Navy", 0.0, 0.0)
+local mundo = {}
+for i = 1, 79 do
+    mundo[#mundo + 1] = obj("NPC-" .. i, "Kraylor", i * 100.0, 0.0)
+end
+mundo[#mundo + 1] = ship_obj
+function getPlayerShip(n) return ship_obj end
+function getObjectsInRadius(x, y, r) return mundo end
+"""
+
+
 def _interprete_lua() -> str | None:
     for nombre in ("lua5.3", "lua5.4", "lua"):
         ruta = shutil.which(nombre)
@@ -64,14 +93,14 @@ def _interprete_lua() -> str | None:
     return None
 
 
-def _ejecutar_contacts_lua(tmp_path) -> dict:
+def _ejecutar_contacts_lua(tmp_path, mundo: str = _MUNDO_LUA) -> dict:
     lua = _interprete_lua()
     if lua is None:
         pytest.skip("no hay intérprete Lua para probar el encoder real")
     # Envolvemos el Lua del puente (que hace `return ...`) en una función para
     # capturar su valor de retorno y escribirlo por stdout.
     driver = (
-        _MUNDO_LUA
+        mundo
         + "\nlocal function cuerpo()\n"
         + bridge._CONTACTS_LUA
         + "\nend\nio.write(cuerpo())\n"
@@ -87,8 +116,11 @@ def _ejecutar_contacts_lua(tmp_path) -> dict:
 
 
 def test_encoder_lua_genera_json_valido_con_caracteres_hostiles(tmp_path):
-    contactos = _ejecutar_contacts_lua(tmp_path)["contacts"]
+    payload = _ejecutar_contacts_lua(tmp_path)
+    contactos = payload["contacts"]
     assert len(contactos) == 4
+    assert payload["truncated"] is False
+    assert payload["total"] == 4
 
     hostile = next(c for c in contactos if c["callsign"].startswith("Bad"))
     # Carácter de control (0x01), barra invertida y comilla sobreviven el
@@ -104,11 +136,30 @@ def test_encoder_lua_identifica_al_jugador_por_objeto_no_por_indicativo(tmp_path
     contactos = _ejecutar_contacts_lua(tmp_path)["contacts"]
 
     jugadores = [c for c in contactos if c["is_player"]]
-    # Exactamente uno, y es la nave del jugador (posición 0,0), no la NPC que
-    # comparte indicativo.
+    # Exactamente uno, encabezando la lista, y es la nave del jugador
+    # (posición 0,0), no la NPC que comparte indicativo.
     assert len(jugadores) == 1
+    assert contactos[0]["is_player"] is True
     assert jugadores[0]["position"] == {"x": 0.0, "y": 0.0}
 
     homonimos = [c for c in contactos if c["callsign"] == "Itsaso 1"]
     assert len(homonimos) == 2
     assert sum(1 for c in homonimos if c["is_player"]) == 1
+
+
+def test_encoder_lua_ordena_por_distancia_e_incluye_al_jugador(tmp_path):
+    # 80 objetos y el jugador el ÚLTIMO del índice espacial: aun así entra
+    # (encabezando la lista), los 59 acompañantes son los MÁS CERCANOS en
+    # orden de distancia creciente, y el truncamiento queda declarado.
+    payload = _ejecutar_contacts_lua(tmp_path, mundo=_MUNDO_GRANDE_LUA)
+    contactos = payload["contacts"]
+
+    assert len(contactos) == 60
+    assert payload["truncated"] is True
+    assert payload["total"] == 80
+
+    assert contactos[0]["is_player"] is True
+    assert contactos[0]["callsign"] == "Itsaso 1"
+    acompanantes = [c["callsign"] for c in contactos[1:]]
+    assert acompanantes == [f"NPC-{i}" for i in range(1, 60)]
+    assert all(not c["is_player"] for c in contactos[1:])

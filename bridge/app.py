@@ -210,16 +210,24 @@ return '{"events":[' .. table.concat(events, ",") .. ']}'
 """
 
 # Contactos cercanos a la nave del jugador: base de datos para un mapa vivo en
-# Foundry (starfield + puntos). Solo lectura, radio y número acotados para
-# limitar el tamaño de la respuesta. Cada accesor opcional va en pcall: objetos
-# como asteroides o nebulosas no responden a getFaction y no deben romper la
-# lista. El jugador se marca por identidad de objeto (object == ship, con __eq
-# definido en el binding de SeriousProton y usado así en los escenarios), no por
-# indicativo: dos naves con el mismo callsign no se confunden. json_escape
-# serializa cada string como JSON válido (comillas, barra inversa y caracteres
-# de control como \\u00XX); %q de Lua escapa para Lua, no para JSON, y rompía
-# la respuesta con caracteres de control. Cadena "raw" de Python para que las
-# barras invertidas lleguen intactas a Lua.
+# Foundry (starfield + puntos). VISTA GM OMNISCIENTE, no de sensores: publica
+# indicativo y facción de todo objeto en radio sin filtrar por detección
+# (isScannedBy / nivel de identificación). Es deliberado — la consume la
+# ventana de mapa vivo, solo-GM, detrás del Bearer que solo tiene el GM — y NO
+# debe reutilizarse como contrato para jugadores sin añadir ese filtrado.
+#
+# Solo lectura, radio y número acotados para limitar el tamaño de la
+# respuesta. El truncamiento es honesto: se ordenan TODOS los objetos del
+# radio por distancia y se devuelven los `limite` más cercanos (el índice
+# espacial de getObjectsInRadius no garantiza orden), con el jugador SIEMPRE
+# incluido (se separa por identidad de objeto — __eq del binding de
+# SeriousProton — y encabeza la lista), y `truncated`/`total` en la respuesta
+# para que el consumidor sepa si hay más. Cada accesor opcional va en pcall:
+# objetos como asteroides o nebulosas no responden a getFaction y no deben
+# romper la lista. json_escape serializa cada string como JSON válido
+# (comillas, barra inversa y controles como \\u00XX); %q de Lua escapa para
+# Lua, no para JSON. Cadena "raw" de Python para que las barras invertidas
+# lleguen intactas a Lua.
 _CONTACTS_LUA = r"""
 local function json_escape(s)
     s = string.gsub(s, '[%c"\\]', function(c)
@@ -231,14 +239,21 @@ local function json_escape(s)
 end
 local ship = getPlayerShip(-1)
 if ship == nil then
-    return '{"contacts":[]}'
+    return '{"contacts":[],"truncated":false,"total":0}'
 end
 local x, y = ship:getPosition()
-local contacts = {}
 local limite = 60
+local otros = {}
 for _, object in ipairs(getObjectsInRadius(x, y, 30000)) do
-    if #contacts >= limite then break end
-    local ox, oy = object:getPosition()
+    if object ~= ship then
+        local ox, oy = object:getPosition()
+        local dx = ox - x
+        local dy = oy - y
+        otros[#otros + 1] = {obj = object, ox = ox, oy = oy, d2 = dx * dx + dy * dy}
+    end
+end
+table.sort(otros, function(a, b) return a.d2 < b.d2 end)
+local function entrada(object, ox, oy, es_jugador)
     local ok_cs, callsign = pcall(function() return object:getCallSign() end)
     if not ok_cs or callsign == nil then callsign = "?" end
     local faction_json = "null"
@@ -246,13 +261,16 @@ for _, object in ipairs(getObjectsInRadius(x, y, 30000)) do
     if ok_f and faction ~= nil and faction ~= "" then
         faction_json = json_escape(faction)
     end
-    local es_jugador = "false"
-    if object == ship then es_jugador = "true" end
-    contacts[#contacts + 1] = string.format(
+    return string.format(
         '{"callsign":%s,"position":{"x":%.1f,"y":%.1f},"faction":%s,"is_player":%s}',
         json_escape(callsign), ox, oy, faction_json, es_jugador)
 end
-return '{"contacts":[' .. table.concat(contacts, ",") .. ']}'
+local contacts = {entrada(ship, x, y, "true")}
+for i = 1, math.min(#otros, limite - 1) do
+    contacts[#contacts + 1] = entrada(otros[i].obj, otros[i].ox, otros[i].oy, "false")
+end
+return string.format('{"contacts":[%s],"truncated":%s,"total":%d}',
+    table.concat(contacts, ","), tostring(#otros > limite - 1), #otros + 1)
 """
 
 

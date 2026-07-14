@@ -17,7 +17,7 @@ heredado: [`docs/API_HTTP.md`](../docs/API_HTTP.md).
 | GET | `/v1/state` | Bearer | Nave: posición, rumbo, velocidad, destino, distancia, ETA, casco, energía, escudos y sistemas |
 | GET | `/v1/scenario` | Bearer | Tiempo de escenario |
 | GET | `/v1/events` | Bearer | Eventos normalizados presentes; inicialmente llegada de Primera Guardia |
-| GET | `/v1/contacts` | Bearer | Objetos cercanos a la nave (indicativo, posición, facción, si es el jugador) para un mapa vivo en Foundry |
+| GET | `/v1/contacts` | Bearer | Objetos cercanos a la nave (indicativo, posición, facción, si es el jugador) para un mapa vivo en Foundry. **Vista GM omnisciente** (ver abajo) |
 | POST | `/v1/command` | Bearer | Órdenes de lista blanca (ver abajo) |
 | GET | `/docs` | No* | OpenAPI interactiva generada por FastAPI |
 
@@ -29,6 +29,18 @@ mesa de *Spelljammer* (una tripulación, un spelljammer). Cargar un escenario co
 varios `PlayerSpaceship` deja a `-1` eligiendo una nave arbitraria y queda
 **fuera de contrato v0**: el indexado multi-nave (flota o PvP) no es un objetivo
 de esta integración.
+
+**`/v1/contacts` es una vista GM omnisciente, no de sensores.** Publica
+indicativo y facción de todo objeto en radio (30 000 U) **sin filtrar por
+detección ni identificación** (`isScannedBy` / niveles de escaneo). Es una
+decisión explícita: la consume la ventana de mapa vivo del módulo de Foundry,
+que es solo-GM, detrás del Bearer que solo tiene el GM. **No debe reutilizarse
+como contrato para jugadores** sin añadir ese filtrado — sería revelar en la
+mesa lo que la ciencia de a bordo aún no ha escaneado. La respuesta devuelve
+los **60 contactos más cercanos ordenados por distancia** (el jugador siempre
+incluido, encabezando la lista) y declara el truncamiento:
+`{"contacts": […], "truncated": true|false, "total": N}` — `total` es cuántos
+objetos había realmente en radio.
 
 ### Órdenes permitidas (`POST /v1/command`)
 
@@ -70,9 +82,13 @@ EmptyEpsilon en marcha) y cubre auth, límite de frecuencia, traducción de
 errores a 502, la lista blanca de órdenes y los intentos de inyección por los
 campos tipados. También cubre el endpoint de eventos vacío y con una llegada
 normalizada, y el de contactos (lista vacía, objetos normalizados y objetos sin
-facción). El Lua fijo de `/v1/contacts` se validó además contra un EmptyEpsilon
-headless real (`luac -p` + ejecución vía `httpserver`, con nave, nave IA y un
-asteroide sin facción).
+facción). El Lua fijo de `/v1/contacts` tiene además una suite adversarial que
+lo EJECUTA con un intérprete Lua real contra un mundo simulado: caracteres de
+control/comillas/barras en indicativos y facciones (JSON válido), indicativos
+duplicados (identidad por objeto), y 80 objetos con el jugador el último del
+índice (orden por distancia, jugador incluido, `truncated`/`total` declarados).
+También se validó contra un EmptyEpsilon headless real (`luac -p` + ejecución
+vía `httpserver`, con nave, nave IA y un asteroide sin facción).
 
 ```bash
 cd bridge

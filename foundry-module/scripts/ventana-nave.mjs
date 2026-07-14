@@ -126,3 +126,94 @@ export function proyectarContactos({ contacts = [], centro, headingDeg = 0, radi
     };
   });
 }
+
+/**
+ * Interpola el centro (posición de la nave propia) entre las dos últimas
+ * muestras CONFIRMADAS del puente. `t` se acota a [0,1]: nunca se extrapola
+ * más allá de la última muestra — el mapa es una vista de lo que el puente ha
+ * dicho, no un simulador propio (docs/FOUNDRY.md). Con una sola muestra (o
+ * timestamps degenerados) devuelve la actual tal cual.
+ *
+ * @param {{tMs:number,centro:{x:number,y:number}}|null} prev
+ * @param {{tMs:number,centro:{x:number,y:number}}} actual
+ * @param {number} tMs instante de dibujo (misma base de tiempo que las muestras)
+ */
+export function interpolarCentro(prev, actual, tMs) {
+  if (!actual) return { x: 0, y: 0 };
+  if (!prev || !(actual.tMs > prev.tMs)) return { ...actual.centro };
+  const t = Math.min(1, Math.max(0, (tMs - prev.tMs) / (actual.tMs - prev.tMs)));
+  return {
+    x: prev.centro.x + (actual.centro.x - prev.centro.x) * t,
+    y: prev.centro.y + (actual.centro.y - prev.centro.y) * t,
+  };
+}
+
+/**
+ * Interpola dos rumbos en grados por el camino angular corto (350°→10° cruza
+ * por 0°, no da la vuelta por 180°). Resultado normalizado a [0, 360).
+ */
+export function interpolarAngulo(a, b, t) {
+  const ta = Math.min(1, Math.max(0, t));
+  let delta = (((b - a) % 360) + 540) % 360 - 180; // en (-180, 180]
+  const bruto = a + delta * ta;
+  return ((bruto % 360) + 360) % 360;
+}
+
+/** Throttle del bucle de dibujo: ¿toca pintar este tick de rAF a `fpsMax`?
+ * El primer frame (sin dibujo previo) pinta siempre. */
+export function debeDibujar(ultimoMs, ahoraMs, fpsMax = 30) {
+  if (ultimoMs == null) return true;
+  return ahoraMs - ultimoMs >= 1000 / fpsMax;
+}
+
+/**
+ * Compone el «frame» del mapa vivo: TODO lo que el pintor de canvas necesita,
+ * calculado de forma pura y determinista (mismas entradas → mismo frame). El
+ * movimiento propio se tweenea entre las dos últimas muestras del puente
+ * (interpolarCentro/interpolarAngulo, sin extrapolación); los contactos se
+ * proyectan con sus últimas posiciones conocidas. El `parpadeo` retro de los
+ * blips sale de la fase temporal, no de estado mutable.
+ *
+ * @returns {{sinDatos:boolean, centro:{x,y}, rumboDeg:number,
+ *   capas:{dx:number,dy:number,estrellas:object[]}[],
+ *   blips:{callsign,faction,color,esJugador,x,y,distancia,dentro,parpadeo}[]}}
+ */
+export function componerFrame({
+  muestraPrev = null,
+  muestraActual = null,
+  contactos = [],
+  campo = [],
+  tMs = 0,
+  ancho = 320,
+  alto = 320,
+  radioMundo = 30000,
+  escalaFondo = 0.05,
+} = {}) {
+  if (!muestraActual) {
+    return { sinDatos: true, centro: { x: 0, y: 0 }, rumboDeg: 0, capas: [], blips: [] };
+  }
+  const centro = interpolarCentro(muestraPrev, muestraActual, tMs);
+  const rumboDeg = muestraPrev && muestraActual.tMs > muestraPrev.tMs
+    ? interpolarAngulo(
+        muestraPrev.rumboDeg ?? 0,
+        muestraActual.rumboDeg ?? 0,
+        (tMs - muestraPrev.tMs) / (muestraActual.tMs - muestraPrev.tMs),
+      )
+    : ((muestraActual.rumboDeg ?? 0) % 360 + 360) % 360;
+
+  const capas = campo.map((capa) => ({
+    ...offsetParallax(capa.factor, centro, escalaFondo, ancho, alto),
+    estrellas: capa.estrellas,
+  }));
+
+  const encendido = Math.floor(tMs / 300) % 2 === 0; // fase de parpadeo retro
+  const blips = proyectarContactos({
+    contacts: contactos, centro, headingDeg: rumboDeg, radioMundo, ancho, alto,
+  }).map((p) => ({
+    ...p,
+    color: colorFaccion(p.faction, p.esJugador),
+    parpadeo: p.esJugador ? true : encendido, // la nave propia no parpadea
+  }));
+
+  return { sinDatos: false, centro, rumboDeg, capas, blips };
+}

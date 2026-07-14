@@ -346,7 +346,9 @@ class SetSystemHealth(BaseModel):
 
     op: Literal["set_system_health"]
     system: SystemName
-    value: Annotated[float, Field(ge=-1.0, le=1.0)]
+    # strict=True: sin coacción de booleanos (true → 1.0 sería una reparación
+    # total silenciosa); acepta enteros/decimales JSON, rechaza bool y cadenas.
+    value: Annotated[float, Field(strict=True, ge=-1.0, le=1.0)]
 
     def lua(self) -> str:
         return _command_lua(

@@ -135,6 +135,26 @@ def test_system_health_fuera_de_rango_rechazado(client, juego, auth, valor):
     assert not juego.llamadas
 
 
+@pytest.mark.parametrize("valor", [True, False])
+def test_system_health_booleano_rechazado(client, juego, auth, valor):
+    # Sin strict=True Pydantic coacciona true → 1.0 (reparación total) y
+    # false → 0.0: un booleano no debe convertirse en una mutación válida.
+    r = client.post(
+        CMD, headers=auth, json={"op": "set_system_health", "system": "impulse", "value": valor}
+    )
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+def test_system_health_entero_en_rango_aceptado(client, juego, auth):
+    # strict=True no debe romper los enteros JSON del contrato (-1, 0, 1).
+    r = client.post(
+        CMD, headers=auth, json={"op": "set_system_health", "system": "impulse", "value": -1}
+    )
+    assert r.status_code == 200
+    assert 'setSystemHealth("impulse", -1.000)' in juego.ultimo_lua
+
+
 def test_system_health_sistema_no_permitido_rechazado(client, juego, auth):
     r = client.post(
         CMD, headers=auth, json={"op": "set_system_health", "system": "hull", "value": -1.0}

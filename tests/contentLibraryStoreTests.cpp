@@ -59,8 +59,8 @@ ContentResource campaign(const std::string& id, const std::string& name)
     result.id = id;
     result.name = name;
     result.description = "Campaign description";
-    result.primary = "map-one,map-two";
-    result.secondary = "map-one";
+    result.primary = "";
+    result.secondary = "";
     return result;
 }
 
@@ -218,13 +218,15 @@ void testManagedImportExportAndSymlinks()
     const auto resource = campaign("portable", "Portable");
 
     std::string filename;
-    expect(store.exportResource(resource, false, filename) == ContentStoreError::None,
+    expect(store.exportResource(resource, {resource}, false, filename) == ContentStoreError::None,
         "first managed export succeeds");
     expect(filename == "campaign-portable.json", "export filename is generated from validated identity");
     const auto first_export = readAll(store.rootPath() / "exports" / filename);
-    expect(store.exportResource(resource, false, filename) == ContentStoreError::AlreadyExists,
+    expect(first_export.find("\"dependencies\"") != std::string::npos,
+        "managed individual export includes its dependency manifest");
+    expect(store.exportResource(resource, {resource}, false, filename) == ContentStoreError::AlreadyExists,
         "export overwrite requires explicit confirmation");
-    expect(store.exportResource(resource, true, filename) == ContentStoreError::None,
+    expect(store.exportResource(resource, {resource}, true, filename) == ContentStoreError::None,
         "confirmed export overwrite succeeds atomically");
 
     fs::copy_file(store.rootPath() / "exports" / filename, store.rootPath() / "inbox" / "roundtrip.json");
@@ -232,7 +234,7 @@ void testManagedImportExportAndSymlinks()
     expect(store.importFromInbox("roundtrip.json", imported) == ContentStoreError::None && imported == resource,
         "managed inbox imports exported resource");
     std::string second_filename;
-    expect(store.exportResource(imported, true, second_filename) == ContentStoreError::None,
+    expect(store.exportResource(imported, {imported}, true, second_filename) == ContentStoreError::None,
         "imported resource re-exports");
     expect(readAll(store.rootPath() / "exports" / second_filename) == first_export,
         "export-import-export remains equivalent");
@@ -240,7 +242,7 @@ void testManagedImportExportAndSymlinks()
     auto updated_resource = resource;
     updated_resource.name = "Portable Updated";
     store.setTestFault(ContentStoreFault::InterruptAfterTempSync);
-    expect(store.exportResource(updated_resource, true, filename) == ContentStoreError::Interrupted,
+    expect(store.exportResource(updated_resource, {updated_resource}, true, filename) == ContentStoreError::Interrupted,
         "managed export can stop after syncing temp");
     ContentLibraryStore recovered_export_before_rotation(store.rootPath());
     expect(recovered_export_before_rotation.initialize() == ContentStoreError::None,
@@ -251,7 +253,8 @@ void testManagedImportExportAndSymlinks()
         "valid exported canonical wins over uncommitted temp");
 
     recovered_export_before_rotation.setTestFault(ContentStoreFault::InterruptAfterBackup);
-    expect(recovered_export_before_rotation.exportResource(updated_resource, true, filename)
+    expect(recovered_export_before_rotation.exportResource(
+               updated_resource, {updated_resource}, true, filename)
             == ContentStoreError::Interrupted,
         "managed export can stop after backup rotation");
     ContentLibraryStore recovered_export_after_rotation(store.rootPath());

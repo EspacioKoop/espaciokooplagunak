@@ -4021,3 +4021,79 @@ msgstr "Recurso exportado al archivo gestionado: {filename}"
 msgctxt "content_editor"
 msgid "This ID already exists. Repeat the import action to replace it."
 msgstr "Este ID ya existe. Repite la acción de importación para sustituirlo."
+
+msgctxt "content_editor"
+msgid "Map IDs (ordered, comma separated)"
+msgstr "ID de mapas (ordenados y separados por comas)"
+
+msgctxt "content_editor"
+msgid "Character IDs (comma separated)"
+msgstr "ID de personajes (separados por comas)"
+
+msgctxt "content_editor"
+msgid "Ship IDs (comma separated)"
+msgstr "ID de naves (separados por comas)"
+
+msgctxt "content_editor"
+msgid "Transitions (from>to, comma separated)"
+msgstr "Transiciones (origen>destino, separadas por comas)"
+
+msgctxt "content_editor"
+msgid "Crew position ID"
+msgstr "ID del puesto de tripulación"
+
+msgctxt "content_editor"
+msgid "Legacy role (clear after assigning a crew position)"
+msgstr "Rol anterior (borrar tras asignar un puesto de tripulación)"
+
+msgctxt "content_editor"
+msgid "Tags (comma separated)"
+msgstr "Etiquetas (separadas por comas)"
+
+msgctxt "content_editor"
+msgid "Ship ID (optional)"
+msgstr "ID de nave (opcional)"
+
+msgctxt "content_editor"
+msgid "Resource exported with missing dependencies listed in its manifest."
+msgstr "Recurso exportado; las dependencias que faltan figuran en su manifiesto."
+
+msgctxt "content_editor"
+msgid "Resource exported to the clipboard with its dependency manifest."
+msgstr "Recurso exportado al portapapeles con su manifiesto de dependencias."
+
+msgctxt "content_editor"
+msgid "Resource exported to managed file with its dependency manifest: {filename}"
+msgstr "Recurso exportado al archivo gestionado con su manifiesto de dependencias: {filename}"
+
+msgctxt "content_editor"
+msgid "Campaign map IDs or starting map are invalid."
+msgstr "Los ID de mapas o el mapa inicial de la campaña no son válidos."
+
+msgctxt "content_editor"
+msgid "Campaign character or ship IDs are invalid."
+msgstr "Los ID de personajes o naves de la campaña no son válidos."
+
+msgctxt "content_editor"
+msgid "Campaign transitions must use map-id>map-id and reference campaign maps."
+msgstr "Las transiciones deben usar id-mapa>id-mapa y referirse a mapas de la campaña."
+
+msgctxt "content_editor"
+msgid "Campaign transitions contain a cycle."
+msgstr "Las transiciones de la campaña contienen un ciclo."
+
+msgctxt "content_editor"
+msgid "Crew position must use a canonical game identifier."
+msgstr "El puesto de tripulación debe usar un identificador canónico del juego."
+
+msgctxt "content_editor"
+msgid "Character tags must be unique lowercase IDs."
+msgstr "Las etiquetas del personaje deben ser ID únicos en minúsculas."
+
+msgctxt "content_editor"
+msgid "Character ship ID is invalid."
+msgstr "El ID de nave del personaje no es válido."
+
+msgctxt "content_editor"
+msgid "A referenced map, character or ship is missing from the library."
+msgstr "Falta en la biblioteca un mapa, personaje o nave referenciado."

@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <string>
+#include <vector>
 
 enum class ContentResourceType
 {
@@ -19,6 +20,11 @@ struct ContentResource
     std::string description;
     std::string primary;
     std::string secondary;
+    // Campaign: character IDs, ship IDs and declarative map transitions.
+    // Character: tags, optional ship ID and a legacy v1 role awaiting canonical migration.
+    std::string tertiary;
+    std::string quaternary;
+    std::string quinary;
 };
 
 inline bool operator==(const ContentResource& lhs, const ContentResource& rhs)
@@ -28,7 +34,10 @@ inline bool operator==(const ContentResource& lhs, const ContentResource& rhs)
         && lhs.name == rhs.name
         && lhs.description == rhs.description
         && lhs.primary == rhs.primary
-        && lhs.secondary == rhs.secondary;
+        && lhs.secondary == rhs.secondary
+        && lhs.tertiary == rhs.tertiary
+        && lhs.quaternary == rhs.quaternary
+        && lhs.quinary == rhs.quinary;
 }
 
 inline bool operator!=(const ContentResource& lhs, const ContentResource& rhs)
@@ -55,17 +64,34 @@ enum class ContentResourceError
     TypeFieldTooLong,
     MissingPrimaryField,
     InvalidCampaignMapIds,
+    InvalidCampaignReferences,
+    InvalidCampaignTransitions,
+    CampaignTransitionCycle,
+    InvalidCrewPosition,
+    InvalidCharacterTags,
+    InvalidCharacterShipId,
+    MissingDependency,
     UnsafeScenarioFile,
     InvalidPlayerCount,
 };
 
-constexpr int CONTENT_RESOURCE_SCHEMA_VERSION = 1;
+constexpr int CONTENT_RESOURCE_SCHEMA_VERSION = 2;
 constexpr std::size_t CONTENT_RESOURCE_MAX_IMPORT_BYTES = 64 * 1024;
 
 std::string contentResourceTypeId(ContentResourceType type);
 bool parseContentResourceType(const std::string& value, ContentResourceType& type);
 ContentResourceError validateContentResource(const ContentResource& resource);
+ContentResourceError validateContentLibrary(const std::vector<ContentResource>& resources);
+bool contentResourceHasMissingDependencies(
+    const ContentResource& resource,
+    const std::vector<ContentResource>& library
+);
 std::string serializeContentResource(const ContentResource& resource, int indent = -1);
+std::string serializeContentResourceExport(
+    const ContentResource& resource,
+    const std::vector<ContentResource>& library,
+    int indent = -1
+);
 ContentResourceError parseContentResource(const std::string& input, ContentResource& resource);
 
 class ContentDiscardGuard

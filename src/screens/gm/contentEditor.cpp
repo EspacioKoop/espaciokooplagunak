@@ -8,6 +8,7 @@
 #include "gui/gui2_selector.h"
 #include "gui/gui2_textentry.h"
 
+#include <array>
 #include <utility>
 
 namespace
@@ -24,20 +25,30 @@ string typeLabel(ContentResourceType type)
     return "";
 }
 
-std::pair<string, string> fieldLabels(ContentResourceType type)
+std::array<string, 5> fieldLabels(ContentResourceType type)
 {
     switch(type)
     {
     case ContentResourceType::Campaign:
-        return {tr("content_editor", "Map IDs (comma separated)"), tr("content_editor", "Starting map ID")};
+        return {
+            tr("content_editor", "Map IDs (ordered, comma separated)"),
+            tr("content_editor", "Starting map ID"),
+            tr("content_editor", "Character IDs (comma separated)"),
+            tr("content_editor", "Ship IDs (comma separated)"),
+            tr("content_editor", "Transitions (from>to, comma separated)"),
+        };
     case ContentResourceType::Map:
-        return {tr("content_editor", "Scenario file"), tr("content_editor", "Recommended player count")};
+        return {tr("content_editor", "Scenario file"), tr("content_editor", "Recommended player count"), "", "", ""};
     case ContentResourceType::Character:
-        return {tr("content_editor", "Role"), tr("content_editor", "Callsign")};
+        return {
+            tr("content_editor", "Crew position ID"), tr("content_editor", "Callsign"),
+            tr("content_editor", "Tags (comma separated)"), tr("content_editor", "Ship ID (optional)"),
+            tr("content_editor", "Legacy role (clear after assigning a crew position)"),
+        };
     case ContentResourceType::Ship:
-        return {tr("content_editor", "Ship template"), tr("content_editor", "Faction")};
+        return {tr("content_editor", "Ship template"), tr("content_editor", "Faction"), "", "", ""};
     }
-    return {"", ""};
+    return {"", "", "", "", ""};
 }
 }
 
@@ -91,30 +102,45 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
 
     (new GuiLabel(box, "DESCRIPTION_LABEL", tr("content_editor", "Description"), 20))->setPosition(x, 160)->setSize(180, 35);
     description_entry = new GuiTextEntry(box, "DESCRIPTION", "");
-    description_entry->setMultiline()->setPosition(x + 190, 160)->setSize(500, 150);
+    description_entry->setMultiline()->setPosition(x + 190, 160)->setSize(500, 105);
 
-    primary_label = new GuiLabel(box, "PRIMARY_LABEL", "", 20);
-    primary_label->setPosition(x, 330)->setSize(180, 35);
+    primary_label = new GuiLabel(box, "PRIMARY_LABEL", "", 18);
+    primary_label->setPosition(x, 280)->setSize(180, 30);
     primary_entry = new GuiTextEntry(box, "PRIMARY", "");
-    primary_entry->setPosition(x + 190, 330)->setSize(500, 35);
+    primary_entry->setPosition(x + 190, 280)->setSize(500, 30);
 
-    secondary_label = new GuiLabel(box, "SECONDARY_LABEL", "", 20);
-    secondary_label->setPosition(x, 375)->setSize(180, 35);
+    secondary_label = new GuiLabel(box, "SECONDARY_LABEL", "", 18);
+    secondary_label->setPosition(x, 320)->setSize(180, 30);
     secondary_entry = new GuiTextEntry(box, "SECONDARY", "");
-    secondary_entry->setPosition(x + 190, 375)->setSize(500, 35);
+    secondary_entry->setPosition(x + 190, 320)->setSize(500, 30);
+
+    tertiary_label = new GuiLabel(box, "TERTIARY_LABEL", "", 18);
+    tertiary_label->setPosition(x, 360)->setSize(180, 30);
+    tertiary_entry = new GuiTextEntry(box, "TERTIARY", "");
+    tertiary_entry->setPosition(x + 190, 360)->setSize(500, 30);
+
+    quaternary_label = new GuiLabel(box, "QUATERNARY_LABEL", "", 18);
+    quaternary_label->setPosition(x, 400)->setSize(180, 30);
+    quaternary_entry = new GuiTextEntry(box, "QUATERNARY", "");
+    quaternary_entry->setPosition(x + 190, 400)->setSize(500, 30);
+
+    quinary_label = new GuiLabel(box, "QUINARY_LABEL", "", 18);
+    quinary_label->setPosition(x, 440)->setSize(180, 30);
+    quinary_entry = new GuiTextEntry(box, "QUINARY", "");
+    quinary_entry->setPosition(x + 190, 440)->setSize(500, 30);
 
     (new GuiButton(box, "SAVE", tr("content_editor", "Save"), [this]() { saveResource(); }))
-        ->setPosition(x, 445)->setSize(150, 45);
+        ->setPosition(x, 490)->setSize(150, 45);
     (new GuiButton(box, "EXPORT", tr("content_editor", "Export"), [this]() { exportToClipboard(); }))
-        ->setPosition(x + 165, 445)->setSize(150, 45);
+        ->setPosition(x + 165, 490)->setSize(150, 45);
     (new GuiButton(box, "IMPORT", tr("content_editor", "Import"), [this]() { importFromClipboard(); }))
-        ->setPosition(x + 330, 445)->setSize(150, 45);
+        ->setPosition(x + 330, 490)->setSize(150, 45);
     (new GuiButton(box, "EXPORT_FILE", tr("content_editor", "Export file"), [this]() {
         exportToManagedFile();
-    }))->setPosition(x + 495, 445)->setSize(195, 45);
+    }))->setPosition(x + 495, 490)->setSize(195, 45);
 
     status_label = new GuiLabel(box, "STATUS", "", 18);
-    status_label->setPosition(x, 510)->setSize(690, 70);
+    status_label->setPosition(x, 545)->setSize(690, 55);
 
     (new GuiLabel(
         box,
@@ -164,11 +190,26 @@ void GuiContentEditor::setType(ContentResourceType type)
 {
     current_type = type;
     type_selector->setSelectionIndex(static_cast<int>(type));
-    auto labels = fieldLabels(type);
-    primary_label->setText(labels.first);
-    secondary_label->setText(labels.second);
+    updateFieldPresentation(type);
     clearForm();
     refreshList();
+}
+
+void GuiContentEditor::updateFieldPresentation(ContentResourceType type)
+{
+    const auto labels = fieldLabels(type);
+    GuiLabel* field_labels[] = {
+        primary_label, secondary_label, tertiary_label, quaternary_label, quinary_label
+    };
+    GuiTextEntry* field_entries[] = {
+        primary_entry, secondary_entry, tertiary_entry, quaternary_entry, quinary_entry
+    };
+    for (std::size_t index = 0; index < labels.size(); ++index)
+    {
+        field_labels[index]->setText(labels[index]);
+        field_labels[index]->setVisible(!labels[index].empty());
+        field_entries[index]->setVisible(!labels[index].empty());
+    }
 }
 
 void GuiContentEditor::refreshList()
@@ -234,6 +275,9 @@ void GuiContentEditor::clearForm()
     description_entry->setText("");
     primary_entry->setText("");
     secondary_entry->setText("");
+    tertiary_entry->setText("");
+    quaternary_entry->setText("");
+    quinary_entry->setText("");
     clean_snapshot = formResource();
     syncListSelection();
     setStatus(tr("content_editor", "Create a resource or import one from the clipboard."));
@@ -258,9 +302,7 @@ void GuiContentEditor::loadResource(int index)
     {
         current_type = resource.type;
         type_selector->setSelectionIndex(static_cast<int>(resource.type));
-        auto labels = fieldLabels(resource.type);
-        primary_label->setText(labels.first);
-        secondary_label->setText(labels.second);
+        updateFieldPresentation(resource.type);
         refreshList();
     }
     id_entry->setText(resource.id);
@@ -268,6 +310,9 @@ void GuiContentEditor::loadResource(int index)
     description_entry->setText(resource.description);
     primary_entry->setText(resource.primary);
     secondary_entry->setText(resource.secondary);
+    tertiary_entry->setText(resource.tertiary);
+    quaternary_entry->setText(resource.quaternary);
+    quinary_entry->setText(resource.quinary);
     clean_snapshot = resource;
     pending_import = "";
     pending_save = "";
@@ -292,6 +337,9 @@ ContentResource GuiContentEditor::formResource() const
         description_entry->getText(),
         primary_entry->getText(),
         secondary_entry->getText(),
+        tertiary_entry->getText(),
+        quaternary_entry->getText(),
+        quinary_entry->getText(),
     };
 }
 
@@ -350,6 +398,8 @@ void GuiContentEditor::saveResource()
         target_index = int(candidate.size()) - 1;
         success = tr("content_editor", "Resource created.");
     }
+    const auto library_error = validateContentLibrary(candidate);
+    if (library_error != ContentResourceError::None) return setStatus(errorText(library_error));
     const auto store_error = store.save(candidate);
     if (store_error != ContentStoreError::None) return setStatus(storeErrorText(store_error));
     resources = std::move(candidate);
@@ -377,6 +427,8 @@ void GuiContentEditor::deleteResource()
     }
     auto candidate = resources;
     candidate.erase(candidate.begin() + selected_index);
+    const auto library_error = validateContentLibrary(candidate);
+    if (library_error != ContentResourceError::None) return setStatus(errorText(library_error));
     const auto store_error = store.save(candidate);
     if (store_error != ContentStoreError::None) return setStatus(storeErrorText(store_error));
     resources = std::move(candidate);
@@ -390,8 +442,10 @@ void GuiContentEditor::exportToClipboard()
     auto resource = formResource();
     auto error = validateContentResource(resource);
     if (error != ContentResourceError::None) return setStatus(errorText(error));
-    Clipboard::setClipboard(serializeContentResource(resource, 2));
-    setStatus(tr("content_editor", "Resource exported to the clipboard."));
+    Clipboard::setClipboard(serializeContentResourceExport(resource, resources, 2));
+    setStatus(contentResourceHasMissingDependencies(resource, resources)
+        ? tr("content_editor", "Resource exported with missing dependencies listed in its manifest.")
+        : tr("content_editor", "Resource exported to the clipboard with its dependency manifest."));
 }
 
 void GuiContentEditor::importFromClipboard()
@@ -423,6 +477,12 @@ bool GuiContentEditor::applyImportedResource(const ContentResource& resource, co
         candidate.push_back(resource);
         existing = int(candidate.size()) - 1;
     }
+    const auto library_error = validateContentLibrary(candidate);
+    if (library_error != ContentResourceError::None)
+    {
+        setStatus(errorText(library_error));
+        return false;
+    }
     const auto store_error = store.save(candidate);
     if (store_error != ContentStoreError::None)
     {
@@ -433,9 +493,7 @@ bool GuiContentEditor::applyImportedResource(const ContentResource& resource, co
     selected_index = existing;
     current_type = resource.type;
     type_selector->setSelectionIndex(static_cast<int>(resource.type));
-    auto labels = fieldLabels(resource.type);
-    primary_label->setText(labels.first);
-    secondary_label->setText(labels.second);
+    updateFieldPresentation(resource.type);
     refreshList();
     loadResource(selected_index);
     pending_import = "";
@@ -454,7 +512,7 @@ void GuiContentEditor::exportToManagedFile()
     const string signature = serializeContentResource(resource);
     const bool overwrite = pending_file_export == signature;
     std::string filename;
-    const auto result = store.exportResource(resource, overwrite, filename);
+    const auto result = store.exportResource(resource, resources, overwrite, filename);
     if (result == ContentStoreError::AlreadyExists)
     {
         pending_file_export = signature;
@@ -462,8 +520,10 @@ void GuiContentEditor::exportToManagedFile()
     }
     if (result != ContentStoreError::None) return setStatus(storeErrorText(result));
     pending_file_export = "";
-    setStatus(tr("content_editor", "Resource exported to managed file: {filename}")
-        .format({{"filename", filename}}));
+    setStatus(contentResourceHasMissingDependencies(resource, resources)
+        ? tr("content_editor", "Resource exported with missing dependencies listed in its manifest.")
+        : tr("content_editor", "Resource exported to managed file with its dependency manifest: {filename}")
+            .format({{"filename", filename}}));
 }
 
 void GuiContentEditor::importFromManagedFile()
@@ -537,7 +597,21 @@ string GuiContentEditor::errorText(ContentResourceError error) const
     case ContentResourceError::MissingPrimaryField:
         return tr("content_editor", "The first type-specific field is required.");
     case ContentResourceError::InvalidCampaignMapIds:
-        return tr("content_editor", "Campaign map IDs are invalid.");
+        return tr("content_editor", "Campaign map IDs or starting map are invalid.");
+    case ContentResourceError::InvalidCampaignReferences:
+        return tr("content_editor", "Campaign character or ship IDs are invalid.");
+    case ContentResourceError::InvalidCampaignTransitions:
+        return tr("content_editor", "Campaign transitions must use map-id>map-id and reference campaign maps.");
+    case ContentResourceError::CampaignTransitionCycle:
+        return tr("content_editor", "Campaign transitions contain a cycle.");
+    case ContentResourceError::InvalidCrewPosition:
+        return tr("content_editor", "Crew position must use a canonical game identifier.");
+    case ContentResourceError::InvalidCharacterTags:
+        return tr("content_editor", "Character tags must be unique lowercase IDs.");
+    case ContentResourceError::InvalidCharacterShipId:
+        return tr("content_editor", "Character ship ID is invalid.");
+    case ContentResourceError::MissingDependency:
+        return tr("content_editor", "A referenced map, character or ship is missing from the library.");
     case ContentResourceError::UnsafeScenarioFile:
         return tr("content_editor", "Scenario file must be a safe scenario_*.lua filename.");
     case ContentResourceError::InvalidPlayerCount:

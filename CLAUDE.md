@@ -91,7 +91,9 @@ node --test foundry-module/tests/*.test.mjs
 
 La CI actual: `cicd.yml` ejecuta builds Linux (con el CTest anterior dentro de
 `docker/build.sh`) / macOS / Windows-cross, más `luac -p` sobre `scripts/` (job LuaTest);
-`docker.yml` construye ambas imágenes y corre el pytest del puente; `foundry-module.yml`
+`docker.yml` construye ambas imágenes, corre el pytest del puente, verifica que compose no
+publica el puerto de `/exec.lua` (job `guardia-exec-lua`) y hace smoke test headless del
+escenario propio del fork — también en PRs que tocan `src/**`; `foundry-module.yml`
 corre la suite Node; `tools.yml` prueba los scripts de `tools/`; `codeql.yml` analiza;
 `docker-publish.yml` publica en GHCR solo con tag `v*` o dispatch (actions fijadas por SHA
 — mantén ese fijado al actualizar versiones). Lo que ninguna suite cubre se prueba a mano
@@ -115,7 +117,11 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
 - `resources/` y `packs/` — assets heredados de upstream.
 - La versión se calcula por fecha (`AAAA.MM.DD`) en `CMakeLists.txt` salvo override explícito.
 - `docs/` — documentación propia del fork: [`BUILDING.md`](docs/BUILDING.md),
-  [`UPSTREAM.md`](docs/UPSTREAM.md), [`FOUNDRY.md`](docs/FOUNDRY.md).
+  [`UPSTREAM.md`](docs/UPSTREAM.md), [`FOUNDRY.md`](docs/FOUNDRY.md),
+  [`BASELINE.md`](docs/BASELINE.md) (índice AECF del issue #88: qué prácticas de
+  seguridad/accesibilidad/calidad/fiabilidad están adoptadas, cuáles cortadas y
+  por qué — la regla de admisión es "solo se abre issue cuando duele y cabe en
+  un PR", y el cumplimiento se convierte en gate de CI, no en ceremonia).
 
 ## Flujo git
 

@@ -330,17 +330,19 @@ void GuiContentEditor::requestClose()
 
 ContentResource GuiContentEditor::formResource() const
 {
-    return {
-        current_type,
-        id_entry->getText(),
-        name_entry->getText(),
-        description_entry->getText(),
-        primary_entry->getText(),
-        secondary_entry->getText(),
-        tertiary_entry->getText(),
-        quaternary_entry->getText(),
-        quinary_entry->getText(),
-    };
+    ContentResource resource;
+    resource.type = current_type;
+    resource.id = id_entry->getText();
+    resource.name = name_entry->getText();
+    resource.description = description_entry->getText();
+    resource.primary = primary_entry->getText();
+    resource.secondary = secondary_entry->getText();
+    resource.tertiary = tertiary_entry->getText();
+    resource.quaternary = quaternary_entry->getText();
+    resource.quinary = quinary_entry->getText();
+    if (current_type == ContentResourceType::Map && clean_snapshot.type == ContentResourceType::Map)
+        resource.map_document = clean_snapshot.map_document;
+    return resource;
 }
 
 bool GuiContentEditor::isFormDirty() const
@@ -616,6 +618,8 @@ string GuiContentEditor::errorText(ContentResourceError error) const
         return tr("content_editor", "Scenario file must be a safe scenario_*.lua filename.");
     case ContentResourceError::InvalidPlayerCount:
         return tr("content_editor", "Recommended player count must be between 1 and 64.");
+    case ContentResourceError::InvalidMapDocument:
+        return tr("content_editor", "Imported document has invalid type-specific fields.");
     }
     return tr("content_editor", "Clipboard does not contain valid content JSON.");
 }

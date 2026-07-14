@@ -277,6 +277,10 @@ set(MAIN_SOURCES
     src/content/contentLibraryStore.h
     src/content/contentResource.cpp
     src/content/contentResource.h
+    src/content/mapDocument.cpp
+    src/content/mapDocument.h
+    src/content/mapEditSession.cpp
+    src/content/mapEditSession.h
     src/screens/gm/gameMasterScreen.cpp
     src/screens/gm/contentEditor.cpp
     src/screens/gm/contentEditor.h
@@ -716,6 +720,7 @@ if(BUILD_CONTENT_RESOURCE_TESTS)
     add_executable(content_resource_tests
         tests/contentResourceTests.cpp
         src/content/contentResource.cpp
+        src/content/mapDocument.cpp
         src/crewPosition.cpp
     )
     target_include_directories(content_resource_tests PRIVATE
@@ -727,11 +732,29 @@ if(BUILD_CONTENT_RESOURCE_TESTS)
         tests/contentLibraryStoreTests.cpp
         src/content/contentLibraryStore.cpp
         src/content/contentResource.cpp
+        src/content/mapDocument.cpp
         src/crewPosition.cpp
     )
     target_include_directories(content_library_store_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
     target_link_libraries(content_library_store_tests PRIVATE seriousproton)
     add_test(NAME content_library_store COMMAND content_library_store_tests)
+
+    add_executable(map_document_tests
+        tests/mapDocumentTests.cpp
+        src/content/mapDocument.cpp
+    )
+    target_include_directories(map_document_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+    target_link_libraries(map_document_tests PRIVATE seriousproton)
+    add_test(NAME map_document_codec COMMAND map_document_tests)
+
+    add_executable(map_edit_session_tests
+        tests/mapEditSessionTests.cpp
+        src/content/mapDocument.cpp
+        src/content/mapEditSession.cpp
+    )
+    target_include_directories(map_edit_session_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+    target_link_libraries(map_edit_session_tests PRIVATE seriousproton)
+    add_test(NAME map_edit_session COMMAND map_edit_session_tests)
 endif()
 
 if(WIN32)

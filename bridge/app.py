@@ -16,9 +16,10 @@ Contrato v0 (ver docs/FOUNDRY.md):
   POST /v1/command   — órdenes de una lista blanca cerrada (auth).
 
 Configuración por variables de entorno:
-  EE_URL        — URL interna del juego (p. ej. http://game:8080).
-  BRIDGE_TOKEN  — token Bearer obligatorio para /v1/*.
-  BRIDGE_PORT   — puerto de escucha (por defecto 8090).
+  EE_URL                  — URL interna del juego (p. ej. http://game:8080).
+  BRIDGE_TOKEN            — token Bearer obligatorio para /v1/*.
+  BRIDGE_PORT             — puerto de escucha (por defecto 8090).
+  BRIDGE_ALLOWED_ORIGINS  — orígenes web permitidos, separados por comas.
 """
 
 from __future__ import annotations
@@ -30,14 +31,17 @@ import threading
 import time
 from enum import Enum
 from typing import Annotated, Any, Literal, Union
+from urllib.parse import urlsplit
 
 import httpx
 from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field, StrictBool
 
 EE_URL = os.environ.get("EE_URL", "http://game:8080")
 BRIDGE_TOKEN = os.environ.get("BRIDGE_TOKEN", "")
+BRIDGE_ALLOWED_ORIGINS = os.environ.get("BRIDGE_ALLOWED_ORIGINS", "")
 
 EXEC_TIMEOUT_SECONDS = 5.0
 MAX_GAME_RESPONSE_BYTES = 64 * 1024
@@ -49,6 +53,58 @@ app = FastAPI(
     version="0.1.0",
     description=__doc__,
 )
+
+
+def _parse_allowed_origins(raw: str) -> list[str]:
+    """Valida una allowlist CORS de orígenes HTTP(S) exactos."""
+    origins: list[str] = []
+    for value in raw.split(","):
+        origin = value.strip()
+        if not origin:
+            continue
+        if origin == "*":
+            raise RuntimeError("BRIDGE_ALLOWED_ORIGINS no admite el comodín '*'")
+
+        parsed = urlsplit(origin)
+        try:
+            parsed.port
+        except ValueError as exc:
+            raise RuntimeError(
+                f"Origen CORS inválido en BRIDGE_ALLOWED_ORIGINS: {origin!r}"
+            ) from exc
+        if (
+            parsed.scheme not in {"http", "https"}
+            or not parsed.hostname
+            or parsed.username is not None
+            or parsed.password is not None
+            or parsed.netloc.endswith(":")
+            or parsed.path
+            or parsed.query
+            or parsed.fragment
+        ):
+            raise RuntimeError(
+                f"Origen CORS inválido en BRIDGE_ALLOWED_ORIGINS: {origin!r}"
+            )
+        if origin not in origins:
+            origins.append(origin)
+    return origins
+
+
+def _configure_cors(application: FastAPI, raw_origins: str) -> None:
+    origins = _parse_allowed_origins(raw_origins)
+    if not origins:
+        return
+    application.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_methods=["GET", "POST"],
+        allow_headers=["Authorization", "Content-Type"],
+        allow_credentials=False,
+        max_age=600,
+    )
+
+
+_configure_cors(app, BRIDGE_ALLOWED_ORIGINS)
 
 _bearer = HTTPBearer(auto_error=False)
 

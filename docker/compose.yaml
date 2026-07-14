@@ -37,6 +37,7 @@ services:
     environment:
       EE_URL: http://game:8080
       BRIDGE_TOKEN: ${BRIDGE_TOKEN:?Define BRIDGE_TOKEN en docker/.env}
+      BRIDGE_ALLOWED_ORIGINS: ${BRIDGE_ALLOWED_ORIGINS:-}
       BRIDGE_PORT: "8090"
     ports:
       # API del puente para Foundry. Loopback por defecto: ampliar el bind

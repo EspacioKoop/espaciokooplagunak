@@ -21,6 +21,7 @@ El código del puente vive en [`bridge/`](../bridge/).
 cd docker
 cp .env.example .env
 # Edita .env y define BRIDGE_TOKEN (openssl rand -hex 32)
+# Ajusta BRIDGE_ALLOWED_ORIGINS al origen exacto de Foundry
 docker compose up -d --build
 ```
 
@@ -108,6 +109,7 @@ caso usa HTTPS también para el puente.
 | `EE_SERVER_PASSWORD` | vacío | Contraseña para clientes |
 | `EE_SERVER_PORT` | `35666` | Puerto publicado para clientes |
 | `BRIDGE_TOKEN` | — (obligatorio) | Token Bearer del puente |
+| `BRIDGE_ALLOWED_ORIGINS` | `http://localhost:30000` en `.env.example` | Orígenes Foundry autorizados para CORS, separados por comas; vacío lo desactiva |
 | `BRIDGE_BIND` | `127.0.0.1` | Dirección del host donde se publica el puente |
 | `BRIDGE_PORT` | `8090` | Puerto publicado del puente |
 

@@ -15,7 +15,8 @@ polling.
   versión del **anfitrión** que hospeda la partida: los jugadores se conectan
   por navegador y no ejecutan Foundry.
 - El puente de integración en marcha (`docker/README.md`): juego + puente vía
-  compose, con `BRIDGE_TOKEN` definido.
+  compose, con `BRIDGE_TOKEN` definido y el origen web de Foundry incluido en
+  `BRIDGE_ALLOWED_ORIGINS` (por ejemplo, `http://localhost:30000`).
 
 ## Instalación (manual, sin manifiesto todavía)
 
@@ -39,6 +40,14 @@ En *Configuración → Ajustes del módulo*:
 | URL del puente | `http://localhost:8090` (o donde esté publicado el puente) |
 | Token del puente | el `BRIDGE_TOKEN` de `docker/.env` |
 | Intervalo de sondeo | 1–30 s (2 s por defecto) |
+
+La configuración del contenedor debe permitir el origen **exacto** que aparece
+en la barra del navegador (esquema, host y puerto, sin barra final), no
+necesariamente la URL del puente. Por ejemplo:
+
+```dotenv
+BRIDGE_ALLOWED_ORIGINS=http://localhost:30000
+```
 
 Los tres ajustes son de ámbito **client**: viven en el navegador del GM, no
 entran en la base de datos del mundo y no se sincronizan con los jugadores.

@@ -23,9 +23,13 @@ tipos de recursos sin editar Lua:
 9. Si el formulario cambió desde la última carga o guardado, **New**, cambiar de
    tipo, cargar otro recurso, importar o cerrar requieren repetir la acción. La
    confirmación se invalida si cambia el formulario o se elige otra acción.
-10. **Export file** escribe el recurso en la carpeta de exportaciones gestionada.
+10. En mapas, **Preview on radar** activa una capa read-only sobre el radar GM.
+    Asteroides y nebulosas se muestran semitransparentes; los tipos futuros se
+    conservan pero no se interpretan ni dibujan. El preview persiste al cerrar el
+    modal y sigue el pan/zoom del radar.
+11. **Export file** escribe el recurso en la carpeta de exportaciones gestionada.
     Si el archivo ya existe, exige una segunda pulsación.
-11. **Import inbox** permite elegir un JSON depositado en la bandeja gestionada.
+12. **Import inbox** permite elegir un JSON depositado en la bandeja gestionada.
     **Import file** muestra primero tipo, ID y nombre de archivo; una segunda
     pulsación confirma la importación y una sustitución exige confirmación propia.
 
@@ -154,7 +158,7 @@ configurado con `-DBUILD_CONTENT_RESOURCE_TESTS=ON` se ejecutan con:
 
 ```bash
 ctest --test-dir build --output-on-failure \
-  -R 'content_resource_codec|content_library_store|map_document_codec|map_edit_session'
+  -R 'content_resource_codec|content_library_store|map_document_codec|map_edit_session|map_preview_projection'
 ```
 
 El test del codec cubre los cuatro tipos, round-trip, límite de 64 KiB, claves
@@ -165,15 +169,16 @@ ENOSPC, permisos, interrupciones antes y después de rotar el backup, recuperaci
 migración secuencial, versión futura y export-import-export equivalente.
 `docker/build.sh` activa y ejecuta estas pruebas en el job Linux.
 
-## Alcance de esta primera fase
+## Alcance de esta fase
 
 El editor crea, valida, persiste e intercambia metadatos declarativos de los cuatro tipos.
-Los mapas ya tienen modelo separado del ECS y una sesión transaccional de staging
-con undo, redo, dirty state y rollback. Este primer corte no añade todavía una
-pantalla: los objetos del mundo se siguen colocando y ajustando visualmente desde
-Game Master. Las siguientes fases mantendrán la misma envoltura versionada:
+Los mapas tienen modelo separado del ECS, sesión transaccional de staging con undo,
+redo, dirty state y rollback, y preview read-only sobre el radar GM. El preview no
+crea ni modifica entidades: solo proyecta asteroides y nebulosas de la allowlist;
+los tipos futuros opacos se omiten visualmente sin perderse. La siguiente fase
+mantendrá la misma envoltura versionada:
 
-- preview del documento sobre el radar y aplicación tipada al mundo, sin Lua importado
+- aplicación tipada al mundo con autorización GM y rollback, sin Lua importado
   ([#54](https://github.com/VaroTv7/espaciokooplagunak/issues/54));
 - plantillas, previsualización y spawn de naves ([#55](https://github.com/VaroTv7/espaciokooplagunak/issues/55)).
 

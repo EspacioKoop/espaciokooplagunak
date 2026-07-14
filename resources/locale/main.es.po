@@ -3995,6 +3995,10 @@ msgid "Private library could not be written because storage is full."
 msgstr "No se ha podido escribir la biblioteca privada porque el almacenamiento está lleno."
 
 msgctxt "content_editor"
+msgid "Preview on radar"
+msgstr "Previsualizar en el radar"
+
+msgctxt "content_editor"
 msgid "Private library loaded."
 msgstr "Biblioteca privada cargada."
 

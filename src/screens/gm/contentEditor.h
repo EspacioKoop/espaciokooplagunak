@@ -9,11 +9,14 @@ class GuiLabel;
 class GuiListbox;
 class GuiSelector;
 class GuiTextEntry;
+class GuiToggleButton;
 
 class GuiContentEditor : public GuiOverlay
 {
 public:
     explicit GuiContentEditor(GuiContainer* owner);
+
+    const MapDocument* previewDocument() const;
 
     virtual bool onMouseDown(
         sp::io::Pointer::Button button,
@@ -35,6 +38,7 @@ private:
     string pending_file_import;
     string pending_file_export;
     ContentDiscardGuard discard_guard;
+    bool preview_enabled = false;
 
     GuiSelector* type_selector;
     GuiSelector* inbox_selector;
@@ -53,6 +57,7 @@ private:
     GuiLabel* quinary_label;
     GuiTextEntry* quinary_entry;
     GuiLabel* status_label;
+    GuiToggleButton* preview_toggle;
 
     void requestSetType(ContentResourceType type);
     void setType(ContentResourceType type);

@@ -281,6 +281,8 @@ set(MAIN_SOURCES
     src/content/mapDocument.h
     src/content/mapEditSession.cpp
     src/content/mapEditSession.h
+    src/content/mapPreview.cpp
+    src/content/mapPreview.h
     src/screens/gm/gameMasterScreen.cpp
     src/screens/gm/contentEditor.cpp
     src/screens/gm/contentEditor.h
@@ -755,6 +757,15 @@ if(BUILD_CONTENT_RESOURCE_TESTS)
     target_include_directories(map_edit_session_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
     target_link_libraries(map_edit_session_tests PRIVATE seriousproton)
     add_test(NAME map_edit_session COMMAND map_edit_session_tests)
+
+    add_executable(map_preview_tests
+        tests/mapPreviewTests.cpp
+        src/content/mapDocument.cpp
+        src/content/mapPreview.cpp
+    )
+    target_include_directories(map_preview_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+    target_link_libraries(map_preview_tests PRIVATE seriousproton)
+    add_test(NAME map_preview_projection COMMAND map_preview_tests)
 endif()
 
 if(WIN32)

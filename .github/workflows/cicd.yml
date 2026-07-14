@@ -162,6 +162,20 @@ jobs:
       - name: Build
         working-directory: ${{github.workspace}}/build
         run: cmake --build . --config ${{ matrix.build_type }} --target package 
+  foundry-tests:
+    name: Tests del módulo Foundry
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Ejecutar la suite del módulo
+        run: node --test foundry-module/tests/*.test.mjs
   luatest:
     name: LuaTest
     runs-on: ubuntu-latest

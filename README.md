@@ -208,6 +208,13 @@ Los agentes de IA deben leer además [`AGENTS.md`](AGENTS.md) antes de modificar
 
 La incorporación de cambios de EmptyEpsilon se realiza de forma explícita y sin `push --force`. Procedimiento completo: [`docs/UPSTREAM.md`](docs/UPSTREAM.md).
 
+## Créditos del fork
+
+Espaciokoop Lagunak cuenta con un equipo colaborativo humano–IA formado por
+**Varo**, **Eloy «Gurucharri»**, **OTACON** y **Claude Fable 5**, la IA de apoyo
+técnico de Gurucharri. Funciones, atribución y reconocimiento del proyecto
+original: [`CREDITS.md`](CREDITS.md).
+
 ## Licencia y atribución
 
 Este repositorio deriva de EmptyEpsilon y conserva su licencia **GNU General Public License, versión 2**. Consulta [`LICENSE`](LICENSE). Los autores originales mantienen la autoría de sus contribuciones; los cambios del fork pertenecen a sus respectivos contribuidores bajo la misma licencia aplicable.

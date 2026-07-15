@@ -183,7 +183,11 @@ Los mapas tienen modelo separado del ECS, sesión transaccional de staging con u
 redo, dirty state y rollback, y preview read-only sobre el radar GM. El preview no
 crea ni modifica entidades: solo proyecta asteroides y nebulosas de la allowlist;
 los tipos futuros opacos se omiten visualmente sin perderse y su recuento queda
-visible en el editor.
+visible en el editor. El núcleo de interacción del preview añade hit-test con tolerancia
+en píxeles estable al zoom y un drag provisional separado de `MapEditSession`: solo el
+commit final llama una vez a `moveObject()`, mientras cancelar o mover el puntero no
+crea historial. Los objetos opacos nunca entran en hit-test. La conexión de este núcleo
+al radar GM se completa en #150.
 
 Las naves tienen un modelo tipado para overrides opcionales de sistemas, recursos,
 carga y puestos. Rechaza IDs no canónicos, duplicados, valores no finitos y

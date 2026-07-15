@@ -283,6 +283,8 @@ set(MAIN_SOURCES
     src/content/mapEditSession.h
     src/content/mapPreview.cpp
     src/content/mapPreview.h
+    src/content/mapPreviewInteraction.cpp
+    src/content/mapPreviewInteraction.h
     src/content/shipDocument.cpp
     src/content/shipDocument.h
     src/content/shipEditSession.cpp
@@ -774,6 +776,17 @@ if(BUILD_CONTENT_RESOURCE_TESTS)
     target_include_directories(map_preview_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
     target_link_libraries(map_preview_tests PRIVATE seriousproton)
     add_test(NAME map_preview_projection COMMAND map_preview_tests)
+
+    add_executable(map_preview_interaction_tests
+        tests/mapPreviewInteractionTests.cpp
+        src/content/mapDocument.cpp
+        src/content/mapEditSession.cpp
+        src/content/mapPreview.cpp
+        src/content/mapPreviewInteraction.cpp
+    )
+    target_include_directories(map_preview_interaction_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+    target_link_libraries(map_preview_interaction_tests PRIVATE seriousproton)
+    add_test(NAME map_preview_interaction COMMAND map_preview_interaction_tests)
 
     add_executable(ship_document_tests
         tests/shipDocumentTests.cpp

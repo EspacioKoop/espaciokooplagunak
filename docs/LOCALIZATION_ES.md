@@ -39,6 +39,22 @@ Este comando extrae las llamadas `tr(msgid)` y `tr(contexto, msgid)` de `src/`
 y actualiza únicamente `resources/locale/main.en.po`. No modifica otros
 idiomas silenciosamente.
 
+## Catálogo vivo del tutorial
+
+El tutorial carga su traducción según la ruta del script mediante
+`i18n::load("locale/" + filename…)`. Para `scripts/tutorial/00_all.lua`, los
+catálogos efectivos son:
+
+- `scripts/locale/tutorial/00_all.en.po`;
+- `scripts/locale/tutorial/00_all.es.po`.
+
+Los archivos agregados `resources/locale/tutorial.*.po` son un artefacto
+heredado de upstream: el juego no los carga y `update_locale.py` no los
+regenera. Se conservan para evitar divergencia y conflictos innecesarios con
+upstream, pero **no son fuente de verdad**, no deben usarse para certificar el
+tutorial ni requieren nuevas pasadas de traducción asistida. Si upstream
+reactiva ese catálogo, esta decisión debe revisarse contra el código de carga.
+
 ## Generar la primera pasada española
 
 Con un entorno Python que contenga `polib`, `ctranslate2` y `sentencepiece`:
@@ -58,8 +74,6 @@ al traductor y las peticiones se agrupan con un separador verificado:
 ```bash
 python3 tools/i18n_es.py --root . --provider google \
   --only resources/locale/main.en.po --overwrite
-python3 tools/i18n_es.py --root . --provider google \
-  --only resources/locale/tutorial.en.po --overwrite
 python3 tools/i18n_es.py --root . --provider google \
   --only scripts/locale/tutorial --overwrite
 ```

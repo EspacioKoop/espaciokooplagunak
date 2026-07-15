@@ -70,7 +70,9 @@ jobs:
           format: sarif
           output: trivy-${{ matrix.image.name }}.sarif
           severity: HIGH,CRITICAL
-          ignore-unfixed: false
+          # Solo CVEs con parche disponible: las imágenes van sobre Debian
+          # estable y los CVE sin fix upstream no son accionables (issue #142).
+          ignore-unfixed: true
           exit-code: "0"
           timeout: 10m0s
 

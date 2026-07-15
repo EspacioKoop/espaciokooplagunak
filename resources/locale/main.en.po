@@ -4521,3 +4521,39 @@ msgstr ""
 msgctxt "content_editor"
 msgid "The ship template references a missing 3D model."
 msgstr ""
+
+msgctxt "content_editor"
+msgid "Choose template"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Choose ship template"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Search"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Use template"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "No ship template catalog is available in this scenario."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "No matching ship templates."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "templates available"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Select a ship template first."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Ship template selected."
+msgstr ""

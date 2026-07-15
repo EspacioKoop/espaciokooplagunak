@@ -4299,3 +4299,39 @@ msgstr "La plantilla de nave no está disponible en este escenario."
 msgctxt "content_editor"
 msgid "The ship template references a missing 3D model."
 msgstr "La plantilla de nave hace referencia a un modelo 3D inexistente."
+
+msgctxt "content_editor"
+msgid "Choose template"
+msgstr "Elegir plantilla"
+
+msgctxt "content_editor"
+msgid "Choose ship template"
+msgstr "Elegir plantilla de nave"
+
+msgctxt "content_editor"
+msgid "Search"
+msgstr "Buscar"
+
+msgctxt "content_editor"
+msgid "Use template"
+msgstr "Usar plantilla"
+
+msgctxt "content_editor"
+msgid "No ship template catalog is available in this scenario."
+msgstr "No hay un catálogo de plantillas de nave disponible en este escenario."
+
+msgctxt "content_editor"
+msgid "No matching ship templates."
+msgstr "No hay plantillas de nave coincidentes."
+
+msgctxt "content_editor"
+msgid "templates available"
+msgstr "plantillas disponibles"
+
+msgctxt "content_editor"
+msgid "Select a ship template first."
+msgstr "Selecciona primero una plantilla de nave."
+
+msgctxt "content_editor"
+msgid "Ship template selected."
+msgstr "Plantilla de nave seleccionada."

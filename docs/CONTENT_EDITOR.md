@@ -196,10 +196,14 @@ precargados de confianza: exige una plantilla canónica existente y que su model
 siga registrado. La consulta devuelve solo metadatos escalares ordenados; no expone
 ni ejecuta callbacks de spawn. Si todavía no hay escenario/catálogo cargado, el
 editor conserva el comportamiento declarativo y no bloquea el guardado.
+El botón `Elegir plantilla` abre una lista buscable con scroll. Solo ofrece plantillas
+visibles cuyo modelo siga registrado; filtra sin distinguir mayúsculas ASCII sobre
+ID, etiqueta, tipo y modelo, pero aplica siempre el ID canónico. La entrada manual se
+mantiene para documentos legacy y las plantillas ocultas siguen validando al cargar su
+ID. El selector no crea entidades ni ejecuta callbacks de spawn.
 El documento no toca el ECS. La sesión C++ pura prepara todos esos cambios con
 dirty state, historial acotado y rollback al último snapshot guardado.
-Un selector de plantillas escalable, la previsualización y la aplicación al mundo se
-incorporarán en verticales posteriores.
+La previsualización y la aplicación al mundo se incorporarán en verticales posteriores.
 La siguiente fase mantendrá la misma envoltura versionada:
 
 - aplicación tipada al mundo con autorización GM y rollback, sin Lua importado

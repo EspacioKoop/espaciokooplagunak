@@ -53,6 +53,18 @@ int main()
             == ShipTemplateValidation::Available,
         "hidden templates remain valid for backward-compatible documents");
 
+    const auto all_selectable = filterSelectableShipTemplates(catalog, "");
+    expect(all_selectable.size() == 1 && all_selectable.front() == 0,
+        "picker excludes hidden templates and templates without valid models");
+    const auto by_label = filterSelectableShipTemplates(catalog, "ADDER");
+    expect(by_label.size() == 1 && by_label.front() == 0,
+        "picker search is ASCII case-insensitive across labels and IDs");
+    const auto by_model = filterSelectableShipTemplates(catalog, "addermk5");
+    expect(by_model.size() == 1 && by_model.front() == 0,
+        "picker search includes canonical model IDs");
+    expect(filterSelectableShipTemplates(catalog, "unknown query").empty(),
+        "picker returns no entries for an unmatched query");
+
     std::cout << "SHIP_TEMPLATE_CATALOG_TESTS_OK checks=" << checks << "\n";
     return 0;
 }

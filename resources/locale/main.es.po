@@ -4380,3 +4380,23 @@ msgstr "Otro recurso de este tipo ya utiliza el nuevo ID."
 msgctxt "content_editor"
 msgid "The resource could not be renamed."
 msgstr "No se ha podido renombrar el recurso."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The resource type is invalid."
+msgstr "El tipo de recurso no es válido."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The resource changed on disk. The latest version was reloaded."
+msgstr "El recurso cambió en disco. Se ha recargado la versión más reciente."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The rename was recovered after a storage error. Review the reloaded library."
+msgstr "El renombrado se recuperó tras un error de almacenamiento. Revisa la biblioteca recargada."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The renamed resource could not be reloaded."
+msgstr "No se ha podido recargar el recurso renombrado."

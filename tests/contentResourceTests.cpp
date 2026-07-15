@@ -84,15 +84,6 @@ ContentResource* findResource(std::vector<ContentResource>& resources,
     });
     return found == resources.end() ? nullptr : &*found;
 }
-
-const ContentResource* findResource(const std::vector<ContentResource>& resources,
-                                    ContentResourceType type, const std::string& id)
-{
-    const auto found = std::find_if(resources.begin(), resources.end(), [&](const ContentResource& item) {
-        return item.type == type && item.id == id;
-    });
-    return found == resources.end() ? nullptr : &*found;
-}
 }
 
 int main()
@@ -345,6 +336,15 @@ int main()
     expect(validateContentLibrary({map_one, map_two, character, campaign}) == ContentResourceError::MissingDependency,
         "missing campaign or character dependency blocks library validation");
 
+    auto invalid_type_resource = map_one;
+    invalid_type_resource.type = static_cast<ContentResourceType>(999);
+    expect(validateContentResource(invalid_type_resource) == ContentResourceError::UnknownType,
+        "out-of-range C++ resource type is rejected explicitly");
+    auto invalid_type_library = complete_library;
+    invalid_type_library.front().type = static_cast<ContentResourceType>(999);
+    expect(validateContentLibrary(invalid_type_library) == ContentResourceError::UnknownType,
+        "library validation rejects an out-of-range C++ resource type");
+
     auto renamed_map_library = complete_library;
     auto unrelated_campaign = validResource(ContentResourceType::Campaign);
     unrelated_campaign.id = "campaign-2";
@@ -406,6 +406,12 @@ int main()
 
     auto unchanged_rename_library = complete_library;
     const auto rename_snapshot = unchanged_rename_library;
+    expect(renameContentResource(unchanged_rename_library,
+                                 static_cast<ContentResourceType>(999),
+                                 "map-1", "new-map") == ContentRenameError::InvalidType,
+        "out-of-range rename type is rejected explicitly");
+    expect(unchanged_rename_library == rename_snapshot,
+        "invalid rename type leaves the whole library unchanged");
     expect(renameContentResource(unchanged_rename_library, ContentResourceType::Map,
                                  "map-1", "Uppercase") == ContentRenameError::InvalidNewId,
         "invalid destination ID is rejected");
@@ -460,6 +466,35 @@ int main()
     expect(duplicate_rename_library == duplicate_rename_snapshot,
         "duplicate source identities remain untouched on failure");
 
+    auto oversized_candidate_library = complete_library;
+    auto* oversized_campaign = findResource(
+        oversized_candidate_library, ContentResourceType::Campaign, "campaign-1");
+    expect(oversized_campaign != nullptr, "candidate-overflow fixture contains campaign");
+    oversized_campaign->primary = "map-1";
+    oversized_campaign->secondary = "map-1";
+    oversized_campaign->quinary.clear();
+    for (int index = 0; index < 16; ++index)
+    {
+        const std::string destination_id = "dest-" + std::to_string(index);
+        auto destination_map = map_one;
+        destination_map.id = destination_id;
+        oversized_candidate_library.push_back(destination_map);
+        oversized_campaign = findResource(
+            oversized_candidate_library, ContentResourceType::Campaign, "campaign-1");
+        oversized_campaign->primary += ", " + destination_id;
+        if (!oversized_campaign->quinary.empty()) oversized_campaign->quinary += ',';
+        oversized_campaign->quinary += "map-1>" + destination_id;
+    }
+    expect(validateContentLibrary(oversized_candidate_library) == ContentResourceError::None,
+        "candidate-overflow source library is valid before rename");
+    const auto oversized_candidate_snapshot = oversized_candidate_library;
+    const std::string longest_valid_id(64, 'a');
+    expect(renameContentResource(oversized_candidate_library, ContentResourceType::Map,
+                                 "map-1", longest_valid_id) == ContentRenameError::InvalidLibrary,
+        "rename rejects a candidate whose expanded references exceed field limits");
+    expect(oversized_candidate_library == oversized_candidate_snapshot,
+        "post-copy candidate validation failure leaves original library unchanged");
+
     const auto exported = nlohmann::json::parse(serializeContentResourceExport(campaign, complete_library, 2));
     expect(exported["dependencies"].is_array() && exported["dependencies"].size() == 4,
         "individual campaign export has a closed dependency manifest");
@@ -507,6 +542,20 @@ int main()
     expect(guard.confirm("close", clean, clean), "clean form needs no confirmation");
     expect(!guard.confirm("close", dirty, clean), "first destructive action is blocked");
     expect(guard.confirm("close", dirty, clean), "identical second action is confirmed");
+
+    ContentDiscardGuard rename_guard;
+    auto rename_candidate = clean;
+    rename_candidate.id = "renamed-map";
+    expect(!rename_guard.confirm("rename:map:map-1", rename_candidate, clean),
+        "first rename save is blocked for confirmation");
+    rename_candidate.name = "Edited before confirmation";
+    expect(!rename_guard.confirm("rename:map:map-1", rename_candidate, clean),
+        "editing the form invalidates the previous rename confirmation");
+    expect(rename_guard.confirm("rename:map:map-1", rename_candidate, clean),
+        "identical second rename save confirms the current form signature");
+    rename_guard.reset();
+    expect(!rename_guard.confirm("rename:map:map-1", rename_candidate, clean),
+        "loading or saving resets rename confirmation state");
     expect(!guard.confirm("new", dirty, clean), "different action needs its own confirmation");
     dirty.description = "Changed after warning";
     expect(!guard.confirm("new", dirty, clean), "editing after warning invalidates confirmation");

@@ -58,8 +58,10 @@ enum class ContentRenameError
 {
     None,
     InvalidLibrary,
+    InvalidType,
     InvalidNewId,
     SourceNotFound,
+    SourceChanged,
     TargetAlreadyExists,
 };
 

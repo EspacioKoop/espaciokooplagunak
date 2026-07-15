@@ -219,10 +219,13 @@ recurso sobre una copia de la biblioteca: actualiza mapas iniciales y ordenados,
 transiciones, personajes y naves referenciadas, valida la candidata completa y solo
 entonces reemplaza el vector original. IDs inválidos, colisiones, recursos ausentes o
 una biblioteca origen inválida no producen mutación parcial. El store envuelve carga,
-renombrado y guardado con su lock y commit atómico; distingue rechazos de dominio de
-fallos de E/S y conserva la generación anterior si la escritura falla. En la GUI, editar
-el ID de un recurso cargado y pulsar Guardar muestra el alcance del cambio; una segunda
-pulsación confirma el renombrado y sus referencias en un único commit. Las colisiones
+comparación del snapshot editado, renombrado, campos modificados y guardado con un único
+lock: preserva cambios concurrentes ajenos y rechaza si cambió el propio recurso. Los
+fallos previos a promoción conservan la generación anterior; si el commit ya rotó el
+canónico, recarga la generación recuperada e informa por separado si el cambio quedó
+aplicado. En la GUI, editar el ID de un recurso cargado y pulsar Guardar muestra el
+alcance del cambio; una segunda pulsación confirma el renombrado y sus referencias en
+un único commit. Las colisiones
 se rechazan sin reemplazar otro recurso. Los selectores tipados de relaciones se
 incorporarán en el siguiente corte de #154.
 Aplicar esos documentos a una sesión viva queda separado de la edición y persistencia

@@ -310,6 +310,7 @@ bool parseContentResourceType(const std::string& value, ContentResourceType& typ
 
 ContentResourceError validateContentResource(const ContentResource& resource)
 {
+    if (contentResourceTypeId(resource.type).empty()) return ContentResourceError::UnknownType;
     if (!validId(resource.id)) return ContentResourceError::InvalidId;
     if (resource.name.empty() || resource.name.size() > 120) return ContentResourceError::InvalidName;
     if (resource.description.size() > 4000) return ContentResourceError::DescriptionTooLong;
@@ -385,6 +386,7 @@ ContentRenameError renameContentResource(std::vector<ContentResource>& resources
                                          const std::string& old_id,
                                          const std::string& new_id)
 {
+    if (contentResourceTypeId(type).empty()) return ContentRenameError::InvalidType;
     if (!uniqueResourceIds(resources)
         || validateContentLibrary(resources) != ContentResourceError::None)
         return ContentRenameError::InvalidLibrary;

@@ -574,6 +574,7 @@ void GuiContentEditor::loadResource(int index)
     pending_delete_key = "";
     pending_file_export = "";
     discard_guard.reset();
+    rename_guard.reset();
     syncListSelection();
     setStatus(tr("content_editor", "Resource loaded."));
 }
@@ -640,26 +641,62 @@ void GuiContentEditor::saveResource()
         && resources[selected_index].id != resource.id;
     const bool replacing_other = existing >= 0 && existing != selected_index;
     const string save_signature = serializeContentResource(resource);
+    if (!renaming) rename_guard.reset();
 
     auto candidate = resources;
     int target_index = selected_index;
     string success;
+    bool already_persisted = false;
     if (renaming)
     {
-        const auto& original = resources[selected_index];
+        const auto original = resources[selected_index];
         const auto rename_error = renameContentResource(
             candidate, original.type, original.id, resource.id);
         if (rename_error != ContentRenameError::None)
-            return setStatus(renameErrorText(rename_error));
-        const string rename_signature = contentResourceTypeId(original.type) + ":"
-            + original.id + "->" + resource.id + "\n" + save_signature;
-        if (pending_save != rename_signature)
         {
-            pending_save = rename_signature;
+            rename_guard.reset();
+            return setStatus(renameErrorText(rename_error));
+        }
+        const string rename_action = "rename:" + contentResourceTypeId(original.type)
+            + ":" + original.id;
+        if (!rename_guard.confirm(rename_action, resource, original))
+        {
             return setStatus(tr("content_editor",
                 "Changing this ID updates every reference. Press Save again to confirm."));
         }
-        candidate[selected_index] = resource;
+        std::vector<ContentResource> reconciled;
+        const auto rename_result = store.renameResource(original, resource, reconciled);
+        if (!rename_result.ok())
+        {
+            if (rename_result.reconciled)
+            {
+                resources = std::move(reconciled);
+                const auto& identity = rename_result.applied ? resource : original;
+                const auto actual = std::find_if(
+                    resources.begin(), resources.end(), [&](const ContentResource& item) {
+                        return item.type == identity.type && item.id == identity.id;
+                    });
+                const int actual_index = actual == resources.end()
+                    ? -1 : int(actual - resources.begin());
+                refreshList();
+                if (actual_index >= 0) loadResource(actual_index);
+            }
+            pending_save = "";
+            if (rename_result.rename_error != ContentRenameError::None)
+                return setStatus(renameErrorText(rename_result.rename_error));
+            if (rename_result.reconciled && rename_result.applied)
+                return setStatus(tr("content_editor",
+                    "The rename was recovered after a storage error. Review the reloaded library."));
+            return setStatus(storeErrorText(rename_result.store_error));
+        }
+        candidate = std::move(reconciled);
+        const auto target = std::find_if(candidate.begin(), candidate.end(), [&](const ContentResource& item) {
+            return item.type == resource.type && item.id == resource.id;
+        });
+        if (target == candidate.end())
+            return setStatus(tr("content_editor", "The renamed resource could not be reloaded."));
+        target_index = int(target - candidate.begin());
+        already_persisted = true;
         success = tr("content_editor", "Resource renamed and references updated.");
     }
     else if (replacing_other)
@@ -693,8 +730,11 @@ void GuiContentEditor::saveResource()
     }
     const auto library_error = validateContentLibrary(candidate);
     if (library_error != ContentResourceError::None) return setStatus(errorText(library_error));
-    const auto store_error = store.save(candidate);
-    if (store_error != ContentStoreError::None) return setStatus(storeErrorText(store_error));
+    if (!already_persisted)
+    {
+        const auto store_error = store.save(candidate);
+        if (store_error != ContentStoreError::None) return setStatus(storeErrorText(store_error));
+    }
     resources = std::move(candidate);
     selected_index = target_index;
     clean_snapshot = resource;
@@ -706,6 +746,7 @@ void GuiContentEditor::saveResource()
     pending_delete_key = "";
     pending_file_export = "";
     discard_guard.reset();
+    rename_guard.reset();
     refreshList();
     setStatus(success);
 }
@@ -926,10 +967,14 @@ string GuiContentEditor::renameErrorText(ContentRenameError error) const
     case ContentRenameError::None: return "";
     case ContentRenameError::InvalidLibrary:
         return tr("content_editor", "The library is invalid and was not changed.");
+    case ContentRenameError::InvalidType:
+        return tr("content_editor", "The resource type is invalid.");
     case ContentRenameError::InvalidNewId:
         return tr("content_editor", "The new ID is invalid.");
     case ContentRenameError::SourceNotFound:
         return tr("content_editor", "The resource to rename no longer exists.");
+    case ContentRenameError::SourceChanged:
+        return tr("content_editor", "The resource changed on disk. The latest version was reloaded.");
     case ContentRenameError::TargetAlreadyExists:
         return tr("content_editor", "Another resource of this type already uses the new ID.");
     }

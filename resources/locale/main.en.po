@@ -4602,3 +4602,23 @@ msgstr ""
 msgctxt "content_editor"
 msgid "The resource could not be renamed."
 msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The resource type is invalid."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The resource changed on disk. The latest version was reloaded."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The rename was recovered after a storage error. Review the reloaded library."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The renamed resource could not be reloaded."
+msgstr ""

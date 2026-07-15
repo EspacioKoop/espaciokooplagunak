@@ -42,6 +42,7 @@ private:
     string pending_file_import;
     string pending_file_export;
     ContentDiscardGuard discard_guard;
+    ContentDiscardGuard rename_guard;
     ShipEditSession ship_edit_session;
     std::vector<ShipTemplateCatalogEntry> ship_template_catalog;
     std::vector<std::size_t> visible_ship_template_indices;

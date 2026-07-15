@@ -822,9 +822,18 @@ ContentStoreError ContentLibraryStore::save(const std::vector<ContentResource>& 
 }
 
 ContentStoreRenameResult ContentLibraryStore::renameResource(
-    ContentResourceType type, const std::string& old_id, const std::string& new_id)
+    const ContentResource& expected,
+    const ContentResource& replacement,
+    std::vector<ContentResource>& reconciled_resources
+)
 {
     ContentStoreRenameResult result;
+    if (expected.type != replacement.type
+        || contentResourceTypeId(expected.type).empty())
+    {
+        result.rename_error = ContentRenameError::InvalidType;
+        return result;
+    }
     result.store_error = initialize();
     if (result.store_error != ContentStoreError::None) return result;
 
@@ -837,10 +846,89 @@ ContentStoreRenameResult ContentLibraryStore::renameResource(
     result.store_error = loaded.error;
     if (result.store_error != ContentStoreError::None) return result;
 
+    const auto source = std::find_if(resources.begin(), resources.end(), [&](const ContentResource& item) {
+        return item.type == expected.type && item.id == expected.id;
+    });
+    if (source == resources.end())
+    {
+        result.rename_error = ContentRenameError::SourceNotFound;
+        reconciled_resources = resources;
+        result.reconciled = true;
+        return result;
+    }
+    if (*source != expected)
+    {
+        result.rename_error = ContentRenameError::SourceChanged;
+        reconciled_resources = resources;
+        result.reconciled = true;
+        return result;
+    }
+
     const auto original = resources;
-    result.rename_error = renameContentResource(resources, type, old_id, new_id);
-    if (result.rename_error != ContentRenameError::None || resources == original) return result;
+    result.rename_error = renameContentResource(
+        resources, expected.type, expected.id, replacement.id);
+    if (result.rename_error != ContentRenameError::None)
+    {
+        reconciled_resources = resources;
+        result.reconciled = true;
+        return result;
+    }
+    const auto renamed = std::find_if(resources.begin(), resources.end(), [&](const ContentResource& item) {
+        return item.type == replacement.type && item.id == replacement.id;
+    });
+    if (renamed == resources.end())
+    {
+        result.rename_error = ContentRenameError::SourceNotFound;
+        reconciled_resources = original;
+        result.reconciled = true;
+        return result;
+    }
+    *renamed = replacement;
+    if (validateContentLibrary(resources) != ContentResourceError::None)
+    {
+        result.rename_error = ContentRenameError::InvalidLibrary;
+        reconciled_resources = original;
+        result.reconciled = true;
+        return result;
+    }
+    std::sort(resources.begin(), resources.end(), [](const ContentResource& left, const ContentResource& right) {
+        return resourceKey(left) < resourceKey(right);
+    });
+    if (resources == original)
+    {
+        reconciled_resources = resources;
+        result.reconciled = true;
+        return result;
+    }
+
     result.store_error = save(resources);
+    if (result.store_error == ContentStoreError::None)
+    {
+        reconciled_resources = resources;
+        result.reconciled = true;
+        result.applied = true;
+        return result;
+    }
+
+    const auto commit_error = result.store_error;
+    fault = ContentStoreFault::None;
+    std::vector<ContentResource> recovered;
+    const auto recovery = load(recovered);
+    result.store_error = commit_error;
+    if (recovery.error != ContentStoreError::None) return result;
+
+    reconciled_resources = std::move(recovered);
+    result.reconciled = true;
+    const auto persisted = std::find_if(
+        reconciled_resources.begin(), reconciled_resources.end(), [&](const ContentResource& item) {
+            return item == replacement;
+        });
+    const bool old_identity_gone = expected.id == replacement.id
+        || std::none_of(reconciled_resources.begin(), reconciled_resources.end(),
+            [&](const ContentResource& item) {
+                return item.type == expected.type && item.id == expected.id;
+            });
+    result.applied = persisted != reconciled_resources.end() && old_identity_gone;
     return result;
 }
 

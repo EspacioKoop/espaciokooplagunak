@@ -4511,3 +4511,13 @@ msgstr ""
 msgctxt "content_editor"
 msgid "Ship crew position removed from staging."
 msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The ship template is not available in this scenario."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The ship template references a missing 3D model."
+msgstr ""

@@ -4289,3 +4289,13 @@ msgstr "El puesto seleccionado no está asignado."
 msgctxt "content_editor"
 msgid "Ship crew position removed from staging."
 msgstr "Puesto de tripulación retirado del staging."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The ship template is not available in this scenario."
+msgstr "La plantilla de nave no está disponible en este escenario."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The ship template references a missing 3D model."
+msgstr "La plantilla de nave hace referencia a un modelo 3D inexistente."

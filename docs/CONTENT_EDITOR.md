@@ -165,7 +165,7 @@ configurado con `-DBUILD_CONTENT_RESOURCE_TESTS=ON` se ejecutan con:
 
 ```bash
 ctest --test-dir build --output-on-failure \
-  -R 'content_resource_codec|content_library_store|map_document_codec|map_edit_session|map_preview_projection|ship_document_model|ship_edit_session'
+  -R 'content_resource_codec|content_library_store|map_document_codec|map_edit_session|map_preview_projection|ship_document_model|ship_template_catalog|ship_edit_session'
 ```
 
 El test del codec cubre los cuatro tipos, round-trip, límite de 64 KiB, claves
@@ -191,9 +191,15 @@ cantidades fuera de rango; v4 ya lo persiste e intercambia con migración de v1�
 El formulario ya ofrece verticales GUI tipadas para los cuatro grupos de overrides:
 salud de sistemas, recursos, carga y puestos canónicos de tripulación. Incluye IDs
 y valores validados, aplicar/quitar override y undo/redo compartido sobre el staging.
+Al guardar una nave consulta un catálogo read-only generado por los registros Lua
+precargados de confianza: exige una plantilla canónica existente y que su modelo 3D
+siga registrado. La consulta devuelve solo metadatos escalares ordenados; no expone
+ni ejecuta callbacks de spawn. Si todavía no hay escenario/catálogo cargado, el
+editor conserva el comportamiento declarativo y no bloquea el guardado.
 El documento no toca el ECS. La sesión C++ pura prepara todos esos cambios con
 dirty state, historial acotado y rollback al último snapshot guardado.
-Previsualización y aplicación al mundo se incorporarán en verticales posteriores.
+Un selector de plantillas escalable, la previsualización y la aplicación al mundo se
+incorporarán en verticales posteriores.
 La siguiente fase mantendrá la misma envoltura versionada:
 
 - aplicación tipada al mundo con autorización GM y rollback, sin Lua importado

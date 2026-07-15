@@ -287,6 +287,8 @@ set(MAIN_SOURCES
     src/content/shipDocument.h
     src/content/shipEditSession.cpp
     src/content/shipEditSession.h
+    src/content/shipTemplateCatalog.cpp
+    src/content/shipTemplateCatalog.h
     src/screens/gm/gameMasterScreen.cpp
     src/screens/gm/contentEditor.cpp
     src/screens/gm/contentEditor.h
@@ -781,6 +783,14 @@ if(BUILD_CONTENT_RESOURCE_TESTS)
     target_include_directories(ship_document_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
     target_link_libraries(ship_document_tests PRIVATE seriousproton)
     add_test(NAME ship_document_model COMMAND ship_document_tests)
+
+    add_executable(ship_template_catalog_tests
+        tests/shipTemplateCatalogTests.cpp
+        src/content/shipTemplateCatalog.cpp
+    )
+    target_include_directories(ship_template_catalog_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+    target_link_libraries(ship_template_catalog_tests PRIVATE seriousproton)
+    add_test(NAME ship_template_catalog COMMAND ship_template_catalog_tests)
 
     add_executable(ship_edit_session_tests
         tests/shipEditSessionTests.cpp

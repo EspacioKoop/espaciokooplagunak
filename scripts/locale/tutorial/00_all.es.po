@@ -492,9 +492,9 @@ msgid ""
 "\n"
 "You are the eyes of the ship. Your job is to supply the captain with information. From your station, you can detect and scan objects at a range of up to 30u."
 msgstr ""
-"Bienvenido, oficial científico.\n"
+"Te damos la bienvenida, oficial de ciencias.\n"
 "\n"
-"Sois los ojos del barco. Su trabajo es proporcionar información al capitán. Desde su estación, puede detectar y escanear objetos a una distancia de hasta 30u."
+"Eres los ojos de la nave. Tu trabajo es proporcionar información al capitán. Desde tu puesto puedes detectar y escanear objetos hasta a 30u de distancia."
 
 #: scripts/tutorial/00_all.lua:311 scripts/tutorial/00_all.lua:397
 msgid ""
@@ -502,9 +502,9 @@ msgid ""
 "I've added a friendly ship and a station for you to examine. Select them and notice how much information you can observe.\n"
 "Heading and distance are of particular importance, as without these, the helms officer will be jumping in the dark."
 msgstr ""
-"En este radar, puedes seleccionar objetos para obtener información sobre ellos.\n"
-"Agregué un barco amigo y una estación para que los examines. Selecciónalos y observa cuánta información puedes observar.\n"
-"El rumbo y la distancia son de particular importancia, ya que sin ellos, el oficial al mando estará saltando en la oscuridad."
+"En este radar puedes seleccionar objetos para obtener información sobre ellos.\n"
+"He añadido una nave aliada y una estación para que los examines. Selecciónalos y fíjate en cuánta información obtienes.\n"
+"El rumbo y la distancia son especialmente importantes: sin ellos, el oficial de timón saltará a ciegas."
 
 #: scripts/tutorial/00_all.lua:316 scripts/tutorial/00_all.lua:402
 msgid ""
@@ -512,13 +512,13 @@ msgid ""
 "To learn about it, you must scan it. Scanning requires you to match your scanner's frequency bands to your target's.\n"
 "Scan this ship now."
 msgstr ""
-"Reemplacé la estación amiga con una nave desconocida. Una vez que lo selecciones, observa que no sabes nada sobre este barco.\n"
-"Para conocerlo, debes escanearlo. El escaneo requiere que haga coincidir las bandas de frecuencia de su escáner con las de su objetivo.\n"
-"Escanea este barco ahora."
+"He sustituido la estación aliada por una nave desconocida. Al seleccionarla, fíjate en que no sabes nada de ella.\n"
+"Para conocerla debes escanearla. Escanear consiste en igualar las bandas de frecuencia de tu escáner con las del objetivo.\n"
+"Escanea esa nave ahora."
 
 #: scripts/tutorial/00_all.lua:319 scripts/tutorial/00_all.lua:405
 msgid "Good. Notice that you now know this ship is unfriendly. It might have been a friendly or neutral ship as well, but until you scanned it, you do not know."
-msgstr "Bien. Observe que ahora sabe que este barco no es amigable. Podría haber sido también un barco amigo o neutral, pero hasta que no lo escaneas, no lo sabes."
+msgstr "Bien. Fíjate en que ahora sabes que esa nave es hostil. Podría haber sido aliada o neutral: hasta que no la escaneas, no lo sabes."
 
 #: scripts/tutorial/00_all.lua:320 scripts/tutorial/00_all.lua:406
 msgid ""
@@ -526,13 +526,13 @@ msgid ""
 "A deep scan takes more effort and requires you to align 2 different frequency bands simultaneously.\n"
 "Deep scan the enemy now."
 msgstr ""
-"Tenga en cuenta que tiene menos información sobre este barco que el barco amigo. Debes realizar un escaneo profundo de esta nave para adquirir más información.\n"
-"Un escaneo profundo requiere más esfuerzo y requiere alinear 2 bandas de frecuencia diferentes simultáneamente.\n"
-"Escanea profundamente al enemigo ahora."
+"Observa que tienes menos información de esta nave que de la nave aliada. Para conseguir más, debes hacerle un escaneo profundo.\n"
+"Un escaneo profundo exige más esfuerzo: hay que alinear 2 bandas de frecuencia distintas a la vez.\n"
+"Haz ahora un escaneo profundo a la nave enemiga."
 
 #: scripts/tutorial/00_all.lua:323 scripts/tutorial/00_all.lua:409
 msgid "Excellent. Notice that this took more time and concentration than the simple scan, so be careful to perform deep scans only when necessary or you could run out of time."
-msgstr "Excelente. Tenga en cuenta que esto requirió más tiempo y concentración que el escaneo simple, así que tenga cuidado de realizar escaneos profundos solo cuando sea necesario o podría quedarse sin tiempo."
+msgstr "Excelente. Fíjate en que ha exigido más tiempo y concentración que el escaneo simple, así que reserva los escaneos profundos para cuando hagan falta o podrías quedarte sin tiempo."
 
 #: scripts/tutorial/00_all.lua:327 scripts/tutorial/00_all.lua:413
 msgid ""
@@ -540,9 +540,9 @@ msgid ""
 "\n"
 "In this database, you can look up details on things like ship types, weapons, and other objects."
 msgstr ""
-"Además del radar de largo alcance, la estación científica también puede acceder a la base de datos científica.\n"
+"Además del radar de largo alcance, el puesto de ciencias tiene acceso a la base de datos científica.\n"
 "\n"
-"En esta base de datos, puedes buscar detalles sobre cosas como tipos de barcos, armas y otros objetos."
+"En ella puedes consultar detalles de tipos de nave, armas y otros objetos."
 
 #: scripts/tutorial/00_all.lua:330 scripts/tutorial/00_all.lua:416
 msgid ""
@@ -550,9 +550,9 @@ msgid ""
 "\n"
 "Without your information, the crew is mostly blind."
 msgstr ""
-"Recuerde, su trabajo es proporcionar información. Conocer la ubicación y el estado de otros barcos es vital para tu capitán.\n"
+"Recuerda: tu trabajo es proporcionar información. Conocer la posición y el estado de las demás naves es vital para tu capitán.\n"
 "\n"
-"Sin su información, la tripulación está prácticamente ciega."
+"Sin tu información, la tripulación está casi ciega."
 
 #: scripts/tutorial/00_all.lua:340
 msgid ""
@@ -560,9 +560,9 @@ msgid ""
 "\n"
 "It is your job to communicate with stations and ships. You also have access to short-range radar data from friendly ships and stations, and can place navigational waypoints and launch scanning probes."
 msgstr ""
-"¡Bienvenidos al relevo!\n"
+"¡Te damos la bienvenida a comunicaciones!\n"
 "\n"
-"Es su trabajo comunicarse con estaciones y barcos. También tienes acceso a datos de radar de corto alcance de barcos y estaciones amigas, y puedes colocar puntos de referencia de navegación y lanzar sondas de escaneo."
+"Tu trabajo es comunicarte con estaciones y naves. También tienes acceso al radar de corto alcance de las naves y estaciones aliadas, puedes colocar puntos de referencia de navegación y lanzar sondas de escaneo."
 
 #: scripts/tutorial/00_all.lua:343
 msgid ""
@@ -570,13 +570,13 @@ msgid ""
 "\n"
 "You can target any station or ship and attempt to communicate with it. Other ships can also attempt to contact you."
 msgstr ""
-"Tu primera responsabilidad es coordinar las comunicaciones del barco.\n"
+"Tu primera responsabilidad es coordinar las comunicaciones de la nave.\n"
 "\n"
-"Puedes apuntar a cualquier estación o barco e intentar comunicarte con él. Otros barcos también pueden intentar comunicarse con usted."
+"Puedes seleccionar cualquier estación o nave e intentar comunicarte con ella. Otras naves también pueden intentar contactar contigo."
 
 #: scripts/tutorial/00_all.lua:349 scripts/tutorial/00_all.lua:425
 msgid "You successfully opened communications. Congratulations."
-msgstr "Abriste comunicaciones exitosamente. Felicidades."
+msgstr "Has abierto comunicaciones. Enhorabuena."
 
 #: scripts/tutorial/00_all.lua:350 scripts/tutorial/00_all.lua:426
 msgid "Tell me more!"
@@ -584,7 +584,7 @@ msgstr "¡Cuéntame más!"
 
 #: scripts/tutorial/00_all.lua:351 scripts/tutorial/00_all.lua:427
 msgid "Sorry, there's nothing more to tell you."
-msgstr "Lo siento, no hay nada más que decirte."
+msgstr "Lo siento, no hay nada más que contar."
 
 #: scripts/tutorial/00_all.lua:353 scripts/tutorial/00_all.lua:429
 msgid "Continue with the tutorial."
@@ -596,19 +596,19 @@ msgstr "El tutorial continuará cuando cierres las comunicaciones con esta estac
 
 #: scripts/tutorial/00_all.lua:358 scripts/tutorial/00_all.lua:434
 msgid "Open communications with the station near you to continue the tutorial."
-msgstr "Abre comunicaciones con la estación más cercana a ti para continuar con el tutorial."
+msgstr "Abre comunicaciones con la estación cercana para continuar el tutorial."
 
 #: scripts/tutorial/00_all.lua:360 scripts/tutorial/00_all.lua:436
 msgid "Now finish your talk with the station."
-msgstr "Ahora termina tu conversación con la estación."
+msgstr "Ahora termina la conversación con la estación."
 
 #: scripts/tutorial/00_all.lua:363 scripts/tutorial/00_all.lua:439
 msgid ""
 "Depending on the scenario, you might have different options when communicating with stations.\n"
 "They might inform you about new objectives and your mission progress, ask for backup, or resupply your weapons. This is all part of your responsibilities as relay officer."
 msgstr ""
-"Dependiendo del escenario, es posible que tenga diferentes opciones al comunicarse con las estaciones.\n"
-"Es posible que le informen sobre nuevos objetivos y el progreso de su misión, le soliciten refuerzos o reabastezcan sus armas. Todo esto es parte de sus responsabilidades como oficial de relevo."
+"Según el escenario, tendrás distintas opciones al comunicarte con las estaciones.\n"
+"Pueden informarte de nuevos objetivos y del progreso de la misión, pedirte refuerzos o reabastecer tus armas. Todo ello forma parte de tus responsabilidades como oficial de comunicaciones."
 
 #: scripts/tutorial/00_all.lua:369
 msgid ""
@@ -616,17 +616,17 @@ msgid ""
 "\n"
 "On this map, you can detect objects within short-range radar range of all allied ships and stations. Everything else is invisible to you. This gives you a different view from the science officer, because you can scan the contents of nebulae."
 msgstr ""
-"Su estación también incluye este mapa de radar.\n"
+"Tu puesto incluye además este mapa de radar.\n"
 "\n"
-"En este mapa, puedes detectar objetos dentro del alcance del radar de corto alcance de todos los barcos y estaciones aliados. Todo lo demás es invisible para ti. Esto le brinda una visión diferente a la del oficial científico, porque puede escanear el contenido de las nebulosas."
+"En él detectas los objetos dentro del radar de corto alcance de todas las naves y estaciones aliadas. Todo lo demás es invisible para ti. Te da una visión distinta a la del oficial de ciencias, porque puedes escanear el contenido de las nebulosas."
 
 #: scripts/tutorial/00_all.lua:372
 msgid "Finally, you control your ship's probes. Probes can expand your radar view. Launch a probe to the top right, toward the ship designated DMY-01."
-msgstr "Finalmente, controlas las sondas de tu nave. Las sondas pueden ampliar la vista de su radar. Lanza una sonda hacia la parte superior derecha, hacia el barco designado DMY-01."
+msgstr "Por último, controlas las sondas de la nave. Las sondas amplían tu vista de radar. Lanza una sonda hacia arriba a la derecha, hacia la nave designada DMY-01."
 
 #: scripts/tutorial/00_all.lua:383
 msgid "Probes can expand your sensory capabilities beyond your normal range and explore nebulae. However, you have a limited supply of them and can't replenish them until you to dock with a station."
-msgstr "Las sondas pueden ampliar sus capacidades sensoriales más allá de su rango normal y explorar nebulosas. Sin embargo, tienes un suministro limitado de ellos y no puedes reponerlos hasta que te acoples a una estación."
+msgstr "Las sondas amplían tus sensores más allá de su alcance normal y permiten explorar nebulosas. Pero llevas una cantidad limitada y no puedes reponerlas hasta atracar en una estación."
 
 #: scripts/tutorial/00_all.lua:392
 msgid ""
@@ -634,9 +634,9 @@ msgid ""
 "\n"
 "You are the eyes of the ship. Your job is to supply the captain with information. From your station, you can detect and scan objects at a range of up to 30u."
 msgstr ""
-"Bienvenido, oficial de operaciones.\n"
+"Te damos la bienvenida, oficial de operaciones.\n"
 "\n"
-"Sois los ojos del barco. Su trabajo es proporcionar información al capitán. Desde su estación, puede detectar y escanear objetos a una distancia de hasta 30u."
+"Eres los ojos de la nave. Tu trabajo es proporcionar información al capitán. Desde tu puesto puedes detectar y escanear objetos hasta a 30u de distancia."
 
 #: scripts/tutorial/00_all.lua:419
 msgid ""
@@ -644,10 +644,10 @@ msgid ""
 "\n"
 "You can target any station or ship and attempt to communicate with it. Other ships can also attempt to contact you."
 msgstr ""
-"Su segunda responsabilidad es coordinar las comunicaciones del barco.\n"
+"Tu segunda responsabilidad es coordinar las comunicaciones de la nave.\n"
 "\n"
-"Puedes apuntar a cualquier estación o barco e intentar comunicarte con él. Otros barcos también pueden intentar comunicarse con usted."
+"Puedes seleccionar cualquier estación o nave e intentar comunicarte con ella. Otras naves también pueden intentar contactar contigo."
 
 #: scripts/tutorial/00_all.lua:445
 msgid "This concludes the tutorial. While we have covered the basics, there are more advanced features in the game that you might discover."
-msgstr "Esto concluye el tutorial. Si bien hemos cubierto los conceptos básicos, hay funciones más avanzadas en el juego que quizás descubras."
+msgstr "Aquí termina el tutorial. Hemos cubierto lo básico; el juego tiene funciones más avanzadas que irás descubriendo."

@@ -214,5 +214,11 @@ La siguiente fase mantendrá la misma envoltura versionada:
 - plantillas, previsualización y spawn de naves ([#55](https://github.com/VaroTv7/espaciokooplagunak/issues/55)).
 
 Las campañas y personajes ya se enlazan de forma declarativa con mapas, naves
-y puestos canónicos. Aplicar esos documentos a una sesión viva queda separado
-de la edición y persistencia de metadatos.
+y puestos canónicos. El núcleo C++ puede renombrar de forma transaccional cualquier
+recurso sobre una copia de la biblioteca: actualiza mapas iniciales y ordenados,
+transiciones, personajes y naves referenciadas, valida la candidata completa y solo
+entonces reemplaza el vector original. IDs inválidos, colisiones, recursos ausentes o
+una biblioteca origen inválida no producen mutación parcial. La operación de UI y el
+guardado atómico se incorporarán en el siguiente corte de #154.
+Aplicar esos documentos a una sesión viva queda separado de la edición y persistencia
+de metadatos.

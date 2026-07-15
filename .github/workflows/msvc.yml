@@ -15,6 +15,7 @@ on:
     branches: [ "main" ]
   schedule:
     - cron: '42 12 * * 2'
+  workflow_dispatch:
 
 env:
   # Path to the CMake build directory.
@@ -33,11 +34,58 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      # SeriousProton lo exige el add_subdirectory del CMakeLists; fijado al
+      # commit que incluye los arreglos de compilación estricta con MSVC (#294).
+      - name: SeriousProton Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          repository: daid/SeriousProton
+          path: SeriousProton
+          ref: e6f10ae5a3fcffc8f36ced0e7823cb3c57797acd
+
+      - name: EmptyEpsilon Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          path: EmptyEpsilon
+
+      # Misma provisión de SDL2 que el job Windows de cicd.yml: la configuración
+      # de CMake necesita resolver SDL2::SDL2 aunque el análisis no enlace nada.
+      - name: SDL2 Dependency
+        run: |
+          $sdl_version = "2.0.16"
+          $sdl_link = "https://libsdl.org/release/SDL2-devel-$sdl_version-VC.zip"
+          $sdl_zip = "$env:GITHUB_WORKSPACE/sdl-dev.zip"
+          (new-object System.Net.WebClient).DownloadFile($sdl_link, $sdl_zip)
+          Expand-Archive -LiteralPath $sdl_zip -DestinationPath "$env:GITHUB_WORKSPACE/externals"
+          $sdl_config = @"
+          set(flavor x86)
+          if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+              set(flavor x64)
+          endif()
+          set(_SDL2_prefix "`${CMAKE_CURRENT_LIST_DIR}/SDL2-$sdl_version")
+
+          add_library(SDL2::SDL2main STATIC IMPORTED)
+          set_target_properties(SDL2::SDL2main PROPERTIES
+          IMPORTED_LOCATION "`${_SDL2_prefix}/lib/`${flavor}/SDL2main.lib"
+          )
+
+          add_library(SDL2::SDL2 SHARED IMPORTED)
+          set_target_properties(SDL2::SDL2 PROPERTIES
+          IMPORTED_LOCATION "`${_SDL2_prefix}/lib/`${flavor}/SDL2.dll"
+          IMPORTED_IMPLIB "`${_SDL2_prefix}/lib/`${flavor}/SDL2.lib"
+          INTERFACE_INCLUDE_DIRECTORIES "`${_SDL2_prefix}/include"
+          )
+
+          target_link_libraries(SDL2::SDL2 INTERFACE SDL2::SDL2main)
+          "@
+          Set-Content -Path "$env:GITHUB_WORKSPACE/externals/sdl2-config.cmake" -Value $sdl_config
 
       - name: Configure CMake
-        run: cmake -B ${{ env.build }}
+        run: >
+          cmake -B ${{ env.build }} EmptyEpsilon
+          -G "Visual Studio 17 2022" -A Win32
+          -DSDL2_DIR:PATH="$env:GITHUB_WORKSPACE/externals"
+          -DSERIOUS_PROTON_DIR="$env:GITHUB_WORKSPACE/SeriousProton"
 
       # Build is not required unless generated source files are used
       # - name: Build CMake
@@ -54,7 +102,7 @@ jobs:
 
       # Upload SARIF file to GitHub Code Scanning Alerts
       - name: Upload SARIF to GitHub
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@02c5e83432fe5497fd85b873b6c9f16a8578e1d9 # v3
         with:
           sarif_file: ${{ steps.run-analysis.outputs.sarif }}
 

@@ -283,6 +283,8 @@ set(MAIN_SOURCES
     src/content/mapEditSession.h
     src/content/mapPreview.cpp
     src/content/mapPreview.h
+    src/content/shipDocument.cpp
+    src/content/shipDocument.h
     src/screens/gm/gameMasterScreen.cpp
     src/screens/gm/contentEditor.cpp
     src/screens/gm/contentEditor.h
@@ -766,6 +768,15 @@ if(BUILD_CONTENT_RESOURCE_TESTS)
     target_include_directories(map_preview_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
     target_link_libraries(map_preview_tests PRIVATE seriousproton)
     add_test(NAME map_preview_projection COMMAND map_preview_tests)
+
+    add_executable(ship_document_tests
+        tests/shipDocumentTests.cpp
+        src/content/shipDocument.cpp
+        src/crewPosition.cpp
+    )
+    target_include_directories(ship_document_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+    target_link_libraries(ship_document_tests PRIVATE seriousproton)
+    add_test(NAME ship_document_model COMMAND ship_document_tests)
 endif()
 
 if(WIN32)

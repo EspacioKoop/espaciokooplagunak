@@ -485,11 +485,14 @@ CONTEXT_OVERRIDES: dict[tuple[str | None, str], str] = {
     ("system", "Maneuvering"): "Maniobra",
     ("system", "Jump Drive"): "Motor de salto",
     ("hotkey_Engineering", "Select warp system"): "Seleccionar sistema de curvatura",
-    ("hotkey_Engineering", "Select jump drive system"): "Seleccionar sistema de motor de salto",
+    ("hotkey_Engineering", "Select jump drive system"): "Seleccionar motor de salto",
+    ("hotkey_Engineering", "Set warp power (joystick)"): "Establecer la potencia del motor de curvatura (joystick)",
+    ("hotkey_Engineering", "Set warp coolant (joystick)"): "Establecer el refrigerante del motor de curvatura (joystick)",
     ("hotkey_Engineering", "Set jump drive power (joystick)"): "Establecer la potencia del motor de salto (joystick)",
     ("hotkey_Engineering", "Set jump drive coolant (joystick)"): "Establecer el refrigerante del motor de salto (joystick)",
     (None, "Jump in: {delay}"): "Salto en: {delay}",
     (None, "Jump drive recharge rate"): "Tasa de recarga del motor de salto",
+    (None, "Time to jump activation"): "Tiempo hasta la activación del salto",
     (None, "Warp drive speed"): "Velocidad de curvatura",
     ("tweak-tab", "Jump drive"): "Motor de salto",
     ("tweak-tab", "Warp drive"): "Motor de curvatura",
@@ -512,7 +515,7 @@ CONTEXT_OVERRIDES: dict[tuple[str | None, str], str] = {
         "Heading and distance are of particular importance, as without these, the helms officer will be jumping in the dark.",
     ): (
         "En este radar puedes seleccionar objetos para obtener información sobre ellos.\n"
-        "He añadido una nave amiga y una estación para que los examines. Selecciónalos y fíjate en cuánta información obtienes.\n"
+        "He añadido una nave aliada y una estación para que los examines. Selecciónalos y fíjate en cuánta información obtienes.\n"
         "El rumbo y la distancia son especialmente importantes: sin ellos, el oficial de timón saltará a ciegas."
     ),
     (
@@ -521,21 +524,21 @@ CONTEXT_OVERRIDES: dict[tuple[str | None, str], str] = {
         "To learn about it, you must scan it. Scanning requires you to match your scanner's frequency bands to your target's.\n"
         "Scan this ship now.",
     ): (
-        "He sustituido la estación amiga por una nave desconocida. Al seleccionarla, fíjate en que no sabes nada de ella.\n"
+        "He sustituido la estación aliada por una nave desconocida. Al seleccionarla, fíjate en que no sabes nada de ella.\n"
         "Para conocerla debes escanearla. Escanear consiste en igualar las bandas de frecuencia de tu escáner con las del objetivo.\n"
         "Escanea esa nave ahora."
     ),
     (
         None,
         "Good. Notice that you now know this ship is unfriendly. It might have been a friendly or neutral ship as well, but until you scanned it, you do not know.",
-    ): "Bien. Fíjate en que ahora sabes que esa nave es hostil. Podría haber sido amiga o neutral: hasta que no la escaneas, no lo sabes.",
+    ): "Bien. Fíjate en que ahora sabes que esa nave es hostil. Podría haber sido aliada o neutral: hasta que no la escaneas, no lo sabes.",
     (
         None,
         "Note that you have less information about this ship than the friendly ship. You must perform a deep scan of this ship to acquire more information.\n"
         "A deep scan takes more effort and requires you to align 2 different frequency bands simultaneously.\n"
         "Deep scan the enemy now.",
     ): (
-        "Observa que tienes menos información de esta nave que de la nave amiga. Para conseguir más, debes hacerle un escaneo profundo.\n"
+        "Observa que tienes menos información de esta nave que de la nave aliada. Para conseguir más, debes hacerle un escaneo profundo.\n"
         "Un escaneo profundo exige más esfuerzo: hay que alinear 2 bandas de frecuencia distintas a la vez.\n"
         "Haz ahora un escaneo profundo a la nave enemiga."
     ),
@@ -565,7 +568,7 @@ CONTEXT_OVERRIDES: dict[tuple[str | None, str], str] = {
         "It is your job to communicate with stations and ships. You also have access to short-range radar data from friendly ships and stations, and can place navigational waypoints and launch scanning probes.",
     ): (
         "¡Te damos la bienvenida a comunicaciones!\n\n"
-        "Tu trabajo es comunicarte con estaciones y naves. También tienes acceso al radar de corto alcance de las naves y estaciones amigas, puedes colocar puntos de referencia de navegación y lanzar sondas de escaneo."
+        "Tu trabajo es comunicarte con estaciones y naves. También tienes acceso al radar de corto alcance de las naves y estaciones aliadas, puedes colocar puntos de referencia de navegación y lanzar sondas de escaneo."
     ),
     (
         None,

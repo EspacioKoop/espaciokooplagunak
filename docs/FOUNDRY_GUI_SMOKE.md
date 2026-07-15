@@ -55,6 +55,11 @@ marca esas casillas como `N/A` en vez de asumir un resultado.
    cd /ruta/a/espaciokooplagunak/docker
    cp .env.example .env
    # Edita .env localmente y define BRIDGE_TOKEN.
+   # Revisa también BRIDGE_ALLOWED_ORIGINS: debe contener el origen EXACTO
+   # donde se sirve Foundry (el .env.example trae http://localhost:30000).
+   # Si no coincide, el navegador bloquea el fetch del módulo por CORS y la
+   # ventana queda en «Disconnected» aunque /healthz responda por curl
+   # (issue #92). Nunca uses "*": el puente lo rechaza al arrancar.
    docker compose up -d --build
    docker compose ps
    ```

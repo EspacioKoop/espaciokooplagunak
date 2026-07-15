@@ -13,6 +13,7 @@ enum class MapEditError
     DuplicateId,
     NotFound,
     WrongKind,
+    SessionChanged,
 };
 
 class MapEditSession

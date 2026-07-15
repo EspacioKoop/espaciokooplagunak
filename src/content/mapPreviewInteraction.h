@@ -13,6 +13,7 @@ struct MapPreviewPoint
 };
 
 constexpr float MAP_PREVIEW_HIT_TOLERANCE_PIXELS = 5.0f;
+constexpr float MAP_PREVIEW_MAX_HIT_TOLERANCE_PIXELS = 128.0f;
 
 MapDocumentError hitTestMapPreviewObject(
     const MapDocument& document,
@@ -26,7 +27,7 @@ class MapPreviewDragSession
 {
 public:
     MapDocumentError begin(
-        const MapDocument& document,
+        const MapEditSession& session,
         MapPreviewPoint world_position,
         float world_to_screen_scale
     );
@@ -41,6 +42,9 @@ public:
 
 private:
     std::string selected_id;
+    const MapEditSession* source_session = nullptr;
+    MapDocument source_document;
+    MapPreviewPoint pointer_offset;
     MapObjectTransform original_transform;
     MapObjectTransform provisional_transform;
     bool dragging = false;

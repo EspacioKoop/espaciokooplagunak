@@ -64,6 +64,10 @@ int main()
                                   {std::numeric_limits<float>::infinity(), 0.0f}, 1.0f, hit)
             == MapDocumentError::InvalidNumber && hit == "stable",
         "invalid pointer position leaves hit output unchanged");
+    expect(hitTestMapPreviewObject(hit_document, {100.0f, 50.0f}, 1.0f, hit,
+                                  MAP_PREVIEW_MAX_HIT_TOLERANCE_PIXELS + 1.0f)
+            == MapDocumentError::InvalidNumber && hit == "stable",
+        "excessive public tolerance is rejected before geometry can overflow");
 
     hit_document.objects.push_back(nebula("nebula-top", 100.0f, 50.0f));
     expect(hitTestMapPreviewObject(hit_document, {100.0f, 50.0f}, 1.0f, hit)
@@ -84,7 +88,42 @@ int main()
     drag_document.objects.push_back(opaque);
     MapEditSession session(drag_document);
     MapPreviewDragSession drag;
-    expect(drag.begin(session.document(), {10.0f, 20.0f}, 1.0f) == MapDocumentError::None
+
+    expect(drag.begin(session, {40.0f, 20.0f}, 1.0f) == MapDocumentError::None
+            && drag.update({100.0f, 120.0f})
+            && drag.provisionalTransform().x == 70.0f
+            && drag.provisionalTransform().y == 120.0f,
+        "drag started off-centre preserves pointer-to-object offset");
+    drag.cancel();
+    expect(session.document() == drag_document && !session.isDirty(),
+        "offset regression probe remains provisional when cancelled");
+
+    expect(drag.begin(session, {10.0f, 20.0f}, 1.0f) == MapDocumentError::None
+            && drag.update({90.0f, 100.0f}),
+        "active drag prepares failed-begin regression");
+    expect(drag.begin(session, {10.0f, 20.0f}, 0.0f) == MapDocumentError::InvalidNumber
+            && !drag.isDragging() && drag.commit(session) == MapEditError::NotFound
+            && session.document() == drag_document,
+        "failed begin cancels the previous provisional drag");
+
+    expect(drag.begin(session, {10.0f, 20.0f}, 1.0f) == MapDocumentError::None
+            && drag.update({110.0f, 120.0f})
+            && session.moveObject("dragged", {30.0f, 40.0f, 75.0f}) == MapEditError::None,
+        "intervening staged edit prepares stale-session rejection");
+    expect(drag.commit(session) == MapEditError::SessionChanged
+            && session.document().objects.front().transform.x == 30.0f
+            && session.document().objects.front().transform.rotation == 75.0f,
+        "stale drag cannot overwrite a newer transform or rotation");
+    session.rollback();
+
+    MapEditSession different_session(drag_document);
+    expect(drag.begin(session, {10.0f, 20.0f}, 1.0f) == MapDocumentError::None
+            && drag.update({60.0f, 70.0f})
+            && drag.commit(different_session) == MapEditError::SessionChanged
+            && different_session.document() == drag_document,
+        "drag cannot commit into another session with an identical document");
+
+    expect(drag.begin(session, {10.0f, 20.0f}, 1.0f) == MapDocumentError::None
             && drag.isDragging() && drag.selectedId() == "dragged",
         "drag starts on a supported staged object");
     expect(drag.update({200.0f, 300.0f}) && drag.update({250.0f, 350.0f}),
@@ -114,7 +153,7 @@ int main()
         "redo restores exact position and opaque bytes");
 
     session.rollback();
-    expect(drag.begin(session.document(), {10.0f, 20.0f}, 1.0f) == MapDocumentError::None
+    expect(drag.begin(session, {10.0f, 20.0f}, 1.0f) == MapDocumentError::None
             && drag.update({500.0f, 600.0f}),
         "second drag can start from rolled-back staging");
     drag.cancel();
@@ -124,7 +163,7 @@ int main()
     expect(drag.commit(session) == MapEditError::NotFound,
         "cancelled drag cannot commit later");
 
-    expect(drag.begin(session.document(), {10.0f, 20.0f}, 1.0f) == MapDocumentError::None,
+    expect(drag.begin(session, {10.0f, 20.0f}, 1.0f) == MapDocumentError::None,
         "no-op drag can select an object");
     const auto before_invalid_update = drag.provisionalTransform();
     expect(!drag.update({std::numeric_limits<float>::quiet_NaN(), 0.0f})
@@ -134,15 +173,15 @@ int main()
             && !session.isDirty() && !session.canUndo(),
         "click without movement creates no history entry");
 
-    expect(drag.begin(session.document(), {400.0f, 500.0f}, 1.0f) == MapDocumentError::None
+    expect(drag.begin(session, {400.0f, 500.0f}, 1.0f) == MapDocumentError::None
             && !drag.isDragging() && drag.selectedId().empty(),
         "opaque position cannot begin a drag");
 
-    expect(drag.begin(session.document(), {10.0f, 20.0f}, 1.0f) == MapDocumentError::None
+    expect(drag.begin(session, {10.0f, 20.0f}, 1.0f) == MapDocumentError::None
             && drag.update({30.0f, 40.0f}) && drag.commit(session) == MapEditError::None,
         "first committed drag prepares redo invalidation test");
     expect(session.undo() && session.canRedo(), "undo exposes redo before a new edit");
-    expect(drag.begin(session.document(), {10.0f, 20.0f}, 1.0f) == MapDocumentError::None
+    expect(drag.begin(session, {10.0f, 20.0f}, 1.0f) == MapDocumentError::None
             && drag.update({70.0f, 80.0f}) && drag.commit(session) == MapEditError::None
             && !session.canRedo(),
         "new committed drag after undo invalidates redo");

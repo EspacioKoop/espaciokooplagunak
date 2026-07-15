@@ -26,7 +26,7 @@ Baseline normativa: [SECURITY.md](../SECURITY.md) (no se duplica aquí).
 
 - [x] `/exec.lua` nunca expuesto — regla en SECURITY.md **y gate en CI**
       (job `guardia-exec-lua` en `docker.yml`: falla si `compose.yaml` publica
-      el puerto 8080).
+      el puerto 8080 o usa `network_mode: host`; el job prueba ambas regresiones).
 - [x] Permisos mínimos declarados en los 6 workflows (`contents: read`;
       ampliaciones justificadas en `codeql.yml` y `docker-publish.yml`).
 - [x] CodeQL activo (`codeql.yml`); alertas 8/9 resueltas vendorizando
@@ -38,10 +38,9 @@ Baseline normativa: [SECURITY.md](../SECURITY.md) (no se duplica aquí).
 - [ ] **Protección de rama en `main`** exigiendo los checks existentes
       (cicd, pytest del puente, foundry-module, guardia-exec-lua). Hoy "todo
       por PR" es solo convención. *Propietario: Varo (requiere admin).*
-- [ ] **Dependabot alerts** (Settings → Security): las actualizaciones
-      programadas de `dependabot.yml` no avisan de un CVE en una dependencia
-      ya pinneada hasta el bump semanal; las alertas sí. Pedido en #88.
-      *Propietario: Varo (requiere admin).*
+- [x] **Dependabot alerts** activado y verificado por API
+      (`GET /vulnerability-alerts` → 204, Varo, 2026-07-15). Las PR automáticas
+      de `dependabot_security_updates` siguen siendo una decisión separada.
 - [x] Private vulnerability reporting activado y verificado por API
       (issue #86, Varo, 2026-07-14).
 - [ ] CODEOWNERS (opcional con 2 humanos; decidir si aporta o estorba).
@@ -89,9 +88,9 @@ Baseline normativa: las tres suites propias + gates documentados en
 - [x] El gate de CI fija la MISMA revisión (`docker/build.sh`) — antes clonaba
       el HEAD vivo de SeriousProton y la CI podía romperse sin ningún cambio
       local. Ambos pins se actualizan a la vez en cada sincronización upstream.
-- [x] El smoke test headless corre también en PRs que tocan `src/**` y
-      `CMakeLists.txt` (antes solo tras el merge a `main`) y arranca el
-      escenario propio del fork, no solo el heredado.
+- [x] El smoke test headless corre también en PRs que tocan `src/**`,
+      `CMakeLists.txt` o el escenario propio exacto (antes solo tras el merge a
+      `main`) y arranca ese escenario, no solo el heredado.
 - [x] Publicación reproducible en GHCR con actions fijadas por SHA
       (`docker-publish.yml`).
 - [ ] Los jobs windows-cross/macOS heredados de upstream siguen usando el

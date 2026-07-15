@@ -9,6 +9,7 @@ on:
       - ".dockerignore"
       - "src/**"
       - "CMakeLists.txt"
+      - "scripts/scenario_90_lagunak_primera_guardia.lua"
       - ".github/workflows/docker.yml"
   pull_request:
     paths:
@@ -17,6 +18,7 @@ on:
       - ".dockerignore"
       - "src/**"
       - "CMakeLists.txt"
+      - "scripts/scenario_90_lagunak_primera_guardia.lua"
       - ".github/workflows/docker.yml"
   workflow_dispatch:
 
@@ -32,11 +34,38 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Comprobar puertos publicados en compose.yaml
+      - name: Comprobar exposición de /exec.lua en compose.yaml
         run: |
-          BRIDGE_TOKEN=ci docker compose -f docker/compose.yaml config --format json \
-            | jq -e '[.services[].ports[]? | select(.target == 8080)] | length == 0' \
-            || { echo "::error::docker/compose.yaml publica el puerto 8080 (/exec.lua). Ver SECURITY.md."; exit 1; }
+          set -euo pipefail
+
+          expone_exec_lua() {
+            jq -e '
+              (.services.game.network_mode // "") == "host"
+              or any(.services[]; any(.ports[]?; .target == 8080))
+            ' "$1" >/dev/null
+          }
+
+          config=$(mktemp)
+          BRIDGE_TOKEN=ci docker compose -f docker/compose.yaml config --format json > "$config"
+
+          if expone_exec_lua "$config"; then
+            echo "::error::docker/compose.yaml expone /exec.lua mediante el puerto 8080 o network_mode: host. Ver SECURITY.md."
+            exit 1
+          fi
+
+          # Regresiones hostiles: el gate debe detectar ambas vías aunque el
+          # compose real permanezca seguro.
+          hostil_host=$(mktemp)
+          jq '.services.game.network_mode = "host" | .services.game |= del(.ports)' \
+            "$config" > "$hostil_host"
+          expone_exec_lua "$hostil_host" \
+            || { echo "::error::La guardia no detecta network_mode: host."; exit 1; }
+
+          hostil_puerto=$(mktemp)
+          jq '.services.game.ports = [{"target": 8080, "published": "8080", "protocol": "tcp"}]' \
+            "$config" > "$hostil_puerto"
+          expone_exec_lua "$hostil_puerto" \
+            || { echo "::error::La guardia no detecta la publicación del puerto 8080."; exit 1; }
 
   # Suite pytest del puente (simula /exec.lua; no necesita el juego): auth,
   # límite de frecuencia, lista blanca de órdenes, eventos y contactos. Se

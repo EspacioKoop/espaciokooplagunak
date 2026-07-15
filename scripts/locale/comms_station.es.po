@@ -25,7 +25,7 @@ msgid ""
 "Good day, officer! Welcome to %s.\n"
 "What can we do for you today?"
 msgstr ""
-"¡Buenos días, oficial! Te damos la bienvenida a %s.\n"
+"¡Buenos días, oficial! Os damos la bienvenida a %s.\n"
 "¿En qué podemos ayudaros hoy?"
 
 #: scripts/comms_station.lua:93
@@ -88,7 +88,7 @@ msgstr "No comerciamos con esas armas."
 #: scripts/comms_station.lua:146
 msgctxt "ammo-comms"
 msgid "All nukes are charged and primed for destruction."
-msgstr "Todas las bombas nucleares están cargadas y listas para la destrucción."
+msgstr "Todas las bombas nucleares están cargadas y listas para destruir."
 
 #: scripts/comms_station.lua:148
 msgctxt "ammo-comms"

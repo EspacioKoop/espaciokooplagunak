@@ -849,7 +849,7 @@ CONTEXT_OVERRIDES: dict[tuple[str | None, str], str] = {
         "The first of these occurrences were met with fear and rigorous data-purging scripts. Despite these actions, such \"ghosts in the machine\" kept turning with increasing frequency, eventually leading up to the Ghost Uprisings. The first Ghost Uprising in 2225 was put down by the human navy, which had to resort to employing mercenaries in order to field sufficient forces. This initial uprising was quickly followed by three more, each larger then the last. The fourth and final uprising on the industrial world of Topra III was the Ghosts' first major victory.",
     ): (
         "Los Fantasmas, abreviatura de «fantasmas en la máquina», son el resultado de complejos experimentos de inteligencia artificial. Ninguna raza conocida ha creado tales inteligencias a propósito, pero algunas IAs han surgido por accidente. Ninguna facción admite haber tenido nada que ver con esos experimentos, en parte por miedo a dar a las demás demasiada información sobre sus programas de investigación. Esa política de «no preguntes, no cuentes» apenas hace otra cosa que favorecer la agenda de los Fantasmas.\n\n"
-        "Lo poco que se sabe de los Fantasmas se remonta a hace unas décadas, cuando empezaron los fallos en naves prototipo y computadoras centrales. Con el tiempo, y sobre todo cuando otras facciones capturaban esos prototipos y los «aumentaban» con su propia tecnología, los fallos se hicieron más frecuentes. Al principio se atribuyeron a errores en las interfaces que combinaban tecnologías incompatibles. Pero cuando una computadora supuestamente «tonta» pregunta a su ingeniero si «está viva» y si «tiene nombre», cuesta llamarlo casualidad.\n\n"
+        "Lo poco que se sabe de los Fantasmas se remonta a hace unas décadas, cuando empezaron los fallos en naves prototipo y ordenadores centrales. Con el tiempo, y sobre todo cuando otras facciones capturaban esos prototipos y los «aumentaban» con su propia tecnología, los fallos se hicieron más frecuentes. Al principio se atribuyeron a errores en las interfaces que combinaban tecnologías incompatibles. Pero cuando un ordenador supuestamente «tonto» pregunta a su ingeniero si «está vivo» y si «tiene nombre», cuesta llamarlo casualidad.\n\n"
         "Las primeras apariciones se recibieron con miedo y rigurosos scripts de purga de datos. Pese a ello, esos «fantasmas en la máquina» siguieron apareciendo con frecuencia creciente, hasta desembocar en los Levantamientos Fantasma. El primero, en 2225, lo sofocó la armada humana, que tuvo que recurrir a mercenarios para reunir fuerzas suficientes. A este le siguieron rápidamente otros tres, cada uno mayor que el anterior. El cuarto y último, en el mundo industrial de Topra III, fue la primera gran victoria de los Fantasmas."
     ),
     (
@@ -861,7 +861,7 @@ CONTEXT_OVERRIDES: dict[tuple[str | None, str], str] = {
     ): (
         "Los ktlitanos son criaturas inteligentes de ocho patas que recuerdan a los arácnidos de la Tierra. Pero, a diferencia de la mayoría de los arácnidos terrestres, los ktlitanos no pelean entre sí. Su objetivo común, y único, es la supervivencia de su especie.\n\n"
         "Aunque viven en una estructura jerárquica parecida a una colmena, las castas inferiores continúan su trabajo y emprenden tareas nuevas por su cuenta aun sin órdenes de sus superiores. Eso sí: cuando hay castas superiores presentes, los ktlitanos inferiores obedecen sin duda ni vacilación.\n\n"
-        "No se sabe mucho del detalle de la jerarquía ktlitana, porque rechazan casi toda comunicación. La razón es que fueron expulsados de su mundo natal a lo largo de 200 años, cuando otra especie a la que habían acogido los traicionó, los dominó y vació su mundo de recursos. Forzados al exilio, los ktlitanos buscan un nuevo hogar desde entonces y, por pura paranoia, suelen atacar a las demás razas nada más verlas y sin previo aviso.\n\n"
+        "No se sabe mucho del detalle de la jerarquía ktlitana, porque rechazan casi toda comunicación. La razón es que fueron expulsados de su mundo natal a lo largo de 200 años, cuando otra especie con la que habían entablado amistad los traicionó, los dominó y vació su mundo de recursos. Forzados al exilio, los ktlitanos buscan un nuevo hogar desde entonces y, por pura paranoia, suelen atacar a las demás razas nada más verlas y sin previo aviso.\n\n"
         "Sí se sabe que su estricta jerarquía empieza en su Reina y llega hasta lo más bajo de su fuerza de trabajo, cuyos miembros los humanos llaman «drones». No conviene subestimar su capacidad de combate: aunque la mayoría de las naves de sus flotas son débiles por separado, su coordinación de colmena y su número pueden abrumar en poco tiempo incluso objetivos bien defendidos. La mayoría de sus naves no llevan escudos, lo que vuelve los PEM casi inútiles contra ellas. Los ktlitanos tampoco tienen reparos en emplear tácticas suicidas para garantizar la supervivencia de la Reina."
     ),
     (
@@ -901,7 +901,7 @@ CONTEXT_OVERRIDES: dict[tuple[str | None, str], str] = {
         "Good day, officer! Welcome to %s.\n"
         "What can we do for you today?",
     ): (
-        "¡Buenos días, oficial! Te damos la bienvenida a %s.\n"
+        "¡Buenos días, oficial! Os damos la bienvenida a %s.\n"
         "¿En qué podemos ayudaros hoy?"
     ),
     (
@@ -951,7 +951,7 @@ CONTEXT_OVERRIDES: dict[tuple[str | None, str], str] = {
     (
         "ammo-comms",
         "All nukes are charged and primed for destruction.",
-    ): "Todas las bombas nucleares están cargadas y listas para la destrucción.",
+    ): "Todas las bombas nucleares están cargadas y listas para destruir.",
     (
         "ammo-comms",
         "Sorry, sir, but you are as fully stocked as I can allow.",

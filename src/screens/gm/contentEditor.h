@@ -1,11 +1,13 @@
 #pragma once
 
 #include "content/contentLibraryStore.h"
+#include "content/shipEditSession.h"
 #include "gui/gui2_overlay.h"
 #include "stringImproved.h"
 #include <vector>
 
 class GuiLabel;
+class GuiButton;
 class GuiListbox;
 class GuiSelector;
 class GuiTextEntry;
@@ -38,6 +40,7 @@ private:
     string pending_file_import;
     string pending_file_export;
     ContentDiscardGuard discard_guard;
+    ShipEditSession ship_edit_session;
     bool preview_enabled = false;
 
     GuiSelector* type_selector;
@@ -59,6 +62,14 @@ private:
     GuiLabel* status_label;
     GuiToggleButton* preview_toggle;
     GuiLabel* preview_status_label;
+    GuiLabel* ship_system_label;
+    GuiSelector* ship_system_selector;
+    GuiLabel* ship_health_label;
+    GuiTextEntry* ship_health_entry;
+    GuiButton* ship_set_system_button;
+    GuiButton* ship_remove_system_button;
+    GuiButton* ship_undo_button;
+    GuiButton* ship_redo_button;
 
     void requestSetType(ContentResourceType type);
     void setType(ContentResourceType type);
@@ -86,4 +97,9 @@ private:
     string storeErrorText(ContentStoreError error) const;
     void setStatus(const string& text);
     void updatePreviewStatus();
+    void updateShipSystemEditor();
+    void setShipSystemOverride();
+    void removeShipSystemOverride();
+    void undoShipEdit();
+    void redoShipEdit();
 };

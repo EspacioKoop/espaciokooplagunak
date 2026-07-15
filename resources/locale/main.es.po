@@ -4105,3 +4105,95 @@ msgstr "El ID de nave del personaje no es válido."
 msgctxt "content_editor"
 msgid "A referenced map, character or ship is missing from the library."
 msgstr "Falta en la biblioteca un mapa, personaje o nave referenciado."
+
+msgctxt "content_editor"
+msgid "System"
+msgstr "Sistema"
+
+msgctxt "content_editor"
+msgid "Reactor"
+msgstr "Reactor"
+
+msgctxt "content_editor"
+msgid "Beam weapons"
+msgstr "Armas de rayos"
+
+msgctxt "content_editor"
+msgid "Missile system"
+msgstr "Sistema de misiles"
+
+msgctxt "content_editor"
+msgid "Maneuvering"
+msgstr "Maniobra"
+
+msgctxt "content_editor"
+msgid "Impulse"
+msgstr "Impulso"
+
+msgctxt "content_editor"
+msgid "Warp"
+msgstr "Curvatura"
+
+msgctxt "content_editor"
+msgid "Jump drive"
+msgstr "Motor de salto"
+
+msgctxt "content_editor"
+msgid "Front shield"
+msgstr "Escudo frontal"
+
+msgctxt "content_editor"
+msgid "Rear shield"
+msgstr "Escudo trasero"
+
+msgctxt "content_editor"
+msgid "Health [-1, 1]"
+msgstr "Salud [-1, 1]"
+
+msgctxt "content_editor"
+msgid "Set system"
+msgstr "Aplicar sistema"
+
+msgctxt "content_editor"
+msgid "Remove override"
+msgstr "Quitar override"
+
+msgctxt "content_editor"
+msgid "Undo"
+msgstr "Deshacer"
+
+msgctxt "content_editor"
+msgid "Redo"
+msgstr "Rehacer"
+
+msgctxt "content_editor"
+msgid "Health must be a finite number between -1 and 1."
+msgstr "La salud debe ser un número finito entre -1 y 1."
+
+msgctxt "content_editor"
+msgid "Ship system override staged."
+msgstr "Override de sistema preparado."
+
+msgctxt "content_editor"
+msgid "The selected system has no override."
+msgstr "El sistema seleccionado no tiene override."
+
+msgctxt "content_editor"
+msgid "Ship system override removed from staging."
+msgstr "Override de sistema retirado del staging."
+
+msgctxt "content_editor"
+msgid "There is no ship edit to undo."
+msgstr "No hay ninguna edición de nave que deshacer."
+
+msgctxt "content_editor"
+msgid "Ship edit undone."
+msgstr "Edición de nave deshecha."
+
+msgctxt "content_editor"
+msgid "There is no ship edit to redo."
+msgstr "No hay ninguna edición de nave que rehacer."
+
+msgctxt "content_editor"
+msgid "Ship edit redone."
+msgstr "Edición de nave rehecha."

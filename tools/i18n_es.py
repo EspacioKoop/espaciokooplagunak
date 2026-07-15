@@ -848,6 +848,265 @@ CONTEXT_OVERRIDES: dict[tuple[str | None, str], str] = {
         "Un impactador de plomo de alta velocidad (HVLI) dispara un simple proyectil de plomo a gran velocidad. Es un arma habitual en naves sencillas porque no necesita ordenadores de guiado, lo que también significa que sus proyectiles vuelan en línea recta desde el tubo y no pueden perseguir a un objetivo.\n\n"
         "Cada disparo de un HVLI lanza una ráfaga de 5 proyectiles, lo que aumenta la probabilidad de acertar pero exige apuntar con precisión para ser eficaz. Alcanza todo su potencial de daño a 2u de distancia."
     ),
+    # Issue #28: reviewed faction lore (factionInfo) and station comms dialogue.
+    (
+        None,
+        "Arlenians",
+    ): "Arlenianos",
+    (
+        None,
+        "Ktlitans",
+    ): "Ktlitanos",
+    (
+        None,
+        "Despite appearing as a faction, independents are distinguished primarily by having no strong affiliation with any faction at all. Most traders consider themselves independent, though certain voices have started to speak up about creating a merchant faction.",
+    ): "Aunque aparecen como una facción, los independientes se distinguen precisamente por no tener una afiliación fuerte con facción alguna. La mayoría de los comerciantes se consideran independientes, aunque algunas voces han empezado a hablar de crear una facción mercante.",
+    (
+        None,
+        "The remnants of the human navy.\n\n"
+        "While all other races were driven to the stars out of greed or scientific research, humans where the only race to start exploring the galaxy because their homeworld could no longer sustain their population. Some other races view humans as a sort of virus or plague due to the rate at which they can breed and spread.\n\n"
+        "Due to human regulations on spaceships, naval ships are the only ones permitted in deep space. However, this hasn't completely prevented humans outside of the navy from spacefaring, as quite a few humans sign up on alien trading vessels or pirate raiders.",
+    ): (
+        "Los restos de la armada humana.\n\n"
+        "Mientras que a todas las demás razas las llevó a las estrellas la codicia o la investigación científica, los humanos fueron la única raza que empezó a explorar la galaxia porque su mundo natal ya no podía sostener a su población. Algunas razas ven a los humanos como una especie de virus o plaga, por el ritmo al que se reproducen y se extienden.\n\n"
+        "Por las regulaciones humanas sobre naves espaciales, las naves de la armada son las únicas autorizadas en el espacio profundo. Aun así, eso no ha impedido del todo que humanos ajenos a la armada naveguen: no son pocos los que se enrolan en mercantes alienígenas o en naves piratas."
+    ),
+    (
+        None,
+        "The reptilian Kraylor are a race of warriors with a strong religious dogma.\n\n"
+        "As soon as the Kraylor obtained reliable space flight, they immediately set out to conquer and subjugate unbelievers. Their hierarchy is based solely on physical might; a Kraylor kills anything it can kill, and owns anything it can take by force.\n\n"
+        "Kraylor can live for weeks without air, food, or gravity, and consider humans to be weak creatures for dying within minutes of exposure to space. Because of their fortitude and cultural pressures against retreat, Kraylor ships do not contain escape pods.",
+    ): (
+        "Los reptilianos kraylor son una raza de guerreros con un fuerte dogma religioso.\n\n"
+        "En cuanto los kraylor lograron un vuelo espacial fiable, salieron de inmediato a conquistar y someter a los infieles. Su jerarquía se basa únicamente en la fuerza física: un kraylor mata todo lo que puede matar y posee todo lo que puede tomar por la fuerza.\n\n"
+        "Los kraylor pueden vivir semanas sin aire, comida ni gravedad, y consideran a los humanos criaturas débiles por morir a los pocos minutos de exponerse al espacio. Por su resistencia y por la presión cultural contra la retirada, las naves kraylor no llevan cápsulas de escape."
+    ),
+    (
+        None,
+        "Arlenians are energy-based life forms who long ago transcended physical reality through superior technology. Arlenians' energy forms also give them access to strong telepathic powers. Many consider Arlenians to be the first and oldest explorers of the galaxy.\n\n"
+        "Despite all these advantages, they are very peaceful, as they see little value in material posession.\n\n"
+        "For unknown reasons, Arlenians started granting their anti-grav technology to other races, and almost all starfaring races' technology is based off Arlenian designs. Dissenters and skeptics claim that Arlenians see other races as playthings to add to their galactic playground, but most are more than happy to accept their technology in hopes that it will give them an advantage over the others.\n\n"
+        "Destroying an Arlenian ship does not kill its crew. They simply phase out of existence in that point of spacetime and reappear in another. Nonetheless, the Kraylor are devoted to destroying the Arlenians, as they see the energy-based beings as physically powerless.",
+    ): (
+        "Los arlenianos son formas de vida de energía que trascendieron la realidad física hace mucho tiempo gracias a una tecnología superior. Su forma de energía les da además poderosas capacidades telepáticas. Muchos los consideran los primeros y más antiguos exploradores de la galaxia.\n\n"
+        "Pese a todas esas ventajas son muy pacíficos, porque ven poco valor en las posesiones materiales.\n\n"
+        "Por razones desconocidas, los arlenianos empezaron a ceder su tecnología antigravitatoria a otras razas, y la tecnología de casi todas las razas espaciales se basa en diseños arlenianos. Los disidentes y escépticos sostienen que los arlenianos ven a las demás razas como juguetes que añadir a su parque galáctico, pero la mayoría acepta encantada su tecnología con la esperanza de sacar ventaja sobre los demás.\n\n"
+        "Destruir una nave arleniana no mata a su tripulación: simplemente se desvanecen de ese punto del espacio-tiempo y reaparecen en otro. Aun así, los kraylor están consagrados a destruir a los arlenianos, a los que ven como seres físicamente impotentes."
+    ),
+    (
+        None,
+        "Exuari are race of predatory amphibians with long noses. They once had an empire that stretched halfway across the galaxy, but their territory is now limited to a handful of star systems. For some reason, they find death to be outrageously funny, and several of their most famous comedians have died on stage.\n\n"
+        "Upon making contact with other races, the chaotic Exuari found that killing aliens is more fun than killing their own people, and as such attack all non-Exauri on sight.",
+    ): (
+        "Los exuari son una raza de anfibios depredadores de nariz larga. Tuvieron un imperio que abarcaba media galaxia, pero su territorio se limita hoy a un puñado de sistemas estelares. Por algún motivo la muerte les parece desternillante, y varios de sus cómicos más famosos han muerto en el escenario.\n\n"
+        "Al contactar con otras razas, los caóticos exuari descubrieron que matar alienígenas es más divertido que matar a los suyos, así que atacan a todo lo que no sea exuari en cuanto lo ven."
+    ),
+    (
+        None,
+        "The Ghosts, an abbreviation of \"ghosts in the machine\", are the result of complex artificial intelligence experiments. While no known race has intentionally created such intelligences, some AIs have come about by accident. None of the factions claim to have had anything to do with such experiments, in part out of fear that it would give the others too much insight into their research programs. This \"don't ask, don't tell\" policy does little but aid the Ghosts' agenda.\n\n"
+        "What little is known about the Ghosts dates back to a few decades ago, when glitches started occurring in prototype ships and computer mainframes. Over time, and especially when such prototypes were captured by other factions and \"augmented\" with their technology, the glitches became more frequent. At first, these were seen as the result of mistakes in the interfaces combining the incompatible technologies. But once a supposedly \"dumb\" computer asks its engineer if \"it is alive\" and whether it \"has a name\", it's hard to call it a one-time fluke.\n\n"
+        "The first of these occurrences were met with fear and rigorous data-purging scripts. Despite these actions, such \"ghosts in the machine\" kept turning with increasing frequency, eventually leading up to the Ghost Uprisings. The first Ghost Uprising in 2225 was put down by the human navy, which had to resort to employing mercenaries in order to field sufficient forces. This initial uprising was quickly followed by three more, each larger then the last. The fourth and final uprising on the industrial world of Topra III was the Ghosts' first major victory.",
+    ): (
+        "Los Fantasmas, abreviatura de «fantasmas en la máquina», son el resultado de complejos experimentos de inteligencia artificial. Ninguna raza conocida ha creado tales inteligencias a propósito, pero algunas IAs han surgido por accidente. Ninguna facción admite haber tenido nada que ver con esos experimentos, en parte por miedo a dar a las demás demasiada información sobre sus programas de investigación. Esa política de «no preguntes, no cuentes» apenas hace otra cosa que favorecer la agenda de los Fantasmas.\n\n"
+        "Lo poco que se sabe de los Fantasmas se remonta a hace unas décadas, cuando empezaron los fallos en naves prototipo y ordenadores centrales. Con el tiempo, y sobre todo cuando otras facciones capturaban esos prototipos y los «aumentaban» con su propia tecnología, los fallos se hicieron más frecuentes. Al principio se atribuyeron a errores en las interfaces que combinaban tecnologías incompatibles. Pero cuando un ordenador supuestamente «tonto» pregunta a su ingeniero si «está vivo» y si «tiene nombre», cuesta llamarlo casualidad.\n\n"
+        "Las primeras apariciones se recibieron con miedo y rigurosos scripts de purga de datos. Pese a ello, esos «fantasmas en la máquina» siguieron apareciendo con frecuencia creciente, hasta desembocar en los Levantamientos Fantasma. El primero, en 2225, lo sofocó la armada humana, que tuvo que recurrir a mercenarios para reunir fuerzas suficientes. A este le siguieron rápidamente otros tres, cada uno mayor que el anterior. El cuarto y último, en el mundo industrial de Topra III, fue la primera gran victoria de los Fantasmas."
+    ),
+    (
+        None,
+        "The Ktlitans are intelligent eight-legged creatures that resemble Earth's arachnids. However, unlike most terrestrial arachnids, the Ktlitans do not fight among themselves. Their common, and only, goal is their species' survival.\n\n"
+        "While they live in a hierarchical structure that resembles a hive, the lower castes continue their work and start new tasks on their own even when no orders come from their superiors. However, when higher castes are present, the lower Ktlitans follow their orders without question or hesitation.\n\n"
+        "Not much is known about the detailed Ktlitan hierarchy since they refuse most communication. This is because they were once driven from their homeworld over a span of 200 years when another species they befriended betrayed them, dominated them, and drained their world of resources. Forced into exile, the Ktlitans have searched for a new homeworld ever since, and out of paranoia typically attack other races on sight and without warning.\n\n"
+        "It is known, however, that the strict Ktlitan hierarchy starts with their Queen and extends all the way to the bottom of their workforce, whose members are called \"drones\" by the humans. Their combat capabilities should not be underestimated, because while most ships in their fleets are individually weak, their hive-like coordination and numbers can quickly overwhelm even hardened targets. Most of their ships are unshielded, which makes EMPs largely ineffective against them. Ktlitans also have no qualms about applying suicidal tactics to ensure the Queen's survival.",
+    ): (
+        "Los ktlitanos son criaturas inteligentes de ocho patas que recuerdan a los arácnidos de la Tierra. Pero, a diferencia de la mayoría de los arácnidos terrestres, los ktlitanos no pelean entre sí. Su objetivo común, y único, es la supervivencia de su especie.\n\n"
+        "Aunque viven en una estructura jerárquica parecida a una colmena, las castas inferiores continúan su trabajo y emprenden tareas nuevas por su cuenta aun sin órdenes de sus superiores. Eso sí: cuando hay castas superiores presentes, los ktlitanos inferiores obedecen sin duda ni vacilación.\n\n"
+        "No se sabe mucho del detalle de la jerarquía ktlitana, porque rechazan casi toda comunicación. La razón es que fueron expulsados de su mundo natal a lo largo de 200 años, cuando otra especie con la que habían entablado amistad los traicionó, los dominó y vació su mundo de recursos. Forzados al exilio, los ktlitanos buscan un nuevo hogar desde entonces y, por pura paranoia, suelen atacar a las demás razas nada más verlas y sin previo aviso.\n\n"
+        "Sí se sabe que su estricta jerarquía empieza en su Reina y llega hasta lo más bajo de su fuerza de trabajo, cuyos miembros los humanos llaman «drones». No conviene subestimar su capacidad de combate: aunque la mayoría de las naves de sus flotas son débiles por separado, su coordinación de colmena y su número pueden abrumar en poco tiempo incluso objetivos bien defendidos. La mayoría de sus naves no llevan escudos, lo que vuelve los PEM casi inútiles contra ellas. Los ktlitanos tampoco tienen reparos en emplear tácticas suicidas para garantizar la supervivencia de la Reina."
+    ),
+    (
+        None,
+        "The Terran Stellar Navy, or TSN, consists of naval forces based near Terra. Its members are primarily human.\n\n"
+        "These humans and other races have banded together to form a navy to protect and enforce common philosophies. They are friendly with the human navy but do not follow the same command structure. Military actions taken in the past have made them enemies of the Arlenians, but they've got a better relationship with the Ghosts than the Human Navy does.\n\n"
+        "The TSN and USN are enemies because of the USN's neutral stance towards the Kraylor.",
+    ): (
+        "La Armada Estelar Terrana, o TSN, la componen fuerzas navales asentadas cerca de Terra. Sus miembros son mayoritariamente humanos.\n\n"
+        "Estos humanos y otras razas se han unido para formar una armada que proteja y haga valer una filosofía común. Mantienen buena relación con la Armada Humana, pero no siguen su misma cadena de mando. Acciones militares del pasado los han convertido en enemigos de los arlenianos, aunque se llevan mejor con los Fantasmas que la propia Armada Humana.\n\n"
+        "La TSN y la USN son enemigas por la postura neutral de la USN hacia los kraylor."
+    ),
+    (
+        None,
+        "The United Stellar Navy, or USN, is a naval force near the boundary of human and Kraylor space consisting of mostly humans. The USN is friendly with the human navy and uses a similar command structure.\n\n"
+        "The USN is primarily human but includes other races. This includes some Kraylor, which has made the TSN an enemy of the USN.",
+    ): (
+        "La Armada Estelar Unida, o USN, es una fuerza naval cercana a la frontera entre el espacio humano y el kraylor, compuesta sobre todo por humanos. La USN mantiene buena relación con la Armada Humana y usa una cadena de mando parecida.\n\n"
+        "Aunque es mayoritariamente humana, la USN incluye otras razas — entre ellas algunos kraylor, lo que ha convertido a la TSN en su enemiga."
+    ),
+    (
+        None,
+        "The Celestial Unified Fleet, or CUF, is the farthest-ranging primarily human fleet as well as the least xenophobic. The CUF's goals center on exploration and trade, but since it's a dangerous galaxy, they recognize the need for strong warships.\n\n"
+        "The CUF is friendly with the human navy, and neutral toward the TSN and USN. They are less structured than the other primarily human navies.\n\n"
+        "The CUF have neutral relations with the Ktlitans and Arlenians. They are enemies with Exuari, Kraylor, and Ghosts for political and historical reasons, not xenophobia; some of their best friends are also Exuari, Kraylor, and Ghosts.",
+    ): (
+        "La Flota Unificada Celestial, o CUF, es la flota mayoritariamente humana de mayor alcance, y también la menos xenófoba. Sus objetivos se centran en la exploración y el comercio pero, como la galaxia es peligrosa, reconocen la necesidad de buenas naves de guerra.\n\n"
+        "La CUF mantiene buena relación con la Armada Humana y es neutral hacia la TSN y la USN. Está menos estructurada que las demás armadas mayoritariamente humanas.\n\n"
+        "La CUF mantiene relaciones neutrales con ktlitanos y arlenianos. Es enemiga de exuari, kraylor y Fantasmas por motivos políticos e históricos, no por xenofobia; algunos de sus mejores amigos también son exuari, kraylor y Fantasmas."
+    ),
+    (
+        "station-comms",
+        "We are under attack! No time for chatting!",
+    ): "¡Estamos bajo ataque! ¡No hay tiempo para charlas!",
+    (
+        "station-comms",
+        "Good day, officer! Welcome to %s.\n"
+        "What can we do for you today?",
+    ): (
+        "¡Buenos días, oficial! Os damos la bienvenida a %s.\n"
+        "¿En qué podemos ayudaros hoy?"
+    ),
+    (
+        "station-comms",
+        "Welcome to our lovely station %s.",
+    ): "Os damos la bienvenida a nuestra encantadora estación %s.",
+    (
+        "ammo-comms",
+        "Do you have spare homing missiles for us?",
+    ): "¿Tenéis misiles guiados de sobra para nosotros?",
+    (
+        "ammo-comms",
+        "Can you restock us with HVLI?",
+    ): "¿Podéis reabastecernos de HVLI?",
+    (
+        "ammo-comms",
+        "Please re-stock our mines.",
+    ): "Por favor, reponed nuestras minas.",
+    (
+        "ammo-comms",
+        "Can you supply us with some nukes?",
+    ): "¿Podéis suministrarnos algunas bombas nucleares?",
+    (
+        "ammo-comms",
+        "Please re-stock our EMP missiles.",
+    ): "Por favor, reponed nuestros misiles PEM.",
+    (
+        "ammo-comms",
+        "%s (%d rep each)",
+    ): "%s (%d rep cada uno)",
+    (
+        "station-comms",
+        "You need to stay docked for that action.",
+    ): "Tenéis que permanecer atracados para esa acción.",
+    (
+        "ammo-comms",
+        "We do not deal in weapons of mass destruction.",
+    ): "No comerciamos con armas de destrucción masiva.",
+    (
+        "ammo-comms",
+        "We do not deal in weapons of mass disruption.",
+    ): "No comerciamos con armas de perturbación masiva.",
+    (
+        "ammo-comms",
+        "We do not deal in those weapons.",
+    ): "No comerciamos con esas armas.",
+    (
+        "ammo-comms",
+        "All nukes are charged and primed for destruction.",
+    ): "Todas las bombas nucleares están cargadas y listas para destruir.",
+    (
+        "ammo-comms",
+        "Sorry, sir, but you are as fully stocked as I can allow.",
+    ): "Lo siento, oficial, pero ya vais tan cargados como puedo permitir.",
+    (
+        "needRep-comms",
+        "Not enough reputation.",
+    ): "No tenéis suficiente reputación.",
+    (
+        "ammo-comms",
+        "You are fully loaded and ready to explode things.",
+    ): "Vais completamente cargados y listos para hacer explotar cosas.",
+    (
+        "ammo-comms",
+        "We generously resupplied you with some weapon charges.\n"
+        "Put them to good use.",
+    ): (
+        "Os hemos reabastecido generosamente con algunas cargas de armamento.\n"
+        "Dadles buen uso."
+    ),
+    (
+        "station-comms",
+        "This is %s. Good day, officer.\n"
+        "If you need supplies, please dock with us first.",
+    ): (
+        "Aquí %s. Buenos días, oficial.\n"
+        "Si necesitáis suministros, atracad con nosotros primero."
+    ),
+    (
+        "station-comms",
+        "This is %s. Greetings.\n"
+        "If you want to do business, please dock with us first.",
+    ): (
+        "Aquí %s. Saludos.\n"
+        "Si queréis hacer negocios, atracad con nosotros primero."
+    ),
+    (
+        "stationAssist-comms",
+        "Can you send a supply drop? (%d rep)",
+    ): "¿Podéis enviar un paquete de suministros? (%d rep)",
+    (
+        "stationAssist-comms",
+        "Please send reinforcements! (%d rep)",
+    ): "¡Por favor, enviad refuerzos! (%d rep)",
+    (
+        "stationAssist-comms",
+        "You need to set a waypoint before you can request backup.",
+    ): "Tenéis que fijar un punto de referencia antes de pedir apoyo.",
+    (
+        "stationAssist-comms",
+        "To which waypoint should we deliver your supplies?",
+    ): "¿A qué punto de referencia entregamos vuestros suministros?",
+    (
+        "stationAssist-comms",
+        "We have dispatched a supply ship toward %s.",
+    ): "Hemos enviado una nave de suministros hacia %s.",
+    (
+        "needRep-comms",
+        "Not enough reputation!",
+    ): "¡No tenéis suficiente reputación!",
+    (
+        "stationAssist-comms",
+        "What kind of reinforcement ship would you like?",
+    ): "¿Qué clase de nave de refuerzo queréis?",
+    (
+        "stationAssist-comms",
+        "Adder MK3 (%d rep)",
+    ): "Adder MK3 (%d rep)",
+    (
+        "stationAssist-comms",
+        "MU52 Hornet (%d rep)",
+    ): "MU52 Hornet (%d rep)",
+    (
+        "stationAssist-comms",
+        "Standard Adder MK5 (%d rep)",
+    ): "Adder MK5 estándar (%d rep)",
+    (
+        "stationAssist-comms",
+        "Adder MK8 (%d rep)",
+    ): "Adder MK8 (%d rep)",
+    (
+        "stationAssist-comms",
+        "Phobos T3 (%d rep)",
+    ): "Phobos T3 (%d rep)",
+    (
+        "stationAssist-comms",
+        "You need to set a waypoint before you can request reinforcements.",
+    ): "Tenéis que fijar un punto de referencia antes de pedir refuerzos.",
+    (
+        "stationAssist-comms",
+        "To which waypoint should we dispatch the reinforcements?",
+    ): "¿A qué punto de referencia enviamos los refuerzos?",
+    (
+        "stationAssist-comms",
+        "We have dispatched %s to assist at %s.",
+    ): "Hemos enviado %s para prestar asistencia en %s.",
 }
 
 

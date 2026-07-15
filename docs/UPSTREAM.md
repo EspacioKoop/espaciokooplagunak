@@ -48,10 +48,13 @@ git merge --no-ff upstream/master
 Después:
 
 1. Resuelve conflictos preservando intención y atribución.
-2. Ejecuta compilación y pruebas aplicables.
-3. Revisa el diff y enumera conflictos o adaptaciones.
-4. Publica la rama y abre un pull request hacia `main`.
-5. Integra solo tras revisión.
+2. Actualiza la revisión fija de SeriousProton en los DOS sitios que la
+   declaran: `SERIOUS_PROTON_REF` en `docker/Dockerfile` y en `docker/build.sh`
+   (deben apuntar al mismo SHA; la CI y la imagen de release compilan contra él).
+3. Ejecuta compilación y pruebas aplicables.
+4. Revisa el diff y enumera conflictos o adaptaciones.
+5. Publica la rama y abre un pull request hacia `main`.
+6. Integra solo tras revisión.
 
 Si `main` no tiene cambios propios desde la última sincronización, el merge puede ser fast-forward; aun así debe revisarse mediante una rama/PR una vez concluido el bootstrap.
 

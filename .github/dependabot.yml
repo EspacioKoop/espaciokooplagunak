@@ -1,0 +1,26 @@
+# Dependabot acotado a lo PROPIO del fork (issue #88, ver docs/BASELINE.md):
+# actions de CI, dependencias Python del puente e imágenes base de Docker.
+# Deliberadamente NO vigila dependencias C++ heredadas de upstream
+# (CMakeLists.txt, src/): un bump ahí es divergencia upstream permanente y
+# le corresponde a EmptyEpsilon resolverlo a su ritmo (docs/UPSTREAM.md).
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3
+
+  - package-ecosystem: "pip"
+    directory: "/bridge"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3
+
+  - package-ecosystem: "docker"
+    directories:
+      - "/docker"
+      - "/bridge"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3

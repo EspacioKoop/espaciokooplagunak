@@ -6,40 +6,25 @@ set -e
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 PROJECT_DIR="$( cd "${SCRIPT_DIR}/.." && pwd )"
 
-# For debugging.
-echo "GITHUB_REF: ${GITHUB_REF}"
-echo "GITHUB_HEAD_REF: ${GITHUB_HEAD_REF}"
-echo "GITHUB_BASE_REF: ${GITHUB_BASE_REF}"
+# Revisión FIJA de SeriousProton, la misma que docker/Dockerfile, para que el
+# gate de CI sea reproducible (un cambio en el master vivo de SeriousProton no
+# debe poder romper la CI de este repo sin un commit local). Al sincronizar con
+# upstream, actualiza esta revisión y la del Dockerfile a la vez (docs/UPSTREAM.md).
+SERIOUS_PROTON_REPO="${SERIOUS_PROTON_REPO:-https://github.com/daid/SeriousProton.git}"
+SERIOUS_PROTON_REF="${SERIOUS_PROTON_REF:-e6f10ae5a3fcffc8f36ced0e7823cb3c57797acd}"
 
-GIT_REF_NAME_LIST=( "${GITHUB_HEAD_REF}" "${GITHUB_BASE_REF}" "${GITHUB_REF}" "master" )
-for git_ref_name in "${GIT_REF_NAME_LIST[@]}"
-do
-  if [ -z "${git_ref_name}" ]; then
-    continue
-  fi
-  git_ref_name="$(basename "${git_ref_name}")"
-  # Skip refs/pull/1234/merge as pull requests use it as GITHUB_REF
-  if [[ "${git_ref_name}" == "merge" ]]; then
-    echo "Skip [${git_ref_name}]"
-    continue
-  fi
-  SERIOUS_PROTON_BRANCH="${git_ref_name}"
-  output="$(git ls-remote --heads https://github.com/Daid/SeriousProton "${SERIOUS_PROTON_BRANCH}")"
-  if [ -n "${output}" ]; then
-    echo "Found SeriousProton branch [${SERIOUS_PROTON_BRANCH}]."
-    break
-  else
-    echo "Could not find SeriousProton banch [${SERIOUS_PROTON_BRANCH}], try next."
-  fi
-done
+echo "Using SeriousProton ref ${SERIOUS_PROTON_REF} ..."
 
-echo "Using SeriousProton branch ${SERIOUS_PROTON_BRANCH} ..."
-
-git clone --depth=1 -b "${SERIOUS_PROTON_BRANCH}" https://github.com/Daid/SeriousProton.git "${PROJECT_DIR}"/SeriousProton
+git init "${PROJECT_DIR}"/SeriousProton
+git -C "${PROJECT_DIR}"/SeriousProton remote add origin "${SERIOUS_PROTON_REPO}"
+git -C "${PROJECT_DIR}"/SeriousProton fetch --depth=1 origin "${SERIOUS_PROTON_REF}"
+git -C "${PROJECT_DIR}"/SeriousProton checkout FETCH_HEAD
 
 mkdir build
 cd build
-cmake .. -DSERIOUS_PROTON_DIR=$PROJECT_DIR/SeriousProton/ -DBUILD_CONTENT_RESOURCE_TESTS=ON
-make
+# WARNING_IS_ERROR también aquí: este es el único job que ejecuta el CTest del
+# fork, y sin él un warning nuevo en src/ pasaría la CI Linux sin ruido.
+cmake .. -DSERIOUS_PROTON_DIR=$PROJECT_DIR/SeriousProton/ -DBUILD_CONTENT_RESOURCE_TESTS=ON -DWARNING_IS_ERROR=1
+make -j"$(nproc)"
 ctest --output-on-failure
 

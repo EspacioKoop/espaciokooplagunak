@@ -58,8 +58,8 @@ MapDocumentError MapPreviewDragSession::begin(
 {
     cancel();
     selected_id.clear();
-    source_session = nullptr;
-    source_document = {};
+    source_session_id = 0;
+    source_revision = 0;
     const auto& document = session.document();
     std::string hit;
     const auto error = hitTestMapPreviewObject(
@@ -82,8 +82,8 @@ MapDocumentError MapPreviewDragSession::begin(
         original_transform.x - world_position.x,
         original_transform.y - world_position.y,
     };
-    source_session = &session;
-    source_document = document;
+    source_session_id = session.sessionId();
+    source_revision = session.revision();
     dragging = true;
     return MapDocumentError::None;
 }
@@ -100,7 +100,7 @@ MapEditError MapPreviewDragSession::commit(MapEditSession& session)
 {
     if (!dragging) return MapEditError::NotFound;
     dragging = false;
-    if (&session != source_session || session.document() != source_document)
+    if (session.sessionId() != source_session_id || session.revision() != source_revision)
         return MapEditError::SessionChanged;
     return session.moveObject(selected_id, provisional_transform);
 }

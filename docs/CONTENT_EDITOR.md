@@ -186,9 +186,10 @@ los tipos futuros opacos se omiten visualmente sin perderse y su recuento queda
 visible en el editor. El núcleo de interacción del preview añade hit-test con tolerancia
 en píxeles estable al zoom y un drag provisional separado de `MapEditSession`: solo el
 commit final llama una vez a `moveObject()`, mientras cancelar o mover el puntero no
-crea historial. El gesto conserva el offset de agarre y solo puede confirmar contra la
-misma sesión y snapshot con que comenzó. Los objetos opacos nunca entran en hit-test. La
-conexión de este núcleo al radar GM se completa en #150.
+misma identidad generacional y revisión de sesión con que empezó; cada edición, undo,
+redo, rollback, guardado o reemplazo de sesión avanza esa barrera para impedir ABA. Los
+objetos opacos nunca entran en hit-test. La conexión de este núcleo al radar GM se
+completa en el siguiente vertical de #150.
 
 Las naves tienen un modelo tipado para overrides opcionales de sistemas, recursos,
 carga y puestos. Rechaza IDs no canónicos, duplicados, valores no finitos y

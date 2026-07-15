@@ -124,6 +124,28 @@ int main()
         "drag cannot commit into another session with an identical document");
 
     expect(drag.begin(session, {10.0f, 20.0f}, 1.0f) == MapDocumentError::None
+            && drag.update({80.0f, 90.0f}),
+        "same-address replacement regression starts a drag");
+    const auto replaced_session_id = session.sessionId();
+    session = MapEditSession(drag_document);
+    expect(session.sessionId() != replaced_session_id
+            && drag.commit(session) == MapEditError::SessionChanged
+            && session.document() == drag_document,
+        "reassigned session at the same address has a new stable identity");
+
+    expect(drag.begin(session, {10.0f, 20.0f}, 1.0f) == MapDocumentError::None
+            && drag.update({120.0f, 130.0f}),
+        "ABA revision regression starts a drag");
+    const auto drag_revision = session.revision();
+    expect(session.moveObject("dragged", {30.0f, 40.0f, 35.0f}) == MapEditError::None
+            && session.undo() && session.document() == drag_document
+            && session.revision() > drag_revision,
+        "edit plus undo restores bytes but advances session revision");
+    expect(drag.commit(session) == MapEditError::SessionChanged
+            && session.document() == drag_document,
+        "stale drag cannot commit after an edit-undo ABA cycle");
+
+    expect(drag.begin(session, {10.0f, 20.0f}, 1.0f) == MapDocumentError::None
             && drag.isDragging() && drag.selectedId() == "dragged",
         "drag starts on a supported staged object");
     expect(drag.update({200.0f, 300.0f}) && drag.update({250.0f, 350.0f}),

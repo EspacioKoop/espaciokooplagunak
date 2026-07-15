@@ -491,6 +491,93 @@ void testInboxLimitAndConcurrentWriters()
 #endif
 }
 
+void testTransactionalRename()
+{
+    TemporaryDirectory temporary("rename");
+    ContentLibraryStore store(temporary.path / "managed");
+
+    auto first_map = visualMap();
+    auto second_map = first_map;
+    second_map.id = "second-map";
+    second_map.name = "Second Map";
+    auto ship = declarativeShip();
+    ContentResource character;
+    character.type = ContentResourceType::Character;
+    character.id = "pilot";
+    character.name = "Pilot";
+    character.primary = "helms";
+    character.secondary = "Echo";
+    character.quaternary = ship.id;
+    auto linked_campaign = campaign("linked-campaign", "Linked Campaign");
+    linked_campaign.primary = first_map.id + ", " + second_map.id;
+    linked_campaign.secondary = first_map.id;
+    linked_campaign.tertiary = character.id;
+    linked_campaign.quaternary = ship.id;
+    linked_campaign.quinary = first_map.id + ">" + second_map.id;
+    const std::vector<ContentResource> source{
+        first_map, second_map, ship, character, linked_campaign
+    };
+    expect(store.save(source) == ContentStoreError::None,
+        "rename fixture is committed atomically");
+
+    const auto renamed = store.renameResource(
+        ContentResourceType::Map, "visual-map", "renamed-map");
+    expect(renamed.ok(), "store rename commits a valid candidate");
+
+    ContentLibraryStore reloaded_store(store.rootPath());
+    std::vector<ContentResource> reloaded;
+    expect(reloaded_store.load(reloaded).error == ContentStoreError::None,
+        "renamed library reloads from a fresh store instance");
+    const auto find_resource = [&](ContentResourceType type, const std::string& id) {
+        return std::find_if(reloaded.begin(), reloaded.end(), [&](const ContentResource& item) {
+            return item.type == type && item.id == id;
+        });
+    };
+    const auto persisted_map = find_resource(ContentResourceType::Map, "renamed-map");
+    const auto persisted_campaign = find_resource(ContentResourceType::Campaign, "linked-campaign");
+    expect(persisted_map != reloaded.end()
+            && find_resource(ContentResourceType::Map, "visual-map") == reloaded.end(),
+        "fresh reload contains only the renamed map identity");
+    expect(persisted_campaign != reloaded.end()
+            && persisted_campaign->primary == "renamed-map, second-map"
+            && persisted_campaign->secondary == "renamed-map"
+            && persisted_campaign->quinary == "renamed-map>second-map",
+        "fresh reload contains every updated map reference");
+
+    const auto library_path = store.rootPath() / "library/library.json";
+    const auto before_collision = readAll(library_path);
+    const auto collision = store.renameResource(
+        ContentResourceType::Map, "renamed-map", "second-map");
+    expect(collision.store_error == ContentStoreError::None
+            && collision.rename_error == ContentRenameError::TargetAlreadyExists,
+        "store reports destination collision separately from I/O errors");
+    expect(readAll(library_path) == before_collision,
+        "rejected rename leaves canonical library bytes untouched");
+    const auto no_op = store.renameResource(
+        ContentResourceType::Map, "renamed-map", "renamed-map");
+    expect(no_op.ok() && readAll(library_path) == before_collision,
+        "no-op rename succeeds without rewriting canonical library");
+
+    store.setTestFault(ContentStoreFault::NoSpaceDuringWrite);
+    const auto no_space = store.renameResource(
+        ContentResourceType::Map, "second-map", "third-map");
+    expect(no_space.store_error == ContentStoreError::NoSpace
+            && no_space.rename_error == ContentRenameError::None,
+        "store exposes persistence failure after a valid in-memory rename");
+    store.setTestFault(ContentStoreFault::None);
+    ContentLibraryStore after_failure(store.rootPath());
+    reloaded.clear();
+    expect(after_failure.load(reloaded).error == ContentStoreError::None,
+        "canonical generation remains reloadable after failed rename write");
+    const auto has_id = [&](const std::string& id) {
+        return std::any_of(reloaded.begin(), reloaded.end(), [&](const ContentResource& item) {
+            return item.type == ContentResourceType::Map && item.id == id;
+        });
+    };
+    expect(has_id("second-map") && !has_id("third-map"),
+        "failed rename write preserves the previous map identity");
+}
+
 void testSchemaGuards()
 {
     TemporaryDirectory temporary("schema");
@@ -517,6 +604,7 @@ int main()
     testCorruptionMigrationAndFutureVersion();
     testManagedImportExportAndSymlinks();
     testInboxLimitAndConcurrentWriters();
+    testTransactionalRename();
     testSchemaGuards();
     std::cout << "CONTENT_LIBRARY_STORE_TESTS_OK checks=" << checks << "\n";
     return 0;

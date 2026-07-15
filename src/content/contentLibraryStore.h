@@ -44,6 +44,18 @@ struct ContentStoreLoadResult
     bool migrated = false;
 };
 
+struct ContentStoreRenameResult
+{
+    ContentStoreError store_error = ContentStoreError::None;
+    ContentRenameError rename_error = ContentRenameError::None;
+
+    bool ok() const
+    {
+        return store_error == ContentStoreError::None
+            && rename_error == ContentRenameError::None;
+    }
+};
+
 class ContentLibraryStore
 {
 public:
@@ -63,6 +75,11 @@ public:
     ContentStoreError initialize();
     ContentStoreLoadResult load(std::vector<ContentResource>& resources);
     ContentStoreError save(const std::vector<ContentResource>& resources);
+    ContentStoreRenameResult renameResource(
+        ContentResourceType type,
+        const std::string& old_id,
+        const std::string& new_id
+    );
 
     ContentStoreError listInbox(std::vector<std::string>& filenames);
     ContentStoreError importFromInbox(const std::string& filename, ContentResource& resource);

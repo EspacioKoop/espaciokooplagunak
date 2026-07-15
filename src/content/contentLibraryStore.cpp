@@ -821,6 +821,29 @@ ContentStoreError ContentLibraryStore::save(const std::vector<ContentResource>& 
     return commitDocument(data);
 }
 
+ContentStoreRenameResult ContentLibraryStore::renameResource(
+    ContentResourceType type, const std::string& old_id, const std::string& new_id)
+{
+    ContentStoreRenameResult result;
+    result.store_error = initialize();
+    if (result.store_error != ContentStoreError::None) return result;
+
+    ContentStoreLockGuard lock(*this);
+    result.store_error = lock.error();
+    if (result.store_error != ContentStoreError::None) return result;
+
+    std::vector<ContentResource> resources;
+    const auto loaded = load(resources);
+    result.store_error = loaded.error;
+    if (result.store_error != ContentStoreError::None) return result;
+
+    const auto original = resources;
+    result.rename_error = renameContentResource(resources, type, old_id, new_id);
+    if (result.rename_error != ContentRenameError::None || resources == original) return result;
+    result.store_error = save(resources);
+    return result;
+}
+
 ContentStoreLoadResult ContentLibraryStore::load(std::vector<ContentResource>& resources)
 {
     ContentStoreLoadResult result;

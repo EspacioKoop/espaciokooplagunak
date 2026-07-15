@@ -218,7 +218,9 @@ y puestos canónicos. El núcleo C++ puede renombrar de forma transaccional cual
 recurso sobre una copia de la biblioteca: actualiza mapas iniciales y ordenados,
 transiciones, personajes y naves referenciadas, valida la candidata completa y solo
 entonces reemplaza el vector original. IDs inválidos, colisiones, recursos ausentes o
-una biblioteca origen inválida no producen mutación parcial. La operación de UI y el
-guardado atómico se incorporarán en el siguiente corte de #154.
+una biblioteca origen inválida no producen mutación parcial. El store envuelve carga,
+renombrado y guardado con su lock y commit atómico; distingue rechazos de dominio de
+fallos de E/S y conserva la generación anterior si la escritura falla. La operación de
+UI y los selectores tipados se incorporarán en el siguiente corte de #154.
 Aplicar esos documentos a una sesión viva queda separado de la edición y persistencia
 de metadatos.

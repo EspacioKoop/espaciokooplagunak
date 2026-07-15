@@ -4197,3 +4197,35 @@ msgstr "No hay ninguna edición de nave que rehacer."
 msgctxt "content_editor"
 msgid "Ship edit redone."
 msgstr "Edición de nave rehecha."
+
+msgctxt "content_editor"
+msgid "Systems"
+msgstr "Sistemas"
+
+msgctxt "content_editor"
+msgid "Resources"
+msgstr "Recursos"
+
+msgctxt "content_editor"
+msgid "Amount"
+msgstr "Cantidad"
+
+msgctxt "content_editor"
+msgid "Set resource"
+msgstr "Aplicar recurso"
+
+msgctxt "content_editor"
+msgid "Resource ID or amount is invalid."
+msgstr "El ID o la cantidad del recurso no son válidos."
+
+msgctxt "content_editor"
+msgid "Ship resource override staged."
+msgstr "Override de recurso preparado."
+
+msgctxt "content_editor"
+msgid "The selected resource has no override."
+msgstr "El recurso seleccionado no tiene override."
+
+msgctxt "content_editor"
+msgid "Ship resource override removed from staging."
+msgstr "Override de recurso retirado del staging."

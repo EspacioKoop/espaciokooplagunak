@@ -62,10 +62,13 @@ private:
     GuiLabel* status_label;
     GuiToggleButton* preview_toggle;
     GuiLabel* preview_status_label;
-    GuiLabel* ship_system_label;
+    GuiSelector* ship_override_selector;
     GuiSelector* ship_system_selector;
     GuiLabel* ship_health_label;
     GuiTextEntry* ship_health_entry;
+    GuiTextEntry* ship_resource_id_entry = nullptr;
+    GuiLabel* ship_resource_amount_label;
+    GuiTextEntry* ship_resource_amount_entry;
     GuiButton* ship_set_system_button;
     GuiButton* ship_remove_system_button;
     GuiButton* ship_undo_button;
@@ -97,9 +100,9 @@ private:
     string storeErrorText(ContentStoreError error) const;
     void setStatus(const string& text);
     void updatePreviewStatus();
-    void updateShipSystemEditor();
-    void setShipSystemOverride();
-    void removeShipSystemOverride();
+    void updateShipOverrideEditor();
+    void setShipOverride();
+    void removeShipOverride();
     void undoShipEdit();
     void redoShipEdit();
 };

@@ -187,28 +187,44 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
     preview_status_label = new GuiLabel(box, "MAP_PREVIEW_STATUS", "", 16);
     preview_status_label->setPosition(x + 270, 360)->setSize(420, 40)->hide();
 
-    ship_system_label = new GuiLabel(box, "SHIP_SYSTEM_LABEL", tr("content_editor", "System"), 18);
-    ship_system_label->setPosition(x, 360)->setSize(100, 35)->hide();
+    ship_override_selector = new GuiSelector(box, "SHIP_OVERRIDE_MODE", [this](int, string value) {
+        if (value == "resources" && ship_resource_id_entry && ship_resource_id_entry->getText().empty()
+            && !ship_edit_session.document().resources.empty())
+            ship_resource_id_entry->setText(ship_edit_session.document().resources.front().id);
+        updateShipOverrideEditor();
+    });
+    ship_override_selector->addEntry(tr("content_editor", "Systems"), "systems");
+    ship_override_selector->addEntry(tr("content_editor", "Resources"), "resources");
+    ship_override_selector->setSelectionIndex(0)->setPosition(x, 360)->setSize(170, 35)->hide();
+
     ship_system_selector = new GuiSelector(box, "SHIP_SYSTEM", [this](int, string) {
-        updateShipSystemEditor();
+        updateShipOverrideEditor();
     });
     for (int index = 0; index < static_cast<int>(ShipSystemId::Count); ++index)
     {
         const auto system = static_cast<ShipSystemId>(index);
         ship_system_selector->addEntry(shipSystemLabel(system), shipSystemId(system));
     }
-    ship_system_selector->setSelectionIndex(0)->setPosition(x + 105, 360)->setSize(230, 35)->hide();
+    ship_system_selector->setSelectionIndex(0)->setPosition(x + 180, 360)->setSize(240, 35)->hide();
     ship_health_label = new GuiLabel(box, "SHIP_HEALTH_LABEL", tr("content_editor", "Health [-1, 1]"), 18);
-    ship_health_label->setPosition(x + 350, 360)->setSize(145, 35)->hide();
+    ship_health_label->setPosition(x + 430, 360)->setSize(130, 35)->hide();
     ship_health_entry = new GuiTextEntry(box, "SHIP_HEALTH", "");
-    ship_health_entry->setSelectOnFocus()->setPosition(x + 500, 360)->setSize(190, 35)->hide();
+    ship_health_entry->setSelectOnFocus()->setPosition(x + 565, 360)->setSize(125, 35)->hide();
 
-    ship_set_system_button = new GuiButton(box, "SHIP_SET_SYSTEM", tr("content_editor", "Set system"), [this]() {
-        setShipSystemOverride();
+    ship_resource_id_entry = new GuiTextEntry(box, "SHIP_RESOURCE_ID", "");
+    ship_resource_id_entry->callback([this](string) { updateShipOverrideEditor(); });
+    ship_resource_id_entry->setSelectOnFocus()->setPosition(x + 180, 360)->setSize(240, 35)->hide();
+    ship_resource_amount_label = new GuiLabel(box, "SHIP_RESOURCE_AMOUNT_LABEL", tr("content_editor", "Amount"), 18);
+    ship_resource_amount_label->setPosition(x + 430, 360)->setSize(130, 35)->hide();
+    ship_resource_amount_entry = new GuiTextEntry(box, "SHIP_RESOURCE_AMOUNT", "");
+    ship_resource_amount_entry->setSelectOnFocus()->setPosition(x + 565, 360)->setSize(125, 35)->hide();
+
+    ship_set_system_button = new GuiButton(box, "SHIP_SET_OVERRIDE", tr("content_editor", "Set system"), [this]() {
+        setShipOverride();
     });
     ship_set_system_button->setPosition(x, 400)->setSize(220, 35)->hide();
-    ship_remove_system_button = new GuiButton(box, "SHIP_REMOVE_SYSTEM", tr("content_editor", "Remove override"), [this]() {
-        removeShipSystemOverride();
+    ship_remove_system_button = new GuiButton(box, "SHIP_REMOVE_OVERRIDE", tr("content_editor", "Remove override"), [this]() {
+        removeShipOverride();
     });
     ship_remove_system_button->setPosition(x + 235, 400)->setSize(220, 35)->hide();
     ship_undo_button = new GuiButton(box, "SHIP_UNDO", tr("content_editor", "Undo"), [this]() {
@@ -315,15 +331,22 @@ void GuiContentEditor::updateFieldPresentation(ContentResourceType type)
         preview_toggle->setValue(false);
     }
     const bool is_ship = type == ContentResourceType::Ship;
-    ship_system_label->setVisible(is_ship);
-    ship_system_selector->setVisible(is_ship);
-    ship_health_label->setVisible(is_ship);
-    ship_health_entry->setVisible(is_ship);
+    ship_override_selector->setVisible(is_ship);
     ship_set_system_button->setVisible(is_ship);
     ship_remove_system_button->setVisible(is_ship);
     ship_undo_button->setVisible(is_ship);
     ship_redo_button->setVisible(is_ship);
-    if (is_ship) updateShipSystemEditor();
+    if (is_ship)
+        updateShipOverrideEditor();
+    else
+    {
+        ship_system_selector->hide();
+        ship_health_label->hide();
+        ship_health_entry->hide();
+        ship_resource_id_entry->hide();
+        ship_resource_amount_label->hide();
+        ship_resource_amount_entry->hide();
+    }
     updatePreviewStatus();
 }
 
@@ -379,6 +402,8 @@ void GuiContentEditor::requestClearForm()
 void GuiContentEditor::clearForm()
 {
     ship_edit_session = ShipEditSession{};
+    ship_resource_id_entry->setText("");
+    ship_resource_amount_entry->setText("");
     selected_index = -1;
     pending_import = "";
     pending_save = "";
@@ -396,7 +421,7 @@ void GuiContentEditor::clearForm()
     quinary_entry->setText("");
     clean_snapshot = ContentResource{};
     clean_snapshot = formResource();
-    updateShipSystemEditor();
+    updateShipOverrideEditor();
     updatePreviewStatus();
     syncListSelection();
     setStatus(tr("content_editor", "Create a resource or import one from the clipboard."));
@@ -420,6 +445,11 @@ void GuiContentEditor::loadResource(int index)
     ship_edit_session = resource.type == ContentResourceType::Ship
         ? ShipEditSession(resource.ship_document)
         : ShipEditSession{};
+    ship_resource_id_entry->setText(
+        resource.type == ContentResourceType::Ship && !resource.ship_document.resources.empty()
+            ? resource.ship_document.resources.front().id
+            : ""
+    );
     if (current_type != resource.type)
     {
         current_type = resource.type;
@@ -436,7 +466,7 @@ void GuiContentEditor::loadResource(int index)
     quaternary_entry->setText(resource.quaternary);
     quinary_entry->setText(resource.quinary);
     clean_snapshot = resource;
-    updateShipSystemEditor();
+    updateShipOverrideEditor();
     updatePreviewStatus();
     pending_import = "";
     pending_save = "";
@@ -534,7 +564,7 @@ void GuiContentEditor::saveResource()
     selected_index = target_index;
     clean_snapshot = resource;
     if (current_type == ContentResourceType::Ship) ship_edit_session.markSaved();
-    updateShipSystemEditor();
+    updateShipOverrideEditor();
     updatePreviewStatus();
     pending_import = "";
     pending_save = "";
@@ -811,9 +841,35 @@ void GuiContentEditor::updatePreviewStatus()
         );
 }
 
-void GuiContentEditor::updateShipSystemEditor()
+void GuiContentEditor::updateShipOverrideEditor()
 {
     if (current_type != ContentResourceType::Ship) return;
+    const bool resources = ship_override_selector->getSelectionValue() == "resources";
+    ship_system_selector->setVisible(!resources);
+    ship_health_label->setVisible(!resources);
+    ship_health_entry->setVisible(!resources);
+    ship_resource_id_entry->setVisible(resources);
+    ship_resource_amount_label->setVisible(resources);
+    ship_resource_amount_entry->setVisible(resources);
+    ship_set_system_button->setText(resources
+        ? tr("content_editor", "Set resource")
+        : tr("content_editor", "Set system"));
+
+    if (resources)
+    {
+        const std::string id = ship_resource_id_entry->getText();
+        for (const auto& item : ship_edit_session.document().resources)
+        {
+            if (item.id == id)
+            {
+                ship_resource_amount_entry->setText(formatShipHealth(item.amount));
+                return;
+            }
+        }
+        ship_resource_amount_entry->setText("");
+        return;
+    }
+
     ShipSystemId selected;
     if (!parseShipSystemId(ship_system_selector->getSelectionValue(), selected))
     {
@@ -831,12 +887,26 @@ void GuiContentEditor::updateShipSystemEditor()
     ship_health_entry->setText("");
 }
 
-void GuiContentEditor::setShipSystemOverride()
+void GuiContentEditor::setShipOverride()
 {
+    if (current_type != ContentResourceType::Ship) return;
+    if (ship_override_selector->getSelectionValue() == "resources")
+    {
+        float amount = 0.0f;
+        const std::string id = ship_resource_id_entry->getText();
+        if (!parseShipHealth(ship_resource_amount_entry->getText(), amount)
+            || ship_edit_session.setResourceAmount(id, amount) != ShipEditError::None)
+            return setStatus(tr("content_editor", "Resource ID or amount is invalid."));
+        pending_save = "";
+        pending_file_export = "";
+        discard_guard.reset();
+        updateShipOverrideEditor();
+        return setStatus(tr("content_editor", "Ship resource override staged."));
+    }
+
     ShipSystemId system;
     float health = 0.0f;
-    if (current_type != ContentResourceType::Ship
-        || !parseShipSystemId(ship_system_selector->getSelectionValue(), system)
+    if (!parseShipSystemId(ship_system_selector->getSelectionValue(), system)
         || !parseShipHealth(ship_health_entry->getText(), health))
         return setStatus(tr("content_editor", "Health must be a finite number between -1 and 1."));
     if (ship_edit_session.setSystemHealth(system, health) != ShipEditError::None)
@@ -844,22 +914,33 @@ void GuiContentEditor::setShipSystemOverride()
     pending_save = "";
     pending_file_export = "";
     discard_guard.reset();
-    updateShipSystemEditor();
+    updateShipOverrideEditor();
     setStatus(tr("content_editor", "Ship system override staged."));
 }
 
-void GuiContentEditor::removeShipSystemOverride()
+void GuiContentEditor::removeShipOverride()
 {
+    if (current_type != ContentResourceType::Ship) return;
+    if (ship_override_selector->getSelectionValue() == "resources")
+    {
+        const std::string id = ship_resource_id_entry->getText();
+        if (ship_edit_session.removeResource(id) == ShipEditError::NotFound)
+            return setStatus(tr("content_editor", "The selected resource has no override."));
+        pending_save = "";
+        pending_file_export = "";
+        discard_guard.reset();
+        updateShipOverrideEditor();
+        return setStatus(tr("content_editor", "Ship resource override removed from staging."));
+    }
+
     ShipSystemId system;
-    if (current_type != ContentResourceType::Ship
-        || !parseShipSystemId(ship_system_selector->getSelectionValue(), system))
-        return;
+    if (!parseShipSystemId(ship_system_selector->getSelectionValue(), system)) return;
     if (ship_edit_session.removeSystemOverride(system) == ShipEditError::NotFound)
         return setStatus(tr("content_editor", "The selected system has no override."));
     pending_save = "";
     pending_file_export = "";
     discard_guard.reset();
-    updateShipSystemEditor();
+    updateShipOverrideEditor();
     setStatus(tr("content_editor", "Ship system override removed from staging."));
 }
 
@@ -870,7 +951,7 @@ void GuiContentEditor::undoShipEdit()
     pending_save = "";
     pending_file_export = "";
     discard_guard.reset();
-    updateShipSystemEditor();
+    updateShipOverrideEditor();
     setStatus(tr("content_editor", "Ship edit undone."));
 }
 
@@ -881,6 +962,6 @@ void GuiContentEditor::redoShipEdit()
     pending_save = "";
     pending_file_export = "";
     discard_guard.reset();
-    updateShipSystemEditor();
+    updateShipOverrideEditor();
     setStatus(tr("content_editor", "Ship edit redone."));
 }

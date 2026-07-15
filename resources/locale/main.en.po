@@ -4479,3 +4479,35 @@ msgstr ""
 msgctxt "content_editor"
 msgid "Ship cargo override removed from staging."
 msgstr ""
+
+msgctxt "content_editor"
+msgid "Crew positions"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Not assigned"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Assigned"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Add position"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "The selected crew position is invalid."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Ship crew position staged."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "The selected crew position is not assigned."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Ship crew position removed from staging."
+msgstr ""

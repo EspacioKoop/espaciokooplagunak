@@ -2,6 +2,7 @@
 #include "clipboard.h"
 #include "content/mapPreview.h"
 #include "i18n.h"
+#include "playerInfo.h"
 #include "gui/gui2_button.h"
 #include "gui/gui2_label.h"
 #include "gui/gui2_listbox.h"
@@ -217,6 +218,7 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
     ship_override_selector->addEntry(tr("content_editor", "Systems"), "systems");
     ship_override_selector->addEntry(tr("content_editor", "Resources"), "resources");
     ship_override_selector->addEntry(tr("content_editor", "Cargo"), "cargo");
+    ship_override_selector->addEntry(tr("content_editor", "Crew positions"), "crew");
     ship_override_selector->setSelectionIndex(0)->setPosition(x, 360)->setSize(170, 35)->hide();
 
     ship_system_selector = new GuiSelector(box, "SHIP_SYSTEM", [this](int, string) {
@@ -228,6 +230,17 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
         ship_system_selector->addEntry(shipSystemLabel(system), shipSystemId(system));
     }
     ship_system_selector->setSelectionIndex(0)->setPosition(x + 180, 360)->setSize(240, 35)->hide();
+
+    ship_crew_selector = new GuiSelector(box, "SHIP_CREW_POSITION", [this](int, string) {
+        updateShipOverrideEditor();
+    });
+    for (int index = 0; index < static_cast<int>(CrewPosition::MAX); ++index)
+    {
+        const auto position = static_cast<CrewPosition>(index);
+        ship_crew_selector->addEntry(getCrewPositionName(position), crewPositionToString(position));
+    }
+    ship_crew_selector->setSelectionIndex(0)->setPosition(x + 180, 360)->setSize(240, 35)->hide();
+
     ship_health_label = new GuiLabel(box, "SHIP_HEALTH_LABEL", tr("content_editor", "Health [-1, 1]"), 18);
     ship_health_label->setPosition(x + 430, 360)->setSize(130, 35)->hide();
     ship_health_entry = new GuiTextEntry(box, "SHIP_HEALTH", "");
@@ -363,6 +376,7 @@ void GuiContentEditor::updateFieldPresentation(ContentResourceType type)
     else
     {
         ship_system_selector->hide();
+        ship_crew_selector->hide();
         ship_health_label->hide();
         ship_health_entry->hide();
         ship_resource_id_entry->hide();
@@ -874,20 +888,39 @@ void GuiContentEditor::updateShipOverrideEditor()
     const auto mode = ship_override_selector->getSelectionValue();
     const bool resources = mode == "resources";
     const bool cargo = mode == "cargo";
+    const bool crew = mode == "crew";
     const bool items = resources || cargo;
-    ship_system_selector->setVisible(!items);
-    ship_health_label->setVisible(!items);
-    ship_health_entry->setVisible(!items);
+    const bool systems = !items && !crew;
+    ship_system_selector->setVisible(systems);
+    ship_crew_selector->setVisible(crew);
+    ship_health_label->setVisible(systems);
+    ship_health_entry->setVisible(systems);
     ship_resource_id_entry->setVisible(items);
-    ship_resource_amount_label->setVisible(items);
+    ship_resource_amount_label->setVisible(items || crew);
     ship_resource_amount_entry->setVisible(items);
-    ship_resource_amount_label->setText(cargo
-        ? tr("content_editor", "Quantity")
-        : tr("content_editor", "Amount"));
-    ship_set_system_button->setText(cargo
-        ? tr("content_editor", "Set cargo")
-        : resources ? tr("content_editor", "Set resource")
-                    : tr("content_editor", "Set system"));
+    ship_resource_amount_label->setText(crew
+        ? tr("content_editor", "Not assigned")
+        : cargo ? tr("content_editor", "Quantity")
+                : tr("content_editor", "Amount"));
+    ship_set_system_button->setText(crew
+        ? tr("content_editor", "Add position")
+        : cargo ? tr("content_editor", "Set cargo")
+                : resources ? tr("content_editor", "Set resource")
+                            : tr("content_editor", "Set system"));
+
+    if (crew)
+    {
+        const std::string id = ship_crew_selector->getSelectionValue();
+        for (const auto& assigned : ship_edit_session.document().crew_position_ids)
+        {
+            if (assigned == id)
+            {
+                ship_resource_amount_label->setText(tr("content_editor", "Assigned"));
+                break;
+            }
+        }
+        return;
+    }
 
     if (cargo)
     {
@@ -939,6 +972,17 @@ void GuiContentEditor::updateShipOverrideEditor()
 void GuiContentEditor::setShipOverride()
 {
     if (current_type != ContentResourceType::Ship) return;
+    if (ship_override_selector->getSelectionValue() == "crew")
+    {
+        const std::string id = ship_crew_selector->getSelectionValue();
+        if (ship_edit_session.setCrewPosition(id, true) != ShipEditError::None)
+            return setStatus(tr("content_editor", "The selected crew position is invalid."));
+        pending_save = "";
+        pending_file_export = "";
+        discard_guard.reset();
+        updateShipOverrideEditor();
+        return setStatus(tr("content_editor", "Ship crew position staged."));
+    }
     if (ship_override_selector->getSelectionValue() == "cargo")
     {
         std::uint32_t quantity = 0;
@@ -983,6 +1027,17 @@ void GuiContentEditor::setShipOverride()
 void GuiContentEditor::removeShipOverride()
 {
     if (current_type != ContentResourceType::Ship) return;
+    if (ship_override_selector->getSelectionValue() == "crew")
+    {
+        const std::string id = ship_crew_selector->getSelectionValue();
+        if (ship_edit_session.setCrewPosition(id, false) == ShipEditError::NotFound)
+            return setStatus(tr("content_editor", "The selected crew position is not assigned."));
+        pending_save = "";
+        pending_file_export = "";
+        discard_guard.reset();
+        updateShipOverrideEditor();
+        return setStatus(tr("content_editor", "Ship crew position removed from staging."));
+    }
     if (ship_override_selector->getSelectionValue() == "cargo")
     {
         const std::string id = ship_resource_id_entry->getText();

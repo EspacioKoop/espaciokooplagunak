@@ -770,7 +770,7 @@ msgstr "Seleccionar sistema de curvatura"
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:477
 msgctxt "hotkey_Engineering"
 msgid "Select jump drive system"
-msgstr "Seleccionar sistema de motor de salto"
+msgstr "Seleccionar motor de salto"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:478
 msgctxt "hotkey_Engineering"
@@ -930,7 +930,7 @@ msgstr "Establecer potencia de impulso (joystick)"
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:510
 msgctxt "hotkey_Engineering"
 msgid "Set warp power (joystick)"
-msgstr "Establecer potencia de deformación (joystick)"
+msgstr "Establecer la potencia del motor de curvatura (joystick)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:511
 msgctxt "hotkey_Engineering"
@@ -975,7 +975,7 @@ msgstr "Establecer refrigerante por impulso (joystick)"
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:520
 msgctxt "hotkey_Engineering"
 msgid "Set warp coolant (joystick)"
-msgstr "Establecer refrigerante warp (joystick)"
+msgstr "Establecer el refrigerante del motor de curvatura (joystick)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:521
 msgctxt "hotkey_Engineering"
@@ -2584,7 +2584,7 @@ msgstr "Velocidad de curvatura"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:477
 msgid "Time to jump activation"
-msgstr "Hora de saltar la activación"
+msgstr "Tiempo hasta la activación del salto"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:481
 msgid "Jump drive recharge rate"

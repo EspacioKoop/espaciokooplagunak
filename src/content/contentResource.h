@@ -1,6 +1,7 @@
 #pragma once
 
 #include "content/mapDocument.h"
+#include "content/shipDocument.h"
 
 #include <cstddef>
 #include <string>
@@ -29,6 +30,8 @@ struct ContentResource
     std::string quinary;
     // Declarative map staging data. It never stores ECS handles or executable Lua.
     MapDocument map_document;
+    // Declarative ship overrides. They are data only and never spawn or mutate ECS entities.
+    ShipDocument ship_document;
 };
 
 inline bool operator==(const ContentResource& lhs, const ContentResource& rhs)
@@ -42,7 +45,8 @@ inline bool operator==(const ContentResource& lhs, const ContentResource& rhs)
         && lhs.tertiary == rhs.tertiary
         && lhs.quaternary == rhs.quaternary
         && lhs.quinary == rhs.quinary
-        && lhs.map_document == rhs.map_document;
+        && lhs.map_document == rhs.map_document
+        && lhs.ship_document == rhs.ship_document;
 }
 
 inline bool operator!=(const ContentResource& lhs, const ContentResource& rhs)
@@ -79,9 +83,10 @@ enum class ContentResourceError
     UnsafeScenarioFile,
     InvalidPlayerCount,
     InvalidMapDocument,
+    InvalidShipDocument,
 };
 
-constexpr int CONTENT_RESOURCE_SCHEMA_VERSION = 3;
+constexpr int CONTENT_RESOURCE_SCHEMA_VERSION = 4;
 constexpr std::size_t CONTENT_RESOURCE_MAX_IMPORT_BYTES = 64 * 1024;
 
 std::string contentResourceTypeId(ContentResourceType type);

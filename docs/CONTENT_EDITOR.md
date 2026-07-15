@@ -56,16 +56,17 @@ lista en cada acción. Para mantener el selector accesible muestra como máximo
 los primeros 16 nombres ordenados; hay que mover o borrar los ya procesados para
 acceder a los siguientes.
 
-## Formato `espaciokoop-content` v3
+## Formato `espaciokoop-content` v4
 
-La versión 3 mantiene la envoltura de v1/v2 y añade objetos declarativos a los
-mapas. El importador sigue aceptando documentos v1 y v2; al volver a guardarlos
-o exportarlos se escriben como v3. Un mapa antiguo migra a `objects: []`.
+La versión 4 mantiene la envoltura y los objetos de mapa de v3, y añade overrides
+declarativos a las naves. El importador sigue aceptando documentos v1–v3; al
+volver a guardarlos o exportarlos se escriben como v4. Un mapa antiguo migra a
+`objects: []` y una nave antigua a colecciones de overrides vacías.
 
 ```json
 {
   "format": "espaciokoop-content",
-  "version": 3,
+  "version": 4,
   "type": "map",
   "id": "sector-uno",
   "name": "Sector uno",
@@ -93,7 +94,12 @@ Tipos y campos específicos:
 | `campaign` | `map_ids` ordenados, `starting_map_id`, `character_ids`, `ship_ids`, `transitions` |
 | `map` | `scenario_file`, `recommended_players`, `objects` |
 | `character` | `crew_position_id`, `callsign`, `tags`, `ship_id` opcional, `legacy_role` para migración v1 |
-| `ship` | `template`, `faction` |
+| `ship` | `template`, `faction`, `overrides` (`systems`, `resources`, `cargo`, `crew_positions`) |
+
+Los overrides de nave son datos cerrados: cada sistema usa uno de los nueve IDs
+canónicos y una salud entre `-1` y `1`; recursos y carga usan IDs portables y
+cantidades acotadas; los puestos usan IDs canónicos. Las cuatro colecciones son
+explícitas aunque estén vacías. No admiten callbacks, Lua ni claves adicionales.
 
 Las listas se editan separadas por comas. Las transiciones son aristas
 declarativas `mapa-origen>mapa-destino`: ambos extremos deben pertenecer a
@@ -108,7 +114,7 @@ ID canónico. Un `role` histórico de texto libre se conserva íntegro en
 `legacy_role` y deja vacío `crew_position_id`, en vez de inventar una asignación
 operativa. El editor muestra ambos campos para que el GM pueda elegir un puesto
 canónico y borrar después el valor histórico; mientras tanto el documento sigue
-siendo válido y puede guardarse o exportarse como v3 sin perder el rol original.
+siendo válido y puede guardarse o exportarse como v4 sin perder el rol original.
 
 `objects` admite inicialmente `asteroid` (posición, rotación y tamaño) y `nebula`
 (posición y rotación). Los IDs son únicos y las coordenadas, rotaciones, tamaños
@@ -179,11 +185,12 @@ crea ni modifica entidades: solo proyecta asteroides y nebulosas de la allowlist
 los tipos futuros opacos se omiten visualmente sin perderse y su recuento queda
 visible en el editor.
 
-Las naves tienen además un primer modelo tipado **solo en memoria** para overrides
-opcionales de sistemas, recursos, carga y puestos. Rechaza IDs no canónicos,
-duplicados, valores no finitos y cantidades fuera de rango. Todavía no forma parte
-del JSON v3, de la GUI ni del ECS; persistencia, previsualización y aplicación se
-incorporarán en verticales posteriores sin reinterpretar documentos antiguos.
+Las naves tienen un modelo tipado para overrides opcionales de sistemas, recursos,
+carga y puestos. Rechaza IDs no canónicos, duplicados, valores no finitos y
+cantidades fuera de rango; v4 ya lo persiste e intercambia con migración de v1–v3.
+El formulario todavía no expone esos campos y el documento no toca el ECS; al
+editar metadatos visibles de una nave importada, los overrides se conservan
+íntegros. Previsualización y aplicación se incorporarán en verticales posteriores.
 La siguiente fase mantendrá la misma envoltura versionada:
 
 - aplicación tipada al mundo con autorización GM y rollback, sin Lua importado

@@ -704,6 +704,7 @@ ContentStoreError ContentLibraryStore::parseLibrary(
 
     std::vector<ContentResource> candidate;
     std::set<std::string> identities;
+    migrated = version == 0;
     candidate.reserve(document[array_key].size());
     for (const auto& item : document[array_key])
     {
@@ -712,10 +713,12 @@ ContentStoreError ContentLibraryStore::parseLibrary(
             return ContentStoreError::InvalidData;
         if (!identities.insert(resourceKey(resource)).second)
             return ContentStoreError::DuplicateResource;
+        const auto canonical = nlohmann::json::parse(serializeContentResource(resource), nullptr, false);
+        if (canonical.is_discarded()) return ContentStoreError::InvalidData;
+        if (item != canonical) migrated = true;
         candidate.push_back(std::move(resource));
     }
     resources = std::move(candidate);
-    migrated = version == 0;
     return ContentStoreError::None;
 }
 

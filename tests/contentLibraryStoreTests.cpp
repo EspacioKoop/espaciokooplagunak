@@ -86,6 +86,21 @@ ContentResource visualMap()
     return result;
 }
 
+ContentResource declarativeShip()
+{
+    ContentResource result;
+    result.type = ContentResourceType::Ship;
+    result.id = "declarative-ship";
+    result.name = "Declarative Ship";
+    result.primary = "Phobos M3P";
+    result.secondary = "Human Navy";
+    result.ship_document.systems = {{ShipSystemId::Reactor, 0.5f}};
+    result.ship_document.resources = {{"coolant", 10.0f}};
+    result.ship_document.cargo = {{"medicine", 4}};
+    result.ship_document.crew_position_ids = {"helms", "engineering"};
+    return result;
+}
+
 std::string readAll(const fs::path& path)
 {
     std::ifstream input(path, std::ios::binary);
@@ -185,16 +200,51 @@ void testMapDocumentRoundTrip()
     ContentLibraryStore store(temporary.path / "managed");
     const auto source = visualMap();
     expect(store.save({source}) == ContentStoreError::None,
-        "v3 map document saves through the atomic store");
+        "v4 map resource saves through the atomic store");
     std::vector<ContentResource> loaded;
     const auto result = store.load(loaded);
     expect(result.error == ContentStoreError::None && loaded == std::vector<ContentResource>{source},
         "supported and opaque map objects survive atomic save/load");
     const auto canonical = nlohmann::json::parse(
         readAll(store.rootPath() / "library/library.json"));
-    expect(canonical["resources"][0]["version"] == 3
-            && canonical["resources"][0]["fields"]["objects"].size() == 2,
-        "library stores canonical v3 resources without changing its envelope version");
+    expect(canonical["resources"][0]["version"] == 4
+            && canonical["resources"][0]["fields"]["objects"].size() == 2
+            && canonical["version"] == 1,
+        "library stores canonical v4 resources without changing its envelope version");
+}
+
+void testShipDocumentRoundTripAndMigration()
+{
+    TemporaryDirectory temporary("ship-document");
+    ContentLibraryStore store(temporary.path / "managed");
+    const auto source = declarativeShip();
+    expect(store.save({source}) == ContentStoreError::None,
+        "v4 ship overrides save through the atomic store");
+    std::vector<ContentResource> loaded;
+    auto result = store.load(loaded);
+    expect(result.error == ContentStoreError::None
+            && loaded == std::vector<ContentResource>{source},
+        "ship overrides survive atomic save/load");
+
+    auto legacy_library = nlohmann::json::parse(
+        readAll(store.rootPath() / "library/library.json"));
+    legacy_library["resources"][0]["version"] = 3;
+    legacy_library["resources"][0]["fields"].erase("overrides");
+    writeAll(store.rootPath() / "library/library.json", legacy_library.dump());
+
+    ContentLibraryStore migrating_store(store.rootPath());
+    loaded.clear();
+    result = migrating_store.load(loaded);
+    auto legacy_source = source;
+    legacy_source.ship_document = ShipDocument{};
+    expect(result.error == ContentStoreError::None && result.migrated
+            && loaded == std::vector<ContentResource>{legacy_source},
+        "store migrates a v3 ship to empty overrides without inventing state");
+    const auto canonical = nlohmann::json::parse(
+        readAll(store.rootPath() / "library/library.json"));
+    expect(canonical["resources"][0]["version"] == 4
+            && canonical["resources"][0]["fields"]["overrides"]["systems"].empty(),
+        "store rewrites migrated ship as canonical v4");
 }
 
 void testCorruptionMigrationAndFutureVersion()
@@ -463,6 +513,7 @@ int main()
 {
     testRoundTripAndAtomicFailures();
     testMapDocumentRoundTrip();
+    testShipDocumentRoundTripAndMigration();
     testCorruptionMigrationAndFutureVersion();
     testManagedImportExportAndSymlinks();
     testInboxLimitAndConcurrentWriters();

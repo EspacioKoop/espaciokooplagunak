@@ -1,0 +1,82 @@
+name: Trivy — imágenes Docker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/trivy.yml"
+      - "docker/Dockerfile"
+      - "bridge/Dockerfile"
+      - "bridge/requirements.txt"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/trivy.yml"
+      - "docker/Dockerfile"
+      - "bridge/Dockerfile"
+      - "bridge/requirements.txt"
+  schedule:
+    - cron: "19 15 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: trivy-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  scan:
+    # Los tokens de PR de forks no pueden subir SARIF. No usamos
+    # pull_request_target porque construiría código no confiable con permisos.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    name: ${{ matrix.image.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        image:
+          - name: server
+            dockerfile: docker/Dockerfile
+            context: .
+          - name: bridge
+            dockerfile: bridge/Dockerfile
+            context: bridge
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Construir imagen
+        env:
+          IMAGE: local/espaciokooplagunak-${{ matrix.image.name }}:${{ github.sha }}
+        run: |
+          docker build \
+            --file "${{ matrix.image.dockerfile }}" \
+            --tag "$IMAGE" \
+            "${{ matrix.image.context }}"
+
+      - name: Analizar vulnerabilidades HIGH/CRITICAL
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: image
+          image-ref: local/espaciokooplagunak-${{ matrix.image.name }}:${{ github.sha }}
+          scanners: vuln
+          vuln-type: os,library
+          format: sarif
+          output: trivy-${{ matrix.image.name }}.sarif
+          severity: HIGH,CRITICAL
+          ignore-unfixed: false
+          exit-code: "0"
+          timeout: 10m0s
+
+      - name: Subir resultados a Code Scanning
+        uses: github/codeql-action/upload-sarif@99df26d4f13ea111d4ec1a7dddef6063f76b97e9 # v4
+        with:
+          sarif_file: trivy-${{ matrix.image.name }}.sarif
+          category: trivy-${{ matrix.image.name }}
+          wait-for-processing: true

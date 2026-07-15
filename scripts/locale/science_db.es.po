@@ -22,7 +22,7 @@ msgid ""
 "This database covers naturally occurring phenomena that spaceborne crews might encounter.\n"
 "\n"
 "While ship captains are encouraged to avoid unnecessary interactions with these phenomena, knowing their properties can offer an advantage in conflicts near them."
-msgstr "Esta base de datos cubre fenómenos naturales que pueden encontrar las tripulaciones espaciales. Mientras se alienta a los capitanes de los buques a evitar interacciones innecesarias con estos fenómenos, sabiendo que sus propiedades pueden ofrecer una ventaja en conflictos cercanos a ellos."
+msgstr "Esta base de datos cubre fenómenos naturales que las tripulaciones espaciales pueden encontrarse. Aunque se anima a los capitanes a evitar interacciones innecesarias con estos fenómenos, conocer sus propiedades puede dar ventaja en los conflictos cercanos a ellos."
 
 #: scripts/science_db.lua:13
 msgid "Asteroid"
@@ -225,11 +225,11 @@ msgstr ""
 
 #: scripts/science_db.lua:83
 msgid "Supply drop"
-msgstr "Reducción de la oferta"
+msgstr "Paquete de suministros"
 
 #: scripts/science_db.lua:84
 msgid "Contents"
-msgstr "Índice"
+msgstr "Contenido"
 
 #: scripts/science_db.lua:84
 msgid "Weapons, energy"
@@ -237,18 +237,21 @@ msgstr "Armas, energía"
 
 #: scripts/science_db.lua:85
 msgid "Close-range retrieval"
-msgstr "Retrieval de cerca"
+msgstr "Recogida a corta distancia"
 
 #: scripts/science_db.lua:88
 msgid ""
 "To expedite resupply actions, our engineers have standardized containers for weapons and energy that can be automatically and quickly integrated into your ship's systems.\n"
 "\n"
 "Commonly known as a supply drop, your ship needs only to enter near-contact range with one of these containers to automatically engage your ship's acquisition and integration systems. Supply drops are cryptographically keyed to respond only to ships of the same faction, so theft isn't possible."
-msgstr "Para acelerar las acciones de reaprovisionamiento, nuestros ingenieros tienen contenedores estandarizados para armas y energía que pueden integrarse automáticamente y rápidamente en los sistemas de su nave. Comúnmente conocido como una gota de suministro, su nave sólo necesita entrar en rango de contacto cercano con uno de estos contenedores para involucrar automáticamente los sistemas de adquisición e integración de su nave. Las gotas de suministro son claves criptográficamente para responder sólo a los barcos de la misma facción, por lo que el robo no es posible."
+msgstr ""
+"Para agilizar el reabastecimiento, nuestros ingenieros han estandarizado contenedores de armas y energía que se integran automática y rápidamente en los sistemas de tu nave.\n"
+"\n"
+"Conocido comúnmente como paquete de suministros, basta con que tu nave entre en rango de contacto cercano con uno de estos contenedores para que se activen automáticamente sus sistemas de adquisición e integración. Los paquetes de suministros llevan claves criptográficas para responder solo a naves de su misma facción, así que el robo no es posible."
 
 #: scripts/science_db.lua:92
 msgid "Warp jammer"
-msgstr "Commer Warp"
+msgstr "Inhibidor de curvatura"
 
 #: scripts/science_db.lua:93
 msgid "Short-range encounter"
@@ -262,9 +265,11 @@ msgid ""
 "\n"
 "Ship captains who value the option of retreat are advised to either give warp jammers a wide berth or prioritize their destruction."
 msgstr ""
-"Las tecnologías Warp y Jump dependen de la manipulación tecnológica de las fuerzas gravitatorias para lograr un viaje de largo alcance. Sin embargo, estas fuerzas manipuladoras pueden ser anuladas o interdictas por dispositivos que generan pozos gravitatorios simulados electromagnéticamente. Tales dispositivos son coloquialmente conocidos como martillos de warp, aunque también pueden prevenir saltos.\n"
+"Las tecnologías de curvatura y salto dependen de la manipulación tecnológica de fuerzas gravitatorias para viajar a larga distancia. Sin embargo, esas fuerzas pueden anularse o interceptarse con dispositivos que generan pozos gravitatorios simulados electromagnéticamente. Estos dispositivos se conocen coloquialmente como inhibidores de curvatura, aunque también impiden saltar.\n"
 "\n"
-"Un barco de caza que entra en el radio de un martillo es interceptado y se ralentiza a velocidades de impulso. Un barco de salto no puede comprometer su unidad de salto mientras que dentro del radio de un martillo. Los capitanes de barco que valoran la opción de retiro se recomiendan para dar a los jammers warp una gran profundidad o priorizar su destrucción."
+"Una nave en curvatura que entra en el radio de un inhibidor queda interceptada y frenada a velocidad de impulso. Una nave con motor de salto no puede activarlo dentro del radio del inhibidor.\n"
+"\n"
+"A los capitanes que valoran la opción de retirarse se les recomienda mantenerse bien lejos de los inhibidores de curvatura o priorizar su destrucción."
 
 #: scripts/science_db.lua:103
 msgid "Weapons"
@@ -278,17 +283,19 @@ msgid ""
 "\n"
 "Smaller variations of these missiles have become common in the galaxy, too. Fighter pilots praise their speed and maneuverability, because it gives them an edge against small and fast-moving targets. They only deal half the damage of their basic counterparts, but what good is a missile if it does not hit its target."
 msgstr ""
-"Esta base de datos solo cubre las versiones básicas de las armas de misiles utilizadas a lo largo de la galaxia. Se ha informado de que algunos buques de combate comenzaron a utilizar variaciones más grandes de esos misiles. Los pequeños combatientes e incluso las fragatas no deberían tener demasiados problemas para esquivarlos, pero los capitanes espaciales de los buques más grandes deberían ser cuidadosos de su potencial de doble daño.\n"
+"Esta base de datos cubre solo las versiones básicas de los misiles usados por toda la galaxia.\n"
 "\n"
-"Las variaciones más pequeñas de estos misiles también se han vuelto comunes en la galaxia. Los pilotos de combate elogian su velocidad y maniobrabilidad, porque les da un borde contra objetivos pequeños y rápidos. Sólo tratan la mitad del daño de sus contrapartes básicas, pero lo bueno es un misil si no golpea su objetivo."
+"Se ha informado de que algunos acorazados han empezado a usar variantes más grandes de estos misiles. A los cazas pequeños e incluso a las fragatas no les costará esquivarlas, pero los capitanes de naves grandes deben cuidarse de su potencial de daño doblado.\n"
+"\n"
+"Las variantes más pequeñas también se han vuelto comunes en la galaxia. Los pilotos de caza alaban su velocidad y maniobrabilidad, porque les dan ventaja contra objetivos pequeños y rápidos. Solo causan la mitad del daño que sus equivalentes básicos, pero de qué sirve un misil que no acierta a su objetivo."
 
 #: scripts/science_db.lua:110
 msgid "Homing missile"
-msgstr "Misil Homing"
+msgstr "Misil guiado"
 
 #: scripts/science_db.lua:111 scripts/science_db.lua:116 scripts/science_db.lua:135 scripts/science_db.lua:142
 msgid "Range"
-msgstr "Rango"
+msgstr "Alcance"
 
 #: scripts/science_db.lua:112 scripts/science_db.lua:143
 msgid "Damage"
@@ -296,15 +303,15 @@ msgstr "Daños"
 
 #: scripts/science_db.lua:113
 msgid "This target-seeking missile is the workhorse of many space combat arsenals. It's compact enough to be fitted on frigates, and packs enough punch to be used on larger ships, though usually in more than a single missile tube."
-msgstr "Este misil de búsqueda de objetivos es el caballo de trabajo de muchos arsenales de combate espacial. Es lo suficientemente compacto para ser instalado en fragatas, y empaqueta suficiente golpe para ser utilizado en buques más grandes, aunque generalmente en más de un solo tubo de misiles."
+msgstr "Este misil buscador de objetivos es el caballo de batalla de muchos arsenales de combate espacial. Es lo bastante compacto para montarse en fragatas y pega lo bastante fuerte para usarse en naves mayores, aunque normalmente en más de un tubo lanzador."
 
 #: scripts/science_db.lua:115
 msgid "Nuke"
-msgstr "Nuke"
+msgstr "Bomba nuclear"
 
 #: scripts/science_db.lua:117 scripts/science_db.lua:127 scripts/science_db.lua:136
 msgid "Blast radius"
-msgstr "Radius de la explosión"
+msgstr "Radio de explosión"
 
 #: scripts/science_db.lua:118 scripts/science_db.lua:128 scripts/science_db.lua:137
 msgid "Damage at center"
@@ -319,7 +326,10 @@ msgid ""
 "A nuclear missile is similar to a homing missile in that it can seek a target, but it moves and turns more slowly and explodes a greatly increased payload. Its nuclear explosion spans 1U of space and can take out multiple ships in a single shot.\n"
 "\n"
 "Some captains oppose the use of nuclear weapons because their large explosions can lead to 'fragging', or unintentional friendly fire. Shields should protect crews from harmful radiation, but because these weapons are often used in the thick of battle, there's no way of knowing if hull plating or shields can provide enough protection."
-msgstr "Un misil nuclear es similar a un misil de homenaje en el que puede buscar un objetivo, pero se mueve y se vuelve más lentamente y explota una carga útil mucho mayor. Su explosión nuclear abarca 1U del espacio y puede sacar múltiples barcos en un solo tiro. Algunos capitanes se oponen al uso de armas nucleares porque sus grandes explosiones pueden conducir a 'fragging', o un fuego amigable involuntario. Los escudos deben proteger a las tripulaciones de la radiación dañina, pero debido a que estas armas son usadas a menudo en el grueso de la batalla, no hay forma de saber si el revestimiento de casco o los escudos pueden proporcionar suficiente protección."
+msgstr ""
+"Un misil nuclear se parece a un misil guiado en que puede buscar un objetivo, pero se mueve y gira más despacio y detona una carga mucho mayor. Su explosión nuclear abarca 1U de espacio y puede eliminar varias naves de un solo disparo.\n"
+"\n"
+"Algunos capitanes se oponen al uso de armas nucleares porque sus grandes explosiones pueden provocar fuego amigo accidental. Los escudos deberían proteger a las tripulaciones de la radiación dañina, pero como estas armas suelen usarse en lo más denso de la batalla, no hay forma de saber si el blindaje del casco o los escudos bastan como protección."
 
 #: scripts/science_db.lua:124
 msgid "Mine"
@@ -327,26 +337,29 @@ msgstr "Mina"
 
 #: scripts/science_db.lua:125
 msgid "Drop distance"
-msgstr "Distancia de gota"
+msgstr "Distancia de suelta"
 
 #: scripts/science_db.lua:126
 msgid "Trigger distance"
-msgstr "Distancia del truco"
+msgstr "Distancia de activación"
 
 #: scripts/science_db.lua:130
 msgid ""
 "Mines are often placed in defensive perimeters around stations. There are also old minefields scattered around the galaxy from older wars.\n"
 "\n"
 "Some fearless captains use mines as offensive weapons, but their delayed detonation and blast radius make this use risky at best."
-msgstr "Las minas se colocan a menudo en perímetros defensivos alrededor de las estaciones. También hay viejos campos de minas diseminados alrededor de la galaxia de guerras antiguas. Algunos capitanes sin miedo utilizan las minas como armas ofensivas, pero su detonación retardada y radio de explosión hacen que este uso sea arriesgado en el mejor de los casos."
+msgstr ""
+"Las minas suelen colocarse en perímetros defensivos alrededor de las estaciones. También quedan viejos campos de minas dispersos por la galaxia, restos de guerras pasadas.\n"
+"\n"
+"Algunos capitanes intrépidos usan las minas como arma ofensiva, pero su detonación retardada y su radio de explosión hacen de ello un uso arriesgado, como poco."
 
 #: scripts/science_db.lua:134
 msgid "EMP"
-msgstr "EMP"
+msgstr "PEM"
 
 #: scripts/science_db.lua:139
 msgid "The electromagnetic pulse missile (EMP) reproduces the disruptive effects of a nuclear explosion, but without the destructive properties. This causes it to only affect shields within its blast radius, leaving their hulls intact. The EMP missile is also smaller and easier to store than heavy nukes. Many captains (and pirates) prefer EMPs over nukes for these reasons, and use them to knock out targets' shields before closing to disable them with focused beam fire."
-msgstr "El misil de pulso electromagnético (EMP) reproduce los efectos disruptivos de una explosión nuclear, pero sin las propiedades destructivas. Esto hace que sólo afecte los escudos dentro de su radio de explosión, dejando intactos sus cascos. El misil EMP también es más pequeño y más fácil de almacenar que las bombas pesadas. Muchos capitanes (y piratas) prefieren los EMPs sobre las armas nucleares por estas razones, y los usan para eliminar los escudos de los blancos antes de cerrar para deshabilitarlos con fuego de haz concentrado."
+msgstr "El misil de pulso electromagnético (PEM) reproduce los efectos disruptivos de una explosión nuclear, pero sin sus propiedades destructivas. Por eso solo afecta a los escudos dentro de su radio de explosión y deja los cascos intactos. Además es más pequeño y fácil de almacenar que las pesadas bombas nucleares. Muchos capitanes (y piratas) prefieren los PEM por estos motivos, y los usan para tumbar los escudos del objetivo antes de acercarse a inutilizarlo con fuego concentrado de haz."
 
 #: scripts/science_db.lua:141
 msgid "HVLI"
@@ -354,15 +367,18 @@ msgstr "HVLI"
 
 #: scripts/science_db.lua:143
 msgid "10 each, 50 total"
-msgstr "10 cada uno, 50 total"
+msgstr "10 de cada, 50 en total"
 
 #: scripts/science_db.lua:144
 msgid "Burst"
-msgstr "Burst"
+msgstr "Ráfaga"
 
 #: scripts/science_db.lua:145
 msgid ""
 "A high-velocity lead impactor (HVLI) fires a simple slug of lead at a high velocity. This weapon is usually found in simpler ships since it does not require guidance computers. This also means its projectiles fly in a straight line from its tube and can't pursue a target.\n"
 "\n"
 "Each shot from an HVLI fires a burst of 5 projectiles, which increases the chance to hit but requires precision aiming to be effective. It reaches its full damage potential at a range of 2u."
-msgstr "Un impactor de plomo de alta velocidad (HVLI) dispara un simple golpe de plomo a una alta velocidad. Este arma se encuentra generalmente en naves más simples ya que no requiere ordenadores de orientación. Esto también significa que sus proyectiles vuelan en una línea recta desde su tubo y no pueden perseguir un objetivo. Cada disparo de un HVLI dispara una explosión de 5 proyectiles, lo que aumenta la oportunidad de golpear pero requiere una precisión con el objetivo de ser eficaz. Alcanza su potencial de daño total en una gama de 2u."
+msgstr ""
+"Un impactador de plomo de alta velocidad (HVLI) dispara un simple proyectil de plomo a gran velocidad. Es un arma habitual en naves sencillas porque no necesita computadoras de guiado, lo que también significa que sus proyectiles vuelan en línea recta desde el tubo y no pueden perseguir a un objetivo.\n"
+"\n"
+"Cada disparo de un HVLI lanza una ráfaga de 5 proyectiles, lo que aumenta la probabilidad de acertar pero exige apuntar con precisión para ser eficaz. Alcanza todo su potencial de daño a 2u de distancia."

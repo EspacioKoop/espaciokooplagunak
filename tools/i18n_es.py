@@ -669,6 +669,126 @@ CONTEXT_OVERRIDES: dict[tuple[str | None, str], str] = {
     (None, "Time to jump activation"): "Tiempo hasta la activación del salto",
     (None, "Center on ship"): "Centrar en la nave",
     ("spectator", "Select player ship as target"): "Seleccionar la nave del jugador como objetivo",
+    # Issue #28: reviewed science database (supply drop, warp jammer, weapons section).
+    (
+        None,
+        "This database covers naturally occurring phenomena that spaceborne crews might encounter.\n\n"
+        "While ship captains are encouraged to avoid unnecessary interactions with these phenomena, knowing their properties can offer an advantage in conflicts near them.",
+    ): (
+        "Esta base de datos cubre fenómenos naturales que las tripulaciones espaciales pueden encontrarse. Aunque se anima a los capitanes a evitar interacciones innecesarias con estos fenómenos, conocer sus propiedades puede dar ventaja en los conflictos cercanos a ellos."
+    ),
+    (
+        None,
+        "Supply drop",
+    ): "Paquete de suministros",
+    (
+        None,
+        "Contents",
+    ): "Contenido",
+    (
+        None,
+        "Close-range retrieval",
+    ): "Recogida a corta distancia",
+    (
+        None,
+        "To expedite resupply actions, our engineers have standardized containers for weapons and energy that can be automatically and quickly integrated into your ship's systems.\n\n"
+        "Commonly known as a supply drop, your ship needs only to enter near-contact range with one of these containers to automatically engage your ship's acquisition and integration systems. Supply drops are cryptographically keyed to respond only to ships of the same faction, so theft isn't possible.",
+    ): (
+        "Para agilizar el reabastecimiento, nuestros ingenieros han estandarizado contenedores de armas y energía que se integran automática y rápidamente en los sistemas de tu nave.\n\n"
+        "Conocido comúnmente como paquete de suministros, basta con que tu nave entre en rango de contacto cercano con uno de estos contenedores para que se activen automáticamente sus sistemas de adquisición e integración. Los paquetes de suministros llevan claves criptográficas para responder solo a naves de su misma facción, así que el robo no es posible."
+    ),
+    (
+        None,
+        "Warp jammer",
+    ): "Inhibidor de curvatura",
+    (
+        None,
+        "Warp and jump technologies rely on technological manipulation of gravitational forces to achieve long-range travel. However, these manipulative forces can be nullified or interdicted by devices that generate electromagnetically simulated gravitational wells. Such devices are colloquially known as warp jammers, even though they can also prevent jumps.\n\n"
+        "A warping ship that enters a jammer's radius is interdicted and slowed to impulse speeds. A jumping ship is unable to engage its jump drive while within a jammer's radius.\n\n"
+        "Ship captains who value the option of retreat are advised to either give warp jammers a wide berth or prioritize their destruction.",
+    ): (
+        "Las tecnologías de curvatura y salto dependen de la manipulación tecnológica de fuerzas gravitatorias para viajar a larga distancia. Sin embargo, esas fuerzas pueden anularse o interceptarse con dispositivos que generan pozos gravitatorios simulados electromagnéticamente. Estos dispositivos se conocen coloquialmente como inhibidores de curvatura, aunque también impiden saltar.\n\n"
+        "Una nave en curvatura que entra en el radio de un inhibidor queda interceptada y frenada a velocidad de impulso. Una nave con motor de salto no puede activarlo dentro del radio del inhibidor.\n\n"
+        "A los capitanes que valoran la opción de retirarse se les recomienda mantenerse bien lejos de los inhibidores de curvatura o priorizar su destrucción."
+    ),
+    (
+        None,
+        "This database covers only the basic versions of missile weapons used throughout the galaxy.\n\n"
+        "It has been reported that some battleships started using larger variations of those missiles. Small fighters and even frigates should not have too much trouble dodging them, but space captains of bigger ships should be wary of their doubled damage potential.\n\n"
+        "Smaller variations of these missiles have become common in the galaxy, too. Fighter pilots praise their speed and maneuverability, because it gives them an edge against small and fast-moving targets. They only deal half the damage of their basic counterparts, but what good is a missile if it does not hit its target.",
+    ): (
+        "Esta base de datos cubre solo las versiones básicas de los misiles usados por toda la galaxia.\n\n"
+        "Se ha informado de que algunos acorazados han empezado a usar variantes más grandes de estos misiles. A los cazas pequeños e incluso a las fragatas no les costará esquivarlas, pero los capitanes de naves grandes deben cuidarse de su potencial de daño doblado.\n\n"
+        "Las variantes más pequeñas también se han vuelto comunes en la galaxia. Los pilotos de caza alaban su velocidad y maniobrabilidad, porque les dan ventaja contra objetivos pequeños y rápidos. Solo causan la mitad del daño que sus equivalentes básicos, pero de qué sirve un misil que no acierta a su objetivo."
+    ),
+    (
+        None,
+        "Homing missile",
+    ): "Misil guiado",
+    (
+        None,
+        "Range",
+    ): "Alcance",
+    (
+        None,
+        "This target-seeking missile is the workhorse of many space combat arsenals. It's compact enough to be fitted on frigates, and packs enough punch to be used on larger ships, though usually in more than a single missile tube.",
+    ): "Este misil buscador de objetivos es el caballo de batalla de muchos arsenales de combate espacial. Es lo bastante compacto para montarse en fragatas y pega lo bastante fuerte para usarse en naves mayores, aunque normalmente en más de un tubo lanzador.",
+    (
+        None,
+        "Nuke",
+    ): "Bomba nuclear",
+    (
+        None,
+        "Blast radius",
+    ): "Radio de explosión",
+    (
+        None,
+        "A nuclear missile is similar to a homing missile in that it can seek a target, but it moves and turns more slowly and explodes a greatly increased payload. Its nuclear explosion spans 1U of space and can take out multiple ships in a single shot.\n\n"
+        "Some captains oppose the use of nuclear weapons because their large explosions can lead to 'fragging', or unintentional friendly fire. Shields should protect crews from harmful radiation, but because these weapons are often used in the thick of battle, there's no way of knowing if hull plating or shields can provide enough protection.",
+    ): (
+        "Un misil nuclear se parece a un misil guiado en que puede buscar un objetivo, pero se mueve y gira más despacio y detona una carga mucho mayor. Su explosión nuclear abarca 1U de espacio y puede eliminar varias naves de un solo disparo.\n\n"
+        "Algunos capitanes se oponen al uso de armas nucleares porque sus grandes explosiones pueden provocar fuego amigo accidental. Los escudos deberían proteger a las tripulaciones de la radiación dañina, pero como estas armas suelen usarse en lo más denso de la batalla, no hay forma de saber si el blindaje del casco o los escudos bastan como protección."
+    ),
+    (
+        None,
+        "Drop distance",
+    ): "Distancia de suelta",
+    (
+        None,
+        "Trigger distance",
+    ): "Distancia de activación",
+    (
+        None,
+        "Mines are often placed in defensive perimeters around stations. There are also old minefields scattered around the galaxy from older wars.\n\n"
+        "Some fearless captains use mines as offensive weapons, but their delayed detonation and blast radius make this use risky at best.",
+    ): (
+        "Las minas suelen colocarse en perímetros defensivos alrededor de las estaciones. También quedan viejos campos de minas dispersos por la galaxia, restos de guerras pasadas.\n\n"
+        "Algunos capitanes intrépidos usan las minas como arma ofensiva, pero su detonación retardada y su radio de explosión hacen de ello un uso arriesgado, como poco."
+    ),
+    (
+        None,
+        "EMP",
+    ): "PEM",
+    (
+        None,
+        "The electromagnetic pulse missile (EMP) reproduces the disruptive effects of a nuclear explosion, but without the destructive properties. This causes it to only affect shields within its blast radius, leaving their hulls intact. The EMP missile is also smaller and easier to store than heavy nukes. Many captains (and pirates) prefer EMPs over nukes for these reasons, and use them to knock out targets' shields before closing to disable them with focused beam fire.",
+    ): "El misil de pulso electromagnético (PEM) reproduce los efectos disruptivos de una explosión nuclear, pero sin sus propiedades destructivas. Por eso solo afecta a los escudos dentro de su radio de explosión y deja los cascos intactos. Además es más pequeño y fácil de almacenar que las pesadas bombas nucleares. Muchos capitanes (y piratas) prefieren los PEM por estos motivos, y los usan para tumbar los escudos del objetivo antes de acercarse a inutilizarlo con fuego concentrado de haz.",
+    (
+        None,
+        "10 each, 50 total",
+    ): "10 de cada, 50 en total",
+    (
+        None,
+        "Burst",
+    ): "Ráfaga",
+    (
+        None,
+        "A high-velocity lead impactor (HVLI) fires a simple slug of lead at a high velocity. This weapon is usually found in simpler ships since it does not require guidance computers. This also means its projectiles fly in a straight line from its tube and can't pursue a target.\n\n"
+        "Each shot from an HVLI fires a burst of 5 projectiles, which increases the chance to hit but requires precision aiming to be effective. It reaches its full damage potential at a range of 2u.",
+    ): (
+        "Un impactador de plomo de alta velocidad (HVLI) dispara un simple proyectil de plomo a gran velocidad. Es un arma habitual en naves sencillas porque no necesita computadoras de guiado, lo que también significa que sus proyectiles vuelan en línea recta desde el tubo y no pueden perseguir a un objetivo.\n\n"
+        "Cada disparo de un HVLI lanza una ráfaga de 5 proyectiles, lo que aumenta la probabilidad de acertar pero exige apuntar con precisión para ser eficaz. Alcanza todo su potencial de daño a 2u de distancia."
+    ),
 }
 
 

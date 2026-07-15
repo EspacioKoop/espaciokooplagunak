@@ -1,6 +1,7 @@
 #include "contentEditor.h"
 #include "clipboard.h"
 #include "content/mapPreview.h"
+#include "gameGlobalInfo.h"
 #include "i18n.h"
 #include "playerInfo.h"
 #include "gui/gui2_button.h"
@@ -172,6 +173,13 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
     primary_label->setPosition(x, 280)->setSize(180, 30);
     primary_entry = new GuiTextEntry(box, "PRIMARY", "");
     primary_entry->setPosition(x + 190, 280)->setSize(500, 30);
+    ship_template_picker_button = new GuiButton(
+        box,
+        "SHIP_TEMPLATE_PICKER_OPEN",
+        tr("content_editor", "Choose template"),
+        [this]() { openShipTemplatePicker(); }
+    );
+    ship_template_picker_button->setPosition(x + 545, 280)->setSize(145, 30)->hide();
 
     secondary_label = new GuiLabel(box, "SECONDARY_LABEL", "", 18);
     secondary_label->setPosition(x, 320)->setSize(180, 30);
@@ -294,6 +302,47 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
     (new GuiButton(box, "CLOSE", tr("button", "Close"), [this]() { requestClose(); }))
         ->setPosition(-30, -25, sp::Alignment::BottomRight)->setSize(180, 45);
 
+    ship_template_picker_overlay = new GuiOverlay(
+        box, "SHIP_TEMPLATE_PICKER_OVERLAY", glm::u8vec4(0, 0, 0, 180));
+    auto picker_panel = new GuiPanel(ship_template_picker_overlay, "SHIP_TEMPLATE_PICKER");
+    picker_panel->setPosition(0, 0, sp::Alignment::Center)->setSize(760, 560);
+    (new GuiLabel(
+        picker_panel,
+        "SHIP_TEMPLATE_PICKER_TITLE",
+        tr("content_editor", "Choose ship template"),
+        28
+    ))->setPosition(30, 20)->setSize(700, 45);
+    (new GuiLabel(
+        picker_panel,
+        "SHIP_TEMPLATE_SEARCH_LABEL",
+        tr("content_editor", "Search"),
+        18
+    ))->setPosition(30, 75)->setSize(120, 35);
+    ship_template_search_entry = new GuiTextEntry(picker_panel, "SHIP_TEMPLATE_SEARCH", "");
+    ship_template_search_entry->callback([this](string) { refreshShipTemplatePicker(); });
+    ship_template_search_entry->setSelectOnFocus()->setPosition(150, 75)->setSize(580, 35);
+    ship_template_list = new GuiListbox(
+        picker_panel,
+        "SHIP_TEMPLATE_LIST",
+        [](int, string) {}
+    );
+    ship_template_list->setTextSize(20)->setButtonHeight(38)->setPosition(30, 125)->setSize(700, 310);
+    ship_template_picker_status = new GuiLabel(picker_panel, "SHIP_TEMPLATE_PICKER_STATUS", "", 17);
+    ship_template_picker_status->setPosition(30, 445)->setSize(700, 35);
+    (new GuiButton(
+        picker_panel,
+        "SHIP_TEMPLATE_USE",
+        tr("content_editor", "Use template"),
+        [this]() { useSelectedShipTemplate(); }
+    ))->setPosition(190, 495)->setSize(180, 40);
+    (new GuiButton(
+        picker_panel,
+        "SHIP_TEMPLATE_CANCEL",
+        tr("button", "Close"),
+        [this]() { ship_template_picker_overlay->hide(); }
+    ))->setPosition(390, 495)->setSize(180, 40);
+    ship_template_picker_overlay->hide();
+
     setType(ContentResourceType::Campaign);
     const auto load_result = store.load(resources);
     refreshList();
@@ -366,6 +415,8 @@ void GuiContentEditor::updateFieldPresentation(ContentResourceType type)
         preview_toggle->setValue(false);
     }
     const bool is_ship = type == ContentResourceType::Ship;
+    primary_entry->setSize(is_ship ? 340 : 500, 30);
+    ship_template_picker_button->setVisible(is_ship);
     ship_override_selector->setVisible(is_ship);
     ship_set_system_button->setVisible(is_ship);
     ship_remove_system_button->setVisible(is_ship);
@@ -375,6 +426,7 @@ void GuiContentEditor::updateFieldPresentation(ContentResourceType type)
         updateShipOverrideEditor();
     else
     {
+        ship_template_picker_overlay->hide();
         ship_system_selector->hide();
         ship_crew_selector->hide();
         ship_health_label->hide();
@@ -559,6 +611,15 @@ void GuiContentEditor::saveResource()
     auto resource = formResource();
     auto error = validateContentResource(resource);
     if (error != ContentResourceError::None) return setStatus(errorText(error));
+    if (resource.type == ContentResourceType::Ship && gameGlobalInfo)
+    {
+        const auto template_status = validateShipTemplateSelection(
+            gameGlobalInfo->getShipTemplateCatalog(), resource.primary);
+        if (template_status == ShipTemplateValidation::TemplateNotFound)
+            return setStatus(tr("content_editor", "The ship template is not available in this scenario."));
+        if (template_status == ShipTemplateValidation::ModelMissing)
+            return setStatus(tr("content_editor", "The ship template references a missing 3D model."));
+    }
 
     int existing = findResource(resource.type, resource.id);
     const bool selected = selected_index >= 0 && selected_index < int(resources.size());
@@ -880,6 +941,67 @@ void GuiContentEditor::updatePreviewStatus()
             tr("content_editor", "Omitted objects (preserved): {count}")
                 .format({{"count", string(static_cast<unsigned int>(count))}})
         );
+}
+
+void GuiContentEditor::openShipTemplatePicker()
+{
+    ship_template_catalog = gameGlobalInfo
+        ? gameGlobalInfo->getShipTemplateCatalog()
+        : std::vector<ShipTemplateCatalogEntry>{};
+    if (ship_template_catalog.empty())
+    {
+        setStatus(tr("content_editor", "No ship template catalog is available in this scenario."));
+        return;
+    }
+    ship_template_search_entry->setText("");
+    refreshShipTemplatePicker();
+    ship_template_picker_overlay->show();
+}
+
+void GuiContentEditor::refreshShipTemplatePicker()
+{
+    if (!ship_template_list) return;
+    visible_ship_template_indices = filterSelectableShipTemplates(
+        ship_template_catalog, ship_template_search_entry->getText());
+    ship_template_list->clear();
+    int selection = -1;
+    const std::string current_template = primary_entry->getText();
+    for (std::size_t visible_index = 0;
+         visible_index < visible_ship_template_indices.size();
+         ++visible_index)
+    {
+        const auto catalog_index = visible_ship_template_indices[visible_index];
+        const auto& entry = ship_template_catalog[catalog_index];
+        string display_name = entry.label;
+        if (entry.label != entry.canonical_id)
+            display_name += " - " + string(entry.canonical_id);
+        ship_template_list->addEntry(display_name, entry.canonical_id);
+        if (entry.canonical_id == current_template)
+            selection = static_cast<int>(visible_index);
+    }
+    if (selection < 0 && !visible_ship_template_indices.empty()) selection = 0;
+    ship_template_list->setSelectionIndex(selection);
+    if (selection >= 0) ship_template_list->scrollTo(selection);
+    if (visible_ship_template_indices.empty())
+        ship_template_picker_status->setText(tr("content_editor", "No matching ship templates."));
+    else
+        ship_template_picker_status->setText(
+            string(static_cast<unsigned int>(visible_ship_template_indices.size())) + " "
+            + tr("content_editor", "templates available"));
+}
+
+void GuiContentEditor::useSelectedShipTemplate()
+{
+    const int selection = ship_template_list->getSelectionIndex();
+    if (selection < 0 || selection >= static_cast<int>(visible_ship_template_indices.size()))
+    {
+        ship_template_picker_status->setText(tr("content_editor", "Select a ship template first."));
+        return;
+    }
+    const auto catalog_index = visible_ship_template_indices[selection];
+    primary_entry->setText(ship_template_catalog[catalog_index].canonical_id);
+    ship_template_picker_overlay->hide();
+    setStatus(tr("content_editor", "Ship template selected."));
 }
 
 void GuiContentEditor::updateShipOverrideEditor()

@@ -4229,3 +4229,31 @@ msgstr "El recurso seleccionado no tiene override."
 msgctxt "content_editor"
 msgid "Ship resource override removed from staging."
 msgstr "Override de recurso retirado del staging."
+
+msgctxt "content_editor"
+msgid "Cargo"
+msgstr "Carga"
+
+msgctxt "content_editor"
+msgid "Quantity"
+msgstr "Cantidad"
+
+msgctxt "content_editor"
+msgid "Set cargo"
+msgstr "Aplicar carga"
+
+msgctxt "content_editor"
+msgid "Cargo ID or quantity is invalid."
+msgstr "El ID o la cantidad de carga no son válidos."
+
+msgctxt "content_editor"
+msgid "Ship cargo override staged."
+msgstr "Override de carga preparado."
+
+msgctxt "content_editor"
+msgid "The selected cargo has no override."
+msgstr "La carga seleccionada no tiene override."
+
+msgctxt "content_editor"
+msgid "Ship cargo override removed from staging."
+msgstr "Override de carga retirado del staging."

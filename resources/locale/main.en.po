@@ -4451,3 +4451,31 @@ msgstr ""
 msgctxt "content_editor"
 msgid "Ship resource override removed from staging."
 msgstr ""
+
+msgctxt "content_editor"
+msgid "Cargo"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Quantity"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Set cargo"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Cargo ID or quantity is invalid."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Ship cargo override staged."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "The selected cargo has no override."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Ship cargo override removed from staging."
+msgstr ""

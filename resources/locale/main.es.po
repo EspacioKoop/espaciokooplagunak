@@ -435,7 +435,7 @@ msgstr "Gira a la derecha"
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:401
 msgctxt "hotkey_Helms"
 msgid "Zero warp"
-msgstr "Deformación cero"
+msgstr "Curvatura cero"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:402
 msgctxt "hotkey_Helms"
@@ -770,7 +770,7 @@ msgstr "Seleccionar sistema de curvatura"
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:477
 msgctxt "hotkey_Engineering"
 msgid "Select jump drive system"
-msgstr "Seleccionar sistema de motor de salto"
+msgstr "Seleccionar motor de salto"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:478
 msgctxt "hotkey_Engineering"
@@ -930,7 +930,7 @@ msgstr "Establecer potencia de impulso (joystick)"
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:510
 msgctxt "hotkey_Engineering"
 msgid "Set warp power (joystick)"
-msgstr "Establecer la potencia de curvatura (joystick)"
+msgstr "Establecer la potencia del motor de curvatura (joystick)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:511
 msgctxt "hotkey_Engineering"
@@ -975,7 +975,7 @@ msgstr "Establecer refrigerante por impulso (joystick)"
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:520
 msgctxt "hotkey_Engineering"
 msgid "Set warp coolant (joystick)"
-msgstr "Establecer refrigerante warp (joystick)"
+msgstr "Establecer el refrigerante del motor de curvatura (joystick)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:521
 msgctxt "hotkey_Engineering"

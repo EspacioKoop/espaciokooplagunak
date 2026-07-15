@@ -503,7 +503,7 @@ msgid ""
 "Heading and distance are of particular importance, as without these, the helms officer will be jumping in the dark."
 msgstr ""
 "En este radar puedes seleccionar objetos para obtener información sobre ellos.\n"
-"He añadido una nave amiga y una estación para que los examines. Selecciónalos y fíjate en cuánta información obtienes.\n"
+"He añadido una nave aliada y una estación para que los examines. Selecciónalos y fíjate en cuánta información obtienes.\n"
 "El rumbo y la distancia son especialmente importantes: sin ellos, el oficial de timón saltará a ciegas."
 
 #: scripts/tutorial/00_all.lua:316 scripts/tutorial/00_all.lua:402
@@ -512,13 +512,13 @@ msgid ""
 "To learn about it, you must scan it. Scanning requires you to match your scanner's frequency bands to your target's.\n"
 "Scan this ship now."
 msgstr ""
-"He sustituido la estación amiga por una nave desconocida. Al seleccionarla, fíjate en que no sabes nada de ella.\n"
+"He sustituido la estación aliada por una nave desconocida. Al seleccionarla, fíjate en que no sabes nada de ella.\n"
 "Para conocerla debes escanearla. Escanear consiste en igualar las bandas de frecuencia de tu escáner con las del objetivo.\n"
 "Escanea esa nave ahora."
 
 #: scripts/tutorial/00_all.lua:319 scripts/tutorial/00_all.lua:405
 msgid "Good. Notice that you now know this ship is unfriendly. It might have been a friendly or neutral ship as well, but until you scanned it, you do not know."
-msgstr "Bien. Fíjate en que ahora sabes que esa nave es hostil. Podría haber sido amiga o neutral: hasta que no la escaneas, no lo sabes."
+msgstr "Bien. Fíjate en que ahora sabes que esa nave es hostil. Podría haber sido aliada o neutral: hasta que no la escaneas, no lo sabes."
 
 #: scripts/tutorial/00_all.lua:320 scripts/tutorial/00_all.lua:406
 msgid ""
@@ -526,7 +526,7 @@ msgid ""
 "A deep scan takes more effort and requires you to align 2 different frequency bands simultaneously.\n"
 "Deep scan the enemy now."
 msgstr ""
-"Observa que tienes menos información de esta nave que de la nave amiga. Para conseguir más, debes hacerle un escaneo profundo.\n"
+"Observa que tienes menos información de esta nave que de la nave aliada. Para conseguir más, debes hacerle un escaneo profundo.\n"
 "Un escaneo profundo exige más esfuerzo: hay que alinear 2 bandas de frecuencia distintas a la vez.\n"
 "Haz ahora un escaneo profundo a la nave enemiga."
 
@@ -562,7 +562,7 @@ msgid ""
 msgstr ""
 "¡Te damos la bienvenida a comunicaciones!\n"
 "\n"
-"Tu trabajo es comunicarte con estaciones y naves. También tienes acceso al radar de corto alcance de las naves y estaciones amigas, puedes colocar puntos de referencia de navegación y lanzar sondas de escaneo."
+"Tu trabajo es comunicarte con estaciones y naves. También tienes acceso al radar de corto alcance de las naves y estaciones aliadas, puedes colocar puntos de referencia de navegación y lanzar sondas de escaneo."
 
 #: scripts/tutorial/00_all.lua:343
 msgid ""

@@ -332,6 +332,153 @@ CONTEXT_OVERRIDES: dict[tuple[str | None, str], str] = {
         "Las bombas nucleares y los PEM también tienen guiado, estallan en un radio de 1u y causan más daño.\n"
         "Los PEM solo dañan los escudos, así que son ideales para debilitar a enemigos con escudos potentes."
     ),
+    # Issue #28: reviewed engineering tutorial sequence (power, heat, coolant, repairs).
+    (
+        None,
+        "Welcome to engineering.\n"
+        "Engineering is split into two parts. The top part shows your ship's interior, including damage control teams stationed throughout.\n"
+        "The bottom part controls power and coolant levels of your ship's systems.",
+    ): (
+        "Te damos la bienvenida a ingeniería.\n"
+        "La pantalla de ingeniería se divide en dos partes. La superior muestra el interior de tu nave, incluidos los equipos de control de daños repartidos por ella.\n"
+        "La inferior controla los niveles de potencia y refrigerante de los sistemas de tu nave."
+    ),
+    (
+        None,
+        "First, we will explain your control over your ship's systems.\n"
+        "Each row on the bottom area of the screen represents one of your ship's system, and each system has a damage level, heat level, power level, and coolant level.\n\n"
+        "I've overheated your warp system. An overheating system can damage your ship. You can prevent this by putting coolant in your warp system. Select the warp system and increase the coolant slider.",
+    ): (
+        "Primero veremos el control de los sistemas de tu nave.\n"
+        "Cada fila de la zona inferior de la pantalla representa un sistema de tu nave, y cada sistema tiene niveles de daño, calor, potencia y refrigerante.\n\n"
+        "He sobrecalentado tu sistema de curvatura. Un sistema sobrecalentado puede dañar tu nave; lo evitas asignándole refrigerante. Selecciona el sistema de curvatura y sube el deslizador de refrigerante."
+    ),
+    (
+        None,
+        "I've also overheated the impulse system. As before, increase the system's coolant level to mitigate the effect. Note that the warp system's coolant level is automatically reduced to allow for coolant in the impulse system.\n\n"
+        "This is because you have a limited amount of coolant available to distribute this across your ship's systems.",
+    ): (
+        "También he sobrecalentado el sistema de impulso. Como antes, sube el refrigerante de ese sistema para mitigar el efecto. Fíjate en que el refrigerante del sistema de curvatura baja automáticamente para dejárselo al sistema de impulso.\n\n"
+        "Esto ocurre porque dispones de una cantidad limitada de refrigerante para repartir entre los sistemas de tu nave."
+    ),
+    (
+        None,
+        "Good! Next up: power levels.\n"
+        "You can manage each system's power level independently. Adding power to a system makes it perform more effectively, but also generates more heat, and thus requires coolant to prevent it from overheating and damaging the system.\n\n"
+        "Maximize the power to the front shield system.",
+    ): (
+        "¡Bien! A continuación: los niveles de potencia.\n"
+        "Puedes gestionar la potencia de cada sistema por separado. Dar más potencia a un sistema lo hace funcionar mejor, pero también genera más calor, y por tanto exige refrigerante para que no se sobrecaliente y se dañe.\n\n"
+        "Sube al máximo la potencia del sistema de escudo frontal."
+    ),
+    (
+        None,
+        "The added power increases the amount of heat in the system.\n\n"
+        "Overpower the system until it overheats.",
+    ): (
+        "La potencia añadida aumenta el calor del sistema.\n\n"
+        "Sobrecarga el sistema hasta que se sobrecaliente."
+    ),
+    (
+        None,
+        "Note that as the system overheats, it takes damage. Because the system is damaged, it functions less effectively.\n\n"
+        "Systems can also take damage when your ship is hit while the shields are down.",
+    ): (
+        "Fíjate en que, al sobrecalentarse, el sistema sufre daños. Un sistema dañado funciona con menos eficacia.\n\n"
+        "Los sistemas también pueden dañarse cuando tu nave recibe impactos con los escudos bajados."
+    ),
+    (
+        None,
+        "In this top area, you see your damage control teams in your ship.",
+    ): "En esta zona superior ves los equipos de control de daños de tu nave.",
+    (
+        None,
+        "The front shield system is damaged, as indicated by the color of this room's outline.\n\n"
+        "Select a damage control team from elsewhere on the ship by pressing it, then press on that room to initiate repairs.\n"
+        "(Repairs will take a while.)",
+    ): (
+        "El sistema de escudo frontal está dañado, como indica el color del contorno de esa sala.\n\n"
+        "Selecciona un equipo de control de daños de otra parte de la nave pulsándolo, y pulsa después esa sala para iniciar las reparaciones.\n"
+        "(Las reparaciones llevan un rato.)"
+    ),
+    (
+        None,
+        "Good. Now you know your most important tasks. Next, we'll go over each system's function in detail.\n"
+        "Remember, each system performs better with more power, but performs less well when damaged. Your job is to keep vital systems running as well as you can.",
+    ): (
+        "Bien. Ya conoces tus tareas más importantes. A continuación repasaremos en detalle la función de cada sistema.\n"
+        "Recuerda: cada sistema funciona mejor con más potencia y peor cuando está dañado. Tu trabajo es mantener los sistemas vitales rindiendo lo mejor posible."
+    ),
+    (
+        None,
+        "Reactor:\n\n"
+        "The reactor generates energy. Adding power to the reactor increases your energy generation rate.",
+    ): (
+        "Reactor:\n\n"
+        "El reactor genera energía. Darle más potencia aumenta el ritmo al que generas energía."
+    ),
+    (
+        None,
+        "Beam Weapons:\n\n"
+        "Adding power to the beam weapons system increases their rate of fire, which causes them to do more damage.\n"
+        "Note that every beam you fire adds additional heat to the system.",
+    ): (
+        "Armas de haz:\n\n"
+        "Dar más potencia al sistema de armas de haz aumenta su cadencia de disparo, con lo que causan más daño.\n"
+        "Ten en cuenta que cada haz que disparas añade calor al sistema."
+    ),
+    (
+        None,
+        "Missile System:\n\n"
+        "Increased missile system power lowers the reload time of weapon tubes.",
+    ): (
+        "Sistema de misiles:\n\n"
+        "Con más potencia en el sistema de misiles, los tubos se recargan en menos tiempo."
+    ),
+    (
+        None,
+        "Maneuvering:\n\n"
+        "Increasing power to the maneuvering system allows the ship to turn faster. It also increases the recharge rate for the combat maneuvering system.",
+    ): (
+        "Maniobra:\n\n"
+        "Dar más potencia al sistema de maniobra permite a la nave girar más rápido. También acelera la recarga de la maniobra de combate."
+    ),
+    (
+        None,
+        "Impulse Engines:\n\n"
+        "Adding power to the impulse engines increases your impulse flight speed.",
+    ): (
+        "Motores de impulso:\n\n"
+        "Dar más potencia a los motores de impulso aumenta tu velocidad de vuelo a impulso."
+    ),
+    (
+        None,
+        "Warp Drive:\n\n"
+        "Adding power to the warp drive increases your warp drive flight speed.",
+    ): (
+        "Motor de curvatura:\n\n"
+        "Dar más potencia al motor de curvatura aumenta tu velocidad de vuelo en curvatura."
+    ),
+    (
+        None,
+        "Jump Drive:\n\n"
+        "A higher-powered jump drive recharges faster and has a shorter delay before jumping.",
+    ): (
+        "Motor de salto:\n\n"
+        "Un motor de salto con más potencia se recarga antes y salta con menos retardo."
+    ),
+    (
+        None,
+        "Shields:\n\n"
+        "Additional power in the shield system increases their rate of recharge, and decreases the amount of degradation your shields sustain when damaged.",
+    ): (
+        "Escudos:\n\n"
+        "Más potencia en el sistema de escudos acelera su recarga y reduce la degradación que sufren al recibir daño."
+    ),
+    (
+        None,
+        "This concludes the overview of the engineering station. Be sure to keep your ship running in top condition!",
+    ): "Con esto termina el repaso del puesto de ingeniería. ¡Mantén tu nave siempre a punto!",
 }
 
 

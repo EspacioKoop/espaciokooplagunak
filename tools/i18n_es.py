@@ -496,6 +496,157 @@ CONTEXT_OVERRIDES: dict[tuple[str | None, str], str] = {
     ("tweak-text", "Jump drive system"): "Sistema del motor de salto",
     ("tweak-text", "Warp drive system"): "Sistema del motor de curvatura",
     ("jumpcontrol", "Jump in"): "Salto en",
+    # Issue #28: reviewed science, comms, operations and closing tutorial sequences.
+    (
+        None,
+        "Welcome, science officer.\n\n"
+        "You are the eyes of the ship. Your job is to supply the captain with information. From your station, you can detect and scan objects at a range of up to 30u.",
+    ): (
+        "Te damos la bienvenida, oficial de ciencias.\n\n"
+        "Eres los ojos de la nave. Tu trabajo es proporcionar información al capitán. Desde tu puesto puedes detectar y escanear objetos hasta a 30u de distancia."
+    ),
+    (
+        None,
+        "On this radar, you can select objects to get information about them.\n"
+        "I've added a friendly ship and a station for you to examine. Select them and notice how much information you can observe.\n"
+        "Heading and distance are of particular importance, as without these, the helms officer will be jumping in the dark.",
+    ): (
+        "En este radar puedes seleccionar objetos para obtener información sobre ellos.\n"
+        "He añadido una nave amiga y una estación para que los examines. Selecciónalos y fíjate en cuánta información obtienes.\n"
+        "El rumbo y la distancia son especialmente importantes: sin ellos, el oficial de timón saltará a ciegas."
+    ),
+    (
+        None,
+        "I've replaced the friendly station with an unknown ship. Once you select it, notice that you know nothing about this ship.\n"
+        "To learn about it, you must scan it. Scanning requires you to match your scanner's frequency bands to your target's.\n"
+        "Scan this ship now.",
+    ): (
+        "He sustituido la estación amiga por una nave desconocida. Al seleccionarla, fíjate en que no sabes nada de ella.\n"
+        "Para conocerla debes escanearla. Escanear consiste en igualar las bandas de frecuencia de tu escáner con las del objetivo.\n"
+        "Escanea esa nave ahora."
+    ),
+    (
+        None,
+        "Good. Notice that you now know this ship is unfriendly. It might have been a friendly or neutral ship as well, but until you scanned it, you do not know.",
+    ): "Bien. Fíjate en que ahora sabes que esa nave es hostil. Podría haber sido amiga o neutral: hasta que no la escaneas, no lo sabes.",
+    (
+        None,
+        "Note that you have less information about this ship than the friendly ship. You must perform a deep scan of this ship to acquire more information.\n"
+        "A deep scan takes more effort and requires you to align 2 different frequency bands simultaneously.\n"
+        "Deep scan the enemy now.",
+    ): (
+        "Observa que tienes menos información de esta nave que de la nave amiga. Para conseguir más, debes hacerle un escaneo profundo.\n"
+        "Un escaneo profundo exige más esfuerzo: hay que alinear 2 bandas de frecuencia distintas a la vez.\n"
+        "Haz ahora un escaneo profundo a la nave enemiga."
+    ),
+    (
+        None,
+        "Excellent. Notice that this took more time and concentration than the simple scan, so be careful to perform deep scans only when necessary or you could run out of time.",
+    ): "Excelente. Fíjate en que ha exigido más tiempo y concentración que el escaneo simple, así que reserva los escaneos profundos para cuando hagan falta o podrías quedarte sin tiempo.",
+    (
+        None,
+        "Next to the long-range radar, the science station can also access the science database.\n\n"
+        "In this database, you can look up details on things like ship types, weapons, and other objects.",
+    ): (
+        "Además del radar de largo alcance, el puesto de ciencias tiene acceso a la base de datos científica.\n\n"
+        "En ella puedes consultar detalles de tipos de nave, armas y otros objetos."
+    ),
+    (
+        None,
+        "Remember, your job is to supply information. Knowing the location and status of other ships is vital to your captain.\n\n"
+        "Without your information, the crew is mostly blind.",
+    ): (
+        "Recuerda: tu trabajo es proporcionar información. Conocer la posición y el estado de las demás naves es vital para tu capitán.\n\n"
+        "Sin tu información, la tripulación está casi ciega."
+    ),
+    (
+        None,
+        "Welcome to relay!\n\n"
+        "It is your job to communicate with stations and ships. You also have access to short-range radar data from friendly ships and stations, and can place navigational waypoints and launch scanning probes.",
+    ): (
+        "¡Te damos la bienvenida a comunicaciones!\n\n"
+        "Tu trabajo es comunicarte con estaciones y naves. También tienes acceso al radar de corto alcance de las naves y estaciones amigas, puedes colocar puntos de referencia de navegación y lanzar sondas de escaneo."
+    ),
+    (
+        None,
+        "Your first responsibility is to coordinate the ship's communications.\n\n"
+        "You can target any station or ship and attempt to communicate with it. Other ships can also attempt to contact you.",
+    ): (
+        "Tu primera responsabilidad es coordinar las comunicaciones de la nave.\n\n"
+        "Puedes seleccionar cualquier estación o nave e intentar comunicarte con ella. Otras naves también pueden intentar contactar contigo."
+    ),
+    (
+        None,
+        "You successfully opened communications. Congratulations.",
+    ): "Has abierto comunicaciones. Enhorabuena.",
+    (
+        None,
+        "Tell me more!",
+    ): "¡Cuéntame más!",
+    (
+        None,
+        "Sorry, there's nothing more to tell you.",
+    ): "Lo siento, no hay nada más que contar.",
+    (
+        None,
+        "Continue with the tutorial.",
+    ): "Continuar con el tutorial.",
+    (
+        None,
+        "The tutorial will continue when you close communications with this station.",
+    ): "El tutorial continuará cuando cierres las comunicaciones con esta estación.",
+    (
+        None,
+        "Open communications with the station near you to continue the tutorial.",
+    ): "Abre comunicaciones con la estación cercana para continuar el tutorial.",
+    (
+        None,
+        "Now finish your talk with the station.",
+    ): "Ahora termina la conversación con la estación.",
+    (
+        None,
+        "Depending on the scenario, you might have different options when communicating with stations.\n"
+        "They might inform you about new objectives and your mission progress, ask for backup, or resupply your weapons. This is all part of your responsibilities as relay officer.",
+    ): (
+        "Según el escenario, tendrás distintas opciones al comunicarte con las estaciones.\n"
+        "Pueden informarte de nuevos objetivos y del progreso de la misión, pedirte refuerzos o reabastecer tus armas. Todo ello forma parte de tus responsabilidades como oficial de comunicaciones."
+    ),
+    (
+        None,
+        "Your station also includes this radar map.\n\n"
+        "On this map, you can detect objects within short-range radar range of all allied ships and stations. Everything else is invisible to you. This gives you a different view from the science officer, because you can scan the contents of nebulae.",
+    ): (
+        "Tu puesto incluye además este mapa de radar.\n\n"
+        "En él detectas los objetos dentro del radar de corto alcance de todas las naves y estaciones aliadas. Todo lo demás es invisible para ti. Te da una visión distinta a la del oficial de ciencias, porque puedes escanear el contenido de las nebulosas."
+    ),
+    (
+        None,
+        "Finally, you control your ship's probes. Probes can expand your radar view. Launch a probe to the top right, toward the ship designated DMY-01.",
+    ): "Por último, controlas las sondas de la nave. Las sondas amplían tu vista de radar. Lanza una sonda hacia arriba a la derecha, hacia la nave designada DMY-01.",
+    (
+        None,
+        "Probes can expand your sensory capabilities beyond your normal range and explore nebulae. However, you have a limited supply of them and can't replenish them until you to dock with a station.",
+    ): "Las sondas amplían tus sensores más allá de su alcance normal y permiten explorar nebulosas. Pero llevas una cantidad limitada y no puedes reponerlas hasta atracar en una estación.",
+    (
+        None,
+        "Welcome, operations officer.\n\n"
+        "You are the eyes of the ship. Your job is to supply the captain with information. From your station, you can detect and scan objects at a range of up to 30u.",
+    ): (
+        "Te damos la bienvenida, oficial de operaciones.\n\n"
+        "Eres los ojos de la nave. Tu trabajo es proporcionar información al capitán. Desde tu puesto puedes detectar y escanear objetos hasta a 30u de distancia."
+    ),
+    (
+        None,
+        "Your second responsibility is to coordinate the ship's communications.\n\n"
+        "You can target any station or ship and attempt to communicate with it. Other ships can also attempt to contact you.",
+    ): (
+        "Tu segunda responsabilidad es coordinar las comunicaciones de la nave.\n\n"
+        "Puedes seleccionar cualquier estación o nave e intentar comunicarte con ella. Otras naves también pueden intentar contactar contigo."
+    ),
+    (
+        None,
+        "This concludes the tutorial. While we have covered the basics, there are more advanced features in the game that you might discover.",
+    ): "Aquí termina el tutorial. Hemos cubierto lo básico; el juego tiene funciones más avanzadas que irás descubriendo.",
 }
 
 

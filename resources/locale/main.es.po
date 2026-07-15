@@ -31,7 +31,7 @@ msgstr "normales"
 #: /home/varo/proyectos/espaciokolagunak/src/components/shipsystem.cpp:115
 msgctxt "system"
 msgid "Reactor"
-msgstr "reactor"
+msgstr "Reactor"
 
 #: /home/varo/proyectos/espaciokolagunak/src/components/shipsystem.cpp:116
 msgctxt "system"
@@ -46,7 +46,7 @@ msgstr "Sistema de misiles"
 #: /home/varo/proyectos/espaciokolagunak/src/components/shipsystem.cpp:118
 msgctxt "system"
 msgid "Maneuvering"
-msgstr "maniobrar"
+msgstr "Maniobra"
 
 #: /home/varo/proyectos/espaciokolagunak/src/components/shipsystem.cpp:119
 msgctxt "system"
@@ -61,7 +61,7 @@ msgstr "Motor de curvatura"
 #: /home/varo/proyectos/espaciokolagunak/src/components/shipsystem.cpp:121
 msgctxt "system"
 msgid "Jump Drive"
-msgstr "Salto de conducción"
+msgstr "Motor de salto"
 
 #: /home/varo/proyectos/espaciokolagunak/src/components/shipsystem.cpp:122
 msgctxt "system"
@@ -765,12 +765,12 @@ msgstr "Seleccionar sistema de impulso"
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:476
 msgctxt "hotkey_Engineering"
 msgid "Select warp system"
-msgstr "Seleccionar sistema de deformación"
+msgstr "Seleccionar sistema de curvatura"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:477
 msgctxt "hotkey_Engineering"
 msgid "Select jump drive system"
-msgstr "Seleccione el sistema de accionamiento de salto"
+msgstr "Seleccionar sistema de motor de salto"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:478
 msgctxt "hotkey_Engineering"
@@ -935,7 +935,7 @@ msgstr "Establecer potencia de deformación (joystick)"
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:511
 msgctxt "hotkey_Engineering"
 msgid "Set jump drive power (joystick)"
-msgstr "Establecer la potencia del impulsor de salto (joystick)"
+msgstr "Establecer la potencia del motor de salto (joystick)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:512
 msgctxt "hotkey_Engineering"
@@ -980,7 +980,7 @@ msgstr "Establecer refrigerante warp (joystick)"
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:521
 msgctxt "hotkey_Engineering"
 msgid "Set jump drive coolant (joystick)"
-msgstr "Establecer refrigerante de accionamiento de salto (joystick)"
+msgstr "Establecer el refrigerante del motor de salto (joystick)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:522
 msgctxt "hotkey_Engineering"
@@ -2128,7 +2128,7 @@ msgstr "retrasado"
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/jumpControls.cpp:75
 msgctxt "jumpcontrol"
 msgid "Jump in"
-msgstr "Saltar en"
+msgstr "Salto en"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/jumpControls.cpp:76 /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:477
 msgctxt "jumpcontrol"
@@ -2157,7 +2157,7 @@ msgstr " seg."
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/jumpIndicator.cpp:30
 msgid "Jump in: {delay}"
-msgstr "Salta: {delay}"
+msgstr "Salto en: {delay}"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/mainScreenControls.cpp:22
 msgctxt "controlbutton"
@@ -2580,7 +2580,7 @@ msgstr "velocidad de impulso"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:470
 msgid "Warp drive speed"
-msgstr "Velocidad de deformación"
+msgstr "Velocidad de curvatura"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:477
 msgid "Time to jump activation"
@@ -2588,7 +2588,7 @@ msgstr "Hora de saltar la activación"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:481
 msgid "Jump drive recharge rate"
-msgstr "Tasa de recarga de la unidad de salto"
+msgstr "Tasa de recarga del motor de salto"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:496
 msgctxt "shields"
@@ -3320,7 +3320,7 @@ msgstr "Nivel:"
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:468
 msgctxt "tweak-tab"
 msgid "Warp drive"
-msgstr "unidad de deformación"
+msgstr "Motor de curvatura"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:469
 msgctxt "tweak-text"
@@ -3340,12 +3340,12 @@ msgstr "Energía por segundo:"
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:472
 msgctxt "tweak-text"
 msgid "Warp drive system"
-msgstr "Sistema de accionamiento por deformación"
+msgstr "Sistema del motor de curvatura"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:475
 msgctxt "tweak-tab"
 msgid "Jump drive"
-msgstr "unidad de salto"
+msgstr "Motor de salto"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:476
 msgctxt "tweak-text"
@@ -3360,7 +3360,7 @@ msgstr "Distancia máxima:"
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:478
 msgctxt "tweak-text"
 msgid "Jump drive system"
-msgstr "Sistema de salto"
+msgstr "Sistema del motor de salto"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:485
 msgctxt "tweak-tab"
@@ -3375,7 +3375,7 @@ msgstr "Código de control:"
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:488
 msgctxt "tweak-tab"
 msgid "Reactor"
-msgstr "reactor"
+msgstr "Reactor"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/gm/tweak.cpp:489
 msgctxt "tweak-text"

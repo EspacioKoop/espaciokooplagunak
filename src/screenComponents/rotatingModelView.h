@@ -2,11 +2,13 @@
 
 #include "gui/gui2_element.h"
 #include "components/rendering.h"
+#include <optional>
 
 class GuiRotatingModelView : public GuiElement
 {
 private:
-    sp::ecs::Entity &entity;
+    sp::ecs::Entity* entity = nullptr;
+    std::optional<MeshRenderComponent> model;
     // Zoom 1.0 = default, >1 zooms in, <1 zooms out
     float zoom_level = 1.0f;
     // Default to filling 90% of narrowest dimension
@@ -25,6 +27,7 @@ private:
 
 public:
     GuiRotatingModelView(GuiContainer* owner, string id, sp::ecs::Entity& entity);
+    GuiRotatingModelView(GuiContainer* owner, string id);
 
     virtual void onDraw(sp::RenderTarget& target) override;
     virtual bool onMouseWheelScroll(glm::vec2 position, float value) override;
@@ -35,4 +38,6 @@ public:
     GuiRotatingModelView* setFillPercentage(float percentage);
     GuiRotatingModelView* setZoom(float zoom);
     GuiRotatingModelView* setManualRotationAllowed(bool allowed);
+    GuiRotatingModelView* setModel(const MeshRenderComponent& model);
+    GuiRotatingModelView* clearModel();
 };

@@ -19,7 +19,13 @@
 
 GuiRotatingModelView::GuiRotatingModelView(GuiContainer* owner, string id, sp::ecs::Entity& entity)
 
-: GuiElement(owner, id), entity(entity)
+: GuiElement(owner, id), entity(&entity)
+{
+}
+
+GuiRotatingModelView::GuiRotatingModelView(GuiContainer* owner, string id)
+
+: GuiElement(owner, id)
 {
 }
 
@@ -27,7 +33,7 @@ void GuiRotatingModelView::onDraw(sp::RenderTarget& renderer)
 {
     if (rect.size.x <= 0 || rect.size.y <= 0) return;
 
-    auto mrc = entity.getComponent<MeshRenderComponent>();
+    auto mrc = model ? &*model : (entity ? entity->getComponent<MeshRenderComponent>() : nullptr);
     if (!mrc) return;
 
     renderer.finish();
@@ -156,6 +162,18 @@ GuiRotatingModelView* GuiRotatingModelView::setZoom(float zoom)
 GuiRotatingModelView* GuiRotatingModelView::setManualRotationAllowed(bool allowed)
 {
     manual_rotation_allowed = allowed;
+    return this;
+}
+
+GuiRotatingModelView* GuiRotatingModelView::setModel(const MeshRenderComponent& value)
+{
+    model = value;
+    return this;
+}
+
+GuiRotatingModelView* GuiRotatingModelView::clearModel()
+{
+    model.reset();
     return this;
 }
 

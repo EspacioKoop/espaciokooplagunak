@@ -4557,3 +4557,13 @@ msgstr ""
 msgctxt "content_editor"
 msgid "Ship template selected."
 msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "3D preview unavailable."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Drag to rotate; wheel to zoom."
+msgstr ""

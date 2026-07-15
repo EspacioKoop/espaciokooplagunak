@@ -792,6 +792,15 @@ if(BUILD_CONTENT_RESOURCE_TESTS)
     target_link_libraries(ship_template_catalog_tests PRIVATE seriousproton)
     add_test(NAME ship_template_catalog COMMAND ship_template_catalog_tests)
 
+    find_program(CONTENT_EDITOR_LUA_EXECUTABLE NAMES lua5.4 lua)
+    if(CONTENT_EDITOR_LUA_EXECUTABLE)
+        add_test(
+            NAME ship_template_preview_lua
+            COMMAND ${CONTENT_EDITOR_LUA_EXECUTABLE}
+                ${CMAKE_CURRENT_SOURCE_DIR}/tests/shipTemplatePreviewLuaTests.lua
+                ${CMAKE_CURRENT_SOURCE_DIR}/scripts/api/shipTemplate.lua)
+    endif()
+
     add_executable(ship_edit_session_tests
         tests/shipEditSessionTests.cpp
         src/content/shipDocument.cpp

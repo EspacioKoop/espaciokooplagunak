@@ -13,6 +13,7 @@ class GuiListbox;
 class GuiSelector;
 class GuiTextEntry;
 class GuiToggleButton;
+class GuiRotatingModelView;
 
 class GuiContentEditor : public GuiOverlay
 {
@@ -59,6 +60,8 @@ private:
     GuiTextEntry* ship_template_search_entry;
     GuiListbox* ship_template_list;
     GuiLabel* ship_template_picker_status;
+    GuiRotatingModelView* ship_template_model_view;
+    GuiLabel* ship_template_preview_status;
     GuiLabel* secondary_label;
     GuiTextEntry* secondary_entry;
     GuiLabel* tertiary_label;
@@ -111,6 +114,9 @@ private:
     void updatePreviewStatus();
     void openShipTemplatePicker();
     void refreshShipTemplatePicker();
+    void refreshShipTemplatePreview();
+    void clearShipTemplatePreview();
+    void closeShipTemplatePicker();
     void useSelectedShipTemplate();
     void updateShipOverrideEditor();
     void setShipOverride();

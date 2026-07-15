@@ -435,7 +435,7 @@ msgstr "Gira a la derecha"
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:401
 msgctxt "hotkey_Helms"
 msgid "Zero warp"
-msgstr "Deformación cero"
+msgstr "Curvatura cero"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:402
 msgctxt "hotkey_Helms"

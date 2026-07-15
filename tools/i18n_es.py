@@ -650,6 +650,7 @@ CONTEXT_OVERRIDES: dict[tuple[str | None, str], str] = {
     # Issue #28: eradicate «deformación» (warp) and «barco» (ship) from the UI.
     ("hotkey_Cinematic", "Cycle next player ship"): "Cambiar a la siguiente nave de jugador",
     ("hotkey_Topdown", "Cycle next player ship"): "Cambiar a la siguiente nave de jugador",
+    ("hotkey_Helms", "Zero warp"): "Curvatura cero",
     ("hotkey_Helms", "Request warp 1"): "Solicitar curvatura 1",
     ("hotkey_Helms", "Request warp 2"): "Solicitar curvatura 2",
     ("hotkey_Helms", "Request warp 3"): "Solicitar curvatura 3",

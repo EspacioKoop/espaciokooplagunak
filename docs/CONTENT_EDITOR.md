@@ -188,12 +188,13 @@ visible en el editor.
 Las naves tienen un modelo tipado para overrides opcionales de sistemas, recursos,
 carga y puestos. Rechaza IDs no canónicos, duplicados, valores no finitos y
 cantidades fuera de rango; v4 ya lo persiste e intercambia con migración de v1–v3.
-El formulario ya ofrece una primera vertical GUI tipada para salud de sistemas:
-selector canónico, valor `[-1, 1]`, aplicar/quitar override y undo/redo sobre el
-staging. Los overrides de recursos, carga y puestos todavía se conservan pero no
-se exponen. El documento no toca el ECS. La sesión C++ pura prepara todos esos
-cambios con dirty state, historial acotado y rollback al último snapshot guardado.
-Previsualización y aplicación al mundo se incorporarán en verticales posteriores.
+El formulario ya ofrece verticales GUI tipadas para salud de sistemas y recursos:
+selector canónico de sistema, ID seguro de recurso, valores validados, aplicar/quitar
+override y undo/redo compartido sobre el staging. Los overrides de carga y puestos
+todavía se conservan pero no se exponen. El documento no toca el ECS. La sesión
+C++ pura prepara todos esos cambios con dirty state, historial acotado y rollback
+al último snapshot guardado. Previsualización y aplicación al mundo se incorporarán
+en verticales posteriores.
 La siguiente fase mantendrá la misma envoltura versionada:
 
 - aplicación tipada al mundo con autorización GM y rollback, sin Lua importado

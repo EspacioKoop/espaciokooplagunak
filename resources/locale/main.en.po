@@ -4419,3 +4419,35 @@ msgstr ""
 msgctxt "content_editor"
 msgid "Ship edit redone."
 msgstr ""
+
+msgctxt "content_editor"
+msgid "Systems"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Resources"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Amount"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Set resource"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Resource ID or amount is invalid."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Ship resource override staged."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "The selected resource has no override."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Ship resource override removed from staging."
+msgstr ""

@@ -201,9 +201,9 @@ visibles cuyo modelo siga registrado; filtra sin distinguir mayúsculas ASCII so
 ID, etiqueta, tipo y modelo, pero aplica siempre el ID canónico. La entrada manual se
 mantiene para documentos legacy y las plantillas ocultas siguen validando al cargar su
 ID. Al seleccionar una entrada, el overlay consulta únicamente el `mesh_render` de la
-plantilla y muestra una vista 3D giratoria. Para ello crea una entidad ECS temporal con
-solo `MeshRenderComponent`, sin `Transform`, física, red ni callback de spawn; la
-entidad se destruye al cambiar la selección o cerrar/aplicar el selector.
+plantilla y muestra una vista 3D giratoria. El widget conserva una copia inerte de
+`MeshRenderComponent`: no crea ninguna entidad ECS, `Transform`, física, red ni
+callback de spawn, y descarta la copia al cambiar o cerrar/aplicar el selector.
 El documento editado no toca el ECS. La sesión C++ pura prepara todos los overrides
 con dirty state, historial acotado y rollback al último snapshot guardado.
 La aplicación autorizada al mundo se incorporará en un vertical posterior.

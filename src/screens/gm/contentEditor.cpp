@@ -324,7 +324,7 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
     ship_template_search_entry->callback([this](string) { refreshShipTemplatePicker(); });
     ship_template_search_entry->setSelectOnFocus()->setPosition(150, 75)->setSize(580, 35);
     ship_template_model_view = new GuiRotatingModelView(
-        picker_panel, "SHIP_TEMPLATE_MODEL_PREVIEW", ship_template_preview_entity);
+        picker_panel, "SHIP_TEMPLATE_MODEL_PREVIEW");
     ship_template_model_view->setPosition(450, 125)->setSize(280, 260)->hide();
     ship_template_preview_status = new GuiLabel(
         picker_panel, "SHIP_TEMPLATE_PREVIEW_STATUS", "", 16);
@@ -363,11 +363,6 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
         setStatus(tr("content_editor", "Private library migrated to the current format."));
     else
         setStatus(tr("content_editor", "Private library loaded."));
-}
-
-GuiContentEditor::~GuiContentEditor()
-{
-    clearShipTemplatePreview();
 }
 
 bool GuiContentEditor::onMouseDown(sp::io::Pointer::Button, glm::vec2, sp::io::Pointer::ID)
@@ -1031,8 +1026,7 @@ void GuiContentEditor::refreshShipTemplatePreview()
         return;
     }
 
-    ship_template_preview_entity = sp::ecs::Entity::create();
-    auto& render = ship_template_preview_entity.addComponent<MeshRenderComponent>();
+    MeshRenderComponent render;
     render.mesh.name = preview.mesh;
     render.texture.name = preview.texture;
     render.specular_texture.name = preview.specular_texture;
@@ -1041,18 +1035,13 @@ void GuiContentEditor::refreshShipTemplatePreview()
     render.mesh_offset = {
         preview.mesh_offset_x, preview.mesh_offset_y, preview.mesh_offset_z};
     render.scale = preview.scale;
-    ship_template_model_view->show();
+    ship_template_model_view->setModel(render)->show();
     ship_template_preview_status->setText(tr("content_editor", "Drag to rotate; wheel to zoom."));
 }
 
 void GuiContentEditor::clearShipTemplatePreview()
 {
-    if (ship_template_preview_entity)
-    {
-        ship_template_preview_entity.destroy();
-        ship_template_preview_entity = {};
-    }
-    if (ship_template_model_view) ship_template_model_view->hide();
+    if (ship_template_model_view) ship_template_model_view->clearModel()->hide();
     if (ship_template_preview_status) ship_template_preview_status->setText("");
 }
 

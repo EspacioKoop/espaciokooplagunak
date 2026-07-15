@@ -165,7 +165,7 @@ configurado con `-DBUILD_CONTENT_RESOURCE_TESTS=ON` se ejecutan con:
 
 ```bash
 ctest --test-dir build --output-on-failure \
-  -R 'content_resource_codec|content_library_store|map_document_codec|map_edit_session|map_preview_projection|ship_document_model'
+  -R 'content_resource_codec|content_library_store|map_document_codec|map_edit_session|map_preview_projection|ship_document_model|ship_edit_session'
 ```
 
 El test del codec cubre los cuatro tipos, round-trip, límite de 64 KiB, claves
@@ -190,7 +190,10 @@ carga y puestos. Rechaza IDs no canónicos, duplicados, valores no finitos y
 cantidades fuera de rango; v4 ya lo persiste e intercambia con migración de v1–v3.
 El formulario todavía no expone esos campos y el documento no toca el ECS; al
 editar metadatos visibles de una nave importada, los overrides se conservan
-íntegros. Previsualización y aplicación se incorporarán en verticales posteriores.
+íntegros. Una sesión C++ pura permite preparar cambios de sistemas, recursos,
+carga y puestos con undo, redo, dirty state, historial acotado y rollback al
+último snapshot guardado. Todavía no está conectada al formulario ni al ECS;
+previsualización y aplicación se incorporarán en verticales posteriores.
 La siguiente fase mantendrá la misma envoltura versionada:
 
 - aplicación tipada al mundo con autorización GM y rollback, sin Lua importado

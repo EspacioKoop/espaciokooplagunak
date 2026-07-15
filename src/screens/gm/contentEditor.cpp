@@ -371,6 +371,8 @@ ContentResource GuiContentEditor::formResource() const
     resource.quinary = quinary_entry->getText();
     if (current_type == ContentResourceType::Map && clean_snapshot.type == ContentResourceType::Map)
         resource.map_document = clean_snapshot.map_document;
+    if (current_type == ContentResourceType::Ship && clean_snapshot.type == ContentResourceType::Ship)
+        resource.ship_document = clean_snapshot.ship_document;
     return resource;
 }
 
@@ -649,6 +651,7 @@ string GuiContentEditor::errorText(ContentResourceError error) const
     case ContentResourceError::InvalidPlayerCount:
         return tr("content_editor", "Recommended player count must be between 1 and 64.");
     case ContentResourceError::InvalidMapDocument:
+    case ContentResourceError::InvalidShipDocument:
         return tr("content_editor", "Imported document has invalid type-specific fields.");
     }
     return tr("content_editor", "Clipboard does not contain valid content JSON.");

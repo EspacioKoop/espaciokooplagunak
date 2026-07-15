@@ -725,6 +725,7 @@ if(BUILD_CONTENT_RESOURCE_TESTS)
         tests/contentResourceTests.cpp
         src/content/contentResource.cpp
         src/content/mapDocument.cpp
+        src/content/shipDocument.cpp
         src/crewPosition.cpp
     )
     target_include_directories(content_resource_tests PRIVATE
@@ -737,6 +738,7 @@ if(BUILD_CONTENT_RESOURCE_TESTS)
         src/content/contentLibraryStore.cpp
         src/content/contentResource.cpp
         src/content/mapDocument.cpp
+        src/content/shipDocument.cpp
         src/crewPosition.cpp
     )
     target_include_directories(content_library_store_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)

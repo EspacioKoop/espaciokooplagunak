@@ -215,7 +215,8 @@ nlohmann::json resourceDocument(const ContentResource& resource)
                   {"legacy_role", resource.quinary}};
         break;
     case ContentResourceType::Ship:
-        fields = {{"template", resource.primary}, {"faction", resource.secondary}};
+        fields = {{"template", resource.primary}, {"faction", resource.secondary},
+                  {"overrides", shipDocumentOverridesJson(resource.ship_document)}};
         break;
     }
     return {{"format", "espaciokoop-content"}, {"version", CONTENT_RESOURCE_SCHEMA_VERSION},
@@ -262,6 +263,8 @@ ContentResourceError validateContentResource(const ContentResource& resource)
         return ContentResourceError::UnknownTypeFields;
     if (resource.type != ContentResourceType::Map && !resource.map_document.objects.empty())
         return ContentResourceError::InvalidMapDocument;
+    if (resource.type != ContentResourceType::Ship && resource.ship_document != ShipDocument{})
+        return ContentResourceError::InvalidShipDocument;
 
     if (resource.type == ContentResourceType::Campaign)
     {
@@ -289,6 +292,9 @@ ContentResourceError validateContentResource(const ContentResource& resource)
     if (resource.type == ContentResourceType::Map
         && validateMapDocument(resource.map_document) != MapDocumentError::None)
         return ContentResourceError::InvalidMapDocument;
+    if (resource.type == ContentResourceType::Ship
+        && validateShipDocument(resource.ship_document) != ShipDocumentError::None)
+        return ContentResourceError::InvalidShipDocument;
     if (resource.type == ContentResourceType::Character)
     {
         if (!resource.primary.empty() && !validCrewPosition(resource.primary))
@@ -390,6 +396,8 @@ ContentResourceError parseContentResource(const std::string& input, ContentResou
     std::set<std::string> allowed_fields(keys.begin(), keys.end());
     if (candidate.type == ContentResourceType::Map && version >= 3)
         allowed_fields.insert("objects");
+    if (candidate.type == ContentResourceType::Ship && version >= 4)
+        allowed_fields.insert("overrides");
     for (auto it = fields_it->begin(); it != fields_it->end(); ++it)
         if (!allowed_fields.count(it.key())) return ContentResourceError::UnknownTypeFields;
     std::string* outputs[] = {&candidate.primary, &candidate.secondary, &candidate.tertiary,
@@ -405,6 +413,14 @@ ContentResourceError parseContentResource(const std::string& input, ContentResou
         if (objects_it == fields_it->end()
             || parseMapDocumentObjects(*objects_it, candidate.map_document) != MapDocumentError::None)
             return ContentResourceError::InvalidMapDocument;
+    }
+    if (candidate.type == ContentResourceType::Ship && version >= 4)
+    {
+        const auto overrides_it = fields_it->find("overrides");
+        if (overrides_it == fields_it->end()
+            || parseShipDocumentOverrides(*overrides_it, candidate.ship_document)
+                != ShipDocumentError::None)
+            return ContentResourceError::InvalidShipDocument;
     }
 
     if (version == 1 && candidate.type == ContentResourceType::Character)

@@ -123,6 +123,44 @@ int main()
     expect(validateShipDocument(document) == ShipDocumentError::TooManyEntries,
         "oversized resource collections are rejected before item validation");
 
+    const auto overrides = shipDocumentOverridesJson(valid);
+    ShipDocument parsed_document;
+    expect(parseShipDocumentOverrides(overrides, parsed_document) == ShipDocumentError::None
+            && parsed_document == valid,
+        "ship overrides round-trip through canonical JSON");
+
+    const auto parsed_before_error = parsed_document;
+    auto hostile = overrides;
+    hostile["callback"] = "never()";
+    expect(parseShipDocumentOverrides(hostile, parsed_document) == ShipDocumentError::UnknownFields,
+        "unknown override fields are rejected");
+    expect(parsed_document == parsed_before_error, "failed override parse does not mutate output");
+
+    hostile = overrides;
+    hostile.erase("cargo");
+    expect(parseShipDocumentOverrides(hostile, parsed_document) == ShipDocumentError::InvalidStructure,
+        "all canonical override collections are required");
+    hostile = overrides;
+    hostile["systems"][0]["health"] = "perfect";
+    expect(parseShipDocumentOverrides(hostile, parsed_document) == ShipDocumentError::InvalidStructure,
+        "system health must be numeric JSON");
+    hostile = overrides;
+    hostile["systems"][0]["lua"] = "setSystemHealth()";
+    expect(parseShipDocumentOverrides(hostile, parsed_document) == ShipDocumentError::UnknownFields,
+        "system entries reject executable-looking extra fields");
+    hostile = overrides;
+    hostile["resources"][0]["amount"] = -1;
+    expect(parseShipDocumentOverrides(hostile, parsed_document) == ShipDocumentError::InvalidResourceAmount,
+        "negative resource JSON values are rejected");
+    hostile = overrides;
+    hostile["cargo"][0]["quantity"] = 1.5;
+    expect(parseShipDocumentOverrides(hostile, parsed_document) == ShipDocumentError::InvalidCargoQuantity,
+        "fractional cargo JSON values are rejected");
+    hostile = overrides;
+    hostile["crew_positions"][0] = "helmsofficer";
+    expect(parseShipDocumentOverrides(hostile, parsed_document) == ShipDocumentError::InvalidCrewPosition,
+        "legacy crew aliases are rejected in v4 overrides");
+
     std::cout << "SHIP_DOCUMENT_TESTS_OK checks=" << checks << "\n";
     return 0;
 }

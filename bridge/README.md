@@ -15,7 +15,7 @@ heredado: [`docs/API_HTTP.md`](../docs/API_HTTP.md).
 |---|---|---|---|
 | GET | `/healthz` | No | Estado del puente y alcance del juego |
 | GET | `/v1/state` | Bearer | Nave: posición, rumbo, velocidad, destino, distancia, ETA, casco, energía, escudos y sistemas |
-| GET | `/v1/scenario` | Bearer | Tiempo de escenario |
+| GET | `/v1/scenario` | Bearer | Tiempo de escenario y estado de pausa (`paused`) |
 | GET | `/v1/events` | Bearer | Eventos normalizados presentes; inicialmente llegada de Primera Guardia |
 | GET | `/v1/contacts` | Bearer | Objetos cercanos a la nave (indicativo, posición, facción, si es el jugador) para un mapa vivo en Foundry. **Vista GM omnisciente** (ver abajo) |
 | POST | `/v1/command` | Bearer | Órdenes de lista blanca (ver abajo) |

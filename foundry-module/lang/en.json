@@ -48,5 +48,14 @@
   "LAGUNAK.Eventos.Llegada.Resumen": "The ship has arrived at {destination}. Scenario time: {elapsed} s.",
   "LAGUNAK.Eventos.Anotados": "New event written to the ship's log.",
   "LAGUNAK.Errores.SinEstado": "There is no ship state to log.",
-  "LAGUNAK.Errores.Desconocido": "Unexpected error querying the bridge."
+  "LAGUNAK.Errores.Desconocido": "Unexpected error querying the bridge.",
+  "LAGUNAK.Controles.Grupo": "Espaciokoop Lagunak",
+  "LAGUNAK.Pausa.Conectando": "Pause state: no data yet",
+  "LAGUNAK.Pausa.Desconectado": "Pause state unknown (disconnected)",
+  "LAGUNAK.Pausa.EnMarcha": "Simulation running",
+  "LAGUNAK.Pausa.Pausado": "Simulation paused",
+  "LAGUNAK.Pausa.Pausando": "Pausing…",
+  "LAGUNAK.Pausa.Reanudando": "Resuming…",
+  "LAGUNAK.Pausa.Error": "The last order failed; you can retry",
+  "LAGUNAK.Pausa.FoundryPausado": "Foundry is paused (independent from the simulator; they do not sync)."
 }

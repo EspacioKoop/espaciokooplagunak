@@ -28,6 +28,7 @@
 import { BridgeClient, BridgeError } from "./bridge-client.mjs";
 import { processBridgeEvents } from "./event-journal.mjs";
 import { dibujarFrame } from "./mapa-render.mjs";
+import { prepararVistaPausa } from "./pausa-control.mjs";
 import { prepareRoute } from "./ship-view.mjs";
 import { setSimulationPaused } from "./tempo-control.mjs";
 import {
@@ -81,51 +82,84 @@ Hooks.once("init", () => {
   });
 });
 
-/* Botón en los controles de escena (grupo de fichas), solo GM.
- * Rama v11/v12 (array de grupos con `tools` array): IDÉNTICA al esqueleto
- * original. Rama v13 (record de grupos con `tools` record): añadida, pura-
- * mente aditiva — el `if (Array.isArray)` deja el camino v11/v12 intacto. */
+/* Grupo PROPIO en los controles de escena, con icono de nave, solo GM
+ * (issue #125: las herramientas del módulo no se mezclan con Token Controls).
+ * Rama v11/v12: array de grupos con `tools` array; rama v13: record de grupos
+ * con `tools` record. En ambas, el grupo usa la capa "controls" (existe en
+ * todas las versiones soportadas) porque sus herramientas son botones puros:
+ * activar el grupo no debe tocar ninguna capa de fichas. */
 Hooks.on("getSceneControlButtons", (controls) => {
   if (!game.user?.isGM) return;
 
   if (Array.isArray(controls)) {
-    const tokenControls = controls.find?.((c) => c.name === "token");
-    if (!tokenControls) return;
-    tokenControls.tools.push({
-      name: "lagunak-estado",
-      title: "LAGUNAK.Controles.AbrirEstado",
+    controls.push({
+      name: "lagunak",
+      title: "LAGUNAK.Controles.Grupo",
       icon: "fa-solid fa-shuttle-space",
-      button: true,
-      onClick: () => abrirEstadoNave(),
-    });
-    tokenControls.tools.push({
-      name: "lagunak-mapa",
-      title: "LAGUNAK.Controles.AbrirMapa",
-      icon: "fa-solid fa-satellite-dish",
-      button: true,
-      onClick: () => abrirMapaVivo(),
+      layer: "controls",
+      visible: true,
+      activeTool: "lagunak-estado",
+      tools: [
+        {
+          name: "lagunak-estado",
+          title: "LAGUNAK.Controles.AbrirEstado",
+          icon: "fa-solid fa-gauge-high",
+          button: true,
+          onClick: () => abrirEstadoNave(),
+        },
+        {
+          name: "lagunak-mapa",
+          title: "LAGUNAK.Controles.AbrirMapa",
+          icon: "fa-solid fa-satellite-dish",
+          button: true,
+          onClick: () => abrirMapaVivo(),
+        },
+      ],
     });
     return;
   }
 
-  const grupo = controls?.tokens ?? controls?.token;
-  if (grupo?.tools && !Array.isArray(grupo.tools)) {
-    grupo.tools["lagunak-estado"] = {
-      name: "lagunak-estado",
-      title: "LAGUNAK.Controles.AbrirEstado",
+  if (controls && typeof controls === "object") {
+    controls.lagunak = {
+      name: "lagunak",
+      title: "LAGUNAK.Controles.Grupo",
       icon: "fa-solid fa-shuttle-space",
-      button: true,
-      onClick: () => abrirEstadoNave(),
-      onChange: () => abrirEstadoNave(),
+      layer: "controls",
+      visible: true,
+      activeTool: "lagunak-estado",
+      order: Object.keys(controls).length,
+      onChange: () => {},
+      onToolChange: () => {},
+      tools: {
+        "lagunak-estado": {
+          name: "lagunak-estado",
+          title: "LAGUNAK.Controles.AbrirEstado",
+          icon: "fa-solid fa-gauge-high",
+          order: 0,
+          button: true,
+          onClick: () => abrirEstadoNave(),
+          onChange: () => abrirEstadoNave(),
+        },
+        "lagunak-mapa": {
+          name: "lagunak-mapa",
+          title: "LAGUNAK.Controles.AbrirMapa",
+          icon: "fa-solid fa-satellite-dish",
+          order: 1,
+          button: true,
+          onClick: () => abrirMapaVivo(),
+          onChange: () => abrirMapaVivo(),
+        },
+      },
     };
-    grupo.tools["lagunak-mapa"] = {
-      name: "lagunak-mapa",
-      title: "LAGUNAK.Controles.AbrirMapa",
-      icon: "fa-solid fa-satellite-dish",
-      button: true,
-      onClick: () => abrirMapaVivo(),
-      onChange: () => abrirMapaVivo(),
-    };
+  }
+});
+
+/* La pausa de Foundry (game.paused) se muestra como dato informativo en la
+ * ventana de estado; este hook solo refresca la vista abierta. NO se propaga
+ * en ninguna dirección (decisión de #125, ver docs/FOUNDRY.md). */
+Hooks.on("pauseGame", () => {
+  if (estadoApp?.rendered) {
+    estadoApp.render(foundry.applications?.api?.ApplicationV2 ? {} : false);
   }
 });
 
@@ -206,6 +240,9 @@ function crearClaseV2() {
     ultimoEstado = null; // último /v1/state correcto
     conexion = "conectando"; // "ok" | "error" | "conectando"
     detalleError = "";
+    pausaConfirmada = null; // último `paused` de /v1/scenario (null = sin lectura)
+    ordenPendiente = null; // orden de pausa en vuelo (true/false) o null
+    falloOrden = false; // la última orden de pausa terminó en error
 
     #cliente() {
       return new BridgeClient({
@@ -226,6 +263,8 @@ function crearClaseV2() {
         const cliente = this.#cliente();
         await cliente.healthz();
         this.ultimoEstado = await cliente.state();
+        const escenario = await cliente.scenario();
+        this.pausaConfirmada = typeof escenario?.paused === "boolean" ? escenario.paused : null;
         await processBridgeEvents({
           payload: await cliente.events(),
           game,
@@ -259,6 +298,9 @@ function crearClaseV2() {
       this.#timer = null;
       this.#fallosSeguidos = 0;
       this.conexion = "conectando";
+      this.pausaConfirmada = null;
+      this.ordenPendiente = null;
+      this.falloOrden = false;
       super._onClose?.(options);
     }
 
@@ -273,6 +315,14 @@ function crearClaseV2() {
         esGM: Boolean(game.user?.isGM),
         nave,
         ruta: prepareRoute(nave, game.i18n),
+        pausa: prepararVistaPausa({
+          conexion: this.conexion,
+          paused: this.pausaConfirmada,
+          pendiente: this.ordenPendiente,
+          falloOrden: this.falloOrden,
+          foundryPausado: Boolean(game.paused),
+          i18n: game.i18n,
+        }),
         sistemas: nave
           ? Object.entries(nave.systems ?? {}).map(([nombre, s]) => ({
               nombre,
@@ -285,6 +335,11 @@ function crearClaseV2() {
     }
 
     async _cambiarPausa(paused) {
+      // Una orden cada vez: mientras una viaja, la UI deshabilita ambas.
+      if (this.ordenPendiente !== null) return;
+      this.ordenPendiente = paused;
+      this.falloOrden = false;
+      if (this.rendered) this.render();
       try {
         const changed = await setSimulationPaused({
           paused,
@@ -292,14 +347,20 @@ function crearClaseV2() {
           client: this.#cliente(),
         });
         if (changed) {
+          // Confirmación optimista hasta la siguiente lectura de /v1/scenario.
+          this.pausaConfirmada = paused;
           const key = paused ? "LAGUNAK.Tempo.Pausado" : "LAGUNAK.Tempo.Reanudado";
           ui.notifications.info(game.i18n.localize(key));
         }
       } catch (err) {
+        this.falloOrden = true;
         const message = err instanceof BridgeError
           ? err.message
           : game.i18n.localize("LAGUNAK.Errores.Desconocido");
         ui.notifications.error(message);
+      } finally {
+        this.ordenPendiente = null;
+        if (this.rendered) this.render();
       }
     }
 
@@ -365,6 +426,9 @@ function crearClaseV1() {
     ultimoEstado = null;
     conexion = "conectando";
     detalleError = "";
+    pausaConfirmada = null;
+    ordenPendiente = null;
+    falloOrden = false;
 
     static get defaultOptions() {
       return foundry.utils.mergeObject(super.defaultOptions, {
@@ -399,6 +463,8 @@ function crearClaseV1() {
         const cliente = this.#cliente();
         await cliente.healthz();
         this.ultimoEstado = await cliente.state();
+        const escenario = await cliente.scenario();
+        this.pausaConfirmada = typeof escenario?.paused === "boolean" ? escenario.paused : null;
         await processBridgeEvents({
           payload: await cliente.events(),
           game,
@@ -432,6 +498,9 @@ function crearClaseV1() {
       this.#sondeando = false;
       this.#fallosSeguidos = 0;
       this.conexion = "conectando";
+      this.pausaConfirmada = null;
+      this.ordenPendiente = null;
+      this.falloOrden = false;
       return super.close(options);
     }
 
@@ -453,6 +522,14 @@ function crearClaseV1() {
         esGM: Boolean(game.user?.isGM),
         nave,
         ruta: prepareRoute(nave, game.i18n),
+        pausa: prepararVistaPausa({
+          conexion: this.conexion,
+          paused: this.pausaConfirmada,
+          pendiente: this.ordenPendiente,
+          falloOrden: this.falloOrden,
+          foundryPausado: Boolean(game.paused),
+          i18n: game.i18n,
+        }),
         sistemas: nave
           ? Object.entries(nave.systems ?? {}).map(([nombre, s]) => ({
               nombre,
@@ -465,6 +542,11 @@ function crearClaseV1() {
     }
 
     async #cambiarPausa(paused) {
+      // Una orden cada vez: mientras una viaja, la UI deshabilita ambas.
+      if (this.ordenPendiente !== null) return;
+      this.ordenPendiente = paused;
+      this.falloOrden = false;
+      if (this.rendered) this.render(false);
       try {
         const changed = await setSimulationPaused({
           paused,
@@ -472,14 +554,20 @@ function crearClaseV1() {
           client: this.#cliente(),
         });
         if (changed) {
+          // Confirmación optimista hasta la siguiente lectura de /v1/scenario.
+          this.pausaConfirmada = paused;
           const key = paused ? "LAGUNAK.Tempo.Pausado" : "LAGUNAK.Tempo.Reanudado";
           ui.notifications.info(game.i18n.localize(key));
         }
       } catch (err) {
+        this.falloOrden = true;
         const message = err instanceof BridgeError
           ? err.message
           : game.i18n.localize("LAGUNAK.Errores.Desconocido");
         ui.notifications.error(message);
+      } finally {
+        this.ordenPendiente = null;
+        if (this.rendered) this.render(false);
       }
     }
 

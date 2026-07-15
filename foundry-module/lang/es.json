@@ -48,5 +48,14 @@
   "LAGUNAK.Eventos.Llegada.Resumen": "La nave ha llegado a {destination}. Tiempo de escenario: {elapsed} s.",
   "LAGUNAK.Eventos.Anotados": "Nuevo evento anotado en la bitácora.",
   "LAGUNAK.Errores.SinEstado": "No hay estado de la nave que anotar.",
-  "LAGUNAK.Errores.Desconocido": "Error inesperado consultando el puente."
+  "LAGUNAK.Errores.Desconocido": "Error inesperado consultando el puente.",
+  "LAGUNAK.Controles.Grupo": "Espaciokoop Lagunak",
+  "LAGUNAK.Pausa.Conectando": "Estado de pausa: sin datos todavía",
+  "LAGUNAK.Pausa.Desconectado": "Estado de pausa desconocido (sin conexión)",
+  "LAGUNAK.Pausa.EnMarcha": "Simulación en marcha",
+  "LAGUNAK.Pausa.Pausado": "Simulación pausada",
+  "LAGUNAK.Pausa.Pausando": "Pausando…",
+  "LAGUNAK.Pausa.Reanudando": "Reanudando…",
+  "LAGUNAK.Pausa.Error": "La última orden falló; puedes reintentar",
+  "LAGUNAK.Pausa.FoundryPausado": "Foundry está en pausa (independiente del simulador; no se sincronizan)."
 }

@@ -507,6 +507,7 @@ void GuiContentEditor::clearForm()
     pending_file_import = "";
     pending_file_export = "";
     discard_guard.reset();
+    rename_guard.reset();
     id_entry->setText("");
     name_entry->setText("");
     description_entry->setText("");
@@ -680,6 +681,7 @@ void GuiContentEditor::saveResource()
                     ? -1 : int(actual - resources.begin());
                 refreshList();
                 if (actual_index >= 0) loadResource(actual_index);
+                else clearForm();
             }
             pending_save = "";
             if (rename_result.rename_error != ContentRenameError::None)

@@ -191,6 +191,147 @@ CONTEXT_OVERRIDES: dict[tuple[str | None, str], str] = {
     ("time-incCall", "%s, you have one minute remaining."): "%s, te queda %d minuto.",
     ("time-incCall", "%s, you have %d minutes remaining."): "%s, te quedan %d minutos.",
     ("upgrade-comms", "Provide %s for 25 percent energy capacity upgrade"): "Entrega %s para mejorar un 25 por ciento la capacidad de energía",
+    # Issue #28: reviewed weapons tutorial sequence (targeting, shields, missiles).
+    (
+        None,
+        "This is the weapons screen.\n"
+        "As the weapons officer, you are responsible for targeting beam weapons, loading and firing missile weapons, and controlling your shields.",
+    ): (
+        "Esta es la pantalla de armas.\n"
+        "Como oficial de armas, te encargas de asignar el objetivo de las armas de haz, de cargar y disparar los misiles y de controlar los escudos."
+    ),
+    (
+        None,
+        "Your most fundamental task is to target your ship's weapons.\n"
+        "Your beam weapons only fire at your selected target, and homing missiles travel toward your selected target.\n\n"
+        "Target the ship in front of you by pressing it.",
+    ): (
+        "Tu tarea más esencial es asignar objetivo a las armas de tu nave.\n"
+        "Las armas de haz solo disparan al objetivo seleccionado, y los misiles guiados vuelan hacia él.\n\n"
+        "Fija como objetivo la nave que tienes delante pulsándola."
+    ),
+    (
+        None,
+        "Good! Notice that your beam weapons did not fire on this ship until you targeted it.\n\n"
+        "Next up: shield controls.",
+    ): (
+        "¡Bien! Fíjate en que tus armas de haz no han disparado contra esa nave hasta que la has fijado como objetivo.\n\n"
+        "A continuación: el control de escudos."
+    ),
+    (
+        None,
+        "As you might notice, you are being shot at. Do not worry, you cannot die right now.\n\n"
+        "You are taking damage, however, so enable your shields to protect yourself.",
+    ): (
+        "Como habrás notado, te están disparando. No te preocupes: ahora mismo no puedes morir.\n\n"
+        "Aun así estás recibiendo daño, así que activa los escudos para protegerte."
+    ),
+    (
+        None,
+        "Shields protect your ship from direct damage, but they cost extra energy to maintain, can take only a limited amount of damage, and are slow to recharge. Eventually, this enemy's attacks will get through your shields.\n\n"
+        "Disable your shields to continue.",
+    ): (
+        "Los escudos protegen tu nave del daño directo, pero mantenerlos consume energía adicional, solo aguantan una cantidad limitada de daño y tardan en recargarse. Tarde o temprano, los ataques de este enemigo atravesarán tus escudos.\n\n"
+        "Desactiva los escudos para continuar."
+    ),
+    (
+        None,
+        "While only a single button, your shields are vital for survival. They protect against all kinds of damage, including beam weapons, missiles, asteroids, and mines, so make them one of your primary priorities.\n\n"
+        "Next up, the real fun starts: missile weapons.",
+    ): (
+        "Aunque no sean más que un botón, los escudos son vitales para sobrevivir. Protegen contra todo tipo de daño (armas de haz, misiles, asteroides y minas), así que conviértelos en una de tus principales prioridades.\n\n"
+        "A continuación empieza la verdadera diversión: los misiles."
+    ),
+    (
+        None,
+        "You have 1 homing missile in your missile storage now, and 1 weapon tube.\n"
+        "You can load this missile into your weapon tube. Depending on your ship type, you might have more types of missiles and more weapon tubes.\n\n"
+        "Load this homing missile into the weapon tube by selecting the homing missile, and then pressing the load button for this tube. Note that it takes some time to load missiles into tubes.",
+    ): (
+        "Ahora tienes 1 misil guiado en tu almacén de misiles y 1 tubo lanzador.\n"
+        "Puedes cargar este misil en el tubo. Según tu tipo de nave, puedes tener más tipos de misil y más tubos.\n\n"
+        "Carga el misil guiado en el tubo: selecciona el misil y pulsa después el botón de carga de ese tubo. Ten en cuenta que cargar misiles en los tubos lleva su tiempo."
+    ),
+    (
+        None,
+        "Great! Now fire this missile by clicking on the tube.",
+    ): "¡Genial! Ahora dispara el misil pulsando el tubo.",
+    (
+        None,
+        "Missile away!",
+    ): "¡Misil lanzado!",
+    (
+        None,
+        "BOOM! That was just firing straight ahead, but you can also aim missiles.\n\n"
+        "First, unlock your aim by pressing the [Lock] button above the radar view.\n"
+        "Next, aim your missiles with the aiming dial surrounding the radar.\n"
+        "Point the aiming dial at the next ship, load a missile, and fire.",
+    ): (
+        "¡BUM! Eso ha sido solo un disparo en línea recta, pero también puedes apuntar los misiles.\n\n"
+        "Primero, desbloquea la puntería pulsando el botón [Bloquear] situado sobre la vista del radar.\n"
+        "Después, apunta los misiles con el dial de puntería que rodea el radar.\n"
+        "Apunta el dial hacia la siguiente nave, carga un misil y dispara."
+    ),
+    (
+        None,
+        "BOOM! That was just firing straight ahead, but missiles also have a homing feature, so let's try that!\n\n"
+        "First, load a homing missile in the tube.\n"
+        "Next, target the enemy ship by pressing it to guide your homing missiles toward your selected target.\n"
+        "Then fire your missile!",
+    ): (
+        "¡BUM! Eso ha sido solo un disparo en línea recta, pero los misiles también tienen guiado, ¡así que vamos a probarlo!\n\n"
+        "Primero, carga un misil guiado en el tubo.\n"
+        "Después, fija la nave enemiga como objetivo pulsándola, para que tus misiles guiados se dirijan hacia ella.\n"
+        "¡Y dispara!"
+    ),
+    (
+        None,
+        "While not necessary against a stationary target, this homing ability can make all the difference against a moving target.",
+    ): "Contra un objetivo inmóvil no hace falta, pero contra un objetivo en movimiento el guiado puede marcar la diferencia.",
+    (
+        None,
+        "You can also manually aim missiles.\n\n"
+        "First, unlock your aim by pressing the [Lock] button above the radar view.\n"
+        "Load a missile to view your missile's trajectory.\n"
+        "Next, aim your missiles with the aiming dial surrounding the radar.\n"
+        "Point the aiming dial at the next ship and fire.",
+    ): (
+        "También puedes apuntar los misiles manualmente.\n\n"
+        "Primero, desbloquea la puntería pulsando el botón [Bloquear] situado sobre la vista del radar.\n"
+        "Carga un misil para ver su trayectoria.\n"
+        "Después, apunta los misiles con el dial de puntería que rodea el radar.\n"
+        "Apunta el dial hacia la siguiente nave y dispara."
+    ),
+    (
+        None,
+        "Perfect aim! The next ship is behind you. Notice how it's out of reach when you try to aim manually and, if you only use the homing ability, the trajectory won't reach the enemy. Manually aiming and the missile's homing ability aren't mutually exclusive to one another. You can hit the ship if you put the two abilities together.\n\n"
+        "First, make sure your aim is unlocked and aim your missile as close to the enemy as you can.\n"
+        "Next, target the enemy ship by pressing it.\n"
+        "Then fire! The missile will first follow your manually-aimed trajectory, and then start homing in on the enemy.\n"
+        "",
+    ): (
+        "¡Puntería perfecta! La siguiente nave está detrás de ti. Fíjate: si intentas apuntar manualmente queda fuera de alcance y, si solo usas el guiado, la trayectoria no llega hasta el enemigo. Apuntar manualmente y el guiado del misil no se excluyen entre sí: combinando ambos puedes alcanzar la nave.\n\n"
+        "Primero, asegúrate de que la puntería está desbloqueada y apunta el misil lo más cerca del enemigo que puedas.\n"
+        "Después, fija la nave enemiga como objetivo pulsándola.\n"
+        "¡Y dispara! El misil seguirá primero la trayectoria apuntada a mano y luego activará el guiado hacia el enemigo.\n"
+        ""
+    ),
+    (
+        None,
+        "In addition to homing missiles, your ship might have nukes, EMPs, and mines. Nukes and EMPs have the same features as homing missiles, but have a 1u-radius blast and do much more damage. EMPs damage only shields, and thus are great for weakening heavily shielded enemies.",
+    ): "Además de los misiles guiados, tu nave puede llevar bombas nucleares, PEM y minas. Las bombas nucleares y los PEM funcionan igual que los misiles guiados, pero estallan en un radio de 1u y causan mucho más daño. Los PEM solo dañan los escudos, así que son ideales para debilitar a enemigos con escudos potentes.",
+    (
+        None,
+        "In addition to homing missiles, your ship might have HVLIs, nukes, EMPs, and mines.\n"
+        "HVLI stands for \"High Velocity Lead Impactor\". They fire in straight lines and do not have homing abilities.\n"
+        "Nukes and EMPs also have homing abilities and have a 1u-radius blast and do more damage.\n"
+        "EMPs damage only shields, and thus are great for weakening heavily shielded enemies.",
+    ): (
+        "Además de los misiles guiados, tu nave puede llevar HVLI, bombas nucleares, PEM y minas.\n"
+        "HVLI son las siglas de «High Velocity Lead Impactor», impactador de plomo de alta velocidad: se disparan en línea recta y carecen de guiado.\n"
+        "Las bombas nucleares y los PEM también tienen guiado, estallan en un radio de 1u y causan más daño.\n"
+        "Los PEM solo dañan los escudos, así que son ideales para debilitar a enemigos con escudos potentes."
+    ),
 }
 
 

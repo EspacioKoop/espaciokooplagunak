@@ -175,7 +175,7 @@ msgid ""
 "As the weapons officer, you are responsible for targeting beam weapons, loading and firing missile weapons, and controlling your shields."
 msgstr ""
 "Esta es la pantalla de armas.\n"
-"Como oficial de armas, eres responsable de apuntar a las armas de rayos, cargar y disparar armas de misiles y controlar tus escudos."
+"Como oficial de armas, te encargas de asignar el objetivo de las armas de haz, de cargar y disparar los misiles y de controlar los escudos."
 
 #: scripts/tutorial/00_all.lua:134
 msgid ""
@@ -184,10 +184,10 @@ msgid ""
 "\n"
 "Target the ship in front of you by pressing it."
 msgstr ""
-"Tu tarea más fundamental es apuntar a las armas de tu nave.\n"
-"Tus armas de rayos solo disparan al objetivo seleccionado y los misiles guiados viajan hacia el objetivo seleccionado.\n"
+"Tu tarea más esencial es asignar objetivo a las armas de tu nave.\n"
+"Las armas de haz solo disparan al objetivo seleccionado, y los misiles guiados vuelan hacia él.\n"
 "\n"
-"Apunta al barco frente a ti presionándolo."
+"Fija como objetivo la nave que tienes delante pulsándola."
 
 #: scripts/tutorial/00_all.lua:138
 msgid ""
@@ -195,9 +195,9 @@ msgid ""
 "\n"
 "Next up: shield controls."
 msgstr ""
-"¡Bien! Observe que sus armas de rayos no dispararon contra este barco hasta que lo apuntó.\n"
+"¡Bien! Fíjate en que tus armas de haz no han disparado contra esa nave hasta que la has fijado como objetivo.\n"
 "\n"
-"A continuación: controles de escudo."
+"A continuación: el control de escudos."
 
 #: scripts/tutorial/00_all.lua:143
 msgid ""
@@ -205,9 +205,9 @@ msgid ""
 "\n"
 "You are taking damage, however, so enable your shields to protect yourself."
 msgstr ""
-"Como habrás notado, te están disparando. No te preocupes, no puedes morir ahora mismo.\n"
+"Como habrás notado, te están disparando. No te preocupes: ahora mismo no puedes morir.\n"
 "\n"
-"Sin embargo, estás sufriendo daños, así que habilita tus escudos para protegerte."
+"Aun así estás recibiendo daño, así que activa los escudos para protegerte."
 
 #: scripts/tutorial/00_all.lua:158
 msgid ""
@@ -215,9 +215,9 @@ msgid ""
 "\n"
 "Disable your shields to continue."
 msgstr ""
-"Los escudos protegen su nave del daño directo, pero su mantenimiento cuesta energía adicional, solo pueden soportar una cantidad limitada de daño y se recargan lentamente. Con el tiempo, los ataques de este enemigo atravesarán tus escudos.\n"
+"Los escudos protegen tu nave del daño directo, pero mantenerlos consume energía adicional, solo aguantan una cantidad limitada de daño y tardan en recargarse. Tarde o temprano, los ataques de este enemigo atravesarán tus escudos.\n"
 "\n"
-"Desactiva tus escudos para continuar."
+"Desactiva los escudos para continuar."
 
 #: scripts/tutorial/00_all.lua:162
 msgid ""
@@ -225,9 +225,9 @@ msgid ""
 "\n"
 "Next up, the real fun starts: missile weapons."
 msgstr ""
-"Si bien solo tienes un botón, tus escudos son vitales para la supervivencia. Protegen contra todo tipo de daños, incluidas armas de rayos, misiles, asteroides y minas, así que conviértalos en una de sus principales prioridades.\n"
+"Aunque no sean más que un botón, los escudos son vitales para sobrevivir. Protegen contra todo tipo de daño (armas de haz, misiles, asteroides y minas), así que conviértelos en una de tus principales prioridades.\n"
 "\n"
-"A continuación comienza la verdadera diversión: las armas de misiles."
+"A continuación empieza la verdadera diversión: los misiles."
 
 #: scripts/tutorial/00_all.lua:173
 msgid ""
@@ -236,18 +236,18 @@ msgid ""
 "\n"
 "Load this homing missile into the weapon tube by selecting the homing missile, and then pressing the load button for this tube. Note that it takes some time to load missiles into tubes."
 msgstr ""
-"Ahora tienes 1 misil guiador en tu almacén de misiles y 1 tubo de arma.\n"
-"Puedes cargar este misil en el tubo de tu arma. Dependiendo de tu tipo de nave, es posible que tengas más tipos de misiles y más tubos de armas.\n"
+"Ahora tienes 1 misil guiado en tu almacén de misiles y 1 tubo lanzador.\n"
+"Puedes cargar este misil en el tubo. Según tu tipo de nave, puedes tener más tipos de misil y más tubos.\n"
 "\n"
-"Cargue este misil guiado en el tubo del arma seleccionándolo y luego presionando el botón de carga de este tubo. Tenga en cuenta que lleva algún tiempo cargar misiles en tubos."
+"Carga el misil guiado en el tubo: selecciona el misil y pulsa después el botón de carga de ese tubo. Ten en cuenta que cargar misiles en los tubos lleva su tiempo."
 
 #: scripts/tutorial/00_all.lua:178
 msgid "Great! Now fire this missile by clicking on the tube."
-msgstr "¡Genial! Ahora dispara este misil haciendo clic en el tubo."
+msgstr "¡Genial! Ahora dispara el misil pulsando el tubo."
 
 #: scripts/tutorial/00_all.lua:179
 msgid "Missile away!"
-msgstr "¡Misil lejos!"
+msgstr "¡Misil lanzado!"
 
 #: scripts/tutorial/00_all.lua:182
 msgid ""
@@ -257,11 +257,11 @@ msgid ""
 "Next, aim your missiles with the aiming dial surrounding the radar.\n"
 "Point the aiming dial at the next ship, load a missile, and fire."
 msgstr ""
-"¡BOOM! Eso fue simplemente disparar de frente, pero también puedes apuntar misiles.\n"
+"¡BUM! Eso ha sido solo un disparo en línea recta, pero también puedes apuntar los misiles.\n"
 "\n"
-"Primero, desbloquea tu puntería presionando el botón [Bloquear] encima de la vista del radar.\n"
-"A continuación, apunta tus misiles con el dial de puntería que rodea el radar.\n"
-"Apunta el dial de puntería al siguiente barco, carga un misil y dispara."
+"Primero, desbloquea la puntería pulsando el botón [Bloquear] situado sobre la vista del radar.\n"
+"Después, apunta los misiles con el dial de puntería que rodea el radar.\n"
+"Apunta el dial hacia la siguiente nave, carga un misil y dispara."
 
 #: scripts/tutorial/00_all.lua:193
 msgid ""
@@ -277,7 +277,7 @@ msgstr ""
 
 #: scripts/tutorial/00_all.lua:204
 msgid "In addition to homing missiles, your ship might have nukes, EMPs, and mines. Nukes and EMPs have the same features as homing missiles, but have a 1u-radius blast and do much more damage. EMPs damage only shields, and thus are great for weakening heavily shielded enemies."
-msgstr "Además de los misiles guiados, tu nave puede tener armas nucleares, EMP y minas. Las armas nucleares y los EMP tienen las mismas características que los misiles guiados, pero tienen una explosión de 1u de radio y causan mucho más daño. Los EMP solo dañan los escudos y, por lo tanto, son excelentes para debilitar a enemigos fuertemente protegidos."
+msgstr "Además de los misiles guiados, tu nave puede llevar bombas nucleares, PEM y minas. Las bombas nucleares y los PEM funcionan igual que los misiles guiados, pero estallan en un radio de 1u y causan mucho más daño. Los PEM solo dañan los escudos, así que son ideales para debilitar a enemigos con escudos potentes."
 
 #: scripts/tutorial/00_all.lua:212
 msgid ""

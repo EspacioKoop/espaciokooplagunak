@@ -80,10 +80,14 @@ jobs:
           "@
           Set-Content -Path "$env:GITHUB_WORKSPACE/externals/sdl2-config.cmake" -Value $sdl_config
 
+      # Sin -G fijo: windows-latest ya no trae VS 2022 y el generador
+      # explícito "Visual Studio 17 2022" no encuentra ninguna instancia;
+      # CMake elige el Visual Studio del runner. -A Win32 por paridad con el
+      # job Windows de cicd.yml (el SDL2 provisto tiene sabor x86 y x64).
       - name: Configure CMake
         run: >
           cmake -B ${{ env.build }} EmptyEpsilon
-          -G "Visual Studio 17 2022" -A Win32
+          -A Win32
           -DSDL2_DIR:PATH="$env:GITHUB_WORKSPACE/externals"
           -DSERIOUS_PROTON_DIR="$env:GITHUB_WORKSPACE/SeriousProton"
 

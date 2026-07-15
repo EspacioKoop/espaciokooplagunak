@@ -191,6 +191,61 @@ CONTEXT_OVERRIDES: dict[tuple[str | None, str], str] = {
     ("time-incCall", "%s, you have one minute remaining."): "%s, te queda %d minuto.",
     ("time-incCall", "%s, you have %d minutes remaining."): "%s, te quedan %d minutos.",
     ("upgrade-comms", "Provide %s for 25 percent energy capacity upgrade"): "Entrega %s para mejorar un 25 por ciento la capacidad de energía",
+    # Issue #28: reviewed helm tutorial sequence (docking and long-distance travel).
+    (
+        None,
+        "Excellent!\n\n"
+        "Next up: docking. Docking with a station recharges your energy, repairs your hull, and allows the relay officer to request weapon refills. It can also be important for other mission-related events.\n"
+        'To dock, maneuver within 1u of a station and press the "Request Dock" button, from which point docking is fully automated.\n'
+        "Maneuver to the nearby station and request permission to dock.",
+    ): (
+        "¡Excelente!\n\n"
+        "A continuación: el atraque. Al atracar en una estación, recargas energía, reparas el casco y permites que el oficial de comunicaciones solicite reabastecer las armas. También puede ser importante para otros eventos de la misión.\n"
+        "Para atracar, maniobra hasta situarte a menos de 1u de una estación y pulsa el botón «Solicitar atraque»; a partir de ahí, la maniobra es completamente automática.\n"
+        "Acércate a la estación y solicita permiso para atracar."
+    ),
+    (
+        None,
+        "Now that you are docked, your movement is locked. As helms officer, there is nothing else you can do but undock, so do that now.",
+    ): "Ahora que estás atracado, no puedes moverte. Como oficial de timón, solo puedes desatracar; hazlo ahora.",
+    (
+        None,
+        "Aggression is not always the solution, but boy, it is fun!\n\n"
+        "On to the next task: moving long distances.\n"
+        "There are two methods of moving long distances quickly. Depending on your ship, you either have a warp drive or a jump drive.\n"
+        "The warp drive moves your ship at high speed, while the jump drive instantly teleports your ship a great distance.",
+    ): (
+        "La agresividad no siempre es la solución, pero ¡hay que reconocer que es divertida!\n\n"
+        "Pasemos a la siguiente tarea: recorrer largas distancias.\n"
+        "Hay dos métodos para recorrerlas rápidamente. Según tu nave, tendrás un motor de curvatura o un motor de salto.\n"
+        "El motor de curvatura desplaza tu nave a gran velocidad, mientras que el motor de salto la transporta una gran distancia al instante."
+    ),
+    (
+        None,
+        "First, let us try the warp drive.\n\n"
+        "It functions like the impulse drive but only propels your ship forward, and consumes energy at a much faster rate.\n"
+        "Use the warp drive to move more than 30u away from this starting point.",
+    ): (
+        "Primero, probemos el motor de curvatura.\n\n"
+        "Funciona como el motor de impulso, pero solo propulsa tu nave hacia delante y consume energía mucho más deprisa.\n"
+        "Usa el motor de curvatura para alejarte más de 30u de este punto de partida."
+    ),
+    (
+        None,
+        "Next, let us demonstrate the jump drive.\n\n"
+        "To use the jump drive, point your ship in the direction where you want to jump, configure a distance to jump, and then initiate it. The jump occurs 10 seconds after you initiate. Use the jump drive to jump more than 30u from this starting point, in any direction.",
+    ): (
+        "A continuación, probemos el motor de salto.\n\n"
+        "Para usarlo, orienta tu nave en la dirección deseada, configura la distancia e inicia el salto. El salto se produce 10 segundos después de iniciarlo. Usa el motor de salto para alejarte más de 30u de este punto de partida, en cualquier dirección."
+    ),
+    (
+        None,
+        "Notice how your jump drive needs to recharge after use.\n\n"
+        "This covers the basics of the helms officer.",
+    ): (
+        "Observa que el motor de salto necesita recargarse después de usarlo.\n\n"
+        "Con esto terminan los fundamentos del puesto de timón."
+    ),
     # Issue #28: reviewed weapons tutorial sequence (targeting, shields, missiles).
     (
         None,

@@ -70,6 +70,11 @@ jobs:
           format: sarif
           output: trivy-${{ matrix.image.name }}.sarif
           severity: HIGH,CRITICAL
+          # El SARIF incluye TODAS las severidades salvo que se limite
+          # explícitamente; esto retira el ruido LOW/MEDIUM/UNKNOWN (issue
+          # #142) sin ocultar HIGH/CRITICAL sin parche, que siguen visibles
+          # para su triaje (p. ej. retirar curl/dependencias de la imagen).
+          limit-severities-for-sarif: true
           ignore-unfixed: false
           exit-code: "0"
           timeout: 10m0s

@@ -695,7 +695,7 @@ CONTEXT_OVERRIDES: dict[tuple[str | None, str], str] = {
         "Commonly known as a supply drop, your ship needs only to enter near-contact range with one of these containers to automatically engage your ship's acquisition and integration systems. Supply drops are cryptographically keyed to respond only to ships of the same faction, so theft isn't possible.",
     ): (
         "Para agilizar el reabastecimiento, nuestros ingenieros han estandarizado contenedores de armas y energía que se integran automática y rápidamente en los sistemas de tu nave.\n\n"
-        "Conocido comúnmente como paquete de suministros, basta con que tu nave entre en rango de contacto cercano con uno de estos contenedores para que se activen automáticamente sus sistemas de adquisición e integración. Los paquetes de suministros llevan claves criptográficas para responder solo a naves de su misma facción, así que el robo no es posible."
+        "Estos contenedores, conocidos comúnmente como paquetes de suministros, se integran automáticamente cuando tu nave entra en rango de contacto cercano. Llevan claves criptográficas para responder solo a naves de su misma facción, así que el robo no es posible."
     ),
     (
         None,
@@ -718,8 +718,8 @@ CONTEXT_OVERRIDES: dict[tuple[str | None, str], str] = {
         "Smaller variations of these missiles have become common in the galaxy, too. Fighter pilots praise their speed and maneuverability, because it gives them an edge against small and fast-moving targets. They only deal half the damage of their basic counterparts, but what good is a missile if it does not hit its target.",
     ): (
         "Esta base de datos cubre solo las versiones básicas de los misiles usados por toda la galaxia.\n\n"
-        "Se ha informado de que algunos acorazados han empezado a usar variantes más grandes de estos misiles. A los cazas pequeños e incluso a las fragatas no les costará esquivarlas, pero los capitanes de naves grandes deben cuidarse de su potencial de daño doblado.\n\n"
-        "Las variantes más pequeñas también se han vuelto comunes en la galaxia. Los pilotos de caza alaban su velocidad y maniobrabilidad, porque les dan ventaja contra objetivos pequeños y rápidos. Solo causan la mitad del daño que sus equivalentes básicos, pero de qué sirve un misil que no acierta a su objetivo."
+        "Se ha informado de que algunos acorazados han empezado a usar variantes más grandes de estos misiles. A los cazas pequeños e incluso a las fragatas no les costará esquivarlas, pero los capitanes de naves grandes deben cuidarse de su potencial para causar el doble de daño.\n\n"
+        "Las variantes más pequeñas también se han vuelto comunes en la galaxia. Los pilotos de caza alaban su velocidad y maniobrabilidad, porque les dan ventaja contra objetivos pequeños y rápidos. Solo causan la mitad del daño que sus equivalentes básicos, pero ¿de qué sirve un misil si no acierta a su objetivo?"
     ),
     (
         None,
@@ -763,7 +763,7 @@ CONTEXT_OVERRIDES: dict[tuple[str | None, str], str] = {
         "Some fearless captains use mines as offensive weapons, but their delayed detonation and blast radius make this use risky at best.",
     ): (
         "Las minas suelen colocarse en perímetros defensivos alrededor de las estaciones. También quedan viejos campos de minas dispersos por la galaxia, restos de guerras pasadas.\n\n"
-        "Algunos capitanes intrépidos usan las minas como arma ofensiva, pero su detonación retardada y su radio de explosión hacen de ello un uso arriesgado, como poco."
+        "Algunos capitanes intrépidos usan las minas como arma ofensiva, pero su detonación retardada y su radio de explosión hacen que usarlas así sea, como mínimo, arriesgado."
     ),
     (
         None,
@@ -786,7 +786,7 @@ CONTEXT_OVERRIDES: dict[tuple[str | None, str], str] = {
         "A high-velocity lead impactor (HVLI) fires a simple slug of lead at a high velocity. This weapon is usually found in simpler ships since it does not require guidance computers. This also means its projectiles fly in a straight line from its tube and can't pursue a target.\n\n"
         "Each shot from an HVLI fires a burst of 5 projectiles, which increases the chance to hit but requires precision aiming to be effective. It reaches its full damage potential at a range of 2u.",
     ): (
-        "Un impactador de plomo de alta velocidad (HVLI) dispara un simple proyectil de plomo a gran velocidad. Es un arma habitual en naves sencillas porque no necesita computadoras de guiado, lo que también significa que sus proyectiles vuelan en línea recta desde el tubo y no pueden perseguir a un objetivo.\n\n"
+        "Un impactador de plomo de alta velocidad (HVLI) dispara un simple proyectil de plomo a gran velocidad. Es un arma habitual en naves sencillas porque no necesita ordenadores de guiado, lo que también significa que sus proyectiles vuelan en línea recta desde el tubo y no pueden perseguir a un objetivo.\n\n"
         "Cada disparo de un HVLI lanza una ráfaga de 5 proyectiles, lo que aumenta la probabilidad de acertar pero exige apuntar con precisión para ser eficaz. Alcanza todo su potencial de daño a 2u de distancia."
     ),
 }

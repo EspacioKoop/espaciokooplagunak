@@ -2,7 +2,7 @@
 # Puente de integración Espaciokoop Lagunak ↔ Foundry VTT.
 # Contexto de build: el directorio bridge/.
 
-FROM python:3.12-slim
+FROM python:3.14-slim
 
 RUN useradd --system --create-home --uid 10001 bridge
 

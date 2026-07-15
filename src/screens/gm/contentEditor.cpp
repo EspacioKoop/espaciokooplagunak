@@ -1,6 +1,7 @@
 #include "contentEditor.h"
 #include "clipboard.h"
 #include "content/mapPreview.h"
+#include "gameGlobalInfo.h"
 #include "i18n.h"
 #include "playerInfo.h"
 #include "gui/gui2_button.h"
@@ -559,6 +560,15 @@ void GuiContentEditor::saveResource()
     auto resource = formResource();
     auto error = validateContentResource(resource);
     if (error != ContentResourceError::None) return setStatus(errorText(error));
+    if (resource.type == ContentResourceType::Ship && gameGlobalInfo)
+    {
+        const auto template_status = validateShipTemplateSelection(
+            gameGlobalInfo->getShipTemplateCatalog(), resource.primary);
+        if (template_status == ShipTemplateValidation::TemplateNotFound)
+            return setStatus(tr("content_editor", "The ship template is not available in this scenario."));
+        if (template_status == ShipTemplateValidation::ModelMissing)
+            return setStatus(tr("content_editor", "The ship template references a missing 3D model."));
+    }
 
     int existing = findResource(resource.type, resource.id);
     const bool selected = selected_index >= 0 && selected_index < int(resources.size());

@@ -4,6 +4,7 @@
 #include "script/gm.h"
 #include "components/faction.h"
 #include "components/radar.h"
+#include "content/shipTemplateCatalog.h"
 #include "Updatable.h"
 #include "multiplayer.h"
 #include <list>
@@ -111,6 +112,7 @@ public:
         string icon;
     };
     std::vector<ObjectSpawnInfo> getGMSpawnableObjects();
+    std::vector<ShipTemplateCatalogEntry> getShipTemplateCatalog();
     string getEntityExportString(sp::ecs::Entity entity);
     void execScriptCode(const string& code);
     bool allowNewPlayerShips();

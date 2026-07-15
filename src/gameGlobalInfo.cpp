@@ -257,6 +257,47 @@ std::vector<GameGlobalInfo::ObjectSpawnInfo> GameGlobalInfo::getGMSpawnableObjec
     return info;
 }
 
+namespace sp::script {
+    template<> struct Convert<std::vector<ShipTemplateCatalogEntry>> {
+        static std::vector<ShipTemplateCatalogEntry> fromLua(lua_State* L, int idx) {
+            std::vector<ShipTemplateCatalogEntry> result{};
+            if (lua_istable(L, idx)) {
+                for(int index=1; lua_geti(L, idx, index) == LUA_TTABLE; index++) {
+                    lua_geti(L, -1, 1); auto canonical_id = lua_tostring(L, -1); lua_pop(L, 1);
+                    lua_geti(L, -1, 2); auto label = lua_tostring(L, -1); lua_pop(L, 1);
+                    lua_geti(L, -1, 3); auto type = lua_tostring(L, -1); lua_pop(L, 1);
+                    lua_geti(L, -1, 4); auto model_id = lua_tostring(L, -1); lua_pop(L, 1);
+                    lua_geti(L, -1, 5); const bool hidden = lua_toboolean(L, -1); lua_pop(L, 1);
+                    lua_geti(L, -1, 6); const bool model_exists = lua_toboolean(L, -1); lua_pop(L, 1);
+                    lua_pop(L, 1);
+                    result.push_back({
+                        canonical_id ? canonical_id : "",
+                        label ? label : "",
+                        type ? type : "",
+                        model_id ? model_id : "",
+                        hidden,
+                        model_exists,
+                    });
+                }
+                lua_pop(L, 1);
+            }
+            return result;
+        }
+    };
+}
+
+std::vector<ShipTemplateCatalogEntry> GameGlobalInfo::getShipTemplateCatalog()
+{
+    std::vector<ShipTemplateCatalogEntry> catalog;
+    if (main_scenario_script) {
+        auto res = main_scenario_script->call<std::vector<ShipTemplateCatalogEntry>>("getShipTemplateCatalog");
+        LuaConsole::checkResult(res);
+        if (res.isOk())
+            catalog = res.value();
+    }
+    return catalog;
+}
+
 string GameGlobalInfo::getEntityExportString(sp::ecs::Entity entity)
 {
     if (main_scenario_script) {

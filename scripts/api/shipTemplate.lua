@@ -4,6 +4,33 @@ __player_ship_templates = {}
 __allow_new_player_ships = true
 __on_new_player_ship = function() end
 
+-- Read-only metadata used by native editors and validators. This returns plain
+-- values only: no template tables and no spawn callbacks cross the boundary.
+function getShipTemplateCatalog()
+    local result = {}
+    local model_registry = type(__model_data) == "table" and __model_data or {}
+    for key, template in pairs(__ship_templates) do
+        if type(key) == "string" and type(template) == "table" then
+            local label = key
+            if type(template.typename) == "table" and type(template.typename.localized) == "string" then
+                label = template.typename.localized
+            end
+            local template_type = type(template.__type) == "string" and template.__type or "ship"
+            local model_name = type(template.__model_data_name) == "string" and template.__model_data_name or ""
+            result[#result + 1] = {
+                key,
+                label,
+                template_type,
+                model_name,
+                template.__hidden == true,
+                model_name ~= "" and model_registry[model_name] ~= nil,
+            }
+        end
+    end
+    table.sort(result, function(a, b) return a[1] < b[1] end)
+    return result
+end
+
 -- Called by the engine to populate the list of player ships that can be spawned.
 -- Returns a list of {key, label, description, radar trace}.
 function getSpawnablePlayerShips()

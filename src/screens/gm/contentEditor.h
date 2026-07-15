@@ -2,6 +2,7 @@
 
 #include "content/contentLibraryStore.h"
 #include "content/shipEditSession.h"
+#include "content/shipTemplateCatalog.h"
 #include "gui/gui2_overlay.h"
 #include "stringImproved.h"
 #include <vector>
@@ -41,6 +42,8 @@ private:
     string pending_file_export;
     ContentDiscardGuard discard_guard;
     ShipEditSession ship_edit_session;
+    std::vector<ShipTemplateCatalogEntry> ship_template_catalog;
+    std::vector<std::size_t> visible_ship_template_indices;
     bool preview_enabled = false;
 
     GuiSelector* type_selector;
@@ -51,6 +54,11 @@ private:
     GuiTextEntry* description_entry;
     GuiLabel* primary_label;
     GuiTextEntry* primary_entry;
+    GuiButton* ship_template_picker_button;
+    GuiOverlay* ship_template_picker_overlay;
+    GuiTextEntry* ship_template_search_entry;
+    GuiListbox* ship_template_list;
+    GuiLabel* ship_template_picker_status;
     GuiLabel* secondary_label;
     GuiTextEntry* secondary_entry;
     GuiLabel* tertiary_label;
@@ -101,6 +109,9 @@ private:
     string storeErrorText(ContentStoreError error) const;
     void setStatus(const string& text);
     void updatePreviewStatus();
+    void openShipTemplatePicker();
+    void refreshShipTemplatePicker();
+    void useSelectedShipTemplate();
     void updateShipOverrideEditor();
     void setShipOverride();
     void removeShipOverride();

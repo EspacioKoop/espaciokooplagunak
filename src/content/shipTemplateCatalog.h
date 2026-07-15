@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -28,3 +29,7 @@ const ShipTemplateCatalogEntry* findShipTemplate(
 ShipTemplateValidation validateShipTemplateSelection(
     const std::vector<ShipTemplateCatalogEntry>& catalog,
     const std::string& canonical_id);
+
+std::vector<std::size_t> filterSelectableShipTemplates(
+    const std::vector<ShipTemplateCatalogEntry>& catalog,
+    const std::string& query);

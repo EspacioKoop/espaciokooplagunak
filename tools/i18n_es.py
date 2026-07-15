@@ -479,6 +479,26 @@ CONTEXT_OVERRIDES: dict[tuple[str | None, str], str] = {
         None,
         "This concludes the overview of the engineering station. Be sure to keep your ship running in top condition!",
     ): "Con esto termina el repaso del puesto de ingeniería. ¡Mantén tu nave siempre a punto!",
+    # Issue #28: canonical system names and jump/warp drive strings in the UI.
+    ("system", "Reactor"): "Reactor",
+    ("tweak-tab", "Reactor"): "Reactor",
+    ("system", "Maneuvering"): "Maniobra",
+    ("system", "Jump Drive"): "Motor de salto",
+    ("hotkey_Engineering", "Select warp system"): "Seleccionar sistema de curvatura",
+    ("hotkey_Engineering", "Select jump drive system"): "Seleccionar motor de salto",
+    ("hotkey_Engineering", "Set warp power (joystick)"): "Establecer la potencia del motor de curvatura (joystick)",
+    ("hotkey_Engineering", "Set warp coolant (joystick)"): "Establecer el refrigerante del motor de curvatura (joystick)",
+    ("hotkey_Engineering", "Set jump drive power (joystick)"): "Establecer la potencia del motor de salto (joystick)",
+    ("hotkey_Engineering", "Set jump drive coolant (joystick)"): "Establecer el refrigerante del motor de salto (joystick)",
+    (None, "Jump in: {delay}"): "Salto en: {delay}",
+    (None, "Jump drive recharge rate"): "Tasa de recarga del motor de salto",
+    (None, "Time to jump activation"): "Tiempo hasta la activación del salto",
+    (None, "Warp drive speed"): "Velocidad de curvatura",
+    ("tweak-tab", "Jump drive"): "Motor de salto",
+    ("tweak-tab", "Warp drive"): "Motor de curvatura",
+    ("tweak-text", "Jump drive system"): "Sistema del motor de salto",
+    ("tweak-text", "Warp drive system"): "Sistema del motor de curvatura",
+    ("jumpcontrol", "Jump in"): "Salto en",
 }
 
 

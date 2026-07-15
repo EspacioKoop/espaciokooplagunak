@@ -110,7 +110,7 @@ msgstr "Ciclo de nave del jugador anterior"
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:36
 msgctxt "hotkey_Cinematic"
 msgid "Cycle next player ship"
-msgstr "Ciclo de barco del siguiente jugador"
+msgstr "Cambiar a la siguiente nave de jugador"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:37
 msgctxt "hotkey_Cinematic"
@@ -190,7 +190,7 @@ msgstr "Ciclo de nave del jugador anterior"
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:69
 msgctxt "hotkey_Topdown"
 msgid "Cycle next player ship"
-msgstr "Ciclo de barco del siguiente jugador"
+msgstr "Cambiar a la siguiente nave de jugador"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:70
 msgctxt "hotkey_Topdown"
@@ -440,42 +440,42 @@ msgstr "Deformación cero"
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:402
 msgctxt "hotkey_Helms"
 msgid "Request warp 1"
-msgstr "Solicitar deformación 1"
+msgstr "Solicitar curvatura 1"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:403
 msgctxt "hotkey_Helms"
 msgid "Request warp 2"
-msgstr "Solicitar deformación 2"
+msgstr "Solicitar curvatura 2"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:404
 msgctxt "hotkey_Helms"
 msgid "Request warp 3"
-msgstr "Solicitar deformación 3"
+msgstr "Solicitar curvatura 3"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:405
 msgctxt "hotkey_Helms"
 msgid "Request warp 4"
-msgstr "Solicitar deformación 4"
+msgstr "Solicitar curvatura 4"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:406
 msgctxt "hotkey_Helms"
 msgid "Request max warp"
-msgstr "Solicitar deformación máxima"
+msgstr "Solicitar curvatura máxima"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:407
 msgctxt "hotkey_Helms"
 msgid "Increase warp request"
-msgstr "Aumentar la solicitud de deformación"
+msgstr "Aumentar la curvatura solicitada"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:408
 msgctxt "hotkey_Helms"
 msgid "Decrease warp request"
-msgstr "Disminuir solicitud de deformación"
+msgstr "Disminuir la curvatura solicitada"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:409
 msgctxt "hotkey_Helms"
 msgid "Set warp request (joystick)"
-msgstr "Establecer solicitud de deformación (joystick)"
+msgstr "Establecer la curvatura solicitada (joystick)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:410
 msgctxt "hotkey_Helms"
@@ -930,7 +930,7 @@ msgstr "Establecer potencia de impulso (joystick)"
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:510
 msgctxt "hotkey_Engineering"
 msgid "Set warp power (joystick)"
-msgstr "Establecer potencia de deformación (joystick)"
+msgstr "Establecer la potencia de curvatura (joystick)"
 
 #: /home/varo/proyectos/espaciokolagunak/src/gui/hotkeyConfig.cpp:511
 msgctxt "hotkey_Engineering"
@@ -1073,7 +1073,7 @@ msgstr "Esperando a la nave en "
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/autoConnectScreen.cpp:148
 msgid "Waiting for ship..."
-msgstr "Esperando el barco..."
+msgstr "Esperando a la nave..."
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/autoConnectScreen.cpp:179
 msgid "Connected, waiting for game data..."
@@ -1081,7 +1081,7 @@ msgstr "Conectado, esperando datos del juego..."
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/autoConnectScreen.cpp:290 /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:797
 msgid "Ship window"
-msgstr "Ventana de barco"
+msgstr "Ventana de la nave"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/autoConnectScreen.cpp:293 /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:786 /home/varo/proyectos/espaciokolagunak/src/menus/shipSelectionScreen.cpp:899
 msgid "Main screen"
@@ -1270,7 +1270,7 @@ msgstr "El radar gira"
 #: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:279 /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:283 /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:303 /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:307 /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:328 /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:332
 msgctxt "radar_locks"
 msgid "Ship rotates"
-msgstr "El barco gira"
+msgstr "La nave gira"
 
 #: /home/varo/proyectos/espaciokolagunak/src/menus/optionsMenu.cpp:294
 msgctxt "radar_locks"
@@ -1857,7 +1857,7 @@ msgstr "Comunicaciones"
 #: /home/varo/proyectos/espaciokolagunak/src/playerInfo.cpp:1162
 msgctxt "station"
 msgid "Ship's Log"
-msgstr "Bitácora del barco"
+msgstr "Bitácora de la nave"
 
 #: /home/varo/proyectos/espaciokolagunak/src/scenarioInfo.cpp:104 /home/varo/proyectos/espaciokolagunak/src/scenarioInfo.cpp:105
 msgid "setting"
@@ -1981,7 +1981,7 @@ msgstr "Sistema de destino"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/hackingDialog.cpp:81
 msgid "Select a system in the targeted ship to begin a remote intrusion attempt, or hack. If successful, you reduce that system's effectiveness for a short period of time. Continue hacking systems on hostile targets to give your crew and allies a tactical advantage against it."
-msgstr "Selecciona un sistema en el barco objetivo para iniciar un intento de intrusión remota o hackearlo. Si tiene éxito, reducirá la eficacia de ese sistema durante un corto período de tiempo. Continúe pirateando sistemas en objetivos hostiles para darle a su tripulación y a sus aliados una ventaja táctica contra ellos."
+msgstr "Selecciona un sistema de la nave objetivo para iniciar un intento de intrusión remota (hackeo). Si tiene éxito, reducirás la eficacia de ese sistema durante un breve periodo. Sigue hackeando sistemas de objetivos hostiles para dar a tu tripulación y aliados una ventaja táctica contra ellos."
 
 #: /home/varo/proyectos/espaciokolagunak/src/screenComponents/hackingDialog.cpp:91
 msgctxt "hacking"
@@ -2477,12 +2477,12 @@ msgstr "Curvatura"
 #: /home/varo/proyectos/espaciokolagunak/src/screens/cinematicViewScreen.cpp:51 /home/varo/proyectos/espaciokolagunak/src/screens/topDownScreen.cpp:39
 msgctxt "button"
 msgid "Lock camera on ship"
-msgstr "Bloquear cámara en barco"
+msgstr "Fijar la cámara en la nave"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/cinematicViewScreen.cpp:54
 msgctxt "button"
 msgid "Lock camera on ship's target"
-msgstr "Bloquear la cámara en el objetivo del barco."
+msgstr "Fijar la cámara en el objetivo de la nave"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/cinematicViewScreen.cpp:57
 msgctxt "button"
@@ -2584,7 +2584,7 @@ msgstr "Velocidad de curvatura"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:477
 msgid "Time to jump activation"
-msgstr "Hora de saltar la activación"
+msgstr "Tiempo hasta la activación del salto"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/engineeringScreen.cpp:481
 msgid "Jump drive recharge rate"
@@ -2638,7 +2638,7 @@ msgstr "Cancelar sonda"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/relayScreen.cpp:197
 msgid "Center on ship"
-msgstr "Centro en barco"
+msgstr "Centrar en la nave"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/crew6/relayScreen.cpp:340
 msgid "Launch probe ({stock})"
@@ -3530,7 +3530,7 @@ msgstr "Crear componente"
 #: /home/varo/proyectos/espaciokolagunak/src/screens/spectatorScreen.cpp:51
 msgctxt "spectator"
 msgid "Select player ship as target"
-msgstr "Selecciona el barco del jugador como objetivo."
+msgstr "Seleccionar la nave del jugador como objetivo"
 
 #: /home/varo/proyectos/espaciokolagunak/src/screens/spectatorScreen.cpp:78
 msgctxt "spectate"

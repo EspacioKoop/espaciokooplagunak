@@ -647,6 +647,28 @@ CONTEXT_OVERRIDES: dict[tuple[str | None, str], str] = {
         None,
         "This concludes the tutorial. While we have covered the basics, there are more advanced features in the game that you might discover.",
     ): "Aquí termina el tutorial. Hemos cubierto lo básico; el juego tiene funciones más avanzadas que irás descubriendo.",
+    # Issue #28: eradicate «deformación» (warp) and «barco» (ship) from the UI.
+    ("hotkey_Cinematic", "Cycle next player ship"): "Cambiar a la siguiente nave de jugador",
+    ("hotkey_Topdown", "Cycle next player ship"): "Cambiar a la siguiente nave de jugador",
+    ("hotkey_Helms", "Request warp 1"): "Solicitar curvatura 1",
+    ("hotkey_Helms", "Request warp 2"): "Solicitar curvatura 2",
+    ("hotkey_Helms", "Request warp 3"): "Solicitar curvatura 3",
+    ("hotkey_Helms", "Request warp 4"): "Solicitar curvatura 4",
+    ("hotkey_Helms", "Request max warp"): "Solicitar curvatura máxima",
+    ("hotkey_Helms", "Increase warp request"): "Aumentar la curvatura solicitada",
+    ("hotkey_Helms", "Decrease warp request"): "Disminuir la curvatura solicitada",
+    ("hotkey_Helms", "Set warp request (joystick)"): "Establecer la curvatura solicitada (joystick)",
+    ("hotkey_Engineering", "Set warp power (joystick)"): "Establecer la potencia de curvatura (joystick)",
+    (None, "Waiting for ship..."): "Esperando a la nave...",
+    (None, "Ship window"): "Ventana de la nave",
+    ("radar_locks", "Ship rotates"): "La nave gira",
+    ("station", "Ship's Log"): "Bitácora de la nave",
+    (None, "Select a system in the targeted ship to begin a remote intrusion attempt, or hack. If successful, you reduce that system's effectiveness for a short period of time. Continue hacking systems on hostile targets to give your crew and allies a tactical advantage against it."): "Selecciona un sistema de la nave objetivo para iniciar un intento de intrusión remota (hackeo). Si tiene éxito, reducirás la eficacia de ese sistema durante un breve periodo. Sigue hackeando sistemas de objetivos hostiles para dar a tu tripulación y aliados una ventaja táctica contra ellos.",
+    ("button", "Lock camera on ship"): "Fijar la cámara en la nave",
+    ("button", "Lock camera on ship's target"): "Fijar la cámara en el objetivo de la nave",
+    (None, "Time to jump activation"): "Tiempo hasta la activación del salto",
+    (None, "Center on ship"): "Centrar en la nave",
+    ("spectator", "Select player ship as target"): "Seleccionar la nave del jugador como objetivo",
 }
 
 

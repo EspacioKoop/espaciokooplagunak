@@ -159,7 +159,7 @@ configurado con `-DBUILD_CONTENT_RESOURCE_TESTS=ON` se ejecutan con:
 
 ```bash
 ctest --test-dir build --output-on-failure \
-  -R 'content_resource_codec|content_library_store|map_document_codec|map_edit_session|map_preview_projection'
+  -R 'content_resource_codec|content_library_store|map_document_codec|map_edit_session|map_preview_projection|ship_document_model'
 ```
 
 El test del codec cubre los cuatro tipos, round-trip, límite de 64 KiB, claves
@@ -177,7 +177,14 @@ Los mapas tienen modelo separado del ECS, sesión transaccional de staging con u
 redo, dirty state y rollback, y preview read-only sobre el radar GM. El preview no
 crea ni modifica entidades: solo proyecta asteroides y nebulosas de la allowlist;
 los tipos futuros opacos se omiten visualmente sin perderse y su recuento queda
-visible en el editor. La siguiente fase mantendrá la misma envoltura versionada:
+visible en el editor.
+
+Las naves tienen además un primer modelo tipado **solo en memoria** para overrides
+opcionales de sistemas, recursos, carga y puestos. Rechaza IDs no canónicos,
+duplicados, valores no finitos y cantidades fuera de rango. Todavía no forma parte
+del JSON v3, de la GUI ni del ECS; persistencia, previsualización y aplicación se
+incorporarán en verticales posteriores sin reinterpretar documentos antiguos.
+La siguiente fase mantendrá la misma envoltura versionada:
 
 - aplicación tipada al mundo con autorización GM y rollback, sin Lua importado
   ([#54](https://github.com/VaroTv7/espaciokooplagunak/issues/54));

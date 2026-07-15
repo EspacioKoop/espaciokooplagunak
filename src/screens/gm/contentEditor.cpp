@@ -207,11 +207,30 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
         box,
         "MAP_PREVIEW",
         tr("content_editor", "Preview on radar"),
-        [this](bool value) { preview_enabled = value; }
+        [this](bool value) {
+            preview_enabled = value;
+            if (!value) setMapEditMode(false);
+        }
     );
     preview_toggle->setPosition(x, 360)->setSize(250, 40)->hide();
     preview_status_label = new GuiLabel(box, "MAP_PREVIEW_STATUS", "", 16);
     preview_status_label->setPosition(x + 270, 360)->setSize(420, 40)->hide();
+
+    map_edit_toggle = new GuiToggleButton(
+        box,
+        "MAP_EDIT_RADAR",
+        tr("content_editor", "Edit on radar"),
+        [this](bool value) { setMapEditMode(value); }
+    );
+    map_edit_toggle->setPosition(x, 405)->setSize(220, 35)->hide();
+    map_undo_button = new GuiButton(box, "MAP_UNDO", tr("content_editor", "Undo"), [this]() {
+        undoMapEdit();
+    });
+    map_undo_button->setPosition(x + 235, 405)->setSize(220, 35)->hide();
+    map_redo_button = new GuiButton(box, "MAP_REDO", tr("content_editor", "Redo"), [this]() {
+        redoMapEdit();
+    });
+    map_redo_button->setPosition(x + 470, 405)->setSize(220, 35)->hide();
 
     ship_override_selector = new GuiSelector(box, "SHIP_OVERRIDE_MODE", [this](int, string value) {
         if (ship_resource_id_entry)
@@ -373,7 +392,70 @@ bool GuiContentEditor::onMouseDown(sp::io::Pointer::Button, glm::vec2, sp::io::P
 const MapDocument* GuiContentEditor::previewDocument() const
 {
     if (!preview_enabled || current_type != ContentResourceType::Map) return nullptr;
-    return &clean_snapshot.map_document;
+    return &map_edit_session.document();
+}
+
+bool GuiContentEditor::beginMapDrag(float world_x, float world_y, float world_to_screen_scale)
+{
+    cancelMapDrag();
+    if (!map_edit_mode) return false;
+    const auto error = map_drag.begin(
+        map_edit_session, {world_x, world_y}, world_to_screen_scale);
+    if (error != MapDocumentError::None)
+    {
+        setStatus(tr("content_editor", "Map object could not be selected."));
+        return false;
+    }
+    if (map_drag.isDragging())
+        setStatus(tr("content_editor", "Map object selected; drag to stage its position."));
+    return map_drag.isDragging();
+}
+
+void GuiContentEditor::updateMapDrag(float world_x, float world_y)
+{
+    if (!map_edit_mode || !map_drag.isDragging()) return;
+    if (!map_drag.update({world_x, world_y}))
+    {
+        map_drag.cancel();
+        setStatus(tr("content_editor", "Map object drag cancelled outside the valid map area."));
+    }
+}
+
+void GuiContentEditor::commitMapDrag(float world_x, float world_y)
+{
+    if (!map_edit_mode || !map_drag.isDragging()) return;
+    if (!map_drag.update({world_x, world_y}))
+    {
+        map_drag.cancel();
+        return setStatus(tr("content_editor", "Map object drag cancelled outside the valid map area."));
+    }
+
+    const auto object_id = map_drag.selectedId();
+    const auto final_transform = map_drag.provisionalTransform();
+    bool changed = true;
+    for (const auto& object : map_edit_session.document().objects)
+        if (object.id == object_id) changed = !(object.transform == final_transform);
+    if (map_drag.commit(map_edit_session) != MapEditError::None)
+        return setStatus(tr("content_editor", "Map object could not be moved."));
+    if (!changed)
+        return setStatus(tr("content_editor", "Map object position unchanged."));
+    pending_save = "";
+    pending_file_export = "";
+    discard_guard.reset();
+    updatePreviewStatus();
+    setStatus(tr("content_editor", "Map object move staged."));
+}
+
+void GuiContentEditor::cancelMapDrag()
+{
+    if (!map_drag.isDragging()) return;
+    map_drag.cancel();
+    setStatus(tr("content_editor", "Map object drag cancelled."));
+}
+
+void GuiContentEditor::stopMapEditMode()
+{
+    setMapEditMode(false);
 }
 
 void GuiContentEditor::requestSetType(ContentResourceType type)
@@ -417,8 +499,12 @@ void GuiContentEditor::updateFieldPresentation(ContentResourceType type)
     }
     const bool is_map = type == ContentResourceType::Map;
     preview_toggle->setVisible(is_map);
+    map_edit_toggle->setVisible(is_map);
+    map_undo_button->setVisible(is_map);
+    map_redo_button->setVisible(is_map);
     if (!is_map)
     {
+        setMapEditMode(false);
         preview_enabled = false;
         preview_toggle->setValue(false);
     }
@@ -497,6 +583,9 @@ void GuiContentEditor::requestClearForm()
 
 void GuiContentEditor::clearForm()
 {
+    setMapEditMode(false);
+    map_edit_session = MapEditSession{};
+    map_drag = {};
     ship_edit_session = ShipEditSession{};
     ship_resource_id_entry->setText("");
     ship_resource_amount_entry->setText("");
@@ -538,6 +627,11 @@ void GuiContentEditor::loadResource(int index)
     if (index < 0 || index >= int(resources.size())) return;
     selected_index = index;
     const auto& resource = resources[index];
+    setMapEditMode(false);
+    map_edit_session = resource.type == ContentResourceType::Map
+        ? MapEditSession(resource.map_document)
+        : MapEditSession{};
+    map_drag = {};
     ship_edit_session = resource.type == ContentResourceType::Ship
         ? ShipEditSession(resource.ship_document)
         : ShipEditSession{};
@@ -599,8 +693,8 @@ ContentResource GuiContentEditor::formResource() const
     resource.tertiary = tertiary_entry->getText();
     resource.quaternary = quaternary_entry->getText();
     resource.quinary = quinary_entry->getText();
-    if (current_type == ContentResourceType::Map && clean_snapshot.type == ContentResourceType::Map)
-        resource.map_document = clean_snapshot.map_document;
+    if (current_type == ContentResourceType::Map)
+        resource.map_document = map_edit_session.document();
     if (current_type == ContentResourceType::Ship)
         resource.ship_document = ship_edit_session.document();
     return resource;
@@ -677,6 +771,7 @@ void GuiContentEditor::saveResource()
     resources = std::move(candidate);
     selected_index = target_index;
     clean_snapshot = resource;
+    if (current_type == ContentResourceType::Map) map_edit_session.markSaved();
     if (current_type == ContentResourceType::Ship) ship_edit_session.markSaved();
     updateShipOverrideEditor();
     updatePreviewStatus();
@@ -945,7 +1040,7 @@ void GuiContentEditor::setStatus(const string& text)
 void GuiContentEditor::updatePreviewStatus()
 {
     const auto count = current_type == ContentResourceType::Map
-        ? countUnsupportedMapPreviewObjects(clean_snapshot.map_document)
+        ? countUnsupportedMapPreviewObjects(map_edit_session.document())
         : 0;
     preview_status_label->setVisible(count > 0);
     if (count > 0)
@@ -953,6 +1048,49 @@ void GuiContentEditor::updatePreviewStatus()
             tr("content_editor", "Omitted objects (preserved): {count}")
                 .format({{"count", string(static_cast<unsigned int>(count))}})
         );
+}
+
+void GuiContentEditor::setMapEditMode(bool enabled)
+{
+    if (enabled && current_type != ContentResourceType::Map) enabled = false;
+    if (!enabled)
+    {
+        cancelMapDrag();
+        map_edit_mode = false;
+        if (map_edit_toggle) map_edit_toggle->setValue(false);
+        return;
+    }
+
+    map_edit_mode = true;
+    preview_enabled = true;
+    preview_toggle->setValue(true);
+    map_edit_toggle->setValue(true);
+    setStatus(tr("content_editor", "Radar edit active. Drag a staged object; Escape returns without committing an active drag."));
+    hide();
+}
+
+void GuiContentEditor::undoMapEdit()
+{
+    cancelMapDrag();
+    if (!map_edit_session.undo())
+        return setStatus(tr("content_editor", "There is no map edit to undo."));
+    pending_save = "";
+    pending_file_export = "";
+    discard_guard.reset();
+    updatePreviewStatus();
+    setStatus(tr("content_editor", "Map edit undone."));
+}
+
+void GuiContentEditor::redoMapEdit()
+{
+    cancelMapDrag();
+    if (!map_edit_session.redo())
+        return setStatus(tr("content_editor", "There is no map edit to redo."));
+    pending_save = "";
+    pending_file_export = "";
+    discard_guard.reset();
+    updatePreviewStatus();
+    setStatus(tr("content_editor", "Map edit redone."));
 }
 
 void GuiContentEditor::openShipTemplatePicker()

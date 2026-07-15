@@ -1,6 +1,9 @@
 #pragma once
 
 #include "content/contentLibraryStore.h"
+#include "content/mapEditSession.h"
+#include "content/mapPreview.h"
+#include "content/mapPreviewInteraction.h"
 #include "content/shipEditSession.h"
 #include "content/shipTemplateCatalog.h"
 #include "gui/gui2_overlay.h"
@@ -21,6 +24,16 @@ public:
     explicit GuiContentEditor(GuiContainer* owner);
 
     const MapDocument* previewDocument() const;
+    bool isMapEditMode() const { return map_edit_mode; }
+    bool isSelectedMapObject(const std::string& id) const
+        { return map_drag.isDragging() && map_drag.selectedId() == id; }
+    void applyMapDragPreview(std::vector<MapPreviewMarker>& markers) const
+        { map_drag.applyProvisional(markers); }
+    bool beginMapDrag(float world_x, float world_y, float world_to_screen_scale);
+    void updateMapDrag(float world_x, float world_y);
+    void commitMapDrag(float world_x, float world_y);
+    void cancelMapDrag();
+    void stopMapEditMode();
 
     virtual bool onMouseDown(
         sp::io::Pointer::Button button,
@@ -42,10 +55,13 @@ private:
     string pending_file_import;
     string pending_file_export;
     ContentDiscardGuard discard_guard;
+    MapEditSession map_edit_session;
+    MapPreviewDragSession map_drag;
     ShipEditSession ship_edit_session;
     std::vector<ShipTemplateCatalogEntry> ship_template_catalog;
     std::vector<std::size_t> visible_ship_template_indices;
     bool preview_enabled = false;
+    bool map_edit_mode = false;
 
     GuiSelector* type_selector;
     GuiSelector* inbox_selector;
@@ -73,6 +89,9 @@ private:
     GuiLabel* status_label;
     GuiToggleButton* preview_toggle;
     GuiLabel* preview_status_label;
+    GuiToggleButton* map_edit_toggle;
+    GuiButton* map_undo_button;
+    GuiButton* map_redo_button;
     GuiSelector* ship_override_selector;
     GuiSelector* ship_system_selector;
     GuiSelector* ship_crew_selector;
@@ -112,6 +131,9 @@ private:
     string storeErrorText(ContentStoreError error) const;
     void setStatus(const string& text);
     void updatePreviewStatus();
+    void setMapEditMode(bool enabled);
+    void undoMapEdit();
+    void redoMapEdit();
     void openShipTemplatePicker();
     void refreshShipTemplatePicker();
     void refreshShipTemplatePreview();

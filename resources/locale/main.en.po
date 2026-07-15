@@ -4567,3 +4567,55 @@ msgstr ""
 msgctxt "content_editor"
 msgid "Drag to rotate; wheel to zoom."
 msgstr ""
+
+msgctxt "content_editor"
+msgid "Edit on radar"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Map object selected; drag to stage its position."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Map object position unchanged."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Map object could not be moved."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Map object move staged."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Map object drag cancelled."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Radar edit active. Drag a staged object; Escape returns without committing an active drag."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "There is no map edit to undo."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Map edit undone."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "There is no map edit to redo."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Map edit redone."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Map object could not be selected."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Map object drag cancelled outside the valid map area."
+msgstr ""

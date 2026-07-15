@@ -64,6 +64,7 @@ private:
     GuiLabel* preview_status_label;
     GuiSelector* ship_override_selector;
     GuiSelector* ship_system_selector;
+    GuiSelector* ship_crew_selector;
     GuiLabel* ship_health_label;
     GuiTextEntry* ship_health_entry;
     GuiTextEntry* ship_resource_id_entry = nullptr;

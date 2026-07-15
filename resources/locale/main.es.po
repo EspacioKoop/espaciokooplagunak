@@ -4257,3 +4257,35 @@ msgstr "La carga seleccionada no tiene override."
 msgctxt "content_editor"
 msgid "Ship cargo override removed from staging."
 msgstr "Override de carga retirado del staging."
+
+msgctxt "content_editor"
+msgid "Crew positions"
+msgstr "Puestos"
+
+msgctxt "content_editor"
+msgid "Not assigned"
+msgstr "No asignado"
+
+msgctxt "content_editor"
+msgid "Assigned"
+msgstr "Asignado"
+
+msgctxt "content_editor"
+msgid "Add position"
+msgstr "Añadir puesto"
+
+msgctxt "content_editor"
+msgid "The selected crew position is invalid."
+msgstr "El puesto seleccionado no es válido."
+
+msgctxt "content_editor"
+msgid "Ship crew position staged."
+msgstr "Puesto de tripulación preparado."
+
+msgctxt "content_editor"
+msgid "The selected crew position is not assigned."
+msgstr "El puesto seleccionado no está asignado."
+
+msgctxt "content_editor"
+msgid "Ship crew position removed from staging."
+msgstr "Puesto de tripulación retirado del staging."

@@ -4335,3 +4335,13 @@ msgstr "Selecciona primero una plantilla de nave."
 msgctxt "content_editor"
 msgid "Ship template selected."
 msgstr "Plantilla de nave seleccionada."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "3D preview unavailable."
+msgstr "Vista previa 3D no disponible."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Drag to rotate; wheel to zoom."
+msgstr "Arrastra para girar; usa la rueda para acercar o alejar."

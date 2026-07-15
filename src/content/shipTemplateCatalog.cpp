@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cmath>
 
 namespace
 {
@@ -53,4 +54,28 @@ std::vector<std::size_t> filterSelectableShipTemplates(
             result.push_back(index);
     }
     return result;
+}
+
+bool isUsableShipTemplatePreview(const ShipTemplatePreviewData& preview)
+{
+    constexpr std::size_t max_asset_path_length = 1024;
+    constexpr float max_absolute_offset = 1000000.0f;
+    constexpr float max_scale = 1000000.0f;
+    const auto valid_path = [](const std::string& value, bool required) {
+        return (!required || !value.empty()) && value.size() <= max_asset_path_length;
+    };
+    return valid_path(preview.mesh, true)
+        && valid_path(preview.texture, true)
+        && valid_path(preview.specular_texture, false)
+        && valid_path(preview.illumination_texture, false)
+        && valid_path(preview.normal_texture, false)
+        && std::isfinite(preview.mesh_offset_x)
+        && std::isfinite(preview.mesh_offset_y)
+        && std::isfinite(preview.mesh_offset_z)
+        && std::abs(preview.mesh_offset_x) <= max_absolute_offset
+        && std::abs(preview.mesh_offset_y) <= max_absolute_offset
+        && std::abs(preview.mesh_offset_z) <= max_absolute_offset
+        && std::isfinite(preview.scale)
+        && preview.scale > 0.0f
+        && preview.scale <= max_scale;
 }

@@ -298,6 +298,57 @@ std::vector<ShipTemplateCatalogEntry> GameGlobalInfo::getShipTemplateCatalog()
     return catalog;
 }
 
+namespace sp::script {
+    template<> struct Convert<ShipTemplatePreviewData> {
+        static ShipTemplatePreviewData fromLua(lua_State* L, int idx) {
+            ShipTemplatePreviewData preview;
+            if (!lua_istable(L, idx)) return preview;
+            const auto string_field = [L, idx](int field) {
+                lua_geti(L, idx, field);
+                std::size_t length = 0;
+                const char* value = lua_type(L, -1) == LUA_TSTRING
+                    ? lua_tolstring(L, -1, &length)
+                    : nullptr;
+                std::string result;
+                if (value && length <= 1024) result.assign(value, length);
+                lua_pop(L, 1);
+                return result;
+            };
+            const auto number_field = [L, idx](int field, float fallback) {
+                lua_geti(L, idx, field);
+                const float result = lua_type(L, -1) == LUA_TNUMBER
+                    ? static_cast<float>(lua_tonumber(L, -1))
+                    : fallback;
+                lua_pop(L, 1);
+                return result;
+            };
+            preview.mesh = string_field(1);
+            preview.texture = string_field(2);
+            preview.specular_texture = string_field(3);
+            preview.illumination_texture = string_field(4);
+            preview.normal_texture = string_field(5);
+            preview.mesh_offset_x = number_field(6, 0.0f);
+            preview.mesh_offset_y = number_field(7, 0.0f);
+            preview.mesh_offset_z = number_field(8, 0.0f);
+            preview.scale = number_field(9, 1.0f);
+            return preview;
+        }
+    };
+}
+
+ShipTemplatePreviewData GameGlobalInfo::getShipTemplatePreview(const string& canonical_id)
+{
+    ShipTemplatePreviewData preview;
+    if (main_scenario_script) {
+        auto res = main_scenario_script->call<ShipTemplatePreviewData>(
+            "getShipTemplatePreview", canonical_id);
+        LuaConsole::checkResult(res);
+        if (res.isOk() && isUsableShipTemplatePreview(res.value()))
+            preview = res.value();
+    }
+    return preview;
+}
+
 string GameGlobalInfo::getEntityExportString(sp::ecs::Entity entity)
 {
     if (main_scenario_script) {

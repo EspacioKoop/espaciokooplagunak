@@ -3,6 +3,7 @@
 #include "content/contentLibraryStore.h"
 #include "content/shipEditSession.h"
 #include "content/shipTemplateCatalog.h"
+#include "ecs/entity.h"
 #include "gui/gui2_overlay.h"
 #include "stringImproved.h"
 #include <vector>
@@ -13,11 +14,13 @@ class GuiListbox;
 class GuiSelector;
 class GuiTextEntry;
 class GuiToggleButton;
+class GuiRotatingModelView;
 
 class GuiContentEditor : public GuiOverlay
 {
 public:
     explicit GuiContentEditor(GuiContainer* owner);
+    ~GuiContentEditor() override;
 
     const MapDocument* previewDocument() const;
 
@@ -44,6 +47,7 @@ private:
     ShipEditSession ship_edit_session;
     std::vector<ShipTemplateCatalogEntry> ship_template_catalog;
     std::vector<std::size_t> visible_ship_template_indices;
+    sp::ecs::Entity ship_template_preview_entity;
     bool preview_enabled = false;
 
     GuiSelector* type_selector;
@@ -59,6 +63,8 @@ private:
     GuiTextEntry* ship_template_search_entry;
     GuiListbox* ship_template_list;
     GuiLabel* ship_template_picker_status;
+    GuiRotatingModelView* ship_template_model_view;
+    GuiLabel* ship_template_preview_status;
     GuiLabel* secondary_label;
     GuiTextEntry* secondary_entry;
     GuiLabel* tertiary_label;
@@ -111,6 +117,9 @@ private:
     void updatePreviewStatus();
     void openShipTemplatePicker();
     void refreshShipTemplatePicker();
+    void refreshShipTemplatePreview();
+    void clearShipTemplatePreview();
+    void closeShipTemplatePicker();
     void useSelectedShipTemplate();
     void updateShipOverrideEditor();
     void setShipOverride();

@@ -113,6 +113,7 @@ public:
     };
     std::vector<ObjectSpawnInfo> getGMSpawnableObjects();
     std::vector<ShipTemplateCatalogEntry> getShipTemplateCatalog();
+    ShipTemplatePreviewData getShipTemplatePreview(const string& canonical_id);
     string getEntityExportString(sp::ecs::Entity entity);
     void execScriptCode(const string& code);
     bool allowNewPlayerShips();

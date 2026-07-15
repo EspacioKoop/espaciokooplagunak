@@ -1,9 +1,11 @@
 #include "contentEditor.h"
 #include "clipboard.h"
 #include "content/mapPreview.h"
+#include "components/rendering.h"
 #include "gameGlobalInfo.h"
 #include "i18n.h"
 #include "playerInfo.h"
+#include "screenComponents/rotatingModelView.h"
 #include "gui/gui2_button.h"
 #include "gui/gui2_label.h"
 #include "gui/gui2_listbox.h"
@@ -321,14 +323,20 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
     ship_template_search_entry = new GuiTextEntry(picker_panel, "SHIP_TEMPLATE_SEARCH", "");
     ship_template_search_entry->callback([this](string) { refreshShipTemplatePicker(); });
     ship_template_search_entry->setSelectOnFocus()->setPosition(150, 75)->setSize(580, 35);
+    ship_template_model_view = new GuiRotatingModelView(
+        picker_panel, "SHIP_TEMPLATE_MODEL_PREVIEW", ship_template_preview_entity);
+    ship_template_model_view->setPosition(450, 125)->setSize(280, 260)->hide();
+    ship_template_preview_status = new GuiLabel(
+        picker_panel, "SHIP_TEMPLATE_PREVIEW_STATUS", "", 16);
+    ship_template_preview_status->setPosition(450, 395)->setSize(280, 40);
     ship_template_list = new GuiListbox(
         picker_panel,
         "SHIP_TEMPLATE_LIST",
-        [](int, string) {}
+        [this](int, string) { refreshShipTemplatePreview(); }
     );
-    ship_template_list->setTextSize(20)->setButtonHeight(38)->setPosition(30, 125)->setSize(700, 310);
+    ship_template_list->setTextSize(20)->setButtonHeight(38)->setPosition(30, 125)->setSize(400, 310);
     ship_template_picker_status = new GuiLabel(picker_panel, "SHIP_TEMPLATE_PICKER_STATUS", "", 17);
-    ship_template_picker_status->setPosition(30, 445)->setSize(700, 35);
+    ship_template_picker_status->setPosition(30, 445)->setSize(400, 35);
     (new GuiButton(
         picker_panel,
         "SHIP_TEMPLATE_USE",
@@ -339,7 +347,7 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
         picker_panel,
         "SHIP_TEMPLATE_CANCEL",
         tr("button", "Close"),
-        [this]() { ship_template_picker_overlay->hide(); }
+        [this]() { closeShipTemplatePicker(); }
     ))->setPosition(390, 495)->setSize(180, 40);
     ship_template_picker_overlay->hide();
 
@@ -355,6 +363,11 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
         setStatus(tr("content_editor", "Private library migrated to the current format."));
     else
         setStatus(tr("content_editor", "Private library loaded."));
+}
+
+GuiContentEditor::~GuiContentEditor()
+{
+    clearShipTemplatePreview();
 }
 
 bool GuiContentEditor::onMouseDown(sp::io::Pointer::Button, glm::vec2, sp::io::Pointer::ID)
@@ -426,7 +439,7 @@ void GuiContentEditor::updateFieldPresentation(ContentResourceType type)
         updateShipOverrideEditor();
     else
     {
-        ship_template_picker_overlay->hide();
+        closeShipTemplatePicker();
         ship_system_selector->hide();
         ship_crew_selector->hide();
         ship_health_label->hide();
@@ -572,7 +585,11 @@ void GuiContentEditor::loadResource(int index)
 
 void GuiContentEditor::requestClose()
 {
-    if (confirmDiscard("close")) hide();
+    if (confirmDiscard("close"))
+    {
+        closeShipTemplatePicker();
+        hide();
+    }
 }
 
 ContentResource GuiContentEditor::formResource() const
@@ -988,6 +1005,61 @@ void GuiContentEditor::refreshShipTemplatePicker()
         ship_template_picker_status->setText(
             string(static_cast<unsigned int>(visible_ship_template_indices.size())) + " "
             + tr("content_editor", "templates available"));
+    refreshShipTemplatePreview();
+}
+
+void GuiContentEditor::refreshShipTemplatePreview()
+{
+    clearShipTemplatePreview();
+    const int selection = ship_template_list->getSelectionIndex();
+    if (selection < 0 || selection >= static_cast<int>(visible_ship_template_indices.size()))
+    {
+        ship_template_preview_status->setText(tr("content_editor", "3D preview unavailable."));
+        return;
+    }
+    const auto catalog_index = visible_ship_template_indices[selection];
+    if (!gameGlobalInfo || catalog_index >= ship_template_catalog.size())
+    {
+        ship_template_preview_status->setText(tr("content_editor", "3D preview unavailable."));
+        return;
+    }
+    const auto preview = gameGlobalInfo->getShipTemplatePreview(
+        ship_template_catalog[catalog_index].canonical_id);
+    if (!isUsableShipTemplatePreview(preview))
+    {
+        ship_template_preview_status->setText(tr("content_editor", "3D preview unavailable."));
+        return;
+    }
+
+    ship_template_preview_entity = sp::ecs::Entity::create();
+    auto& render = ship_template_preview_entity.addComponent<MeshRenderComponent>();
+    render.mesh.name = preview.mesh;
+    render.texture.name = preview.texture;
+    render.specular_texture.name = preview.specular_texture;
+    render.illumination_texture.name = preview.illumination_texture;
+    render.normal_texture.name = preview.normal_texture;
+    render.mesh_offset = {
+        preview.mesh_offset_x, preview.mesh_offset_y, preview.mesh_offset_z};
+    render.scale = preview.scale;
+    ship_template_model_view->show();
+    ship_template_preview_status->setText(tr("content_editor", "Drag to rotate; wheel to zoom."));
+}
+
+void GuiContentEditor::clearShipTemplatePreview()
+{
+    if (ship_template_preview_entity)
+    {
+        ship_template_preview_entity.destroy();
+        ship_template_preview_entity = {};
+    }
+    if (ship_template_model_view) ship_template_model_view->hide();
+    if (ship_template_preview_status) ship_template_preview_status->setText("");
+}
+
+void GuiContentEditor::closeShipTemplatePicker()
+{
+    clearShipTemplatePreview();
+    if (ship_template_picker_overlay) ship_template_picker_overlay->hide();
 }
 
 void GuiContentEditor::useSelectedShipTemplate()
@@ -1000,7 +1072,7 @@ void GuiContentEditor::useSelectedShipTemplate()
     }
     const auto catalog_index = visible_ship_template_indices[selection];
     primary_entry->setText(ship_template_catalog[catalog_index].canonical_id);
-    ship_template_picker_overlay->hide();
+    closeShipTemplatePicker();
     setStatus(tr("content_editor", "Ship template selected."));
 }
 

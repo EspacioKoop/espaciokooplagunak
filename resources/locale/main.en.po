@@ -4327,3 +4327,95 @@ msgstr ""
 msgctxt "content_editor"
 msgid "A referenced map, character or ship is missing from the library."
 msgstr ""
+
+msgctxt "content_editor"
+msgid "System"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Reactor"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Beam weapons"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Missile system"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Maneuvering"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Impulse"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Warp"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Jump drive"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Front shield"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Rear shield"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Health [-1, 1]"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Set system"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Remove override"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Undo"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Redo"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Health must be a finite number between -1 and 1."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Ship system override staged."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "The selected system has no override."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Ship system override removed from staging."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "There is no ship edit to undo."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Ship edit undone."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "There is no ship edit to redo."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Ship edit redone."
+msgstr ""

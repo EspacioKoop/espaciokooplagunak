@@ -4345,3 +4345,38 @@ msgstr "Vista previa 3D no disponible."
 msgctxt "content_editor"
 msgid "Drag to rotate; wheel to zoom."
 msgstr "Arrastra para girar; usa la rueda para acercar o alejar."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Changing this ID updates every reference. Press Save again to confirm."
+msgstr "Cambiar este ID actualizará todas sus referencias. Pulsa Guardar de nuevo para confirmar."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Resource renamed and references updated."
+msgstr "Recurso renombrado y referencias actualizadas."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The library is invalid and was not changed."
+msgstr "La biblioteca no es válida y no se ha modificado."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The new ID is invalid."
+msgstr "El nuevo ID no es válido."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The resource to rename no longer exists."
+msgstr "El recurso que se iba a renombrar ya no existe."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Another resource of this type already uses the new ID."
+msgstr "Otro recurso de este tipo ya utiliza el nuevo ID."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The resource could not be renamed."
+msgstr "No se ha podido renombrar el recurso."

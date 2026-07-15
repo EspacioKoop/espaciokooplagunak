@@ -635,19 +635,40 @@ void GuiContentEditor::saveResource()
 
     int existing = findResource(resource.type, resource.id);
     const bool selected = selected_index >= 0 && selected_index < int(resources.size());
+    const bool renaming = selected
+        && resources[selected_index].type == resource.type
+        && resources[selected_index].id != resource.id;
     const bool replacing_other = existing >= 0 && existing != selected_index;
     const string save_signature = serializeContentResource(resource);
-    if (replacing_other && pending_save != save_signature)
-    {
-        pending_save = save_signature;
-        return setStatus(tr("content_editor", "This ID already exists. Press Save again to replace it."));
-    }
 
     auto candidate = resources;
     int target_index = selected_index;
     string success;
-    if (replacing_other)
+    if (renaming)
     {
+        const auto& original = resources[selected_index];
+        const auto rename_error = renameContentResource(
+            candidate, original.type, original.id, resource.id);
+        if (rename_error != ContentRenameError::None)
+            return setStatus(renameErrorText(rename_error));
+        const string rename_signature = contentResourceTypeId(original.type) + ":"
+            + original.id + "->" + resource.id + "\n" + save_signature;
+        if (pending_save != rename_signature)
+        {
+            pending_save = rename_signature;
+            return setStatus(tr("content_editor",
+                "Changing this ID updates every reference. Press Save again to confirm."));
+        }
+        candidate[selected_index] = resource;
+        success = tr("content_editor", "Resource renamed and references updated.");
+    }
+    else if (replacing_other)
+    {
+        if (pending_save != save_signature)
+        {
+            pending_save = save_signature;
+            return setStatus(tr("content_editor", "This ID already exists. Press Save again to replace it."));
+        }
         candidate[existing] = resource;
         if (selected)
         {
@@ -896,6 +917,23 @@ string GuiContentEditor::errorText(ContentResourceError error) const
         return tr("content_editor", "Imported document has invalid type-specific fields.");
     }
     return tr("content_editor", "Clipboard does not contain valid content JSON.");
+}
+
+string GuiContentEditor::renameErrorText(ContentRenameError error) const
+{
+    switch(error)
+    {
+    case ContentRenameError::None: return "";
+    case ContentRenameError::InvalidLibrary:
+        return tr("content_editor", "The library is invalid and was not changed.");
+    case ContentRenameError::InvalidNewId:
+        return tr("content_editor", "The new ID is invalid.");
+    case ContentRenameError::SourceNotFound:
+        return tr("content_editor", "The resource to rename no longer exists.");
+    case ContentRenameError::TargetAlreadyExists:
+        return tr("content_editor", "Another resource of this type already uses the new ID.");
+    }
+    return tr("content_editor", "The resource could not be renamed.");
 }
 
 string GuiContentEditor::storeErrorText(ContentStoreError error) const

@@ -109,6 +109,7 @@ private:
     bool applyImportedResource(const ContentResource& resource, const string& import_key);
     int findResource(ContentResourceType type, const string& id) const;
     string errorText(ContentResourceError error) const;
+    string renameErrorText(ContentRenameError error) const;
     string storeErrorText(ContentStoreError error) const;
     void setStatus(const string& text);
     void updatePreviewStatus();

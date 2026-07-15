@@ -220,7 +220,10 @@ transiciones, personajes y naves referenciadas, valida la candidata completa y s
 entonces reemplaza el vector original. IDs inválidos, colisiones, recursos ausentes o
 una biblioteca origen inválida no producen mutación parcial. El store envuelve carga,
 renombrado y guardado con su lock y commit atómico; distingue rechazos de dominio de
-fallos de E/S y conserva la generación anterior si la escritura falla. La operación de
-UI y los selectores tipados se incorporarán en el siguiente corte de #154.
+fallos de E/S y conserva la generación anterior si la escritura falla. En la GUI, editar
+el ID de un recurso cargado y pulsar Guardar muestra el alcance del cambio; una segunda
+pulsación confirma el renombrado y sus referencias en un único commit. Las colisiones
+se rechazan sin reemplazar otro recurso. Los selectores tipados de relaciones se
+incorporarán en el siguiente corte de #154.
 Aplicar esos documentos a una sesión viva queda separado de la edición y persistencia
 de metadatos.

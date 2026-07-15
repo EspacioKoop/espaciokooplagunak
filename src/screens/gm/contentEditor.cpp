@@ -15,6 +15,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <iomanip>
+#include <limits>
 #include <sstream>
 #include <utility>
 
@@ -86,6 +87,20 @@ bool parseShipHealth(const string& input, float& output)
     if (errno == ERANGE || end == text.c_str() || *end != '\0' || !std::isfinite(value))
         return false;
     output = value;
+    return true;
+}
+
+bool parseShipCargoQuantity(const string& input, std::uint32_t& output)
+{
+    const std::string text = input;
+    if (text.empty() || text.front() < '0' || text.front() > '9') return false;
+    char* end = nullptr;
+    errno = 0;
+    const auto value = std::strtoull(text.c_str(), &end, 10);
+    if (errno == ERANGE || end == text.c_str() || *end != '\0'
+        || value > std::numeric_limits<std::uint32_t>::max())
+        return false;
+    output = static_cast<std::uint32_t>(value);
     return true;
 }
 
@@ -188,13 +203,20 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
     preview_status_label->setPosition(x + 270, 360)->setSize(420, 40)->hide();
 
     ship_override_selector = new GuiSelector(box, "SHIP_OVERRIDE_MODE", [this](int, string value) {
-        if (value == "resources" && ship_resource_id_entry && ship_resource_id_entry->getText().empty()
-            && !ship_edit_session.document().resources.empty())
-            ship_resource_id_entry->setText(ship_edit_session.document().resources.front().id);
+        if (ship_resource_id_entry)
+        {
+            string id = "";
+            if (value == "resources" && !ship_edit_session.document().resources.empty())
+                id = ship_edit_session.document().resources.front().id;
+            else if (value == "cargo" && !ship_edit_session.document().cargo.empty())
+                id = ship_edit_session.document().cargo.front().id;
+            ship_resource_id_entry->setText(id);
+        }
         updateShipOverrideEditor();
     });
     ship_override_selector->addEntry(tr("content_editor", "Systems"), "systems");
     ship_override_selector->addEntry(tr("content_editor", "Resources"), "resources");
+    ship_override_selector->addEntry(tr("content_editor", "Cargo"), "cargo");
     ship_override_selector->setSelectionIndex(0)->setPosition(x, 360)->setSize(170, 35)->hide();
 
     ship_system_selector = new GuiSelector(box, "SHIP_SYSTEM", [this](int, string) {
@@ -445,11 +467,16 @@ void GuiContentEditor::loadResource(int index)
     ship_edit_session = resource.type == ContentResourceType::Ship
         ? ShipEditSession(resource.ship_document)
         : ShipEditSession{};
-    ship_resource_id_entry->setText(
-        resource.type == ContentResourceType::Ship && !resource.ship_document.resources.empty()
-            ? resource.ship_document.resources.front().id
-            : ""
-    );
+    string selected_ship_item = "";
+    if (resource.type == ContentResourceType::Ship)
+    {
+        const auto mode = ship_override_selector->getSelectionValue();
+        if (mode == "resources" && !resource.ship_document.resources.empty())
+            selected_ship_item = resource.ship_document.resources.front().id;
+        else if (mode == "cargo" && !resource.ship_document.cargo.empty())
+            selected_ship_item = resource.ship_document.cargo.front().id;
+    }
+    ship_resource_id_entry->setText(selected_ship_item);
     if (current_type != resource.type)
     {
         current_type = resource.type;
@@ -844,16 +871,38 @@ void GuiContentEditor::updatePreviewStatus()
 void GuiContentEditor::updateShipOverrideEditor()
 {
     if (current_type != ContentResourceType::Ship) return;
-    const bool resources = ship_override_selector->getSelectionValue() == "resources";
-    ship_system_selector->setVisible(!resources);
-    ship_health_label->setVisible(!resources);
-    ship_health_entry->setVisible(!resources);
-    ship_resource_id_entry->setVisible(resources);
-    ship_resource_amount_label->setVisible(resources);
-    ship_resource_amount_entry->setVisible(resources);
-    ship_set_system_button->setText(resources
-        ? tr("content_editor", "Set resource")
-        : tr("content_editor", "Set system"));
+    const auto mode = ship_override_selector->getSelectionValue();
+    const bool resources = mode == "resources";
+    const bool cargo = mode == "cargo";
+    const bool items = resources || cargo;
+    ship_system_selector->setVisible(!items);
+    ship_health_label->setVisible(!items);
+    ship_health_entry->setVisible(!items);
+    ship_resource_id_entry->setVisible(items);
+    ship_resource_amount_label->setVisible(items);
+    ship_resource_amount_entry->setVisible(items);
+    ship_resource_amount_label->setText(cargo
+        ? tr("content_editor", "Quantity")
+        : tr("content_editor", "Amount"));
+    ship_set_system_button->setText(cargo
+        ? tr("content_editor", "Set cargo")
+        : resources ? tr("content_editor", "Set resource")
+                    : tr("content_editor", "Set system"));
+
+    if (cargo)
+    {
+        const std::string id = ship_resource_id_entry->getText();
+        for (const auto& item : ship_edit_session.document().cargo)
+        {
+            if (item.id == id)
+            {
+                ship_resource_amount_entry->setText(string(static_cast<unsigned int>(item.quantity)));
+                return;
+            }
+        }
+        ship_resource_amount_entry->setText("");
+        return;
+    }
 
     if (resources)
     {
@@ -890,6 +939,19 @@ void GuiContentEditor::updateShipOverrideEditor()
 void GuiContentEditor::setShipOverride()
 {
     if (current_type != ContentResourceType::Ship) return;
+    if (ship_override_selector->getSelectionValue() == "cargo")
+    {
+        std::uint32_t quantity = 0;
+        const std::string id = ship_resource_id_entry->getText();
+        if (!parseShipCargoQuantity(ship_resource_amount_entry->getText(), quantity)
+            || ship_edit_session.setCargoQuantity(id, quantity) != ShipEditError::None)
+            return setStatus(tr("content_editor", "Cargo ID or quantity is invalid."));
+        pending_save = "";
+        pending_file_export = "";
+        discard_guard.reset();
+        updateShipOverrideEditor();
+        return setStatus(tr("content_editor", "Ship cargo override staged."));
+    }
     if (ship_override_selector->getSelectionValue() == "resources")
     {
         float amount = 0.0f;
@@ -921,6 +983,17 @@ void GuiContentEditor::setShipOverride()
 void GuiContentEditor::removeShipOverride()
 {
     if (current_type != ContentResourceType::Ship) return;
+    if (ship_override_selector->getSelectionValue() == "cargo")
+    {
+        const std::string id = ship_resource_id_entry->getText();
+        if (ship_edit_session.removeCargo(id) == ShipEditError::NotFound)
+            return setStatus(tr("content_editor", "The selected cargo has no override."));
+        pending_save = "";
+        pending_file_export = "";
+        discard_guard.reset();
+        updateShipOverrideEditor();
+        return setStatus(tr("content_editor", "Ship cargo override removed from staging."));
+    }
     if (ship_override_selector->getSelectionValue() == "resources")
     {
         const std::string id = ship_resource_id_entry->getText();

@@ -319,9 +319,14 @@ local function entrada(object, ox, oy, es_jugador)
     if ok_f and faction ~= nil and faction ~= "" then
         faction_json = json_escape(faction)
     end
+    local type_json = "null"
+    local ok_t, tname = pcall(function() return object.typeName end)
+    if ok_t and tname ~= nil and tname ~= "" then
+        type_json = json_escape(tname)
+    end
     return string.format(
-        '{"callsign":%s,"position":{"x":%.1f,"y":%.1f},"faction":%s,"is_player":%s}',
-        json_escape(callsign), ox, oy, faction_json, es_jugador)
+        '{"callsign":%s,"position":{"x":%.1f,"y":%.1f},"faction":%s,"type":%s,"is_player":%s}',
+        json_escape(callsign), ox, oy, faction_json, type_json, es_jugador)
 end
 local contacts = {entrada(ship, x, y, "true")}
 for i = 1, math.min(#otros, limite - 1) do

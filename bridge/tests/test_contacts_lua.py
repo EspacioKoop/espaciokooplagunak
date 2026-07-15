@@ -51,7 +51,10 @@ local function obj(cs, fac, x, y, sin_faccion)
     return o
 end
 local ship_obj = obj("Itsaso 1", "Human Navy", 0.0, 0.0, false)
+ship_obj.typeName = "PlayerSpaceship"
 local npc_dup = obj("Itsaso 1", "Kraylor", 100.0, 200.0, false)
+npc_dup.typeName = "CpuShip"
+
 local hostile = obj("Bad" .. string.char(1) .. "\\Name\"X", 'Pirati "Rossa"', -50.0, -60.0, false)
 local asteroid = obj("?", nil, 300.0, 300.0, true)
 local mundo = { ship_obj, npc_dup, hostile, asteroid }
@@ -130,6 +133,12 @@ def test_encoder_lua_genera_json_valido_con_caracteres_hostiles(tmp_path):
 
     asteroide = next(c for c in contactos if c["callsign"] == "?")
     assert asteroide["faction"] is None
+    # typeName es opcional: se publica cuando el objeto lo expone y queda
+    # null cuando no (el asteroide del mundo falso no lo define).
+    assert contactos[0]["type"] == "PlayerSpaceship"
+    npc = next(c for c in contactos if c["callsign"] == "Itsaso 1" and not c["is_player"])
+    assert npc["type"] == "CpuShip"
+    assert asteroide["type"] is None
 
 
 def test_encoder_lua_identifica_al_jugador_por_objeto_no_por_indicativo(tmp_path):

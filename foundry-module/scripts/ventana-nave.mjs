@@ -253,3 +253,65 @@ export function componerFrame({
 
   return { sinDatos: false, centro, rumboDeg, capas, blips };
 }
+
+/**
+ * Rumbo desde el centro (nave propia) hacia una posición, en la convención de
+ * EmptyEpsilon (0° = norte, sentido horario) — la misma fórmula
+ * `deg(atan(dy, dx)) + 90` que usan los escenarios Lua. Resultado en [0, 360).
+ */
+export function rumboHacia(centro, posicion) {
+  const dx = (posicion?.x ?? 0) - (centro?.x ?? 0);
+  const dy = (posicion?.y ?? 0) - (centro?.y ?? 0);
+  const grados = (Math.atan2(dy, dx) * 180) / Math.PI + 90;
+  return ((grados % 360) + 360) % 360;
+}
+
+/**
+ * Detalle de un contacto seleccionado para el onboarding del mapa (issue
+ * #126): nombre, tipo y facción si el DTO los trae, y distancia/rumbo
+ * calculados desde la nave propia. Puro: las etiquetas i18n las pone la vista.
+ *
+ * @returns {{callsign:string, tipo:string|null, faccion:string|null,
+ *   esJugador:boolean, color:string, distancia:number, rumboDeg:number}}
+ */
+export function prepararDetalleContacto(contacto, centro) {
+  const dx = (contacto.position?.x ?? 0) - (centro?.x ?? 0);
+  const dy = (contacto.position?.y ?? 0) - (centro?.y ?? 0);
+  return {
+    callsign: contacto.callsign ?? "?",
+    tipo: contacto.type ?? null,
+    faccion: contacto.faction ?? null,
+    esJugador: Boolean(contacto.is_player),
+    color: colorFaccion(contacto.faction ?? null, Boolean(contacto.is_player)),
+    distancia: Math.hypot(dx, dy),
+    rumboDeg: rumboHacia(centro, contacto.position),
+  };
+}
+
+/**
+ * Leyenda del mapa para una lista de contactos: la nave propia y una entrada
+ * por facción presente (color determinista de colorFaccion), más los objetos
+ * sin facción si los hay. Accesible: cada color va acompañado de su texto.
+ *
+ * @returns {{clave:string, color:string, faccion:string|null, esJugador:boolean}[]}
+ */
+export function leyendaContactos(contactos = []) {
+  const entradas = [{ clave: "propia", color: COLOR_JUGADOR, faccion: null, esJugador: true }];
+  const vistas = new Set();
+  let hayNeutros = false;
+  for (const c of contactos) {
+    if (c.is_player) continue;
+    const faccion = c.faction ?? null;
+    if (faccion === null) {
+      hayNeutros = true;
+      continue;
+    }
+    if (vistas.has(faccion)) continue;
+    vistas.add(faccion);
+    entradas.push({ clave: `faccion:${faccion}`, color: colorFaccion(faccion), faccion, esJugador: false });
+  }
+  if (hayNeutros) {
+    entradas.push({ clave: "neutro", color: COLOR_NEUTRO, faccion: null, esJugador: false });
+  }
+  return entradas;
+}

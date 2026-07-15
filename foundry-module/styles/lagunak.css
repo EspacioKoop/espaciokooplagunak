@@ -187,3 +187,73 @@
 @keyframes lagunak-parpadeo {
   50% { opacity: 0.25; }
 }
+
+/* --- Onboarding: ayuda, leyenda y detalle de contacto (issue #126) --- */
+
+.lagunak-ayuda {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9em;
+}
+
+.lagunak-ayuda summary {
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.lagunak-ayuda p {
+  margin: 0.25em 0;
+  opacity: 0.85;
+}
+
+.lagunak-mapa-claves {
+  list-style: none;
+  margin: 0 0 0.5rem 0;
+  padding: 0;
+}
+
+.lagunak-mapa-claves li {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+}
+
+.lagunak-mapa-clave-texto {
+  font-size: 0.85em;
+  opacity: 0.8;
+}
+
+.lagunak-mapa-contacto {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  width: 100%;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.lagunak-mapa-contacto.lagunak-seleccionado {
+  border-color: currentColor;
+  border-radius: 3px;
+}
+
+.lagunak-mapa-detalle {
+  margin-top: 0.5rem;
+  padding: 0.4rem;
+  border: 1px solid rgba(127, 127, 127, 0.5);
+  border-radius: 3px;
+}
+
+.lagunak-mapa-detalle h4 {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  margin: 0 0 0.3rem 0;
+}
+
+.lagunak-mapa-sin-seleccion {
+  font-size: 0.9em;
+  opacity: 0.8;
+  font-style: italic;
+}

@@ -36,6 +36,8 @@ import {
   componerFrame,
   crearCampoEstrellas,
   debeDibujar,
+  leyendaContactos,
+  prepararDetalleContacto,
   rotarMuestras,
 } from "./ventana-nave.mjs";
 
@@ -647,6 +649,7 @@ function crearClaseMapaV2() {
     #muestraPrev = null;
     #muestraActual = null;
     contactos = [];
+    seleccion = null; // callsign del contacto seleccionado en la lista
     conexion = "conectando";
     detalleError = "";
 
@@ -748,6 +751,20 @@ function crearClaseMapaV2() {
       this.#animar();
     }
 
+    /* Selección de contacto (issue #126): la lista re-renderiza en cada
+     * sondeo, así que los listeners se re-atan tras cada render. Clic en el
+     * contacto ya seleccionado lo deselecciona. */
+    _onRender(context, options) {
+      super._onRender?.(context, options);
+      this.element?.querySelectorAll?.("[data-contacto]")?.forEach((el) => {
+        el.addEventListener("click", () => {
+          const callsign = el.dataset.contacto ?? null;
+          this.seleccion = callsign === this.seleccion ? null : callsign;
+          this.render();
+        });
+      });
+    }
+
     _onClose(options) {
       // Invalida cualquier #sondear en vuelo: su respuesta tardía morirá en
       // la comparación de generación sin rearmar el polling.
@@ -766,6 +783,26 @@ function crearClaseMapaV2() {
 
     async _prepareContext(_options) {
       const centro = this.#muestraActual?.centro ?? null;
+      const desconocido = game.i18n.localize("LAGUNAK.MapaVivo.Desconocido");
+      const propia = game.i18n.localize("LAGUNAK.MapaVivo.LeyendaPropia");
+      const contactoSeleccionado =
+        this.contactos.find((c) => (c.callsign ?? "?") === this.seleccion) ?? null;
+      let detalle = null;
+      if (contactoSeleccionado) {
+        const d = prepararDetalleContacto(contactoSeleccionado, centro);
+        detalle = {
+          callsign: d.callsign,
+          color: d.color,
+          tipo: d.tipo ?? desconocido,
+          faccion: d.esJugador ? propia : d.faccion ?? desconocido,
+          distanciaLabel: game.i18n.format("LAGUNAK.EstadoNave.DistanciaUnidades", {
+            distance: Math.round(d.distancia),
+          }),
+          rumboLabel: game.i18n.format("LAGUNAK.MapaVivo.RumboGrados", {
+            rumbo: Math.round(d.rumboDeg),
+          }),
+        };
+      }
       return {
         conexion: this.conexion,
         conexionOk: this.conexion === "ok",
@@ -775,6 +812,13 @@ function crearClaseMapaV2() {
         esGM: Boolean(game.user?.isGM),
         sinDatos: !this.#muestraActual,
         alcanceLabel: game.i18n.format("LAGUNAK.MapaVivo.Alcance", { radio: MAPA_RADIO_MUNDO }),
+        detalle,
+        leyenda: leyendaContactos(this.contactos).map((e) => ({
+          color: e.color,
+          etiqueta: e.esJugador
+            ? propia
+            : e.faccion ?? game.i18n.localize("LAGUNAK.MapaVivo.LeyendaNeutro"),
+        })),
         contactos: this.contactos.map((c) => {
           const dx = (c.position?.x ?? 0) - (centro?.x ?? 0);
           const dy = (c.position?.y ?? 0) - (centro?.y ?? 0);
@@ -783,6 +827,7 @@ function crearClaseMapaV2() {
             callsign: c.callsign ?? "?",
             color: colorFaccion(c.faction ?? null, Boolean(c.is_player)),
             esJugador: Boolean(c.is_player),
+            seleccionado: (c.callsign ?? "?") === this.seleccion,
             distanciaLabel: game.i18n.format("LAGUNAK.EstadoNave.DistanciaUnidades", {
               distance: Math.round(distancia),
             }),
@@ -812,6 +857,7 @@ function crearClaseMapaV1() {
     #muestraPrev = null;
     #muestraActual = null;
     contactos = [];
+    seleccion = null; // callsign del contacto seleccionado en la lista
     conexion = "conectando";
     detalleError = "";
 
@@ -913,6 +959,17 @@ function crearClaseMapaV1() {
       dibujarFrame(ctx, frame, { ancho: canvas.width, alto: canvas.height });
     }
 
+    /* Selección de contacto (issue #126), réplica aislada de la ruta V2:
+     * clic selecciona, clic en el seleccionado deselecciona. */
+    activateListeners(html) {
+      super.activateListeners(html);
+      html.find("[data-contacto]").on("click", (ev) => {
+        const callsign = ev.currentTarget?.dataset?.contacto ?? null;
+        this.seleccion = callsign === this.seleccion ? null : callsign;
+        this.render(false);
+      });
+    }
+
     async _render(force, options) {
       await super._render(force, options);
       if (!this.#sondeando) {
@@ -940,6 +997,26 @@ function crearClaseMapaV1() {
 
     getData(_options) {
       const centro = this.#muestraActual?.centro ?? null;
+      const desconocido = game.i18n.localize("LAGUNAK.MapaVivo.Desconocido");
+      const propia = game.i18n.localize("LAGUNAK.MapaVivo.LeyendaPropia");
+      const contactoSeleccionado =
+        this.contactos.find((c) => (c.callsign ?? "?") === this.seleccion) ?? null;
+      let detalle = null;
+      if (contactoSeleccionado) {
+        const d = prepararDetalleContacto(contactoSeleccionado, centro);
+        detalle = {
+          callsign: d.callsign,
+          color: d.color,
+          tipo: d.tipo ?? desconocido,
+          faccion: d.esJugador ? propia : d.faccion ?? desconocido,
+          distanciaLabel: game.i18n.format("LAGUNAK.EstadoNave.DistanciaUnidades", {
+            distance: Math.round(d.distancia),
+          }),
+          rumboLabel: game.i18n.format("LAGUNAK.MapaVivo.RumboGrados", {
+            rumbo: Math.round(d.rumboDeg),
+          }),
+        };
+      }
       return {
         conexion: this.conexion,
         conexionOk: this.conexion === "ok",
@@ -949,6 +1026,13 @@ function crearClaseMapaV1() {
         esGM: Boolean(game.user?.isGM),
         sinDatos: !this.#muestraActual,
         alcanceLabel: game.i18n.format("LAGUNAK.MapaVivo.Alcance", { radio: MAPA_RADIO_MUNDO }),
+        detalle,
+        leyenda: leyendaContactos(this.contactos).map((e) => ({
+          color: e.color,
+          etiqueta: e.esJugador
+            ? propia
+            : e.faccion ?? game.i18n.localize("LAGUNAK.MapaVivo.LeyendaNeutro"),
+        })),
         contactos: this.contactos.map((c) => {
           const dx = (c.position?.x ?? 0) - (centro?.x ?? 0);
           const dy = (c.position?.y ?? 0) - (centro?.y ?? 0);
@@ -957,6 +1041,7 @@ function crearClaseMapaV1() {
             callsign: c.callsign ?? "?",
             color: colorFaccion(c.faction ?? null, Boolean(c.is_player)),
             esJugador: Boolean(c.is_player),
+            seleccionado: (c.callsign ?? "?") === this.seleccion,
             distanciaLabel: game.i18n.format("LAGUNAK.EstadoNave.DistanciaUnidades", {
               distance: Math.round(distancia),
             }),

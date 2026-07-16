@@ -6105,7 +6105,7 @@ function healthCheck(delta)
 						crewFate(p,fatalityChance)
 					end
 				else	--no repair crew left
-					if random(1,100) <= (4 - dificulty) then
+					if random(1,100) <= (4 - difficulty) then
 						p:setRepairCrewCount(1)
 						if p:hasPlayerAtPosition("Engineering") then
 							local repairCrewRecovery = "repairCrewRecovery"

@@ -64,6 +64,17 @@ cmake --build build --parallel
 find scripts -type f -iname '*.lua' -print0 | xargs -0 -n 1 luac -p
 ```
 
+`.luarc.json` (raíz) configura lua-language-server: `diagnostics.globals` contiene
+únicamente las globales que el runtime registra con `setGlobal("...")` en `src/` —
+nunca nombres observados en escenarios, que ocultarían erratas ejecutables. El test
+`tools/tests/test_luarc_globals.py` hace cumplir ese contrato (y, con
+`lua-language-server` en el PATH, verifica el comportamiento focal). Si añades API
+nueva que se inyecte como global, regístrala en C++ y añádela a la lista; el test
+fallará si la lista contiene nombres sin binding. Los diagnósticos restantes en
+escenarios upstream (`need-check-nil`, `undefined-field`, `undefined-global` de
+estado opcional comentado…) son ruido honesto por falta de anotaciones `---@meta` —
+pendiente para Fase 4/5; no los «arregles» en escenarios upstream.
+
 Hay TRES suites de tests propias del fork — ejecútalas siempre que toques su área, y no
 confundas «no está en CI todavía» con «no existe»:
 
@@ -112,6 +123,9 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
   inline vía la etiqueta `{{inline ...}}` en vez de cargarlo de un CDN sin `integrity` (alertas
   CodeQL 8/9); la salida sigue siendo un único HTML autocontenido que funciona offline. Vigila esta
   divergencia al mergear cambios de upstream que toquen `script_docs/`.
+- `foundry-module/` — la lógica pura y testeable del mapa vive en `scripts/ventana-nave.mjs`, el
+  pintor Canvas en `scripts/mapa-render.mjs` y las rutas Foundry V1/V2 permanecen aisladas en
+  `scripts/main.mjs`; el mapa interpola únicamente muestras confirmadas y nunca extrapola.
 - `resources/` y `packs/` — assets heredados de upstream.
 - La versión se calcula por fecha (`AAAA.MM.DD`) en `CMakeLists.txt` salvo override explícito.
 - `docs/` — documentación propia del fork: [`BUILDING.md`](docs/BUILDING.md),
@@ -119,7 +133,12 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
   [`BASELINE.md`](docs/BASELINE.md) (índice AECF del issue #88: qué prácticas de
   seguridad/accesibilidad/calidad/fiabilidad están adoptadas, cuáles cortadas y
   por qué — la regla de admisión es "solo se abre issue cuando duele y cabe en
-  un PR", y el cumplimiento se convierte en gate de CI, no en ceremonia).
+  un PR", y el cumplimiento se convierte en gate de CI, no en ceremonia),
+  [`docs/adr/`](docs/adr/README.md) (registro de decisiones de arquitectura ya
+  tomadas, formato MADR; las propuestas siguen siendo issues),
+  [`ASSESSMENT-ARQUITECTURA.md`](docs/ASSESSMENT-ARQUITECTURA.md) (evaluación
+  ATAM-lite/ISO 42010) y [`AECF-METRICAS.md`](docs/AECF-METRICAS.md) (madurez
+  AECF, escala M0–M5).
 
 ## Flujo git
 

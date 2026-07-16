@@ -54,11 +54,17 @@ def test_state_sin_nave(client, juego, auth):
     assert r.json() == {"ship": None}
 
 
-def test_scenario_devuelve_el_tiempo(client, juego, auth):
-    juego.text = '{"scenario_time":42.5}'
+def test_scenario_devuelve_el_tiempo_y_la_pausa(client, juego, auth):
+    juego.text = '{"scenario_time":42.5,"paused":false}'
     r = client.get("/v1/scenario", headers=auth)
     assert r.status_code == 200
-    assert r.json() == {"scenario_time": 42.5}
+    assert r.json() == {"scenario_time": 42.5, "paused": False}
+
+
+def test_scenario_envia_lua_con_pausa_al_juego(client, juego, auth):
+    juego.text = '{"scenario_time":0.0,"paused":true}'
+    client.get("/v1/scenario", headers=auth)
+    assert "isGamePaused()" in juego.ultimo_lua
 
 
 def test_state_envia_lua_de_estado_al_juego(client, juego, auth):

@@ -238,7 +238,8 @@ return string.format(
 """ % ", ".join(f'"{name}"' for name in _SYSTEMS)
 
 _SCENARIO_LUA = """
-return string.format('{"scenario_time":%.1f}', getScenarioTime())
+return string.format('{"scenario_time":%.1f,"paused":%s}',
+    getScenarioTime(), tostring(isGamePaused()))
 """
 
 _HEALTH_LUA = """

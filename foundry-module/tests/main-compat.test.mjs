@@ -95,12 +95,16 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
   const controls = [{ name: "token", tools: [] }];
 
   hooks.getSceneControlButtons(controls);
-  // Tres herramientas: puestos, estado de la nave y mapa vivo.
-  assert.equal(controls[0].tools.length, 3);
+  // El puesto sigue accesible desde fichas; estado y mapa viven en el grupo GM.
+  assert.equal(controls[0].tools.length, 1);
   assert.equal(controls[0].tools[0].name, "lagunak-puestos");
-  assert.equal(controls[0].tools[1].name, "lagunak-estado");
-  assert.equal(controls[0].tools[2].name, "lagunak-mapa");
-  controls[0].tools[1].onClick();
+  const grupo = controls.find((c) => c.name === "lagunak");
+  assert.ok(grupo);
+  assert.equal(grupo.icon, "fa-solid fa-shuttle-space");
+  assert.equal(grupo.tools.length, 2);
+  assert.equal(grupo.tools[0].name, "lagunak-estado");
+  assert.equal(grupo.tools[1].name, "lagunak-mapa");
+  grupo.tools[0].onClick();
 
   assert.equal(instances.length, 1);
   assert.deepEqual(instances[0].renderCalls, [true]);
@@ -119,8 +123,22 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
 
   assert.equal(bindings.get('[data-action="pausar"]').event, "click");
   assert.equal(bindings.get('[data-action="reanudar"]').event, "click");
+
+  // El ACK del comando NO confirma: sin lectura de /v1/scenario no hay
+  // estado confirmado ni notificación (autoridad del simulador).
   await bindings.get('[data-action="pausar"]').callback();
+  assert.equal(instances[0].pausaConfirmada, null);
+  assert.deepEqual(notifications.info, []);
+
+  // La confirmación llega únicamente de una lectura real de /v1/scenario.
+  instances[0]._registrarLecturaPausa({ paused: true });
+  assert.equal(instances[0].pausaConfirmada, true);
+  assert.deepEqual(notifications.info, ["LAGUNAK.Tempo.Pausado"]);
+
   await bindings.get('[data-action="reanudar"]').callback();
+  assert.equal(instances[0].pausaConfirmada, true);
+  instances[0]._registrarLecturaPausa({ paused: false });
+  assert.equal(instances[0].pausaConfirmada, false);
 
   assert.deepEqual(pauseValues(fetchCalls), [true, false]);
   assert.deepEqual(notifications.info, ["LAGUNAK.Tempo.Pausado", "LAGUNAK.Tempo.Reanudado"]);
@@ -129,23 +147,80 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
 
 test("host moderno conecta las acciones de pausa y reanudación con el puente", async () => {
   const { hooks, instances, notifications, fetchCalls } = await loadModule({ modern: true });
-  const controls = { tokens: { tools: {} } };
+  const controls = {};
 
   hooks.getSceneControlButtons(controls);
-  assert.ok(controls.tokens.tools["lagunak-estado"]);
-  controls.tokens.tools["lagunak-estado"].onClick();
+  // Grupo propio con icono de nave (issue #125), record de tools en v13.
+  assert.ok(controls.lagunak);
+  assert.equal(controls.lagunak.icon, "fa-solid fa-shuttle-space");
+  assert.ok(controls.lagunak.tools["lagunak-estado"]);
+  controls.lagunak.tools["lagunak-estado"].onClick();
 
   assert.equal(instances.length, 1);
   assert.deepEqual(instances[0].renderCalls, [{ force: true }]);
   const actions = instances[0].constructor.DEFAULT_OPTIONS.actions;
   assert.equal(typeof actions.pausar, "function");
   assert.equal(typeof actions.reanudar, "function");
+
+  // ACK sin confirmación: sin lectura de /v1/scenario no hay estado.
   await actions.pausar.call(instances[0]);
+  assert.equal(instances[0].pausaConfirmada, null);
+  assert.deepEqual(notifications.info, []);
+
+  instances[0]._registrarLecturaPausa({ paused: true });
+  assert.equal(instances[0].pausaConfirmada, true);
+
   await actions.reanudar.call(instances[0]);
+  instances[0]._registrarLecturaPausa({ paused: false });
+  assert.equal(instances[0].pausaConfirmada, false);
 
   assert.deepEqual(pauseValues(fetchCalls), [true, false]);
   assert.deepEqual(notifications.info, ["LAGUNAK.Tempo.Pausado", "LAGUNAK.Tempo.Reanudado"]);
   assert.deepEqual(notifications.error, []);
+});
+
+test("v11: lectura discordante tras el ACK avisa y pasa a estado de error", async () => {
+  const { hooks, instances, notifications } = await loadModule();
+  const controls = [];
+  hooks.getSceneControlButtons(controls);
+  controls.find((c) => c.name === "lagunak").tools[0].onClick();
+
+  const bindings = new Map();
+  instances[0].activateListeners({
+    find(selector) {
+      return { on(_event, callback) { bindings.set(selector, callback); } };
+    },
+  });
+  await bindings.get('[data-action="pausar"]')();
+
+  // Mientras espera confirmación, una segunda orden queda bloqueada.
+  await bindings.get('[data-action="reanudar"]')();
+  assert.equal(instances[0].confirmacionPendiente, true);
+
+  // El simulador responde lo contrario de lo ordenado.
+  instances[0]._registrarLecturaPausa({ paused: false });
+  assert.equal(instances[0].pausaConfirmada, false);
+  assert.equal(instances[0].falloOrden, true);
+  assert.deepEqual(notifications.info, []);
+  assert.deepEqual(notifications.warn, ["LAGUNAK.Tempo.Discordante"]);
+});
+
+test("ApplicationV2: lectura discordante tras el ACK avisa y pasa a estado de error", async () => {
+  const { hooks, instances, notifications } = await loadModule({ modern: true });
+  const controls = {};
+  hooks.getSceneControlButtons(controls);
+  controls.lagunak.tools["lagunak-estado"].onClick();
+
+  const actions = instances[0].constructor.DEFAULT_OPTIONS.actions;
+  await actions.pausar.call(instances[0]);
+  await actions.reanudar.call(instances[0]); // bloqueada: confirmación pendiente
+  assert.equal(instances[0].confirmacionPendiente, true);
+
+  instances[0]._registrarLecturaPausa({ paused: false });
+  assert.equal(instances[0].pausaConfirmada, false);
+  assert.equal(instances[0].falloOrden, true);
+  assert.deepEqual(notifications.info, []);
+  assert.deepEqual(notifications.warn, ["LAGUNAK.Tempo.Discordante"]);
 });
 
 test("v11 muestra el error del puente sin emitir una confirmación falsa", async () => {
@@ -154,7 +229,7 @@ test("v11 muestra el error del puente sin emitir una confirmación falsa", async
   });
   const controls = [{ name: "token", tools: [] }];
   hooks.getSceneControlButtons(controls);
-  controls[0].tools[1].onClick();
+  controls.find((c) => c.name === "lagunak").tools[0].onClick();
 
   const bindings = new Map();
   instances[0].activateListeners({
@@ -174,9 +249,9 @@ test("ApplicationV2 muestra el error del puente sin emitir una confirmación fal
     modern: true,
     fetchImpl: async () => ({ ok: false, status: 503, async json() { return {}; } }),
   });
-  const controls = { tokens: { tools: {} } };
+  const controls = {};
   hooks.getSceneControlButtons(controls);
-  controls.tokens.tools["lagunak-estado"].onClick();
+  controls.lagunak.tools["lagunak-estado"].onClick();
 
   const actions = instances[0].constructor.DEFAULT_OPTIONS.actions;
   await actions.reanudar.call(instances[0]);
@@ -190,7 +265,7 @@ test("v11 bloquea la orden si el usuario deja de ser GM", async () => {
   const { hooks, instances, notifications, fetchCalls } = await loadModule();
   const controls = [{ name: "token", tools: [] }];
   hooks.getSceneControlButtons(controls);
-  controls[0].tools[1].onClick();
+  controls.find((c) => c.name === "lagunak").tools[0].onClick();
 
   const bindings = new Map();
   instances[0].activateListeners({
@@ -209,9 +284,9 @@ test("v11 bloquea la orden si el usuario deja de ser GM", async () => {
 
 test("ApplicationV2 bloquea la orden si el usuario deja de ser GM", async () => {
   const { hooks, instances, notifications, fetchCalls } = await loadModule({ modern: true });
-  const controls = { tokens: { tools: {} } };
+  const controls = {};
   hooks.getSceneControlButtons(controls);
-  controls.tokens.tools["lagunak-estado"].onClick();
+  controls.lagunak.tools["lagunak-estado"].onClick();
   game.user.isGM = false;
 
   const actions = instances[0].constructor.DEFAULT_OPTIONS.actions;
@@ -230,14 +305,15 @@ test("un jugador no GM recibe solo el control de su puesto", async () => {
   hooks.getSceneControlButtons(controls);
   assert.equal(controls[0].tools.length, 1);
   assert.equal(controls[0].tools[0].name, "lagunak-puestos");
+  assert.equal(controls.find((c) => c.name === "lagunak"), undefined);
 });
 
 test("v11 abre el mapa vivo con Application clásica (rAF ausente: sin bucle)", async () => {
   const { hooks, instances } = await loadModule();
-  const controls = [{ name: "token", tools: [] }];
+  const controls = [];
 
   hooks.getSceneControlButtons(controls);
-  const mapa = controls[0].tools.find((t) => t.name === "lagunak-mapa");
+  const mapa = controls.find((c) => c.name === "lagunak").tools.find((t) => t.name === "lagunak-mapa");
   assert.ok(mapa);
   assert.equal(mapa.button, true);
   // Abrir no debe romper aunque el arnés no tenga requestAnimationFrame:
@@ -252,10 +328,10 @@ test("v11 abre el mapa vivo con Application clásica (rAF ausente: sin bucle)", 
 
 test("host moderno registra el mapa vivo con onChange (v13) y lo abre", async () => {
   const { hooks, instances } = await loadModule({ modern: true });
-  const controls = { tokens: { tools: {} } };
+  const controls = {};
 
   hooks.getSceneControlButtons(controls);
-  const mapa = controls.tokens.tools["lagunak-mapa"];
+  const mapa = controls.lagunak.tools["lagunak-mapa"];
   assert.ok(mapa);
   assert.equal(typeof mapa.onClick, "function");
   assert.equal(typeof mapa.onChange, "function"); // v13 dispara onChange
@@ -268,15 +344,15 @@ test("host moderno registra el mapa vivo con onChange (v13) y lo abre", async ()
 
 test("las ventanas de estado y mapa son instancias separadas", async () => {
   const { hooks, instances } = await loadModule({ modern: true });
-  const controls = { tokens: { tools: {} } };
+  const controls = {};
 
   hooks.getSceneControlButtons(controls);
-  controls.tokens.tools["lagunak-estado"].onClick();
-  controls.tokens.tools["lagunak-mapa"].onClick();
+  controls.lagunak.tools["lagunak-estado"].onClick();
+  controls.lagunak.tools["lagunak-mapa"].onClick();
 
   assert.equal(instances.length, 2);
   assert.notEqual(instances[0].constructor, instances[1].constructor);
   // Reabrir no crea instancias nuevas (instancia perezosa compartida).
-  controls.tokens.tools["lagunak-mapa"].onClick();
+  controls.lagunak.tools["lagunak-mapa"].onClick();
   assert.equal(instances.length, 2);
 });

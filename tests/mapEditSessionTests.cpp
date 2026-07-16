@@ -116,6 +116,35 @@ int main()
 
     MapDocument history_base;
     history_base.objects.push_back(asteroid("history"));
+
+    MapEditSession versioned(history_base);
+    MapEditSession copied(versioned);
+    expect(copied.sessionId() != versioned.sessionId(),
+        "copied session receives a distinct stable identity");
+    const auto original_identity = versioned.sessionId();
+    versioned = MapEditSession(history_base);
+    expect(versioned.sessionId() != original_identity && versioned.revision() == 0,
+        "reassigned session receives a new identity and initial revision");
+    auto revision = versioned.revision();
+    expect(versioned.moveObject("history", {10, 20, 30}) == MapEditError::None
+            && versioned.revision() == revision,
+        "no-op edit does not advance revision");
+    expect(versioned.moveObject("history", {11, 20, 30}) == MapEditError::None
+            && versioned.revision() > revision,
+        "committed edit advances revision");
+    revision = versioned.revision();
+    expect(versioned.undo() && versioned.revision() > revision,
+        "undo advances revision even when bytes return to an earlier snapshot");
+    revision = versioned.revision();
+    expect(versioned.redo() && versioned.revision() > revision,
+        "redo advances revision");
+    revision = versioned.revision();
+    versioned.markSaved();
+    expect(versioned.revision() > revision, "markSaved advances revision");
+    revision = versioned.revision();
+    versioned.rollback();
+    expect(versioned.revision() > revision, "rollback advances revision");
+
     MapEditSession bounded(history_base);
     for (int index = 1; index <= 101; ++index)
         expect(bounded.moveObject("history", {static_cast<float>(index), 20, 30}) == MapEditError::None,

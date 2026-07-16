@@ -134,3 +134,56 @@
   color: #ffb703; /* ámbar de aviso */
   font-style: italic;
 }
+
+/* --- Estado de pausa (issue #125) --- */
+
+.lagunak-tempo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5em;
+  margin-bottom: 0.5rem;
+}
+
+.lagunak-tempo button[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.lagunak-pausa-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  flex: 1 1 100%;
+  font-weight: bold;
+}
+
+.lagunak-pausa-en_marcha .lagunak-punto {
+  background: #3fa34d;
+}
+
+.lagunak-pausa-pausado .lagunak-punto {
+  background: #ffb703;
+}
+
+.lagunak-pausa-pausando .lagunak-punto,
+.lagunak-pausa-reanudando .lagunak-punto {
+  background: #3a86ff;
+  animation: lagunak-parpadeo 0.8s linear infinite;
+}
+
+.lagunak-pausa-error .lagunak-punto,
+.lagunak-pausa-desconectado .lagunak-punto {
+  background: #c0392b;
+}
+
+.lagunak-pausa-foundry {
+  flex: 1 1 100%;
+  margin: 0;
+  font-size: 0.85em;
+  opacity: 0.8;
+}
+
+@keyframes lagunak-parpadeo {
+  50% { opacity: 0.25; }
+}

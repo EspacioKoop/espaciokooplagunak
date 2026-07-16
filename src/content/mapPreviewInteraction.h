@@ -3,6 +3,7 @@
 #include "content/mapEditSession.h"
 #include "content/mapPreview.h"
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -42,8 +43,8 @@ public:
 
 private:
     std::string selected_id;
-    const MapEditSession* source_session = nullptr;
-    MapDocument source_document;
+    std::uint64_t source_session_id = 0;
+    std::uint64_t source_revision = 0;
     MapPreviewPoint pointer_offset;
     MapObjectTransform original_transform;
     MapObjectTransform provisional_transform;

@@ -191,9 +191,12 @@ redo, dirty state y rollback, y edición visual sobre el radar GM. El modo de ed
 consume los gestos antes de la lógica normal del radar: nunca crea ni mueve entidades
 del mundo. Solo proyecta, selecciona y mueve asteroides y nebulosas de la allowlist;
 los tipos futuros opacos se omiten visualmente sin perderse y su recuento queda
-visible en el editor. El hit-test mantiene una tolerancia visual estable al zoom y el
-drag provisional vive fuera de `MapEditSession`: solo mouse-up confirma una vez contra
-la misma sesión y snapshot con que comenzó. Escape, clic derecho, una coordenada fuera
+visible en el editor. El hit-test mantiene una tolerancia visual estable al zoom y los
+objetos opacos nunca participan en él. El drag provisional vive fuera de
+`MapEditSession`: mover el puntero no modifica el documento y `mouse-up` llama una sola
+vez a `moveObject()` únicamente si conserva la misma identidad generacional y revisión
+de sesión con que empezó. Cada edición, undo, redo, rollback, guardado o reemplazo de
+sesión avanza esa barrera para impedir ABA. Escape, clic derecho, una coordenada fuera
 de rango o terminar el modo cancelan sin ensuciar el documento ni añadir historial.
 
 Las naves tienen un modelo tipado para overrides opcionales de sistemas, recursos,

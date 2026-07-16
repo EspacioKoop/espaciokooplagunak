@@ -77,6 +77,67 @@ bool parseTransitions(const std::string& value, std::vector<Transition>& output)
     return true;
 }
 
+std::string serializeIdList(const std::vector<std::string>& ids)
+{
+    std::ostringstream output;
+    for (std::size_t index = 0; index < ids.size(); ++index)
+    {
+        if (index > 0) output << ", ";
+        output << ids[index];
+    }
+    return output.str();
+}
+
+void replaceIdList(std::string& value, const std::string& old_id, const std::string& new_id)
+{
+    std::vector<std::string> ids;
+    if (!parseIdList(value, ids)) return;
+    bool changed = false;
+    for (auto& id : ids)
+    {
+        if (id != old_id) continue;
+        id = new_id;
+        changed = true;
+    }
+    if (changed) value = serializeIdList(ids);
+}
+
+void replaceTransitions(std::string& value, const std::string& old_id, const std::string& new_id)
+{
+    std::vector<Transition> transitions;
+    if (!parseTransitions(value, transitions)) return;
+    bool changed = false;
+    for (auto& transition : transitions)
+    {
+        if (transition.first == old_id)
+        {
+            transition.first = new_id;
+            changed = true;
+        }
+        if (transition.second == old_id)
+        {
+            transition.second = new_id;
+            changed = true;
+        }
+    }
+    if (!changed) return;
+    std::ostringstream output;
+    for (std::size_t index = 0; index < transitions.size(); ++index)
+    {
+        if (index > 0) output << ", ";
+        output << transitions[index].first << '>' << transitions[index].second;
+    }
+    value = output.str();
+}
+
+bool uniqueResourceIds(const std::vector<ContentResource>& resources)
+{
+    std::set<std::pair<ContentResourceType, std::string>> identities;
+    for (const auto& resource : resources)
+        if (!identities.insert({resource.type, resource.id}).second) return false;
+    return true;
+}
+
 bool transitionCycle(const std::vector<Transition>& transitions)
 {
     std::map<std::string, std::vector<std::string>> graph;
@@ -249,6 +310,7 @@ bool parseContentResourceType(const std::string& value, ContentResourceType& typ
 
 ContentResourceError validateContentResource(const ContentResource& resource)
 {
+    if (contentResourceTypeId(resource.type).empty()) return ContentResourceError::UnknownType;
     if (!validId(resource.id)) return ContentResourceError::InvalidId;
     if (resource.name.empty() || resource.name.size() > 120) return ContentResourceError::InvalidName;
     if (resource.description.size() > 4000) return ContentResourceError::DescriptionTooLong;
@@ -319,8 +381,58 @@ ContentResourceError validateContentLibrary(const std::vector<ContentResource>& 
     return ContentResourceError::None;
 }
 
-bool contentResourceHasMissingDependencies(const ContentResource& resource,
-                                           const std::vector<ContentResource>& library)
+ContentRenameError renameContentResource(std::vector<ContentResource>& resources,
+                                         ContentResourceType type,
+                                         const std::string& old_id,
+                                         const std::string& new_id)
+{
+    if (contentResourceTypeId(type).empty()) return ContentRenameError::InvalidType;
+    if (!uniqueResourceIds(resources)
+        || validateContentLibrary(resources) != ContentResourceError::None)
+        return ContentRenameError::InvalidLibrary;
+    if (!validId(new_id)) return ContentRenameError::InvalidNewId;
+
+    const auto source = std::find_if(resources.begin(), resources.end(), [&](const ContentResource& item) {
+        return item.type == type && item.id == old_id;
+    });
+    if (source == resources.end()) return ContentRenameError::SourceNotFound;
+    if (old_id == new_id) return ContentRenameError::None;
+    if (resourceExists(resources, type, new_id)) return ContentRenameError::TargetAlreadyExists;
+
+    auto candidate = resources;
+    for (auto& resource : candidate)
+    {
+        if (resource.type == type && resource.id == old_id) resource.id = new_id;
+        if (resource.type == ContentResourceType::Campaign)
+        {
+            if (type == ContentResourceType::Map)
+            {
+                replaceIdList(resource.primary, old_id, new_id);
+                if (resource.secondary == old_id) resource.secondary = new_id;
+                replaceTransitions(resource.quinary, old_id, new_id);
+            }
+            else if (type == ContentResourceType::Character)
+                replaceIdList(resource.tertiary, old_id, new_id);
+            else if (type == ContentResourceType::Ship)
+                replaceIdList(resource.quaternary, old_id, new_id);
+        }
+        if (type == ContentResourceType::Ship
+            && resource.type == ContentResourceType::Character
+            && resource.quaternary == old_id)
+            resource.quaternary = new_id;
+    }
+
+    if (!uniqueResourceIds(candidate)
+        || validateContentLibrary(candidate) != ContentResourceError::None)
+        return ContentRenameError::InvalidLibrary;
+    resources = std::move(candidate);
+    return ContentRenameError::None;
+}
+
+bool contentResourceHasMissingDependencies(
+    const ContentResource& resource,
+    const std::vector<ContentResource>& library
+)
 {
     for (const auto& dependency : dependencies(resource))
         if (!resourceExists(library, dependency.first, dependency.second)) return true;

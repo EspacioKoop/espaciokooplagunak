@@ -19,9 +19,11 @@
 | Mantenedores (2 humanos + agentes) | Merge tax mínimo con upstream, CI como fuente de verdad |
 | Upstream (daid/EmptyEpsilon) | Recibir arreglos generales como PR (ADR-0007) |
 
-Sistema en tres contenedores propios más el juego heredado (vista C4 nivel 2):
-juego headless C++ (:8080 interno, :35666 LAN) ← puente FastAPI (:8090,
-bind 127.0.0.1) ← módulo Foundry (polling HTTP + Bearer).
+Sistema en dos contenedores propios (`docker/compose.yaml`: servicios `game`
+y `bridge`, vista C4 nivel 2): juego headless C++ (:8080 interno, :35666 LAN)
+← puente FastAPI (:8090, bind 127.0.0.1). El módulo Foundry se ejecuta en un
+Foundry VTT **externo** al despliegue (polling HTTP + Bearer contra el
+puente); no es un contenedor del sistema.
 
 ## 2. Decisiones arquitectónicas registradas
 
@@ -40,7 +42,7 @@ El inventario completo está en [`docs/adr/README.md`](adr/README.md)
 | # | Atributo | Escenario | Respuesta observada |
 |---|---|---|---|
 | E1 | Seguridad | Un atacante en la LAN intenta ejecutar Lua vía HTTP | El 8080 no está publicado; el puente solo acepta plantillas de lista blanca con Bearer + rate limit; regresión cubierta por CI |
-| E2 | Modificabilidad | Upstream publica cambios en `src/` | Merge `--no-ff` en rama `upstream/AAAA-MM-DD`; divergencias vigiladas: solo `script_docs/` |
+| E2 | Modificabilidad | Upstream publica cambios en `src/` | Merge `--no-ff` en rama `upstream/AAAA-MM-DD`; divergencia real vs. upstream (medida con `git diff --name-only upstream/master...HEAD`): piezas propias deliberadas en `src/content/` + `src/screens/gm/` (editor de contenido, 20 archivos) y soporte del fork en `src/` (puestos, menús, `gameGlobalInfo`, 12 archivos), `scripts/` (locale es 76, escenario propio, `api/shipTemplate.lua`) y `script_docs/` (8, ADR-0006) — ese es el merge tax a vigilar en cada sync |
 | E3 | Fiabilidad | SeriousProton cambia su HEAD | Sin efecto: release y CI fijan el mismo SHA (ADR-0004) |
 | E4 | Testabilidad | Cambio en el puente o el módulo | pytest con juego mockeado y `node --test` de lógica pura — sin necesidad de juego ni Foundry vivos |
 | E5 | Disponibilidad de datos | El polling pierde muestras | El mapa interpola solo muestras confirmadas, nunca extrapola; eventos idempotentes por `eventId` |

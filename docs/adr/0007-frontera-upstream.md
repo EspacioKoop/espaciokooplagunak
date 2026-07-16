@@ -20,7 +20,12 @@ mezclada con funcionalidades propias, siempre por PR.
 
 ## Consecuencias
 
-- Las divergencias permanentes existentes quedan enumeradas y vigiladas
-  (hoy: `script_docs/` — ADR-0006 — y las piezas propias del fork).
+- Las divergencias permanentes existentes quedan enumeradas y vigiladas.
+  Hoy (vs. `upstream/master`): `script_docs/` (ADR-0006), el editor de
+  contenido propio (`src/content/`, `src/screens/gm/`), el soporte del fork
+  en `src/` heredado (puestos de tripulación, menús, `gameGlobalInfo`,
+  `main.cpp`), la localización y el escenario propios en `scripts/` y
+  `scripts/api/shipTemplate.lua`. La cifra exacta se mide en cada sync con
+  `git diff --name-only upstream/master...HEAD`.
 - La accesibilidad del juego C++ heredado solo se aborda si un jugador real
   choca con la barrera y no puede resolverse en módulo/doc (fase 4).

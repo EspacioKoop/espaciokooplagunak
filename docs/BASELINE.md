@@ -32,8 +32,11 @@ Baseline normativa: [SECURITY.md](../SECURITY.md) (no se duplica aquí).
 - [x] `/exec.lua` nunca expuesto — regla en SECURITY.md **y gate en CI**
       (job `guardia-exec-lua` en `docker.yml`: falla si `compose.yaml` publica
       el puerto 8080 o usa `network_mode: host`; el job prueba ambas regresiones).
-- [x] Permisos mínimos declarados en los 6 workflows (`contents: read`;
-      ampliaciones justificadas en `codeql.yml` y `docker-publish.yml`).
+- [x] Permisos mínimos declarados en los 8 workflows: seis a nivel de
+      workflow (`contents: read`) y dos solo a nivel de job — `codeql.yml`
+      (`security-events: write`) y `label.yml` (`contents: read`,
+      `pull-requests: write`); ampliaciones justificadas también en
+      `docker-publish.yml`.
 - [x] CodeQL activo (`codeql.yml`); alertas 8/9 resueltas vendorizando
       highlight.js (issue #87, PR #89).
 - [x] Dependabot acotado a lo propio del fork: `github-actions`, `pip` en

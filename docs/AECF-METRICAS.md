@@ -27,7 +27,7 @@ Adaptación de los niveles de capacidad tipo CMMI al principio del fork
 | Práctica | Nivel | Evidencia |
 |---|---|---|
 | `/exec.lua` nunca expuesto | M4 | Gate `guardia-exec-lua` prueba ambas regresiones (puerto publicado, `network_mode: host`) |
-| Permisos mínimos en workflows | M3 | Declarados en los 6; sin gate que impida ampliarlos |
+| Permisos mínimos en workflows | M3 | Declarados en los 8: seis a nivel de workflow; `codeql.yml` (`security-events: write`) y `label.yml` (`contents: read`, `pull-requests: write`) solo a nivel de job. Sin gate que impida ampliarlos |
 | CodeQL | M3 | Activo; alertas 8/9 resueltas (ADR-0006); actions con tags mutables (riesgo R3) |
 | Dependabot (alerts + updates acotadas) | M3 | Verificado por API 2026-07-15; nunca deps C++ heredadas |
 | Deps Python fijadas exactas | M4 | `requirements*.txt` + pytest en CI |
@@ -40,14 +40,16 @@ SHA-pinning en `codeql.yml`. Ambos ya en BASELINE con propietario (Varo).
 ### Accesibilidad — **M1** (deliberadamente)
 
 - Módulo Foundry + docs (superficie propia): solo `aria-`/`role` puntuales en
-  un `.hbs`; la pasada real (contraste Neo Geo, teclado, `aria-` en controles
-  del GM) está planificada **después** de fusionar el mapa vivo (PR #73), para
-  no revisar dos veces lo mismo.
+  un `.hbs`. La condición de secuencia que aplazaba la pasada real (contraste
+  Neo Geo, teclado, `aria-` en controles del GM) ya se cumplió: el mapa vivo
+  (PR #73) se fusionó el 2026-07-14. La pasada está **pendiente de ejecución**
+  — ya sin bloqueo previo; es la siguiente acción de la dimensión.
 - Juego C++ heredado: fuera de alcance por ADR-0007 (solo si un jugador real
   choca y no se resuelve en módulo/doc; experiencia = fase 4).
-- M1 aquí no es un hallazgo negativo: es una decisión de secuencia registrada.
-  **Para subir a M2–M3**: ejecutar la pasada tras PR #73 y convertir lo
-  verificable (p. ej. lint de plantillas) en check de CI.
+- M1 sigue siendo el nivel correcto (regla escrita, sin verificación), pero ya
+  no ampara aplazar: la secuencia registrada se agotó al fusionarse PR #73.
+  **Para subir a M2–M3**: ejecutar la pasada ahora y convertir lo verificable
+  (p. ej. lint de plantillas) en check de CI.
 
 ### Calidad y mantenimiento — **M4**
 
@@ -74,13 +76,15 @@ SHA-pinning en `codeql.yml`. Ambos ya en BASELINE con propietario (Varo).
 
 | Dimensión | Nivel | Siguiente acción concreta |
 |---|---|---|
-| Accesibilidad | M1 | Pasada al módulo tras fusionar PR #73 |
+| Accesibilidad | M1 | Ejecutar ya la pasada al módulo (PR #73 fusionado el 2026-07-14; sin bloqueo previo) |
 | Seguridad | M3 | Branch protection en `main` + SHA-pin en `codeql.yml` |
 | Calidad | M4 | Checklist de reevaluación en cada sync upstream |
 | Fiabilidad | M3 | Vigilar jobs heredados; sin acción hasta que fallen en falso |
 
-Lectura global: el fork está en **M3–M4 sobre lo que gobierna**, con los dos
-M1 restantes siendo decisiones registradas (secuencia de accesibilidad,
-desviación de jobs heredados), no descuidos. La regla de admisión de
+Lectura global: el fork está en **M3–M4 sobre lo que gobierna**. De los dos
+M1 restantes, la desviación de jobs heredados sigue siendo una decisión
+registrada (ADR-0004); el de accesibilidad dejó de estar amparado por la
+secuencia al fusionarse PR #73 y es ahora trabajo pendiente con acción
+concreta. La regla de admisión de
 BASELINE.md sigue vigente: nada de aquí se convierte en issue hasta que duela
 y quepa en un PR.

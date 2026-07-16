@@ -30,7 +30,7 @@ export function colorFaccion(faction, esJugador = false) {
   if (faction == null || faction === "") return COLOR_NEUTRO;
   let hash = 0;
   for (let i = 0; i < faction.length; i += 1) {
-    hash = (hash * 31 + faction.charCodeAt(i)) >>> 0;
+    hash = (hash * 31 + faction.codePointAt(i)) >>> 0;
   }
   return PALETA_FACCIONES[hash % PALETA_FACCIONES.length];
 }
@@ -39,8 +39,8 @@ export function colorFaccion(faction, esJugador = false) {
 export function rngSemilla(seed) {
   let a = seed >>> 0;
   return function siguiente() {
-    a |= 0;
-    a = (a + 0x6d2b79f5) | 0;
+    a = Math.trunc(a);
+    a = Math.trunc(a + 0x6d2b79f5);
     let t = Math.imul(a ^ (a >>> 15), 1 | a);
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
@@ -177,7 +177,7 @@ export function proyectarDestino({ destino, centro, headingDeg = 0, radioMundo =
  */
 export function interpolarCentro(prev, actual, tMs) {
   if (!actual) return { x: 0, y: 0 };
-  if (!prev || !(actual.tMs > prev.tMs)) return { ...actual.centro };
+  if (!prev || (actual.tMs <= prev.tMs)) return { ...actual.centro };
   const t = Math.min(1, Math.max(0, (tMs - prev.tMs) / (actual.tMs - prev.tMs)));
   return {
     x: prev.centro.x + (actual.centro.x - prev.centro.x) * t,

@@ -52,7 +52,7 @@ SHA-pinning en `codeql.yml`. Ambos ya en BASELINE con propietario (Varo).
 ### Calidad y mantenimiento — **M4**
 
 - Tres suites propias + `luac -p`, todas en CI: CTest del editor de contenido,
-  pytest del puente (65 tests, adversariales de auth/rate-limit), `node --test`
+  pytest del puente (incl. adversariales de auth/rate-limit), `node --test`
   del módulo.
 - El job Linux compila con `-DWARNING_IS_ERROR=1` (hueco corregido).
 - Cobertura de línea/rama: **cortada** por ADR-0005 — no puntúa en contra.
@@ -75,7 +75,7 @@ SHA-pinning en `codeql.yml`. Ambos ya en BASELINE con propietario (Varo).
 | Dimensión | Nivel | Siguiente acción concreta |
 |---|---|---|
 | Accesibilidad | M1 | Pasada al módulo tras fusionar PR #73 |
-| sEguridad | M3 | Branch protection en `main` + SHA-pin en `codeql.yml` |
+| Seguridad | M3 | Branch protection en `main` + SHA-pin en `codeql.yml` |
 | Calidad | M4 | Checklist de reevaluación en cada sync upstream |
 | Fiabilidad | M3 | Vigilar jobs heredados; sin acción hasta que fallen en falso |
 

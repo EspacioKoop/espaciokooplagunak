@@ -42,7 +42,7 @@ El inventario completo está en [`docs/adr/README.md`](adr/README.md)
 | E1 | Seguridad | Un atacante en la LAN intenta ejecutar Lua vía HTTP | El 8080 no está publicado; el puente solo acepta plantillas de lista blanca con Bearer + rate limit; regresión cubierta por CI |
 | E2 | Modificabilidad | Upstream publica cambios en `src/` | Merge `--no-ff` en rama `upstream/AAAA-MM-DD`; divergencias vigiladas: solo `script_docs/` |
 | E3 | Fiabilidad | SeriousProton cambia su HEAD | Sin efecto: release y CI fijan el mismo SHA (ADR-0004) |
-| E4 | Testabilidad | Cambio en el puente o el módulo | pytest con juego mockeado (65 tests) y `node --test` de lógica pura — sin necesidad de juego ni Foundry vivos |
+| E4 | Testabilidad | Cambio en el puente o el módulo | pytest con juego mockeado y `node --test` de lógica pura — sin necesidad de juego ni Foundry vivos |
 | E5 | Disponibilidad de datos | El polling pierde muestras | El mapa interpola solo muestras confirmadas, nunca extrapola; eventos idempotentes por `eventId` |
 | E6 | Rendimiento/latencia | El GM necesita estado "en vivo" | Polling suficiente hoy; WebSocket aplazado hasta latencia medida (ADR-0003) |
 

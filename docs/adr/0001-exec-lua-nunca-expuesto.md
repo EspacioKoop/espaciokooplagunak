@@ -23,6 +23,6 @@ estricto, rate limit). La regla es un gate de CI, no una convención: el job
 ## Consecuencias
 
 - Toda capacidad nueva expuesta a Foundry exige tocar el puente y sus tests
-  (65 pytest, incl. adversariales de auth/rate-limit) — fricción deliberada.
+  (suite pytest, incl. adversariales de auth/rate-limit) — fricción deliberada.
 - No hay atajo "temporal" posible: la CI lo bloquea.
 - `/get.lua` y `/set.lua` (incompletos en upstream) quedan igualmente fuera.

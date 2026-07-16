@@ -246,6 +246,7 @@ function crearClaseV2() {
     ordenPendiente = null; // orden de pausa en vuelo (true/false) o null
     confirmacionPendiente = null; // ACK recibido, a la espera de observarlo en /v1/scenario
     falloOrden = false; // la última orden de pausa terminó en error
+    ayudaAbierta = false; // conserva <details open> entre reemplazos del DOM
 
     #cliente() {
       return new BridgeClient({
@@ -322,6 +323,14 @@ function crearClaseV2() {
       this.#sondear();
     }
 
+    _onRender(context, options) {
+      super._onRender?.(context, options);
+      const ayuda = this.element?.querySelector?.(".lagunak-ayuda");
+      ayuda?.addEventListener?.("toggle", (event) => {
+        this.ayudaAbierta = Boolean(event.currentTarget?.open);
+      });
+    }
+
     _onClose(options) {
       clearTimeout(this.#timer);
       this.#timer = null;
@@ -331,6 +340,7 @@ function crearClaseV2() {
       this.ordenPendiente = null;
       this.confirmacionPendiente = null;
       this.falloOrden = false;
+      this.ayudaAbierta = false;
       super._onClose?.(options);
     }
 
@@ -342,6 +352,7 @@ function crearClaseV2() {
         conexionError: this.conexion === "error",
         conexionConectando: this.conexion === "conectando",
         detalleError: this.detalleError,
+        ayudaAbierta: this.ayudaAbierta,
         esGM: Boolean(game.user?.isGM),
         nave,
         ruta: prepareRoute(nave, game.i18n),
@@ -461,6 +472,7 @@ function crearClaseV1() {
     ordenPendiente = null;
     confirmacionPendiente = null;
     falloOrden = false;
+    ayudaAbierta = false;
 
     static get defaultOptions() {
       return foundry.utils.mergeObject(super.defaultOptions, {
@@ -560,6 +572,7 @@ function crearClaseV1() {
       this.ordenPendiente = null;
       this.confirmacionPendiente = null;
       this.falloOrden = false;
+      this.ayudaAbierta = false;
       return super.close(options);
     }
 
@@ -568,6 +581,9 @@ function crearClaseV1() {
       html.find('[data-action="anotar"]').on("click", () => this.#anotar());
       html.find('[data-action="pausar"]').on("click", () => this.#cambiarPausa(true));
       html.find('[data-action="reanudar"]').on("click", () => this.#cambiarPausa(false));
+      html.find(".lagunak-ayuda").on("toggle", (event) => {
+        this.ayudaAbierta = Boolean(event.currentTarget?.open);
+      });
     }
 
     getData(_options) {
@@ -578,6 +594,7 @@ function crearClaseV1() {
         conexionError: this.conexion === "error",
         conexionConectando: this.conexion === "conectando",
         detalleError: this.detalleError,
+        ayudaAbierta: this.ayudaAbierta,
         esGM: Boolean(game.user?.isGM),
         nave,
         ruta: prepareRoute(nave, game.i18n),

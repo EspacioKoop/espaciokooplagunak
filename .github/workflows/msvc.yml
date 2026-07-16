@@ -94,10 +94,12 @@ jobs:
           -DSERIOUS_PROTON_DIR="$env:GITHUB_WORKSPACE/SeriousProton"
 
       # El análisis compila con las rutas de include del proyecto, y
-      # graphics/glDebug.inl es un fuente GENERADO por un custom command del
-      # target seriousproton: sin compilarlo antes, el include no existe.
+      # graphics/glDebug.inl es un fuente GENERADO por un custom command:
+      # sin compilarlo antes, el include no existe. El consumidor del custom
+      # command es seriousproton_objects (seriousproton es INTERFACE y no
+      # produce proyecto MSBuild).
       - name: Build SeriousProton (genera glDebug.inl)
-        run: cmake --build ${{ env.build }} --target seriousproton
+        run: cmake --build ${{ env.build }} --target seriousproton_objects
 
       - name: Initialize MSVC Code Analysis
         uses: microsoft/msvc-code-analysis-action@04825f6d9e00f87422d6bf04e1a38b1f3ed60d99

@@ -1,11 +1,67 @@
 #include "content/mapEditSession.h"
 
 #include <algorithm>
+#include <atomic>
+#include <cstdint>
 #include <utility>
 
-MapEditSession::MapEditSession(MapDocument clean_document)
-: clean_document(std::move(clean_document)), current_document(this->clean_document)
+namespace
 {
+std::atomic<std::uint64_t> next_session_id{1};
+}
+
+MapEditSession::MapEditSession(MapDocument clean_document)
+: session_id(nextSessionId()), clean_document(std::move(clean_document)),
+  current_document(this->clean_document)
+{
+}
+
+MapEditSession::MapEditSession(const MapEditSession& other)
+: session_id(nextSessionId()), clean_document(other.clean_document),
+  current_document(other.current_document), undo_history(other.undo_history),
+  redo_history(other.redo_history)
+{
+}
+
+MapEditSession::MapEditSession(MapEditSession&& other) noexcept
+: session_id(nextSessionId()), clean_document(std::move(other.clean_document)),
+  current_document(std::move(other.current_document)), undo_history(std::move(other.undo_history)),
+  redo_history(std::move(other.redo_history))
+{
+}
+
+MapEditSession& MapEditSession::operator=(const MapEditSession& other)
+{
+    if (this == &other) return *this;
+    clean_document = other.clean_document;
+    current_document = other.current_document;
+    undo_history = other.undo_history;
+    redo_history = other.redo_history;
+    session_id = nextSessionId();
+    session_revision = 0;
+    return *this;
+}
+
+MapEditSession& MapEditSession::operator=(MapEditSession&& other) noexcept
+{
+    if (this == &other) return *this;
+    clean_document = std::move(other.clean_document);
+    current_document = std::move(other.current_document);
+    undo_history = std::move(other.undo_history);
+    redo_history = std::move(other.redo_history);
+    session_id = nextSessionId();
+    session_revision = 0;
+    return *this;
+}
+
+std::uint64_t MapEditSession::nextSessionId()
+{
+    return next_session_id.fetch_add(1, std::memory_order_relaxed);
+}
+
+void MapEditSession::advanceRevision()
+{
+    ++session_revision;
 }
 
 MapObject* MapEditSession::findObject(MapDocument& document, const std::string& id)
@@ -23,6 +79,7 @@ MapEditError MapEditSession::commit(MapDocument next)
     if (undo_history.size() > history_limit) undo_history.erase(undo_history.begin());
     current_document = std::move(next);
     redo_history.clear();
+    advanceRevision();
     return MapEditError::None;
 }
 
@@ -70,6 +127,7 @@ bool MapEditSession::undo()
     redo_history.push_back(current_document);
     current_document = std::move(undo_history.back());
     undo_history.pop_back();
+    advanceRevision();
     return true;
 }
 
@@ -80,12 +138,14 @@ bool MapEditSession::redo()
     if (undo_history.size() > history_limit) undo_history.erase(undo_history.begin());
     current_document = std::move(redo_history.back());
     redo_history.pop_back();
+    advanceRevision();
     return true;
 }
 
 void MapEditSession::markSaved()
 {
     clean_document = current_document;
+    advanceRevision();
 }
 
 void MapEditSession::rollback()
@@ -93,4 +153,5 @@ void MapEditSession::rollback()
     current_document = clean_document;
     undo_history.clear();
     redo_history.clear();
+    advanceRevision();
 }

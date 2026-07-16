@@ -72,6 +72,32 @@ end
 
 -- Called by the engine to populate the list of player ships that can be spawned.
 -- Returns a list of {key, label, description, radar trace}.
+-- Trusted, closed factory used only by the C++ content editor adapter. It accepts
+-- scalar values already validated by C++ and resolves the template from the
+-- built-in registry; no document table, callback or Lua source crosses the boundary.
+function spawnContentEditorShip(template_id, faction, callsign, x, y, has_rotation, rotation)
+    if type(template_id) ~= "string" or type(faction) ~= "string" or type(callsign) ~= "string"
+        or type(x) ~= "number" or type(y) ~= "number" or type(has_rotation) ~= "boolean"
+        or type(rotation) ~= "number" then
+        error("invalid content editor ship plan", 2)
+    end
+    local template = __ship_templates[template_id]
+    if type(template) ~= "table" or template.__type ~= "playership" then
+        error("content editor template is not a player ship", 2)
+    end
+    local entity = PlayerSpaceship()
+    local ok, result = pcall(function()
+        entity:setFaction(faction):setTemplate(template_id):setCallSign(callsign):setPosition(x, y)
+        if has_rotation then entity:setRotation(rotation) end
+        return entity
+    end)
+    if not ok then
+        entity:destroy()
+        error(result, 2)
+    end
+    return result
+end
+
 function getSpawnablePlayerShips()
     local result = {}
     if __allow_new_player_ships then

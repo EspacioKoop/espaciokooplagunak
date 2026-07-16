@@ -3,6 +3,9 @@
 #include "content/mapPreview.h"
 #include "components/rendering.h"
 #include "gameGlobalInfo.h"
+#include "multiplayer_server.h"
+#include "ecs/query.h"
+#include "components/faction.h"
 #include "i18n.h"
 #include "playerInfo.h"
 #include "screenComponents/rotatingModelView.h"
@@ -280,6 +283,14 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
         redoShipEdit();
     });
     ship_redo_button->setPosition(x + 235, 445)->setSize(220, 35)->hide();
+    ship_deploy_button = new GuiButton(box, "SHIP_DEPLOY", tr("content_editor", "Deploy ship"), [this]() {
+        deployShip();
+    });
+    ship_deploy_button->setPosition(x + 470, 400)->setSize(220, 35)->hide();
+    ship_rollback_button = new GuiButton(box, "SHIP_ROLLBACK", tr("content_editor", "Rollback ship"), [this]() {
+        rollbackShip();
+    });
+    ship_rollback_button->setPosition(x + 470, 445)->setSize(220, 35)->hide();
 
     (new GuiButton(box, "SAVE", tr("content_editor", "Save"), [this]() { saveResource(); }))
         ->setPosition(x, 490)->setSize(150, 45);
@@ -430,6 +441,8 @@ void GuiContentEditor::updateFieldPresentation(ContentResourceType type)
     ship_remove_system_button->setVisible(is_ship);
     ship_undo_button->setVisible(is_ship);
     ship_redo_button->setVisible(is_ship);
+    ship_deploy_button->setVisible(is_ship);
+    ship_rollback_button->setVisible(is_ship && ship_deployment_session.hasActiveDeployment());
     if (is_ship)
         updateShipOverrideEditor();
     else
@@ -1360,4 +1373,126 @@ void GuiContentEditor::redoShipEdit()
     discard_guard.reset();
     updateShipOverrideEditor();
     setStatus(tr("content_editor", "Ship edit redone."));
+}
+
+string GuiContentEditor::deploymentErrorText(ShipDeploymentError error) const
+{
+    switch(error)
+    {
+    case ShipDeploymentError::None: return "";
+    case ShipDeploymentError::ServerRequired:
+        return tr("content_editor", "Ship deployment requires the local server and a Game Master.");
+    case ShipDeploymentError::InvalidResource:
+        return tr("content_editor", "The ship document is not valid for deployment.");
+    case ShipDeploymentError::TemplateUnavailable:
+        return tr("content_editor", "The selected player-ship template is not available.");
+    case ShipDeploymentError::FactionUnavailable:
+        return tr("content_editor", "The selected faction is not available.");
+    case ShipDeploymentError::InvalidPosition:
+        return tr("content_editor", "The deployment position is outside the safe world bounds.");
+    case ShipDeploymentError::UnsupportedResource:
+        return tr("content_editor", "Deployment supports only energy and coolant resources.");
+    case ShipDeploymentError::UnsupportedCargo:
+        return tr("content_editor", "Deployment supports only medicine and spare-parts cargo.");
+    case ShipDeploymentError::ConfirmationRequired:
+        return tr("content_editor", "Review and confirm the exact deployment plan first.");
+    case ShipDeploymentError::ConfirmationStale:
+        return tr("content_editor", "The deployment plan changed; review it again.");
+    case ShipDeploymentError::ActiveDeployment:
+        return tr("content_editor", "Rollback the active content ship before deploying another.");
+    case ShipDeploymentError::FactoryFailure:
+        return tr("content_editor", "The ship factory failed and removed the partial entity.");
+    case ShipDeploymentError::NothingToRollback:
+        return tr("content_editor", "There is no active content ship to roll back.");
+    case ShipDeploymentError::RollbackFailure:
+        return tr("content_editor", "The active content ship could not be rolled back.");
+    }
+    return tr("content_editor", "Ship deployment failed.");
+}
+
+void GuiContentEditor::deployShip()
+{
+    if (current_type != ContentResourceType::Ship) return;
+    if (ship_deployment_session.hasActiveDeployment())
+        return setStatus(deploymentErrorText(ShipDeploymentError::ActiveDeployment));
+
+    const auto factions = [] {
+        std::vector<std::string> result;
+        for (auto [entity, info] : sp::ecs::Query<FactionInfo>()) result.push_back(info.name);
+        return result;
+    }();
+
+    if (const auto* pending = ship_deployment_session.pendingPlan())
+    {
+        ShipDeploymentPlan current_plan;
+        const auto build_error = buildShipDeploymentPlan(
+            formResource(), gameGlobalInfo ? gameGlobalInfo->getShipTemplateCatalog() : ship_template_catalog,
+            factions, pending->x, pending->y, pending->rotation, game_server != nullptr, current_plan);
+        if (build_error != ShipDeploymentError::None)
+            return setStatus(deploymentErrorText(build_error));
+        if (current_plan.fingerprint != pending->fingerprint)
+        {
+            ship_deployment_session.prepare(current_plan);
+            return setStatus(tr("content_editor", "Deployment plan updated. Review it and press Deploy ship again."));
+        }
+        auto error = ship_deployment_session.confirm(current_plan.fingerprint);
+        if (error == ShipDeploymentError::None)
+        {
+            error = ship_deployment_session.apply([](const ShipDeploymentPlan& plan, std::string& receipt) {
+                sp::ecs::Entity entity;
+                if (!gameGlobalInfo || !gameGlobalInfo->createContentShip(plan, entity)) return false;
+                receipt = entity.toString();
+                return true;
+            });
+        }
+        if (error != ShipDeploymentError::None)
+            return setStatus(deploymentErrorText(error));
+        ship_rollback_button->show();
+        return setStatus(tr("content_editor", "Ship deployed. Rollback removes only this created ship."));
+    }
+
+    ShipDeploymentPlan validation_plan;
+    const auto validation_error = buildShipDeploymentPlan(
+        formResource(), gameGlobalInfo ? gameGlobalInfo->getShipTemplateCatalog() : ship_template_catalog,
+        factions, 0.0f, 0.0f, {}, game_server != nullptr, validation_plan);
+    if (validation_error != ShipDeploymentError::None)
+        return setStatus(deploymentErrorText(validation_error));
+
+    const ContentResource snapshot = formResource();
+    gameGlobalInfo->on_gm_click = [this, snapshot](glm::vec2 position, std::optional<float> rotation) {
+        std::vector<std::string> current_factions;
+        for (auto [entity, info] : sp::ecs::Query<FactionInfo>()) current_factions.push_back(info.name);
+        ShipDeploymentPlan plan;
+        const auto error = buildShipDeploymentPlan(
+            snapshot, gameGlobalInfo->getShipTemplateCatalog(), current_factions,
+            position.x, position.y, rotation, game_server != nullptr, plan);
+        gameGlobalInfo->on_gm_click = nullptr;
+        gameGlobalInfo->on_gm_preview_trace = std::nullopt;
+        show();
+        if (error != ShipDeploymentError::None)
+            return setStatus(deploymentErrorText(error));
+        ship_deployment_session.prepare(plan);
+        setStatus(tr("content_editor", "Plan: {template} at ({x}, {y}); {systems} systems, {resources} resources, {cargo} cargo and {positions} crew positions. Press Deploy ship again to confirm.").format({
+            {"template", string(plan.template_id)},
+            {"x", string(plan.x)},
+            {"y", string(plan.y)},
+            {"systems", string(static_cast<int>(plan.overrides.systems.size()))},
+            {"resources", string(static_cast<int>(plan.overrides.resources.size()))},
+            {"cargo", string(static_cast<int>(plan.overrides.cargo.size()))},
+            {"positions", string(static_cast<int>(plan.overrides.crew_position_ids.size()))},
+        }));
+    };
+    hide();
+}
+
+void GuiContentEditor::rollbackShip()
+{
+    const auto error = ship_deployment_session.rollback([](const std::string& receipt) {
+        const auto entity = sp::ecs::Entity::fromString(receipt);
+        return !entity || (gameGlobalInfo && gameGlobalInfo->rollbackContentShip(entity));
+    });
+    if (error != ShipDeploymentError::None)
+        return setStatus(deploymentErrorText(error));
+    ship_rollback_button->hide();
+    setStatus(tr("content_editor", "Content ship rolled back."));
 }

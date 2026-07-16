@@ -13,8 +13,10 @@ tipos de recursos sin editar Lua:
 1. Abre **Game Master → Content editor…**.
 2. Selecciona el tipo de recurso.
 3. Pulsa **New**, rellena el formulario y guarda.
-4. **Save** actualiza el recurso seleccionado aunque cambie su ID. Si ese ID ya
-   pertenece a otro recurso, exige una segunda pulsación antes de sustituirlo.
+4. **Save** actualiza el recurso seleccionado. Si cambia su ID, exige una segunda
+   pulsación para confirmar el renombrado y actualizar sus referencias. Si el ID
+   nuevo ya pertenece a otro recurso del mismo tipo, rechaza la operación sin
+   sustituirlo.
 5. **Export** copia únicamente el recurso visible al portapapeles como JSON.
 6. **Import** lee un recurso JSON del portapapeles y valida todos sus campos.
 7. Si ya existe el mismo par `type + id`, hay que pulsar **Import** por segunda

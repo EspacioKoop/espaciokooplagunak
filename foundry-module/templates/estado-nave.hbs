@@ -1,6 +1,6 @@
 <div class="lagunak-estado-cuerpo">
-  <p class="lagunak-conexion lagunak-conexion-{{conexion}}">
-    <span class="lagunak-punto"></span>
+  <p class="lagunak-conexion lagunak-conexion-{{conexion}}" role="status" aria-live="polite">
+    <span class="lagunak-punto" aria-hidden="true"></span>
     {{#if conexionOk}}{{localize "LAGUNAK.Conexion.Ok"}}{{/if}}
     {{#if conexionError}}{{localize "LAGUNAK.Conexion.Error"}} — {{detalleError}}{{/if}}
     {{#if conexionConectando}}{{localize "LAGUNAK.Conexion.Conectando"}}{{/if}}
@@ -9,17 +9,17 @@
   {{#if esGM}}
   <div class="lagunak-tempo">
     <button type="button" data-action="pausar">
-      <i class="fa-solid fa-pause"></i> {{localize "LAGUNAK.Tempo.Pausar"}}
+      <i class="fa-solid fa-pause" aria-hidden="true"></i> {{localize "LAGUNAK.Tempo.Pausar"}}
     </button>
     <button type="button" data-action="reanudar">
-      <i class="fa-solid fa-play"></i> {{localize "LAGUNAK.Tempo.Reanudar"}}
+      <i class="fa-solid fa-play" aria-hidden="true"></i> {{localize "LAGUNAK.Tempo.Reanudar"}}
     </button>
   </div>
   {{/if}}
 
   {{#if nave}}
   <h3>{{nave.callsign}}</h3>
-  <table class="lagunak-tabla">
+  <table class="lagunak-tabla" aria-label="{{localize "LAGUNAK.EstadoNave.Resumen"}}">
     <tr><th>{{localize "LAGUNAK.EstadoNave.Posicion"}}</th><td>{{nave.position.x}}, {{nave.position.y}}</td></tr>
     <tr><th>{{localize "LAGUNAK.EstadoNave.Rumbo"}}</th><td>{{nave.heading}}°</td></tr>
     {{#if ruta}}
@@ -33,7 +33,7 @@
   </table>
 
   <h4>{{localize "LAGUNAK.EstadoNave.Sistemas"}}</h4>
-  <table class="lagunak-tabla lagunak-sistemas">
+  <table class="lagunak-tabla lagunak-sistemas" aria-label="{{localize "LAGUNAK.EstadoNave.EstadoSistemas"}}">
     <tr>
       <th>{{localize "LAGUNAK.EstadoNave.Sistema"}}</th>
       <th>{{localize "LAGUNAK.EstadoNave.Salud"}}</th>
@@ -51,7 +51,7 @@
   </table>
 
   <button type="button" data-action="anotar">
-    <i class="fa-solid fa-book"></i> {{localize "LAGUNAK.Diario.Boton"}}
+    <i class="fa-solid fa-book" aria-hidden="true"></i> {{localize "LAGUNAK.Diario.Boton"}}
   </button>
   {{else}}
   <p class="lagunak-sin-datos">{{localize "LAGUNAK.EstadoNave.SinDatos"}}</p>

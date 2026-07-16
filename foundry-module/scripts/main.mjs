@@ -28,7 +28,7 @@
 import { BridgeClient, BridgeError } from "./bridge-client.mjs";
 import { processBridgeEvents } from "./event-journal.mjs";
 import { dibujarFrame } from "./mapa-render.mjs";
-import { prepareRoute } from "./ship-view.mjs";
+import { prepareRoute, prepareSystemRows } from "./ship-view.mjs";
 import { setSimulationPaused } from "./tempo-control.mjs";
 import { addStationControl, registerStationFeature } from "./station-ui.mjs";
 import { addWorkspaceControl, registerWorkspaceFeature } from "./station-workspace-ui.mjs";
@@ -55,6 +55,28 @@ registerWorkspaceFeature(MODULE_ID);
 
 let estadoApp = null;
 let mapaApp = null;
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (character) => `&#${character.charCodeAt(0)};`);
+}
+
+function fechaLocal() {
+  const idioma = game.i18n.lang === "es" ? "es-ES" : game.i18n.lang;
+  return new Date().toLocaleString(idioma);
+}
+
+function contenidoEstadoBitacora(nave, marca) {
+  const texto = (key) => escapeHtml(game.i18n.localize(key));
+  return `
+      <p><strong>${escapeHtml(nave.callsign ?? "?")}</strong> — ${escapeHtml(marca)}</p>
+      <ul>
+        <li>${texto("LAGUNAK.Diario.Campo.Posicion")}: ${Math.round(nave.position?.x ?? 0)}, ${Math.round(nave.position?.y ?? 0)}</li>
+        <li>${texto("LAGUNAK.Diario.Campo.Rumbo")}: ${Math.round(nave.heading ?? 0)}°</li>
+        <li>${texto("LAGUNAK.Diario.Campo.Casco")}: ${nave.hull} / ${nave.hull_max}</li>
+        <li>${texto("LAGUNAK.Diario.Campo.Energia")}: ${nave.energy} / ${nave.energy_max}</li>
+        <li>${texto("LAGUNAK.Diario.Campo.Escudos")}: ${texto(nave.shields_active ? "LAGUNAK.EstadoNave.EscudosActivos" : "LAGUNAK.EstadoNave.EscudosInactivos")}</li>
+      </ul>`;
+}
 
 Hooks.once("init", () => {
   game.settings.register(MODULE_ID, "bridgeUrl", {
@@ -281,11 +303,11 @@ function crearClaseV2() {
         nave,
         ruta: prepareRoute(nave, game.i18n),
         sistemas: nave
-          ? Object.entries(nave.systems ?? {}).map(([nombre, s]) => ({
-              nombre,
-              salud: Math.round((s.health ?? 0) * 100),
-              calor: Math.round((s.heat ?? 0) * 100),
-              potencia: Math.round((s.power ?? 0) * 100),
+          ? prepareSystemRows(nave, game.i18n).map(({ name, health, heat, power }) => ({
+              nombre: name,
+              salud: health,
+              calor: heat,
+              potencia: power,
             }))
           : [],
       };
@@ -332,18 +354,8 @@ function crearClaseV2() {
         game.journal.getName(nombreDiario) ??
         (await JournalEntry.create({ name: nombreDiario }));
 
-      const esc = (s) =>
-        String(s).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
-      const marca = new Date().toLocaleString();
-      const contenido = `
-      <p><strong>${esc(nave.callsign ?? "?")}</strong> — ${marca}</p>
-      <ul>
-        <li>Posición: ${Math.round(nave.position?.x ?? 0)}, ${Math.round(nave.position?.y ?? 0)}</li>
-        <li>Rumbo: ${Math.round(nave.heading ?? 0)}°</li>
-        <li>Casco: ${nave.hull} / ${nave.hull_max}</li>
-        <li>Energía: ${nave.energy} / ${nave.energy_max}</li>
-        <li>Escudos: ${nave.shields_active ? game.i18n.localize("LAGUNAK.EstadoNave.EscudosActivos") : game.i18n.localize("LAGUNAK.EstadoNave.EscudosInactivos")}</li>
-      </ul>`;
+      const marca = fechaLocal();
+      const contenido = contenidoEstadoBitacora(nave, marca);
 
       await diario.createEmbeddedDocuments("JournalEntryPage", [
         {
@@ -461,11 +473,11 @@ function crearClaseV1() {
         nave,
         ruta: prepareRoute(nave, game.i18n),
         sistemas: nave
-          ? Object.entries(nave.systems ?? {}).map(([nombre, s]) => ({
-              nombre,
-              salud: Math.round((s.health ?? 0) * 100),
-              calor: Math.round((s.heat ?? 0) * 100),
-              potencia: Math.round((s.power ?? 0) * 100),
+          ? prepareSystemRows(nave, game.i18n).map(({ name, health, heat, power }) => ({
+              nombre: name,
+              salud: health,
+              calor: heat,
+              potencia: power,
             }))
           : [],
       };
@@ -503,18 +515,8 @@ function crearClaseV1() {
         game.journal.getName(nombreDiario) ??
         (await JournalEntry.create({ name: nombreDiario }));
 
-      const esc = (s) =>
-        String(s).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
-      const marca = new Date().toLocaleString();
-      const contenido = `
-      <p><strong>${esc(nave.callsign ?? "?")}</strong> — ${marca}</p>
-      <ul>
-        <li>Posición: ${Math.round(nave.position?.x ?? 0)}, ${Math.round(nave.position?.y ?? 0)}</li>
-        <li>Rumbo: ${Math.round(nave.heading ?? 0)}°</li>
-        <li>Casco: ${nave.hull} / ${nave.hull_max}</li>
-        <li>Energía: ${nave.energy} / ${nave.energy_max}</li>
-        <li>Escudos: ${nave.shields_active ? game.i18n.localize("LAGUNAK.EstadoNave.EscudosActivos") : game.i18n.localize("LAGUNAK.EstadoNave.EscudosInactivos")}</li>
-      </ul>`;
+      const marca = fechaLocal();
+      const contenido = contenidoEstadoBitacora(nave, marca);
 
       await diario.createEmbeddedDocuments("JournalEntryPage", [
         {

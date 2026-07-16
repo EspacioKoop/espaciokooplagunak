@@ -2,6 +2,39 @@ function finiteNonNegative(value) {
   return Number.isFinite(value) && value >= 0;
 }
 
+const SYSTEM_NAMES = new Set([
+  "reactor",
+  "beamweapons",
+  "missilesystem",
+  "maneuver",
+  "impulse",
+  "warp",
+  "jumpdrive",
+  "frontshield",
+  "rearshield",
+]);
+
+/** Traduce los identificadores cerrados del DTO sin mostrar inglés interno. */
+export function localizeSystemName(name, i18n) {
+  const normalized = typeof name === "string" ? name.toLowerCase() : "";
+  const key = SYSTEM_NAMES.has(normalized)
+    ? `LAGUNAK.Sistemas.${normalized}`
+    : "LAGUNAK.Sistemas.Desconocido";
+  return i18n?.localize?.(key) ?? key;
+}
+
+/** Prepara la matriz técnica con nombres localizados y valores normalizados. */
+export function prepareSystemRows(ship, i18n) {
+  return Object.entries(ship?.systems ?? {}).map(([name, system]) => ({
+    id: name,
+    name: localizeSystemName(name, i18n),
+    health: Math.round((Number(system?.health) || 0) * 100),
+    heat: Math.round((Number(system?.heat) || 0) * 100),
+    power: Math.round((Number(system?.power) || 0) * 100),
+    coolant: Math.round((Number(system?.coolant) || 0) * 100),
+  }));
+}
+
 /** Prepara destino/distancia/ETA para Handlebars sin depender de Foundry. */
 export function prepareRoute(ship, i18n) {
   const destination = ship?.destination;

@@ -149,6 +149,11 @@ function initialiseApp(app) {
   app.closed = false;
 }
 
+function releaseWorkspaceApp(app) {
+  app.closed = true;
+  if (workspaceApp === app) workspaceApp = null;
+}
+
 function createV2Class() {
   const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
   return class StationWorkspaceV2 extends HandlebarsApplicationMixin(ApplicationV2) {
@@ -194,7 +199,7 @@ function createV2Class() {
     }
 
     _onClose(options) {
-      this.closed = true;
+      releaseWorkspaceApp(this);
       super._onClose?.(options);
     }
   };
@@ -249,7 +254,7 @@ function createV1Class() {
     }
 
     async close(options) {
-      this.closed = true;
+      releaseWorkspaceApp(this);
       return super.close(options);
     }
   };

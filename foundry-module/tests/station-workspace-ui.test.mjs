@@ -141,3 +141,32 @@ test("una respuesta tardía tras cerrar no repuebla la consola", async () => {
   assert.equal(app.statePayload, null);
   assert.equal(app.contactsPayload, null);
 });
+
+for (const modern of [false, true]) {
+  const version = modern ? "ApplicationV2" : "v11";
+
+  test(`${version}: cerrar y reabrir crea una instancia capaz de actualizar telemetría`, async () => {
+    let fetchCalls = 0;
+    const fetchImpl = async (url) => {
+      fetchCalls += 1;
+      const payload = url.endsWith("/v1/state")
+        ? { ship: { callsign: "Lagunak", systems: {} } }
+        : { contacts: [] };
+      return { ok: true, async json() { return payload; } };
+    };
+    const { module, instances } = await setup({ isGM: true, modern, fetchImpl });
+
+    module.openWorkspaceApp();
+    const first = instances[0];
+    if (modern) first._onClose();
+    else await first.close();
+
+    module.openWorkspaceApp();
+    const reopened = instances[1];
+    assert.notEqual(reopened, first);
+    assert.equal(reopened.closed, false);
+    assert.equal(await reopened.refreshTelemetry(), true);
+    assert.equal(reopened.statePayload.ship.callsign, "Lagunak");
+    assert.equal(fetchCalls, 2);
+  });
+}

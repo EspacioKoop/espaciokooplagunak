@@ -1,4 +1,5 @@
 import { STATIONS, normalizeStation } from "./station-assignment.mjs";
+import { prepareSystemRows } from "./ship-view.mjs";
 
 const DEFINITIONS = Object.freeze({
   captain: Object.freeze({
@@ -57,6 +58,29 @@ function localize(i18n, key) {
   return i18n?.localize?.(key) ?? key;
 }
 
+function format(i18n, key, data) {
+  if (typeof i18n?.format === "function") return i18n.format(key, data);
+  return localize(i18n, key).replace(/\{(\w+)\}/g, (_match, name) => String(data?.[name] ?? ""));
+}
+
+const FACTION_KEYS = Object.freeze({
+  Independent: "Independent",
+  "Human Navy": "HumanNavy",
+  Kraylor: "Kraylor",
+  Arlenians: "Arlenians",
+  Exuari: "Exuari",
+  Ghosts: "Ghosts",
+  Ktlitans: "Ktlitans",
+  TSN: "TSN",
+  USN: "USN",
+  CUF: "CUF",
+});
+
+function localizeFaction(i18n, faction) {
+  const key = FACTION_KEYS[faction];
+  return localize(i18n, key ? `LAGUNAK.Facciones.${key}` : "LAGUNAK.Facciones.Desconocida");
+}
+
 function finite(value, fallback = 0) {
   const number = Number(value);
   return Number.isFinite(number) ? number : fallback;
@@ -92,22 +116,12 @@ function metric(i18n, key, value, tone = "normal", progress = null) {
   };
 }
 
-function systemRows(ship) {
-  return Object.entries(ship?.systems ?? {}).map(([name, system]) => ({
-    name,
-    health: Math.round(finite(system?.health) * 100),
-    heat: Math.round(finite(system?.heat) * 100),
-    power: Math.round(finite(system?.power) * 100),
-    coolant: Math.round(finite(system?.coolant) * 100),
-  }));
-}
-
 function hottestSystem(rows) {
   return rows.reduce((current, row) => (!current || row.heat > current.heat ? row : current), null);
 }
 
 function metricsFor(station, ship, contactsPayload, i18n, crewCount = 0) {
-  const systems = systemRows(ship);
+  const systems = prepareSystemRows(ship, i18n);
   const contacts = Array.isArray(contactsPayload?.contacts) ? contactsPayload.contacts : [];
   const externalContacts = contacts.filter((entry) => !entry?.is_player);
   const hull = percent(ship?.hull, ship?.hull_max);
@@ -125,7 +139,7 @@ function metricsFor(station, ship, contactsPayload, i18n, crewCount = 0) {
     case "navigation":
       return [
         metric(i18n, "Rumbo", `${integer(ship?.heading)}°`),
-        metric(i18n, "Velocidad", `${velocity(ship)} U/s`),
+        metric(i18n, "Velocidad", format(i18n, "LAGUNAK.Espacios.Valor.Velocidad", { value: velocity(ship) })),
         metric(i18n, "Posicion", `${integer(ship?.position?.x)}, ${integer(ship?.position?.y)}`),
         metric(i18n, "Destino", String(ship?.destination?.name ?? "—")),
       ];
@@ -140,7 +154,7 @@ function metricsFor(station, ship, contactsPayload, i18n, crewCount = 0) {
       return [
         metric(i18n, "Contactos", String(externalContacts.length)),
         metric(i18n, "TotalSensor", String(integer(contactsPayload?.total ?? contacts.length))),
-        metric(i18n, "Cobertura", "30 000 U"),
+        metric(i18n, "Cobertura", localize(i18n, "LAGUNAK.Espacios.Valor.Cobertura")),
         metric(i18n, "Truncado", localize(i18n, contactsPayload?.truncated ? "LAGUNAK.Espacios.Si" : "LAGUNAK.Espacios.No"), contactsPayload?.truncated ? "warning" : "good"),
       ];
     case "communications":
@@ -151,7 +165,7 @@ function metricsFor(station, ship, contactsPayload, i18n, crewCount = 0) {
         metric(i18n, "Bitacora", localize(i18n, "LAGUNAK.Espacios.Disponible"), "good"),
       ];
     case "weapons": {
-      const weaponSystems = systems.filter(({ name }) => name === "beamweapons" || name === "missilesystem");
+      const weaponSystems = systems.filter(({ id }) => id === "beamweapons" || id === "missilesystem");
       const average = weaponSystems.length
         ? Math.round(weaponSystems.reduce((sum, row) => sum + row.health, 0) / weaponSystems.length)
         : 0;
@@ -185,18 +199,21 @@ function crewRows(users, moduleId, i18n) {
         stationLabel: station
           ? localize(i18n, `LAGUNAK.Puestos.${station}`)
           : localize(i18n, "LAGUNAK.Puestos.SinAsignar"),
+        statusLabel: localize(i18n, user.active ? "LAGUNAK.Espacios.EnLinea" : "LAGUNAK.Puestos.Desconectado"),
       };
     });
 }
 
-function visibleContacts(contactsPayload) {
+function visibleContacts(contactsPayload, i18n) {
   const contacts = Array.isArray(contactsPayload?.contacts) ? contactsPayload.contacts : [];
   return contacts
     .filter((entry) => !entry?.is_player)
     .slice(0, 6)
     .map((entry) => ({
       callsign: String(entry?.callsign ?? "?"),
-      faction: entry?.faction ? String(entry.faction) : "—",
+      faction: entry?.faction
+        ? localizeFaction(i18n, String(entry.faction))
+        : localize(i18n, "LAGUNAK.Facciones.SinFaccion"),
       x: integer(entry?.position?.x),
       y: integer(entry?.position?.y),
     }));
@@ -232,11 +249,12 @@ export function buildWorkspaceModel({
     hasStation: true,
     station: normalized,
     stationLabel: localize(i18n, `LAGUNAK.Puestos.${normalized}`),
-    stationCode: definition.code,
+    stationCode: localize(i18n, `LAGUNAK.Espacios.${normalized}.Codigo`),
     stationIcon: definition.icon,
     accent: definition.accent,
     isNavigation: normalized === "navigation",
     navigationHeading: integer(ship?.heading),
+    navigationAriaLabel: format(i18n, "LAGUNAK.Espacios.RumboAccesible", { heading: integer(ship?.heading) }),
     isGM: Boolean(isGM),
     hasTelemetry: Boolean(ship),
     connection,
@@ -247,8 +265,8 @@ export function buildWorkspaceModel({
     error,
     ship,
     metrics: ship ? metricsFor(normalized, ship, safeContactsPayload, i18n, crew.length) : [],
-    systems: normalized === "engineering" ? systemRows(ship) : [],
-    contacts: normalized === "sensors" || normalized === "weapons" ? visibleContacts(safeContactsPayload) : [],
+    systems: normalized === "engineering" ? prepareSystemRows(ship, i18n) : [],
+    contacts: normalized === "sensors" || normalized === "weapons" ? visibleContacts(safeContactsPayload, i18n) : [],
     crew,
     crewCount: crew.length,
     activeCrew: crew.filter((member) => member.active).length,

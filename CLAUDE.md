@@ -64,6 +64,17 @@ cmake --build build --parallel
 find scripts -type f -iname '*.lua' -print0 | xargs -0 -n 1 luac -p
 ```
 
+`.luarc.json` (raíz) configura lua-language-server: `diagnostics.globals` contiene
+únicamente las globales que el runtime registra con `setGlobal("...")` en `src/` —
+nunca nombres observados en escenarios, que ocultarían erratas ejecutables. El test
+`tools/tests/test_luarc_globals.py` hace cumplir ese contrato (y, con
+`lua-language-server` en el PATH, verifica el comportamiento focal). Si añades API
+nueva que se inyecte como global, regístrala en C++ y añádela a la lista; el test
+fallará si la lista contiene nombres sin binding. Los diagnósticos restantes en
+escenarios upstream (`need-check-nil`, `undefined-field`, `undefined-global` de
+estado opcional comentado…) son ruido honesto por falta de anotaciones `---@meta` —
+pendiente para Fase 4/5; no los «arregles» en escenarios upstream.
+
 Hay TRES suites de tests propias del fork — ejecútalas siempre que toques su área, y no
 confundas «no está en CI todavía» con «no existe»:
 

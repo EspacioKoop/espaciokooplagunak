@@ -95,11 +95,12 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
   const controls = [{ name: "token", tools: [] }];
 
   hooks.getSceneControlButtons(controls);
-  // Dos herramientas: estado de la nave y mapa vivo.
-  assert.equal(controls[0].tools.length, 2);
-  assert.equal(controls[0].tools[0].name, "lagunak-estado");
-  assert.equal(controls[0].tools[1].name, "lagunak-mapa");
-  controls[0].tools[0].onClick();
+  // Tres herramientas: puestos, estado de la nave y mapa vivo.
+  assert.equal(controls[0].tools.length, 3);
+  assert.equal(controls[0].tools[0].name, "lagunak-puestos");
+  assert.equal(controls[0].tools[1].name, "lagunak-estado");
+  assert.equal(controls[0].tools[2].name, "lagunak-mapa");
+  controls[0].tools[1].onClick();
 
   assert.equal(instances.length, 1);
   assert.deepEqual(instances[0].renderCalls, [true]);
@@ -153,7 +154,7 @@ test("v11 muestra el error del puente sin emitir una confirmación falsa", async
   });
   const controls = [{ name: "token", tools: [] }];
   hooks.getSceneControlButtons(controls);
-  controls[0].tools[0].onClick();
+  controls[0].tools[1].onClick();
 
   const bindings = new Map();
   instances[0].activateListeners({
@@ -189,7 +190,7 @@ test("v11 bloquea la orden si el usuario deja de ser GM", async () => {
   const { hooks, instances, notifications, fetchCalls } = await loadModule();
   const controls = [{ name: "token", tools: [] }];
   hooks.getSceneControlButtons(controls);
-  controls[0].tools[0].onClick();
+  controls[0].tools[1].onClick();
 
   const bindings = new Map();
   instances[0].activateListeners({
@@ -222,12 +223,13 @@ test("ApplicationV2 bloquea la orden si el usuario deja de ser GM", async () => 
   assert.deepEqual(notifications.error, []);
 });
 
-test("un jugador no GM no recibe ningún control", async () => {
+test("un jugador no GM recibe solo el control de su puesto", async () => {
   const { hooks } = await loadModule({ isGM: false });
   const controls = [{ name: "token", tools: [] }];
 
   hooks.getSceneControlButtons(controls);
-  assert.deepEqual(controls[0].tools, []);
+  assert.equal(controls[0].tools.length, 1);
+  assert.equal(controls[0].tools[0].name, "lagunak-puestos");
 });
 
 test("v11 abre el mapa vivo con Application clásica (rAF ausente: sin bucle)", async () => {

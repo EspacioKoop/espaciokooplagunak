@@ -76,6 +76,22 @@ cualquier cliente que obtenga el token puede invocar las órdenes autorizadas.
    evento normalizado y crea automáticamente una página de llegada. El flag
    `eventId` evita duplicados al reabrir la ventana o reconectar.
 
+## Puestos de tripulación
+
+El control «Puestos de tripulación» está disponible tanto para jugadores como
+para el GM. Cada jugador puede elegir o cambiar únicamente su propio puesto;
+el GM ve a toda la tripulación y puede corregir cualquier asignación, incluso
+si el usuario está desconectado. Los puestos iniciales son capitán, navegación,
+ingeniería, sensores, comunicaciones y armas.
+
+La elección se guarda como un flag del documento `User` de Foundry, por lo que
+se comparte con el mundo y sobrevive a recargas y reconexiones. No entrega el
+token del puente ni concede por sí sola permiso para enviar órdenes externas:
+esa autorización por puesto requiere un contrato posterior del puente.
+
+En este primer vertical se permiten puestos duplicados; el GM puede resolverlos
+desde la misma ventana.
+
 ## Mapa vivo
 
 El botón «Mapa vivo (Espaciokoop Lagunak)» (junto al de estado, solo GM) abre

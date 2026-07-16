@@ -30,6 +30,7 @@ import { processBridgeEvents } from "./event-journal.mjs";
 import { dibujarFrame } from "./mapa-render.mjs";
 import { prepareRoute } from "./ship-view.mjs";
 import { setSimulationPaused } from "./tempo-control.mjs";
+import { addStationControl, registerStationFeature } from "./station-ui.mjs";
 import {
   colorFaccion,
   componerFrame,
@@ -47,6 +48,8 @@ const BACKOFF_MAX_MS = 60000;
 const MAPA_RADIO_MUNDO = 30000;
 const MAPA_FPS = 30;
 const MAPA_SEMILLA = 0x4c4147;
+
+registerStationFeature(MODULE_ID);
 
 let estadoApp = null;
 let mapaApp = null;
@@ -86,6 +89,7 @@ Hooks.once("init", () => {
  * original. Rama v13 (record de grupos con `tools` record): añadida, pura-
  * mente aditiva — el `if (Array.isArray)` deja el camino v11/v12 intacto. */
 Hooks.on("getSceneControlButtons", (controls) => {
+  addStationControl(controls);
   if (!game.user?.isGM) return;
 
   if (Array.isArray(controls)) {

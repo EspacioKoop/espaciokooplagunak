@@ -14,7 +14,7 @@
     "verified": "11"
   },
   "esmodules": ["scripts/main.mjs"],
-  "styles": ["styles/lagunak.css"],
+  "styles": ["styles/lagunak.css", "styles/puestos-tripulacion.css"],
   "languages": [
     {
       "lang": "es",

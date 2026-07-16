@@ -1,0 +1,39 @@
+.lagunak-puestos__contenido {
+  padding: 0.75rem;
+}
+
+.lagunak-puestos__intro {
+  margin-top: 0;
+}
+
+.lagunak-puestos__lista {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.lagunak-puestos__fila {
+  align-items: center;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: minmax(8rem, 1fr) minmax(11rem, 1.4fr);
+}
+
+.lagunak-puestos__usuario {
+  display: flex;
+  flex-direction: column;
+}
+
+.lagunak-puestos__usuario small {
+  opacity: 0.7;
+}
+
+.lagunak-puestos__fila select {
+  min-height: 2rem;
+  width: 100%;
+}
+
+@media (max-width: 420px) {
+  .lagunak-puestos__fila {
+    grid-template-columns: 1fr;
+  }
+}

@@ -112,6 +112,9 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
   inline vía la etiqueta `{{inline ...}}` en vez de cargarlo de un CDN sin `integrity` (alertas
   CodeQL 8/9); la salida sigue siendo un único HTML autocontenido que funciona offline. Vigila esta
   divergencia al mergear cambios de upstream que toquen `script_docs/`.
+- `foundry-module/` — la lógica pura y testeable del mapa vive en `scripts/ventana-nave.mjs`, el
+  pintor Canvas en `scripts/mapa-render.mjs` y las rutas Foundry V1/V2 permanecen aisladas en
+  `scripts/main.mjs`; el mapa interpola únicamente muestras confirmadas y nunca extrapola.
 - `resources/` y `packs/` — assets heredados de upstream.
 - La versión se calcula por fecha (`AAAA.MM.DD`) en `CMakeLists.txt` salvo override explícito.
 - `docs/` — documentación propia del fork: [`BUILDING.md`](docs/BUILDING.md),

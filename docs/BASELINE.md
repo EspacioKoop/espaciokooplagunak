@@ -1,9 +1,14 @@
 # Baseline AECF — accesibilidad, seguridad, calidad y fiabilidad
 
 Índice único del estado de buenas prácticas del fork (issue #88). Este documento
-es la fuente de verdad: se cambia por pull request, como todo lo demás. El issue
-#88 fue el arranque de este doc, no un paraguas permanente — el estado del
+es la fuente de verdad: se cambia por pull request, como todo lo demás. El
+issue #88 fue el arranque de este doc, no un paraguas permanente — el estado del
 proyecto vive en `main` verificado, no en la pestaña Issues.
+
+Evaluaciones derivadas de este índice: madurez por dimensión (escala M0–M5) en
+[`AECF-METRICAS.md`](AECF-METRICAS.md) y evaluación de arquitectura (ATAM-lite,
+con registro de ADRs en [`adr/`](adr/README.md)) en
+[`ASSESSMENT-ARQUITECTURA.md`](ASSESSMENT-ARQUITECTURA.md).
 
 ## Reglas de funcionamiento
 

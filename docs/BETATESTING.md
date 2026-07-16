@@ -76,7 +76,12 @@ pausado, y cuánto tardó la UI en reflejar el estado real.
 
 ### 4. Avería y encuentro (15 min)
 
-- El GM inflige una avería desde Foundry (`set_system_health`) sin anunciarla.
+- El GM inflige una avería sin anunciarla. **Desde Foundry hoy es `N/A`**: el
+  puente declara la orden `set_system_health`, pero el módulo aún no expone
+  ningún control que la envíe (solo pausa/reanudación), así que este paso se
+  ejecuta desde la pantalla de GM del propio juego: seleccionar la nave de los
+  jugadores → «Tweak» → bajar el campo *Health* del sistema elegido. Cuando
+  exista la UI integrada, este paso pasará a hacerse desde Foundry.
 - La tripulación debe detectarla, diagnosticarla y repararla desde su estación
   de ingeniería real; el GM observa la reparación en el estado.
 - Si el trayecto cruza el encuentro del escenario, se juega con normalidad.
@@ -113,6 +118,15 @@ Etiquetas orientativas: `Betatesting` siempre; añade `Fix` para fallos y
 `Accesibilidad` o `Calidad` cuando aplique. Los hallazgos de comprensión del
 mapa van al issue #126 y los de español al #28 como comentarios, si encajan.
 
-**No publiques** en issues ni capturas: el `BRIDGE_TOKEN`, contraseñas del
-servidor, el contenido de `docker/.env` o `~/.emptyepsilon`, ni datos
-personales de la mesa.
+**Revisa y redacta antes de adjuntar** cualquier texto de consola o captura —
+la consola del navegador y las capturas de la ventana suelen incluir datos de
+despliegue aunque no muestren el token. No publiques en issues ni capturas:
+
+- el `BRIDGE_TOKEN`, contraseñas del servidor, el contenido de `docker/.env`
+  o `~/.emptyepsilon`;
+- la URL, IP o hostname del puente y cualquier otra topología de la red de la
+  mesa (tapa o recorta la barra de ajustes y las URLs de las peticiones);
+- nombres de usuario de Foundry o del sistema y rutas locales de archivos;
+- datos personales de la mesa.
+
+Una captura que no se pueda anonimizar no se adjunta: se describe con texto.

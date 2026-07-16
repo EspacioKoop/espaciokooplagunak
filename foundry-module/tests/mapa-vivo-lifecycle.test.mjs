@@ -136,11 +136,11 @@ for (const modern of [false, true]) {
 
   test(`${version}: cerrar durante /healthz no rearma el sondeo ni renderiza tarde`, async (t) => {
     const entorno = await cargarMapa({ modern, t });
-    const controles = modern ? { tokens: { tools: {} } } : [{ name: "token", tools: [] }];
+    const controles = modern ? {} : [];
     entorno.hooks.getSceneControlButtons(controles);
     const boton = modern
-      ? controles.tokens.tools["lagunak-mapa"]
-      : controles[0].tools.find((tool) => tool.name === "lagunak-mapa");
+      ? controles.lagunak.tools["lagunak-mapa"]
+      : controles.find((c) => c.name === "lagunak").tools.find((tool) => tool.name === "lagunak-mapa");
     boton.onClick();
 
     const app = entorno.instancias[0];

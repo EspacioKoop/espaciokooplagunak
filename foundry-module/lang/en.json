@@ -176,5 +176,15 @@
   "LAGUNAK.Espacios.Refrigerante": "Coolant",
   "LAGUNAK.MapaVivo.Descripcion": "Tactical map of contacts around the ship",
   "LAGUNAK.EstadoNave.Resumen": "Ship status summary",
-  "LAGUNAK.EstadoNave.EstadoSistemas": "Ship system status"
+  "LAGUNAK.EstadoNave.EstadoSistemas": "Ship system status",
+  "LAGUNAK.Controles.Grupo": "Espaciokoop Lagunak",
+  "LAGUNAK.Pausa.Conectando": "Pause state: no data yet",
+  "LAGUNAK.Pausa.Desconectado": "Pause state unknown (disconnected)",
+  "LAGUNAK.Pausa.EnMarcha": "Simulation running",
+  "LAGUNAK.Pausa.Pausado": "Simulation paused",
+  "LAGUNAK.Pausa.Pausando": "Pausing…",
+  "LAGUNAK.Pausa.Reanudando": "Resuming…",
+  "LAGUNAK.Pausa.Error": "The last order failed; you can retry",
+  "LAGUNAK.Pausa.FoundryPausado": "Foundry is paused (independent from the simulator; they do not sync).",
+  "LAGUNAK.Tempo.Discordante": "The simulator does not reflect the pause command: check its state."
 }

@@ -176,5 +176,15 @@
   "LAGUNAK.Espacios.Refrigerante": "Refrigerante",
   "LAGUNAK.MapaVivo.Descripcion": "Mapa táctico de contactos alrededor de la nave",
   "LAGUNAK.EstadoNave.Resumen": "Resumen del estado de la nave",
-  "LAGUNAK.EstadoNave.EstadoSistemas": "Estado de los sistemas de la nave"
+  "LAGUNAK.EstadoNave.EstadoSistemas": "Estado de los sistemas de la nave",
+  "LAGUNAK.Controles.Grupo": "Espaciokoop Lagunak",
+  "LAGUNAK.Pausa.Conectando": "Estado de pausa: sin datos todavía",
+  "LAGUNAK.Pausa.Desconectado": "Estado de pausa desconocido (sin conexión)",
+  "LAGUNAK.Pausa.EnMarcha": "Simulación en marcha",
+  "LAGUNAK.Pausa.Pausado": "Simulación pausada",
+  "LAGUNAK.Pausa.Pausando": "Pausando…",
+  "LAGUNAK.Pausa.Reanudando": "Reanudando…",
+  "LAGUNAK.Pausa.Error": "La última orden falló; puedes reintentar",
+  "LAGUNAK.Pausa.FoundryPausado": "Foundry está en pausa (independiente del simulador; no se sincronizan).",
+  "LAGUNAK.Tempo.Discordante": "El simulador no refleja la orden de pausa: revisa su estado."
 }

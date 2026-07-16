@@ -127,8 +127,14 @@ sequenceDiagram
     F->>B: POST /v1/command {call: "pause"}
     B->>B: validación Pydantic (lista blanca cerrada)
     B->>G: POST /exec.lua → pauseGame()
-    G-->>B: confirmación
-    B-->>F: la UI del GM refleja la pausa
+    G-->>B: resultado de la orden
+    B-->>F: ACK (orden aceptada, sin estado autoritativo)
+    Note over F: la UI queda en «pausando» — el ACK no confirma la pausa
+    F->>B: GET /v1/scenario (sondeo posterior)
+    B->>G: POST /exec.lua (lectura de estado)
+    G-->>B: paused observado
+    B-->>F: paused autoritativo
+    Note over F: solo esta lectura confirma la pausa en la UI del GM
 ```
 
 ## Mantenimiento

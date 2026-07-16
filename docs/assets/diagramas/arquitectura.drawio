@@ -174,9 +174,9 @@
         <mxCell id="fC" value="&lt;b&gt;Servidor headless&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#2E6295;" vertex="1" parent="1">
           <mxGeometry x="900" y="90" width="180" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="lA" style="endArrow=none;dashed=1;html=1;strokeColor=#999999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="170" y="140" as="sourcePoint" /><mxPoint x="170" y="760" as="targetPoint" /></mxGeometry></mxCell>
-        <mxCell id="lB" style="endArrow=none;dashed=1;html=1;strokeColor=#999999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="580" y="140" as="sourcePoint" /><mxPoint x="580" y="760" as="targetPoint" /></mxGeometry></mxCell>
-        <mxCell id="lC" style="endArrow=none;dashed=1;html=1;strokeColor=#999999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="990" y="140" as="sourcePoint" /><mxPoint x="990" y="760" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="lA" style="endArrow=none;dashed=1;html=1;strokeColor=#999999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="170" y="140" as="sourcePoint" /><mxPoint x="170" y="960" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="lB" style="endArrow=none;dashed=1;html=1;strokeColor=#999999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="580" y="140" as="sourcePoint" /><mxPoint x="580" y="960" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="lC" style="endArrow=none;dashed=1;html=1;strokeColor=#999999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="990" y="140" as="sourcePoint" /><mxPoint x="990" y="960" as="targetPoint" /></mxGeometry></mxCell>
         <mxCell id="s1" value="1. GET /v1/state (Bearer)" style="html=1;fontColor=#404040;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="170" y="190" as="sourcePoint" /><mxPoint x="580" y="190" as="targetPoint" /></mxGeometry></mxCell>
         <mxCell id="s2" value="2. Auth + rate limit; POST /exec.lua con plantilla fija" style="html=1;fontColor=#404040;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="580" y="250" as="sourcePoint" /><mxPoint x="990" y="250" as="targetPoint" /></mxGeometry></mxCell>
         <mxCell id="s3" value="3. Resultado Lua (JSON)" style="html=1;dashed=1;fontColor=#404040;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="990" y="310" as="sourcePoint" /><mxPoint x="580" y="310" as="targetPoint" /></mxGeometry></mxCell>
@@ -184,9 +184,12 @@
         <mxCell id="s5" value="5. GET /v1/events → Journal (deduplicado por eventId)" style="html=1;fontColor=#404040;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="170" y="440" as="sourcePoint" /><mxPoint x="580" y="440" as="targetPoint" /></mxGeometry></mxCell>
         <mxCell id="s6" value="6. POST /v1/command {call: pause} — solo lista blanca" style="html=1;fontColor=#404040;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="170" y="530" as="sourcePoint" /><mxPoint x="580" y="530" as="targetPoint" /></mxGeometry></mxCell>
         <mxCell id="s7" value="7. Validación Pydantic; Lua generado en el servidor: pauseGame()" style="html=1;fontColor=#404040;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="580" y="590" as="sourcePoint" /><mxPoint x="990" y="590" as="targetPoint" /></mxGeometry></mxCell>
-        <mxCell id="s8" value="8. Confirmación → UI del GM refleja la pausa" style="html=1;dashed=1;fontColor=#404040;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="990" y="660" as="sourcePoint" /><mxPoint x="170" y="660" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="s8" value="8. ACK de /v1/command (orden aceptada, sin estado autoritativo) — la UI queda en «pausando»" style="html=1;dashed=1;fontColor=#404040;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="990" y="660" as="sourcePoint" /><mxPoint x="170" y="660" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="s9" value="9. GET /v1/scenario (sondeo posterior)" style="html=1;fontColor=#404040;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="170" y="720" as="sourcePoint" /><mxPoint x="580" y="720" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="s10" value="10. POST /exec.lua (lectura de estado) → paused observado" style="html=1;fontColor=#404040;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="580" y="780" as="sourcePoint" /><mxPoint x="990" y="780" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="s11" value="11. paused autoritativo — solo esta lectura confirma la pausa en la UI del GM" style="html=1;dashed=1;fontColor=#404040;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="990" y="840" as="sourcePoint" /><mxPoint x="170" y="840" as="targetPoint" /></mxGeometry></mxCell>
         <mxCell id="nota" value="El módulo nunca envía Lua: los fragmentos viven en el puente y las entradas del cliente solo rellenan valores tipados y validados." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#FFF2CC;strokeColor=#D6B656;" vertex="1" parent="1">
-          <mxGeometry x="720" y="700" width="360" height="70" as="geometry" />
+          <mxGeometry x="720" y="880" width="360" height="70" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

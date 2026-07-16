@@ -195,6 +195,22 @@ int main()
             && !session.isDirty() && !session.canUndo(),
         "click without movement creates no history entry");
 
+    MapDocument edge_document;
+    edge_document.objects.push_back(asteroid("edge", 999000.0f, 0.0f));
+    MapEditSession edge_session(edge_document);
+    MapPreviewDragSession edge_drag;
+    expect(edge_drag.begin(edge_session, {995000.0f, 0.0f}, 0.001f) == MapDocumentError::None
+            && edge_drag.isDragging() && edge_drag.selectedId() == "edge",
+        "low-zoom grab far from centre is accepted within pixel tolerance");
+    expect(edge_drag.update({999999.0f, 0.0f})
+            && edge_drag.provisionalTransform().x == MAP_COORDINATE_LIMIT
+            && edge_drag.provisionalTransform().y == 0.0f,
+        "valid pointer plus large offset clamps provisional to the coordinate limit");
+    expect(edge_drag.commit(edge_session) == MapEditError::None
+            && validateMapDocument(edge_session.document()) == MapDocumentError::None
+            && edge_session.document().objects.front().transform.x == MAP_COORDINATE_LIMIT,
+        "committed drag never stages a document outside the validator contract");
+
     expect(drag.begin(session, {400.0f, 500.0f}, 1.0f) == MapDocumentError::None
             && !drag.isDragging() && drag.selectedId().empty(),
         "opaque position cannot begin a drag");

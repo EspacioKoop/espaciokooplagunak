@@ -1,0 +1,8 @@
+# Revisores por defecto de todos los PR.
+# El último patrón que coincide gana.
+
+* @VaroTv7 @eGurucharri
+
+# Áreas con responsable principal
+/foundry-module/ @eGurucharri
+/bridge/ @eGurucharri

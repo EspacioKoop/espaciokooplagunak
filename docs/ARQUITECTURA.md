@@ -47,17 +47,19 @@ publica jamás al host**; solo el puente lo alcanza por la red interna.
 ```mermaid
 flowchart LR
     subgraph clientes["Mesa de juego"]
-        nav["Navegador del GM y jugadores"]
+        gmweb["Navegador del GM<br/>módulo Lagunak ejecutado en cliente<br/>Bearer en setting client provisional"]
+        players["Navegadores de jugadores"]
         native["Clientes nativos<br/>(puestos de la tripulación)"]
     end
-    foundry["Foundry VTT + módulo Lagunak<br/><i>Node.js — foundry-module/</i>"]
+    foundry["Servidor Foundry VTT<br/><i>Node.js — sistema externo</i>"]
     subgraph compose["Docker Compose — red interna «espaciokoop»"]
         bridge["Puente de integración<br/><i>Python/FastAPI — bridge/</i><br/>:8090 (bind 127.0.0.1 por defecto)"]
         game["Servidor headless del juego<br/><i>C++/SDL2/Lua</i><br/>:8080 interno · :35666 LAN"]
     end
 
-    nav -->|"sesión Foundry"| foundry
-    foundry -->|"GET /v1/* · POST /v1/command<br/>HTTP + Bearer, polling"| bridge
+    gmweb -->|"sesión Foundry"| foundry
+    players -->|"sesión Foundry"| foundry
+    gmweb -->|"GET /v1/* · POST /v1/command<br/>fetch directo · HTTP + Bearer · CORS"| bridge
     bridge -->|"POST /exec.lua<br/>solo plantillas definidas en el puente"| game
     native -->|":35666 TCP/UDP (protocolo del juego)"| game
 ```
@@ -66,7 +68,8 @@ flowchart LR
 |---|---|---|
 | Servidor headless | C++ (fork de EmptyEpsilon), escenarios Lua | Simulación autoritativa de la nave y del escenario |
 | Puente de integración | Python / FastAPI | Única pieza autorizada a hablar con `/exec.lua`: auth Bearer, CORS estricto, rate limit, órdenes de lista blanca |
-| Módulo Foundry | JavaScript (módulo VTT) | Presenta el estado vivo al GM, escribe eventos en el Journal y envía órdenes cerradas |
+| Servidor Foundry | Node.js (sistema externo) | Aloja el mundo y sirve la aplicación web de Foundry a GM y jugadores |
+| Módulo Foundry | JavaScript en el navegador del GM | Presenta el estado vivo, escribe eventos en el Journal y llama directamente al puente; URL y Bearer v0 son settings `client` provisionales |
 | Clientes nativos | EmptyEpsilon de escritorio | Puestos de la tripulación por LAN |
 
 ## Nivel 3 — Componentes
@@ -76,7 +79,7 @@ fork; el servidor del juego mantiene la arquitectura de EmptyEpsilon).
 
 ```mermaid
 flowchart TB
-    subgraph mod["Módulo Foundry «Lagunak»"]
+    subgraph mod["Módulo Foundry «Lagunak» — navegador del GM"]
         main["main.mjs<br/>registro y ajustes"]
         ship["ship-view.mjs / ventana-nave.mjs<br/>estado vivo, destino y ETA"]
         mapa["mapa-render.mjs<br/>mapa vivo con contactos"]
@@ -109,7 +112,7 @@ cliente solo rellenan valores tipados y validados.
 
 ```mermaid
 sequenceDiagram
-    participant F as Módulo Foundry
+    participant F as Módulo Foundry (navegador del GM)
     participant B as Puente
     participant G as Servidor headless
 

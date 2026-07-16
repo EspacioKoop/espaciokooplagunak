@@ -41,7 +41,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="c4-contenedores" name="C4-2 Contenedores">
-    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="826" math="0" shadow="0">
+    <mxGraphModel dx="1200" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="900" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -57,19 +57,22 @@
         <mxCell id="bridge" value="&lt;b&gt;Puente de integración&lt;/b&gt;&lt;br&gt;[Contenedor: Python / FastAPI]&lt;br&gt;&lt;br&gt;Única pieza autorizada a hablar con /exec.lua. API v1 en :8090 (bind 127.0.0.1 por defecto): auth Bearer, CORS estricto, rate limit y órdenes de lista blanca" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#2E6295;" vertex="1" parent="1">
           <mxGeometry x="460" y="180" width="260" height="160" as="geometry" />
         </mxCell>
-        <mxCell id="foundrysrv" value="&lt;b&gt;Foundry VTT + módulo Lagunak&lt;/b&gt;&lt;br&gt;[Contenedor/servidor: Node.js]&lt;br&gt;&lt;br&gt;Módulo foundry-module/: estado de nave, mapa vivo, control de tempo y diario de eventos" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#2E6295;" vertex="1" parent="1">
+        <mxCell id="foundrysrv" value="&lt;b&gt;Servidor Foundry VTT&lt;/b&gt;&lt;br&gt;[Sistema externo: Node.js]&lt;br&gt;&lt;br&gt;Aloja el mundo y sirve la aplicación web a GM y jugadores" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#2E6295;" vertex="1" parent="1">
           <mxGeometry x="80" y="180" width="260" height="160" as="geometry" />
         </mxCell>
         <mxCell id="cliente" value="&lt;b&gt;Clientes nativos&lt;/b&gt;&lt;br&gt;[Aplicación de escritorio]&lt;br&gt;&lt;br&gt;Puestos de la tripulación (EmptyEpsilon)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#2E6295;" vertex="1" parent="1">
           <mxGeometry x="80" y="420" width="260" height="110" as="geometry" />
         </mxCell>
-        <mxCell id="navegador" value="&lt;b&gt;Navegador del GM y jugadores&lt;/b&gt;&lt;br&gt;[Aplicación web]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#2E6295;" vertex="1" parent="1">
-          <mxGeometry x="80" y="590" width="260" height="70" as="geometry" />
+        <mxCell id="navegador" value="&lt;b&gt;Navegador del GM + módulo Lagunak&lt;/b&gt;&lt;br&gt;[Aplicación web cliente]&lt;br&gt;&lt;br&gt;Hace fetch directo al puente. URL y Bearer v0 viven en settings client provisionales" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#2E6295;" vertex="1" parent="1">
+          <mxGeometry x="80" y="570" width="260" height="120" as="geometry" />
         </mxCell>
-        <mxCell id="c1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#707070;fontColor=#404040;" edge="1" parent="1" source="foundrysrv" target="bridge">
+        <mxCell id="jugadores-web" value="&lt;b&gt;Navegadores de jugadores&lt;/b&gt;&lt;br&gt;[Aplicación web cliente]&lt;br&gt;Sesión Foundry; sin token ni acceso al puente" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#2E6295;" vertex="1" parent="1">
+          <mxGeometry x="80" y="730" width="260" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="c1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#707070;fontColor=#404040;" edge="1" parent="1" source="navegador" target="bridge">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="c1l" value="GET /healthz /v1/state /v1/scenario /v1/events /v1/contacts · POST /v1/command [HTTPS/HTTP + Bearer, polling]" style="edgeLabel;html=1;" vertex="1" connectable="0" parent="c1">
+        <mxCell id="c1l" value="fetch directo: GET /healthz /v1/* · POST /v1/command [HTTP + Bearer, polling, CORS]" style="edgeLabel;html=1;" vertex="1" connectable="0" parent="c1">
           <mxGeometry x="-0.1" relative="1" as="geometry" />
         </mxCell>
         <mxCell id="c2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#707070;fontColor=#404040;" edge="1" parent="1" source="bridge" target="game">
@@ -90,6 +93,12 @@
         <mxCell id="c4l" value="Sesión de Foundry [WebSocket/HTTP]" style="edgeLabel;html=1;" vertex="1" connectable="0" parent="c4e">
           <mxGeometry x="-0.1" relative="1" as="geometry" />
         </mxCell>
+        <mxCell id="c5e" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#707070;fontColor=#404040;" edge="1" parent="1" source="jugadores-web" target="foundrysrv">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c5l" value="Sesión de Foundry [WebSocket/HTTP] — sin acceso al puente" style="edgeLabel;html=1;" vertex="1" connectable="0" parent="c5e">
+          <mxGeometry x="-0.1" relative="1" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
@@ -101,7 +110,7 @@
         <mxCell id="titulo3" value="Nivel 3 — Componentes del puente (bridge/app.py) y del módulo Foundry (foundry-module/scripts/)" style="text;html=1;fontSize=16;fontStyle=1;align=left;" vertex="1" parent="1">
           <mxGeometry x="40" y="20" width="900" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="fmod" value="Módulo Foundry «Lagunak» [Contenedor]" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#666666;dashed=1;verticalAlign=bottom;fontStyle=2;" vertex="1" parent="1">
+        <mxCell id="fmod" value="Módulo Foundry «Lagunak» [Navegador del GM]" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#666666;dashed=1;verticalAlign=bottom;fontStyle=2;" vertex="1" parent="1">
           <mxGeometry x="40" y="80" width="560" height="560" as="geometry" />
         </mxCell>
         <mxCell id="main" value="&lt;b&gt;main.mjs&lt;/b&gt;&lt;br&gt;[Componente]&lt;br&gt;Registro del módulo, ajustes y arranque" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#85BBF0;strokeColor=#5D82A8;" vertex="1" parent="1">
@@ -165,8 +174,8 @@
         <mxCell id="titulo4" value="Flujo de datos — ciclo de polling y envío de una orden (contrato v0, transporte fijado en polling HTTP)" style="text;html=1;fontSize=16;fontStyle=1;align=left;" vertex="1" parent="1">
           <mxGeometry x="40" y="20" width="900" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="fA" value="&lt;b&gt;Módulo Foundry&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#2E6295;" vertex="1" parent="1">
-          <mxGeometry x="80" y="90" width="180" height="50" as="geometry" />
+        <mxCell id="fA" value="&lt;b&gt;Módulo Foundry&lt;/b&gt;&lt;br&gt;[Navegador del GM]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#2E6295;" vertex="1" parent="1">
+          <mxGeometry x="80" y="90" width="180" height="60" as="geometry" />
         </mxCell>
         <mxCell id="fB" value="&lt;b&gt;Puente&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#2E6295;" vertex="1" parent="1">
           <mxGeometry x="490" y="90" width="180" height="50" as="geometry" />

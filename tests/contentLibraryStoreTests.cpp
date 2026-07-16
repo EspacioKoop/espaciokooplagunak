@@ -491,6 +491,175 @@ void testInboxLimitAndConcurrentWriters()
 #endif
 }
 
+void testTransactionalRename()
+{
+    TemporaryDirectory temporary("rename");
+    ContentLibraryStore store(temporary.path / "managed");
+
+    auto first_map = visualMap();
+    auto second_map = first_map;
+    second_map.id = "second-map";
+    second_map.name = "Second Map";
+    auto ship = declarativeShip();
+    ContentResource character;
+    character.type = ContentResourceType::Character;
+    character.id = "pilot";
+    character.name = "Pilot";
+    character.primary = "helms";
+    character.secondary = "Echo";
+    character.quaternary = ship.id;
+    auto linked_campaign = campaign("linked-campaign", "Linked Campaign");
+    linked_campaign.primary = first_map.id + ", " + second_map.id;
+    linked_campaign.secondary = first_map.id;
+    linked_campaign.tertiary = character.id;
+    linked_campaign.quaternary = ship.id;
+    linked_campaign.quinary = first_map.id + ">" + second_map.id;
+    const std::vector<ContentResource> source{
+        first_map, second_map, ship, character, linked_campaign
+    };
+    expect(store.save(source) == ContentStoreError::None,
+        "rename fixture is committed atomically");
+
+    auto renamed_map = first_map;
+    renamed_map.id = "renamed-map";
+    renamed_map.name = "Renamed Map";
+    std::vector<ContentResource> reconciled;
+    const auto renamed = store.renameResource(first_map, renamed_map, reconciled);
+    expect(renamed.ok() && renamed.reconciled && renamed.applied,
+        "store atomically commits rename and edited fields");
+
+    ContentLibraryStore reloaded_store(store.rootPath());
+    std::vector<ContentResource> reloaded;
+    expect(reloaded_store.load(reloaded).error == ContentStoreError::None,
+        "renamed library reloads from a fresh store instance");
+    const auto find_resource = [&](ContentResourceType type, const std::string& id) {
+        return std::find_if(reloaded.begin(), reloaded.end(), [&](const ContentResource& item) {
+            return item.type == type && item.id == id;
+        });
+    };
+    const auto persisted_map = find_resource(ContentResourceType::Map, "renamed-map");
+    const auto persisted_campaign = find_resource(ContentResourceType::Campaign, "linked-campaign");
+    expect(persisted_map != reloaded.end()
+            && find_resource(ContentResourceType::Map, "visual-map") == reloaded.end(),
+        "fresh reload contains only the renamed map identity");
+    expect(persisted_campaign != reloaded.end()
+            && persisted_campaign->primary == "renamed-map, second-map"
+            && persisted_campaign->secondary == "renamed-map"
+            && persisted_campaign->quinary == "renamed-map>second-map",
+        "fresh reload contains every updated map reference");
+
+    const auto library_path = store.rootPath() / "library/library.json";
+    const auto before_collision = readAll(library_path);
+    auto collision_replacement = *persisted_map;
+    collision_replacement.id = "second-map";
+    reconciled.clear();
+    const auto collision = store.renameResource(
+        *persisted_map, collision_replacement, reconciled);
+    expect(collision.store_error == ContentStoreError::None
+            && collision.rename_error == ContentRenameError::TargetAlreadyExists,
+        "store reports destination collision separately from I/O errors");
+    expect(readAll(library_path) == before_collision,
+        "rejected rename leaves canonical library bytes untouched");
+    reconciled.clear();
+    const auto no_op = store.renameResource(*persisted_map, *persisted_map, reconciled);
+    expect(no_op.ok() && no_op.reconciled && !no_op.applied
+            && readAll(library_path) == before_collision,
+        "no-op rename succeeds without rewriting canonical library");
+
+    ContentLibraryStore external_writer(store.rootPath());
+    std::vector<ContentResource> external_library;
+    expect(external_writer.load(external_library).error == ContentStoreError::None,
+        "external writer loads current generation");
+    external_library.push_back(campaign("external-campaign", "External Campaign"));
+    expect(external_writer.save(external_library) == ContentStoreError::None,
+        "external writer commits an unrelated resource");
+    auto final_map = *persisted_map;
+    final_map.id = "final-map";
+    reconciled.clear();
+    const auto preserves_external = store.renameResource(*persisted_map, final_map, reconciled);
+    expect(preserves_external.ok() && preserves_external.applied
+            && std::any_of(reconciled.begin(), reconciled.end(), [](const ContentResource& item) {
+                return item.type == ContentResourceType::Campaign && item.id == "external-campaign";
+            }),
+        "locked read-modify-write preserves an unrelated concurrent addition");
+
+    const auto expected_final_it = std::find_if(
+        reconciled.begin(), reconciled.end(), [](const ContentResource& item) {
+            return item.type == ContentResourceType::Map && item.id == "final-map";
+        });
+    expect(expected_final_it != reconciled.end(),
+        "concurrent-preservation result contains renamed source");
+    const auto expected_final = *expected_final_it;
+    external_library.clear();
+    expect(external_writer.load(external_library).error == ContentStoreError::None,
+        "external writer reloads before source-conflict test");
+    auto changed_source = std::find_if(
+        external_library.begin(), external_library.end(), [](const ContentResource& item) {
+            return item.type == ContentResourceType::Map && item.id == "final-map";
+        });
+    expect(changed_source != external_library.end(), "source-conflict fixture finds renamed map");
+    changed_source->name = "Changed by another writer";
+    expect(external_writer.save(external_library) == ContentStoreError::None,
+        "external writer changes the source resource");
+    auto stale_replacement = expected_final;
+    stale_replacement.id = "stale-target";
+    reconciled.clear();
+    const auto source_changed = store.renameResource(
+        expected_final, stale_replacement, reconciled);
+    expect(source_changed.rename_error == ContentRenameError::SourceChanged
+            && source_changed.reconciled && !source_changed.applied
+            && std::any_of(reconciled.begin(), reconciled.end(), [](const ContentResource& item) {
+                return item.type == ContentResourceType::Map && item.id == "final-map"
+                    && item.name == "Changed by another writer";
+            }),
+        "stale source is rejected and latest generation is returned");
+
+    store.setTestFault(ContentStoreFault::NoSpaceDuringWrite);
+    auto third_map = second_map;
+    third_map.id = "third-map";
+    reconciled.clear();
+    const auto no_space = store.renameResource(second_map, third_map, reconciled);
+    expect(no_space.store_error == ContentStoreError::NoSpace
+            && no_space.rename_error == ContentRenameError::None
+            && no_space.reconciled && !no_space.applied,
+        "pre-promotion write failure reloads the previous generation");
+    store.setTestFault(ContentStoreFault::None);
+    ContentLibraryStore after_failure(store.rootPath());
+    reloaded.clear();
+    expect(after_failure.load(reloaded).error == ContentStoreError::None,
+        "canonical generation remains reloadable after failed rename write");
+    const auto has_id = [&](const std::string& id) {
+        return std::any_of(reloaded.begin(), reloaded.end(), [&](const ContentResource& item) {
+            return item.type == ContentResourceType::Map && item.id == id;
+        });
+    };
+    expect(has_id("second-map") && !has_id("third-map"),
+        "failed rename write preserves the previous map identity");
+
+    auto recovered_map = second_map;
+    recovered_map.id = "recovered-map";
+    reconciled.clear();
+    store.setTestFault(ContentStoreFault::InterruptAfterBackup);
+    const auto interrupted = store.renameResource(second_map, recovered_map, reconciled);
+    expect(interrupted.store_error == ContentStoreError::Interrupted
+            && interrupted.rename_error == ContentRenameError::None
+            && interrupted.reconciled && interrupted.applied,
+        "post-backup interruption reports error and reconciled applied outcome");
+    expect(std::any_of(reconciled.begin(), reconciled.end(), [](const ContentResource& item) {
+            return item.type == ContentResourceType::Map && item.id == "recovered-map";
+        }) && std::none_of(reconciled.begin(), reconciled.end(), [](const ContentResource& item) {
+            return item.type == ContentResourceType::Map && item.id == "second-map";
+        }),
+        "reconciliation returns the generation promoted from the durable temp");
+    ContentLibraryStore after_interruption(store.rootPath());
+    reloaded.clear();
+    expect(after_interruption.load(reloaded).error == ContentStoreError::None
+            && std::any_of(reloaded.begin(), reloaded.end(), [](const ContentResource& item) {
+                return item.type == ContentResourceType::Map && item.id == "recovered-map";
+            }),
+        "fresh store observes the same reconciled post-interruption generation");
+}
+
 void testSchemaGuards()
 {
     TemporaryDirectory temporary("schema");
@@ -517,6 +686,7 @@ int main()
     testCorruptionMigrationAndFutureVersion();
     testManagedImportExportAndSymlinks();
     testInboxLimitAndConcurrentWriters();
+    testTransactionalRename();
     testSchemaGuards();
     std::cout << "CONTENT_LIBRARY_STORE_TESTS_OK checks=" << checks << "\n";
     return 0;

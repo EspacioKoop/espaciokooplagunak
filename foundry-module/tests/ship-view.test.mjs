@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { prepareRoute } from "../scripts/ship-view.mjs";
+import { localizeSystemName, prepareRoute, prepareSystemRows } from "../scripts/ship-view.mjs";
 
 const i18n = {
   localize: (key) => key,
@@ -71,4 +71,20 @@ test("nave en movimiento formatea una ETA finita", () => {
   assert.equal(route.estado, "en_ruta");
   assert.match(route.etaLabel, /"minutes":4/);
   assert.match(route.etaLabel, /"seconds":12/);
+});
+
+test("los sistemas del DTO se localizan sin exponer identificadores ingleses", () => {
+  assert.equal(localizeSystemName("beamweapons", i18n), "LAGUNAK.Sistemas.beamweapons");
+  assert.equal(localizeSystemName("unknown-drive", i18n), "LAGUNAK.Sistemas.Desconocido");
+  const rows = prepareSystemRows({
+    systems: { jumpdrive: { health: 0.75, heat: 0.2, power: 1.5, coolant: 0.4 } },
+  }, i18n);
+  assert.deepEqual(rows, [{
+    id: "jumpdrive",
+    name: "LAGUNAK.Sistemas.jumpdrive",
+    health: 75,
+    heat: 20,
+    power: 150,
+    coolant: 40,
+  }]);
 });

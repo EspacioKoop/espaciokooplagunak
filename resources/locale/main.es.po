@@ -4335,3 +4335,198 @@ msgstr "Selecciona primero una plantilla de nave."
 msgctxt "content_editor"
 msgid "Ship template selected."
 msgstr "Plantilla de nave seleccionada."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "3D preview unavailable."
+msgstr "Vista previa 3D no disponible."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Drag to rotate; wheel to zoom."
+msgstr "Arrastra para girar; usa la rueda para acercar o alejar."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Changing this ID updates every reference. Press Save again to confirm."
+msgstr "Cambiar este ID actualizará todas sus referencias. Pulsa Guardar de nuevo para confirmar."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Resource renamed and references updated."
+msgstr "Recurso renombrado y referencias actualizadas."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The library is invalid and was not changed."
+msgstr "La biblioteca no es válida y no se ha modificado."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The new ID is invalid."
+msgstr "El nuevo ID no es válido."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The resource to rename no longer exists."
+msgstr "El recurso que se iba a renombrar ya no existe."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Another resource of this type already uses the new ID."
+msgstr "Otro recurso de este tipo ya utiliza el nuevo ID."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The resource could not be renamed."
+msgstr "No se ha podido renombrar el recurso."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The resource type is invalid."
+msgstr "El tipo de recurso no es válido."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The resource changed on disk. The latest version was reloaded."
+msgstr "El recurso cambió en disco. Se ha recargado la versión más reciente."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The rename was recovered after a storage error. Review the reloaded library."
+msgstr "El renombrado se recuperó tras un error de almacenamiento. Revisa la biblioteca recargada."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The renamed resource could not be reloaded."
+msgstr "No se ha podido recargar el recurso renombrado."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Add selection"
+msgstr "Añadir selección"
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Campaign characters"
+msgstr "Personajes de la campaña"
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Campaign map order updated in staging."
+msgstr "Se ha actualizado el orden provisional de los mapas de campaña."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Campaign maps"
+msgstr "Mapas de la campaña"
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Campaign ships"
+msgstr "Naves de la campaña"
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Character ship"
+msgstr "Nave del personaje"
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Characters"
+msgstr "Personajes"
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Clear selection"
+msgstr "Borrar selección"
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Crew position"
+msgstr "Puesto de tripulación"
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Map transitions"
+msgstr "Transiciones entre mapas"
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Maps (ordered)"
+msgstr "Mapas (en orden)"
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Move down"
+msgstr "Bajar"
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Move up"
+msgstr "Subir"
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Relationship cleared in staging."
+msgstr "Se ha borrado la relación de los cambios provisionales."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Relationship removed from staging."
+msgstr "Se ha eliminado la relación de los cambios provisionales."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Relationship staged. Save the resource to persist it."
+msgstr "La relación queda preparada. Guarda el recurso para conservarla."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Remove"
+msgstr "Quitar"
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Select"
+msgstr "Seleccionar"
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Select an existing relationship first."
+msgstr "Selecciona primero una relación existente."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Ship (optional)"
+msgstr "Nave (opcional)"
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Ships"
+msgstr "Naves"
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Starting map"
+msgstr "Mapa inicial"
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The selected map cannot move in that direction."
+msgstr "El mapa seleccionado no puede moverse en esa dirección."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The selected relationship is invalid or already present."
+msgstr "La relación seleccionada no es válida o ya existe."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The selection cannot be cleared."
+msgstr "No se puede borrar la selección."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Use selection"
+msgstr "Usar selección"

@@ -75,6 +75,15 @@ ContentResourceError parseJson(const nlohmann::json& document, ContentResource& 
 {
     return parseContentResource(document.dump(), output);
 }
+
+ContentResource* findResource(std::vector<ContentResource>& resources,
+                              ContentResourceType type, const std::string& id)
+{
+    const auto found = std::find_if(resources.begin(), resources.end(), [&](const ContentResource& item) {
+        return item.type == type && item.id == id;
+    });
+    return found == resources.end() ? nullptr : &*found;
+}
 }
 
 int main()
@@ -327,6 +336,219 @@ int main()
     expect(validateContentLibrary({map_one, map_two, character, campaign}) == ContentResourceError::MissingDependency,
         "missing campaign or character dependency blocks library validation");
 
+    auto selected_campaign = validResource(ContentResourceType::Campaign);
+    selected_campaign.primary = "map-1";
+    selected_campaign.secondary = "map-1";
+    selected_campaign.tertiary.clear();
+    selected_campaign.quaternary.clear();
+    selected_campaign.quinary.clear();
+    expect(addContentReference(selected_campaign, complete_library,
+                               ContentReferenceKind::CampaignMap, "map-2")
+            && selected_campaign.primary == "map-1, map-2",
+        "typed map selection appends a canonical existing map");
+    const auto selection_snapshot = selected_campaign;
+    expect(!addContentReference(selected_campaign, complete_library,
+                                ContentReferenceKind::CampaignMap, "map-2")
+            && selected_campaign == selection_snapshot,
+        "typed selection rejects duplicates without mutation");
+    expect(!addContentReference(selected_campaign, complete_library,
+                                ContentReferenceKind::CampaignMap, "ship-1")
+            && selected_campaign == selection_snapshot,
+        "typed selection rejects a resource of the wrong type");
+    expect(setCampaignStartingMap(selected_campaign, "map-2")
+            && addCampaignTransition(selected_campaign, "map-1", "map-2"),
+        "starting map and transition are selected from campaign maps");
+    const auto dag_snapshot = selected_campaign;
+    expect(!addCampaignTransition(selected_campaign, "map-2", "map-1")
+            && selected_campaign == dag_snapshot,
+        "typed transition selection preserves DAG validation");
+    expect(moveCampaignMap(selected_campaign, "map-2", -1)
+            && selected_campaign.primary == "map-2, map-1",
+        "campaign maps can be reordered without changing IDs");
+    expect(removeContentReference(selected_campaign, ContentReferenceKind::CampaignMap, "map-2")
+            && selected_campaign.primary == "map-1"
+            && selected_campaign.secondary.empty() && selected_campaign.quinary.empty(),
+        "removing a map also clears its starting-map and transition references");
+    expect(addContentReference(selected_campaign, complete_library,
+                               ContentReferenceKind::CampaignCharacter, "character-1")
+            && addContentReference(selected_campaign, complete_library,
+                                   ContentReferenceKind::CampaignShip, "ship-1"),
+        "campaign character and ship selectors persist canonical IDs");
+
+    auto selected_character = validResource(ContentResourceType::Character);
+    expect(setCharacterCrewPosition(selected_character, "engineering")
+            && selected_character.primary == "engineering",
+        "character crew selector accepts canonical positions");
+    const auto character_selection_snapshot = selected_character;
+    expect(!setCharacterCrewPosition(selected_character, "helmsofficer")
+            && selected_character == character_selection_snapshot,
+        "character crew selector rejects aliases without mutation");
+    expect(setCharacterShipReference(selected_character, complete_library, "")
+            && selected_character.quaternary.empty(),
+        "optional character ship selection can be cleared");
+    expect(!setCharacterShipReference(selected_character, complete_library, "map-1")
+            && selected_character.quaternary.empty(),
+        "character ship selector rejects non-ship resources");
+
+    auto invalid_type_resource = map_one;
+    invalid_type_resource.type = static_cast<ContentResourceType>(999);
+    expect(validateContentResource(invalid_type_resource) == ContentResourceError::UnknownType,
+        "out-of-range C++ resource type is rejected explicitly");
+    auto invalid_type_library = complete_library;
+    invalid_type_library.front().type = static_cast<ContentResourceType>(999);
+    expect(validateContentLibrary(invalid_type_library) == ContentResourceError::UnknownType,
+        "library validation rejects an out-of-range C++ resource type");
+
+    auto renamed_map_library = complete_library;
+    auto unrelated_campaign = validResource(ContentResourceType::Campaign);
+    unrelated_campaign.id = "campaign-2";
+    unrelated_campaign.primary = " map-2 ";
+    unrelated_campaign.secondary = "map-2";
+    unrelated_campaign.tertiary.clear();
+    unrelated_campaign.quaternary.clear();
+    unrelated_campaign.quinary.clear();
+    renamed_map_library.push_back(unrelated_campaign);
+    expect(renameContentResource(renamed_map_library, ContentResourceType::Map,
+                                 "map-1", "map-renamed") == ContentRenameError::None,
+        "map rename succeeds on a valid library");
+    const auto* renamed_map = findResource(
+        renamed_map_library, ContentResourceType::Map, "map-renamed");
+    const auto* campaign_after_map = findResource(
+        renamed_map_library, ContentResourceType::Campaign, "campaign-1");
+    expect(renamed_map != nullptr
+            && findResource(renamed_map_library, ContentResourceType::Map, "map-1") == nullptr,
+        "map rename replaces the resource identity");
+    expect(campaign_after_map
+            && campaign_after_map->primary == "map-renamed, map-2"
+            && campaign_after_map->secondary == "map-renamed"
+            && campaign_after_map->quinary == "map-renamed>map-2",
+        "map rename updates ordered maps, starting map and transitions");
+    expect(validateContentLibrary(renamed_map_library) == ContentResourceError::None,
+        "map rename produces a valid candidate library");
+    const auto* unrelated_after_map = findResource(
+        renamed_map_library, ContentResourceType::Campaign, "campaign-2");
+    expect(unrelated_after_map && unrelated_after_map->primary == " map-2 ",
+        "rename preserves unrelated reference fields byte for byte");
+
+    auto renamed_character_library = complete_library;
+    expect(renameContentResource(renamed_character_library, ContentResourceType::Character,
+                                 "character-1", "character-renamed") == ContentRenameError::None,
+        "character rename succeeds");
+    const auto* campaign_after_character = findResource(
+        renamed_character_library, ContentResourceType::Campaign, "campaign-1");
+    expect(campaign_after_character && campaign_after_character->tertiary == "character-renamed",
+        "character rename updates campaign references");
+
+    auto renamed_ship_library = complete_library;
+    expect(renameContentResource(renamed_ship_library, ContentResourceType::Ship,
+                                 "ship-1", "ship-renamed") == ContentRenameError::None,
+        "ship rename succeeds");
+    const auto* campaign_after_ship = findResource(
+        renamed_ship_library, ContentResourceType::Campaign, "campaign-1");
+    const auto* character_after_ship = findResource(
+        renamed_ship_library, ContentResourceType::Character, "character-1");
+    expect(campaign_after_ship && campaign_after_ship->quaternary == "ship-renamed"
+            && character_after_ship && character_after_ship->quaternary == "ship-renamed",
+        "ship rename updates campaign and character references");
+
+    auto renamed_campaign_library = complete_library;
+    expect(renameContentResource(renamed_campaign_library, ContentResourceType::Campaign,
+                                 "campaign-1", "campaign-renamed") == ContentRenameError::None
+            && findResource(renamed_campaign_library, ContentResourceType::Campaign,
+                            "campaign-renamed") != nullptr,
+        "campaign rename updates its own identity");
+
+    auto unchanged_rename_library = complete_library;
+    const auto rename_snapshot = unchanged_rename_library;
+    expect(renameContentResource(unchanged_rename_library,
+                                 static_cast<ContentResourceType>(999),
+                                 "map-1", "new-map") == ContentRenameError::InvalidType,
+        "out-of-range rename type is rejected explicitly");
+    expect(unchanged_rename_library == rename_snapshot,
+        "invalid rename type leaves the whole library unchanged");
+    expect(renameContentResource(unchanged_rename_library, ContentResourceType::Map,
+                                 "map-1", "Uppercase") == ContentRenameError::InvalidNewId,
+        "invalid destination ID is rejected");
+    expect(unchanged_rename_library == rename_snapshot,
+        "invalid destination leaves the whole library unchanged");
+    expect(renameContentResource(unchanged_rename_library, ContentResourceType::Map,
+                                 "missing", "new-map") == ContentRenameError::SourceNotFound,
+        "missing source is reported without mutation");
+    expect(unchanged_rename_library == rename_snapshot,
+        "missing source leaves the whole library unchanged");
+    expect(renameContentResource(unchanged_rename_library, ContentResourceType::Map,
+                                 "map-1", "map-2") == ContentRenameError::TargetAlreadyExists,
+        "same-type destination collision is rejected");
+    expect(unchanged_rename_library == rename_snapshot,
+        "destination collision leaves the whole library unchanged");
+    expect(renameContentResource(unchanged_rename_library, ContentResourceType::Map,
+                                 "map-1", "map-1") == ContentRenameError::None
+            && unchanged_rename_library == rename_snapshot,
+        "renaming to the same ID is an explicit no-op");
+
+    auto cross_type_library = complete_library;
+    auto* cross_type_character = findResource(
+        cross_type_library, ContentResourceType::Character, "character-1");
+    auto* cross_type_campaign = findResource(
+        cross_type_library, ContentResourceType::Campaign, "campaign-1");
+    expect(cross_type_character && cross_type_campaign,
+        "cross-type fixture contains campaign and character");
+    cross_type_character->id = "shared-id";
+    cross_type_campaign->tertiary = "shared-id";
+    expect(renameContentResource(cross_type_library, ContentResourceType::Map,
+                                 "map-1", "shared-id") == ContentRenameError::None,
+        "same destination text is allowed for a different resource type");
+
+    auto invalid_rename_library = complete_library;
+    invalid_rename_library.erase(std::remove_if(
+        invalid_rename_library.begin(), invalid_rename_library.end(), [](const ContentResource& item) {
+            return item.type == ContentResourceType::Ship;
+        }), invalid_rename_library.end());
+    const auto invalid_rename_snapshot = invalid_rename_library;
+    expect(renameContentResource(invalid_rename_library, ContentResourceType::Map,
+                                 "map-1", "new-map") == ContentRenameError::InvalidLibrary,
+        "invalid source library is rejected before renaming");
+    expect(invalid_rename_library == invalid_rename_snapshot,
+        "invalid source library is never partially repaired or mutated");
+
+    auto duplicate_rename_library = complete_library;
+    duplicate_rename_library.push_back(map_one);
+    const auto duplicate_rename_snapshot = duplicate_rename_library;
+    expect(renameContentResource(duplicate_rename_library, ContentResourceType::Map,
+                                 "map-1", "new-map") == ContentRenameError::InvalidLibrary,
+        "duplicate source identities are rejected");
+    expect(duplicate_rename_library == duplicate_rename_snapshot,
+        "duplicate source identities remain untouched on failure");
+
+    auto oversized_candidate_library = complete_library;
+    auto* oversized_campaign = findResource(
+        oversized_candidate_library, ContentResourceType::Campaign, "campaign-1");
+    expect(oversized_campaign != nullptr, "candidate-overflow fixture contains campaign");
+    oversized_campaign->primary = "map-1";
+    oversized_campaign->secondary = "map-1";
+    oversized_campaign->quinary.clear();
+    for (int index = 0; index < 16; ++index)
+    {
+        const std::string destination_id = "dest-" + std::to_string(index);
+        auto destination_map = map_one;
+        destination_map.id = destination_id;
+        oversized_candidate_library.push_back(destination_map);
+        oversized_campaign = findResource(
+            oversized_candidate_library, ContentResourceType::Campaign, "campaign-1");
+        oversized_campaign->primary += ", " + destination_id;
+        if (!oversized_campaign->quinary.empty()) oversized_campaign->quinary += ',';
+        oversized_campaign->quinary += "map-1>" + destination_id;
+    }
+    expect(validateContentLibrary(oversized_candidate_library) == ContentResourceError::None,
+        "candidate-overflow source library is valid before rename");
+    const auto oversized_candidate_snapshot = oversized_candidate_library;
+    const std::string longest_valid_id(64, 'a');
+    expect(renameContentResource(oversized_candidate_library, ContentResourceType::Map,
+                                 "map-1", longest_valid_id) == ContentRenameError::InvalidLibrary,
+        "rename rejects a candidate whose expanded references exceed field limits");
+    expect(oversized_candidate_library == oversized_candidate_snapshot,
+        "post-copy candidate validation failure leaves original library unchanged");
+
     const auto exported = nlohmann::json::parse(serializeContentResourceExport(campaign, complete_library, 2));
     expect(exported["dependencies"].is_array() && exported["dependencies"].size() == 4,
         "individual campaign export has a closed dependency manifest");
@@ -374,6 +596,20 @@ int main()
     expect(guard.confirm("close", clean, clean), "clean form needs no confirmation");
     expect(!guard.confirm("close", dirty, clean), "first destructive action is blocked");
     expect(guard.confirm("close", dirty, clean), "identical second action is confirmed");
+
+    ContentDiscardGuard rename_guard;
+    auto rename_candidate = clean;
+    rename_candidate.id = "renamed-map";
+    expect(!rename_guard.confirm("rename:map:map-1", rename_candidate, clean),
+        "first rename save is blocked for confirmation");
+    rename_candidate.name = "Edited before confirmation";
+    expect(!rename_guard.confirm("rename:map:map-1", rename_candidate, clean),
+        "editing the form invalidates the previous rename confirmation");
+    expect(rename_guard.confirm("rename:map:map-1", rename_candidate, clean),
+        "identical second rename save confirms the current form signature");
+    rename_guard.reset();
+    expect(!rename_guard.confirm("rename:map:map-1", rename_candidate, clean),
+        "loading or saving resets rename confirmation state");
     expect(!guard.confirm("new", dirty, clean), "different action needs its own confirmation");
     dirty.description = "Changed after warning";
     expect(!guard.confirm("new", dirty, clean), "editing after warning invalidates confirmation");

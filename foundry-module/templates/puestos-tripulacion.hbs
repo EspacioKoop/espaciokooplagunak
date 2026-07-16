@@ -1,0 +1,27 @@
+<section class="lagunak-puestos__contenido">
+  <p class="lagunak-puestos__intro">
+    {{#if isGM}}
+      {{localize "LAGUNAK.Puestos.IntroGM"}}
+    {{else}}
+      {{localize "LAGUNAK.Puestos.IntroJugador"}}
+    {{/if}}
+  </p>
+
+  <div class="lagunak-puestos__lista">
+    {{#each crew}}
+      <label class="lagunak-puestos__fila" for="lagunak-station-{{id}}">
+        <span class="lagunak-puestos__usuario">
+          <strong>{{name}}</strong>
+          {{#unless active}}<small>{{localize "LAGUNAK.Puestos.Desconectado"}}</small>{{/unless}}
+        </span>
+        <select id="lagunak-station-{{id}}" data-station-user data-user-id="{{id}}" {{#unless canEdit}}disabled{{/unless}}>
+          {{#each stations}}
+            <option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>
+          {{/each}}
+        </select>
+      </label>
+    {{else}}
+      <p>{{localize "LAGUNAK.Puestos.SinJugadores"}}</p>
+    {{/each}}
+  </div>
+</section>

@@ -9,6 +9,14 @@ async function loadModule({ modern = false, isGM = true, fetchImpl } = {}) {
   const instances = [];
   const notifications = { info: [], warn: [], error: [] };
   const fetchCalls = [];
+  const journalPages = [];
+  const journal = {
+    async createEmbeddedDocuments(type, pages) {
+      assert.equal(type, "JournalEntryPage");
+      journalPages.push(...pages);
+      return pages;
+    },
+  };
 
   class BaseApplication {
     static get defaultOptions() {
@@ -50,9 +58,9 @@ async function loadModule({ modern = false, isGM = true, fetchImpl } = {}) {
       },
     },
     i18n: { localize: (key) => key, format: (key) => key },
-    journal: { getName: () => null },
+    journal: { getName: () => journal },
   };
-  globalThis.JournalEntry = { create: async () => null };
+  globalThis.JournalEntry = { create: async () => journal };
   globalThis.ui = {
     notifications: {
       info(message) { notifications.info.push(message); },
@@ -84,26 +92,32 @@ async function loadModule({ modern = false, isGM = true, fetchImpl } = {}) {
   }
 
   await import(`../scripts/main.mjs?compat-test=${importNonce++}`);
-  return { hooks, instances, notifications, fetchCalls };
+  return { hooks, instances, notifications, fetchCalls, journalPages };
 }
 
 function pauseValues(fetchCalls) {
   return fetchCalls.map(([, options]) => JSON.parse(options.body).paused);
 }
 
+function toolByName(controls, name) {
+  return controls.flatMap((control) => control.tools ?? []).find((tool) => tool.name === name);
+}
+
 test("v11 conecta los listeners de pausa y reanudación con el puente", async () => {
   const { hooks, instances, notifications, fetchCalls } = await loadModule();
-  const controls = [];
+  const controls = [{ name: "token", tools: [] }];
 
   hooks.getSceneControlButtons(controls);
-  // Grupo propio con icono de nave y dos herramientas (issue #125).
-  const grupo = controls.find((c) => c.name === "lagunak");
+  // Jugadores: asignación y consola en fichas. GM: estado y mapa en grupo propio.
+  assert.deepEqual(controls[0].tools.map(({ name }) => name), [
+    "lagunak-puestos",
+    "lagunak-espacio-puesto",
+  ]);
+  const grupo = controls.find((control) => control.name === "lagunak");
   assert.ok(grupo);
   assert.equal(grupo.icon, "fa-solid fa-shuttle-space");
-  assert.equal(grupo.tools.length, 2);
-  assert.equal(grupo.tools[0].name, "lagunak-estado");
-  assert.equal(grupo.tools[1].name, "lagunak-mapa");
-  grupo.tools[0].onClick();
+  assert.deepEqual(grupo.tools.map(({ name }) => name), ["lagunak-estado", "lagunak-mapa"]);
+  toolByName(controls, "lagunak-estado").onClick();
 
   assert.equal(instances.length, 1);
   assert.deepEqual(instances[0].renderCalls, [true]);
@@ -142,6 +156,42 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
   assert.deepEqual(pauseValues(fetchCalls), [true, false]);
   assert.deepEqual(notifications.info, ["LAGUNAK.Tempo.Pausado", "LAGUNAK.Tempo.Reanudado"]);
   assert.deepEqual(notifications.error, []);
+});
+
+test("la bitácora normaliza la telemetría y no inserta HTML del puente", async () => {
+  const { hooks, instances, journalPages } = await loadModule();
+  const controls = [{ name: "token", tools: [] }];
+  hooks.getSceneControlButtons(controls);
+  toolByName(controls, "lagunak-estado").onClick();
+
+  instances[0].ultimoEstado = {
+    ship: {
+      callsign: '<img src=x onerror="alert(1)">',
+      position: { x: "<svg onload=alert(1)>", y: 25.4 },
+      heading: "90deg",
+      hull: "<img src=x>",
+      hull_max: 100,
+      energy: Number.POSITIVE_INFINITY,
+      energy_max: 200,
+      shields_active: false,
+    },
+  };
+
+  const bindings = new Map();
+  instances[0].activateListeners({
+    find(selector) {
+      return { on(_event, callback) { bindings.set(selector, callback); } };
+    },
+  });
+  await bindings.get('[data-action="anotar"]')();
+
+  assert.equal(journalPages.length, 1);
+  const content = journalPages[0].text.content;
+  assert.doesNotMatch(content, /<img|<svg/);
+  assert.match(content, /LAGUNAK\.Diario\.Campo\.Posicion: 0, 25/);
+  assert.match(content, /LAGUNAK\.Diario\.Campo\.Rumbo: 0°/);
+  assert.match(content, /LAGUNAK\.Diario\.Campo\.Casco: 0 \/ 100/);
+  assert.match(content, /LAGUNAK\.Diario\.Campo\.Energia: 0 \/ 200/);
 });
 
 test("host moderno conecta las acciones de pausa y reanudación con el puente", async () => {
@@ -226,9 +276,9 @@ test("v11 muestra el error del puente sin emitir una confirmación falsa", async
   const { hooks, instances, notifications, fetchCalls } = await loadModule({
     fetchImpl: async () => ({ ok: false, status: 503, async json() { return {}; } }),
   });
-  const controls = [];
+  const controls = [{ name: "token", tools: [] }];
   hooks.getSceneControlButtons(controls);
-  controls.find((c) => c.name === "lagunak").tools[0].onClick();
+  toolByName(controls, "lagunak-estado").onClick();
 
   const bindings = new Map();
   instances[0].activateListeners({
@@ -262,9 +312,9 @@ test("ApplicationV2 muestra el error del puente sin emitir una confirmación fal
 
 test("v11 bloquea la orden si el usuario deja de ser GM", async () => {
   const { hooks, instances, notifications, fetchCalls } = await loadModule();
-  const controls = [];
+  const controls = [{ name: "token", tools: [] }];
   hooks.getSceneControlButtons(controls);
-  controls.find((c) => c.name === "lagunak").tools[0].onClick();
+  toolByName(controls, "lagunak-estado").onClick();
 
   const bindings = new Map();
   instances[0].activateListeners({
@@ -297,12 +347,16 @@ test("ApplicationV2 bloquea la orden si el usuario deja de ser GM", async () => 
   assert.deepEqual(notifications.error, []);
 });
 
-test("un jugador no GM no recibe ningún control", async () => {
+test("un jugador no GM recibe asignación y espacio de puesto, sin controles GM", async () => {
   const { hooks } = await loadModule({ isGM: false });
-  const controls = [];
+  const controls = [{ name: "token", tools: [] }];
 
   hooks.getSceneControlButtons(controls);
-  assert.equal(controls.find((c) => c.name === "lagunak"), undefined);
+  assert.deepEqual(controls[0].tools.map(({ name }) => name), [
+    "lagunak-puestos",
+    "lagunak-espacio-puesto",
+  ]);
+  assert.equal(controls.find((control) => control.name === "lagunak"), undefined);
 });
 
 test("v11 abre el mapa vivo con Application clásica (rAF ausente: sin bucle)", async () => {

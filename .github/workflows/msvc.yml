@@ -94,12 +94,20 @@ jobs:
           -DSERIOUS_PROTON_DIR="$env:GITHUB_WORKSPACE/SeriousProton"
 
       # El análisis compila con las rutas de include del proyecto, y
-      # graphics/glDebug.inl es un fuente GENERADO por un custom command:
-      # sin compilarlo antes, el include no existe. El consumidor del custom
-      # command es seriousproton_objects (seriousproton es INTERFACE y no
-      # produce proyecto MSBuild).
-      - name: Build SeriousProton (genera glDebug.inl)
-        run: cmake --build ${{ env.build }} --target seriousproton_objects
+      # graphics/glDebug.inl es un fuente GENERADO por un custom command de
+      # SeriousProton: sin generarlo antes, el include no existe. Se invoca el
+      # script directamente en vez de compilar seriousproton_objects, porque
+      # el SDL2 2.0.16 provisto no compila el SeriousProton fijado (usa
+      # miembros de SDL_MouseWheelEvent de SDL 2.26+). Las rutas replican el
+      # custom command del CMakeLists de SeriousProton con el binary dir
+      # ${build}/SeriousProton que fija el add_subdirectory de EmptyEpsilon.
+      - name: Generar glDebug.inl
+        working-directory: SeriousProton
+        run: >
+          cmake
+          -Dglad_h="$env:GITHUB_WORKSPACE/SeriousProton/libs/glad/glad/glad.h"
+          -DglDebug_inl="${{ env.build }}/SeriousProton/include/graphics/glDebug.inl"
+          -P cmake/GenerateGlDebug.cmake
 
       - name: Initialize MSVC Code Analysis
         uses: microsoft/msvc-code-analysis-action@04825f6d9e00f87422d6bf04e1a38b1f3ed60d99

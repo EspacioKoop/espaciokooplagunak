@@ -133,7 +133,12 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
   [`BASELINE.md`](docs/BASELINE.md) (índice AECF del issue #88: qué prácticas de
   seguridad/accesibilidad/calidad/fiabilidad están adoptadas, cuáles cortadas y
   por qué — la regla de admisión es "solo se abre issue cuando duele y cabe en
-  un PR", y el cumplimiento se convierte en gate de CI, no en ceremonia).
+  un PR", y el cumplimiento se convierte en gate de CI, no en ceremonia),
+  [`docs/adr/`](docs/adr/README.md) (registro de decisiones de arquitectura ya
+  tomadas, formato MADR; las propuestas siguen siendo issues),
+  [`ASSESSMENT-ARQUITECTURA.md`](docs/ASSESSMENT-ARQUITECTURA.md) (evaluación
+  ATAM-lite/ISO 42010) y [`AECF-METRICAS.md`](docs/AECF-METRICAS.md) (madurez
+  AECF, escala M0–M5).
 
 ## Flujo git
 

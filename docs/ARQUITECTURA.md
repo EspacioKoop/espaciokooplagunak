@@ -47,8 +47,8 @@ publica jamás al host**; solo el puente lo alcanza por la red interna.
 ```mermaid
 flowchart LR
     subgraph clientes["Mesa de juego"]
-        gmweb["Navegador del GM<br/>módulo Lagunak ejecutado en cliente<br/>Bearer en setting client provisional"]
-        players["Navegadores de jugadores"]
+        gmweb["Navegador del GM<br/>módulo Lagunak cargado (como en todos)<br/>único con Bearer configurado (setting client)<br/>único que hace fetch al puente"]
+        players["Navegadores de jugadores<br/>módulo Lagunak cargado<br/>sin token ni acceso al puente"]
         native["Clientes nativos<br/>(puestos de la tripulación)"]
     end
     foundry["Servidor Foundry VTT<br/><i>Node.js — sistema externo</i>"]
@@ -69,7 +69,7 @@ flowchart LR
 | Servidor headless | C++ (fork de EmptyEpsilon), escenarios Lua | Simulación autoritativa de la nave y del escenario |
 | Puente de integración | Python / FastAPI | Única pieza autorizada a hablar con `/exec.lua`: auth Bearer, CORS estricto, rate limit, órdenes de lista blanca |
 | Servidor Foundry | Node.js (sistema externo) | Aloja el mundo y sirve la aplicación web de Foundry a GM y jugadores |
-| Módulo Foundry | JavaScript en el navegador del GM | Presenta el estado vivo, escribe eventos en el Journal y llama directamente al puente; URL y Bearer v0 son settings `client` provisionales |
+| Módulo Foundry | JavaScript cargado en el navegador de todos los clientes; solo el del GM tiene token y habla con el puente | Presenta el estado vivo, escribe eventos en el Journal y llama directamente al puente; URL y Bearer v0 son settings `client` provisionales |
 | Clientes nativos | EmptyEpsilon de escritorio | Puestos de la tripulación por LAN |
 
 ## Nivel 3 — Componentes

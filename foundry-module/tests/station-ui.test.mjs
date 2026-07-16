@@ -38,7 +38,7 @@ async function setup({ isGM = false, modern = false } = {}) {
 
   const current = makeUser({ id: isGM ? "gm" : "p1", name: isGM ? "GM" : "Uno", isGM });
   const other = makeUser({ id: "p2", name: "Dos" });
-  const users = isGM ? [current, other] : [current, other];
+  const users = [current, other];
   users.get = (id) => users.find((entry) => entry.id === id);
 
   globalThis.Application = BaseApplication;
@@ -134,3 +134,41 @@ test("host moderno abre con ApplicationV2 y refresca al actualizar un usuario", 
   hooks.updateUser();
   assert.deepEqual(instances[0].renderCalls, [{ force: true }, { force: true }]);
 });
+
+for (const modern of [false, true]) {
+  const version = modern ? "ApplicationV2" : "v11";
+  test(`${version}: un fallo al guardar restaura el puesto autoritativo`, async () => {
+    const { module, instances, notifications, current } = await setup({ modern });
+    current.flags.station = "navigation";
+    current.setFlag = async () => {
+      throw new Error("fallo simulado de persistencia");
+    };
+    const controls = modern ? { tokens: { tools: {} } } : [{ name: "token", tools: [] }];
+
+    module.addStationControl(controls);
+    if (modern) controls.tokens.tools["lagunak-puestos"].onClick();
+    else controls[0].tools[0].onClick();
+
+    let change;
+    if (modern) {
+      instances[0].element = {
+        querySelectorAll() {
+          return [{ addEventListener(_event, callback) { change = callback; } }];
+        },
+      };
+      instances[0]._onRender({}, {});
+    } else {
+      instances[0].activateListeners({
+        find() { return { on(_event, callback) { change = callback; } }; },
+      });
+    }
+
+    const select = { dataset: { userId: current.id }, value: "engineering" };
+    await change({ currentTarget: select });
+
+    assert.equal(current.flags.station, "navigation");
+    assert.equal(select.value, "navigation");
+    assert.deepEqual(notifications.info, []);
+    assert.deepEqual(notifications.error, ["LAGUNAK.Puestos.ErrorGuardado"]);
+  });
+}

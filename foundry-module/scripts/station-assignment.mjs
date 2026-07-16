@@ -1,5 +1,9 @@
 const FLAG_KEY = "station";
 
+export const STATION_ASSIGNMENT_ERRORS = Object.freeze({
+  NOT_ALLOWED: "not-allowed",
+});
+
 export const STATIONS = Object.freeze([
   "captain",
   "navigation",
@@ -23,7 +27,9 @@ export function canAssignStation(actor, target) {
 
 export async function assignStation({ actor, target, station, moduleId }) {
   if (!canAssignStation(actor, target)) {
-    throw new Error("Not allowed to assign this crew station");
+    const error = new Error("Not allowed to assign this crew station");
+    error.code = STATION_ASSIGNMENT_ERRORS.NOT_ALLOWED;
+    throw error;
   }
   const normalized = normalizeStation(station);
   if (normalized === null) {

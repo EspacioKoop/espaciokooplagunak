@@ -90,7 +90,8 @@ token del puente ni concede por sí sola permiso para enviar órdenes externas:
 esa autorización por puesto requiere un contrato posterior del puente.
 
 En este primer vertical se permiten puestos duplicados; el GM puede resolverlos
-desde la misma ventana.
+desde la misma ventana. Los usuarios GM no forman parte de la tripulación
+asignable: dirigen la mesa y supervisan las asignaciones de los jugadores.
 
 ## Mapa vivo
 

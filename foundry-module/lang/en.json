@@ -22,6 +22,7 @@
   "LAGUNAK.Puestos.SinJugadores": "There are no player users in this world.",
   "LAGUNAK.Puestos.Guardado": "Station updated.",
   "LAGUNAK.Puestos.NoPermitido": "You cannot change that player's station.",
+  "LAGUNAK.Puestos.ErrorGuardado": "The station could not be saved. The previous assignment remains active.",
   "LAGUNAK.MapaVivo.Titulo": "Espaciokoop Lagunak — Live map",
   "LAGUNAK.MapaVivo.SinDatos": "No contacts from the bridge yet.",
   "LAGUNAK.MapaVivo.Contactos": "Contacts",

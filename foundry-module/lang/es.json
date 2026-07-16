@@ -22,6 +22,7 @@
   "LAGUNAK.Puestos.SinJugadores": "No hay usuarios jugadores en el mundo.",
   "LAGUNAK.Puestos.Guardado": "Puesto actualizado.",
   "LAGUNAK.Puestos.NoPermitido": "No puedes cambiar el puesto de ese jugador.",
+  "LAGUNAK.Puestos.ErrorGuardado": "No se pudo guardar el puesto. Se mantiene la asignación anterior.",
   "LAGUNAK.MapaVivo.Titulo": "Espaciokoop Lagunak — Mapa vivo",
   "LAGUNAK.MapaVivo.SinDatos": "Sin contactos del puente todavía.",
   "LAGUNAK.MapaVivo.Contactos": "Contactos",

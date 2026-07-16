@@ -46,18 +46,18 @@ std::array<string, 5> fieldLabels(ContentResourceType type)
     {
     case ContentResourceType::Campaign:
         return {
-            tr("content_editor", "Map IDs (ordered, comma separated)"),
-            tr("content_editor", "Starting map ID"),
-            tr("content_editor", "Character IDs (comma separated)"),
-            tr("content_editor", "Ship IDs (comma separated)"),
-            tr("content_editor", "Transitions (from>to, comma separated)"),
+            tr("content_editor", "Maps (ordered)"),
+            tr("content_editor", "Starting map"),
+            tr("content_editor", "Characters"),
+            tr("content_editor", "Ships"),
+            tr("content_editor", "Map transitions"),
         };
     case ContentResourceType::Map:
         return {tr("content_editor", "Scenario file"), tr("content_editor", "Recommended player count"), "", "", ""};
     case ContentResourceType::Character:
         return {
-            tr("content_editor", "Crew position ID"), tr("content_editor", "Callsign"),
-            tr("content_editor", "Tags (comma separated)"), tr("content_editor", "Ship ID (optional)"),
+            tr("content_editor", "Crew position"), tr("content_editor", "Callsign"),
+            tr("content_editor", "Tags (comma separated)"), tr("content_editor", "Ship (optional)"),
             tr("content_editor", "Legacy role (clear after assigning a crew position)"),
         };
     case ContentResourceType::Ship:
@@ -119,6 +119,28 @@ string formatShipHealth(float value)
     while (!text.empty() && text.back() == '0') text.pop_back();
     if (!text.empty() && text.back() == '.') text.pop_back();
     return text;
+}
+
+std::vector<std::string> relationItems(const string& value)
+{
+    std::vector<std::string> items;
+    std::stringstream stream{std::string(value)};
+    std::string item;
+    while (std::getline(stream, item, ','))
+    {
+        const auto first = item.find_first_not_of(" \t");
+        if (first == std::string::npos) continue;
+        item = item.substr(first, item.find_last_not_of(" \t") - first + 1);
+        items.push_back(std::move(item));
+    }
+    return items;
+}
+
+string relationResourceLabel(const ContentResource& resource)
+{
+    return resource.name == resource.id
+        ? string(resource.id)
+        : string(resource.name) + " - " + string(resource.id);
 }
 }
 
@@ -205,6 +227,30 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
     quinary_label->setPosition(x, 440)->setSize(180, 30);
     quinary_entry = new GuiTextEntry(box, "QUINARY", "");
     quinary_entry->setPosition(x + 190, 440)->setSize(500, 30);
+
+    const std::array<RelationEditorMode, 5> campaign_modes = {
+        RelationEditorMode::CampaignMaps,
+        RelationEditorMode::CampaignStartingMap,
+        RelationEditorMode::CampaignCharacters,
+        RelationEditorMode::CampaignShips,
+        RelationEditorMode::CampaignTransitions,
+    };
+    for (std::size_t index = 0; index < campaign_modes.size(); ++index)
+    {
+        relation_edit_buttons[index] = new GuiButton(
+            box, "RELATION_EDIT_" + string(static_cast<unsigned int>(index)),
+            tr("content_editor", "Select"),
+            [this, index, mode = campaign_modes[index]]() {
+                if (current_type == ContentResourceType::Character && index == 0)
+                    openRelationEditor(RelationEditorMode::CharacterCrewPosition);
+                else if (current_type == ContentResourceType::Character && index == 3)
+                    openRelationEditor(RelationEditorMode::CharacterShip);
+                else
+                    openRelationEditor(mode);
+            });
+        relation_edit_buttons[index]->setPosition(x + 545, 280 + 40 * index)
+            ->setSize(145, 30)->hide();
+    }
 
     preview_toggle = new GuiToggleButton(
         box,
@@ -362,6 +408,48 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
     ))->setPosition(390, 495)->setSize(180, 40);
     ship_template_picker_overlay->hide();
 
+    relation_editor_overlay = new GuiOverlay(
+        box, "RELATION_EDITOR_OVERLAY", glm::u8vec4(0, 0, 0, 180));
+    auto relation_panel = new GuiPanel(relation_editor_overlay, "RELATION_EDITOR_PANEL");
+    relation_panel->setPosition(0, 0, sp::Alignment::Center)->setSize(760, 560);
+    relation_editor_title = new GuiLabel(relation_panel, "RELATION_EDITOR_TITLE", "", 28);
+    relation_editor_title->setPosition(30, 20)->setSize(700, 45);
+    relation_candidate_selector = new GuiSelector(
+        relation_panel, "RELATION_CANDIDATE", [](int, string) {});
+    relation_candidate_selector->setTextSize(20)->setPosition(30, 80)->setSize(330, 40);
+    relation_destination_selector = new GuiSelector(
+        relation_panel, "RELATION_DESTINATION", [](int, string) {});
+    relation_destination_selector->setTextSize(20)->setPosition(380, 80)->setSize(350, 40);
+    relation_apply_button = new GuiButton(
+        relation_panel, "RELATION_APPLY", tr("content_editor", "Add selection"),
+        [this]() { applyRelationSelection(); });
+    relation_apply_button->setPosition(30, 135)->setSize(220, 40);
+    relation_clear_button = new GuiButton(
+        relation_panel, "RELATION_CLEAR", tr("content_editor", "Clear selection"),
+        [this]() { clearRelationSelection(); });
+    relation_clear_button->setPosition(270, 135)->setSize(220, 40);
+    relation_current_list = new GuiListbox(
+        relation_panel, "RELATION_CURRENT", [](int, string) {});
+    relation_current_list->setTextSize(20)->setButtonHeight(36)
+        ->setPosition(30, 190)->setSize(700, 255);
+    relation_remove_button = new GuiButton(
+        relation_panel, "RELATION_REMOVE", tr("content_editor", "Remove"),
+        [this]() { removeRelationSelection(); });
+    relation_remove_button->setPosition(30, 460)->setSize(150, 40);
+    relation_up_button = new GuiButton(
+        relation_panel, "RELATION_UP", tr("content_editor", "Move up"),
+        [this]() { moveRelationSelection(-1); });
+    relation_up_button->setPosition(195, 460)->setSize(150, 40);
+    relation_down_button = new GuiButton(
+        relation_panel, "RELATION_DOWN", tr("content_editor", "Move down"),
+        [this]() { moveRelationSelection(1); });
+    relation_down_button->setPosition(360, 460)->setSize(150, 40);
+    (new GuiButton(
+        relation_panel, "RELATION_CLOSE", tr("button", "Close"),
+        [this]() { closeRelationEditor(); }))
+        ->setPosition(550, 460)->setSize(180, 40);
+    relation_editor_overlay->hide();
+
     setType(ContentResourceType::Campaign);
     const auto load_result = store.load(resources);
     refreshList();
@@ -425,6 +513,13 @@ void GuiContentEditor::updateFieldPresentation(ContentResourceType type)
         field_labels[index]->setText(labels[index]);
         field_labels[index]->setVisible(!labels[index].empty());
         field_entries[index]->setVisible(!labels[index].empty());
+        const bool managed_campaign = type == ContentResourceType::Campaign;
+        const bool managed_character = type == ContentResourceType::Character
+            && (index == 0 || index == 3);
+        const bool managed = managed_campaign || managed_character;
+        field_entries[index]->setEnable(!managed);
+        field_entries[index]->setSize(managed ? 340 : 500, 30);
+        relation_edit_buttons[index]->setVisible(managed);
     }
     const bool is_map = type == ContentResourceType::Map;
     preview_toggle->setVisible(is_map);
@@ -434,7 +529,9 @@ void GuiContentEditor::updateFieldPresentation(ContentResourceType type)
         preview_toggle->setValue(false);
     }
     const bool is_ship = type == ContentResourceType::Ship;
-    primary_entry->setSize(is_ship ? 340 : 500, 30);
+    const bool managed_primary = type == ContentResourceType::Campaign
+        || type == ContentResourceType::Character;
+    primary_entry->setSize((is_ship || managed_primary) ? 340 : 500, 30);
     ship_template_picker_button->setVisible(is_ship);
     ship_override_selector->setVisible(is_ship);
     ship_set_system_button->setVisible(is_ship);
@@ -1495,4 +1592,231 @@ void GuiContentEditor::rollbackShip()
         return setStatus(deploymentErrorText(error));
     ship_rollback_button->hide();
     setStatus(tr("content_editor", "Content ship rolled back."));
+}
+
+void GuiContentEditor::openRelationEditor(RelationEditorMode mode)
+{
+    relation_editor_mode = mode;
+    refreshRelationEditor();
+    relation_editor_overlay->show()->moveToFront();
+}
+
+void GuiContentEditor::closeRelationEditor()
+{
+    relation_editor_overlay->hide();
+}
+
+void GuiContentEditor::refreshRelationEditor()
+{
+    const auto resource = formResource();
+    relation_candidate_selector->clear();
+    relation_destination_selector->clear();
+    relation_current_list->clear();
+    relation_candidate_selector->show();
+    relation_destination_selector->hide();
+    relation_apply_button->show();
+    relation_apply_button->setText(tr("content_editor", "Add selection"));
+    relation_clear_button->hide();
+    relation_remove_button->show();
+    relation_up_button->hide();
+    relation_down_button->hide();
+
+    auto addResources = [&](GuiSelector* selector, ContentResourceType type,
+                            const std::vector<std::string>* limited_ids = nullptr) {
+        for (const auto& item : resources)
+        {
+            if (item.type != type) continue;
+            if (limited_ids
+                && std::find(limited_ids->begin(), limited_ids->end(), item.id) == limited_ids->end())
+                continue;
+            selector->addEntry(relationResourceLabel(item), item.id);
+        }
+        selector->setSelectionIndex(selector->entryCount() > 0 ? 0 : -1);
+    };
+    auto addCurrentIds = [&](const string& value, ContentResourceType expected_type) {
+        for (const auto& id : relationItems(value))
+        {
+            string label = id;
+            for (const auto& item : resources)
+            {
+                if (item.type != expected_type || item.id != id) continue;
+                label = relationResourceLabel(item);
+                break;
+            }
+            relation_current_list->addEntry(label, id);
+        }
+        relation_current_list->setSelectionIndex(relation_current_list->entryCount() > 0 ? 0 : -1);
+    };
+
+    switch(relation_editor_mode)
+    {
+    case RelationEditorMode::CampaignMaps:
+        relation_editor_title->setText(tr("content_editor", "Campaign maps"));
+        addResources(relation_candidate_selector, ContentResourceType::Map);
+        addCurrentIds(resource.primary, ContentResourceType::Map);
+        relation_up_button->show();
+        relation_down_button->show();
+        break;
+    case RelationEditorMode::CampaignStartingMap:
+    {
+        relation_editor_title->setText(tr("content_editor", "Starting map"));
+        const auto map_ids = relationItems(resource.primary);
+        addResources(relation_candidate_selector, ContentResourceType::Map, &map_ids);
+        addCurrentIds(resource.secondary, ContentResourceType::Map);
+        relation_apply_button->setText(tr("content_editor", "Use selection"));
+        relation_clear_button->show();
+        relation_remove_button->hide();
+        break;
+    }
+    case RelationEditorMode::CampaignCharacters:
+        relation_editor_title->setText(tr("content_editor", "Campaign characters"));
+        addResources(relation_candidate_selector, ContentResourceType::Character);
+        addCurrentIds(resource.tertiary, ContentResourceType::Character);
+        break;
+    case RelationEditorMode::CampaignShips:
+        relation_editor_title->setText(tr("content_editor", "Campaign ships"));
+        addResources(relation_candidate_selector, ContentResourceType::Ship);
+        addCurrentIds(resource.quaternary, ContentResourceType::Ship);
+        break;
+    case RelationEditorMode::CampaignTransitions:
+    {
+        relation_editor_title->setText(tr("content_editor", "Map transitions"));
+        const auto map_ids = relationItems(resource.primary);
+        addResources(relation_candidate_selector, ContentResourceType::Map, &map_ids);
+        addResources(relation_destination_selector, ContentResourceType::Map, &map_ids);
+        relation_destination_selector->show();
+        for (const auto& transition : relationItems(resource.quinary))
+            relation_current_list->addEntry(transition, transition);
+        relation_current_list->setSelectionIndex(relation_current_list->entryCount() > 0 ? 0 : -1);
+        break;
+    }
+    case RelationEditorMode::CharacterCrewPosition:
+        relation_editor_title->setText(tr("content_editor", "Crew position"));
+        for (int index = 0; index < static_cast<int>(CrewPosition::MAX); ++index)
+        {
+            const auto position = static_cast<CrewPosition>(index);
+            relation_candidate_selector->addEntry(
+                getCrewPositionName(position), crewPositionToString(position));
+        }
+        relation_candidate_selector->setSelectionIndex(0);
+        if (const auto current_position = tryParseCrewPosition(resource.primary))
+            relation_current_list->addEntry(
+                getCrewPositionName(*current_position), crewPositionToString(*current_position));
+        relation_current_list->setSelectionIndex(relation_current_list->entryCount() > 0 ? 0 : -1);
+        relation_apply_button->setText(tr("content_editor", "Use selection"));
+        relation_clear_button->setVisible(!resource.quinary.empty());
+        relation_remove_button->hide();
+        break;
+    case RelationEditorMode::CharacterShip:
+        relation_editor_title->setText(tr("content_editor", "Character ship"));
+        addResources(relation_candidate_selector, ContentResourceType::Ship);
+        addCurrentIds(resource.quaternary, ContentResourceType::Ship);
+        relation_apply_button->setText(tr("content_editor", "Use selection"));
+        relation_clear_button->show();
+        relation_remove_button->hide();
+        break;
+    }
+}
+
+void GuiContentEditor::applyRelationSelection()
+{
+    auto resource = formResource();
+    const std::string selected = relation_candidate_selector->getSelectionValue();
+    bool changed = false;
+    switch(relation_editor_mode)
+    {
+    case RelationEditorMode::CampaignMaps:
+        changed = addContentReference(resource, resources, ContentReferenceKind::CampaignMap, selected);
+        break;
+    case RelationEditorMode::CampaignStartingMap:
+        changed = setCampaignStartingMap(resource, selected);
+        break;
+    case RelationEditorMode::CampaignCharacters:
+        changed = addContentReference(resource, resources, ContentReferenceKind::CampaignCharacter, selected);
+        break;
+    case RelationEditorMode::CampaignShips:
+        changed = addContentReference(resource, resources, ContentReferenceKind::CampaignShip, selected);
+        break;
+    case RelationEditorMode::CampaignTransitions:
+        changed = addCampaignTransition(
+            resource, selected, relation_destination_selector->getSelectionValue());
+        break;
+    case RelationEditorMode::CharacterCrewPosition:
+        changed = setCharacterCrewPosition(resource, selected);
+        break;
+    case RelationEditorMode::CharacterShip:
+        changed = setCharacterShipReference(resource, resources, selected);
+        break;
+    }
+    if (!changed)
+        return setStatus(tr("content_editor", "The selected relationship is invalid or already present."));
+    applyRelationResource(resource);
+    refreshRelationEditor();
+    setStatus(tr("content_editor", "Relationship staged. Save the resource to persist it."));
+}
+
+void GuiContentEditor::clearRelationSelection()
+{
+    auto resource = formResource();
+    bool changed = false;
+    if (relation_editor_mode == RelationEditorMode::CampaignStartingMap)
+        changed = setCampaignStartingMap(resource, "");
+    else if (relation_editor_mode == RelationEditorMode::CharacterCrewPosition)
+        changed = setCharacterCrewPosition(resource, "");
+    else if (relation_editor_mode == RelationEditorMode::CharacterShip)
+        changed = setCharacterShipReference(resource, resources, "");
+    if (!changed)
+        return setStatus(tr("content_editor", "The selection cannot be cleared."));
+    applyRelationResource(resource);
+    refreshRelationEditor();
+    setStatus(tr("content_editor", "Relationship cleared in staging."));
+}
+
+void GuiContentEditor::removeRelationSelection()
+{
+    const std::string selected = relation_current_list->getSelectionValue();
+    auto resource = formResource();
+    bool changed = false;
+    if (relation_editor_mode == RelationEditorMode::CampaignMaps)
+        changed = removeContentReference(resource, ContentReferenceKind::CampaignMap, selected);
+    else if (relation_editor_mode == RelationEditorMode::CampaignCharacters)
+        changed = removeContentReference(resource, ContentReferenceKind::CampaignCharacter, selected);
+    else if (relation_editor_mode == RelationEditorMode::CampaignShips)
+        changed = removeContentReference(resource, ContentReferenceKind::CampaignShip, selected);
+    else if (relation_editor_mode == RelationEditorMode::CampaignTransitions)
+    {
+        const auto separator = selected.find('>');
+        if (separator != std::string::npos)
+            changed = removeCampaignTransition(
+                resource, selected.substr(0, separator), selected.substr(separator + 1));
+    }
+    if (!changed)
+        return setStatus(tr("content_editor", "Select an existing relationship first."));
+    applyRelationResource(resource);
+    refreshRelationEditor();
+    setStatus(tr("content_editor", "Relationship removed from staging."));
+}
+
+void GuiContentEditor::moveRelationSelection(int direction)
+{
+    auto resource = formResource();
+    if (relation_editor_mode != RelationEditorMode::CampaignMaps
+        || !moveCampaignMap(resource, relation_current_list->getSelectionValue(), direction))
+        return setStatus(tr("content_editor", "The selected map cannot move in that direction."));
+    applyRelationResource(resource);
+    refreshRelationEditor();
+    setStatus(tr("content_editor", "Campaign map order updated in staging."));
+}
+
+void GuiContentEditor::applyRelationResource(const ContentResource& resource)
+{
+    primary_entry->setText(resource.primary);
+    secondary_entry->setText(resource.secondary);
+    tertiary_entry->setText(resource.tertiary);
+    quaternary_entry->setText(resource.quaternary);
+    quinary_entry->setText(resource.quinary);
+    pending_save = "";
+    pending_file_export = "";
+    discard_guard.reset();
+    rename_guard.reset();
 }

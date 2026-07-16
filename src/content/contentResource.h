@@ -65,6 +65,15 @@ enum class ContentRenameError
     TargetAlreadyExists,
 };
 
+// Typed edits used by the GM content editor. These helpers keep the v4 string
+// representation private to the codec while preventing free-form references.
+enum class ContentReferenceKind
+{
+    CampaignMap,
+    CampaignCharacter,
+    CampaignShip,
+};
+
 enum class ContentResourceError
 {
     None,
@@ -109,6 +118,35 @@ ContentRenameError renameContentResource(
     ContentResourceType type,
     const std::string& old_id,
     const std::string& new_id
+);
+bool addContentReference(
+    ContentResource& resource,
+    const std::vector<ContentResource>& library,
+    ContentReferenceKind kind,
+    const std::string& id
+);
+bool removeContentReference(
+    ContentResource& resource,
+    ContentReferenceKind kind,
+    const std::string& id
+);
+bool moveCampaignMap(ContentResource& resource, const std::string& id, int direction);
+bool setCampaignStartingMap(ContentResource& resource, const std::string& id);
+bool addCampaignTransition(
+    ContentResource& resource,
+    const std::string& from_id,
+    const std::string& to_id
+);
+bool removeCampaignTransition(
+    ContentResource& resource,
+    const std::string& from_id,
+    const std::string& to_id
+);
+bool setCharacterCrewPosition(ContentResource& resource, const std::string& crew_position_id);
+bool setCharacterShipReference(
+    ContentResource& resource,
+    const std::vector<ContentResource>& library,
+    const std::string& ship_id
 );
 bool contentResourceHasMissingDependencies(
     const ContentResource& resource,

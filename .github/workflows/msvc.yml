@@ -82,18 +82,22 @@ jobs:
 
       # Sin -G fijo: windows-latest ya no trae VS 2022 y el generador
       # explícito "Visual Studio 17 2022" no encuentra ninguna instancia;
-      # CMake elige el Visual Studio del runner. -A Win32 por paridad con el
-      # job Windows de cicd.yml (el SDL2 provisto tiene sabor x86 y x64).
+      # CMake elige el Visual Studio del runner. -A x64 y no Win32: el binding
+      # Lua de SeriousProton exige sizeof(void*) == sizeof(ecs::Entity) (8
+      # bytes) en static_assert de src/script/conversion.h, que en 32 bits no
+      # se cumple. El sdl2-config provisto resuelve el sabor x64 solo.
       - name: Configure CMake
         run: >
           cmake -B ${{ env.build }} EmptyEpsilon
-          -A Win32
+          -A x64
           -DSDL2_DIR:PATH="$env:GITHUB_WORKSPACE/externals"
           -DSERIOUS_PROTON_DIR="$env:GITHUB_WORKSPACE/SeriousProton"
 
-      # Build is not required unless generated source files are used
-      # - name: Build CMake
-      #   run: cmake --build ${{ env.build }}
+      # El análisis compila con las rutas de include del proyecto, y
+      # graphics/glDebug.inl es un fuente GENERADO por un custom command del
+      # target seriousproton: sin compilarlo antes, el include no existe.
+      - name: Build SeriousProton (genera glDebug.inl)
+        run: cmake --build ${{ env.build }} --target seriousproton
 
       - name: Initialize MSVC Code Analysis
         uses: microsoft/msvc-code-analysis-action@04825f6d9e00f87422d6bf04e1a38b1f3ed60d99

@@ -4622,3 +4622,133 @@ msgstr ""
 msgctxt "content_editor"
 msgid "The renamed resource could not be reloaded."
 msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Add selection"
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Campaign characters"
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Campaign map order updated in staging."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Campaign maps"
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Campaign ships"
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Character ship"
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Characters"
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Clear selection"
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Crew position"
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Map transitions"
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Maps (ordered)"
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Move down"
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Move up"
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Relationship cleared in staging."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Relationship removed from staging."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Relationship staged. Save the resource to persist it."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Remove"
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Select"
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Select an existing relationship first."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Ship (optional)"
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Ships"
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Starting map"
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The selected map cannot move in that direction."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The selected relationship is invalid or already present."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The selection cannot be cleared."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Use selection"
+msgstr ""

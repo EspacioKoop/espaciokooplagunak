@@ -336,6 +336,60 @@ int main()
     expect(validateContentLibrary({map_one, map_two, character, campaign}) == ContentResourceError::MissingDependency,
         "missing campaign or character dependency blocks library validation");
 
+    auto selected_campaign = validResource(ContentResourceType::Campaign);
+    selected_campaign.primary = "map-1";
+    selected_campaign.secondary = "map-1";
+    selected_campaign.tertiary.clear();
+    selected_campaign.quaternary.clear();
+    selected_campaign.quinary.clear();
+    expect(addContentReference(selected_campaign, complete_library,
+                               ContentReferenceKind::CampaignMap, "map-2")
+            && selected_campaign.primary == "map-1, map-2",
+        "typed map selection appends a canonical existing map");
+    const auto selection_snapshot = selected_campaign;
+    expect(!addContentReference(selected_campaign, complete_library,
+                                ContentReferenceKind::CampaignMap, "map-2")
+            && selected_campaign == selection_snapshot,
+        "typed selection rejects duplicates without mutation");
+    expect(!addContentReference(selected_campaign, complete_library,
+                                ContentReferenceKind::CampaignMap, "ship-1")
+            && selected_campaign == selection_snapshot,
+        "typed selection rejects a resource of the wrong type");
+    expect(setCampaignStartingMap(selected_campaign, "map-2")
+            && addCampaignTransition(selected_campaign, "map-1", "map-2"),
+        "starting map and transition are selected from campaign maps");
+    const auto dag_snapshot = selected_campaign;
+    expect(!addCampaignTransition(selected_campaign, "map-2", "map-1")
+            && selected_campaign == dag_snapshot,
+        "typed transition selection preserves DAG validation");
+    expect(moveCampaignMap(selected_campaign, "map-2", -1)
+            && selected_campaign.primary == "map-2, map-1",
+        "campaign maps can be reordered without changing IDs");
+    expect(removeContentReference(selected_campaign, ContentReferenceKind::CampaignMap, "map-2")
+            && selected_campaign.primary == "map-1"
+            && selected_campaign.secondary.empty() && selected_campaign.quinary.empty(),
+        "removing a map also clears its starting-map and transition references");
+    expect(addContentReference(selected_campaign, complete_library,
+                               ContentReferenceKind::CampaignCharacter, "character-1")
+            && addContentReference(selected_campaign, complete_library,
+                                   ContentReferenceKind::CampaignShip, "ship-1"),
+        "campaign character and ship selectors persist canonical IDs");
+
+    auto selected_character = validResource(ContentResourceType::Character);
+    expect(setCharacterCrewPosition(selected_character, "engineering")
+            && selected_character.primary == "engineering",
+        "character crew selector accepts canonical positions");
+    const auto character_selection_snapshot = selected_character;
+    expect(!setCharacterCrewPosition(selected_character, "helmsofficer")
+            && selected_character == character_selection_snapshot,
+        "character crew selector rejects aliases without mutation");
+    expect(setCharacterShipReference(selected_character, complete_library, "")
+            && selected_character.quaternary.empty(),
+        "optional character ship selection can be cleared");
+    expect(!setCharacterShipReference(selected_character, complete_library, "map-1")
+            && selected_character.quaternary.empty(),
+        "character ship selector rejects non-ship resources");
+
     auto invalid_type_resource = map_one;
     invalid_type_resource.type = static_cast<ContentResourceType>(999);
     expect(validateContentResource(invalid_type_resource) == ContentResourceError::UnknownType,

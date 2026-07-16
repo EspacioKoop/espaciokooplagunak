@@ -8,12 +8,18 @@
 
   {{#if esGM}}
   <div class="lagunak-tempo">
-    <button type="button" data-action="pausar">
+    <span class="lagunak-pausa-estado lagunak-pausa-{{pausa.estado}}" role="status">
+      <span class="lagunak-punto"></span> {{pausa.etiqueta}}
+    </span>
+    <button type="button" data-action="pausar" {{#unless pausa.puedePausar}}disabled{{/unless}}>
       <i class="fa-solid fa-pause"></i> {{localize "LAGUNAK.Tempo.Pausar"}}
     </button>
-    <button type="button" data-action="reanudar">
+    <button type="button" data-action="reanudar" {{#unless pausa.puedeReanudar}}disabled{{/unless}}>
       <i class="fa-solid fa-play"></i> {{localize "LAGUNAK.Tempo.Reanudar"}}
     </button>
+    {{#if pausa.foundryPausado}}
+    <p class="lagunak-pausa-foundry">{{localize "LAGUNAK.Pausa.FoundryPausado"}}</p>
+    {{/if}}
   </div>
   {{/if}}
 

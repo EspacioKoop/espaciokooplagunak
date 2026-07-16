@@ -64,9 +64,10 @@ Tres superficies con costes muy distintos; solo dos son nuestras:
   mejorable sin merge tax. Pendiente de baseline real (hoy solo hay `aria-`/
   `role` puntuales en un `.hbs`).
   - [ ] Pasada de accesibilidad al módulo Foundry (contraste de la ventana
-        Neo Geo, navegación por teclado, `aria-` en los controles del GM)
-        cuando el mapa vivo (PR #73) esté fusionado — no antes, para no
-        revisar dos veces lo mismo.
+        Neo Geo, navegación por teclado, `aria-` en los controles del GM).
+        La condición de secuencia que la aplazaba (esperar al mapa vivo,
+        PR #73) se cumplió el 2026-07-14: es la siguiente acción pendiente
+        de la dimensión, sin bloqueo previo (ver AECF-METRICAS.md).
 - **Juego C++ heredado (`src/gui/`, `src/screens/`)**: divergencia upstream
   permanente y cara. Regla: solo si un jugador real del fork choca con la
   barrera y no puede resolverse en módulo/doc — y entonces primero PR a

@@ -121,8 +121,22 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
 
   assert.equal(bindings.get('[data-action="pausar"]').event, "click");
   assert.equal(bindings.get('[data-action="reanudar"]').event, "click");
+
+  // El ACK del comando NO confirma: sin lectura de /v1/scenario no hay
+  // estado confirmado ni notificación (autoridad del simulador).
   await bindings.get('[data-action="pausar"]').callback();
+  assert.equal(instances[0].pausaConfirmada, null);
+  assert.deepEqual(notifications.info, []);
+
+  // La confirmación llega únicamente de una lectura real de /v1/scenario.
+  instances[0]._registrarLecturaPausa({ paused: true });
+  assert.equal(instances[0].pausaConfirmada, true);
+  assert.deepEqual(notifications.info, ["LAGUNAK.Tempo.Pausado"]);
+
   await bindings.get('[data-action="reanudar"]').callback();
+  assert.equal(instances[0].pausaConfirmada, true);
+  instances[0]._registrarLecturaPausa({ paused: false });
+  assert.equal(instances[0].pausaConfirmada, false);
 
   assert.deepEqual(pauseValues(fetchCalls), [true, false]);
   assert.deepEqual(notifications.info, ["LAGUNAK.Tempo.Pausado", "LAGUNAK.Tempo.Reanudado"]);
@@ -145,12 +159,66 @@ test("host moderno conecta las acciones de pausa y reanudación con el puente", 
   const actions = instances[0].constructor.DEFAULT_OPTIONS.actions;
   assert.equal(typeof actions.pausar, "function");
   assert.equal(typeof actions.reanudar, "function");
+
+  // ACK sin confirmación: sin lectura de /v1/scenario no hay estado.
   await actions.pausar.call(instances[0]);
+  assert.equal(instances[0].pausaConfirmada, null);
+  assert.deepEqual(notifications.info, []);
+
+  instances[0]._registrarLecturaPausa({ paused: true });
+  assert.equal(instances[0].pausaConfirmada, true);
+
   await actions.reanudar.call(instances[0]);
+  instances[0]._registrarLecturaPausa({ paused: false });
+  assert.equal(instances[0].pausaConfirmada, false);
 
   assert.deepEqual(pauseValues(fetchCalls), [true, false]);
   assert.deepEqual(notifications.info, ["LAGUNAK.Tempo.Pausado", "LAGUNAK.Tempo.Reanudado"]);
   assert.deepEqual(notifications.error, []);
+});
+
+test("v11: lectura discordante tras el ACK avisa y pasa a estado de error", async () => {
+  const { hooks, instances, notifications } = await loadModule();
+  const controls = [];
+  hooks.getSceneControlButtons(controls);
+  controls.find((c) => c.name === "lagunak").tools[0].onClick();
+
+  const bindings = new Map();
+  instances[0].activateListeners({
+    find(selector) {
+      return { on(_event, callback) { bindings.set(selector, callback); } };
+    },
+  });
+  await bindings.get('[data-action="pausar"]')();
+
+  // Mientras espera confirmación, una segunda orden queda bloqueada.
+  await bindings.get('[data-action="reanudar"]')();
+  assert.equal(instances[0].confirmacionPendiente, true);
+
+  // El simulador responde lo contrario de lo ordenado.
+  instances[0]._registrarLecturaPausa({ paused: false });
+  assert.equal(instances[0].pausaConfirmada, false);
+  assert.equal(instances[0].falloOrden, true);
+  assert.deepEqual(notifications.info, []);
+  assert.deepEqual(notifications.warn, ["LAGUNAK.Tempo.Discordante"]);
+});
+
+test("ApplicationV2: lectura discordante tras el ACK avisa y pasa a estado de error", async () => {
+  const { hooks, instances, notifications } = await loadModule({ modern: true });
+  const controls = {};
+  hooks.getSceneControlButtons(controls);
+  controls.lagunak.tools["lagunak-estado"].onClick();
+
+  const actions = instances[0].constructor.DEFAULT_OPTIONS.actions;
+  await actions.pausar.call(instances[0]);
+  await actions.reanudar.call(instances[0]); // bloqueada: confirmación pendiente
+  assert.equal(instances[0].confirmacionPendiente, true);
+
+  instances[0]._registrarLecturaPausa({ paused: false });
+  assert.equal(instances[0].pausaConfirmada, false);
+  assert.equal(instances[0].falloOrden, true);
+  assert.deepEqual(notifications.info, []);
+  assert.deepEqual(notifications.warn, ["LAGUNAK.Tempo.Discordante"]);
 });
 
 test("v11 muestra el error del puente sin emitir una confirmación falsa", async () => {

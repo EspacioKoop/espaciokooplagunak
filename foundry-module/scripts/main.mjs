@@ -242,6 +242,7 @@ function crearClaseV2() {
     detalleError = "";
     pausaConfirmada = null; // último `paused` de /v1/scenario (null = sin lectura)
     ordenPendiente = null; // orden de pausa en vuelo (true/false) o null
+    confirmacionPendiente = null; // ACK recibido, a la espera de observarlo en /v1/scenario
     falloOrden = false; // la última orden de pausa terminó en error
 
     #cliente() {
@@ -263,8 +264,7 @@ function crearClaseV2() {
         const cliente = this.#cliente();
         await cliente.healthz();
         this.ultimoEstado = await cliente.state();
-        const escenario = await cliente.scenario();
-        this.pausaConfirmada = typeof escenario?.paused === "boolean" ? escenario.paused : null;
+        this._registrarLecturaPausa(await cliente.scenario());
         await processBridgeEvents({
           payload: await cliente.events(),
           game,
@@ -278,6 +278,12 @@ function crearClaseV2() {
         this.conexion = "error";
         this.detalleError = err instanceof BridgeError ? err.message : game.i18n.localize("LAGUNAK.Errores.Desconocido");
         this.#fallosSeguidos = Math.min(this.#fallosSeguidos + 1, 10);
+        // Salida segura: si el sondeo falla con una confirmación pendiente,
+        // no se deja la UI esperando para siempre un estado inobservable.
+        if (this.confirmacionPendiente !== null) {
+          this.confirmacionPendiente = null;
+          this.falloOrden = true;
+        }
       }
       if (this.rendered) this.render();
       this.#programar();
@@ -286,6 +292,27 @@ function crearClaseV2() {
     #programar() {
       clearTimeout(this.#timer);
       this.#timer = setTimeout(() => this.#sondear(), this.#intervaloMs());
+    }
+
+    /**
+     * Única vía de actualización de `pausaConfirmada`: una lectura real de
+     * /v1/scenario. El ACK de /v1/command solo deja `confirmacionPendiente`;
+     * aquí se resuelve como confirmada (notificación) o discordante (aviso y
+     * estado de error con reintento coherente).
+     */
+    _registrarLecturaPausa(escenario) {
+      const lectura = typeof escenario?.paused === "boolean" ? escenario.paused : null;
+      this.pausaConfirmada = lectura;
+      if (this.confirmacionPendiente === null || lectura === null) return;
+      const esperado = this.confirmacionPendiente;
+      this.confirmacionPendiente = null;
+      if (lectura === esperado) {
+        const key = lectura ? "LAGUNAK.Tempo.Pausado" : "LAGUNAK.Tempo.Reanudado";
+        ui.notifications.info(game.i18n.localize(key));
+      } else {
+        this.falloOrden = true;
+        ui.notifications.warn(game.i18n.localize("LAGUNAK.Tempo.Discordante"));
+      }
     }
 
     _onFirstRender(context, options) {
@@ -300,6 +327,7 @@ function crearClaseV2() {
       this.conexion = "conectando";
       this.pausaConfirmada = null;
       this.ordenPendiente = null;
+      this.confirmacionPendiente = null;
       this.falloOrden = false;
       super._onClose?.(options);
     }
@@ -318,7 +346,8 @@ function crearClaseV2() {
         pausa: prepararVistaPausa({
           conexion: this.conexion,
           paused: this.pausaConfirmada,
-          pendiente: this.ordenPendiente,
+          // La UI sigue en «pausando»/«reanudando» hasta observar la lectura.
+          pendiente: this.ordenPendiente ?? this.confirmacionPendiente,
           falloOrden: this.falloOrden,
           foundryPausado: Boolean(game.paused),
           i18n: game.i18n,
@@ -335,8 +364,9 @@ function crearClaseV2() {
     }
 
     async _cambiarPausa(paused) {
-      // Una orden cada vez: mientras una viaja, la UI deshabilita ambas.
-      if (this.ordenPendiente !== null) return;
+      // Una orden cada vez: mientras una viaja o espera confirmación, la UI
+      // deshabilita ambas.
+      if (this.ordenPendiente !== null || this.confirmacionPendiente !== null) return;
       this.ordenPendiente = paused;
       this.falloOrden = false;
       if (this.rendered) this.render();
@@ -347,10 +377,9 @@ function crearClaseV2() {
           client: this.#cliente(),
         });
         if (changed) {
-          // Confirmación optimista hasta la siguiente lectura de /v1/scenario.
-          this.pausaConfirmada = paused;
-          const key = paused ? "LAGUNAK.Tempo.Pausado" : "LAGUNAK.Tempo.Reanudado";
-          ui.notifications.info(game.i18n.localize(key));
+          // El ACK solo confirma que la orden fue aceptada: el estado se
+          // considera confirmado únicamente al observarlo en /v1/scenario.
+          this.confirmacionPendiente = paused;
         }
       } catch (err) {
         this.falloOrden = true;
@@ -428,6 +457,7 @@ function crearClaseV1() {
     detalleError = "";
     pausaConfirmada = null;
     ordenPendiente = null;
+    confirmacionPendiente = null;
     falloOrden = false;
 
     static get defaultOptions() {
@@ -463,8 +493,7 @@ function crearClaseV1() {
         const cliente = this.#cliente();
         await cliente.healthz();
         this.ultimoEstado = await cliente.state();
-        const escenario = await cliente.scenario();
-        this.pausaConfirmada = typeof escenario?.paused === "boolean" ? escenario.paused : null;
+        this._registrarLecturaPausa(await cliente.scenario());
         await processBridgeEvents({
           payload: await cliente.events(),
           game,
@@ -478,10 +507,37 @@ function crearClaseV1() {
         this.conexion = "error";
         this.detalleError = err instanceof BridgeError ? err.message : game.i18n.localize("LAGUNAK.Errores.Desconocido");
         this.#fallosSeguidos = Math.min(this.#fallosSeguidos + 1, 10);
+        // Salida segura: si el sondeo falla con una confirmación pendiente,
+        // no se deja la UI esperando para siempre un estado inobservable.
+        if (this.confirmacionPendiente !== null) {
+          this.confirmacionPendiente = null;
+          this.falloOrden = true;
+        }
       }
       if (this.rendered) this.render(false);
       clearTimeout(this.#timer);
       this.#timer = setTimeout(() => this.#sondear(), this.#intervaloMs());
+    }
+
+    /**
+     * Única vía de actualización de `pausaConfirmada`: una lectura real de
+     * /v1/scenario. El ACK de /v1/command solo deja `confirmacionPendiente`;
+     * aquí se resuelve como confirmada (notificación) o discordante (aviso y
+     * estado de error con reintento coherente).
+     */
+    _registrarLecturaPausa(escenario) {
+      const lectura = typeof escenario?.paused === "boolean" ? escenario.paused : null;
+      this.pausaConfirmada = lectura;
+      if (this.confirmacionPendiente === null || lectura === null) return;
+      const esperado = this.confirmacionPendiente;
+      this.confirmacionPendiente = null;
+      if (lectura === esperado) {
+        const key = lectura ? "LAGUNAK.Tempo.Pausado" : "LAGUNAK.Tempo.Reanudado";
+        ui.notifications.info(game.i18n.localize(key));
+      } else {
+        this.falloOrden = true;
+        ui.notifications.warn(game.i18n.localize("LAGUNAK.Tempo.Discordante"));
+      }
     }
 
     async _render(force, options) {
@@ -500,6 +556,7 @@ function crearClaseV1() {
       this.conexion = "conectando";
       this.pausaConfirmada = null;
       this.ordenPendiente = null;
+      this.confirmacionPendiente = null;
       this.falloOrden = false;
       return super.close(options);
     }
@@ -525,7 +582,8 @@ function crearClaseV1() {
         pausa: prepararVistaPausa({
           conexion: this.conexion,
           paused: this.pausaConfirmada,
-          pendiente: this.ordenPendiente,
+          // La UI sigue en «pausando»/«reanudando» hasta observar la lectura.
+          pendiente: this.ordenPendiente ?? this.confirmacionPendiente,
           falloOrden: this.falloOrden,
           foundryPausado: Boolean(game.paused),
           i18n: game.i18n,
@@ -542,8 +600,9 @@ function crearClaseV1() {
     }
 
     async #cambiarPausa(paused) {
-      // Una orden cada vez: mientras una viaja, la UI deshabilita ambas.
-      if (this.ordenPendiente !== null) return;
+      // Una orden cada vez: mientras una viaja o espera confirmación, la UI
+      // deshabilita ambas.
+      if (this.ordenPendiente !== null || this.confirmacionPendiente !== null) return;
       this.ordenPendiente = paused;
       this.falloOrden = false;
       if (this.rendered) this.render(false);
@@ -554,10 +613,9 @@ function crearClaseV1() {
           client: this.#cliente(),
         });
         if (changed) {
-          // Confirmación optimista hasta la siguiente lectura de /v1/scenario.
-          this.pausaConfirmada = paused;
-          const key = paused ? "LAGUNAK.Tempo.Pausado" : "LAGUNAK.Tempo.Reanudado";
-          ui.notifications.info(game.i18n.localize(key));
+          // El ACK solo confirma que la orden fue aceptada: el estado se
+          // considera confirmado únicamente al observarlo en /v1/scenario.
+          this.confirmacionPendiente = paused;
         }
       } catch (err) {
         this.falloOrden = true;

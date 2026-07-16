@@ -92,10 +92,12 @@ function pauseValues(fetchCalls) {
 
 test("v11 conecta los listeners de pausa y reanudación con el puente", async () => {
   const { hooks, instances, notifications, fetchCalls } = await loadModule();
-  const controls = [];
+  const controls = [{ name: "token", tools: [] }];
 
   hooks.getSceneControlButtons(controls);
-  // Grupo propio con icono de nave y dos herramientas (issue #125).
+  // El puesto sigue accesible desde fichas; estado y mapa viven en el grupo GM.
+  assert.equal(controls[0].tools.length, 1);
+  assert.equal(controls[0].tools[0].name, "lagunak-puestos");
   const grupo = controls.find((c) => c.name === "lagunak");
   assert.ok(grupo);
   assert.equal(grupo.icon, "fa-solid fa-shuttle-space");
@@ -225,7 +227,7 @@ test("v11 muestra el error del puente sin emitir una confirmación falsa", async
   const { hooks, instances, notifications, fetchCalls } = await loadModule({
     fetchImpl: async () => ({ ok: false, status: 503, async json() { return {}; } }),
   });
-  const controls = [];
+  const controls = [{ name: "token", tools: [] }];
   hooks.getSceneControlButtons(controls);
   controls.find((c) => c.name === "lagunak").tools[0].onClick();
 
@@ -261,7 +263,7 @@ test("ApplicationV2 muestra el error del puente sin emitir una confirmación fal
 
 test("v11 bloquea la orden si el usuario deja de ser GM", async () => {
   const { hooks, instances, notifications, fetchCalls } = await loadModule();
-  const controls = [];
+  const controls = [{ name: "token", tools: [] }];
   hooks.getSceneControlButtons(controls);
   controls.find((c) => c.name === "lagunak").tools[0].onClick();
 
@@ -296,11 +298,13 @@ test("ApplicationV2 bloquea la orden si el usuario deja de ser GM", async () => 
   assert.deepEqual(notifications.error, []);
 });
 
-test("un jugador no GM no recibe ningún control", async () => {
+test("un jugador no GM recibe solo el control de su puesto", async () => {
   const { hooks } = await loadModule({ isGM: false });
-  const controls = [];
+  const controls = [{ name: "token", tools: [] }];
 
   hooks.getSceneControlButtons(controls);
+  assert.equal(controls[0].tools.length, 1);
+  assert.equal(controls[0].tools[0].name, "lagunak-puestos");
   assert.equal(controls.find((c) => c.name === "lagunak"), undefined);
 });
 

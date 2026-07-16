@@ -31,6 +31,7 @@ import { dibujarFrame } from "./mapa-render.mjs";
 import { prepararVistaPausa } from "./pausa-control.mjs";
 import { prepareRoute } from "./ship-view.mjs";
 import { setSimulationPaused } from "./tempo-control.mjs";
+import { addStationControl, registerStationFeature } from "./station-ui.mjs";
 import {
   colorFaccion,
   componerFrame,
@@ -48,6 +49,8 @@ const BACKOFF_MAX_MS = 60000;
 const MAPA_RADIO_MUNDO = 30000;
 const MAPA_FPS = 30;
 const MAPA_SEMILLA = 0x4c4147;
+
+registerStationFeature(MODULE_ID);
 
 let estadoApp = null;
 let mapaApp = null;
@@ -89,6 +92,7 @@ Hooks.once("init", () => {
  * todas las versiones soportadas) porque sus herramientas son botones puros:
  * activar el grupo no debe tocar ninguna capa de fichas. */
 Hooks.on("getSceneControlButtons", (controls) => {
+  addStationControl(controls);
   if (!game.user?.isGM) return;
 
   if (Array.isArray(controls)) {

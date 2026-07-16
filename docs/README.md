@@ -10,6 +10,7 @@
 | [INSTALACION.md](INSTALACION.md) | Asistente de instalación guiado (`tools/instalar.py`) |
 | [PRUEBA-INDIVIDUAL.md](PRUEBA-INDIVIDUAL.md) | Probar en solitario el escenario «Primera guardia» |
 | [SESION-FASE1.md](SESION-FASE1.md) | Guion de sesión de prueba en grupo (fase 1) |
+| [BETATESTING.md](BETATESTING.md) | Guion de sesión de betatesting con Foundry (alpha, fase 3) |
 
 ## Quiero compilar o desarrollar
 

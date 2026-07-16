@@ -4672,7 +4672,7 @@ function pickHullGood(delta)
 					end
 				end
 			end
-		until(hullGood ~= nill)
+		until(hullGood ~= nil)
 		plot4 = cleanUpHullers
 		hullReveal = 0
 		hullUpgradeAvailable = true

@@ -31,6 +31,7 @@ import { dibujarFrame } from "./mapa-render.mjs";
 import { prepareRoute } from "./ship-view.mjs";
 import { setSimulationPaused } from "./tempo-control.mjs";
 import { addStationControl, registerStationFeature } from "./station-ui.mjs";
+import { addWorkspaceControl, registerWorkspaceFeature } from "./station-workspace-ui.mjs";
 import {
   colorFaccion,
   componerFrame,
@@ -50,6 +51,7 @@ const MAPA_FPS = 30;
 const MAPA_SEMILLA = 0x4c4147;
 
 registerStationFeature(MODULE_ID);
+registerWorkspaceFeature(MODULE_ID);
 
 let estadoApp = null;
 let mapaApp = null;
@@ -90,6 +92,7 @@ Hooks.once("init", () => {
  * mente aditiva — el `if (Array.isArray)` deja el camino v11/v12 intacto. */
 Hooks.on("getSceneControlButtons", (controls) => {
   addStationControl(controls);
+  addWorkspaceControl(controls);
   if (!game.user?.isGM) return;
 
   if (Array.isArray(controls)) {

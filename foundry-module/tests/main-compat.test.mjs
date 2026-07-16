@@ -90,17 +90,23 @@ function pauseValues(fetchCalls) {
   return fetchCalls.map(([, options]) => JSON.parse(options.body).paused);
 }
 
+function toolByName(controls, name) {
+  return controls[0].tools.find((tool) => tool.name === name);
+}
+
 test("v11 conecta los listeners de pausa y reanudación con el puente", async () => {
   const { hooks, instances, notifications, fetchCalls } = await loadModule();
   const controls = [{ name: "token", tools: [] }];
 
   hooks.getSceneControlButtons(controls);
-  // Tres herramientas: puestos, estado de la nave y mapa vivo.
-  assert.equal(controls[0].tools.length, 3);
-  assert.equal(controls[0].tools[0].name, "lagunak-puestos");
-  assert.equal(controls[0].tools[1].name, "lagunak-estado");
-  assert.equal(controls[0].tools[2].name, "lagunak-mapa");
-  controls[0].tools[1].onClick();
+  // Cuatro herramientas: asignación, espacio del puesto, estado y mapa vivo.
+  assert.deepEqual(controls[0].tools.map(({ name }) => name), [
+    "lagunak-puestos",
+    "lagunak-espacio-puesto",
+    "lagunak-estado",
+    "lagunak-mapa",
+  ]);
+  toolByName(controls, "lagunak-estado").onClick();
 
   assert.equal(instances.length, 1);
   assert.deepEqual(instances[0].renderCalls, [true]);
@@ -154,7 +160,7 @@ test("v11 muestra el error del puente sin emitir una confirmación falsa", async
   });
   const controls = [{ name: "token", tools: [] }];
   hooks.getSceneControlButtons(controls);
-  controls[0].tools[1].onClick();
+  toolByName(controls, "lagunak-estado").onClick();
 
   const bindings = new Map();
   instances[0].activateListeners({
@@ -190,7 +196,7 @@ test("v11 bloquea la orden si el usuario deja de ser GM", async () => {
   const { hooks, instances, notifications, fetchCalls } = await loadModule();
   const controls = [{ name: "token", tools: [] }];
   hooks.getSceneControlButtons(controls);
-  controls[0].tools[1].onClick();
+  toolByName(controls, "lagunak-estado").onClick();
 
   const bindings = new Map();
   instances[0].activateListeners({
@@ -223,13 +229,15 @@ test("ApplicationV2 bloquea la orden si el usuario deja de ser GM", async () => 
   assert.deepEqual(notifications.error, []);
 });
 
-test("un jugador no GM recibe solo el control de su puesto", async () => {
+test("un jugador no GM recibe asignación y espacio de puesto, sin controles GM", async () => {
   const { hooks } = await loadModule({ isGM: false });
   const controls = [{ name: "token", tools: [] }];
 
   hooks.getSceneControlButtons(controls);
-  assert.equal(controls[0].tools.length, 1);
-  assert.equal(controls[0].tools[0].name, "lagunak-puestos");
+  assert.deepEqual(controls[0].tools.map(({ name }) => name), [
+    "lagunak-puestos",
+    "lagunak-espacio-puesto",
+  ]);
 });
 
 test("v11 abre el mapa vivo con Application clásica (rAF ausente: sin bucle)", async () => {

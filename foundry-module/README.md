@@ -13,7 +13,8 @@ polling.
   de controles de escena de v13, pero v12/v13 siguen pendientes de prueba en
   una instalación real antes de declararlas verificadas. Solo importa la
   versión del **anfitrión** que hospeda la partida: los jugadores se conectan
-  por navegador y no ejecutan Foundry.
+  por navegador y no ejecutan el servidor, pero el módulo se carga también en
+  sus clientes web.
 - El puente de integración en marcha (`docker/README.md`): juego + puente vía
   compose, con `BRIDGE_TOKEN` definido y el origen web de Foundry incluido en
   `BRIDGE_ALLOWED_ORIGINS` (por ejemplo, `http://localhost:30000`).
@@ -92,6 +93,33 @@ esa autorización por puesto requiere un contrato posterior del puente.
 En este primer vertical se permiten puestos duplicados; el GM puede resolverlos
 desde la misma ventana.
 
+### Espacios de trabajo por puesto
+
+El control «Espacio de trabajo del puesto» abre una consola distinta para cada
+asignación. El diseño toma de las pantallas de EmptyEpsilon la jerarquía de
+instrumentación, retículas, alarmas, matrices de sistemas y disciplina de
+guardia, pero la adapta a Foundry con mejor contraste, distribución responsive
+y reducción de movimiento:
+
+| Puesto | Instrumentación principal |
+|---|---|
+| Capitán | resumen de casco, energía, escudos, ruta y cobertura de tripulación |
+| Navegación | rumbo, velocidad, posición, destino y retícula de orientación |
+| Ingeniería | energía, casco, pico térmico y matriz de salud/calor/potencia |
+| Sensores | cobertura, contactos próximos y aviso de lectura truncada |
+| Comunicaciones | indicativo, bitácora, canales y disciplina de mensajes |
+| Armas | escudos, salud de sistemas de armas y contactos confirmados |
+
+Cada consola incluye una lista de guardia específica y el estado de la
+tripulación. Un jugador abre directamente su puesto asignado; si aún no tiene
+uno, la ventana le lleva al selector. El GM puede previsualizar las seis
+consolas y actualizar manualmente telemetría de `/v1/state` y `/v1/contacts`.
+
+La frontera es deliberada: los jugadores **no leen URL/token, no consultan el
+puente y no reciben telemetría omnisciente**. Sus consolas muestran asignación,
+tripulación y procedimientos locales. La previsualización GM es solo lectura;
+no se añaden órdenes de navegación, energía o armas en este vertical.
+
 ## Mapa vivo
 
 El botón «Mapa vivo (Espaciokoop Lagunak)» (junto al de estado, solo GM) abre
@@ -119,7 +147,9 @@ coloreados por facción, con leyenda de indicativos y distancias.
   (healthz, state, 401 sin token, timeout y error de red) — es ESM puro sin
   dependencias de Foundry precisamente para eso.
 - Tests Node cubren `/v1/events`, validación y deduplicación persistente del
-  Journal, formato destino/ETA, POST cerrado de pausa y bloqueo no-GM.
+  Journal, formato destino/ETA, POST cerrado de pausa, bloqueo no-GM y las seis
+  consolas de puesto. También verifican que un jugador no lee ajustes del
+  puente ni recibe telemetría aunque otro código intente inyectársela.
 - Del mapa vivo, los tests Node cubren SOLO la lógica pura (proyección,
   interpolación sin extrapolar, throttle de fps, composición del frame) y la
   compatibilidad del botón/ventana v11 y v13; el pintado real sobre `<canvas>`
@@ -130,9 +160,10 @@ coloreados por facción, con leyenda de indicativos y distancias.
   arranca limpio con el módulo instalado (symlink en `Data/modules`), sin
   rechazo del manifiesto.
 - **Pendiente de verificación humana en un Foundry real con partida activa**:
-  render de la ventana, botón de escena y escritura en el diario. Requiere una
-  sesión de GM autenticada en el navegador; la licencia de Foundry no permite
-  incluirlo en CI. Véase el criterio de aceptación de #8.
+  render de las ventanas, responsive, contraste, botones de escena, reconexión
+  de jugador y escritura en el diario. Requiere sesiones GM/jugador autenticadas
+  en navegador; la licencia de Foundry no permite incluirlo en CI. Véanse #8,
+  #162 y #173.
 
 ## Instalación para desarrollo (symlink)
 

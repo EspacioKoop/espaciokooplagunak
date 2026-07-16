@@ -4,37 +4,31 @@ import { prepareSystemRows } from "./ship-view.mjs";
 const DEFINITIONS = Object.freeze({
   captain: Object.freeze({
     icon: "fa-solid fa-chess-king",
-    code: "CMD",
     accent: "amber",
     tasks: ["Situacion", "Prioridades", "Coordinacion"],
   }),
   navigation: Object.freeze({
     icon: "fa-solid fa-compass",
-    code: "NAV",
     accent: "cyan",
     tasks: ["Rumbo", "Ruta", "Llegada"],
   }),
   engineering: Object.freeze({
     icon: "fa-solid fa-screwdriver-wrench",
-    code: "ENG",
     accent: "lime",
     tasks: ["Potencia", "Temperatura", "Reparaciones"],
   }),
   sensors: Object.freeze({
     icon: "fa-solid fa-satellite-dish",
-    code: "SEN",
     accent: "violet",
     tasks: ["Barrido", "Identificacion", "Seguimiento"],
   }),
   communications: Object.freeze({
     icon: "fa-solid fa-tower-broadcast",
-    code: "COM",
     accent: "blue",
     tasks: ["Canales", "Mensajes", "Bitacora"],
   }),
   weapons: Object.freeze({
     icon: "fa-solid fa-crosshairs",
-    code: "TAC",
     accent: "red",
     tasks: ["Seguridad", "Soluciones", "Confirmacion"],
   }),
@@ -48,7 +42,13 @@ export function workspaceDefinition(station) {
 }
 
 export function stationForWorkspace({ user, moduleId, previewStation = null }) {
-  if (user?.isGM && previewStation) return normalizeStation(previewStation);
+  if (user?.isGM && previewStation) {
+    try {
+      return normalizeStation(previewStation);
+    } catch {
+      return "captain";
+    }
+  }
   const assigned = user?.getFlag?.(moduleId, "station") ?? null;
   if (assigned) return normalizeStation(assigned);
   return user?.isGM ? "captain" : null;

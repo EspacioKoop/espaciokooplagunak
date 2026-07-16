@@ -65,15 +65,20 @@ function fechaLocal() {
   return new Date().toLocaleString(idioma);
 }
 
+function numeroBitacora(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? Math.round(number) : 0;
+}
+
 function contenidoEstadoBitacora(nave, marca) {
   const texto = (key) => escapeHtml(game.i18n.localize(key));
   return `
       <p><strong>${escapeHtml(nave.callsign ?? "?")}</strong> — ${escapeHtml(marca)}</p>
       <ul>
-        <li>${texto("LAGUNAK.Diario.Campo.Posicion")}: ${Math.round(nave.position?.x ?? 0)}, ${Math.round(nave.position?.y ?? 0)}</li>
-        <li>${texto("LAGUNAK.Diario.Campo.Rumbo")}: ${Math.round(nave.heading ?? 0)}°</li>
-        <li>${texto("LAGUNAK.Diario.Campo.Casco")}: ${nave.hull} / ${nave.hull_max}</li>
-        <li>${texto("LAGUNAK.Diario.Campo.Energia")}: ${nave.energy} / ${nave.energy_max}</li>
+        <li>${texto("LAGUNAK.Diario.Campo.Posicion")}: ${numeroBitacora(nave.position?.x)}, ${numeroBitacora(nave.position?.y)}</li>
+        <li>${texto("LAGUNAK.Diario.Campo.Rumbo")}: ${numeroBitacora(nave.heading)}°</li>
+        <li>${texto("LAGUNAK.Diario.Campo.Casco")}: ${numeroBitacora(nave.hull)} / ${numeroBitacora(nave.hull_max)}</li>
+        <li>${texto("LAGUNAK.Diario.Campo.Energia")}: ${numeroBitacora(nave.energy)} / ${numeroBitacora(nave.energy_max)}</li>
         <li>${texto("LAGUNAK.Diario.Campo.Escudos")}: ${texto(nave.shields_active ? "LAGUNAK.EstadoNave.EscudosActivos" : "LAGUNAK.EstadoNave.EscudosInactivos")}</li>
       </ul>`;
 }

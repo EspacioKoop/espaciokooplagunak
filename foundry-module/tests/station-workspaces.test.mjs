@@ -80,9 +80,9 @@ test("el jugador abre su puesto y el GM puede previsualizar cualquier consola", 
   assert.equal(stationForWorkspace({ user: player, moduleId: MODULE_ID }), "engineering");
   assert.equal(stationForWorkspace({ user: gm, moduleId: MODULE_ID }), "captain");
   assert.equal(stationForWorkspace({ user: gm, moduleId: MODULE_ID, previewStation: "sensors" }), "sensors");
-  assert.throws(
-    () => stationForWorkspace({ user: gm, moduleId: MODULE_ID, previewStation: "unknown" }),
-    /Unknown crew station/,
+  assert.equal(
+    stationForWorkspace({ user: gm, moduleId: MODULE_ID, previewStation: "unknown" }),
+    "captain",
   );
 });
 

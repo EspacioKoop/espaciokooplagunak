@@ -8,6 +8,14 @@ async function loadModule({ modern = false, isGM = true, fetchImpl } = {}) {
   const instances = [];
   const notifications = { info: [], warn: [], error: [] };
   const fetchCalls = [];
+  const journalPages = [];
+  const journal = {
+    async createEmbeddedDocuments(type, pages) {
+      assert.equal(type, "JournalEntryPage");
+      journalPages.push(...pages);
+      return pages;
+    },
+  };
 
   class BaseApplication {
     static get defaultOptions() {
@@ -49,9 +57,9 @@ async function loadModule({ modern = false, isGM = true, fetchImpl } = {}) {
       },
     },
     i18n: { localize: (key) => key, format: (key) => key },
-    journal: { getName: () => null },
+    journal: { getName: () => journal },
   };
-  globalThis.JournalEntry = { create: async () => null };
+  globalThis.JournalEntry = { create: async () => journal };
   globalThis.ui = {
     notifications: {
       info(message) { notifications.info.push(message); },
@@ -83,7 +91,7 @@ async function loadModule({ modern = false, isGM = true, fetchImpl } = {}) {
   }
 
   await import(`../scripts/main.mjs?compat-test=${importNonce++}`);
-  return { hooks, instances, notifications, fetchCalls };
+  return { hooks, instances, notifications, fetchCalls, journalPages };
 }
 
 function pauseValues(fetchCalls) {
@@ -131,6 +139,42 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
   assert.deepEqual(pauseValues(fetchCalls), [true, false]);
   assert.deepEqual(notifications.info, ["LAGUNAK.Tempo.Pausado", "LAGUNAK.Tempo.Reanudado"]);
   assert.deepEqual(notifications.error, []);
+});
+
+test("la bitácora normaliza la telemetría y no inserta HTML del puente", async () => {
+  const { hooks, instances, journalPages } = await loadModule();
+  const controls = [{ name: "token", tools: [] }];
+  hooks.getSceneControlButtons(controls);
+  toolByName(controls, "lagunak-estado").onClick();
+
+  instances[0].ultimoEstado = {
+    ship: {
+      callsign: '<img src=x onerror="alert(1)">',
+      position: { x: "<svg onload=alert(1)>", y: 25.4 },
+      heading: "90deg",
+      hull: "<img src=x>",
+      hull_max: 100,
+      energy: Number.POSITIVE_INFINITY,
+      energy_max: 200,
+      shields_active: false,
+    },
+  };
+
+  const bindings = new Map();
+  instances[0].activateListeners({
+    find(selector) {
+      return { on(_event, callback) { bindings.set(selector, callback); } };
+    },
+  });
+  await bindings.get('[data-action="anotar"]')();
+
+  assert.equal(journalPages.length, 1);
+  const content = journalPages[0].text.content;
+  assert.doesNotMatch(content, /<img|<svg/);
+  assert.match(content, /LAGUNAK\.Diario\.Campo\.Posicion: 0, 25/);
+  assert.match(content, /LAGUNAK\.Diario\.Campo\.Rumbo: 0°/);
+  assert.match(content, /LAGUNAK\.Diario\.Campo\.Casco: 0 \/ 100/);
+  assert.match(content, /LAGUNAK\.Diario\.Campo\.Energia: 0 \/ 200/);
 });
 
 test("host moderno conecta las acciones de pausa y reanudación con el puente", async () => {

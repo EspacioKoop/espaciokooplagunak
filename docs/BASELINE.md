@@ -1,9 +1,14 @@
 # Baseline AECF — accesibilidad, seguridad, calidad y fiabilidad
 
 Índice único del estado de buenas prácticas del fork (issue #88). Este documento
-es la fuente de verdad: se cambia por pull request, como todo lo demás. El issue
-#88 fue el arranque de este doc, no un paraguas permanente — el estado del
+es la fuente de verdad: se cambia por pull request, como todo lo demás. El
+issue #88 fue el arranque de este doc, no un paraguas permanente — el estado del
 proyecto vive en `main` verificado, no en la pestaña Issues.
+
+Evaluaciones derivadas de este índice: madurez por dimensión (escala M0–M5) en
+[`AECF-METRICAS.md`](AECF-METRICAS.md) y evaluación de arquitectura (ATAM-lite,
+con registro de ADRs en [`adr/`](adr/README.md)) en
+[`ASSESSMENT-ARQUITECTURA.md`](ASSESSMENT-ARQUITECTURA.md).
 
 ## Reglas de funcionamiento
 
@@ -27,8 +32,11 @@ Baseline normativa: [SECURITY.md](../SECURITY.md) (no se duplica aquí).
 - [x] `/exec.lua` nunca expuesto — regla en SECURITY.md **y gate en CI**
       (job `guardia-exec-lua` en `docker.yml`: falla si `compose.yaml` publica
       el puerto 8080 o usa `network_mode: host`; el job prueba ambas regresiones).
-- [x] Permisos mínimos declarados en los 6 workflows (`contents: read`;
-      ampliaciones justificadas en `codeql.yml` y `docker-publish.yml`).
+- [x] Permisos mínimos declarados en los 8 workflows: seis a nivel de
+      workflow (`contents: read`) y dos solo a nivel de job — `codeql.yml`
+      (`security-events: write`) y `label.yml` (`contents: read`,
+      `pull-requests: write`); ampliaciones justificadas también en
+      `docker-publish.yml`.
 - [x] CodeQL activo (`codeql.yml`); alertas 8/9 resueltas vendorizando
       highlight.js (issue #87, PR #89).
 - [x] Dependabot acotado a lo propio del fork: `github-actions`, `pip` en
@@ -56,9 +64,10 @@ Tres superficies con costes muy distintos; solo dos son nuestras:
   mejorable sin merge tax. Pendiente de baseline real (hoy solo hay `aria-`/
   `role` puntuales en un `.hbs`).
   - [ ] Pasada de accesibilidad al módulo Foundry (contraste de la ventana
-        Neo Geo, navegación por teclado, `aria-` en los controles del GM)
-        cuando el mapa vivo (PR #73) esté fusionado — no antes, para no
-        revisar dos veces lo mismo.
+        Neo Geo, navegación por teclado, `aria-` en los controles del GM).
+        La condición de secuencia que la aplazaba (esperar al mapa vivo,
+        PR #73) se cumplió el 2026-07-14: es la siguiente acción pendiente
+        de la dimensión, sin bloqueo previo (ver AECF-METRICAS.md).
 - **Juego C++ heredado (`src/gui/`, `src/screens/`)**: divergencia upstream
   permanente y cara. Regla: solo si un jugador real del fork choca con la
   barrera y no puede resolverse en módulo/doc — y entonces primero PR a

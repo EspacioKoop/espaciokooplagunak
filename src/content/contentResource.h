@@ -54,6 +54,17 @@ inline bool operator!=(const ContentResource& lhs, const ContentResource& rhs)
     return !(lhs == rhs);
 }
 
+enum class ContentRenameError
+{
+    None,
+    InvalidLibrary,
+    InvalidType,
+    InvalidNewId,
+    SourceNotFound,
+    SourceChanged,
+    TargetAlreadyExists,
+};
+
 enum class ContentResourceError
 {
     None,
@@ -93,6 +104,12 @@ std::string contentResourceTypeId(ContentResourceType type);
 bool parseContentResourceType(const std::string& value, ContentResourceType& type);
 ContentResourceError validateContentResource(const ContentResource& resource);
 ContentResourceError validateContentLibrary(const std::vector<ContentResource>& resources);
+ContentRenameError renameContentResource(
+    std::vector<ContentResource>& resources,
+    ContentResourceType type,
+    const std::string& old_id,
+    const std::string& new_id
+);
 bool contentResourceHasMissingDependencies(
     const ContentResource& resource,
     const std::vector<ContentResource>& library

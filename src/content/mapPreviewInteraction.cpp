@@ -91,8 +91,13 @@ MapDocumentError MapPreviewDragSession::begin(
 bool MapPreviewDragSession::update(MapPreviewPoint world_position)
 {
     if (!dragging || !validPoint(world_position)) return false;
-    provisional_transform.x = world_position.x + pointer_offset.x;
-    provisional_transform.y = world_position.y + pointer_offset.y;
+    // pointer_offset can span thousands of world units at low zoom, so a valid
+    // pointer can still project the object past MAP_COORDINATE_LIMIT; clamp so
+    // the provisional (and therefore commit()) never leaves the document contract.
+    provisional_transform.x = std::clamp(world_position.x + pointer_offset.x,
+        -MAP_COORDINATE_LIMIT, MAP_COORDINATE_LIMIT);
+    provisional_transform.y = std::clamp(world_position.y + pointer_offset.y,
+        -MAP_COORDINATE_LIMIT, MAP_COORDINATE_LIMIT);
     return true;
 }
 

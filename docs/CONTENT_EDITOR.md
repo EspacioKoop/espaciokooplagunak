@@ -13,8 +13,10 @@ tipos de recursos sin editar Lua:
 1. Abre **Game Master → Content editor…**.
 2. Selecciona el tipo de recurso.
 3. Pulsa **New**, rellena el formulario y guarda.
-4. **Save** actualiza el recurso seleccionado aunque cambie su ID. Si ese ID ya
-   pertenece a otro recurso, exige una segunda pulsación antes de sustituirlo.
+4. **Save** actualiza el recurso seleccionado. Si cambia su ID, exige una segunda
+   pulsación para confirmar el renombrado y actualizar sus referencias. Si el ID
+   nuevo ya pertenece a otro recurso del mismo tipo, rechaza la operación sin
+   sustituirlo.
 5. **Export** copia únicamente el recurso visible al portapapeles como JSON.
 6. **Import** lee un recurso JSON del portapapeles y valida todos sus campos.
 7. Si ya existe el mismo par `type + id`, hay que pulsar **Import** por segunda
@@ -228,5 +230,19 @@ La siguiente fase mantendrá la misma envoltura versionada:
 - plantillas, previsualización y spawn de naves ([#55](https://github.com/VaroTv7/espaciokooplagunak/issues/55)).
 
 Las campañas y personajes ya se enlazan de forma declarativa con mapas, naves
-y puestos canónicos. Aplicar esos documentos a una sesión viva queda separado
-de la edición y persistencia de metadatos.
+y puestos canónicos. El núcleo C++ puede renombrar de forma transaccional cualquier
+recurso sobre una copia de la biblioteca: actualiza mapas iniciales y ordenados,
+transiciones, personajes y naves referenciadas, valida la candidata completa y solo
+entonces reemplaza el vector original. IDs inválidos, colisiones, recursos ausentes o
+una biblioteca origen inválida no producen mutación parcial. El store envuelve carga,
+comparación del snapshot editado, renombrado, campos modificados y guardado con un único
+lock: preserva cambios concurrentes ajenos y rechaza si cambió el propio recurso. Los
+fallos previos a promoción conservan la generación anterior; si el commit ya rotó el
+canónico, recarga la generación recuperada e informa por separado si el cambio quedó
+aplicado. En la GUI, editar el ID de un recurso cargado y pulsar Guardar muestra el
+alcance del cambio; una segunda pulsación confirma el renombrado y sus referencias en
+un único commit. Las colisiones
+se rechazan sin reemplazar otro recurso. Los selectores tipados de relaciones se
+incorporarán en el siguiente corte de #154.
+Aplicar esos documentos a una sesión viva queda separado de la edición y persistencia
+de metadatos.

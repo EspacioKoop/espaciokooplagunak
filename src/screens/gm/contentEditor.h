@@ -55,6 +55,7 @@ private:
     string pending_file_import;
     string pending_file_export;
     ContentDiscardGuard discard_guard;
+    ContentDiscardGuard rename_guard;
     MapEditSession map_edit_session;
     MapPreviewDragSession map_drag;
     ShipEditSession ship_edit_session;
@@ -128,6 +129,7 @@ private:
     bool applyImportedResource(const ContentResource& resource, const string& import_key);
     int findResource(ContentResourceType type, const string& id) const;
     string errorText(ContentResourceError error) const;
+    string renameErrorText(ContentRenameError error) const;
     string storeErrorText(ContentStoreError error) const;
     void setStatus(const string& text);
     void updatePreviewStatus();

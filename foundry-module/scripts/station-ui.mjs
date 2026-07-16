@@ -1,4 +1,8 @@
-import { assignStation, stationRows } from "./station-assignment.mjs";
+import {
+  assignStation,
+  stationRows,
+  STATION_ASSIGNMENT_ERRORS,
+} from "./station-assignment.mjs";
 
 let stationApp = null;
 let configuredModuleId = null;
@@ -66,6 +70,7 @@ async function onStationChange(event) {
   const select = event.currentTarget;
   const target = game.users.get(select.dataset.userId);
   if (!target) return;
+  const previousStation = target.getFlag(configuredModuleId, "station") ?? "";
 
   try {
     await assignStation({
@@ -75,8 +80,12 @@ async function onStationChange(event) {
       moduleId: configuredModuleId,
     });
     ui.notifications.info(game.i18n.localize("LAGUNAK.Puestos.Guardado"));
-  } catch (_error) {
-    ui.notifications.error(game.i18n.localize("LAGUNAK.Puestos.NoPermitido"));
+  } catch (error) {
+    select.value = previousStation;
+    const key = error?.code === STATION_ASSIGNMENT_ERRORS.NOT_ALLOWED
+      ? "LAGUNAK.Puestos.NoPermitido"
+      : "LAGUNAK.Puestos.ErrorGuardado";
+    ui.notifications.error(game.i18n.localize(key));
   }
 }
 

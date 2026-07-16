@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   STATIONS,
+  STATION_ASSIGNMENT_ERRORS,
   assignStation,
   canAssignStation,
   normalizeStation,
@@ -57,7 +58,7 @@ test("un jugador no puede cambiar el puesto de otro", async () => {
   assert.equal(canAssignStation(actor, target), false);
   await assert.rejects(
     assignStation({ actor, target, station: "weapons", moduleId: "lagunak" }),
-    /Not allowed/,
+    (error) => error.code === STATION_ASSIGNMENT_ERRORS.NOT_ALLOWED,
   );
   assert.equal(target.flags.station, undefined);
 });

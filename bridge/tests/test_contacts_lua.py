@@ -25,6 +25,7 @@ from __future__ import annotations
 import json
 import shutil
 import subprocess
+from pathlib import Path
 
 import pytest
 
@@ -51,9 +52,12 @@ local function obj(cs, fac, x, y, sin_faccion)
     return o
 end
 local ship_obj = obj("Itsaso 1", "Human Navy", 0.0, 0.0, false)
-ship_obj.typeName = "PlayerSpaceship"
+-- Mismo shape que el binding ECS real: components.typename.type_name
+-- (src/script/components.cpp registra el componente; scripts/api/shipTemplate.lua
+-- lo rellena al crear naves desde plantilla).
+ship_obj.components = { typename = { type_name = "PlayerSpaceship" } }
 local npc_dup = obj("Itsaso 1", "Kraylor", 100.0, 200.0, false)
-npc_dup.typeName = "CpuShip"
+npc_dup.components = { typename = { type_name = "CpuShip" } }
 
 local hostile = obj("Bad" .. string.char(1) .. "\\Name\"X", 'Pirati "Rossa"', -50.0, -60.0, false)
 local asteroid = obj("?", nil, 300.0, 300.0, true)
@@ -133,12 +137,31 @@ def test_encoder_lua_genera_json_valido_con_caracteres_hostiles(tmp_path):
 
     asteroide = next(c for c in contactos if c["callsign"] == "?")
     assert asteroide["faction"] is None
-    # typeName es opcional: se publica cuando el objeto lo expone y queda
-    # null cuando no (el asteroide del mundo falso no lo define).
+    # `type` sale del componente ECS `typename` (components.typename.type_name);
+    # es opcional: las entidades sin el componente (el asteroide, y también el
+    # hostile de este mundo, que ni siquiera define `components`) quedan null.
     assert contactos[0]["type"] == "PlayerSpaceship"
     npc = next(c for c in contactos if c["callsign"] == "Itsaso 1" and not c["is_player"])
     assert npc["type"] == "CpuShip"
     assert asteroide["type"] is None
+    hostile_c = next(c for c in contactos if c["callsign"].startswith("Bad"))
+    assert hostile_c["type"] is None
+
+
+def test_contrato_typename_anclado_al_binding_real():
+    """El Lua del puente debe leer la MISMA ruta que el juego registra.
+
+    Esta prueba fija el contrato en ambos extremos: el binding C++ que
+    registra el componente `typename` con su campo `type_name`, y el
+    encoder Lua que lo consume. Si upstream renombra el componente o el
+    campo, esto falla aquí en vez de degenerar en `type: null` silencioso
+    en producción (el pcall del encoder se tragaría el error).
+    """
+    raiz = Path(__file__).resolve().parents[2]
+    components = (raiz / "src" / "script" / "components.cpp").read_text(encoding="utf-8")
+    assert 'ComponentHandler<TypeName>::name("typename")' in components
+    assert "BIND_MEMBER(TypeName, type_name)" in components
+    assert "object.components.typename.type_name" in bridge._CONTACTS_LUA
 
 
 def test_encoder_lua_identifica_al_jugador_por_objeto_no_por_indicativo(tmp_path):

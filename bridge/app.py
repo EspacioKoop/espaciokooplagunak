@@ -320,7 +320,10 @@ local function entrada(object, ox, oy, es_jugador)
         faction_json = json_escape(faction)
     end
     local type_json = "null"
-    local ok_t, tname = pcall(function() return object.typeName end)
+    -- Contrato real del juego: el componente ECS `typename` (registrado en
+    -- src/script/components.cpp) con su campo `type_name`. Las entidades sin
+    -- ese componente (asteroides…) hacen fallar el pcall y quedan en null.
+    local ok_t, tname = pcall(function() return object.components.typename.type_name end)
     if ok_t and tname ~= nil and tname ~= "" then
         type_json = json_escape(tname)
     end

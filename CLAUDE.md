@@ -64,6 +64,13 @@ cmake --build build --parallel
 find scripts -type f -iname '*.lua' -print0 | xargs -0 -n 1 luac -p
 ```
 
+`.luarc.json` (raíz) configura lua-language-server: lista como `diagnostics.globals` las
+globales que EmptyEpsilon inyecta en runtime (`_`, `comms_source`, `addCommsReply`…) y
+desactiva `lowercase-global`/`discard-returns` (estilo heredado de los escenarios upstream).
+Si añades API nueva que se inyecte como global, añádela ahí. Los diagnósticos restantes
+(`need-check-nil`, `undefined-field`…) son mayormente ruido por falta de anotaciones
+`---@meta` de la API — pendiente para Fase 4/5; no los «arregles» en escenarios upstream.
+
 Hay TRES suites de tests propias del fork — ejecútalas siempre que toques su área, y no
 confundas «no está en CI todavía» con «no existe»:
 

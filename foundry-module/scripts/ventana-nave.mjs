@@ -128,6 +128,43 @@ export function proyectarContactos({ contacts = [], centro, headingDeg = 0, radi
 }
 
 /**
+ * Proyecta el destino de la ruta (issue #175) con la misma proyección de
+ * cabina que los contactos. Devuelve null si no hay destino utilizable
+ * (sin nombre o sin posición: no se inventa nada). Cuando el destino queda
+ * fuera del visor, `x`/`y` son el punto recortado al anillo de alcance en
+ * su dirección real, y `dentro` es false — el pintor decide la marca.
+ *
+ * @param {{name:string, position:{x:number,y:number}}|null} destino
+ * @returns {{nombre:string,x:number,y:number,distancia:number,dentro:boolean}|null}
+ */
+export function proyectarDestino({ destino, centro, headingDeg = 0, radioMundo = 30000, ancho = 320, alto = 320 }) {
+  if (!destino || typeof destino.name !== "string" || destino.name === "") return null;
+  const px = destino.position?.x;
+  const py = destino.position?.y;
+  if (!Number.isFinite(px) || !Number.isFinite(py)) return null;
+
+  const [p] = proyectarContactos({
+    contacts: [{ callsign: destino.name, position: { x: px, y: py } }],
+    centro, headingDeg, radioMundo, ancho, alto,
+  });
+  if (p.dentro) {
+    return { nombre: destino.name, x: p.x, y: p.y, distancia: p.distancia, dentro: true };
+  }
+  // Fuera de alcance: recorta al anillo, conservando la dirección.
+  const cx = ancho / 2;
+  const cy = alto / 2;
+  const radioVisor = Math.min(ancho, alto) / 2;
+  const a = Math.atan2(p.y - cy, p.x - cx);
+  return {
+    nombre: destino.name,
+    x: cx + Math.cos(a) * radioVisor,
+    y: cy + Math.sin(a) * radioVisor,
+    distancia: p.distancia,
+    dentro: false,
+  };
+}
+
+/**
  * Interpola el centro (posición de la nave propia) entre las dos últimas
  * muestras CONFIRMADAS del puente. `t` se acota a [0,1]: nunca se extrapola
  * más allá de la última muestra — el mapa es una vista de lo que el puente ha
@@ -212,12 +249,14 @@ export function rotarMuestras(muestraActual, nueva, ahoraMs, ventanaMaxMs = 4000
  *
  * @returns {{sinDatos:boolean, centro:{x,y}, rumboDeg:number,
  *   capas:{dx:number,dy:number,estrellas:object[]}[],
- *   blips:{callsign,faction,color,esJugador,x,y,distancia,dentro,parpadeo}[]}}
+ *   blips:{callsign,faction,color,esJugador,x,y,distancia,dentro,parpadeo}[],
+ *   destino:({nombre,x,y,distancia,dentro}|null)}}
  */
 export function componerFrame({
   muestraPrev = null,
   muestraActual = null,
   contactos = [],
+  destino = null,
   campo = [],
   tMs = 0,
   ancho = 320,
@@ -226,7 +265,7 @@ export function componerFrame({
   escalaFondo = 0.05,
 } = {}) {
   if (!muestraActual) {
-    return { sinDatos: true, centro: { x: 0, y: 0 }, rumboDeg: 0, capas: [], blips: [] };
+    return { sinDatos: true, centro: { x: 0, y: 0 }, rumboDeg: 0, capas: [], blips: [], destino: null };
   }
   const centro = interpolarCentro(muestraPrev, muestraActual, tMs);
   const rumboDeg = muestraPrev && muestraActual.tMs > muestraPrev.tMs
@@ -251,7 +290,14 @@ export function componerFrame({
     parpadeo: p.esJugador ? true : encendido, // la nave propia no parpadea
   }));
 
-  return { sinDatos: false, centro, rumboDeg, capas, blips };
+  return {
+    sinDatos: false,
+    centro,
+    rumboDeg,
+    capas,
+    blips,
+    destino: proyectarDestino({ destino, centro, headingDeg: rumboDeg, radioMundo, ancho, alto }),
+  };
 }
 
 /**

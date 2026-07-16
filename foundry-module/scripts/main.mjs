@@ -707,6 +707,7 @@ function crearClaseMapaV2() {
     #muestraPrev = null;
     #muestraActual = null;
     contactos = [];
+    destino = null; // último destination confirmado de /v1/state (issue #175)
     seleccion = null; // callsign del contacto seleccionado en la lista
     conexion = "conectando";
     detalleError = "";
@@ -731,12 +732,14 @@ function crearClaseMapaV2() {
       const generacion = this.#generacion;
       let rotadas = null;
       let contactos = null;
+      let destino = null;
       let fallo = null;
       try {
         const cliente = this.#cliente();
         await cliente.healthz();
         const estado = await cliente.state();
         const nave = estado?.ship ?? null;
+        destino = nave?.destination ?? null;
         if (nave) {
           // Ventana de reproducción: rotarMuestras ancla el tween hacia
           // delante (los frames van DETRÁS de la recepción — sin esto, t
@@ -757,6 +760,7 @@ function crearClaseMapaV2() {
           this.#muestraActual = rotadas.actual;
         }
         this.contactos = contactos;
+        this.destino = destino;
         this.conexion = "ok";
         this.detalleError = "";
         this.#fallosSeguidos = 0;
@@ -794,6 +798,7 @@ function crearClaseMapaV2() {
         muestraPrev: this.#muestraPrev,
         muestraActual: this.#muestraActual,
         contactos: this.contactos,
+        destino: this.destino,
         campo: this.#campo,
         tMs: ahora,
         ancho: canvas.width,
@@ -915,6 +920,7 @@ function crearClaseMapaV1() {
     #muestraPrev = null;
     #muestraActual = null;
     contactos = [];
+    destino = null; // último destination confirmado de /v1/state (issue #175)
     seleccion = null; // callsign del contacto seleccionado en la lista
     conexion = "conectando";
     detalleError = "";
@@ -954,12 +960,14 @@ function crearClaseMapaV1() {
       const generacion = this.#generacion;
       let rotadas = null;
       let contactos = null;
+      let destino = null;
       let fallo = null;
       try {
         const cliente = this.#cliente();
         await cliente.healthz();
         const estado = await cliente.state();
         const nave = estado?.ship ?? null;
+        destino = nave?.destination ?? null;
         if (nave) {
           // Ventana de reproducción (ver rotarMuestras): el tween se ancla
           // hacia delante para que existan frames intermedios reales.
@@ -979,6 +987,7 @@ function crearClaseMapaV1() {
           this.#muestraActual = rotadas.actual;
         }
         this.contactos = contactos;
+        this.destino = destino;
         this.conexion = "ok";
         this.detalleError = "";
         this.#fallosSeguidos = 0;
@@ -1008,6 +1017,7 @@ function crearClaseMapaV1() {
         muestraPrev: this.#muestraPrev,
         muestraActual: this.#muestraActual,
         contactos: this.contactos,
+        destino: this.destino,
         campo: this.#campo,
         tMs: ahora,
         ancho: canvas.width,

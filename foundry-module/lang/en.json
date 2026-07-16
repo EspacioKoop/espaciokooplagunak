@@ -44,6 +44,7 @@
   "LAGUNAK.Tempo.Reanudar": "Resume simulation",
   "LAGUNAK.Tempo.Pausado": "Simulation paused.",
   "LAGUNAK.Tempo.Reanudado": "Simulation resumed.",
+  "LAGUNAK.Tempo.Discordante": "The simulator does not reflect the pause command: check its state.",
   "LAGUNAK.Eventos.Llegada.Titulo": "Arrival at {destination}",
   "LAGUNAK.Eventos.Llegada.Resumen": "The ship has arrived at {destination}. Scenario time: {elapsed} s.",
   "LAGUNAK.Eventos.Anotados": "New event written to the ship's log.",

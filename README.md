@@ -6,6 +6,8 @@
 
 > Fork colaborativo de [EmptyEpsilon](https://github.com/daid/EmptyEpsilon) para juego, experimentación y desarrollo cooperativo entre personas y agentes de IA.
 
+[![CI/CD](https://github.com/VaroTv7/espaciokooplagunak/actions/workflows/cicd.yml/badge.svg)](https://github.com/VaroTv7/espaciokooplagunak/actions/workflows/cicd.yml)
+[![CodeQL](https://github.com/VaroTv7/espaciokooplagunak/actions/workflows/codeql.yml/badge.svg)](https://github.com/VaroTv7/espaciokooplagunak/actions/workflows/codeql.yml)
 [![Licencia: GPL-2.0](https://img.shields.io/badge/licencia-GPL--2.0-blue.svg)](LICENSE)
 [![Base upstream](https://img.shields.io/badge/upstream-EmptyEpsilon-informational.svg)](https://github.com/daid/EmptyEpsilon)
 [![Docker](https://img.shields.io/badge/docker-servidor%20%2B%20puente-2496ed.svg?logo=docker&logoColor=white)](docker/README.md)
@@ -26,9 +28,9 @@ seguro y módulo Foundry en desarrollo. Las fases 0, 1 y 2 están completadas.
 | Normas de colaboración | Hecho | [`CONTRIBUTING.md`](CONTRIBUTING.md) y [`AGENTS.md`](AGENTS.md) |
 | Compilación reproducible | Verificada en Linux | Nativa ([`docs/BUILDING.md`](docs/BUILDING.md)) y en imagen Docker (SeriousProton fijado por commit) |
 | Ejecución con Docker | Verificada en local | Servidor headless + puente vía compose ([`docker/README.md`](docker/README.md)) |
-| Integración con Foundry VTT | Vertical en desarrollo | Puente v0 + módulo GM + llegada deduplicada en Journal ([`docs/FOUNDRY.md`](docs/FOUNDRY.md)) |
+| Integración con Foundry VTT | Vertical en desarrollo | Puente v0 con órdenes de lista blanca + módulo GM con estado, destino/ETA, mapa vivo, pausa/reanudación y llegada deduplicada en Journal ([`docs/FOUNDRY.md`](docs/FOUNDRY.md)) |
 | Cambios jugables propios | Primera iteración disponible | «Lagunak: Primera guardia» (`scenario_90`) |
-| Lanzamientos propios | No disponibles | Se crearán solo tras validar compilación y pruebas |
+| Lanzamientos propios | Automatización lista, sin lanzamiento aún | `docker-publish.yml` publica en GHCR con cada tag `v*`; falta el primer tag tras validar una sesión real |
 
 ## Qué es
 
@@ -70,7 +72,8 @@ Características propias integradas y verificadas:
 - escenario cooperativo «Lagunak: Primera guardia»;
 - identidad visual del fork y localización Español (España);
 - servidor headless y puente seguro reproducibles;
-- módulo Foundry para lectura del estado y bitácora del GM.
+- módulo Foundry para el GM: estado en vivo, destino y ETA, mapa vivo,
+  pausa/reanudación de la simulación y bitácora deduplicada;
 - primera fase del editor integrado de campañas, mapas, personajes y naves,
   con intercambio JSON individual desde Game Master
   ([guía](docs/CONTENT_EDITOR.md)).
@@ -127,11 +130,14 @@ Hitos verticales:
 - [x] Destino y ETA legibles en `/v1/state` y en la ventana Foundry (#32).
 - [x] Pausa/reanudación del GM de extremo a extremo (#34); factor temporal pendiente por falta de API.
 
-- [ ] Crear un módulo de Foundry VTT para el director de juego y la tripulación.
+- [ ] Crear un módulo de Foundry VTT para el director de juego y la tripulación
+      (la parte del GM está disponible; los puestos de la tripulación, en curso en #162).
 - [ ] Representar trayectos en tiempo real, con pausa y aceleración controladas por el director de juego.
 - [x] Sincronizar mapa, posición, rumbo, velocidad, destino y tiempo estimado de llegada
       (#33, #69 y #73).
-- [ ] Gestionar motores, combustible o energía, temperatura, daños, reparaciones y recursos de la nave.
+- [ ] Gestionar motores, combustible o energía, temperatura, daños, reparaciones y recursos de la nave
+      (el puente ya autoriza impulso, warp, rumbo, escudos, energía por sistema y averías
+      —decisión del issue #80—; falta la superficie por puesto en Foundry).
 - [ ] Modelar puestos, permisos, turnos y acciones de la tripulación.
 - [ ] Permitir al director de juego introducir encuentros, anomalías, averías y cambios narrativos.
 - [ ] Enviar a Foundry eventos y resultados normalizados para diarios, escenas y fichas.
@@ -152,7 +158,8 @@ Diseño inicial: [`docs/FOUNDRY.md`](docs/FOUNDRY.md).
 
 ### Fase 5 — Distribución mantenible
 
-- [ ] Automatizar artefactos reproducibles para plataformas validadas.
+- [ ] Automatizar artefactos reproducibles para plataformas validadas
+      (las imágenes Docker ya se publican en GHCR por tag `v*`; faltan artefactos nativos).
 - [ ] Publicar notas de versión que separen cambios propios y de upstream.
 - [ ] Establecer una cadencia segura de sincronización con EmptyEpsilon.
 

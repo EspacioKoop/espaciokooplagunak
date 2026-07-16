@@ -1,8 +1,5 @@
 # Revisores por defecto de todos los PR.
-# El último patrón que coincide gana.
+# Dirección compartida: no hay territorios asignados; ambos mantenedores
+# trabajan y revisan cualquier área.
 
 * @VaroTv7 @eGurucharri
-
-# Áreas con responsable principal
-/foundry-module/ @eGurucharri
-/bridge/ @eGurucharri

@@ -39,7 +39,10 @@ import {
   componerFrame,
   crearCampoEstrellas,
   debeDibujar,
+  firmaEstructuralContactos,
   leyendaContactos,
+  normalizarContactosMapa,
+  normalizarPosicionMapa,
   prepararDetalleContacto,
   rotarMuestras,
 } from "./ventana-nave.mjs";
@@ -51,7 +54,7 @@ const BACKOFF_MAX_MS = 60000;
 // Mapa vivo: mismo radio que el Lua fijo de /v1/contacts en el puente, fps del
 // pintor y semilla fija del campo de estrellas ("LAG" — mismo cielo siempre).
 const MAPA_RADIO_MUNDO = 30000;
-const MAPA_FPS = 30;
+const MAPA_FPS = 60;
 const MAPA_SEMILLA = 0x4c4147;
 
 registerStationFeature(MODULE_ID);
@@ -739,9 +742,9 @@ function crearClaseV1() {
 
 /* ================================================================== */
 /* Mapa vivo (ApplicationV2, v12+). Ventana solo-vista: starfield en   */
-/* parallax + blips de contactos de /v1/contacts, con el movimiento    */
-/* propio tweeneado entre las dos últimas muestras confirmadas del     */
-/* puente (nunca extrapola: el mapa es una vista, no un simulador).    */
+/* parallax + blips de contactos de /v1/contacts, con nave, rumbo y    */
+/* contactos inequívocos tweeneados entre las dos últimas muestras     */
+/* confirmadas (nunca extrapola: es una vista, no un simulador).       */
 /* Sondeo de datos cada pollSeconds con backoff; dibujo por rAF a      */
 /* MAPA_FPS. NO llama a processBridgeEvents: el diario es asunto de la */
 /* ventana de estado (evita anotaciones duplicadas). Misma disciplina  */
@@ -798,6 +801,9 @@ function crearClaseMapaV2() {
       // reabre) con esta petición en vuelo, la respuesta tardía no puede
       // tocar estado, renderizar ni rearmar el polling.
       const generacion = this.#generacion;
+      const firmaAnterior = firmaEstructuralContactos(this.contactos);
+      const conexionAnterior = this.conexion;
+      const detalleErrorAnterior = this.detalleError;
       let rotadas = null;
       let contactos = null;
       let destino = null;
@@ -805,19 +811,29 @@ function crearClaseMapaV2() {
       try {
         const cliente = this.#cliente();
         await cliente.healthz();
-        const estado = await cliente.state();
+        // Estado y contactos se solicitan juntos para reducir el desfase
+        // temporal entre ambas fotografías confirmadas del simulador.
+        const resultados = await Promise.allSettled([
+          cliente.state(),
+          cliente.contacts(),
+        ]);
+        const rechazado = resultados.find((resultado) => resultado.status === "rejected");
+        if (rechazado) throw rechazado.reason;
+        const [estado, respuestaContactos] = resultados.map((resultado) => resultado.value);
         const nave = estado?.ship ?? null;
+        contactos = normalizarContactosMapa(respuestaContactos?.contacts ?? []);
         destino = nave?.destination ?? null;
         if (nave) {
-          // Ventana de reproducción: rotarMuestras ancla el tween hacia
-          // delante (los frames van DETRÁS de la recepción — sin esto, t
-          // quedaría clavado en 1 y no habría frames intermedios).
+          const centro = normalizarPosicionMapa(nave.position);
+          if (!centro) throw new Error("Posición de nave no finita");
+          // Ventana de reproducción: nave, rumbo y contactos comparten los
+          // mismos timestamps y avanzan juntos entre sondeos confirmados.
           rotadas = rotarMuestras(this.#muestraActual, {
-            centro: { x: nave.position?.x ?? 0, y: nave.position?.y ?? 0 },
-            rumboDeg: nave.heading ?? 0,
+            centro,
+            rumboDeg: Number.isFinite(nave.heading) ? nave.heading : 0,
+            contactos,
           }, Date.now());
         }
-        contactos = (await cliente.contacts())?.contacts ?? [];
       } catch (err) {
         fallo = err;
       }
@@ -837,7 +853,14 @@ function crearClaseMapaV2() {
         this.detalleError = fallo instanceof BridgeError ? fallo.message : game.i18n.localize("LAGUNAK.Errores.Desconocido");
         this.#fallosSeguidos = Math.min(this.#fallosSeguidos + 1, 10);
       }
-      if (this.rendered) this.render();
+      const cambioVisible = conexionAnterior !== this.conexion
+        || detalleErrorAnterior !== this.detalleError
+        || firmaAnterior !== firmaEstructuralContactos(this.contactos);
+      // Una posición nueva alimenta el rAF sin sustituir el canvas. Solo los
+      // cambios estructurales o de conexión necesitan reconstruir la ventana;
+      // las cifras confirmadas se actualizan sobre el DOM estable.
+      if (this.rendered && cambioVisible) this.render();
+      else if (this.rendered) this.#actualizarTelemetriaDom();
       this.#programar();
     }
 
@@ -846,22 +869,58 @@ function crearClaseMapaV2() {
       this.#timer = setTimeout(() => this.#sondear(), this.#intervaloMs());
     }
 
-    #animar() {
+    #actualizarTelemetriaDom() {
+      const raiz = this.element;
+      const centro = this.#muestraActual?.centro ?? null;
+      if (!raiz?.querySelectorAll || !centro) return;
+      for (const boton of raiz.querySelectorAll("[data-contacto]")) {
+        const indice = Number.parseInt(boton.dataset.contactoIndice ?? "", 10);
+        const contacto = Number.isInteger(indice) ? this.contactos[indice] : null;
+        if (!contacto) continue;
+        const detalle = prepararDetalleContacto(contacto, centro);
+        const distancia = boton.querySelector?.(".lagunak-mapa-distancia");
+        if (distancia) {
+          distancia.textContent = game.i18n.format("LAGUNAK.EstadoNave.DistanciaUnidades", {
+            distance: Math.round(detalle.distancia),
+          });
+        }
+        const fuera = boton.querySelector?.("[data-lagunak-fuera]");
+        if (fuera) fuera.hidden = detalle.distancia <= MAPA_RADIO_MUNDO;
+      }
+      const seleccionado = this.contactos.find((c) => (c.callsign ?? "?") === this.seleccion);
+      if (!seleccionado) return;
+      const detalle = prepararDetalleContacto(seleccionado, centro);
+      const distancia = raiz.querySelector("[data-lagunak-detalle-distancia]");
+      const rumbo = raiz.querySelector("[data-lagunak-detalle-rumbo]");
+      if (distancia) {
+        distancia.textContent = game.i18n.format("LAGUNAK.EstadoNave.DistanciaUnidades", {
+          distance: Math.round(detalle.distancia),
+        });
+      }
+      if (rumbo) {
+        rumbo.textContent = game.i18n.format("LAGUNAK.MapaVivo.RumboGrados", {
+          rumbo: Math.round(detalle.rumboDeg),
+        });
+      }
+    }
+
+    #animar(rafMs = null) {
       // Sin rAF global (p. ej. arnés de pruebas) la animación se auto-inhibe;
       // el mapa sigue funcionando a golpe de re-render del sondeo.
       if (!this.rendered || typeof requestAnimationFrame !== "function") {
         this.#rafId = null;
         return;
       }
-      this.#rafId = requestAnimationFrame(() => this.#animar());
+      this.#rafId = requestAnimationFrame((siguienteRafMs) => this.#animar(siguienteRafMs));
+      const relojRaf = Number.isFinite(rafMs) ? rafMs : (globalThis.performance?.now?.() ?? 0);
       const ahora = Date.now();
-      if (!debeDibujar(this.#ultimoDibujoMs, ahora, MAPA_FPS)) return;
+      if (!debeDibujar(this.#ultimoDibujoMs, relojRaf, MAPA_FPS)) return;
       // El re-render del sondeo reemplaza el DOM del part (canvas incluido):
       // el lienzo se busca en cada tick, nunca se cachea.
       const canvas = this.element?.querySelector?.(".lagunak-mapa-canvas");
       const ctx = canvas?.getContext?.("2d");
       if (!ctx) return;
-      this.#ultimoDibujoMs = ahora;
+      this.#ultimoDibujoMs = relojRaf;
       const frame = componerFrame({
         muestraPrev: this.#muestraPrev,
         muestraActual: this.#muestraActual,
@@ -882,8 +941,8 @@ function crearClaseMapaV2() {
       this.#animar();
     }
 
-    /* Selección de contacto (issue #126): la lista re-renderiza en cada
-     * sondeo, así que los listeners se re-atan tras cada render. Clic en el
+    /* Selección de contacto (issue #126): un cambio estructural puede sustituir
+     * la lista, así que los listeners se re-atan tras cada render. Clic en el
      * contacto ya seleccionado lo deselecciona. */
     _onRender(context, options) {
       super._onRender?.(context, options);
@@ -1026,6 +1085,9 @@ function crearClaseMapaV1() {
       // captura al entrar y una respuesta tardía tras cerrar muere sin tocar
       // estado, renderizar ni rearmar el polling.
       const generacion = this.#generacion;
+      const firmaAnterior = firmaEstructuralContactos(this.contactos);
+      const conexionAnterior = this.conexion;
+      const detalleErrorAnterior = this.detalleError;
       let rotadas = null;
       let contactos = null;
       let destino = null;
@@ -1033,18 +1095,27 @@ function crearClaseMapaV1() {
       try {
         const cliente = this.#cliente();
         await cliente.healthz();
-        const estado = await cliente.state();
+        const resultados = await Promise.allSettled([
+          cliente.state(),
+          cliente.contacts(),
+        ]);
+        const rechazado = resultados.find((resultado) => resultado.status === "rejected");
+        if (rechazado) throw rechazado.reason;
+        const [estado, respuestaContactos] = resultados.map((resultado) => resultado.value);
         const nave = estado?.ship ?? null;
+        contactos = normalizarContactosMapa(respuestaContactos?.contacts ?? []);
         destino = nave?.destination ?? null;
         if (nave) {
-          // Ventana de reproducción (ver rotarMuestras): el tween se ancla
-          // hacia delante para que existan frames intermedios reales.
+          const centro = normalizarPosicionMapa(nave.position);
+          if (!centro) throw new Error("Posición de nave no finita");
+          // Ventana de reproducción equivalente a V2: centro, rumbo y
+          // contactos comparten la misma ventana temporal confirmada.
           rotadas = rotarMuestras(this.#muestraActual, {
-            centro: { x: nave.position?.x ?? 0, y: nave.position?.y ?? 0 },
-            rumboDeg: nave.heading ?? 0,
+            centro,
+            rumboDeg: Number.isFinite(nave.heading) ? nave.heading : 0,
+            contactos,
           }, Date.now());
         }
-        contactos = (await cliente.contacts())?.contacts ?? [];
       } catch (err) {
         fallo = err;
       }
@@ -1064,23 +1135,63 @@ function crearClaseMapaV1() {
         this.detalleError = fallo instanceof BridgeError ? fallo.message : game.i18n.localize("LAGUNAK.Errores.Desconocido");
         this.#fallosSeguidos = Math.min(this.#fallosSeguidos + 1, 10);
       }
-      if (this.rendered) this.render(false);
+      const cambioVisible = conexionAnterior !== this.conexion
+        || detalleErrorAnterior !== this.detalleError
+        || firmaAnterior !== firmaEstructuralContactos(this.contactos);
+      if (this.rendered && cambioVisible) this.render(false);
+      else if (this.rendered) this.#actualizarTelemetriaDom();
       clearTimeout(this.#timer);
       this.#timer = setTimeout(() => this.#sondear(), this.#intervaloMs());
     }
 
-    #animar() {
+    #actualizarTelemetriaDom() {
+      const raiz = this.element?.[0];
+      const centro = this.#muestraActual?.centro ?? null;
+      if (!raiz?.querySelectorAll || !centro) return;
+      for (const boton of raiz.querySelectorAll("[data-contacto]")) {
+        const indice = Number.parseInt(boton.dataset.contactoIndice ?? "", 10);
+        const contacto = Number.isInteger(indice) ? this.contactos[indice] : null;
+        if (!contacto) continue;
+        const detalle = prepararDetalleContacto(contacto, centro);
+        const distancia = boton.querySelector?.(".lagunak-mapa-distancia");
+        if (distancia) {
+          distancia.textContent = game.i18n.format("LAGUNAK.EstadoNave.DistanciaUnidades", {
+            distance: Math.round(detalle.distancia),
+          });
+        }
+        const fuera = boton.querySelector?.("[data-lagunak-fuera]");
+        if (fuera) fuera.hidden = detalle.distancia <= MAPA_RADIO_MUNDO;
+      }
+      const seleccionado = this.contactos.find((c) => (c.callsign ?? "?") === this.seleccion);
+      if (!seleccionado) return;
+      const detalle = prepararDetalleContacto(seleccionado, centro);
+      const distancia = raiz.querySelector("[data-lagunak-detalle-distancia]");
+      const rumbo = raiz.querySelector("[data-lagunak-detalle-rumbo]");
+      if (distancia) {
+        distancia.textContent = game.i18n.format("LAGUNAK.EstadoNave.DistanciaUnidades", {
+          distance: Math.round(detalle.distancia),
+        });
+      }
+      if (rumbo) {
+        rumbo.textContent = game.i18n.format("LAGUNAK.MapaVivo.RumboGrados", {
+          rumbo: Math.round(detalle.rumboDeg),
+        });
+      }
+    }
+
+    #animar(rafMs = null) {
       if (!this.rendered || typeof requestAnimationFrame !== "function") {
         this.#rafId = null;
         return;
       }
-      this.#rafId = requestAnimationFrame(() => this.#animar());
+      this.#rafId = requestAnimationFrame((siguienteRafMs) => this.#animar(siguienteRafMs));
+      const relojRaf = Number.isFinite(rafMs) ? rafMs : (globalThis.performance?.now?.() ?? 0);
       const ahora = Date.now();
-      if (!debeDibujar(this.#ultimoDibujoMs, ahora, MAPA_FPS)) return;
+      if (!debeDibujar(this.#ultimoDibujoMs, relojRaf, MAPA_FPS)) return;
       const canvas = this.element?.[0]?.querySelector?.(".lagunak-mapa-canvas");
       const ctx = canvas?.getContext?.("2d");
       if (!ctx) return;
-      this.#ultimoDibujoMs = ahora;
+      this.#ultimoDibujoMs = relojRaf;
       const frame = componerFrame({
         muestraPrev: this.#muestraPrev,
         muestraActual: this.#muestraActual,

@@ -4,13 +4,18 @@ import test from "node:test";
 import {
   COLOR_JUGADOR,
   COLOR_NEUTRO,
+  claveContacto,
   colorFaccion,
   componerFrame,
   crearCampoEstrellas,
   debeDibujar,
+  firmaEstructuralContactos,
   interpolarAngulo,
   interpolarCentro,
+  interpolarContactos,
   leyendaContactos,
+  normalizarContactosMapa,
+  normalizarPosicionMapa,
   offsetParallax,
   prepararDetalleContacto,
   proyectarContactos,
@@ -135,11 +140,110 @@ test("interpolarAngulo va por el camino corto y normaliza a [0,360)", () => {
   assert.ok(v >= 0 && v < 360);
 });
 
+test("interpolarContactos mueve identidades únicas y conserva la muestra actual", () => {
+  const prev = [
+    { callsign: "Itsaso 1", is_player: true, position: { x: 0, y: 0 } },
+    { callsign: "K-7", faction: "Kraylor", type: "CpuShip", position: { x: 100, y: 200 } },
+  ];
+  const actual = [
+    { callsign: "Itsaso 1", is_player: true, position: { x: 20, y: 40 } },
+    { callsign: "K-7", faction: "Kraylor", type: "CpuShip", position: { x: 300, y: 600 } },
+  ];
+  const mitad = interpolarContactos(prev, actual, 0.5);
+  assert.deepEqual(mitad.map((c) => c.position), [
+    { x: 10, y: 20 },
+    { x: 200, y: 400 },
+  ]);
+  assert.equal(mitad[1].faction, "Kraylor");
+  assert.equal(claveContacto(actual[0]), "player");
+});
+
+test("interpolarContactos no mezcla anónimos/duplicados y elimina desaparecidos", () => {
+  const prev = [
+    { callsign: "?", position: { x: 10, y: 10 } },
+    { callsign: "DUP", faction: null, position: { x: 20, y: 20 } },
+    { callsign: "DUP", faction: null, position: { x: 30, y: 30 } },
+    { callsign: "YA-NO", position: { x: 40, y: 40 } },
+  ];
+  const actual = [
+    { callsign: "?", position: { x: 100, y: 100 } },
+    { callsign: "DUP", faction: null, position: { x: 200, y: 200 } },
+    { callsign: "DUP", faction: null, position: { x: 300, y: 300 } },
+    { callsign: "NUEVO", position: { x: Number.NaN, y: 50 } },
+  ];
+  const salida = interpolarContactos(prev, actual, 0.5);
+  assert.deepEqual(salida.map((c) => c.position), [
+    { x: 100, y: 100 },
+    { x: 200, y: 200 },
+    { x: 300, y: 300 },
+  ]);
+  assert.equal(salida.some((c) => c.callsign === "YA-NO"), false);
+  assert.equal(salida.some((c) => c.callsign === "NUEVO"), false);
+  assert.equal(claveContacto(actual[0]), null);
+});
+
+test("la frontera numérica descarta coordenadas inválidas sin inventar (0,0)", () => {
+  assert.deepEqual(normalizarPosicionMapa({ x: 1, y: -2 }), { x: 1, y: -2 });
+  assert.equal(normalizarPosicionMapa({ x: Number.NaN, y: 2 }), null);
+  assert.equal(normalizarPosicionMapa({ x: 1, y: Infinity }), null);
+  const contactos = normalizarContactosMapa([
+    { callsign: "VALIDO", position: { x: 1, y: 2 } },
+    { callsign: "NAN", position: { x: Number.NaN, y: 2 } },
+    { callsign: "TEXTO", position: { x: "1", y: 2 } },
+  ]);
+  assert.deepEqual(contactos.map((c) => c.callsign), ["VALIDO"]);
+  const proyectados = proyectarContactos({ contacts: contactos, centro: { x: 0, y: 0 } });
+  assert.equal(proyectados.length, 1);
+  assert.ok(proyectados.every((c) => [c.x, c.y, c.distancia].every(Number.isFinite)));
+  const detalle = prepararDetalleContacto(
+    { callsign: "NAN", position: { x: Number.NaN, y: 2 } },
+    { x: 0, y: 0 },
+  );
+  assert.equal(detalle.distancia, null);
+  assert.equal(detalle.rumboDeg, null);
+});
+
+test("firmaEstructuralContactos ignora movimiento y detecta cambios visibles", () => {
+  const base = [{ callsign: "K-7", faction: "Kraylor", type: "CpuShip", position: { x: 0, y: 0 } }];
+  const movido = [{ ...base[0], position: { x: 999, y: -400 } }];
+  const cambiado = [{ ...base[0], type: "Station", position: { x: 999, y: -400 } }];
+  assert.equal(firmaEstructuralContactos(base), firmaEstructuralContactos(movido));
+  assert.notEqual(firmaEstructuralContactos(base), firmaEstructuralContactos(cambiado));
+});
+
+test("rotarMuestras y componerFrame producen blips intermedios de contactos", () => {
+  const c1 = [{ callsign: "K-7", faction: "Kraylor", position: { x: 0, y: 0 } }];
+  const c2 = [{ callsign: "K-7", faction: "Kraylor", position: { x: 100, y: 0 } }];
+  const r1 = rotarMuestras(null, { centro: { x: 0, y: 0 }, rumboDeg: 0, contactos: c1 }, 1000);
+  const r2 = rotarMuestras(r1.actual, { centro: { x: 0, y: 0 }, rumboDeg: 0, contactos: c2 }, 3000);
+  const frame = componerFrame({
+    muestraPrev: r2.prev,
+    muestraActual: r2.actual,
+    contactos: c2,
+    campo: [],
+    tMs: 4000,
+  });
+  assert.equal(frame.blips.length, 1);
+  assert.equal(frame.blips[0].distancia, 50);
+});
+
 test("debeDibujar respeta fpsMax y el primer frame siempre pinta", () => {
   assert.equal(debeDibujar(null, 123, 30), true);
   // A 30 fps el intervalo es ~33.3 ms.
   assert.equal(debeDibujar(1000, 1010, 30), false);
   assert.equal(debeDibujar(1000, 1040, 30), true);
+});
+
+test("debeDibujar conserva 60 FPS con timestamps fraccionales de rAF", () => {
+  let ultimo = null;
+  let dibujos = 0;
+  for (let tick = 0; tick < 600; tick += 1) {
+    const ahora = tick * (1000 / 60);
+    if (!debeDibujar(ultimo, ahora, 60)) continue;
+    ultimo = ahora;
+    dibujos += 1;
+  }
+  assert.equal(dibujos, 600);
 });
 
 test("componerFrame sin muestra devuelve sinDatos y nada que pintar", () => {

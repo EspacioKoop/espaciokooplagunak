@@ -39,6 +39,14 @@ para tu SO. Después ofrece un menú:
    servidor, token) con validación, escribiendo en `docker/.env` sin perder
    comentarios ni orden. Incluye regenerar el token.
 5. **Diagnóstico de requisitos** — enumera lo que falta para cada vía.
+6. **Copiar el token del puente** — copia el `BRIDGE_TOKEN` de `docker/.env`
+   al portapapeles del sistema (`wl-copy`, `xclip`, `xsel`, `pbcopy` o
+   `clip.exe`) para pegarlo en los ajustes del módulo de Foundry sin abrir el
+   archivo a mano. Solo si no hay herramienta de portapapeles ofrece mostrarlo
+   **una** vez en pantalla, con confirmación explícita. Tras pegarlo, el botón
+   **Probar conexión con el puente** de los controles de escena del GM en
+   Foundry verifica el resultado (ver
+   [`foundry-module/README.md`](../foundry-module/README.md)).
 
 ## Seguridad
 
@@ -65,6 +73,7 @@ Coherente con [`AGENTS.md`](../AGENTS.md) y [`SECURITY.md`](../SECURITY.md):
 | `python3 tools/instalar.py --diagnostico` | Requisitos de cada vía. |
 | `python3 tools/instalar.py --generar-token` | Imprime un token Bearer nuevo **completo** por stdout (única salida que no enmascara el token). |
 | `python3 tools/instalar.py --imprimir-config` | `docker/.env` con el token oculto. |
+| `python3 tools/instalar.py --copiar-token` | Copia el `BRIDGE_TOKEN` al portapapeles (nunca lo imprime; sin herramienta de portapapeles falla y remite al menú). |
 | `python3 tools/instalar.py --set CLAVE=VALOR …` | Aplica cambios a `docker/.env` (lo crea si falta). |
 
 Ejemplo:

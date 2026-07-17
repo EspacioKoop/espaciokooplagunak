@@ -42,6 +42,21 @@ En *Configuración → Ajustes del módulo*:
 | Token del puente | el `BRIDGE_TOKEN` de `docker/.env` |
 | Intervalo de sondeo | 1–30 s (2 s por defecto) |
 
+Flujo recomendado para el token (issue #183): **copiar → pegar → validar**.
+
+1. **Copiar**: `python3 tools/instalar.py --copiar-token` (o la opción «Copiar
+   el token del puente» del menú) lo deja en el portapapeles sin mostrarlo.
+2. **Pegar**: en *Configuración → Ajustes del módulo → Token del puente*.
+3. **Validar**: el botón **Probar conexión con el puente** (grupo de controles
+   de escena de Espaciokoop Lagunak, solo GM) comprueba `/healthz` y después
+   `/v1/state`, y distingue en una notificación: todo correcto, token ausente
+   o rechazado, o puente inaccesible (pila caída, URL o CORS). El token nunca
+   aparece en el mensaje.
+
+El emparejamiento automático o remoto del token queda **fuera de alcance**
+mientras el puente escuche solo en `127.0.0.1`; ampliar `BRIDGE_BIND` es una
+decisión explícita con revisión ADR (ver `docker/compose.yaml`).
+
 La configuración del contenedor debe permitir el origen **exacto** que aparece
 en la barra del navegador (esquema, host y puerto, sin barra final), no
 necesariamente la URL del puente. Por ejemplo:

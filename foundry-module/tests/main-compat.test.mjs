@@ -116,7 +116,11 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
   const grupo = controls.find((control) => control.name === "lagunak");
   assert.ok(grupo);
   assert.equal(grupo.icon, "fa-solid fa-shuttle-space");
-  assert.deepEqual(grupo.tools.map(({ name }) => name), ["lagunak-estado", "lagunak-mapa"]);
+  assert.deepEqual(grupo.tools.map(({ name }) => name), [
+    "lagunak-estado",
+    "lagunak-mapa",
+    "lagunak-diagnostico",
+  ]);
   toolByName(controls, "lagunak-estado").onClick();
 
   assert.equal(instances.length, 1);

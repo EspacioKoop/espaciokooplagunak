@@ -26,6 +26,7 @@
  */
 
 import { BridgeClient, BridgeError } from "./bridge-client.mjs";
+import { probarConexion } from "./diagnostico-conexion.mjs";
 import { processBridgeEvents } from "./event-journal.mjs";
 import { dibujarFrame } from "./mapa-render.mjs";
 import { prepararVistaPausa } from "./pausa-control.mjs";
@@ -150,6 +151,13 @@ Hooks.on("getSceneControlButtons", (controls) => {
           button: true,
           onClick: () => abrirMapaVivo(),
         },
+        {
+          name: "lagunak-diagnostico",
+          title: "LAGUNAK.Controles.ProbarConexion",
+          icon: "fa-solid fa-stethoscope",
+          button: true,
+          onClick: () => diagnosticarConexion(),
+        },
       ],
     });
     return;
@@ -185,10 +193,39 @@ Hooks.on("getSceneControlButtons", (controls) => {
           onClick: () => abrirMapaVivo(),
           onChange: () => abrirMapaVivo(),
         },
+        "lagunak-diagnostico": {
+          name: "lagunak-diagnostico",
+          title: "LAGUNAK.Controles.ProbarConexion",
+          icon: "fa-solid fa-stethoscope",
+          order: 2,
+          button: true,
+          onClick: () => diagnosticarConexion(),
+          onChange: () => diagnosticarConexion(),
+        },
       },
     };
   }
 });
+
+/* Diagnóstico de conexión (issue #183): comprueba /healthz y después
+ * /v1/state con el token configurado, y comunica el resultado con una
+ * notificación en el lenguaje del GM. Nunca muestra el token. */
+let diagnosticoEnCurso = false;
+async function diagnosticarConexion() {
+  if (!game.user?.isGM || diagnosticoEnCurso) return;
+  diagnosticoEnCurso = true;
+  try {
+    const res = await probarConexion({
+      url: game.settings.get(MODULE_ID, "bridgeUrl"),
+      token: game.settings.get(MODULE_ID, "bridgeToken"),
+    });
+    const mensaje = game.i18n.localize(res.claveI18n);
+    if (res.exito) ui.notifications.info(mensaje);
+    else ui.notifications.warn(mensaje);
+  } finally {
+    diagnosticoEnCurso = false;
+  }
+}
 
 /* La pausa de Foundry (game.paused) se muestra como dato informativo en la
  * ventana de estado; este hook solo refresca la vista abierta. NO se propaga

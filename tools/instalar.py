@@ -272,6 +272,46 @@ def _ocultar_token(valor: str) -> str:
     return f"{valor[:4]}…{valor[-4:]} ({len(valor)} car.)"
 
 
+# Herramientas de portapapeles por prioridad. El token viaja SIEMPRE por
+# stdin, nunca como argumento (argv es visible en la lista de procesos).
+_PORTAPAPELES = (
+    ("wl-copy", ["wl-copy"]),
+    ("xclip", ["xclip", "-selection", "clipboard"]),
+    ("xsel", ["xsel", "--clipboard", "--input"]),
+    ("pbcopy", ["pbcopy"]),
+    ("clip.exe", ["clip.exe"]),
+)
+
+
+def leer_token(destino: Path | None = None) -> str:
+    """BRIDGE_TOKEN actual de ``docker/.env``; cadena vacía si no hay."""
+    if destino is None:
+        destino = ENV_DESTINO
+    if not destino.exists():
+        return ""
+    return parse_env(destino.read_text(encoding="utf-8")).get("BRIDGE_TOKEN", "")
+
+
+def copiar_al_portapapeles(texto: str, which=shutil.which, run=subprocess.run) -> str | None:
+    """Copia ``texto`` al portapapeles del sistema.
+
+    Devuelve el nombre de la herramienta usada, o ``None`` si ninguna está
+    disponible o todas fallaron. Nunca lanza ni imprime el texto.
+    """
+    for nombre, comando in _PORTAPAPELES:
+        if not which(comando[0]):
+            continue
+        try:
+            proceso = run(comando, input=texto.encode("utf-8"),
+                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                          timeout=10, check=False)
+        except (OSError, subprocess.TimeoutExpired):
+            continue
+        if proceso.returncode == 0:
+            return nombre
+    return None
+
+
 # --- Validación de opciones --------------------------------------------------
 
 
@@ -582,6 +622,33 @@ def _accion_foundry(info: dict) -> None:
     print("  Reinicia Foundry, activa «Espaciokoop Lagunak — Puente de mando» y entra como GM.")
 
 
+def _accion_copiar_token() -> None:
+    """Entrega el token al GM para pegarlo en los ajustes del módulo (#183).
+
+    Primero intenta el portapapeles del sistema; solo si no hay herramienta
+    disponible ofrece mostrarlo UNA vez en pantalla, con confirmación
+    explícita. El token no se guarda en ningún sitio nuevo.
+    """
+    _titulo("Copiar el token del puente (para Foundry)")
+    token = leer_token()
+    if not token:
+        print("  docker/.env no define BRIDGE_TOKEN todavía. Usa primero la opción 1")
+        print("  (Instalar con Docker) o «Modificar opciones» para crearlo.")
+        return
+    herramienta = copiar_al_portapapeles(token)
+    if herramienta:
+        print(f"  Token {_ocultar_token(token)} copiado al portapapeles ({herramienta}).")
+        print("  Pégalo en Foundry: Configuración → Ajustes del módulo → «Token del puente».")
+        print("  Después pulsa «Probar conexión con el puente» en los controles de escena del GM.")
+        return
+    print(_c("  No hay herramienta de portapapeles (wl-copy, xclip, xsel, pbcopy).", "33"))
+    if _confirmar("¿Mostrar el token UNA vez en pantalla para copiarlo a mano?", defecto=False):
+        print(f"  {token}")
+        print("  Pégalo en los ajustes del módulo y limpia el scrollback si compartes pantalla.")
+    else:
+        print("  No se ha mostrado; instala una herramienta de portapapeles y repite.")
+
+
 def _accion_opciones() -> None:
     _titulo("Modificar opciones (docker/.env)")
     if not ENV_DESTINO.exists():
@@ -631,6 +698,7 @@ def menu_interactivo() -> int:
         print("  3. Instalar el módulo de Foundry VTT")
         print("  4. Modificar opciones (config del puente)")
         print("  5. Diagnóstico de requisitos")
+        print("  6. Copiar el token del puente (para Foundry)")
         print("  0. Salir")
         eleccion = _preguntar("Elige")
         if eleccion in ("0", "", "q"):
@@ -641,6 +709,7 @@ def menu_interactivo() -> int:
             "3": lambda: _accion_foundry(info),
             "4": _accion_opciones,
             "5": lambda: mostrar_diagnostico(),
+            "6": _accion_copiar_token,
         }.get(eleccion)
         if accion is None:
             print("  Opción no válida.")
@@ -687,6 +756,8 @@ def construir_parser() -> argparse.ArgumentParser:
                         help="Muestra los requisitos de cada vía de instalación.")
     parser.add_argument("--generar-token", action="store_true",
                         help="Imprime un token Bearer nuevo y termina.")
+    parser.add_argument("--copiar-token", action="store_true",
+                        help="Copia el BRIDGE_TOKEN de docker/.env al portapapeles y termina.")
     parser.add_argument("--imprimir-config", action="store_true",
                         help="Muestra docker/.env con el token oculto.")
     parser.add_argument("--set", nargs="+", metavar="CLAVE=VALOR", default=None,
@@ -705,6 +776,19 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if args.diagnostico:
         mostrar_diagnostico()
+        return 0
+    if args.copiar_token:
+        token = leer_token()
+        if not token:
+            print("docker/.env no define BRIDGE_TOKEN todavía. Ejecuta el asistente para crearlo.")
+            return 1
+        herramienta = copiar_al_portapapeles(token)
+        if herramienta is None:
+            print("Sin herramienta de portapapeles (wl-copy, xclip, xsel, pbcopy). "
+                  "Usa el menú interactivo para mostrarlo con confirmación.")
+            return 1
+        print(f"Token {_ocultar_token(token)} copiado al portapapeles ({herramienta}). "
+              "Pégalo en los ajustes del módulo de Foundry.")
         return 0
     if args.set is not None:
         resultado = asegurar_env(_aplicar_set(args.set))

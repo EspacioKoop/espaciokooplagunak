@@ -337,6 +337,23 @@ class CliTests(unittest.TestCase):
 
 
 class CopiarTokenTests(unittest.TestCase):
+    def test_menu_edita_token_con_getpass_sin_mostrar_el_actual(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            env = Path(tmp) / ".env"
+            actual = "token-actual-no-visible"
+            env.write_text(f"BRIDGE_TOKEN={actual}\n", encoding="utf-8")
+            with mock.patch.object(instalar, "ENV_DESTINO", env), \
+                 mock.patch.object(instalar, "_preguntar", return_value="7") as preguntar, \
+                 mock.patch.object(instalar.getpass, "getpass", return_value="token-nuevo") as oculto, \
+                 mock.patch.object(instalar, "asegurar_env") as guardar, \
+                 contextlib.redirect_stdout(io.StringIO()) as salida:
+                instalar._accion_opciones()
+        oculto.assert_called_once()
+        self.assertNotIn(actual, oculto.call_args.args[0])
+        self.assertNotIn(actual, salida.getvalue())
+        self.assertTrue(all(actual not in str(call) for call in preguntar.call_args_list))
+        guardar.assert_called_once_with({"BRIDGE_TOKEN": "token-nuevo"})
+
     def test_leer_token_sin_env_devuelve_vacio(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             self.assertEqual(instalar.leer_token(Path(tmp) / ".env"), "")

@@ -416,6 +416,11 @@ GameMasterScreen::GameMasterScreen(RenderLayer* render_layer)
 // defined.
 GameMasterScreen::~GameMasterScreen()
 {
+    if (gameGlobalInfo)
+    {
+        gameGlobalInfo->on_gm_click = nullptr;
+        gameGlobalInfo->on_gm_preview_trace = std::nullopt;
+    }
     if (P<MouseRenderer> mouse_renderer = engine->getObject("mouseRenderer"))
     {
         mouse_renderer->setPrimary("cursors/mouse.png");

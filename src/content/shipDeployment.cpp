@@ -66,6 +66,9 @@ ShipDeploymentError buildShipDeploymentPlan(
         return ShipDeploymentError::InvalidResource;
     if (validateShipTemplateSelection(catalog, resource.primary) != ShipTemplateValidation::Available)
         return ShipDeploymentError::TemplateUnavailable;
+    const auto* template_entry = findShipTemplate(catalog, resource.primary);
+    if (!template_entry || template_entry->type != "playership")
+        return ShipDeploymentError::TemplateUnavailable;
     if (!contains(factions, resource.secondary))
         return ShipDeploymentError::FactionUnavailable;
     if (!std::isfinite(x) || !std::isfinite(y)

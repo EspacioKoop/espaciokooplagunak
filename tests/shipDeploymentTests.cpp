@@ -65,6 +65,19 @@ void testPlanValidation()
     expect(buildShipDeploymentPlan(resource, {}, factions, 0, 0, {}, true, changed_plan)
             == ShipDeploymentError::TemplateUnavailable,
         "missing template catalog fails before mutation");
+    auto non_player_catalog = catalog();
+    non_player_catalog[0].type = "ship";
+    expect(buildShipDeploymentPlan(resource, non_player_catalog, factions, 0, 0, {}, true, changed_plan)
+            == ShipDeploymentError::TemplateUnavailable,
+        "CPU ship templates cannot cross the player-ship factory boundary");
+    non_player_catalog[0].type = "station";
+    expect(buildShipDeploymentPlan(resource, non_player_catalog, factions, 0, 0, {}, true, changed_plan)
+            == ShipDeploymentError::TemplateUnavailable,
+        "station templates cannot cross the player-ship factory boundary");
+    non_player_catalog[0].type.clear();
+    expect(buildShipDeploymentPlan(resource, non_player_catalog, factions, 0, 0, {}, true, changed_plan)
+            == ShipDeploymentError::TemplateUnavailable,
+        "templates without a runtime type fail closed");
     expect(buildShipDeploymentPlan(resource, catalog(), {"Independent"}, 0, 0, {}, true, changed_plan)
             == ShipDeploymentError::FactionUnavailable,
         "unknown faction fails before mutation");

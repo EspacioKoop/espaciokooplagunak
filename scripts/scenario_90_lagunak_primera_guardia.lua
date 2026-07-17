@@ -166,6 +166,39 @@ function instalarControlesPruebaIndividual()
     return true
 end
 
+-- Encuentro inyectado por el GM via el puente (#117). Foundry decide el QUE
+-- (arquetipo de un catalogo cerrado); este escenario decide el COMO: posicion
+-- concreta, faccion, estado. El rumbo es una sugerencia gruesa relativa a la
+-- nave, nunca una coordenada — el escenario puede honrarlo laxamente.
+function lagunakSpawnEncounter(arquetipo, rumbo)
+    local nave = getPlayerShip(-1)
+    if nave == nil then
+        return false
+    end
+    if arquetipo ~= "derelict" then
+        return false
+    end
+
+    local desvios = { ahead = 0, starboard = 90, astern = 180, port = 270 }
+    local desvio = desvios[rumbo] or 0
+    -- A rango largo de sensores: visible en ciencia, sin caer encima.
+    local distancia = 15000 + math.random(-2000, 2000)
+    local angulo = math.rad(nave:getHeading() + desvio + math.random(-15, 15))
+    local x, y = nave:getPosition()
+
+    contadorEncuentros = (contadorEncuentros or 0) + 1
+    CpuShip()
+        :setTemplate("Flavia")
+        :setFaction("Independent")
+        :setCallSign(string.format("Hondar %d", contadorEncuentros))
+        :setPosition(x + math.sin(angulo) * distancia, y - math.cos(angulo) * distancia)
+        :setHullMax(50):setHull(15)
+        :setSystemHealth("impulse", -0.5)
+        :setSystemHealth("reactor", -0.25)
+        :orderIdle()
+    return true
+end
+
 function publicarEventoLlegada()
     local x, y = player:getPosition()
     marcadorEventoLlegada = Artifact()

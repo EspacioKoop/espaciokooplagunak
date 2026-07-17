@@ -214,3 +214,68 @@ def test_command_requiere_auth(client, juego):
     r = client.post(CMD, json={"op": "set_impulse", "value": 0.5})
     assert r.status_code == 401
     assert not juego.llamadas
+
+
+# --- spawn_encounter: encuentros inyectados por el GM (#117) -------------------
+
+
+def test_spawn_encounter_genera_lua_fijo(client, juego, auth):
+    r = client.post(
+        CMD, headers=auth, json={"op": "spawn_encounter", "archetype": "derelict"}
+    )
+    assert r.status_code == 200
+    assert r.json()["op"] == "spawn_encounter"
+    assert 'lagunakSpawnEncounter("derelict", nil)' in juego.ultimo_lua
+    assert "getPlayerShip(-1)" in juego.ultimo_lua
+    # Degradación honesta cuando el escenario no registra el global.
+    assert "not_supported" in juego.ultimo_lua
+
+
+def test_spawn_encounter_con_rumbo(client, juego, auth):
+    r = client.post(
+        CMD,
+        headers=auth,
+        json={"op": "spawn_encounter", "archetype": "derelict", "bearing": "port"},
+    )
+    assert r.status_code == 200
+    assert 'lagunakSpawnEncounter("derelict", "port")' in juego.ultimo_lua
+
+
+def test_spawn_encounter_arquetipo_fuera_de_catalogo_rechazado(client, juego, auth):
+    r = client.post(
+        CMD, headers=auth, json={"op": "spawn_encounter", "archetype": "kraken"}
+    )
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+def test_spawn_encounter_rumbo_invalido_rechazado(client, juego, auth):
+    r = client.post(
+        CMD,
+        headers=auth,
+        json={"op": "spawn_encounter", "archetype": "derelict", "bearing": "north"},
+    )
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+def test_spawn_encounter_sin_coordenadas_crudas(client, juego, auth):
+    # La frontera de autoridad (ADR-0002): el cliente jamás coloca objetos por
+    # posición absoluta; cualquier coordenada extra se rechaza entera.
+    r = client.post(
+        CMD,
+        headers=auth,
+        json={"op": "spawn_encounter", "archetype": "derelict", "x": 1000, "y": -2000},
+    )
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+def test_inyeccion_por_arquetipo_rechazada(client, juego, auth):
+    r = client.post(
+        CMD,
+        headers=auth,
+        json={"op": "spawn_encounter", "archetype": '"); victory("Exuari"); ("'},
+    )
+    assert r.status_code == 422
+    assert not juego.llamadas

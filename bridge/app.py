@@ -37,7 +37,7 @@ import httpx
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from pydantic import BaseModel, Field, StrictBool
+from pydantic import BaseModel, ConfigDict, Field, StrictBool
 
 EE_URL = os.environ.get("EE_URL", "http://game:8080")
 BRIDGE_TOKEN = os.environ.get("BRIDGE_TOKEN", "")
@@ -421,6 +421,58 @@ class SetSystemHealth(BaseModel):
         )
 
 
+class EncounterArchetype(str, Enum):
+    """Catálogo cerrado de encuentros que el GM puede pedir desde Foundry.
+
+    Foundry decide el *qué* (arquetipo); el escenario decide el *cómo*
+    (posición exacta, facción, stats, IA). Nunca se aceptan coordenadas ni
+    definiciones de objeto desde el cliente: eso sería doble autoridad sobre
+    el estado de la nave (ADR-0002) y la puerta de /exec.lua disfrazada.
+    """
+
+    derelict = "derelict"
+
+
+class EncounterBearing(str, Enum):
+    """Rumbo grueso relativo a la nave: una sugerencia, no una coordenada."""
+
+    ahead = "ahead"
+    astern = "astern"
+    port = "port"
+    starboard = "starboard"
+
+
+class SpawnEncounter(BaseModel):
+    """Encuentro inyectado por el GM: la mitad narrativa que faltaba (#117).
+
+    El Lua emitido es fijo y solo llama a un global registrado por el
+    escenario (`lagunakSpawnEncounter`); si el escenario cargado no lo
+    define, degrada honestamente a not_supported — el mismo patrón que
+    _STATE_LUA sin nave. El escenario puede honrar el rumbo laxamente.
+    """
+
+    # extra="forbid": una coordenada o campo colado (x, y, faction…) rechaza la
+    # orden entera en vez de ignorarse — la frontera de autoridad falla cerrado.
+    model_config = ConfigDict(extra="forbid")
+
+    op: Literal["spawn_encounter"]
+    archetype: EncounterArchetype
+    bearing: EncounterBearing | None = None
+
+    def lua(self) -> str:
+        bearing = f'"{self.bearing.value}"' if self.bearing is not None else "nil"
+        return (
+            "if type(lagunakSpawnEncounter) ~= 'function' then\n"
+            "  return '{\"ok\":false,\"reason\":\"not_supported\"}'\n"
+            "end\n"
+            "local ship = getPlayerShip(-1)\n"
+            "if ship == nil then return '{\"ok\":false,\"reason\":\"no_ship\"}' end\n"
+            f'local ok = lagunakSpawnEncounter("{self.archetype.value}", {bearing})\n'
+            "if ok then return '{\"ok\":true}' end\n"
+            "return '{\"ok\":false,\"reason\":\"not_supported\"}'"
+        )
+
+
 class SetPause(BaseModel):
     op: Literal["set_pause"]
     paused: StrictBool
@@ -438,6 +490,7 @@ Command = Annotated[
         SetShields,
         SetSystemPower,
         SetSystemHealth,
+        SpawnEncounter,
         SetPause,
     ],
     Field(discriminator="op"),

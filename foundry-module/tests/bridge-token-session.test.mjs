@@ -116,11 +116,13 @@ test("ApplicationV2 conecta guardar y borrar sin persistencia", async () => {
 });
 
 test("el contrato no vuelve a persistir ni prerrellenar el secreto", async () => {
-  const [main, template] = await Promise.all([
+  const [main, workspace, template] = await Promise.all([
     readFile(new URL("../scripts/main.mjs", import.meta.url), "utf8"),
+    readFile(new URL("../scripts/station-workspace-ui.mjs", import.meta.url), "utf8"),
     readFile(new URL("../templates/token-puente.hbs", import.meta.url), "utf8"),
   ]);
   assert.doesNotMatch(main, /settings\.get\(MODULE_ID,\s*["']bridgeToken["']/);
+  assert.doesNotMatch(workspace, /settings\.get\([^)]*["']bridgeToken["']/);
   assert.match(main, /config:\s*false/);
   assert.match(template, /type="password"/);
   assert.match(template, /autocomplete="new-password"/);

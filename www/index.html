@@ -720,7 +720,7 @@
           <textarea id="exec-script" aria-label="/exec.lua script" style="width: 50%; height: 400px; float: left;">player = getPlayerShip(-1)
   if player == nil then return {error = "No ship"} end
   return {hull = player:getHull() / player:getHullMax()}</textarea>
-          <pre class="code" id="exec-output" aria-label="/exec.lua response" style="width: 50%; height: 400px; float: right;"></pre>
+          <pre class="code" id="exec-output" style="width: 50%; height: 400px; float: right;"></pre>
         </div>
         <button onclick="exec_send()">Send</button>
 

@@ -31,7 +31,6 @@ class WwwAccessibilityTests(unittest.TestCase):
     def test_http_sandbox_controls_have_contextual_accessible_names(self) -> None:
         expected = {
             "exec-script": ("textarea", "/exec.lua script"),
-            "exec-output": ("pre", "/exec.lua response"),
             "get-script": ("textarea", "/get.lua parameters"),
             "get-output": ("textarea", "/get.lua response"),
             "set-script": ("textarea", "/set.lua parameters"),
@@ -42,6 +41,9 @@ class WwwAccessibilityTests(unittest.TestCase):
                 self.assertIn(control_id, self.controls)
                 self.assertEqual(self.controls[control_id]["tag"], tag)
                 self.assertEqual(self.controls[control_id].get("aria-label"), accessible_name)
+
+        self.assertEqual(self.controls["exec-output"]["tag"], "pre")
+        self.assertNotIn("aria-label", self.controls["exec-output"])
 
     def test_exec_output_pre_has_a_matching_closing_tag(self) -> None:
         self.assertRegex(

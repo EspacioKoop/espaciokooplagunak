@@ -14,6 +14,7 @@ import {
   offsetParallax,
   prepararDetalleContacto,
   proyectarContactos,
+  proyectarDestino,
   rumboHacia,
   rngSemilla,
   rotarMuestras,
@@ -283,4 +284,73 @@ test("leyendaContactos sin contactos deja solo la nave propia", () => {
   const leyenda = leyendaContactos([]);
   assert.equal(leyenda.length, 1);
   assert.equal(leyenda[0].esJugador, true);
+});
+
+/* --- Destino en el mapa vivo (issue #175) --- */
+
+test("proyectarDestino dentro del visor: punto proyectado con su nombre", () => {
+  const d = proyectarDestino({
+    destino: { name: "Argia", position: { x: 0, y: -15000 } },
+    centro: { x: 0, y: 0 },
+    headingDeg: 0,
+    radioMundo: 30000,
+  });
+  assert.equal(d.nombre, "Argia");
+  assert.equal(d.dentro, true);
+  assert.equal(d.distancia, 15000);
+  // A mitad del radio del mundo, morro al norte: mitad del radio del visor.
+  assert.equal(Math.round(d.x), 160);
+  assert.equal(Math.round(d.y), 80);
+});
+
+test("proyectarDestino fuera de alcance: recortado al anillo, dirección intacta", () => {
+  const d = proyectarDestino({
+    destino: { name: "Argia", position: { x: 90000, y: 0 } },
+    centro: { x: 0, y: 0 },
+    headingDeg: 0,
+    radioMundo: 30000,
+  });
+  assert.equal(d.dentro, false);
+  assert.equal(d.distancia, 90000);
+  // Al este a rumbo 0: recortado al borde derecho del anillo.
+  assert.equal(Math.round(d.x), 320);
+  assert.equal(Math.round(d.y), 160);
+});
+
+test("proyectarDestino gira con el rumbo (proyección de cabina)", () => {
+  // Destino al este, nave con morro al este: el destino queda arriba.
+  const d = proyectarDestino({
+    destino: { name: "Argia", position: { x: 15000, y: 0 } },
+    centro: { x: 0, y: 0 },
+    headingDeg: 90,
+    radioMundo: 30000,
+  });
+  assert.equal(Math.round(d.x), 160);
+  assert.equal(Math.round(d.y), 80);
+});
+
+test("proyectarDestino no inventa: null sin destino, sin nombre o sin posición", () => {
+  const base = { centro: { x: 0, y: 0 }, headingDeg: 0 };
+  assert.equal(proyectarDestino({ destino: null, ...base }), null);
+  assert.equal(proyectarDestino({ destino: { name: "", position: { x: 1, y: 1 } }, ...base }), null);
+  assert.equal(proyectarDestino({ destino: { name: "Argia" }, ...base }), null);
+  assert.equal(proyectarDestino({ destino: { name: "Argia", position: { x: NaN, y: 0 } }, ...base }), null);
+});
+
+test("componerFrame publica frame.destino y lo deja null sin datos o sin destino", () => {
+  const muestra = { tMs: 0, centro: { x: 0, y: 0 }, rumboDeg: 0 };
+  const conDestino = componerFrame({
+    muestraActual: muestra,
+    destino: { name: "Argia", position: { x: 0, y: -15000 } },
+    tMs: 0,
+  });
+  assert.equal(conDestino.destino.nombre, "Argia");
+  assert.equal(conDestino.destino.dentro, true);
+
+  const sinDestino = componerFrame({ muestraActual: muestra, tMs: 0 });
+  assert.equal(sinDestino.destino, null);
+
+  const sinDatos = componerFrame({ destino: { name: "Argia", position: { x: 0, y: 0 } } });
+  assert.equal(sinDatos.sinDatos, true);
+  assert.equal(sinDatos.destino, null);
 });

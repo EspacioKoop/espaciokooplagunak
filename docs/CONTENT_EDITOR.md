@@ -33,8 +33,9 @@ tipos de recursos sin editar Lua:
 11. **Edit on radar** cierra el modal y entra en un modo explícito de staging:
     seleccionar y arrastrar un asteroide o nebulosa solo cambia la copia del
     documento. El movimiento se confirma al soltar y crea una única entrada de
-    deshacer; **Undo** y **Redo** operan sobre ese historial. Escape o clic derecho
-    cancelan el arrastre activo y vuelven al editor. Los tipos futuros nunca son
+    deshacer; **Undo** y **Redo** operan sobre ese historial. Durante el modo de
+    edición el modal está oculto, así que Undo/Redo no son accesibles hasta salir
+    con Escape o clic derecho — que cancelan el arrastre activo y vuelven al editor. Los tipos futuros nunca son
     seleccionables. Guardar persiste las posiciones; **New**, cargar/importar otro
     recurso o descartar reconstruyen la sesión desde su snapshot limpio.
 12. **Export file** escribe el recurso en la carpeta de exportaciones gestionada.

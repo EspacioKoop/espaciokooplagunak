@@ -397,8 +397,8 @@ const MapDocument* GuiContentEditor::previewDocument() const
 
 bool GuiContentEditor::beginMapDrag(float world_x, float world_y, float world_to_screen_scale)
 {
-    cancelMapDrag();
     if (!map_edit_mode) return false;
+    cancelMapDrag();
     const auto error = map_drag.begin(
         map_edit_session, {world_x, world_y}, world_to_screen_scale);
     if (error != MapDocumentError::None)
@@ -432,7 +432,7 @@ void GuiContentEditor::commitMapDrag(float world_x, float world_y)
 
     const auto object_id = map_drag.selectedId();
     const auto final_transform = map_drag.provisionalTransform();
-    bool changed = true;
+    bool changed = false;
     for (const auto& object : map_edit_session.document().objects)
         if (object.id == object_id) changed = !(object.transform == final_transform);
     if (map_drag.commit(map_edit_session) != MapEditError::None)

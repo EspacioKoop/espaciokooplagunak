@@ -122,12 +122,21 @@ test("v11 abre la configuración efímera del token sin tocar red", async () => 
   await instances[0].close();
 });
 
-test("updateUser revoca el token si el usuario local deja de ser GM", async () => {
-  const { hooks, tokenSession } = await loadModule();
+test("updateUser revoca el token y cierra la ventana si el usuario local deja de ser GM", async () => {
+  const { hooks, tokenSession, instances } = await loadModule();
+  const controls = [{ name: "token", tools: [] }];
+  hooks.getSceneControlButtons(controls);
+  await toolByName(controls, "lagunak-token").onClick();
+  const app = instances[0];
+  assert.equal(app.rendered, true);
   assert.equal(tokenSession.getBridgeToken(), "test-token");
+
   game.user.isGM = false;
   hooks.updateUser({ id: "local-user", isGM: false });
+  await Promise.resolve();
+
   assert.equal(tokenSession.getBridgeToken(), "");
+  assert.equal(app.rendered, false);
   game.user.isGM = true;
   assert.equal(tokenSession.getBridgeToken(), "");
 });

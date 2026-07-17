@@ -20,6 +20,8 @@
   "LAGUNAK.Token.Borrado": "Token borrado de la sesión.",
   "LAGUNAK.Token.Vacio": "Pega un token antes de guardar.",
   "LAGUNAK.Token.ErrorMigracion": "No se pudo vaciar el ajuste de token legado. Bórralo manualmente del almacenamiento de este sitio antes de continuar.",
+  "LAGUNAK.Token.ErrorVentana": "No se pudo abrir la ventana del token. El secreto no se ha cargado.",
+  "LAGUNAK.Token.ErrorCierre": "El token se ha revocado, pero Foundry no pudo cerrar su ventana. El campo sensible se ha vaciado.",
   "LAGUNAK.Diagnostico.Ok": "Puente accesible y token autorizado. Todo listo.",
   "LAGUNAK.Diagnostico.SinUrl": "Falta la URL del puente. Configúrala en los ajustes del módulo.",
   "LAGUNAK.Diagnostico.SinToken": "El puente responde, pero falta el token de sesión. Cópialo desde el asistente y usa «Configurar token del puente».",

@@ -4,8 +4,15 @@ import test from "node:test";
 
 let importNonce = 0;
 
-async function loadSession({ isGM = true, modern = false, settingsFail = false } = {}) {
-  const notifications = { info: [], warn: [] };
+async function loadSession({
+  isGM = true,
+  modern = false,
+  settingsFail = false,
+  settingsSet = null,
+  renderFail = false,
+  closeFail = false,
+} = {}) {
+  const notifications = { info: [], warn: [], error: [] };
   const settingsWrites = [];
   const instances = [];
 
@@ -16,9 +23,17 @@ async function loadSession({ isGM = true, modern = false, settingsFail = false }
       this.rendered = false;
       this.closed = false;
     }
-    render() { this.rendered = true; return this; }
+    render() {
+      this.rendered = true;
+      if (renderFail) return Promise.reject(new Error("render failed"));
+      return this;
+    }
     activateListeners() {}
-    async close() { this.closed = true; this.rendered = false; }
+    async close() {
+      if (closeFail) throw new Error("close failed");
+      this.closed = true;
+      this.rendered = false;
+    }
   }
 
   globalThis.Application = BaseApplication;
@@ -38,6 +53,7 @@ async function loadSession({ isGM = true, modern = false, settingsFail = false }
     user: { id: "local-user", isGM },
     settings: {
       async set(moduleId, key, value) {
+        if (settingsSet) return settingsSet(moduleId, key, value);
         if (settingsFail) throw new Error("storage unavailable");
         settingsWrites.push([moduleId, key, value]);
       },
@@ -48,6 +64,7 @@ async function loadSession({ isGM = true, modern = false, settingsFail = false }
     notifications: {
       info: (message) => notifications.info.push(message),
       warn: (message) => notifications.warn.push(message),
+      error: (message) => notifications.error.push(message),
     },
   };
   const module = await import(`../scripts/bridge-token-session.mjs?test=${importNonce++}`);
@@ -80,6 +97,50 @@ test("una migración fallida bloquea la ventana", async () => {
   assert.equal(await module.openBridgeTokenApp(), null);
   assert.equal(instances.length, 0);
   assert.deepEqual(notifications.warn, ["LAGUNAK.Token.ErrorMigracion"]);
+});
+
+test("la migración concurrente comparte intento y permite reintentar", async () => {
+  let rejectFirst;
+  let calls = 0;
+  const settingsSet = async () => {
+    calls += 1;
+    if (calls === 1) {
+      await new Promise((_resolve, reject) => { rejectFirst = reject; });
+    }
+  };
+  const { module, instances } = await loadSession({ settingsSet });
+  const first = module.clearLegacyBridgeToken();
+  const concurrent = module.openBridgeTokenApp();
+  await Promise.resolve();
+  assert.equal(calls, 1);
+  rejectFirst(new Error("first attempt failed"));
+  assert.equal(await first, false);
+  assert.equal(await concurrent, null);
+
+  const app = await module.openBridgeTokenApp();
+  assert.ok(app);
+  assert.equal(calls, 2);
+  assert.equal(instances.length, 1);
+});
+
+test("ApplicationV2 captura un rechazo de render", async () => {
+  const { module, notifications } = await loadSession({ modern: true, renderFail: true });
+  assert.equal(await module.openBridgeTokenApp(), null);
+  assert.deepEqual(notifications.error, ["LAGUNAK.Token.ErrorVentana"]);
+});
+
+test("revocar captura un fallo de cierre y vacía el campo sensible", async () => {
+  const { module, notifications } = await loadSession({ modern: true, closeFail: true });
+  const app = await module.openBridgeTokenApp();
+  const input = { value: "secreto-en-edicion" };
+  app.element = { querySelector: () => input };
+  module.setBridgeToken("token-revocable");
+
+  await module.revokeBridgeTokenAccess();
+
+  assert.equal(module.getBridgeToken(), "");
+  assert.equal(input.value, "");
+  assert.deepEqual(notifications.warn, ["LAGUNAK.Token.ErrorCierre"]);
 });
 
 test("degradar al usuario oculta y revoca definitivamente el token", async () => {

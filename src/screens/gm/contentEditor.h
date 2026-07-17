@@ -13,6 +13,7 @@ class GuiListbox;
 class GuiSelector;
 class GuiTextEntry;
 class GuiToggleButton;
+class GuiRotatingModelView;
 
 class GuiContentEditor : public GuiOverlay
 {
@@ -28,6 +29,17 @@ public:
     ) override;
 
 private:
+    enum class RelationEditorMode
+    {
+        CampaignMaps,
+        CampaignStartingMap,
+        CampaignCharacters,
+        CampaignShips,
+        CampaignTransitions,
+        CharacterCrewPosition,
+        CharacterShip,
+    };
+
     ContentLibraryStore store;
     std::vector<ContentResource> resources;
     std::vector<int> visible_indices;
@@ -41,6 +53,7 @@ private:
     string pending_file_import;
     string pending_file_export;
     ContentDiscardGuard discard_guard;
+    ContentDiscardGuard rename_guard;
     ShipEditSession ship_edit_session;
     std::vector<ShipTemplateCatalogEntry> ship_template_catalog;
     std::vector<std::size_t> visible_ship_template_indices;
@@ -59,6 +72,8 @@ private:
     GuiTextEntry* ship_template_search_entry;
     GuiListbox* ship_template_list;
     GuiLabel* ship_template_picker_status;
+    GuiRotatingModelView* ship_template_model_view;
+    GuiLabel* ship_template_preview_status;
     GuiLabel* secondary_label;
     GuiTextEntry* secondary_entry;
     GuiLabel* tertiary_label;
@@ -82,6 +97,18 @@ private:
     GuiButton* ship_remove_system_button;
     GuiButton* ship_undo_button;
     GuiButton* ship_redo_button;
+    GuiButton* relation_edit_buttons[5]{};
+    GuiOverlay* relation_editor_overlay;
+    GuiLabel* relation_editor_title;
+    GuiSelector* relation_candidate_selector;
+    GuiSelector* relation_destination_selector;
+    GuiListbox* relation_current_list;
+    GuiButton* relation_apply_button;
+    GuiButton* relation_clear_button;
+    GuiButton* relation_remove_button;
+    GuiButton* relation_up_button;
+    GuiButton* relation_down_button;
+    RelationEditorMode relation_editor_mode = RelationEditorMode::CampaignMaps;
 
     void requestSetType(ContentResourceType type);
     void setType(ContentResourceType type);
@@ -106,15 +133,27 @@ private:
     bool applyImportedResource(const ContentResource& resource, const string& import_key);
     int findResource(ContentResourceType type, const string& id) const;
     string errorText(ContentResourceError error) const;
+    string renameErrorText(ContentRenameError error) const;
     string storeErrorText(ContentStoreError error) const;
     void setStatus(const string& text);
     void updatePreviewStatus();
     void openShipTemplatePicker();
     void refreshShipTemplatePicker();
+    void refreshShipTemplatePreview();
+    void clearShipTemplatePreview();
+    void closeShipTemplatePicker();
     void useSelectedShipTemplate();
     void updateShipOverrideEditor();
     void setShipOverride();
     void removeShipOverride();
     void undoShipEdit();
     void redoShipEdit();
+    void openRelationEditor(RelationEditorMode mode);
+    void closeRelationEditor();
+    void refreshRelationEditor();
+    void applyRelationSelection();
+    void clearRelationSelection();
+    void removeRelationSelection();
+    void moveRelationSelection(int direction);
+    void applyRelationResource(const ContentResource& resource);
 };

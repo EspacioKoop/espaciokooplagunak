@@ -2079,7 +2079,7 @@ function handleDockedState()
 				if comms_source:takeReputationPoints(replacement_cost) then
 					respawnCarrier()
 					setPlayers()
-					setComsMessage(_("station-comms","A replacement carrier has been provided"))
+					setCommsMessage(_("station-comms","A replacement carrier has been provided"))
 				else
 					setCommsMessage(_("needRep-comms", "Insufficient reputation"))
 				end

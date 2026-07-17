@@ -2,6 +2,7 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <limits>
 #include <vector>
 
 namespace
@@ -64,6 +65,22 @@ int main()
         "picker search includes canonical model IDs");
     expect(filterSelectableShipTemplates(catalog, "unknown query").empty(),
         "picker returns no entries for an unmatched query");
+
+    ShipTemplatePreviewData preview{
+        "ship.model", "ship_color.png", "", "ship_glow.png", "",
+        1.0f, -2.0f, 3.0f, 4.0f};
+    expect(isUsableShipTemplatePreview(preview),
+        "complete finite rendering metadata is accepted for preview");
+    preview.mesh = "";
+    expect(!isUsableShipTemplatePreview(preview), "preview requires a mesh");
+    preview.mesh = "ship.model";
+    preview.scale = 0.0f;
+    expect(!isUsableShipTemplatePreview(preview), "preview rejects non-positive scale");
+    preview.scale = std::numeric_limits<float>::infinity();
+    expect(!isUsableShipTemplatePreview(preview), "preview rejects non-finite scale");
+    preview.scale = 1.0f;
+    preview.mesh_offset_x = std::numeric_limits<float>::quiet_NaN();
+    expect(!isUsableShipTemplatePreview(preview), "preview rejects non-finite offsets");
 
     std::cout << "SHIP_TEMPLATE_CATALOG_TESTS_OK checks=" << checks << "\n";
     return 0;

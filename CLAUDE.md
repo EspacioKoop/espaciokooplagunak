@@ -24,25 +24,18 @@ simulador cooperativo de puente de mando espacial: C++17 + CMake, motor
 [SeriousProton](https://github.com/daid/SeriousProton) (repo hermano, NO submódulo) + SDL2, y
 escenarios/lógica de misión en Lua.
 
-**Fase actual: 3 — integración prioritaria con Foundry VTT** (fases 0–2 completadas; roadmap completo
-en el README, fases 0–5). Ya hay: escenario propio (`scenario_90_lagunak_primera_guardia.lua`),
-compilación reproducible (nativa y Docker), puente seguro con contrato v0 (`bridge/`), módulo Foundry
-adaptativo v11/v12/v13 (`foundry-module/`), editor de contenido del GM, asistente de instalación
-(`tools/instalar.py` + `docs/INSTALACION.md`, PR #68), publicación de imágenes en GHCR con cada tag
-`v*` (`docker-publish.yml`, PR #83 — el primer tag aún no existe, así que aún no hay imagen publicada)
-y averías narrativas del GM mediante `set_system_health`, con coolant/repair_crew en `/v1/state`
-(PR #81). En desarrollo, aún SIN fusionar: el **mapa vivo** (ventana GM Neo Geo: starfield parallax +
-blips de `/v1/contacts`; PR #73, rama `feature/mapa-vivo-nave`, bloqueantes funcionales resueltos;
-pendiente actualizar sobre `main`, conservar las regresiones de #72 y ejecutar la suite Node en CI
-sobre el resultado combinado). Patrón del mapa vivo: lógica pura en
-`ventana-nave.mjs` (testeable en Node, incl. `componerFrame` con tween SIN extrapolación entre muestras
-confirmadas), pintor acoplado a canvas en `mapa-render.mjs` (verificación humana), ventanas V1/V2
-aisladas en `main.mjs`. Pendiente en fase 3: gestión de motores/combustible/daños, puestos y permisos,
-y encuentros inyectados por el GM.
-Compilación verificada localmente (2026-07-12, Ubuntu 24.04, g++ 13.3, cmake 3.28.3, ninja 1.11.1,
-SDL2 2.30.0): limpio con `WARNING_IS_ERROR=1` (539 objetivos), `luac -p` pasa sobre todo `scripts/`, y
-`./build/EmptyEpsilon headless=scenario_10_empty.lua` arranca, carga el escenario y escucha en TCP/UDP
-35666 (config en `~/.emptyepsilon`; stdin es consola Lua en headless).
+Este archivo recoge solo **hechos duraderos**. El roadmap por fases (0–5) y qué característica está
+integrada viven en el `README.md`; el estado operativo (qué hay en vuelo, bloqueos, traspasos) se
+sigue en el issue de coordinación [#14](https://github.com/VaroTv7/espaciokooplagunak/issues/14) y en
+los issues/PRs abiertos — no lo dupliques aquí: si un dato necesita actualizarse cada semana, no
+pertenece a este archivo.
+
+Piezas propias del fork: escenario `scenario_90_lagunak_primera_guardia.lua`, puente seguro con
+contrato v0 (`bridge/`), módulo Foundry adaptativo v11–v13 (`foundry-module/`), editor de contenido
+del GM, asistente de instalación (`tools/instalar.py` + `docs/INSTALACION.md`) y compilación
+reproducible nativa y Docker, con publicación en GHCR por tag `v*`. Para QA local:
+`./build/EmptyEpsilon headless=<escenario>.lua` arranca sin ventana, escucha en TCP/UDP 35666
+(config en `~/.emptyepsilon`) y su stdin es una consola Lua.
 
 La **prioridad estratégica** es la integración con Foundry VTT para campañas tipo *Spelljammer*
 (diseño en [`docs/FOUNDRY.md`](docs/FOUNDRY.md)): Foundry es autoritativo para la narrativa
@@ -71,6 +64,17 @@ cmake --build build --parallel
 find scripts -type f -iname '*.lua' -print0 | xargs -0 -n 1 luac -p
 ```
 
+`.luarc.json` (raíz) configura lua-language-server: `diagnostics.globals` contiene
+únicamente las globales que el runtime registra con `setGlobal("...")` en `src/` —
+nunca nombres observados en escenarios, que ocultarían erratas ejecutables. El test
+`tools/tests/test_luarc_globals.py` hace cumplir ese contrato (y, con
+`lua-language-server` en el PATH, verifica el comportamiento focal). Si añades API
+nueva que se inyecte como global, regístrala en C++ y añádela a la lista; el test
+fallará si la lista contiene nombres sin binding. Los diagnósticos restantes en
+escenarios upstream (`need-check-nil`, `undefined-field`, `undefined-global` de
+estado opcional comentado…) son ruido honesto por falta de anotaciones `---@meta` —
+pendiente para Fase 4/5; no los «arregles» en escenarios upstream.
+
 Hay TRES suites de tests propias del fork — ejecútalas siempre que toques su área, y no
 confundas «no está en CI todavía» con «no existe»:
 
@@ -81,11 +85,11 @@ cmake -S . -B build -G Ninja ... -DBUILD_CONTENT_RESOURCE_TESTS=ON
 ninja -C build content_resource_tests content_library_store_tests && ctest --test-dir build -R content
 
 # Python (pytest): el puente, con el juego mockeado — no necesita EmptyEpsilon vivo.
-# EN CI: job pytest del workflow Docker (.github/workflows/docker.yml, PR #74).
+# EN CI: job pytest del workflow Docker (.github/workflows/docker.yml).
 cd bridge && pip install -r requirements-dev.txt && pytest
 
 # Node (node --test): lógica pura del módulo Foundry (sin Foundry real).
-# EN CI: .github/workflows/foundry-module.yml (PR #77).
+# EN CI: .github/workflows/foundry-module.yml.
 node --test foundry-module/tests/*.test.mjs
 ```
 
@@ -111,7 +115,7 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
   `menus/`, `hardware/` (integración con hardware físico de puente), `httpScriptAccess.*` (la API
   HTTP heredada — ver advertencia de seguridad arriba; para QA en localhost: `httpserver=<puerto>`
   la activa, `/exec.lua` ejecuta el POST y devuelve su `return` o `{"ERROR": ...}`, y `/get.lua`
-  NO está implementado — devuelve el literal `TODO`, verificado 2026-07-12).
+  NO está implementado — devuelve el literal `TODO`).
 - `scripts/` — escenarios Lua (`scenario_*.lua`), la API Lua expuesta a misiones en `scripts/api/`,
   y utilidades reutilizables (`comms_*.lua`, `*_scenario_utility.lua`).
 - `script_docs/` — generador de `script_reference.html` (heredado de upstream) con una divergencia
@@ -119,6 +123,9 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
   inline vía la etiqueta `{{inline ...}}` en vez de cargarlo de un CDN sin `integrity` (alertas
   CodeQL 8/9); la salida sigue siendo un único HTML autocontenido que funciona offline. Vigila esta
   divergencia al mergear cambios de upstream que toquen `script_docs/`.
+- `foundry-module/` — la lógica pura y testeable del mapa vive en `scripts/ventana-nave.mjs`, el
+  pintor Canvas en `scripts/mapa-render.mjs` y las rutas Foundry V1/V2 permanecen aisladas en
+  `scripts/main.mjs`; el mapa interpola únicamente muestras confirmadas y nunca extrapola.
 - `resources/` y `packs/` — assets heredados de upstream.
 - La versión se calcula por fecha (`AAAA.MM.DD`) en `CMakeLists.txt` salvo override explícito.
 - `docs/` — documentación propia del fork: [`BUILDING.md`](docs/BUILDING.md),
@@ -126,7 +133,12 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
   [`BASELINE.md`](docs/BASELINE.md) (índice AECF del issue #88: qué prácticas de
   seguridad/accesibilidad/calidad/fiabilidad están adoptadas, cuáles cortadas y
   por qué — la regla de admisión es "solo se abre issue cuando duele y cabe en
-  un PR", y el cumplimiento se convierte en gate de CI, no en ceremonia).
+  un PR", y el cumplimiento se convierte en gate de CI, no en ceremonia),
+  [`docs/adr/`](docs/adr/README.md) (registro de decisiones de arquitectura ya
+  tomadas, formato MADR; las propuestas siguen siendo issues),
+  [`ASSESSMENT-ARQUITECTURA.md`](docs/ASSESSMENT-ARQUITECTURA.md) (evaluación
+  ATAM-lite/ISO 42010) y [`AECF-METRICAS.md`](docs/AECF-METRICAS.md) (madurez
+  AECF, escala M0–M5).
 
 ## Flujo git
 

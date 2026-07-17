@@ -31,6 +31,45 @@ function getShipTemplateCatalog()
     return result
 end
 
+-- Returns only the inert rendering values needed by the native ship preview.
+-- No template table, entity or spawn callback crosses the Lua/C++ boundary.
+function getShipTemplatePreview(template_id)
+    if type(template_id) ~= "string" then return {} end
+    local template = __ship_templates[template_id]
+    if type(template) ~= "table" or type(template.__model_data_name) ~= "string" then return {} end
+    local registry = type(__model_data) == "table" and __model_data or {}
+    local model = registry[template.__model_data_name]
+    local render = type(model) == "table" and model.mesh_render or nil
+    if type(render) ~= "table" then return {} end
+
+    local function safe_string(value, required)
+        if type(value) ~= "string" or #value > 1024 then return nil end
+        if required and value == "" then return nil end
+        return value
+    end
+    local function safe_number(value, fallback)
+        if value == nil then return fallback end
+        if type(value) ~= "number" or value ~= value or value < -1000000 or value > 1000000 then return nil end
+        return value
+    end
+
+    local mesh = safe_string(render.mesh, true)
+    local texture = safe_string(render.texture, true)
+    local specular = safe_string(render.specular_texture or "", false)
+    local illumination = safe_string(render.illumination_texture or "", false)
+    local normal = safe_string(render.normal_texture or "", false)
+    local offset = type(render.mesh_offset) == "table" and render.mesh_offset or {}
+    local offset_x = safe_number(offset[1], 0)
+    local offset_y = safe_number(offset[2], 0)
+    local offset_z = safe_number(offset[3], 0)
+    local scale = safe_number(render.scale, 1)
+    if not mesh or not texture or not specular or not illumination or not normal
+        or not offset_x or not offset_y or not offset_z or not scale or scale <= 0 then
+        return {}
+    end
+    return {mesh, texture, specular, illumination, normal, offset_x, offset_y, offset_z, scale}
+end
+
 -- Called by the engine to populate the list of player ships that can be spawned.
 -- Returns a list of {key, label, description, radar trace}.
 function getSpawnablePlayerShips()

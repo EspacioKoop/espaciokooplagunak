@@ -77,6 +77,67 @@ bool parseTransitions(const std::string& value, std::vector<Transition>& output)
     return true;
 }
 
+std::string serializeIdList(const std::vector<std::string>& ids)
+{
+    std::ostringstream output;
+    for (std::size_t index = 0; index < ids.size(); ++index)
+    {
+        if (index > 0) output << ", ";
+        output << ids[index];
+    }
+    return output.str();
+}
+
+void replaceIdList(std::string& value, const std::string& old_id, const std::string& new_id)
+{
+    std::vector<std::string> ids;
+    if (!parseIdList(value, ids)) return;
+    bool changed = false;
+    for (auto& id : ids)
+    {
+        if (id != old_id) continue;
+        id = new_id;
+        changed = true;
+    }
+    if (changed) value = serializeIdList(ids);
+}
+
+void replaceTransitions(std::string& value, const std::string& old_id, const std::string& new_id)
+{
+    std::vector<Transition> transitions;
+    if (!parseTransitions(value, transitions)) return;
+    bool changed = false;
+    for (auto& transition : transitions)
+    {
+        if (transition.first == old_id)
+        {
+            transition.first = new_id;
+            changed = true;
+        }
+        if (transition.second == old_id)
+        {
+            transition.second = new_id;
+            changed = true;
+        }
+    }
+    if (!changed) return;
+    std::ostringstream output;
+    for (std::size_t index = 0; index < transitions.size(); ++index)
+    {
+        if (index > 0) output << ", ";
+        output << transitions[index].first << '>' << transitions[index].second;
+    }
+    value = output.str();
+}
+
+bool uniqueResourceIds(const std::vector<ContentResource>& resources)
+{
+    std::set<std::pair<ContentResourceType, std::string>> identities;
+    for (const auto& resource : resources)
+        if (!identities.insert({resource.type, resource.id}).second) return false;
+    return true;
+}
+
 bool transitionCycle(const std::vector<Transition>& transitions)
 {
     std::map<std::string, std::vector<std::string>> graph;
@@ -223,6 +284,15 @@ nlohmann::json resourceDocument(const ContentResource& resource)
             {"type", contentResourceTypeId(resource.type)}, {"id", resource.id},
             {"name", resource.name}, {"description", resource.description}, {"fields", fields}};
 }
+
+bool validTypedFields(const ContentResource& resource)
+{
+    auto probe = resource;
+    probe.id = "staged";
+    probe.name = "Staged";
+    probe.description.clear();
+    return validateContentResource(probe) == ContentResourceError::None;
+}
 }
 
 std::string contentResourceTypeId(ContentResourceType type)
@@ -249,6 +319,7 @@ bool parseContentResourceType(const std::string& value, ContentResourceType& typ
 
 ContentResourceError validateContentResource(const ContentResource& resource)
 {
+    if (contentResourceTypeId(resource.type).empty()) return ContentResourceError::UnknownType;
     if (!validId(resource.id)) return ContentResourceError::InvalidId;
     if (resource.name.empty() || resource.name.size() > 120) return ContentResourceError::InvalidName;
     if (resource.description.size() > 4000) return ContentResourceError::DescriptionTooLong;
@@ -319,8 +390,207 @@ ContentResourceError validateContentLibrary(const std::vector<ContentResource>& 
     return ContentResourceError::None;
 }
 
-bool contentResourceHasMissingDependencies(const ContentResource& resource,
-                                           const std::vector<ContentResource>& library)
+bool addContentReference(ContentResource& resource,
+                         const std::vector<ContentResource>& library,
+                         ContentReferenceKind kind,
+                         const std::string& id)
+{
+    if (resource.type != ContentResourceType::Campaign) return false;
+    ContentResourceType expected_type = ContentResourceType::Map;
+    std::string* field = &resource.primary;
+    if (kind == ContentReferenceKind::CampaignCharacter)
+    {
+        expected_type = ContentResourceType::Character;
+        field = &resource.tertiary;
+    }
+    else if (kind == ContentReferenceKind::CampaignShip)
+    {
+        expected_type = ContentResourceType::Ship;
+        field = &resource.quaternary;
+    }
+    if (!resourceExists(library, expected_type, id)) return false;
+    std::vector<std::string> ids;
+    if (!parseIdList(*field, ids) || std::find(ids.begin(), ids.end(), id) != ids.end()) return false;
+    ids.push_back(id);
+    auto candidate = resource;
+    std::string* candidate_field = &candidate.primary;
+    if (kind == ContentReferenceKind::CampaignCharacter) candidate_field = &candidate.tertiary;
+    else if (kind == ContentReferenceKind::CampaignShip) candidate_field = &candidate.quaternary;
+    *candidate_field = serializeIdList(ids);
+    if (!validTypedFields(candidate)) return false;
+    resource = std::move(candidate);
+    return true;
+}
+
+bool removeContentReference(ContentResource& resource, ContentReferenceKind kind,
+                            const std::string& id)
+{
+    if (resource.type != ContentResourceType::Campaign) return false;
+    std::string* field = &resource.primary;
+    if (kind == ContentReferenceKind::CampaignCharacter) field = &resource.tertiary;
+    else if (kind == ContentReferenceKind::CampaignShip) field = &resource.quaternary;
+    std::vector<std::string> ids;
+    if (!parseIdList(*field, ids)) return false;
+    const auto found = std::find(ids.begin(), ids.end(), id);
+    if (found == ids.end()) return false;
+    ids.erase(found);
+    auto candidate = resource;
+    std::string* candidate_field = &candidate.primary;
+    if (kind == ContentReferenceKind::CampaignCharacter) candidate_field = &candidate.tertiary;
+    else if (kind == ContentReferenceKind::CampaignShip) candidate_field = &candidate.quaternary;
+    *candidate_field = serializeIdList(ids);
+    if (kind == ContentReferenceKind::CampaignMap)
+    {
+        if (candidate.secondary == id) candidate.secondary.clear();
+        std::vector<Transition> transitions;
+        if (!parseTransitions(candidate.quinary, transitions)) return false;
+        transitions.erase(std::remove_if(transitions.begin(), transitions.end(), [&](const Transition& item) {
+            return item.first == id || item.second == id;
+        }), transitions.end());
+        std::ostringstream output;
+        for (std::size_t index = 0; index < transitions.size(); ++index)
+        {
+            if (index > 0) output << ", ";
+            output << transitions[index].first << '>' << transitions[index].second;
+        }
+        candidate.quinary = output.str();
+    }
+    if (!validTypedFields(candidate)) return false;
+    resource = std::move(candidate);
+    return true;
+}
+
+bool moveCampaignMap(ContentResource& resource, const std::string& id, int direction)
+{
+    if (resource.type != ContentResourceType::Campaign || (direction != -1 && direction != 1)) return false;
+    std::vector<std::string> ids;
+    if (!parseIdList(resource.primary, ids)) return false;
+    const auto found = std::find(ids.begin(), ids.end(), id);
+    if (found == ids.end()) return false;
+    const auto index = static_cast<std::ptrdiff_t>(found - ids.begin());
+    const auto target = index + direction;
+    if (target < 0 || target >= static_cast<std::ptrdiff_t>(ids.size())) return false;
+    std::swap(ids[static_cast<std::size_t>(index)], ids[static_cast<std::size_t>(target)]);
+    resource.primary = serializeIdList(ids);
+    return true;
+}
+
+bool setCampaignStartingMap(ContentResource& resource, const std::string& id)
+{
+    if (resource.type != ContentResourceType::Campaign) return false;
+    std::vector<std::string> ids;
+    if (!parseIdList(resource.primary, ids)
+        || (!id.empty() && std::find(ids.begin(), ids.end(), id) == ids.end())) return false;
+    resource.secondary = id;
+    return true;
+}
+
+bool addCampaignTransition(ContentResource& resource, const std::string& from_id,
+                           const std::string& to_id)
+{
+    if (resource.type != ContentResourceType::Campaign) return false;
+    std::vector<Transition> transitions;
+    if (!parseTransitions(resource.quinary, transitions)) return false;
+    const Transition transition{from_id, to_id};
+    if (std::find(transitions.begin(), transitions.end(), transition) != transitions.end()) return false;
+    auto candidate = resource;
+    if (!candidate.quinary.empty()) candidate.quinary += ", ";
+    candidate.quinary += from_id + ">" + to_id;
+    if (!validTypedFields(candidate)) return false;
+    resource = std::move(candidate);
+    return true;
+}
+
+bool removeCampaignTransition(ContentResource& resource, const std::string& from_id,
+                              const std::string& to_id)
+{
+    if (resource.type != ContentResourceType::Campaign) return false;
+    std::vector<Transition> transitions;
+    if (!parseTransitions(resource.quinary, transitions)) return false;
+    const auto found = std::find(transitions.begin(), transitions.end(), Transition{from_id, to_id});
+    if (found == transitions.end()) return false;
+    transitions.erase(found);
+    std::ostringstream output;
+    for (std::size_t index = 0; index < transitions.size(); ++index)
+    {
+        if (index > 0) output << ", ";
+        output << transitions[index].first << '>' << transitions[index].second;
+    }
+    resource.quinary = output.str();
+    return true;
+}
+
+bool setCharacterCrewPosition(ContentResource& resource, const std::string& crew_position_id)
+{
+    if (resource.type != ContentResourceType::Character
+        || (!crew_position_id.empty() && !validCrewPosition(crew_position_id))) return false;
+    if (crew_position_id.empty() && resource.quinary.empty()) return false;
+    resource.primary = crew_position_id;
+    return true;
+}
+
+bool setCharacterShipReference(ContentResource& resource,
+                               const std::vector<ContentResource>& library,
+                               const std::string& ship_id)
+{
+    if (resource.type != ContentResourceType::Character
+        || (!ship_id.empty() && !resourceExists(library, ContentResourceType::Ship, ship_id))) return false;
+    resource.quaternary = ship_id;
+    return true;
+}
+
+ContentRenameError renameContentResource(std::vector<ContentResource>& resources,
+                                         ContentResourceType type,
+                                         const std::string& old_id,
+                                         const std::string& new_id)
+{
+    if (contentResourceTypeId(type).empty()) return ContentRenameError::InvalidType;
+    if (!uniqueResourceIds(resources)
+        || validateContentLibrary(resources) != ContentResourceError::None)
+        return ContentRenameError::InvalidLibrary;
+    if (!validId(new_id)) return ContentRenameError::InvalidNewId;
+
+    const auto source = std::find_if(resources.begin(), resources.end(), [&](const ContentResource& item) {
+        return item.type == type && item.id == old_id;
+    });
+    if (source == resources.end()) return ContentRenameError::SourceNotFound;
+    if (old_id == new_id) return ContentRenameError::None;
+    if (resourceExists(resources, type, new_id)) return ContentRenameError::TargetAlreadyExists;
+
+    auto candidate = resources;
+    for (auto& resource : candidate)
+    {
+        if (resource.type == type && resource.id == old_id) resource.id = new_id;
+        if (resource.type == ContentResourceType::Campaign)
+        {
+            if (type == ContentResourceType::Map)
+            {
+                replaceIdList(resource.primary, old_id, new_id);
+                if (resource.secondary == old_id) resource.secondary = new_id;
+                replaceTransitions(resource.quinary, old_id, new_id);
+            }
+            else if (type == ContentResourceType::Character)
+                replaceIdList(resource.tertiary, old_id, new_id);
+            else if (type == ContentResourceType::Ship)
+                replaceIdList(resource.quaternary, old_id, new_id);
+        }
+        if (type == ContentResourceType::Ship
+            && resource.type == ContentResourceType::Character
+            && resource.quaternary == old_id)
+            resource.quaternary = new_id;
+    }
+
+    if (!uniqueResourceIds(candidate)
+        || validateContentLibrary(candidate) != ContentResourceError::None)
+        return ContentRenameError::InvalidLibrary;
+    resources = std::move(candidate);
+    return ContentRenameError::None;
+}
+
+bool contentResourceHasMissingDependencies(
+    const ContentResource& resource,
+    const std::vector<ContentResource>& library
+)
 {
     for (const auto& dependency : dependencies(resource))
         if (!resourceExists(library, dependency.first, dependency.second)) return true;

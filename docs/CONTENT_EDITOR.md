@@ -13,8 +13,10 @@ tipos de recursos sin editar Lua:
 1. Abre **Game Master → Content editor…**.
 2. Selecciona el tipo de recurso.
 3. Pulsa **New**, rellena el formulario y guarda.
-4. **Save** actualiza el recurso seleccionado aunque cambie su ID. Si ese ID ya
-   pertenece a otro recurso, exige una segunda pulsación antes de sustituirlo.
+4. **Save** actualiza el recurso seleccionado. Si cambia su ID, exige una segunda
+   pulsación para confirmar el renombrado y actualizar sus referencias. Si el ID
+   nuevo ya pertenece a otro recurso del mismo tipo, rechaza la operación sin
+   sustituirlo.
 5. **Export** copia únicamente el recurso visible al portapapeles como JSON.
 6. **Import** lee un recurso JSON del portapapeles y valida todos sus campos.
 7. Si ya existe el mismo par `type + id`, hay que pulsar **Import** por segunda
@@ -165,7 +167,7 @@ configurado con `-DBUILD_CONTENT_RESOURCE_TESTS=ON` se ejecutan con:
 
 ```bash
 ctest --test-dir build --output-on-failure \
-  -R 'content_resource_codec|content_library_store|map_document_codec|map_edit_session|map_preview_projection|ship_document_model|ship_template_catalog|ship_edit_session'
+  -R 'content_resource_codec|content_library_store|map_document_codec|map_edit_session|map_preview_projection|ship_document_model|ship_template_catalog|ship_template_preview_lua|ship_edit_session'
 ```
 
 El test del codec cubre los cuatro tipos, round-trip, límite de 64 KiB, claves
@@ -183,7 +185,13 @@ Los mapas tienen modelo separado del ECS, sesión transaccional de staging con u
 redo, dirty state y rollback, y preview read-only sobre el radar GM. El preview no
 crea ni modifica entidades: solo proyecta asteroides y nebulosas de la allowlist;
 los tipos futuros opacos se omiten visualmente sin perderse y su recuento queda
-visible en el editor.
+visible en el editor. El núcleo de interacción del preview añade hit-test con tolerancia
+en píxeles estable al zoom y un drag provisional separado de `MapEditSession`: solo el
+commit final llama una vez a `moveObject()`, mientras cancelar o mover el puntero no
+misma identidad generacional y revisión de sesión con que empezó; cada edición, undo,
+redo, rollback, guardado o reemplazo de sesión avanza esa barrera para impedir ABA. Los
+objetos opacos nunca entran en hit-test. La conexión de este núcleo al radar GM se
+completa en el siguiente vertical de #150.
 
 Las naves tienen un modelo tipado para overrides opcionales de sistemas, recursos,
 carga y puestos. Rechaza IDs no canónicos, duplicados, valores no finitos y
@@ -200,10 +208,13 @@ El botón `Elegir plantilla` abre una lista buscable con scroll. Solo ofrece pla
 visibles cuyo modelo siga registrado; filtra sin distinguir mayúsculas ASCII sobre
 ID, etiqueta, tipo y modelo, pero aplica siempre el ID canónico. La entrada manual se
 mantiene para documentos legacy y las plantillas ocultas siguen validando al cargar su
-ID. El selector no crea entidades ni ejecuta callbacks de spawn.
-El documento no toca el ECS. La sesión C++ pura prepara todos esos cambios con
-dirty state, historial acotado y rollback al último snapshot guardado.
-La previsualización y la aplicación al mundo se incorporarán en verticales posteriores.
+ID. Al seleccionar una entrada, el overlay consulta únicamente el `mesh_render` de la
+plantilla y muestra una vista 3D giratoria. El widget conserva una copia inerte de
+`MeshRenderComponent`: no crea ninguna entidad ECS, `Transform`, física, red ni
+callback de spawn, y descarta la copia al cambiar o cerrar/aplicar el selector.
+El documento editado no toca el ECS. La sesión C++ pura prepara todos los overrides
+con dirty state, historial acotado y rollback al último snapshot guardado.
+La aplicación autorizada al mundo se incorporará en un vertical posterior.
 La siguiente fase mantendrá la misma envoltura versionada:
 
 - aplicación tipada al mundo con autorización GM y rollback, sin Lua importado
@@ -211,5 +222,19 @@ La siguiente fase mantendrá la misma envoltura versionada:
 - plantillas, previsualización y spawn de naves ([#55](https://github.com/VaroTv7/espaciokooplagunak/issues/55)).
 
 Las campañas y personajes ya se enlazan de forma declarativa con mapas, naves
-y puestos canónicos. Aplicar esos documentos a una sesión viva queda separado
-de la edición y persistencia de metadatos.
+y puestos canónicos. El núcleo C++ puede renombrar de forma transaccional cualquier
+recurso sobre una copia de la biblioteca: actualiza mapas iniciales y ordenados,
+transiciones, personajes y naves referenciadas, valida la candidata completa y solo
+entonces reemplaza el vector original. IDs inválidos, colisiones, recursos ausentes o
+una biblioteca origen inválida no producen mutación parcial. El store envuelve carga,
+comparación del snapshot editado, renombrado, campos modificados y guardado con un único
+lock: preserva cambios concurrentes ajenos y rechaza si cambió el propio recurso. Los
+fallos previos a promoción conservan la generación anterior; si el commit ya rotó el
+canónico, recarga la generación recuperada e informa por separado si el cambio quedó
+aplicado. En la GUI, editar el ID de un recurso cargado y pulsar Guardar muestra el
+alcance del cambio; una segunda pulsación confirma el renombrado y sus referencias en
+un único commit. Las colisiones
+se rechazan sin reemplazar otro recurso. Los selectores tipados de relaciones se
+incorporarán en el siguiente corte de #154.
+Aplicar esos documentos a una sesión viva queda separado de la edición y persistencia
+de metadatos.

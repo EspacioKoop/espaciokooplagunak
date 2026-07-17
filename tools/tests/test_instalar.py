@@ -331,5 +331,82 @@ class CliTests(unittest.TestCase):
         self.assertIn("saltos de línea", salida.stderr)
 
 
+class CopiarTokenTests(unittest.TestCase):
+    def test_leer_token_sin_env_devuelve_vacio(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(instalar.leer_token(Path(tmp) / ".env"), "")
+
+    def test_leer_token_devuelve_el_valor(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            env = Path(tmp) / ".env"
+            env.write_text("BRIDGE_TOKEN=abc123\n", encoding="utf-8")
+            self.assertEqual(instalar.leer_token(env), "abc123")
+
+    def test_copiar_usa_stdin_y_no_argv(self) -> None:
+        # El token nunca puede viajar como argumento: argv es visible en `ps`.
+        llamadas = []
+
+        def run_falso(comando, **kwargs):
+            llamadas.append((comando, kwargs))
+            return subprocess.CompletedProcess(comando, 0)
+
+        herramienta = instalar.copiar_al_portapapeles(
+            "secreto", which=lambda nombre: "/usr/bin/" + nombre, run=run_falso)
+        self.assertEqual(herramienta, "wl-copy")
+        comando, kwargs = llamadas[0]
+        self.assertNotIn("secreto", " ".join(comando))
+        self.assertEqual(kwargs["input"], b"secreto")
+
+    def test_copiar_prueba_la_siguiente_herramienta_si_falla(self) -> None:
+        def run_falso(comando, **kwargs):
+            codigo = 1 if comando[0] == "wl-copy" else 0
+            return subprocess.CompletedProcess(comando, codigo)
+
+        herramienta = instalar.copiar_al_portapapeles(
+            "secreto", which=lambda nombre: "/usr/bin/" + nombre, run=run_falso)
+        self.assertEqual(herramienta, "xclip")
+
+    def test_copiar_sin_herramientas_devuelve_none(self) -> None:
+        self.assertIsNone(
+            instalar.copiar_al_portapapeles("secreto", which=lambda _: None))
+
+    def test_cli_copiar_token_sin_env_falla(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            with mock.patch.object(instalar, "ENV_DESTINO", Path(tmp) / ".env"):
+                buffer = io.StringIO()
+                with contextlib.redirect_stdout(buffer):
+                    codigo = instalar.main(["--copiar-token"])
+        self.assertEqual(codigo, 1)
+
+    def test_cli_copiar_token_no_imprime_el_token_entero(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            env = Path(tmp) / ".env"
+            token = "a" * 64
+            env.write_text(f"BRIDGE_TOKEN={token}\n", encoding="utf-8")
+            with mock.patch.object(instalar, "ENV_DESTINO", env), \
+                 mock.patch.object(instalar, "copiar_al_portapapeles",
+                                   return_value="wl-copy"):
+                buffer = io.StringIO()
+                with contextlib.redirect_stdout(buffer):
+                    codigo = instalar.main(["--copiar-token"])
+        self.assertEqual(codigo, 0)
+        self.assertNotIn(token, buffer.getvalue())
+        self.assertIn("portapapeles", buffer.getvalue())
+
+    def test_cli_copiar_token_sin_portapapeles_no_imprime_el_token(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            env = Path(tmp) / ".env"
+            token = "b" * 64
+            env.write_text(f"BRIDGE_TOKEN={token}\n", encoding="utf-8")
+            with mock.patch.object(instalar, "ENV_DESTINO", env), \
+                 mock.patch.object(instalar, "copiar_al_portapapeles",
+                                   return_value=None):
+                buffer = io.StringIO()
+                with contextlib.redirect_stdout(buffer):
+                    codigo = instalar.main(["--copiar-token"])
+        self.assertEqual(codigo, 1)
+        self.assertNotIn(token, buffer.getvalue())
+
+
 if __name__ == "__main__":
     unittest.main()

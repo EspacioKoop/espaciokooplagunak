@@ -132,13 +132,15 @@ coloreados por facción, con leyenda de indicativos y distancias.
   puente. Este último endpoint llega con el PR #69 del puente: contra un
   puente anterior la ventana muestra el estado de error y reintenta con
   backoff, sin romper nada.
-- **Movimiento**: la posición propia se interpola entre las dos últimas
-  muestras confirmadas del puente (nunca se extrapola: el mapa es una vista,
-  no un simulador — con la simulación en pausa, el mapa se congela). Los
-  contactos se pintan en su última posición conocida.
+- **Movimiento**: la nave propia, el rumbo y los contactos con identidad pública
+  inequívoca se interpolan entre las dos últimas muestras confirmadas del
+  puente. Nunca se extrapola: el mapa es una vista, no un simulador — con la
+  simulación en pausa, el mapa se congela. Contactos anónimos o duplicados se
+  muestran directamente en su última posición para no asociar objetos distintos.
 - **Dibujo**: canvas interno de 320×320 escalado con `image-rendering:
-  pixelated`, ~30 fps, con scanlines por CSS. El bucle de animación se detiene
-  al cerrar la ventana.
+  pixelated`, hasta 60 fps, con scanlines por CSS. Un sondeo solo posicional
+  actualiza el canvas y las distancias sin reconstruir la ventana; el bucle de
+  animación se detiene al cerrarla.
 
 ## Estado de verificación
 
@@ -151,11 +153,11 @@ coloreados por facción, con leyenda de indicativos y distancias.
   Journal, formato destino/ETA, POST cerrado de pausa, bloqueo no-GM y las seis
   consolas de puesto. También verifican que un jugador no lee ajustes del
   puente ni recibe telemetría aunque otro código intente inyectársela.
-- Del mapa vivo, los tests Node cubren SOLO la lógica pura (proyección,
-  interpolación sin extrapolar, throttle de fps, composición del frame) y la
-  compatibilidad del botón/ventana v11 y v13; el pintado real sobre `<canvas>`
-  (`mapa-render.mjs`) queda dentro del punto pendiente de verificación humana
-  de abajo.
+- Del mapa vivo, los tests Node cubren la lógica pura (proyección, interpolación
+  sin extrapolar de nave/contactos, identidades ambiguas, throttle de fps y
+  composición del frame), el canvas estable entre sondeos posicionales y la
+  compatibilidad del botón/ventana v11 y v13. El pintado real sobre `<canvas>`
+  (`mapa-render.mjs`) queda dentro del punto pendiente de verificación humana.
 - **Manifiesto validado con el propio parser de Foundry v11.302**
   (`BaseModule`, modo estricto): sin errores de contenido. Foundry v11.302
   arranca limpio con el módulo instalado (symlink en `Data/modules`), sin

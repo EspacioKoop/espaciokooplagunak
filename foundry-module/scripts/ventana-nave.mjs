@@ -196,6 +196,84 @@ export function interpolarAngulo(a, b, t) {
   return ((bruto % 360) + 360) % 360;
 }
 
+/**
+ * Identidad pública utilizable entre sondeos. EmptyEpsilon no expone todavía
+ * un ID técnico en `/v1/contacts`: la nave propia es inequívoca y un callsign
+ * no vacío se combina con tipo/facción. Los contactos anónimos (`?`) no se
+ * emparejan para evitar interpolar por error dos asteroides distintos.
+ */
+export function claveContacto(contacto) {
+  if (contacto?.is_player) return "player";
+  const callsign = typeof contacto?.callsign === "string" ? contacto.callsign.trim() : "";
+  if (!callsign || callsign === "?") return null;
+  return JSON.stringify([
+    callsign,
+    contacto?.type ?? null,
+    contacto?.faction ?? null,
+  ]);
+}
+
+function coordenadaFinita(valor) {
+  return Number.isFinite(valor) ? valor : 0;
+}
+
+/**
+ * Interpola únicamente contactos con identidad única en ambas muestras. Los
+ * nuevos, desaparecidos, anónimos o duplicados se resuelven a la muestra
+ * actual: sin residuos, NaN ni asociaciones visuales falsas.
+ */
+export function interpolarContactos(prev = [], actual = [], t = 1) {
+  const factor = Math.min(1, Math.max(0, Number.isFinite(t) ? t : 1));
+  const contar = (contactos) => {
+    const cuentas = new Map();
+    for (const contacto of contactos) {
+      const clave = claveContacto(contacto);
+      if (clave !== null) cuentas.set(clave, (cuentas.get(clave) ?? 0) + 1);
+    }
+    return cuentas;
+  };
+  const cuentasPrev = contar(prev);
+  const cuentasActual = contar(actual);
+  const prevPorClave = new Map();
+  for (const contacto of prev) {
+    const clave = claveContacto(contacto);
+    if (clave !== null && cuentasPrev.get(clave) === 1) prevPorClave.set(clave, contacto);
+  }
+
+  return actual.map((contacto) => {
+    const clave = claveContacto(contacto);
+    const anterior = clave !== null && cuentasActual.get(clave) === 1
+      ? prevPorClave.get(clave)
+      : null;
+    const xActual = coordenadaFinita(contacto?.position?.x);
+    const yActual = coordenadaFinita(contacto?.position?.y);
+    if (!anterior) {
+      return { ...contacto, position: { x: xActual, y: yActual } };
+    }
+    const xPrev = coordenadaFinita(anterior?.position?.x);
+    const yPrev = coordenadaFinita(anterior?.position?.y);
+    return {
+      ...contacto,
+      position: {
+        x: xPrev + (xActual - xPrev) * factor,
+        y: yPrev + (yActual - yPrev) * factor,
+      },
+    };
+  });
+}
+
+/** Firma que excluye posición: permite actualizar muestras móviles sin que
+ * Foundry reconstruya el canvas y el resto de la ventana en cada sondeo. */
+export function firmaEstructuralContactos(contactos = []) {
+  return JSON.stringify(contactos.map((contacto) => ({
+    clave: claveContacto(contacto),
+    callsign: contacto?.callsign ?? "?",
+    faction: contacto?.faction ?? null,
+    type: contacto?.type ?? null,
+    is_player: Boolean(contacto?.is_player),
+  })));
+}
+
 /** Throttle del bucle de dibujo: ¿toca pintar este tick de rAF a `fpsMax`?
  * El primer frame (sin dibujo previo) pinta siempre. */
 export function debeDibujar(ultimoMs, ahoraMs, fpsMax = 30) {
@@ -217,7 +295,7 @@ export function debeDibujar(ultimoMs, ahoraMs, fpsMax = 30) {
  * intervalo de retardo — nunca se extrapola.
  *
  * @param {object|null} muestraActual la muestra `actual` vigente (null si es la primera)
- * @param {{centro:{x:number,y:number}, rumboDeg:number}} nueva datos confirmados del puente
+ * @param {{centro:{x:number,y:number}, rumboDeg:number, contactos?:object[]}} nueva datos confirmados del puente
  * @param {number} ahoraMs instante de recepción (misma base de tiempo que el dibujo)
  * @returns {{prev: object|null, actual: object}}
  */
@@ -227,6 +305,7 @@ export function rotarMuestras(muestraActual, nueva, ahoraMs, ventanaMaxMs = 4000
     rumboDeg: nueva.rumboDeg ?? 0,
     recibidaMs: ahoraMs,
   };
+  if (Array.isArray(nueva.contactos)) entrante.contactos = nueva.contactos;
   if (!muestraActual) {
     // Primera muestra: se pinta directa, sin tween (no hay "anterior").
     return { prev: null, actual: { ...entrante, tMs: ahoraMs } };
@@ -234,7 +313,12 @@ export function rotarMuestras(muestraActual, nueva, ahoraMs, ventanaMaxMs = 4000
   const transcurrido = ahoraMs - (muestraActual.recibidaMs ?? ahoraMs);
   const ventana = Math.min(Math.max(transcurrido, 0), ventanaMaxMs);
   return {
-    prev: { tMs: ahoraMs, centro: muestraActual.centro, rumboDeg: muestraActual.rumboDeg },
+    prev: {
+      tMs: ahoraMs,
+      centro: muestraActual.centro,
+      rumboDeg: muestraActual.rumboDeg,
+      ...(Array.isArray(muestraActual.contactos) ? { contactos: muestraActual.contactos } : {}),
+    },
     actual: { ...entrante, tMs: ahoraMs + ventana },
   };
 }
@@ -243,9 +327,9 @@ export function rotarMuestras(muestraActual, nueva, ahoraMs, ventanaMaxMs = 4000
  * Compone el «frame» del mapa vivo: TODO lo que el pintor de canvas necesita,
  * calculado de forma pura y determinista (mismas entradas → mismo frame). El
  * movimiento propio se tweenea entre las dos últimas muestras del puente
- * (interpolarCentro/interpolarAngulo, sin extrapolación); los contactos se
- * proyectan con sus últimas posiciones conocidas. El `parpadeo` retro de los
- * blips sale de la fase temporal, no de estado mutable.
+ * (interpolarCentro/interpolarAngulo, sin extrapolación); los contactos con
+ * identidad inequívoca comparten esa interpolación temporal. El `parpadeo`
+ * retro de los blips sale de la fase temporal, no de estado mutable.
  *
  * @returns {{sinDatos:boolean, centro:{x,y}, rumboDeg:number,
  *   capas:{dx:number,dy:number,estrellas:object[]}[],
@@ -268,6 +352,9 @@ export function componerFrame({
     return { sinDatos: true, centro: { x: 0, y: 0 }, rumboDeg: 0, capas: [], blips: [], destino: null };
   }
   const centro = interpolarCentro(muestraPrev, muestraActual, tMs);
+  const factorMuestra = muestraPrev && muestraActual.tMs > muestraPrev.tMs
+    ? (tMs - muestraPrev.tMs) / (muestraActual.tMs - muestraPrev.tMs)
+    : 1;
   const rumboDeg = muestraPrev && muestraActual.tMs > muestraPrev.tMs
     ? interpolarAngulo(
         muestraPrev.rumboDeg ?? 0,
@@ -282,8 +369,11 @@ export function componerFrame({
   }));
 
   const encendido = Math.floor(tMs / 300) % 2 === 0; // fase de parpadeo retro
+  const contactosFrame = Array.isArray(muestraActual.contactos)
+    ? interpolarContactos(muestraPrev?.contactos ?? [], muestraActual.contactos, factorMuestra)
+    : contactos;
   const blips = proyectarContactos({
-    contacts: contactos, centro, headingDeg: rumboDeg, radioMundo, ancho, alto,
+    contacts: contactosFrame, centro, headingDeg: rumboDeg, radioMundo, ancho, alto,
   }).map((p) => ({
     ...p,
     color: colorFaccion(p.faction, p.esJugador),

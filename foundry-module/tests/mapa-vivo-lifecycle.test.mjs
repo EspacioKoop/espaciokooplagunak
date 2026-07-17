@@ -21,6 +21,8 @@ async function cargarMapa({ modern, t }) {
   const contactosVistos = diferida();
   const liberarHealthz = diferida();
   const llamadasFetch = [];
+  let lecturasEstado = 0;
+  let lecturasContactos = 0;
   const originales = {
     Application: globalThis.Application,
     Hooks: globalThis.Hooks,
@@ -49,6 +51,22 @@ async function cargarMapa({ modern, t }) {
       instancias.push(this);
       this.rendered = false;
       this.renderCalls = [];
+      this.distanciaNode = { textContent: "" };
+      this.detalleDistanciaNode = { textContent: "" };
+      this.detalleRumboNode = { textContent: "" };
+      const botonContacto = {
+        dataset: { contacto: "K-7" },
+        querySelector: (selector) => selector === ".lagunak-mapa-distancia" ? this.distanciaNode : null,
+      };
+      const raiz = {
+        querySelectorAll: (selector) => selector === "[data-contacto]" ? [botonContacto] : [],
+        querySelector: (selector) => {
+          if (selector === "[data-lagunak-detalle-distancia]") return this.detalleDistanciaNode;
+          if (selector === "[data-lagunak-detalle-rumbo]") return this.detalleRumboNode;
+          return null;
+        },
+      };
+      this.element = modern ? raiz : [raiz];
     }
 
     render(options) {
@@ -83,7 +101,10 @@ async function cargarMapa({ modern, t }) {
         return 2;
       },
     },
-    i18n: { localize: (key) => key, format: (key) => key },
+    i18n: {
+      localize: (key) => key,
+      format: (key, data = {}) => String(data.distance ?? data.rumbo ?? key),
+    },
     journal: { getName: () => null },
   };
   globalThis.JournalEntry = { create: async () => null };
@@ -106,17 +127,25 @@ async function cargarMapa({ modern, t }) {
       return respuesta({ bridge: "ok" });
     }
     if (url.endsWith("/v1/state")) {
+      lecturasEstado += 1;
       return respuesta({
         ship: {
-          position: { x: 10, y: 20 },
+          position: { x: lecturasEstado * 10, y: 20 },
           heading: 30,
           destination: { name: "Argia", position: { x: 5000, y: -2000 } },
         },
       });
     }
     if (url.endsWith("/v1/contacts")) {
+      lecturasContactos += 1;
       contactosVistos.resolve();
-      return respuesta({ contacts: [] });
+      return respuesta({ contacts: [{
+        callsign: "K-7",
+        faction: "Kraylor",
+        type: "CpuShip",
+        is_player: false,
+        position: { x: lecturasContactos * 100, y: 20 },
+      }] });
     }
     throw new Error(`Ruta inesperada: ${url}`);
   };
@@ -134,7 +163,7 @@ async function cargarMapa({ modern, t }) {
 }
 
 async function vaciarMicrotareas() {
-  for (let i = 0; i < 8; i += 1) await Promise.resolve();
+  for (let i = 0; i < 24; i += 1) await Promise.resolve();
 }
 
 for (const modern of [false, true]) {
@@ -173,6 +202,50 @@ for (const modern of [false, true]) {
       false,
       "una respuesta tardía no debe programar el siguiente sondeo",
     );
+  });
+
+  test(`${version}: un segundo sondeo solo posicional no reconstruye la ventana`, async (t) => {
+    const entorno = await cargarMapa({ modern, t });
+    const controles = modern ? {} : [];
+    entorno.hooks.getSceneControlButtons(controles);
+    const boton = modern
+      ? controles.lagunak.tools["lagunak-mapa"]
+      : controles.find((c) => c.name === "lagunak").tools.find((tool) => tool.name === "lagunak-mapa");
+    boton.onClick();
+
+    const app = entorno.instancias[0];
+    if (modern) app._onFirstRender();
+    else await app._render(true);
+    await entorno.healthzVista.promise;
+    entorno.liberarHealthz.resolve();
+    await entorno.contactosVistos.promise;
+    await vaciarMicrotareas();
+
+    const rendersTrasPrimeraMuestra = app.renderCalls.length;
+    const timer = entorno.timers.find((candidato) => candidato.activo && candidato.delay === 2000);
+    assert.ok(timer, "el primer sondeo correcto debe programar el siguiente");
+    timer.activo = false;
+    timer.callback(...timer.args);
+    await vaciarMicrotareas();
+
+    assert.equal(
+      entorno.llamadasFetch.filter((url) => url.endsWith("/v1/contacts")).length,
+      2,
+      "debe haberse completado un segundo sondeo",
+    );
+    assert.equal(
+      app.renderCalls.length,
+      rendersTrasPrimeraMuestra,
+      "una muestra con la misma estructura no debe sustituir el canvas",
+    );
+    assert.equal(
+      app.distanciaNode.textContent,
+      "180",
+      "la distancia confirmada debe actualizarse sobre el DOM estable",
+    );
+
+    if (modern) app._onClose();
+    else await app.close();
   });
 }
 

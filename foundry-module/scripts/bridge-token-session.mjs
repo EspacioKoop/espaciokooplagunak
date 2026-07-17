@@ -1,13 +1,14 @@
 let configuredModuleId = null;
 let sessionToken = "";
 let tokenApp = null;
+let legacyStorageCleared = false;
 
 export function registerBridgeTokenFeature(moduleId) {
   configuredModuleId = moduleId;
 }
 
 export function getBridgeToken() {
-  return sessionToken;
+  return game.user?.isGM ? sessionToken : "";
 }
 
 export function setBridgeToken(value) {
@@ -23,15 +24,18 @@ export async function clearLegacyBridgeToken() {
   if (!configuredModuleId) return false;
   try {
     await game.settings.set(configuredModuleId, "bridgeToken", "");
+    legacyStorageCleared = true;
     return true;
   } catch {
+    legacyStorageCleared = false;
     ui.notifications.warn(game.i18n.localize("LAGUNAK.Token.ErrorMigracion"));
     return false;
   }
 }
 
-export function openBridgeTokenApp() {
+export async function openBridgeTokenApp() {
   if (!configuredModuleId || !game.user?.isGM) return null;
+  if (!legacyStorageCleared && !(await clearLegacyBridgeToken())) return null;
   tokenApp ??= new (tokenAppClass())();
   if (foundry.applications?.api?.ApplicationV2) {
     tokenApp.render({ force: true });
@@ -39,6 +43,12 @@ export function openBridgeTokenApp() {
     tokenApp.render(true);
   }
   return tokenApp;
+}
+
+export async function revokeBridgeTokenAccess() {
+  clearBridgeToken();
+  const app = tokenApp;
+  if (app) await app.close();
 }
 
 function tokenAppClass() {
@@ -54,7 +64,7 @@ function context() {
 }
 
 async function saveAndClose(value, app) {
-  if (!game.user?.isGM) return;
+  if (!game.user?.isGM || !legacyStorageCleared) return;
   if (!setBridgeToken(value)) {
     ui.notifications.warn(game.i18n.localize("LAGUNAK.Token.Vacio"));
     return;

@@ -328,6 +328,23 @@ def limpiar_portapapeles(herramienta: str, which=shutil.which,
     return proceso.returncode == 0
 
 
+def esperar_pegado_y_limpiar(herramienta: str) -> bool:
+    """Espera el pegado e intenta limpiar incluso si la espera se interrumpe."""
+    try:
+        _preguntar("Pulsa Intro cuando lo hayas pegado para vaciar el portapapeles")
+    finally:
+        limpiado = limpiar_portapapeles(herramienta)
+        if limpiado:
+            print("  Portapapeles vaciado.")
+            print("  Si usas un gestor de historial, elimina también allí la entrada.")
+        else:
+            print(_c(
+                "  No se pudo vaciar automáticamente; límpialo manualmente y rota el token si pudo quedar expuesto.",
+                "33",
+            ))
+    return limpiado
+
+
 # --- Validación de opciones --------------------------------------------------
 
 
@@ -651,15 +668,7 @@ def _accion_copiar_token() -> None:
         print(f"  Token copiado al portapapeles ({herramienta}); no se muestra en pantalla.")
         print("  Pégalo en Foundry desde «Configurar token del puente» (solo GM).")
         print("  Después pulsa «Probar conexión con el puente» en los controles de escena del GM.")
-        _preguntar("Pulsa Intro cuando lo hayas pegado para vaciar el portapapeles")
-        if limpiar_portapapeles(herramienta):
-            print("  Portapapeles vaciado.")
-            print("  Si usas un gestor de historial, elimina también allí la entrada.")
-        else:
-            print(_c(
-                "  No se pudo vaciar automáticamente; límpialo manualmente y rota el token si pudo quedar expuesto.",
-                "33",
-            ))
+        esperar_pegado_y_limpiar(herramienta)
         return
     print(_c("  No hay herramienta de portapapeles (wl-copy, xclip, xsel, pbcopy).", "33"))
     print("  El token no se mostrará. Instala una herramienta compatible y repite.")
@@ -817,13 +826,12 @@ def main(argv: list[str] | None = None) -> int:
             return 1
         print(f"Token copiado al portapapeles ({herramienta}); no se muestra. "
               "Pégalo en «Configurar token del puente».")
-        _preguntar("Pulsa Intro cuando lo hayas pegado para vaciar el portapapeles")
-        if not limpiar_portapapeles(herramienta):
-            print("No se pudo vaciar automáticamente; límpialo manualmente y rota el token si pudo quedar expuesto.")
-            return 1
-        print("Portapapeles vaciado.")
-        print("Si usas un gestor de historial, elimina también allí la entrada.")
-        return 0
+        try:
+            limpiado = esperar_pegado_y_limpiar(herramienta)
+        except KeyboardInterrupt:
+            print()
+            return 130
+        return 0 if limpiado else 1
     if args.set is not None:
         resultado = asegurar_env(_aplicar_set(args.set))
         accion = "Creado" if resultado.creado else "Actualizado"

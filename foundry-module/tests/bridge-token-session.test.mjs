@@ -4,7 +4,7 @@ import test from "node:test";
 
 let importNonce = 0;
 
-async function loadSession({ isGM = true, modern = false } = {}) {
+async function loadSession({ isGM = true, modern = false, settingsFail = false } = {}) {
   const notifications = { info: [], warn: [] };
   const settingsWrites = [];
   const instances = [];
@@ -35,9 +35,10 @@ async function loadSession({ isGM = true, modern = false } = {}) {
     };
   }
   globalThis.game = {
-    user: { isGM },
+    user: { id: "local-user", isGM },
     settings: {
       async set(moduleId, key, value) {
+        if (settingsFail) throw new Error("storage unavailable");
         settingsWrites.push([moduleId, key, value]);
       },
     },
@@ -71,12 +72,29 @@ test("la migración sobrescribe el ajuste legado sin leerlo", async () => {
 
 test("un jugador no puede abrir la ventana del token", async () => {
   const { module } = await loadSession({ isGM: false });
-  assert.equal(module.openBridgeTokenApp(), null);
+  assert.equal(await module.openBridgeTokenApp(), null);
+});
+
+test("una migración fallida bloquea la ventana", async () => {
+  const { module, instances, notifications } = await loadSession({ settingsFail: true });
+  assert.equal(await module.openBridgeTokenApp(), null);
+  assert.equal(instances.length, 0);
+  assert.deepEqual(notifications.warn, ["LAGUNAK.Token.ErrorMigracion"]);
+});
+
+test("degradar al usuario oculta y revoca definitivamente el token", async () => {
+  const { module } = await loadSession();
+  module.setBridgeToken("token-revocable");
+  game.user.isGM = false;
+  assert.equal(module.getBridgeToken(), "");
+  await module.revokeBridgeTokenAccess();
+  game.user.isGM = true;
+  assert.equal(module.getBridgeToken(), "");
 });
 
 test("v11 guarda el campo en memoria, lo cierra y permite reabrir", async () => {
   const { module, instances, notifications } = await loadSession();
-  const app = module.openBridgeTokenApp();
+  const app = await module.openBridgeTokenApp();
   const bindings = new Map();
   const html = {
     find(selector) {
@@ -92,21 +110,21 @@ test("v11 guarda el campo en memoria, lo cierra y permite reabrir", async () => 
   assert.equal(module.getBridgeToken(), "token-v11");
   assert.equal(app.closed, true);
   assert.deepEqual(notifications.info, ["LAGUNAK.Token.Configurado"]);
-  const reopened = module.openBridgeTokenApp();
+  const reopened = await module.openBridgeTokenApp();
   assert.notEqual(reopened, app);
   assert.equal(instances.length, 2);
 });
 
 test("ApplicationV2 conecta guardar y borrar sin persistencia", async () => {
   const { module, notifications } = await loadSession({ modern: true });
-  const app = module.openBridgeTokenApp();
+  const app = await module.openBridgeTokenApp();
   app.element = { querySelector: () => ({ value: "token-v13" }) };
   const actions = app.constructor.DEFAULT_OPTIONS.actions;
   await actions.saveToken.call(app);
   assert.equal(module.getBridgeToken(), "token-v13");
   app._onClose();
 
-  const reopened = module.openBridgeTokenApp();
+  const reopened = await module.openBridgeTokenApp();
   await reopened.constructor.DEFAULT_OPTIONS.actions.clearToken.call(reopened);
   assert.equal(module.getBridgeToken(), "");
   assert.deepEqual(notifications.info, [

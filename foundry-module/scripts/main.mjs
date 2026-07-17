@@ -31,6 +31,7 @@ import {
   getBridgeToken,
   openBridgeTokenApp,
   registerBridgeTokenFeature,
+  revokeBridgeTokenAccess,
 } from "./bridge-token-session.mjs";
 import { probarConexion } from "./diagnostico-conexion.mjs";
 import { processBridgeEvents } from "./event-journal.mjs";
@@ -131,6 +132,12 @@ Hooks.once("ready", () => {
   // Migración de #183: no se lee el valor legado; se sobrescribe con vacío.
   // El token operativo vive exclusivamente en bridge-token-session.mjs.
   void clearLegacyBridgeToken();
+});
+
+Hooks.on("updateUser", (user) => {
+  if (user?.id === game.user?.id && !user.isGM) {
+    void revokeBridgeTokenAccess();
+  }
 });
 
 /* Grupo PROPIO en los controles de escena, con icono de nave, solo GM

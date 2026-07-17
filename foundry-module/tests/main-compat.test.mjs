@@ -52,9 +52,10 @@ async function loadModule({ modern = false, isGM = true, fetchImpl } = {}) {
     },
   };
   globalThis.game = {
-    user: { isGM },
+    user: { id: "local-user", isGM },
     settings: {
       register() {},
+      async set() {},
       get(_module, key) {
         if (key === "bridgeUrl") return "http://bridge.test";
         return 2;
@@ -98,7 +99,7 @@ async function loadModule({ modern = false, isGM = true, fetchImpl } = {}) {
   tokenSession.clearBridgeToken();
   if (isGM) tokenSession.setBridgeToken("test-token");
   await import(`../scripts/main.mjs?compat-test=${importNonce++}`);
-  return { hooks, instances, notifications, fetchCalls, journalPages };
+  return { hooks, instances, notifications, fetchCalls, journalPages, tokenSession };
 }
 
 function pauseValues(fetchCalls) {
@@ -114,11 +115,21 @@ test("v11 abre la configuración efímera del token sin tocar red", async () => 
   const controls = [{ name: "token", tools: [] }];
   hooks.getSceneControlButtons(controls);
 
-  toolByName(controls, "lagunak-token").onClick();
+  await toolByName(controls, "lagunak-token").onClick();
   assert.equal(instances.length, 1);
   assert.deepEqual(instances[0].renderCalls, [true]);
   assert.deepEqual(fetchCalls, []);
   await instances[0].close();
+});
+
+test("updateUser revoca el token si el usuario local deja de ser GM", async () => {
+  const { hooks, tokenSession } = await loadModule();
+  assert.equal(tokenSession.getBridgeToken(), "test-token");
+  game.user.isGM = false;
+  hooks.updateUser({ id: "local-user", isGM: false });
+  assert.equal(tokenSession.getBridgeToken(), "");
+  game.user.isGM = true;
+  assert.equal(tokenSession.getBridgeToken(), "");
 });
 
 test("v11 conecta los listeners de pausa y reanudación con el puente", async () => {

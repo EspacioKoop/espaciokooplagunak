@@ -409,6 +409,14 @@ class CopiarTokenTests(unittest.TestCase):
         self.assertFalse(instalar.limpiar_portapapeles(
             "xclip", which=lambda _: None))
 
+    def test_interrupcion_siempre_intenta_limpiar_portapapeles(self) -> None:
+        with mock.patch.object(instalar, "_preguntar", side_effect=KeyboardInterrupt), \
+             mock.patch.object(instalar, "limpiar_portapapeles", return_value=True) as limpiar, \
+             contextlib.redirect_stdout(io.StringIO()):
+            with self.assertRaises(KeyboardInterrupt):
+                instalar.esperar_pegado_y_limpiar("wl-copy")
+        limpiar.assert_called_once_with("wl-copy")
+
     def test_cli_copiar_token_sin_env_falla(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             with mock.patch.object(instalar, "ENV_DESTINO", Path(tmp) / ".env"):
@@ -451,6 +459,22 @@ class CopiarTokenTests(unittest.TestCase):
         self.assertEqual(codigo, 1)
         self.assertNotIn(token, buffer.getvalue())
         self.assertIn("No se pudo vaciar", buffer.getvalue())
+
+    def test_cli_interrumpida_limpia_y_devuelve_130(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            env = Path(tmp) / ".env"
+            env.write_text(
+                instalar.fusionar_env("", {"BRIDGE_TOKEN": "interrupcion"}),
+                encoding="utf-8",
+            )
+            with mock.patch.object(instalar, "ENV_DESTINO", env), \
+                 mock.patch.object(instalar, "copiar_al_portapapeles", return_value="xclip"), \
+                 mock.patch.object(instalar, "limpiar_portapapeles", return_value=True) as limpiar, \
+                 mock.patch.object(instalar, "_preguntar", side_effect=KeyboardInterrupt), \
+                 contextlib.redirect_stdout(io.StringIO()):
+                codigo = instalar.main(["--copiar-token"])
+        self.assertEqual(codigo, 130)
+        limpiar.assert_called_once_with("xclip")
 
     def test_cli_copiar_token_sin_portapapeles_no_imprime_el_token(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

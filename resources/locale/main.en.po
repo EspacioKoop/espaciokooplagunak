@@ -4313,6 +4313,38 @@ msgid "Campaign transitions contain a cycle."
 msgstr ""
 
 msgctxt "content_editor"
+msgid "View campaign graph"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Campaign graph"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "The campaign fields cannot be parsed; fix them to view the graph."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "The campaign has no maps to draw."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "No starting map is set; reachability is not checked."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "{count} maps are unreachable from the starting map."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Missing from the library: {maps} maps, {characters} characters, {ships} ships."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Every map is reachable and every reference exists."
+msgstr ""
+
+msgctxt "content_editor"
 msgid "Crew position must use a canonical game identifier."
 msgstr ""
 

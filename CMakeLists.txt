@@ -273,6 +273,8 @@ set(MAIN_SOURCES
     src/screens/extra/databaseScreen.cpp
     src/screens/extra/commsScreen.cpp
     src/screens/extra/shipLogScreen.cpp
+    src/content/campaignGraph.cpp
+    src/content/campaignGraph.h
     src/content/contentLibraryStore.cpp
     src/content/contentLibraryStore.h
     src/content/contentResource.cpp
@@ -738,6 +740,19 @@ if(BUILD_CONTENT_RESOURCE_TESTS)
         "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>")
     target_link_libraries(content_resource_tests PRIVATE seriousproton)
     add_test(NAME content_resource_codec COMMAND content_resource_tests)
+
+    add_executable(campaign_graph_tests
+        tests/campaignGraphTests.cpp
+        src/content/campaignGraph.cpp
+        src/content/contentResource.cpp
+        src/content/mapDocument.cpp
+        src/content/shipDocument.cpp
+        src/crewPosition.cpp
+    )
+    target_include_directories(campaign_graph_tests PRIVATE
+        "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>")
+    target_link_libraries(campaign_graph_tests PRIVATE seriousproton)
+    add_test(NAME campaign_graph COMMAND campaign_graph_tests)
 
     add_executable(content_library_store_tests
         tests/contentLibraryStoreTests.cpp

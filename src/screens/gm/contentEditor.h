@@ -1,5 +1,6 @@
 #pragma once
 
+#include "content/campaignGraph.h"
 #include "content/contentLibraryStore.h"
 #include "content/mapEditSession.h"
 #include "content/mapPreview.h"
@@ -128,6 +129,10 @@ private:
     GuiButton* relation_up_button;
     GuiButton* relation_down_button;
     RelationEditorMode relation_editor_mode = RelationEditorMode::CampaignMaps;
+    CampaignGraph campaign_graph;
+    GuiButton* campaign_graph_button;
+    GuiOverlay* campaign_graph_overlay;
+    GuiLabel* campaign_graph_warnings;
 
     void requestSetType(ContentResourceType type);
     void setType(ContentResourceType type);
@@ -178,4 +183,6 @@ private:
     void removeRelationSelection();
     void moveRelationSelection(int direction);
     void applyRelationResource(const ContentResource& resource);
+    void openCampaignGraph();
+    void closeCampaignGraph();
 };

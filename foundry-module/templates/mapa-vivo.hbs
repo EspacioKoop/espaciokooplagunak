@@ -1,15 +1,35 @@
 <div class="lagunak-mapa-cuerpo">
-  <p class="lagunak-conexion lagunak-conexion-{{conexion}}">
-    <span class="lagunak-punto"></span>
+  <p class="lagunak-conexion lagunak-conexion-{{conexion}}" role="status" aria-live="polite">
+    <span class="lagunak-punto" aria-hidden="true"></span>
     {{#if conexionOk}}{{localize "LAGUNAK.Conexion.Ok"}}{{/if}}
     {{#if conexionError}}{{localize "LAGUNAK.Conexion.Error"}} — {{detalleError}}{{/if}}
     {{#if conexionConectando}}{{localize "LAGUNAK.Conexion.Conectando"}}{{/if}}
   </p>
 
+  <details class="lagunak-ayuda">
+    <summary>{{localize "LAGUNAK.Ayuda.Titulo"}}</summary>
+    <p>{{localize "LAGUNAK.Ayuda.MapaQueEs"}}</p>
+    <p>{{localize "LAGUNAK.Ayuda.SoloLectura"}}</p>
+    <p>{{localize "LAGUNAK.Ayuda.Navegacion"}}</p>
+  </details>
+
   <div class="lagunak-mapa-visor">
-    <canvas class="lagunak-mapa-canvas" width="320" height="320"></canvas>
+    <canvas class="lagunak-mapa-canvas" width="320" height="320" role="img" aria-label="{{localize "LAGUNAK.MapaVivo.Descripcion"}}">
+      {{localize "LAGUNAK.MapaVivo.Descripcion"}}
+    </canvas>
   </div>
   <p class="lagunak-mapa-alcance">{{alcanceLabel}}</p>
+
+  <h4>{{localize "LAGUNAK.MapaVivo.Leyenda"}}</h4>
+  <ul class="lagunak-mapa-claves">
+    {{#each leyenda}}
+    <li>
+      <span class="lagunak-mapa-color" style="background: {{this.color}}"></span>
+      <span>{{this.etiqueta}}</span>
+    </li>
+    {{/each}}
+    <li class="lagunak-mapa-clave-texto">{{localize "LAGUNAK.MapaVivo.LeyendaParpadeo"}}</li>
+  </ul>
 
   {{#if sinDatos}}
   <p class="lagunak-sin-datos">{{localize "LAGUNAK.MapaVivo.SinDatos"}}</p>
@@ -18,12 +38,28 @@
   <ul class="lagunak-mapa-leyenda">
     {{#each contactos}}
     <li>
-      <span class="lagunak-mapa-color" style="background: {{this.color}}"></span>
-      <span class="lagunak-mapa-callsign">{{this.callsign}}</span>
-      <span class="lagunak-mapa-distancia">{{this.distanciaLabel}}</span>
-      {{#if this.fuera}}<span class="lagunak-mapa-fuera">{{localize "LAGUNAK.MapaVivo.FueraVisor"}}</span>{{/if}}
+      <button type="button" class="lagunak-mapa-contacto {{#if this.seleccionado}}lagunak-seleccionado{{/if}}" data-contacto="{{this.callsign}}">
+        <span class="lagunak-mapa-color" style="background: {{this.color}}" aria-hidden="true"></span>
+        <span class="lagunak-mapa-callsign">{{this.callsign}}</span>
+        <span class="lagunak-mapa-distancia">{{this.distanciaLabel}}</span>
+        {{#if this.fuera}}<span class="lagunak-mapa-fuera">{{localize "LAGUNAK.MapaVivo.FueraVisor"}}</span>{{/if}}
+      </button>
     </li>
     {{/each}}
   </ul>
+
+  {{#if detalle}}
+  <div class="lagunak-mapa-detalle" role="status">
+    <h4><span class="lagunak-mapa-color" style="background: {{detalle.color}}"></span> {{detalle.callsign}}</h4>
+    <table class="lagunak-tabla">
+      <tr><th>{{localize "LAGUNAK.MapaVivo.Detalle.Tipo"}}</th><td>{{detalle.tipo}}</td></tr>
+      <tr><th>{{localize "LAGUNAK.MapaVivo.Detalle.Faccion"}}</th><td>{{detalle.faccion}}</td></tr>
+      <tr><th>{{localize "LAGUNAK.EstadoNave.Distancia"}}</th><td>{{detalle.distanciaLabel}}</td></tr>
+      <tr><th>{{localize "LAGUNAK.EstadoNave.Rumbo"}}</th><td>{{detalle.rumboLabel}}</td></tr>
+    </table>
+  </div>
+  {{else}}
+  <p class="lagunak-mapa-sin-seleccion">{{localize "LAGUNAK.MapaVivo.SinSeleccion"}}</p>
+  {{/if}}
   {{/if}}
 </div>

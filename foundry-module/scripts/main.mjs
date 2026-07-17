@@ -28,13 +28,18 @@
 import { BridgeClient, BridgeError } from "./bridge-client.mjs";
 import { processBridgeEvents } from "./event-journal.mjs";
 import { dibujarFrame } from "./mapa-render.mjs";
-import { prepareRoute } from "./ship-view.mjs";
+import { prepararVistaPausa } from "./pausa-control.mjs";
+import { prepareRoute, prepareSystemRows } from "./ship-view.mjs";
 import { setSimulationPaused } from "./tempo-control.mjs";
+import { addStationControl, registerStationFeature } from "./station-ui.mjs";
+import { addWorkspaceControl, registerWorkspaceFeature } from "./station-workspace-ui.mjs";
 import {
   colorFaccion,
   componerFrame,
   crearCampoEstrellas,
   debeDibujar,
+  leyendaContactos,
+  prepararDetalleContacto,
   rotarMuestras,
 } from "./ventana-nave.mjs";
 
@@ -48,8 +53,38 @@ const MAPA_RADIO_MUNDO = 30000;
 const MAPA_FPS = 30;
 const MAPA_SEMILLA = 0x4c4147;
 
+registerStationFeature(MODULE_ID);
+registerWorkspaceFeature(MODULE_ID);
+
 let estadoApp = null;
 let mapaApp = null;
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (character) => `&#${character.charCodeAt(0)};`);
+}
+
+function fechaLocal() {
+  const idioma = game.i18n.lang === "es" ? "es-ES" : game.i18n.lang;
+  return new Date().toLocaleString(idioma);
+}
+
+function numeroBitacora(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? Math.round(number) : 0;
+}
+
+function contenidoEstadoBitacora(nave, marca) {
+  const texto = (key) => escapeHtml(game.i18n.localize(key));
+  return `
+      <p><strong>${escapeHtml(nave.callsign ?? "?")}</strong> — ${escapeHtml(marca)}</p>
+      <ul>
+        <li>${texto("LAGUNAK.Diario.Campo.Posicion")}: ${numeroBitacora(nave.position?.x)}, ${numeroBitacora(nave.position?.y)}</li>
+        <li>${texto("LAGUNAK.Diario.Campo.Rumbo")}: ${numeroBitacora(nave.heading)}°</li>
+        <li>${texto("LAGUNAK.Diario.Campo.Casco")}: ${numeroBitacora(nave.hull)} / ${numeroBitacora(nave.hull_max)}</li>
+        <li>${texto("LAGUNAK.Diario.Campo.Energia")}: ${numeroBitacora(nave.energy)} / ${numeroBitacora(nave.energy_max)}</li>
+        <li>${texto("LAGUNAK.Diario.Campo.Escudos")}: ${texto(nave.shields_active ? "LAGUNAK.EstadoNave.EscudosActivos" : "LAGUNAK.EstadoNave.EscudosInactivos")}</li>
+      </ul>`;
+}
 
 Hooks.once("init", () => {
   game.settings.register(MODULE_ID, "bridgeUrl", {
@@ -81,51 +116,86 @@ Hooks.once("init", () => {
   });
 });
 
-/* Botón en los controles de escena (grupo de fichas), solo GM.
- * Rama v11/v12 (array de grupos con `tools` array): IDÉNTICA al esqueleto
- * original. Rama v13 (record de grupos con `tools` record): añadida, pura-
- * mente aditiva — el `if (Array.isArray)` deja el camino v11/v12 intacto. */
+/* Grupo PROPIO en los controles de escena, con icono de nave, solo GM
+ * (issue #125: las herramientas del módulo no se mezclan con Token Controls).
+ * Rama v11/v12: array de grupos con `tools` array; rama v13: record de grupos
+ * con `tools` record. En ambas, el grupo usa la capa "controls" (existe en
+ * todas las versiones soportadas) porque sus herramientas son botones puros:
+ * activar el grupo no debe tocar ninguna capa de fichas. */
 Hooks.on("getSceneControlButtons", (controls) => {
+  addStationControl(controls);
+  addWorkspaceControl(controls);
   if (!game.user?.isGM) return;
 
   if (Array.isArray(controls)) {
-    const tokenControls = controls.find?.((c) => c.name === "token");
-    if (!tokenControls) return;
-    tokenControls.tools.push({
-      name: "lagunak-estado",
-      title: "LAGUNAK.Controles.AbrirEstado",
+    controls.push({
+      name: "lagunak",
+      title: "LAGUNAK.Controles.Grupo",
       icon: "fa-solid fa-shuttle-space",
-      button: true,
-      onClick: () => abrirEstadoNave(),
-    });
-    tokenControls.tools.push({
-      name: "lagunak-mapa",
-      title: "LAGUNAK.Controles.AbrirMapa",
-      icon: "fa-solid fa-satellite-dish",
-      button: true,
-      onClick: () => abrirMapaVivo(),
+      layer: "controls",
+      visible: true,
+      activeTool: "lagunak-estado",
+      tools: [
+        {
+          name: "lagunak-estado",
+          title: "LAGUNAK.Controles.AbrirEstado",
+          icon: "fa-solid fa-gauge-high",
+          button: true,
+          onClick: () => abrirEstadoNave(),
+        },
+        {
+          name: "lagunak-mapa",
+          title: "LAGUNAK.Controles.AbrirMapa",
+          icon: "fa-solid fa-satellite-dish",
+          button: true,
+          onClick: () => abrirMapaVivo(),
+        },
+      ],
     });
     return;
   }
 
-  const grupo = controls?.tokens ?? controls?.token;
-  if (grupo?.tools && !Array.isArray(grupo.tools)) {
-    grupo.tools["lagunak-estado"] = {
-      name: "lagunak-estado",
-      title: "LAGUNAK.Controles.AbrirEstado",
+  if (controls && typeof controls === "object") {
+    controls.lagunak = {
+      name: "lagunak",
+      title: "LAGUNAK.Controles.Grupo",
       icon: "fa-solid fa-shuttle-space",
-      button: true,
-      onClick: () => abrirEstadoNave(),
-      onChange: () => abrirEstadoNave(),
+      layer: "controls",
+      visible: true,
+      activeTool: "lagunak-estado",
+      order: Object.keys(controls).length,
+      onChange: () => {},
+      onToolChange: () => {},
+      tools: {
+        "lagunak-estado": {
+          name: "lagunak-estado",
+          title: "LAGUNAK.Controles.AbrirEstado",
+          icon: "fa-solid fa-gauge-high",
+          order: 0,
+          button: true,
+          onClick: () => abrirEstadoNave(),
+          onChange: () => abrirEstadoNave(),
+        },
+        "lagunak-mapa": {
+          name: "lagunak-mapa",
+          title: "LAGUNAK.Controles.AbrirMapa",
+          icon: "fa-solid fa-satellite-dish",
+          order: 1,
+          button: true,
+          onClick: () => abrirMapaVivo(),
+          onChange: () => abrirMapaVivo(),
+        },
+      },
     };
-    grupo.tools["lagunak-mapa"] = {
-      name: "lagunak-mapa",
-      title: "LAGUNAK.Controles.AbrirMapa",
-      icon: "fa-solid fa-satellite-dish",
-      button: true,
-      onClick: () => abrirMapaVivo(),
-      onChange: () => abrirMapaVivo(),
-    };
+  }
+});
+
+/* La pausa de Foundry (game.paused) se muestra como dato informativo en la
+ * ventana de estado; este hook solo refresca la vista abierta. NO se propaga
+ * en ninguna dirección (decisión de #125, ver docs/FOUNDRY.md). */
+Hooks.on("pauseGame", () => {
+  if (estadoApp?.rendered) {
+    estadoApp.render(foundry.applications?.api?.ApplicationV2 ? {} : false);
   }
 });
 
@@ -206,6 +276,11 @@ function crearClaseV2() {
     ultimoEstado = null; // último /v1/state correcto
     conexion = "conectando"; // "ok" | "error" | "conectando"
     detalleError = "";
+    pausaConfirmada = null; // último `paused` de /v1/scenario (null = sin lectura)
+    ordenPendiente = null; // orden de pausa en vuelo (true/false) o null
+    confirmacionPendiente = null; // ACK recibido, a la espera de observarlo en /v1/scenario
+    falloOrden = false; // la última orden de pausa terminó en error
+    ayudaAbierta = false; // conserva <details open> entre reemplazos del DOM
 
     #cliente() {
       return new BridgeClient({
@@ -226,6 +301,7 @@ function crearClaseV2() {
         const cliente = this.#cliente();
         await cliente.healthz();
         this.ultimoEstado = await cliente.state();
+        this._registrarLecturaPausa(await cliente.scenario());
         await processBridgeEvents({
           payload: await cliente.events(),
           game,
@@ -239,6 +315,12 @@ function crearClaseV2() {
         this.conexion = "error";
         this.detalleError = err instanceof BridgeError ? err.message : game.i18n.localize("LAGUNAK.Errores.Desconocido");
         this.#fallosSeguidos = Math.min(this.#fallosSeguidos + 1, 10);
+        // Salida segura: si el sondeo falla con una confirmación pendiente,
+        // no se deja la UI esperando para siempre un estado inobservable.
+        if (this.confirmacionPendiente !== null) {
+          this.confirmacionPendiente = null;
+          this.falloOrden = true;
+        }
       }
       if (this.rendered) this.render();
       this.#programar();
@@ -249,9 +331,38 @@ function crearClaseV2() {
       this.#timer = setTimeout(() => this.#sondear(), this.#intervaloMs());
     }
 
+    /**
+     * Única vía de actualización de `pausaConfirmada`: una lectura real de
+     * /v1/scenario. El ACK de /v1/command solo deja `confirmacionPendiente`;
+     * aquí se resuelve como confirmada (notificación) o discordante (aviso y
+     * estado de error con reintento coherente).
+     */
+    _registrarLecturaPausa(escenario) {
+      const lectura = typeof escenario?.paused === "boolean" ? escenario.paused : null;
+      this.pausaConfirmada = lectura;
+      if (this.confirmacionPendiente === null || lectura === null) return;
+      const esperado = this.confirmacionPendiente;
+      this.confirmacionPendiente = null;
+      if (lectura === esperado) {
+        const key = lectura ? "LAGUNAK.Tempo.Pausado" : "LAGUNAK.Tempo.Reanudado";
+        ui.notifications.info(game.i18n.localize(key));
+      } else {
+        this.falloOrden = true;
+        ui.notifications.warn(game.i18n.localize("LAGUNAK.Tempo.Discordante"));
+      }
+    }
+
     _onFirstRender(context, options) {
       super._onFirstRender?.(context, options);
       this.#sondear();
+    }
+
+    _onRender(context, options) {
+      super._onRender?.(context, options);
+      const ayuda = this.element?.querySelector?.(".lagunak-ayuda");
+      ayuda?.addEventListener?.("toggle", (event) => {
+        this.ayudaAbierta = Boolean(event.currentTarget?.open);
+      });
     }
 
     _onClose(options) {
@@ -259,6 +370,11 @@ function crearClaseV2() {
       this.#timer = null;
       this.#fallosSeguidos = 0;
       this.conexion = "conectando";
+      this.pausaConfirmada = null;
+      this.ordenPendiente = null;
+      this.confirmacionPendiente = null;
+      this.falloOrden = false;
+      this.ayudaAbierta = false;
       super._onClose?.(options);
     }
 
@@ -270,21 +386,37 @@ function crearClaseV2() {
         conexionError: this.conexion === "error",
         conexionConectando: this.conexion === "conectando",
         detalleError: this.detalleError,
+        ayudaAbierta: this.ayudaAbierta,
         esGM: Boolean(game.user?.isGM),
         nave,
         ruta: prepareRoute(nave, game.i18n),
+        pausa: prepararVistaPausa({
+          conexion: this.conexion,
+          paused: this.pausaConfirmada,
+          // La UI sigue en «pausando»/«reanudando» hasta observar la lectura.
+          pendiente: this.ordenPendiente ?? this.confirmacionPendiente,
+          falloOrden: this.falloOrden,
+          foundryPausado: Boolean(game.paused),
+          i18n: game.i18n,
+        }),
         sistemas: nave
-          ? Object.entries(nave.systems ?? {}).map(([nombre, s]) => ({
-              nombre,
-              salud: Math.round((s.health ?? 0) * 100),
-              calor: Math.round((s.heat ?? 0) * 100),
-              potencia: Math.round((s.power ?? 0) * 100),
+          ? prepareSystemRows(nave, game.i18n).map(({ name, health, heat, power }) => ({
+              nombre: name,
+              salud: health,
+              calor: heat,
+              potencia: power,
             }))
           : [],
       };
     }
 
     async _cambiarPausa(paused) {
+      // Una orden cada vez: mientras una viaja o espera confirmación, la UI
+      // deshabilita ambas.
+      if (this.ordenPendiente !== null || this.confirmacionPendiente !== null) return;
+      this.ordenPendiente = paused;
+      this.falloOrden = false;
+      if (this.rendered) this.render();
       try {
         const changed = await setSimulationPaused({
           paused,
@@ -292,14 +424,19 @@ function crearClaseV2() {
           client: this.#cliente(),
         });
         if (changed) {
-          const key = paused ? "LAGUNAK.Tempo.Pausado" : "LAGUNAK.Tempo.Reanudado";
-          ui.notifications.info(game.i18n.localize(key));
+          // El ACK solo confirma que la orden fue aceptada: el estado se
+          // considera confirmado únicamente al observarlo en /v1/scenario.
+          this.confirmacionPendiente = paused;
         }
       } catch (err) {
+        this.falloOrden = true;
         const message = err instanceof BridgeError
           ? err.message
           : game.i18n.localize("LAGUNAK.Errores.Desconocido");
         ui.notifications.error(message);
+      } finally {
+        this.ordenPendiente = null;
+        if (this.rendered) this.render();
       }
     }
 
@@ -325,18 +462,8 @@ function crearClaseV2() {
         game.journal.getName(nombreDiario) ??
         (await JournalEntry.create({ name: nombreDiario }));
 
-      const esc = (s) =>
-        String(s).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
-      const marca = new Date().toLocaleString();
-      const contenido = `
-      <p><strong>${esc(nave.callsign ?? "?")}</strong> — ${marca}</p>
-      <ul>
-        <li>Posición: ${Math.round(nave.position?.x ?? 0)}, ${Math.round(nave.position?.y ?? 0)}</li>
-        <li>Rumbo: ${Math.round(nave.heading ?? 0)}°</li>
-        <li>Casco: ${nave.hull} / ${nave.hull_max}</li>
-        <li>Energía: ${nave.energy} / ${nave.energy_max}</li>
-        <li>Escudos: ${nave.shields_active ? game.i18n.localize("LAGUNAK.EstadoNave.EscudosActivos") : game.i18n.localize("LAGUNAK.EstadoNave.EscudosInactivos")}</li>
-      </ul>`;
+      const marca = fechaLocal();
+      const contenido = contenidoEstadoBitacora(nave, marca);
 
       await diario.createEmbeddedDocuments("JournalEntryPage", [
         {
@@ -365,6 +492,11 @@ function crearClaseV1() {
     ultimoEstado = null;
     conexion = "conectando";
     detalleError = "";
+    pausaConfirmada = null;
+    ordenPendiente = null;
+    confirmacionPendiente = null;
+    falloOrden = false;
+    ayudaAbierta = false;
 
     static get defaultOptions() {
       return foundry.utils.mergeObject(super.defaultOptions, {
@@ -399,6 +531,7 @@ function crearClaseV1() {
         const cliente = this.#cliente();
         await cliente.healthz();
         this.ultimoEstado = await cliente.state();
+        this._registrarLecturaPausa(await cliente.scenario());
         await processBridgeEvents({
           payload: await cliente.events(),
           game,
@@ -412,10 +545,37 @@ function crearClaseV1() {
         this.conexion = "error";
         this.detalleError = err instanceof BridgeError ? err.message : game.i18n.localize("LAGUNAK.Errores.Desconocido");
         this.#fallosSeguidos = Math.min(this.#fallosSeguidos + 1, 10);
+        // Salida segura: si el sondeo falla con una confirmación pendiente,
+        // no se deja la UI esperando para siempre un estado inobservable.
+        if (this.confirmacionPendiente !== null) {
+          this.confirmacionPendiente = null;
+          this.falloOrden = true;
+        }
       }
       if (this.rendered) this.render(false);
       clearTimeout(this.#timer);
       this.#timer = setTimeout(() => this.#sondear(), this.#intervaloMs());
+    }
+
+    /**
+     * Única vía de actualización de `pausaConfirmada`: una lectura real de
+     * /v1/scenario. El ACK de /v1/command solo deja `confirmacionPendiente`;
+     * aquí se resuelve como confirmada (notificación) o discordante (aviso y
+     * estado de error con reintento coherente).
+     */
+    _registrarLecturaPausa(escenario) {
+      const lectura = typeof escenario?.paused === "boolean" ? escenario.paused : null;
+      this.pausaConfirmada = lectura;
+      if (this.confirmacionPendiente === null || lectura === null) return;
+      const esperado = this.confirmacionPendiente;
+      this.confirmacionPendiente = null;
+      if (lectura === esperado) {
+        const key = lectura ? "LAGUNAK.Tempo.Pausado" : "LAGUNAK.Tempo.Reanudado";
+        ui.notifications.info(game.i18n.localize(key));
+      } else {
+        this.falloOrden = true;
+        ui.notifications.warn(game.i18n.localize("LAGUNAK.Tempo.Discordante"));
+      }
     }
 
     async _render(force, options) {
@@ -432,6 +592,11 @@ function crearClaseV1() {
       this.#sondeando = false;
       this.#fallosSeguidos = 0;
       this.conexion = "conectando";
+      this.pausaConfirmada = null;
+      this.ordenPendiente = null;
+      this.confirmacionPendiente = null;
+      this.falloOrden = false;
+      this.ayudaAbierta = false;
       return super.close(options);
     }
 
@@ -440,6 +605,9 @@ function crearClaseV1() {
       html.find('[data-action="anotar"]').on("click", () => this.#anotar());
       html.find('[data-action="pausar"]').on("click", () => this.#cambiarPausa(true));
       html.find('[data-action="reanudar"]').on("click", () => this.#cambiarPausa(false));
+      html.find(".lagunak-ayuda").on("toggle", (event) => {
+        this.ayudaAbierta = Boolean(event.currentTarget?.open);
+      });
     }
 
     getData(_options) {
@@ -450,21 +618,37 @@ function crearClaseV1() {
         conexionError: this.conexion === "error",
         conexionConectando: this.conexion === "conectando",
         detalleError: this.detalleError,
+        ayudaAbierta: this.ayudaAbierta,
         esGM: Boolean(game.user?.isGM),
         nave,
         ruta: prepareRoute(nave, game.i18n),
+        pausa: prepararVistaPausa({
+          conexion: this.conexion,
+          paused: this.pausaConfirmada,
+          // La UI sigue en «pausando»/«reanudando» hasta observar la lectura.
+          pendiente: this.ordenPendiente ?? this.confirmacionPendiente,
+          falloOrden: this.falloOrden,
+          foundryPausado: Boolean(game.paused),
+          i18n: game.i18n,
+        }),
         sistemas: nave
-          ? Object.entries(nave.systems ?? {}).map(([nombre, s]) => ({
-              nombre,
-              salud: Math.round((s.health ?? 0) * 100),
-              calor: Math.round((s.heat ?? 0) * 100),
-              potencia: Math.round((s.power ?? 0) * 100),
+          ? prepareSystemRows(nave, game.i18n).map(({ name, health, heat, power }) => ({
+              nombre: name,
+              salud: health,
+              calor: heat,
+              potencia: power,
             }))
           : [],
       };
     }
 
     async #cambiarPausa(paused) {
+      // Una orden cada vez: mientras una viaja o espera confirmación, la UI
+      // deshabilita ambas.
+      if (this.ordenPendiente !== null || this.confirmacionPendiente !== null) return;
+      this.ordenPendiente = paused;
+      this.falloOrden = false;
+      if (this.rendered) this.render(false);
       try {
         const changed = await setSimulationPaused({
           paused,
@@ -472,14 +656,19 @@ function crearClaseV1() {
           client: this.#cliente(),
         });
         if (changed) {
-          const key = paused ? "LAGUNAK.Tempo.Pausado" : "LAGUNAK.Tempo.Reanudado";
-          ui.notifications.info(game.i18n.localize(key));
+          // El ACK solo confirma que la orden fue aceptada: el estado se
+          // considera confirmado únicamente al observarlo en /v1/scenario.
+          this.confirmacionPendiente = paused;
         }
       } catch (err) {
+        this.falloOrden = true;
         const message = err instanceof BridgeError
           ? err.message
           : game.i18n.localize("LAGUNAK.Errores.Desconocido");
         ui.notifications.error(message);
+      } finally {
+        this.ordenPendiente = null;
+        if (this.rendered) this.render(false);
       }
     }
 
@@ -496,18 +685,8 @@ function crearClaseV1() {
         game.journal.getName(nombreDiario) ??
         (await JournalEntry.create({ name: nombreDiario }));
 
-      const esc = (s) =>
-        String(s).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
-      const marca = new Date().toLocaleString();
-      const contenido = `
-      <p><strong>${esc(nave.callsign ?? "?")}</strong> — ${marca}</p>
-      <ul>
-        <li>Posición: ${Math.round(nave.position?.x ?? 0)}, ${Math.round(nave.position?.y ?? 0)}</li>
-        <li>Rumbo: ${Math.round(nave.heading ?? 0)}°</li>
-        <li>Casco: ${nave.hull} / ${nave.hull_max}</li>
-        <li>Energía: ${nave.energy} / ${nave.energy_max}</li>
-        <li>Escudos: ${nave.shields_active ? game.i18n.localize("LAGUNAK.EstadoNave.EscudosActivos") : game.i18n.localize("LAGUNAK.EstadoNave.EscudosInactivos")}</li>
-      </ul>`;
+      const marca = fechaLocal();
+      const contenido = contenidoEstadoBitacora(nave, marca);
 
       await diario.createEmbeddedDocuments("JournalEntryPage", [
         {
@@ -559,6 +738,8 @@ function crearClaseMapaV2() {
     #muestraPrev = null;
     #muestraActual = null;
     contactos = [];
+    destino = null; // último destination confirmado de /v1/state (issue #175)
+    seleccion = null; // callsign del contacto seleccionado en la lista
     conexion = "conectando";
     detalleError = "";
 
@@ -582,12 +763,14 @@ function crearClaseMapaV2() {
       const generacion = this.#generacion;
       let rotadas = null;
       let contactos = null;
+      let destino = null;
       let fallo = null;
       try {
         const cliente = this.#cliente();
         await cliente.healthz();
         const estado = await cliente.state();
         const nave = estado?.ship ?? null;
+        destino = nave?.destination ?? null;
         if (nave) {
           // Ventana de reproducción: rotarMuestras ancla el tween hacia
           // delante (los frames van DETRÁS de la recepción — sin esto, t
@@ -608,6 +791,7 @@ function crearClaseMapaV2() {
           this.#muestraActual = rotadas.actual;
         }
         this.contactos = contactos;
+        this.destino = destino;
         this.conexion = "ok";
         this.detalleError = "";
         this.#fallosSeguidos = 0;
@@ -645,6 +829,7 @@ function crearClaseMapaV2() {
         muestraPrev: this.#muestraPrev,
         muestraActual: this.#muestraActual,
         contactos: this.contactos,
+        destino: this.destino,
         campo: this.#campo,
         tMs: ahora,
         ancho: canvas.width,
@@ -658,6 +843,20 @@ function crearClaseMapaV2() {
       super._onFirstRender?.(context, options);
       this.#sondear();
       this.#animar();
+    }
+
+    /* Selección de contacto (issue #126): la lista re-renderiza en cada
+     * sondeo, así que los listeners se re-atan tras cada render. Clic en el
+     * contacto ya seleccionado lo deselecciona. */
+    _onRender(context, options) {
+      super._onRender?.(context, options);
+      this.element?.querySelectorAll?.("[data-contacto]")?.forEach((el) => {
+        el.addEventListener("click", () => {
+          const callsign = el.dataset.contacto ?? null;
+          this.seleccion = callsign === this.seleccion ? null : callsign;
+          this.render();
+        });
+      });
     }
 
     _onClose(options) {
@@ -678,6 +877,26 @@ function crearClaseMapaV2() {
 
     async _prepareContext(_options) {
       const centro = this.#muestraActual?.centro ?? null;
+      const desconocido = game.i18n.localize("LAGUNAK.MapaVivo.Desconocido");
+      const propia = game.i18n.localize("LAGUNAK.MapaVivo.LeyendaPropia");
+      const contactoSeleccionado =
+        this.contactos.find((c) => (c.callsign ?? "?") === this.seleccion) ?? null;
+      let detalle = null;
+      if (contactoSeleccionado) {
+        const d = prepararDetalleContacto(contactoSeleccionado, centro);
+        detalle = {
+          callsign: d.callsign,
+          color: d.color,
+          tipo: d.tipo ?? desconocido,
+          faccion: d.esJugador ? propia : d.faccion ?? desconocido,
+          distanciaLabel: game.i18n.format("LAGUNAK.EstadoNave.DistanciaUnidades", {
+            distance: Math.round(d.distancia),
+          }),
+          rumboLabel: game.i18n.format("LAGUNAK.MapaVivo.RumboGrados", {
+            rumbo: Math.round(d.rumboDeg),
+          }),
+        };
+      }
       return {
         conexion: this.conexion,
         conexionOk: this.conexion === "ok",
@@ -687,6 +906,13 @@ function crearClaseMapaV2() {
         esGM: Boolean(game.user?.isGM),
         sinDatos: !this.#muestraActual,
         alcanceLabel: game.i18n.format("LAGUNAK.MapaVivo.Alcance", { radio: MAPA_RADIO_MUNDO }),
+        detalle,
+        leyenda: leyendaContactos(this.contactos).map((e) => ({
+          color: e.color,
+          etiqueta: e.esJugador
+            ? propia
+            : e.faccion ?? game.i18n.localize("LAGUNAK.MapaVivo.LeyendaNeutro"),
+        })),
         contactos: this.contactos.map((c) => {
           const dx = (c.position?.x ?? 0) - (centro?.x ?? 0);
           const dy = (c.position?.y ?? 0) - (centro?.y ?? 0);
@@ -695,6 +921,7 @@ function crearClaseMapaV2() {
             callsign: c.callsign ?? "?",
             color: colorFaccion(c.faction ?? null, Boolean(c.is_player)),
             esJugador: Boolean(c.is_player),
+            seleccionado: (c.callsign ?? "?") === this.seleccion,
             distanciaLabel: game.i18n.format("LAGUNAK.EstadoNave.DistanciaUnidades", {
               distance: Math.round(distancia),
             }),
@@ -724,6 +951,8 @@ function crearClaseMapaV1() {
     #muestraPrev = null;
     #muestraActual = null;
     contactos = [];
+    destino = null; // último destination confirmado de /v1/state (issue #175)
+    seleccion = null; // callsign del contacto seleccionado en la lista
     conexion = "conectando";
     detalleError = "";
 
@@ -762,12 +991,14 @@ function crearClaseMapaV1() {
       const generacion = this.#generacion;
       let rotadas = null;
       let contactos = null;
+      let destino = null;
       let fallo = null;
       try {
         const cliente = this.#cliente();
         await cliente.healthz();
         const estado = await cliente.state();
         const nave = estado?.ship ?? null;
+        destino = nave?.destination ?? null;
         if (nave) {
           // Ventana de reproducción (ver rotarMuestras): el tween se ancla
           // hacia delante para que existan frames intermedios reales.
@@ -787,6 +1018,7 @@ function crearClaseMapaV1() {
           this.#muestraActual = rotadas.actual;
         }
         this.contactos = contactos;
+        this.destino = destino;
         this.conexion = "ok";
         this.detalleError = "";
         this.#fallosSeguidos = 0;
@@ -816,6 +1048,7 @@ function crearClaseMapaV1() {
         muestraPrev: this.#muestraPrev,
         muestraActual: this.#muestraActual,
         contactos: this.contactos,
+        destino: this.destino,
         campo: this.#campo,
         tMs: ahora,
         ancho: canvas.width,
@@ -823,6 +1056,17 @@ function crearClaseMapaV1() {
         radioMundo: MAPA_RADIO_MUNDO,
       });
       dibujarFrame(ctx, frame, { ancho: canvas.width, alto: canvas.height });
+    }
+
+    /* Selección de contacto (issue #126), réplica aislada de la ruta V2:
+     * clic selecciona, clic en el seleccionado deselecciona. */
+    activateListeners(html) {
+      super.activateListeners(html);
+      html.find("[data-contacto]").on("click", (ev) => {
+        const callsign = ev.currentTarget?.dataset?.contacto ?? null;
+        this.seleccion = callsign === this.seleccion ? null : callsign;
+        this.render(false);
+      });
     }
 
     async _render(force, options) {
@@ -852,6 +1096,26 @@ function crearClaseMapaV1() {
 
     getData(_options) {
       const centro = this.#muestraActual?.centro ?? null;
+      const desconocido = game.i18n.localize("LAGUNAK.MapaVivo.Desconocido");
+      const propia = game.i18n.localize("LAGUNAK.MapaVivo.LeyendaPropia");
+      const contactoSeleccionado =
+        this.contactos.find((c) => (c.callsign ?? "?") === this.seleccion) ?? null;
+      let detalle = null;
+      if (contactoSeleccionado) {
+        const d = prepararDetalleContacto(contactoSeleccionado, centro);
+        detalle = {
+          callsign: d.callsign,
+          color: d.color,
+          tipo: d.tipo ?? desconocido,
+          faccion: d.esJugador ? propia : d.faccion ?? desconocido,
+          distanciaLabel: game.i18n.format("LAGUNAK.EstadoNave.DistanciaUnidades", {
+            distance: Math.round(d.distancia),
+          }),
+          rumboLabel: game.i18n.format("LAGUNAK.MapaVivo.RumboGrados", {
+            rumbo: Math.round(d.rumboDeg),
+          }),
+        };
+      }
       return {
         conexion: this.conexion,
         conexionOk: this.conexion === "ok",
@@ -861,6 +1125,13 @@ function crearClaseMapaV1() {
         esGM: Boolean(game.user?.isGM),
         sinDatos: !this.#muestraActual,
         alcanceLabel: game.i18n.format("LAGUNAK.MapaVivo.Alcance", { radio: MAPA_RADIO_MUNDO }),
+        detalle,
+        leyenda: leyendaContactos(this.contactos).map((e) => ({
+          color: e.color,
+          etiqueta: e.esJugador
+            ? propia
+            : e.faccion ?? game.i18n.localize("LAGUNAK.MapaVivo.LeyendaNeutro"),
+        })),
         contactos: this.contactos.map((c) => {
           const dx = (c.position?.x ?? 0) - (centro?.x ?? 0);
           const dy = (c.position?.y ?? 0) - (centro?.y ?? 0);
@@ -869,6 +1140,7 @@ function crearClaseMapaV1() {
             callsign: c.callsign ?? "?",
             color: colorFaccion(c.faction ?? null, Boolean(c.is_player)),
             esJugador: Boolean(c.is_player),
+            seleccionado: (c.callsign ?? "?") === this.seleccion,
             distanciaLabel: game.i18n.format("LAGUNAK.EstadoNave.DistanciaUnidades", {
               distance: Math.round(distancia),
             }),

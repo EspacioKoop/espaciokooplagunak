@@ -1,0 +1,164 @@
+<section class="lagunak-workspace__shell lagunak-workspace--{{accent}}">
+  {{#if hasStation}}
+    <header class="lagunak-workspace__header">
+      <div class="lagunak-workspace__identity">
+        <span class="lagunak-workspace__code">{{stationCode}}</span>
+        <span class="lagunak-workspace__icon" aria-hidden="true"><i class="{{stationIcon}}"></i></span>
+        <div>
+          <small>{{localize "LAGUNAK.Espacios.PuestoActivo"}}</small>
+          <h2>{{stationLabel}}</h2>
+        </div>
+      </div>
+      <div class="lagunak-workspace__crew-counter" aria-label="{{localize "LAGUNAK.Espacios.TripulacionActiva"}}">
+        <strong>{{activeCrew}}</strong><span>/{{crewCount}}</span>
+        <small>{{localize "LAGUNAK.Espacios.EnLinea"}}</small>
+      </div>
+    </header>
+
+    {{#if isGM}}
+      <nav class="lagunak-workspace__tabs" aria-label="{{localize "LAGUNAK.Espacios.Previsualizar"}}">
+        {{#each tabs}}
+          <button type="button" class="{{#if selected}}is-selected{{/if}}" aria-pressed="{{selected}}" data-workspace-action="preview" data-station="{{station}}">
+            {{label}}
+          </button>
+        {{/each}}
+      </nav>
+    {{/if}}
+
+    <div class="lagunak-workspace__connection lagunak-workspace__connection--{{connection}}" role="status" aria-live="polite">
+      <span class="lagunak-workspace__pulse" aria-hidden="true"></span>
+      {{#if connectionOk}}{{localize "LAGUNAK.Espacios.TelemetriaOk"}}{{/if}}
+      {{#if connectionLoading}}{{localize "LAGUNAK.Espacios.TelemetriaCargando"}}{{/if}}
+      {{#if connectionError}}{{localize "LAGUNAK.Espacios.TelemetriaError"}} — {{error}}{{/if}}
+      {{#if connectionRestricted}}{{localize "LAGUNAK.Espacios.TelemetriaRestringida"}}{{/if}}
+    </div>
+
+    <div class="lagunak-workspace__grid">
+      <main class="lagunak-workspace__console">
+        <div class="lagunak-workspace__console-title">
+          <span>{{localize "LAGUNAK.Espacios.PanelOperativo"}}</span>
+          <span class="lagunak-workspace__sweep" aria-hidden="true"></span>
+        </div>
+
+        {{#if hasTelemetry}}
+          <div class="lagunak-workspace__metrics">
+            {{#each metrics}}
+              <article class="lagunak-workspace__metric lagunak-workspace__metric--{{tone}}">
+                <small>{{label}}</small>
+                <strong>{{value}}</strong>
+                {{#if hasProgress}}
+                  <div class="lagunak-workspace__meter" role="meter" aria-label="{{label}}: {{value}}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{progress}}">
+                    <span style="width: {{progress}}%"></span>
+                  </div>
+                {{/if}}
+              </article>
+            {{/each}}
+          </div>
+
+          {{#if ship}}
+            {{#if isNavigation}}
+              <div class="lagunak-workspace__nav-display">
+                <div class="lagunak-workspace__radar" role="img" aria-label="{{navigationAriaLabel}}" style="--lagunak-heading: {{navigationHeading}}deg">
+                  <span class="lagunak-workspace__radar-ring" aria-hidden="true"></span>
+                  <span class="lagunak-workspace__heading-line" aria-hidden="true"></span>
+                  <i class="fa-solid fa-shuttle-space" aria-hidden="true"></i>
+                </div>
+                <div class="lagunak-workspace__route-copy">
+                  <small>{{localize "LAGUNAK.Espacios.RutaActual"}}</small>
+                  <strong>{{#if ship.destination}}{{ship.destination.name}}{{else}}{{localize "LAGUNAK.Espacios.SinDestino"}}{{/if}}</strong>
+                  <span>{{localize "LAGUNAK.Espacios.RutaSoloLectura"}}</span>
+                </div>
+              </div>
+            {{/if}}
+          {{/if}}
+
+          {{#if systems.length}}
+            <div class="lagunak-workspace__systems">
+              <div class="lagunak-workspace__list-heading">
+                <span>{{localize "LAGUNAK.Espacios.MatrizSistemas"}}</span>
+                <span>{{localize "LAGUNAK.Espacios.SaludCalorPotencia"}}</span>
+              </div>
+              {{#each systems}}
+                <div class="lagunak-workspace__system-row">
+                  <strong>{{name}}</strong>
+                  <span class="is-health" aria-label="{{localize "LAGUNAK.EstadoNave.Salud"}}: {{health}}%">{{health}}%</span>
+                  <span class="is-heat" aria-label="{{localize "LAGUNAK.EstadoNave.Calor"}}: {{heat}}%">{{heat}}%</span>
+                  <span class="is-power" aria-label="{{localize "LAGUNAK.EstadoNave.Potencia"}}: {{power}}%">{{power}}%</span>
+                  <span class="is-coolant" aria-label="{{localize "LAGUNAK.Espacios.Refrigerante"}}: {{coolant}}%">{{coolant}}%</span>
+                </div>
+              {{/each}}
+            </div>
+          {{/if}}
+
+          {{#if contacts.length}}
+            <div class="lagunak-workspace__contacts">
+              <div class="lagunak-workspace__list-heading">
+                <span>{{localize "LAGUNAK.Espacios.ContactosProximos"}}</span>
+                <span>{{localize "LAGUNAK.Espacios.SoloGM"}}</span>
+              </div>
+              {{#each contacts}}
+                <div class="lagunak-workspace__contact-row">
+                  <i class="fa-solid fa-diamond" aria-hidden="true"></i>
+                  <strong>{{callsign}}</strong>
+                  <span>{{faction}}</span>
+                  <code>{{x}}, {{y}}</code>
+                </div>
+              {{/each}}
+            </div>
+          {{/if}}
+        {{else}}
+          <div class="lagunak-workspace__empty">
+            <i class="fa-solid fa-wave-square" aria-hidden="true"></i>
+            <strong>{{localize "LAGUNAK.Espacios.SinTelemetria"}}</strong>
+            <p>{{localize "LAGUNAK.Espacios.SinTelemetriaDetalle"}}</p>
+          </div>
+        {{/if}}
+      </main>
+
+      <aside class="lagunak-workspace__side">
+        <section class="lagunak-workspace__briefing">
+          <h3>{{localize "LAGUNAK.Espacios.ListaGuardia"}}</h3>
+          <ol>
+            {{#each tasks}}
+              <li><span>{{number}}</span>{{label}}</li>
+            {{/each}}
+          </ol>
+        </section>
+
+        <section class="lagunak-workspace__crew">
+          <h3>{{localize "LAGUNAK.Espacios.Tripulacion"}}</h3>
+          {{#each crew}}
+            <div class="lagunak-workspace__crew-row {{#unless active}}is-offline{{/unless}}">
+              <span class="lagunak-workspace__crew-light" aria-hidden="true"></span>
+              <strong>{{name}}</strong>
+              <small>{{stationLabel}}{{#unless active}} · {{statusLabel}}{{/unless}}</small>
+            </div>
+          {{else}}
+            <p>{{localize "LAGUNAK.Puestos.SinJugadores"}}</p>
+          {{/each}}
+        </section>
+      </aside>
+    </div>
+
+    <footer class="lagunak-workspace__actions">
+      <button type="button" data-workspace-action="assignments">
+        <i class="fa-solid fa-users-gear" aria-hidden="true"></i> {{localize "LAGUNAK.Espacios.GestionarPuestos"}}
+      </button>
+      {{#if isGM}}
+        <button type="button" class="is-primary" data-workspace-action="refresh">
+          <i class="fa-solid fa-rotate" aria-hidden="true"></i> {{localize "LAGUNAK.Espacios.Actualizar"}}
+        </button>
+      {{/if}}
+    </footer>
+  {{else}}
+    <div class="lagunak-workspace__unassigned">
+      <span class="lagunak-workspace__unassigned-icon" aria-hidden="true"><i class="fa-solid fa-user-astronaut"></i></span>
+      <small>{{localize "LAGUNAK.Espacios.SinPuestoCodigo"}}</small>
+      <h2>{{localize "LAGUNAK.Espacios.SinPuesto"}}</h2>
+      <p>{{localize "LAGUNAK.Espacios.SinPuestoDetalle"}}</p>
+      <button type="button" data-workspace-action="assignments">
+        <i class="fa-solid fa-users-gear" aria-hidden="true"></i> {{localize "LAGUNAK.Espacios.ElegirPuesto"}}
+      </button>
+    </div>
+  {{/if}}
+</section>

@@ -238,7 +238,8 @@ return string.format(
 """ % ", ".join(f'"{name}"' for name in _SYSTEMS)
 
 _SCENARIO_LUA = """
-return string.format('{"scenario_time":%.1f}', getScenarioTime())
+return string.format('{"scenario_time":%.1f,"paused":%s}',
+    getScenarioTime(), tostring(isGamePaused()))
 """
 
 _HEALTH_LUA = """
@@ -318,9 +319,17 @@ local function entrada(object, ox, oy, es_jugador)
     if ok_f and faction ~= nil and faction ~= "" then
         faction_json = json_escape(faction)
     end
+    local type_json = "null"
+    -- Contrato real del juego: el componente ECS `typename` (registrado en
+    -- src/script/components.cpp) con su campo `type_name`. Las entidades sin
+    -- ese componente (asteroides…) hacen fallar el pcall y quedan en null.
+    local ok_t, tname = pcall(function() return object.components.typename.type_name end)
+    if ok_t and tname ~= nil and tname ~= "" then
+        type_json = json_escape(tname)
+    end
     return string.format(
-        '{"callsign":%s,"position":{"x":%.1f,"y":%.1f},"faction":%s,"is_player":%s}',
-        json_escape(callsign), ox, oy, faction_json, es_jugador)
+        '{"callsign":%s,"position":{"x":%.1f,"y":%.1f},"faction":%s,"type":%s,"is_player":%s}',
+        json_escape(callsign), ox, oy, faction_json, type_json, es_jugador)
 end
 local contacts = {entrada(ship, x, y, "true")}
 for i = 1, math.min(#otros, limite - 1) do

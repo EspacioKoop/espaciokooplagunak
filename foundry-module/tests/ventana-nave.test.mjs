@@ -10,8 +10,12 @@ import {
   debeDibujar,
   interpolarAngulo,
   interpolarCentro,
+  leyendaContactos,
   offsetParallax,
+  prepararDetalleContacto,
   proyectarContactos,
+  proyectarDestino,
+  rumboHacia,
   rngSemilla,
   rotarMuestras,
 } from "../scripts/ventana-nave.mjs";
@@ -229,4 +233,124 @@ test("rotarMuestras acota la ventana de reproducción (huecos de backoff)", () =
   // segunda (recibidaMs), no su timestamp de reproducción.
   const r3 = rotarMuestras(r2.actual, { centro: { x: 200, y: 0 }, rumboDeg: 0 }, 63000);
   assert.equal(r3.actual.tMs - r3.prev.tMs, 2000);
+});
+
+/* --- Onboarding del mapa (issue #126): rumbo, detalle y leyenda --- */
+
+test("rumboHacia usa la convención de EmptyEpsilon (0° = norte, horario)", () => {
+  const centro = { x: 0, y: 0 };
+  // En EE la Y crece hacia el sur: un objeto en -y queda al norte (0°).
+  assert.equal(rumboHacia(centro, { x: 0, y: -100 }), 0);
+  assert.equal(rumboHacia(centro, { x: 100, y: 0 }), 90);
+  assert.equal(rumboHacia(centro, { x: 0, y: 100 }), 180);
+  assert.equal(rumboHacia(centro, { x: -100, y: 0 }), 270);
+});
+
+test("prepararDetalleContacto calcula distancia y rumbo y conserva tipo/facción", () => {
+  const d = prepararDetalleContacto(
+    { callsign: "K-7", type: "SpaceStation", faction: "Kraylor", position: { x: 300, y: 400 } },
+    { x: 0, y: 0 },
+  );
+  assert.equal(d.callsign, "K-7");
+  assert.equal(d.tipo, "SpaceStation");
+  assert.equal(d.faccion, "Kraylor");
+  assert.equal(d.distancia, 500);
+  assert.equal(d.color, colorFaccion("Kraylor"));
+  assert.ok(d.rumboDeg > 90 && d.rumboDeg < 180); // sureste en convención EE
+});
+
+test("prepararDetalleContacto tolera DTOs sin tipo ni facción", () => {
+  const d = prepararDetalleContacto({ callsign: "?", position: { x: 0, y: 10 } }, { x: 0, y: 0 });
+  assert.equal(d.tipo, null);
+  assert.equal(d.faccion, null);
+  assert.equal(d.color, COLOR_NEUTRO);
+});
+
+test("leyendaContactos: nave propia primero, una entrada por facción y neutros al final", () => {
+  const leyenda = leyendaContactos([
+    { callsign: "Itsaso 1", faction: "Human Navy", is_player: true },
+    { callsign: "K-1", faction: "Kraylor" },
+    { callsign: "K-2", faction: "Kraylor" },
+    { callsign: "roca", faction: null },
+  ]);
+  assert.equal(leyenda.length, 3);
+  assert.equal(leyenda[0].esJugador, true);
+  assert.equal(leyenda[0].color, COLOR_JUGADOR);
+  assert.equal(leyenda[1].faccion, "Kraylor");
+  assert.equal(leyenda[2].color, COLOR_NEUTRO);
+});
+
+test("leyendaContactos sin contactos deja solo la nave propia", () => {
+  const leyenda = leyendaContactos([]);
+  assert.equal(leyenda.length, 1);
+  assert.equal(leyenda[0].esJugador, true);
+});
+
+/* --- Destino en el mapa vivo (issue #175) --- */
+
+test("proyectarDestino dentro del visor: punto proyectado con su nombre", () => {
+  const d = proyectarDestino({
+    destino: { name: "Argia", position: { x: 0, y: -15000 } },
+    centro: { x: 0, y: 0 },
+    headingDeg: 0,
+    radioMundo: 30000,
+  });
+  assert.equal(d.nombre, "Argia");
+  assert.equal(d.dentro, true);
+  assert.equal(d.distancia, 15000);
+  // A mitad del radio del mundo, morro al norte: mitad del radio del visor.
+  assert.equal(Math.round(d.x), 160);
+  assert.equal(Math.round(d.y), 80);
+});
+
+test("proyectarDestino fuera de alcance: recortado al anillo, dirección intacta", () => {
+  const d = proyectarDestino({
+    destino: { name: "Argia", position: { x: 90000, y: 0 } },
+    centro: { x: 0, y: 0 },
+    headingDeg: 0,
+    radioMundo: 30000,
+  });
+  assert.equal(d.dentro, false);
+  assert.equal(d.distancia, 90000);
+  // Al este a rumbo 0: recortado al borde derecho del anillo.
+  assert.equal(Math.round(d.x), 320);
+  assert.equal(Math.round(d.y), 160);
+});
+
+test("proyectarDestino gira con el rumbo (proyección de cabina)", () => {
+  // Destino al este, nave con morro al este: el destino queda arriba.
+  const d = proyectarDestino({
+    destino: { name: "Argia", position: { x: 15000, y: 0 } },
+    centro: { x: 0, y: 0 },
+    headingDeg: 90,
+    radioMundo: 30000,
+  });
+  assert.equal(Math.round(d.x), 160);
+  assert.equal(Math.round(d.y), 80);
+});
+
+test("proyectarDestino no inventa: null sin destino, sin nombre o sin posición", () => {
+  const base = { centro: { x: 0, y: 0 }, headingDeg: 0 };
+  assert.equal(proyectarDestino({ destino: null, ...base }), null);
+  assert.equal(proyectarDestino({ destino: { name: "", position: { x: 1, y: 1 } }, ...base }), null);
+  assert.equal(proyectarDestino({ destino: { name: "Argia" }, ...base }), null);
+  assert.equal(proyectarDestino({ destino: { name: "Argia", position: { x: NaN, y: 0 } }, ...base }), null);
+});
+
+test("componerFrame publica frame.destino y lo deja null sin datos o sin destino", () => {
+  const muestra = { tMs: 0, centro: { x: 0, y: 0 }, rumboDeg: 0 };
+  const conDestino = componerFrame({
+    muestraActual: muestra,
+    destino: { name: "Argia", position: { x: 0, y: -15000 } },
+    tMs: 0,
+  });
+  assert.equal(conDestino.destino.nombre, "Argia");
+  assert.equal(conDestino.destino.dentro, true);
+
+  const sinDestino = componerFrame({ muestraActual: muestra, tMs: 0 });
+  assert.equal(sinDestino.destino, null);
+
+  const sinDatos = componerFrame({ destino: { name: "Argia", position: { x: 0, y: 0 } } });
+  assert.equal(sinDatos.sinDatos, true);
+  assert.equal(sinDatos.destino, null);
 });

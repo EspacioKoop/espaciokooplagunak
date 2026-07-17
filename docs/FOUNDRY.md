@@ -226,6 +226,23 @@ La primera integración debe demostrar valor sin intentar cubrir toda una campa�
 
 Estas decisiones se resolverán mediante issues antes de fijar una API estable.
 
+### Resuelta: pausa de Foundry y pausa del simulador (issue #125)
+
+- **No se sincronizan automáticamente en ninguna dirección.** La pausa del
+  simulador (`pauseGame()`/`unpauseGame()`) es del simulador; `game.paused`
+  de Foundry es de Foundry. Cualquier sincronización automática crearía el
+  bucle clásico (Foundry pausa → puente pausa → sondeo detecta pausa →
+  Foundry reacciona…) y reintentos ante fallos parciales.
+- **Autoridad**: el simulador es la única fuente de verdad de su propia
+  pausa. El módulo la lee confirmada del puente (`paused` en `/v1/scenario`)
+  y solo la cambia mediante la orden explícita del GM (`set_pause`), una
+  orden en vuelo cada vez.
+- **UI**: la ventana de estado muestra el estado confirmado (`en marcha`,
+  `pausando`, `pausado`, `reanudando`, error, desconexión), deshabilita la
+  acción imposible y, si Foundry está además en pausa, lo indica como dato
+  informativo independiente. Si el GM quiere pausar «todo», ejecuta ambas
+  pausas a mano: son dos actos deliberados, no un acoplamiento.
+
 ### Resuelta: motores, combustible, energía y recursos (issue #80)
 
 - **La energía de EmptyEpsilon es el recurso consumible v0**: la batería del

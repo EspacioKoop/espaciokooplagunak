@@ -134,3 +134,126 @@
   color: #ffb703; /* ámbar de aviso */
   font-style: italic;
 }
+
+/* --- Estado de pausa (issue #125) --- */
+
+.lagunak-tempo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5em;
+  margin-bottom: 0.5rem;
+}
+
+.lagunak-tempo button[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.lagunak-pausa-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  flex: 1 1 100%;
+  font-weight: bold;
+}
+
+.lagunak-pausa-en_marcha .lagunak-punto {
+  background: #3fa34d;
+}
+
+.lagunak-pausa-pausado .lagunak-punto {
+  background: #ffb703;
+}
+
+.lagunak-pausa-pausando .lagunak-punto,
+.lagunak-pausa-reanudando .lagunak-punto {
+  background: #3a86ff;
+  animation: lagunak-parpadeo 0.8s linear infinite;
+}
+
+.lagunak-pausa-error .lagunak-punto,
+.lagunak-pausa-desconectado .lagunak-punto {
+  background: #c0392b;
+}
+
+.lagunak-pausa-foundry {
+  flex: 1 1 100%;
+  margin: 0;
+  font-size: 0.85em;
+  opacity: 0.8;
+}
+
+@keyframes lagunak-parpadeo {
+  50% { opacity: 0.25; }
+}
+
+/* --- Onboarding: ayuda, leyenda y detalle de contacto (issue #126) --- */
+
+.lagunak-ayuda {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9em;
+}
+
+.lagunak-ayuda summary {
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.lagunak-ayuda p {
+  margin: 0.25em 0;
+  opacity: 0.85;
+}
+
+.lagunak-mapa-claves {
+  list-style: none;
+  margin: 0 0 0.5rem 0;
+  padding: 0;
+}
+
+.lagunak-mapa-claves li {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+}
+
+.lagunak-mapa-clave-texto {
+  font-size: 0.85em;
+  opacity: 0.8;
+}
+
+.lagunak-mapa-contacto {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  width: 100%;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.lagunak-mapa-contacto.lagunak-seleccionado {
+  border-color: currentColor;
+  border-radius: 3px;
+}
+
+.lagunak-mapa-detalle {
+  margin-top: 0.5rem;
+  padding: 0.4rem;
+  border: 1px solid rgba(127, 127, 127, 0.5);
+  border-radius: 3px;
+}
+
+.lagunak-mapa-detalle h4 {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  margin: 0 0 0.3rem 0;
+}
+
+.lagunak-mapa-sin-seleccion {
+  font-size: 0.9em;
+  opacity: 0.8;
+  font-style: italic;
+}

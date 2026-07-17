@@ -225,6 +225,10 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
     quinary_entry = new GuiTextEntry(box, "QUINARY", "");
     quinary_entry->setPosition(x + 190, 440)->setSize(500, 30);
 
+    character_links_label = new GuiLabel(box, "CHARACTER_LINKS", "", 16);
+    character_links_label->setAlignment(sp::Alignment::CenterLeft)
+        ->setPosition(x, 470)->setSize(690, 20)->hide();
+
     const std::array<RelationEditorMode, 5> campaign_modes = {
         RelationEditorMode::CampaignMaps,
         RelationEditorMode::CampaignStartingMap,
@@ -240,8 +244,12 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
             [this, index, mode = campaign_modes[index]]() {
                 if (current_type == ContentResourceType::Character && index == 0)
                     openRelationEditor(RelationEditorMode::CharacterCrewPosition);
+                else if (current_type == ContentResourceType::Character && index == 2)
+                    openRelationEditor(RelationEditorMode::CharacterTags);
                 else if (current_type == ContentResourceType::Character && index == 3)
                     openRelationEditor(RelationEditorMode::CharacterShip);
+                else if (current_type == ContentResourceType::Character && index == 4)
+                    clearLegacyRole();
                 else
                     openRelationEditor(mode);
             });
@@ -428,6 +436,8 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
     relation_destination_selector = new GuiSelector(
         relation_panel, "RELATION_DESTINATION", [](int, string) {});
     relation_destination_selector->setTextSize(20)->setPosition(380, 80)->setSize(350, 40);
+    relation_tag_entry = new GuiTextEntry(relation_panel, "RELATION_TAG", "");
+    relation_tag_entry->setSelectOnFocus()->setPosition(30, 80)->setSize(330, 40)->hide();
     relation_apply_button = new GuiButton(
         relation_panel, "RELATION_APPLY", tr("content_editor", "Add selection"),
         [this]() { applyRelationSelection(); });
@@ -585,13 +595,19 @@ void GuiContentEditor::updateFieldPresentation(ContentResourceType type)
         field_labels[index]->setVisible(!labels[index].empty());
         field_entries[index]->setVisible(!labels[index].empty());
         const bool managed_campaign = type == ContentResourceType::Campaign;
-        const bool managed_character = type == ContentResourceType::Character
-            && (index == 0 || index == 3);
+        const bool managed_character = type == ContentResourceType::Character && index != 1;
         const bool managed = managed_campaign || managed_character;
         field_entries[index]->setEnable(!managed);
         field_entries[index]->setSize(managed ? 340 : 500, 30);
-        relation_edit_buttons[index]->setVisible(managed);
+        relation_edit_buttons[index]->setVisible(managed && !labels[index].empty());
+        relation_edit_buttons[index]->setText(managed_character && index == 4
+            ? tr("content_editor", "Clear")
+            : tr("content_editor", "Select"));
     }
+    const bool is_character = type == ContentResourceType::Character;
+    character_links_label->setVisible(is_character);
+    if (is_character)
+        updateCharacterLinksSummary();
     const bool is_map = type == ContentResourceType::Map;
     preview_toggle->setVisible(is_map);
     map_edit_toggle->setVisible(is_map);
@@ -706,6 +722,7 @@ void GuiContentEditor::clearForm()
     clean_snapshot = formResource();
     updateShipOverrideEditor();
     updatePreviewStatus();
+    updateCharacterLinksSummary();
     syncListSelection();
     setStatus(tr("content_editor", "Create a resource or import one from the clipboard."));
 }
@@ -761,6 +778,7 @@ void GuiContentEditor::loadResource(int index)
     clean_snapshot = resource;
     updateShipOverrideEditor();
     updatePreviewStatus();
+    updateCharacterLinksSummary();
     pending_import = "";
     pending_save = "";
     pending_delete_key = "";
@@ -1617,6 +1635,7 @@ void GuiContentEditor::refreshRelationEditor()
     relation_current_list->clear();
     relation_candidate_selector->show();
     relation_destination_selector->hide();
+    relation_tag_entry->hide();
     relation_apply_button->show();
     relation_apply_button->setText(tr("content_editor", "Add selection"));
     relation_clear_button->hide();
@@ -1718,6 +1737,17 @@ void GuiContentEditor::refreshRelationEditor()
         relation_clear_button->show();
         relation_remove_button->hide();
         break;
+    case RelationEditorMode::CharacterTags:
+        relation_editor_title->setText(tr("content_editor", "Character tags"));
+        relation_candidate_selector->hide();
+        relation_tag_entry->show();
+        relation_apply_button->setText(tr("content_editor", "Add tag"));
+        for (const auto& tag : relationItems(resource.tertiary))
+            relation_current_list->addEntry(tag, tag);
+        relation_current_list->setSelectionIndex(relation_current_list->entryCount() > 0 ? 0 : -1);
+        relation_up_button->show();
+        relation_down_button->show();
+        break;
     }
 }
 
@@ -1750,9 +1780,16 @@ void GuiContentEditor::applyRelationSelection()
     case RelationEditorMode::CharacterShip:
         changed = setCharacterShipReference(resource, resources, selected);
         break;
+    case RelationEditorMode::CharacterTags:
+        changed = addCharacterTag(resource, relation_tag_entry->getText());
+        break;
     }
     if (!changed)
-        return setStatus(tr("content_editor", "The selected relationship is invalid or already present."));
+        return setStatus(relation_editor_mode == RelationEditorMode::CharacterTags
+            ? tr("content_editor", "The tag is empty, duplicated or not a portable ID.")
+            : tr("content_editor", "The selected relationship is invalid or already present."));
+    if (relation_editor_mode == RelationEditorMode::CharacterTags)
+        relation_tag_entry->setText("");
     applyRelationResource(resource);
     refreshRelationEditor();
     setStatus(tr("content_editor", "Relationship staged. Save the resource to persist it."));
@@ -1786,6 +1823,8 @@ void GuiContentEditor::removeRelationSelection()
         changed = removeContentReference(resource, ContentReferenceKind::CampaignCharacter, selected);
     else if (relation_editor_mode == RelationEditorMode::CampaignShips)
         changed = removeContentReference(resource, ContentReferenceKind::CampaignShip, selected);
+    else if (relation_editor_mode == RelationEditorMode::CharacterTags)
+        changed = removeCharacterTag(resource, selected);
     else if (relation_editor_mode == RelationEditorMode::CampaignTransitions)
     {
         const auto separator = selected.find('>');
@@ -1803,12 +1842,16 @@ void GuiContentEditor::removeRelationSelection()
 void GuiContentEditor::moveRelationSelection(int direction)
 {
     auto resource = formResource();
-    if (relation_editor_mode != RelationEditorMode::CampaignMaps
-        || !moveCampaignMap(resource, relation_current_list->getSelectionValue(), direction))
-        return setStatus(tr("content_editor", "The selected map cannot move in that direction."));
+    bool changed = false;
+    if (relation_editor_mode == RelationEditorMode::CampaignMaps)
+        changed = moveCampaignMap(resource, relation_current_list->getSelectionValue(), direction);
+    else if (relation_editor_mode == RelationEditorMode::CharacterTags)
+        changed = moveCharacterTag(resource, relation_current_list->getSelectionValue(), direction);
+    if (!changed)
+        return setStatus(tr("content_editor", "The selected entry cannot move in that direction."));
     applyRelationResource(resource);
     refreshRelationEditor();
-    setStatus(tr("content_editor", "Campaign map order updated in staging."));
+    setStatus(tr("content_editor", "Order updated in staging."));
 }
 
 void GuiContentEditor::applyRelationResource(const ContentResource& resource)
@@ -1822,4 +1865,45 @@ void GuiContentEditor::applyRelationResource(const ContentResource& resource)
     pending_file_export = "";
     discard_guard.reset();
     rename_guard.reset();
+    updateCharacterLinksSummary();
+}
+
+void GuiContentEditor::clearLegacyRole()
+{
+    auto resource = formResource();
+    if (!clearCharacterLegacyRole(resource))
+        return setStatus(tr("content_editor", "There is no legacy role to clear."));
+    applyRelationResource(resource);
+    setStatus(tr("content_editor", "Legacy role cleared in staging. Save the resource to persist it."));
+}
+
+void GuiContentEditor::updateCharacterLinksSummary()
+{
+    if (current_type != ContentResourceType::Character || !character_links_label)
+        return;
+    const auto resource = formResource();
+    string campaigns;
+    for (const auto& item : resources)
+    {
+        if (item.type != ContentResourceType::Campaign) continue;
+        for (const auto& id : relationItems(item.tertiary))
+        {
+            if (id != resource.id) continue;
+            if (!campaigns.empty()) campaigns += ", ";
+            campaigns += item.name.empty() ? string(item.id) : string(item.name);
+            break;
+        }
+    }
+    if (campaigns.empty()) campaigns = tr("content_editor", "none");
+    string ship = tr("content_editor", "none");
+    if (!resource.quaternary.empty())
+    {
+        ship = resource.quaternary;
+        for (const auto& item : resources)
+            if (item.type == ContentResourceType::Ship && item.id == resource.quaternary && !item.name.empty())
+                ship = item.name;
+    }
+    character_links_label->setText(
+        tr("content_editor", "Linked campaigns: {campaigns} — Ship: {ship}")
+            .format({{"campaigns", campaigns}, {"ship", ship}}));
 }

@@ -51,6 +51,7 @@ private:
         CampaignTransitions,
         CharacterCrewPosition,
         CharacterShip,
+        CharacterTags,
     };
 
     ContentLibraryStore store;
@@ -121,6 +122,8 @@ private:
     GuiLabel* relation_editor_title;
     GuiSelector* relation_candidate_selector;
     GuiSelector* relation_destination_selector;
+    GuiTextEntry* relation_tag_entry;
+    GuiLabel* character_links_label;
     GuiListbox* relation_current_list;
     GuiButton* relation_apply_button;
     GuiButton* relation_clear_button;
@@ -178,4 +181,6 @@ private:
     void removeRelationSelection();
     void moveRelationSelection(int direction);
     void applyRelationResource(const ContentResource& resource);
+    void clearLegacyRole();
+    void updateCharacterLinksSummary();
 };

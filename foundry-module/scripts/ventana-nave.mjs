@@ -106,10 +106,10 @@ export function proyectarContactos({ contacts = [], centro, headingDeg = 0, radi
   const a = (-headingDeg * Math.PI) / 180;
   const cos = Math.cos(a);
   const sin = Math.sin(a);
-  const ox = centro?.x ?? 0;
-  const oy = centro?.y ?? 0;
+  const ox = Number.isFinite(centro?.x) ? centro.x : 0;
+  const oy = Number.isFinite(centro?.y) ? centro.y : 0;
 
-  return contacts.map((c) => {
+  return normalizarContactosMapa(contacts).map((c) => {
     const relx = (c.position?.x ?? 0) - ox;
     const rely = (c.position?.y ?? 0) - oy;
     const rx = relx * cos - rely * sin;
@@ -213,8 +213,23 @@ export function claveContacto(contacto) {
   ]);
 }
 
-function coordenadaFinita(valor) {
-  return Number.isFinite(valor) ? valor : 0;
+/** Devuelve una copia numérica de la posición o null si el DTO no es usable. */
+export function normalizarPosicionMapa(posicion) {
+  if (!Number.isFinite(posicion?.x) || !Number.isFinite(posicion?.y)) return null;
+  return { x: posicion.x, y: posicion.y };
+}
+
+/**
+ * Frontera defensiva del mapa: una coordenada no finita no se convierte en
+ * `(0,0)` porque eso inventaría una posición. El contacto se omite de esta
+ * fotografía hasta que el puente entregue una muestra válida.
+ */
+export function normalizarContactosMapa(contactos = []) {
+  if (!Array.isArray(contactos)) return [];
+  return contactos.flatMap((contacto) => {
+    const position = normalizarPosicionMapa(contacto?.position);
+    return position ? [{ ...contacto, position }] : [];
+  });
 }
 
 /**
@@ -224,6 +239,8 @@ function coordenadaFinita(valor) {
  */
 export function interpolarContactos(prev = [], actual = [], t = 1) {
   const factor = Math.min(1, Math.max(0, Number.isFinite(t) ? t : 1));
+  const prevValidos = normalizarContactosMapa(prev);
+  const actualesValidos = normalizarContactosMapa(actual);
   const contar = (contactos) => {
     const cuentas = new Map();
     for (const contacto of contactos) {
@@ -232,26 +249,24 @@ export function interpolarContactos(prev = [], actual = [], t = 1) {
     }
     return cuentas;
   };
-  const cuentasPrev = contar(prev);
-  const cuentasActual = contar(actual);
+  const cuentasPrev = contar(prevValidos);
+  const cuentasActual = contar(actualesValidos);
   const prevPorClave = new Map();
-  for (const contacto of prev) {
+  for (const contacto of prevValidos) {
     const clave = claveContacto(contacto);
     if (clave !== null && cuentasPrev.get(clave) === 1) prevPorClave.set(clave, contacto);
   }
 
-  return actual.map((contacto) => {
+  return actualesValidos.map((contacto) => {
     const clave = claveContacto(contacto);
     const anterior = clave !== null && cuentasActual.get(clave) === 1
       ? prevPorClave.get(clave)
       : null;
-    const xActual = coordenadaFinita(contacto?.position?.x);
-    const yActual = coordenadaFinita(contacto?.position?.y);
-    if (!anterior) {
-      return { ...contacto, position: { x: xActual, y: yActual } };
-    }
-    const xPrev = coordenadaFinita(anterior?.position?.x);
-    const yPrev = coordenadaFinita(anterior?.position?.y);
+    const xActual = contacto.position.x;
+    const yActual = contacto.position.y;
+    if (!anterior) return contacto;
+    const xPrev = anterior.position.x;
+    const yPrev = anterior.position.y;
     return {
       ...contacto,
       position: {
@@ -278,7 +293,10 @@ export function firmaEstructuralContactos(contactos = []) {
  * El primer frame (sin dibujo previo) pinta siempre. */
 export function debeDibujar(ultimoMs, ahoraMs, fpsMax = 30) {
   if (ultimoMs == null) return true;
-  return ahoraMs - ultimoMs >= 1000 / fpsMax;
+  if (!Number.isFinite(ahoraMs) || !Number.isFinite(fpsMax) || fpsMax <= 0) return false;
+  // rAF suele avanzar 16.666… ms. Una tolerancia submilisegundo evita que el
+  // redondeo 16/17 ms descarte un tick y reduzca 60 Hz efectivos a ~40 FPS.
+  return ahoraMs - ultimoMs >= Math.max(0, 1000 / fpsMax - 0.5);
 }
 
 /**
@@ -396,6 +414,7 @@ export function componerFrame({
  * `deg(atan(dy, dx)) + 90` que usan los escenarios Lua. Resultado en [0, 360).
  */
 export function rumboHacia(centro, posicion) {
+  if (!normalizarPosicionMapa(centro) || !normalizarPosicionMapa(posicion)) return null;
   const dx = (posicion?.x ?? 0) - (centro?.x ?? 0);
   const dy = (posicion?.y ?? 0) - (centro?.y ?? 0);
   const grados = (Math.atan2(dy, dx) * 180) / Math.PI + 90;
@@ -408,19 +427,21 @@ export function rumboHacia(centro, posicion) {
  * calculados desde la nave propia. Puro: las etiquetas i18n las pone la vista.
  *
  * @returns {{callsign:string, tipo:string|null, faccion:string|null,
- *   esJugador:boolean, color:string, distancia:number, rumboDeg:number}}
+ *   esJugador:boolean, color:string, distancia:(number|null), rumboDeg:(number|null)}}
  */
 export function prepararDetalleContacto(contacto, centro) {
-  const dx = (contacto.position?.x ?? 0) - (centro?.x ?? 0);
-  const dy = (contacto.position?.y ?? 0) - (centro?.y ?? 0);
+  const centroValido = normalizarPosicionMapa(centro);
+  const posicionValida = normalizarPosicionMapa(contacto?.position);
+  const dx = centroValido && posicionValida ? posicionValida.x - centroValido.x : null;
+  const dy = centroValido && posicionValida ? posicionValida.y - centroValido.y : null;
   return {
     callsign: contacto.callsign ?? "?",
     tipo: contacto.type ?? null,
     faccion: contacto.faction ?? null,
     esJugador: Boolean(contacto.is_player),
     color: colorFaccion(contacto.faction ?? null, Boolean(contacto.is_player)),
-    distancia: Math.hypot(dx, dy),
-    rumboDeg: rumboHacia(centro, contacto.position),
+    distancia: dx === null || dy === null ? null : Math.hypot(dx, dy),
+    rumboDeg: centroValido && posicionValida ? rumboHacia(centroValido, posicionValida) : null,
   };
 }
 

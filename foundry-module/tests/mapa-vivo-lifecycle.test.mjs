@@ -13,7 +13,14 @@ function diferida() {
   return { promise, resolve };
 }
 
-async function cargarMapa({ modern, t }) {
+async function cargarMapa({
+  modern,
+  t,
+  estadoPendienteSegunda = null,
+  fallarEstadoLecturas = [],
+  fallarContactosLecturas = [],
+  contactosDuplicados = false,
+}) {
   const hooks = {};
   const instancias = [];
   const timers = [];
@@ -51,15 +58,22 @@ async function cargarMapa({ modern, t }) {
       instancias.push(this);
       this.rendered = false;
       this.renderCalls = [];
-      this.distanciaNode = { textContent: "" };
+      this.distanciaNodes = [{ textContent: "" }, { textContent: "" }];
+      this.fueraNodes = [{ hidden: true }, { hidden: true }];
+      this.distanciaNode = this.distanciaNodes[0];
+      this.fueraNode = this.fueraNodes[0];
       this.detalleDistanciaNode = { textContent: "" };
       this.detalleRumboNode = { textContent: "" };
-      const botonContacto = {
-        dataset: { contacto: "K-7" },
-        querySelector: (selector) => selector === ".lagunak-mapa-distancia" ? this.distanciaNode : null,
-      };
+      const botonesContacto = Array.from({ length: contactosDuplicados ? 2 : 1 }, (_, indice) => ({
+        dataset: { contacto: contactosDuplicados ? "?" : "K-7", contactoIndice: String(indice) },
+        querySelector: (selector) => {
+          if (selector === ".lagunak-mapa-distancia") return this.distanciaNodes[indice];
+          if (selector === "[data-lagunak-fuera]") return this.fueraNodes[indice];
+          return null;
+        },
+      }));
       const raiz = {
-        querySelectorAll: (selector) => selector === "[data-contacto]" ? [botonContacto] : [],
+        querySelectorAll: (selector) => selector === "[data-contacto]" ? botonesContacto : [],
         querySelector: (selector) => {
           if (selector === "[data-lagunak-detalle-distancia]") return this.detalleDistanciaNode;
           if (selector === "[data-lagunak-detalle-rumbo]") return this.detalleRumboNode;
@@ -128,6 +142,8 @@ async function cargarMapa({ modern, t }) {
     }
     if (url.endsWith("/v1/state")) {
       lecturasEstado += 1;
+      if (lecturasEstado === 2 && estadoPendienteSegunda) await estadoPendienteSegunda.promise;
+      if (fallarEstadoLecturas.includes(lecturasEstado)) throw new TypeError("state inaccesible");
       return respuesta({
         ship: {
           position: { x: lecturasEstado * 10, y: 20 },
@@ -138,14 +154,23 @@ async function cargarMapa({ modern, t }) {
     }
     if (url.endsWith("/v1/contacts")) {
       lecturasContactos += 1;
+      if (fallarContactosLecturas.includes(lecturasContactos)) throw new TypeError("contacts inaccesible");
       contactosVistos.resolve();
-      return respuesta({ contacts: [{
+      const contacts = [{
         callsign: "K-7",
         faction: "Kraylor",
         type: "CpuShip",
         is_player: false,
-        position: { x: lecturasContactos * 100, y: 20 },
-      }] });
+        position: { x: lecturasContactos === 1 ? 100 : 40000, y: 20 },
+      }];
+      if (contactosDuplicados) {
+        contacts[0].callsign = "?";
+        contacts.push({
+          ...contacts[0],
+          position: { x: lecturasContactos === 1 ? 200 : 20000, y: 20 },
+        });
+      }
+      return respuesta({ contacts });
     }
     throw new Error(`Ruta inesperada: ${url}`);
   };
@@ -240,10 +265,124 @@ for (const modern of [false, true]) {
     );
     assert.equal(
       app.distanciaNode.textContent,
-      "180",
+      "39980",
       "la distancia confirmada debe actualizarse sobre el DOM estable",
     );
+    assert.equal(app.fueraNode.hidden, false, "el aviso fuera del visor debe aparecer sin re-render");
 
+    if (modern) app._onClose();
+    else await app.close();
+  });
+
+  test(`${version}: filas duplicadas actualizan distancias por índice sin identidad inventada`, async (t) => {
+    const entorno = await cargarMapa({ modern, t, contactosDuplicados: true });
+    const controles = modern ? {} : [];
+    entorno.hooks.getSceneControlButtons(controles);
+    const boton = modern
+      ? controles.lagunak.tools["lagunak-mapa"]
+      : controles.find((c) => c.name === "lagunak").tools.find((tool) => tool.name === "lagunak-mapa");
+    boton.onClick();
+    const app = entorno.instancias[0];
+    if (modern) app._onFirstRender();
+    else await app._render(true);
+    await entorno.healthzVista.promise;
+    entorno.liberarHealthz.resolve();
+    await entorno.contactosVistos.promise;
+    await vaciarMicrotareas();
+
+    const rendersIniciales = app.renderCalls.length;
+    const timer = entorno.timers.find((candidato) => candidato.activo && candidato.delay === 2000);
+    timer.activo = false;
+    timer.callback(...timer.args);
+    await vaciarMicrotareas();
+    assert.equal(app.renderCalls.length, rendersIniciales);
+    assert.deepEqual(app.distanciaNodes.map((nodo) => nodo.textContent), ["39980", "19980"]);
+    assert.deepEqual(app.fueraNodes.map((nodo) => nodo.hidden), [false, true]);
+    if (modern) app._onClose();
+    else await app.close();
+  });
+
+  test(`${version}: no rearma mientras una rama del lote sigue pendiente`, async (t) => {
+    const estadoPendienteSegunda = diferida();
+    const entorno = await cargarMapa({
+      modern,
+      t,
+      estadoPendienteSegunda,
+      fallarContactosLecturas: [2],
+    });
+    const controles = modern ? {} : [];
+    entorno.hooks.getSceneControlButtons(controles);
+    const boton = modern
+      ? controles.lagunak.tools["lagunak-mapa"]
+      : controles.find((c) => c.name === "lagunak").tools.find((tool) => tool.name === "lagunak-mapa");
+    boton.onClick();
+    const app = entorno.instancias[0];
+    if (modern) app._onFirstRender();
+    else await app._render(true);
+    await entorno.healthzVista.promise;
+    entorno.liberarHealthz.resolve();
+    await entorno.contactosVistos.promise;
+    await vaciarMicrotareas();
+
+    const timer = entorno.timers.find((candidato) => candidato.activo && candidato.delay === 2000);
+    assert.ok(timer);
+    timer.activo = false;
+    timer.callback(...timer.args);
+    await vaciarMicrotareas();
+    assert.equal(entorno.llamadasFetch.filter((url) => url.endsWith("/v1/state")).length, 2);
+    assert.equal(entorno.llamadasFetch.filter((url) => url.endsWith("/v1/contacts")).length, 2);
+    assert.equal(
+      entorno.timers.some((candidato) => candidato.activo && candidato.delay === 4000),
+      false,
+      "no debe arrancar backoff mientras /v1/state sigue pendiente",
+    );
+
+    estadoPendienteSegunda.resolve();
+    await vaciarMicrotareas();
+    assert.equal(
+      entorno.timers.some((candidato) => candidato.activo && candidato.delay === 4000),
+      true,
+      "el backoff se arma al asentarse las dos ramas",
+    );
+    if (modern) app._onClose();
+    else await app.close();
+  });
+
+  test(`${version}: un segundo error distinto actualiza el mensaje visible`, async (t) => {
+    const entorno = await cargarMapa({
+      modern,
+      t,
+      fallarContactosLecturas: [2],
+      fallarEstadoLecturas: [3],
+    });
+    const controles = modern ? {} : [];
+    entorno.hooks.getSceneControlButtons(controles);
+    const boton = modern
+      ? controles.lagunak.tools["lagunak-mapa"]
+      : controles.find((c) => c.name === "lagunak").tools.find((tool) => tool.name === "lagunak-mapa");
+    boton.onClick();
+    const app = entorno.instancias[0];
+    if (modern) app._onFirstRender();
+    else await app._render(true);
+    await entorno.healthzVista.promise;
+    entorno.liberarHealthz.resolve();
+    await entorno.contactosVistos.promise;
+    await vaciarMicrotareas();
+
+    const segundo = entorno.timers.find((candidato) => candidato.activo && candidato.delay === 2000);
+    segundo.activo = false;
+    segundo.callback(...segundo.args);
+    await vaciarMicrotareas();
+    const primerError = app.detalleError;
+    const rendersPrimerError = app.renderCalls.length;
+    const tercero = entorno.timers.find((candidato) => candidato.activo && candidato.delay === 4000);
+    assert.ok(tercero);
+    tercero.activo = false;
+    tercero.callback(...tercero.args);
+    await vaciarMicrotareas();
+
+    assert.notEqual(app.detalleError, primerError);
+    assert.ok(app.renderCalls.length > rendersPrimerError, "el nuevo detalle de error debe renderizarse");
     if (modern) app._onClose();
     else await app.close();
   });

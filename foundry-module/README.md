@@ -136,7 +136,9 @@ coloreados por facción, con leyenda de indicativos y distancias.
   inequívoca se interpolan entre las dos últimas muestras confirmadas del
   puente. Nunca se extrapola: el mapa es una vista, no un simulador — con la
   simulación en pausa, el mapa se congela. Contactos anónimos o duplicados se
-  muestran directamente en su última posición para no asociar objetos distintos.
+  muestran directamente en su última posición para no asociar objetos distintos;
+  una coordenada no finita se omite hasta recibir una muestra válida, nunca se
+  convierte en una posición inventada.
 - **Dibujo**: canvas interno de 320×320 escalado con `image-rendering:
   pixelated`, hasta 60 fps, con scanlines por CSS. Un sondeo solo posicional
   actualiza el canvas y las distancias sin reconstruir la ventana; el bucle de

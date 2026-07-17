@@ -14,6 +14,8 @@ import {
   interpolarCentro,
   interpolarContactos,
   leyendaContactos,
+  normalizarContactosMapa,
+  normalizarPosicionMapa,
   offsetParallax,
   prepararDetalleContacto,
   proyectarContactos,
@@ -174,10 +176,31 @@ test("interpolarContactos no mezcla anónimos/duplicados y elimina desaparecidos
     { x: 100, y: 100 },
     { x: 200, y: 200 },
     { x: 300, y: 300 },
-    { x: 0, y: 50 },
   ]);
   assert.equal(salida.some((c) => c.callsign === "YA-NO"), false);
+  assert.equal(salida.some((c) => c.callsign === "NUEVO"), false);
   assert.equal(claveContacto(actual[0]), null);
+});
+
+test("la frontera numérica descarta coordenadas inválidas sin inventar (0,0)", () => {
+  assert.deepEqual(normalizarPosicionMapa({ x: 1, y: -2 }), { x: 1, y: -2 });
+  assert.equal(normalizarPosicionMapa({ x: Number.NaN, y: 2 }), null);
+  assert.equal(normalizarPosicionMapa({ x: 1, y: Infinity }), null);
+  const contactos = normalizarContactosMapa([
+    { callsign: "VALIDO", position: { x: 1, y: 2 } },
+    { callsign: "NAN", position: { x: Number.NaN, y: 2 } },
+    { callsign: "TEXTO", position: { x: "1", y: 2 } },
+  ]);
+  assert.deepEqual(contactos.map((c) => c.callsign), ["VALIDO"]);
+  const proyectados = proyectarContactos({ contacts: contactos, centro: { x: 0, y: 0 } });
+  assert.equal(proyectados.length, 1);
+  assert.ok(proyectados.every((c) => [c.x, c.y, c.distancia].every(Number.isFinite)));
+  const detalle = prepararDetalleContacto(
+    { callsign: "NAN", position: { x: Number.NaN, y: 2 } },
+    { x: 0, y: 0 },
+  );
+  assert.equal(detalle.distancia, null);
+  assert.equal(detalle.rumboDeg, null);
 });
 
 test("firmaEstructuralContactos ignora movimiento y detecta cambios visibles", () => {
@@ -209,6 +232,18 @@ test("debeDibujar respeta fpsMax y el primer frame siempre pinta", () => {
   // A 30 fps el intervalo es ~33.3 ms.
   assert.equal(debeDibujar(1000, 1010, 30), false);
   assert.equal(debeDibujar(1000, 1040, 30), true);
+});
+
+test("debeDibujar conserva 60 FPS con timestamps fraccionales de rAF", () => {
+  let ultimo = null;
+  let dibujos = 0;
+  for (let tick = 0; tick < 600; tick += 1) {
+    const ahora = tick * (1000 / 60);
+    if (!debeDibujar(ultimo, ahora, 60)) continue;
+    ultimo = ahora;
+    dibujos += 1;
+  }
+  assert.equal(dibujos, 600);
 });
 
 test("componerFrame sin muestra devuelve sinDatos y nada que pintar", () => {

@@ -40,7 +40,11 @@ import { prepararVistaPausa } from "./pausa-control.mjs";
 import { prepareRoute, prepareSystemRows } from "./ship-view.mjs";
 import { setSimulationPaused } from "./tempo-control.mjs";
 import { addStationControl, registerStationFeature } from "./station-ui.mjs";
-import { addWorkspaceControl, registerWorkspaceFeature } from "./station-workspace-ui.mjs";
+import {
+  addWorkspaceControl,
+  registerWorkspaceFeature,
+  revokeWorkspaceAccess,
+} from "./station-workspace-ui.mjs";
 import {
   colorFaccion,
   componerFrame,
@@ -136,9 +140,37 @@ Hooks.once("ready", () => {
 
 Hooks.on("updateUser", (user) => {
   if (user?.id === game.user?.id && !user.isGM) {
-    void revokeBridgeTokenAccess();
+    void revokePrivilegedBridgeAccess();
   }
 });
+
+function wipePrivilegedWindow(app) {
+  const root = app?.element?.[0] ?? app?.element;
+  root?.replaceChildren?.();
+}
+
+async function revokePrivilegedApp(app) {
+  if (!app) return;
+  app.bridgeAccessRevoked = true;
+  app.ultimoEstado = null;
+  app.contactos = [];
+  app.destino = null;
+  wipePrivilegedWindow(app);
+  try {
+    await app.close();
+  } catch {
+    // La frontera ya está revocada y el DOM vacío aunque Foundry no cierre.
+  }
+}
+
+async function revokePrivilegedBridgeAccess() {
+  await Promise.allSettled([
+    revokeBridgeTokenAccess(),
+    revokeWorkspaceAccess(),
+    revokePrivilegedApp(estadoApp),
+    revokePrivilegedApp(mapaApp),
+  ]);
+}
 
 /* Grupo PROPIO en los controles de escena, con icono de nave, solo GM
  * (issue #125: las herramientas del módulo no se mezclan con Token Controls).
@@ -254,10 +286,13 @@ async function diagnosticarConexion() {
   if (!game.user?.isGM || diagnosticoEnCurso) return;
   diagnosticoEnCurso = true;
   try {
+    const token = getBridgeToken();
     const res = await probarConexion({
       url: game.settings.get(MODULE_ID, "bridgeUrl"),
-      token: getBridgeToken(),
+      token,
+      canUseToken: () => Boolean(game.user?.isGM) && getBridgeToken() === token,
     });
+    if (!game.user?.isGM) return;
     const mensaje = game.i18n.localize(res.claveI18n);
     if (res.exito) ui.notifications.info(mensaje);
     else ui.notifications.warn(mensaje);
@@ -280,7 +315,7 @@ function abrirEstadoNave() {
   // del GM. Mostrarla a un jugador rompería la asimetría de puestos que el
   // reparto de pantallas del juego fragmenta a propósito.
   if (!game.user?.isGM) return;
-  estadoApp ??= new (claseEstadoNave())();
+  if (!estadoApp || estadoApp.bridgeAccessRevoked) estadoApp = new (claseEstadoNave())();
   if (foundry.applications?.api?.ApplicationV2) {
     estadoApp.render({ force: true });
   } else {
@@ -292,7 +327,7 @@ function abrirMapaVivo() {
   // Mismo candado que el estado de nave: el mapa agrega los contactos de los
   // sensores sin filtrar por puesto — es una vista de GM.
   if (!game.user?.isGM) return;
-  mapaApp ??= new (claseMapaVivo())();
+  if (!mapaApp || mapaApp.bridgeAccessRevoked) mapaApp = new (claseMapaVivo())();
   if (foundry.applications?.api?.ApplicationV2) {
     mapaApp.render({ force: true });
   } else {
@@ -357,6 +392,7 @@ function crearClaseV2() {
     confirmacionPendiente = null; // ACK recibido, a la espera de observarlo en /v1/scenario
     falloOrden = false; // la última orden de pausa terminó en error
     ayudaAbierta = false; // conserva <details open> entre reemplazos del DOM
+    bridgeAccessRevoked = false;
 
     #cliente() {
       return new BridgeClient({
@@ -373,21 +409,31 @@ function crearClaseV2() {
     }
 
     async #sondear() {
+      if (this.bridgeAccessRevoked || !game.user?.isGM) return;
       try {
         const cliente = this.#cliente();
         await cliente.healthz();
-        this.ultimoEstado = await cliente.state();
-        this._registrarLecturaPausa(await cliente.scenario());
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        const estado = await cliente.state();
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        const escenario = await cliente.scenario();
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        const eventos = await cliente.events();
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        this.ultimoEstado = estado;
+        this._registrarLecturaPausa(escenario);
         await processBridgeEvents({
-          payload: await cliente.events(),
+          payload: eventos,
           game,
           JournalEntry,
           ui,
         });
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
         this.conexion = "ok";
         this.detalleError = "";
         this.#fallosSeguidos = 0;
       } catch (err) {
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
         this.conexion = "error";
         this.detalleError = err instanceof BridgeError ? err.message : game.i18n.localize("LAGUNAK.Errores.Desconocido");
         this.#fallosSeguidos = Math.min(this.#fallosSeguidos + 1, 10);
@@ -499,7 +545,7 @@ function crearClaseV2() {
           isGM: Boolean(game.user?.isGM),
           client: this.#cliente(),
         });
-        if (changed) {
+        if (changed && !this.bridgeAccessRevoked && game.user?.isGM) {
           // El ACK solo confirma que la orden fue aceptada: el estado se
           // considera confirmado únicamente al observarlo en /v1/scenario.
           this.confirmacionPendiente = paused;
@@ -573,6 +619,7 @@ function crearClaseV1() {
     confirmacionPendiente = null;
     falloOrden = false;
     ayudaAbierta = false;
+    bridgeAccessRevoked = false;
 
     static get defaultOptions() {
       return foundry.utils.mergeObject(super.defaultOptions, {
@@ -603,21 +650,31 @@ function crearClaseV1() {
     }
 
     async #sondear() {
+      if (this.bridgeAccessRevoked || !game.user?.isGM) return;
       try {
         const cliente = this.#cliente();
         await cliente.healthz();
-        this.ultimoEstado = await cliente.state();
-        this._registrarLecturaPausa(await cliente.scenario());
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        const estado = await cliente.state();
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        const escenario = await cliente.scenario();
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        const eventos = await cliente.events();
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        this.ultimoEstado = estado;
+        this._registrarLecturaPausa(escenario);
         await processBridgeEvents({
-          payload: await cliente.events(),
+          payload: eventos,
           game,
           JournalEntry,
           ui,
         });
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
         this.conexion = "ok";
         this.detalleError = "";
         this.#fallosSeguidos = 0;
       } catch (err) {
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
         this.conexion = "error";
         this.detalleError = err instanceof BridgeError ? err.message : game.i18n.localize("LAGUNAK.Errores.Desconocido");
         this.#fallosSeguidos = Math.min(this.#fallosSeguidos + 1, 10);
@@ -731,7 +788,7 @@ function crearClaseV1() {
           isGM: Boolean(game.user?.isGM),
           client: this.#cliente(),
         });
-        if (changed) {
+        if (changed && !this.bridgeAccessRevoked && game.user?.isGM) {
           // El ACK solo confirma que la orden fue aceptada: el estado se
           // considera confirmado únicamente al observarlo en /v1/scenario.
           this.confirmacionPendiente = paused;
@@ -818,6 +875,7 @@ function crearClaseMapaV2() {
     seleccion = null; // callsign del contacto seleccionado en la lista
     conexion = "conectando";
     detalleError = "";
+    bridgeAccessRevoked = false;
 
     #cliente() {
       return new BridgeClient({
@@ -833,6 +891,7 @@ function crearClaseMapaV2() {
     }
 
     async #sondear() {
+      if (this.bridgeAccessRevoked || !game.user?.isGM) return;
       // La generación se captura al entrar: si la ventana se cierra (o se
       // reabre) con esta petición en vuelo, la respuesta tardía no puede
       // tocar estado, renderizar ni rearmar el polling.
@@ -847,6 +906,7 @@ function crearClaseMapaV2() {
       try {
         const cliente = this.#cliente();
         await cliente.healthz();
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
         // Estado y contactos se solicitan juntos para reducir el desfase
         // temporal entre ambas fotografías confirmadas del simulador.
         const resultados = await Promise.allSettled([
@@ -873,7 +933,7 @@ function crearClaseMapaV2() {
       } catch (err) {
         fallo = err;
       }
-      if (generacion !== this.#generacion) return;
+      if (generacion !== this.#generacion || this.bridgeAccessRevoked || !game.user?.isGM) return;
       if (fallo === null) {
         if (rotadas) {
           this.#muestraPrev = rotadas.prev;
@@ -1087,6 +1147,7 @@ function crearClaseMapaV1() {
     seleccion = null; // callsign del contacto seleccionado en la lista
     conexion = "conectando";
     detalleError = "";
+    bridgeAccessRevoked = false;
 
     static get defaultOptions() {
       return foundry.utils.mergeObject(super.defaultOptions, {
@@ -1117,6 +1178,7 @@ function crearClaseMapaV1() {
     }
 
     async #sondear() {
+      if (this.bridgeAccessRevoked || !game.user?.isGM) return;
       // Misma disciplina que la ruta V2 (réplica aislada): la generación se
       // captura al entrar y una respuesta tardía tras cerrar muere sin tocar
       // estado, renderizar ni rearmar el polling.
@@ -1131,6 +1193,7 @@ function crearClaseMapaV1() {
       try {
         const cliente = this.#cliente();
         await cliente.healthz();
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
         const resultados = await Promise.allSettled([
           cliente.state(),
           cliente.contacts(),
@@ -1155,7 +1218,7 @@ function crearClaseMapaV1() {
       } catch (err) {
         fallo = err;
       }
-      if (generacion !== this.#generacion) return;
+      if (generacion !== this.#generacion || this.bridgeAccessRevoked || !game.user?.isGM) return;
       if (fallo === null) {
         if (rotadas) {
           this.#muestraPrev = rotadas.prev;

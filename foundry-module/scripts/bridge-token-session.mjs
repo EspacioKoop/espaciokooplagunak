@@ -53,7 +53,18 @@ export async function openBridgeTokenApp() {
       tokenApp.render(true);
     }
   } catch {
-    releaseTokenApp(tokenApp);
+    const failedApp = tokenApp;
+    clearBridgeToken();
+    if (failedApp) {
+      failedApp.bridgeAccessRevoked = true;
+      wipeTokenInput(failedApp);
+      try {
+        await failedApp.close();
+      } catch {
+        // La instancia queda revocada y sin secreto aunque Foundry no cierre.
+      }
+      releaseTokenApp(failedApp);
+    }
     ui.notifications.error(game.i18n.localize("LAGUNAK.Token.ErrorVentana"));
     return null;
   }
@@ -99,6 +110,10 @@ function context() {
 }
 
 async function saveAndClose(value, app) {
+  if (app?.bridgeAccessRevoked) {
+    wipeTokenInput(app);
+    return;
+  }
   if (!game.user?.isGM || !legacyStorageCleared) return;
   if (!setBridgeToken(value)) {
     ui.notifications.warn(game.i18n.localize("LAGUNAK.Token.Vacio"));
@@ -109,8 +124,12 @@ async function saveAndClose(value, app) {
 }
 
 async function clearAndClose(app) {
-  if (!game.user?.isGM) return;
   clearBridgeToken();
+  if (app?.bridgeAccessRevoked) {
+    wipeTokenInput(app);
+    return;
+  }
+  if (!game.user?.isGM) return;
   if (!(await closeTokenAppSafely(app))) return;
   ui.notifications.info(game.i18n.localize("LAGUNAK.Token.Borrado"));
 }

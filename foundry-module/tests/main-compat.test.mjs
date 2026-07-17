@@ -141,6 +141,67 @@ test("updateUser revoca el token y cierra la ventana si el usuario local deja de
   assert.equal(tokenSession.getBridgeToken(), "");
 });
 
+test("degradar durante healthz cierra la vista y no inicia peticiones autenticadas", async () => {
+  let finishHealth;
+  const fetchImpl = (url) => {
+    if (url.endsWith("/healthz")) {
+      return new Promise((resolve) => { finishHealth = resolve; });
+    }
+    return Promise.resolve({ ok: true, status: 200, async json() { return { ok: true }; } });
+  };
+  const { hooks, tokenSession, instances, fetchCalls } = await loadModule({ modern: true, fetchImpl });
+  const controls = {};
+  hooks.getSceneControlButtons(controls);
+  controls.lagunak.tools["lagunak-estado"].onClick();
+  const app = instances[0];
+  let wipes = 0;
+  app.element = { replaceChildren() { wipes += 1; } };
+  app._onFirstRender();
+  await Promise.resolve();
+  assert.equal(fetchCalls.length, 1);
+  assert.match(fetchCalls[0][0], /\/healthz$/);
+
+  game.user.isGM = false;
+  hooks.updateUser({ id: "local-user", isGM: false });
+  await Promise.resolve();
+  finishHealth({ ok: true, status: 200, async json() { return { ok: true }; } });
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.equal(tokenSession.getBridgeToken(), "");
+  assert.equal(app.bridgeAccessRevoked, true);
+  assert.equal(app.rendered, false);
+  assert.equal(wipes, 1);
+  assert.equal(fetchCalls.length, 1);
+});
+
+test("degradar cierra y vacía estado, mapa y workspace abiertos", async () => {
+  const { hooks, instances } = await loadModule({ modern: true });
+  const controls = { tokens: { tools: {} } };
+  hooks.getSceneControlButtons(controls);
+  controls.lagunak.tools["lagunak-estado"].onClick();
+  controls.lagunak.tools["lagunak-mapa"].onClick();
+  controls.tokens.tools["lagunak-espacio-puesto"].onClick();
+  assert.equal(instances.length, 3);
+  const wipes = [0, 0, 0];
+  instances.forEach((app, index) => {
+    app.element = { replaceChildren() { wipes[index] += 1; } };
+  });
+  instances[0].ultimoEstado = { ship: { callsign: "Agregado" } };
+  instances[1].contactos = [{ callsign: "Contacto" }];
+  instances[2].statePayload = { ship: { callsign: "Workspace" } };
+
+  game.user.isGM = false;
+  hooks.updateUser({ id: "local-user", isGM: false });
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.deepEqual(instances.map((app) => app.rendered), [false, false, false]);
+  assert.deepEqual(wipes, [1, 1, 1]);
+  assert.equal(instances[0].ultimoEstado, null);
+  assert.deepEqual(instances[1].contactos, []);
+  assert.equal(instances[2].statePayload, null);
+  assert.equal(instances[2].closed, true);
+});
+
 test("v11 conecta los listeners de pausa y reanudación con el puente", async () => {
   const { hooks, instances, notifications, fetchCalls } = await loadModule();
   const controls = [{ name: "token", tools: [] }];

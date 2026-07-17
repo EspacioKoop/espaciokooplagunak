@@ -10,6 +10,7 @@ async function loadSession({
   settingsFail = false,
   settingsSet = null,
   renderFail = false,
+  renderFailAfter = null,
   closeFail = false,
 } = {}) {
   const notifications = { info: [], warn: [], error: [] };
@@ -22,10 +23,14 @@ async function loadSession({
       instances.push(this);
       this.rendered = false;
       this.closed = false;
+      this.renderCount = 0;
     }
     render() {
       this.rendered = true;
-      if (renderFail) return Promise.reject(new Error("render failed"));
+      this.renderCount += 1;
+      if (renderFail || (renderFailAfter !== null && this.renderCount > renderFailAfter)) {
+        return Promise.reject(new Error("render failed"));
+      }
       return this;
     }
     activateListeners() {}
@@ -127,6 +132,24 @@ test("ApplicationV2 captura un rechazo de render", async () => {
   const { module, notifications } = await loadSession({ modern: true, renderFail: true });
   assert.equal(await module.openBridgeTokenApp(), null);
   assert.deepEqual(notifications.error, ["LAGUNAK.Token.ErrorVentana"]);
+});
+
+test("un rechazo de re-render revoca memoria, vacía DOM e inutiliza la instancia", async () => {
+  const { module, notifications } = await loadSession({ modern: true, renderFailAfter: 1 });
+  const app = await module.openBridgeTokenApp();
+  const input = { value: "SECRETO-SIN-GUARDAR" };
+  app.element = { querySelector: () => input };
+  module.setBridgeToken("token-anterior");
+
+  assert.equal(await module.openBridgeTokenApp(), null);
+  assert.equal(input.value, "");
+  assert.equal(module.getBridgeToken(), "");
+  assert.equal(app.bridgeAccessRevoked, true);
+  assert.equal(app.closed, true);
+  assert.deepEqual(notifications.error, ["LAGUNAK.Token.ErrorVentana"]);
+
+  await app.constructor.DEFAULT_OPTIONS.actions.saveToken.call(app);
+  assert.equal(module.getBridgeToken(), "");
 });
 
 test("revocar captura un fallo de cierre y vacía el campo sensible", async () => {

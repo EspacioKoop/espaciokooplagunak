@@ -64,13 +64,7 @@ export async function revokeBridgeTokenAccess() {
   clearBridgeToken();
   const app = tokenApp;
   if (!app) return;
-  wipeTokenInput(app);
-  try {
-    await app.close();
-  } catch {
-    releaseTokenApp(app);
-    ui.notifications.warn(game.i18n.localize("LAGUNAK.Token.ErrorCierre"));
-  }
+  await closeTokenAppSafely(app);
 }
 
 function wipeTokenInput(app) {
@@ -78,6 +72,18 @@ function wipeTokenInput(app) {
   const input = root?.querySelector?.('[name="bridge-token"]')
     ?? root?.find?.('[name="bridge-token"]')?.[0];
   if (input) input.value = "";
+}
+
+async function closeTokenAppSafely(app, { rollbackToken = false } = {}) {
+  wipeTokenInput(app);
+  try {
+    await app.close();
+    return true;
+  } catch {
+    if (rollbackToken) clearBridgeToken();
+    ui.notifications.warn(game.i18n.localize("LAGUNAK.Token.ErrorCierre"));
+    return false;
+  }
 }
 
 function tokenAppClass() {
@@ -98,15 +104,15 @@ async function saveAndClose(value, app) {
     ui.notifications.warn(game.i18n.localize("LAGUNAK.Token.Vacio"));
     return;
   }
+  if (!(await closeTokenAppSafely(app, { rollbackToken: true }))) return;
   ui.notifications.info(game.i18n.localize("LAGUNAK.Token.Configurado"));
-  await app.close();
 }
 
 async function clearAndClose(app) {
   if (!game.user?.isGM) return;
   clearBridgeToken();
+  if (!(await closeTokenAppSafely(app))) return;
   ui.notifications.info(game.i18n.localize("LAGUNAK.Token.Borrado"));
-  await app.close();
 }
 
 function createV2Class() {
@@ -178,8 +184,9 @@ function createV1Class() {
     }
 
     async close(options) {
+      const result = await super.close(options);
       releaseTokenApp(this);
-      return super.close(options);
+      return result;
     }
   };
 }

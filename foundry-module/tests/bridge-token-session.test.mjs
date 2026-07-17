@@ -143,6 +143,35 @@ test("revocar captura un fallo de cierre y vacía el campo sensible", async () =
   assert.deepEqual(notifications.warn, ["LAGUNAK.Token.ErrorCierre"]);
 });
 
+test("ApplicationV2 revierte Guardar si el cierre falla", async () => {
+  const { module, notifications } = await loadSession({ modern: true, closeFail: true });
+  const app = await module.openBridgeTokenApp();
+  const input = { value: "token-no-confirmado" };
+  app.element = { querySelector: () => input };
+
+  await app.constructor.DEFAULT_OPTIONS.actions.saveToken.call(app);
+
+  assert.equal(module.getBridgeToken(), "");
+  assert.equal(input.value, "");
+  assert.deepEqual(notifications.info, []);
+  assert.deepEqual(notifications.warn, ["LAGUNAK.Token.ErrorCierre"]);
+});
+
+test("ApplicationV2 Borrar vacía DOM y memoria aunque el cierre falle", async () => {
+  const { module, notifications } = await loadSession({ modern: true, closeFail: true });
+  const app = await module.openBridgeTokenApp();
+  const input = { value: "secreto-en-edicion" };
+  app.element = { querySelector: () => input };
+  module.setBridgeToken("token-revocable");
+
+  await app.constructor.DEFAULT_OPTIONS.actions.clearToken.call(app);
+
+  assert.equal(module.getBridgeToken(), "");
+  assert.equal(input.value, "");
+  assert.deepEqual(notifications.info, []);
+  assert.deepEqual(notifications.warn, ["LAGUNAK.Token.ErrorCierre"]);
+});
+
 test("degradar al usuario oculta y revoca definitivamente el token", async () => {
   const { module } = await loadSession();
   module.setBridgeToken("token-revocable");

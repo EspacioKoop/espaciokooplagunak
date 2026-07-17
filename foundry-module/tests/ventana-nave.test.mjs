@@ -10,8 +10,11 @@ import {
   debeDibujar,
   interpolarAngulo,
   interpolarCentro,
+  leyendaContactos,
   offsetParallax,
+  prepararDetalleContacto,
   proyectarContactos,
+  rumboHacia,
   rngSemilla,
   rotarMuestras,
 } from "../scripts/ventana-nave.mjs";
@@ -229,4 +232,55 @@ test("rotarMuestras acota la ventana de reproducción (huecos de backoff)", () =
   // segunda (recibidaMs), no su timestamp de reproducción.
   const r3 = rotarMuestras(r2.actual, { centro: { x: 200, y: 0 }, rumboDeg: 0 }, 63000);
   assert.equal(r3.actual.tMs - r3.prev.tMs, 2000);
+});
+
+/* --- Onboarding del mapa (issue #126): rumbo, detalle y leyenda --- */
+
+test("rumboHacia usa la convención de EmptyEpsilon (0° = norte, horario)", () => {
+  const centro = { x: 0, y: 0 };
+  // En EE la Y crece hacia el sur: un objeto en -y queda al norte (0°).
+  assert.equal(rumboHacia(centro, { x: 0, y: -100 }), 0);
+  assert.equal(rumboHacia(centro, { x: 100, y: 0 }), 90);
+  assert.equal(rumboHacia(centro, { x: 0, y: 100 }), 180);
+  assert.equal(rumboHacia(centro, { x: -100, y: 0 }), 270);
+});
+
+test("prepararDetalleContacto calcula distancia y rumbo y conserva tipo/facción", () => {
+  const d = prepararDetalleContacto(
+    { callsign: "K-7", type: "SpaceStation", faction: "Kraylor", position: { x: 300, y: 400 } },
+    { x: 0, y: 0 },
+  );
+  assert.equal(d.callsign, "K-7");
+  assert.equal(d.tipo, "SpaceStation");
+  assert.equal(d.faccion, "Kraylor");
+  assert.equal(d.distancia, 500);
+  assert.equal(d.color, colorFaccion("Kraylor"));
+  assert.ok(d.rumboDeg > 90 && d.rumboDeg < 180); // sureste en convención EE
+});
+
+test("prepararDetalleContacto tolera DTOs sin tipo ni facción", () => {
+  const d = prepararDetalleContacto({ callsign: "?", position: { x: 0, y: 10 } }, { x: 0, y: 0 });
+  assert.equal(d.tipo, null);
+  assert.equal(d.faccion, null);
+  assert.equal(d.color, COLOR_NEUTRO);
+});
+
+test("leyendaContactos: nave propia primero, una entrada por facción y neutros al final", () => {
+  const leyenda = leyendaContactos([
+    { callsign: "Itsaso 1", faction: "Human Navy", is_player: true },
+    { callsign: "K-1", faction: "Kraylor" },
+    { callsign: "K-2", faction: "Kraylor" },
+    { callsign: "roca", faction: null },
+  ]);
+  assert.equal(leyenda.length, 3);
+  assert.equal(leyenda[0].esJugador, true);
+  assert.equal(leyenda[0].color, COLOR_JUGADOR);
+  assert.equal(leyenda[1].faccion, "Kraylor");
+  assert.equal(leyenda[2].color, COLOR_NEUTRO);
+});
+
+test("leyendaContactos sin contactos deja solo la nave propia", () => {
+  const leyenda = leyendaContactos([]);
+  assert.equal(leyenda.length, 1);
+  assert.equal(leyenda[0].esJugador, true);
 });

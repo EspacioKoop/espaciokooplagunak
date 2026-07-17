@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 let importNonce = 0;
@@ -405,4 +406,56 @@ test("las ventanas de estado y mapa son instancias separadas", async () => {
   // Reabrir no crea instancias nuevas (instancia perezosa compartida).
   controls.lagunak.tools["lagunak-mapa"].onClick();
   assert.equal(instances.length, 2);
+});
+
+test("v11 conserva la ayuda abierta entre re-renderizados hasta que se cierra", async () => {
+  const { hooks, instances } = await loadModule();
+  const controls = [];
+  hooks.getSceneControlButtons(controls);
+  controls.find((group) => group.name === "lagunak").tools[0].onClick();
+
+  const bindings = new Map();
+  instances[0].activateListeners({
+    find(selector) {
+      return { on(event, callback) { bindings.set(selector, { event, callback }); } };
+    },
+  });
+
+  const toggle = bindings.get(".lagunak-ayuda");
+  assert.equal(toggle.event, "toggle");
+  assert.equal(instances[0].getData().ayudaAbierta, false);
+  toggle.callback({ currentTarget: { open: true } });
+  instances[0].render(false); // reemplazo de DOM equivalente al del sondeo
+  assert.equal(instances[0].getData().ayudaAbierta, true);
+  toggle.callback({ currentTarget: { open: false } });
+  assert.equal(instances[0].getData().ayudaAbierta, false);
+});
+
+test("ApplicationV2 conserva la ayuda abierta entre re-renderizados hasta que se cierra", async () => {
+  const { hooks, instances } = await loadModule({ modern: true });
+  const controls = {};
+  hooks.getSceneControlButtons(controls);
+  controls.lagunak.tools["lagunak-estado"].onClick();
+
+  let onToggle = null;
+  const details = {
+    open: false,
+    addEventListener(event, callback) {
+      if (event === "toggle") onToggle = callback;
+    },
+  };
+  instances[0].element = { querySelector: () => details };
+  instances[0]._onRender({}, {});
+
+  assert.equal((await instances[0]._prepareContext()).ayudaAbierta, false);
+  details.open = true;
+  onToggle({ currentTarget: details });
+  instances[0].render({ force: true });
+  assert.equal((await instances[0]._prepareContext()).ayudaAbierta, true);
+  details.open = false;
+  onToggle({ currentTarget: details });
+  assert.equal((await instances[0]._prepareContext()).ayudaAbierta, false);
+
+  const template = await readFile(new URL("../templates/estado-nave.hbs", import.meta.url), "utf8");
+  assert.match(template, /\{\{#if ayudaAbierta\}\}open\{\{\/if\}\}/);
 });

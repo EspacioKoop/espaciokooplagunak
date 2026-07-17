@@ -4397,6 +4397,7 @@ msgstr "No se ha podido seleccionar el objeto de mapa."
 msgctxt "content_editor"
 msgid "Map object drag cancelled outside the valid map area."
 msgstr "Arrastre del objeto de mapa cancelado fuera del área válida."
+
 #: src/screens/gm/contentEditor.cpp
 msgctxt "content_editor"
 msgid "Changing this ID updates every reference. Press Save again to confirm."

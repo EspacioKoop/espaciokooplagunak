@@ -4618,6 +4618,8 @@ msgstr ""
 
 msgctxt "content_editor"
 msgid "Map object drag cancelled outside the valid map area."
+msgstr ""
+
 #: src/screens/gm/contentEditor.cpp
 msgctxt "content_editor"
 msgid "Changing this ID updates every reference. Press Save again to confirm."

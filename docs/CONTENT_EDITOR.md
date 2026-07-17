@@ -25,14 +25,22 @@ tipos de recursos sin editar Lua:
 9. Si el formulario cambió desde la última carga o guardado, **New**, cambiar de
    tipo, cargar otro recurso, importar o cerrar requieren repetir la acción. La
    confirmación se invalida si cambia el formulario o se elige otra acción.
-10. En mapas, **Preview on radar** activa una capa read-only sobre el radar GM.
+10. En mapas, **Preview on radar** activa una capa sobre el radar GM.
     Asteroides y nebulosas se muestran semitransparentes; los tipos futuros se
     conservan pero no se interpretan ni dibujan. Si existen, el editor muestra
     junto al toggle cuántos objetos se omiten sin dejar de conservarlos. El
     preview persiste al cerrar el modal y sigue el pan/zoom del radar.
-11. **Export file** escribe el recurso en la carpeta de exportaciones gestionada.
+11. **Edit on radar** cierra el modal y entra en un modo explícito de staging:
+    seleccionar y arrastrar un asteroide o nebulosa solo cambia la copia del
+    documento. El movimiento se confirma al soltar y crea una única entrada de
+    deshacer; **Undo** y **Redo** operan sobre ese historial. Durante el modo de
+    edición el modal está oculto, así que Undo/Redo no son accesibles hasta salir
+    con Escape o clic derecho — que cancelan el arrastre activo y vuelven al editor. Los tipos futuros nunca son
+    seleccionables. Guardar persiste las posiciones; **New**, cargar/importar otro
+    recurso o descartar reconstruyen la sesión desde su snapshot limpio.
+12. **Export file** escribe el recurso en la carpeta de exportaciones gestionada.
     Si el archivo ya existe, exige una segunda pulsación.
-12. **Import inbox** permite elegir un JSON depositado en la bandeja gestionada.
+13. **Import inbox** permite elegir un JSON depositado en la bandeja gestionada.
     **Import file** muestra primero tipo, ID y nombre de archivo; una segunda
     pulsación confirma la importación y una sustitución exige confirmación propia.
 
@@ -182,16 +190,17 @@ migración secuencial, versión futura y export-import-export equivalente.
 
 El editor crea, valida, persiste e intercambia metadatos declarativos de los cuatro tipos.
 Los mapas tienen modelo separado del ECS, sesión transaccional de staging con undo,
-redo, dirty state y rollback, y preview read-only sobre el radar GM. El preview no
-crea ni modifica entidades: solo proyecta asteroides y nebulosas de la allowlist;
+redo, dirty state y rollback, y edición visual sobre el radar GM. El modo de edición
+consume los gestos antes de la lógica normal del radar: nunca crea ni mueve entidades
+del mundo. Solo proyecta, selecciona y mueve asteroides y nebulosas de la allowlist;
 los tipos futuros opacos se omiten visualmente sin perderse y su recuento queda
-visible en el editor. El núcleo de interacción del preview añade hit-test con tolerancia
-en píxeles estable al zoom y un drag provisional separado de `MapEditSession`: solo el
-commit final llama una vez a `moveObject()`, mientras cancelar o mover el puntero no
-misma identidad generacional y revisión de sesión con que empezó; cada edición, undo,
-redo, rollback, guardado o reemplazo de sesión avanza esa barrera para impedir ABA. Los
-objetos opacos nunca entran en hit-test. La conexión de este núcleo al radar GM se
-completa en el siguiente vertical de #150.
+visible en el editor. El hit-test mantiene una tolerancia visual estable al zoom y los
+objetos opacos nunca participan en él. El drag provisional vive fuera de
+`MapEditSession`: mover el puntero no modifica el documento y `mouse-up` llama una sola
+vez a `moveObject()` únicamente si conserva la misma identidad generacional y revisión
+de sesión con que empezó. Cada edición, undo, redo, rollback, guardado o reemplazo de
+sesión avanza esa barrera para impedir ABA. Escape, clic derecho, una coordenada fuera
+de rango o terminar el modo cancelan sin ensuciar el documento ni añadir historial.
 
 Las naves tienen un modelo tipado para overrides opcionales de sistemas, recursos,
 carga y puestos. Rechaza IDs no canónicos, duplicados, valores no finitos y

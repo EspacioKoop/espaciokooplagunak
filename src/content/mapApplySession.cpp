@@ -34,7 +34,6 @@ MapVisualParams computeMapVisualParams(const MapApplyItem& item)
     MapVisualParams params;
     const auto seed = item.visual_seed;
     params.model_number = 1 + static_cast<int>(mix(seed + 1) % 10ull);
-    params.rotation = unitLane(seed, 2) * 360.0f;
     params.spin_rate = 0.1f + unitLane(seed, 3) * 0.7f;
     params.z_offset = unitLane(seed, 4) * 100.0f - 50.0f;
     params.nebula_texture = 1 + static_cast<int>(mix(seed + 5) % 3ull);
@@ -94,10 +93,13 @@ MapApplyError MapApplySession::apply(const MapApplyPlan& plan, const Create& cre
     return MapApplyError::None;
 }
 
-MapApplyError MapApplySession::rollback(const Destroy& destroy, std::size_t* destroyed, std::size_t* missing)
+MapApplyError MapApplySession::rollback(bool local_server, const Destroy& destroy,
+    std::size_t* destroyed, std::size_t* missing)
 {
     if (destroyed) *destroyed = 0;
     if (missing) *missing = 0;
+    if (!local_server)
+        return MapApplyError::ServerRequired;
     if (!hasActiveBatch())
         return MapApplyError::NothingToRollback;
 

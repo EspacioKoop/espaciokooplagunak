@@ -1324,11 +1324,13 @@ void GuiContentEditor::applyMapBatch()
 
 void GuiContentEditor::rollbackMapBatch()
 {
+    if (!game_server)
+        return setStatus(tr("content_editor", "Undoing an applied map requires the local server."));
     if (!map_apply_session.hasActiveBatch())
         return setStatus(tr("content_editor", "There is no applied batch to undo."));
     std::size_t destroyed = 0;
     std::size_t missing = 0;
-    map_apply_session.rollback(map_world_adapter.destroyer(), &destroyed, &missing);
+    map_apply_session.rollback(game_server != nullptr, map_world_adapter.destroyer(), &destroyed, &missing);
     map_world_adapter.clear();
     updateMapBatchButtons();
     setStatus(tr("content_editor", "Applied batch removed: {destroyed} objects destroyed, {missing} were already gone.")

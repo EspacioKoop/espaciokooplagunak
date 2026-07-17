@@ -40,7 +40,7 @@ sp::ecs::Entity createAsteroid(const MapApplyItem& item, const MapVisualParams& 
     auto entity = sp::ecs::Entity::create();
     auto& transform = entity.addComponent<sp::Transform>();
     transform.setPosition({item.transform.x, item.transform.y});
-    transform.setRotation(params.rotation);
+    transform.setRotation(item.transform.rotation);
     entity.addComponent<RawRadarSignatureInfo>(0.05f, 0.0f, 0.0f);
 
     auto model = string(params.model_number);
@@ -76,7 +76,7 @@ sp::ecs::Entity createNebula(const MapApplyItem& item, const MapVisualParams& pa
     auto entity = sp::ecs::Entity::create();
     auto& transform = entity.addComponent<sp::Transform>();
     transform.setPosition({item.transform.x, item.transform.y});
-    transform.setRotation(params.rotation);
+    transform.setRotation(item.transform.rotation);
     entity.addComponent<RawRadarSignatureInfo>(0.0f, 0.8f, -1.0f);
 
     auto& trace = entity.addComponent<RadarTrace>();
@@ -110,6 +110,10 @@ MapApplySession::Create MapWorldAdapter::creator()
 {
     return [this](const MapApplyItem& item, std::string& handle)
     {
+        // Defense against a hand-built plan: a handle already tracked would
+        // orphan its previous entity, so fail before creating anything.
+        if (entities.find(item.id) != entities.end())
+            return false;
         const auto params = computeMapVisualParams(item);
         sp::ecs::Entity entity;
         switch (item.kind)

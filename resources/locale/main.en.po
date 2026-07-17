@@ -4818,6 +4818,14 @@ msgid "Applying a map requires the local server."
 msgstr ""
 
 msgctxt "content_editor"
+msgid "Undoing an applied map requires the local server."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "There is no applied batch to undo."
+msgstr ""
+
+msgctxt "content_editor"
 msgid "A batch is already applied; undo it before applying again."
 msgstr ""
 

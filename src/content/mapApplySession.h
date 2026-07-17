@@ -36,11 +36,12 @@ struct MapApplyPlan
 };
 
 // Deterministic cosmetic parameters derived exclusively from the object id, so
-// applying the same document twice produces identical-looking entities.
+// applying the same document twice produces identical-looking entities. The
+// entity rotation is NOT cosmetic: it comes from the document snapshot
+// (MapObjectTransform::rotation), matching what the preview renders.
 struct MapVisualParams
 {
     int model_number = 1;      // asteroid mesh/texture variant, 1..10
-    float rotation = 0.0f;     // resting rotation, 0..360
     float spin_rate = 0.0f;    // asteroid spin, 0.1..0.8
     float z_offset = 0.0f;     // asteroid mesh offset, -50..50
     int nebula_texture = 1;    // nebula radar/cloud texture variant, 1..3
@@ -67,8 +68,10 @@ public:
     MapApplyError apply(const MapApplyPlan& plan, const Create& create, const Destroy& destroy);
     // Destroys only this batch, newest first. Handles already destroyed by the
     // simulation are tolerated and reported through destroyed/missing counts.
-    MapApplyError rollback(const Destroy& destroy, std::size_t* destroyed = nullptr,
-        std::size_t* missing = nullptr);
+    // Fails closed without local authority: no destroy callback is invoked and
+    // the batch stays active, mirroring the guard in buildMapApplyPlan().
+    MapApplyError rollback(bool local_server, const Destroy& destroy,
+        std::size_t* destroyed = nullptr, std::size_t* missing = nullptr);
 
     bool hasActiveBatch() const { return !batch_handles.empty(); }
     const std::vector<std::string>& batchHandles() const { return batch_handles; }

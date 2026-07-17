@@ -4596,6 +4596,14 @@ msgid "Applying a map requires the local server."
 msgstr "Aplicar un mapa requiere el servidor local."
 
 msgctxt "content_editor"
+msgid "Undoing an applied map requires the local server."
+msgstr "Deshacer un mapa aplicado requiere el servidor local."
+
+msgctxt "content_editor"
+msgid "There is no applied batch to undo."
+msgstr "No hay ningún lote aplicado que deshacer."
+
+msgctxt "content_editor"
 msgid "A batch is already applied; undo it before applying again."
 msgstr "Ya hay un lote aplicado; deshazlo antes de aplicar de nuevo."
 

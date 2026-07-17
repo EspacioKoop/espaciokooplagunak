@@ -139,19 +139,28 @@ int main()
                 && untouched.created.empty() && untouched.destroyed.empty(),
             "second apply with active batch fails closed");
 
+        // 7. Rollback without local authority fails closed: zero destroy calls
+        // and the batch stays active for a later authorized rollback.
+        {
+            FakeWorld offline;
+            expect(session.rollback(false, offline.destroyer()) == MapApplyError::ServerRequired
+                    && offline.destroyed.empty() && session.hasActiveBatch(),
+                "rollback without local server fails closed with zero destroy calls");
+        }
+
         // 5. Rollback tolerates an already destroyed handle and only touches its own batch.
         world.live.push_back("sentinel");
         expect(world.destroyer()("n-1"), "simulation destroys one batch entity externally");
         std::size_t destroyed = 0, missing = 0;
         world.destroyed.clear();
-        expect(session.rollback(world.destroyer(), &destroyed, &missing) == MapApplyError::None
+        expect(session.rollback(true, world.destroyer(), &destroyed, &missing) == MapApplyError::None
                 && destroyed == 1 && missing == 1 && !session.hasActiveBatch(),
             "rollback tolerates a dead handle and reports it");
         expect(world.destroyed == std::vector<std::string>({"n-1", "a-1"}),
             "rollback destroys newest first and only its own batch");
         expect(world.live == std::vector<std::string>({"sentinel"}),
             "sentinel entity outside the batch survives rollback");
-        expect(session.rollback(world.destroyer()) == MapApplyError::NothingToRollback,
+        expect(session.rollback(true, world.destroyer()) == MapApplyError::NothingToRollback,
             "rollback without batch fails closed");
     }
 
@@ -215,12 +224,11 @@ int main()
 
         const auto first = computeMapVisualParams(plan.items[0]);
         const auto second = computeMapVisualParams(again.items[0]);
-        expect(first.model_number == second.model_number && first.rotation == second.rotation
+        expect(first.model_number == second.model_number
                 && first.spin_rate == second.spin_rate && first.z_offset == second.z_offset
                 && first.nebula_texture == second.nebula_texture,
             "visual parameters are deterministic for the same id");
         expect(first.model_number >= 1 && first.model_number <= 10
-                && first.rotation >= 0.0f && first.rotation < 360.0f
                 && first.spin_rate >= 0.1f && first.spin_rate <= 0.8f
                 && first.z_offset >= -50.0f && first.z_offset <= 50.0f
                 && first.nebula_texture >= 1 && first.nebula_texture <= 3,

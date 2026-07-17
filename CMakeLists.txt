@@ -781,6 +781,16 @@ if(BUILD_CONTENT_RESOURCE_TESTS)
     target_link_libraries(map_apply_session_tests PRIVATE seriousproton)
     add_test(NAME map_apply_session COMMAND map_apply_session_tests)
 
+    add_executable(map_world_adapter_tests
+        tests/mapWorldAdapterTests.cpp
+        src/content/mapApplySession.cpp
+        src/content/mapDocument.cpp
+        src/content/mapWorldAdapter.cpp
+    )
+    target_include_directories(map_world_adapter_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+    target_link_libraries(map_world_adapter_tests PRIVATE seriousproton)
+    add_test(NAME map_world_adapter COMMAND map_world_adapter_tests)
+
     add_executable(map_preview_tests
         tests/mapPreviewTests.cpp
         src/content/mapDocument.cpp

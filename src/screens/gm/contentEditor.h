@@ -147,6 +147,17 @@ private:
     bool isFormDirty() const;
     bool confirmDiscard(const string& action);
     void saveResource();
+    bool validateSaveCandidate(const ContentResource& resource);
+    bool saveRenamedResource(
+        const ContentResource& resource,
+        std::vector<ContentResource>& candidate,
+        int& target_index,
+        string& success);
+    void reconcileFailedRename(
+        const ContentStoreRenameResult& rename_result,
+        const ContentResource& resource,
+        const ContentResource& original);
+    void openRelationEditorForButton(std::size_t index, RelationEditorMode campaign_mode);
     void deleteResource();
     void exportToClipboard();
     void importFromClipboard();

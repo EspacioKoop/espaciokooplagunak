@@ -242,16 +242,7 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
             box, "RELATION_EDIT_" + string(static_cast<unsigned int>(index)),
             tr("content_editor", "Select"),
             [this, index, mode = campaign_modes[index]]() {
-                if (current_type == ContentResourceType::Character && index == 0)
-                    openRelationEditor(RelationEditorMode::CharacterCrewPosition);
-                else if (current_type == ContentResourceType::Character && index == 2)
-                    openRelationEditor(RelationEditorMode::CharacterTags);
-                else if (current_type == ContentResourceType::Character && index == 3)
-                    openRelationEditor(RelationEditorMode::CharacterShip);
-                else if (current_type == ContentResourceType::Character && index == 4)
-                    clearLegacyRole();
-                else
-                    openRelationEditor(mode);
+                openRelationEditorForButton(index, mode);
             });
         relation_edit_buttons[index]->setPosition(x + 545, 280 + 40 * index)
             ->setSize(145, 30)->hide();
@@ -431,10 +422,10 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
     relation_editor_title = new GuiLabel(relation_panel, "RELATION_EDITOR_TITLE", "", 28);
     relation_editor_title->setPosition(30, 20)->setSize(700, 45);
     relation_candidate_selector = new GuiSelector(
-        relation_panel, "RELATION_CANDIDATE", [](int, string) {});
+        relation_panel, "RELATION_CANDIDATE", [](int, string) { /* selection alone has no side effect */ });
     relation_candidate_selector->setTextSize(20)->setPosition(30, 80)->setSize(330, 40);
     relation_destination_selector = new GuiSelector(
-        relation_panel, "RELATION_DESTINATION", [](int, string) {});
+        relation_panel, "RELATION_DESTINATION", [](int, string) { /* selection alone has no side effect */ });
     relation_destination_selector->setTextSize(20)->setPosition(380, 80)->setSize(350, 40);
     relation_tag_entry = new GuiTextEntry(relation_panel, "RELATION_TAG", "");
     relation_tag_entry->setSelectOnFocus()->setPosition(30, 80)->setSize(330, 40)->hide();
@@ -447,7 +438,7 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
         [this]() { clearRelationSelection(); });
     relation_clear_button->setPosition(270, 135)->setSize(220, 40);
     relation_current_list = new GuiListbox(
-        relation_panel, "RELATION_CURRENT", [](int, string) {});
+        relation_panel, "RELATION_CURRENT", [](int, string) { /* selection alone has no side effect */ });
     relation_current_list->setTextSize(20)->setButtonHeight(36)
         ->setPosition(30, 190)->setSize(700, 255);
     relation_remove_button = new GuiButton(
@@ -829,20 +820,36 @@ bool GuiContentEditor::confirmDiscard(const string& action)
     return false;
 }
 
-void GuiContentEditor::saveResource()
+bool GuiContentEditor::validateSaveCandidate(const ContentResource& resource)
 {
-    auto resource = formResource();
-    auto error = validateContentResource(resource);
-    if (error != ContentResourceError::None) return setStatus(errorText(error));
+    const auto error = validateContentResource(resource);
+    if (error != ContentResourceError::None)
+    {
+        setStatus(errorText(error));
+        return false;
+    }
     if (resource.type == ContentResourceType::Ship && gameGlobalInfo)
     {
         const auto template_status = validateShipTemplateSelection(
             gameGlobalInfo->getShipTemplateCatalog(), resource.primary);
         if (template_status == ShipTemplateValidation::TemplateNotFound)
-            return setStatus(tr("content_editor", "The ship template is not available in this scenario."));
+        {
+            setStatus(tr("content_editor", "The ship template is not available in this scenario."));
+            return false;
+        }
         if (template_status == ShipTemplateValidation::ModelMissing)
-            return setStatus(tr("content_editor", "The ship template references a missing 3D model."));
+        {
+            setStatus(tr("content_editor", "The ship template references a missing 3D model."));
+            return false;
+        }
     }
+    return true;
+}
+
+void GuiContentEditor::saveResource()
+{
+    auto resource = formResource();
+    if (!validateSaveCandidate(resource)) return;
 
     int existing = findResource(resource.type, resource.id);
     const bool selected = selected_index >= 0 && selected_index < int(resources.size());
@@ -859,56 +866,8 @@ void GuiContentEditor::saveResource()
     bool already_persisted = false;
     if (renaming)
     {
-        const auto original = resources[selected_index];
-        const auto rename_error = renameContentResource(
-            candidate, original.type, original.id, resource.id);
-        if (rename_error != ContentRenameError::None)
-        {
-            rename_guard.reset();
-            return setStatus(renameErrorText(rename_error));
-        }
-        const string rename_action = "rename:" + contentResourceTypeId(original.type)
-            + ":" + original.id;
-        if (!rename_guard.confirm(rename_action, resource, original))
-        {
-            return setStatus(tr("content_editor",
-                "Changing this ID updates every reference. Press Save again to confirm."));
-        }
-        std::vector<ContentResource> reconciled;
-        const auto rename_result = store.renameResource(original, resource, reconciled);
-        if (!rename_result.ok())
-        {
-            if (rename_result.reconciled)
-            {
-                resources = std::move(reconciled);
-                const auto& identity = rename_result.applied ? resource : original;
-                const auto actual = std::find_if(
-                    resources.begin(), resources.end(), [&](const ContentResource& item) {
-                        return item.type == identity.type && item.id == identity.id;
-                    });
-                const int actual_index = actual == resources.end()
-                    ? -1 : int(actual - resources.begin());
-                refreshList();
-                if (actual_index >= 0) loadResource(actual_index);
-                else clearForm();
-            }
-            pending_save = "";
-            if (rename_result.rename_error != ContentRenameError::None)
-                return setStatus(renameErrorText(rename_result.rename_error));
-            if (rename_result.reconciled && rename_result.applied)
-                return setStatus(tr("content_editor",
-                    "The rename was recovered after a storage error. Review the reloaded library."));
-            return setStatus(storeErrorText(rename_result.store_error));
-        }
-        candidate = std::move(reconciled);
-        const auto target = std::find_if(candidate.begin(), candidate.end(), [&](const ContentResource& item) {
-            return item.type == resource.type && item.id == resource.id;
-        });
-        if (target == candidate.end())
-            return setStatus(tr("content_editor", "The renamed resource could not be reloaded."));
-        target_index = int(target - candidate.begin());
+        if (!saveRenamedResource(resource, candidate, target_index, success)) return;
         already_persisted = true;
-        success = tr("content_editor", "Resource renamed and references updated.");
     }
     else if (replacing_other)
     {
@@ -961,6 +920,79 @@ void GuiContentEditor::saveResource()
     rename_guard.reset();
     refreshList();
     setStatus(success);
+}
+
+bool GuiContentEditor::saveRenamedResource(
+    const ContentResource& resource,
+    std::vector<ContentResource>& candidate,
+    int& target_index,
+    string& success)
+{
+    const auto original = resources[selected_index];
+    const auto rename_error = renameContentResource(
+        candidate, original.type, original.id, resource.id);
+    if (rename_error != ContentRenameError::None)
+    {
+        rename_guard.reset();
+        setStatus(renameErrorText(rename_error));
+        return false;
+    }
+    const string rename_action = "rename:" + contentResourceTypeId(original.type)
+        + ":" + original.id;
+    if (!rename_guard.confirm(rename_action, resource, original))
+    {
+        setStatus(tr("content_editor",
+            "Changing this ID updates every reference. Press Save again to confirm."));
+        return false;
+    }
+    std::vector<ContentResource> reconciled;
+    const auto rename_result = store.renameResource(original, resource, reconciled);
+    if (!rename_result.ok())
+    {
+        if (rename_result.reconciled)
+        {
+            resources = std::move(reconciled);
+            reconcileFailedRename(rename_result, resource, original);
+        }
+        pending_save = "";
+        if (rename_result.rename_error != ContentRenameError::None)
+            setStatus(renameErrorText(rename_result.rename_error));
+        else if (rename_result.reconciled && rename_result.applied)
+            setStatus(tr("content_editor",
+                "The rename was recovered after a storage error. Review the reloaded library."));
+        else
+            setStatus(storeErrorText(rename_result.store_error));
+        return false;
+    }
+    candidate = std::move(reconciled);
+    const auto target = std::find_if(candidate.begin(), candidate.end(), [&](const ContentResource& item) {
+        return item.type == resource.type && item.id == resource.id;
+    });
+    if (target == candidate.end())
+    {
+        setStatus(tr("content_editor", "The renamed resource could not be reloaded."));
+        return false;
+    }
+    target_index = int(target - candidate.begin());
+    success = tr("content_editor", "Resource renamed and references updated.");
+    return true;
+}
+
+void GuiContentEditor::reconcileFailedRename(
+    const ContentStoreRenameResult& rename_result,
+    const ContentResource& resource,
+    const ContentResource& original)
+{
+    const auto& identity = rename_result.applied ? resource : original;
+    const auto actual = std::find_if(
+        resources.begin(), resources.end(), [&](const ContentResource& item) {
+            return item.type == identity.type && item.id == identity.id;
+        });
+    const int actual_index = actual == resources.end()
+        ? -1 : int(actual - resources.begin());
+    refreshList();
+    if (actual_index >= 0) loadResource(actual_index);
+    else clearForm();
 }
 
 void GuiContentEditor::deleteResource()
@@ -1613,6 +1645,20 @@ void GuiContentEditor::redoShipEdit()
     discard_guard.reset();
     updateShipOverrideEditor();
     setStatus(tr("content_editor", "Ship edit redone."));
+}
+
+void GuiContentEditor::openRelationEditorForButton(std::size_t index, RelationEditorMode campaign_mode)
+{
+    if (current_type != ContentResourceType::Character)
+        return openRelationEditor(campaign_mode);
+    switch (index)
+    {
+    case 0: return openRelationEditor(RelationEditorMode::CharacterCrewPosition);
+    case 2: return openRelationEditor(RelationEditorMode::CharacterTags);
+    case 3: return openRelationEditor(RelationEditorMode::CharacterShip);
+    case 4: return clearLegacyRole();
+    default: return openRelationEditor(campaign_mode);
+    }
 }
 
 void GuiContentEditor::openRelationEditor(RelationEditorMode mode)

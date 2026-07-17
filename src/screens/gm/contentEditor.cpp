@@ -1563,21 +1563,28 @@ void GuiContentEditor::deployShip()
         const auto error = buildShipDeploymentPlan(
             snapshot, gameGlobalInfo->getShipTemplateCatalog(), current_factions,
             position.x, position.y, rotation, game_server != nullptr, plan);
-        gameGlobalInfo->on_gm_click = nullptr;
         gameGlobalInfo->on_gm_preview_trace = std::nullopt;
         show();
         if (error != ShipDeploymentError::None)
-            return setStatus(deploymentErrorText(error));
-        ship_deployment_session.prepare(plan);
-        setStatus(tr("content_editor", "Plan: {template} at ({x}, {y}); {systems} systems, {resources} resources, {cargo} cargo and {positions} crew positions. Press Deploy ship again to confirm.").format({
-            {"template", string(plan.template_id)},
-            {"x", string(plan.x)},
-            {"y", string(plan.y)},
-            {"systems", string(static_cast<int>(plan.overrides.systems.size()))},
-            {"resources", string(static_cast<int>(plan.overrides.resources.size()))},
-            {"cargo", string(static_cast<int>(plan.overrides.cargo.size()))},
-            {"positions", string(static_cast<int>(plan.overrides.crew_position_ids.size()))},
-        }));
+        {
+            setStatus(deploymentErrorText(error));
+        }
+        else
+        {
+            ship_deployment_session.prepare(plan);
+            setStatus(tr("content_editor", "Plan: {template} at ({x}, {y}); {systems} systems, {resources} resources, {cargo} cargo and {positions} crew positions. Press Deploy ship again to confirm.").format({
+                {"template", string(plan.template_id)},
+                {"x", string(plan.x)},
+                {"y", string(plan.y)},
+                {"systems", string(static_cast<int>(plan.overrides.systems.size()))},
+                {"resources", string(static_cast<int>(plan.overrides.resources.size()))},
+                {"cargo", string(static_cast<int>(plan.overrides.cargo.size()))},
+                {"positions", string(static_cast<int>(plan.overrides.crew_position_ids.size()))},
+            }));
+        }
+        // Clearing this std::function destroys the currently executing closure.
+        // Do it only after the final access to its captures.
+        gameGlobalInfo->on_gm_click = nullptr;
     };
     hide();
 }

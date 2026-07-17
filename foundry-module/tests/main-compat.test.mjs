@@ -35,6 +35,10 @@ async function loadModule({ modern = false, isGM = true, fetchImpl } = {}) {
       return this;
     }
 
+    async close() {
+      this.rendered = false;
+    }
+
     activateListeners() {}
   }
 
@@ -53,7 +57,6 @@ async function loadModule({ modern = false, isGM = true, fetchImpl } = {}) {
       register() {},
       get(_module, key) {
         if (key === "bridgeUrl") return "http://bridge.test";
-        if (key === "bridgeToken") return "test-token";
         return 2;
       },
     },
@@ -91,6 +94,9 @@ async function loadModule({ modern = false, isGM = true, fetchImpl } = {}) {
     };
   }
 
+  const tokenSession = await import("../scripts/bridge-token-session.mjs");
+  tokenSession.clearBridgeToken();
+  if (isGM) tokenSession.setBridgeToken("test-token");
   await import(`../scripts/main.mjs?compat-test=${importNonce++}`);
   return { hooks, instances, notifications, fetchCalls, journalPages };
 }
@@ -102,6 +108,18 @@ function pauseValues(fetchCalls) {
 function toolByName(controls, name) {
   return controls.flatMap((control) => control.tools ?? []).find((tool) => tool.name === name);
 }
+
+test("v11 abre la configuración efímera del token sin tocar red", async () => {
+  const { hooks, instances, fetchCalls } = await loadModule();
+  const controls = [{ name: "token", tools: [] }];
+  hooks.getSceneControlButtons(controls);
+
+  toolByName(controls, "lagunak-token").onClick();
+  assert.equal(instances.length, 1);
+  assert.deepEqual(instances[0].renderCalls, [true]);
+  assert.deepEqual(fetchCalls, []);
+  await instances[0].close();
+});
 
 test("v11 conecta los listeners de pausa y reanudación con el puente", async () => {
   const { hooks, instances, notifications, fetchCalls } = await loadModule();
@@ -119,6 +137,7 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
   assert.deepEqual(grupo.tools.map(({ name }) => name), [
     "lagunak-estado",
     "lagunak-mapa",
+    "lagunak-token",
     "lagunak-diagnostico",
   ]);
   toolByName(controls, "lagunak-estado").onClick();

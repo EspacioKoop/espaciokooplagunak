@@ -39,14 +39,17 @@ En *Configuración → Ajustes del módulo*:
 | Ajuste | Valor |
 |---|---|
 | URL del puente | `http://localhost:8090` (o donde esté publicado el puente) |
-| Token del puente | el `BRIDGE_TOKEN` de `docker/.env` |
 | Intervalo de sondeo | 1–30 s (2 s por defecto) |
 
 Flujo recomendado para el token (issue #183): **copiar → pegar → validar**.
 
 1. **Copiar**: `python3 tools/instalar.py --copiar-token` (o la opción «Copiar
    el token del puente» del menú) lo deja en el portapapeles sin mostrarlo.
-2. **Pegar**: en *Configuración → Ajustes del módulo → Token del puente*.
+2. **Pegar**: pulsa **Configurar token del puente** en los controles de escena
+   del GM y pégalo en el campo de contraseña. El asistente vacía el
+   portapapeles cuando confirmas que has terminado. Un gestor de historial
+   externo puede conservar copias: elimina también su entrada o desactívalo
+   durante la operación.
 3. **Validar**: el botón **Probar conexión con el puente** (grupo de controles
    de escena de Espaciokoop Lagunak, solo GM) comprueba `/healthz` y después
    `/v1/state`, y distingue en una notificación: todo correcto, token ausente
@@ -65,9 +68,11 @@ necesariamente la URL del puente. Por ejemplo:
 BRIDGE_ALLOWED_ORIGINS=http://localhost:30000
 ```
 
-Los tres ajustes son de ámbito **client**: viven en el navegador del GM, no
-entran en la base de datos del mundo y no se sincronizan con los jugadores.
-El token no aparece en logs ni en mensajes de error.
+La URL y el intervalo son ajustes de ámbito **client**: viven en el navegador
+del GM y no entran en la base de datos del mundo. El token vive **solo en
+memoria** durante la sesión de esa pestaña; al recargar o cerrar hay que pegarlo
+de nuevo. El módulo vacía al arrancar cualquier valor del antiguo setting
+persistente. El token no aparece en logs, Journal, sockets ni mensajes de error.
 
 El **token Bearer es la autoridad efectiva del puente** y debe entregarse solo
 al GM. Las comprobaciones `game.user.isGM` ocultan la interfaz y evitan órdenes

@@ -1,4 +1,5 @@
 import { BridgeClient, BridgeError } from "./bridge-client.mjs";
+import { getBridgeToken } from "./bridge-token-session.mjs";
 import { openStationApp } from "./station-ui.mjs";
 import { buildWorkspaceModel, stationForWorkspace } from "./station-workspaces.mjs";
 
@@ -54,7 +55,7 @@ function workspaceAppClass() {
 function bridgeClient() {
   return new BridgeClient({
     url: game.settings.get(configuredModuleId, "bridgeUrl"),
-    token: game.settings.get(configuredModuleId, "bridgeToken"),
+    token: getBridgeToken(),
   });
 }
 

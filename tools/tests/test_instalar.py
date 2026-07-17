@@ -159,11 +159,12 @@ class ValidacionTests(unittest.TestCase):
         self.assertEqual(len(token), 64)
         int(token, 16)  # no lanza si es hexadecimal
 
-    def test_ocultar_token_no_revela_entero(self) -> None:
+    def test_ocultar_token_no_revela_huella(self) -> None:
         token = "a" * 64
         oculto = instalar._ocultar_token(token)
         self.assertNotIn(token, oculto)
-        self.assertIn("…", oculto)
+        self.assertNotIn("aaaa", oculto)
+        self.assertEqual(oculto, "**** (64 car.)")
 
 
 class ModuloTests(unittest.TestCase):
@@ -330,6 +331,10 @@ class CliTests(unittest.TestCase):
         self.assertNotEqual(salida.returncode, 0)
         self.assertIn("saltos de línea", salida.stderr)
 
+    def test_set_rechaza_secretos_en_argv(self) -> None:
+        with self.assertRaisesRegex(SystemExit, "no admite secretos por argv"):
+            instalar.main(["--set", "BRIDGE_TOKEN=valor-de-prueba"])
+
 
 class CopiarTokenTests(unittest.TestCase):
     def test_leer_token_sin_env_devuelve_vacio(self) -> None:
@@ -370,6 +375,23 @@ class CopiarTokenTests(unittest.TestCase):
         self.assertIsNone(
             instalar.copiar_al_portapapeles("secreto", which=lambda _: None))
 
+    def test_limpiar_portapapeles_no_envia_el_token(self) -> None:
+        llamadas = []
+
+        def run_falso(comando, **kwargs):
+            llamadas.append((comando, kwargs))
+            return subprocess.CompletedProcess(comando, 0)
+
+        self.assertTrue(instalar.limpiar_portapapeles(
+            "wl-copy", which=lambda _: "/usr/bin/wl-copy", run=run_falso))
+        comando, kwargs = llamadas[0]
+        self.assertEqual(comando, ["wl-copy", "--clear"])
+        self.assertEqual(kwargs["input"], b"")
+
+    def test_limpiar_portapapeles_informa_fallo(self) -> None:
+        self.assertFalse(instalar.limpiar_portapapeles(
+            "xclip", which=lambda _: None))
+
     def test_cli_copiar_token_sin_env_falla(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             with mock.patch.object(instalar, "ENV_DESTINO", Path(tmp) / ".env"):
@@ -385,13 +407,33 @@ class CopiarTokenTests(unittest.TestCase):
             env.write_text(f"BRIDGE_TOKEN={token}\n", encoding="utf-8")
             with mock.patch.object(instalar, "ENV_DESTINO", env), \
                  mock.patch.object(instalar, "copiar_al_portapapeles",
-                                   return_value="wl-copy"):
+                                   return_value="wl-copy"), \
+                 mock.patch.object(instalar, "limpiar_portapapeles", return_value=True), \
+                 mock.patch.object(instalar, "_preguntar", return_value=""):
                 buffer = io.StringIO()
                 with contextlib.redirect_stdout(buffer):
                     codigo = instalar.main(["--copiar-token"])
         self.assertEqual(codigo, 0)
         self.assertNotIn(token, buffer.getvalue())
+        self.assertNotIn("aaaa", buffer.getvalue())
         self.assertIn("portapapeles", buffer.getvalue())
+        self.assertIn("vaciado", buffer.getvalue())
+
+    def test_cli_copiar_token_falla_si_no_puede_limpiar(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            env = Path(tmp) / ".env"
+            token = "c" * 64
+            env.write_text(f"BRIDGE_TOKEN={token}\n", encoding="utf-8")
+            with mock.patch.object(instalar, "ENV_DESTINO", env), \
+                 mock.patch.object(instalar, "copiar_al_portapapeles", return_value="xclip"), \
+                 mock.patch.object(instalar, "limpiar_portapapeles", return_value=False), \
+                 mock.patch.object(instalar, "_preguntar", return_value=""):
+                buffer = io.StringIO()
+                with contextlib.redirect_stdout(buffer):
+                    codigo = instalar.main(["--copiar-token"])
+        self.assertEqual(codigo, 1)
+        self.assertNotIn(token, buffer.getvalue())
+        self.assertIn("No se pudo vaciar", buffer.getvalue())
 
     def test_cli_copiar_token_sin_portapapeles_no_imprime_el_token(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

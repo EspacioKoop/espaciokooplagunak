@@ -18,14 +18,20 @@
  * factoría), para que importar el módulo no rompa en v11 al desestructurar
  * una API ausente en el nivel superior.
  *
- * Seguridad: la URL y el token del puente son ajustes de ámbito "client"
- * (localStorage del navegador del GM) — nunca entran en la base de datos
- * del mundo ni se sincronizan con los jugadores, y no se escriben en logs.
+ * Seguridad: la URL es un ajuste de ámbito "client"; el token del puente vive
+ * solo en memoria durante la sesión del navegador GM. Nunca entra en la base
+ * de datos del mundo, localStorage, sockets, Journal o logs.
  * El token Bearer es la autoridad del puente; `game.user.isGM` protege la UI,
  * pero el navegador no puede acreditar por sí solo un rol ante el servidor.
  */
 
 import { BridgeClient, BridgeError } from "./bridge-client.mjs";
+import {
+  clearLegacyBridgeToken,
+  getBridgeToken,
+  openBridgeTokenApp,
+  registerBridgeTokenFeature,
+} from "./bridge-token-session.mjs";
 import { probarConexion } from "./diagnostico-conexion.mjs";
 import { processBridgeEvents } from "./event-journal.mjs";
 import { dibujarFrame } from "./mapa-render.mjs";
@@ -59,6 +65,7 @@ const MAPA_SEMILLA = 0x4c4147;
 
 registerStationFeature(MODULE_ID);
 registerWorkspaceFeature(MODULE_ID);
+registerBridgeTokenFeature(MODULE_ID);
 
 let estadoApp = null;
 let mapaApp = null;
@@ -104,7 +111,7 @@ Hooks.once("init", () => {
     name: "LAGUNAK.Ajustes.Token.Nombre",
     hint: "LAGUNAK.Ajustes.Token.Pista",
     scope: "client",
-    config: true,
+    config: false,
     type: String,
     default: "",
   });
@@ -118,6 +125,12 @@ Hooks.once("init", () => {
     range: { min: POLL_MIN_S, max: POLL_MAX_S, step: 1 },
     default: 2,
   });
+});
+
+Hooks.once("ready", () => {
+  // Migración de #183: no se lee el valor legado; se sobrescribe con vacío.
+  // El token operativo vive exclusivamente en bridge-token-session.mjs.
+  void clearLegacyBridgeToken();
 });
 
 /* Grupo PROPIO en los controles de escena, con icono de nave, solo GM
@@ -153,6 +166,13 @@ Hooks.on("getSceneControlButtons", (controls) => {
           icon: "fa-solid fa-satellite-dish",
           button: true,
           onClick: () => abrirMapaVivo(),
+        },
+        {
+          name: "lagunak-token",
+          title: "LAGUNAK.Controles.ConfigurarToken",
+          icon: "fa-solid fa-key",
+          button: true,
+          onClick: () => openBridgeTokenApp(),
         },
         {
           name: "lagunak-diagnostico",
@@ -196,11 +216,20 @@ Hooks.on("getSceneControlButtons", (controls) => {
           onClick: () => abrirMapaVivo(),
           onChange: () => abrirMapaVivo(),
         },
+        "lagunak-token": {
+          name: "lagunak-token",
+          title: "LAGUNAK.Controles.ConfigurarToken",
+          icon: "fa-solid fa-key",
+          order: 2,
+          button: true,
+          onClick: () => openBridgeTokenApp(),
+          onChange: () => openBridgeTokenApp(),
+        },
         "lagunak-diagnostico": {
           name: "lagunak-diagnostico",
           title: "LAGUNAK.Controles.ProbarConexion",
           icon: "fa-solid fa-stethoscope",
-          order: 2,
+          order: 3,
           button: true,
           onClick: () => diagnosticarConexion(),
           onChange: () => diagnosticarConexion(),
@@ -220,7 +249,7 @@ async function diagnosticarConexion() {
   try {
     const res = await probarConexion({
       url: game.settings.get(MODULE_ID, "bridgeUrl"),
-      token: game.settings.get(MODULE_ID, "bridgeToken"),
+      token: getBridgeToken(),
     });
     const mensaje = game.i18n.localize(res.claveI18n);
     if (res.exito) ui.notifications.info(mensaje);
@@ -325,7 +354,7 @@ function crearClaseV2() {
     #cliente() {
       return new BridgeClient({
         url: game.settings.get(MODULE_ID, "bridgeUrl"),
-        token: game.settings.get(MODULE_ID, "bridgeToken"),
+        token: getBridgeToken(),
       });
     }
 
@@ -556,7 +585,7 @@ function crearClaseV1() {
     #cliente() {
       return new BridgeClient({
         url: game.settings.get(MODULE_ID, "bridgeUrl"),
-        token: game.settings.get(MODULE_ID, "bridgeToken"),
+        token: getBridgeToken(),
       });
     }
 
@@ -786,7 +815,7 @@ function crearClaseMapaV2() {
     #cliente() {
       return new BridgeClient({
         url: game.settings.get(MODULE_ID, "bridgeUrl"),
-        token: game.settings.get(MODULE_ID, "bridgeToken"),
+        token: getBridgeToken(),
       });
     }
 
@@ -1070,7 +1099,7 @@ function crearClaseMapaV1() {
     #cliente() {
       return new BridgeClient({
         url: game.settings.get(MODULE_ID, "bridgeUrl"),
-        token: game.settings.get(MODULE_ID, "bridgeToken"),
+        token: getBridgeToken(),
       });
     }
 

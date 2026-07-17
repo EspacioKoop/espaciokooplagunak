@@ -67,13 +67,15 @@ async function setup({ isGM = false, modern = false, fetchImpl = null } = {}) {
         settingsReads.push(key);
         if (!isGM) throw new Error("un jugador no debe leer ajustes del puente");
         if (key === "bridgeUrl") return "http://bridge.invalid";
-        if (key === "bridgeToken") return "secret-for-test";
         return null;
       },
     },
   };
   globalThis.fetch = fetchImpl ?? (() => { throw new Error("fetch inesperado"); });
 
+  const tokenSession = await import("../scripts/bridge-token-session.mjs");
+  tokenSession.clearBridgeToken();
+  if (isGM) tokenSession.setBridgeToken("secret-for-test");
   const module = await import(`../scripts/station-workspace-ui.mjs?workspace-ui=${nonce++}`);
   module.registerWorkspaceFeature("espaciokoop-lagunak");
   return { module, hooks, instances, settingsReads };
@@ -119,7 +121,7 @@ test("ApplicationV2: el GM recibe estado y contactos y previsualiza puestos", as
   assert.equal(model.hasTelemetry, true);
   assert.equal(model.connectionOk, true);
   assert.equal(JSON.stringify(model).includes("secret-for-test"), false);
-  assert.deepEqual(settingsReads, ["bridgeUrl", "bridgeToken"]);
+  assert.deepEqual(settingsReads, ["bridgeUrl"]);
 });
 
 test("una respuesta tardía tras cerrar no repuebla la consola", async () => {

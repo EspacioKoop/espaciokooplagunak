@@ -33,6 +33,7 @@ Uso no interactivo (automatización, CI, pruebas):
 from __future__ import annotations
 
 import argparse
+import getpass
 import json
 import os
 import platform
@@ -266,10 +267,8 @@ def token_nuevo() -> str:
 
 def _ocultar_token(valor: str) -> str:
     if not valor:
-        return "(sin definir)"
-    if len(valor) <= 8:
-        return "****"
-    return f"{valor[:4]}…{valor[-4:]} ({len(valor)} car.)"
+        return "(vacío)"
+    return f"**** ({len(valor)} car.)"
 
 
 # Herramientas de portapapeles por prioridad. El token viaja SIEMPRE por
@@ -310,6 +309,23 @@ def copiar_al_portapapeles(texto: str, which=shutil.which, run=subprocess.run) -
         if proceso.returncode == 0:
             return nombre
     return None
+
+
+def limpiar_portapapeles(herramienta: str, which=shutil.which,
+                         run=subprocess.run) -> bool:
+    """Vacía el portapapeles usado para entregar el token."""
+    comandos = dict(_PORTAPAPELES)
+    comando = comandos.get(herramienta)
+    if comando is None or not which(comando[0]):
+        return False
+    if herramienta == "wl-copy":
+        comando = ["wl-copy", "--clear"]
+    try:
+        proceso = run(comando, input=b"", stdout=subprocess.DEVNULL,
+                      stderr=subprocess.DEVNULL, timeout=10, check=False)
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+    return proceso.returncode == 0
 
 
 # --- Validación de opciones --------------------------------------------------
@@ -623,12 +639,7 @@ def _accion_foundry(info: dict) -> None:
 
 
 def _accion_copiar_token() -> None:
-    """Entrega el token al GM para pegarlo en los ajustes del módulo (#183).
-
-    Primero intenta el portapapeles del sistema; solo si no hay herramienta
-    disponible ofrece mostrarlo UNA vez en pantalla, con confirmación
-    explícita. El token no se guarda en ningún sitio nuevo.
-    """
+    """Entrega el token al GM y vacía el portapapeles tras el pegado (#183)."""
     _titulo("Copiar el token del puente (para Foundry)")
     token = leer_token()
     if not token:
@@ -637,16 +648,21 @@ def _accion_copiar_token() -> None:
         return
     herramienta = copiar_al_portapapeles(token)
     if herramienta:
-        print(f"  Token {_ocultar_token(token)} copiado al portapapeles ({herramienta}).")
-        print("  Pégalo en Foundry: Configuración → Ajustes del módulo → «Token del puente».")
+        print(f"  Token copiado al portapapeles ({herramienta}); no se muestra en pantalla.")
+        print("  Pégalo en Foundry desde «Configurar token del puente» (solo GM).")
         print("  Después pulsa «Probar conexión con el puente» en los controles de escena del GM.")
+        _preguntar("Pulsa Intro cuando lo hayas pegado para vaciar el portapapeles")
+        if limpiar_portapapeles(herramienta):
+            print("  Portapapeles vaciado.")
+            print("  Si usas un gestor de historial, elimina también allí la entrada.")
+        else:
+            print(_c(
+                "  No se pudo vaciar automáticamente; límpialo manualmente y rota el token si pudo quedar expuesto.",
+                "33",
+            ))
         return
     print(_c("  No hay herramienta de portapapeles (wl-copy, xclip, xsel, pbcopy).", "33"))
-    if _confirmar("¿Mostrar el token UNA vez en pantalla para copiarlo a mano?", defecto=False):
-        print(f"  {token}")
-        print("  Pégalo en los ajustes del módulo y limpia el scrollback si compartes pantalla.")
-    else:
-        print("  No se ha mostrado; instala una herramienta de portapapeles y repite.")
+    print("  El token no se mostrará. Instala una herramienta compatible y repite.")
 
 
 def _accion_opciones() -> None:
@@ -676,7 +692,14 @@ def _accion_opciones() -> None:
         print("  Opción no válida.")
         return
     print(f"  {op.ayuda}")
-    valor = _preguntar(f"Nuevo valor para {op.clave}", actuales.get(op.clave, ""))
+    if op.secreto:
+        valor = getpass.getpass(
+            f"Nuevo valor para {op.clave} (vacío conserva el actual): "
+        ).strip()
+        if not valor:
+            valor = actuales.get(op.clave, "")
+    else:
+        valor = _preguntar(f"Nuevo valor para {op.clave}", actuales.get(op.clave, ""))
     if op.validador is not None:
         try:
             op.validador(valor)
@@ -735,7 +758,12 @@ def _aplicar_set(pares: list[str]) -> dict[str, str]:
         # Un salto de línea en el valor inyectaría líneas nuevas en el .env.
         if "\n" in valor or "\r" in valor:
             raise SystemExit(f"{clave}: el valor no puede contener saltos de línea")
-        validador = opciones[clave].validador
+        opcion = opciones[clave]
+        if opcion.secreto:
+            raise SystemExit(
+                f"{clave}: --set no admite secretos por argv; usa el menú interactivo"
+            )
+        validador = opcion.validador
         if validador is not None:
             try:
                 validador(valor)
@@ -761,7 +789,7 @@ def construir_parser() -> argparse.ArgumentParser:
     parser.add_argument("--imprimir-config", action="store_true",
                         help="Muestra docker/.env con el token oculto.")
     parser.add_argument("--set", nargs="+", metavar="CLAVE=VALOR", default=None,
-                        help="Aplica cambios a docker/.env (lo crea si falta) y termina.")
+                        help="Aplica cambios no secretos a docker/.env (lo crea si falta) y termina.")
     return parser
 
 
@@ -785,10 +813,16 @@ def main(argv: list[str] | None = None) -> int:
         herramienta = copiar_al_portapapeles(token)
         if herramienta is None:
             print("Sin herramienta de portapapeles (wl-copy, xclip, xsel, pbcopy). "
-                  "Usa el menú interactivo para mostrarlo con confirmación.")
+                  "El token no se mostrará; instala una herramienta compatible.")
             return 1
-        print(f"Token {_ocultar_token(token)} copiado al portapapeles ({herramienta}). "
-              "Pégalo en los ajustes del módulo de Foundry.")
+        print(f"Token copiado al portapapeles ({herramienta}); no se muestra. "
+              "Pégalo en «Configurar token del puente».")
+        _preguntar("Pulsa Intro cuando lo hayas pegado para vaciar el portapapeles")
+        if not limpiar_portapapeles(herramienta):
+            print("No se pudo vaciar automáticamente; límpialo manualmente y rota el token si pudo quedar expuesto.")
+            return 1
+        print("Portapapeles vaciado.")
+        print("Si usas un gestor de historial, elimina también allí la entrada.")
         return 0
     if args.set is not None:
         resultado = asegurar_env(_aplicar_set(args.set))

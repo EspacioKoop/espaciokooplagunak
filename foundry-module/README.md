@@ -39,14 +39,17 @@ En *Configuración → Ajustes del módulo*:
 | Ajuste | Valor |
 |---|---|
 | URL del puente | `http://localhost:8090` (o donde esté publicado el puente) |
-| Token del puente | el `BRIDGE_TOKEN` de `docker/.env` |
 | Intervalo de sondeo | 1–30 s (2 s por defecto) |
 
 Flujo recomendado para el token (issue #183): **copiar → pegar → validar**.
 
 1. **Copiar**: `python3 tools/instalar.py --copiar-token` (o la opción «Copiar
    el token del puente» del menú) lo deja en el portapapeles sin mostrarlo.
-2. **Pegar**: en *Configuración → Ajustes del módulo → Token del puente*.
+2. **Pegar**: pulsa **Configurar token del puente** en los controles de escena
+   del GM y pégalo en el campo de contraseña. El asistente vacía el
+   portapapeles cuando confirmas que has terminado. Un gestor de historial
+   externo puede conservar copias: elimina también su entrada o desactívalo
+   durante la operación.
 3. **Validar**: el botón **Probar conexión con el puente** (grupo de controles
    de escena de Espaciokoop Lagunak, solo GM) comprueba `/healthz` y después
    `/v1/state`, y distingue en una notificación: todo correcto, token ausente
@@ -65,9 +68,11 @@ necesariamente la URL del puente. Por ejemplo:
 BRIDGE_ALLOWED_ORIGINS=http://localhost:30000
 ```
 
-Los tres ajustes son de ámbito **client**: viven en el navegador del GM, no
-entran en la base de datos del mundo y no se sincronizan con los jugadores.
-El token no aparece en logs ni en mensajes de error.
+La URL y el intervalo son ajustes de ámbito **client**: viven en el navegador
+del GM y no entran en la base de datos del mundo. El token vive **solo en
+memoria** durante la sesión de esa pestaña; al recargar o cerrar hay que pegarlo
+de nuevo. El módulo vacía al arrancar cualquier valor del antiguo setting
+persistente. El token no aparece en logs, Journal, sockets ni mensajes de error.
 
 El **token Bearer es la autoridad efectiva del puente** y debe entregarse solo
 al GM. Las comprobaciones `game.user.isGM` ocultan la interfaz y evitan órdenes
@@ -82,8 +87,10 @@ cualquier cliente que obtenga el token puede invocar las órdenes autorizadas.
    (`/v1/state`): posición, rumbo, destino, distancia, ETA, casco, energía,
    escudos y sistemas. Con la nave detenida la ETA se muestra como no
    disponible, sin dividir por cero.
-3. El GM puede pausar o reanudar la simulación con los botones de tempo. No se
-   muestra un estado de pausa inferido porque EmptyEpsilon no ofrece un getter.
+3. El GM puede pausar o reanudar la simulación con los botones de tempo. La
+   ventana refleja el estado `paused` confirmado por `/v1/scenario`; la pausa
+   global de Foundry se muestra aparte y no se sincroniza automáticamente con
+   la simulación para evitar bucles.
 4. Si el puente se cae, el módulo reintenta con backoff exponencial (hasta
    60 s) y se recupera solo al volver el puente.
 5. «Anotar estado» escribe una página con el estado actual en el diario

@@ -92,6 +92,30 @@ function getObjectsInRadius(x, y, r) return mundo end
 """
 
 
+# Dos marcadores internos quedan más cerca que cualquier contacto jugable. Si
+# consumieran cupo, desplazarían NPC-58/59 y declararían truncamiento falso.
+_MUNDO_CON_MARCADORES_LUA = r"""
+local function obj(cs, fac, x, y)
+    local o = {}
+    function o:getCallSign() return cs end
+    function o:getPosition() return x, y end
+    function o:getFaction() return fac end
+    return o
+end
+local ship_obj = obj("Itsaso 1", "Human Navy", 0.0, 0.0)
+local mundo = {
+    ship_obj,
+    obj("LAGUNAK_EVT_arrival_s90_654321", "Independent", 0.0, 0.0),
+    obj("LAGUNAK_EVT_encounter_started_s90_654321_000002_derelict", "Independent", 0.0, 0.0),
+}
+for i = 1, 59 do
+    mundo[#mundo + 1] = obj("NPC-" .. i, "Kraylor", i * 100.0, 0.0)
+end
+function getPlayerShip(n) return ship_obj end
+function getObjectsInRadius(x, y, r) return mundo end
+"""
+
+
 def _interprete_lua() -> str | None:
     for nombre in ("lua5.3", "lua5.4", "lua"):
         ruta = shutil.which(nombre)
@@ -195,3 +219,14 @@ def test_encoder_lua_ordena_por_distancia_e_incluye_al_jugador(tmp_path):
     acompanantes = [c["callsign"] for c in contactos[1:]]
     assert acompanantes == [f"NPC-{i}" for i in range(1, 60)]
     assert all(not c["is_player"] for c in contactos[1:])
+
+
+def test_encoder_lua_excluye_marcadores_de_evento_sin_consumir_cupo(tmp_path):
+    payload = _ejecutar_contacts_lua(tmp_path, mundo=_MUNDO_CON_MARCADORES_LUA)
+    contactos = payload["contacts"]
+
+    assert len(contactos) == 60
+    assert payload["total"] == 60
+    assert payload["truncated"] is False
+    assert all(not c["callsign"].startswith("LAGUNAK_EVT_") for c in contactos)
+    assert [c["callsign"] for c in contactos[1:]] == [f"NPC-{i}" for i in range(1, 60)]

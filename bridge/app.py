@@ -314,7 +314,11 @@ local x, y = ship:getPosition()
 local limite = 60
 local otros = {}
 for _, object in ipairs(getObjectsInRadius(x, y, 30000)) do
-    if object ~= ship then
+    local ok_cs, call_sign = pcall(function() return object:getCallSign() end)
+    local marcador_evento = ok_cs
+        and type(call_sign) == "string"
+        and string.match(call_sign, "^LAGUNAK_EVT_") ~= nil
+    if object ~= ship and not marcador_evento then
         local ox, oy = object:getPosition()
         local dx = ox - x
         local dy = oy - y

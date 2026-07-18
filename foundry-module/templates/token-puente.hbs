@@ -1,0 +1,29 @@
+<section class="lagunak-token-form">
+  <p>{{localize "LAGUNAK.Token.Intro"}}</p>
+  <div class="form-group">
+    <label for="lagunak-bridge-token">{{localize "LAGUNAK.Token.Etiqueta"}}</label>
+    <div class="form-fields">
+      <input id="lagunak-bridge-token"
+             name="bridge-token"
+             type="password"
+             value=""
+             autocomplete="new-password"
+             spellcheck="false">
+    </div>
+  </div>
+  <p class="notes">
+    {{#if configured}}
+      {{localize "LAGUNAK.Token.EstadoConfigurado"}}
+    {{else}}
+      {{localize "LAGUNAK.Token.EstadoVacio"}}
+    {{/if}}
+  </p>
+  <footer class="sheet-footer flexrow">
+    <button type="button" data-action="saveToken">
+      <i class="fa-solid fa-check"></i> {{localize "LAGUNAK.Token.Guardar"}}
+    </button>
+    <button type="button" data-action="clearToken">
+      <i class="fa-solid fa-trash"></i> {{localize "LAGUNAK.Token.Borrar"}}
+    </button>
+  </footer>
+</section>

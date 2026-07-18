@@ -145,3 +145,22 @@ def test_events_envia_solo_lua_fijo_al_juego(client, juego, auth):
     assert "getObjectsInRadius" in juego.ultimo_lua
     assert "LAGUNAK_EVT_arrival_s90_" in juego.ultimo_lua
     assert "LAGUNAK_EVT_encounter_started_s90_" in juego.ultimo_lua
+
+
+# --- /v1/anchors: catálogo de anclas de reposition_ship (#176) ----------------
+
+
+def test_anchors_publica_el_catalogo_cerrado(client, juego, auth):
+    import app as bridge
+
+    r = client.get("/v1/anchors", headers=auth)
+    assert r.status_code == 200
+    cuerpo = r.json()
+    # Misma fuente de verdad que valida /v1/command: el enum ShipAnchor.
+    assert cuerpo["anchors"] == [anchor.value for anchor in bridge.ShipAnchor]
+    # No consulta al juego: es un catálogo estático servido por el puente.
+    assert not juego.llamadas
+
+
+def test_anchors_requiere_auth(client, juego):
+    assert client.get("/v1/anchors").status_code == 401

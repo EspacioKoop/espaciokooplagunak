@@ -1,4 +1,5 @@
 import { BridgeClient, BridgeError } from "./bridge-client.mjs";
+import { getBridgeToken } from "./bridge-token-session.mjs";
 import { openStationApp } from "./station-ui.mjs";
 import { buildWorkspaceModel, stationForWorkspace } from "./station-workspaces.mjs";
 
@@ -38,6 +39,22 @@ export function openWorkspaceApp(previewStation = null) {
   renderWorkspace(true);
 }
 
+export async function revokeWorkspaceAccess() {
+  const app = workspaceApp;
+  if (!app) return;
+  app.statePayload = null;
+  app.contactsPayload = null;
+  app.connection = "restricted";
+  const root = app.element?.[0] ?? app.element;
+  root?.replaceChildren?.();
+  releaseWorkspaceApp(app);
+  try {
+    await app.close();
+  } catch {
+    // Datos, referencia y DOM ya están revocados aunque Foundry no cierre.
+  }
+}
+
 function renderWorkspace(force = false) {
   if (!workspaceApp) return;
   if (foundry.applications?.api?.ApplicationV2) {
@@ -54,7 +71,7 @@ function workspaceAppClass() {
 function bridgeClient() {
   return new BridgeClient({
     url: game.settings.get(configuredModuleId, "bridgeUrl"),
-    token: game.settings.get(configuredModuleId, "bridgeToken"),
+    token: getBridgeToken(),
   });
 }
 
@@ -96,7 +113,7 @@ async function refreshTelemetry(app) {
       client.state(),
       client.contacts(),
     ]);
-    if (app.closed) return false;
+    if (app.closed || !game.user?.isGM) return false;
     app.statePayload = statePayload;
     app.contactsPayload = contactsPayload;
     app.connection = "ok";

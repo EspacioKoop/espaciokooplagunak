@@ -24,7 +24,7 @@ import { rngSemilla, offsetParallax } from "./ventana-nave.mjs";
 export const PALETA_DECORADO = {
   planetas: ["#3a5a7a", "#7a5a3a", "#5a7a5a", "#6a4a6a"],
   nebulosas: ["#5a2a6a", "#2a4a6a", "#6a3a4a"],
-  asteroide: "#aaa096",
+  asteroide: "#c0a98f",
 };
 
 // Factor de parallax por tipo: más pequeño = se mueve menos = se percibe más
@@ -68,12 +68,22 @@ export function crearDecorado(
   }
 
   const elemAsteroides = [];
+  const centroCinturon = rng() * alto;
+  const inclinacionCinturon = (rng() - 0.5) * 0.35;
   for (let i = 0; i < asteroides; i += 1) {
+    const x = rng() * ancho;
+    // Tres muestras sumadas concentran las motas alrededor de una banda sin
+    // necesitar trigonometría ni estado: sigue siendo determinista y teselable.
+    const dispersion = (rng() + rng() + rng() - 1.5) * alto * 0.24;
+    const y = envolver(
+      centroCinturon + (x - ancho / 2) * inclinacionCinturon + dispersion,
+      alto,
+    );
     elemAsteroides.push({
-      x: rng() * ancho,
-      y: rng() * alto,
+      x,
+      y,
       r: 1 + Math.floor(rng() * 2), // 1–2 px
-      brillo: 0.18 + rng() * 0.25,
+      brillo: 0.36 + rng() * 0.28,
     });
   }
 
@@ -111,21 +121,50 @@ function rgba(hex, alpha) {
 // Envuelve una coordenada al rango [0, tam).
 const envolver = (v, tam) => ((v % tam) + tam) % tam;
 
+function ruidoCelda(ix, iy, semilla) {
+  let n = Math.imul(ix + semilla, 374761393) + Math.imul(iy - semilla, 668265263);
+  n = Math.imul(n ^ (n >>> 13), 1274126177);
+  return ((n ^ (n >>> 16)) >>> 0) / 4294967296;
+}
+
 function pintarNebulosa(ctx, el, x, y) {
-  const g = ctx.createRadialGradient(x, y, 0, x, y, el.r);
-  g.addColorStop(0, rgba(el.color, el.alpha));
-  g.addColorStop(1, rgba(el.color, 0));
-  ctx.fillStyle = g;
-  ctx.beginPath();
-  ctx.arc(x, y, el.r, 0, Math.PI * 2);
-  ctx.fill();
+  const paso = 6;
+  const radio = Math.max(1, Math.round(el.r));
+  const semilla = Math.round(el.x * 17 + el.y * 31);
+  ctx.fillStyle = rgba(el.color, Math.min(0.22, el.alpha * 2));
+  for (let dy = -radio; dy <= radio; dy += paso) {
+    for (let dx = -radio; dx <= radio; dx += paso) {
+      const distancia = Math.hypot(dx, dy) / radio;
+      if (distancia >= 1) continue;
+      const densidad = (1 - distancia) * 0.58;
+      if (ruidoCelda(dx / paso, dy / paso, semilla) > densidad) continue;
+      ctx.fillRect(Math.round(x + dx), Math.round(y + dy), 2, 2);
+    }
+  }
 }
 
 function pintarPlaneta(ctx, el, x, y) {
-  ctx.fillStyle = rgba(el.color, el.brillo);
-  ctx.beginPath();
-  ctx.arc(x, y, el.r, 0, Math.PI * 2);
-  ctx.fill();
+  const radio = Math.max(1, Math.round(el.r));
+  const cx = Math.round(x);
+  const cy = Math.round(y);
+  for (let dy = -radio; dy <= radio; dy += 1) {
+    const medioAncho = Math.floor(Math.sqrt(Math.max(0, radio * radio - dy * dy)));
+    const izquierda = cx - medioAncho;
+    const ancho = medioAncho * 2 + 1;
+    ctx.fillStyle = rgba(el.color, el.brillo * 0.72);
+    ctx.fillRect(izquierda, cy + dy, ancho, 1);
+
+    // Hemisferio en sombra y bandas atmosféricas: píxeles enteros, sin curvas.
+    const sombra = Math.floor(ancho * 0.38);
+    if (sombra > 0) {
+      ctx.fillStyle = "rgba(3, 7, 30, 0.42)";
+      ctx.fillRect(izquierda, cy + dy, sombra, 1);
+    }
+    if ((dy + radio) % 5 === 0 && ancho > 6) {
+      ctx.fillStyle = rgba(el.color, Math.min(0.72, el.brillo * 1.35));
+      ctx.fillRect(izquierda + sombra, cy + dy, Math.max(2, ancho - sombra - 2), 1);
+    }
+  }
 }
 
 // Elementos grandes (nebulosa/planeta): se replican en una rejilla 3×3 para
@@ -142,13 +181,23 @@ function pintarGrande(ctx, tipo, el, x, y, ancho, alto) {
   }
 }
 
-// Asteroides: motas pixeladas; basta duplicar en los bordes derecho/inferior.
+// Asteroides: motas pixeladas replicadas en 3×3 para conservar también la
+// esquina cuando una mota cruza a la vez los bordes horizontal y vertical.
 function pintarAsteroide(ctx, el, x, y, ancho, alto) {
   const tam = Math.max(1, Math.round(el.r));
-  ctx.fillStyle = rgba(PALETA_DECORADO.asteroide, el.brillo);
-  ctx.fillRect(Math.round(x), Math.round(y), tam, tam);
-  if (x + tam > ancho) ctx.fillRect(Math.round(x - ancho), Math.round(y), tam, tam);
-  if (y + tam > alto) ctx.fillRect(Math.round(x), Math.round(y - alto), tam, tam);
+  for (const ox of [-ancho, 0, ancho]) {
+    for (const oy of [-alto, 0, alto]) {
+      const px = Math.round(x + ox);
+      const py = Math.round(y + oy);
+      if (px + tam <= 0 || px >= ancho || py + tam <= 0 || py >= alto) continue;
+      ctx.fillStyle = rgba(PALETA_DECORADO.asteroide, el.brillo);
+      ctx.fillRect(px, py, tam, tam);
+      if (tam > 1) {
+        ctx.fillStyle = "rgba(60, 49, 42, 0.55)";
+        ctx.fillRect(px, py + tam - 1, 1, 1);
+      }
+    }
+  }
 }
 
 /**

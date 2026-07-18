@@ -139,6 +139,38 @@ int main()
     expect(validateMapDocument(direct) == MapDocumentError::InvalidNumber,
         "non-finite in-memory coordinate is rejected");
 
+    // --- Colocación de objetos nuevos desde el radar GM (issue #204) ---
+
+    MapDocument placement;
+    // makeMapObject: valores por defecto cerrados y objeto válido por tipo.
+    MapObject new_asteroid = makeMapObject(MapObjectKind::Asteroid, 1500.0f, -2500.0f);
+    new_asteroid.id = nextMapObjectId(placement, MapObjectKind::Asteroid);
+    expect(new_asteroid.id == "asteroid-1", "first asteroid id is asteroid-1");
+    expect(new_asteroid.transform.x == 1500.0f && new_asteroid.transform.y == -2500.0f
+            && new_asteroid.transform.rotation == 0.0f, "new object takes the clicked position, rotation 0");
+    expect(new_asteroid.size == MAP_ASTEROID_DEFAULT_SIZE, "asteroid gets a valid default size");
+    placement.objects.push_back(new_asteroid);
+    expect(validateMapDocument(placement) == MapDocumentError::None, "placed asteroid validates");
+
+    MapObject new_nebula = makeMapObject(MapObjectKind::Nebula, 0.0f, 0.0f);
+    new_nebula.id = nextMapObjectId(placement, MapObjectKind::Nebula);
+    expect(new_nebula.id == "nebula-1", "first nebula id is nebula-1 (independent per kind)");
+    placement.objects.push_back(new_nebula);
+    expect(validateMapDocument(placement) == MapDocumentError::None,
+        "placed nebula validates (no properties serialized)");
+
+    // Ids deterministas: el siguiente sufijo libre por tipo, saltando huecos.
+    expect(nextMapObjectId(placement, MapObjectKind::Asteroid) == "asteroid-2",
+        "next asteroid id skips the taken one");
+    MapDocument gapped;
+    gapped.objects.push_back(makeMapObject(MapObjectKind::Asteroid, 0, 0));
+    gapped.objects.back().id = "asteroid-5";
+    expect(nextMapObjectId(gapped, MapObjectKind::Asteroid) == "asteroid-1",
+        "next id is the first free suffix from 1, not max+1");
+
+    expect(nextMapObjectId(placement, MapObjectKind::Unsupported).empty(),
+        "unsupported kind yields no id");
+
     std::cout << "MAP_DOCUMENT_TESTS_OK checks=" << checks << "\n";
     return 0;
 }

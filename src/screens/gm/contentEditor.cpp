@@ -357,6 +357,14 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
         rollbackMapBatch();
     });
     map_rollback_button->setPosition(x + 235, 445)->setSize(220, 35)->hide();
+    map_add_asteroid_button = new GuiButton(box, "MAP_ADD_ASTEROID", tr("content_editor", "Add asteroid"), [this]() {
+        armMapPlacement(MapObjectKind::Asteroid);
+    });
+    map_add_asteroid_button->setPosition(x, 485)->setSize(220, 35)->hide();
+    map_add_nebula_button = new GuiButton(box, "MAP_ADD_NEBULA", tr("content_editor", "Add nebula"), [this]() {
+        armMapPlacement(MapObjectKind::Nebula);
+    });
+    map_add_nebula_button->setPosition(x + 235, 485)->setSize(220, 35)->hide();
 
     ship_override_selector = new GuiSelector(box, "SHIP_OVERRIDE_MODE", [this](int, string value) {
         if (ship_resource_id_entry)
@@ -715,6 +723,9 @@ void GuiContentEditor::updateFieldPresentation(ContentResourceType type)
     map_edit_toggle->setVisible(is_map);
     map_undo_button->setVisible(is_map);
     map_redo_button->setVisible(is_map);
+    map_add_asteroid_button->setVisible(is_map);
+    map_add_nebula_button->setVisible(is_map);
+    if (!is_map) cancelMapPlacement();
     const bool local_server = bool(game_server);
     map_apply_button->setVisible(is_map && local_server);
     map_rollback_button->setVisible(is_map && local_server);
@@ -1405,6 +1416,7 @@ void GuiContentEditor::setMapEditMode(bool enabled)
     if (!enabled)
     {
         cancelMapDrag();
+        cancelMapPlacement();
         map_edit_mode = false;
         if (map_edit_toggle) map_edit_toggle->setValue(false);
         return;
@@ -1416,6 +1428,49 @@ void GuiContentEditor::setMapEditMode(bool enabled)
     map_edit_toggle->setValue(true);
     setStatus(tr("content_editor", "Radar edit active. Drag a staged object; Escape returns without committing an active drag."));
     hide();
+}
+
+void GuiContentEditor::armMapPlacement(MapObjectKind kind)
+{
+    if (current_type != ContentResourceType::Map) return;
+    if (kind != MapObjectKind::Asteroid && kind != MapObjectKind::Nebula) return;
+    // Activate radar edit first (hides the editor, makes the radar interactive),
+    // then arm the one-shot placement; setMapEditMode clears any prior placement.
+    setMapEditMode(true);
+    if (!map_edit_mode) return;
+    map_placement_kind = kind;
+    map_placement_pending = true;
+    setStatus(kind == MapObjectKind::Asteroid
+        ? tr("content_editor", "Click on the radar to place an asteroid; Escape or right-click cancels.")
+        : tr("content_editor", "Click on the radar to place a nebula; Escape or right-click cancels."));
+}
+
+void GuiContentEditor::cancelMapPlacement()
+{
+    map_placement_pending = false;
+    map_placement_kind = MapObjectKind::Unsupported;
+}
+
+void GuiContentEditor::placeMapObjectAt(float world_x, float world_y)
+{
+    if (!map_edit_mode || !map_placement_pending) return;
+    const MapObjectKind kind = map_placement_kind;
+    // One-shot: consume the armed placement before mutating so a second click
+    // falls through to selection/drag, and a failed placement is not retried.
+    cancelMapPlacement();
+
+    MapObject object = makeMapObject(kind, world_x, world_y);
+    object.id = nextMapObjectId(map_edit_session.document(), kind);
+    if (object.id.empty() || map_edit_session.addObject(std::move(object)) != MapEditError::None)
+        return setStatus(tr("content_editor", "Map object could not be placed."));
+
+    pending_save = "";
+    pending_file_export = "";
+    discard_guard.reset();
+    updatePreviewStatus();
+    setStatus(kind == MapObjectKind::Asteroid
+        ? tr("content_editor", "Asteroid placed and staged.")
+        : tr("content_editor", "Nebula placed and staged."));
 }
 
 void GuiContentEditor::undoMapEdit()

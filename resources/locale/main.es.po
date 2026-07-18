@@ -4407,6 +4407,34 @@ msgid "Radar edit active. Drag a staged object; Escape returns without committin
 msgstr "Edición en el radar activa. Arrastra un objeto preparado; Escape vuelve sin confirmar un arrastre activo."
 
 msgctxt "content_editor"
+msgid "Add asteroid"
+msgstr "Añadir asteroide"
+
+msgctxt "content_editor"
+msgid "Add nebula"
+msgstr "Añadir nebulosa"
+
+msgctxt "content_editor"
+msgid "Click on the radar to place an asteroid; Escape or right-click cancels."
+msgstr "Haz clic en el radar para colocar un asteroide; Escape o clic derecho cancelan."
+
+msgctxt "content_editor"
+msgid "Click on the radar to place a nebula; Escape or right-click cancels."
+msgstr "Haz clic en el radar para colocar una nebulosa; Escape o clic derecho cancelan."
+
+msgctxt "content_editor"
+msgid "Map object could not be placed."
+msgstr "No se ha podido colocar el objeto de mapa."
+
+msgctxt "content_editor"
+msgid "Asteroid placed and staged."
+msgstr "Asteroide colocado y preparado."
+
+msgctxt "content_editor"
+msgid "Nebula placed and staged."
+msgstr "Nebulosa colocada y preparada."
+
+msgctxt "content_editor"
 msgid "There is no map edit to undo."
 msgstr "No hay ninguna edición de mapa que deshacer."
 

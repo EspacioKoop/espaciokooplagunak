@@ -94,6 +94,35 @@ std::string mapObjectKindId(MapObjectKind kind)
     return "unsupported";
 }
 
+std::string nextMapObjectId(const MapDocument& document, MapObjectKind kind)
+{
+    if (kind == MapObjectKind::Unsupported) return "";
+    const std::string prefix = mapObjectKindId(kind) + "-";
+    // Scan for the first free suffix from 1 upwards; deterministic regardless of
+    // the order or the ids already present (including gaps).
+    for (std::size_t candidate = 1; candidate <= document.objects.size() + 1; ++candidate)
+    {
+        const std::string id = prefix + std::to_string(candidate);
+        bool taken = false;
+        for (const auto& object : document.objects)
+            if (object.id == id) { taken = true; break; }
+        if (!taken) return id;
+    }
+    return "";
+}
+
+MapObject makeMapObject(MapObjectKind kind, float x, float y)
+{
+    MapObject object;
+    object.kind = kind;
+    object.transform = {x, y, 0.0f};
+    // Nebulae carry no properties; the default size is only meaningful for
+    // asteroids (and only asteroids serialize it), but keeping it valid keeps
+    // the object accepted by validateMapDocument() whatever the kind.
+    object.size = MAP_ASTEROID_DEFAULT_SIZE;
+    return object;
+}
+
 MapDocumentError validateMapDocument(const MapDocument& document)
 {
     if (document.objects.size() > MAP_DOCUMENT_MAX_OBJECTS)

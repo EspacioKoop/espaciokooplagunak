@@ -156,6 +156,24 @@ int main()
     expect(bounded.moveObject("history", {500, 20, 30}) == MapEditError::None
             && !bounded.canRedo(), "new edit after undo clears redo");
 
+    // Colocación desde el radar GM (issue #204): una colocación es exactamente
+    // una entrada de undo; deshacer restaura el documento previo y una edición
+    // posterior invalida el redo.
+    MapEditSession placement;
+    MapObject placed = makeMapObject(MapObjectKind::Asteroid, 1500, -2500);
+    placed.id = nextMapObjectId(placement.document(), MapObjectKind::Asteroid);
+    expect(placement.addObject(placed) == MapEditError::None
+            && placement.document().objects.size() == 1 && placement.canUndo() && !placement.canRedo(),
+        "one placement is one undo entry");
+    expect(placement.undo() && placement.document().objects.empty(),
+        "undo removes exactly the placed object");
+    expect(placement.canRedo() && placement.redo() && placement.document().objects.size() == 1,
+        "redo restores the placement");
+    MapObject placed_nebula = makeMapObject(MapObjectKind::Nebula, 0, 0);
+    placed_nebula.id = nextMapObjectId(placement.document(), MapObjectKind::Nebula);
+    expect(placement.addObject(placed_nebula) == MapEditError::None && !placement.canRedo(),
+        "a later placement invalidates redo");
+
     std::cout << "MAP_EDIT_SESSION_TESTS_OK checks=" << checks << "\n";
     return 0;
 }

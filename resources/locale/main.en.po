@@ -4629,6 +4629,34 @@ msgid "Radar edit active. Drag a staged object; Escape returns without committin
 msgstr ""
 
 msgctxt "content_editor"
+msgid "Add asteroid"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Add nebula"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Click on the radar to place an asteroid; Escape or right-click cancels."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Click on the radar to place a nebula; Escape or right-click cancels."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Map object could not be placed."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Asteroid placed and staged."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Nebula placed and staged."
+msgstr ""
+
+msgctxt "content_editor"
 msgid "There is no map edit to undo."
 msgstr ""
 

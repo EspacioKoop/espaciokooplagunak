@@ -76,8 +76,20 @@ constexpr std::size_t MAP_DOCUMENT_MAX_SERIALIZED_BYTES = 48 * 1024;
 constexpr float MAP_COORDINATE_LIMIT = 1000000.0f;
 constexpr float MAP_ASTEROID_MIN_SIZE = 2.0f;
 constexpr float MAP_ASTEROID_MAX_SIZE = 5000.0f;
+constexpr float MAP_ASTEROID_DEFAULT_SIZE = 120.0f;
 
 std::string mapObjectKindId(MapObjectKind kind);
+
+// Deterministic, unique id for a new object of `kind` in `document`: the kind id
+// followed by the first free "-N" suffix (N starting at 1). Returns an empty
+// string for an unsupported kind. Free text is never accepted (issue #204).
+std::string nextMapObjectId(const MapDocument& document, MapObjectKind kind);
+
+// A new placeable object of `kind` at the given world position, with closed
+// default values (rotation 0; a valid default size for asteroids). The id is
+// left empty for the caller to fill with nextMapObjectId(); an unsupported kind
+// yields an object that validateMapDocument() will reject.
+MapObject makeMapObject(MapObjectKind kind, float x, float y);
 MapDocumentError validateMapDocument(const MapDocument& document);
 nlohmann::json mapDocumentObjectsJson(const MapDocument& document);
 MapDocumentError parseMapDocumentObjects(const nlohmann::json& objects, MapDocument& output);

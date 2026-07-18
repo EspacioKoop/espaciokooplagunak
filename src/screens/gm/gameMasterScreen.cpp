@@ -742,6 +742,8 @@ void GameMasterScreen::onMouseDown(sp::io::Pointer::Button button, glm::vec2 pos
             content_editor->stopMapEditMode();
             content_editor->show();
         }
+        else if (content_editor->hasPendingPlacement())
+            content_editor->placeMapObjectAt(position.x, position.y);
         else
             content_editor->beginMapDrag(position.x, position.y, main_radar->getScale());
         return;

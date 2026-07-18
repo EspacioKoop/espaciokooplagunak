@@ -39,6 +39,12 @@ public:
     void cancelMapDrag();
     void stopMapEditMode();
 
+    // One-shot placement of a new map object from the GM radar (issue #204): the
+    // GM arms a kind in the editor, and the next left click on the radar places
+    // exactly one object. Escape or right-click cancel before any mutation.
+    bool hasPendingPlacement() const { return map_placement_pending; }
+    void placeMapObjectAt(float world_x, float world_y);
+
     virtual bool onMouseDown(
         sp::io::Pointer::Button button,
         glm::vec2 position,
@@ -82,6 +88,8 @@ private:
     std::vector<std::size_t> visible_ship_template_indices;
     bool preview_enabled = false;
     bool map_edit_mode = false;
+    bool map_placement_pending = false;
+    MapObjectKind map_placement_kind = MapObjectKind::Unsupported;
 
     GuiSelector* type_selector;
     GuiSelector* inbox_selector;
@@ -114,6 +122,8 @@ private:
     GuiButton* map_redo_button;
     GuiButton* map_apply_button;
     GuiButton* map_rollback_button;
+    GuiButton* map_add_asteroid_button;
+    GuiButton* map_add_nebula_button;
     GuiSelector* ship_override_selector;
     GuiSelector* ship_system_selector;
     GuiSelector* ship_crew_selector;
@@ -186,6 +196,8 @@ private:
     void setStatus(const string& text);
     void updatePreviewStatus();
     void setMapEditMode(bool enabled);
+    void armMapPlacement(MapObjectKind kind);
+    void cancelMapPlacement();
     void undoMapEdit();
     void redoMapEdit();
     void applyMapBatch();

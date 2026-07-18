@@ -87,8 +87,10 @@ cualquier cliente que obtenga el token puede invocar las órdenes autorizadas.
    (`/v1/state`): posición, rumbo, destino, distancia, ETA, casco, energía,
    escudos y sistemas. Con la nave detenida la ETA se muestra como no
    disponible, sin dividir por cero.
-3. El GM puede pausar o reanudar la simulación con los botones de tempo. No se
-   muestra un estado de pausa inferido porque EmptyEpsilon no ofrece un getter.
+3. El GM puede pausar o reanudar la simulación con los botones de tempo. La
+   ventana refleja el estado `paused` confirmado por `/v1/scenario`; la pausa
+   global de Foundry se muestra aparte y no se sincroniza automáticamente con
+   la simulación para evitar bucles.
 4. Si el puente se cae, el módulo reintenta con backoff exponencial (hasta
    60 s) y se recupera solo al volver el puente.
 5. «Anotar estado» escribe una página con el estado actual en el diario

@@ -54,7 +54,7 @@ std::array<string, 5> fieldLabels(ContentResourceType type)
     case ContentResourceType::Character:
         return {
             tr("content_editor", "Crew position"), tr("content_editor", "Callsign"),
-            tr("content_editor", "Tags (comma separated)"), tr("content_editor", "Ship (optional)"),
+            tr("content_editor", "Character tags"), tr("content_editor", "Ship (optional)"),
             tr("content_editor", "Legacy role (clear after assigning a crew position)"),
         };
     case ContentResourceType::Ship:

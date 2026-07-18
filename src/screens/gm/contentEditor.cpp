@@ -7,6 +7,7 @@
 #include "ecs/query.h"
 #include "components/faction.h"
 #include "i18n.h"
+#include "multiplayer_server.h"
 #include "playerInfo.h"
 #include "screenComponents/rotatingModelView.h"
 #include "gui/gui2_button.h"
@@ -28,6 +29,71 @@
 
 namespace
 {
+// Read-only rendering of a campaign's map graph: one box per map placed on the
+// deterministic grid computed by buildCampaignGraph(), one arrow per transition.
+class GuiCampaignGraphView : public GuiElement
+{
+public:
+    GuiCampaignGraphView(GuiContainer* owner, const CampaignGraph& graph)
+    : GuiElement(owner, "CAMPAIGN_GRAPH_VIEW"), graph(graph) {}
+
+    void onDraw(sp::RenderTarget& renderer) override
+    {
+        renderer.fillRect(rect, glm::u8vec4(0, 0, 0, 120));
+        renderer.outlineRect(rect, glm::u8vec4(128, 128, 128, 128));
+        if (graph.nodes.empty() || graph.columns < 1 || graph.rows < 1)
+            return;
+
+        const float margin = 12.0f;
+        const float cell_width = (rect.size.x - 2.0f * margin) / float(graph.columns);
+        const float cell_height = (rect.size.y - 2.0f * margin) / float(graph.rows);
+        const float node_width = std::min(cell_width - 14.0f, 180.0f);
+        const float node_height = std::min(cell_height - 10.0f, 42.0f);
+        const auto nodeRect = [&](const CampaignGraphNode& node)
+        {
+            const glm::vec2 center{
+                rect.position.x + margin + (float(node.column) + 0.5f) * cell_width,
+                rect.position.y + margin + (float(node.row) + 0.5f) * cell_height,
+            };
+            return sp::Rect(center - glm::vec2(node_width, node_height) * 0.5f,
+                {node_width, node_height});
+        };
+
+        for (const auto& edge : graph.edges)
+        {
+            const auto from = nodeRect(graph.nodes[edge.from]);
+            const auto to = nodeRect(graph.nodes[edge.to]);
+            const glm::vec2 start{from.position.x + from.size.x, from.center().y};
+            const glm::vec2 end{to.position.x, to.center().y};
+            const auto color = glm::u8vec4(200, 200, 200, 200);
+            renderer.drawLine(start, end, color);
+            const auto direction = glm::normalize(end - start);
+            const glm::vec2 normal{-direction.y, direction.x};
+            renderer.drawLine(end, end - direction * 9.0f + normal * 5.0f, color);
+            renderer.drawLine(end, end - direction * 9.0f - normal * 5.0f, color);
+        }
+
+        for (const auto& node : graph.nodes)
+        {
+            const auto box = nodeRect(node);
+            glm::u8vec4 outline{255, 255, 255, 200};
+            if (node.missing_in_library) outline = {255, 96, 96, 230};
+            else if (node.unreachable) outline = {255, 176, 64, 230};
+            else if (node.starting) outline = {96, 255, 128, 230};
+            renderer.fillRect(box, glm::u8vec4(32, 32, 48, 220));
+            renderer.outlineRect(box, outline);
+            string label = node.id;
+            if (node.starting) label = "> " + label;
+            if (node.missing_in_library) label += " !";
+            else if (node.unreachable) label += " ?";
+            renderer.drawText(box, label, sp::Alignment::Center, 18, nullptr, outline);
+        }
+    }
+
+private:
+    const CampaignGraph& graph;
+};
+
 string typeLabel(ContentResourceType type)
 {
     switch(type)
@@ -57,7 +123,7 @@ std::array<string, 5> fieldLabels(ContentResourceType type)
     case ContentResourceType::Character:
         return {
             tr("content_editor", "Crew position"), tr("content_editor", "Callsign"),
-            tr("content_editor", "Tags (comma separated)"), tr("content_editor", "Ship (optional)"),
+            tr("content_editor", "Character tags"), tr("content_editor", "Ship (optional)"),
             tr("content_editor", "Legacy role (clear after assigning a crew position)"),
         };
     case ContentResourceType::Ship:
@@ -228,6 +294,10 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
     quinary_entry = new GuiTextEntry(box, "QUINARY", "");
     quinary_entry->setPosition(x + 190, 440)->setSize(500, 30);
 
+    character_links_label = new GuiLabel(box, "CHARACTER_LINKS", "", 16);
+    character_links_label->setAlignment(sp::Alignment::CenterLeft)
+        ->setPosition(x, 470)->setSize(690, 20)->hide();
+
     const std::array<RelationEditorMode, 5> campaign_modes = {
         RelationEditorMode::CampaignMaps,
         RelationEditorMode::CampaignStartingMap,
@@ -241,12 +311,7 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
             box, "RELATION_EDIT_" + string(static_cast<unsigned int>(index)),
             tr("content_editor", "Select"),
             [this, index, mode = campaign_modes[index]]() {
-                if (current_type == ContentResourceType::Character && index == 0)
-                    openRelationEditor(RelationEditorMode::CharacterCrewPosition);
-                else if (current_type == ContentResourceType::Character && index == 3)
-                    openRelationEditor(RelationEditorMode::CharacterShip);
-                else
-                    openRelationEditor(mode);
+                openRelationEditorForButton(index, mode);
             });
         relation_edit_buttons[index]->setPosition(x + 545, 280 + 40 * index)
             ->setSize(145, 30)->hide();
@@ -256,11 +321,42 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
         box,
         "MAP_PREVIEW",
         tr("content_editor", "Preview on radar"),
-        [this](bool value) { preview_enabled = value; }
+        [this](bool value) {
+            preview_enabled = value;
+            if (!value) setMapEditMode(false);
+        }
     );
     preview_toggle->setPosition(x, 360)->setSize(250, 40)->hide();
+    campaign_graph_button = new GuiButton(
+        box, "CAMPAIGN_GRAPH", tr("content_editor", "View campaign graph"),
+        [this]() { openCampaignGraph(); });
+    campaign_graph_button->setPosition(x, 360)->setSize(250, 40)->hide();
     preview_status_label = new GuiLabel(box, "MAP_PREVIEW_STATUS", "", 16);
     preview_status_label->setPosition(x + 270, 360)->setSize(420, 40)->hide();
+
+    map_edit_toggle = new GuiToggleButton(
+        box,
+        "MAP_EDIT_RADAR",
+        tr("content_editor", "Edit on radar"),
+        [this](bool value) { setMapEditMode(value); }
+    );
+    map_edit_toggle->setPosition(x, 405)->setSize(220, 35)->hide();
+    map_undo_button = new GuiButton(box, "MAP_UNDO", tr("content_editor", "Undo"), [this]() {
+        undoMapEdit();
+    });
+    map_undo_button->setPosition(x + 235, 405)->setSize(220, 35)->hide();
+    map_redo_button = new GuiButton(box, "MAP_REDO", tr("content_editor", "Redo"), [this]() {
+        redoMapEdit();
+    });
+    map_redo_button->setPosition(x + 470, 405)->setSize(220, 35)->hide();
+    map_apply_button = new GuiButton(box, "MAP_APPLY_WORLD", tr("content_editor", "Apply to world"), [this]() {
+        applyMapBatch();
+    });
+    map_apply_button->setPosition(x, 445)->setSize(220, 35)->hide();
+    map_rollback_button = new GuiButton(box, "MAP_ROLLBACK_WORLD", tr("content_editor", "Undo applied batch"), [this]() {
+        rollbackMapBatch();
+    });
+    map_rollback_button->setPosition(x + 235, 445)->setSize(220, 35)->hide();
 
     ship_override_selector = new GuiSelector(box, "SHIP_OVERRIDE_MODE", [this](int, string value) {
         if (ship_resource_id_entry)
@@ -415,11 +511,13 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
     relation_editor_title = new GuiLabel(relation_panel, "RELATION_EDITOR_TITLE", "", 28);
     relation_editor_title->setPosition(30, 20)->setSize(700, 45);
     relation_candidate_selector = new GuiSelector(
-        relation_panel, "RELATION_CANDIDATE", [](int, string) {});
+        relation_panel, "RELATION_CANDIDATE", [](int, string) { /* selection alone has no side effect */ });
     relation_candidate_selector->setTextSize(20)->setPosition(30, 80)->setSize(330, 40);
     relation_destination_selector = new GuiSelector(
-        relation_panel, "RELATION_DESTINATION", [](int, string) {});
+        relation_panel, "RELATION_DESTINATION", [](int, string) { /* selection alone has no side effect */ });
     relation_destination_selector->setTextSize(20)->setPosition(380, 80)->setSize(350, 40);
+    relation_tag_entry = new GuiTextEntry(relation_panel, "RELATION_TAG", "");
+    relation_tag_entry->setSelectOnFocus()->setPosition(30, 80)->setSize(330, 40)->hide();
     relation_apply_button = new GuiButton(
         relation_panel, "RELATION_APPLY", tr("content_editor", "Add selection"),
         [this]() { applyRelationSelection(); });
@@ -429,7 +527,7 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
         [this]() { clearRelationSelection(); });
     relation_clear_button->setPosition(270, 135)->setSize(220, 40);
     relation_current_list = new GuiListbox(
-        relation_panel, "RELATION_CURRENT", [](int, string) {});
+        relation_panel, "RELATION_CURRENT", [](int, string) { /* selection alone has no side effect */ });
     relation_current_list->setTextSize(20)->setButtonHeight(36)
         ->setPosition(30, 190)->setSize(700, 255);
     relation_remove_button = new GuiButton(
@@ -449,6 +547,23 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
         [this]() { closeRelationEditor(); }))
         ->setPosition(550, 460)->setSize(180, 40);
     relation_editor_overlay->hide();
+
+    campaign_graph_overlay = new GuiOverlay(
+        box, "CAMPAIGN_GRAPH_OVERLAY", glm::u8vec4(0, 0, 0, 180));
+    auto graph_panel = new GuiPanel(campaign_graph_overlay, "CAMPAIGN_GRAPH_PANEL");
+    graph_panel->setPosition(0, 0, sp::Alignment::Center)->setSize(760, 560);
+    (new GuiLabel(graph_panel, "CAMPAIGN_GRAPH_TITLE",
+        tr("content_editor", "Campaign graph"), 28))
+        ->setPosition(30, 20)->setSize(700, 45);
+    (new GuiCampaignGraphView(graph_panel, campaign_graph))
+        ->setPosition(30, 75)->setSize(700, 330);
+    campaign_graph_warnings = new GuiLabel(graph_panel, "CAMPAIGN_GRAPH_WARNINGS", "", 18);
+    campaign_graph_warnings->setPosition(30, 415)->setSize(700, 40);
+    (new GuiButton(
+        graph_panel, "CAMPAIGN_GRAPH_CLOSE", tr("button", "Close"),
+        [this]() { closeCampaignGraph(); }))
+        ->setPosition(550, 460)->setSize(180, 40);
+    campaign_graph_overlay->hide();
 
     setType(ContentResourceType::Campaign);
     const auto load_result = store.load(resources);
@@ -472,7 +587,70 @@ bool GuiContentEditor::onMouseDown(sp::io::Pointer::Button, glm::vec2, sp::io::P
 const MapDocument* GuiContentEditor::previewDocument() const
 {
     if (!preview_enabled || current_type != ContentResourceType::Map) return nullptr;
-    return &clean_snapshot.map_document;
+    return &map_edit_session.document();
+}
+
+bool GuiContentEditor::beginMapDrag(float world_x, float world_y, float world_to_screen_scale)
+{
+    if (!map_edit_mode) return false;
+    cancelMapDrag();
+    const auto error = map_drag.begin(
+        map_edit_session, {world_x, world_y}, world_to_screen_scale);
+    if (error != MapDocumentError::None)
+    {
+        setStatus(tr("content_editor", "Map object could not be selected."));
+        return false;
+    }
+    if (map_drag.isDragging())
+        setStatus(tr("content_editor", "Map object selected; drag to stage its position."));
+    return map_drag.isDragging();
+}
+
+void GuiContentEditor::updateMapDrag(float world_x, float world_y)
+{
+    if (!map_edit_mode || !map_drag.isDragging()) return;
+    if (!map_drag.update({world_x, world_y}))
+    {
+        map_drag.cancel();
+        setStatus(tr("content_editor", "Map object drag cancelled outside the valid map area."));
+    }
+}
+
+void GuiContentEditor::commitMapDrag(float world_x, float world_y)
+{
+    if (!map_edit_mode || !map_drag.isDragging()) return;
+    if (!map_drag.update({world_x, world_y}))
+    {
+        map_drag.cancel();
+        return setStatus(tr("content_editor", "Map object drag cancelled outside the valid map area."));
+    }
+
+    const auto object_id = map_drag.selectedId();
+    const auto final_transform = map_drag.provisionalTransform();
+    bool changed = false;
+    for (const auto& object : map_edit_session.document().objects)
+        if (object.id == object_id) changed = !(object.transform == final_transform);
+    if (map_drag.commit(map_edit_session) != MapEditError::None)
+        return setStatus(tr("content_editor", "Map object could not be moved."));
+    if (!changed)
+        return setStatus(tr("content_editor", "Map object position unchanged."));
+    pending_save = "";
+    pending_file_export = "";
+    discard_guard.reset();
+    updatePreviewStatus();
+    setStatus(tr("content_editor", "Map object move staged."));
+}
+
+void GuiContentEditor::cancelMapDrag()
+{
+    if (!map_drag.isDragging()) return;
+    map_drag.cancel();
+    setStatus(tr("content_editor", "Map object drag cancelled."));
+}
+
+void GuiContentEditor::stopMapEditMode()
+{
+    setMapEditMode(false);
 }
 
 void GuiContentEditor::requestSetType(ContentResourceType type)
@@ -514,17 +692,36 @@ void GuiContentEditor::updateFieldPresentation(ContentResourceType type)
         field_labels[index]->setVisible(!labels[index].empty());
         field_entries[index]->setVisible(!labels[index].empty());
         const bool managed_campaign = type == ContentResourceType::Campaign;
-        const bool managed_character = type == ContentResourceType::Character
-            && (index == 0 || index == 3);
+        const bool managed_character = type == ContentResourceType::Character && index != 1;
         const bool managed = managed_campaign || managed_character;
         field_entries[index]->setEnable(!managed);
         field_entries[index]->setSize(managed ? 340 : 500, 30);
-        relation_edit_buttons[index]->setVisible(managed);
+        relation_edit_buttons[index]->setVisible(managed && !labels[index].empty());
+        relation_edit_buttons[index]->setText(managed_character && index == 4
+            ? tr("content_editor", "Clear")
+            : tr("content_editor", "Select"));
     }
+    const bool is_campaign = type == ContentResourceType::Campaign;
+    campaign_graph_button->setVisible(is_campaign);
+    if (!is_campaign)
+        closeCampaignGraph();
+
+    const bool is_character = type == ContentResourceType::Character;
+    character_links_label->setVisible(is_character);
+    if (is_character)
+        updateCharacterLinksSummary();
     const bool is_map = type == ContentResourceType::Map;
     preview_toggle->setVisible(is_map);
+    map_edit_toggle->setVisible(is_map);
+    map_undo_button->setVisible(is_map);
+    map_redo_button->setVisible(is_map);
+    const bool local_server = bool(game_server);
+    map_apply_button->setVisible(is_map && local_server);
+    map_rollback_button->setVisible(is_map && local_server);
+    updateMapBatchButtons();
     if (!is_map)
     {
+        setMapEditMode(false);
         preview_enabled = false;
         preview_toggle->setValue(false);
     }
@@ -607,6 +804,9 @@ void GuiContentEditor::requestClearForm()
 
 void GuiContentEditor::clearForm()
 {
+    setMapEditMode(false);
+    map_edit_session = MapEditSession{};
+    map_drag = {};
     ship_edit_session = ShipEditSession{};
     ship_resource_id_entry->setText("");
     ship_resource_amount_entry->setText("");
@@ -630,6 +830,7 @@ void GuiContentEditor::clearForm()
     clean_snapshot = formResource();
     updateShipOverrideEditor();
     updatePreviewStatus();
+    updateCharacterLinksSummary();
     syncListSelection();
     setStatus(tr("content_editor", "Create a resource or import one from the clipboard."));
 }
@@ -649,6 +850,11 @@ void GuiContentEditor::loadResource(int index)
     if (index < 0 || index >= int(resources.size())) return;
     selected_index = index;
     const auto& resource = resources[index];
+    setMapEditMode(false);
+    map_edit_session = resource.type == ContentResourceType::Map
+        ? MapEditSession(resource.map_document)
+        : MapEditSession{};
+    map_drag = {};
     ship_edit_session = resource.type == ContentResourceType::Ship
         ? ShipEditSession(resource.ship_document)
         : ShipEditSession{};
@@ -680,6 +886,7 @@ void GuiContentEditor::loadResource(int index)
     clean_snapshot = resource;
     updateShipOverrideEditor();
     updatePreviewStatus();
+    updateCharacterLinksSummary();
     pending_import = "";
     pending_save = "";
     pending_delete_key = "";
@@ -711,8 +918,8 @@ ContentResource GuiContentEditor::formResource() const
     resource.tertiary = tertiary_entry->getText();
     resource.quaternary = quaternary_entry->getText();
     resource.quinary = quinary_entry->getText();
-    if (current_type == ContentResourceType::Map && clean_snapshot.type == ContentResourceType::Map)
-        resource.map_document = clean_snapshot.map_document;
+    if (current_type == ContentResourceType::Map)
+        resource.map_document = map_edit_session.document();
     if (current_type == ContentResourceType::Ship)
         resource.ship_document = ship_edit_session.document();
     return resource;
@@ -730,20 +937,36 @@ bool GuiContentEditor::confirmDiscard(const string& action)
     return false;
 }
 
-void GuiContentEditor::saveResource()
+bool GuiContentEditor::validateSaveCandidate(const ContentResource& resource)
 {
-    auto resource = formResource();
-    auto error = validateContentResource(resource);
-    if (error != ContentResourceError::None) return setStatus(errorText(error));
+    const auto error = validateContentResource(resource);
+    if (error != ContentResourceError::None)
+    {
+        setStatus(errorText(error));
+        return false;
+    }
     if (resource.type == ContentResourceType::Ship && gameGlobalInfo)
     {
         const auto template_status = validateShipTemplateSelection(
             gameGlobalInfo->getShipTemplateCatalog(), resource.primary);
         if (template_status == ShipTemplateValidation::TemplateNotFound)
-            return setStatus(tr("content_editor", "The ship template is not available in this scenario."));
+        {
+            setStatus(tr("content_editor", "The ship template is not available in this scenario."));
+            return false;
+        }
         if (template_status == ShipTemplateValidation::ModelMissing)
-            return setStatus(tr("content_editor", "The ship template references a missing 3D model."));
+        {
+            setStatus(tr("content_editor", "The ship template references a missing 3D model."));
+            return false;
+        }
     }
+    return true;
+}
+
+void GuiContentEditor::saveResource()
+{
+    auto resource = formResource();
+    if (!validateSaveCandidate(resource)) return;
 
     int existing = findResource(resource.type, resource.id);
     const bool selected = selected_index >= 0 && selected_index < int(resources.size());
@@ -760,56 +983,8 @@ void GuiContentEditor::saveResource()
     bool already_persisted = false;
     if (renaming)
     {
-        const auto original = resources[selected_index];
-        const auto rename_error = renameContentResource(
-            candidate, original.type, original.id, resource.id);
-        if (rename_error != ContentRenameError::None)
-        {
-            rename_guard.reset();
-            return setStatus(renameErrorText(rename_error));
-        }
-        const string rename_action = "rename:" + contentResourceTypeId(original.type)
-            + ":" + original.id;
-        if (!rename_guard.confirm(rename_action, resource, original))
-        {
-            return setStatus(tr("content_editor",
-                "Changing this ID updates every reference. Press Save again to confirm."));
-        }
-        std::vector<ContentResource> reconciled;
-        const auto rename_result = store.renameResource(original, resource, reconciled);
-        if (!rename_result.ok())
-        {
-            if (rename_result.reconciled)
-            {
-                resources = std::move(reconciled);
-                const auto& identity = rename_result.applied ? resource : original;
-                const auto actual = std::find_if(
-                    resources.begin(), resources.end(), [&](const ContentResource& item) {
-                        return item.type == identity.type && item.id == identity.id;
-                    });
-                const int actual_index = actual == resources.end()
-                    ? -1 : int(actual - resources.begin());
-                refreshList();
-                if (actual_index >= 0) loadResource(actual_index);
-                else clearForm();
-            }
-            pending_save = "";
-            if (rename_result.rename_error != ContentRenameError::None)
-                return setStatus(renameErrorText(rename_result.rename_error));
-            if (rename_result.reconciled && rename_result.applied)
-                return setStatus(tr("content_editor",
-                    "The rename was recovered after a storage error. Review the reloaded library."));
-            return setStatus(storeErrorText(rename_result.store_error));
-        }
-        candidate = std::move(reconciled);
-        const auto target = std::find_if(candidate.begin(), candidate.end(), [&](const ContentResource& item) {
-            return item.type == resource.type && item.id == resource.id;
-        });
-        if (target == candidate.end())
-            return setStatus(tr("content_editor", "The renamed resource could not be reloaded."));
-        target_index = int(target - candidate.begin());
+        if (!saveRenamedResource(resource, candidate, target_index, success)) return;
         already_persisted = true;
-        success = tr("content_editor", "Resource renamed and references updated.");
     }
     else if (replacing_other)
     {
@@ -850,6 +1025,7 @@ void GuiContentEditor::saveResource()
     resources = std::move(candidate);
     selected_index = target_index;
     clean_snapshot = resource;
+    if (current_type == ContentResourceType::Map) map_edit_session.markSaved();
     if (current_type == ContentResourceType::Ship) ship_edit_session.markSaved();
     updateShipOverrideEditor();
     updatePreviewStatus();
@@ -861,6 +1037,79 @@ void GuiContentEditor::saveResource()
     rename_guard.reset();
     refreshList();
     setStatus(success);
+}
+
+bool GuiContentEditor::saveRenamedResource(
+    const ContentResource& resource,
+    std::vector<ContentResource>& candidate,
+    int& target_index,
+    string& success)
+{
+    const auto original = resources[selected_index];
+    const auto rename_error = renameContentResource(
+        candidate, original.type, original.id, resource.id);
+    if (rename_error != ContentRenameError::None)
+    {
+        rename_guard.reset();
+        setStatus(renameErrorText(rename_error));
+        return false;
+    }
+    const string rename_action = "rename:" + contentResourceTypeId(original.type)
+        + ":" + original.id;
+    if (!rename_guard.confirm(rename_action, resource, original))
+    {
+        setStatus(tr("content_editor",
+            "Changing this ID updates every reference. Press Save again to confirm."));
+        return false;
+    }
+    std::vector<ContentResource> reconciled;
+    const auto rename_result = store.renameResource(original, resource, reconciled);
+    if (!rename_result.ok())
+    {
+        if (rename_result.reconciled)
+        {
+            resources = std::move(reconciled);
+            reconcileFailedRename(rename_result, resource, original);
+        }
+        pending_save = "";
+        if (rename_result.rename_error != ContentRenameError::None)
+            setStatus(renameErrorText(rename_result.rename_error));
+        else if (rename_result.reconciled && rename_result.applied)
+            setStatus(tr("content_editor",
+                "The rename was recovered after a storage error. Review the reloaded library."));
+        else
+            setStatus(storeErrorText(rename_result.store_error));
+        return false;
+    }
+    candidate = std::move(reconciled);
+    const auto target = std::find_if(candidate.begin(), candidate.end(), [&](const ContentResource& item) {
+        return item.type == resource.type && item.id == resource.id;
+    });
+    if (target == candidate.end())
+    {
+        setStatus(tr("content_editor", "The renamed resource could not be reloaded."));
+        return false;
+    }
+    target_index = int(target - candidate.begin());
+    success = tr("content_editor", "Resource renamed and references updated.");
+    return true;
+}
+
+void GuiContentEditor::reconcileFailedRename(
+    const ContentStoreRenameResult& rename_result,
+    const ContentResource& resource,
+    const ContentResource& original)
+{
+    const auto& identity = rename_result.applied ? resource : original;
+    const auto actual = std::find_if(
+        resources.begin(), resources.end(), [&](const ContentResource& item) {
+            return item.type == identity.type && item.id == identity.id;
+        });
+    const int actual_index = actual == resources.end()
+        ? -1 : int(actual - resources.begin());
+    refreshList();
+    if (actual_index >= 0) loadResource(actual_index);
+    else clearForm();
 }
 
 void GuiContentEditor::deleteResource()
@@ -1140,7 +1389,7 @@ void GuiContentEditor::setStatus(const string& text)
 void GuiContentEditor::updatePreviewStatus()
 {
     const auto count = current_type == ContentResourceType::Map
-        ? countUnsupportedMapPreviewObjects(clean_snapshot.map_document)
+        ? countUnsupportedMapPreviewObjects(map_edit_session.document())
         : 0;
     preview_status_label->setVisible(count > 0);
     if (count > 0)
@@ -1148,6 +1397,107 @@ void GuiContentEditor::updatePreviewStatus()
             tr("content_editor", "Omitted objects (preserved): {count}")
                 .format({{"count", string(static_cast<unsigned int>(count))}})
         );
+}
+
+void GuiContentEditor::setMapEditMode(bool enabled)
+{
+    if (enabled && current_type != ContentResourceType::Map) enabled = false;
+    if (!enabled)
+    {
+        cancelMapDrag();
+        map_edit_mode = false;
+        if (map_edit_toggle) map_edit_toggle->setValue(false);
+        return;
+    }
+
+    map_edit_mode = true;
+    preview_enabled = true;
+    preview_toggle->setValue(true);
+    map_edit_toggle->setValue(true);
+    setStatus(tr("content_editor", "Radar edit active. Drag a staged object; Escape returns without committing an active drag."));
+    hide();
+}
+
+void GuiContentEditor::undoMapEdit()
+{
+    cancelMapDrag();
+    if (!map_edit_session.undo())
+        return setStatus(tr("content_editor", "There is no map edit to undo."));
+    pending_save = "";
+    pending_file_export = "";
+    discard_guard.reset();
+    updatePreviewStatus();
+    setStatus(tr("content_editor", "Map edit undone."));
+}
+
+void GuiContentEditor::redoMapEdit()
+{
+    cancelMapDrag();
+    if (!map_edit_session.redo())
+        return setStatus(tr("content_editor", "There is no map edit to redo."));
+    pending_save = "";
+    pending_file_export = "";
+    discard_guard.reset();
+    updatePreviewStatus();
+    setStatus(tr("content_editor", "Map edit redone."));
+}
+
+void GuiContentEditor::applyMapBatch()
+{
+    if (!game_server)
+        return setStatus(tr("content_editor", "Applying a map requires the local server."));
+    if (map_apply_session.hasActiveBatch())
+        return setStatus(tr("content_editor", "A batch is already applied; undo it before applying again."));
+    cancelMapDrag();
+
+    MapApplyPlan plan;
+    switch (buildMapApplyPlan(map_edit_session.document(), true, plan))
+    {
+    case MapApplyError::InvalidDocument:
+        return setStatus(tr("content_editor", "The staged map is invalid; nothing was applied."));
+    case MapApplyError::NothingToApply:
+        return setStatus(tr("content_editor", "The staged map has no supported objects to apply."));
+    default:
+        break;
+    }
+
+    if (map_apply_session.apply(plan, map_world_adapter.creator(), map_world_adapter.destroyer())
+        != MapApplyError::None)
+    {
+        map_world_adapter.clear();
+        updateMapBatchButtons();
+        return setStatus(tr("content_editor", "Applying the map failed; every created object was removed."));
+    }
+    updateMapBatchButtons();
+    setStatus(tr("content_editor", "Map applied: {count} objects created, {skipped} preserved objects omitted.")
+        .format({
+            {"count", string(static_cast<unsigned int>(map_apply_session.batchHandles().size()))},
+            {"skipped", string(static_cast<unsigned int>(map_apply_session.batchSkipped()))},
+        }));
+}
+
+void GuiContentEditor::rollbackMapBatch()
+{
+    if (!game_server)
+        return setStatus(tr("content_editor", "Undoing an applied map requires the local server."));
+    if (!map_apply_session.hasActiveBatch())
+        return setStatus(tr("content_editor", "There is no applied batch to undo."));
+    std::size_t destroyed = 0;
+    std::size_t missing = 0;
+    map_apply_session.rollback(game_server != nullptr, map_world_adapter.destroyer(), &destroyed, &missing);
+    map_world_adapter.clear();
+    updateMapBatchButtons();
+    setStatus(tr("content_editor", "Applied batch removed: {destroyed} objects destroyed, {missing} were already gone.")
+        .format({
+            {"destroyed", string(static_cast<unsigned int>(destroyed))},
+            {"missing", string(static_cast<unsigned int>(missing))},
+        }));
+}
+
+void GuiContentEditor::updateMapBatchButtons()
+{
+    map_apply_button->setEnable(!map_apply_session.hasActiveBatch());
+    map_rollback_button->setEnable(map_apply_session.hasActiveBatch());
 }
 
 void GuiContentEditor::openShipTemplatePicker()
@@ -1601,6 +1951,20 @@ void GuiContentEditor::rollbackShip()
     setStatus(tr("content_editor", "Content ship rolled back."));
 }
 
+void GuiContentEditor::openRelationEditorForButton(std::size_t index, RelationEditorMode campaign_mode)
+{
+    if (current_type != ContentResourceType::Character)
+        return openRelationEditor(campaign_mode);
+    switch (index)
+    {
+    case 0: return openRelationEditor(RelationEditorMode::CharacterCrewPosition);
+    case 2: return openRelationEditor(RelationEditorMode::CharacterTags);
+    case 3: return openRelationEditor(RelationEditorMode::CharacterShip);
+    case 4: return clearLegacyRole();
+    default: return openRelationEditor(campaign_mode);
+    }
+}
+
 void GuiContentEditor::openRelationEditor(RelationEditorMode mode)
 {
     relation_editor_mode = mode;
@@ -1613,6 +1977,42 @@ void GuiContentEditor::closeRelationEditor()
     relation_editor_overlay->hide();
 }
 
+void GuiContentEditor::openCampaignGraph()
+{
+    if (!buildCampaignGraph(formResource(), resources, campaign_graph))
+        return setStatus(tr("content_editor", "The campaign fields cannot be parsed; fix them to view the graph."));
+    if (campaign_graph.nodes.empty())
+        return setStatus(tr("content_editor", "The campaign has no maps to draw."));
+
+    string warnings;
+    if (!campaign_graph.has_starting_map)
+        warnings = tr("content_editor", "No starting map is set; reachability is not checked.");
+    else if (campaign_graph.unreachable_maps > 0)
+        warnings = tr("content_editor", "{count} maps are unreachable from the starting map.")
+            .format({{"count", string(static_cast<unsigned int>(campaign_graph.unreachable_maps))}});
+    const auto missing = campaign_graph.missing_maps + campaign_graph.missing_characters
+        + campaign_graph.missing_ships;
+    if (missing > 0)
+    {
+        if (!warnings.empty()) warnings += " ";
+        warnings += tr("content_editor", "Missing from the library: {maps} maps, {characters} characters, {ships} ships.")
+            .format({
+                {"maps", string(static_cast<unsigned int>(campaign_graph.missing_maps))},
+                {"characters", string(static_cast<unsigned int>(campaign_graph.missing_characters))},
+                {"ships", string(static_cast<unsigned int>(campaign_graph.missing_ships))},
+            });
+    }
+    if (warnings.empty())
+        warnings = tr("content_editor", "Every map is reachable and every reference exists.");
+    campaign_graph_warnings->setText(warnings);
+    campaign_graph_overlay->show()->moveToFront();
+}
+
+void GuiContentEditor::closeCampaignGraph()
+{
+    campaign_graph_overlay->hide();
+}
+
 void GuiContentEditor::refreshRelationEditor()
 {
     const auto resource = formResource();
@@ -1621,6 +2021,7 @@ void GuiContentEditor::refreshRelationEditor()
     relation_current_list->clear();
     relation_candidate_selector->show();
     relation_destination_selector->hide();
+    relation_tag_entry->hide();
     relation_apply_button->show();
     relation_apply_button->setText(tr("content_editor", "Add selection"));
     relation_clear_button->hide();
@@ -1722,6 +2123,17 @@ void GuiContentEditor::refreshRelationEditor()
         relation_clear_button->show();
         relation_remove_button->hide();
         break;
+    case RelationEditorMode::CharacterTags:
+        relation_editor_title->setText(tr("content_editor", "Character tags"));
+        relation_candidate_selector->hide();
+        relation_tag_entry->show();
+        relation_apply_button->setText(tr("content_editor", "Add tag"));
+        for (const auto& tag : relationItems(resource.tertiary))
+            relation_current_list->addEntry(tag, tag);
+        relation_current_list->setSelectionIndex(relation_current_list->entryCount() > 0 ? 0 : -1);
+        relation_up_button->show();
+        relation_down_button->show();
+        break;
     }
 }
 
@@ -1754,9 +2166,16 @@ void GuiContentEditor::applyRelationSelection()
     case RelationEditorMode::CharacterShip:
         changed = setCharacterShipReference(resource, resources, selected);
         break;
+    case RelationEditorMode::CharacterTags:
+        changed = addCharacterTag(resource, relation_tag_entry->getText());
+        break;
     }
     if (!changed)
-        return setStatus(tr("content_editor", "The selected relationship is invalid or already present."));
+        return setStatus(relation_editor_mode == RelationEditorMode::CharacterTags
+            ? tr("content_editor", "The tag is empty, duplicated or not a portable ID.")
+            : tr("content_editor", "The selected relationship is invalid or already present."));
+    if (relation_editor_mode == RelationEditorMode::CharacterTags)
+        relation_tag_entry->setText("");
     applyRelationResource(resource);
     refreshRelationEditor();
     setStatus(tr("content_editor", "Relationship staged. Save the resource to persist it."));
@@ -1790,6 +2209,8 @@ void GuiContentEditor::removeRelationSelection()
         changed = removeContentReference(resource, ContentReferenceKind::CampaignCharacter, selected);
     else if (relation_editor_mode == RelationEditorMode::CampaignShips)
         changed = removeContentReference(resource, ContentReferenceKind::CampaignShip, selected);
+    else if (relation_editor_mode == RelationEditorMode::CharacterTags)
+        changed = removeCharacterTag(resource, selected);
     else if (relation_editor_mode == RelationEditorMode::CampaignTransitions)
     {
         const auto separator = selected.find('>');
@@ -1807,12 +2228,16 @@ void GuiContentEditor::removeRelationSelection()
 void GuiContentEditor::moveRelationSelection(int direction)
 {
     auto resource = formResource();
-    if (relation_editor_mode != RelationEditorMode::CampaignMaps
-        || !moveCampaignMap(resource, relation_current_list->getSelectionValue(), direction))
-        return setStatus(tr("content_editor", "The selected map cannot move in that direction."));
+    bool changed = false;
+    if (relation_editor_mode == RelationEditorMode::CampaignMaps)
+        changed = moveCampaignMap(resource, relation_current_list->getSelectionValue(), direction);
+    else if (relation_editor_mode == RelationEditorMode::CharacterTags)
+        changed = moveCharacterTag(resource, relation_current_list->getSelectionValue(), direction);
+    if (!changed)
+        return setStatus(tr("content_editor", "The selected entry cannot move in that direction."));
     applyRelationResource(resource);
     refreshRelationEditor();
-    setStatus(tr("content_editor", "Campaign map order updated in staging."));
+    setStatus(tr("content_editor", "Order updated in staging."));
 }
 
 void GuiContentEditor::applyRelationResource(const ContentResource& resource)
@@ -1826,4 +2251,45 @@ void GuiContentEditor::applyRelationResource(const ContentResource& resource)
     pending_file_export = "";
     discard_guard.reset();
     rename_guard.reset();
+    updateCharacterLinksSummary();
+}
+
+void GuiContentEditor::clearLegacyRole()
+{
+    auto resource = formResource();
+    if (!clearCharacterLegacyRole(resource))
+        return setStatus(tr("content_editor", "There is no legacy role to clear."));
+    applyRelationResource(resource);
+    setStatus(tr("content_editor", "Legacy role cleared in staging. Save the resource to persist it."));
+}
+
+void GuiContentEditor::updateCharacterLinksSummary()
+{
+    if (current_type != ContentResourceType::Character || !character_links_label)
+        return;
+    const auto resource = formResource();
+    string campaigns;
+    for (const auto& item : resources)
+    {
+        if (item.type != ContentResourceType::Campaign) continue;
+        for (const auto& id : relationItems(item.tertiary))
+        {
+            if (id != resource.id) continue;
+            if (!campaigns.empty()) campaigns += ", ";
+            campaigns += item.name.empty() ? string(item.id) : string(item.name);
+            break;
+        }
+    }
+    if (campaigns.empty()) campaigns = tr("content_editor", "none");
+    string ship = tr("content_editor", "none");
+    if (!resource.quaternary.empty())
+    {
+        ship = resource.quaternary;
+        for (const auto& item : resources)
+            if (item.type == ContentResourceType::Ship && item.id == resource.quaternary && !item.name.empty())
+                ship = item.name;
+    }
+    character_links_label->setText(
+        tr("content_editor", "Linked campaigns: {campaigns} — Ship: {ship}")
+            .format({{"campaigns", campaigns}, {"ship", ship}}));
 }

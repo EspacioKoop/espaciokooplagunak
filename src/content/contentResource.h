@@ -130,6 +130,20 @@ bool removeContentReference(
     ContentReferenceKind kind,
     const std::string& id
 );
+// Typed, read-only view of the campaign v4 string fields. Consumers never see
+// the serialized representation, which stays private to the codec.
+struct CampaignFields
+{
+    std::vector<std::string> map_ids;
+    std::string starting_map_id;
+    std::vector<std::string> character_ids;
+    std::vector<std::string> ship_ids;
+    std::vector<std::pair<std::string, std::string>> transitions;
+};
+
+// False unless the resource is a Campaign whose fields parse cleanly.
+bool campaignFields(const ContentResource& resource, CampaignFields& output);
+
 bool moveCampaignMap(ContentResource& resource, const std::string& id, int direction);
 bool setCampaignStartingMap(ContentResource& resource, const std::string& id);
 bool addCampaignTransition(
@@ -148,6 +162,13 @@ bool setCharacterShipReference(
     const std::vector<ContentResource>& library,
     const std::string& ship_id
 );
+// Lowercases, trims and maps separators to '-'; returns "" when the result is
+// not a portable ID, so free-form input can never produce an invalid tag.
+std::string normalizeCharacterTag(const std::string& raw_tag);
+bool addCharacterTag(ContentResource& resource, const std::string& raw_tag);
+bool removeCharacterTag(ContentResource& resource, const std::string& tag);
+bool moveCharacterTag(ContentResource& resource, const std::string& tag, int direction);
+bool clearCharacterLegacyRole(ContentResource& resource);
 bool contentResourceHasMissingDependencies(
     const ContentResource& resource,
     const std::vector<ContentResource>& library

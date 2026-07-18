@@ -1,6 +1,12 @@
 #pragma once
 
+#include "content/campaignGraph.h"
 #include "content/contentLibraryStore.h"
+#include "content/mapApplySession.h"
+#include "content/mapEditSession.h"
+#include "content/mapPreview.h"
+#include "content/mapPreviewInteraction.h"
+#include "content/mapWorldAdapter.h"
 #include "content/shipEditSession.h"
 #include "content/shipDeployment.h"
 #include "content/shipTemplateCatalog.h"
@@ -22,6 +28,16 @@ public:
     explicit GuiContentEditor(GuiContainer* owner);
 
     const MapDocument* previewDocument() const;
+    bool isMapEditMode() const { return map_edit_mode; }
+    bool isSelectedMapObject(const std::string& id) const
+        { return map_drag.isDragging() && map_drag.selectedId() == id; }
+    void applyMapDragPreview(std::vector<MapPreviewMarker>& markers) const
+        { map_drag.applyProvisional(markers); }
+    bool beginMapDrag(float world_x, float world_y, float world_to_screen_scale);
+    void updateMapDrag(float world_x, float world_y);
+    void commitMapDrag(float world_x, float world_y);
+    void cancelMapDrag();
+    void stopMapEditMode();
 
     virtual bool onMouseDown(
         sp::io::Pointer::Button button,
@@ -39,6 +55,7 @@ private:
         CampaignTransitions,
         CharacterCrewPosition,
         CharacterShip,
+        CharacterTags,
     };
 
     ContentLibraryStore store;
@@ -55,11 +72,16 @@ private:
     string pending_file_export;
     ContentDiscardGuard discard_guard;
     ContentDiscardGuard rename_guard;
+    MapEditSession map_edit_session;
+    MapApplySession map_apply_session;
+    MapWorldAdapter map_world_adapter;
+    MapPreviewDragSession map_drag;
     ShipEditSession ship_edit_session;
     ShipDeploymentSession ship_deployment_session;
     std::vector<ShipTemplateCatalogEntry> ship_template_catalog;
     std::vector<std::size_t> visible_ship_template_indices;
     bool preview_enabled = false;
+    bool map_edit_mode = false;
 
     GuiSelector* type_selector;
     GuiSelector* inbox_selector;
@@ -87,6 +109,11 @@ private:
     GuiLabel* status_label;
     GuiToggleButton* preview_toggle;
     GuiLabel* preview_status_label;
+    GuiToggleButton* map_edit_toggle;
+    GuiButton* map_undo_button;
+    GuiButton* map_redo_button;
+    GuiButton* map_apply_button;
+    GuiButton* map_rollback_button;
     GuiSelector* ship_override_selector;
     GuiSelector* ship_system_selector;
     GuiSelector* ship_crew_selector;
@@ -106,6 +133,8 @@ private:
     GuiLabel* relation_editor_title;
     GuiSelector* relation_candidate_selector;
     GuiSelector* relation_destination_selector;
+    GuiTextEntry* relation_tag_entry;
+    GuiLabel* character_links_label;
     GuiListbox* relation_current_list;
     GuiButton* relation_apply_button;
     GuiButton* relation_clear_button;
@@ -113,6 +142,10 @@ private:
     GuiButton* relation_up_button;
     GuiButton* relation_down_button;
     RelationEditorMode relation_editor_mode = RelationEditorMode::CampaignMaps;
+    CampaignGraph campaign_graph;
+    GuiButton* campaign_graph_button;
+    GuiOverlay* campaign_graph_overlay;
+    GuiLabel* campaign_graph_warnings;
 
     void requestSetType(ContentResourceType type);
     void setType(ContentResourceType type);
@@ -129,6 +162,17 @@ private:
     bool isFormDirty() const;
     bool confirmDiscard(const string& action);
     void saveResource();
+    bool validateSaveCandidate(const ContentResource& resource);
+    bool saveRenamedResource(
+        const ContentResource& resource,
+        std::vector<ContentResource>& candidate,
+        int& target_index,
+        string& success);
+    void reconcileFailedRename(
+        const ContentStoreRenameResult& rename_result,
+        const ContentResource& resource,
+        const ContentResource& original);
+    void openRelationEditorForButton(std::size_t index, RelationEditorMode campaign_mode);
     void deleteResource();
     void exportToClipboard();
     void importFromClipboard();
@@ -141,6 +185,12 @@ private:
     string storeErrorText(ContentStoreError error) const;
     void setStatus(const string& text);
     void updatePreviewStatus();
+    void setMapEditMode(bool enabled);
+    void undoMapEdit();
+    void redoMapEdit();
+    void applyMapBatch();
+    void rollbackMapBatch();
+    void updateMapBatchButtons();
     void openShipTemplatePicker();
     void refreshShipTemplatePicker();
     void refreshShipTemplatePreview();
@@ -163,4 +213,8 @@ private:
     void removeRelationSelection();
     void moveRelationSelection(int direction);
     void applyRelationResource(const ContentResource& resource);
+    void openCampaignGraph();
+    void closeCampaignGraph();
+    void clearLegacyRole();
+    void updateCharacterLinksSummary();
 };

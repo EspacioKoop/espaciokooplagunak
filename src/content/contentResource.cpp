@@ -390,6 +390,19 @@ ContentResourceError validateContentLibrary(const std::vector<ContentResource>& 
     return ContentResourceError::None;
 }
 
+bool campaignFields(const ContentResource& resource, CampaignFields& output)
+{
+    output = {};
+    if (resource.type != ContentResourceType::Campaign) return false;
+    if (!parseIdList(resource.primary, output.map_ids)) return false;
+    if (!resource.secondary.empty() && !validId(resource.secondary)) return false;
+    output.starting_map_id = resource.secondary;
+    if (!parseIdList(resource.tertiary, output.character_ids)) return false;
+    if (!parseIdList(resource.quaternary, output.ship_ids)) return false;
+    if (!parseTransitions(resource.quinary, output.transitions)) return false;
+    return true;
+}
+
 bool addContentReference(ContentResource& resource,
                          const std::vector<ContentResource>& library,
                          ContentReferenceKind kind,
@@ -536,6 +549,66 @@ bool setCharacterShipReference(ContentResource& resource,
     if (resource.type != ContentResourceType::Character
         || (!ship_id.empty() && !resourceExists(library, ContentResourceType::Ship, ship_id))) return false;
     resource.quaternary = ship_id;
+    return true;
+}
+
+std::string normalizeCharacterTag(const std::string& raw_tag)
+{
+    std::string tag;
+    for (char c : trim(raw_tag))
+    {
+        if (c >= 'A' && c <= 'Z') c = static_cast<char>(c - 'A' + 'a');
+        if (c == ' ' || c == '\t') c = '-';
+        if (c == '-' && !tag.empty() && tag.back() == '-') continue;
+        tag += c;
+    }
+    return validId(tag) ? tag : std::string{};
+}
+
+bool addCharacterTag(ContentResource& resource, const std::string& raw_tag)
+{
+    if (resource.type != ContentResourceType::Character) return false;
+    const auto tag = normalizeCharacterTag(raw_tag);
+    if (tag.empty()) return false;
+    std::vector<std::string> tags;
+    if (!parseIdList(resource.tertiary, tags)
+        || std::find(tags.begin(), tags.end(), tag) != tags.end()) return false;
+    tags.push_back(tag);
+    resource.tertiary = serializeIdList(tags);
+    return true;
+}
+
+bool removeCharacterTag(ContentResource& resource, const std::string& tag)
+{
+    if (resource.type != ContentResourceType::Character) return false;
+    std::vector<std::string> tags;
+    if (!parseIdList(resource.tertiary, tags)) return false;
+    const auto found = std::find(tags.begin(), tags.end(), tag);
+    if (found == tags.end()) return false;
+    tags.erase(found);
+    resource.tertiary = serializeIdList(tags);
+    return true;
+}
+
+bool moveCharacterTag(ContentResource& resource, const std::string& tag, int direction)
+{
+    if (resource.type != ContentResourceType::Character || (direction != -1 && direction != 1)) return false;
+    std::vector<std::string> tags;
+    if (!parseIdList(resource.tertiary, tags)) return false;
+    const auto found = std::find(tags.begin(), tags.end(), tag);
+    if (found == tags.end()) return false;
+    const auto index = static_cast<std::ptrdiff_t>(found - tags.begin());
+    const auto target = index + direction;
+    if (target < 0 || target >= static_cast<std::ptrdiff_t>(tags.size())) return false;
+    std::swap(tags[static_cast<std::size_t>(index)], tags[static_cast<std::size_t>(target)]);
+    resource.tertiary = serializeIdList(tags);
+    return true;
+}
+
+bool clearCharacterLegacyRole(ContentResource& resource)
+{
+    if (resource.type != ContentResourceType::Character || resource.quinary.empty()) return false;
+    resource.quinary.clear();
     return true;
 }
 

@@ -18,27 +18,42 @@
  * factoría), para que importar el módulo no rompa en v11 al desestructurar
  * una API ausente en el nivel superior.
  *
- * Seguridad: la URL y el token del puente son ajustes de ámbito "client"
- * (localStorage del navegador del GM) — nunca entran en la base de datos
- * del mundo ni se sincronizan con los jugadores, y no se escriben en logs.
+ * Seguridad: la URL es un ajuste de ámbito "client"; el token del puente vive
+ * solo en memoria durante la sesión del navegador GM. Nunca entra en la base
+ * de datos del mundo, localStorage, sockets, Journal o logs.
  * El token Bearer es la autoridad del puente; `game.user.isGM` protege la UI,
  * pero el navegador no puede acreditar por sí solo un rol ante el servidor.
  */
 
 import { BridgeClient, BridgeError } from "./bridge-client.mjs";
+import {
+  clearLegacyBridgeToken,
+  getBridgeToken,
+  openBridgeTokenApp,
+  registerBridgeTokenFeature,
+  revokeBridgeTokenAccess,
+} from "./bridge-token-session.mjs";
+import { probarConexion } from "./diagnostico-conexion.mjs";
 import { processBridgeEvents } from "./event-journal.mjs";
 import { dibujarFrame } from "./mapa-render.mjs";
 import { prepararVistaPausa } from "./pausa-control.mjs";
 import { prepareRoute, prepareSystemRows } from "./ship-view.mjs";
 import { setSimulationPaused } from "./tempo-control.mjs";
 import { addStationControl, registerStationFeature } from "./station-ui.mjs";
-import { addWorkspaceControl, registerWorkspaceFeature } from "./station-workspace-ui.mjs";
+import {
+  addWorkspaceControl,
+  registerWorkspaceFeature,
+  revokeWorkspaceAccess,
+} from "./station-workspace-ui.mjs";
 import {
   colorFaccion,
   componerFrame,
   crearCampoEstrellas,
   debeDibujar,
+  firmaEstructuralContactos,
   leyendaContactos,
+  normalizarContactosMapa,
+  normalizarPosicionMapa,
   prepararDetalleContacto,
   rotarMuestras,
 } from "./ventana-nave.mjs";
@@ -50,11 +65,12 @@ const BACKOFF_MAX_MS = 60000;
 // Mapa vivo: mismo radio que el Lua fijo de /v1/contacts en el puente, fps del
 // pintor y semilla fija del campo de estrellas ("LAG" — mismo cielo siempre).
 const MAPA_RADIO_MUNDO = 30000;
-const MAPA_FPS = 30;
+const MAPA_FPS = 60;
 const MAPA_SEMILLA = 0x4c4147;
 
 registerStationFeature(MODULE_ID);
 registerWorkspaceFeature(MODULE_ID);
+registerBridgeTokenFeature(MODULE_ID);
 
 let estadoApp = null;
 let mapaApp = null;
@@ -100,7 +116,7 @@ Hooks.once("init", () => {
     name: "LAGUNAK.Ajustes.Token.Nombre",
     hint: "LAGUNAK.Ajustes.Token.Pista",
     scope: "client",
-    config: true,
+    config: false,
     type: String,
     default: "",
   });
@@ -115,6 +131,46 @@ Hooks.once("init", () => {
     default: 2,
   });
 });
+
+Hooks.once("ready", () => {
+  // Migración de #183: no se lee el valor legado; se sobrescribe con vacío.
+  // El token operativo vive exclusivamente en bridge-token-session.mjs.
+  void clearLegacyBridgeToken();
+});
+
+Hooks.on("updateUser", (user) => {
+  if (user?.id === game.user?.id && !user.isGM) {
+    void revokePrivilegedBridgeAccess();
+  }
+});
+
+function wipePrivilegedWindow(app) {
+  const root = app?.element?.[0] ?? app?.element;
+  root?.replaceChildren?.();
+}
+
+async function revokePrivilegedApp(app) {
+  if (!app) return;
+  app.bridgeAccessRevoked = true;
+  app.ultimoEstado = null;
+  app.contactos = [];
+  app.destino = null;
+  wipePrivilegedWindow(app);
+  try {
+    await app.close();
+  } catch {
+    // La frontera ya está revocada y el DOM vacío aunque Foundry no cierre.
+  }
+}
+
+async function revokePrivilegedBridgeAccess() {
+  await Promise.allSettled([
+    revokeBridgeTokenAccess(),
+    revokeWorkspaceAccess(),
+    revokePrivilegedApp(estadoApp),
+    revokePrivilegedApp(mapaApp),
+  ]);
+}
 
 /* Grupo PROPIO en los controles de escena, con icono de nave, solo GM
  * (issue #125: las herramientas del módulo no se mezclan con Token Controls).
@@ -149,6 +205,20 @@ Hooks.on("getSceneControlButtons", (controls) => {
           icon: "fa-solid fa-satellite-dish",
           button: true,
           onClick: () => abrirMapaVivo(),
+        },
+        {
+          name: "lagunak-token",
+          title: "LAGUNAK.Controles.ConfigurarToken",
+          icon: "fa-solid fa-key",
+          button: true,
+          onClick: () => openBridgeTokenApp(),
+        },
+        {
+          name: "lagunak-diagnostico",
+          title: "LAGUNAK.Controles.ProbarConexion",
+          icon: "fa-solid fa-stethoscope",
+          button: true,
+          onClick: () => diagnosticarConexion(),
         },
       ],
     });
@@ -185,10 +255,51 @@ Hooks.on("getSceneControlButtons", (controls) => {
           onClick: () => abrirMapaVivo(),
           onChange: () => abrirMapaVivo(),
         },
+        "lagunak-token": {
+          name: "lagunak-token",
+          title: "LAGUNAK.Controles.ConfigurarToken",
+          icon: "fa-solid fa-key",
+          order: 2,
+          button: true,
+          onClick: () => openBridgeTokenApp(),
+          onChange: () => openBridgeTokenApp(),
+        },
+        "lagunak-diagnostico": {
+          name: "lagunak-diagnostico",
+          title: "LAGUNAK.Controles.ProbarConexion",
+          icon: "fa-solid fa-stethoscope",
+          order: 3,
+          button: true,
+          onClick: () => diagnosticarConexion(),
+          onChange: () => diagnosticarConexion(),
+        },
       },
     };
   }
 });
+
+/* Diagnóstico de conexión (issue #183): comprueba /healthz y después
+ * /v1/state con el token configurado, y comunica el resultado con una
+ * notificación en el lenguaje del GM. Nunca muestra el token. */
+let diagnosticoEnCurso = false;
+async function diagnosticarConexion() {
+  if (!game.user?.isGM || diagnosticoEnCurso) return;
+  diagnosticoEnCurso = true;
+  try {
+    const token = getBridgeToken();
+    const res = await probarConexion({
+      url: game.settings.get(MODULE_ID, "bridgeUrl"),
+      token,
+      canUseToken: () => Boolean(game.user?.isGM) && getBridgeToken() === token,
+    });
+    if (!game.user?.isGM) return;
+    const mensaje = game.i18n.localize(res.claveI18n);
+    if (res.exito) ui.notifications.info(mensaje);
+    else ui.notifications.warn(mensaje);
+  } finally {
+    diagnosticoEnCurso = false;
+  }
+}
 
 /* La pausa de Foundry (game.paused) se muestra como dato informativo en la
  * ventana de estado; este hook solo refresca la vista abierta. NO se propaga
@@ -204,7 +315,7 @@ function abrirEstadoNave() {
   // del GM. Mostrarla a un jugador rompería la asimetría de puestos que el
   // reparto de pantallas del juego fragmenta a propósito.
   if (!game.user?.isGM) return;
-  estadoApp ??= new (claseEstadoNave())();
+  if (!estadoApp || estadoApp.bridgeAccessRevoked) estadoApp = new (claseEstadoNave())();
   if (foundry.applications?.api?.ApplicationV2) {
     estadoApp.render({ force: true });
   } else {
@@ -216,7 +327,7 @@ function abrirMapaVivo() {
   // Mismo candado que el estado de nave: el mapa agrega los contactos de los
   // sensores sin filtrar por puesto — es una vista de GM.
   if (!game.user?.isGM) return;
-  mapaApp ??= new (claseMapaVivo())();
+  if (!mapaApp || mapaApp.bridgeAccessRevoked) mapaApp = new (claseMapaVivo())();
   if (foundry.applications?.api?.ApplicationV2) {
     mapaApp.render({ force: true });
   } else {
@@ -281,11 +392,12 @@ function crearClaseV2() {
     confirmacionPendiente = null; // ACK recibido, a la espera de observarlo en /v1/scenario
     falloOrden = false; // la última orden de pausa terminó en error
     ayudaAbierta = false; // conserva <details open> entre reemplazos del DOM
+    bridgeAccessRevoked = false;
 
     #cliente() {
       return new BridgeClient({
         url: game.settings.get(MODULE_ID, "bridgeUrl"),
-        token: game.settings.get(MODULE_ID, "bridgeToken"),
+        token: getBridgeToken(),
       });
     }
 
@@ -297,21 +409,31 @@ function crearClaseV2() {
     }
 
     async #sondear() {
+      if (this.bridgeAccessRevoked || !game.user?.isGM) return;
       try {
         const cliente = this.#cliente();
         await cliente.healthz();
-        this.ultimoEstado = await cliente.state();
-        this._registrarLecturaPausa(await cliente.scenario());
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        const estado = await cliente.state();
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        const escenario = await cliente.scenario();
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        const eventos = await cliente.events();
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        this.ultimoEstado = estado;
+        this._registrarLecturaPausa(escenario);
         await processBridgeEvents({
-          payload: await cliente.events(),
+          payload: eventos,
           game,
           JournalEntry,
           ui,
         });
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
         this.conexion = "ok";
         this.detalleError = "";
         this.#fallosSeguidos = 0;
       } catch (err) {
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
         this.conexion = "error";
         this.detalleError = err instanceof BridgeError ? err.message : game.i18n.localize("LAGUNAK.Errores.Desconocido");
         this.#fallosSeguidos = Math.min(this.#fallosSeguidos + 1, 10);
@@ -423,7 +545,7 @@ function crearClaseV2() {
           isGM: Boolean(game.user?.isGM),
           client: this.#cliente(),
         });
-        if (changed) {
+        if (changed && !this.bridgeAccessRevoked && game.user?.isGM) {
           // El ACK solo confirma que la orden fue aceptada: el estado se
           // considera confirmado únicamente al observarlo en /v1/scenario.
           this.confirmacionPendiente = paused;
@@ -497,6 +619,7 @@ function crearClaseV1() {
     confirmacionPendiente = null;
     falloOrden = false;
     ayudaAbierta = false;
+    bridgeAccessRevoked = false;
 
     static get defaultOptions() {
       return foundry.utils.mergeObject(super.defaultOptions, {
@@ -516,7 +639,7 @@ function crearClaseV1() {
     #cliente() {
       return new BridgeClient({
         url: game.settings.get(MODULE_ID, "bridgeUrl"),
-        token: game.settings.get(MODULE_ID, "bridgeToken"),
+        token: getBridgeToken(),
       });
     }
 
@@ -527,21 +650,31 @@ function crearClaseV1() {
     }
 
     async #sondear() {
+      if (this.bridgeAccessRevoked || !game.user?.isGM) return;
       try {
         const cliente = this.#cliente();
         await cliente.healthz();
-        this.ultimoEstado = await cliente.state();
-        this._registrarLecturaPausa(await cliente.scenario());
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        const estado = await cliente.state();
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        const escenario = await cliente.scenario();
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        const eventos = await cliente.events();
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        this.ultimoEstado = estado;
+        this._registrarLecturaPausa(escenario);
         await processBridgeEvents({
-          payload: await cliente.events(),
+          payload: eventos,
           game,
           JournalEntry,
           ui,
         });
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
         this.conexion = "ok";
         this.detalleError = "";
         this.#fallosSeguidos = 0;
       } catch (err) {
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
         this.conexion = "error";
         this.detalleError = err instanceof BridgeError ? err.message : game.i18n.localize("LAGUNAK.Errores.Desconocido");
         this.#fallosSeguidos = Math.min(this.#fallosSeguidos + 1, 10);
@@ -655,7 +788,7 @@ function crearClaseV1() {
           isGM: Boolean(game.user?.isGM),
           client: this.#cliente(),
         });
-        if (changed) {
+        if (changed && !this.bridgeAccessRevoked && game.user?.isGM) {
           // El ACK solo confirma que la orden fue aceptada: el estado se
           // considera confirmado únicamente al observarlo en /v1/scenario.
           this.confirmacionPendiente = paused;
@@ -702,9 +835,9 @@ function crearClaseV1() {
 
 /* ================================================================== */
 /* Mapa vivo (ApplicationV2, v12+). Ventana solo-vista: starfield en   */
-/* parallax + blips de contactos de /v1/contacts, con el movimiento    */
-/* propio tweeneado entre las dos últimas muestras confirmadas del     */
-/* puente (nunca extrapola: el mapa es una vista, no un simulador).    */
+/* parallax + blips de contactos de /v1/contacts, con nave, rumbo y    */
+/* contactos inequívocos tweeneados entre las dos últimas muestras     */
+/* confirmadas (nunca extrapola: es una vista, no un simulador).       */
 /* Sondeo de datos cada pollSeconds con backoff; dibujo por rAF a      */
 /* MAPA_FPS. NO llama a processBridgeEvents: el diario es asunto de la */
 /* ventana de estado (evita anotaciones duplicadas). Misma disciplina  */
@@ -742,11 +875,12 @@ function crearClaseMapaV2() {
     seleccion = null; // callsign del contacto seleccionado en la lista
     conexion = "conectando";
     detalleError = "";
+    bridgeAccessRevoked = false;
 
     #cliente() {
       return new BridgeClient({
         url: game.settings.get(MODULE_ID, "bridgeUrl"),
-        token: game.settings.get(MODULE_ID, "bridgeToken"),
+        token: getBridgeToken(),
       });
     }
 
@@ -757,10 +891,14 @@ function crearClaseMapaV2() {
     }
 
     async #sondear() {
+      if (this.bridgeAccessRevoked || !game.user?.isGM) return;
       // La generación se captura al entrar: si la ventana se cierra (o se
       // reabre) con esta petición en vuelo, la respuesta tardía no puede
       // tocar estado, renderizar ni rearmar el polling.
       const generacion = this.#generacion;
+      const firmaAnterior = firmaEstructuralContactos(this.contactos);
+      const conexionAnterior = this.conexion;
+      const detalleErrorAnterior = this.detalleError;
       let rotadas = null;
       let contactos = null;
       let destino = null;
@@ -768,23 +906,34 @@ function crearClaseMapaV2() {
       try {
         const cliente = this.#cliente();
         await cliente.healthz();
-        const estado = await cliente.state();
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        // Estado y contactos se solicitan juntos para reducir el desfase
+        // temporal entre ambas fotografías confirmadas del simulador.
+        const resultados = await Promise.allSettled([
+          cliente.state(),
+          cliente.contacts(),
+        ]);
+        const rechazado = resultados.find((resultado) => resultado.status === "rejected");
+        if (rechazado) throw rechazado.reason;
+        const [estado, respuestaContactos] = resultados.map((resultado) => resultado.value);
         const nave = estado?.ship ?? null;
+        contactos = normalizarContactosMapa(respuestaContactos?.contacts ?? []);
         destino = nave?.destination ?? null;
         if (nave) {
-          // Ventana de reproducción: rotarMuestras ancla el tween hacia
-          // delante (los frames van DETRÁS de la recepción — sin esto, t
-          // quedaría clavado en 1 y no habría frames intermedios).
+          const centro = normalizarPosicionMapa(nave.position);
+          if (!centro) throw new Error("Posición de nave no finita");
+          // Ventana de reproducción: nave, rumbo y contactos comparten los
+          // mismos timestamps y avanzan juntos entre sondeos confirmados.
           rotadas = rotarMuestras(this.#muestraActual, {
-            centro: { x: nave.position?.x ?? 0, y: nave.position?.y ?? 0 },
-            rumboDeg: nave.heading ?? 0,
+            centro,
+            rumboDeg: Number.isFinite(nave.heading) ? nave.heading : 0,
+            contactos,
           }, Date.now());
         }
-        contactos = (await cliente.contacts())?.contacts ?? [];
       } catch (err) {
         fallo = err;
       }
-      if (generacion !== this.#generacion) return;
+      if (generacion !== this.#generacion || this.bridgeAccessRevoked || !game.user?.isGM) return;
       if (fallo === null) {
         if (rotadas) {
           this.#muestraPrev = rotadas.prev;
@@ -800,7 +949,14 @@ function crearClaseMapaV2() {
         this.detalleError = fallo instanceof BridgeError ? fallo.message : game.i18n.localize("LAGUNAK.Errores.Desconocido");
         this.#fallosSeguidos = Math.min(this.#fallosSeguidos + 1, 10);
       }
-      if (this.rendered) this.render();
+      const cambioVisible = conexionAnterior !== this.conexion
+        || detalleErrorAnterior !== this.detalleError
+        || firmaAnterior !== firmaEstructuralContactos(this.contactos);
+      // Una posición nueva alimenta el rAF sin sustituir el canvas. Solo los
+      // cambios estructurales o de conexión necesitan reconstruir la ventana;
+      // las cifras confirmadas se actualizan sobre el DOM estable.
+      if (this.rendered && cambioVisible) this.render();
+      else if (this.rendered) this.#actualizarTelemetriaDom();
       this.#programar();
     }
 
@@ -809,22 +965,58 @@ function crearClaseMapaV2() {
       this.#timer = setTimeout(() => this.#sondear(), this.#intervaloMs());
     }
 
-    #animar() {
+    #actualizarTelemetriaDom() {
+      const raiz = this.element;
+      const centro = this.#muestraActual?.centro ?? null;
+      if (!raiz?.querySelectorAll || !centro) return;
+      for (const boton of raiz.querySelectorAll("[data-contacto]")) {
+        const indice = Number.parseInt(boton.dataset.contactoIndice ?? "", 10);
+        const contacto = Number.isInteger(indice) ? this.contactos[indice] : null;
+        if (!contacto) continue;
+        const detalle = prepararDetalleContacto(contacto, centro);
+        const distancia = boton.querySelector?.(".lagunak-mapa-distancia");
+        if (distancia) {
+          distancia.textContent = game.i18n.format("LAGUNAK.EstadoNave.DistanciaUnidades", {
+            distance: Math.round(detalle.distancia),
+          });
+        }
+        const fuera = boton.querySelector?.("[data-lagunak-fuera]");
+        if (fuera) fuera.hidden = detalle.distancia <= MAPA_RADIO_MUNDO;
+      }
+      const seleccionado = this.contactos.find((c) => (c.callsign ?? "?") === this.seleccion);
+      if (!seleccionado) return;
+      const detalle = prepararDetalleContacto(seleccionado, centro);
+      const distancia = raiz.querySelector("[data-lagunak-detalle-distancia]");
+      const rumbo = raiz.querySelector("[data-lagunak-detalle-rumbo]");
+      if (distancia) {
+        distancia.textContent = game.i18n.format("LAGUNAK.EstadoNave.DistanciaUnidades", {
+          distance: Math.round(detalle.distancia),
+        });
+      }
+      if (rumbo) {
+        rumbo.textContent = game.i18n.format("LAGUNAK.MapaVivo.RumboGrados", {
+          rumbo: Math.round(detalle.rumboDeg),
+        });
+      }
+    }
+
+    #animar(rafMs = null) {
       // Sin rAF global (p. ej. arnés de pruebas) la animación se auto-inhibe;
       // el mapa sigue funcionando a golpe de re-render del sondeo.
       if (!this.rendered || typeof requestAnimationFrame !== "function") {
         this.#rafId = null;
         return;
       }
-      this.#rafId = requestAnimationFrame(() => this.#animar());
+      this.#rafId = requestAnimationFrame((siguienteRafMs) => this.#animar(siguienteRafMs));
+      const relojRaf = Number.isFinite(rafMs) ? rafMs : (globalThis.performance?.now?.() ?? 0);
       const ahora = Date.now();
-      if (!debeDibujar(this.#ultimoDibujoMs, ahora, MAPA_FPS)) return;
+      if (!debeDibujar(this.#ultimoDibujoMs, relojRaf, MAPA_FPS)) return;
       // El re-render del sondeo reemplaza el DOM del part (canvas incluido):
       // el lienzo se busca en cada tick, nunca se cachea.
       const canvas = this.element?.querySelector?.(".lagunak-mapa-canvas");
       const ctx = canvas?.getContext?.("2d");
       if (!ctx) return;
-      this.#ultimoDibujoMs = ahora;
+      this.#ultimoDibujoMs = relojRaf;
       const frame = componerFrame({
         muestraPrev: this.#muestraPrev,
         muestraActual: this.#muestraActual,
@@ -845,8 +1037,8 @@ function crearClaseMapaV2() {
       this.#animar();
     }
 
-    /* Selección de contacto (issue #126): la lista re-renderiza en cada
-     * sondeo, así que los listeners se re-atan tras cada render. Clic en el
+    /* Selección de contacto (issue #126): un cambio estructural puede sustituir
+     * la lista, así que los listeners se re-atan tras cada render. Clic en el
      * contacto ya seleccionado lo deselecciona. */
     _onRender(context, options) {
       super._onRender?.(context, options);
@@ -955,6 +1147,7 @@ function crearClaseMapaV1() {
     seleccion = null; // callsign del contacto seleccionado en la lista
     conexion = "conectando";
     detalleError = "";
+    bridgeAccessRevoked = false;
 
     static get defaultOptions() {
       return foundry.utils.mergeObject(super.defaultOptions, {
@@ -974,7 +1167,7 @@ function crearClaseMapaV1() {
     #cliente() {
       return new BridgeClient({
         url: game.settings.get(MODULE_ID, "bridgeUrl"),
-        token: game.settings.get(MODULE_ID, "bridgeToken"),
+        token: getBridgeToken(),
       });
     }
 
@@ -985,10 +1178,14 @@ function crearClaseMapaV1() {
     }
 
     async #sondear() {
+      if (this.bridgeAccessRevoked || !game.user?.isGM) return;
       // Misma disciplina que la ruta V2 (réplica aislada): la generación se
       // captura al entrar y una respuesta tardía tras cerrar muere sin tocar
       // estado, renderizar ni rearmar el polling.
       const generacion = this.#generacion;
+      const firmaAnterior = firmaEstructuralContactos(this.contactos);
+      const conexionAnterior = this.conexion;
+      const detalleErrorAnterior = this.detalleError;
       let rotadas = null;
       let contactos = null;
       let destino = null;
@@ -996,22 +1193,32 @@ function crearClaseMapaV1() {
       try {
         const cliente = this.#cliente();
         await cliente.healthz();
-        const estado = await cliente.state();
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        const resultados = await Promise.allSettled([
+          cliente.state(),
+          cliente.contacts(),
+        ]);
+        const rechazado = resultados.find((resultado) => resultado.status === "rejected");
+        if (rechazado) throw rechazado.reason;
+        const [estado, respuestaContactos] = resultados.map((resultado) => resultado.value);
         const nave = estado?.ship ?? null;
+        contactos = normalizarContactosMapa(respuestaContactos?.contacts ?? []);
         destino = nave?.destination ?? null;
         if (nave) {
-          // Ventana de reproducción (ver rotarMuestras): el tween se ancla
-          // hacia delante para que existan frames intermedios reales.
+          const centro = normalizarPosicionMapa(nave.position);
+          if (!centro) throw new Error("Posición de nave no finita");
+          // Ventana de reproducción equivalente a V2: centro, rumbo y
+          // contactos comparten la misma ventana temporal confirmada.
           rotadas = rotarMuestras(this.#muestraActual, {
-            centro: { x: nave.position?.x ?? 0, y: nave.position?.y ?? 0 },
-            rumboDeg: nave.heading ?? 0,
+            centro,
+            rumboDeg: Number.isFinite(nave.heading) ? nave.heading : 0,
+            contactos,
           }, Date.now());
         }
-        contactos = (await cliente.contacts())?.contacts ?? [];
       } catch (err) {
         fallo = err;
       }
-      if (generacion !== this.#generacion) return;
+      if (generacion !== this.#generacion || this.bridgeAccessRevoked || !game.user?.isGM) return;
       if (fallo === null) {
         if (rotadas) {
           this.#muestraPrev = rotadas.prev;
@@ -1027,23 +1234,63 @@ function crearClaseMapaV1() {
         this.detalleError = fallo instanceof BridgeError ? fallo.message : game.i18n.localize("LAGUNAK.Errores.Desconocido");
         this.#fallosSeguidos = Math.min(this.#fallosSeguidos + 1, 10);
       }
-      if (this.rendered) this.render(false);
+      const cambioVisible = conexionAnterior !== this.conexion
+        || detalleErrorAnterior !== this.detalleError
+        || firmaAnterior !== firmaEstructuralContactos(this.contactos);
+      if (this.rendered && cambioVisible) this.render(false);
+      else if (this.rendered) this.#actualizarTelemetriaDom();
       clearTimeout(this.#timer);
       this.#timer = setTimeout(() => this.#sondear(), this.#intervaloMs());
     }
 
-    #animar() {
+    #actualizarTelemetriaDom() {
+      const raiz = this.element?.[0];
+      const centro = this.#muestraActual?.centro ?? null;
+      if (!raiz?.querySelectorAll || !centro) return;
+      for (const boton of raiz.querySelectorAll("[data-contacto]")) {
+        const indice = Number.parseInt(boton.dataset.contactoIndice ?? "", 10);
+        const contacto = Number.isInteger(indice) ? this.contactos[indice] : null;
+        if (!contacto) continue;
+        const detalle = prepararDetalleContacto(contacto, centro);
+        const distancia = boton.querySelector?.(".lagunak-mapa-distancia");
+        if (distancia) {
+          distancia.textContent = game.i18n.format("LAGUNAK.EstadoNave.DistanciaUnidades", {
+            distance: Math.round(detalle.distancia),
+          });
+        }
+        const fuera = boton.querySelector?.("[data-lagunak-fuera]");
+        if (fuera) fuera.hidden = detalle.distancia <= MAPA_RADIO_MUNDO;
+      }
+      const seleccionado = this.contactos.find((c) => (c.callsign ?? "?") === this.seleccion);
+      if (!seleccionado) return;
+      const detalle = prepararDetalleContacto(seleccionado, centro);
+      const distancia = raiz.querySelector("[data-lagunak-detalle-distancia]");
+      const rumbo = raiz.querySelector("[data-lagunak-detalle-rumbo]");
+      if (distancia) {
+        distancia.textContent = game.i18n.format("LAGUNAK.EstadoNave.DistanciaUnidades", {
+          distance: Math.round(detalle.distancia),
+        });
+      }
+      if (rumbo) {
+        rumbo.textContent = game.i18n.format("LAGUNAK.MapaVivo.RumboGrados", {
+          rumbo: Math.round(detalle.rumboDeg),
+        });
+      }
+    }
+
+    #animar(rafMs = null) {
       if (!this.rendered || typeof requestAnimationFrame !== "function") {
         this.#rafId = null;
         return;
       }
-      this.#rafId = requestAnimationFrame(() => this.#animar());
+      this.#rafId = requestAnimationFrame((siguienteRafMs) => this.#animar(siguienteRafMs));
+      const relojRaf = Number.isFinite(rafMs) ? rafMs : (globalThis.performance?.now?.() ?? 0);
       const ahora = Date.now();
-      if (!debeDibujar(this.#ultimoDibujoMs, ahora, MAPA_FPS)) return;
+      if (!debeDibujar(this.#ultimoDibujoMs, relojRaf, MAPA_FPS)) return;
       const canvas = this.element?.[0]?.querySelector?.(".lagunak-mapa-canvas");
       const ctx = canvas?.getContext?.("2d");
       if (!ctx) return;
-      this.#ultimoDibujoMs = ahora;
+      this.#ultimoDibujoMs = relojRaf;
       const frame = componerFrame({
         muestraPrev: this.#muestraPrev,
         muestraActual: this.#muestraActual,

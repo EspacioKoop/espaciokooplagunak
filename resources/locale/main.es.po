@@ -4091,6 +4091,38 @@ msgid "Campaign transitions contain a cycle."
 msgstr "Las transiciones de la campaña contienen un ciclo."
 
 msgctxt "content_editor"
+msgid "View campaign graph"
+msgstr "Ver grafo de campaña"
+
+msgctxt "content_editor"
+msgid "Campaign graph"
+msgstr "Grafo de campaña"
+
+msgctxt "content_editor"
+msgid "The campaign fields cannot be parsed; fix them to view the graph."
+msgstr "Los campos de la campaña no se pueden interpretar; corrígelos para ver el grafo."
+
+msgctxt "content_editor"
+msgid "The campaign has no maps to draw."
+msgstr "La campaña no tiene mapas que dibujar."
+
+msgctxt "content_editor"
+msgid "No starting map is set; reachability is not checked."
+msgstr "No hay mapa inicial; no se comprueba la alcanzabilidad."
+
+msgctxt "content_editor"
+msgid "{count} maps are unreachable from the starting map."
+msgstr "{count} mapas son inalcanzables desde el mapa inicial."
+
+msgctxt "content_editor"
+msgid "Missing from the library: {maps} maps, {characters} characters, {ships} ships."
+msgstr "Faltan en la biblioteca: {maps} mapas, {characters} personajes, {ships} naves."
+
+msgctxt "content_editor"
+msgid "Every map is reachable and every reference exists."
+msgstr "Todos los mapas son alcanzables y todas las referencias existen."
+
+msgctxt "content_editor"
 msgid "Crew position must use a canonical game identifier."
 msgstr "El puesto de tripulación debe usar un identificador canónico del juego."
 
@@ -4345,6 +4377,58 @@ msgstr "Vista previa 3D no disponible."
 msgctxt "content_editor"
 msgid "Drag to rotate; wheel to zoom."
 msgstr "Arrastra para girar; usa la rueda para acercar o alejar."
+
+msgctxt "content_editor"
+msgid "Edit on radar"
+msgstr "Editar en el radar"
+
+msgctxt "content_editor"
+msgid "Map object selected; drag to stage its position."
+msgstr "Objeto de mapa seleccionado; arrástralo para preparar su posición."
+
+msgctxt "content_editor"
+msgid "Map object position unchanged."
+msgstr "La posición del objeto de mapa no ha cambiado."
+
+msgctxt "content_editor"
+msgid "Map object could not be moved."
+msgstr "No se ha podido mover el objeto de mapa."
+
+msgctxt "content_editor"
+msgid "Map object move staged."
+msgstr "Movimiento del objeto de mapa preparado."
+
+msgctxt "content_editor"
+msgid "Map object drag cancelled."
+msgstr "Arrastre del objeto de mapa cancelado."
+
+msgctxt "content_editor"
+msgid "Radar edit active. Drag a staged object; Escape returns without committing an active drag."
+msgstr "Edición en el radar activa. Arrastra un objeto preparado; Escape vuelve sin confirmar un arrastre activo."
+
+msgctxt "content_editor"
+msgid "There is no map edit to undo."
+msgstr "No hay ninguna edición de mapa que deshacer."
+
+msgctxt "content_editor"
+msgid "Map edit undone."
+msgstr "Edición de mapa deshecha."
+
+msgctxt "content_editor"
+msgid "There is no map edit to redo."
+msgstr "No hay ninguna edición de mapa que rehacer."
+
+msgctxt "content_editor"
+msgid "Map edit redone."
+msgstr "Edición de mapa rehecha."
+
+msgctxt "content_editor"
+msgid "Map object could not be selected."
+msgstr "No se ha podido seleccionar el objeto de mapa."
+
+msgctxt "content_editor"
+msgid "Map object drag cancelled outside the valid map area."
+msgstr "Arrastre del objeto de mapa cancelado fuera del área válida."
 
 #: src/screens/gm/contentEditor.cpp
 msgctxt "content_editor"
@@ -4630,3 +4714,87 @@ msgstr "Plan: {template} en ({x}, {y}); {systems} sistemas, {resources} recursos
 msgctxt "content_editor"
 msgid "Content ship rolled back."
 msgstr "Nave de contenido revertida."
+
+msgctxt "content_editor"
+msgid "Apply to world"
+msgstr "Aplicar al mundo"
+
+msgctxt "content_editor"
+msgid "Undo applied batch"
+msgstr "Deshacer lote aplicado"
+
+msgctxt "content_editor"
+msgid "Applying a map requires the local server."
+msgstr "Aplicar un mapa requiere el servidor local."
+
+msgctxt "content_editor"
+msgid "Undoing an applied map requires the local server."
+msgstr "Deshacer un mapa aplicado requiere el servidor local."
+
+msgctxt "content_editor"
+msgid "There is no applied batch to undo."
+msgstr "No hay ningún lote aplicado que deshacer."
+
+msgctxt "content_editor"
+msgid "A batch is already applied; undo it before applying again."
+msgstr "Ya hay un lote aplicado; deshazlo antes de aplicar de nuevo."
+
+msgctxt "content_editor"
+msgid "The staged map is invalid; nothing was applied."
+msgstr "El mapa preparado no es válido; no se aplicó nada."
+
+msgctxt "content_editor"
+msgid "The staged map has no supported objects to apply."
+msgstr "El mapa preparado no tiene objetos compatibles que aplicar."
+
+msgctxt "content_editor"
+msgid "Applying the map failed; every created object was removed."
+msgstr "La aplicación del mapa falló; se eliminó todo objeto creado."
+
+msgctxt "content_editor"
+msgid "Map applied: {count} objects created, {skipped} preserved objects omitted."
+msgstr "Mapa aplicado: {count} objetos creados, {skipped} objetos conservados omitidos."
+
+msgctxt "content_editor"
+msgid "Applied batch removed: {destroyed} objects destroyed, {missing} were already gone."
+msgstr "Lote aplicado retirado: {destroyed} objetos destruidos, {missing} ya no existían."
+
+msgctxt "content_editor"
+msgid "Clear"
+msgstr "Limpiar"
+
+msgctxt "content_editor"
+msgid "Character tags"
+msgstr "Etiquetas del personaje"
+
+msgctxt "content_editor"
+msgid "Add tag"
+msgstr "Añadir etiqueta"
+
+msgctxt "content_editor"
+msgid "The tag is empty, duplicated or not a portable ID."
+msgstr "La etiqueta está vacía, duplicada o no es un ID portable."
+
+msgctxt "content_editor"
+msgid "The selected entry cannot move in that direction."
+msgstr "La entrada seleccionada no puede moverse en esa dirección."
+
+msgctxt "content_editor"
+msgid "Order updated in staging."
+msgstr "Orden actualizado en preparación."
+
+msgctxt "content_editor"
+msgid "There is no legacy role to clear."
+msgstr "No hay rol heredado que limpiar."
+
+msgctxt "content_editor"
+msgid "Legacy role cleared in staging. Save the resource to persist it."
+msgstr "Rol heredado limpiado en preparación. Guarda el recurso para conservarlo."
+
+msgctxt "content_editor"
+msgid "none"
+msgstr "ninguno"
+
+msgctxt "content_editor"
+msgid "Linked campaigns: {campaigns} — Ship: {ship}"
+msgstr "Campañas vinculadas: {campaigns} — Nave: {ship}"

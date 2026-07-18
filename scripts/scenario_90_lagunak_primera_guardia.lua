@@ -76,6 +76,13 @@ function init()
         :setPosition(15000, -7500):orderDefendLocation(14000, -8000))
 
     fase = "guardia"
+    -- /exec.lua se ejecuta en otro entorno Lua: los globales del escenario no
+    -- cruzan esa frontera. ScriptStorage es el canal explícito que comparte el
+    -- callback cerrado con el puente, bajo un namespace propio del fork.
+    local storage = getScriptStorage()
+    storage.espaciokoop_lagunak = storage.espaciokoop_lagunak or {}
+    storage.espaciokoop_lagunak.spawnEncounter = lagunakSpawnEncounter
+    storage.espaciokoop_lagunak.repositionShip = lagunakRepositionShip
     if modoPruebaIndividual then
         instalarControlesPruebaIndividual()
     end
@@ -163,6 +170,67 @@ function instalarControlesPruebaIndividual()
     player:addCustomButton(
         "Tactical", "lagunak_qa_llegada", "QA: preparar llegada", prepararLlegadaPruebaIndividual, 3
     )
+    return true
+end
+
+-- Encuentro inyectado por el GM via el puente (#117). Foundry decide el QUE
+-- (arquetipo de un catalogo cerrado); este escenario decide el COMO: posicion
+-- concreta, faccion, estado. El rumbo es una sugerencia gruesa relativa a la
+-- nave, nunca una coordenada — el escenario puede honrarlo laxamente.
+function lagunakSpawnEncounter(arquetipo, rumbo)
+    local nave = getPlayerShip(-1)
+    if nave == nil then
+        return false
+    end
+    if arquetipo ~= "derelict" then
+        return false
+    end
+
+    local desvios = { ahead = 0, starboard = 90, astern = 180, port = 270 }
+    local desvio = desvios[rumbo] or 0
+    -- A rango largo de sensores: visible en ciencia, sin caer encima.
+    local distancia = 15000 + math.random(-2000, 2000)
+    local angulo = math.rad(nave:getHeading() + desvio + math.random(-15, 15))
+    local x, y = nave:getPosition()
+
+    contadorEncuentros = (contadorEncuentros or 0) + 1
+    CpuShip()
+        :setTemplate("Flavia")
+        :setFaction("Independent")
+        :setCallSign(string.format("Hondar %d", contadorEncuentros))
+        :setPosition(x + math.sin(angulo) * distancia, y - math.cos(angulo) * distancia)
+        :setHullMax(50):setHull(15)
+        :setSystemHealth("impulse", -0.5)
+        :setSystemHealth("reactor", -0.25)
+        :orderIdle()
+    return true
+end
+
+-- Reposicion de la nave pedida por el GM via el puente (#176). Foundry decide
+-- el DONDE eligiendo un ancla de un catalogo cerrado; este escenario es dueno
+-- de la coordenada exacta que cada nombre resuelve. Nunca se aceptan
+-- coordenadas crudas: seria doble autoridad sobre la posicion de la nave
+-- (ADR-0002). Deja la nave JUNTO al ancla, no encima, y detiene su empuje para
+-- que el salto no herede la velocidad previa.
+function lagunakRepositionShip(ancla)
+    local nave = getPlayerShip(-1)
+    if nave == nil then
+        return false
+    end
+    local anclas = {
+        lagunak = { x = 0, y = 0 },
+        argia = { x = 28000, y = -16000 },
+    }
+    local destino = anclas[ancla]
+    if destino == nil then
+        return false
+    end
+    -- Desplazamiento fijo (no aleatorio): la reposicion del GM es determinista y
+    -- reproducible. 1500U deja la nave a la vista del ancla sin colisionar.
+    nave:setPosition(destino.x + 1500, destino.y + 1500)
+    nave:commandImpulse(0)
+    nave:commandWarp(0)
+    nave:commandAbortJump()
     return true
 end
 

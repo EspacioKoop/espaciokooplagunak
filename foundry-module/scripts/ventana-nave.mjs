@@ -106,10 +106,10 @@ export function proyectarContactos({ contacts = [], centro, headingDeg = 0, radi
   const a = (-headingDeg * Math.PI) / 180;
   const cos = Math.cos(a);
   const sin = Math.sin(a);
-  const ox = centro?.x ?? 0;
-  const oy = centro?.y ?? 0;
+  const ox = Number.isFinite(centro?.x) ? centro.x : 0;
+  const oy = Number.isFinite(centro?.y) ? centro.y : 0;
 
-  return contacts.map((c) => {
+  return normalizarContactosMapa(contacts).map((c) => {
     const relx = (c.position?.x ?? 0) - ox;
     const rely = (c.position?.y ?? 0) - oy;
     const rx = relx * cos - rely * sin;
@@ -196,11 +196,107 @@ export function interpolarAngulo(a, b, t) {
   return ((bruto % 360) + 360) % 360;
 }
 
+/**
+ * Identidad pública utilizable entre sondeos. EmptyEpsilon no expone todavía
+ * un ID técnico en `/v1/contacts`: la nave propia es inequívoca y un callsign
+ * no vacío se combina con tipo/facción. Los contactos anónimos (`?`) no se
+ * emparejan para evitar interpolar por error dos asteroides distintos.
+ */
+export function claveContacto(contacto) {
+  if (contacto?.is_player) return "player";
+  const callsign = typeof contacto?.callsign === "string" ? contacto.callsign.trim() : "";
+  if (!callsign || callsign === "?") return null;
+  return JSON.stringify([
+    callsign,
+    contacto?.type ?? null,
+    contacto?.faction ?? null,
+  ]);
+}
+
+/** Devuelve una copia numérica de la posición o null si el DTO no es usable. */
+export function normalizarPosicionMapa(posicion) {
+  if (!Number.isFinite(posicion?.x) || !Number.isFinite(posicion?.y)) return null;
+  return { x: posicion.x, y: posicion.y };
+}
+
+/**
+ * Frontera defensiva del mapa: una coordenada no finita no se convierte en
+ * `(0,0)` porque eso inventaría una posición. El contacto se omite de esta
+ * fotografía hasta que el puente entregue una muestra válida.
+ */
+export function normalizarContactosMapa(contactos = []) {
+  if (!Array.isArray(contactos)) return [];
+  return contactos.flatMap((contacto) => {
+    const position = normalizarPosicionMapa(contacto?.position);
+    return position ? [{ ...contacto, position }] : [];
+  });
+}
+
+/**
+ * Interpola únicamente contactos con identidad única en ambas muestras. Los
+ * nuevos, desaparecidos, anónimos o duplicados se resuelven a la muestra
+ * actual: sin residuos, NaN ni asociaciones visuales falsas.
+ */
+export function interpolarContactos(prev = [], actual = [], t = 1) {
+  const factor = Math.min(1, Math.max(0, Number.isFinite(t) ? t : 1));
+  const prevValidos = normalizarContactosMapa(prev);
+  const actualesValidos = normalizarContactosMapa(actual);
+  const contar = (contactos) => {
+    const cuentas = new Map();
+    for (const contacto of contactos) {
+      const clave = claveContacto(contacto);
+      if (clave !== null) cuentas.set(clave, (cuentas.get(clave) ?? 0) + 1);
+    }
+    return cuentas;
+  };
+  const cuentasPrev = contar(prevValidos);
+  const cuentasActual = contar(actualesValidos);
+  const prevPorClave = new Map();
+  for (const contacto of prevValidos) {
+    const clave = claveContacto(contacto);
+    if (clave !== null && cuentasPrev.get(clave) === 1) prevPorClave.set(clave, contacto);
+  }
+
+  return actualesValidos.map((contacto) => {
+    const clave = claveContacto(contacto);
+    const anterior = clave !== null && cuentasActual.get(clave) === 1
+      ? prevPorClave.get(clave)
+      : null;
+    const xActual = contacto.position.x;
+    const yActual = contacto.position.y;
+    if (!anterior) return contacto;
+    const xPrev = anterior.position.x;
+    const yPrev = anterior.position.y;
+    return {
+      ...contacto,
+      position: {
+        x: xPrev + (xActual - xPrev) * factor,
+        y: yPrev + (yActual - yPrev) * factor,
+      },
+    };
+  });
+}
+
+/** Firma que excluye posición: permite actualizar muestras móviles sin que
+ * Foundry reconstruya el canvas y el resto de la ventana en cada sondeo. */
+export function firmaEstructuralContactos(contactos = []) {
+  return JSON.stringify(contactos.map((contacto) => ({
+    clave: claveContacto(contacto),
+    callsign: contacto?.callsign ?? "?",
+    faction: contacto?.faction ?? null,
+    type: contacto?.type ?? null,
+    is_player: Boolean(contacto?.is_player),
+  })));
+}
+
 /** Throttle del bucle de dibujo: ¿toca pintar este tick de rAF a `fpsMax`?
  * El primer frame (sin dibujo previo) pinta siempre. */
 export function debeDibujar(ultimoMs, ahoraMs, fpsMax = 30) {
   if (ultimoMs == null) return true;
-  return ahoraMs - ultimoMs >= 1000 / fpsMax;
+  if (!Number.isFinite(ahoraMs) || !Number.isFinite(fpsMax) || fpsMax <= 0) return false;
+  // rAF suele avanzar 16.666… ms. Una tolerancia submilisegundo evita que el
+  // redondeo 16/17 ms descarte un tick y reduzca 60 Hz efectivos a ~40 FPS.
+  return ahoraMs - ultimoMs >= Math.max(0, 1000 / fpsMax - 0.5);
 }
 
 /**
@@ -217,7 +313,7 @@ export function debeDibujar(ultimoMs, ahoraMs, fpsMax = 30) {
  * intervalo de retardo — nunca se extrapola.
  *
  * @param {object|null} muestraActual la muestra `actual` vigente (null si es la primera)
- * @param {{centro:{x:number,y:number}, rumboDeg:number}} nueva datos confirmados del puente
+ * @param {{centro:{x:number,y:number}, rumboDeg:number, contactos?:object[]}} nueva datos confirmados del puente
  * @param {number} ahoraMs instante de recepción (misma base de tiempo que el dibujo)
  * @returns {{prev: object|null, actual: object}}
  */
@@ -227,6 +323,7 @@ export function rotarMuestras(muestraActual, nueva, ahoraMs, ventanaMaxMs = 4000
     rumboDeg: nueva.rumboDeg ?? 0,
     recibidaMs: ahoraMs,
   };
+  if (Array.isArray(nueva.contactos)) entrante.contactos = nueva.contactos;
   if (!muestraActual) {
     // Primera muestra: se pinta directa, sin tween (no hay "anterior").
     return { prev: null, actual: { ...entrante, tMs: ahoraMs } };
@@ -234,7 +331,12 @@ export function rotarMuestras(muestraActual, nueva, ahoraMs, ventanaMaxMs = 4000
   const transcurrido = ahoraMs - (muestraActual.recibidaMs ?? ahoraMs);
   const ventana = Math.min(Math.max(transcurrido, 0), ventanaMaxMs);
   return {
-    prev: { tMs: ahoraMs, centro: muestraActual.centro, rumboDeg: muestraActual.rumboDeg },
+    prev: {
+      tMs: ahoraMs,
+      centro: muestraActual.centro,
+      rumboDeg: muestraActual.rumboDeg,
+      ...(Array.isArray(muestraActual.contactos) ? { contactos: muestraActual.contactos } : {}),
+    },
     actual: { ...entrante, tMs: ahoraMs + ventana },
   };
 }
@@ -243,9 +345,9 @@ export function rotarMuestras(muestraActual, nueva, ahoraMs, ventanaMaxMs = 4000
  * Compone el «frame» del mapa vivo: TODO lo que el pintor de canvas necesita,
  * calculado de forma pura y determinista (mismas entradas → mismo frame). El
  * movimiento propio se tweenea entre las dos últimas muestras del puente
- * (interpolarCentro/interpolarAngulo, sin extrapolación); los contactos se
- * proyectan con sus últimas posiciones conocidas. El `parpadeo` retro de los
- * blips sale de la fase temporal, no de estado mutable.
+ * (interpolarCentro/interpolarAngulo, sin extrapolación); los contactos con
+ * identidad inequívoca comparten esa interpolación temporal. El `parpadeo`
+ * retro de los blips sale de la fase temporal, no de estado mutable.
  *
  * @returns {{sinDatos:boolean, centro:{x,y}, rumboDeg:number,
  *   capas:{dx:number,dy:number,estrellas:object[]}[],
@@ -268,6 +370,9 @@ export function componerFrame({
     return { sinDatos: true, centro: { x: 0, y: 0 }, rumboDeg: 0, capas: [], blips: [], destino: null };
   }
   const centro = interpolarCentro(muestraPrev, muestraActual, tMs);
+  const factorMuestra = muestraPrev && muestraActual.tMs > muestraPrev.tMs
+    ? (tMs - muestraPrev.tMs) / (muestraActual.tMs - muestraPrev.tMs)
+    : 1;
   const rumboDeg = muestraPrev && muestraActual.tMs > muestraPrev.tMs
     ? interpolarAngulo(
         muestraPrev.rumboDeg ?? 0,
@@ -282,8 +387,11 @@ export function componerFrame({
   }));
 
   const encendido = Math.floor(tMs / 300) % 2 === 0; // fase de parpadeo retro
+  const contactosFrame = Array.isArray(muestraActual.contactos)
+    ? interpolarContactos(muestraPrev?.contactos ?? [], muestraActual.contactos, factorMuestra)
+    : contactos;
   const blips = proyectarContactos({
-    contacts: contactos, centro, headingDeg: rumboDeg, radioMundo, ancho, alto,
+    contacts: contactosFrame, centro, headingDeg: rumboDeg, radioMundo, ancho, alto,
   }).map((p) => ({
     ...p,
     color: colorFaccion(p.faction, p.esJugador),
@@ -306,6 +414,7 @@ export function componerFrame({
  * `deg(atan(dy, dx)) + 90` que usan los escenarios Lua. Resultado en [0, 360).
  */
 export function rumboHacia(centro, posicion) {
+  if (!normalizarPosicionMapa(centro) || !normalizarPosicionMapa(posicion)) return null;
   const dx = (posicion?.x ?? 0) - (centro?.x ?? 0);
   const dy = (posicion?.y ?? 0) - (centro?.y ?? 0);
   const grados = (Math.atan2(dy, dx) * 180) / Math.PI + 90;
@@ -318,19 +427,21 @@ export function rumboHacia(centro, posicion) {
  * calculados desde la nave propia. Puro: las etiquetas i18n las pone la vista.
  *
  * @returns {{callsign:string, tipo:string|null, faccion:string|null,
- *   esJugador:boolean, color:string, distancia:number, rumboDeg:number}}
+ *   esJugador:boolean, color:string, distancia:(number|null), rumboDeg:(number|null)}}
  */
 export function prepararDetalleContacto(contacto, centro) {
-  const dx = (contacto.position?.x ?? 0) - (centro?.x ?? 0);
-  const dy = (contacto.position?.y ?? 0) - (centro?.y ?? 0);
+  const centroValido = normalizarPosicionMapa(centro);
+  const posicionValida = normalizarPosicionMapa(contacto?.position);
+  const dx = centroValido && posicionValida ? posicionValida.x - centroValido.x : null;
+  const dy = centroValido && posicionValida ? posicionValida.y - centroValido.y : null;
   return {
     callsign: contacto.callsign ?? "?",
     tipo: contacto.type ?? null,
     faccion: contacto.faction ?? null,
     esJugador: Boolean(contacto.is_player),
     color: colorFaccion(contacto.faction ?? null, Boolean(contacto.is_player)),
-    distancia: Math.hypot(dx, dy),
-    rumboDeg: rumboHacia(centro, contacto.position),
+    distancia: dx === null || dy === null ? null : Math.hypot(dx, dy),
+    rumboDeg: centroValido && posicionValida ? rumboHacia(centroValido, posicionValida) : null,
   };
 }
 

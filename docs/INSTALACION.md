@@ -39,6 +39,15 @@ para tu SO. Después ofrece un menú:
    servidor, token) con validación, escribiendo en `docker/.env` sin perder
    comentarios ni orden. Incluye regenerar el token.
 5. **Diagnóstico de requisitos** — enumera lo que falta para cada vía.
+6. **Copiar el token del puente** — copia el `BRIDGE_TOKEN` de `docker/.env`
+   al portapapeles del sistema (`wl-copy`, `xclip`, `xsel`, `pbcopy` o
+   `clip.exe`) para pegarlo en **Configurar token del puente** sin abrir el
+   archivo a mano. El asistente nunca lo muestra y vacía el portapapeles cuando
+   confirmas que ya lo has pegado; un gestor de historial externo debe limpiarse
+   aparte. Si no hay herramienta compatible, falla cerrado. Tras pegarlo, el botón
+   **Probar conexión con el puente** de los controles de escena del GM en
+   Foundry verifica el resultado (ver
+   [`foundry-module/README.md`](../foundry-module/README.md)).
 
 ## Seguridad
 
@@ -49,7 +58,7 @@ Coherente con [`AGENTS.md`](../AGENTS.md) y [`SECURITY.md`](../SECURITY.md):
 - Las acciones que modifican tu equipo (crear `docker/.env`, enlazar el módulo,
   levantar Docker) **se confirman** antes de ejecutarse.
 - El `BRIDGE_TOKEN` **nunca se imprime entero** ni en el menú ni en la salida:
-  se enmascara (`7a22…9e05`). La única excepción es `--generar-token`, que
+  se representa sin prefijo ni sufijo (`****`). La única excepción es `--generar-token`, que
   imprime un token nuevo **completo** por stdout —es su función explícita, para
   poder capturarlo—, así que redirige su salida a donde toque y no la dejes en
   un log compartido. `docker/.env` está ignorado por git y se escribe con
@@ -65,6 +74,7 @@ Coherente con [`AGENTS.md`](../AGENTS.md) y [`SECURITY.md`](../SECURITY.md):
 | `python3 tools/instalar.py --diagnostico` | Requisitos de cada vía. |
 | `python3 tools/instalar.py --generar-token` | Imprime un token Bearer nuevo **completo** por stdout (única salida que no enmascara el token). |
 | `python3 tools/instalar.py --imprimir-config` | `docker/.env` con el token oculto. |
+| `python3 tools/instalar.py --copiar-token` | Copia el `BRIDGE_TOKEN`, espera el pegado y vacía el portapapeles; nunca lo imprime y falla cerrado si no puede copiar o limpiar. |
 | `python3 tools/instalar.py --set CLAVE=VALOR …` | Aplica cambios a `docker/.env` (lo crea si falta). |
 
 Ejemplo:
@@ -73,9 +83,11 @@ Ejemplo:
 python3 tools/instalar.py --set EE_SERVER_PORT=36000 BRIDGE_PORT=8091
 ```
 
-`--set` solo admite las claves de la lista blanca (las que ofrece el menú de
-opciones) y rechaza valores con saltos de línea: no puede añadir claves
-arbitrarias ni inyectar líneas sueltas en el `.env`. Las claves con validación
+`--set` solo admite las claves **no secretas** de la lista blanca (las que
+ofrece el menú de opciones) y rechaza valores con saltos de línea: no puede
+añadir claves arbitrarias ni inyectar líneas sueltas en el `.env`. `BRIDGE_TOKEN`
+y `EE_SERVER_PASSWORD` se rechazan expresamente para que nunca viajen en `argv`;
+edítalos desde el menú, que usa entrada oculta. Las claves con validación
 (`EE_SERVER_PORT`, `BRIDGE_PORT`) rechazan además valores fuera de rango antes
 de escribir nada.
 

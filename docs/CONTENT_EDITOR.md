@@ -25,14 +25,33 @@ tipos de recursos sin editar Lua:
 9. Si el formulario cambió desde la última carga o guardado, **New**, cambiar de
    tipo, cargar otro recurso, importar o cerrar requieren repetir la acción. La
    confirmación se invalida si cambia el formulario o se elige otra acción.
-10. En mapas, **Preview on radar** activa una capa read-only sobre el radar GM.
+10. En mapas, **Preview on radar** activa una capa sobre el radar GM.
     Asteroides y nebulosas se muestran semitransparentes; los tipos futuros se
     conservan pero no se interpretan ni dibujan. Si existen, el editor muestra
     junto al toggle cuántos objetos se omiten sin dejar de conservarlos. El
     preview persiste al cerrar el modal y sigue el pan/zoom del radar.
-11. **Export file** escribe el recurso en la carpeta de exportaciones gestionada.
+11. **Edit on radar** cierra el modal y entra en un modo explícito de staging:
+    seleccionar y arrastrar un asteroide o nebulosa solo cambia la copia del
+    documento. El movimiento se confirma al soltar y crea una única entrada de
+    deshacer; **Undo** y **Redo** operan sobre ese historial. Durante el modo de
+    edición el modal está oculto, así que Undo/Redo no son accesibles hasta salir
+    con Escape o clic derecho — que cancelan el arrastre activo y vuelven al editor. Los tipos futuros nunca son
+    seleccionables. Guardar persiste las posiciones; **New**, cargar/importar otro
+    recurso o descartar reconstruyen la sesión desde su snapshot limpio.
+12. En mapas y solo con servidor local, **Apply to world** aplica el snapshot
+    preparado como un lote nuevo y reversible: valida el documento completo antes
+    de tocar el mundo (un documento inválido no genera ninguna llamada), crea
+    asteroides y nebulosas mediante una allowlist C++ con parámetros visuales
+    deterministas derivados del ID de cada objeto, y cuenta como omitidos los
+    tipos futuros sin interpretarlos. Un fallo en el objeto N destruye en orden
+    inverso todo lo creado por esa operación. Mientras hay un lote activo no se
+    puede aplicar otro; **Undo applied batch** destruye únicamente las entidades
+    del lote propio (tolerando las que la simulación ya destruyó) y nunca toca
+    entidades preexistentes. Editar el staging después de aplicar no altera el
+    lote ya aplicado.
+13. **Export file** escribe el recurso en la carpeta de exportaciones gestionada.
     Si el archivo ya existe, exige una segunda pulsación.
-12. **Import inbox** permite elegir un JSON depositado en la bandeja gestionada.
+14. **Import inbox** permite elegir un JSON depositado en la bandeja gestionada.
     **Import file** muestra primero tipo, ID y nombre de archivo; una segunda
     pulsación confirma la importación y una sustitución exige confirmación propia.
 13. En una nave, **Deploy ship** valida el documento contra el catálogo y las
@@ -99,7 +118,7 @@ volver a guardarlos o exportarlos se escriben como v4. Un mapa antiguo migra a
 Tipos y campos específicos:
 
 | Tipo | Campos |
-|---|---|
+| --- | --- |
 | `campaign` | `map_ids` ordenados, `starting_map_id`, `character_ids`, `ship_ids`, `transitions` |
 | `map` | `scenario_file`, `recommended_players`, `objects` |
 | `character` | `crew_position_id`, `callsign`, `tags`, `ship_id` opcional, `legacy_role` para migración v1 |
@@ -124,6 +143,15 @@ ID canónico. Un `role` histórico de texto libre se conserva íntegro en
 operativa. El editor muestra ambos campos para que el GM pueda elegir un puesto
 canónico y borrar después el valor histórico; mientras tanto el documento sigue
 siendo válido y puede guardarse o exportarse como v4 sin perder el rol original.
+
+La ficha de personaje es asistida: el puesto y la nave se eligen con selectores
+canónicos (no se puede introducir un puesto o nave inexistente desde la UI), las
+etiquetas se editan como lista normalizada — cada entrada se recorta, pasa a
+minúsculas y convierte separadores en guiones antes de validarse como ID
+portable, sin CSV manual —, el rol heredado se muestra en solo lectura con un
+botón **Clear** para limpiarlo explícitamente, y un resumen de solo lectura
+muestra en qué campañas aparece el personaje y su nave vinculada. Solo el
+callsign sigue siendo texto libre.
 
 `objects` admite inicialmente `asteroid` (posición, rotación y tamaño) y `nebula`
 (posición y rotación). Los IDs son únicos y las coordenadas, rotaciones, tamaños
@@ -198,16 +226,17 @@ migración secuencial, versión futura y export-import-export equivalente.
 
 El editor crea, valida, persiste e intercambia metadatos declarativos de los cuatro tipos.
 Los mapas tienen modelo separado del ECS, sesión transaccional de staging con undo,
-redo, dirty state y rollback, y preview read-only sobre el radar GM. El preview no
-crea ni modifica entidades: solo proyecta asteroides y nebulosas de la allowlist;
+redo, dirty state y rollback, y edición visual sobre el radar GM. El modo de edición
+consume los gestos antes de la lógica normal del radar: nunca crea ni mueve entidades
+del mundo. Solo proyecta, selecciona y mueve asteroides y nebulosas de la allowlist;
 los tipos futuros opacos se omiten visualmente sin perderse y su recuento queda
-visible en el editor. El núcleo de interacción del preview añade hit-test con tolerancia
-en píxeles estable al zoom y un drag provisional separado de `MapEditSession`: solo el
-commit final llama una vez a `moveObject()`, mientras cancelar o mover el puntero no
-misma identidad generacional y revisión de sesión con que empezó; cada edición, undo,
-redo, rollback, guardado o reemplazo de sesión avanza esa barrera para impedir ABA. Los
-objetos opacos nunca entran en hit-test. La conexión de este núcleo al radar GM se
-completa en el siguiente vertical de #150.
+visible en el editor. El hit-test mantiene una tolerancia visual estable al zoom y los
+objetos opacos nunca participan en él. El drag provisional vive fuera de
+`MapEditSession`: mover el puntero no modifica el documento y `mouse-up` llama una sola
+vez a `moveObject()` únicamente si conserva la misma identidad generacional y revisión
+de sesión con que empezó. Cada edición, undo, redo, rollback, guardado o reemplazo de
+sesión avanza esa barrera para impedir ABA. Escape, clic derecho, una coordenada fuera
+de rango o terminar el modo cancelan sin ensuciar el documento ni añadir historial.
 
 Las naves tienen un modelo tipado para overrides opcionales de sistemas, recursos,
 carga y puestos. Rechaza IDs no canónicos, duplicados, valores no finitos y

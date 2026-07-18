@@ -99,19 +99,25 @@ GameMasterScreen::GameMasterScreen(RenderLayer* render_layer)
                         if (buildMapPreviewMarkers(*document, main_radar->getScale(), markers)
                             == MapDocumentError::None)
                         {
+                            content_editor->applyMapDragPreview(markers);
                             constexpr float degrees_to_radians = 0.017453292519943295769f;
                             for (const auto& marker : markers)
                             {
                                 const auto position = main_radar->worldToScreen({marker.x, marker.y});
+                                const bool selected = content_editor->isSelectedMapObject(marker.id);
                                 if (marker.kind == MapPreviewMarkerKind::Nebula)
                                 {
                                     renderer.fillCircle(position, marker.radius_pixels, glm::u8vec4(120, 80, 255, 36));
-                                    renderer.drawCircleOutline(position, marker.radius_pixels, 2.0f, glm::u8vec4(180, 150, 255, 160));
+                                    renderer.drawCircleOutline(position, marker.radius_pixels,
+                                        selected ? 4.0f : 2.0f,
+                                        selected ? glm::u8vec4(255, 255, 255, 240) : glm::u8vec4(180, 150, 255, 160));
                                     continue;
                                 }
 
                                 renderer.fillCircle(position, marker.radius_pixels, glm::u8vec4(255, 190, 60, 48));
-                                renderer.drawCircleOutline(position, marker.radius_pixels, 2.0f, glm::u8vec4(255, 220, 120, 200));
+                                renderer.drawCircleOutline(position, marker.radius_pixels,
+                                    selected ? 4.0f : 2.0f,
+                                    selected ? glm::u8vec4(255, 255, 255, 240) : glm::u8vec4(255, 220, 120, 200));
                                 const float angle = marker.rotation * degrees_to_radians;
                                 const glm::vec2 direction(std::cos(angle), std::sin(angle));
                                 renderer.drawLine(
@@ -451,6 +457,12 @@ void GameMasterScreen::update(float delta)
 
     if (keys.escape.getDown())
     {
+        if (content_editor && content_editor->isMapEditMode())
+        {
+            content_editor->stopMapEditMode();
+            content_editor->show();
+            return;
+        }
         destroy();
         returnToShipSelection(getRenderLayer());
     }
@@ -723,6 +735,17 @@ void GameMasterScreen::update(float delta)
 
 void GameMasterScreen::onMouseDown(sp::io::Pointer::Button button, glm::vec2 position)
 {
+    if (content_editor && content_editor->isMapEditMode())
+    {
+        if (button == sp::io::Pointer::Button::Right)
+        {
+            content_editor->stopMapEditMode();
+            content_editor->show();
+        }
+        else
+            content_editor->beginMapDrag(position.x, position.y, main_radar->getScale());
+        return;
+    }
     if (click_and_drag_state != ClickAndDragState::None) return;
 
     if (button == sp::io::Pointer::Button::Right)
@@ -754,6 +777,11 @@ void GameMasterScreen::onMouseDown(sp::io::Pointer::Button button, glm::vec2 pos
 
 void GameMasterScreen::onMouseDrag(glm::vec2 position)
 {
+    if (content_editor && content_editor->isMapEditMode())
+    {
+        content_editor->updateMapDrag(position.x, position.y);
+        return;
+    }
     switch(click_and_drag_state)
     {
     case ClickAndDragState::DragViewOrOrder:
@@ -794,6 +822,11 @@ void GameMasterScreen::onMouseDrag(glm::vec2 position)
 
 void GameMasterScreen::onMouseUp(glm::vec2 position)
 {
+    if (content_editor && content_editor->isMapEditMode())
+    {
+        content_editor->commitMapDrag(position.x, position.y);
+        return;
+    }
     auto mods = SDL_GetModState();
     const bool shift_down = mods & KMOD_SHIFT;
     const bool ctrl_down = mods & KMOD_CTRL;

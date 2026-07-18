@@ -273,10 +273,14 @@ set(MAIN_SOURCES
     src/screens/extra/databaseScreen.cpp
     src/screens/extra/commsScreen.cpp
     src/screens/extra/shipLogScreen.cpp
+    src/content/campaignGraph.cpp
+    src/content/campaignGraph.h
     src/content/contentLibraryStore.cpp
     src/content/contentLibraryStore.h
     src/content/contentResource.cpp
     src/content/contentResource.h
+    src/content/mapApplySession.cpp
+    src/content/mapApplySession.h
     src/content/mapDocument.cpp
     src/content/mapDocument.h
     src/content/mapEditSession.cpp
@@ -285,6 +289,8 @@ set(MAIN_SOURCES
     src/content/mapPreview.h
     src/content/mapPreviewInteraction.cpp
     src/content/mapPreviewInteraction.h
+    src/content/mapWorldAdapter.cpp
+    src/content/mapWorldAdapter.h
     src/content/shipDocument.cpp
     src/content/shipDocument.h
     src/content/shipEditSession.cpp
@@ -742,6 +748,19 @@ if(BUILD_CONTENT_RESOURCE_TESTS)
     target_link_libraries(content_resource_tests PRIVATE seriousproton)
     add_test(NAME content_resource_codec COMMAND content_resource_tests)
 
+    add_executable(campaign_graph_tests
+        tests/campaignGraphTests.cpp
+        src/content/campaignGraph.cpp
+        src/content/contentResource.cpp
+        src/content/mapDocument.cpp
+        src/content/shipDocument.cpp
+        src/crewPosition.cpp
+    )
+    target_include_directories(campaign_graph_tests PRIVATE
+        "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>")
+    target_link_libraries(campaign_graph_tests PRIVATE seriousproton)
+    add_test(NAME campaign_graph COMMAND campaign_graph_tests)
+
     add_executable(content_library_store_tests
         tests/contentLibraryStoreTests.cpp
         src/content/contentLibraryStore.cpp
@@ -770,6 +789,25 @@ if(BUILD_CONTENT_RESOURCE_TESTS)
     target_include_directories(map_edit_session_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
     target_link_libraries(map_edit_session_tests PRIVATE seriousproton)
     add_test(NAME map_edit_session COMMAND map_edit_session_tests)
+
+    add_executable(map_apply_session_tests
+        tests/mapApplySessionTests.cpp
+        src/content/mapApplySession.cpp
+        src/content/mapDocument.cpp
+    )
+    target_include_directories(map_apply_session_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+    target_link_libraries(map_apply_session_tests PRIVATE seriousproton)
+    add_test(NAME map_apply_session COMMAND map_apply_session_tests)
+
+    add_executable(map_world_adapter_tests
+        tests/mapWorldAdapterTests.cpp
+        src/content/mapApplySession.cpp
+        src/content/mapDocument.cpp
+        src/content/mapWorldAdapter.cpp
+    )
+    target_include_directories(map_world_adapter_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+    target_link_libraries(map_world_adapter_tests PRIVATE seriousproton)
+    add_test(NAME map_world_adapter COMMAND map_world_adapter_tests)
 
     add_executable(map_preview_tests
         tests/mapPreviewTests.cpp

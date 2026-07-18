@@ -96,3 +96,56 @@ test("setPause rechaza valores no booleanos antes de tocar red", async () => {
   await assert.rejects(client.setPause("true"), BridgeError);
   assert.equal(calls, 0);
 });
+
+test("anchors consulta /v1/anchors con Bearer", async () => {
+  const calls = [];
+  const client = new BridgeClient({
+    url: "http://bridge.test/",
+    token: "secreto-operativo",
+    fetchImpl: async (url, options) => {
+      calls.push({ url, options });
+      return response({ anchors: ["lagunak", "argia"] });
+    },
+  });
+
+  assert.deepEqual(await client.anchors(), { anchors: ["lagunak", "argia"] });
+  assert.equal(calls[0].url, "http://bridge.test/v1/anchors");
+  assert.equal(calls[0].options.headers.Authorization, "Bearer secreto-operativo");
+});
+
+test("repositionShip envía únicamente la orden cerrada con Bearer", async () => {
+  const calls = [];
+  const client = new BridgeClient({
+    url: "http://bridge.test",
+    token: "secreto-operativo",
+    fetchImpl: async (url, options) => {
+      calls.push({ url, options });
+      return response({ op: "reposition_ship", result: { ok: true } });
+    },
+  });
+
+  await client.repositionShip("argia");
+  assert.equal(calls[0].url, "http://bridge.test/v1/command");
+  assert.equal(calls[0].options.method, "POST");
+  assert.equal(calls[0].options.headers.Authorization, "Bearer secreto-operativo");
+  assert.deepEqual(JSON.parse(calls[0].options.body), {
+    op: "reposition_ship",
+    anchor: "argia",
+  });
+});
+
+test("repositionShip rechaza anclas no-cadena antes de tocar red", async () => {
+  let calls = 0;
+  const client = new BridgeClient({
+    url: "http://bridge.test",
+    token: "x",
+    fetchImpl: async () => {
+      calls += 1;
+      return response({});
+    },
+  });
+
+  await assert.rejects(client.repositionShip(""), BridgeError);
+  await assert.rejects(client.repositionShip(42), BridgeError);
+  assert.equal(calls, 0);
+});

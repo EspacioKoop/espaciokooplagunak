@@ -147,8 +147,11 @@ no se añaden órdenes de navegación, energía o armas en este vertical.
 
 El botón «Mapa vivo (Espaciokoop Lagunak)» (junto al de estado, solo GM) abre
 un visor retro tipo Neo Geo: campo de estrellas en parallax, la nave propia en
-el centro (morro arriba) y los objetos cercanos como blips pixelados
-coloreados por facción, con leyenda de indicativos y distancias.
+el centro (morro arriba) y los objetos cercanos como **sprites pixel-art «falso
+3D»** (siluetas de caza, carguero, crucero o estación según el tipo del contacto,
+con sombreado de volumen y coloreados por facción), con leyenda de indicativos y
+distancias. Los contactos fuera del visor se marcan en el borde del anillo. Los
+sprites se dibujan solo con primitivas de canvas, sin assets externos.
 
 - **Datos**: `/v1/state` (posición y rumbo propios) y **`/v1/contacts`** del
   puente. Este último endpoint llega con el PR #69 del puente: contra un
@@ -182,6 +185,10 @@ coloreados por facción, con leyenda de indicativos y distancias.
   composición del frame), el canvas estable entre sondeos posicionales y la
   compatibilidad del botón/ventana v11 y v13. El pintado real sobre `<canvas>`
   (`mapa-render.mjs`) queda dentro del punto pendiente de verificación humana.
+- De los sprites pixel-art de las naves (`nave-sprite.mjs`) los tests Node cubren
+  la clasificación por tipo (clases de EmptyEpsilon → silueta), el sombreado
+  (aclarar/oscurecer el color de facción) y la construcción determinista del
+  sprite; el pintado sobre `<canvas>` queda en verificación humana.
 - **Manifiesto validado con el propio parser de Foundry v11.302**
   (`BaseModule`, modo estricto): sin errores de contenido. Foundry v11.302
   arranca limpio con el módulo instalado (symlink en `Data/modules`), sin

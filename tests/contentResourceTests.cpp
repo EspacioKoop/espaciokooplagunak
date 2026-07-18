@@ -617,6 +617,46 @@ int main()
     guard.reset();
     expect(!guard.confirm("new", dirty, clean), "explicit reset clears pending confirmation");
 
+    expect(normalizeCharacterTag("  Piloto Estrella ") == "piloto-estrella",
+        "tag normalization trims, lowercases and maps spaces to dashes");
+    expect(normalizeCharacterTag("nave_2") == "nave_2",
+        "underscores stay valid in normalized tags");
+    expect(normalizeCharacterTag("Doble  Espacio") == "doble-espacio",
+        "consecutive separators collapse to one dash");
+    expect(normalizeCharacterTag("---").empty() && normalizeCharacterTag("").empty(),
+        "tags without a valid leading character are rejected");
+
+    auto tagged = validResource(ContentResourceType::Character);
+    tagged.tertiary = "";
+    expect(addCharacterTag(tagged, "Piloto") && tagged.tertiary == "piloto",
+        "assisted tag add stores the normalized value");
+    expect(!addCharacterTag(tagged, " piloto ") && tagged.tertiary == "piloto",
+        "duplicate after normalization is rejected without mutation");
+    expect(addCharacterTag(tagged, "Oficial Ciencia")
+            && tagged.tertiary == "piloto, oficial-ciencia",
+        "second tag appends to the normalized list");
+    expect(validateContentResource(tagged) == ContentResourceError::None,
+        "assisted tags always satisfy the character tag validator");
+    expect(moveCharacterTag(tagged, "oficial-ciencia", -1)
+            && tagged.tertiary == "oficial-ciencia, piloto",
+        "tags can be reordered");
+    expect(!moveCharacterTag(tagged, "oficial-ciencia", -1),
+        "moving past the list edge is rejected");
+    expect(removeCharacterTag(tagged, "piloto") && tagged.tertiary == "oficial-ciencia",
+        "tags can be removed individually");
+    expect(!removeCharacterTag(tagged, "piloto"),
+        "removing a missing tag is rejected");
+    auto not_character = validResource(ContentResourceType::Ship);
+    expect(!addCharacterTag(not_character, "piloto"),
+        "tag helpers only apply to characters");
+
+    auto legacy = validResource(ContentResourceType::Character);
+    legacy.quinary = "Timonel jefe";
+    expect(clearCharacterLegacyRole(legacy) && legacy.quinary.empty(),
+        "legacy role can be cleared explicitly");
+    expect(!clearCharacterLegacyRole(legacy),
+        "clearing an absent legacy role is rejected");
+
     std::cout << "CONTENT_RESOURCE_TESTS_OK checks=" << checks << "\n";
     return 0;
 }

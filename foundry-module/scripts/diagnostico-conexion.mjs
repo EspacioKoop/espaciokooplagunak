@@ -41,9 +41,16 @@ function resultado(codigo) {
  * @param {string} opts.token  Token Bearer configurado (puede estar vacío).
  * @param {typeof fetch} [opts.fetchImpl]  Inyectable para pruebas.
  * @param {number} [opts.timeoutMs]
+ * @param {() => boolean} [opts.canUseToken] Guardia viva antes/después de auth.
  * @returns {Promise<{codigo: string, exito: boolean, claveI18n: string}>}
  */
-export async function probarConexion({ url, token, fetchImpl, timeoutMs } = {}) {
+export async function probarConexion({
+  url,
+  token,
+  fetchImpl,
+  timeoutMs,
+  canUseToken = () => true,
+} = {}) {
   if (!url) return resultado("sin-url");
 
   const client = new BridgeClient({ url, token: token ?? "", timeoutMs, fetchImpl });
@@ -53,9 +60,10 @@ export async function probarConexion({ url, token, fetchImpl, timeoutMs } = {}) 
     return resultado("inaccesible");
   }
 
-  if (!token) return resultado("sin-token");
+  if (!token || !canUseToken()) return resultado("sin-token");
   try {
     await client.state();
+    if (!canUseToken()) return resultado("sin-token");
   } catch (err) {
     if (err instanceof BridgeError && (err.status === 401 || err.status === 403)) {
       return resultado("token-invalido");

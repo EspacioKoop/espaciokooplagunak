@@ -258,5 +258,12 @@ Estas decisiones se resolverán mediante issues antes de fijar una API estable.
   **reparación es de la tripulación** en su estación real de ingeniería; el GM
   la observa por `/v1/state` (`health`, `coolant` por sistema y `repair_crew`).
   No habrá botón de «reparar» en Foundry.
+- **Los encuentros son la otra mitad de esa palanca** (#117): `spawn_encounter`
+  pide un arquetipo de catálogo cerrado (hoy `derelict`) con un rumbo grueso
+  opcional; el escenario, dueño del *cómo*, publica el callback
+  `spawnEncounter` bajo el namespace `espaciokoop_lagunak` de
+  `getScriptStorage()`. Si el escenario no lo publica, la orden degrada a
+  `not_supported`. Foundry jamás envía coordenadas ni definiciones de objeto:
+  sería doble autoridad sobre la verdad de la nave.
 - Órdenes de refrigeración/energía por puesto de jugador quedan para cuando
   existan permisos por puesto (fase 3 tardía / fase 4).

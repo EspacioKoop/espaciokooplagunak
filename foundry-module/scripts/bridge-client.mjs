@@ -64,6 +64,23 @@ export class BridgeClient {
     return this.#get("/v1/contacts", { auth: true });
   }
 
+  /** GET /v1/anchors — catálogo cerrado de anclas de reposición del GM (Bearer). */
+  async anchors() {
+    return this.#get("/v1/anchors", { auth: true });
+  }
+
+  /** POST /v1/command — reposiciona la nave a un ancla del catálogo cerrado (Bearer). */
+  async repositionShip(anchor) {
+    if (typeof anchor !== "string" || anchor === "") {
+      throw new BridgeError("El ancla de reposición debe ser una cadena", { kind: "parse" });
+    }
+    return this.#request("/v1/command", {
+      auth: true,
+      method: "POST",
+      body: JSON.stringify({ op: "reposition_ship", anchor }),
+    });
+  }
+
   /** POST /v1/command — pausa o reanuda la simulación (Bearer). */
   async setPause(paused) {
     if (typeof paused !== "boolean") {

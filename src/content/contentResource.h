@@ -162,6 +162,13 @@ bool setCharacterShipReference(
     const std::vector<ContentResource>& library,
     const std::string& ship_id
 );
+// Lowercases, trims and maps separators to '-'; returns "" when the result is
+// not a portable ID, so free-form input can never produce an invalid tag.
+std::string normalizeCharacterTag(const std::string& raw_tag);
+bool addCharacterTag(ContentResource& resource, const std::string& raw_tag);
+bool removeCharacterTag(ContentResource& resource, const std::string& tag);
+bool moveCharacterTag(ContentResource& resource, const std::string& tag, int direction);
+bool clearCharacterLegacyRole(ContentResource& resource);
 bool contentResourceHasMissingDependencies(
     const ContentResource& resource,
     const std::vector<ContentResource>& library

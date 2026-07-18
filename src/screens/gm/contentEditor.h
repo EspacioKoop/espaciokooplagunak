@@ -8,6 +8,7 @@
 #include "content/mapPreviewInteraction.h"
 #include "content/mapWorldAdapter.h"
 #include "content/shipEditSession.h"
+#include "content/shipDeployment.h"
 #include "content/shipTemplateCatalog.h"
 #include "gui/gui2_overlay.h"
 #include "stringImproved.h"
@@ -76,6 +77,7 @@ private:
     MapWorldAdapter map_world_adapter;
     MapPreviewDragSession map_drag;
     ShipEditSession ship_edit_session;
+    ShipDeploymentSession ship_deployment_session;
     std::vector<ShipTemplateCatalogEntry> ship_template_catalog;
     std::vector<std::size_t> visible_ship_template_indices;
     bool preview_enabled = false;
@@ -124,6 +126,8 @@ private:
     GuiButton* ship_remove_system_button;
     GuiButton* ship_undo_button;
     GuiButton* ship_redo_button;
+    GuiButton* ship_deploy_button;
+    GuiButton* ship_rollback_button;
     GuiButton* relation_edit_buttons[5]{};
     GuiOverlay* relation_editor_overlay;
     GuiLabel* relation_editor_title;
@@ -198,6 +202,9 @@ private:
     void removeShipOverride();
     void undoShipEdit();
     void redoShipEdit();
+    void deployShip();
+    void rollbackShip();
+    string deploymentErrorText(ShipDeploymentError error) const;
     void openRelationEditor(RelationEditorMode mode);
     void closeRelationEditor();
     void refreshRelationEditor();

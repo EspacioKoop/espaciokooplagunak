@@ -295,6 +295,8 @@ set(MAIN_SOURCES
     src/content/shipDocument.h
     src/content/shipEditSession.cpp
     src/content/shipEditSession.h
+    src/content/shipDeployment.cpp
+    src/content/shipDeployment.h
     src/content/shipTemplateCatalog.cpp
     src/content/shipTemplateCatalog.h
     src/screens/gm/gameMasterScreen.cpp
@@ -383,6 +385,7 @@ set(MAIN_SOURCES
     src/components/rendering.h
     src/components/name.h
     src/components/customshipfunction.h
+    src/components/contentship.h
     src/components/shiplog.h
     src/components/shiplog.cpp
     src/components/comms.h
@@ -861,6 +864,19 @@ if(BUILD_CONTENT_RESOURCE_TESTS)
     target_include_directories(ship_edit_session_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
     target_link_libraries(ship_edit_session_tests PRIVATE seriousproton)
     add_test(NAME ship_edit_session COMMAND ship_edit_session_tests)
+
+    add_executable(ship_deployment_tests
+        tests/shipDeploymentTests.cpp
+        src/content/contentResource.cpp
+        src/content/mapDocument.cpp
+        src/content/shipDocument.cpp
+        src/content/shipDeployment.cpp
+        src/content/shipTemplateCatalog.cpp
+        src/crewPosition.cpp
+    )
+    target_include_directories(ship_deployment_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+    target_link_libraries(ship_deployment_tests PRIVATE seriousproton)
+    add_test(NAME ship_deployment_plan COMMAND ship_deployment_tests)
 endif()
 
 if(WIN32)

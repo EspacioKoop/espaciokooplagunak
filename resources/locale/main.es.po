@@ -4615,6 +4615,106 @@ msgctxt "content_editor"
 msgid "Use selection"
 msgstr "Usar selección"
 
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Deploy ship"
+msgstr "Desplegar nave"
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Rollback ship"
+msgstr "Revertir nave"
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Ship deployment requires the local server and a Game Master."
+msgstr "El despliegue de naves requiere un servidor local y un director de juego."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The ship document is not valid for deployment."
+msgstr "El documento de nave no es válido para desplegarlo."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The selected player-ship template is not available."
+msgstr "La plantilla de nave de jugador seleccionada no está disponible."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The selected faction is not available."
+msgstr "La facción seleccionada no está disponible."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The deployment position is outside the safe world bounds."
+msgstr "La posición de despliegue está fuera de los límites seguros del mundo."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Deployment supports only energy and coolant resources."
+msgstr "El despliegue solo admite los recursos energía y refrigerante."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Deployment supports only medicine and spare-parts cargo."
+msgstr "El despliegue solo admite carga de medicina y repuestos."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Review and confirm the exact deployment plan first."
+msgstr "Revisa y confirma primero el plan de despliegue exacto."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The deployment plan changed; review it again."
+msgstr "El plan de despliegue ha cambiado; revísalo de nuevo."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Rollback the active content ship before deploying another."
+msgstr "Revierte la nave de contenido activa antes de desplegar otra."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The ship factory failed and removed the partial entity."
+msgstr "La factoría de naves ha fallado y ha retirado la entidad parcial."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "There is no active content ship to roll back."
+msgstr "No hay ninguna nave de contenido activa que revertir."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The active content ship could not be rolled back."
+msgstr "No se ha podido revertir la nave de contenido activa."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Ship deployment failed."
+msgstr "El despliegue de la nave ha fallado."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Deployment plan updated. Review it and press Deploy ship again."
+msgstr "Plan de despliegue actualizado. Revísalo y pulsa Desplegar nave de nuevo."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Ship deployed. Rollback removes only this created ship."
+msgstr "Nave desplegada. Revertir nave solo elimina esta nave recién creada."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Plan: {template} at ({x}, {y}); {systems} systems, {resources} resources, {cargo} cargo and {positions} crew positions. Press Deploy ship again to confirm."
+msgstr "Plan: {template} en ({x}, {y}); {systems} sistemas, {resources} recursos, {cargo} elementos de carga y {positions} puestos. Pulsa Desplegar nave de nuevo para confirmarlo."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Content ship rolled back."
+msgstr "Nave de contenido revertida."
+
 msgctxt "content_editor"
 msgid "Apply to world"
 msgstr "Aplicar al mundo"

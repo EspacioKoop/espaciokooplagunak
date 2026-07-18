@@ -38,9 +38,20 @@ tipos de recursos sin editar Lua:
     con Escape o clic derecho — que cancelan el arrastre activo y vuelven al editor. Los tipos futuros nunca son
     seleccionables. Guardar persiste las posiciones; **New**, cargar/importar otro
     recurso o descartar reconstruyen la sesión desde su snapshot limpio.
-12. **Export file** escribe el recurso en la carpeta de exportaciones gestionada.
+12. En mapas y solo con servidor local, **Apply to world** aplica el snapshot
+    preparado como un lote nuevo y reversible: valida el documento completo antes
+    de tocar el mundo (un documento inválido no genera ninguna llamada), crea
+    asteroides y nebulosas mediante una allowlist C++ con parámetros visuales
+    deterministas derivados del ID de cada objeto, y cuenta como omitidos los
+    tipos futuros sin interpretarlos. Un fallo en el objeto N destruye en orden
+    inverso todo lo creado por esa operación. Mientras hay un lote activo no se
+    puede aplicar otro; **Undo applied batch** destruye únicamente las entidades
+    del lote propio (tolerando las que la simulación ya destruyó) y nunca toca
+    entidades preexistentes. Editar el staging después de aplicar no altera el
+    lote ya aplicado.
+13. **Export file** escribe el recurso en la carpeta de exportaciones gestionada.
     Si el archivo ya existe, exige una segunda pulsación.
-13. **Import inbox** permite elegir un JSON depositado en la bandeja gestionada.
+14. **Import inbox** permite elegir un JSON depositado en la bandeja gestionada.
     **Import file** muestra primero tipo, ID y nombre de archivo; una segunda
     pulsación confirma la importación y una sustitución exige confirmación propia.
 

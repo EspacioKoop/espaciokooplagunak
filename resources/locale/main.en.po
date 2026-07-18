@@ -4806,6 +4806,50 @@ msgid "Use selection"
 msgstr ""
 
 msgctxt "content_editor"
+msgid "Apply to world"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Undo applied batch"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Applying a map requires the local server."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Undoing an applied map requires the local server."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "There is no applied batch to undo."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "A batch is already applied; undo it before applying again."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "The staged map is invalid; nothing was applied."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "The staged map has no supported objects to apply."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Applying the map failed; every created object was removed."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Map applied: {count} objects created, {skipped} preserved objects omitted."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Applied batch removed: {destroyed} objects destroyed, {missing} were already gone."
+msgstr ""
+
+msgctxt "content_editor"
 msgid "Clear"
 msgstr ""
 

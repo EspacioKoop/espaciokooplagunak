@@ -4584,6 +4584,50 @@ msgid "Use selection"
 msgstr "Usar selección"
 
 msgctxt "content_editor"
+msgid "Apply to world"
+msgstr "Aplicar al mundo"
+
+msgctxt "content_editor"
+msgid "Undo applied batch"
+msgstr "Deshacer lote aplicado"
+
+msgctxt "content_editor"
+msgid "Applying a map requires the local server."
+msgstr "Aplicar un mapa requiere el servidor local."
+
+msgctxt "content_editor"
+msgid "Undoing an applied map requires the local server."
+msgstr "Deshacer un mapa aplicado requiere el servidor local."
+
+msgctxt "content_editor"
+msgid "There is no applied batch to undo."
+msgstr "No hay ningún lote aplicado que deshacer."
+
+msgctxt "content_editor"
+msgid "A batch is already applied; undo it before applying again."
+msgstr "Ya hay un lote aplicado; deshazlo antes de aplicar de nuevo."
+
+msgctxt "content_editor"
+msgid "The staged map is invalid; nothing was applied."
+msgstr "El mapa preparado no es válido; no se aplicó nada."
+
+msgctxt "content_editor"
+msgid "The staged map has no supported objects to apply."
+msgstr "El mapa preparado no tiene objetos compatibles que aplicar."
+
+msgctxt "content_editor"
+msgid "Applying the map failed; every created object was removed."
+msgstr "La aplicación del mapa falló; se eliminó todo objeto creado."
+
+msgctxt "content_editor"
+msgid "Map applied: {count} objects created, {skipped} preserved objects omitted."
+msgstr "Mapa aplicado: {count} objetos creados, {skipped} objetos conservados omitidos."
+
+msgctxt "content_editor"
+msgid "Applied batch removed: {destroyed} objects destroyed, {missing} were already gone."
+msgstr "Lote aplicado retirado: {destroyed} objetos destruidos, {missing} ya no existían."
+
+msgctxt "content_editor"
 msgid "Clear"
 msgstr "Limpiar"
 

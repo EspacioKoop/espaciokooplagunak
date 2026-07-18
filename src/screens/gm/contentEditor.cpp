@@ -4,6 +4,7 @@
 #include "components/rendering.h"
 #include "gameGlobalInfo.h"
 #include "i18n.h"
+#include "multiplayer_server.h"
 #include "playerInfo.h"
 #include "screenComponents/rotatingModelView.h"
 #include "gui/gui2_button.h"
@@ -276,6 +277,14 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
         redoMapEdit();
     });
     map_redo_button->setPosition(x + 470, 405)->setSize(220, 35)->hide();
+    map_apply_button = new GuiButton(box, "MAP_APPLY_WORLD", tr("content_editor", "Apply to world"), [this]() {
+        applyMapBatch();
+    });
+    map_apply_button->setPosition(x, 445)->setSize(220, 35)->hide();
+    map_rollback_button = new GuiButton(box, "MAP_ROLLBACK_WORLD", tr("content_editor", "Undo applied batch"), [this]() {
+        rollbackMapBatch();
+    });
+    map_rollback_button->setPosition(x + 235, 445)->setSize(220, 35)->hide();
 
     ship_override_selector = new GuiSelector(box, "SHIP_OVERRIDE_MODE", [this](int, string value) {
         if (ship_resource_id_entry)
@@ -604,6 +613,10 @@ void GuiContentEditor::updateFieldPresentation(ContentResourceType type)
     map_edit_toggle->setVisible(is_map);
     map_undo_button->setVisible(is_map);
     map_redo_button->setVisible(is_map);
+    const bool local_server = bool(game_server);
+    map_apply_button->setVisible(is_map && local_server);
+    map_rollback_button->setVisible(is_map && local_server);
+    updateMapBatchButtons();
     if (!is_map)
     {
         setMapEditMode(false);
@@ -1323,6 +1336,64 @@ void GuiContentEditor::redoMapEdit()
     discard_guard.reset();
     updatePreviewStatus();
     setStatus(tr("content_editor", "Map edit redone."));
+}
+
+void GuiContentEditor::applyMapBatch()
+{
+    if (!game_server)
+        return setStatus(tr("content_editor", "Applying a map requires the local server."));
+    if (map_apply_session.hasActiveBatch())
+        return setStatus(tr("content_editor", "A batch is already applied; undo it before applying again."));
+    cancelMapDrag();
+
+    MapApplyPlan plan;
+    switch (buildMapApplyPlan(map_edit_session.document(), true, plan))
+    {
+    case MapApplyError::InvalidDocument:
+        return setStatus(tr("content_editor", "The staged map is invalid; nothing was applied."));
+    case MapApplyError::NothingToApply:
+        return setStatus(tr("content_editor", "The staged map has no supported objects to apply."));
+    default:
+        break;
+    }
+
+    if (map_apply_session.apply(plan, map_world_adapter.creator(), map_world_adapter.destroyer())
+        != MapApplyError::None)
+    {
+        map_world_adapter.clear();
+        updateMapBatchButtons();
+        return setStatus(tr("content_editor", "Applying the map failed; every created object was removed."));
+    }
+    updateMapBatchButtons();
+    setStatus(tr("content_editor", "Map applied: {count} objects created, {skipped} preserved objects omitted.")
+        .format({
+            {"count", string(static_cast<unsigned int>(map_apply_session.batchHandles().size()))},
+            {"skipped", string(static_cast<unsigned int>(map_apply_session.batchSkipped()))},
+        }));
+}
+
+void GuiContentEditor::rollbackMapBatch()
+{
+    if (!game_server)
+        return setStatus(tr("content_editor", "Undoing an applied map requires the local server."));
+    if (!map_apply_session.hasActiveBatch())
+        return setStatus(tr("content_editor", "There is no applied batch to undo."));
+    std::size_t destroyed = 0;
+    std::size_t missing = 0;
+    map_apply_session.rollback(game_server != nullptr, map_world_adapter.destroyer(), &destroyed, &missing);
+    map_world_adapter.clear();
+    updateMapBatchButtons();
+    setStatus(tr("content_editor", "Applied batch removed: {destroyed} objects destroyed, {missing} were already gone.")
+        .format({
+            {"destroyed", string(static_cast<unsigned int>(destroyed))},
+            {"missing", string(static_cast<unsigned int>(missing))},
+        }));
+}
+
+void GuiContentEditor::updateMapBatchButtons()
+{
+    map_apply_button->setEnable(!map_apply_session.hasActiveBatch());
+    map_rollback_button->setEnable(map_apply_session.hasActiveBatch());
 }
 
 void GuiContentEditor::openShipTemplatePicker()

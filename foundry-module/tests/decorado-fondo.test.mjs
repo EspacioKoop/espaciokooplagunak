@@ -5,6 +5,7 @@ import {
   PALETA_DECORADO,
   componerDecorado,
   crearDecorado,
+  dibujarDecorado,
 } from "../scripts/decorado-fondo.mjs";
 
 const SEMILLA = 0x4c4147; // misma que MAPA_SEMILLA en main.mjs
@@ -105,4 +106,46 @@ test("componerDecorado sin centro no rompe (offset 0)", () => {
 
 test("componerDecorado con lista vacía devuelve lista vacía", () => {
   assert.deepEqual(componerDecorado([], { centro: { x: 1, y: 2 } }), []);
+});
+
+test("dibujarDecorado conserva el contrato pixel art sin curvas ni gradientes", () => {
+  const rectangulos = [];
+  const ctx = {
+    fillStyle: "",
+    fillRect(x, y, ancho, alto) {
+      for (const valor of [x, y, ancho, alto]) {
+        assert.ok(Number.isInteger(valor), `fillRect usa entero: ${valor}`);
+      }
+      assert.ok(ancho > 0 && alto > 0, "rectángulo visible");
+      rectangulos.push({ x, y, ancho, alto, color: this.fillStyle });
+    },
+    arc() {
+      assert.fail("el decorado pixel art no debe usar arc()");
+    },
+    createRadialGradient() {
+      assert.fail("el decorado pixel art no debe usar gradientes");
+    },
+  };
+  const decorado = crearDecorado(SEMILLA, {
+    ancho: 320,
+    alto: 320,
+    planetas: 1,
+    nebulosas: 1,
+    asteroides: 6,
+  });
+  dibujarDecorado(ctx, componerDecorado(decorado), { ancho: 320, alto: 320 });
+  assert.ok(rectangulos.length > 20, "pinta cuerpos y dithering con suficientes píxeles");
+  assert.ok(rectangulos.some((r) => r.ancho === 1 && r.alto === 1), "incluye detalle de un píxel");
+  assert.ok(rectangulos.some((r) => r.ancho === 2 && r.alto === 2), "incluye motas/dithering 2×2");
+
+  rectangulos.length = 0;
+  dibujarDecorado(
+    ctx,
+    [{ tipo: "asteroide", dx: 0, dy: 0, elementos: [{ x: 319.5, y: 319.5, r: 2, brillo: 0.5 }] }],
+    { ancho: 320, alto: 320 },
+  );
+  assert.ok(
+    rectangulos.some((r) => r.x === 0 && r.y === 0 && r.ancho === 2 && r.alto === 2),
+    "la mota que cruza dos bordes reaparece completa en la esquina opuesta",
+  );
 });

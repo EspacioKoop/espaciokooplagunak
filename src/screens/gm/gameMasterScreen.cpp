@@ -742,7 +742,7 @@ void GameMasterScreen::onMouseDown(sp::io::Pointer::Button button, glm::vec2 pos
             content_editor->stopMapEditMode();
             content_editor->show();
         }
-        else
+        else if (button == sp::io::Pointer::Button::Left)
             content_editor->beginMapDrag(position.x, position.y, main_radar->getScale());
         return;
     }

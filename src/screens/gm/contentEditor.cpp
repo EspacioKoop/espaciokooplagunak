@@ -357,6 +357,19 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
         rollbackMapBatch();
     });
     map_rollback_button->setPosition(x + 235, 445)->setSize(220, 35)->hide();
+    map_placement_selector = new GuiSelector(
+        box, "MAP_PLACE_OBJECT", [this](int index, string value) {
+            if (index <= 0) return;
+            map_placement_selector->setSelectionIndex(0);
+            map_placement_kind = value == "asteroid"
+                ? MapObjectKind::Asteroid : MapObjectKind::Nebula;
+            setMapEditMode(true);
+            setStatus(tr("content_editor", "Placement active. Click the radar to add the staged object; Escape cancels."));
+        });
+    map_placement_selector->addEntry(tr("content_editor", "Add map object..."), "");
+    map_placement_selector->addEntry(tr("content_editor", "Add asteroid"), "asteroid");
+    map_placement_selector->addEntry(tr("content_editor", "Add nebula"), "nebula");
+    map_placement_selector->setSelectionIndex(0)->setPosition(x + 470, 445)->setSize(220, 35)->hide();
 
     ship_override_selector = new GuiSelector(box, "SHIP_OVERRIDE_MODE", [this](int, string value) {
         if (ship_resource_id_entry)
@@ -594,6 +607,15 @@ bool GuiContentEditor::beginMapDrag(float world_x, float world_y, float world_to
 {
     if (!map_edit_mode) return false;
     cancelMapDrag();
+    if (map_placement_kind != MapObjectKind::Unsupported)
+    {
+        map_placement_pending = true;
+        map_placement_start = {world_x, world_y, 0.0f};
+        map_placement_scale = world_to_screen_scale;
+        map_placement_session_id = map_edit_session.sessionId();
+        map_placement_revision = map_edit_session.revision();
+        return true;
+    }
     const auto error = map_drag.begin(
         map_edit_session, {world_x, world_y}, world_to_screen_scale);
     if (error != MapDocumentError::None)
@@ -608,7 +630,19 @@ bool GuiContentEditor::beginMapDrag(float world_x, float world_y, float world_to
 
 void GuiContentEditor::updateMapDrag(float world_x, float world_y)
 {
-    if (!map_edit_mode || !map_drag.isDragging()) return;
+    if (!map_edit_mode) return;
+    if (map_placement_pending)
+    {
+        const float dx = world_x - map_placement_start.x;
+        const float dy = world_y - map_placement_start.y;
+        if (std::hypot(dx, dy) * map_placement_scale > 5.0f)
+        {
+            map_placement_pending = false;
+            setStatus(tr("content_editor", "Map object placement cancelled after pointer movement."));
+        }
+        return;
+    }
+    if (!map_drag.isDragging()) return;
     if (!map_drag.update({world_x, world_y}))
     {
         map_drag.cancel();
@@ -618,7 +652,35 @@ void GuiContentEditor::updateMapDrag(float world_x, float world_y)
 
 void GuiContentEditor::commitMapDrag(float world_x, float world_y)
 {
-    if (!map_edit_mode || !map_drag.isDragging()) return;
+    if (!map_edit_mode) return;
+    if (map_placement_kind != MapObjectKind::Unsupported)
+    {
+        if (!map_placement_pending) return;
+        const float dx = world_x - map_placement_start.x;
+        const float dy = world_y - map_placement_start.y;
+        map_placement_pending = false;
+        if (std::hypot(dx, dy) * map_placement_scale > 5.0f)
+            return setStatus(tr("content_editor", "Map object placement cancelled after pointer movement."));
+        if (map_edit_session.sessionId() != map_placement_session_id
+            || map_edit_session.revision() != map_placement_revision)
+            return setStatus(tr("content_editor", "Map object placement cancelled because the staged map changed."));
+
+        std::string created_id;
+        if (map_edit_session.addObject(
+                map_placement_kind, map_placement_start, &created_id)
+            != MapEditError::None)
+            return setStatus(tr("content_editor", "Map object could not be added at that position."));
+        pending_save = "";
+        pending_file_export = "";
+        discard_guard.reset();
+        updatePreviewStatus();
+        setMapEditMode(false);
+        show();
+        setStatus(tr("content_editor", "Map object {id} added to staging.")
+            .format({{"id", created_id}}));
+        return;
+    }
+    if (!map_drag.isDragging()) return;
     if (!map_drag.update({world_x, world_y}))
     {
         map_drag.cancel();
@@ -643,6 +705,12 @@ void GuiContentEditor::commitMapDrag(float world_x, float world_y)
 
 void GuiContentEditor::cancelMapDrag()
 {
+    if (map_placement_pending)
+    {
+        map_placement_pending = false;
+        setStatus(tr("content_editor", "Map object placement cancelled."));
+        return;
+    }
     if (!map_drag.isDragging()) return;
     map_drag.cancel();
     setStatus(tr("content_editor", "Map object drag cancelled."));
@@ -718,6 +786,7 @@ void GuiContentEditor::updateFieldPresentation(ContentResourceType type)
     const bool local_server = bool(game_server);
     map_apply_button->setVisible(is_map && local_server);
     map_rollback_button->setVisible(is_map && local_server);
+    map_placement_selector->setVisible(is_map);
     updateMapBatchButtons();
     if (!is_map)
     {
@@ -1406,6 +1475,7 @@ void GuiContentEditor::setMapEditMode(bool enabled)
     {
         cancelMapDrag();
         map_edit_mode = false;
+        map_placement_kind = MapObjectKind::Unsupported;
         if (map_edit_toggle) map_edit_toggle->setValue(false);
         return;
     }

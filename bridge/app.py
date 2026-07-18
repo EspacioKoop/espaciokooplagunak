@@ -478,6 +478,58 @@ class SpawnEncounter(BaseModel):
         )
 
 
+class ShipAnchor(str, Enum):
+    """Catálogo cerrado de anclas con nombre a las que el GM puede reposicionar
+    la nave del jugador (#176).
+
+    Foundry decide el *dónde* eligiendo un nombre del catálogo; el escenario es
+    dueño de la coordenada exacta que ese nombre resuelve. Nunca se aceptan
+    coordenadas crudas desde el cliente: el ADR de encuentros ya fijó que
+    aceptar ``x``/``y`` para la nave sería doble autoridad sobre su posición
+    (ADR-0002). El nombre nombrado es además la forma en que un GM piensa la
+    mesa ("llévalos al pecio"), no un par de flotantes.
+    """
+
+    lagunak = "lagunak"
+    argia = "argia"
+
+
+class RepositionShip(BaseModel):
+    """Reposición de la nave del jugador a un ancla nombrada: palanca puntual
+    del GM (#176).
+
+    Misma figura aceptada que ``set_system_health``: una escritura GM sobre la
+    verdad de la nave (ADR-0002), orden única en vuelo, no un bucle de
+    sincronización. El Lua emitido es fijo y solo llama al callback que el
+    escenario publica en ``getScriptStorage()`` — la misma frontera compartida
+    con ``/exec.lua`` que usa ``spawn_encounter``. Si el escenario no registra
+    el callback, degrada honestamente a ``not_supported``.
+    """
+
+    # extra="forbid": una coordenada colada (x, y) o cualquier campo extra
+    # rechaza la orden entera en vez de ignorarse — la frontera de autoridad
+    # falla cerrado.
+    model_config = ConfigDict(extra="forbid")
+
+    op: Literal["reposition_ship"]
+    anchor: ShipAnchor
+
+    def lua(self) -> str:
+        return (
+            "local storage = getScriptStorage()\n"
+            "local integration = storage and storage.espaciokoop_lagunak\n"
+            "local reposition = integration and integration.repositionShip\n"
+            "if type(reposition) ~= 'function' then\n"
+            "  return '{\"ok\":false,\"reason\":\"not_supported\"}'\n"
+            "end\n"
+            "local ship = getPlayerShip(-1)\n"
+            "if ship == nil then return '{\"ok\":false,\"reason\":\"no_ship\"}' end\n"
+            f'local ok = reposition("{self.anchor.value}")\n'
+            "if ok then return '{\"ok\":true}' end\n"
+            "return '{\"ok\":false,\"reason\":\"not_supported\"}'"
+        )
+
+
 class SetPause(BaseModel):
     op: Literal["set_pause"]
     paused: StrictBool
@@ -496,6 +548,7 @@ Command = Annotated[
         SetSystemPower,
         SetSystemHealth,
         SpawnEncounter,
+        RepositionShip,
         SetPause,
     ],
     Field(discriminator="op"),
@@ -542,6 +595,19 @@ async def events() -> Any:
 @app.get("/v1/contacts", dependencies=[Depends(_require_auth)])
 async def contacts() -> Any:
     return await _run_lua(_CONTACTS_LUA)
+
+
+@app.get("/v1/anchors", dependencies=[Depends(_require_auth)])
+async def anchors() -> Any:
+    """Catálogo cerrado de anclas a las que acepta reposicionar ``reposition_ship``.
+
+    Es la misma fuente de verdad que valida /v1/command (el enum ``ShipAnchor``):
+    el módulo de Foundry lee este catálogo en vez de hardcodear nombres, y nunca
+    puede ofrecer uno que el puente rechazaría. No consulta al juego: si el
+    escenario cargado no publica el callback, la orden degradará honestamente a
+    ``not_supported`` al ejecutarse.
+    """
+    return {"anchors": [anchor.value for anchor in ShipAnchor]}
 
 
 @app.post("/v1/command", dependencies=[Depends(_require_auth)])

@@ -82,6 +82,7 @@ function init()
     local storage = getScriptStorage()
     storage.espaciokoop_lagunak = storage.espaciokoop_lagunak or {}
     storage.espaciokoop_lagunak.spawnEncounter = lagunakSpawnEncounter
+    storage.espaciokoop_lagunak.repositionShip = lagunakRepositionShip
     if modoPruebaIndividual then
         instalarControlesPruebaIndividual()
     end
@@ -202,6 +203,34 @@ function lagunakSpawnEncounter(arquetipo, rumbo)
         :setSystemHealth("impulse", -0.5)
         :setSystemHealth("reactor", -0.25)
         :orderIdle()
+    return true
+end
+
+-- Reposicion de la nave pedida por el GM via el puente (#176). Foundry decide
+-- el DONDE eligiendo un ancla de un catalogo cerrado; este escenario es dueno
+-- de la coordenada exacta que cada nombre resuelve. Nunca se aceptan
+-- coordenadas crudas: seria doble autoridad sobre la posicion de la nave
+-- (ADR-0002). Deja la nave JUNTO al ancla, no encima, y detiene su empuje para
+-- que el salto no herede la velocidad previa.
+function lagunakRepositionShip(ancla)
+    local nave = getPlayerShip(-1)
+    if nave == nil then
+        return false
+    end
+    local anclas = {
+        lagunak = { x = 0, y = 0 },
+        argia = { x = 28000, y = -16000 },
+    }
+    local destino = anclas[ancla]
+    if destino == nil then
+        return false
+    end
+    -- Desplazamiento fijo (no aleatorio): la reposicion del GM es determinista y
+    -- reproducible. 1500U deja la nave a la vista del ancla sin colisionar.
+    nave:setPosition(destino.x + 1500, destino.y + 1500)
+    nave:commandImpulse(0)
+    nave:commandWarp(0)
+    nave:commandAbortJump()
     return true
 end
 

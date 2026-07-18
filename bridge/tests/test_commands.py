@@ -281,3 +281,56 @@ def test_inyeccion_por_arquetipo_rechazada(client, juego, auth):
     )
     assert r.status_code == 422
     assert not juego.llamadas
+
+
+# --- reposition_ship: reposición de la nave a un ancla nombrada (#176) ---------
+
+
+def test_reposition_ship_genera_lua_fijo(client, juego, auth):
+    r = client.post(
+        CMD, headers=auth, json={"op": "reposition_ship", "anchor": "argia"}
+    )
+    assert r.status_code == 200
+    assert r.json()["op"] == "reposition_ship"
+    assert 'reposition("argia")' in juego.ultimo_lua
+    assert "getScriptStorage()" in juego.ultimo_lua
+    assert "storage.espaciokoop_lagunak" in juego.ultimo_lua
+    assert "getPlayerShip(-1)" in juego.ultimo_lua
+    # Degradación honesta cuando el escenario no registra el callback.
+    assert "not_supported" in juego.ultimo_lua
+
+
+def test_reposition_ship_ancla_fuera_de_catalogo_rechazada(client, juego, auth):
+    r = client.post(
+        CMD, headers=auth, json={"op": "reposition_ship", "anchor": "andromeda"}
+    )
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+def test_reposition_ship_sin_coordenadas_crudas(client, juego, auth):
+    # La frontera de autoridad (ADR-0002): el cliente jamás fija la posición por
+    # coordenada absoluta; cualquier x/y colada rechaza la orden entera.
+    r = client.post(
+        CMD,
+        headers=auth,
+        json={"op": "reposition_ship", "anchor": "argia", "x": 0, "y": 0},
+    )
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+def test_reposition_ship_ancla_faltante_rechazada(client, juego, auth):
+    r = client.post(CMD, headers=auth, json={"op": "reposition_ship"})
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+def test_inyeccion_por_ancla_rechazada(client, juego, auth):
+    r = client.post(
+        CMD,
+        headers=auth,
+        json={"op": "reposition_ship", "anchor": '"); victory("Exuari"); ("'},
+    )
+    assert r.status_code == 422
+    assert not juego.llamadas

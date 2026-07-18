@@ -13,11 +13,11 @@
  */
 
 import { COLOR_JUGADOR } from "./ventana-nave.mjs";
+import { clasificarNave, construirSpriteNave, dibujarNaveSprite } from "./nave-sprite.mjs";
 import { dibujarDecorado } from "./decorado-fondo.mjs";
 
 const FONDO = "#03071e"; // azul-negro profundo
 const RETICULA = "rgba(125, 133, 151, 0.25)"; // gris azulado tenue
-const TAM_BLIP = 5; // cuadrado pixelado, en píxeles internos
 const TAM_ESTRELLA_MIN = 1;
 const COLOR_DESTINO = "#ffd166"; // ámbar cálido: la ruta no compite con las facciones
 const RUTA_DESTINO = "rgba(255, 209, 102, 0.55)";
@@ -91,12 +91,11 @@ export function dibujarFrame(ctx, frame, { ancho = 320, alto = 320, decorado = [
     if (blip.esJugador) continue; // la nave propia se pinta al final, encima
     if (!blip.parpadeo) continue; // fase apagada del parpadeo retro
     if (blip.dentro) {
-      ctx.fillStyle = blip.color;
-      ctx.fillRect(
-        Math.round(blip.x - TAM_BLIP / 2),
-        Math.round(blip.y - TAM_BLIP / 2),
-        TAM_BLIP,
-        TAM_BLIP,
+      // Sprite pixel-art por tipo/facción en vez de un cuadrado (Neo Geo).
+      dibujarNaveSprite(
+        ctx,
+        construirSpriteNave({ clave: clasificarNave(blip, false), color: blip.color }),
+        { centroX: blip.x, centroY: blip.y, pixel: 2 },
       );
     } else {
       // Fuera de alcance: marca en el borde del anillo, hacia el contacto.
@@ -131,13 +130,11 @@ export function dibujarFrame(ctx, frame, { ancho = 320, alto = 320, decorado = [
     }
   }
 
-  // Nave propia: triángulo blanco con el morro hacia arriba (la rotación del
+  // Nave propia: sprite pixel-art con el morro hacia arriba (la rotación del
   // mundo ya la hizo la proyección; en cabina el morro siempre apunta arriba).
-  ctx.fillStyle = COLOR_JUGADOR;
-  ctx.beginPath();
-  ctx.moveTo(cx, cy - 6);
-  ctx.lineTo(cx - 5, cy + 5);
-  ctx.lineTo(cx + 5, cy + 5);
-  ctx.closePath();
-  ctx.fill();
+  dibujarNaveSprite(
+    ctx,
+    construirSpriteNave({ clave: clasificarNave(null, true), color: COLOR_JUGADOR }),
+    { centroX: cx, centroY: cy, pixel: 2 },
+  );
 }

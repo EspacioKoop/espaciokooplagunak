@@ -17,7 +17,7 @@ heredado: [`docs/API_HTTP.md`](../docs/API_HTTP.md).
 | GET | `/v1/state` | Bearer | Nave: posición, rumbo, velocidad, destino, distancia, ETA, casco, energía, escudos y sistemas |
 | GET | `/v1/scenario` | Bearer | Tiempo de escenario y estado de pausa (`paused`) |
 | GET | `/v1/events` | Bearer | Eventos normalizados presentes; inicialmente llegada de Primera Guardia |
-| GET | `/v1/contacts` | Bearer | Objetos cercanos a la nave (indicativo, posición, facción, si es el jugador) para un mapa vivo en Foundry. **Vista GM omnisciente** (ver abajo) |
+| GET | `/v1/contacts` | Bearer | Objetos cercanos a la nave (indicativo, posición, facción, plantilla, clase/subclase opcionales y si es el jugador) para un mapa vivo en Foundry. **Vista GM omnisciente** (ver abajo) |
 | POST | `/v1/command` | Bearer | Órdenes de lista blanca (ver abajo) |
 | GET | `/docs` | No* | OpenAPI interactiva generada por FastAPI |
 
@@ -41,6 +41,9 @@ los **60 contactos más cercanos ordenados por distancia** (el jugador siempre
 incluido, encabezando la lista) y declara el truncamiento:
 `{"contacts": […], "truncated": true|false, "total": N}` — `total` es cuántos
 objetos había realmente en radio.
+Cada contacto incluye `type` (nombre estable de plantilla cuando existe) y
+`class`/`subclass` cuando la plantilla publica el componente `docking_port`;
+objetos sin esos componentes devuelven `null`, nunca valores inventados.
 
 ### Órdenes permitidas (`POST /v1/command`)
 
@@ -119,8 +122,9 @@ campos tipados. También cubre el endpoint de eventos vacío y con una llegada
 normalizada, y el de contactos (lista vacía, objetos normalizados y objetos sin
 facción). El Lua fijo de `/v1/contacts` tiene además una suite adversarial que
 lo EJECUTA con un intérprete Lua real contra un mundo simulado: caracteres de
-control/comillas/barras en indicativos y facciones (JSON válido), indicativos
-duplicados (identidad por objeto), y 80 objetos con el jugador el último del
+control/comillas/barras en indicativos y facciones (JSON válido), propagación
+de plantilla/clase/subclase desde los componentes ECS, indicativos duplicados
+(identidad por objeto), y 80 objetos con el jugador el último del
 índice (orden por distancia, jugador incluido, `truncated`/`total` declarados).
 También se validó contra un EmptyEpsilon headless real (`luac -p` + ejecución
 vía `httpserver`, con nave, nave IA y un asteroide sin facción).

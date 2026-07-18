@@ -175,7 +175,10 @@ coloreados por facción, con leyenda de indicativos y distancias.
   dependencias de Foundry precisamente para eso.
 - Tests Node cubren `/v1/events`, validación y deduplicación persistente del
   Journal, formato destino/ETA, POST cerrado de pausa, bloqueo no-GM y las seis
-  consolas de puesto. También verifican que un jugador no lee ajustes del
+  consolas de puesto. También cubren las alertas de umbral de la nave
+  (`alertas-nave.mjs`): derivación por flanco descendente (casco/energía/sistema)
+  a partir de `/v1/state` y anotación una sola vez por sesión y umbral, con
+  bloqueo no-GM. También verifican que un jugador no lee ajustes del
   puente ni recibe telemetría aunque otro código intente inyectársela.
 - Del mapa vivo, los tests Node cubren la lógica pura (proyección, interpolación
   sin extrapolar de nave/contactos, identidades ambiguas, throttle de fps y

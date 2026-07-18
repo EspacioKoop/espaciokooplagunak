@@ -12,9 +12,23 @@
 #include "ecs/query.h"
 #include "menus/luaConsole.h"
 #include "playerInfo.h"
+#include "main.h"
+#include "components/contentship.h"
+#include "components/coolant.h"
+#include "components/player.h"
+#include "components/reactor.h"
+#include "components/shipsystem.h"
 #include <SDL_assert.h>
 
 P<GameGlobalInfo> gameGlobalInfo;
+
+namespace
+{
+ShipSystem::Type runtimeSystem(ShipSystemId system)
+{
+    return static_cast<ShipSystem::Type>(static_cast<int>(system));
+}
+}
 
 REGISTER_MULTIPLAYER_CLASS(GameGlobalInfo, "GameGlobalInfo")
 GameGlobalInfo::GameGlobalInfo()
@@ -347,6 +361,99 @@ ShipTemplatePreviewData GameGlobalInfo::getShipTemplatePreview(const string& can
             preview = res.value();
     }
     return preview;
+}
+
+bool GameGlobalInfo::createContentShip(const ShipDeploymentPlan& plan, sp::ecs::Entity& output)
+{
+    output = {};
+    if (!game_server || !main_scenario_script) return false;
+
+    auto result = main_scenario_script->call<sp::ecs::Entity>(
+        "spawnContentEditorShip",
+        string(plan.template_id),
+        string(plan.faction),
+        string(plan.callsign),
+        plan.x,
+        plan.y,
+        plan.rotation.has_value(),
+        plan.rotation.value_or(0.0f));
+    LuaConsole::checkResult(result);
+    if (!result.isOk()) return false;
+
+    auto entity = result.value();
+    if (!entity || !entity.hasComponent<PlayerControl>() || !entity.hasComponent<sp::Transform>())
+    {
+        if (entity) entity.destroy();
+        return false;
+    }
+
+    for (const auto& override_value : plan.overrides.systems)
+    {
+        auto* system = ShipSystem::get(entity, runtimeSystem(override_value.system));
+        if (!system)
+        {
+            entity.destroy();
+            return false;
+        }
+        system->health = override_value.health;
+    }
+
+    for (const auto& resource : plan.overrides.resources)
+    {
+        if (resource.id == "energy")
+        {
+            auto* reactor = entity.getComponent<Reactor>();
+            if (!reactor)
+            {
+                entity.destroy();
+                return false;
+            }
+            reactor->energy = std::min(resource.amount, reactor->max_energy);
+        }
+        else if (resource.id == "coolant")
+        {
+            auto* coolant = entity.getComponent<Coolant>();
+            if (!coolant)
+            {
+                entity.destroy();
+                return false;
+            }
+            coolant->max = resource.amount;
+        }
+        else
+        {
+            entity.destroy();
+            return false;
+        }
+    }
+
+    CrewPositions allowed;
+    for (const auto& position_id : plan.overrides.crew_position_ids)
+    {
+        const auto position = tryParseCrewPosition(position_id);
+        if (!position)
+        {
+            entity.destroy();
+            return false;
+        }
+        allowed.add(*position);
+    }
+    if (!plan.overrides.crew_position_ids.empty())
+        entity.getComponent<PlayerControl>()->allowed_positions = allowed;
+
+    auto& manifest = entity.getOrAddComponent<ContentShipManifest>();
+    manifest.resource_id = plan.resource_id;
+    manifest.resources = plan.overrides.resources;
+    manifest.cargo = plan.overrides.cargo;
+    output = entity;
+    return true;
+}
+
+bool GameGlobalInfo::rollbackContentShip(sp::ecs::Entity entity)
+{
+    if (!game_server || !entity || !entity.hasComponent<ContentShipManifest>()) return false;
+    entity.destroy();
+    return true;
 }
 
 string GameGlobalInfo::getEntityExportString(sp::ecs::Entity entity)

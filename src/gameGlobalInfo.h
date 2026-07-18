@@ -5,6 +5,7 @@
 #include "components/faction.h"
 #include "components/radar.h"
 #include "content/shipTemplateCatalog.h"
+#include "content/shipDeployment.h"
 #include "Updatable.h"
 #include "multiplayer.h"
 #include <list>
@@ -114,6 +115,8 @@ public:
     std::vector<ObjectSpawnInfo> getGMSpawnableObjects();
     std::vector<ShipTemplateCatalogEntry> getShipTemplateCatalog();
     ShipTemplatePreviewData getShipTemplatePreview(const string& canonical_id);
+    bool createContentShip(const ShipDeploymentPlan& plan, sp::ecs::Entity& output);
+    bool rollbackContentShip(sp::ecs::Entity entity);
     string getEntityExportString(sp::ecs::Entity entity);
     void execScriptCode(const string& code);
     bool allowNewPlayerShips();

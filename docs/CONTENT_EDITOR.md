@@ -38,11 +38,29 @@ tipos de recursos sin editar Lua:
     con Escape o clic derecho — que cancelan el arrastre activo y vuelven al editor. Los tipos futuros nunca son
     seleccionables. Guardar persiste las posiciones; **New**, cargar/importar otro
     recurso o descartar reconstruyen la sesión desde su snapshot limpio.
-12. **Export file** escribe el recurso en la carpeta de exportaciones gestionada.
+12. En mapas y solo con servidor local, **Apply to world** aplica el snapshot
+    preparado como un lote nuevo y reversible: valida el documento completo antes
+    de tocar el mundo (un documento inválido no genera ninguna llamada), crea
+    asteroides y nebulosas mediante una allowlist C++ con parámetros visuales
+    deterministas derivados del ID de cada objeto, y cuenta como omitidos los
+    tipos futuros sin interpretarlos. Un fallo en el objeto N destruye en orden
+    inverso todo lo creado por esa operación. Mientras hay un lote activo no se
+    puede aplicar otro; **Undo applied batch** destruye únicamente las entidades
+    del lote propio (tolerando las que la simulación ya destruyó) y nunca toca
+    entidades preexistentes. Editar el staging después de aplicar no altera el
+    lote ya aplicado.
+13. **Export file** escribe el recurso en la carpeta de exportaciones gestionada.
     Si el archivo ya existe, exige una segunda pulsación.
-13. **Import inbox** permite elegir un JSON depositado en la bandeja gestionada.
+14. **Import inbox** permite elegir un JSON depositado en la bandeja gestionada.
     **Import file** muestra primero tipo, ID y nombre de archivo; una segunda
     pulsación confirma la importación y una sustitución exige confirmación propia.
+13. En una nave, **Deploy ship** valida el documento contra el catálogo y las
+    facciones cargadas. Después permite elegir una posición en el radar y vuelve
+    al editor con un plan sin aplicar. Una segunda pulsación confirma exactamente
+    ese documento, posición y rotación antes de crear una única nave.
+14. **Rollback ship** elimina solo la nave creada por ese plan. Mientras exista
+    ese recibo no se admite otro despliegue desde el editor; si la nave ya fue
+    destruida por el escenario, el rollback se considera completado.
 
 **Save**, **Delete** e importación persisten la biblioteca entre sesiones. El
 portapapeles continúa disponible como transporte multiplataforma, pero no es
@@ -170,6 +188,15 @@ incorrectos y campos excesivamente largos.
   procesos cooperantes, evitando colisiones sobre temporales y backups. Si dos
   editores guardan snapshots distintos, se aplica explícitamente último escritor gana.
 - Una versión futura no se migra hacia atrás ni se modifica.
+- El despliegue requiere un servidor local y el flujo Game Master. La factoría
+  recibe únicamente plantilla, facción, callsign, posición y rotación escalares;
+  resuelve una plantilla `playership` del registro Lua de confianza y nunca
+  ejecuta Lua incluido en documentos. Antes de crear valida todo el plan y, si
+  falta un componente al aplicar overrides, destruye la entidad parcial.
+- La allowlist de despliegue admite `energy` y `coolant` como recursos, y
+  `medicine` y `spare-parts` como carga declarativa. La energía y el refrigerante
+  se aplican a sus componentes ECS; la carga queda en un manifiesto tipado del
+  servidor hasta que exista un sistema de inventario propietario.
 - Guardar o importar sobre otro ID y borrar requieren confirmación explícita.
 - Una sola acción de navegación o cierre no descarta un formulario modificado.
 - Cada recurso se importa/exporta por separado; no se mezclan campañas, mapas,
@@ -184,7 +211,7 @@ configurado con `-DBUILD_CONTENT_RESOURCE_TESTS=ON` se ejecutan con:
 
 ```bash
 ctest --test-dir build --output-on-failure \
-  -R 'content_resource_codec|content_library_store|map_document_codec|map_edit_session|map_preview_projection|ship_document_model|ship_template_catalog|ship_template_preview_lua|ship_edit_session'
+  -R 'content_resource_codec|content_library_store|map_document_codec|map_edit_session|map_preview_projection|ship_document_model|ship_template_catalog|ship_template_preview_lua|ship_edit_session|ship_deployment_plan'
 ```
 
 El test del codec cubre los cuatro tipos, round-trip, límite de 64 KiB, claves
@@ -230,14 +257,13 @@ ID. Al seleccionar una entrada, el overlay consulta únicamente el `mesh_render`
 plantilla y muestra una vista 3D giratoria. El widget conserva una copia inerte de
 `MeshRenderComponent`: no crea ninguna entidad ECS, `Transform`, física, red ni
 callback de spawn, y descarta la copia al cambiar o cerrar/aplicar el selector.
-El documento editado no toca el ECS. La sesión C++ pura prepara todos los overrides
-con dirty state, historial acotado y rollback al último snapshot guardado.
-La aplicación autorizada al mundo se incorporará en un vertical posterior.
-La siguiente fase mantendrá la misma envoltura versionada:
-
-- aplicación tipada al mundo con autorización GM y rollback, sin Lua importado
-  ([#54](https://github.com/VaroTv7/espaciokooplagunak/issues/54));
-- plantillas, previsualización y spawn de naves ([#55](https://github.com/VaroTv7/espaciokooplagunak/issues/55)).
+El documento editado no toca el ECS mientras está en staging. La sesión C++ pura
+prepara los overrides con dirty state, historial acotado y rollback al último
+snapshot guardado. El despliegue GM construye además un plan cerrado y lo liga
+mediante fingerprint al documento, posición y rotación. Solo la segunda
+confirmación crea una nave; cualquier fallo al aplicar plantilla, sistemas,
+recursos o puestos destruye la entidad parcial. El recibo conserva exclusivamente
+la entidad propia para rollback y bloquea una segunda aplicación activa.
 
 Las campañas y personajes ya se enlazan de forma declarativa con mapas, naves
 y puestos canónicos. El núcleo C++ puede renombrar de forma transaccional cualquier

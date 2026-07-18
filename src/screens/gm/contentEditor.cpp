@@ -3,7 +3,11 @@
 #include "content/mapPreview.h"
 #include "components/rendering.h"
 #include "gameGlobalInfo.h"
+#include "multiplayer_server.h"
+#include "ecs/query.h"
+#include "components/faction.h"
 #include "i18n.h"
+#include "multiplayer_server.h"
 #include "playerInfo.h"
 #include "screenComponents/rotatingModelView.h"
 #include "gui/gui2_button.h"
@@ -25,6 +29,71 @@
 
 namespace
 {
+// Read-only rendering of a campaign's map graph: one box per map placed on the
+// deterministic grid computed by buildCampaignGraph(), one arrow per transition.
+class GuiCampaignGraphView : public GuiElement
+{
+public:
+    GuiCampaignGraphView(GuiContainer* owner, const CampaignGraph& graph)
+    : GuiElement(owner, "CAMPAIGN_GRAPH_VIEW"), graph(graph) {}
+
+    void onDraw(sp::RenderTarget& renderer) override
+    {
+        renderer.fillRect(rect, glm::u8vec4(0, 0, 0, 120));
+        renderer.outlineRect(rect, glm::u8vec4(128, 128, 128, 128));
+        if (graph.nodes.empty() || graph.columns < 1 || graph.rows < 1)
+            return;
+
+        const float margin = 12.0f;
+        const float cell_width = (rect.size.x - 2.0f * margin) / float(graph.columns);
+        const float cell_height = (rect.size.y - 2.0f * margin) / float(graph.rows);
+        const float node_width = std::min(cell_width - 14.0f, 180.0f);
+        const float node_height = std::min(cell_height - 10.0f, 42.0f);
+        const auto nodeRect = [&](const CampaignGraphNode& node)
+        {
+            const glm::vec2 center{
+                rect.position.x + margin + (float(node.column) + 0.5f) * cell_width,
+                rect.position.y + margin + (float(node.row) + 0.5f) * cell_height,
+            };
+            return sp::Rect(center - glm::vec2(node_width, node_height) * 0.5f,
+                {node_width, node_height});
+        };
+
+        for (const auto& edge : graph.edges)
+        {
+            const auto from = nodeRect(graph.nodes[edge.from]);
+            const auto to = nodeRect(graph.nodes[edge.to]);
+            const glm::vec2 start{from.position.x + from.size.x, from.center().y};
+            const glm::vec2 end{to.position.x, to.center().y};
+            const auto color = glm::u8vec4(200, 200, 200, 200);
+            renderer.drawLine(start, end, color);
+            const auto direction = glm::normalize(end - start);
+            const glm::vec2 normal{-direction.y, direction.x};
+            renderer.drawLine(end, end - direction * 9.0f + normal * 5.0f, color);
+            renderer.drawLine(end, end - direction * 9.0f - normal * 5.0f, color);
+        }
+
+        for (const auto& node : graph.nodes)
+        {
+            const auto box = nodeRect(node);
+            glm::u8vec4 outline{255, 255, 255, 200};
+            if (node.missing_in_library) outline = {255, 96, 96, 230};
+            else if (node.unreachable) outline = {255, 176, 64, 230};
+            else if (node.starting) outline = {96, 255, 128, 230};
+            renderer.fillRect(box, glm::u8vec4(32, 32, 48, 220));
+            renderer.outlineRect(box, outline);
+            string label = node.id;
+            if (node.starting) label = "> " + label;
+            if (node.missing_in_library) label += " !";
+            else if (node.unreachable) label += " ?";
+            renderer.drawText(box, label, sp::Alignment::Center, 18, nullptr, outline);
+        }
+    }
+
+private:
+    const CampaignGraph& graph;
+};
+
 string typeLabel(ContentResourceType type)
 {
     switch(type)
@@ -258,6 +327,10 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
         }
     );
     preview_toggle->setPosition(x, 360)->setSize(250, 40)->hide();
+    campaign_graph_button = new GuiButton(
+        box, "CAMPAIGN_GRAPH", tr("content_editor", "View campaign graph"),
+        [this]() { openCampaignGraph(); });
+    campaign_graph_button->setPosition(x, 360)->setSize(250, 40)->hide();
     preview_status_label = new GuiLabel(box, "MAP_PREVIEW_STATUS", "", 16);
     preview_status_label->setPosition(x + 270, 360)->setSize(420, 40)->hide();
 
@@ -276,6 +349,14 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
         redoMapEdit();
     });
     map_redo_button->setPosition(x + 470, 405)->setSize(220, 35)->hide();
+    map_apply_button = new GuiButton(box, "MAP_APPLY_WORLD", tr("content_editor", "Apply to world"), [this]() {
+        applyMapBatch();
+    });
+    map_apply_button->setPosition(x, 445)->setSize(220, 35)->hide();
+    map_rollback_button = new GuiButton(box, "MAP_ROLLBACK_WORLD", tr("content_editor", "Undo applied batch"), [this]() {
+        rollbackMapBatch();
+    });
+    map_rollback_button->setPosition(x + 235, 445)->setSize(220, 35)->hide();
 
     ship_override_selector = new GuiSelector(box, "SHIP_OVERRIDE_MODE", [this](int, string value) {
         if (ship_resource_id_entry)
@@ -344,6 +425,14 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
         redoShipEdit();
     });
     ship_redo_button->setPosition(x + 235, 445)->setSize(220, 35)->hide();
+    ship_deploy_button = new GuiButton(box, "SHIP_DEPLOY", tr("content_editor", "Deploy ship"), [this]() {
+        deployShip();
+    });
+    ship_deploy_button->setPosition(x + 470, 400)->setSize(220, 35)->hide();
+    ship_rollback_button = new GuiButton(box, "SHIP_ROLLBACK", tr("content_editor", "Rollback ship"), [this]() {
+        rollbackShip();
+    });
+    ship_rollback_button->setPosition(x + 470, 445)->setSize(220, 35)->hide();
 
     (new GuiButton(box, "SAVE", tr("content_editor", "Save"), [this]() { saveResource(); }))
         ->setPosition(x, 490)->setSize(150, 45);
@@ -458,6 +547,23 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
         [this]() { closeRelationEditor(); }))
         ->setPosition(550, 460)->setSize(180, 40);
     relation_editor_overlay->hide();
+
+    campaign_graph_overlay = new GuiOverlay(
+        box, "CAMPAIGN_GRAPH_OVERLAY", glm::u8vec4(0, 0, 0, 180));
+    auto graph_panel = new GuiPanel(campaign_graph_overlay, "CAMPAIGN_GRAPH_PANEL");
+    graph_panel->setPosition(0, 0, sp::Alignment::Center)->setSize(760, 560);
+    (new GuiLabel(graph_panel, "CAMPAIGN_GRAPH_TITLE",
+        tr("content_editor", "Campaign graph"), 28))
+        ->setPosition(30, 20)->setSize(700, 45);
+    (new GuiCampaignGraphView(graph_panel, campaign_graph))
+        ->setPosition(30, 75)->setSize(700, 330);
+    campaign_graph_warnings = new GuiLabel(graph_panel, "CAMPAIGN_GRAPH_WARNINGS", "", 18);
+    campaign_graph_warnings->setPosition(30, 415)->setSize(700, 40);
+    (new GuiButton(
+        graph_panel, "CAMPAIGN_GRAPH_CLOSE", tr("button", "Close"),
+        [this]() { closeCampaignGraph(); }))
+        ->setPosition(550, 460)->setSize(180, 40);
+    campaign_graph_overlay->hide();
 
     setType(ContentResourceType::Campaign);
     const auto load_result = store.load(resources);
@@ -595,6 +701,11 @@ void GuiContentEditor::updateFieldPresentation(ContentResourceType type)
             ? tr("content_editor", "Clear")
             : tr("content_editor", "Select"));
     }
+    const bool is_campaign = type == ContentResourceType::Campaign;
+    campaign_graph_button->setVisible(is_campaign);
+    if (!is_campaign)
+        closeCampaignGraph();
+
     const bool is_character = type == ContentResourceType::Character;
     character_links_label->setVisible(is_character);
     if (is_character)
@@ -604,6 +715,10 @@ void GuiContentEditor::updateFieldPresentation(ContentResourceType type)
     map_edit_toggle->setVisible(is_map);
     map_undo_button->setVisible(is_map);
     map_redo_button->setVisible(is_map);
+    const bool local_server = bool(game_server);
+    map_apply_button->setVisible(is_map && local_server);
+    map_rollback_button->setVisible(is_map && local_server);
+    updateMapBatchButtons();
     if (!is_map)
     {
         setMapEditMode(false);
@@ -620,6 +735,8 @@ void GuiContentEditor::updateFieldPresentation(ContentResourceType type)
     ship_remove_system_button->setVisible(is_ship);
     ship_undo_button->setVisible(is_ship);
     ship_redo_button->setVisible(is_ship);
+    ship_deploy_button->setVisible(is_ship);
+    ship_rollback_button->setVisible(is_ship && ship_deployment_session.hasActiveDeployment());
     if (is_ship)
         updateShipOverrideEditor();
     else
@@ -1325,6 +1442,64 @@ void GuiContentEditor::redoMapEdit()
     setStatus(tr("content_editor", "Map edit redone."));
 }
 
+void GuiContentEditor::applyMapBatch()
+{
+    if (!game_server)
+        return setStatus(tr("content_editor", "Applying a map requires the local server."));
+    if (map_apply_session.hasActiveBatch())
+        return setStatus(tr("content_editor", "A batch is already applied; undo it before applying again."));
+    cancelMapDrag();
+
+    MapApplyPlan plan;
+    switch (buildMapApplyPlan(map_edit_session.document(), true, plan))
+    {
+    case MapApplyError::InvalidDocument:
+        return setStatus(tr("content_editor", "The staged map is invalid; nothing was applied."));
+    case MapApplyError::NothingToApply:
+        return setStatus(tr("content_editor", "The staged map has no supported objects to apply."));
+    default:
+        break;
+    }
+
+    if (map_apply_session.apply(plan, map_world_adapter.creator(), map_world_adapter.destroyer())
+        != MapApplyError::None)
+    {
+        map_world_adapter.clear();
+        updateMapBatchButtons();
+        return setStatus(tr("content_editor", "Applying the map failed; every created object was removed."));
+    }
+    updateMapBatchButtons();
+    setStatus(tr("content_editor", "Map applied: {count} objects created, {skipped} preserved objects omitted.")
+        .format({
+            {"count", string(static_cast<unsigned int>(map_apply_session.batchHandles().size()))},
+            {"skipped", string(static_cast<unsigned int>(map_apply_session.batchSkipped()))},
+        }));
+}
+
+void GuiContentEditor::rollbackMapBatch()
+{
+    if (!game_server)
+        return setStatus(tr("content_editor", "Undoing an applied map requires the local server."));
+    if (!map_apply_session.hasActiveBatch())
+        return setStatus(tr("content_editor", "There is no applied batch to undo."));
+    std::size_t destroyed = 0;
+    std::size_t missing = 0;
+    map_apply_session.rollback(game_server != nullptr, map_world_adapter.destroyer(), &destroyed, &missing);
+    map_world_adapter.clear();
+    updateMapBatchButtons();
+    setStatus(tr("content_editor", "Applied batch removed: {destroyed} objects destroyed, {missing} were already gone.")
+        .format({
+            {"destroyed", string(static_cast<unsigned int>(destroyed))},
+            {"missing", string(static_cast<unsigned int>(missing))},
+        }));
+}
+
+void GuiContentEditor::updateMapBatchButtons()
+{
+    map_apply_button->setEnable(!map_apply_session.hasActiveBatch());
+    map_rollback_button->setEnable(map_apply_session.hasActiveBatch());
+}
+
 void GuiContentEditor::openShipTemplatePicker()
 {
     ship_template_catalog = gameGlobalInfo
@@ -1647,6 +1822,135 @@ void GuiContentEditor::redoShipEdit()
     setStatus(tr("content_editor", "Ship edit redone."));
 }
 
+string GuiContentEditor::deploymentErrorText(ShipDeploymentError error) const
+{
+    switch(error)
+    {
+    case ShipDeploymentError::None: return "";
+    case ShipDeploymentError::ServerRequired:
+        return tr("content_editor", "Ship deployment requires the local server and a Game Master.");
+    case ShipDeploymentError::InvalidResource:
+        return tr("content_editor", "The ship document is not valid for deployment.");
+    case ShipDeploymentError::TemplateUnavailable:
+        return tr("content_editor", "The selected player-ship template is not available.");
+    case ShipDeploymentError::FactionUnavailable:
+        return tr("content_editor", "The selected faction is not available.");
+    case ShipDeploymentError::InvalidPosition:
+        return tr("content_editor", "The deployment position is outside the safe world bounds.");
+    case ShipDeploymentError::UnsupportedResource:
+        return tr("content_editor", "Deployment supports only energy and coolant resources.");
+    case ShipDeploymentError::UnsupportedCargo:
+        return tr("content_editor", "Deployment supports only medicine and spare-parts cargo.");
+    case ShipDeploymentError::ConfirmationRequired:
+        return tr("content_editor", "Review and confirm the exact deployment plan first.");
+    case ShipDeploymentError::ConfirmationStale:
+        return tr("content_editor", "The deployment plan changed; review it again.");
+    case ShipDeploymentError::ActiveDeployment:
+        return tr("content_editor", "Rollback the active content ship before deploying another.");
+    case ShipDeploymentError::FactoryFailure:
+        return tr("content_editor", "The ship factory failed and removed the partial entity.");
+    case ShipDeploymentError::NothingToRollback:
+        return tr("content_editor", "There is no active content ship to roll back.");
+    case ShipDeploymentError::RollbackFailure:
+        return tr("content_editor", "The active content ship could not be rolled back.");
+    }
+    return tr("content_editor", "Ship deployment failed.");
+}
+
+void GuiContentEditor::deployShip()
+{
+    if (current_type != ContentResourceType::Ship) return;
+    if (ship_deployment_session.hasActiveDeployment())
+        return setStatus(deploymentErrorText(ShipDeploymentError::ActiveDeployment));
+
+    const auto factions = [] {
+        std::vector<std::string> result;
+        for (auto [entity, info] : sp::ecs::Query<FactionInfo>()) result.push_back(info.name);
+        return result;
+    }();
+
+    if (const auto* pending = ship_deployment_session.pendingPlan())
+    {
+        ShipDeploymentPlan current_plan;
+        const auto build_error = buildShipDeploymentPlan(
+            formResource(), gameGlobalInfo ? gameGlobalInfo->getShipTemplateCatalog() : ship_template_catalog,
+            factions, pending->x, pending->y, pending->rotation, game_server != nullptr, current_plan);
+        if (build_error != ShipDeploymentError::None)
+            return setStatus(deploymentErrorText(build_error));
+        if (current_plan.fingerprint != pending->fingerprint)
+        {
+            ship_deployment_session.prepare(current_plan);
+            return setStatus(tr("content_editor", "Deployment plan updated. Review it and press Deploy ship again."));
+        }
+        auto error = ship_deployment_session.confirm(current_plan.fingerprint);
+        if (error == ShipDeploymentError::None)
+        {
+            error = ship_deployment_session.apply([](const ShipDeploymentPlan& plan, std::string& receipt) {
+                sp::ecs::Entity entity;
+                if (!gameGlobalInfo || !gameGlobalInfo->createContentShip(plan, entity)) return false;
+                receipt = entity.toString();
+                return true;
+            });
+        }
+        if (error != ShipDeploymentError::None)
+            return setStatus(deploymentErrorText(error));
+        ship_rollback_button->show();
+        return setStatus(tr("content_editor", "Ship deployed. Rollback removes only this created ship."));
+    }
+
+    ShipDeploymentPlan validation_plan;
+    const auto validation_error = buildShipDeploymentPlan(
+        formResource(), gameGlobalInfo ? gameGlobalInfo->getShipTemplateCatalog() : ship_template_catalog,
+        factions, 0.0f, 0.0f, {}, game_server != nullptr, validation_plan);
+    if (validation_error != ShipDeploymentError::None)
+        return setStatus(deploymentErrorText(validation_error));
+
+    const ContentResource snapshot = formResource();
+    gameGlobalInfo->on_gm_click = [this, snapshot](glm::vec2 position, std::optional<float> rotation) {
+        std::vector<std::string> current_factions;
+        for (auto [entity, info] : sp::ecs::Query<FactionInfo>()) current_factions.push_back(info.name);
+        ShipDeploymentPlan plan;
+        const auto error = buildShipDeploymentPlan(
+            snapshot, gameGlobalInfo->getShipTemplateCatalog(), current_factions,
+            position.x, position.y, rotation, game_server != nullptr, plan);
+        gameGlobalInfo->on_gm_preview_trace = std::nullopt;
+        show();
+        if (error != ShipDeploymentError::None)
+        {
+            setStatus(deploymentErrorText(error));
+        }
+        else
+        {
+            ship_deployment_session.prepare(plan);
+            setStatus(tr("content_editor", "Plan: {template} at ({x}, {y}); {systems} systems, {resources} resources, {cargo} cargo and {positions} crew positions. Press Deploy ship again to confirm.").format({
+                {"template", string(plan.template_id)},
+                {"x", string(plan.x)},
+                {"y", string(plan.y)},
+                {"systems", string(static_cast<int>(plan.overrides.systems.size()))},
+                {"resources", string(static_cast<int>(plan.overrides.resources.size()))},
+                {"cargo", string(static_cast<int>(plan.overrides.cargo.size()))},
+                {"positions", string(static_cast<int>(plan.overrides.crew_position_ids.size()))},
+            }));
+        }
+        // Clearing this std::function destroys the currently executing closure.
+        // Do it only after the final access to its captures.
+        gameGlobalInfo->on_gm_click = nullptr;
+    };
+    hide();
+}
+
+void GuiContentEditor::rollbackShip()
+{
+    const auto error = ship_deployment_session.rollback([](const std::string& receipt) {
+        const auto entity = sp::ecs::Entity::fromString(receipt);
+        return !entity || (gameGlobalInfo && gameGlobalInfo->rollbackContentShip(entity));
+    });
+    if (error != ShipDeploymentError::None)
+        return setStatus(deploymentErrorText(error));
+    ship_rollback_button->hide();
+    setStatus(tr("content_editor", "Content ship rolled back."));
+}
+
 void GuiContentEditor::openRelationEditorForButton(std::size_t index, RelationEditorMode campaign_mode)
 {
     if (current_type != ContentResourceType::Character)
@@ -1671,6 +1975,42 @@ void GuiContentEditor::openRelationEditor(RelationEditorMode mode)
 void GuiContentEditor::closeRelationEditor()
 {
     relation_editor_overlay->hide();
+}
+
+void GuiContentEditor::openCampaignGraph()
+{
+    if (!buildCampaignGraph(formResource(), resources, campaign_graph))
+        return setStatus(tr("content_editor", "The campaign fields cannot be parsed; fix them to view the graph."));
+    if (campaign_graph.nodes.empty())
+        return setStatus(tr("content_editor", "The campaign has no maps to draw."));
+
+    string warnings;
+    if (!campaign_graph.has_starting_map)
+        warnings = tr("content_editor", "No starting map is set; reachability is not checked.");
+    else if (campaign_graph.unreachable_maps > 0)
+        warnings = tr("content_editor", "{count} maps are unreachable from the starting map.")
+            .format({{"count", string(static_cast<unsigned int>(campaign_graph.unreachable_maps))}});
+    const auto missing = campaign_graph.missing_maps + campaign_graph.missing_characters
+        + campaign_graph.missing_ships;
+    if (missing > 0)
+    {
+        if (!warnings.empty()) warnings += " ";
+        warnings += tr("content_editor", "Missing from the library: {maps} maps, {characters} characters, {ships} ships.")
+            .format({
+                {"maps", string(static_cast<unsigned int>(campaign_graph.missing_maps))},
+                {"characters", string(static_cast<unsigned int>(campaign_graph.missing_characters))},
+                {"ships", string(static_cast<unsigned int>(campaign_graph.missing_ships))},
+            });
+    }
+    if (warnings.empty())
+        warnings = tr("content_editor", "Every map is reachable and every reference exists.");
+    campaign_graph_warnings->setText(warnings);
+    campaign_graph_overlay->show()->moveToFront();
+}
+
+void GuiContentEditor::closeCampaignGraph()
+{
+    campaign_graph_overlay->hide();
 }
 
 void GuiContentEditor::refreshRelationEditor()

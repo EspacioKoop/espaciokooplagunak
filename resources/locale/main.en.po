@@ -4313,6 +4313,38 @@ msgid "Campaign transitions contain a cycle."
 msgstr ""
 
 msgctxt "content_editor"
+msgid "View campaign graph"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Campaign graph"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "The campaign fields cannot be parsed; fix them to view the graph."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "The campaign has no maps to draw."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "No starting map is set; reachability is not checked."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "{count} maps are unreachable from the starting map."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Missing from the library: {maps} maps, {characters} characters, {ships} ships."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Every map is reachable and every reference exists."
+msgstr ""
+
+msgctxt "content_editor"
 msgid "Crew position must use a canonical game identifier."
 msgstr ""
 
@@ -4803,6 +4835,150 @@ msgstr ""
 #: src/screens/gm/contentEditor.cpp
 msgctxt "content_editor"
 msgid "Use selection"
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Deploy ship"
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Rollback ship"
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Ship deployment requires the local server and a Game Master."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The ship document is not valid for deployment."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The selected player-ship template is not available."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The selected faction is not available."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The deployment position is outside the safe world bounds."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Deployment supports only energy and coolant resources."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Deployment supports only medicine and spare-parts cargo."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Review and confirm the exact deployment plan first."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The deployment plan changed; review it again."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Rollback the active content ship before deploying another."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The ship factory failed and removed the partial entity."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "There is no active content ship to roll back."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "The active content ship could not be rolled back."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Ship deployment failed."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Deployment plan updated. Review it and press Deploy ship again."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Ship deployed. Rollback removes only this created ship."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Plan: {template} at ({x}, {y}); {systems} systems, {resources} resources, {cargo} cargo and {positions} crew positions. Press Deploy ship again to confirm."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Content ship rolled back."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Apply to world"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Undo applied batch"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Applying a map requires the local server."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Undoing an applied map requires the local server."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "There is no applied batch to undo."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "A batch is already applied; undo it before applying again."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "The staged map is invalid; nothing was applied."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "The staged map has no supported objects to apply."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Applying the map failed; every created object was removed."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Map applied: {count} objects created, {skipped} preserved objects omitted."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Applied batch removed: {destroyed} objects destroyed, {missing} were already gone."
 msgstr ""
 
 msgctxt "content_editor"

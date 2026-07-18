@@ -390,6 +390,19 @@ ContentResourceError validateContentLibrary(const std::vector<ContentResource>& 
     return ContentResourceError::None;
 }
 
+bool campaignFields(const ContentResource& resource, CampaignFields& output)
+{
+    output = {};
+    if (resource.type != ContentResourceType::Campaign) return false;
+    if (!parseIdList(resource.primary, output.map_ids)) return false;
+    if (!resource.secondary.empty() && !validId(resource.secondary)) return false;
+    output.starting_map_id = resource.secondary;
+    if (!parseIdList(resource.tertiary, output.character_ids)) return false;
+    if (!parseIdList(resource.quaternary, output.ship_ids)) return false;
+    if (!parseTransitions(resource.quinary, output.transitions)) return false;
+    return true;
+}
+
 bool addContentReference(ContentResource& resource,
                          const std::vector<ContentResource>& library,
                          ContentReferenceKind kind,

@@ -4848,3 +4848,43 @@ msgstr ""
 msgctxt "content_editor"
 msgid "Applied batch removed: {destroyed} objects destroyed, {missing} were already gone."
 msgstr ""
+
+msgctxt "content_editor"
+msgid "Clear"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Character tags"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Add tag"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "The tag is empty, duplicated or not a portable ID."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "The selected entry cannot move in that direction."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Order updated in staging."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "There is no legacy role to clear."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Legacy role cleared in staging. Save the resource to persist it."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "none"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Linked campaigns: {campaigns} — Ship: {ship}"
+msgstr ""

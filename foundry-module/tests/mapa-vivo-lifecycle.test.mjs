@@ -13,7 +13,14 @@ function diferida() {
   return { promise, resolve };
 }
 
-async function cargarMapa({ modern, t }) {
+async function cargarMapa({
+  modern,
+  t,
+  estadoPendienteSegunda = null,
+  fallarEstadoLecturas = [],
+  fallarContactosLecturas = [],
+  contactosDuplicados = false,
+}) {
   const hooks = {};
   const instancias = [];
   const timers = [];
@@ -21,6 +28,8 @@ async function cargarMapa({ modern, t }) {
   const contactosVistos = diferida();
   const liberarHealthz = diferida();
   const llamadasFetch = [];
+  let lecturasEstado = 0;
+  let lecturasContactos = 0;
   const originales = {
     Application: globalThis.Application,
     Hooks: globalThis.Hooks,
@@ -49,6 +58,29 @@ async function cargarMapa({ modern, t }) {
       instancias.push(this);
       this.rendered = false;
       this.renderCalls = [];
+      this.distanciaNodes = [{ textContent: "" }, { textContent: "" }];
+      this.fueraNodes = [{ hidden: true }, { hidden: true }];
+      this.distanciaNode = this.distanciaNodes[0];
+      this.fueraNode = this.fueraNodes[0];
+      this.detalleDistanciaNode = { textContent: "" };
+      this.detalleRumboNode = { textContent: "" };
+      const botonesContacto = Array.from({ length: contactosDuplicados ? 2 : 1 }, (_, indice) => ({
+        dataset: { contacto: contactosDuplicados ? "?" : "K-7", contactoIndice: String(indice) },
+        querySelector: (selector) => {
+          if (selector === ".lagunak-mapa-distancia") return this.distanciaNodes[indice];
+          if (selector === "[data-lagunak-fuera]") return this.fueraNodes[indice];
+          return null;
+        },
+      }));
+      const raiz = {
+        querySelectorAll: (selector) => selector === "[data-contacto]" ? botonesContacto : [],
+        querySelector: (selector) => {
+          if (selector === "[data-lagunak-detalle-distancia]") return this.detalleDistanciaNode;
+          if (selector === "[data-lagunak-detalle-rumbo]") return this.detalleRumboNode;
+          return null;
+        },
+      };
+      this.element = modern ? raiz : [raiz];
     }
 
     render(options) {
@@ -79,11 +111,13 @@ async function cargarMapa({ modern, t }) {
       register() {},
       get(_module, key) {
         if (key === "bridgeUrl") return "http://bridge.test";
-        if (key === "bridgeToken") return "test-token";
-        return 2;
+        if (key === "pollSeconds") return 2;
       },
     },
-    i18n: { localize: (key) => key, format: (key) => key },
+    i18n: {
+      localize: (key) => key,
+      format: (key, data = {}) => String(data.distance ?? data.rumbo ?? key),
+    },
     journal: { getName: () => null },
   };
   globalThis.JournalEntry = { create: async () => null };
@@ -106,21 +140,43 @@ async function cargarMapa({ modern, t }) {
       return respuesta({ bridge: "ok" });
     }
     if (url.endsWith("/v1/state")) {
+      lecturasEstado += 1;
+      if (lecturasEstado === 2 && estadoPendienteSegunda) await estadoPendienteSegunda.promise;
+      if (fallarEstadoLecturas.includes(lecturasEstado)) throw new TypeError("state inaccesible");
       return respuesta({
         ship: {
-          position: { x: 10, y: 20 },
+          position: { x: lecturasEstado * 10, y: 20 },
           heading: 30,
           destination: { name: "Argia", position: { x: 5000, y: -2000 } },
         },
       });
     }
     if (url.endsWith("/v1/contacts")) {
+      lecturasContactos += 1;
+      if (fallarContactosLecturas.includes(lecturasContactos)) throw new TypeError("contacts inaccesible");
       contactosVistos.resolve();
-      return respuesta({ contacts: [] });
+      const contacts = [{
+        callsign: "K-7",
+        faction: "Kraylor",
+        type: "CpuShip",
+        is_player: false,
+        position: { x: lecturasContactos === 1 ? 100 : 40000, y: 20 },
+      }];
+      if (contactosDuplicados) {
+        contacts[0].callsign = "?";
+        contacts.push({
+          ...contacts[0],
+          position: { x: lecturasContactos === 1 ? 200 : 20000, y: 20 },
+        });
+      }
+      return respuesta({ contacts });
     }
     throw new Error(`Ruta inesperada: ${url}`);
   };
 
+  const tokenSession = await import("../scripts/bridge-token-session.mjs");
+  tokenSession.clearBridgeToken();
+  tokenSession.setBridgeToken("test-token");
   await import(`../scripts/main.mjs?mapa-lifecycle-test=${importNonce++}`);
   return {
     contactosVistos,
@@ -134,7 +190,7 @@ async function cargarMapa({ modern, t }) {
 }
 
 async function vaciarMicrotareas() {
-  for (let i = 0; i < 8; i += 1) await Promise.resolve();
+  for (let i = 0; i < 24; i += 1) await Promise.resolve();
 }
 
 for (const modern of [false, true]) {
@@ -173,6 +229,164 @@ for (const modern of [false, true]) {
       false,
       "una respuesta tardía no debe programar el siguiente sondeo",
     );
+  });
+
+  test(`${version}: un segundo sondeo solo posicional no reconstruye la ventana`, async (t) => {
+    const entorno = await cargarMapa({ modern, t });
+    const controles = modern ? {} : [];
+    entorno.hooks.getSceneControlButtons(controles);
+    const boton = modern
+      ? controles.lagunak.tools["lagunak-mapa"]
+      : controles.find((c) => c.name === "lagunak").tools.find((tool) => tool.name === "lagunak-mapa");
+    boton.onClick();
+
+    const app = entorno.instancias[0];
+    if (modern) app._onFirstRender();
+    else await app._render(true);
+    await entorno.healthzVista.promise;
+    entorno.liberarHealthz.resolve();
+    await entorno.contactosVistos.promise;
+    await vaciarMicrotareas();
+
+    const rendersTrasPrimeraMuestra = app.renderCalls.length;
+    const timer = entorno.timers.find((candidato) => candidato.activo && candidato.delay === 2000);
+    assert.ok(timer, "el primer sondeo correcto debe programar el siguiente");
+    timer.activo = false;
+    timer.callback(...timer.args);
+    await vaciarMicrotareas();
+
+    assert.equal(
+      entorno.llamadasFetch.filter((url) => url.endsWith("/v1/contacts")).length,
+      2,
+      "debe haberse completado un segundo sondeo",
+    );
+    assert.equal(
+      app.renderCalls.length,
+      rendersTrasPrimeraMuestra,
+      "una muestra con la misma estructura no debe sustituir el canvas",
+    );
+    assert.equal(
+      app.distanciaNode.textContent,
+      "39980",
+      "la distancia confirmada debe actualizarse sobre el DOM estable",
+    );
+    assert.equal(app.fueraNode.hidden, false, "el aviso fuera del visor debe aparecer sin re-render");
+
+    if (modern) app._onClose();
+    else await app.close();
+  });
+
+  test(`${version}: filas duplicadas actualizan distancias por índice sin identidad inventada`, async (t) => {
+    const entorno = await cargarMapa({ modern, t, contactosDuplicados: true });
+    const controles = modern ? {} : [];
+    entorno.hooks.getSceneControlButtons(controles);
+    const boton = modern
+      ? controles.lagunak.tools["lagunak-mapa"]
+      : controles.find((c) => c.name === "lagunak").tools.find((tool) => tool.name === "lagunak-mapa");
+    boton.onClick();
+    const app = entorno.instancias[0];
+    if (modern) app._onFirstRender();
+    else await app._render(true);
+    await entorno.healthzVista.promise;
+    entorno.liberarHealthz.resolve();
+    await entorno.contactosVistos.promise;
+    await vaciarMicrotareas();
+
+    const rendersIniciales = app.renderCalls.length;
+    const timer = entorno.timers.find((candidato) => candidato.activo && candidato.delay === 2000);
+    timer.activo = false;
+    timer.callback(...timer.args);
+    await vaciarMicrotareas();
+    assert.equal(app.renderCalls.length, rendersIniciales);
+    assert.deepEqual(app.distanciaNodes.map((nodo) => nodo.textContent), ["39980", "19980"]);
+    assert.deepEqual(app.fueraNodes.map((nodo) => nodo.hidden), [false, true]);
+    if (modern) app._onClose();
+    else await app.close();
+  });
+
+  test(`${version}: no rearma mientras una rama del lote sigue pendiente`, async (t) => {
+    const estadoPendienteSegunda = diferida();
+    const entorno = await cargarMapa({
+      modern,
+      t,
+      estadoPendienteSegunda,
+      fallarContactosLecturas: [2],
+    });
+    const controles = modern ? {} : [];
+    entorno.hooks.getSceneControlButtons(controles);
+    const boton = modern
+      ? controles.lagunak.tools["lagunak-mapa"]
+      : controles.find((c) => c.name === "lagunak").tools.find((tool) => tool.name === "lagunak-mapa");
+    boton.onClick();
+    const app = entorno.instancias[0];
+    if (modern) app._onFirstRender();
+    else await app._render(true);
+    await entorno.healthzVista.promise;
+    entorno.liberarHealthz.resolve();
+    await entorno.contactosVistos.promise;
+    await vaciarMicrotareas();
+
+    const timer = entorno.timers.find((candidato) => candidato.activo && candidato.delay === 2000);
+    assert.ok(timer);
+    timer.activo = false;
+    timer.callback(...timer.args);
+    await vaciarMicrotareas();
+    assert.equal(entorno.llamadasFetch.filter((url) => url.endsWith("/v1/state")).length, 2);
+    assert.equal(entorno.llamadasFetch.filter((url) => url.endsWith("/v1/contacts")).length, 2);
+    assert.equal(
+      entorno.timers.some((candidato) => candidato.activo && candidato.delay === 4000),
+      false,
+      "no debe arrancar backoff mientras /v1/state sigue pendiente",
+    );
+
+    estadoPendienteSegunda.resolve();
+    await vaciarMicrotareas();
+    assert.equal(
+      entorno.timers.some((candidato) => candidato.activo && candidato.delay === 4000),
+      true,
+      "el backoff se arma al asentarse las dos ramas",
+    );
+    if (modern) app._onClose();
+    else await app.close();
+  });
+
+  test(`${version}: un segundo error distinto actualiza el mensaje visible`, async (t) => {
+    const entorno = await cargarMapa({
+      modern,
+      t,
+      fallarContactosLecturas: [2],
+      fallarEstadoLecturas: [3],
+    });
+    const controles = modern ? {} : [];
+    entorno.hooks.getSceneControlButtons(controles);
+    const boton = modern
+      ? controles.lagunak.tools["lagunak-mapa"]
+      : controles.find((c) => c.name === "lagunak").tools.find((tool) => tool.name === "lagunak-mapa");
+    boton.onClick();
+    const app = entorno.instancias[0];
+    if (modern) app._onFirstRender();
+    else await app._render(true);
+    await entorno.healthzVista.promise;
+    entorno.liberarHealthz.resolve();
+    await entorno.contactosVistos.promise;
+    await vaciarMicrotareas();
+
+    const segundo = entorno.timers.find((candidato) => candidato.activo && candidato.delay === 2000);
+    segundo.activo = false;
+    segundo.callback(...segundo.args);
+    await vaciarMicrotareas();
+    const primerError = app.detalleError;
+    const rendersPrimerError = app.renderCalls.length;
+    const tercero = entorno.timers.find((candidato) => candidato.activo && candidato.delay === 4000);
+    assert.ok(tercero);
+    tercero.activo = false;
+    tercero.callback(...tercero.args);
+    await vaciarMicrotareas();
+
+    assert.notEqual(app.detalleError, primerError);
+    assert.ok(app.renderCalls.length > rendersPrimerError, "el nuevo detalle de error debe renderizarse");
+    if (modern) app._onClose();
+    else await app.close();
   });
 }
 

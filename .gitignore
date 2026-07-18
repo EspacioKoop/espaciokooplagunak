@@ -68,3 +68,6 @@ bridge/.venv/
 
 # Artefactos locales de distribución
 /dist/
+
+# Configuración local de análisis SonarQube
+sonar-project.properties

@@ -4626,3 +4626,43 @@ msgstr "Mapa aplicado: {count} objetos creados, {skipped} objetos conservados om
 msgctxt "content_editor"
 msgid "Applied batch removed: {destroyed} objects destroyed, {missing} were already gone."
 msgstr "Lote aplicado retirado: {destroyed} objetos destruidos, {missing} ya no existían."
+
+msgctxt "content_editor"
+msgid "Clear"
+msgstr "Limpiar"
+
+msgctxt "content_editor"
+msgid "Character tags"
+msgstr "Etiquetas del personaje"
+
+msgctxt "content_editor"
+msgid "Add tag"
+msgstr "Añadir etiqueta"
+
+msgctxt "content_editor"
+msgid "The tag is empty, duplicated or not a portable ID."
+msgstr "La etiqueta está vacía, duplicada o no es un ID portable."
+
+msgctxt "content_editor"
+msgid "The selected entry cannot move in that direction."
+msgstr "La entrada seleccionada no puede moverse en esa dirección."
+
+msgctxt "content_editor"
+msgid "Order updated in staging."
+msgstr "Orden actualizado en preparación."
+
+msgctxt "content_editor"
+msgid "There is no legacy role to clear."
+msgstr "No hay rol heredado que limpiar."
+
+msgctxt "content_editor"
+msgid "Legacy role cleared in staging. Save the resource to persist it."
+msgstr "Rol heredado limpiado en preparación. Guarda el recurso para conservarlo."
+
+msgctxt "content_editor"
+msgid "none"
+msgstr "ninguno"
+
+msgctxt "content_editor"
+msgid "Linked campaigns: {campaigns} — Ship: {ship}"
+msgstr "Campañas vinculadas: {campaigns} — Nave: {ship}"

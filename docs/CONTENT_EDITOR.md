@@ -100,7 +100,7 @@ volver a guardarlos o exportarlos se escriben como v4. Un mapa antiguo migra a
 Tipos y campos específicos:
 
 | Tipo | Campos |
-|---|---|
+| --- | --- |
 | `campaign` | `map_ids` ordenados, `starting_map_id`, `character_ids`, `ship_ids`, `transitions` |
 | `map` | `scenario_file`, `recommended_players`, `objects` |
 | `character` | `crew_position_id`, `callsign`, `tags`, `ship_id` opcional, `legacy_role` para migración v1 |
@@ -125,6 +125,15 @@ ID canónico. Un `role` histórico de texto libre se conserva íntegro en
 operativa. El editor muestra ambos campos para que el GM pueda elegir un puesto
 canónico y borrar después el valor histórico; mientras tanto el documento sigue
 siendo válido y puede guardarse o exportarse como v4 sin perder el rol original.
+
+La ficha de personaje es asistida: el puesto y la nave se eligen con selectores
+canónicos (no se puede introducir un puesto o nave inexistente desde la UI), las
+etiquetas se editan como lista normalizada — cada entrada se recorta, pasa a
+minúsculas y convierte separadores en guiones antes de validarse como ID
+portable, sin CSV manual —, el rol heredado se muestra en solo lectura con un
+botón **Clear** para limpiarlo explícitamente, y un resumen de solo lectura
+muestra en qué campañas aparece el personaje y su nave vinculada. Solo el
+callsign sigue siendo texto libre.
 
 `objects` admite inicialmente `asteroid` (posición, rotación y tamaño) y `nebula`
 (posición y rotación). Los IDs son únicos y las coordenadas, rotaciones, tamaños

@@ -51,6 +51,7 @@ private:
         CampaignTransitions,
         CharacterCrewPosition,
         CharacterShip,
+        CharacterTags,
     };
 
     ContentLibraryStore store;
@@ -121,6 +122,8 @@ private:
     GuiLabel* relation_editor_title;
     GuiSelector* relation_candidate_selector;
     GuiSelector* relation_destination_selector;
+    GuiTextEntry* relation_tag_entry;
+    GuiLabel* character_links_label;
     GuiListbox* relation_current_list;
     GuiButton* relation_apply_button;
     GuiButton* relation_clear_button;
@@ -144,6 +147,17 @@ private:
     bool isFormDirty() const;
     bool confirmDiscard(const string& action);
     void saveResource();
+    bool validateSaveCandidate(const ContentResource& resource);
+    bool saveRenamedResource(
+        const ContentResource& resource,
+        std::vector<ContentResource>& candidate,
+        int& target_index,
+        string& success);
+    void reconcileFailedRename(
+        const ContentStoreRenameResult& rename_result,
+        const ContentResource& resource,
+        const ContentResource& original);
+    void openRelationEditorForButton(std::size_t index, RelationEditorMode campaign_mode);
     void deleteResource();
     void exportToClipboard();
     void importFromClipboard();
@@ -178,4 +192,6 @@ private:
     void removeRelationSelection();
     void moveRelationSelection(int direction);
     void applyRelationResource(const ContentResource& resource);
+    void clearLegacyRole();
+    void updateCharacterLinksSummary();
 };

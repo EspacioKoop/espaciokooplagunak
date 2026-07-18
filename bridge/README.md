@@ -51,6 +51,7 @@ objetos había realmente en radio.
 {"op": "set_shields",        "active": true}
 {"op": "set_system_power",   "system": "impulse", "level": 1.5}
 {"op": "set_system_health",  "system": "impulse", "value": -0.75}
+{"op": "spawn_encounter",    "archetype": "derelict", "bearing": "port"}
 {"op": "set_pause",          "paused": true}
 ```
 
@@ -61,6 +62,18 @@ encuentro narrativo — o revertirla. La reparación normal sigue siendo trabajo
 de la tripulación en su estación de ingeniería; el GM la *observa* por
 `/v1/state`, que publica `coolant` por sistema y `repair_crew` global además
 de `health`/`heat`/`power`.
+
+**`spawn_encounter` es la mitad «encuentros» de esa misma palanca** (#117):
+Foundry decide el *qué* (un arquetipo de catálogo cerrado — hoy `derelict`) y
+el escenario decide el *cómo* (posición exacta, facción, estado). `bearing` es
+opcional (`ahead`/`astern`/`port`/`starboard`), un rumbo grueso relativo a la
+nave que el escenario puede honrar laxamente — **nunca se aceptan coordenadas**:
+cualquier campo extra rechaza la orden entera (`422`). El Lua emitido es fijo y
+solo llama al callback `spawnEncounter(archetype, bearing)` que el escenario
+publica bajo el namespace propio `espaciokoop_lagunak` de `getScriptStorage()`;
+si el escenario cargado no lo registra, la respuesta degrada a
+`{"ok":false,"reason":"not_supported"}`. El contacto nuevo aparece por
+`/v1/contacts` y en las estaciones de ciencia/relay de la tripulación.
 
 Cualquier otra operación devuelve `422`. Añadir una orden nueva implica
 añadir un modelo validado en `app.py` y documentarla aquí — nunca un

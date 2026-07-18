@@ -26,6 +26,71 @@
 
 namespace
 {
+// Read-only rendering of a campaign's map graph: one box per map placed on the
+// deterministic grid computed by buildCampaignGraph(), one arrow per transition.
+class GuiCampaignGraphView : public GuiElement
+{
+public:
+    GuiCampaignGraphView(GuiContainer* owner, const CampaignGraph& graph)
+    : GuiElement(owner, "CAMPAIGN_GRAPH_VIEW"), graph(graph) {}
+
+    void onDraw(sp::RenderTarget& renderer) override
+    {
+        renderer.fillRect(rect, glm::u8vec4(0, 0, 0, 120));
+        renderer.outlineRect(rect, glm::u8vec4(128, 128, 128, 128));
+        if (graph.nodes.empty() || graph.columns < 1 || graph.rows < 1)
+            return;
+
+        const float margin = 12.0f;
+        const float cell_width = (rect.size.x - 2.0f * margin) / float(graph.columns);
+        const float cell_height = (rect.size.y - 2.0f * margin) / float(graph.rows);
+        const float node_width = std::min(cell_width - 14.0f, 180.0f);
+        const float node_height = std::min(cell_height - 10.0f, 42.0f);
+        const auto nodeRect = [&](const CampaignGraphNode& node)
+        {
+            const glm::vec2 center{
+                rect.position.x + margin + (float(node.column) + 0.5f) * cell_width,
+                rect.position.y + margin + (float(node.row) + 0.5f) * cell_height,
+            };
+            return sp::Rect(center - glm::vec2(node_width, node_height) * 0.5f,
+                {node_width, node_height});
+        };
+
+        for (const auto& edge : graph.edges)
+        {
+            const auto from = nodeRect(graph.nodes[edge.from]);
+            const auto to = nodeRect(graph.nodes[edge.to]);
+            const glm::vec2 start{from.position.x + from.size.x, from.center().y};
+            const glm::vec2 end{to.position.x, to.center().y};
+            const auto color = glm::u8vec4(200, 200, 200, 200);
+            renderer.drawLine(start, end, color);
+            const auto direction = glm::normalize(end - start);
+            const glm::vec2 normal{-direction.y, direction.x};
+            renderer.drawLine(end, end - direction * 9.0f + normal * 5.0f, color);
+            renderer.drawLine(end, end - direction * 9.0f - normal * 5.0f, color);
+        }
+
+        for (const auto& node : graph.nodes)
+        {
+            const auto box = nodeRect(node);
+            glm::u8vec4 outline{255, 255, 255, 200};
+            if (node.missing_in_library) outline = {255, 96, 96, 230};
+            else if (node.unreachable) outline = {255, 176, 64, 230};
+            else if (node.starting) outline = {96, 255, 128, 230};
+            renderer.fillRect(box, glm::u8vec4(32, 32, 48, 220));
+            renderer.outlineRect(box, outline);
+            string label = node.id;
+            if (node.starting) label = "> " + label;
+            if (node.missing_in_library) label += " !";
+            else if (node.unreachable) label += " ?";
+            renderer.drawText(box, label, sp::Alignment::Center, 18, nullptr, outline);
+        }
+    }
+
+private:
+    const CampaignGraph& graph;
+};
+
 string typeLabel(ContentResourceType type)
 {
     switch(type)
@@ -259,6 +324,10 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
         }
     );
     preview_toggle->setPosition(x, 360)->setSize(250, 40)->hide();
+    campaign_graph_button = new GuiButton(
+        box, "CAMPAIGN_GRAPH", tr("content_editor", "View campaign graph"),
+        [this]() { openCampaignGraph(); });
+    campaign_graph_button->setPosition(x, 360)->setSize(250, 40)->hide();
     preview_status_label = new GuiLabel(box, "MAP_PREVIEW_STATUS", "", 16);
     preview_status_label->setPosition(x + 270, 360)->setSize(420, 40)->hide();
 
@@ -468,6 +537,23 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
         ->setPosition(550, 460)->setSize(180, 40);
     relation_editor_overlay->hide();
 
+    campaign_graph_overlay = new GuiOverlay(
+        box, "CAMPAIGN_GRAPH_OVERLAY", glm::u8vec4(0, 0, 0, 180));
+    auto graph_panel = new GuiPanel(campaign_graph_overlay, "CAMPAIGN_GRAPH_PANEL");
+    graph_panel->setPosition(0, 0, sp::Alignment::Center)->setSize(760, 560);
+    (new GuiLabel(graph_panel, "CAMPAIGN_GRAPH_TITLE",
+        tr("content_editor", "Campaign graph"), 28))
+        ->setPosition(30, 20)->setSize(700, 45);
+    (new GuiCampaignGraphView(graph_panel, campaign_graph))
+        ->setPosition(30, 75)->setSize(700, 330);
+    campaign_graph_warnings = new GuiLabel(graph_panel, "CAMPAIGN_GRAPH_WARNINGS", "", 18);
+    campaign_graph_warnings->setPosition(30, 415)->setSize(700, 40);
+    (new GuiButton(
+        graph_panel, "CAMPAIGN_GRAPH_CLOSE", tr("button", "Close"),
+        [this]() { closeCampaignGraph(); }))
+        ->setPosition(550, 460)->setSize(180, 40);
+    campaign_graph_overlay->hide();
+
     setType(ContentResourceType::Campaign);
     const auto load_result = store.load(resources);
     refreshList();
@@ -604,6 +690,11 @@ void GuiContentEditor::updateFieldPresentation(ContentResourceType type)
             ? tr("content_editor", "Clear")
             : tr("content_editor", "Select"));
     }
+    const bool is_campaign = type == ContentResourceType::Campaign;
+    campaign_graph_button->setVisible(is_campaign);
+    if (!is_campaign)
+        closeCampaignGraph();
+
     const bool is_character = type == ContentResourceType::Character;
     character_links_label->setVisible(is_character);
     if (is_character)
@@ -1742,6 +1833,42 @@ void GuiContentEditor::openRelationEditor(RelationEditorMode mode)
 void GuiContentEditor::closeRelationEditor()
 {
     relation_editor_overlay->hide();
+}
+
+void GuiContentEditor::openCampaignGraph()
+{
+    if (!buildCampaignGraph(formResource(), resources, campaign_graph))
+        return setStatus(tr("content_editor", "The campaign fields cannot be parsed; fix them to view the graph."));
+    if (campaign_graph.nodes.empty())
+        return setStatus(tr("content_editor", "The campaign has no maps to draw."));
+
+    string warnings;
+    if (!campaign_graph.has_starting_map)
+        warnings = tr("content_editor", "No starting map is set; reachability is not checked.");
+    else if (campaign_graph.unreachable_maps > 0)
+        warnings = tr("content_editor", "{count} maps are unreachable from the starting map.")
+            .format({{"count", string(static_cast<unsigned int>(campaign_graph.unreachable_maps))}});
+    const auto missing = campaign_graph.missing_maps + campaign_graph.missing_characters
+        + campaign_graph.missing_ships;
+    if (missing > 0)
+    {
+        if (!warnings.empty()) warnings += " ";
+        warnings += tr("content_editor", "Missing from the library: {maps} maps, {characters} characters, {ships} ships.")
+            .format({
+                {"maps", string(static_cast<unsigned int>(campaign_graph.missing_maps))},
+                {"characters", string(static_cast<unsigned int>(campaign_graph.missing_characters))},
+                {"ships", string(static_cast<unsigned int>(campaign_graph.missing_ships))},
+            });
+    }
+    if (warnings.empty())
+        warnings = tr("content_editor", "Every map is reachable and every reference exists.");
+    campaign_graph_warnings->setText(warnings);
+    campaign_graph_overlay->show()->moveToFront();
+}
+
+void GuiContentEditor::closeCampaignGraph()
+{
+    campaign_graph_overlay->hide();
 }
 
 void GuiContentEditor::refreshRelationEditor()

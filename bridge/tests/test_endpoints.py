@@ -115,6 +115,26 @@ def test_events_devuelve_llegada_normalizada(client, juego, auth):
     }
 
 
+def test_events_devuelve_encuentro_iniciado_normalizado(client, juego, auth):
+    juego.text = (
+        '{"events":[{"id":"encounter-started-s90-123456-000002",'
+        '"type":"encounter_started",'
+        '"scenario":"scenario_90_lagunak_primera_guardia",'
+        '"archetype":"derelict","encounter_callsign":"Hondar 2",'
+        '"scenario_time":42.5}]}'
+    )
+    r = client.get("/v1/events", headers=auth)
+    assert r.status_code == 200
+    assert r.json()["events"][0] == {
+        "id": "encounter-started-s90-123456-000002",
+        "type": "encounter_started",
+        "scenario": "scenario_90_lagunak_primera_guardia",
+        "archetype": "derelict",
+        "encounter_callsign": "Hondar 2",
+        "scenario_time": 42.5,
+    }
+
+
 def test_events_requiere_auth(client, juego):
     assert client.get("/v1/events").status_code == 401
 
@@ -124,3 +144,4 @@ def test_events_envia_solo_lua_fijo_al_juego(client, juego, auth):
     client.get("/v1/events", headers=auth)
     assert "getObjectsInRadius" in juego.ultimo_lua
     assert "LAGUNAK_EVT_arrival_s90_" in juego.ultimo_lua
+    assert "LAGUNAK_EVT_encounter_started_s90_" in juego.ultimo_lua

@@ -264,6 +264,9 @@ Estas decisiones se resolverán mediante issues antes de fijar una API estable.
   `spawnEncounter` bajo el namespace `espaciokoop_lagunak` de
   `getScriptStorage()`. Si el escenario no lo publica, la orden degrada a
   `not_supported`. Foundry jamás envía coordenadas ni definiciones de objeto:
-  sería doble autoridad sobre la verdad de la nave.
+  sería doble autoridad sobre la verdad de la nave. Cuando el escenario crea
+  el encuentro, publica además `encounter_started` en `/v1/events` con un ID
+  estable de sesión y secuencia monotónica; la escritura deduplicada en Journal
+  sigue pendiente de la rebanada de módulo de #117.
 - Órdenes de refrigeración/energía por puesto de jugador quedan para cuando
   existan permisos por puesto (fase 3 tardía / fase 4).

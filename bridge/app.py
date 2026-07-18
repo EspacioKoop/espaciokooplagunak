@@ -263,6 +263,17 @@ for _, object in ipairs(getObjectsInRadius(x, y, 5000)) do
             .. '"destination":"Argia","scenario_time":%.1f}',
             suffix, getScenarioTime())
     end
+    local session_id, sequence = string.match(
+        call_sign,
+        "^LAGUNAK_EVT_encounter_started_s90_(%d%d%d%d%d%d)_(%d%d%d%d%d%d)_derelict$")
+    if session_id ~= nil and sequence ~= nil then
+        events[#events + 1] = string.format(
+            '{"id":"encounter-started-s90-%s-%s","type":"encounter_started",'
+            .. '"scenario":"scenario_90_lagunak_primera_guardia",'
+            .. '"archetype":"derelict","encounter_callsign":"Hondar %d",'
+            .. '"scenario_time":%.1f}',
+            session_id, sequence, tonumber(sequence), getScenarioTime())
+    end
 end
 return '{"events":[' .. table.concat(events, ",") .. ']}'
 """

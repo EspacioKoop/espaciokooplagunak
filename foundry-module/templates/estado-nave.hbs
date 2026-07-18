@@ -21,6 +21,28 @@
     <p class="lagunak-pausa-foundry">{{localize "LAGUNAK.Pausa.FoundryPausado"}}</p>
     {{/if}}
   </div>
+
+  {{#if encuentros.disponible}}
+  <div class="lagunak-encuentros">
+    <label for="lagunak-encuentro-arquetipo">{{localize "LAGUNAK.Encuentros.Titulo"}}</label>
+    <select id="lagunak-encuentro-arquetipo" data-lagunak-encuentro-arquetipo>
+      {{#each encuentros.arquetipos}}
+      <option value="{{this.id}}" {{#if this.seleccionado}}selected{{/if}}>{{this.etiqueta}}</option>
+      {{/each}}
+    </select>
+    <label for="lagunak-encuentro-rumbo" class="lagunak-visualmente-oculto">{{localize "LAGUNAK.Encuentros.RumboEtiqueta"}}</label>
+    <select id="lagunak-encuentro-rumbo" data-lagunak-encuentro-rumbo>
+      <option value="">{{localize "LAGUNAK.Encuentros.RumboEscenario"}}</option>
+      {{#each encuentros.rumbos}}
+      <option value="{{this.id}}" {{#if this.seleccionado}}selected{{/if}}>{{this.etiqueta}}</option>
+      {{/each}}
+    </select>
+    <button type="button" data-action="encuentro" {{#unless encuentros.puedeIntroducir}}disabled{{/unless}}>
+      <i class="fa-solid fa-satellite" aria-hidden="true"></i>
+      {{#if encuentros.pendiente}}{{localize "LAGUNAK.Encuentros.Enviando"}}{{else}}{{localize "LAGUNAK.Encuentros.Boton"}}{{/if}}
+    </button>
+  </div>
+  {{/if}}
   {{/if}}
 
   <details class="lagunak-ayuda" {{#if ayudaAbierta}}open{{/if}}>

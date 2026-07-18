@@ -64,6 +64,28 @@ export class BridgeClient {
     return this.#get("/v1/contacts", { auth: true });
   }
 
+  /** GET /v1/encounters — catálogo cerrado de encuentros del GM (Bearer). */
+  async encounters() {
+    return this.#get("/v1/encounters", { auth: true });
+  }
+
+  /** POST /v1/command — encuentro del catálogo cerrado, con rumbo grueso opcional (Bearer). */
+  async spawnEncounter(archetype, bearing = null) {
+    if (typeof archetype !== "string" || archetype === "") {
+      throw new BridgeError("El arquetipo de encuentro debe ser una cadena", { kind: "parse" });
+    }
+    if (bearing !== null && (typeof bearing !== "string" || bearing === "")) {
+      throw new BridgeError("El rumbo del encuentro debe ser una cadena o null", { kind: "parse" });
+    }
+    const body = { op: "spawn_encounter", archetype };
+    if (bearing !== null) body.bearing = bearing;
+    return this.#request("/v1/command", {
+      auth: true,
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  }
+
   /** POST /v1/command — pausa o reanuda la simulación (Bearer). */
   async setPause(paused) {
     if (typeof paused !== "boolean") {

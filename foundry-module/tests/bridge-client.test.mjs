@@ -82,6 +82,68 @@ test("setPause envía únicamente la orden cerrada con Bearer", async () => {
   });
 });
 
+test("spawnEncounter envía la orden cerrada, omitiendo el rumbo nulo", async () => {
+  const calls = [];
+  const client = new BridgeClient({
+    url: "http://bridge.test",
+    token: "secreto-operativo",
+    fetchImpl: async (url, options) => {
+      calls.push({ url, options });
+      return response({ op: "spawn_encounter", result: { ok: true } });
+    },
+  });
+
+  await client.spawnEncounter("derelict", "port");
+  await client.spawnEncounter("derelict");
+  assert.equal(calls[0].url, "http://bridge.test/v1/command");
+  assert.equal(calls[0].options.method, "POST");
+  assert.equal(calls[0].options.headers.Authorization, "Bearer secreto-operativo");
+  assert.deepEqual(JSON.parse(calls[0].options.body), {
+    op: "spawn_encounter",
+    archetype: "derelict",
+    bearing: "port",
+  });
+  assert.deepEqual(JSON.parse(calls[1].options.body), {
+    op: "spawn_encounter",
+    archetype: "derelict",
+  });
+});
+
+test("spawnEncounter valida arquetipo y rumbo antes de tocar red", async () => {
+  let calls = 0;
+  const client = new BridgeClient({
+    url: "http://bridge.test",
+    token: "x",
+    fetchImpl: async () => {
+      calls += 1;
+      return response({});
+    },
+  });
+
+  await assert.rejects(client.spawnEncounter(""), BridgeError);
+  await assert.rejects(client.spawnEncounter(7), BridgeError);
+  await assert.rejects(client.spawnEncounter("derelict", ""), BridgeError);
+  assert.equal(calls, 0);
+});
+
+test("encounters consulta el catálogo con Bearer", async () => {
+  const calls = [];
+  const client = new BridgeClient({
+    url: "http://bridge.test",
+    token: "secreto-operativo",
+    fetchImpl: async (url, options) => {
+      calls.push({ url, options });
+      return response({ archetypes: ["derelict"], bearings: ["port"] });
+    },
+  });
+
+  const catalogo = await client.encounters();
+  assert.equal(calls[0].url, "http://bridge.test/v1/encounters");
+  assert.equal(calls[0].options.method, "GET");
+  assert.equal(calls[0].options.headers.Authorization, "Bearer secreto-operativo");
+  assert.deepEqual(catalogo.archetypes, ["derelict"]);
+});
+
 test("setPause rechaza valores no booleanos antes de tocar red", async () => {
   let calls = 0;
   const client = new BridgeClient({

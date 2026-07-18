@@ -28,6 +28,12 @@
 import { BridgeClient, BridgeError } from "./bridge-client.mjs";
 import { probarConexion } from "./diagnostico-conexion.mjs";
 import { processBridgeEvents } from "./event-journal.mjs";
+import {
+  claveResultadoEncuentro,
+  introducirEncuentro,
+  normalizarCatalogoEncuentros,
+  prepararVistaEncuentros,
+} from "./encuentro-control.mjs";
 import { dibujarFrame } from "./mapa-render.mjs";
 import { prepararVistaPausa } from "./pausa-control.mjs";
 import { prepareRoute, prepareSystemRows } from "./ship-view.mjs";
@@ -303,6 +309,7 @@ function crearClaseV2() {
         anotar: EstadoNaveApp.onAnotar,
         pausar: EstadoNaveApp.onPausar,
         reanudar: EstadoNaveApp.onReanudar,
+        encuentro: EstadoNaveApp.onEncuentro,
       },
     };
 
@@ -321,6 +328,10 @@ function crearClaseV2() {
     confirmacionPendiente = null; // ACK recibido, a la espera de observarlo en /v1/scenario
     falloOrden = false; // la última orden de pausa terminó en error
     ayudaAbierta = false; // conserva <details open> entre reemplazos del DOM
+    catalogoEncuentros = null; // catálogo de /v1/encounters (null = sin leer)
+    encuentroPendiente = false; // orden spawn_encounter en vuelo
+    encuentroArquetipo = null; // selección conservada entre re-renders
+    encuentroRumbo = null;
 
     #cliente() {
       return new BridgeClient({
@@ -348,6 +359,10 @@ function crearClaseV2() {
           JournalEntry,
           ui,
         });
+        // El catálogo es estático en el puente: se lee una vez por apertura.
+        if (this.catalogoEncuentros === null) {
+          this.catalogoEncuentros = normalizarCatalogoEncuentros(await cliente.encounters());
+        }
         this.conexion = "ok";
         this.detalleError = "";
         this.#fallosSeguidos = 0;
@@ -403,6 +418,13 @@ function crearClaseV2() {
       ayuda?.addEventListener?.("toggle", (event) => {
         this.ayudaAbierta = Boolean(event.currentTarget?.open);
       });
+      // El sondeo reemplaza el DOM: la selección se conserva en la instancia.
+      this.element?.querySelector?.("[data-lagunak-encuentro-arquetipo]")?.addEventListener?.("change", (event) => {
+        this.encuentroArquetipo = event.currentTarget?.value || null;
+      });
+      this.element?.querySelector?.("[data-lagunak-encuentro-rumbo]")?.addEventListener?.("change", (event) => {
+        this.encuentroRumbo = event.currentTarget?.value || null;
+      });
     }
 
     _onClose(options) {
@@ -415,6 +437,10 @@ function crearClaseV2() {
       this.confirmacionPendiente = null;
       this.falloOrden = false;
       this.ayudaAbierta = false;
+      this.catalogoEncuentros = null;
+      this.encuentroPendiente = false;
+      this.encuentroArquetipo = null;
+      this.encuentroRumbo = null;
       super._onClose?.(options);
     }
 
@@ -439,6 +465,14 @@ function crearClaseV2() {
           foundryPausado: Boolean(game.paused),
           i18n: game.i18n,
         }),
+        encuentros: prepararVistaEncuentros({
+          conexion: this.conexion,
+          catalogo: this.catalogoEncuentros,
+          pendiente: this.encuentroPendiente,
+          seleccionArquetipo: this.encuentroArquetipo,
+          seleccionRumbo: this.encuentroRumbo,
+          i18n: game.i18n,
+        }),
         sistemas: nave
           ? prepareSystemRows(nave, game.i18n).map(({ name, health, heat, power }) => ({
               nombre: name,
@@ -448,6 +482,45 @@ function crearClaseV2() {
             }))
           : [],
       };
+    }
+
+    async _introducirEncuentro() {
+      // Una orden cada vez, como la pausa: sin solapar peticiones.
+      if (this.encuentroPendiente) return;
+      const raiz = this.element;
+      const archetype = raiz?.querySelector?.("[data-lagunak-encuentro-arquetipo]")?.value
+        ?? this.encuentroArquetipo
+        ?? this.catalogoEncuentros?.archetypes?.[0];
+      const bearing = raiz?.querySelector?.("[data-lagunak-encuentro-rumbo]")?.value || null;
+      this.encuentroPendiente = true;
+      if (this.rendered) this.render();
+      try {
+        const respuesta = await introducirEncuentro({
+          archetype,
+          bearing,
+          isGM: Boolean(game.user?.isGM),
+          catalogo: this.catalogoEncuentros,
+          client: this.#cliente(),
+        });
+        if (respuesta !== null) {
+          const resultado = claveResultadoEncuentro(respuesta);
+          const mensaje = game.i18n.localize(resultado.clave);
+          if (resultado.ok) ui.notifications.info(mensaje);
+          else ui.notifications.warn(mensaje);
+        }
+      } catch (err) {
+        const message = err instanceof BridgeError
+          ? err.message
+          : game.i18n.localize("LAGUNAK.Errores.Desconocido");
+        ui.notifications.error(message);
+      } finally {
+        this.encuentroPendiente = false;
+        if (this.rendered) this.render();
+      }
+    }
+
+    static async onEncuentro() {
+      return this._introducirEncuentro();
     }
 
     async _cambiarPausa(paused) {
@@ -537,6 +610,10 @@ function crearClaseV1() {
     confirmacionPendiente = null;
     falloOrden = false;
     ayudaAbierta = false;
+    catalogoEncuentros = null;
+    encuentroPendiente = false;
+    encuentroArquetipo = null;
+    encuentroRumbo = null;
 
     static get defaultOptions() {
       return foundry.utils.mergeObject(super.defaultOptions, {
@@ -578,6 +655,10 @@ function crearClaseV1() {
           JournalEntry,
           ui,
         });
+        // El catálogo es estático en el puente: se lee una vez por apertura.
+        if (this.catalogoEncuentros === null) {
+          this.catalogoEncuentros = normalizarCatalogoEncuentros(await cliente.encounters());
+        }
         this.conexion = "ok";
         this.detalleError = "";
         this.#fallosSeguidos = 0;
@@ -637,6 +718,10 @@ function crearClaseV1() {
       this.confirmacionPendiente = null;
       this.falloOrden = false;
       this.ayudaAbierta = false;
+      this.catalogoEncuentros = null;
+      this.encuentroPendiente = false;
+      this.encuentroArquetipo = null;
+      this.encuentroRumbo = null;
       return super.close(options);
     }
 
@@ -645,8 +730,16 @@ function crearClaseV1() {
       html.find('[data-action="anotar"]').on("click", () => this.#anotar());
       html.find('[data-action="pausar"]').on("click", () => this.#cambiarPausa(true));
       html.find('[data-action="reanudar"]').on("click", () => this.#cambiarPausa(false));
+      html.find('[data-action="encuentro"]').on("click", () => this.#introducirEncuentro());
       html.find(".lagunak-ayuda").on("toggle", (event) => {
         this.ayudaAbierta = Boolean(event.currentTarget?.open);
+      });
+      // El sondeo reemplaza el DOM: la selección se conserva en la instancia.
+      html.find("[data-lagunak-encuentro-arquetipo]").on("change", (event) => {
+        this.encuentroArquetipo = event.currentTarget?.value || null;
+      });
+      html.find("[data-lagunak-encuentro-rumbo]").on("change", (event) => {
+        this.encuentroRumbo = event.currentTarget?.value || null;
       });
     }
 
@@ -669,6 +762,14 @@ function crearClaseV1() {
           pendiente: this.ordenPendiente ?? this.confirmacionPendiente,
           falloOrden: this.falloOrden,
           foundryPausado: Boolean(game.paused),
+          i18n: game.i18n,
+        }),
+        encuentros: prepararVistaEncuentros({
+          conexion: this.conexion,
+          catalogo: this.catalogoEncuentros,
+          pendiente: this.encuentroPendiente,
+          seleccionArquetipo: this.encuentroArquetipo,
+          seleccionRumbo: this.encuentroRumbo,
           i18n: game.i18n,
         }),
         sistemas: nave
@@ -708,6 +809,41 @@ function crearClaseV1() {
         ui.notifications.error(message);
       } finally {
         this.ordenPendiente = null;
+        if (this.rendered) this.render(false);
+      }
+    }
+
+    async #introducirEncuentro() {
+      // Una orden cada vez, como la pausa: sin solapar peticiones.
+      if (this.encuentroPendiente) return;
+      const raiz = this.element?.[0];
+      const archetype = raiz?.querySelector?.("[data-lagunak-encuentro-arquetipo]")?.value
+        ?? this.encuentroArquetipo
+        ?? this.catalogoEncuentros?.archetypes?.[0];
+      const bearing = raiz?.querySelector?.("[data-lagunak-encuentro-rumbo]")?.value || null;
+      this.encuentroPendiente = true;
+      if (this.rendered) this.render(false);
+      try {
+        const respuesta = await introducirEncuentro({
+          archetype,
+          bearing,
+          isGM: Boolean(game.user?.isGM),
+          catalogo: this.catalogoEncuentros,
+          client: this.#cliente(),
+        });
+        if (respuesta !== null) {
+          const resultado = claveResultadoEncuentro(respuesta);
+          const mensaje = game.i18n.localize(resultado.clave);
+          if (resultado.ok) ui.notifications.info(mensaje);
+          else ui.notifications.warn(mensaje);
+        }
+      } catch (err) {
+        const message = err instanceof BridgeError
+          ? err.message
+          : game.i18n.localize("LAGUNAK.Errores.Desconocido");
+        ui.notifications.error(message);
+      } finally {
+        this.encuentroPendiente = false;
         if (this.rendered) this.render(false);
       }
     }

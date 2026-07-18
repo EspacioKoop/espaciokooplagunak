@@ -99,15 +99,24 @@ export function ajustarBrillo(hex, factor) {
   return `#${hx(r)}${hx(g)}${hx(b)}`;
 }
 
-/** Elige la silueta a partir del tipo del contacto (clases de EmptyEpsilon). */
-export function clasificarNave(tipo, esJugador = false) {
+/**
+ * Elige la silueta a partir de la plantilla y la clasificación semántica de
+ * EmptyEpsilon. Acepta también una cadena por compatibilidad con consumidores
+ * anteriores; el mapa pasa `{tipo, clase, subclase}` desde `/v1/contacts`.
+ */
+export function clasificarNave(datos, esJugador = false) {
   if (esJugador) return "jugador";
-  const t = typeof tipo === "string" ? tipo.toLowerCase() : "";
+  const campos = typeof datos === "string"
+    ? [datos]
+    : [datos?.tipo ?? datos?.type, datos?.clase ?? datos?.class, datos?.subclase ?? datos?.subclass];
+  const t = campos.filter((valor) => typeof valor === "string").join(" ").toLowerCase();
   if (!t) return "desconocido";
-  if (/(station|base|platform)/.test(t)) return "estacion";
-  if (/(fighter|interceptor|gunship|drone|scout)/.test(t)) return "caza";
-  if (/(freighter|transport|cargo|tug|hauler|tanker)/.test(t)) return "carguero";
-  if (/(cruiser|battleship|dreadnought|frigate|corvette|carrier|destroyer|warship)/.test(t))
+  if (/(station|base|platform|estación|estacion|plataforma)/.test(t)) return "estacion";
+  if (/(freighter|transport|cargo|tug|hauler|tanker|carguero|transporte|remolcador|cisterna)/.test(t))
+    return "carguero";
+  if (/(starfighter|fighter|interceptor|gunship|drone|scout|caza|cañonera|canonera|dron|explorador)/.test(t))
+    return "caza";
+  if (/(cruiser|battleship|dreadnought|frigate|corvette|carrier|destroyer|warship|crucero|acorazado|fragata|corbeta|portaaviones|destructor)/.test(t))
     return "crucero";
   return "desconocido";
 }

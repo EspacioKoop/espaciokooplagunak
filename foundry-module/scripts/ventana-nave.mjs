@@ -119,6 +119,8 @@ export function proyectarContactos({ contacts = [], centro, headingDeg = 0, radi
       callsign: c.callsign ?? "?",
       faction: c.faction ?? null,
       tipo: c.type ?? null,
+      clase: c.class ?? null,
+      subclase: c.subclass ?? null,
       esJugador: Boolean(c.is_player),
       x: cx + rx * escala,
       y: cy + ry * escala,

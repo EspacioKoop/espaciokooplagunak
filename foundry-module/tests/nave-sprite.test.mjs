@@ -7,6 +7,7 @@ import {
   clasificarNave,
   construirSpriteNave,
 } from "../scripts/nave-sprite.mjs";
+import { proyectarContactos } from "../scripts/ventana-nave.mjs";
 
 test("clasificarNave: la nave propia siempre usa la silueta jugador", () => {
   assert.equal(clasificarNave(null, true), "jugador");
@@ -18,6 +19,29 @@ test("clasificarNave mapea las clases de EmptyEpsilon por palabra clave", () => 
   assert.equal(clasificarNave("Goods Freighter 5"), "carguero");
   assert.equal(clasificarNave("Atlantis Cruiser"), "crucero");
   assert.equal(clasificarNave("Sensor Station"), "estacion");
+});
+
+test("DTO real del bridge conserva clase hasta el clasificador de sprites", () => {
+  const [adder] = proyectarContactos({
+    contacts: [{
+      callsign: "Adder-1",
+      position: { x: 100, y: 200 },
+      faction: "Kraylor",
+      type: "Adder MK5",
+      class: "Starfighter",
+      subclass: "Gunship",
+      is_player: false,
+    }],
+    centro: { x: 0, y: 0 },
+  });
+  assert.equal(adder.tipo, "Adder MK5");
+  assert.equal(adder.clase, "Starfighter");
+  assert.equal(adder.subclase, "Gunship");
+  assert.equal(clasificarNave(adder), "caza");
+
+  assert.equal(clasificarNave({ tipo: "Phobos T3", clase: "Frigate", subclase: "Cruiser" }), "crucero");
+  assert.equal(clasificarNave({ tipo: "Goods Freighter 5", clase: "Corvette", subclase: "Freighter" }), "carguero");
+  assert.equal(clasificarNave({ tipo: "Large Station" }), "estacion");
 });
 
 test("clasificarNave sin tipo utilizable cae en desconocido", () => {

@@ -69,8 +69,9 @@ el escenario decide el *cómo* (posición exacta, facción, estado). `bearing` e
 opcional (`ahead`/`astern`/`port`/`starboard`), un rumbo grueso relativo a la
 nave que el escenario puede honrar laxamente — **nunca se aceptan coordenadas**:
 cualquier campo extra rechaza la orden entera (`422`). El Lua emitido es fijo y
-solo llama al global `lagunakSpawnEncounter(archetype, bearing)` que registra
-el escenario; si el escenario cargado no lo define, la respuesta degrada a
+solo llama al callback `spawnEncounter(archetype, bearing)` que el escenario
+publica bajo el namespace propio `espaciokoop_lagunak` de `getScriptStorage()`;
+si el escenario cargado no lo registra, la respuesta degrada a
 `{"ok":false,"reason":"not_supported"}`. El contacto nuevo aparece por
 `/v1/contacts` y en las estaciones de ciencia/relay de la tripulación.
 

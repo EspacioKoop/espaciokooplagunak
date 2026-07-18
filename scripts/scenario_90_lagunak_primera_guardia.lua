@@ -76,6 +76,12 @@ function init()
         :setPosition(15000, -7500):orderDefendLocation(14000, -8000))
 
     fase = "guardia"
+    -- /exec.lua se ejecuta en otro entorno Lua: los globales del escenario no
+    -- cruzan esa frontera. ScriptStorage es el canal explícito que comparte el
+    -- callback cerrado con el puente, bajo un namespace propio del fork.
+    local storage = getScriptStorage()
+    storage.espaciokoop_lagunak = storage.espaciokoop_lagunak or {}
+    storage.espaciokoop_lagunak.spawnEncounter = lagunakSpawnEncounter
     if modoPruebaIndividual then
         instalarControlesPruebaIndividual()
     end

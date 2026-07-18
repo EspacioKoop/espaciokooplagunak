@@ -225,9 +225,11 @@ def test_spawn_encounter_genera_lua_fijo(client, juego, auth):
     )
     assert r.status_code == 200
     assert r.json()["op"] == "spawn_encounter"
-    assert 'lagunakSpawnEncounter("derelict", nil)' in juego.ultimo_lua
+    assert 'spawn("derelict", nil)' in juego.ultimo_lua
+    assert "getScriptStorage()" in juego.ultimo_lua
+    assert "storage.espaciokoop_lagunak" in juego.ultimo_lua
     assert "getPlayerShip(-1)" in juego.ultimo_lua
-    # Degradación honesta cuando el escenario no registra el global.
+    # Degradación honesta cuando el escenario no registra el callback.
     assert "not_supported" in juego.ultimo_lua
 
 
@@ -238,7 +240,7 @@ def test_spawn_encounter_con_rumbo(client, juego, auth):
         json={"op": "spawn_encounter", "archetype": "derelict", "bearing": "port"},
     )
     assert r.status_code == 200
-    assert 'lagunakSpawnEncounter("derelict", "port")' in juego.ultimo_lua
+    assert 'spawn("derelict", "port")' in juego.ultimo_lua
 
 
 def test_spawn_encounter_arquetipo_fuera_de_catalogo_rechazado(client, juego, auth):

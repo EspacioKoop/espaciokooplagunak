@@ -445,10 +445,12 @@ class EncounterBearing(str, Enum):
 class SpawnEncounter(BaseModel):
     """Encuentro inyectado por el GM: la mitad narrativa que faltaba (#117).
 
-    El Lua emitido es fijo y solo llama a un global registrado por el
-    escenario (`lagunakSpawnEncounter`); si el escenario cargado no lo
-    define, degrada honestamente a not_supported — el mismo patrón que
-    _STATE_LUA sin nave. El escenario puede honrar el rumbo laxamente.
+    El Lua emitido es fijo y solo llama al callback que el escenario publica
+    en ``getScriptStorage()``. Ese almacén es la frontera compartida con
+    ``/exec.lua``: los globales del entorno del escenario no son visibles
+    desde el endpoint heredado. Si el escenario no registra el callback,
+    degrada honestamente a ``not_supported``. El escenario puede honrar el
+    rumbo laxamente.
     """
 
     # extra="forbid": una coordenada o campo colado (x, y, faction…) rechaza la
@@ -462,12 +464,15 @@ class SpawnEncounter(BaseModel):
     def lua(self) -> str:
         bearing = f'"{self.bearing.value}"' if self.bearing is not None else "nil"
         return (
-            "if type(lagunakSpawnEncounter) ~= 'function' then\n"
+            "local storage = getScriptStorage()\n"
+            "local integration = storage and storage.espaciokoop_lagunak\n"
+            "local spawn = integration and integration.spawnEncounter\n"
+            "if type(spawn) ~= 'function' then\n"
             "  return '{\"ok\":false,\"reason\":\"not_supported\"}'\n"
             "end\n"
             "local ship = getPlayerShip(-1)\n"
             "if ship == nil then return '{\"ok\":false,\"reason\":\"no_ship\"}' end\n"
-            f'local ok = lagunakSpawnEncounter("{self.archetype.value}", {bearing})\n'
+            f'local ok = spawn("{self.archetype.value}", {bearing})\n'
             "if ok then return '{\"ok\":true}' end\n"
             "return '{\"ok\":false,\"reason\":\"not_supported\"}'"
         )

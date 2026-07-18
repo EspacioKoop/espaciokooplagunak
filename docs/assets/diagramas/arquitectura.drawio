@@ -63,7 +63,7 @@
         <mxCell id="cliente" value="&lt;b&gt;Clientes nativos&lt;/b&gt;&lt;br&gt;[Aplicación de escritorio]&lt;br&gt;&lt;br&gt;Puestos de la tripulación (EmptyEpsilon)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#2E6295;" vertex="1" parent="1">
           <mxGeometry x="80" y="420" width="260" height="110" as="geometry" />
         </mxCell>
-        <mxCell id="navegador" value="&lt;b&gt;Navegador del GM&lt;/b&gt;&lt;br&gt;[Aplicación web cliente]&lt;br&gt;&lt;br&gt;Módulo Lagunak cargado (como en todos los navegadores); único con Bearer configurado (setting client, localStorage) y único que hace fetch al puente" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#2E6295;" vertex="1" parent="1">
+        <mxCell id="navegador" value="&lt;b&gt;Navegador del GM&lt;/b&gt;&lt;br&gt;[Aplicación web cliente]&lt;br&gt;&lt;br&gt;Módulo Lagunak cargado (como en todos los navegadores); único con Bearer configurado en memoria efímera de la pestaña GM y único que hace fetch al puente" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#2E6295;" vertex="1" parent="1">
           <mxGeometry x="80" y="570" width="260" height="120" as="geometry" />
         </mxCell>
         <mxCell id="jugadores-web" value="&lt;b&gt;Navegadores de jugadores&lt;/b&gt;&lt;br&gt;[Aplicación web cliente]&lt;br&gt;Sesión Foundry; módulo Lagunak cargado, sin token ni acceso al puente" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#2E6295;" vertex="1" parent="1">

@@ -54,7 +54,7 @@ std::array<string, 5> fieldLabels(ContentResourceType type)
     case ContentResourceType::Character:
         return {
             tr("content_editor", "Crew position"), tr("content_editor", "Callsign"),
-            tr("content_editor", "Tags (comma separated)"), tr("content_editor", "Ship (optional)"),
+            tr("content_editor", "Character tags"), tr("content_editor", "Ship (optional)"),
             tr("content_editor", "Legacy role (clear after assigning a crew position)"),
         };
     case ContentResourceType::Ship:
@@ -225,6 +225,10 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
     quinary_entry = new GuiTextEntry(box, "QUINARY", "");
     quinary_entry->setPosition(x + 190, 440)->setSize(500, 30);
 
+    character_links_label = new GuiLabel(box, "CHARACTER_LINKS", "", 16);
+    character_links_label->setAlignment(sp::Alignment::CenterLeft)
+        ->setPosition(x, 470)->setSize(690, 20)->hide();
+
     const std::array<RelationEditorMode, 5> campaign_modes = {
         RelationEditorMode::CampaignMaps,
         RelationEditorMode::CampaignStartingMap,
@@ -238,12 +242,7 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
             box, "RELATION_EDIT_" + string(static_cast<unsigned int>(index)),
             tr("content_editor", "Select"),
             [this, index, mode = campaign_modes[index]]() {
-                if (current_type == ContentResourceType::Character && index == 0)
-                    openRelationEditor(RelationEditorMode::CharacterCrewPosition);
-                else if (current_type == ContentResourceType::Character && index == 3)
-                    openRelationEditor(RelationEditorMode::CharacterShip);
-                else
-                    openRelationEditor(mode);
+                openRelationEditorForButton(index, mode);
             });
         relation_edit_buttons[index]->setPosition(x + 545, 280 + 40 * index)
             ->setSize(145, 30)->hide();
@@ -423,11 +422,13 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
     relation_editor_title = new GuiLabel(relation_panel, "RELATION_EDITOR_TITLE", "", 28);
     relation_editor_title->setPosition(30, 20)->setSize(700, 45);
     relation_candidate_selector = new GuiSelector(
-        relation_panel, "RELATION_CANDIDATE", [](int, string) {});
+        relation_panel, "RELATION_CANDIDATE", [](int, string) { /* selection alone has no side effect */ });
     relation_candidate_selector->setTextSize(20)->setPosition(30, 80)->setSize(330, 40);
     relation_destination_selector = new GuiSelector(
-        relation_panel, "RELATION_DESTINATION", [](int, string) {});
+        relation_panel, "RELATION_DESTINATION", [](int, string) { /* selection alone has no side effect */ });
     relation_destination_selector->setTextSize(20)->setPosition(380, 80)->setSize(350, 40);
+    relation_tag_entry = new GuiTextEntry(relation_panel, "RELATION_TAG", "");
+    relation_tag_entry->setSelectOnFocus()->setPosition(30, 80)->setSize(330, 40)->hide();
     relation_apply_button = new GuiButton(
         relation_panel, "RELATION_APPLY", tr("content_editor", "Add selection"),
         [this]() { applyRelationSelection(); });
@@ -437,7 +438,7 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
         [this]() { clearRelationSelection(); });
     relation_clear_button->setPosition(270, 135)->setSize(220, 40);
     relation_current_list = new GuiListbox(
-        relation_panel, "RELATION_CURRENT", [](int, string) {});
+        relation_panel, "RELATION_CURRENT", [](int, string) { /* selection alone has no side effect */ });
     relation_current_list->setTextSize(20)->setButtonHeight(36)
         ->setPosition(30, 190)->setSize(700, 255);
     relation_remove_button = new GuiButton(
@@ -585,13 +586,19 @@ void GuiContentEditor::updateFieldPresentation(ContentResourceType type)
         field_labels[index]->setVisible(!labels[index].empty());
         field_entries[index]->setVisible(!labels[index].empty());
         const bool managed_campaign = type == ContentResourceType::Campaign;
-        const bool managed_character = type == ContentResourceType::Character
-            && (index == 0 || index == 3);
+        const bool managed_character = type == ContentResourceType::Character && index != 1;
         const bool managed = managed_campaign || managed_character;
         field_entries[index]->setEnable(!managed);
         field_entries[index]->setSize(managed ? 340 : 500, 30);
-        relation_edit_buttons[index]->setVisible(managed);
+        relation_edit_buttons[index]->setVisible(managed && !labels[index].empty());
+        relation_edit_buttons[index]->setText(managed_character && index == 4
+            ? tr("content_editor", "Clear")
+            : tr("content_editor", "Select"));
     }
+    const bool is_character = type == ContentResourceType::Character;
+    character_links_label->setVisible(is_character);
+    if (is_character)
+        updateCharacterLinksSummary();
     const bool is_map = type == ContentResourceType::Map;
     preview_toggle->setVisible(is_map);
     map_edit_toggle->setVisible(is_map);
@@ -706,6 +713,7 @@ void GuiContentEditor::clearForm()
     clean_snapshot = formResource();
     updateShipOverrideEditor();
     updatePreviewStatus();
+    updateCharacterLinksSummary();
     syncListSelection();
     setStatus(tr("content_editor", "Create a resource or import one from the clipboard."));
 }
@@ -761,6 +769,7 @@ void GuiContentEditor::loadResource(int index)
     clean_snapshot = resource;
     updateShipOverrideEditor();
     updatePreviewStatus();
+    updateCharacterLinksSummary();
     pending_import = "";
     pending_save = "";
     pending_delete_key = "";
@@ -811,20 +820,36 @@ bool GuiContentEditor::confirmDiscard(const string& action)
     return false;
 }
 
-void GuiContentEditor::saveResource()
+bool GuiContentEditor::validateSaveCandidate(const ContentResource& resource)
 {
-    auto resource = formResource();
-    auto error = validateContentResource(resource);
-    if (error != ContentResourceError::None) return setStatus(errorText(error));
+    const auto error = validateContentResource(resource);
+    if (error != ContentResourceError::None)
+    {
+        setStatus(errorText(error));
+        return false;
+    }
     if (resource.type == ContentResourceType::Ship && gameGlobalInfo)
     {
         const auto template_status = validateShipTemplateSelection(
             gameGlobalInfo->getShipTemplateCatalog(), resource.primary);
         if (template_status == ShipTemplateValidation::TemplateNotFound)
-            return setStatus(tr("content_editor", "The ship template is not available in this scenario."));
+        {
+            setStatus(tr("content_editor", "The ship template is not available in this scenario."));
+            return false;
+        }
         if (template_status == ShipTemplateValidation::ModelMissing)
-            return setStatus(tr("content_editor", "The ship template references a missing 3D model."));
+        {
+            setStatus(tr("content_editor", "The ship template references a missing 3D model."));
+            return false;
+        }
     }
+    return true;
+}
+
+void GuiContentEditor::saveResource()
+{
+    auto resource = formResource();
+    if (!validateSaveCandidate(resource)) return;
 
     int existing = findResource(resource.type, resource.id);
     const bool selected = selected_index >= 0 && selected_index < int(resources.size());
@@ -841,56 +866,8 @@ void GuiContentEditor::saveResource()
     bool already_persisted = false;
     if (renaming)
     {
-        const auto original = resources[selected_index];
-        const auto rename_error = renameContentResource(
-            candidate, original.type, original.id, resource.id);
-        if (rename_error != ContentRenameError::None)
-        {
-            rename_guard.reset();
-            return setStatus(renameErrorText(rename_error));
-        }
-        const string rename_action = "rename:" + contentResourceTypeId(original.type)
-            + ":" + original.id;
-        if (!rename_guard.confirm(rename_action, resource, original))
-        {
-            return setStatus(tr("content_editor",
-                "Changing this ID updates every reference. Press Save again to confirm."));
-        }
-        std::vector<ContentResource> reconciled;
-        const auto rename_result = store.renameResource(original, resource, reconciled);
-        if (!rename_result.ok())
-        {
-            if (rename_result.reconciled)
-            {
-                resources = std::move(reconciled);
-                const auto& identity = rename_result.applied ? resource : original;
-                const auto actual = std::find_if(
-                    resources.begin(), resources.end(), [&](const ContentResource& item) {
-                        return item.type == identity.type && item.id == identity.id;
-                    });
-                const int actual_index = actual == resources.end()
-                    ? -1 : int(actual - resources.begin());
-                refreshList();
-                if (actual_index >= 0) loadResource(actual_index);
-                else clearForm();
-            }
-            pending_save = "";
-            if (rename_result.rename_error != ContentRenameError::None)
-                return setStatus(renameErrorText(rename_result.rename_error));
-            if (rename_result.reconciled && rename_result.applied)
-                return setStatus(tr("content_editor",
-                    "The rename was recovered after a storage error. Review the reloaded library."));
-            return setStatus(storeErrorText(rename_result.store_error));
-        }
-        candidate = std::move(reconciled);
-        const auto target = std::find_if(candidate.begin(), candidate.end(), [&](const ContentResource& item) {
-            return item.type == resource.type && item.id == resource.id;
-        });
-        if (target == candidate.end())
-            return setStatus(tr("content_editor", "The renamed resource could not be reloaded."));
-        target_index = int(target - candidate.begin());
+        if (!saveRenamedResource(resource, candidate, target_index, success)) return;
         already_persisted = true;
-        success = tr("content_editor", "Resource renamed and references updated.");
     }
     else if (replacing_other)
     {
@@ -943,6 +920,79 @@ void GuiContentEditor::saveResource()
     rename_guard.reset();
     refreshList();
     setStatus(success);
+}
+
+bool GuiContentEditor::saveRenamedResource(
+    const ContentResource& resource,
+    std::vector<ContentResource>& candidate,
+    int& target_index,
+    string& success)
+{
+    const auto original = resources[selected_index];
+    const auto rename_error = renameContentResource(
+        candidate, original.type, original.id, resource.id);
+    if (rename_error != ContentRenameError::None)
+    {
+        rename_guard.reset();
+        setStatus(renameErrorText(rename_error));
+        return false;
+    }
+    const string rename_action = "rename:" + contentResourceTypeId(original.type)
+        + ":" + original.id;
+    if (!rename_guard.confirm(rename_action, resource, original))
+    {
+        setStatus(tr("content_editor",
+            "Changing this ID updates every reference. Press Save again to confirm."));
+        return false;
+    }
+    std::vector<ContentResource> reconciled;
+    const auto rename_result = store.renameResource(original, resource, reconciled);
+    if (!rename_result.ok())
+    {
+        if (rename_result.reconciled)
+        {
+            resources = std::move(reconciled);
+            reconcileFailedRename(rename_result, resource, original);
+        }
+        pending_save = "";
+        if (rename_result.rename_error != ContentRenameError::None)
+            setStatus(renameErrorText(rename_result.rename_error));
+        else if (rename_result.reconciled && rename_result.applied)
+            setStatus(tr("content_editor",
+                "The rename was recovered after a storage error. Review the reloaded library."));
+        else
+            setStatus(storeErrorText(rename_result.store_error));
+        return false;
+    }
+    candidate = std::move(reconciled);
+    const auto target = std::find_if(candidate.begin(), candidate.end(), [&](const ContentResource& item) {
+        return item.type == resource.type && item.id == resource.id;
+    });
+    if (target == candidate.end())
+    {
+        setStatus(tr("content_editor", "The renamed resource could not be reloaded."));
+        return false;
+    }
+    target_index = int(target - candidate.begin());
+    success = tr("content_editor", "Resource renamed and references updated.");
+    return true;
+}
+
+void GuiContentEditor::reconcileFailedRename(
+    const ContentStoreRenameResult& rename_result,
+    const ContentResource& resource,
+    const ContentResource& original)
+{
+    const auto& identity = rename_result.applied ? resource : original;
+    const auto actual = std::find_if(
+        resources.begin(), resources.end(), [&](const ContentResource& item) {
+            return item.type == identity.type && item.id == identity.id;
+        });
+    const int actual_index = actual == resources.end()
+        ? -1 : int(actual - resources.begin());
+    refreshList();
+    if (actual_index >= 0) loadResource(actual_index);
+    else clearForm();
 }
 
 void GuiContentEditor::deleteResource()
@@ -1597,6 +1647,20 @@ void GuiContentEditor::redoShipEdit()
     setStatus(tr("content_editor", "Ship edit redone."));
 }
 
+void GuiContentEditor::openRelationEditorForButton(std::size_t index, RelationEditorMode campaign_mode)
+{
+    if (current_type != ContentResourceType::Character)
+        return openRelationEditor(campaign_mode);
+    switch (index)
+    {
+    case 0: return openRelationEditor(RelationEditorMode::CharacterCrewPosition);
+    case 2: return openRelationEditor(RelationEditorMode::CharacterTags);
+    case 3: return openRelationEditor(RelationEditorMode::CharacterShip);
+    case 4: return clearLegacyRole();
+    default: return openRelationEditor(campaign_mode);
+    }
+}
+
 void GuiContentEditor::openRelationEditor(RelationEditorMode mode)
 {
     relation_editor_mode = mode;
@@ -1617,6 +1681,7 @@ void GuiContentEditor::refreshRelationEditor()
     relation_current_list->clear();
     relation_candidate_selector->show();
     relation_destination_selector->hide();
+    relation_tag_entry->hide();
     relation_apply_button->show();
     relation_apply_button->setText(tr("content_editor", "Add selection"));
     relation_clear_button->hide();
@@ -1718,6 +1783,17 @@ void GuiContentEditor::refreshRelationEditor()
         relation_clear_button->show();
         relation_remove_button->hide();
         break;
+    case RelationEditorMode::CharacterTags:
+        relation_editor_title->setText(tr("content_editor", "Character tags"));
+        relation_candidate_selector->hide();
+        relation_tag_entry->show();
+        relation_apply_button->setText(tr("content_editor", "Add tag"));
+        for (const auto& tag : relationItems(resource.tertiary))
+            relation_current_list->addEntry(tag, tag);
+        relation_current_list->setSelectionIndex(relation_current_list->entryCount() > 0 ? 0 : -1);
+        relation_up_button->show();
+        relation_down_button->show();
+        break;
     }
 }
 
@@ -1750,9 +1826,16 @@ void GuiContentEditor::applyRelationSelection()
     case RelationEditorMode::CharacterShip:
         changed = setCharacterShipReference(resource, resources, selected);
         break;
+    case RelationEditorMode::CharacterTags:
+        changed = addCharacterTag(resource, relation_tag_entry->getText());
+        break;
     }
     if (!changed)
-        return setStatus(tr("content_editor", "The selected relationship is invalid or already present."));
+        return setStatus(relation_editor_mode == RelationEditorMode::CharacterTags
+            ? tr("content_editor", "The tag is empty, duplicated or not a portable ID.")
+            : tr("content_editor", "The selected relationship is invalid or already present."));
+    if (relation_editor_mode == RelationEditorMode::CharacterTags)
+        relation_tag_entry->setText("");
     applyRelationResource(resource);
     refreshRelationEditor();
     setStatus(tr("content_editor", "Relationship staged. Save the resource to persist it."));
@@ -1786,6 +1869,8 @@ void GuiContentEditor::removeRelationSelection()
         changed = removeContentReference(resource, ContentReferenceKind::CampaignCharacter, selected);
     else if (relation_editor_mode == RelationEditorMode::CampaignShips)
         changed = removeContentReference(resource, ContentReferenceKind::CampaignShip, selected);
+    else if (relation_editor_mode == RelationEditorMode::CharacterTags)
+        changed = removeCharacterTag(resource, selected);
     else if (relation_editor_mode == RelationEditorMode::CampaignTransitions)
     {
         const auto separator = selected.find('>');
@@ -1803,12 +1888,16 @@ void GuiContentEditor::removeRelationSelection()
 void GuiContentEditor::moveRelationSelection(int direction)
 {
     auto resource = formResource();
-    if (relation_editor_mode != RelationEditorMode::CampaignMaps
-        || !moveCampaignMap(resource, relation_current_list->getSelectionValue(), direction))
-        return setStatus(tr("content_editor", "The selected map cannot move in that direction."));
+    bool changed = false;
+    if (relation_editor_mode == RelationEditorMode::CampaignMaps)
+        changed = moveCampaignMap(resource, relation_current_list->getSelectionValue(), direction);
+    else if (relation_editor_mode == RelationEditorMode::CharacterTags)
+        changed = moveCharacterTag(resource, relation_current_list->getSelectionValue(), direction);
+    if (!changed)
+        return setStatus(tr("content_editor", "The selected entry cannot move in that direction."));
     applyRelationResource(resource);
     refreshRelationEditor();
-    setStatus(tr("content_editor", "Campaign map order updated in staging."));
+    setStatus(tr("content_editor", "Order updated in staging."));
 }
 
 void GuiContentEditor::applyRelationResource(const ContentResource& resource)
@@ -1822,4 +1911,45 @@ void GuiContentEditor::applyRelationResource(const ContentResource& resource)
     pending_file_export = "";
     discard_guard.reset();
     rename_guard.reset();
+    updateCharacterLinksSummary();
+}
+
+void GuiContentEditor::clearLegacyRole()
+{
+    auto resource = formResource();
+    if (!clearCharacterLegacyRole(resource))
+        return setStatus(tr("content_editor", "There is no legacy role to clear."));
+    applyRelationResource(resource);
+    setStatus(tr("content_editor", "Legacy role cleared in staging. Save the resource to persist it."));
+}
+
+void GuiContentEditor::updateCharacterLinksSummary()
+{
+    if (current_type != ContentResourceType::Character || !character_links_label)
+        return;
+    const auto resource = formResource();
+    string campaigns;
+    for (const auto& item : resources)
+    {
+        if (item.type != ContentResourceType::Campaign) continue;
+        for (const auto& id : relationItems(item.tertiary))
+        {
+            if (id != resource.id) continue;
+            if (!campaigns.empty()) campaigns += ", ";
+            campaigns += item.name.empty() ? string(item.id) : string(item.name);
+            break;
+        }
+    }
+    if (campaigns.empty()) campaigns = tr("content_editor", "none");
+    string ship = tr("content_editor", "none");
+    if (!resource.quaternary.empty())
+    {
+        ship = resource.quaternary;
+        for (const auto& item : resources)
+            if (item.type == ContentResourceType::Ship && item.id == resource.quaternary && !item.name.empty())
+                ship = item.name;
+    }
+    character_links_label->setText(
+        tr("content_editor", "Linked campaigns: {campaigns} — Ship: {ship}")
+            .format({{"campaigns", campaigns}, {"ship", ship}}));
 }

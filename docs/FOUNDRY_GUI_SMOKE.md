@@ -65,7 +65,12 @@ marca esas casillas como `N/A` en vez de asumir un resultado.
    ```
 
 6. Entra al mundo como GM, activa «Espaciokoop Lagunak — Puente de mando» y recarga el mundo.
-7. En *Configuración → Ajustes del módulo*, configura la URL segura elegida, el token y un intervalo de 2 segundos. El token es una credencial provisional guardada en el navegador del GM: no lo copies a un ajuste de mundo, Journal, issue o captura.
+7. En *Configuración → Ajustes del módulo*, configura la URL segura elegida y
+   un intervalo de 2 segundos. Después pulsa **Configurar token del puente** en
+   los controles de escena del GM y pégalo en el campo de contraseña. El token
+   vive solo en memoria durante esa sesión de la pestaña: no se guarda en los
+   ajustes del navegador ni del mundo y, tras recargar o cerrar, hay que pegarlo
+   de nuevo. No lo copies a Journal, issues o capturas.
 8. Abre las herramientas de desarrollo del navegador, limpia la consola y evita capturar paneles de red que muestren cabeceras `Authorization`.
 
 ## Identificación del anfitrión
@@ -96,6 +101,31 @@ Ejecuta la secuencia completa en cada anfitrión:
 - [ ] La página contiene datos de nave, pero no URL del puente, token ni cabeceras HTTP.
 - [ ] En otro navegador autenticado como usuario no-GM, no aparece el botón y
       no queda abierta una ventana agregada de la nave.
+
+### Token efímero y revocación
+
+1. Con el estado ya conectado, recarga la pestaña del GM.
+
+- [ ] El módulo no reutiliza el token anterior y vuelve a pedir configuración.
+- [ ] Las ventanas que consultan el puente fallan cerradas: no conservan un
+      cliente autenticado ni muestran datos nuevos con la credencial anterior.
+- [ ] El ajuste legado `bridgeToken`, si existía de una instalación previa,
+      queda vacío y no vuelve a poblarse.
+
+2. Pega de nuevo el token mediante **Configurar token del puente** y valida la
+   conexión.
+
+- [ ] Estado, mapa y consola GM recuperan la conexión sin reiniciar Foundry.
+- [ ] El campo de contraseña nunca aparece pre-rellenado.
+
+3. Usa la acción de borrar/revocar el token con ventanas del módulo abiertas.
+
+- [ ] Todas dejan de usar el cliente autenticado anterior y pasan a estado sin
+      credencial/error controlado.
+- [ ] Una respuesta tardía iniciada antes de la revocación no repinta datos ni
+      reabre una ventana cerrada.
+- [ ] Token, URL con credenciales y cabeceras `Authorization` siguen ausentes de
+      consola, notificaciones y Journal.
 
 ### Pausa y reanudación (si están incluidas en el commit)
 
@@ -173,7 +203,8 @@ Copia esta plantilla en el issue #29 por cada anfitrión:
 - Pausa/reanudación y efecto observable: OK / FALLA / N/A
 - Escritura en Journal: OK / FALLA
 - Caída y recuperación del puente: OK / FALLA
-- Token ausente de logs/Journal/evidencias: OK / FALLA
+- Token efímero tras recarga/revocación: OK / FALLA
+- Token ausente de ajustes/logs/Journal/evidencias: OK / FALLA
 - Evidencias saneadas de datos de entorno/campaña: OK / FALLA
 - Evidencias: <enlaces o descripción>
 - Incidencias: <ninguna o detalle reproducible>

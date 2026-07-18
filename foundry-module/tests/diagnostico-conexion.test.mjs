@@ -89,6 +89,24 @@ test("puente accesible pero token vacio devuelve sin-token sin llamar a /v1/stat
   assert.equal(calls.length, 1);
 });
 
+test("revocar durante healthz impide iniciar /v1/state", async () => {
+  let authorized = true;
+  const calls = [];
+  const res = await probarConexion({
+    url: "http://bridge.test",
+    token: "secreto",
+    canUseToken: () => authorized,
+    fetchImpl: async (url) => {
+      calls.push(url);
+      authorized = false;
+      return response({ status: "ok" });
+    },
+  });
+  assert.equal(res.codigo, "sin-token");
+  assert.equal(calls.length, 1);
+  assert.ok(calls[0].endsWith("/healthz"));
+});
+
 test("fallo no-auth en /v1/state se reporta como error-puente", async () => {
   const { impl } = fetchPorRuta({
     "/healthz": () => response({ status: "ok" }),

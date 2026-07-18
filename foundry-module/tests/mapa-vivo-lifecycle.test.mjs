@@ -111,8 +111,7 @@ async function cargarMapa({
       register() {},
       get(_module, key) {
         if (key === "bridgeUrl") return "http://bridge.test";
-        if (key === "bridgeToken") return "test-token";
-        return 2;
+        if (key === "pollSeconds") return 2;
       },
     },
     i18n: {
@@ -175,6 +174,9 @@ async function cargarMapa({
     throw new Error(`Ruta inesperada: ${url}`);
   };
 
+  const tokenSession = await import("../scripts/bridge-token-session.mjs");
+  tokenSession.clearBridgeToken();
+  tokenSession.setBridgeToken("test-token");
   await import(`../scripts/main.mjs?mapa-lifecycle-test=${importNonce++}`);
   return {
     contactosVistos,

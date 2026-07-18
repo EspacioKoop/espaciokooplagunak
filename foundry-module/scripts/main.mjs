@@ -587,6 +587,10 @@ function crearClaseV2() {
           catalogo: this.catalogoEncuentros,
           client: this.#cliente(),
         });
+        // El rol pudo revocarse mientras la orden viajaba: un ACK privilegiado
+        // tardío no debe notificar ni repoblar la ventana (fail-closed, como ya
+        // hacen el sondeo y el token).
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
         if (respuesta !== null) {
           const resultado = claveResultadoEncuentro(respuesta);
           const mensaje = game.i18n.localize(resultado.clave);
@@ -594,6 +598,7 @@ function crearClaseV2() {
           else ui.notifications.warn(mensaje);
         }
       } catch (err) {
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
         const message = err instanceof BridgeError
           ? err.message
           : game.i18n.localize("LAGUNAK.Errores.Desconocido");
@@ -930,6 +935,10 @@ function crearClaseV1() {
           catalogo: this.catalogoEncuentros,
           client: this.#cliente(),
         });
+        // El rol pudo revocarse mientras la orden viajaba: un ACK privilegiado
+        // tardío no debe notificar ni repoblar la ventana (fail-closed, como ya
+        // hacen el sondeo y el token).
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
         if (respuesta !== null) {
           const resultado = claveResultadoEncuentro(respuesta);
           const mensaje = game.i18n.localize(resultado.clave);
@@ -937,6 +946,7 @@ function crearClaseV1() {
           else ui.notifications.warn(mensaje);
         }
       } catch (err) {
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
         const message = err instanceof BridgeError
           ? err.message
           : game.i18n.localize("LAGUNAK.Errores.Desconocido");

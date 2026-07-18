@@ -95,7 +95,7 @@ export function dibujarFrame(ctx, frame, { ancho = 320, alto = 320, decorado = [
       dibujarNaveSprite(
         ctx,
         construirSpriteNave({ clave: clasificarNave(blip, false), color: blip.color }),
-        { centroX: blip.x, centroY: blip.y, pixel: 1 },
+        { centroX: blip.x, centroY: blip.y, pixel: 2 },
       );
     } else {
       // Fuera de alcance: marca en el borde del anillo, hacia el contacto.

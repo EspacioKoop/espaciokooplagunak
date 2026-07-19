@@ -373,14 +373,26 @@ function pintarPlaneta(ctx, el, x, y, tMs = 0) {
   if (el.anillo) pintarAnillo(ctx, el, cx, cy, radio, true); // anillo delantero
 }
 
+// Huella exterior de un elemento grande para el culling de la rejilla 3×3. Un
+// planeta con anillo se extiende hasta `1.9*r` (más la segunda banda), muy por
+// encima de `el.r`: descartar por `el.r` cortaría el anillo al cruzar un borde
+// (costura). El anillo solo lo pinta el planeta; nebulosas usan su propio radio.
+function huellaGrande(tipo, el) {
+  if (tipo !== "nebulosa" && tipo !== "nebulosa_lejana" && el.anillo) {
+    return el.r * 1.9 + 2;
+  }
+  return el.r;
+}
+
 // Elementos grandes (nebulosa/planeta): se replican en una rejilla 3×3 para
 // envolver el lienzo sin costura; las copias fuera de vista se descartan.
 function pintarGrande(ctx, tipo, el, x, y, ancho, alto, tMs) {
+  const huella = huellaGrande(tipo, el);
   for (const ox of [-ancho, 0, ancho]) {
     for (const oy of [-alto, 0, alto]) {
       const px = x + ox;
       const py = y + oy;
-      if (px + el.r < 0 || px - el.r > ancho || py + el.r < 0 || py - el.r > alto) continue;
+      if (px + huella < 0 || px - huella > ancho || py + huella < 0 || py - huella > alto) continue;
       if (tipo === "nebulosa_lejana") pintarNebulosaLejana(ctx, el, px, py);
       else if (tipo === "nebulosa") pintarNebulosa(ctx, el, px, py);
       else pintarPlaneta(ctx, el, px, py, tMs);

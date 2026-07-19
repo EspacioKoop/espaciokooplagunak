@@ -35,6 +35,7 @@ import {
 } from "./bridge-token-session.mjs";
 import { probarConexion } from "./diagnostico-conexion.mjs";
 import { processBridgeEvents } from "./event-journal.mjs";
+import { anotarAlertas, derivarAlertas } from "./alertas-nave.mjs";
 import { dibujarFrame } from "./mapa-render.mjs";
 import { prepararVistaPausa } from "./pausa-control.mjs";
 import { prepareRoute, prepareSystemRows } from "./ship-view.mjs";
@@ -67,6 +68,10 @@ const BACKOFF_MAX_MS = 60000;
 const MAPA_RADIO_MUNDO = 30000;
 const MAPA_FPS = 60;
 const MAPA_SEMILLA = 0x4c4147;
+// Nonce de alertas por sesión del navegador (como el id de llegada del
+// escenario): mantiene únicos los eventId de alerta entre sesiones y deja que un
+// umbral se anote una sola vez por sesión aunque oscile.
+const ALERTAS_NONCE = String(Math.floor(Math.random() * 1000000)).padStart(6, "0");
 
 registerStationFeature(MODULE_ID);
 registerWorkspaceFeature(MODULE_ID);
@@ -420,6 +425,7 @@ function crearClaseV2() {
         if (this.bridgeAccessRevoked || !game.user?.isGM) return;
         const eventos = await cliente.events();
         if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        const navePrevAlertas = this.ultimoEstado?.ship ?? null;
         this.ultimoEstado = estado;
         this._registrarLecturaPausa(escenario);
         await processBridgeEvents({
@@ -427,6 +433,14 @@ function crearClaseV2() {
           game,
           JournalEntry,
           ui,
+        });
+        await anotarAlertas({
+          alertas: derivarAlertas(navePrevAlertas, estado?.ship ?? null),
+          nonce: ALERTAS_NONCE,
+          game,
+          JournalEntry,
+          ui,
+          sigueVigente: () => !this.bridgeAccessRevoked && Boolean(game.user?.isGM),
         });
         if (this.bridgeAccessRevoked || !game.user?.isGM) return;
         this.conexion = "ok";
@@ -661,6 +675,7 @@ function crearClaseV1() {
         if (this.bridgeAccessRevoked || !game.user?.isGM) return;
         const eventos = await cliente.events();
         if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        const navePrevAlertas = this.ultimoEstado?.ship ?? null;
         this.ultimoEstado = estado;
         this._registrarLecturaPausa(escenario);
         await processBridgeEvents({
@@ -668,6 +683,14 @@ function crearClaseV1() {
           game,
           JournalEntry,
           ui,
+        });
+        await anotarAlertas({
+          alertas: derivarAlertas(navePrevAlertas, estado?.ship ?? null),
+          nonce: ALERTAS_NONCE,
+          game,
+          JournalEntry,
+          ui,
+          sigueVigente: () => !this.bridgeAccessRevoked && Boolean(game.user?.isGM),
         });
         if (this.bridgeAccessRevoked || !game.user?.isGM) return;
         this.conexion = "ok";

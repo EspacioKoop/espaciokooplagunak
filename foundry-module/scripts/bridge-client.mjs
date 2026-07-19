@@ -81,6 +81,21 @@ export class BridgeClient {
     });
   }
 
+  /**
+   * POST /v1/command — reparte energía a un sistema de la nave (Bearer).
+   * Panel de ingeniería del GM: `system` es un identificador cerrado que el
+   * puente valida (enum SystemName) y `level` el rango 0..3 que acepta.
+   */
+  async setSystemPower(system, level) {
+    if (typeof system !== "string" || system === "") {
+      throw new BridgeError("El sistema debe ser una cadena", { kind: "parse" });
+    }
+    if (typeof level !== "number" || !Number.isFinite(level) || level < 0 || level > 3) {
+      throw new BridgeError("El nivel de energía debe estar entre 0 y 3", { kind: "parse" });
+    }
+    return this.#command({ op: "set_system_power", system, level });
+  }
+
   /** POST /v1/command — orden directa de impulso, −1..1 (Bearer). */
   async setImpulse(value) {
     if (typeof value !== "number" || !Number.isFinite(value) || value < -1 || value > 1) {

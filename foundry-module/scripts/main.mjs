@@ -39,6 +39,11 @@ import { anotarAlertas, derivarAlertas } from "./alertas-nave.mjs";
 import { dibujarFrame } from "./mapa-render.mjs";
 import { prepararVistaPausa } from "./pausa-control.mjs";
 import {
+  ajustarPotencia,
+  claveResultadoIngenieria,
+  prepararVistaIngenieria,
+} from "./ingenieria-control.mjs";
+import {
   claveResultadoManiobra,
   ordenarManiobra,
   prepararVistaManiobra,
@@ -365,6 +370,7 @@ function crearClaseV2() {
         anotar: EstadoNaveApp.onAnotar,
         pausar: EstadoNaveApp.onPausar,
         reanudar: EstadoNaveApp.onReanudar,
+        ajustarIngenieria: EstadoNaveApp.onAjustarIngenieria,
         ordenarImpulso: EstadoNaveApp.onOrdenarImpulso,
         ordenarWarp: EstadoNaveApp.onOrdenarWarp,
         ordenarRumbo: EstadoNaveApp.onOrdenarRumbo,
@@ -387,6 +393,12 @@ function crearClaseV2() {
     confirmacionPendiente = null; // ACK recibido, a la espera de observarlo en /v1/scenario
     falloOrden = false; // la última orden de pausa terminó en error
     ayudaAbierta = false; // conserva <details open> entre reemplazos del DOM
+    // Panel de ingeniería del GM: selección y orden en vuelo. La selección se
+    // conserva entre reemplazos del DOM del sondeo (como <details open>).
+    ingenieriaSistema = null;
+    ingenieriaNivel = 1;
+    ingenieriaPendiente = false;
+    ingenieriaFallo = false;
     // Órdenes directas del GM (#176): una orden cada vez y último fallo.
     maniobraPendiente = false;
     maniobraFallo = false;
@@ -492,6 +504,17 @@ function crearClaseV2() {
       ayuda?.addEventListener?.("toggle", (event) => {
         this.ayudaAbierta = Boolean(event.currentTarget?.open);
       });
+      // La selección de ingeniería se conserva en la instancia para sobrevivir
+      // a los reemplazos del DOM del sondeo (que reconstruyen los <select>).
+      const sistema = this.element?.querySelector?.('[data-field="ingenieria-sistema"]');
+      sistema?.addEventListener?.("change", (event) => {
+        this.ingenieriaSistema = event.currentTarget?.value ?? null;
+      });
+      const nivel = this.element?.querySelector?.('[data-field="ingenieria-nivel"]');
+      nivel?.addEventListener?.("change", (event) => {
+        const parsed = Number(event.currentTarget?.value);
+        if (Number.isFinite(parsed)) this.ingenieriaNivel = parsed;
+      });
     }
 
     _onClose(options) {
@@ -504,6 +527,10 @@ function crearClaseV2() {
       this.confirmacionPendiente = null;
       this.falloOrden = false;
       this.ayudaAbierta = false;
+      this.ingenieriaSistema = null;
+      this.ingenieriaNivel = 1;
+      this.ingenieriaPendiente = false;
+      this.ingenieriaFallo = false;
       this.maniobraPendiente = false;
       this.maniobraFallo = false;
       super._onClose?.(options);
@@ -545,6 +572,15 @@ function crearClaseV2() {
               potencia: power,
             }))
           : [],
+        ingenieria: prepararVistaIngenieria({
+          conexion: this.conexion,
+          ship: nave,
+          pendiente: this.ingenieriaPendiente,
+          seleccionSistema: this.ingenieriaSistema,
+          seleccionNivel: this.ingenieriaNivel,
+          i18n: game.i18n,
+        }),
+        ingenieriaFallo: this.ingenieriaFallo,
       };
     }
 
@@ -639,6 +675,62 @@ function crearClaseV2() {
       return this._cambiarPausa(false);
     }
 
+    static async onAjustarIngenieria() {
+      return this._ajustarIngenieria();
+    }
+
+    /**
+     * Reparte energía al sistema seleccionado (panel de ingeniería del GM).
+     * Una orden cada vez; revalida revocación y rol tras el await antes de
+     * notificar o repoblar (lección de #201: un ACK tardío no debe alterar una
+     * ventana ya revocada).
+     */
+    async _ajustarIngenieria() {
+      if (this.ingenieriaPendiente || !game.user?.isGM || this.bridgeAccessRevoked) return;
+      const system = this.ingenieriaSistema ?? this.#sistemaIngenieriaPorDefecto();
+      const level = this.ingenieriaNivel;
+      if (system == null) return;
+      this.ingenieriaSistema = system;
+      this.ingenieriaPendiente = true;
+      this.ingenieriaFallo = false;
+      if (this.rendered) this.render();
+      try {
+        const respuesta = await ajustarPotencia({
+          system,
+          level,
+          isGM: Boolean(game.user?.isGM),
+          client: this.#cliente(),
+        });
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        const { ok, clave } = claveResultadoIngenieria(respuesta);
+        this.ingenieriaFallo = !ok;
+        (ok ? ui.notifications.info : ui.notifications.warn).call(
+          ui.notifications,
+          game.i18n.localize(clave),
+        );
+      } catch (err) {
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        this.ingenieriaFallo = true;
+        const message = err instanceof BridgeError
+          ? err.message
+          : game.i18n.localize("LAGUNAK.Errores.Desconocido");
+        ui.notifications.error(message);
+      } finally {
+        this.ingenieriaPendiente = false;
+        if (!this.bridgeAccessRevoked && game.user?.isGM && this.rendered) this.render();
+      }
+    }
+
+    /** Primer sistema presente en el último estado, para el valor por defecto. */
+    #sistemaIngenieriaPorDefecto() {
+      const vista = prepararVistaIngenieria({
+        conexion: this.conexion,
+        ship: this.ultimoEstado?.ship ?? null,
+        i18n: game.i18n,
+      });
+      return vista.opcionesSistema[0]?.id ?? null;
+    }
+
     /** Acción del botón «Anotar estado»: escribe el estado actual en el diario. */
     static async onAnotar() {
       if (!game.user?.isGM) return;
@@ -688,6 +780,10 @@ function crearClaseV1() {
     confirmacionPendiente = null;
     falloOrden = false;
     ayudaAbierta = false;
+    ingenieriaSistema = null;
+    ingenieriaNivel = 1;
+    ingenieriaPendiente = false;
+    ingenieriaFallo = false;
     maniobraPendiente = false;
     maniobraFallo = false;
     bridgeAccessRevoked = false;
@@ -810,6 +906,10 @@ function crearClaseV1() {
       this.confirmacionPendiente = null;
       this.falloOrden = false;
       this.ayudaAbierta = false;
+      this.ingenieriaSistema = null;
+      this.ingenieriaNivel = 1;
+      this.ingenieriaPendiente = false;
+      this.ingenieriaFallo = false;
       this.maniobraPendiente = false;
       this.maniobraFallo = false;
       return super.close(options);
@@ -828,6 +928,14 @@ function crearClaseV1() {
         this.#emitirManiobra("heading", Number(html.find('[data-field="maniobra-rumbo"]').val())));
       html.find('[data-action="pausar"]').on("click", () => this.#cambiarPausa(true));
       html.find('[data-action="reanudar"]').on("click", () => this.#cambiarPausa(false));
+      html.find('[data-action="ajustarIngenieria"]').on("click", () => this.#ajustarIngenieria());
+      html.find('[data-field="ingenieria-sistema"]').on("change", (event) => {
+        this.ingenieriaSistema = event.currentTarget?.value ?? null;
+      });
+      html.find('[data-field="ingenieria-nivel"]').on("change", (event) => {
+        const parsed = Number(event.currentTarget?.value);
+        if (Number.isFinite(parsed)) this.ingenieriaNivel = parsed;
+      });
       html.find(".lagunak-ayuda").on("toggle", (event) => {
         this.ayudaAbierta = Boolean(event.currentTarget?.open);
       });
@@ -869,7 +977,52 @@ function crearClaseV1() {
               potencia: power,
             }))
           : [],
+        ingenieria: prepararVistaIngenieria({
+          conexion: this.conexion,
+          ship: nave,
+          pendiente: this.ingenieriaPendiente,
+          seleccionSistema: this.ingenieriaSistema,
+          seleccionNivel: this.ingenieriaNivel,
+          i18n: game.i18n,
+        }),
+        ingenieriaFallo: this.ingenieriaFallo,
       };
+    }
+
+    async #ajustarIngenieria() {
+      if (this.ingenieriaPendiente || !game.user?.isGM || this.bridgeAccessRevoked) return;
+      const system = this.ingenieriaSistema ?? this.#sistemaIngenieriaPorDefecto();
+      const level = this.ingenieriaNivel;
+      if (system == null) return;
+      this.ingenieriaSistema = system;
+      this.ingenieriaPendiente = true;
+      this.ingenieriaFallo = false;
+      if (this.rendered) this.render(false);
+      try {
+        const respuesta = await ajustarPotencia({
+          system,
+          level,
+          isGM: Boolean(game.user?.isGM),
+          client: this.#cliente(),
+        });
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        const { ok, clave } = claveResultadoIngenieria(respuesta);
+        this.ingenieriaFallo = !ok;
+        (ok ? ui.notifications.info : ui.notifications.warn).call(
+          ui.notifications,
+          game.i18n.localize(clave),
+        );
+      } catch (err) {
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        this.ingenieriaFallo = true;
+        const message = err instanceof BridgeError
+          ? err.message
+          : game.i18n.localize("LAGUNAK.Errores.Desconocido");
+        ui.notifications.error(message);
+      } finally {
+        this.ingenieriaPendiente = false;
+        if (!this.bridgeAccessRevoked && game.user?.isGM && this.rendered) this.render(false);
+      }
     }
 
     async #emitirManiobra(op, value) {
@@ -902,6 +1055,15 @@ function crearClaseV1() {
         this.maniobraPendiente = false;
         if (!this.bridgeAccessRevoked && game.user?.isGM && this.rendered) this.render(false);
       }
+    }
+
+    #sistemaIngenieriaPorDefecto() {
+      const vista = prepararVistaIngenieria({
+        conexion: this.conexion,
+        ship: this.ultimoEstado?.ship ?? null,
+        i18n: game.i18n,
+      });
+      return vista.opcionesSistema[0]?.id ?? null;
     }
 
     async #cambiarPausa(paused) {

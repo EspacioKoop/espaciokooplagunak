@@ -40,6 +40,32 @@ El control de tempo inicial es binario: `pauseGame()` / `unpauseGame()` son las
 estado consultable porque `setGameSpeed`, `getGameSpeed` y un getter de pausa no
 existen en la API Lua observada.
 
+### Superficies de control del GM
+
+La ventana **Estado de nave** del módulo agrupa las órdenes cerradas que el GM
+puede dar desde Foundry. Todas son **solo-GM** (el token del puente es solo-GM;
+los permisos por puesto para la tripulación siguen pendientes, ver
+[`bridge/README.md`](../bridge/README.md)), viven en las dos rutas aisladas del
+módulo (ApplicationV2 y la clásica de v11) y revalidan rol y revocación tras
+cada llamada de red:
+
+- **Tempo** — pausa/reanudación de extremo a extremo (integrado; #34/#125). La
+  aceleración temporal queda fuera por falta de API del juego.
+- **Reposición** — recolocar la nave junto a un ancla de un catálogo cerrado que
+  el puente publica en `/v1/anchors`; el escenario es dueño de la coordenada
+  exacta (integrado; #176/#202).
+- **Ingeniería** — repartir energía por sistema (`set_system_power`) y leer
+  `health`/`heat`/`power`/`coolant` y `repair_crew` de `/v1/state`. No sustituye
+  la reparación de la tripulación en EmptyEpsilon; la observa (en revisión:
+  PR #217, issue #216).
+- **Órdenes directas** — impulso, warp, rumbo (8 puntos de brújula) y escudos:
+  las cuatro órdenes de nave que el puente ya autoriza, para dirigir la nave sin
+  pasar por los puestos (en revisión: PR #218, issue #176).
+- **Encuentros** — inyectar un objeto de un catálogo cerrado de arquetipos:
+  `derelict`, `patrol`, `freighter`, `sentry`. Foundry elige el arquetipo; el
+  escenario decide plantilla, facción, posición y orden de IA. Nunca se aceptan
+  coordenadas (#117; catálogo ampliado en PR #220, UI en PR #201).
+
 ## Visión de juego
 
 Foundry conserva personajes, fichas, mapas narrativos, diarios, reglas y estado general de la campaña. Espaciokoop Lagunak ejecuta la vida operativa de la nave: trayectos, navegación, sistemas, recursos, averías, encuentros y coordinación de la tripulación.

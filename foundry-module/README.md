@@ -5,16 +5,31 @@ vivo de la nave simulada en Espaciokoop Lagunak y ofrece controles GM cerrados,
 consultando el [puente de integración](../bridge/README.md) (contrato v0) por
 polling.
 
+## Compatibilidad objetivo
+
+El proyecto mantiene dos entornos de Foundry como objetivos explícitos:
+
+| Entorno | Foundry VTT | Sistema de juego | Papel en el proyecto |
+|---|---|---|---|
+| Eloy | **v11.302** | **dnd5e 2.3.1** | Objetivo legado y de regresión que no debe romperse |
+| Varo/OTACON | Versión estable más reciente disponible | Registrar id y versión en cada smoke | Objetivo moderno de desarrollo y APIs actuales |
+
+`dnd5e 2.3.1` identifica el mundo real usado por Eloy para probar; no es una
+dependencia obligatoria del módulo. El código debe conservar tanto la ruta
+clásica de v11 como la moderna: usa `Application` en v11 y, cuando el anfitrión
+expone la API, `ApplicationV2`. Un cambio que use APIs modernas no puede romper
+v11.302 de forma implícita; retirar ese objetivo requiere una decisión explícita
+del proyecto.
+
+Foundry VTT **v11.302 está verificado** (issue #7). Las versiones modernas solo
+se añadirán a `compatibility.verified` después de ejecutar y registrar su smoke
+real en el issue [#29](https://github.com/VaroTv7/espaciokooplagunak/issues/29).
+Solo importa la versión del **anfitrión** que hospeda la partida: los jugadores
+se conectan por navegador y no ejecutan el servidor, aunque el módulo se carga
+también en sus clientes web.
+
 ## Requisitos
 
-- Foundry VTT **v11.302 verificado** (la mesa real, issue #7). El módulo es
-  adaptativo: usa la ventana clásica `Application` en v11 y, si el anfitrión
-  ofrece `ApplicationV2`, la ventana moderna automáticamente. Incluye la forma
-  de controles de escena de v13, pero v12/v13 siguen pendientes de prueba en
-  una instalación real antes de declararlas verificadas. Solo importa la
-  versión del **anfitrión** que hospeda la partida: los jugadores se conectan
-  por navegador y no ejecutan el servidor, pero el módulo se carga también en
-  sus clientes web.
 - El puente de integración en marcha (`docker/README.md`): juego + puente vía
   compose, con `BRIDGE_TOKEN` definido y el origen web de Foundry incluido en
   `BRIDGE_ALLOWED_ORIGINS` (por ejemplo, `http://localhost:30000`).

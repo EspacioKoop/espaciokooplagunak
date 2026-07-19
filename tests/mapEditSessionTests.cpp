@@ -52,6 +52,55 @@ int main()
         "undo returns to the clean snapshot");
     expect(session.redo() && session.isDirty(), "redo restores the edit");
 
+    MapEditSession placement;
+    std::string placed_id;
+    expect(placement.addObject(MapObjectKind::Asteroid, {300, -400, 0}, &placed_id)
+            == MapEditError::None
+            && placed_id == "asteroid-1"
+            && placement.document().objects[0].size == 120.0f,
+        "closed asteroid placement generates a valid default object");
+    expect(placement.addObject(asteroid("asteroid-2")) == MapEditError::None,
+        "explicit object can reserve a later generated id");
+    expect(placement.addObject(MapObjectKind::Asteroid, {500, 600, 0}, &placed_id)
+            == MapEditError::None && placed_id == "asteroid-3",
+        "generated id uses the first free deterministic suffix");
+    expect(placement.addObject(MapObjectKind::Nebula, {-10, 20, 0}, &placed_id)
+            == MapEditError::None && placed_id == "nebula-1",
+        "closed nebula placement uses an independent deterministic prefix");
+    const auto before_invalid_placement = placement.document();
+    expect(placement.addObject(MapObjectKind::Unsupported, {1, 2, 0}, &placed_id)
+            == MapEditError::WrongKind
+            && placed_id.empty()
+            && placement.document() == before_invalid_placement,
+        "unsupported placement fails without mutating staging");
+    expect(placement.addObject(MapObjectKind::Nebula,
+            {std::numeric_limits<float>::infinity(), 2, 0}, &placed_id)
+            == MapEditError::InvalidDocument
+            && placement.document() == before_invalid_placement,
+        "invalid placement is atomic");
+    expect(placement.undo() && placement.document().objects.size() == 3,
+        "one undo removes exactly the last successful placement");
+    expect(placement.redo() && placement.document().objects.size() == 4,
+        "redo restores the placed object exactly");
+
+    MapEditSession opaque_id_collision;
+    MapObject opaque_reserved;
+    opaque_reserved.id = "asteroid-1";
+    opaque_reserved.kind = MapObjectKind::Unsupported;
+    opaque_reserved.opaque_json = R"({"id":"asteroid-1","kind":"comet"})";
+    expect(opaque_id_collision.addObject(opaque_reserved) == MapEditError::None
+            && opaque_id_collision.addObject(
+                MapObjectKind::Asteroid, {0, 0, 0}, &placed_id) == MapEditError::None
+            && placed_id == "asteroid-2",
+        "opaque ids reserve the same document namespace as supported objects");
+
+    MapEditSession lowest_free_id;
+    expect(lowest_free_id.addObject(asteroid("asteroid-2")) == MapEditError::None
+            && lowest_free_id.addObject(
+                MapObjectKind::Asteroid, {0, 0, 0}, &placed_id) == MapEditError::None
+            && placed_id == "asteroid-1",
+        "generated id deterministically chooses the lowest free suffix");
+
     expect(session.moveObject("missing", {1, 2, 3}) == MapEditError::NotFound,
         "missing move does not mutate staging");
     expect(session.moveObject("asteroid-1", {50, 60, 70}) == MapEditError::None

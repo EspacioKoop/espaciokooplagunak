@@ -71,8 +71,12 @@ test("ajustar: GM con sistema y nivel válidos envía la orden", async () => {
   assert.deepEqual(r, { result: { ok: true } });
 });
 
-test("clave de resultado: ok, sin nave y fallo", () => {
-  assert.deepEqual(claveResultadoIngenieria({ result: { ok: true } }), { ok: true, clave: "LAGUNAK.Ingenieria.Ajustada" });
+test("un ACK aislado confirma orden aceptada, no energía ya ajustada", () => {
+  const ack = claveResultadoIngenieria({ result: { ok: true } });
+  assert.deepEqual(ack, { ok: true, clave: "LAGUNAK.Ingenieria.Aceptada" });
+});
+
+test("clave de resultado: sin nave y fallo", () => {
   assert.deepEqual(claveResultadoIngenieria({ result: { ok: false, reason: "no_ship" } }), { ok: false, clave: "LAGUNAK.Ingenieria.SinNave" });
   assert.deepEqual(claveResultadoIngenieria({}), { ok: false, clave: "LAGUNAK.Ingenieria.Fallo" });
   assert.deepEqual(claveResultadoIngenieria(null), { ok: false, clave: "LAGUNAK.Ingenieria.Fallo" });

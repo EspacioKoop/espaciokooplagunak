@@ -32,6 +32,8 @@ class FoundryPackageTests(unittest.TestCase):
                 self.assertIn("module.json", names)
                 self.assertIn("LICENSE", names)
                 self.assertIn("scripts/main.mjs", names)
+                self.assertIn("scripts/catalogo-cosmografico.mjs", names)
+                self.assertIn("data/cosmografia.example.json", names)
                 self.assertTrue(all(not name.startswith("tests/") for name in names))
                 self.assertTrue(all("__pycache__" not in name for name in names))
                 self.assertEqual(names, sorted(names))

@@ -43,6 +43,11 @@ import {
   claveResultadoIngenieria,
   prepararVistaIngenieria,
 } from "./ingenieria-control.mjs";
+import {
+  claveResultadoManiobra,
+  ordenarManiobra,
+  prepararVistaManiobra,
+} from "./maniobra-control.mjs";
 import { prepareRoute, prepareSystemRows } from "./ship-view.mjs";
 import { setSimulationPaused } from "./tempo-control.mjs";
 import { addStationControl, registerStationFeature } from "./station-ui.mjs";
@@ -366,6 +371,10 @@ function crearClaseV2() {
         pausar: EstadoNaveApp.onPausar,
         reanudar: EstadoNaveApp.onReanudar,
         ajustarIngenieria: EstadoNaveApp.onAjustarIngenieria,
+        ordenarImpulso: EstadoNaveApp.onOrdenarImpulso,
+        ordenarWarp: EstadoNaveApp.onOrdenarWarp,
+        ordenarRumbo: EstadoNaveApp.onOrdenarRumbo,
+        ordenarEscudos: EstadoNaveApp.onOrdenarEscudos,
       },
     };
 
@@ -390,6 +399,9 @@ function crearClaseV2() {
     ingenieriaNivel = 1;
     ingenieriaPendiente = false;
     ingenieriaFallo = false;
+    // Órdenes directas del GM (#176): una orden cada vez y último fallo.
+    maniobraPendiente = false;
+    maniobraFallo = false;
     bridgeAccessRevoked = false;
 
     #cliente() {
@@ -519,6 +531,8 @@ function crearClaseV2() {
       this.ingenieriaNivel = 1;
       this.ingenieriaPendiente = false;
       this.ingenieriaFallo = false;
+      this.maniobraPendiente = false;
+      this.maniobraFallo = false;
       super._onClose?.(options);
     }
 
@@ -543,6 +557,13 @@ function crearClaseV2() {
           foundryPausado: Boolean(game.paused),
           i18n: game.i18n,
         }),
+        maniobra: prepararVistaManiobra({
+          conexion: this.conexion,
+          ship: nave,
+          pendiente: this.maniobraPendiente,
+          i18n: game.i18n,
+        }),
+        maniobraFallo: this.maniobraFallo,
         sistemas: nave
           ? prepareSystemRows(nave, game.i18n).map(({ name, health, heat, power }) => ({
               nombre: name,
@@ -561,6 +582,59 @@ function crearClaseV2() {
         }),
         ingenieriaFallo: this.ingenieriaFallo,
       };
+    }
+
+    /**
+     * Emite una orden directa (#176). Una orden cada vez; revalida revocación y
+     * rol tras el await antes de notificar o repoblar (lección de #201).
+     */
+    async _emitirManiobra(op, value) {
+      if (this.maniobraPendiente || !game.user?.isGM || this.bridgeAccessRevoked) return;
+      this.maniobraPendiente = true;
+      this.maniobraFallo = false;
+      if (this.rendered) this.render();
+      try {
+        const respuesta = await ordenarManiobra({
+          op,
+          value,
+          isGM: Boolean(game.user?.isGM),
+          client: this.#cliente(),
+        });
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        const { ok, clave } = claveResultadoManiobra(respuesta);
+        this.maniobraFallo = !ok;
+        (ok ? ui.notifications.info : ui.notifications.warn).call(
+          ui.notifications,
+          game.i18n.localize(clave),
+        );
+      } catch (err) {
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        this.maniobraFallo = true;
+        const message = err instanceof BridgeError
+          ? err.message
+          : game.i18n.localize("LAGUNAK.Errores.Desconocido");
+        ui.notifications.error(message);
+      } finally {
+        this.maniobraPendiente = false;
+        if (!this.bridgeAccessRevoked && game.user?.isGM && this.rendered) this.render();
+      }
+    }
+
+    static async onOrdenarImpulso(_event, target) {
+      return this._emitirManiobra("impulse", Number(target?.dataset?.value));
+    }
+
+    static async onOrdenarWarp(_event, target) {
+      return this._emitirManiobra("warp", Number(target?.dataset?.value));
+    }
+
+    static async onOrdenarRumbo() {
+      const select = this.element?.querySelector?.('[data-field="maniobra-rumbo"]');
+      return this._emitirManiobra("heading", Number(select?.value));
+    }
+
+    static async onOrdenarEscudos(_event, target) {
+      return this._emitirManiobra("shields", target?.dataset?.value === "true");
     }
 
     async _cambiarPausa(paused) {
@@ -710,6 +784,8 @@ function crearClaseV1() {
     ingenieriaNivel = 1;
     ingenieriaPendiente = false;
     ingenieriaFallo = false;
+    maniobraPendiente = false;
+    maniobraFallo = false;
     bridgeAccessRevoked = false;
 
     static get defaultOptions() {
@@ -834,12 +910,22 @@ function crearClaseV1() {
       this.ingenieriaNivel = 1;
       this.ingenieriaPendiente = false;
       this.ingenieriaFallo = false;
+      this.maniobraPendiente = false;
+      this.maniobraFallo = false;
       return super.close(options);
     }
 
     activateListeners(html) {
       super.activateListeners(html);
       html.find('[data-action="anotar"]').on("click", () => this.#anotar());
+      html.find('[data-action="ordenarImpulso"]').on("click", (event) =>
+        this.#emitirManiobra("impulse", Number(event.currentTarget?.dataset?.value)));
+      html.find('[data-action="ordenarWarp"]').on("click", (event) =>
+        this.#emitirManiobra("warp", Number(event.currentTarget?.dataset?.value)));
+      html.find('[data-action="ordenarEscudos"]').on("click", (event) =>
+        this.#emitirManiobra("shields", event.currentTarget?.dataset?.value === "true"));
+      html.find('[data-action="ordenarRumbo"]').on("click", () =>
+        this.#emitirManiobra("heading", Number(html.find('[data-field="maniobra-rumbo"]').val())));
       html.find('[data-action="pausar"]').on("click", () => this.#cambiarPausa(true));
       html.find('[data-action="reanudar"]').on("click", () => this.#cambiarPausa(false));
       html.find('[data-action="ajustarIngenieria"]').on("click", () => this.#ajustarIngenieria());
@@ -876,6 +962,13 @@ function crearClaseV1() {
           foundryPausado: Boolean(game.paused),
           i18n: game.i18n,
         }),
+        maniobra: prepararVistaManiobra({
+          conexion: this.conexion,
+          ship: nave,
+          pendiente: this.maniobraPendiente,
+          i18n: game.i18n,
+        }),
+        maniobraFallo: this.maniobraFallo,
         sistemas: nave
           ? prepareSystemRows(nave, game.i18n).map(({ name, health, heat, power }) => ({
               nombre: name,
@@ -928,6 +1021,38 @@ function crearClaseV1() {
         ui.notifications.error(message);
       } finally {
         this.ingenieriaPendiente = false;
+        if (!this.bridgeAccessRevoked && game.user?.isGM && this.rendered) this.render(false);
+      }
+    }
+
+    async #emitirManiobra(op, value) {
+      if (this.maniobraPendiente || !game.user?.isGM || this.bridgeAccessRevoked) return;
+      this.maniobraPendiente = true;
+      this.maniobraFallo = false;
+      if (this.rendered) this.render(false);
+      try {
+        const respuesta = await ordenarManiobra({
+          op,
+          value,
+          isGM: Boolean(game.user?.isGM),
+          client: this.#cliente(),
+        });
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        const { ok, clave } = claveResultadoManiobra(respuesta);
+        this.maniobraFallo = !ok;
+        (ok ? ui.notifications.info : ui.notifications.warn).call(
+          ui.notifications,
+          game.i18n.localize(clave),
+        );
+      } catch (err) {
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        this.maniobraFallo = true;
+        const message = err instanceof BridgeError
+          ? err.message
+          : game.i18n.localize("LAGUNAK.Errores.Desconocido");
+        ui.notifications.error(message);
+      } finally {
+        this.maniobraPendiente = false;
         if (!this.bridgeAccessRevoked && game.user?.isGM && this.rendered) this.render(false);
       }
     }

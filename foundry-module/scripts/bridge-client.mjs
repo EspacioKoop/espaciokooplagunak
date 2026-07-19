@@ -93,11 +93,39 @@ export class BridgeClient {
     if (typeof level !== "number" || !Number.isFinite(level) || level < 0 || level > 3) {
       throw new BridgeError("El nivel de energía debe estar entre 0 y 3", { kind: "parse" });
     }
-    return this.#request("/v1/command", {
-      auth: true,
-      method: "POST",
-      body: JSON.stringify({ op: "set_system_power", system, level }),
-    });
+    return this.#command({ op: "set_system_power", system, level });
+  }
+
+  /** POST /v1/command — orden directa de impulso, −1..1 (Bearer). */
+  async setImpulse(value) {
+    if (typeof value !== "number" || !Number.isFinite(value) || value < -1 || value > 1) {
+      throw new BridgeError("El impulso debe estar entre -1 y 1", { kind: "parse" });
+    }
+    return this.#command({ op: "set_impulse", value });
+  }
+
+  /** POST /v1/command — orden directa de warp, entero 0..4 (Bearer). */
+  async setWarp(level) {
+    if (typeof level !== "number" || !Number.isInteger(level) || level < 0 || level > 4) {
+      throw new BridgeError("El nivel de warp debe ser un entero entre 0 y 4", { kind: "parse" });
+    }
+    return this.#command({ op: "set_warp", level });
+  }
+
+  /** POST /v1/command — orden directa de rumbo, 0..360 grados (Bearer). */
+  async setTargetHeading(heading) {
+    if (typeof heading !== "number" || !Number.isFinite(heading) || heading < 0 || heading > 360) {
+      throw new BridgeError("El rumbo debe estar entre 0 y 360", { kind: "parse" });
+    }
+    return this.#command({ op: "set_target_heading", heading });
+  }
+
+  /** POST /v1/command — sube o baja los escudos (Bearer). */
+  async setShields(active) {
+    if (typeof active !== "boolean") {
+      throw new BridgeError("El estado de escudos debe ser booleano", { kind: "parse" });
+    }
+    return this.#command({ op: "set_shields", active });
   }
 
   /** POST /v1/command — pausa o reanuda la simulación (Bearer). */
@@ -114,6 +142,15 @@ export class BridgeClient {
 
   async #get(path, { auth }) {
     return this.#request(path, { auth, method: "GET" });
+  }
+
+  /** POST /v1/command con un cuerpo de orden ya tipado. */
+  async #command(body) {
+    return this.#request("/v1/command", {
+      auth: true,
+      method: "POST",
+      body: JSON.stringify(body),
+    });
   }
 
   async #request(path, { auth, method, body = undefined }) {

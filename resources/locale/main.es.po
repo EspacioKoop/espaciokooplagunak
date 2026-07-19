@@ -4432,6 +4432,51 @@ msgstr "Arrastre del objeto de mapa cancelado fuera del área válida."
 
 #: src/screens/gm/contentEditor.cpp
 msgctxt "content_editor"
+msgid "Placement active. Click the radar to add the staged object; Escape cancels."
+msgstr "Colocación activa. Haz clic en el radar para añadir el objeto preparado; Escape cancela."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Add map object..."
+msgstr "Añadir objeto de mapa..."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Add asteroid"
+msgstr "Añadir asteroide"
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Add nebula"
+msgstr "Añadir nebulosa"
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Map object placement cancelled after pointer movement."
+msgstr "Colocación del objeto de mapa cancelada tras mover el puntero."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Map object placement cancelled because the staged map changed."
+msgstr "Colocación del objeto de mapa cancelada porque ha cambiado el mapa preparado."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Map object could not be added at that position."
+msgstr "No se ha podido añadir el objeto de mapa en esa posición."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Map object {id} added to staging."
+msgstr "Objeto de mapa {id} añadido al mapa preparado."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Map object placement cancelled."
+msgstr "Colocación del objeto de mapa cancelada."
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
 msgid "Changing this ID updates every reference. Press Save again to confirm."
 msgstr "Cambiar este ID actualizará todas sus referencias. Pulsa Guardar de nuevo para confirmar."
 

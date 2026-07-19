@@ -83,11 +83,12 @@ export async function ajustarPotencia({ system, level, isGM, client }) {
 
 /**
  * Traduce la respuesta de /v1/command a la clave i18n del resultado. El ACK del
- * puente envuelve el resultado del Lua fijo en `result`.
+ * puente solo confirma que la orden fue aceptada y envuelve el resultado del Lua
+ * fijo en `result`; no acredita todavía el nivel observado en /v1/state.
  */
 export function claveResultadoIngenieria(respuesta) {
   const result = respuesta?.result;
-  if (result?.ok === true) return { ok: true, clave: "LAGUNAK.Ingenieria.Ajustada" };
+  if (result?.ok === true) return { ok: true, clave: "LAGUNAK.Ingenieria.Aceptada" };
   if (result?.reason === "no_ship") return { ok: false, clave: "LAGUNAK.Ingenieria.SinNave" };
   return { ok: false, clave: "LAGUNAK.Ingenieria.Fallo" };
 }

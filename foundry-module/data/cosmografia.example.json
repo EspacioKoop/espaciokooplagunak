@@ -1,0 +1,62 @@
+{
+  "format": "espaciokoop-cosmography",
+  "version": 1,
+  "entries": [
+    {
+      "id": "mar-de-argia",
+      "type": "plane",
+      "name": {
+        "es": "Mar de Argia",
+        "en": "Argia Sea"
+      },
+      "summary": {
+        "es": "Región luminosa original para campañas de prueba.",
+        "en": "Original luminous region for test campaigns."
+      },
+      "continuity": "original",
+      "provenance": {
+        "kind": "original",
+        "source": "Espaciokoop Lagunak",
+        "license": "GPL-2.0-only"
+      }
+    },
+    {
+      "id": "sistema-laguna",
+      "type": "star_system",
+      "parent_id": "mar-de-argia",
+      "name": {
+        "es": "Sistema Laguna",
+        "en": "Laguna System"
+      },
+      "summary": {
+        "es": "Sistema original usado para validar relaciones del atlas.",
+        "en": "Original system used to validate atlas relationships."
+      },
+      "continuity": "original",
+      "provenance": {
+        "kind": "original",
+        "source": "Espaciokoop Lagunak",
+        "license": "GPL-2.0-only"
+      }
+    },
+    {
+      "id": "mundo-auzolan",
+      "type": "planet",
+      "parent_id": "sistema-laguna",
+      "name": {
+        "es": "Auzolan",
+        "en": "Auzolan"
+      },
+      "summary": {
+        "es": "Mundo original de cooperación y reparación de naves.",
+        "en": "Original world of cooperation and ship repair."
+      },
+      "continuity": "original",
+      "provenance": {
+        "kind": "original",
+        "source": "Espaciokoop Lagunak",
+        "license": "GPL-2.0-only"
+      }
+    }
+  ]
+}

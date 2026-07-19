@@ -154,3 +154,33 @@ test("dibujarDecorado conserva el contrato pixel art sin curvas ni gradientes", 
     "el peñasco que cruza dos bordes reaparece en la esquina opuesta",
   );
 });
+
+test("el anillo de un planeta que cruza un borde reaparece sin costura", () => {
+  const rectangulos = [];
+  const ctx = {
+    fillStyle: "",
+    fillRect(x, y, ancho, alto) {
+      rectangulos.push({ x, y, ancho, alto });
+    },
+    arc() { assert.fail("sin arc()"); },
+    createRadialGradient() { assert.fail("sin gradientes"); },
+  };
+  // Caso focal del review: planeta con x=15, r=10 y anillo en un lienzo 100×100.
+  // El anillo primario (hasta 1.9*r) cruza el borde izquierdo; la copia envuelta
+  // debe pintar píxeles en el borde derecho (x=95..99). Antes, el culling por
+  // `el.r` descartaba esa copia y el anillo se cortaba.
+  const planeta = {
+    x: 15, y: 50, r: 10, anillo: true,
+    color: "#88aacc", color2: "#446688",
+    inclinacionAnillo: 0.3, velocidadGiro: 0, semilla: 5,
+  };
+  dibujarDecorado(
+    ctx,
+    [{ tipo: "planeta", dx: 0, dy: 0, elementos: [planeta] }],
+    { ancho: 100, alto: 100 },
+  );
+  assert.ok(
+    rectangulos.some((r) => r.x >= 95 && r.x <= 99),
+    "el anillo reaparece en el borde derecho (sin costura)",
+  );
+});

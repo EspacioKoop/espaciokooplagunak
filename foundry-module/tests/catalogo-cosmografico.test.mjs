@@ -137,6 +137,10 @@ test("la procedencia es cerrada y las fuentes remotas exigen HTTPS", () => {
   insecureUrl.entries[0].provenance.source_url = "http://example.invalid/source";
   expectCode(insecureUrl, "invalid_url", "entries[0].provenance.source_url");
 
+  const credentialUrl = clone();
+  credentialUrl.entries[0].provenance.source_url = "https://usuario:secreto@example.invalid/source";
+  expectCode(credentialUrl, "invalid_url", "entries[0].provenance.source_url");
+
   const ccWithoutSource = clone();
   ccWithoutSource.entries[0].provenance.kind = "cc";
   ccWithoutSource.entries[0].provenance.license = "CC-BY-4.0";

@@ -83,6 +83,9 @@ function validateProvenance(value, path) {
     if (parsed.protocol !== "https:") {
       fail("invalid_url", `${path}.source_url`, "la fuente debe usar HTTPS");
     }
+    if (parsed.username || parsed.password) {
+      fail("invalid_url", `${path}.source_url`, "la fuente no admite credenciales embebidas");
+    }
   }
   if (value.kind === "cc" && !Object.hasOwn(value, "source_url")) {
     fail("missing_field", `${path}.source_url`, "el contenido CC necesita una fuente HTTPS");

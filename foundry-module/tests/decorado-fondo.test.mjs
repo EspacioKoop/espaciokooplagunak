@@ -252,7 +252,7 @@ test("la caché rasteriza cuerpos grandes una vez y recompone cada frame con dra
   assert.equal(factoria.lienzos.length, 4, "solo renueva el planeta al avanzar el giro");
 });
 
-test("las fases de semilla reparten la renovación de planetas entre frames", () => {
+test("las fases de giro reparten la renovación de planetas entre frames", () => {
   const factoria = crearFactoriaLienzos();
   const cache = crearCacheDecorado({ crearLienzo: factoria.crearLienzo, intervaloPlanetaMs: 200 });
   const ctx = { fillStyle: "", fillRect() {}, drawImage() {} };
@@ -269,7 +269,10 @@ test("las fases de semilla reparten la renovación de planetas entre frames", ()
     tipo: "planeta",
     dx: 0,
     dy: 0,
-    elementos: [{ ...base, semilla: 0 }, { ...base, x: 200, semilla: 100 }],
+    elementos: [
+      { ...base, semilla: 10, faseGiro: 0 },
+      { ...base, x: 200, semilla: 20, faseGiro: 0.5 },
+    ],
   }];
 
   dibujarDecorado(ctx, frame, { tMs: 0, cache });

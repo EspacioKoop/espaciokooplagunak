@@ -11,10 +11,9 @@
  * Contrato de dibujo: se pinta entre el fondo y las estrellas/retícula, nunca
  * sobre contactos, ruta o nave propia. Si no hay decorado, no pinta nada.
  *
- * ACOPLADO AL CANVAS: `dibujarDecorado` no se prueba en Node (no hay contexto 2D
- * real); su verificación es humana, como el resto de `mapa-render.mjs`. La
- * siembra y el parallax (`crearDecorado`, `componerDecorado`) sí son lógica pura
- * y tienen pruebas en `tests/decorado-fondo.test.mjs`.
+ * El pintor directo y la caché se verifican con contextos Canvas instrumentados
+ * en Node; el aspecto final y el coste del compositor real siguen requiriendo
+ * smoke en Foundry. La siembra y el parallax son lógica pura.
  */
 
 import { rngSemilla, offsetParallax } from "./ventana-nave.mjs";
@@ -127,6 +126,9 @@ export function crearDecorado(
       // Giro axial: la superficie escrolla en longitud a esta velocidad
       // (rad/ms), en un sentido u otro. Cada planeta a su ritmo.
       velocidadGiro: (0.00003 + rng() * 0.00008) * (rng() < 0.5 ? 1 : -1),
+      // Reparte uniformemente la renovación de sprites entre frames. No altera
+      // el aspecto ni la velocidad: solo evita recalcular dos planetas a la vez.
+      faseGiro: planetas > 0 ? i / planetas : 0,
     });
   }
 
@@ -434,17 +436,138 @@ function pintarAsteroide(ctx, el, x, y, ancho, alto) {
   }
 }
 
+// El giro es deliberadamente sutil: cinco sprites por segundo conservan el
+// movimiento visible sin volver a rasterizar miles de píxeles a 60 FPS.
+export const INTERVALO_CACHE_PLANETA_MS = 200;
+
+function crearLienzoNativo(ancho, alto) {
+  let lienzo = null;
+  if (typeof globalThis.OffscreenCanvas === "function") {
+    lienzo = new globalThis.OffscreenCanvas(ancho, alto);
+  } else if (globalThis.document?.createElement) {
+    lienzo = globalThis.document.createElement("canvas");
+    lienzo.width = ancho;
+    lienzo.height = alto;
+  }
+  return lienzo;
+}
+
+/**
+ * Caché de sprites independiente por ventana. La factoría inyectable mantiene
+ * la ruta testeable en Node; en Foundry usa OffscreenCanvas cuando existe y un
+ * canvas DOM fuera de pantalla como fallback para v11.
+ */
+export function crearCacheDecorado({
+  crearLienzo = crearLienzoNativo,
+  intervaloPlanetaMs = INTERVALO_CACHE_PLANETA_MS,
+} = {}) {
+  return {
+    crearLienzo,
+    intervaloPlanetaMs: Math.max(1, Number(intervaloPlanetaMs) || INTERVALO_CACHE_PLANETA_MS),
+    sprites: new WeakMap(),
+    limpiar() {
+      this.sprites = new WeakMap();
+    },
+  };
+}
+
+function crearSprite(cache, tipo, el, tMs) {
+  if (!cache?.sprites || typeof cache.crearLienzo !== "function") return null;
+  const fasePlaneta = tipo === "planeta"
+    ? Math.floor(
+        Number.isFinite(el.faseGiro)
+          ? envolver(el.faseGiro, 1) * cache.intervaloPlanetaMs
+          : envolver(Number(el.semilla) || 0, cache.intervaloPlanetaMs),
+      )
+    : 0;
+  const version = tipo === "planeta"
+    ? Math.floor((Math.max(0, tMs) + fasePlaneta) / cache.intervaloPlanetaMs)
+    : 0;
+  const previo = cache.sprites.get(el);
+  if (previo?.tipo === tipo && previo.version === version) return previo;
+
+  // Los planetas grandes ya se muestran como pixel art. Rasterizarlos a media
+  // resolución y ampliarlos sin suavizado reduce el coste cuadrático del disco
+  // y refuerza el píxel grueso en vez de difuminarlo.
+  const escala = tipo === "planeta" && el.r >= 48 ? 2 : 1;
+  const elementoSprite = escala === 1 ? el : { ...el, r: el.r / escala };
+  // Se calcula sobre el elemento reducido: la segunda banda del anillo conserva
+  // dos píxeles propios y no debe recortarse al dividir la huella original.
+  const centroSprite = Math.max(1, Math.ceil(huellaGrande(tipo, elementoSprite)));
+  const tam = centroSprite * 2 + 1;
+  const lienzo = cache.crearLienzo(tam, tam);
+  const spriteCtx = lienzo?.getContext?.("2d");
+  if (!spriteCtx) return null;
+  spriteCtx.imageSmoothingEnabled = false;
+
+  if (tipo === "nebulosa_lejana") pintarNebulosaLejana(spriteCtx, el, centroSprite, centroSprite);
+  else if (tipo === "nebulosa") pintarNebulosa(spriteCtx, el, centroSprite, centroSprite);
+  else {
+    const tiempoSprite = Math.max(0, version * cache.intervaloPlanetaMs - fasePlaneta);
+    pintarPlaneta(spriteCtx, elementoSprite, centroSprite, centroSprite, tiempoSprite);
+  }
+
+  const sprite = {
+    tipo,
+    version,
+    lienzo,
+    escala,
+    huella: centroSprite * escala,
+  };
+  cache.sprites.set(el, sprite);
+  return sprite;
+}
+
+function pintarGrandeCacheado(ctx, cache, tipo, el, x, y, ancho, alto, tMs) {
+  if (typeof ctx.drawImage !== "function") return false;
+  const sprite = crearSprite(cache, tipo, el, tMs);
+  if (!sprite) return false;
+  const huella = sprite.huella;
+  for (const ox of [-ancho, 0, ancho]) {
+    for (const oy of [-alto, 0, alto]) {
+      const px = x + ox;
+      const py = y + oy;
+      if (px + huella < 0 || px - huella > ancho || py + huella < 0 || py - huella > alto) continue;
+      const destinoX = Math.round(px - huella);
+      const destinoY = Math.round(py - huella);
+      if (sprite.escala === 1) {
+        ctx.drawImage(sprite.lienzo, destinoX, destinoY);
+      } else {
+        ctx.drawImage(
+          sprite.lienzo,
+          destinoX,
+          destinoY,
+          sprite.lienzo.width * sprite.escala,
+          sprite.lienzo.height * sprite.escala,
+        );
+      }
+    }
+  }
+  return true;
+}
+
 /**
  * Pinta el decorado ya compuesto (salida de `componerDecorado`) sobre el
  * contexto 2D. Debe llamarse tras el fondo y antes de estrellas/retícula.
+ *
+ * Con `cache`, nebulosas y planetas se rasterizan fuera de pantalla y cada
+ * frame solo recompone sprites. Si el host no permite crear el lienzo auxiliar,
+ * cae automáticamente al pintor directo anterior.
  */
-export function dibujarDecorado(ctx, decoradoFrame = [], { ancho = 320, alto = 320, tMs = 0 } = {}) {
+export function dibujarDecorado(
+  ctx,
+  decoradoFrame = [],
+  { ancho = 320, alto = 320, tMs = 0, cache = null } = {},
+) {
   for (const capa of decoradoFrame) {
     for (const el of capa.elementos ?? []) {
       const x = envolver(el.x + capa.dx, ancho);
       const y = envolver(el.y + capa.dy, alto);
-      if (capa.tipo === "asteroide") pintarAsteroide(ctx, el, x, y, ancho, alto);
-      else pintarGrande(ctx, capa.tipo, el, x, y, ancho, alto, tMs);
+      if (capa.tipo === "asteroide") {
+        pintarAsteroide(ctx, el, x, y, ancho, alto);
+      } else if (!pintarGrandeCacheado(ctx, cache, capa.tipo, el, x, y, ancho, alto, tMs)) {
+        pintarGrande(ctx, capa.tipo, el, x, y, ancho, alto, tMs);
+      }
     }
   }
 }

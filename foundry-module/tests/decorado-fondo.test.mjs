@@ -3,8 +3,10 @@ import test from "node:test";
 
 import {
   BIOMAS,
+  INTERVALO_CACHE_PLANETA_MS,
   PALETA_DECORADO,
   componerDecorado,
+  crearCacheDecorado,
   crearDecorado,
   dibujarDecorado,
 } from "../scripts/decorado-fondo.mjs";
@@ -183,4 +185,165 @@ test("el anillo de un planeta que cruza un borde reaparece sin costura", () => {
     rectangulos.some((r) => r.x >= 95 && r.x <= 99),
     "el anillo reaparece en el borde derecho (sin costura)",
   );
+});
+
+function crearFactoriaLienzos() {
+  const lienzos = [];
+  const crearLienzo = (ancho, alto) => {
+    const rectangulos = [];
+    const contexto = {
+      fillStyle: "",
+      imageSmoothingEnabled: true,
+      fillRect(...args) { rectangulos.push(args); },
+    };
+    const lienzo = {
+      width: ancho,
+      height: alto,
+      rectangulos,
+      getContext(tipo) { return tipo === "2d" ? contexto : null; },
+    };
+    lienzos.push(lienzo);
+    return lienzo;
+  };
+  return { crearLienzo, lienzos };
+}
+
+test("la caché rasteriza cuerpos grandes una vez y recompone cada frame con drawImage", () => {
+  const factoria = crearFactoriaLienzos();
+  const cache = crearCacheDecorado({ crearLienzo: factoria.crearLienzo });
+  const imagenes = [];
+  const ctx = {
+    fillStyle: "",
+    fillRect() {},
+    drawImage(...args) { imagenes.push(args); },
+  };
+  const decorado = crearDecorado(SEMILLA, {
+    ancho: 320,
+    alto: 320,
+    planetas: 1,
+    nebulosas: 1,
+    nebulosasLejanas: 1,
+    asteroides: 0,
+  });
+  decorado.find((capa) => capa.tipo === "planeta").elementos[0].semilla = 0;
+  const frame = componerDecorado(decorado, { centro: { x: 100, y: 50 } });
+
+  dibujarDecorado(ctx, frame, { ancho: 320, alto: 320, tMs: 0, cache });
+  assert.equal(factoria.lienzos.length, 3, "crea un sprite por cuerpo grande");
+  assert.ok(imagenes.length >= 3, "compone los sprites en el lienzo visible");
+  assert.ok(factoria.lienzos.every((lienzo) => lienzo.rectangulos.length > 0), "cada sprite contiene pixel art");
+
+  imagenes.length = 0;
+  dibujarDecorado(ctx, frame, {
+    ancho: 320,
+    alto: 320,
+    tMs: INTERVALO_CACHE_PLANETA_MS - 1,
+    cache,
+  });
+  assert.equal(factoria.lienzos.length, 3, "reutiliza nebulosas y planeta dentro del mismo tick");
+  assert.ok(imagenes.length >= 3, "sigue dibujando el parallax en cada frame");
+
+  dibujarDecorado(ctx, frame, {
+    ancho: 320,
+    alto: 320,
+    tMs: INTERVALO_CACHE_PLANETA_MS,
+    cache,
+  });
+  assert.equal(factoria.lienzos.length, 4, "solo renueva el planeta al avanzar el giro");
+});
+
+test("las fases de semilla reparten la renovación de planetas entre frames", () => {
+  const factoria = crearFactoriaLienzos();
+  const cache = crearCacheDecorado({ crearLienzo: factoria.crearLienzo, intervaloPlanetaMs: 200 });
+  const ctx = { fillStyle: "", fillRect() {}, drawImage() {} };
+  const base = {
+    x: 80,
+    y: 80,
+    r: 12,
+    anillo: false,
+    color: "#88aacc",
+    color2: "#446688",
+    velocidadGiro: 0.00005,
+  };
+  const frame = [{
+    tipo: "planeta",
+    dx: 0,
+    dy: 0,
+    elementos: [{ ...base, semilla: 0 }, { ...base, x: 200, semilla: 100 }],
+  }];
+
+  dibujarDecorado(ctx, frame, { tMs: 0, cache });
+  assert.equal(factoria.lienzos.length, 2);
+  dibujarDecorado(ctx, frame, { tMs: 100, cache });
+  assert.equal(factoria.lienzos.length, 3, "solo se renueva el planeta con fase 100");
+  dibujarDecorado(ctx, frame, { tMs: 200, cache });
+  assert.equal(factoria.lienzos.length, 4, "el planeta con fase cero se renueva después");
+});
+
+test("los planetas grandes usan escala entera para conservar el pixel art", () => {
+  const factoria = crearFactoriaLienzos();
+  const cache = crearCacheDecorado({ crearLienzo: factoria.crearLienzo });
+  const imagenes = [];
+  const ctx = { fillStyle: "", fillRect() {}, drawImage(...args) { imagenes.push(args); } };
+  const planeta = {
+    x: 160,
+    y: 160,
+    r: 80,
+    anillo: true,
+    inclinacionAnillo: 0.3,
+    color: "#88aacc",
+    color2: "#446688",
+    velocidadGiro: 0.00005,
+    semilla: 0,
+  };
+
+  dibujarDecorado(ctx, [{ tipo: "planeta", dx: 0, dy: 0, elementos: [planeta] }], {
+    ancho: 320,
+    alto: 320,
+    cache,
+  });
+  const ampliada = imagenes.find((args) => args.length === 5);
+  assert.ok(ampliada, "usa drawImage con tamaño de destino explícito");
+  assert.equal(ampliada[3], ampliada[0].width * 2);
+  assert.equal(ampliada[4], ampliada[0].height * 2);
+  assert.ok(Number.isInteger(ampliada[1]) && Number.isInteger(ampliada[2]), "alinea el sprite a píxeles enteros");
+});
+
+test("limpiar la caché libera sprites y fuerza una rasterización nueva", () => {
+  const factoria = crearFactoriaLienzos();
+  const cache = crearCacheDecorado({ crearLienzo: factoria.crearLienzo });
+  const ctx = { fillStyle: "", fillRect() {}, drawImage() {} };
+  const decorado = crearDecorado(SEMILLA, {
+    planetas: 0,
+    nebulosas: 1,
+    nebulosasLejanas: 0,
+    asteroides: 0,
+  });
+  const frame = componerDecorado(decorado);
+
+  dibujarDecorado(ctx, frame, { cache });
+  assert.equal(factoria.lienzos.length, 1);
+  cache.limpiar();
+  dibujarDecorado(ctx, frame, { cache });
+  assert.equal(factoria.lienzos.length, 2);
+});
+
+test("si no puede crear canvas auxiliar conserva el pintor directo", () => {
+  const cache = crearCacheDecorado({ crearLienzo: () => null });
+  let rectangulos = 0;
+  let imagenes = 0;
+  const ctx = {
+    fillStyle: "",
+    fillRect() { rectangulos += 1; },
+    drawImage() { imagenes += 1; },
+  };
+  const decorado = crearDecorado(SEMILLA, {
+    planetas: 1,
+    nebulosas: 0,
+    nebulosasLejanas: 0,
+    asteroides: 0,
+  });
+  dibujarDecorado(ctx, componerDecorado(decorado), { cache });
+  assert.ok(rectangulos > 0, "el fallback conserva los píxeles del planeta");
+  assert.equal(imagenes, 0);
 });

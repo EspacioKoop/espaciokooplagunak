@@ -41,6 +41,7 @@ import {
   normalizarCatalogoEncuentros,
   prepararVistaEncuentros,
 } from "./encuentro-control.mjs";
+import { anotarAlertas, derivarAlertas } from "./alertas-nave.mjs";
 import { dibujarFrame } from "./mapa-render.mjs";
 import { prepararVistaPausa } from "./pausa-control.mjs";
 import { prepareRoute, prepareSystemRows } from "./ship-view.mjs";
@@ -63,16 +64,22 @@ import {
   prepararDetalleContacto,
   rotarMuestras,
 } from "./ventana-nave.mjs";
+import { crearDecorado, componerDecorado } from "./decorado-fondo.mjs";
 
 const MODULE_ID = "espaciokoop-lagunak";
 const POLL_MIN_S = 1;
 const POLL_MAX_S = 30;
 const BACKOFF_MAX_MS = 60000;
 // Mapa vivo: mismo radio que el Lua fijo de /v1/contacts en el puente, fps del
-// pintor y semilla fija del campo de estrellas ("LAG" — mismo cielo siempre).
+// pintor y semilla fija del campo de estrellas y del decorado de fondo
+// ("LAG" — mismo cielo y mismo decorado siempre).
 const MAPA_RADIO_MUNDO = 30000;
 const MAPA_FPS = 60;
 const MAPA_SEMILLA = 0x4c4147;
+// Nonce de alertas por sesión del navegador (como el id de llegada del
+// escenario): mantiene únicos los eventId de alerta entre sesiones y deja que un
+// umbral se anote una sola vez por sesión aunque oscile.
+const ALERTAS_NONCE = String(Math.floor(Math.random() * 1000000)).padStart(6, "0");
 
 registerStationFeature(MODULE_ID);
 registerWorkspaceFeature(MODULE_ID);
@@ -185,9 +192,49 @@ async function revokePrivilegedBridgeAccess() {
  * todas las versiones soportadas) porque sus herramientas son botones puros:
  * activar el grupo no debe tocar ninguna capa de fichas. */
 Hooks.on("getSceneControlButtons", (controls) => {
-  addStationControl(controls);
-  addWorkspaceControl(controls);
-  if (!game.user?.isGM) return;
+  const isGM = Boolean(game.user?.isGM);
+
+  // Herramientas solo-GM del grupo (estado, mapa, token, diagnóstico). Los
+  // botones de puesto (asignación y consola) los añaden addStationControl y
+  // addWorkspaceControl para TODOS los usuarios, más abajo.
+  const gmTools = isGM
+    ? [
+        {
+          name: "lagunak-estado",
+          title: "LAGUNAK.Controles.AbrirEstado",
+          icon: "fa-solid fa-gauge-high",
+          button: true,
+          onClick: () => abrirEstadoNave(),
+        },
+        {
+          name: "lagunak-mapa",
+          title: "LAGUNAK.Controles.AbrirMapa",
+          icon: "fa-solid fa-satellite-dish",
+          button: true,
+          onClick: () => abrirMapaVivo(),
+        },
+        {
+          name: "lagunak-token",
+          title: "LAGUNAK.Controles.ConfigurarToken",
+          icon: "fa-solid fa-key",
+          button: true,
+          onClick: () => openBridgeTokenApp(),
+        },
+        {
+          name: "lagunak-diagnostico",
+          title: "LAGUNAK.Controles.ProbarConexion",
+          icon: "fa-solid fa-stethoscope",
+          button: true,
+          onClick: () => diagnosticarConexion(),
+        },
+      ]
+    : [];
+
+  // El grupo propio es visible para TODOS: los jugadores ven sus botones de
+  // puesto aquí, no en Token Controls (issue #125). Solo el GM ve además
+  // estado/mapa/token/diagnóstico. activeTool apunta a una herramienta que
+  // exista para el rol actual.
+  const activeTool = isGM ? "lagunak-estado" : "lagunak-puestos";
 
   if (Array.isArray(controls)) {
     controls.push({
@@ -196,92 +243,31 @@ Hooks.on("getSceneControlButtons", (controls) => {
       icon: "fa-solid fa-shuttle-space",
       layer: "controls",
       visible: true,
-      activeTool: "lagunak-estado",
-      tools: [
-        {
-          name: "lagunak-estado",
-          title: "LAGUNAK.Controles.AbrirEstado",
-          icon: "fa-solid fa-gauge-high",
-          button: true,
-          onClick: () => abrirEstadoNave(),
-        },
-        {
-          name: "lagunak-mapa",
-          title: "LAGUNAK.Controles.AbrirMapa",
-          icon: "fa-solid fa-satellite-dish",
-          button: true,
-          onClick: () => abrirMapaVivo(),
-        },
-        {
-          name: "lagunak-token",
-          title: "LAGUNAK.Controles.ConfigurarToken",
-          icon: "fa-solid fa-key",
-          button: true,
-          onClick: () => openBridgeTokenApp(),
-        },
-        {
-          name: "lagunak-diagnostico",
-          title: "LAGUNAK.Controles.ProbarConexion",
-          icon: "fa-solid fa-stethoscope",
-          button: true,
-          onClick: () => diagnosticarConexion(),
-        },
-      ],
+      activeTool,
+      tools: gmTools,
     });
-    return;
-  }
-
-  if (controls && typeof controls === "object") {
+  } else if (controls && typeof controls === "object") {
+    const tools = {};
+    gmTools.forEach((tool, order) => {
+      tools[tool.name] = { ...tool, order, onChange: tool.onClick };
+    });
     controls.lagunak = {
       name: "lagunak",
       title: "LAGUNAK.Controles.Grupo",
       icon: "fa-solid fa-shuttle-space",
       layer: "controls",
       visible: true,
-      activeTool: "lagunak-estado",
+      activeTool,
       order: Object.keys(controls).length,
       onChange: () => {},
       onToolChange: () => {},
-      tools: {
-        "lagunak-estado": {
-          name: "lagunak-estado",
-          title: "LAGUNAK.Controles.AbrirEstado",
-          icon: "fa-solid fa-gauge-high",
-          order: 0,
-          button: true,
-          onClick: () => abrirEstadoNave(),
-          onChange: () => abrirEstadoNave(),
-        },
-        "lagunak-mapa": {
-          name: "lagunak-mapa",
-          title: "LAGUNAK.Controles.AbrirMapa",
-          icon: "fa-solid fa-satellite-dish",
-          order: 1,
-          button: true,
-          onClick: () => abrirMapaVivo(),
-          onChange: () => abrirMapaVivo(),
-        },
-        "lagunak-token": {
-          name: "lagunak-token",
-          title: "LAGUNAK.Controles.ConfigurarToken",
-          icon: "fa-solid fa-key",
-          order: 2,
-          button: true,
-          onClick: () => openBridgeTokenApp(),
-          onChange: () => openBridgeTokenApp(),
-        },
-        "lagunak-diagnostico": {
-          name: "lagunak-diagnostico",
-          title: "LAGUNAK.Controles.ProbarConexion",
-          icon: "fa-solid fa-stethoscope",
-          order: 3,
-          button: true,
-          onClick: () => diagnosticarConexion(),
-          onChange: () => diagnosticarConexion(),
-        },
-      },
+      tools,
     };
   }
+
+  // Botones de puesto para TODOS los usuarios, dentro del grupo propio.
+  addStationControl(controls);
+  addWorkspaceControl(controls);
 });
 
 /* Diagnóstico de conexión (issue #183): comprueba /healthz y después
@@ -431,6 +417,7 @@ function crearClaseV2() {
         if (this.bridgeAccessRevoked || !game.user?.isGM) return;
         const eventos = await cliente.events();
         if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        const navePrevAlertas = this.ultimoEstado?.ship ?? null;
         this.ultimoEstado = estado;
         this._registrarLecturaPausa(escenario);
         await processBridgeEvents({
@@ -438,6 +425,14 @@ function crearClaseV2() {
           game,
           JournalEntry,
           ui,
+        });
+        await anotarAlertas({
+          alertas: derivarAlertas(navePrevAlertas, estado?.ship ?? null),
+          nonce: ALERTAS_NONCE,
+          game,
+          JournalEntry,
+          ui,
+          sigueVigente: () => !this.bridgeAccessRevoked && Boolean(game.user?.isGM),
         });
         if (this.bridgeAccessRevoked || !game.user?.isGM) return;
         // El catálogo es estático en el puente: se lee una vez por apertura.
@@ -746,6 +741,7 @@ function crearClaseV1() {
         if (this.bridgeAccessRevoked || !game.user?.isGM) return;
         const eventos = await cliente.events();
         if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        const navePrevAlertas = this.ultimoEstado?.ship ?? null;
         this.ultimoEstado = estado;
         this._registrarLecturaPausa(escenario);
         await processBridgeEvents({
@@ -753,6 +749,14 @@ function crearClaseV1() {
           game,
           JournalEntry,
           ui,
+        });
+        await anotarAlertas({
+          alertas: derivarAlertas(navePrevAlertas, estado?.ship ?? null),
+          nonce: ALERTAS_NONCE,
+          game,
+          JournalEntry,
+          ui,
+          sigueVigente: () => !this.bridgeAccessRevoked && Boolean(game.user?.isGM),
         });
         if (this.bridgeAccessRevoked || !game.user?.isGM) return;
         // El catálogo es estático en el puente: se lee una vez por apertura.
@@ -1020,6 +1024,7 @@ function crearClaseMapaV2() {
     #rafId = null;
     #ultimoDibujoMs = null;
     #campo = crearCampoEstrellas(MAPA_SEMILLA);
+    #decorado = crearDecorado(MAPA_SEMILLA);
     #muestraPrev = null;
     #muestraActual = null;
     contactos = [];
@@ -1180,7 +1185,14 @@ function crearClaseMapaV2() {
         alto: canvas.height,
         radioMundo: MAPA_RADIO_MUNDO,
       });
-      dibujarFrame(ctx, frame, { ancho: canvas.width, alto: canvas.height });
+      const decorado = frame.sinDatos
+        ? []
+        : componerDecorado(this.#decorado, {
+            centro: frame.centro,
+            ancho: canvas.width,
+            alto: canvas.height,
+          });
+      dibujarFrame(ctx, frame, { ancho: canvas.width, alto: canvas.height, decorado });
     }
 
     _onFirstRender(context, options) {
@@ -1292,6 +1304,7 @@ function crearClaseMapaV1() {
     #rafId = null;
     #ultimoDibujoMs = null;
     #campo = crearCampoEstrellas(MAPA_SEMILLA);
+    #decorado = crearDecorado(MAPA_SEMILLA);
     #muestraPrev = null;
     #muestraActual = null;
     contactos = [];
@@ -1454,7 +1467,14 @@ function crearClaseMapaV1() {
         alto: canvas.height,
         radioMundo: MAPA_RADIO_MUNDO,
       });
-      dibujarFrame(ctx, frame, { ancho: canvas.width, alto: canvas.height });
+      const decorado = frame.sinDatos
+        ? []
+        : componerDecorado(this.#decorado, {
+            centro: frame.centro,
+            ancho: canvas.width,
+            alto: canvas.height,
+          });
+      dibujarFrame(ctx, frame, { ancho: canvas.width, alto: canvas.height, decorado });
     }
 
     /* Selección de contacto (issue #126), réplica aislada de la ruta V2:

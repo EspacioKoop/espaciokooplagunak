@@ -1,0 +1,359 @@
+/* ================= Base de consola compartida (estilo workspace) =================
+ * Unifica el lenguaje visual del "Crew station workspace" (espacios-puesto.css)
+ * en Ship status, Crew stations, Token y el chrome del Live map. Solo estilo:
+ * no toca markup ni los selectores que enlaza el JS ([data-action],
+ * [data-station-user], .lagunak-ayuda…). El visor del mapa conserva su estética
+ * arcade Neo Geo; aquí solo se arma el marco de consola a su alrededor.
+ */
+
+/* --- Tokens compartidos (los mismos que el workspace) --- */
+.lagunak-estado,
+.lagunak-puestos,
+.lagunak-token-puente,
+.lagunak-mapa {
+  --lagunak-accent: #42d7ff;
+  --lagunak-accent-rgb: 66, 215, 255;
+  --lagunak-bg: #071017;
+  --lagunak-panel: #0d1a22;
+  --lagunak-line: rgba(var(--lagunak-accent-rgb), 0.28);
+  --lagunak-text: #e8f6fb;
+  --lagunak-muted: #8aa5b2;
+  --lagunak-danger: #ff5667;
+  --lagunak-warning: #ffd166;
+  --lagunak-good: #83e96b;
+}
+
+.lagunak-estado .window-content,
+.lagunak-puestos .window-content,
+.lagunak-token-puente .window-content,
+.lagunak-mapa .window-content {
+  padding: 0;
+  background: #050b10;
+}
+
+/* --- Shell: cada cuerpo pasa a ser una consola oscura --- */
+.lagunak-estado-cuerpo,
+.lagunak-puestos__contenido,
+.lagunak-token-form,
+.lagunak-mapa-cuerpo {
+  position: relative;
+  min-height: 100%;
+  padding: 16px 18px;
+  color: var(--lagunak-text);
+  background:
+    radial-gradient(circle at 82% 6%, rgba(var(--lagunak-accent-rgb), 0.12), transparent 26rem),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.025) 25%, transparent 25%) 0 0 / 18px 18px,
+    var(--lagunak-bg);
+  font-family: "Roboto Condensed", "Arial Narrow", sans-serif;
+  isolation: isolate;
+}
+
+.lagunak-estado-cuerpo::after,
+.lagunak-puestos__contenido::after,
+.lagunak-token-form::after,
+.lagunak-mapa-cuerpo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.12;
+  background: repeating-linear-gradient(0deg, transparent 0 3px, #000 3px 4px);
+}
+
+/* --- Encabezados con acento --- */
+.lagunak-estado-cuerpo h3,
+.lagunak-mapa-cuerpo h3,
+.lagunak-token-form h3 {
+  margin: 14px 0 8px;
+  color: var(--lagunak-text);
+  border: 0;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.lagunak-estado-cuerpo h4,
+.lagunak-mapa-cuerpo h4 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0 8px;
+  color: var(--lagunak-accent);
+  border: 0;
+  font: 700 10px/1 monospace;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.lagunak-estado-cuerpo h4::after,
+.lagunak-mapa-cuerpo h4::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--lagunak-accent), transparent);
+}
+
+/* --- Indicador de conexión con pulso (estado y mapa) --- */
+.lagunak-conexion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  margin: 0 0 12px;
+  padding: 5px 2px;
+  color: var(--lagunak-muted);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.lagunak-conexion .lagunak-punto {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #7d8790;
+  box-shadow: 0 0 8px currentColor;
+}
+
+.lagunak-conexion-ok { color: var(--lagunak-good); }
+.lagunak-conexion-ok .lagunak-punto { background: var(--lagunak-good); }
+.lagunak-conexion-error { color: var(--lagunak-danger); }
+.lagunak-conexion-error .lagunak-punto { background: var(--lagunak-danger); }
+.lagunak-conexion-conectando { color: var(--lagunak-warning); }
+.lagunak-conexion-conectando .lagunak-punto { background: var(--lagunak-warning); animation: lagunak-pulse 1.2s ease-in-out infinite; }
+
+/* --- Tablas como panel de datos (estado y detalle de contacto) --- */
+.lagunak-estado-cuerpo .lagunak-tabla,
+.lagunak-mapa-cuerpo .lagunak-tabla {
+  width: 100%;
+  margin: 10px 0 6px;
+  border-collapse: collapse;
+  border: 1px solid var(--lagunak-line);
+  background: linear-gradient(155deg, rgba(var(--lagunak-accent-rgb), 0.055), rgba(2, 8, 12, 0.88));
+  box-shadow: inset 0 0 26px rgba(0, 0, 0, 0.35);
+}
+
+.lagunak-estado-cuerpo .lagunak-tabla th,
+.lagunak-estado-cuerpo .lagunak-tabla td,
+.lagunak-mapa-cuerpo .lagunak-tabla th,
+.lagunak-mapa-cuerpo .lagunak-tabla td {
+  padding: 7px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.045);
+}
+
+.lagunak-estado-cuerpo .lagunak-tabla th,
+.lagunak-mapa-cuerpo .lagunak-tabla th {
+  color: var(--lagunak-muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.lagunak-estado-cuerpo .lagunak-tabla td,
+.lagunak-mapa-cuerpo .lagunak-tabla td {
+  color: var(--lagunak-text);
+  font: 13px/1.3 monospace;
+  text-align: right;
+}
+
+.lagunak-estado .lagunak-sistemas tr:first-child th {
+  color: var(--lagunak-accent);
+  background: rgba(var(--lagunak-accent-rgb), 0.06);
+}
+
+.lagunak-estado .lagunak-sistemas td:first-child {
+  color: var(--lagunak-muted);
+  text-transform: capitalize;
+}
+
+/* --- Botones estilo panel (estado y token) --- */
+.lagunak-estado-cuerpo button,
+.lagunak-token-form button {
+  min-height: 34px;
+  padding: 0 15px;
+  color: var(--lagunak-muted);
+  border: 1px solid var(--lagunak-line);
+  border-radius: 0;
+  background: rgba(0, 0, 0, 0.28);
+  box-shadow: none;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.lagunak-estado-cuerpo button:hover:not([disabled]),
+.lagunak-estado-cuerpo button:focus-visible:not([disabled]),
+.lagunak-token-form button:hover:not([disabled]),
+.lagunak-token-form button:focus-visible:not([disabled]) {
+  color: var(--lagunak-accent);
+  border-color: var(--lagunak-accent);
+  background: rgba(var(--lagunak-accent-rgb), 0.09);
+}
+
+.lagunak-estado-cuerpo button[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* --- Tempo / pausa (estado) --- */
+.lagunak-tempo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 10px;
+  border: 1px solid var(--lagunak-line);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.lagunak-pausa-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 100%;
+  color: var(--lagunak-text);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.lagunak-pausa-estado .lagunak-punto {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  box-shadow: 0 0 8px currentColor;
+}
+
+.lagunak-pausa-en_marcha .lagunak-punto { background: var(--lagunak-good); }
+.lagunak-pausa-pausado .lagunak-punto { background: var(--lagunak-warning); }
+.lagunak-pausa-pausando .lagunak-punto,
+.lagunak-pausa-reanudando .lagunak-punto { background: #3a86ff; animation: lagunak-pulse 0.8s linear infinite; }
+.lagunak-pausa-error .lagunak-punto,
+.lagunak-pausa-desconectado .lagunak-punto { background: var(--lagunak-danger); }
+
+.lagunak-pausa-foundry {
+  flex: 1 1 100%;
+  margin: 0;
+  color: var(--lagunak-muted);
+  font-size: 11px;
+}
+
+/* --- Ayuda plegable y sin-datos (compartido) --- */
+.lagunak-ayuda {
+  margin: 0 0 12px;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.2);
+  font-size: 12px;
+}
+
+.lagunak-ayuda summary {
+  cursor: pointer;
+  color: var(--lagunak-accent);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.lagunak-ayuda p { margin: 6px 0 0; color: var(--lagunak-muted); }
+
+.lagunak-sin-datos {
+  padding: 24px;
+  color: var(--lagunak-muted);
+  text-align: center;
+  font-style: italic;
+}
+
+/* --- Crew stations --- */
+.lagunak-puestos__intro {
+  margin: 0 0 12px;
+  color: var(--lagunak-muted);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+.lagunak-puestos__fila {
+  padding: 8px 10px;
+  border: 1px solid var(--lagunak-line);
+  background: linear-gradient(155deg, rgba(var(--lagunak-accent-rgb), 0.055), rgba(2, 8, 12, 0.88));
+}
+
+.lagunak-puestos__usuario strong {
+  color: var(--lagunak-text);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.lagunak-puestos__usuario small { color: var(--lagunak-muted); }
+
+.lagunak-puestos__fila select,
+.lagunak-token-form input {
+  color: var(--lagunak-text);
+  border: 1px solid var(--lagunak-line);
+  border-radius: 0;
+  background: rgba(0, 0, 0, 0.35);
+  font-family: monospace;
+}
+
+/* --- Token --- */
+.lagunak-token-form > p { color: var(--lagunak-muted); font-size: 12px; }
+.lagunak-token-form label {
+  color: var(--lagunak-accent);
+  font: 700 10px/1.4 monospace;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.lagunak-token-form .notes { color: var(--lagunak-muted); font-style: italic; }
+.lagunak-token-form input { width: 100%; min-height: 32px; padding: 0 10px; }
+.lagunak-token-form .sheet-footer { gap: 8px; margin-top: 12px; }
+
+/* --- Chrome del Live map (el visor conserva su arcade) --- */
+.lagunak-mapa-alcance { color: var(--lagunak-accent); opacity: 1; letter-spacing: 0.08em; }
+.lagunak-mapa-claves li,
+.lagunak-mapa-leyenda li { color: var(--lagunak-text); }
+.lagunak-mapa-clave-texto { color: var(--lagunak-muted); }
+.lagunak-mapa-callsign { color: var(--lagunak-text); }
+.lagunak-mapa-distancia { color: var(--lagunak-muted); }
+.lagunak-mapa-contacto {
+  padding: 4px 6px;
+  border: 1px solid transparent;
+  color: inherit;
+  font-family: monospace;
+}
+.lagunak-mapa-contacto:hover,
+.lagunak-mapa-contacto:focus-visible {
+  border-color: var(--lagunak-line);
+  background: rgba(var(--lagunak-accent-rgb), 0.08);
+}
+.lagunak-mapa-contacto.lagunak-seleccionado {
+  border-color: var(--lagunak-accent);
+  background: rgba(var(--lagunak-accent-rgb), 0.1);
+}
+.lagunak-mapa-detalle {
+  margin-top: 12px;
+  padding: 10px;
+  border: 1px solid var(--lagunak-line);
+  background: rgba(0, 0, 0, 0.25);
+}
+.lagunak-mapa-sin-seleccion { color: var(--lagunak-muted); }
+
+@keyframes lagunak-pulse {
+  50% { opacity: 0.35; transform: scale(0.8); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lagunak-estado-cuerpo *,
+  .lagunak-puestos__contenido *,
+  .lagunak-token-form *,
+  .lagunak-mapa-cuerpo * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

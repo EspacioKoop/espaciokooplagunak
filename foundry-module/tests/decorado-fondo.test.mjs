@@ -283,6 +283,36 @@ test("las fases de giro reparten la renovación de planetas entre frames", () =>
   assert.equal(factoria.lienzos.length, 4, "el planeta con fase cero se renueva después");
 });
 
+test("un salto temporal renueva como máximo un planeta por frame", () => {
+  const factoria = crearFactoriaLienzos();
+  const cache = crearCacheDecorado({ crearLienzo: factoria.crearLienzo, intervaloPlanetaMs: 200 });
+  const ctx = { fillStyle: "", fillRect() {}, drawImage() {} };
+  const base = {
+    y: 80,
+    r: 12,
+    anillo: false,
+    color: "#88aacc",
+    color2: "#446688",
+    velocidadGiro: 0.00005,
+    faseGiro: 0,
+  };
+  const frame = [{
+    tipo: "planeta",
+    dx: 0,
+    dy: 0,
+    elementos: [40, 120, 200].map((x, i) => ({ ...base, x, semilla: i + 1 })),
+  }];
+
+  dibujarDecorado(ctx, frame, { tMs: 0, cache });
+  assert.equal(factoria.lienzos.length, 3, "el primer frame construye todos los sprites");
+  dibujarDecorado(ctx, frame, { tMs: 200, cache });
+  assert.equal(factoria.lienzos.length, 4, "solo renueva uno tras el salto");
+  dibujarDecorado(ctx, frame, { tMs: 201, cache });
+  assert.equal(factoria.lienzos.length, 5, "renueva el segundo en el frame siguiente");
+  dibujarDecorado(ctx, frame, { tMs: 202, cache });
+  assert.equal(factoria.lienzos.length, 6, "termina la cola sin picos múltiples");
+});
+
 test("los planetas grandes usan escala entera para conservar el pixel art", () => {
   const factoria = crearFactoriaLienzos();
   const cache = crearCacheDecorado({ crearLienzo: factoria.crearLienzo });

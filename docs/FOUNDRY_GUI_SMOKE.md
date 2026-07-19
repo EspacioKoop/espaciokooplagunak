@@ -1,8 +1,21 @@
 # Smoke GUI del módulo Foundry VTT
 
-Este runbook prepara la verificación manual del issue [#29](https://github.com/VaroTv7/espaciokooplagunak/issues/29). Debe ejecutarse una vez en **Foundry VTT v11.302 con dnd5e 2.3.1** y otra en el host moderno de Varo, registrando su versión exacta.
+Este runbook prepara la verificación manual del issue [#29](https://github.com/VaroTv7/espaciokooplagunak/issues/29). Debe ejecutarse una vez en **Foundry VTT v11.302 con dnd5e 2.3.1** y otra en el entorno moderno de Varo/OTACON, que usa la versión estable más reciente disponible de Foundry y debe registrar su versión exacta en cada pasada.
 
 La prueba requiere una licencia y una sesión GM reales; no se ejecuta en CI. No marques una casilla ni aumentes `compatibility.verified` sin haber ejercitado esa versión del anfitrión.
+
+## Matriz mantenida por el proyecto
+
+| Entorno | Foundry VTT | Sistema | Expectativa |
+|---|---|---|---|
+| Eloy | **v11.302** | **dnd5e 2.3.1** | Regresión obligatoria de la ruta clásica |
+| Varo/OTACON | Última versión estable disponible | Registrar id y versión exactos | Validación de la ruta moderna |
+
+Ambas pasadas forman parte de la compatibilidad objetivo. La versión moderna no
+sustituye a v11.302, y conservar v11 no justifica evitar las APIs modernas cuando
+pueden seleccionarse de forma adaptativa. Si una pasada falla, registra la
+incompatibilidad con reproducción; no cambies el rango del manifiesto por
+suposición.
 
 ## Alcance
 

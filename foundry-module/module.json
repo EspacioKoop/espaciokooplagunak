@@ -13,8 +13,15 @@
     "minimum": "11",
     "verified": "11"
   },
-  "esmodules": ["scripts/main.mjs"],
-  "styles": ["styles/lagunak.css", "styles/puestos-tripulacion.css", "styles/espacios-puesto.css"],
+  "esmodules": [
+    "scripts/main.mjs"
+  ],
+  "styles": [
+    "styles/lagunak.css",
+    "styles/lagunak-consola.css",
+    "styles/puestos-tripulacion.css",
+    "styles/espacios-puesto.css"
+  ],
   "languages": [
     {
       "lang": "es",

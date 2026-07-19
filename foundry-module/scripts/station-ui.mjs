@@ -29,14 +29,14 @@ export function addStationControl(controls) {
   };
 
   if (Array.isArray(controls)) {
-    const tokenControls = controls.find?.((group) => group.name === "token");
-    if (tokenControls) tokenControls.tools.push(tool);
+    const grupo = controls.find?.((group) => group.name === "lagunak");
+    if (grupo) grupo.tools.push(tool);
     return;
   }
 
-  const group = controls?.tokens ?? controls?.token;
+  const group = controls?.lagunak;
   if (group?.tools && !Array.isArray(group.tools)) {
-    group.tools[tool.name] = { ...tool, onChange: tool.onClick };
+    group.tools[tool.name] = { ...tool, order: Object.keys(group.tools).length, onChange: tool.onClick };
   }
 }
 

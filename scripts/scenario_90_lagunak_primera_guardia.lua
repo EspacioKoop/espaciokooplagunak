@@ -34,6 +34,7 @@ function init()
     briefEnviado = false
     cierreTimer = 5.0
     eventoLlegadaId = string.format("%06d", math.random(0, 999999))
+    marcadoresEventosEncuentro = {}
     modoPruebaIndividual = esModoPruebaIndividual()
 
     estacionLagunak = SpaceStation()
@@ -194,16 +195,43 @@ function lagunakSpawnEncounter(arquetipo, rumbo)
     local x, y = nave:getPosition()
 
     contadorEncuentros = (contadorEncuentros or 0) + 1
+    local indicativo = string.format("Hondar %d", contadorEncuentros)
     CpuShip()
         :setTemplate("Flavia")
         :setFaction("Independent")
-        :setCallSign(string.format("Hondar %d", contadorEncuentros))
+        :setCallSign(indicativo)
         :setPosition(x + math.sin(angulo) * distancia, y - math.cos(angulo) * distancia)
         :setHullMax(50):setHull(15)
         :setSystemHealth("impulse", -0.5)
         :setSystemHealth("reactor", -0.25)
         :orderIdle()
+
+    -- Artifact es el canal persistente y acotado que /v1/events puede leer
+    -- desde el entorno aislado de /exec.lua. El prefijo y todos sus campos son
+    -- cerrados; Foundry nunca aporta el ID ni el indicativo.
+    local marcador = Artifact()
+        :setPosition(x, y)
+        :setCallSign(string.format(
+            "LAGUNAK_EVT_encounter_started_s90_%s_%06d_derelict",
+            eventoLlegadaId,
+            contadorEncuentros
+        ))
+        :setRadarSignatureInfo(0, 0, 0)
+        :allowPickup(false)
+    table.insert(marcadoresEventosEncuentro, marcador)
     return true
+end
+
+function actualizarMarcadoresEventosEncuentro()
+    if player == nil or not player:isValid() then return end
+    local x, y = player:getPosition()
+    for _, marcador in ipairs(marcadoresEventosEncuentro or {}) do
+        if marcador:isValid() then
+            -- Mantener el marcador junto a la nave evita perder el evento si
+            -- esta recorre mas de 5U entre dos sondeos del modulo.
+            marcador:setPosition(x, y)
+        end
+    end
 end
 
 -- Reposicion de la nave pedida por el GM via el puente (#176). Foundry decide
@@ -270,6 +298,7 @@ end
 
 function update(delta)
     timer = timer + delta
+    actualizarMarcadoresEventosEncuentro()
 
     if fase == "guardia" then
         if not briefEnviado and timer > 5.0 then

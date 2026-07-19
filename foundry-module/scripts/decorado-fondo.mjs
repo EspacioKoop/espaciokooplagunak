@@ -471,7 +471,7 @@ export function crearCacheDecorado({
   };
 }
 
-function crearSprite(cache, tipo, el, tMs) {
+function crearSprite(cache, tipo, el, tMs, presupuesto) {
   if (!cache?.sprites || typeof cache.crearLienzo !== "function") return null;
   const fasePlaneta = tipo === "planeta"
     ? Math.floor(
@@ -485,6 +485,10 @@ function crearSprite(cache, tipo, el, tMs) {
     : 0;
   const previo = cache.sprites.get(el);
   if (previo?.tipo === tipo && previo.version === version) return previo;
+  // Tras un salto de rAF podrían quedar varios planetas obsoletos a la vez.
+  // Conserva temporalmente el sprite anterior y reparte su renovación entre
+  // frames; el primer frame sí construye todos porque todavía no hay fallback.
+  if (tipo === "planeta" && previo && presupuesto.actualizacionesPlaneta >= 1) return previo;
 
   // Los planetas grandes ya se muestran como pixel art. Rasterizarlos a media
   // resolución y ampliarlos sin suavizado reduce el coste cuadrático del disco
@@ -514,13 +518,14 @@ function crearSprite(cache, tipo, el, tMs) {
     escala,
     huella: centroSprite * escala,
   };
+  if (tipo === "planeta" && previo) presupuesto.actualizacionesPlaneta += 1;
   cache.sprites.set(el, sprite);
   return sprite;
 }
 
-function pintarGrandeCacheado(ctx, cache, tipo, el, x, y, ancho, alto, tMs) {
+function pintarGrandeCacheado(ctx, cache, tipo, el, x, y, ancho, alto, tMs, presupuesto) {
   if (typeof ctx.drawImage !== "function") return false;
-  const sprite = crearSprite(cache, tipo, el, tMs);
+  const sprite = crearSprite(cache, tipo, el, tMs, presupuesto);
   if (!sprite) return false;
   const huella = sprite.huella;
   for (const ox of [-ancho, 0, ancho]) {
@@ -559,13 +564,16 @@ export function dibujarDecorado(
   decoradoFrame = [],
   { ancho = 320, alto = 320, tMs = 0, cache = null } = {},
 ) {
+  const presupuesto = { actualizacionesPlaneta: 0 };
   for (const capa of decoradoFrame) {
     for (const el of capa.elementos ?? []) {
       const x = envolver(el.x + capa.dx, ancho);
       const y = envolver(el.y + capa.dy, alto);
       if (capa.tipo === "asteroide") {
         pintarAsteroide(ctx, el, x, y, ancho, alto);
-      } else if (!pintarGrandeCacheado(ctx, cache, capa.tipo, el, x, y, ancho, alto, tMs)) {
+      } else if (!pintarGrandeCacheado(
+        ctx, cache, capa.tipo, el, x, y, ancho, alto, tMs, presupuesto,
+      )) {
         pintarGrande(ctx, capa.tipo, el, x, y, ancho, alto, tMs);
       }
     }

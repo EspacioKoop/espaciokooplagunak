@@ -92,6 +92,21 @@ registerBridgeTokenFeature(MODULE_ID);
 let estadoApp = null;
 let mapaApp = null;
 
+// Estado de movimiento de la nave propia entre frames (para encender los
+// propulsores) y deriva ambiente lenta en reposo (para que el fondo «respire»
+// aunque la nave esté parada). Guarda el centro anterior en la instancia.
+function derivarMovimiento(app, centro, tMs) {
+  const prev = app._centroAnterior;
+  const moviendo = Boolean(
+    prev && centro && Math.hypot(centro.x - prev.x, centro.y - prev.y) > 0.5,
+  );
+  app._centroAnterior = centro ?? null;
+  const ambiente = moviendo
+    ? null
+    : { dx: Math.sin(tMs / 1500) * 5, dy: Math.cos(tMs / 1900) * 5 };
+  return { moviendo, ambiente };
+}
+
 function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, (character) => `&#${character.charCodeAt(0)};`);
 }
@@ -1145,7 +1160,7 @@ function crearClaseMapaV2() {
         title: "LAGUNAK.MapaVivo.Titulo",
         icon: "fa-solid fa-satellite-dish",
       },
-      position: { width: 480, height: "auto" },
+      position: { width: 640, height: "auto" },
     };
 
     static PARTS = {
@@ -1320,14 +1335,22 @@ function crearClaseMapaV2() {
         alto: canvas.height,
         radioMundo: MAPA_RADIO_MUNDO,
       });
+      const { moviendo, ambiente } = derivarMovimiento(this, frame.centro, ahora);
       const decorado = frame.sinDatos
         ? []
         : componerDecorado(this.#decorado, {
             centro: frame.centro,
             ancho: canvas.width,
             alto: canvas.height,
+            ambiente,
           });
-      dibujarFrame(ctx, frame, { ancho: canvas.width, alto: canvas.height, decorado });
+      dibujarFrame(ctx, frame, {
+        ancho: canvas.width,
+        alto: canvas.height,
+        decorado,
+        moviendo,
+        tMs: ahora,
+      });
     }
 
     _onFirstRender(context, options) {
@@ -1454,7 +1477,7 @@ function crearClaseMapaV1() {
         id: "lagunak-mapa-vivo",
         classes: ["lagunak-mapa"],
         template: `modules/${MODULE_ID}/templates/mapa-vivo.hbs`,
-        width: 480,
+        width: 640,
         height: "auto",
         resizable: true,
       });
@@ -1602,14 +1625,22 @@ function crearClaseMapaV1() {
         alto: canvas.height,
         radioMundo: MAPA_RADIO_MUNDO,
       });
+      const { moviendo, ambiente } = derivarMovimiento(this, frame.centro, ahora);
       const decorado = frame.sinDatos
         ? []
         : componerDecorado(this.#decorado, {
             centro: frame.centro,
             ancho: canvas.width,
             alto: canvas.height,
+            ambiente,
           });
-      dibujarFrame(ctx, frame, { ancho: canvas.width, alto: canvas.height, decorado });
+      dibujarFrame(ctx, frame, {
+        ancho: canvas.width,
+        alto: canvas.height,
+        decorado,
+        moviendo,
+        tMs: ahora,
+      });
     }
 
     /* Selección de contacto (issue #126), réplica aislada de la ruta V2:

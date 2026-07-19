@@ -63,6 +63,62 @@
     {{/each}}
   </table>
 
+  {{#if esGM}}{{#if maniobra.disponible}}
+  <div class="lagunak-maniobra">
+    <h4>{{localize "LAGUNAK.Maniobra.Titulo"}}</h4>
+
+    <div class="lagunak-maniobra-grupo" role="group" aria-label="{{localize "LAGUNAK.Maniobra.Impulso"}}">
+      <span class="lagunak-maniobra-etiqueta">{{localize "LAGUNAK.Maniobra.Impulso"}}</span>
+      {{#each maniobra.impulsos}}
+      <button type="button" data-action="ordenarImpulso" data-value="{{this.valor}}"
+        class="{{#if this.neutro}}lagunak-maniobra-neutro{{/if}}"
+        {{#unless ../maniobra.puedeOrdenar}}disabled{{/unless}}>{{this.etiqueta}}</button>
+      {{/each}}
+    </div>
+
+    <div class="lagunak-maniobra-grupo" role="group" aria-label="{{localize "LAGUNAK.Maniobra.Warp"}}">
+      <span class="lagunak-maniobra-etiqueta">{{localize "LAGUNAK.Maniobra.Warp"}}</span>
+      {{#each maniobra.warps}}
+      <button type="button" data-action="ordenarWarp" data-value="{{this.valor}}"
+        {{#unless ../maniobra.puedeOrdenar}}disabled{{/unless}}>{{this.etiqueta}}</button>
+      {{/each}}
+    </div>
+
+    <div class="lagunak-maniobra-grupo">
+      <label>
+        <span class="lagunak-maniobra-etiqueta">{{localize "LAGUNAK.Maniobra.Rumbo"}}</span>
+        <select data-field="maniobra-rumbo" {{#unless maniobra.puedeOrdenar}}disabled{{/unless}}>
+          {{#each maniobra.rumbos}}
+          <option value="{{this.valor}}">{{this.etiqueta}}</option>
+          {{/each}}
+        </select>
+      </label>
+      <button type="button" data-action="ordenarRumbo" {{#unless maniobra.puedeOrdenar}}disabled{{/unless}}>
+        {{localize "LAGUNAK.Maniobra.AplicarRumbo"}}
+      </button>
+    </div>
+
+    <div class="lagunak-maniobra-grupo" role="group" aria-label="{{localize "LAGUNAK.EstadoNave.Escudos"}}">
+      <span class="lagunak-maniobra-etiqueta">{{localize "LAGUNAK.EstadoNave.Escudos"}}</span>
+      <button type="button" data-action="ordenarEscudos" data-value="true"
+        class="{{#if maniobra.escudosActivos}}lagunak-maniobra-activo{{/if}}"
+        {{#unless maniobra.puedeOrdenar}}disabled{{/unless}}>
+        <i class="fa-solid fa-shield-halved" aria-hidden="true"></i> {{localize "LAGUNAK.Maniobra.EscudosSubir"}}
+      </button>
+      <button type="button" data-action="ordenarEscudos" data-value="false"
+        class="{{#if maniobra.escudosInactivos}}lagunak-maniobra-activo{{/if}}"
+        {{#unless maniobra.puedeOrdenar}}disabled{{/unless}}>
+        <i class="fa-solid fa-shield" aria-hidden="true"></i> {{localize "LAGUNAK.Maniobra.EscudosBajar"}}
+      </button>
+    </div>
+
+    {{#if maniobraFallo}}
+    <p class="lagunak-maniobra-fallo" role="status">{{localize "LAGUNAK.Maniobra.Fallo"}}</p>
+    {{/if}}
+    <p class="lagunak-maniobra-nota">{{localize "LAGUNAK.Maniobra.Nota"}}</p>
+  </div>
+  {{/if}}{{/if}}
+
   <button type="button" data-action="anotar">
     <i class="fa-solid fa-book" aria-hidden="true"></i> {{localize "LAGUNAK.Diario.Boton"}}
   </button>

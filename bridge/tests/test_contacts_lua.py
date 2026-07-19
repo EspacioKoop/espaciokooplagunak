@@ -55,9 +55,15 @@ local ship_obj = obj("Itsaso 1", "Human Navy", 0.0, 0.0, false)
 -- Mismo shape que el binding ECS real: components.typename.type_name
 -- (src/script/components.cpp registra el componente; scripts/api/shipTemplate.lua
 -- lo rellena al crear naves desde plantilla).
-ship_obj.components = { typename = { type_name = "PlayerSpaceship" } }
+ship_obj.components = {
+    typename = { type_name = "Phobos M3P" },
+    docking_port = { dock_class = "Frigate", dock_subclass = "Cruiser" },
+}
 local npc_dup = obj("Itsaso 1", "Kraylor", 100.0, 200.0, false)
-npc_dup.components = { typename = { type_name = "CpuShip" } }
+npc_dup.components = {
+    typename = { type_name = "Adder MK5" },
+    docking_port = { dock_class = "Starfighter", dock_subclass = "Gunship" },
+}
 
 local hostile = obj("Bad" .. string.char(1) .. "\\Name\"X", 'Pirati "Rossa"', -50.0, -60.0, false)
 local asteroid = obj("?", nil, 300.0, 300.0, true)
@@ -140,10 +146,16 @@ def test_encoder_lua_genera_json_valido_con_caracteres_hostiles(tmp_path):
     # `type` sale del componente ECS `typename` (components.typename.type_name);
     # es opcional: las entidades sin el componente (el asteroide, y también el
     # hostile de este mundo, que ni siquiera define `components`) quedan null.
-    assert contactos[0]["type"] == "PlayerSpaceship"
+    assert contactos[0]["type"] == "Phobos M3P"
+    assert contactos[0]["class"] == "Frigate"
+    assert contactos[0]["subclass"] == "Cruiser"
     npc = next(c for c in contactos if c["callsign"] == "Itsaso 1" and not c["is_player"])
-    assert npc["type"] == "CpuShip"
+    assert npc["type"] == "Adder MK5"
+    assert npc["class"] == "Starfighter"
+    assert npc["subclass"] == "Gunship"
     assert asteroide["type"] is None
+    assert asteroide["class"] is None
+    assert asteroide["subclass"] is None
     hostile_c = next(c for c in contactos if c["callsign"].startswith("Bad"))
     assert hostile_c["type"] is None
 
@@ -159,9 +171,18 @@ def test_contrato_typename_anclado_al_binding_real():
     """
     raiz = Path(__file__).resolve().parents[2]
     components = (raiz / "src" / "script" / "components.cpp").read_text(encoding="utf-8")
+    templates = (raiz / "scripts" / "api" / "shipTemplate.lua").read_text(encoding="utf-8")
+    apply_template = (raiz / "scripts" / "api" / "entity" / "shiptemplatebasedobject.lua").read_text(encoding="utf-8")
     assert 'ComponentHandler<TypeName>::name("typename")' in components
     assert "BIND_MEMBER(TypeName, type_name)" in components
+    assert 'ComponentHandler<DockingPort>::name("docking_port")' in components
+    assert "BIND_MEMBER(DockingPort, dock_class)" in components
+    assert "BIND_MEMBER(DockingPort, dock_subclass)" in components
+    assert "self.typename = {type_name=name, localized=name}" in templates
+    assert "self.docking_port =" in templates
+    assert "comp[key] = value" in apply_template
     assert "object.components.typename.type_name" in bridge._CONTACTS_LUA
+    assert "object.components.docking_port" in bridge._CONTACTS_LUA
 
 
 def test_encoder_lua_identifica_al_jugador_por_objeto_no_por_indicativo(tmp_path):

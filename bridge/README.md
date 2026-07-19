@@ -16,7 +16,7 @@ heredado: [`docs/API_HTTP.md`](../docs/API_HTTP.md).
 | GET | `/healthz` | No | Estado del puente y alcance del juego |
 | GET | `/v1/state` | Bearer | Nave: posición, rumbo, velocidad, destino, distancia, ETA, casco, energía, escudos y sistemas |
 | GET | `/v1/scenario` | Bearer | Tiempo de escenario y estado de pausa (`paused`) |
-| GET | `/v1/events` | Bearer | Eventos normalizados presentes; inicialmente llegada de Primera Guardia |
+| GET | `/v1/events` | Bearer | Eventos normalizados presentes: llegada e inicio de encuentro en Primera Guardia |
 | GET | `/v1/contacts` | Bearer | Objetos cercanos a la nave (indicativo, posición, facción, plantilla, clase/subclase opcionales y si es el jugador) para un mapa vivo en Foundry. **Vista GM omnisciente** (ver abajo) |
 | POST | `/v1/command` | Bearer | Órdenes de lista blanca (ver abajo) |
 | GET | `/docs` | No* | OpenAPI interactiva generada por FastAPI |
@@ -81,7 +81,9 @@ solo llama al callback `spawnEncounter(archetype, bearing)` que el escenario
 publica bajo el namespace propio `espaciokoop_lagunak` de `getScriptStorage()`;
 si el escenario cargado no lo registra, la respuesta degrada a
 `{"ok":false,"reason":"not_supported"}`. El contacto nuevo aparece por
-`/v1/contacts` y en las estaciones de ciencia/relay de la tripulación.
+`/v1/contacts` y en las estaciones de ciencia/relay de la tripulación. Tras
+crearlo, `/v1/events` publica un DTO cerrado `encounter_started` con ID estable
+de sesión y secuencia monotónica para que Foundry pueda deduplicarlo.
 
 Cualquier otra operación devuelve `422`. Añadir una orden nueva implica
 añadir un modelo validado en `app.py` y documentarla aquí — nunca un
@@ -123,8 +125,8 @@ vacía, el puente no añade cabeceras CORS. Solo se aceptan orígenes `http` y
 Suite `pytest` que simula el `/exec.lua` del juego (no necesita un
 EmptyEpsilon en marcha) y cubre auth, límite de frecuencia, traducción de
 errores a 502, la lista blanca de órdenes y los intentos de inyección por los
-campos tipados. También cubre el endpoint de eventos vacío y con una llegada
-normalizada, y el de contactos (lista vacía, objetos normalizados y objetos sin
+campos tipados. También cubre el endpoint de eventos vacío, una llegada y un
+inicio de encuentro normalizados, y el de contactos (lista vacía, objetos normalizados y objetos sin
 facción). El Lua fijo de `/v1/contacts` tiene además una suite adversarial que
 lo EJECUTA con un intérprete Lua real contra un mundo simulado: caracteres de
 control/comillas/barras en indicativos y facciones (JSON válido), propagación

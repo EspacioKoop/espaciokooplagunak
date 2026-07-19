@@ -38,6 +38,10 @@ tipos de recursos sin editar Lua:
     con Escape o clic derecho — que cancelan el arrastre activo y vuelven al editor. Los tipos futuros nunca son
     seleccionables. Guardar persiste las posiciones; **New**, cargar/importar otro
     recurso o descartar reconstruyen la sesión desde su snapshot limpio.
+    **Add map object…** ofrece únicamente asteroide o nebulosa. Al elegir uno,
+    el siguiente clic izquierdo en el radar añade una entidad nueva solo al staging,
+    con ID generado y valores iniciales seguros; vuelve después al editor para poder
+    deshacer o guardar. Escape y clic derecho cancelan sin modificar el documento.
 12. En mapas y solo con servidor local, **Apply to world** aplica el snapshot
     preparado como un lote nuevo y reversible: valida el documento completo antes
     de tocar el mundo (un documento inválido no genera ninguna llamada), crea

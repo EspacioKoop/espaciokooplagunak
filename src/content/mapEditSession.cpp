@@ -91,6 +91,38 @@ MapEditError MapEditSession::addObject(MapObject object)
     return commit(std::move(next));
 }
 
+MapEditError MapEditSession::addObject(
+    MapObjectKind kind,
+    MapObjectTransform transform,
+    std::string* created_id)
+{
+    if (created_id) created_id->clear();
+    if (kind != MapObjectKind::Asteroid && kind != MapObjectKind::Nebula)
+        return MapEditError::WrongKind;
+
+    const std::string prefix = kind == MapObjectKind::Asteroid ? "asteroid-" : "nebula-";
+    std::string id;
+    for (std::size_t suffix = 1; suffix <= MAP_DOCUMENT_MAX_OBJECTS + 1; ++suffix)
+    {
+        const auto candidate = prefix + std::to_string(suffix);
+        if (!findObject(current_document, candidate))
+        {
+            id = candidate;
+            break;
+        }
+    }
+    if (id.empty()) return MapEditError::InvalidDocument;
+
+    MapObject object;
+    object.id = id;
+    object.kind = kind;
+    object.transform = transform;
+    object.size = 120.0f;
+    const auto result = addObject(std::move(object));
+    if (result == MapEditError::None && created_id) *created_id = id;
+    return result;
+}
+
 MapEditError MapEditSession::moveObject(const std::string& id, MapObjectTransform transform)
 {
     auto next = current_document;

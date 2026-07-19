@@ -38,6 +38,11 @@ import { processBridgeEvents } from "./event-journal.mjs";
 import { anotarAlertas, derivarAlertas } from "./alertas-nave.mjs";
 import { dibujarFrame } from "./mapa-render.mjs";
 import { prepararVistaPausa } from "./pausa-control.mjs";
+import {
+  claveResultadoManiobra,
+  ordenarManiobra,
+  prepararVistaManiobra,
+} from "./maniobra-control.mjs";
 import { prepareRoute, prepareSystemRows } from "./ship-view.mjs";
 import { setSimulationPaused } from "./tempo-control.mjs";
 import { addStationControl, registerStationFeature } from "./station-ui.mjs";
@@ -360,6 +365,10 @@ function crearClaseV2() {
         anotar: EstadoNaveApp.onAnotar,
         pausar: EstadoNaveApp.onPausar,
         reanudar: EstadoNaveApp.onReanudar,
+        ordenarImpulso: EstadoNaveApp.onOrdenarImpulso,
+        ordenarWarp: EstadoNaveApp.onOrdenarWarp,
+        ordenarRumbo: EstadoNaveApp.onOrdenarRumbo,
+        ordenarEscudos: EstadoNaveApp.onOrdenarEscudos,
       },
     };
 
@@ -378,6 +387,9 @@ function crearClaseV2() {
     confirmacionPendiente = null; // ACK recibido, a la espera de observarlo en /v1/scenario
     falloOrden = false; // la última orden de pausa terminó en error
     ayudaAbierta = false; // conserva <details open> entre reemplazos del DOM
+    // Órdenes directas del GM (#176): una orden cada vez y último fallo.
+    maniobraPendiente = false;
+    maniobraFallo = false;
     bridgeAccessRevoked = false;
 
     #cliente() {
@@ -492,6 +504,8 @@ function crearClaseV2() {
       this.confirmacionPendiente = null;
       this.falloOrden = false;
       this.ayudaAbierta = false;
+      this.maniobraPendiente = false;
+      this.maniobraFallo = false;
       super._onClose?.(options);
     }
 
@@ -516,6 +530,13 @@ function crearClaseV2() {
           foundryPausado: Boolean(game.paused),
           i18n: game.i18n,
         }),
+        maniobra: prepararVistaManiobra({
+          conexion: this.conexion,
+          ship: nave,
+          pendiente: this.maniobraPendiente,
+          i18n: game.i18n,
+        }),
+        maniobraFallo: this.maniobraFallo,
         sistemas: nave
           ? prepareSystemRows(nave, game.i18n).map(({ name, health, heat, power }) => ({
               nombre: name,
@@ -525,6 +546,59 @@ function crearClaseV2() {
             }))
           : [],
       };
+    }
+
+    /**
+     * Emite una orden directa (#176). Una orden cada vez; revalida revocación y
+     * rol tras el await antes de notificar o repoblar (lección de #201).
+     */
+    async _emitirManiobra(op, value) {
+      if (this.maniobraPendiente || !game.user?.isGM || this.bridgeAccessRevoked) return;
+      this.maniobraPendiente = true;
+      this.maniobraFallo = false;
+      if (this.rendered) this.render();
+      try {
+        const respuesta = await ordenarManiobra({
+          op,
+          value,
+          isGM: Boolean(game.user?.isGM),
+          client: this.#cliente(),
+        });
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        const { ok, clave } = claveResultadoManiobra(respuesta);
+        this.maniobraFallo = !ok;
+        (ok ? ui.notifications.info : ui.notifications.warn).call(
+          ui.notifications,
+          game.i18n.localize(clave),
+        );
+      } catch (err) {
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        this.maniobraFallo = true;
+        const message = err instanceof BridgeError
+          ? err.message
+          : game.i18n.localize("LAGUNAK.Errores.Desconocido");
+        ui.notifications.error(message);
+      } finally {
+        this.maniobraPendiente = false;
+        if (!this.bridgeAccessRevoked && game.user?.isGM && this.rendered) this.render();
+      }
+    }
+
+    static async onOrdenarImpulso(_event, target) {
+      return this._emitirManiobra("impulse", Number(target?.dataset?.value));
+    }
+
+    static async onOrdenarWarp(_event, target) {
+      return this._emitirManiobra("warp", Number(target?.dataset?.value));
+    }
+
+    static async onOrdenarRumbo() {
+      const select = this.element?.querySelector?.('[data-field="maniobra-rumbo"]');
+      return this._emitirManiobra("heading", Number(select?.value));
+    }
+
+    static async onOrdenarEscudos(_event, target) {
+      return this._emitirManiobra("shields", target?.dataset?.value === "true");
     }
 
     async _cambiarPausa(paused) {
@@ -614,6 +688,8 @@ function crearClaseV1() {
     confirmacionPendiente = null;
     falloOrden = false;
     ayudaAbierta = false;
+    maniobraPendiente = false;
+    maniobraFallo = false;
     bridgeAccessRevoked = false;
 
     static get defaultOptions() {
@@ -734,12 +810,22 @@ function crearClaseV1() {
       this.confirmacionPendiente = null;
       this.falloOrden = false;
       this.ayudaAbierta = false;
+      this.maniobraPendiente = false;
+      this.maniobraFallo = false;
       return super.close(options);
     }
 
     activateListeners(html) {
       super.activateListeners(html);
       html.find('[data-action="anotar"]').on("click", () => this.#anotar());
+      html.find('[data-action="ordenarImpulso"]').on("click", (event) =>
+        this.#emitirManiobra("impulse", Number(event.currentTarget?.dataset?.value)));
+      html.find('[data-action="ordenarWarp"]').on("click", (event) =>
+        this.#emitirManiobra("warp", Number(event.currentTarget?.dataset?.value)));
+      html.find('[data-action="ordenarEscudos"]').on("click", (event) =>
+        this.#emitirManiobra("shields", event.currentTarget?.dataset?.value === "true"));
+      html.find('[data-action="ordenarRumbo"]').on("click", () =>
+        this.#emitirManiobra("heading", Number(html.find('[data-field="maniobra-rumbo"]').val())));
       html.find('[data-action="pausar"]').on("click", () => this.#cambiarPausa(true));
       html.find('[data-action="reanudar"]').on("click", () => this.#cambiarPausa(false));
       html.find(".lagunak-ayuda").on("toggle", (event) => {
@@ -768,6 +854,13 @@ function crearClaseV1() {
           foundryPausado: Boolean(game.paused),
           i18n: game.i18n,
         }),
+        maniobra: prepararVistaManiobra({
+          conexion: this.conexion,
+          ship: nave,
+          pendiente: this.maniobraPendiente,
+          i18n: game.i18n,
+        }),
+        maniobraFallo: this.maniobraFallo,
         sistemas: nave
           ? prepareSystemRows(nave, game.i18n).map(({ name, health, heat, power }) => ({
               nombre: name,
@@ -777,6 +870,38 @@ function crearClaseV1() {
             }))
           : [],
       };
+    }
+
+    async #emitirManiobra(op, value) {
+      if (this.maniobraPendiente || !game.user?.isGM || this.bridgeAccessRevoked) return;
+      this.maniobraPendiente = true;
+      this.maniobraFallo = false;
+      if (this.rendered) this.render(false);
+      try {
+        const respuesta = await ordenarManiobra({
+          op,
+          value,
+          isGM: Boolean(game.user?.isGM),
+          client: this.#cliente(),
+        });
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        const { ok, clave } = claveResultadoManiobra(respuesta);
+        this.maniobraFallo = !ok;
+        (ok ? ui.notifications.info : ui.notifications.warn).call(
+          ui.notifications,
+          game.i18n.localize(clave),
+        );
+      } catch (err) {
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        this.maniobraFallo = true;
+        const message = err instanceof BridgeError
+          ? err.message
+          : game.i18n.localize("LAGUNAK.Errores.Desconocido");
+        ui.notifications.error(message);
+      } finally {
+        this.maniobraPendiente = false;
+        if (!this.bridgeAccessRevoked && game.user?.isGM && this.rendered) this.render(false);
+      }
     }
 
     async #cambiarPausa(paused) {

@@ -68,7 +68,7 @@ import {
   prepararDetalleContacto,
   rotarMuestras,
 } from "./ventana-nave.mjs";
-import { crearDecorado, componerDecorado } from "./decorado-fondo.mjs";
+import { crearCacheDecorado, crearDecorado, componerDecorado } from "./decorado-fondo.mjs";
 
 const MODULE_ID = "espaciokoop-lagunak";
 const POLL_MIN_S = 1;
@@ -1175,6 +1175,7 @@ function crearClaseMapaV2() {
     #ultimoDibujoMs = null;
     #campo = crearCampoEstrellas(MAPA_SEMILLA);
     #decorado = crearDecorado(MAPA_SEMILLA);
+    #cacheDecorado = crearCacheDecorado();
     #muestraPrev = null;
     #muestraActual = null;
     contactos = [];
@@ -1348,6 +1349,7 @@ function crearClaseMapaV2() {
         ancho: canvas.width,
         alto: canvas.height,
         decorado,
+        cacheDecorado: this.#cacheDecorado,
         moviendo,
         tMs: ahora,
       });
@@ -1384,6 +1386,7 @@ function crearClaseMapaV2() {
       }
       this.#rafId = null;
       this.#ultimoDibujoMs = null;
+      this.#cacheDecorado.limpiar();
       this.#fallosSeguidos = 0;
       this.conexion = "conectando";
       super._onClose?.(options);
@@ -1463,6 +1466,7 @@ function crearClaseMapaV1() {
     #ultimoDibujoMs = null;
     #campo = crearCampoEstrellas(MAPA_SEMILLA);
     #decorado = crearDecorado(MAPA_SEMILLA);
+    #cacheDecorado = crearCacheDecorado();
     #muestraPrev = null;
     #muestraActual = null;
     contactos = [];
@@ -1638,6 +1642,7 @@ function crearClaseMapaV1() {
         ancho: canvas.width,
         alto: canvas.height,
         decorado,
+        cacheDecorado: this.#cacheDecorado,
         moviendo,
         tMs: ahora,
       });
@@ -1674,6 +1679,7 @@ function crearClaseMapaV1() {
       }
       this.#rafId = null;
       this.#ultimoDibujoMs = null;
+      this.#cacheDecorado.limpiar();
       this.#fallosSeguidos = 0;
       this.conexion = "conectando";
       return super.close(options);

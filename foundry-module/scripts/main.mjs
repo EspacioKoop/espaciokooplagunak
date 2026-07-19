@@ -58,13 +58,15 @@ import {
   prepararDetalleContacto,
   rotarMuestras,
 } from "./ventana-nave.mjs";
+import { crearDecorado, componerDecorado } from "./decorado-fondo.mjs";
 
 const MODULE_ID = "espaciokoop-lagunak";
 const POLL_MIN_S = 1;
 const POLL_MAX_S = 30;
 const BACKOFF_MAX_MS = 60000;
 // Mapa vivo: mismo radio que el Lua fijo de /v1/contacts en el puente, fps del
-// pintor y semilla fija del campo de estrellas ("LAG" — mismo cielo siempre).
+// pintor y semilla fija del campo de estrellas y del decorado de fondo
+// ("LAG" — mismo cielo y mismo decorado siempre).
 const MAPA_RADIO_MUNDO = 30000;
 const MAPA_FPS = 60;
 const MAPA_SEMILLA = 0x4c4147;
@@ -870,6 +872,7 @@ function crearClaseMapaV2() {
     #rafId = null;
     #ultimoDibujoMs = null;
     #campo = crearCampoEstrellas(MAPA_SEMILLA);
+    #decorado = crearDecorado(MAPA_SEMILLA);
     #muestraPrev = null;
     #muestraActual = null;
     contactos = [];
@@ -1030,7 +1033,14 @@ function crearClaseMapaV2() {
         alto: canvas.height,
         radioMundo: MAPA_RADIO_MUNDO,
       });
-      dibujarFrame(ctx, frame, { ancho: canvas.width, alto: canvas.height });
+      const decorado = frame.sinDatos
+        ? []
+        : componerDecorado(this.#decorado, {
+            centro: frame.centro,
+            ancho: canvas.width,
+            alto: canvas.height,
+          });
+      dibujarFrame(ctx, frame, { ancho: canvas.width, alto: canvas.height, decorado });
     }
 
     _onFirstRender(context, options) {
@@ -1142,6 +1152,7 @@ function crearClaseMapaV1() {
     #rafId = null;
     #ultimoDibujoMs = null;
     #campo = crearCampoEstrellas(MAPA_SEMILLA);
+    #decorado = crearDecorado(MAPA_SEMILLA);
     #muestraPrev = null;
     #muestraActual = null;
     contactos = [];
@@ -1304,7 +1315,14 @@ function crearClaseMapaV1() {
         alto: canvas.height,
         radioMundo: MAPA_RADIO_MUNDO,
       });
-      dibujarFrame(ctx, frame, { ancho: canvas.width, alto: canvas.height });
+      const decorado = frame.sinDatos
+        ? []
+        : componerDecorado(this.#decorado, {
+            centro: frame.centro,
+            ancho: canvas.width,
+            alto: canvas.height,
+          });
+      dibujarFrame(ctx, frame, { ancho: canvas.width, alto: canvas.height, decorado });
     }
 
     /* Selección de contacto (issue #126), réplica aislada de la ruta V2:

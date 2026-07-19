@@ -342,9 +342,21 @@ local function entrada(object, ox, oy, es_jugador)
     if ok_t and tname ~= nil and tname ~= "" then
         type_json = json_escape(tname)
     end
+    local class_json = "null"
+    local subclass_json = "null"
+    -- ShipTemplate:setClass() copia la clasificación semántica al componente
+    -- `docking_port`. Es opcional: estaciones y objetos de escenario pueden
+    -- no publicarlo, por lo que cada acceso permanece dentro de pcall.
+    local ok_dp, docking = pcall(function() return object.components.docking_port end)
+    if ok_dp and docking ~= nil then
+        local ok_c, class = pcall(function() return docking.dock_class end)
+        if ok_c and class ~= nil and class ~= "" then class_json = json_escape(class) end
+        local ok_sc, subclass = pcall(function() return docking.dock_subclass end)
+        if ok_sc and subclass ~= nil and subclass ~= "" then subclass_json = json_escape(subclass) end
+    end
     return string.format(
-        '{"callsign":%s,"position":{"x":%.1f,"y":%.1f},"faction":%s,"type":%s,"is_player":%s}',
-        json_escape(callsign), ox, oy, faction_json, type_json, es_jugador)
+        '{"callsign":%s,"position":{"x":%.1f,"y":%.1f},"faction":%s,"type":%s,"class":%s,"subclass":%s,"is_player":%s}',
+        json_escape(callsign), ox, oy, faction_json, type_json, class_json, subclass_json, es_jugador)
 end
 local contacts = {entrada(ship, x, y, "true")}
 for i = 1, math.min(#otros, limite - 1) do

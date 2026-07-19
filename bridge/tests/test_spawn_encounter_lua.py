@@ -97,6 +97,66 @@ function getPlayerShip(_) return nil end
     assert payload == {"ok": False, "reason": "no_ship"}
 
 
+def test_escenario_crea_y_conserva_marcador_de_evento(tmp_path):
+    lua = _interprete_lua()
+    if lua is None:
+        pytest.skip("no hay intérprete Lua para probar el escenario real")
+    lua = cast(str, lua)
+    raiz = Path(__file__).resolve().parents[2]
+    escenario = raiz / "scripts" / "scenario_90_lagunak_primera_guardia.lua"
+    driver = f'''
+package.preload["utils.lua"] = function() end
+local wreck = nil
+local marker = nil
+local function entity(kind)
+    local value = {{ kind = kind, x = 100, y = 200, heading = 30, valid = true }}
+    return setmetatable(value, {{ __index = function(_, key)
+        if key == "getPosition" then
+            return function(self) return self.x, self.y end
+        elseif key == "getHeading" then
+            return function(self) return self.heading end
+        elseif key == "isValid" then
+            return function(self) return self.valid end
+        end
+        return function(self, ...)
+            local args = {{...}}
+            if key == "setPosition" then self.x, self.y = args[1], args[2] end
+            if key == "setCallSign" then self.callsign = args[1] end
+            return self
+        end
+    end }})
+end
+function CpuShip() wreck = entity("wreck") return wreck end
+function Artifact() marker = entity("marker") return marker end
+local ship = entity("player")
+function getPlayerShip(_) return ship end
+assert(loadfile({json.dumps(str(escenario))}))()
+eventoLlegadaId = "654321"
+marcadoresEventosEncuentro = {{}}
+contadorEncuentros = nil
+assert(lagunakSpawnEncounter("derelict", "port") == true)
+assert(wreck.callsign == "Hondar 1")
+assert(marker.callsign == "LAGUNAK_EVT_encounter_started_s90_654321_000001_derelict")
+assert(#marcadoresEventosEncuentro == 1)
+local first_marker = marker
+assert(lagunakSpawnEncounter("derelict", "ahead") == true)
+assert(wreck.callsign == "Hondar 2")
+assert(marker.callsign == "LAGUNAK_EVT_encounter_started_s90_654321_000002_derelict")
+assert(#marcadoresEventosEncuentro == 2)
+ship:setPosition(700, 800)
+player = ship
+actualizarMarcadoresEventosEncuentro()
+assert(first_marker.x == 700 and first_marker.y == 800)
+assert(marker.x == 700 and marker.y == 800)
+io.write("ok")
+'''
+    ruta = tmp_path / "scenario-encounter-driver.lua"
+    ruta.write_text(driver, encoding="utf-8")
+    proc = subprocess.run([lua, str(ruta)], capture_output=True, timeout=10)
+    assert proc.returncode == 0, proc.stderr.decode("utf-8", "replace")
+    assert proc.stdout == b"ok"
+
+
 def test_escenario_registra_el_callback_bajo_namespace_propio():
     raiz = Path(__file__).resolve().parents[2]
     escenario = (
@@ -107,3 +167,5 @@ def test_escenario_registra_el_callback_bajo_namespace_propio():
         "storage.espaciokoop_lagunak.spawnEncounter = lagunakSpawnEncounter"
         in escenario
     )
+    assert "LAGUNAK_EVT_encounter_started_s90_" in escenario
+    assert "actualizarMarcadoresEventosEncuentro()" in escenario

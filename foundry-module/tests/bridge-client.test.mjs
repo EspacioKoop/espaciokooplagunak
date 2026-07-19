@@ -211,3 +211,45 @@ test("repositionShip rechaza anclas no-cadena antes de tocar red", async () => {
   await assert.rejects(client.repositionShip(42), BridgeError);
   assert.equal(calls, 0);
 });
+
+test("órdenes directas envían solo la orden cerrada con Bearer", async () => {
+  const casos = [
+    { call: (c) => c.setImpulse(0.5), body: { op: "set_impulse", value: 0.5 } },
+    { call: (c) => c.setWarp(3), body: { op: "set_warp", level: 3 } },
+    { call: (c) => c.setTargetHeading(90), body: { op: "set_target_heading", heading: 90 } },
+    { call: (c) => c.setShields(true), body: { op: "set_shields", active: true } },
+  ];
+  for (const caso of casos) {
+    const calls = [];
+    const client = new BridgeClient({
+      url: "http://bridge.test",
+      token: "secreto-operativo",
+      fetchImpl: async (url, options) => {
+        calls.push({ url, options });
+        return response({ result: { ok: true } });
+      },
+    });
+    await caso.call(client);
+    assert.equal(calls[0].url, "http://bridge.test/v1/command");
+    assert.equal(calls[0].options.method, "POST");
+    assert.equal(calls[0].options.headers.Authorization, "Bearer secreto-operativo");
+    assert.deepEqual(JSON.parse(calls[0].options.body), caso.body);
+  }
+});
+
+test("órdenes directas rechazan valores fuera de rango antes de tocar red", async () => {
+  let calls = 0;
+  const client = new BridgeClient({
+    url: "http://bridge.test",
+    token: "x",
+    fetchImpl: async () => { calls += 1; return response({}); },
+  });
+  await assert.rejects(client.setImpulse(2), BridgeError);
+  await assert.rejects(client.setImpulse("0.5"), BridgeError);
+  await assert.rejects(client.setWarp(5), BridgeError);
+  await assert.rejects(client.setWarp(2.5), BridgeError);
+  await assert.rejects(client.setTargetHeading(-1), BridgeError);
+  await assert.rejects(client.setTargetHeading(361), BridgeError);
+  await assert.rejects(client.setShields("up"), BridgeError);
+  assert.equal(calls, 0);
+});

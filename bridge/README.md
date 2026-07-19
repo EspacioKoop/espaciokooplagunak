@@ -16,7 +16,7 @@ heredado: [`docs/API_HTTP.md`](../docs/API_HTTP.md).
 | GET | `/healthz` | No | Estado del puente y alcance del juego |
 | GET | `/v1/state` | Bearer | Nave: posición, rumbo, velocidad, destino, distancia, ETA, casco, energía, escudos y sistemas |
 | GET | `/v1/scenario` | Bearer | Tiempo de escenario y estado de pausa (`paused`) |
-| GET | `/v1/events` | Bearer | Eventos normalizados presentes; inicialmente llegada de Primera Guardia |
+| GET | `/v1/events` | Bearer | Eventos normalizados presentes: llegada e inicio de encuentro en Primera Guardia |
 | GET | `/v1/contacts` | Bearer | Objetos cercanos a la nave (indicativo, posición, facción, plantilla, clase/subclase opcionales y si es el jugador) para un mapa vivo en Foundry. **Vista GM omnisciente** (ver abajo) |
 | GET | `/v1/encounters` | Bearer | Catálogo cerrado de encuentros del GM (`archetypes` y `bearings` que acepta `spawn_encounter`); estático, sin llamada al juego |
 | POST | `/v1/command` | Bearer | Órdenes de lista blanca (ver abajo) |
@@ -68,10 +68,15 @@ de la tripulación en su estación de ingeniería; el GM la *observa* por
 de `health`/`heat`/`power`.
 
 **`spawn_encounter` es la mitad «encuentros» de esa misma palanca** (#117):
-Foundry decide el *qué* (un arquetipo de catálogo cerrado — hoy `derelict`) y
-el escenario decide el *cómo* (posición exacta, facción, estado). `bearing` es
-opcional (`ahead`/`astern`/`port`/`starboard`), un rumbo grueso relativo a la
-nave que el escenario puede honrar laxamente — **nunca se aceptan coordenadas**:
+Foundry decide el *qué* (un arquetipo de catálogo cerrado) y el escenario decide
+el *cómo* (plantilla, posición exacta, facción, estado, orden de IA). El catálogo
+admitido hoy es `derelict` (pecio civil averiado y quieto), `patrol` (cazador
+Exuari hostil en ronda), `freighter` (mercante neutral) y `sentry` (plataforma de
+defensa hostil que guarda su posición). Un arquetipo que el puente conoce pero el
+escenario cargado no honra degrada a `not_supported`, nunca inventa un objeto.
+`bearing` es opcional (`ahead`/`astern`/`port`/`starboard`), un rumbo grueso
+relativo a la nave que el escenario puede honrar laxamente — **nunca se aceptan
+coordenadas**:
 cualquier campo extra rechaza la orden entera (`422`). El Lua emitido es fijo y
 solo llama al callback `spawnEncounter(archetype, bearing)` que el escenario
 publica bajo el namespace propio `espaciokoop_lagunak` de `getScriptStorage()`;
@@ -80,7 +85,9 @@ si el escenario cargado no lo registra, la respuesta degrada a
 `/v1/contacts` y en las estaciones de ciencia/relay de la tripulación. El
 catálogo admitido se publica en `GET /v1/encounters` desde los mismos enums
 que validan la orden: el módulo de Foundry lo lee de ahí y no hardcodea
-arquetipos.
+arquetipos. Tras crear uno, `/v1/events` publica un DTO cerrado
+`encounter_started` con ID estable de sesión y secuencia monotónica para que
+Foundry pueda deduplicarlo.
 
 Cualquier otra operación devuelve `422`. Añadir una orden nueva implica
 añadir un modelo validado en `app.py` y documentarla aquí — nunca un
@@ -122,8 +129,8 @@ vacía, el puente no añade cabeceras CORS. Solo se aceptan orígenes `http` y
 Suite `pytest` que simula el `/exec.lua` del juego (no necesita un
 EmptyEpsilon en marcha) y cubre auth, límite de frecuencia, traducción de
 errores a 502, la lista blanca de órdenes y los intentos de inyección por los
-campos tipados. También cubre el endpoint de eventos vacío y con una llegada
-normalizada, y el de contactos (lista vacía, objetos normalizados y objetos sin
+campos tipados. También cubre el endpoint de eventos vacío, una llegada y un
+inicio de encuentro normalizados, y el de contactos (lista vacía, objetos normalizados y objetos sin
 facción). El Lua fijo de `/v1/contacts` tiene además una suite adversarial que
 lo EJECUTA con un intérprete Lua real contra un mundo simulado: caracteres de
 control/comillas/barras en indicativos y facciones (JSON válido), propagación

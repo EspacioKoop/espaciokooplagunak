@@ -12,7 +12,7 @@ import zipfile
 from pathlib import Path, PurePosixPath
 
 MODULE_FILES = ("module.json", "README.md")
-MODULE_DIRS = ("lang", "scripts", "styles", "templates")
+MODULE_DIRS = ("data", "lang", "scripts", "styles", "templates")
 FIXED_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 
 

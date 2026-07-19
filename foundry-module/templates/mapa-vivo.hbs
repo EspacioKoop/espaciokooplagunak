@@ -24,7 +24,7 @@
   <ul class="lagunak-mapa-claves">
     {{#each leyenda}}
     <li>
-      <span class="lagunak-mapa-color" style="background: {{this.color}}"></span>
+      <span class="lagunak-mapa-color" style="background: {{this.color}}" aria-hidden="true"></span>
       <span>{{this.etiqueta}}</span>
     </li>
     {{/each}}
@@ -38,7 +38,7 @@
   <ul class="lagunak-mapa-leyenda">
     {{#each contactos}}
     <li>
-      <button type="button" class="lagunak-mapa-contacto {{#if this.seleccionado}}lagunak-seleccionado{{/if}}" data-contacto="{{this.callsign}}" data-contacto-indice="{{@index}}">
+      <button type="button" class="lagunak-mapa-contacto {{#if this.seleccionado}}lagunak-seleccionado{{/if}}" aria-pressed="{{this.seleccionado}}" data-contacto="{{this.callsign}}" data-contacto-indice="{{@index}}">
         <span class="lagunak-mapa-color" style="background: {{this.color}}" aria-hidden="true"></span>
         <span class="lagunak-mapa-callsign">{{this.callsign}}</span>
         <span class="lagunak-mapa-distancia">{{this.distanciaLabel}}</span>
@@ -50,7 +50,7 @@
 
   {{#if detalle}}
   <div class="lagunak-mapa-detalle" role="status">
-    <h4><span class="lagunak-mapa-color" style="background: {{detalle.color}}"></span> {{detalle.callsign}}</h4>
+    <h4><span class="lagunak-mapa-color" style="background: {{detalle.color}}" aria-hidden="true"></span> {{detalle.callsign}}</h4>
     <table class="lagunak-tabla">
       <tr><th>{{localize "LAGUNAK.MapaVivo.Detalle.Tipo"}}</th><td>{{detalle.tipo}}</td></tr>
       <tr><th>{{localize "LAGUNAK.MapaVivo.Detalle.Faccion"}}</th><td>{{detalle.faccion}}</td></tr>

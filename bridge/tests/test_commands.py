@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import pytest
 
+import app as bridge
+
 CMD = "/v1/command"
 
 
@@ -241,6 +243,23 @@ def test_spawn_encounter_con_rumbo(client, juego, auth):
     )
     assert r.status_code == 200
     assert 'spawn("derelict", "port")' in juego.ultimo_lua
+
+
+@pytest.mark.parametrize("archetype", ["derelict", "patrol", "freighter", "sentry"])
+def test_spawn_encounter_todos_los_arquetipos_del_catalogo(client, juego, auth, archetype):
+    # Cada arquetipo del enum se acepta y viaja como cadena literal al callback;
+    # el Lua emitido sigue siendo fijo (no depende del arquetipo).
+    r = client.post(
+        CMD, headers=auth, json={"op": "spawn_encounter", "archetype": archetype}
+    )
+    assert r.status_code == 200
+    assert f'spawn("{archetype}", nil)' in juego.ultimo_lua
+
+
+def test_spawn_encounter_arquetipos_expuestos_coinciden_con_el_enum():
+    # El catálogo cerrado y la documentación no se separan sin que un test avise.
+    valores = {a.value for a in bridge.EncounterArchetype}
+    assert valores == {"derelict", "patrol", "freighter", "sentry"}
 
 
 def test_spawn_encounter_arquetipo_fuera_de_catalogo_rechazado(client, juego, auth):

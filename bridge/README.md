@@ -67,10 +67,15 @@ de la tripulación en su estación de ingeniería; el GM la *observa* por
 de `health`/`heat`/`power`.
 
 **`spawn_encounter` es la mitad «encuentros» de esa misma palanca** (#117):
-Foundry decide el *qué* (un arquetipo de catálogo cerrado — hoy `derelict`) y
-el escenario decide el *cómo* (posición exacta, facción, estado). `bearing` es
-opcional (`ahead`/`astern`/`port`/`starboard`), un rumbo grueso relativo a la
-nave que el escenario puede honrar laxamente — **nunca se aceptan coordenadas**:
+Foundry decide el *qué* (un arquetipo de catálogo cerrado) y el escenario decide
+el *cómo* (plantilla, posición exacta, facción, estado, orden de IA). El catálogo
+admitido hoy es `derelict` (pecio civil averiado y quieto), `patrol` (cazador
+Exuari hostil en ronda), `freighter` (mercante neutral) y `sentry` (plataforma de
+defensa hostil que guarda su posición). Un arquetipo que el puente conoce pero el
+escenario cargado no honra degrada a `not_supported`, nunca inventa un objeto.
+`bearing` es opcional (`ahead`/`astern`/`port`/`starboard`), un rumbo grueso
+relativo a la nave que el escenario puede honrar laxamente — **nunca se aceptan
+coordenadas**:
 cualquier campo extra rechaza la orden entera (`422`). El Lua emitido es fijo y
 solo llama al callback `spawnEncounter(archetype, bearing)` que el escenario
 publica bajo el namespace propio `espaciokoop_lagunak` de `getScriptStorage()`;

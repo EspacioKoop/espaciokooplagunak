@@ -81,6 +81,25 @@ export class BridgeClient {
     });
   }
 
+  /**
+   * POST /v1/command — reparte energía a un sistema de la nave (Bearer).
+   * Panel de ingeniería del GM: `system` es un identificador cerrado que el
+   * puente valida (enum SystemName) y `level` el rango 0..3 que acepta.
+   */
+  async setSystemPower(system, level) {
+    if (typeof system !== "string" || system === "") {
+      throw new BridgeError("El sistema debe ser una cadena", { kind: "parse" });
+    }
+    if (typeof level !== "number" || !Number.isFinite(level) || level < 0 || level > 3) {
+      throw new BridgeError("El nivel de energía debe estar entre 0 y 3", { kind: "parse" });
+    }
+    return this.#request("/v1/command", {
+      auth: true,
+      method: "POST",
+      body: JSON.stringify({ op: "set_system_power", system, level }),
+    });
+  }
+
   /** POST /v1/command — pausa o reanuda la simulación (Bearer). */
   async setPause(paused) {
     if (typeof paused !== "boolean") {

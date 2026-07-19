@@ -63,6 +63,44 @@
     {{/each}}
   </table>
 
+  {{#if esGM}}{{#if ingenieria.disponible}}
+  <div class="lagunak-ingenieria">
+    <h4>{{localize "LAGUNAK.Ingenieria.Titulo"}}</h4>
+    {{#if ingenieria.tieneReparadores}}
+    <p class="lagunak-ingenieria-reparadores">
+      <i class="fa-solid fa-user-gear" aria-hidden="true"></i>
+      {{localize "LAGUNAK.Ingenieria.Reparadores"}}: {{ingenieria.reparadores}}
+    </p>
+    {{/if}}
+    <div class="lagunak-ingenieria-mando">
+      <label>
+        <span>{{localize "LAGUNAK.Ingenieria.Sistema"}}</span>
+        <select data-field="ingenieria-sistema" {{#unless ingenieria.puedeAjustar}}disabled{{/unless}}>
+          {{#each ingenieria.opcionesSistema}}
+          <option value="{{this.id}}" {{#if this.seleccionado}}selected{{/if}}>{{this.etiqueta}}</option>
+          {{/each}}
+        </select>
+      </label>
+      <label>
+        <span>{{localize "LAGUNAK.Ingenieria.Nivel"}}</span>
+        <select data-field="ingenieria-nivel" {{#unless ingenieria.puedeAjustar}}disabled{{/unless}}>
+          {{#each ingenieria.niveles}}
+          <option value="{{this.valor}}" {{#if this.seleccionado}}selected{{/if}}>{{this.etiqueta}}×{{#if this.nominal}} ({{localize "LAGUNAK.Ingenieria.Nominal"}}){{/if}}</option>
+          {{/each}}
+        </select>
+      </label>
+      <button type="button" data-action="ajustarIngenieria" {{#unless ingenieria.puedeAjustar}}disabled{{/unless}}>
+        <i class="fa-solid fa-bolt" aria-hidden="true"></i>
+        {{#if ingenieria.pendiente}}{{localize "LAGUNAK.Ingenieria.Aplicando"}}{{else}}{{localize "LAGUNAK.Ingenieria.Aplicar"}}{{/if}}
+      </button>
+    </div>
+    {{#if ingenieriaFallo}}
+    <p class="lagunak-ingenieria-fallo" role="status">{{localize "LAGUNAK.Ingenieria.Fallo"}}</p>
+    {{/if}}
+    <p class="lagunak-ingenieria-nota">{{localize "LAGUNAK.Ingenieria.Nota"}}</p>
+  </div>
+  {{/if}}{{/if}}
+
   <button type="button" data-action="anotar">
     <i class="fa-solid fa-book" aria-hidden="true"></i> {{localize "LAGUNAK.Diario.Boton"}}
   </button>

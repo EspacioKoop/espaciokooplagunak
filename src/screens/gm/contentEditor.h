@@ -82,6 +82,12 @@ private:
     std::vector<std::size_t> visible_ship_template_indices;
     bool preview_enabled = false;
     bool map_edit_mode = false;
+    MapObjectKind map_placement_kind = MapObjectKind::Unsupported;
+    bool map_placement_pending = false;
+    MapObjectTransform map_placement_start;
+    float map_placement_scale = 1.0f;
+    std::uint64_t map_placement_session_id = 0;
+    std::uint64_t map_placement_revision = 0;
 
     GuiSelector* type_selector;
     GuiSelector* inbox_selector;
@@ -114,6 +120,7 @@ private:
     GuiButton* map_redo_button;
     GuiButton* map_apply_button;
     GuiButton* map_rollback_button;
+    GuiSelector* map_placement_selector;
     GuiSelector* ship_override_selector;
     GuiSelector* ship_system_selector;
     GuiSelector* ship_crew_selector;

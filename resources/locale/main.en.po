@@ -4654,6 +4654,51 @@ msgstr ""
 
 #: src/screens/gm/contentEditor.cpp
 msgctxt "content_editor"
+msgid "Placement active. Click the radar to add the staged object; Escape cancels."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Add map object..."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Add asteroid"
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Add nebula"
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Map object placement cancelled after pointer movement."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Map object placement cancelled because the staged map changed."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Map object could not be added at that position."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Map object {id} added to staging."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
+msgid "Map object placement cancelled."
+msgstr ""
+
+#: src/screens/gm/contentEditor.cpp
+msgctxt "content_editor"
 msgid "Changing this ID updates every reference. Press Save again to confirm."
 msgstr ""
 

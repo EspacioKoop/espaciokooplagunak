@@ -440,6 +440,7 @@ function crearClaseV2() {
           game,
           JournalEntry,
           ui,
+          sigueVigente: () => !this.bridgeAccessRevoked && Boolean(game.user?.isGM),
         });
         if (this.bridgeAccessRevoked || !game.user?.isGM) return;
         this.conexion = "ok";
@@ -689,6 +690,7 @@ function crearClaseV1() {
           game,
           JournalEntry,
           ui,
+          sigueVigente: () => !this.bridgeAccessRevoked && Boolean(game.user?.isGM),
         });
         if (this.bridgeAccessRevoked || !game.user?.isGM) return;
         this.conexion = "ok";

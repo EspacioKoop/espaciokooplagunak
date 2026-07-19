@@ -99,6 +99,7 @@ function harness() {
   return {
     created,
     notifications,
+    _journal: journal,
     nonce: "484848",
     game: {
       user: { isGM: true },
@@ -138,4 +139,53 @@ test("el nombre del sistema se localiza y los datos se escapan", async () => {
   const alertas = derivarAlertas(sano, con(sano, { systems: { impulse: { health: 0 }, warp: { health: 1 } } }));
   await anotarAlertas({ ...ctx, alertas });
   assert.match(ctx.created[0].text.content, /Impulso/);
+});
+
+// --- caducidad de autorización asíncrona (revisión PR #207) ---
+
+test("perder GM mientras se crea el Journal no escribe la página", async () => {
+  const ctx = harness();
+  // No hay Journal previo: forzamos la ruta que espera a JournalEntry.create().
+  ctx.game.journal.getName = () => undefined;
+  let liberar;
+  const retenida = new Promise((resolve) => {
+    liberar = resolve;
+  });
+  ctx.JournalEntry = {
+    create: async () => {
+      await retenida; // create queda pendiente hasta que lo liberemos
+      return ctx._journal;
+    },
+  };
+  const alertas = derivarAlertas(sano, con(sano, { hull: 10 }));
+  const pendiente = anotarAlertas({ ...ctx, alertas });
+  // El GM se degrada MIENTRAS create() sigue en vuelo.
+  ctx.game.user.isGM = false;
+  liberar();
+  assert.equal(await pendiente, 0);
+  assert.equal(ctx.created.length, 0);
+});
+
+test("revocar el acceso del puente durante la escritura corta la persistencia", async () => {
+  const ctx = harness();
+  let revocado = false;
+  const alertas = derivarAlertas(sano, con(sano, {
+    hull: 10,
+    energy: 50,
+    systems: { impulse: { health: 0 } },
+  }));
+  assert.ok(alertas.length >= 2); // necesitamos varias para revocar entre iteraciones
+  // La primera escritura revoca el acceso; el guard debe cortar el resto.
+  const createReal = ctx._journal.createEmbeddedDocuments.bind(ctx._journal);
+  ctx._journal.createEmbeddedDocuments = async (type, documents) => {
+    revocado = true;
+    return createReal(type, documents);
+  };
+  const escritas = await anotarAlertas({
+    ...ctx,
+    alertas,
+    sigueVigente: () => !revocado,
+  });
+  assert.equal(escritas, 1);
+  assert.equal(ctx.created.length, 1);
 });

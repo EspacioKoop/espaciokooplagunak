@@ -107,17 +107,35 @@ function escapeHtml(value) {
  * id de llegada del escenario) evita colisiones entre sesiones, y la clave estable
  * hace que un umbral que oscila no genere una entrada por cada rebote dentro de la
  * misma sesión. La deduplicación vive en flags de la página, no en memoria.
+ *
+ * `sigueVigente` es un guard de vigencia que se reevalúa tras CADA `await` y antes
+ * de toda escritura: la autorización asíncrona puede caducar mientras esperamos a
+ * `JournalEntry.create()` o a `createEmbeddedDocuments()` (el usuario pierde GM, o
+ * el puente revoca el acceso). Sin este guard persistiríamos páginas como jugador
+ * ya degradado. Por defecto solo comprueba `isGM`; el llamador pasa además su
+ * `bridgeAccessRevoked` para cortar en cuanto se revoca la sesión.
  */
-export async function anotarAlertas({ alertas = [], nonce, game, JournalEntry, ui }) {
-  if (!game.user?.isGM || alertas.length === 0) return 0;
+export async function anotarAlertas({
+  alertas = [],
+  nonce,
+  game,
+  JournalEntry,
+  ui,
+  sigueVigente = () => true,
+}) {
+  const vigente = () => Boolean(game.user?.isGM) && sigueVigente();
+  if (!vigente() || alertas.length === 0) return 0;
 
   const journalName = game.i18n.localize("LAGUNAK.Diario.Nombre");
   const journal =
     game.journal.getName(journalName) ??
     (await JournalEntry.create({ name: journalName }));
+  // La creación del Journal es un await: revalida antes de escribir nada en él.
+  if (!vigente()) return 0;
   let created = 0;
 
   for (const alerta of alertas) {
+    if (!vigente()) break;
     const eventId = `alert-${nonce}-${alerta.clave}`;
     const pages = Array.from(journal.pages ?? []);
     if (pages.some((page) => page.getFlag?.(MODULE_ID, "eventId") === eventId)) continue;
@@ -131,6 +149,9 @@ export async function anotarAlertas({ alertas = [], nonce, game, JournalEntry, u
     const title = game.i18n.format(alerta.tituloKey, seguros);
     const content = `<p>${game.i18n.format(alerta.resumenKey, seguros)}</p>`;
 
+    // Última barrera antes de la escritura persistente: la autorización pudo
+    // caducar durante el await anterior o entre iteraciones del bucle.
+    if (!vigente()) break;
     await journal.createEmbeddedDocuments("JournalEntryPage", [
       {
         type: "text",

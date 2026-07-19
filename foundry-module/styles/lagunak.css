@@ -261,3 +261,59 @@
   opacity: 0.8;
   font-style: italic;
 }
+
+/* Panel de órdenes directas del GM (#176). */
+.lagunak-maniobra {
+  margin-top: 0.6rem;
+  padding-top: 0.4rem;
+  border-top: 1px solid rgba(127, 127, 127, 0.4);
+}
+
+.lagunak-maniobra h4 {
+  margin: 0 0 0.4rem 0;
+}
+
+.lagunak-maniobra-grupo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35em;
+  margin-bottom: 0.4rem;
+}
+
+.lagunak-maniobra-etiqueta {
+  flex: 0 0 5.5em;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+
+.lagunak-maniobra-grupo button {
+  flex: 0 0 auto;
+  min-width: 2.6em;
+}
+
+.lagunak-maniobra-grupo button[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.lagunak-maniobra-neutro {
+  font-weight: bold;
+}
+
+.lagunak-maniobra-activo {
+  outline: 2px solid #3fa34d;
+}
+
+.lagunak-maniobra-fallo {
+  color: #d1495b;
+  font-size: 0.9em;
+  margin: 0.2rem 0;
+}
+
+.lagunak-maniobra-nota {
+  font-size: 0.82em;
+  opacity: 0.8;
+  font-style: italic;
+  margin: 0.2rem 0 0 0;
+}

@@ -83,7 +83,7 @@ async function setup({ isGM = false, modern = false, fetchImpl = null } = {}) {
 
 test("v11: un jugador abre su consola sin leer token ni ejecutar fetch", async () => {
   const { module, instances, settingsReads } = await setup();
-  const controls = [{ name: "token", tools: [] }];
+  const controls = [{ name: "lagunak", tools: [] }];
   module.addWorkspaceControl(controls);
   assert.equal(controls[0].tools[0].name, "lagunak-espacio-puesto");
 
@@ -106,11 +106,11 @@ test("ApplicationV2: el GM recibe estado y contactos y previsualiza puestos", as
     return { ok: true, async json() { return payload; } };
   };
   const { module, instances, settingsReads } = await setup({ isGM: true, modern: true, fetchImpl });
-  const controls = { tokens: { tools: {} } };
+  const controls = { lagunak: { tools: {} } };
   module.addWorkspaceControl(controls);
-  assert.equal(typeof controls.tokens.tools["lagunak-espacio-puesto"].onChange, "function");
+  assert.equal(typeof controls.lagunak.tools["lagunak-espacio-puesto"].onChange, "function");
 
-  controls.tokens.tools["lagunak-espacio-puesto"].onClick();
+  controls.lagunak.tools["lagunak-espacio-puesto"].onClick();
   const app = instances[0];
   assert.deepEqual(app.renderCalls, [{ force: true }]);
   assert.equal(await app.refreshTelemetry(), true);

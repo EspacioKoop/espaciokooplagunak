@@ -74,7 +74,7 @@ async function setup({ isGM = false, modern = false } = {}) {
 
 test("v11: un jugador abre su selector, ve solo su fila y guarda su puesto", async () => {
   const { module, instances, notifications, current } = await setup();
-  const controls = [{ name: "token", tools: [] }];
+  const controls = [{ name: "lagunak", tools: [] }];
 
   module.addStationControl(controls);
   assert.equal(controls[0].tools.length, 1);
@@ -102,7 +102,7 @@ test("v11: un jugador abre su selector, ve solo su fila y guarda su puesto", asy
 test("v11: el GM ve jugadores desconectados y puede corregir su puesto", async () => {
   const { module, instances, other } = await setup({ isGM: true });
   other.active = false;
-  const controls = [{ name: "token", tools: [] }];
+  const controls = [{ name: "lagunak", tools: [] }];
 
   module.addStationControl(controls);
   controls[0].tools[0].onClick();
@@ -120,11 +120,11 @@ test("v11: el GM ve jugadores desconectados y puede corregir su puesto", async (
 
 test("host moderno abre con ApplicationV2 y refresca al actualizar un usuario", async () => {
   const { module, hooks, instances } = await setup({ modern: true });
-  const controls = { tokens: { tools: {} } };
+  const controls = { lagunak: { tools: {} } };
 
   module.addStationControl(controls);
-  assert.equal(typeof controls.tokens.tools["lagunak-puestos"].onChange, "function");
-  controls.tokens.tools["lagunak-puestos"].onClick();
+  assert.equal(typeof controls.lagunak.tools["lagunak-puestos"].onChange, "function");
+  controls.lagunak.tools["lagunak-puestos"].onClick();
 
   assert.equal(instances.length, 1);
   assert.deepEqual(instances[0].renderCalls, [{ force: true }]);
@@ -143,10 +143,10 @@ for (const modern of [false, true]) {
     current.setFlag = async () => {
       throw new Error("fallo simulado de persistencia");
     };
-    const controls = modern ? { tokens: { tools: {} } } : [{ name: "token", tools: [] }];
+    const controls = modern ? { lagunak: { tools: {} } } : [{ name: "lagunak", tools: [] }];
 
     module.addStationControl(controls);
-    if (modern) controls.tokens.tools["lagunak-puestos"].onClick();
+    if (modern) controls.lagunak.tools["lagunak-puestos"].onClick();
     else controls[0].tools[0].onClick();
 
     let change;

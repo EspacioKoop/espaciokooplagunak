@@ -173,6 +173,36 @@ function instalarControlesPruebaIndividual()
     return true
 end
 
+-- Catalogo cerrado de arquetipos que ESTE escenario sabe materializar. Foundry
+-- (via el puente) elige el arquetipo; el escenario es dueno del COMO: plantilla,
+-- faccion, distancia, estado y orden de IA. El puente puede anunciar mas
+-- arquetipos en su enum, pero cualquiera que no este aqui degrada a
+-- not_supported (return false) en vez de inventar un objeto.
+local ARQUETIPOS_ENCUENTRO = {
+    -- Pecio a la deriva: nave civil averiada y quieta (encuentro de rescate).
+    derelict = {
+        indicativo = "Hondar", template = "Flavia", faccion = "Independent",
+        distancia = 15000, orden = "idle",
+        casco_max = 50, casco = 15,
+        averias = { impulse = -0.5, reactor = -0.25 },
+    },
+    -- Patrulla hostil: cazador Exuari en ronda (encuentro de combate).
+    patrol = {
+        indicativo = "Ehiztari", template = "Dagger", faccion = "Exuari",
+        distancia = 18000, orden = "roaming",
+    },
+    -- Mercante civil: transporte neutral (encuentro de comercio/escolta).
+    freighter = {
+        indicativo = "Merkatari", template = "Personnel Freighter 1",
+        faccion = "Independent", distancia = 12000, orden = "idle",
+    },
+    -- Centinela: plataforma de defensa hostil que guarda su posicion.
+    sentry = {
+        indicativo = "Zaindari", template = "Defense platform", faccion = "Kraylor",
+        distancia = 16000, orden = "standground",
+    },
+}
+
 -- Encuentro inyectado por el GM via el puente (#117). Foundry decide el QUE
 -- (arquetipo de un catalogo cerrado); este escenario decide el COMO: posicion
 -- concreta, faccion, estado. El rumbo es una sugerencia gruesa relativa a la
@@ -182,27 +212,39 @@ function lagunakSpawnEncounter(arquetipo, rumbo)
     if nave == nil then
         return false
     end
-    if arquetipo ~= "derelict" then
+    local spec = ARQUETIPOS_ENCUENTRO[arquetipo]
+    if spec == nil then
         return false
     end
 
     local desvios = { ahead = 0, starboard = 90, astern = 180, port = 270 }
     local desvio = desvios[rumbo] or 0
     -- A rango largo de sensores: visible en ciencia, sin caer encima.
-    local distancia = 15000 + math.random(-2000, 2000)
+    local distancia = spec.distancia + math.random(-2000, 2000)
     local angulo = math.rad(nave:getHeading() + desvio + math.random(-15, 15))
     local x, y = nave:getPosition()
 
     contadorEncuentros = (contadorEncuentros or 0) + 1
-    CpuShip()
-        :setTemplate("Flavia")
-        :setFaction("Independent")
-        :setCallSign(string.format("Hondar %d", contadorEncuentros))
+    local objeto = CpuShip()
+        :setTemplate(spec.template)
+        :setFaction(spec.faccion)
+        :setCallSign(string.format("%s %d", spec.indicativo, contadorEncuentros))
         :setPosition(x + math.sin(angulo) * distancia, y - math.cos(angulo) * distancia)
-        :setHullMax(50):setHull(15)
-        :setSystemHealth("impulse", -0.5)
-        :setSystemHealth("reactor", -0.25)
-        :orderIdle()
+
+    if spec.casco_max ~= nil then
+        objeto:setHullMax(spec.casco_max):setHull(spec.casco or spec.casco_max)
+    end
+    for sistema, valor in pairs(spec.averias or {}) do
+        objeto:setSystemHealth(sistema, valor)
+    end
+
+    if spec.orden == "roaming" then
+        objeto:orderRoaming()
+    elseif spec.orden == "standground" then
+        objeto:orderStandGround()
+    else
+        objeto:orderIdle()
+    end
     return true
 end
 

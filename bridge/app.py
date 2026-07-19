@@ -440,9 +440,16 @@ class EncounterArchetype(str, Enum):
     (posición exacta, facción, stats, IA). Nunca se aceptan coordenadas ni
     definiciones de objeto desde el cliente: eso sería doble autoridad sobre
     el estado de la nave (ADR-0002) y la puerta de /exec.lua disfrazada.
+
+    Cada valor nuevo aquí solo se vuelve jugable cuando el escenario lo honra en
+    su callback ``lagunakSpawnEncounter``; un arquetipo que el puente conoce pero
+    el escenario no reconoce degrada a ``not_supported`` (nunca inventa nada).
     """
 
     derelict = "derelict"
+    patrol = "patrol"
+    freighter = "freighter"
+    sentry = "sentry"
 
 
 class EncounterBearing(str, Enum):

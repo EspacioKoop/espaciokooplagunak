@@ -180,7 +180,7 @@ test("degradar cierra y vacía estado, mapa y workspace abiertos", async () => {
   hooks.getSceneControlButtons(controls);
   controls.lagunak.tools["lagunak-estado"].onClick();
   controls.lagunak.tools["lagunak-mapa"].onClick();
-  controls.tokens.tools["lagunak-espacio-puesto"].onClick();
+  controls.lagunak.tools["lagunak-espacio-puesto"].onClick();
   assert.equal(instances.length, 3);
   const wipes = [0, 0, 0];
   instances.forEach((app, index) => {
@@ -207,11 +207,10 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
   const controls = [{ name: "token", tools: [] }];
 
   hooks.getSceneControlButtons(controls);
-  // Jugadores: asignación y consola en fichas. GM: estado y mapa en grupo propio.
-  assert.deepEqual(controls[0].tools.map(({ name }) => name), [
-    "lagunak-puestos",
-    "lagunak-espacio-puesto",
-  ]);
+  // Issue #125: TODAS las herramientas del módulo viven en el grupo propio;
+  // nada se cuelga de Token Controls. El GM ve estado/mapa/token/diagnóstico
+  // más los botones de puesto.
+  assert.deepEqual(controls[0].tools.map(({ name }) => name), []);
   const grupo = controls.find((control) => control.name === "lagunak");
   assert.ok(grupo);
   assert.equal(grupo.icon, "fa-solid fa-shuttle-space");
@@ -220,6 +219,8 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
     "lagunak-mapa",
     "lagunak-token",
     "lagunak-diagnostico",
+    "lagunak-puestos",
+    "lagunak-espacio-puesto",
   ]);
   toolByName(controls, "lagunak-estado").onClick();
 
@@ -456,11 +457,15 @@ test("un jugador no GM recibe asignación y espacio de puesto, sin controles GM"
   const controls = [{ name: "token", tools: [] }];
 
   hooks.getSceneControlButtons(controls);
-  assert.deepEqual(controls[0].tools.map(({ name }) => name), [
+  // El grupo propio es visible para el jugador con SOLO sus botones de puesto;
+  // sin estado/mapa/token/diagnóstico (solo-GM) y nada en Token Controls.
+  assert.deepEqual(controls[0].tools.map(({ name }) => name), []);
+  const grupo = controls.find((control) => control.name === "lagunak");
+  assert.ok(grupo);
+  assert.deepEqual(grupo.tools.map(({ name }) => name), [
     "lagunak-puestos",
     "lagunak-espacio-puesto",
   ]);
-  assert.equal(controls.find((control) => control.name === "lagunak"), undefined);
 });
 
 test("v11 abre el mapa vivo con Application clásica (rAF ausente: sin bucle)", async () => {

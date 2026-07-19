@@ -184,9 +184,49 @@ async function revokePrivilegedBridgeAccess() {
  * todas las versiones soportadas) porque sus herramientas son botones puros:
  * activar el grupo no debe tocar ninguna capa de fichas. */
 Hooks.on("getSceneControlButtons", (controls) => {
-  addStationControl(controls);
-  addWorkspaceControl(controls);
-  if (!game.user?.isGM) return;
+  const isGM = Boolean(game.user?.isGM);
+
+  // Herramientas solo-GM del grupo (estado, mapa, token, diagnóstico). Los
+  // botones de puesto (asignación y consola) los añaden addStationControl y
+  // addWorkspaceControl para TODOS los usuarios, más abajo.
+  const gmTools = isGM
+    ? [
+        {
+          name: "lagunak-estado",
+          title: "LAGUNAK.Controles.AbrirEstado",
+          icon: "fa-solid fa-gauge-high",
+          button: true,
+          onClick: () => abrirEstadoNave(),
+        },
+        {
+          name: "lagunak-mapa",
+          title: "LAGUNAK.Controles.AbrirMapa",
+          icon: "fa-solid fa-satellite-dish",
+          button: true,
+          onClick: () => abrirMapaVivo(),
+        },
+        {
+          name: "lagunak-token",
+          title: "LAGUNAK.Controles.ConfigurarToken",
+          icon: "fa-solid fa-key",
+          button: true,
+          onClick: () => openBridgeTokenApp(),
+        },
+        {
+          name: "lagunak-diagnostico",
+          title: "LAGUNAK.Controles.ProbarConexion",
+          icon: "fa-solid fa-stethoscope",
+          button: true,
+          onClick: () => diagnosticarConexion(),
+        },
+      ]
+    : [];
+
+  // El grupo propio es visible para TODOS: los jugadores ven sus botones de
+  // puesto aquí, no en Token Controls (issue #125). Solo el GM ve además
+  // estado/mapa/token/diagnóstico. activeTool apunta a una herramienta que
+  // exista para el rol actual.
+  const activeTool = isGM ? "lagunak-estado" : "lagunak-puestos";
 
   if (Array.isArray(controls)) {
     controls.push({
@@ -195,92 +235,31 @@ Hooks.on("getSceneControlButtons", (controls) => {
       icon: "fa-solid fa-shuttle-space",
       layer: "controls",
       visible: true,
-      activeTool: "lagunak-estado",
-      tools: [
-        {
-          name: "lagunak-estado",
-          title: "LAGUNAK.Controles.AbrirEstado",
-          icon: "fa-solid fa-gauge-high",
-          button: true,
-          onClick: () => abrirEstadoNave(),
-        },
-        {
-          name: "lagunak-mapa",
-          title: "LAGUNAK.Controles.AbrirMapa",
-          icon: "fa-solid fa-satellite-dish",
-          button: true,
-          onClick: () => abrirMapaVivo(),
-        },
-        {
-          name: "lagunak-token",
-          title: "LAGUNAK.Controles.ConfigurarToken",
-          icon: "fa-solid fa-key",
-          button: true,
-          onClick: () => openBridgeTokenApp(),
-        },
-        {
-          name: "lagunak-diagnostico",
-          title: "LAGUNAK.Controles.ProbarConexion",
-          icon: "fa-solid fa-stethoscope",
-          button: true,
-          onClick: () => diagnosticarConexion(),
-        },
-      ],
+      activeTool,
+      tools: gmTools,
     });
-    return;
-  }
-
-  if (controls && typeof controls === "object") {
+  } else if (controls && typeof controls === "object") {
+    const tools = {};
+    gmTools.forEach((tool, order) => {
+      tools[tool.name] = { ...tool, order, onChange: tool.onClick };
+    });
     controls.lagunak = {
       name: "lagunak",
       title: "LAGUNAK.Controles.Grupo",
       icon: "fa-solid fa-shuttle-space",
       layer: "controls",
       visible: true,
-      activeTool: "lagunak-estado",
+      activeTool,
       order: Object.keys(controls).length,
       onChange: () => {},
       onToolChange: () => {},
-      tools: {
-        "lagunak-estado": {
-          name: "lagunak-estado",
-          title: "LAGUNAK.Controles.AbrirEstado",
-          icon: "fa-solid fa-gauge-high",
-          order: 0,
-          button: true,
-          onClick: () => abrirEstadoNave(),
-          onChange: () => abrirEstadoNave(),
-        },
-        "lagunak-mapa": {
-          name: "lagunak-mapa",
-          title: "LAGUNAK.Controles.AbrirMapa",
-          icon: "fa-solid fa-satellite-dish",
-          order: 1,
-          button: true,
-          onClick: () => abrirMapaVivo(),
-          onChange: () => abrirMapaVivo(),
-        },
-        "lagunak-token": {
-          name: "lagunak-token",
-          title: "LAGUNAK.Controles.ConfigurarToken",
-          icon: "fa-solid fa-key",
-          order: 2,
-          button: true,
-          onClick: () => openBridgeTokenApp(),
-          onChange: () => openBridgeTokenApp(),
-        },
-        "lagunak-diagnostico": {
-          name: "lagunak-diagnostico",
-          title: "LAGUNAK.Controles.ProbarConexion",
-          icon: "fa-solid fa-stethoscope",
-          order: 3,
-          button: true,
-          onClick: () => diagnosticarConexion(),
-          onChange: () => diagnosticarConexion(),
-        },
-      },
+      tools,
     };
   }
+
+  // Botones de puesto para TODOS los usuarios, dentro del grupo propio.
+  addStationControl(controls);
+  addWorkspaceControl(controls);
 });
 
 /* Diagnóstico de conexión (issue #183): comprueba /healthz y después

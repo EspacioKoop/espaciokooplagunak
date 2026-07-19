@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  BIOMAS,
   PALETA_DECORADO,
   componerDecorado,
   crearDecorado,
@@ -10,11 +11,11 @@ import {
 
 const SEMILLA = 0x4c4147; // misma que MAPA_SEMILLA en main.mjs
 
-test("crearDecorado devuelve las tres capas ordenadas de lejana a cercana", () => {
+test("crearDecorado devuelve las capas ordenadas de lejana a cercana", () => {
   const capas = crearDecorado(SEMILLA);
   assert.deepEqual(
     capas.map((c) => c.tipo),
-    ["nebulosa", "planeta", "asteroide"],
+    ["nebulosa_lejana", "nebulosa", "planeta", "asteroide"],
   );
   // El factor de parallax crece de lejana a cercana (más lejos = se mueve menos).
   for (let i = 1; i < capas.length; i += 1) {
@@ -56,7 +57,9 @@ test("los elementos caen dentro del lienzo y usan colores de la paleta", () => {
     }
     if (capa.tipo === "planeta") {
       for (const el of capa.elementos) {
-        assert.ok(PALETA_DECORADO.planetas.includes(el.color));
+        assert.ok(BIOMAS[el.bioma], "bioma válido");
+        assert.equal(el.color, BIOMAS[el.bioma].color);
+        assert.equal(el.rasgo, BIOMAS[el.bioma].rasgo);
         assert.ok(el.brillo > 0 && el.brillo < 1);
       }
     }
@@ -141,11 +144,13 @@ test("dibujarDecorado conserva el contrato pixel art sin curvas ni gradientes", 
   rectangulos.length = 0;
   dibujarDecorado(
     ctx,
-    [{ tipo: "asteroide", dx: 0, dy: 0, elementos: [{ x: 319.5, y: 319.5, r: 2, brillo: 0.5 }] }],
+    [{ tipo: "asteroide", dx: 0, dy: 0, elementos: [{ x: 319.5, y: 319.5, r: 2, brillo: 0.5, semilla: 1 }] }],
     { ancho: 320, alto: 320 },
   );
+  // El peñasco (píxeles 1×1 con forma irregular) que cruza dos bordes reaparece
+  // en la esquina opuesta: hay píxeles pintados en el rincón (0,0).
   assert.ok(
-    rectangulos.some((r) => r.x === 0 && r.y === 0 && r.ancho === 2 && r.alto === 2),
-    "la mota que cruza dos bordes reaparece completa en la esquina opuesta",
+    rectangulos.some((r) => r.x >= 0 && r.x < 2 && r.y >= 0 && r.y < 2 && r.ancho === 1 && r.alto === 1),
+    "el peñasco que cruza dos bordes reaparece en la esquina opuesta",
   );
 });

@@ -26,7 +26,11 @@ const RUTA_DESTINO = "rgba(255, 209, 102, 0.55)";
  * Pinta un frame completo. `frame` es la salida de componerFrame; con
  * `sinDatos` se pinta solo el fondo y la retícula (pantalla «en espera»).
  */
-export function dibujarFrame(ctx, frame, { ancho = 320, alto = 320, decorado = [] } = {}) {
+export function dibujarFrame(
+  ctx,
+  frame,
+  { ancho = 320, alto = 320, decorado = [], moviendo = false, tMs = 0 } = {},
+) {
   ctx.imageSmoothingEnabled = false;
 
   // Fondo.
@@ -36,7 +40,7 @@ export function dibujarFrame(ctx, frame, { ancho = 320, alto = 320, decorado = [
   // Decorado de fondo (issue #203): nebulosas/planetas/asteroides con parallax,
   // ya compuesto por el llamador, entre el fondo y las estrellas. En la pantalla
   // «en espera» el llamador pasa una lista vacía y aquí no se pinta nada.
-  dibujarDecorado(ctx, decorado, { ancho, alto });
+  dibujarDecorado(ctx, decorado, { ancho, alto, tMs });
 
   // Estrellas por capa, teseladas: cada estrella se pinta desplazada por el
   // offset de su capa y envuelta al lienzo; las que quedan a caballo del borde
@@ -95,7 +99,7 @@ export function dibujarFrame(ctx, frame, { ancho = 320, alto = 320, decorado = [
       dibujarNaveSprite(
         ctx,
         construirSpriteNave({ clave: clasificarNave(blip, false), color: blip.color }),
-        { centroX: blip.x, centroY: blip.y, pixel: 2 },
+        { centroX: blip.x, centroY: blip.y, pixel: 3 },
       );
     } else {
       // Fuera de alcance: marca en el borde del anillo, hacia el contacto.
@@ -135,6 +139,6 @@ export function dibujarFrame(ctx, frame, { ancho = 320, alto = 320, decorado = [
   dibujarNaveSprite(
     ctx,
     construirSpriteNave({ clave: clasificarNave(null, true), color: COLOR_JUGADOR }),
-    { centroX: cx, centroY: cy, pixel: 2 },
+    { centroX: cx, centroY: cy, pixel: 4, moviendo, tMs },
   );
 }

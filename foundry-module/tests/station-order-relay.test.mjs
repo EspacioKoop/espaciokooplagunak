@@ -124,6 +124,30 @@ test("registerStationOrderHandler despacha en el GM y permite darse de baja", as
   assert.equal(socket.listeners.length, 0);
 });
 
+test("registerStationOrderHandler solo ejecuta si canHandle() es cierto (GM primario)", async () => {
+  const socket = fakeSocket();
+  const bridge = fakeBridge();
+  let esPrimario = false;
+  registerStationOrderHandler({
+    socket,
+    isGM: true,
+    canHandle: () => esPrimario,
+    resolveUserStation: () => "navigation",
+    bridge,
+  });
+  const { fn } = socket.listeners[0];
+  const orden = { type: STATION_ORDER_EVENT, userId: "u1", action: "set_target_heading", params: { heading: 5 } };
+
+  fn(orden);
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(bridge.calls, [], "un GM no primario no ejecuta la orden");
+
+  esPrimario = true;
+  fn(orden);
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(bridge.calls, [["setTargetHeading", 5]], "el GM primario sí la ejecuta");
+});
+
 test("registerStationOrderHandler ignora mensajes de otro tipo", async () => {
   const socket = fakeSocket();
   const bridge = fakeBridge();

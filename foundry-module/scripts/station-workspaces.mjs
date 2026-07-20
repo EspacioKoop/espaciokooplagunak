@@ -256,7 +256,9 @@ export function buildWorkspaceModel({
     isNavigation: normalized === "navigation",
     // Acción operativa por puesto (#236): disponible aunque el tripulante no
     // tenga telemetría —la orden es intención, la simulación es autoritativa—.
-    canOrderHeading: isActionAllowed(normalized, "set_target_heading"),
+    // Solo para tripulación (no-GM): el GM tiene sus propios controles directos
+    // y `game.socket.emit` no se autoentrega, así que el control no le serviría.
+    canOrderHeading: !isGM && isActionAllowed(normalized, "set_target_heading"),
     navigationHeading: integer(ship?.heading),
     navigationAriaLabel: format(i18n, "LAGUNAK.Espacios.RumboAccesible", { heading: integer(ship?.heading) }),
     isGM: Boolean(isGM),

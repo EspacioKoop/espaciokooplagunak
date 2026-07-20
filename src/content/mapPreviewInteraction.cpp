@@ -56,10 +56,7 @@ MapDocumentError MapPreviewDragSession::begin(
     float world_to_screen_scale
 )
 {
-    cancel();
-    selected_id.clear();
-    source_session_id = 0;
-    source_revision = 0;
+    clearSelection();
     const auto& document = session.document();
     std::string hit;
     const auto error = hitTestMapPreviewObject(
@@ -114,6 +111,14 @@ void MapPreviewDragSession::cancel()
 {
     dragging = false;
     provisional_transform = original_transform;
+}
+
+void MapPreviewDragSession::clearSelection()
+{
+    cancel();
+    selected_id.clear();
+    source_session_id = 0;
+    source_revision = 0;
 }
 
 void MapPreviewDragSession::applyProvisional(std::vector<MapPreviewMarker>& markers) const

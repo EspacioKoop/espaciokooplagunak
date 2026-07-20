@@ -224,6 +224,18 @@ int main()
             && !session.canRedo(),
         "new committed drag after undo invalidates redo");
 
+    MapPreviewDragSession selection;
+    expect(selection.begin(session, {70.0f, 80.0f}, 1.0f) == MapDocumentError::None
+            && selection.selectedId() == "dragged",
+        "supported radar hit exposes the selected object after the drag");
+    selection.cancel();
+    expect(selection.selectedId() == "dragged",
+        "cancelling movement preserves selection for explicit staging actions");
+    selection.clearSelection();
+    expect(selection.selectedId().empty() && !selection.isDragging()
+            && selection.commit(session) == MapEditError::NotFound,
+        "explicit clear disables later actions and cannot commit stale movement");
+
     std::cout << "MAP_PREVIEW_INTERACTION_TESTS_OK checks=" << checks << "\n";
     return 0;
 }

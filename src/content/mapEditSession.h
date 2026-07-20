@@ -37,6 +37,7 @@ public:
         MapObjectTransform transform,
         std::string* created_id = nullptr);
     MapEditError moveObject(const std::string& id, MapObjectTransform transform);
+    MapEditError rotateObject(const std::string& id, float delta_degrees);
     MapEditError resizeAsteroid(const std::string& id, float size);
     MapEditError removeObject(const std::string& id);
 

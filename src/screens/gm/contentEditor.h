@@ -116,6 +116,9 @@ private:
     GuiToggleButton* preview_toggle;
     GuiLabel* preview_status_label;
     GuiToggleButton* map_edit_toggle;
+    GuiButton* map_rotate_left_button;
+    GuiButton* map_rotate_right_button;
+    GuiButton* map_delete_selected_button;
     GuiButton* map_undo_button;
     GuiButton* map_redo_button;
     GuiButton* map_apply_button;
@@ -193,6 +196,10 @@ private:
     void setStatus(const string& text);
     void updatePreviewStatus();
     void setMapEditMode(bool enabled);
+    const MapObject* selectedMapObject() const;
+    void updateMapSelectionButtons();
+    void rotateSelectedMapObject(float delta_degrees);
+    void deleteSelectedMapObject();
     void undoMapEdit();
     void redoMapEdit();
     void applyMapBatch();

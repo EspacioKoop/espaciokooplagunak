@@ -106,6 +106,37 @@ int main()
     expect(session.moveObject("asteroid-1", {50, 60, 70}) == MapEditError::None
             && session.document().objects[0].transform.x == 50,
         "move updates a supported object");
+
+    MapDocument rotation_document;
+    auto rotating_asteroid = asteroid("rotating");
+    rotating_asteroid.transform.rotation = 350.0f;
+    rotation_document.objects.push_back(rotating_asteroid);
+    MapEditSession rotation_session(rotation_document);
+    expect(rotation_session.rotateObject("rotating", 15.0f) == MapEditError::None
+            && rotation_session.document().objects[0].transform.rotation == 5.0f,
+        "positive rotation wraps into the canonical range");
+    expect(rotation_session.undo()
+            && rotation_session.document().objects[0].transform.rotation == 350.0f
+            && !rotation_session.canUndo(),
+        "one undo reverses exactly one rotation");
+    expect(rotation_session.redo()
+            && rotation_session.document().objects[0].transform.rotation == 5.0f,
+        "redo restores the normalized rotation");
+    expect(rotation_session.rotateObject("rotating", -15.0f) == MapEditError::None
+            && rotation_session.document().objects[0].transform.rotation == 350.0f,
+        "negative rotation wraps into the canonical range");
+
+    MapEditSession no_op_rotation(rotation_document);
+    expect(no_op_rotation.rotateObject("rotating", 360.0f) == MapEditError::None
+            && !no_op_rotation.isDirty() && !no_op_rotation.canUndo(),
+        "full-turn rotation creates no history entry");
+    const auto before_invalid_rotation = no_op_rotation.document();
+    expect(no_op_rotation.rotateObject("missing", 15.0f) == MapEditError::NotFound
+            && no_op_rotation.rotateObject(
+                "rotating", std::numeric_limits<float>::quiet_NaN()) == MapEditError::InvalidDocument
+            && no_op_rotation.document() == before_invalid_rotation
+            && !no_op_rotation.canUndo(),
+        "missing or non-finite rotation is rejected atomically");
     expect(session.resizeAsteroid("asteroid-1", 400) == MapEditError::None
             && session.document().objects[0].size == 400,
         "asteroid resize is staged");
@@ -138,6 +169,8 @@ int main()
         "opaque unsupported object can be staged without interpretation");
     expect(session.moveObject("future-1", {1, 2, 3}) == MapEditError::WrongKind,
         "unsupported object cannot be transformed by the allowlist editor");
+    expect(session.rotateObject("future-1", 15.0f) == MapEditError::WrongKind,
+        "unsupported object cannot be rotated by the allowlist editor");
     expect(session.undo() && session.document().objects.size() == 2,
         "undo removes unsupported object without corrupting clean objects");
     expect(session.redo() && session.document().objects.back().opaque_json == unsupported.opaque_json,

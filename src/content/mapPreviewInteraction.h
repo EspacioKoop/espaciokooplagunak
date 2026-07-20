@@ -35,6 +35,7 @@ public:
     bool update(MapPreviewPoint world_position);
     MapEditError commit(MapEditSession& session);
     void cancel();
+    void clearSelection();
 
     bool isDragging() const { return dragging; }
     const std::string& selectedId() const { return selected_id; }

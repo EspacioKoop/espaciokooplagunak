@@ -326,13 +326,25 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
             if (!value) setMapEditMode(false);
         }
     );
-    preview_toggle->setPosition(x, 360)->setSize(250, 40)->hide();
+    preview_toggle->setPosition(x, 360)->setSize(220, 40)->hide();
     campaign_graph_button = new GuiButton(
         box, "CAMPAIGN_GRAPH", tr("content_editor", "View campaign graph"),
         [this]() { openCampaignGraph(); });
     campaign_graph_button->setPosition(x, 360)->setSize(250, 40)->hide();
     preview_status_label = new GuiLabel(box, "MAP_PREVIEW_STATUS", "", 16);
-    preview_status_label->setPosition(x + 270, 360)->setSize(420, 40)->hide();
+    preview_status_label->setPosition(x + 225, 360)->setSize(135, 40)->hide();
+    map_rotate_left_button = new GuiButton(
+        box, "MAP_ROTATE_LEFT", tr("content_editor", "Rotate -15°"),
+        [this]() { rotateSelectedMapObject(-15.0f); });
+    map_rotate_left_button->setPosition(x + 365, 360)->setSize(100, 40)->hide();
+    map_rotate_right_button = new GuiButton(
+        box, "MAP_ROTATE_RIGHT", tr("content_editor", "Rotate +15°"),
+        [this]() { rotateSelectedMapObject(15.0f); });
+    map_rotate_right_button->setPosition(x + 470, 360)->setSize(100, 40)->hide();
+    map_delete_selected_button = new GuiButton(
+        box, "MAP_DELETE_SELECTED", tr("content_editor", "Delete"),
+        [this]() { deleteSelectedMapObject(); });
+    map_delete_selected_button->setPosition(x + 575, 360)->setSize(115, 40)->hide();
 
     map_edit_toggle = new GuiToggleButton(
         box,
@@ -781,6 +793,9 @@ void GuiContentEditor::updateFieldPresentation(ContentResourceType type)
     const bool is_map = type == ContentResourceType::Map;
     preview_toggle->setVisible(is_map);
     map_edit_toggle->setVisible(is_map);
+    map_rotate_left_button->setVisible(is_map);
+    map_rotate_right_button->setVisible(is_map);
+    map_delete_selected_button->setVisible(is_map);
     map_undo_button->setVisible(is_map);
     map_redo_button->setVisible(is_map);
     const bool local_server = bool(game_server);
@@ -788,6 +803,7 @@ void GuiContentEditor::updateFieldPresentation(ContentResourceType type)
     map_rollback_button->setVisible(is_map && local_server);
     map_placement_selector->setVisible(is_map);
     updateMapBatchButtons();
+    updateMapSelectionButtons();
     if (!is_map)
     {
         setMapEditMode(false);
@@ -1463,9 +1479,59 @@ void GuiContentEditor::updatePreviewStatus()
     preview_status_label->setVisible(count > 0);
     if (count > 0)
         preview_status_label->setText(
-            tr("content_editor", "Omitted objects (preserved): {count}")
+            tr("content_editor", "Omitted: {count}")
                 .format({{"count", string(static_cast<unsigned int>(count))}})
         );
+    updateMapSelectionButtons();
+}
+
+const MapObject* GuiContentEditor::selectedMapObject() const
+{
+    if (current_type != ContentResourceType::Map || map_drag.selectedId().empty()) return nullptr;
+    const auto& objects = map_edit_session.document().objects;
+    const auto selected = std::find_if(objects.begin(), objects.end(), [&](const MapObject& object) {
+        return object.id == map_drag.selectedId() && object.kind != MapObjectKind::Unsupported;
+    });
+    return selected == objects.end() ? nullptr : &*selected;
+}
+
+void GuiContentEditor::updateMapSelectionButtons()
+{
+    const bool enabled = selectedMapObject() != nullptr;
+    map_rotate_left_button->setEnable(enabled);
+    map_rotate_right_button->setEnable(enabled);
+    map_delete_selected_button->setEnable(enabled);
+}
+
+void GuiContentEditor::rotateSelectedMapObject(float delta_degrees)
+{
+    const auto* selected = selectedMapObject();
+    if (!selected)
+        return setStatus(tr("content_editor", "Select a supported map object on the radar first."));
+    const auto id = selected->id;
+    if (map_edit_session.rotateObject(id, delta_degrees) != MapEditError::None)
+        return setStatus(tr("content_editor", "The selected map object could not be rotated."));
+    pending_save = "";
+    pending_file_export = "";
+    discard_guard.reset();
+    updatePreviewStatus();
+    setStatus(tr("content_editor", "Map object rotation staged."));
+}
+
+void GuiContentEditor::deleteSelectedMapObject()
+{
+    const auto* selected = selectedMapObject();
+    if (!selected)
+        return setStatus(tr("content_editor", "Select a supported map object on the radar first."));
+    const auto id = selected->id;
+    if (map_edit_session.removeObject(id) != MapEditError::None)
+        return setStatus(tr("content_editor", "The selected map object could not be removed."));
+    map_drag.clearSelection();
+    pending_save = "";
+    pending_file_export = "";
+    discard_guard.reset();
+    updatePreviewStatus();
+    setStatus(tr("content_editor", "Map object removed from staging."));
 }
 
 void GuiContentEditor::setMapEditMode(bool enabled)
@@ -1477,6 +1543,7 @@ void GuiContentEditor::setMapEditMode(bool enabled)
         map_edit_mode = false;
         map_placement_kind = MapObjectKind::Unsupported;
         if (map_edit_toggle) map_edit_toggle->setValue(false);
+        updateMapSelectionButtons();
         return;
     }
 

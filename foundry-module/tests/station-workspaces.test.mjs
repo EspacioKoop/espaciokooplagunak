@@ -116,10 +116,14 @@ test("navegación puede ordenar rumbo aunque no tenga telemetría; otros puestos
   });
   assert.equal(navegacion.hasTelemetry, false);
   assert.equal(navegacion.canOrderHeading, true);
+  assert.equal(navegacion.canOrderImpulse, true);
+  assert.equal(navegacion.canOrderWarp, true);
 
   for (const station of ["captain", "engineering", "sensors", "communications", "weapons"]) {
     const model = buildWorkspaceModel({ station, isGM: true, users: [], moduleId: MODULE_ID, i18n });
     assert.equal(model.canOrderHeading, false, `${station} no debería ordenar rumbo en esta rebanada`);
+    assert.equal(model.canOrderImpulse, false, `${station} no debería ordenar impulso`);
+    assert.equal(model.canOrderWarp, false, `${station} no debería ordenar warp`);
   }
 });
 

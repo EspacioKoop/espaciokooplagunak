@@ -9,15 +9,28 @@ import {
   resolveStationOrder,
 } from "../scripts/station-actions.mjs";
 
-test("navegación puede fijar rumbo", () => {
+test("navegación controla el movimiento: rumbo, impulso y warp", () => {
   assert.equal(isActionAllowed("navigation", "set_target_heading"), true);
-  assert.deepEqual(STATION_ACTIONS.navigation, ["set_target_heading"]);
+  assert.equal(isActionAllowed("navigation", "set_impulse"), true);
+  assert.equal(isActionAllowed("navigation", "set_warp"), true);
+  assert.deepEqual(STATION_ACTIONS.navigation, ["set_target_heading", "set_impulse", "set_warp"]);
+});
+
+test("las órdenes de movimiento encaminan al método correcto de BridgeClient", () => {
+  assert.deepEqual(
+    resolveStationOrder({ station: "navigation", action: "set_impulse", params: { value: -0.5 } }),
+    { method: "setImpulse", args: [-0.5] },
+  );
+  assert.deepEqual(
+    resolveStationOrder({ station: "navigation", action: "set_warp", params: { level: 3 } }),
+    { method: "setWarp", args: [3] },
+  );
 });
 
 test("isActionAllowed no lanza ante entradas inválidas", () => {
   assert.equal(isActionAllowed("desconocido", "set_target_heading"), false);
   assert.equal(isActionAllowed(null, "set_target_heading"), false);
-  assert.equal(isActionAllowed("navigation", "set_impulse"), false);
+  assert.equal(isActionAllowed("navigation", "set_system_power"), false);
   assert.equal(isActionAllowed("engineering", "set_target_heading"), false);
 });
 

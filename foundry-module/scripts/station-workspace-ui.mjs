@@ -140,15 +140,41 @@ function stationFromEvent(event) {
   return event?.currentTarget?.dataset?.station ?? null;
 }
 
-function submitHeadingOrder(app) {
+// Formularios de orden de puesto: cada acción de UI declara de qué input lee,
+// cómo valida el valor del cliente (el puente revalida rangos igualmente) y bajo
+// qué parámetro lo emite. La validación aquí es solo cortesía de UX.
+const ORDER_FORMS = Object.freeze({
+  "orden-rumbo": {
+    inputId: "lagunak-orden-rumbo",
+    action: "set_target_heading",
+    param: "heading",
+    valid: (n) => Number.isFinite(n) && n >= 0 && n < 360,
+    invalidKey: "LAGUNAK.Espacios.Orden.RumboInvalido",
+  },
+  "orden-impulso": {
+    inputId: "lagunak-orden-impulso",
+    action: "set_impulse",
+    param: "value",
+    valid: (n) => Number.isFinite(n) && n >= -1 && n <= 1,
+    invalidKey: "LAGUNAK.Espacios.Orden.ImpulsoInvalido",
+  },
+  "orden-warp": {
+    inputId: "lagunak-orden-warp",
+    action: "set_warp",
+    param: "level",
+    valid: (n) => Number.isInteger(n) && n >= 0 && n <= 4,
+    invalidKey: "LAGUNAK.Espacios.Orden.WarpInvalido",
+  },
+});
+
+function submitStationOrder(app, spec) {
   const root = app.element?.[0] ?? app.element;
-  const input = root?.querySelector?.("#lagunak-orden-rumbo");
-  const heading = Number(input?.value);
-  if (!Number.isFinite(heading) || heading < 0 || heading >= 360) {
-    ui.notifications?.warn?.(game.i18n.localize("LAGUNAK.Espacios.Orden.RumboInvalido"));
+  const value = Number(root?.querySelector?.(`#${spec.inputId}`)?.value);
+  if (!spec.valid(value)) {
+    ui.notifications?.warn?.(game.i18n.localize(spec.invalidKey));
     return;
   }
-  emitWorkspaceOrder({ action: "set_target_heading", params: { heading } });
+  emitWorkspaceOrder({ action: spec.action, params: { [spec.param]: value } });
   ui.notifications?.info?.(game.i18n.localize("LAGUNAK.Espacios.Orden.Enviada"));
 }
 
@@ -156,7 +182,7 @@ async function handleWorkspaceAction(app, event) {
   const action = actionFromEvent(event);
   if (action === "refresh") return refreshTelemetry(app);
   if (action === "assignments") return openStationApp();
-  if (action === "orden-rumbo") return submitHeadingOrder(app);
+  if (ORDER_FORMS[action]) return submitStationOrder(app, ORDER_FORMS[action]);
   if (action === "preview" && game.user?.isGM) {
     app.setPreviewStation(stationFromEvent(event));
     renderWorkspace();

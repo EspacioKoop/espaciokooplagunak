@@ -254,9 +254,12 @@ export function buildWorkspaceModel({
     stationIcon: definition.icon,
     accent: definition.accent,
     isNavigation: normalized === "navigation",
-    // Acción operativa por puesto (#236): disponible aunque el tripulante no
-    // tenga telemetría —la orden es intención, la simulación es autoritativa—.
+    // Acciones operativas por puesto (#236/#238): disponibles aunque el
+    // tripulante no tenga telemetría —la orden es intención, la simulación es
+    // autoritativa—.
     canOrderHeading: isActionAllowed(normalized, "set_target_heading"),
+    canOrderImpulse: isActionAllowed(normalized, "set_impulse"),
+    canOrderWarp: isActionAllowed(normalized, "set_warp"),
     navigationHeading: integer(ship?.heading),
     navigationAriaLabel: format(i18n, "LAGUNAK.Espacios.RumboAccesible", { heading: integer(ship?.heading) }),
     isGM: Boolean(isGM),

@@ -31,6 +31,12 @@
 | [FOUNDRY_DISTRIBUTION.md](FOUNDRY_DISTRIBUTION.md) | Empaquetado y distribución del módulo Foundry |
 | [FOUNDRY_GUI_SMOKE.md](FOUNDRY_GUI_SMOKE.md) | Prueba de humo de la interfaz del módulo |
 
+## Investigación y diseño de contenido
+
+| Documento | Qué cubre |
+|---|---|
+| [ATLAS_SPELLJAMMER.md](ATLAS_SPELLJAMMER.md) | Investigación del atlas jerárquico de campaña y matriz de procedencia/licencia (#213) |
+
 ## Localización
 
 | Documento | Qué cubre |

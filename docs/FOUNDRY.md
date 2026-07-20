@@ -15,13 +15,16 @@ verificada en local** (2026-07-12, x86-64):
   reales del escenario → orden `set_impulse` con efecto observable en la
   simulación → `/exec.lua` inaccesible desde el host.
 
-**El módulo de Foundry VTT existe como vertical para el director de juego**:
-muestra el estado en vivo vía polling, permite anotarlo en un diario y envía
-la orden cerrada de pausa/reanudación. Instalación,
-configuración y estado de verificación en
-[`foundry-module/README.md`](../foundry-module/README.md) — la activación en
-un Foundry real está pendiente de verificación humana (la licencia de Foundry
-impide probarlo en CI). El resto de este documento describe la visión
+**El módulo de Foundry VTT ya cubre al director de juego y una primera capa de
+tripulación**: muestra el estado en vivo vía polling, permite anotarlo en un
+diario, ofrece controles GM cerrados de tempo, reposición, ingeniería y
+maniobra, y permite asignar puestos con espacios informativos propios (#162,
+#176 y #216). Las acciones operativas por puesto siguen pendientes.
+Instalación, configuración y estado de verificación en
+[`foundry-module/README.md`](../foundry-module/README.md). Existe evidencia
+humana positiva en v11.302 y en un host moderno, pero la matriz completa de
+versión, consola limpia y ausencia de secretos sigue abierta en #29; la licencia
+de Foundry impide cubrirla en CI. El resto de este documento describe la visión
 completa, de la que está construida esa base.
 
 El transporte del contrato v0 queda fijado en **polling HTTP** (issue #6). El
@@ -56,11 +59,11 @@ cada llamada de red:
   exacta (integrado; #176/#202).
 - **Ingeniería** — repartir energía por sistema (`set_system_power`) y leer
   `health`/`heat`/`power`/`coolant` y `repair_crew` de `/v1/state`. No sustituye
-  la reparación de la tripulación en EmptyEpsilon; la observa (en revisión:
+  la reparación de la tripulación en EmptyEpsilon; la observa (integrado en
   PR #217, issue #216).
 - **Órdenes directas** — impulso, warp, rumbo (8 puntos de brújula) y escudos:
   las cuatro órdenes de nave que el puente ya autoriza, para dirigir la nave sin
-  pasar por los puestos (en revisión: PR #218, issue #176).
+  pasar por los puestos (integrado en PR #218, issue #176).
 - **Encuentros** — inyectar un objeto de un catálogo cerrado de arquetipos:
   `derelict`, `patrol`, `freighter`, `sentry`. Foundry elige el arquetipo; el
   escenario decide plantilla, facción, posición y orden de IA. Nunca se aceptan

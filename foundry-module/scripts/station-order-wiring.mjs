@@ -62,6 +62,10 @@ export function registerStationOrders(moduleId) {
   unregister = registerStationOrderHandler({
     socket: moduleSocket(moduleId),
     isGM: Boolean(game.user?.isGM),
+    // Con varios GM conectados, solo el GM primario ejecuta la orden (evita
+    // mandarla N veces al puente). Se evalúa por orden, así que si el primario
+    // cambia (desconexión), el relevo pasa solo.
+    canHandle: () => game.user === game.users?.activeGM,
     resolveUserStation: resolveUserStation(moduleId),
     bridge: lazyBridge(moduleId),
     onResult: () => {

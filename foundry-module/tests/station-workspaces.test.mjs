@@ -119,8 +119,13 @@ test("navegación puede ordenar rumbo aunque no tenga telemetría; otros puestos
   assert.equal(navegacion.canOrderImpulse, true);
   assert.equal(navegacion.canOrderWarp, true);
 
+  // El GM no recibe el control de tripulación (tiene los suyos y el emit no se
+  // autoentrega), ni siquiera en navegación.
+  const gmNav = buildWorkspaceModel({ station: "navigation", isGM: true, users: [], moduleId: MODULE_ID, i18n });
+  assert.equal(gmNav.canOrderHeading, false);
+
   for (const station of ["captain", "engineering", "sensors", "communications", "weapons"]) {
-    const model = buildWorkspaceModel({ station, isGM: true, users: [], moduleId: MODULE_ID, i18n });
+    const model = buildWorkspaceModel({ station, isGM: false, users: [], moduleId: MODULE_ID, i18n });
     assert.equal(model.canOrderHeading, false, `${station} no debería ordenar rumbo en esta rebanada`);
     assert.equal(model.canOrderImpulse, false, `${station} no debería ordenar impulso`);
     assert.equal(model.canOrderWarp, false, `${station} no debería ordenar warp`);

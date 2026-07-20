@@ -47,18 +47,25 @@ export async function handleStationOrder({ payload, resolveUserStation, bridge }
 
 // Registra el manejador de órdenes en el socket, solo en el cliente GM. Fuera
 // del GM es no-op (los clientes de tripulación solo emiten, no procesan).
+//
+// `canHandle` se evalúa EN CADA orden (no al registrar): con varios GM
+// conectados, todos reciben el mensaje del socket, pero solo debe ejecutarlo
+// uno para no mandar la orden N veces al puente. El cableado pasa aquí el
+// criterio de GM primario (game.users.activeGM); por defecto, ejecuta siempre.
 // Devuelve una función para dar de baja el manejador.
 export function registerStationOrderHandler({
   socket,
   isGM,
   resolveUserStation,
   bridge,
+  canHandle = () => true,
   onResult = () => {},
   onError = () => {},
 }) {
   if (!isGM) return () => {};
   const listener = (payload) => {
     if (payload?.type !== STATION_ORDER_EVENT) return;
+    if (!canHandle()) return;
     Promise.resolve()
       .then(() => handleStationOrder({ payload, resolveUserStation, bridge }))
       .then((result) => onResult(result, payload))

@@ -53,8 +53,9 @@ Baseline normativa: [SECURITY.md](../SECURITY.md) (no se duplica aquí).
       (issue #86, Varo, 2026-07-14).
 - [ ] CODEOWNERS (opcional con 2 humanos; decidir si aporta o estorba).
       *Propietario: Varo (requiere admin para hacerlo obligatorio).*
-- [ ] SHA-pinning de actions en los workflows con permisos ampliados que aún
-      usan tags mutables (`codeql.yml`) — `docker-publish.yml` ya lo hace.
+- [x] SHA-pinning de actions en los workflows con permisos ampliados:
+      `codeql.yml` y `docker-publish.yml` usan commits inmutables; los cuatro
+      análisis CodeQL lo verificaron en el PR #229.
 
 ## Accesibilidad
 

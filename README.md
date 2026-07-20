@@ -139,12 +139,18 @@ Hitos verticales:
       (#33, #69 y #73).
 - [ ] Gestionar motores, combustible o energía, temperatura, daños, reparaciones y recursos de la nave
       (el puente ya autoriza impulso, warp, rumbo, escudos, energía por sistema y averías
-      —decisión del issue #80—; falta la superficie por puesto en Foundry).
+      —decisión del issue #80—; el panel de ingeniería del GM ya reparte energía por
+      sistema —#217—; falta la superficie por puesto de tripulación en Foundry).
 - [ ] Modelar puestos, permisos, turnos y acciones de la tripulación
       (asignación y espacios informativos integrados en #162; permisos y acciones
       operativas siguen pendientes).
-- [ ] Permitir al director de juego introducir encuentros, anomalías, averías y cambios narrativos.
-- [ ] Enviar a Foundry eventos y resultados normalizados para diarios, escenas y fichas.
+- [ ] Permitir al director de juego introducir encuentros, anomalías, averías y cambios narrativos
+      (el puente ya inyecta encuentros de un catálogo cerrado de arquetipos
+      —`spawn_encounter`, #196/#220— y reposiciona la nave a un ancla —#202—; la UI GM
+      para introducir encuentros está en revisión en #201).
+- [ ] Enviar a Foundry eventos y resultados normalizados para diarios, escenas y fichas
+      (`encounter_started` normalizado —#200— y alertas de umbral a la bitácora —#207—
+      ya publicados; falta el resto de resultados de sesión).
 - [ ] Probar una sesión completa de *Spelljammer* con director de juego y varios puestos conectados.
 
 **Criterio de salida:** una mesa de Foundry puede iniciar un trayecto, jugar su gestión operativa en Espaciokoop Lagunak y recibir el resultado en la campaña sin acceso directo a la API insegura heredada.

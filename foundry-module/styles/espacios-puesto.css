@@ -396,6 +396,11 @@
 .lagunak-workspace__unassigned button:focus-visible { color: var(--lagunak-accent); background: rgba(var(--lagunak-accent-rgb), 0.09); }
 .lagunak-workspace__actions button.is-primary { color: #041015; border-color: var(--lagunak-accent); background: var(--lagunak-accent); }
 
+.lagunak-workspace button:focus-visible {
+  outline: 2px solid var(--lagunak-accent);
+  outline-offset: 2px;
+}
+
 .lagunak-workspace__unassigned {
   display: grid;
   place-items: center;

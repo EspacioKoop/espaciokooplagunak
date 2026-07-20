@@ -229,8 +229,14 @@ int main()
             && selection.selectedId() == "dragged",
         "supported radar hit exposes the selected object after the drag");
     selection.cancel();
-    expect(selection.selectedId() == "dragged",
-        "cancelling movement preserves selection for explicit staging actions");
+    expect(selection.selectedId() == "dragged"
+            && editableMapPreviewSelection(session, selection, true) != nullptr,
+        "cancelling movement preserves selection for actions while editing");
+    expect(editableMapPreviewSelection(session, selection, false) == nullptr
+            && selection.selectedId() == "dragged",
+        "leaving edit mode disables selection actions without discarding selection");
+    expect(editableMapPreviewSelection(session, selection, true) != nullptr,
+        "re-entering edit mode restores actions for the preserved selection");
     selection.clearSelection();
     expect(selection.selectedId().empty() && !selection.isDragging()
             && selection.commit(session) == MapEditError::NotFound,

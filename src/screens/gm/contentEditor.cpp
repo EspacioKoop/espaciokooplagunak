@@ -1487,12 +1487,8 @@ void GuiContentEditor::updatePreviewStatus()
 
 const MapObject* GuiContentEditor::selectedMapObject() const
 {
-    if (current_type != ContentResourceType::Map || map_drag.selectedId().empty()) return nullptr;
-    const auto& objects = map_edit_session.document().objects;
-    const auto selected = std::find_if(objects.begin(), objects.end(), [&](const MapObject& object) {
-        return object.id == map_drag.selectedId() && object.kind != MapObjectKind::Unsupported;
-    });
-    return selected == objects.end() ? nullptr : &*selected;
+    if (current_type != ContentResourceType::Map) return nullptr;
+    return editableMapPreviewSelection(map_edit_session, map_drag, map_edit_mode);
 }
 
 void GuiContentEditor::updateMapSelectionButtons()

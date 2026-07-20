@@ -131,3 +131,17 @@ void MapPreviewDragSession::applyProvisional(std::vector<MapPreviewMarker>& mark
     marker->y = provisional_transform.y;
     marker->rotation = provisional_transform.rotation;
 }
+
+const MapObject* editableMapPreviewSelection(
+    const MapEditSession& session,
+    const MapPreviewDragSession& selection,
+    bool edit_mode
+)
+{
+    if (!edit_mode || selection.selectedId().empty()) return nullptr;
+    const auto& objects = session.document().objects;
+    const auto selected = std::find_if(objects.begin(), objects.end(), [&](const MapObject& object) {
+        return object.id == selection.selectedId() && object.kind != MapObjectKind::Unsupported;
+    });
+    return selected == objects.end() ? nullptr : &*selected;
+}

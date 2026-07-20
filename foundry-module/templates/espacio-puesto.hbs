@@ -72,33 +72,6 @@
             {{/if}}
           {{/if}}
 
-          {{#if canOrderHeading}}
-            <form class="lagunak-workspace__orden" data-workspace-order="heading">
-              <label for="lagunak-orden-rumbo">{{localize "LAGUNAK.Espacios.Orden.RumboLabel"}}</label>
-              <input id="lagunak-orden-rumbo" name="heading" type="number" min="0" max="359" step="1" inputmode="numeric" />
-              <button type="button" data-workspace-action="orden-rumbo">{{localize "LAGUNAK.Espacios.Orden.FijarRumbo"}}</button>
-              <small>{{localize "LAGUNAK.Espacios.Orden.RumboAyuda"}}</small>
-            </form>
-          {{/if}}
-
-          {{#if canOrderImpulse}}
-            <form class="lagunak-workspace__orden" data-workspace-order="impulse">
-              <label for="lagunak-orden-impulso">{{localize "LAGUNAK.Espacios.Orden.ImpulsoLabel"}}</label>
-              <input id="lagunak-orden-impulso" name="impulse" type="number" min="-1" max="1" step="0.1" inputmode="decimal" />
-              <button type="button" data-workspace-action="orden-impulso">{{localize "LAGUNAK.Espacios.Orden.FijarImpulso"}}</button>
-              <small>{{localize "LAGUNAK.Espacios.Orden.ImpulsoAyuda"}}</small>
-            </form>
-          {{/if}}
-
-          {{#if canOrderWarp}}
-            <form class="lagunak-workspace__orden" data-workspace-order="warp">
-              <label for="lagunak-orden-warp">{{localize "LAGUNAK.Espacios.Orden.WarpLabel"}}</label>
-              <input id="lagunak-orden-warp" name="warp" type="number" min="0" max="4" step="1" inputmode="numeric" />
-              <button type="button" data-workspace-action="orden-warp">{{localize "LAGUNAK.Espacios.Orden.FijarWarp"}}</button>
-              <small>{{localize "LAGUNAK.Espacios.Orden.WarpAyuda"}}</small>
-            </form>
-          {{/if}}
-
           {{#if systems.length}}
             <div class="lagunak-workspace__systems">
               <div class="lagunak-workspace__list-heading">
@@ -139,6 +112,50 @@
             <strong>{{localize "LAGUNAK.Espacios.SinTelemetria"}}</strong>
             <p>{{localize "LAGUNAK.Espacios.SinTelemetriaDetalle"}}</p>
           </div>
+        {{/if}}
+
+        {{! Órdenes operativas por puesto (#236+): fuera del bloque de telemetría
+            porque la tripulación no la recibe y aun así debe poder ordenar. }}
+        {{#if canOrderHeading}}
+          <form class="lagunak-workspace__orden" data-workspace-order="heading">
+            <label for="lagunak-orden-rumbo">{{localize "LAGUNAK.Espacios.Orden.RumboLabel"}}</label>
+            <input id="lagunak-orden-rumbo" name="heading" type="number" min="0" max="359" step="1" inputmode="numeric" />
+            <button type="button" data-workspace-action="orden-rumbo">{{localize "LAGUNAK.Espacios.Orden.FijarRumbo"}}</button>
+            <small>{{localize "LAGUNAK.Espacios.Orden.RumboAyuda"}}</small>
+          </form>
+        {{/if}}
+
+        {{#if canOrderImpulse}}
+          <form class="lagunak-workspace__orden" data-workspace-order="impulse">
+            <label for="lagunak-orden-impulso">{{localize "LAGUNAK.Espacios.Orden.ImpulsoLabel"}}</label>
+            <input id="lagunak-orden-impulso" name="impulse" type="number" min="-1" max="1" step="0.1" inputmode="decimal" />
+            <button type="button" data-workspace-action="orden-impulso">{{localize "LAGUNAK.Espacios.Orden.FijarImpulso"}}</button>
+            <small>{{localize "LAGUNAK.Espacios.Orden.ImpulsoAyuda"}}</small>
+          </form>
+        {{/if}}
+
+        {{#if canOrderWarp}}
+          <form class="lagunak-workspace__orden" data-workspace-order="warp">
+            <label for="lagunak-orden-warp">{{localize "LAGUNAK.Espacios.Orden.WarpLabel"}}</label>
+            <input id="lagunak-orden-warp" name="warp" type="number" min="0" max="4" step="1" inputmode="numeric" />
+            <button type="button" data-workspace-action="orden-warp">{{localize "LAGUNAK.Espacios.Orden.FijarWarp"}}</button>
+            <small>{{localize "LAGUNAK.Espacios.Orden.WarpAyuda"}}</small>
+          </form>
+        {{/if}}
+
+        {{#if canOrderPower}}
+          <form class="lagunak-workspace__orden" data-workspace-order="power">
+            <label for="lagunak-orden-sistema">{{localize "LAGUNAK.Espacios.Orden.SistemaLabel"}}</label>
+            <select id="lagunak-orden-sistema" name="system">
+              {{#each powerSystems}}<option value="{{value}}">{{label}}</option>{{/each}}
+            </select>
+            <label for="lagunak-orden-nivel">{{localize "LAGUNAK.Espacios.Orden.NivelLabel"}}</label>
+            <select id="lagunak-orden-nivel" name="level">
+              {{#each powerLevels}}<option value="{{value}}">{{label}}</option>{{/each}}
+            </select>
+            <button type="button" data-workspace-action="orden-potencia">{{localize "LAGUNAK.Espacios.Orden.FijarPotencia"}}</button>
+            <small>{{localize "LAGUNAK.Espacios.Orden.PotenciaAyuda"}}</small>
+          </form>
         {{/if}}
       </main>
 

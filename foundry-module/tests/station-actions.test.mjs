@@ -27,6 +27,19 @@ test("las órdenes de movimiento encaminan al método correcto de BridgeClient",
   );
 });
 
+test("ingeniería reparte energía por sistema y solo ella", () => {
+  assert.equal(isActionAllowed("engineering", "set_system_power"), true);
+  assert.equal(isActionAllowed("navigation", "set_system_power"), false);
+  assert.deepEqual(
+    resolveStationOrder({
+      station: "engineering",
+      action: "set_system_power",
+      params: { system: "reactor", level: 1.5 },
+    }),
+    { method: "setSystemPower", args: ["reactor", 1.5] },
+  );
+});
+
 test("isActionAllowed no lanza ante entradas inválidas", () => {
   assert.equal(isActionAllowed("desconocido", "set_target_heading"), false);
   assert.equal(isActionAllowed(null, "set_target_heading"), false);

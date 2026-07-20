@@ -127,6 +127,27 @@ test("navegación puede ordenar rumbo aunque no tenga telemetría; otros puestos
   }
 });
 
+test("ingeniería puede repartir energía por sistema, con opciones pobladas", () => {
+  const model = buildWorkspaceModel({
+    station: "engineering",
+    isGM: false,
+    users: [user({ id: "p1", station: "engineering" })],
+    moduleId: MODULE_ID,
+    i18n,
+    connection: "restricted",
+  });
+  assert.equal(model.hasTelemetry, false);
+  assert.equal(model.canOrderPower, true);
+  assert.equal(model.canOrderHeading, false);
+  assert.ok(model.powerSystems.length >= 1);
+  assert.ok(model.powerSystems.some((option) => option.value === "reactor"));
+  assert.ok(model.powerLevels.some((option) => option.value === 1));
+
+  const navegacion = buildWorkspaceModel({ station: "navigation", isGM: true, users: [], moduleId: MODULE_ID, i18n });
+  assert.equal(navegacion.canOrderPower, false);
+  assert.deepEqual(navegacion.powerSystems, []);
+});
+
 test("ingeniería recibe sistemas y alarmas medibles para la vista GM", () => {
   const model = buildWorkspaceModel({
     station: "engineering",

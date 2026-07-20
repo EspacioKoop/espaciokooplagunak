@@ -72,6 +72,26 @@ flowchart LR
 | Módulo Foundry | JavaScript cargado en el navegador de todos los clientes; solo el del GM tiene token y habla con el puente | Presenta el estado vivo, escribe eventos en el Journal y llama directamente al puente; URL y Bearer v0 son settings `client` provisionales |
 | Clientes nativos | EmptyEpsilon de escritorio | Puestos de la tripulación por LAN |
 
+## Supuesto de confianza y visibilidad GM
+
+El contrato v0 del puente es una **capacidad GM compartida**, no una frontera de
+permisos por jugador. FastAPI solo comprueba la posesión del Bearer: no conoce la
+sesión, el usuario ni el rol de Foundry y concede a cualquier poseedor la misma
+lista de lecturas y órdenes. El guard `game.user.isGM`, la ausencia de token en
+los navegadores de jugadores y CORS reducen exposiciones accidentales en el
+cliente, pero no acreditan el rol ante el puente.
+
+En particular, `/v1/contacts` ofrece deliberadamente una vista omnisciente para
+el GM, sin aplicar detección, identificación ni ocultación por puesto. El puente
+no debe usarse como API directa de tripulación ni sus respuestas GM deben
+redistribuirse sin un filtrado autoritativo. Si en el futuro los jugadores hablan
+con el puente, esa ampliación requerirá credenciales o capacidades diferenciadas
+y endpoints con visibilidad impuesta en el servidor; ocultar controles en la UI
+no será suficiente.
+
+El inventario completo de actores, controles y riesgos residuales está en el
+[modelo de amenazas del puente](BRIDGE_THREAT_MODEL.md).
+
 ## Nivel 3 — Componentes
 
 Dentro del puente y del módulo Foundry (los dos contenedores propios de este

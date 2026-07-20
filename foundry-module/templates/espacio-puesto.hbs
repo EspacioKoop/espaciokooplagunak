@@ -72,6 +72,15 @@
             {{/if}}
           {{/if}}
 
+          {{#if canOrderHeading}}
+            <form class="lagunak-workspace__orden" data-workspace-order="heading">
+              <label for="lagunak-orden-rumbo">{{localize "LAGUNAK.Espacios.Orden.RumboLabel"}}</label>
+              <input id="lagunak-orden-rumbo" name="heading" type="number" min="0" max="359" step="1" inputmode="numeric" />
+              <button type="button" data-workspace-action="orden-rumbo">{{localize "LAGUNAK.Espacios.Orden.FijarRumbo"}}</button>
+              <small>{{localize "LAGUNAK.Espacios.Orden.RumboAyuda"}}</small>
+            </form>
+          {{/if}}
+
           {{#if systems.length}}
             <div class="lagunak-workspace__systems">
               <div class="lagunak-workspace__list-heading">

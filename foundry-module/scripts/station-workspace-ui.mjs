@@ -2,6 +2,7 @@ import { BridgeClient, BridgeError } from "./bridge-client.mjs";
 import { getBridgeToken } from "./bridge-token-session.mjs";
 import { openStationApp } from "./station-ui.mjs";
 import { buildWorkspaceModel, stationForWorkspace } from "./station-workspaces.mjs";
+import { emitWorkspaceOrder } from "./station-order-wiring.mjs";
 
 let configuredModuleId = null;
 let workspaceApp = null;
@@ -139,10 +140,23 @@ function stationFromEvent(event) {
   return event?.currentTarget?.dataset?.station ?? null;
 }
 
+function submitHeadingOrder(app) {
+  const root = app.element?.[0] ?? app.element;
+  const input = root?.querySelector?.("#lagunak-orden-rumbo");
+  const heading = Number(input?.value);
+  if (!Number.isFinite(heading) || heading < 0 || heading >= 360) {
+    ui.notifications?.warn?.(game.i18n.localize("LAGUNAK.Espacios.Orden.RumboInvalido"));
+    return;
+  }
+  emitWorkspaceOrder({ action: "set_target_heading", params: { heading } });
+  ui.notifications?.info?.(game.i18n.localize("LAGUNAK.Espacios.Orden.Enviada"));
+}
+
 async function handleWorkspaceAction(app, event) {
   const action = actionFromEvent(event);
   if (action === "refresh") return refreshTelemetry(app);
   if (action === "assignments") return openStationApp();
+  if (action === "orden-rumbo") return submitHeadingOrder(app);
   if (action === "preview" && game.user?.isGM) {
     app.setPreviewStation(stationFromEvent(event));
     renderWorkspace();

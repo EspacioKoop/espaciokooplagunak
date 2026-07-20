@@ -4221,7 +4221,7 @@ msgid "Preview on radar"
 msgstr ""
 
 msgctxt "content_editor"
-msgid "Omitted objects (preserved): {count}"
+msgid "Omitted: {count}"
 msgstr ""
 
 msgctxt "content_editor"
@@ -4602,6 +4602,34 @@ msgstr ""
 
 msgctxt "content_editor"
 msgid "Edit on radar"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Rotate -15°"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Rotate +15°"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Select a supported map object on the radar first."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "The selected map object could not be rotated."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Map object rotation staged."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "The selected map object could not be removed."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Map object removed from staging."
 msgstr ""
 
 msgctxt "content_editor"

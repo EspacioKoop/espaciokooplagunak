@@ -3999,8 +3999,8 @@ msgid "Preview on radar"
 msgstr "Previsualizar en el radar"
 
 msgctxt "content_editor"
-msgid "Omitted objects (preserved): {count}"
-msgstr "Objetos omitidos (conservados): {count}"
+msgid "Omitted: {count}"
+msgstr "Omitidos: {count}"
 
 msgctxt "content_editor"
 msgid "Private library loaded."
@@ -4381,6 +4381,34 @@ msgstr "Arrastra para girar; usa la rueda para acercar o alejar."
 msgctxt "content_editor"
 msgid "Edit on radar"
 msgstr "Editar en el radar"
+
+msgctxt "content_editor"
+msgid "Rotate -15°"
+msgstr "Girar -15°"
+
+msgctxt "content_editor"
+msgid "Rotate +15°"
+msgstr "Girar +15°"
+
+msgctxt "content_editor"
+msgid "Select a supported map object on the radar first."
+msgstr "Selecciona primero en el radar un objeto de mapa compatible."
+
+msgctxt "content_editor"
+msgid "The selected map object could not be rotated."
+msgstr "No se ha podido girar el objeto de mapa seleccionado."
+
+msgctxt "content_editor"
+msgid "Map object rotation staged."
+msgstr "Rotación del objeto de mapa preparada."
+
+msgctxt "content_editor"
+msgid "The selected map object could not be removed."
+msgstr "No se ha podido eliminar el objeto de mapa seleccionado."
+
+msgctxt "content_editor"
+msgid "Map object removed from staging."
+msgstr "Objeto de mapa eliminado del staging."
 
 msgctxt "content_editor"
 msgid "Map object selected; drag to stage its position."

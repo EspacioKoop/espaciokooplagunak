@@ -8,6 +8,7 @@ import { normalizeStation } from "./station-assignment.mjs";
 export const STATION_ACTIONS = Object.freeze({
   navigation: Object.freeze(["set_target_heading", "set_impulse", "set_warp"]),
   engineering: Object.freeze(["set_system_power"]),
+  weapons: Object.freeze(["set_shields"]),
 });
 
 // Correspondencia acción del contrato → método de BridgeClient. La validación
@@ -29,6 +30,10 @@ const ACTION_DISPATCH = Object.freeze({
   set_system_power: Object.freeze({
     method: "setSystemPower",
     args: (params) => [params?.system, params?.level],
+  }),
+  set_shields: Object.freeze({
+    method: "setShields",
+    args: (params) => [params?.active],
   }),
 });
 

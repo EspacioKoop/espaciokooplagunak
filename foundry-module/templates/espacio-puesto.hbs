@@ -157,6 +157,15 @@
             <small>{{localize "LAGUNAK.Espacios.Orden.PotenciaAyuda"}}</small>
           </form>
         {{/if}}
+
+        {{#if canOrderShields}}
+          <form class="lagunak-workspace__orden" data-workspace-order="shields">
+            <span class="lagunak-workspace__orden-label">{{localize "LAGUNAK.Espacios.Orden.EscudosLabel"}}</span>
+            <button type="button" data-workspace-action="orden-escudos-subir">{{localize "LAGUNAK.Espacios.Orden.SubirEscudos"}}</button>
+            <button type="button" data-workspace-action="orden-escudos-bajar">{{localize "LAGUNAK.Espacios.Orden.BajarEscudos"}}</button>
+            <small>{{localize "LAGUNAK.Espacios.Orden.EscudosAyuda"}}</small>
+          </form>
+        {{/if}}
       </main>
 
       <aside class="lagunak-workspace__side">

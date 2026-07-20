@@ -182,6 +182,18 @@ const ORDER_FORMS = Object.freeze({
     },
     invalidKey: "LAGUNAK.Espacios.Orden.PotenciaInvalida",
   },
+  // Escudos: dos acciones con valor fijo (no leen del DOM) que comparten la
+  // orden set_shields con `active` true/false.
+  "orden-escudos-subir": {
+    action: "set_shields",
+    read: () => ({ active: true }),
+    invalidKey: "LAGUNAK.Espacios.Orden.EscudosInvalido",
+  },
+  "orden-escudos-bajar": {
+    action: "set_shields",
+    read: () => ({ active: false }),
+    invalidKey: "LAGUNAK.Espacios.Orden.EscudosInvalido",
+  },
 });
 
 function submitStationOrder(app, spec) {

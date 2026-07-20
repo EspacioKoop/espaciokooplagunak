@@ -263,6 +263,7 @@ export function buildWorkspaceModel({
     canOrderImpulse: !isGM && isActionAllowed(normalized, "set_impulse"),
     canOrderWarp: !isGM && isActionAllowed(normalized, "set_warp"),
     canOrderPower: !isGM && isActionAllowed(normalized, "set_system_power"),
+    canOrderShields: !isGM && isActionAllowed(normalized, "set_shields"),
     powerSystems: !isGM && isActionAllowed(normalized, "set_system_power")
       ? SISTEMAS_INGENIERIA.map((id) => ({ value: id, label: localize(i18n, `LAGUNAK.Sistemas.${id}`) }))
       : [],

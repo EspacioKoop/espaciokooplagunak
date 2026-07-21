@@ -1,8 +1,9 @@
-<section class="lagunak-workspace__shell lagunak-workspace--{{accent}}">
+<section class="lagunak-workspace__shell lagunak-workspace--{{accent}} lagunak-puesto-{{station}}">
   {{#if hasStation}}
     <header class="lagunak-workspace__header">
       <div class="lagunak-workspace__identity">
         <span class="lagunak-workspace__code">{{stationCode}}</span>
+        <span class="lagunak-workspace__emblem" aria-hidden="true"></span>
         <span class="lagunak-workspace__icon" aria-hidden="true"><i class="{{stationIcon}}"></i></span>
         <div>
           <small>{{localize "LAGUNAK.Espacios.PuestoActivo"}}</small>

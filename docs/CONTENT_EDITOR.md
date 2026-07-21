@@ -35,8 +35,11 @@ tipos de recursos sin editar Lua:
     documento. El movimiento se confirma al soltar y crea una única entrada de
     deshacer; **Undo** y **Redo** operan sobre ese historial. Durante el modo de
     edición el modal está oculto, así que Undo/Redo no son accesibles hasta salir
-    con Escape o clic derecho — que cancelan el arrastre activo y vuelven al editor. Los tipos futuros nunca son
-    seleccionables. Guardar persiste las posiciones; **New**, cargar/importar otro
+    con Escape o clic derecho — que cancelan el arrastre activo y vuelven al editor.
+    La selección permanece al volver: **Girar -15°**, **Girar +15°** y **Eliminar
+    selección** modifican únicamente el staging y cada acción crea una sola entrada
+    reversible. Eliminar limpia la selección. Los tipos futuros nunca son
+    seleccionables. Guardar persiste posiciones, rotaciones y borrados; **New**, cargar/importar otro
     recurso o descartar reconstruyen la sesión desde su snapshot limpio.
     **Add map object…** ofrece únicamente asteroide o nebulosa. Al elegir uno,
     el siguiente clic izquierdo en el radar añade una entidad nueva solo al staging,

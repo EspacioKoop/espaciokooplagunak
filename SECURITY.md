@@ -27,6 +27,9 @@ Reglas de este proyecto:
 3. Un pull request que exponga `/exec.lua` a Foundry, a una LAN no confiable
    o a Internet se rechaza por defecto.
 
+Actores, activos, fronteras, amenazas y riesgos residuales están inventariados
+en el [`modelo de amenazas del puente`](docs/BRIDGE_THREAT_MODEL.md).
+
 ## Secretos
 
 - Los secretos viven en archivos `.env` ignorados por git
@@ -34,6 +37,9 @@ Reglas de este proyecto:
 - No se aceptan tokens, contraseñas ni cookies en código, commits, issues,
   logs o capturas. Si un secreto se filtra, se rota inmediatamente y se
   registra en el issue correspondiente.
+
+La generación, custodia, rotación, revocación y recuperación del Bearer se
+detallan en [`docs/BRIDGE_AUTHENTICATION.md`](docs/BRIDGE_AUTHENTICATION.md).
 
 ## Transporte del puente Foundry
 

@@ -195,6 +195,17 @@
   background: rgba(var(--lagunak-accent-rgb), 0.09);
 }
 
+.lagunak-estado-cuerpo button:focus-visible:not([disabled]),
+.lagunak-estado-cuerpo select:focus-visible:not([disabled]),
+.lagunak-puestos__contenido select:focus-visible:not([disabled]),
+.lagunak-token-form input:focus-visible:not([disabled]),
+.lagunak-token-form button:focus-visible:not([disabled]),
+.lagunak-mapa-contacto:focus-visible,
+.lagunak-ayuda summary:focus-visible {
+  outline: 2px solid var(--lagunak-accent);
+  outline-offset: 2px;
+}
+
 .lagunak-estado-cuerpo button[disabled] {
   opacity: 0.4;
   cursor: not-allowed;

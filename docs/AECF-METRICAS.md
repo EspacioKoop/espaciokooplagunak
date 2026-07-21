@@ -37,19 +37,24 @@ Adaptación de los niveles de capacidad tipo CMMI al principio del fork
 **Para subir a M4**: activar branch protection con los checks existentes y
 SHA-pinning en `codeql.yml`. Ambos ya en BASELINE con propietario (Varo).
 
-### Accesibilidad — **M1** (deliberadamente)
+### Accesibilidad — **M3** (techo alcanzable hoy: M4)
 
-- Módulo Foundry + docs (superficie propia): solo `aria-`/`role` puntuales en
-  un `.hbs`. La condición de secuencia que aplazaba la pasada real (contraste
-  Neo Geo, teclado, `aria-` en controles del GM) ya se cumplió: el mapa vivo
-  (PR #73) se fusionó el 2026-07-14. La pasada está **pendiente de ejecución**
-  — ya sin bloqueo previo; es la siguiente acción de la dimensión.
+- Módulo Foundry + docs (superficie propia): la pasada real ya se ejecutó y
+  quedó convertida en gate de CI, no en documentación suelta. PR #231
+  (2026-07-20) cubrió `aria-`/`role`/nombre accesible, foco visible,
+  `prefers-reduced-motion` y contraste AA calculado desde los tokens CSS
+  reales, con regresión Node. PR #274 cubrió gestión de puestos y espacios de
+  puesto; PR #281 fijó por regresión el orden de teclado en las cinco
+  superficies (issue #227).
+- Huecos conocidos que dejan la dimensión en M3, no M4: foco y `aria-live`
+  tras re-render en las dos rutas de aplicación (v11 clásico y
+  ApplicationV2) — en revisión en los PRs #279/#280/#282 — y el recorrido
+  humano con teclado/lector de pantalla en Foundry real, coordinado con el
+  smoke general de #29. El issue #227 permanece abierto hasta esa evidencia.
 - Juego C++ heredado: fuera de alcance por ADR-0007 (solo si un jugador real
   choca y no se resuelve en módulo/doc; experiencia = fase 4).
-- M1 sigue siendo el nivel correcto (regla escrita, sin verificación), pero ya
-  no ampara aplazar: la secuencia registrada se agotó al fusionarse PR #73.
-  **Para subir a M2–M3**: ejecutar la pasada ahora y convertir lo verificable
-  (p. ej. lint de plantillas) en check de CI.
+- **Para subir a M4**: mergear #279/#280/#282 y completar el recorrido
+  humano de #29 con evidencia fechada.
 
 ### Calidad y mantenimiento — **M4**
 
@@ -76,15 +81,15 @@ SHA-pinning en `codeql.yml`. Ambos ya en BASELINE con propietario (Varo).
 
 | Dimensión | Nivel | Siguiente acción concreta |
 |---|---|---|
-| Accesibilidad | M1 | Ejecutar ya la pasada al módulo (PR #73 fusionado el 2026-07-14; sin bloqueo previo) |
+| Accesibilidad | M3 | Mergear #279/#280/#282 (foco y `aria-live` tras re-render) y completar el recorrido humano de #29 |
 | Seguridad | M3 | Branch protection en `main` + SHA-pin en `codeql.yml` |
 | Calidad | M4 | Checklist de reevaluación en cada sync upstream |
 | Fiabilidad | M3 | Vigilar jobs heredados; sin acción hasta que fallen en falso |
 
-Lectura global: el fork está en **M3–M4 sobre lo que gobierna**. De los dos
-M1 restantes, la desviación de jobs heredados sigue siendo una decisión
-registrada (ADR-0004); el de accesibilidad dejó de estar amparado por la
-secuencia al fusionarse PR #73 y es ahora trabajo pendiente con acción
-concreta. La regla de admisión de
+Lectura global: el fork está en **M3–M4 sobre lo que gobierna**. La única
+M1 restante es la desviación de jobs heredados, decisión registrada
+(ADR-0004); accesibilidad subió a M3 al fusionarse los PRs #231/#274/#281
+(issue #227), con huecos conocidos (foco/`aria-live` en revisión, recorrido
+humano pendiente coordinado con #29). La regla de admisión de
 BASELINE.md sigue vigente: nada de aquí se convierte en issue hasta que duela
 y quepa en un PR.

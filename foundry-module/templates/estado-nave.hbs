@@ -55,15 +55,15 @@
   {{#if nave}}
   <h3>{{nave.callsign}}</h3>
   <table class="lagunak-tabla" aria-label="{{localize "LAGUNAK.EstadoNave.Resumen"}}">
-    <tr><th>{{localize "LAGUNAK.EstadoNave.Posicion"}}</th><td>{{nave.position.x}}, {{nave.position.y}}</td></tr>
-    <tr><th>{{localize "LAGUNAK.EstadoNave.Rumbo"}}</th><td>{{nave.heading}}°</td></tr>
+    <tr><th>{{localize "LAGUNAK.EstadoNave.Posicion"}}</th><td data-field="nave-posicion">{{nave.position.x}}, {{nave.position.y}}</td></tr>
+    <tr><th>{{localize "LAGUNAK.EstadoNave.Rumbo"}}</th><td data-field="nave-rumbo">{{nave.heading}}°</td></tr>
     {{#if ruta}}
     <tr class="lagunak-ruta-{{ruta.estado}}"><th>{{localize "LAGUNAK.EstadoNave.Destino"}}</th><td>{{ruta.name}}</td></tr>
-    <tr class="lagunak-ruta-{{ruta.estado}}"><th>{{localize "LAGUNAK.EstadoNave.Distancia"}}</th><td>{{ruta.distanceLabel}}</td></tr>
-    <tr class="lagunak-ruta-{{ruta.estado}}"><th>{{localize "LAGUNAK.EstadoNave.Eta"}}</th><td>{{ruta.etaLabel}}</td></tr>
+    <tr class="lagunak-ruta-{{ruta.estado}}"><th>{{localize "LAGUNAK.EstadoNave.Distancia"}}</th><td data-field="ruta-distancia">{{ruta.distanceLabel}}</td></tr>
+    <tr class="lagunak-ruta-{{ruta.estado}}"><th>{{localize "LAGUNAK.EstadoNave.Eta"}}</th><td data-field="ruta-eta">{{ruta.etaLabel}}</td></tr>
     {{/if}}
-    <tr><th>{{localize "LAGUNAK.EstadoNave.Casco"}}</th><td>{{nave.hull}} / {{nave.hull_max}}</td></tr>
-    <tr><th>{{localize "LAGUNAK.EstadoNave.Energia"}}</th><td>{{nave.energy}} / {{nave.energy_max}}</td></tr>
+    <tr><th>{{localize "LAGUNAK.EstadoNave.Casco"}}</th><td data-field="nave-casco">{{nave.hull}} / {{nave.hull_max}}</td></tr>
+    <tr><th>{{localize "LAGUNAK.EstadoNave.Energia"}}</th><td data-field="nave-energia">{{nave.energy}} / {{nave.energy_max}}</td></tr>
     <tr><th>{{localize "LAGUNAK.EstadoNave.Escudos"}}</th><td>{{#if nave.shields_active}}{{localize "LAGUNAK.EstadoNave.EscudosActivos"}}{{else}}{{localize "LAGUNAK.EstadoNave.EscudosInactivos"}}{{/if}}</td></tr>
   </table>
 
@@ -76,11 +76,11 @@
       <th>{{localize "LAGUNAK.EstadoNave.Potencia"}}</th>
     </tr>
     {{#each sistemas}}
-    <tr>
+    <tr data-sistema-id="{{this.id}}">
       <td>{{this.nombre}}</td>
-      <td>{{this.salud}}%</td>
-      <td>{{this.calor}}%</td>
-      <td>{{this.potencia}}%</td>
+      <td data-campo="salud">{{this.salud}}%</td>
+      <td data-campo="calor">{{this.calor}}%</td>
+      <td data-campo="potencia">{{this.potencia}}%</td>
     </tr>
     {{/each}}
   </table>

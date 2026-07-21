@@ -2,6 +2,8 @@ import { BridgeClient, BridgeError } from "./bridge-client.mjs";
 import { getBridgeToken } from "./bridge-token-session.mjs";
 import { openStationApp } from "./station-ui.mjs";
 import { buildWorkspaceModel, stationForWorkspace } from "./station-workspaces.mjs";
+import { emitWorkspaceOrder } from "./station-order-wiring.mjs";
+import { ORDER_FORMS } from "./station-order-forms.mjs";
 
 let configuredModuleId = null;
 let workspaceApp = null;
@@ -57,6 +59,11 @@ export async function revokeWorkspaceAccess() {
 
 function renderWorkspace(force = false) {
   if (!workspaceApp) return;
+  // Refresco reactivo (hook updateUser al cambiar de puesto): re-renderiza solo
+  // si la consola sigue abierta. Sin este guard, render(false) sobre una app V1
+  // ya cerrada llama a _replaceHTML con el elemento fuera del DOM y peta con
+  // «can't access property "hasChildNodes"» (#263). La apertura usa force=true.
+  if (!force && !workspaceApp.rendered) return;
   if (foundry.applications?.api?.ApplicationV2) {
     workspaceApp.render({ force: true });
   } else {
@@ -139,10 +146,22 @@ function stationFromEvent(event) {
   return event?.currentTarget?.dataset?.station ?? null;
 }
 
+function submitStationOrder(app, spec) {
+  const root = app.element?.[0] ?? app.element;
+  const params = spec.read(root);
+  if (!params) {
+    ui.notifications?.warn?.(game.i18n.localize(spec.invalidKey));
+    return;
+  }
+  emitWorkspaceOrder({ action: spec.action, params });
+  ui.notifications?.info?.(game.i18n.localize("LAGUNAK.Espacios.Orden.Enviada"));
+}
+
 async function handleWorkspaceAction(app, event) {
   const action = actionFromEvent(event);
   if (action === "refresh") return refreshTelemetry(app);
   if (action === "assignments") return openStationApp();
+  if (ORDER_FORMS[action]) return submitStationOrder(app, ORDER_FORMS[action]);
   if (action === "preview" && game.user?.isGM) {
     app.setPreviewStation(stationFromEvent(event));
     renderWorkspace();

@@ -97,3 +97,54 @@ export function prepareRoute(ship, i18n) {
     etaLabel,
   };
 }
+
+/**
+ * Firma estable del panel de estado de nave que ignora telemetría continua
+ * (posición, rumbo, casco, energía, distancia/ETA y salud/calor/potencia de
+ * sistemas) y solo cambia cuando algo que de verdad requiere reconstruir el
+ * DOM —incluidas las regiones `role="status"`— ha cambiado: conexión, error,
+ * disponibilidad/resultado de paneles GM o la existencia/identidad de la nave
+ * y sus sistemas. Sin esto, el sondeo periódico reconstruye el panel entero
+ * en cada tick y las regiones aria-live anuncian ruido aunque nada relevante
+ * haya cambiado (issue #227, punto 6).
+ */
+export function firmaEstadoNaveVisible({
+  conexion,
+  detalleError,
+  ayudaAbierta,
+  esGM,
+  naveExiste,
+  naveCallsign,
+  ruta,
+  pausa,
+  maniobra,
+  maniobraFallo,
+  ingenieria,
+  ingenieriaFallo,
+  sistemas,
+}) {
+  return JSON.stringify({
+    conexion,
+    detalleError,
+    ayudaAbierta,
+    esGM,
+    naveExiste,
+    naveCallsign: naveCallsign ?? null,
+    rutaEstado: ruta?.estado ?? null,
+    rutaNombre: ruta?.name ?? null,
+    pausaEstado: pausa?.estado ?? null,
+    pausaPuedePausar: Boolean(pausa?.puedePausar),
+    pausaPuedeReanudar: Boolean(pausa?.puedeReanudar),
+    pausaFoundryPausado: Boolean(pausa?.foundryPausado),
+    maniobraDisponible: Boolean(maniobra?.disponible),
+    maniobraPuedeOrdenar: Boolean(maniobra?.puedeOrdenar),
+    maniobraEscudosActivos: Boolean(maniobra?.escudosActivos),
+    maniobraFallo: Boolean(maniobraFallo),
+    ingenieriaDisponible: Boolean(ingenieria?.disponible),
+    ingenieriaPuedeAjustar: Boolean(ingenieria?.puedeAjustar),
+    ingenieriaPendiente: Boolean(ingenieria?.pendiente),
+    ingenieriaTieneReparadores: Boolean(ingenieria?.tieneReparadores),
+    ingenieriaFallo: Boolean(ingenieriaFallo),
+    sistemas: (sistemas ?? []).map((sistema) => sistema.id),
+  });
+}

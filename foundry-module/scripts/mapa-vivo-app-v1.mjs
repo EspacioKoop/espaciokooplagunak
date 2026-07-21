@@ -19,6 +19,7 @@ import {
   normalizarContactosMapa,
   normalizarPosicionMapa,
   prepararDetalleContacto,
+  reconciliarIndiceContacto,
   rotarMuestras,
 } from "./ventana-nave.mjs";
 import { crearDecorado, componerDecorado } from "./decorado-fondo.mjs";
@@ -39,7 +40,7 @@ export function crearClaseMapaV1() {
     #muestraActual = null;
     contactos = [];
     destino = null; // último destination confirmado de /v1/state (issue #175)
-    seleccion = null; // callsign del contacto seleccionado en la lista
+    seleccion = null; // índice reconciliado del contacto seleccionado
     conexion = "conectando";
     detalleError = "";
     bridgeAccessRevoked = false;
@@ -78,6 +79,8 @@ export function crearClaseMapaV1() {
       // captura al entrar y una respuesta tardía tras cerrar muere sin tocar
       // estado, renderizar ni rearmar el polling.
       const generacion = this.#generacion;
+      const contactosAnteriores = this.contactos;
+      const seleccionAnterior = this.seleccion;
       const firmaAnterior = firmaEstructuralContactos(this.contactos);
       const conexionAnterior = this.conexion;
       const detalleErrorAnterior = this.detalleError;
@@ -119,6 +122,7 @@ export function crearClaseMapaV1() {
           this.#muestraPrev = rotadas.prev;
           this.#muestraActual = rotadas.actual;
         }
+        this.seleccion = reconciliarIndiceContacto(contactosAnteriores, contactos, seleccionAnterior);
         this.contactos = contactos;
         this.destino = destino;
         this.conexion = "ok";
@@ -131,7 +135,8 @@ export function crearClaseMapaV1() {
       }
       const cambioVisible = conexionAnterior !== this.conexion
         || detalleErrorAnterior !== this.detalleError
-        || firmaAnterior !== firmaEstructuralContactos(this.contactos);
+        || firmaAnterior !== firmaEstructuralContactos(this.contactos)
+        || seleccionAnterior !== this.seleccion;
       if (this.rendered && cambioVisible) this.render(false);
       else if (this.rendered) this.#actualizarTelemetriaDom();
       clearTimeout(this.#timer);
@@ -156,7 +161,7 @@ export function crearClaseMapaV1() {
         const fuera = boton.querySelector?.("[data-lagunak-fuera]");
         if (fuera) fuera.hidden = detalle.distancia <= MAPA_RADIO_MUNDO;
       }
-      const seleccionado = this.contactos.find((c) => (c.callsign ?? "?") === this.seleccion);
+      const seleccionado = Number.isInteger(this.seleccion) ? this.contactos[this.seleccion] : null;
       if (!seleccionado) return;
       const detalle = prepararDetalleContacto(seleccionado, centro);
       const distancia = raiz.querySelector("[data-lagunak-detalle-distancia]");
@@ -213,8 +218,9 @@ export function crearClaseMapaV1() {
     activateListeners(html) {
       super.activateListeners(html);
       html.find("[data-contacto]").on("click", (ev) => {
-        const callsign = ev.currentTarget?.dataset?.contacto ?? null;
-        this.seleccion = callsign === this.seleccion ? null : callsign;
+        const indice = Number.parseInt(ev.currentTarget?.dataset?.contactoIndice ?? "", 10);
+        if (!Number.isInteger(indice)) return;
+        this.seleccion = indice === this.seleccion ? null : indice;
         this.render(false);
       });
       // Clic directo sobre el objeto en el mapa vivo (issue #259), misma
@@ -226,9 +232,9 @@ export function crearClaseMapaV1() {
         const rect = canvas.getBoundingClientRect();
         const x = ((ev.clientX - rect.left) / rect.width) * canvas.width;
         const y = ((ev.clientY - rect.top) / rect.height) * canvas.height;
-        const callsign = contactoEnPunto(this.#ultimoFrame.blips, x, y);
-        if (callsign === null) return;
-        this.seleccion = callsign === this.seleccion ? null : callsign;
+        const indice = contactoEnPunto(this.#ultimoFrame.blips, x, y);
+        if (indice === null) return;
+        this.seleccion = indice === this.seleccion ? null : indice;
         this.render(false);
       });
     }
@@ -262,8 +268,9 @@ export function crearClaseMapaV1() {
       const centro = this.#muestraActual?.centro ?? null;
       const desconocido = game.i18n.localize("LAGUNAK.MapaVivo.Desconocido");
       const propia = game.i18n.localize("LAGUNAK.MapaVivo.LeyendaPropia");
-      const contactoSeleccionado =
-        this.contactos.find((c) => (c.callsign ?? "?") === this.seleccion) ?? null;
+      const contactoSeleccionado = Number.isInteger(this.seleccion)
+        ? this.contactos[this.seleccion] ?? null
+        : null;
       let detalle = null;
       if (contactoSeleccionado) {
         const d = prepararDetalleContacto(contactoSeleccionado, centro);
@@ -296,7 +303,7 @@ export function crearClaseMapaV1() {
             ? propia
             : e.faccion ?? game.i18n.localize("LAGUNAK.MapaVivo.LeyendaNeutro"),
         })),
-        contactos: this.contactos.map((c) => {
+        contactos: this.contactos.map((c, indice) => {
           const dx = (c.position?.x ?? 0) - (centro?.x ?? 0);
           const dy = (c.position?.y ?? 0) - (centro?.y ?? 0);
           const distancia = Math.hypot(dx, dy);
@@ -304,7 +311,7 @@ export function crearClaseMapaV1() {
             callsign: c.callsign ?? "?",
             color: colorFaccion(c.faction ?? null, Boolean(c.is_player)),
             esJugador: Boolean(c.is_player),
-            seleccionado: (c.callsign ?? "?") === this.seleccion,
+            seleccionado: indice === this.seleccion,
             distanciaLabel: game.i18n.format("LAGUNAK.EstadoNave.DistanciaUnidades", {
               distance: Math.round(distancia),
             }),

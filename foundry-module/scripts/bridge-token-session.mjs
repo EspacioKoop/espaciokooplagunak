@@ -1,3 +1,5 @@
+import { probarConexion } from "./diagnostico-conexion.mjs";
+
 let configuredModuleId = null;
 let sessionToken = "";
 let tokenApp = null;
@@ -109,6 +111,13 @@ function context() {
   return { configured: Boolean(sessionToken) };
 }
 
+/**
+ * Guarda el token y, en el mismo gesto, dispara el diagnóstico de conexión
+ * (issue #289: antes eran dos herramientas separadas — guardar no
+ * comprobaba nada, y probar la conexión vivía aparte). El resultado
+ * reemplaza la notificación genérica "Token configurado" por el estado real
+ * (ok / token inválido / puente inaccesible / …), sin exponer el token.
+ */
 async function saveAndClose(value, app) {
   if (app?.bridgeAccessRevoked) {
     wipeTokenInput(app);
@@ -119,8 +128,16 @@ async function saveAndClose(value, app) {
     ui.notifications.warn(game.i18n.localize("LAGUNAK.Token.Vacio"));
     return;
   }
+  const savedToken = sessionToken;
+  const diagnostico = await probarConexion({
+    url: game.settings.get(configuredModuleId, "bridgeUrl"),
+    token: savedToken,
+    canUseToken: () => Boolean(game.user?.isGM) && sessionToken === savedToken,
+  });
   if (!(await closeTokenAppSafely(app, { rollbackToken: true }))) return;
-  ui.notifications.info(game.i18n.localize("LAGUNAK.Token.Configurado"));
+  const mensaje = game.i18n.localize(diagnostico.claveI18n);
+  if (diagnostico.exito) ui.notifications.info(mensaje);
+  else ui.notifications.warn(mensaje);
 }
 
 async function clearAndClose(app) {

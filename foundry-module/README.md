@@ -56,20 +56,22 @@ En *Configuración → Ajustes del módulo*:
 | URL del puente | `http://localhost:8090` (o donde esté publicado el puente) |
 | Intervalo de sondeo | 1–30 s (2 s por defecto) |
 
-Flujo recomendado para el token (issue #183): **copiar → pegar → validar**.
+Flujo recomendado para el token (issue #183): **copiar → pegar → guardar**.
 
 1. **Copiar**: `python3 tools/instalar.py --copiar-token` (o la opción «Copiar
    el token del puente» del menú) lo deja en el portapapeles sin mostrarlo.
-2. **Pegar**: pulsa **Configurar token del puente** en los controles de escena
-   del GM y pégalo en el campo de contraseña. El asistente vacía el
-   portapapeles cuando confirmas que has terminado. Un gestor de historial
-   externo puede conservar copias: elimina también su entrada o desactívalo
-   durante la operación.
-3. **Validar**: el botón **Probar conexión con el puente** (grupo de controles
-   de escena de Espaciokoop Lagunak, solo GM) comprueba `/healthz` y después
-   `/v1/state`, y distingue en una notificación: todo correcto, token ausente
-   o rechazado, o puente inaccesible (pila caída, URL o CORS). El token nunca
-   aparece en el mensaje.
+2. **Pegar y guardar**: pulsa **Configurar token del puente** en los controles
+   de escena del GM, pégalo en el campo de contraseña y pulsa **Guardar**. El
+   asistente vacía el portapapeles cuando confirmas que has terminado. Un
+   gestor de historial externo puede conservar copias: elimina también su
+   entrada o desactívalo durante la operación. Guardar dispara automáticamente
+   el mismo diagnóstico que antes exigía abrir aparte **Probar conexión con el
+   puente** (issue #289): comprueba `/healthz` y después `/v1/state`, y
+   distingue en una notificación: todo correcto, token ausente o rechazado, o
+   puente inaccesible (pila caída, URL o CORS). El token nunca aparece en el
+   mensaje. **Probar conexión con el puente** sigue disponible en el grupo de
+   controles de escena para comprobar el estado sin reabrir el diálogo del
+   token.
 
 El emparejamiento automático o remoto del token queda **fuera de alcance**
 mientras el puente escuche solo en `127.0.0.1`; ampliar `BRIDGE_BIND` es una

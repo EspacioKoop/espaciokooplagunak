@@ -162,6 +162,14 @@ Se mantienen las convenciones de EmptyEpsilon: miembros con guion bajo (`zoom_le
 `HighCamelCase` (`GuiSlider`), funciones en `lowCamelCase` (`getZoomLevel`). Escenarios y lógica de
 misión en Lua. No mezcles reformateos masivos con cambios funcionales.
 
+Toda feature nueva se diseña modular desde el principio, no se extrae después: un archivo nuevo por
+responsabilidad (settings/hooks, UI de una ventana, lógica pura testeable, modelos de datos), en vez
+de crecer un archivo existente hasta que haga falta un PR de "modularizar X" (como el #283 en
+`foundry-module/scripts/main.mjs` o la extracción de `bridge/app.py` en middleware/rate
+limit/modelos). Si una pieza es lógica pura sin dependencias de Foundry/FastAPI/DOM, vive en su
+propio módulo testeable desde Node/pytest sin mockear el framework — el patrón ya establecido en
+`ventana-nave.mjs`, `mapa-render.mjs` y `command_models.py`.
+
 Actualiza `README.md` (estado/roadmap/características) solo cuando un cambio esté integrado en
 `main` y verificado — nunca marques tareas como hechas por el mero hecho de haber escrito código.
 

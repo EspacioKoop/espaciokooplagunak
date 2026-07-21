@@ -63,6 +63,30 @@ const FACTOR = { nebulosa_lejana: 0.035, nebulosa: 0.08, planeta: 0.16, asteroid
  *
  * @returns {{tipo:string, factor:number, elementos:object[]}[]}
  */
+/** Lado de diseño del decorado: el ruido de nebulosa está calibrado a 320. */
+export const LADO_DECORADO_BASE = 320;
+
+/**
+ * Lado del backing del canvas que evita el aliasing de #260.
+ *
+ * El canvas se pinta 1:1 con la pantalla salvo cuando hay sitio de sobra: por
+ * encima del lado de diseño (320) mantenemos el backing en 320 y dejamos que la
+ * CSS lo agrande con `image-rendering: pixelated` (píxel gordo retro, upscale
+ * limpio). Por debajo de 320 subescalar ese ráster a nearest-neighbor rompe el
+ * ruido fino de las nebulosas en bloques, así que renderizamos al tamaño real
+ * (nunca reducimos): el backing sigue al display y el decorado se regenera a ese
+ * lado. Nunca por debajo de 1 px para no crear un canvas degenerado.
+ *
+ * @param {number} anchoDisplay ancho mostrado del canvas (p.ej. `clientWidth`).
+ * @param {number} [base] lado de diseño por encima del cual se conserva el chunky.
+ * @returns {number} lado entero del backing a usar.
+ */
+export function ladoDecorado(anchoDisplay, base = LADO_DECORADO_BASE) {
+  const ancho = Math.round(Number(anchoDisplay));
+  if (!Number.isFinite(ancho) || ancho <= 0) return base;
+  return Math.max(1, Math.min(base, ancho));
+}
+
 export function crearDecorado(
   seed,
   { ancho = 320, alto = 320, planetas = 5, nebulosas = 3, asteroides = 120, nebulosasLejanas = 2 } = {},

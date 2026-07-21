@@ -343,6 +343,156 @@ test("host moderno conecta las acciones de pausa y reanudación con el puente", 
   assert.deepEqual(notifications.error, []);
 });
 
+test("v11 conecta el listener de encuentro y envía la selección exacta una sola vez", async () => {
+  const { hooks, instances, fetchCalls } = await loadModule();
+  const controls = [{ name: "token", tools: [] }];
+  hooks.getSceneControlButtons(controls);
+  toolByName(controls, "lagunak-estado").onClick();
+
+  const app = instances[0];
+  app.catalogoEncuentros = { archetypes: ["derelict"], bearings: ["starboard"] };
+  app.element = [{
+    querySelector(selector) {
+      if (selector === "[data-lagunak-encuentro-arquetipo]") return { value: "derelict" };
+      if (selector === "[data-lagunak-encuentro-rumbo]") return { value: "starboard" };
+      return null;
+    },
+  }];
+  const bindings = new Map();
+  app.activateListeners({
+    find(selector) {
+      return { on(event, callback) { bindings.set(selector, { event, callback }); } };
+    },
+  });
+
+  const binding = bindings.get('[data-action="encuentro"]');
+  assert.equal(binding.event, "click");
+  await binding.callback();
+
+  assert.equal(fetchCalls.length, 1);
+  assert.match(fetchCalls[0][0], /\/v1\/command$/);
+  assert.equal(fetchCalls[0][1].method, "POST");
+  assert.equal(fetchCalls[0][1].headers.Authorization, "Bearer test-token");
+  assert.deepEqual(JSON.parse(fetchCalls[0][1].body), {
+    op: "spawn_encounter",
+    archetype: "derelict",
+    bearing: "starboard",
+  });
+});
+
+test("ApplicationV2 conecta la acción de encuentro y envía la selección exacta una sola vez", async () => {
+  const { hooks, instances, fetchCalls } = await loadModule({ modern: true });
+  const controls = {};
+  hooks.getSceneControlButtons(controls);
+  controls.lagunak.tools["lagunak-estado"].onClick();
+
+  const app = instances[0];
+  app.catalogoEncuentros = { archetypes: ["derelict"], bearings: ["ahead"] };
+  app.element = {
+    querySelector(selector) {
+      if (selector === "[data-lagunak-encuentro-arquetipo]") return { value: "derelict" };
+      if (selector === "[data-lagunak-encuentro-rumbo]") return { value: "ahead" };
+      return null;
+    },
+  };
+  const actions = app.constructor.DEFAULT_OPTIONS.actions;
+  assert.equal(typeof actions.encuentro, "function");
+  await actions.encuentro.call(app);
+
+  assert.equal(fetchCalls.length, 1);
+  assert.match(fetchCalls[0][0], /\/v1\/command$/);
+  assert.equal(fetchCalls[0][1].method, "POST");
+  assert.equal(fetchCalls[0][1].headers.Authorization, "Bearer test-token");
+  assert.deepEqual(JSON.parse(fetchCalls[0][1].body), {
+    op: "spawn_encounter",
+    archetype: "derelict",
+    bearing: "ahead",
+  });
+});
+
+// Fail-closed ante ACK/errores tardíos de spawn_encounter: si el rol GM se
+// revoca mientras la orden viaja, la respuesta privilegiada tardía no debe
+// notificar ni repoblar la ventana (misma garantía que el sondeo y el token).
+function comandoRetenido() {
+  let finish;
+  const fetchImpl = (url) => {
+    if (String(url).endsWith("/v1/command")) {
+      return new Promise((resolve) => { finish = resolve; });
+    }
+    return Promise.resolve({ ok: true, status: 200, async json() { return { ok: true }; } });
+  };
+  return { fetchImpl, resolver: (body) => finish({ ok: true, status: 200, async json() { return body; } }) };
+}
+
+const raizEncuentroSel = { archetypes: ["derelict"], bearings: ["ahead"] };
+function raizEncuentro() {
+  return {
+    querySelector(selector) {
+      if (selector.includes("arquetipo")) return { value: "derelict" };
+      if (selector.includes("rumbo")) return { value: "ahead" };
+      return null;
+    },
+  };
+}
+
+test("v11: un ACK tardío de encuentro tras revocar el rol GM no notifica ni repuebla", async () => {
+  const { fetchImpl, resolver } = comandoRetenido();
+  const { hooks, instances, notifications } = await loadModule({ fetchImpl });
+  const controls = [{ name: "token", tools: [] }];
+  hooks.getSceneControlButtons(controls);
+  toolByName(controls, "lagunak-estado").onClick();
+
+  const app = instances[0];
+  app.catalogoEncuentros = raizEncuentroSel;
+  app.element = [raizEncuentro()];
+  const bindings = new Map();
+  app.activateListeners({ find(selector) { return { on(event, callback) { bindings.set(selector, { event, callback }); } }; } });
+
+  const enVuelo = bindings.get('[data-action="encuentro"]').callback();
+  const rendersPrevios = app.renderCalls.length;
+
+  // El rol se pierde con la orden en vuelo.
+  game.user.isGM = false;
+  hooks.updateUser({ id: "local-user", isGM: false });
+  await Promise.resolve();
+
+  // El ACK privilegiado llega tarde.
+  resolver({ op: "spawn_encounter", result: { ok: true } });
+  await enVuelo;
+
+  assert.equal(app.bridgeAccessRevoked, true);
+  assert.deepEqual(notifications.info, []);
+  assert.deepEqual(notifications.warn, []);
+  // No repuebla la ventana ya revocada tras el ACK tardío.
+  assert.equal(app.renderCalls.length, rendersPrevios);
+});
+
+test("ApplicationV2: un ACK tardío de encuentro tras revocar el rol GM no notifica ni repuebla", async () => {
+  const { fetchImpl, resolver } = comandoRetenido();
+  const { hooks, instances, notifications } = await loadModule({ modern: true, fetchImpl });
+  const controls = {};
+  hooks.getSceneControlButtons(controls);
+  controls.lagunak.tools["lagunak-estado"].onClick();
+
+  const app = instances[0];
+  app.catalogoEncuentros = raizEncuentroSel;
+  app.element = raizEncuentro();
+  const enVuelo = app.constructor.DEFAULT_OPTIONS.actions.encuentro.call(app);
+  const rendersPrevios = app.renderCalls.length;
+
+  game.user.isGM = false;
+  hooks.updateUser({ id: "local-user", isGM: false });
+  await Promise.resolve();
+
+  resolver({ op: "spawn_encounter", result: { ok: true } });
+  await enVuelo;
+
+  assert.equal(app.bridgeAccessRevoked, true);
+  assert.deepEqual(notifications.info, []);
+  assert.deepEqual(notifications.warn, []);
+  assert.equal(app.renderCalls.length, rendersPrevios);
+});
+
 test("v11: lectura discordante tras el ACK avisa y pasa a estado de error", async () => {
   const { hooks, instances, notifications } = await loadModule();
   const controls = [];

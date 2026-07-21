@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   BIOMAS,
   INTERVALO_CACHE_PLANETA_MS,
+  LADO_DECORADO_BASE,
   PALETA_DECORADO,
   componerDecorado,
   crearCacheDecorado,
@@ -12,6 +13,7 @@ import {
   dibujarDecorado,
   dibujarEventosFondo,
   posicionEvento,
+  ladoDecorado,
 } from "../scripts/decorado-fondo.mjs";
 
 const SEMILLA = 0x4c4147; // misma que MAPA_SEMILLA_DEFECTO en lagunak-constantes.mjs
@@ -69,6 +71,46 @@ test("los elementos caen dentro del lienzo y usan colores de la paleta", () => {
       }
     }
   }
+});
+
+test("ladoDecorado conserva el chunky retro en display >= 320 (#260)", () => {
+  // A 320 o por encima el backing se queda en 320: la CSS lo agranda con píxel
+  // gordo (upscale limpio), sin subescalar.
+  assert.equal(ladoDecorado(320), LADO_DECORADO_BASE);
+  assert.equal(ladoDecorado(640), LADO_DECORADO_BASE);
+  assert.equal(ladoDecorado(321), LADO_DECORADO_BASE);
+});
+
+test("ladoDecorado sigue al display por debajo de 320 para no subescalar (#260)", () => {
+  // Por debajo del lado de diseño renderizamos 1:1 al tamaño real: nunca reducimos.
+  assert.equal(ladoDecorado(200), 200);
+  assert.equal(ladoDecorado(120.6), 121);
+  assert.equal(ladoDecorado(1), 1);
+});
+
+test("ladoDecorado ante tamaños no válidos cae al lado de diseño", () => {
+  for (const malo of [0, -50, NaN, undefined, null, "x"]) {
+    assert.equal(ladoDecorado(malo), LADO_DECORADO_BASE, `entrada ${malo}`);
+  }
+});
+
+test("crearDecorado a un lado < 320 mantiene todo dentro del lienzo y escala radios (#260)", () => {
+  const lado = 160;
+  const grande = crearDecorado(SEMILLA, { ancho: LADO_DECORADO_BASE, alto: LADO_DECORADO_BASE });
+  const chico = crearDecorado(SEMILLA, { ancho: lado, alto: lado });
+  const porTipo = (capas) => Object.fromEntries(capas.map((c) => [c.tipo, c.elementos]));
+  const g = porTipo(grande);
+  const c = porTipo(chico);
+
+  for (const capa of chico) {
+    for (const el of capa.elementos) {
+      assert.ok(el.x >= 0 && el.x < lado, "x dentro del lienzo reducido");
+      assert.ok(el.y >= 0 && el.y < lado, "y dentro del lienzo reducido");
+      assert.ok(el.r > 0, "radio positivo");
+    }
+  }
+  // El radio de nebulosas escala con el lado (misma semilla, mitad de tamaño ≈ mitad de radio).
+  assert.ok(Math.abs(c.nebulosa[0].r - g.nebulosa[0].r / 2) < 1e-9, "radio de nebulosa proporcional");
 });
 
 test("componerDecorado aplica offsets de parallax en [0, tam) por capa", () => {

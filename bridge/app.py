@@ -13,6 +13,7 @@ Contrato v0 (ver docs/FOUNDRY.md):
   GET  /v1/scenario  — tiempo de escenario y metadatos (auth).
   GET  /v1/events    — eventos normalizados presentes en la sesión (auth).
   GET  /v1/contacts  — objetos cercanos a la nave, para un mapa vivo (auth).
+  GET  /v1/encounters — catálogo cerrado de encuentros del GM (auth).
   POST /v1/command   — órdenes de una lista blanca cerrada (auth).
 
 Configuración por variables de entorno:
@@ -163,6 +164,22 @@ async def events() -> Any:
 @app.get("/v1/contacts", dependencies=[Depends(_require_auth)])
 async def contacts() -> Any:
     return await _run_lua(_CONTACTS_LUA)
+
+
+@app.get("/v1/encounters", dependencies=[Depends(_require_auth)])
+async def encounters() -> Any:
+    """Catálogo cerrado de encuentros que acepta ``spawn_encounter``.
+
+    Es la misma fuente de verdad que valida /v1/command (los enums de
+    ``SpawnEncounter``): el módulo de Foundry lee este catálogo en vez de
+    hardcodear arquetipos, y nunca puede ofrecer uno que el puente rechazaría.
+    No consulta al juego: si el escenario cargado no publica el callback, la
+    orden degradará honestamente a ``not_supported`` al ejecutarse.
+    """
+    return {
+        "archetypes": [archetype.value for archetype in EncounterArchetype],
+        "bearings": [bearing.value for bearing in EncounterBearing],
+    }
 
 
 @app.get("/v1/anchors", dependencies=[Depends(_require_auth)])

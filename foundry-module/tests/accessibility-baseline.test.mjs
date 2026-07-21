@@ -134,6 +134,16 @@ test("los colores de texto de consola cumplen contraste AA sobre sus fondos", ()
     }
   }
 });
+test("los <select> del panel definen color/fondo propios: sus opciones abiertas no heredan el tema claro del navegador (#287)", () => {
+  const css = read("styles/lagunak-consola.css");
+  for (const selector of [
+    ".lagunak-estado-cuerpo select",
+    ".lagunak-puestos__contenido select",
+    ".lagunak-estado-cuerpo select option",
+    ".lagunak-puestos__contenido select option",
+  ]) assert.ok(css.includes(selector), `falta color/fondo explícito: ${selector}`);
+});
+
 /**
  * Extrae los controles interactivos nativos (button/select/input/summary) de
  * una plantilla en orden de aparición en el DOM, con un identificador legible
@@ -171,11 +181,14 @@ test("ninguna de las cinco superficies fija tabindex: el orden del DOM es el ord
   }
 });
 
-test("estado de nave: el orden de teclado va de tempo a ingeniería, maniobra y anotar", () => {
+test("estado de nave: el orden de teclado va de tempo a encuentros, ingeniería, maniobra y anotar", () => {
   const ids = controlesInteractivos(read("templates/estado-nave.hbs")).map((c) => c.id);
   assert.deepEqual(ids, [
     "pausar",
     "reanudar",
+    "lagunak-encuentro-arquetipo",
+    "lagunak-encuentro-rumbo",
+    "encuentro",
     "summary",
     "ingenieria-sistema",
     "ingenieria-nivel",

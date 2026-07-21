@@ -10,6 +10,12 @@ import { BridgeClient, BridgeError } from "./bridge-client.mjs";
 import { getBridgeToken } from "./bridge-token-session.mjs";
 import { describirFoco, restaurarFoco } from "./foco-render.mjs";
 import { processBridgeEvents } from "./event-journal.mjs";
+import {
+  claveResultadoEncuentro,
+  introducirEncuentro,
+  normalizarCatalogoEncuentros,
+  prepararVistaEncuentros,
+} from "./encuentro-control.mjs";
 import { anotarAlertas, derivarAlertas } from "./alertas-nave.mjs";
 import { prepararVistaPausa } from "./pausa-control.mjs";
 import {
@@ -48,6 +54,10 @@ export function crearClaseV1() {
     confirmacionPendiente = null;
     falloOrden = false;
     ayudaAbierta = false;
+    catalogoEncuentros = null; // catálogo de /v1/encounters (null = sin leer)
+    encuentroPendiente = false; // orden spawn_encounter en vuelo
+    encuentroArquetipo = null; // selección conservada entre re-renders
+    encuentroRumbo = null;
     ingenieriaSistema = null;
     ingenieriaNivel = 1;
     ingenieriaPendiente = false;
@@ -124,6 +134,13 @@ export function crearClaseV1() {
           sigueVigente: () => !this.bridgeAccessRevoked && Boolean(game.user?.isGM),
         });
         if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        // El catálogo es estático en el puente: se lee una vez por apertura.
+        if (this.catalogoEncuentros === null) {
+          const catalogo = await cliente.encounters();
+          if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+          this.catalogoEncuentros = normalizarCatalogoEncuentros(catalogo);
+        }
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
         this.conexion = "ok";
         this.detalleError = "";
         this.#fallosSeguidos = 0;
@@ -157,6 +174,14 @@ export function crearClaseV1() {
             pendiente: this.ordenPendiente ?? this.confirmacionPendiente,
             falloOrden: this.falloOrden,
             foundryPausado: Boolean(game.paused),
+            i18n: game.i18n,
+          }),
+          encuentros: prepararVistaEncuentros({
+            conexion: this.conexion,
+            catalogo: this.catalogoEncuentros,
+            pendiente: this.encuentroPendiente,
+            seleccionArquetipo: this.encuentroArquetipo,
+            seleccionRumbo: this.encuentroRumbo,
             i18n: game.i18n,
           }),
           maniobra: prepararVistaManiobra({
@@ -254,6 +279,10 @@ export function crearClaseV1() {
       this.confirmacionPendiente = null;
       this.falloOrden = false;
       this.ayudaAbierta = false;
+      this.catalogoEncuentros = null;
+      this.encuentroPendiente = false;
+      this.encuentroArquetipo = null;
+      this.encuentroRumbo = null;
       this.ingenieriaSistema = null;
       this.ingenieriaNivel = 1;
       this.ingenieriaPendiente = false;
@@ -280,6 +309,13 @@ export function crearClaseV1() {
         this.#emitirManiobra("heading", Number(html.find('[data-field="maniobra-rumbo"]').val())));
       html.find('[data-action="pausar"]').on("click", () => this.#cambiarPausa(true));
       html.find('[data-action="reanudar"]').on("click", () => this.#cambiarPausa(false));
+      html.find('[data-action="encuentro"]').on("click", () => this.#introducirEncuentro());
+      html.find("[data-lagunak-encuentro-arquetipo]").on("change", (event) => {
+        this.encuentroArquetipo = event.currentTarget?.value || null;
+      });
+      html.find("[data-lagunak-encuentro-rumbo]").on("change", (event) => {
+        this.encuentroRumbo = event.currentTarget?.value || null;
+      });
       html.find('[data-action="ajustarIngenieria"]').on("click", () => this.#ajustarIngenieria());
       html.find('[data-field="ingenieria-sistema"]').on("change", (event) => {
         this.ingenieriaSistema = event.currentTarget?.value ?? null;
@@ -312,6 +348,14 @@ export function crearClaseV1() {
           pendiente: this.ordenPendiente ?? this.confirmacionPendiente,
           falloOrden: this.falloOrden,
           foundryPausado: Boolean(game.paused),
+          i18n: game.i18n,
+        }),
+        encuentros: prepararVistaEncuentros({
+          conexion: this.conexion,
+          catalogo: this.catalogoEncuentros,
+          pendiente: this.encuentroPendiente,
+          seleccionArquetipo: this.encuentroArquetipo,
+          seleccionRumbo: this.encuentroRumbo,
           i18n: game.i18n,
         }),
         maniobra: prepararVistaManiobra({
@@ -374,6 +418,48 @@ export function crearClaseV1() {
         ui.notifications.error(message);
       } finally {
         this.ingenieriaPendiente = false;
+        if (!this.bridgeAccessRevoked && game.user?.isGM && this.rendered) this.#renderConservandoFoco(false);
+      }
+    }
+
+    /**
+     * Ordena un encuentro del catálogo (#117). Una orden cada vez, como la
+     * pausa; revalida revocación y rol tras el await antes de notificar o
+     * repoblar (lección de #201: un ACK tardío no debe alterar una ventana ya
+     * revocada).
+     */
+    async #introducirEncuentro() {
+      if (this.encuentroPendiente) return;
+      const raiz = this.element?.[0];
+      const archetype = raiz?.querySelector?.("[data-lagunak-encuentro-arquetipo]")?.value
+        ?? this.encuentroArquetipo
+        ?? this.catalogoEncuentros?.archetypes?.[0];
+      const bearing = raiz?.querySelector?.("[data-lagunak-encuentro-rumbo]")?.value || null;
+      this.encuentroPendiente = true;
+      if (this.rendered) this.#renderConservandoFoco(false);
+      try {
+        const respuesta = await introducirEncuentro({
+          archetype,
+          bearing,
+          isGM: Boolean(game.user?.isGM),
+          catalogo: this.catalogoEncuentros,
+          client: this.#cliente(),
+        });
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        if (respuesta !== null) {
+          const resultado = claveResultadoEncuentro(respuesta);
+          const mensaje = game.i18n.localize(resultado.clave);
+          if (resultado.ok) ui.notifications.info(mensaje);
+          else ui.notifications.warn(mensaje);
+        }
+      } catch (err) {
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        const message = err instanceof BridgeError
+          ? err.message
+          : game.i18n.localize("LAGUNAK.Errores.Desconocido");
+        ui.notifications.error(message);
+      } finally {
+        this.encuentroPendiente = false;
         if (!this.bridgeAccessRevoked && game.user?.isGM && this.rendered) this.#renderConservandoFoco(false);
       }
     }

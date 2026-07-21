@@ -27,6 +27,7 @@ import {
   crearDecorado,
   crearEventosFondo,
   componerDecorado,
+  ladoDecorado,
 } from "./decorado-fondo.mjs";
 import {
   BACKOFF_MAX_MS,
@@ -216,6 +217,17 @@ export function crearClaseMapaV1() {
       }
     }
 
+    // Ajusta el backing del canvas al lado real de dibujo para no subescalar el
+    // decorado por debajo de 320 (aliasing de #260). Regenera el decorado solo
+    // al cambiar de lado: es determinista y barato entre resizes.
+    #ajustarBacking(canvas) {
+      const lado = ladoDecorado(canvas.clientWidth);
+      if (canvas.width === lado) return;
+      canvas.width = lado;
+      canvas.height = lado;
+      this.#decorado = crearDecorado(semillaDecoradoActual(), { ancho: lado, alto: lado });
+    }
+
     #animar(rafMs = null) {
       if (!this.rendered || typeof requestAnimationFrame !== "function") {
         this.#rafId = null;
@@ -228,6 +240,7 @@ export function crearClaseMapaV1() {
       const canvas = this.element?.[0]?.querySelector?.(".lagunak-mapa-canvas");
       const ctx = canvas?.getContext?.("2d");
       if (!ctx) return;
+      this.#ajustarBacking(canvas);
       this.#ultimoDibujoMs = relojRaf;
       const frame = componerFrame({
         muestraPrev: this.#muestraPrev,

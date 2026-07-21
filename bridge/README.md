@@ -58,6 +58,7 @@ pruebas y el modelo de amenazas.
 | GET | `/v1/scenario` | Bearer | Tiempo de escenario y estado de pausa (`paused`) |
 | GET | `/v1/events` | Bearer | Eventos normalizados presentes: llegada e inicio de encuentro en Primera Guardia |
 | GET | `/v1/contacts` | Bearer | Objetos cercanos a la nave (indicativo, posición, facción, plantilla, clase/subclase opcionales y si es el jugador) para un mapa vivo en Foundry. **Vista GM omnisciente** (ver abajo) |
+| GET | `/v1/encounters` | Bearer | Catálogo cerrado de encuentros del GM (`archetypes` y `bearings` que acepta `spawn_encounter`); estático, sin llamada al juego |
 | POST | `/v1/command` | Bearer | Órdenes de lista blanca (ver abajo) |
 | GET | `/docs` | No* | OpenAPI interactiva generada por FastAPI |
 
@@ -121,9 +122,12 @@ solo llama al callback `spawnEncounter(archetype, bearing)` que el escenario
 publica bajo el namespace propio `espaciokoop_lagunak` de `getScriptStorage()`;
 si el escenario cargado no lo registra, la respuesta degrada a
 `{"ok":false,"reason":"not_supported"}`. El contacto nuevo aparece por
-`/v1/contacts` y en las estaciones de ciencia/relay de la tripulación. Tras
-crearlo, `/v1/events` publica un DTO cerrado `encounter_started` con ID estable
-de sesión y secuencia monotónica para que Foundry pueda deduplicarlo.
+`/v1/contacts` y en las estaciones de ciencia/relay de la tripulación. El
+catálogo admitido se publica en `GET /v1/encounters` desde los mismos enums
+que validan la orden: el módulo de Foundry lo lee de ahí y no hardcodea
+arquetipos. Tras crear uno, `/v1/events` publica un DTO cerrado
+`encounter_started` con ID estable de sesión y secuencia monotónica para que
+Foundry pueda deduplicarlo.
 
 Cualquier otra operación devuelve `422`. Añadir una orden nueva implica
 añadir un modelo validado en `app.py` y documentarla aquí — nunca un

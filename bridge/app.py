@@ -442,8 +442,14 @@ class SetSystemCoolant(BaseModel):
     level: Annotated[float, Field(ge=0.0, le=10.0)]
 
     def lua(self) -> str:
+        # Llamada de función global, no de método: /exec.lua corre en un
+        # sub-entorno propio (ver httpScriptAccess.cpp) donde las extensiones
+        # de metatabla de Entity (scripts/api/entity/playerspaceship.lua,
+        # cargadas solo por el escenario vía require) no están disponibles;
+        # src/script.cpp solo registra este símbolo como global vía
+        # env.setGlobal, nunca como método EFT.
         return _command_lua(
-            f'ship:commandSetSystemCoolantRequest("{self.system.value}", {self.level:.3f})'
+            f'commandSetSystemCoolantRequest(ship, "{self.system.value}", {self.level:.3f})'
         )
 
 

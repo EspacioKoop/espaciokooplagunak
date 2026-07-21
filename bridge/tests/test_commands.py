@@ -57,7 +57,7 @@ def test_set_system_coolant_genera_lua(client, juego, auth):
         CMD, headers=auth, json={"op": "set_system_coolant", "system": "impulse", "level": 7.5}
     )
     assert r.status_code == 200
-    assert 'commandSetSystemCoolantRequest("impulse", 7.500)' in juego.ultimo_lua
+    assert 'commandSetSystemCoolantRequest(ship, "impulse", 7.500)' in juego.ultimo_lua
     assert "getPlayerShip(-1)" in juego.ultimo_lua
 
 

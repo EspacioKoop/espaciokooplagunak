@@ -2,26 +2,15 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
-  STATION_ORDER_EVENT,
-  emitStationOrder,
+  STATION_ORDER_FLAG,
+  buildStationOrder,
+  extractOrderFromChange,
   handleStationOrder,
-  registerStationOrderHandler,
+  dispatchUserUpdate,
 } from "../scripts/station-order-relay.mjs";
 import { STATION_ACTION_ERRORS } from "../scripts/station-actions.mjs";
 
-function fakeSocket() {
-  const listeners = [];
-  return {
-    emitted: [],
-    listeners,
-    emit(event, payload) { this.emitted.push({ event, payload }); },
-    on(event, fn) { listeners.push({ event, fn }); },
-    off(event, fn) {
-      const i = listeners.findIndex((l) => l.event === event && l.fn === fn);
-      if (i >= 0) listeners.splice(i, 1);
-    },
-  };
-}
+const MOD = "espaciokoop-lagunak";
 
 function fakeBridge() {
   return {
@@ -30,27 +19,34 @@ function fakeBridge() {
   };
 }
 
-test("emitStationOrder manda userId y acción, nunca el puesto", () => {
-  const socket = fakeSocket();
-  emitStationOrder({ socket, userId: "u1", action: "set_target_heading", params: { heading: 90 } });
-  assert.equal(socket.emitted.length, 1);
-  const { event, payload } = socket.emitted[0];
-  assert.equal(event, STATION_ORDER_EVENT);
-  assert.equal(payload.userId, "u1");
-  assert.equal(payload.action, "set_target_heading");
-  assert.deepEqual(payload.params, { heading: 90 });
-  assert.ok(!("station" in payload), "el cliente no declara su puesto");
+test("buildStationOrder guarda acción, params y nonce, nunca el puesto ni el userId", () => {
+  const order = buildStationOrder({ action: "set_target_heading", params: { heading: 90 }, nonce: "n1" });
+  assert.deepEqual(order, { action: "set_target_heading", params: { heading: 90 }, nonce: "n1" });
+  assert.ok(!("station" in order), "el cliente no declara su puesto");
+  assert.ok(!("userId" in order), "el cliente no declara su identidad");
 });
 
-test("emitStationOrder valida socket y userId", () => {
-  assert.throws(() => emitStationOrder({ socket: {}, userId: "u1", action: "x" }), TypeError);
-  assert.throws(() => emitStationOrder({ socket: fakeSocket(), action: "x" }), TypeError);
+test("buildStationOrder exige action y nonce", () => {
+  assert.throws(() => buildStationOrder({ action: "x" }), TypeError);
+  assert.throws(() => buildStationOrder({ nonce: "n1" }), TypeError);
 });
 
-test("handleStationOrder resuelve el puesto del emisor y despacha al puente", async () => {
+test("extractOrderFromChange devuelve la orden solo si el cambio toca nuestro flag", () => {
+  const changes = { flags: { [MOD]: { [STATION_ORDER_FLAG]: { action: "set_target_heading", params: { heading: 42 }, nonce: "n" } } } };
+  assert.deepEqual(extractOrderFromChange({ changes, moduleId: MOD }), { action: "set_target_heading", params: { heading: 42 }, nonce: "n" });
+});
+
+test("extractOrderFromChange ignora cambios ajenos al flag", () => {
+  assert.equal(extractOrderFromChange({ changes: { name: "otra cosa" }, moduleId: MOD }), null);
+  assert.equal(extractOrderFromChange({ changes: { flags: { otroModulo: { x: 1 } } }, moduleId: MOD }), null);
+  assert.equal(extractOrderFromChange({ changes: {}, moduleId: MOD }), null);
+});
+
+test("handleStationOrder resuelve el puesto del emisor autenticado y despacha al puente", async () => {
   const bridge = fakeBridge();
   const result = await handleStationOrder({
-    payload: { userId: "u1", action: "set_target_heading", params: { heading: 42 } },
+    userId: "u1",
+    order: { action: "set_target_heading", params: { heading: 42 } },
     resolveUserStation: () => "navigation",
     bridge,
   });
@@ -58,23 +54,39 @@ test("handleStationOrder resuelve el puesto del emisor y despacha al puente", as
   assert.deepEqual(result, { ok: true });
 });
 
-test("handleStationOrder ignora el puesto falsificado en el payload", async () => {
+test("SEGURIDAD: la identidad la fija el emisor autenticado, no un campo dentro de la orden", async () => {
+  // La orden lleva embebido el userId de una víctima de navegación intentando
+  // suplantarla; el emisor real autenticado (userDoc.id) es de ingeniería, que
+  // NO puede fijar rumbo. Debe resolverse por el emisor real y rechazarse.
   const bridge = fakeBridge();
-  // El emisor está en navegación; el payload miente diciendo ser 'captain' con
-  // otra acción. Debe resolverse por el emisor (navegación) y su permiso.
-  await handleStationOrder({
-    payload: { userId: "u1", action: "set_target_heading", station: "captain", params: { heading: 10 } },
-    resolveUserStation: () => "navigation",
-    bridge,
-  });
-  assert.deepEqual(bridge.calls, [["setTargetHeading", 10]]);
+  const resolveUserStation = (id) => (id === "engineer" ? "engineering" : "navigation");
+  await assert.rejects(
+    () => handleStationOrder({
+      userId: "engineer",
+      order: { action: "set_target_heading", params: { heading: 270 }, userId: "navigator", station: "navigation" },
+      resolveUserStation,
+      bridge,
+    }),
+    (error) => error.code === STATION_ACTION_ERRORS.ACTION_NOT_ALLOWED,
+  );
+  assert.deepEqual(bridge.calls, [], "no toca el puente: el campo userId embebido se ignora");
+});
+
+test("handleStationOrder rechaza si no hay emisor autenticado", async () => {
+  const bridge = fakeBridge();
+  await assert.rejects(
+    () => handleStationOrder({ userId: undefined, order: { action: "set_target_heading" }, resolveUserStation: () => "navigation", bridge }),
+    TypeError,
+  );
+  assert.deepEqual(bridge.calls, []);
 });
 
 test("handleStationOrder rechaza a un emisor sin puesto asignado", async () => {
   const bridge = fakeBridge();
   await assert.rejects(
     () => handleStationOrder({
-      payload: { userId: "u1", action: "set_target_heading", params: { heading: 10 } },
+      userId: "u1",
+      order: { action: "set_target_heading", params: { heading: 10 } },
       resolveUserStation: () => null,
       bridge,
     }),
@@ -87,7 +99,8 @@ test("handleStationOrder rechaza una acción fuera del permiso del puesto", asyn
   const bridge = fakeBridge();
   await assert.rejects(
     () => handleStationOrder({
-      payload: { userId: "u1", action: "set_system_power", params: {} },
+      userId: "u1",
+      order: { action: "set_system_power", params: {} },
       resolveUserStation: () => "navigation",
       bridge,
     }),
@@ -96,63 +109,65 @@ test("handleStationOrder rechaza una acción fuera del permiso del puesto", asyn
   assert.deepEqual(bridge.calls, []);
 });
 
-test("registerStationOrderHandler es no-op fuera del GM", () => {
-  const socket = fakeSocket();
-  const off = registerStationOrderHandler({ socket, isGM: false, resolveUserStation: () => "navigation", bridge: fakeBridge() });
-  assert.equal(socket.listeners.length, 0);
-  assert.equal(typeof off, "function");
+test("dispatchUserUpdate ignora updateUser que no toca el flag de orden", async () => {
+  const bridge = fakeBridge();
+  const result = dispatchUserUpdate({
+    userDoc: { id: "u1" },
+    changes: { name: "renombrado" },
+    moduleId: MOD,
+    resolveUserStation: () => "navigation",
+    bridge,
+  });
+  assert.equal(result, null);
+  assert.deepEqual(bridge.calls, []);
 });
 
-test("registerStationOrderHandler despacha en el GM y permite darse de baja", async () => {
-  const socket = fakeSocket();
+test("dispatchUserUpdate usa userDoc.id como identidad autenticada y despacha", async () => {
   const bridge = fakeBridge();
   const resultados = [];
-  const off = registerStationOrderHandler({
-    socket,
-    isGM: true,
-    resolveUserStation: () => "navigation",
+  await dispatchUserUpdate({
+    userDoc: { id: "u1" },
+    changes: { flags: { [MOD]: { [STATION_ORDER_FLAG]: { action: "set_target_heading", params: { heading: 7 }, nonce: "n" } } } },
+    moduleId: MOD,
+    resolveUserStation: (id) => (id === "u1" ? "navigation" : null),
     bridge,
     onResult: (r) => resultados.push(r),
   });
-  assert.equal(socket.listeners.length, 1);
-  const { fn } = socket.listeners[0];
-  fn({ type: STATION_ORDER_EVENT, userId: "u1", action: "set_target_heading", params: { heading: 7 } });
-  await new Promise((resolve) => setImmediate(resolve));
   assert.deepEqual(bridge.calls, [["setTargetHeading", 7]]);
   assert.deepEqual(resultados, [{ ok: true }]);
-  off();
-  assert.equal(socket.listeners.length, 0);
 });
 
-test("registerStationOrderHandler solo ejecuta si canHandle() es cierto (GM primario)", async () => {
-  const socket = fakeSocket();
+test("dispatchUserUpdate solo ejecuta si canHandle() es cierto (GM primario)", async () => {
   const bridge = fakeBridge();
   let esPrimario = false;
-  registerStationOrderHandler({
-    socket,
-    isGM: true,
-    canHandle: () => esPrimario,
-    resolveUserStation: () => "navigation",
-    bridge,
-  });
-  const { fn } = socket.listeners[0];
-  const orden = { type: STATION_ORDER_EVENT, userId: "u1", action: "set_target_heading", params: { heading: 5 } };
+  const changes = { flags: { [MOD]: { [STATION_ORDER_FLAG]: { action: "set_target_heading", params: { heading: 5 }, nonce: "n" } } } };
 
-  fn(orden);
-  await new Promise((resolve) => setImmediate(resolve));
-  assert.deepEqual(bridge.calls, [], "un GM no primario no ejecuta la orden");
+  const r1 = dispatchUserUpdate({
+    userDoc: { id: "u1" }, changes, moduleId: MOD,
+    canHandle: () => esPrimario, resolveUserStation: () => "navigation", bridge,
+  });
+  assert.equal(r1, null, "un GM no primario no ejecuta la orden");
+  assert.deepEqual(bridge.calls, []);
 
   esPrimario = true;
-  fn(orden);
-  await new Promise((resolve) => setImmediate(resolve));
+  await dispatchUserUpdate({
+    userDoc: { id: "u1" }, changes, moduleId: MOD,
+    canHandle: () => esPrimario, resolveUserStation: () => "navigation", bridge,
+  });
   assert.deepEqual(bridge.calls, [["setTargetHeading", 5]], "el GM primario sí la ejecuta");
 });
 
-test("registerStationOrderHandler ignora mensajes de otro tipo", async () => {
-  const socket = fakeSocket();
-  const bridge = fakeBridge();
-  registerStationOrderHandler({ socket, isGM: true, resolveUserStation: () => "navigation", bridge });
-  socket.listeners[0].fn({ type: "otraCosa", userId: "u1", action: "set_target_heading" });
-  await new Promise((resolve) => setImmediate(resolve));
-  assert.deepEqual(bridge.calls, []);
+test("dispatchUserUpdate encamina el error del puente a onError sin propagar", async () => {
+  const errores = [];
+  const bridge = { async setTargetHeading() { throw new Error("boom"); } };
+  const result = await dispatchUserUpdate({
+    userDoc: { id: "u1" },
+    changes: { flags: { [MOD]: { [STATION_ORDER_FLAG]: { action: "set_target_heading", params: { heading: 1 }, nonce: "n" } } } },
+    moduleId: MOD,
+    resolveUserStation: () => "navigation",
+    bridge,
+    onError: (e) => errores.push(e.message),
+  });
+  assert.equal(result, null);
+  assert.deepEqual(errores, ["boom"]);
 });

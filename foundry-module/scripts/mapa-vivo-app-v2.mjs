@@ -26,8 +26,35 @@ import {
   reconciliarIndiceContacto,
   rotarMuestras,
 } from "./ventana-nave.mjs";
-import { crearDecorado, componerDecorado, ladoDecorado } from "./decorado-fondo.mjs";
-import { BACKOFF_MAX_MS, MAPA_FPS, MAPA_RADIO_MUNDO, MAPA_SEMILLA, MODULE_ID } from "./lagunak-constantes.mjs";
+import {
+  crearCacheDecorado,
+  crearDecorado,
+  crearEventosFondo,
+  componerDecorado,
+  ladoDecorado,
+} from "./decorado-fondo.mjs";
+import {
+  BACKOFF_MAX_MS,
+  MAPA_FPS,
+  MAPA_RADIO_MUNDO,
+  MODULE_ID,
+  semillaDecoradoActual,
+} from "./lagunak-constantes.mjs";
+
+// Estado de movimiento de la nave propia entre frames (para encender los
+// propulsores) y deriva ambiente lenta en reposo (para que el fondo «respire»
+// aunque la nave esté parada). Guarda el centro anterior en la instancia.
+function derivarMovimiento(app, centro, tMs) {
+  const prev = app._centroAnterior;
+  const moviendo = Boolean(
+    prev && centro && Math.hypot(centro.x - prev.x, centro.y - prev.y) > 0.5,
+  );
+  app._centroAnterior = centro ?? null;
+  const ambiente = moviendo
+    ? null
+    : { dx: Math.sin(tMs / 1500) * 5, dy: Math.cos(tMs / 1900) * 5 };
+  return { moviendo, ambiente };
+}
 
 export function crearClaseMapaV2() {
   const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -40,7 +67,7 @@ export function crearClaseMapaV2() {
         title: "LAGUNAK.MapaVivo.Titulo",
         icon: "fa-solid fa-satellite-dish",
       },
-      position: { width: 480, height: "auto" },
+      position: { width: 640, height: "auto" },
     };
 
     static PARTS = {
@@ -54,8 +81,20 @@ export function crearClaseMapaV2() {
     #rafId = null;
     #ultimoDibujoMs = null;
     #ultimoFrame = null; // último frame pintado, para el hit-test de clic (issue #259)
-    #campo = crearCampoEstrellas(MAPA_SEMILLA);
-    #decorado = crearDecorado(MAPA_SEMILLA);
+    #campo = crearCampoEstrellas(semillaDecoradoActual());
+    #decorado = crearDecorado(semillaDecoradoActual());
+    #eventosFondo = crearEventosFondo(semillaDecoradoActual());
+    #cacheDecorado = crearCacheDecorado();
+
+    /** Nuevo decorado con `semilla` (issue #215): regenera cielo, decorado y
+     * eventos de fondo in situ y limpia la caché de sprites para que el
+     * próximo frame rasterice con el nuevo aspecto. */
+    regenerarDecorado(semilla) {
+      this.#campo = crearCampoEstrellas(semilla);
+      this.#decorado = crearDecorado(semilla);
+      this.#eventosFondo = crearEventosFondo(semilla);
+      this.#cacheDecorado.limpiar();
+    }
     #muestraPrev = null;
     #muestraActual = null;
     contactos = [];
@@ -200,7 +239,7 @@ export function crearClaseMapaV2() {
       if (canvas.width === lado) return;
       canvas.width = lado;
       canvas.height = lado;
-      this.#decorado = crearDecorado(MAPA_SEMILLA, { ancho: lado, alto: lado });
+      this.#decorado = crearDecorado(semillaDecoradoActual(), { ancho: lado, alto: lado });
     }
 
     #animar(rafMs = null) {
@@ -232,14 +271,24 @@ export function crearClaseMapaV2() {
         alto: canvas.height,
         radioMundo: MAPA_RADIO_MUNDO,
       });
+      const { moviendo, ambiente } = derivarMovimiento(this, frame.centro, ahora);
       const decorado = frame.sinDatos
         ? []
         : componerDecorado(this.#decorado, {
             centro: frame.centro,
             ancho: canvas.width,
             alto: canvas.height,
+            ambiente,
           });
-      dibujarFrame(ctx, frame, { ancho: canvas.width, alto: canvas.height, decorado });
+      dibujarFrame(ctx, frame, {
+        ancho: canvas.width,
+        alto: canvas.height,
+        decorado,
+        cacheDecorado: this.#cacheDecorado,
+        eventosFondo: this.#eventosFondo,
+        moviendo,
+        tMs: ahora,
+      });
       this.#ultimoFrame = frame;
     }
 
@@ -289,6 +338,7 @@ export function crearClaseMapaV2() {
       }
       this.#rafId = null;
       this.#ultimoDibujoMs = null;
+      this.#cacheDecorado.limpiar();
       this.#fallosSeguidos = 0;
       this.conexion = "conectando";
       super._onClose?.(options);

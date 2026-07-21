@@ -45,7 +45,12 @@ import { crearClaseV2 } from "./estado-nave-app-v2.mjs";
 import { crearClaseV1 } from "./estado-nave-app-v1.mjs";
 import { crearClaseMapaV2 } from "./mapa-vivo-app-v2.mjs";
 import { crearClaseMapaV1 } from "./mapa-vivo-app-v1.mjs";
-import { MODULE_ID, POLL_MIN_S, POLL_MAX_S } from "./lagunak-constantes.mjs";
+import {
+  MODULE_ID,
+  POLL_MIN_S,
+  POLL_MAX_S,
+  MAPA_SEMILLA_DEFECTO,
+} from "./lagunak-constantes.mjs";
 
 registerStationFeature(MODULE_ID);
 registerWorkspaceFeature(MODULE_ID);
@@ -81,6 +86,25 @@ Hooks.once("init", () => {
     type: Number,
     range: { min: POLL_MIN_S, max: POLL_MAX_S, step: 1 },
     default: 2,
+  });
+
+  // Semilla del decorado de fondo del mapa vivo (issue #215, mejora pedida en
+  // review): ajuste de MUNDO para que todos vean el mismo cielo. El GM puede
+  // escribir un valor concreto aquí, o usar el botón "nuevo decorado
+  // aleatorio" de los controles de escena (regenerarDecoradoAleatorio), que
+  // guarda un valor al azar en este mismo ajuste.
+  game.settings.register(MODULE_ID, "decoradoSemilla", {
+    name: "LAGUNAK.Ajustes.DecoradoSemilla.Nombre",
+    hint: "LAGUNAK.Ajustes.DecoradoSemilla.Pista",
+    scope: "world",
+    config: true,
+    type: Number,
+    default: MAPA_SEMILLA_DEFECTO,
+    // Único punto de regeneración del mapa abierto: Foundry lo invoca tanto
+    // en el cliente que escribe el ajuste como en el resto al sincronizar el
+    // valor de mundo, así que un cambio desde ajustes o desde el botón "nuevo
+    // decorado aleatorio" refresca a todos por igual (issue #215 review).
+    onChange: (semilla) => mapaApp?.regenerarDecorado?.(semilla),
   });
 });
 
@@ -172,6 +196,13 @@ Hooks.on("getSceneControlButtons", (controls) => {
           button: true,
           onClick: () => diagnosticarConexion(),
         },
+        {
+          name: "lagunak-decorado-aleatorio",
+          title: "LAGUNAK.Controles.DecoradoAleatorio",
+          icon: "fa-solid fa-dice",
+          button: true,
+          onClick: () => regenerarDecoradoAleatorio(),
+        },
       ]
     : [];
 
@@ -236,6 +267,22 @@ async function diagnosticarConexion() {
   } finally {
     diagnosticoEnCurso = false;
   }
+}
+
+/* Nuevo decorado aleatorio (issue #215, mejora pedida en review): el GM puede
+ * cambiar el cielo/decorado del mapa vivo a uno nuevo con un clic, en vez de
+ * teclear una semilla a mano en los ajustes del módulo. Se guarda como ajuste
+ * de MUNDO para que quede igual para todos y sobreviva a recargas; el
+ * `onChange` del ajuste (arriba) es el único punto que reconstruye el mapa
+ * abierto, así que aquí no se llama a mapaApp directamente: evita
+ * regenerarlo dos veces en este mismo cliente y cubre también a los demás. */
+async function regenerarDecoradoAleatorio() {
+  if (!game.user?.isGM) return;
+  const nuevaSemilla = Math.floor(Math.random() * 0x100000000); // 32 bits, mismo rango que rngSemilla
+  await game.settings.set(MODULE_ID, "decoradoSemilla", nuevaSemilla);
+  ui.notifications.info(
+    game.i18n.format("LAGUNAK.Notificaciones.DecoradoRegenerado", { semilla: nuevaSemilla }),
+  );
 }
 
 /* La pausa de Foundry (game.paused) se muestra como dato informativo en la

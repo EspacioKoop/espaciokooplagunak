@@ -25,13 +25,15 @@ const MOTOR = "#ffb703"; // ámbar de propulsión
 // '-' casco en sombra, '*' cabina, 'o' motor, '.' vacío.
 export const SILUETAS = {
   jugador: [
-    "...=...",
-    "..===..",
-    ".==*==.",
-    "##=*=##",
-    ".#####.",
-    ".#-.-#.",
-    "..o.o..",
+    "....=....",
+    "...=*=...",
+    "..==*==..",
+    ".==#*#==.",
+    "=##=*=##=",
+    "###-*-###",
+    ".#-###-#.",
+    "..#-#-#..",
+    "..o#-#o..",
   ],
   caza: [
     "..=..",
@@ -160,14 +162,27 @@ export function construirSpriteNave({ clave = "desconocido", color = "#ffffff" }
  * `pixel` px por celda. Debe llamarse tras el fondo/decorado y bajo la retícula
  * para la nave propia, o en la posición del contacto para los blips.
  */
-export function dibujarNaveSprite(ctx, celdas, { centroX, centroY, pixel = 2 } = {}) {
+export function dibujarNaveSprite(
+  ctx,
+  celdas,
+  { centroX, centroY, pixel = 2, moviendo = false, tMs = 0 } = {},
+) {
+  // Parpadeo de la llama de propulsión (fase temporal, look retro).
+  const llamaLarga = moviendo && Math.floor(tMs / 90) % 2 === 0;
   for (const celda of celdas) {
-    ctx.fillStyle = celda.color;
-    ctx.fillRect(
-      Math.round(centroX + celda.dx * pixel - pixel / 2),
-      Math.round(centroY + celda.dy * pixel - pixel / 2),
-      pixel,
-      pixel,
-    );
+    const esMotor = celda.color === MOTOR;
+    // Motor apagado cuando la nave está parada; encendido (ámbar vivo) al mover.
+    ctx.fillStyle = esMotor && !moviendo ? "#6e5211" : celda.color;
+    const px = Math.round(centroX + celda.dx * pixel - pixel / 2);
+    const py = Math.round(centroY + celda.dy * pixel - pixel / 2);
+    ctx.fillRect(px, py, pixel, pixel);
+
+    // Estela de propulsión hacia popa (abajo, morro arriba) solo en movimiento.
+    if (esMotor && moviendo) {
+      ctx.fillStyle = "#fff3c4"; // núcleo claro
+      ctx.fillRect(px, py + pixel, pixel, pixel);
+      ctx.fillStyle = "#ff8c1e"; // estela ámbar
+      ctx.fillRect(px, py + pixel * 2, pixel, pixel * (llamaLarga ? 2 : 1));
+    }
   }
 }

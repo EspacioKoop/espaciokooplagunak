@@ -2,21 +2,27 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  BIOMAS,
+  INTERVALO_CACHE_PLANETA_MS,
   LADO_DECORADO_BASE,
   PALETA_DECORADO,
   componerDecorado,
+  crearCacheDecorado,
   crearDecorado,
+  crearEventosFondo,
   dibujarDecorado,
+  dibujarEventosFondo,
+  posicionEvento,
   ladoDecorado,
 } from "../scripts/decorado-fondo.mjs";
 
 const SEMILLA = 0x4c4147; // misma que MAPA_SEMILLA_DEFECTO en lagunak-constantes.mjs
 
-test("crearDecorado devuelve las tres capas ordenadas de lejana a cercana", () => {
+test("crearDecorado devuelve las capas ordenadas de lejana a cercana", () => {
   const capas = crearDecorado(SEMILLA);
   assert.deepEqual(
     capas.map((c) => c.tipo),
-    ["nebulosa", "planeta", "asteroide"],
+    ["nebulosa_lejana", "nebulosa", "planeta", "asteroide"],
   );
   // El factor de parallax crece de lejana a cercana (más lejos = se mueve menos).
   for (let i = 1; i < capas.length; i += 1) {
@@ -58,7 +64,9 @@ test("los elementos caen dentro del lienzo y usan colores de la paleta", () => {
     }
     if (capa.tipo === "planeta") {
       for (const el of capa.elementos) {
-        assert.ok(PALETA_DECORADO.planetas.includes(el.color));
+        assert.ok(BIOMAS[el.bioma], "bioma válido");
+        assert.equal(el.color, BIOMAS[el.bioma].color);
+        assert.equal(el.rasgo, BIOMAS[el.bioma].rasgo);
         assert.ok(el.brillo > 0 && el.brillo < 1);
       }
     }
@@ -183,11 +191,342 @@ test("dibujarDecorado conserva el contrato pixel art sin curvas ni gradientes", 
   rectangulos.length = 0;
   dibujarDecorado(
     ctx,
-    [{ tipo: "asteroide", dx: 0, dy: 0, elementos: [{ x: 319.5, y: 319.5, r: 2, brillo: 0.5 }] }],
+    [{ tipo: "asteroide", dx: 0, dy: 0, elementos: [{ x: 319.5, y: 319.5, r: 2, brillo: 0.5, semilla: 1 }] }],
     { ancho: 320, alto: 320 },
   );
+  // El peñasco (píxeles 1×1 con forma irregular) que cruza dos bordes reaparece
+  // en la esquina opuesta: hay píxeles pintados en el rincón (0,0).
   assert.ok(
-    rectangulos.some((r) => r.x === 0 && r.y === 0 && r.ancho === 2 && r.alto === 2),
-    "la mota que cruza dos bordes reaparece completa en la esquina opuesta",
+    rectangulos.some((r) => r.x >= 0 && r.x < 2 && r.y >= 0 && r.y < 2 && r.ancho === 1 && r.alto === 1),
+    "el peñasco que cruza dos bordes reaparece en la esquina opuesta",
   );
+});
+
+test("el anillo de un planeta que cruza un borde reaparece sin costura", () => {
+  const rectangulos = [];
+  const ctx = {
+    fillStyle: "",
+    fillRect(x, y, ancho, alto) {
+      rectangulos.push({ x, y, ancho, alto });
+    },
+    arc() { assert.fail("sin arc()"); },
+    createRadialGradient() { assert.fail("sin gradientes"); },
+  };
+  // Caso focal del review: planeta con x=15, r=10 y anillo en un lienzo 100×100.
+  // El anillo primario (hasta 1.9*r) cruza el borde izquierdo; la copia envuelta
+  // debe pintar píxeles en el borde derecho (x=95..99). Antes, el culling por
+  // `el.r` descartaba esa copia y el anillo se cortaba.
+  const planeta = {
+    x: 15, y: 50, r: 10, anillo: true,
+    color: "#88aacc", color2: "#446688",
+    inclinacionAnillo: 0.3, velocidadGiro: 0, semilla: 5,
+  };
+  dibujarDecorado(
+    ctx,
+    [{ tipo: "planeta", dx: 0, dy: 0, elementos: [planeta] }],
+    { ancho: 100, alto: 100 },
+  );
+  assert.ok(
+    rectangulos.some((r) => r.x >= 95 && r.x <= 99),
+    "el anillo reaparece en el borde derecho (sin costura)",
+  );
+});
+
+function crearFactoriaLienzos() {
+  const lienzos = [];
+  const crearLienzo = (ancho, alto) => {
+    const rectangulos = [];
+    const contexto = {
+      fillStyle: "",
+      imageSmoothingEnabled: true,
+      fillRect(...args) { rectangulos.push(args); },
+    };
+    const lienzo = {
+      width: ancho,
+      height: alto,
+      rectangulos,
+      getContext(tipo) { return tipo === "2d" ? contexto : null; },
+    };
+    lienzos.push(lienzo);
+    return lienzo;
+  };
+  return { crearLienzo, lienzos };
+}
+
+test("la caché rasteriza cuerpos grandes una vez y recompone cada frame con drawImage", () => {
+  const factoria = crearFactoriaLienzos();
+  const cache = crearCacheDecorado({ crearLienzo: factoria.crearLienzo });
+  const imagenes = [];
+  const ctx = {
+    fillStyle: "",
+    fillRect() {},
+    drawImage(...args) { imagenes.push(args); },
+  };
+  const decorado = crearDecorado(SEMILLA, {
+    ancho: 320,
+    alto: 320,
+    planetas: 1,
+    nebulosas: 1,
+    nebulosasLejanas: 1,
+    asteroides: 0,
+  });
+  decorado.find((capa) => capa.tipo === "planeta").elementos[0].semilla = 0;
+  const frame = componerDecorado(decorado, { centro: { x: 100, y: 50 } });
+
+  dibujarDecorado(ctx, frame, { ancho: 320, alto: 320, tMs: 0, cache });
+  assert.equal(factoria.lienzos.length, 3, "crea un sprite por cuerpo grande");
+  assert.ok(imagenes.length >= 3, "compone los sprites en el lienzo visible");
+  assert.ok(factoria.lienzos.every((lienzo) => lienzo.rectangulos.length > 0), "cada sprite contiene pixel art");
+
+  imagenes.length = 0;
+  dibujarDecorado(ctx, frame, {
+    ancho: 320,
+    alto: 320,
+    tMs: INTERVALO_CACHE_PLANETA_MS - 1,
+    cache,
+  });
+  assert.equal(factoria.lienzos.length, 3, "reutiliza nebulosas y planeta dentro del mismo tick");
+  assert.ok(imagenes.length >= 3, "sigue dibujando el parallax en cada frame");
+
+  dibujarDecorado(ctx, frame, {
+    ancho: 320,
+    alto: 320,
+    tMs: INTERVALO_CACHE_PLANETA_MS,
+    cache,
+  });
+  assert.equal(factoria.lienzos.length, 4, "solo renueva el planeta al avanzar el giro");
+});
+
+test("las fases de giro reparten la renovación de planetas entre frames", () => {
+  const factoria = crearFactoriaLienzos();
+  const cache = crearCacheDecorado({ crearLienzo: factoria.crearLienzo, intervaloPlanetaMs: 200 });
+  const ctx = { fillStyle: "", fillRect() {}, drawImage() {} };
+  const base = {
+    x: 80,
+    y: 80,
+    r: 12,
+    anillo: false,
+    color: "#88aacc",
+    color2: "#446688",
+    velocidadGiro: 0.00005,
+  };
+  const frame = [{
+    tipo: "planeta",
+    dx: 0,
+    dy: 0,
+    elementos: [
+      { ...base, semilla: 10, faseGiro: 0 },
+      { ...base, x: 200, semilla: 20, faseGiro: 0.5 },
+    ],
+  }];
+
+  dibujarDecorado(ctx, frame, { tMs: 0, cache });
+  assert.equal(factoria.lienzos.length, 2);
+  dibujarDecorado(ctx, frame, { tMs: 100, cache });
+  assert.equal(factoria.lienzos.length, 3, "solo se renueva el planeta con fase 100");
+  dibujarDecorado(ctx, frame, { tMs: 200, cache });
+  assert.equal(factoria.lienzos.length, 4, "el planeta con fase cero se renueva después");
+});
+
+test("un salto temporal renueva como máximo un planeta por frame", () => {
+  const factoria = crearFactoriaLienzos();
+  const cache = crearCacheDecorado({ crearLienzo: factoria.crearLienzo, intervaloPlanetaMs: 200 });
+  const ctx = { fillStyle: "", fillRect() {}, drawImage() {} };
+  const base = {
+    y: 80,
+    r: 12,
+    anillo: false,
+    color: "#88aacc",
+    color2: "#446688",
+    velocidadGiro: 0.00005,
+    faseGiro: 0,
+  };
+  const frame = [{
+    tipo: "planeta",
+    dx: 0,
+    dy: 0,
+    elementos: [40, 120, 200].map((x, i) => ({ ...base, x, semilla: i + 1 })),
+  }];
+
+  dibujarDecorado(ctx, frame, { tMs: 0, cache });
+  assert.equal(factoria.lienzos.length, 3, "el primer frame construye todos los sprites");
+  dibujarDecorado(ctx, frame, { tMs: 200, cache });
+  assert.equal(factoria.lienzos.length, 4, "solo renueva uno tras el salto");
+  dibujarDecorado(ctx, frame, { tMs: 201, cache });
+  assert.equal(factoria.lienzos.length, 5, "renueva el segundo en el frame siguiente");
+  dibujarDecorado(ctx, frame, { tMs: 202, cache });
+  assert.equal(factoria.lienzos.length, 6, "termina la cola sin picos múltiples");
+});
+
+test("los planetas grandes usan escala entera para conservar el pixel art", () => {
+  const factoria = crearFactoriaLienzos();
+  const cache = crearCacheDecorado({ crearLienzo: factoria.crearLienzo });
+  const imagenes = [];
+  const ctx = { fillStyle: "", fillRect() {}, drawImage(...args) { imagenes.push(args); } };
+  const planeta = {
+    x: 160,
+    y: 160,
+    r: 80,
+    anillo: true,
+    inclinacionAnillo: 0.3,
+    color: "#88aacc",
+    color2: "#446688",
+    velocidadGiro: 0.00005,
+    semilla: 0,
+  };
+
+  dibujarDecorado(ctx, [{ tipo: "planeta", dx: 0, dy: 0, elementos: [planeta] }], {
+    ancho: 320,
+    alto: 320,
+    cache,
+  });
+  const ampliada = imagenes.find((args) => args.length === 5);
+  assert.ok(ampliada, "usa drawImage con tamaño de destino explícito");
+  assert.equal(ampliada[3], ampliada[0].width * 2);
+  assert.equal(ampliada[4], ampliada[0].height * 2);
+  assert.ok(Number.isInteger(ampliada[1]) && Number.isInteger(ampliada[2]), "alinea el sprite a píxeles enteros");
+});
+
+test("limpiar la caché libera sprites y fuerza una rasterización nueva", () => {
+  const factoria = crearFactoriaLienzos();
+  const cache = crearCacheDecorado({ crearLienzo: factoria.crearLienzo });
+  const ctx = { fillStyle: "", fillRect() {}, drawImage() {} };
+  const decorado = crearDecorado(SEMILLA, {
+    planetas: 0,
+    nebulosas: 1,
+    nebulosasLejanas: 0,
+    asteroides: 0,
+  });
+  const frame = componerDecorado(decorado);
+
+  dibujarDecorado(ctx, frame, { cache });
+  assert.equal(factoria.lienzos.length, 1);
+  cache.limpiar();
+  dibujarDecorado(ctx, frame, { cache });
+  assert.equal(factoria.lienzos.length, 2);
+});
+
+test("si no puede crear canvas auxiliar conserva el pintor directo", () => {
+  const cache = crearCacheDecorado({ crearLienzo: () => null });
+  let rectangulos = 0;
+  let imagenes = 0;
+  const ctx = {
+    fillStyle: "",
+    fillRect() { rectangulos += 1; },
+    drawImage() { imagenes += 1; },
+  };
+  const decorado = crearDecorado(SEMILLA, {
+    planetas: 1,
+    nebulosas: 0,
+    nebulosasLejanas: 0,
+    asteroides: 0,
+  });
+  dibujarDecorado(ctx, componerDecorado(decorado), { cache });
+  assert.ok(rectangulos > 0, "el fallback conserva los píxeles del planeta");
+  assert.equal(imagenes, 0);
+});
+
+// Mejora pedida en review de #215: las nebulosas dejan de ser círculos
+// perfectos (contorno modulado por armónicos deterministas).
+test("las nebulosas no son círculos perfectos: el contorno varía con el ángulo", () => {
+  const capas = crearDecorado(SEMILLA, { nebulosas: 1, nebulosasLejanas: 1, planetas: 0, asteroides: 0 });
+  for (const capa of capas) {
+    for (const el of capa.elementos) {
+      assert.ok(Array.isArray(el.formaArmonicos) && el.formaArmonicos.length === 3);
+      // Si algún armónico tuviera amplitud 0 el contorno sería circular; con la
+      // fórmula actual (0.1 + ruido*0.16) la amplitud nunca es cero.
+      for (const { amp } of el.formaArmonicos) assert.ok(amp > 0);
+    }
+  }
+});
+
+test("el contorno no circular pinta píxeles más allá del radio base en algunas direcciones", () => {
+  const rectangulos = [];
+  const ctx = {
+    fillStyle: "",
+    fillRect(x, y, ancho, alto) { rectangulos.push({ x, y, ancho, alto }); },
+    arc() { assert.fail("sin arc()"); },
+  };
+  const nebulosa = {
+    x: 160, y: 160, r: 40, color: "#5a2a6a", color2: "#2a4a6a", alpha: 0.1, semilla: 7,
+  };
+  dibujarDecorado(ctx, [{ tipo: "nebulosa", dx: 0, dy: 0, elementos: [nebulosa] }], { ancho: 320, alto: 320 });
+  const maxDistancia = Math.max(...rectangulos.map((r) => Math.hypot(r.x - 160, r.y - 160)));
+  assert.ok(maxDistancia > 40, "algún píxel cae fuera del radio base gracias al abombado");
+});
+
+test("el abombado de una nebulosa no se recorta al cruzar un borde (sin costura)", () => {
+  const rectangulos = [];
+  const ctx = {
+    fillStyle: "",
+    fillRect(x, y, ancho, alto) { rectangulos.push({ x, y, ancho, alto }); },
+  };
+  // Nebulosa pegada al borde izquierdo: su lóbulo más ancho puede sobresalir
+  // más de r si no se usa la huella real (amplitudMaxima) en el culling.
+  const nebulosa = { x: 5, y: 50, r: 20, color: "#5a2a6a", color2: "#2a4a6a", alpha: 0.1, semilla: 3 };
+  dibujarDecorado(ctx, [{ tipo: "nebulosa", dx: 0, dy: 0, elementos: [nebulosa] }], { ancho: 100, alto: 100 });
+  assert.ok(
+    rectangulos.some((r) => r.x >= 95 && r.x <= 99),
+    "la copia envuelta pinta en el borde derecho cuando el abombado cruza",
+  );
+});
+
+// Eventos de fondo (issue #215, mejora pedida en review): naves lejanas,
+// cometas y estrellas fugaces que cruzan el mapa de vez en cuando.
+test("crearEventosFondo es determinista y produce la cantidad pedida", () => {
+  const eventos = crearEventosFondo(SEMILLA, { cantidad: 3 });
+  assert.equal(eventos.length, 3);
+  assert.deepEqual(eventos, crearEventosFondo(SEMILLA, { cantidad: 3 }));
+  assert.notDeepEqual(eventos, crearEventosFondo(SEMILLA + 1, { cantidad: 3 }));
+});
+
+test("posicionEvento es null la mayor parte del tiempo (suceso puntual, no tráfico constante)", () => {
+  const [evento] = crearEventosFondo(SEMILLA, { cantidad: 1 });
+  let activos = 0;
+  const muestras = 200;
+  for (let i = 0; i < muestras; i += 1) {
+    if (posicionEvento(evento, (evento.periodoMs / muestras) * i, 320, 320)) activos += 1;
+  }
+  assert.ok(activos > 0, "el evento llega a estar activo en su ventana");
+  assert.ok(activos < muestras, "el evento pasa la mayor parte del tiempo inactivo");
+});
+
+// t = envolver(tMs + offsetMs, periodoMs), así que el evento arranca (t=0)
+// exactamente en tMs = -offsetMs (mod periodoMs).
+function tInicioVentana(evento) {
+  return ((-evento.offsetMs % evento.periodoMs) + evento.periodoMs) % evento.periodoMs;
+}
+
+test("posicionEvento recorre el lienzo de un borde a otro durante su ventana activa", () => {
+  const [evento] = crearEventosFondo(SEMILLA, { cantidad: 1 });
+  const tInicio = tInicioVentana(evento);
+  const inicio = posicionEvento(evento, tInicio, 320, 320);
+  const fin = posicionEvento(evento, tInicio + evento.duracionMs - 1, 320, 320);
+  assert.ok(inicio, "activo justo al empezar su ventana");
+  assert.ok(fin, "activo justo antes de terminar su ventana");
+  assert.notEqual(Math.round(inicio.x), Math.round(fin.x), "avanza a lo largo del cruce");
+});
+
+test("dibujarEventosFondo solo pinta los eventos activos en tMs, con píxeles enteros", () => {
+  const eventos = crearEventosFondo(SEMILLA, { cantidad: 3 });
+  const rectangulos = [];
+  const ctx = {
+    fillStyle: "",
+    fillRect(x, y, ancho, alto) {
+      for (const valor of [x, y, ancho, alto]) assert.ok(Number.isInteger(valor));
+      rectangulos.push({ x, y, ancho, alto });
+    },
+  };
+  const [evento] = eventos;
+  dibujarEventosFondo(ctx, eventos, tInicioVentana(evento), 320, 320);
+  assert.ok(rectangulos.length > 0, "el evento activo en su ventana se pinta");
+});
+
+test("dibujarDecorado pinta los eventos de fondo cuando se pasan explícitamente", () => {
+  const eventos = crearEventosFondo(SEMILLA, { cantidad: 1 });
+  const [evento] = eventos;
+  let llamadas = 0;
+  const ctx = { fillStyle: "", fillRect() { llamadas += 1; } };
+  dibujarDecorado(ctx, [], { ancho: 320, alto: 320, tMs: tInicioVentana(evento), eventos });
+  assert.ok(llamadas > 0, "el evento activo en su ventana se pinta");
 });

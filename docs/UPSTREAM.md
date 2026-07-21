@@ -58,6 +58,17 @@ Después:
 
 Si `main` no tiene cambios propios desde la última sincronización, el merge puede ser fast-forward; aun así debe revisarse mediante una rama/PR una vez concluido el bootstrap.
 
+### Checklist de relectura obligatoria
+
+Además de resolver conflictos, cada sync `upstream/AAAA-MM-DD` debe releer estos puntos
+sensibles aunque el merge no los toque, para confirmar que el modelo de amenaza documentado
+sigue vigente tras los cambios que upstream haya hecho en esa área:
+
+- `src/httpScriptAccess.*` — expone `/exec.lua` (ejecución de Lua arbitrario por red) y los
+  stubs `/get.lua`/`/set.lua`. No requiere cambiarse solo por antigüedad; confirma que la
+  mitigación (httpserver apagado por defecto + gate de CI `guardia-exec-lua`) sigue cubriendo
+  el comportamiento real tras el merge. Ver CLAUDE.md y `docs/SECURITY.md` (issue #272).
+
 ## Reglas
 
 - No hagas `push --force` sobre `main` ni ramas compartidas.

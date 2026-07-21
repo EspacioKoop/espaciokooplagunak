@@ -173,6 +173,18 @@ Diseño inicial: [`docs/FOUNDRY.md`](docs/FOUNDRY.md).
 - [ ] Publicar notas de versión que separen cambios propios y de upstream.
 - [ ] Establecer una cadencia segura de sincronización con EmptyEpsilon.
 
+### Hipótesis en estudio — un juego standalone más allá de EmptyEpsilon y Foundry
+
+`docs/ATLAS_SPELLJAMMER.md` (issue #213) plantea, como investigación previa a
+decidir —**explícitamente no es un ADR ni una decisión adoptada**—, que un
+futuro juego standalone de Espaciokoop Lagunak podría mantener su propio
+modelo autoritativo de campaña y no depender de EmptyEpsilon ni de Foundry VTT
+como requisitos permanentes. Hoy ninguno de los dos deja de ser requisito:
+EmptyEpsilon sigue siendo el motor de simulación (ADR-0007 fija minimizar la
+divergencia con upstream) y Foundry sigue siendo la superficie narrativa
+prevista (ADR-0002). Esta sección se actualizará en cuanto Varo y Eloy cierren
+esa decisión en el issue.
+
 ## Estructura del repositorio
 
 | Ruta | Procedencia / propósito |

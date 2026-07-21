@@ -113,7 +113,7 @@ export function prepararVistaManiobra({ conexion, ship, pendiente = false, i18n 
   const puede = conexion === "ok" && !pendiente;
   const escudos = ship?.shields_active;
   const etiquetaRumbo = (deg) =>
-    i18n?.localize?.(`LAGUNAK.Maniobra.Rumbo.${deg}`) ?? `${deg}°`;
+    i18n?.localize?.(`LAGUNAK.Maniobra.Brujula.${deg}`) ?? `${deg}°`;
 
   return {
     disponible: Boolean(ship),

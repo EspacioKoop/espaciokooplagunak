@@ -1,0 +1,85 @@
+import { resolveStationOrder } from "./station-actions.mjs";
+
+// Clave de flag donde el tripulante deja su orden pendiente EN SU PROPIO
+// documento User. La identidad del emisor NO viaja como campo declarable: es la
+// del documento que Foundry autoriza a escribir (server-side, un usuario solo
+// puede modificar su propio User; el mismo principio que canAssignStation). El
+// GM la lee del hook updateUser, así que un cliente no puede hacerse pasar por
+// otro puesto: tendría que escribir el documento de otra persona, y el servidor
+// de Foundry lo rechaza.
+export const STATION_ORDER_FLAG = "pendingOrder";
+
+// --- Lado tripulante ---------------------------------------------------------
+
+// Construye el registro de orden a guardar como flag propio. Incluye un `nonce`
+// para que Foundry dispare `updateUser` aunque se repita la misma acción/params
+// (dos órdenes idénticas seguidas deben llegar como dos cambios distintos). El
+// puesto NUNCA se declara aquí: lo resuelve el GM por la identidad autenticada.
+export function buildStationOrder({ action, params = {}, nonce }) {
+  if (!action) throw new TypeError("buildStationOrder requiere action");
+  if (!nonce) throw new TypeError("buildStationOrder requiere nonce");
+  return { action, params, nonce };
+}
+
+// Extrae la orden pendiente del objeto de cambios de un `updateUser`. Foundry
+// dispara ese hook por cualquier cambio del User, así que devuelve null cuando
+// el cambio no tocó nuestro flag. Puro: recibe los cambios y el moduleId.
+export function extractOrderFromChange({ changes, moduleId }) {
+  const order = changes?.flags?.[moduleId]?.[STATION_ORDER_FLAG];
+  if (!order || typeof order !== "object") return null;
+  if (!order.action || !order.nonce) return null;
+  return { action: order.action, params: order.params ?? {}, nonce: order.nonce };
+}
+
+// --- Lado GM -----------------------------------------------------------------
+
+// Procesa una orden autenticada. Solo debe invocarse en el cliente GM (único con
+// token del puente); el registro comprueba `isGM`/GM primario antes de llamar.
+//
+// `userId` es la identidad NO FALSIFICABLE del emisor: procede del documento User
+// que Foundry autorizó a escribir, no de un campo dentro de la orden. Cualquier
+// `userId`/`station` que apareciera embebido en `order` se ignora por diseño.
+//
+// Deps inyectadas para poder probar sin Foundry:
+// - `resolveUserStation(userId)`: puesto asignado del emisor (su flag), o null.
+// - `bridge`: instancia BridgeClient (o equivalente con los métodos de orden).
+export async function handleStationOrder({ userId, order, resolveUserStation, bridge }) {
+  if (!userId) throw new TypeError("orden sin emisor autenticado");
+  const { action, params } = order ?? {};
+  // El puesto se resuelve SIEMPRE por la identidad autenticada del emisor,
+  // ignorando cualquier userId/station que viniera dentro de la orden.
+  const station = resolveUserStation(userId);
+  const { method, args } = resolveStationOrder({ station, action, params });
+  if (typeof bridge?.[method] !== "function") {
+    throw new TypeError(`el puente no expone ${method}`);
+  }
+  return bridge[method](...args);
+}
+
+// Adapta un `updateUser` a una orden despachada. Es la lógica pura del cableado:
+// filtra cambios ajenos a nuestro flag, aplica el criterio de GM primario y usa
+// la identidad autenticada del documento. Devuelve una promesa con el resultado
+// del puente, o null si el cambio no era una orden (o no toca ejecutarla aquí).
+//
+// - `userDoc`: documento User que cambió (su `id` es la identidad autenticada).
+// - `changes`: objeto de cambios que entrega Foundry al hook.
+// - `canHandle()`: solo el GM primario ejecuta, para no duplicar la orden.
+export function dispatchUserUpdate({
+  userDoc,
+  changes,
+  moduleId,
+  resolveUserStation,
+  bridge,
+  canHandle = () => true,
+  onResult = () => {},
+  onError = () => {},
+}) {
+  const order = extractOrderFromChange({ changes, moduleId });
+  if (!order) return null;
+  if (!canHandle()) return null;
+  const userId = userDoc?.id;
+  return Promise.resolve()
+    .then(() => handleStationOrder({ userId, order, resolveUserStation, bridge }))
+    .then((result) => { onResult(result, { userId, order }); return result; })
+    .catch((error) => { onError(error, { userId, order }); return null; });
+}

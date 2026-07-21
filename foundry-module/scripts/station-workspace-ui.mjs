@@ -143,7 +143,7 @@ function stationFromEvent(event) {
 // Formularios de orden de puesto: cada acción de UI declara de qué input lee,
 // cómo valida el valor del cliente (el puente revalida rangos igualmente) y bajo
 // qué parámetro lo emite. La validación aquí es solo cortesía de UX.
-const ORDER_FORMS = Object.freeze({
+export const ORDER_FORMS = Object.freeze({
   "orden-rumbo": {
     inputId: "lagunak-orden-rumbo",
     action: "set_target_heading",
@@ -167,14 +167,35 @@ const ORDER_FORMS = Object.freeze({
   },
 });
 
+// Convierte el texto crudo del input en número, rechazando ausencia y vacío
+// ANTES de convertir: Number("") === 0 colaría una orden a cero como válida
+// (rumbo 0, impulso 0, warp 0). Devuelve null si no hay dato utilizable.
+export function parseOrderValue(raw) {
+  if (raw === null || raw === undefined) return null;
+  const text = String(raw).trim();
+  if (text === "") return null;
+  const value = Number(text);
+  return Number.isNaN(value) ? null : value;
+}
+
+// Evalúa el texto de un input contra el spec de su formulario. Puro y testeable
+// sin DOM: separa "no hay dato / no convierte" de "fuera de rango". Devuelve
+// { ok:false } si debe rechazarse, o { ok:true, value } si puede emitirse.
+export function evaluateOrder(raw, spec) {
+  const value = parseOrderValue(raw);
+  if (value === null || !spec.valid(value)) return { ok: false };
+  return { ok: true, value };
+}
+
 function submitStationOrder(app, spec) {
   const root = app.element?.[0] ?? app.element;
-  const value = Number(root?.querySelector?.(`#${spec.inputId}`)?.value);
-  if (!spec.valid(value)) {
+  const raw = root?.querySelector?.(`#${spec.inputId}`)?.value;
+  const result = evaluateOrder(raw, spec);
+  if (!result.ok) {
     ui.notifications?.warn?.(game.i18n.localize(spec.invalidKey));
     return;
   }
-  emitWorkspaceOrder({ action: spec.action, params: { [spec.param]: value } });
+  emitWorkspaceOrder({ action: spec.action, params: { [spec.param]: result.value } });
   ui.notifications?.info?.(game.i18n.localize("LAGUNAK.Espacios.Orden.Enviada"));
 }
 

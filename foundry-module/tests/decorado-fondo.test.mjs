@@ -8,7 +8,7 @@ import {
   dibujarDecorado,
 } from "../scripts/decorado-fondo.mjs";
 
-const SEMILLA = 0x4c4147; // misma que MAPA_SEMILLA en main.mjs
+const SEMILLA = 0x4c4147; // misma que MAPA_SEMILLA_DEFECTO en lagunak-constantes.mjs
 
 test("crearDecorado devuelve las tres capas ordenadas de lejana a cercana", () => {
   const capas = crearDecorado(SEMILLA);

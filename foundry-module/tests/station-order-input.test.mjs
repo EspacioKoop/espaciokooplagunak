@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { ORDER_FORMS, parseOrderValue } from "../scripts/station-workspace-ui.mjs";
+import { ORDER_FORMS, parseOrderValue } from "../scripts/station-order-forms.mjs";
 
 // Regresión del input vacío: Number("") === 0 hacía que un envío sin dato pasara
 // como orden válida a cero (rumbo/impulso/warp/nivel). parseOrderValue comprueba

@@ -57,7 +57,8 @@ cada llamada de red:
 - **Reposición** — recolocar la nave junto a un ancla de un catálogo cerrado que
   el puente publica en `/v1/anchors`; el escenario es dueño de la coordenada
   exacta (integrado; #176/#202).
-- **Ingeniería** — repartir energía por sistema (`set_system_power`) y leer
+- **Ingeniería** — repartir energía (`set_system_power`) y refrigerante
+  (`set_system_coolant`, rango 0..10) por sistema, y leer
   `health`/`heat`/`power`/`coolant` y `repair_crew` de `/v1/state`. No sustituye
   la reparación de la tripulación en EmptyEpsilon; la observa (integrado en
   PR #217, issue #216).
@@ -297,5 +298,7 @@ Estas decisiones se resolverán mediante issues antes de fijar una API estable.
   el encuentro, publica además `encounter_started` en `/v1/events` con un ID
   estable de sesión y secuencia monotónica; la escritura deduplicada en Journal
   sigue pendiente de la rebanada de módulo de #117.
-- Órdenes de refrigeración/energía por puesto de jugador quedan para cuando
-  existan permisos por puesto (fase 3 tardía / fase 4).
+- El contrato del puente ya autoriza energía (`set_system_power`) y refrigerante
+  (`set_system_coolant`) por sistema; su encaminamiento a un **puesto** concreto
+  de jugador depende de la matriz de autoridad por puesto (relé de órdenes
+  tripulante→GM→puente, #236 y siguientes).

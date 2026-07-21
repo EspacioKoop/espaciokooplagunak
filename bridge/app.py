@@ -506,6 +506,33 @@ class SetSystemPower(BaseModel):
         )
 
 
+class SetSystemCoolant(BaseModel):
+    """Reparto de refrigerante por sistema: la otra mitad de la gestión de
+    ingeniería junto a `set_system_power`.
+
+    El juego expone el refrigerante por sistema en `/v1/state` pero hasta ahora
+    no había orden para asignarlo. Rango 0.0..10.0, el de EmptyEpsilon
+    (`max_coolant_per_system` en `components/coolant.h`); el juego además lo
+    recorta server-side a `min(max_coolant_per_system, coolant->max)`, así que
+    esta cota es la envolvente segura del contrato, no la autoridad final.
+    """
+
+    op: Literal["set_system_coolant"]
+    system: SystemName
+    level: Annotated[float, Field(ge=0.0, le=10.0)]
+
+    def lua(self) -> str:
+        # Llamada de función global, no de método: /exec.lua corre en un
+        # sub-entorno propio (ver httpScriptAccess.cpp) donde las extensiones
+        # de metatabla de Entity (scripts/api/entity/playerspaceship.lua,
+        # cargadas solo por el escenario vía require) no están disponibles;
+        # src/script.cpp solo registra este símbolo como global vía
+        # env.setGlobal, nunca como método EFT.
+        return _command_lua(
+            f'commandSetSystemCoolantRequest(ship, "{self.system.value}", {self.level:.3f})'
+        )
+
+
 class SetSystemHealth(BaseModel):
     """Avería (o reparación) directa de un sistema: palanca narrativa del GM.
 
@@ -660,6 +687,7 @@ Command = Annotated[
         SetTargetHeading,
         SetShields,
         SetSystemPower,
+        SetSystemCoolant,
         SetSystemHealth,
         SpawnEncounter,
         RepositionShip,

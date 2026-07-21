@@ -72,18 +72,34 @@ import {
   reconciliarIndiceContacto,
   rotarMuestras,
 } from "./ventana-nave.mjs";
-import { crearCacheDecorado, crearDecorado, componerDecorado } from "./decorado-fondo.mjs";
+import {
+  crearCacheDecorado,
+  crearDecorado,
+  crearEventosFondo,
+  componerDecorado,
+} from "./decorado-fondo.mjs";
 
 const MODULE_ID = "espaciokoop-lagunak";
 const POLL_MIN_S = 1;
 const POLL_MAX_S = 30;
 const BACKOFF_MAX_MS = 60000;
 // Mapa vivo: mismo radio que el Lua fijo de /v1/contacts en el puente, fps del
-// pintor y semilla fija del campo de estrellas y del decorado de fondo
-// ("LAG" — mismo cielo y mismo decorado siempre).
+// pintor y semilla por defecto del campo de estrellas y del decorado de fondo
+// ("LAG" — mismo cielo y mismo decorado siempre, salvo que el GM la cambie).
 const MAPA_RADIO_MUNDO = 30000;
 const MAPA_FPS = 60;
-const MAPA_SEMILLA = 0x4c4147;
+const MAPA_SEMILLA_DEFECTO = 0x4c4147;
+
+/**
+ * Semilla vigente del decorado (issue #215, mejora pedida en review): ajuste
+ * de mundo (`scope: "world"`) para que el GM y todos los jugadores vean el
+ * mismo cielo/decorado. Con `game.settings` aún sin registrar (tests fuera de
+ * Foundry) cae al valor por defecto.
+ */
+function semillaDecoradoActual() {
+  const valor = Number(game.settings?.get?.(MODULE_ID, "decoradoSemilla"));
+  return Number.isFinite(valor) ? valor : MAPA_SEMILLA_DEFECTO;
+}
 // Nonce de alertas por sesión del navegador (como el id de llegada del
 // escenario): mantiene únicos los eventId de alerta entre sesiones y deja que un
 // umbral se anote una sola vez por sesión aunque oscile.
@@ -165,6 +181,20 @@ Hooks.once("init", () => {
     type: Number,
     range: { min: POLL_MIN_S, max: POLL_MAX_S, step: 1 },
     default: 2,
+  });
+
+  // Semilla del decorado de fondo del mapa vivo (issue #215, mejora pedida en
+  // review): ajuste de MUNDO para que todos vean el mismo cielo. El GM puede
+  // escribir un valor concreto aquí, o usar el botón "nuevo decorado
+  // aleatorio" de los controles de escena (regenerarDecoradoAleatorio), que
+  // guarda un valor al azar en este mismo ajuste.
+  game.settings.register(MODULE_ID, "decoradoSemilla", {
+    name: "LAGUNAK.Ajustes.DecoradoSemilla.Nombre",
+    hint: "LAGUNAK.Ajustes.DecoradoSemilla.Pista",
+    scope: "world",
+    config: true,
+    type: Number,
+    default: MAPA_SEMILLA_DEFECTO,
   });
 });
 
@@ -256,6 +286,13 @@ Hooks.on("getSceneControlButtons", (controls) => {
           button: true,
           onClick: () => diagnosticarConexion(),
         },
+        {
+          name: "lagunak-decorado-aleatorio",
+          title: "LAGUNAK.Controles.DecoradoAleatorio",
+          icon: "fa-solid fa-dice",
+          button: true,
+          onClick: () => regenerarDecoradoAleatorio(),
+        },
       ]
     : [];
 
@@ -320,6 +357,21 @@ async function diagnosticarConexion() {
   } finally {
     diagnosticoEnCurso = false;
   }
+}
+
+/* Nuevo decorado aleatorio (issue #215, mejora pedida en review): el GM puede
+ * cambiar el cielo/decorado del mapa vivo a uno nuevo con un clic, en vez de
+ * teclear una semilla a mano en los ajustes del módulo. Se guarda como ajuste
+ * de MUNDO para que quede igual para todos y sobreviva a recargas; si el mapa
+ * está abierto, se reconstruye en el sitio sin tener que cerrarlo y reabrirlo. */
+async function regenerarDecoradoAleatorio() {
+  if (!game.user?.isGM) return;
+  const nuevaSemilla = Math.floor(Math.random() * 0x100000000); // 32 bits, mismo rango que rngSemilla
+  await game.settings.set(MODULE_ID, "decoradoSemilla", nuevaSemilla);
+  mapaApp?.regenerarDecorado?.(nuevaSemilla);
+  ui.notifications.info(
+    game.i18n.format("LAGUNAK.Notificaciones.DecoradoRegenerado", { semilla: nuevaSemilla }),
+  );
 }
 
 /* La pausa de Foundry (game.paused) se muestra como dato informativo en la
@@ -1369,9 +1421,20 @@ function crearClaseMapaV2() {
     #rafId = null;
     #ultimoDibujoMs = null;
     #ultimoFrame = null; // último frame pintado, para el hit-test de clic (issue #259)
-    #campo = crearCampoEstrellas(MAPA_SEMILLA);
-    #decorado = crearDecorado(MAPA_SEMILLA);
+    #campo = crearCampoEstrellas(semillaDecoradoActual());
+    #decorado = crearDecorado(semillaDecoradoActual());
+    #eventosFondo = crearEventosFondo(semillaDecoradoActual());
     #cacheDecorado = crearCacheDecorado();
+
+    /** Nuevo decorado con `semilla` (issue #215): regenera cielo, decorado y
+     * eventos de fondo in situ y limpia la caché de sprites para que el
+     * próximo frame rasterice con el nuevo aspecto. */
+    regenerarDecorado(semilla) {
+      this.#campo = crearCampoEstrellas(semilla);
+      this.#decorado = crearDecorado(semilla);
+      this.#eventosFondo = crearEventosFondo(semilla);
+      this.#cacheDecorado.limpiar();
+    }
     #muestraPrev = null;
     #muestraActual = null;
     contactos = [];
@@ -1550,6 +1613,7 @@ function crearClaseMapaV2() {
         alto: canvas.height,
         decorado,
         cacheDecorado: this.#cacheDecorado,
+        eventosFondo: this.#eventosFondo,
         moviendo,
         tMs: ahora,
       });
@@ -1682,9 +1746,20 @@ function crearClaseMapaV1() {
     #rafId = null;
     #ultimoDibujoMs = null;
     #ultimoFrame = null; // último frame pintado, para el hit-test de clic (issue #259)
-    #campo = crearCampoEstrellas(MAPA_SEMILLA);
-    #decorado = crearDecorado(MAPA_SEMILLA);
+    #campo = crearCampoEstrellas(semillaDecoradoActual());
+    #decorado = crearDecorado(semillaDecoradoActual());
+    #eventosFondo = crearEventosFondo(semillaDecoradoActual());
     #cacheDecorado = crearCacheDecorado();
+
+    /** Nuevo decorado con `semilla` (issue #215): regenera cielo, decorado y
+     * eventos de fondo in situ y limpia la caché de sprites para que el
+     * próximo frame rasterice con el nuevo aspecto. */
+    regenerarDecorado(semilla) {
+      this.#campo = crearCampoEstrellas(semilla);
+      this.#decorado = crearDecorado(semilla);
+      this.#eventosFondo = crearEventosFondo(semilla);
+      this.#cacheDecorado.limpiar();
+    }
     #muestraPrev = null;
     #muestraActual = null;
     contactos = [];
@@ -1865,6 +1940,7 @@ function crearClaseMapaV1() {
         alto: canvas.height,
         decorado,
         cacheDecorado: this.#cacheDecorado,
+        eventosFondo: this.#eventosFondo,
         moviendo,
         tMs: ahora,
       });

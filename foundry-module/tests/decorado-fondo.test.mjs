@@ -8,7 +8,10 @@ import {
   componerDecorado,
   crearCacheDecorado,
   crearDecorado,
+  crearEventosFondo,
   dibujarDecorado,
+  dibujarEventosFondo,
+  posicionEvento,
 } from "../scripts/decorado-fondo.mjs";
 
 const SEMILLA = 0x4c4147; // misma que MAPA_SEMILLA en main.mjs
@@ -379,4 +382,109 @@ test("si no puede crear canvas auxiliar conserva el pintor directo", () => {
   dibujarDecorado(ctx, componerDecorado(decorado), { cache });
   assert.ok(rectangulos > 0, "el fallback conserva los píxeles del planeta");
   assert.equal(imagenes, 0);
+});
+
+// Mejora pedida en review de #215: las nebulosas dejan de ser círculos
+// perfectos (contorno modulado por armónicos deterministas).
+test("las nebulosas no son círculos perfectos: el contorno varía con el ángulo", () => {
+  const capas = crearDecorado(SEMILLA, { nebulosas: 1, nebulosasLejanas: 1, planetas: 0, asteroides: 0 });
+  for (const capa of capas) {
+    for (const el of capa.elementos) {
+      assert.ok(Array.isArray(el.formaArmonicos) && el.formaArmonicos.length === 3);
+      // Si algún armónico tuviera amplitud 0 el contorno sería circular; con la
+      // fórmula actual (0.1 + ruido*0.16) la amplitud nunca es cero.
+      for (const { amp } of el.formaArmonicos) assert.ok(amp > 0);
+    }
+  }
+});
+
+test("el contorno no circular pinta píxeles más allá del radio base en algunas direcciones", () => {
+  const rectangulos = [];
+  const ctx = {
+    fillStyle: "",
+    fillRect(x, y, ancho, alto) { rectangulos.push({ x, y, ancho, alto }); },
+    arc() { assert.fail("sin arc()"); },
+  };
+  const nebulosa = {
+    x: 160, y: 160, r: 40, color: "#5a2a6a", color2: "#2a4a6a", alpha: 0.1, semilla: 7,
+  };
+  dibujarDecorado(ctx, [{ tipo: "nebulosa", dx: 0, dy: 0, elementos: [nebulosa] }], { ancho: 320, alto: 320 });
+  const maxDistancia = Math.max(...rectangulos.map((r) => Math.hypot(r.x - 160, r.y - 160)));
+  assert.ok(maxDistancia > 40, "algún píxel cae fuera del radio base gracias al abombado");
+});
+
+test("el abombado de una nebulosa no se recorta al cruzar un borde (sin costura)", () => {
+  const rectangulos = [];
+  const ctx = {
+    fillStyle: "",
+    fillRect(x, y, ancho, alto) { rectangulos.push({ x, y, ancho, alto }); },
+  };
+  // Nebulosa pegada al borde izquierdo: su lóbulo más ancho puede sobresalir
+  // más de r si no se usa la huella real (amplitudMaxima) en el culling.
+  const nebulosa = { x: 5, y: 50, r: 20, color: "#5a2a6a", color2: "#2a4a6a", alpha: 0.1, semilla: 3 };
+  dibujarDecorado(ctx, [{ tipo: "nebulosa", dx: 0, dy: 0, elementos: [nebulosa] }], { ancho: 100, alto: 100 });
+  assert.ok(
+    rectangulos.some((r) => r.x >= 95 && r.x <= 99),
+    "la copia envuelta pinta en el borde derecho cuando el abombado cruza",
+  );
+});
+
+// Eventos de fondo (issue #215, mejora pedida en review): naves lejanas,
+// cometas y estrellas fugaces que cruzan el mapa de vez en cuando.
+test("crearEventosFondo es determinista y produce la cantidad pedida", () => {
+  const eventos = crearEventosFondo(SEMILLA, { cantidad: 3 });
+  assert.equal(eventos.length, 3);
+  assert.deepEqual(eventos, crearEventosFondo(SEMILLA, { cantidad: 3 }));
+  assert.notDeepEqual(eventos, crearEventosFondo(SEMILLA + 1, { cantidad: 3 }));
+});
+
+test("posicionEvento es null la mayor parte del tiempo (suceso puntual, no tráfico constante)", () => {
+  const [evento] = crearEventosFondo(SEMILLA, { cantidad: 1 });
+  let activos = 0;
+  const muestras = 200;
+  for (let i = 0; i < muestras; i += 1) {
+    if (posicionEvento(evento, (evento.periodoMs / muestras) * i, 320, 320)) activos += 1;
+  }
+  assert.ok(activos > 0, "el evento llega a estar activo en su ventana");
+  assert.ok(activos < muestras, "el evento pasa la mayor parte del tiempo inactivo");
+});
+
+// t = envolver(tMs + offsetMs, periodoMs), así que el evento arranca (t=0)
+// exactamente en tMs = -offsetMs (mod periodoMs).
+function tInicioVentana(evento) {
+  return ((-evento.offsetMs % evento.periodoMs) + evento.periodoMs) % evento.periodoMs;
+}
+
+test("posicionEvento recorre el lienzo de un borde a otro durante su ventana activa", () => {
+  const [evento] = crearEventosFondo(SEMILLA, { cantidad: 1 });
+  const tInicio = tInicioVentana(evento);
+  const inicio = posicionEvento(evento, tInicio, 320, 320);
+  const fin = posicionEvento(evento, tInicio + evento.duracionMs - 1, 320, 320);
+  assert.ok(inicio, "activo justo al empezar su ventana");
+  assert.ok(fin, "activo justo antes de terminar su ventana");
+  assert.notEqual(Math.round(inicio.x), Math.round(fin.x), "avanza a lo largo del cruce");
+});
+
+test("dibujarEventosFondo solo pinta los eventos activos en tMs, con píxeles enteros", () => {
+  const eventos = crearEventosFondo(SEMILLA, { cantidad: 3 });
+  const rectangulos = [];
+  const ctx = {
+    fillStyle: "",
+    fillRect(x, y, ancho, alto) {
+      for (const valor of [x, y, ancho, alto]) assert.ok(Number.isInteger(valor));
+      rectangulos.push({ x, y, ancho, alto });
+    },
+  };
+  const [evento] = eventos;
+  dibujarEventosFondo(ctx, eventos, tInicioVentana(evento), 320, 320);
+  assert.ok(rectangulos.length > 0, "el evento activo en su ventana se pinta");
+});
+
+test("dibujarDecorado pinta los eventos de fondo cuando se pasan explícitamente", () => {
+  const eventos = crearEventosFondo(SEMILLA, { cantidad: 1 });
+  const [evento] = eventos;
+  let llamadas = 0;
+  const ctx = { fillStyle: "", fillRect() { llamadas += 1; } };
+  dibujarDecorado(ctx, [], { ancho: 320, alto: 320, tMs: tInicioVentana(evento), eventos });
+  assert.ok(llamadas > 0, "el evento activo en su ventana se pinta");
 });

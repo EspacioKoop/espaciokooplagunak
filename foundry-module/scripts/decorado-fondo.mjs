@@ -74,6 +74,7 @@ export function crearDecorado(
   const elemNebulosasLejanas = [];
   for (let i = 0; i < nebulosasLejanas; i += 1) {
     const paleta = elige(PALETA_NEBULOSA_LEJANA);
+    const semilla = Math.floor(rng() * 1e6);
     elemNebulosasLejanas.push({
       x: rng() * ancho,
       y: rng() * alto,
@@ -81,12 +82,16 @@ export function crearDecorado(
       anilloColor: paleta.anillo,
       nucleoColor: paleta.nucleo,
       alpha: 0.16 + rng() * 0.1,
-      semilla: Math.floor(rng() * 1e6),
+      semilla,
+      // Contorno no circular (issue #215): precomputado aquí para que el
+      // culling/caché usen la misma huella que el pintor sin recalcularla.
+      formaArmonicos: armonicosNebulosa(semilla),
     });
   }
 
   const elemNebulosas = [];
   for (let i = 0; i < nebulosas; i += 1) {
+    const semilla = Math.floor(rng() * 1e6);
     elemNebulosas.push({
       x: rng() * ancho,
       y: rng() * alto,
@@ -94,7 +99,8 @@ export function crearDecorado(
       color: elige(PALETA_DECORADO.nebulosas),
       color2: elige(PALETA_DECORADO.nebulosas), // segundo tono para veteado
       alpha: 0.06 + rng() * 0.07,
-      semilla: Math.floor(rng() * 1e6),
+      semilla,
+      formaArmonicos: armonicosNebulosa(semilla),
     });
   }
 
@@ -267,13 +273,41 @@ function ruidoCelda(ix, iy, semilla) {
   return ((n ^ (n >>> 16)) >>> 0) / 4294967296;
 }
 
+// Contorno de nebulosa (issue #215, mejora de la review): en vez de un círculo
+// perfecto, el radio se modula por ángulo con 3 armónicos deterministas (fase y
+// amplitud propias de la semilla) que se suman en una curva suave — un blob
+// orgánico sin aristas ni rectas, no un polígono. `amplitudMaxima` es la suma de
+// las amplitudes: cota superior del abombado, usada para el culling y la caché
+// de sprites (si no se agranda la huella, el lóbulo más ancho se recortaría en
+// el borde del lienzo, la misma costura que ya corrigió #260).
+function armonicosNebulosa(semilla) {
+  return [1, 2, 3].map((k) => ({
+    k,
+    amp: 0.1 + ruidoCelda(k, 0, semilla) * 0.16,
+    fase: ruidoCelda(0, k, semilla) * Math.PI * 2,
+  }));
+}
+
+function amplitudMaximaNebulosa(armonicos) {
+  return armonicos.reduce((acc, a) => acc + a.amp, 0);
+}
+
+function factorFormaNebulosa(armonicos, angulo) {
+  let factor = 1;
+  for (const { k, amp, fase } of armonicos) factor += amp * Math.cos(k * angulo + fase);
+  return factor;
+}
+
 function pintarNebulosa(ctx, el, x, y) {
   const paso = 4; // celdas más finas → nube más detallada
   const radio = Math.max(1, Math.round(el.r));
   const semilla = el.semilla ?? Math.round(el.x * 17 + el.y * 31);
-  for (let dy = -radio; dy <= radio; dy += paso) {
-    for (let dx = -radio; dx <= radio; dx += paso) {
-      const distancia = Math.hypot(dx, dy) / radio;
+  const armonicos = el.formaArmonicos ?? armonicosNebulosa(semilla);
+  const radioMax = radio * (1 + amplitudMaximaNebulosa(armonicos));
+  for (let dy = -radioMax; dy <= radioMax; dy += paso) {
+    for (let dx = -radioMax; dx <= radioMax; dx += paso) {
+      const radioEfectivo = radio * factorFormaNebulosa(armonicos, Math.atan2(dy, dx));
+      const distancia = Math.hypot(dx, dy) / radioEfectivo;
       if (distancia >= 1) continue;
       const densidad = (1 - distancia) * 0.62;
       const ruido = ruidoCelda(dx / paso, dy / paso, semilla);
@@ -289,13 +323,18 @@ function pintarNebulosa(ctx, el, x, y) {
 // Nebulosa «fantasía» de capa lejana (Ojo de Dios/Hélix): un anillo vibrante y
 // un núcleo que contrasta, con textura de ruido y grano grueso (paso 3) para el
 // look pixelado. Muy al fondo del parallax, así que puede permitirse color.
+// Comparte el mismo contorno no circular que `pintarNebulosa` (armónicos
+// propios, distinta semilla → distinto blob).
 function pintarNebulosaLejana(ctx, el, x, y) {
   const paso = 3;
   const radio = Math.max(2, Math.round(el.r));
   const semilla = el.semilla ?? 1;
-  for (let dy = -radio; dy <= radio; dy += paso) {
-    for (let dx = -radio; dx <= radio; dx += paso) {
-      const d = Math.hypot(dx, dy) / radio;
+  const armonicos = el.formaArmonicos ?? armonicosNebulosa(semilla);
+  const radioMax = radio * (1 + amplitudMaximaNebulosa(armonicos));
+  for (let dy = -radioMax; dy <= radioMax; dy += paso) {
+    for (let dx = -radioMax; dx <= radioMax; dx += paso) {
+      const radioEfectivo = radio * factorFormaNebulosa(armonicos, Math.atan2(dy, dx));
+      const d = Math.hypot(dx, dy) / radioEfectivo;
       if (d > 1) continue;
       const anillo = Math.exp(-(((d - 0.55) / 0.16) ** 2)); // gaussiana en d≈0.55
       const nucleo = Math.max(0, 1 - d / 0.32); // brillo central
@@ -378,10 +417,16 @@ function pintarPlaneta(ctx, el, x, y, tMs = 0) {
 // Huella exterior de un elemento grande para el culling de la rejilla 3×3. Un
 // planeta con anillo se extiende hasta `1.9*r` (más la segunda banda), muy por
 // encima de `el.r`: descartar por `el.r` cortaría el anillo al cruzar un borde
-// (costura). El anillo solo lo pinta el planeta; nebulosas usan su propio radio.
+// (costura). Las nebulosas (contorno no circular, issue #215) se abomban hasta
+// `r*(1+amplitudMáxima)`: sin ampliar la huella, el lóbulo más ancho se
+// recortaría al cruzar un borde, la misma costura que ya corrigió #260.
 function huellaGrande(tipo, el) {
   if (tipo !== "nebulosa" && tipo !== "nebulosa_lejana" && el.anillo) {
     return el.r * 1.9 + 2;
+  }
+  if (tipo === "nebulosa" || tipo === "nebulosa_lejana") {
+    const armonicos = el.formaArmonicos ?? armonicosNebulosa(el.semilla ?? 1);
+    return el.r * (1 + amplitudMaximaNebulosa(armonicos));
   }
   return el.r;
 }
@@ -558,11 +603,16 @@ function pintarGrandeCacheado(ctx, cache, tipo, el, x, y, ancho, alto, tMs, pres
  * Con `cache`, nebulosas y planetas se rasterizan fuera de pantalla y cada
  * frame solo recompone sprites. Si el host no permite crear el lienzo auxiliar,
  * cae automáticamente al pintor directo anterior.
+ *
+ * `eventos` (issue #215, mejora de la review) añade sucesos puntuales y sutiles
+ * — naves lejanas, cometas, estrellas fugaces — que cruzan el fondo; se pintan
+ * tras el decorado estático, con el mismo contrato (nunca sobre contactos/ruta/
+ * nave, que se pintan después en `dibujarFrame`).
  */
 export function dibujarDecorado(
   ctx,
   decoradoFrame = [],
-  { ancho = 320, alto = 320, tMs = 0, cache = null } = {},
+  { ancho = 320, alto = 320, tMs = 0, cache = null, eventos = [] } = {},
 ) {
   const presupuesto = { actualizacionesPlaneta: 0 };
   for (const capa of decoradoFrame) {
@@ -577,5 +627,128 @@ export function dibujarDecorado(
         pintarGrande(ctx, capa.tipo, el, x, y, ancho, alto, tMs);
       }
     }
+  }
+  if (eventos.length) dibujarEventosFondo(ctx, eventos, tMs, ancho, alto);
+}
+
+// Tipos de eventos estéticos de fondo (issue #215, mejora pedida en review):
+// sucesos puntuales que cruzan el lienzo de fondo sin tocar la simulación ni
+// competir con contactos/ruta/nave. Cada uno tiene su propio ritmo: la estrella
+// fugaz es breve y frecuente, la nave lejana es larga y rara, el cometa queda
+// entre ambas.
+const TIPOS_EVENTO = ["estrella_fugaz", "cometa", "nave_lejana"];
+const DURACION_EVENTO_MS = { estrella_fugaz: 600, cometa: 3200, nave_lejana: 9000 };
+const PERIODO_EVENTO_MS = { estrella_fugaz: 14000, cometa: 26000, nave_lejana: 45000 };
+
+/**
+ * Siembra los eventos de fondo de forma determinista (misma `seed` → mismos
+ * eventos). Cada evento cruza el lienzo en línea recta con una deriva vertical
+ * sutil; su posición es una función pura de `tMs` (ver `posicionEvento`), no
+ * hay estado mutable ni se reinicia con el movimiento de la nave: son sucesos
+ * de fondo lejanos, no atados a la posición del mundo.
+ *
+ * @returns {{tipo:string, sentido:number, y:number, pendiente:number,
+ *   margen:number, offsetMs:number, periodoMs:number, duracionMs:number,
+ *   semilla:number}[]}
+ */
+export function crearEventosFondo(seed, { cantidad = 3, ancho = 320, alto = 320 } = {}) {
+  const rng = rngSemilla(seed);
+  const eventos = [];
+  const margen = Math.max(ancho, alto) * 0.15;
+  for (let i = 0; i < cantidad; i += 1) {
+    const tipo = TIPOS_EVENTO[i % TIPOS_EVENTO.length];
+    eventos.push({
+      tipo,
+      sentido: rng() < 0.5 ? 1 : -1,
+      y: rng() * alto,
+      pendiente: (rng() - 0.5) * 0.5, // deriva vertical sutil durante el cruce
+      margen,
+      offsetMs: Math.floor(rng() * PERIODO_EVENTO_MS[tipo]),
+      periodoMs: PERIODO_EVENTO_MS[tipo],
+      duracionMs: DURACION_EVENTO_MS[tipo],
+      semilla: Math.floor(rng() * 1e6),
+    });
+  }
+  return eventos;
+}
+
+/**
+ * Posición de un evento en el instante `tMs`, o `null` si está fuera de su
+ * ventana activa (la mayor parte del tiempo, para que sea un suceso puntual y
+ * no un tráfico constante) o si la deriva vertical lo saca del lienzo. Pura:
+ * mismo (evento, tMs) → misma posición, sin depender de llamadas anteriores.
+ *
+ * @returns {{tipo:string, x:number, y:number, progreso:number, semilla:number,
+ *   sentido:number}|null}
+ */
+export function posicionEvento(evento, tMs, ancho = 320, alto = 320) {
+  const t = envolver((Math.max(0, tMs) || 0) + evento.offsetMs, evento.periodoMs);
+  if (t >= evento.duracionMs) return null;
+  const progreso = t / evento.duracionMs;
+  const recorrido = ancho + evento.margen * 2;
+  const xInicio = evento.sentido > 0 ? -evento.margen : ancho + evento.margen;
+  const x = xInicio + evento.sentido * recorrido * progreso;
+  const y = evento.y + (x - ancho / 2) * evento.pendiente;
+  if (y < -evento.margen || y > alto + evento.margen) return null;
+  return { tipo: evento.tipo, x, y, progreso, semilla: evento.semilla, sentido: evento.sentido };
+}
+
+// Racha breve y brillante que se desvanece hacia la cola, en la dirección del
+// movimiento — más viva a mitad de recorrido, apagándose en los extremos.
+function pintarEstrellaFugaz(ctx, ev) {
+  const x = Math.round(ev.x);
+  const y = Math.round(ev.y);
+  const longitud = 6;
+  const brilloPico = 1 - Math.abs(ev.progreso - 0.5) * 1.7;
+  if (brilloPico <= 0) return;
+  for (let i = 0; i < longitud; i += 1) {
+    const alpha = brilloPico * (1 - i / longitud);
+    if (alpha <= 0.03) continue;
+    ctx.fillStyle = rgba("#fffff0", alpha);
+    ctx.fillRect(x - ev.sentido * i, y, 1, 1);
+  }
+}
+
+// Cometa: núcleo brillante de 2×2 con cola difusa más larga y tenue.
+function pintarCometa(ctx, ev) {
+  const x = Math.round(ev.x);
+  const y = Math.round(ev.y);
+  const alphaNucleo = 0.6 * Math.min(1, Math.sin(Math.PI * ev.progreso) * 1.6 + 0.2);
+  if (alphaNucleo <= 0.03) return;
+  ctx.fillStyle = rgba("#d2f0ff", alphaNucleo);
+  ctx.fillRect(x, y, 2, 2);
+  const longitudCola = 10;
+  for (let i = 1; i <= longitudCola; i += 1) {
+    const alpha = alphaNucleo * (1 - i / longitudCola) * 0.6;
+    if (alpha <= 0.03) continue;
+    ctx.fillStyle = rgba("#8cbedc", alpha);
+    ctx.fillRect(Math.round(x - ev.sentido * i * 1.4), y, 1, 1);
+  }
+}
+
+// Nave lejana: silueta mínima de 2×1 con una luz de posición que parpadea
+// despacio, muy tenue para no confundirse con un contacto real.
+function pintarNaveLejana(ctx, ev) {
+  const x = Math.round(ev.x);
+  const y = Math.round(ev.y);
+  ctx.fillStyle = rgba("#b4becd", 0.45);
+  ctx.fillRect(x, y, 2, 1);
+  if (Math.floor(ev.progreso * 20) % 2 === 0) {
+    ctx.fillStyle = rgba("#ff8c8c", 0.75);
+    ctx.fillRect(x + ev.sentido, y, 1, 1);
+  }
+}
+
+function pintarEvento(ctx, ev) {
+  if (ev.tipo === "estrella_fugaz") pintarEstrellaFugaz(ctx, ev);
+  else if (ev.tipo === "cometa") pintarCometa(ctx, ev);
+  else pintarNaveLejana(ctx, ev);
+}
+
+/** Dibuja los eventos de fondo activos en `tMs`. Ver `dibujarDecorado`. */
+export function dibujarEventosFondo(ctx, eventos = [], tMs = 0, ancho = 320, alto = 320) {
+  for (const evento of eventos) {
+    const pos = posicionEvento(evento, tMs, ancho, alto);
+    if (pos) pintarEvento(ctx, pos);
   }
 }

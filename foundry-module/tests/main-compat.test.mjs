@@ -228,6 +228,7 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
     "lagunak-mapa",
     "lagunak-token",
     "lagunak-diagnostico",
+    "lagunak-decorado-aleatorio",
     "lagunak-puestos",
     "lagunak-espacio-puesto",
   ]);

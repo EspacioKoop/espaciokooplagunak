@@ -34,6 +34,7 @@ export function dibujarFrame(
     alto = 320,
     decorado = [],
     cacheDecorado = null,
+    eventosFondo = [],
     moviendo = false,
     tMs = 0,
   } = {},
@@ -47,7 +48,7 @@ export function dibujarFrame(
   // Decorado de fondo (issue #203): nebulosas/planetas/asteroides con parallax,
   // ya compuesto por el llamador, entre el fondo y las estrellas. En la pantalla
   // «en espera» el llamador pasa una lista vacía y aquí no se pinta nada.
-  dibujarDecorado(ctx, decorado, { ancho, alto, tMs, cache: cacheDecorado });
+  dibujarDecorado(ctx, decorado, { ancho, alto, tMs, cache: cacheDecorado, eventos: eventosFondo });
 
   // Estrellas por capa, teseladas: cada estrella se pinta desplazada por el
   // offset de su capa y envuelta al lienzo; las que quedan a caballo del borde

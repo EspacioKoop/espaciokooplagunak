@@ -1,42 +1,53 @@
 import { resolveStationOrder } from "./station-actions.mjs";
 
-// Nombre del mensaje de socket. El canal real (`module.<id>`) lo fija quien
-// registra el manejador; aquí solo viaja el tipo de evento y su carga.
-export const STATION_ORDER_EVENT = "stationOrder";
+// Clave de flag donde el tripulante deja su orden pendiente EN SU PROPIO
+// documento User. La identidad del emisor NO viaja como campo declarable: es la
+// del documento que Foundry autoriza a escribir (server-side, un usuario solo
+// puede modificar su propio User; el mismo principio que canAssignStation). El
+// GM la lee del hook updateUser, así que un cliente no puede hacerse pasar por
+// otro puesto: tendría que escribir el documento de otra persona, y el servidor
+// de Foundry lo rechaza.
+export const STATION_ORDER_FLAG = "pendingOrder";
 
 // --- Lado tripulante ---------------------------------------------------------
 
-// Emite una orden de puesto por el socket. El cliente NUNCA declara su propio
-// puesto: manda su `userId` y el GM resuelve el puesto autoritativamente. Así
-// un cliente manipulado no puede hacerse pasar por otro puesto.
-export function emitStationOrder({ socket, userId, action, params = {} }) {
-  if (!socket || typeof socket.emit !== "function") {
-    throw new TypeError("emitStationOrder requiere un socket con emit()");
-  }
-  if (!userId) throw new TypeError("emitStationOrder requiere userId");
-  socket.emit(STATION_ORDER_EVENT, {
-    type: STATION_ORDER_EVENT,
-    userId,
-    action,
-    params,
-  });
+// Construye el registro de orden a guardar como flag propio. Incluye un `nonce`
+// para que Foundry dispare `updateUser` aunque se repita la misma acción/params
+// (dos órdenes idénticas seguidas deben llegar como dos cambios distintos). El
+// puesto NUNCA se declara aquí: lo resuelve el GM por la identidad autenticada.
+export function buildStationOrder({ action, params = {}, nonce }) {
+  if (!action) throw new TypeError("buildStationOrder requiere action");
+  if (!nonce) throw new TypeError("buildStationOrder requiere nonce");
+  return { action, params, nonce };
+}
+
+// Extrae la orden pendiente del objeto de cambios de un `updateUser`. Foundry
+// dispara ese hook por cualquier cambio del User, así que devuelve null cuando
+// el cambio no tocó nuestro flag. Puro: recibe los cambios y el moduleId.
+export function extractOrderFromChange({ changes, moduleId }) {
+  const order = changes?.flags?.[moduleId]?.[STATION_ORDER_FLAG];
+  if (!order || typeof order !== "object") return null;
+  if (!order.action || !order.nonce) return null;
+  return { action: order.action, params: order.params ?? {}, nonce: order.nonce };
 }
 
 // --- Lado GM -----------------------------------------------------------------
 
-// Procesa una orden recibida por socket. Solo debe invocarse en el cliente GM
-// (único con token del puente); el registro comprueba `isGM` antes de llamar.
+// Procesa una orden autenticada. Solo debe invocarse en el cliente GM (único con
+// token del puente); el registro comprueba `isGM`/GM primario antes de llamar.
+//
+// `userId` es la identidad NO FALSIFICABLE del emisor: procede del documento User
+// que Foundry autorizó a escribir, no de un campo dentro de la orden. Cualquier
+// `userId`/`station` que apareciera embebido en `order` se ignora por diseño.
 //
 // Deps inyectadas para poder probar sin Foundry:
-// - `resolveUserStation(userId)`: devuelve el puesto asignado del emisor
-//   (leído de su flag por el GM), o null.
+// - `resolveUserStation(userId)`: puesto asignado del emisor (su flag), o null.
 // - `bridge`: instancia BridgeClient (o equivalente con los métodos de orden).
-//
-// El puesto SIEMPRE se resuelve del emisor, ignorando cualquier `station` que
-// pudiera venir en el payload. Devuelve el resultado del puente en éxito.
-export async function handleStationOrder({ payload, resolveUserStation, bridge }) {
-  const { userId, action, params } = payload ?? {};
-  if (!userId) throw new TypeError("orden sin userId");
+export async function handleStationOrder({ userId, order, resolveUserStation, bridge }) {
+  if (!userId) throw new TypeError("orden sin emisor autenticado");
+  const { action, params } = order ?? {};
+  // El puesto se resuelve SIEMPRE por la identidad autenticada del emisor,
+  // ignorando cualquier userId/station que viniera dentro de la orden.
   const station = resolveUserStation(userId);
   const { method, args } = resolveStationOrder({ station, action, params });
   if (typeof bridge?.[method] !== "function") {
@@ -45,32 +56,30 @@ export async function handleStationOrder({ payload, resolveUserStation, bridge }
   return bridge[method](...args);
 }
 
-// Registra el manejador de órdenes en el socket, solo en el cliente GM. Fuera
-// del GM es no-op (los clientes de tripulación solo emiten, no procesan).
+// Adapta un `updateUser` a una orden despachada. Es la lógica pura del cableado:
+// filtra cambios ajenos a nuestro flag, aplica el criterio de GM primario y usa
+// la identidad autenticada del documento. Devuelve una promesa con el resultado
+// del puente, o null si el cambio no era una orden (o no toca ejecutarla aquí).
 //
-// `canHandle` se evalúa EN CADA orden (no al registrar): con varios GM
-// conectados, todos reciben el mensaje del socket, pero solo debe ejecutarlo
-// uno para no mandar la orden N veces al puente. El cableado pasa aquí el
-// criterio de GM primario (game.users.activeGM); por defecto, ejecuta siempre.
-// Devuelve una función para dar de baja el manejador.
-export function registerStationOrderHandler({
-  socket,
-  isGM,
+// - `userDoc`: documento User que cambió (su `id` es la identidad autenticada).
+// - `changes`: objeto de cambios que entrega Foundry al hook.
+// - `canHandle()`: solo el GM primario ejecuta, para no duplicar la orden.
+export function dispatchUserUpdate({
+  userDoc,
+  changes,
+  moduleId,
   resolveUserStation,
   bridge,
   canHandle = () => true,
   onResult = () => {},
   onError = () => {},
 }) {
-  if (!isGM) return () => {};
-  const listener = (payload) => {
-    if (payload?.type !== STATION_ORDER_EVENT) return;
-    if (!canHandle()) return;
-    Promise.resolve()
-      .then(() => handleStationOrder({ payload, resolveUserStation, bridge }))
-      .then((result) => onResult(result, payload))
-      .catch((error) => onError(error, payload));
-  };
-  socket.on(STATION_ORDER_EVENT, listener);
-  return () => socket.off?.(STATION_ORDER_EVENT, listener);
+  const order = extractOrderFromChange({ changes, moduleId });
+  if (!order) return null;
+  if (!canHandle()) return null;
+  const userId = userDoc?.id;
+  return Promise.resolve()
+    .then(() => handleStationOrder({ userId, order, resolveUserStation, bridge }))
+    .then((result) => { onResult(result, { userId, order }); return result; })
+    .catch((error) => { onError(error, { userId, order }); return null; });
 }

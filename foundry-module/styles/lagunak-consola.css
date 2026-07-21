@@ -195,6 +195,18 @@
   background: rgba(var(--lagunak-accent-rgb), 0.09);
 }
 
+.lagunak-estado-cuerpo select,
+.lagunak-puestos__contenido select {
+  color: var(--lagunak-text);
+  background-color: var(--lagunak-panel);
+}
+
+.lagunak-estado-cuerpo select option,
+.lagunak-puestos__contenido select option {
+  color: var(--lagunak-text);
+  background-color: var(--lagunak-panel);
+}
+
 .lagunak-estado-cuerpo button:focus-visible:not([disabled]),
 .lagunak-estado-cuerpo select:focus-visible:not([disabled]),
 .lagunak-puestos__contenido select:focus-visible:not([disabled]),

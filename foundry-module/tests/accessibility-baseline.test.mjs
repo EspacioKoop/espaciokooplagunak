@@ -134,6 +134,16 @@ test("los colores de texto de consola cumplen contraste AA sobre sus fondos", ()
     }
   }
 });
+test("los <select> del panel definen color/fondo propios: sus opciones abiertas no heredan el tema claro del navegador (#287)", () => {
+  const css = read("styles/lagunak-consola.css");
+  for (const selector of [
+    ".lagunak-estado-cuerpo select",
+    ".lagunak-puestos__contenido select",
+    ".lagunak-estado-cuerpo select option",
+    ".lagunak-puestos__contenido select option",
+  ]) assert.ok(css.includes(selector), `falta color/fondo explícito: ${selector}`);
+});
+
 /**
  * Extrae los controles interactivos nativos (button/select/input/summary) de
  * una plantilla en orden de aparición en el DOM, con un identificador legible

@@ -856,6 +856,10 @@ function crearClaseV1() {
     #timer = null;
     #fallosSeguidos = 0;
     #sondeando = false;
+    // Última firma no-telemétrica renderizada (issue #227 punto 6): evita que
+    // el sondeo reconstruya el panel —y sus regiones role="status"— cuando
+    // solo cambió telemetría continua.
+    #firmaVisibleAnterior = null;
     ultimoEstado = null;
     conexion = "conectando";
     detalleError = "";
@@ -945,9 +949,79 @@ function crearClaseV1() {
           this.falloOrden = true;
         }
       }
-      if (this.rendered) this.render(false);
+      if (this.rendered) {
+        const nave = this.ultimoEstado?.ship ?? null;
+        const ruta = prepareRoute(nave, game.i18n);
+        const sistemas = nave ? prepareSystemRows(nave, game.i18n) : [];
+        const firmaActual = firmaEstadoNaveVisible({
+          conexion: this.conexion,
+          detalleError: this.detalleError,
+          ayudaAbierta: this.ayudaAbierta,
+          esGM: Boolean(game.user?.isGM),
+          naveExiste: Boolean(nave),
+          naveCallsign: nave?.callsign ?? null,
+          ruta,
+          pausa: prepararVistaPausa({
+            conexion: this.conexion,
+            paused: this.pausaConfirmada,
+            pendiente: this.ordenPendiente ?? this.confirmacionPendiente,
+            falloOrden: this.falloOrden,
+            foundryPausado: Boolean(game.paused),
+            i18n: game.i18n,
+          }),
+          maniobra: prepararVistaManiobra({
+            conexion: this.conexion,
+            ship: nave,
+            pendiente: this.maniobraPendiente,
+            i18n: game.i18n,
+          }),
+          maniobraFallo: this.maniobraFallo,
+          ingenieria: prepararVistaIngenieria({
+            conexion: this.conexion,
+            ship: nave,
+            pendiente: this.ingenieriaPendiente,
+            seleccionSistema: this.ingenieriaSistema,
+            seleccionNivel: this.ingenieriaNivel,
+            i18n: game.i18n,
+          }),
+          ingenieriaFallo: this.ingenieriaFallo,
+          sistemas,
+        });
+        const cambioVisible = firmaActual !== this.#firmaVisibleAnterior;
+        this.#firmaVisibleAnterior = firmaActual;
+        if (cambioVisible) this.render(false);
+        else this.#actualizarTelemetriaDom(nave, ruta, sistemas);
+      }
       clearTimeout(this.#timer);
       this.#timer = setTimeout(() => this.#sondear(), this.#intervaloMs());
+    }
+
+    /**
+     * Patch directo del DOM para telemetría continua (posición, rumbo, casco,
+     * energía, distancia/ETA y salud/calor/potencia de sistemas) que no
+     * necesita reconstruir el panel ni sus regiones role="status" — evita el
+     * ruido de aria-live del sondeo periódico (issue #227 punto 6).
+     */
+    #actualizarTelemetriaDom(nave, ruta, sistemas) {
+      const raiz = this.element?.[0];
+      if (!raiz?.querySelector || !nave) return;
+      const set = (selector, texto) => {
+        const nodo = raiz.querySelector(selector);
+        if (nodo && nodo.textContent !== texto) nodo.textContent = texto;
+      };
+      set('[data-field="nave-posicion"]', `${nave.position?.x ?? "?"}, ${nave.position?.y ?? "?"}`);
+      set('[data-field="nave-rumbo"]', `${nave.heading ?? "?"}°`);
+      set('[data-field="nave-casco"]', `${nave.hull ?? "?"} / ${nave.hull_max ?? "?"}`);
+      set('[data-field="nave-energia"]', `${nave.energy ?? "?"} / ${nave.energy_max ?? "?"}`);
+      if (ruta) {
+        set('[data-field="ruta-distancia"]', ruta.distanceLabel);
+        set('[data-field="ruta-eta"]', ruta.etaLabel);
+      }
+      for (const sistema of sistemas) {
+        set(`[data-sistema-id="${sistema.id}"] [data-campo="salud"]`, `${sistema.health}%`);
+        set(`[data-sistema-id="${sistema.id}"] [data-campo="calor"]`, `${sistema.heat}%`);
+        set(`[data-sistema-id="${sistema.id}"] [data-campo="potencia"]`, `${sistema.power}%`);
+      }
     }
 
     /**
@@ -996,6 +1070,7 @@ function crearClaseV1() {
       this.ingenieriaFallo = false;
       this.maniobraPendiente = false;
       this.maniobraFallo = false;
+      this.#firmaVisibleAnterior = null;
       return super.close(options);
     }
 

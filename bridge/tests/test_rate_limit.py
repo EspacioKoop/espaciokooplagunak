@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import app as bridge
+import rate_limit
 
 
 def test_permite_hasta_la_rafaga_y_luego_bloquea(monkeypatch):
     reloj = {"t": 1000.0}
-    monkeypatch.setattr(bridge.time, "monotonic", lambda: reloj["t"])
+    monkeypatch.setattr(rate_limit.time, "monotonic", lambda: reloj["t"])
     bucket = bridge._TokenBucket(rate=10, burst=3)
 
     # Sin avanzar el reloj, solo hay `burst` tokens.
@@ -19,7 +20,7 @@ def test_permite_hasta_la_rafaga_y_luego_bloquea(monkeypatch):
 
 def test_recarga_con_el_tiempo(monkeypatch):
     reloj = {"t": 0.0}
-    monkeypatch.setattr(bridge.time, "monotonic", lambda: reloj["t"])
+    monkeypatch.setattr(rate_limit.time, "monotonic", lambda: reloj["t"])
     bucket = bridge._TokenBucket(rate=10, burst=2)
 
     assert bucket.allow() is True
@@ -33,7 +34,7 @@ def test_recarga_con_el_tiempo(monkeypatch):
 
 def test_la_recarga_no_supera_la_capacidad(monkeypatch):
     reloj = {"t": 0.0}
-    monkeypatch.setattr(bridge.time, "monotonic", lambda: reloj["t"])
+    monkeypatch.setattr(rate_limit.time, "monotonic", lambda: reloj["t"])
     bucket = bridge._TokenBucket(rate=10, burst=2)
 
     reloj["t"] = 100.0  # tiempo de sobra para muchos tokens

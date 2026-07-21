@@ -147,7 +147,8 @@ Hitos verticales:
 - [ ] Permitir al director de juego introducir encuentros, anomalías, averías y cambios narrativos
       (el puente ya inyecta encuentros de un catálogo cerrado de arquetipos
       —`spawn_encounter`, #196/#220— y reposiciona la nave a un ancla —#202—; la UI GM
-      para introducir encuentros está en revisión en #201).
+      para introducir encuentros ya está integrada —#201—; falta el evento
+      `encounter_started` de vuelta a Journal para cerrar #117).
 - [ ] Enviar a Foundry eventos y resultados normalizados para diarios, escenas y fichas
       (`encounter_started` normalizado —#200— y alertas de umbral a la bitácora —#207—
       ya publicados; falta el resto de resultados de sesión).

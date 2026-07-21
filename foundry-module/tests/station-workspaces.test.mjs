@@ -105,6 +105,73 @@ test("un jugador nunca recibe telemetría aunque se le inyecte por error", () =>
   assert.equal(model.connectionRestricted, true);
 });
 
+test("navegación puede ordenar rumbo aunque no tenga telemetría; otros puestos no", () => {
+  const navegacion = buildWorkspaceModel({
+    station: "navigation",
+    isGM: false,
+    users: [user({ id: "p1", station: "navigation" })],
+    moduleId: MODULE_ID,
+    i18n,
+    connection: "restricted",
+  });
+  assert.equal(navegacion.hasTelemetry, false);
+  assert.equal(navegacion.canOrderHeading, true);
+  assert.equal(navegacion.canOrderImpulse, true);
+  assert.equal(navegacion.canOrderWarp, true);
+
+  // El GM no recibe el control de tripulación (tiene los suyos y el emit no se
+  // autoentrega), ni siquiera en navegación.
+  const gmNav = buildWorkspaceModel({ station: "navigation", isGM: true, users: [], moduleId: MODULE_ID, i18n });
+  assert.equal(gmNav.canOrderHeading, false);
+
+  for (const station of ["captain", "engineering", "sensors", "communications", "weapons"]) {
+    const model = buildWorkspaceModel({ station, isGM: false, users: [], moduleId: MODULE_ID, i18n });
+    assert.equal(model.canOrderHeading, false, `${station} no debería ordenar rumbo en esta rebanada`);
+    assert.equal(model.canOrderImpulse, false, `${station} no debería ordenar impulso`);
+    assert.equal(model.canOrderWarp, false, `${station} no debería ordenar warp`);
+  }
+});
+
+test("ingeniería puede repartir energía por sistema, con opciones pobladas", () => {
+  const model = buildWorkspaceModel({
+    station: "engineering",
+    isGM: false,
+    users: [user({ id: "p1", station: "engineering" })],
+    moduleId: MODULE_ID,
+    i18n,
+    connection: "restricted",
+  });
+  assert.equal(model.hasTelemetry, false);
+  assert.equal(model.canOrderPower, true);
+  assert.equal(model.canOrderHeading, false);
+  assert.ok(model.powerSystems.length >= 1);
+  assert.ok(model.powerSystems.some((option) => option.value === "reactor"));
+  assert.ok(model.powerLevels.some((option) => option.value === 1));
+
+  const navegacion = buildWorkspaceModel({ station: "navigation", isGM: true, users: [], moduleId: MODULE_ID, i18n });
+  assert.equal(navegacion.canOrderPower, false);
+  assert.deepEqual(navegacion.powerSystems, []);
+});
+
+test("armas puede subir/bajar escudos como tripulación, no el GM ni otros puestos", () => {
+  const armas = buildWorkspaceModel({
+    station: "weapons",
+    isGM: false,
+    users: [user({ id: "p1", station: "weapons" })],
+    moduleId: MODULE_ID,
+    i18n,
+    connection: "restricted",
+  });
+  assert.equal(armas.canOrderShields, true);
+  assert.equal(armas.canOrderHeading, false);
+
+  const gmArmas = buildWorkspaceModel({ station: "weapons", isGM: true, users: [], moduleId: MODULE_ID, i18n });
+  assert.equal(gmArmas.canOrderShields, false);
+
+  const navegacion = buildWorkspaceModel({ station: "navigation", isGM: false, users: [], moduleId: MODULE_ID, i18n });
+  assert.equal(navegacion.canOrderShields, false);
+});
+
 test("ingeniería recibe sistemas y alarmas medibles para la vista GM", () => {
   const model = buildWorkspaceModel({
     station: "engineering",

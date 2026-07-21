@@ -40,6 +40,10 @@ local objects = {
     object("LAGUNAK_EVT_encounter_started_s90_654321_000003_kraken"),
     object("LAGUNAK_EVT_encounter_started_s90_654321_2_derelict"),
     object("LAGUNAK_EVT_encounter_started_s90_654321_000004_derelict_extra"),
+    object("LAGUNAK_EVT_ship_repositioned_s90_654321_000007_argia_0000000425"),
+    object("LAGUNAK_EVT_ship_repositioned_s90_654321_000008_mordor_0000000425"),
+    object("LAGUNAK_EVT_ship_repositioned_s90_654321_000009_lagunak_42"),
+    object("LAGUNAK_EVT_ship_repositioned_s90_654321_000010_argia_0000000425_extra"),
 }
 function getPlayerShip(_) return player end
 function getObjectsInRadius(_, _, radius)
@@ -72,6 +76,13 @@ function getScenarioTime() return 42.5 end
                 "scenario": "scenario_90_lagunak_primera_guardia",
                 "archetype": "derelict",
                 "encounter_callsign": "Hondar 2",
+                "scenario_time": 42.5,
+            },
+            {
+                "id": "ship-repositioned-s90-654321-000007-argia-0000000425",
+                "type": "ship_repositioned",
+                "scenario": "scenario_90_lagunak_primera_guardia",
+                "anchor": "argia",
                 "scenario_time": 42.5,
             },
         ]

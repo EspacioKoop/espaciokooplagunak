@@ -122,3 +122,68 @@ def test_escenario_registra_el_callback_bajo_namespace_propio():
         "storage.espaciokoop_lagunak.repositionShip = lagunakRepositionShip"
         in escenario
     )
+
+
+def test_escenario_publica_evento_solo_para_reposicion_aceptada(tmp_path: Path):
+    lua = _interprete_lua()
+    if lua is None:
+        pytest.skip("no hay intérprete Lua para probar el escenario real")
+    lua = cast(str, lua)
+    raiz = Path(__file__).resolve().parents[2]
+    escenario = raiz / "scripts" / "scenario_90_lagunak_primera_guardia.lua"
+    driver = f'''
+package.loaded["utils.lua"] = true
+dofile({json.dumps(str(escenario))})
+
+local markers = {{}}
+function Artifact()
+    local marker = {{}}
+    function marker:setPosition(x, y) self.x = x; self.y = y; return self end
+    function marker:setCallSign(value) self.callsign = value; return self end
+    function marker:setRadarSignatureInfo(_, _, _) return self end
+    function marker:allowPickup(_) return self end
+    markers[#markers + 1] = marker
+    return marker
+end
+
+local commands = 0
+local ship = {{}}
+function ship:setPosition(x, y) self.x = x; self.y = y; return self end
+function ship:commandImpulse(_) commands = commands + 1 end
+function ship:commandWarp(_) commands = commands + 1 end
+function ship:commandAbortJump() commands = commands + 1 end
+function getPlayerShip(_) return ship end
+function getScenarioTime() return 42.46 end
+
+eventoLlegadaId = "654321"
+contadorReposiciones = 0
+marcadoresEventosReposicion = {{}}
+local accepted = lagunakRepositionShip("argia")
+local rejected = lagunakRepositionShip("mordor")
+
+io.write(string.format(
+    '{{"accepted":%s,"rejected":%s,"markers":%d,"tracked":%d,'
+    .. '"callsign":%q,"x":%d,"y":%d,"commands":%d}}',
+    tostring(accepted), tostring(rejected), #markers,
+    #marcadoresEventosReposicion, markers[1].callsign,
+    ship.x, ship.y, commands))
+'''
+    ruta = tmp_path / "scenario-reposition-event-driver.lua"
+    ruta.write_text(driver, encoding="utf-8")
+    proc = subprocess.run([lua, str(ruta)], capture_output=True, timeout=10)
+    assert proc.returncode == 0, proc.stderr.decode("utf-8", "replace")
+    payload = json.loads(proc.stdout.decode("utf-8"))
+
+    assert payload == {
+        "accepted": True,
+        "rejected": False,
+        "markers": 1,
+        "tracked": 1,
+        "callsign": (
+            "LAGUNAK_EVT_ship_repositioned_s90_654321_000001_"
+            "argia_0000000425"
+        ),
+        "x": 29500,
+        "y": -14500,
+        "commands": 3,
+    }

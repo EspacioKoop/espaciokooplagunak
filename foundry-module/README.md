@@ -115,6 +115,9 @@ cualquier cliente que obtenga el token puede invocar las órdenes autorizadas.
 6. Al llegar a Argia en «Primera Guardia», el módulo recibe por polling un
    evento normalizado y crea automáticamente una página de llegada. El flag
    `eventId` evita duplicados al reabrir la ventana o reconectar.
+7. Una reposición GM aceptada crea del mismo modo una página localizada con el
+   ancla y el tiempo de escenario. Sondeos repetidos no la duplican; respuestas
+   fallidas o eventos fuera del catálogo no escriben nada.
 
 ## Puestos de tripulación
 
@@ -195,7 +198,8 @@ sprites se dibujan solo con primitivas de canvas, sin assets externos.
   (healthz, state, 401 sin token, timeout y error de red) — es ESM puro sin
   dependencias de Foundry precisamente para eso.
 - Tests Node cubren `/v1/events`, validación y deduplicación persistente del
-  Journal, formato destino/ETA, POST cerrado de pausa, bloqueo no-GM y las seis
+  Journal para llegadas y reposiciones GM, formato destino/ETA, POST cerrado de
+  pausa, bloqueo no-GM y las seis
   consolas de puesto. También cubren las alertas de umbral de la nave
   (`alertas-nave.mjs`): derivación por flanco descendente (casco/energía/sistema)
   a partir de `/v1/state` y anotación una sola vez por sesión y umbral, con

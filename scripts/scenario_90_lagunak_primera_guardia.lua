@@ -35,6 +35,8 @@ function init()
     cierreTimer = 5.0
     eventoLlegadaId = string.format("%06d", math.random(0, 999999))
     marcadoresEventosEncuentro = {}
+    marcadoresEventosReposicion = {}
+    contadorReposiciones = 0
     modoPruebaIndividual = esModoPruebaIndividual()
 
     estacionLagunak = SpaceStation()
@@ -270,11 +272,16 @@ end
 function actualizarMarcadoresEventosEncuentro()
     if player == nil or not player:isValid() then return end
     local x, y = player:getPosition()
-    for _, marcador in ipairs(marcadoresEventosEncuentro or {}) do
-        if marcador:isValid() then
-            -- Mantener el marcador junto a la nave evita perder el evento si
-            -- esta recorre mas de 5U entre dos sondeos del modulo.
-            marcador:setPosition(x, y)
+    for _, marcadores in ipairs({
+        marcadoresEventosEncuentro or {},
+        marcadoresEventosReposicion or {},
+    }) do
+        for _, marcador in ipairs(marcadores) do
+            if marcador:isValid() then
+                -- Mantener cada marcador junto a la nave evita perder el evento
+                -- si esta recorre mas de 5U entre dos sondeos del modulo.
+                marcador:setPosition(x, y)
+            end
         end
     end
 end
@@ -304,6 +311,25 @@ function lagunakRepositionShip(ancla)
     nave:commandImpulse(0)
     nave:commandWarp(0)
     nave:commandAbortJump()
+
+    -- Publicar solo despues de completar la reposicion. El ID incorpora la
+    -- sesion, una secuencia monotona, el ancla y el tiempo confirmado por el
+    -- escenario (decimas) para que cada orden aceptada sea estable y
+    -- deduplicable. Ninguno de esos campos procede libremente del cliente.
+    contadorReposiciones = (contadorReposiciones or 0) + 1
+    local tiempoDecimas = math.max(0, math.floor(getScenarioTime() * 10 + 0.5))
+    local marcador = Artifact()
+        :setPosition(destino.x + 1500, destino.y + 1500)
+        :setCallSign(string.format(
+            "LAGUNAK_EVT_ship_repositioned_s90_%s_%06d_%s_%010d",
+            eventoLlegadaId,
+            contadorReposiciones,
+            ancla,
+            tiempoDecimas
+        ))
+        :setRadarSignatureInfo(0, 0, 0)
+        :allowPickup(false)
+    table.insert(marcadoresEventosReposicion, marcador)
     return true
 end
 

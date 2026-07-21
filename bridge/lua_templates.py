@@ -113,6 +113,21 @@ for _, object in ipairs(getObjectsInRadius(x, y, 5000)) do
             .. '"scenario_time":%.1f}',
             session_id, sequence, tonumber(sequence), getScenarioTime())
     end
+    local reposition_session, reposition_sequence, anchor, scenario_time_tenths =
+        string.match(
+            call_sign,
+            "^LAGUNAK_EVT_ship_repositioned_s90_(%d%d%d%d%d%d)_(%d%d%d%d%d%d)_([%a]+)_(%d%d%d%d%d%d%d%d%d%d)$")
+    local valid_anchor = anchor == "lagunak" or anchor == "argia"
+    if reposition_session ~= nil and reposition_sequence ~= nil
+        and scenario_time_tenths ~= nil and valid_anchor then
+        events[#events + 1] = string.format(
+            '{"id":"ship-repositioned-s90-%s-%s-%s-%s",'
+            .. '"type":"ship_repositioned",'
+            .. '"scenario":"scenario_90_lagunak_primera_guardia",'
+            .. '"anchor":"%s","scenario_time":%.1f}',
+            reposition_session, reposition_sequence, anchor, scenario_time_tenths,
+            anchor, tonumber(scenario_time_tenths) / 10)
+    end
 end
 return '{"events":[' .. table.concat(events, ",") .. ']}'
 """

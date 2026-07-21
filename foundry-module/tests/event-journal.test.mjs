@@ -24,6 +24,7 @@ function harness() {
   return {
     created,
     notifications,
+    journal,
     game: {
       user: { isGM: true },
       journal: { getName: () => journal },
@@ -45,6 +46,14 @@ const arrival = {
   scenario_time: 42.5,
 };
 
+const reposition = {
+  id: "ship-repositioned-s90-123456-000007-argia-0000000425",
+  type: "ship_repositioned",
+  scenario: "scenario_90_lagunak_primera_guardia",
+  anchor: "argia",
+  scenario_time: 42.5,
+};
+
 test("el mismo evento solo crea una página tras dos sondeos", async () => {
   const context = harness();
   const args = { ...context, payload: { events: [arrival] } };
@@ -59,6 +68,22 @@ test("el mismo evento solo crea una página tras dos sondeos", async () => {
   assert.equal(context.notifications.length, 1);
 });
 
+test("una reposición aceptada crea una página localizada y deduplicada", async () => {
+  const context = harness();
+  const args = { ...context, payload: { events: [reposition] } };
+
+  assert.equal(await processBridgeEvents(args), 1);
+  assert.equal(await processBridgeEvents(args), 0);
+  assert.equal(context.created.length, 1);
+  assert.equal(
+    context.created[0].flags["espaciokoop-lagunak"].eventId,
+    reposition.id,
+  );
+  assert.match(context.created[0].name, /LAGUNAK\.Eventos\.Reposicion\.Titulo/);
+  assert.match(context.created[0].text.content, /LAGUNAK\.Reposicion\.Ancla\.argia/);
+  assert.doesNotMatch(context.created[0].text.content, /Authorization|Bearer|https?:\/\//i);
+});
+
 test("ignora eventos desconocidos o IDs fuera del contrato", async () => {
   const context = harness();
   const payload = {
@@ -66,6 +91,10 @@ test("ignora eventos desconocidos o IDs fuera del contrato", async () => {
       { ...arrival, type: "arbitrary" },
       { ...arrival, id: "<script>alert(1)</script>" },
       { ...arrival, scenario_time: Number.NaN },
+      { ...reposition, anchor: "mordor" },
+      { ...reposition, id: reposition.id.replace("argia", "lagunak") },
+      { ...reposition, scenario_time: 43.5 },
+      { ...reposition, id: `${reposition.id}-extra` },
     ],
   };
 
@@ -77,8 +106,32 @@ test("no escribe Journal para un jugador no GM", async () => {
   const context = harness();
   context.game.user.isGM = false;
   assert.equal(
-    await processBridgeEvents({ ...context, payload: { events: [arrival] } }),
+    await processBridgeEvents({ ...context, payload: { events: [arrival, reposition] } }),
     0,
   );
   assert.equal(context.created.length, 0);
+});
+
+test("revocar el rol mientras se crea el diario impide escribir la página", async () => {
+  const context = harness();
+  let resolver;
+  context.game.journal.getName = () => null;
+  context.JournalEntry.create = () => new Promise((resolve) => {
+    resolver = resolve;
+  });
+
+  const pendiente = processBridgeEvents({
+    ...context,
+    payload: { events: [reposition] },
+    sigueVigente: () => context.game.user.isGM,
+  });
+  context.game.user.isGM = false;
+  resolver({
+    pages: [],
+    createEmbeddedDocuments: async () => assert.fail("no debe escribir"),
+  });
+
+  assert.equal(await pendiente, 0);
+  assert.equal(context.created.length, 0);
+  assert.equal(context.notifications.length, 0);
 });

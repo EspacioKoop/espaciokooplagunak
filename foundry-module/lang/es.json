@@ -146,6 +146,8 @@
   "LAGUNAK.Reposicion.Ancla.argia": "Puesto avanzado Argia",
   "LAGUNAK.Eventos.Llegada.Titulo": "Llegada a {destination}",
   "LAGUNAK.Eventos.Llegada.Resumen": "La nave ha llegado a {destination}. Tiempo de escenario: {elapsed} s.",
+  "LAGUNAK.Eventos.Reposicion.Titulo": "Reposición en {anchor}",
+  "LAGUNAK.Eventos.Reposicion.Resumen": "El director de juego ha reposicionado la nave junto a {anchor}. Tiempo de escenario: {elapsed} s.",
   "LAGUNAK.Eventos.Anotados": "Nuevo evento anotado en la bitácora.",
   "LAGUNAK.Alertas.Anotadas": "Nueva alerta de la nave anotada en la bitácora.",
   "LAGUNAK.Alertas.Casco.Titulo": "Alerta de casco",

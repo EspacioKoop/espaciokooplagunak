@@ -124,6 +124,7 @@ export function crearClaseV1() {
           game,
           JournalEntry,
           ui,
+          sigueVigente: () => !this.bridgeAccessRevoked && Boolean(game.user?.isGM),
         });
         await anotarAlertas({
           alertas: derivarAlertas(navePrevAlertas, estado?.ship ?? null),

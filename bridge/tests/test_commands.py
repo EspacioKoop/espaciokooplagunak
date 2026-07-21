@@ -52,6 +52,34 @@ def test_set_system_power_genera_lua(client, juego, auth):
     assert 'commandSetSystemPowerRequest("impulse", 1.500)' in juego.ultimo_lua
 
 
+def test_set_system_coolant_genera_lua(client, juego, auth):
+    r = client.post(
+        CMD, headers=auth, json={"op": "set_system_coolant", "system": "impulse", "level": 7.5}
+    )
+    assert r.status_code == 200
+    assert 'commandSetSystemCoolantRequest("impulse", 7.500)' in juego.ultimo_lua
+    assert "getPlayerShip(-1)" in juego.ultimo_lua
+
+
+@pytest.mark.parametrize("nivel", [-0.1, -1.0, 10.1, 100])
+def test_coolant_fuera_de_rango_rechazado(client, juego, auth, nivel):
+    r = client.post(
+        CMD, headers=auth, json={"op": "set_system_coolant", "system": "impulse", "level": nivel}
+    )
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+def test_coolant_sistema_fuera_de_lista_rechazado(client, juego, auth):
+    r = client.post(
+        CMD,
+        headers=auth,
+        json={"op": "set_system_coolant", "system": '"); victory("Exuari"); ("', "level": 5.0},
+    )
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
 def test_set_system_health_genera_lua(client, juego, auth):
     r = client.post(
         CMD, headers=auth, json={"op": "set_system_health", "system": "impulse", "value": -1.0}

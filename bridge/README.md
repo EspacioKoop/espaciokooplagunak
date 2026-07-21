@@ -9,6 +9,22 @@ validados y acotados. **Nunca se reenvía Lua recibido por la red.**
 Diseño completo: [`docs/FOUNDRY.md`](../docs/FOUNDRY.md) · Inventario del API
 heredado: [`docs/API_HTTP.md`](../docs/API_HTTP.md).
 
+## Decisiones de arquitectura
+
+El [registro ADR](../docs/adr/README.md) conserva el contexto y las consecuencias
+de las decisiones que delimitan este puente:
+
+- [ADR-0001](../docs/adr/0001-exec-lua-nunca-expuesto.md): `/exec.lua` nunca
+  se expone; el puente es su único cliente y aplica autenticación Bearer, CORS
+  estricto, límites y una lista blanca de operaciones.
+- [ADR-0002](../docs/adr/0002-autoridad-de-datos-foundry-vs-simulacion.md):
+  Foundry gobierna la narrativa y la simulación gobierna el estado de la nave.
+- [ADR-0003](../docs/adr/0003-transporte-polling-http.md): el contrato v0 usa
+  polling HTTP; WebSocket queda aplazado hasta disponer de métricas que lo
+  justifiquen.
+- [ADR-0007](../docs/adr/0007-frontera-upstream.md): los arreglos del código
+  heredado se proponen primero a upstream para limitar divergencias permanentes.
+
 ## Contrato v0
 
 | Método | Ruta | Auth | Descripción |

@@ -141,8 +141,20 @@ function stationFromEvent(event) {
   return event?.currentTarget?.dataset?.station ?? null;
 }
 
+// Convierte el texto crudo de un input en número, rechazando ausencia y vacío
+// ANTES de convertir: Number("") === 0 colaría una orden a cero como válida
+// (rumbo 0, impulso 0, warp 0, nivel 0). Devuelve null si no hay dato utilizable
+// —y los predicados `valid`/`esNivelValido` ya rechazan null—.
+export function parseOrderValue(raw) {
+  if (raw === null || raw === undefined) return null;
+  const text = String(raw).trim();
+  if (text === "") return null;
+  const value = Number(text);
+  return Number.isNaN(value) ? null : value;
+}
+
 function numberFrom(root, id) {
-  return Number(root?.querySelector?.(`#${id}`)?.value);
+  return parseOrderValue(root?.querySelector?.(`#${id}`)?.value);
 }
 
 // Orden de un único campo numérico: valida y devuelve los parámetros o null.
@@ -157,7 +169,7 @@ function numericOrder(inputId, param, valid) {
 // parámetros del DOM (devolviendo el objeto de params o null si es inválido),
 // a qué acción del contrato los emite y qué aviso mostrar si no validan. La
 // validación aquí es cortesía de UX; el puente revalida rangos igualmente.
-const ORDER_FORMS = Object.freeze({
+export const ORDER_FORMS = Object.freeze({
   "orden-rumbo": {
     action: "set_target_heading",
     read: numericOrder("lagunak-orden-rumbo", "heading", (n) => Number.isFinite(n) && n >= 0 && n < 360),

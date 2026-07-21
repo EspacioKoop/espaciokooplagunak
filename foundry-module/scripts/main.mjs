@@ -68,7 +68,7 @@ import {
   prepararDetalleContacto,
   rotarMuestras,
 } from "./ventana-nave.mjs";
-import { crearDecorado, componerDecorado } from "./decorado-fondo.mjs";
+import { crearDecorado, componerDecorado, ladoDecorado } from "./decorado-fondo.mjs";
 
 const MODULE_ID = "espaciokoop-lagunak";
 const POLL_MIN_S = 1;
@@ -1292,6 +1292,17 @@ function crearClaseMapaV2() {
       }
     }
 
+    // Ajusta el backing del canvas al lado real de dibujo para no subescalar el
+    // decorado por debajo de 320 (aliasing de #260). Regenera el decorado solo
+    // al cambiar de lado: es determinista y barato entre resizes.
+    #ajustarBacking(canvas) {
+      const lado = ladoDecorado(canvas.clientWidth);
+      if (canvas.width === lado) return;
+      canvas.width = lado;
+      canvas.height = lado;
+      this.#decorado = crearDecorado(MAPA_SEMILLA, { ancho: lado, alto: lado });
+    }
+
     #animar(rafMs = null) {
       // Sin rAF global (p. ej. arnés de pruebas) la animación se auto-inhibe;
       // el mapa sigue funcionando a golpe de re-render del sondeo.
@@ -1308,6 +1319,7 @@ function crearClaseMapaV2() {
       const canvas = this.element?.querySelector?.(".lagunak-mapa-canvas");
       const ctx = canvas?.getContext?.("2d");
       if (!ctx) return;
+      this.#ajustarBacking(canvas);
       this.#ultimoDibujoMs = relojRaf;
       const frame = componerFrame({
         muestraPrev: this.#muestraPrev,
@@ -1578,6 +1590,17 @@ function crearClaseMapaV1() {
       }
     }
 
+    // Ajusta el backing del canvas al lado real de dibujo para no subescalar el
+    // decorado por debajo de 320 (aliasing de #260). Regenera el decorado solo
+    // al cambiar de lado: es determinista y barato entre resizes.
+    #ajustarBacking(canvas) {
+      const lado = ladoDecorado(canvas.clientWidth);
+      if (canvas.width === lado) return;
+      canvas.width = lado;
+      canvas.height = lado;
+      this.#decorado = crearDecorado(MAPA_SEMILLA, { ancho: lado, alto: lado });
+    }
+
     #animar(rafMs = null) {
       if (!this.rendered || typeof requestAnimationFrame !== "function") {
         this.#rafId = null;
@@ -1590,6 +1613,7 @@ function crearClaseMapaV1() {
       const canvas = this.element?.[0]?.querySelector?.(".lagunak-mapa-canvas");
       const ctx = canvas?.getContext?.("2d");
       if (!ctx) return;
+      this.#ajustarBacking(canvas);
       this.#ultimoDibujoMs = relojRaf;
       const frame = componerFrame({
         muestraPrev: this.#muestraPrev,

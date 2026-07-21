@@ -58,6 +58,11 @@ export async function revokeWorkspaceAccess() {
 
 function renderWorkspace(force = false) {
   if (!workspaceApp) return;
+  // Refresco reactivo (hook updateUser al cambiar de puesto): re-renderiza solo
+  // si la consola sigue abierta. Sin este guard, render(false) sobre una app V1
+  // ya cerrada llama a _replaceHTML con el elemento fuera del DOM y peta con
+  // «can't access property "hasChildNodes"» (#263). La apertura usa force=true.
+  if (!force && !workspaceApp.rendered) return;
   if (foundry.applications?.api?.ApplicationV2) {
     workspaceApp.render({ force: true });
   } else {

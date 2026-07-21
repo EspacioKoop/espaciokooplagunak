@@ -568,3 +568,69 @@ test("ApplicationV2 conserva la ayuda abierta entre re-renderizados hasta que se
   const template = await readFile(new URL("../templates/estado-nave.hbs", import.meta.url), "utf8");
   assert.match(template, /\{\{#if ayudaAbierta\}\}open\{\{\/if\}\}/);
 });
+
+// Regresión de review (#279): #actualizarTelemetriaDom() patcheaba el DOM con
+// sistema.salud/calor/potencia, pero prepareSystemRows() (ship-view.mjs)
+// devuelve health/heat/power. Sin re-render (guard de aria-live de #227), el
+// segundo sondeo estable escribía "undefined%" en las tres celdas de cada
+// sistema. La prueba fuerza dos sondeos con la misma nave (sin cambio
+// estructural) y comprueba el DOM tras el segundo, que es el que toma la vía
+// del patch en vez de render().
+test("ApplicationV2: el patch de telemetría usa los campos reales (health/heat/power) tras un sondeo estable", async (t) => {
+  const nave = () => ({
+    callsign: "Argia",
+    position: { x: 10, y: 20 },
+    heading: 90,
+    hull: 100,
+    hull_max: 100,
+    energy: 100,
+    energy_max: 100,
+    shields_active: true,
+    systems: {
+      reactor: { health: 0.8, heat: 0.3, power: 1.0, coolant: 0 },
+    },
+  });
+  const okJson = (payload) => ({ ok: true, status: 200, async json() { return payload; } });
+  const fetchImpl = async (url) => {
+    if (url.endsWith("/healthz")) return okJson({ ok: true });
+    if (url.endsWith("/v1/state")) return okJson({ ship: nave() });
+    if (url.endsWith("/v1/scenario")) return okJson({ scenario_time: 0, paused: false });
+    if (url.endsWith("/v1/events")) return okJson({ events: [] });
+    return okJson({});
+  };
+
+  const { hooks, instances } = await loadModule({ modern: true, fetchImpl });
+  const controls = {};
+  hooks.getSceneControlButtons(controls);
+  controls.lagunak.tools["lagunak-estado"].onClick();
+  const app = instances[0];
+
+  const nodos = {
+    salud: { textContent: "" },
+    calor: { textContent: "" },
+    potencia: { textContent: "" },
+  };
+  app.element = {
+    querySelector(selector) {
+      const match = selector.match(/data-campo="(\w+)"/);
+      return match ? nodos[match[1]] ?? null : null;
+    },
+  };
+
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  app._onFirstRender({}, {});
+  // Primer sondeo: fija #firmaVisibleAnterior (dispara render(), no el patch).
+  await new Promise((resolve) => setImmediate(resolve));
+  await new Promise((resolve) => setImmediate(resolve));
+  await new Promise((resolve) => setImmediate(resolve));
+
+  t.mock.timers.tick(2000);
+  // Segundo sondeo, sin cambio estructural: toma la vía del patch directo.
+  await new Promise((resolve) => setImmediate(resolve));
+  await new Promise((resolve) => setImmediate(resolve));
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.equal(nodos.salud.textContent, "80%");
+  assert.equal(nodos.calor.textContent, "30%");
+  assert.equal(nodos.potencia.textContent, "100%");
+});

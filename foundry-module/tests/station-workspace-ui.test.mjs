@@ -200,3 +200,25 @@ for (const modern of [false, true]) {
     assert.equal(fetchCalls, 2);
   });
 }
+
+test("updateUser no re-renderiza la consola cerrada (regresión #263)", async () => {
+  const { module, hooks, instances } = await setup();
+  module.openWorkspaceApp();
+  const app = instances[0];
+  assert.deepEqual(app.renderCalls, [true]);
+  await app.close();
+  assert.equal(app.rendered, false);
+  // Cambiar de puesto dispara updateUser. Sin el guard, esto llamaría
+  // render(false) sobre la app cerrada y en Foundry real reventaría en
+  // _replaceHTML (element fuera del DOM).
+  hooks.updateUser();
+  assert.deepEqual(app.renderCalls, [true]);
+});
+
+test("updateUser sí refresca la consola abierta", async () => {
+  const { module, hooks, instances } = await setup();
+  module.openWorkspaceApp();
+  const app = instances[0];
+  hooks.updateUser();
+  assert.deepEqual(app.renderCalls, [true, false]);
+});

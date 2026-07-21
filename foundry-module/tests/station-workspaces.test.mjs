@@ -153,6 +153,25 @@ test("ingeniería puede repartir energía por sistema, con opciones pobladas", (
   assert.deepEqual(navegacion.powerSystems, []);
 });
 
+test("armas puede subir/bajar escudos como tripulación, no el GM ni otros puestos", () => {
+  const armas = buildWorkspaceModel({
+    station: "weapons",
+    isGM: false,
+    users: [user({ id: "p1", station: "weapons" })],
+    moduleId: MODULE_ID,
+    i18n,
+    connection: "restricted",
+  });
+  assert.equal(armas.canOrderShields, true);
+  assert.equal(armas.canOrderHeading, false);
+
+  const gmArmas = buildWorkspaceModel({ station: "weapons", isGM: true, users: [], moduleId: MODULE_ID, i18n });
+  assert.equal(gmArmas.canOrderShields, false);
+
+  const navegacion = buildWorkspaceModel({ station: "navigation", isGM: false, users: [], moduleId: MODULE_ID, i18n });
+  assert.equal(navegacion.canOrderShields, false);
+});
+
 test("ingeniería recibe sistemas y alarmas medibles para la vista GM", () => {
   const model = buildWorkspaceModel({
     station: "engineering",

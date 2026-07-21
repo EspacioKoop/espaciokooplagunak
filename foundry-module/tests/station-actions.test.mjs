@@ -40,6 +40,19 @@ test("ingeniería reparte energía por sistema y solo ella", () => {
   );
 });
 
+test("armas sube y baja escudos, y solo ella", () => {
+  assert.equal(isActionAllowed("weapons", "set_shields"), true);
+  assert.equal(isActionAllowed("navigation", "set_shields"), false);
+  assert.deepEqual(
+    resolveStationOrder({ station: "weapons", action: "set_shields", params: { active: true } }),
+    { method: "setShields", args: [true] },
+  );
+  assert.deepEqual(
+    resolveStationOrder({ station: "weapons", action: "set_shields", params: { active: false } }),
+    { method: "setShields", args: [false] },
+  );
+});
+
 test("isActionAllowed no lanza ante entradas inválidas", () => {
   assert.equal(isActionAllowed("desconocido", "set_target_heading"), false);
   assert.equal(isActionAllowed(null, "set_target_heading"), false);

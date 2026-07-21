@@ -60,6 +60,7 @@ import { registerStationOrders } from "./station-order-wiring.mjs";
 import {
   colorFaccion,
   componerFrame,
+  contactoEnPunto,
   crearCampoEstrellas,
   debeDibujar,
   firmaEstructuralContactos,
@@ -1165,6 +1166,7 @@ function crearClaseMapaV2() {
     #generacion = 0;
     #rafId = null;
     #ultimoDibujoMs = null;
+    #ultimoFrame = null; // último frame pintado, para el hit-test de clic (issue #259)
     #campo = crearCampoEstrellas(MAPA_SEMILLA);
     #decorado = crearDecorado(MAPA_SEMILLA);
     #muestraPrev = null;
@@ -1335,6 +1337,7 @@ function crearClaseMapaV2() {
             alto: canvas.height,
           });
       dibujarFrame(ctx, frame, { ancho: canvas.width, alto: canvas.height, decorado });
+      this.#ultimoFrame = frame;
     }
 
     _onFirstRender(context, options) {
@@ -1354,6 +1357,20 @@ function crearClaseMapaV2() {
           this.seleccion = callsign === this.seleccion ? null : callsign;
           this.render();
         });
+      });
+      // Clic directo sobre el objeto en el mapa vivo (issue #259): mismo
+      // mecanismo de selección que la lista de contactos, así que reutiliza
+      // el panel de detalle ya existente sin duplicar lógica.
+      const canvas = this.element?.querySelector?.(".lagunak-mapa-canvas");
+      canvas?.addEventListener("click", (ev) => {
+        if (!this.#ultimoFrame) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = ((ev.clientX - rect.left) / rect.width) * canvas.width;
+        const y = ((ev.clientY - rect.top) / rect.height) * canvas.height;
+        const callsign = contactoEnPunto(this.#ultimoFrame.blips, x, y);
+        if (callsign === null) return;
+        this.seleccion = callsign === this.seleccion ? null : callsign;
+        this.render();
       });
     }
 
@@ -1445,6 +1462,7 @@ function crearClaseMapaV1() {
     #generacion = 0;
     #rafId = null;
     #ultimoDibujoMs = null;
+    #ultimoFrame = null; // último frame pintado, para el hit-test de clic (issue #259)
     #campo = crearCampoEstrellas(MAPA_SEMILLA);
     #decorado = crearDecorado(MAPA_SEMILLA);
     #muestraPrev = null;
@@ -1617,6 +1635,7 @@ function crearClaseMapaV1() {
             alto: canvas.height,
           });
       dibujarFrame(ctx, frame, { ancho: canvas.width, alto: canvas.height, decorado });
+      this.#ultimoFrame = frame;
     }
 
     /* Selección de contacto (issue #126), réplica aislada de la ruta V2:
@@ -1625,6 +1644,20 @@ function crearClaseMapaV1() {
       super.activateListeners(html);
       html.find("[data-contacto]").on("click", (ev) => {
         const callsign = ev.currentTarget?.dataset?.contacto ?? null;
+        this.seleccion = callsign === this.seleccion ? null : callsign;
+        this.render(false);
+      });
+      // Clic directo sobre el objeto en el mapa vivo (issue #259), misma
+      // lógica que la ruta V2: reutiliza la selección/panel de detalle ya
+      // existente en vez de un popover flotante nuevo.
+      html.find(".lagunak-mapa-canvas").on("click", (ev) => {
+        const canvas = ev.currentTarget;
+        if (!this.#ultimoFrame || !canvas) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = ((ev.clientX - rect.left) / rect.width) * canvas.width;
+        const y = ((ev.clientY - rect.top) / rect.height) * canvas.height;
+        const callsign = contactoEnPunto(this.#ultimoFrame.blips, x, y);
+        if (callsign === null) return;
         this.seleccion = callsign === this.seleccion ? null : callsign;
         this.render(false);
       });

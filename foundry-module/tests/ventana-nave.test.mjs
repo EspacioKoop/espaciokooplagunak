@@ -7,6 +7,7 @@ import {
   claveContacto,
   colorFaccion,
   componerFrame,
+  contactoEnPunto,
   crearCampoEstrellas,
   debeDibujar,
   firmaEstructuralContactos,
@@ -368,6 +369,36 @@ test("prepararDetalleContacto tolera DTOs sin tipo ni facción", () => {
   assert.equal(d.tipo, null);
   assert.equal(d.faccion, null);
   assert.equal(d.color, COLOR_NEUTRO);
+});
+
+test("contactoEnPunto selecciona el blip más cercano dentro de tolerancia", () => {
+  const blips = [
+    { callsign: "K-1", x: 100, y: 100, dentro: true },
+    { callsign: "K-2", x: 200, y: 200, dentro: true },
+  ];
+  assert.equal(contactoEnPunto(blips, 102, 98), "K-1");
+  assert.equal(contactoEnPunto(blips, 197, 203), "K-2");
+});
+
+test("contactoEnPunto devuelve null fuera de tolerancia o sin blips", () => {
+  const blips = [{ callsign: "K-1", x: 100, y: 100, dentro: true }];
+  assert.equal(contactoEnPunto(blips, 150, 150), null);
+  assert.equal(contactoEnPunto([], 100, 100), null);
+});
+
+test("contactoEnPunto ignora contactos fuera de alcance (recortados al anillo)", () => {
+  // Un blip `dentro: false` se pinta recortado al anillo, no en x/y real:
+  // pinchar en esas coordenadas no debe seleccionarlo.
+  const blips = [{ callsign: "Lejano", x: 100, y: 100, dentro: false }];
+  assert.equal(contactoEnPunto(blips, 100, 100), null);
+});
+
+test("contactoEnPunto desempata por distancia cuando dos blips caen en tolerancia", () => {
+  const blips = [
+    { callsign: "Lejos", x: 100, y: 100, dentro: true },
+    { callsign: "Cerca", x: 103, y: 100, dentro: true },
+  ];
+  assert.equal(contactoEnPunto(blips, 104, 100), "Cerca");
 });
 
 test("leyendaContactos: nave propia primero, una entrada por facción y neutros al final", () => {

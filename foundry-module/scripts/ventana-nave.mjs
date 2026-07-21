@@ -449,6 +449,31 @@ export function prepararDetalleContacto(contacto, centro) {
 }
 
 /**
+ * Hit-test puro sobre los blips ya proyectados de un frame (issue #259): dado
+ * un punto del canvas, devuelve el callsign del contacto dibujado más cercano
+ * dentro de `tolerancia` píxeles, o null si no hay ninguno a esa distancia.
+ * Los contactos fuera de alcance (`dentro: false`) se pintan recortados al
+ * anillo, no en su posición real, así que no participan del hit-test: pinchar
+ * ahí seleccionaría el objeto equivocado.
+ *
+ * @param {{callsign:string, x:number, y:number, dentro:boolean}[]} blips
+ * @returns {string|null}
+ */
+export function contactoEnPunto(blips = [], x, y, tolerancia = 6) {
+  let mejor = null;
+  let mejorDist = Infinity;
+  for (const blip of blips) {
+    if (!blip.dentro) continue;
+    const dist = Math.hypot(blip.x - x, blip.y - y);
+    if (dist <= tolerancia && dist < mejorDist) {
+      mejor = blip;
+      mejorDist = dist;
+    }
+  }
+  return mejor ? (mejor.callsign ?? "?") : null;
+}
+
+/**
  * Leyenda del mapa para una lista de contactos: la nave propia y una entrada
  * por facción presente (color determinista de colorFaccion), más los objetos
  * sin facción si los hay. Accesible: cada color va acompañado de su texto.

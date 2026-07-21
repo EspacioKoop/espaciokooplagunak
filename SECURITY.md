@@ -38,6 +38,9 @@ en el [`modelo de amenazas del puente`](docs/BRIDGE_THREAT_MODEL.md).
   logs o capturas. Si un secreto se filtra, se rota inmediatamente y se
   registra en el issue correspondiente.
 
+La generación, custodia, rotación, revocación y recuperación del Bearer se
+detallan en [`docs/BRIDGE_AUTHENTICATION.md`](docs/BRIDGE_AUTHENTICATION.md).
+
 ## Transporte del puente Foundry
 
 El puente autentica con un token Bearer, pero su endpoint directo usa HTTP. Por

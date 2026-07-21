@@ -21,6 +21,7 @@
 | [UPSTREAM.md](UPSTREAM.md) | Relación con EmptyEpsilon y sincronización con upstream |
 | [BASELINE.md](BASELINE.md) | Baseline de accesibilidad, seguridad, calidad y fiabilidad |
 | [API_HTTP.md](API_HTTP.md) | Inventario del API HTTP heredado del servidor |
+| [BRIDGE_AUTHENTICATION.md](BRIDGE_AUTHENTICATION.md) | Ciclo de vida, rotación y revocación del Bearer |
 | [CONTENT_EDITOR.md](CONTENT_EDITOR.md) | Editor de contenido integrado |
 
 ## Integración con Foundry VTT

@@ -107,7 +107,7 @@ credencial presente en memoria.
 
 | Amenaza | Control actual | Riesgo residual / seguimiento |
 |---|---|---|
-| Acceso sin autorización o suplantación del GM | Bearer obligatorio, comparación en tiempo constante y UI solo-GM | Un Bearer robado concede la allowlist completa; rotación y revocación operativas se detallarán en #249 |
+| Acceso sin autorización o suplantación del GM | Bearer obligatorio, comparación en tiempo constante y UI solo-GM | Un Bearer robado concede la allowlist completa; seguir la [rotación y revocación operativas](BRIDGE_AUTHENTICATION.md) |
 | Ejecución de Lua arbitrario | Puerto 8080 interno, guardia CI, modelos Pydantic y plantillas Lua del servidor | Un cambio malicioso o defectuoso en `bridge/app.py` sigue siendo código privilegiado y requiere review adversarial |
 | Alteración con campos u operaciones fuera de contrato | Unión discriminada, enums y rangos cerrados; algunas órdenes prohíben campos extra | No existe todavía una política común de tamaño/complejidad para todos los cuerpos; seguimiento #248 |
 | Lectura de telemetría reservada al GM | Bearer solo entregado al GM; jugadores sin URL/token ni `fetch` al puente | `/v1/contacts` es deliberadamente omnisciente y el puente no aplica visibilidad por jugador; seguimiento documental #250 |

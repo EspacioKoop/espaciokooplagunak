@@ -72,12 +72,18 @@ Tres superficies con costes muy distintos; solo dos son nuestras:
   - [x] Pasada de accesibilidad automatizada al módulo Foundry (contraste,
         navegación por teclado, `aria-` en los controles del GM) — PRs #231,
         #274, #281 (ver AECF-METRICAS.md).
-  - [ ] Foco conservado y `aria-live` sin ruido tras re-render en las dos
-        rutas de aplicación (v11 clásico y ApplicationV2): en revisión,
-        PRs #279/#280/#282.
+  - [x] Foco conservado y `aria-live` sin ruido tras re-render en las dos
+        rutas de aplicación (v11 clásico y ApplicationV2) — PRs #279, #280,
+        #282.
   - [ ] Recorrido humano con teclado y lector de pantalla en Foundry real
         (v11.302 y host moderno), coordinado con el smoke general de #29 —
-        el issue #227 no se cierra sin esta evidencia.
+        el issue #227 no se cierra sin esta evidencia. Pasada v11.302
+        completada: encontró una regresión real de `restaurarFoco()`
+        (`pausar`/`reanudar` quedan `disabled` uno a otro; enfocar un control
+        `disabled` es un no-op silencioso del navegador y el foco caía a
+        `document.body`, rompiendo la tabulación del resto de la ventana),
+        corregida con fallback al control enfocable adyacente — ver PR. Falta
+        la pasada de host moderno y el recorrido con lector de pantalla.
 - **Juego C++ heredado (`src/gui/`, `src/screens/`)**: divergencia upstream
   permanente y cara. Regla: solo si un jugador real del fork choca con la
   barrera y no puede resolverse en módulo/doc — y entonces primero PR a

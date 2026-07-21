@@ -44,9 +44,11 @@ para tu SO. Después ofrece un menú:
    `clip.exe`) para pegarlo en **Configurar token del puente** sin abrir el
    archivo a mano. El asistente nunca lo muestra y vacía el portapapeles cuando
    confirmas que ya lo has pegado; un gestor de historial externo debe limpiarse
-   aparte. Si no hay herramienta compatible, falla cerrado. Tras pegarlo, el botón
-   **Probar conexión con el puente** de los controles de escena del GM en
-   Foundry verifica el resultado (ver
+   aparte. Si no hay herramienta compatible, falla cerrado. Al pulsar **Guardar**
+   en ese mismo diálogo, Foundry ya comprueba la conexión con el puente y
+   notifica el resultado real (token válido, puente inaccesible, token
+   rechazado…) — no hace falta abrir aparte **Probar conexión con el puente**
+   salvo para volver a comprobar el estado sin cambiar el token (ver
    [`foundry-module/README.md`](../foundry-module/README.md)).
 
 ## Seguridad

@@ -12,6 +12,7 @@ async function loadSession({
   renderFail = false,
   renderFailAfter = null,
   closeFail = false,
+  bridgeUrl = "",
 } = {}) {
   const notifications = { info: [], warn: [], error: [] };
   const settingsWrites = [];
@@ -61,6 +62,9 @@ async function loadSession({
         if (settingsSet) return settingsSet(moduleId, key, value);
         if (settingsFail) throw new Error("storage unavailable");
         settingsWrites.push([moduleId, key, value]);
+      },
+      get(_moduleId, key) {
+        return key === "bridgeUrl" ? bridgeUrl : undefined;
       },
     },
     i18n: { localize: (key) => key },
@@ -222,7 +226,10 @@ test("v11 guarda el campo en memoria, lo cierra y permite reabrir", async () => 
 
   assert.equal(module.getBridgeToken(), "token-v11");
   assert.equal(app.closed, true);
-  assert.deepEqual(notifications.info, ["LAGUNAK.Token.Configurado"]);
+  // Guardar dispara el mismo diagnóstico que "Probar conexión" (issue #289):
+  // sin URL de puente configurada, el resultado es "sin-url", no el genérico
+  // "Token configurado" de antes.
+  assert.deepEqual(notifications.warn, ["LAGUNAK.Diagnostico.SinUrl"]);
   const reopened = await module.openBridgeTokenApp();
   assert.notEqual(reopened, app);
   assert.equal(instances.length, 2);
@@ -240,10 +247,30 @@ test("ApplicationV2 conecta guardar y borrar sin persistencia", async () => {
   const reopened = await module.openBridgeTokenApp();
   await reopened.constructor.DEFAULT_OPTIONS.actions.clearToken.call(reopened);
   assert.equal(module.getBridgeToken(), "");
-  assert.deepEqual(notifications.info, [
-    "LAGUNAK.Token.Configurado",
-    "LAGUNAK.Token.Borrado",
-  ]);
+  assert.deepEqual(notifications.warn, ["LAGUNAK.Diagnostico.SinUrl"]);
+  assert.deepEqual(notifications.info, ["LAGUNAK.Token.Borrado"]);
+});
+
+test("guardar dispara el diagnóstico completo y notifica éxito real, no un genérico (#289)", async () => {
+  const { module, notifications } = await loadSession({ modern: true, bridgeUrl: "http://bridge.test" });
+  const calls = [];
+  globalThis.fetch = async (url) => {
+    calls.push(url);
+    if (url.endsWith("/healthz")) return { ok: true, status: 200, async json() { return { status: "ok" }; } };
+    if (url.endsWith("/v1/state")) return { ok: true, status: 200, async json() { return { ship: {} }; } };
+    throw new Error(`ruta inesperada: ${url}`);
+  };
+  try {
+    const app = await module.openBridgeTokenApp();
+    app.element = { querySelector: () => ({ value: "token-valido" }) };
+    await app.constructor.DEFAULT_OPTIONS.actions.saveToken.call(app);
+  } finally {
+    delete globalThis.fetch;
+  }
+  assert.equal(module.getBridgeToken(), "token-valido");
+  assert.deepEqual(notifications.info, ["LAGUNAK.Diagnostico.Ok"]);
+  assert.deepEqual(notifications.warn, []);
+  assert.equal(calls.length, 2);
 });
 
 test("el contrato no vuelve a persistir ni prerrellenar el secreto", async () => {

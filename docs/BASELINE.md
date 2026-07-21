@@ -62,13 +62,22 @@ Baseline normativa: [SECURITY.md](../SECURITY.md) (no se duplica aquí).
 Tres superficies con costes muy distintos; solo dos son nuestras:
 
 - **Módulo Foundry (`foundry-module/`) y documentación**: código propio,
-  mejorable sin merge tax. Pendiente de baseline real (hoy solo hay `aria-`/
-  `role` puntuales en un `.hbs`).
-  - [ ] Pasada de accesibilidad al módulo Foundry (contraste de la ventana
-        Neo Geo, navegación por teclado, `aria-` en los controles del GM).
-        La condición de secuencia que la aplazaba (esperar al mapa vivo,
-        PR #73) se cumplió el 2026-07-14: es la siguiente acción pendiente
-        de la dimensión, sin bloqueo previo (ver AECF-METRICAS.md).
+  mejorable sin merge tax. Cobertura automatizada real desde el PR #231
+  (2026-07-20): `aria-`/`role`/nombre accesible en 4 de las 5 plantillas,
+  foco visible, `prefers-reduced-motion` y contraste AA calculado desde los
+  tokens CSS reales — todo verificado por regresión Node en CI, no solo
+  documentado. El PR #274 cubrió gestión de puestos y espacios de puesto; el
+  PR #281 fijó por regresión el orden de teclado en las cinco superficies
+  (issue #227).
+  - [x] Pasada de accesibilidad automatizada al módulo Foundry (contraste,
+        navegación por teclado, `aria-` en los controles del GM) — PRs #231,
+        #274, #281 (ver AECF-METRICAS.md).
+  - [ ] Foco conservado y `aria-live` sin ruido tras re-render en las dos
+        rutas de aplicación (v11 clásico y ApplicationV2): en revisión,
+        PRs #279/#280/#282.
+  - [ ] Recorrido humano con teclado y lector de pantalla en Foundry real
+        (v11.302 y host moderno), coordinado con el smoke general de #29 —
+        el issue #227 no se cierra sin esta evidencia.
 - **Juego C++ heredado (`src/gui/`, `src/screens/`)**: divergencia upstream
   permanente y cara. Regla: solo si un jugador real del fork choca con la
   barrera y no puede resolverse en módulo/doc — y entonces primero PR a

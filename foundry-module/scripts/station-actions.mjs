@@ -6,7 +6,7 @@ import { normalizeStation } from "./station-assignment.mjs";
 // ya la autorice y que el puesto la necesite. Un puesto ausente aquí no puede
 // emitir ninguna orden operativa.
 export const STATION_ACTIONS = Object.freeze({
-  navigation: Object.freeze(["set_target_heading"]),
+  navigation: Object.freeze(["set_target_heading", "set_impulse", "set_warp"]),
 });
 
 // Correspondencia acción del contrato → método de BridgeClient. La validación
@@ -16,6 +16,14 @@ const ACTION_DISPATCH = Object.freeze({
   set_target_heading: Object.freeze({
     method: "setTargetHeading",
     args: (params) => [params?.heading],
+  }),
+  set_impulse: Object.freeze({
+    method: "setImpulse",
+    args: (params) => [params?.value],
+  }),
+  set_warp: Object.freeze({
+    method: "setWarp",
+    args: (params) => [params?.level],
   }),
 });
 

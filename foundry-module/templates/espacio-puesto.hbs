@@ -81,6 +81,24 @@
             </form>
           {{/if}}
 
+          {{#if canOrderImpulse}}
+            <form class="lagunak-workspace__orden" data-workspace-order="impulse">
+              <label for="lagunak-orden-impulso">{{localize "LAGUNAK.Espacios.Orden.ImpulsoLabel"}}</label>
+              <input id="lagunak-orden-impulso" name="impulse" type="number" min="-1" max="1" step="0.1" inputmode="decimal" />
+              <button type="button" data-workspace-action="orden-impulso">{{localize "LAGUNAK.Espacios.Orden.FijarImpulso"}}</button>
+              <small>{{localize "LAGUNAK.Espacios.Orden.ImpulsoAyuda"}}</small>
+            </form>
+          {{/if}}
+
+          {{#if canOrderWarp}}
+            <form class="lagunak-workspace__orden" data-workspace-order="warp">
+              <label for="lagunak-orden-warp">{{localize "LAGUNAK.Espacios.Orden.WarpLabel"}}</label>
+              <input id="lagunak-orden-warp" name="warp" type="number" min="0" max="4" step="1" inputmode="numeric" />
+              <button type="button" data-workspace-action="orden-warp">{{localize "LAGUNAK.Espacios.Orden.FijarWarp"}}</button>
+              <small>{{localize "LAGUNAK.Espacios.Orden.WarpAyuda"}}</small>
+            </form>
+          {{/if}}
+
           {{#if systems.length}}
             <div class="lagunak-workspace__systems">
               <div class="lagunak-workspace__list-heading">

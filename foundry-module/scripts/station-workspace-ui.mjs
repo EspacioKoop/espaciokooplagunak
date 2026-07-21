@@ -145,28 +145,62 @@ function stationFromEvent(event) {
   return event?.currentTarget?.dataset?.station ?? null;
 }
 
-// Valida el rumbo introducido por el tripulante antes de emitir la orden.
-// Devuelve el grado normalizado o `null` si es inválido. Rechaza ausencia y
-// cadena vacía/espacios ANTES de convertir: `Number("")` es 0 y colaría como
-// una orden real a rumbo 0 en vez de avisar. El cero explícito sí es válido.
-export function parseHeadingValue(raw) {
-  if (raw === undefined || raw === null) return null;
-  const texto = String(raw).trim();
-  if (texto === "") return null;
-  const heading = Number(texto);
-  if (!Number.isFinite(heading) || heading < 0 || heading >= 360) return null;
-  return heading;
+// Formularios de orden de puesto: cada acción de UI declara de qué input lee,
+// cómo valida el valor del cliente (el puente revalida rangos igualmente) y bajo
+// qué parámetro lo emite. La validación aquí es solo cortesía de UX.
+export const ORDER_FORMS = Object.freeze({
+  "orden-rumbo": {
+    inputId: "lagunak-orden-rumbo",
+    action: "set_target_heading",
+    param: "heading",
+    valid: (n) => Number.isFinite(n) && n >= 0 && n < 360,
+    invalidKey: "LAGUNAK.Espacios.Orden.RumboInvalido",
+  },
+  "orden-impulso": {
+    inputId: "lagunak-orden-impulso",
+    action: "set_impulse",
+    param: "value",
+    valid: (n) => Number.isFinite(n) && n >= -1 && n <= 1,
+    invalidKey: "LAGUNAK.Espacios.Orden.ImpulsoInvalido",
+  },
+  "orden-warp": {
+    inputId: "lagunak-orden-warp",
+    action: "set_warp",
+    param: "level",
+    valid: (n) => Number.isInteger(n) && n >= 0 && n <= 4,
+    invalidKey: "LAGUNAK.Espacios.Orden.WarpInvalido",
+  },
+});
+
+// Convierte el texto crudo del input en número, rechazando ausencia y vacío
+// ANTES de convertir: Number("") === 0 colaría una orden a cero como válida
+// (rumbo 0, impulso 0, warp 0). Devuelve null si no hay dato utilizable.
+export function parseOrderValue(raw) {
+  if (raw === null || raw === undefined) return null;
+  const text = String(raw).trim();
+  if (text === "") return null;
+  const value = Number(text);
+  return Number.isNaN(value) ? null : value;
 }
 
-function submitHeadingOrder(app) {
+// Evalúa el texto de un input contra el spec de su formulario. Puro y testeable
+// sin DOM: separa "no hay dato / no convierte" de "fuera de rango". Devuelve
+// { ok:false } si debe rechazarse, o { ok:true, value } si puede emitirse.
+export function evaluateOrder(raw, spec) {
+  const value = parseOrderValue(raw);
+  if (value === null || !spec.valid(value)) return { ok: false };
+  return { ok: true, value };
+}
+
+function submitStationOrder(app, spec) {
   const root = app.element?.[0] ?? app.element;
-  const input = root?.querySelector?.("#lagunak-orden-rumbo");
-  const heading = parseHeadingValue(input?.value);
-  if (heading === null) {
-    ui.notifications?.warn?.(game.i18n.localize("LAGUNAK.Espacios.Orden.RumboInvalido"));
+  const raw = root?.querySelector?.(`#${spec.inputId}`)?.value;
+  const result = evaluateOrder(raw, spec);
+  if (!result.ok) {
+    ui.notifications?.warn?.(game.i18n.localize(spec.invalidKey));
     return;
   }
-  emitWorkspaceOrder({ action: "set_target_heading", params: { heading } });
+  emitWorkspaceOrder({ action: spec.action, params: { [spec.param]: result.value } });
   ui.notifications?.info?.(game.i18n.localize("LAGUNAK.Espacios.Orden.Enviada"));
 }
 
@@ -174,7 +208,7 @@ async function handleWorkspaceAction(app, event) {
   const action = actionFromEvent(event);
   if (action === "refresh") return refreshTelemetry(app);
   if (action === "assignments") return openStationApp();
-  if (action === "orden-rumbo") return submitHeadingOrder(app);
+  if (ORDER_FORMS[action]) return submitStationOrder(app, ORDER_FORMS[action]);
   if (action === "preview" && game.user?.isGM) {
     app.setPreviewStation(stationFromEvent(event));
     renderWorkspace();

@@ -3,6 +3,7 @@ import { getBridgeToken } from "./bridge-token-session.mjs";
 import { openStationApp } from "./station-ui.mjs";
 import { buildWorkspaceModel, stationForWorkspace } from "./station-workspaces.mjs";
 import { emitWorkspaceOrder } from "./station-order-wiring.mjs";
+import { esSistemaValido, esNivelValido } from "./ingenieria-control.mjs";
 
 let configuredModuleId = null;
 let workspaceApp = null;
@@ -145,36 +146,10 @@ function stationFromEvent(event) {
   return event?.currentTarget?.dataset?.station ?? null;
 }
 
-// Formularios de orden de puesto: cada acción de UI declara de qué input lee,
-// cómo valida el valor del cliente (el puente revalida rangos igualmente) y bajo
-// qué parámetro lo emite. La validación aquí es solo cortesía de UX.
-export const ORDER_FORMS = Object.freeze({
-  "orden-rumbo": {
-    inputId: "lagunak-orden-rumbo",
-    action: "set_target_heading",
-    param: "heading",
-    valid: (n) => Number.isFinite(n) && n >= 0 && n < 360,
-    invalidKey: "LAGUNAK.Espacios.Orden.RumboInvalido",
-  },
-  "orden-impulso": {
-    inputId: "lagunak-orden-impulso",
-    action: "set_impulse",
-    param: "value",
-    valid: (n) => Number.isFinite(n) && n >= -1 && n <= 1,
-    invalidKey: "LAGUNAK.Espacios.Orden.ImpulsoInvalido",
-  },
-  "orden-warp": {
-    inputId: "lagunak-orden-warp",
-    action: "set_warp",
-    param: "level",
-    valid: (n) => Number.isInteger(n) && n >= 0 && n <= 4,
-    invalidKey: "LAGUNAK.Espacios.Orden.WarpInvalido",
-  },
-});
-
-// Convierte el texto crudo del input en número, rechazando ausencia y vacío
+// Convierte el texto crudo de un input en número, rechazando ausencia y vacío
 // ANTES de convertir: Number("") === 0 colaría una orden a cero como válida
-// (rumbo 0, impulso 0, warp 0). Devuelve null si no hay dato utilizable.
+// (rumbo 0, impulso 0, warp 0, nivel 0). Devuelve null si no hay dato utilizable
+// —y los predicados `valid`/`esNivelValido` ya rechazan null—.
 export function parseOrderValue(raw) {
   if (raw === null || raw === undefined) return null;
   const text = String(raw).trim();
@@ -183,24 +158,57 @@ export function parseOrderValue(raw) {
   return Number.isNaN(value) ? null : value;
 }
 
-// Evalúa el texto de un input contra el spec de su formulario. Puro y testeable
-// sin DOM: separa "no hay dato / no convierte" de "fuera de rango". Devuelve
-// { ok:false } si debe rechazarse, o { ok:true, value } si puede emitirse.
-export function evaluateOrder(raw, spec) {
-  const value = parseOrderValue(raw);
-  if (value === null || !spec.valid(value)) return { ok: false };
-  return { ok: true, value };
+function numberFrom(root, id) {
+  return parseOrderValue(root?.querySelector?.(`#${id}`)?.value);
 }
+
+// Orden de un único campo numérico: valida y devuelve los parámetros o null.
+function numericOrder(inputId, param, valid) {
+  return (root) => {
+    const value = numberFrom(root, inputId);
+    return valid(value) ? { [param]: value } : null;
+  };
+}
+
+// Formularios de orden de puesto: cada acción de UI declara cómo LEE sus
+// parámetros del DOM (devolviendo el objeto de params o null si es inválido),
+// a qué acción del contrato los emite y qué aviso mostrar si no validan. La
+// validación aquí es cortesía de UX; el puente revalida rangos igualmente.
+export const ORDER_FORMS = Object.freeze({
+  "orden-rumbo": {
+    action: "set_target_heading",
+    read: numericOrder("lagunak-orden-rumbo", "heading", (n) => Number.isFinite(n) && n >= 0 && n < 360),
+    invalidKey: "LAGUNAK.Espacios.Orden.RumboInvalido",
+  },
+  "orden-impulso": {
+    action: "set_impulse",
+    read: numericOrder("lagunak-orden-impulso", "value", (n) => Number.isFinite(n) && n >= -1 && n <= 1),
+    invalidKey: "LAGUNAK.Espacios.Orden.ImpulsoInvalido",
+  },
+  "orden-warp": {
+    action: "set_warp",
+    read: numericOrder("lagunak-orden-warp", "level", (n) => Number.isInteger(n) && n >= 0 && n <= 4),
+    invalidKey: "LAGUNAK.Espacios.Orden.WarpInvalido",
+  },
+  "orden-potencia": {
+    action: "set_system_power",
+    read: (root) => {
+      const system = root?.querySelector?.("#lagunak-orden-sistema")?.value ?? "";
+      const level = numberFrom(root, "lagunak-orden-nivel");
+      return esSistemaValido(system) && esNivelValido(level) ? { system, level } : null;
+    },
+    invalidKey: "LAGUNAK.Espacios.Orden.PotenciaInvalida",
+  },
+});
 
 function submitStationOrder(app, spec) {
   const root = app.element?.[0] ?? app.element;
-  const raw = root?.querySelector?.(`#${spec.inputId}`)?.value;
-  const result = evaluateOrder(raw, spec);
-  if (!result.ok) {
+  const params = spec.read(root);
+  if (!params) {
     ui.notifications?.warn?.(game.i18n.localize(spec.invalidKey));
     return;
   }
-  emitWorkspaceOrder({ action: spec.action, params: { [spec.param]: result.value } });
+  emitWorkspaceOrder({ action: spec.action, params });
   ui.notifications?.info?.(game.i18n.localize("LAGUNAK.Espacios.Orden.Enviada"));
 }
 

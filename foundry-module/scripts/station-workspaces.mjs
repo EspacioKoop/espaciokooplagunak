@@ -1,5 +1,6 @@
 import { STATIONS, normalizeStation } from "./station-assignment.mjs";
 import { isActionAllowed } from "./station-actions.mjs";
+import { SISTEMAS_INGENIERIA, NIVELES_POTENCIA } from "./ingenieria-control.mjs";
 import { prepareSystemRows } from "./ship-view.mjs";
 
 const DEFINITIONS = Object.freeze({
@@ -254,13 +255,20 @@ export function buildWorkspaceModel({
     stationIcon: definition.icon,
     accent: definition.accent,
     isNavigation: normalized === "navigation",
-    // Acciones operativas por puesto (#236/#238): disponibles aunque el
+    // Acciones operativas por puesto (#236/#238/#240): disponibles aunque el
     // tripulante no tenga telemetría —la orden es intención, la simulación es
     // autoritativa—. Solo para tripulación (no-GM): el GM tiene sus controles
     // directos y `game.socket.emit` no se autoentrega, así que no le serviría.
     canOrderHeading: !isGM && isActionAllowed(normalized, "set_target_heading"),
     canOrderImpulse: !isGM && isActionAllowed(normalized, "set_impulse"),
     canOrderWarp: !isGM && isActionAllowed(normalized, "set_warp"),
+    canOrderPower: !isGM && isActionAllowed(normalized, "set_system_power"),
+    powerSystems: !isGM && isActionAllowed(normalized, "set_system_power")
+      ? SISTEMAS_INGENIERIA.map((id) => ({ value: id, label: localize(i18n, `LAGUNAK.Sistemas.${id}`) }))
+      : [],
+    powerLevels: !isGM && isActionAllowed(normalized, "set_system_power")
+      ? NIVELES_POTENCIA.map((value) => ({ value, label: String(value) }))
+      : [],
     navigationHeading: integer(ship?.heading),
     navigationAriaLabel: format(i18n, "LAGUNAK.Espacios.RumboAccesible", { heading: integer(ship?.heading) }),
     isGM: Boolean(isGM),

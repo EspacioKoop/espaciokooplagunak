@@ -1,11 +1,21 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { ORDER_FORMS, parseOrderValue, evaluateOrder } from "../scripts/station-workspace-ui.mjs";
+import { ORDER_FORMS, parseOrderValue } from "../scripts/station-workspace-ui.mjs";
 
 // Regresión del input vacío: Number("") === 0 hacía que un envío sin dato pasara
-// como orden válida a cero (rumbo/impulso/warp). parseOrderValue comprueba la
-// presencia ANTES de convertir.
+// como orden válida a cero (rumbo/impulso/warp/nivel). parseOrderValue comprueba
+// la presencia ANTES de convertir, y los predicados de rango ya rechazan null.
+
+// Root DOM falso: devuelve el valor indicado por id de input.
+function fakeRoot(values = {}) {
+  return {
+    querySelector(sel) {
+      const id = sel.replace(/^#/, "");
+      return id in values ? { value: values[id] } : null;
+    },
+  };
+}
 
 test("parseOrderValue rechaza ausencia y vacío (nunca lo trata como 0)", () => {
   assert.equal(parseOrderValue(null), null);
@@ -22,26 +32,38 @@ test("parseOrderValue convierte texto numérico válido, incluido el cero explí
   assert.equal(parseOrderValue("3.5"), 3.5);
 });
 
-test("evaluateOrder rechaza el input vacío en las tres órdenes (no emitiría)", () => {
-  for (const key of Object.keys(ORDER_FORMS)) {
-    const spec = ORDER_FORMS[key];
-    assert.deepEqual(evaluateOrder("", spec), { ok: false }, `${key} vacío no debe emitir`);
-    assert.deepEqual(evaluateOrder("   ", spec), { ok: false }, `${key} espacios no debe emitir`);
-    assert.deepEqual(evaluateOrder(undefined, spec), { ok: false }, `${key} sin input no debe emitir`);
+test("read() con input vacío NO devuelve params en rumbo, impulso y warp", () => {
+  const inputs = {
+    "orden-rumbo": "lagunak-orden-rumbo",
+    "orden-impulso": "lagunak-orden-impulso",
+    "orden-warp": "lagunak-orden-warp",
+  };
+  for (const [form, inputId] of Object.entries(inputs)) {
+    const spec = ORDER_FORMS[form];
+    assert.equal(spec.read(fakeRoot({ [inputId]: "" })), null, `${form} vacío no debe emitir`);
+    assert.equal(spec.read(fakeRoot({ [inputId]: "   " })), null, `${form} espacios no debe emitir`);
+    assert.equal(spec.read(fakeRoot({})), null, `${form} sin input no debe emitir`);
   }
 });
 
-test("evaluateOrder admite el cero explícito solo donde el spec lo permite", () => {
-  // rumbo 0, impulso 0 y warp 0 son válidos SI se teclearon; el bug era aceptar
-  // el vacío como 0, no rechazar el 0 tecleado.
-  assert.deepEqual(evaluateOrder("0", ORDER_FORMS["orden-rumbo"]), { ok: true, value: 0 });
-  assert.deepEqual(evaluateOrder("0", ORDER_FORMS["orden-impulso"]), { ok: true, value: 0 });
-  assert.deepEqual(evaluateOrder("0", ORDER_FORMS["orden-warp"]), { ok: true, value: 0 });
+test("read() de potencia rechaza el nivel vacío aunque el sistema sea válido", () => {
+  const spec = ORDER_FORMS["orden-potencia"];
+  assert.equal(
+    spec.read(fakeRoot({ "lagunak-orden-sistema": "reactor", "lagunak-orden-nivel": "" })),
+    null,
+    "nivel vacío no debe emitir",
+  );
 });
 
-test("evaluateOrder rechaza valores fuera de rango de cada spec", () => {
-  assert.deepEqual(evaluateOrder("360", ORDER_FORMS["orden-rumbo"]), { ok: false });
-  assert.deepEqual(evaluateOrder("2", ORDER_FORMS["orden-impulso"]), { ok: false });
-  assert.deepEqual(evaluateOrder("5", ORDER_FORMS["orden-warp"]), { ok: false });
-  assert.deepEqual(evaluateOrder("1.5", ORDER_FORMS["orden-warp"]), { ok: false });
+test("read() admite el cero explícito donde el rango lo permite", () => {
+  assert.deepEqual(ORDER_FORMS["orden-rumbo"].read(fakeRoot({ "lagunak-orden-rumbo": "0" })), { heading: 0 });
+  assert.deepEqual(ORDER_FORMS["orden-impulso"].read(fakeRoot({ "lagunak-orden-impulso": "0" })), { value: 0 });
+  assert.deepEqual(ORDER_FORMS["orden-warp"].read(fakeRoot({ "lagunak-orden-warp": "0" })), { level: 0 });
+});
+
+test("read() rechaza valores fuera de rango de cada spec", () => {
+  assert.equal(ORDER_FORMS["orden-rumbo"].read(fakeRoot({ "lagunak-orden-rumbo": "360" })), null);
+  assert.equal(ORDER_FORMS["orden-impulso"].read(fakeRoot({ "lagunak-orden-impulso": "2" })), null);
+  assert.equal(ORDER_FORMS["orden-warp"].read(fakeRoot({ "lagunak-orden-warp": "5" })), null);
+  assert.equal(ORDER_FORMS["orden-warp"].read(fakeRoot({ "lagunak-orden-warp": "1.5" })), null);
 });

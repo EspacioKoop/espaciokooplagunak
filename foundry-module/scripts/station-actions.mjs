@@ -7,6 +7,7 @@ import { normalizeStation } from "./station-assignment.mjs";
 // emitir ninguna orden operativa.
 export const STATION_ACTIONS = Object.freeze({
   navigation: Object.freeze(["set_target_heading", "set_impulse", "set_warp"]),
+  engineering: Object.freeze(["set_system_power"]),
 });
 
 // Correspondencia acción del contrato → método de BridgeClient. La validación
@@ -24,6 +25,10 @@ const ACTION_DISPATCH = Object.freeze({
   set_warp: Object.freeze({
     method: "setWarp",
     args: (params) => [params?.level],
+  }),
+  set_system_power: Object.freeze({
+    method: "setSystemPower",
+    args: (params) => [params?.system, params?.level],
   }),
 });
 

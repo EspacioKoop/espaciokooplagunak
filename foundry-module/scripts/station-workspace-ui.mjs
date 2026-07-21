@@ -140,11 +140,24 @@ function stationFromEvent(event) {
   return event?.currentTarget?.dataset?.station ?? null;
 }
 
+// Valida el rumbo introducido por el tripulante antes de emitir la orden.
+// Devuelve el grado normalizado o `null` si es inválido. Rechaza ausencia y
+// cadena vacía/espacios ANTES de convertir: `Number("")` es 0 y colaría como
+// una orden real a rumbo 0 en vez de avisar. El cero explícito sí es válido.
+export function parseHeadingValue(raw) {
+  if (raw === undefined || raw === null) return null;
+  const texto = String(raw).trim();
+  if (texto === "") return null;
+  const heading = Number(texto);
+  if (!Number.isFinite(heading) || heading < 0 || heading >= 360) return null;
+  return heading;
+}
+
 function submitHeadingOrder(app) {
   const root = app.element?.[0] ?? app.element;
   const input = root?.querySelector?.("#lagunak-orden-rumbo");
-  const heading = Number(input?.value);
-  if (!Number.isFinite(heading) || heading < 0 || heading >= 360) {
+  const heading = parseHeadingValue(input?.value);
+  if (heading === null) {
     ui.notifications?.warn?.(game.i18n.localize("LAGUNAK.Espacios.Orden.RumboInvalido"));
     return;
   }

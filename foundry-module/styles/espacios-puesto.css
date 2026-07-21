@@ -88,7 +88,10 @@
   clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
   font: 800 15px/1 monospace;
   letter-spacing: 0.08em;
-  box-shadow: 0 0 24px rgba(var(--lagunak-accent-rgb), 0.28);
+  /* Remate duotono con el color secundario del puesto (identidad, #244). */
+  box-shadow:
+    0 0 24px rgba(var(--lagunak-accent-rgb), 0.28),
+    inset 0 -4px 0 rgba(var(--lagunak-accent-2-rgb, var(--lagunak-accent-rgb)), 0.75);
 }
 
 .lagunak-workspace__icon {
@@ -442,4 +445,74 @@
     animation: none !important;
     transition: none !important;
   }
+}
+
+/* --- Identidad visual por puesto (#244) ------------------------------------
+ * Cada puesto suma a su acento un emblema pixel-art propio y un color
+ * secundario duotono, partiendo de la estética ya vigente. Los emblemas son
+ * SVG data-URI autocontenidos (sin assets externos), pintados con `crispEdges`
+ * y `image-rendering: pixelated` para conservar el aspecto pixel-art. El
+ * emblema es decorativo (aria-hidden); el icono y el código del puesto siguen
+ * dando la lectura literal accesible. */
+.lagunak-workspace__emblem {
+  width: 24px;
+  height: 24px;
+  image-rendering: pixelated;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 24px 24px;
+  filter: drop-shadow(0 0 5px rgba(var(--lagunak-accent-2-rgb, var(--lagunak-accent-rgb)), 0.55));
+}
+
+/* Motivo de fondo tenue por puesto: una franja diagonal duotono que distingue
+ * la consola de cada estación sin competir con la información. Va en ::before
+ * (el ::after del shell ya pinta las scanlines) y detrás del contenido. */
+.lagunak-workspace__shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background: repeating-linear-gradient(
+    135deg,
+    rgba(var(--lagunak-accent-2-rgb, var(--lagunak-accent-rgb)), 0.05) 0,
+    rgba(var(--lagunak-accent-2-rgb, var(--lagunak-accent-rgb)), 0.05) 2px,
+    transparent 2px,
+    transparent 10px);
+}
+
+/* Capitán — corona (ámbar) */
+.lagunak-puesto-captain { --lagunak-accent-2: #ff9d5c; --lagunak-accent-2-rgb: 255, 157, 92; }
+.lagunak-puesto-captain .lagunak-workspace__emblem {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Crect x='1' y='1' width='1' height='3' fill='rgb(255,200,87)'/%3E%3Crect x='3' y='0' width='1' height='4' fill='rgb(255,200,87)'/%3E%3Crect x='5' y='1' width='1' height='3' fill='rgb(255,200,87)'/%3E%3Crect x='1' y='3' width='5' height='3' fill='rgb(255,200,87)'/%3E%3C/svg%3E");
+}
+
+/* Navegación — rosa de los vientos (cian) */
+.lagunak-puesto-navigation { --lagunak-accent-2: #4affc6; --lagunak-accent-2-rgb: 74, 255, 198; }
+.lagunak-puesto-navigation .lagunak-workspace__emblem {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Crect x='3' y='0' width='2' height='2' fill='rgb(67,232,255)'/%3E%3Crect x='3' y='6' width='2' height='2' fill='rgb(67,232,255)'/%3E%3Crect x='0' y='3' width='2' height='2' fill='rgb(67,232,255)'/%3E%3Crect x='6' y='3' width='2' height='2' fill='rgb(67,232,255)'/%3E%3Crect x='3' y='3' width='2' height='2' fill='rgb(67,232,255)'/%3E%3C/svg%3E");
+}
+
+/* Ingeniería — engranaje (lima) */
+.lagunak-puesto-engineering { --lagunak-accent-2: #d7f06f; --lagunak-accent-2-rgb: 215, 240, 111; }
+.lagunak-puesto-engineering .lagunak-workspace__emblem {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Crect x='2' y='2' width='4' height='4' fill='rgb(141,240,111)'/%3E%3Crect x='3' y='0' width='2' height='1' fill='rgb(141,240,111)'/%3E%3Crect x='3' y='7' width='2' height='1' fill='rgb(141,240,111)'/%3E%3Crect x='0' y='3' width='1' height='2' fill='rgb(141,240,111)'/%3E%3Crect x='7' y='3' width='1' height='2' fill='rgb(141,240,111)'/%3E%3C/svg%3E");
+}
+
+/* Sensores — barrido de radar (violeta) */
+.lagunak-puesto-sensors { --lagunak-accent-2: #ff94e0; --lagunak-accent-2-rgb: 255, 148, 224; }
+.lagunak-puesto-sensors .lagunak-workspace__emblem {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Crect x='1' y='1' width='6' height='1' fill='rgb(196,148,255)'/%3E%3Crect x='2' y='3' width='4' height='1' fill='rgb(196,148,255)'/%3E%3Crect x='3' y='5' width='2' height='1' fill='rgb(196,148,255)'/%3E%3C/svg%3E");
+}
+
+/* Comunicaciones — señal ascendente (azul) */
+.lagunak-puesto-communications { --lagunak-accent-2: #6be0ff; --lagunak-accent-2-rgb: 107, 224, 255; }
+.lagunak-puesto-communications .lagunak-workspace__emblem {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Crect x='1' y='5' width='1' height='2' fill='rgb(107,168,255)'/%3E%3Crect x='3' y='3' width='1' height='4' fill='rgb(107,168,255)'/%3E%3Crect x='5' y='1' width='1' height='6' fill='rgb(107,168,255)'/%3E%3C/svg%3E");
+}
+
+/* Armas — retícula (rojo) */
+.lagunak-puesto-weapons { --lagunak-accent-2: #ff9d62; --lagunak-accent-2-rgb: 255, 157, 98; }
+.lagunak-puesto-weapons .lagunak-workspace__emblem {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Crect x='3' y='0' width='2' height='1' fill='rgb(255,98,111)'/%3E%3Crect x='3' y='7' width='2' height='1' fill='rgb(255,98,111)'/%3E%3Crect x='0' y='3' width='1' height='2' fill='rgb(255,98,111)'/%3E%3Crect x='7' y='3' width='1' height='2' fill='rgb(255,98,111)'/%3E%3Crect x='3' y='2' width='2' height='4' fill='rgb(255,98,111)'/%3E%3Crect x='2' y='3' width='4' height='2' fill='rgb(255,98,111)'/%3E%3C/svg%3E");
 }

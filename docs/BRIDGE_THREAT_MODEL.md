@@ -109,12 +109,12 @@ credencial presente en memoria.
 |---|---|---|
 | Acceso sin autorización o suplantación del GM | Bearer obligatorio, comparación en tiempo constante y UI solo-GM | Un Bearer robado concede la allowlist completa; seguir la [rotación y revocación operativas](BRIDGE_AUTHENTICATION.md) |
 | Ejecución de Lua arbitrario | Puerto 8080 interno, guardia CI, modelos Pydantic y plantillas Lua del servidor | Un cambio malicioso o defectuoso en `bridge/app.py` sigue siendo código privilegiado y requiere review adversarial |
-| Alteración con campos u operaciones fuera de contrato | Unión discriminada, enums y rangos cerrados; algunas órdenes prohíben campos extra | No existe todavía una política común de tamaño/complejidad para todos los cuerpos; seguimiento #248 |
+| Alteración con campos u operaciones fuera de contrato | Unión discriminada, enums y rangos cerrados; algunas órdenes prohíben campos extra; todos los cuerpos mutables se limitan a 16 KiB antes del parseo JSON | El límite de tamaño no sustituye la validación semántica ni una cuota diferenciada por identidad |
 | Lectura de telemetría reservada al GM | Bearer solo entregado al GM; jugadores sin URL/token ni `fetch` al puente | `/v1/contacts` es deliberadamente omnisciente y el puente no aplica visibilidad por jugador; seguimiento documental #250 |
 | Intercepción del Bearer o respuestas | Loopback por defecto; se exige túnel, VPN confiable o HTTPS fuera del host | HTTP en una red no confiable revela credencial y estado; no hay TLS integrado en FastAPI |
 | Repetición de una orden | Lista blanca y validación reducen el impacto de cada llamada | El contrato v0 no tiene nonce ni idempotency key general: un retry puede repetir una mutación |
 | Duplicación de eventos en Journal | `eventId` persistido y comprobado antes de crear la página | Depende de que cada productor emita una identidad de sesión/evento estable |
-| Agotamiento del puente o del juego | Rate limit global, timeout de 5 s y respuesta heredada limitada a 64 KiB | El rate limit es global, en memoria y por proceso; no sustituye límites del proxy. El límite de cuerpo entrante sigue en #248 |
+| Agotamiento del puente o del juego | Rate limit global, cuerpos entrantes limitados a 16 KiB, timeout de 5 s y respuesta heredada limitada a 64 KiB | El rate limit es global, en memoria y por proceso; no sustituye límites del proxy ni cuotas por cliente |
 | Respuesta heredada malformada o excesiva | Estado HTTP, tamaño y parseo JSON se validan; errores se traducen a `502` genérico | Un servidor de juego comprometido puede degradar disponibilidad; no se considera una raíz de confianza para secretos |
 | Filtración por errores o logs | Errores externos genéricos; política de no registrar tokens | Dependencias, proxy y configuración operativa deben conservar la misma redacción |
 

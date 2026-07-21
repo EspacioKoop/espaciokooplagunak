@@ -95,7 +95,7 @@ export function offsetParallax(factorCapa, centroMundo, escalaFondo, ancho, alto
  * `radioMundo` unidades de mundo al radio del visor. Con `headingDeg` rota el
  * mundo para que el morro de la nave apunte hacia arriba (sensación de cabina).
  *
- * @returns {{callsign:string,faction:(string|null),esJugador:boolean,
+ * @returns {{indiceContacto:number,callsign:string,faction:(string|null),esJugador:boolean,
  *   x:number,y:number,distancia:number,dentro:boolean}[]}
  */
 export function proyectarContactos({ contacts = [], centro, headingDeg = 0, radioMundo = 30000, ancho = 320, alto = 320 }) {
@@ -109,13 +109,14 @@ export function proyectarContactos({ contacts = [], centro, headingDeg = 0, radi
   const ox = Number.isFinite(centro?.x) ? centro.x : 0;
   const oy = Number.isFinite(centro?.y) ? centro.y : 0;
 
-  return normalizarContactosMapa(contacts).map((c) => {
+  return normalizarContactosMapa(contacts).map((c, indiceContacto) => {
     const relx = (c.position?.x ?? 0) - ox;
     const rely = (c.position?.y ?? 0) - oy;
     const rx = relx * cos - rely * sin;
     const ry = relx * sin + rely * cos;
     const distancia = Math.hypot(relx, rely);
     return {
+      indiceContacto,
       callsign: c.callsign ?? "?",
       faction: c.faction ?? null,
       tipo: c.type ?? null,
@@ -450,14 +451,14 @@ export function prepararDetalleContacto(contacto, centro) {
 
 /**
  * Hit-test puro sobre los blips ya proyectados de un frame (issue #259): dado
- * un punto del canvas, devuelve el callsign del contacto dibujado más cercano
+ * un punto del canvas, devuelve el índice del contacto dibujado más cercano
  * dentro de `tolerancia` píxeles, o null si no hay ninguno a esa distancia.
  * Los contactos fuera de alcance (`dentro: false`) se pintan recortados al
  * anillo, no en su posición real, así que no participan del hit-test: pinchar
  * ahí seleccionaría el objeto equivocado.
  *
- * @param {{callsign:string, x:number, y:number, dentro:boolean}[]} blips
- * @returns {string|null}
+ * @param {{indiceContacto:number, x:number, y:number, dentro:boolean}[]} blips
+ * @returns {number|null}
  */
 export function contactoEnPunto(blips = [], x, y, tolerancia = 6) {
   let mejor = null;
@@ -470,7 +471,44 @@ export function contactoEnPunto(blips = [], x, y, tolerancia = 6) {
       mejorDist = dist;
     }
   }
-  return mejor ? (mejor.callsign ?? "?") : null;
+  return Number.isInteger(mejor?.indiceContacto) ? mejor.indiceContacto : null;
+}
+
+/**
+ * Conserva una selección entre dos fotografías sin confiar en callsigns
+ * únicos. Primero filtra por identidad estructural y, si hay homónimos, elige
+ * el candidato inequívocamente más cercano a la posición anterior. Un empate,
+ * una desaparición o una posición inválida deseleccionan de forma conservadora.
+ */
+export function reconciliarIndiceContacto(anteriores = [], actuales = [], indiceAnterior = null) {
+  if (!Number.isInteger(indiceAnterior) || indiceAnterior < 0 || indiceAnterior >= anteriores.length) return null;
+  const anterior = anteriores[indiceAnterior];
+  const firma = (contacto) => JSON.stringify([
+    contacto?.callsign ?? "?",
+    contacto?.type ?? null,
+    contacto?.class ?? null,
+    contacto?.subclass ?? null,
+    contacto?.faction ?? null,
+    Boolean(contacto?.is_player),
+  ]);
+  const firmaAnterior = firma(anterior);
+  const cantidadAnterior = anteriores.filter((contacto) => firma(contacto) === firmaAnterior).length;
+  const candidatos = actuales
+    .map((contacto, indice) => ({ contacto, indice }))
+    .filter(({ contacto }) => firma(contacto) === firmaAnterior);
+  if (cantidadAnterior === 1 && candidatos.length === 1) return candidatos[0].indice;
+  if (cantidadAnterior !== candidatos.length || candidatos.length === 0) return null;
+  const posicionAnterior = normalizarPosicionMapa(anterior?.position);
+  if (!posicionAnterior) return null;
+  const ordenados = candidatos
+    .flatMap(({ contacto, indice }) => {
+      const posicion = normalizarPosicionMapa(contacto?.position);
+      return posicion ? [{ indice, distancia: Math.hypot(posicion.x - posicionAnterior.x, posicion.y - posicionAnterior.y) }] : [];
+    })
+    .sort((a, b) => a.distancia - b.distancia);
+  if (ordenados.length === 0) return null;
+  if (ordenados.length > 1 && ordenados[0].distancia === ordenados[1].distancia) return null;
+  return ordenados[0].indice;
 }
 
 /**

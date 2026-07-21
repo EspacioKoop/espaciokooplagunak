@@ -21,7 +21,7 @@ jobs:
     - name: Install SDL2
       run: sudo apt-get install libsdl2-dev
     - name: Checkout EmptyEpsilon
-      uses: actions/checkout@v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
     - name: Build and test
       run: docker/build.sh
   windows-cross:
@@ -33,13 +33,13 @@ jobs:
           sudo apt update -qq
           sudo apt install build-essential cmake python3-minimal mingw-w64 ninja-build p7zip-full
       - name: SeriousProton Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           repository: daid/SeriousProton
           path: SeriousProton
           ref: master
       - name: EmptyEpsilon Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           path: EmptyEpsilon
       - name: Build
@@ -57,13 +57,13 @@ jobs:
         run: |
           brew install sdl2
       - name: SeriousProton Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           repository: daid/SeriousProton
           path: SeriousProton
           ref: master
       - name: EmptyEpsilon Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           path: EmptyEpsilon
       - name: Build
@@ -145,11 +145,11 @@ jobs:
           Set-Content -Path "$env:GITHUB_WORKSPACE/externals/sdl2-config.cmake" -Value $sdl_config
           Get-Content "$env:GITHUB_WORKSPACE/externals/sdl2-config.cmake"
       - name: EmptyEpsilon Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           path: EmptyEpsilon
       - name: SeriousProton Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           repository: daid/SeriousProton
           path: SeriousProton
@@ -175,6 +175,6 @@ jobs:
     - name: Install dependencies
       run: sudo apt-get install lua5.3
     - name: Checkout EmptyEpsilon
-      uses: actions/checkout@v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
     - name: Test if lua scripts parse
       run: find scripts/ -iname "*.lua" | xargs -P 4 -n 1 luac -p

@@ -292,13 +292,23 @@ for (const modern of [false, true]) {
     await entorno.contactosVistos.promise;
     await vaciarMicrotareas();
 
+    app.seleccion = 1;
+    const contextoSeleccionado = modern ? await app._prepareContext({}) : app.getData({});
+    assert.equal(
+      contextoSeleccionado.detalle.distanciaLabel,
+      "190",
+      "el panel debe resolver la segunda fila homónima por índice",
+    );
+
     const rendersIniciales = app.renderCalls.length;
     const timer = entorno.timers.find((candidato) => candidato.activo && candidato.delay === 2000);
     timer.activo = false;
     timer.callback(...timer.args);
     await vaciarMicrotareas();
     assert.equal(app.renderCalls.length, rendersIniciales);
+    assert.equal(app.seleccion, 1, "el sondeo conserva la segunda identidad homónima");
     assert.deepEqual(app.distanciaNodes.map((nodo) => nodo.textContent), ["39980", "19980"]);
+    assert.equal(app.detalleDistanciaNode.textContent, "19980");
     assert.deepEqual(app.fueraNodes.map((nodo) => nodo.hidden), [false, true]);
     if (modern) app._onClose();
     else await app.close();

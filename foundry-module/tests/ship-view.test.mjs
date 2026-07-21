@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { localizeSystemName, prepareRoute, prepareSystemRows } from "../scripts/ship-view.mjs";
+import {
+  firmaEstadoNaveVisible,
+  localizeSystemName,
+  prepareRoute,
+  prepareSystemRows,
+} from "../scripts/ship-view.mjs";
 
 const i18n = {
   localize: (key) => key,
@@ -87,4 +92,50 @@ test("los sistemas del DTO se localizan sin exponer identificadores ingleses", (
     power: 150,
     coolant: 40,
   }]);
+});
+
+const vistaBase = () => ({
+  conexion: "ok",
+  detalleError: "",
+  ayudaAbierta: false,
+  esGM: true,
+  naveExiste: true,
+  naveCallsign: "Artemis",
+  ruta: { estado: "en_ruta", name: "Argia", distanceLabel: "12.3 u", etaLabel: "00:04:12" },
+  pausa: { estado: "activa", puedePausar: true, puedeReanudar: false, foundryPausado: false },
+  maniobra: { disponible: true, puedeOrdenar: true, escudosActivos: true },
+  maniobraFallo: false,
+  ingenieria: { disponible: true, puedeAjustar: true, pendiente: false, tieneReparadores: true },
+  ingenieriaFallo: false,
+  sistemas: [{ id: "reactor", salud: 90, calor: 10, potencia: 100 }],
+});
+
+test("firmaEstadoNaveVisible ignora telemetría continua", () => {
+  const base = vistaBase();
+  const soloTelemetriaDistinta = {
+    ...vistaBase(),
+    ruta: { ...base.ruta, distanceLabel: "8.1 u", etaLabel: "00:02:50" },
+    sistemas: [{ id: "reactor", salud: 40, calor: 55, potencia: 60 }],
+  };
+  assert.equal(firmaEstadoNaveVisible(base), firmaEstadoNaveVisible(soloTelemetriaDistinta));
+});
+
+test("firmaEstadoNaveVisible detecta cambios que sí requieren reconstruir el panel", () => {
+  const base = vistaBase();
+  assert.notEqual(
+    firmaEstadoNaveVisible(base),
+    firmaEstadoNaveVisible({ ...base, conexion: "error" }),
+  );
+  assert.notEqual(
+    firmaEstadoNaveVisible(base),
+    firmaEstadoNaveVisible({ ...base, maniobraFallo: true }),
+  );
+  assert.notEqual(
+    firmaEstadoNaveVisible(base),
+    firmaEstadoNaveVisible({ ...base, ingenieria: { ...base.ingenieria, pendiente: true } }),
+  );
+  assert.notEqual(
+    firmaEstadoNaveVisible(base),
+    firmaEstadoNaveVisible({ ...base, sistemas: [{ id: "reactor", salud: 90, calor: 10, potencia: 100 }, { id: "warp", salud: 80, calor: 5, potencia: 70 }] }),
+  );
 });

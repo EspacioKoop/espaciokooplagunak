@@ -7,6 +7,7 @@ import {
   claveContacto,
   colorFaccion,
   componerFrame,
+  contactoEnPunto,
   crearCampoEstrellas,
   debeDibujar,
   firmaEstructuralContactos,
@@ -20,6 +21,7 @@ import {
   prepararDetalleContacto,
   proyectarContactos,
   proyectarDestino,
+  reconciliarIndiceContacto,
   rumboHacia,
   rngSemilla,
   rotarMuestras,
@@ -368,6 +370,79 @@ test("prepararDetalleContacto tolera DTOs sin tipo ni facción", () => {
   assert.equal(d.tipo, null);
   assert.equal(d.faccion, null);
   assert.equal(d.color, COLOR_NEUTRO);
+});
+
+test("contactoEnPunto selecciona el blip más cercano dentro de tolerancia", () => {
+  const blips = [
+    { indiceContacto: 0, callsign: "K-1", x: 100, y: 100, dentro: true },
+    { indiceContacto: 1, callsign: "K-2", x: 200, y: 200, dentro: true },
+  ];
+  assert.equal(contactoEnPunto(blips, 102, 98), 0);
+  assert.equal(contactoEnPunto(blips, 197, 203), 1);
+});
+
+test("contactoEnPunto devuelve null fuera de tolerancia o sin blips", () => {
+  const blips = [{ indiceContacto: 0, callsign: "K-1", x: 100, y: 100, dentro: true }];
+  assert.equal(contactoEnPunto(blips, 150, 150), null);
+  assert.equal(contactoEnPunto([], 100, 100), null);
+});
+
+test("contactoEnPunto ignora contactos fuera de alcance (recortados al anillo)", () => {
+  // Un blip `dentro: false` se pinta recortado al anillo, no en x/y real:
+  // pinchar en esas coordenadas no debe seleccionarlo.
+  const blips = [{ indiceContacto: 0, callsign: "Lejano", x: 100, y: 100, dentro: false }];
+  assert.equal(contactoEnPunto(blips, 100, 100), null);
+});
+
+test("contactoEnPunto desempata por distancia cuando dos blips caen en tolerancia", () => {
+  const blips = [
+    { indiceContacto: 0, callsign: "Lejos", x: 100, y: 100, dentro: true },
+    { indiceContacto: 1, callsign: "Cerca", x: 103, y: 100, dentro: true },
+  ];
+  assert.equal(contactoEnPunto(blips, 104, 100), 1);
+});
+
+test("contactoEnPunto distingue homónimos y anónimos por índice de frame", () => {
+  const blips = [
+    { indiceContacto: 0, callsign: "Itsaso 1", x: 50, y: 50, dentro: true },
+    { indiceContacto: 1, callsign: "Itsaso 1", x: 150, y: 150, dentro: true },
+    { indiceContacto: 2, callsign: "?", x: 250, y: 250, dentro: true },
+  ];
+  assert.equal(contactoEnPunto(blips, 50, 50), 0);
+  assert.equal(contactoEnPunto(blips, 150, 150), 1);
+  assert.equal(contactoEnPunto(blips, 250, 250), 2);
+});
+
+test("reconciliarIndiceContacto sigue al homónimo más cercano aunque cambie el orden", () => {
+  const anteriores = [
+    { callsign: "DUP", type: "CpuShip", faction: "Human Navy", position: { x: 10, y: 10 } },
+    { callsign: "DUP", type: "CpuShip", faction: "Human Navy", position: { x: 100, y: 100 } },
+  ];
+  const actuales = [
+    { callsign: "DUP", type: "CpuShip", faction: "Human Navy", position: { x: 102, y: 101 } },
+    { callsign: "DUP", type: "CpuShip", faction: "Human Navy", position: { x: 12, y: 9 } },
+  ];
+  assert.equal(reconciliarIndiceContacto(anteriores, actuales, 0), 1);
+  assert.equal(reconciliarIndiceContacto(anteriores, actuales, 1), 0);
+});
+
+test("reconciliarIndiceContacto deselecciona ante desaparición o empate ambiguo", () => {
+  const anteriores = [{ callsign: "?", position: { x: 0, y: 0 } }];
+  const empate = [
+    { callsign: "?", position: { x: -1, y: 0 } },
+    { callsign: "?", position: { x: 1, y: 0 } },
+  ];
+  assert.equal(reconciliarIndiceContacto(anteriores, [], 0), null);
+  assert.equal(reconciliarIndiceContacto(anteriores, empate, 0), null);
+  const duplicados = [
+    { callsign: "DUP", position: { x: 0, y: 0 } },
+    { callsign: "DUP", position: { x: 100, y: 100 } },
+  ];
+  assert.equal(
+    reconciliarIndiceContacto(duplicados, [duplicados[1]], 0),
+    null,
+    "si desaparece un homónimo no salta silenciosamente al superviviente",
+  );
 });
 
 test("leyendaContactos: nave propia primero, una entrada por facción y neutros al final", () => {

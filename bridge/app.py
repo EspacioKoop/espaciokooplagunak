@@ -38,6 +38,7 @@ from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, ConfigDict, Field, StrictBool
+from starlette.responses import JSONResponse
 
 EE_URL = os.environ.get("EE_URL", "http://game:8080")
 BRIDGE_TOKEN = os.environ.get("BRIDGE_TOKEN", "")
@@ -45,14 +46,93 @@ BRIDGE_ALLOWED_ORIGINS = os.environ.get("BRIDGE_ALLOWED_ORIGINS", "")
 
 EXEC_TIMEOUT_SECONDS = 5.0
 MAX_GAME_RESPONSE_BYTES = 64 * 1024
+MAX_REQUEST_BODY_BYTES = 16 * 1024
 RATE_LIMIT_PER_SECOND = 10
 RATE_LIMIT_BURST = 20
+
+
+class _RequestBodyLimitMiddleware:
+    """Rechaza cuerpos grandes antes de que el parser JSON los materialice.
+
+    ``Content-Length`` permite fallar inmediatamente. Para peticiones sin esa
+    cabecera o con transferencia fragmentada se leen como máximo ``max_bytes``
+    y solo se entrega al parser un cuerpo ya acotado.
+    """
+
+    def __init__(self, application: Any, max_bytes: int) -> None:
+        self.application = application
+        self.max_bytes = max_bytes
+
+    async def __call__(self, scope: dict[str, Any], receive: Any, send: Any) -> None:
+        if scope.get("type") != "http" or scope.get("method") not in {
+            "POST",
+            "PUT",
+            "PATCH",
+        }:
+            await self.application(scope, receive, send)
+            return
+
+        headers = dict(scope.get("headers", []))
+        raw_length = headers.get(b"content-length")
+        if raw_length is not None:
+            try:
+                if int(raw_length) > self.max_bytes:
+                    await self._reject(scope, receive, send)
+                    return
+            except ValueError:
+                # El servidor HTTP decide cómo tratar una cabecera malformada;
+                # el contador de abajo sigue impidiendo saltarse el límite.
+                pass
+
+        body = bytearray()
+        while True:
+            message = await receive()
+            if message.get("type") != "http.request":
+                await self.application(scope, _replay_receive(message), send)
+                return
+            chunk = message.get("body", b"")
+            if len(body) + len(chunk) > self.max_bytes:
+                await self._reject(scope, receive, send)
+                return
+            body.extend(chunk)
+            if not message.get("more_body", False):
+                break
+
+        delivered = False
+
+        async def replay_body() -> dict[str, Any]:
+            nonlocal delivered
+            if not delivered:
+                delivered = True
+                return {"type": "http.request", "body": bytes(body), "more_body": False}
+            return await receive()
+
+        await self.application(scope, replay_body, send)
+
+    @staticmethod
+    async def _reject(scope: dict[str, Any], receive: Any, send: Any) -> None:
+        response = JSONResponse(
+            status_code=413,
+            content={"detail": "Cuerpo de petición demasiado grande"},
+        )
+        await response(scope, receive, send)
+
+
+def _replay_receive(message: dict[str, Any]):
+    """Devuelve una función ASGI que reproduce una desconexión ya consumida."""
+
+    async def replay() -> dict[str, Any]:
+        return message
+
+    return replay
+
 
 app = FastAPI(
     title="Espaciokoop Lagunak — puente Foundry VTT",
     version="0.1.0",
     description=__doc__,
 )
+app.add_middleware(_RequestBodyLimitMiddleware, max_bytes=MAX_REQUEST_BODY_BYTES)
 
 
 def _parse_allowed_origins(raw: str) -> list[str]:
@@ -426,6 +506,33 @@ class SetSystemPower(BaseModel):
         )
 
 
+class SetSystemCoolant(BaseModel):
+    """Reparto de refrigerante por sistema: la otra mitad de la gestión de
+    ingeniería junto a `set_system_power`.
+
+    El juego expone el refrigerante por sistema en `/v1/state` pero hasta ahora
+    no había orden para asignarlo. Rango 0.0..10.0, el de EmptyEpsilon
+    (`max_coolant_per_system` en `components/coolant.h`); el juego además lo
+    recorta server-side a `min(max_coolant_per_system, coolant->max)`, así que
+    esta cota es la envolvente segura del contrato, no la autoridad final.
+    """
+
+    op: Literal["set_system_coolant"]
+    system: SystemName
+    level: Annotated[float, Field(ge=0.0, le=10.0)]
+
+    def lua(self) -> str:
+        # Llamada de función global, no de método: /exec.lua corre en un
+        # sub-entorno propio (ver httpScriptAccess.cpp) donde las extensiones
+        # de metatabla de Entity (scripts/api/entity/playerspaceship.lua,
+        # cargadas solo por el escenario vía require) no están disponibles;
+        # src/script.cpp solo registra este símbolo como global vía
+        # env.setGlobal, nunca como método EFT.
+        return _command_lua(
+            f'commandSetSystemCoolantRequest(ship, "{self.system.value}", {self.level:.3f})'
+        )
+
+
 class SetSystemHealth(BaseModel):
     """Avería (o reparación) directa de un sistema: palanca narrativa del GM.
 
@@ -580,6 +687,7 @@ Command = Annotated[
         SetTargetHeading,
         SetShields,
         SetSystemPower,
+        SetSystemCoolant,
         SetSystemHealth,
         SpawnEncounter,
         RepositionShip,

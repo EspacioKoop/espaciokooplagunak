@@ -47,8 +47,17 @@ export function dibujarFrame(
 
   // Decorado de fondo (issue #203): nebulosas/planetas/asteroides con parallax,
   // ya compuesto por el llamador, entre el fondo y las estrellas. En la pantalla
-  // «en espera» el llamador pasa una lista vacía y aquí no se pinta nada.
-  dibujarDecorado(ctx, decorado, { ancho, alto, tMs, cache: cacheDecorado, eventos: eventosFondo });
+  // «en espera» el llamador pasa una lista vacía para el decorado, pero los
+  // eventos de fondo (issue #215 review) son un parámetro aparte que puede
+  // seguir activo aunque no haya datos de la nave: se fuerzan vacíos aquí para
+  // no dibujar sucesos ficticios (p. ej. una nave lejana) sobre la espera.
+  dibujarDecorado(ctx, decorado, {
+    ancho,
+    alto,
+    tMs,
+    cache: cacheDecorado,
+    eventos: frame.sinDatos ? [] : eventosFondo,
+  });
 
   // Estrellas por capa, teseladas: cada estrella se pinta desplazada por el
   // offset de su capa y envuelta al lienzo; las que quedan a caballo del borde

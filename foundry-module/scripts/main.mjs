@@ -100,6 +100,11 @@ Hooks.once("init", () => {
     config: true,
     type: Number,
     default: MAPA_SEMILLA_DEFECTO,
+    // Único punto de regeneración del mapa abierto: Foundry lo invoca tanto
+    // en el cliente que escribe el ajuste como en el resto al sincronizar el
+    // valor de mundo, así que un cambio desde ajustes o desde el botón "nuevo
+    // decorado aleatorio" refresca a todos por igual (issue #215 review).
+    onChange: (semilla) => mapaApp?.regenerarDecorado?.(semilla),
   });
 });
 
@@ -267,13 +272,14 @@ async function diagnosticarConexion() {
 /* Nuevo decorado aleatorio (issue #215, mejora pedida en review): el GM puede
  * cambiar el cielo/decorado del mapa vivo a uno nuevo con un clic, en vez de
  * teclear una semilla a mano en los ajustes del módulo. Se guarda como ajuste
- * de MUNDO para que quede igual para todos y sobreviva a recargas; si el mapa
- * está abierto, se reconstruye en el sitio sin tener que cerrarlo y reabrirlo. */
+ * de MUNDO para que quede igual para todos y sobreviva a recargas; el
+ * `onChange` del ajuste (arriba) es el único punto que reconstruye el mapa
+ * abierto, así que aquí no se llama a mapaApp directamente: evita
+ * regenerarlo dos veces en este mismo cliente y cubre también a los demás. */
 async function regenerarDecoradoAleatorio() {
   if (!game.user?.isGM) return;
   const nuevaSemilla = Math.floor(Math.random() * 0x100000000); // 32 bits, mismo rango que rngSemilla
   await game.settings.set(MODULE_ID, "decoradoSemilla", nuevaSemilla);
-  mapaApp?.regenerarDecorado?.(nuevaSemilla);
   ui.notifications.info(
     game.i18n.format("LAGUNAK.Notificaciones.DecoradoRegenerado", { semilla: nuevaSemilla }),
   );

@@ -27,6 +27,9 @@ Reglas de este proyecto:
 3. Un pull request que exponga `/exec.lua` a Foundry, a una LAN no confiable
    o a Internet se rechaza por defecto.
 
+Actores, activos, fronteras, amenazas y riesgos residuales están inventariados
+en el [`modelo de amenazas del puente`](docs/BRIDGE_THREAT_MODEL.md).
+
 ## Secretos
 
 - Los secretos viven en archivos `.env` ignorados por git

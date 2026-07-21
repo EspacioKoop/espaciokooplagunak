@@ -34,6 +34,7 @@ import {
   revokeBridgeTokenAccess,
 } from "./bridge-token-session.mjs";
 import { probarConexion } from "./diagnostico-conexion.mjs";
+import { describirFoco, restaurarFoco } from "./foco-render.mjs";
 import { processBridgeEvents } from "./event-journal.mjs";
 import { anotarAlertas, derivarAlertas } from "./alertas-nave.mjs";
 import { dibujarFrame } from "./mapa-render.mjs";
@@ -394,6 +395,10 @@ function crearClaseV2() {
     /** Estado interno del sondeo. */
     #timer = null;
     #fallosSeguidos = 0;
+    // Descriptor del control con foco justo antes de un render que reconstruye
+    // el DOM (issue #227): sin esto, cualquier render() con foco activo lo
+    // devuelve a document.body, un salto confuso con teclado/lector.
+    #focoAConservar = null;
     // Última firma no-telemétrica renderizada (issue #227 punto 6): evita que
     // el sondeo reconstruya el panel —y sus regiones role="status"— cuando
     // solo cambió telemetría continua.
@@ -422,6 +427,15 @@ function crearClaseV2() {
         url: game.settings.get(MODULE_ID, "bridgeUrl"),
         token: getBridgeToken(),
       });
+    }
+
+    /** Captura el foco actual antes de reconstruir el DOM; _onRender lo restaura. */
+    #renderConservandoFoco() {
+      const activo = typeof document !== "undefined" && this.element?.contains?.(document.activeElement)
+        ? document.activeElement
+        : null;
+      this.#focoAConservar = describirFoco(activo, this.element);
+      this.render();
     }
 
     #intervaloMs() {
@@ -516,7 +530,7 @@ function crearClaseV2() {
         });
         const cambioVisible = firmaActual !== this.#firmaVisibleAnterior;
         this.#firmaVisibleAnterior = firmaActual;
-        if (cambioVisible) this.render();
+        if (cambioVisible) this.#renderConservandoFoco();
         else this.#actualizarTelemetriaDom(nave, ruta, sistemas);
       }
       this.#programar();
@@ -583,6 +597,8 @@ function crearClaseV2() {
 
     _onRender(context, options) {
       super._onRender?.(context, options);
+      restaurarFoco(this.element, this.#focoAConservar);
+      this.#focoAConservar = null;
       const ayuda = this.element?.querySelector?.(".lagunak-ayuda");
       ayuda?.addEventListener?.("toggle", (event) => {
         this.ayudaAbierta = Boolean(event.currentTarget?.open);
@@ -616,6 +632,7 @@ function crearClaseV2() {
       this.ingenieriaFallo = false;
       this.maniobraPendiente = false;
       this.maniobraFallo = false;
+      this.#focoAConservar = null;
       this.#firmaVisibleAnterior = null;
       super._onClose?.(options);
     }
@@ -677,7 +694,7 @@ function crearClaseV2() {
       if (this.maniobraPendiente || !game.user?.isGM || this.bridgeAccessRevoked) return;
       this.maniobraPendiente = true;
       this.maniobraFallo = false;
-      if (this.rendered) this.render();
+      if (this.rendered) this.#renderConservandoFoco();
       try {
         const respuesta = await ordenarManiobra({
           op,
@@ -701,7 +718,7 @@ function crearClaseV2() {
         ui.notifications.error(message);
       } finally {
         this.maniobraPendiente = false;
-        if (!this.bridgeAccessRevoked && game.user?.isGM && this.rendered) this.render();
+        if (!this.bridgeAccessRevoked && game.user?.isGM && this.rendered) this.#renderConservandoFoco();
       }
     }
 
@@ -728,7 +745,7 @@ function crearClaseV2() {
       if (this.ordenPendiente !== null || this.confirmacionPendiente !== null) return;
       this.ordenPendiente = paused;
       this.falloOrden = false;
-      if (this.rendered) this.render();
+      if (this.rendered) this.#renderConservandoFoco();
       try {
         const changed = await setSimulationPaused({
           paused,
@@ -748,7 +765,7 @@ function crearClaseV2() {
         ui.notifications.error(message);
       } finally {
         this.ordenPendiente = null;
-        if (this.rendered) this.render();
+        if (this.rendered) this.#renderConservandoFoco();
       }
     }
 
@@ -778,7 +795,7 @@ function crearClaseV2() {
       this.ingenieriaSistema = system;
       this.ingenieriaPendiente = true;
       this.ingenieriaFallo = false;
-      if (this.rendered) this.render();
+      if (this.rendered) this.#renderConservandoFoco();
       try {
         const respuesta = await ajustarPotencia({
           system,
@@ -802,7 +819,7 @@ function crearClaseV2() {
         ui.notifications.error(message);
       } finally {
         this.ingenieriaPendiente = false;
-        if (!this.bridgeAccessRevoked && game.user?.isGM && this.rendered) this.render();
+        if (!this.bridgeAccessRevoked && game.user?.isGM && this.rendered) this.#renderConservandoFoco();
       }
     }
 
@@ -857,6 +874,10 @@ function crearClaseV1() {
     #timer = null;
     #fallosSeguidos = 0;
     #sondeando = false;
+    // Descriptor del control con foco justo antes de un render que reconstruye
+    // el DOM (issue #227): sin esto, cualquier render() con foco activo lo
+    // devuelve a document.body, un salto confuso con teclado/lector.
+    #focoAConservar = null;
     // Última firma no-telemétrica renderizada (issue #227 punto 6): evita que
     // el sondeo reconstruya el panel —y sus regiones role="status"— cuando
     // solo cambió telemetría continua.
@@ -897,6 +918,16 @@ function crearClaseV1() {
         url: game.settings.get(MODULE_ID, "bridgeUrl"),
         token: getBridgeToken(),
       });
+    }
+
+    /** Captura el foco actual antes de reconstruir el DOM; activateListeners lo restaura. */
+    #renderConservandoFoco(force) {
+      const raiz = this.element?.[0];
+      const activo = typeof document !== "undefined" && raiz?.contains?.(document.activeElement)
+        ? document.activeElement
+        : null;
+      this.#focoAConservar = describirFoco(activo, raiz);
+      this.render(force);
     }
 
     #intervaloMs() {
@@ -990,7 +1021,7 @@ function crearClaseV1() {
         });
         const cambioVisible = firmaActual !== this.#firmaVisibleAnterior;
         this.#firmaVisibleAnterior = firmaActual;
-        if (cambioVisible) this.render(false);
+        if (cambioVisible) this.#renderConservandoFoco(false);
         else this.#actualizarTelemetriaDom(nave, ruta, sistemas);
       }
       clearTimeout(this.#timer);
@@ -1071,12 +1102,15 @@ function crearClaseV1() {
       this.ingenieriaFallo = false;
       this.maniobraPendiente = false;
       this.maniobraFallo = false;
+      this.#focoAConservar = null;
       this.#firmaVisibleAnterior = null;
       return super.close(options);
     }
 
     activateListeners(html) {
       super.activateListeners(html);
+      restaurarFoco(html?.[0], this.#focoAConservar);
+      this.#focoAConservar = null;
       html.find('[data-action="anotar"]').on("click", () => this.#anotar());
       html.find('[data-action="ordenarImpulso"]').on("click", (event) =>
         this.#emitirManiobra("impulse", Number(event.currentTarget?.dataset?.value)));
@@ -1158,7 +1192,7 @@ function crearClaseV1() {
       this.ingenieriaSistema = system;
       this.ingenieriaPendiente = true;
       this.ingenieriaFallo = false;
-      if (this.rendered) this.render(false);
+      if (this.rendered) this.#renderConservandoFoco(false);
       try {
         const respuesta = await ajustarPotencia({
           system,
@@ -1182,7 +1216,7 @@ function crearClaseV1() {
         ui.notifications.error(message);
       } finally {
         this.ingenieriaPendiente = false;
-        if (!this.bridgeAccessRevoked && game.user?.isGM && this.rendered) this.render(false);
+        if (!this.bridgeAccessRevoked && game.user?.isGM && this.rendered) this.#renderConservandoFoco(false);
       }
     }
 
@@ -1190,7 +1224,7 @@ function crearClaseV1() {
       if (this.maniobraPendiente || !game.user?.isGM || this.bridgeAccessRevoked) return;
       this.maniobraPendiente = true;
       this.maniobraFallo = false;
-      if (this.rendered) this.render(false);
+      if (this.rendered) this.#renderConservandoFoco(false);
       try {
         const respuesta = await ordenarManiobra({
           op,
@@ -1214,7 +1248,7 @@ function crearClaseV1() {
         ui.notifications.error(message);
       } finally {
         this.maniobraPendiente = false;
-        if (!this.bridgeAccessRevoked && game.user?.isGM && this.rendered) this.render(false);
+        if (!this.bridgeAccessRevoked && game.user?.isGM && this.rendered) this.#renderConservandoFoco(false);
       }
     }
 
@@ -1233,7 +1267,7 @@ function crearClaseV1() {
       if (this.ordenPendiente !== null || this.confirmacionPendiente !== null) return;
       this.ordenPendiente = paused;
       this.falloOrden = false;
-      if (this.rendered) this.render(false);
+      if (this.rendered) this.#renderConservandoFoco(false);
       try {
         const changed = await setSimulationPaused({
           paused,
@@ -1253,7 +1287,7 @@ function crearClaseV1() {
         ui.notifications.error(message);
       } finally {
         this.ordenPendiente = null;
-        if (this.rendered) this.render(false);
+        if (this.rendered) this.#renderConservandoFoco(false);
       }
     }
 

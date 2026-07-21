@@ -72,6 +72,7 @@
   display: block;
   background: #03071e;
   image-rendering: pixelated; /* píxel gordo: el 320×320 se escala sin suavizar */
+  cursor: pointer; /* issue #259: se puede pinchar un objeto para ver su info */
 }
 
 /* Scanlines por encima del canvas, sin bloquear el ratón. */

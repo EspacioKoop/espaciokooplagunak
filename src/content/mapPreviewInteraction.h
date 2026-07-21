@@ -35,6 +35,7 @@ public:
     bool update(MapPreviewPoint world_position);
     MapEditError commit(MapEditSession& session);
     void cancel();
+    void clearSelection();
 
     bool isDragging() const { return dragging; }
     const std::string& selectedId() const { return selected_id; }
@@ -50,3 +51,9 @@ private:
     MapObjectTransform provisional_transform;
     bool dragging = false;
 };
+
+const MapObject* editableMapPreviewSelection(
+    const MapEditSession& session,
+    const MapPreviewDragSession& selection,
+    bool edit_mode
+);

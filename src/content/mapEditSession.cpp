@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cmath>
 #include <cstdint>
 #include <utility>
 
@@ -130,6 +131,18 @@ MapEditError MapEditSession::moveObject(const std::string& id, MapObjectTransfor
     if (!object) return MapEditError::NotFound;
     if (object->kind == MapObjectKind::Unsupported) return MapEditError::WrongKind;
     object->transform = transform;
+    return commit(std::move(next));
+}
+
+MapEditError MapEditSession::rotateObject(const std::string& id, float delta_degrees)
+{
+    auto next = current_document;
+    auto* object = findObject(next, id);
+    if (!object) return MapEditError::NotFound;
+    if (object->kind == MapObjectKind::Unsupported) return MapEditError::WrongKind;
+    if (!std::isfinite(delta_degrees)) return MapEditError::InvalidDocument;
+    object->transform.rotation = std::fmod(object->transform.rotation + delta_degrees, 360.0f);
+    if (object->transform.rotation < 0.0f) object->transform.rotation += 360.0f;
     return commit(std::move(next));
 }
 

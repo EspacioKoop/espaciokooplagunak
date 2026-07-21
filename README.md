@@ -28,7 +28,7 @@ seguro y módulo Foundry en desarrollo. Las fases 0, 1 y 2 están completadas.
 | Normas de colaboración | Hecho | [`CONTRIBUTING.md`](CONTRIBUTING.md) y [`AGENTS.md`](AGENTS.md) |
 | Compilación reproducible | Verificada en Linux | Nativa ([`docs/BUILDING.md`](docs/BUILDING.md)) y en imagen Docker (SeriousProton fijado por commit) |
 | Ejecución con Docker | Verificada en local | Servidor headless + puente vía compose ([`docker/README.md`](docker/README.md)) |
-| Integración con Foundry VTT | Vertical en desarrollo | Puente v0 con órdenes de lista blanca + módulo GM con estado, destino/ETA, mapa vivo, pausa/reanudación y llegada deduplicada en Journal ([`docs/FOUNDRY.md`](docs/FOUNDRY.md)) |
+| Integración con Foundry VTT | Vertical en desarrollo | Puente v0 + módulo con estado, destino/ETA y mapa vivo; controles GM de tempo, reposición, ingeniería y maniobra; asignación y espacios informativos de tripulación. Siguen pendientes las acciones por puesto y la matriz completa de smoke ([`docs/FOUNDRY.md`](docs/FOUNDRY.md), #29) |
 | Cambios jugables propios | Primera iteración disponible | «Lagunak: Primera guardia» (`scenario_90`) |
 | Lanzamientos propios | Automatización lista, sin lanzamiento aún | `docker-publish.yml` publica en GHCR con cada tag `v*`; falta el primer tag tras validar una sesión real |
 
@@ -72,8 +72,9 @@ Características propias integradas y verificadas:
 - escenario cooperativo «Lagunak: Primera guardia»;
 - identidad visual del fork y localización Español (España);
 - servidor headless y puente seguro reproducibles;
-- módulo Foundry para el GM: estado en vivo, destino y ETA, mapa vivo,
-  pausa/reanudación de la simulación y bitácora deduplicada;
+- módulo Foundry para el GM y la tripulación: estado en vivo, destino y ETA,
+  mapa, bitácora deduplicada, controles GM cerrados y espacios informativos de
+  puesto; las acciones operativas por puesto siguen pendientes;
 - primera fase del editor integrado de campañas, mapas, personajes y naves,
   con intercambio JSON individual desde Game Master
   ([guía](docs/CONTENT_EDITOR.md)).
@@ -131,16 +132,25 @@ Hitos verticales:
 - [x] Pausa/reanudación del GM de extremo a extremo (#34); factor temporal pendiente por falta de API.
 
 - [ ] Crear un módulo de Foundry VTT para el director de juego y la tripulación
-      (la parte del GM está disponible; los puestos de la tripulación, en curso en #162).
+      (la parte del GM, la asignación y los espacios informativos de puesto están
+      integrados —#162—; faltan acciones operativas por puesto y cerrar #29).
 - [ ] Representar trayectos en tiempo real, con pausa y aceleración controladas por el director de juego.
 - [x] Sincronizar mapa, posición, rumbo, velocidad, destino y tiempo estimado de llegada
       (#33, #69 y #73).
 - [ ] Gestionar motores, combustible o energía, temperatura, daños, reparaciones y recursos de la nave
       (el puente ya autoriza impulso, warp, rumbo, escudos, energía por sistema y averías
-      —decisión del issue #80—; falta la superficie por puesto en Foundry).
-- [ ] Modelar puestos, permisos, turnos y acciones de la tripulación.
-- [ ] Permitir al director de juego introducir encuentros, anomalías, averías y cambios narrativos.
-- [ ] Enviar a Foundry eventos y resultados normalizados para diarios, escenas y fichas.
+      —decisión del issue #80—; el panel de ingeniería del GM ya reparte energía por
+      sistema —#217—; falta la superficie por puesto de tripulación en Foundry).
+- [ ] Modelar puestos, permisos, turnos y acciones de la tripulación
+      (asignación y espacios informativos integrados en #162; permisos y acciones
+      operativas siguen pendientes).
+- [ ] Permitir al director de juego introducir encuentros, anomalías, averías y cambios narrativos
+      (el puente ya inyecta encuentros de un catálogo cerrado de arquetipos
+      —`spawn_encounter`, #196/#220— y reposiciona la nave a un ancla —#202—; la UI GM
+      para introducir encuentros está en revisión en #201).
+- [ ] Enviar a Foundry eventos y resultados normalizados para diarios, escenas y fichas
+      (`encounter_started` normalizado —#200— y alertas de umbral a la bitácora —#207—
+      ya publicados; falta el resto de resultados de sesión).
 - [ ] Probar una sesión completa de *Spelljammer* con director de juego y varios puestos conectados.
 
 **Criterio de salida:** una mesa de Foundry puede iniciar un trayecto, jugar su gestión operativa en Espaciokoop Lagunak y recibir el resultado en la campaña sin acceso directo a la API insegura heredada.

@@ -33,9 +33,13 @@ curl http://localhost:8090/healthz
 
 # Estado seguro de la nave (requiere el token de .env; la entrada no se muestra)
 read -rsp "BRIDGE_TOKEN: " BRIDGE_TOKEN && printf '\n'
-curl -H "Authorization: Bearer ${BRIDGE_TOKEN}" http://127.0.0.1:8090/v1/state
+curl -H "Authorization: Bearer ***" http://127.0.0.1:8090/v1/state
 unset BRIDGE_TOKEN
 ```
+
+Antes de custodiar, compartir o sustituir el token, sigue el procedimiento de
+[`docs/BRIDGE_AUTHENTICATION.md`](../docs/BRIDGE_AUTHENTICATION.md). Cambiar
+`.env` no rota por sí solo la credencial: hay que recrear el servicio `bridge`.
 
 Los clientes del puente de mando (EmptyEpsilon/Espaciokoop Lagunak de
 escritorio) se conectan al puerto `35666` del host.
@@ -112,6 +116,10 @@ caso usa HTTPS también para el puente.
 | `BRIDGE_ALLOWED_ORIGINS` | `http://localhost:30000` en `.env.example` | Orígenes Foundry autorizados para CORS, separados por comas; vacío lo desactiva |
 | `BRIDGE_BIND` | `127.0.0.1` | Dirección del host donde se publica el puente |
 | `BRIDGE_PORT` | `8090` | Puerto publicado del puente |
+
+No compartas la salida completa de `docker compose config` ni de
+`docker inspect`: pueden mostrar `BRIDGE_TOKEN` ya resuelto. La comprobación
+filtrada de imágenes de la sección anterior no imprime esa variable.
 
 Argumentos extra al contenedor `game` se pasan tal cual al binario, p. ej.
 `docker compose run game startpaused=1`.

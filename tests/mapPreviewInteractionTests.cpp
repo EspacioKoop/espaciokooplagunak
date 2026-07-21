@@ -224,6 +224,51 @@ int main()
             && !session.canRedo(),
         "new committed drag after undo invalidates redo");
 
+    MapPreviewDragSession selection;
+    expect(selection.begin(session, {70.0f, 80.0f}, 1.0f) == MapDocumentError::None
+            && selection.selectedId() == "dragged",
+        "supported radar hit exposes the selected object after the drag");
+    selection.cancel();
+    expect(selection.selectedId() == "dragged"
+            && editableMapPreviewSelection(session, selection, true) != nullptr,
+        "cancelling movement preserves selection for actions while editing");
+    expect(editableMapPreviewSelection(session, selection, false) == nullptr
+            && selection.selectedId() == "dragged",
+        "leaving edit mode disables selection actions without discarding selection");
+    expect(editableMapPreviewSelection(session, selection, true) != nullptr,
+        "re-entering edit mode restores actions for the preserved selection");
+    selection.clearSelection();
+    expect(selection.selectedId().empty() && !selection.isDragging()
+            && selection.commit(session) == MapEditError::NotFound,
+        "explicit clear disables later actions and cannot commit stale movement");
+
+    MapDocument delete_document;
+    delete_document.objects.push_back(asteroid("delete-selected", 10.0f, 20.0f));
+    delete_document.objects.push_back(opaque);
+    MapEditSession delete_session(delete_document);
+    MapPreviewDragSession delete_selection;
+    expect(delete_selection.begin(delete_session, {10.0f, 20.0f}, 1.0f)
+                == MapDocumentError::None
+            && delete_selection.selectedId() == "delete-selected",
+        "delete flow starts with a supported staged selection");
+    delete_selection.cancel();
+    expect(delete_session.removeObject(delete_selection.selectedId()) == MapEditError::None,
+        "delete flow removes the selected object from staging");
+    delete_selection.clearSelection();
+    expect(delete_session.document().objects.size() == 1
+            && delete_session.document().objects.front().opaque_json == opaque.opaque_json
+            && delete_selection.selectedId().empty() && !delete_selection.isDragging()
+            && delete_selection.commit(delete_session) == MapEditError::NotFound,
+        "successful delete clears selection, provisional movement and preserves opaque bytes");
+    expect(delete_session.undo() && delete_session.document() == delete_document
+            && delete_selection.selectedId().empty()
+            && delete_session.document().objects.back().opaque_json == opaque.opaque_json,
+        "undo restores the deleted object without reviving stale selection or changing opaque bytes");
+    expect(delete_session.redo() && delete_session.document().objects.size() == 1
+            && delete_selection.selectedId().empty()
+            && delete_session.document().objects.front().opaque_json == opaque.opaque_json,
+        "redo removes the object again while selection stays clear and opaque bytes stay exact");
+
     std::cout << "MAP_PREVIEW_INTERACTION_TESTS_OK checks=" << checks << "\n";
     return 0;
 }

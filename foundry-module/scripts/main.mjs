@@ -96,7 +96,7 @@ let estadoApp = null;
 let mapaApp = null;
 
 function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, (character) => `&#${character.codePointAt(0)};`);
+  return String(value).replace(/[&<>"']/g, (character) => `&#${character.charCodeAt(0)};`);
 }
 
 function fechaLocal() {
@@ -429,7 +429,7 @@ function crearClaseV2() {
       const activo = typeof document !== "undefined" && this.element?.contains?.(document.activeElement)
         ? document.activeElement
         : null;
-      this.#focoAConservar = describirFoco(activo);
+      this.#focoAConservar = describirFoco(activo, this.element);
       this.render();
     }
 
@@ -845,7 +845,7 @@ function crearClaseV1() {
       const activo = typeof document !== "undefined" && raiz?.contains?.(document.activeElement)
         ? document.activeElement
         : null;
-      this.#focoAConservar = describirFoco(activo);
+      this.#focoAConservar = describirFoco(activo, raiz);
       this.render(force);
     }
 

@@ -1018,9 +1018,9 @@ function crearClaseV1() {
         set('[data-field="ruta-eta"]', ruta.etaLabel);
       }
       for (const sistema of sistemas) {
-        set(`[data-sistema-id="${sistema.id}"] [data-campo="salud"]`, `${sistema.salud}%`);
-        set(`[data-sistema-id="${sistema.id}"] [data-campo="calor"]`, `${sistema.calor}%`);
-        set(`[data-sistema-id="${sistema.id}"] [data-campo="potencia"]`, `${sistema.potencia}%`);
+        set(`[data-sistema-id="${sistema.id}"] [data-campo="salud"]`, `${sistema.health}%`);
+        set(`[data-sistema-id="${sistema.id}"] [data-campo="calor"]`, `${sistema.heat}%`);
+        set(`[data-sistema-id="${sistema.id}"] [data-campo="potencia"]`, `${sistema.power}%`);
       }
     }
 

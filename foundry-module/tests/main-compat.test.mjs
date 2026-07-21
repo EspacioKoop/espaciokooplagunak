@@ -35,6 +35,15 @@ async function loadModule({ modern = false, isGM = true, fetchImpl } = {}) {
       return this;
     }
 
+    // No-op: el `render()` público de este stub no reconstruye el árbol real
+    // de Foundry, así que nunca invoca `_render`. Las subclases V1 (Application
+    // clásica) sobrescriben `_render` para arrancar el sondeo tras el primer
+    // render real; los tests que necesitan ejercitar ese arranque llaman a
+    // `_render` directamente en vez de pasar por `render()`.
+    async _render(_force, _options) {
+      this.rendered = true;
+    }
+
     async close() {
       this.rendered = false;
     }
@@ -619,6 +628,71 @@ test("ApplicationV2: el patch de telemetría usa los campos reales (health/heat/
 
   t.mock.timers.enable({ apis: ["setTimeout"] });
   app._onFirstRender({}, {});
+  // Primer sondeo: fija #firmaVisibleAnterior (dispara render(), no el patch).
+  await new Promise((resolve) => setImmediate(resolve));
+  await new Promise((resolve) => setImmediate(resolve));
+  await new Promise((resolve) => setImmediate(resolve));
+
+  t.mock.timers.tick(2000);
+  // Segundo sondeo, sin cambio estructural: toma la vía del patch directo.
+  await new Promise((resolve) => setImmediate(resolve));
+  await new Promise((resolve) => setImmediate(resolve));
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.equal(nodos.salud.textContent, "80%");
+  assert.equal(nodos.calor.textContent, "30%");
+  assert.equal(nodos.potencia.textContent, "100%");
+});
+
+// Regresión de review (#280): réplica AISLADA para v11 del mismo bloqueo de
+// #279 — #actualizarTelemetriaDom() de EstadoNaveAppV1 leía
+// sistema.salud/calor/potencia en vez de health/heat/power. Mismo criterio
+// que el test V2 equivalente, pero disparando el sondeo a través de
+// `_render` (la vía real de arranque en v11, nunca ejercitada por los tests
+// existentes porque el stub de `render()` no invocaba `_render`).
+test("v11: el patch de telemetría usa los campos reales (health/heat/power) tras un sondeo estable", async (t) => {
+  const nave = () => ({
+    callsign: "Argia",
+    position: { x: 10, y: 20 },
+    heading: 90,
+    hull: 100,
+    hull_max: 100,
+    energy: 100,
+    energy_max: 100,
+    shields_active: true,
+    systems: {
+      reactor: { health: 0.8, heat: 0.3, power: 1.0, coolant: 0 },
+    },
+  });
+  const okJson = (payload) => ({ ok: true, status: 200, async json() { return payload; } });
+  const fetchImpl = async (url) => {
+    if (url.endsWith("/healthz")) return okJson({ ok: true });
+    if (url.endsWith("/v1/state")) return okJson({ ship: nave() });
+    if (url.endsWith("/v1/scenario")) return okJson({ scenario_time: 0, paused: false });
+    if (url.endsWith("/v1/events")) return okJson({ events: [] });
+    return okJson({});
+  };
+
+  const { hooks, instances } = await loadModule({ fetchImpl });
+  const controls = [];
+  hooks.getSceneControlButtons(controls);
+  controls.find((group) => group.name === "lagunak").tools[0].onClick();
+  const app = instances[0];
+
+  const nodos = {
+    salud: { textContent: "" },
+    calor: { textContent: "" },
+    potencia: { textContent: "" },
+  };
+  app.element = [{
+    querySelector(selector) {
+      const match = selector.match(/data-campo="(\w+)"/);
+      return match ? nodos[match[1]] ?? null : null;
+    },
+  }];
+
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  await app._render(true);
   // Primer sondeo: fija #firmaVisibleAnterior (dispara render(), no el patch).
   await new Promise((resolve) => setImmediate(resolve));
   await new Promise((resolve) => setImmediate(resolve));

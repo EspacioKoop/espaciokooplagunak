@@ -44,6 +44,24 @@ test("todas las claves estáticas usadas por scripts y plantillas existen", asyn
   assert.deepEqual(missingEn, [], `Faltan claves en en.json: ${missingEn.join(", ")}`);
 });
 
+test("ninguna clave es a la vez hoja y rama (colisión que rompe expandObject de Foundry)", async () => {
+  // Foundry expande las claves con puntos vía expandObject al cargar el catálogo.
+  // Si una ruta existe como hoja ("A.B": "x") y como rama ("A.B.C": "y"), Foundry
+  // intenta convertir el string en objeto, aborta el fichero entero y cae TODA la
+  // i18n del módulo (regresión #258). Guardamos ambos idiomas.
+  for (const language of ["es", "en"]) {
+    const keys = Object.keys(await catalog(language));
+    const colisiones = keys
+      .filter((key) => keys.some((other) => other !== key && other.startsWith(`${key}.`)))
+      .sort();
+    assert.deepEqual(
+      colisiones,
+      [],
+      `Claves hoja que también son rama en ${language}.json: ${colisiones.join(", ")}`,
+    );
+  }
+});
+
 test("el catálogo es-ES traduce sistemas, facciones y códigos visibles", async () => {
   const es = await catalog("es");
   assert.equal(es["LAGUNAK.Sistemas.beamweapons"], "Armas de haz");

@@ -70,6 +70,54 @@ test("el orden de estilos y reduced-motion cubren la regla legacy animada", () =
   assert.match(workspaceCss, /@media \(prefers-reduced-motion: reduce\)[\s\S]+\.lagunak-workspace \*[\s\S]+animation: none !important/);
 });
 
+test("gestión de puestos: cada select de asignación tiene nombre accesible por label", () => {
+  const template = read("templates/puestos-tripulacion.hbs");
+  // El <label for> envuelve la fila y apunta al id del <select>: nombre
+  // accesible ligado al control, no solo texto visual cercano.
+  assert.match(template, /<label class="lagunak-puestos__fila" for="lagunak-station-\{\{id\}\}">/);
+  assert.match(template, /<select id="lagunak-station-\{\{id\}\}"[^>]+data-station-user/);
+});
+
+test("espacio de puesto: pestañas de previsualización GM exponen selección sin depender solo del color", () => {
+  const template = read("templates/espacio-puesto.hbs");
+  // aria-pressed en el botón de pestaña: el estado seleccionado es semántico,
+  // no solo la clase visual "is-selected".
+  assert.match(template, /<button type="button" class="\{\{#if selected\}\}is-selected\{\{\/if\}\}" aria-pressed="\{\{selected\}\}"/);
+  assert.match(template, /<nav class="lagunak-workspace__tabs" aria-label=/);
+});
+
+test("espacio de puesto: región de conexión es aria-live y su pulso decorativo está oculto a lectores", () => {
+  const template = read("templates/espacio-puesto.hbs");
+  assert.match(template, /class="lagunak-workspace__connection[^"]*" role="status" aria-live="polite"/);
+  assert.match(template, /<span class="lagunak-workspace__pulse" aria-hidden="true">/);
+});
+
+test("espacio de puesto: métricas con barra de progreso llevan role=meter con límites y nombre", () => {
+  const template = read("templates/espacio-puesto.hbs");
+  assert.match(template, /role="meter" aria-label="\{\{label\}\}: \{\{value\}\}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="\{\{progress\}\}"/);
+});
+
+test("espacio de puesto: todos los formularios de orden tienen input/select con label asociado por id", () => {
+  const template = read("templates/espacio-puesto.hbs");
+  for (const form of template.matchAll(/<form class="lagunak-workspace__orden"[\s\S]*?<\/form>/g)) {
+    const cuerpo = form[0];
+    const ids = [...cuerpo.matchAll(/<(?:input|select) id="([^"]+)"/g)].map((m) => m[1]);
+    for (const id of ids) {
+      assert.match(cuerpo, new RegExp(`<label for="${id}">`), `input/select sin label: ${id}`);
+    }
+  }
+});
+
+test("espacio de puesto: los iconos decorativos de acciones y estados no contaminan el nombre accesible", () => {
+  const template = read("templates/espacio-puesto.hbs");
+  // aria-hidden se hereda a los descendientes: un <i> vale si lo lleva él
+  // mismo o si un ancestro directo (p. ej. el <span> que lo envuelve) ya lo
+  // declara — no hace falta duplicarlo en cada nivel.
+  for (const icon of template.matchAll(/(?:<span[^>]*aria-hidden="true"[^>]*>\s*)?<i class="fa-solid[^>]*>/g)) {
+    assert.match(icon[0], /aria-hidden="true"/, `icono sin aria-hidden propio ni de ancestro directo: ${icon[0]}`);
+  }
+});
+
 test("los colores de texto de consola cumplen contraste AA sobre sus fondos", () => {
   const css = read("styles/lagunak-consola.css");
   const token = (name) => {

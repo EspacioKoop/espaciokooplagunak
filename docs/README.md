@@ -21,6 +21,7 @@
 | [UPSTREAM.md](UPSTREAM.md) | Relación con EmptyEpsilon y sincronización con upstream |
 | [BASELINE.md](BASELINE.md) | Baseline de accesibilidad, seguridad, calidad y fiabilidad |
 | [API_HTTP.md](API_HTTP.md) | Inventario del API HTTP heredado del servidor |
+| [BRIDGE_AUTHENTICATION.md](BRIDGE_AUTHENTICATION.md) | Ciclo de vida, rotación y revocación del Bearer |
 | [CONTENT_EDITOR.md](CONTENT_EDITOR.md) | Editor de contenido integrado |
 
 ## Integración con Foundry VTT
@@ -30,6 +31,12 @@
 | [FOUNDRY.md](FOUNDRY.md) | Arquitectura de la integración y gestión de nave |
 | [FOUNDRY_DISTRIBUTION.md](FOUNDRY_DISTRIBUTION.md) | Empaquetado y distribución del módulo Foundry |
 | [FOUNDRY_GUI_SMOKE.md](FOUNDRY_GUI_SMOKE.md) | Prueba de humo de la interfaz del módulo |
+
+## Investigación y diseño de contenido
+
+| Documento | Qué cubre |
+|---|---|
+| [ATLAS_SPELLJAMMER.md](ATLAS_SPELLJAMMER.md) | Investigación del atlas jerárquico de campaña y matriz de procedencia/licencia (#213) |
 
 ## Localización
 

@@ -9,6 +9,46 @@ validados y acotados. **Nunca se reenvía Lua recibido por la red.**
 Diseño completo: [`docs/FOUNDRY.md`](../docs/FOUNDRY.md) · Inventario del API
 heredado: [`docs/API_HTTP.md`](../docs/API_HTTP.md).
 
+## Decisiones de arquitectura
+
+El [registro ADR](../docs/adr/README.md) conserva el contexto y las consecuencias
+de las decisiones que delimitan este puente:
+
+- [ADR-0001](../docs/adr/0001-exec-lua-nunca-expuesto.md): `/exec.lua` nunca
+  se expone; el puente es su único cliente y aplica autenticación Bearer, CORS
+  estricto, límites y una lista blanca de operaciones.
+- [ADR-0002](../docs/adr/0002-autoridad-de-datos-foundry-vs-simulacion.md):
+  Foundry gobierna la narrativa y la simulación gobierna el estado de la nave.
+- [ADR-0003](../docs/adr/0003-transporte-polling-http.md): el contrato v0 usa
+  polling HTTP; WebSocket queda aplazado hasta disponer de métricas que lo
+  justifiquen.
+- [ADR-0007](../docs/adr/0007-frontera-upstream.md): los arreglos del código
+  heredado se proponen primero a upstream para limitar divergencias permanentes.
+
+## Garantías de seguridad que no deben retroceder
+
+Estas garantías describen el **contrato implementado y comprobable** del puente,
+no una certificación OWASP ASVS ni una promesa de que pueda publicarse en
+Internet. El [modelo de amenazas](../docs/BRIDGE_THREAT_MODEL.md) documenta los
+actores, riesgos residuales y cambios que requieren revisión adversarial.
+
+| Garantía | Control vigente | Límite explícito |
+|---|---|---|
+| El cliente no puede aportar Lua para ejecutar | `/v1/command` acepta una unión discriminada de operaciones tipadas; cada modelo genera una plantilla Lua propiedad del servidor | `bridge/app.py` sigue siendo código privilegiado: una plantilla nueva exige review de seguridad |
+| `/exec.lua` no es accesible desde el cliente | El puerto heredado permanece en la red interna de Compose y una guardia CI rechaza su publicación | Un cambio de red, `network_mode: host` o acceso alternativo al puerto 8080 rompe la garantía |
+| Toda ruta `/v1/*` exige autenticación | Dependencia Bearer común y comparación en tiempo constante; sin `BRIDGE_TOKEN` el puente falla cerrado con `503` | `/healthz` y `/docs` son públicos; el Bearer es compartido y no acredita identidad ni rol de Foundry |
+| Solo se admiten órdenes y valores cerrados | Discriminador `op`, enums, tipos estrictos y rangos Pydantic; operación o forma desconocida devuelve `422` | No hay passthrough genérico; ampliar un enum, campo u operación amplía la superficie autorizada |
+| Los cuerpos mutables están acotados antes del parseo | Middleware ASGI rechaza con `413` cuerpos mayores de 16 KiB, tanto por `Content-Length` como por transferencia fragmentada | El límite no sustituye cuotas por cliente ni los límites de cabeceras y conexión del servidor o proxy |
+| La espera y la respuesta del juego están acotadas en el puente | Timeout HTTP de 5 s y rechazo de respuestas heredadas mayores de 64 KiB | El timeout limita cuánto espera el puente, pero no garantiza cancelar un script que el juego ya haya empezado |
+| El sondeo no puede crecer sin límite por frecuencia | Token bucket global de 10 peticiones/s con ráfaga de 20 | Es un límite en memoria y por proceso, no sustituye límites del proxy ni aislamiento operativo |
+| Los fallos del juego no filtran su cuerpo al cliente | Estados no válidos, JSON malformado, exceso de tamaño y errores Lua se traducen a `502` genérico | Logs y proxies externos deben conservar la misma política de redacción |
+| CORS solo permite orígenes web exactos configurados | Allowlist HTTP(S), sin `*`, credenciales embebidas, rutas, query ni fragmentos | CORS no autentica, no protege clientes no navegador y no sustituye TLS |
+
+Las regresiones de `bridge/tests/` cubren autenticación, CORS, rate limit,
+traducción de respuestas heredadas, lista blanca, rangos, límite de cuerpos e
+intentos de inyección. Un cambio que altere una fila debe actualizar también sus
+pruebas y el modelo de amenazas.
+
 ## Contrato v0
 
 | Método | Ruta | Auth | Descripción |

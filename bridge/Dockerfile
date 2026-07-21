@@ -9,7 +9,7 @@ RUN useradd --system --create-home --uid 10001 bridge
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-COPY app.py .
+COPY app.py lua_templates.py http_middleware.py rate_limit.py command_models.py .
 
 ENV BRIDGE_PORT=8090
 USER bridge

@@ -2,6 +2,7 @@ import { BridgeClient, BridgeError } from "./bridge-client.mjs";
 import { getBridgeToken } from "./bridge-token-session.mjs";
 import { openStationApp } from "./station-ui.mjs";
 import { buildWorkspaceModel, stationForWorkspace } from "./station-workspaces.mjs";
+import { emitWorkspaceOrder } from "./station-order-wiring.mjs";
 
 let configuredModuleId = null;
 let workspaceApp = null;
@@ -57,6 +58,11 @@ export async function revokeWorkspaceAccess() {
 
 function renderWorkspace(force = false) {
   if (!workspaceApp) return;
+  // Refresco reactivo (hook updateUser al cambiar de puesto): re-renderiza solo
+  // si la consola sigue abierta. Sin este guard, render(false) sobre una app V1
+  // ya cerrada llama a _replaceHTML con el elemento fuera del DOM y peta con
+  // «can't access property "hasChildNodes"» (#263). La apertura usa force=true.
+  if (!force && !workspaceApp.rendered) return;
   if (foundry.applications?.api?.ApplicationV2) {
     workspaceApp.render({ force: true });
   } else {
@@ -139,10 +145,36 @@ function stationFromEvent(event) {
   return event?.currentTarget?.dataset?.station ?? null;
 }
 
+// Valida el rumbo introducido por el tripulante antes de emitir la orden.
+// Devuelve el grado normalizado o `null` si es inválido. Rechaza ausencia y
+// cadena vacía/espacios ANTES de convertir: `Number("")` es 0 y colaría como
+// una orden real a rumbo 0 en vez de avisar. El cero explícito sí es válido.
+export function parseHeadingValue(raw) {
+  if (raw === undefined || raw === null) return null;
+  const texto = String(raw).trim();
+  if (texto === "") return null;
+  const heading = Number(texto);
+  if (!Number.isFinite(heading) || heading < 0 || heading >= 360) return null;
+  return heading;
+}
+
+function submitHeadingOrder(app) {
+  const root = app.element?.[0] ?? app.element;
+  const input = root?.querySelector?.("#lagunak-orden-rumbo");
+  const heading = parseHeadingValue(input?.value);
+  if (heading === null) {
+    ui.notifications?.warn?.(game.i18n.localize("LAGUNAK.Espacios.Orden.RumboInvalido"));
+    return;
+  }
+  emitWorkspaceOrder({ action: "set_target_heading", params: { heading } });
+  ui.notifications?.info?.(game.i18n.localize("LAGUNAK.Espacios.Orden.Enviada"));
+}
+
 async function handleWorkspaceAction(app, event) {
   const action = actionFromEvent(event);
   if (action === "refresh") return refreshTelemetry(app);
   if (action === "assignments") return openStationApp();
+  if (action === "orden-rumbo") return submitHeadingOrder(app);
   if (action === "preview" && game.user?.isGM) {
     app.setPreviewStation(stationFromEvent(event));
     renderWorkspace();

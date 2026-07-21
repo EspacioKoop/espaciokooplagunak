@@ -1,4 +1,5 @@
 import { STATIONS, normalizeStation } from "./station-assignment.mjs";
+import { isActionAllowed } from "./station-actions.mjs";
 import { prepareSystemRows } from "./ship-view.mjs";
 
 const DEFINITIONS = Object.freeze({
@@ -253,6 +254,11 @@ export function buildWorkspaceModel({
     stationIcon: definition.icon,
     accent: definition.accent,
     isNavigation: normalized === "navigation",
+    // Acción operativa por puesto (#236): disponible aunque el tripulante no
+    // tenga telemetría —la orden es intención, la simulación es autoritativa—.
+    // Solo para tripulación (no-GM): el GM tiene sus propios controles directos
+    // y `game.socket.emit` no se autoentrega, así que el control no le serviría.
+    canOrderHeading: !isGM && isActionAllowed(normalized, "set_target_heading"),
     navigationHeading: integer(ship?.heading),
     navigationAriaLabel: format(i18n, "LAGUNAK.Espacios.RumboAccesible", { heading: integer(ship?.heading) }),
     isGM: Boolean(isGM),

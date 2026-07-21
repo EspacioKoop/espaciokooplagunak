@@ -105,6 +105,29 @@ test("un jugador nunca recibe telemetría aunque se le inyecte por error", () =>
   assert.equal(model.connectionRestricted, true);
 });
 
+test("navegación puede ordenar rumbo aunque no tenga telemetría; otros puestos no", () => {
+  const navegacion = buildWorkspaceModel({
+    station: "navigation",
+    isGM: false,
+    users: [user({ id: "p1", station: "navigation" })],
+    moduleId: MODULE_ID,
+    i18n,
+    connection: "restricted",
+  });
+  assert.equal(navegacion.hasTelemetry, false);
+  assert.equal(navegacion.canOrderHeading, true);
+
+  // El GM no recibe el control de tripulación (tiene los suyos y el emit no se
+  // autoentrega), ni siquiera en navegación.
+  const gmNav = buildWorkspaceModel({ station: "navigation", isGM: true, users: [], moduleId: MODULE_ID, i18n });
+  assert.equal(gmNav.canOrderHeading, false);
+
+  for (const station of ["captain", "engineering", "sensors", "communications", "weapons"]) {
+    const model = buildWorkspaceModel({ station, isGM: false, users: [], moduleId: MODULE_ID, i18n });
+    assert.equal(model.canOrderHeading, false, `${station} no debería ordenar rumbo en esta rebanada`);
+  }
+});
+
 test("ingeniería recibe sistemas y alarmas medibles para la vista GM", () => {
   const model = buildWorkspaceModel({
     station: "engineering",

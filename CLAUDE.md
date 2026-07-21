@@ -124,8 +124,11 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
   CodeQL 8/9); la salida sigue siendo un único HTML autocontenido que funciona offline. Vigila esta
   divergencia al mergear cambios de upstream que toquen `script_docs/`.
 - `foundry-module/` — la lógica pura y testeable del mapa vive en `scripts/ventana-nave.mjs`, el
-  pintor Canvas en `scripts/mapa-render.mjs` y las rutas Foundry V1/V2 permanecen aisladas en
-  `scripts/main.mjs`; el mapa interpola únicamente muestras confirmadas y nunca extrapola.
+  pintor Canvas en `scripts/mapa-render.mjs` (decorado de fondo en `scripts/decorado-fondo.mjs`,
+  sprite de nave en `scripts/nave-sprite.mjs`); el mapa interpola únicamente muestras confirmadas y
+  nunca extrapola. `scripts/main.mjs` es un orquestador puro (settings, hooks, scene controls); las
+  cuatro factorías de ventana (estado de nave y mapa vivo, V1/V2, aisladas a propósito entre sí) viven
+  en `scripts/estado-nave-app-v{1,2}.mjs` y `scripts/mapa-vivo-app-v{1,2}.mjs` (extracción del PR #283).
 - `resources/` y `packs/` — assets heredados de upstream.
 - La versión se calcula por fecha (`AAAA.MM.DD`) en `CMakeLists.txt` salvo override explícito.
 - `docs/` — documentación propia del fork: [`BUILDING.md`](docs/BUILDING.md),
@@ -161,3 +164,25 @@ misión en Lua. No mezcles reformateos masivos con cambios funcionales.
 
 Actualiza `README.md` (estado/roadmap/características) solo cuando un cambio esté integrado en
 `main` y verificado — nunca marques tareas como hechas por el mero hecho de haber escrito código.
+
+## Mantenimiento de la documentación
+
+La documentación se queda obsoleta silenciosamente (un refactor mecánico como el del PR #283 cambia
+rutas que otro documento describe en prosa, sin que ningún test lo detecte). Al fusionar un cambio a
+`main`, revisa si toca actualizar:
+
+- **`README.md`** — marcar casillas del roadmap solo si el criterio de salida de la fase ya está
+  verificado en `main` (no en un PR abierto); añadir a "Características propias" solo lo integrado.
+- **`CLAUDE.md`** — la sección `## Arquitectura` describe rutas y responsabilidades de archivos
+  concretos; una extracción/renombrado/movimiento de archivo (como #283 o la modularización de
+  `bridge/app.py`) la deja desactualizada de inmediato. Corrígela en el mismo PR que mueve el código,
+  no en uno aparte.
+- **`docs/BASELINE.md`** y **`docs/AECF-METRICAS.md`** — si el cambio activa, corta o mueve de estado
+  una práctica AECF (seguridad/accesibilidad/calidad/fiabilidad), o cambia qué gate de CI la vigila.
+- **`docs/adr/`** — un ADR registra una decisión ya tomada y verificada; no se edita retroactivamente
+  salvo error, se añade uno nuevo si la decisión cambia (ver `docs/adr/README.md`).
+- **Documentos de investigación** (p. ej. `docs/ATLAS_SPELLJAMMER.md`) — permanecen "a validar" hasta
+  que Varo y Eloy cierren la decisión en su issue; no los promuevas a hecho por iniciativa propia.
+
+Regla general: el PR que cambia el código es también el lugar de corregir la prosa que ese código
+invalida — no una tarea de "documentación" aparte que se pospone.

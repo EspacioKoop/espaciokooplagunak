@@ -56,6 +56,7 @@ import {
   registerWorkspaceFeature,
   revokeWorkspaceAccess,
 } from "./station-workspace-ui.mjs";
+import { registerStationOrders } from "./station-order-wiring.mjs";
 import {
   colorFaccion,
   componerFrame,
@@ -153,11 +154,17 @@ Hooks.once("ready", () => {
   // Migración de #183: no se lee el valor legado; se sobrescribe con vacío.
   // El token operativo vive exclusivamente en bridge-token-session.mjs.
   void clearLegacyBridgeToken();
+  // Relé de órdenes por puesto (#236): el GM registra el manejador del socket;
+  // en clientes de tripulación es no-op (solo emiten).
+  registerStationOrders(MODULE_ID);
 });
 
 Hooks.on("updateUser", (user) => {
-  if (user?.id === game.user?.id && !user.isGM) {
-    void revokePrivilegedBridgeAccess();
+  if (user?.id === game.user?.id) {
+    // Un cambio de rol del propio usuario rearma el relé: el GM entrante gana
+    // el manejador, el saliente lo pierde (registerStationOrders comprueba isGM).
+    registerStationOrders(MODULE_ID);
+    if (!user.isGM) void revokePrivilegedBridgeAccess();
   }
 });
 

@@ -147,6 +147,20 @@ def test_events_envia_solo_lua_fijo_al_juego(client, juego, auth):
     assert "LAGUNAK_EVT_encounter_started_s90_" in juego.ultimo_lua
 
 
+def test_encounters_publica_el_catalogo_cerrado(client, juego, auth):
+    r = client.get("/v1/encounters", headers=auth)
+    assert r.status_code == 200
+    cuerpo = r.json()
+    assert cuerpo["archetypes"] == ["derelict", "patrol", "freighter", "sentry"]
+    assert cuerpo["bearings"] == ["ahead", "astern", "port", "starboard"]
+    # Catálogo estático: nunca ejecuta Lua contra el juego.
+    assert juego.llamadas == []
+
+
+def test_encounters_requiere_auth(client, juego):
+    assert client.get("/v1/encounters").status_code == 401
+
+
 # --- /v1/anchors: catálogo de anclas de reposition_ship (#176) ----------------
 
 

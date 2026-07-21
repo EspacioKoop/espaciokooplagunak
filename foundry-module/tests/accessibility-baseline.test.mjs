@@ -181,11 +181,14 @@ test("ninguna de las cinco superficies fija tabindex: el orden del DOM es el ord
   }
 });
 
-test("estado de nave: el orden de teclado va de tempo a ingeniería, maniobra y anotar", () => {
+test("estado de nave: el orden de teclado va de tempo a encuentros, ingeniería, maniobra y anotar", () => {
   const ids = controlesInteractivos(read("templates/estado-nave.hbs")).map((c) => c.id);
   assert.deepEqual(ids, [
     "pausar",
     "reanudar",
+    "lagunak-encuentro-arquetipo",
+    "lagunak-encuentro-rumbo",
+    "encuentro",
     "summary",
     "ingenieria-sistema",
     "ingenieria-nivel",

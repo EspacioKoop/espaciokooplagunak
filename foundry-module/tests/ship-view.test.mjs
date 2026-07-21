@@ -103,6 +103,7 @@ const vistaBase = () => ({
   naveCallsign: "Artemis",
   ruta: { estado: "en_ruta", name: "Argia", distanceLabel: "12.3 u", etaLabel: "00:04:12" },
   pausa: { estado: "activa", puedePausar: true, puedeReanudar: false, foundryPausado: false },
+  encuentros: { disponible: true, puedeIntroducir: true, pendiente: false },
   maniobra: { disponible: true, puedeOrdenar: true, escudosActivos: true },
   maniobraFallo: false,
   ingenieria: { disponible: true, puedeAjustar: true, pendiente: false, tieneReparadores: true },
@@ -133,6 +134,10 @@ test("firmaEstadoNaveVisible detecta cambios que sí requieren reconstruir el pa
   assert.notEqual(
     firmaEstadoNaveVisible(base),
     firmaEstadoNaveVisible({ ...base, ingenieria: { ...base.ingenieria, pendiente: true } }),
+  );
+  assert.notEqual(
+    firmaEstadoNaveVisible(base),
+    firmaEstadoNaveVisible({ ...base, encuentros: { ...base.encuentros, pendiente: true } }),
   );
   assert.notEqual(
     firmaEstadoNaveVisible(base),

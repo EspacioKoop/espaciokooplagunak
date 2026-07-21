@@ -155,6 +155,36 @@
   cursor: not-allowed;
 }
 
+.lagunak-encuentros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5em;
+  margin-bottom: 0.5rem;
+}
+
+.lagunak-encuentros select {
+  flex: 1 1 8em;
+}
+
+.lagunak-encuentros button[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Etiqueta accesible sin ocupar sitio (patrón visually-hidden). */
+.lagunak-visualmente-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .lagunak-pausa-estado {
   display: inline-flex;
   align-items: center;

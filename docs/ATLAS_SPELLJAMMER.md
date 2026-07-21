@@ -69,7 +69,7 @@ Cada entrada real del atlas de una mesa heredará una de estas filas.
 | Ejemplos de sistemas/mundos **inventados** | Creación original para el fork | **Sí**, versionado como fixtures | Autoría propia en el PR |
 | Datos SRD 5.1 / material CC-BY compatible | SRD (OGL/CC-BY 4.0 según edición) | **Sí**, con atributo de licencia por entrada | Localizador verificable (URL/ISBN) + nota de licencia |
 | Mundos/planos oficiales de Spelljammer (nombres, lore, mapas, stats) | WotC / TSR, protegido | **No**. Solo esquema; dato lo aporta la mesa | La mesa declara poseer el material |
-| Homebrew de una mesa | La mesa | **No** en el repo público; queda en el mundo Foundry / export privado | Marca `provenance: "private"` por entrada |
+| Homebrew de una mesa | La mesa | **No** en el repo público; queda en el mundo Foundry / export privado | Marca `provenance.kind: "user_supplied"` por entrada; el archivo privado se mantiene explícitamente fuera del catálogo público del repo |
 | Contenido de fans bajo *Fan Content Policy* WotC | Fan, no comercial, no oficial | **No** por defecto; caso a caso, nunca como canon | Enlace a política + declaración de la mesa |
 
 **Regla de separación:** el catálogo redistribuible (esquema + ejemplos
@@ -134,9 +134,10 @@ ADR-0002 (Foundry autoritativo de narrativa) y no envía lore ni código al puen
 **Nota de estado:** #214 ya materializó un **primer corte** de esta preferencia —
 un documento cosmográfico separado, jerárquico, versionado y validable
 (`espaciokoop-cosmography` v1)— pero **en el módulo Foundry (JS)**, no como
-`CampaignAtlasDocument` en C++. La pregunta abierta ya no es "¿opción 2 sí o no?"
-(está tomada de facto) sino dónde vive el validador canónico a largo plazo (JS del
-módulo vs. `content/` C++ para el standalone) y qué capas añade v2+.
+`CampaignAtlasDocument` en C++. v1 es el **primer vertical ya integrado** (evidencia,
+no decisión cerrada): la elección arquitectónica para el standalone sigue abierta a
+acuerdo entre Varo y Eloy. Las preguntas vivas son dónde reside el validador canónico
+a largo plazo (JS del módulo vs. `content/` C++ para el standalone) y qué capas añade v2+.
 
 ## Modelo propuesto para el núcleo standalone (evolución sobre v1)
 
@@ -198,6 +199,7 @@ estrenar: es v1 (#214) más `enclave`/`route`/`tacticalMapId`/`meta`.
       "id": "region-marea-de-brasas",
       "type": "plane",
       "name": { "es": "Marea de Brasas", "en": "Ember Tide" }, // texto localizado en línea (v1)
+      "summary": { "es": "Región de rescoldos a la deriva.", "en": "Region of drifting embers." }, // obligatorio (v1)
       "continuity": "original",
       "provenance": { "kind": "original", "source": "Espaciokoop Lagunak", "license": "GPL-2.0-only" }
     },
@@ -206,6 +208,7 @@ estrenar: es v1 (#214) más `enclave`/`route`/`tacticalMapId`/`meta`.
       "type": "star_system",
       "parent_id": "region-marea-de-brasas",              // jerarquía por referencia (v1)
       "name": { "es": "Yunque Roto", "en": "Broken Anvil" },
+      "summary": { "es": "Sistema forjado en torno a una estrella partida.", "en": "System forged around a split star." },
       "route": { "unit": "mesa-definida", "coords": [0, 0] }, // NUEVO v2: opcional
       "continuity": "original",
       "provenance": { "kind": "original", "source": "Espaciokoop Lagunak", "license": "GPL-2.0-only" }
@@ -215,6 +218,7 @@ estrenar: es v1 (#214) más `enclave`/`route`/`tacticalMapId`/`meta`.
       "type": "planet",
       "parent_id": "sistema-yunque-roto",
       "name": { "es": "Forja Errante", "en": "Wandering Forge" },
+      "summary": { "es": "Planeta-taller que vaga por el sistema.", "en": "Workshop-planet that roams the system." },
       "tacticalMapId": null,                                // NUEVO v2: enlace opcional a un MapDocument
       "meta": {},                                           // NUEVO v2: preservado, nunca ejecutado
       "continuity": "original",
@@ -225,6 +229,7 @@ estrenar: es v1 (#214) más `enclave`/`route`/`tacticalMapId`/`meta`.
       "type": "enclave",                                    // NUEVO v2: cuarta capa
       "parent_id": "cuerpo-forja-errante",
       "name": { "es": "Puerto Ceniza", "en": "Ash Harbor" },
+      "summary": { "es": "Enclave comercial sobre la Forja Errante.", "en": "Trade enclave atop the Wandering Forge." },
       "continuity": "original",
       "provenance": { "kind": "original", "source": "Espaciokoop Lagunak", "license": "GPL-2.0-only" }
     }
@@ -302,8 +307,9 @@ fueran canon):
    `foundry-module/`; ¿se porta a C++ `content/` al estilo `campaignGraph` para el
    standalone?) y quién la UI GM de exploración/importación en Foundry?
 4. **Coordinación con #54:** el ADR del modelo se escribirá *después* de acordar
-   1–3 y de que la evolución esté verificada en `main` (política de `docs/adr/`);
-   v1 ya integrado puede documentarse como ADR de hecho.
+   1–3 y de que la evolución esté verificada en `main` (política de `docs/adr/`).
+   v1 ya integrado es evidencia del primer vertical, no un ADR: la decisión
+   standalone queda abierta hasta que Varo y Eloy la acuerden.
 
 ## Relaciones
 

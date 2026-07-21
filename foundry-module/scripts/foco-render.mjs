@@ -42,10 +42,50 @@ export function describirFoco(elemento, raiz = null) {
   return null;
 }
 
-/** Reencuentra y enfoca el control descrito por `describirFoco` en la nueva raíz. */
+// Controles nativamente enfocables por teclado en las plantillas del módulo.
+const SELECTOR_ENFOCABLE = "button, select, input, textarea, summary, a[href], [tabindex]";
+
+/**
+ * Primer elemento enfocable (no deshabilitado) en `todos` a partir de
+ * `posicion`, buscando primero hacia atrás y, si no hay ninguno antes, hacia
+ * delante. Se prueba atrás primero porque el patrón de este panel es un par
+ * de controles adyacentes que se deshabilitan uno a otro (p. ej.
+ * "reanudar" deshabilita "pausar" y viceversa, siempre justo antes en el
+ * DOM): un control que sigue habilitado más adelante en el panel (como el
+ * <summary> de ayuda) no es su pareja lógica y roba el fallback si se
+ * probara primero. `posicion === -1` (elemento no encontrado en la lista)
+ * prueba el primero enfocable del panel completo.
+ */
+function focalizableDesde(todos, posicion) {
+  if (posicion === -1) return todos.find((el) => !el.disabled) ?? null;
+  for (let i = posicion - 1; i >= 0; i -= 1) {
+    if (!todos[i].disabled) return todos[i];
+  }
+  for (let i = posicion + 1; i < todos.length; i += 1) {
+    if (!todos[i].disabled) return todos[i];
+  }
+  return null;
+}
+
+/**
+ * Reencuentra y enfoca el control descrito por `describirFoco` en la nueva
+ * raíz. Si ese control concreto quedó `disabled` tras el re-render (p. ej.
+ * "Pausar" justo después de pausar con éxito), enfocarlo es un no-op
+ * silencioso en el navegador y el foco cae a `document.body`, rompiendo el
+ * orden de tabulación de la ventana entera (issue #227, hallado en el smoke
+ * humano: Tab dejaba de moverse tras pulsar Pausar/Reanudar/Ajustar). En ese
+ * caso se busca el siguiente control enfocable del panel en vez de dejar el
+ * foco perdido.
+ */
 export function restaurarFoco(raiz, descriptor) {
   if (!descriptor || !raiz?.querySelectorAll) return;
   const coincidencias = raiz.querySelectorAll(`[${descriptor.atributo}="${descriptor.valor}"]`);
   const elemento = coincidencias[descriptor.indice ?? 0] ?? coincidencias[0];
-  elemento?.focus?.();
+  if (elemento && !elemento.disabled) {
+    elemento.focus?.();
+    return;
+  }
+  const todos = Array.from(raiz.querySelectorAll(SELECTOR_ENFOCABLE));
+  const posicion = elemento ? todos.indexOf(elemento) : -1;
+  focalizableDesde(todos, posicion)?.focus?.();
 }

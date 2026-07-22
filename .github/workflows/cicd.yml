@@ -18,29 +18,35 @@ jobs:
     outputs:
       build: ${{ steps.filter.outputs.build }}
     steps:
+      # Checkout shallow (depth 1): no clonamos la historia completa de
+      # EmptyEpsilon solo para un diff. El diff de dos puntos base↔merge basta.
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
-        with:
-          fetch-depth: 0
       - name: Decidir si compilar
         id: filter
         shell: bash
         run: |
           # Por defecto se compila. Solo se omite la build C++/Lua cuando TODO el
           # cambio del PR cae en rutas que no pueden afectarla; así, una ruta
-          # nueva que sí influya sigue disparando la build (fallo seguro).
+          # nueva que sí influya sigue disparando la build (fallo seguro). Ante
+          # cualquier problema resolviendo el diff, también se compila.
           if [ "${{ github.event_name }}" != "pull_request" ]; then
             echo "Evento ${{ github.event_name }}: se compila siempre."
             echo "build=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           base="${{ github.base_ref }}"
-          git fetch --no-tags --prune --depth=1 origin "+refs/heads/$base:refs/remotes/origin/$base"
-          changed="$(git diff --name-only "origin/$base...HEAD")"
+          if ! git fetch --no-tags --depth=1 origin "+refs/heads/$base:refs/remotes/origin/$base"; then
+            echo "No se pudo traer la base → se compila por seguridad."
+            echo "build=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          changed="$(git diff --name-only "origin/$base" HEAD)" || {
+            echo "diff falló → se compila por seguridad."
+            echo "build=true" >> "$GITHUB_OUTPUT"; exit 0; }
           echo "Archivos cambiados en el PR:"; echo "$changed"
           safe='^(foundry-module/|bridge/|docs/|tools/|\.github/ISSUE_TEMPLATE/|\.github/PULL_REQUEST_TEMPLATE|\.github/dependabot\.yml|.*\.md$|LICENSE$|\.gitignore$|\.editorconfig$)'
-          if echo "$changed" | grep -qvE "$safe"; then
-            echo "Hay cambios fuera de rutas seguras → se compila."
+          if [ -z "$changed" ] || echo "$changed" | grep -qvE "$safe"; then
+            echo "Cambios fuera de rutas seguras (o diff vacío) → se compila."
             echo "build=true" >> "$GITHUB_OUTPUT"
           else
             echo "Solo rutas seguras (docs/módulo/puente/tools) → se omite la build C++/Lua."

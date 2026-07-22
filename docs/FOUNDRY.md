@@ -78,12 +78,15 @@ Cada tripulante emite **solo** las órdenes de su puesto, y lo hace **sin poseer
 el token del puente**. El permiso se gatea en el **relé de Foundry**, no en el
 token:
 
-- **Identidad no falsificable** (#237). El tripulante escribe la orden en su
-  propio flag de usuario (`emitWorkspaceOrder`); el GM la recoge en el hook
+- **Identidad de usuario no falsificable** (#237). El tripulante escribe la orden
+  en su propio flag de usuario (`emitWorkspaceOrder`); el GM la recoge en el hook
   `updateUser`. El puesto **nunca** se declara en la orden: el GM lo resuelve
-  por la identidad autenticada del emisor (su flag `station`), e ignora cualquier
-  `userId`/`station` que viniera embebido. Un cliente no puede hacerse pasar por
-  otro puesto sin escribir el documento de otra persona, que el servidor rechaza.
+  desde el `User` autenticado que emitió el cambio e ignora cualquier
+  `userId`/`station` embebido. Esto impide suplantar a otro usuario, pero no
+  convierte el puesto en un rol fijo: cada jugador puede cambiar el flag
+  `station` de su propio `User`. La garantía actual es «acción permitida para el
+  puesto que declara ahora el usuario autenticado»; un puesto impuesto por el GM
+  requeriría restringir aparte esa autoasignación.
 - **Matriz de autoridad cerrada** (`station-actions.mjs`, `STATION_ACTIONS`).
   Declara qué órdenes del whitelist del puente puede emitir cada puesto:
   `navigation` → `set_target_heading`, `set_impulse`, `set_warp`; `engineering`

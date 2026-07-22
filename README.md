@@ -167,6 +167,16 @@ Diseño inicial: [`docs/FOUNDRY.md`](docs/FOUNDRY.md).
 - [ ] Mejorar accesibilidad, localización y experiencia de incorporación.
 - [ ] Definir compatibilidad de red y política de versiones.
 
+Capa de diversión y cohesión social (exploración, del lado de Foundry, sin tocar
+la simulación ni el puente):
+
+- [ ] Sistema de minijuegos a bordo, diegético y con estética Neo Geo; póker como
+      primer vertical (#308).
+- [ ] Ayudar a otro puesto con mini-minijuegos de habilidad tipo *Skyrim*, con
+      efecto acotado y coherente con los permisos por puesto (#309).
+- [ ] Catálogo verificado de guiños de dominio público del imaginario scifi/pulp,
+      separando copyright caducado de marca vigente (#310).
+
 ### Fase 5 — Distribución mantenible
 
 - [ ] Automatizar artefactos reproducibles para plataformas validadas

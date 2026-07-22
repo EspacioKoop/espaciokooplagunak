@@ -56,7 +56,8 @@ cada llamada de red:
   aceleración temporal queda fuera por falta de API del juego.
 - **Reposición** — recolocar la nave junto a un ancla de un catálogo cerrado que
   el puente publica en `/v1/anchors`; el escenario es dueño de la coordenada
-  exacta (integrado; #176/#202).
+  exacta. Una orden aceptada vuelve como evento `ship_repositioned` y se anota
+  una sola vez en Journal con ancla y tiempo de escenario (#176/#202/#223).
 - **Ingeniería** — repartir energía (`set_system_power`) y refrigerante
   (`set_system_coolant`, rango 0..10) por sistema, y leer
   `health`/`heat`/`power`/`coolant` y `repair_crew` de `/v1/state`. No sustituye

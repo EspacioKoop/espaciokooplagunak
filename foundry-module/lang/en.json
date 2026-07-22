@@ -146,6 +146,8 @@
   "LAGUNAK.Reposicion.Ancla.argia": "Argia outpost",
   "LAGUNAK.Eventos.Llegada.Titulo": "Arrival at {destination}",
   "LAGUNAK.Eventos.Llegada.Resumen": "The ship has arrived at {destination}. Scenario time: {elapsed} s.",
+  "LAGUNAK.Eventos.Reposicion.Titulo": "Repositioned at {anchor}",
+  "LAGUNAK.Eventos.Reposicion.Resumen": "The game master repositioned the ship next to {anchor}. Scenario time: {elapsed} s.",
   "LAGUNAK.Eventos.Anotados": "New event written to the ship's log.",
   "LAGUNAK.Alertas.Anotadas": "New ship alert written to the ship's log.",
   "LAGUNAK.Alertas.Casco.Titulo": "Hull alert",

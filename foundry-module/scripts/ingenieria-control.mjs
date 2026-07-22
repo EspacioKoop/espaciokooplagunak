@@ -53,6 +53,20 @@ export function esNivelValido(level) {
   return typeof level === "number" && Number.isFinite(level) && NIVELES.has(level);
 }
 
+/**
+ * Niveles de refrigerante cerrados que ofrece el puesto. El puente acepta el
+ * rango continuo 0.0..10.0 (Field ge=0 le=10) y recorta server-side a la cota
+ * real del sistema; aquí se exponen pasos enteros para ordenar sin decimales.
+ */
+export const NIVELES_REFRIGERANTE = Object.freeze([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+
+const NIVELES_REFRIG = new Set(NIVELES_REFRIGERANTE);
+
+/** Un nivel de refrigerante válido: número finito dentro del conjunto cerrado. */
+export function esNivelRefrigeranteValido(level) {
+  return typeof level === "number" && Number.isFinite(level) && NIVELES_REFRIG.has(level);
+}
+
 /** Un sistema válido: identificador cerrado que el puente reconoce. */
 export function esSistemaValido(system) {
   return typeof system === "string" && SISTEMAS.has(system);

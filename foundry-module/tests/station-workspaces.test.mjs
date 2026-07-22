@@ -153,6 +153,28 @@ test("ingeniería puede repartir energía por sistema, con opciones pobladas", (
   assert.deepEqual(navegacion.powerSystems, []);
 });
 
+test("ingeniería también puede repartir refrigerante 0..10, no el GM ni otros puestos (#301)", () => {
+  const model = buildWorkspaceModel({
+    station: "engineering",
+    isGM: false,
+    users: [user({ id: "p1", station: "engineering" })],
+    moduleId: MODULE_ID,
+    i18n,
+    connection: "restricted",
+  });
+  assert.equal(model.canOrderCoolant, true);
+  assert.ok(model.coolantSystems.some((option) => option.value === "reactor"));
+  assert.ok(model.coolantLevels.some((option) => option.value === 0));
+  assert.ok(model.coolantLevels.some((option) => option.value === 10));
+
+  const gmIng = buildWorkspaceModel({ station: "engineering", isGM: true, users: [], moduleId: MODULE_ID, i18n });
+  assert.equal(gmIng.canOrderCoolant, false);
+  assert.deepEqual(gmIng.coolantSystems, []);
+
+  const navegacion = buildWorkspaceModel({ station: "navigation", isGM: false, users: [], moduleId: MODULE_ID, i18n });
+  assert.equal(navegacion.canOrderCoolant, false);
+});
+
 test("armas puede subir/bajar escudos como tripulación, no el GM ni otros puestos", () => {
   const armas = buildWorkspaceModel({
     station: "weapons",

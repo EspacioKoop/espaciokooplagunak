@@ -159,6 +159,21 @@
           </form>
         {{/if}}
 
+        {{#if canOrderCoolant}}
+          <form class="lagunak-workspace__orden" data-workspace-order="coolant">
+            <label for="lagunak-orden-sistema-refrig">{{localize "LAGUNAK.Espacios.Orden.SistemaLabel"}}</label>
+            <select id="lagunak-orden-sistema-refrig" name="system">
+              {{#each coolantSystems}}<option value="{{value}}">{{label}}</option>{{/each}}
+            </select>
+            <label for="lagunak-orden-nivel-refrig">{{localize "LAGUNAK.Espacios.Orden.RefrigeranteNivelLabel"}}</label>
+            <select id="lagunak-orden-nivel-refrig" name="level">
+              {{#each coolantLevels}}<option value="{{value}}">{{label}}</option>{{/each}}
+            </select>
+            <button type="button" data-workspace-action="orden-refrigerante">{{localize "LAGUNAK.Espacios.Orden.FijarRefrigerante"}}</button>
+            <small>{{localize "LAGUNAK.Espacios.Orden.RefrigeranteAyuda"}}</small>
+          </form>
+        {{/if}}
+
         {{#if canOrderShields}}
           <form class="lagunak-workspace__orden" data-workspace-order="shields">
             <span class="lagunak-workspace__orden-label">{{localize "LAGUNAK.Espacios.Orden.EscudosLabel"}}</span>

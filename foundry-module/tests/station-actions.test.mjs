@@ -40,6 +40,21 @@ test("ingeniería reparte energía por sistema y solo ella", () => {
   );
 });
 
+test("ingeniería también reparte refrigerante por sistema y solo ella (#301)", () => {
+  assert.equal(isActionAllowed("engineering", "set_system_coolant"), true);
+  assert.equal(isActionAllowed("navigation", "set_system_coolant"), false);
+  assert.equal(isActionAllowed("weapons", "set_system_coolant"), false);
+  assert.deepEqual(STATION_ACTIONS.engineering, ["set_system_power", "set_system_coolant"]);
+  assert.deepEqual(
+    resolveStationOrder({
+      station: "engineering",
+      action: "set_system_coolant",
+      params: { system: "impulse", level: 7 },
+    }),
+    { method: "setSystemCoolant", args: ["impulse", 7] },
+  );
+});
+
 test("armas sube y baja escudos, y solo ella", () => {
   assert.equal(isActionAllowed("weapons", "set_shields"), true);
   assert.equal(isActionAllowed("navigation", "set_shields"), false);

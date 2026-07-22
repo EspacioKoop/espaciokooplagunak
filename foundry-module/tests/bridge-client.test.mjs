@@ -253,3 +253,39 @@ test("órdenes directas rechazan valores fuera de rango antes de tocar red", asy
   await assert.rejects(client.setShields("up"), BridgeError);
   assert.equal(calls, 0);
 });
+
+test("setSystemCoolant envía la orden cerrada con Bearer (#301)", async () => {
+  const calls = [];
+  const client = new BridgeClient({
+    url: "http://bridge.test",
+    token: "secreto-operativo",
+    fetchImpl: async (url, options) => {
+      calls.push({ url, options });
+      return response({ op: "set_system_coolant", result: { ok: true } });
+    },
+  });
+
+  await client.setSystemCoolant("impulse", 7);
+  assert.equal(calls[0].url, "http://bridge.test/v1/command");
+  assert.equal(calls[0].options.method, "POST");
+  assert.equal(calls[0].options.headers.Authorization, "Bearer secreto-operativo");
+  assert.deepEqual(JSON.parse(calls[0].options.body), {
+    op: "set_system_coolant",
+    system: "impulse",
+    level: 7,
+  });
+});
+
+test("setSystemCoolant rechaza sistema/nivel inválidos antes de tocar red (#301)", async () => {
+  let calls = 0;
+  const client = new BridgeClient({
+    url: "http://bridge.test",
+    token: "x",
+    fetchImpl: async () => { calls += 1; return response({}); },
+  });
+  await assert.rejects(client.setSystemCoolant("", 5), BridgeError);
+  await assert.rejects(client.setSystemCoolant("impulse", -1), BridgeError);
+  await assert.rejects(client.setSystemCoolant("impulse", 11), BridgeError);
+  await assert.rejects(client.setSystemCoolant("impulse", "5"), BridgeError);
+  assert.equal(calls, 0);
+});

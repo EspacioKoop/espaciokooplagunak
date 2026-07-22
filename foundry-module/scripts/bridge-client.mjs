@@ -118,6 +118,21 @@ export class BridgeClient {
     return this.#command({ op: "set_system_power", system, level });
   }
 
+  /**
+   * POST /v1/command — orden de refrigerante por sistema (Bearer). `system` es
+   * el mismo enum cerrado SystemName que valida el puente; `level` el rango
+   * 0..10 que acepta (el juego recorta a la cota real del sistema).
+   */
+  async setSystemCoolant(system, level) {
+    if (typeof system !== "string" || system === "") {
+      throw new BridgeError("El sistema debe ser una cadena", { kind: "parse" });
+    }
+    if (typeof level !== "number" || !Number.isFinite(level) || level < 0 || level > 10) {
+      throw new BridgeError("El nivel de refrigerante debe estar entre 0 y 10", { kind: "parse" });
+    }
+    return this.#command({ op: "set_system_coolant", system, level });
+  }
+
   /** POST /v1/command — orden directa de impulso, −1..1 (Bearer). */
   async setImpulse(value) {
     if (typeof value !== "number" || !Number.isFinite(value) || value < -1 || value > 1) {

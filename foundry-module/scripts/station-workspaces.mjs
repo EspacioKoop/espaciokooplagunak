@@ -1,6 +1,6 @@
 import { STATIONS, normalizeStation } from "./station-assignment.mjs";
 import { isActionAllowed } from "./station-actions.mjs";
-import { SISTEMAS_INGENIERIA, NIVELES_POTENCIA } from "./ingenieria-control.mjs";
+import { SISTEMAS_INGENIERIA, NIVELES_POTENCIA, NIVELES_REFRIGERANTE } from "./ingenieria-control.mjs";
 import { prepareSystemRows } from "./ship-view.mjs";
 
 const DEFINITIONS = Object.freeze({
@@ -269,6 +269,13 @@ export function buildWorkspaceModel({
       : [],
     powerLevels: !isGM && isActionAllowed(normalized, "set_system_power")
       ? NIVELES_POTENCIA.map((value) => ({ value, label: String(value) }))
+      : [],
+    canOrderCoolant: !isGM && isActionAllowed(normalized, "set_system_coolant"),
+    coolantSystems: !isGM && isActionAllowed(normalized, "set_system_coolant")
+      ? SISTEMAS_INGENIERIA.map((id) => ({ value: id, label: localize(i18n, `LAGUNAK.Sistemas.${id}`) }))
+      : [],
+    coolantLevels: !isGM && isActionAllowed(normalized, "set_system_coolant")
+      ? NIVELES_REFRIGERANTE.map((value) => ({ value, label: String(value) }))
       : [],
     navigationHeading: integer(ship?.heading),
     navigationAriaLabel: format(i18n, "LAGUNAK.Espacios.RumboAccesible", { heading: integer(ship?.heading) }),

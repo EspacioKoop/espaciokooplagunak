@@ -1,4 +1,4 @@
-import { esSistemaValido, esNivelValido } from "./ingenieria-control.mjs";
+import { esSistemaValido, esNivelValido, esNivelRefrigeranteValido } from "./ingenieria-control.mjs";
 
 // Convierte el texto crudo de un input en número, rechazando ausencia y vacío
 // ANTES de convertir: Number("") === 0 colaría una orden a cero como válida
@@ -52,6 +52,15 @@ export const ORDER_FORMS = Object.freeze({
       return esSistemaValido(system) && esNivelValido(level) ? { system, level } : null;
     },
     invalidKey: "LAGUNAK.Espacios.Orden.PotenciaInvalida",
+  },
+  "orden-refrigerante": {
+    action: "set_system_coolant",
+    read: (root) => {
+      const system = root?.querySelector?.("#lagunak-orden-sistema-refrig")?.value ?? "";
+      const level = numberFrom(root, "lagunak-orden-nivel-refrig");
+      return esSistemaValido(system) && esNivelRefrigeranteValido(level) ? { system, level } : null;
+    },
+    invalidKey: "LAGUNAK.Espacios.Orden.RefrigeranteInvalida",
   },
   // Escudos: dos acciones con valor fijo (no leen del DOM) que comparten la
   // orden set_shields con `active` true/false.

@@ -12,8 +12,45 @@ permissions:
   contents: read
 
 jobs:
+  changes:
+    name: Filtro de rutas
+    runs-on: ubuntu-latest
+    outputs:
+      build: ${{ steps.filter.outputs.build }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+        with:
+          fetch-depth: 0
+      - name: Decidir si compilar
+        id: filter
+        shell: bash
+        run: |
+          # Por defecto se compila. Solo se omite la build C++/Lua cuando TODO el
+          # cambio del PR cae en rutas que no pueden afectarla; así, una ruta
+          # nueva que sí influya sigue disparando la build (fallo seguro).
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "Evento ${{ github.event_name }}: se compila siempre."
+            echo "build=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          base="${{ github.base_ref }}"
+          git fetch --no-tags --prune --depth=1 origin "+refs/heads/$base:refs/remotes/origin/$base"
+          changed="$(git diff --name-only "origin/$base...HEAD")"
+          echo "Archivos cambiados en el PR:"; echo "$changed"
+          safe='^(foundry-module/|bridge/|docs/|tools/|\.github/ISSUE_TEMPLATE/|\.github/PULL_REQUEST_TEMPLATE|\.github/dependabot\.yml|.*\.md$|LICENSE$|\.gitignore$|\.editorconfig$)'
+          if echo "$changed" | grep -qvE "$safe"; then
+            echo "Hay cambios fuera de rutas seguras → se compila."
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Solo rutas seguras (docs/módulo/puente/tools) → se omite la build C++/Lua."
+            echo "build=false" >> "$GITHUB_OUTPUT"
+          fi
+
   linux:
     name: Linux
+    needs: changes
+    if: ${{ needs.changes.outputs.build == 'true' }}
     runs-on: ubuntu-latest
     steps:
     - name: Update apt index
@@ -26,6 +63,8 @@ jobs:
       run: docker/build.sh
   windows-cross:
     name: Windows (Cross-Compile)
+    needs: changes
+    if: ${{ needs.changes.outputs.build == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Dependencies
@@ -49,8 +88,9 @@ jobs:
           cmake ../EmptyEpsilon -G Ninja -DCMAKE_MAKE_PROGRAM=ninja -DCMAKE_TOOLCHAIN_FILE=../EmptyEpsilon/cmake/mingw.toolchain -DSERIOUS_PROTON_DIR=../SeriousProton -DWARNING_IS_ERROR=1
           ninja package
   macos:
-    if: true
     name: MacOS
+    needs: changes
+    if: ${{ needs.changes.outputs.build == 'true' }}
     runs-on: macos-latest
     steps:
       - name: Dependencies
@@ -168,6 +208,8 @@ jobs:
         run: cmake --build . --config ${{ matrix.build_type }} --target package 
   luatest:
     name: LuaTest
+    needs: changes
+    if: ${{ needs.changes.outputs.build == 'true' }}
     runs-on: ubuntu-latest
     steps:
     - name: Update apt index

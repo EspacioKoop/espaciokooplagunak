@@ -173,7 +173,9 @@ la simulación ni el puente):
 - [ ] Sistema de minijuegos a bordo, diegético y con estética Neo Geo; póker como
       primer vertical (#308).
 - [ ] Ayudar a otro puesto con mini-minijuegos de habilidad tipo *Skyrim*, con
-      efecto acotado y coherente con los permisos por puesto (#309).
+      efecto acotado y coherente con los permisos por puesto (#309; **depende de
+      #308**: consume su motor de minijuegos, y el efecto sobre la nave sale solo
+      por una orden del titular del puesto asistido, nunca del ayudante).
 - [ ] Catálogo verificado de guiños de dominio público del imaginario scifi/pulp,
       separando copyright caducado de marca vigente (#310).
 

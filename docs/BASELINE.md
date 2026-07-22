@@ -75,15 +75,18 @@ Tres superficies con costes muy distintos; solo dos son nuestras:
   - [x] Foco conservado y `aria-live` sin ruido tras re-render en las dos
         rutas de aplicación (v11 clásico y ApplicationV2) — PRs #279, #280,
         #282.
-  - [ ] Recorrido humano con teclado y lector de pantalla en Foundry real
-        (v11.302 y host moderno), coordinado con el smoke general de #29 —
-        el issue #227 no se cierra sin esta evidencia. Pasada v11.302
-        completada: encontró una regresión real de `restaurarFoco()`
-        (`pausar`/`reanudar` quedan `disabled` uno a otro; enfocar un control
-        `disabled` es un no-op silencioso del navegador y el foco caía a
-        `document.body`, rompiendo la tabulación del resto de la ventana),
-        corregida con fallback al control enfocable adyacente — ver PR. Falta
-        la pasada de host moderno y el recorrido con lector de pantalla.
+  - [x] Recorrido humano con **teclado y reducción de movimiento** en Foundry
+        real (v11.302), coordinado con el smoke general de #29. La pasada
+        encontró una regresión real de `restaurarFoco()` (`pausar`/`reanudar`
+        quedan `disabled` uno a otro; enfocar un control `disabled` es un no-op
+        silencioso del navegador y el foco caía a `document.body`, rompiendo la
+        tabulación del resto de la ventana), corregida con fallback al control
+        enfocable adyacente (PR #288). Con esto **se cierra #227**: cobertura
+        automatizada completa en las cinco superficies + pase humano de teclado
+        y `prefers-reduced-motion` en v11.302.
+  - [ ] Residual acotado (folded en #29, no bloquea #227): pase con **lector de
+        pantalla** y repetición en **host moderno**. Es verificación adicional,
+        no una superficie sin cubrir.
 - **Juego C++ heredado (`src/gui/`, `src/screens/`)**: divergencia upstream
   permanente y cara. Regla: solo si un jugador real del fork choca con la
   barrera y no puede resolverse en módulo/doc — y entonces primero PR a

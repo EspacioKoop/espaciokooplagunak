@@ -134,6 +134,8 @@ Foundry pueda deduplicarlo.
 orden aceptada crea un marcador interno que `/v1/events` normaliza como
 `ship_repositioned`. Su `eventId` incorpora la sesión, una secuencia monotónica,
 el ancla del catálogo (`lagunak` o `argia`) y el tiempo de escenario en décimas.
+La secuencia admite `000001`..`999999` por sesión; una orden posterior se
+rechaza antes de mover la nave para no aceptar una reposición sin evento.
 Los nombres fuera del catálogo y los marcadores malformados se ignoran; una
 orden `not_supported`, `no_ship` o rechazada no publica evento. El DTO no
 contiene coordenadas, URL, token ni cabeceras.

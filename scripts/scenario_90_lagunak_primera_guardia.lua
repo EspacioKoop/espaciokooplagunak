@@ -292,6 +292,8 @@ end
 -- coordenadas crudas: seria doble autoridad sobre la posicion de la nave
 -- (ADR-0002). Deja la nave JUNTO al ancla, no encima, y detiene su empuje para
 -- que el salto no herede la velocidad previa.
+local MAX_SECUENCIA_REPOSICION = 999999
+
 function lagunakRepositionShip(ancla)
     local nave = getPlayerShip(-1)
     if nave == nil then
@@ -303,6 +305,12 @@ function lagunakRepositionShip(ancla)
     }
     local destino = anclas[ancla]
     if destino == nil then
+        return false
+    end
+    -- El marcador y los validadores del puente/Foundry fijan seis digitos. Al
+    -- agotarlos, rechazar antes de tocar la nave conserva la garantia de que
+    -- toda reposicion aceptada produce un evento normalizable y deduplicable.
+    if (contadorReposiciones or 0) >= MAX_SECUENCIA_REPOSICION then
         return false
     end
     -- Desplazamiento fijo (no aleatorio): la reposicion del GM es determinista y

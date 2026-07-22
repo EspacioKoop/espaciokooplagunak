@@ -187,3 +187,70 @@ io.write(string.format(
         "y": -14500,
         "commands": 3,
     }
+
+
+def test_escenario_rechaza_antes_de_mover_al_agotar_secuencia(tmp_path: Path):
+    lua = _interprete_lua()
+    if lua is None:
+        pytest.skip("no hay intérprete Lua para probar el escenario real")
+    lua = cast(str, lua)
+    raiz = Path(__file__).resolve().parents[2]
+    escenario = raiz / "scripts" / "scenario_90_lagunak_primera_guardia.lua"
+    driver = f'''
+package.loaded["utils.lua"] = true
+dofile({json.dumps(str(escenario))})
+
+local markers = {{}}
+function Artifact()
+    local marker = {{}}
+    function marker:setPosition(_, _) return self end
+    function marker:setCallSign(value) self.callsign = value; return self end
+    function marker:setRadarSignatureInfo(_, _, _) return self end
+    function marker:allowPickup(_) return self end
+    markers[#markers + 1] = marker
+    return marker
+end
+
+local mutations = 0
+local ship = {{}}
+function ship:setPosition(_, _) mutations = mutations + 1; return self end
+function ship:commandImpulse(_) mutations = mutations + 1 end
+function ship:commandWarp(_) mutations = mutations + 1 end
+function ship:commandAbortJump() mutations = mutations + 1 end
+function getPlayerShip(_) return ship end
+function getScenarioTime() return 42.46 end
+
+eventoLlegadaId = "654321"
+contadorReposiciones = 999998
+marcadoresEventosReposicion = {{}}
+local ultimaAceptada = lagunakRepositionShip("argia")
+local mutationsTrasAceptada = mutations
+local agotada = lagunakRepositionShip("lagunak")
+
+io.write(string.format(
+    '{{"ultima_aceptada":%s,"agotada":%s,"contador":%d,'
+    .. '"markers":%d,"tracked":%d,"callsign":%q,'
+    .. '"mutations_aceptada":%d,"mutations_final":%d}}',
+    tostring(ultimaAceptada), tostring(agotada), contadorReposiciones,
+    #markers, #marcadoresEventosReposicion, markers[1].callsign,
+    mutationsTrasAceptada, mutations))
+'''
+    ruta = tmp_path / "scenario-reposition-sequence-limit-driver.lua"
+    ruta.write_text(driver, encoding="utf-8")
+    proc = subprocess.run([lua, str(ruta)], capture_output=True, timeout=10)
+    assert proc.returncode == 0, proc.stderr.decode("utf-8", "replace")
+    payload = json.loads(proc.stdout.decode("utf-8"))
+
+    assert payload == {
+        "ultima_aceptada": True,
+        "agotada": False,
+        "contador": 999999,
+        "markers": 1,
+        "tracked": 1,
+        "callsign": (
+            "LAGUNAK_EVT_ship_repositioned_s90_654321_999999_"
+            "argia_0000000425"
+        ),
+        "mutations_aceptada": 4,
+        "mutations_final": 4,
+    }

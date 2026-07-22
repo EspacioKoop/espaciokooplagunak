@@ -18,8 +18,9 @@ verificada en local** (2026-07-12, x86-64):
 **El módulo de Foundry VTT ya cubre al director de juego y una primera capa de
 tripulación**: muestra el estado en vivo vía polling, permite anotarlo en un
 diario, ofrece controles GM cerrados de tempo, reposición, ingeniería y
-maniobra, y permite asignar puestos con espacios informativos propios (#162,
-#176 y #216). Las acciones operativas por puesto siguen pendientes.
+maniobra, y permite asignar puestos con espacios operativos propios: cada
+tripulante emite las órdenes de su puesto, que un relé del GM ejecuta contra
+el puente (#162, #176, #216, #236/#238/#240; ver «Permisos por puesto» abajo).
 Instalación, configuración y estado de verificación en
 [`foundry-module/README.md`](../foundry-module/README.md). Existe evidencia
 humana positiva en v11.302 y en un host moderno, pero la matriz completa de
@@ -46,11 +47,10 @@ existen en la API Lua observada.
 ### Superficies de control del GM
 
 La ventana **Estado de nave** del módulo agrupa las órdenes cerradas que el GM
-puede dar desde Foundry. Todas son **solo-GM** (el token del puente es solo-GM;
-los permisos por puesto para la tripulación siguen pendientes, ver
-[`bridge/README.md`](../bridge/README.md)), viven en las dos rutas aisladas del
-módulo (ApplicationV2 y la clásica de v11) y revalidan rol y revocación tras
-cada llamada de red:
+puede dar desde Foundry. Todas son **solo-GM**, viven en las dos rutas aisladas
+del módulo (ApplicationV2 y la clásica de v11) y revalidan rol y revocación tras
+cada llamada de red. La tripulación no usa estas superficies: emite las órdenes
+de su puesto por un relé aparte (ver «Permisos por puesto» abajo).
 
 - **Tempo** — pausa/reanudación de extremo a extremo (integrado; #34/#125). La
   aceleración temporal queda fuera por falta de API del juego.
@@ -58,11 +58,12 @@ cada llamada de red:
   el puente publica en `/v1/anchors`; el escenario es dueño de la coordenada
   exacta. Una orden aceptada vuelve como evento `ship_repositioned` y se anota
   una sola vez en Journal con ancla y tiempo de escenario (#176/#202/#223).
-- **Ingeniería** — repartir energía (`set_system_power`) y refrigerante
-  (`set_system_coolant`, rango 0..10) por sistema, y leer
+- **Ingeniería** — repartir energía (`set_system_power`) por sistema y leer
   `health`/`heat`/`power`/`coolant` y `repair_crew` de `/v1/state`. No sustituye
   la reparación de la tripulación en EmptyEpsilon; la observa (integrado en
-  PR #217, issue #216).
+  PR #217, issue #216). El refrigerante es hoy **solo lectura**:
+  `set_system_coolant` está en el whitelist del puente pero aún no lo emite
+  ningún cliente — convertirlo en orden es un vertical pendiente (#301).
 - **Órdenes directas** — impulso, warp, rumbo (8 puntos de brújula) y escudos:
   las cuatro órdenes de nave que el puente ya autoriza, para dirigir la nave sin
   pasar por los puestos (integrado en PR #218, issue #176).
@@ -70,6 +71,38 @@ cada llamada de red:
   `derelict`, `patrol`, `freighter`, `sentry`. Foundry elige el arquetipo; el
   escenario decide plantilla, facción, posición y orden de IA. Nunca se aceptan
   coordenadas (#117; catálogo ampliado en PR #220, UI en PR #201).
+
+### Permisos por puesto de tripulación
+
+Cada tripulante emite **solo** las órdenes de su puesto, y lo hace **sin poseer
+el token del puente**. El permiso se gatea en el **relé de Foundry**, no en el
+token:
+
+- **Identidad no falsificable** (#237). El tripulante escribe la orden en su
+  propio flag de usuario (`emitWorkspaceOrder`); el GM la recoge en el hook
+  `updateUser`. El puesto **nunca** se declara en la orden: el GM lo resuelve
+  por la identidad autenticada del emisor (su flag `station`), e ignora cualquier
+  `userId`/`station` que viniera embebido. Un cliente no puede hacerse pasar por
+  otro puesto sin escribir el documento de otra persona, que el servidor rechaza.
+- **Matriz de autoridad cerrada** (`station-actions.mjs`, `STATION_ACTIONS`).
+  Declara qué órdenes del whitelist del puente puede emitir cada puesto:
+  `navigation` → `set_target_heading`, `set_impulse`, `set_warp`; `engineering`
+  → `set_system_power`; `weapons` → `set_shields`. `captain`, `sensors` y
+  `communications` son de **observación/narrativa**: no emiten órdenes de control
+  de nave (coherente con el género bridge-sim; ratificado en #268). Añadir una
+  acción exige que el puente ya la autorice y que el puesto la necesite.
+- **Degradación explícita.** Un puesto desconocido o una acción no permitida se
+  rechazan con un error tipado (`UNKNOWN_STATION` / `ACTION_NOT_ALLOWED`), nunca
+  en silencio; la UI oculta de antemano los controles que el puesto no puede
+  emitir (`isActionAllowed`).
+
+**El token del puente sigue siendo grano grueso por diseño.** El permiso por
+puesto vive en la sesión de Foundry, cuya identidad es más fuerte que un secreto
+compartido; el Bearer del puente autoriza *todo* el whitelist a quien lo tenga
+(hoy, solo el GM). Un token filtrado no gana permisos por puesto, pero sí podría
+emitir cualquier orden del whitelist: por eso el token es solo-GM y su modelo de
+amenaza vive en [`bridge/README.md`](../bridge/README.md). Afinar el grano en el
+propio puente sería una decisión aparte, con su ADR.
 
 ## Visión de juego
 

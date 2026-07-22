@@ -61,9 +61,9 @@ de su puesto por un relé aparte (ver «Permisos por puesto» abajo).
 - **Ingeniería** — repartir energía (`set_system_power`) por sistema y leer
   `health`/`heat`/`power`/`coolant` y `repair_crew` de `/v1/state`. No sustituye
   la reparación de la tripulación en EmptyEpsilon; la observa (integrado en
-  PR #217, issue #216). El refrigerante es hoy **solo lectura**:
-  `set_system_coolant` está en el whitelist del puente pero aún no lo emite
-  ningún cliente — convertirlo en orden es un vertical pendiente (#301).
+  PR #217, issue #216). El panel del GM solo reparte energía; el **refrigerante**
+  (`set_system_coolant`, 0..10 por sistema) es una orden del **puesto de
+  ingeniería** de la tripulación, no del GM (ver «Permisos por puesto»; #301).
 - **Órdenes directas** — impulso, warp, rumbo (8 puntos de brújula) y escudos:
   las cuatro órdenes de nave que el puente ya autoriza, para dirigir la nave sin
   pasar por los puestos (integrado en PR #218, issue #176).
@@ -87,7 +87,8 @@ token:
 - **Matriz de autoridad cerrada** (`station-actions.mjs`, `STATION_ACTIONS`).
   Declara qué órdenes del whitelist del puente puede emitir cada puesto:
   `navigation` → `set_target_heading`, `set_impulse`, `set_warp`; `engineering`
-  → `set_system_power`; `weapons` → `set_shields`. `captain`, `sensors` y
+  → `set_system_power`, `set_system_coolant`; `weapons` → `set_shields`.
+  `captain`, `sensors` y
   `communications` son de **observación/narrativa**: no emiten órdenes de control
   de nave (coherente con el género bridge-sim; ratificado en #268). Añadir una
   acción exige que el puente ya la autorice y que el puesto la necesite.

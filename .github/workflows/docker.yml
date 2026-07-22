@@ -33,7 +33,7 @@ jobs:
     name: El puerto de /exec.lua no se publica
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
       - name: Comprobar exposición de /exec.lua en compose.yaml
         run: |
           set -euo pipefail
@@ -76,7 +76,7 @@ jobs:
     name: Tests del puente (pytest)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.12"
@@ -92,7 +92,7 @@ jobs:
     name: Imagen del puente
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
       - name: Build
         run: docker build -t espaciokooplagunak-bridge:ci bridge/
       - name: Smoke test /healthz
@@ -120,7 +120,7 @@ jobs:
     # La compilación completa de C++ tarda; solo se ejecuta si cambia algo
     # que afecte a la imagen del servidor.
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
       - name: Build
         run: docker build -f docker/Dockerfile -t espaciokooplagunak-server:ci .
       - name: Smoke test arranque headless (escenario propio del fork)

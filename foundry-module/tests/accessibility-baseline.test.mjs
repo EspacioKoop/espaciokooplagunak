@@ -70,6 +70,23 @@ test("el orden de estilos y reduced-motion cubren la regla legacy animada", () =
   assert.match(workspaceCss, /@media \(prefers-reduced-motion: reduce\)[\s\S]+\.lagunak-workspace \*[\s\S]+animation: none !important/);
 });
 
+test("toda hoja de module.json con animación declara su bloque prefers-reduced-motion (#227)", () => {
+  const manifest = JSON.parse(read("module.json"));
+  // Regla del alcance de #227: prefers-reduced-motion debe cubrir TODAS las
+  // ventanas que carga module.json, no un subconjunto. Cualquier hoja que
+  // introduzca movimiento (animation/@keyframes) y no lo neutralice es un hueco.
+  for (const hoja of manifest.styles) {
+    const css = read(hoja);
+    const anima = /@keyframes\b/.test(css) || /\banimation:/.test(css);
+    if (!anima) continue;
+    assert.match(
+      css,
+      /@media \(prefers-reduced-motion: reduce\)[\s\S]*animation:\s*none\s*!important/,
+      `${hoja} anima pero no neutraliza el movimiento bajo prefers-reduced-motion`,
+    );
+  }
+});
+
 test("gestión de puestos: cada select de asignación tiene nombre accesible por label", () => {
   const template = read("templates/puestos-tripulacion.hbs");
   // El <label for> envuelve la fila y apunta al id del <select>: nombre

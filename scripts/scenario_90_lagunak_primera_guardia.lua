@@ -13,6 +13,10 @@
 -- EmptyEpsilon y sus creditos no se modifican; este archivo es nuevo.
 
 require("utils.lua")
+-- Pools de nombres scifi/pulp en dominio publico (#310, docs/DOMINIO_PUBLICO_SCIFI.md):
+-- dan un "nombre de casco" evocador a pecios y mercantes de origen ajeno sin tocar el
+-- indicativo vasco que el puente/Foundry rastrean por prefijo.
+require("public_domain_names_scenario_utility.lua")
 
 -- Globales (sin "local") a proposito: permiten sondear el estado desde la
 -- consola Lua del modo headless o via /exec.lua en QA local.
@@ -188,6 +192,8 @@ local ARQUETIPOS_ENCUENTRO = {
         distancia = 15000, orden = "idle",
         casco_max = 50, casco = 15,
         averias = { impulse = -0.5, reactor = -0.25 },
+        -- Nave fantasma: nombre de casco de terror cosmico (topónimos de Lovecraft, DP).
+        tema_dp = "lovecraft",
     },
     -- Patrulla hostil: cazador Exuari en ronda (encuentro de combate).
     patrol = {
@@ -198,6 +204,8 @@ local ARQUETIPOS_ENCUENTRO = {
     freighter = {
         indicativo = "Merkatari", template = "Personnel Freighter 1",
         faccion = "Independent", distancia = 12000, orden = "idle",
+        -- Mercante civil: nombre de casco de aventura clasica (Verne, DP).
+        tema_dp = "verne",
     },
     -- Centinela: plataforma de defensa hostil que guarda su posicion.
     sentry = {
@@ -228,10 +236,17 @@ function lagunakSpawnEncounter(arquetipo, rumbo)
     local x, y = nave:getPosition()
 
     contadorEncuentros = (contadorEncuentros or 0) + 1
+    -- El indicativo vasco (+ contador) sigue siendo el identificador rastreable; el
+    -- nombre de casco DP es un guiño cosmetico entre parentesis para naves de origen
+    -- ajeno (pecios, mercantes). Sin tema_dp, el indicativo va tal cual.
+    local indicativo = string.format("%s %d", spec.indicativo, contadorEncuentros)
+    if spec.tema_dp ~= nil then
+        indicativo = string.format("%s (%s)", indicativo, getPublicDomainName(spec.tema_dp))
+    end
     local objeto = CpuShip()
         :setTemplate(spec.template)
         :setFaction(spec.faccion)
-        :setCallSign(string.format("%s %d", spec.indicativo, contadorEncuentros))
+        :setCallSign(indicativo)
         :setPosition(x + math.sin(angulo) * distancia, y - math.cos(angulo) * distancia)
 
     if spec.casco_max ~= nil then

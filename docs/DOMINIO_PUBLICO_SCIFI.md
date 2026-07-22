@@ -96,6 +96,45 @@ están en DP, pero **hay que verificar la pieza concreta**.
 > y con el «arte propio» exigido en [#308](https://github.com/VaroTv7/espaciokooplagunak/issues/308)).
 > El estilo y los tropos no se pueden registrar; una ilustración concreta sí.
 
+### 4.1. Protocolo de verificación de una lámina concreta
+
+Antes de **reproducir** (no solo inspirarse en) una ilustración pulp, recórrela por estos pasos y
+**anota el resultado** junto al asset. Si cualquier paso queda en duda → **descartar** y pintar arte
+propio.
+
+1. **Fecha y país de primera publicación.** Anota revista, número, mes/año e ilustrador.
+2. **Regla por jurisdicción.**
+   - *EE. UU.:* obras publicadas **antes de 1929** → DP. Entre **1929 y 1963** → DP **solo si no se
+     renovó** el copyright (muy común en pulps). Comprobar la **renovación** en los registros del
+     *US Copyright Office* / *Catalog of Copyright Entries* (Stanford mantiene un índice consultable
+     de renovaciones de 1923–1963).
+   - *UE/ES:* la ilustración es obra propia del **ilustrador** → **vida + 70**. Aunque en EE. UU. sea
+     DP por no-renovación, en la UE puede **seguir protegida** si el ilustrador murió hace <70 años.
+     Para uso desde España, **manda la fecha del ilustrador**.
+3. **Marca/cabecera.** El **logotipo** de la revista puede seguir siendo marca aunque el número sea
+   DP. Recorta la ilustración **sin** la cabecera.
+4. **Fuente del archivo.** Usa un escaneo de un repositorio que declare DP (p. ej. *Internet Archive*,
+   *Wikimedia Commons* con licencia PD-US **y** verificada la fecha del autor para la UE). La etiqueta
+   del repositorio **no basta**: reconfirma con el paso 2.
+
+### 4.2. Candidatas concretas (verificar pieza a pieza antes de reproducir)
+
+Lista de trabajo, **no** de vía libre. El ✅/📝 indica el resultado **esperado** tras el protocolo,
+que hay que confirmar para la edición exacta.
+
+| Lámina / autor | Fecha aprox. | Resultado esperado | Nota de verificación |
+|---|---|---|---|
+| Portadas de **Frank R. Paul** para *Amazing Stories* | 1926–1928 | ✅ (EE. UU. pre-1929) | Paul falleció en **1963** → en la **UE** protegidas hasta **2034**. Para uso desde ES: **inspiración de estilo sí, reproducción no** hasta 2034 |
+| Portada de *Amazing Stories* vol. 1 nº 1 (abr. 1926) | 1926 | ✅ EE. UU. / 📝 UE | Misma cautela UE por el ilustrador (Paul, 2034) |
+| Ilustraciones interiores b/n de pulps **anteriores a 1929** de autor **fallecido antes de 1956** | <1929 | ✅ | Requiere identificar al ilustrador **y** su fecha; muchos interiores van sin firma → si no se identifica, **descartar** |
+| Portadas de *Weird Tales* de **Margaret Brundage** | 1932–1938 | ⛔ para reproducir | Brundage falleció en **1976** → UE hasta **2046**; además muchas requieren renovación US. Solo **inspiración de estilo** |
+| Tipografías/rótulos art déco de cabeceras pulp | — | 📝 | El **estilo** tipográfico es libre de reinterpretar; **rehazlo** en pixel-art propio, no vectorices el logo original |
+
+> **Conclusión práctica para este proyecto:** para casi todas las láminas pulp icónicas, la regla
+> **UE vida+70 del ilustrador** las mantiene protegidas más allá de lo que sugiere el «pre-1929» de
+> EE. UU. Por eso la vía por defecto sigue siendo **arte propio Neo Geo inspirado**, y la reproducción
+> literal se reserva a piezas donde el protocolo 4.1 dé ✅ **también en la UE**.
+
 ---
 
 ## Guía de uso: convertir un elemento DP en guiño

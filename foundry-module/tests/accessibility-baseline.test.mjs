@@ -72,9 +72,9 @@ test("el orden de estilos y reduced-motion cubren la regla legacy animada", () =
 
 test("toda hoja de module.json con animación declara su bloque prefers-reduced-motion (#227)", () => {
   const manifest = JSON.parse(read("module.json"));
-  // Regla del alcance de #227: prefers-reduced-motion debe cubrir TODAS las
-  // ventanas que carga module.json, no un subconjunto. Cualquier hoja que
-  // introduzca movimiento (animation/@keyframes) y no lo neutralice es un hueco.
+  // Garantía mínima por hoja: ninguna hoja animada puede omitir por completo
+  // la alternativa reduced-motion. Las animaciones conocidas se atan además
+  // a sus selectores concretos en regresiones focales como la siguiente.
   for (const hoja of manifest.styles) {
     const css = read(hoja);
     const anima = /@keyframes\b/.test(css) || /\banimation:/.test(css);
@@ -85,6 +85,15 @@ test("toda hoja de module.json con animación declara su bloque prefers-reduced-
       `${hoja} anima pero no neutraliza el movimiento bajo prefers-reduced-motion`,
     );
   }
+});
+
+test("lagunak.css neutraliza las dos transiciones de pausa bajo reduced-motion (#227)", () => {
+  const css = read("styles/lagunak.css");
+  assert.match(
+    css,
+    /@media \(prefers-reduced-motion: reduce\)\s*\{[\s\S]*?\.lagunak-pausa-pausando \.lagunak-punto\s*,\s*\.lagunak-pausa-reanudando \.lagunak-punto\s*\{[^}]*animation:\s*none\s*!important/,
+    "pausando y reanudando deben compartir la neutralización de movimiento",
+  );
 });
 
 test("gestión de puestos: cada select de asignación tiene nombre accesible por label", () => {

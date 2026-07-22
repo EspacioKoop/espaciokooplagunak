@@ -348,3 +348,17 @@
   font-style: italic;
   margin: 0.2rem 0 0 0;
 }
+
+/*
+ * Accesibilidad (issue #227). El punto de estado de pausa parpadea en las
+ * transiciones "pausando"/"reanudando". El color ya distingue cada estado
+ * (azul de transición vs. verde en marcha / ámbar pausado), así que bajo
+ * prefers-reduced-motion basta con detener el parpadeo: el estado se sigue
+ * comunicando sin depender del movimiento.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .lagunak-pausa-pausando .lagunak-punto,
+  .lagunak-pausa-reanudando .lagunak-punto {
+    animation: none !important;
+  }
+}

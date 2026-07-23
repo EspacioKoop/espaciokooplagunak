@@ -89,6 +89,9 @@ test("toda hoja de module.json con animación declara su bloque prefers-reduced-
 
 test("lagunak.css neutraliza las dos transiciones de pausa bajo reduced-motion (#227)", () => {
   const css = read("styles/lagunak.css");
+  // Regresión recuperada tras la integración de #300 y el cierre sin merge de
+  // su PR hija #303: ambos estados deben seguir en una única regla para que la
+  // neutralización sea idéntica y ninguno pierda cobertura por separado.
   assert.match(
     css,
     /@media \(prefers-reduced-motion: reduce\)\s*\{[\s\S]*?\.lagunak-pausa-pausando \.lagunak-punto\s*,\s*\.lagunak-pausa-reanudando \.lagunak-punto\s*\{[^}]*animation:\s*none\s*!important/,

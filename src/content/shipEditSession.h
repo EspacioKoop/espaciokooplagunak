@@ -23,6 +23,8 @@ public:
 
     ShipEditError setSystemHealth(ShipSystemId system, float health);
     ShipEditError removeSystemOverride(ShipSystemId system);
+    ShipEditError setHullMax(float hull_max);
+    ShipEditError removeHullOverride();
     ShipEditError setResourceAmount(const std::string& id, float amount);
     ShipEditError removeResource(const std::string& id);
     ShipEditError setCargoQuantity(const std::string& id, std::uint32_t quantity);

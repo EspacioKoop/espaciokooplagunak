@@ -396,6 +396,7 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
         updateShipOverrideEditor();
     });
     ship_override_selector->addEntry(tr("content_editor", "Systems"), "systems");
+    ship_override_selector->addEntry(tr("content_editor", "Hull"), "hull");
     ship_override_selector->addEntry(tr("content_editor", "Resources"), "resources");
     ship_override_selector->addEntry(tr("content_editor", "Cargo"), "cargo");
     ship_override_selector->addEntry(tr("content_editor", "Crew positions"), "crew");
@@ -1750,15 +1751,19 @@ void GuiContentEditor::updateShipOverrideEditor()
     const bool resources = mode == "resources";
     const bool cargo = mode == "cargo";
     const bool crew = mode == "crew";
+    const bool hull = mode == "hull";
     const bool items = resources || cargo;
-    const bool systems = !items && !crew;
+    const bool systems = !items && !crew && !hull;
     ship_system_selector->setVisible(systems);
     ship_crew_selector->setVisible(crew);
-    ship_health_label->setVisible(systems);
-    ship_health_entry->setVisible(systems);
+    ship_health_label->setVisible(systems || hull);
+    ship_health_entry->setVisible(systems || hull);
     ship_resource_id_entry->setVisible(items);
     ship_resource_amount_label->setVisible(items || crew);
     ship_resource_amount_entry->setVisible(items);
+    ship_health_label->setText(hull
+        ? tr("content_editor", "Maximum hull")
+        : tr("content_editor", "Health [-1, 1]"));
     ship_resource_amount_label->setText(crew
         ? tr("content_editor", "Not assigned")
         : cargo ? tr("content_editor", "Quantity")
@@ -1767,7 +1772,15 @@ void GuiContentEditor::updateShipOverrideEditor()
         ? tr("content_editor", "Add position")
         : cargo ? tr("content_editor", "Set cargo")
                 : resources ? tr("content_editor", "Set resource")
+                            : hull ? tr("content_editor", "Set hull")
                             : tr("content_editor", "Set system"));
+
+    if (hull)
+    {
+        ship_health_entry->setText(ship_edit_session.document().hull_max
+            ? formatShipHealth(*ship_edit_session.document().hull_max) : string(""));
+        return;
+    }
 
     if (crew)
     {
@@ -1833,6 +1846,18 @@ void GuiContentEditor::updateShipOverrideEditor()
 void GuiContentEditor::setShipOverride()
 {
     if (current_type != ContentResourceType::Ship) return;
+    if (ship_override_selector->getSelectionValue() == "hull")
+    {
+        float hull_max = 0.0f;
+        if (!parseShipHealth(ship_health_entry->getText(), hull_max)
+            || ship_edit_session.setHullMax(hull_max) != ShipEditError::None)
+            return setStatus(tr("content_editor", "Maximum hull must be a finite positive number up to 1000000."));
+        pending_save = "";
+        pending_file_export = "";
+        discard_guard.reset();
+        updateShipOverrideEditor();
+        return setStatus(tr("content_editor", "Ship hull override staged."));
+    }
     if (ship_override_selector->getSelectionValue() == "crew")
     {
         const std::string id = ship_crew_selector->getSelectionValue();
@@ -1888,6 +1913,16 @@ void GuiContentEditor::setShipOverride()
 void GuiContentEditor::removeShipOverride()
 {
     if (current_type != ContentResourceType::Ship) return;
+    if (ship_override_selector->getSelectionValue() == "hull")
+    {
+        if (ship_edit_session.removeHullOverride() == ShipEditError::NotFound)
+            return setStatus(tr("content_editor", "The ship has no hull override."));
+        pending_save = "";
+        pending_file_export = "";
+        discard_guard.reset();
+        updateShipOverrideEditor();
+        return setStatus(tr("content_editor", "Ship hull override removed from staging."));
+    }
     if (ship_override_selector->getSelectionValue() == "crew")
     {
         const std::string id = ship_crew_selector->getSelectionValue();

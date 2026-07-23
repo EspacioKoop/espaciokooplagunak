@@ -23,6 +23,7 @@ void expect(bool condition, const char* message)
 ShipDocument validDocument()
 {
     ShipDocument document;
+    document.hull_max = 250.0f;
     document.systems = {
         {ShipSystemId::Reactor, 0.5f},
         {ShipSystemId::FrontShield, -0.25f},
@@ -41,6 +42,17 @@ int main()
         "all ship overrides are optional");
     expect(validateShipDocument(valid) == ShipDocumentError::None,
         "typed ship document validates");
+
+    for (const float hull_max : {
+        0.0f, -1.0f, SHIP_DOCUMENT_MAX_HULL + 1.0f,
+        std::numeric_limits<float>::infinity(), std::numeric_limits<float>::quiet_NaN(),
+    })
+    {
+        auto invalid_hull = valid;
+        invalid_hull.hull_max = hull_max;
+        expect(validateShipDocument(invalid_hull) == ShipDocumentError::InvalidHullMax,
+            "maximum hull must be finite, positive and bounded");
+    }
 
     for (int index = 0; index < static_cast<int>(ShipSystemId::Count); ++index)
     {
@@ -124,6 +136,8 @@ int main()
         "oversized resource collections are rejected before item validation");
 
     const auto overrides = shipDocumentOverridesJson(valid);
+    expect(overrides["hull_max"] == 250.0f,
+        "canonical overrides include the optional maximum hull");
     ShipDocument parsed_document;
     expect(parseShipDocumentOverrides(overrides, parsed_document) == ShipDocumentError::None
             && parsed_document == valid,
@@ -136,6 +150,20 @@ int main()
         "unknown override fields are rejected");
     expect(parsed_document == parsed_before_error, "failed override parse does not mutate output");
 
+    auto legacy_v4 = overrides;
+    legacy_v4.erase("hull_max");
+    ShipDocument migrated_v4;
+    expect(parseShipDocumentOverrides(legacy_v4, migrated_v4, 4) == ShipDocumentError::None
+            && !migrated_v4.hull_max,
+        "v4 overrides migrate in memory without inventing a hull value");
+    expect(parseShipDocumentOverrides(legacy_v4, migrated_v4, 5)
+            == ShipDocumentError::InvalidStructure,
+        "v5 overrides require an explicit nullable hull field");
+
+    hostile = overrides;
+    hostile["hull_max"] = 0;
+    expect(parseShipDocumentOverrides(hostile, parsed_document) == ShipDocumentError::InvalidHullMax,
+        "non-positive hull JSON is rejected");
     hostile = overrides;
     hostile.erase("cargo");
     expect(parseShipDocumentOverrides(hostile, parsed_document) == ShipDocumentError::InvalidStructure,

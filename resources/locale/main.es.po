@@ -4183,8 +4183,16 @@ msgid "Health [-1, 1]"
 msgstr "Salud [-1, 1]"
 
 msgctxt "content_editor"
+msgid "Maximum hull"
+msgstr "Casco máximo"
+
+msgctxt "content_editor"
 msgid "Set system"
 msgstr "Aplicar sistema"
+
+msgctxt "content_editor"
+msgid "Set hull"
+msgstr "Aplicar casco"
 
 msgctxt "content_editor"
 msgid "Remove override"
@@ -4205,6 +4213,22 @@ msgstr "La salud debe ser un número finito entre -1 y 1."
 msgctxt "content_editor"
 msgid "Ship system override staged."
 msgstr "Override de sistema preparado."
+
+msgctxt "content_editor"
+msgid "Maximum hull must be a finite positive number up to 1000000."
+msgstr "El casco máximo debe ser un número finito y positivo de hasta 1000000."
+
+msgctxt "content_editor"
+msgid "Ship hull override staged."
+msgstr "Override de casco preparado."
+
+msgctxt "content_editor"
+msgid "The ship has no hull override."
+msgstr "La nave no tiene override de casco."
+
+msgctxt "content_editor"
+msgid "Ship hull override removed from staging."
+msgstr "Override de casco retirado del staging."
 
 msgctxt "content_editor"
 msgid "The selected system has no override."
@@ -4233,6 +4257,10 @@ msgstr "Edición de nave rehecha."
 msgctxt "content_editor"
 msgid "Systems"
 msgstr "Sistemas"
+
+msgctxt "content_editor"
+msgid "Hull"
+msgstr "Casco"
 
 msgctxt "content_editor"
 msgid "Resources"

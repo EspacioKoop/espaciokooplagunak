@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 #include <nlohmann/json.hpp>
@@ -55,6 +56,8 @@ inline bool operator==(const ShipCargoAmount& lhs, const ShipCargoAmount& rhs)
 
 struct ShipDocument
 {
+    // Structural overrides are optional: absence preserves the template value.
+    std::optional<float> hull_max;
     std::vector<ShipSystemOverride> systems;
     std::vector<ShipResourceAmount> resources;
     std::vector<ShipCargoAmount> cargo;
@@ -63,7 +66,8 @@ struct ShipDocument
 
 inline bool operator==(const ShipDocument& lhs, const ShipDocument& rhs)
 {
-    return lhs.systems == rhs.systems && lhs.resources == rhs.resources
+    return lhs.hull_max == rhs.hull_max
+        && lhs.systems == rhs.systems && lhs.resources == rhs.resources
         && lhs.cargo == rhs.cargo && lhs.crew_position_ids == rhs.crew_position_ids;
 }
 
@@ -78,6 +82,7 @@ enum class ShipDocumentError
     InvalidStructure,
     UnknownFields,
     TooManyEntries,
+    InvalidHullMax,
     InvalidSystem,
     DuplicateSystem,
     InvalidSystemHealth,
@@ -94,6 +99,7 @@ enum class ShipDocumentError
 constexpr std::size_t SHIP_DOCUMENT_MAX_RESOURCES = 64;
 constexpr std::size_t SHIP_DOCUMENT_MAX_CARGO = 64;
 constexpr std::size_t SHIP_DOCUMENT_MAX_CREW_POSITIONS = 16;
+constexpr float SHIP_DOCUMENT_MAX_HULL = 1'000'000.0f;
 constexpr float SHIP_DOCUMENT_MAX_RESOURCE_AMOUNT = 1'000'000'000.0f;
 constexpr std::uint32_t SHIP_DOCUMENT_MAX_CARGO_QUANTITY = 1'000'000;
 
@@ -101,4 +107,8 @@ const char* shipSystemId(ShipSystemId system);
 bool parseShipSystemId(const std::string& value, ShipSystemId& system);
 ShipDocumentError validateShipDocument(const ShipDocument& document);
 nlohmann::json shipDocumentOverridesJson(const ShipDocument& document);
-ShipDocumentError parseShipDocumentOverrides(const nlohmann::json& overrides, ShipDocument& output);
+ShipDocumentError parseShipDocumentOverrides(
+    const nlohmann::json& overrides,
+    ShipDocument& output,
+    int schema_version = 5
+);

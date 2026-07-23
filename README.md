@@ -28,7 +28,7 @@ seguro y módulo Foundry en desarrollo. Las fases 0, 1 y 2 están completadas.
 | Normas de colaboración | Hecho | [`CONTRIBUTING.md`](CONTRIBUTING.md) y [`AGENTS.md`](AGENTS.md) |
 | Compilación reproducible | Verificada en Linux | Nativa ([`docs/BUILDING.md`](docs/BUILDING.md)) y en imagen Docker (SeriousProton fijado por commit) |
 | Ejecución con Docker | Verificada en local | Servidor headless + puente vía compose ([`docker/README.md`](docker/README.md)) |
-| Integración con Foundry VTT | Vertical en desarrollo | Puente v0 + módulo con estado, destino/ETA y mapa vivo; controles GM de tempo, reposición, ingeniería y maniobra; asignación y espacios informativos de tripulación. Siguen pendientes las acciones por puesto y la matriz completa de smoke ([`docs/FOUNDRY.md`](docs/FOUNDRY.md), #29) |
+| Integración con Foundry VTT | Vertical en desarrollo | Puente v0 + módulo con estado, destino/ETA y mapa vivo; controles GM de tempo, reposición, ingeniería y maniobra; asignación y **espacios operativos de puesto** (cada tripulante emite las órdenes de su puesto: navegación, ingeniería con energía y refrigerante, armas). Smoke GUI **verificado en v11.302**; falta la fila del host moderno ([`docs/FOUNDRY.md`](docs/FOUNDRY.md), #29) |
 | Cambios jugables propios | Primera iteración disponible | «Lagunak: Primera guardia» (`scenario_90`) |
 | Lanzamientos propios | Automatización lista, sin lanzamiento aún | `docker-publish.yml` publica en GHCR con cada tag `v*`; falta el primer tag tras validar una sesión real |
 
@@ -73,8 +73,10 @@ Características propias integradas y verificadas:
 - identidad visual del fork y localización Español (España);
 - servidor headless y puente seguro reproducibles;
 - módulo Foundry para el GM y la tripulación: estado en vivo, destino y ETA,
-  mapa, bitácora deduplicada, controles GM cerrados y espacios informativos de
-  puesto; las acciones operativas por puesto siguen pendientes;
+  mapa, bitácora deduplicada, controles GM cerrados y **espacios operativos de
+  puesto** donde cada tripulante emite las órdenes de su puesto (navegación;
+  ingeniería con energía y refrigerante; armas), gateadas por identidad no
+  falsificable;
 - primera fase del editor integrado de campañas, mapas, personajes y naves,
   con intercambio JSON individual desde Game Master
   ([guía](docs/CONTENT_EDITOR.md)).
@@ -132,23 +134,26 @@ Hitos verticales:
 - [x] Pausa/reanudación del GM de extremo a extremo (#34); factor temporal pendiente por falta de API.
 
 - [ ] Crear un módulo de Foundry VTT para el director de juego y la tripulación
-      (la parte del GM, la asignación y los espacios informativos de puesto están
-      integrados —#162—; faltan acciones operativas por puesto y cerrar #29).
+      (la parte del GM, la asignación y los espacios de puesto están integrados
+      —#162—, y las **acciones operativas por puesto** ya funcionan —#236/#238/#268/#301—;
+      smoke GUI verificado en v11.302 —#29—, falta solo la fila del host moderno).
 - [ ] Representar trayectos en tiempo real, con pausa y aceleración controladas por el director de juego.
 - [x] Sincronizar mapa, posición, rumbo, velocidad, destino y tiempo estimado de llegada
       (#33, #69 y #73).
 - [ ] Gestionar motores, combustible o energía, temperatura, daños, reparaciones y recursos de la nave
       (el puente ya autoriza impulso, warp, rumbo, escudos, energía por sistema y averías
-      —decisión del issue #80—; el panel de ingeniería del GM ya reparte energía por
-      sistema —#217—; falta la superficie por puesto de tripulación en Foundry).
+      —decisión del issue #80—; el panel de ingeniería del GM reparte energía —#217— y la
+      **superficie por puesto de ingeniería** ya ordena energía y refrigerante —#238/#301—;
+      combustible y recursos siguen fuera de alcance).
 - [ ] Modelar puestos, permisos, turnos y acciones de la tripulación
-      (asignación y espacios informativos integrados en #162; permisos y acciones
-      operativas siguen pendientes).
-- [ ] Permitir al director de juego introducir encuentros, anomalías, averías y cambios narrativos
-      (el puente ya inyecta encuentros de un catálogo cerrado de arquetipos
-      —`spawn_encounter`, #196/#220— y reposiciona la nave a un ancla —#202—; la UI GM
-      para introducir encuentros ya está integrada —#201—; falta el evento
-      `encounter_started` de vuelta a Journal para cerrar #117).
+      (asignación y espacios integrados en #162; **permisos por puesto y acciones
+      operativas integrados y ratificados** —#237/#268/#238/#301—; turnos y guardias
+      siguen pendientes).
+- [x] Permitir al director de juego introducir encuentros, anomalías, averías y cambios narrativos
+      (el puente inyecta encuentros de un catálogo cerrado de arquetipos
+      —`spawn_encounter`, #196/#220— y reposiciona la nave a un ancla —#202/#176—; la UI GM
+      está integrada —#201— y el evento `encounter_started` deduplicado en Journal
+      cierra #117 —#294—).
 - [ ] Enviar a Foundry eventos y resultados normalizados para diarios, escenas y fichas
       (`encounter_started` normalizado —#200— y alertas de umbral a la bitácora —#207—
       ya publicados; falta el resto de resultados de sesión).
@@ -166,6 +171,18 @@ Diseño inicial: [`docs/FOUNDRY.md`](docs/FOUNDRY.md).
       con el mapa vivo y las plantillas del juego.
 - [ ] Mejorar accesibilidad, localización y experiencia de incorporación.
 - [ ] Definir compatibilidad de red y política de versiones.
+
+Capa de diversión y cohesión social (exploración, del lado de Foundry, sin tocar
+la simulación ni el puente):
+
+- [ ] Sistema de minijuegos a bordo, diegético y con estética Neo Geo; póker como
+      primer vertical (#308).
+- [ ] Ayudar a otro puesto con mini-minijuegos de habilidad tipo *Skyrim*, con
+      efecto acotado y coherente con los permisos por puesto (#309; **depende de
+      #308**: consume su motor de minijuegos, y el efecto sobre la nave sale solo
+      por una orden del titular del puesto asistido, nunca del ayudante).
+- [ ] Catálogo verificado de guiños de dominio público del imaginario scifi/pulp,
+      separando copyright caducado de marca vigente (#310).
 
 ### Fase 5 — Distribución mantenible
 

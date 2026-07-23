@@ -84,9 +84,12 @@ token:
   desde el `User` autenticado que emitió el cambio e ignora cualquier
   `userId`/`station` embebido. Esto impide suplantar a otro usuario, pero no
   convierte el puesto en un rol fijo: cada jugador puede cambiar el flag
-  `station` de su propio `User`. La garantía actual es «acción permitida para el
-  puesto que declara ahora el usuario autenticado»; un puesto impuesto por el GM
-  requeriría restringir aparte esa autoasignación.
+  `station` de su propio `User`. Foundry persiste ese flag, pero su valor es un
+  contexto operativo mutable, no identidad ni credencial. La garantía actual es
+  «acción permitida para el puesto que declara ahora el usuario autenticado»;
+  un puesto impuesto por el GM requeriría restringir aparte esa autoasignación.
+  Esta descripción documenta el comportamiento vigente, no decide si una versión
+  futura conservará la autoasignación o exigirá aprobación del GM.
 - **Matriz de autoridad cerrada** (`station-actions.mjs`, `STATION_ACTIONS`).
   Declara qué órdenes del whitelist del puente puede emitir cada puesto:
   `navigation` → `set_target_heading`, `set_impulse`, `set_warp`; `engineering`
@@ -101,12 +104,13 @@ token:
   emitir (`isActionAllowed`).
 
 **El token del puente sigue siendo grano grueso por diseño.** El permiso por
-puesto vive en la sesión de Foundry, cuya identidad es más fuerte que un secreto
-compartido; el Bearer del puente autoriza *todo* el whitelist a quien lo tenga
-(hoy, solo el GM). Un token filtrado no gana permisos por puesto, pero sí podría
-emitir cualquier orden del whitelist: por eso el token es solo-GM y su modelo de
-amenaza vive en [`bridge/README.md`](../bridge/README.md). Afinar el grano en el
-propio puente sería una decisión aparte, con su ADR.
+puesto se aplica en el relé del cliente GM a partir del `User` cuyo cambio
+autorizó Foundry; no fortalece el Bearer ante el puente. El Bearer autoriza
+*todo* el whitelist a quien lo tenga (hoy, solo el GM). Un token filtrado no gana
+permisos por puesto, pero sí podría emitir cualquier orden del whitelist: por eso
+el token es solo-GM y su modelo de amenaza vive en
+[`bridge/README.md`](../bridge/README.md). Afinar el grano en el propio puente
+sería una decisión aparte, con su ADR.
 
 ## Visión de juego
 

@@ -73,6 +73,7 @@ export const LADO_DECORADO_BASE = 320;
 export const MARGEN_PLANETAS_BASE = 10;
 export const RADIO_ZONA_TACTICA_BASE = 34;
 const INTENTOS_POSICION_PLANETA = 64;
+const RADIO_PENTAGONO_PLANETAS_BASE = 95;
 
 function distanciaToroidal(ax, ay, bx, by, ancho, alto) {
   const dx = Math.abs(ax - bx);
@@ -111,6 +112,34 @@ function elegirPosicionPlaneta(rng, huella, colocados, ancho, alto) {
   // Un recuento/radio personalizado puede hacer imposible cumplir todos los
   // márgenes. Conservamos determinismo y elegimos la alternativa menos densa.
   return { x: mejor.x, y: mejor.y };
+}
+
+function planetasBienSeparados(planetas, ancho, alto) {
+  const escala = ancho / LADO_DECORADO_BASE;
+  const margen = MARGEN_PLANETAS_BASE * escala;
+  const radioZonaTactica = RADIO_ZONA_TACTICA_BASE * escala;
+  const centroX = ancho / 2;
+  const centroY = alto / 2;
+  for (let i = 0; i < planetas.length; i += 1) {
+    const planeta = planetas[i];
+    if (Math.hypot(planeta.x - centroX, planeta.y - centroY)
+      < huellaPlaneta(planeta) + radioZonaTactica) return false;
+    for (let j = i + 1; j < planetas.length; j += 1) {
+      if (distanciaToroidal(planeta.x, planeta.y, planetas[j].x, planetas[j].y, ancho, alto)
+        < huellaPlaneta(planeta) + huellaPlaneta(planetas[j]) + margen) return false;
+    }
+  }
+  return true;
+}
+
+function recolocarPentagonoNormal(planetas, ancho, alto, giro) {
+  const escala = ancho / LADO_DECORADO_BASE;
+  const radio = RADIO_PENTAGONO_PLANETAS_BASE * escala;
+  for (let i = 0; i < planetas.length; i += 1) {
+    const angulo = giro + i * Math.PI * 2 / planetas.length;
+    planetas[i].x = ancho / 2 + Math.cos(angulo) * radio;
+    planetas[i].y = alto / 2 + Math.sin(angulo) * radio;
+  }
 }
 
 /**
@@ -210,6 +239,14 @@ export function crearDecorado(
       // el aspecto ni la velocidad: solo evita recalcular dos planetas a la vez.
       faseGiro: planetas > 0 ? i / planetas : 0,
     });
+  }
+  // Con el recuento y lienzo normales, el contrato de legibilidad es estricto:
+  // si el muestreo aleatorio se atasca, un pentágono escalado garantiza tanto
+  // el margen entre las huellas máximas como la zona táctica central. La
+  // degradación «menos mala» queda limitada a configuraciones personalizadas
+  // que pueden ser geométricamente imposibles.
+  if (planetas === 5 && ancho === alto && !planetasBienSeparados(elemPlanetas, ancho, alto)) {
+    recolocarPentagonoNormal(elemPlanetas, ancho, alto, rng() * Math.PI * 2);
   }
 
   const elemAsteroides = [];

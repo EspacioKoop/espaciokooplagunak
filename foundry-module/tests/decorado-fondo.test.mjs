@@ -88,10 +88,16 @@ function huellaPlaneta(planeta) {
 test("la siembra normal separa planetas y mantiene libre el centro táctico (#290)", () => {
   const ancho = 320;
   const alto = 320;
-  // Varias semillas cubren que la regla sea de composición, no una coincidencia
-  // de la semilla predeterminada que se usa en el mapa vivo.
-  for (let semilla = 0; semilla < 128; semilla += 1) {
-    const planetas = crearDecorado(semilla, { ancho, alto })
+  // Barrido amplio que incluye las regresiones 331 (solape) y 1324 (invasión
+  // central), no solo la semilla predeterminada que usa el mapa vivo.
+  for (let semilla = 0; semilla < 10_000; semilla += 1) {
+    const planetas = crearDecorado(semilla, {
+      ancho,
+      alto,
+      nebulosas: 0,
+      asteroides: 0,
+      nebulosasLejanas: 0,
+    })
       .find((capa) => capa.tipo === "planeta").elementos;
     for (let i = 0; i < planetas.length; i += 1) {
       const planeta = planetas[i];

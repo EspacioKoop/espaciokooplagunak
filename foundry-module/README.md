@@ -189,6 +189,9 @@ sprites se dibujan solo con primitivas de canvas, sin assets externos.
   pixelated`, hasta 60 fps, con scanlines por CSS. Un sondeo solo posicional
   actualiza el canvas y las distancias sin reconstruir la ventana; el bucle de
   animación se detiene al cerrarla.
+- **Legibilidad del decorado**: los planetas de fondo se siembran con separación
+  mínima entre siluetas y dejan libre el entorno inmediato de la nave. Siguen
+  sin etiquetas porque son ambientación, no contactos ni destinos tácticos.
 
 ## Estado de verificación
 

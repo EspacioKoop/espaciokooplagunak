@@ -5,7 +5,9 @@ import {
   BIOMAS,
   INTERVALO_CACHE_PLANETA_MS,
   LADO_DECORADO_BASE,
+  MARGEN_PLANETAS_BASE,
   PALETA_DECORADO,
+  RADIO_ZONA_TACTICA_BASE,
   componerDecorado,
   crearCacheDecorado,
   crearDecorado,
@@ -69,6 +71,59 @@ test("los elementos caen dentro del lienzo y usan colores de la paleta", () => {
         assert.equal(el.rasgo, BIOMAS[el.bioma].rasgo);
         assert.ok(el.brillo > 0 && el.brillo < 1);
       }
+    }
+  }
+});
+
+function distanciaToroidal(a, b, ancho, alto) {
+  const dx = Math.abs(a.x - b.x);
+  const dy = Math.abs(a.y - b.y);
+  return Math.hypot(Math.min(dx, ancho - dx), Math.min(dy, alto - dy));
+}
+
+function huellaPlaneta(planeta) {
+  return planeta.anillo ? planeta.r * 1.9 + 2 : planeta.r;
+}
+
+test("la siembra normal separa planetas y mantiene libre el centro táctico (#290)", () => {
+  const ancho = 320;
+  const alto = 320;
+  // Varias semillas cubren que la regla sea de composición, no una coincidencia
+  // de la semilla predeterminada que se usa en el mapa vivo.
+  for (let semilla = 0; semilla < 128; semilla += 1) {
+    const planetas = crearDecorado(semilla, { ancho, alto })
+      .find((capa) => capa.tipo === "planeta").elementos;
+    for (let i = 0; i < planetas.length; i += 1) {
+      const planeta = planetas[i];
+      const distanciaCentro = Math.hypot(planeta.x - ancho / 2, planeta.y - alto / 2);
+      assert.ok(
+        distanciaCentro + 1e-9 >= huellaPlaneta(planeta) + RADIO_ZONA_TACTICA_BASE,
+        `semilla ${semilla}: el planeta ${i} respeta la zona de la nave`,
+      );
+      for (let j = i + 1; j < planetas.length; j += 1) {
+        assert.ok(
+          distanciaToroidal(planeta, planetas[j], ancho, alto) + 1e-9
+            >= huellaPlaneta(planeta) + huellaPlaneta(planetas[j]) + MARGEN_PLANETAS_BASE,
+          `semilla ${semilla}: los planetas ${i}/${j} no se apelotonan`,
+        );
+      }
+    }
+  }
+});
+
+test("la separación de planetas escala con un backing menor (#290)", () => {
+  const lado = 160;
+  const escala = lado / LADO_DECORADO_BASE;
+  const planetas = crearDecorado(SEMILLA, { ancho: lado, alto: lado })
+    .find((capa) => capa.tipo === "planeta").elementos;
+  for (let i = 0; i < planetas.length; i += 1) {
+    const distanciaCentro = Math.hypot(planetas[i].x - lado / 2, planetas[i].y - lado / 2);
+    assert.ok(distanciaCentro >= huellaPlaneta(planetas[i]) + RADIO_ZONA_TACTICA_BASE * escala);
+    for (let j = i + 1; j < planetas.length; j += 1) {
+      assert.ok(
+        distanciaToroidal(planetas[i], planetas[j], lado, lado)
+          >= huellaPlaneta(planetas[i]) + huellaPlaneta(planetas[j]) + MARGEN_PLANETAS_BASE * escala,
+      );
     }
   }
 });
@@ -200,6 +255,22 @@ test("dibujarDecorado conserva el contrato pixel art sin curvas ni gradientes", 
     rectangulos.some((r) => r.x >= 0 && r.x < 2 && r.y >= 0 && r.y < 2 && r.ancho === 1 && r.alto === 1),
     "el peñasco que cruza dos bordes reaparece en la esquina opuesta",
   );
+});
+
+test("la zona táctica sigue libre cuando el parallax lleva un planeta al centro (#290)", () => {
+  const planeta = {
+    x: 20, y: 160, r: 10, anillo: false,
+    color: "#88aacc", color2: "#446688",
+    velocidadGiro: 0, semilla: 5,
+  };
+  const ctx = { fillStyle: "", llamadas: 0, fillRect() { this.llamadas += 1; } };
+
+  dibujarDecorado(ctx, [{ tipo: "planeta", dx: 0, dy: 0, elementos: [planeta] }]);
+  assert.ok(ctx.llamadas > 0, "el planeta se pinta fuera de la zona táctica");
+
+  ctx.llamadas = 0;
+  dibujarDecorado(ctx, [{ tipo: "planeta", dx: 140, dy: 0, elementos: [planeta] }]);
+  assert.equal(ctx.llamadas, 0, "el decorado se omite al invadir la nave central");
 });
 
 test("el anillo de un planeta que cruza un borde reaparece sin costura", () => {
@@ -364,8 +435,8 @@ test("los planetas grandes usan escala entera para conservar el pixel art", () =
   const imagenes = [];
   const ctx = { fillStyle: "", fillRect() {}, drawImage(...args) { imagenes.push(args); } };
   const planeta = {
-    x: 160,
-    y: 160,
+    x: 20,
+    y: 20,
     r: 80,
     anillo: true,
     inclinacionAnillo: 0.3,

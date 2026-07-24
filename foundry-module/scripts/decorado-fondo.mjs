@@ -66,6 +66,53 @@ const FACTOR = { nebulosa_lejana: 0.035, nebulosa: 0.08, planeta: 0.16, asteroid
 /** Lado de diseño del decorado: el ruido de nebulosa está calibrado a 320. */
 export const LADO_DECORADO_BASE = 320;
 
+// Legibilidad del mapa (issue #290): los planetas son decorado, no contactos.
+// Sus discos no deben apelotonarse ni invadir la zona de lectura inmediata de
+// la nave propia. Los márgenes escalan con el backing para conservar la misma
+// composición a resoluciones menores.
+export const MARGEN_PLANETAS_BASE = 10;
+export const RADIO_ZONA_TACTICA_BASE = 34;
+const INTENTOS_POSICION_PLANETA = 64;
+
+function distanciaToroidal(ax, ay, bx, by, ancho, alto) {
+  const dx = Math.abs(ax - bx);
+  const dy = Math.abs(ay - by);
+  return Math.hypot(Math.min(dx, ancho - dx), Math.min(dy, alto - dy));
+}
+
+function huellaPlaneta(el) {
+  return el.anillo ? el.r * 1.9 + 2 : el.r;
+}
+
+function elegirPosicionPlaneta(rng, huella, colocados, ancho, alto) {
+  const escala = ancho / LADO_DECORADO_BASE;
+  const margen = MARGEN_PLANETAS_BASE * escala;
+  const radioZonaTactica = RADIO_ZONA_TACTICA_BASE * escala;
+  const centroX = ancho / 2;
+  const centroY = alto / 2;
+  let mejor = null;
+
+  for (let intento = 0; intento < INTENTOS_POSICION_PLANETA; intento += 1) {
+    const candidato = { x: rng() * ancho, y: rng() * alto };
+    const holguraCentro = Math.hypot(candidato.x - centroX, candidato.y - centroY)
+      - huella - radioZonaTactica;
+    let holgura = holguraCentro;
+    for (const previo of colocados) {
+      holgura = Math.min(
+        holgura,
+        distanciaToroidal(candidato.x, candidato.y, previo.x, previo.y, ancho, alto)
+          - huella - huellaPlaneta(previo) - margen,
+      );
+    }
+    if (!mejor || holgura > mejor.holgura) mejor = { ...candidato, holgura };
+    if (holgura >= 0) return candidato;
+  }
+
+  // Un recuento/radio personalizado puede hacer imposible cumplir todos los
+  // márgenes. Conservamos determinismo y elegimos la alternativa menos densa.
+  return { x: mejor.x, y: mejor.y };
+}
+
 /**
  * Lado del backing del canvas que evita el aliasing de #260.
  *
@@ -138,10 +185,13 @@ export function crearDecorado(
   for (let i = 0; i < planetas; i += 1) {
     const bioma = nombresBioma[i % nombresBioma.length];
     const def = BIOMAS[bioma];
+    const r = ancho * (0.06 + rng() * 0.02); // 19–26 px a 320: legibles sin dominar el radar
+    const anillo = rng() < 0.45;
+    const posicion = elegirPosicionPlaneta(rng, huellaPlaneta({ r, anillo }), elemPlanetas, ancho, alto);
     elemPlanetas.push({
-      x: rng() * ancho,
-      y: rng() * alto,
-      r: ancho * (0.09 + rng() * 0.11), // planetas mayores (~29–64 px)
+      x: posicion.x,
+      y: posicion.y,
+      r,
       bioma,
       rasgo: def.rasgo,
       color: def.color,
@@ -150,7 +200,7 @@ export function crearDecorado(
       // Combinación de biomas: un planeta no-helado puede lucir casquetes de
       // hielo (p. ej. desértico con polos helados).
       casquetes: def.rasgo !== "casquetes" && rng() < 0.4,
-      anillo: rng() < 0.45, // casi la mitad lucen anillo
+      anillo, // casi la mitad lucen anillo
       inclinacionAnillo: 0.28 + rng() * 0.22,
       semilla: Math.floor(rng() * 1e6), // cráteres/bandas deterministas
       // Giro axial: la superficie escrolla en longitud a esta velocidad
@@ -643,6 +693,14 @@ export function dibujarDecorado(
     for (const el of capa.elementos ?? []) {
       const x = envolver(el.x + capa.dx, ancho);
       const y = envolver(el.y + capa.dy, alto);
+      // El parallax desplaza el decorado respecto a su siembra. Conservamos la
+      // zona de lectura de la nave también durante ese movimiento: un planeta
+      // puramente ambiental que la invadiría no se pinta en ese frame.
+      if (
+        capa.tipo === "planeta"
+        && Math.hypot(x - ancho / 2, y - alto / 2)
+          < huellaPlaneta(el) + RADIO_ZONA_TACTICA_BASE * (ancho / LADO_DECORADO_BASE)
+      ) continue;
       if (capa.tipo === "asteroide") {
         pintarAsteroide(ctx, el, x, y, ancho, alto);
       } else if (!pintarGrandeCacheado(

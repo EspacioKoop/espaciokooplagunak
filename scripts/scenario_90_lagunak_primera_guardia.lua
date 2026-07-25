@@ -236,18 +236,24 @@ function lagunakSpawnEncounter(arquetipo, rumbo)
     local x, y = nave:getPosition()
 
     contadorEncuentros = (contadorEncuentros or 0) + 1
-    -- El indicativo vasco (+ contador) sigue siendo el identificador rastreable; el
-    -- nombre de casco DP es un guiño cosmetico entre parentesis para naves de origen
-    -- ajeno (pecios, mercantes). Sin tema_dp, el indicativo va tal cual.
+    -- El indicativo vasco (+ contador) sigue siendo el identificador rastreable por
+    -- puente y Foundry. El nombre de casco DP vive solo en la descripcion cientifica:
+    -- nunca altera el contrato de contactos ni eventos.
     local indicativo = string.format("%s %d", spec.indicativo, contadorEncuentros)
-    if spec.tema_dp ~= nil then
-        indicativo = string.format("%s (%s)", indicativo, getPublicDomainName(spec.tema_dp))
-    end
     local objeto = CpuShip()
         :setTemplate(spec.template)
         :setFaction(spec.faccion)
         :setCallSign(indicativo)
         :setPosition(x + math.sin(angulo) * distancia, y - math.cos(angulo) * distancia)
+
+    if spec.tema_dp ~= nil then
+        -- El catalogo es una capa cosmetica: un tema retirado o invalido no debe
+        -- impedir que el GM materialice el encuentro autorizado.
+        local ok, nombre = pcall(getPublicDomainName, spec.tema_dp)
+        if ok and type(nombre) == "string" and nombre ~= "" then
+            objeto:setDescription(nombre)
+        end
+    end
 
     if spec.casco_max ~= nil then
         objeto:setHullMax(spec.casco_max):setHull(spec.casco or spec.casco_max)

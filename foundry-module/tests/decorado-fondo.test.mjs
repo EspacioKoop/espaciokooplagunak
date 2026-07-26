@@ -7,6 +7,7 @@ import {
   LADO_DECORADO_BASE,
   MARGEN_PLANETAS_BASE,
   PALETA_DECORADO,
+  PLANOS_PLANETA,
   RADIO_ZONA_TACTICA_BASE,
   componerDecorado,
   crearCacheDecorado,
@@ -73,6 +74,40 @@ test("los elementos caen dentro del lienzo y usan colores de la paleta", () => {
       }
     }
   }
+});
+
+test("los planetas forman una jerarquía visual discreta sin semántica táctica (#290)", () => {
+  const planetas = crearDecorado(SEMILLA, {
+    nebulosas: 0, asteroides: 0, nebulosasLejanas: 0,
+  }).find((capa) => capa.tipo === "planeta").elementos;
+  assert.deepEqual(
+    planetas.map((p) => p.plano),
+    ["lejano", "medio", "cercano", "lejano", "medio"],
+  );
+  for (const planeta of planetas) {
+    const plano = PLANOS_PLANETA.find((p) => p.nombre === planeta.plano);
+    assert.ok(plano, `plano conocido: ${planeta.plano}`);
+    assert.equal(planeta.opacidad, plano.opacidad);
+    assert.ok(planeta.r >= 320 * plano.radioMin);
+    assert.ok(planeta.r < 320 * (plano.radioMin + plano.radioRango));
+  }
+});
+
+test("el pintor aplica la opacidad del plano también al disco planetario (#290)", () => {
+  const estilos = [];
+  const ctx = {
+    set fillStyle(valor) { estilos.push(valor); },
+    get fillStyle() { return estilos.at(-1) ?? ""; },
+    fillRect() {},
+  };
+  dibujarDecorado(ctx, [{
+    tipo: "planeta", dx: 0, dy: 0,
+    elementos: [{
+      x: 20, y: 20, r: 4, anillo: false, opacidad: 0.42,
+      color: "#7fa9c4", color2: "#dceff7", rasgo: "casquetes", semilla: 1,
+    }],
+  }]);
+  assert.ok(estilos.some((estilo) => estilo.endsWith(", 0.42)")));
 });
 
 function distanciaToroidal(a, b, ancho, alto) {

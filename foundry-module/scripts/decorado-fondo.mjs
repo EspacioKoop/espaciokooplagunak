@@ -75,6 +75,17 @@ export const RADIO_ZONA_TACTICA_BASE = 34;
 const INTENTOS_POSICION_PLANETA = 64;
 const RADIO_PENTAGONO_PLANETAS_BASE = 95;
 
+// Tres planos visuales discretos: la silueta y la opacidad cuentan de un vistazo
+// qué planeta está más al fondo sin añadir etiquetas ni fingir distancia táctica.
+// Los valores son deliberadamente más pequeños que los contactos principales:
+// siguen mostrando bioma/anillos al escalar con nearest-neighbour, pero ya no
+// dominan el radar a 1080p ni en el backing compacto.
+export const PLANOS_PLANETA = [
+  { nombre: "lejano", radioMin: 0.034, radioRango: 0.008, opacidad: 0.42 },
+  { nombre: "medio", radioMin: 0.042, radioRango: 0.009, opacidad: 0.56 },
+  { nombre: "cercano", radioMin: 0.05, radioRango: 0.008, opacidad: 0.7 },
+];
+
 function distanciaToroidal(ax, ay, bx, by, ancho, alto) {
   const dx = Math.abs(ax - bx);
   const dy = Math.abs(ay - by);
@@ -214,7 +225,8 @@ export function crearDecorado(
   for (let i = 0; i < planetas; i += 1) {
     const bioma = nombresBioma[i % nombresBioma.length];
     const def = BIOMAS[bioma];
-    const r = ancho * (0.06 + rng() * 0.02); // 19–26 px a 320: legibles sin dominar el radar
+    const plano = PLANOS_PLANETA[i % PLANOS_PLANETA.length];
+    const r = ancho * (plano.radioMin + rng() * plano.radioRango); // 11–19 px a 320
     const anillo = rng() < 0.45;
     const posicion = elegirPosicionPlaneta(rng, huellaPlaneta({ r, anillo }), elemPlanetas, ancho, alto);
     elemPlanetas.push({
@@ -222,6 +234,8 @@ export function crearDecorado(
       y: posicion.y,
       r,
       bioma,
+      plano: plano.nombre,
+      opacidad: plano.opacidad,
       rasgo: def.rasgo,
       color: def.color,
       color2: def.color2,
@@ -471,7 +485,8 @@ function pintarAnillo(ctx, el, cx, cy, radio, frente) {
     for (let banda = 0; banda < 2; banda += 1) {
       const px = Math.round(cx + Math.cos(a) * (rx + banda * 2));
       const py = Math.round(cy + Math.sin(a) * (ry + banda));
-      ctx.fillStyle = rgba(color, banda === 0 ? 0.5 : 0.28);
+      const opacidad = Number.isFinite(el.opacidad) ? el.opacidad : 1;
+      ctx.fillStyle = rgba(color, (banda === 0 ? 0.5 : 0.28) * opacidad);
       ctx.fillRect(px, py, 1, 1);
     }
   }
@@ -518,7 +533,7 @@ function pintarPlaneta(ctx, el, x, y, tMs = 0) {
     for (let dx = -radio; dx <= radio; dx += 1) {
       const color = colorPlanetaPixel(el, dx, dy, radio, semilla, tMs);
       if (color === null) continue;
-      ctx.fillStyle = color;
+      ctx.fillStyle = rgba(color, Number.isFinite(el.opacidad) ? el.opacidad : 1);
       ctx.fillRect(cx + dx, cy + dy, 1, 1);
     }
   }

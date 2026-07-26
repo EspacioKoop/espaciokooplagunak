@@ -29,9 +29,10 @@ accesibilidad y estética con póker, blackjack, dominó u otros verticales.
 4. **Foundry es la única autoridad.** El simulador y el puente no reciben datos,
    endpoints u órdenes de minijuegos. Esto respeta ADR-0002 y mantiene intacto
    upstream EmptyEpsilon.
-5. **Reductor determinista.** Mismo estado inicial, semilla y secuencia válida de
-   acciones producen el mismo resultado público. La aleatoriedad se consume a
-   través de una semilla de sesión explícita; el motor no llama a `Math.random()`.
+5. **Reductor determinista.** Mismo estado privado inicial y misma secuencia
+   válida de acciones producen el mismo resultado. La aleatoriedad se consume a
+   través de una semilla creada y conservada solo por el coordinador; el motor no
+   llama a `Math.random()` ni incluye la semilla en DTO, flag o evento compartido.
 6. **Coordinador único.** El GM primario valida y aplica acciones. Los demás
    clientes proponen acciones mediante un evento de Foundry que vincule la
    identidad en origen (por ejemplo, el patrón existente basado en cambios del
@@ -41,19 +42,22 @@ accesibilidad y estética con póker, blackjack, dominó u otros verticales.
 
 ## Contrato de sesión
 
-El estado común mínimo es lógica pura y serializable:
+El estado compartido mínimo es lógica pura y serializable, pero contiene solo la
+vista pública de la mesa:
 
 ```text
-SesionMinijuego {
+EstadoPublicoSesion {
   version: 1
   id: string
   juego: string
   fase: "lobby" | "en_curso" | "terminada"
   revision: integer >= 0
-  semilla: integer
+  epocaCoordinador: integer >= 0
+  coordinadorId: string
   anfitrionId: string
   jugadores: [{ userId, asiento, estado }]
   espectadores: [userId]
+  checkpointMano: object | null
   juegoPublico: object
   resultado: object | null
 }
@@ -62,16 +66,43 @@ SesionMinijuego {
 - `id` identifica una mesa, no una campaña ni un mundo.
 - `revision` aumenta exactamente una vez por acción aceptada y permite rechazar
   acciones obsoletas o repetidas.
+- `coordinadorId` se elige mediante la misma regla determinista de GM primario que
+  use el adaptador; solo esa identidad aplica acciones. `epocaCoordinador` cambia
+  al sustituirlo e invalida propuestas y respuestas de la época anterior.
+- `checkpointMano` conserva únicamente fichas y datos públicos inmediatamente
+  anteriores al reparto. Permite cancelar una mano sin reconstruir secretos ni
+  adjudicar apuestas incompletas.
 - `juegoPublico` contiene solo información que todos los participantes pueden
   conocer. Las manos privadas no forman parte de este estado compartido.
 - El motor limita jugadores, espectadores, tamaño de payload y longitud de
   cadenas antes de persistir o retransmitir estado.
 
+El GM coordinador mantiene por separado, y solo en memoria, el estado necesario
+para resolver la mano:
+
+```text
+EstadoPrivadoCoordinador {
+  sessionId: string
+  epocaCoordinador: integer
+  semilla: integer
+  estadoAleatorio: object
+  mazo: [carta]
+  manos: { userId: [carta] }
+  noncesProcesados: colección acotada
+}
+```
+
+Este objeto puede serializarse dentro de pruebas puras del motor, pero el
+adaptador Foundry no lo escribe en Documents, flags, ajustes, sockets de difusión
+ni almacenamiento persistente del navegador. Tampoco se deriva desde el estado
+público ni se transmite completo a otros clientes.
+
 ## Acciones comunes
 
-Todas las acciones contienen `sessionId`, `revisionEsperada`, `tipo` y un
-`nonce` acotado. El coordinador obtiene el actor del evento autenticado de
-Foundry, no del payload.
+Todas las acciones contienen `sessionId`, `epocaCoordinador`,
+`revisionEsperada`, `tipo` y un `nonce` acotado. El coordinador obtiene el actor
+del evento autenticado de Foundry, no del payload. Los nonces se comparan en el
+estado privado y no se copian al estado público.
 
 | Acción | Quién puede pedirla | Efecto |
 |---|---|---|
@@ -84,8 +115,8 @@ Foundry, no del payload.
 | `close` | anfitrión o GM | destruye la mesa cuando ya no está en curso |
 
 Una acción inválida devuelve un resultado cerrado (`ok: false`, código estable)
-y no modifica estado ni revisión. Repetir el mismo `nonce` del mismo actor es
-idempotente.
+y no modifica estado ni revisión. Repetir el mismo `nonce` del mismo actor dentro
+de la época vigente es idempotente.
 
 ## Interfaz interna de cada juego
 
@@ -115,6 +146,9 @@ Por tanto:
 
 - la UI solo muestra a cada jugador su vista privada y nunca incluye manos en el
   estado público, logs, notificaciones o flags compartidos;
+- una vista privada se entrega como mensaje efímero dirigido al `userId`
+  autenticado y los demás clientes la descartan; dado que el transporte cliente
+  de Foundry no es un canal secreto, esto sigue siendo privacidad de interfaz;
 - el proyecto describe esta garantía como **privacidad de interfaz**, no como
   seguridad criptográfica contra jugadores hostiles;
 - no se persisten mazo, semilla ni manos privadas en `localStorage`, ajustes del
@@ -135,9 +169,13 @@ nivel de presentación.
   puede reclamarlo.
 - **Cambio de escena o cierre de ventana:** no equivale a abandonar. La sesión
   sigue y la ventana puede reabrirse.
-- **Pérdida del GM coordinador:** se congela la mesa hasta elegir un nuevo GM
-  primario y reconciliar la última revisión confirmada; nunca avanzan dos
-  coordinadores simultáneamente.
+- **Pérdida del GM coordinador:** la mesa se congela. Si vuelve la misma instancia
+  con su estado privado intacto, puede continuar en la misma época. Si la pérdida
+  es definitiva, no se intenta reconstruir mazo ni manos desde datos públicos:
+  un nuevo GM incrementa `epocaCoordinador`, cancela la mano sin resultado,
+  restaura las fichas al checkpoint público anterior al reparto y crea una mano
+  nueva con semilla privada nueva. Las acciones pendientes de la época cancelada
+  se descartan; nunca avanzan dos coordinadores simultáneamente.
 - **Todos ausentes:** la mesa expira tras un plazo acotado y solo fuera de una
   resolución activa. El plazo exacto será configuración del host, no del juego.
 
@@ -179,13 +217,13 @@ variantes y efectos sobre la campaña.
 ## Orden de implementación
 
 1. Motor puro de sesión y contrato común con pruebas de identidad, revisión,
-   nonces, desconexión y espectadores.
+   época, nonces, desconexión, cancelación segura y espectadores.
 2. Motor puro de póker con vectores deterministas y pruebas de reglas.
 3. Adaptador Foundry y vistas pública/privada sin persistir secretos.
 4. Ventana clásica v11 y ApplicationV2 compartiendo el mismo modelo.
 5. Arte pixel-art, teclado, reduced-motion e i18n.
-6. Smoke multijugador real con GM, dos jugadores, espectador, reconexión y relevo
-   controlado del coordinador.
+6. Smoke multijugador real con GM, dos jugadores, espectador, reconexión, pérdida
+   del coordinador y cancelación/reinicio seguro de la mano.
 
 El issue #309 puede consumir este marco cuando llegue la Fase 4, pero no puede
 usar el minijuego para emitir órdenes de nave ni saltarse permisos de puesto.

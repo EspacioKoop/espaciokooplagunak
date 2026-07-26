@@ -20,8 +20,10 @@ Son dos derechos **independientes** y hay que superar **los dos**:
 
 1. **Copyright (derecho de autor).** Caduca por jurisdicción y fecha. Este proyecto asume contexto
    **ES/UE** salvo nota. En la UE la regla general es **vida del autor + 70 años**; en EE. UU. es un
-   sistema por fecha/renovación (regla práctica: obras publicadas **antes de 1929** están en DP en
-   2026). Damos ambas cuando difieren.
+   sistema por fecha/renovación (**término de 95 años** para obras publicadas antes de 1978:
+   **en 2026 son DP las publicadas hasta 1930 inclusive** — las de 1930 entraron el 1-ene-2026;
+   [Public Domain Day 2026, Duke CSPD](https://web.law.duke.edu/cspd/publicdomainday/2026/)).
+   Damos ambas cuando difieren.
 2. **Marca registrada (*trademark*).** **No caduca** mientras se use y renueve. Un personaje puede
    ser DP **como texto** y su **nombre/logo** seguir siendo marca viva (p. ej. la editorial que sigue
    vendiendo juegos con ese nombre). Marca viva ⇒ **no** uses el nombre/logo como identificador de
@@ -34,9 +36,37 @@ Columna **Uso** de cada tabla:
   nombre/logo exactos como etiqueta.
 - ⛔ **Descartar** — ver [Lista de descartes](#lista-de-descartes).
 
-> Las fechas son de referencia a fecha de redacción (2026-07) y a mi mejor conocimiento; **no son
-> asesoría legal**. Antes de un lanzamiento público con un guiño concreto, reverifica el elemento
-> exacto (edición, ilustrador, jurisdicción).
+> **No es asesoría legal.** Antes de un lanzamiento público con un guiño concreto, reverifica el
+> elemento exacto (edición, ilustrador, jurisdicción). Cada bloque cierra con su **fuente y fecha de
+> consulta**; ver [Fuentes y método de verificación](#fuentes-y-método-de-verificación).
+
+## Fuentes y método de verificación
+
+**Fecha de consulta de todas las citas de esta versión: 2026-07-27.**
+
+Cada afirmación se clasifica por su **nivel de evidencia**, no por intuición:
+
+- **Copyright — verificado.** Se cruza la **fecha de fallecimiento del autor** (biografía estándar) con
+  el plazo aplicable: UE vida+70; EE. UU. término de 95 años (DP hasta lo publicado en 1930). Fuentes
+  autoritativas de plazo:
+  [Duke CSPD — Public Domain Day 2026](https://web.law.duke.edu/cspd/publicdomainday/2026/) ·
+  [Cornell — Copyright Term and the Public Domain (Hirtle)](https://guides.library.cornell.edu/copyright/publicdomain).
+- **Marca — verificado.** Solo se marca como evidencia una afirmación con **registro o litigio citable**.
+  Las verificadas en esta versión (registro USPTO vía Justia / caso público):
+  «Arkham Horror»® ([USPTO 78230423](https://trademarks.justia.com/782/30/arkham-78230423.html)),
+  «Call of Cthulhu» de Chaosium ([copyright status, HPL Wiki](https://lovecraft.fandom.com/wiki/Copyright_status_of_works_by_H._P._Lovecraft)),
+  marcas vivas de Edgar Rice Burroughs, Inc. sobre John Carter®/Barsoom®/Tarzan®
+  ([ERB, Inc. — Wikipedia](https://en.wikipedia.org/wiki/Edgar_Rice_Burroughs,_Inc.)),
+  disputa de marca de Buck Rogers / Dille Family Trust
+  ([Forbes, 2018](https://www.forbes.com/sites/legalentertainment/2018/07/27/buck-rogers-ip-and-a-possible-armageddon-2419/)).
+- **Marca — precautorio (no verificado en registro).** Riesgo de marca razonable pero **sin pull de
+  registro en esta versión** (p. ej. Flash Gordon / King Features, cabeceras de revistas pulp). Se
+  trata en la dirección **conservadora** (⛔/📝), nunca como ✅. Queda **pendiente** cerrar con búsqueda
+  TESS (USPTO) / EUIPO antes de consumirlo como marca-libre.
+
+Regla de degradación: **si una casilla no alcanza «verificado», su estado se mueve hacia lo
+conservador** (📝 o ⛔), nunca al alza. El ✅ exige copyright verificado *y* ausencia de marca en
+colisión (verificada o, en su defecto, uso no-etiqueta que evita el riesgo).
 
 ---
 
@@ -44,18 +74,24 @@ Columna **Uso** de cada tabla:
 
 | Fuente | Autor (fallec.) | Estado copyright | Uso | Elementos aprovechables |
 |---|---|---|---|---|
-| *20.000 leguas de viaje submarino*, *La isla misteriosa*, *Robur el conquistador* | Jules Verne (1905) | DP mundial (vida+70 desde 1975; EE. UU. pre-1929) | ✅ | Nave **Nautilus**, **capitán Nemo**, **Robur**, el **Albatros**, estética de submarino-fortaleza |
-| *La máquina del tiempo*, *La guerra de los mundos*, *Los primeros hombres en la Luna* | H. G. Wells (1946) | DP en UE desde 2017 (vida+70); EE. UU. pre-1929 | ✅ | **Trípodes** marcianos, **Morlocks**, **Eloi**, **cavorita**, rayo de calor, la máquina del tiempo |
+| *20.000 leguas de viaje submarino*, *La isla misteriosa*, *Robur el conquistador* | Jules Verne (1905) | DP mundial (vida+70 desde 1976; EE. UU. hasta 1930) | ✅ | Nave **Nautilus**, **capitán Nemo**, **Robur**, el **Albatros**, estética de submarino-fortaleza |
+| *La máquina del tiempo*, *La guerra de los mundos*, *Los primeros hombres en la Luna* | H. G. Wells (1946) | DP en UE desde 2017 (vida+70); EE. UU. hasta 1930 | ✅ | **Trípodes** marcianos, **Morlocks**, **Eloi**, **cavorita**, rayo de calor, la máquina del tiempo; de *La guerra de los mundos*: el grito marciano «**Ulla**» y el astrónomo **Ogilvy** |
 | *Frankenstein o el moderno Prometeo* | Mary Shelley (1851) | DP mundial | 📝 | **Víctor Frankenstein**, la **Criatura**, el tropo del creador que pierde el control. **Evita** el diseño Universal (frente plana, tornillos): ese *aspecto* es copyright/marca de Universal, no de la novela |
 | *El doctor Jekyll y el señor Hyde* | R. L. Stevenson (1894) | DP mundial | ✅ | El suero, el doble monstruoso, la transformación química |
-| *La isla del doctor Moreau* | H. G. Wells (1946) | DP en UE desde 2017; EE. UU. pre-1929 | ✅ | Híbridos animal-humano, la «Casa del Dolor», bioética torcida |
+| *La isla del doctor Moreau* | H. G. Wells (1946) | DP en UE desde 2017; EE. UU. hasta 1930 | ✅ | Híbridos animal-humano, la «Casa del Dolor», bioética torcida |
 | *Un yanqui en la corte del rey Arturo* | Mark Twain (1910) | DP mundial | ✅ | Anacronismo tecnológico, el forastero con conocimiento «mágico» |
+
+> **Fuente/verificación (consulta 2026-07-27):** copyright derivado de la fecha de fallecimiento de
+> cada autor (Verne 1905, Wells 1946, Shelley 1851, Stevenson 1894, Twain 1910) contra UE vida+70 y
+> EE. UU. término de 95 años ([Duke CSPD 2026](https://web.law.duke.edu/cspd/publicdomainday/2026/)).
+> Diseño Universal de *Frankenstein*: marca/imagen de los estudios, no de la novela — **precautorio**.
 
 ## 2. Terror cósmico (mitos de Lovecraft)
 
-H. P. Lovecraft falleció en **1937** → **DP en la UE desde 2008** (vida+70) y en EE. UU. sus relatos
-clave son pre-1929 o de copyright no renovado. Los **nombres de criaturas y lugares que él acuñó**
-son DP. Cuidado con capas posteriores (ver notas).
+H. P. Lovecraft falleció en **1937** → **DP en la UE desde 2008** (vida+70) y en EE. UU. lo publicado
+hasta 1930 es DP por término de 95 años, y de lo posterior no consta renovación de copyright
+([copyright status, HPL Wiki](https://lovecraft.fandom.com/wiki/Copyright_status_of_works_by_H._P._Lovecraft)).
+Los **nombres de criaturas y lugares que él acuñó** son DP. Cuidado con capas posteriores (ver notas).
 
 | Elemento | Uso | Nota |
 |---|---|---|
@@ -65,6 +101,11 @@ son DP. Cuidado con capas posteriores (ver notas).
 | «**Arkham**» | 📝 | Topónimo de Lovecraft (DP) **pero** marca muy activa de terceros en videojuegos/cómic. Para evitar confusión de marca, prefiere **Miskatonic/Innsmouth/R'lyeh** |
 | Término «**Cthulhu Mythos**», deidades **añadidas por August Derleth** (Cthugha…) | 📝/⛔ | Lo acuñado por Derleth (1971) **no** es DP. Cíñete a lo de Lovecraft |
 | *Call of Cthulhu* (juego de rol de Chaosium) | ⛔ | El **juego** y su presentación son marca/producto vivo. Referencia a Lovecraft, no a Chaosium |
+
+> **Fuente/verificación (consulta 2026-07-27):** copyright DP por fallecimiento en 1937 (UE vida+70) y
+> ausencia de renovación en EE. UU. ([HPL Wiki](https://lovecraft.fandom.com/wiki/Copyright_status_of_works_by_H._P._Lovecraft)).
+> Marcas **verificadas** que motivan los 📝/⛔: «**Arkham Horror**»® ([USPTO 78230423, Justia](https://trademarks.justia.com/782/30/arkham-78230423.html))
+> y «**Call of Cthulhu**» de Chaosium. La deidad/《Mythos》 de Derleth (1971) no es DP.
 
 ## 3. Mitología y folclore (siempre DP)
 
@@ -76,8 +117,13 @@ copyright/marca (el Thor de Marvel, el God of War de Sony) — usa el **mito**, 
 |---|---|---|
 | Griega/romana | ✅ | **Prometeo**, **Ícaro**, **Némesis**, **Cerbero**, **Hades**, **Aqueronte**, **Estigia** para naves/estaciones/sectores |
 | Nórdica | ✅ | **Yggdrasil** (red/árbol de datos), **Ragnarök** (evento de crisis), **Valquiria**, **Fenrir**, **Midgard** |
-| **Vasca** (encaje temático «Lagunak») | ✅ | **Mari** (señora de las tormentas → IA/ancla), **Sugaar**/**Herensuge** (serpiente-dragón → nave capital), **Basajaun** (guardián del bosque → centinela), **Gaueko** (el de la noche → sector oscuro), **Tartalo** (cíclope → estación minera), **Gaueko**/**Ilargi** (luna). Guiño identitario propio y 100 % seguro |
+| **Vasca** (encaje temático «Lagunak») | ✅ | **Mari** (señora de las tormentas → IA/ancla), **Sugaar**/**Herensuge** (serpiente-dragón → nave capital), **Basajaun** (guardián del bosque → centinela), **Gaueko** (el de la noche → sector oscuro), **Tartalo** (cíclope → estación minera), **Ilargi** (luna) y **Eguzki** (sol). Guiño identitario propio y 100 % seguro |
 | Egipcia/mesopotámica | ✅ | **Ra**, **Anubis**, **Tiamat** (dragón del caos → jefe), **Marduk**, **Gilgamesh** |
+
+> **Fuente/verificación (consulta 2026-07-27):** el folclore y la mitología carecen de autor moderno,
+> por lo que la **base mitológica es DP por naturaleza** (⚠️ una *versión* moderna concreta —Thor de
+> Marvel, God of War— sí tiene copyright/marca; se usa el mito, no esas versiones). **Ilargi** (luna) y
+> **Eguzki** (sol) son teónimos de la mitología vasca, DP por naturaleza.
 
 ## 4. Portadas e ilustración pulp
 
@@ -88,8 +134,13 @@ están en DP, pero **hay que verificar la pieza concreta**.
 | Fuente | Uso | Nota de verificación |
 |---|---|---|
 | Ilustraciones de **Frank R. Paul** (*Amazing Stories*, años 20–30) | 📝 verificar | Gran parte en DP por fecha/no-renovación; **confirma la lámina exacta** antes de reproducir. Como **inspiración de estilo** (ciudades-cohete, cascos de pecera) es libre |
-| Portadas de *Weird Tales*, *Amazing Stories*, *Wonder Stories* pre-1929 | 📝 verificar | El **estilo** (tipografías art déco, colores saturados, monstruos de bug-eyed) es libre de imitar con **arte propio**; reproducir una portada concreta requiere verificar esa edición |
+| Portadas de *Weird Tales*, *Amazing Stories*, *Wonder Stories* hasta 1930 | 📝 verificar | El **estilo** (tipografías art déco, colores saturados, monstruos de bug-eyed) es libre de imitar con **arte propio**; reproducir una portada concreta requiere verificar esa edición |
 | **Logotipos/cabeceras** de esas revistas | ⛔ | Aunque la revista sea vieja, el nombre/cabecera puede seguir siendo marca. No los copies |
+
+> **Fuente/verificación (consulta 2026-07-27):** riesgo **por pieza**, no por categoría. El estado ✅ no
+> aplica aquí: cada lámina/cabecera queda en **📝 verificar** o **⛔** hasta confirmar fecha, país y
+> renovación de esa edición concreta, y la marca de la cabecera (**precautorio**, pendiente TESS/EUIPO).
+> Vía segura del proyecto: **arte propio Neo Geo** inspirado en el tropo, no reproducción.
 
 > **Vía recomendada para el arte del proyecto:** no reproducir láminas, sino **pintar arte propio
 > Neo Geo** *inspirado* en esos tropos (coherente con [#215](https://github.com/VaroTv7/espaciokooplagunak/issues/215)
@@ -122,12 +173,19 @@ nombres/logos** como guiño de producto.
 | Franquicia | Por qué se descarta |
 |---|---|
 | **Flash Gordon** | King Features; obra y marca vivas. ⛔ |
-| **Buck Rogers** | La novela de 1928 pasó a DP en EE. UU., **pero** el nombre/personaje sigue en disputa/marca (Dille Family Trust). ⛔ por precaución |
-| **John Carter / Barsoom / Tarzan** (E. R. Burroughs, 1950) | Texto en DP en UE **solo desde 2021** y en EE. UU. lo pre-1929, **pero** ERB, Inc. mantiene **marcas vivas** sobre los nombres. 📝 como texto, ⛔ como etiqueta de producto |
+| **Buck Rogers** | *Armageddon 2419 A.D.* (Nowlan, 1928–29) es DP en EE. UU., **pero** el nombre/personaje sigue en disputa/marca (Dille Family Trust). ⛔ por precaución |
+| **John Carter / Barsoom / Tarzan** (E. R. Burroughs, fallec. 1950) | Texto en DP en UE **solo desde 2021** y en EE. UU. las primeras novelas (hasta 1930), **pero** ERB, Inc. mantiene **marcas vivas** sobre los nombres. 📝 como texto, ⛔ como etiqueta de producto |
 | **Star Wars, Star Trek, Dune, Warhammer 40k, Alien, Blade Runner** | Copyright y marca plenamente vigentes. ⛔ |
 | **Doctor Who, Dan Dare, Perry Rhodan** | Vigentes. ⛔ |
 | Diseño Universal de **Frankenstein/Drácula** (tornillos, capa) | La novela es DP; **ese diseño** es de los estudios. 📝 usa la novela, ⛔ el diseño |
 | Deidades y término «Mythos» de **Derleth** / material de **Chaosium** | Posterior a Lovecraft; no DP. ⛔ |
+
+> **Fuente/verificación (consulta 2026-07-27):** Buck Rogers — DP del texto de Nowlan y disputa de
+> marca del Dille Family Trust ([Forbes, 2018](https://www.forbes.com/sites/legalentertainment/2018/07/27/buck-rogers-ip-and-a-possible-armageddon-2419/)).
+> Burroughs — marcas vivas John Carter®/Barsoom®/Tarzan® de ERB, Inc.
+> ([Wikipedia](https://en.wikipedia.org/wiki/Edgar_Rice_Burroughs,_Inc.)). Flash Gordon (King Features),
+> Universal (*Frankenstein*/*Drácula*) y demás franquicias vigentes: descarte **precautorio** (pendiente
+> pull de registro), tratado en la dirección conservadora.
 
 ---
 
@@ -142,5 +200,8 @@ nombres/logos** como guiño de producto.
 ## Mantenimiento
 
 Este catálogo evoluciona. Al añadir una fuente: incluye **autor + fecha de fallecimiento**,
-**jurisdicción**, **estado de copyright**, **estado de marca** y la columna **Uso**. Al usar un
-elemento en código/arte, enlaza de vuelta a la fila de esta tabla en el PR.
+**jurisdicción**, **estado de copyright**, **estado de marca**, la columna **Uso** y, en la nota de
+bloque, la **fuente autoritativa + fecha de consulta** (ver
+[Fuentes y método de verificación](#fuentes-y-método-de-verificación)). Sin evidencia de registro,
+una afirmación de marca queda **precautoria** y su estado se mueve a lo conservador (📝/⛔), nunca a ✅.
+Al usar un elemento en código/arte, enlaza de vuelta a la fila de esta tabla en el PR.

@@ -5,12 +5,17 @@
 --	sabor de ambientación a indicativos de nave, contactos y estaciones sin coste de
 --	licencia y sin arriesgar una marca ajena.
 --
+--	DEPENDENCIA: este archivo NO es autónomo. Su fuente de verdad legal es
+--	docs/DOMINIO_PUBLICO_SCIFI.md, integrado en esta misma pila de PRs (#310). Cada nombre
+--	de los pools de abajo está trazado a una fila/nota verificada de ese catálogo.
+--
 --	IMPORTANTE (criterio legal, resumido de docs/DOMINIO_PUBLICO_SCIFI.md):
 --		- Solo se incluyen nombres cuyo COPYRIGHT está caducado (vida+70 en UE) y que NO
 --		  colisionan con una marca viva en nuestro uso lúdico.
 --		- Se excluyen a propósito nombres de la lista de descartes (Flash Gordon, Buck
 --		  Rogers, John Carter/Barsoom, material de Derleth/Chaosium, etc.).
 --		- Antes de añadir un nombre nuevo aquí, verifica su fila en el catálogo y enlaza.
+--		  Si no aparece en una fila/nota verificada del catálogo, NO lo añadas.
 --
 --	Este archivo es propio del fork (no upstream) y NO modifica el generador de
 --	indicativos de EmptyEpsilon (generate_call_sign_scenario_utility.lua). Interopera con
@@ -35,20 +40,23 @@
 
 public_domain_names = public_domain_names or {}
 
---	Verne (fallec. 1905): DP mundial. Nautilus/Nemo/Robur/Albatros.
+--	Verne (fallec. 1905): DP mundial. Nautilus/Nemo/Robur/Albatros y el prof. Aronnax.
+--	(Se retiran "Lincoln" —riesgo de marca genérica— y "Vernia" —no figura en el catálogo.)
 public_domain_names.verne = {
-	"Nautilus", "Nemo", "Robur", "Albatros", "Aronnax", "Lincoln", "Vernia",
+	"Nautilus", "Nemo", "Robur", "Albatros", "Aronnax",
 }
 
---	H. G. Wells (fallec. 1946): DP en UE desde 2017; EE. UU. pre-1929.
+--	H. G. Wells (fallec. 1946): DP en UE desde 2017; EE. UU. hasta 1930. "Ulla" (grito
+--	marciano) y "Ogilvy" (astrónomo) de La guerra de los mundos; ambos en el catálogo.
 public_domain_names.wells = {
 	"Morlock", "Eloi", "Cavor", "Cavorita", "Ulla", "Ogilvy", "Tripode",
 }
 
 --	Lovecraft (fallec. 1937): DP en UE desde 2008. Solo lo acuñado por él; nada de
---	Derleth. Se evita "Arkham" por marca viva (ver catálogo): mejores topónimos abajo.
+--	Derleth. Se evita "Arkham" por marca viva (ver catálogo). Se sustituyen las truncaduras
+--	"Nyar"/"Yog" por teónimos exactos del catálogo (Cthulhu, Azathoth).
 public_domain_names.lovecraft = {
-	"Miskatonic", "Innsmouth", "Rlyeh", "Kadath", "Dagon", "Nyar", "Yog", "Leng",
+	"Miskatonic", "Innsmouth", "Rlyeh", "Kadath", "Dagon", "Cthulhu", "Azathoth", "Leng",
 }
 
 --	Mitología griega/nórdica/mesopotámica: DP por naturaleza (usar el mito, no versiones

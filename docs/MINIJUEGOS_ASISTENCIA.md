@@ -77,6 +77,30 @@ representa un **tipo de habilidad**, el puesto solo cambia el **contexto narrati
 Odiseo). Así el aprendizaje del jugador se transfiere entre sistemas sin que todas las ayudas se
 sientan idénticas.
 
+### Hechizos y rasgos de clase como enfoques
+Además de las habilidades, un enfoque puede invocar un **hechizo** o un **rasgo/aptitud de clase** de
+la hoja (p. ej. un mago que usa *Reparar*/*Prestidigitación* o *Detectar magia* para ayudar a
+ingeniería o sensores; un pícaro que aplica *Pericia*; un clérigo un rasgo de canalizar divinidad de
+color). Esto refuerza la identidad de clase y da variedad de caminos por personaje.
+
+Dos matices de diseño, porque los hechizos y rasgos **sí consumen recursos reales** de la hoja:
+
+- **Coste de recurso = decisión con gate del GM.** Gastar un **espacio de conjuro** o un **uso limitado**
+  (recarga corta/larga) es un coste de campaña *real*, no efímero. Por eso el enfoque «hechizo/rasgo»
+  es **opt-in y lo habilita el GM** por tarea; cuando está activo, el gasto se contabiliza en el actor
+  como cualquier lanzamiento de dnd5e (respeta la economía de 5e, no la inventa). El motor de
+  asistencia **no fabrica ni regala recursos**: solo puede *consumir* los que el jugador ya tiene, y
+  únicamente si el GM abrió esa vía.
+- **La línea de #308 se mantiene al revés.** #308 prohíbe que un minijuego **conceda** recursos de
+  campaña o de nave. Aquí no se concede nada: el hechizo/rasgo **gasta** un recurso del personaje para
+  producir, como cualquier otro enfoque, **solo una banda de resultado** → propuesta acotada. El
+  resultado sigue sin poder salir de `STATION_ACTIONS` ni superar el rango ya autorizado.
+
+Enfoques sin coste (habilidad a secas, truco/*cantrip* a voluntad) quedan siempre disponibles; los de
+coste se ofrecen como **opción de más potencia** cuando el jugador quiere invertir un recurso propio.
+Un enfoque de hechizo declara su **CD, tirada (de característica o de salvación del objetivo) y coste**,
+y el «rango de éxito» los muestra antes de comprometerse, incluido el recurso que se gastará.
+
 ### «Ver el rango de éxito» antes de comprometerse
 Al elegir un enfoque, la UI muestra el **rango de éxito previsto** para *esa* habilidad del personaje,
 calculado del modificador total de su hoja frente a la CD, **antes** de tirar:

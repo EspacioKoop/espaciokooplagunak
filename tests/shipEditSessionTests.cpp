@@ -35,6 +35,20 @@ int main()
     expect(!session.isDirty() && !session.canUndo() && !session.canRedo(),
         "new ship session starts clean with empty history");
 
+    expect(session.setHullMax(250.0f) == ShipEditError::None
+            && session.document().hull_max == 250.0f && session.isDirty(),
+        "a valid maximum hull can be staged");
+    expect(session.setHullMax(0.0f) == ShipEditError::InvalidDocument
+            && session.document().hull_max == 250.0f,
+        "an invalid hull edit fails without partial mutation");
+    expect(session.removeHullOverride() == ShipEditError::None
+            && !session.document().hull_max && !session.isDirty(),
+        "removing the staged hull override returns to the clean document");
+    expect(session.undo() && session.document().hull_max == 250.0f,
+        "hull override removal can be undone");
+    expect(session.redo() && !session.document().hull_max,
+        "hull override removal can be redone");
+
     expect(session.setSystemHealth(ShipSystemId::FrontShield, -0.25f) == ShipEditError::None
             && session.isDirty() && session.document().systems.size() == 2,
         "adding a valid system override dirties staging");

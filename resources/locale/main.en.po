@@ -4405,7 +4405,15 @@ msgid "Health [-1, 1]"
 msgstr ""
 
 msgctxt "content_editor"
+msgid "Maximum hull"
+msgstr ""
+
+msgctxt "content_editor"
 msgid "Set system"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Set hull"
 msgstr ""
 
 msgctxt "content_editor"
@@ -4426,6 +4434,22 @@ msgstr ""
 
 msgctxt "content_editor"
 msgid "Ship system override staged."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Maximum hull must be a finite positive number up to 1000000."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Ship hull override staged."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "The ship has no hull override."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Ship hull override removed from staging."
 msgstr ""
 
 msgctxt "content_editor"
@@ -4454,6 +4478,10 @@ msgstr ""
 
 msgctxt "content_editor"
 msgid "Systems"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Hull"
 msgstr ""
 
 msgctxt "content_editor"

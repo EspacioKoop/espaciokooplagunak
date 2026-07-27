@@ -29,7 +29,12 @@ import {
   prepararVistaManiobra,
 } from "./maniobra-control.mjs";
 import { firmaEstadoNaveVisible, prepareRoute, prepareSystemRows } from "./ship-view.mjs";
-import { barraRecurso, barrasSistema, aplicarBarraDom } from "./barras-estado.mjs";
+import {
+  barraRecurso,
+  barrasSistema,
+  aplicarBarraDom,
+  textoPorcentaje,
+} from "./barras-estado.mjs";
 import { setSimulationPaused } from "./tempo-control.mjs";
 import { contenidoEstadoBitacora, fechaLocal } from "./bitacora-nave.mjs";
 import { ALERTAS_NONCE, BACKOFF_MAX_MS, MODULE_ID } from "./lagunak-constantes.mjs";
@@ -248,9 +253,9 @@ export function crearClaseV1() {
       for (const sistema of sistemas) {
         const barras = barrasSistema(sistema);
         const base = `[data-sistema-id="${sistema.id}"]`;
-        setBarra(`${base} [data-campo="salud"]`, `${sistema.health}%`, barras.salud);
-        setBarra(`${base} [data-campo="calor"]`, `${sistema.heat}%`, barras.calor);
-        setBarra(`${base} [data-campo="potencia"]`, `${sistema.power}%`, barras.potencia);
+        setBarra(`${base} [data-campo="salud"]`, textoPorcentaje(sistema.health), barras.salud);
+        setBarra(`${base} [data-campo="calor"]`, textoPorcentaje(sistema.heat), barras.calor);
+        setBarra(`${base} [data-campo="potencia"]`, textoPorcentaje(sistema.power), barras.potencia);
       }
     }
 
@@ -384,9 +389,9 @@ export function crearClaseV1() {
           ? prepareSystemRows(nave, game.i18n).map(({ id, name, health, heat, power }) => ({
               id,
               nombre: name,
-              salud: health,
-              calor: heat,
-              potencia: power,
+              salud: textoPorcentaje(health),
+              calor: textoPorcentaje(heat),
+              potencia: textoPorcentaje(power),
               barras: barrasSistema({ health, heat, power }),
             }))
           : [],

@@ -87,3 +87,12 @@ export function aplicarBarraDom(nodo, texto, barra) {
   if (relleno.style.width !== ancho) relleno.style.width = ancho;
   if (relleno.dataset.nivel !== barra.nivel) relleno.dataset.nivel = barra.nivel;
 }
+
+// Marca visible de «no hay lectura». No es "0%": un sistema del que no
+// sabemos nada no está destruido, y un cero real sí es información.
+export const SIN_DATO = "—";
+
+// Texto de un porcentaje ya calculado, o la marca de ausencia.
+export function textoPorcentaje(valor) {
+  return Number.isFinite(valor) ? `${valor}%` : SIN_DATO;
+}

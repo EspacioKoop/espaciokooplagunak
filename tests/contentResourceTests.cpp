@@ -150,7 +150,7 @@ int main()
         "unknown top-level field is rejected");
 
     document = nlohmann::json::parse(compact);
-    document["version"] = 6;
+    document["version"] = CONTENT_RESOURCE_SCHEMA_VERSION + 1;
     expect(parseJson(document, parsed) == ContentResourceError::UnsupportedFormatOrVersion,
         "future version is rejected");
     document["version"] = 1.0;

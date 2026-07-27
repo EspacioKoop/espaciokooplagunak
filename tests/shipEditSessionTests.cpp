@@ -65,6 +65,9 @@ int main()
         "shield override removal can be undone");
     expect(session.redo() && !session.document().front_shield_max,
         "shield override removal can be redone");
+    session.rollback();
+    expect(!session.isDirty() && !session.canUndo() && !session.canRedo(),
+        "shield sub-session rolls back before independent edit cases");
 
     expect(session.setSystemHealth(ShipSystemId::FrontShield, -0.25f) == ShipEditError::None
             && session.isDirty() && session.document().systems.size() == 2,

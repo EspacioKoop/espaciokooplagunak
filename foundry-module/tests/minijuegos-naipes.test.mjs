@@ -6,6 +6,7 @@ import {
   barajaMezclada,
   repartir,
   codigoCarta,
+  interpretarCodigo,
   PALOS,
 } from "../scripts/minijuegos/naipes.mjs";
 import { crearAleatorio } from "../scripts/minijuegos/aleatorio.mjs";
@@ -56,4 +57,17 @@ test("repartir no muta el mazo y separa repartidas/resto", () => {
 test("repartir falla si no hay cartas suficientes", () => {
   assert.throws(() => repartir(barajaOrdenada(), 53), RangeError);
   assert.throws(() => repartir(barajaOrdenada(), -1), RangeError);
+});
+
+test("interpretarCodigo es la inversa exacta de codigoCarta en las 52 cartas", () => {
+  for (const carta of barajaOrdenada()) {
+    assert.deepEqual(interpretarCodigo(carta.codigo), { valor: carta.valor, palo: carta.palo });
+  }
+});
+
+test("interpretarCodigo falla cerrado ante cualquier otra forma", () => {
+  // El par valor+palo en crudo ("14s", "10s") no es un código de carta.
+  for (const malo of ["14s", "10s", "1c", "15s", "Tx", "as", "AS", "T", "", "Ts ", null, 7]) {
+    assert.throws(() => interpretarCodigo(malo), RangeError, `esperaba rechazo de ${malo}`);
+  }
 });

@@ -104,7 +104,7 @@ flowchart TB
         ship["ship-view.mjs / ventana-nave.mjs<br/>estado vivo, destino y ETA"]
         mapa["mapa-render.mjs<br/>mapa vivo con contactos"]
         tempo["tempo-control.mjs<br/>pausa/reanudación"]
-        journal["event-journal.mjs<br/>Journal deduplicado por eventId"]
+        journal["event-journal.mjs<br/>Registro de descriptores;<br/>Journal deduplicado por eventId"]
         client["bridge-client.mjs<br/>cliente HTTP: polling, token, errores"]
         ship --> client
         mapa --> client

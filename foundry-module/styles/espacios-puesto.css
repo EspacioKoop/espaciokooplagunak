@@ -516,3 +516,66 @@
 .lagunak-puesto-weapons .lagunak-workspace__emblem {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Crect x='3' y='0' width='2' height='1' fill='rgb(255,98,111)'/%3E%3Crect x='3' y='7' width='2' height='1' fill='rgb(255,98,111)'/%3E%3Crect x='0' y='3' width='1' height='2' fill='rgb(255,98,111)'/%3E%3Crect x='7' y='3' width='1' height='2' fill='rgb(255,98,111)'/%3E%3Crect x='3' y='2' width='2' height='4' fill='rgb(255,98,111)'/%3E%3Crect x='2' y='3' width='4' height='2' fill='rgb(255,98,111)'/%3E%3C/svg%3E");
 }
+
+/* Formularios de órdenes de puesto (#125/#244): los inputs y botones nativos
+ * eran invisibles sobre el fondo oscuro de la consola. Contraste explícito
+ * con el color de acento del puesto, foco visible y estados deshabilitados
+ * distinguibles — legibilidad antes que decoración. */
+.lagunak-workspace__orden {
+  display: grid;
+  gap: 4px;
+  margin: 10px 0;
+}
+
+.lagunak-workspace__orden label {
+  color: var(--lagunak-accent);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.lagunak-workspace__orden input {
+  color: var(--lagunak-text);
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(var(--lagunak-accent-rgb), 0.55);
+  border-radius: 2px;
+  padding: 6px 8px;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.lagunak-workspace__orden input:focus-visible {
+  outline: 2px solid var(--lagunak-accent);
+  outline-offset: 1px;
+}
+
+.lagunak-workspace__orden button {
+  color: #041015;
+  background: var(--lagunak-accent);
+  border: 1px solid var(--lagunak-accent);
+  border-radius: 2px;
+  padding: 6px 10px;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.lagunak-workspace__orden button:hover,
+.lagunak-workspace__orden button:focus-visible {
+  filter: brightness(1.15);
+  outline: 2px solid var(--lagunak-text);
+  outline-offset: 1px;
+}
+
+.lagunak-workspace__orden button:disabled {
+  color: var(--lagunak-muted);
+  background: transparent;
+  border-color: rgba(var(--lagunak-accent-rgb), 0.3);
+  cursor: not-allowed;
+}
+
+.lagunak-workspace__orden small,
+.lagunak-workspace__orden .hint {
+  color: var(--lagunak-muted);
+}

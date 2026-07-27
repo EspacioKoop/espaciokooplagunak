@@ -199,7 +199,7 @@ function svg(rects, fondo) {
   );
 }
 
-// SVG de la cara de una carta a partir de su código ("14s", "2c"…).
+// SVG de la cara de una carta a partir de su código estable ("As", "Td", "2c"…).
 export function cartaSvg(codigo) {
   return svg(rectsDeCarta(codigo), PALETA.cara);
 }

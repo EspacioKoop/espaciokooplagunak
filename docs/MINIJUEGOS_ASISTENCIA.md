@@ -141,8 +141,9 @@ Al elegir un enfoque, la UI muestra **antes de comprometerse** lo que se puede s
   tirada que corresponda —`d20 + modificador` del ayudante frente a la CD o la CA, o la salvación del
   objetivo frente a la CD de salvación del lanzador—, más la CD/CA y el modificador aplicado en claro
   (no un número mágico). Si el personaje tiene **competencia/pericia**, se refleja en el modificador y
-  por tanto en el rango mostrado. En (b) por salvación se muestra **quién tira** y que un éxito suyo
-  es el fallo del enfoque.
+  por tanto en el rango mostrado. La probabilidad se calcula siempre sobre el **margen a favor del
+  enfoque** definido abajo, no sobre la tirada en bruto. En (b) por salvación se muestra **quién
+  tira** y que un éxito suyo es el fallo del enfoque.
 - **Clase (c)**: no hay probabilidad que mostrar. La UI enseña la **banda fija** que se obtendrá y el
   **recurso que se gastará**; presentar un porcentaje aquí sería inventar una tirada inexistente.
 - En **(b) y (c)**, siempre el **coste** (espacio de conjuro o uso limitado) y el aviso de que se
@@ -156,15 +157,31 @@ La tirada se resuelve con el **motor de dados de dnd5e/Foundry** (no con el redu
 #308; ver «Frontera con #308»). Su resultado se **cuantiza** en bandas y cada banda mapea a un efecto
 **ya acotado**:
 
-| Banda | Condición (ejemplo) | Modo A (narrativo) | Modo B (propuesta) |
-|---|---|---|---|
-| Pifia | fallo por ≥5 | complicación narrativa | sin token (o coste) |
-| Fallo | < CD | sin ventaja | sin token |
-| Éxito | ≥ CD | ventaja menor | token de propuesta, tier bajo del rango ya permitido |
-| Éxito crítico | ≥ CD+5 | ventaja clara | token de propuesta, tier alto **dentro** del mismo rango |
+Las bandas **no** se leen directamente sobre la tirada: se leen sobre un **margen a favor del
+enfoque**, que cada clase calcula de forma distinta. Esto importa porque en una salvación quien tira
+es el objetivo y su éxito es el **fracaso** del enfoque; aplicarle `≥ CD → Éxito` invertiría el
+resultado y premiaría al ayudante justo cuando el objetivo resiste.
 
-Las condiciones se leen sobre la tirada **de la clase que corresponda** (contra CD en (a), contra CA o
-CD de salvación en (b)); la clase (c) no consulta esta tabla: entrega la banda fija que declaró.
+| Clase | Quién tira | Margen a favor del enfoque |
+|---|---|---|
+| (a) prueba de habilidad o herramienta | ayudante | `total del ayudante − CD` |
+| (b) por **ataque** de conjuro | ayudante | `total del ataque − CA del objetivo` |
+| (b) por **salvación** | **el objetivo** | `CD de salvación del lanzador − total de la salvación` **(mapeo invertido)** |
+| (c) uso sin tirada | nadie | no aplica: banda fija declarada por la tarea |
+
+En (b) por salvación el margen es invertido a propósito: una salvación **alta** produce margen
+**negativo** y por tanto banda desfavorable al ayudante. Que el objetivo **iguale** la CD ya es
+salvación superada en 5e, así que el margen 0 cae del lado del fallo del enfoque; por eso la banda
+«Éxito» exige margen **> 0** en salvaciones y `≥ 0` en (a) y (b) por ataque.
+
+| Banda | Condición sobre el margen | Salvación (equivalente explícito) | Modo A (narrativo) | Modo B (propuesta) |
+|---|---|---|---|---|
+| Pifia | margen ≤ −5 | el objetivo supera la CD por ≥5 | complicación narrativa | sin token (o coste) |
+| Fallo | margen < 0 (en salvación, ≤ 0) | el objetivo salva | sin ventaja | sin token |
+| Éxito | margen ≥ 0 (en salvación, > 0) | el objetivo falla la salvación | ventaja menor | token de propuesta, tier bajo del rango ya permitido |
+| Éxito crítico | margen ≥ +5 | el objetivo falla por ≥5 | ventaja clara | token de propuesta, tier alto **dentro** del mismo rango |
+
+La clase (c) no consulta esta tabla: entrega la banda fija que declaró.
 
 **El 1 y el 20 naturales no son banda por sí solos.** En dnd5e (reglas de 2014) el crítico y la pifia
 automáticos son cosa de **tiradas de ataque**, no de pruebas de característica ni de salvaciones: un
@@ -186,7 +203,11 @@ mecánico exigiera un modificador inexistente hoy en `STATION_ACTIONS`, **eso es
 no algo que #309 arrastre de tapadillo.
 
 ### dnd5e es enriquecimiento, no dependencia dura
-El módulo debe seguir funcionando sin dnd5e (objetivo «moderno» del smoke, #29). Por tanto:
+El módulo debe seguir funcionando **sin dnd5e**. Esto es un **gate adicional**, no la ruta moderna del
+smoke: la ruta moderna de #29 se ejercita **con dnd5e**, en la última versión estable de Foundry, y
+registra en cada pasada la versión exacta de anfitrión y sistema (ver [FOUNDRY_GUI_SMOKE.md](FOUNDRY_GUI_SMOKE.md)).
+La ruta clásica es v11.302 con dnd5e 2.3.1. El caso sin-dnd5e se prueba **aparte de ambas**, para que
+un mundo con otro sistema no vea la asistencia rota. Por tanto:
 
 - **Con actor dnd5e disponible** para el usuario: se ofrece el modo de resolución por habilidad
   (enfoques, rango de éxito, tirada real).

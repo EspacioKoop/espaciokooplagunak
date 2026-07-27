@@ -1,46 +1,77 @@
 const MODULE_ID = "espaciokoop-lagunak";
+const ESCENARIO = "scenario_90_lagunak_primera_guardia";
+
 const ARRIVAL_ID = /^arrival-s90-\d{6}$/;
+const ENCOUNTER_ID = /^encounter-started-s90-(\d{6})-(\d{6})$/;
 const REPOSITION_ID = /^ship-repositioned-s90-(\d{6})-(\d{6})-(lagunak|argia)-(\d{10})$/;
 const REPOSITION_ANCHORS = new Set(["lagunak", "argia"]);
+const ENCOUNTER_ARCHETYPES = new Set(["derelict", "patrol", "freighter", "sentry"]);
 
 function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, (character) => `&#${character.charCodeAt(0)};`);
 }
 
-function validArrival(event) {
+// Comprobaciones que todo evento del puente debe superar antes de mirar su
+// tipo. El puente publica lo que encuentra en el escenario; el módulo no se fía
+// de la forma, porque una página de diario es persistente y visible en la mesa.
+function formaComun(event) {
   return (
-    event?.type === "arrival" &&
-    typeof event.id === "string" &&
-    ARRIVAL_ID.test(event.id) &&
-    event.scenario === "scenario_90_lagunak_primera_guardia" &&
-    typeof event.destination === "string" &&
-    Number.isFinite(event.scenario_time)
+    typeof event?.id === "string" &&
+    event.scenario === ESCENARIO &&
+    Number.isFinite(event.scenario_time) &&
+    event.scenario_time >= 0
   );
 }
 
-function validReposition(event) {
-  if (
-    event?.type !== "ship_repositioned" ||
-    typeof event.id !== "string" ||
-    event.scenario !== "scenario_90_lagunak_primera_guardia" ||
-    !REPOSITION_ANCHORS.has(event.anchor) ||
-    !Number.isFinite(event.scenario_time) ||
-    event.scenario_time < 0
-  ) {
-    return false;
+// ---- Registro de tipos de evento -------------------------------------------
+//
+// Cada tipo que la bitácora sabe anotar es un descriptor con `validar` y
+// `pagina`. Añadir un evento nuevo es añadir una entrada aquí: ni el validador
+// general ni el bucle de escritura cambian. Antes esto era una cadena de `if`
+// que había que tocar entera para cada tipo, y por eso `encounter_started` —que
+// el puente lleva emitiendo desde el principio— se descartaba en silencio.
+//
+// Un tipo sin descriptor se ignora, que es el comportamiento seguro: mejor no
+// anotar un evento que escribir en el diario algo cuya forma no se ha validado.
+
+export const DESCRIPTORES = new Map();
+
+export function registrarDescriptor(descriptor) {
+  if (typeof descriptor?.tipo !== "string") {
+    throw new TypeError("registrarDescriptor requiere un tipo");
   }
-  const match = REPOSITION_ID.exec(event.id);
-  if (!match || match[3] !== event.anchor) return false;
-  return Number(match[4]) === Math.round(event.scenario_time * 10);
+  if (typeof descriptor.validar !== "function" || typeof descriptor.pagina !== "function") {
+    throw new TypeError(`descriptor ${descriptor.tipo}: faltan validar/pagina`);
+  }
+  DESCRIPTORES.set(descriptor.tipo, descriptor);
+  return descriptor;
 }
 
-function validEvent(event) {
-  return validArrival(event) || validReposition(event);
-}
+registrarDescriptor({
+  tipo: "arrival",
+  validar: (event) => ARRIVAL_ID.test(event.id) && typeof event.destination === "string",
+  pagina: (event, game, elapsed) => ({
+    title: game.i18n.format("LAGUNAK.Eventos.Llegada.Titulo", {
+      destination: event.destination,
+    }),
+    content: `<p>${game.i18n.format("LAGUNAK.Eventos.Llegada.Resumen", {
+      destination: escapeHtml(event.destination),
+      elapsed,
+    })}</p>`,
+  }),
+});
 
-function pageForEvent(event, game) {
-  const elapsed = Math.max(0, Math.round(event.scenario_time));
-  if (event.type === "ship_repositioned") {
+registrarDescriptor({
+  tipo: "ship_repositioned",
+  // El id repite ancla y tiempo; que coincidan con los campos es la prueba de
+  // que el evento viene del marcador del escenario y no de un payload cosido.
+  validar: (event) => {
+    if (!REPOSITION_ANCHORS.has(event.anchor)) return false;
+    const match = REPOSITION_ID.exec(event.id);
+    if (!match || match[3] !== event.anchor) return false;
+    return Number(match[4]) === Math.round(event.scenario_time * 10);
+  },
+  pagina: (event, game, elapsed) => {
     const anchorLabel = game.i18n.localize(`LAGUNAK.Reposicion.Ancla.${event.anchor}`);
     return {
       title: game.i18n.format("LAGUNAK.Eventos.Reposicion.Titulo", { anchor: anchorLabel }),
@@ -49,18 +80,48 @@ function pageForEvent(event, game) {
         elapsed,
       })}</p>`,
     };
-  }
+  },
+});
 
-  const destination = escapeHtml(event.destination);
-  return {
-    title: game.i18n.format("LAGUNAK.Eventos.Llegada.Titulo", {
-      destination: event.destination,
-    }),
-    content: `<p>${game.i18n.format("LAGUNAK.Eventos.Llegada.Resumen", {
-      destination,
-      elapsed,
-    })}</p>`,
-  };
+registrarDescriptor({
+  tipo: "encounter_started",
+  validar: (event) =>
+    ENCOUNTER_ID.test(event.id) &&
+    ENCOUNTER_ARCHETYPES.has(event.archetype) &&
+    typeof event.encounter_callsign === "string" &&
+    event.encounter_callsign.length > 0 &&
+    event.encounter_callsign.length <= 64,
+  pagina: (event, game, elapsed) => {
+    const archetypeLabel = game.i18n.localize(
+      `LAGUNAK.Encuentros.Arquetipo.${event.archetype}`,
+    );
+    return {
+      title: game.i18n.format("LAGUNAK.Eventos.Encuentro.Titulo", {
+        callsign: event.encounter_callsign,
+      }),
+      content: `<p>${game.i18n.format("LAGUNAK.Eventos.Encuentro.Resumen", {
+        callsign: escapeHtml(event.encounter_callsign),
+        archetype: escapeHtml(archetypeLabel),
+        elapsed,
+      })}</p>`,
+    };
+  },
+});
+
+function descriptorDe(event) {
+  if (!formaComun(event)) return null;
+  const descriptor = DESCRIPTORES.get(event?.type);
+  if (!descriptor || !descriptor.validar(event)) return null;
+  return descriptor;
+}
+
+export function validEvent(event) {
+  return descriptorDe(event) !== null;
+}
+
+function pageForEvent(event, game) {
+  const elapsed = Math.max(0, Math.round(event.scenario_time));
+  return descriptorDe(event).pagina(event, game, elapsed);
 }
 
 /**

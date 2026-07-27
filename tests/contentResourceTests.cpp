@@ -168,10 +168,11 @@ int main()
     visual_asteroid.size = 150.0f;
     visual_map.map_document.objects.push_back(visual_asteroid);
     const auto visual_json = nlohmann::json::parse(serializeContentResource(visual_map, 2));
-    expect(visual_json["version"] == 5 && visual_json["fields"]["objects"].size() == 1,
-        "map serialization writes canonical v5 resources");
+    expect(visual_json["version"] == CONTENT_RESOURCE_SCHEMA_VERSION
+            && visual_json["fields"]["objects"].size() == 1,
+        "map serialization writes the canonical resource schema");
     expect(parseJson(visual_json, parsed) == ContentResourceError::None && parsed == visual_map,
-        "v5 map object document round-trips through ContentResource");
+        "current map object document round-trips through ContentResource");
 
     auto future_visual = visual_json;
     const nlohmann::json future_object = {
@@ -181,7 +182,7 @@ int main()
     future_visual["fields"]["objects"].push_back(future_object);
     expect(parseJson(future_visual, parsed) == ContentResourceError::None
             && parsed.map_document.objects.back().kind == MapObjectKind::Unsupported,
-        "v5 resource preserves a future map object without interpreting it");
+        "current resource preserves a future map object without interpreting it");
     const auto future_reserialized = nlohmann::json::parse(serializeContentResource(parsed));
     expect(future_reserialized["fields"]["objects"].back() == future_object,
         "future object survives the complete resource round-trip");

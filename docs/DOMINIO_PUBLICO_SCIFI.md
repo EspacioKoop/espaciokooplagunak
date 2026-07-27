@@ -199,8 +199,16 @@ del mismo número de la misma revista (portada, interiores y publicidad pueden t
 estatus distintos).
 
 **Paso 0 — Identificar la pieza.** Revista, número, **fecha exacta de publicación**, **país de
-primera publicación**, **ilustrador** (con fecha de fallecimiento) y si es **portada** o **interior**.
-Si no puedes nombrar esos seis datos, la pieza no entra: se queda en ⛔.
+primera publicación**, **país de origen según Berna**, **ilustrador** (con fecha de fallecimiento),
+**nacionalidad del ilustrador** y si es **portada** o **interior**. Si no puedes nombrar esos **ocho**
+datos **con fuente**, la pieza no entra: se queda en ⛔.
+
+Los dos datos añadidos no son burocracia: son exactamente las **condiciones de aplicación** del
+art. 163 TRLPI (país de origen tercer país **y** autor no nacional de un Estado miembro). Sin ellos
+no se puede decidir si rige la comparación de plazos o el `vida+70` español, que es la diferencia
+entre «caducado» y «protegido hasta 2034». Y ojo: **país de primera publicación ≠ nacionalidad del
+autor**; una lámina publicada en EE. UU. por un ilustrador con nacionalidad de un Estado miembro
+**no** entra en el art. 163.
 
 **Paso 1 — Regla por jurisdicción.** Hay que superar **las dos**; el proyecto publica desde ES/UE,
 así que la UE manda, pero se documentan ambas:
@@ -268,9 +276,9 @@ lámina exacta.
 
 | Candidata | Fecha / país | EE. UU. | UE (vida+70 del ilustrador) | Esperado | Por qué |
 |---|---|---|---|---|---|
-| *Amazing Stories* nº 1 (abr. 1926), portada de **Frank R. Paul** | 1926, EE. UU. | ✅ DP por fecha (pre-1931) | 📝 **plazo más breve** (art. 163 TRLPI): origen EE. UU. y autor estadounidense ⇒ rige el plazo estadounidense, **ya vencido**. `vida+70` (Paul †1963 → 2034) **no** es el plazo aplicable | 📝 | Deja de ser un ⛔ automático: es **viable** si se documentan país de origen y nacionalidad del ilustrador (pasos 0 y 1). Sigue sin autorizarse hasta cerrar el protocolo |
-| Cualquier otra lámina de **Frank R. Paul** (*Amazing*, *Wonder Stories*, *Science Wonder*) | 1926–1963, EE. UU. | ✅/📝 según año (1931+ requiere renovación) | 📝 por plazo más breve; el cuello de botella pasa a ser la **renovación estadounidense** de 1931+ | 📝 | El obstáculo ya no es la UE sino EE. UU.: sin búsqueda de renovación documentada (Stanford/CCE), la pieza no pasa |
-| Portadas de *Weird Tales* de **Margaret Brundage** | 1932–1945, EE. UU. | 📝 requiere comprobar renovación (1932+) | 📝 por plazo más breve: si no hubo renovación estadounidense, el plazo español es ese. `vida+70` (Brundage †1976 → 2047) **no** aplica a una obra de origen estadounidense con autora estadounidense | 📝 | El veredicto depende **por entero** de la renovación de esa edición concreta, no de 2047 |
+| *Amazing Stories* nº 1 (abr. 1926), portada de **Frank R. Paul** | 1926, EE. UU. | ✅ DP por fecha (pre-1931) | ⛔ **nacionalidad sin acreditar**: Paul nació en Austria (hoy **Estado miembro**) y **no consta naturalización** en las fuentes consultadas. Si conservó nacionalidad austriaca, el art. 163 **no aplica** y rige `vida+70`: †1963 → **protegida hasta 2034** | ⛔ | El ⛔ ya **no** es por analogía sino por un hecho concreto que falta: acreditar la nacionalidad del ilustrador. Cerrarlo exige documento de naturalización, no una etiqueta biográfica |
+| Cualquier otra lámina de **Frank R. Paul** (*Amazing*, *Wonder Stories*, *Science Wonder*) | 1926–1963, EE. UU. | ✅/📝 según año (1931+ requiere renovación) | ⛔ mismo bloqueo de nacionalidad que la fila anterior; **si** se acreditara nacionalidad no-UE, el cuello de botella pasaría a la **renovación estadounidense** de 1931+ | ⛔ | Dos obstáculos apilados, y el de la UE es el primero. Sin resolver la nacionalidad, la búsqueda de renovación ni siquiera es necesaria |
+| Portadas de *Weird Tales* de **Margaret Brundage** | 1932–1945, EE. UU. | 📝 requiere comprobar renovación (1932+) | 📝 por plazo más breve: nacida en **Chicago** de padres nacidos en Illinois ⇒ estadounidense por *ius soli*, con origen EE. UU. ⇒ art. 163 **sí** aplica y `vida+70` (†1976 → 2047) **no** es el plazo | 📝 | Aquí la nacionalidad **sí** está acreditada por lugar de nacimiento, así que el veredicto depende **por entero** de la renovación de esa edición concreta, no de 2047 |
 | **Interiores b/n** de revistas pulp estadounidenses **anteriores a 1931** | ≤1930, EE. UU. | ✅ DP por fecha | ❓ depende del ilustrador; muchos interiores van **sin firmar** | 📝 | Única familia con recorrido real: si el interior es **anónimo o de ilustrador fallecido antes de 1956**, puede dar ✅ en ambas. **Anónimo ≠ libre**: la UE cuenta 70 años desde la publicación **solo si el autor nunca se identificó**; una atribución posterior reinicia el cálculo (dispara la reevaluación del paso 5) |
 | **Tipografías / rótulos art déco** de esas portadas | 1920–1940 | — | — | ✅ como **estilo**, ⛔ como fichero | En ES/UE el **diseño tipográfico** como tal no goza de la protección de una obra literaria, pero un **fichero de fuente** moderno sí tiene licencia propia. Vía correcta: **redibujar** los rótulos, o usar una fuente con licencia explícita que lo permita |
 | **Cabeceras/logotipos** (*Weird Tales*, *Amazing Stories*) | — | — | — | ⛔ | Marca, no copyright: no caduca mientras se use y renueve. Precautorio pendiente de TESS/EUIPO; se trata como ⛔ en cualquier caso (§4, paso 2) |
@@ -279,19 +287,54 @@ lámina exacta.
 > no-UE con autor no-UE: [TRLPI, art. 163](https://www.boe.es/buscar/act.php?id=BOE-A-1996-8930),
 > [Berna art. 7.8](https://www.wipo.int/treaties/es/text.jsp?file_id=283700) y
 > [Directiva 2006/116/CE art. 7.1](https://www.boe.es/buscar/doc.php?id=DOUE-L-2006-82676).
-> Fallecimientos de **Frank R. Paul (1963)** y **Margaret Brundage (1976)** anotados porque fijan el
-> plazo español **solo** si la obra no cae bajo la comparación de plazos; corte estadounidense de 95 años vía
+> **Fechas de fallecimiento** (LCNAF, encabezamiento autorizado):
+> [Paul, Frank R. (Frank Rudolph), 1884-1963](https://id.loc.gov/authorities/names/no2010152388) ·
+> [Brundage, Margaret, 1900-1976](https://id.loc.gov/authorities/names/no2015165442). Fijan el plazo
+> español **solo** si la obra no cae bajo la comparación de plazos.
+>
+> **Nacionalidad y país de origen** — el hecho que activa o desactiva el art. 163, y donde las dos
+> candidatas están en situación **opuesta**:
+>
+> - **Brundage: acreditada.** Nacida en **Chicago** el 9-12-1900, de padres nacidos en Illinois
+>   ([pulpartists.com](https://www.pulpartists.com/Brundage.html)) ⇒ estadounidense por *ius soli*.
+>   Con origen y autoría estadounidenses, el art. 163 aplica.
+> - **Paul: NO acreditada, y con indicio contrario.** Nació en territorio del Imperio austrohúngaro
+>   que hoy es **Austria, Estado miembro de la UE**. Las fuentes consultadas **se contradicen** en el
+>   lugar (Radkersburg en [pulpartists.com](https://www.pulpartists.com/PF.html), Viena en la
+>   [SFE](https://sf-encyclopedia.com/entry/paul_frank_r)) y en la fecha de emigración (1906 vs
+>   1908-09), y **ninguna documenta una naturalización**: pulpartists lo registra en 1910 como
+>   *«Alien with Working Papers»*, y el «American artist, born in Austria» de la SFE es una etiqueta
+>   biográfica, no una acreditación de nacionalidad legal. Mientras eso siga así, la condición del
+>   art. 163 («autor **no** nacional de un Estado miembro») **no está cumplida** y lo prudente es el
+>   `vida+70`: protegida hasta **2034**.
+>
+> Corte estadounidense de 95 años vía
 > [Duke CSPD 2026](https://web.law.duke.edu/cspd/publicdomainday/2026/) y
 > [Cornell/Hirtle](https://guides.library.cornell.edu/copyright/publicdomain); renovaciones 1931–1963 vía
 > [Stanford Copyright Renewal Database](https://exhibits.stanford.edu/copyrightrenewals). Marcas de
 > cabecera: **precautorio**, sin pull de registro en esta versión.
 
-**Conclusión operativa.** Al aplicar la regla de la UE, **casi toda lámina pulp icónica sigue
-protegida**: los ilustradores que definieron el estilo murieron demasiado tarde (Paul 1963,
-Brundage 1976). El «pre-1929/1930» estadounidense que circula como atajo **no basta** para publicar
-desde España. Por eso la vía por defecto del proyecto sigue siendo **arte propio Neo Geo inspirado**
-en los tropos, y la reproducción literal se reserva a piezas que den ✅ **también en la UE** — hoy,
-en la práctica, solo algunos interiores b/n pre-1931 sin autoría viva.
+**Conclusión operativa.** Hay que separar dos cosas que antes iban mezcladas en esta sección, y de
+ahí venía la contradicción con el apartado del art. 163:
+
+1. **Qué permite la ley.** Para una lámina de **origen no-UE y autor no nacional de un Estado
+   miembro**, el plazo español es el del país de origen: si el estadounidense ya venció, la pieza es
+   **legalmente viable** aunque el ilustrador muriera en 1976. El `vida+70` **no** rige ahí, y el
+   atajo «pre-1930 y listo» tampoco: lo que hay que documentar es el **par** origen + nacionalidad.
+2. **Qué hace el proyecto.** Aun siendo viable, la vía por defecto sigue siendo **arte propio
+   Neo Geo inspirado** en los tropos. Eso es una **decisión de producto** —el beneficio de reproducir
+   una lámina ajena es pequeño y el coste de equivocarse no—, **no** una consecuencia de la ley. No
+   se debe presentar como si la ley obligara.
+
+**Estado real de las candidatas de §4.2, que no es simétrico:** el bloqueo de las láminas de Paul
+**no** es el `vida+70` de un ilustrador que murió tarde, sino que **su nacionalidad no está
+acreditada** y hay indicio de que podría ser la de un Estado miembro —lo que desactivaría el art. 163
+y dejaría la pieza protegida hasta 2034—. El de Brundage, en cambio, es **solo** la renovación
+estadounidense de la edición concreta: su nacionalidad sí está acreditada y 2047 es irrelevante.
+
+La reproducción literal se reserva, pues, a piezas que cierren el protocolo completo: hoy, en la
+práctica, algunos interiores b/n pre-1931 sin autoría viva, y cualquier pieza cuya pareja
+origen/nacionalidad quede documentada.
 
 ---
 

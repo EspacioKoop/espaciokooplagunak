@@ -40,6 +40,21 @@ ShipEditError ShipEditSession::removeSystemOverride(ShipSystemId system)
     return commit(std::move(next));
 }
 
+ShipEditError ShipEditSession::setHullMax(float hull_max)
+{
+    auto next = current_document;
+    next.hull_max = hull_max;
+    return commit(std::move(next));
+}
+
+ShipEditError ShipEditSession::removeHullOverride()
+{
+    if (!current_document.hull_max) return ShipEditError::NotFound;
+    auto next = current_document;
+    next.hull_max.reset();
+    return commit(std::move(next));
+}
+
 ShipEditError ShipEditSession::setResourceAmount(const std::string& id, float amount)
 {
     auto next = current_document;

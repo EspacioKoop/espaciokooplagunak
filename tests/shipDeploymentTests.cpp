@@ -23,6 +23,7 @@ ContentResource validShip()
     resource.name = "Rescue One";
     resource.primary = "Phobos M3P";
     resource.secondary = "Human Navy";
+    resource.ship_document.hull_max = 250.0f;
     resource.ship_document.systems = {{ShipSystemId::Reactor, 0.5f}};
     resource.ship_document.resources = {{"energy", 800.0f}, {"coolant", 10.0f}};
     resource.ship_document.cargo = {{"medicine", 4}, {"spare-parts", 2}};
@@ -44,7 +45,8 @@ void testPlanValidation()
             == ShipDeploymentError::None,
         "valid deployment builds a plan");
     expect(plan.template_id == "Phobos M3P" && plan.faction == "Human Navy"
-            && plan.callsign == "Rescue One" && plan.fingerprint != 0,
+            && plan.callsign == "Rescue One" && plan.overrides.hull_max == 250.0f
+            && plan.fingerprint != 0,
         "plan contains the closed scalar inputs and a confirmation fingerprint");
 
     auto changed = resource;
@@ -54,6 +56,12 @@ void testPlanValidation()
             == ShipDeploymentError::None
             && changed_plan.fingerprint != plan.fingerprint,
         "document changes invalidate the plan fingerprint");
+    changed = resource;
+    changed.ship_document.hull_max = 300.0f;
+    expect(buildShipDeploymentPlan(changed, catalog(), factions, 12.0f, -4.0f, 90.0f, true, changed_plan)
+            == ShipDeploymentError::None
+            && changed_plan.fingerprint != plan.fingerprint,
+        "hull changes invalidate the exact confirmation fingerprint");
     expect(buildShipDeploymentPlan(resource, catalog(), factions, 13.0f, -4.0f, 90.0f, true, changed_plan)
             == ShipDeploymentError::None
             && changed_plan.fingerprint != plan.fingerprint,

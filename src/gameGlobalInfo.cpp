@@ -15,6 +15,7 @@
 #include "main.h"
 #include "components/contentship.h"
 #include "components/coolant.h"
+#include "components/hull.h"
 #include "components/player.h"
 #include "components/reactor.h"
 #include "components/shipsystem.h"
@@ -385,6 +386,18 @@ bool GameGlobalInfo::createContentShip(const ShipDeploymentPlan& plan, sp::ecs::
     {
         if (entity) entity.destroy();
         return false;
+    }
+
+    if (plan.overrides.hull_max)
+    {
+        auto* hull = entity.getComponent<Hull>();
+        if (!hull)
+        {
+            entity.destroy();
+            return false;
+        }
+        hull->max = *plan.overrides.hull_max;
+        hull->current = *plan.overrides.hull_max;
     }
 
     for (const auto& override_value : plan.overrides.systems)

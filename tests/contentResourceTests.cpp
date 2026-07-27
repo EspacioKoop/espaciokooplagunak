@@ -150,7 +150,7 @@ int main()
         "unknown top-level field is rejected");
 
     document = nlohmann::json::parse(compact);
-    document["version"] = 5;
+    document["version"] = 6;
     expect(parseJson(document, parsed) == ContentResourceError::UnsupportedFormatOrVersion,
         "future version is rejected");
     document["version"] = 1.0;
@@ -168,10 +168,10 @@ int main()
     visual_asteroid.size = 150.0f;
     visual_map.map_document.objects.push_back(visual_asteroid);
     const auto visual_json = nlohmann::json::parse(serializeContentResource(visual_map, 2));
-    expect(visual_json["version"] == 4 && visual_json["fields"]["objects"].size() == 1,
-        "map serialization writes canonical v4 resources");
+    expect(visual_json["version"] == 5 && visual_json["fields"]["objects"].size() == 1,
+        "map serialization writes canonical v5 resources");
     expect(parseJson(visual_json, parsed) == ContentResourceError::None && parsed == visual_map,
-        "v4 map object document round-trips through ContentResource");
+        "v5 map object document round-trips through ContentResource");
 
     auto future_visual = visual_json;
     const nlohmann::json future_object = {
@@ -181,7 +181,7 @@ int main()
     future_visual["fields"]["objects"].push_back(future_object);
     expect(parseJson(future_visual, parsed) == ContentResourceError::None
             && parsed.map_document.objects.back().kind == MapObjectKind::Unsupported,
-        "v4 resource preserves a future map object without interpreting it");
+        "v5 resource preserves a future map object without interpreting it");
     const auto future_reserialized = nlohmann::json::parse(serializeContentResource(parsed));
     expect(future_reserialized["fields"]["objects"].back() == future_object,
         "future object survives the complete resource round-trip");
@@ -193,8 +193,8 @@ int main()
             && parsed.map_document.objects.empty(),
         "v2 map migrates in memory to an empty object document");
     const auto migrated_map = nlohmann::json::parse(serializeContentResource(parsed));
-    expect(migrated_map["version"] == 4 && migrated_map["fields"]["objects"].empty(),
-        "saving a migrated map emits canonical v4");
+    expect(migrated_map["version"] == 5 && migrated_map["fields"]["objects"].empty(),
+        "saving a migrated map emits canonical v5");
 
     auto invalid_visual = visual_json;
     invalid_visual["fields"]["objects"][0]["lua"] = "Asteroid()";
@@ -214,26 +214,32 @@ int main()
     expect(validateContentResource(non_ship_with_overrides) == ContentResourceError::InvalidShipDocument,
         "non-ship resource cannot carry ship overrides");
 
-    const auto ship_v4 = nlohmann::json::parse(
+    const auto ship_v5 = nlohmann::json::parse(
         serializeContentResource(validResource(ContentResourceType::Ship), 2));
-    expect(ship_v4["version"] == 4 && ship_v4["fields"]["overrides"]["systems"].size() == 2,
-        "ship serialization writes canonical v4 overrides");
-    expect(parseJson(ship_v4, parsed) == ContentResourceError::None
+    expect(ship_v5["version"] == 5 && ship_v5["fields"]["overrides"]["systems"].size() == 2,
+        "ship serialization writes canonical v5 overrides");
+    expect(parseJson(ship_v5, parsed) == ContentResourceError::None
             && parsed == validResource(ContentResourceType::Ship),
-        "v4 ship overrides round-trip through ContentResource");
+        "v5 ship overrides round-trip through ContentResource");
 
-    auto legacy_ship = ship_v4;
+    auto legacy_ship = ship_v5;
     legacy_ship["version"] = 3;
     legacy_ship["fields"].erase("overrides");
     expect(parseJson(legacy_ship, parsed) == ContentResourceError::None
             && parsed.ship_document == ShipDocument{},
         "v3 ship migrates in memory to an empty override document");
     const auto migrated_ship = nlohmann::json::parse(serializeContentResource(parsed));
-    expect(migrated_ship["version"] == 4
+    expect(migrated_ship["version"] == 5
             && migrated_ship["fields"]["overrides"]["systems"].empty(),
-        "saving a migrated ship emits canonical v4 empty overrides");
+        "saving a migrated ship emits canonical v5 empty overrides");
 
-    auto missing_overrides = ship_v4;
+    auto ship_v4 = ship_v5;
+    ship_v4["version"] = 4;
+    ship_v4["fields"]["overrides"].erase("hull_max");
+    expect(parseJson(ship_v4, parsed) == ContentResourceError::None && !parsed.ship_document.hull_max,
+        "v4 ship overrides migrate without inventing a hull value");
+
+    auto missing_overrides = ship_v5;
     missing_overrides["fields"].erase("overrides");
     const auto output_before_invalid_ship = parsed;
     expect(parseJson(missing_overrides, parsed) == ContentResourceError::InvalidShipDocument,
@@ -241,10 +247,10 @@ int main()
     expect(parsed == output_before_invalid_ship,
         "invalid ship document does not partially mutate ContentResource output");
 
-    auto invalid_ship = ship_v4;
+    auto invalid_ship = ship_v5;
     invalid_ship["fields"]["overrides"]["systems"][0]["lua"] = "setSystemHealth()";
     expect(parseJson(invalid_ship, parsed) == ContentResourceError::InvalidShipDocument,
-        "v4 ship override rejects executable-looking extra fields");
+        "v5 ship override rejects executable-looking extra fields");
 
     document = nlohmann::json::parse(compact);
     document["type"] = "planet";

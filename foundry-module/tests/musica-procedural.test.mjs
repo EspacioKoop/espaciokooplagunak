@@ -5,7 +5,9 @@ import {
   generarPieza,
   frecuencia,
   registroParaAlerta,
+  encadenarTramos,
   REGISTROS,
+  TIMBRES,
 } from "../scripts/musica-procedural.mjs";
 
 test("misma semilla, misma pieza: la mesa oye lo mismo sin sincronizar audio", () => {
@@ -129,4 +131,91 @@ test("lo cotidiano suena más suave que la tensión", () => {
 
   // Y va despacio por defecto: es música para una mesa que está hablando.
   assert.ok(calma.bpm <= 60, `tempo demasiado vivo para acompañar: ${calma.bpm}`);
+});
+
+// ---- Instrumentos y variación ---------------------------------------------
+
+test("cada timbre es un espectro, no una muestra de audio", () => {
+  for (const [nombre, t] of Object.entries(TIMBRES)) {
+    assert.ok(Array.isArray(t.parciales) && t.parciales.length > 0, `${nombre} sin parciales`);
+    assert.equal(t.parciales[0], 1, `${nombre}: el fundamental es la referencia`);
+    assert.ok(t.ataqueMs >= 0 && t.decaimientoMs > 0, `${nombre} sin envolvente`);
+  }
+  // La madera vibra INARMÓNICA: es lo que la hace sonar a tabla y no a nota.
+  assert.ok(Array.isArray(TIMBRES.madera.inarmonicos));
+  assert.notEqual(TIMBRES.madera.inarmonicos[1], 2, "un parcial inarmónico no puede ser el doble exacto");
+  // La flauta apenas tiene segundo armónico: por eso se mezcla sin pelear.
+  assert.ok(TIMBRES.flauta.parciales[1] < 0.15);
+});
+
+test("todas las notas declaran un timbre existente", () => {
+  for (const registro of REGISTROS) {
+    for (const n of generarPieza("s", { registro, compases: 6 }).notas) {
+      assert.ok(n.timbre, `${registro}: nota sin timbre`);
+      assert.ok(TIMBRES[n.timbre], `${registro}: timbre desconocido ${n.timbre}`);
+    }
+  }
+});
+
+test("la txalaparta alterna estrictamente entre los dos ejecutantes", () => {
+  // La regla del instrumento: nunca golpea dos veces seguidas el mismo. El
+  // ritmo solo existe en el encaje de los dos, que es justo el tema del juego.
+  const { notas } = generarPieza("s", { registro: "txalaparta", compases: 8, flautas: false });
+  const turnos = [];
+  let ultimo = null;
+  for (const n of notas) {
+    if (n.voz !== ultimo) {
+      turnos.push(n.voz);
+      ultimo = n.voz;
+    }
+  }
+  for (let i = 1; i < turnos.length; i += 1) {
+    assert.notEqual(turnos[i], turnos[i - 1], "el mismo ejecutante golpeó dos turnos seguidos");
+  }
+  assert.ok(turnos.includes("ttakun") && turnos.includes("herrena"), "faltan los dos papeles");
+});
+
+test("las flautas acompañan sin competir: tarde, por debajo y con huecos", () => {
+  const pieza = generarPieza("s", { registro: "bordon", compases: 12 });
+  const flautas = pieza.notas.filter((n) => n.voz === "flauta");
+  assert.ok(flautas.length > 0, "no entraron las flautas");
+
+  // Por debajo de todo lo demás.
+  const otras = pieza.notas.filter((n) => n.voz !== "flauta");
+  const maxFlauta = Math.max(...flautas.map((n) => n.intensidad));
+  assert.ok(maxFlauta < Math.max(...otras.map((n) => n.intensidad)), "las flautas tapan la voz principal");
+
+  // No entran en el primer compás: se suman a algo que ya sonaba.
+  const compas = pieza.duracionMs / 12;
+  assert.ok(Math.min(...flautas.map((n) => n.inicioMs)) >= compas, "las flautas entran demasiado pronto");
+
+  // Y se pueden apagar del todo.
+  const sinFlautas = generarPieza("s", { registro: "bordon", compases: 12, flautas: false });
+  assert.equal(sinFlautas.notas.filter((n) => n.voz === "flauta").length, 0);
+});
+
+test("paganini corre y mahler pesa: se distinguen por el oído", () => {
+  const corre = generarPieza("s", { registro: "paganini", compases: 4 });
+  const pesa = generarPieza("s", { registro: "mahler", compases: 4 });
+  // Muchas más notas por segundo: urgencia con agencia frente a peso sin salida.
+  const densidad = (p) => p.notas.length / (p.duracionMs / 1000);
+  assert.ok(densidad(corre) > densidad(pesa) * 2, "la carrera debe ser mucho más densa");
+});
+
+test("los tramos encadenados derivan sin saltos ni repetirse", () => {
+  const cadena = encadenarTramos("mesa", { registro: "bandura", tramos: 6 });
+  assert.equal(cadena.tramos.length, 6);
+
+  const tonicas = cadena.tramos.map((t) => t.tonica);
+  assert.ok(new Set(tonicas).size > 1, "no varía: es un bucle idéntico");
+  // Pero la deriva es acotada: nunca se va de tesitura ni de carácter.
+  for (const t of tonicas) assert.ok(Math.abs(t - 57) <= 4, `tónica fuera de rango: ${t}`);
+  for (const t of cadena.tramos) assert.ok(t.bpm >= 30 && t.bpm <= 200);
+
+  // Los tramos van uno detrás de otro, sin solaparse ni dejar hueco.
+  for (let i = 1; i < cadena.tramos.length; i += 1) {
+    assert.ok(cadena.tramos[i].inicioMs > cadena.tramos[i - 1].inicioMs);
+  }
+  // Y sigue siendo determinista para toda la mesa.
+  assert.deepEqual(encadenarTramos("mesa", { registro: "bandura", tramos: 6 }), cadena);
 });

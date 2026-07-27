@@ -218,6 +218,10 @@ variantes y efectos sobre la campaña.
 
 1. Motor puro de sesión y contrato común con pruebas de identidad, revisión,
    época, nonces, desconexión, cancelación segura y espectadores.
+   **Implementado** en `foundry-module/scripts/minijuegos/sesion-motor.mjs`
+   (pruebas: `foundry-module/tests/minijuegos-sesion-motor.test.mjs`). Aloja el
+   juego por la interfaz interna de abajo, recibiéndolo como dependencia: no
+   importa ningún vertical.
 2. Motor puro de póker con vectores deterministas y pruebas de reglas.
 3. Adaptador Foundry y vistas pública/privada sin persistir secretos.
 4. Ventana clásica v11 y ApplicationV2 compartiendo el mismo modelo.

@@ -23,7 +23,9 @@ Son dos derechos **independientes** y hay que superar **los dos**:
    sistema por fecha/renovación (**término de 95 años** para obras publicadas antes de 1978:
    **en 2026 son DP las publicadas hasta 1930 inclusive** — las de 1930 entraron el 1-ene-2026;
    [Public Domain Day 2026, Duke CSPD](https://web.law.duke.edu/cspd/publicdomainday/2026/)).
-   Damos ambas cuando difieren.
+   Damos ambas cuando difieren. **Ojo:** `vida+70` no es universal en España — para una obra de
+   origen no-UE con autor no-UE rige el **plazo más breve** del país de origen (art. 163 TRLPI); esto
+   importa sobre todo en las láminas pulp, ver [§4.1](#41-protocolo-de-verificación-de-una-lámina).
 2. **Marca registrada (*trademark*).** **No caduca** mientras se use y renueve. Un personaje puede
    ser DP **como texto** y su **nombre/logo** seguir siendo marca viva (p. ej. la editorial que sigue
    vendiendo juegos con ese nombre). Marca viva ⇒ **no** uses el nombre/logo como identificador de
@@ -175,7 +177,7 @@ están en DP, pero **hay que verificar la pieza concreta**.
 
 | Fuente | Uso | Nota de verificación |
 |---|---|---|
-| Ilustraciones de **Frank R. Paul** (*Amazing Stories*, años 20–30) | ⛔ reproducir | DP en EE. UU. por fecha, pero Paul falleció en **1963** ⇒ **protegidas en la UE hasta 2034** (ver [§4.2](#42-candidatas-concretas)). Como **inspiración de estilo** (ciudades-cohete, cascos de pecera) sí es libre |
+| Ilustraciones de **Frank R. Paul** (*Amazing Stories*, años 20–30) | 📝 verificar | DP en EE. UU. por fecha; en España rige el **plazo más breve** del país de origen (art. 163 TRLPI), no `vida+70` — ver [§4.1](#41-protocolo-de-verificación-de-una-lámina) y [§4.2](#42-candidatas-concretas). Como **inspiración de estilo** (ciudades-cohete, cascos de pecera) es libre sin más |
 | Portadas de *Weird Tales*, *Amazing Stories*, *Wonder Stories* hasta 1930 | 📝 verificar | El **estilo** (tipografías art déco, colores saturados, monstruos de bug-eyed) es libre de imitar con **arte propio**; reproducir una portada concreta exige el protocolo de [§4.1](#41-protocolo-de-verificación-de-una-lámina) sobre esa edición **y su ilustrador** |
 | **Logotipos/cabeceras** de esas revistas | ⛔ | Aunque la revista sea vieja, el nombre/cabecera puede seguir siendo marca. No los copies |
 
@@ -206,12 +208,35 @@ así que la UE manda, pero se documentan ambas:
 | Jurisdicción | Regla aplicable en 2026 | Qué comprobar |
 |---|---|---|
 | **EE. UU.** (publicación estadounidense pre-1978) | Término de 95 años: **DP hasta lo publicado en 1930 inclusive**. De **1931 a 1963**, DP **solo si no se renovó** el copyright | 1926–1930 → DP por fecha, sin más. 1931–1963 → buscar renovación en el [Stanford Copyright Renewal Database](https://exhibits.stanford.edu/copyrightrenewals) y en los [Catalogs of Copyright Entries (CCE)](https://onlinebooks.library.upenn.edu/cce/). **Ausencia de renovación se documenta con la búsqueda hecha**, no se presume |
-| **UE / España** | **Vida del ilustrador + 70 años** — **independiente** de la fecha de publicación y de cualquier renovación estadounidense | Fecha de fallecimiento del **ilustrador concreto** (no del autor del relato, no de la editorial). Si murió después de **1955**, la lámina **sigue protegida en la UE en 2026** |
+| **España (obra de origen español o autor de la UE)** | **Vida del ilustrador + 70 años** | Fecha de fallecimiento del **ilustrador concreto** (no del autor del relato, no de la editorial). Si murió después de **1955**, la lámina sigue protegida en 2026 |
+| **España (obra de origen no-UE con autor no-UE)** | **Plazo del país de origen, sin exceder el español** — la *rule of the shorter term* | Es el caso típico de una lámina estadounidense de ilustrador estadounidense: si el plazo **estadounidense ya expiró**, el plazo español **es ese**, aunque el ilustrador muriera hace menos de 70 años |
 
-> **Política de jurisdicción:** cuando dos jurisdicciones discrepan, **se aplica siempre la más
-> restrictiva**. Un ✅ estadounidense con protección viva en la UE es un ⛔ para este proyecto.
-> Otros países (p. ej. plazos vida+50, o *rule of the shorter term*) pueden dar resultados distintos;
-> no se consideran habilitantes, solo pueden empeorar el veredicto, nunca mejorarlo.
+**España sí aplica la comparación de plazos.** Es un error tratar `vida+70` como si rigiera siempre:
+el TRLPI ([RDL 1/1996](https://www.boe.es/buscar/act.php?id=BOE-A-1996-8930), art. 163) protege las
+obras cuyo país de origen según Berna es un tercer país, y cuyo autor no es nacional de un Estado
+miembro, **por el plazo del país de origen sin exceder el español** — la facultad que el
+[Convenio de Berna, art. 7.8](https://www.wipo.int/treaties/es/text.jsp?file_id=283700) reconoce y que
+el art. 7.1 de la [Directiva 2006/116/CE](https://www.boe.es/buscar/doc.php?id=DOUE-L-2006-82676)
+generaliza para la UE. Decir que la regla «solo puede empeorar el veredicto, nunca mejorarlo» es
+justamente lo contrario de lo que hace en este caso.
+
+> **Consecuencia práctica:** para una lámina **estadounidense de ilustrador estadounidense** cuyo
+> término de 95 años ya venció, el plazo aplicable en España es el estadounidense — es decir,
+> **caducado** — con independencia de que el ilustrador falleciera en 1963 o en 1976.
+
+**Política de jurisdicción del proyecto.** Aun así, el veredicto por defecto de las candidatas de
+§4.2 sigue siendo ⛔, y esto ahora es una **decisión deliberada**, no una lectura de la ley:
+
+1. Aplicar la comparación de plazos exige fijar el **país de origen según Berna** y la **nacionalidad
+   del ilustrador** con evidencia, no por presunción — y en las revistas pulp la autoría de portada
+   está mal documentada con frecuencia.
+2. La vía del proyecto es **arte propio Neo Geo**, así que el beneficio de reproducir una lámina
+   ajena es pequeño y el coste de equivocarse, no.
+3. Si en algún momento interesa una pieza concreta, la regla del plazo más breve la hace **viable**:
+   se documenta origen, nacionalidad y expiración estadounidense en la fila de §4.2, y el estado sube
+   a ✅ por la vía correcta en vez de por analogía.
+
+Cuando el análisis quede realmente indeterminado, se aplica la lectura más restrictiva.
 
 **Paso 2 — Recorte sin cabecera ni marca.** Aunque la ilustración sea DP, la **cabecera/logotipo** de
 la revista puede ser marca viva (`⛔` en la tabla §4). Si la pieza se acepta, se usa **recortada**:
@@ -243,15 +268,19 @@ lámina exacta.
 
 | Candidata | Fecha / país | EE. UU. | UE (vida+70 del ilustrador) | Esperado | Por qué |
 |---|---|---|---|---|---|
-| *Amazing Stories* nº 1 (abr. 1926), portada de **Frank R. Paul** | 1926, EE. UU. | ✅ DP por fecha (pre-1931) | ⛔ Paul falleció en **1963** → protegida hasta el **31-dic-2033** (DP el 1-ene-2034) | ⛔ | Caso testigo del choque de jurisdicciones: DP estadounidense claro, **protegida en la UE** durante otros ~8 años. Publicamos desde ES/UE ⇒ manda la UE |
-| Cualquier otra lámina de **Frank R. Paul** (*Amazing*, *Wonder Stories*, *Science Wonder*) | 1926–1963, EE. UU. | ✅/📝 según año (1931+ requiere renovación) | ⛔ hasta el **1-ene-2034** | ⛔ | Mismo motivo: el ilustrador es el mismo. Ninguna lámina de Paul es reproducible en la UE en 2026 |
-| Portadas de *Weird Tales* de **Margaret Brundage** | 1932–1945, EE. UU. | 📝 requiere comprobar renovación (1932+) | ⛔ falleció en **1976** → protegida hasta el **31-dic-2046** (DP el 1-ene-2047) | ⛔ | Reproducción descartada hasta 2047. El *tropo* (mujer en peligro, paleta pastel, pastel sobre cartón) sí es imitable con arte propio |
+| *Amazing Stories* nº 1 (abr. 1926), portada de **Frank R. Paul** | 1926, EE. UU. | ✅ DP por fecha (pre-1931) | 📝 **plazo más breve** (art. 163 TRLPI): origen EE. UU. y autor estadounidense ⇒ rige el plazo estadounidense, **ya vencido**. `vida+70` (Paul †1963 → 2034) **no** es el plazo aplicable | 📝 | Deja de ser un ⛔ automático: es **viable** si se documentan país de origen y nacionalidad del ilustrador (pasos 0 y 1). Sigue sin autorizarse hasta cerrar el protocolo |
+| Cualquier otra lámina de **Frank R. Paul** (*Amazing*, *Wonder Stories*, *Science Wonder*) | 1926–1963, EE. UU. | ✅/📝 según año (1931+ requiere renovación) | 📝 por plazo más breve; el cuello de botella pasa a ser la **renovación estadounidense** de 1931+ | 📝 | El obstáculo ya no es la UE sino EE. UU.: sin búsqueda de renovación documentada (Stanford/CCE), la pieza no pasa |
+| Portadas de *Weird Tales* de **Margaret Brundage** | 1932–1945, EE. UU. | 📝 requiere comprobar renovación (1932+) | 📝 por plazo más breve: si no hubo renovación estadounidense, el plazo español es ese. `vida+70` (Brundage †1976 → 2047) **no** aplica a una obra de origen estadounidense con autora estadounidense | 📝 | El veredicto depende **por entero** de la renovación de esa edición concreta, no de 2047 |
 | **Interiores b/n** de revistas pulp estadounidenses **anteriores a 1931** | ≤1930, EE. UU. | ✅ DP por fecha | ❓ depende del ilustrador; muchos interiores van **sin firmar** | 📝 | Única familia con recorrido real: si el interior es **anónimo o de ilustrador fallecido antes de 1956**, puede dar ✅ en ambas. **Anónimo ≠ libre**: la UE cuenta 70 años desde la publicación **solo si el autor nunca se identificó**; una atribución posterior reinicia el cálculo (dispara la reevaluación del paso 5) |
 | **Tipografías / rótulos art déco** de esas portadas | 1920–1940 | — | — | ✅ como **estilo**, ⛔ como fichero | En ES/UE el **diseño tipográfico** como tal no goza de la protección de una obra literaria, pero un **fichero de fuente** moderno sí tiene licencia propia. Vía correcta: **redibujar** los rótulos, o usar una fuente con licencia explícita que lo permita |
 | **Cabeceras/logotipos** (*Weird Tales*, *Amazing Stories*) | — | — | — | ⛔ | Marca, no copyright: no caduca mientras se use y renueve. Precautorio pendiente de TESS/EUIPO; se trata como ⛔ en cualquier caso (§4, paso 2) |
 
-> **Fuente/verificación (consulta 2026-07-27):** fallecimientos de **Frank R. Paul (1963)** y
-> **Margaret Brundage (1976)** cruzados con UE vida+70; corte estadounidense de 95 años vía
+> **Fuente/verificación (consulta 2026-07-27):** regla del **plazo más breve** para obras de origen
+> no-UE con autor no-UE: [TRLPI, art. 163](https://www.boe.es/buscar/act.php?id=BOE-A-1996-8930),
+> [Berna art. 7.8](https://www.wipo.int/treaties/es/text.jsp?file_id=283700) y
+> [Directiva 2006/116/CE art. 7.1](https://www.boe.es/buscar/doc.php?id=DOUE-L-2006-82676).
+> Fallecimientos de **Frank R. Paul (1963)** y **Margaret Brundage (1976)** anotados porque fijan el
+> plazo español **solo** si la obra no cae bajo la comparación de plazos; corte estadounidense de 95 años vía
 > [Duke CSPD 2026](https://web.law.duke.edu/cspd/publicdomainday/2026/) y
 > [Cornell/Hirtle](https://guides.library.cornell.edu/copyright/publicdomain); renovaciones 1931–1963 vía
 > [Stanford Copyright Renewal Database](https://exhibits.stanford.edu/copyrightrenewals). Marcas de

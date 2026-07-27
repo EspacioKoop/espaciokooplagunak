@@ -45,15 +45,44 @@ def leer_pool(ruta: Path) -> dict[str, list[str]]:
     return pools
 
 
-def nombres_del_catalogo(ruta: Path) -> set[str]:
-    """Every word-ish token of the catalogue, folded, for literal lookup.
+# A catalogue row authorises forms only when its Uso column says ✅. The other
+# markers are the opposite of an authorisation: 📝 ships the idea but *not* the
+# exact name, and ⛔ is an explicit discard.
+AUTORIZA = "\u2705"  # ✅
+PROHIBE = ("\U0001F4DD", "\u26D4")  # 📝 ⛔
+# Authorised forms are written in bold inside the row. Their column is not
+# fixed: the source tables put them last, the toponym tables put them first.
+NEGRITA = re.compile(r"\*\*(.+?)\*\*")
 
-    Deliberately generous on the catalogue side and strict on the pool side: the
-    point is to catch a name that appears *nowhere* in the evidence document,
-    not to parse Markdown tables exactly.
+
+def filas_autorizadas(texto: str) -> list[str]:
+    """Table rows whose Uso column authorises the forms they carry."""
+    filas = []
+    for linea in texto.splitlines():
+        recortada = linea.strip()
+        if not recortada.startswith("|"):
+            continue
+        if AUTORIZA not in recortada or any(m in recortada for m in PROHIBE):
+            continue
+        filas.append(recortada)
+    return filas
+
+
+def nombres_del_catalogo(ruta: Path) -> set[str]:
+    """Folded tokens of the forms this catalogue actually authorises.
+
+    Only bold spans of rows marked ✅ count. Tokenising the whole document —as
+    an earlier version did— also swallowed names the catalogue lists in order to
+    *forbid* them (the discard list, the 📝 rows, the prose warnings), so a name
+    the evidence explicitly rejects would sail through the gate: exactly the rot
+    this checker exists to prevent.
     """
     texto = sin_tildes(ruta.read_text(encoding="utf-8"))
-    return {palabra.casefold() for palabra in re.findall(r"[A-Za-z']+", texto)}
+    tokens: set[str] = set()
+    for fila in filas_autorizadas(texto):
+        for forma in NEGRITA.findall(fila):
+            tokens.update(palabra.casefold() for palabra in re.findall(r"[A-Za-z']+", forma))
+    return tokens
 
 
 def comprobar(pool: Path = POOL, catalogo: Path = CATALOGUE) -> list[str]:
@@ -64,8 +93,10 @@ def comprobar(pool: Path = POOL, catalogo: Path = CATALOGUE) -> list[str]:
         for nombre in nombres:
             if sin_tildes(nombre).casefold() not in conocidos:
                 fallos.append(
-                    f"{tema}: «{nombre}» no aparece en {catalogo.name}. "
-                    "Añádelo a la fila que lo respalda o retíralo del pool."
+                    f"{tema}: «{nombre}» no está autorizado por {catalogo.name}. "
+                    "Debe figurar en negrita en una fila marcada ✅; aparecer en "
+                    "un descarte, en una fila 📝/⛔ o en la prosa no basta. "
+                    "Añade la fila que lo respalde o retíralo del pool."
                 )
     return fallos
 

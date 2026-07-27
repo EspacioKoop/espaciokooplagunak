@@ -2,6 +2,7 @@ import {
   AJUSTE_SESION,
   FLAG_PROPUESTA,
   aceptarVistaPrivada,
+  adoptarSesionPublicada,
   construirPropuesta,
   despacharCambioDeUsuario,
 } from "./minijuegos/adaptador-sesion.mjs";
@@ -57,6 +58,33 @@ function esCoordinador() {
   return game.user === game.users?.activeGM;
 }
 
+// Relevo real del coordinador. El motor sabe hacer el relevo, pero alguien tiene
+// que detectar que toca hacerlo: si el GM que coordinaba se marcha, `activeGM`
+// pasa a otro cliente cuya `sesionViva` es null, y sin esto descartaría todas
+// las propuestas por «no hay sesión» mientras el ajuste público sigue congelado
+// con la época y la mano del anterior.
+//
+// Se ejecuta al arrancar y en cada cambio de conexión. Es idempotente: solo
+// actúa el GM activo, y solo cuando el estado público dice que coordinaba otro.
+function asegurarCoordinacion() {
+  if (!moduloConfigurado || !esCoordinador()) return null;
+  const miId = game.user?.id;
+  if (!miId) return null;
+  // Ya coordino y conservo los secretos: no hay nada que relevar.
+  if (sesionViva?.publico?.coordinadorId === miId) return null;
+  const publico = game.settings.get(moduloConfigurado, AJUSTE_SESION);
+  if (!publico || publico.coordinadorId === miId) return null;
+
+  const adopcion = adoptarSesionPublicada({ publico, coordinadorId: miId });
+  if (!adopcion) return null;
+  sesionViva = adopcion.sesion;
+  game.settings.set(moduloConfigurado, AJUSTE_SESION, adopcion.publico);
+  // La mano cancelada se anuncia para que la UI (paso 4) pueda explicar por qué
+  // la mesa volvió al estado previo al reparto.
+  Hooks.callAll("lagunakMinijuegoRelevoCoordinador", adopcion.publico);
+  return adopcion.publico;
+}
+
 export function registrarSesionesMinijuegos(moduleId) {
   moduloConfigurado = moduleId;
   desregistrar();
@@ -75,7 +103,18 @@ export function registrarSesionesMinijuegos(moduleId) {
   escuchas.push(() => game.socket?.off?.(canalSocket(moduleId), receptor));
 
   if (game.user?.isGM) {
+    // Un GM puede pasar a ser el activo sin recargar la página: se comprueba al
+    // registrar y en cada conexión o desconexión.
+    asegurarCoordinacion();
+    const alCambiarConexion = () => asegurarCoordinacion();
+    Hooks.on("userConnected", alCambiarConexion);
+    escuchas.push(() => Hooks.off("userConnected", alCambiarConexion));
+
     const alCambiarUsuario = (userDoc, changes) => {
+      // Red de seguridad: si el relevo no se detectó por conexión (p. ej. el GM
+      // anterior sigue conectado pero dejó de ser el activo), se resuelve antes
+      // de procesar la propuesta en vez de descartarla.
+      asegurarCoordinacion();
       const resultado = despacharCambioDeUsuario({
         userDoc,
         changes,

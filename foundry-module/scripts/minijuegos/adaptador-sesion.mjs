@@ -15,7 +15,12 @@
 // se escriben en el estado compartido. Como dice el contrato, esto es
 // privacidad de interfaz, no secreto criptográfico frente a un cliente hostil.
 
-import { aplicar, vistaPublicaSesion, vistaPrivadaSesion } from "./sesion-motor.mjs";
+import {
+  aplicar,
+  sustituirCoordinador,
+  vistaPublicaSesion,
+  vistaPrivadaSesion,
+} from "./sesion-motor.mjs";
 
 // Flag donde el participante deja su propuesta, en su propio documento User.
 export const FLAG_PROPUESTA = "minijuegoPropuesta";
@@ -138,6 +143,38 @@ export function despacharCambioDeUsuario({
     }
   }
   return resultado;
+}
+
+// ---- Relevo de coordinador ------------------------------------------------
+
+// Adopción de una mesa cuyo coordinador anterior ya no coordina. El GM que toma
+// el relevo NO tiene la sesión viva: los secretos (semilla, mazo, manos) solo
+// existían en la memoria del anterior y se han perdido. Lo único disponible es
+// el estado público del ajuste de mundo.
+//
+// Por eso la adopción reconstruye la sesión con `privado` vacío y delega en
+// `sustituirCoordinador`, que es quien cumple el contrato: sube la época
+// —invalidando los sobres en vuelo del coordinador anterior—, cancela la mano
+// en curso y restaura el checkpoint previo al reparto. No se reanuda ninguna
+// mano: sin semilla no hay forma honesta de continuar la que estaba a medias.
+//
+// Devuelve null si no hay estado público adoptable o si ya coordinaba este
+// mismo usuario, para que el cableado no republique sin motivo.
+export function adoptarSesionPublicada({ publico, coordinadorId }) {
+  if (!publico || typeof publico !== "object" || typeof publico.id !== "string") return null;
+  if (typeof coordinadorId !== "string" || !coordinadorId) return null;
+  if (publico.fase === "terminada") return null;
+  const sesion = {
+    publico: structuredClone(publico),
+    privado: {
+      epocaCoordinador: publico.epocaCoordinador ?? 0,
+      semilla: null,
+      estadoJuego: null,
+      nonces: [],
+    },
+  };
+  const adoptada = sustituirCoordinador(sesion, { coordinadorId });
+  return { sesion: adoptada, publico: vistaPublicaSesion(adoptada) };
 }
 
 // ---- Lado receptor --------------------------------------------------------

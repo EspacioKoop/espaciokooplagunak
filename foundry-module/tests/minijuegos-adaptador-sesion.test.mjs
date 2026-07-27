@@ -9,6 +9,7 @@ import {
   procesarPropuesta,
   vistasPrivadas,
   despacharCambioDeUsuario,
+  adoptarSesionPublicada,
   aceptarVistaPrivada,
 } from "../scripts/minijuegos/adaptador-sesion.mjs";
 
@@ -276,4 +277,94 @@ test("un cliente descarta la vista privada que no va dirigida a él", () => {
   assert.equal(aceptarVistaPrivada({ destinatarioId: "u1", userId: "u1" }), true);
   assert.equal(aceptarVistaPrivada({ destinatarioId: "u2", userId: "u1" }), false);
   assert.equal(aceptarVistaPrivada({ destinatarioId: undefined, userId: "u1" }), false);
+});
+
+// ---- Relevo de coordinador -------------------------------------------------
+// El GM que toma el relevo solo dispone del estado público: los secretos vivían
+// en la memoria del anterior. Estas pruebas fijan lo que el contrato promete.
+
+test("adoptar el estado público sube la época e invalida los sobres en vuelo", () => {
+  let sesion = sesionConDos();
+  const publicado = vistaPublicaSesion(sesion);
+
+  const adopcion = adoptarSesionPublicada({ publico: publicado, coordinadorId: "gm2" });
+  assert.equal(adopcion.publico.coordinadorId, "gm2");
+  assert.equal(adopcion.publico.epocaCoordinador, publicado.epocaCoordinador + 1);
+
+  // Un sobre construido contra la época anterior ya no se aplica.
+  const viejo = construirPropuesta({ publico: publicado, tipo: "start", nonce: nonce() });
+  const res = aplicar(adopcion.sesion, {
+    sobre: viejo,
+    actorId: "gm",
+    juego: juegoFalso,
+    semilla: 10,
+  });
+  assert.equal(res.ok, false);
+  assert.equal(res.codigo, "epoca_obsoleta");
+});
+
+test("el relevo cancela la mano en curso y restaura el checkpoint", () => {
+  let sesion = sesionConDos();
+  const arrancar = construirPropuesta({
+    publico: vistaPublicaSesion(sesion),
+    tipo: "start",
+    nonce: nonce(),
+  });
+  sesion = aplicar(sesion, { sobre: arrancar, actorId: "gm", juego: juegoFalso, semilla: 10 }).sesion;
+  assert.equal(sesion.publico.manoEnCurso, true);
+
+  const adopcion = adoptarSesionPublicada({
+    publico: vistaPublicaSesion(sesion),
+    coordinadorId: "gm2",
+  });
+  assert.equal(adopcion.publico.manoEnCurso, false);
+  assert.equal(adopcion.publico.manoCancelada, true);
+  assert.equal(adopcion.publico.juegoPublico, null);
+  // Sin semilla no se reanuda nada: el privado queda limpio.
+  assert.equal(adopcion.sesion.privado.semilla, null);
+  assert.equal(adopcion.sesion.privado.estadoJuego, null);
+  assert.deepEqual(adopcion.sesion.privado.nonces, []);
+  // Los asientos sobreviven a la cancelación.
+  assert.deepEqual(
+    adopcion.publico.jugadores.map((j) => j.userId),
+    ["u1", "u2"],
+  );
+});
+
+test("la adopción no publica nada cuando no hay mesa adoptable", () => {
+  assert.equal(adoptarSesionPublicada({ publico: null, coordinadorId: "gm2" }), null);
+  assert.equal(adoptarSesionPublicada({ publico: { id: "mesa" }, coordinadorId: "" }), null);
+  const terminada = { ...vistaPublicaSesion(sesionConDos()), fase: "terminada" };
+  assert.equal(adoptarSesionPublicada({ publico: terminada, coordinadorId: "gm2" }), null);
+});
+
+test("tras el relevo el nuevo coordinador ya procesa propuestas", () => {
+  const sesion = sesionConDos();
+  const adopcion = adoptarSesionPublicada({
+    publico: vistaPublicaSesion(sesion),
+    coordinadorId: "gm2",
+  });
+  let viva = adopcion.sesion;
+  let publicado = null;
+
+  const sobre = construirPropuesta({
+    publico: adopcion.publico,
+    tipo: "start",
+    nonce: nonce(),
+  });
+  const resultado = despacharCambioDeUsuario({
+    userDoc: { id: "gm2" },
+    changes: cambioConPropuesta(sobre),
+    moduleId: MODULO,
+    obtenerSesion: () => viva,
+    puedeCoordinar: () => true,
+    juego: juegoFalso,
+    semillaNueva: () => 77,
+    publicar: (publico) => {
+      publicado = publico;
+    },
+  });
+  assert.equal(resultado.ok, true);
+  assert.equal(publicado.manoEnCurso, true);
+  assert.equal(publicado.coordinadorId, "gm2");
 });

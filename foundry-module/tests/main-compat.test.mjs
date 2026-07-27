@@ -141,13 +141,31 @@ test("updateUser revoca el token y cierra la ventana si el usuario local deja de
   assert.equal(tokenSession.getBridgeToken(), "test-token");
 
   game.user.isGM = false;
-  hooks.updateUser({ id: "local-user", isGM: false });
+  hooks.updateUser({ id: "local-user", isGM: false }, { role: 1 });
   await Promise.resolve();
 
   assert.equal(tokenSession.getBridgeToken(), "");
   assert.equal(app.rendered, false);
   game.user.isGM = true;
   assert.equal(tokenSession.getBridgeToken(), "");
+});
+
+test("un updateUser sin cambio de rol (cambiar de puesto) no revoca nada", async () => {
+  const { hooks, tokenSession, instances } = await loadModule();
+  const controls = [{ name: "token", tools: [] }];
+  hooks.getSceneControlButtons(controls);
+  await toolByName(controls, "lagunak-token").onClick();
+  const app = instances[0];
+  assert.equal(app.rendered, true);
+
+  // Cambiar de puesto escribe un flag: updateUser SIN "role" en el diff.
+  // Antes esto revocaba y cerraba las consolas de cualquier no-GM en plena
+  // sesión (ventana en blanco hasta recargar).
+  hooks.updateUser({ id: "local-user", isGM: true }, { flags: { puesto: "navigation" } });
+  await Promise.resolve();
+
+  assert.equal(tokenSession.getBridgeToken(), "test-token");
+  assert.equal(app.rendered, true);
 });
 
 test("degradar durante healthz cierra la vista y no inicia peticiones autenticadas", async () => {
@@ -171,7 +189,7 @@ test("degradar durante healthz cierra la vista y no inicia peticiones autenticad
   assert.match(fetchCalls[0][0], /\/healthz$/);
 
   game.user.isGM = false;
-  hooks.updateUser({ id: "local-user", isGM: false });
+  hooks.updateUser({ id: "local-user", isGM: false }, { role: 1 });
   await Promise.resolve();
   finishHealth({ ok: true, status: 200, async json() { return { ok: true }; } });
   await new Promise((resolve) => setImmediate(resolve));
@@ -200,7 +218,7 @@ test("degradar cierra y vacía estado, mapa y workspace abiertos", async () => {
   instances[2].statePayload = { ship: { callsign: "Workspace" } };
 
   game.user.isGM = false;
-  hooks.updateUser({ id: "local-user", isGM: false });
+  hooks.updateUser({ id: "local-user", isGM: false }, { role: 1 });
   await new Promise((resolve) => setImmediate(resolve));
 
   assert.deepEqual(instances.map((app) => app.rendered), [false, false, false]);
@@ -453,7 +471,7 @@ test("v11: un ACK tardío de encuentro tras revocar el rol GM no notifica ni rep
 
   // El rol se pierde con la orden en vuelo.
   game.user.isGM = false;
-  hooks.updateUser({ id: "local-user", isGM: false });
+  hooks.updateUser({ id: "local-user", isGM: false }, { role: 1 });
   await Promise.resolve();
 
   // El ACK privilegiado llega tarde.
@@ -481,7 +499,7 @@ test("ApplicationV2: un ACK tardío de encuentro tras revocar el rol GM no notif
   const rendersPrevios = app.renderCalls.length;
 
   game.user.isGM = false;
-  hooks.updateUser({ id: "local-user", isGM: false });
+  hooks.updateUser({ id: "local-user", isGM: false }, { role: 1 });
   await Promise.resolve();
 
   resolver({ op: "spawn_encounter", result: { ok: true } });

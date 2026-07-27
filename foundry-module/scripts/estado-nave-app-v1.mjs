@@ -17,6 +17,7 @@ import {
   prepararVistaEncuentros,
 } from "./encuentro-control.mjs";
 import { anotarAlertas, derivarAlertas } from "./alertas-nave.mjs";
+import { publicarNivelAlerta } from "./alerta-escena.mjs";
 import { prepararVistaPausa } from "./pausa-control.mjs";
 import {
   ajustarPotencia,
@@ -134,6 +135,11 @@ export function crearClaseV1() {
           ui,
           sigueVigente: () => !this.bridgeAccessRevoked && Boolean(game.user?.isGM),
         });
+        // Nivel sostenido para toda la mesa. Va después de las alertas de
+        // flanco y es independiente de ellas: aquellas anotan el instante del
+        // cruce, esto describe cómo está la nave mientras dura.
+        await publicarNivelAlerta({ moduleId: MODULE_ID, nave: estado?.ship ?? null });
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
         if (this.bridgeAccessRevoked || !game.user?.isGM) return;
         // El catálogo es estático en el puente: se lee una vez por apertura.
         if (this.catalogoEncuentros === null) {

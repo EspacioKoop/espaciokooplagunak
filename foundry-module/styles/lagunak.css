@@ -362,3 +362,54 @@
     animation: none !important;
   }
 }
+
+/*
+ * Nivel de alerta de la nave como estado visual de la mesa (alerta-escena.mjs).
+ * Se pinta un borde interior sobre el viewport, NO un velo sobre el tablero:
+ * teñir la escena entera bajaría el contraste de tokens y texto justo cuando
+ * más falta hace leerlos. pointer-events:none para no robar clics al canvas.
+ *
+ * El color no es el único canal: el módulo también escribe el motivo en la
+ * ventana de estado, para no comunicar por color en solitario.
+ */
+.lagunak-alerta-amarilla::after,
+.lagunak-alerta-roja::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  border: 6px solid transparent;
+}
+
+.lagunak-alerta-amarilla::after {
+  border-color: rgba(226, 170, 40, 0.55);
+  box-shadow: inset 0 0 34px rgba(226, 170, 40, 0.28);
+}
+
+.lagunak-alerta-roja::after {
+  border-color: rgba(209, 73, 91, 0.72);
+  box-shadow: inset 0 0 46px rgba(209, 73, 91, 0.4);
+  animation: lagunak-alerta-latido 2.4s ease-in-out infinite;
+}
+
+@keyframes lagunak-alerta-latido {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+/*
+ * Accesibilidad (misma disciplina que #227): bajo prefers-reduced-motion se
+ * detiene el latido. El borde rojo permanece, así que la alerta se sigue
+ * comunicando sin movimiento.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .lagunak-alerta-roja::after {
+    animation: none;
+  }
+}

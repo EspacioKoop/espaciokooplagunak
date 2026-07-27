@@ -105,11 +105,13 @@ flowchart TB
         mapa["mapa-render.mjs<br/>mapa vivo con contactos"]
         tempo["tempo-control.mjs<br/>pausa/reanudación"]
         journal["event-journal.mjs<br/>Journal deduplicado por eventId"]
+        alerta["nivel-alerta.mjs / alerta-escena.mjs<br/>nivel sostenido con histéresis;<br/>ajuste de mundo → toda la mesa"]
         client["bridge-client.mjs<br/>cliente HTTP: polling, token, errores"]
         ship --> client
         mapa --> client
         tempo --> client
         journal --> client
+        ship --> alerta
     end
     subgraph puente["Puente de integración (bridge/app.py)"]
         api["API v1 (FastAPI)<br/>/healthz · /v1/state · /v1/scenario<br/>/v1/events · /v1/contacts · /v1/command"]
@@ -123,6 +125,28 @@ flowchart TB
     client -->|"HTTP + Bearer"| api
     runlua -->|"POST /exec.lua"| game["Servidor headless"]
 ```
+
+## Nivel de alerta: lo único que ven todos los clientes
+
+Casi todo el módulo es asimétrico —solo el navegador del GM tiene token y habla
+con el puente—, con una excepción deliberada: el **nivel de alerta de la nave**
+(verde / amarilla / roja).
+
+- Lo **deriva** `nivel-alerta.mjs` del mismo `/v1/state` que el GM ya sondea.
+  Es lógica pura, con **histéresis**: se entra en un nivel con un umbral y solo
+  se sale con otro más holgado, para que una nave oscilando en el borde no haga
+  parpadear la pantalla en cada sondeo.
+- Lo **publica** el GM en un ajuste de mundo, y solo cuando cambia.
+- Lo **lee** cualquier cliente y lo aplica como un borde de aviso sobre el
+  viewport. Al ser un ajuste de mundo, un jugador que se conecta tarde ve la
+  alerta vigente sin esperar al siguiente sondeo.
+
+No es una fuga de información oculta: una tripulación sabe perfectamente que su
+propia nave está en alerta roja. Tampoco toca ningún documento de escena — es
+una capa de presentación, así que volver a verde no deja nada que limpiar.
+Se distingue de `alertas-nave.mjs`, que detecta **flancos** (el instante del
+cruce) y los anota una vez en la bitácora; esto describe el estado **mientras
+dura**.
 
 ## Flujo de datos — polling y una orden
 

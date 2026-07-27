@@ -83,6 +83,12 @@ la hoja (p. ej. un mago que usa *Reparar*/*Prestidigitación* o *Detectar magia*
 ingeniería o sensores; un pícaro que aplica *Pericia*; un clérigo un rasgo de canalizar divinidad de
 color). Esto refuerza la identidad de clase y da variedad de caminos por personaje.
 
+Ahora bien, **no todos los enfoques se resuelven igual**, y meterlos a todos en un único
+`d20 + modificador vs CD` sería inventar reglas que dnd5e no tiene: muchos hechizos no piden ninguna
+prueba a quien los lanza. Por eso el contrato distingue **tres clases de enfoque**; cada tarea declara
+a cuál pertenece cada uno de los suyos (ver «Tres clases de enfoque» más abajo, que fija para cada una
+quién tira, cuándo se consume el recurso y cómo se produce la banda).
+
 Dos matices de diseño, porque los hechizos y rasgos **sí consumen recursos reales** de la hoja:
 
 - **Coste de recurso = decisión con gate del GM.** Gastar un **espacio de conjuro** o un **uso limitado**
@@ -98,17 +104,49 @@ Dos matices de diseño, porque los hechizos y rasgos **sí consumen recursos rea
 
 Enfoques sin coste (habilidad a secas, truco/*cantrip* a voluntad) quedan siempre disponibles; los de
 coste se ofrecen como **opción de más potencia** cuando el jugador quiere invertir un recurso propio.
-Un enfoque de hechizo declara su **CD, tirada (de característica o de salvación del objetivo) y coste**,
-y el «rango de éxito» los muestra antes de comprometerse, incluido el recurso que se gastará.
+
+### Tres clases de enfoque
+Cada enfoque declara su **clase de resolución**. La clase determina **quién tira**, **cuándo se
+consume el recurso** y **cómo se produce la banda**. Un enfoque que no encaje en ninguna de las tres
+no es declarable: no hay cuarta vía improvisada.
+
+| Clase | Quién tira | Contra qué | Cuándo se consume el recurso | Cómo produce la banda |
+|---|---|---|---|---|
+| **(a) Prueba de habilidad o de herramienta** | el **ayudante** | CD declarada por la tarea | no hay recurso que gastar | margen de `d20 + modificador` frente a la CD |
+| **(b) Ataque de conjuro o salvación** | ataque: el **ayudante**; salvación: el **objetivo** declarado por la tarea | ataque: CA del objetivo; salvación: CD de salvación del lanzador | **al lanzar**, antes de conocer el resultado (economía 5e) | margen de la tirada relevante frente a CA/CD |
+| **(c) Uso sin tirada** | nadie tira | — | **al lanzar/activar** | banda **fija** que la tarea declara para ese enfoque |
+
+Notas que fijan el contrato y evitan reinterpretaciones:
+
+- **(b) solo es declarable si la tarea define un objetivo concreto** con CA o que haga la salvación.
+  Una tarea de asistencia sin objetivo (estabilizar un sistema, leer un contacto) **no** puede
+  ofrecer enfoques de clase (b): usaría un `d20 vs CD` que 5e no pide ahí. En ese caso el hechizo
+  entra por (c), o no entra.
+- En **(b) por salvación, quien tira es el objetivo, no el ayudante**, y un éxito en la salvación es
+  el **fallo** del enfoque. La UI lo dice con esas palabras, porque la lectura intuitiva es la
+  contraria.
+- En **(c) la banda es fija y la declara la tarea**; por diseño nunca es «éxito crítico»: un efecto
+  garantizado no compra además el tier alto. Es la vía de *Reparar*, *Prestidigitación* o un rasgo que
+  simplemente funciona.
+- El **recurso se consume en (b) y (c) al comprometerse**, no al conocer el resultado. Un ataque
+  fallado o una salvación superada **gastan igual** el espacio de conjuro: así funciona 5e y así debe
+  contabilizarlo el adaptador. La UI advierte del gasto antes de confirmar.
+- La clase (a) es la **única** que existe siempre; (b) y (c) requieren el opt-in del GM descrito
+  arriba, porque tocan recursos reales de campaña.
 
 ### «Ver el rango de éxito» antes de comprometerse
-Al elegir un enfoque, la UI muestra el **rango de éxito previsto** para *esa* habilidad del personaje,
-calculado del modificador total de su hoja frente a la CD, **antes** de tirar:
+Al elegir un enfoque, la UI muestra **antes de comprometerse** lo que se puede saber de *esa* clase:
 
-- probabilidad de cada **banda de resultado** (ver tiers abajo) con el `d20 + modificador` del actor;
-- la CD y el modificador aplicado, en claro (no un número mágico);
-- si el personaje tiene **competencia/pericia** en esa habilidad, se refleja en el modificador y por
-  tanto en el rango mostrado.
+- **Clase (a) y (b)**: probabilidad de cada **banda de resultado** (ver tiers abajo) calculada con la
+  tirada que corresponda —`d20 + modificador` del ayudante frente a la CD o la CA, o la salvación del
+  objetivo frente a la CD de salvación del lanzador—, más la CD/CA y el modificador aplicado en claro
+  (no un número mágico). Si el personaje tiene **competencia/pericia**, se refleja en el modificador y
+  por tanto en el rango mostrado. En (b) por salvación se muestra **quién tira** y que un éxito suyo
+  es el fallo del enfoque.
+- **Clase (c)**: no hay probabilidad que mostrar. La UI enseña la **banda fija** que se obtendrá y el
+  **recurso que se gastará**; presentar un porcentaje aquí sería inventar una tirada inexistente.
+- En **(b) y (c)**, siempre el **coste** (espacio de conjuro o uso limitado) y el aviso de que se
+  consume al confirmar, aunque el resultado sea un fallo.
 
 Esto convierte la decisión en táctica de personaje: «con mi Arcana +7 tengo buena banda; con
 Herramientas +2, no» — sin destripar el resultado, que sigue siendo una tirada real de dnd5e.
@@ -120,10 +158,27 @@ La tirada se resuelve con el **motor de dados de dnd5e/Foundry** (no con el redu
 
 | Banda | Condición (ejemplo) | Modo A (narrativo) | Modo B (propuesta) |
 |---|---|---|---|
-| Pifia | fallo por ≥5 / nat 1 | complicación narrativa | sin token (o coste) |
+| Pifia | fallo por ≥5 | complicación narrativa | sin token (o coste) |
 | Fallo | < CD | sin ventaja | sin token |
 | Éxito | ≥ CD | ventaja menor | token de propuesta, tier bajo del rango ya permitido |
-| Éxito crítico | ≥ CD+5 / nat 20 | ventaja clara | token de propuesta, tier alto **dentro** del mismo rango |
+| Éxito crítico | ≥ CD+5 | ventaja clara | token de propuesta, tier alto **dentro** del mismo rango |
+
+Las condiciones se leen sobre la tirada **de la clase que corresponda** (contra CD en (a), contra CA o
+CD de salvación en (b)); la clase (c) no consulta esta tabla: entrega la banda fija que declaró.
+
+**El 1 y el 20 naturales no son banda por sí solos.** En dnd5e (reglas de 2014) el crítico y la pifia
+automáticos son cosa de **tiradas de ataque**, no de pruebas de característica ni de salvaciones: un
+20 natural en una prueba de Arcana no es un éxito garantizado. Convertirlos en pifia/crítico de
+asistencia sería una regla nueva vendida como 5e. Por tanto:
+
+- **Base:** las bandas salen **solo del margen** frente a CD/CA. Un 20 natural en una prueba de la
+  clase (a) alcanza el crítico si el total llega a CD+5, y si no, no.
+- **Regla opcional de la casa:** la tabla puede activar «1 natural → pifia / 20 natural → crítico» en
+  pruebas de habilidad, **con gate del GM** y **declarado en la UI** junto al rango de éxito, porque
+  cambia las probabilidades que el jugador está leyendo. Es opt-in explícito, nunca el comportamiento
+  por defecto.
+- En **(b) por ataque de conjuro**, el crítico natural del ataque **sí** es regla base de 5e y se
+  respeta como tal; lo que no se hace es extrapolarlo a las demás clases.
 
 Regla invariable: **incluso el crítico se queda dentro de lo que la orden del titular ya permitía.**
 El grado de éxito elige *dónde* dentro de un rango autorizado, nunca abre un rango nuevo. Si un modo
@@ -139,8 +194,10 @@ El módulo debe seguir funcionando sin dnd5e (objetivo «moderno» del smoke, #2
   precisión), que produce las **mismas bandas** de resultado. Los dos caminos comparten el mapeo
   banda→efecto, así que la autoridad y el balance no dependen del sistema de juego.
 - El acoplamiento con dnd5e queda **aislado** en un adaptador de sistema (leer modificador de
-  habilidad, competencia, CD, lanzar la tirada), detrás de una interfaz estable; nada del núcleo de
-  asistencia importa `dnd5e` directamente.
+  habilidad, competencia, CD, CA y CD de salvación del lanzador; lanzar la tirada de cada clase;
+  consumir el recurso de (b)/(c)), detrás de una interfaz estable; nada del núcleo de asistencia
+  importa `dnd5e` directamente. El fallback sin dnd5e cubre **solo la clase (a)**: sin hoja no hay
+  hechizos ni recursos que gastar, así que (b) y (c) simplemente no se ofrecen.
 
 ## Frontera con el contrato de minijuegos (#308)
 
@@ -189,6 +246,8 @@ Un solo camino vertical, para validar el marco sin sobreconstruir:
 
 - **Un puesto asistible**: ingeniería (estabilizar sistema caliente).
 - **Un modo**: propuesta consumible (Modo B) que el ingeniero gasta como su `set_system_coolant`.
+- **Una sola clase de enfoque**: la (a), prueba de habilidad/herramienta, sin recursos que consumir.
+  Las clases (b) y (c) llegan después, cuando el camino base esté validado.
 - **Dos caminos de resolución que comparten bandas**: tirada de habilidad dnd5e (con «rango de éxito»)
   **y** minijuego de temporización de fallback.
 - Reutiliza relé (#237), matriz de puestos (#268) y marco de #308.
@@ -206,4 +265,7 @@ hoy — y eso sería un **issue aparte**. **Nunca toca `src/` heredado: cero div
 - Cualquier resultado que **no esté ya en `STATION_ACTIONS`** o que exceda el rango que la orden ya
   permitía (ni siquiera en crítico).
 - Hacer de dnd5e una **dependencia dura** que rompa el objetivo sin-dnd5e del smoke.
+- **Vender como regla de 5e algo que 5e no dice**: meter hechizos sin tirada en un `d20 vs CD`,
+  declarar enfoques de clase (b) en tareas sin objetivo, o dar por base el 1/20 natural en pruebas de
+  característica. Toda desviación de este tipo es **regla de la casa declarada y con gate del GM**.
 - Convertir la asistencia en **peaje** obligatorio o en la vía más eficiente de progresar.

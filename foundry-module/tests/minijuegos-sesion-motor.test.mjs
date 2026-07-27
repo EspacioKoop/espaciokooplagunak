@@ -368,3 +368,38 @@ test("si el juego rechaza la configuración, la sesión no queda a medias", () =
   assert.equal(vistaPublicaSesion(s).fase, "lobby");
   assert.equal(s.privado.estadoJuego, null);
 });
+
+test("cancelar la mano no resucita a quien se desconectó durante ella", () => {
+  let s = mesaEnCurso();
+  s = marcarAusente(s, "u1");
+  const nueva = sustituirCoordinador(s, { coordinadorId: "gm2" });
+  const jugadores = vistaPublicaSesion(nueva).jugadores;
+  assert.equal(jugadores.find((j) => j.userId === "u1").estado, "ausente");
+  assert.equal(jugadores.find((j) => j.userId === "u2").estado, "activo");
+  // Los asientos previos al reparto sí se recuperan.
+  assert.deepEqual(
+    jugadores.map((j) => [j.userId, j.asiento]),
+    [
+      ["u1", 0],
+      ["u2", 1],
+    ],
+  );
+});
+
+test("el payload se acota: nada de anidamiento ni cadenas sin límite", () => {
+  const s = mesaEnCurso();
+  const rechazados = [
+    { tipo: "jugar", parametros: { hondo: { mas: { aun: 1 } } } }, // demasiado anidado
+    { tipo: "jugar", parametros: { valor: "x".repeat(65) } }, // cadena sobre maxCadena
+    { tipo: "jugar", lista: [1, 2, 3] }, // arrays fuera
+    { tipo: "jugar", raro: () => 1 }, // funciones fuera
+  ];
+  for (const parametros of rechazados) {
+    const res = aplicar(s, { sobre: sobre("act", s, { parametros }), actorId: "u1", juego: juegoFalso });
+    assert.equal(res.ok, false, `debería rechazar ${JSON.stringify(parametros)}`);
+    assert.equal(res.codigo, ERRORES.PAYLOAD_INVALIDO);
+  }
+  // El anidamiento legítimo de `act` (tipo + parámetros del juego) sí pasa.
+  const valida = ok(s, "act", "u1", { parametros: { tipo: "jugar", parametros: { valor: 7 } } });
+  assert.deepEqual(vistaPublicaSesion(valida).juegoPublico.jugadas, { u1: 7 });
+});

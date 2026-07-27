@@ -375,7 +375,11 @@ function iniciarMano(sesion, { juego, semilla, configuracionJuego }) {
   // poder cancelar sin reconstruir secretos ni adjudicar apuestas incompletas.
   publico.checkpointMano = {
     revision: publico.revision,
-    jugadores: publico.jugadores.map((j) => ({ ...j })),
+    // Solo la disposición de asientos y los datos públicos del juego (donde
+    // viven las fichas). La presencia NO se guarda: quien se desconectó durante
+    // la mano sigue ausente después de cancelarla, y restaurarlo como activo
+    // sería resucitar a alguien que no está.
+    jugadores: publico.jugadores.map((j) => ({ userId: j.userId, asiento: j.asiento })),
     juegoPublico: publico.juegoPublico,
   };
   publico.manoCancelada = false;
@@ -419,10 +423,16 @@ function sincronizarJuego(sesion, juego) {
   }
 }
 
+// Vuelve a los asientos y a las fichas públicas anteriores al reparto,
+// conservando la presencia ACTUAL de cada jugador (ausente sigue ausente).
 function restaurarCheckpoint(sesion) {
   const { publico } = sesion;
   if (!publico.checkpointMano) return;
-  publico.jugadores = publico.checkpointMano.jugadores.map((j) => ({ ...j }));
+  const presencia = new Map(publico.jugadores.map((j) => [j.userId, j.estado]));
+  publico.jugadores = publico.checkpointMano.jugadores.map((j) => ({
+    ...j,
+    estado: presencia.get(j.userId) ?? "activo",
+  }));
   publico.juegoPublico = publico.checkpointMano.juegoPublico ?? null;
 }
 
@@ -450,14 +460,31 @@ function validarSobre(sobre, limites) {
   ) {
     return ERRORES.PAYLOAD_INVALIDO;
   }
-  const parametros = sobre.parametros;
-  if (parametros != null) {
-    if (typeof parametros !== "object" || Array.isArray(parametros)) return ERRORES.PAYLOAD_INVALIDO;
-    if (Object.keys(parametros).length > limites.maxClavesParametros) {
-      return ERRORES.PAYLOAD_INVALIDO;
-    }
+  if (sobre.parametros != null && !parametrosAcotados(sobre.parametros, limites, 0)) {
+    return ERRORES.PAYLOAD_INVALIDO;
   }
   return null;
+}
+
+// El payload que llega de un cliente se acota antes de retransmitirlo o de
+// dárselo al juego: escalares o un objeto plano de escalares, con dos niveles
+// como mucho (`act` anida `{ tipo, parametros }`), claves y cadenas limitadas.
+// Sin esto, un participante podría inflar el estado compartido a voluntad.
+function parametrosAcotados(valor, limites, profundidad) {
+  if (valor === null) return true;
+  const tipo = typeof valor;
+  if (tipo === "string") return valor.length <= limites.maxCadena;
+  if (tipo === "number") return Number.isFinite(valor);
+  if (tipo === "boolean") return true;
+  if (tipo !== "object" || Array.isArray(valor)) return false;
+  if (profundidad >= 2) return false;
+  const claves = Object.keys(valor);
+  if (claves.length > limites.maxClavesParametros) return false;
+  return claves.every(
+    (clave) =>
+      clave.length <= limites.maxCadena &&
+      parametrosAcotados(valor[clave], limites, profundidad + 1),
+  );
 }
 
 function nonceProcesado(privado, actorId, nonce) {

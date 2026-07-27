@@ -1,7 +1,7 @@
-# Guiños de dominio público — imaginario scifi/pulp (catálogo verificado)
+# Guiños de dominio público — imaginario scifi/pulp (catálogo con trazabilidad de evidencia)
 
 > **Issue de origen:** [#310](https://github.com/VaroTv7/espaciokooplagunak/issues/310) · Fase 4 (experiencia/contenido).
-> **Qué es este documento:** un catálogo **curado y verificado** de elementos del imaginario
+> **Qué es este documento:** un catálogo **curado** de elementos del imaginario
 > scifi/pulp en **dominio público (DP)**, para que escenarios (`scripts/`), arte del módulo
 > (`foundry-module/`) y minijuegos ([#308](https://github.com/VaroTv7/espaciokooplagunak/issues/308))
 > tiren de una fuente segura al meter **guiños** de ambientación **sin coste de licencia**.
@@ -31,7 +31,10 @@ Son dos derechos **independientes** y hay que superar **los dos**:
 
 Columna **Uso** de cada tabla:
 
-- ✅ **Libre** — copyright caducado y sin marca relevante que colisione con nuestro uso lúdico.
+- ✅ **Libre para uso interno de ficción** — copyright caducado **y** consumo limitado a nombre dentro
+  de la ficción (nave, estación, sector, PNJ). **No** afirma que no exista marca registrada sobre ese
+  nombre: afirma que nuestro uso no es uso de marca. Ver
+  [Marca: qué está comprobado y qué no](#marca-qué-está-comprobado-y-qué-no).
 - 📝 **Solo texto/idea** — copyright caducado pero **hay marca viva**: usa el concepto, **evita**
   nombre/logo exactos como etiqueta.
 - ⛔ **Descartar** — ver [Lista de descartes](#lista-de-descartes).
@@ -65,8 +68,41 @@ Cada afirmación se clasifica por su **nivel de evidencia**, no por intuición:
   TESS (USPTO) / EUIPO antes de consumirlo como marca-libre.
 
 Regla de degradación: **si una casilla no alcanza «verificado», su estado se mueve hacia lo
-conservador** (📝 o ⛔), nunca al alza. El ✅ exige copyright verificado *y* ausencia de marca en
-colisión (verificada o, en su defecto, uso no-etiqueta que evita el riesgo).
+conservador** (📝 o ⛔), nunca al alza.
+
+### Marca: qué está comprobado y qué no
+
+**En esta versión no se ha hecho ningún pull de registro para los nombres marcados ✅.** Decirlo es
+más honesto que dejar que el ✅ se lea como «busqué y no hay marca». Lo que sí está comprobado, por
+nombre ✅, es su **copyright** (fila y nota de bloque). El estado de marca de cada nombre ✅ es, sin
+excepción, **no consultado en registro**.
+
+El ✅ **no se apoya en la ausencia de marca**, sino en que **nuestro consumo no es uso de marca**:
+
+- El derecho de marca faculta a prohibir el uso de un signo **«en el tráfico económico»** como signo
+  distintivo del origen empresarial ([Ley 17/2001 de Marcas, art. 34.2](https://www.boe.es/buscar/act.php?id=BOE-A-2001-23093);
+  equivalente en el art. 9.2 del Reglamento (UE) 2017/1001).
+- Llamar `Nautilus-7` a una nave **dentro** de la ficción no identifica el origen de ningún producto:
+  el producto es el módulo, que se llama y se presenta como *Espaciokoop Lagunak*. Es uso
+  **ornamental/referencial interno**, del mismo tipo que un topónimo en una novela.
+
+De ahí la **frontera dura**, que es la condición del ✅ y no una recomendación:
+
+| Permitido bajo ✅ | Prohibido pese al ✅ |
+|---|---|
+| nombre de nave, estación, sector o PNJ dentro del juego | nombre del módulo, del producto, de un paquete o de un release |
+| entrada de un pool de indicativos generados | título de la escena de portada, marca del proyecto o dominio |
+| texto de lore y diario del GM | logotipo, tipografía o *trade dress* asociado a la marca ajena |
+| — | cualquier presentación que sugiera patrocinio, licencia o vínculo con el titular |
+
+**Gate pendiente antes de cualquier lanzamiento público o de tienda:** si el módulo llega a
+distribuirse fuera del círculo privado, cada nombre ✅ **consumido** debe pasar una búsqueda de marca
+real (TESS/USPTO y EUIPO) en las clases 9, 28 y 41, y lo que colisione baja a 📝 o se retira del pool.
+Ese gate se rastrea en [#310](https://github.com/VaroTv7/espaciokooplagunak/issues/310); esta versión
+no lo da por cumplido.
+
+Las marcas **sí verificadas** en esta versión (con registro o caso citable) son las que fuerzan los
+📝/⛔ del catálogo, y están enumeradas arriba: Arkham Horror®, Call of Cthulhu, ERB Inc., Buck Rogers.
 
 ---
 
@@ -74,8 +110,8 @@ colisión (verificada o, en su defecto, uso no-etiqueta que evita el riesgo).
 
 | Fuente | Autor (fallec.) | Estado copyright | Uso | Elementos aprovechables |
 |---|---|---|---|---|
-| *20.000 leguas de viaje submarino*, *La isla misteriosa*, *Robur el conquistador* | Jules Verne (1905) | DP mundial (vida+70 desde 1976; EE. UU. hasta 1930) | ✅ | Nave **Nautilus**, **capitán Nemo**, **Robur**, el **Albatros**, estética de submarino-fortaleza |
-| *La máquina del tiempo*, *La guerra de los mundos*, *Los primeros hombres en la Luna* | H. G. Wells (1946) | DP en UE desde 2017 (vida+70); EE. UU. hasta 1930 | ✅ | **Trípodes** marcianos, **Morlocks**, **Eloi**, **cavorita**, rayo de calor, la máquina del tiempo; de *La guerra de los mundos*: el grito marciano «**Ulla**» y el astrónomo **Ogilvy** |
+| *20.000 leguas de viaje submarino*, *La isla misteriosa*, *Robur el conquistador* | Jules Verne (1905) | DP mundial (vida+70 desde 1976; EE. UU. hasta 1930) | ✅ | Nave **Nautilus**, **capitán Nemo**, el profesor **Aronnax** (narrador de *20.000 leguas*), **Robur**, el **Albatros**, estética de submarino-fortaleza |
+| *La máquina del tiempo*, *La guerra de los mundos*, *Los primeros hombres en la Luna* | H. G. Wells (1946) | DP en UE desde 2017 (vida+70); EE. UU. hasta 1930 | ✅ | **Trípodes** (sing. **Trípode**) marcianos, **Morlocks** (sing. **Morlock**), **Eloi**, el **señor Cavor** y su **cavorita** (*Los primeros hombres en la Luna*), rayo de calor, la máquina del tiempo; de *La guerra de los mundos*: el grito marciano «**Ulla**» y el astrónomo **Ogilvy** |
 | *Frankenstein o el moderno Prometeo* | Mary Shelley (1851) | DP mundial | 📝 | **Víctor Frankenstein**, la **Criatura**, el tropo del creador que pierde el control. **Evita** el diseño Universal (frente plana, tornillos): ese *aspecto* es copyright/marca de Universal, no de la novela |
 | *El doctor Jekyll y el señor Hyde* | R. L. Stevenson (1894) | DP mundial | ✅ | El suero, el doble monstruoso, la transformación química |
 | *La isla del doctor Moreau* | H. G. Wells (1946) | DP en UE desde 2017; EE. UU. hasta 1930 | ✅ | Híbridos animal-humano, la «Casa del Dolor», bioética torcida |
@@ -85,6 +121,8 @@ colisión (verificada o, en su defecto, uso no-etiqueta que evita el riesgo).
 > cada autor (Verne 1905, Wells 1946, Shelley 1851, Stevenson 1894, Twain 1910) contra UE vida+70 y
 > EE. UU. término de 95 años ([Duke CSPD 2026](https://web.law.duke.edu/cspd/publicdomainday/2026/)).
 > Diseño Universal de *Frankenstein*: marca/imagen de los estudios, no de la novela — **precautorio**.
+> **Marca (todas las filas ✅ de este bloque):** no consultada en registro. El ✅ vale solo como
+> nombre interno de ficción, nunca como etiqueta de producto — ver [Marca: qué está comprobado y qué no](#marca-qué-está-comprobado-y-qué-no).
 
 ## 2. Terror cósmico (mitos de Lovecraft)
 
@@ -96,7 +134,7 @@ Los **nombres de criaturas y lugares que él acuñó** son DP. Cuidado con capas
 | Elemento | Uso | Nota |
 |---|---|---|
 | **Cthulhu**, **Dagon**, **shoggoth**, **Nyarlathotep**, **Yog-Sothoth**, **Azathoth** | ✅ | Criaturas acuñadas por Lovecraft, DP |
-| **Miskatonic** (universidad/río), **R'lyeh**, **Innsmouth**, **Kadath**, **Leng** | ✅ | Topónimos de Lovecraft, DP. Excelentes para nombres de naves/estaciones |
+| **Miskatonic** (universidad/río), **R'lyeh** (forma sin apóstrofo: **Rlyeh**), **Innsmouth**, **Kadath**, **Leng** | ✅ | Topónimos de Lovecraft, DP. Excelentes para nombres de naves/estaciones |
 | **Necronomicón** | ✅ | El nombre y el concepto son de Lovecraft (DP). El *aspecto* del libro en films concretos puede ser propio de esos films |
 | «**Arkham**» | 📝 | Topónimo de Lovecraft (DP) **pero** marca muy activa de terceros en videojuegos/cómic. Para evitar confusión de marca, prefiere **Miskatonic/Innsmouth/R'lyeh** |
 | Término «**Cthulhu Mythos**», deidades **añadidas por August Derleth** (Cthugha…) | 📝/⛔ | Lo acuñado por Derleth (1971) **no** es DP. Cíñete a lo de Lovecraft |
@@ -106,6 +144,8 @@ Los **nombres de criaturas y lugares que él acuñó** son DP. Cuidado con capas
 > ausencia de renovación en EE. UU. ([HPL Wiki](https://lovecraft.fandom.com/wiki/Copyright_status_of_works_by_H._P._Lovecraft)).
 > Marcas **verificadas** que motivan los 📝/⛔: «**Arkham Horror**»® ([USPTO 78230423, Justia](https://trademarks.justia.com/782/30/arkham-78230423.html))
 > y «**Call of Cthulhu**» de Chaosium. La deidad/《Mythos》 de Derleth (1971) no es DP.
+> **Marca (todas las filas ✅ de este bloque):** no consultada en registro. El ✅ vale solo como
+> nombre interno de ficción, nunca como etiqueta de producto — ver [Marca: qué está comprobado y qué no](#marca-qué-está-comprobado-y-qué-no).
 
 ## 3. Mitología y folclore (siempre DP)
 
@@ -124,6 +164,8 @@ copyright/marca (el Thor de Marvel, el God of War de Sony) — usa el **mito**, 
 > por lo que la **base mitológica es DP por naturaleza** (⚠️ una *versión* moderna concreta —Thor de
 > Marvel, God of War— sí tiene copyright/marca; se usa el mito, no esas versiones). **Ilargi** (luna) y
 > **Eguzki** (sol) son teónimos de la mitología vasca, DP por naturaleza.
+> **Marca (todas las filas ✅ de este bloque):** no consultada en registro. El ✅ vale solo como
+> nombre interno de ficción, nunca como etiqueta de producto — ver [Marca: qué está comprobado y qué no](#marca-qué-está-comprobado-y-qué-no).
 
 ## 4. Portadas e ilustración pulp
 
@@ -205,3 +247,9 @@ bloque, la **fuente autoritativa + fecha de consulta** (ver
 [Fuentes y método de verificación](#fuentes-y-método-de-verificación)). Sin evidencia de registro,
 una afirmación de marca queda **precautoria** y su estado se mueve a lo conservador (📝/⛔), nunca a ✅.
 Al usar un elemento en código/arte, enlaza de vuelta a la fila de esta tabla en el PR.
+
+**Formas exactas publicables.** El código no publica «el concepto», publica **cadenas**. Toda cadena
+que un pool o un escenario llegue a mostrar debe aparecer **literalmente** en una fila de este
+catálogo, incluidas sus normalizaciones ASCII (`R'lyeh` → `Rlyeh`) y sus singulares (`Trípodes` →
+`Trípode`). Si una forma no está escrita aquí, o se añade a la fila correspondiente en el mismo PR, o
+se retira del pool. No vale «se deduce de la fila»: la trazabilidad es literal.

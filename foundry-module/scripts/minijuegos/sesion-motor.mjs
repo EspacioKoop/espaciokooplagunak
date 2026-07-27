@@ -48,6 +48,7 @@ export const ERRORES = Object.freeze({
   YA_EN_MESA: "ya_en_mesa",
   NO_PARTICIPA: "no_participa",
   SIN_SEMILLA: "sin_semilla",
+  NONCE_REUTILIZADO: "nonce_reutilizado",
   JUEGO_RECHAZO: "juego_rechazo",
 });
 
@@ -173,7 +174,15 @@ export function aplicar(sesion, { sobre, actorId, juego, semilla, configuracionJ
   if (sobre.epocaCoordinador !== publico.epocaCoordinador) {
     return { ok: false, codigo: ERRORES.EPOCA_OBSOLETA };
   }
-  if (nonceProcesado(privado, actorId, sobre.nonce)) {
+  // El nonce va ligado a la huella de SU petición: reenviar el sobre idéntico
+  // es idempotente, pero reutilizar el nonce para otra acción es un error
+  // explícito y no un éxito silencioso que descarta la petición nueva.
+  const huella = huellaSobre(sobre);
+  const previo = nonceProcesado(privado, actorId, sobre.nonce);
+  if (previo) {
+    if (previo.huella !== huella) {
+      return { ok: false, codigo: ERRORES.NONCE_REUTILIZADO };
+    }
     // Reintento del mismo actor dentro de la época: no reaplica ni sube
     // revisión. El adaptador puede reenviar sin miedo tras una desconexión.
     return { ok: true, sesion, idempotente: true };
@@ -198,7 +207,13 @@ export function aplicar(sesion, { sobre, actorId, juego, semilla, configuracionJ
 
   // Una acción aceptada sube la revisión exactamente una vez y consume su nonce.
   siguiente.publico.revision += 1;
-  registrarNonce(siguiente.privado, actorId, sobre.nonce, siguiente.publico.limites.maxNonces);
+  registrarNonce(
+    siguiente.privado,
+    actorId,
+    sobre.nonce,
+    huella,
+    siguiente.publico.limites.maxNonces,
+  );
   return { ok: true, sesion: siguiente };
 }
 
@@ -488,13 +503,31 @@ function parametrosAcotados(valor, limites, profundidad) {
 }
 
 function nonceProcesado(privado, actorId, nonce) {
-  return privado.nonces.some((n) => n.actorId === actorId && n.nonce === nonce);
+  return privado.nonces.find((n) => n.actorId === actorId && n.nonce === nonce) ?? null;
+}
+
+// Huella estable de lo que el sobre PIDE (tipo y parámetros), independiente del
+// orden de claves y de los campos de transporte. Los sobres ya vienen acotados
+// en profundidad, claves y longitud por `validarSobre`, así que serializarlos
+// aquí es barato y no puede desbordarse.
+function huellaSobre(sobre) {
+  return JSON.stringify([sobre.tipo, canonico(sobre.parametros ?? {})]);
+}
+
+function canonico(valor) {
+  if (Array.isArray(valor)) return valor.map(canonico);
+  if (valor === null || typeof valor !== "object") return valor;
+  const salida = {};
+  for (const clave of Object.keys(valor).sort()) {
+    salida[clave] = canonico(valor[clave]);
+  }
+  return salida;
 }
 
 // Colección acotada: descarta los más antiguos. Vive solo en el estado privado
 // del coordinador, nunca se copia al estado público.
-function registrarNonce(privado, actorId, nonce, maximo) {
-  privado.nonces.push({ actorId, nonce });
+function registrarNonce(privado, actorId, nonce, huella, maximo) {
+  privado.nonces.push({ actorId, nonce, huella });
   if (privado.nonces.length > maximo) {
     privado.nonces.splice(0, privado.nonces.length - maximo);
   }

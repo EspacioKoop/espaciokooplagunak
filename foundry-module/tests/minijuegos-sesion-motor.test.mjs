@@ -166,6 +166,53 @@ test("repetir el mismo nonce del mismo actor es idempotente", () => {
   assert.equal(otro.idempotente, undefined);
 });
 
+test("reutilizar un nonce para otra acción se rechaza, no se traga en silencio", () => {
+  let s = sesionNueva();
+  const observar = sobre("watch", s);
+  const primera = aplicar(s, { sobre: observar, actorId: "u", juego: juegoFalso });
+  assert.equal(primera.ok, true);
+  s = primera.sesion;
+
+  // Mismo actor, mismo nonce, PETICIÓN DISTINTA: si esto pasara por idempotente,
+  // el `leave` se descartaría en silencio devolviendo éxito.
+  const colado = aplicar(s, {
+    sobre: { ...observar, tipo: "leave" },
+    actorId: "u",
+    juego: juegoFalso,
+  });
+  assert.equal(colado.ok, false);
+  assert.equal(colado.codigo, ERRORES.NONCE_REUTILIZADO);
+  assert.deepEqual(vistaPublicaSesion(s).espectadores, ["u"]);
+  assert.equal(vistaPublicaSesion(s).revision, 1);
+});
+
+test("la huella del nonce ignora el orden de claves de los parámetros", () => {
+  let s = mesaEnCurso();
+  const jugar = sobre("act", s, { parametros: { tipo: "jugar", valor: 1, extra: "x" } });
+  const primera = aplicar(s, { sobre: jugar, actorId: "u1", juego: juegoFalso });
+  assert.equal(primera.ok, true);
+  s = primera.sesion;
+
+  // El mismo sobre reserializado con otro orden de claves sigue siendo el mismo
+  // reenvío: idempotente, no un rechazo espurio.
+  const reenvio = {
+    ...jugar,
+    parametros: { extra: "x", valor: 1, tipo: "jugar" },
+  };
+  const repetida = aplicar(s, { sobre: reenvio, actorId: "u1", juego: juegoFalso });
+  assert.equal(repetida.ok, true);
+  assert.equal(repetida.idempotente, true);
+
+  // Cambiar un valor sí es otra petición.
+  const distinta = aplicar(s, {
+    sobre: { ...jugar, parametros: { tipo: "jugar", valor: 2, extra: "x" } },
+    actorId: "u1",
+    juego: juegoFalso,
+  });
+  assert.equal(distinta.ok, false);
+  assert.equal(distinta.codigo, ERRORES.NONCE_REUTILIZADO);
+});
+
 test("los nonces se acotan y nunca salen al estado público", () => {
   let s = sesionNueva({ maxNonces: 3 });
   for (let i = 0; i < 5; i += 1) {

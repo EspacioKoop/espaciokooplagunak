@@ -41,6 +41,10 @@ import {
   revokeWorkspaceAccess,
 } from "./station-workspace-ui.mjs";
 import { registerStationOrders } from "./station-order-wiring.mjs";
+import {
+  registrarAjustesMinijuegos,
+  registrarSesionesMinijuegos,
+} from "./minijuegos-wiring.mjs";
 import { crearClaseV2 } from "./estado-nave-app-v2.mjs";
 import { crearClaseV1 } from "./estado-nave-app-v1.mjs";
 import { crearClaseMapaV2 } from "./mapa-vivo-app-v2.mjs";
@@ -106,6 +110,12 @@ Hooks.once("init", () => {
     // decorado aleatorio" refresca a todos por igual (issue #215 review).
     onChange: (semilla) => mapaApp?.regenerarDecorado?.(semilla),
   });
+
+  // Estado público de la mesa de minijuegos (#308). Ajuste de MUNDO porque la
+  // mesa es compartida; `config: false` porque no se edita a mano. La sesión
+  // viva del coordinador (semilla, mazo, manos) NO se guarda aquí ni en ningún
+  // otro sitio persistente: vive solo en memoria del GM que coordina.
+  registrarAjustesMinijuegos(MODULE_ID);
 });
 
 Hooks.once("ready", () => {
@@ -115,6 +125,9 @@ Hooks.once("ready", () => {
   // Relé de órdenes por puesto (#236): el GM registra el manejador del socket;
   // en clientes de tripulación es no-op (solo emiten).
   registerStationOrders(MODULE_ID);
+  // Sesiones de minijuegos (#308): el GM coordinador recoge las propuestas por
+  // updateUser; cualquier cliente escucha las vistas privadas dirigidas a él.
+  registrarSesionesMinijuegos(MODULE_ID);
 });
 
 Hooks.on("updateUser", (user) => {
@@ -122,6 +135,7 @@ Hooks.on("updateUser", (user) => {
     // Un cambio de rol del propio usuario rearma el relé: el GM entrante gana
     // el manejador, el saliente lo pierde (registerStationOrders comprueba isGM).
     registerStationOrders(MODULE_ID);
+    registrarSesionesMinijuegos(MODULE_ID);
     if (!user.isGM) void revokePrivilegedBridgeAccess();
   }
 });

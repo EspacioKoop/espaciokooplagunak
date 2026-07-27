@@ -224,6 +224,13 @@ variantes y efectos sobre la campaña.
    importa ningún vertical.
 2. Motor puro de póker con vectores deterministas y pruebas de reglas.
 3. Adaptador Foundry y vistas pública/privada sin persistir secretos.
+   **Implementado** en `foundry-module/scripts/minijuegos/adaptador-sesion.mjs`
+   (lógica pura, con pruebas) y `foundry-module/scripts/minijuegos-wiring.mjs`
+   (capa fina con globales de Foundry). Transporte: propuesta en un flag del
+   propio `User` → `updateUser` en el GM coordinador → estado público en un
+   ajuste de mundo, y vistas privadas por socket dirigidas a cada `userId`. La
+   sesión viva del coordinador (semilla, mazo, manos) no se persiste en ningún
+   sitio: si se pierde, el relevo la cancela con checkpoint.
 4. Ventana clásica v11 y ApplicationV2 compartiendo el mismo modelo.
 5. Arte pixel-art, teclado, reduced-motion e i18n.
 6. Smoke multijugador real con GM, dos jugadores, espectador, reconexión, pérdida

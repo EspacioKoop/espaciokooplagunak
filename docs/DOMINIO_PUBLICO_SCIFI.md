@@ -133,8 +133,8 @@ están en DP, pero **hay que verificar la pieza concreta**.
 
 | Fuente | Uso | Nota de verificación |
 |---|---|---|
-| Ilustraciones de **Frank R. Paul** (*Amazing Stories*, años 20–30) | 📝 verificar | Gran parte en DP por fecha/no-renovación; **confirma la lámina exacta** antes de reproducir. Como **inspiración de estilo** (ciudades-cohete, cascos de pecera) es libre |
-| Portadas de *Weird Tales*, *Amazing Stories*, *Wonder Stories* hasta 1930 | 📝 verificar | El **estilo** (tipografías art déco, colores saturados, monstruos de bug-eyed) es libre de imitar con **arte propio**; reproducir una portada concreta requiere verificar esa edición |
+| Ilustraciones de **Frank R. Paul** (*Amazing Stories*, años 20–30) | ⛔ reproducir | DP en EE. UU. por fecha, pero Paul falleció en **1963** ⇒ **protegidas en la UE hasta 2034** (ver [§4.2](#42-candidatas-concretas)). Como **inspiración de estilo** (ciudades-cohete, cascos de pecera) sí es libre |
+| Portadas de *Weird Tales*, *Amazing Stories*, *Wonder Stories* hasta 1930 | 📝 verificar | El **estilo** (tipografías art déco, colores saturados, monstruos de bug-eyed) es libre de imitar con **arte propio**; reproducir una portada concreta exige el protocolo de [§4.1](#41-protocolo-de-verificación-de-una-lámina) sobre esa edición **y su ilustrador** |
 | **Logotipos/cabeceras** de esas revistas | ⛔ | Aunque la revista sea vieja, el nombre/cabecera puede seguir siendo marca. No los copies |
 
 > **Fuente/verificación (consulta 2026-07-27):** riesgo **por pieza**, no por categoría. El estado ✅ no
@@ -146,6 +146,81 @@ están en DP, pero **hay que verificar la pieza concreta**.
 > Neo Geo** *inspirado* en esos tropos (coherente con [#215](https://github.com/VaroTv7/espaciokooplagunak/issues/215)
 > y con el «arte propio» exigido en [#308](https://github.com/VaroTv7/espaciokooplagunak/issues/308)).
 > El estilo y los tropos no se pueden registrar; una ilustración concreta sí.
+
+### 4.1 Protocolo de verificación de una lámina
+
+La tabla de arriba dice **por qué** una lámina no puede darse por libre. Esto dice **cómo**
+resolverla. Se aplica **pieza a pieza**: una portada verificada no valida la siguiente, ni siquiera
+del mismo número de la misma revista (portada, interiores y publicidad pueden tener autoría y
+estatus distintos).
+
+**Paso 0 — Identificar la pieza.** Revista, número, **fecha exacta de publicación**, **país de
+primera publicación**, **ilustrador** (con fecha de fallecimiento) y si es **portada** o **interior**.
+Si no puedes nombrar esos seis datos, la pieza no entra: se queda en ⛔.
+
+**Paso 1 — Regla por jurisdicción.** Hay que superar **las dos**; el proyecto publica desde ES/UE,
+así que la UE manda, pero se documentan ambas:
+
+| Jurisdicción | Regla aplicable en 2026 | Qué comprobar |
+|---|---|---|
+| **EE. UU.** (publicación estadounidense pre-1978) | Término de 95 años: **DP hasta lo publicado en 1930 inclusive**. De **1931 a 1963**, DP **solo si no se renovó** el copyright | 1926–1930 → DP por fecha, sin más. 1931–1963 → buscar renovación en el [Stanford Copyright Renewal Database](https://exhibits.stanford.edu/copyrightrenewals) y en los [Catalogs of Copyright Entries (CCE)](https://onlinebooks.library.upenn.edu/cce/). **Ausencia de renovación se documenta con la búsqueda hecha**, no se presume |
+| **UE / España** | **Vida del ilustrador + 70 años** — **independiente** de la fecha de publicación y de cualquier renovación estadounidense | Fecha de fallecimiento del **ilustrador concreto** (no del autor del relato, no de la editorial). Si murió después de **1955**, la lámina **sigue protegida en la UE en 2026** |
+
+> **Política de jurisdicción:** cuando dos jurisdicciones discrepan, **se aplica siempre la más
+> restrictiva**. Un ✅ estadounidense con protección viva en la UE es un ⛔ para este proyecto.
+> Otros países (p. ej. plazos vida+50, o *rule of the shorter term*) pueden dar resultados distintos;
+> no se consideran habilitantes, solo pueden empeorar el veredicto, nunca mejorarlo.
+
+**Paso 2 — Recorte sin cabecera ni marca.** Aunque la ilustración sea DP, la **cabecera/logotipo** de
+la revista puede ser marca viva (`⛔` en la tabla §4). Si la pieza se acepta, se usa **recortada**:
+sin cabecera, sin nombre de revista, sin precio ni claims de portada. Una portada íntegra escaneada
+mezcla obra DP con marca ajena en una sola imagen.
+
+**Paso 3 — Fuente del escaneo reconfirmada.** El estatus legal es de la **obra**, pero el escaneo
+llega por un intermediario. Se anota **de dónde sale** el fichero y qué condiciones declara (Internet
+Archive, Wikimedia Commons con su plantilla de licencia, biblioteca digital). Un escaneo con
+restricciones contractuales propias se descarta aunque la obra sea DP: hay alternativas.
+
+**Paso 4 — Registro de evidencia.** El veredicto no vale sin su rastro. Se anota en la fila de la
+tabla §4.2: **qué se consultó**, **fecha de consulta** y **enlace**. Sin esas tres cosas, el nivel de
+evidencia es *precautorio* y el estado se mueve a lo conservador (§ [Fuentes y método de
+verificación](#fuentes-y-método-de-verificación)).
+
+**Paso 5 — Reevaluación.** Una verificación **no es definitiva**. Se revisa una pieza ya aceptada
+cuando: (a) cambia la legislación o el plazo aplicable; (b) se sustituye el escaneo por otro fichero
+o fuente; (c) aparece información nueva sobre la **autoría** (atribución corregida, ilustrador
+identificado, fecha de fallecimiento distinta); (d) aparece una fuente primaria mejor que la usada.
+En cualquiera de los cuatro casos, la pieza vuelve a 📝 hasta rehacer los pasos 1–4.
+
+### 4.2 Candidatas concretas
+
+**Tabla de trabajo, no vía libre.** Recoge el resultado **esperado** de aplicar §4.1 a las piezas que
+más se citan al hablar de estética pulp, para no repetir la investigación desde cero. Ninguna fila
+autoriza uso: el ✅/📝/⛔ es la **hipótesis** de partida y hay que cerrarla con los pasos 0–4 sobre la
+lámina exacta.
+
+| Candidata | Fecha / país | EE. UU. | UE (vida+70 del ilustrador) | Esperado | Por qué |
+|---|---|---|---|---|---|
+| *Amazing Stories* nº 1 (abr. 1926), portada de **Frank R. Paul** | 1926, EE. UU. | ✅ DP por fecha (pre-1931) | ⛔ Paul falleció en **1963** → protegida hasta el **31-dic-2033** (DP el 1-ene-2034) | ⛔ | Caso testigo del choque de jurisdicciones: DP estadounidense claro, **protegida en la UE** durante otros ~8 años. Publicamos desde ES/UE ⇒ manda la UE |
+| Cualquier otra lámina de **Frank R. Paul** (*Amazing*, *Wonder Stories*, *Science Wonder*) | 1926–1963, EE. UU. | ✅/📝 según año (1931+ requiere renovación) | ⛔ hasta el **1-ene-2034** | ⛔ | Mismo motivo: el ilustrador es el mismo. Ninguna lámina de Paul es reproducible en la UE en 2026 |
+| Portadas de *Weird Tales* de **Margaret Brundage** | 1932–1945, EE. UU. | 📝 requiere comprobar renovación (1932+) | ⛔ falleció en **1976** → protegida hasta el **31-dic-2046** (DP el 1-ene-2047) | ⛔ | Reproducción descartada hasta 2047. El *tropo* (mujer en peligro, paleta pastel, pastel sobre cartón) sí es imitable con arte propio |
+| **Interiores b/n** de revistas pulp estadounidenses **anteriores a 1931** | ≤1930, EE. UU. | ✅ DP por fecha | ❓ depende del ilustrador; muchos interiores van **sin firmar** | 📝 | Única familia con recorrido real: si el interior es **anónimo o de ilustrador fallecido antes de 1956**, puede dar ✅ en ambas. **Anónimo ≠ libre**: la UE cuenta 70 años desde la publicación **solo si el autor nunca se identificó**; una atribución posterior reinicia el cálculo (dispara la reevaluación del paso 5) |
+| **Tipografías / rótulos art déco** de esas portadas | 1920–1940 | — | — | ✅ como **estilo**, ⛔ como fichero | En ES/UE el **diseño tipográfico** como tal no goza de la protección de una obra literaria, pero un **fichero de fuente** moderno sí tiene licencia propia. Vía correcta: **redibujar** los rótulos, o usar una fuente con licencia explícita que lo permita |
+| **Cabeceras/logotipos** (*Weird Tales*, *Amazing Stories*) | — | — | — | ⛔ | Marca, no copyright: no caduca mientras se use y renueve. Precautorio pendiente de TESS/EUIPO; se trata como ⛔ en cualquier caso (§4, paso 2) |
+
+> **Fuente/verificación (consulta 2026-07-27):** fallecimientos de **Frank R. Paul (1963)** y
+> **Margaret Brundage (1976)** cruzados con UE vida+70; corte estadounidense de 95 años vía
+> [Duke CSPD 2026](https://web.law.duke.edu/cspd/publicdomainday/2026/) y
+> [Cornell/Hirtle](https://guides.library.cornell.edu/copyright/publicdomain); renovaciones 1931–1963 vía
+> [Stanford Copyright Renewal Database](https://exhibits.stanford.edu/copyrightrenewals). Marcas de
+> cabecera: **precautorio**, sin pull de registro en esta versión.
+
+**Conclusión operativa.** Al aplicar la regla de la UE, **casi toda lámina pulp icónica sigue
+protegida**: los ilustradores que definieron el estilo murieron demasiado tarde (Paul 1963,
+Brundage 1976). El «pre-1929/1930» estadounidense que circula como atajo **no basta** para publicar
+desde España. Por eso la vía por defecto del proyecto sigue siendo **arte propio Neo Geo inspirado**
+en los tropos, y la reproducción literal se reserva a piezas que den ✅ **también en la UE** — hoy,
+en la práctica, solo algunos interiores b/n pre-1931 sin autoría viva.
 
 ---
 
@@ -194,6 +269,7 @@ nombres/logos** como guiño de producto.
 1. ¿El **copyright** está caducado en ES/UE (vida+70) *y* donde publiquemos? → si no, ⛔.
 2. ¿Hay una **marca viva** sobre ese nombre/logo en juegos/entretenimiento? → si sí, 📝 (usa idea, no etiqueta).
 3. ¿Estoy copiando un **diseño visual** concreto de una adaptación moderna? → si sí, ⛔; pinta arte propio.
+   Si es una **lámina/portada pulp**, aplica el [protocolo de §4.1](#41-protocolo-de-verificación-de-una-lámina) entero antes de nada.
 4. ¿Aparece en la [lista de descartes](#lista-de-descartes)? → ⛔.
 5. Ante cualquier duda no resuelta → **descartar**.
 
@@ -205,3 +281,8 @@ bloque, la **fuente autoritativa + fecha de consulta** (ver
 [Fuentes y método de verificación](#fuentes-y-método-de-verificación)). Sin evidencia de registro,
 una afirmación de marca queda **precautoria** y su estado se mueve a lo conservador (📝/⛔), nunca a ✅.
 Al usar un elemento en código/arte, enlaza de vuelta a la fila de esta tabla en el PR.
+
+Para **imágenes** (láminas, portadas, interiores) el listón es mayor: se pasa el
+[protocolo de §4.1](#41-protocolo-de-verificación-de-una-lámina) completo y se deja la pieza registrada
+en [§4.2](#42-candidatas-concretas) con su evidencia. Ninguna verificación es definitiva: el **paso 5**
+enumera cuándo hay que rehacerla.

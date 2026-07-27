@@ -1,21 +1,25 @@
 --	----------     Public domain call sign / name pools     ----------
 --
---	Pools de nombres tomados del imaginario scifi/pulp en DOMINIO PÚBLICO, curados y
---	verificados en docs/DOMINIO_PUBLICO_SCIFI.md (issue #310, Fase 4). Sirven para dar
---	sabor de ambientación a indicativos de nave, contactos y estaciones sin coste de
---	licencia y sin arriesgar una marca ajena.
+--	Pools de nombres del imaginario scifi/pulp en DOMINIO PÚBLICO, curados en
+--	docs/DOMINIO_PUBLICO_SCIFI.md (issue #310, Fase 4). Sirven para dar sabor de
+--	ambientación a indicativos de nave, contactos y estaciones sin coste de licencia.
 --
 --	DEPENDENCIA: este archivo NO es autónomo. Su fuente de verdad legal es
---	docs/DOMINIO_PUBLICO_SCIFI.md, integrado en esta misma pila de PRs (#310). Cada nombre
---	de los pools de abajo está trazado a una fila/nota verificada de ese catálogo.
+--	docs/DOMINIO_PUBLICO_SCIFI.md, integrado en esta misma pila de PRs (#310). Cada
+--	nombre de abajo aparece literalmente en una fila de ese catálogo, y eso lo verifica
+--	tools/check_public_domain_names.py en CI: añadir aquí un nombre que el catálogo no
+--	mencione rompe el build.
 --
 --	IMPORTANTE (criterio legal, resumido de docs/DOMINIO_PUBLICO_SCIFI.md):
---		- Solo se incluyen nombres cuyo COPYRIGHT está caducado (vida+70 en UE) y que NO
---		  colisionan con una marca viva en nuestro uso lúdico.
+--		- Solo se incluyen nombres cuyo COPYRIGHT está caducado (vida+70 en UE).
+--		- El estado de MARCA de estos nombres NO se ha consultado en registro. Lo que
+--		  sostiene su uso es que aquí son nombres DENTRO de la ficción, no signos que
+--		  identifiquen el origen del producto. Por eso el módulo, sus paquetes y sus
+--		  releases nunca deben llamarse con uno de estos nombres, y nada de esto debe
+--		  presentarse con el logotipo o la tipografía de una marca ajena.
 --		- Se excluyen a propósito nombres de la lista de descartes (Flash Gordon, Buck
 --		  Rogers, John Carter/Barsoom, material de Derleth/Chaosium, etc.).
 --		- Antes de añadir un nombre nuevo aquí, verifica su fila en el catálogo y enlaza.
---		  Si no aparece en una fila/nota verificada del catálogo, NO lo añadas.
 --
 --	Este archivo es propio del fork (no upstream) y NO modifica el generador de
 --	indicativos de EmptyEpsilon (generate_call_sign_scenario_utility.lua). Interopera con

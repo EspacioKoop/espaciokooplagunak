@@ -98,7 +98,7 @@ export function derivarAlertas(estadoPrev, estadoActual) {
 }
 
 function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, (character) => `&#${character.charCodeAt(0)};`);
+  return String(value).replace(/[&<>"']/g, (character) => `&#${character.codePointAt(0)};`);
 }
 
 /**

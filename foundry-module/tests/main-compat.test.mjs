@@ -150,22 +150,44 @@ test("updateUser revoca el token y cierra la ventana si el usuario local deja de
   assert.equal(tokenSession.getBridgeToken(), "");
 });
 
-test("un updateUser sin cambio de rol (cambiar de puesto) no revoca nada", async () => {
+test("un updateUser sin cambio de rol no revoca la consola del jugador", async () => {
+  // El bug vivía SOLO en el no-GM: a él se le revocaba y cerraba la consola al
+  // cambiar de puesto. Con un GM local el hook ni siquiera llega a revocar, así
+  // que el fixture debe ser un jugador para que esta regresión valga de algo.
+  const { hooks, instances } = await loadModule({ isGM: false });
+  const controls = [{ name: "token", tools: [] }];
+  hooks.getSceneControlButtons(controls);
+  const grupo = controls.find((control) => control.name === "lagunak");
+  grupo.tools.find((tool) => tool.name === "lagunak-espacio-puesto").onClick();
+
+  const consola = instances[0];
+  assert.equal(consola.rendered, true);
+
+  // Cambiar de puesto escribe un flag: updateUser SIN "role" en el diff. El
+  // código anterior revocaba aquí y dejaba al jugador con la ventana vacía
+  // hasta recargar.
+  hooks.updateUser({ id: "local-user", isGM: false }, { flags: { puesto: "navigation" } });
+  await Promise.resolve();
+  await Promise.resolve();
+
+  assert.equal(consola.closed, false, "la consola del jugador no debe cerrarse");
+  assert.equal(consola.rendered, true);
+});
+
+test("perder el rol GM sí revoca, con el mismo hook", async () => {
   const { hooks, tokenSession, instances } = await loadModule();
   const controls = [{ name: "token", tools: [] }];
   hooks.getSceneControlButtons(controls);
   await toolByName(controls, "lagunak-token").onClick();
   const app = instances[0];
-  assert.equal(app.rendered, true);
 
-  // Cambiar de puesto escribe un flag: updateUser SIN "role" en el diff.
-  // Antes esto revocaba y cerraba las consolas de cualquier no-GM en plena
-  // sesión (ventana en blanco hasta recargar).
-  hooks.updateUser({ id: "local-user", isGM: true }, { flags: { puesto: "navigation" } });
+  game.user.isGM = false;
+  hooks.updateUser({ id: "local-user", isGM: false }, { role: 1 });
   await Promise.resolve();
 
-  assert.equal(tokenSession.getBridgeToken(), "test-token");
-  assert.equal(app.rendered, true);
+  assert.equal(tokenSession.getBridgeToken(), "");
+  assert.equal(app.rendered, false);
+  game.user.isGM = true;
 });
 
 test("degradar durante healthz cierra la vista y no inicia peticiones autenticadas", async () => {

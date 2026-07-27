@@ -1,7 +1,8 @@
 // Arte pixel procedural de la baraja de póker (#308). Genera cada carta como
 // SVG en rejilla de píxeles (shape-rendering: crispEdges), sin assets binarios
-// ni dependencias: la carta se deriva del código de `naipes.mjs` ("14s", "2c"…)
-// en el cliente, así que la baraja pesa cero bytes en el repositorio.
+// ni dependencias: la carta se deriva del código estable de `naipes.mjs`
+// ("As", "Td", "2c"…) en el cliente, así que la baraja pesa cero bytes en el
+// repositorio.
 //
 // Criterio de diseño nº 1: LEGIBILIDAD. Cada carta se identifica de un vistazo
 // por su índice — valor en tipografía pixel 5x7 + palo 7x7 — repetido en las
@@ -12,7 +13,7 @@
 // sobre campo estrellado: el guiño D&D vive en el dorso para no robar contraste
 // a la cara.
 
-import { PALOS, VALOR_MINIMO, VALOR_MAXIMO } from "./naipes.mjs";
+import { interpretarCodigo } from "./naipes.mjs";
 
 // Lienzo lógico en píxeles de arte; el SVG escala sin difuminar.
 export const ANCHO = 30;
@@ -130,10 +131,16 @@ function estamparIndice(rects, valor, palo, invertido) {
 }
 
 function rectsDeCarta(codigo) {
-  const palo = codigo.slice(-1);
-  const valor = Number(codigo.slice(0, -1));
-  if (!PALOS.includes(palo) || !Number.isInteger(valor) || valor < VALOR_MINIMO || valor > VALOR_MAXIMO) {
-    throw new RangeError(`cartaSvg: código de carta desconocido (${codigo})`);
+  let valor;
+  let palo;
+  try {
+    ({ valor, palo } = interpretarCodigo(codigo));
+  } catch (causa) {
+    throw new RangeError(
+      `cartaSvg: código de carta desconocido (${codigo}); se espera el código ` +
+        'estable de naipes.mjs ("As", "Td", "2c"), no el par valor+palo en crudo',
+      { cause: causa },
+    );
   }
   const rects = [];
   const color = colorDePalo(palo);

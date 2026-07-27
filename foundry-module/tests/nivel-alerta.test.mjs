@@ -5,6 +5,8 @@ import { NIVELES, motivosDeAlerta, nivelDeAlerta } from "../scripts/nivel-alerta
 import {
   AJUSTE_NIVEL_ALERTA,
   aplicarNivelAlBody,
+  aplicarAvisoAlerta,
+  normalizarAviso,
   publicarNivelAlerta,
   registrarEscuchaAlerta,
 } from "../scripts/alerta-escena.mjs";
@@ -91,6 +93,7 @@ function ajustesFalsos(inicial = "verde") {
 
 function bodyFalso(clases = []) {
   const set = new Set(clases);
+  const hijos = [];
   return {
     classList: {
       add: (c) => set.add(c),
@@ -98,8 +101,31 @@ function bodyFalso(clases = []) {
       [Symbol.iterator]: () => set[Symbol.iterator](),
     },
     clases: set,
+    hijos,
+    ownerDocument: {
+      createElement: () => {
+        const atributos = {};
+        const nodo = {
+          atributos,
+          textContent: "",
+          className: "",
+          setAttribute: (k, v) => { atributos[k] = v; },
+          getAttribute: (k) => atributos[k],
+          remove: () => {
+            const i = hijos.indexOf(nodo);
+            if (i >= 0) hijos.splice(i, 1);
+          },
+        };
+        return nodo;
+      },
+    },
+    appendChild: (nodo) => hijos.push(nodo),
+    querySelector: (sel) => (sel === "#lagunak-alerta-aviso" ? hijos.find((h) => h.id === "lagunak-alerta-aviso") ?? null : null),
   };
 }
+
+// i18n de prueba: devuelve la clave, para poder afirmar sobre ella.
+const i18nFalso = { localize: (clave) => clave };
 
 test("solo el GM publica el nivel", async () => {
   const ajustes = ajustesFalsos();
@@ -113,10 +139,27 @@ test("solo el GM publica el nivel", async () => {
   assert.deepEqual(ajustes.escrituras, []);
 });
 
-test("no se reescribe el ajuste si el nivel no cambió", async () => {
-  const ajustes = ajustesFalsos("roja");
+test("no se reescribe el ajuste si nivel y motivos no cambiaron", async () => {
+  const ajustes = ajustesFalsos({ nivel: "roja", motivos: ["LAGUNAK.Alerta.Motivo.Casco"] });
   await publicarNivelAlerta({ moduleId: MODULO, nave: nave({ hull: 10 }), ajustes, esGM: true });
   assert.deepEqual(ajustes.escrituras, []);
+});
+
+test("un motivo nuevo se publica aunque el nivel siga igual", async () => {
+  // La mesa necesita saber que ahora ADEMÁS hay sistemas inutilizados, aunque
+  // el borde siga siendo del mismo color.
+  const ajustes = ajustesFalsos({ nivel: "roja", motivos: ["LAGUNAK.Alerta.Motivo.Casco"] });
+  await publicarNivelAlerta({
+    moduleId: MODULO,
+    nave: nave({ hull: 10, systems: { reactor: { health: 0 } } }),
+    ajustes,
+    esGM: true,
+  });
+  assert.equal(ajustes.escrituras.length, 1);
+  assert.deepEqual(ajustes.escrituras[0].motivos, [
+    "LAGUNAK.Alerta.Motivo.Casco",
+    "LAGUNAK.Alerta.Motivo.Sistemas",
+  ]);
 });
 
 test("un cambio de nivel se publica y se anuncia por hook", async () => {
@@ -130,7 +173,9 @@ test("un cambio de nivel se publica y se anuncia por hook", async () => {
     hooks: { callAll: (...args) => avisos.push(args) },
   });
   assert.equal(nivel, "roja");
-  assert.deepEqual(ajustes.escrituras, ["roja"]);
+  assert.equal(ajustes.escrituras.length, 1);
+  assert.equal(ajustes.escrituras[0].nivel, "roja");
+  assert.deepEqual(ajustes.escrituras[0].motivos, ["LAGUNAK.Alerta.Motivo.Casco"]);
   assert.deepEqual(avisos, [["lagunakNivelAlerta", "roja", "verde"]]);
 });
 
@@ -159,20 +204,97 @@ test("la escucha aplica el nivel vigente al entrar y en cada cambio", () => {
   };
   const desregistrar = registrarEscuchaAlerta(MODULO, {
     hooks,
-    ajustes: ajustesFalsos("amarilla"),
+    ajustes: ajustesFalsos({ nivel: "amarilla", motivos: [] }),
     body,
   });
   // Un jugador que entra tarde ve la alerta en curso, sin esperar al GM.
   assert.ok(body.clases.has("lagunak-alerta-amarilla"));
 
   const [, alCambiar] = manejadores[0];
-  alCambiar({ key: `${MODULO}.${AJUSTE_NIVEL_ALERTA}`, value: "roja" });
+  alCambiar({ key: `${MODULO}.${AJUSTE_NIVEL_ALERTA}`, value: { nivel: "roja", motivos: [] } });
   assert.ok(body.clases.has("lagunak-alerta-roja"));
 
   // Un ajuste ajeno no toca la pantalla.
-  alCambiar({ key: "otro-modulo.loQueSea", value: "verde" });
+  alCambiar({ key: "otro-modulo.loQueSea", value: { nivel: "verde", motivos: [] } });
   assert.ok(body.clases.has("lagunak-alerta-roja"));
 
   desregistrar();
   assert.equal(manejadores.length, 0);
+});
+
+// ---- Aviso textual: el color nunca en solitario ----------------------------
+
+test("el aviso escribe nivel y motivos en texto, en una región anunciable", () => {
+  const body = bodyFalso();
+  const texto = aplicarAvisoAlerta(
+    { nivel: "roja", motivos: ["LAGUNAK.Alerta.Motivo.Casco", "LAGUNAK.Alerta.Motivo.Sistemas"] },
+    { body, i18n: i18nFalso },
+  );
+  assert.equal(texto, "LAGUNAK.Alerta.Nivel.roja · LAGUNAK.Alerta.Motivo.Casco · LAGUNAK.Alerta.Motivo.Sistemas");
+
+  const [aviso] = body.hijos;
+  assert.equal(aviso.getAttribute("role"), "status");
+  assert.equal(aviso.getAttribute("aria-live"), "polite");
+  assert.match(aviso.className, /lagunak-alerta-aviso--roja/);
+});
+
+test("el aviso reutiliza su nodo entre cambios en vez de recrearlo", () => {
+  // Recrear la región haría que el lector anunciase una región nueva en vez de
+  // una actualización.
+  const body = bodyFalso();
+  aplicarAvisoAlerta({ nivel: "amarilla", motivos: [] }, { body, i18n: i18nFalso });
+  const primero = body.hijos[0];
+  aplicarAvisoAlerta({ nivel: "roja", motivos: ["LAGUNAK.Alerta.Motivo.Casco"] }, { body, i18n: i18nFalso });
+  assert.equal(body.hijos.length, 1);
+  assert.equal(body.hijos[0], primero, "debe ser el mismo nodo");
+  assert.match(body.hijos[0].className, /lagunak-alerta-aviso--roja/);
+});
+
+test("al volver a verde el aviso desaparece por completo", () => {
+  const body = bodyFalso();
+  aplicarAvisoAlerta({ nivel: "roja", motivos: ["LAGUNAK.Alerta.Motivo.Casco"] }, { body, i18n: i18nFalso });
+  assert.equal(body.hijos.length, 1);
+  assert.equal(aplicarAvisoAlerta({ nivel: "verde", motivos: [] }, { body, i18n: i18nFalso }), null);
+  assert.equal(body.hijos.length, 0);
+});
+
+test("un nivel sin motivos se anuncia igual, solo con su etiqueta", () => {
+  const body = bodyFalso();
+  const texto = aplicarAvisoAlerta({ nivel: "amarilla", motivos: [] }, { body, i18n: i18nFalso });
+  assert.equal(texto, "LAGUNAK.Alerta.Nivel.amarilla");
+  assert.equal(texto.includes("·"), false, "sin motivos no debe quedar un separador suelto");
+});
+
+test("normalizarAviso acepta el valor legado en cadena de mundos ya en marcha", () => {
+  assert.deepEqual(normalizarAviso("roja"), { nivel: "roja", motivos: [] });
+  assert.deepEqual(normalizarAviso(""), { nivel: "verde", motivos: [] });
+  assert.deepEqual(normalizarAviso(undefined), { nivel: "verde", motivos: [] });
+  assert.deepEqual(normalizarAviso({ nivel: "amarilla", motivos: ["x"] }), { nivel: "amarilla", motivos: ["x"] });
+  // Basura en el ajuste no debe llegar al DOM.
+  assert.deepEqual(normalizarAviso({ nivel: 7, motivos: "no-es-lista" }), { nivel: "verde", motivos: [] });
+  assert.deepEqual(normalizarAviso({ nivel: "roja", motivos: [1, "ok", null] }), { nivel: "roja", motivos: ["ok"] });
+});
+
+test("la escucha pinta el aviso textual además del borde, para toda la mesa", () => {
+  const body = bodyFalso();
+  const manejadores = [];
+  const hooks = {
+    on: (evento, fn) => manejadores.push([evento, fn]),
+    off: () => {},
+  };
+  registrarEscuchaAlerta(MODULO, {
+    hooks,
+    ajustes: ajustesFalsos({ nivel: "roja", motivos: ["LAGUNAK.Alerta.Motivo.Casco"] }),
+    body,
+    i18n: i18nFalso,
+  });
+  // Borde Y texto: el jugador que entra tarde recibe ambos canales.
+  assert.ok(body.clases.has("lagunak-alerta-roja"));
+  assert.equal(body.hijos.length, 1);
+  assert.match(body.hijos[0].textContent, /LAGUNAK\.Alerta\.Motivo\.Casco/);
+
+  const [, alCambiar] = manejadores[0];
+  alCambiar({ key: `${MODULO}.${AJUSTE_NIVEL_ALERTA}`, value: { nivel: "verde", motivos: [] } });
+  assert.equal(body.hijos.length, 0, "verde no deja rastro textual");
+  assert.equal([...body.clases].filter((c) => c.startsWith("lagunak-alerta-")).length, 0);
 });

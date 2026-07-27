@@ -369,8 +369,9 @@
  * teñir la escena entera bajaría el contraste de tokens y texto justo cuando
  * más falta hace leerlos. pointer-events:none para no robar clics al canvas.
  *
- * El color no es el único canal: el módulo también escribe el motivo en la
- * ventana de estado, para no comunicar por color en solitario.
+ * El color no es el único canal: junto al borde se pinta el aviso textual
+ * `.lagunak-alerta-aviso` (region role="status") con el nivel y sus motivos,
+ * de modo que la alerta se comunica también por texto y a lector de pantalla.
  */
 .lagunak-alerta-amarilla::after,
 .lagunak-alerta-roja::after {
@@ -413,3 +414,29 @@
     animation: none;
   }
 }
+
+/*
+ * Aviso textual de alerta. Acompaña SIEMPRE al borde de color: es el canal no
+ * cromático exigido por WCAG 1.4.1 y lo único que percibe un lector de
+ * pantalla. Arriba y centrado, sin robar clics al tablero.
+ */
+.lagunak-alerta-aviso {
+  position: fixed;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 61;
+  pointer-events: none;
+  max-width: min(90vw, 720px);
+  padding: 4px 14px;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  background: rgba(6, 8, 14, 0.88);
+  font: 700 12px/1.4 var(--font-primary, sans-serif);
+  letter-spacing: 0.12em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.lagunak-alerta-aviso--amarilla { color: #e2aa28; }
+.lagunak-alerta-aviso--roja { color: #ff8f9d; }

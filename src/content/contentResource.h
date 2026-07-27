@@ -106,7 +106,7 @@ enum class ContentResourceError
     InvalidShipDocument,
 };
 
-constexpr int CONTENT_RESOURCE_SCHEMA_VERSION = 5;
+constexpr int CONTENT_RESOURCE_SCHEMA_VERSION = 6;
 constexpr std::size_t CONTENT_RESOURCE_MAX_IMPORT_BYTES = 64 * 1024;
 
 std::string contentResourceTypeId(ContentResourceType type);

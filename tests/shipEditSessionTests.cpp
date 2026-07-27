@@ -49,6 +49,23 @@ int main()
     expect(session.redo() && !session.document().hull_max,
         "hull override removal can be redone");
 
+    expect(session.setShieldMax(true, 120.0f) == ShipEditError::None
+            && session.document().front_shield_max == 120.0f,
+        "front shield maximum can be staged independently");
+    expect(session.setShieldMax(false, 90.0f) == ShipEditError::None
+            && session.document().rear_shield_max == 90.0f,
+        "rear shield maximum can be staged independently");
+    expect(session.setShieldMax(false, 0.0f) == ShipEditError::InvalidDocument
+            && session.document().rear_shield_max == 90.0f,
+        "invalid shield edit fails without partial mutation");
+    expect(session.removeShieldOverride(true) == ShipEditError::None
+            && !session.document().front_shield_max,
+        "shield override removal is explicit");
+    expect(session.undo() && session.document().front_shield_max == 120.0f,
+        "shield override removal can be undone");
+    expect(session.redo() && !session.document().front_shield_max,
+        "shield override removal can be redone");
+
     expect(session.setSystemHealth(ShipSystemId::FrontShield, -0.25f) == ShipEditError::None
             && session.isDirty() && session.document().systems.size() == 2,
         "adding a valid system override dirties staging");

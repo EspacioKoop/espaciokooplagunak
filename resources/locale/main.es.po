@@ -4187,12 +4187,20 @@ msgid "Maximum hull"
 msgstr "Casco máximo"
 
 msgctxt "content_editor"
+msgid "Maximum shield"
+msgstr "Escudo máximo"
+
+msgctxt "content_editor"
 msgid "Set system"
 msgstr "Aplicar sistema"
 
 msgctxt "content_editor"
 msgid "Set hull"
 msgstr "Aplicar casco"
+
+msgctxt "content_editor"
+msgid "Set shield"
+msgstr "Aplicar escudo"
 
 msgctxt "content_editor"
 msgid "Remove override"
@@ -4221,6 +4229,22 @@ msgstr "El casco máximo debe ser un número finito y positivo de hasta 1000000.
 msgctxt "content_editor"
 msgid "Ship hull override staged."
 msgstr "Override de casco preparado."
+
+msgctxt "content_editor"
+msgid "Maximum shield must be a finite positive number up to 1000000."
+msgstr "El escudo máximo debe ser un número finito y positivo de hasta 1000000."
+
+msgctxt "content_editor"
+msgid "Ship shield override staged."
+msgstr "Override de escudo preparado."
+
+msgctxt "content_editor"
+msgid "The ship has no selected shield override."
+msgstr "La nave no tiene override para el escudo seleccionado."
+
+msgctxt "content_editor"
+msgid "Ship shield override removed from staging."
+msgstr "Override de escudo retirado del staging."
 
 msgctxt "content_editor"
 msgid "The ship has no hull override."

@@ -145,3 +145,82 @@ test("no se puede actuar tras terminar la mano", () => {
   assert.equal(res.ok, false);
   assert.equal(res.codigo, "mano_terminada");
 });
+
+test("las ciegas que dejan a todos all-in resuelven la mano al crearla", () => {
+  for (const stacks of [
+    [1, 1],
+    [1, 2],
+  ]) {
+    const jugadores = stacks.map((stack, i) => ({ userId: `u${i}`, stack }));
+    const estado = crear({ jugadores, ciegaPequena: 1, ciegaGrande: 2, botonIndice: 0 }, 77);
+    const pub = vistaPublica(estado);
+    assert.equal(haTerminado(estado), true, `stacks ${stacks}: la mano debe terminar`);
+    assert.equal(pub.turno, null);
+    assert.equal(pub.comunitarias.length, 5);
+    assert.equal(resultado(estado).tipo, "showdown");
+    assert.equal(fichasTotales(estado), stacks[0] + stacks[1]);
+    assert.deepEqual(accionesPermitidas(estado, "u0"), []);
+  }
+});
+
+test("crear rechaza identidades duplicadas o vacías", () => {
+  const conJugadores = (jugadores) =>
+    crear({ jugadores, ciegaPequena: 1, ciegaGrande: 2, botonIndice: 0 }, 5);
+  assert.throws(
+    () =>
+      conJugadores([
+        { userId: "u0", stack: 100 },
+        { userId: "u0", stack: 100 },
+      ]),
+    /duplicada/,
+  );
+  assert.throws(
+    () =>
+      conJugadores([
+        { userId: "", stack: 100 },
+        { userId: "u1", stack: 100 },
+      ]),
+    /identificador no vacío/,
+  );
+  assert.throws(
+    () => conJugadores([{ stack: 100 }, { userId: "u1", stack: 100 }]),
+    /identificador no vacío/,
+  );
+});
+
+test("crear rechaza un botonIndice fuera de la mesa", () => {
+  const jugadores = [
+    { userId: "u0", stack: 100 },
+    { userId: "u1", stack: 100 },
+  ];
+  for (const botonIndice of [9, -1, 2, 1.5, "0"]) {
+    assert.throws(
+      () => crear({ jugadores, ciegaPequena: 1, ciegaGrande: 2, botonIndice }, 5),
+      /botonIndice/,
+      `botonIndice ${botonIndice} debería rechazarse`,
+    );
+  }
+  const valida = crear({ jugadores, ciegaPequena: 1, ciegaGrande: 2, botonIndice: 1 }, 5);
+  assert.equal(vistaPublica(valida).turno, "u1");
+});
+
+test("si un jugador aún puede igualar tras las ciegas, la mano sigue viva", () => {
+  // u0 (SB, stack 2) no está all-in: le queda decisión frente al BB all-in.
+  const estado = crear(
+    {
+      jugadores: [
+        { userId: "u0", stack: 2 },
+        { userId: "u1", stack: 1 },
+      ],
+      ciegaPequena: 1,
+      ciegaGrande: 2,
+      botonIndice: 0,
+    },
+    77,
+  );
+  assert.equal(haTerminado(estado), false);
+  assert.equal(vistaPublica(estado).turno, "u0");
+  const final = jugarPasivo(estado);
+  assert.equal(haTerminado(final), true);
+  assert.equal(fichasTotales(final), 3);
+});

@@ -44,6 +44,23 @@ export function crear(configuracion, semilla) {
   const ciegaPequena = enteroPositivo(configuracion.ciegaPequena ?? 1, "ciegaPequena");
   const ciegaGrande = enteroPositivo(configuracion.ciegaGrande ?? ciegaPequena * 2, "ciegaGrande");
   const botonIndice = configuracion.botonIndice ?? 0;
+  if (!Number.isInteger(botonIndice) || botonIndice < 0 || botonIndice >= jugadoresConfig.length) {
+    throw new RangeError("botonIndice: debe ser el índice de un asiento de la mesa");
+  }
+
+  // La identidad de cada asiento sostiene la vista privada y la asociación
+  // identidad↔asiento de la capa de sesión: sin unicidad, dos asientos
+  // compartirían mano y actor.
+  const vistos = new Set();
+  for (const j of jugadoresConfig) {
+    if (typeof j?.userId !== "string" || j.userId === "") {
+      throw new RangeError("userId: cada jugador necesita un identificador no vacío");
+    }
+    if (vistos.has(j.userId)) {
+      throw new RangeError(`userId: identidad duplicada en la mesa (${j.userId})`);
+    }
+    vistos.add(j.userId);
+  }
 
   const jugadores = jugadoresConfig.map((j, indice) => {
     enteroPositivo(j.stack, "stack");
@@ -96,6 +113,12 @@ export function crear(configuracion, semilla) {
 
   // Primero en hablar en preflop: el siguiente a la ciega grande.
   estado.turnoIndice = siguientePuedeActuar(estado, indiceBb);
+  // Si las ciegas ya han dejado a todo el mundo all-in, no hay acción posible:
+  // se corre el tablero y se resuelve en el acto en vez de dejar la mano
+  // congelada (turno null y sin terminar).
+  if (estado.turnoIndice == null) {
+    correrTableroYResolver(estado);
+  }
   return estado;
 }
 
@@ -240,13 +263,18 @@ function avanzar(estado) {
   // tablero sin más apuestas hasta el showdown.
   const puedenActuar = estado.jugadores.filter((j) => !j.retirado && !j.allIn);
   if (estado.fase === "river" || puedenActuar.length <= 1) {
-    while (estado.fase !== "river" && estado.comunitarias.length < 5) {
-      repartirCalleSilenciosa(estado);
-    }
-    showdown(estado);
+    correrTableroYResolver(estado);
     return;
   }
   pasarDeCalle(estado);
+}
+
+// Reparte lo que falte del tablero sin abrir más rondas y resuelve el showdown.
+function correrTableroYResolver(estado) {
+  while (estado.fase !== "river" && estado.comunitarias.length < 5) {
+    repartirCalleSilenciosa(estado);
+  }
+  showdown(estado);
 }
 
 function pasarDeCalle(estado) {

@@ -71,3 +71,4 @@ bridge/.venv/
 
 # Configuración local de análisis SonarQube
 sonar-project.properties
+.evidencia-tinte/

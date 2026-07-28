@@ -4,7 +4,6 @@ import test from "node:test";
 import {
   AJUSTES_EPOCA,
   EPOCAS,
-  EPOCA_POR_DEFECTO,
   MALLA_CAZA,
   ajustesEpoca,
   areaFirmada,
@@ -52,12 +51,17 @@ test("PSX ajusta los vértices a la rejilla; GameCube no", () => {
   assert.equal(AJUSTES_EPOCA.psx.profundidadPorPixel, false, "y la PSX no");
 });
 
-test("una época desconocida cae en la de por defecto en vez de romper", () => {
+test("una época desconocida cae en una válida en vez de romper", () => {
+  // Cuál es la época por defecto es una decisión de producto que #362 tiene
+  // abierta, así que aquí NO se fija ninguna preferencia: solo se comprueba que
+  // esta capa pura no se rompe con lo que no conoce y que devuelve una época
+  // real, sea la que sea la que se acuerde luego.
   for (const basura of [null, undefined, "n64", 7, {}]) {
-    assert.equal(ajustesEpoca(basura), AJUSTES_EPOCA[EPOCA_POR_DEFECTO]);
+    const ajustes = ajustesEpoca(basura);
+    assert.ok(Object.values(AJUSTES_EPOCA).includes(ajustes), "unos ajustes reales");
   }
-  assert.ok(EPOCAS.includes(EPOCA_POR_DEFECTO));
-  assert.equal(componerEscena(MALLA_CAZA, { epoca: "n64" }).epoca, EPOCA_POR_DEFECTO);
+  const escena = componerEscena(MALLA_CAZA, { epoca: "n64" });
+  assert.ok(EPOCAS.includes(escena.epoca), "y una época declarada");
 });
 
 test("un vértice detrás de la cámara se recorta, no sale disparado", () => {
@@ -197,5 +201,103 @@ test("el campo de visión se calcula desde el alto, no se configura a mano", () 
   // Valores imposibles se acotan en vez de dar infinito o negativo.
   for (const fov of [0, -20, 400, NaN]) {
     assert.ok(Number.isFinite(focal(120, fov)) && focal(120, fov) > 0, `fov ${fov}`);
+  }
+});
+
+// ---- La frontera numérica (bloqueante de la revisión) ----------------------
+
+/** ¿Todo número de la escena es finito? Es lo que el pintor da por hecho. */
+function escenaFinita(escena) {
+  return escena.poligonos.every((poligono) =>
+    poligono.puntos.every(
+      (punto) => Number.isFinite(punto.x) && Number.isFinite(punto.y) && Number.isFinite(punto.z),
+    ) && Number.isFinite(poligono.profundidad),
+  );
+}
+
+test("REGRESIÓN: focal nunca devuelve un número imposible", () => {
+  // `focal(NaN)` devolvía NaN y `focal(Infinity)` devolvía Infinity. Ninguna de
+  // las dos revienta: mandan la geometría a un sitio imposible, lejísimos de
+  // donde entró el valor malo, que es la peor forma de fallar.
+  for (const alto of [NaN, Infinity, -Infinity, -10, 0, null, undefined, "alto", {}]) {
+    const f = focal(alto);
+    assert.ok(Number.isFinite(f) && f > 0, `focal(${String(alto)}) = ${f}`);
+  }
+  for (const fov of [NaN, Infinity, 0, -30, 500, "sesenta"]) {
+    const f = focal(120, fov);
+    assert.ok(Number.isFinite(f) && f > 0, `fov ${String(fov)} -> ${f}`);
+  }
+});
+
+test("REGRESIÓN: una medida rota no produce geometría rota", () => {
+  // Reproducción de la revisión: `componerEscena(MALLA_CAZA, { alto: NaN })`
+  // devolvía ocho polígonos con coordenadas no finitas. Geometría con la forma
+  // correcta y los números rotos es lo que el lienzo se traga sin rechistar.
+  for (const opciones of [
+    { alto: NaN },
+    { ancho: NaN },
+    { alto: Infinity },
+    { ancho: -50 },
+    { alto: 0 },
+    { fov: NaN },
+    { cerca: NaN },
+    { cerca: -1 },
+  ]) {
+    const escena = componerEscena(MALLA_CAZA, opciones);
+    assert.ok(escenaFinita(escena), `escena finita con ${JSON.stringify(opciones)}`);
+    assert.ok(escena.ancho > 0 && escena.alto > 0, "y con un visor de tamaño real");
+  }
+});
+
+test("REGRESIÓN: una posición o una rotación imposibles no rompen ni contaminan", () => {
+  // `posicion: null` lanzaba TypeError al leer `posicion[0]`: la escena entera
+  // se perdía por un dato que se podía sustituir.
+  for (const opciones of [
+    { posicion: null },
+    { posicion: [0, 0] },
+    { posicion: [NaN, 0, 6] },
+    { posicion: "lejos" },
+    { yaw: NaN },
+    { pitch: Infinity },
+    { roll: null },
+  ]) {
+    let escena;
+    assert.doesNotThrow(() => {
+      escena = componerEscena(MALLA_CAZA, opciones);
+    }, `no lanza con ${JSON.stringify(opciones)}`);
+    assert.ok(escenaFinita(escena), `escena finita con ${JSON.stringify(opciones)}`);
+  }
+});
+
+test("transformar y proyectar se defienden solos, que son públicas", () => {
+  // No pueden fiarse de que las llamen en orden ni con datos buenos: cualquiera
+  // que importe el módulo puede usarlas sueltas.
+  assert.deepEqual(transformar(null), [0, 0, 0]);
+  assert.deepEqual(transformar([1, 2, 3], { posicion: null }), [1, 2, 3]);
+  for (const v of transformar([NaN, 2, 3], { yaw: NaN })) {
+    assert.ok(Number.isFinite(v), "ninguna coordenada se contagia");
+  }
+  // Dividir por un z no positivo es EL fallo del rasterizador casero: aquí no
+  // llega, pero la función pública no puede confiar en eso.
+  for (const vertice of [[1, 1, 0], [1, 1, -5], [1, 1, NaN], null]) {
+    const p = proyectar(vertice, { ancho: 100, alto: 80, f: 50 });
+    assert.ok(Number.isFinite(p.x) && Number.isFinite(p.y), `proyectar ${JSON.stringify(vertice)}`);
+  }
+  const sinOpciones = proyectar([0, 0, 1]);
+  assert.ok(Number.isFinite(sinOpciones.x) && Number.isFinite(sinOpciones.y));
+});
+
+test("un plano cercano imposible sigue recortando lo que hay detrás", () => {
+  const triangulo = [
+    [0, 1, 5],
+    [1, -1, 5],
+    [0, 0, -5],
+  ];
+  for (const cerca of [NaN, 0, -1, Infinity, null]) {
+    const recortado = recortarCercano(triangulo, cerca);
+    for (const v of recortado) {
+      assert.ok(v.every?.(Number.isFinite) ?? v.every((n) => Number.isFinite(n)));
+      assert.ok(v[2] > 0, "nada detrás de la cámara sobrevive al recorte");
+    }
   }
 });

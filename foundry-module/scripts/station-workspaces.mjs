@@ -261,7 +261,24 @@ export function buildWorkspaceModel({
 }) {
   const normalized = normalizeStation(station);
   const definition = normalized ? DEFINITIONS[normalized] : null;
-  const ship = isGM ? statePayload?.ship ?? null : null;
+  // Telemetría de la PROPIA NAVE: la ve toda la tripulación (#331).
+  //
+  // Estaba cerrada al GM y por eso las consolas salían vacías: `metricsFor` ya
+  // tenía una lectura distinta para cada puesto, pero sin `ship` no llegaba a
+  // ejecutarse. No era falta de diseño, era una llave echada.
+  //
+  // Y ocultarla no defendía nada: en el EmptyEpsilon del que esto es fork, cada
+  // pantalla de tripulación ve casco, energía y sistemas. Una consola de Foundry
+  // que esconde lo que la consola nativa enseña es un peor producto a cambio de
+  // cero seguridad. Lo que se protege es el **Bearer del puente**, que nunca sale
+  // del navegador del GM, no el contenido de un `/v1/state` que la tripulación
+  // vería igual asomándose a su propia nave.
+  const ship = statePayload?.ship ?? null;
+  // Los contactos SÍ siguen siendo recurso del GM. Es la excepción del issue:
+  // callsign, facción y coordenadas exactas son lo que el sistema de sensores
+  // debería decidir cuánto revela, y difundirlos crudos regalaría el trabajo del
+  // puesto. Se abrirán degradados por distancia y salud de sensores, con su
+  // propio módulo puro y sus pruebas.
   const safeContactsPayload = isGM ? contactsPayload : null;
   const crew = crewRows(users, moduleId, i18n);
 

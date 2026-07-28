@@ -78,6 +78,21 @@ Cada tripulante emite **solo** las órdenes de su puesto, y lo hace **sin poseer
 el token del puente**. El permiso se gatea en el **relé de Foundry**, no en el
 token:
 
+- **Doctrina de telemetría** (#331). La telemetría de la **nave propia** se
+  difunde a toda la tripulación; lo que permanece cerrado es lo que el GM autora.
+  El GM sigue siendo el único que habla con el puente —el Bearer no sale de su
+  navegador y ningún cliente de jugador lee el ajuste del token ni ejecuta un
+  `fetch` contra él— y reparte por socket el `statePayload` que ya sondeaba
+  (`telemetria-difusion.mjs`). Se transporta por socket y **no** por ajuste de
+  mundo: un `/v1/state` por sondeo persistido sería escritura continua en la base
+  de datos de la campaña, y la pérdida al recargar la repara el siguiente tick.
+  La razón de fondo es que «quién puede **pedir** el dato» y «quién puede
+  **leerlo**» son preguntas distintas: en el EmptyEpsilon del que esto es fork,
+  cada pantalla de tripulación ve casco, energía y sistemas, así que ocultarlo
+  aquí era un peor producto a cambio de cero seguridad. **Los contactos son la
+  excepción** y siguen siendo recurso del GM: callsign, facción y coordenadas
+  exactas son lo que el sistema de sensores debe decidir cuánto revela, y se
+  abrirán degradados por distancia y salud de sensores.
 - **Identidad de usuario no falsificable** (#237). El tripulante escribe la orden
   en su propio flag de usuario (`emitWorkspaceOrder`); el GM la recoge en el hook
   `updateUser`. El puesto **nunca** se declara en la orden: el GM lo resuelve

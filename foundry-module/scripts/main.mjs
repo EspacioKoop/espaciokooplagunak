@@ -51,6 +51,17 @@ import {
   POLL_MAX_S,
   MAPA_SEMILLA_DEFECTO,
 } from "./lagunak-constantes.mjs";
+import {
+  AJUSTE_MUSICA,
+  descripcionMando,
+  normalizarMando,
+  publicarOrdenMusica,
+  registrarAjusteMusica,
+  registrarEscuchaMusica,
+  registroEfectivo,
+  siguienteOrden,
+} from "./musica-mando.mjs";
+import { crearReproductor } from "./musica-reproductor.mjs";
 
 registerStationFeature(MODULE_ID);
 registerWorkspaceFeature(MODULE_ID);
@@ -106,6 +117,10 @@ Hooks.once("init", () => {
     // decorado aleatorio" refresca a todos por igual (issue #215 review).
     onChange: (semilla) => mapaApp?.regenerarDecorado?.(semilla),
   });
+
+  // Mando del GM sobre la música (#347). Ajuste de MUNDO: solo el GM escribe y
+  // toda la mesa lo lee, igual que el nivel de alerta.
+  registrarAjusteMusica(MODULE_ID);
 });
 
 Hooks.once("ready", () => {
@@ -115,7 +130,70 @@ Hooks.once("ready", () => {
   // Relé de órdenes por puesto (#236): el GM registra el manejador del socket;
   // en clientes de tripulación es no-op (solo emiten).
   registerStationOrders(MODULE_ID);
+  conectarMusica();
 });
+
+/* Música de a bordo (#347): el GM manda, todos los clientes obedecen.
+ *
+ * El reproductor se crea aquí pero NO suena hasta que alguien pulsa el botón de
+ * audio: los navegadores exigen un gesto del usuario, y saltárselo solo produce
+ * una consola llena de avisos y una mesa en silencio sin saber por qué. */
+let reproductorMusica = null;
+
+/** Nivel de alerta vigente, si la función está instalada (#338). */
+function nivelAlertaVigente() {
+  try {
+    const aviso = game.settings.get(MODULE_ID, "nivelAlertaNave");
+    return typeof aviso === "string" ? aviso : (aviso?.nivel ?? "verde");
+  } catch {
+    // El ajuste de alerta puede no existir en este mundo: la música en
+    // automático se queda en el registro de cotidianidad y no falla.
+    return "verde";
+  }
+}
+
+function conectarMusica() {
+  const Contexto = globalThis.AudioContext ?? globalThis.webkitAudioContext;
+  if (!Contexto) return; // Navegador sin Web Audio: el resto del módulo sigue igual.
+  reproductorMusica = crearReproductor({
+    contexto: new Contexto(),
+    // La semilla de mundo hace que toda la mesa sintetice exactamente la misma
+    // música sin enviar ni un byte de audio por la red.
+    semilla: String(game.settings.get(MODULE_ID, "decoradoSemilla") ?? "lagunak"),
+  });
+  registrarEscuchaMusica(MODULE_ID, {
+    nivelAlerta: nivelAlertaVigente,
+    alCambiar: (registro) => reproductorMusica?.poner(registro),
+  });
+}
+
+/** Botón del GM: un clic avanza el ciclo y anuncia qué suena ahora. */
+async function ciclarMusica() {
+  if (!game.user?.isGM) return;
+  const actual = normalizarMando(game.settings.get(MODULE_ID, AJUSTE_MUSICA));
+  const mando = await publicarOrdenMusica({ moduleId: MODULE_ID, orden: siguienteOrden(actual) });
+  const { clave, registro } = descripcionMando(mando, nivelAlertaVigente());
+  const nombre = registro ? game.i18n.localize(`LAGUNAK.Musica.Registro.${registro}`) : "";
+  const etiqueta = game.i18n.localize(clave);
+  ui.notifications?.info(nombre && etiqueta !== nombre ? `${etiqueta} · ${nombre}` : etiqueta);
+}
+
+/** Botón de todos: habilita el audio en ESTE cliente, o lo calla. */
+async function alternarAudioLocal() {
+  if (!reproductorMusica) return;
+  if (!reproductorMusica.habilitado) {
+    // Se reaplica el mando vigente: quien cortó el audio y vuelve a activarlo
+    // debe engancharse a lo que la mesa está oyendo, no esperar a la próxima
+    // orden del GM.
+    const mando = normalizarMando(game.settings.get(MODULE_ID, AJUSTE_MUSICA));
+    reproductorMusica.poner(registroEfectivo(mando, nivelAlertaVigente()));
+    await reproductorMusica.habilitar();
+    ui.notifications?.info(game.i18n.localize("LAGUNAK.Musica.AudioActivado"));
+    return;
+  }
+  reproductorMusica.detener();
+  ui.notifications?.info(game.i18n.localize("LAGUNAK.Musica.AudioCortado"));
+}
 
 Hooks.on("updateUser", (user, changes) => {
   if (user?.id !== game.user?.id) return;
@@ -201,6 +279,13 @@ Hooks.on("getSceneControlButtons", (controls) => {
           onClick: () => diagnosticarConexion(),
         },
         {
+          name: "lagunak-musica",
+          title: "LAGUNAK.Controles.CambiarMusica",
+          icon: "fa-solid fa-music",
+          button: true,
+          onClick: () => ciclarMusica(),
+        },
+        {
           name: "lagunak-decorado-aleatorio",
           title: "LAGUNAK.Controles.DecoradoAleatorio",
           icon: "fa-solid fa-dice",
@@ -216,6 +301,20 @@ Hooks.on("getSceneControlButtons", (controls) => {
   // exista para el rol actual.
   const activeTool = isGM ? "lagunak-estado" : "lagunak-puestos";
 
+  // El audio lo habilita CADA cliente por su cuenta: el navegador exige un
+  // gesto del usuario y ese gesto no se puede delegar en el GM. Por eso este
+  // botón lo ven todos, a diferencia del mando, que es solo del GM.
+  const tools = [
+    ...gmTools,
+    {
+      name: "lagunak-musica-audio",
+      title: "LAGUNAK.Controles.AudioMusica",
+      icon: "fa-solid fa-headphones",
+      button: true,
+      onClick: () => alternarAudioLocal(),
+    },
+  ];
+
   if (Array.isArray(controls)) {
     controls.push({
       name: "lagunak",
@@ -224,12 +323,12 @@ Hooks.on("getSceneControlButtons", (controls) => {
       layer: "controls",
       visible: true,
       activeTool,
-      tools: gmTools,
+      tools,
     });
   } else if (controls && typeof controls === "object") {
-    const tools = {};
-    gmTools.forEach((tool, order) => {
-      tools[tool.name] = { ...tool, order, onChange: tool.onClick };
+    const registro = {};
+    tools.forEach((tool, order) => {
+      registro[tool.name] = { ...tool, order, onChange: tool.onClick };
     });
     controls.lagunak = {
       name: "lagunak",
@@ -241,7 +340,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
       order: Object.keys(controls).length,
       onChange: () => {},
       onToolChange: () => {},
-      tools,
+      tools: registro,
     };
   }
 

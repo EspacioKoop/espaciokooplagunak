@@ -325,5 +325,18 @@
   "LAGUNAK.MapaVivo.Detalle.Faccion": "Facción",
   "LAGUNAK.MapaVivo.RumboGrados": "{rumbo}°",
   "LAGUNAK.MapaVivo.Desconocido": "—",
-  "LAGUNAK.Tempo.Discordante": "El simulador no refleja la orden de pausa: revisa su estado."
+  "LAGUNAK.Tempo.Discordante": "El simulador no refleja la orden de pausa: revisa su estado.",
+  "LAGUNAK.Controles.CambiarMusica": "Cambiar la música de a bordo (Espaciokoop Lagunak)",
+  "LAGUNAK.Controles.AudioMusica": "Activar o cortar el audio en este equipo (Espaciokoop Lagunak)",
+  "LAGUNAK.Musica.Auto": "Música automática, según la alerta",
+  "LAGUNAK.Musica.Silencio": "Música en silencio",
+  "LAGUNAK.Musica.AudioActivado": "Audio activado en este equipo.",
+  "LAGUNAK.Musica.AudioCortado": "Audio cortado en este equipo.",
+  "LAGUNAK.Musica.Registro.bach": "Contrapunto: guardia tranquila",
+  "LAGUNAK.Musica.Registro.mahler": "Marcha lenta: tensión y pérdida",
+  "LAGUNAK.Musica.Registro.bandura": "Cascada de cuerda: belleza tranquila",
+  "LAGUNAK.Musica.Registro.bordon": "Bordón: calma sin pulso",
+  "LAGUNAK.Musica.Registro.paganini": "Virtuosismo: urgencia con agencia",
+  "LAGUNAK.Musica.Registro.txalaparta": "Txalaparta: faena compartida",
+  "LAGUNAK.Musica.Registro.auto": "Música automática, según la alerta"
 }

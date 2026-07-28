@@ -325,5 +325,18 @@
   "LAGUNAK.MapaVivo.Detalle.Faccion": "Faction",
   "LAGUNAK.MapaVivo.RumboGrados": "{rumbo}°",
   "LAGUNAK.MapaVivo.Desconocido": "—",
-  "LAGUNAK.Tempo.Discordante": "The simulator does not reflect the pause command: check its state."
+  "LAGUNAK.Tempo.Discordante": "The simulator does not reflect the pause command: check its state.",
+  "LAGUNAK.Controles.CambiarMusica": "Change the shipboard music (Espaciokoop Lagunak)",
+  "LAGUNAK.Controles.AudioMusica": "Enable or mute audio on this machine (Espaciokoop Lagunak)",
+  "LAGUNAK.Musica.Auto": "Automatic music, following the alert level",
+  "LAGUNAK.Musica.Silencio": "Music muted",
+  "LAGUNAK.Musica.AudioActivado": "Audio enabled on this machine.",
+  "LAGUNAK.Musica.AudioCortado": "Audio muted on this machine.",
+  "LAGUNAK.Musica.Registro.bach": "Counterpoint: quiet watch",
+  "LAGUNAK.Musica.Registro.mahler": "Slow march: tension and loss",
+  "LAGUNAK.Musica.Registro.bandura": "Plucked cascade: quiet beauty",
+  "LAGUNAK.Musica.Registro.bordon": "Drone: calm without pulse",
+  "LAGUNAK.Musica.Registro.paganini": "Virtuosity: urgency with agency",
+  "LAGUNAK.Musica.Registro.txalaparta": "Txalaparta: shared labour",
+  "LAGUNAK.Musica.Registro.auto": "Automatic music, following the alert level"
 }

@@ -210,6 +210,27 @@ Esta separación evita bucles de sincronización donde ambos sistemas intentan s
 - decidir qué resultados alteran fichas, diarios o recursos de Foundry;
 - aplicar intervención manual sin romper el estado de la simulación.
 
+### Música de a bordo
+
+Ambiente sonoro **sintetizado en cada navegador** a partir de una semilla de
+mundo (#344, #347). No hay ficheros de audio en el repositorio ni audio viajando
+por la red: cada cliente genera las mismas notas con la misma semilla, así que
+toda la mesa oye lo mismo sin sincronizar nada.
+
+- **Automático** por defecto: el registro lo deriva el nivel de alerta (#338) —
+  cotidianidad frente a tensión.
+- **El GM manda** cuando quiere: el botón «cambiar la música» del grupo de
+  controles Lagunak cicla entre automático, los seis registros y el silencio.
+  La alerta sabe si el casco está roto, pero no sabe si el momento es solemne,
+  ridículo o tierno; eso lo lee el GM.
+- **El audio lo habilita cada cliente**, con el botón de auriculares que ven
+  todos: los navegadores exigen un gesto del usuario y ese gesto no se puede
+  delegar en el GM.
+- Un registro desconocido en el ajuste **falla cerrado** y vuelve al automático.
+
+Módulos: `musica-procedural.mjs` (qué notas), `musica-mando.mjs` (quién decide),
+`musica-reproductor.mjs` (cómo suena).
+
 ## Seguridad obligatoria
 
 La implementación heredada contiene el endpoint HTTP `/exec.lua`, que ejecuta contenido Lua recibido por la red. Estado verificado en vivo (2026-07-12, servidor headless local con `httpserver=<puerto>`):

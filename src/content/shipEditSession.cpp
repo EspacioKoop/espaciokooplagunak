@@ -55,6 +55,23 @@ ShipEditError ShipEditSession::removeHullOverride()
     return commit(std::move(next));
 }
 
+ShipEditError ShipEditSession::setShieldMax(bool front, float shield_max)
+{
+    auto next = current_document;
+    (front ? next.front_shield_max : next.rear_shield_max) = shield_max;
+    return commit(std::move(next));
+}
+
+ShipEditError ShipEditSession::removeShieldOverride(bool front)
+{
+    const auto& current = front
+        ? current_document.front_shield_max : current_document.rear_shield_max;
+    if (!current) return ShipEditError::NotFound;
+    auto next = current_document;
+    (front ? next.front_shield_max : next.rear_shield_max).reset();
+    return commit(std::move(next));
+}
+
 ShipEditError ShipEditSession::setResourceAmount(const std::string& id, float amount)
 {
     auto next = current_document;

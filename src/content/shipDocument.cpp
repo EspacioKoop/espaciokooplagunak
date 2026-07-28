@@ -58,6 +58,11 @@ ShipDocumentError validateShipDocument(const ShipDocument& document)
         && (!std::isfinite(*document.hull_max) || *document.hull_max <= 0.0f
             || *document.hull_max > SHIP_DOCUMENT_MAX_HULL))
         return ShipDocumentError::InvalidHullMax;
+    for (const auto shield_max : {document.front_shield_max, document.rear_shield_max})
+        if (shield_max
+            && (!std::isfinite(*shield_max) || *shield_max <= 0.0f
+                || *shield_max > SHIP_DOCUMENT_MAX_SHIELD))
+            return ShipDocumentError::InvalidShieldMax;
     if (document.systems.size() > static_cast<std::size_t>(ShipSystemId::Count)
         || document.resources.size() > SHIP_DOCUMENT_MAX_RESOURCES
         || document.cargo.size() > SHIP_DOCUMENT_MAX_CARGO
@@ -117,6 +122,8 @@ nlohmann::json shipDocumentOverridesJson(const ShipDocument& document)
         cargo.push_back({{"id", item.id}, {"quantity", item.quantity}});
 
     return {{"hull_max", document.hull_max ? nlohmann::json(*document.hull_max) : nlohmann::json(nullptr)},
+            {"front_shield_max", document.front_shield_max ? nlohmann::json(*document.front_shield_max) : nlohmann::json(nullptr)},
+            {"rear_shield_max", document.rear_shield_max ? nlohmann::json(*document.rear_shield_max) : nlohmann::json(nullptr)},
             {"systems", std::move(systems)},
             {"resources", std::move(resources)},
             {"cargo", std::move(cargo)},
@@ -127,9 +134,14 @@ ShipDocumentError parseShipDocumentOverrides(
     const nlohmann::json& overrides, ShipDocument& output, int schema_version)
 {
     if (!overrides.is_object()) return ShipDocumentError::InvalidStructure;
-    if (schema_version < 4 || schema_version > 5) return ShipDocumentError::InvalidStructure;
+    if (schema_version < 4 || schema_version > 6) return ShipDocumentError::InvalidStructure;
     std::set<std::string> allowed{"systems", "resources", "cargo", "crew_positions"};
     if (schema_version >= 5) allowed.insert("hull_max");
+    if (schema_version >= 6)
+    {
+        allowed.insert("front_shield_max");
+        allowed.insert("rear_shield_max");
+    }
     for (auto it = overrides.begin(); it != overrides.end(); ++it)
         if (!allowed.count(it.key())) return ShipDocumentError::UnknownFields;
     if (overrides.size() != allowed.size()) return ShipDocumentError::InvalidStructure;
@@ -159,6 +171,25 @@ ShipDocumentError parseShipDocumentOverrides(
                 return ShipDocumentError::InvalidHullMax;
             candidate.hull_max = static_cast<float>(value);
         }
+    }
+    if (schema_version >= 6)
+    {
+        const auto parse_shield_max = [&](const char* key, std::optional<float>& output) {
+            const auto& shield_max = overrides[key];
+            if (shield_max.is_null()) return ShipDocumentError::None;
+            if (!shield_max.is_number()) return ShipDocumentError::InvalidShieldMax;
+            const double value = shield_max.get<double>();
+            if (!std::isfinite(value) || value <= 0.0
+                || value > static_cast<double>(SHIP_DOCUMENT_MAX_SHIELD))
+                return ShipDocumentError::InvalidShieldMax;
+            output = static_cast<float>(value);
+            return ShipDocumentError::None;
+        };
+        if (parse_shield_max("front_shield_max", candidate.front_shield_max)
+                != ShipDocumentError::None
+            || parse_shield_max("rear_shield_max", candidate.rear_shield_max)
+                != ShipDocumentError::None)
+            return ShipDocumentError::InvalidShieldMax;
     }
     for (const auto& item : systems)
     {

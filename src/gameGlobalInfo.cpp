@@ -18,6 +18,7 @@
 #include "components/hull.h"
 #include "components/player.h"
 #include "components/reactor.h"
+#include "components/shields.h"
 #include "components/shipsystem.h"
 #include <SDL_assert.h>
 
@@ -398,6 +399,27 @@ bool GameGlobalInfo::createContentShip(const ShipDeploymentPlan& plan, sp::ecs::
         }
         hull->max = *plan.overrides.hull_max;
         hull->current = *plan.overrides.hull_max;
+    }
+
+    if (plan.overrides.front_shield_max || plan.overrides.rear_shield_max)
+    {
+        auto* shields = entity.getComponent<Shields>();
+        const std::size_t required_entries = plan.overrides.rear_shield_max ? 2 : 1;
+        if (!shields || shields->entries.size() < required_entries)
+        {
+            entity.destroy();
+            return false;
+        }
+        if (plan.overrides.front_shield_max)
+        {
+            shields->entries[0].max = *plan.overrides.front_shield_max;
+            shields->entries[0].level = *plan.overrides.front_shield_max;
+        }
+        if (plan.overrides.rear_shield_max)
+        {
+            shields->entries[1].max = *plan.overrides.rear_shield_max;
+            shields->entries[1].level = *plan.overrides.rear_shield_max;
+        }
     }
 
     for (const auto& override_value : plan.overrides.systems)

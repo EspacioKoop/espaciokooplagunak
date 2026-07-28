@@ -354,30 +354,64 @@ export function areaFirmada(puntos) {
 // ---- Malla ------------------------------------------------------------------
 
 /**
- * Un caza de pocos polígonos: dato del módulo, como los sprites y los retratos.
- * Nada de importar modelos ni depender de un archivo externo.
+ * Topología común de todos los cascos: qué vértice va con cuál. Los índices van
+ * en sentido antihorario visto desde fuera, que es lo que hace funcionar el
+ * descarte de caras traseras.
+ */
+const CARAS_CASCO = Object.freeze([
+  [0, 2, 1], // lomo
+  [0, 1, 3], // costado izquierdo
+  [0, 3, 2], // costado derecho
+  [1, 2, 3], // popa
+  [0, 1, 4], // ala izquierda, cara superior
+  [0, 4, 3], // ala izquierda, cara inferior
+  [0, 5, 2], // ala derecha, cara superior
+  [0, 3, 5], // ala derecha, cara inferior
+]);
+
+/** Medidas de un casco de serie. Un caza: corto, estrecho y con mucha ala. */
+export const CASCO_POR_DEFECTO = Object.freeze({
+  eslora: 1.6,
+  manga: 0.75,
+  envergadura: 1.7,
+  quilla: 0.35,
+});
+
+/**
+ * Malla a partir de CUATRO MEDIDAS, no de una lista de vértices a mano.
+ *
+ * Decidido en #362 tras ver las dos opciones renderizadas: con una malla escrita
+ * a mano, un carguero y un caza son la misma nave repintada, y eso no vale para
+ * un atlas. Con medidas, la clase se lee de un vistazo — el carguero es ancho y
+ * el caza afilado— y una nave nueva no obliga a dibujar nada.
+ *
+ * En esta fase los números se escriben en el módulo. Cuando exista el editor
+ * declarativo de naves (#55), se cambia de dónde vienen y este código no se
+ * entera: es justo lo que se gana empezando por aquí y no por el catálogo.
  *
  * Morro en +z (la cámara mira hacia +z, así que de frente se ve venir), alas en
- * ±x, quilla en −y. Los índices de cada cara van en sentido antihorario visto
- * desde fuera, que es lo que hace funcionar el descarte de caras traseras.
+ * ±x, quilla en −y.
  */
-export const MALLA_CAZA = Object.freeze({
-  vertices: Object.freeze([
-    [0, 0, 1.6], // 0 morro
-    [-0.75, 0.18, -0.6], // 1 popa alta izquierda
-    [0.75, 0.18, -0.6], // 2 popa alta derecha
-    [0, -0.35, -0.5], // 3 quilla
-    [-1.7, -0.05, -0.75], // 4 punta de ala izquierda
-    [1.7, -0.05, -0.75], // 5 punta de ala derecha
-  ]),
-  caras: Object.freeze([
-    [0, 2, 1], // lomo
-    [0, 1, 3], // costado izquierdo
-    [0, 3, 2], // costado derecho
-    [1, 2, 3], // popa
-    [0, 1, 4], // ala izquierda, cara superior
-    [0, 4, 3], // ala izquierda, cara inferior
-    [0, 5, 2], // ala derecha, cara superior
-    [0, 3, 5], // ala derecha, cara inferior
-  ]),
-});
+export function mallaDesdeCasco(entrada = {}) {
+  // `= {}` solo cubre `undefined`; un `null` explícito llegaría hasta aquí y
+  // reventaría al leer la primera medida.
+  const medidas = entrada ?? {};
+  const eslora = acotar(medidas.eslora, 0.2, 8, CASCO_POR_DEFECTO.eslora);
+  const manga = acotar(medidas.manga, 0.1, 4, CASCO_POR_DEFECTO.manga);
+  const envergadura = acotar(medidas.envergadura, 0.1, 6, CASCO_POR_DEFECTO.envergadura);
+  const quilla = acotar(medidas.quilla, 0.05, 3, CASCO_POR_DEFECTO.quilla);
+  return {
+    vertices: [
+      [0, 0, eslora], // 0 morro
+      [-manga, 0.18, -0.6], // 1 popa alta izquierda
+      [manga, 0.18, -0.6], // 2 popa alta derecha
+      [0, -quilla, -0.5], // 3 quilla
+      [-envergadura, -0.05, -0.75], // 4 punta de ala izquierda
+      [envergadura, -0.05, -0.75], // 5 punta de ala derecha
+    ],
+    caras: CARAS_CASCO.map((cara) => [...cara]),
+  };
+}
+
+/** El caza de serie, por comodidad de quien no quiere pensar en medidas. */
+export const MALLA_CAZA = Object.freeze(mallaDesdeCasco(CASCO_POR_DEFECTO));

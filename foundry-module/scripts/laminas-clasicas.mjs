@@ -20,15 +20,11 @@
 // que se prueba desde Node. Toda la aleatoriedad entra por `semilla`.
 
 import { crearAleatorio } from "./minijuegos/aleatorio.mjs";
+import { TINTA } from "./paleta.mjs";
 
-// Tinta sepia sobre papel envejecido: la paleta del grabado impreso, no la de
-// una pantalla. Se expone para que el consumidor pueda invertirla.
-export const TINTA = Object.freeze({
-  linea: "#c9b48a",
-  lineaSuave: "rgba(201, 180, 138, 0.45)",
-  papel: "#0b0f18",
-  realce: "#f0e4c4",
-});
+// La tinta del grabado vive en `paleta.mjs` con la frontera de estilo (#351).
+// Se reexporta porque los consumidores de este módulo ya la importaban de aquí.
+export { TINTA };
 
 const TAU = Math.PI * 2;
 

@@ -344,5 +344,17 @@
   "LAGUNAK.Musica.Registro.bordon": "Bordón: calma sin pulso",
   "LAGUNAK.Musica.Registro.paganini": "Virtuosismo: urgencia con agencia",
   "LAGUNAK.Musica.Registro.txalaparta": "Txalaparta: faena compartida",
-  "LAGUNAK.Musica.Registro.auto": "Música automática, según la alerta"
+  "LAGUNAK.Musica.Registro.auto": "Música automática, según la alerta",
+  "LAGUNAK.Minijuegos.Accion.Sentarse": "Sentarse",
+  "LAGUNAK.Minijuegos.Accion.Mirar": "Mirar la mesa",
+  "LAGUNAK.Minijuegos.Accion.Levantarse": "Levantarse",
+  "LAGUNAK.Minijuegos.Accion.Repartir": "Repartir",
+  "LAGUNAK.Minijuegos.Accion.Rematar": "Rematar la mano",
+  "LAGUNAK.Minijuegos.Accion.Cerrar": "Cerrar la mesa",
+  "LAGUNAK.Minijuegos.Accion.Retirarse": "Retirarse",
+  "LAGUNAK.Minijuegos.Accion.Pasar": "Pasar",
+  "LAGUNAK.Minijuegos.Accion.Igualar": "Igualar",
+  "LAGUNAK.Minijuegos.Accion.Subir": "Subir",
+  "LAGUNAK.Minijuegos.Ajustes.Mesa.Nombre": "Mesa de juego: entrada y ciegas",
+  "LAGUNAK.Minijuegos.Ajustes.Mesa.Pista": "Fichas con las que se sienta cada jugador y valor de las ciegas. Se aplica a la mano siguiente, no a la que esté en curso."
 }

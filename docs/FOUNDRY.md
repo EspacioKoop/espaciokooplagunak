@@ -232,7 +232,11 @@ cuelgue de una consola, y una barra que sigue a `/v1/state` es pixel aunque viva
 dentro de un diario.
 
 Los colores viven en `paleta.mjs` y **solo** ahí: una prueba falla si un módulo
-de arte declara un color propio. Sin eso la regla sería prosa, y el cuarto
+de arte declara un color propio —hexadecimal con cualquier comilla, o `rgb()` y
+`hsl()`—. La guardia cubre hoy las láminas, el sprite de nave, los naipes y la
+paleta de facciones del mapa vivo; `decorado-fondo.mjs` y `mapa-render.mjs`
+quedan fuera a la espera de decidir si sus catálogos (tipos de planeta,
+nebulosas, tonos de lienzo) son paleta compartida o dato de decorado. Sin eso la regla sería prosa, y el cuarto
 módulo volvería a inventarse su propio sepia. Ese módulo también trae el cálculo
 de contraste de WCAG, con los pares que portan información verificados en la
 suite (#351).

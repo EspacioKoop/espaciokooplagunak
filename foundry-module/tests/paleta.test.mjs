@@ -2,16 +2,23 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-import { LENGUAJES, PIXEL, TINTA, canales, contraste, lenguajePara, luminancia } from "../scripts/paleta.mjs";
+import { FACCIONES, LENGUAJES, PIXEL, TINTA, canales, contraste, lenguajePara, luminancia } from "../scripts/paleta.mjs";
 import { TINTA as TINTA_LAMINAS } from "../scripts/laminas-clasicas.mjs";
 import { PALETA } from "../scripts/minijuegos/cartas-pixelart.mjs";
+import { COLOR_JUGADOR, COLOR_NEUTRO, PALETA_FACCIONES } from "../scripts/ventana-nave.mjs";
 
 // Módulos de arte que deben tomar sus colores de la paleta común. `paleta.mjs`
 // queda fuera por definición: es donde viven.
+//
+// `decorado-fondo.mjs` y `mapa-render.mjs` NO están todavía: sus colores son
+// catálogos de contenido (tipos de planeta, nebulosas) y tonos de lienzo, y
+// decidir si eso es paleta compartida o dato de decorado es una discusión de
+// diseño, no una mudanza mecánica. Queda anotado en #351 para no perderlo.
 const MODULOS_DE_ARTE = [
   "../scripts/laminas-clasicas.mjs",
   "../scripts/nave-sprite.mjs",
   "../scripts/minijuegos/cartas-pixelart.mjs",
+  "../scripts/ventana-nave.mjs",
 ];
 
 test("los colores no cambian al mudarse: mismo valor que antes en cada módulo", () => {
@@ -24,6 +31,19 @@ test("los colores no cambian al mudarse: mismo valor que antes en cada módulo",
   assert.equal(PALETA.rojo, "#b3212a");
   assert.equal(PIXEL.cabina, "#fdfffc");
   assert.equal(PIXEL.motor, "#ffb703");
+  assert.equal(COLOR_JUGADOR, "#fdfffc");
+  assert.equal(COLOR_NEUTRO, "#7d8597");
+  assert.deepEqual(PALETA_FACCIONES, FACCIONES);
+  assert.equal(PALETA_FACCIONES.length, 8, "el hash reparte sobre ocho colores");
+  assert.equal(PALETA_FACCIONES[2], "#ffb703");
+});
+
+test("la nave propia del mapa y la cabina del sprite son el mismo crema", () => {
+  // No es coincidencia y por eso no se escribe dos veces: el comentario que
+  // acompañaba a `COLOR_JUGADOR` ya decía «como la nave propia del mapa», pero
+  // nada impedía que uno de los dos derivase.
+  assert.equal(COLOR_JUGADOR, PIXEL.cabina);
+  assert.equal(PALETA_FACCIONES[2], PIXEL.motor, "el ámbar de facción es el de propulsión");
 });
 
 test("ningún módulo de arte esconde un color propio", async () => {
@@ -35,8 +55,14 @@ test("ningún módulo de arte esconde un color propio", async () => {
       .replace(/\/\*[\s\S]*?\*\//g, "")
       .replace(/^\s*\/\/.*$/gm, "");
     // Se buscan literales de color en cadena; las siluetas usan '#' como píxel
-    // dentro de cadenas, así que solo cuenta un hexadecimal completo.
-    const literales = sinComentarios.match(/"#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})"/g) ?? [];
+    // dentro de cadenas, así que solo cuenta un hexadecimal completo. Cuentan
+    // las tres comillas y también las notaciones funcionales: si la guardia
+    // solo mirase `"#rrggbb"`, bastaría un apóstrofo o un `rgba()` para
+    // saltársela sin querer, y el módulo no tiene linter que fuerce el estilo.
+    const literales = [
+      ...(sinComentarios.match(/["'`]#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})["'`]/g) ?? []),
+      ...(sinComentarios.match(/\b(?:rgba?|hsla?)\(\s*\d/g) ?? []),
+    ];
     assert.deepEqual(literales, [], `${ruta} declara colores propios: ${literales.join(", ")}`);
   }
 });

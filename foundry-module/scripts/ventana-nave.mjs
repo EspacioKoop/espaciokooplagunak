@@ -9,19 +9,14 @@
  * fuera de aquí; esto solo calcula posiciones, colores y desplazamientos.
  */
 
-// Paleta arcade saturada tipo Neo Geo para las facciones.
-export const PALETA_FACCIONES = [
-  "#ff2e88", // magenta
-  "#00e5ff", // cian
-  "#ffb703", // ámbar
-  "#38b000", // verde
-  "#9d4edd", // púrpura
-  "#ef233c", // rojo
-  "#3a86ff", // azul
-  "#f15bb5", // rosa
-];
-export const COLOR_JUGADOR = "#fdfffc"; // blanco cálido: la nave propia destaca
-export const COLOR_NEUTRO = "#7d8597"; // gris azulado: objetos sin facción
+import { FACCIONES, PIXEL } from "./paleta.mjs";
+
+// Paleta arcade saturada tipo Neo Geo para las facciones. Vive en `paleta.mjs`
+// con la frontera de estilo (#351); aquí se reexporta con los nombres que ya
+// usaban los consumidores.
+export const PALETA_FACCIONES = FACCIONES;
+export const COLOR_JUGADOR = PIXEL.naveJugador;
+export const COLOR_NEUTRO = PIXEL.sinFaccion;
 
 /** Color determinista para una facción. El jugador y los objetos sin facción
  * tienen colores reservados; el resto se reparte por hash sobre la paleta. */

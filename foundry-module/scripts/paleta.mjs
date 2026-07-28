@@ -49,6 +49,12 @@ export const TINTA = Object.freeze({
  * Paleta del arte de rejilla. Reúne los acentos de los sprites de nave y la
  * baraja, que antes vivían por separado.
  */
+// Crema cálido. Lo comparten el acento de cabina del sprite y la nave propia
+// del mapa vivo, que es justo lo que quiere decir su comentario original
+// («como la nave propia del mapa»): la relación se escribe, no se repite el
+// literal en dos módulos donde nadie los ve juntos.
+const CREMA = "#fdfffc";
+
 export const PIXEL = Object.freeze({
   // Naipes (#308/#330). `cara` es pergamino claro para dar el máximo contraste
   // con ambas tintas de palo.
@@ -60,13 +66,36 @@ export const PIXEL = Object.freeze({
   dorsoMotivo: "#c8a24a",
   dorsoEstrella: "#8fa3d9",
   // Sprites de nave: acentos fijos que no dependen del color de facción.
-  cabina: "#fdfffc",
+  cabina: CREMA,
   motor: "#ffb703",
   motorApagado: "#6e5211", // ámbar sin propulsión: mismo tono, sin brillo
   motorNucleo: "#fff3c4", // núcleo claro de la estela
   motorEstela: "#ff8c1e", // cola de la estela
   neutro: "#ffffff", // casco sin color de facción utilizable
+  // Mapa vivo (#33): contactos del radar. Reservados, fuera del reparto por
+  // hash de `FACCIONES`.
+  naveJugador: CREMA, // la nave propia destaca
+  sinFaccion: "#7d8597", // gris azulado: objetos sin facción
 });
+
+/**
+ * Paleta arcade saturada de las facciones en el mapa vivo. Es una lista y no un
+ * objeto porque el color se reparte por hash del nombre de facción: importa el
+ * orden, no el nombre de cada entrada.
+ *
+ * El ámbar coincide a propósito con `PIXEL.motor`: es el mismo ámbar de
+ * propulsión del sprite, y por eso se toma de ahí en vez de repetirlo.
+ */
+export const FACCIONES = Object.freeze([
+  "#ff2e88", // magenta
+  "#00e5ff", // cian
+  PIXEL.motor, // ámbar
+  "#38b000", // verde
+  "#9d4edd", // púrpura
+  "#ef233c", // rojo
+  "#3a86ff", // azul
+  "#f15bb5", // rosa
+]);
 
 /**
  * Qué lenguaje toca. Se responde con una pregunta y no con una lista de

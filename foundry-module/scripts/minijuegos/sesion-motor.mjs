@@ -22,6 +22,19 @@
 // `actorId` que viniera DENTRO del sobre de acción se ignora por diseño; este
 // módulo nunca lo lee. Es la misma regla que en station-order-relay.mjs.
 
+// Los asientos automáticos no son usuarios de Foundry: no tienen documento, ni
+// socket, ni vista que recibir. Se les da una identidad sintética con un prefijo
+// que NINGÚN id de Foundry puede tener (los suyos son alfanuméricos), para que
+// no haya forma de confundir un NPC con una persona ni de que alguien reclame su
+// asiento.
+export const PREFIJO_AUTOMATICO = "auto:";
+
+/** ¿Este asiento lo lleva la máquina? Se decide por la identidad, que es lo
+ *  único que viaja por todas las capas. */
+export function esAutomatico(userId) {
+  return typeof userId === "string" && userId.startsWith(PREFIJO_AUTOMATICO);
+}
+
 export const FASES_SESION = Object.freeze(["lobby", "en_curso", "terminada"]);
 
 export const ACCIONES = Object.freeze([
@@ -29,6 +42,8 @@ export const ACCIONES = Object.freeze([
   "watch",
   "leave",
   "return",
+  "botAdd",
+  "botRemove",
   "start",
   "act",
   "finish",
@@ -86,6 +101,9 @@ export function crearSesion({ id, juego, anfitrionId, coordinadorId, limites = {
       anfitrionId,
       jugadores: [],
       espectadores: [],
+      // Cuántos asientos automáticos se han sentado en esta mesa, alguna vez.
+      // No se decrementa al quitar uno: ver `siguienteNumeroAutomatico`.
+      contadorAutomaticos: 0,
       checkpointMano: null,
       juegoPublico: null,
       resultado: null,
@@ -152,6 +170,16 @@ export function accionesPermitidas(sesion, userId, juego) {
     ...(ausente ? ["return"] : []),
     ...(dentro ? ["leave"] : []),
     ...accionesDeJuego(sesion, userId, juego),
+    // Sentar y levantar automáticos es cosa de quien lleva la mesa, y solo
+    // mientras no haya mano en juego.
+    ...(esAnfitrionOGm(sesion, userId) && publico.fase === "lobby" && hayAsiento(sesion)
+      ? ["botAdd"]
+      : []),
+    ...(esAnfitrionOGm(sesion, userId) &&
+    publico.fase === "lobby" &&
+    publico.jugadores.some((j) => esAutomatico(j.userId))
+      ? ["botRemove"]
+      : []),
     ...(puedeIniciar(sesion, userId) ? ["start"] : []),
     ...(puedeCerrar(sesion, userId) ? ["finish", "close"] : []),
   ];
@@ -248,6 +276,10 @@ function despachar(sesion, ctx) {
       return accionLeave(sesion, ctx);
     case "return":
       return accionReturn(sesion, ctx);
+    case "botAdd":
+      return accionBotAdd(sesion, ctx);
+    case "botRemove":
+      return accionBotRemove(sesion, ctx);
     case "start":
       return accionStart(sesion, ctx);
     case "act":
@@ -285,6 +317,54 @@ function accionReturn(sesion, { actorId }) {
   if (jugador.estado !== "ausente") return { ok: false, codigo: ERRORES.YA_EN_MESA };
   jugador.estado = "activo";
   return { ok: true };
+}
+
+// Sentar a un jugador automático. Lo pide el anfitrión —o el GM coordinador—,
+// nunca el propio NPC: no hay nadie ahí que pueda proponer nada.
+//
+// Solo en lobby, y por el mismo motivo que `join`: meter una silla nueva a media
+// mano cambiaría el reparto de fichas y el orden de apuestas de una mano que ya
+// está siendo jugada.
+function accionBotAdd(sesion, { actorId }) {
+  const { publico } = sesion;
+  if (!esAnfitrionOGm(sesion, actorId)) return { ok: false, codigo: ERRORES.NO_AUTORIZADO };
+  if (publico.fase !== "lobby") return { ok: false, codigo: ERRORES.FASE_INVALIDA };
+  if (!hayAsiento(sesion)) return { ok: false, codigo: ERRORES.MESA_LLENA };
+  publico.jugadores.push({
+    userId: `${PREFIJO_AUTOMATICO}${siguienteNumeroAutomatico(sesion)}`,
+    asiento: publico.jugadores.length,
+    estado: "activo",
+    controlador: "automatico",
+  });
+  return { ok: true };
+}
+
+// Levantar al último automático que se sentó. Sin parámetros a propósito: un
+// identificador en el sobre sería una identidad declarada por el cliente, y esa
+// es justo la clase de dato del que este marco no se fía (#237). El último es
+// suficiente para deshacer, que es lo que se quiere.
+function accionBotRemove(sesion, { actorId }) {
+  const { publico } = sesion;
+  if (!esAnfitrionOGm(sesion, actorId)) return { ok: false, codigo: ERRORES.NO_AUTORIZADO };
+  if (publico.fase !== "lobby") return { ok: false, codigo: ERRORES.FASE_INVALIDA };
+  const indice = publico.jugadores.map((j) => esAutomatico(j.userId)).lastIndexOf(true);
+  if (indice < 0) return { ok: false, codigo: ERRORES.NO_PARTICIPA };
+  publico.jugadores.splice(indice, 1);
+  publico.jugadores = publico.jugadores.map((j, i) => ({ ...j, asiento: i }));
+  return { ok: true };
+}
+
+// Numeración que NO se reutiliza, con un contador propio en el estado público.
+//
+// No es cosmético. Las fichas se arrastran entre manos POR IDENTIDAD
+// (`mesa-config.fichasDe` las busca por `userId`), así que un `auto:2` nuevo
+// heredaría el montón del `auto:2` que se levantó de la mesa: un asiento recién
+// sentado empezaría con las fichas de un muerto. Que además dos asientos
+// distintos no se llamen igual en la misma noche es la parte bonita.
+function siguienteNumeroAutomatico(sesion) {
+  const { publico } = sesion;
+  publico.contadorAutomaticos = (publico.contadorAutomaticos ?? 0) + 1;
+  return publico.contadorAutomaticos;
 }
 
 function accionWatch(sesion, { actorId }) {

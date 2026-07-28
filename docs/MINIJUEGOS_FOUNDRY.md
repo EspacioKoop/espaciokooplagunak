@@ -201,6 +201,33 @@ ofrece a quien está ausente. La presencia también la lleva el cableado: el
 coordinador marca ausente a quien se desconecta y reconecta a quien vuelve, con
 `userConnected`. Antes nadie se lo decía al motor, y la mesa esperaba
 eternamente a alguien que había cerrado la pestaña.
+## Asientos automáticos
+
+Un asiento puede llevarlo la máquina (`controlador: "automatico"`). Los sienta y
+los levanta **quien lleva la mesa** —anfitrión o GM coordinador— y solo en lobby:
+cambiar la composición a media mano movería el reparto de fichas y el orden de
+apuestas de una mano ya en juego.
+
+**Identidad sintética.** Un NPC no es un usuario de Foundry: no tiene documento,
+ni socket, ni vista que recibir. Se le da un `userId` con el prefijo `auto:`, que
+ningún id de Foundry puede tener, así que no hay forma de confundirlo con una
+persona ni de que alguien reclame su asiento. La numeración **no se reutiliza**:
+las fichas se arrastran entre manos por identidad, y un `auto:2` nuevo heredaría
+el montón del `auto:2` que se levantó.
+
+**Quién juega sus turnos.** El motor no tiene reloj y el agente automático no
+sabe de sesiones; los presenta `turnos-automaticos.mjs`, que el coordinador
+invoca después de publicar cada jugada humana —primero se ve lo que hizo la
+persona, luego la respuesta de la máquina—. Dos reglas lo sostienen: los NPC
+pasan por la **misma puerta** que las personas (`aplicar`, con sobre, época y
+nonce; no hay atajo que escriba el estado del juego a mano), y la cadena **se
+corta siempre**: hay un límite duro de jugadas y cualquier rechazo del motor la
+detiene. Sin eso, una política que devolviera una acción inválida colgaría el
+navegador de quien lleva la mesa.
+
+La política vive fuera y llega inyectada, así que se puede sustituir por otra
+más lista —o por una de otro juego— sin tocar el motor ni la interfaz.
+
 ## Espectadores
 
 Los espectadores reciben únicamente `vistaPublica`, no ocupan asiento, no

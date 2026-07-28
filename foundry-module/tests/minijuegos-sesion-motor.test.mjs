@@ -2,8 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  PREFIJO_AUTOMATICO,
   crearSesion,
   aplicar,
+  esAutomatico,
   vistaPublicaSesion,
   vistaPrivadaSesion,
   accionesPermitidas,
@@ -530,4 +532,66 @@ test("solo al ausente se le ofrece volver", () => {
   }).sesion;
   assert.equal(accionesPermitidas(sesion, "p1", juegoFalso).includes("return"), false);
   assert.equal(accionesPermitidas(sesion, "ajeno", juegoFalso).includes("return"), false);
+});
+
+test("los asientos automáticos los sienta quien lleva la mesa, y solo en lobby", () => {
+  let sesion = crearSesion({ id: "b", juego: "j", anfitrionId: "gm", coordinadorId: "gm" });
+  let n = 0;
+  const paso = (actorId, tipo) => {
+    const res = aplicar(sesion, {
+      sobre: {
+        sessionId: "b",
+        epocaCoordinador: sesion.publico.epocaCoordinador,
+        nonce: `n${(n += 1)}`,
+        tipo,
+      },
+      actorId,
+      juego: juegoFalso,
+      semilla: 3,
+    });
+    if (res.ok) sesion = res.sesion;
+    return res;
+  };
+
+  // Un jugador cualquiera no puede poblar la mesa de máquinas.
+  assert.equal(paso("p1", "botAdd").codigo, "no_autorizado");
+
+  assert.equal(paso("gm", "botAdd").ok, true);
+  assert.equal(paso("gm", "botAdd").ok, true);
+  const automaticos = sesion.publico.jugadores.filter((j) => esAutomatico(j.userId));
+  assert.equal(automaticos.length, 2);
+  for (const asiento of automaticos) {
+    assert.equal(asiento.controlador, "automatico", "el motor de juego necesita saberlo");
+    // La identidad sintética lleva un prefijo que ningún id de Foundry puede
+    // tener: no hay forma de confundir un NPC con una persona.
+    assert.ok(asiento.userId.startsWith(PREFIJO_AUTOMATICO));
+  }
+  assert.equal(
+    new Set(automaticos.map((j) => j.userId)).size,
+    2,
+    "dos asientos con el mismo nombre serían indistinguibles en la mesa",
+  );
+
+  // Quitar el último y volver a sentar: la numeración no se reutiliza.
+  assert.equal(paso("gm", "botRemove").ok, true);
+  assert.equal(paso("gm", "botAdd").ok, true);
+  const nombres = sesion.publico.jugadores.filter((j) => esAutomatico(j.userId)).map((j) => j.userId);
+  assert.deepEqual(nombres, [`${PREFIJO_AUTOMATICO}1`, `${PREFIJO_AUTOMATICO}3`]);
+
+  // Con la mano en juego no se toca la composición de la mesa.
+  paso("p1", "join");
+  assert.equal(paso("gm", "start").ok, true);
+  assert.equal(paso("gm", "botAdd").codigo, "fase_invalida");
+  assert.equal(paso("gm", "botRemove").codigo, "fase_invalida");
+});
+
+test("sin automáticos en la mesa no se ofrece quitarlos", () => {
+  const sesion = crearSesion({ id: "b2", juego: "j", anfitrionId: "gm", coordinadorId: "gm" });
+  const acciones = accionesPermitidas(sesion, "gm", juegoFalso);
+  assert.ok(acciones.includes("botAdd"));
+  assert.equal(acciones.includes("botRemove"), false);
+  // Y a quien no lleva la mesa no se le ofrece ninguna de las dos.
+  const ajenas = accionesPermitidas(sesion, "p1", juegoFalso);
+  assert.equal(ajenas.includes("botAdd"), false);
+  assert.equal(ajenas.includes("botRemove"), false);
 });

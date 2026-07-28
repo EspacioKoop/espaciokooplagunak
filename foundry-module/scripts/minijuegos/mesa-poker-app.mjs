@@ -19,6 +19,7 @@
 
 import { MODULE_ID } from "../lagunak-constantes.mjs";
 import { lineasResultado, mesaVista } from "./mesa-vista.mjs";
+import { PREFIJO_AUTOMATICO } from "./sesion-motor.mjs";
 
 const PLANTILLA = `modules/${MODULE_ID}/templates/mesa-poker.hbs`;
 
@@ -44,7 +45,16 @@ function contexto() {
   const modelo = mesaVista(ultimaVista, { userId, acciones: ultimasAcciones });
   if (!modelo.hayMesa) return modelo;
 
-  const nombre = (id) => game.users?.get?.(id)?.name ?? id;
+  // Un asiento automático no es un usuario de Foundry: no hay documento del que
+  // sacar el nombre, y enseñar «auto:2» en la mesa sería enseñar una tripa.
+  const nombre = (id) => {
+    if (typeof id === "string" && id.startsWith(PREFIJO_AUTOMATICO)) {
+      return game.i18n.format("LAGUNAK.Minijuegos.Mesa.NombreAutomatico", {
+        numero: id.slice(PREFIJO_AUTOMATICO.length),
+      });
+    }
+    return game.users?.get?.(id)?.name ?? id;
+  };
   const cifra = (valor) => (Number.isInteger(valor) ? String(valor) : "—");
   return {
     ...modelo,

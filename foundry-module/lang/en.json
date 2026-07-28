@@ -399,5 +399,8 @@
   "LAGUNAK.Minijuegos.Ajustes.CiegaPequena.Nombre": "Card table: small blind",
   "LAGUNAK.Minijuegos.Ajustes.CiegaPequena.Pista": "Forced bet from the seat after the button.",
   "LAGUNAK.Minijuegos.Ajustes.CiegaGrande.Nombre": "Card table: big blind",
-  "LAGUNAK.Minijuegos.Ajustes.CiegaGrande.Pista": "Never drops below the small blind: that would be a table with the rules backwards."
+  "LAGUNAK.Minijuegos.Ajustes.CiegaGrande.Pista": "Never drops below the small blind: that would be a table with the rules backwards.",
+  "LAGUNAK.Minijuegos.Accion.SentarAutomatico": "Seat a bot",
+  "LAGUNAK.Minijuegos.Accion.QuitarAutomatico": "Remove a bot",
+  "LAGUNAK.Minijuegos.Mesa.NombreAutomatico": "Bot {numero}"
 }

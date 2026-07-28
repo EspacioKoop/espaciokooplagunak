@@ -15,6 +15,8 @@ import {
 } from "./minijuegos/sesion-motor.mjs";
 import { MESA_POR_DEFECTO, configuracionPoker } from "./minijuegos/mesa-config.mjs";
 import * as poker from "./minijuegos/poker-motor.mjs";
+import { decidirAccionAutomatica } from "./minijuegos/agente-automatico.mjs";
+import { resolverTurnosAutomaticos } from "./minijuegos/turnos-automaticos.mjs";
 
 // Cableado Foundry de las sesiones de minijuegos (#308, paso 3). Capa fina y no
 // testeable en Node (usa globales de Foundry): toda la lógica de autoridad vive
@@ -321,6 +323,10 @@ export function registrarSesionesMinijuegos(moduleId) {
       // viva para la acción siguiente. Un rechazo devuelve la sesión intacta y
       // un cambio ajeno devuelve null, así que solo se pisa cuando hay algo.
       if (resultado?.sesion) sesionViva = resultado.sesion;
+      // Y ahora juegan las máquinas. Va DESPUÉS de publicar lo que hizo la
+      // persona, no en su lugar: la mesa enseña primero la jugada humana y
+      // luego la respuesta automática, que es el orden en que ocurren.
+      jugarTurnosAutomaticos(moduleId);
     };
     Hooks.on("updateUser", alCambiarUsuario);
     escuchas.push(() => Hooks.off("updateUser", alCambiarUsuario));
@@ -330,6 +336,31 @@ export function registrarSesionesMinijuegos(moduleId) {
     for (const parar of escuchas) parar();
     desregistrar = () => {};
   };
+}
+
+// Deja que los asientos automáticos jueguen lo suyo y publica el resultado.
+//
+// Solo el coordinador: es quien tiene la sesión viva —con la mano y la semilla—
+// y quien puede aplicar jugadas. Si no hay nada que jugar, `resolver` devuelve
+// la misma sesión y aquí no se publica nada, así que llamarlo de más es gratis.
+function jugarTurnosAutomaticos(moduleId) {
+  if (!sesionViva || !esCoordinador()) return;
+  const { sesion, jugadas, cortadoPor } = resolverTurnosAutomaticos(sesionViva, {
+    juego: juegoActivo(),
+    decidir: decidirAccionAutomatica,
+  });
+  if (jugadas.length === 0) {
+    // Un corte con jugadas a cero y motivo es un turno automático atascado: la
+    // mesa se queda esperando a una máquina que no sabe jugar. Se dice, porque
+    // desde la silla se ve igual que una mesa colgada.
+    if (cortadoPor && cortadoPor !== "sin_acciones") {
+      console.warn(`[lagunak] turno automático sin resolver: ${cortadoPor}`);
+    }
+    return;
+  }
+  sesionViva = sesion;
+  game.settings.set(moduleId, AJUSTE_SESION, vistaPublicaSesion(sesionViva));
+  repartirVistas(moduleId);
 }
 
 // Verticales registrados. El cableado no conoce ninguno: se le inyecta el módulo

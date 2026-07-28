@@ -192,6 +192,42 @@ nivel de presentación.
 - **Todos ausentes:** la mesa expira tras un plazo acotado y solo fuera de una
   resolución activa. El plazo exacto será configuración del host, no del juego.
 
+
+**Volver a la mesa.** Abandonar en partida no libera el asiento: lo reserva y
+marca al jugador ausente, para que su identidad no la reclame otro. Esa reserva
+necesitaba su vuelta, o era una trampa —el asiento seguía siendo suyo y no había
+forma de ocuparlo otra vez—, así que existe la acción `return`, que solo se le
+ofrece a quien está ausente. La presencia también la lleva el cableado: el
+coordinador marca ausente a quien se desconecta y reconecta a quien vuelve, con
+`userConnected`. Antes nadie se lo decía al motor, y la mesa esperaba
+eternamente a alguien que había cerrado la pestaña.
+## Asientos automáticos
+
+Un asiento puede llevarlo la máquina (`controlador: "automatico"`). Los sienta y
+los levanta **quien lleva la mesa** —anfitrión o GM coordinador— y solo en lobby:
+cambiar la composición a media mano movería el reparto de fichas y el orden de
+apuestas de una mano ya en juego.
+
+**Identidad sintética.** Un NPC no es un usuario de Foundry: no tiene documento,
+ni socket, ni vista que recibir. Se le da un `userId` con el prefijo `auto:`, que
+ningún id de Foundry puede tener, así que no hay forma de confundirlo con una
+persona ni de que alguien reclame su asiento. La numeración **no se reutiliza**:
+las fichas se arrastran entre manos por identidad, y un `auto:2` nuevo heredaría
+el montón del `auto:2` que se levantó.
+
+**Quién juega sus turnos.** El motor no tiene reloj y el agente automático no
+sabe de sesiones; los presenta `turnos-automaticos.mjs`, que el coordinador
+invoca después de publicar cada jugada humana —primero se ve lo que hizo la
+persona, luego la respuesta de la máquina—. Dos reglas lo sostienen: los NPC
+pasan por la **misma puerta** que las personas (`aplicar`, con sobre, época y
+nonce; no hay atajo que escriba el estado del juego a mano), y la cadena **se
+corta siempre**: hay un límite duro de jugadas y cualquier rechazo del motor la
+detiene. Sin eso, una política que devolviera una acción inválida colgaría el
+navegador de quien lleva la mesa.
+
+La política vive fuera y llega inyectada, así que se puede sustituir por otra
+más lista —o por una de otro juego— sin tocar el motor ni la interfaz.
+
 ## Espectadores
 
 Los espectadores reciben únicamente `vistaPublica`, no ocupan asiento, no
@@ -250,9 +286,26 @@ variantes y efectos sobre la campaña.
    sesión viva del coordinador (semilla, mazo, manos) no se persiste en ningún
    sitio: si se pierde, el relevo la cancela con checkpoint.
 
+   **El manifiesto tiene que declarar `"socket": true`.** Sin esa línea el
+   servidor de Foundry no retransmite los eventos `module.<id>`: el `emit` sale
+   del cliente y muere ahí, sin error en ninguno de los dos extremos. Desde
+   dentro es idéntico a un mensaje perdido, y deja la mesa funcionando a medias
+   —el estado público llega, porque va por un ajuste de mundo, pero las manos
+   privadas no—. Hay prueba que lo fija.
+
+   **El sobre se lee del documento, no del diferencial.** `updateUser` entrega
+   los cambios como diferencial: la segunda propuesta de un mismo cliente solo
+   trae las claves que cambiaron y llegaría sin `sessionId` ni época. Los
+   cambios sirven para saber *que* el flag se tocó; el sobre se lee del `User`
+   ya actualizado. La identidad sigue siendo la del documento.
+
    **Relevo real.** El cableado detecta el cambio de `game.users.activeGM` al
    registrarse y en cada `userConnected`, y también antes de despachar una
-   propuesta. Cuando el GM activo ve un estado público cuyo `coordinadorId` es
+   propuesta. Lo que dispara el relevo es **no tener la sesión viva**, no quién
+   figure como coordinador en el estado público: el GM que recarga la página
+   sigue figurando como coordinador —un ajuste de mundo no se entera de un F5—
+   pero ha perdido semilla, mazo y manos, así que readopta su propia mesa por el
+   mismo camino que un relevo entre GMs distintos. Cuando el GM activo ve un estado público cuyo `coordinadorId` es
    otro, adopta la mesa con `adoptarSesionPublicada`: reconstruye la sesión desde
    el ajuste público con el privado vacío y delega en `sustituirCoordinador`, que
    sube la época —invalidando los sobres en vuelo del anterior—, cancela la mano
@@ -260,6 +313,25 @@ variantes y efectos sobre la campaña.
    sin semilla no hay forma honesta de continuarla. El relevo se anuncia por el
    hook `lagunakMinijuegoRelevoCoordinador` para que la UI del paso 4 lo explique.
 4. Ventana clásica v11 y ApplicationV2 compartiendo el mismo modelo.
+   **Implementado** en `foundry-module/scripts/minijuegos/mesa-poker-app.mjs`
+   (dos clases hermanas, sin compartir código de ventana) sobre el modelo puro
+   `mesa-vista.mjs` y la plantilla `templates/mesa-poker.hbs`. Se abre desde el
+   botón **Mesa de juego** del grupo Lagunak en los controles de escena, que ven
+   TODOS los usuarios: la mesa es la capa social, y un minijuego al que solo
+   entrara el GM no sería un minijuego. El GM que pulsa el botón crea la mesa si
+   no había ninguna; sentarse es otra acción, con su propio botón, porque el GM
+   puede querer repartir sin jugar.
+
+   **Los botones no los decide la ventana.** `accionesPermitidas` necesita la
+   sesión viva —con la mano en curso—, que solo existe en la memoria del
+   coordinador. Por eso cada vista dirigida viaja con la lista de acciones de su
+   destinatario, y el reparto llega a todos los conectados, no solo a los
+   sentados: quien todavía no juega necesita su vista para que se le pueda
+   ofrecer «sentarse» o «mirar» (a ese se le manda exactamente la vista pública,
+   que ya es un ajuste de mundo). Un cliente que dedujera sus propios botones
+   estaría reimplementando las reglas, y la segunda implementación de unas
+   reglas es una forma cara de acabar enseñando un botón que el coordinador va a
+   rechazar.
 5. Arte pixel-art, teclado, reduced-motion e i18n.
 6. Smoke multijugador real con GM, dos jugadores, espectador, reconexión, pérdida
    del coordinador y cancelación/reinicio seguro de la mano.

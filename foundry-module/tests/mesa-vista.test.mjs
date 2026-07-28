@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { mesaVista, accionesVisibles } from "../scripts/minijuegos/mesa-vista.mjs";
+import { lineasResultado, mesaVista, accionesVisibles } from "../scripts/minijuegos/mesa-vista.mjs";
 import * as poker from "../scripts/minijuegos/poker-motor.mjs";
 import { configuracionPoker } from "../scripts/minijuegos/mesa-config.mjs";
 import {
@@ -194,4 +194,77 @@ test("el disco se pinta en el asiento que lleva el botón", () => {
 test("antes del reparto no hay disco que enseñar", () => {
   const modelo = mesaVista({ jugadores: [{ userId: "p1" }, { userId: "p2" }] }, { userId: "p1" });
   assert.equal(modelo.jugadores.some((j) => j.esBoton), false);
+});
+
+// ---- Resultado legible ----------------------------------------------------
+
+test("lineasResultado lee las DOS formas del resultado del póker", () => {
+  // Sin rival: el motor publica ganador y ganancia sueltos.
+  assert.deepEqual(
+    lineasResultado({ tipo: "sin-rival", ganadorId: "p2", ganancia: 3 }),
+    [{ userId: "p2", fichas: 3 }],
+  );
+  // Showdown: un diccionario de ganancias, que con botes laterales puede tener
+  // más de una entrada.
+  assert.deepEqual(
+    lineasResultado({ tipo: "showdown", ganancias: { p1: 12, p2: 0, p3: 4 } }),
+    [
+      { userId: "p1", fichas: 12 },
+      { userId: "p3", fichas: 4 },
+    ],
+    "quien no gana nada no sale como ganador",
+  );
+});
+
+test("sin resultado reconocible no se anuncia ganador", () => {
+  for (const entrada of [null, undefined, {}, "gana p1", { ganadorId: "p1" }, { ganancias: 3 }]) {
+    assert.deepEqual(lineasResultado(entrada), []);
+  }
+});
+
+// ---- Respaldo cuando el envío dirigido no llega ----------------------------
+
+test("REGRESIÓN: sin envío dirigido, quien está fuera aún puede sentarse", () => {
+  // Lo que se veía en mesa: el cliente que se perdía su reparto —llega por
+  // socket, y quien todavía no escuchaba se lo pierde entero— pintaba la mesa
+  // sin un solo botón. Desde fuera es indistinguible de una mesa que no te deja
+  // entrar. El respaldo son las acciones de forastero que publica el
+  // coordinador en la vista pública, que llega por el ajuste de mundo.
+  const vista = {
+    jugadores: [{ userId: "gm" }],
+    espectadores: [],
+    accionesForastero: ["join", "watch"],
+  };
+  const modelo = mesaVista(vista, { userId: "p1", acciones: [] });
+  assert.deepEqual(
+    modelo.acciones.map((a) => a.tipo),
+    ["join", "watch"],
+  );
+});
+
+test("el respaldo NO se le ofrece a quien ya está en la mesa", () => {
+  // Las acciones de un participante dependen de su sitio en la mano, y esas sí
+  // exigen el envío dirigido: ofrecerle las de forastero sería enseñarle
+  // botones que el coordinador va a rechazar.
+  const vista = {
+    jugadores: [{ userId: "p1" }],
+    espectadores: [],
+    accionesForastero: ["join", "watch"],
+  };
+  assert.deepEqual(mesaVista(vista, { userId: "p1", acciones: [] }).acciones, []);
+  // Ni a quien está mirando.
+  const mirando = { jugadores: [], espectadores: ["p2"], accionesForastero: ["join", "watch"] };
+  assert.deepEqual(mesaVista(mirando, { userId: "p2", acciones: [] }).acciones, []);
+});
+
+test("lo dirigido manda sobre el respaldo", () => {
+  const vista = {
+    jugadores: [{ userId: "gm" }],
+    espectadores: [],
+    accionesForastero: ["join", "watch"],
+  };
+  assert.deepEqual(
+    mesaVista(vista, { userId: "p1", acciones: ["watch"] }).acciones.map((a) => a.tipo),
+    ["watch"],
+  );
 });

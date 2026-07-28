@@ -327,6 +327,10 @@ export function buildWorkspaceModel({
       ? NIVELES_REFRIGERANTE.map((value) => ({ value, label: String(value) }))
       : [],
     navigationHeading: integer(ship?.heading),
+    // Casco propio en 3D (#362). `null` cuando no hay lectura, que NO es lo
+    // mismo que rumbo cero: el visor se queda quieto y apagado en vez de
+    // enseñar una nave girando que no se corresponde con nada.
+    cascoRumbo: Number.isFinite(Number(ship?.heading)) ? Number(ship.heading) : null,
     navigationAriaLabel: format(i18n, "LAGUNAK.Espacios.RumboAccesible", { heading: integer(ship?.heading) }),
     isGM: Boolean(isGM),
     hasTelemetry: Boolean(ship),

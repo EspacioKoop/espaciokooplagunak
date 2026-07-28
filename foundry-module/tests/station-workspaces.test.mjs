@@ -339,3 +339,65 @@ test("cascoRumbo distingue «sin lectura» de rumbo cero (#362)", () => {
   });
   assert.equal(sinNada.cascoRumbo, null, "sin telemetría no hay rumbo que dibujar");
 });
+
+test("REGRESIÓN: rumbo nulo o vacío NO es norte", () => {
+  // `Number.isFinite(Number(x))` aceptaba `null` y `""` porque los dos valen
+  // cero: la ausencia de dato se convertía en «rumbo 0» y el casco se pintaba
+  // como si fuera una lectura buena. Ausencia no es cero — esa es la regla que
+  // sostiene el visor entero.
+  const modelo = (heading) =>
+    buildWorkspaceModel({
+      station: "navigation",
+      isGM: true,
+      users: [],
+      moduleId: "m",
+      i18n: { localize: (k) => k, format: (k) => k },
+      statePayload: { ship: { callsign: "Itsaso 1", heading } },
+      connection: "ok",
+    });
+
+  for (const ausente of [null, undefined, "", "   ", NaN, Infinity, -Infinity, {}, [], true]) {
+    assert.equal(
+      modelo(ausente).cascoRumbo,
+      null,
+      `sin lectura con ${JSON.stringify(ausente) ?? String(ausente)}`,
+    );
+  }
+
+  // Y lo que SÍ es una lectura sigue siéndolo, incluido el cero y la cadena que
+  // puede entregar el puente.
+  assert.equal(modelo(0).cascoRumbo, 0, "cero es un rumbo");
+  assert.equal(modelo(214).cascoRumbo, 214);
+  assert.equal(modelo("214").cascoRumbo, 214, "el puente puede entregarlo como texto");
+  assert.equal(modelo("0").cascoRumbo, 0);
+});
+
+test("REGRESIÓN: el casco lo ve la tripulación, no solo el GM", async () => {
+  const plantillaPuesto = await readFile(
+    new URL("../templates/espacio-puesto.hbs", import.meta.url),
+    "utf8",
+  );
+  // El visor vivía dentro de `{{#if hasTelemetry}}`, y la telemetría solo la
+  // recibe el GM: en un cliente de tripulación —que es para quien se hizo— no
+  // existía ningún lienzo que pintar. La primera superficie visible del 3D solo
+  // aparecía en la pantalla de quien dirige.
+  const plantilla = plantillaPuesto;
+  const lienzo = plantilla.indexOf("data-lagunak-casco");
+  const telemetria = plantilla.indexOf("{{#if hasTelemetry}}");
+  assert.ok(lienzo > 0 && telemetria > 0, "la plantilla tiene visor y bloque de telemetría");
+  assert.ok(lienzo < telemetria, "el visor se pinta ANTES, fuera del bloque de telemetría");
+
+  // Y el modelo de un jugador sin telemetría sigue diciendo la verdad: no hay
+  // rumbo que dibujar, así que el visor se queda quieto y gris.
+  const jugador = buildWorkspaceModel({
+    station: "navigation",
+    isGM: false,
+    users: [],
+    moduleId: "m",
+    i18n: { localize: (k) => k, format: (k) => k },
+    statePayload: null,
+    connection: "restricted",
+  });
+  assert.equal(jugador.hasTelemetry, false, "el jugador no recibe telemetría, como debe ser");
+  assert.equal(jugador.cascoRumbo, null, "y sin lectura no se inventa un rumbo");
+});

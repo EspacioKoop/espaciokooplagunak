@@ -58,6 +58,27 @@ test("la fase se acota y el disco sigue siendo SVG válido en los extremos", () 
   }
 });
 
+test("la zona no iluminada se raya, no se rellena: nada de negro sobre negro", () => {
+  const svg = discoLunarSvg("s", { radio: 40, fase: 0.6 });
+  // El terminador se pinta con la trama de grabado…
+  assert.match(svg, /<path d="M 0 -40[^"]*" fill="url\(#luna-s-40-t0\)"/);
+  // …y no con un relleno plano, que sobre fondo oscuro era invisible.
+  assert.doesNotMatch(svg, /fill-opacity/);
+  // El rayado nunca se sale del limbo del disco.
+  assert.match(svg, /<clipPath id="luna-s-40-c"><circle cx="0" cy="0" r="40"\/><\/clipPath>/);
+  assert.match(svg, /clip-path="url\(#luna-s-40-c\)"/);
+});
+
+test("dos discos de la misma semilla y distinto radio no comparten identificadores", () => {
+  const ids = (svg) => [...svg.matchAll(/ id="([^"]+)"/g)].map((m) => m[1]);
+  const pequeno = ids(discoLunarSvg("mesa", { radio: 20 }));
+  const grande = ids(discoLunarSvg("mesa", { radio: 60 }));
+  assert.ok(pequeno.length > 0);
+  for (const id of pequeno) {
+    assert.ok(!grande.includes(id), `id compartido entre discos distintos: ${id}`);
+  }
+});
+
 test("la carta enmarca sin tapar: el interior queda hueco", () => {
   const svg = cartografiaSvg({ ancho: 200, alto: 120 });
   assert.match(svg, /viewBox="0 0 200 120"/);

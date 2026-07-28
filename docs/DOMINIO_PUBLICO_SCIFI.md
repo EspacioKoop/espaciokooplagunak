@@ -443,23 +443,54 @@ Méliès y sus contemporáneos son la primera imaginería de viaje espacial en m
 el proyecto. Pero **el cine no computa como un cuadro** y confundirlo es la forma más fácil de
 equivocarse aquí.
 
-**La regla.** El [TRLPI art. 28.1](https://www.boe.es/buscar/act.php?id=BOE-A-1996-8930) trata la obra
-cinematográfica como **obra en colaboración**: el plazo dura la vida de los coautores y **70 años
-desde la muerte del ÚLTIMO coautor superviviente** — no del director. Los coautores de una obra
-audiovisual son varios (dirección, guion, diálogos, música compuesta para la obra), así que **una
-sola fecha no cierra el cálculo**.
+**La regla, con artículo.** El [TRLPI art. 28.1](https://www.boe.es/buscar/act.php?id=BOE-A-1996-8930)
+dice que las obras cinematográficas y audiovisuales «durarán toda la vida de los coautores y setenta
+años desde la muerte o declaración de fallecimiento del último coautor superviviente» — **no** desde
+la muerte del director. Y el **art. 87** dice quiénes son esos coautores, que es la parte que se
+olvida:
+
+1. el **director-realizador**;
+2. los autores del **argumento, la adaptación, el guion y los diálogos**;
+3. los autores de las **composiciones musicales creadas específicamente** para la obra.
+
+Dos consecuencias prácticas. Una: el operador de cámara **no** está en esa lista, así que su fecha no
+entra en el cálculo. Otra, la que muerde: **una sola fecha no cierra nada**, y basta un compositor sin
+identificar para que el plazo quede abierto.
+
+Ámbito: esto es derecho **español**, armonizado en la UE. Fuera de ES/UE no se afirma nada aquí.
 
 | Obra / autor | Fecha clave | Estado | Uso | Nota |
 |---|---|---|---|---|
-| *Le Voyage dans la Lune* (1902) y demás obra de **Georges Méliès** | Méliès †1938 ([LCNAF](https://id.loc.gov/authorities/names/n79055178)) | DP en la UE **desde 2009** *si* Méliès es el último coautor superviviente | ✅ | Caso favorable: dirigía, escribía, diseñaba y actuaba en sus películas, y eran **mudas** —sin música compuesta para la obra—, así que la lista de coautores se reduce casi a él. **Verificar por película**, no por autor |
-| Obra de **Segundo de Chomón** (*El hotel eléctrico*, trucajes Pathé) | Chomón †1929 ([LCNAF](https://id.loc.gov/authorities/names/n88128513)) | DP en la UE **desde 2000**, mismo supuesto | ✅ | **Pionero español**, del mismo lenguaje de trucaje que Méliès. Encaja doblemente por procedencia |
+| *Le Voyage dans la Lune* (1902), **Georges Méliès** | Méliès †1938 ([LCNAF](https://id.loc.gov/authorities/names/n79055178)) | **Plazo SIN CERRAR**: falta el compositor | ⛔ | Dirección y guion son de Méliès y no hay diálogos, pero el cuarto coautor del art. 87 sigue abierto: la [ficha de la película](https://en.wikipedia.org/wiki/A_Trip_to_the_Moon) recoge que en el estreno del Olympia (1902) «an original film score was reportedly written for it», **sin nombrar compositor ni fuente firme**. Si esa partitura se compuso para la obra, su autor es coautor y el plazo se cuenta desde él, no desde 1938. Mientras no se pueda nombrar y fechar, ⛔ |
+| Obra de **Segundo de Chomón** (*El hotel eléctrico*, 1908, trucajes Pathé) | Chomón †1929 ([LCNAF](https://id.loc.gov/authorities/names/n88128513)) | **Plazo SIN CERRAR**: falta guion y música documentados | ⛔ | Pionero español del mismo lenguaje de trucaje, y encajaría doblemente por procedencia, pero la producción es de Pathé y no hemos localizado fuente que documente **quién firma el guion** ni si hubo música compuesta *ad hoc*. Sin esos dos datos no hay último superviviente que calcular |
 | *Metropolis* (1927), **Fritz Lang** | Lang †1976 ([LCNAF](https://id.loc.gov/authorities/names/n79043386)) | **PROTEGIDA hasta 2047** como mínimo | ⛔ | La trampa clásica: «es de 1927, será DP». No lo es. El plazo va por el **último coautor**, y Lang murió en 1976. Que circule por todas partes no la hace libre |
-| **Restauraciones y coloreados modernos** de cualquiera de las anteriores | — | Derecho **nuevo** sobre la versión restaurada | ⛔ | Una copia restaurada, recoloreada o con banda sonora añadida es una capa protegida **encima** de una obra DP. Se usa la copia de archivo lisa, no la edición moderna |
+| **Restauraciones, coloreados y bandas sonoras añadidas** | — | ⛔ por **política del proyecto** | ⛔ | Aquí no se afirma que la ley cree automáticamente un derecho nuevo sobre cualquier restauración: una restauración fiel y una intervención creativa no son lo mismo, y no tenemos fuente para equipararlas. Lo que se afirma es **nuestra regla**: se usa la copia de archivo lisa y se rechaza toda edición moderna, porque distinguir caso por caso cuánta aportación original lleva una copia concreta es un trabajo jurídico que este proyecto no va a hacer. Ejemplo de por qué: la restauración en color de 2011 de *Le Voyage dans la Lune* lleva banda sonora **compuesta en 2011** por Nicolas Godin y Jean-Benoît Dunckel (Air) — ahí no hay duda posible |
 
 **Cómo se verifica una película, entonces.** Paso 0 del protocolo, ampliado: no basta el director. Hay
 que listar los **coautores** (dirección, guion, diálogos, música compuesta *ad hoc*), tomar la fecha
-del **último superviviente** y, por separado, comprobar que la copia concreta no es una **restauración
-moderna** con derechos propios. Si no puedes nombrar a los coautores, la pieza se queda en ⛔.
+del **último superviviente** y, por separado, comprobar que la copia concreta no es una **edición
+moderna**. Si no puedes **nombrar y fechar** a los cuatro tipos de coautor del art. 87, la pieza se
+queda en ⛔ — y «era muda, así que no hubo música» **no** sustituye a esa comprobación: es deducir un
+hecho negativo del formato, y en el cine de 1900 los estrenos con partitura propia existían.
+
+**Por qué el cine primitivo se queda fuera, en la práctica.** No es mala suerte con dos películas: es
+estructural. Cerrar el plazo exige demostrar un **negativo** —que nadie compuso música para la obra—
+sobre producciones de hace 120 años con fichas incompletas. Por eso el cine entra en este catálogo
+solo cuando una filmografía nombra a los cuatro coautores con sus fechas, y hasta entonces el estado
+por defecto es ⛔. Que no duela: lo que el juego necesita del cine primitivo es el **vocabulario
+visual**, y eso no es obra de nadie.
+
+
+**Cinco candidatas aportadas por Eloy, pasadas por esta misma regla.** Se recogen con su veredicto y
+con lo que falta, porque el catálogo sirve para eso: dejar el trabajo hecho para la próxima vez.
+
+| Obra | Autoría del art. 87 | Plazo en ES/UE | Uso | Qué falta o qué la descarta |
+|---|---|---|---|---|
+| **Solar Eclipse** (1900), Nevil Maskelyne — el primer registro filmado de un eclipse total, en una expedición de la British Astronomical Association | Maskelyne †22-09-1924 ([Wikipedia](https://en.wikipedia.org/wiki/Nevil_Maskelyne_(magician))). Documental: **sin guion ni diálogos** | `vida+70` **vencido en 1995** | 📝 | **La más prometedora de las cinco, y con diferencia**: un documental de autor único reduce la lista del art. 87 casi a una persona, en vez de dejarla abierta como en la ficción. Faltan dos cosas concretas: (1) una fuente filmográfica —[RAS](https://ras.ac.uk/news-and-press/news/first-ever-solar-eclipse-film-brought-back-life) o BFI— que **liste la autoría** y cierre el negativo de la música; (2) una copia que no sea la **restauración 4K del BFI (2019)**, porque la única que circula es precisamente la edición moderna que nuestra política rechaza. Tema perfecto para el proyecto: un eclipse real de 1900 |
+| ***Spirochoeta pallida (de la syphilis)*** (1910), Jean Comandon — microcinematografía pionera | Comandon †30-10-1970 ([Wikipedia](https://en.wikipedia.org/wiki/Jean_Comandon)) | **PROTEGIDA hasta 2041** | ⛔ | La trampa más limpia del catálogo: es de 1910, es científica, es muda, parece libre — y no lo es, porque su autor murió en 1970. Sirve como recordatorio de que **la antigüedad de la película no dice nada**: lo que manda es la fecha del último coautor |
+| ***The Unchanging Sea*** (1910), D. W. Griffith (Biograph) | Griffith †1948; guion suyo, inspirado en un poema de Charles Kingsley (†1875, DP) | `vida+70` **vencido en 2019** | 📝 | Cerca de poder cerrarse: el plazo por Griffith ya venció y el texto de partida es DP. Falta el mismo negativo de siempre, la música compuesta *ad hoc*, que en una Biograph de 1910 no está documentada. La fotografía es de Billy Bitzer, que **no** es coautor del art. 87 y por tanto no entra en el cálculo |
+| ***The Inventor Crazybrains and His Wonderful Airship*** (1906), Georges Méliès | Igual que *Le Voyage dans la Lune* | **Sin cerrar** | ⛔ | Hereda exactamente el problema de la fila de Méliès: dirección y guion suyos, pero el cuarto coautor sigue sin nombre. Se resolverán las dos juntas o ninguna |
+| ***Serpentine Dance*** | **Sin identificar** | **No calculable** | ⛔ | El título no identifica una obra: hay versiones de 1894–1897 de Edison, de los Lumière y de otros, con autorías y fechas distintas. Sin decir **qué copia concreta**, no hay coautores que listar ni plazo que calcular. Es el recordatorio de que en cine primitivo el título es una pista, no una identificación |
 
 **Qué se aprovecha de verdad.** No el metraje —el juego no reproduce vídeo— sino el **vocabulario
 visual**: el cohete-obús, la Luna con cara, el decorado pintado a mano con perspectiva teatral, el

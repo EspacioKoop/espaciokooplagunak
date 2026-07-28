@@ -28,7 +28,12 @@ import { PIXEL, canales } from "./paleta.mjs";
 /** Épocas disponibles. Cualquier otra cosa cae en la de por defecto. */
 export const EPOCAS = Object.freeze(["psx", "gamecube"]);
 
-export const EPOCA_POR_DEFECTO = "psx";
+// Época de respaldo, DELIBERADAMENTE NO EXPORTADA. Cuál debe ser la época por
+// defecto es una decisión de producto que #362 tiene abierta, y exportarla desde
+// aquí la cerraría de tapadillo: quien importase la constante estaría heredando
+// una preferencia que nadie ha acordado. Esta capa es pura y solo necesita no
+// romperse cuando le dan una época que no conoce, así que se queda dentro.
+const EPOCA_RESPALDO = "psx";
 
 /**
  * Lo que cambia entre una consola y otra, escrito como datos y no como ramas
@@ -48,7 +53,7 @@ export const AJUSTES_EPOCA = Object.freeze({
 });
 
 export function ajustesEpoca(epoca) {
-  return AJUSTES_EPOCA[epoca] ?? AJUSTES_EPOCA[EPOCA_POR_DEFECTO];
+  return AJUSTES_EPOCA[epoca] ?? AJUSTES_EPOCA[EPOCA_RESPALDO];
 }
 
 // ---- Álgebra mínima --------------------------------------------------------
@@ -82,7 +87,15 @@ const punto = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
  * El orden es fijo y se escribe porque componer rotaciones no es conmutativo:
  * cambiarlo aquí movería todas las mallas sin que nadie lo pidiera.
  */
-export function transformar([x, y, z], { yaw = 0, pitch = 0, roll = 0, posicion = [0, 0, 0] } = {}) {
+export function transformar(vertice, opciones = {}) {
+  const [x, y, z] = triple(vertice, [0, 0, 0]);
+  // Las rotaciones entran por la puerta: `Math.cos(NaN)` es `NaN` y a partir de
+  // ahí todo el vértice deja de ser un número, pero el resultado sigue teniendo
+  // la forma de un vértice y viaja tan tranquilo hasta el lienzo.
+  const yaw = finito(opciones.yaw, 0);
+  const pitch = finito(opciones.pitch, 0);
+  const roll = finito(opciones.roll, 0);
+  const posicion = triple(opciones.posicion, [0, 0, 0]);
   const cy = Math.cos(yaw);
   const sy = Math.sin(yaw);
   let px = x * cy + z * sy;
@@ -114,7 +127,11 @@ export function transformar([x, y, z], { yaw = 0, pitch = 0, roll = 0, posicion 
  */
 export function focal(alto, fovGrados = 60) {
   const fov = (acotar(fovGrados, 1, 179, 60) * Math.PI) / 180;
-  return alto / 2 / Math.tan(fov / 2);
+  // El alto también se acota: `focal(NaN)` devolvía `NaN` y `focal(Infinity)`
+  // devolvía `Infinity`, y una focal así no revienta nada — simplemente manda
+  // toda la geometría a un sitio imposible, muy lejos de donde entró el valor
+  // malo. El mínimo es 1: un visor de alto 0 no tiene proyección que calcular.
+  return acotar(alto, 1, 1e6, 1) / 2 / Math.tan(fov / 2);
 }
 
 /**
@@ -128,6 +145,27 @@ function acotar(valor, minimo, maximo, porDefecto) {
   return Math.max(minimo, Math.min(maximo, n));
 }
 
+/** Número finito o el de repuesto. Para lo que no tiene rango, como un ángulo. */
+function finito(valor, porDefecto) {
+  const n = Number(valor);
+  return Number.isFinite(n) ? n : porDefecto;
+}
+
+/**
+ * Triple de números finitos. Vale para vértices y para posiciones, y admite que
+ * no llegue nada: `posicion: null` reventaba con un `TypeError` al leer
+ * `posicion[0]`, y un vértice con una coordenada mala contaminaba la escena
+ * entera sin que nadie pudiera decir de dónde salió.
+ */
+function triple(valor, porDefecto) {
+  if (!Array.isArray(valor)) return [...porDefecto];
+  return [
+    finito(valor[0], porDefecto[0]),
+    finito(valor[1], porDefecto[1]),
+    finito(valor[2], porDefecto[2]),
+  ];
+}
+
 /**
  * Proyecta un vértice en espacio de cámara (la cámara mira hacia +z) a
  * coordenadas de pantalla. `rejilla` ajusta el resultado, que es de donde sale
@@ -136,11 +174,20 @@ function acotar(valor, minimo, maximo, porDefecto) {
  *
  * Devuelve también `z`, que el orden por pintor necesita después.
  */
-export function proyectar([x, y, z], { ancho, alto, f, rejilla = 0 }) {
-  const px = ancho / 2 + (x * f) / z;
+export function proyectar(vertice, opciones = {}) {
+  const [x, y, z] = triple(vertice, [0, 0, 1]);
+  const ancho = acotar(opciones.ancho, 1, 1e6, 1);
+  const alto = acotar(opciones.alto, 1, 1e6, 1);
+  const f = acotar(opciones.f, 1e-6, 1e9, 1);
+  const rejilla = acotar(opciones.rejilla, 0, 1e3, 0);
+  // Dividir por un `z` no positivo es el fallo clásico del rasterizador casero:
+  // el vértice sale disparado. `recortarCercano` lo evita antes de llegar aquí,
+  // pero esta función es pública y no puede fiarse de que la llamen en orden.
+  const profundidad = z > 0 && Number.isFinite(z) ? z : 1e-6;
+  const px = ancho / 2 + (x * f) / profundidad;
   // La pantalla crece hacia abajo y el mundo hacia arriba: sin este signo la
   // nave sale del revés y se arregla luego rotando la malla, que es peor.
-  const py = alto / 2 - (y * f) / z;
+  const py = alto / 2 - (y * f) / profundidad;
   if (rejilla > 0) {
     return { x: Math.round(px / rejilla) * rejilla, y: Math.round(py / rejilla) * rejilla, z };
   }
@@ -155,20 +202,23 @@ export function proyectar([x, y, z], { ancho, alto, f, rejilla = 0 }) {
  * propósito, porque un artefacto que no se puede leer no es estética.
  */
 export function recortarCercano(vertices, cerca) {
+  // Un plano cercano no finito o negativo deja pasar vértices detrás de la
+  // cámara, que es justo lo que este recorte existe para impedir.
+  const plano = acotar(cerca, 1e-6, 1e6, 0.1);
   const dentro = [];
   const n = vertices.length;
   for (let i = 0; i < n; i += 1) {
     const actual = vertices[i];
     const siguiente = vertices[(i + 1) % n];
-    const actualDentro = actual[2] >= cerca;
-    const siguienteDentro = siguiente[2] >= cerca;
+    const actualDentro = actual[2] >= plano;
+    const siguienteDentro = siguiente[2] >= plano;
     if (actualDentro) dentro.push(actual);
     if (actualDentro !== siguienteDentro) {
-      const t = (cerca - actual[2]) / (siguiente[2] - actual[2]);
+      const t = (plano - actual[2]) / (siguiente[2] - actual[2]);
       dentro.push([
         actual[0] + (siguiente[0] - actual[0]) * t,
         actual[1] + (siguiente[1] - actual[1]) * t,
-        cerca,
+        plano,
       ]);
     }
   }
@@ -228,19 +278,24 @@ export function sombrear(colorBase, intensidad) {
  * @param {object} opciones
  */
 export function componerEscena(malla, opciones = {}) {
+  // TODA la entrada se normaliza aquí, en el borde, y no en cada operación de
+  // dentro: un `alto: NaN` producía ocho polígonos con coordenadas no finitas
+  // —geometría con la forma correcta y los números rotos— que el pintor
+  // aceptaría sin rechistar. Lo que entra mal se corrige o se sustituye, pero no
+  // sigue hacia dentro.
   const {
-    epoca = EPOCA_POR_DEFECTO,
-    ancho = 160,
-    alto = 120,
-    fov = 60,
-    cerca = 0.1,
+    epoca = EPOCA_RESPALDO,
     // Casco sin color de facción, tomado de la paleta y no escrito aquí.
     color = PIXEL.neutro,
-    yaw = 0,
-    pitch = 0,
-    roll = 0,
-    posicion = [0, 0, 6],
   } = opciones;
+  const ancho = acotar(opciones.ancho, 1, 1e6, 160);
+  const alto = acotar(opciones.alto, 1, 1e6, 120);
+  const fov = acotar(opciones.fov, 1, 179, 60);
+  const cerca = acotar(opciones.cerca, 1e-6, 1e6, 0.1);
+  const yaw = finito(opciones.yaw, 0);
+  const pitch = finito(opciones.pitch, 0);
+  const roll = finito(opciones.roll, 0);
+  const posicion = triple(opciones.posicion, [0, 0, 6]);
 
   const ajustes = ajustesEpoca(epoca);
   const f = focal(alto, fov);
@@ -282,7 +337,7 @@ export function componerEscena(malla, opciones = {}) {
   // necesitaría, pero ordenar igual no le hace daño y deja un solo camino; lo
   // que cambia de verdad entre épocas es el temblor y los tonos.
   poligonos.sort((a, b) => b.profundidad - a.profundidad);
-  return { epoca: EPOCAS.includes(epoca) ? epoca : EPOCA_POR_DEFECTO, ancho, alto, poligonos };
+  return { epoca: EPOCAS.includes(epoca) ? epoca : EPOCA_RESPALDO, ancho, alto, poligonos };
 }
 
 /** Área firmada del polígono en pantalla. Positiva = mirándonos. */

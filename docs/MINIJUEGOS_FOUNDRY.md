@@ -204,7 +204,12 @@ turno y resultado sí son públicos; manos aún activas, no.
 El primer corte implementará una sola mesa de Texas Hold'em simplificado:
 
 - 2–6 jugadores y espectadores;
-- fichas efímeras iguales al entrar; sin recompras, economía ni premios externos;
+- fichas efímeras iguales al entrar; sin recompras, economía ni premios externos.
+  Cada mano arranca con lo que dejó la anterior (`mesa-config.mjs`), no con la
+  entrada: repartir de nuevo la entrada sería una recompra encubierta y ganar no
+  significaría nada más allá de la mano en curso. Quien se queda a cero sale de
+  **la mano, no de la mesa** — sigue sentado y viendo el reparto, porque esta
+  capa es social antes que competitiva, pero no se le reponen fichas;
 - barajar, ciegas, reparto, rondas, bote y showdown deterministas;
 - acciones cerradas: `fold`, `check`, `call`, `raise` con límites explícitos;
 - retirada automática al expirar el turno de un jugador ausente;

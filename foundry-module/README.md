@@ -56,6 +56,18 @@ En *Configuración → Ajustes del módulo*:
 | URL del puente | `http://localhost:8090` (o donde esté publicado el puente) |
 | Intervalo de sondeo | 1–30 s (2 s por defecto) |
 
+## Idioma del módulo (cualquier cliente)
+
+En los mismos ajustes hay **Idioma del módulo**, y no es el idioma de Foundry:
+Foundry tiene uno solo y lo aplica a todo, así que con el core en inglés los
+textos de la nave salían en inglés aunque la partida se jugara en castellano.
+Este ajuste separa las dos cosas y cambia **solo** los textos de Lagunak.
+
+Es de **cliente**: en qué idioma lee cada cual no es una decisión de la partida.
+Dos personas de la misma mesa pueden leer la misma consola en idiomas distintos
+y estar viendo exactamente lo mismo. «Automático» sigue a Foundry, que es el
+comportamiento de siempre. El cambio se ve al momento, sin recargar.
+
 Flujo recomendado para el token (issue #183): **copiar → pegar → guardar**.
 
 1. **Copiar**: `python3 tools/instalar.py --copiar-token` (o la opción «Copiar

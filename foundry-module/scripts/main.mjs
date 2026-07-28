@@ -46,6 +46,12 @@ import {
   registrarSesionesMinijuegos,
 } from "./minijuegos-wiring.mjs";
 import { registrarAjusteAlerta, registrarEscuchaAlerta } from "./alerta-escena.mjs";
+import {
+  IDIOMA_AUTOMATICO,
+  clavesDelModulo,
+  idiomaEfectivo,
+  opcionesIdioma,
+} from "./idioma-modulo.mjs";
 import { crearClaseV2 } from "./estado-nave-app-v2.mjs";
 import { crearClaseV1 } from "./estado-nave-app-v1.mjs";
 import { crearClaseMapaV2 } from "./mapa-vivo-app-v2.mjs";
@@ -76,6 +82,24 @@ let estadoApp = null;
 let mapaApp = null;
 
 Hooks.once("init", () => {
+  // Idioma propio del módulo. Ajuste de CLIENTE: en qué idioma lee cada cual no
+  // es una decisión de la partida, es suya, y dos personas de la misma mesa
+  // pueden leer la misma consola en idiomas distintos sin dejar de ver lo mismo.
+  // «Automático» sigue a Foundry, que es el comportamiento de siempre.
+  game.settings.register(MODULE_ID, AJUSTE_IDIOMA, {
+    name: "LAGUNAK.Ajustes.Idioma.Nombre",
+    hint: "LAGUNAK.Ajustes.Idioma.Pista",
+    scope: "client",
+    config: true,
+    type: String,
+    choices: opcionesIdioma(
+      game.modules?.get?.(MODULE_ID)?.languages ?? [],
+      "LAGUNAK.Ajustes.Idioma.Automatico",
+    ),
+    default: IDIOMA_AUTOMATICO,
+    onChange: () => void aplicarIdiomaModulo(),
+  });
+
   game.settings.register(MODULE_ID, "bridgeUrl", {
     name: "LAGUNAK.Ajustes.Url.Nombre",
     hint: "LAGUNAK.Ajustes.Url.Pista",
@@ -139,7 +163,51 @@ Hooks.once("init", () => {
   registrarAjusteMusica(MODULE_ID);
 });
 
+const AJUSTE_IDIOMA = "idioma";
+
+/* Aplica el idioma elegido a los textos del módulo, y solo a ellos.
+ *
+ * Se fusionan las claves `LAGUNAK.*` del fichero pedido sobre las traducciones
+ * vivas, en vez de traducir en cada punto de llamada: así el selector funciona
+ * en todo el módulo —incluidos los textos que Foundry localiza por su cuenta,
+ * como los títulos de ajustes— sin tocar ni una sola llamada a `localize`.
+ *
+ * El filtro por prefijo no es decorativo: sin él, este ajuste podría pisar
+ * traducciones del core o de otros módulos, que es exactamente lo que un
+ * selector propio NO debe hacer.
+ */
+async function aplicarIdiomaModulo() {
+  const modulo = game.modules?.get?.(MODULE_ID);
+  const idiomas = modulo?.languages ?? [];
+  const elegido = idiomaEfectivo(
+    game.settings.get(MODULE_ID, AJUSTE_IDIOMA),
+    game.i18n?.lang,
+    idiomas.map((idioma) => idioma.lang),
+  );
+  const ruta = idiomas.find((idioma) => idioma.lang === elegido)?.path;
+  if (!ruta) return;
+  let propias = null;
+  try {
+    const respuesta = await fetch(`modules/${MODULE_ID}/${ruta}`);
+    if (!respuesta.ok) throw new Error(String(respuesta.status));
+    propias = clavesDelModulo(await respuesta.json());
+  } catch (err) {
+    // Un fichero de idioma que no carga no puede dejar la interfaz en claves
+    // crudas: se conserva lo que Foundry ya había cargado.
+    console.warn(`[lagunak] no se pudo cargar el idioma ${elegido}`, err);
+    return;
+  }
+  foundry.utils.mergeObject(game.i18n.translations, foundry.utils.expandObject(propias));
+  // Las ventanas abiertas ya tienen texto pintado: se reconstruyen para que el
+  // cambio se vea al instante y no en la próxima recarga.
+  for (const app of Object.values(ui.windows ?? {})) app.render?.(false);
+  for (const app of foundry.applications?.instances?.values?.() ?? []) app.render?.();
+}
+
 Hooks.once("ready", () => {
+  // Antes que nada visible: si el cliente pidió otro idioma para el módulo, se
+  // aplica antes de que se abra ninguna ventana.
+  void aplicarIdiomaModulo();
   // Migración de #183: no se lee el valor legado; se sobrescribe con vacío.
   // El token operativo vive exclusivamente en bridge-token-session.mjs.
   void clearLegacyBridgeToken();

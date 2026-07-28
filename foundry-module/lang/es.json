@@ -376,5 +376,22 @@
   "LAGUNAK.Minijuegos.Mesa.ImporteInvalido": "Di hasta cuánto subes: un número de fichas.",
   "LAGUNAK.Minijuegos.Fase.lobby": "esperando",
   "LAGUNAK.Minijuegos.Fase.en_curso": "mano en curso",
-  "LAGUNAK.Minijuegos.Fase.terminada": "cerrada"
+  "LAGUNAK.Minijuegos.Fase.terminada": "cerrada",
+  "LAGUNAK.Minijuegos.Mesa.Rechazada": "La mesa no ha aceptado la jugada: {motivo}",
+  "LAGUNAK.Minijuegos.Rechazo.sesion_desconocida": "esa mesa ya no existe",
+  "LAGUNAK.Minijuegos.Rechazo.epoca_obsoleta": "cambió quien dirige la mesa; vuelve a intentarlo",
+  "LAGUNAK.Minijuegos.Rechazo.revision_obsoleta": "la mesa se movió mientras decidías; vuelve a intentarlo",
+  "LAGUNAK.Minijuegos.Rechazo.accion_desconocida": "esa jugada no existe",
+  "LAGUNAK.Minijuegos.Rechazo.payload_invalido": "la jugada llegó mal formada",
+  "LAGUNAK.Minijuegos.Rechazo.sin_identidad": "la mesa no ha reconocido quién juega",
+  "LAGUNAK.Minijuegos.Rechazo.no_autorizado": "eso no te toca a ti",
+  "LAGUNAK.Minijuegos.Rechazo.fase_invalida": "ahora no es el momento de eso",
+  "LAGUNAK.Minijuegos.Rechazo.mesa_llena": "no quedan asientos",
+  "LAGUNAK.Minijuegos.Rechazo.aforo_completo": "no cabe nadie más mirando",
+  "LAGUNAK.Minijuegos.Rechazo.ya_en_mesa": "ya estás en la mesa",
+  "LAGUNAK.Minijuegos.Rechazo.no_participa": "no estás en la mesa",
+  "LAGUNAK.Minijuegos.Rechazo.sin_semilla": "no se pudo barajar",
+  "LAGUNAK.Minijuegos.Rechazo.nonce_reutilizado": "esa jugada ya se había enviado",
+  "LAGUNAK.Minijuegos.Rechazo.juego_rechazo": "el juego no admite esa jugada",
+  "LAGUNAK.Minijuegos.Rechazo.desconocido": "motivo desconocido"
 }

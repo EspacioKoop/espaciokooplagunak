@@ -44,6 +44,7 @@ import { registerStationOrders } from "./station-order-wiring.mjs";
 import {
   abrirMesa,
   estadoPublicoVigente,
+  pedirVista,
   proponerAccion,
   registrarAjustesMinijuegos,
   registrarSesionesMinijuegos,
@@ -169,6 +170,18 @@ Hooks.once("ready", () => {
     recordarVista(vista, acciones);
     refrescarMesa();
   });
+  // Un rechazo tiene que verse: sin esto es indistinguible de un botón que no
+  // funciona, que es exactamente lo que parece desde el otro lado.
+  Hooks.on("lagunakMinijuegoPropuestaRechazada", (codigo) => {
+    ui.notifications?.warn(
+      game.i18n.format("LAGUNAK.Minijuegos.Mesa.Rechazada", {
+        motivo: game.i18n.localize(`LAGUNAK.Minijuegos.Rechazo.${codigo ?? "desconocido"}`),
+      }),
+    );
+  });
+  // Se pide el reparto en cuanto este cliente está listo: el empujón del
+  // coordinador al conectarse llega antes de que haya nadie escuchando.
+  pedirVista();
   conectarMusica();
 });
 
@@ -193,6 +206,9 @@ function abrirMesaMinijuegos() {
   // público, que es un ajuste de mundo y lo lee cualquiera. Sin acciones: los
   // botones los concede el coordinador, y llegarán con la primera vista.
   if (!vistaRecordada().vista) recordarVista(estadoPublicoVigente(), []);
+  // Y se vuelve a pedir al abrir: si el reparto del arranque se perdió, esto lo
+  // recupera sin recargar la página.
+  pedirVista();
   // Abrir la mesa y sentarse son cosas distintas: esto solo pone la mesa (si
   // hace falta y si se puede) y enseña la ventana. Sentarse es una acción más,
   // con su botón, porque el GM puede querer repartir sin jugar.

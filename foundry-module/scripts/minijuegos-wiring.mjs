@@ -37,6 +37,12 @@ function canalSocket(moduleId) {
   return `module.${moduleId}`;
 }
 
+// Mensajes del canal. La vista dirigida la MANDA el coordinador; los otros dos
+// los manda cualquiera y no declaran identidad (ver `pedirVista`).
+const MENSAJE_VISTA = "minijuego:vista-privada";
+const MENSAJE_PEDIR = "minijuego:pedir-vista";
+const MENSAJE_RECHAZO = "minijuego:rechazo";
+
 // Entero positivo de 31 bits desde el CSPRNG del entorno. El motor exige un
 // entero como semilla y no admite otra fuente de aleatoriedad.
 function semillaCriptografica() {
@@ -62,7 +68,7 @@ function entregarVista(moduleId, userId, vista, acciones) {
     return;
   }
   game.socket?.emit(canalSocket(moduleId), {
-    tipo: "minijuego:vista-privada",
+    tipo: MENSAJE_VISTA,
     destinatarioId: userId,
     vista,
     acciones,
@@ -149,7 +155,22 @@ export function registrarSesionesMinijuegos(moduleId) {
   // Receptor de vistas privadas: cada cliente descarta lo que no va dirigido a
   // su usuario. Es privacidad de interfaz, no secreto criptográfico.
   const receptor = (mensaje) => {
-    if (mensaje?.tipo !== "minijuego:vista-privada") return;
+    // Petición de reparto. La atiende solo el coordinador, y NO se fía de
+    // ninguna identidad declarada en el mensaje: reparte a todos, y cada
+    // cliente se queda con lo suyo. Así una petición inventada no puede
+    // sonsacar la vista de otro; lo peor que consigue es un reparto de más.
+    if (mensaje?.tipo === MENSAJE_PEDIR) {
+      if (esCoordinador()) repartirVistas(moduleId);
+      return;
+    }
+    if (mensaje?.tipo === MENSAJE_RECHAZO) {
+      if (!aceptarVistaPrivada({ destinatarioId: mensaje.destinatarioId, userId: game.user?.id })) {
+        return;
+      }
+      Hooks.callAll("lagunakMinijuegoPropuestaRechazada", mensaje.codigo);
+      return;
+    }
+    if (mensaje?.tipo !== MENSAJE_VISTA) return;
     if (!aceptarVistaPrivada({ destinatarioId: mensaje.destinatarioId, userId: game.user?.id })) {
       return;
     }
@@ -204,8 +225,20 @@ export function registrarSesionesMinijuegos(moduleId) {
         publicar: (publico) => game.settings.set(moduleId, AJUSTE_SESION, publico),
         enviarPrivada: (userId, vista, acciones) =>
           entregarVista(moduleId, userId, vista, acciones),
-        alRechazar: ({ codigo }) => {
+        // Un rechazo silencioso es indistinguible de un botón roto: se le dice
+        // a quien lo propuso, que es el único que puede hacer algo al respecto.
+        alRechazar: ({ actorId, codigo }) => {
           console.debug(`[lagunak] propuesta de minijuego rechazada: ${codigo}`);
+          if (!actorId) return;
+          if (actorId === game.user?.id) {
+            Hooks.callAll("lagunakMinijuegoPropuestaRechazada", codigo);
+            return;
+          }
+          game.socket?.emit(canalSocket(moduleId), {
+            tipo: MENSAJE_RECHAZO,
+            destinatarioId: actorId,
+            codigo,
+          });
         },
       });
       // El despachador devuelve la sesión resultante; se conserva como sesión
@@ -270,6 +303,27 @@ export function proponerAccion({ tipo, parametros } = {}) {
     nonce: foundry.utils.randomID(),
   });
   return game.user?.setFlag(moduloConfigurado, FLAG_PROPUESTA, sobre);
+}
+
+// Pide al coordinador que reparta las vistas.
+//
+// POR QUÉ HACE FALTA UN TIRÓN Y NO BASTA EL EMPUJÓN. El coordinador reparte
+// cuando alguien se conecta, pero `userConnected` le llega mucho antes de que
+// el cliente recién llegado haya terminado su `ready` y se haya suscrito al
+// canal: ese reparto se pierde en el vacío. El síntoma era una mesa visible sin
+// un solo botón —el cliente tenía el estado público, que es un ajuste de mundo,
+// pero ninguna acción concedida—, y parecía que la mesa «no dejaba sentarse».
+//
+// No lleva identidad: no hay forma de autenticar el emisor de un socket, así
+// que el coordinador responde repartiendo a todos y cada cual se queda con lo
+// suyo.
+export function pedirVista() {
+  if (!moduloConfigurado) return;
+  if (esCoordinador()) {
+    repartirVistas(moduloConfigurado);
+    return;
+  }
+  game.socket?.emit(canalSocket(moduloConfigurado), { tipo: MENSAJE_PEDIR });
 }
 
 // Estado público vigente, para que la UI (paso 4) lo pinte sin conocer el

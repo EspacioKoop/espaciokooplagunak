@@ -122,3 +122,36 @@ def test_solo_cuentan_las_formas_en_negrita_de_filas_autorizadas(tmp_path):
     assert "prohibido" not in conocidos
     assert "descartado" not in conocidos
     assert "colateral" not in conocidos
+
+
+def test_una_celda_con_dudas_no_autoriza(tmp_path):
+    """Regresión literal de la review: `pendiente ✅ revisar` no es permiso.
+
+    El predicado anterior aceptaba cualquier fila que CONTUVIERA ✅ en algún
+    sitio, así que una nota pidiendo revisión autorizaba las formas de su fila.
+    Ahora tiene que haber una celda que sea exactamente ✅.
+    """
+    catalogo = tmp_path / "catalogo.md"
+    catalogo.write_text(
+        "| Fuente | Uso | Elementos |\n"
+        "| --- | --- | --- |\n"
+        "| Obra dudosa | pendiente ✅ revisar | **Tarzan** |\n"
+        "| Obra libre | ✅ | **Nautilus** |\n",
+        encoding="utf-8",
+    )
+    conocidos = checker.nombres_del_catalogo(catalogo)
+
+    assert "tarzan" not in conocidos, "una nota de revisión no puede autorizar"
+    assert "nautilus" in conocidos, "la fila autorizada de verdad sigue contando"
+
+
+def test_el_permiso_no_depende_del_orden_de_columnas(tmp_path):
+    """La celda ✅ no está en un índice fijo: los topónimos la ponen en otra."""
+    catalogo = tmp_path / "catalogo.md"
+    catalogo.write_text(
+        "| Elementos | Uso |\n"
+        "| --- | --- |\n"
+        "| **Ganimedes** | ✅ |\n",
+        encoding="utf-8",
+    )
+    assert "ganimedes" in checker.nombres_del_catalogo(catalogo)

@@ -55,14 +55,31 @@ PROHIBE = ("\U0001F4DD", "\u26D4")  # 📝 ⛔
 NEGRITA = re.compile(r"\*\*(.+?)\*\*")
 
 
+def celdas(fila: str) -> list[str]:
+    """The row's cells, stripped. Leading and trailing pipes yield empty ends."""
+    return [celda.strip() for celda in fila.strip().strip("|").split("|")]
+
+
 def filas_autorizadas(texto: str) -> list[str]:
-    """Table rows whose Uso column authorises the forms they carry."""
+    """Table rows whose Uso column authorises the forms they carry.
+
+    A whole *cell* must be exactly ✅. Merely containing the mark somewhere in
+    the row is not enough, and the difference is not pedantry: a row reading
+    `| Obra | pendiente ✅ revisar | **Tarzan** |` expresses doubt, not
+    permission, yet a substring test reads it as an authorisation and lets a name
+    through the legal gate on the strength of a note asking for review.
+
+    The cell's index is deliberately not fixed, as with the bold forms: the
+    tables in this catalogue do not agree on column order.
+    """
     filas = []
     for linea in texto.splitlines():
         recortada = linea.strip()
         if not recortada.startswith("|"):
             continue
-        if AUTORIZA not in recortada or any(m in recortada for m in PROHIBE):
+        if any(m in recortada for m in PROHIBE):
+            continue
+        if not any(celda == AUTORIZA for celda in celdas(recortada)):
             continue
         filas.append(recortada)
     return filas

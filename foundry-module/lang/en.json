@@ -394,5 +394,6 @@
   "LAGUNAK.Minijuegos.Rechazo.nonce_reutilizado": "that play had already been sent",
   "LAGUNAK.Minijuegos.Rechazo.juego_rechazo": "the game does not allow that play",
   "LAGUNAK.Minijuegos.Rechazo.desconocido": "unknown reason",
-  "LAGUNAK.Minijuegos.Rechazo.sin_modulo": "the module has not finished starting up"
+  "LAGUNAK.Minijuegos.Rechazo.sin_modulo": "the module has not finished starting up",
+  "LAGUNAK.Minijuegos.Accion.Volver": "Return to the table"
 }

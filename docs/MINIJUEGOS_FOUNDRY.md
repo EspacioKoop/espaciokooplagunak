@@ -192,6 +192,15 @@ nivel de presentación.
 - **Todos ausentes:** la mesa expira tras un plazo acotado y solo fuera de una
   resolución activa. El plazo exacto será configuración del host, no del juego.
 
+
+**Volver a la mesa.** Abandonar en partida no libera el asiento: lo reserva y
+marca al jugador ausente, para que su identidad no la reclame otro. Esa reserva
+necesitaba su vuelta, o era una trampa —el asiento seguía siendo suyo y no había
+forma de ocuparlo otra vez—, así que existe la acción `return`, que solo se le
+ofrece a quien está ausente. La presencia también la lleva el cableado: el
+coordinador marca ausente a quien se desconecta y reconecta a quien vuelve, con
+`userConnected`. Antes nadie se lo decía al motor, y la mesa esperaba
+eternamente a alguien que había cerrado la pestaña.
 ## Espectadores
 
 Los espectadores reciben únicamente `vistaPublica`, no ocupan asiento, no

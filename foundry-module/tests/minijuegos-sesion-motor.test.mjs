@@ -477,3 +477,57 @@ test("el payload se acota: nada de anidamiento ni cadenas sin límite", () => {
   const valida = ok(s, "act", "u1", { parametros: { tipo: "jugar", parametros: { valor: 7 } } });
   assert.deepEqual(vistaPublicaSesion(valida).juegoPublico.jugadas, { u1: 7 });
 });
+
+test("quien se ausenta en partida puede volver a SU asiento", () => {
+  // `leave` en partida no libera el asiento a propósito: lo reserva y marca al
+  // jugador ausente, para que su identidad no la reclame otro. Sin una acción
+  // de vuelta esa reserva era una trampa —el asiento seguía siendo suyo y no
+  // había forma de ocuparlo otra vez—, y quien se levantaba a media partida se
+  // quedaba mirando con un botón que ya no hacía nada.
+  let sesion = crearSesion({ id: "s", juego: "j", anfitrionId: "gm", coordinadorId: "gm" });
+  let n = 0;
+  const paso = (actorId, tipo) => {
+    const res = aplicar(sesion, {
+      sobre: {
+        sessionId: "s",
+        epocaCoordinador: sesion.publico.epocaCoordinador,
+        nonce: `n${(n += 1)}`,
+        tipo,
+      },
+      actorId,
+      juego: juegoFalso,
+      semilla: 7,
+    });
+    if (res.ok) sesion = res.sesion;
+    return res;
+  };
+  paso("gm", "join");
+  paso("p1", "join");
+  assert.equal(paso("gm", "start").ok, true);
+
+  assert.equal(paso("p1", "leave").ok, true);
+  const ausente = sesion.publico.jugadores.find((j) => j.userId === "p1");
+  assert.equal(ausente.estado, "ausente", "el asiento sigue siendo suyo");
+  assert.ok(
+    accionesPermitidas(sesion, "p1", juegoFalso).includes("return"),
+    "y se le ofrece volver",
+  );
+
+  assert.equal(paso("p1", "return").ok, true);
+  assert.equal(sesion.publico.jugadores.find((j) => j.userId === "p1").estado, "activo");
+  // Volver dos veces no es volver: ya está en la mesa.
+  assert.equal(paso("p1", "return").codigo, "ya_en_mesa");
+  // Y quien no tiene asiento no puede «volver» a uno que no existe.
+  assert.equal(paso("ajeno", "return").codigo, "no_participa");
+});
+
+test("solo al ausente se le ofrece volver", () => {
+  let sesion = crearSesion({ id: "s2", juego: "j", anfitrionId: "gm", coordinadorId: "gm" });
+  sesion = aplicar(sesion, {
+    sobre: { sessionId: "s2", epocaCoordinador: 0, nonce: "a", tipo: "join" },
+    actorId: "p1",
+    juego: juegoFalso,
+  }).sesion;
+  assert.equal(accionesPermitidas(sesion, "p1", juegoFalso).includes("return"), false);
+  assert.equal(accionesPermitidas(sesion, "ajeno", juegoFalso).includes("return"), false);
+});

@@ -27,6 +27,7 @@ const ETIQUETAS = Object.freeze({
   join: "LAGUNAK.Minijuegos.Accion.Sentarse",
   watch: "LAGUNAK.Minijuegos.Accion.Mirar",
   leave: "LAGUNAK.Minijuegos.Accion.Levantarse",
+  return: "LAGUNAK.Minijuegos.Accion.Volver",
   start: "LAGUNAK.Minijuegos.Accion.Repartir",
   finish: "LAGUNAK.Minijuegos.Accion.Rematar",
   close: "LAGUNAK.Minijuegos.Accion.Cerrar",

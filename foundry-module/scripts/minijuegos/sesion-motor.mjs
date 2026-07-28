@@ -28,6 +28,7 @@ export const ACCIONES = Object.freeze([
   "join",
   "watch",
   "leave",
+  "return",
   "start",
   "act",
   "finish",
@@ -142,9 +143,13 @@ export function accionesPermitidas(sesion, userId, juego) {
   const { publico } = sesion;
   if (publico.fase === "terminada") return [];
   const dentro = esParticipante(sesion, userId);
+  const ausente = publico.jugadores.some((j) => j.userId === userId && j.estado === "ausente");
   const acciones = [
     ...(publico.fase === "lobby" && !dentro && hayAsiento(sesion) ? ["join"] : []),
     ...(!dentro && hayAforo(sesion) ? ["watch"] : []),
+    // Al ausente se le ofrece volver a SU asiento, que sigue reservado. Es la
+    // vuelta de `leave` en partida, y sin ella la reserva era una trampa.
+    ...(ausente ? ["return"] : []),
     ...(dentro ? ["leave"] : []),
     ...accionesDeJuego(sesion, userId, juego),
     ...(puedeIniciar(sesion, userId) ? ["start"] : []),
@@ -241,6 +246,8 @@ function despachar(sesion, ctx) {
       return accionWatch(sesion, ctx);
     case "leave":
       return accionLeave(sesion, ctx);
+    case "return":
+      return accionReturn(sesion, ctx);
     case "start":
       return accionStart(sesion, ctx);
     case "act":
@@ -260,6 +267,23 @@ function accionJoin(sesion, { actorId }) {
   if (esParticipante(sesion, actorId)) return { ok: false, codigo: ERRORES.YA_EN_MESA };
   if (!hayAsiento(sesion)) return { ok: false, codigo: ERRORES.MESA_LLENA };
   publico.jugadores.push({ userId: actorId, asiento: publico.jugadores.length, estado: "activo" });
+  return { ok: true };
+}
+
+// Volver a la mesa tras haberse ausentado. Es la vuelta de `leave` en partida,
+// que NO libera el asiento: lo deja reservado y marca al jugador ausente. Sin
+// esta acción esa reserva era una trampa —el asiento seguía siendo tuyo y no
+// había forma de sentarse otra vez en él—, y quien se levantaba a media partida
+// se quedaba mirando con un botón que ya no hacía nada.
+//
+// No devuelve secretos por sí sola: la mano que estuviera en curso se le
+// vuelve a repartir por el camino normal de vistas dirigidas.
+function accionReturn(sesion, { actorId }) {
+  const { publico } = sesion;
+  const jugador = publico.jugadores.find((j) => j.userId === actorId);
+  if (!jugador) return { ok: false, codigo: ERRORES.NO_PARTICIPA };
+  if (jugador.estado !== "ausente") return { ok: false, codigo: ERRORES.YA_EN_MESA };
+  jugador.estado = "activo";
   return { ok: true };
 }
 

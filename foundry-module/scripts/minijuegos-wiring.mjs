@@ -7,7 +7,12 @@ import {
   construirPropuesta,
   despacharCambioDeUsuario,
 } from "./minijuegos/adaptador-sesion.mjs";
-import { crearSesion, vistaPublicaSesion } from "./minijuegos/sesion-motor.mjs";
+import {
+  crearSesion,
+  marcarAusente,
+  reconectar,
+  vistaPublicaSesion,
+} from "./minijuegos/sesion-motor.mjs";
 import { MESA_POR_DEFECTO, configuracionPoker } from "./minijuegos/mesa-config.mjs";
 import * as poker from "./minijuegos/poker-motor.mjs";
 
@@ -212,8 +217,22 @@ export function registrarSesionesMinijuegos(moduleId) {
     // Al conectarse alguien se reparte de nuevo: quien acaba de entrar (o de
     // recargar) no tiene vista ni acciones, y sin esto se quedaría mirando una
     // mesa muerta hasta que otro hiciera algo.
-    const alCambiarConexion = () => {
+    const alCambiarConexion = (usuario, conectado) => {
       asegurarCoordinacion();
+      // Presencia. El motor sabe marcar ausente y activo desde el principio,
+      // pero nadie se lo decía: un jugador que cerraba la pestaña seguía
+      // figurando como activo y la mesa lo esperaba eternamente. Se aplica solo
+      // a quien está sentado; a los demás no les cambia nada.
+      const id = usuario?.id;
+      if (sesionViva && id && sesionViva.publico.jugadores.some((j) => j.userId === id)) {
+        const siguiente = conectado
+          ? reconectar(sesionViva, id)
+          : marcarAusente(sesionViva, id);
+        if (siguiente !== sesionViva) {
+          sesionViva = siguiente;
+          game.settings.set(moduleId, AJUSTE_SESION, vistaPublicaSesion(sesionViva));
+        }
+      }
       repartirVistas(moduleId);
     };
     Hooks.on("userConnected", alCambiarConexion);

@@ -603,3 +603,43 @@
   height: 144px;
   image-rendering: pixelated;
 }
+
+/* Lazo cerrado de la orden (#331). Lo que se pidió, lo que hace la nave, y si ya
+ * llegó. El estado NO viaja solo en el color del borde: cada uno lleva su
+ * palabra al lado, que es la regla que este módulo ya aplica al daño y a la
+ * alerta. */
+.lagunak-workspace__orden-estado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 12px;
+  margin: 12px 0 6px;
+  padding: 8px 12px;
+  border-left: 3px solid var(--lagunak-muted);
+  background: rgba(255, 255, 255, 0.035);
+  font-size: 12px;
+}
+
+.lagunak-workspace__orden-estado--aceptada { border-left-color: #83e96b; }
+.lagunak-workspace__orden-estado--rechazada { border-left-color: #ff6b76; }
+.lagunak-workspace__orden-estado--enviada { border-left-color: #ffd166; }
+
+.lagunak-workspace__orden-etiqueta {
+  color: var(--lagunak-muted);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.lagunak-workspace__orden-delta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-family: monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.lagunak-workspace__orden-delta b { color: var(--lagunak-accent); }
+.lagunak-workspace__orden-ok { color: #83e96b; }
+.lagunak-workspace__orden-espera { color: #ffd166; }
+.lagunak-workspace__orden-sinlectura { color: var(--lagunak-muted); }

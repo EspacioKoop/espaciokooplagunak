@@ -345,5 +345,14 @@
   "LAGUNAK.Musica.Registro.paganini": "Virtuosity: urgency with agency",
   "LAGUNAK.Musica.Registro.txalaparta": "Txalaparta: shared labour",
   "LAGUNAK.Musica.Registro.auto": "Automatic music, following the alert level",
-  "LAGUNAK.MapaVivo.Detalle.Clase": "Class"
+  "LAGUNAK.MapaVivo.Detalle.Clase": "Class",
+  "LAGUNAK.Espacios.Orden.Estado.enviada": "Sent",
+  "LAGUNAK.Espacios.Orden.Estado.aceptada": "Accepted",
+  "LAGUNAK.Espacios.Orden.Estado.rechazada": "Rejected",
+  "LAGUNAK.Espacios.Orden.Ordenado": "Ordered",
+  "LAGUNAK.Espacios.Orden.Real": "Actual",
+  "LAGUNAK.Espacios.Orden.Convergido": "On course",
+  "LAGUNAK.Espacios.Orden.Maniobrando": "Manoeuvring",
+  "LAGUNAK.Espacios.Orden.SinLectura": "No reading from the ship",
+  "LAGUNAK.Espacios.Orden.EstadoTitulo": "Last order"
 }

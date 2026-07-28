@@ -93,6 +93,17 @@ token:
   excepción** y siguen siendo recurso del GM: callsign, facción y coordenadas
   exactas son lo que el sistema de sensores debe decidir cuánto revela, y se
   abrirán degradados por distancia y salud de sensores.
+- **Lazo cerrado de la orden** (#331 paso 2, `acuse-orden.mjs`). Cada orden
+  vuelve a **la consola que la emitió**, y a ninguna otra: el relé ya recibía el
+  resultado del puente con el `userId` del emisor y hasta ahora se descartaba. La
+  consola enseña «ordenado 090 / real 073», con lo pedido sacado del acuse del GM
+  y lo real de la telemetría —por eso este paso depende de la apertura de
+  telemetría: sin ella, la mitad derecha del delta no existiría para quien la
+  necesita—. El rumbo se compara por el **arco corto**: 359 y 001 distan dos
+  grados, y compararlos a lo bruto marcaría como desobediente a una nave ya en
+  rumbo justo al cruzar el norte. **Impulso y warp no tienen lectura real**
+  porque `/v1/state` no los publica; la consola lo dice en vez de enseñar como
+  «real» el mismo número que se acaba de pedir.
 - **Identidad de usuario no falsificable** (#237). El tripulante escribe la orden
   en su propio flag de usuario (`emitWorkspaceOrder`); el GM la recoge en el hook
   `updateUser`. El puesto **nunca** se declara en la orden: el GM lo resuelve

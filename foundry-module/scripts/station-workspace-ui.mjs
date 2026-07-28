@@ -5,6 +5,7 @@ import { buildWorkspaceModel, stationForWorkspace } from "./station-workspaces.m
 import { emitWorkspaceOrder } from "./station-order-wiring.mjs";
 import { ORDER_FORMS } from "./station-order-forms.mjs";
 import { pintarNave } from "./retro3d-lienzo.mjs";
+import { aceptarAcuse, estadoOrden } from "./acuse-orden.mjs";
 import {
   aceptarTelemetria,
   canalTelemetria,
@@ -25,7 +26,22 @@ export function registerWorkspaceFeature(moduleId) {
   // también en el cliente del GM: es inofensivo —él ya tiene el dato de primera
   // mano y el sello descarta lo viejo— y evita que un relevo de GM deje a un
   // cliente sin oyente.
+  // Acuse de la última orden propia (#331, paso 2). Cada cliente descarta lo
+  // que no va dirigido a su usuario, igual que las vistas privadas del póker.
+  const recibirAcuse = (sobre) => {
+    const app = workspaceApp;
+    if (!app || app.closed || !sobre) return;
+    app.ultimoAcuse = sobre;
+    renderWorkspace();
+  };
+  Hooks.on("lagunakAcuseOrden", recibirAcuse);
+
   game.socket?.on(canalTelemetria(moduleId), (mensaje) => {
+    const acuse = aceptarAcuse(mensaje, game.user?.id);
+    if (acuse) {
+      recibirAcuse(acuse);
+      return;
+    }
     const ship = aceptarTelemetria(mensaje);
     if (!ship) return;
     const app = workspaceApp;
@@ -127,6 +143,29 @@ function bridgeClient() {
   });
 }
 
+// Etiquetas del delta. Se resuelven aquí y no en la plantilla para no depender
+// de un helper de Handlebars que puede no existir en todas las versiones de
+// Foundry, y para que un booleano (escudos) se lea como palabra y no como
+// «true».
+function etiquetarOrden(orden) {
+  if (!orden) return null;
+  const texto = (valor) => {
+    if (valor === null || valor === undefined) return "—";
+    if (typeof valor === "boolean") {
+      return game.i18n.localize(valor ? "LAGUNAK.Espacios.Activos" : "LAGUNAK.Espacios.Inactivos");
+    }
+    // Un rumbo con seis decimales no se lee: la consola redondea a lo que una
+    // persona puede comparar de un vistazo.
+    return String(Math.round(valor * 100) / 100);
+  };
+  return {
+    ...orden,
+    estadoLabel: game.i18n.localize(`LAGUNAK.Espacios.Orden.Estado.${orden.estado}`),
+    ordenadoLabel: texto(orden.ordenado),
+    realLabel: texto(orden.real),
+  };
+}
+
 function workspaceContext(app) {
   let station = null;
   try {
@@ -153,6 +192,12 @@ function workspaceContext(app) {
     connection: app.connection,
     error: app.error,
   });
+  // Delta ordenado/real de la última orden de este puesto. La mitad izquierda
+  // sale del acuse del GM y la derecha de la telemetría, que desde #331 llega a
+  // toda la tripulación: sin aquello, esto no existiría para quien lo necesita.
+  app.ultimoModelo.orden = etiquetarOrden(
+    estadoOrden({ acuse: app.ultimoAcuse, ship: app.ultimoModelo.ship }),
+  );
   return app.ultimoModelo;
 }
 
@@ -210,6 +255,11 @@ function submitStationOrder(app, spec) {
     return;
   }
   emitWorkspaceOrder({ action: spec.action, params });
+  // «Enviada» es un estado real y se pinta como tal: entre emitir y que el GM
+  // conteste hay un viaje de ida y vuelta, y una consola que no dice nada en ese
+  // hueco parece rota.
+  app.ultimoAcuse = { accion: spec.action, params, estado: "enviada", codigo: null };
+  renderWorkspace();
   ui.notifications?.info?.(game.i18n.localize("LAGUNAK.Espacios.Orden.Enviada"));
 }
 
@@ -272,6 +322,7 @@ function initialiseApp(app) {
   // y lo dice, que es distinto de «no tienes permiso».
   app.connection = "loading";
   app.selloTelemetria = null;
+  app.ultimoAcuse = null;
   app.error = "";
   app.loading = false;
   app.closed = false;

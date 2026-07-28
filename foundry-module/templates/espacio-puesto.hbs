@@ -125,6 +125,31 @@
           </div>
         {{/if}}
 
+        {{! Lazo cerrado de la orden (#331, paso 2). Un timón se distingue de un
+            formulario en que contesta: aquí se ve qué se pidió, qué está
+            haciendo la nave, y si ya ha llegado. Va con aria-live porque el
+            cambio ocurre solo, sin que nadie pulse nada. }}
+        {{#if orden}}
+          <div class="lagunak-workspace__orden-estado lagunak-workspace__orden-estado--{{orden.estado}}" role="status" aria-live="polite">
+            <span class="lagunak-workspace__orden-etiqueta">{{localize "LAGUNAK.Espacios.Orden.EstadoTitulo"}}</span>
+            <strong>{{orden.estadoLabel}}</strong>
+            {{#if orden.codigo}}<small>{{orden.codigo}}</small>{{/if}}
+            <span class="lagunak-workspace__orden-delta">
+              <span>{{localize "LAGUNAK.Espacios.Orden.Ordenado"}} <b>{{orden.ordenadoLabel}}</b></span>
+              {{#if orden.hayLecturaReal}}
+                <span>{{localize "LAGUNAK.Espacios.Orden.Real"}} <b>{{orden.realLabel}}</b></span>
+                {{#if orden.convergido}}
+                  <span class="lagunak-workspace__orden-ok">{{localize "LAGUNAK.Espacios.Orden.Convergido"}}</span>
+                {{else}}
+                  <span class="lagunak-workspace__orden-espera">{{localize "LAGUNAK.Espacios.Orden.Maniobrando"}}</span>
+                {{/if}}
+              {{else}}
+                <span class="lagunak-workspace__orden-sinlectura">{{localize "LAGUNAK.Espacios.Orden.SinLectura"}}</span>
+              {{/if}}
+            </span>
+          </div>
+        {{/if}}
+
         {{! Órdenes operativas por puesto (#236+): fuera del bloque de telemetría
             porque la tripulación no la recibe y aun así debe poder ordenar. }}
         {{#if canOrderHeading}}

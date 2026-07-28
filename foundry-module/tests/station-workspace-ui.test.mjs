@@ -81,6 +81,9 @@ async function setup({ isGM = false, modern = false, fetchImpl = null } = {}) {
   return { module, hooks, instances, settingsReads };
 }
 
+// LA GARANTÍA QUE NO CAMBIA con la apertura de telemetría (#331): el cliente de
+// un jugador no lee el token ni habla con el puente. Lo que cambió es que ahora
+// recibe la nave por difusión del GM; lo que NO cambió es que no puede pedirla.
 test("v11: un jugador abre su consola sin leer token ni ejecutar fetch", async () => {
   const { module, instances, settingsReads } = await setup();
   const controls = [{ name: "lagunak", tools: [] }];
@@ -92,8 +95,12 @@ test("v11: un jugador abre su consola sin leer token ni ejecutar fetch", async (
   assert.deepEqual(instances[0].renderCalls, [true]);
   const model = instances[0].getData();
   assert.equal(model.station, "navigation");
-  assert.equal(model.connectionRestricted, true);
-  assert.equal(model.hasTelemetry, false);
+  // Ya no está «restringido» —eso decía «no tienes permiso»— sino esperando la
+  // difusión del GM, que es lo que de verdad ocurre.
+  assert.equal(model.connectionRestricted, false);
+  assert.equal(model.connectionLoading, true);
+  assert.equal(model.hasTelemetry, false, "todavía no ha llegado nada");
+  // Lo importante: ni una lectura de ajustes, así que ni token ni URL del puente.
   assert.deepEqual(settingsReads, []);
 });
 

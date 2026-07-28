@@ -4,6 +4,12 @@ import { openStationApp } from "./station-ui.mjs";
 import { buildWorkspaceModel, stationForWorkspace } from "./station-workspaces.mjs";
 import { emitWorkspaceOrder } from "./station-order-wiring.mjs";
 import { ORDER_FORMS } from "./station-order-forms.mjs";
+import {
+  aceptarTelemetria,
+  canalTelemetria,
+  difundirTelemetria,
+  esMasReciente,
+} from "./telemetria-difusion.mjs";
 
 let configuredModuleId = null;
 let workspaceApp = null;
@@ -11,6 +17,29 @@ let workspaceApp = null;
 export function registerWorkspaceFeature(moduleId) {
   configuredModuleId = moduleId;
   Hooks.on("updateUser", () => renderWorkspace());
+
+  // Recepción de la telemetría difundida por el GM (#331). Se registra siempre,
+  // también en el cliente del GM: es inofensivo —él ya tiene el dato de primera
+  // mano y el sello descarta lo viejo— y evita que un relevo de GM deje a un
+  // cliente sin oyente.
+  game.socket?.on(canalTelemetria(moduleId), (mensaje) => {
+    const ship = aceptarTelemetria(mensaje);
+    if (!ship) return;
+    const app = workspaceApp;
+    if (!app || app.closed) return;
+    // Fuera de orden se descarta: sin esto la consola parpadearía hacia atrás, y
+    // en una lectura de rumbo eso se ve como una sacudida de la nave.
+    if (!esMasReciente(mensaje, app.selloTelemetria)) return;
+    app.selloTelemetria = mensaje.sello;
+    // El GM conserva su propio sondeo como fuente: tiene los contactos, que no
+    // viajan por aquí, y pisarlo con el sobre recortado se los borraría.
+    if (!game.user?.isGM) {
+      app.statePayload = { ship };
+      app.connection = "ok";
+      app.error = "";
+    }
+    renderWorkspace();
+  });
 }
 
 export function addWorkspaceControl(controls) {
@@ -137,6 +166,13 @@ async function refreshTelemetry(app) {
     app.statePayload = statePayload;
     app.contactsPayload = contactsPayload;
     app.connection = "ok";
+    // La tripulación no puede sondear el puente —no tiene token— así que el GM
+    // reparte lo que acaba de recibir (#331). Solo la nave propia: los contactos
+    // se quedan aquí hasta que se abran degradados.
+    difundirTelemetria({
+      statePayload,
+      emitir: (sobre) => game.socket?.emit(canalTelemetria(configuredModuleId), sobre),
+    });
     return true;
   } catch (error) {
     if (app.closed) return false;
@@ -192,7 +228,11 @@ function initialiseApp(app) {
   app.previewStation = null;
   app.statePayload = null;
   app.contactsPayload = null;
-  app.connection = game.user?.isGM ? "loading" : "restricted";
+  // La tripulación ya no está «restringida»: espera la difusión del GM. Si no
+  // llega —porque no hay GM conectado o su puente está caído— se queda en espera
+  // y lo dice, que es distinto de «no tienes permiso».
+  app.connection = "loading";
+  app.selloTelemetria = null;
   app.error = "";
   app.loading = false;
   app.closed = false;

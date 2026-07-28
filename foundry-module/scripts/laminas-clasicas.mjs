@@ -37,6 +37,25 @@ function num(valor, porDefecto) {
   return Number.isFinite(n) ? n : porDefecto;
 }
 
+/**
+ * Cuenta de elementos a dibujar: entero, finito y con tope explícito.
+ *
+ * El tope no es cosmético. Estos valores gobiernan bucles y asignaciones de
+ * objetos, y estas figuras acabarán cableadas a opciones de escena; sin techo,
+ * un `divisiones: 100000` escrito por error o por malicia bloquea la pestaña de
+ * Foundry de toda la mesa. Se acota en vez de fallar porque una lámina de
+ * adorno nunca debe tumbar la sesión.
+ */
+function cuenta(valor, porDefecto, minimo, maximo) {
+  const n = Math.round(num(valor, porDefecto));
+  return Math.max(minimo, Math.min(maximo, n));
+}
+
+// Techos de dibujo: por encima de esto ni se distingue a simple vista ni cabe
+// en la lámina, así que solo cuesta tiempo de CPU.
+const MAX_DIVISIONES = 64;
+const MAX_CRATERES = 240;
+
 // ---- Trama de grabado ------------------------------------------------------
 
 /**
@@ -92,7 +111,8 @@ export function discoLunar(semilla, { radio = 40, fase = 0.6, crateres = 18 } = 
   const { siguiente } = crearAleatorio(semilla);
   const r = Math.max(4, num(radio, 40));
   const marcas = [];
-  for (let i = 0; i < Math.max(0, crateres); i += 1) {
+  const cuantos = cuenta(crateres, 18, 0, MAX_CRATERES);
+  for (let i = 0; i < cuantos; i += 1) {
     // Distribución uniforme en el disco: sqrt evita la acumulación central.
     const distancia = Math.sqrt(siguiente()) * r * 0.86;
     const angulo = siguiente() * TAU;
@@ -135,7 +155,7 @@ export function discoLunarSvg(semilla, opciones = {}) {
 export function cartografia({ ancho = 320, alto = 320, divisiones = 8, titulo = "" } = {}) {
   const w = Math.max(80, num(ancho, 320));
   const h = Math.max(80, num(alto, 320));
-  const n = Math.max(2, Math.round(num(divisiones, 8)));
+  const n = cuenta(divisiones, 8, 2, MAX_DIVISIONES);
   const marcasX = [];
   const marcasY = [];
   for (let i = 0; i <= n; i += 1) {

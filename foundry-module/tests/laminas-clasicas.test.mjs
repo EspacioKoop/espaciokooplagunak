@@ -87,8 +87,13 @@ test("la rosa de los vientos tiene ocho brazos y los cardinales son los largos",
 
 test("el título de la cartela se escapa: un nombre hostil no inyecta marcado", () => {
   const svg = cartografiaSvg({ titulo: '<script>alert(1)</script>' });
-  assert.doesNotMatch(svg, /<script>/);
+  assert.doesNotMatch(svg, /<script>/i);
   assert.match(svg, /&lt;script&gt;/);
+  // Y en mayúsculas: el analizador de HTML no distingue caja, así que un
+  // escape que solo cubriera minúsculas no sería escape.
+  const gritado = cartografiaSvg({ titulo: '<SCRIPT>alert(1)</SCRIPT>' });
+  assert.doesNotMatch(gritado, /<script/i);
+  assert.match(gritado, /&lt;SCRIPT&gt;/);
   // Sin título no se dibuja cartela vacía.
   assert.doesNotMatch(cartografiaSvg({}), /<text/);
 });
@@ -131,4 +136,23 @@ test("la carta tiembla como una plancha cortada a mano, y siempre igual", () => 
     assert.ok(Math.abs(Number(sx)) <= 210, "el temblor se salió del lienzo");
     assert.ok(Math.abs(Number(sy)) <= 210);
   }
+});
+
+test("las cuentas de dibujo se acotan: nada de bucles de cien mil", () => {
+  // Antes, `divisiones: 100000` generaba 100001 marcas y otros tantos objetos:
+  // suficiente para congelar la pestaña de quien tuviera la escena abierta.
+  const enorme = cartografia({ divisiones: 100000 });
+  assert.equal(enorme.marcasX.length, 65);
+  assert.equal(enorme.marcasY.length, 65);
+  assert.equal(discoLunar("probe", { crateres: 100000 }).crateres.length, 240);
+
+  // Por abajo y con basura: se acota, no se rompe ni se cuelga.
+  assert.equal(cartografia({ divisiones: 0 }).marcasX.length, 3);
+  assert.equal(cartografia({ divisiones: -50 }).marcasX.length, 3);
+  assert.equal(cartografia({ divisiones: 8.7 }).marcasX.length, 10);
+  assert.equal(cartografia({ divisiones: Infinity }).marcasX.length, 9);
+  assert.equal(cartografia({ divisiones: "muchas" }).marcasX.length, 9);
+  assert.equal(discoLunar("probe", { crateres: -3 }).crateres.length, 0);
+  assert.equal(discoLunar("probe", { crateres: Infinity }).crateres.length, 18);
+  assert.equal(discoLunar("probe", { crateres: 4.6 }).crateres.length, 5);
 });

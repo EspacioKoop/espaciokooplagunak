@@ -4,6 +4,8 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
+import { ERRORES } from "../scripts/minijuegos/sesion-motor.mjs";
+
 const moduleRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 async function catalog(language) {
@@ -76,4 +78,18 @@ test("las plantillas no exponen identificadores internos ingleses", async () => 
   const templates = await sourceFiles(path.join(moduleRoot, "templates"));
   const source = (await Promise.all(templates.map((file) => readFile(file, "utf8")))).join("\n");
   assert.doesNotMatch(source, /\b(?:beamweapons|missilesystem|jumpdrive|frontshield|rearshield|Human Navy|Independent)\b/);
+});
+
+test("todo motivo de rechazo de la mesa tiene texto en ES y EN", async () => {
+  const [es, en] = await Promise.all([catalog("es"), catalog("en")]);
+  // La clave se compone en tiempo de ejecución (`Rechazo.${codigo}`), así que
+  // el rastreo de literales no la ve: un motivo nuevo en el motor se colaría
+  // hasta la pantalla como clave cruda. Aquí se comprueba contra el motor.
+  const codigos = [...Object.values(ERRORES), "desconocido"];
+  for (const catalogo of [{ nombre: "es", claves: es }, { nombre: "en", claves: en }]) {
+    const faltan = codigos.filter(
+      (codigo) => !(`LAGUNAK.Minijuegos.Rechazo.${codigo}` in catalogo.claves),
+    );
+    assert.deepEqual(faltan, [], `Faltan motivos en ${catalogo.nombre}.json`);
+  }
 });

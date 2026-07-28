@@ -1,5 +1,6 @@
 {
   "id": "espaciokoop-lagunak",
+  "socket": true,
   "title": "Espaciokoop Lagunak — Puente de mando",
   "description": "Muestra en Foundry VTT el estado en vivo de la nave simulada en Espaciokoop Lagunak y ofrece controles GM cerrados a través del puente de integración (contrato v0).",
   "version": "0.4.0",

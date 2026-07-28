@@ -168,3 +168,30 @@ test("quien se retira sigue en la mesa, marcado", () => {
   const jugador = vista.jugadores.find((j) => j.userId === turno);
   assert.equal(jugador.retirado, true, "retirarse se ve; el asiento no desaparece");
 });
+
+test("el disco se pinta en el asiento que lleva el botón", () => {
+  // Se marca por identidad: los asientos de la MANO son solo los que juegan,
+  // así que comparar posiciones con los de la MESA pondría el disco en el
+  // asiento equivocado en cuanto alguien se quede sin fichas.
+  const vista = {
+    jugadores: [{ userId: "p1" }, { userId: "p2" }, { userId: "p3" }],
+    juegoPublico: {
+      botonIndice: 1,
+      jugadores: [
+        { userId: "p1", stack: 100 },
+        { userId: "p3", stack: 100 },
+      ],
+    },
+  };
+  const modelo = mesaVista(vista, { userId: "p1" });
+  assert.deepEqual(
+    modelo.jugadores.map((j) => j.esBoton),
+    [false, false, true],
+    "el disco es de p3, no del asiento 1 de la mesa",
+  );
+});
+
+test("antes del reparto no hay disco que enseñar", () => {
+  const modelo = mesaVista({ jugadores: [{ userId: "p1" }, { userId: "p2" }] }, { userId: "p1" });
+  assert.equal(modelo.jugadores.some((j) => j.esBoton), false);
+});

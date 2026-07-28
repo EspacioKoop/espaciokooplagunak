@@ -207,3 +207,116 @@ test("la primera mano sí usa la entrada configurada", () => {
     [80, 120],
   );
 });
+
+// ---- El botón rota (hallazgo abierto de PR #360) ---------------------------
+
+test("REGRESIÓN: el botón rota entre manos — no siempre paga la ciega el mismo", () => {
+  // El síntoma en mesa: `poker.crear` cae en `botonIndice: 0` si nadie se lo
+  // dice, y la configuración no se lo decía. Con el disco clavado en el asiento
+  // 0, ese jugador pagaba la ciega pequeña TODA la noche (y en heads-up, además,
+  // actuaba primero siempre). La ventaja posicional dejaba de repartirse.
+  const mesa = [{ userId: "p1" }, { userId: "p2" }, { userId: "p3" }];
+
+  // Primera mano: sin nada anterior, el disco arranca en el asiento 0.
+  assert.equal(configuracionPoker({ jugadores: mesa }).botonIndice, 0);
+
+  // Segunda: la mano anterior lo tuvo en p1, así que le toca a p2.
+  const trasP1 = {
+    jugadores: mesa,
+    juegoPublico: { botonIndice: 0, jugadores: mesa.map((j) => ({ ...j, stack: 100 })) },
+  };
+  assert.equal(configuracionPoker(trasP1).botonIndice, 1);
+
+  // Y desde el último asiento vuelve al primero: da la vuelta a la mesa.
+  const trasP3 = {
+    jugadores: mesa,
+    juegoPublico: { botonIndice: 2, jugadores: mesa.map((j) => ({ ...j, stack: 100 })) },
+  };
+  assert.equal(configuracionPoker(trasP3).botonIndice, 0);
+});
+
+test("el botón salta a quien SÍ juega, contando por el orden de la mesa", () => {
+  // p2 sigue sentado pero sin fichas: no entra a la mano. El disco le
+  // correspondería, y pasa al siguiente que reparte — sin que ese salto
+  // desplace la cuenta para las manos posteriores, porque se cuenta por el
+  // orden de la mesa y no por el de la mano.
+  const publico = {
+    jugadores: [{ userId: "p1" }, { userId: "p2" }, { userId: "p3" }],
+    juegoPublico: {
+      botonIndice: 0,
+      jugadores: [
+        { userId: "p1", stack: 100 },
+        { userId: "p2", stack: 0 },
+        { userId: "p3", stack: 100 },
+      ],
+    },
+    resultado: { stacksFinales: { p1: 150, p2: 0, p3: 50 } },
+  };
+  const config = configuracionPoker(publico);
+  assert.deepEqual(config.jugadores.map((j) => j.userId), ["p1", "p3"]);
+  assert.equal(config.botonIndice, 1, "el disco va a p3, que es el índice 1 de la mano");
+});
+
+test("el botón es un índice válido de la mano que empieza, pase lo que pase", () => {
+  // Lo que protege esta prueba es el motor: `crear` rechaza un `botonIndice`
+  // fuera de rango con un RangeError, y ese fallo llegaría a la mesa como
+  // «juego_rechazo», muy lejos de su causa. Entradas raras: quien tenía el
+  // disco ya no está en la mesa, un índice imposible, o basura.
+  const mesa = [{ userId: "p1" }, { userId: "p2" }];
+  const casos = [
+    { botonIndice: 0, jugadores: [{ userId: "quien-se-fue", stack: 10 }] },
+    { botonIndice: 7, jugadores: mesa.map((j) => ({ ...j, stack: 10 })) },
+    { botonIndice: "dos", jugadores: mesa.map((j) => ({ ...j, stack: 10 })) },
+    { jugadores: mesa.map((j) => ({ ...j, stack: 10 })) },
+  ];
+  for (const juegoPublico of casos) {
+    const config = configuracionPoker({ jugadores: mesa, juegoPublico });
+    assert.ok(
+      Number.isInteger(config.botonIndice) && config.botonIndice < config.jugadores.length,
+      `botonIndice usable con ${JSON.stringify(juegoPublico.botonIndice)}`,
+    );
+    assert.doesNotThrow(() => poker.crear(config, 1));
+  }
+  // Y sin nadie sentado tampoco explota: no hay mano, pero la configuración se
+  // construye igual.
+  assert.equal(configuracionPoker({ jugadores: [] }).botonIndice, 0);
+});
+
+test("dos manos seguidas por el cableado real: la ciega pequeña cambia de dueño", () => {
+  // La comprobación de mesa, extremo a extremo con tres asientos: quien pagó la
+  // ciega pequeña en la primera mano NO la paga en la segunda.
+  let sesion = crearSesion({ id: "s", juego: "poker", anfitrionId: "gm", coordinadorId: "gm" });
+  let nonce = 0;
+  const paso = (actorId, tipo, parametros, configuracionJuego) => {
+    const res = aplicar(sesion, {
+      sobre: sobre(sesion, tipo, parametros, `n${(nonce += 1)}`),
+      actorId,
+      juego: poker,
+      semilla: 7,
+      configuracionJuego,
+    });
+    if (res.ok) sesion = res.sesion;
+    return res;
+  };
+  const ciegaPequenaDe = () => {
+    const juego = vistaPublicaSesion(sesion).juegoPublico;
+    // Con tres o más, la ciega pequeña es el asiento siguiente al botón.
+    return juego.jugadores[(juego.botonIndice + 1) % juego.jugadores.length].userId;
+  };
+
+  paso("p1", "join", {});
+  paso("p2", "join", {});
+  paso("p3", "join", {});
+  assert.equal(paso("gm", "start", {}, configuracionPoker(sesion.publico)).ok, true);
+  const primera = ciegaPequenaDe();
+
+  // Se cierra la mano a base de retiradas hasta que solo quede uno.
+  while (vistaPublicaSesion(sesion).manoEnCurso) {
+    const enTurno = vistaPublicaSesion(sesion).juegoPublico.turno;
+    assert.ok(enTurno, "una mano en curso tiene turno");
+    assert.equal(paso(enTurno, "act", { tipo: "fold" }).ok, true);
+  }
+
+  assert.equal(paso("gm", "start", {}, configuracionPoker(sesion.publico)).ok, true);
+  assert.notEqual(ciegaPequenaDe(), primera, "la ciega pequeña ha cambiado de dueño");
+});

@@ -59,6 +59,10 @@ async function loadModule({ modern = false, isGM = true, fetchImpl } = {}) {
     on(name, callback) {
       hooks[name] = callback;
     },
+    // El arnés no desregistra nada, pero varios cableados llaman a `off` al
+    // reregistrarse: sin esto, `ready` revienta a mitad y deja el módulo a
+    // medio arrancar.
+    off() {},
   };
   const ajustes = new Map();
   globalThis.game = {
@@ -126,6 +130,25 @@ async function loadModule({ modern = false, isGM = true, fetchImpl } = {}) {
 
 function pauseValues(fetchCalls) {
   return fetchCalls.map(([, options]) => JSON.parse(options.body).paused);
+}
+
+// `ready` toca cosas que este arnés no simula (DOM de la alerta de escena,
+// audio). Lo que interesa de él es que registre los hooks del módulo, así que se
+// ejecuta con los mínimos globales para que llegue hasta el final.
+async function arrancarReady(hooks) {
+  const listaClases = Object.assign([], {
+    add() {},
+    remove() {},
+    toggle() {},
+    contains: () => false,
+  });
+  globalThis.document = globalThis.document ?? {
+    body: { classList: listaClases },
+    documentElement: { style: { setProperty() {} } },
+    querySelector: () => null,
+    createElement: () => ({ style: {}, classList: { add() {} }, appendChild() {} }),
+  };
+  await hooks.ready();
 }
 
 function toolByName(controls, name) {
@@ -283,6 +306,9 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
     "lagunak-diagnostico",
     "lagunak-musica",
     "lagunak-decorado-aleatorio",
+    // La mesa de minijuegos (#308) la ven todos: es la capa social, y un
+    // minijuego al que solo pudiera entrar el GM no sería un minijuego.
+    "lagunak-mesa",
     "lagunak-musica-audio",
     "lagunak-puestos",
     "lagunak-espacio-puesto",
@@ -678,6 +704,9 @@ test("un jugador no GM recibe asignación y espacio de puesto, sin controles GM"
   const grupo = controls.find((control) => control.name === "lagunak");
   assert.ok(grupo);
   assert.deepEqual(grupo.tools.map(({ name }) => name), [
+    // La mesa de minijuegos también, por lo mismo que el audio: es de la mesa,
+    // no del GM.
+    "lagunak-mesa",
     // El audio lo habilita cada cliente con su propio gesto, que el navegador
     // exige y que no se puede delegar en el GM: por eso este botón sí lo ve un
     // jugador. El MANDO de la música sigue siendo solo del GM.
@@ -957,4 +986,80 @@ test("REGRESIÓN: la ventana de puestos sigue los cambios del ajuste de requisit
   ventana.renderCalls.length = 0;
   await assert.doesNotReject(async () => activar.onChange(true));
   assert.deepEqual(ventana.renderCalls, [], "una ventana cerrada no se repinta");
+});
+
+test("v11: la mesa se puede cerrar y volver a abrir, con instancia nueva", async () => {
+  // El singleton `mesaApp` solo se creaba cuando era null y ninguna ventana lo
+  // soltaba al cerrarse: la segunda apertura reutilizaba una instancia cerrada.
+  // En ApplicationV2 eso ni siquiera se puede renderizar; en v11 es una
+  // diferencia invisible entre rutas, que es como se cuelan los fallos.
+  const { hooks, instances } = await loadModule();
+  // El hook que reparte vistas a la ventana se registra en `ready`.
+  await arrancarReady(hooks);
+  const controls = [{ name: "token", tools: [] }];
+  hooks.getSceneControlButtons(controls);
+  const boton = toolByName(controls, "lagunak-mesa");
+  assert.ok(boton, "la mesa tiene su botón de escena");
+
+  await boton.onClick();
+  const primera = instances.at(-1);
+  assert.equal(primera.rendered, true);
+
+  await primera.close();
+  await boton.onClick();
+  const segunda = instances.at(-1);
+  assert.notEqual(segunda, primera, "la reapertura construye otra ventana");
+  assert.equal(segunda.rendered, true);
+
+  // Y la vista que llegue después refresca la NUEVA, no el cadáver de la vieja.
+  primera.renderCalls.length = 0;
+  segunda.renderCalls.length = 0;
+  hooks.lagunakMinijuegoVistaPrivada({ id: "s", jugadores: [] }, ["join"]);
+  assert.equal(segunda.renderCalls.length, 1);
+  assert.deepEqual(primera.renderCalls, [], "la instancia cerrada no se toca");
+  await segunda.close();
+});
+
+test("host moderno: misma regla de descarte para la mesa (ApplicationV2)", async () => {
+  const { hooks, instances } = await loadModule({ modern: true });
+  await arrancarReady(hooks);
+  const controls = [{ name: "token", tools: [] }];
+  hooks.getSceneControlButtons(controls);
+  const boton = toolByName(controls, "lagunak-mesa");
+
+  await boton.onClick();
+  const primera = instances.at(-1);
+  // En V2 el descarte llega por `_onClose`, que es lo que invoca el marco.
+  primera._onClose({});
+  await boton.onClick();
+  const segunda = instances.at(-1);
+  assert.notEqual(segunda, primera);
+
+  primera.renderCalls.length = 0;
+  segunda.renderCalls.length = 0;
+  hooks.lagunakMinijuegoVistaPrivada({ id: "s", jugadores: [] }, ["join"]);
+  assert.equal(segunda.renderCalls.length, 1);
+  assert.deepEqual(primera.renderCalls, []);
+});
+
+test("cerrar una ventana que ya no es la vigente no deja huérfana a la nueva", async () => {
+  // Entre cerrar una y abrir la siguiente puede haberse creado ya otra: soltar
+  // la referencia a ciegas dejaría sin refresco a la que está en pantalla.
+  const { hooks, instances } = await loadModule();
+  await arrancarReady(hooks);
+  const controls = [{ name: "token", tools: [] }];
+  hooks.getSceneControlButtons(controls);
+  const boton = toolByName(controls, "lagunak-mesa");
+
+  await boton.onClick();
+  const primera = instances.at(-1);
+  await primera.close();
+  await boton.onClick();
+  const segunda = instances.at(-1);
+
+  await primera.close(); // cierre tardío de la vieja
+  segunda.renderCalls.length = 0;
+  hooks.lagunakMinijuegoVistaPrivada({ id: "s", jugadores: [] }, ["join"]);
+  assert.equal(segunda.renderCalls.length, 1, "la vigente sigue viva");
+  await segunda.close();
 });

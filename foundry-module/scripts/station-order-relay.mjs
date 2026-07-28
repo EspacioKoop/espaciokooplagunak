@@ -24,8 +24,18 @@ export function buildStationOrder({ action, params = {}, nonce }) {
 // Extrae la orden pendiente del objeto de cambios de un `updateUser`. Foundry
 // dispara ese hook por cualquier cambio del User, así que devuelve null cuando
 // el cambio no tocó nuestro flag. Puro: recibe los cambios y el moduleId.
-export function extractOrderFromChange({ changes, moduleId }) {
-  const order = changes?.flags?.[moduleId]?.[STATION_ORDER_FLAG];
+export function extractOrderFromChange({ changes, moduleId, userDoc }) {
+  // OJO CON `changes`: Foundry entrega el DIFERENCIAL del documento, no el
+  // valor completo. La segunda orden de un mismo puesto solo trae las claves
+  // que cambiaron —si repites la misma orden con otros parámetros, puede llegar
+  // sin `action`, y si la repites igual, sin `params`—, así que la orden se
+  // reconstruía a medias o se descartaba. Los cambios sirven para saber QUE
+  // nuestro flag se tocó; la orden se lee del `User` ya actualizado, que la
+  // tiene entera. La identidad sigue siendo la del documento, que es lo que no
+  // se puede falsificar (#237).
+  const tocado = changes?.flags?.[moduleId]?.[STATION_ORDER_FLAG];
+  if (!tocado || typeof tocado !== "object") return null;
+  const order = userDoc?.flags?.[moduleId]?.[STATION_ORDER_FLAG] ?? tocado;
   if (!order || typeof order !== "object") return null;
   if (!order.action || !order.nonce) return null;
   return { action: order.action, params: order.params ?? {}, nonce: order.nonce };
@@ -74,7 +84,7 @@ export function dispatchUserUpdate({
   onResult = () => {},
   onError = () => {},
 }) {
-  const order = extractOrderFromChange({ changes, moduleId });
+  const order = extractOrderFromChange({ changes, moduleId, userDoc });
   if (!order) return null;
   if (!canHandle()) return null;
   const userId = userDoc?.id;

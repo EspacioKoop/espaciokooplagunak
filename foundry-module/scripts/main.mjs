@@ -43,10 +43,26 @@ import {
 } from "./station-workspace-ui.mjs";
 import { registerStationOrders } from "./station-order-wiring.mjs";
 import {
+  abrirMesa,
+  estadoPublicoVigente,
+  pedirVista,
+  proponerAccion,
   registrarAjustesMinijuegos,
   registrarSesionesMinijuegos,
 } from "./minijuegos-wiring.mjs";
+import {
+  crearClaseMesaV1,
+  crearClaseMesaV2,
+  recordarVista,
+  vistaRecordada,
+} from "./minijuegos/mesa-poker-app.mjs";
 import { registrarAjusteAlerta, registrarEscuchaAlerta } from "./alerta-escena.mjs";
+import {
+  IDIOMA_AUTOMATICO,
+  crearAplicadorIdioma,
+  opcionesIdioma,
+  rutaIdioma,
+} from "./idioma-modulo.mjs";
 import { crearClaseV2 } from "./estado-nave-app-v2.mjs";
 import { crearClaseV1 } from "./estado-nave-app-v1.mjs";
 import { crearClaseMapaV2 } from "./mapa-vivo-app-v2.mjs";
@@ -77,6 +93,25 @@ let estadoApp = null;
 let mapaApp = null;
 
 Hooks.once("init", () => {
+  // Idioma propio del módulo. Ajuste de CLIENTE: en qué idioma lee cada cual no
+  // es una decisión de la partida, es suya, y dos personas de la misma mesa
+  // pueden leer la misma consola en idiomas distintos sin dejar de ver lo mismo.
+  // «Automático» sigue a Foundry, que es el comportamiento de siempre.
+  game.settings.register(MODULE_ID, AJUSTE_IDIOMA, {
+    name: "LAGUNAK.Ajustes.Idioma.Nombre",
+    hint: "LAGUNAK.Ajustes.Idioma.Pista",
+    scope: "client",
+    config: true,
+    type: String,
+    choices: opcionesIdioma(
+      game.modules?.get?.(MODULE_ID)?.languages ?? [],
+      "LAGUNAK.Ajustes.Idioma.Automatico",
+    ),
+    default: IDIOMA_AUTOMATICO,
+    // Cambiar el idioma es una acción explícita: si algo va mal, se dice.
+    onChange: () => void aplicarIdiomaModulo({ avisar: true }),
+  });
+
   game.settings.register(MODULE_ID, "bridgeUrl", {
     name: "LAGUNAK.Ajustes.Url.Nombre",
     hint: "LAGUNAK.Ajustes.Url.Pista",
@@ -168,7 +203,62 @@ Hooks.once("init", () => {
   registrarAjusteMusica(MODULE_ID);
 });
 
+const AJUSTE_IDIOMA = "idioma";
+
+/* Aplica el idioma elegido a los textos del módulo, y solo a ellos.
+ *
+ * Se fusionan las claves `LAGUNAK.*` del fichero pedido sobre las traducciones
+ * vivas, en vez de traducir en cada punto de llamada: así el selector funciona
+ * en todo el módulo —incluidos los textos que Foundry localiza por su cuenta,
+ * como los títulos de ajustes— sin tocar ni una sola llamada a `localize`.
+ *
+ * El filtro por prefijo no es decorativo: sin él, este ajuste podría pisar
+ * traducciones del core o de otros módulos, que es exactamente lo que un
+ * selector propio NO debe hacer.
+ */
+// Aplicador del idioma del módulo. La lógica —incluida la guarda contra
+// respuestas obsoletas— vive en `idioma-modulo.mjs` y se prueba en Node; aquí
+// solo se le dan los cables de Foundry.
+const aplicadorIdioma = crearAplicadorIdioma({
+  leerEstado: () => ({
+    pedido: game.settings.get(MODULE_ID, AJUSTE_IDIOMA),
+    idiomaFoundry: game.i18n?.lang,
+    // `languages` es una Collection de Foundry, no un array: se normaliza para
+    // no depender de qué métodos traiga esa clase en cada versión.
+    idiomas: [...(game.modules?.get?.(MODULE_ID)?.languages ?? [])],
+  }),
+  cargar: async (ruta) => {
+    const respuesta = await fetch(rutaIdioma(ruta, MODULE_ID));
+    if (!respuesta.ok) throw new Error(String(respuesta.status));
+    return respuesta.json();
+  },
+  fusionar: (traducciones) =>
+    foundry.utils.mergeObject(game.i18n.translations, foundry.utils.expandObject(traducciones)),
+  refrescar: () => {
+    // Las ventanas abiertas ya tienen texto pintado: se reconstruyen para que el
+    // cambio se vea al instante y no en la próxima recarga.
+    for (const app of Object.values(ui.windows ?? {})) app.render?.(false);
+    for (const app of foundry.applications?.instances?.values?.() ?? []) app.render?.();
+  },
+  alAplicar: ({ idioma, textos }) =>
+    console.log(`[lagunak] idioma "${idioma}": ${textos} textos aplicados`),
+  alFallar: (motivo, datos) => {
+    if (motivo === "obsoleto") return; // llegó tarde: se descarta y ya está
+    console.warn(`[lagunak] idioma del módulo (${motivo})`, datos);
+    if (motivo === "no_cargado" && datos?.avisar) {
+      ui.notifications?.warn(game.i18n.localize("LAGUNAK.Ajustes.Idioma.NoCargado"));
+    }
+  },
+});
+
+function aplicarIdiomaModulo(opciones) {
+  return aplicadorIdioma(opciones);
+}
+
 Hooks.once("ready", () => {
+  // Antes que nada visible: si el cliente pidió otro idioma para el módulo, se
+  // aplica antes de que se abra ninguna ventana.
+  void aplicarIdiomaModulo();
   // Migración de #183: no se lee el valor legado; se sobrescribe con vacío.
   // El token operativo vive exclusivamente en bridge-token-session.mjs.
   void clearLegacyBridgeToken();
@@ -182,8 +272,71 @@ Hooks.once("ready", () => {
   // Sesiones de minijuegos (#308): el GM coordinador recoge las propuestas por
   // updateUser; cualquier cliente escucha las vistas privadas dirigidas a él.
   registrarSesionesMinijuegos(MODULE_ID);
+  // La ventana de la mesa se refresca con lo que llega dirigido a este cliente:
+  // la vista y las acciones que el coordinador le concede. Se guarda aunque la
+  // ventana esté cerrada, para que al abrirla la mesa ya esté puesta.
+  Hooks.on("lagunakMinijuegoVistaPrivada", (vista, acciones) => {
+    recordarVista(vista, acciones);
+    refrescarMesa();
+  });
+  // Un rechazo tiene que verse: sin esto es indistinguible de un botón que no
+  // funciona, que es exactamente lo que parece desde el otro lado.
+  Hooks.on("lagunakMinijuegoPropuestaRechazada", (codigo) => {
+    ui.notifications?.warn(
+      game.i18n.format("LAGUNAK.Minijuegos.Mesa.Rechazada", {
+        motivo: game.i18n.localize(`LAGUNAK.Minijuegos.Rechazo.${codigo ?? "desconocido"}`),
+      }),
+    );
+  });
+  // Se pide el reparto en cuanto este cliente está listo: el empujón del
+  // coordinador al conectarse llega antes de que haya nadie escuchando.
+  pedirVista();
   conectarMusica();
 });
+
+/* Mesa de minijuegos (#308): una sola ventana por cliente. El GM que la abre
+ * crea la mesa si no había ninguna; el resto se une a la que ya existe. */
+let mesaApp = null;
+
+function refrescarMesa() {
+  if (!mesaApp?.rendered) return;
+  mesaApp.render(foundry.applications?.api?.ApplicationV2 ? {} : false);
+}
+
+function claseMesa() {
+  const inyeccion = {
+    proponer: (accion) => proponerAccion(accion),
+    // Solo se suelta la referencia si sigue siendo ESTA instancia: entre cerrar
+    // una ventana y abrir la siguiente puede haberse creado ya otra, y ponerla
+    // a null a ciegas dejaría huérfana la que está en pantalla.
+    alCerrar: (app) => {
+      if (mesaApp === app) mesaApp = null;
+    },
+  };
+  return foundry.applications?.api?.ApplicationV2
+    ? crearClaseMesaV2(inyeccion)
+    : crearClaseMesaV1(inyeccion);
+}
+
+function abrirMesaMinijuegos() {
+  // Si aún no ha llegado ninguna vista dirigida, se arranca con el estado
+  // público, que es un ajuste de mundo y lo lee cualquiera. Sin acciones: los
+  // botones los concede el coordinador, y llegarán con la primera vista.
+  if (!vistaRecordada().vista) recordarVista(estadoPublicoVigente(), []);
+  // Y se vuelve a pedir al abrir: si el reparto del arranque se perdió, esto lo
+  // recupera sin recargar la página.
+  pedirVista();
+  // Abrir la mesa y sentarse son cosas distintas: esto solo pone la mesa (si
+  // hace falta y si se puede) y enseña la ventana. Sentarse es una acción más,
+  // con su botón, porque el GM puede querer repartir sin jugar.
+  if (game.user?.isGM && !estadoPublicoVigente()) abrirMesa({ nombreJuego: "poker" });
+  // Instancia nueva en cada apertura tras un cierre: una ApplicationV2 cerrada
+  // no se reutiliza —renderizarla otra vez falla— y la ruta v11 se descarta
+  // igual para que las dos tengan el mismo contrato.
+  if (!mesaApp) mesaApp = new (claseMesa())();
+  if (foundry.applications?.api?.ApplicationV2) mesaApp.render({ force: true });
+  else mesaApp.render(true);
+}
 
 /* Música de a bordo (#347): el GM manda, todos los clientes obedecen.
  *
@@ -361,6 +514,17 @@ Hooks.on("getSceneControlButtons", (controls) => {
   // botón lo ven todos, a diferencia del mando, que es solo del GM.
   const tools = [
     ...gmTools,
+    {
+      // La mesa la ven todos: es la capa social, y un minijuego al que solo
+      // pudiera entrar el GM no sería un minijuego. El GM además la CREA si no
+      // hay ninguna abierta; a un jugador el botón le enseña la mesa puesta, o
+      // el aviso de que todavía no hay ninguna.
+      name: "lagunak-mesa",
+      title: "LAGUNAK.Controles.AbrirMesa",
+      icon: "fa-solid fa-diamond",
+      button: true,
+      onClick: () => abrirMesaMinijuegos(),
+    },
     {
       name: "lagunak-musica-audio",
       title: "LAGUNAK.Controles.AudioMusica",

@@ -230,6 +230,7 @@ toda la mesa oye lo mismo sin sincronizar nada.
 
 Módulos: `musica-procedural.mjs` (qué notas), `musica-mando.mjs` (quién decide),
 `musica-reproductor.mjs` (cómo suena).
+
 ### Frontera de estilo: vivo frente a registrado
 
 El módulo genera dos artes en el cliente y comparten disciplina —ninguna usa

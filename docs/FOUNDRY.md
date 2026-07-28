@@ -210,6 +210,47 @@ Esta separación evita bucles de sincronización donde ambos sistemas intentan s
 - decidir qué resultados alteran fichas, diarios o recursos de Foundry;
 - aplicar intervención manual sin romper el estado de la simulación.
 
+### Música de a bordo
+
+Ambiente sonoro **sintetizado en cada navegador** a partir de una semilla de
+mundo (#344, #347). No hay ficheros de audio en el repositorio ni audio viajando
+por la red: cada cliente genera las mismas notas con la misma semilla, así que
+toda la mesa oye lo mismo sin sincronizar nada.
+
+- **Automático** por defecto: el registro lo deriva el nivel de alerta (#338) —
+  cotidianidad frente a tensión.
+- **El GM manda** cuando quiere: el botón «cambiar la música» del grupo de
+  controles Lagunak cicla entre automático, los seis registros y el silencio.
+  La alerta sabe si el casco está roto, pero no sabe si el momento es solemne,
+  ridículo o tierno; eso lo lee el GM.
+- **El audio lo habilita cada cliente**, con el botón de auriculares que ven
+  todos: los navegadores exigen un gesto del usuario y ese gesto no se puede
+  delegar en el GM.
+- Un registro desconocido en el ajuste **falla cerrado** y vuelve al automático.
+
+Módulos: `musica-procedural.mjs` (qué notas), `musica-mando.mjs` (quién decide),
+`musica-reproductor.mjs` (cómo suena).
+
+### Daño de sistema dibujado, no solo coloreado (#353)
+
+La tabla de sistemas del panel de nave lleva un icono por sistema cuyo **daño se
+dibuja**: grietas, píxeles apagados, contorno discontinuo. Las barras comunican
+la severidad por color, y el color en solitario no basta (WCAG 1.4.1); el icono
+añade forma. **Acompaña** al texto y a la barra, nunca los sustituye.
+
+Son **cuatro** estados, y el cuarto es el que importa: intacto, dañado,
+inutilizado y **sin lectura**. `null` significa «no hubo sondeo», no «cero»
+—`barras-estado.mjs` ya lo distingue—, y un icono agrietado por falta de lectura
+mentiría diciendo «destruido», que en plena sesión es peor que no dibujar nada.
+Una prueba fija que ninguna entrada nula puede producir otro estado.
+
+Alcance honesto: hoy esto es una mejora **para el GM**. La tripulación no recibe
+telemetría de sistemas en el módulo (la ve en su estación de EmptyEpsilon);
+abrirla es otra decisión, con su autoridad y su fuga de sensores (#331).
+
+Módulo: `iconos-sistema.mjs` (lógica pura y SVG), consumido por las dos rutas de
+ventana y por sus parcheadores de telemetría.
+
 ### Frontera de estilo: vivo frente a registrado
 
 El módulo genera dos artes en el cliente y comparten disciplina —ninguna usa

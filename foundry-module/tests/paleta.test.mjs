@@ -19,6 +19,7 @@ const MODULOS_DE_ARTE = [
   "../scripts/nave-sprite.mjs",
   "../scripts/minijuegos/cartas-pixelart.mjs",
   "../scripts/ventana-nave.mjs",
+  "../scripts/iconos-sistema.mjs",
   "../scripts/retrato-tripulante.mjs",
 ];
 
@@ -120,6 +121,10 @@ test("cada par que porta información llega al mínimo de WCAG", () => {
     ["estrellas del dorso", PIXEL.dorsoEstrella, PIXEL.dorsoFondo],
     ["cabina sobre papel", PIXEL.cabina, TINTA.papel],
     ["motor sobre papel", PIXEL.motor, TINTA.papel],
+    // Estaba por debajo (2,63:1) y #351 lo dejó fijado a propósito para que el
+    // arreglo fuese deliberado. Se corrige aquí, que es donde toca: #353 existe
+    // justo para que el estado no viaje solo en el color.
+    ["motor apagado sobre papel", PIXEL.motorApagado, TINTA.papel],
   ];
   for (const [nombre, frente, fondo] of graficos) {
     const razon = contraste(frente, fondo);
@@ -127,24 +132,14 @@ test("cada par que porta información llega al mínimo de WCAG", () => {
   }
 });
 
-test("déficit conocido: el motor apagado no llega a 3:1 sobre el papel", () => {
-  // Hallazgo de este issue, no un fallo que se tape. `motorApagado` señala
-  // «sin propulsión», así que porta información, y sobre el papel oscuro da
-  // 2.63:1 — por debajo del 3:1 de WCAG 1.4.11.
-  //
-  // NO se corrige aquí a propósito: el contrato de #351 es reunir la paleta con
-  // diff visual nulo, y cambiar el tono sería colar un cambio de arte en una
-  // refactorización. Se fija el valor medido para que el arreglo sea deliberado
-  // y no accidental, y se hace en #353, cuyo objeto es justo que el estado no
-  // viaje solo en el color.
-  //
-  // Mientras tanto el estado sigue siendo distinguible por otra vía: la estela
-  // aparece o no aparece, que es forma y no tono.
-  const razon = contraste(PIXEL.motorApagado, TINTA.papel);
-  assert.ok(razon < 3, "si ya cumple, quita esta prueba y añade el par a la lista de arriba");
-  assert.equal(razon.toFixed(2), "2.63");
-  // Y encendido frente a apagado sí se distinguen bien entre sí.
+test("el motor apagado se distingue del encendido, no solo del fondo", () => {
+  // El par cumple dos mínimos a la vez y por eso tiene prueba propia: subirlo
+  // sobre el papel es fácil, pero un ámbar más claro se acerca al motor
+  // encendido y entonces se pierde justo la distinción que porta la
+  // información. La ventana que cumple ambos es estrecha.
   assert.ok(contraste(PIXEL.motor, PIXEL.motorApagado) >= 3);
+  // Y el estado sigue teniendo además un canal no cromático: la estela aparece
+  // o no aparece, que es forma y no tono.
 });
 
 test("las paletas son inmutables: nadie retoca un color en caliente", () => {

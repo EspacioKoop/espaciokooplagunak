@@ -68,7 +68,10 @@ export const PIXEL = Object.freeze({
   // Sprites de nave: acentos fijos que no dependen del color de facción.
   cabina: CREMA,
   motor: "#ffb703",
-  motorApagado: "#6e5211", // ámbar sin propulsión: mismo tono, sin brillo
+  // Ámbar sin propulsión: mismo tono, sin brillo. El valor está apretado entre
+  // dos mínimos a la vez —≥3:1 sobre el papel y ≥3:1 frente al motor encendido—
+  // y la ventana que cumple ambos es estrecha, así que no se retoca a ojo.
+  motorApagado: "#836018",
   motorNucleo: "#fff3c4", // núcleo claro de la estela
   motorEstela: "#ff8c1e", // cola de la estela
   neutro: "#ffffff", // casco sin color de facción utilizable
@@ -117,6 +120,24 @@ export const RETRATO = Object.freeze({
   // va siempre rodeado de casco.
   visores: Object.freeze(["#0d1a2e", "#241026", "#08231d"]),
   acentos: Object.freeze(["#ff6f8f", "#5fffc0", "#ffd166", "#8fa3d9"]),
+});
+
+/**
+ * Iconos de daño por sistema (#353). El estado se dibuja con forma —grietas,
+ * píxeles apagados, contorno discontinuo—, así que estos colores acompañan a
+ * la forma en vez de sustituirla: quien no distinga los tonos sigue leyendo el
+ * estado, y el texto de la fila sigue siendo la verdad.
+ */
+export const SISTEMA = Object.freeze({
+  // El marco no es un gris nuevo: es el mismo de lo que no tiene facción en el
+  // mapa. Se toma de ahí en vez de repetirlo, que es la regla de este archivo.
+  marco: PIXEL.sinFaccion,
+  nucleo: "#8df06f", // verde de sistema respondiendo
+  // No hay color de grieta: la grieta es un hueco, no un tono. Un ámbar sobre
+  // el verde del núcleo daba 1,48:1 y habría dejado el estado viajando en el
+  // color justo en el módulo que existe para evitarlo.
+  apagado: "#3a2b2f", // núcleo muerto: presente pero sin responder
+  sinLectura: "#5b6472", // ni bueno ni malo: no se sabe
 });
 
 /**

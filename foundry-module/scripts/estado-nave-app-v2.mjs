@@ -38,6 +38,7 @@ import {
   aplicarBarraDom,
   textoPorcentaje,
 } from "./barras-estado.mjs";
+import { estadoIcono, iconoSistemaDataUri, aplicarIconoDom } from "./iconos-sistema.mjs";
 import { setSimulationPaused } from "./tempo-control.mjs";
 import { contenidoEstadoBitacora, fechaLocal } from "./bitacora-nave.mjs";
 import { ALERTAS_NONCE, BACKOFF_MAX_MS, MODULE_ID } from "./lagunak-constantes.mjs";
@@ -283,6 +284,7 @@ export function crearClaseV2() {
         setBarra(`${base} [data-campo="salud"]`, textoPorcentaje(sistema.health), barras.salud);
         setBarra(`${base} [data-campo="calor"]`, textoPorcentaje(sistema.heat), barras.calor);
         setBarra(`${base} [data-campo="potencia"]`, textoPorcentaje(sistema.power), barras.potencia);
+        aplicarIconoDom(this.element?.[0] ?? this.element, base, sistema.id, barras.salud);
       }
     }
 
@@ -409,6 +411,12 @@ export function crearClaseV2() {
               calor: textoPorcentaje(heat),
               potencia: textoPorcentaje(power),
               barras: barrasSistema({ health, heat, power }),
+              // Icono de daño (#353): forma además de color. Se siembra con el
+              // id para que las grietas no bailen entre sondeos.
+              icono: iconoSistemaDataUri(
+                estadoIcono(barrasSistema({ health, heat, power }).salud),
+                id,
+              ),
             }))
           : [],
         barras: {

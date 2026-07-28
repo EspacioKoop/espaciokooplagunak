@@ -93,7 +93,10 @@
     </tr>
     {{#each sistemas}}
     <tr data-sistema-id="{{this.id}}">
-      <td>{{this.nombre}}</td>
+      {{! El icono ACOMPAÑA al nombre y a la barra; no los sustituye (#353).
+          Decorativo a propósito: el porcentaje ya va en texto en la celda de
+          salud, y «sin lectura» se dice ahí con su marca propia. }}
+      <td><img class="lagunak-icono-sistema" data-icono src="{{this.icono}}" alt="" aria-hidden="true" width="18" height="18"/> {{this.nombre}}</td>
       <td data-campo="salud" class="lagunak-celda-barra">
         <span data-texto>{{this.salud}}</span>
         <span class="lagunak-barra" aria-hidden="true">

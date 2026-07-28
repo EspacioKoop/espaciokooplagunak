@@ -268,7 +268,9 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
     "lagunak-mapa",
     "lagunak-token",
     "lagunak-diagnostico",
+    "lagunak-musica",
     "lagunak-decorado-aleatorio",
+    "lagunak-musica-audio",
     "lagunak-puestos",
     "lagunak-espacio-puesto",
   ]);
@@ -663,9 +665,14 @@ test("un jugador no GM recibe asignación y espacio de puesto, sin controles GM"
   const grupo = controls.find((control) => control.name === "lagunak");
   assert.ok(grupo);
   assert.deepEqual(grupo.tools.map(({ name }) => name), [
+    // El audio lo habilita cada cliente con su propio gesto, que el navegador
+    // exige y que no se puede delegar en el GM: por eso este botón sí lo ve un
+    // jugador. El MANDO de la música sigue siendo solo del GM.
+    "lagunak-musica-audio",
     "lagunak-puestos",
     "lagunak-espacio-puesto",
   ]);
+  assert.equal(grupo.tools.find(({ name }) => name === "lagunak-musica"), undefined);
 });
 
 test("v11 abre el mapa vivo con Application clásica (rAF ausente: sin bucle)", async () => {

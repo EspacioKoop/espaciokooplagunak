@@ -199,6 +199,12 @@
           {{#each crew}}
             <div class="lagunak-workspace__crew-row {{#unless active}}is-offline{{/unless}}">
               <span class="lagunak-workspace__crew-light" aria-hidden="true"></span>
+              {{! El retrato es decorativo: alt vacío y aria-hidden, porque
+                  puesto y estado ya van en texto justo al lado. El marco de
+                  puesto es CSS, no imagen: no es un galón. }}
+              <span class="lagunak-workspace__crew-portrait {{#if station}}lagunak-workspace__crew-portrait--{{station}}{{/if}}" aria-hidden="true">
+                <img class="lagunak-workspace__crew-portrait-img" src="{{portrait}}" alt="" aria-hidden="true" width="32" height="32"/>
+              </span>
               <strong>{{name}}</strong>
               <small>{{stationLabel}}{{#unless active}} · {{statusLabel}}{{/unless}}</small>
             </div>

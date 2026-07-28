@@ -78,6 +78,21 @@ Cada tripulante emite **solo** las órdenes de su puesto, y lo hace **sin poseer
 el token del puente**. El permiso se gatea en el **relé de Foundry**, no en el
 token:
 
+- **Doctrina de telemetría** (#331). La telemetría de la **nave propia** se
+  difunde a toda la tripulación; lo que permanece cerrado es lo que el GM autora.
+  El GM sigue siendo el único que habla con el puente —el Bearer no sale de su
+  navegador y ningún cliente de jugador lee el ajuste del token ni ejecuta un
+  `fetch` contra él— y reparte por socket el `statePayload` que ya sondeaba
+  (`telemetria-difusion.mjs`). Se transporta por socket y **no** por ajuste de
+  mundo: un `/v1/state` por sondeo persistido sería escritura continua en la base
+  de datos de la campaña, y la pérdida al recargar la repara el siguiente tick.
+  La razón de fondo es que «quién puede **pedir** el dato» y «quién puede
+  **leerlo**» son preguntas distintas: en el EmptyEpsilon del que esto es fork,
+  cada pantalla de tripulación ve casco, energía y sistemas, así que ocultarlo
+  aquí era un peor producto a cambio de cero seguridad. **Los contactos son la
+  excepción** y siguen siendo recurso del GM: callsign, facción y coordenadas
+  exactas son lo que el sistema de sensores debe decidir cuánto revela, y se
+  abrirán degradados por distancia y salud de sensores.
 - **Identidad de usuario no falsificable** (#237). El tripulante escribe la orden
   en su propio flag de usuario (`emitWorkspaceOrder`); el GM la recoge en el hook
   `updateUser`. El puesto **nunca** se declara en la orden: el GM lo resuelve
@@ -285,6 +300,22 @@ es la verdad que cambia en cada sondeo—. Formulada como vivo/registrado predic
 bien los casos que vienen: la cartela de una lámina impresa es grabado aunque
 cuelgue de una consola, y una barra que sigue a `/v1/state` es pixel aunque viva
 dentro de un diario.
+
+#### Retratos de tripulación (#352)
+
+La fila de tripulación de la consola de puesto lleva un retrato pixel por
+tripulante, generado en el cliente a partir de `user.id` — determinista, así que
+todos ven la misma cara sin sincronizar nada, y sin un byte nuevo por el puente.
+Se siembra con el id y no con el nombre para que sobreviva a un renombrado; la
+contrapartida aceptada es que reinvitar a alguien le cambia la cara.
+
+**El retrato no es un galón.** Codifica presencia (color o gris) y sirve de
+ancla visual; el marco de puesto y el tinte de alerta se aplican por CSS sobre
+el contenedor, fuera de la imagen. El flag `station` es autoasignable y mutable
+(#237), así que el puesto y el estado siguen escritos en texto en la misma fila,
+y el `<img>` va con `alt=""` y `aria-hidden`: quien use lector de pantalla
+recibe la misma información en palabras, sin que se le repita en una forma que
+no es autoridad ni permiso.
 
 Los colores viven en `paleta.mjs` y **solo** ahí: una prueba falla si un módulo
 de arte declara un color propio —hexadecimal con cualquier comilla, o `rgb()` y

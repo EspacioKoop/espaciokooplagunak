@@ -86,7 +86,14 @@ test("el jugador abre su puesto y el GM puede previsualizar cualquier consola", 
   );
 });
 
-test("un jugador nunca recibe telemetría aunque se le inyecte por error", () => {
+test("un jugador SÍ ve la telemetría de su nave, pero NO los contactos (#331)", () => {
+  // Cambio de doctrina deliberado. Antes esta prueba exigía lo contrario, y ese
+  // «lo contrario» era la razón de que las consolas salieran vacías: `metricsFor`
+  // ya tenía una lectura por puesto, pero sin `ship` no llegaba a ejecutarse.
+  //
+  // Ocultar la nave propia no defendía nada: en el EmptyEpsilon del que esto es
+  // fork, cada pantalla de tripulación ve casco, energía y sistemas. Lo que se
+  // protege es el Bearer del puente, que sigue sin salir del navegador del GM.
   const model = buildWorkspaceModel({
     station: "weapons",
     isGM: false,
@@ -95,14 +102,29 @@ test("un jugador nunca recibe telemetría aunque se le inyecte por error", () =>
     i18n,
     statePayload,
     contactsPayload,
-    connection: "restricted",
+    connection: "ok",
   });
   assert.equal(model.hasStation, true);
-  assert.equal(model.hasTelemetry, false);
-  assert.equal(model.ship, null);
-  assert.deepEqual(model.metrics, []);
-  assert.deepEqual(model.contacts, []);
-  assert.equal(model.connectionRestricted, true);
+  assert.equal(model.hasTelemetry, true);
+  assert.ok(model.ship, "la nave propia se ve");
+  assert.ok(model.metrics.length > 0, "y por fin hay lectura de puesto");
+
+  // La excepción que SIGUE cerrada: los contactos son recurso del GM hasta que
+  // se abran degradados por distancia y salud de sensores. Difundirlos crudos
+  // regalaría el trabajo del puesto de Sensores.
+  assert.deepEqual(model.contacts, [], "los contactos siguen siendo del GM");
+
+  const comoGM = buildWorkspaceModel({
+    station: "weapons",
+    isGM: true,
+    users: [user({ id: "p1", station: "weapons" })],
+    moduleId: MODULE_ID,
+    i18n,
+    statePayload,
+    contactsPayload,
+    connection: "ok",
+  });
+  assert.ok(comoGM.contacts.length > 0, "el GM sí los ve");
 });
 
 test("navegación puede ordenar rumbo aunque no tenga telemetría; otros puestos no", () => {
@@ -300,4 +322,33 @@ test("un usuario sin puesto obtiene una pantalla de asignación, no capitán", (
     connection: "restricted",
   });
   assert.equal(model.hasStation, false);
+});
+
+test("cada tripulante trae su retrato, y el retrato no sustituye al texto (#352)", () => {
+  const model = buildWorkspaceModel({
+    station: "captain",
+    isGM: false,
+    users: [
+      user({ id: "p1", station: "engineering" }),
+      { ...user({ id: "p2", station: null }), active: false },
+    ],
+    moduleId: MODULE_ID,
+    i18n,
+  });
+
+  const [enLinea, desconectado] = model.crew;
+  assert.match(enLinea.portrait, /^data:image\/svg\+xml,/);
+  // El texto sigue llevando la información: el retrato es un ancla visual, no
+  // el canal por el que se comunica puesto ni estado.
+  assert.ok(enLinea.stationLabel);
+  assert.ok(desconectado.statusLabel);
+
+  // Se siembra con el id: dos tripulantes distintos, retratos distintos.
+  assert.notEqual(enLinea.portrait, desconectado.portrait);
+
+  // Y el estado de presencia llega hasta el dibujo, no solo hasta la clase CSS.
+  const svg = decodeURIComponent(desconectado.portrait.split(",")[1]);
+  for (const [, color] of svg.matchAll(/fill="(#[0-9a-f]{6})"/gi)) {
+    assert.equal(color.slice(1, 3), color.slice(3, 5), `${color} no es gris`);
+  }
 });

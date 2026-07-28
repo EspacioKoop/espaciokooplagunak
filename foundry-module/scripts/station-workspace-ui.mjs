@@ -4,6 +4,12 @@ import { openStationApp } from "./station-ui.mjs";
 import { buildWorkspaceModel, stationForWorkspace } from "./station-workspaces.mjs";
 import { emitWorkspaceOrder } from "./station-order-wiring.mjs";
 import { ORDER_FORMS } from "./station-order-forms.mjs";
+import {
+  AJUSTE_TELEMETRIA,
+  aceptarTelemetria,
+  difundirTelemetria,
+  esMasReciente,
+} from "./telemetria-difusion.mjs";
 
 let configuredModuleId = null;
 let workspaceApp = null;
@@ -11,6 +17,37 @@ let workspaceApp = null;
 export function registerWorkspaceFeature(moduleId) {
   configuredModuleId = moduleId;
   Hooks.on("updateUser", () => renderWorkspace());
+
+  // Recepción de la telemetría que publica el GM (#331). Llega por el ajuste de
+  // mundo, no por socket: `game.socket` no acredita a quien emite y cualquier
+  // cliente podía mandar una nave inventada —y, con un sello en el futuro, dejar
+  // la consola clavada en ella—. Un ajuste de mundo solo lo escribe un GM, y esa
+  // comprobación la hace el servidor.
+  Hooks.on("updateSetting", (ajuste) => {
+    if (!ajuste?.key?.endsWith?.(`.${AJUSTE_TELEMETRIA}`)) return;
+    recibirTelemetria();
+  });
+}
+
+/** Aplica la última telemetría publicada a la consola abierta. */
+function recibirTelemetria() {
+  const app = workspaceApp;
+  if (!app || app.closed || !configuredModuleId) return;
+  const sobre = game.settings?.get?.(configuredModuleId, AJUSTE_TELEMETRIA) ?? null;
+  const ship = aceptarTelemetria(sobre);
+  if (!ship) return;
+  // Fuera de orden se descarta: dos escrituras seguidas pueden llegar cruzadas y
+  // la consola parpadearía hacia atrás, que en un rumbo se ve como una sacudida.
+  if (!esMasReciente(sobre, app.selloTelemetria)) return;
+  app.selloTelemetria = sobre.sello;
+  // El GM conserva su propio sondeo como fuente: tiene los contactos, que no
+  // viajan por aquí, y pisarlo con el sobre recortado se los borraría.
+  if (!game.user?.isGM) {
+    app.statePayload = { ship };
+    app.connection = "ok";
+    app.error = "";
+  }
+  renderWorkspace();
 }
 
 export function addWorkspaceControl(controls) {
@@ -137,6 +174,17 @@ async function refreshTelemetry(app) {
     app.statePayload = statePayload;
     app.contactsPayload = contactsPayload;
     app.connection = "ok";
+    // La tripulación no puede sondear el puente —no tiene token— así que el GM
+    // reparte lo que acaba de recibir (#331). Solo la nave propia: los contactos
+    // se quedan aquí hasta que se abran degradados.
+    // Publicar es escribir un ajuste de mundo, y eso solo lo puede hacer un GM:
+    // la autorización la impone el servidor, no este `if`.
+    const publicado = difundirTelemetria({
+      statePayload,
+      anterior: game.settings?.get?.(configuredModuleId, AJUSTE_TELEMETRIA) ?? null,
+      publicar: (sobre) => game.settings?.set?.(configuredModuleId, AJUSTE_TELEMETRIA, sobre),
+    });
+    if (publicado) app.selloTelemetria = publicado.sello;
     return true;
   } catch (error) {
     if (app.closed) return false;
@@ -192,7 +240,11 @@ function initialiseApp(app) {
   app.previewStation = null;
   app.statePayload = null;
   app.contactsPayload = null;
-  app.connection = game.user?.isGM ? "loading" : "restricted";
+  // La tripulación ya no está «restringida»: espera la difusión del GM. Si no
+  // llega —porque no hay GM conectado o su puente está caído— se queda en espera
+  // y lo dice, que es distinto de «no tienes permiso».
+  app.connection = "loading";
+  app.selloTelemetria = null;
   app.error = "";
   app.loading = false;
   app.closed = false;

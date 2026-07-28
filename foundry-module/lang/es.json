@@ -356,5 +356,6 @@
   "LAGUNAK.Minijuegos.Accion.Igualar": "Igualar",
   "LAGUNAK.Minijuegos.Accion.Subir": "Subir",
   "LAGUNAK.Minijuegos.Ajustes.Mesa.Nombre": "Mesa de juego: entrada y ciegas",
-  "LAGUNAK.Minijuegos.Ajustes.Mesa.Pista": "Fichas con las que se sienta cada jugador y valor de las ciegas. Se aplica a la mano siguiente, no a la que esté en curso."
+  "LAGUNAK.Minijuegos.Ajustes.Mesa.Pista": "Fichas con las que se sienta cada jugador y valor de las ciegas. Se aplica a la mano siguiente, no a la que esté en curso.",
+  "LAGUNAK.MapaVivo.Detalle.Clase": "Clase"
 }

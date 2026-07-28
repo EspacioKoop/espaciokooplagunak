@@ -330,3 +330,41 @@ test("cada tripulante trae su retrato, y el retrato no sustituye al texto (#352)
     assert.equal(color.slice(1, 3), color.slice(3, 5), `${color} no es gris`);
   }
 });
+
+test("cascoRumbo distingue «sin lectura» de rumbo cero (#362)", () => {
+  // Es la misma trampa que resolvió barras-estado: si la ausencia se degradara
+  // a 0, el visor enseñaría una nave apuntando al norte cuando en realidad no
+  // se sabe nada de ella.
+  const conRumbo = buildWorkspaceModel({
+    station: "navigation",
+    isGM: true,
+    users: [],
+    moduleId: "m",
+    i18n: { localize: (k) => k, format: (k) => k },
+    statePayload: { ship: { callsign: "Itsaso 1", heading: 214 } },
+    connection: "ok",
+  });
+  assert.equal(conRumbo.cascoRumbo, 214);
+
+  const aCero = buildWorkspaceModel({
+    station: "navigation",
+    isGM: true,
+    users: [],
+    moduleId: "m",
+    i18n: { localize: (k) => k, format: (k) => k },
+    statePayload: { ship: { callsign: "Itsaso 1", heading: 0 } },
+    connection: "ok",
+  });
+  assert.equal(aCero.cascoRumbo, 0, "cero es un rumbo, no una ausencia");
+
+  const sinNada = buildWorkspaceModel({
+    station: "navigation",
+    isGM: true,
+    users: [],
+    moduleId: "m",
+    i18n: { localize: (k) => k, format: (k) => k },
+    statePayload: null,
+    connection: "error",
+  });
+  assert.equal(sinNada.cascoRumbo, null, "sin telemetría no hay rumbo que dibujar");
+});

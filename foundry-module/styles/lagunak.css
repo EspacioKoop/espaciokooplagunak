@@ -448,5 +448,21 @@
   width: 18px;
   height: 18px;
   vertical-align: -3px;
+/* Lámina de reconocimiento del contacto (#362).
+ *
+ * Época GameCube: esto se mira FIJO para reconocer una silueta, al contrario que
+ * el casco de la consola, que se ve de reojo. El lienzo mide 120x90 de verdad y
+ * se amplía; la nave gira despacio porque una lámina no dice hacia dónde va
+ * nadie —eso sí lo dice el rumbo, escrito debajo— sino qué forma tiene. */
+.lagunak-mapa-lamina {
+  display: flex;
+  justify-content: center;
+  margin: 6px 0 10px;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.lagunak-mapa-lamina canvas {
+  width: 180px;
+  height: 135px;
   image-rendering: pixelated;
 }

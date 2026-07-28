@@ -56,6 +56,7 @@ import {
   vistaRecordada,
 } from "./minijuegos/mesa-poker-app.mjs";
 import { registrarAjusteAlerta, registrarEscuchaAlerta } from "./alerta-escena.mjs";
+import { AJUSTE_TELEMETRIA } from "./telemetria-difusion.mjs";
 import {
   IDIOMA_AUTOMATICO,
   crearAplicadorIdioma,
@@ -167,6 +168,17 @@ Hooks.once("init", () => {
   // mesa es compartida; `config: false` porque no se edita a mano. La sesión
   // viva del coordinador (semilla, mazo, manos) NO se guarda aquí ni en ningún
   // otro sitio persistente: vive solo en memoria del GM que coordina.
+  // Telemetría de la nave propia para toda la tripulación (#331). Ajuste de
+  // MUNDO porque es el único canal cuya escritura acredita Foundry: solo un GM
+  // puede escribirlo, y esa comprobación la hace el servidor. `config: false`:
+  // lo escribe el sondeo, no una persona.
+  game.settings.register(MODULE_ID, AJUSTE_TELEMETRIA, {
+    scope: "world",
+    config: false,
+    type: Object,
+    default: null,
+  });
+
   registrarAjustesMinijuegos(MODULE_ID);
 
   // Mando del GM sobre la música (#347). Ajuste de MUNDO: solo el GM escribe y

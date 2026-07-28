@@ -54,6 +54,10 @@ bool parseShipSystemId(const std::string& value, ShipSystemId& system)
 
 ShipDocumentError validateShipDocument(const ShipDocument& document)
 {
+    if (document.hull_max
+        && (!std::isfinite(*document.hull_max) || *document.hull_max <= 0.0f
+            || *document.hull_max > SHIP_DOCUMENT_MAX_HULL))
+        return ShipDocumentError::InvalidHullMax;
     if (document.systems.size() > static_cast<std::size_t>(ShipSystemId::Count)
         || document.resources.size() > SHIP_DOCUMENT_MAX_RESOURCES
         || document.cargo.size() > SHIP_DOCUMENT_MAX_CARGO
@@ -112,16 +116,20 @@ nlohmann::json shipDocumentOverridesJson(const ShipDocument& document)
     for (const auto& item : document.cargo)
         cargo.push_back({{"id", item.id}, {"quantity", item.quantity}});
 
-    return {{"systems", std::move(systems)},
+    return {{"hull_max", document.hull_max ? nlohmann::json(*document.hull_max) : nlohmann::json(nullptr)},
+            {"systems", std::move(systems)},
             {"resources", std::move(resources)},
             {"cargo", std::move(cargo)},
             {"crew_positions", document.crew_position_ids}};
 }
 
-ShipDocumentError parseShipDocumentOverrides(const nlohmann::json& overrides, ShipDocument& output)
+ShipDocumentError parseShipDocumentOverrides(
+    const nlohmann::json& overrides, ShipDocument& output, int schema_version)
 {
     if (!overrides.is_object()) return ShipDocumentError::InvalidStructure;
-    const std::set<std::string> allowed{"systems", "resources", "cargo", "crew_positions"};
+    if (schema_version < 4 || schema_version > 5) return ShipDocumentError::InvalidStructure;
+    std::set<std::string> allowed{"systems", "resources", "cargo", "crew_positions"};
+    if (schema_version >= 5) allowed.insert("hull_max");
     for (auto it = overrides.begin(); it != overrides.end(); ++it)
         if (!allowed.count(it.key())) return ShipDocumentError::UnknownFields;
     if (overrides.size() != allowed.size()) return ShipDocumentError::InvalidStructure;
@@ -139,6 +147,19 @@ ShipDocumentError parseShipDocumentOverrides(const nlohmann::json& overrides, Sh
         return ShipDocumentError::TooManyEntries;
 
     ShipDocument candidate;
+    if (schema_version >= 5)
+    {
+        const auto& hull_max = overrides["hull_max"];
+        if (!hull_max.is_null())
+        {
+            if (!hull_max.is_number()) return ShipDocumentError::InvalidHullMax;
+            const double value = hull_max.get<double>();
+            if (!std::isfinite(value) || value <= 0.0
+                || value > static_cast<double>(SHIP_DOCUMENT_MAX_HULL))
+                return ShipDocumentError::InvalidHullMax;
+            candidate.hull_max = static_cast<float>(value);
+        }
+    }
     for (const auto& item : systems)
     {
         if (!item.is_object()) return ShipDocumentError::InvalidStructure;

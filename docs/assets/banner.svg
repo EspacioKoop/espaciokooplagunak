@@ -1,124 +1,117 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="900" height="240" viewBox="0 0 900 240" role="img" aria-label="Espaciokoop Lagunak — simulador de puente de mando cooperativo, fork de EmptyEpsilon con integración Foundry VTT y Docker">
-<defs>
-<style>
-@keyframes shimmer{0%,100%{opacity:.2}50%{opacity:1}}
-@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
-@keyframes softblink{0%,100%{opacity:1}50%{opacity:.25}}
-@keyframes glow{0%,100%{filter:drop-shadow(0 0 3px #3ddcff)}50%{filter:drop-shadow(0 0 10px #3ddcff)}}
-@keyframes ants{to{stroke-dashoffset:-16}}
-@keyframes pktdown{0%{transform:translateY(0);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(22px);opacity:0}}
-@keyframes pktup{0%{transform:translateY(0);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-22px);opacity:0}}
-@keyframes typecmd{0%,8%{transform:translateX(0)}72%{transform:translateX(500px)}100%{transform:translateX(500px)}}
-@keyframes hullpulse{0%,100%{opacity:.85}50%{opacity:1}}
-.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
-.title{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:800;fill:#e8f9ff}
-.tag{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;fill:#5fc4e8;letter-spacing:2px}
-.st{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;fill:#d9f4ff}
-.dim{fill:#2e6f92}
-.amber{fill:#ffb35c}
-.cyan{fill:#3ddcff}
-.cmd{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;fill:#c7eeff}
-.star{fill:#bfefff;animation:shimmer ease-in-out infinite}
-.box{fill:#051a2c;stroke-width:1.2}
-.boxlabel{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;letter-spacing:1.5px}
-.ants{stroke:#1a7fa8;stroke-width:1.2;stroke-dasharray:4 4;animation:ants 1.2s linear infinite}
-</style>
-<linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-<stop offset="0%" stop-color="#04101f"/><stop offset="100%" stop-color="#010409"/>
-</linearGradient>
-<linearGradient id="wedge" x1="0" y1="0" x2="1" y2="0">
-<stop offset="0%" stop-color="#3ddcff" stop-opacity="0"/><stop offset="100%" stop-color="#3ddcff" stop-opacity=".5"/>
-</linearGradient>
-<linearGradient id="hull" x1="0" y1="0" x2="1" y2="0">
-<stop offset="0%" stop-color="#1a7fa8"/><stop offset="100%" stop-color="#3ddcff"/>
-</linearGradient>
-<linearGradient id="energy" x1="0" y1="0" x2="1" y2="0">
-<stop offset="0%" stop-color="#b3702e"/><stop offset="100%" stop-color="#ffb35c"/>
-</linearGradient>
-</defs>
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="280" viewBox="0 0 900 280" role="img" aria-labelledby="title desc">
+  <title id="title">Espaciokoop Lagunak</title>
+  <desc id="desc">Simulador cooperativo de puente espacial basado en EmptyEpsilon, conectado de forma segura con Foundry VTT, con puestos de tripulación, mapa vivo, estado de nave y minijuegos sociales.</desc>
+  <defs>
+    <linearGradient id="space" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#020817"/>
+      <stop offset="1" stop-color="#061726"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#082339"/>
+      <stop offset="1" stop-color="#03111f"/>
+    </linearGradient>
+    <linearGradient id="cyan" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#32b9d8"/><stop offset="1" stop-color="#78f3ff"/>
+    </linearGradient>
+    <linearGradient id="amber" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#a76025"/><stop offset="1" stop-color="#ffbe63"/>
+    </linearGradient>
+    <radialGradient id="planet" cx="35%" cy="30%">
+      <stop offset="0" stop-color="#9ef6ff"/><stop offset=".25" stop-color="#2d87a8"/><stop offset="1" stop-color="#062b47"/>
+    </radialGradient>
+    <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <clipPath id="viewport"><path d="M236 77h428l44 132H192z"/></clipPath>
+    <style>
+      .mono{font-family:ui-monospace,"JetBrains Mono",SFMono-Regular,Menlo,monospace}
+      .label{font:700 9px ui-monospace,"JetBrains Mono",monospace;letter-spacing:1.2px}
+      .tiny{font:8px ui-monospace,"JetBrains Mono",monospace;letter-spacing:.6px}
+      .line{fill:none;stroke:#226482;stroke-width:1}
+    </style>
+  </defs>
 
-<rect width="900" height="240" fill="url(#bg)"/>
+  <rect width="900" height="280" rx="14" fill="url(#space)"/>
+  <rect x="1" y="1" width="898" height="278" rx="13" fill="none" stroke="#16425d" stroke-width="2"/>
 
-<!-- estrellas en los márgenes -->
-<circle class="star" cx="18" cy="52" r="1.4" style="animation-duration:2.4s"/>
-<circle class="star" cx="34" cy="120" r="1" style="animation-duration:3.1s;animation-delay:-1.2s"/>
-<circle class="star" cx="14" cy="186" r="1.2" style="animation-duration:2.8s;animation-delay:-.6s"/>
-<circle class="star" cx="40" cy="222" r="1" style="animation-duration:3.6s;animation-delay:-2s"/>
-<circle class="star" cx="864" cy="60" r="1.3" style="animation-duration:2.6s;animation-delay:-.9s"/>
-<circle class="star" cx="884" cy="132" r="1" style="animation-duration:3.3s;animation-delay:-1.7s"/>
-<circle class="star" cx="870" cy="198" r="1.4" style="animation-duration:2.2s;animation-delay:-.3s"/>
-<circle class="star" cx="120" cy="16" r="1" style="animation-duration:3s;animation-delay:-1.1s"/>
-<circle class="star" cx="360" cy="10" r="1.1" style="animation-duration:2.7s;animation-delay:-2.2s"/>
-<circle class="star" cx="700" cy="14" r="1" style="animation-duration:3.4s;animation-delay:-.8s"/>
-<circle class="star" cx="812" cy="24" r="1.2" style="animation-duration:2.5s;animation-delay:-1.5s"/>
+  <!-- estrellas -->
+  <g fill="#c8f7ff">
+    <circle cx="28" cy="38" r="1" opacity=".7"/><circle cx="76" cy="20" r="1.2" opacity=".45"/><circle cx="145" cy="51" r=".8" opacity=".8"/>
+    <circle cx="751" cy="28" r="1" opacity=".7"/><circle cx="840" cy="54" r="1.2" opacity=".45"/><circle cx="872" cy="18" r=".8" opacity=".8"/>
+    <circle cx="690" cy="58" r=".7" opacity=".6"/><circle cx="211" cy="20" r=".8" opacity=".6"/>
+  </g>
 
-<!-- título -->
-<text class="title" x="450" y="24" text-anchor="middle" style="animation:glow 3.2s ease-in-out infinite;font-size:19px;letter-spacing:7px">E S P A C I O K O O P&#160;&#160;L A G U N A K</text>
+  <!-- cabecera -->
+  <text x="450" y="34" class="mono" text-anchor="middle" font-size="26" font-weight="900" letter-spacing="7" fill="#e9fbff" filter="url(#glow)">ESPACIOKOOP LAGUNAK</text>
+  <text x="450" y="55" class="mono" text-anchor="middle" font-size="9.5" letter-spacing="2.4" fill="#63cce7">TRIPULACIÓN COOPERATIVA · SIMULACIÓN ESPACIAL · FOUNDRY VTT</text>
 
-<!-- ventana terminal -->
-<rect x="48" y="34" width="804" height="180" rx="10" fill="#03101e" stroke="#0e3a5c" stroke-width="1.5"/>
-<path d="M48 44 a10 10 0 0 1 10-10 h784 a10 10 0 0 1 10 10 v16 h-804 z" fill="#061c30"/>
-<circle cx="68" cy="47" r="5" fill="#ff5f57"/><circle cx="86" cy="47" r="5" fill="#febc2e"/><circle cx="104" cy="47" r="5" fill="#28c840"/>
-<text x="450" y="51" text-anchor="middle" class="tag" style="font-size:10px;letter-spacing:1px">espaciokoop-lagunak — puente de mando &#183; headless &#183; foundry vtt</text>
+  <!-- panel izquierdo: puestos -->
+  <g>
+    <path d="M24 75h158l27 136H24z" fill="url(#panel)" stroke="#17506d" stroke-width="1.5"/>
+    <text x="43" y="96" class="label" fill="#78f3ff">PUESTOS CONECTADOS</text>
+    <g class="mono" font-size="9.5">
+      <circle cx="43" cy="117" r="3" fill="#43df8b"/><text x="54" y="120" fill="#d9f7ff">MANDO</text><text x="171" y="120" text-anchor="end" fill="#43df8b">LISTO</text>
+      <circle cx="43" cy="140" r="3" fill="#43df8b"/><text x="54" y="143" fill="#d9f7ff">NAVEGACIÓN</text><text x="171" y="143" text-anchor="end" fill="#43df8b">127°</text>
+      <circle cx="43" cy="163" r="3" fill="#ffbe63"/><text x="54" y="166" fill="#d9f7ff">INGENIERÍA</text><text x="171" y="166" text-anchor="end" fill="#ffbe63">67%</text>
+      <circle cx="43" cy="186" r="3" fill="#43df8b"/><text x="54" y="189" fill="#d9f7ff">ARMAS</text><text x="171" y="189" text-anchor="end" fill="#43df8b">SEGURO</text>
+    </g>
+    <path d="M38 201h135" stroke="#16425d"/>
+    <text x="43" y="218" class="tiny" fill="#548ba4">IDENTIDAD · PERMISOS · ÓRDENES</text>
+  </g>
 
-<!-- radar de sensores -->
-<g stroke="#12496b" fill="none" stroke-width="1">
-<circle cx="160" cy="130" r="18"/><circle cx="160" cy="130" r="36"/><circle cx="160" cy="130" r="52"/>
-<line x1="108" y1="130" x2="212" y2="130"/><line x1="160" y1="78" x2="160" y2="182"/>
-</g>
-<g>
-<path d="M160 130 L160 78 A52 52 0 0 1 194.8 91.4 Z" fill="url(#wedge)" opacity=".45"/>
-<line x1="160" y1="130" x2="160" y2="78" stroke="#3ddcff" stroke-width="1.6" style="animation:glow 2s ease-in-out infinite"/>
-<animateTransform attributeName="transform" type="rotate" from="0 160 130" to="360 160 130" dur="5s" repeatCount="indefinite"/>
-</g>
-<circle cx="135" cy="105" r="2.6" fill="#ff5f57" style="animation:blink 1.4s step-end infinite"/>
-<circle cx="185" cy="150" r="2.6" fill="#3ddcff" style="animation:blink 2.2s step-end infinite"/>
-<circle cx="178" cy="110" r="2.2" fill="#ffb35c" style="animation:blink 3s step-end infinite"/>
-<circle cx="160" cy="130" r="2" fill="#e8f9ff"/>
-<text x="160" y="196" text-anchor="middle" class="tag" style="font-size:9px">sensores &#183; largo alcance</text>
+  <!-- mirador del puente -->
+  <path d="M236 77h428l44 132H192z" fill="#010611" stroke="#2b7897" stroke-width="2"/>
+  <g clip-path="url(#viewport)">
+    <rect x="190" y="76" width="520" height="135" fill="#010611"/>
+    <g fill="#d5faff">
+      <circle cx="244" cy="101" r="1"/><circle cx="314" cy="87" r=".7"/><circle cx="386" cy="118" r="1.1"/><circle cx="478" cy="92" r=".8"/>
+      <circle cx="588" cy="106" r="1"/><circle cx="652" cy="88" r=".8"/><circle cx="671" cy="156" r="1"/><circle cx="259" cy="174" r=".8"/>
+    </g>
+    <circle cx="601" cy="142" r="47" fill="url(#planet)"/>
+    <ellipse cx="601" cy="147" rx="60" ry="17" fill="none" stroke="#5fc4e8" stroke-width="2" opacity=".45" transform="rotate(-12 601 147)"/>
+    <!-- nave -->
+    <g transform="translate(423 145)" filter="url(#glow)">
+      <path d="M-54 10L-17-5L0-28L17-5L54 10L18 18L0 13L-18 18z" fill="#0a334b" stroke="#78f3ff" stroke-width="2"/>
+      <path d="M-17-5L0 13L17-5L0-28z" fill="#16637e"/><path d="M-44 11l-18 6 22 3zM44 11l18 6-22 3z" fill="#ffbe63" opacity=".8"/>
+      <circle cx="0" cy="-4" r="3" fill="#e9fbff"/>
+    </g>
+    <!-- ruta viva -->
+    <path d="M421 167C470 189 526 184 567 157" fill="none" stroke="#ffbe63" stroke-width="1.5" stroke-dasharray="5 5"><animate attributeName="stroke-dashoffset" from="20" to="0" dur="1.5s" repeatCount="indefinite"/></path>
+    <circle cx="567" cy="157" r="4" fill="#ffbe63"><animate attributeName="r" values="3;6;3" dur="1.7s" repeatCount="indefinite"/></circle>
+    <text x="451" y="198" class="tiny" fill="#63cce7">MAPA VIVO · RUMBO 127.4° · ETA 00:42</text>
+  </g>
 
-<!-- diagrama de integración -->
-<rect class="box" x="292" y="78" width="150" height="24" rx="4" stroke="#5f4a9e"/>
-<text x="367" y="94" text-anchor="middle" class="boxlabel" fill="#b9a6f2">FOUNDRY VTT</text>
-<line class="ants" x1="360" y1="102" x2="360" y2="124"/>
-<line class="ants" x1="374" y1="124" x2="374" y2="102" style="animation-direction:reverse"/>
-<rect x="357" y="104" width="6" height="6" fill="#b9a6f2" style="animation:pktdown 1.8s linear infinite"/>
-<rect x="371" y="116" width="6" height="6" fill="#ffb35c" style="animation:pktup 1.8s linear infinite;animation-delay:-.9s"/>
-<rect class="box" x="292" y="124" width="150" height="24" rx="4" stroke="#b3702e"/>
-<text x="367" y="140" text-anchor="middle" class="boxlabel amber">PUENTE &#183; API v0</text>
-<line class="ants" x1="360" y1="148" x2="360" y2="170"/>
-<line class="ants" x1="374" y1="170" x2="374" y2="148" style="animation-direction:reverse"/>
-<rect x="357" y="150" width="6" height="6" fill="#ffb35c" style="animation:pktdown 1.8s linear infinite;animation-delay:-.5s"/>
-<rect x="371" y="162" width="6" height="6" fill="#3ddcff" style="animation:pktup 1.8s linear infinite;animation-delay:-1.4s"/>
-<rect class="box" x="292" y="170" width="150" height="24" rx="4" stroke="#1a7fa8"/>
-<text x="367" y="186" text-anchor="middle" class="boxlabel cyan">SIMULACI&#211;N</text>
-<text x="452" y="94" class="mono dim" style="font-size:9px">eventos</text>
-<text x="452" y="140" class="mono dim" style="font-size:9px">&#243;rdenes</text>
-<text x="452" y="186" class="mono dim" style="font-size:9px">autoritativa</text>
+  <!-- montantes del puente -->
+  <path d="M236 77l-44 132M664 77l44 132M450 77v132" fill="none" stroke="#123b53" stroke-width="2" opacity=".8"/>
 
-<!-- panel de estado de nave -->
-<text x="520" y="92" class="st amber" style="font-weight:700;letter-spacing:1px">EKL&#183;ATLANTIS</text>
-<text x="655" y="92" class="st dim">RUMBO 127.4&#176; &#183; ETA 00:42</text>
-<text x="520" y="112" class="st">CASCO</text>
-<rect x="590" y="104" width="180" height="8" rx="2" fill="#0a2438"/>
-<rect x="590" y="104" width="148" height="8" rx="2" fill="url(#hull)" style="animation:hullpulse 2.4s ease-in-out infinite"/>
-<text x="778" y="112" class="st cyan">82%</text>
-<text x="520" y="132" class="st">ENERG&#205;A</text>
-<rect x="590" y="124" width="180" height="8" rx="2" fill="#0a2438"/>
-<rect x="590" y="124" width="121" height="8" rx="2" fill="url(#energy)" style="animation:hullpulse 3.1s ease-in-out infinite"/>
-<text x="778" y="132" class="st amber">67%</text>
-<text x="520" y="152" class="st">ESCUDOS <tspan class="cyan" style="animation:softblink 1.8s ease-in-out infinite">[ACTIVOS]</tspan>&#160;&#160;WARP 0 &#183; IMPULSO 0.75</text>
-<text x="520" y="170" class="mono dim" style="font-size:10px">reactor OK &#183; motores OK &#183; sensores OK &#183; armas OK</text>
-<text x="520" y="186" class="mono dim" style="font-size:10px">tripulaci&#243;n: 5 puestos conectados</text>
+  <!-- panel derecho: estado + capa social -->
+  <g>
+    <path d="M718 75h158v136H691z" fill="url(#panel)" stroke="#17506d" stroke-width="1.5"/>
+    <text x="724" y="96" class="label" fill="#78f3ff">ESTADO DE NAVE</text>
+    <text x="724" y="116" class="tiny" fill="#d9f7ff">CASCO</text><rect x="765" y="109" width="92" height="7" rx="2" fill="#0b2a3b"/><rect x="765" y="109" width="76" height="7" rx="2" fill="url(#cyan)"/><text x="861" y="116" class="tiny" fill="#78f3ff">82</text>
+    <text x="724" y="136" class="tiny" fill="#d9f7ff">ENERGÍA</text><rect x="765" y="129" width="92" height="7" rx="2" fill="#0b2a3b"/><rect x="765" y="129" width="62" height="7" rx="2" fill="url(#amber)"/><text x="861" y="136" class="tiny" fill="#ffbe63">67</text>
+    <text x="724" y="156" class="tiny" fill="#d9f7ff">ALERTA</text><rect x="765" y="149" width="92" height="7" rx="2" fill="#0b2a3b"/><rect x="765" y="149" width="31" height="7" rx="2" fill="#43df8b"/><text x="861" y="156" class="tiny" fill="#43df8b">BAJA</text>
+    <path d="M719 169h140" stroke="#16425d"/>
+    <!-- tres cartas pixel-art -->
+    <g transform="translate(729 180)">
+      <rect width="28" height="38" rx="3" fill="#edf7f7" stroke="#63cce7"/><text x="5" y="13" class="mono" font-size="10" font-weight="700" fill="#d34f64">A</text><path d="M14 19l5 6-5 7-5-7z" fill="#d34f64"/>
+      <rect x="34" width="28" height="38" rx="3" fill="#edf7f7" stroke="#63cce7"/><text x="39" y="13" class="mono" font-size="10" font-weight="700" fill="#182e47">K</text><path d="M48 20l5 5-5 5-5-5z" fill="#182e47"/>
+      <rect x="68" width="28" height="38" rx="3" fill="#edf7f7" stroke="#63cce7"/><text x="73" y="13" class="mono" font-size="10" font-weight="700" fill="#d34f64">Q</text><path d="M82 19c9 5 4 12 0 14-4-2-9-9 0-14z" fill="#d34f64"/>
+    </g>
+    <text x="833" y="194" class="tiny" fill="#ffbe63">CANTINA</text><text x="833" y="208" class="tiny" fill="#548ba4">MINIJUEGOS</text>
+  </g>
 
-<!-- línea de comandos -->
-<g>
-<text x="66" y="207" class="cmd"><tspan fill="#28c840">$</tspan> docker compose up -d &#183; <tspan fill="#28c840">&#10003;</tspan> game &#183; <tspan fill="#28c840">&#10003;</tspan> bridge &#183; GET /v1/state <tspan class="cyan">200 OK</tspan></text>
-<g style="animation:typecmd 8s steps(52) infinite">
-<rect x="78" y="196" width="520" height="15" fill="#03101e"/>
-<rect x="78" y="196" width="8" height="13" fill="#3ddcff" style="animation:blink .9s step-end infinite"/>
-</g>
-</g>
+  <!-- bus de integración -->
+  <g transform="translate(70 239)">
+    <rect x="0" y="0" width="760" height="27" rx="6" fill="#04111d" stroke="#16425d"/>
+    <text x="65" y="18" class="label" text-anchor="middle" fill="#bba7f4">FOUNDRY VTT</text>
+    <path d="M132 13h92" stroke="#5c86a0" stroke-dasharray="4 3"><animate attributeName="stroke-dashoffset" from="14" to="0" dur="1.3s" repeatCount="indefinite"/></path>
+    <text x="290" y="18" class="label" text-anchor="middle" fill="#ffbe63">PUENTE SEGURO · API v0</text>
+    <path d="M365 13h92" stroke="#5c86a0" stroke-dasharray="4 3"><animate attributeName="stroke-dashoffset" from="14" to="0" dur="1.3s" repeatCount="indefinite"/></path>
+    <text x="529" y="18" class="label" text-anchor="middle" fill="#78f3ff">EMPTYEPSILON</text>
+    <text x="698" y="18" class="tiny" text-anchor="middle" fill="#548ba4">FORK · GPL-2.0</text>
+  </g>
 
-<text x="450" y="232" text-anchor="middle" class="tag">C++17 &#183; FORK DE EMPTYEPSILON &#183; PUENTE FOUNDRY VTT &#183; DOCKER &#183; KOOP LAGUNAK ARTEAN</text>
+  <text x="18" y="273" class="tiny" fill="#386d86">C++17 · DOCKER · FOUNDRY · COOPERACIÓN POR PUESTOS</text>
+  <text x="882" y="273" class="tiny" text-anchor="end" fill="#386d86">LAGUNAK ARTEAN</text>
 </svg>

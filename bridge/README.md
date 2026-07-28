@@ -209,7 +209,15 @@ limpiamente en vez de fallar.
 - Más tipos de evento y persistencia después de reiniciar completamente el juego.
 - WebSocket solo si métricas futuras demuestran que el polling v0 no basta.
 - Grano fino de permisos **en el propio puente** (decisión con ADR). El permiso
-  por puesto de la tripulación ya existe, pero gateado en el relé de Foundry por
-  identidad no falsificable (ver `docs/FOUNDRY.md`, «Permisos por puesto»), no en
-  el Bearer, que sigue siendo grano grueso y solo-GM.
+  por puesto de la tripulación ya existe, pero gateado en el relé de Foundry
+  según el puesto actual del `User` autenticado (ver `docs/FOUNDRY.md`, «Permisos
+  por puesto»), no en el Bearer, que sigue siendo grano grueso y solo-GM. La
+  identidad de usuario no se toma del payload; el puesto sí es autoasignable en
+  el modelo actual y no equivale a un rol fijo impuesto por el GM. Foundry
+  persiste el flag, pero sigue siendo contexto operativo mutable, no una
+  credencial; restringirlo en el futuro requiere una decisión explícita.
+- Auditoría de órdenes por puesto: cualquier registro futuro debe conservar tanto
+  el `userId` autenticado como el puesto resuelto en el momento del despacho. El
+  puesto por sí solo no identifica a quien actuó; tokens y datos sensibles deben
+  seguir redactados.
 - Órdenes de trayecto (destino y factor temporal; pausa/reanudación ya disponible).

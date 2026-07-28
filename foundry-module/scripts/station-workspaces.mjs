@@ -3,6 +3,9 @@ import { isActionAllowed } from "./station-actions.mjs";
 import { SISTEMAS_INGENIERIA, NIVELES_POTENCIA, NIVELES_REFRIGERANTE } from "./ingenieria-control.mjs";
 import { prepareSystemRows } from "./ship-view.mjs";
 
+// Marca visible de «no hay lectura», distinta de cualquier valor real.
+const SIN_DATO = "—";
+
 const DEFINITIONS = Object.freeze({
   captain: Object.freeze({
     icon: "fa-solid fa-chess-king",
@@ -118,8 +121,21 @@ function metric(i18n, key, value, tone = "normal", progress = null) {
   };
 }
 
+// Promedio de salud sobre los sistemas CON lectura. Si no hay ninguna, el
+// promedio no existe (null) en vez de valer cero, que se leería como
+// «armamento destruido».
+function promedioSalud(rows) {
+  const leidos = rows.filter((row) => Number.isFinite(row.health));
+  if (leidos.length === 0) return null;
+  return Math.round(leidos.reduce((suma, row) => suma + row.health, 0) / leidos.length);
+}
+
 function hottestSystem(rows) {
-  return rows.reduce((current, row) => (!current || row.heat > current.heat ? row : current), null);
+  // Un sistema sin lectura de calor no puede ser el pico térmico: se ignora en
+  // vez de competir como si estuviera frío.
+  return rows
+    .filter((row) => Number.isFinite(row.heat))
+    .reduce((current, row) => (!current || row.heat > current.heat ? row : current), null);
 }
 
 function metricsFor(station, ship, contactsPayload, i18n, crewCount = 0) {
@@ -150,7 +166,12 @@ function metricsFor(station, ship, contactsPayload, i18n, crewCount = 0) {
         metric(i18n, "Energia", ratioLabel(ship?.energy, ship?.energy_max), energy < 25 ? "danger" : "normal", energy),
         metric(i18n, "Casco", `${hull}%`, hull < 35 ? "danger" : "normal", hull),
         metric(i18n, "Sistemas", String(systems.length)),
-        metric(i18n, "PicoTermico", hot ? `${hot.name} · ${hot.heat}%` : "—", hot?.heat > 80 ? "danger" : "normal"),
+        metric(
+          i18n,
+          "PicoTermico",
+          hot ? `${hot.name} · ${hot.heat}%` : SIN_DATO,
+          hot?.heat > 80 ? "danger" : "normal",
+        ),
       ];
     case "sensors":
       return [
@@ -169,11 +190,17 @@ function metricsFor(station, ship, contactsPayload, i18n, crewCount = 0) {
     case "weapons": {
       const weaponSystems = systems.filter(({ id }) => id === "beamweapons" || id === "missilesystem");
       const average = weaponSystems.length
-        ? Math.round(weaponSystems.reduce((sum, row) => sum + row.health, 0) / weaponSystems.length)
-        : 0;
+        ? promedioSalud(weaponSystems)
+        : null;
       return [
         metric(i18n, "Escudos", localize(i18n, ship?.shields_active ? "LAGUNAK.Espacios.Activos" : "LAGUNAK.Espacios.Inactivos"), ship?.shields_active ? "good" : "warning"),
-        metric(i18n, "SistemasArmas", `${average}%`, average < 40 ? "danger" : "normal", average),
+        metric(
+          i18n,
+          "SistemasArmas",
+          average === null ? SIN_DATO : `${average}%`,
+          average !== null && average < 40 ? "danger" : "normal",
+          average,
+        ),
         metric(i18n, "Contactos", String(externalContacts.length)),
         metric(i18n, "Autorizacion", localize(i18n, "LAGUNAK.Espacios.SinOrdenes"), "warning"),
       ];

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/banner.svg" alt="Espaciokoop Lagunak — simulador de puente de mando cooperativo" width="900"/>
+  <img src="docs/assets/banner.svg" alt="Espaciokoop Lagunak — simulación espacial cooperativa por puestos, conectada con Foundry VTT" width="900"/>
 </p>
 
 # Espaciokoop Lagunak

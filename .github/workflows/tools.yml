@@ -12,10 +12,16 @@ on:
     paths:
       - "tools/**"
       - ".github/workflows/tools.yml"
+      # La trazabilidad de nombres DP depende de estos dos ficheros tanto como
+      # de la propia herramienta (#310).
+      - "scripts/public_domain_names_scenario_utility.lua"
+      - "docs/DOMINIO_PUBLICO_SCIFI.md"
   pull_request:
     paths:
       - "tools/**"
       - ".github/workflows/tools.yml"
+      - "scripts/public_domain_names_scenario_utility.lua"
+      - "docs/DOMINIO_PUBLICO_SCIFI.md"
   workflow_dispatch:
 
 permissions:
@@ -34,3 +40,5 @@ jobs:
         run: python3 -m pip install pytest polib==1.2.0
       - name: Ejecutar tests de tools/
         run: python3 -m pytest tools/tests/ -q
+      - name: Trazabilidad de nombres de dominio público (#310)
+        run: python3 tools/check_public_domain_names.py

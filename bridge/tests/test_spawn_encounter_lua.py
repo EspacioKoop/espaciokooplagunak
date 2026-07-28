@@ -106,6 +106,12 @@ def test_escenario_crea_y_conserva_marcador_de_evento(tmp_path):
     escenario = raiz / "scripts" / "scenario_90_lagunak_primera_guardia.lua"
     driver = f'''
 package.preload["utils.lua"] = function() end
+package.preload["public_domain_names_scenario_utility.lua"] = function()
+    function getPublicDomainName(theme)
+        assert(theme == "lovecraft" or theme == "verne")
+        return theme == "lovecraft" and "Kadath" or "Nautilus"
+    end
+end
 local wreck = nil
 local marker = nil
 local function entity(kind)
@@ -122,6 +128,7 @@ local function entity(kind)
             local args = {{...}}
             if key == "setPosition" then self.x, self.y = args[1], args[2] end
             if key == "setCallSign" then self.callsign = args[1] end
+            if key == "setDescription" then self.description = args[1] end
             return self
         end
     end }})
@@ -136,12 +143,19 @@ marcadoresEventosEncuentro = {{}}
 contadorEncuentros = nil
 assert(lagunakSpawnEncounter("derelict", "port") == true)
 assert(wreck.callsign == "Hondar 1")
+assert(wreck.description == "Kadath")
 assert(marker.callsign == "LAGUNAK_EVT_encounter_started_s90_654321_000001_derelict")
 assert(#marcadoresEventosEncuentro == 1)
 local first_marker = marker
 assert(lagunakSpawnEncounter("derelict", "ahead") == true)
 assert(wreck.callsign == "Hondar 2")
+assert(wreck.description == "Kadath")
 assert(marker.callsign == "LAGUNAK_EVT_encounter_started_s90_654321_000002_derelict")
+assert(#marcadoresEventosEncuentro == 2)
+getPublicDomainName = function(_) error("tema retirado") end
+assert(lagunakSpawnEncounter("freighter", "port") == true)
+assert(wreck.callsign == "Merkatari 3")
+assert(rawget(wreck, "description") == nil)
 assert(#marcadoresEventosEncuentro == 2)
 ship:setPosition(700, 800)
 player = ship

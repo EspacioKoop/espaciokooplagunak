@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { processBridgeEvents } from "../scripts/event-journal.mjs";
+import {
+  DESCRIPTORES,
+  processBridgeEvents,
+  registrarDescriptor,
+} from "../scripts/event-journal.mjs";
 
 function harness() {
   const pages = [];
@@ -134,4 +138,98 @@ test("revocar el rol mientras se crea el diario impide escribir la página", asy
   assert.equal(await pendiente, 0);
   assert.equal(context.created.length, 0);
   assert.equal(context.notifications.length, 0);
+});
+
+// ---- Registro modular de tipos de evento -----------------------------------
+
+const encuentro = {
+  id: "encounter-started-s90-123456-000002",
+  type: "encounter_started",
+  scenario: "scenario_90_lagunak_primera_guardia",
+  archetype: "derelict",
+  encounter_callsign: "Hondar 2",
+  scenario_time: 61.0,
+};
+
+test("el encuentro que el puente emite ya no se descarta en silencio", async () => {
+  const context = harness();
+  const escritos = await processBridgeEvents({
+    ...context,
+    payload: { events: [encuentro] },
+  });
+  assert.equal(escritos, 1);
+  assert.match(context.created[0].name, /LAGUNAK\.Eventos\.Encuentro\.Titulo/);
+  assert.match(context.created[0].text.content, /Hondar 2/);
+  assert.match(context.created[0].text.content, /LAGUNAK\.Encuentros\.Arquetipo\.derelict/);
+});
+
+test("un encuentro malformado no llega al diario", async () => {
+  const malos = [
+    { ...encuentro, archetype: "inventado" },
+    { ...encuentro, id: "encounter-started-s90-123456-2" },
+    { ...encuentro, encounter_callsign: "" },
+    { ...encuentro, encounter_callsign: "x".repeat(65) },
+    { ...encuentro, scenario: "otro_escenario" },
+    { ...encuentro, scenario_time: -1 },
+  ];
+  for (const evento of malos) {
+    const context = harness();
+    assert.equal(
+      await processBridgeEvents({ ...context, payload: { events: [evento] } }),
+      0,
+      `debería descartarse: ${JSON.stringify(evento)}`,
+    );
+  }
+});
+
+test("un tipo sin descriptor se ignora en vez de anotarse", async () => {
+  const context = harness();
+  const escritos = await processBridgeEvents({
+    ...context,
+    payload: {
+      events: [{ ...encuentro, type: "tipo_que_no_conocemos" }],
+    },
+  });
+  assert.equal(escritos, 0);
+});
+
+test("registrarDescriptor exige tipo, validar y pagina", () => {
+  assert.throws(() => registrarDescriptor({}), TypeError);
+  assert.throws(() => registrarDescriptor({ tipo: "x" }), TypeError);
+  assert.throws(() => registrarDescriptor({ tipo: "x", validar: () => true }), TypeError);
+});
+
+test("un descriptor nuevo se anota sin tocar el bucle de escritura", async () => {
+  registrarDescriptor({
+    tipo: "prueba_temporal",
+    validar: (event) => event.id === "prueba-1",
+    pagina: () => ({ title: "Prueba", content: "<p>Prueba</p>" }),
+  });
+  try {
+    const context = harness();
+    const escritos = await processBridgeEvents({
+      ...context,
+      payload: {
+        events: [
+          {
+            id: "prueba-1",
+            type: "prueba_temporal",
+            scenario: "scenario_90_lagunak_primera_guardia",
+            scenario_time: 1,
+          },
+        ],
+      },
+    });
+    assert.equal(escritos, 1);
+    assert.equal(context.created[0].name, "Prueba");
+  } finally {
+    DESCRIPTORES.delete("prueba_temporal");
+  }
+});
+
+test("los tres tipos conocidos están registrados", () => {
+  assert.deepEqual(
+    [...DESCRIPTORES.keys()].sort(),
+    ["arrival", "encounter_started", "ship_repositioned"],
+  );
 });

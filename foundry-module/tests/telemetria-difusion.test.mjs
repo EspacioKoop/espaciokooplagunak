@@ -2,9 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  AJUSTE_TELEMETRIA,
+  recortarNave,
   TIPO_TELEMETRIA,
   aceptarTelemetria,
-  canalTelemetria,
   difundirTelemetria,
   esMasReciente,
   sobreTelemetria,
@@ -41,33 +42,35 @@ test("un sondeo sin nave no difunde: no se borra la última lectura buena", () =
   for (const vacio of [null, undefined, {}, { ship: null }]) {
     assert.equal(sobreTelemetria(vacio), null);
     let emitido = false;
-    assert.equal(difundirTelemetria({ statePayload: vacio, emitir: () => (emitido = true) }), null);
+    assert.equal(difundirTelemetria({ statePayload: vacio, publicar: () => (emitido = true) }), null);
     assert.equal(emitido, false);
   }
 });
 
 test("difundir emite el sobre por el canal del módulo", () => {
   const enviados = [];
-  const sobre = difundirTelemetria({ statePayload: estado, emitir: (s) => enviados.push(s) });
+  const sobre = difundirTelemetria({ statePayload: estado, publicar: (s) => enviados.push(s) });
   assert.equal(enviados.length, 1);
   assert.deepEqual(enviados[0], sobre);
   assert.equal(sobre.tipo, TIPO_TELEMETRIA);
-  assert.equal(canalTelemetria("mi-modulo"), "module.mi-modulo");
+  assert.equal(AJUSTE_TELEMETRIA, "telemetriaNave");
   // Sin emisor no revienta: devuelve null y ya está.
   assert.equal(difundirTelemetria({ statePayload: estado }), null);
 });
 
-test("se filtra por tipo: por este canal viajan también las manos del póker", () => {
-  // Aceptar «lo que venga» haría que una vista privada de minijuego acabara
-  // interpretada como telemetría de la nave.
+test("se filtra por tipo: en el ajuste solo vale un sobre de telemetría", () => {
+  // Aceptar «lo que venga» haría que cualquier objeto guardado ahí acabara
+  // interpretado como telemetría de la nave.
   assert.equal(aceptarTelemetria({ tipo: "minijuego:vista-privada", vista: {} }), null);
   assert.equal(aceptarTelemetria({ tipo: TIPO_TELEMETRIA, ship: null }), null);
   assert.equal(aceptarTelemetria({ tipo: TIPO_TELEMETRIA, ship: "no-es-objeto" }), null);
   assert.equal(aceptarTelemetria(null), null);
-  assert.deepEqual(aceptarTelemetria(sobreTelemetria(estado)), estado.ship);
+  // Lo que sale es la nave RECORTADA, no la cruda: lo que no se copia no puede
+  // escaparse por un canal que lee toda la mesa.
+  assert.deepEqual(aceptarTelemetria(sobreTelemetria(estado)), recortarNave(estado.ship));
 });
 
-test("un sobre viejo no pisa a uno nuevo: el socket no garantiza orden", () => {
+test("un sobre viejo no pisa a uno nuevo: dos escrituras pueden cruzarse", () => {
   // Dos sondeos seguidos pueden llegar cruzados. Sin esto la consola parpadearía
   // hacia atrás, y en una lectura de rumbo eso se ve como una sacudida.
   assert.equal(esMasReciente({ sello: 100 }, null), true, "el primero siempre entra");
@@ -76,4 +79,41 @@ test("un sobre viejo no pisa a uno nuevo: el socket no garantiza orden", () => {
   assert.equal(esMasReciente({ sello: 100 }, 100), true, "un reenvío del mismo sello no estorba");
   assert.equal(esMasReciente({}, 100), false, "un sobre sin sello no se cuela");
   assert.equal(esMasReciente({ sello: "ayer" }, 100), false);
+});
+
+test("REGRESIÓN: la telemetría no se publica si nada ha cambiado", () => {
+  // El precio del ajuste de mundo es la persistencia, y se paga aquí: con la
+  // nave quieta no se escribe nada. Sin el recorte y el redondeo, el ruido del
+  // último decimal escribiría en cada sondeo.
+  const publicados = [];
+  const primera = difundirTelemetria({
+    statePayload: estado,
+    publicar: (sobre) => publicados.push(sobre),
+    anterior: null,
+    ahora: 1000,
+  });
+  assert.ok(primera, "la primera lectura siempre se publica");
+  assert.equal(publicados.length, 1);
+
+  const repetida = difundirTelemetria({
+    statePayload: estado,
+    publicar: (sobre) => publicados.push(sobre),
+    anterior: primera,
+    ahora: 2000,
+  });
+  assert.equal(repetida, null, "la misma lectura no se reescribe");
+  assert.equal(publicados.length, 1);
+
+  // Un cambio real sí escribe.
+  const movida = {
+    ship: { ...estado.ship, heading: (Number(estado.ship.heading) || 0) + 5 },
+  };
+  const tercera = difundirTelemetria({
+    statePayload: movida,
+    publicar: (sobre) => publicados.push(sobre),
+    anterior: primera,
+    ahora: 3000,
+  });
+  assert.ok(tercera, "moverse sí publica");
+  assert.equal(publicados.length, 2);
 });

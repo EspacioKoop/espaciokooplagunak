@@ -11,21 +11,69 @@
 // la credencial ni la URL. Un cliente de jugador no puede sondear el puente por
 // su cuenta —no tiene con qué— y este canal no le da nada para intentarlo.
 //
-// POR SOCKET Y NO POR AJUSTE DE MUNDO. Un ajuste de mundo se persiste, y aquí
-// hay un `/v1/state` por sondeo: sería escritura continua en la base de datos de
-// la campaña para un dato que caduca en segundos. La contrapartida —quien
-// recarga se queda a oscuras hasta el siguiente tick— es barata: el GM sondea
-// cada pocos segundos y la repara sola. Es el mismo canal que las órdenes de
-// puesto, en sentido inverso.
+// POR AJUSTE DE MUNDO Y NO POR SOCKET, y esta es la decisión importante.
+//
+// El primer intento fue el socket, por barato: no persiste nada y el dato caduca
+// en segundos. Pero `game.socket` NO acredita a quien emite. Cualquier cliente
+// podía mandar un sobre con esta misma forma y toda la tripulación lo aceptaba
+// como telemetría legítima —casco, rumbo y sistemas inventados— y, con un sello
+// en el futuro, dejaba además clavada la consola: las emisiones reales del GM
+// llegaban «viejas» y se descartaban. El socket del módulo es un bus, no una
+// frontera de autorización.
+//
+// Un ajuste de MUNDO sí lo es: el servidor de Foundry solo deja escribirlo a un
+// GM, y esa comprobación no está en el cliente, así que no se puede saltar desde
+// la consola de nadie. El precio es la persistencia, y se paga acotándola: lo
+// que se publica va RECORTADO y REDONDEADO, y solo se escribe cuando cambia algo
+// de verdad. Con la nave quieta no se escribe nada; moviéndose, una vez por
+// sondeo. Sin el redondeo, el ruido del último decimal escribiría siempre.
 //
 // Puro salvo el emisor: recibe `emitir` y `alRecibir` desde fuera, así que se
 // prueba en Node sin Foundry.
 
 export const TIPO_TELEMETRIA = "lagunak:telemetria-nave";
 
-/** Canal de socket del módulo. Mismo que usan las vistas privadas y las órdenes. */
-export function canalTelemetria(moduleId) {
-  return `module.${moduleId}`;
+/** Ajuste de mundo donde el GM publica. Solo un GM puede escribirlo. */
+export const AJUSTE_TELEMETRIA = "telemetriaNave";
+
+/** Redondeo de lo que se publica. Ver la cabecera: sin esto se escribe siempre. */
+function redondear(valor) {
+  const n = Number(valor);
+  return Number.isFinite(n) ? Math.round(n * 10) / 10 : null;
+}
+
+/**
+ * Recorta la nave a lo que las consolas enseñan, ya redondeado.
+ *
+ * Recortar no es solo higiene de tamaño: lo que no se copia aquí no puede
+ * escaparse por este canal, y este canal es público para toda la mesa.
+ */
+export function recortarNave(ship) {
+  if (!ship || typeof ship !== "object") return null;
+  const sistemas = {};
+  for (const [nombre, datos] of Object.entries(ship.systems ?? {})) {
+    if (!datos || typeof datos !== "object") continue;
+    sistemas[nombre] = {
+      health: redondear(datos.health),
+      heat: redondear(datos.heat),
+      power: redondear(datos.power),
+      coolant: redondear(datos.coolant),
+    };
+  }
+  return {
+    callsign: typeof ship.callsign === "string" ? ship.callsign : null,
+    heading: redondear(ship.heading),
+    hull: redondear(ship.hull),
+    energy: redondear(ship.energy),
+    shields: Array.isArray(ship.shields) ? ship.shields.map(redondear) : null,
+    destination: ship.destination ?? null,
+    systems: sistemas,
+  };
+}
+
+/** ¿Ha cambiado algo que se vea? Compara lo ya recortado, no el crudo. */
+export function hayCambio(nave, anterior) {
+  return JSON.stringify(nave) !== JSON.stringify(anterior ?? null);
 }
 
 /**
@@ -39,10 +87,10 @@ export function canalTelemetria(moduleId) {
  * `ship` y no `statePayload` entero: para que añadir contactos aquí sea una
  * decisión y no un descuido.
  */
-export function sobreTelemetria(statePayload) {
-  const ship = statePayload?.ship ?? null;
+export function sobreTelemetria(statePayload, ahora = Date.now()) {
+  const ship = recortarNave(statePayload?.ship);
   if (!ship) return null;
-  return { tipo: TIPO_TELEMETRIA, ship, sello: Date.now() };
+  return { tipo: TIPO_TELEMETRIA, ship, sello: ahora };
 }
 
 /**
@@ -50,10 +98,12 @@ export function sobreTelemetria(statePayload) {
  * que enviar — un sondeo fallido no debe borrar de las consolas ajenas la última
  * lectura buena.
  */
-export function difundirTelemetria({ statePayload, emitir }) {
-  const sobre = sobreTelemetria(statePayload);
-  if (!sobre || typeof emitir !== "function") return null;
-  emitir(sobre);
+export function difundirTelemetria({ statePayload, publicar, anterior = null, ahora }) {
+  const sobre = sobreTelemetria(statePayload, ahora);
+  if (!sobre || typeof publicar !== "function") return null;
+  // Nada nuevo, nada que escribir: es lo que hace barata la persistencia.
+  if (!hayCambio(sobre.ship, anterior?.ship)) return null;
+  publicar(sobre);
   return sobre;
 }
 
@@ -70,10 +120,13 @@ export function aceptarTelemetria(mensaje) {
 }
 
 /**
- * Descarta un sobre más viejo que el que ya se tenía. El socket no garantiza
- * orden, y dos sondeos seguidos pueden llegar cruzados: sin esto, la consola
- * parpadearía hacia atrás durante un instante y en una lectura de rumbo eso se
- * ve como una sacudida de la nave.
+ * Descarta un sobre más viejo que el que ya se tenía. Sigue haciendo falta con
+ * el ajuste de mundo: dos escrituras seguidas pueden llegar cruzadas a un
+ * cliente, y sin esto la consola parpadearía hacia atrás un instante — en una
+ * lectura de rumbo eso se ve como una sacudida de la nave.
+ *
+ * Ya no es una defensa contra nadie: un sello en el futuro solo puede ponerlo un
+ * GM, porque solo un GM puede escribir el ajuste.
  */
 export function esMasReciente(sobre, selloAnterior) {
   const sello = Number(sobre?.sello);

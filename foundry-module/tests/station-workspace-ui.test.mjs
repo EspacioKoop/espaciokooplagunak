@@ -128,7 +128,10 @@ test("ApplicationV2: el GM recibe estado y contactos y previsualiza puestos", as
   assert.equal(model.hasTelemetry, true);
   assert.equal(model.connectionOk, true);
   assert.equal(JSON.stringify(model).includes("secret-for-test"), false);
-  assert.deepEqual(settingsReads, ["bridgeUrl"]);
+  // La URL del puente y el ajuste donde se publica la telemetría: el sondeo lee
+  // el segundo para no reescribir una lectura idéntica. El TOKEN no sale por
+  // ajustes —vive en la sesión del navegador— y por eso no aparece aquí.
+  assert.deepEqual(settingsReads, ["bridgeUrl", "telemetriaNave"]);
 });
 
 test("una respuesta tardía tras cerrar no repuebla la consola", async () => {

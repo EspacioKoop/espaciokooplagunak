@@ -361,3 +361,45 @@ test("cascoRumbo distingue «sin lectura» de rumbo cero (#362)", () => {
   });
   assert.equal(sinNada.cascoRumbo, null, "sin telemetría no hay rumbo que dibujar");
 });
+
+test("la tripulación ve contactos DEGRADADOS y el GM la verdad completa (#331 paso 4)", () => {
+  // Son dos listas distintas a propósito. Si fueran la misma, abrirla a la
+  // tripulación regalaría el trabajo del puesto de Sensores.
+  const proyectados = [
+    { nivel: "identificado", callsign: "Kestrel", faccion: "Hostil", marcacion: 90, distancia: 1200, position: { x: 1200, y: 0 } },
+    { nivel: "traza", callsign: null, faccion: null, marcacion: 45, distancia: 20000, position: null },
+  ];
+  const tripulante = buildWorkspaceModel({
+    station: "sensors",
+    isGM: false,
+    users: [],
+    moduleId: MODULE_ID,
+    i18n,
+    statePayload,
+    contactosProyectados: proyectados,
+    connection: "ok",
+  });
+  assert.equal(tripulante.contacts.length, 2);
+  assert.equal(tripulante.contacts[0].callsign, "Kestrel", "de cerca sí hay nombre");
+  // Lo que no se sabe se DICE, no se deja en blanco: un hueco en una consola se
+  // lee como un fallo, no como una incertidumbre.
+  assert.ok(tripulante.contacts[1].callsign, "la traza tiene texto, no un vacío");
+  assert.notEqual(tripulante.contacts[1].callsign, "Kestrel");
+  assert.equal(tripulante.contacts[1].x, null, "y no lleva coordenadas");
+  assert.equal(tripulante.contacts[1].marcacion, 45, "sino marcación y distancia");
+
+  // El GM sigue viendo su payload crudo, no la proyección.
+  const gm = buildWorkspaceModel({
+    station: "sensors",
+    isGM: true,
+    users: [],
+    moduleId: MODULE_ID,
+    i18n,
+    statePayload,
+    contactsPayload,
+    contactosProyectados: proyectados,
+    connection: "ok",
+  });
+  assert.ok(gm.contacts.length > 0);
+  assert.ok(gm.contacts.every((c) => c.x !== null), "el GM sí tiene coordenadas de todo");
+});

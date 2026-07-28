@@ -354,5 +354,8 @@
   "LAGUNAK.Espacios.Orden.Convergido": "En rumbo",
   "LAGUNAK.Espacios.Orden.Maniobrando": "Maniobrando",
   "LAGUNAK.Espacios.Orden.SinLectura": "Sin lectura de la nave",
-  "LAGUNAK.Espacios.Orden.EstadoTitulo": "Última orden"
+  "LAGUNAK.Espacios.Orden.EstadoTitulo": "Última orden",
+  "LAGUNAK.Espacios.Contacto.SinIdentificar": "Sin identificar",
+  "LAGUNAK.Espacios.Contacto.FaccionDesconocida": "Bando desconocido",
+  "LAGUNAK.Espacios.Contacto.Marcacion": "Marcación"
 }

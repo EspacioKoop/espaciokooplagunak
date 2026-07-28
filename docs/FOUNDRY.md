@@ -91,8 +91,21 @@ token:
   cada pantalla de tripulación ve casco, energía y sistemas, así que ocultarlo
   aquí era un peor producto a cambio de cero seguridad. **Los contactos son la
   excepción** y siguen siendo recurso del GM: callsign, facción y coordenadas
-  exactas son lo que el sistema de sensores debe decidir cuánto revela, y se
-  abrirán degradados por distancia y salud de sensores.
+  exactas son lo que el sistema de sensores debe decidir cuánto revela. Se
+  difunden **degradados** (`contactos-proyeccion.mjs`): identificado por debajo
+  de 5000 unidades (nombre, bando y posición), detectado hasta 15000 (bando,
+  marcación y distancia redondeadas, sin nombre ni posición) y traza hasta 30000
+  (solo marcación y banda de distancia). Fuera de ahí **no aparece**, que no es
+  lo mismo que aparecer vacío. La degradación quita precisión y **nunca falsea
+  un valor**: un callsign equivocado sería peor que ningún callsign. Es
+  determinista — un contacto que parpadeara entre niveles se leería como ruido
+  de la interfaz y no como una lectura de la nave.
+
+  Aviso para quien continúe: el plan hablaba de degradar también por **salud del
+  sistema de sensores**, y ese sistema **no existe** — EmptyEpsilon tiene nueve
+  (`src/components/shipsystem.h`) y ninguno es de sensores. La calidad entra como
+  parámetro con valor pleno por defecto, listo para conectarse el día que haya de
+  dónde sacarla.
 - **Lazo cerrado de la orden** (#331 paso 2, `acuse-orden.mjs`). Cada orden
   vuelve a **la consola que la emitió**, y a ninguna otra: el relé ya recibía el
   resultado del puente con el `userId` del emisor y hasta ahora se descartaba. La

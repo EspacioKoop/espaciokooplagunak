@@ -354,5 +354,8 @@
   "LAGUNAK.Espacios.Orden.Convergido": "On course",
   "LAGUNAK.Espacios.Orden.Maniobrando": "Manoeuvring",
   "LAGUNAK.Espacios.Orden.SinLectura": "No reading from the ship",
-  "LAGUNAK.Espacios.Orden.EstadoTitulo": "Last order"
+  "LAGUNAK.Espacios.Orden.EstadoTitulo": "Last order",
+  "LAGUNAK.Espacios.Contacto.SinIdentificar": "Unidentified",
+  "LAGUNAK.Espacios.Contacto.FaccionDesconocida": "Unknown allegiance",
+  "LAGUNAK.Espacios.Contacto.Marcacion": "Bearing"
 }

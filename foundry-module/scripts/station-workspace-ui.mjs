@@ -42,8 +42,8 @@ export function registerWorkspaceFeature(moduleId) {
       recibirAcuse(acuse);
       return;
     }
-    const ship = aceptarTelemetria(mensaje);
-    if (!ship) return;
+    const recibido = aceptarTelemetria(mensaje);
+    if (!recibido) return;
     const app = workspaceApp;
     if (!app || app.closed) return;
     // Fuera de orden se descarta: sin esto la consola parpadearía hacia atrás, y
@@ -53,7 +53,11 @@ export function registerWorkspaceFeature(moduleId) {
     // El GM conserva su propio sondeo como fuente: tiene los contactos, que no
     // viajan por aquí, y pisarlo con el sobre recortado se los borraría.
     if (!game.user?.isGM) {
-      app.statePayload = { ship };
+      app.statePayload = { ship: recibido.ship };
+      // Contactos ya degradados por el GM: la tripulación nunca recibe el
+      // payload crudo, así que esto es lo único que tiene y no hay nada que
+      // volver a filtrar en este lado.
+      app.contactosProyectados = recibido.contactos;
       app.connection = "ok";
       app.error = "";
     }
@@ -189,6 +193,7 @@ function workspaceContext(app) {
     i18n: game.i18n,
     statePayload: app.statePayload,
     contactsPayload: app.contactsPayload,
+    contactosProyectados: app.contactosProyectados,
     connection: app.connection,
     error: app.error,
   });
@@ -223,6 +228,7 @@ async function refreshTelemetry(app) {
     // se quedan aquí hasta que se abran degradados.
     difundirTelemetria({
       statePayload,
+      contactsPayload,
       emitir: (sobre) => game.socket?.emit(canalTelemetria(configuredModuleId), sobre),
     });
     return true;
@@ -323,6 +329,7 @@ function initialiseApp(app) {
   app.connection = "loading";
   app.selloTelemetria = null;
   app.ultimoAcuse = null;
+  app.contactosProyectados = [];
   app.error = "";
   app.loading = false;
   app.closed = false;

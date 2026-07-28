@@ -22,18 +22,31 @@ test("EL TOKEN NO VIAJA: el sobre lleva la nave y nada más", () => {
   const serializado = JSON.stringify(sobre);
   assert.doesNotMatch(serializado, /secreto/);
   assert.doesNotMatch(serializado, /bridgeUrl|Bearer|token/i);
-  assert.deepEqual(Object.keys(sobre).sort(), ["sello", "ship", "tipo"]);
+  assert.deepEqual(Object.keys(sobre).sort(), ["contactos", "sello", "ship", "tipo"]);
 });
 
-test("LOS CONTACTOS NO VIAJAN: es la excepción del issue, no un olvido", () => {
-  // Callsign, facción y coordenadas exactas son lo que el sistema de sensores
-  // debería decidir cuánto revela. Difundirlos crudos regalaría el trabajo de
-  // ese puesto. El sobre lleva `ship` y no el payload entero justamente para que
-  // añadirlos sea una decisión y no un descuido.
-  const sobre = sobreTelemetria(estado);
-  assert.equal(sobre.ship.callsign, "Itsaso 1");
-  assert.equal(sobre.contacts, undefined);
-  assert.doesNotMatch(JSON.stringify(sobre), /Kestrel/);
+test("LOS CONTACTOS VIAJAN DEGRADADOS, nunca crudos (paso 4)", () => {
+  // Este es el único punto por el que el mapa completo del GM podría escaparse.
+  // Un contacto lejano no puede llevar ni nombre ni coordenadas: con eso, un
+  // cliente reconstruiría la partida entera y la degradación no habría servido.
+  const lejano = {
+    ship: { callsign: "Itsaso 1", position: { x: 0, y: 0 } },
+    contacts: [{ callsign: "Kestrel", faction: "Hostil", position: { x: 20000, y: 0 } }],
+  };
+  const sobre = sobreTelemetria(lejano, { contacts: lejano.contacts });
+  assert.equal(sobre.contactos.length, 1, "se detecta que hay algo");
+  assert.equal(sobre.contactos[0].callsign, null, "pero no quién es");
+  assert.equal(sobre.contactos[0].position, null, "ni dónde exactamente");
+  assert.doesNotMatch(JSON.stringify(sobre), /Kestrel/, "el nombre no sale del cliente del GM");
+
+  // De cerca sí, que para eso se acerca uno.
+  const cerca = sobreTelemetria(lejano, {
+    contacts: [{ callsign: "Kestrel", faction: "Hostil", position: { x: 1000, y: 0 } }],
+  });
+  assert.equal(cerca.contactos[0].callsign, "Kestrel");
+
+  // Sin contactos que difundir, la lista va vacía y no falta la clave.
+  assert.deepEqual(sobreTelemetria(estado).contactos, []);
 });
 
 test("un sondeo sin nave no difunde: no se borra la última lectura buena", () => {
@@ -64,7 +77,9 @@ test("se filtra por tipo: por este canal viajan también las manos del póker", 
   assert.equal(aceptarTelemetria({ tipo: TIPO_TELEMETRIA, ship: null }), null);
   assert.equal(aceptarTelemetria({ tipo: TIPO_TELEMETRIA, ship: "no-es-objeto" }), null);
   assert.equal(aceptarTelemetria(null), null);
-  assert.deepEqual(aceptarTelemetria(sobreTelemetria(estado)), estado.ship);
+  const recibido = aceptarTelemetria(sobreTelemetria(estado));
+  assert.deepEqual(recibido.ship, estado.ship);
+  assert.deepEqual(recibido.contactos, [], "sin contactos difundidos, lista vacía y no undefined");
 });
 
 test("un sobre viejo no pisa a uno nuevo: el socket no garantiza orden", () => {

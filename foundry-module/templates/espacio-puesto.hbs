@@ -107,12 +107,20 @@
                 <span>{{localize "LAGUNAK.Espacios.ContactosProximos"}}</span>
                 <span>{{localize "LAGUNAK.Espacios.SoloGM"}}</span>
               </div>
+              {{! El nivel de conocimiento se dice con palabra y con forma, no
+                  solo con color: es la misma regla del daño por sistema (#353).
+                  Y lo que no se sabe se escribe («sin identificar»), porque un
+                  hueco en una consola se lee como un fallo. }}
               {{#each contacts}}
-                <div class="lagunak-workspace__contact-row">
+                <div class="lagunak-workspace__contact-row lagunak-workspace__contact-row--{{nivel}}">
                   <i class="fa-solid fa-diamond" aria-hidden="true"></i>
                   <strong>{{callsign}}</strong>
                   <span>{{faction}}</span>
-                  <code>{{x}}, {{y}}</code>
+                  {{#if x}}
+                    <code>{{x}}, {{y}}</code>
+                  {{else}}
+                    <code>{{localize "LAGUNAK.Espacios.Contacto.Marcacion"}} {{marcacion}}° · {{distancia}}</code>
+                  {{/if}}
                 </div>
               {{/each}}
             </div>

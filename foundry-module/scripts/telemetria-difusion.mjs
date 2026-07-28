@@ -1,3 +1,5 @@
+import { proyectarContactos } from "./contactos-proyeccion.mjs";
+
 // Difusión de telemetría de la nave propia a toda la tripulación (#331, paso 1).
 //
 // El problema que resuelve. Solo el GM tiene el Bearer del puente, así que solo
@@ -32,17 +34,22 @@ export function canalTelemetria(moduleId) {
  * Sobre a difundir. Se recorta a lo que la tripulación puede ver: la nave propia
  * y nada más.
  *
- * Los contactos NO van aquí a propósito (excepción de #331): callsign, facción y
- * coordenadas exactas son lo que el sistema de sensores debería decidir cuánto
- * revela, y difundirlos crudos regalaría el trabajo de ese puesto. Cuando se
- * abran, será degradados y por su propio camino — por eso este sobre lleva
- * `ship` y no `statePayload` entero: para que añadir contactos aquí sea una
- * decisión y no un descuido.
+ * Los contactos van DEGRADADOS y nunca crudos (paso 4): `contactos-proyeccion`
+ * decide qué se puede saber de cada uno desde donde está la nave. El payload
+ * completo del GM —callsign, facción y coordenadas exactas de todo el mapa— no
+ * sale de su cliente, y este es el único punto por el que podría escaparse.
  */
-export function sobreTelemetria(statePayload) {
+export function sobreTelemetria(statePayload, contactsPayload = null) {
   const ship = statePayload?.ship ?? null;
   if (!ship) return null;
-  return { tipo: TIPO_TELEMETRIA, ship, sello: Date.now() };
+  // Los contactos viajan YA DEGRADADOS (#331 paso 4). Nunca el payload crudo:
+  // callsign, facción y coordenadas exactas de todo el mapa son del GM, y este
+  // es el único punto por el que podrían escaparse.
+  const contactos = proyectarContactos({
+    contacts: contactsPayload?.contacts ?? [],
+    origen: ship.position,
+  });
+  return { tipo: TIPO_TELEMETRIA, ship, contactos, sello: Date.now() };
 }
 
 /**
@@ -50,8 +57,8 @@ export function sobreTelemetria(statePayload) {
  * que enviar — un sondeo fallido no debe borrar de las consolas ajenas la última
  * lectura buena.
  */
-export function difundirTelemetria({ statePayload, emitir }) {
-  const sobre = sobreTelemetria(statePayload);
+export function difundirTelemetria({ statePayload, contactsPayload = null, emitir }) {
+  const sobre = sobreTelemetria(statePayload, contactsPayload);
   if (!sobre || typeof emitir !== "function") return null;
   emitir(sobre);
   return sobre;
@@ -66,7 +73,7 @@ export function aceptarTelemetria(mensaje) {
   if (mensaje?.tipo !== TIPO_TELEMETRIA) return null;
   const ship = mensaje.ship;
   if (!ship || typeof ship !== "object") return null;
-  return ship;
+  return { ship, contactos: Array.isArray(mensaje.contactos) ? mensaje.contactos : [] };
 }
 
 /**

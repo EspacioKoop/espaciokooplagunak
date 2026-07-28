@@ -233,6 +233,28 @@ function crewRows(users, moduleId, i18n) {
     });
 }
 
+/**
+ * Traduce los contactos degradados a filas pintables. Lo que NO se sabe se dice
+ * con palabras —«sin identificar»— y no con un hueco: un espacio en blanco en
+ * una consola se lee como un fallo, no como una incertidumbre.
+ */
+function etiquetarProyectados(proyectados, i18n) {
+  return (Array.isArray(proyectados) ? proyectados : []).map((contacto) => ({
+    callsign: contacto.callsign ?? localize(i18n, "LAGUNAK.Espacios.Contacto.SinIdentificar"),
+    faction: contacto.faccion
+      ? localizeFaction(i18n, String(contacto.faccion))
+      : localize(i18n, "LAGUNAK.Espacios.Contacto.FaccionDesconocida"),
+    nivel: contacto.nivel,
+    // Marcación y distancia sustituyen a las coordenadas: es lo que una nave
+    // sabe de algo que ve de lejos, y además es lo único que se difunde.
+    marcacion: integer(contacto.marcacion),
+    distancia: integer(contacto.distancia),
+    // Sin coordenadas salvo identificación positiva; la plantilla las omite.
+    x: contacto.position ? integer(contacto.position.x) : null,
+    y: contacto.position ? integer(contacto.position.y) : null,
+  }));
+}
+
 function visibleContacts(contactsPayload, i18n) {
   const contacts = Array.isArray(contactsPayload?.contacts) ? contactsPayload.contacts : [];
   return contacts
@@ -256,6 +278,7 @@ export function buildWorkspaceModel({
   i18n,
   statePayload = null,
   contactsPayload = null,
+  contactosProyectados = [],
   connection = "restricted",
   error = "",
 }) {
@@ -338,7 +361,15 @@ export function buildWorkspaceModel({
     ship,
     metrics: ship ? metricsFor(normalized, ship, safeContactsPayload, i18n, crew.length) : [],
     systems: normalized === "engineering" ? prepareSystemRows(ship, i18n) : [],
-    contacts: normalized === "sensors" || normalized === "weapons" ? visibleContacts(safeContactsPayload, i18n) : [],
+    // El GM ve la verdad completa; la tripulación, la proyección degradada que
+    // él le difunde (#331 paso 4). Son dos listas distintas a propósito: si
+    // fuera la misma, abrirla a la tripulación regalaría el trabajo de Sensores.
+    contacts:
+      normalized === "sensors" || normalized === "weapons"
+        ? isGM
+          ? visibleContacts(safeContactsPayload, i18n)
+          : etiquetarProyectados(contactosProyectados, i18n)
+        : [],
     crew,
     crewCount: crew.length,
     activeCrew: crew.filter((member) => member.active).length,

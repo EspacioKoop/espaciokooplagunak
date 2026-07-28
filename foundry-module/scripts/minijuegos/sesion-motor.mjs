@@ -107,8 +107,24 @@ export function crearSesion({ id, juego, anfitrionId, coordinadorId, limites = {
 
 // Estado compartido: nunca incluye secretos. `juegoPublico` sale de la
 // vistaPublica del juego alojado, no del estado interno.
+// Identidad imposible: no la tiene nadie, así que `accionesPermitidas` la trata
+// siempre como alguien de fuera de la mesa. Sirve para calcular qué puede hacer
+// quien todavía no participa, sin preguntar por nadie en concreto.
+const FORASTERO = "\u0000forastero";
+
 export function vistaPublicaSesion(sesion) {
-  return estructuraClonada(sesion.publico);
+  const publico = estructuraClonada(sesion.publico);
+  // Qué puede hacer quien NO está en la mesa (sentarse, mirar). Va en la vista
+  // pública a propósito: es igual para todo el mundo y no revela nada, y así
+  // llega por el ajuste de mundo —que Foundry sincroniza solo— en vez de
+  // depender de que el envío dirigido llegue a tiempo. Sin esto, un cliente que
+  // se pierde su reparto ve la mesa y ni un botón, y parece que la mesa no le
+  // deja entrar.
+  //
+  // No hace falta el juego para calcularlas: quien no está sentado no tiene
+  // acciones de juego, y `accionesDeJuego` sale antes de mirarlo.
+  publico.accionesForastero = accionesPermitidas(sesion, FORASTERO, null);
+  return publico;
 }
 
 // Vista dirigida a un `userId` autenticado. Solo un jugador sentado recibe su

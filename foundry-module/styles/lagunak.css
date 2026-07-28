@@ -452,112 +452,194 @@
 }
 
 /* ---- Mesa de minijuegos (#308) -------------------------------------------
- * Mismo mueble arcade que el resto: esquinas duras, filo cian, acento magenta.
+ * Mismo mueble arcade que el resto del módulo: fondo oscuro, esquinas duras,
+ * filo cian y acento magenta. El marco claro de Foundry v11 dejaba la mesa
+ * como un formulario; se viste el cuerpo de la ventana, no solo su contenido.
+ *
  * El tapete es lo único verde del módulo, y es a propósito: una mesa de cartas
  * se reconoce por el fieltro antes que por lo que hay escrito encima.
  */
+.lagunak-mesa .window-content {
+  background: #03071e;
+  color: #e0e1dd;
+  padding: 0;
+}
+
 .lagunak-mesa-cuerpo {
-  padding: 0.5rem;
+  padding: 0.6rem;
 }
 
 .lagunak-mesa-fase,
 .lagunak-mesa-aviso {
-  margin: 0 0 0.4rem;
+  margin: 0 0 0.5rem;
   font-variant: small-caps;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
+  color: #00e5ff;
 }
 
 .lagunak-mesa-aviso {
   color: #ff2e88;
 }
 
+.lagunak-mesa-vacia {
+  padding: 1rem 0.6rem;
+  color: #e0e1dd;
+  opacity: 0.85;
+}
+
+/* El tapete: fieltro con filo cian, como el visor del mapa vivo. */
 .lagunak-mesa-tapete {
   border: 4px solid #1b263b;
+  border-top-color: #ff2e88;
   box-shadow: inset 0 0 0 1px #00e5ff;
-  background: #14532d;
-  padding: 0.5rem;
+  background: #0f3d2a;
+  padding: 0.6rem;
+  min-height: 4.5rem;
 }
 
 .lagunak-mesa-bote {
-  margin: 0 0 0.4rem;
+  margin: 0 0 0.5rem;
   color: #ffd166;
+  font-variant: small-caps;
+  letter-spacing: 0.06em;
 }
 
 .lagunak-mesa-comunitarias,
 .lagunak-mesa-mano {
   display: flex;
-  gap: 0.25rem;
+  flex-wrap: wrap;
+  gap: 0.3rem;
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-/* Las cartas son pixel-art: se escalan sin suavizado o dejan de ser pixel-art. */
+/* Las cartas son pixel-art: se escalan sin suavizado o dejan de serlo. */
 .lagunak-mesa-comunitarias img,
 .lagunak-mesa-mano img {
-  width: 48px;
+  width: 52px;
   height: auto;
   image-rendering: pixelated;
+  border: 1px solid #1b263b;
+}
+
+.lagunak-mesa h4 {
+  margin: 0.7rem 0 0.3rem;
+  border: 0;
+  color: #00e5ff;
+  font-variant: small-caps;
+  letter-spacing: 0.08em;
 }
 
 .lagunak-mesa-asientos {
   list-style: none;
-  margin: 0.5rem 0;
+  margin: 0.6rem 0 0;
   padding: 0;
 }
 
 .lagunak-mesa-asiento {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.15rem 0.3rem;
+  gap: 0.45rem;
+  padding: 0.25rem 0.4rem;
   border-left: 3px solid transparent;
+  background: rgba(224, 225, 221, 0.04);
+  margin-bottom: 2px;
 }
 
 /* De quién es el turno tiene que verse sin leer: color Y borde, nunca solo
- * color (el mismo criterio de accesibilidad que el resto del módulo). */
+ * color (mismo criterio de accesibilidad que el resto del módulo). */
 .lagunak-mesa-asiento.es-turno {
   border-left-color: #00e5ff;
-  background: rgba(0, 229, 255, 0.08);
+  background: rgba(0, 229, 255, 0.12);
 }
 
 .lagunak-mesa-asiento.retirado {
-  opacity: 0.55;
+  opacity: 0.5;
+}
+
+.lagunak-mesa-nombre {
+  font-weight: 600;
 }
 
 .lagunak-mesa-disco {
   display: inline-grid;
   place-items: center;
-  width: 1.2rem;
-  height: 1.2rem;
+  width: 1.3rem;
+  height: 1.3rem;
   border-radius: 50%;
   background: #f8f9fa;
   color: #03071e;
   font-weight: 700;
   font-size: 0.75rem;
+  flex: 0 0 auto;
 }
 
 .lagunak-mesa-npc,
 .lagunak-mesa-estado {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  opacity: 0.8;
+  letter-spacing: 0.06em;
+  padding: 0 0.3em;
+  border: 1px solid currentColor;
+  opacity: 0.85;
 }
 
 .lagunak-mesa-fichas {
   margin-left: auto;
   color: #ffd166;
+  font-variant-numeric: tabular-nums;
+}
+
+.lagunak-mesa-resultado {
+  margin: 0.6rem 0 0;
+  padding: 0.4rem 0.5rem;
+  border-left: 3px solid #ffd166;
+  background: rgba(255, 209, 102, 0.1);
 }
 
 .lagunak-mesa-acciones {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.3rem;
-  margin-top: 0.5rem;
+  gap: 0.35rem;
+  margin-top: 0.8rem;
+}
+
+.lagunak-mesa-acciones button {
+  flex: 1 1 8rem;
+  background: #1b263b;
+  border: 1px solid #00e5ff;
+  border-radius: 0;
+  color: #e0e1dd;
+  font-variant: small-caps;
+  letter-spacing: 0.06em;
+  line-height: 2;
+}
+
+.lagunak-mesa-acciones button:hover {
+  background: #24344d;
+  box-shadow: 0 0 0 1px #ff2e88;
+}
+
+/* Foco visible: el teclado es un modo de juego, no una concesión. */
+.lagunak-mesa-acciones button:focus-visible,
+.lagunak-mesa-importe input:focus-visible {
+  outline: 2px solid #ffd166;
+  outline-offset: 1px;
+}
+
+.lagunak-mesa-importe {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #e0e1dd;
 }
 
 .lagunak-mesa-importe input {
   width: 5rem;
+  background: #03071e;
+  border: 1px solid #1b263b;
+  border-radius: 0;
+  color: #e0e1dd;
 }

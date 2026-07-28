@@ -7,7 +7,7 @@ import {
   construirPropuesta,
   despacharCambioDeUsuario,
 } from "./minijuegos/adaptador-sesion.mjs";
-import { crearSesion } from "./minijuegos/sesion-motor.mjs";
+import { crearSesion, vistaPublicaSesion } from "./minijuegos/sesion-motor.mjs";
 import { MESA_POR_DEFECTO, configuracionPoker } from "./minijuegos/mesa-config.mjs";
 import * as poker from "./minijuegos/poker-motor.mjs";
 
@@ -294,7 +294,10 @@ export function abrirMesa({ id, nombreJuego, limites } = {}) {
     coordinadorId: game.user.id,
     limites,
   });
-  game.settings.set(moduloConfigurado, AJUSTE_SESION, sesionViva.publico);
+  // Se publica la VISTA pública, no el estado interno a pelo: la vista añade
+  // las acciones de forastero, que son el respaldo de quien no reciba su envío
+  // dirigido. Publicando `sesionViva.publico` la mesa nacía sin ellas.
+  game.settings.set(moduloConfigurado, AJUSTE_SESION, vistaPublicaSesion(sesionViva));
   repartirVistas(moduloConfigurado);
   return sesionViva.publico;
 }

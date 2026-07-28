@@ -119,8 +119,31 @@ export function mesaVista(vista, { userId = "", acciones = [] } = {}) {
       };
     }),
     resultado: vista.resultado ?? null,
-    acciones: accionesVisibles(acciones),
+    acciones: accionesVisibles(accionesEfectivas(vista, acciones, eresJugador, userId)),
   };
+}
+
+/**
+ * Qué acciones se pintan.
+ *
+ * Manda siempre lo que el coordinador concedió a ESTE cliente. Pero ese envío
+ * es dirigido y puede perderse —llega por socket, y un cliente que aún no
+ * escuchaba se lo pierde entero—, y entonces la mesa se veía sin un solo botón:
+ * indistinguible de una mesa que no te deja entrar.
+ *
+ * El respaldo son las acciones «de forastero» que el coordinador publica en la
+ * vista pública, y que solo se usan si este cliente NO participa: son las de
+ * entrar (sentarse, mirar), iguales para cualquiera de fuera y calculadas por
+ * quien tiene la autoridad, no deducidas aquí. A un participante no se le
+ * ofrecen nunca: sus acciones dependen de su sitio en la mano y esas sí exigen
+ * el envío dirigido.
+ */
+function accionesEfectivas(vista, acciones, eresJugador, userId) {
+  if (Array.isArray(acciones) && acciones.length > 0) return acciones;
+  if (eresJugador) return [];
+  const espectador = Array.isArray(vista.espectadores) && vista.espectadores.includes(userId);
+  if (espectador) return [];
+  return Array.isArray(vista.accionesForastero) ? vista.accionesForastero : [];
 }
 
 /**

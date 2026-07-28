@@ -101,10 +101,15 @@ export function iconoSistema(estado, semilla = "") {
       }
 
       if (modo === "dañado") {
-        // Grietas: una diagonal quebrada que atraviesa el núcleo. Es forma, no
-        // tono — se distingue en escala de grises y a tamaño pequeño.
-        const grieta = Math.abs(x - y) <= 1 || Math.abs(x + y - LADO + 1) <= 0;
-        celdas.push({ x, y, color: grieta ? SISTEMA.grieta : SISTEMA.nucleo });
+        // Grietas: una diagonal quebrada que ABRE el núcleo. Las celdas de la
+        // grieta no se repintan de otro color, se quitan — si solo cambiaran de
+        // tono, «dañado» e «intacto» ocuparían exactamente las mismas celdas y
+        // el estado volvería a viajar en el color, que es lo que #353 corrige.
+        // Al retirarlas, la silueta del núcleo cambia y se lee en escala de
+        // grises y a 18 px.
+        const grieta = Math.abs(x - y) <= 1 || x + y === LADO - 1;
+        if (grieta) return;
+        celdas.push({ x, y, color: SISTEMA.nucleo });
         return;
       }
 

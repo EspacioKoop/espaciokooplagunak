@@ -11,6 +11,7 @@ import {
   iconoSistemaSvg,
 } from "../scripts/iconos-sistema.mjs";
 import { barrasSistema } from "../scripts/barras-estado.mjs";
+import { SISTEMA, contraste } from "../scripts/paleta.mjs";
 
 test("sin lectura NO es ninguno de los otros tres estados", () => {
   // Es el criterio central de #353. Un icono agrietado por falta de sondeo
@@ -54,9 +55,23 @@ test("cada estado se DIBUJA distinto, no solo se colorea distinto", () => {
     formas.set(estado, celdas.map(({ x, y }) => `${x},${y}`).join("|"));
   }
   // «sin lectura» tiene una silueta distinta (contorno discontinuo, núcleo
-  // vacío); los otros tres comparten silueta y se distinguen por el patrón de
-  // píxeles apagados dentro de ella.
+  // vacío) y «dañado» abre el núcleo: ambos se distinguen de «intacto» por las
+  // celdas que ocupan, sin mirar un solo color.
   assert.notEqual(formas.get("sin-lectura"), formas.get("intacto"));
+  assert.notEqual(formas.get("dañado"), formas.get("intacto"));
+  const ocupadas = (estado) => iconoSistema(estado, "impulse").celdas.length;
+  assert.ok(
+    ocupadas("dañado") < ocupadas("intacto"),
+    "la grieta tiene que quitar celdas, no repintarlas: si solo cambia el tono, " +
+      "el estado vuelve a viajar en el color",
+  );
+
+  // «inutilizado» sí comparte silueta con «intacto», así que su distinción
+  // descansa en el tono y hay que exigirle el contraste que porta información
+  // (WCAG 1.4.11). En escala de grises el núcleo apagado se lee como hueco.
+  assert.equal(formas.get("inutilizado"), formas.get("intacto"));
+  const razon = contraste(SISTEMA.nucleo, SISTEMA.apagado);
+  assert.ok(razon >= 3, `núcleo vivo frente a apagado: ${razon.toFixed(2)} < 3`);
 
   const patron = (estado) =>
     iconoSistema(estado, "impulse")

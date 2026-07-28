@@ -357,5 +357,17 @@
   "LAGUNAK.Minijuegos.Accion.Subir": "Subir",
   "LAGUNAK.Minijuegos.Ajustes.Mesa.Nombre": "Mesa de juego: entrada y ciegas",
   "LAGUNAK.Minijuegos.Ajustes.Mesa.Pista": "Fichas con las que se sienta cada jugador y valor de las ciegas. Se aplica a la mano siguiente, no a la que esté en curso.",
-  "LAGUNAK.MapaVivo.Detalle.Clase": "Clase"
+  "LAGUNAK.MapaVivo.Detalle.Clase": "Clase",
+  "LAGUNAK.Puestos.Requisitos.SinFicha": "Necesitas un personaje asignado para ocupar un puesto.",
+  "LAGUNAK.Puestos.Requisitos.PuntuacionBaja": "Requiere {caracteristicas} {minimo} o más.",
+  "LAGUNAK.Caracteristicas.str": "Fuerza",
+  "LAGUNAK.Caracteristicas.dex": "Destreza",
+  "LAGUNAK.Caracteristicas.con": "Constitución",
+  "LAGUNAK.Caracteristicas.int": "Inteligencia",
+  "LAGUNAK.Caracteristicas.wis": "Sabiduría",
+  "LAGUNAK.Caracteristicas.cha": "Carisma",
+  "LAGUNAK.Ajustes.Requisitos.Nombre": "Exigir características para ocupar un puesto",
+  "LAGUNAK.Ajustes.Requisitos.Pista": "Cuando está activo, cada puesto pide una puntuación mínima en alguna de sus características (ingeniería pide Inteligencia o Sabiduría, armas pide Destreza o Fuerza, etc.). El director de juego queda exento y puede recolocar a cualquiera. Es una ayuda para organizar la mesa, no una barrera infranqueable.",
+  "LAGUNAK.Ajustes.RequisitosMinimo.Nombre": "Puntuación mínima exigida",
+  "LAGUNAK.Ajustes.RequisitosMinimo.Pista": "Solo se aplica si lo anterior está activo. 12 es «por encima de la media» sin llegar a ser una criba."
 }

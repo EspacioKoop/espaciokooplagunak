@@ -357,5 +357,17 @@
   "LAGUNAK.Minijuegos.Accion.Subir": "Raise",
   "LAGUNAK.Minijuegos.Ajustes.Mesa.Nombre": "Card table: buy-in and blinds",
   "LAGUNAK.Minijuegos.Ajustes.Mesa.Pista": "Chips each player sits down with, and the blind values. Applies to the next hand, not the one in progress.",
-  "LAGUNAK.MapaVivo.Detalle.Clase": "Class"
+  "LAGUNAK.MapaVivo.Detalle.Clase": "Class",
+  "LAGUNAK.Puestos.Requisitos.SinFicha": "You need an assigned character to take a station.",
+  "LAGUNAK.Puestos.Requisitos.PuntuacionBaja": "Requires {caracteristicas} {minimo} or higher.",
+  "LAGUNAK.Caracteristicas.str": "Strength",
+  "LAGUNAK.Caracteristicas.dex": "Dexterity",
+  "LAGUNAK.Caracteristicas.con": "Constitution",
+  "LAGUNAK.Caracteristicas.int": "Intelligence",
+  "LAGUNAK.Caracteristicas.wis": "Wisdom",
+  "LAGUNAK.Caracteristicas.cha": "Charisma",
+  "LAGUNAK.Ajustes.Requisitos.Nombre": "Require ability scores to take a station",
+  "LAGUNAK.Ajustes.Requisitos.Pista": "When enabled, each station asks for a minimum score in one of its abilities (engineering asks for Intelligence or Wisdom, weapons for Dexterity or Strength, and so on). The GM is exempt and can always reassign anyone. It is a way to organise the table, not a hard barrier.",
+  "LAGUNAK.Ajustes.RequisitosMinimo.Nombre": "Minimum score required",
+  "LAGUNAK.Ajustes.RequisitosMinimo.Pista": "Only applies when the above is enabled. 12 is «above average» without being a filter."
 }

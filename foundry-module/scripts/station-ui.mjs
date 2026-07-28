@@ -1,8 +1,10 @@
 import {
   assignStation,
+  motivoRequisito,
   stationRows,
   STATION_ASSIGNMENT_ERRORS,
 } from "./station-assignment.mjs";
+import { caracteristicasDeActor } from "./requisitos-puesto.mjs";
 
 let stationApp = null;
 let configuredModuleId = null;
@@ -62,8 +64,34 @@ function context() {
       actor: game.user,
       moduleId: configuredModuleId,
       i18n: game.i18n,
+      requisitos: requisitosVigentes(),
+      caracteristicasDe: caracteristicasDeUsuario,
     }),
   };
+}
+
+// Configuración vigente de requisitos, leída de los ajustes de mundo. Se lee en
+// cada uso y no se guarda: el GM puede activarla o cambiar el mínimo con la
+// ventana abierta, y quedarse con la regla anterior sería confuso.
+function requisitosVigentes() {
+  // Si el ajuste todavía no está registrado, `settings.get` lanza. El fallo
+  // seguro es APAGADO: una regla opcional que no se puede leer no debe impedir
+  // que nadie ocupe su puesto.
+  try {
+    return {
+      activo: Boolean(game.settings?.get(configuredModuleId, "requisitosPuesto")),
+      minimo: game.settings?.get(configuredModuleId, "requisitosPuestoMinimo"),
+    };
+  } catch {
+    return { activo: false };
+  }
+}
+
+// Las características salen del personaje ASIGNADO al usuario, no del token
+// seleccionado: el puesto lo ocupa la persona, y su token puede no estar en la
+// escena o no ser suyo.
+function caracteristicasDeUsuario(user) {
+  return caracteristicasDeActor(user?.character);
 }
 
 async function onStationChange(event) {
@@ -78,10 +106,18 @@ async function onStationChange(event) {
       target,
       station: select.value,
       moduleId: configuredModuleId,
+      requisitos: requisitosVigentes(),
+      caracteristicas: caracteristicasDeUsuario(target),
     });
     ui.notifications.info(game.i18n.localize("LAGUNAK.Puestos.Guardado"));
   } catch (error) {
     select.value = previousStation;
+    // El requisito incumplido se explica con su motivo concreto: decir solo «no
+    // se pudo guardar» dejaría a quien lo intenta sin saber qué le falta.
+    if (error?.code === STATION_ASSIGNMENT_ERRORS.REQUISITO) {
+      ui.notifications.warn(motivoRequisito(error.veredicto, game.i18n));
+      return;
+    }
     const key = error?.code === STATION_ASSIGNMENT_ERRORS.NOT_ALLOWED
       ? "LAGUNAK.Puestos.NoPermitido"
       : "LAGUNAK.Puestos.ErrorGuardado";

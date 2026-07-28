@@ -118,3 +118,29 @@ test("la lista se acota: una nave hecha trizas no tapa la consola", () => {
     "y los tres son los graves",
   );
 });
+
+test("un sistema que la nave NO LLEVA no está averiado: no está", () => {
+  // Encontrado contra el juego en marcha, no en una prueba con datos inventados.
+  // El puente consulta los nueve sistemas de EmptyEpsilon para toda nave, y los
+  // que no están instalados vuelven a cero en las cuatro lecturas. Sin esto, una
+  // nave sin warp ni motor de salto —la mayoría— anunciaba dos «SISTEMA
+  // INUTILIZADO» permanentes en cada sesión: exactamente el ruido que el paso 3
+  // venía a quitar.
+  const comoLlegaDelJuego = nave({
+    systems: {
+      reactor: { health: 1, heat: 0, power: 1, coolant: 0 },
+      warp: { health: 0, heat: 0, power: 0, coolant: 0 },
+      jumpdrive: { health: 0, heat: 0, power: 0, coolant: 0 },
+    },
+  });
+  assert.deepEqual(avisosDeGuardia(comoLlegaDelJuego), [], "una nave sana no avisa de nada");
+
+  // Pero un sistema instalado y destruido SÍ avisa: conserva la potencia que
+  // ingeniería le dejó, y ahí está la diferencia.
+  const destruido = nave({
+    systems: { impulse: { health: 0, heat: 0.4, power: 1, coolant: 0 } },
+  });
+  const avisos = avisosDeGuardia(destruido);
+  assert.equal(avisos[0].clave, "SistemaInutilizado");
+  assert.equal(avisos[0].datos.sistema, "impulse");
+});

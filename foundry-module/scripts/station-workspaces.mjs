@@ -92,6 +92,25 @@ function finite(value, fallback = 0) {
   return Number.isFinite(number) ? number : fallback;
 }
 
+/**
+ * Rumbo para el casco 3D, o `null` si no hay lectura.
+ *
+ * `Number.isFinite(Number(x))` NO vale aquí: `Number(null)` y `Number("")` son
+ * cero, así que la ausencia de dato se convertía en «rumbo norte» y el casco se
+ * pintaba como si fuera una lectura buena. Ausencia no es cero — esa es la
+ * regla que sostiene todo el visor— y por eso se comprueba el tipo antes que el
+ * valor. Se admite una cadena numérica porque el puente puede entregarla, pero
+ * la vacía no lo es.
+ */
+function rumboDeLectura(valor) {
+  if (typeof valor === "number") return Number.isFinite(valor) ? valor : null;
+  if (typeof valor === "string" && valor.trim() !== "") {
+    const n = Number(valor);
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+}
+
 function integer(value) {
   return Math.round(finite(value));
 }
@@ -330,7 +349,7 @@ export function buildWorkspaceModel({
     // Casco propio en 3D (#362). `null` cuando no hay lectura, que NO es lo
     // mismo que rumbo cero: el visor se queda quieto y apagado en vez de
     // enseñar una nave girando que no se corresponde con nada.
-    cascoRumbo: Number.isFinite(Number(ship?.heading)) ? Number(ship.heading) : null,
+    cascoRumbo: rumboDeLectura(ship?.heading),
     navigationAriaLabel: format(i18n, "LAGUNAK.Espacios.RumboAccesible", { heading: integer(ship?.heading) }),
     isGM: Boolean(isGM),
     hasTelemetry: Boolean(ship),

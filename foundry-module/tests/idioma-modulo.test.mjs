@@ -7,6 +7,7 @@ import {
   clavesDelModulo,
   idiomaEfectivo,
   opcionesIdioma,
+  rutaIdioma,
 } from "../scripts/idioma-modulo.mjs";
 
 const DISPONIBLES = ["es", "en"];
@@ -69,4 +70,22 @@ test("el desplegable ofrece «automático» primero y cada idioma por su nombre"
   assert.deepEqual(Object.keys(opciones), [IDIOMA_AUTOMATICO, "es", "en"]);
   assert.equal(opciones.es, "Español");
   assert.equal(opciones.en, "English");
+});
+
+test("REGRESIÓN: la ruta del manifiesto ya viene resuelta y no se duplica", () => {
+  // Fallo visto en Foundry real: `modules/<id>/modules/<id>/lang/en.json` →
+  // 404, y el selector no cargaba ningún idioma. `path` llega resuelto desde la
+  // raíz de datos, no relativo al módulo.
+  assert.equal(
+    rutaIdioma("modules/espaciokoop-lagunak/lang/en.json", "espaciokoop-lagunak"),
+    "modules/espaciokoop-lagunak/lang/en.json",
+  );
+  // Una ruta corta sí se completa, por si el manifiesto la trae así.
+  assert.equal(
+    rutaIdioma("lang/en.json", "espaciokoop-lagunak"),
+    "modules/espaciokoop-lagunak/lang/en.json",
+  );
+  assert.equal(rutaIdioma("/otra/ruta/en.json", "x"), "/otra/ruta/en.json");
+  assert.equal(rutaIdioma("", "x"), null);
+  assert.equal(rutaIdioma(undefined, "x"), null);
 });

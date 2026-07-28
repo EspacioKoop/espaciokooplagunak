@@ -51,6 +51,7 @@ import {
   clavesDelModulo,
   idiomaEfectivo,
   opcionesIdioma,
+  rutaIdioma,
 } from "./idioma-modulo.mjs";
 import { crearClaseV2 } from "./estado-nave-app-v2.mjs";
 import { crearClaseV1 } from "./estado-nave-app-v1.mjs";
@@ -188,7 +189,7 @@ async function aplicarIdiomaModulo() {
   if (!ruta) return;
   let propias = null;
   try {
-    const respuesta = await fetch(`modules/${MODULE_ID}/${ruta}`);
+    const respuesta = await fetch(rutaIdioma(ruta, MODULE_ID));
     if (!respuesta.ok) throw new Error(String(respuesta.status));
     propias = clavesDelModulo(await respuesta.json());
   } catch (err) {

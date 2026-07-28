@@ -72,3 +72,18 @@ export function opcionesIdioma(idiomasManifiesto = [], etiquetaAuto = "Automáti
   }
   return opciones;
 }
+
+/**
+ * URL del fichero de idioma a partir de lo que declara el manifiesto.
+ *
+ * Foundry entrega `path` **ya resuelto desde la raíz de datos**
+ * (`modules/<id>/lang/es.json`), no relativo al módulo. Anteponer otra vez la
+ * carpeta daba un 404 con la ruta duplicada y el selector no cargaba nada. Se
+ * admiten las dos formas: la resuelta se usa tal cual, y una ruta corta se
+ * completa.
+ */
+export function rutaIdioma(ruta, moduleId) {
+  if (typeof ruta !== "string" || ruta === "") return null;
+  if (ruta.startsWith("modules/") || ruta.startsWith("/") || /^https?:/.test(ruta)) return ruta;
+  return `modules/${moduleId}/${ruta}`;
+}

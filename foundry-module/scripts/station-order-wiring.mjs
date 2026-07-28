@@ -1,4 +1,5 @@
 import { BridgeClient } from "./bridge-client.mjs";
+import { sobreAcuse } from "./acuse-orden.mjs";
 import { getBridgeToken } from "./bridge-token-session.mjs";
 import { normalizeStation } from "./station-assignment.mjs";
 import {
@@ -54,6 +55,16 @@ function lazyBridge(moduleId) {
 // Registra el manejador GM del relé sobre el hook updateUser. En clientes de
 // tripulación es no-op: solo escriben su propio flag. Idempotente — vuelve a
 // registrar si se llama de nuevo (p. ej. tras cambiar el rol GM).
+// Envía el acuse por socket al emisor. Si el emisor es el propio GM, el socket
+// de Foundry no se autoentrega, así que se le pasa en local — mismo detalle que
+// ya resuelven las vistas privadas de los minijuegos.
+function acusar({ userId, order, ok, codigo = null }) {
+  const sobre = sobreAcuse({ userId, order, ok, codigo });
+  if (!sobre) return;
+  game.socket?.emit(`module.${configuredModuleId}`, sobre);
+  if (userId === game.user?.id) Hooks.callAll("lagunakAcuseOrden", sobre);
+}
+
 export function registerStationOrders(moduleId) {
   configuredModuleId = moduleId;
   unregister();
@@ -74,11 +85,16 @@ export function registerStationOrders(moduleId) {
       // ejecuta la orden (evita mandarla N veces al puente). Se evalúa por
       // orden, así que si el primario cambia (desconexión), el relevo pasa solo.
       canHandle: () => game.user === game.users?.activeGM,
-      onResult: () => {
+      // El acuse vuelve a la consola que emitió la orden, y a ninguna otra: la
+      // orden de Navegación no es asunto de Armas (#331, paso 2). El relé ya
+      // traía `userId` y `order` aquí; hasta ahora se tiraban.
+      onResult: (_resultado, contexto) => {
         ui.notifications?.info?.(game.i18n.localize("LAGUNAK.Espacios.Orden.Aplicada"));
+        acusar({ ...contexto, ok: true });
       },
-      onError: () => {
+      onError: (error, contexto) => {
         ui.notifications?.warn?.(game.i18n.localize("LAGUNAK.Espacios.Orden.Rechazada"));
+        acusar({ ...contexto, ok: false, codigo: error?.message ?? null });
       },
     });
   };

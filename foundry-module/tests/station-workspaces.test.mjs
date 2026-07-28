@@ -57,13 +57,16 @@ const contactsPayload = {
   truncated: false,
 };
 
-test("los seis puestos tienen identidad y lista de guardia propias", () => {
+test("los seis puestos tienen identidad propia", () => {
   assert.deepEqual(WORKSPACE_STATIONS, [
     "captain", "navigation", "engineering", "sensors", "communications", "weapons",
   ]);
   const definitions = WORKSPACE_STATIONS.map(workspaceDefinition);
   assert.equal(new Set(definitions.map(({ accent }) => accent)).size, 6);
-  assert.ok(definitions.every(({ tasks }) => tasks.length === 3));
+  // La lista de tareas fijas por puesto se fue en #331 paso 3: no cambiaba
+  // nunca y enseñaba a ignorar esa esquina de la pantalla. Ahora esa columna la
+  // llenan los avisos derivados del estado, que sí dicen qué hacer ahora.
+  assert.ok(definitions.every(({ tasks }) => tasks === undefined));
   const codes = WORKSPACE_STATIONS.map((station) => buildWorkspaceModel({
     station,
     isGM: true,
@@ -86,7 +89,14 @@ test("el jugador abre su puesto y el GM puede previsualizar cualquier consola", 
   );
 });
 
-test("un jugador nunca recibe telemetría aunque se le inyecte por error", () => {
+test("un jugador SÍ ve la telemetría de su nave, pero NO los contactos (#331)", () => {
+  // Cambio de doctrina deliberado. Antes esta prueba exigía lo contrario, y ese
+  // «lo contrario» era la razón de que las consolas salieran vacías: `metricsFor`
+  // ya tenía una lectura por puesto, pero sin `ship` no llegaba a ejecutarse.
+  //
+  // Ocultar la nave propia no defendía nada: en el EmptyEpsilon del que esto es
+  // fork, cada pantalla de tripulación ve casco, energía y sistemas. Lo que se
+  // protege es el Bearer del puente, que sigue sin salir del navegador del GM.
   const model = buildWorkspaceModel({
     station: "weapons",
     isGM: false,
@@ -95,14 +105,29 @@ test("un jugador nunca recibe telemetría aunque se le inyecte por error", () =>
     i18n,
     statePayload,
     contactsPayload,
-    connection: "restricted",
+    connection: "ok",
   });
   assert.equal(model.hasStation, true);
-  assert.equal(model.hasTelemetry, false);
-  assert.equal(model.ship, null);
-  assert.deepEqual(model.metrics, []);
-  assert.deepEqual(model.contacts, []);
-  assert.equal(model.connectionRestricted, true);
+  assert.equal(model.hasTelemetry, true);
+  assert.ok(model.ship, "la nave propia se ve");
+  assert.ok(model.metrics.length > 0, "y por fin hay lectura de puesto");
+
+  // La excepción que SIGUE cerrada: los contactos son recurso del GM hasta que
+  // se abran degradados por distancia y salud de sensores. Difundirlos crudos
+  // regalaría el trabajo del puesto de Sensores.
+  assert.deepEqual(model.contacts, [], "los contactos siguen siendo del GM");
+
+  const comoGM = buildWorkspaceModel({
+    station: "weapons",
+    isGM: true,
+    users: [user({ id: "p1", station: "weapons" })],
+    moduleId: MODULE_ID,
+    i18n,
+    statePayload,
+    contactsPayload,
+    connection: "ok",
+  });
+  assert.ok(comoGM.contacts.length > 0, "el GM sí los ve");
 });
 
 test("navegación puede ordenar rumbo aunque no tenga telemetría; otros puestos no", () => {
@@ -367,4 +392,46 @@ test("cascoRumbo distingue «sin lectura» de rumbo cero (#362)", () => {
     connection: "error",
   });
   assert.equal(sinNada.cascoRumbo, null, "sin telemetría no hay rumbo que dibujar");
+});
+
+test("la tripulación ve contactos DEGRADADOS y el GM la verdad completa (#331 paso 4)", () => {
+  // Son dos listas distintas a propósito. Si fueran la misma, abrirla a la
+  // tripulación regalaría el trabajo del puesto de Sensores.
+  const proyectados = [
+    { nivel: "identificado", callsign: "Kestrel", faccion: "Hostil", marcacion: 90, distancia: 1200, position: { x: 1200, y: 0 } },
+    { nivel: "traza", callsign: null, faccion: null, marcacion: 45, distancia: 20000, position: null },
+  ];
+  const tripulante = buildWorkspaceModel({
+    station: "sensors",
+    isGM: false,
+    users: [],
+    moduleId: MODULE_ID,
+    i18n,
+    statePayload,
+    contactosProyectados: proyectados,
+    connection: "ok",
+  });
+  assert.equal(tripulante.contacts.length, 2);
+  assert.equal(tripulante.contacts[0].callsign, "Kestrel", "de cerca sí hay nombre");
+  // Lo que no se sabe se DICE, no se deja en blanco: un hueco en una consola se
+  // lee como un fallo, no como una incertidumbre.
+  assert.ok(tripulante.contacts[1].callsign, "la traza tiene texto, no un vacío");
+  assert.notEqual(tripulante.contacts[1].callsign, "Kestrel");
+  assert.equal(tripulante.contacts[1].x, null, "y no lleva coordenadas");
+  assert.equal(tripulante.contacts[1].marcacion, 45, "sino marcación y distancia");
+
+  // El GM sigue viendo su payload crudo, no la proyección.
+  const gm = buildWorkspaceModel({
+    station: "sensors",
+    isGM: true,
+    users: [],
+    moduleId: MODULE_ID,
+    i18n,
+    statePayload,
+    contactsPayload,
+    contactosProyectados: proyectados,
+    connection: "ok",
+  });
+  assert.ok(gm.contacts.length > 0);
+  assert.ok(gm.contacts.every((c) => c.x !== null), "el GM sí tiene coordenadas de todo");
 });

@@ -78,6 +78,63 @@ Cada tripulante emite **solo** las órdenes de su puesto, y lo hace **sin poseer
 el token del puente**. El permiso se gatea en el **relé de Foundry**, no en el
 token:
 
+- **Doctrina de telemetría** (#331). La telemetría de la **nave propia** se
+  difunde a toda la tripulación; lo que permanece cerrado es lo que el GM autora.
+  El GM sigue siendo el único que habla con el puente —el Bearer no sale de su
+  navegador y ningún cliente de jugador lee el ajuste del token ni ejecuta un
+  `fetch` contra él— y reparte por socket el `statePayload` que ya sondeaba
+  (`telemetria-difusion.mjs`). Se transporta por socket y **no** por ajuste de
+  mundo: un `/v1/state` por sondeo persistido sería escritura continua en la base
+  de datos de la campaña, y la pérdida al recargar la repara el siguiente tick.
+  La razón de fondo es que «quién puede **pedir** el dato» y «quién puede
+  **leerlo**» son preguntas distintas: en el EmptyEpsilon del que esto es fork,
+  cada pantalla de tripulación ve casco, energía y sistemas, así que ocultarlo
+  aquí era un peor producto a cambio de cero seguridad. **Los contactos son la
+  excepción** y siguen siendo recurso del GM: callsign, facción y coordenadas
+  exactas son lo que el sistema de sensores debe decidir cuánto revela. Se
+  difunden **degradados** (`contactos-proyeccion.mjs`): identificado por debajo
+  de 5000 unidades (nombre, bando y posición), detectado hasta 15000 (bando,
+  marcación y distancia redondeadas, sin nombre ni posición) y traza hasta 30000
+  (solo marcación y banda de distancia). Fuera de ahí **no aparece**, que no es
+  lo mismo que aparecer vacío. La degradación quita precisión y **nunca falsea
+  un valor**: un callsign equivocado sería peor que ningún callsign. Es
+  determinista — un contacto que parpadeara entre niveles se leería como ruido
+  de la interfaz y no como una lectura de la nave.
+
+  Aviso para quien continúe: el plan hablaba de degradar también por **salud del
+  sistema de sensores**, y ese sistema **no existe** — EmptyEpsilon tiene nueve
+  (`src/components/shipsystem.h`) y ninguno es de sensores. La calidad entra como
+  parámetro con valor pleno por defecto, listo para conectarse el día que haya de
+  dónde sacarla.
+- **Lazo cerrado de la orden** (#331 paso 2, `acuse-orden.mjs`). Cada orden
+  vuelve a **la consola que la emitió**, y a ninguna otra: el relé ya recibía el
+  resultado del puente con el `userId` del emisor y hasta ahora se descartaba. La
+  consola enseña «ordenado 090 / real 073», con lo pedido sacado del acuse del GM
+  y lo real de la telemetría —por eso este paso depende de la apertura de
+  telemetría: sin ella, la mitad derecha del delta no existiría para quien la
+  necesita—. El rumbo se compara por el **arco corto**: 359 y 001 distan dos
+  grados, y compararlos a lo bruto marcaría como desobediente a una nave ya en
+  rumbo justo al cruzar el norte. **Impulso y warp no tienen lectura real**
+  porque `/v1/state` no los publica; la consola lo dice en vez de enseñar como
+  «real» el mismo número que se acaba de pedir.
+- **Avisos de guardia derivados** (#331 paso 3, `avisos-guardia.mjs`). Cada
+  consola mostraba tres «tareas» fijas por puesto —Rumbo, Ruta, Llegada— que no
+  cambiaban nunca ni decían qué hacer AHORA: ocupaban sitio en una consola que se
+  quejaba de estar vacía y enseñaban a ignorar esa esquina de la pantalla. En su
+  lugar, avisos derivados del estado («REFRIGERANTE: maniobra al 91% de calor»),
+  **por puesto**: un aviso que no puedes atender es ruido, así que al piloto no
+  le llega el detalle térmico que solo ingeniería puede tocar, y el capitán los
+  ve todos porque su trabajo es repartir la atención. **Sin telemetría no hay
+  avisos**, en vez de avisos tranquilizadores: un «todo en orden» inventado es
+  peor que un panel en blanco, porque el panel en blanco no miente.
+- **Ausencia no es cero** (`lectura-puente.mjs`). Toda lectura de telemetría pasa
+  por ahí. `Number(null)` es 0 y 0 es finito, así que la conversión ingenua cuela
+  un dato que el puente **no publica** como una lectura válida de cero; en #331
+  eso dejó una nave ciega y anunció «ENERGÍA CRÍTICA» sin motivo, las dos veces
+  cazadas por sus pruebas antes de llegar a una mesa. La regla: lo que no se sabe
+  se devuelve `null`, y un cero real —el sistema está a cero— sigue siendo
+  información distinguible. Una prueba recorre los módulos de telemetría y falla
+  si alguno vuelve a convertir por su cuenta (`Number(`, `parseFloat`, `?? 0`).
 - **Identidad de usuario no falsificable** (#237). El tripulante escribe la orden
   en su propio flag de usuario (`emitWorkspaceOrder`); el GM la recoge en el hook
   `updateUser`. El puesto **nunca** se declara en la orden: el GM lo resuelve

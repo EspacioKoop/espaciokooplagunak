@@ -107,12 +107,20 @@
                 <span>{{localize "LAGUNAK.Espacios.ContactosProximos"}}</span>
                 <span>{{localize "LAGUNAK.Espacios.SoloGM"}}</span>
               </div>
+              {{! El nivel de conocimiento se dice con palabra y con forma, no
+                  solo con color: es la misma regla del daño por sistema (#353).
+                  Y lo que no se sabe se escribe («sin identificar»), porque un
+                  hueco en una consola se lee como un fallo. }}
               {{#each contacts}}
-                <div class="lagunak-workspace__contact-row">
+                <div class="lagunak-workspace__contact-row lagunak-workspace__contact-row--{{nivel}}">
                   <i class="fa-solid fa-diamond" aria-hidden="true"></i>
                   <strong>{{callsign}}</strong>
                   <span>{{faction}}</span>
-                  <code>{{x}}, {{y}}</code>
+                  {{#if x}}
+                    <code>{{x}}, {{y}}</code>
+                  {{else}}
+                    <code>{{localize "LAGUNAK.Espacios.Contacto.Marcacion"}} {{marcacion}}° · {{distancia}}</code>
+                  {{/if}}
                 </div>
               {{/each}}
             </div>
@@ -122,6 +130,31 @@
             <i class="fa-solid fa-wave-square" aria-hidden="true"></i>
             <strong>{{localize "LAGUNAK.Espacios.SinTelemetria"}}</strong>
             <p>{{localize "LAGUNAK.Espacios.SinTelemetriaDetalle"}}</p>
+          </div>
+        {{/if}}
+
+        {{! Lazo cerrado de la orden (#331, paso 2). Un timón se distingue de un
+            formulario en que contesta: aquí se ve qué se pidió, qué está
+            haciendo la nave, y si ya ha llegado. Va con aria-live porque el
+            cambio ocurre solo, sin que nadie pulse nada. }}
+        {{#if orden}}
+          <div class="lagunak-workspace__orden-estado lagunak-workspace__orden-estado--{{orden.estado}}" role="status" aria-live="polite">
+            <span class="lagunak-workspace__orden-etiqueta">{{localize "LAGUNAK.Espacios.Orden.EstadoTitulo"}}</span>
+            <strong>{{orden.estadoLabel}}</strong>
+            {{#if orden.codigo}}<small>{{orden.codigo}}</small>{{/if}}
+            <span class="lagunak-workspace__orden-delta">
+              <span>{{localize "LAGUNAK.Espacios.Orden.Ordenado"}} <b>{{orden.ordenadoLabel}}</b></span>
+              {{#if orden.hayLecturaReal}}
+                <span>{{localize "LAGUNAK.Espacios.Orden.Real"}} <b>{{orden.realLabel}}</b></span>
+                {{#if orden.convergido}}
+                  <span class="lagunak-workspace__orden-ok">{{localize "LAGUNAK.Espacios.Orden.Convergido"}}</span>
+                {{else}}
+                  <span class="lagunak-workspace__orden-espera">{{localize "LAGUNAK.Espacios.Orden.Maniobrando"}}</span>
+                {{/if}}
+              {{else}}
+                <span class="lagunak-workspace__orden-sinlectura">{{localize "LAGUNAK.Espacios.Orden.SinLectura"}}</span>
+              {{/if}}
+            </span>
           </div>
         {{/if}}
 
@@ -197,11 +230,27 @@
       <aside class="lagunak-workspace__side">
         <section class="lagunak-workspace__briefing">
           <h3>{{localize "LAGUNAK.Espacios.ListaGuardia"}}</h3>
-          <ol>
-            {{#each tasks}}
-              <li><span>{{number}}</span>{{label}}</li>
+          {{! La severidad va en la palabra y en el prefijo, no solo en el color:
+              misma regla que el daño por sistema (#353). Y aria-live porque
+              estos avisos aparecen solos, sin que nadie pulse nada. }}
+          <ul class="lagunak-workspace__avisos" role="status" aria-live="polite">
+            {{#each avisos}}
+              <li class="lagunak-workspace__aviso lagunak-workspace__aviso--{{severidad}}">
+                {{! La marca se resuelve en JS: `eq` no es un helper garantizado en todas las
+                    versiones de Foundry, y un helper ausente rompe la plantilla entera. }}
+                <span class="lagunak-workspace__aviso-marca" aria-hidden="true">{{marca}}</span>
+                {{label}}
+              </li>
+            {{else}}
+              <li class="lagunak-workspace__aviso lagunak-workspace__aviso--vacio">
+                {{#if hasTelemetry}}
+                  {{localize "LAGUNAK.Espacios.Aviso.SinNovedad"}}
+                {{else}}
+                  {{localize "LAGUNAK.Espacios.Aviso.SinLectura"}}
+                {{/if}}
+              </li>
             {{/each}}
-          </ol>
+          </ul>
         </section>
 
         <section class="lagunak-workspace__crew">

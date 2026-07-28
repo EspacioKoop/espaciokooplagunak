@@ -1,3 +1,4 @@
+import { leerNumero } from "./lectura-puente.mjs";
 // Barras de estado del panel de nave: lógica pura que convierte la telemetría
 // (casco, energía, salud/calor/potencia de sistemas) en un modelo visual de
 // porcentaje + nivel de severidad. Sin Foundry, DOM ni red — testeable desde
@@ -26,11 +27,9 @@ export function porcentajeBarra(valor, maximo) {
   return Math.max(0, Math.min(100, Math.round((v / m) * 100)));
 }
 
-function numero(valor) {
-  if (valor === null || valor === undefined || valor === "") return null;
-  const n = Number(valor);
-  return Number.isFinite(n) ? n : null;
-}
+// Esta conversión nació aquí, bien resuelta, y ahora vive en un solo sitio:
+// cada módulo que la reescribía tenía una oportunidad de equivocarse.
+const numero = leerNumero;
 
 export function nivelRecurso(pct) {
   if (pct == null) return null;

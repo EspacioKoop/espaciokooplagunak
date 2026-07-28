@@ -1,3 +1,4 @@
+import { leerNormalizado, leerNumero } from "./lectura-puente.mjs";
 function finiteNonNegative(value) {
   return Number.isFinite(value) && value >= 0;
 }
@@ -31,11 +32,7 @@ export function localizeSystemName(name, i18n) {
  * estuviera destruido, frío y sin potencia. «Sin lectura» y «a cero» son
  * cosas opuestas, y el cero real sigue siendo información que debe verse.
  */
-function porcentajeSistema(valor) {
-  if (valor === null || valor === undefined || valor === "") return null;
-  const numero = Number(valor);
-  return Number.isFinite(numero) ? Math.round(numero * 100) : null;
-}
+const porcentajeSistema = leerNormalizado;
 
 /** Prepara la matriz técnica con nombres localizados y valores normalizados. */
 export function prepareSystemRows(ship, i18n) {
@@ -83,10 +80,15 @@ export function prepareRoute(ship, i18n) {
   let estado = "en_ruta";
   let etaLabel;
   if (!finiteNonNegative(ship.eta_seconds)) {
-    const vx = ship.velocity?.x ?? 0;
-    const vy = ship.velocity?.y ?? 0;
-    const enMovimiento = Math.hypot(vx, vy) > 0.01;
-    estado = enMovimiento ? "calculando" : "detenida";
+    // Sin lectura de velocidad NO se puede decir «detenida»: eso es una
+    // afirmación sobre la nave, no una ausencia de dato. Antes se tapaba con
+    // `?? 0` y una nave de la que no se sabía nada aparecía parada, que es justo
+    // la clase de mentira que evita `lectura-puente.mjs`.
+    const vx = leerNumero(ship.velocity?.x);
+    const vy = leerNumero(ship.velocity?.y);
+    const hayLectura = vx !== null && vy !== null;
+    const enMovimiento = hayLectura && Math.hypot(vx, vy) > 0.01;
+    estado = enMovimiento || !hayLectura ? "calculando" : "detenida";
     etaLabel = i18n.localize(
       enMovimiento ? "LAGUNAK.Ruta.Calculando" : "LAGUNAK.EstadoNave.EtaDetenida",
     );

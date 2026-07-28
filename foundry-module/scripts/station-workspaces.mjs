@@ -3,6 +3,8 @@ import { isActionAllowed } from "./station-actions.mjs";
 import { SISTEMAS_INGENIERIA, NIVELES_POTENCIA, NIVELES_REFRIGERANTE } from "./ingenieria-control.mjs";
 import { prepareSystemRows } from "./ship-view.mjs";
 import { retratoTripulanteDataUri } from "./retrato-tripulante.mjs";
+import { avisosParaPuesto } from "./avisos-guardia.mjs";
+import { leerNumero } from "./lectura-puente.mjs";
 
 // Marca visible de «no hay lectura», distinta de cualquier valor real.
 const SIN_DATO = "—";
@@ -11,32 +13,26 @@ const DEFINITIONS = Object.freeze({
   captain: Object.freeze({
     icon: "fa-solid fa-chess-king",
     accent: "amber",
-    tasks: ["Situacion", "Prioridades", "Coordinacion"],
   }),
   navigation: Object.freeze({
     icon: "fa-solid fa-compass",
     accent: "cyan",
-    tasks: ["Rumbo", "Ruta", "Llegada"],
   }),
   engineering: Object.freeze({
     icon: "fa-solid fa-screwdriver-wrench",
     accent: "lime",
-    tasks: ["Potencia", "Temperatura", "Reparaciones"],
   }),
   sensors: Object.freeze({
     icon: "fa-solid fa-satellite-dish",
     accent: "violet",
-    tasks: ["Barrido", "Identificacion", "Seguimiento"],
   }),
   communications: Object.freeze({
     icon: "fa-solid fa-tower-broadcast",
     accent: "blue",
-    tasks: ["Canales", "Mensajes", "Bitacora"],
   }),
   weapons: Object.freeze({
     icon: "fa-solid fa-crosshairs",
     accent: "red",
-    tasks: ["Seguridad", "Soluciones", "Confirmacion"],
   }),
 });
 
@@ -238,6 +234,28 @@ function crewRows(users, moduleId, i18n) {
     });
 }
 
+/**
+ * Traduce los contactos degradados a filas pintables. Lo que NO se sabe se dice
+ * con palabras —«sin identificar»— y no con un hueco: un espacio en blanco en
+ * una consola se lee como un fallo, no como una incertidumbre.
+ */
+function etiquetarProyectados(proyectados, i18n) {
+  return (Array.isArray(proyectados) ? proyectados : []).map((contacto) => ({
+    callsign: contacto.callsign ?? localize(i18n, "LAGUNAK.Espacios.Contacto.SinIdentificar"),
+    faction: contacto.faccion
+      ? localizeFaction(i18n, String(contacto.faccion))
+      : localize(i18n, "LAGUNAK.Espacios.Contacto.FaccionDesconocida"),
+    nivel: contacto.nivel,
+    // Marcación y distancia sustituyen a las coordenadas: es lo que una nave
+    // sabe de algo que ve de lejos, y además es lo único que se difunde.
+    marcacion: integer(contacto.marcacion),
+    distancia: integer(contacto.distancia),
+    // Sin coordenadas salvo identificación positiva; la plantilla las omite.
+    x: contacto.position ? integer(contacto.position.x) : null,
+    y: contacto.position ? integer(contacto.position.y) : null,
+  }));
+}
+
 function visibleContacts(contactsPayload, i18n) {
   const contacts = Array.isArray(contactsPayload?.contacts) ? contactsPayload.contacts : [];
   return contacts
@@ -261,12 +279,30 @@ export function buildWorkspaceModel({
   i18n,
   statePayload = null,
   contactsPayload = null,
+  contactosProyectados = [],
   connection = "restricted",
   error = "",
 }) {
   const normalized = normalizeStation(station);
   const definition = normalized ? DEFINITIONS[normalized] : null;
-  const ship = isGM ? statePayload?.ship ?? null : null;
+  // Telemetría de la PROPIA NAVE: la ve toda la tripulación (#331).
+  //
+  // Estaba cerrada al GM y por eso las consolas salían vacías: `metricsFor` ya
+  // tenía una lectura distinta para cada puesto, pero sin `ship` no llegaba a
+  // ejecutarse. No era falta de diseño, era una llave echada.
+  //
+  // Y ocultarla no defendía nada: en el EmptyEpsilon del que esto es fork, cada
+  // pantalla de tripulación ve casco, energía y sistemas. Una consola de Foundry
+  // que esconde lo que la consola nativa enseña es un peor producto a cambio de
+  // cero seguridad. Lo que se protege es el **Bearer del puente**, que nunca sale
+  // del navegador del GM, no el contenido de un `/v1/state` que la tripulación
+  // vería igual asomándose a su propia nave.
+  const ship = statePayload?.ship ?? null;
+  // Los contactos SÍ siguen siendo recurso del GM. Es la excepción del issue:
+  // callsign, facción y coordenadas exactas son lo que el sistema de sensores
+  // debería decidir cuánto revela, y difundirlos crudos regalaría el trabajo del
+  // puesto. Se abrirán degradados por distancia y salud de sensores, con su
+  // propio módulo puro y sus pruebas.
   const safeContactsPayload = isGM ? contactsPayload : null;
   const crew = crewRows(users, moduleId, i18n);
 
@@ -313,7 +349,7 @@ export function buildWorkspaceModel({
     // Casco propio en 3D (#362). `null` cuando no hay lectura, que NO es lo
     // mismo que rumbo cero: el visor se queda quieto y apagado en vez de
     // enseñar una nave girando que no se corresponde con nada.
-    cascoRumbo: Number.isFinite(Number(ship?.heading)) ? Number(ship.heading) : null,
+    cascoRumbo: leerNumero(ship?.heading),
     navigationAriaLabel: format(i18n, "LAGUNAK.Espacios.RumboAccesible", { heading: integer(ship?.heading) }),
     isGM: Boolean(isGM),
     hasTelemetry: Boolean(ship),
@@ -326,13 +362,33 @@ export function buildWorkspaceModel({
     ship,
     metrics: ship ? metricsFor(normalized, ship, safeContactsPayload, i18n, crew.length) : [],
     systems: normalized === "engineering" ? prepareSystemRows(ship, i18n) : [],
-    contacts: normalized === "sensors" || normalized === "weapons" ? visibleContacts(safeContactsPayload, i18n) : [],
+    // El GM ve la verdad completa; la tripulación, la proyección degradada que
+    // él le difunde (#331 paso 4). Son dos listas distintas a propósito: si
+    // fuera la misma, abrirla a la tripulación regalaría el trabajo de Sensores.
+    contacts:
+      normalized === "sensors" || normalized === "weapons"
+        ? isGM
+          ? visibleContacts(safeContactsPayload, i18n)
+          : etiquetarProyectados(contactosProyectados, i18n)
+        : [],
     crew,
     crewCount: crew.length,
     activeCrew: crew.filter((member) => member.active).length,
-    tasks: definition.tasks.map((task, index) => ({
-      number: index + 1,
-      label: localize(i18n, `LAGUNAK.Espacios.${normalized}.Tarea.${task}`),
+    // Avisos derivados del estado, en lugar de las tres tareas fijas por puesto
+    // (#331 paso 3). Aquellas no cambiaban nunca y enseñaban a ignorar esa
+    // esquina de la pantalla, que es lo peor que puede hacer un panel.
+    //
+    // Sin telemetría la lista va VACÍA, y la plantilla lo dice con una frase en
+    // vez de con un hueco: un «todo en orden» inventado sería peor, porque el
+    // panel en blanco al menos no miente.
+    avisos: avisosParaPuesto(ship, normalized).map((aviso) => ({
+      severidad: aviso.severidad,
+      // Canal no cromático de la severidad, además de la palabra del texto.
+      marca: aviso.severidad === "critico" ? "!!" : "!",
+      label: format(i18n, `LAGUNAK.Espacios.Aviso.${aviso.clave}`, {
+        sistema: aviso.datos.sistema ? localize(i18n, `LAGUNAK.Sistemas.${aviso.datos.sistema}`) : "",
+        valor: aviso.datos.valor,
+      }),
     })),
     tabs: Boolean(isGM)
       ? STATIONS.map((entry) => ({

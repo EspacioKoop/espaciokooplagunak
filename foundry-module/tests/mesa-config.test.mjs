@@ -101,3 +101,109 @@ test("sin mesa publicada no se inventan asientos", () => {
   assert.deepEqual(configuracionPoker(null).jugadores, []);
   assert.deepEqual(configuracionPoker({}).jugadores, []);
 });
+
+test("REGRESIÓN: la segunda mano hereda las fichas — repartir no es una recompra", () => {
+  // El motor de póker lo dice en su cabecera: «la mano siguiente es un nuevo
+  // `crear` con los stacks resultantes». Si la configuración volviera a repartir
+  // la entrada, cada mano devolvería a todos a 100 y las fichas dejarían de ser
+  // efímeras: ganar y perder no significaría nada más allá de la mano en curso.
+  let sesion = crearSesion({ id: "s", juego: "poker", anfitrionId: "gm", coordinadorId: "gm" });
+  let nonce = 0;
+  const paso = (actorId, tipo, parametros, configuracionJuego) => {
+    const res = aplicar(sesion, {
+      sobre: sobre(sesion, tipo, parametros, `n${(nonce += 1)}`),
+      actorId,
+      juego: poker,
+      semilla: 99,
+      configuracionJuego,
+    });
+    if (res.ok) sesion = res.sesion;
+    return res;
+  };
+
+  paso("p1", "join", {});
+  paso("p2", "join", {});
+  assert.equal(paso("gm", "start", {}, configuracionPoker(sesion.publico)).ok, true);
+
+  const total = (publica) =>
+    publica.juegoPublico.jugadores.reduce((suma, j) => suma + j.stack, 0) + publica.juegoPublico.bote;
+  const totalPrimera = total(vistaPublicaSesion(sesion));
+  assert.equal(totalPrimera, 200, "dos entradas de 100");
+
+  // Se termina la mano por retirada: quien tiene el turno se va.
+  const enTurno = vistaPublicaSesion(sesion).juegoPublico.turno;
+  assert.equal(paso(enTurno, "act", { tipo: "fold" }).ok, true);
+  assert.equal(vistaPublicaSesion(sesion).manoEnCurso, false, "la mano ha terminado");
+
+  const trasPrimera = sesion.publico.resultado?.stacksFinales;
+  assert.ok(trasPrimera, "la mano terminada publica sus stacks finales");
+  const suma = Object.values(trasPrimera).reduce((a, b) => a + b, 0);
+  assert.equal(suma, 200, "una mano no crea ni destruye fichas");
+  assert.notDeepEqual(
+    Object.values(trasPrimera).sort(),
+    [100, 100],
+    "la mano tiene que haber movido fichas para que la prueba pruebe algo",
+  );
+
+  // Y aquí está lo que se rompía: la configuración de la SEGUNDA mano.
+  const segunda = configuracionPoker(sesion.publico);
+  for (const jugador of segunda.jugadores) {
+    assert.equal(
+      jugador.stack,
+      trasPrimera[jugador.userId],
+      `${jugador.userId} entra a la segunda mano con las fichas de la primera`,
+    );
+  }
+  assert.equal(
+    segunda.jugadores.reduce((suma, j) => suma + j.stack, 0),
+    200,
+    "el total no cambia entre manos: nadie recompra",
+  );
+
+  assert.equal(paso("gm", "start", {}, segunda).ok, true);
+  assert.equal(total(vistaPublicaSesion(sesion)), 200, "tampoco al repartir de nuevo");
+});
+
+test("quien se queda a cero se queda fuera de la MANO, no de la mesa", () => {
+  // `poker.crear` exige stack entero positivo, así que la regla había que
+  // cerrarla. Sin recompras (#308), un asiento sin fichas no entra al reparto;
+  // sigue sentado en la mesa, que es la capa social y no el juego.
+  const publico = {
+    jugadores: [{ userId: "p1" }, { userId: "p2" }, { userId: "p3" }],
+    resultado: { stacksFinales: { p1: 150, p2: 0, p3: 50 } },
+  };
+  const config = configuracionPoker(publico);
+  assert.deepEqual(
+    config.jugadores.map((j) => j.userId),
+    ["p1", "p3"],
+    "p2 no entra a repartir",
+  );
+  assert.deepEqual(
+    config.jugadores.map((j) => j.stack),
+    [150, 50],
+    "y a nadie se le repone la entrada",
+  );
+  // El orden de los que quedan se conserva: el asiento es posicional y
+  // reordenarlo movería el botón y las ciegas sin que nadie lo pidiera.
+  assert.equal(config.jugadores[0].userId, "p1");
+});
+
+test("la primera mano sí usa la entrada configurada", () => {
+  // Sin mano previa no hay nada que heredar, y ahí la entrada de la mesa es la
+  // que manda: es la diferencia entre «primera mano» y «recompra».
+  const publico = { jugadores: [{ userId: "p1" }, { userId: "p2" }] };
+  assert.deepEqual(
+    configuracionPoker(publico, { fichasIniciales: 250 }).jugadores.map((j) => j.stack),
+    [250, 250],
+  );
+  // Y con una mano EN CURSO (aún sin resultado) se toman los stacks vivos, no
+  // la entrada: es el caso de una mano interrumpida y vuelta a arrancar.
+  const enCurso = {
+    jugadores: [{ userId: "p1" }, { userId: "p2" }],
+    juegoPublico: { jugadores: [{ userId: "p1", stack: 80 }, { userId: "p2", stack: 120 }] },
+  };
+  assert.deepEqual(
+    configuracionPoker(enCurso).jugadores.map((j) => j.stack),
+    [80, 120],
+  );
+});

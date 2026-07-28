@@ -48,12 +48,45 @@ export function normalizarMesa(opciones = {}) {
 }
 
 /**
+ * Fichas con las que cada asiento llega a la mano que va a empezar.
+ *
+ * La primera mano usa la entrada configurada. A partir de ahí manda lo que la
+ * mano anterior dejó: el motor juega UNA mano y declara que «la mano siguiente
+ * es un nuevo `crear` con los stacks resultantes». Si se volviera a repartir la
+ * entrada, cada reparto sería una recompra encubierta y las fichas dejarían de
+ * ser efímeras, que es justo lo que #308 no quiere.
+ *
+ * Se prefiere `resultado.stacksFinales` a los stacks de la vista pública porque
+ * es el cierre contable de la mano —incluye el reparto del bote—, y la vista
+ * pública de una mano terminada podría estar publicada en un punto anterior.
+ */
+function fichasDe(publico, userId, fichasIniciales) {
+  const finales = publico?.resultado?.stacksFinales;
+  if (finales && Number.isInteger(finales[userId])) return finales[userId];
+  const enJuego = publico?.juegoPublico?.jugadores;
+  if (Array.isArray(enJuego)) {
+    const asiento = enJuego.find((j) => j?.userId === userId);
+    if (asiento && Number.isInteger(asiento.stack)) return asiento.stack;
+  }
+  return fichasIniciales;
+}
+
+/**
  * Construye la `configuracionJuego` que `sesion-motor.mjs` pasa a
  * `poker-motor.crear`, a partir del estado público de la mesa.
  *
  * Los asientos se derivan **en el orden que publica la sesión**, que es el
  * mismo que usaría el motor de sesión al derivarlos: el asiento es posicional,
  * y reordenarlos aquí movería el botón y las ciegas sin que nadie lo pidiera.
+ *
+ * QUIEN SE QUEDA A CERO NO VUELVE A ENTRAR. `poker.crear` exige un stack entero
+ * positivo, así que había que cerrar la regla en algún sitio, y la que encaja
+ * con «fichas efímeras, sin recompras» es esta: el asiento se queda **fuera de
+ * la mano**, no fuera de la mesa. Sigue sentado, sigue viendo el reparto y
+ * sigue en la escena — que es para lo que existe esta capa social—, pero no se
+ * le regalan fichas para que siga jugando. Repartirle la entrada otra vez sería
+ * la recompra por la puerta de atrás; echarlo de la mesa lo expulsaría de una
+ * conversación que no es solo el juego.
  *
  * @param {object|null} publico estado público vigente de la sesión.
  * @param {object} opciones opciones de mesa (sin normalizar).
@@ -64,13 +97,18 @@ export function configuracionPoker(publico, opciones = {}) {
   return {
     ciegaPequena: mesa.ciegaPequena,
     ciegaGrande: mesa.ciegaGrande,
-    jugadores: asientos.map((asiento) => ({
-      userId: asiento.userId,
-      stack: mesa.fichasIniciales,
-      // El controlador viaja tal cual: la sesión ya sabe si un asiento lo lleva
-      // una persona o el agente automático, y el motor lo necesita para
-      // distinguir a quién hay que resolverle el turno solo.
-      controlador: asiento.controlador === "automatico" ? "automatico" : "humano",
-    })),
+    jugadores: asientos
+      .map((asiento) => ({
+        userId: asiento.userId,
+        stack: fichasDe(publico, asiento.userId, mesa.fichasIniciales),
+        // El controlador viaja tal cual: la sesión ya sabe si un asiento lo
+        // lleva una persona o el agente automático, y el motor lo necesita para
+        // distinguir a quién hay que resolverle el turno solo.
+        controlador: asiento.controlador === "automatico" ? "automatico" : "humano",
+      }))
+      // Un stack negativo no debería existir; si llega, se trata como cero en
+      // vez de propagarlo al motor, que lo rechazaría con un código lejano a la
+      // causa.
+      .filter((jugador) => jugador.stack > 0),
   };
 }

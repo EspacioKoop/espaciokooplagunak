@@ -123,12 +123,41 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
   inline vía la etiqueta `{{inline ...}}` en vez de cargarlo de un CDN sin `integrity` (alertas
   CodeQL 8/9); la salida sigue siendo un único HTML autocontenido que funciona offline. Vigila esta
   divergencia al mergear cambios de upstream que toquen `script_docs/`.
-- `foundry-module/` — la lógica pura y testeable del mapa vive en `scripts/ventana-nave.mjs`, el
-  pintor Canvas en `scripts/mapa-render.mjs` (decorado de fondo en `scripts/decorado-fondo.mjs`,
-  sprite de nave en `scripts/nave-sprite.mjs`); el mapa interpola únicamente muestras confirmadas y
-  nunca extrapola. `scripts/main.mjs` es un orquestador puro (settings, hooks, scene controls); las
-  cuatro factorías de ventana (estado de nave y mapa vivo, V1/V2, aisladas a propósito entre sí) viven
-  en `scripts/estado-nave-app-v{1,2}.mjs` y `scripts/mapa-vivo-app-v{1,2}.mjs` (extracción del PR #283).
+- `foundry-module/` — unos cincuenta módulos ESM con una suite Node por área. Aquí van los grupos y
+  la regla de cada uno, no el inventario: `ls foundry-module/scripts` es más fiable que una lista en
+  prosa, y la responsabilidad es lo que no se deduce del nombre del archivo.
+  - **Orquestación** — `scripts/main.mjs` es un orquestador puro (settings, hooks, scene controls):
+    no contiene lógica de dominio. Constantes compartidas en `scripts/lagunak-constantes.mjs`.
+  - **Ventanas** — las cuatro factorías (estado de nave y mapa vivo, V1/V2, aisladas a propósito
+    entre sí) en `scripts/estado-nave-app-v{1,2}.mjs` y `scripts/mapa-vivo-app-v{1,2}.mjs`
+    (extracción del PR #283). `scripts/foco-render.mjs` conserva el foco entre reconstrucciones
+    del DOM (#227).
+  - **Mapa vivo** — lógica pura en `scripts/ventana-nave.mjs`, pintor Canvas en
+    `scripts/mapa-render.mjs`, con `scripts/decorado-fondo.mjs` y `scripts/nave-sprite.mjs`. El
+    mapa interpola únicamente muestras confirmadas y **nunca** extrapola.
+  - **Puente** — `scripts/bridge-client.mjs`, el token en
+    `scripts/bridge-token-session.mjs` (solo en memoria y solo para el GM: `getBridgeToken()`
+    devuelve cadena vacía a quien no lo sea, y el valor legado en almacenamiento se borra en el
+    arranque, #183) y `scripts/diagnostico-conexion.mjs`.
+  - **Controles del GM** — un módulo por superficie: `scripts/{tempo,pausa,ingenieria,maniobra,
+    reposicion,encuentro}-control.mjs`. Todos solo-GM y de catálogo cerrado.
+  - **Puestos de tripulación** — `scripts/station-*.mjs`. La matriz de autoridad vive en
+    `scripts/station-actions.mjs` y el relé que la aplica en `scripts/station-order-relay.mjs`: el
+    puesto se resuelve desde el `User` autenticado, nunca desde la orden (#237).
+  - **Eventos y ambiente** — `scripts/event-journal.mjs` (deduplicado por `eventId`),
+    `scripts/bitacora-nave.mjs`, `scripts/alertas-nave.mjs` y el nivel de alerta difundido a toda
+    la mesa (`scripts/nivel-alerta.mjs`, `scripts/alerta-escena.mjs`, #338).
+  - **Telemetría a modelo visual** — `scripts/ship-view.mjs` y `scripts/barras-estado.mjs`
+    convierten el estado crudo en porcentajes y niveles de severidad, sin tocar el DOM: las
+    plantillas de V1/V2 solo consumen su salida.
+  - **Arte procedural** — generado en el cliente, cero binarios en el repositorio. Los colores viven
+    **solo** en `scripts/paleta.mjs`, con la frontera vivo/registrado y una prueba que falla si otro
+    módulo de arte declara un color propio (#351). Grabado en `scripts/laminas-clasicas.mjs`;
+    pixelart en `scripts/nave-sprite.mjs` y `scripts/minijuegos/cartas-pixelart.mjs`; música
+    determinista por semilla en `scripts/musica-procedural.mjs`.
+  - **Minijuegos** — `scripts/minijuegos/` (motor de póker, evaluador de manos, agente automático,
+    sesión) y su enganche en `scripts/minijuegos-wiring.mjs` (#308). La sesión viva del coordinador
+    no se persiste en ningún sitio: vive en memoria del GM.
 - `resources/` y `packs/` — assets heredados de upstream.
 - La versión se calcula por fecha (`AAAA.MM.DD`) en `CMakeLists.txt` salvo override explícito.
 - `docs/` — documentación propia del fork: [`BUILDING.md`](docs/BUILDING.md),

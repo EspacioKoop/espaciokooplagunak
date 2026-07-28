@@ -51,8 +51,14 @@
   {{#if detalle}}
   <div class="lagunak-mapa-detalle" role="status">
     <h4><span class="lagunak-mapa-color" style="background: {{detalle.color}}" aria-hidden="true"></span> {{detalle.callsign}}</h4>
+    {{! Lámina de reconocimiento (#362). Decorativa: la clase va escrita en la
+        tabla de aquí abajo, así que la silueta refuerza y no informa sola. }}
+    <div class="lagunak-mapa-lamina" aria-hidden="true">
+      <canvas data-lagunak-lamina width="120" height="90"></canvas>
+    </div>
     <table class="lagunak-tabla">
       <tr><th>{{localize "LAGUNAK.MapaVivo.Detalle.Tipo"}}</th><td>{{detalle.tipo}}</td></tr>
+      <tr><th>{{localize "LAGUNAK.MapaVivo.Detalle.Clase"}}</th><td>{{detalle.claseLabel}}</td></tr>
       <tr><th>{{localize "LAGUNAK.MapaVivo.Detalle.Faccion"}}</th><td>{{detalle.faccion}}</td></tr>
       <tr><th>{{localize "LAGUNAK.EstadoNave.Distancia"}}</th><td data-lagunak-detalle-distancia>{{detalle.distanciaLabel}}</td></tr>
       <tr><th>{{localize "LAGUNAK.EstadoNave.Rumbo"}}</th><td data-lagunak-detalle-rumbo>{{detalle.rumboLabel}}</td></tr>

@@ -1,0 +1,60 @@
+// Lámina del contacto seleccionado (#362, rebanada 4): la nave ajena, dibujada.
+//
+// Por qué GameCube y no PSX. El casco propio de la consola va en PSX porque es
+// ambiente de cabina y se mira de reojo. Esto es lo contrario: el GM la mira
+// FIJA para reconocer con qué se está encontrando la tripulación, y ahí los
+// dieciséis tonos y la ausencia de temblor se ganan el sitio. Es exactamente el
+// caso para el que la época se dejó como parámetro en vez de como dos módulos.
+//
+// Por qué SÍ gira aquí y no en la consola. El casco propio apunta al rumbo real
+// y girarlo sería mentir. Una lámina no dice hacia dónde va nadie: es una ficha
+// de reconocimiento, y girar es lo que deja ver la silueta entera —que es justo
+// el dato— sin que nadie tenga que orbitar la cámara a mano.
+//
+// El bucle se para solo: montar sobre una raíz que ya tenía lámina detiene la
+// anterior. Sin eso, cada cambio de selección dejaría un bucle huérfano pintando
+// sobre un lienzo que ya no está en el documento.
+
+import { girarNave } from "./retro3d-lienzo.mjs";
+import { mallaDeClase } from "./casco-clases.mjs";
+
+const bucles = new WeakMap();
+
+/** Detiene la lámina de esta raíz, si la había. Llamarlo de más no hace daño. */
+export function desmontarLamina(raiz) {
+  const parar = bucles.get(raiz);
+  if (!parar) return false;
+  bucles.delete(raiz);
+  parar();
+  return true;
+}
+
+/**
+ * Monta (o remonta) la lámina del contacto seleccionado.
+ *
+ * @param {Element} raiz raíz de la ventana del mapa.
+ * @param {{clase?: string|null, color?: string}|null} detalle
+ * @param {object} opciones puntos de entrada inyectables para las pruebas.
+ * @returns {{clase: string|null, conocida: boolean}|null}
+ */
+export function montarLaminaContacto(raiz, detalle, opciones = {}) {
+  desmontarLamina(raiz);
+  const lienzo = raiz?.querySelector?.("[data-lagunak-lamina]");
+  if (!lienzo || !detalle) return null;
+
+  const { malla, conocida, clave } = mallaDeClase(detalle.clase);
+  const parar = girarNave(lienzo, {
+    ...opciones,
+    malla,
+    // El color de facción es el mismo que el blip del mapa: la lámina y el punto
+    // del radar tienen que leerse como el mismo objeto.
+    color: detalle.color,
+    epoca: "gamecube",
+    pitch: 0.34,
+    posicion: [0, 0, 5.4],
+    fov: 52,
+    vueltaMs: 24000,
+  });
+  bucles.set(raiz, parar);
+  return { clase: clave, conocida };
+}

@@ -171,3 +171,25 @@ test("dispatchUserUpdate encamina el error del puente a onError sin propagar", a
   assert.equal(result, null);
   assert.deepEqual(errores, ["boom"]);
 });
+
+test("REGRESIÓN: la segunda orden llega como diferencial y se lee del documento", () => {
+  // Mismo fallo que en la mesa de minijuegos (#308): Foundry entrega en
+  // `updateUser` el DIFERENCIAL, no el flag completo. Repetir la misma orden
+  // con otro valor deja fuera del cambio todo lo que no cambió —incluida
+  // `action`—, y la orden llegaba coja o se descartaba en silencio.
+  const orden = { action: "set_target_heading", params: { heading: 90 }, nonce: "n2" };
+  const soloLoQueCambia = {
+    flags: { [MOD]: { [STATION_ORDER_FLAG]: { params: { heading: 90 }, nonce: "n2" } } },
+  };
+  const userDoc = { id: "u1", flags: { [MOD]: { [STATION_ORDER_FLAG]: orden } } };
+
+  assert.deepEqual(
+    extractOrderFromChange({ changes: soloLoQueCambia, moduleId: MOD, userDoc }),
+    orden,
+    "la orden se lee del documento, no del diferencial",
+  );
+
+  // Y un cambio ajeno sigue sin despachar nada, aunque el documento guarde una
+  // orden vieja: si no, cualquier cambio del User la reejecutaría.
+  assert.equal(extractOrderFromChange({ changes: { name: "otro" }, moduleId: MOD, userDoc }), null);
+});

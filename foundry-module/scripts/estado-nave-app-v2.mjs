@@ -31,6 +31,12 @@ import {
   prepararVistaManiobra,
 } from "./maniobra-control.mjs";
 import { firmaEstadoNaveVisible, prepareRoute, prepareSystemRows } from "./ship-view.mjs";
+import {
+  barraRecurso,
+  barrasSistema,
+  aplicarBarraDom,
+  textoPorcentaje,
+} from "./barras-estado.mjs";
 import { setSimulationPaused } from "./tempo-control.mjs";
 import { contenidoEstadoBitacora, fechaLocal } from "./bitacora-nave.mjs";
 import { ALERTAS_NONCE, BACKOFF_MAX_MS, MODULE_ID } from "./lagunak-constantes.mjs";
@@ -246,18 +252,31 @@ export function crearClaseV2() {
         const nodo = raiz.querySelector(selector);
         if (nodo && nodo.textContent !== texto) nodo.textContent = texto;
       };
+      // Celdas con barra: texto y relleno se actualizan juntos, sin rehacer DOM.
+      const setBarra = (selector, texto, barra) =>
+        aplicarBarraDom(raiz.querySelector(selector), texto, barra);
       set('[data-field="nave-posicion"]', `${nave.position?.x ?? "?"}, ${nave.position?.y ?? "?"}`);
       set('[data-field="nave-rumbo"]', `${nave.heading ?? "?"}°`);
-      set('[data-field="nave-casco"]', `${nave.hull ?? "?"} / ${nave.hull_max ?? "?"}`);
-      set('[data-field="nave-energia"]', `${nave.energy ?? "?"} / ${nave.energy_max ?? "?"}`);
+      setBarra(
+        '[data-field="nave-casco"]',
+        `${nave.hull ?? "?"} / ${nave.hull_max ?? "?"}`,
+        barraRecurso(nave.hull, nave.hull_max),
+      );
+      setBarra(
+        '[data-field="nave-energia"]',
+        `${nave.energy ?? "?"} / ${nave.energy_max ?? "?"}`,
+        barraRecurso(nave.energy, nave.energy_max),
+      );
       if (ruta) {
         set('[data-field="ruta-distancia"]', ruta.distanceLabel);
         set('[data-field="ruta-eta"]', ruta.etaLabel);
       }
       for (const sistema of sistemas) {
-        set(`[data-sistema-id="${sistema.id}"] [data-campo="salud"]`, `${sistema.health}%`);
-        set(`[data-sistema-id="${sistema.id}"] [data-campo="calor"]`, `${sistema.heat}%`);
-        set(`[data-sistema-id="${sistema.id}"] [data-campo="potencia"]`, `${sistema.power}%`);
+        const barras = barrasSistema(sistema);
+        const base = `[data-sistema-id="${sistema.id}"]`;
+        setBarra(`${base} [data-campo="salud"]`, textoPorcentaje(sistema.health), barras.salud);
+        setBarra(`${base} [data-campo="calor"]`, textoPorcentaje(sistema.heat), barras.calor);
+        setBarra(`${base} [data-campo="potencia"]`, textoPorcentaje(sistema.power), barras.potencia);
       }
     }
 
@@ -380,11 +399,16 @@ export function crearClaseV2() {
           ? prepareSystemRows(nave, game.i18n).map(({ id, name, health, heat, power }) => ({
               id,
               nombre: name,
-              salud: health,
-              calor: heat,
-              potencia: power,
+              salud: textoPorcentaje(health),
+              calor: textoPorcentaje(heat),
+              potencia: textoPorcentaje(power),
+              barras: barrasSistema({ health, heat, power }),
             }))
           : [],
+        barras: {
+          casco: barraRecurso(nave?.hull, nave?.hull_max),
+          energia: barraRecurso(nave?.energy, nave?.energy_max),
+        },
         ingenieria: prepararVistaIngenieria({
           conexion: this.conexion,
           ship: nave,

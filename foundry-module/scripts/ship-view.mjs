@@ -23,15 +23,29 @@ export function localizeSystemName(name, i18n) {
   return i18n?.localize?.(key) ?? key;
 }
 
+/**
+ * Porcentaje de una fracción del puente, o `null` si no hay lectura.
+ *
+ * Conservar la ausencia importa: colapsarla a 0 —como se hacía con
+ * `Number(x) || 0`— presenta un sistema del que no sabemos nada como si
+ * estuviera destruido, frío y sin potencia. «Sin lectura» y «a cero» son
+ * cosas opuestas, y el cero real sigue siendo información que debe verse.
+ */
+function porcentajeSistema(valor) {
+  if (valor === null || valor === undefined || valor === "") return null;
+  const numero = Number(valor);
+  return Number.isFinite(numero) ? Math.round(numero * 100) : null;
+}
+
 /** Prepara la matriz técnica con nombres localizados y valores normalizados. */
 export function prepareSystemRows(ship, i18n) {
   return Object.entries(ship?.systems ?? {}).map(([name, system]) => ({
     id: name,
     name: localizeSystemName(name, i18n),
-    health: Math.round((Number(system?.health) || 0) * 100),
-    heat: Math.round((Number(system?.heat) || 0) * 100),
-    power: Math.round((Number(system?.power) || 0) * 100),
-    coolant: Math.round((Number(system?.coolant) || 0) * 100),
+    health: porcentajeSistema(system?.health),
+    heat: porcentajeSistema(system?.heat),
+    power: porcentajeSistema(system?.power),
+    coolant: porcentajeSistema(system?.coolant),
   }));
 }
 

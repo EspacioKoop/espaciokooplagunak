@@ -421,35 +421,6 @@ explícitamente —Biblioteca Digital Hispánica, Rijksmuseum, Metropolitan Muse
 su plantilla de licencia— frente a un escaneo sin procedencia. Y como con cualquier otra pieza: si se
 usa, se **recorta** sin sellos, marcas de agua ni marcos de la institución digitalizadora.
 
-#### Cine primitivo: la misma idea, con OTRA regla de plazo
-
-Méliès y sus contemporáneos son la primera imaginería de viaje espacial en movimiento, y encajan con
-el proyecto. Pero **el cine no computa como un cuadro** y confundirlo es la forma más fácil de
-equivocarse aquí.
-
-**La regla.** El [TRLPI art. 28.1](https://www.boe.es/buscar/act.php?id=BOE-A-1996-8930) trata la obra
-cinematográfica como **obra en colaboración**: el plazo dura la vida de los coautores y **70 años
-desde la muerte del ÚLTIMO coautor superviviente** — no del director. Los coautores de una obra
-audiovisual son varios (dirección, guion, diálogos, música compuesta para la obra), así que **una
-sola fecha no cierra el cálculo**.
-
-| Obra / autor | Fecha clave | Estado | Uso | Nota |
-|---|---|---|---|---|
-| *Le Voyage dans la Lune* (1902) y demás obra de **Georges Méliès** | Méliès †1938 ([LCNAF](https://id.loc.gov/authorities/names/n79055178)) | DP en la UE **desde 2009** *si* Méliès es el último coautor superviviente | ✅ | Caso favorable: dirigía, escribía, diseñaba y actuaba en sus películas, y eran **mudas** —sin música compuesta para la obra—, así que la lista de coautores se reduce casi a él. **Verificar por película**, no por autor |
-| Obra de **Segundo de Chomón** (*El hotel eléctrico*, trucajes Pathé) | Chomón †1929 ([LCNAF](https://id.loc.gov/authorities/names/n88128513)) | DP en la UE **desde 2000**, mismo supuesto | ✅ | **Pionero español**, del mismo lenguaje de trucaje que Méliès. Encaja doblemente por procedencia |
-| *Metropolis* (1927), **Fritz Lang** | Lang †1976 ([LCNAF](https://id.loc.gov/authorities/names/n79043386)) | **PROTEGIDA hasta 2047** como mínimo | ⛔ | La trampa clásica: «es de 1927, será DP». No lo es. El plazo va por el **último coautor**, y Lang murió en 1976. Que circule por todas partes no la hace libre |
-| **Restauraciones y coloreados modernos** de cualquiera de las anteriores | — | Derecho **nuevo** sobre la versión restaurada | ⛔ | Una copia restaurada, recoloreada o con banda sonora añadida es una capa protegida **encima** de una obra DP. Se usa la copia de archivo lisa, no la edición moderna |
-
-**Cómo se verifica una película, entonces.** Paso 0 del protocolo, ampliado: no basta el director. Hay
-que listar los **coautores** (dirección, guion, diálogos, música compuesta *ad hoc*), tomar la fecha
-del **último superviviente** y, por separado, comprobar que la copia concreta no es una **restauración
-moderna** con derechos propios. Si no puedes nombrar a los coautores, la pieza se queda en ⛔.
-
-**Qué se aprovecha de verdad.** No el metraje —el juego no reproduce vídeo— sino el **vocabulario
-visual**: el cohete-obús, la Luna con cara, el decorado pintado a mano con perspectiva teatral, el
-trucaje por sustitución. Eso es **estilo**, no obra: se puede tomar como referencia para arte propio
-sin tocar ningún fotograma, que es la vía que el proyecto prefiere igualmente.
-
 > **Fuente/verificación (consulta 2026-07-27):** fechas de fallecimiento del fichero de autoridades
 > LCNAF, con su encabezamiento autorizado y **URI comprobada una a una**:
 > [Caravaggio, Michelangelo Merisi da, 1573-1610](https://id.loc.gov/authorities/names/n50000558) ·

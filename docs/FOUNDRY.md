@@ -210,6 +210,33 @@ Esta separación evita bucles de sincronización donde ambos sistemas intentan s
 - decidir qué resultados alteran fichas, diarios o recursos de Foundry;
 - aplicar intervención manual sin romper el estado de la simulación.
 
+### Frontera de estilo: vivo frente a registrado
+
+El módulo genera dos artes en el cliente y comparten disciplina —ninguna usa
+degradado, las dos van sobre papel oscuro—, así que conviven sin parecer un
+descuido: son una imprenta y un CRT en la misma sala. La frontera es una
+pregunta, no una lista de superficies:
+
+> **Grabado** (`TINTA`) para lo que **persiste o enmarca**. **Pixelart**
+> (`PIXEL`) para lo que **se repinta con telemetría**.
+
+Cartelas, fichas, códice y el marco cartográfico del mapa son grabado. Sprites
+de nave, barras, iconos de sistema, retratos y naipes son pixel.
+
+El eje **no** es «diegético frente a papel», que fue el primer intento: con esa
+regla el marco de grabado que envuelve el lienzo de píxeles del mapa vivo sería
+una infracción, cuando es justo lo correcto —el marco es la carta, el interior
+es la verdad que cambia en cada sondeo—. Formulada como vivo/registrado predice
+bien los casos que vienen: la cartela de una lámina impresa es grabado aunque
+cuelgue de una consola, y una barra que sigue a `/v1/state` es pixel aunque viva
+dentro de un diario.
+
+Los colores viven en `paleta.mjs` y **solo** ahí: una prueba falla si un módulo
+de arte declara un color propio. Sin eso la regla sería prosa, y el cuarto
+módulo volvería a inventarse su propio sepia. Ese módulo también trae el cálculo
+de contraste de WCAG, con los pares que portan información verificados en la
+suite (#351).
+
 ## Seguridad obligatoria
 
 La implementación heredada contiene el endpoint HTTP `/exec.lua`, que ejecuta contenido Lua recibido por la red. Estado verificado en vivo (2026-07-12, servidor headless local con `httpserver=<puerto>`):

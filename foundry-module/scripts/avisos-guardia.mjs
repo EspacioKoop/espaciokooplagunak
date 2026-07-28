@@ -46,6 +46,11 @@ const normal = leerNumero;
 
 const pct = (f) => Math.round(f * 100);
 
+/** Las cuatro lecturas exactamente a cero: la firma de un sistema ausente. */
+function noInstalado(lectura) {
+  return ["health", "heat", "power", "coolant"].every((campo) => normal(lectura?.[campo]) === 0);
+}
+
 /**
  * Avisos vigentes, de más grave a menos.
  *
@@ -94,6 +99,20 @@ export function avisosDeGuardia(ship) {
 
   const sistemas = ship.systems && typeof ship.systems === "object" ? ship.systems : {};
   for (const [nombre, lectura] of Object.entries(sistemas)) {
+    // Un sistema que la nave NO LLEVA no está averiado: no está. El puente
+    // consulta los nueve sistemas de EmptyEpsilon para toda nave, y los que no
+    // tiene instalados vuelven a cero en las cuatro lecturas. Sin esto, una nave
+    // sin warp ni motor de salto —la mayoría— anunciaba dos «SISTEMA
+    // INUTILIZADO» permanentes en cada sesión. Encontrado contra el juego en
+    // marcha, no en una prueba: los datos inventados no traen esta forma.
+    //
+    // Es una HEURÍSTICA, y por eso se escribe aquí lo que la sostiene: un
+    // sistema realmente destruido conserva la potencia que ingeniería le dejó y
+    // suele haber acumulado calor, así que los cuatro ceros exactos son firma de
+    // ausencia y no de avería. La solución buena es que el puente publique si el
+    // sistema existe (`ship:hasSystem()`); mientras tanto, preferimos callar un
+    // caso rarísimo antes que gritar dos falsedades en cada partida.
+    if (noInstalado(lectura)) continue;
     const calor = normal(lectura?.heat);
     if (calor !== null && calor >= UMBRALES_AVISO.calorCritico) {
       avisos.push({

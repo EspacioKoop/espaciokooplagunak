@@ -231,8 +231,29 @@ variantes y efectos sobre la campaña.
 
 1. Motor puro de sesión y contrato común con pruebas de identidad, revisión,
    época, nonces, desconexión, cancelación segura y espectadores.
+   **Implementado** en `foundry-module/scripts/minijuegos/sesion-motor.mjs`
+   (pruebas: `foundry-module/tests/minijuegos-sesion-motor.test.mjs`). Aloja el
+   juego por la interfaz interna de abajo, recibiéndolo como dependencia: no
+   importa ningún vertical.
 2. Motor puro de póker con vectores deterministas y pruebas de reglas.
 3. Adaptador Foundry y vistas pública/privada sin persistir secretos.
+   **Implementado** en `foundry-module/scripts/minijuegos/adaptador-sesion.mjs`
+   (lógica pura, con pruebas) y `foundry-module/scripts/minijuegos-wiring.mjs`
+   (capa fina con globales de Foundry). Transporte: propuesta en un flag del
+   propio `User` → `updateUser` en el GM coordinador → estado público en un
+   ajuste de mundo, y vistas privadas por socket dirigidas a cada `userId`. La
+   sesión viva del coordinador (semilla, mazo, manos) no se persiste en ningún
+   sitio: si se pierde, el relevo la cancela con checkpoint.
+
+   **Relevo real.** El cableado detecta el cambio de `game.users.activeGM` al
+   registrarse y en cada `userConnected`, y también antes de despachar una
+   propuesta. Cuando el GM activo ve un estado público cuyo `coordinadorId` es
+   otro, adopta la mesa con `adoptarSesionPublicada`: reconstruye la sesión desde
+   el ajuste público con el privado vacío y delega en `sustituirCoordinador`, que
+   sube la época —invalidando los sobres en vuelo del anterior—, cancela la mano
+   y restaura el checkpoint previo al reparto. No se reanuda la mano a medias:
+   sin semilla no hay forma honesta de continuarla. El relevo se anuncia por el
+   hook `lagunakMinijuegoRelevoCoordinador` para que la UI del paso 4 lo explique.
 4. Ventana clásica v11 y ApplicationV2 compartiendo el mismo modelo.
 5. Arte pixel-art, teclado, reduced-motion e i18n.
 6. Smoke multijugador real con GM, dos jugadores, espectador, reconexión, pérdida

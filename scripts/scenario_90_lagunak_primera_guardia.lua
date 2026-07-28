@@ -13,6 +13,10 @@
 -- EmptyEpsilon y sus creditos no se modifican; este archivo es nuevo.
 
 require("utils.lua")
+-- Pools de nombres scifi/pulp en dominio publico (#310, docs/DOMINIO_PUBLICO_SCIFI.md):
+-- dan un "nombre de casco" evocador a pecios y mercantes de origen ajeno sin tocar el
+-- indicativo vasco que el puente/Foundry rastrean por prefijo.
+require("public_domain_names_scenario_utility.lua")
 
 -- Globales (sin "local") a proposito: permiten sondear el estado desde la
 -- consola Lua del modo headless o via /exec.lua en QA local.
@@ -188,6 +192,8 @@ local ARQUETIPOS_ENCUENTRO = {
         distancia = 15000, orden = "idle",
         casco_max = 50, casco = 15,
         averias = { impulse = -0.5, reactor = -0.25 },
+        -- Nave fantasma: nombre de casco de terror cosmico (topónimos de Lovecraft, DP).
+        tema_dp = "lovecraft",
     },
     -- Patrulla hostil: cazador Exuari en ronda (encuentro de combate).
     patrol = {
@@ -198,6 +204,8 @@ local ARQUETIPOS_ENCUENTRO = {
     freighter = {
         indicativo = "Merkatari", template = "Personnel Freighter 1",
         faccion = "Independent", distancia = 12000, orden = "idle",
+        -- Mercante civil: nombre de casco de aventura clasica (Verne, DP).
+        tema_dp = "verne",
     },
     -- Centinela: plataforma de defensa hostil que guarda su posicion.
     sentry = {
@@ -228,11 +236,24 @@ function lagunakSpawnEncounter(arquetipo, rumbo)
     local x, y = nave:getPosition()
 
     contadorEncuentros = (contadorEncuentros or 0) + 1
+    -- El indicativo vasco (+ contador) sigue siendo el identificador rastreable por
+    -- puente y Foundry. El nombre de casco DP vive solo en la descripcion cientifica:
+    -- nunca altera el contrato de contactos ni eventos.
+    local indicativo = string.format("%s %d", spec.indicativo, contadorEncuentros)
     local objeto = CpuShip()
         :setTemplate(spec.template)
         :setFaction(spec.faccion)
-        :setCallSign(string.format("%s %d", spec.indicativo, contadorEncuentros))
+        :setCallSign(indicativo)
         :setPosition(x + math.sin(angulo) * distancia, y - math.cos(angulo) * distancia)
+
+    if spec.tema_dp ~= nil then
+        -- El catalogo es una capa cosmetica: un tema retirado o invalido no debe
+        -- impedir que el GM materialice el encuentro autorizado.
+        local ok, nombre = pcall(getPublicDomainName, spec.tema_dp)
+        if ok and type(nombre) == "string" and nombre ~= "" then
+            objeto:setDescription(nombre)
+        end
+    end
 
     if spec.casco_max ~= nil then
         objeto:setHullMax(spec.casco_max):setHull(spec.casco or spec.casco_max)

@@ -83,7 +83,14 @@ export function crearReproductor({
   let temporizador = null;
   let vivos = [];
   let tramo = 0;
-  let habilitado = false;
+  // Dos cosas distintas que antes estaban confundidas en una sola bandera, y de
+  // ahí el bug: el GESTO del usuario se concede una vez y no se revoca —el
+  // navegador ya nos dejó sonar—, mientras que el audio local se enciende y se
+  // apaga tantas veces como el usuario quiera. Con una bandera única, cortar
+  // dejaba el reproductor «habilitado» y el siguiente clic volvía a cortar: la
+  // música no se podía recuperar sin recargar la página.
+  let gestoConcedido = false;
+  let activo = false;
 
   function pararNodos() {
     for (const osc of vivos) {
@@ -99,7 +106,7 @@ export function crearReproductor({
   }
 
   function sonarTramo() {
-    if (!habilitado || !registroActual) return;
+    if (!activo || !registroActual) return;
     // Semilla por tramo: la mesa entera oye lo mismo sin sincronizar audio por
     // red, y cada tramo suena distinto del anterior sin repetir un bucle.
     const pieza = generarPieza(`${semilla}-${registroActual}-${tramo}`, {
@@ -116,22 +123,30 @@ export function crearReproductor({
   }
 
   return {
+    /** ¿Está sonando el audio en este cliente? Es lo que alterna el botón. */
     get habilitado() {
-      return habilitado;
+      return activo;
     },
     get registro() {
       return registroActual;
     },
 
-    /** Un gesto del usuario habilita el audio en ESTE cliente. Idempotente. */
+    /**
+     * Enciende el audio en ESTE cliente. Idempotente, y **reanudable**: sirve
+     * igual para el primer gesto del usuario que para volver a activar después
+     * de haber cortado, que es el uso normal de un botón alternante.
+     */
     async habilitar() {
-      if (habilitado) return true;
+      if (activo) return true;
       await contexto.resume?.();
-      salida = contexto.createGain();
-      // Música de ambiente: por debajo de las voces de la mesa, siempre.
-      salida.gain.value = 0.25;
-      salida.connect(contexto.destination);
-      habilitado = true;
+      if (!gestoConcedido) {
+        salida = contexto.createGain();
+        // Música de ambiente: por debajo de las voces de la mesa, siempre.
+        salida.gain.value = 0.25;
+        salida.connect(contexto.destination);
+        gestoConcedido = true;
+      }
+      activo = true;
       if (registroActual) sonarTramo();
       return true;
     },
@@ -146,14 +161,19 @@ export function crearReproductor({
       pararNodos();
       registroActual = registro ?? null;
       tramo = 0;
-      if (habilitado && registroActual) sonarTramo();
+      if (activo && registroActual) sonarTramo();
       return registroActual;
     },
 
-    /** Corta y olvida. El cliente queda habilitado: no hay que volver a pedir gesto. */
+    /**
+     * Corta el audio local. El gesto del usuario no se pierde —no hay que
+     * volver a pedirlo—, pero el reproductor queda INACTIVO, así que el
+     * siguiente `habilitar()` vuelve a programar notas de verdad.
+     */
     detener() {
       pararNodos();
       registroActual = null;
+      activo = false;
     },
   };
 }

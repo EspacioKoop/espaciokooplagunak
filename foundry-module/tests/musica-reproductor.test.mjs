@@ -199,14 +199,44 @@ test("misma semilla, misma música: la mesa entera oye lo mismo sin sincronizar 
   assert.notDeepEqual(frecuencias(a), frecuencias(c));
 });
 
-test("detener corta pero deja el cliente habilitado: no se vuelve a pedir gesto", async () => {
-  const { reproductor, reloj } = nuevo();
+test("detener deja el reproductor inactivo, sin perder el gesto del usuario", async () => {
+  const { contexto, reproductor, reloj } = nuevo();
   reproductor.poner("bach");
   await reproductor.habilitar();
   reproductor.detener();
   assert.equal(reproductor.registro, null);
   assert.equal(reloj.cuantos, 0);
+  // Antes esto quedaba en `true`, y era el bug: el botón alternante entraba
+  // otra vez en el ramal de cortar y la música no volvía sin recargar.
+  assert.equal(reproductor.habilitado, false);
+  // El gesto sí se conserva: no se crea una salida nueva ni se vuelve a
+  // reanudar el contexto al reactivar.
+  const gananciasAntes = contexto.ganancias.length;
+  await reproductor.habilitar();
+  assert.equal(contexto.reanudado, 2, "resume es idempotente y barato, se puede repetir");
+  assert.equal(contexto.ganancias.length, gananciasAntes, "no debe duplicar la salida general");
+});
+
+test("activar → cortar → activar vuelve a sonar, que es el contrato del botón", async () => {
+  const { contexto, reproductor } = nuevo();
+  reproductor.poner("bach");
+  await reproductor.habilitar();
+  const trasPrimera = contexto.osciladores.length;
+  assert.ok(trasPrimera > 0);
+
+  reproductor.detener();
+  assert.equal(reproductor.habilitado, false);
+
+  // El cableado real reaplica el mando vigente antes de reactivar, igual que
+  // hace `alternarAudioLocal` en main.mjs.
+  reproductor.poner("bach");
+  await reproductor.habilitar();
+  assert.ok(
+    contexto.osciladores.length > trasPrimera,
+    "el segundo encendido debe programar notas nuevas, no quedarse mudo",
+  );
   assert.equal(reproductor.habilitado, true);
+  assert.equal(reproductor.registro, "bach");
 });
 
 test("ningún parcial se programa por encima de Nyquist", async () => {

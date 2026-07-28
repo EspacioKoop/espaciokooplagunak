@@ -119,6 +119,28 @@ export const SISTEMA = Object.freeze({
 });
 
 /**
+ * Retratos de tripulación (#352). Listas cortas y no objetos porque el rasgo se
+ * sortea por índice desde la semilla: importa cuántos hay, no cómo se llama
+ * cada uno.
+ *
+ * Los tonos de casco son materiales de traje, no tonos de piel: el retrato
+ * codifica presencia y nada más, y una rejilla de 12x12 no puede representar a
+ * una persona sin caricaturizarla.
+ */
+export const RETRATO = Object.freeze({
+  // Tonos medios: tienen que separarse del papel oscuro del panel, que es
+  // contra lo que se recorta la silueta.
+  cascos: Object.freeze(["#8a94a6", "#b6743f", "#5f7a6a", "#9a5f6f", "#c3b184"]),
+  // Cristal OSCURO, no brillante. El primer intento fueron visores luminosos y
+  // se quedaban en 1.15:1 contra el casco — invisibles, justo el rasgo que más
+  // se mira. Un cristal oscuro sobre casco claro llega a 3.3:1 y además es lo
+  // que hace un visor de verdad. No compite con el papel porque nunca lo toca:
+  // va siempre rodeado de casco.
+  visores: Object.freeze(["#0d1a2e", "#241026", "#08231d"]),
+  acentos: Object.freeze(["#ff6f8f", "#5fffc0", "#ffd166", "#8fa3d9"]),
+});
+
+/**
  * Qué lenguaje toca. Se responde con una pregunta y no con una lista de
  * superficies, para que valga también para la superficie que aún no existe.
  *

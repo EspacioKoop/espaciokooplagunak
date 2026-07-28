@@ -98,7 +98,8 @@ Hooks.once("init", () => {
       "LAGUNAK.Ajustes.Idioma.Automatico",
     ),
     default: IDIOMA_AUTOMATICO,
-    onChange: () => void aplicarIdiomaModulo(),
+    // Cambiar el idioma es una acción explícita: si algo va mal, se dice.
+    onChange: () => void aplicarIdiomaModulo({ avisar: true }),
   });
 
   game.settings.register(MODULE_ID, "bridgeUrl", {
@@ -177,16 +178,25 @@ const AJUSTE_IDIOMA = "idioma";
  * traducciones del core o de otros módulos, que es exactamente lo que un
  * selector propio NO debe hacer.
  */
-async function aplicarIdiomaModulo() {
+async function aplicarIdiomaModulo({ avisar = false } = {}) {
   const modulo = game.modules?.get?.(MODULE_ID);
-  const idiomas = modulo?.languages ?? [];
+  // `languages` es una Collection de Foundry, no un array: se normaliza antes
+  // de tocarla para no depender de qué métodos trae.
+  const idiomas = [...(modulo?.languages ?? [])];
+  const pedido = game.settings.get(MODULE_ID, AJUSTE_IDIOMA);
   const elegido = idiomaEfectivo(
-    game.settings.get(MODULE_ID, AJUSTE_IDIOMA),
+    pedido,
     game.i18n?.lang,
     idiomas.map((idioma) => idioma.lang),
   );
   const ruta = idiomas.find((idioma) => idioma.lang === elegido)?.path;
-  if (!ruta) return;
+  if (!ruta) {
+    console.warn(
+      `[lagunak] idioma pedido "${pedido}" -> "${elegido}", pero el módulo no declara ese fichero`,
+      idiomas,
+    );
+    return;
+  }
   let propias = null;
   try {
     const respuesta = await fetch(rutaIdioma(ruta, MODULE_ID));
@@ -196,8 +206,10 @@ async function aplicarIdiomaModulo() {
     // Un fichero de idioma que no carga no puede dejar la interfaz en claves
     // crudas: se conserva lo que Foundry ya había cargado.
     console.warn(`[lagunak] no se pudo cargar el idioma ${elegido}`, err);
+    if (avisar) ui.notifications?.warn(game.i18n.localize("LAGUNAK.Ajustes.Idioma.NoCargado"));
     return;
   }
+  console.log(`[lagunak] idioma "${elegido}": ${Object.keys(propias).length} textos aplicados`);
   foundry.utils.mergeObject(game.i18n.translations, foundry.utils.expandObject(propias));
   // Las ventanas abiertas ya tienen texto pintado: se reconstruyen para que el
   // cambio se vea al instante y no en la próxima recarga.

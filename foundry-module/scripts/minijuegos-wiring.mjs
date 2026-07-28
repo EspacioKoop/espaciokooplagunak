@@ -7,6 +7,8 @@ import {
   despacharCambioDeUsuario,
 } from "./minijuegos/adaptador-sesion.mjs";
 import { crearSesion } from "./minijuegos/sesion-motor.mjs";
+import { MESA_POR_DEFECTO, configuracionPoker } from "./minijuegos/mesa-config.mjs";
+import * as poker from "./minijuegos/poker-motor.mjs";
 
 // Cableado Foundry de las sesiones de minijuegos (#308, paso 3). Capa fina y no
 // testeable en Node (usa globales de Foundry): toda la lógica de autoridad vive
@@ -42,8 +44,21 @@ function semillaCriptografica() {
   return buffer[0] % 2 ** 31;
 }
 
+export const AJUSTE_MESA = "minijuegoMesaConfig";
+
 export function registrarAjustesMinijuegos(moduleId) {
   moduloConfigurado = moduleId;
+  // Entrada y ciegas de la mesa. Ajuste de MUNDO y no memoria del coordinador:
+  // tiene que sobrevivir a un relevo, o la mano siguiente se repartiría con
+  // otras fichas sin que nadie lo hubiera decidido.
+  game.settings.register(moduleId, AJUSTE_MESA, {
+    name: "LAGUNAK.Minijuegos.Ajustes.Mesa.Nombre",
+    hint: "LAGUNAK.Minijuegos.Ajustes.Mesa.Pista",
+    scope: "world",
+    config: true,
+    type: Object,
+    default: { ...MESA_POR_DEFECTO },
+  });
   game.settings.register(moduleId, AJUSTE_SESION, {
     scope: "world",
     config: false,
@@ -127,6 +142,13 @@ export function registrarSesionesMinijuegos(moduleId) {
         // no de Math.random(): con una baraja de por medio, una semilla
         // adivinable es un mazo adivinable.
         semillaNueva: semillaCriptografica,
+        // Sin esto, `start` fallaba SIEMPRE: la sesión deriva los asientos sin
+        // fichas y el motor de póker exige un stack. La entrada de la mesa es
+        // una decisión de la mesa, no una regla del juego.
+        configuracionJuego: configuracionPoker(
+          game.settings.get(moduleId, AJUSTE_SESION),
+          game.settings.get(moduleId, AJUSTE_MESA) ?? {},
+        ),
         publicar: (publico) => game.settings.set(moduleId, AJUSTE_SESION, publico),
         enviarPrivada: (userId, vista) => {
           game.socket?.emit(canalSocket(moduleId), {
@@ -161,7 +183,13 @@ export function registrarSesionesMinijuegos(moduleId) {
 
 // Verticales registrados. El cableado no conoce ninguno: se le inyecta el módulo
 // del juego, que solo tiene que cumplir la interfaz interna del contrato.
-let juego = null;
+//
+// El póker se registra por defecto (#308) porque hasta ahora NADIE llamaba a
+// `registrarJuego`: `juegoActivo()` devolvía null y toda propuesta se
+// despachaba sin vertical, así que la mesa era inalcanzable desde Foundry.
+// Sigue siendo inyección —otro juego puede sustituirlo llamando a
+// `registrarJuego`—, solo que ya no arranca vacío.
+let juego = poker;
 
 export function registrarJuego(moduloDeJuego) {
   juego = moduloDeJuego;

@@ -11,14 +11,26 @@ let configuredModuleId = null;
 
 export function registerStationFeature(moduleId) {
   configuredModuleId = moduleId;
-  Hooks.on("updateUser", () => {
-    if (!stationApp?.rendered) return;
-    if (foundry.applications?.api?.ApplicationV2) {
-      stationApp.render({ force: true });
-    } else {
-      stationApp.render(false);
-    }
-  });
+  Hooks.on("updateUser", () => refrescarPuestos());
+}
+
+/**
+ * Repinta la ventana de puestos si está abierta. Es lo que hay que llamar
+ * cuando cambia algo que la ventana LEE al preparar su contexto.
+ *
+ * Los requisitos se releen en cada render y también al guardar, así que una
+ * ventana abierta con el ajuste cambiado enseñaba el estado anterior: opciones
+ * que parecían permitidas y el guardado las rechazaba, u opciones deshabilitadas
+ * que ya no tenían por qué estarlo y ni siquiera podían emitir el cambio. La
+ * ventana tiene que seguir al ajuste, no al revés.
+ */
+export function refrescarPuestos() {
+  if (!stationApp?.rendered) return;
+  if (foundry.applications?.api?.ApplicationV2) {
+    stationApp.render({ force: true });
+  } else {
+    stationApp.render(false);
+  }
 }
 
 export function addStationControl(controls) {

@@ -34,7 +34,7 @@ import {
   revokeBridgeTokenAccess,
 } from "./bridge-token-session.mjs";
 import { probarConexion } from "./diagnostico-conexion.mjs";
-import { addStationControl, registerStationFeature } from "./station-ui.mjs";
+import { addStationControl, refrescarPuestos, registerStationFeature } from "./station-ui.mjs";
 import { MINIMO_POR_DEFECTO } from "./requisitos-puesto.mjs";
 import {
   addWorkspaceControl,
@@ -139,6 +139,11 @@ Hooks.once("init", () => {
     scope: "world",
     config: true,
     type: Boolean,
+    // La ventana de puestos relee los requisitos en cada render: sin esto, una
+    // ventana abierta se queda con el estado anterior y miente en las dos
+    // direcciones —opciones que parecen permitidas y el guardado rechaza, u
+    // opciones deshabilitadas que ya no tendrían por qué estarlo—.
+    onChange: () => refrescarPuestos(),
     default: false,
   });
   game.settings.register(MODULE_ID, "requisitosPuestoMinimo", {
@@ -148,6 +153,7 @@ Hooks.once("init", () => {
     config: true,
     type: Number,
     range: { min: 3, max: 20, step: 1 },
+    onChange: () => refrescarPuestos(),
     default: MINIMO_POR_DEFECTO,
   });
 

@@ -230,11 +230,27 @@
       <aside class="lagunak-workspace__side">
         <section class="lagunak-workspace__briefing">
           <h3>{{localize "LAGUNAK.Espacios.ListaGuardia"}}</h3>
-          <ol>
-            {{#each tasks}}
-              <li><span>{{number}}</span>{{label}}</li>
+          {{! La severidad va en la palabra y en el prefijo, no solo en el color:
+              misma regla que el daño por sistema (#353). Y aria-live porque
+              estos avisos aparecen solos, sin que nadie pulse nada. }}
+          <ul class="lagunak-workspace__avisos" role="status" aria-live="polite">
+            {{#each avisos}}
+              <li class="lagunak-workspace__aviso lagunak-workspace__aviso--{{severidad}}">
+                {{! La marca se resuelve en JS: `eq` no es un helper garantizado en todas las
+                    versiones de Foundry, y un helper ausente rompe la plantilla entera. }}
+                <span class="lagunak-workspace__aviso-marca" aria-hidden="true">{{marca}}</span>
+                {{label}}
+              </li>
+            {{else}}
+              <li class="lagunak-workspace__aviso lagunak-workspace__aviso--vacio">
+                {{#if hasTelemetry}}
+                  {{localize "LAGUNAK.Espacios.Aviso.SinNovedad"}}
+                {{else}}
+                  {{localize "LAGUNAK.Espacios.Aviso.SinLectura"}}
+                {{/if}}
+              </li>
             {{/each}}
-          </ol>
+          </ul>
         </section>
 
         <section class="lagunak-workspace__crew">

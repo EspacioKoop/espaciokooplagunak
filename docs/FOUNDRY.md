@@ -117,6 +117,16 @@ token:
   rumbo justo al cruzar el norte. **Impulso y warp no tienen lectura real**
   porque `/v1/state` no los publica; la consola lo dice en vez de enseñar como
   «real» el mismo número que se acaba de pedir.
+- **Avisos de guardia derivados** (#331 paso 3, `avisos-guardia.mjs`). Cada
+  consola mostraba tres «tareas» fijas por puesto —Rumbo, Ruta, Llegada— que no
+  cambiaban nunca ni decían qué hacer AHORA: ocupaban sitio en una consola que se
+  quejaba de estar vacía y enseñaban a ignorar esa esquina de la pantalla. En su
+  lugar, avisos derivados del estado («REFRIGERANTE: maniobra al 91% de calor»),
+  **por puesto**: un aviso que no puedes atender es ruido, así que al piloto no
+  le llega el detalle térmico que solo ingeniería puede tocar, y el capitán los
+  ve todos porque su trabajo es repartir la atención. **Sin telemetría no hay
+  avisos**, en vez de avisos tranquilizadores: un «todo en orden» inventado es
+  peor que un panel en blanco, porque el panel en blanco no miente.
 - **Identidad de usuario no falsificable** (#237). El tripulante escribe la orden
   en su propio flag de usuario (`emitWorkspaceOrder`); el GM la recoge en el hook
   `updateUser`. El puesto **nunca** se declara en la orden: el GM lo resuelve

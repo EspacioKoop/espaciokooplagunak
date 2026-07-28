@@ -57,13 +57,16 @@ const contactsPayload = {
   truncated: false,
 };
 
-test("los seis puestos tienen identidad y lista de guardia propias", () => {
+test("los seis puestos tienen identidad propia", () => {
   assert.deepEqual(WORKSPACE_STATIONS, [
     "captain", "navigation", "engineering", "sensors", "communications", "weapons",
   ]);
   const definitions = WORKSPACE_STATIONS.map(workspaceDefinition);
   assert.equal(new Set(definitions.map(({ accent }) => accent)).size, 6);
-  assert.ok(definitions.every(({ tasks }) => tasks.length === 3));
+  // La lista de tareas fijas por puesto se fue en #331 paso 3: no cambiaba
+  // nunca y enseñaba a ignorar esa esquina de la pantalla. Ahora esa columna la
+  // llenan los avisos derivados del estado, que sí dicen qué hacer ahora.
+  assert.ok(definitions.every(({ tasks }) => tasks === undefined));
   const codes = WORKSPACE_STATIONS.map((station) => buildWorkspaceModel({
     station,
     isGM: true,

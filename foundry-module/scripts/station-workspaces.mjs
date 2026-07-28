@@ -2,6 +2,7 @@ import { STATIONS, normalizeStation } from "./station-assignment.mjs";
 import { isActionAllowed } from "./station-actions.mjs";
 import { SISTEMAS_INGENIERIA, NIVELES_POTENCIA, NIVELES_REFRIGERANTE } from "./ingenieria-control.mjs";
 import { prepareSystemRows } from "./ship-view.mjs";
+import { avisosParaPuesto } from "./avisos-guardia.mjs";
 
 // Marca visible de «no hay lectura», distinta de cualquier valor real.
 const SIN_DATO = "—";
@@ -10,32 +11,26 @@ const DEFINITIONS = Object.freeze({
   captain: Object.freeze({
     icon: "fa-solid fa-chess-king",
     accent: "amber",
-    tasks: ["Situacion", "Prioridades", "Coordinacion"],
   }),
   navigation: Object.freeze({
     icon: "fa-solid fa-compass",
     accent: "cyan",
-    tasks: ["Rumbo", "Ruta", "Llegada"],
   }),
   engineering: Object.freeze({
     icon: "fa-solid fa-screwdriver-wrench",
     accent: "lime",
-    tasks: ["Potencia", "Temperatura", "Reparaciones"],
   }),
   sensors: Object.freeze({
     icon: "fa-solid fa-satellite-dish",
     accent: "violet",
-    tasks: ["Barrido", "Identificacion", "Seguimiento"],
   }),
   communications: Object.freeze({
     icon: "fa-solid fa-tower-broadcast",
     accent: "blue",
-    tasks: ["Canales", "Mensajes", "Bitacora"],
   }),
   weapons: Object.freeze({
     icon: "fa-solid fa-crosshairs",
     accent: "red",
-    tasks: ["Seguridad", "Soluciones", "Confirmacion"],
   }),
 });
 
@@ -373,9 +368,21 @@ export function buildWorkspaceModel({
     crew,
     crewCount: crew.length,
     activeCrew: crew.filter((member) => member.active).length,
-    tasks: definition.tasks.map((task, index) => ({
-      number: index + 1,
-      label: localize(i18n, `LAGUNAK.Espacios.${normalized}.Tarea.${task}`),
+    // Avisos derivados del estado, en lugar de las tres tareas fijas por puesto
+    // (#331 paso 3). Aquellas no cambiaban nunca y enseñaban a ignorar esa
+    // esquina de la pantalla, que es lo peor que puede hacer un panel.
+    //
+    // Sin telemetría la lista va VACÍA, y la plantilla lo dice con una frase en
+    // vez de con un hueco: un «todo en orden» inventado sería peor, porque el
+    // panel en blanco al menos no miente.
+    avisos: avisosParaPuesto(ship, normalized).map((aviso) => ({
+      severidad: aviso.severidad,
+      // Canal no cromático de la severidad, además de la palabra del texto.
+      marca: aviso.severidad === "critico" ? "!!" : "!",
+      label: format(i18n, `LAGUNAK.Espacios.Aviso.${aviso.clave}`, {
+        sistema: aviso.datos.sistema ? localize(i18n, `LAGUNAK.Sistemas.${aviso.datos.sistema}`) : "",
+        valor: aviso.datos.valor,
+      }),
     })),
     tabs: Boolean(isGM)
       ? STATIONS.map((entry) => ({

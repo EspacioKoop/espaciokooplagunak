@@ -49,7 +49,9 @@ Columna **Uso** de cada tabla:
 
 Cada afirmación se clasifica por su **nivel de evidencia**, no por intuición:
 
-- **Copyright — verificado.** Se cruza la **fecha de fallecimiento del autor** (biografía estándar) con
+- **Copyright — verificado.** Se cruza la **fecha de fallecimiento del autor** —tomada del fichero de
+  autoridades de la Library of Congress (LCNAF), que publica el encabezamiento autorizado con las
+  fechas y se cita por autor— con
   el plazo aplicable: UE vida+70; EE. UU. término de 95 años (DP hasta lo publicado en 1930). Fuentes
   autoritativas de plazo:
   [Duke CSPD — Public Domain Day 2026](https://web.law.duke.edu/cspd/publicdomainday/2026/) ·
@@ -117,18 +119,32 @@ Las marcas **sí verificadas** en esta versión (con registro o caso citable) so
 | *La isla del doctor Moreau* | H. G. Wells (1946) | DP en UE desde 2017; EE. UU. hasta 1930 | ✅ | Híbridos animal-humano, la «Casa del Dolor», bioética torcida |
 | *Un yanqui en la corte del rey Arturo* | Mark Twain (1910) | DP mundial | ✅ | Anacronismo tecnológico, el forastero con conocimiento «mágico» |
 
-> **Fuente/verificación (consulta 2026-07-27):** copyright derivado de la fecha de fallecimiento de
-> cada autor (Verne 1905, Wells 1946, Shelley 1851, Stevenson 1894, Twain 1910) contra UE vida+70 y
-> EE. UU. término de 95 años ([Duke CSPD 2026](https://web.law.duke.edu/cspd/publicdomainday/2026/)).
+> **Fuente/verificación (consulta 2026-07-27).** Se citan por separado los **dos hechos** que
+> sostienen cada fila, porque son de naturaleza distinta y una fuente de plazo no acredita una fecha
+> autoral:
+>
+> 1. **Fecha de fallecimiento** — fichero de autoridades de la Library of Congress (LCNAF), que
+>    publica el encabezamiento autorizado con las fechas del autor:
+>    [Verne, Jules, 1828-1905](https://id.loc.gov/authorities/names/n79064013) ·
+>    [Wells, H. G. (Herbert George), 1866-1946](https://id.loc.gov/authorities/names/n79063613) ·
+>    [Shelley, Mary Wollstonecraft, 1797-1851](https://id.loc.gov/authorities/names/n79061063) ·
+>    [Stevenson, Robert Louis, 1850-1894](https://id.loc.gov/authorities/names/n78088964) ·
+>    [Twain, Mark, 1835-1910](https://id.loc.gov/authorities/names/n79021164).
+> 2. **Plazo aplicable y corte de dominio público** — UE vida+70 y EE. UU. término de 95 años
+>    ([Duke CSPD 2026](https://web.law.duke.edu/cspd/publicdomainday/2026/)).
 > Diseño Universal de *Frankenstein*: marca/imagen de los estudios, no de la novela — **precautorio**.
 > **Marca (todas las filas ✅ de este bloque):** no consultada en registro. El ✅ vale solo como
 > nombre interno de ficción, nunca como etiqueta de producto — ver [Marca: qué está comprobado y qué no](#marca-qué-está-comprobado-y-qué-no).
 
 ## 2. Terror cósmico (mitos de Lovecraft)
 
-H. P. Lovecraft falleció en **1937** → **DP en la UE desde 2008** (vida+70) y en EE. UU. lo publicado
-hasta 1930 es DP por término de 95 años, y de lo posterior no consta renovación de copyright
-([copyright status, HPL Wiki](https://lovecraft.fandom.com/wiki/Copyright_status_of_works_by_H._P._Lovecraft)).
+H. P. Lovecraft falleció en **1937**
+([LCNAF: Lovecraft, H. P. (Howard Phillips), 1890-1937](https://id.loc.gov/authorities/names/n80017007))
+→ **DP en la UE desde 2008** (vida+70) y en EE. UU. lo publicado hasta 1930 es DP por término de 95
+años, y de lo posterior no consta renovación de copyright
+([copyright status, HPL Wiki](https://lovecraft.fandom.com/wiki/Copyright_status_of_works_by_H._P._Lovecraft)
+— fuente **débil** para el estado de renovación: es un wiki, no un registro; el dato de renovación
+queda **precautorio** y no sostiene por sí solo ningún ✅ sobre obra posterior a 1930).
 Los **nombres de criaturas y lugares que él acuñó** son DP. Cuidado con capas posteriores (ver notas).
 
 | Elemento | Uso | Nota |
@@ -137,7 +153,7 @@ Los **nombres de criaturas y lugares que él acuñó** son DP. Cuidado con capas
 | **Miskatonic** (universidad/río), **R'lyeh** (forma sin apóstrofo: **Rlyeh**), **Innsmouth**, **Kadath**, **Leng** | ✅ | Topónimos de Lovecraft, DP. Excelentes para nombres de naves/estaciones |
 | **Necronomicón** | ✅ | El nombre y el concepto son de Lovecraft (DP). El *aspecto* del libro en films concretos puede ser propio de esos films |
 | «**Arkham**» | 📝 | Topónimo de Lovecraft (DP) **pero** marca muy activa de terceros en videojuegos/cómic. Para evitar confusión de marca, prefiere **Miskatonic/Innsmouth/R'lyeh** |
-| Término «**Cthulhu Mythos**», deidades **añadidas por August Derleth** (Cthugha…) | 📝/⛔ | Lo acuñado por Derleth (1971) **no** es DP. Cíñete a lo de Lovecraft |
+| Término «**Cthulhu Mythos**», deidades **añadidas por August Derleth** (Cthugha…) | 📝/⛔ | Lo acuñado por Derleth ([1909-1971, LCNAF](https://id.loc.gov/authorities/names/n50002948)) **no** es DP: vida+70 lo mantiene protegido en la UE hasta 2042. Cíñete a lo de Lovecraft |
 | *Call of Cthulhu* (juego de rol de Chaosium) | ⛔ | El **juego** y su presentación son marca/producto vivo. Referencia a Lovecraft, no a Chaosium |
 
 > **Fuente/verificación (consulta 2026-07-27):** copyright DP por fallecimiento en 1937 (UE vida+70) y
@@ -216,7 +232,7 @@ nombres/logos** como guiño de producto.
 |---|---|
 | **Flash Gordon** | King Features; obra y marca vivas. ⛔ |
 | **Buck Rogers** | *Armageddon 2419 A.D.* (Nowlan, 1928–29) es DP en EE. UU., **pero** el nombre/personaje sigue en disputa/marca (Dille Family Trust). ⛔ por precaución |
-| **John Carter / Barsoom / Tarzan** (E. R. Burroughs, fallec. 1950) | Texto en DP en UE **solo desde 2021** y en EE. UU. las primeras novelas (hasta 1930), **pero** ERB, Inc. mantiene **marcas vivas** sobre los nombres. 📝 como texto, ⛔ como etiqueta de producto |
+| **John Carter / Barsoom / Tarzan** (E. R. Burroughs, fallec. 1950 — [LCNAF](https://id.loc.gov/authorities/names/n80039681)) | Texto en DP en UE **solo desde 2021** y en EE. UU. las primeras novelas (hasta 1930), **pero** ERB, Inc. mantiene **marcas vivas** sobre los nombres. 📝 como texto, ⛔ como etiqueta de producto |
 | **Star Wars, Star Trek, Dune, Warhammer 40k, Alien, Blade Runner** | Copyright y marca plenamente vigentes. ⛔ |
 | **Doctor Who, Dan Dare, Perry Rhodan** | Vigentes. ⛔ |
 | Diseño Universal de **Frankenstein/Drácula** (tornillos, capa) | La novela es DP; **ese diseño** es de los estudios. 📝 usa la novela, ⛔ el diseño |
@@ -241,7 +257,9 @@ nombres/logos** como guiño de producto.
 
 ## Mantenimiento
 
-Este catálogo evoluciona. Al añadir una fuente: incluye **autor + fecha de fallecimiento**,
+Este catálogo evoluciona. Al añadir una fuente: incluye **autor + fecha de fallecimiento con su
+fuente biográfica citada** (LCNAF u otro fichero de autoridades; una fuente de *plazo* como Duke
+acredita el cómputo, **no** la fecha del autor),
 **jurisdicción**, **estado de copyright**, **estado de marca**, la columna **Uso** y, en la nota de
 bloque, la **fuente autoritativa + fecha de consulta** (ver
 [Fuentes y método de verificación](#fuentes-y-método-de-verificación)). Sin evidencia de registro,

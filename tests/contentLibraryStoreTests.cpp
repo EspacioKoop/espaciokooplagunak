@@ -200,17 +200,17 @@ void testMapDocumentRoundTrip()
     ContentLibraryStore store(temporary.path / "managed");
     const auto source = visualMap();
     expect(store.save({source}) == ContentStoreError::None,
-        "v4 map resource saves through the atomic store");
+        "v5 map resource saves through the atomic store");
     std::vector<ContentResource> loaded;
     const auto result = store.load(loaded);
     expect(result.error == ContentStoreError::None && loaded == std::vector<ContentResource>{source},
         "supported and opaque map objects survive atomic save/load");
     const auto canonical = nlohmann::json::parse(
         readAll(store.rootPath() / "library/library.json"));
-    expect(canonical["resources"][0]["version"] == 4
+    expect(canonical["resources"][0]["version"] == 5
             && canonical["resources"][0]["fields"]["objects"].size() == 2
             && canonical["version"] == 1,
-        "library stores canonical v4 resources without changing its envelope version");
+        "library stores canonical v5 resources without changing its envelope version");
 }
 
 void testShipDocumentRoundTripAndMigration()
@@ -219,7 +219,7 @@ void testShipDocumentRoundTripAndMigration()
     ContentLibraryStore store(temporary.path / "managed");
     const auto source = declarativeShip();
     expect(store.save({source}) == ContentStoreError::None,
-        "v4 ship overrides save through the atomic store");
+        "v5 ship overrides save through the atomic store");
     std::vector<ContentResource> loaded;
     auto result = store.load(loaded);
     expect(result.error == ContentStoreError::None
@@ -242,9 +242,10 @@ void testShipDocumentRoundTripAndMigration()
         "store migrates a v3 ship to empty overrides without inventing state");
     const auto canonical = nlohmann::json::parse(
         readAll(store.rootPath() / "library/library.json"));
-    expect(canonical["resources"][0]["version"] == 4
+    expect(canonical["resources"][0]["version"] == 5
+            && canonical["resources"][0]["fields"]["overrides"]["hull_max"].is_null()
             && canonical["resources"][0]["fields"]["overrides"]["systems"].empty(),
-        "store rewrites migrated ship as canonical v4");
+        "store rewrites migrated ship as canonical v5 without inventing hull");
 }
 
 void testCorruptionMigrationAndFutureVersion()

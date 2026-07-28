@@ -761,7 +761,7 @@ ContentResourceError parseContentResource(const std::string& input, ContentResou
     {
         const auto overrides_it = fields_it->find("overrides");
         if (overrides_it == fields_it->end()
-            || parseShipDocumentOverrides(*overrides_it, candidate.ship_document)
+            || parseShipDocumentOverrides(*overrides_it, candidate.ship_document, version)
                 != ShipDocumentError::None)
             return ContentResourceError::InvalidShipDocument;
     }

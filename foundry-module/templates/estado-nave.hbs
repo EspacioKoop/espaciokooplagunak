@@ -62,8 +62,24 @@
     <tr class="lagunak-ruta-{{ruta.estado}}"><th>{{localize "LAGUNAK.EstadoNave.Distancia"}}</th><td data-field="ruta-distancia">{{ruta.distanceLabel}}</td></tr>
     <tr class="lagunak-ruta-{{ruta.estado}}"><th>{{localize "LAGUNAK.EstadoNave.Eta"}}</th><td data-field="ruta-eta">{{ruta.etaLabel}}</td></tr>
     {{/if}}
-    <tr><th>{{localize "LAGUNAK.EstadoNave.Casco"}}</th><td data-field="nave-casco">{{nave.hull}} / {{nave.hull_max}}</td></tr>
-    <tr><th>{{localize "LAGUNAK.EstadoNave.Energia"}}</th><td data-field="nave-energia">{{nave.energy}} / {{nave.energy_max}}</td></tr>
+    <tr>
+      <th>{{localize "LAGUNAK.EstadoNave.Casco"}}</th>
+      <td data-field="nave-casco" class="lagunak-celda-barra">
+        <span data-texto>{{nave.hull}} / {{nave.hull_max}}</span>
+        <span class="lagunak-barra" aria-hidden="true">
+          <span class="lagunak-barra__relleno" data-relleno data-nivel="{{barras.casco.nivel}}" style="width: {{barras.casco.pct}}%"></span>
+        </span>
+      </td>
+    </tr>
+    <tr>
+      <th>{{localize "LAGUNAK.EstadoNave.Energia"}}</th>
+      <td data-field="nave-energia" class="lagunak-celda-barra">
+        <span data-texto>{{nave.energy}} / {{nave.energy_max}}</span>
+        <span class="lagunak-barra" aria-hidden="true">
+          <span class="lagunak-barra__relleno" data-relleno data-nivel="{{barras.energia.nivel}}" style="width: {{barras.energia.pct}}%"></span>
+        </span>
+      </td>
+    </tr>
     <tr><th>{{localize "LAGUNAK.EstadoNave.Escudos"}}</th><td>{{#if nave.shields_active}}{{localize "LAGUNAK.EstadoNave.EscudosActivos"}}{{else}}{{localize "LAGUNAK.EstadoNave.EscudosInactivos"}}{{/if}}</td></tr>
   </table>
 
@@ -78,9 +94,24 @@
     {{#each sistemas}}
     <tr data-sistema-id="{{this.id}}">
       <td>{{this.nombre}}</td>
-      <td data-campo="salud">{{this.salud}}%</td>
-      <td data-campo="calor">{{this.calor}}%</td>
-      <td data-campo="potencia">{{this.potencia}}%</td>
+      <td data-campo="salud" class="lagunak-celda-barra">
+        <span data-texto>{{this.salud}}</span>
+        <span class="lagunak-barra" aria-hidden="true">
+          <span class="lagunak-barra__relleno" data-relleno data-nivel="{{this.barras.salud.nivel}}" style="width: {{this.barras.salud.pct}}%"></span>
+        </span>
+      </td>
+      <td data-campo="calor" class="lagunak-celda-barra">
+        <span data-texto>{{this.calor}}</span>
+        <span class="lagunak-barra" aria-hidden="true">
+          <span class="lagunak-barra__relleno" data-relleno data-nivel="{{this.barras.calor.nivel}}" style="width: {{this.barras.calor.pct}}%"></span>
+        </span>
+      </td>
+      <td data-campo="potencia" class="lagunak-celda-barra">
+        <span data-texto>{{this.potencia}}</span>
+        <span class="lagunak-barra" aria-hidden="true">
+          <span class="lagunak-barra__relleno" data-relleno data-nivel="{{this.barras.potencia.nivel}}" style="width: {{this.barras.potencia.pct}}%"></span>
+        </span>
+      </td>
     </tr>
     {{/each}}
   </table>

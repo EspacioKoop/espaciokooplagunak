@@ -128,6 +128,12 @@ export function vistaPublica(estado) {
   return {
     version: estado.version,
     fase: estado.fase,
+    // El botón es público en cualquier mesa: se ve el disco. Y hace falta
+    // fuera del motor, porque quien decide dónde empieza la mano SIGUIENTE es
+    // la capa de mesa, y sin esto no tenía forma de saber dónde estaba en la
+    // anterior — el botón se quedaba clavado y el mismo asiento pagaba la
+    // ciega pequeña siempre.
+    botonIndice: estado.botonIndice,
     comunitarias: estado.comunitarias.map(codigo),
     bote: bote(estado),
     apuestaActual: estado.apuestaActual,

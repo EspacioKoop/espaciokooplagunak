@@ -20,15 +20,11 @@
 // que se prueba desde Node. Toda la aleatoriedad entra por `semilla`.
 
 import { crearAleatorio } from "./minijuegos/aleatorio.mjs";
+import { TINTA } from "./paleta.mjs";
 
-// Tinta sepia sobre papel envejecido: la paleta del grabado impreso, no la de
-// una pantalla. Se expone para que el consumidor pueda invertirla.
-export const TINTA = Object.freeze({
-  linea: "#c9b48a",
-  lineaSuave: "rgba(201, 180, 138, 0.45)",
-  papel: "#0b0f18",
-  realce: "#f0e4c4",
-});
+// La tinta del grabado vive en `paleta.mjs` con la frontera de estilo (#351).
+// Se reexporta porque los consumidores de este módulo ya la importaban de aquí.
+export { TINTA };
 
 const TAU = Math.PI * 2;
 
@@ -129,18 +125,32 @@ export function discoLunar(semilla, { radio = 40, fase = 0.6, crateres = 18 } = 
 export function discoLunarSvg(semilla, opciones = {}) {
   const { radio, fase, crateres } = discoLunar(semilla, opciones);
   const lado = radio * 2 + 4;
+  // El radio entra en el identificador porque el `clipPath` depende de él: dos
+  // discos de la misma semilla y distinto radio en la misma página compartirían
+  // id y el navegador resolvería `url(#…)` al primero, recortando mal el segundo.
+  const id = `luna-${String(semilla).replace(/[^a-z0-9]/gi, "")}-${radio}`;
+
+  // Terminador: media elipse cuyo eje horizontal encoge según la fase. Con
+  // fase 0.5 es una recta (cuarto), con 0 o 1 coincide con el borde.
+  const rx = Number((radio * (1 - fase * 2)).toFixed(2));
+  const sombra =
+    `M 0 ${-radio} A ${Math.abs(rx)} ${radio} 0 0 ${rx >= 0 ? 0 : 1} 0 ${radio} ` +
+    `A ${radio} ${radio} 0 0 0 0 ${-radio} Z`;
+
   const circulos = crateres
     .map((c) => `<circle cx="${c.x}" cy="${c.y}" r="${c.r}" fill="none" stroke="${TINTA.lineaSuave}" stroke-width="0.5"/>`)
     .join("");
-  // Terminador: un elipse que barre el disco según la fase.
-  const rxTerminador = Number((radio * Math.abs(1 - fase * 2)).toFixed(2));
-  const ladoOscuro = fase < 0.5 ? 1 : 0;
+
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-lado / 2} ${-lado / 2} ${lado} ${lado}" role="img">` +
+    `<defs>${patronesTrama(id, [0.85])}` +
+    `<clipPath id="${id}-c"><circle cx="0" cy="0" r="${radio}"/></clipPath></defs>` +
     `<circle cx="0" cy="0" r="${radio}" fill="none" stroke="${TINTA.linea}" stroke-width="1"/>` +
     circulos +
-    `<path d="M 0 ${-radio} A ${rxTerminador} ${radio} 0 0 ${ladoOscuro} 0 ${radio} A ${radio} ${radio} 0 0 0 0 ${-radio} Z" ` +
-    `fill="${TINTA.papel}" fill-opacity="0.72"/>` +
+    // El rayado se recorta al disco para que nunca se salga del limbo.
+    `<g clip-path="url(#${id}-c)">` +
+    `<path d="${sombra}" fill="url(#${id}-t0)" stroke="${TINTA.linea}" stroke-width="0.7"/>` +
+    `</g>` +
     `</svg>`
   );
 }

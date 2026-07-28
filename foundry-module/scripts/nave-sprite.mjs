@@ -17,9 +17,11 @@
  * contacto, así que el «falso 3D» es de sombreado, no de frames.
  */
 
-// Acentos fijos (no dependen de la facción).
-const CABINA = "#fdfffc"; // crema cálido, como la nave propia del mapa
-const MOTOR = "#ffb703"; // ámbar de propulsión
+// Acentos fijos (no dependen de la facción), desde la paleta común (#351).
+import { PIXEL } from "./paleta.mjs";
+
+const CABINA = PIXEL.cabina; // crema cálido, como la nave propia del mapa
+const MOTOR = PIXEL.motor; // ámbar de propulsión
 
 // Siluetas nose-up. Códigos: '=' casco iluminado, '#' casco base,
 // '-' casco en sombra, '*' cabina, 'o' motor, '.' vacío.
@@ -141,7 +143,7 @@ function colorCelda(codigo, base) {
  *
  * @returns {{dx:number, dy:number, color:string}[]}
  */
-export function construirSpriteNave({ clave = "desconocido", color = "#ffffff" } = {}) {
+export function construirSpriteNave({ clave = "desconocido", color = PIXEL.neutro } = {}) {
   const filas = SILUETAS[clave] ?? SILUETAS.desconocido;
   const alto = filas.length;
   const ancho = filas.reduce((max, fila) => Math.max(max, fila.length), 0);
@@ -172,16 +174,16 @@ export function dibujarNaveSprite(
   for (const celda of celdas) {
     const esMotor = celda.color === MOTOR;
     // Motor apagado cuando la nave está parada; encendido (ámbar vivo) al mover.
-    ctx.fillStyle = esMotor && !moviendo ? "#6e5211" : celda.color;
+    ctx.fillStyle = esMotor && !moviendo ? PIXEL.motorApagado : celda.color;
     const px = Math.round(centroX + celda.dx * pixel - pixel / 2);
     const py = Math.round(centroY + celda.dy * pixel - pixel / 2);
     ctx.fillRect(px, py, pixel, pixel);
 
     // Estela de propulsión hacia popa (abajo, morro arriba) solo en movimiento.
     if (esMotor && moviendo) {
-      ctx.fillStyle = "#fff3c4"; // núcleo claro
+      ctx.fillStyle = PIXEL.motorNucleo; // núcleo claro
       ctx.fillRect(px, py + pixel, pixel, pixel);
-      ctx.fillStyle = "#ff8c1e"; // estela ámbar
+      ctx.fillStyle = PIXEL.motorEstela; // estela ámbar
       ctx.fillRect(px, py + pixel * 2, pixel, pixel * (llamaLarga ? 2 : 1));
     }
   }

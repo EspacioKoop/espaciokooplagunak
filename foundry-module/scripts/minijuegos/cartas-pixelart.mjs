@@ -14,19 +14,22 @@
 // a la cara.
 
 import { interpretarCodigo } from "./naipes.mjs";
+import { PIXEL } from "../paleta.mjs";
 
 // Lienzo lógico en píxeles de arte; el SVG escala sin difuminar.
 export const ANCHO = 30;
 export const ALTO = 42;
 
+// Los colores de la baraja son los de la paleta común del arte de rejilla
+// (#351); aquí solo se les da el nombre con el que los usa la carta.
 export const PALETA = Object.freeze({
-  cara: "#f4e8c8", // pergamino claro: máximo contraste con ambas tintas
-  borde: "#2a1f14", // marco tinta sepia oscura
-  negro: "#1c1a2e", // palos ♠ ♣: tinta índigo casi negra
-  rojo: "#b3212a", // palos ♥ ♦: carmesí profundo
-  dorsoFondo: "#141b33", // campo estrellado
-  dorsoMotivo: "#c8a24a", // d20 dorado
-  dorsoEstrella: "#8fa3d9",
+  cara: PIXEL.cara, // pergamino claro: máximo contraste con ambas tintas
+  borde: PIXEL.borde, // marco tinta sepia oscura
+  negro: PIXEL.negro, // palos ♠ ♣: tinta índigo casi negra
+  rojo: PIXEL.rojo, // palos ♥ ♦: carmesí profundo
+  dorsoFondo: PIXEL.dorsoFondo, // campo estrellado
+  dorsoMotivo: PIXEL.dorsoMotivo, // d20 dorado
+  dorsoEstrella: PIXEL.dorsoEstrella,
 });
 
 // ---- Tipografía pixel 5x7 -------------------------------------------------

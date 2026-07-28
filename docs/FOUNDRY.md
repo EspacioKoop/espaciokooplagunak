@@ -230,6 +230,36 @@ toda la mesa oye lo mismo sin sincronizar nada.
 
 Módulos: `musica-procedural.mjs` (qué notas), `musica-mando.mjs` (quién decide),
 `musica-reproductor.mjs` (cómo suena).
+### Frontera de estilo: vivo frente a registrado
+
+El módulo genera dos artes en el cliente y comparten disciplina —ninguna usa
+degradado, las dos van sobre papel oscuro—, así que conviven sin parecer un
+descuido: son una imprenta y un CRT en la misma sala. La frontera es una
+pregunta, no una lista de superficies:
+
+> **Grabado** (`TINTA`) para lo que **persiste o enmarca**. **Pixelart**
+> (`PIXEL`) para lo que **se repinta con telemetría**.
+
+Cartelas, fichas, códice y el marco cartográfico del mapa son grabado. Sprites
+de nave, barras, iconos de sistema, retratos y naipes son pixel.
+
+El eje **no** es «diegético frente a papel», que fue el primer intento: con esa
+regla el marco de grabado que envuelve el lienzo de píxeles del mapa vivo sería
+una infracción, cuando es justo lo correcto —el marco es la carta, el interior
+es la verdad que cambia en cada sondeo—. Formulada como vivo/registrado predice
+bien los casos que vienen: la cartela de una lámina impresa es grabado aunque
+cuelgue de una consola, y una barra que sigue a `/v1/state` es pixel aunque viva
+dentro de un diario.
+
+Los colores viven en `paleta.mjs` y **solo** ahí: una prueba falla si un módulo
+de arte declara un color propio —hexadecimal con cualquier comilla, o `rgb()` y
+`hsl()`—. La guardia cubre hoy las láminas, el sprite de nave, los naipes y la
+paleta de facciones del mapa vivo; `decorado-fondo.mjs` y `mapa-render.mjs`
+quedan fuera a la espera de decidir si sus catálogos (tipos de planeta,
+nebulosas, tonos de lienzo) son paleta compartida o dato de decorado. Sin eso la regla sería prosa, y el cuarto
+módulo volvería a inventarse su propio sepia. Ese módulo también trae el cálculo
+de contraste de WCAG, con los pares que portan información verificados en la
+suite (#351).
 
 ## Seguridad obligatoria
 

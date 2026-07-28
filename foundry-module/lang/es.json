@@ -393,5 +393,6 @@
   "LAGUNAK.Minijuegos.Rechazo.sin_semilla": "no se pudo barajar",
   "LAGUNAK.Minijuegos.Rechazo.nonce_reutilizado": "esa jugada ya se había enviado",
   "LAGUNAK.Minijuegos.Rechazo.juego_rechazo": "el juego no admite esa jugada",
-  "LAGUNAK.Minijuegos.Rechazo.desconocido": "motivo desconocido"
+  "LAGUNAK.Minijuegos.Rechazo.desconocido": "motivo desconocido",
+  "LAGUNAK.Minijuegos.Rechazo.sin_modulo": "el módulo no ha terminado de arrancar"
 }

@@ -516,3 +516,25 @@ test("REGRESIÓN: la segunda propuesta llega como diferencial y no puede rechaza
     null,
   );
 });
+
+test("sin sesión viva el coordinador lo dice, no descarta en silencio", () => {
+  // Es el caso del GM que abrió la mesa en otra sesión del navegador: el ajuste
+  // de mundo sigue ahí, pero los secretos no. Callarse deja al que propuso
+  // mirando un botón que no hace nada, que es el peor de los diagnósticos.
+  const rechazos = [];
+  const sobre = construirPropuesta({
+    publico: vistaPublicaSesion(sesionConDos()),
+    tipo: "join",
+    nonce: nonce(),
+  });
+  const resultado = despacharCambioDeUsuario({
+    userDoc: { id: "p1", flags: { [MODULO]: { [FLAG_PROPUESTA]: sobre } } },
+    changes: cambioConPropuesta(sobre),
+    moduleId: MODULO,
+    obtenerSesion: () => null,
+    juego: juegoFalso,
+    alRechazar: ({ actorId, codigo }) => rechazos.push({ actorId, codigo }),
+  });
+  assert.equal(resultado, null);
+  assert.deepEqual(rechazos, [{ actorId: "p1", codigo: "sesion_desconocida" }]);
+});

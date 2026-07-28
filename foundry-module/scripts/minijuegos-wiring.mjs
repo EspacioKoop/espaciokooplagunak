@@ -305,16 +305,47 @@ export function abrirMesa({ id, nombreJuego, limites } = {}) {
 // Lado participante: propone una acción escribiéndola en su propio flag. No
 // declara identidad —la resuelve el coordinador— solo tipo y parámetros.
 export function proponerAccion({ tipo, parametros } = {}) {
-  if (!moduloConfigurado) return undefined;
+  // Nada de fallar en silencio. Este camino tiene cuatro formas de no hacer
+  // nada —módulo sin registrar, mesa inexistente, sobre imposible de construir
+  // y escritura del flag rechazada— y las cuatro se veían igual desde la silla:
+  // pulsas el botón y no pasa nada. Cada una avisa por su nombre.
+  if (!moduloConfigurado) {
+    avisarFallo("sin_modulo");
+    return undefined;
+  }
   const publico = game.settings.get(moduloConfigurado, AJUSTE_SESION);
-  if (!publico) return undefined;
-  const sobre = construirPropuesta({
-    publico,
-    tipo,
-    parametros,
-    nonce: foundry.utils.randomID(),
-  });
-  return game.user?.setFlag(moduloConfigurado, FLAG_PROPUESTA, sobre);
+  if (!publico) {
+    avisarFallo("sesion_desconocida");
+    return undefined;
+  }
+  let sobre;
+  try {
+    sobre = construirPropuesta({
+      publico,
+      tipo,
+      parametros,
+      nonce: foundry.utils.randomID(),
+    });
+  } catch (err) {
+    console.error("[lagunak] no se pudo construir la propuesta", err);
+    avisarFallo("payload_invalido");
+    return undefined;
+  }
+  console.debug("[lagunak] propuesta enviada", sobre);
+  return Promise.resolve(game.user?.setFlag(moduloConfigurado, FLAG_PROPUESTA, sobre)).catch(
+    (err) => {
+      // Aquí acaba, por ejemplo, un cliente sin permiso para escribir su propio
+      // documento: la propuesta no llega a salir y el coordinador no se entera
+      // de nada, así que el aviso solo puede darlo este lado.
+      console.error("[lagunak] el flag de la propuesta no se pudo escribir", err);
+      avisarFallo("sin_identidad");
+      return undefined;
+    },
+  );
+}
+
+function avisarFallo(codigo) {
+  Hooks.callAll("lagunakMinijuegoPropuestaRechazada", codigo);
 }
 
 // Pide al coordinador que reparta las vistas.

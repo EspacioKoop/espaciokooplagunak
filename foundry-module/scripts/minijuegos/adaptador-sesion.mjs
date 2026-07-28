@@ -16,6 +16,7 @@
 // privacidad de interfaz, no secreto criptográfico frente a un cliente hostil.
 
 import {
+  ERRORES,
   accionesPermitidas,
   aplicar,
   sustituirCoordinador,
@@ -160,7 +161,13 @@ export function despacharCambioDeUsuario({
   if (!sobre) return null;
   if (!puedeCoordinar()) return null;
   const sesion = obtenerSesion();
-  if (!sesion) return null;
+  // Sin sesión viva no hay nada que aplicar, pero callarse deja al que propuso
+  // mirando un botón que no hace nada. Se le dice que la mesa ya no existe,
+  // que es exactamente lo que le pasa a su propuesta.
+  if (!sesion) {
+    alRechazar({ actorId: userDoc?.id, codigo: ERRORES.SESION_DESCONOCIDA });
+    return null;
+  }
 
   const actorId = userDoc?.id;
   const resultado = procesarPropuesta({

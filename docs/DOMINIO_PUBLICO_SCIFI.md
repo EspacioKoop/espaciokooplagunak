@@ -267,7 +267,12 @@ una afirmación de marca queda **precautoria** y su estado se mueve a lo conserv
 Al usar un elemento en código/arte, enlaza de vuelta a la fila de esta tabla en el PR.
 
 **Formas exactas publicables.** El código no publica «el concepto», publica **cadenas**. Toda cadena
-que un pool o un escenario llegue a mostrar debe aparecer **literalmente** en una fila de este
-catálogo, incluidas sus normalizaciones ASCII (`R'lyeh` → `Rlyeh`) y sus singulares (`Trípodes` →
-`Trípode`). Si una forma no está escrita aquí, o se añade a la fila correspondiente en el mismo PR, o
-se retira del pool. No vale «se deduce de la fila»: la trazabilidad es literal.
+que un pool o un escenario llegue a mostrar debe aparecer en una fila de este catálogo, salvo el
+plegado de tildes (`Ícaro` cubre `Icaro`), que se admite por ser mera transliteración. Los
+**singulares** y las **variantes sin apóstrofo** sí cuentan como formas distintas y se escriben aquí
+explícitamente (`Trípodes`/`Trípode`, `R'lyeh`/`Rlyeh`). Si una forma no está escrita, o se añade a
+la fila que la respalda en el mismo PR, o se retira del pool.
+
+Esto **no depende de que alguien se acuerde**: lo verifica
+[`tools/check_public_domain_names.py`](../tools/check_public_domain_names.py) en CI, que falla si el
+pool publica un nombre que este documento no menciona.

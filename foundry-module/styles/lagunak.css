@@ -459,3 +459,13 @@
   height: 135px;
   image-rendering: pixelated;
 }
+
+/* Icono de daño por sistema (#353). Acompaña al nombre en la tabla de sistemas;
+ * el porcentaje y la barra siguen a su lado. Sin animación: nada que detener
+ * bajo prefers-reduced-motion. */
+.lagunak-icono-sistema {
+  width: 18px;
+  height: 18px;
+  vertical-align: -3px;
+  image-rendering: pixelated;
+}

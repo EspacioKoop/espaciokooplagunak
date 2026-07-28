@@ -123,6 +123,28 @@ export function mesaVista(vista, { userId = "", acciones = [] } = {}) {
   };
 }
 
+/**
+ * Quién se llevó qué, en líneas listas para escribir. Es puro y vive aquí —y no
+ * en la ventana— porque el resultado del póker tiene DOS formas: la mano que se
+ * gana sin rival (`ganadorId`/`ganancia`) y el showdown (`ganancias` por
+ * identidad, con botes laterales). Leer esas dos formas es saber de póker, y la
+ * ventana no tiene por qué.
+ *
+ * Sin resultado, o con uno que no se reconozca, no se devuelve nada: una mesa
+ * que anuncia un ganador inventado es peor que una que no anuncia ninguno.
+ */
+export function lineasResultado(resultado) {
+  if (!resultado || typeof resultado !== "object") return [];
+  if (typeof resultado.ganadorId === "string" && Number.isFinite(resultado.ganancia)) {
+    return [{ userId: resultado.ganadorId, fichas: resultado.ganancia }];
+  }
+  const ganancias = resultado.ganancias;
+  if (!ganancias || typeof ganancias !== "object") return [];
+  return Object.entries(ganancias)
+    .filter(([, fichas]) => Number.isFinite(fichas) && fichas > 0)
+    .map(([userId, fichas]) => ({ userId, fichas }));
+}
+
 /** Acciones con etiqueta, sin las que este módulo no sepa nombrar. */
 export function accionesVisibles(acciones) {
   return (Array.isArray(acciones) ? acciones : [])

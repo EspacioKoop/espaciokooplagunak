@@ -260,6 +260,25 @@ variantes y efectos sobre la campaña.
    sin semilla no hay forma honesta de continuarla. El relevo se anuncia por el
    hook `lagunakMinijuegoRelevoCoordinador` para que la UI del paso 4 lo explique.
 4. Ventana clásica v11 y ApplicationV2 compartiendo el mismo modelo.
+   **Implementado** en `foundry-module/scripts/minijuegos/mesa-poker-app.mjs`
+   (dos clases hermanas, sin compartir código de ventana) sobre el modelo puro
+   `mesa-vista.mjs` y la plantilla `templates/mesa-poker.hbs`. Se abre desde el
+   botón **Mesa de juego** del grupo Lagunak en los controles de escena, que ven
+   TODOS los usuarios: la mesa es la capa social, y un minijuego al que solo
+   entrara el GM no sería un minijuego. El GM que pulsa el botón crea la mesa si
+   no había ninguna; sentarse es otra acción, con su propio botón, porque el GM
+   puede querer repartir sin jugar.
+
+   **Los botones no los decide la ventana.** `accionesPermitidas` necesita la
+   sesión viva —con la mano en curso—, que solo existe en la memoria del
+   coordinador. Por eso cada vista dirigida viaja con la lista de acciones de su
+   destinatario, y el reparto llega a todos los conectados, no solo a los
+   sentados: quien todavía no juega necesita su vista para que se le pueda
+   ofrecer «sentarse» o «mirar» (a ese se le manda exactamente la vista pública,
+   que ya es un ajuste de mundo). Un cliente que dedujera sus propios botones
+   estaría reimplementando las reglas, y la segunda implementación de unas
+   reglas es una forma cara de acabar enseñando un botón que el coordinador va a
+   rechazar.
 5. Arte pixel-art, teclado, reduced-motion e i18n.
 6. Smoke multijugador real con GM, dos jugadores, espectador, reconexión, pérdida
    del coordinador y cancelación/reinicio seguro de la mano.

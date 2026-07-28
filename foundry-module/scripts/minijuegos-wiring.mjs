@@ -1,5 +1,6 @@
 import {
   AJUSTE_SESION,
+  vistasPrivadas,
   FLAG_PROPUESTA,
   aceptarVistaPrivada,
   adoptarSesionPublicada,
@@ -45,6 +46,43 @@ function semillaCriptografica() {
 }
 
 export const AJUSTE_MESA = "minijuegoMesaConfig";
+
+// Usuarios a los que reparte el coordinador: los conectados. A un cliente
+// desconectado no hay a quién entregarle nada, y cuando vuelva pedirá relevo de
+// vista con `repartirVistas` a la primera acción que ocurra.
+function usuariosConectados() {
+  return (game.users?.contents ?? []).filter((u) => u.active).map((u) => u.id);
+}
+
+// Entrega dirigida de una vista. `game.socket.emit` no se autoentrega, así que
+// al destinatario que es este mismo cliente se le pasa en local.
+function entregarVista(moduleId, userId, vista, acciones) {
+  if (userId === game.user?.id) {
+    Hooks.callAll("lagunakMinijuegoVistaPrivada", vista, acciones);
+    return;
+  }
+  game.socket?.emit(canalSocket(moduleId), {
+    tipo: "minijuego:vista-privada",
+    destinatarioId: userId,
+    vista,
+    acciones,
+  });
+}
+
+// Reparte la vista dirigida de la sesión viva a todos los conectados. Se usa
+// donde el estado cambia FUERA del despachador de propuestas: al abrir la mesa
+// y al relevar coordinador. Sin esto, la mesa recién abierta no le llegaba a
+// nadie con sus acciones y la ventana no tenía qué ofrecer.
+function repartirVistas(moduleId) {
+  if (!sesionViva) return;
+  for (const { userId, vista, acciones } of vistasPrivadas(
+    sesionViva,
+    juegoActivo(),
+    usuariosConectados(),
+  )) {
+    entregarVista(moduleId, userId, vista, acciones);
+  }
+}
 
 export function registrarAjustesMinijuegos(moduleId) {
   moduloConfigurado = moduleId;
@@ -97,6 +135,9 @@ function asegurarCoordinacion() {
   // La mano cancelada se anuncia para que la UI (paso 4) pueda explicar por qué
   // la mesa volvió al estado previo al reparto.
   Hooks.callAll("lagunakMinijuegoRelevoCoordinador", adopcion.publico);
+  // El relevo cambia el estado fuera del despachador: hay que volver a repartir
+  // o las ventanas abiertas se quedarían con las acciones de la época anterior.
+  repartirVistas(moduloConfigurado);
   return adopcion.publico;
 }
 
@@ -112,7 +153,7 @@ export function registrarSesionesMinijuegos(moduleId) {
     if (!aceptarVistaPrivada({ destinatarioId: mensaje.destinatarioId, userId: game.user?.id })) {
       return;
     }
-    Hooks.callAll("lagunakMinijuegoVistaPrivada", mensaje.vista);
+    Hooks.callAll("lagunakMinijuegoVistaPrivada", mensaje.vista, mensaje.acciones);
   };
   game.socket?.on(canalSocket(moduleId), receptor);
   escuchas.push(() => game.socket?.off?.(canalSocket(moduleId), receptor));
@@ -121,7 +162,13 @@ export function registrarSesionesMinijuegos(moduleId) {
     // Un GM puede pasar a ser el activo sin recargar la página: se comprueba al
     // registrar y en cada conexión o desconexión.
     asegurarCoordinacion();
-    const alCambiarConexion = () => asegurarCoordinacion();
+    // Al conectarse alguien se reparte de nuevo: quien acaba de entrar (o de
+    // recargar) no tiene vista ni acciones, y sin esto se quedaría mirando una
+    // mesa muerta hasta que otro hiciera algo.
+    const alCambiarConexion = () => {
+      asegurarCoordinacion();
+      repartirVistas(moduleId);
+    };
     Hooks.on("userConnected", alCambiarConexion);
     escuchas.push(() => Hooks.off("userConnected", alCambiarConexion));
 
@@ -149,19 +196,14 @@ export function registrarSesionesMinijuegos(moduleId) {
           game.settings.get(moduleId, AJUSTE_SESION),
           game.settings.get(moduleId, AJUSTE_MESA) ?? {},
         ),
+        // Se reparte a TODOS los conectados, no solo a los sentados: quien
+        // aún no juega necesita su vista y sus acciones para que la ventana
+        // pueda ofrecerle sentarse o mirar. Al que no está sentado se le manda
+        // exactamente la vista pública, que ya es un ajuste de mundo.
+        destinatarios: usuariosConectados,
         publicar: (publico) => game.settings.set(moduleId, AJUSTE_SESION, publico),
-        enviarPrivada: (userId, vista) => {
-          game.socket?.emit(canalSocket(moduleId), {
-            tipo: "minijuego:vista-privada",
-            destinatarioId: userId,
-            vista,
-          });
-          // `game.socket.emit` no se autoentrega: si el destinatario es el
-          // propio GM, se le pasa la vista en local.
-          if (userId === game.user?.id) {
-            Hooks.callAll("lagunakMinijuegoVistaPrivada", vista);
-          }
-        },
+        enviarPrivada: (userId, vista, acciones) =>
+          entregarVista(moduleId, userId, vista, acciones),
         alRechazar: ({ codigo }) => {
           console.debug(`[lagunak] propuesta de minijuego rechazada: ${codigo}`);
         },
@@ -211,6 +253,7 @@ export function abrirMesa({ id, nombreJuego, limites } = {}) {
     limites,
   });
   game.settings.set(moduloConfigurado, AJUSTE_SESION, sesionViva.publico);
+  repartirVistas(moduloConfigurado);
   return sesionViva.publico;
 }
 

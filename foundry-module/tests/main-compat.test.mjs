@@ -270,6 +270,9 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
     "lagunak-diagnostico",
     "lagunak-musica",
     "lagunak-decorado-aleatorio",
+    // La mesa de minijuegos (#308) la ven todos: es la capa social, y un
+    // minijuego al que solo pudiera entrar el GM no sería un minijuego.
+    "lagunak-mesa",
     "lagunak-musica-audio",
     "lagunak-puestos",
     "lagunak-espacio-puesto",
@@ -665,6 +668,9 @@ test("un jugador no GM recibe asignación y espacio de puesto, sin controles GM"
   const grupo = controls.find((control) => control.name === "lagunak");
   assert.ok(grupo);
   assert.deepEqual(grupo.tools.map(({ name }) => name), [
+    // La mesa de minijuegos también, por lo mismo que el audio: es de la mesa,
+    // no del GM.
+    "lagunak-mesa",
     // El audio lo habilita cada cliente con su propio gesto, que el navegador
     // exige y que no se puede delegar en el GM: por eso este botón sí lo ve un
     // jugador. El MANDO de la música sigue siendo solo del GM.

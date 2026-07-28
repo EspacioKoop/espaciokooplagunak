@@ -16,6 +16,7 @@
 // privacidad de interfaz, no secreto criptográfico frente a un cliente hostil.
 
 import {
+  accionesPermitidas,
   aplicar,
   sustituirCoordinador,
   vistaPublicaSesion,
@@ -67,7 +68,15 @@ export function extraerPropuesta({ changes, moduleId }) {
 //
 // Devuelve `{ ok, sesion, publico, privadas, idempotente?, codigo? }`. No
 // escribe nada: quien decide persistir y emitir es el cableado.
-export function procesarPropuesta({ sesion, sobre, actorId, juego, semilla, configuracionJuego }) {
+export function procesarPropuesta({
+  sesion,
+  sobre,
+  actorId,
+  juego,
+  semilla,
+  configuracionJuego,
+  destinatarios,
+}) {
   const resultado = aplicar(sesion, { sobre, actorId, juego, semilla, configuracionJuego });
   if (!resultado.ok) {
     return { ok: false, codigo: resultado.codigo, sesion };
@@ -77,20 +86,38 @@ export function procesarPropuesta({ sesion, sobre, actorId, juego, semilla, conf
     idempotente: resultado.idempotente ?? false,
     sesion: resultado.sesion,
     publico: vistaPublicaSesion(resultado.sesion),
-    privadas: vistasPrivadas(resultado.sesion, juego),
+    privadas: vistasPrivadas(resultado.sesion, juego, destinatarios),
   };
 }
 
-// Vistas privadas a repartir: una por jugador sentado, dirigida a su userId.
-// Los espectadores no reciben nada privado; el ausente tampoco, hasta que
+// Vistas a repartir, una por destinatario y dirigida a su userId.
+//
+// Cada envío lleva TAMBIÉN lo que ese usuario puede hacer ahora mismo. Es la
+// pieza que le faltaba a la interfaz: `accionesPermitidas` necesita la sesión
+// viva —con la mano en curso—, y esa solo existe en la memoria del coordinador.
+// Un cliente que quisiera deducir sus botones desde el estado público estaría
+// reimplementando las reglas, y una segunda implementación de las reglas es una
+// forma cara de acabar enseñando un botón que el coordinador va a rechazar.
+// La lista no CONCEDE nada: la autoridad sigue siendo el coordinador.
+//
+// Sin `destinatarios` se reparte a los jugadores sentados y activos, que son
+// los únicos con secretos que recibir. Con `destinatarios` se llega también a
+// quien todavía no se ha sentado —lo que necesita cualquier interfaz para
+// ofrecer «sentarse» o «mirar»—; a esos, `vistaPrivadaSesion` les devuelve
+// exactamente la pública, que ya es de mundo. El ausente no recibe hasta que
 // reconecte y se le vuelva a repartir.
-export function vistasPrivadas(sesion, juego) {
-  return sesion.publico.jugadores
-    .filter((jugador) => jugador.estado === "activo")
-    .map((jugador) => ({
-      userId: jugador.userId,
-      vista: vistaPrivadaSesion(sesion, jugador.userId, juego),
-    }));
+export function vistasPrivadas(sesion, juego, destinatarios) {
+  const ids =
+    Array.isArray(destinatarios) && destinatarios.length > 0
+      ? [...new Set(destinatarios.filter((id) => typeof id === "string" && id !== ""))]
+      : sesion.publico.jugadores
+          .filter((jugador) => jugador.estado === "activo")
+          .map((jugador) => jugador.userId);
+  return ids.map((userId) => ({
+    userId,
+    vista: vistaPrivadaSesion(sesion, userId, juego),
+    acciones: accionesPermitidas(sesion, userId, juego),
+  }));
 }
 
 // Cableado puro del hook `updateUser`: filtra cambios ajenos, aplica el criterio
@@ -110,6 +137,10 @@ export function despacharCambioDeUsuario({
   juego,
   semillaNueva = () => undefined,
   configuracionJuego,
+  // A quién se le reparte la vista dirigida. El cableado pasa aquí los usuarios
+  // conectados, para que también quien mira desde fuera reciba su vista y sus
+  // acciones (ver `vistasPrivadas`).
+  destinatarios,
   publicar = () => {},
   enviarPrivada = () => {},
   alRechazar = () => {},
@@ -130,6 +161,7 @@ export function despacharCambioDeUsuario({
     // viaja al estado público ni al sobre del cliente.
     semilla: sobre.tipo === "start" ? semillaNueva() : undefined,
     configuracionJuego,
+    destinatarios: typeof destinatarios === "function" ? destinatarios() : destinatarios,
   });
   if (!resultado.ok) {
     alRechazar({ actorId, codigo: resultado.codigo });
@@ -138,8 +170,8 @@ export function despacharCambioDeUsuario({
   // Un reenvío idempotente no republica: el estado no ha cambiado.
   if (!resultado.idempotente) {
     publicar(resultado.publico);
-    for (const { userId, vista } of resultado.privadas) {
-      enviarPrivada(userId, vista);
+    for (const { userId, vista, acciones } of resultado.privadas) {
+      enviarPrivada(userId, vista, acciones);
     }
   }
   return resultado;

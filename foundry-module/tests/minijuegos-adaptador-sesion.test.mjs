@@ -368,3 +368,74 @@ test("tras el relevo el nuevo coordinador ya procesa propuestas", () => {
   assert.equal(publicado.manoEnCurso, true);
   assert.equal(publicado.coordinadorId, "gm2");
 });
+
+// ---- Lo que necesita la ventana (#308, paso 4) -----------------------------
+
+test("cada vista repartida lleva las acciones de SU destinatario", () => {
+  // Es lo que hacía imposible la interfaz: `accionesPermitidas` necesita la
+  // sesión viva —con la mano en curso—, y esa solo existe en el coordinador. Un
+  // cliente que quisiera deducir sus botones estaría reimplementando las reglas.
+  let sesion = sesionConDos();
+  const arrancar = construirPropuesta({
+    publico: vistaPublicaSesion(sesion),
+    tipo: "start",
+    nonce: nonce(),
+  });
+  sesion = aplicar(sesion, { sobre: arrancar, actorId: "gm", juego: juegoFalso, semilla: 10 }).sesion;
+
+  for (const parte of vistasPrivadas(sesion, juegoFalso)) {
+    assert.ok(Array.isArray(parte.acciones), `${parte.userId} recibe su lista de acciones`);
+  }
+});
+
+test("con destinatarios se reparte también a quien no está sentado, sin secretos", () => {
+  // Quien mira desde fuera necesita su vista para que la ventana pueda
+  // ofrecerle sentarse o mirar; lo que NO puede recibir es la parte privada.
+  let sesion = sesionConDos();
+  const arrancar = construirPropuesta({
+    publico: vistaPublicaSesion(sesion),
+    tipo: "start",
+    nonce: nonce(),
+  });
+  sesion = aplicar(sesion, { sobre: arrancar, actorId: "gm", juego: juegoFalso, semilla: 10 }).sesion;
+
+  const repartidas = vistasPrivadas(sesion, juegoFalso, ["u1", "u2", "ajeno", "ajeno", ""]);
+  assert.deepEqual(
+    repartidas.map((p) => p.userId),
+    ["u1", "u2", "ajeno"],
+    "sin duplicados ni identidades vacías",
+  );
+  const ajeno = repartidas.find((p) => p.userId === "ajeno");
+  assert.equal("juegoPrivado" in ajeno.vista, false, "el de fuera no recibe parte privada");
+  assert.equal(
+    JSON.stringify(ajeno.vista).includes("secreto"),
+    false,
+    "ni rastro de secretos en lo que se le manda",
+  );
+  const sentado = repartidas.find((p) => p.userId === "u1");
+  assert.ok(sentado.vista.juegoPrivado, "el sentado sí recibe la suya");
+});
+
+test("despacharCambioDeUsuario entrega acciones junto a cada vista", () => {
+  let sesion = sesionConDos();
+  const entregas = [];
+  const sobre = construirPropuesta({
+    publico: vistaPublicaSesion(sesion),
+    tipo: "start",
+    nonce: nonce(),
+  });
+  despacharCambioDeUsuario({
+    userDoc: { id: "gm" },
+    changes: cambioConPropuesta(sobre),
+    moduleId: MODULO,
+    obtenerSesion: () => sesion,
+    juego: juegoFalso,
+    semillaNueva: () => 10,
+    destinatarios: () => ["u1", "u2", "ajeno"],
+    enviarPrivada: (userId, vista, acciones) => entregas.push({ userId, vista, acciones }),
+  });
+  assert.deepEqual(entregas.map((e) => e.userId), ["u1", "u2", "ajeno"]);
+  for (const entrega of entregas) {
+    assert.ok(Array.isArray(entrega.acciones));
+  }
+});

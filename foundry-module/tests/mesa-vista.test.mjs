@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { mesaVista, accionesVisibles } from "../scripts/minijuegos/mesa-vista.mjs";
+import { lineasResultado, mesaVista, accionesVisibles } from "../scripts/minijuegos/mesa-vista.mjs";
 import * as poker from "../scripts/minijuegos/poker-motor.mjs";
 import { configuracionPoker } from "../scripts/minijuegos/mesa-config.mjs";
 import {
@@ -194,4 +194,30 @@ test("el disco se pinta en el asiento que lleva el botón", () => {
 test("antes del reparto no hay disco que enseñar", () => {
   const modelo = mesaVista({ jugadores: [{ userId: "p1" }, { userId: "p2" }] }, { userId: "p1" });
   assert.equal(modelo.jugadores.some((j) => j.esBoton), false);
+});
+
+// ---- Resultado legible ----------------------------------------------------
+
+test("lineasResultado lee las DOS formas del resultado del póker", () => {
+  // Sin rival: el motor publica ganador y ganancia sueltos.
+  assert.deepEqual(
+    lineasResultado({ tipo: "sin-rival", ganadorId: "p2", ganancia: 3 }),
+    [{ userId: "p2", fichas: 3 }],
+  );
+  // Showdown: un diccionario de ganancias, que con botes laterales puede tener
+  // más de una entrada.
+  assert.deepEqual(
+    lineasResultado({ tipo: "showdown", ganancias: { p1: 12, p2: 0, p3: 4 } }),
+    [
+      { userId: "p1", fichas: 12 },
+      { userId: "p3", fichas: 4 },
+    ],
+    "quien no gana nada no sale como ganador",
+  );
+});
+
+test("sin resultado reconocible no se anuncia ganador", () => {
+  for (const entrada of [null, undefined, {}, "gana p1", { ganadorId: "p1" }, { ganancias: 3 }]) {
+    assert.deepEqual(lineasResultado(entrada), []);
+  }
 });

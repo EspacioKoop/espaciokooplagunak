@@ -450,3 +450,114 @@
   vertical-align: -3px;
   image-rendering: pixelated;
 }
+
+/* ---- Mesa de minijuegos (#308) -------------------------------------------
+ * Mismo mueble arcade que el resto: esquinas duras, filo cian, acento magenta.
+ * El tapete es lo único verde del módulo, y es a propósito: una mesa de cartas
+ * se reconoce por el fieltro antes que por lo que hay escrito encima.
+ */
+.lagunak-mesa-cuerpo {
+  padding: 0.5rem;
+}
+
+.lagunak-mesa-fase,
+.lagunak-mesa-aviso {
+  margin: 0 0 0.4rem;
+  font-variant: small-caps;
+  letter-spacing: 0.06em;
+}
+
+.lagunak-mesa-aviso {
+  color: #ff2e88;
+}
+
+.lagunak-mesa-tapete {
+  border: 4px solid #1b263b;
+  box-shadow: inset 0 0 0 1px #00e5ff;
+  background: #14532d;
+  padding: 0.5rem;
+}
+
+.lagunak-mesa-bote {
+  margin: 0 0 0.4rem;
+  color: #ffd166;
+}
+
+.lagunak-mesa-comunitarias,
+.lagunak-mesa-mano {
+  display: flex;
+  gap: 0.25rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Las cartas son pixel-art: se escalan sin suavizado o dejan de ser pixel-art. */
+.lagunak-mesa-comunitarias img,
+.lagunak-mesa-mano img {
+  width: 48px;
+  height: auto;
+  image-rendering: pixelated;
+}
+
+.lagunak-mesa-asientos {
+  list-style: none;
+  margin: 0.5rem 0;
+  padding: 0;
+}
+
+.lagunak-mesa-asiento {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.15rem 0.3rem;
+  border-left: 3px solid transparent;
+}
+
+/* De quién es el turno tiene que verse sin leer: color Y borde, nunca solo
+ * color (el mismo criterio de accesibilidad que el resto del módulo). */
+.lagunak-mesa-asiento.es-turno {
+  border-left-color: #00e5ff;
+  background: rgba(0, 229, 255, 0.08);
+}
+
+.lagunak-mesa-asiento.retirado {
+  opacity: 0.55;
+}
+
+.lagunak-mesa-disco {
+  display: inline-grid;
+  place-items: center;
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 50%;
+  background: #f8f9fa;
+  color: #03071e;
+  font-weight: 700;
+  font-size: 0.75rem;
+}
+
+.lagunak-mesa-npc,
+.lagunak-mesa-estado {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.8;
+}
+
+.lagunak-mesa-fichas {
+  margin-left: auto;
+  color: #ffd166;
+}
+
+.lagunak-mesa-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.5rem;
+}
+
+.lagunak-mesa-importe input {
+  width: 5rem;
+}

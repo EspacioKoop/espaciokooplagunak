@@ -105,6 +105,20 @@ token:
   un puesto impuesto por el GM requeriría restringir aparte esa autoasignación.
   Esta descripción documenta el comportamiento vigente, no decide si una versión
   futura conservará la autoasignación o exigirá aprobación del GM.
+- **Requisitos de característica por puesto** (`requisitos-puesto.mjs`, ajuste de
+  mundo `requisitosPuesto`, **apagado de serie**). Una mesa puede exigir una
+  puntuación mínima en alguna de las características del puesto —ingeniería pide
+  Inteligencia o Sabiduría, armas Destreza o Fuerza— y basta cumplir **una**: un
+  puesto no tiene una sola forma de llevarse, y exigir una característica concreta
+  obligaría a construir la ficha contra la idea del personaje. El GM está exento,
+  o una mesa mal configurada se quedaría atascada sin salida; quien no tiene
+  personaje asignado queda bloqueado a propósito, porque dejarle pasar convertiría
+  el ajuste en una mentira. Levantarse del puesto siempre se puede, y el puesto
+  que ya se ocupa no se cierra aunque cambien los requisitos con alguien sentado.
+  **Es una puerta de interfaz**, del mismo orden que la privacidad de las manos
+  del póker: el flag lo escribe el propio usuario, así que alguien con la consola
+  del navegador abierta puede saltársela. Sirve para que una mesa se organice, no
+  para defenderse de quien quiere hacer trampas.
 - **Matriz de autoridad cerrada** (`station-actions.mjs`, `STATION_ACTIONS`).
   Declara qué órdenes del whitelist del puente puede emitir cada puesto:
   `navigation` → `set_target_heading`, `set_impulse`, `set_warp`; `engineering`

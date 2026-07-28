@@ -64,12 +64,25 @@ async function loadModule({ modern = false, isGM = true, fetchImpl } = {}) {
     // medio arrancar.
     off() {},
   };
+  const ajustes = new Map();
   globalThis.game = {
     user: { id: "local-user", isGM },
     settings: {
-      register() {},
-      async set() {},
+      // Se apuntan las opciones de registro para poder disparar sus `onChange`
+      // desde las pruebas: hay cableado que solo existe ahí, y sin esto no se
+      // puede ejercitar sin levantar Foundry.
+      register(_module, key, opciones = {}) {
+        ajustes.set(key, { ...opciones, valor: opciones.default });
+      },
+      async set(_module, key, valor) {
+        const ajuste = ajustes.get(key) ?? {};
+        ajustes.set(key, { ...ajuste, valor });
+        await ajuste.onChange?.(valor);
+      },
       get(_module, key) {
+        if (ajustes.has(key) && ajustes.get(key).valor !== undefined) {
+          return ajustes.get(key).valor;
+        }
         if (key === "bridgeUrl") return "http://bridge.test";
         return 2;
       },
@@ -112,7 +125,7 @@ async function loadModule({ modern = false, isGM = true, fetchImpl } = {}) {
   tokenSession.clearBridgeToken();
   if (isGM) tokenSession.setBridgeToken("test-token");
   await import(`../scripts/main.mjs?compat-test=${importNonce++}`);
-  return { hooks, instances, notifications, fetchCalls, journalPages, tokenSession };
+  return { hooks, instances, notifications, fetchCalls, journalPages, tokenSession, ajustes };
 }
 
 function pauseValues(fetchCalls) {
@@ -934,6 +947,45 @@ test("v11: el patch de telemetría usa los campos reales (health/heat/power) tra
   assert.equal(nodos.salud.textContent, "80%");
   assert.equal(nodos.calor.textContent, "30%");
   assert.equal(nodos.potencia.textContent, "100%");
+});
+
+test("REGRESIÓN: la ventana de puestos sigue los cambios del ajuste de requisitos", async () => {
+  // Los requisitos se releen en cada render y también al guardar, así que una
+  // ventana abierta con el ajuste cambiado enseñaba el estado ANTERIOR y mentía
+  // en las dos direcciones: opciones que parecían permitidas y el guardado
+  // rechazaba, u opciones deshabilitadas que ya no tendrían por qué estarlo y
+  // que ni siquiera podían emitir el cambio.
+  const { hooks, instances, ajustes } = await loadModule();
+  hooks.init?.();
+  const controls = [{ name: "token", tools: [] }];
+  hooks.getSceneControlButtons(controls);
+  await toolByName(controls, "lagunak-puestos").onClick();
+
+  const ventana = instances.at(-1);
+  assert.ok(ventana, "la ventana de puestos se abre");
+
+  const activar = ajustes.get("requisitosPuesto");
+  const minimo = ajustes.get("requisitosPuestoMinimo");
+  assert.ok(activar?.onChange, "el ajuste de requisitos avisa de sus cambios");
+  assert.ok(minimo?.onChange, "y el del mínimo también");
+  assert.equal(activar.default, false, "apagado de serie: quien no lo active no nota nada");
+
+  // Activar, subir el mínimo y desactivar: los tres tienen que repintar.
+  for (const [ajuste, valor] of [
+    [activar, true],
+    [minimo, 14],
+    [activar, false],
+  ]) {
+    ventana.renderCalls.length = 0;
+    await ajuste.onChange(valor);
+    assert.equal(ventana.renderCalls.length, 1, "la ventana abierta se repinta");
+  }
+
+  // Con la ventana cerrada, un cambio de ajuste no la resucita ni revienta.
+  await ventana.close();
+  ventana.renderCalls.length = 0;
+  await assert.doesNotReject(async () => activar.onChange(true));
+  assert.deepEqual(ventana.renderCalls, [], "una ventana cerrada no se repinta");
 });
 
 test("v11: la mesa se puede cerrar y volver a abrir, con instancia nueva", async () => {

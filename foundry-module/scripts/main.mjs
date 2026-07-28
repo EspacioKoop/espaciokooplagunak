@@ -34,7 +34,8 @@ import {
   revokeBridgeTokenAccess,
 } from "./bridge-token-session.mjs";
 import { probarConexion } from "./diagnostico-conexion.mjs";
-import { addStationControl, registerStationFeature } from "./station-ui.mjs";
+import { addStationControl, refrescarPuestos, registerStationFeature } from "./station-ui.mjs";
+import { MINIMO_POR_DEFECTO } from "./requisitos-puesto.mjs";
 import {
   addWorkspaceControl,
   registerWorkspaceFeature,
@@ -162,6 +163,34 @@ Hooks.once("init", () => {
     // valor de mundo, así que un cambio desde ajustes o desde el botón "nuevo
     // decorado aleatorio" refresca a todos por igual (issue #215 review).
     onChange: (semilla) => mapaApp?.regenerarDecorado?.(semilla),
+  });
+
+  // Requisitos de característica por puesto. Ajuste de MUNDO: es una regla de
+  // la mesa entera, no una preferencia de cada cual, y tiene que valer igual
+  // para quien se autoasigna. APAGADO de serie: quien no lo active no debe
+  // notar ninguna diferencia.
+  game.settings.register(MODULE_ID, "requisitosPuesto", {
+    name: "LAGUNAK.Ajustes.Requisitos.Nombre",
+    hint: "LAGUNAK.Ajustes.Requisitos.Pista",
+    scope: "world",
+    config: true,
+    type: Boolean,
+    // La ventana de puestos relee los requisitos en cada render: sin esto, una
+    // ventana abierta se queda con el estado anterior y miente en las dos
+    // direcciones —opciones que parecen permitidas y el guardado rechaza, u
+    // opciones deshabilitadas que ya no tendrían por qué estarlo—.
+    onChange: () => refrescarPuestos(),
+    default: false,
+  });
+  game.settings.register(MODULE_ID, "requisitosPuestoMinimo", {
+    name: "LAGUNAK.Ajustes.RequisitosMinimo.Nombre",
+    hint: "LAGUNAK.Ajustes.RequisitosMinimo.Pista",
+    scope: "world",
+    config: true,
+    type: Number,
+    range: { min: 3, max: 20, step: 1 },
+    onChange: () => refrescarPuestos(),
+    default: MINIMO_POR_DEFECTO,
   });
 
   // Estado público de la mesa de minijuegos (#308). Ajuste de MUNDO porque la

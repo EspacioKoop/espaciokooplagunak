@@ -250,6 +250,12 @@ variantes y efectos sobre la campaña.
    sesión viva del coordinador (semilla, mazo, manos) no se persiste en ningún
    sitio: si se pierde, el relevo la cancela con checkpoint.
 
+   **El sobre se lee del documento, no del diferencial.** `updateUser` entrega
+   los cambios como diferencial: la segunda propuesta de un mismo cliente solo
+   trae las claves que cambiaron y llegaría sin `sessionId` ni época. Los
+   cambios sirven para saber *que* el flag se tocó; el sobre se lee del `User`
+   ya actualizado. La identidad sigue siendo la del documento.
+
    **Relevo real.** El cableado detecta el cambio de `game.users.activeGM` al
    registrarse y en cada `userConnected`, y también antes de despachar una
    propuesta. Lo que dispara el relevo es **no tener la sesión viva**, no quién

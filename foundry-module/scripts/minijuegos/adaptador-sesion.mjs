@@ -53,8 +53,19 @@ export function construirPropuesta({ publico, tipo, parametros, nonce }) {
 // Extrae la propuesta del objeto de cambios de un `updateUser`. Foundry dispara
 // ese hook por cualquier cambio del User, así que devuelve null si el cambio no
 // tocó nuestro flag o si no tiene forma de sobre.
-export function extraerPropuesta({ changes, moduleId }) {
-  const sobre = changes?.flags?.[moduleId]?.[FLAG_PROPUESTA];
+export function extraerPropuesta({ changes, moduleId, userDoc }) {
+  // OJO CON `changes`: Foundry entrega el DIFERENCIAL, no el valor completo. La
+  // segunda propuesta de un mismo cliente solo trae las claves que cambiaron
+  // —típicamente `nonce` y poco más—, así que el sobre llegaba sin `sessionId`
+  // ni `epocaCoordinador` y el coordinador lo rechazaba con `payload_invalido`.
+  // Se veía como «la primera jugada va y las siguientes no».
+  //
+  // Por eso `changes` se usa solo para saber QUE nuestro flag cambió, y el sobre
+  // se lee del documento ya actualizado, que sí lo tiene entero. La identidad
+  // sigue siendo la del documento, que es lo que no se puede falsificar.
+  const tocado = changes?.flags?.[moduleId]?.[FLAG_PROPUESTA];
+  if (!tocado || typeof tocado !== "object") return null;
+  const sobre = userDoc?.flags?.[moduleId]?.[FLAG_PROPUESTA] ?? tocado;
   if (!sobre || typeof sobre !== "object") return null;
   if (typeof sobre.tipo !== "string" || typeof sobre.nonce !== "string") return null;
   return sobre;
@@ -145,7 +156,7 @@ export function despacharCambioDeUsuario({
   enviarPrivada = () => {},
   alRechazar = () => {},
 }) {
-  const sobre = extraerPropuesta({ changes, moduleId });
+  const sobre = extraerPropuesta({ changes, moduleId, userDoc });
   if (!sobre) return null;
   if (!puedeCoordinar()) return null;
   const sesion = obtenerSesion();

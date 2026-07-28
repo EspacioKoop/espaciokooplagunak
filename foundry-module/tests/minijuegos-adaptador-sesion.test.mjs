@@ -473,3 +473,46 @@ test("REGRESIÓN: el coordinador que recarga readopta SU PROPIA mesa", () => {
     antes.jugadores.map((j) => j.userId),
   );
 });
+
+test("REGRESIÓN: la segunda propuesta llega como diferencial y no puede rechazarse", () => {
+  // Lo que se veía en mesa: la primera jugada iba y las siguientes salían con
+  // «payload_invalido». Foundry entrega en `updateUser` el DIFERENCIAL del
+  // documento, no el valor completo: la segunda propuesta del mismo cliente
+  // solo trae las claves que cambiaron, así que el sobre llegaba sin
+  // `sessionId` ni `epocaCoordinador`.
+  let sesion = sesionConDos();
+  const publico = vistaPublicaSesion(sesion);
+  const sobre = construirPropuesta({ publico, tipo: "start", nonce: nonce() });
+
+  // El diferencial: solo el nonce, como haría Foundry al reescribir el flag.
+  const soloElNonce = { flags: { [MODULO]: { [FLAG_PROPUESTA]: { nonce: sobre.nonce } } } };
+  // Y el documento, ya actualizado, con el sobre entero.
+  const userDoc = { id: "gm", flags: { [MODULO]: { [FLAG_PROPUESTA]: sobre } } };
+
+  assert.equal(
+    extraerPropuesta({ changes: soloElNonce, moduleId: MODULO, userDoc })?.sessionId,
+    publico.id,
+    "el sobre se lee del documento, no del diferencial",
+  );
+
+  const rechazos = [];
+  const resultado = despacharCambioDeUsuario({
+    userDoc,
+    changes: soloElNonce,
+    moduleId: MODULO,
+    obtenerSesion: () => sesion,
+    juego: juegoFalso,
+    semillaNueva: () => 10,
+    alRechazar: ({ codigo }) => rechazos.push(codigo),
+  });
+  assert.deepEqual(rechazos, [], "ya no se rechaza por payload_invalido");
+  assert.equal(resultado?.ok, true);
+
+  // Y un cambio que no toca nuestro flag sigue sin despacharse, aunque el
+  // documento tenga un sobre viejo guardado: si no, cualquier cambio ajeno del
+  // User reejecutaría la última propuesta.
+  assert.equal(
+    extraerPropuesta({ changes: { name: "otro nombre" }, moduleId: MODULO, userDoc }),
+    null,
+  );
+});

@@ -250,6 +250,13 @@ variantes y efectos sobre la campaña.
    sesión viva del coordinador (semilla, mazo, manos) no se persiste en ningún
    sitio: si se pierde, el relevo la cancela con checkpoint.
 
+   **El manifiesto tiene que declarar `"socket": true`.** Sin esa línea el
+   servidor de Foundry no retransmite los eventos `module.<id>`: el `emit` sale
+   del cliente y muere ahí, sin error en ninguno de los dos extremos. Desde
+   dentro es idéntico a un mensaje perdido, y deja la mesa funcionando a medias
+   —el estado público llega, porque va por un ajuste de mundo, pero las manos
+   privadas no—. Hay prueba que lo fija.
+
    **El sobre se lee del documento, no del diferencial.** `updateUser` entrega
    los cambios como diferencial: la segunda propuesta de un mismo cliente solo
    trae las claves que cambiaron y llegaría sin `sessionId` ni época. Los

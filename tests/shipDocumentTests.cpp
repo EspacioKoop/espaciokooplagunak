@@ -24,6 +24,8 @@ ShipDocument validDocument()
 {
     ShipDocument document;
     document.hull_max = 250.0f;
+    document.front_shield_max = 120.0f;
+    document.rear_shield_max = 90.0f;
     document.systems = {
         {ShipSystemId::Reactor, 0.5f},
         {ShipSystemId::FrontShield, -0.25f},
@@ -52,6 +54,17 @@ int main()
         invalid_hull.hull_max = hull_max;
         expect(validateShipDocument(invalid_hull) == ShipDocumentError::InvalidHullMax,
             "maximum hull must be finite, positive and bounded");
+    }
+
+    for (const float shield_max : {
+        0.0f, -1.0f, SHIP_DOCUMENT_MAX_SHIELD + 1.0f,
+        std::numeric_limits<float>::infinity(), std::numeric_limits<float>::quiet_NaN(),
+    })
+    {
+        auto invalid_shield = valid;
+        invalid_shield.front_shield_max = shield_max;
+        expect(validateShipDocument(invalid_shield) == ShipDocumentError::InvalidShieldMax,
+            "shield maximum must be finite, positive and bounded");
     }
 
     for (int index = 0; index < static_cast<int>(ShipSystemId::Count); ++index)
@@ -138,6 +151,9 @@ int main()
     const auto overrides = shipDocumentOverridesJson(valid);
     expect(overrides["hull_max"] == 250.0f,
         "canonical overrides include the optional maximum hull");
+    expect(overrides["front_shield_max"] == 120.0f
+            && overrides["rear_shield_max"] == 90.0f,
+        "canonical overrides include independent shield maxima");
     ShipDocument parsed_document;
     expect(parseShipDocumentOverrides(overrides, parsed_document) == ShipDocumentError::None
             && parsed_document == valid,
@@ -152,6 +168,8 @@ int main()
 
     auto legacy_v4 = overrides;
     legacy_v4.erase("hull_max");
+    legacy_v4.erase("front_shield_max");
+    legacy_v4.erase("rear_shield_max");
     ShipDocument migrated_v4;
     expect(parseShipDocumentOverrides(legacy_v4, migrated_v4, 4) == ShipDocumentError::None
             && !migrated_v4.hull_max,
@@ -160,10 +178,25 @@ int main()
             == ShipDocumentError::InvalidStructure,
         "v5 overrides require an explicit nullable hull field");
 
+    auto legacy_v5 = overrides;
+    legacy_v5.erase("front_shield_max");
+    legacy_v5.erase("rear_shield_max");
+    ShipDocument migrated_v5;
+    expect(parseShipDocumentOverrides(legacy_v5, migrated_v5, 5) == ShipDocumentError::None
+            && migrated_v5.hull_max == 250.0f
+            && !migrated_v5.front_shield_max && !migrated_v5.rear_shield_max,
+        "v5 overrides migrate without inventing shield maxima");
+
     hostile = overrides;
     hostile["hull_max"] = 0;
     expect(parseShipDocumentOverrides(hostile, parsed_document) == ShipDocumentError::InvalidHullMax,
         "non-positive hull JSON is rejected");
+    hostile = overrides;
+    hostile["rear_shield_max"] = -1;
+    expect(parseShipDocumentOverrides(hostile, parsed_document) == ShipDocumentError::InvalidShieldMax,
+        "non-positive shield JSON is rejected without mutating output");
+    expect(parsed_document == parsed_before_error,
+        "failed shield parse does not partially mutate output");
     hostile = overrides;
     hostile.erase("cargo");
     expect(parseShipDocumentOverrides(hostile, parsed_document) == ShipDocumentError::InvalidStructure,

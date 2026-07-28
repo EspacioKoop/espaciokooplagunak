@@ -67,7 +67,7 @@ sigue vigente tras los cambios que upstream haya hecho en esa área:
 - `src/httpScriptAccess.*` — expone `/exec.lua` (ejecución de Lua arbitrario por red) y los
   stubs `/get.lua`/`/set.lua`. No requiere cambiarse solo por antigüedad; confirma que la
   mitigación (httpserver apagado por defecto + gate de CI `guardia-exec-lua`) sigue cubriendo
-  el comportamiento real tras el merge. Ver CLAUDE.md y `docs/SECURITY.md` (issue #272).
+  el comportamiento real tras el merge. Ver CLAUDE.md y [`SECURITY.md`](../SECURITY.md) (issue #272).
 
 ## Reglas
 

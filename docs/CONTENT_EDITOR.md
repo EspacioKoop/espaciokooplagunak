@@ -91,19 +91,20 @@ lista en cada acción. Para mantener el selector accesible muestra como máximo
 los primeros 16 nombres ordenados; hay que mover o borrar los ya procesados para
 acceder a los siguientes.
 
-## Formato `espaciokoop-content` v5
+## Formato `espaciokoop-content` v6
 
-La versión 5 mantiene la envoltura, los objetos de mapa y los overrides de nave
-de v4, y añade el override opcional de casco máximo. El importador sigue
-aceptando documentos v1–v4; al volver a guardarlos o exportarlos se escriben
-como v5. Un mapa antiguo migra a `objects: []`, una nave v1–v3 a colecciones de
-overrides vacías y una nave v4 conserva el casco de su plantilla sin inventar un
-valor.
+La versión 6 mantiene la envoltura, los objetos de mapa y los overrides de nave
+de v5, y añade máximos opcionales e independientes para los escudos frontal y
+trasero. El importador sigue aceptando documentos v1–v5; al volver a guardarlos
+o exportarlos se escriben como v6. Un mapa antiguo migra a `objects: []`, una
+nave v1–v3 a colecciones de overrides vacías, una nave v4 conserva el casco de
+su plantilla y una nave v5 conserva los escudos de su plantilla, sin inventar
+valores.
 
 ```json
 {
   "format": "espaciokoop-content",
-  "version": 5,
+  "version": 6,
   "type": "map",
   "id": "sector-uno",
   "name": "Sector uno",
@@ -131,11 +132,15 @@ Tipos y campos específicos:
 | `campaign` | `map_ids` ordenados, `starting_map_id`, `character_ids`, `ship_ids`, `transitions` |
 | `map` | `scenario_file`, `recommended_players`, `objects` |
 | `character` | `crew_position_id`, `callsign`, `tags`, `ship_id` opcional, `legacy_role` para migración v1 |
-| `ship` | `template`, `faction`, `overrides` (`hull_max`, `systems`, `resources`, `cargo`, `crew_positions`) |
+| `ship` | `template`, `faction`, `overrides` (`hull_max`, `front_shield_max`, `rear_shield_max`, `systems`, `resources`, `cargo`, `crew_positions`) |
 
 Los overrides de nave son datos cerrados. `hull_max` es un override opcional
-representado siempre en v5: `null` conserva el casco de la plantilla y un número
-debe ser finito, mayor que `0` y menor o igual que `1000000`. Cada sistema usa
+representado siempre en v6: `null` conserva el casco de la plantilla y un número
+debe ser finito, mayor que `0` y menor o igual que `1000000`.
+`front_shield_max` y `rear_shield_max` siguen la misma regla de forma
+independiente; al desplegar, el máximo y el nivel inicial del segmento quedan
+alineados. Si la plantilla no contiene el segmento solicitado, el spawn falla y
+retira la entidad parcial. Cada sistema usa
 uno de los nueve IDs canónicos y una salud entre `-1` y `1`; recursos y carga
 usan IDs portables y cantidades acotadas; los puestos usan IDs canónicos. Las
 cuatro colecciones son explícitas aunque estén vacías. No admiten callbacks, Lua
@@ -154,7 +159,7 @@ ID canónico. Un `role` histórico de texto libre se conserva íntegro en
 `legacy_role` y deja vacío `crew_position_id`, en vez de inventar una asignación
 operativa. El editor muestra ambos campos para que el GM pueda elegir un puesto
 canónico y borrar después el valor histórico; mientras tanto el documento sigue
-siendo válido y puede guardarse o exportarse como v5 sin perder el rol original.
+siendo válido y puede guardarse o exportarse como v6 sin perder el rol original.
 
 La ficha de personaje es asistida: el puesto y la nave se eligen con selectores
 canónicos (no se puede introducir un puesto o nave inexistente desde la UI), las
@@ -251,12 +256,13 @@ sesión avanza esa barrera para impedir ABA. Escape, clic derecho, una coordenad
 de rango o terminar el modo cancelan sin ensuciar el documento ni añadir historial.
 
 Las naves tienen un modelo tipado para overrides opcionales de casco máximo,
-sistemas, recursos, carga y puestos. Rechaza IDs no canónicos, duplicados,
-valores no finitos y cantidades fuera de rango; v5 ya lo persiste e intercambia
-con migración de v1–v4 sin inventar un casco para documentos anteriores.
-El formulario ya ofrece verticales GUI tipadas para los cuatro grupos de overrides:
-salud de sistemas, recursos, carga y puestos canónicos de tripulación. Incluye IDs
-y valores validados, aplicar/quitar override y undo/redo compartido sobre el staging.
+máximos de escudos frontal/trasero, sistemas, recursos, carga y puestos. Rechaza
+IDs no canónicos, duplicados, valores no finitos y cantidades fuera de rango; v6
+ya lo persiste e intercambia con migración de v1–v5 sin inventar valores
+estructurales para documentos anteriores. El formulario ofrece controles GUI
+tipados para casco, ambos escudos, salud de sistemas, recursos, carga y puestos
+canónicos de tripulación. Incluye IDs y valores validados, aplicar/quitar override
+y undo/redo compartido sobre el staging.
 Al guardar una nave consulta un catálogo read-only generado por los registros Lua
 precargados de confianza: exige una plantilla canónica existente y que su modelo 3D
 siga registrado. La consulta devuelve solo metadatos escalares ordenados; no expone
@@ -274,8 +280,8 @@ El documento editado no toca el ECS mientras está en staging. La sesión C++ pu
 prepara los overrides con dirty state, historial acotado y rollback al último
 snapshot guardado. El despliegue GM construye además un plan cerrado y lo liga
 mediante fingerprint al documento, posición y rotación. Solo la segunda
-confirmación crea una nave; cualquier fallo al aplicar plantilla, sistemas,
-recursos o puestos destruye la entidad parcial. El recibo conserva exclusivamente
+confirmación crea una nave; cualquier fallo al aplicar plantilla, casco, escudos,
+sistemas, recursos o puestos destruye la entidad parcial. El recibo conserva exclusivamente
 la entidad propia para rollback y bloquea una segunda aplicación activa.
 
 Las campañas y personajes ya se enlazan de forma declarativa con mapas, naves

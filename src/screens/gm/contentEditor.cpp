@@ -397,6 +397,8 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
     });
     ship_override_selector->addEntry(tr("content_editor", "Systems"), "systems");
     ship_override_selector->addEntry(tr("content_editor", "Hull"), "hull");
+    ship_override_selector->addEntry(tr("content_editor", "Front shield"), "front_shield");
+    ship_override_selector->addEntry(tr("content_editor", "Rear shield"), "rear_shield");
     ship_override_selector->addEntry(tr("content_editor", "Resources"), "resources");
     ship_override_selector->addEntry(tr("content_editor", "Cargo"), "cargo");
     ship_override_selector->addEntry(tr("content_editor", "Crew positions"), "crew");
@@ -1752,18 +1754,22 @@ void GuiContentEditor::updateShipOverrideEditor()
     const bool cargo = mode == "cargo";
     const bool crew = mode == "crew";
     const bool hull = mode == "hull";
+    const bool front_shield = mode == "front_shield";
+    const bool rear_shield = mode == "rear_shield";
+    const bool shield = front_shield || rear_shield;
     const bool items = resources || cargo;
-    const bool systems = !items && !crew && !hull;
+    const bool systems = !items && !crew && !hull && !shield;
     ship_system_selector->setVisible(systems);
     ship_crew_selector->setVisible(crew);
-    ship_health_label->setVisible(systems || hull);
-    ship_health_entry->setVisible(systems || hull);
+    ship_health_label->setVisible(systems || hull || shield);
+    ship_health_entry->setVisible(systems || hull || shield);
     ship_resource_id_entry->setVisible(items);
     ship_resource_amount_label->setVisible(items || crew);
     ship_resource_amount_entry->setVisible(items);
     ship_health_label->setText(hull
         ? tr("content_editor", "Maximum hull")
-        : tr("content_editor", "Health [-1, 1]"));
+        : shield ? tr("content_editor", "Maximum shield")
+                 : tr("content_editor", "Health [-1, 1]"));
     ship_resource_amount_label->setText(crew
         ? tr("content_editor", "Not assigned")
         : cargo ? tr("content_editor", "Quantity")
@@ -1773,12 +1779,15 @@ void GuiContentEditor::updateShipOverrideEditor()
         : cargo ? tr("content_editor", "Set cargo")
                 : resources ? tr("content_editor", "Set resource")
                             : hull ? tr("content_editor", "Set hull")
+                            : shield ? tr("content_editor", "Set shield")
                             : tr("content_editor", "Set system"));
 
-    if (hull)
+    if (hull || shield)
     {
-        ship_health_entry->setText(ship_edit_session.document().hull_max
-            ? formatShipHealth(*ship_edit_session.document().hull_max) : string(""));
+        const auto& value = hull ? ship_edit_session.document().hull_max
+            : front_shield ? ship_edit_session.document().front_shield_max
+                           : ship_edit_session.document().rear_shield_max;
+        ship_health_entry->setText(value ? formatShipHealth(*value) : string(""));
         return;
     }
 
@@ -1846,6 +1855,20 @@ void GuiContentEditor::updateShipOverrideEditor()
 void GuiContentEditor::setShipOverride()
 {
     if (current_type != ContentResourceType::Ship) return;
+    const auto mode = ship_override_selector->getSelectionValue();
+    if (mode == "front_shield" || mode == "rear_shield")
+    {
+        float shield_max = 0.0f;
+        if (!parseShipHealth(ship_health_entry->getText(), shield_max)
+            || ship_edit_session.setShieldMax(mode == "front_shield", shield_max)
+                != ShipEditError::None)
+            return setStatus(tr("content_editor", "Maximum shield must be a finite positive number up to 1000000."));
+        pending_save = "";
+        pending_file_export = "";
+        discard_guard.reset();
+        updateShipOverrideEditor();
+        return setStatus(tr("content_editor", "Ship shield override staged."));
+    }
     if (ship_override_selector->getSelectionValue() == "hull")
     {
         float hull_max = 0.0f;
@@ -1913,6 +1936,18 @@ void GuiContentEditor::setShipOverride()
 void GuiContentEditor::removeShipOverride()
 {
     if (current_type != ContentResourceType::Ship) return;
+    const auto mode = ship_override_selector->getSelectionValue();
+    if (mode == "front_shield" || mode == "rear_shield")
+    {
+        if (ship_edit_session.removeShieldOverride(mode == "front_shield")
+            == ShipEditError::NotFound)
+            return setStatus(tr("content_editor", "The ship has no selected shield override."));
+        pending_save = "";
+        pending_file_export = "";
+        discard_guard.reset();
+        updateShipOverrideEditor();
+        return setStatus(tr("content_editor", "Ship shield override removed from staging."));
+    }
     if (ship_override_selector->getSelectionValue() == "hull")
     {
         if (ship_edit_session.removeHullOverride() == ShipEditError::NotFound)

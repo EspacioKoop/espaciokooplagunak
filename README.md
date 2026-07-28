@@ -79,7 +79,14 @@ Características propias integradas y verificadas:
   falsificable;
 - primera fase del editor integrado de campañas, mapas, personajes y naves,
   con intercambio JSON individual desde Game Master
-  ([guía](docs/CONTENT_EDITOR.md)).
+  ([guía](docs/CONTENT_EDITOR.md));
+- **nivel de alerta compartido con toda la mesa**: el GM es el único que recibe
+  telemetría, pero la alerta se difunde a todos los clientes —incluido quien
+  entra tarde— porque una tripulación sabría de sobra que está en roja (#338);
+- **arte y música procedurales generados en el cliente**, sin un solo binario en
+  el repositorio ni contenido ajeno distribuido: grabado clásico, pixelart y
+  registros musicales deterministas por semilla, con la frontera de estilo
+  vigilada por pruebas ([`docs/FOUNDRY.md`](docs/FOUNDRY.md)).
 
 Infraestructura propia disponible:
 

@@ -4409,11 +4409,19 @@ msgid "Maximum hull"
 msgstr ""
 
 msgctxt "content_editor"
+msgid "Maximum shield"
+msgstr ""
+
+msgctxt "content_editor"
 msgid "Set system"
 msgstr ""
 
 msgctxt "content_editor"
 msgid "Set hull"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Set shield"
 msgstr ""
 
 msgctxt "content_editor"
@@ -4442,6 +4450,22 @@ msgstr ""
 
 msgctxt "content_editor"
 msgid "Ship hull override staged."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Maximum shield must be a finite positive number up to 1000000."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Ship shield override staged."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "The ship has no selected shield override."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Ship shield override removed from staging."
 msgstr ""
 
 msgctxt "content_editor"

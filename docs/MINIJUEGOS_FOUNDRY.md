@@ -136,6 +136,19 @@ resultado(estadoJuego) -> object | null
 DOM, reloj ni almacenamiento. La capa Foundry se ocupa de identidad, revisión,
 transporte, vistas y ciclo de vida.
 
+Dos invariantes que `crear` debe hacer cumplir por sí mismo, porque sostienen la
+asociación identidad↔asiento de la que dependen las vistas privadas:
+
+- cada asiento lleva un `userId` no vacío y **único** en la mesa; una
+  configuración con identidades repetidas se rechaza cerrada, no se acepta a
+  medias;
+- toda referencia a un asiento en la configuración (por ejemplo el botón) debe
+  apuntar a un asiento existente.
+
+Además, un estado recién creado nunca puede quedar sin salida: si la propia
+creación deja a todos los participantes sin acción posible, `crear` resuelve la
+partida en el acto en vez de devolver un estado sin turno y sin terminar.
+
 ## Información privada y límite de seguridad
 
 Una partida de cartas necesita ocultar manos en la interfaz. Sin embargo, el

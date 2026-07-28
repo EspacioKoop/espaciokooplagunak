@@ -213,6 +213,33 @@ test("la huella del nonce ignora el orden de claves de los parámetros", () => {
   assert.equal(distinta.codigo, ERRORES.NONCE_REUTILIZADO);
 });
 
+test("una clave con significado especial no puede colisionar con el sobre vacío", () => {
+  let s = sesionNueva();
+  // `JSON.parse` y NO un literal a propósito: es como llegan los parámetros por
+  // el socket, y es el único caso donde `__proto__` es una propiedad propia. Con
+  // un literal, el motor lo trataría de otra forma y la prueba no probaría nada.
+  const hostiles = JSON.parse('{"__proto__":{"contaminado":true}}');
+  const envio = sobre("watch", s, { parametros: hostiles });
+  const primera = aplicar(s, { sobre: envio, actorId: "u1", juego: juegoFalso });
+  assert.equal(primera.ok, true);
+  s = primera.sesion;
+
+  // Antes, la huella de los parámetros hostiles y la de `{}` eran ambas iguales,
+  // así que este segundo sobre —otra petición— se colaba como reenvío exacto.
+  const colado = aplicar(s, {
+    // Mismo nonce, misma revisión esperada, parámetros distintos.
+    sobre: { ...envio, revisionEsperada: s.publico.revision, parametros: {} },
+    actorId: "u1",
+    juego: juegoFalso,
+  });
+  assert.equal(colado.idempotente, undefined, "dos sobres distintos no son el mismo reenvío");
+  assert.equal(colado.ok, false);
+  assert.equal(colado.codigo, ERRORES.NONCE_REUTILIZADO);
+
+  // Y el prototipo sigue limpio: nadie ha contaminado Object.
+  assert.equal({}.contaminado, undefined);
+});
+
 test("los nonces se acotan y nunca salen al estado público", () => {
   let s = sesionNueva({ maxNonces: 3 });
   for (let i = 0; i < 5; i += 1) {

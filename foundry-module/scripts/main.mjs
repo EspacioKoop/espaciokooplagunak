@@ -45,6 +45,7 @@ import {
   registrarAjustesMinijuegos,
   registrarSesionesMinijuegos,
 } from "./minijuegos-wiring.mjs";
+import { registrarAjusteAlerta, registrarEscuchaAlerta } from "./alerta-escena.mjs";
 import { crearClaseV2 } from "./estado-nave-app-v2.mjs";
 import { crearClaseV1 } from "./estado-nave-app-v1.mjs";
 import { crearClaseMapaV2 } from "./mapa-vivo-app-v2.mjs";
@@ -97,6 +98,11 @@ Hooks.once("init", () => {
   // escribir un valor concreto aquí, o usar el botón "nuevo decorado
   // aleatorio" de los controles de escena (regenerarDecoradoAleatorio), que
   // guarda un valor al azar en este mismo ajuste.
+  // Nivel de alerta vigente (verde/amarilla/roja). Ajuste de MUNDO: lo escribe
+  // el GM y lo leen todos, así que un jugador que entra tarde ve la alerta en
+  // curso sin esperar al siguiente sondeo del GM.
+  registrarAjusteAlerta(MODULE_ID);
+
   game.settings.register(MODULE_ID, "decoradoSemilla", {
     name: "LAGUNAK.Ajustes.DecoradoSemilla.Nombre",
     hint: "LAGUNAK.Ajustes.DecoradoSemilla.Pista",
@@ -122,6 +128,10 @@ Hooks.once("ready", () => {
   // Migración de #183: no se lee el valor legado; se sobrescribe con vacío.
   // El token operativo vive exclusivamente en bridge-token-session.mjs.
   void clearLegacyBridgeToken();
+  // Nivel de alerta de la nave: TODOS los clientes escuchan, porque la alerta
+  // es información de ambiente que la tripulación conocería de sobra. Solo el
+  // GM la publica, desde el estado que solo él recibe.
+  registrarEscuchaAlerta(MODULE_ID);
   // Relé de órdenes por puesto (#236): el GM registra el manejador del socket;
   // en clientes de tripulación es no-op (solo emiten).
   registerStationOrders(MODULE_ID);
@@ -130,14 +140,20 @@ Hooks.once("ready", () => {
   registrarSesionesMinijuegos(MODULE_ID);
 });
 
-Hooks.on("updateUser", (user) => {
-  if (user?.id === game.user?.id) {
-    // Un cambio de rol del propio usuario rearma el relé: el GM entrante gana
-    // el manejador, el saliente lo pierde (registerStationOrders comprueba isGM).
-    registerStationOrders(MODULE_ID);
-    registrarSesionesMinijuegos(MODULE_ID);
-    if (!user.isGM) void revokePrivilegedBridgeAccess();
-  }
+Hooks.on("updateUser", (user, changes) => {
+  if (user?.id !== game.user?.id) return;
+  // Solo un cambio de ROL rearma el relé y revoca privilegios. Cualquier otro
+  // updateUser del propio usuario (cambiar de puesto escribe un flag) pasaba
+  // por aquí y a un no-GM le revocaba y cerraba sus consolas en plena sesión:
+  // ventana en blanco hasta recargar (#263). Las propuestas de minijuegos, que
+  // también viajan por updateUser, tienen su propio oyente en
+  // minijuegos-wiring.mjs y no pasan por aquí.
+  if (!("role" in (changes ?? {}))) return;
+  // El GM entrante gana el manejador, el saliente lo pierde
+  // (registerStationOrders comprueba isGM).
+  registerStationOrders(MODULE_ID);
+  registrarSesionesMinijuegos(MODULE_ID);
+  if (!user.isGM) void revokePrivilegedBridgeAccess();
 });
 
 function wipePrivilegedWindow(app) {

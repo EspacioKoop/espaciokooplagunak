@@ -514,14 +514,28 @@ function huellaSobre(sobre) {
   return JSON.stringify([sobre.tipo, canonico(sobre.parametros ?? {})]);
 }
 
+/**
+ * Forma canónica como SECUENCIA ORDENADA DE PARES, no como objeto reconstruido.
+ *
+ * Construir un objeto y asignarle claves parecía equivalente y no lo era: con
+ * parámetros que vienen de `JSON.parse` —el caso real, porque llegan por el
+ * socket—, `salida.__proto__ = …` dispara el setter heredado en vez de crear una
+ * propiedad, así que la clave se evaporaba de `JSON.stringify` y las huellas de
+ * `{"__proto__":{…}}` y `{}` salían idénticas. Dos sobres distintos con el mismo
+ * nonce colisionaban y el segundo recibía éxito silencioso, que es exactamente
+ * la garantía que la huella existe para sostener.
+ *
+ * Con pares no hay asignación de claves, así que ninguna clave puede tener
+ * significado especial. Las marcas `"o"` y `"a"` distinguen un objeto de un
+ * array para que un objeto no pueda hacerse pasar por la lista de sus pares.
+ */
 function canonico(valor) {
-  if (Array.isArray(valor)) return valor.map(canonico);
+  if (Array.isArray(valor)) return ["a", valor.map(canonico)];
   if (valor === null || typeof valor !== "object") return valor;
-  const salida = {};
-  for (const clave of Object.keys(valor).sort()) {
-    salida[clave] = canonico(valor[clave]);
-  }
-  return salida;
+  const pares = Object.keys(valor)
+    .sort()
+    .map((clave) => [clave, canonico(valor[clave])]);
+  return ["o", pares];
 }
 
 // Colección acotada: descarta los más antiguos. Vive solo en el estado privado

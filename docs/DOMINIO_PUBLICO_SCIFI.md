@@ -207,6 +207,141 @@ están en DP, pero **hay que verificar la pieza concreta**.
 
 ---
 
+### 4.3 Arte clásico: la vía que sí está limpia
+
+Frente a las pulp —bloqueadas por renovación estadounidense, nacionalidad sin acreditar y cabeceras
+con marca viva—, la **pintura y el grabado clásicos** no tienen ninguno de esos tres problemas: autores
+fallecidos hace entre **un siglo y cinco**, sin marca de revista asociada y con obra original cuya
+condición de DP no admite discusión en ninguna jurisdicción.
+
+| Fuente | Autor (fallec.) | Estado copyright | Uso | Elementos aprovechables |
+|---|---|---|---|---|
+| *Los caprichos*, *Los desastres de la guerra*, *Los disparates/proverbios*, *Pinturas negras* | Francisco de Goya (1828 — [LCNAF](https://id.loc.gov/authorities/names/n79003363)) | **DP mundial** sin matices: `vida+70` venció en 1898 | ✅ | Aguafuerte y aguatinta de alto contraste, monstruo que nace del sueño de la razón, multitud deforme, desastre sin heroísmo. Registro visual para **consecuencias**: bajas, hambre, pánico a bordo |
+| *La Divina Comedia*, *El Quijote*, *El paraíso perdido*, *La Biblia*, *Las obras de Rabelais* | Gustave Doré (1883 — [LCNAF](https://id.loc.gov/authorities/names/n79089221)) | **DP mundial** sin matices: `vida+70` venció en 1953 | ✅ | Grabado a testa con tramado denso: abismos, escalas colosales, figura diminuta ante lo inmenso, luz volumétrica. Registro visual para **lo sublime**: derelictos, vacío, criatura descomunal |
+| *El almuerzo de los remeros*, *Baile en el Moulin de la Galette*, *La lectura*, retratos y escenas de grupo | **Auguste** Renoir (1919 — [LCNAF](https://id.loc.gov/authorities/names/n79055478)) | **DP mundial**: `vida+70` venció en 1989 | ✅ | Luz cálida, color roto, mesa compartida, gente que se ríe junta. Registro visual para **el tiempo entre misiones**: la partida de cartas, la comida de la tripulación, el descanso |
+| *La vocación de san Mateo*, *Judit y Holofernes*, *La cena de Emaús*, *David con la cabeza de Goliat* | Caravaggio (1610 — [LCNAF](https://id.loc.gov/authorities/names/n50000558)) | **DP mundial**: `vida+70` venció en 1680 | ✅ | **Tenebrismo**: una sola fuente de luz mordiendo la oscuridad, gesto congelado en el instante exacto, violencia sin épica. Registro visual para **el interior de la nave a oscuras**: alarma, luz de emergencia, la cara de alguien al recibir una noticia |
+| Aguafuertes (*Las tres cruces*, autorretratos, paisajes) y *La ronda de noche*, *La lección de anatomía* | Rembrandt (1669 — [LCNAF](https://id.loc.gov/authorities/names/n79142935)) | **DP mundial**: `vida+70` venció en 1739 | ✅ | Penumbra cálida, retrato que envejece sin piedad, **grupo trabajando** iluminado desde dentro de la escena. Registro visual para **la tripulación como personas**: retratos de puesto, la escena coral del puente |
+| *La noche estrellada*, *Campo de trigo con cuervos*, *La habitación*, autorretratos | Vincent van Gogh (1890 — [LCNAF](https://id.loc.gov/authorities/names/n79022935)) | **DP mundial**: `vida+70` venció en 1960 | ✅ | Cielo que gira, pincelada con dirección propia, color emocional antes que descriptivo. Registro visual para **el espacio como estado de ánimo**: el vacío que no está quieto, aislamiento, la deriva mental de una guardia larga |
+| *Selenographia* (1647): mapas y láminas lunares grabadas | Johannes Hevelius (1687 — [LCNAF](https://id.loc.gov/authorities/names/n80117341)) | **DP mundial**: obra de 1647; `vida+70` venció en 1757 | ✅ | **La primera cartografía realista de otro mundo**: la Luna dibujada como territorio físico, con nomenclatura, escalas y fases. Registro visual para **los documentos diegéticos**: cartas de navegación, fichas de sistema, el códice del GM, la estética del mapa vivo |
+| *El jardín de las delicias*, *La tentación de san Antonio*, *El juicio final* | Hieronymus Bosch (1516 — [LCNAF](https://id.loc.gov/authorities/names/n79004071)) | **DP mundial**: `vida+70` venció en 1586 | ✅ | Criatura híbrida entre carne y máquina, arquitectura que respira, paisaje que no obedece a la física. Registro visual para **el horror no humano**: el derelicto orgánico, lo que no debería estar vivo |
+| *Caballos en una tormenta*, escenas de animales, *Gulliver despidiéndose de los houyhnhnms* | Sawrey Gilpin (1807 — [LCNAF](https://id.loc.gov/authorities/names/nr2001025477)) | **DP mundial**: `vida+70` venció en 1877 | ✅ | Anatomía animal correcta en movimiento y, sobre todo, **miedo animal**: el bicho que huye, no que ataca. Registro visual para **fauna creíble**: criaturas que se comportan como animales en vez de como monstruos |
+
+**Un registro por cosa que contar, no una galería.** La utilidad de esta lista no es su prestigio:
+es que entre los nueve cubren lo que el juego necesita narrar y hoy no ilustra.
+
+| Qué hay que contar | Autor | Por qué ese y no otro |
+|---|---|---|
+| Consecuencias: bajas, hambre, pánico | **Goya** | Desastre sin heroísmo; el horror es de la gente, no del monstruo |
+| Lo sublime: derelictos, vacío, escala | **Doré** | Figura diminuta ante lo inmenso, que es la relación nave/espacio |
+| La nave a oscuras: alarma, mala noticia | **Caravaggio** | Una sola fuente de luz en la negrura — literalmente la iluminación de un pasillo en emergencia |
+| La tripulación como personas | **Rembrandt** | Retrato sin idealizar y escena coral iluminada desde dentro |
+| El espacio como estado de ánimo | **Van Gogh** | El vacío que no está quieto; aislamiento y deriva de una guardia larga |
+| El tiempo **entre** misiones | **Renoir** | La partida de cartas de #308, la comida, la camaradería |
+| Documentos diegéticos: cartas, fichas, códice | **Hevelius** | Cartografía real de otro mundo, con la autoridad visual de un instrumento, no de una ilustración |
+| Horror no humano: derelicto orgánico | **Bosch** | Híbrido carne-máquina cuatro siglos antes de que existiera la palabra biomecánico |
+| Fauna creíble, no monstruos | **Gilpin** | Anatomía correcta y miedo animal: el bicho que huye |
+
+Renoir y Van Gogh cubren lo que el pulp no toca en absoluto —la capa social y psicológica—, y
+**Hevelius es el que más rendimiento inmediato tiene**: no es ilustración de escena sino material de
+interfaz, que es donde el juego ya tiene superficie (mapa vivo, fichas, códice).
+
+**Sobre Bosch y la genealogía visual.** Ni Bosch ni Goya son ciencia ficción: son fantasía religiosa,
+pesadilla y sátira. Se recogen aquí como **ancestros visuales** de los que bebe el arte conceptual
+moderno de scifi y terror, no como precedentes del género. Conviene decirlo para no vender una
+continuidad histórica que no existe.
+
+**La familia astronómica es más amplia que Hevelius.** Los cartógrafos y grabadores de los siglos
+XVII–XVIII produjeron el primer lenguaje visual «espacial» realista, y casi todo ello está fuera de
+plazo por pura antigüedad. Pero **cada lámina se verifica igual** (paso 0): edición, grabador y
+procedencia del escaneo. Hevelius entra aquí como ancla verificada, no como permiso para dar por
+libre cualquier plancha antigua que aparezca.
+
+**Por qué encajan mejor que una portada pulp, y con qué coste cada uno.** No todos se adaptan igual
+y conviene decirlo antes de prometer nada:
+
+- **Grabado (Goya, Doré, y los aguafuertes de Rembrandt)** — blanco y negro de alto contraste.
+  Sobreviven al recorte, al escalado y a una paleta retro sin perder legibilidad, justo lo contrario
+  que una portada pulp en cuatricromía. **Coste de adaptación: bajo.**
+- **Tenebrismo (Caravaggio)** — ya es casi una paleta reducida: masas negras y una zona iluminada.
+  Recorta y cuantiza bien, y encaja con una interfaz oscura. **Coste: bajo-medio.**
+- **Tabla flamenca de detalle (Bosch)** — el problema opuesto: densidad extrema de figuras diminutas.
+  A tamaño de icono se convierte en ruido. Se usa **recortando un fragmento**, nunca la obra entera.
+  **Coste: medio**, y obliga a elegir bien el recorte.
+- **Grabado científico (Hevelius y la cartografía del XVII–XVIII)** — línea pura sobre fondo claro,
+  pensada para reproducirse por impresión. Es el que **menos** adaptación necesita: se invierte a
+  fondo oscuro y ya funciona como interfaz. **Coste: el más bajo de todos.**
+- **Óleo en color (Renoir, Van Gogh)** — el caso distinto. Lo que los hace reducibles a una paleta
+  Neo Geo no es el contraste sino la **pincelada suelta**: la imagen ya está construida con manchas
+  yuxtapuestas, así que tolera la cuantización a pocos colores. Pero requieren trabajo de
+  adaptación: **no son un recorte directo**. **Coste: medio-alto.**
+
+> **Cuidado con el homónimo.** «Renoir» a secas es ambiguo y los dos **no** están en la misma
+> situación: el pintor **Auguste** Renoir († [1919](https://id.loc.gov/authorities/names/n79055478))
+> es DP, pero su hijo, el cineasta **Jean** Renoir
+> († [1979](https://id.loc.gov/authorities/names/n79018203)), está protegido en la UE **hasta 2049**.
+> Cualquier fotograma, cartel o material de las películas de Jean queda ⛔. Al anotar una pieza hay
+> que nombrar al autor **con sus fechas**, no por apellido — es el mismo riesgo de atribución que
+> dispara la reevaluación del paso 5.
+
+**La cautela aquí NO es la obra, es el escaneo.** El grabado es DP; el **fichero** concreto llega por
+un intermediario que puede imponer sus propias condiciones. Se aplica igual el **paso 3** de §4.1:
+anotar de dónde sale el fichero y qué declara. Preferir fuentes que publican en abierto y lo dicen
+explícitamente —Biblioteca Digital Hispánica, Rijksmuseum, Metropolitan Museum, Wikimedia Commons con
+su plantilla de licencia— frente a un escaneo sin procedencia. Y como con cualquier otra pieza: si se
+usa, se **recorta** sin sellos, marcas de agua ni marcos de la institución digitalizadora.
+
+#### Cine primitivo: la misma idea, con OTRA regla de plazo
+
+Méliès y sus contemporáneos son la primera imaginería de viaje espacial en movimiento, y encajan con
+el proyecto. Pero **el cine no computa como un cuadro** y confundirlo es la forma más fácil de
+equivocarse aquí.
+
+**La regla.** El [TRLPI art. 28.1](https://www.boe.es/buscar/act.php?id=BOE-A-1996-8930) trata la obra
+cinematográfica como **obra en colaboración**: el plazo dura la vida de los coautores y **70 años
+desde la muerte del ÚLTIMO coautor superviviente** — no del director. Los coautores de una obra
+audiovisual son varios (dirección, guion, diálogos, música compuesta para la obra), así que **una
+sola fecha no cierra el cálculo**.
+
+| Obra / autor | Fecha clave | Estado | Uso | Nota |
+|---|---|---|---|---|
+| *Le Voyage dans la Lune* (1902) y demás obra de **Georges Méliès** | Méliès †1938 ([LCNAF](https://id.loc.gov/authorities/names/n79055178)) | DP en la UE **desde 2009** *si* Méliès es el último coautor superviviente | ✅ | Caso favorable: dirigía, escribía, diseñaba y actuaba en sus películas, y eran **mudas** —sin música compuesta para la obra—, así que la lista de coautores se reduce casi a él. **Verificar por película**, no por autor |
+| Obra de **Segundo de Chomón** (*El hotel eléctrico*, trucajes Pathé) | Chomón †1929 ([LCNAF](https://id.loc.gov/authorities/names/n88128513)) | DP en la UE **desde 2000**, mismo supuesto | ✅ | **Pionero español**, del mismo lenguaje de trucaje que Méliès. Encaja doblemente por procedencia |
+| *Metropolis* (1927), **Fritz Lang** | Lang †1976 ([LCNAF](https://id.loc.gov/authorities/names/n79043386)) | **PROTEGIDA hasta 2047** como mínimo | ⛔ | La trampa clásica: «es de 1927, será DP». No lo es. El plazo va por el **último coautor**, y Lang murió en 1976. Que circule por todas partes no la hace libre |
+| **Restauraciones y coloreados modernos** de cualquiera de las anteriores | — | Derecho **nuevo** sobre la versión restaurada | ⛔ | Una copia restaurada, recoloreada o con banda sonora añadida es una capa protegida **encima** de una obra DP. Se usa la copia de archivo lisa, no la edición moderna |
+
+**Cómo se verifica una película, entonces.** Paso 0 del protocolo, ampliado: no basta el director. Hay
+que listar los **coautores** (dirección, guion, diálogos, música compuesta *ad hoc*), tomar la fecha
+del **último superviviente** y, por separado, comprobar que la copia concreta no es una **restauración
+moderna** con derechos propios. Si no puedes nombrar a los coautores, la pieza se queda en ⛔.
+
+**Qué se aprovecha de verdad.** No el metraje —el juego no reproduce vídeo— sino el **vocabulario
+visual**: el cohete-obús, la Luna con cara, el decorado pintado a mano con perspectiva teatral, el
+trucaje por sustitución. Eso es **estilo**, no obra: se puede tomar como referencia para arte propio
+sin tocar ningún fotograma, que es la vía que el proyecto prefiere igualmente.
+
+> **Fuente/verificación (consulta 2026-07-27):** fechas de fallecimiento del fichero de autoridades
+> LCNAF, con su encabezamiento autorizado y **URI comprobada una a una**:
+> [Caravaggio, Michelangelo Merisi da, 1573-1610](https://id.loc.gov/authorities/names/n50000558) ·
+> [Rembrandt Harmenszoon van Rijn, 1606-1669](https://id.loc.gov/authorities/names/n79142935) ·
+> [Goya, Francisco, 1746-1828](https://id.loc.gov/authorities/names/n79003363) ·
+> [Doré, Gustave, 1832-1883](https://id.loc.gov/authorities/names/n79089221) ·
+> [Gogh, Vincent van, 1853-1890](https://id.loc.gov/authorities/names/n79022935) ·
+> [Renoir, Auguste, 1841-1919](https://id.loc.gov/authorities/names/n79055478) ·
+> [Bosch, Hieronymus, -1516](https://id.loc.gov/authorities/names/n79004071) ·
+> [Hevelius, Johannes, 1611-1687](https://id.loc.gov/authorities/names/n80117341) ·
+> [Gilpin, Sawrey, 1733-1807](https://id.loc.gov/authorities/names/nr2001025477). El encabezamiento
+> de Bosch registra **solo** la muerte (1516) porque su nacimiento es incierto (~1450): para el
+> cómputo `vida+70` es exactamente el dato que hace falta. Cruzadas con
+> `vida+70` (UE) y con el término estadounidense de 95 años: sus obras originales están por debajo de
+> cualquier corte vigente — **el más reciente de los nueve, Renoir, entró en DP en 1989**.
+> Homónimo verificado y **excluido**: [Renoir, Jean,
+> 1894-1979](https://id.loc.gov/authorities/names/n79018203), protegido hasta 2049. **No hay aquí problema de renovación** (es anterior al
+> régimen que la exige) **ni de nacionalidad** (el plazo ya venció por cualquiera de las dos vías, así
+> que la comparación del art. 163 es indiferente). **Marca:** no consultada en registro, como en el
+> resto del catálogo; el uso es interno y como referencia de estilo, no como etiqueta de producto.
+
+---
+
 ## Guía de uso: convertir un elemento DP en guiño
 
 | Vector del juego | Cómo aplicarlo | Ejemplo |

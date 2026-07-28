@@ -224,3 +224,15 @@ test("si un jugador aún puede igualar tras las ciegas, la mano sigue viva", () 
   assert.equal(haTerminado(final), true);
   assert.equal(fichasTotales(final), 3);
 });
+
+test("la vista pública dice dónde está el botón", () => {
+  // Es información de mesa —el disco se ve— y además es lo que necesita la capa
+  // de sesión para colocarlo en la mano siguiente: el motor juega UNA mano y no
+  // recuerda dónde estuvo.
+  const estado = crear(
+    { jugadores: [{ userId: "a", stack: 100 }, { userId: "b", stack: 100 }, { userId: "c", stack: 100 }], botonIndice: 2 },
+    5,
+  );
+  assert.equal(vistaPublica(estado).botonIndice, 2);
+  assert.equal(vistaPrivada(estado, "a").botonIndice, 2);
+});

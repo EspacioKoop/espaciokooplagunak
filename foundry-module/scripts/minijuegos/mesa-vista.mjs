@@ -73,6 +73,14 @@ export function mesaVista(vista, { userId = "", acciones = [] } = {}) {
   const manoPorAsiento = new Map(
     (publico?.jugadores ?? []).map((j) => [j.userId, j]),
   );
+  // Quién lleva el disco. Va por identidad y no por índice porque los asientos
+  // de la mano son solo los que juegan: quien está sentado sin fichas no está
+  // en esa lista, y comparar posiciones pondría el disco en el asiento
+  // equivocado. Antes del reparto no hay botón que enseñar.
+  const conBoton =
+    Number.isInteger(publico?.botonIndice) && publico.jugadores?.[publico.botonIndice]
+      ? publico.jugadores[publico.botonIndice].userId
+      : null;
 
   return {
     hayMesa: true,
@@ -100,6 +108,7 @@ export function mesaVista(vista, { userId = "", acciones = [] } = {}) {
         userId: asiento.userId,
         eresTu: asiento.userId === userId,
         esTurno: turno === asiento.userId,
+        esBoton: Boolean(conBoton) && conBoton === asiento.userId,
         // Lo que sigue puede ser null antes del reparto: la mesa existe
         // antes que la mano.
         stack: enJuego?.stack ?? null,

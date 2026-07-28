@@ -94,10 +94,7 @@ function fichasDe(publico, userId, fichasIniciales) {
 export function configuracionPoker(publico, opciones = {}) {
   const mesa = normalizarMesa(opciones);
   const asientos = Array.isArray(publico?.jugadores) ? publico.jugadores : [];
-  return {
-    ciegaPequena: mesa.ciegaPequena,
-    ciegaGrande: mesa.ciegaGrande,
-    jugadores: asientos
+  const jugadores = asientos
       .map((asiento) => ({
         userId: asiento.userId,
         stack: fichasDe(publico, asiento.userId, mesa.fichasIniciales),
@@ -109,6 +106,50 @@ export function configuracionPoker(publico, opciones = {}) {
       // Un stack negativo no debería existir; si llega, se trata como cero en
       // vez de propagarlo al motor, que lo rechazaría con un código lejano a la
       // causa.
-      .filter((jugador) => jugador.stack > 0),
+    .filter((jugador) => jugador.stack > 0);
+  return {
+    ciegaPequena: mesa.ciegaPequena,
+    ciegaGrande: mesa.ciegaGrande,
+    jugadores,
+    botonIndice: botonSiguiente(publico, jugadores),
   };
+}
+
+/**
+ * Dónde va el botón en la mano que empieza.
+ *
+ * El motor juega UNA mano y no sabe que hubo otra antes, así que sin esto
+ * `crear` cae en su valor por defecto —asiento 0— y el botón nunca se mueve:
+ * el mismo jugador paga la ciega pequeña toda la noche. Rotarlo es la regla
+ * del póker, y es además lo que reparte la desventaja posicional.
+ *
+ * Se avanza por el ORDEN DE LA MESA, no por el de la mano anterior: quien se
+ * quedó a cero sigue sentado aunque no reciba cartas (ver arriba), y saltarlo
+ * en el recuento haría que el botón se saltara asientos enteros cuando ese
+ * jugador vuelva a tener fichas. Del orden de mesa se elige el primero que sí
+ * juega esta mano.
+ *
+ * Sin mano anterior —mesa recién abierta, o coordinador que adoptó una mesa sin
+ * estado de juego— el botón arranca en el asiento 0, que es tan bueno como
+ * cualquiera para la primera mano.
+ */
+function botonSiguiente(publico, jugadores) {
+  if (jugadores.length === 0) return 0;
+  const anterior = publico?.juegoPublico;
+  const previos = Array.isArray(anterior?.jugadores) ? anterior.jugadores : [];
+  const indiceAnterior = anterior?.botonIndice;
+  if (!Number.isInteger(indiceAnterior) || !previos[indiceAnterior]) return 0;
+
+  const ordenMesa = (Array.isArray(publico?.jugadores) ? publico.jugadores : []).map(
+    (asiento) => asiento?.userId,
+  );
+  const desde = ordenMesa.indexOf(previos[indiceAnterior].userId);
+  if (desde < 0) return 0;
+
+  for (let salto = 1; salto <= ordenMesa.length; salto += 1) {
+    const candidato = ordenMesa[(desde + salto) % ordenMesa.length];
+    const indice = jugadores.findIndex((jugador) => jugador.userId === candidato);
+    if (indice >= 0) return indice;
+  }
+  return 0;
 }

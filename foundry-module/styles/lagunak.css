@@ -514,13 +514,36 @@
   padding: 0;
 }
 
-/* Las cartas son pixel-art: se escalan sin suavizado o dejan de serlo. */
-.lagunak-mesa-comunitarias img,
-.lagunak-mesa-mano img {
-  width: 52px;
-  height: auto;
+/* Las cartas son pixel-art de 30×42: se escalan sin suavizado y en MÚLTIPLOS
+ * ENTEROS, o el píxel deja de ser cuadrado y el dibujo se emborrona. De ahí las
+ * medidas exactas en vez de un `height: auto`. */
+.lagunak-mesa-comunitarias img {
+  width: 90px; /* ×3 */
+  height: 126px;
   image-rendering: pixelated;
   border: 1px solid #1b263b;
+}
+
+/* La mano propia es la que se mira, así que va un escalón por encima. */
+.lagunak-mesa-mano img {
+  width: 120px; /* ×4 */
+  height: 168px;
+  image-rendering: pixelated;
+  border: 1px solid #1b263b;
+}
+
+/* En una ventana estrecha manda que quepan: se bajan las dos un escalón antes
+ * de que el tapete empiece a recortar cartas. */
+@media (max-width: 560px) {
+  .lagunak-mesa-comunitarias img {
+    width: 60px; /* ×2 */
+    height: 84px;
+  }
+
+  .lagunak-mesa-mano img {
+    width: 90px; /* ×3 */
+    height: 126px;
+  }
 }
 
 .lagunak-mesa h4 {

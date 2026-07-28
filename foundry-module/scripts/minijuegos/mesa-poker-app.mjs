@@ -125,7 +125,9 @@ export function crearClaseMesaV2({ proponer }) {
       id: "lagunak-mesa-poker",
       classes: ["lagunak-mesa"],
       window: { title: "LAGUNAK.Minijuegos.Mesa.Titulo", icon: "fa-solid fa-diamond" },
-      position: { width: 520, height: "auto" },
+      // Cinco comunitarias a escala ×3 más el marco: por debajo de esto la
+      // ventana empieza a envolver el tapete.
+      position: { width: 600, height: "auto" },
     };
 
     static PARTS = { main: { template: PLANTILLA } };
@@ -153,7 +155,7 @@ export function crearClaseMesaV1({ proponer }) {
         classes: ["lagunak-mesa"],
         title: game.i18n.localize("LAGUNAK.Minijuegos.Mesa.Titulo"),
         template: PLANTILLA,
-        width: 520,
+        width: 600,
         height: "auto",
       });
     }

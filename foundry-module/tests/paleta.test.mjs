@@ -19,6 +19,7 @@ const MODULOS_DE_ARTE = [
   "../scripts/nave-sprite.mjs",
   "../scripts/minijuegos/cartas-pixelart.mjs",
   "../scripts/ventana-nave.mjs",
+  "../scripts/iconos-sistema.mjs",
 ];
 
 test("los colores no cambian al mudarse: mismo valor que antes en cada módulo", () => {

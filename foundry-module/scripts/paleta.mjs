@@ -98,6 +98,22 @@ export const FACCIONES = Object.freeze([
 ]);
 
 /**
+ * Iconos de daño por sistema (#353). El estado se dibuja con forma —grietas,
+ * píxeles apagados, contorno discontinuo—, así que estos colores acompañan a
+ * la forma en vez de sustituirla: quien no distinga los tonos sigue leyendo el
+ * estado, y el texto de la fila sigue siendo la verdad.
+ */
+export const SISTEMA = Object.freeze({
+  // El marco no es un gris nuevo: es el mismo de lo que no tiene facción en el
+  // mapa. Se toma de ahí en vez de repetirlo, que es la regla de este archivo.
+  marco: PIXEL.sinFaccion,
+  nucleo: "#8df06f", // verde de sistema respondiendo
+  grieta: "#e2aa28", // ámbar de la alerta amarilla
+  apagado: "#3a2b2f", // núcleo muerto: presente pero sin responder
+  sinLectura: "#5b6472", // ni bueno ni malo: no se sabe
+});
+
+/**
  * Qué lenguaje toca. Se responde con una pregunta y no con una lista de
  * superficies, para que valga también para la superficie que aún no existe.
  *

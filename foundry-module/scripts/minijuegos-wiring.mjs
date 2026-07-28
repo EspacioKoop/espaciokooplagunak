@@ -132,7 +132,16 @@ function asegurarCoordinacion() {
   // Ya coordino y conservo los secretos: no hay nada que relevar.
   if (sesionViva?.publico?.coordinadorId === miId) return null;
   const publico = game.settings.get(moduloConfigurado, AJUSTE_SESION);
-  if (!publico || publico.coordinadorId === miId) return null;
+  if (!publico) return null;
+  // Ojo con la condición: lo que decide el relevo es NO TENER la sesión viva,
+  // no quién figure en el estado público. El coordinador que recarga la página
+  // sigue figurando como coordinador —el ajuste de mundo no se entera de un
+  // F5— pero ha perdido semilla, mazo y manos, que solo vivían en su memoria.
+  // Con la condición mirando el nombre en vez de los secretos, ese GM no
+  // readoptaba su propia mesa y descartaba en silencio todo lo que le
+  // proponían: la mesa quedaba muerta hasta reabrirla. Readoptar sube la época,
+  // cancela la mano y restaura el checkpoint, que es lo honesto: sin semilla no
+  // se puede continuar una mano a medias.
 
   const adopcion = adoptarSesionPublicada({ publico, coordinadorId: miId });
   if (!adopcion) return null;

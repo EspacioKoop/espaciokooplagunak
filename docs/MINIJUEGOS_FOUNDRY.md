@@ -252,7 +252,11 @@ variantes y efectos sobre la campaña.
 
    **Relevo real.** El cableado detecta el cambio de `game.users.activeGM` al
    registrarse y en cada `userConnected`, y también antes de despachar una
-   propuesta. Cuando el GM activo ve un estado público cuyo `coordinadorId` es
+   propuesta. Lo que dispara el relevo es **no tener la sesión viva**, no quién
+   figure como coordinador en el estado público: el GM que recarga la página
+   sigue figurando como coordinador —un ajuste de mundo no se entera de un F5—
+   pero ha perdido semilla, mazo y manos, así que readopta su propia mesa por el
+   mismo camino que un relevo entre GMs distintos. Cuando el GM activo ve un estado público cuyo `coordinadorId` es
    otro, adopta la mesa con `adoptarSesionPublicada`: reconstruye la sesión desde
    el ajuste público con el privado vacío y delega en `sustituirCoordinador`, que
    sube la época —invalidando los sobres en vuelo del anterior—, cancela la mano

@@ -439,3 +439,37 @@ test("despacharCambioDeUsuario entrega acciones junto a cada vista", () => {
     assert.ok(Array.isArray(entrega.acciones));
   }
 });
+
+test("REGRESIÓN: el coordinador que recarga readopta SU PROPIA mesa", () => {
+  // Lo que decide el relevo es no tener los secretos, no quién figure en el
+  // estado público. El GM que recarga la página sigue figurando como
+  // coordinador —un ajuste de mundo no se entera de un F5— pero ha perdido
+  // semilla, mazo y manos, que solo vivían en su memoria. Si no readopta,
+  // descarta en silencio todo lo que le propongan y la mesa queda muerta.
+  let sesion = sesionConDos();
+  const arrancar = construirPropuesta({
+    publico: vistaPublicaSesion(sesion),
+    tipo: "start",
+    nonce: nonce(),
+  });
+  sesion = aplicar(sesion, { sobre: arrancar, actorId: "gm", juego: juegoFalso, semilla: 10 }).sesion;
+  const antes = vistaPublicaSesion(sesion);
+  assert.equal(antes.manoEnCurso, true);
+
+  const readoptada = adoptarSesionPublicada({ publico: antes, coordinadorId: "gm" });
+  assert.ok(readoptada, "readoptar la propia mesa es posible");
+  assert.equal(readoptada.publico.coordinadorId, "gm");
+  assert.equal(
+    readoptada.publico.epocaCoordinador,
+    antes.epocaCoordinador + 1,
+    "sube la época: los sobres en vuelo de antes del F5 ya no valen",
+  );
+  assert.equal(readoptada.publico.manoEnCurso, false, "la mano no se reanuda sin semilla");
+  assert.equal(readoptada.publico.manoCancelada, true, "y se dice que se canceló");
+  assert.equal(readoptada.sesion.privado.estadoJuego, null, "sin secretos inventados");
+  // Los asientos siguen ahí: se cancela la mano, no se disuelve la mesa.
+  assert.deepEqual(
+    readoptada.publico.jugadores.map((j) => j.userId),
+    antes.jugadores.map((j) => j.userId),
+  );
+});

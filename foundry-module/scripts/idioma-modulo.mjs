@@ -87,3 +87,86 @@ export function rutaIdioma(ruta, moduleId) {
   if (ruta.startsWith("modules/") || ruta.startsWith("/") || /^https?:/.test(ruta)) return ruta;
   return `modules/${moduleId}/${ruta}`;
 }
+
+/**
+ * Aplicador de idioma con guarda de generación.
+ *
+ * POR QUÉ NO BASTA CON PEDIR EL FICHERO Y FUSIONARLO. La carga es asíncrona, y
+ * dos cambios seguidos son dos cargas en vuelo: si la segunda respuesta llega
+ * antes que la primera, la última en fusionarse gana, y esa puede ser la vieja.
+ * El resultado es una interfaz que contradice a su propio selector —el ajuste
+ * dice «en», los textos están en «es»— y que se queda así hasta el cambio
+ * siguiente o una recarga. No es teórico: se reproduce resolviendo las dos
+ * cargas en orden inverso, que es justo lo que hace la prueba de regresión.
+ *
+ * La guarda es doble a propósito, porque protegen de cosas distintas:
+ *
+ * - el número de generación descarta cualquier respuesta que no sea de la
+ *   ÚLTIMA petición lanzada;
+ * - la relectura del valor vigente descarta además la respuesta que sí es la
+ *   última pero cuyo idioma ya no es el elegido (el ajuste pudo volver a su
+ *   sitio mientras el fichero viajaba).
+ *
+ * Todo lo que toca Foundry llega inyectado, así que esto se prueba en Node con
+ * cargas resueltas a mano en el orden que haga falta.
+ *
+ * @param {object} deps
+ * @param {() => {pedido: string, idiomaFoundry: string, idiomas: object[]}} deps.leerEstado
+ * @param {(ruta: string) => Promise<object>} deps.cargar
+ * @param {(traducciones: object) => void} deps.fusionar
+ * @param {() => void} [deps.refrescar] repintado de lo que ya está en pantalla.
+ * @param {(motivo: string, datos?: object) => void} [deps.alFallar]
+ * @param {(info: object) => void} [deps.alAplicar]
+ */
+export function crearAplicadorIdioma({
+  leerEstado,
+  cargar,
+  fusionar,
+  refrescar = () => {},
+  alFallar = () => {},
+  alAplicar = () => {},
+}) {
+  let generacion = 0;
+
+  return async function aplicarIdioma({ avisar = false } = {}) {
+    const mia = (generacion += 1);
+    const { pedido, idiomaFoundry, idiomas = [] } = leerEstado() ?? {};
+    const disponibles = idiomas.map((idioma) => idioma.lang);
+    const elegido = idiomaEfectivo(pedido, idiomaFoundry, disponibles);
+    const ruta = idiomas.find((idioma) => idioma.lang === elegido)?.path;
+    if (!ruta) {
+      alFallar("sin_fichero", { pedido, elegido, idiomas });
+      return null;
+    }
+
+    let traducciones = null;
+    try {
+      traducciones = clavesDelModulo(await cargar(ruta));
+    } catch (err) {
+      alFallar("no_cargado", { elegido, err, avisar });
+      return null;
+    }
+
+    // Aquí está la guarda. Entre el `await` de arriba y esta línea ha pasado
+    // tiempo, y en ese tiempo el idioma pudo cambiar otra vez.
+    if (mia !== generacion) {
+      alFallar("obsoleto", { elegido });
+      return null;
+    }
+    const vigente = leerEstado() ?? {};
+    const elegidoAhora = idiomaEfectivo(
+      vigente.pedido,
+      vigente.idiomaFoundry,
+      (vigente.idiomas ?? idiomas).map((idioma) => idioma.lang),
+    );
+    if (elegidoAhora !== elegido) {
+      alFallar("obsoleto", { elegido, elegidoAhora });
+      return null;
+    }
+
+    fusionar(traducciones);
+    refrescar();
+    alAplicar({ idioma: elegido, textos: Object.keys(traducciones).length });
+    return elegido;
+  };
+}

@@ -48,8 +48,7 @@ import {
 import { registrarAjusteAlerta, registrarEscuchaAlerta } from "./alerta-escena.mjs";
 import {
   IDIOMA_AUTOMATICO,
-  clavesDelModulo,
-  idiomaEfectivo,
+  crearAplicadorIdioma,
   opcionesIdioma,
   rutaIdioma,
 } from "./idioma-modulo.mjs";
@@ -178,43 +177,43 @@ const AJUSTE_IDIOMA = "idioma";
  * traducciones del core o de otros módulos, que es exactamente lo que un
  * selector propio NO debe hacer.
  */
-async function aplicarIdiomaModulo({ avisar = false } = {}) {
-  const modulo = game.modules?.get?.(MODULE_ID);
-  // `languages` es una Collection de Foundry, no un array: se normaliza antes
-  // de tocarla para no depender de qué métodos trae.
-  const idiomas = [...(modulo?.languages ?? [])];
-  const pedido = game.settings.get(MODULE_ID, AJUSTE_IDIOMA);
-  const elegido = idiomaEfectivo(
-    pedido,
-    game.i18n?.lang,
-    idiomas.map((idioma) => idioma.lang),
-  );
-  const ruta = idiomas.find((idioma) => idioma.lang === elegido)?.path;
-  if (!ruta) {
-    console.warn(
-      `[lagunak] idioma pedido "${pedido}" -> "${elegido}", pero el módulo no declara ese fichero`,
-      idiomas,
-    );
-    return;
-  }
-  let propias = null;
-  try {
+// Aplicador del idioma del módulo. La lógica —incluida la guarda contra
+// respuestas obsoletas— vive en `idioma-modulo.mjs` y se prueba en Node; aquí
+// solo se le dan los cables de Foundry.
+const aplicadorIdioma = crearAplicadorIdioma({
+  leerEstado: () => ({
+    pedido: game.settings.get(MODULE_ID, AJUSTE_IDIOMA),
+    idiomaFoundry: game.i18n?.lang,
+    // `languages` es una Collection de Foundry, no un array: se normaliza para
+    // no depender de qué métodos traiga esa clase en cada versión.
+    idiomas: [...(game.modules?.get?.(MODULE_ID)?.languages ?? [])],
+  }),
+  cargar: async (ruta) => {
     const respuesta = await fetch(rutaIdioma(ruta, MODULE_ID));
     if (!respuesta.ok) throw new Error(String(respuesta.status));
-    propias = clavesDelModulo(await respuesta.json());
-  } catch (err) {
-    // Un fichero de idioma que no carga no puede dejar la interfaz en claves
-    // crudas: se conserva lo que Foundry ya había cargado.
-    console.warn(`[lagunak] no se pudo cargar el idioma ${elegido}`, err);
-    if (avisar) ui.notifications?.warn(game.i18n.localize("LAGUNAK.Ajustes.Idioma.NoCargado"));
-    return;
-  }
-  console.log(`[lagunak] idioma "${elegido}": ${Object.keys(propias).length} textos aplicados`);
-  foundry.utils.mergeObject(game.i18n.translations, foundry.utils.expandObject(propias));
-  // Las ventanas abiertas ya tienen texto pintado: se reconstruyen para que el
-  // cambio se vea al instante y no en la próxima recarga.
-  for (const app of Object.values(ui.windows ?? {})) app.render?.(false);
-  for (const app of foundry.applications?.instances?.values?.() ?? []) app.render?.();
+    return respuesta.json();
+  },
+  fusionar: (traducciones) =>
+    foundry.utils.mergeObject(game.i18n.translations, foundry.utils.expandObject(traducciones)),
+  refrescar: () => {
+    // Las ventanas abiertas ya tienen texto pintado: se reconstruyen para que el
+    // cambio se vea al instante y no en la próxima recarga.
+    for (const app of Object.values(ui.windows ?? {})) app.render?.(false);
+    for (const app of foundry.applications?.instances?.values?.() ?? []) app.render?.();
+  },
+  alAplicar: ({ idioma, textos }) =>
+    console.log(`[lagunak] idioma "${idioma}": ${textos} textos aplicados`),
+  alFallar: (motivo, datos) => {
+    if (motivo === "obsoleto") return; // llegó tarde: se descarta y ya está
+    console.warn(`[lagunak] idioma del módulo (${motivo})`, datos);
+    if (motivo === "no_cargado" && datos?.avisar) {
+      ui.notifications?.warn(game.i18n.localize("LAGUNAK.Ajustes.Idioma.NoCargado"));
+    }
+  },
+});
+
+function aplicarIdiomaModulo(opciones) {
+  return aplicadorIdioma(opciones);
 }
 
 Hooks.once("ready", () => {

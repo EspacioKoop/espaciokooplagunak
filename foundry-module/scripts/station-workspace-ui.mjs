@@ -4,6 +4,9 @@ import { openStationApp } from "./station-ui.mjs";
 import { buildWorkspaceModel, stationForWorkspace } from "./station-workspaces.mjs";
 import { emitWorkspaceOrder } from "./station-order-wiring.mjs";
 import { ORDER_FORMS } from "./station-order-forms.mjs";
+import { pintarNave } from "./retro3d-lienzo.mjs";
+import { CASCO_POR_DEFECTO, mallaDesdeCasco } from "./retro3d.mjs";
+import { PIXEL } from "./paleta.mjs";
 
 let configuredModuleId = null;
 let workspaceApp = null;
@@ -107,7 +110,10 @@ function workspaceContext(app) {
     station = null;
   }
 
-  return buildWorkspaceModel({
+  // Se guarda el modelo del último render para que el pintor del casco lo tenga
+  // al enganchar el DOM: la plantilla ya se ha resuelto para entonces y el
+  // contexto no llega a `_onRender`.
+  app.ultimoModelo = buildWorkspaceModel({
     station,
     isGM: Boolean(game.user?.isGM),
     users: game.users,
@@ -118,6 +124,7 @@ function workspaceContext(app) {
     connection: app.connection,
     error: app.error,
   });
+  return app.ultimoModelo;
 }
 
 async function refreshTelemetry(app) {
@@ -182,10 +189,42 @@ async function handleWorkspaceAction(app, event) {
   return undefined;
 }
 
+// Casco propio en 3D (#362, rebanada 3).
+//
+// Se pinta UNA vez por render y no en un bucle: el rumbo solo cambia cuando
+// llega telemetría, y la telemetría ya provoca un render. Un bucle de animación
+// aquí gastaría fotogramas para repetir el mismo dibujo, y habría que acordarse
+// de pararlo al cerrar.
+//
+// Y no gira por decorar. Sin lectura de rumbo la nave se queda QUIETA, con la
+// misma regla que los iconos de sistema (#353): ausencia no es cero. Un casco
+// girando alegremente en el puente mientras la nave real mantiene el rumbo sería
+// una mentira pequeña, pero en una consola de mando no hay mentiras pequeñas.
+const MALLA_PROPIA = mallaDesdeCasco(CASCO_POR_DEFECTO);
+
+function pintarCascoPropio(root, modelo) {
+  const lienzo = root?.querySelector?.("[data-lagunak-casco]");
+  if (!lienzo) return null;
+  const rumbo = modelo?.cascoRumbo;
+  const hayLectura = Number.isFinite(rumbo);
+  return pintarNave(lienzo, {
+    malla: MALLA_PROPIA,
+    // La nave propia lleva el crema reservado del mapa vivo: es la misma nave y
+    // se toma de la paleta, no se elige aquí.
+    color: hayLectura ? PIXEL.naveJugador : PIXEL.sinFaccion,
+    // Rumbo del mundo a giro del visor. Sin lectura, morro al frente y quieta.
+    yaw: hayLectura ? (rumbo * Math.PI) / 180 : 0,
+    pitch: 0.42,
+    posicion: [0, 0, 4.4],
+    fov: 55,
+  });
+}
+
 function bindWorkspaceRoot(root, app) {
   root?.querySelectorAll?.("[data-workspace-action]").forEach((element) => {
     element.addEventListener("click", (event) => handleWorkspaceAction(app, event));
   });
+  pintarCascoPropio(root, app.ultimoModelo);
 }
 
 function initialiseApp(app) {
@@ -196,6 +235,7 @@ function initialiseApp(app) {
   app.error = "";
   app.loading = false;
   app.closed = false;
+  app.ultimoModelo = null;
 }
 
 function releaseWorkspaceApp(app) {
@@ -322,6 +362,7 @@ function createV1Class() {
     activateListeners(html) {
       super.activateListeners(html);
       html.find("[data-workspace-action]").on("click", (event) => handleWorkspaceAction(this, event));
+      pintarCascoPropio(raizDe(this), this.ultimoModelo);
     }
 
     async close(options) {

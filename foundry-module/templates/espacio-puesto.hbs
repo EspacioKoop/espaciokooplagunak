@@ -56,7 +56,17 @@
             {{/each}}
           </div>
 
+          {{! Casco propio en 3D (#362). Es un refuerzo de lo que ya está escrito
+              —el rumbo va en la matriz de métricas— así que va decorativo: quien
+              use lector de pantalla no pierde nada, y quien mire de reojo ve
+              hacia dónde apunta la nave sin leer un número. El lienzo es
+              pequeño de verdad y se amplía por CSS: la resolución interna baja
+              ES el efecto, no un adorno. }}
           {{#if ship}}
+            <div class="lagunak-workspace__casco" aria-hidden="true">
+              <canvas data-lagunak-casco width="96" height="72"></canvas>
+            </div>
+
             {{#if isNavigation}}
               <div class="lagunak-workspace__nav-display">
                 <div class="lagunak-workspace__radar" role="img" aria-label="{{navigationAriaLabel}}" style="--lagunak-heading: {{navigationHeading}}deg">

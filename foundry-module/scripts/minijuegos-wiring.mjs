@@ -67,7 +67,14 @@ function entregarVista(moduleId, userId, vista, acciones) {
     Hooks.callAll("lagunakMinijuegoVistaPrivada", vista, acciones);
     return;
   }
-  game.socket?.emit(canalSocket(moduleId), {
+  if (!game.socket) {
+    // Sin socket no hay reparto dirigido posible, y callarlo deja a los demás
+    // con una mesa que no responde y a nosotros sin saber por qué.
+    console.error("[lagunak] no hay socket: la vista dirigida no puede salir");
+    return;
+  }
+  console.debug("[lagunak] vista dirigida ->", userId, acciones);
+  game.socket.emit(canalSocket(moduleId), {
     tipo: MENSAJE_VISTA,
     destinatarioId: userId,
     vista,
@@ -164,6 +171,9 @@ export function registrarSesionesMinijuegos(moduleId) {
   // Receptor de vistas privadas: cada cliente descarta lo que no va dirigido a
   // su usuario. Es privacidad de interfaz, no secreto criptográfico.
   const receptor = (mensaje) => {
+    // Traza de TODO lo que entra por el canal, antes de filtrar nada: es la
+    // única forma de distinguir «no llegó» de «llegó y se descartó».
+    console.debug("[lagunak] socket <-", mensaje?.tipo, mensaje?.destinatarioId ?? "");
     // Petición de reparto. La atiende solo el coordinador, y NO se fía de
     // ninguna identidad declarada en el mensaje: reparte a todos, y cada
     // cliente se queda con lo suyo. Así una petición inventada no puede

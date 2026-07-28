@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import { readdir } from "node:fs/promises";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
 
 import {
@@ -100,6 +103,30 @@ test("no se distribuye obra ajena: el módulo no contiene melodía citable", asy
   );
   const listaLargaDeNotas = /\[\s*(?:\d{2,3}\s*,\s*){7,}/;
   assert.doesNotMatch(fuente, listaLargaDeNotas, "parece una transcripción literal");
+});
+
+test("el módulo Foundry no distribuye ficheros de audio ni MIDI", async () => {
+  // El juego heredado sí conserva voces y efectos propios bajo `resources/`.
+  // La frontera legal de #344 es el módulo distribuible donde vive este arte.
+  const raiz = fileURLToPath(new URL("../", import.meta.url));
+  const extensionesAudio = /\.(?:aac|aif|aiff|caf|flac|m4a|mid|midi|mp3|oga|ogg|opus|wav|webm|wma)$/i;
+  const encontrados = [];
+
+  async function recorrer(directorio) {
+    for (const entrada of await readdir(directorio, { withFileTypes: true })) {
+      if (entrada.name === ".git" || entrada.name === "node_modules") continue;
+      const ruta = join(directorio, entrada.name);
+      if (entrada.isDirectory()) await recorrer(ruta);
+      else if (entrada.isFile() && extensionesAudio.test(entrada.name)) encontrados.push(ruta);
+    }
+  }
+
+  await recorrer(raiz);
+  assert.deepEqual(
+    encontrados,
+    [],
+    `el arte procedural no puede incorporar grabaciones, MIDI ni otros activos de audio: ${encontrados.join(", ")}`,
+  );
 });
 
 // ---- Cozy: acogedor, no mecánico ------------------------------------------

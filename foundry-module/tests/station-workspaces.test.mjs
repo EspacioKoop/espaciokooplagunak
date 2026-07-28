@@ -323,3 +323,32 @@ test("un usuario sin puesto obtiene una pantalla de asignación, no capitán", (
   });
   assert.equal(model.hasStation, false);
 });
+
+test("cada tripulante trae su retrato, y el retrato no sustituye al texto (#352)", () => {
+  const model = buildWorkspaceModel({
+    station: "captain",
+    isGM: false,
+    users: [
+      user({ id: "p1", station: "engineering" }),
+      { ...user({ id: "p2", station: null }), active: false },
+    ],
+    moduleId: MODULE_ID,
+    i18n,
+  });
+
+  const [enLinea, desconectado] = model.crew;
+  assert.match(enLinea.portrait, /^data:image\/svg\+xml,/);
+  // El texto sigue llevando la información: el retrato es un ancla visual, no
+  // el canal por el que se comunica puesto ni estado.
+  assert.ok(enLinea.stationLabel);
+  assert.ok(desconectado.statusLabel);
+
+  // Se siembra con el id: dos tripulantes distintos, retratos distintos.
+  assert.notEqual(enLinea.portrait, desconectado.portrait);
+
+  // Y el estado de presencia llega hasta el dibujo, no solo hasta la clase CSS.
+  const svg = decodeURIComponent(desconectado.portrait.split(",")[1]);
+  for (const [, color] of svg.matchAll(/fill="(#[0-9a-f]{6})"/gi)) {
+    assert.equal(color.slice(1, 3), color.slice(3, 5), `${color} no es gris`);
+  }
+});

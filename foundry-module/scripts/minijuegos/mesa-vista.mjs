@@ -27,6 +27,9 @@ const ETIQUETAS = Object.freeze({
   join: "LAGUNAK.Minijuegos.Accion.Sentarse",
   watch: "LAGUNAK.Minijuegos.Accion.Mirar",
   leave: "LAGUNAK.Minijuegos.Accion.Levantarse",
+  return: "LAGUNAK.Minijuegos.Accion.Volver",
+  botAdd: "LAGUNAK.Minijuegos.Accion.SentarAutomatico",
+  botRemove: "LAGUNAK.Minijuegos.Accion.QuitarAutomatico",
   start: "LAGUNAK.Minijuegos.Accion.Repartir",
   finish: "LAGUNAK.Minijuegos.Accion.Rematar",
   close: "LAGUNAK.Minijuegos.Accion.Cerrar",
@@ -119,8 +122,53 @@ export function mesaVista(vista, { userId = "", acciones = [] } = {}) {
       };
     }),
     resultado: vista.resultado ?? null,
-    acciones: accionesVisibles(acciones),
+    acciones: accionesVisibles(accionesEfectivas(vista, acciones, eresJugador, userId)),
   };
+}
+
+/**
+ * Qué acciones se pintan.
+ *
+ * Manda siempre lo que el coordinador concedió a ESTE cliente. Pero ese envío
+ * es dirigido y puede perderse —llega por socket, y un cliente que aún no
+ * escuchaba se lo pierde entero—, y entonces la mesa se veía sin un solo botón:
+ * indistinguible de una mesa que no te deja entrar.
+ *
+ * El respaldo son las acciones «de forastero» que el coordinador publica en la
+ * vista pública, y que solo se usan si este cliente NO participa: son las de
+ * entrar (sentarse, mirar), iguales para cualquiera de fuera y calculadas por
+ * quien tiene la autoridad, no deducidas aquí. A un participante no se le
+ * ofrecen nunca: sus acciones dependen de su sitio en la mano y esas sí exigen
+ * el envío dirigido.
+ */
+function accionesEfectivas(vista, acciones, eresJugador, userId) {
+  if (Array.isArray(acciones) && acciones.length > 0) return acciones;
+  if (eresJugador) return [];
+  const espectador = Array.isArray(vista.espectadores) && vista.espectadores.includes(userId);
+  if (espectador) return [];
+  return Array.isArray(vista.accionesForastero) ? vista.accionesForastero : [];
+}
+
+/**
+ * Quién se llevó qué, en líneas listas para escribir. Es puro y vive aquí —y no
+ * en la ventana— porque el resultado del póker tiene DOS formas: la mano que se
+ * gana sin rival (`ganadorId`/`ganancia`) y el showdown (`ganancias` por
+ * identidad, con botes laterales). Leer esas dos formas es saber de póker, y la
+ * ventana no tiene por qué.
+ *
+ * Sin resultado, o con uno que no se reconozca, no se devuelve nada: una mesa
+ * que anuncia un ganador inventado es peor que una que no anuncia ninguno.
+ */
+export function lineasResultado(resultado) {
+  if (!resultado || typeof resultado !== "object") return [];
+  if (typeof resultado.ganadorId === "string" && Number.isFinite(resultado.ganancia)) {
+    return [{ userId: resultado.ganadorId, fichas: resultado.ganancia }];
+  }
+  const ganancias = resultado.ganancias;
+  if (!ganancias || typeof ganancias !== "object") return [];
+  return Object.entries(ganancias)
+    .filter(([, fichas]) => Number.isFinite(fichas) && fichas > 0)
+    .map(([userId, fichas]) => ({ userId, fichas }));
 }
 
 /** Acciones con etiqueta, sin las que este módulo no sepa nombrar. */

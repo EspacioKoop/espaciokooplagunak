@@ -2,6 +2,7 @@ import { STATIONS, normalizeStation } from "./station-assignment.mjs";
 import { isActionAllowed } from "./station-actions.mjs";
 import { SISTEMAS_INGENIERIA, NIVELES_POTENCIA, NIVELES_REFRIGERANTE } from "./ingenieria-control.mjs";
 import { prepareSystemRows } from "./ship-view.mjs";
+import { retratoTripulanteDataUri } from "./retrato-tripulante.mjs";
 
 // Marca visible de «no hay lectura», distinta de cualquier valor real.
 const SIN_DATO = "—";
@@ -225,6 +226,10 @@ function crewRows(users, moduleId, i18n) {
         name: user.name,
         active: Boolean(user.active),
         station,
+        // Ancla visual para reconocer a alguien de un vistazo (#352). Se siembra
+        // con el id y no con el nombre para que sobreviva a un renombrado. Es
+        // decorativo: la fila sigue diciendo puesto y estado en texto.
+        portrait: retratoTripulanteDataUri(user.id, { activo: Boolean(user.active) }),
         stationLabel: station
           ? localize(i18n, `LAGUNAK.Puestos.${station}`)
           : localize(i18n, "LAGUNAK.Puestos.SinAsignar"),

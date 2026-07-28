@@ -287,6 +287,22 @@ bien los casos que vienen: la cartela de una lámina impresa es grabado aunque
 cuelgue de una consola, y una barra que sigue a `/v1/state` es pixel aunque viva
 dentro de un diario.
 
+#### Retratos de tripulación (#352)
+
+La fila de tripulación de la consola de puesto lleva un retrato pixel por
+tripulante, generado en el cliente a partir de `user.id` — determinista, así que
+todos ven la misma cara sin sincronizar nada, y sin un byte nuevo por el puente.
+Se siembra con el id y no con el nombre para que sobreviva a un renombrado; la
+contrapartida aceptada es que reinvitar a alguien le cambia la cara.
+
+**El retrato no es un galón.** Codifica presencia (color o gris) y sirve de
+ancla visual; el marco de puesto y el tinte de alerta se aplican por CSS sobre
+el contenedor, fuera de la imagen. El flag `station` es autoasignable y mutable
+(#237), así que el puesto y el estado siguen escritos en texto en la misma fila,
+y el `<img>` va con `alt=""` y `aria-hidden`: quien use lector de pantalla
+recibe la misma información en palabras, sin que se le repita en una forma que
+no es autoridad ni permiso.
+
 Los colores viven en `paleta.mjs` y **solo** ahí: una prueba falla si un módulo
 de arte declara un color propio —hexadecimal con cualquier comilla, o `rgb()` y
 `hsl()`—. La guardia cubre hoy las láminas, el sprite de nave, los naipes y la

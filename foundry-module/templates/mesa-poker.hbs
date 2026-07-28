@@ -1,0 +1,61 @@
+<div class="lagunak-mesa-cuerpo">
+  {{#unless hayMesa}}
+    <p class="lagunak-mesa-vacia" role="status">{{localize "LAGUNAK.Minijuegos.Mesa.SinMesa"}}</p>
+  {{/unless}}
+
+  {{#if hayMesa}}
+    <p class="lagunak-mesa-fase" role="status" aria-live="polite">{{faseTexto}}</p>
+
+    {{#if manoCancelada}}
+      <p class="lagunak-mesa-aviso" role="status">{{localize "LAGUNAK.Minijuegos.Mesa.ManoCancelada"}}</p>
+    {{/if}}
+
+    <div class="lagunak-mesa-tapete">
+      <p class="lagunak-mesa-bote">{{boteTexto}}</p>
+      <ul class="lagunak-mesa-comunitarias" aria-label="{{localize "LAGUNAK.Minijuegos.Mesa.Comunitarias"}}">
+        {{#each comunitarias}}
+          <li><img src="{{this.imagen}}" alt="{{this.codigo}}" /></li>
+        {{/each}}
+      </ul>
+    </div>
+
+    <ul class="lagunak-mesa-asientos">
+      {{#each jugadores}}
+        <li class="lagunak-mesa-asiento{{#if this.esTurno}} es-turno{{/if}}{{#if this.retirado}} retirado{{/if}}">
+          <span class="lagunak-mesa-nombre">{{this.nombre}}</span>
+          {{#if this.esBoton}}<span class="lagunak-mesa-disco" title="{{localize "LAGUNAK.Minijuegos.Mesa.Boton"}}" aria-label="{{localize "LAGUNAK.Minijuegos.Mesa.Boton"}}">D</span>{{/if}}
+          {{#if this.esAutomatico}}<span class="lagunak-mesa-npc">{{localize "LAGUNAK.Minijuegos.Mesa.Automatico"}}</span>{{/if}}
+          <span class="lagunak-mesa-fichas">{{this.fichasTexto}}</span>
+          {{#if this.retirado}}<span class="lagunak-mesa-estado">{{localize "LAGUNAK.Minijuegos.Mesa.Retirado"}}</span>{{/if}}
+          {{#if this.allIn}}<span class="lagunak-mesa-estado">{{localize "LAGUNAK.Minijuegos.Mesa.AllIn"}}</span>{{/if}}
+        </li>
+      {{/each}}
+    </ul>
+
+    <h4>{{localize "LAGUNAK.Minijuegos.Mesa.TuMano"}}</h4>
+    <ul class="lagunak-mesa-mano">
+      {{#each tuMano}}
+        <li><img src="{{this.imagen}}" alt="{{this.codigo}}" /></li>
+      {{/each}}
+      {{#each dorsosPropios}}
+        <li><img src="{{this.imagen}}" alt="{{localize "LAGUNAK.Minijuegos.Mesa.Dorso"}}" /></li>
+      {{/each}}
+    </ul>
+
+    {{#if resultadoTexto}}
+      <p class="lagunak-mesa-resultado" role="status">{{resultadoTexto}}</p>
+    {{/if}}
+
+    <div class="lagunak-mesa-acciones">
+      {{#each acciones}}
+        <button type="button" data-accion="{{this.tipo}}">{{localize this.etiqueta}}</button>
+      {{/each}}
+      {{#if pideImporte}}
+        <label class="lagunak-mesa-importe">
+          {{localize "LAGUNAK.Minijuegos.Mesa.Importe"}}
+          <input type="number" name="importe" min="{{importeMinimo}}" step="1" value="{{importeSugerido}}" />
+        </label>
+      {{/if}}
+    </div>
+  {{/if}}
+</div>

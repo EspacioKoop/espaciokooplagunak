@@ -20,6 +20,10 @@ const MODULOS_DE_ARTE = [
   "../scripts/minijuegos/cartas-pixelart.mjs",
   "../scripts/ventana-nave.mjs",
   "../scripts/iconos-sistema.mjs",
+  // El 3D retro (#362) tampoco declara color propio: recibe el base y solo lo
+  // sombrea. Entra en la guardia desde el primer día para que la nave nueva no
+  // pueda colar su verde cuando ya nadie recuerde la regla.
+  "../scripts/retro3d.mjs",
 ];
 
 test("los colores no cambian al mudarse: mismo valor que antes en cada módulo", () => {

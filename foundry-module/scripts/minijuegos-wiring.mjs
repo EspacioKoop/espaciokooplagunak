@@ -56,7 +56,30 @@ function semillaCriptografica() {
   return buffer[0] % 2 ** 31;
 }
 
-export const AJUSTE_MESA = "minijuegoMesaConfig";
+// Entrada y ciegas, un ajuste por cifra.
+//
+// Estuvo un rato como UN ajuste de tipo Object, y era una mina: al guardar,
+// `SettingsConfig` de Foundry v11 hace `flattenObject(formData)`, y un ajuste
+// visible de tipo Object vuelve del formulario COMO OBJETO, así que se aplana en
+// claves inexistentes (`…minijuegoMesaConfig.fichasIniciales`) y el guardado
+// entero revienta con «Cannot read properties of undefined (reading
+// 'namespace')» — llevándose por delante los demás ajustes del panel, no solo
+// este. Además se editaba como «[object Object]», que no es editable en
+// absoluto. Tres números sueltos se escriben solos.
+export const AJUSTE_FICHAS = "minijuegoFichasIniciales";
+export const AJUSTE_CIEGA_PEQUENA = "minijuegoCiegaPequena";
+export const AJUSTE_CIEGA_GRANDE = "minijuegoCiegaGrande";
+
+// Opciones de mesa tal como las espera `configuracionPoker`, compuestas desde
+// los tres ajustes. `normalizarMesa` sigue acotando: son cifras que edita una
+// persona a mano y una errata no debe dejar la mesa inarrancable.
+function opcionesMesa(moduleId) {
+  return {
+    fichasIniciales: game.settings.get(moduleId, AJUSTE_FICHAS),
+    ciegaPequena: game.settings.get(moduleId, AJUSTE_CIEGA_PEQUENA),
+    ciegaGrande: game.settings.get(moduleId, AJUSTE_CIEGA_GRANDE),
+  };
+}
 
 // Usuarios a los que reparte el coordinador: los conectados. A un cliente
 // desconectado no hay a quién entregarle nada, y cuando vuelva pedirá relevo de
@@ -106,14 +129,33 @@ export function registrarAjustesMinijuegos(moduleId) {
   // Entrada y ciegas de la mesa. Ajuste de MUNDO y no memoria del coordinador:
   // tiene que sobrevivir a un relevo, o la mano siguiente se repartiría con
   // otras fichas sin que nadie lo hubiera decidido.
-  game.settings.register(moduleId, AJUSTE_MESA, {
-    name: "LAGUNAK.Minijuegos.Ajustes.Mesa.Nombre",
-    hint: "LAGUNAK.Minijuegos.Ajustes.Mesa.Pista",
-    scope: "world",
-    config: true,
-    type: Object,
-    default: { ...MESA_POR_DEFECTO },
-  });
+  const cifraDeMesa = (clave, nombre, pista, valorPorDefecto) =>
+    game.settings.register(moduleId, clave, {
+      name: nombre,
+      hint: pista,
+      scope: "world",
+      config: true,
+      type: Number,
+      default: valorPorDefecto,
+    });
+  cifraDeMesa(
+    AJUSTE_FICHAS,
+    "LAGUNAK.Minijuegos.Ajustes.Fichas.Nombre",
+    "LAGUNAK.Minijuegos.Ajustes.Fichas.Pista",
+    MESA_POR_DEFECTO.fichasIniciales,
+  );
+  cifraDeMesa(
+    AJUSTE_CIEGA_PEQUENA,
+    "LAGUNAK.Minijuegos.Ajustes.CiegaPequena.Nombre",
+    "LAGUNAK.Minijuegos.Ajustes.CiegaPequena.Pista",
+    MESA_POR_DEFECTO.ciegaPequena,
+  );
+  cifraDeMesa(
+    AJUSTE_CIEGA_GRANDE,
+    "LAGUNAK.Minijuegos.Ajustes.CiegaGrande.Nombre",
+    "LAGUNAK.Minijuegos.Ajustes.CiegaGrande.Pista",
+    MESA_POR_DEFECTO.ciegaGrande,
+  );
   game.settings.register(moduleId, AJUSTE_SESION, {
     scope: "world",
     config: false,
@@ -249,7 +291,7 @@ export function registrarSesionesMinijuegos(moduleId) {
         // una decisión de la mesa, no una regla del juego.
         configuracionJuego: configuracionPoker(
           game.settings.get(moduleId, AJUSTE_SESION),
-          game.settings.get(moduleId, AJUSTE_MESA) ?? {},
+          opcionesMesa(moduleId),
         ),
         // Se reparte a TODOS los conectados, no solo a los sentados: quien
         // aún no juega necesita su vista y sus acciones para que la ventana

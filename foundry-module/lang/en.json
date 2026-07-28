@@ -355,8 +355,6 @@
   "LAGUNAK.Minijuegos.Accion.Pasar": "Check",
   "LAGUNAK.Minijuegos.Accion.Igualar": "Call",
   "LAGUNAK.Minijuegos.Accion.Subir": "Raise",
-  "LAGUNAK.Minijuegos.Ajustes.Mesa.Nombre": "Card table: buy-in and blinds",
-  "LAGUNAK.Minijuegos.Ajustes.Mesa.Pista": "Chips each player sits down with, and the blind values. Applies to the next hand, not the one in progress.",
   "LAGUNAK.Controles.AbrirMesa": "Game table",
   "LAGUNAK.Minijuegos.Mesa.Titulo": "Poker table",
   "LAGUNAK.Minijuegos.Mesa.SinMesa": "No table is open. The GM sets it up.",
@@ -395,5 +393,11 @@
   "LAGUNAK.Minijuegos.Rechazo.juego_rechazo": "the game does not allow that play",
   "LAGUNAK.Minijuegos.Rechazo.desconocido": "unknown reason",
   "LAGUNAK.Minijuegos.Rechazo.sin_modulo": "the module has not finished starting up",
-  "LAGUNAK.Minijuegos.Accion.Volver": "Return to the table"
+  "LAGUNAK.Minijuegos.Accion.Volver": "Return to the table",
+  "LAGUNAK.Minijuegos.Ajustes.Fichas.Nombre": "Card table: buy-in chips",
+  "LAGUNAK.Minijuegos.Ajustes.Fichas.Pista": "Chips each player sits down with. Applies to the next hand, not the one in progress.",
+  "LAGUNAK.Minijuegos.Ajustes.CiegaPequena.Nombre": "Card table: small blind",
+  "LAGUNAK.Minijuegos.Ajustes.CiegaPequena.Pista": "Forced bet from the seat after the button.",
+  "LAGUNAK.Minijuegos.Ajustes.CiegaGrande.Nombre": "Card table: big blind",
+  "LAGUNAK.Minijuegos.Ajustes.CiegaGrande.Pista": "Never drops below the small blind: that would be a table with the rules backwards."
 }

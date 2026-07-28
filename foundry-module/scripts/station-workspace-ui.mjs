@@ -57,18 +57,31 @@ export async function revokeWorkspaceAccess() {
   }
 }
 
+function esAppV2() {
+  return Boolean(foundry.applications?.api?.ApplicationV2);
+}
+
+function raizDe(app) {
+  return app?.element?.[0] ?? app?.element ?? null;
+}
+
+// Un refresco no forzado solo es seguro si la consola sigue montada y quieta:
+// `rendered` puede seguir a true mientras Foundry desmonta el elemento o
+// mientras un _render asíncrono anterior sigue en vuelo, y un updateUser en ese
+// hueco reproduce el TypeError de #263. La apertura usa force=true.
+function puedeRefrescar(app) {
+  if (!app.rendered) return false;
+  if (globalThis.document && !raizDe(app)?.isConnected) return false;
+  const estados = globalThis.Application?.RENDER_STATES;
+  return !(estados && app._state === estados.RENDERING);
+}
+
 function renderWorkspace(force = false) {
-  if (!workspaceApp) return;
-  // Refresco reactivo (hook updateUser al cambiar de puesto): re-renderiza solo
-  // si la consola sigue abierta. Sin este guard, render(false) sobre una app V1
-  // ya cerrada llama a _replaceHTML con el elemento fuera del DOM y peta con
-  // «can't access property "hasChildNodes"» (#263). La apertura usa force=true.
-  if (!force && !workspaceApp.rendered) return;
-  if (foundry.applications?.api?.ApplicationV2) {
-    workspaceApp.render({ force: true });
-  } else {
-    workspaceApp.render(force);
-  }
+  const app = workspaceApp;
+  if (!app) return;
+  if (!force && !puedeRefrescar(app)) return;
+  if (esAppV2()) app.render({ force: true });
+  else app.render(force);
 }
 
 function workspaceAppClass() {
@@ -282,6 +295,28 @@ function createV1Class() {
         this.started = true;
         this.refreshTelemetry();
       }
+    }
+
+    /**
+     * El mismo updateUser que re-renderiza esta consola también puede
+     * revocarla (main.mjs cierra el workspace al cambiar de puesto). Como el
+     * _render de Foundry V1 es asíncrono, _replaceHTML puede llegar con el
+     * elemento ya desmontado o nulo y revienta con «can't access property
+     * "hasChildNodes"» (#263). Si el DOM ya no está, no hay nada que
+     * reemplazar: el siguiente render con force lo reconstruye entero.
+     */
+    _replaceHTML(element, html) {
+      const nodo = element?.[0] ?? element;
+      if (!nodo?.isConnected) return;
+      // revokeWorkspaceAccess vacía el elemento ENTERO (replaceChildren), así
+      // que puede seguir conectado pero sin esqueleto de ventana. El
+      // _replaceHTML de Foundry v11 hace `.find(".window-title")[0].hasChildNodes()`
+      // sin comprobar nada: sin cabecera, revienta. Aquí solo se protege; la
+      // reconstrucción la hace renderWorkspace ANTES de renderizar, porque
+      // re-entrar en render() desde dentro deja al _render externo llamando a
+      // setPosition con el elemento ya sustituido.
+      if (!nodo.querySelector?.(".window-title")) return;
+      super._replaceHTML(element, html);
     }
 
     activateListeners(html) {

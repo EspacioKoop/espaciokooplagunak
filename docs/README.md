@@ -32,12 +32,14 @@
 | [FOUNDRY_DISTRIBUTION.md](FOUNDRY_DISTRIBUTION.md) | Empaquetado y distribución del módulo Foundry |
 | [FOUNDRY_GUI_SMOKE.md](FOUNDRY_GUI_SMOKE.md) | Prueba de humo de la interfaz del módulo |
 | [MINIJUEGOS_FOUNDRY.md](MINIJUEGOS_FOUNDRY.md) | Contrato previo para minijuegos sociales y primer vertical de póker (#308) |
+| [MINIJUEGOS_ASISTENCIA.md](MINIJUEGOS_ASISTENCIA.md) | Diseño de asistencia entre puestos con minijuegos de habilidad y tiradas dnd5e (#309) |
 
 ## Investigación y diseño de contenido
 
 | Documento | Qué cubre |
 |---|---|
 | [ATLAS_SPELLJAMMER.md](ATLAS_SPELLJAMMER.md) | Investigación del atlas jerárquico de campaña y matriz de procedencia/licencia (#213) |
+| [DOMINIO_PUBLICO_SCIFI.md](DOMINIO_PUBLICO_SCIFI.md) | Catálogo verificado de guiños scifi/pulp en dominio público (copyright vs. marca) (#310) |
 
 ## Localización
 

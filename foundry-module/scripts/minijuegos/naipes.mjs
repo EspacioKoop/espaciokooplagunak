@@ -23,6 +23,31 @@ export function codigoCarta(valor, palo) {
   return `${ETIQUETA_RANGO[valor]}${palo}`;
 }
 
+// Mapa inverso: "A" -> 14. Se deriva de ETIQUETA_RANGO para que escribir y leer
+// un código no puedan divergir nunca.
+const VALOR_POR_ETIQUETA = Object.freeze(
+  Object.fromEntries(
+    Object.entries(ETIQUETA_RANGO).map(([valor, etiqueta]) => [etiqueta, Number(valor)]),
+  ),
+);
+
+// Interpreta un código estable ("As", "Td", "2c") y devuelve `{ valor, palo }`.
+// Es la contraparte de `codigoCarta`: cualquier consumidor de códigos (arte,
+// vistas, vectores de prueba) debe usarla en vez de trocear la cadena por su
+// cuenta. Falla cerrado: un código con otra forma es un error, no una carta
+// aproximada.
+export function interpretarCodigo(codigo) {
+  if (typeof codigo !== "string" || codigo.length !== 2) {
+    throw new RangeError(`interpretarCodigo: código de carta inválido (${codigo})`);
+  }
+  const valor = VALOR_POR_ETIQUETA[codigo.slice(0, 1)];
+  const palo = codigo.slice(1);
+  if (valor === undefined || !PALOS.includes(palo)) {
+    throw new RangeError(`interpretarCodigo: código de carta desconocido (${codigo})`);
+  }
+  return { valor, palo };
+}
+
 function crearCarta(valor, palo) {
   return Object.freeze({ valor, palo, codigo: codigoCarta(valor, palo) });
 }

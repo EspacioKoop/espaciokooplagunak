@@ -127,13 +127,17 @@ Hooks.once("ready", () => {
   registerStationOrders(MODULE_ID);
 });
 
-Hooks.on("updateUser", (user) => {
-  if (user?.id === game.user?.id) {
-    // Un cambio de rol del propio usuario rearma el relé: el GM entrante gana
-    // el manejador, el saliente lo pierde (registerStationOrders comprueba isGM).
-    registerStationOrders(MODULE_ID);
-    if (!user.isGM) void revokePrivilegedBridgeAccess();
-  }
+Hooks.on("updateUser", (user, changes) => {
+  if (user?.id !== game.user?.id) return;
+  // Solo un cambio de ROL rearma el relé y revoca privilegios. Cualquier otro
+  // updateUser del propio usuario (cambiar de puesto escribe un flag) pasaba
+  // por aquí y a un no-GM le revocaba y cerraba sus consolas en plena sesión:
+  // ventana en blanco hasta recargar (#263).
+  if (!("role" in (changes ?? {}))) return;
+  // El GM entrante gana el manejador, el saliente lo pierde
+  // (registerStationOrders comprueba isGM).
+  registerStationOrders(MODULE_ID);
+  if (!user.isGM) void revokePrivilegedBridgeAccess();
 });
 
 function wipePrivilegedWindow(app) {

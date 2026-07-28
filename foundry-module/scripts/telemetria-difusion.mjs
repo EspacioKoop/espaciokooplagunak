@@ -1,4 +1,5 @@
 import { proyectarContactos } from "./contactos-proyeccion.mjs";
+import { leerNumero } from "./lectura-puente.mjs";
 
 // Difusión de telemetría de la nave propia a toda la tripulación (#331, paso 1).
 //
@@ -83,8 +84,9 @@ export function aceptarTelemetria(mensaje) {
  * ve como una sacudida de la nave.
  */
 export function esMasReciente(sobre, selloAnterior) {
-  const sello = Number(sobre?.sello);
-  if (!Number.isFinite(sello)) return false;
-  if (!Number.isFinite(Number(selloAnterior))) return true;
-  return sello >= Number(selloAnterior);
+  const sello = leerNumero(sobre?.sello);
+  if (sello === null) return false;
+  const anterior = leerNumero(selloAnterior);
+  if (anterior === null) return true;
+  return sello >= anterior;
 }

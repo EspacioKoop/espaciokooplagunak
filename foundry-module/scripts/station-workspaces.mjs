@@ -3,6 +3,7 @@ import { isActionAllowed } from "./station-actions.mjs";
 import { SISTEMAS_INGENIERIA, NIVELES_POTENCIA, NIVELES_REFRIGERANTE } from "./ingenieria-control.mjs";
 import { prepareSystemRows } from "./ship-view.mjs";
 import { avisosParaPuesto } from "./avisos-guardia.mjs";
+import { leerNumero } from "./lectura-puente.mjs";
 
 // Marca visible de «no hay lectura», distinta de cualquier valor real.
 const SIN_DATO = "—";
@@ -343,7 +344,7 @@ export function buildWorkspaceModel({
     // Casco propio en 3D (#362). `null` cuando no hay lectura, que NO es lo
     // mismo que rumbo cero: el visor se queda quieto y apagado en vez de
     // enseñar una nave girando que no se corresponde con nada.
-    cascoRumbo: Number.isFinite(Number(ship?.heading)) ? Number(ship.heading) : null,
+    cascoRumbo: leerNumero(ship?.heading),
     navigationAriaLabel: format(i18n, "LAGUNAK.Espacios.RumboAccesible", { heading: integer(ship?.heading) }),
     isGM: Boolean(isGM),
     hasTelemetry: Boolean(ship),

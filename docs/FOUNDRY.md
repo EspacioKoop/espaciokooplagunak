@@ -127,6 +127,14 @@ token:
   ve todos porque su trabajo es repartir la atención. **Sin telemetría no hay
   avisos**, en vez de avisos tranquilizadores: un «todo en orden» inventado es
   peor que un panel en blanco, porque el panel en blanco no miente.
+- **Ausencia no es cero** (`lectura-puente.mjs`). Toda lectura de telemetría pasa
+  por ahí. `Number(null)` es 0 y 0 es finito, así que la conversión ingenua cuela
+  un dato que el puente **no publica** como una lectura válida de cero; en #331
+  eso dejó una nave ciega y anunció «ENERGÍA CRÍTICA» sin motivo, las dos veces
+  cazadas por sus pruebas antes de llegar a una mesa. La regla: lo que no se sabe
+  se devuelve `null`, y un cero real —el sistema está a cero— sigue siendo
+  información distinguible. Una prueba recorre los módulos de telemetría y falla
+  si alguno vuelve a convertir por su cuenta (`Number(`, `parseFloat`, `?? 0`).
 - **Identidad de usuario no falsificable** (#237). El tripulante escribe la orden
   en su propio flag de usuario (`emitWorkspaceOrder`); el GM la recoge en el hook
   `updateUser`. El puesto **nunca** se declara en la orden: el GM lo resuelve

@@ -1,3 +1,5 @@
+import { leerNumero } from "./lectura-puente.mjs";
+
 // Proyección degradada de contactos para la tripulación (#331, paso 4).
 //
 // Qué resuelve. El GM ve callsign, facción y coordenadas exactas de todo lo que
@@ -47,10 +49,7 @@ const PRECISION = Object.freeze({
   traza: Object.freeze({ marcacion: 15, distancia: 5000 }),
 });
 
-function numero(valor) {
-  const n = Number(valor);
-  return Number.isFinite(n) ? n : null;
-}
+const numero = leerNumero;
 
 function redondearA(valor, paso) {
   return Math.round(valor / paso) * paso;
@@ -62,13 +61,10 @@ function redondearA(valor, paso) {
  * plena y el comportamiento es el de una nave con los sensores intactos.
  */
 export function calidadValida(calidad) {
-  // `null` y `undefined` significan «no hay fuente de calidad», no «cero». Y
-  // aquí la diferencia es grave: cero deja la nave CIEGA. Se comprueba antes de
-  // convertir porque `Number(null)` es 0 y se colaría como una lectura válida —
-  // la misma trampa de ausencia-frente-a-cero que ya resolvieron las barras de
-  // estado y los iconos de sistema.
-  if (calidad === null || calidad === undefined) return 1;
-  const n = numero(calidad);
+  // Ausencia significa «no hay fuente de calidad», no «cero», y aquí la
+  // diferencia es grave: cero deja la nave CIEGA. `leerNumero` ya distingue las
+  // dos cosas; antes esto convertía con `Number()` y `Number(null)` es 0.
+  const n = leerNumero(calidad);
   if (n === null) return 1;
   return Math.max(0, Math.min(1, n));
 }

@@ -21,6 +21,8 @@
 // Puro: ni Foundry, ni DOM, ni red, ni reloj. Devuelve claves de traducción y
 // datos, nunca frases ya montadas.
 
+import { leerFraccion, leerNumero } from "./lectura-puente.mjs";
+
 export const SEVERIDADES = Object.freeze(["critico", "aviso"]);
 
 /** Umbrales de presentación, ajustables aquí sin tocar puente ni simulación. */
@@ -35,26 +37,12 @@ export const UMBRALES_AVISO = Object.freeze({
   energiaAviso: 0.35,
 });
 
-// Ausencia NO es cero, y aquí la diferencia dispara una alarma falsa: sin esta
-// comprobación, `Number(null)` da 0 y una energía que el puente no publica se
-// anunciaría como «ENERGÍA CRÍTICA» a toda la mesa. `nivel-alerta.mjs` ya lo
-// evita usando `Number.isFinite` sobre el valor sin convertir; aquí hace falta
-// ser explícito porque estas lecturas llegan sin normalizar.
-function fraccion(valor, max) {
-  if (valor === null || valor === undefined || max === null || max === undefined) return null;
-  const v = Number(valor);
-  const m = Number(max);
-  if (!Number.isFinite(v) || !Number.isFinite(m) || m <= 0) return null;
-  return v / m;
-}
-
-// Las lecturas por sistema ya vienen en [0,1] desde el puente; las de nave
-// vienen como valor y máximo. Se distinguen aquí para no repetir la conversión.
-function normal(valor) {
-  if (valor === null || valor === undefined) return null;
-  const n = Number(valor);
-  return Number.isFinite(n) ? n : null;
-}
+// Ausencia NO es cero, y aquí la diferencia dispara una alarma falsa: una
+// energía que el puente no publica se anunciaría como «ENERGÍA CRÍTICA» a toda
+// la mesa. La conversión vive en `lectura-puente.mjs` para que no haya una
+// versión distinta por módulo — que es exactamente cómo apareció este fallo.
+const fraccion = leerFraccion;
+const normal = leerNumero;
 
 const pct = (f) => Math.round(f * 100);
 

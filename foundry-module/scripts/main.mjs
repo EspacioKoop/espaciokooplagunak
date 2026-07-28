@@ -195,7 +195,15 @@ function refrescarMesa() {
 }
 
 function claseMesa() {
-  const inyeccion = { proponer: (accion) => proponerAccion(accion) };
+  const inyeccion = {
+    proponer: (accion) => proponerAccion(accion),
+    // Solo se suelta la referencia si sigue siendo ESTA instancia: entre cerrar
+    // una ventana y abrir la siguiente puede haberse creado ya otra, y ponerla
+    // a null a ciegas dejaría huérfana la que está en pantalla.
+    alCerrar: (app) => {
+      if (mesaApp === app) mesaApp = null;
+    },
+  };
   return foundry.applications?.api?.ApplicationV2
     ? crearClaseMesaV2(inyeccion)
     : crearClaseMesaV1(inyeccion);
@@ -213,6 +221,9 @@ function abrirMesaMinijuegos() {
   // hace falta y si se puede) y enseña la ventana. Sentarse es una acción más,
   // con su botón, porque el GM puede querer repartir sin jugar.
   if (game.user?.isGM && !estadoPublicoVigente()) abrirMesa({ nombreJuego: "poker" });
+  // Instancia nueva en cada apertura tras un cierre: una ApplicationV2 cerrada
+  // no se reutiliza —renderizarla otra vez falla— y la ruta v11 se descarta
+  // igual para que las dos tengan el mismo contrato.
   if (!mesaApp) mesaApp = new (claseMesa())();
   if (foundry.applications?.api?.ApplicationV2) mesaApp.render({ force: true });
   else mesaApp.render(true);

@@ -127,7 +127,7 @@ function alPulsar(objetivo, elemento, proponer) {
 
 /* ---- v12+ --------------------------------------------------------------- */
 
-export function crearClaseMesaV2({ proponer }) {
+export function crearClaseMesaV2({ proponer, alCerrar = () => {} }) {
   const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
   return class MesaPokerAppV2 extends HandlebarsApplicationMixin(ApplicationV2) {
@@ -152,12 +152,19 @@ export function crearClaseMesaV2({ proponer }) {
         boton.addEventListener("click", () => alPulsar(boton, this.element, proponer));
       });
     }
+
+    // Una ApplicationV2 cerrada NO se reutiliza: hay que construir otra. Quien
+    // guarda la referencia se entera por aquí, y no por adivinación.
+    _onClose(options) {
+      super._onClose?.(options);
+      alCerrar(this);
+    }
   };
 }
 
 /* ---- v11 ---------------------------------------------------------------- */
 
-export function crearClaseMesaV1({ proponer }) {
+export function crearClaseMesaV1({ proponer, alCerrar = () => {} }) {
   return class MesaPokerAppV1 extends Application {
     static get defaultOptions() {
       return foundry.utils.mergeObject(super.defaultOptions, {
@@ -179,6 +186,14 @@ export function crearClaseMesaV1({ proponer }) {
       html.find("[data-accion]").on("click", (ev) => {
         alPulsar(ev.currentTarget, html[0], proponer);
       });
+    }
+
+    // La ruta v11 sí admitiría reutilizar la instancia, pero se descarta igual:
+    // un contrato de descarte distinto en cada ruta es una diferencia invisible
+    // que acaba mordiendo en la que menos se prueba.
+    async close(options) {
+      alCerrar(this);
+      return super.close(options);
     }
   };
 }

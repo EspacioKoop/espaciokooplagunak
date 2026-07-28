@@ -15,8 +15,15 @@
           {{#unless active}}<small>{{localize "LAGUNAK.Puestos.Desconectado"}}</small>{{/unless}}
         </span>
         <select id="lagunak-station-{{id}}" data-station-user data-user-id="{{id}}" {{#unless canEdit}}disabled{{/unless}}>
+          {{! Un puesto cerrado por requisitos sigue LISTADO y dice por qué: si
+              desapareciera, parecería que el módulo se ha comido una opción. El
+              motivo va en el propio texto y no solo en `title`, porque un
+              atributo `title` no llega a quien navega con teclado ni a un lector
+              de pantalla al recorrer la lista. }}
           {{#each stations}}
-            <option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>
+            <option value="{{value}}" {{#if selected}}selected{{/if}} {{#if disabled}}disabled{{/if}}>
+              {{label}}{{#if motivo}} — {{motivo}}{{/if}}
+            </option>
           {{/each}}
         </select>
       </label>

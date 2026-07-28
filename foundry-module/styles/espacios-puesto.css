@@ -401,13 +401,25 @@
  * El marco dice «declara este puesto ahora», no «tiene este rango»: el flag
  * `station` es autoasignable (#237). Por eso es un borde sobrio y no un galón,
  * y el puesto sigue escrito en el texto de al lado, que es la verdad. */
+/* El retrato es un contenedor con la imagen dentro, no la imagen suelta: un
+ * <img> es contenido reemplazado y cualquier capa pintada sobre él (el tinte de
+ * alerta) quedaría por debajo del SVG opaco. El marco vive en el contenedor y
+ * el tinte en un pseudo-elemento superpuesto, que sí se pinta encima. */
 .lagunak-workspace__crew-portrait {
+  position: relative;
+  display: block;
   grid-row: span 2;
   width: 32px;
   height: 32px;
   border-radius: 3px;
   border: 1px solid var(--lagunak-line);
   background: rgba(0, 0, 0, 0.3);
+}
+
+.lagunak-workspace__crew-portrait-img {
+  display: block;
+  width: 100%;
+  height: 100%;
   image-rendering: pixelated;
 }
 
@@ -422,8 +434,17 @@
  * bajo esa misma luz. Es ambiente, no información nueva — el nivel ya se
  * comunica por borde y por texto (#338), así que aquí no hace falta más canal.
  * Sin animación: nada que detener bajo prefers-reduced-motion. */
-body.lagunak-alerta-amarilla .lagunak-workspace__crew-portrait { box-shadow: inset 0 0 0 32px rgba(226, 170, 40, 0.14); }
-body.lagunak-alerta-roja .lagunak-workspace__crew-portrait { box-shadow: inset 0 0 0 32px rgba(209, 73, 91, 0.18); }
+body.lagunak-alerta-amarilla .lagunak-workspace__crew-portrait::after,
+body.lagunak-alerta-roja .lagunak-workspace__crew-portrait::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+body.lagunak-alerta-amarilla .lagunak-workspace__crew-portrait::after { background: rgba(226, 170, 40, 0.14); }
+body.lagunak-alerta-roja .lagunak-workspace__crew-portrait::after { background: rgba(209, 73, 91, 0.18); }
 .lagunak-workspace__crew-light { width: 7px; height: 7px; margin-top: 4px; border-radius: 50%; background: #83e96b; box-shadow: 0 0 6px #83e96b; }
 .lagunak-workspace__crew-row.is-offline { opacity: 0.48; }
 .lagunak-workspace__crew-row.is-offline .lagunak-workspace__crew-light { background: #66727a; box-shadow: none; }

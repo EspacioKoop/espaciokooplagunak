@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import {
@@ -8,6 +9,9 @@ import {
   retratoTripulanteDataUri,
 } from "../scripts/retrato-tripulante.mjs";
 import { RETRATO, TINTA, contraste } from "../scripts/paleta.mjs";
+
+const raiz = new URL("../", import.meta.url);
+const read = (ruta) => readFileSync(new URL(ruta, raiz), "utf8");
 
 test("el retrato es determinista por semilla: misma cara en todos los clientes", () => {
   // Es lo que permite no sincronizar ni un byte: cada cliente lo dibuja igual.
@@ -106,4 +110,48 @@ test("basura por semilla u opciones no rompe el retrato", () => {
   const modelo = retratoTripulante("s", { activo: "sí" });
   assert.equal(modelo.activo, true, "cualquier valor con verdad cuenta como en línea");
   assert.equal(retratoTripulante("s", {}).filas.length, LADO);
+});
+
+test("el tinte de alerta se pinta POR ENCIMA del retrato, no bajo la imagen", () => {
+  // Un <img> es contenido reemplazado: una capa interior (inset shadow, fondo)
+  // queda por debajo del SVG opaco de 32x32 y el tinte no se ve. Por eso el
+  // retrato es un contenedor con la imagen dentro y el tinte va en un
+  // pseudo-elemento superpuesto. Esta prueba fija esa estructura, que es de lo
+  // que depende el efecto: la regla puede existir y no producir nada.
+  const template = read("templates/espacio-puesto.hbs");
+  const css = read("styles/espacios-puesto.css");
+
+  // El contenedor lleva las clases de puesto; la imagen es una capa aparte.
+  assert.match(
+    template,
+    /<span class="lagunak-workspace__crew-portrait \{\{#if station\}\}lagunak-workspace__crew-portrait--\{\{station\}\}\{\{\/if\}\}"/,
+  );
+  assert.match(template, /<img class="lagunak-workspace__crew-portrait-img"/);
+  assert.doesNotMatch(
+    template,
+    /<img class="lagunak-workspace__crew-portrait[ "]/,
+    "el tinte no puede colgar del propio <img>",
+  );
+
+  // El contenedor es el contexto de posicionamiento del tinte.
+  assert.match(css, /\.lagunak-workspace__crew-portrait \{[^}]*position: relative;/);
+
+  // Cada nivel de alerta tiñe por ::after, superpuesto y sin capturar el ratón.
+  for (const nivel of ["amarilla", "roja"]) {
+    assert.match(
+      css,
+      new RegExp(`body\\.lagunak-alerta-${nivel} \\.lagunak-workspace__crew-portrait::after`),
+      `falta el tinte de alerta ${nivel} sobre el retrato`,
+    );
+  }
+  const capa = css.match(
+    /body\.lagunak-alerta-amarilla \.lagunak-workspace__crew-portrait::after,[\s\S]*?\{([^}]*)\}/,
+  );
+  assert.ok(capa, "la capa de tinte debe declararse una sola vez para ambos niveles");
+  assert.match(capa[1], /position: absolute;/);
+  assert.match(capa[1], /inset: 0;/);
+  assert.match(capa[1], /pointer-events: none;/);
+
+  // Y el mecanismo que NO funcionaba no puede volver a colarse.
+  assert.doesNotMatch(css, /\.lagunak-workspace__crew-portrait \{[^}]*box-shadow: inset/);
 });

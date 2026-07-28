@@ -66,6 +66,93 @@ const FACTOR = { nebulosa_lejana: 0.035, nebulosa: 0.08, planeta: 0.16, asteroid
 /** Lado de diseño del decorado: el ruido de nebulosa está calibrado a 320. */
 export const LADO_DECORADO_BASE = 320;
 
+// Legibilidad del mapa (issue #290): los planetas son decorado, no contactos.
+// Sus discos no deben apelotonarse ni invadir la zona de lectura inmediata de
+// la nave propia. Los márgenes escalan con el backing para conservar la misma
+// composición a resoluciones menores.
+export const MARGEN_PLANETAS_BASE = 10;
+export const RADIO_ZONA_TACTICA_BASE = 34;
+const INTENTOS_POSICION_PLANETA = 64;
+const RADIO_PENTAGONO_PLANETAS_BASE = 95;
+
+// Tres planos visuales discretos: la silueta y la opacidad cuentan de un vistazo
+// qué planeta está más al fondo sin añadir etiquetas ni fingir distancia táctica.
+// Los valores son deliberadamente más pequeños que los contactos principales:
+// siguen mostrando bioma/anillos al escalar con nearest-neighbour, pero ya no
+// dominan el radar a 1080p ni en el backing compacto.
+export const PLANOS_PLANETA = [
+  { nombre: "lejano", radioMin: 0.034, radioRango: 0.008, opacidad: 0.42 },
+  { nombre: "medio", radioMin: 0.042, radioRango: 0.009, opacidad: 0.56 },
+  { nombre: "cercano", radioMin: 0.05, radioRango: 0.008, opacidad: 0.7 },
+];
+
+function distanciaToroidal(ax, ay, bx, by, ancho, alto) {
+  const dx = Math.abs(ax - bx);
+  const dy = Math.abs(ay - by);
+  return Math.hypot(Math.min(dx, ancho - dx), Math.min(dy, alto - dy));
+}
+
+function huellaPlaneta(el) {
+  return el.anillo ? el.r * 1.9 + 2 : el.r;
+}
+
+function elegirPosicionPlaneta(rng, huella, colocados, ancho, alto) {
+  const escala = ancho / LADO_DECORADO_BASE;
+  const margen = MARGEN_PLANETAS_BASE * escala;
+  const radioZonaTactica = RADIO_ZONA_TACTICA_BASE * escala;
+  const centroX = ancho / 2;
+  const centroY = alto / 2;
+  let mejor = null;
+
+  for (let intento = 0; intento < INTENTOS_POSICION_PLANETA; intento += 1) {
+    const candidato = { x: rng() * ancho, y: rng() * alto };
+    const holguraCentro = Math.hypot(candidato.x - centroX, candidato.y - centroY)
+      - huella - radioZonaTactica;
+    let holgura = holguraCentro;
+    for (const previo of colocados) {
+      holgura = Math.min(
+        holgura,
+        distanciaToroidal(candidato.x, candidato.y, previo.x, previo.y, ancho, alto)
+          - huella - huellaPlaneta(previo) - margen,
+      );
+    }
+    if (!mejor || holgura > mejor.holgura) mejor = { ...candidato, holgura };
+    if (holgura >= 0) return candidato;
+  }
+
+  // Un recuento/radio personalizado puede hacer imposible cumplir todos los
+  // márgenes. Conservamos determinismo y elegimos la alternativa menos densa.
+  return { x: mejor.x, y: mejor.y };
+}
+
+function planetasBienSeparados(planetas, ancho, alto) {
+  const escala = ancho / LADO_DECORADO_BASE;
+  const margen = MARGEN_PLANETAS_BASE * escala;
+  const radioZonaTactica = RADIO_ZONA_TACTICA_BASE * escala;
+  const centroX = ancho / 2;
+  const centroY = alto / 2;
+  for (let i = 0; i < planetas.length; i += 1) {
+    const planeta = planetas[i];
+    if (Math.hypot(planeta.x - centroX, planeta.y - centroY)
+      < huellaPlaneta(planeta) + radioZonaTactica) return false;
+    for (let j = i + 1; j < planetas.length; j += 1) {
+      if (distanciaToroidal(planeta.x, planeta.y, planetas[j].x, planetas[j].y, ancho, alto)
+        < huellaPlaneta(planeta) + huellaPlaneta(planetas[j]) + margen) return false;
+    }
+  }
+  return true;
+}
+
+function recolocarPentagonoNormal(planetas, ancho, alto, giro) {
+  const escala = ancho / LADO_DECORADO_BASE;
+  const radio = RADIO_PENTAGONO_PLANETAS_BASE * escala;
+  for (let i = 0; i < planetas.length; i += 1) {
+    const angulo = giro + i * Math.PI * 2 / planetas.length;
+    planetas[i].x = ancho / 2 + Math.cos(angulo) * radio;
+    planetas[i].y = alto / 2 + Math.sin(angulo) * radio;
+  }
+}
+
 /**
  * Lado del backing del canvas que evita el aliasing de #260.
  *
@@ -138,11 +225,17 @@ export function crearDecorado(
   for (let i = 0; i < planetas; i += 1) {
     const bioma = nombresBioma[i % nombresBioma.length];
     const def = BIOMAS[bioma];
+    const plano = PLANOS_PLANETA[i % PLANOS_PLANETA.length];
+    const r = ancho * (plano.radioMin + rng() * plano.radioRango); // 11–19 px a 320
+    const anillo = rng() < 0.45;
+    const posicion = elegirPosicionPlaneta(rng, huellaPlaneta({ r, anillo }), elemPlanetas, ancho, alto);
     elemPlanetas.push({
-      x: rng() * ancho,
-      y: rng() * alto,
-      r: ancho * (0.09 + rng() * 0.11), // planetas mayores (~29–64 px)
+      x: posicion.x,
+      y: posicion.y,
+      r,
       bioma,
+      plano: plano.nombre,
+      opacidad: plano.opacidad,
       rasgo: def.rasgo,
       color: def.color,
       color2: def.color2,
@@ -150,7 +243,7 @@ export function crearDecorado(
       // Combinación de biomas: un planeta no-helado puede lucir casquetes de
       // hielo (p. ej. desértico con polos helados).
       casquetes: def.rasgo !== "casquetes" && rng() < 0.4,
-      anillo: rng() < 0.45, // casi la mitad lucen anillo
+      anillo, // casi la mitad lucen anillo
       inclinacionAnillo: 0.28 + rng() * 0.22,
       semilla: Math.floor(rng() * 1e6), // cráteres/bandas deterministas
       // Giro axial: la superficie escrolla en longitud a esta velocidad
@@ -160,6 +253,14 @@ export function crearDecorado(
       // el aspecto ni la velocidad: solo evita recalcular dos planetas a la vez.
       faseGiro: planetas > 0 ? i / planetas : 0,
     });
+  }
+  // Con el recuento y lienzo normales, el contrato de legibilidad es estricto:
+  // si el muestreo aleatorio se atasca, un pentágono escalado garantiza tanto
+  // el margen entre las huellas máximas como la zona táctica central. La
+  // degradación «menos mala» queda limitada a configuraciones personalizadas
+  // que pueden ser geométricamente imposibles.
+  if (planetas === 5 && ancho === alto && !planetasBienSeparados(elemPlanetas, ancho, alto)) {
+    recolocarPentagonoNormal(elemPlanetas, ancho, alto, rng() * Math.PI * 2);
   }
 
   const elemAsteroides = [];
@@ -384,7 +485,8 @@ function pintarAnillo(ctx, el, cx, cy, radio, frente) {
     for (let banda = 0; banda < 2; banda += 1) {
       const px = Math.round(cx + Math.cos(a) * (rx + banda * 2));
       const py = Math.round(cy + Math.sin(a) * (ry + banda));
-      ctx.fillStyle = rgba(color, banda === 0 ? 0.5 : 0.28);
+      const opacidad = Number.isFinite(el.opacidad) ? el.opacidad : 1;
+      ctx.fillStyle = rgba(color, (banda === 0 ? 0.5 : 0.28) * opacidad);
       ctx.fillRect(px, py, 1, 1);
     }
   }
@@ -431,7 +533,7 @@ function pintarPlaneta(ctx, el, x, y, tMs = 0) {
     for (let dx = -radio; dx <= radio; dx += 1) {
       const color = colorPlanetaPixel(el, dx, dy, radio, semilla, tMs);
       if (color === null) continue;
-      ctx.fillStyle = color;
+      ctx.fillStyle = rgba(color, Number.isFinite(el.opacidad) ? el.opacidad : 1);
       ctx.fillRect(cx + dx, cy + dy, 1, 1);
     }
   }
@@ -643,6 +745,14 @@ export function dibujarDecorado(
     for (const el of capa.elementos ?? []) {
       const x = envolver(el.x + capa.dx, ancho);
       const y = envolver(el.y + capa.dy, alto);
+      // El parallax desplaza el decorado respecto a su siembra. Conservamos la
+      // zona de lectura de la nave también durante ese movimiento: un planeta
+      // puramente ambiental que la invadiría no se pinta en ese frame.
+      if (
+        capa.tipo === "planeta"
+        && Math.hypot(x - ancho / 2, y - alto / 2)
+          < huellaPlaneta(el) + RADIO_ZONA_TACTICA_BASE * (ancho / LADO_DECORADO_BASE)
+      ) continue;
       if (capa.tipo === "asteroide") {
         pintarAsteroide(ctx, el, x, y, ancho, alto);
       } else if (!pintarGrandeCacheado(

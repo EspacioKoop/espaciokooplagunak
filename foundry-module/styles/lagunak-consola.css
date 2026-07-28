@@ -380,3 +380,66 @@
     transition: none !important;
   }
 }
+
+/* Barras de estado del panel de nave: el número sigue siendo la verdad, la
+ * barra es lectura periférica — se ve de un vistazo si algo va mal sin leer
+ * cifras. El color codifica severidad y NUNCA es el único canal: el valor
+ * exacto va siempre encima (WCAG 1.4.1).
+ *
+ * La barra va DETRÁS del número, no debajo: con tres columnas por sistema y
+ * una docena de sistemas, apilar barra y texto triplicaba el alto de la tabla
+ * y obligaba a scrollear el panel entero. */
+.lagunak-celda-barra {
+  position: relative;
+  isolation: isolate;
+  min-width: 76px;
+}
+
+.lagunak-celda-barra [data-texto] {
+  position: relative;
+  z-index: 1;
+}
+
+.lagunak-barra {
+  position: absolute;
+  z-index: 0;
+  left: 6px;
+  right: 6px;
+  bottom: 3px;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.lagunak-barra__relleno {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 2px;
+  background: #6be08a;
+  transition: width 240ms linear, background-color 240ms linear;
+}
+
+.lagunak-barra__relleno[data-nivel="aviso"] { background: #ffc861; }
+.lagunak-barra__relleno[data-nivel="critico"] { background: #ff6b6b; }
+
+/* Sin datos: el relleno queda a cero y la pista vacía se lee como "sin
+ * lectura", no como "cero". */
+.lagunak-barra__relleno:not([data-nivel]) { background: rgba(255, 255, 255, 0.25); }
+
+/* Tabla de sistemas compacta: es una rejilla de vigilancia, no un formulario.
+ * Filas bajas para que la docena de sistemas quepa sin scroll. */
+.lagunak-estado .lagunak-sistemas td,
+.lagunak-estado .lagunak-sistemas th {
+  padding: 3px 8px;
+}
+
+.lagunak-estado .lagunak-sistemas td {
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lagunak-barra__relleno { transition: none; }
+}

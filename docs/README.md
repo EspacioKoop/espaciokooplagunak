@@ -31,6 +31,8 @@
 | [FOUNDRY.md](FOUNDRY.md) | Arquitectura de la integración y gestión de nave |
 | [FOUNDRY_DISTRIBUTION.md](FOUNDRY_DISTRIBUTION.md) | Empaquetado y distribución del módulo Foundry |
 | [FOUNDRY_GUI_SMOKE.md](FOUNDRY_GUI_SMOKE.md) | Prueba de humo de la interfaz del módulo |
+| [MINIJUEGOS_FOUNDRY.md](MINIJUEGOS_FOUNDRY.md) | Contrato previo para minijuegos sociales y primer vertical de póker (#308) |
+| [MINIJUEGOS_ASISTENCIA.md](MINIJUEGOS_ASISTENCIA.md) | Diseño de asistencia entre puestos con minijuegos de habilidad y tiradas dnd5e (#309) |
 
 ## Investigación y diseño de contenido
 

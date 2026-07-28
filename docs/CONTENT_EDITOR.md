@@ -91,17 +91,19 @@ lista en cada acción. Para mantener el selector accesible muestra como máximo
 los primeros 16 nombres ordenados; hay que mover o borrar los ya procesados para
 acceder a los siguientes.
 
-## Formato `espaciokoop-content` v4
+## Formato `espaciokoop-content` v5
 
-La versión 4 mantiene la envoltura y los objetos de mapa de v3, y añade overrides
-declarativos a las naves. El importador sigue aceptando documentos v1–v3; al
-volver a guardarlos o exportarlos se escriben como v4. Un mapa antiguo migra a
-`objects: []` y una nave antigua a colecciones de overrides vacías.
+La versión 5 mantiene la envoltura, los objetos de mapa y los overrides de nave
+de v4, y añade el override opcional de casco máximo. El importador sigue
+aceptando documentos v1–v4; al volver a guardarlos o exportarlos se escriben
+como v5. Un mapa antiguo migra a `objects: []`, una nave v1–v3 a colecciones de
+overrides vacías y una nave v4 conserva el casco de su plantilla sin inventar un
+valor.
 
 ```json
 {
   "format": "espaciokoop-content",
-  "version": 4,
+  "version": 5,
   "type": "map",
   "id": "sector-uno",
   "name": "Sector uno",
@@ -129,12 +131,15 @@ Tipos y campos específicos:
 | `campaign` | `map_ids` ordenados, `starting_map_id`, `character_ids`, `ship_ids`, `transitions` |
 | `map` | `scenario_file`, `recommended_players`, `objects` |
 | `character` | `crew_position_id`, `callsign`, `tags`, `ship_id` opcional, `legacy_role` para migración v1 |
-| `ship` | `template`, `faction`, `overrides` (`systems`, `resources`, `cargo`, `crew_positions`) |
+| `ship` | `template`, `faction`, `overrides` (`hull_max`, `systems`, `resources`, `cargo`, `crew_positions`) |
 
-Los overrides de nave son datos cerrados: cada sistema usa uno de los nueve IDs
-canónicos y una salud entre `-1` y `1`; recursos y carga usan IDs portables y
-cantidades acotadas; los puestos usan IDs canónicos. Las cuatro colecciones son
-explícitas aunque estén vacías. No admiten callbacks, Lua ni claves adicionales.
+Los overrides de nave son datos cerrados. `hull_max` es un override opcional
+representado siempre en v5: `null` conserva el casco de la plantilla y un número
+debe ser finito, mayor que `0` y menor o igual que `1000000`. Cada sistema usa
+uno de los nueve IDs canónicos y una salud entre `-1` y `1`; recursos y carga
+usan IDs portables y cantidades acotadas; los puestos usan IDs canónicos. Las
+cuatro colecciones son explícitas aunque estén vacías. No admiten callbacks, Lua
+ni claves adicionales.
 
 Las listas se editan separadas por comas. Las transiciones son aristas
 declarativas `mapa-origen>mapa-destino`: ambos extremos deben pertenecer a
@@ -149,7 +154,7 @@ ID canónico. Un `role` histórico de texto libre se conserva íntegro en
 `legacy_role` y deja vacío `crew_position_id`, en vez de inventar una asignación
 operativa. El editor muestra ambos campos para que el GM pueda elegir un puesto
 canónico y borrar después el valor histórico; mientras tanto el documento sigue
-siendo válido y puede guardarse o exportarse como v4 sin perder el rol original.
+siendo válido y puede guardarse o exportarse como v5 sin perder el rol original.
 
 La ficha de personaje es asistida: el puesto y la nave se eligen con selectores
 canónicos (no se puede introducir un puesto o nave inexistente desde la UI), las
@@ -245,9 +250,10 @@ de sesión con que empezó. Cada edición, undo, redo, rollback, guardado o reem
 sesión avanza esa barrera para impedir ABA. Escape, clic derecho, una coordenada fuera
 de rango o terminar el modo cancelan sin ensuciar el documento ni añadir historial.
 
-Las naves tienen un modelo tipado para overrides opcionales de sistemas, recursos,
-carga y puestos. Rechaza IDs no canónicos, duplicados, valores no finitos y
-cantidades fuera de rango; v4 ya lo persiste e intercambia con migración de v1–v3.
+Las naves tienen un modelo tipado para overrides opcionales de casco máximo,
+sistemas, recursos, carga y puestos. Rechaza IDs no canónicos, duplicados,
+valores no finitos y cantidades fuera de rango; v5 ya lo persiste e intercambia
+con migración de v1–v4 sin inventar un casco para documentos anteriores.
 El formulario ya ofrece verticales GUI tipadas para los cuatro grupos de overrides:
 salud de sistemas, recursos, carga y puestos canónicos de tripulación. Incluye IDs
 y valores validados, aplicar/quitar override y undo/redo compartido sobre el staging.

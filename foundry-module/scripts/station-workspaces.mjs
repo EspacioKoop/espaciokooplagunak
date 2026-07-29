@@ -275,6 +275,7 @@ function visibleContacts(contactsPayload, i18n) {
 export function buildWorkspaceModel({
   station,
   isGM,
+  sensores = null,
   users,
   moduleId,
   i18n,
@@ -303,7 +304,13 @@ export function buildWorkspaceModel({
   // debería decidir cuánto revela, y difundirlos crudos regalaría el trabajo del
   // puesto. Se abrirán degradados por distancia y salud de sensores, con su
   // propio módulo puro y sus pruebas.
-  const safeContactsPayload = isGM ? contactsPayload : null;
+  // El GM lee su sondeo crudo; la tripulación, lo que le llegó degradado por el
+  // alcance del radar (#331 paso 3). Si no llegó nada —sin lectura de radar, o
+  // sin GM conectado difundiendo— la tripulación no ve contactos, que es lo
+  // mismo que veía antes de este paso y nunca menos seguro.
+  const safeContactsPayload = isGM
+    ? contactsPayload
+    : (sensores ? { contacts: sensores.contactos, degradado: true } : null);
   const crew = crewRows(users, moduleId, i18n);
 
   if (!definition) {

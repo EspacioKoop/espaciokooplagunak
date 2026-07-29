@@ -39,6 +39,24 @@ la sesión. `/v1/state` calcula distancia restante y ETA a partir de la posició
 y velocidad reales; la ETA es nula cuando la nave está detenida. El módulo
 formatea estos datos para el GM sin asumir que otros escenarios tengan ruta.
 
+`/v1/state` publica también `radar` con el alcance real de la nave
+(`short_range` / `long_range`, del componente `long_range_radar`), y es `null` si
+el componente no se puede leer. Existe para #331 paso 3: los contactos que el GM
+difunde a la tripulación van **degradados por ese alcance** y no por dos
+constantes elegidas a ojo. Dentro del alcance corto el contacto se identifica
+(indicativo y facción); entre el corto y el largo es un eco —sin nombre y sin
+bandera, con la posición redondeada a una rejilla gruesa y su margen publicado al
+lado, para que la vista dibuje incertidumbre en vez de un punto que no lo es—; más
+allá del largo no se publica y **tampoco se cuenta**, porque un total que
+incluyera lo invisible ya diría que hay algo ahí fuera.
+
+La degradación ocurre en el cliente del GM, antes de difundir, y no al pintar: el
+sobre acaba en un ajuste de mundo que toda la mesa puede leer, así que recortar en
+la vista no defendería nada. Sin lectura de radar no se difunde ningún contacto —
+«no se puede decidir qué ve esta nave» no es «no ve nada», y ante esa duda se
+calla. El GM conserva su sondeo crudo: degradar a la tripulación no le quita
+precisión a quien dirige.
+
 El control de tempo inicial es binario: `pauseGame()` / `unpauseGame()` son las
 únicas APIs verificadas en headless. No se ofrece aceleración ni se inventa un
 estado consultable porque `setGameSpeed`, `getGameSpeed` y un getter de pausa no

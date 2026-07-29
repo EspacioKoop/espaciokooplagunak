@@ -55,6 +55,24 @@ if destination ~= nil then
         eta_json = string.format("%%.1f", distance / speed)
     end
 end
+-- Alcance real del radar de la nave propia (#331 paso 3). Sale del componente
+-- `long_range_radar`, que ya expone `short_range` y `long_range` a Lua: sin esto,
+-- degradar los contactos de la tripulación por distancia obligaría a inventarse
+-- dos constantes, y una banda inventada es una mentira con forma de sensor.
+--
+-- Es opcional como todo lo demás: sin componente, `null`. Y ahí la degradación
+-- falla cerrada —no se publica ningún contacto— en vez de abrir de par en par.
+local radar_json = "null"
+local ok_radar, radar = pcall(function() return ship.components.long_range_radar end)
+if ok_radar and radar ~= nil then
+    local ok_short, short_range = pcall(function() return radar.short_range end)
+    local ok_long, long_range = pcall(function() return radar.long_range end)
+    if ok_short and ok_long and type(short_range) == "number"
+        and type(long_range) == "number" then
+        radar_json = string.format(
+            '{"short_range":%%.1f,"long_range":%%.1f}', short_range, long_range)
+    end
+end
 local systems = {}
 for _, name in ipairs({%s}) do
     systems[#systems + 1] = string.format(
@@ -67,13 +85,13 @@ return string.format(
     .. '"velocity":{"x":%%.2f,"y":%%.2f},"destination":%%s,'
     .. '"distance_to_destination":%%s,"eta_seconds":%%s,'
     .. '"hull":%%.1f,"hull_max":%%.1f,"energy":%%.1f,"energy_max":%%.1f,'
-    .. '"shields_active":%%s,"repair_crew":%%d,"systems":{%%s}}}',
+    .. '"shields_active":%%s,"repair_crew":%%d,"radar":%%s,"systems":{%%s}}}',
     ship:getCallSign() or "?", x, y, ship:getHeading(), vx, vy,
     destination_json, distance_json, eta_json,
     ship:getHull(), ship:getHullMax(),
     ship:getEnergyLevel(), ship:getEnergyLevelMax(),
     tostring(ship:getShieldsActive()), ship:getRepairCrewCount(),
-    table.concat(systems, ","))
+    radar_json, table.concat(systems, ","))
 """ % ", ".join(f'"{name}"' for name in _SYSTEMS)
 
 _SCENARIO_LUA = """

@@ -452,3 +452,75 @@ test("REGRESIÓN: el casco lo ve la tripulación, no solo el GM", async () => {
   assert.equal(jugador.hasTelemetry, false, "el jugador no recibe telemetría, como debe ser");
   assert.equal(jugador.cascoRumbo, null, "y sin lectura no se inventa un rumbo");
 });
+
+// ---- Contactos degradados en la consola de tripulación (#331, paso 3) -------
+
+test("la tripulación ve los contactos que le llegaron degradados, no el crudo", () => {
+  const crudo = {
+    contacts: [
+      { callsign: "Argia", faction: "Humanos", is_player: false, position: { x: 1000, y: 0 } },
+    ],
+    total: 9,
+    truncated: true,
+  };
+  const sensores = {
+    contactos: [
+      { banda: "largo", esJugador: false, callsign: null, faction: null, position: { x: 20000, y: 0 }, precision: 1000 },
+    ],
+    alcance: { corto: 5000, largo: 30000 },
+  };
+  const modelo = buildWorkspaceModel({
+    station: "sensors",
+    isGM: false,
+    users: [],
+    moduleId: "lagunak",
+    i18n: { localize: (k) => k, format: (k) => k },
+    statePayload: { ship: { callsign: "Lagunak", systems: {} } },
+    contactsPayload: crudo,
+    sensores,
+    connection: "ok",
+  });
+  const texto = JSON.stringify(modelo);
+  // Lo que importa: el crudo pasó por la función y NO salió por el otro lado.
+  assert.doesNotMatch(texto, /Argia/, "el indicativo del crudo no llega a la tripulación");
+  // Y el recuento es el de lo visible, no el total del GM: un «9» diría «hay
+  // ocho cosas más ahí fuera», que es el dato que el puesto tiene que ganarse.
+  const contactos = modelo.metrics.find((m) => m.label.endsWith("Contactos"));
+  assert.equal(contactos.value, "1");
+});
+
+test("sin difusión de sensores la tripulación no ve contactos, como antes", () => {
+  const modelo = buildWorkspaceModel({
+    station: "sensors",
+    isGM: false,
+    users: [],
+    moduleId: "lagunak",
+    i18n: { localize: (k) => k, format: (k) => k },
+    statePayload: { ship: { callsign: "Lagunak", systems: {} } },
+    contactsPayload: { contacts: [{ callsign: "Argia", is_player: false }], total: 4 },
+    sensores: null,
+    connection: "ok",
+  });
+  assert.doesNotMatch(JSON.stringify(modelo), /Argia/);
+  const contactos = modelo.metrics.find((m) => m.label.endsWith("Contactos"));
+  assert.equal(contactos.value, "0");
+});
+
+test("el GM sigue viendo su sondeo crudo, con su total", () => {
+  const modelo = buildWorkspaceModel({
+    station: "sensors",
+    isGM: true,
+    users: [],
+    moduleId: "lagunak",
+    i18n: { localize: (k) => k, format: (k) => k },
+    statePayload: { ship: { callsign: "Lagunak", systems: {} } },
+    contactsPayload: {
+      contacts: [{ callsign: "Argia", is_player: false, position: { x: 1000, y: 0 } }],
+      total: 9,
+    },
+    sensores: null,
+    connection: "ok",
+  });
+  const total = modelo.metrics.find((m) => m.label.endsWith("TotalSensor"));
+  assert.equal(total.value, "9", "degradar a la tripulación no le quita precisión al GM");
+});

@@ -14,6 +14,7 @@
 // Node con un contexto de mentira, que es como está cubierto.
 
 import { componerEscena } from "./retro3d.mjs";
+import { campoEstelar, estrellasEpoca, proyectarEstrellas } from "./retro3d-estrellas.mjs";
 
 /**
  * Vuelca una escena ya compuesta en un contexto 2D.
@@ -25,13 +26,21 @@ import { componerEscena } from "./retro3d.mjs";
  */
 export function pintarEscena(ctx, escena, { fondo = null } = {}) {
   if (!ctx || !escena) return 0;
-  const { ancho, alto, poligonos = [] } = escena;
+  const { ancho, alto, poligonos = [], estrellas = [] } = escena;
 
   if (fondo) {
     ctx.fillStyle = fondo;
     ctx.fillRect(0, 0, ancho, alto);
   } else {
     ctx.clearRect(0, 0, ancho, alto);
+  }
+
+  // El cielo va después de limpiar y antes de la nave: es lo único que puede
+  // quedar tapado por todo lo demás. Cuadrados y no círculos —un `arc` a esta
+  // resolución da un borrón gris de tres píxeles en vez de una estrella.
+  for (const estrella of estrellas) {
+    ctx.fillStyle = estrella.color;
+    ctx.fillRect(estrella.x, estrella.y, estrella.tam, estrella.tam);
   }
 
   for (const poligono of poligonos) {
@@ -67,8 +76,39 @@ export function pintarNave(lienzo, opciones = {}) {
     ancho: lienzo.width,
     alto: lienzo.height,
   });
+  // Fondo estelar (#384): opcional y apagado si nadie lo pide, porque no todas
+  // las superficies quieren cielo —una lámina de reconocimiento sobre fondo
+  // limpio se lee mejor que una con purpurina detrás, y esa es decisión de la
+  // superficie y no del pintor.
+  if (opciones.cielo) {
+    escena.estrellas = proyectarEstrellas(cieloDe(opciones.cielo, escena.epoca), {
+      ...opciones,
+      epoca: escena.epoca,
+      ancho: escena.ancho,
+      alto: escena.alto,
+    });
+  }
   pintarEscena(ctx, escena, { fondo: opciones.fondo ?? null });
   return escena;
+}
+
+// El cielo se genera UNA vez por semilla y época y se guarda. Los puntos no
+// cambian nunca —lo que cambia es la cámara, y eso se recalcula igual en cada
+// fotograma—, así que resortearlos sesenta veces por segundo sería tirar trabajo
+// para obtener exactamente el mismo cielo. La clave lleva la época porque la
+// densidad depende de ella.
+const cielos = new Map();
+
+function cieloDe(peticion, epoca) {
+  const semilla = Number(peticion?.semilla) || 0;
+  const cantidad = Number(peticion?.cantidad) || estrellasEpoca(epoca).cantidad;
+  const clave = `${epoca}:${semilla}:${cantidad}`;
+  let campo = cielos.get(clave);
+  if (!campo) {
+    campo = campoEstelar(semilla, { cantidad, radio: peticion?.radio });
+    cielos.set(clave, campo);
+  }
+  return campo;
 }
 
 /**

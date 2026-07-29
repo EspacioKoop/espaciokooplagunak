@@ -646,3 +646,27 @@ body.lagunak-alerta-roja .lagunak-workspace__crew-portrait::after { background: 
 .lagunak-workspace__orden .hint {
   color: var(--lagunak-muted);
 }
+
+/* Casco propio en 3D (#362).
+ *
+ * LA RESOLUCIÓN INTERNA ES EL EFECTO. El lienzo mide 96x72 de verdad y se
+ * estira hasta aquí con `pixelated`: es lo que hacía la consola, y es lo que
+ * hace que el ajuste de vértices a rejilla —el temblor de la PSX— se vea. Si se
+ * dibujara directamente a este tamaño, saldría un render moderno pequeño.
+ *
+ * Sin animación en CSS: el casco se repinta cuando llega telemetría, así que no
+ * hay nada que detener bajo prefers-reduced-motion. */
+.lagunak-workspace__casco {
+  display: flex;
+  justify-content: center;
+  margin: 12px 0;
+  padding: 8px 0;
+  border: 1px solid var(--lagunak-line);
+  background: rgba(0, 0, 0, 0.32);
+}
+
+.lagunak-workspace__casco canvas {
+  width: 192px;
+  height: 144px;
+  image-rendering: pixelated;
+}

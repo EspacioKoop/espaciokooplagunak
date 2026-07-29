@@ -159,3 +159,36 @@ test("medidas imposibles se acotan en vez de producir una nave del revés", () =
   assert.ok(mallaDesdeCasco({ eslora: 1e6 }).vertices[0][2] <= 8);
   assert.deepEqual(mallaDesdeCasco(CASCO_POR_DEFECTO).vertices, MALLA_CAZA.vertices);
 });
+
+// ---- La superficie: el casco propio en la consola (#362, rebanada 3) --------
+
+test("el casco apunta al rumbo real, y sin lectura se queda quieto", async () => {
+  // Regla heredada de los iconos de sistema (#353): ausencia no es cero. Una
+  // nave girando en el puente mientras la real mantiene el rumbo sería una
+  // mentira pequeña, y en una consola de mando no hay mentiras pequeñas.
+  const { componerEscena } = await import("../scripts/retro3d.mjs");
+  const conRumbo = (grados) =>
+    componerEscena(MALLA_CAZA, {
+      ancho: 96,
+      alto: 72,
+      yaw: (grados * Math.PI) / 180,
+      pitch: 0.42,
+      posicion: [0, 0, 4.4],
+      fov: 55,
+    });
+
+  const norte = conRumbo(0);
+  const este = conRumbo(90);
+  assert.notDeepEqual(
+    norte.poligonos.map((p) => p.puntos),
+    este.poligonos.map((p) => p.puntos),
+    "dos rumbos distintos tienen que dibujarse distinto",
+  );
+  // El mismo rumbo dibuja lo mismo: no hay deriva entre repintados.
+  assert.deepEqual(conRumbo(214).poligonos, conRumbo(214).poligonos);
+  // 360 y 0 son el mismo rumbo.
+  assert.deepEqual(
+    conRumbo(360).poligonos.map((p) => p.color),
+    conRumbo(0).poligonos.map((p) => p.color),
+  );
+});

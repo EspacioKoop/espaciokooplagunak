@@ -13,6 +13,19 @@
     <p>{{localize "LAGUNAK.Ayuda.Navegacion"}}</p>
   </details>
 
+  {{!-- Vista por puesto (#331, paso 2): la misma verdad, resaltada distinto.
+        No es un filtro de permisos —lo que el GM no difunde no llega al frame—
+        sino la lectura que hace cada rol del mismo mapa. --}}
+  <label class="lagunak-mapa-vista">
+    <span>{{localize "LAGUNAK.MapaVivo.Vista"}}</span>
+    <select data-lagunak-puesto-vista>
+      {{#each puestosVista}}
+      <option value="{{this.id}}" {{#if this.activo}}selected{{/if}}>{{this.etiqueta}}</option>
+      {{/each}}
+    </select>
+  </label>
+  <p class="lagunak-mapa-vista-ayuda">{{localize "LAGUNAK.MapaVivo.VistaAyuda"}}</p>
+
   <div class="lagunak-mapa-visor">
     <canvas class="lagunak-mapa-canvas" width="480" height="480" role="img" aria-label="{{localize "LAGUNAK.MapaVivo.Descripcion"}}">
       {{localize "LAGUNAK.MapaVivo.Descripcion"}}

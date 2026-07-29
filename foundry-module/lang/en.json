@@ -323,6 +323,8 @@
   "LAGUNAK.Ayuda.SoloLectura": "This window is read-only: the ship is not piloted from here.",
   "LAGUNAK.Ayuda.Navegacion": "Navigation is handled from the helm station of the Espaciokoop game itself (playable tutorial in its main menu). Foundry carries the story; the simulator owns the ship.",
   "LAGUNAK.MapaVivo.Leyenda": "Legend",
+  "LAGUNAK.MapaVivo.Vista": "View the map as",
+  "LAGUNAK.MapaVivo.VistaAyuda": "The same simulator reading, highlighted for what each station looks at. It adds nothing and hides nothing.",
   "LAGUNAK.MapaVivo.LeyendaPropia": "Own ship",
   "LAGUNAK.MapaVivo.LeyendaNeutro": "No faction (asteroids, other objects)",
   "LAGUNAK.MapaVivo.LeyendaParpadeo": "Contacts blink; your own ship stays fixed at the centre.",

@@ -249,6 +249,7 @@ async function handleWorkspaceAction(app, event) {
 // girando alegremente en el puente mientras la nave real mantiene el rumbo sería
 // una mentira pequeña, pero en una consola de mando no hay mentiras pequeñas.
 const MALLA_PROPIA = mallaDesdeCasco(CASCO_POR_DEFECTO);
+const SEMILLA_CIELO_PUENTE = 20362;
 
 function pintarCascoPropio(root, modelo) {
   const lienzo = root?.querySelector?.("[data-lagunak-casco]");
@@ -265,6 +266,11 @@ function pintarCascoPropio(root, modelo) {
     pitch: 0.42,
     posicion: [0, 0, 4.4],
     fov: 55,
+    // Cielo fijo (#384): la semilla es constante a propósito. El puente es
+    // siempre el mismo sitio y las estrellas de fuera no cambian porque se
+    // vuelva a abrir la consola; una semilla variable haría parpadear el
+    // universo entero en cada render.
+    cielo: { semilla: SEMILLA_CIELO_PUENTE },
   });
 }
 

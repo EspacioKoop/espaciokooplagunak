@@ -323,6 +323,8 @@
   "LAGUNAK.Ayuda.SoloLectura": "Esta ventana es solo lectura: aquí no se pilota la nave.",
   "LAGUNAK.Ayuda.Navegacion": "La navegación se gobierna desde el puesto de timón del propio juego Espaciokoop (tutorial jugable en su menú principal). Foundry acompaña la narración; el simulador manda sobre la nave.",
   "LAGUNAK.MapaVivo.Leyenda": "Leyenda",
+  "LAGUNAK.MapaVivo.Vista": "Ver el mapa como",
+  "LAGUNAK.MapaVivo.VistaAyuda": "La misma lectura del simulador, resaltada según lo que mira cada puesto. No añade ni oculta información.",
   "LAGUNAK.MapaVivo.LeyendaPropia": "Nave propia",
   "LAGUNAK.MapaVivo.LeyendaNeutro": "Sin facción (asteroides, otros objetos)",
   "LAGUNAK.MapaVivo.LeyendaParpadeo": "Los contactos parpadean; la nave propia queda fija en el centro.",

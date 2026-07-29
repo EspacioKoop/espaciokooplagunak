@@ -49,3 +49,5 @@ No publiques `~/.emptyepsilon`, contraseñas de servidor ni datos personales al 
 ## Volver al juego normal
 
 Cierra la partida y arranca Espaciokoop Lagunak desde su acceso habitual. Al crear `Lagunak: Primera guardia`, deja **Modo: Normal**. Los controles QA no se instalan en esa variante.
+
+<!-- Prueba de #361: PR solo de documentación. -->

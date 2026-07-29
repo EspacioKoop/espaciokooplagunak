@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { readdir } from "node:fs/promises";
+import { mkdir, mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
@@ -12,6 +13,24 @@ import {
   REGISTROS,
   TIMBRES,
 } from "../scripts/musica-procedural.mjs";
+
+const EXTENSIONES_AUDIO = /\.(?:aac|aif|aiff|caf|flac|m4a|mid|midi|mp3|oga|ogg|opus|wav|webm|wma)$/i;
+
+async function buscarActivosAudio(directorio) {
+  const encontrados = [];
+
+  async function recorrer(actual) {
+    for (const entrada of await readdir(actual, { withFileTypes: true })) {
+      if (entrada.name === ".git") continue;
+      const ruta = join(actual, entrada.name);
+      if (entrada.isDirectory()) await recorrer(ruta);
+      else if (entrada.isFile() && EXTENSIONES_AUDIO.test(entrada.name)) encontrados.push(ruta);
+    }
+  }
+
+  await recorrer(directorio);
+  return encontrados;
+}
 
 test("misma semilla, misma pieza: la mesa oye lo mismo sin sincronizar audio", () => {
   const a = generarPieza("guardia-1", { registro: "bach" });
@@ -109,24 +128,25 @@ test("el módulo Foundry no distribuye ficheros de audio ni MIDI", async () => {
   // El juego heredado sí conserva voces y efectos propios bajo `resources/`.
   // La frontera legal de #344 es el módulo distribuible donde vive este arte.
   const raiz = fileURLToPath(new URL("../", import.meta.url));
-  const extensionesAudio = /\.(?:aac|aif|aiff|caf|flac|m4a|mid|midi|mp3|oga|ogg|opus|wav|webm|wma)$/i;
-  const encontrados = [];
-
-  async function recorrer(directorio) {
-    for (const entrada of await readdir(directorio, { withFileTypes: true })) {
-      if (entrada.name === ".git" || entrada.name === "node_modules") continue;
-      const ruta = join(directorio, entrada.name);
-      if (entrada.isDirectory()) await recorrer(ruta);
-      else if (entrada.isFile() && extensionesAudio.test(entrada.name)) encontrados.push(ruta);
-    }
-  }
-
-  await recorrer(raiz);
+  const encontrados = await buscarActivosAudio(raiz);
   assert.deepEqual(
     encontrados,
     [],
     `el arte procedural no puede incorporar grabaciones, MIDI ni otros activos de audio: ${encontrados.join(", ")}`,
   );
+});
+
+test("la guardia inspecciona node_modules dentro de una ruta empaquetable", async () => {
+  const raiz = await mkdtemp(join(tmpdir(), "lagunak-audio-guard-"));
+  const directorioEmpaquetable = join(raiz, "scripts", "node_modules", "dependencia");
+  const activo = join(directorioEmpaquetable, "muestra.ogg");
+  try {
+    await mkdir(directorioEmpaquetable, { recursive: true });
+    await writeFile(activo, "regresion: no es audio real");
+    assert.deepEqual(await buscarActivosAudio(raiz), [activo]);
+  } finally {
+    await rm(raiz, { recursive: true, force: true });
+  }
 });
 
 // ---- Cozy: acogedor, no mecánico ------------------------------------------

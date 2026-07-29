@@ -79,6 +79,10 @@ export const PIXEL = Object.freeze({
   // hash de `FACCIONES`.
   naveJugador: CREMA, // la nave propia destaca
   sinFaccion: "#7d8597", // gris azulado: objetos sin facción
+  // Fondo estelar del 3D retro (#362). Azul frío y no blanco puro: el blanco lo
+  // tiene reservado la nave propia, y un cielo del mismo tono que el casco haría
+  // competir el decorado con lo que sí importa mirar.
+  estrella: "#9fb4e8",
 });
 
 /**

@@ -25,6 +25,9 @@ const MODULOS_DE_ARTE = [
   // sombrea. Entra en la guardia desde el primer día para que la nave nueva no
   // pueda colar su verde cuando ya nadie recuerde la regla.
   "../scripts/retro3d.mjs",
+  // Y el fondo estelar (#384) tampoco: el azul del cielo sale de `PIXEL`, donde
+  // se ve al lado del crema de la nave propia y se puede decidir que no compitan.
+  "../scripts/retro3d-estrellas.mjs",
 ];
 
 test("los colores no cambian al mudarse: mismo valor que antes en cada módulo", () => {

@@ -3,34 +3,35 @@ name: Docker
 on:
   push:
     branches: [main]
-    paths:
-      - "docker/**"
-      - "bridge/**"
-      - ".dockerignore"
-      - "src/**"
-      - "CMakeLists.txt"
-      - "scripts/scenario_90_lagunak_primera_guardia.lua"
-      - ".github/workflows/docker.yml"
+  # El filtro se mudó del disparador a un job (#361). Aquí importaba especialmente:
+  # la guardia de /exec.lua es un invariante de SECURITY.md y conviene que su
+  # check exista —aunque sea saltado— en todos los PRs.
   pull_request:
-    paths:
-      - "docker/**"
-      - "bridge/**"
-      - ".dockerignore"
-      - "src/**"
-      - "CMakeLists.txt"
-      - "scripts/scenario_90_lagunak_primera_guardia.lua"
-      - ".github/workflows/docker.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
+  changes:
+    name: Filtro de rutas (docker/puente)
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.filtro.outputs.run }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+      - id: filtro
+        uses: ./.github/actions/filtro-rutas
+        with:
+          rutas: '^(docker/|bridge/|src/|\.dockerignore$|CMakeLists\.txt$|scripts/scenario_90_lagunak_primera_guardia\.lua$|\.github/workflows/docker\.yml$|\.github/actions/)'
+
   # Invariante de SECURITY.md como gate: el puerto HTTP del juego (8080,
   # /exec.lua, Lua arbitrario sin autenticación) no se publica JAMÁS fuera de
   # la red interna de compose. Hasta ahora solo lo protegía la revisión humana.
   guardia-exec-lua:
     name: El puerto de /exec.lua no se publica
+    needs: changes
+    if: ${{ needs.changes.outputs.run == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
@@ -74,6 +75,8 @@ jobs:
   # que lo requieren se saltan limpiamente si faltara.
   pytest:
     name: Tests del puente (pytest)
+    needs: changes
+    if: ${{ needs.changes.outputs.run == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
@@ -90,6 +93,8 @@ jobs:
 
   bridge:
     name: Imagen del puente
+    needs: changes
+    if: ${{ needs.changes.outputs.run == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
@@ -116,6 +121,8 @@ jobs:
 
   server:
     name: Imagen del servidor headless
+    needs: changes
+    if: ${{ needs.changes.outputs.run == 'true' }}
     runs-on: ubuntu-latest
     # La compilación completa de C++ tarda; solo se ejecuta si cambia algo
     # que afecte a la imagen del servidor.
@@ -140,3 +147,14 @@ jobs:
       - name: Logs on failure
         if: failure()
         run: docker logs game || true
+
+  puerta:
+    name: Puerta de docker y puente
+    if: always()
+    needs: [changes, guardia-exec-lua, pytest, bridge, server]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+      - uses: ./.github/actions/puerta
+        with:
+          resultados: ${{ toJSON(needs) }}

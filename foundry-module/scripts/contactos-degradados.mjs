@@ -16,15 +16,34 @@
 // no se puede saber hasta dónde llegan los sensores de esta nave y abrir de par
 // en par «por si acaso» es exactamente lo que este módulo existe para no hacer.
 //
-// Y la posición degradada no miente: se redondea a una rejilla y se publica la
-// PRECISIÓN junto al punto, para que quien pinte pueda dibujar la incertidumbre
-// en vez de un punto exacto que no lo es. Un punto fino sobre un dato grueso sí
-// sería mentir; decir «está por aquí, con este margen» no.
+// NO SE PUBLICAN COORDENADAS ABSOLUTAS, sino distancia y rumbo relativo. Dos
+// motivos, y el segundo es el que manda:
+//
+//  1. La tripulación no recibe la posición de su propia nave —el sobre lleva lo
+//     que las consolas enseñan—, así que unas coordenadas de mundo no le sirven
+//     para nada: no tendría contra qué restarlas.
+//  2. Y difundir la posición exacta de cada objeto del sector a un ajuste que
+//     toda la mesa puede leer es justo la fuga que este módulo existe para
+//     cerrar. Un puesto de sensores lee alcance y marcación; eso es lo que se
+//     publica.
+//
+// La lectura degradada no miente porque el MARGEN viaja con el dato: distancia y
+// rumbo van redondeados a la resolución de su banda y acompañados de cuánto vale
+// ese redondeo. Un número fino sobre un dato grueso sí sería mentir; decir «a
+// unos 20.000, por la proa, con este margen» no.
 //
 // Puro: ni Foundry, ni DOM, ni red.
 
-/** Rejilla de redondeo por banda, en unidades de mundo. */
-const REJILLA = Object.freeze({ corto: 10, largo: 1000 });
+/**
+ * Resolución de cada banda: cuánto se redondea la distancia (unidades de mundo)
+ * y el rumbo (grados). Un eco lejano se sabe grueso en las dos cosas, así que
+ * publicarlo con un grado de precisión sería fingir una lectura que no se tiene.
+ */
+const REJILLA = Object.freeze({
+  corto: { distancia: 10, rumbo: 1 },
+  largo: { distancia: 1000, rumbo: 15 },
+  propia: { distancia: 0, rumbo: 0 },
+});
 
 function numero(valor) {
   const n = Number(valor);
@@ -76,23 +95,21 @@ export function degradarContactos(payload, centro, radar) {
     // contacto sin sitio no es un contacto.
     if (contacto?.is_player) {
       if (x !== null && y !== null) {
-        contactos.push(entrada(contacto, x, y, "propia", 0));
+        contactos.push(entrada(contacto, 0, 0, "propia"));
       }
       continue;
     }
     if (x === null || y === null) continue;
 
     const distancia = Math.hypot(x - cx, y - cy);
+    const rumbo = rumboRelativo(cx, cy, x, y);
     // Más allá del alcance largo NO se publica, y tampoco se cuenta. Un total
     // que incluyera lo invisible diría «hay cuatro cosas ahí fuera», que es
     // precisamente el dato que el puesto de ciencia tiene que ganarse.
     if (distancia > alcances.largo) continue;
 
-    if (distancia <= alcances.corto) {
-      contactos.push(entrada(contacto, x, y, "corto", REJILLA.corto));
-    } else {
-      contactos.push(entrada(contacto, x, y, "largo", REJILLA.largo));
-    }
+    const banda = distancia <= alcances.corto ? "corto" : "largo";
+    contactos.push(entrada(contacto, distancia, rumbo, banda));
   }
   return { contactos, alcance: { corto: alcances.corto, largo: alcances.largo } };
 }
@@ -104,19 +121,25 @@ export function degradarContactos(payload, centro, radar) {
  * no se sabe quién es. Se conserva `is_player` a false y nada más que la posición
  * gruesa con su margen.
  */
-function entrada(contacto, x, y, banda, rejilla) {
+function entrada(contacto, distancia, rumbo, banda) {
   const identificado = banda !== "largo";
+  const rejilla = REJILLA[banda];
   return {
     banda,
     esJugador: banda === "propia",
     callsign: identificado && typeof contacto?.callsign === "string" ? contacto.callsign : null,
     faction: identificado && typeof contacto?.faction === "string" ? contacto.faction : null,
-    position: {
-      x: rejilla > 0 ? redondearA(x, rejilla) : x,
-      y: rejilla > 0 ? redondearA(y, rejilla) : y,
-    },
-    // El margen viaja con el punto para que la vista pueda dibujar la
-    // incertidumbre. Sin él, un punto fino sobre un dato grueso sería mentir.
-    precision: rejilla,
+    distancia: rejilla.distancia > 0 ? redondearA(distancia, rejilla.distancia) : distancia,
+    rumboDeg: rejilla.rumbo > 0 ? redondearA(rumbo, rejilla.rumbo) % 360 : rumbo,
+    // Los márgenes viajan con el dato para que la vista los pueda enseñar. Sin
+    // ellos, un número fino sobre una lectura gruesa sería mentir.
+    precision: rejilla.distancia,
+    rumboPrecision: rejilla.rumbo,
   };
+}
+
+/** Marcación absoluta 0-360, con 0 al norte del mundo, como el resto del módulo. */
+function rumboRelativo(cx, cy, x, y) {
+  const grados = (Math.atan2(x - cx, -(y - cy)) * 180) / Math.PI;
+  return grados < 0 ? grados + 360 : grados;
 }

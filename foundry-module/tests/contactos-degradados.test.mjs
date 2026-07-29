@@ -56,8 +56,27 @@ test("en banda larga se pierde quién es, no solo dónde está", () => {
   const lejano = contactos.find((c) => c.banda === "largo");
   assert.equal(lejano.callsign, null, "un eco no tiene nombre");
   assert.equal(lejano.faction, null, "ni bandera");
-  assert.equal(lejano.position.x, 20000, "posición redondeada a la rejilla gruesa");
+  assert.equal(lejano.distancia, 20000, "distancia redondeada a la rejilla gruesa");
   assert.equal(lejano.precision, 1000);
+  // Un eco lejano tampoco se sabe fino de marcación: publicarlo con un grado
+  // sería fingir una lectura que no se tiene.
+  assert.equal(lejano.rumboPrecision, 15);
+  assert.equal(lejano.rumboDeg % 15, 0);
+});
+
+test("NO se difunden coordenadas absolutas de nada", () => {
+  // Es la fuga que este módulo existe para cerrar: la posición exacta de cada
+  // objeto del sector iría a un ajuste que toda la mesa puede leer. Y además la
+  // tripulación no recibe su propia posición, así que no le servirían de nada.
+  const salida = degradarContactos(PAYLOAD, { x: 4000, y: 9000 }, RADAR);
+  const texto = JSON.stringify(salida);
+  assert.doesNotMatch(texto, /"position"/);
+  assert.doesNotMatch(texto, /"x"|"y"/);
+  for (const contacto of salida.contactos) {
+    assert.equal(contacto.position, undefined);
+    assert.equal(typeof contacto.distancia, "number");
+    assert.equal(typeof contacto.rumboDeg, "number");
+  }
 });
 
 test("dentro del alcance corto sí se identifica", () => {
@@ -65,17 +84,21 @@ test("dentro del alcance corto sí se identifica", () => {
   const cerca = contactos.find((c) => c.banda === "corto");
   assert.equal(cerca.callsign, "Argia");
   assert.equal(cerca.faction, "Humanos");
-  assert.equal(cerca.position.x, 1230, "redondeado a la rejilla fina");
+  assert.equal(cerca.distancia, 1230, "redondeada a la rejilla fina");
   assert.equal(cerca.precision, 10);
+  assert.equal(cerca.rumboPrecision, 1);
+  // A proa del mundo: el contacto está en +x, que es marcación 90.
+  assert.equal(cerca.rumboDeg, 90);
 });
 
-test("la precisión viaja con el punto para poder dibujar el margen", () => {
-  // Sin esto, la vista pintaría un punto fino sobre un dato grueso, que sí sería
-  // mentir. Decir «está por aquí, con este margen» no lo es.
+test("los márgenes viajan con el dato para poder enseñarlos", () => {
+  // Sin esto, la consola escribiría un número fino sobre una lectura gruesa, que
+  // sí sería mentir. Decir «a unos 20.000, con este margen» no lo es.
   const { contactos } = degradarContactos(PAYLOAD, CENTRO, RADAR);
   for (const contacto of contactos) {
     assert.equal(typeof contacto.precision, "number");
-    assert.ok(contacto.precision >= 0);
+    assert.equal(typeof contacto.rumboPrecision, "number");
+    assert.ok(contacto.precision >= 0 && contacto.rumboPrecision >= 0);
   }
 });
 
@@ -85,8 +108,8 @@ test("la nave propia se publica entera y sin mirar distancia", () => {
   const propia = contactos.find((c) => c.esJugador);
   assert.equal(propia.callsign, "Lagunak");
   assert.equal(propia.faction, "Humanos");
-  assert.deepEqual(propia.position, { x: 3, y: 7 });
-  assert.equal(propia.precision, 0, "sin redondeo: es su propia posición");
+  assert.equal(propia.distancia, 0, "de sí misma no hay distancia que medir");
+  assert.equal(propia.precision, 0, "y por tanto tampoco margen");
 });
 
 test("el borde exacto del alcance corto cuenta como identificado", () => {
@@ -123,4 +146,72 @@ test("sin contactos devuelve lista vacía, que no es lo mismo que null", () => {
   const salida = degradarContactos({ contacts: [] }, CENTRO, RADAR);
   assert.deepEqual(salida.contactos, []);
   assert.deepEqual(salida.alcance, { corto: 5000, largo: 30000 });
+});
+
+// ---- La lista que se ve en la consola --------------------------------------
+
+import { ESPACIO_FINO, filasCrudas, filasDegradadas } from "../scripts/sensores-lista.mjs";
+
+const i18nFalso = { localize: (clave) => clave };
+
+test("un eco se llama eco, no «desconocido»", () => {
+  // «Desconocido» suena a que hay un nombre y no se ha averiguado. Un eco es que
+  // el sensor solo devuelve un retorno, y esa diferencia ES el trabajo del puesto.
+  const [fila] = filasDegradadas(
+    { contactos: [{ banda: "largo", callsign: null, faction: null, distancia: 20000, rumboDeg: 75, precision: 1000, rumboPrecision: 15 }] },
+    i18nFalso,
+  );
+  assert.equal(fila.callsign, "LAGUNAK.Espacios.Sensores.Eco");
+  assert.equal(fila.faction, "LAGUNAK.Espacios.Sensores.SinIdentificar");
+  assert.equal(fila.eco, true);
+});
+
+test("el margen se escribe, no se insinúa", () => {
+  // «20 000» se lee como una medición; «≈20 000 ±1 000» se lee como lo que es.
+  const [fila] = filasDegradadas(
+    { contactos: [{ banda: "largo", distancia: 20000, rumboDeg: 75, precision: 1000, rumboPrecision: 15 }] },
+    i18nFalso,
+  );
+  // El separador de miles es U+202F, no un espacio normal: se compara contra la
+  // misma constante que usa el módulo para que nadie tenga que adivinarlo
+  // mirando dos caracteres invisibles distintos.
+  assert.equal(fila.lectura, `≈20${ESPACIO_FINO}000 ±1${ESPACIO_FINO}000 · ≈75° ±15°`);
+
+  // Y una lectura exacta NO lleva `±`: si no, todo parecería aproximado.
+  const [cerca] = filasDegradadas(
+    { contactos: [{ banda: "corto", callsign: "Argia", faction: "Humanos", distancia: 1230, rumboDeg: 90, precision: 0, rumboPrecision: 0 }] },
+    i18nFalso,
+  );
+  assert.doesNotMatch(cerca.lectura, /[≈±]/);
+});
+
+test("la lista ordena por cercanía y no enseña la nave propia", () => {
+  const filas = filasDegradadas(
+    {
+      contactos: [
+        { banda: "largo", distancia: 20000, rumboDeg: 0, precision: 1000, rumboPrecision: 15 },
+        { banda: "propia", esJugador: true, callsign: "Lagunak", distancia: 0, rumboDeg: 0 },
+        { banda: "corto", callsign: "Argia", faction: "Humanos", distancia: 1230, rumboDeg: 90, precision: 10, rumboPrecision: 1 },
+      ],
+    },
+    i18nFalso,
+  );
+  assert.equal(filas.length, 2, "la propia no es un contacto que seguir");
+  assert.equal(filas[0].callsign, "Argia", "lo más cercano primero");
+});
+
+test("sin lectura no se inventa un cero", () => {
+  // Un cero se leería como «está encima de nosotros» y «va al norte».
+  const [fila] = filasDegradadas({ contactos: [{ banda: "largo" }] }, i18nFalso);
+  assert.equal(fila.lectura, "LAGUNAK.Espacios.Sensores.SinLectura");
+});
+
+test("el GM sigue leyendo coordenadas exactas, sin márgenes", () => {
+  const filas = filasCrudas(
+    { contacts: [{ callsign: "Argia", faction: "Humanos", position: { x: 1234, y: -56 } }] },
+    i18nFalso,
+    (f) => f,
+  );
+  assert.equal(filas[0].lectura, "1234, -56");
+  assert.equal(filas[0].eco, false);
 });

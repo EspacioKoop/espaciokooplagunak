@@ -44,11 +44,23 @@ formatea estos datos para el GM sin asumir que otros escenarios tengan ruta.
 el componente no se puede leer. Existe para #331 paso 3: los contactos que el GM
 difunde a la tripulación van **degradados por ese alcance** y no por dos
 constantes elegidas a ojo. Dentro del alcance corto el contacto se identifica
-(indicativo y facción); entre el corto y el largo es un eco —sin nombre y sin
-bandera, con la posición redondeada a una rejilla gruesa y su margen publicado al
-lado, para que la vista dibuje incertidumbre en vez de un punto que no lo es—; más
-allá del largo no se publica y **tampoco se cuenta**, porque un total que
-incluyera lo invisible ya diría que hay algo ahí fuera.
+(indicativo y facción); entre el corto y el largo es un eco, sin nombre y sin
+bandera; más allá del largo no se publica y **tampoco se cuenta**, porque un total
+que incluyera lo invisible ya diría que hay algo ahí fuera.
+
+No se difunden coordenadas absolutas de nada, sino **distancia y marcación**
+relativas, redondeadas a la resolución de su banda y acompañadas de ese margen.
+Son dos motivos y el segundo manda: la tripulación no recibe la posición de su
+propia nave, así que unas coordenadas de mundo no le servirían de nada; y
+difundir la posición exacta de cada objeto del sector a un ajuste que toda la mesa
+puede leer es justo la fuga que la degradación existe para cerrar. Un puesto de
+sensores lee alcance y marcación, y eso es lo que se publica.
+
+La consola del puesto lo enseña como filas: el margen se escribe (`≈20 000 ±1 000
+· ≈75° ±15°`) en vez de insinuarse, y un eco se llama eco y no «desconocido» —
+«desconocido» suena a que hay un nombre y no se ha averiguado; un eco es que el
+sensor solo devuelve un retorno, y esa diferencia es el trabajo del puesto. Una
+lectura exacta no lleva `±`, o todo parecería aproximado.
 
 La degradación ocurre en el cliente del GM, antes de difundir, y no al pintar: el
 sobre acaba en un ajuste de mundo que toda la mesa puede leer, así que recortar en

@@ -39,7 +39,15 @@ tipos de recursos sin editar Lua:
     La selección permanece al volver: **Girar -15°**, **Girar +15°** y **Eliminar
     selección** modifican únicamente el staging y cada acción crea una sola entrada
     reversible. Eliminar limpia la selección. Los tipos futuros nunca son
-    seleccionables. Guardar persiste posiciones, rotaciones y borrados; **New**, cargar/importar otro
+    seleccionables.
+    **Selección múltiple**: mayúsculas + clic izquierdo añade el objeto bajo el
+    cursor al grupo, o lo quita si ya estaba; es la misma tecla que el modo GM usa
+    para añadir entidades vivas a su selección. Mayúsculas + clic en vacío no
+    deshace el grupo — solo un clic normal en vacío lo suelta. Arrastrar cualquier
+    miembro mueve el grupo entero conservando su forma, y girar, mover o eliminar
+    un grupo es **una sola entrada de deshacer**: deshacer devuelve los objetos a
+    la vez y nunca deja el grupo a medias. Si el grupo llegara a incluir un tipo
+    futuro, la operación no toca nada en vez de aplicarse a medias. Guardar persiste posiciones, rotaciones y borrados; **New**, cargar/importar otro
     recurso o descartar reconstruyen la sesión desde su snapshot limpio.
     **Add map object…** ofrece únicamente asteroide o nebulosa. Al elegir uno,
     el siguiente clic izquierdo en el radar añade una entidad nueva solo al staging,

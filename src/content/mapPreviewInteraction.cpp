@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <utility>
+#include <vector>
 
 namespace
 {
@@ -50,27 +51,80 @@ MapDocumentError hitTestMapPreviewObject(
     return MapDocumentError::None;
 }
 
+bool MapPreviewDragSession::isSelected(const std::string& id) const
+{
+    return std::find(selected_ids.begin(), selected_ids.end(), id) != selected_ids.end();
+}
+
+MapDocumentError MapPreviewDragSession::pick(
+    const MapEditSession& session,
+    MapPreviewPoint world_position,
+    float world_to_screen_scale,
+    std::string& hit
+) const
+{
+    return hitTestMapPreviewObject(
+        session.document(), world_position, world_to_screen_scale, hit);
+}
+
+void MapPreviewDragSession::rebuildMembers(
+    const MapEditSession& session, MapPreviewPoint world_position)
+{
+    const auto& document = session.document();
+    members.clear();
+    for (const auto& id : selected_ids)
+    {
+        const auto object = std::find_if(document.objects.begin(), document.objects.end(),
+            [&](const MapObject& item) { return item.id == id; });
+        if (object == document.objects.end()) continue;
+        // Each member keeps its OWN offset to the pointer. Without this the
+        // group would collapse onto the anchor on the first move, which reads as
+        // the editor eating the map.
+        members.push_back({
+            id,
+            object->transform,
+            {object->transform.x - world_position.x, object->transform.y - world_position.y},
+        });
+    }
+}
+
 MapDocumentError MapPreviewDragSession::begin(
     const MapEditSession& session,
     MapPreviewPoint world_position,
     float world_to_screen_scale
 )
 {
-    clearSelection();
+    cancel();
     const auto& document = session.document();
     std::string hit;
-    const auto error = hitTestMapPreviewObject(
-        document, world_position, world_to_screen_scale, hit);
-    if (error != MapDocumentError::None) return error;
+    const auto error = pick(session, world_position, world_to_screen_scale, hit);
+    if (error != MapDocumentError::None)
+    {
+        clearSelection();
+        return error;
+    }
 
     dragging = false;
-    selected_id = std::move(hit);
-    if (selected_id.empty()) return MapDocumentError::None;
+    if (hit.empty())
+    {
+        // Clicking empty space clears the selection. It is the only gesture that
+        // can drop a group without picking its members off one by one.
+        clearSelection();
+        return MapDocumentError::None;
+    }
+
+    // Grabbing a member of the current selection drags the WHOLE group; grabbing
+    // anything else starts a fresh selection of one. Otherwise a stray click
+    // inside a group would silently shrink it to a single object and the next
+    // drag would move only that one.
+    if (!isSelected(hit)) selected_ids.assign(1, hit);
+    selected_id = hit;
+
     const auto object = std::find_if(document.objects.begin(), document.objects.end(),
         [&](const MapObject& item) { return item.id == selected_id; });
     if (object == document.objects.end())
     {
-        selected_id.clear();
+        clearSelection();
         return MapDocumentError::InvalidStructure;
     }
     original_transform = object->transform;
@@ -79,9 +133,40 @@ MapDocumentError MapPreviewDragSession::begin(
         original_transform.x - world_position.x,
         original_transform.y - world_position.y,
     };
+    rebuildMembers(session, world_position);
     source_session_id = session.sessionId();
     source_revision = session.revision();
     dragging = true;
+    return MapDocumentError::None;
+}
+
+MapDocumentError MapPreviewDragSession::toggleAt(
+    const MapEditSession& session,
+    MapPreviewPoint world_position,
+    float world_to_screen_scale
+)
+{
+    cancel();
+    std::string hit;
+    const auto error = pick(session, world_position, world_to_screen_scale, hit);
+    if (error != MapDocumentError::None) return error;
+    // A ctrl+click on empty space does NOT clear the selection: the modifier
+    // means "adjust what I have", and losing a carefully built group to a miss
+    // is the kind of thing that makes people stop using multi-selection.
+    if (hit.empty()) return MapDocumentError::None;
+
+    const auto it = std::find(selected_ids.begin(), selected_ids.end(), hit);
+    if (it != selected_ids.end())
+    {
+        selected_ids.erase(it);
+        selected_id = selected_ids.empty() ? std::string{} : selected_ids.back();
+    }
+    else
+    {
+        selected_ids.push_back(hit);
+        selected_id = hit;
+    }
+    members.clear();
     return MapDocumentError::None;
 }
 
@@ -104,7 +189,32 @@ MapEditError MapPreviewDragSession::commit(MapEditSession& session)
     dragging = false;
     if (session.sessionId() != source_session_id || session.revision() != source_revision)
         return MapEditError::SessionChanged;
-    return session.moveObject(selected_id, provisional_transform);
+
+    // The whole group moves by the same delta as the anchor, and it goes through
+    // the batch call so the move is ONE undo entry - dragging five rocks and
+    // undoing it must put the five back at once.
+    const float dx = provisional_transform.x - original_transform.x;
+    const float dy = provisional_transform.y - original_transform.y;
+    std::vector<std::pair<std::string, MapObjectTransform>> moves;
+    moves.reserve(members.size());
+    for (const auto& member : members)
+    {
+        auto transform = member.original_transform;
+        if (member.id == selected_id)
+        {
+            transform = provisional_transform;
+        }
+        else
+        {
+            transform.x = std::clamp(member.original_transform.x + dx,
+                -MAP_COORDINATE_LIMIT, MAP_COORDINATE_LIMIT);
+            transform.y = std::clamp(member.original_transform.y + dy,
+                -MAP_COORDINATE_LIMIT, MAP_COORDINATE_LIMIT);
+        }
+        moves.emplace_back(member.id, transform);
+    }
+    if (moves.empty()) return MapEditError::NotFound;
+    return session.moveObjects(moves);
 }
 
 void MapPreviewDragSession::cancel()
@@ -117,6 +227,8 @@ void MapPreviewDragSession::clearSelection()
 {
     cancel();
     selected_id.clear();
+    selected_ids.clear();
+    members.clear();
     source_session_id = 0;
     source_revision = 0;
 }
@@ -124,12 +236,27 @@ void MapPreviewDragSession::clearSelection()
 void MapPreviewDragSession::applyProvisional(std::vector<MapPreviewMarker>& markers) const
 {
     if (!dragging) return;
-    const auto marker = std::find_if(markers.begin(), markers.end(),
-        [&](const MapPreviewMarker& item) { return item.id == selected_id; });
-    if (marker == markers.end()) return;
-    marker->x = provisional_transform.x;
-    marker->y = provisional_transform.y;
-    marker->rotation = provisional_transform.rotation;
+    const float dx = provisional_transform.x - original_transform.x;
+    const float dy = provisional_transform.y - original_transform.y;
+    for (const auto& member : members)
+    {
+        const auto marker = std::find_if(markers.begin(), markers.end(),
+            [&](const MapPreviewMarker& item) { return item.id == member.id; });
+        if (marker == markers.end()) continue;
+        if (member.id == selected_id)
+        {
+            marker->x = provisional_transform.x;
+            marker->y = provisional_transform.y;
+            marker->rotation = provisional_transform.rotation;
+            continue;
+        }
+        // Same clamp as the commit: what the preview shows and what the commit
+        // writes have to be the same number, or the group jumps on mouse-up.
+        marker->x = std::clamp(member.original_transform.x + dx,
+            -MAP_COORDINATE_LIMIT, MAP_COORDINATE_LIMIT);
+        marker->y = std::clamp(member.original_transform.y + dy,
+            -MAP_COORDINATE_LIMIT, MAP_COORDINATE_LIMIT);
+    }
 }
 
 const MapObject* editableMapPreviewSelection(

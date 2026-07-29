@@ -166,6 +166,52 @@ MapEditError MapEditSession::removeObject(const std::string& id)
     return commit(std::move(next));
 }
 
+MapEditError MapEditSession::moveObjects(
+    const std::vector<std::pair<std::string, MapObjectTransform>>& moves)
+{
+    if (moves.empty()) return MapEditError::NotFound;
+    auto next = current_document;
+    for (const auto& [id, transform] : moves)
+    {
+        auto* object = findObject(next, id);
+        if (!object) return MapEditError::NotFound;
+        if (object->kind == MapObjectKind::Unsupported) return MapEditError::WrongKind;
+        object->transform = transform;
+    }
+    return commit(std::move(next));
+}
+
+MapEditError MapEditSession::rotateObjects(
+    const std::vector<std::string>& ids, float delta_degrees)
+{
+    if (ids.empty()) return MapEditError::NotFound;
+    if (!std::isfinite(delta_degrees)) return MapEditError::InvalidDocument;
+    auto next = current_document;
+    for (const auto& id : ids)
+    {
+        auto* object = findObject(next, id);
+        if (!object) return MapEditError::NotFound;
+        if (object->kind == MapObjectKind::Unsupported) return MapEditError::WrongKind;
+        object->transform.rotation = std::fmod(object->transform.rotation + delta_degrees, 360.0f);
+        if (object->transform.rotation < 0.0f) object->transform.rotation += 360.0f;
+    }
+    return commit(std::move(next));
+}
+
+MapEditError MapEditSession::removeObjects(const std::vector<std::string>& ids)
+{
+    if (ids.empty()) return MapEditError::NotFound;
+    auto next = current_document;
+    for (const auto& id : ids)
+    {
+        const auto it = std::find_if(next.objects.begin(), next.objects.end(),
+            [&](const MapObject& object) { return object.id == id; });
+        if (it == next.objects.end()) return MapEditError::NotFound;
+        next.objects.erase(it);
+    }
+    return commit(std::move(next));
+}
+
 bool MapEditSession::undo()
 {
     if (undo_history.empty()) return false;

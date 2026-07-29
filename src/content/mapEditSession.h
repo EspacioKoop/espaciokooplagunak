@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include <utility>
 #include <vector>
 
 enum class MapEditError
@@ -40,6 +41,19 @@ public:
     MapEditError rotateObject(const std::string& id, float delta_degrees);
     MapEditError resizeAsteroid(const std::string& id, float size);
     MapEditError removeObject(const std::string& id);
+
+    // Batch variants for multi-selection (#54). They exist for one reason: a
+    // group edit must be ONE undo entry. Looping over the single-object calls
+    // would push one snapshot per object, so undoing a ten-object rotation would
+    // take ten presses and each press would leave the group half-rotated - a
+    // state the user never asked for and cannot name.
+    //
+    // All-or-nothing on purpose: if any id is missing or unsupported, nothing is
+    // committed. A partially applied group edit is the worst outcome here,
+    // because the selection still looks like a group afterwards.
+    MapEditError moveObjects(const std::vector<std::pair<std::string, MapObjectTransform>>& moves);
+    MapEditError rotateObjects(const std::vector<std::string>& ids, float delta_degrees);
+    MapEditError removeObjects(const std::vector<std::string>& ids);
 
     bool canUndo() const { return !undo_history.empty(); }
     bool canRedo() const { return !redo_history.empty(); }

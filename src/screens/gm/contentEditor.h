@@ -29,11 +29,18 @@ public:
 
     const MapDocument* previewDocument() const;
     bool isMapEditMode() const { return map_edit_mode; }
+    // Resaltado de la selección (#54). Ya no depende de que haya un arrastre en
+    // curso: con selección múltiple hay que ver el grupo ENTERO mientras se
+    // construye, o no se puede saber qué se está a punto de girar o borrar.
     bool isSelectedMapObject(const std::string& id) const
-        { return map_drag.isDragging() && map_drag.selectedId() == id; }
+        { return map_drag.isSelected(id); }
     void applyMapDragPreview(std::vector<MapPreviewMarker>& markers) const
         { map_drag.applyProvisional(markers); }
     bool beginMapDrag(float world_x, float world_y, float world_to_screen_scale);
+    // Selección aditiva con SHIFT. La tecla es la misma que el modo GM ya usa
+    // para añadir entidades vivas a su selección: dos significados distintos
+    // para la misma tecla en la misma pantalla sería peor que no tenerla.
+    bool toggleMapSelection(float world_x, float world_y, float world_to_screen_scale);
     void updateMapDrag(float world_x, float world_y);
     void commitMapDrag(float world_x, float world_y);
     void cancelMapDrag();
@@ -197,6 +204,7 @@ private:
     void updatePreviewStatus();
     void setMapEditMode(bool enabled);
     const MapObject* selectedMapObject() const;
+    std::vector<std::string> selectedSupportedMapObjectIds() const;
     void updateMapSelectionButtons();
     void rotateSelectedMapObject(float delta_degrees);
     void deleteSelectedMapObject();

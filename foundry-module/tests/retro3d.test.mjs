@@ -301,3 +301,7 @@ test("un plano cercano imposible sigue recortando lo que hay detrás", () => {
     }
   }
 });
+
+test("[prueba #361] fallo deliberado para comprobar que la puerta se pone roja", () => {
+  assert.equal(1, 2, "esto tiene que fallar: es el punto de la prueba");
+});

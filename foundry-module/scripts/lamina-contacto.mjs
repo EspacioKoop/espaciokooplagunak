@@ -56,9 +56,12 @@ export function desmontarLamina(raiz, dueño) {
  * @returns {{clase: string|null, conocida: boolean}|null}
  */
 export function montarLaminaContacto(raiz, detalle, opciones = {}) {
-  const { dueño, ...restoOpciones } = opciones;
+  const { dueño, selector = "[data-lagunak-lamina]", ...restoOpciones } = opciones;
   desmontarLamina(raiz, dueño);
-  const lienzo = raiz?.querySelector?.("[data-lagunak-lamina]");
+  // El selector es parámetro desde #391: la misma lámina sirve para el contacto
+  // seleccionado del mapa y para el objetivo de atraque de la consola. Lo que
+  // cambia entre las dos es dónde se pinta y cuándo existe, no cómo se dibuja.
+  const lienzo = raiz?.querySelector?.(selector);
   if (!lienzo || !detalle) return null;
 
   const { malla, conocida, clave } = mallaDeClase(detalle.clase);

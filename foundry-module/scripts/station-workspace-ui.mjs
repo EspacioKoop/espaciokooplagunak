@@ -11,6 +11,7 @@ import {
   esMasReciente,
 } from "./telemetria-difusion.mjs";
 import { pintarNave } from "./retro3d-lienzo.mjs";
+import { desmontarLamina, montarLaminaContacto } from "./lamina-contacto.mjs";
 import { CASCO_POR_DEFECTO, mallaDesdeCasco } from "./retro3d.mjs";
 import { PIXEL } from "./paleta.mjs";
 
@@ -274,11 +275,42 @@ function pintarCascoPropio(root, modelo) {
   });
 }
 
+// Lámina del objetivo de atraque (#391, rebanada 6 de #362).
+//
+// Reutiliza entera la lámina del contacto: mismo pipeline, misma tabla de cascos
+// por clase, mismo cielo. Lo único propio es CUÁNDO existe —solo mientras hay
+// atraque— y que no depende de una selección: el objetivo lo dice el juego.
+//
+// GameCube y no PSX, por lo mismo que la lámina del contacto: esto se mira FIJO
+// para reconocer contra qué se está atracando; el casco propio se ve de reojo.
+// Y gira, porque una lámina no dice hacia dónde va nadie: dice qué forma tiene, y
+// girar es lo que enseña la silueta entera sin orbitar la cámara a mano.
+//
+// Es refuerzo y no la única vía: el estado y el nombre del sitio están en la
+// matriz de métricas, en texto, y quien use lector de pantalla no pierde nada.
+const SEMILLA_CIELO_ATRAQUE = 20391;
+
+function montarLaminaAtraque(root, modelo, app) {
+  // Desmontar SIEMPRE primero, también cuando el atraque ha terminado: si no, al
+  // soltar amarras el bucle seguiría girando contra un lienzo que ya no está en
+  // el documento. Va contra la instancia de la aplicación y no contra la raíz,
+  // por lo que aprendió #374: un render puede sustituir la raíz entera.
+  desmontarLamina(root, app);
+  const atraque = modelo?.atraque;
+  if (!atraque) return null;
+  return montarLaminaContacto(
+    root,
+    { clase: atraque.clase, color: PIXEL.sinFaccion },
+    { dueño: app, selector: "[data-lagunak-atraque]", cielo: { semilla: SEMILLA_CIELO_ATRAQUE } },
+  );
+}
+
 function bindWorkspaceRoot(root, app) {
   root?.querySelectorAll?.("[data-workspace-action]").forEach((element) => {
     element.addEventListener("click", (event) => handleWorkspaceAction(app, event));
   });
   pintarCascoPropio(root, app.ultimoModelo);
+  montarLaminaAtraque(root, app.ultimoModelo, app);
 }
 
 function initialiseApp(app) {

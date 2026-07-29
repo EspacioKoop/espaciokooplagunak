@@ -316,6 +316,10 @@ export function buildWorkspaceModel({
   // propio módulo puro y sus pruebas.
   const safeContactsPayload = isGM ? contactsPayload : null;
   const crew = crewRows(users, moduleId, i18n);
+  // La misma lectura que usa `metricsFor`: si el texto y la lámina salieran de
+  // dos llamadas con criterios distintos, la consola podría dibujar un atraque
+  // que su propia matriz de métricas no menciona.
+  const atraque = prepareDocking(ship, i18n);
 
   if (!definition) {
     return {
@@ -333,6 +337,13 @@ export function buildWorkspaceModel({
     stationCode: localize(i18n, `LAGUNAK.Espacios.${normalized}.Codigo`),
     stationIcon: definition.icon,
     accent: definition.accent,
+    // Lo que la lámina 3D necesita, y NADA si no hay atraque (#391): el modelo
+    // no lleva un objeto vacío que la plantilla tenga que interpretar. La clase
+    // puede ser null y ahí la lámina cae en el casco de serie, como en #374 —
+    // una nave genérica dice «hay algo ahí», un hueco dice «esto está roto».
+    atraque: atraque.estado
+      ? { estado: atraque.estado, clase: atraque.objetivo?.clase ?? null }
+      : null,
     isNavigation: normalized === "navigation",
     // Acciones operativas por puesto (#236/#238/#240): disponibles aunque el
     // tripulante no tenga telemetría —la orden es intención, la simulación es

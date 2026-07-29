@@ -39,6 +39,16 @@ la sesión. `/v1/state` calcula distancia restante y ETA a partir de la posició
 y velocidad reales; la ETA es nula cuando la nave está detenida. El módulo
 formatea estos datos para el GM sin asumir que otros escenarios tengan ruta.
 
+`/v1/state` publica además el atraque de la nave propia (#391) en `docking`:
+`state` vale `docking` o `docked` y **nunca un tercer valor**, con el objetivo en
+`target` (indicativo y clase) cuando se puede leer. Sale del componente
+`docking_port` del juego, que ya expone `state` y `target` a Lua, así que no hay
+divergencia con upstream. `docking` es `null` tanto si la nave está libre como si
+el componente no se pudo leer: son dos cosas distintas que el juego no distingue
+desde fuera, y por eso la consola no dibuja «sin atracar» —afirmarlo sería elegir
+una de las dos sin saber cuál—. El estado va en texto en la consola; cualquier
+representación visual futura es refuerzo, no la única vía al dato.
+
 El control de tempo inicial es binario: `pauseGame()` / `unpauseGame()` son las
 únicas APIs verificadas en headless. No se ofrece aceleración ni se inventa un
 estado consultable porque `setGameSpeed`, `getGameSpeed` y un getter de pausa no

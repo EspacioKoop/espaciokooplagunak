@@ -24,6 +24,25 @@ _SYSTEMS = (
     "rearshield",
 )
 
+# Escapador JSON compartido por las plantillas Lua (#391). Vivía dentro de
+# `_CONTACTS_LUA`; cuando `/v1/state` empezó a publicar indicativos de atraque
+# hizo falta el mismo, y copiarlo habría dejado dos escapadores que se separan en
+# cuanto alguien arregle un caso raro en uno solo. `%q` de Lua NO vale: escapa
+# para Lua, no para JSON.
+#
+# Va en cadena "raw" y se concatena DESPUÉS del `%` de las plantillas que
+# formatean, para que sus `%c` y `%04x` no haya que duplicarlos.
+_JSON_ESCAPE_LUA = r"""
+local function json_escape(s)
+    s = string.gsub(s, '[%c"\\]', function(c)
+        if c == '"' then return '\\"' end
+        if c == '\\' then return '\\\\' end
+        return string.format('\\u%04x', string.byte(c))
+    end)
+    return '"' .. s .. '"'
+end
+"""
+
 _STATE_LUA = """
 local ship = getPlayerShip(-1)
 if ship == nil then
@@ -55,6 +74,52 @@ if destination ~= nil then
         eta_json = string.format("%%.1f", distance / speed)
     end
 end
+-- Atraque de la nave propia (#391). El componente `docking_port` ya expone
+-- `state` y `target` a Lua (src/script/components.cpp), así que esto no necesita
+-- una sola línea de C++ nueva: es la regla de divergencia cero de #362.
+--
+-- El enum puede llegar como número o como cadena según cómo lo entregue el
+-- binding, así que se aceptan las dos formas y CUALQUIER OTRA COSA es null. Un
+-- estado inventado sería peor que no publicar nada: la consola dibujaría un
+-- atraque que no existe.
+local docking_json = "null"
+local ok_port, port = pcall(function() return ship.components.docking_port end)
+if ok_port and port ~= nil then
+    local ok_state, raw_state = pcall(function() return port.state end)
+    local estado = nil
+    if ok_state then
+        if raw_state == 1 or raw_state == "Docking" then estado = "docking" end
+        if raw_state == 2 or raw_state == "Docked" then estado = "docked" end
+    end
+    if estado ~= nil then
+        -- Sin objetivo legible se publica el estado igualmente: «estamos
+        -- atracando» es cierto aunque no se sepa contra qué, y callarlo entero
+        -- perdería el dato que sí hay.
+        local objetivo_json = "null"
+        local ok_target, target = pcall(function() return port.target end)
+        if ok_target and target ~= nil then
+            local ok_cs, target_callsign = pcall(function() return target:getCallSign() end)
+            local callsign_json = "null"
+            if ok_cs and target_callsign ~= nil and target_callsign ~= "" then
+                callsign_json = json_escape(target_callsign)
+            end
+            local class_json = "null"
+            local ok_tp, target_port = pcall(function() return target.components.docking_port end)
+            if ok_tp and target_port ~= nil then
+                local ok_c, target_class = pcall(function() return target_port.dock_class end)
+                if ok_c and target_class ~= nil and target_class ~= "" then
+                    class_json = json_escape(target_class)
+                end
+            end
+            if callsign_json ~= "null" or class_json ~= "null" then
+                objetivo_json = string.format(
+                    '{"callsign":%%s,"class":%%s}', callsign_json, class_json)
+            end
+        end
+        docking_json = string.format(
+            '{"state":"%%s","target":%%s}', estado, objetivo_json)
+    end
+end
 local systems = {}
 for _, name in ipairs({%s}) do
     systems[#systems + 1] = string.format(
@@ -67,14 +132,15 @@ return string.format(
     .. '"velocity":{"x":%%.2f,"y":%%.2f},"destination":%%s,'
     .. '"distance_to_destination":%%s,"eta_seconds":%%s,'
     .. '"hull":%%.1f,"hull_max":%%.1f,"energy":%%.1f,"energy_max":%%.1f,'
-    .. '"shields_active":%%s,"repair_crew":%%d,"systems":{%%s}}}',
+    .. '"shields_active":%%s,"repair_crew":%%d,"docking":%%s,"systems":{%%s}}}',
     ship:getCallSign() or "?", x, y, ship:getHeading(), vx, vy,
     destination_json, distance_json, eta_json,
     ship:getHull(), ship:getHullMax(),
     ship:getEnergyLevel(), ship:getEnergyLevelMax(),
     tostring(ship:getShieldsActive()), ship:getRepairCrewCount(),
-    table.concat(systems, ","))
+    docking_json, table.concat(systems, ","))
 """ % ", ".join(f'"{name}"' for name in _SYSTEMS)
+_STATE_LUA = _JSON_ESCAPE_LUA + _STATE_LUA
 
 _SCENARIO_LUA = """
 return string.format('{"scenario_time":%.1f,"paused":%s}',
@@ -151,15 +217,7 @@ return '{"events":[' .. table.concat(events, ",") .. ']}'
 # (comillas, barra inversa y controles como \\u00XX); %q de Lua escapa para
 # Lua, no para JSON. Cadena "raw" de Python para que las barras invertidas
 # lleguen intactas a Lua.
-_CONTACTS_LUA = r"""
-local function json_escape(s)
-    s = string.gsub(s, '[%c"\\]', function(c)
-        if c == '"' then return '\\"' end
-        if c == '\\' then return '\\\\' end
-        return string.format('\\u%04x', string.byte(c))
-    end)
-    return '"' .. s .. '"'
-end
+_CONTACTS_LUA = _JSON_ESCAPE_LUA + r"""
 local ship = getPlayerShip(-1)
 if ship == nil then
     return '{"contacts":[],"truncated":false,"total":0}'

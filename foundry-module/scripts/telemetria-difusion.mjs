@@ -31,6 +31,8 @@
 // Puro salvo el emisor: recibe `emitir` y `alRecibir` desde fuera, así que se
 // prueba en Node sin Foundry.
 
+import { degradarContactos } from "./contactos-degradados.mjs";
+
 export const TIPO_TELEMETRIA = "lagunak:telemetria-nave";
 
 /** Ajuste de mundo donde el GM publica. Solo un GM puede escribirlo. */
@@ -80,17 +82,26 @@ export function hayCambio(nave, anterior) {
  * Sobre a difundir. Se recorta a lo que la tripulación puede ver: la nave propia
  * y nada más.
  *
- * Los contactos NO van aquí a propósito (excepción de #331): callsign, facción y
- * coordenadas exactas son lo que el sistema de sensores debería decidir cuánto
- * revela, y difundirlos crudos regalaría el trabajo de ese puesto. Cuando se
- * abran, será degradados y por su propio camino — por eso este sobre lleva
- * `ship` y no `statePayload` entero: para que añadir contactos aquí sea una
- * decisión y no un descuido.
+ * Los contactos ya no van crudos, pero tampoco se quedan fuera (#331 paso 3):
+ * viajan DEGRADADOS por el alcance real del radar de la nave. La degradación
+ * ocurre aquí, en el origen, y no al pintar: este sobre acaba en un ajuste de
+ * mundo que toda la mesa puede leer, así que recortar en la vista no defendería
+ * nada —el dato crudo ya estaría en el cliente de cualquiera—. Lo que no sale de
+ * esta función es lo único que de verdad no sale.
+ *
+ * Sin lectura de radar no se publica ningún contacto. `null` ahí significa «no
+ * se puede decidir qué ve esta nave», que no es «no ve nada», y ante esa duda se
+ * calla en vez de abrir.
  */
-export function sobreTelemetria(statePayload, ahora = Date.now()) {
+export function sobreTelemetria(statePayload, ahora = Date.now(), contactsPayload = null) {
   const ship = recortarNave(statePayload?.ship);
   if (!ship) return null;
-  return { tipo: TIPO_TELEMETRIA, ship, sello: ahora };
+  const sensores = degradarContactos(
+    contactsPayload,
+    statePayload?.ship?.position ?? null,
+    statePayload?.ship?.radar ?? null,
+  );
+  return { tipo: TIPO_TELEMETRIA, ship, sensores, sello: ahora };
 }
 
 /**
@@ -98,11 +109,20 @@ export function sobreTelemetria(statePayload, ahora = Date.now()) {
  * que enviar — un sondeo fallido no debe borrar de las consolas ajenas la última
  * lectura buena.
  */
-export function difundirTelemetria({ statePayload, publicar, anterior = null, ahora }) {
-  const sobre = sobreTelemetria(statePayload, ahora);
+export function difundirTelemetria({
+  statePayload,
+  publicar,
+  anterior = null,
+  ahora,
+  contactsPayload = null,
+}) {
+  const sobre = sobreTelemetria(statePayload, ahora, contactsPayload);
   if (!sobre || typeof publicar !== "function") return null;
-  // Nada nuevo, nada que escribir: es lo que hace barata la persistencia.
-  if (!hayCambio(sobre.ship, anterior?.ship)) return null;
+  // Nada nuevo, nada que escribir: es lo que hace barata la persistencia. Los
+  // contactos entran en la comparación porque un contacto que se acerca cambia
+  // de banda sin que la nave propia se mueva, y eso sí hay que repartirlo.
+  if (!hayCambio(sobre.ship, anterior?.ship)
+      && !hayCambio(sobre.sensores, anterior?.sensores)) return null;
   publicar(sobre);
   return sobre;
 }
@@ -117,6 +137,14 @@ export function aceptarTelemetria(mensaje) {
   const ship = mensaje.ship;
   if (!ship || typeof ship !== "object") return null;
   return ship;
+}
+
+/** Los contactos degradados del sobre, o `null` si no traía. */
+export function aceptarSensores(mensaje) {
+  if (mensaje?.tipo !== TIPO_TELEMETRIA) return null;
+  const sensores = mensaje.sensores;
+  if (!sensores || !Array.isArray(sensores.contactos)) return null;
+  return sensores;
 }
 
 /**

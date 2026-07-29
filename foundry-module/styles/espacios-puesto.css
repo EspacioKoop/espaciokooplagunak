@@ -363,6 +363,14 @@
 
 .lagunak-workspace__contact-row { grid-template-columns: 20px minmax(90px, 1fr) minmax(80px, 1fr) auto; }
 .lagunak-workspace__contact-row i { color: var(--lagunak-accent); font-size: 8px; }
+
+/* Un eco no es un contacto a medias: es otra cosa. Se atenúa y su nombre va en
+ * cursiva para que la lista se lea de un vistazo sin tener que comparar cifras
+ * — y sin usar SOLO el color, que dejaría fuera a quien no lo distinga: el icono
+ * también cambia (interrogación en vez de rombo) y el texto lo dice. */
+.lagunak-workspace__contact-row--eco { opacity: 0.72; }
+.lagunak-workspace__contact-row--eco strong { font-style: italic; font-weight: 500; }
+.lagunak-workspace__contact-row--eco i { color: var(--lagunak-line); }
 .lagunak-workspace__contact-row span { color: var(--lagunak-muted); }
 .lagunak-workspace__contact-row code { color: var(--lagunak-accent); background: transparent; }
 

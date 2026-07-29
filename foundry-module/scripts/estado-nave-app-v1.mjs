@@ -41,6 +41,14 @@ import { setSimulationPaused } from "./tempo-control.mjs";
 import { contenidoEstadoBitacora, fechaLocal } from "./bitacora-nave.mjs";
 import { ALERTAS_NONCE, BACKOFF_MAX_MS, MODULE_ID } from "./lagunak-constantes.mjs";
 
+// Futuro (#276): esta ventana y la del mapa vivo se fusionan en una sola consola
+// del GM con pestañas, y las cuatro factorías V1/V2 pasan a una sola pareja con
+// UN bucle de sondeo y revocación en vez de cuatro. No se hace todavía y la razón
+// está escrita en el issue: el coste no es divergencia —esto es código propio del
+// fork— sino tocar la maquinaria de revocación, sondeo y ciclo de vida que ya ha
+// fallado tres veces, y no toca antes de cerrar el criterio de salida de fase 3.
+// Mientras tanto, lo que se añada aquí conviene que sea contenido de pestaña:
+// lógica pura fuera y plantilla dentro, como ya hacen los encuentros.
 export function crearClaseV1() {
   return class EstadoNaveAppV1 extends Application {
     #timer = null;

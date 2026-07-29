@@ -11,20 +11,37 @@
 // de reconocimiento, y girar es lo que deja ver la silueta entera —que es justo
 // el dato— sin que nadie tenga que orbitar la cámara a mano.
 //
-// El bucle se para solo: montar sobre una raíz que ya tenía lámina detiene la
+// El bucle se para solo: montar otra lámina de la misma ventana detiene la
 // anterior. Sin eso, cada cambio de selección dejaría un bucle huérfano pintando
 // sobre un lienzo que ya no está en el documento.
+//
+// La parada se guarda contra la ventana, no contra la raíz del DOM. Un render
+// estructural de Foundry puede sustituir la raíz entera: si la clave fuera el
+// elemento, la nueva raíz no encontraría la parada de la anterior y ese primer
+// bucle seguiría vivo para siempre. La instancia de la aplicación es lo único
+// que sobrevive a los remontajes, así que es la clave correcta.
 
 import { girarNave } from "./retro3d-lienzo.mjs";
 import { mallaDeClase } from "./casco-clases.mjs";
 
 const bucles = new WeakMap();
 
-/** Detiene la lámina de esta raíz, si la había. Llamarlo de más no hace daño. */
-export function desmontarLamina(raiz) {
-  const parar = bucles.get(raiz);
+/** La ventana si la hay; si no, la propia raíz, que es mejor que nada. */
+function claveDe(raiz, dueño) {
+  return dueño ?? raiz;
+}
+
+/**
+ * Detiene la lámina de esta ventana, si la había. Llamarlo de más no hace daño.
+ *
+ * @param {Element} raiz raíz de la ventana del mapa.
+ * @param {object} [dueño] instancia de la aplicación, estable entre renders.
+ */
+export function desmontarLamina(raiz, dueño) {
+  const clave = claveDe(raiz, dueño);
+  const parar = clave == null ? null : bucles.get(clave);
   if (!parar) return false;
-  bucles.delete(raiz);
+  bucles.delete(clave);
   parar();
   return true;
 }
@@ -35,16 +52,18 @@ export function desmontarLamina(raiz) {
  * @param {Element} raiz raíz de la ventana del mapa.
  * @param {{clase?: string|null, color?: string}|null} detalle
  * @param {object} opciones puntos de entrada inyectables para las pruebas.
+ * @param {object} [opciones.dueño] instancia de la aplicación, estable entre renders.
  * @returns {{clase: string|null, conocida: boolean}|null}
  */
 export function montarLaminaContacto(raiz, detalle, opciones = {}) {
-  desmontarLamina(raiz);
+  const { dueño, ...restoOpciones } = opciones;
+  desmontarLamina(raiz, dueño);
   const lienzo = raiz?.querySelector?.("[data-lagunak-lamina]");
   if (!lienzo || !detalle) return null;
 
   const { malla, conocida, clave } = mallaDeClase(detalle.clase);
   const parar = girarNave(lienzo, {
-    ...opciones,
+    ...restoOpciones,
     malla,
     // El color de facción es el mismo que el blip del mapa: la lámina y el punto
     // del radar tienen que leerse como el mismo objeto.
@@ -55,6 +74,6 @@ export function montarLaminaContacto(raiz, detalle, opciones = {}) {
     fov: 52,
     vueltaMs: 24000,
   });
-  bucles.set(raiz, parar);
+  bucles.set(claveDe(raiz, dueño), parar);
   return { clase: clave, conocida };
 }

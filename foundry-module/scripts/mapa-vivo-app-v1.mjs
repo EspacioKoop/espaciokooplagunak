@@ -280,10 +280,11 @@ export function crearClaseMapaV1() {
     activateListeners(html) {
       super.activateListeners(html);
       // Lámina del contacto seleccionado (#362). Se remonta en cada render:
-      // montar sobre una raíz que ya tenía lámina detiene la anterior, así que
-      // cambiar de selección no deja un bucle huérfano pintando sobre un lienzo
-      // que ya no está en el documento.
-      montarLaminaContacto(this.element?.[0], this.detalleVigente);
+      // montar otra lámina de esta ventana detiene la anterior, así que cambiar
+      // de selección no deja un bucle huérfano pintando sobre un lienzo que ya
+      // no está en el documento. La parada se guarda contra `this` y no contra
+      // la raíz porque un render puede sustituir la raíz entera.
+      montarLaminaContacto(this.element?.[0], this.detalleVigente, { dueño: this });
       html.find("[data-contacto]").on("click", (ev) => {
         const indice = Number.parseInt(ev.currentTarget?.dataset?.contactoIndice ?? "", 10);
         if (!Number.isInteger(indice)) return;
@@ -316,7 +317,7 @@ export function crearClaseMapaV1() {
     }
 
     async close(options) {
-      desmontarLamina(this.element?.[0]);
+      desmontarLamina(this.element?.[0], this);
       // Invalida cualquier #sondear en vuelo (ver comentario en #sondear).
       this.#generacion += 1;
       clearTimeout(this.#timer);

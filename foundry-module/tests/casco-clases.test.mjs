@@ -100,6 +100,34 @@ test("montar la lámina detiene la anterior: nada de bucles huérfanos", () => {
   assert.equal(desmontarLamina(raiz), false, "desmontar de más no hace daño");
 });
 
+test("un render que sustituye la raíz tampoco deja bucles huérfanos", () => {
+  // Foundry puede tirar la raíz entera y montar otra en el mismo render. Si la
+  // parada se guardara contra el elemento, la raíz nueva no encontraría la del
+  // bucle anterior y aquel seguiría pintando sobre un lienzo desconectado.
+  const primera = raizConLienzo();
+  const segunda = raizConLienzo();
+  const ventana = { nombre: "mapa vivo" };
+  const pendientes = [];
+  let cancelados = 0;
+  const opciones = {
+    dueño: ventana,
+    movimientoReducido: () => false,
+    pedirFotograma: (fn) => { pendientes.push(fn); return pendientes.length; },
+    cancelarFotograma: () => (cancelados += 1),
+    ahora: () => 0,
+  };
+
+  montarLaminaContacto(primera, { clase: "Frigate", color: "#00e5ff" }, opciones);
+  assert.equal(cancelados, 0);
+  montarLaminaContacto(segunda, { clase: "Corvette", color: "#ff2e88" }, opciones);
+  assert.equal(cancelados, 1, "la lámina de la raíz sustituida se detuvo");
+
+  assert.equal(desmontarLamina(segunda, ventana), true);
+  assert.equal(cancelados, 2);
+  // Y cerrar la ventana desde la raíz vieja tampoco resucita nada.
+  assert.equal(desmontarLamina(primera, ventana), false);
+});
+
 test("sin contacto seleccionado o sin lienzo no se monta nada", () => {
   const raiz = raizConLienzo();
   assert.equal(montarLaminaContacto(raiz, null), null);

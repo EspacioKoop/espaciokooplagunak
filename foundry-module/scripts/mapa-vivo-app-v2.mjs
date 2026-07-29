@@ -305,8 +305,9 @@ export function crearClaseMapaV2() {
     _onRender(context, options) {
       super._onRender?.(context, options);
       // Ver el comentario equivalente en la ruta V1: remontar detiene la lámina
-      // anterior, que es lo que evita bucles huérfanos al cambiar de selección.
-      montarLaminaContacto(this.element, this.detalleVigente);
+      // anterior, que es lo que evita bucles huérfanos al cambiar de selección,
+      // y la parada va contra `this` porque la raíz no sobrevive a un render.
+      montarLaminaContacto(this.element, this.detalleVigente, { dueño: this });
       this.element?.querySelectorAll?.("[data-contacto]")?.forEach((el) => {
         el.addEventListener("click", () => {
           const indice = Number.parseInt(el.dataset.contactoIndice ?? "", 10);
@@ -332,7 +333,7 @@ export function crearClaseMapaV2() {
     }
 
     _onClose(options) {
-      desmontarLamina(this.element);
+      desmontarLamina(this.element, this);
       // Invalida cualquier #sondear en vuelo: su respuesta tardía morirá en
       // la comparación de generación sin rearmar el polling.
       this.#generacion += 1;

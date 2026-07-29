@@ -23,7 +23,11 @@ test("EL TOKEN NO VIAJA: el sobre lleva la nave y nada más", () => {
   const serializado = JSON.stringify(sobre);
   assert.doesNotMatch(serializado, /secreto/);
   assert.doesNotMatch(serializado, /bridgeUrl|Bearer|token/i);
-  assert.deepEqual(Object.keys(sobre).sort(), ["sello", "ship", "tipo"]);
+  // El sobre lleva ahora también `sensores` (#331 paso 3): contactos YA
+  // degradados en el origen. La lista es cerrada a propósito —si aparece una
+  // clave nueva, esta prueba obliga a justificarla— porque este canal acaba en
+  // un ajuste de mundo que toda la mesa puede leer.
+  assert.deepEqual(Object.keys(sobre).sort(), ["sello", "sensores", "ship", "tipo"]);
 });
 
 test("LOS CONTACTOS NO VIAJAN: es la excepción del issue, no un olvido", () => {

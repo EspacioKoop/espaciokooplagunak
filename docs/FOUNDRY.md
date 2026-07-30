@@ -39,6 +39,48 @@ la sesión. `/v1/state` calcula distancia restante y ETA a partir de la posició
 y velocidad reales; la ETA es nula cuando la nave está detenida. El módulo
 formatea estos datos para el GM sin asumir que otros escenarios tengan ruta.
 
+`/v1/state` publica también `radar` con el alcance real de la nave
+(`short_range` / `long_range`, del componente `long_range_radar`), y es `null` si
+el componente no se puede leer. Existe para #331 paso 3: los contactos que el GM
+difunde a la tripulación van **degradados por ese alcance** y no por dos
+constantes elegidas a ojo. Dentro del alcance corto el contacto se identifica
+(indicativo y facción); entre el corto y el largo es un eco, sin nombre y sin
+bandera; más allá del largo no se publica y **tampoco se cuenta**, porque un total
+que incluyera lo invisible ya diría que hay algo ahí fuera.
+
+No se difunden coordenadas absolutas de nada, sino **distancia y marcación**
+relativas, redondeadas a la resolución de su banda y acompañadas de ese margen.
+Son dos motivos y el segundo manda: la tripulación no recibe la posición de su
+propia nave, así que unas coordenadas de mundo no le servirían de nada; y
+difundir la posición exacta de cada objeto del sector a un ajuste que toda la mesa
+puede leer es justo la fuga que la degradación existe para cerrar. Un puesto de
+sensores lee alcance y marcación, y eso es lo que se publica.
+
+La consola del puesto lo enseña como filas: el margen se escribe (`≈20 000 ±1 000
+· ≈75° ±15°`) en vez de insinuarse, y un eco se llama eco y no «desconocido» —
+«desconocido» suena a que hay un nombre y no se ha averiguado; un eco es que el
+sensor solo devuelve un retorno, y esa diferencia es el trabajo del puesto. Una
+lectura exacta no lleva `±`, o todo parecería aproximado.
+
+La degradación ocurre en el cliente del GM, antes de difundir, y no al pintar: el
+sobre acaba en un ajuste de mundo que toda la mesa puede leer, así que recortar en
+la vista no defendería nada. Sin lectura de radar no se difunde ningún contacto —
+«no se puede decidir qué ve esta nave» no es «no ve nada», y ante esa duda se
+calla. El GM conserva su sondeo crudo: degradar a la tripulación no le quita
+precisión a quien dirige.
+
+`/v1/state` publica además el atraque de la nave propia (#391) en `docking`:
+`state` vale `docking` o `docked` y **nunca un tercer valor**, con el objetivo en
+`target` (indicativo y clase) cuando se puede leer. Sale del componente
+`docking_port` del juego, que ya expone `state` y `target` a Lua, así que no hay
+divergencia con upstream. El binding entrega ese enum como cadena en minúsculas
+(`docking`, `docked`, `not_docking`, `none`: ver `src/script/enum.h`); el puente
+normaliza a minúsculas y descarta todo lo demás, `not_docking` incluido.
+`docking` es `null` tanto si la nave está libre como si el componente no se pudo leer: son dos cosas distintas que el juego no distingue
+desde fuera, y por eso la consola no dibuja «sin atracar» —afirmarlo sería elegir
+una de las dos sin saber cuál—. El estado va en texto en la consola; cualquier
+representación visual futura es refuerzo, no la única vía al dato.
+
 El control de tempo inicial es binario: `pauseGame()` / `unpauseGame()` son las
 únicas APIs verificadas en headless. No se ofrece aceleración ni se inventa un
 estado consultable porque `setGameSpeed`, `getGameSpeed` y un getter de pausa no

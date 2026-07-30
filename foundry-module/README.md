@@ -226,6 +226,13 @@ sprites se dibujan solo con primitivas de canvas, sin assets externos.
   composición del frame), el canvas estable entre sondeos posicionales y la
   compatibilidad del botón/ventana v11 y v13. El pintado real sobre `<canvas>`
   (`mapa-render.mjs`) queda dentro del punto pendiente de verificación humana.
+- De la vista por puesto (`proyeccion-puesto.mjs`, #331 paso 2) los tests cubren
+  lo que de verdad la sostiene: que una proyección **no añade nada** —quitando el
+  énfasis se recupera el frame de entrada tal cual—, que dos puestos leen
+  distinto el mismo frame, que las etiquetas solo salen de campos publicados y
+  que un frame sin contactos no los inventa en ninguna vista. El selector del
+  mapa es del GM: mirar «como navegación» no cambia lo que se difunde, solo lo
+  que se resalta.
 - De los sprites pixel-art de las naves (`nave-sprite.mjs`) los tests Node cubren
   el flujo DTO → proyección → clasificación (clases de EmptyEpsilon → silueta), el sombreado
   (aclarar/oscurecer el color de facción) y la construcción determinista del

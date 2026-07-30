@@ -1,3 +1,18 @@
+import { desmontarLamina, montarLaminaContacto } from "./lamina-contacto.mjs";
+import { proyectarParaPuesto } from "./proyeccion-puesto.mjs";
+import { prepareSystemRows } from "./ship-view.mjs";
+
+// Puestos que ofrece el selector de vista (#331, paso 2). Es la lista de
+// `proyeccion-puesto.mjs` y no una copia con criterio propio: si algún día un
+// puesto deja de existir, el selector no puede ser el sitio donde sobreviva.
+const PUESTOS_VISTA = Object.freeze([
+  "captain",
+  "navigation",
+  "engineering",
+  "sensors",
+  "communications",
+  "weapons",
+]);
 /* ================================================================== */
 /* Mapa vivo (ApplicationV2, v12+). Ventana solo-vista: starfield en   */
 /* parallax + blips de contactos de /v1/contacts, con nave, rumbo y    */
@@ -100,6 +115,11 @@ export function crearClaseMapaV2() {
     contactos = [];
     destino = null; // último destination confirmado de /v1/state (issue #175)
     seleccion = null; // índice reconciliado del contacto seleccionado
+    // Puesto desde el que se lee el mapa (#331, paso 2). El capitán es la
+    // lectura sin editar, así que arrancar ahí deja el mapa como siempre ha
+    // sido: la vista es algo que se pide, no algo que se sufre.
+    puestoVista = "captain";
+    naveVigente = null;
     conexion = "conectando";
     detalleError = "";
     bridgeAccessRevoked = false;
@@ -131,6 +151,7 @@ export function crearClaseMapaV2() {
       let rotadas = null;
       let contactos = null;
       let destino = null;
+      let nave = null;
       let fallo = null;
       try {
         const cliente = this.#cliente();
@@ -145,7 +166,7 @@ export function crearClaseMapaV2() {
         const rechazado = resultados.find((resultado) => resultado.status === "rejected");
         if (rechazado) throw rechazado.reason;
         const [estado, respuestaContactos] = resultados.map((resultado) => resultado.value);
-        const nave = estado?.ship ?? null;
+        nave = estado?.ship ?? null;
         contactos = normalizarContactosMapa(respuestaContactos?.contacts ?? []);
         destino = nave?.destination ?? null;
         if (nave) {
@@ -171,6 +192,10 @@ export function crearClaseMapaV2() {
         this.seleccion = reconciliarIndiceContacto(contactosAnteriores, contactos, seleccionAnterior);
         this.contactos = contactos;
         this.destino = destino;
+        // La nave propia se guarda para las vistas de puesto (#331, paso 2):
+        // el vector de navegación y el calor de ingeniería salen de aquí, no de
+        // una lectura aparte que podría contradecir a la del mapa.
+        this.naveVigente = nave;
         this.conexion = "ok";
         this.detalleError = "";
         this.#fallosSeguidos = 0;
@@ -281,6 +306,13 @@ export function crearClaseMapaV2() {
             ambiente,
           });
       dibujarFrame(ctx, frame, {
+        // El mismo frame, leído desde el puesto elegido (#331, paso 2). El
+        // capitán es la lectura sin editar, así que la vista por defecto pinta
+        // exactamente lo de siempre.
+        vista: proyectarParaPuesto(frame, this.puestoVista, {
+          nave: this.naveVigente,
+          sistemas: prepareSystemRows(this.naveVigente, game.i18n),
+        }),
         ancho: canvas.width,
         alto: canvas.height,
         decorado,
@@ -303,6 +335,17 @@ export function crearClaseMapaV2() {
      * contacto ya seleccionado lo deselecciona. */
     _onRender(context, options) {
       super._onRender?.(context, options);
+      // Ver el comentario equivalente en la ruta V1: remontar detiene la lámina
+      // anterior, que es lo que evita bucles huérfanos al cambiar de selección,
+      // y la parada va contra `this` porque la raíz no sobrevive a un render.
+      montarLaminaContacto(this.element, this.detalleVigente, { dueño: this });
+      // El selector no re-renderiza: basta con cambiar el puesto y el bucle de
+      // animación ya pinta la vista nueva en el siguiente fotograma. Un render
+      // aquí reconstruiría el DOM del part y cerraría el propio desplegable.
+      const selector = this.element?.querySelector?.("[data-lagunak-puesto-vista]");
+      selector?.addEventListener("change", (ev) => {
+        this.puestoVista = ev.target?.value ?? "captain";
+      });
       this.element?.querySelectorAll?.("[data-contacto]")?.forEach((el) => {
         el.addEventListener("click", () => {
           const indice = Number.parseInt(el.dataset.contactoIndice ?? "", 10);
@@ -328,6 +371,7 @@ export function crearClaseMapaV2() {
     }
 
     _onClose(options) {
+      desmontarLamina(this.element, this);
       // Invalida cualquier #sondear en vuelo: su respuesta tardía morirá en
       // la comparación de generación sin rearmar el polling.
       this.#generacion += 1;
@@ -358,6 +402,10 @@ export function crearClaseMapaV2() {
           callsign: d.callsign,
           color: d.color,
           tipo: d.tipo ?? desconocido,
+          // La clase se escribe además de dibujarse: la lámina es refuerzo, no
+          // el único sitio donde se puede leer con qué se está uno encontrando.
+          clase: d.clase,
+          claseLabel: d.clase ?? desconocido,
           faccion: d.esJugador ? propia : d.faccion ?? desconocido,
           distanciaLabel: game.i18n.format("LAGUNAK.EstadoNave.DistanciaUnidades", {
             distance: Math.round(d.distancia),
@@ -367,6 +415,9 @@ export function crearClaseMapaV2() {
           }),
         };
       }
+      // Se conserva para el pintor de la lámina: al enganchar el DOM la
+      // plantilla ya está resuelta y el contexto no llega hasta allí.
+      this.detalleVigente = detalle;
       return {
         conexion: this.conexion,
         conexionOk: this.conexion === "ok",
@@ -376,6 +427,11 @@ export function crearClaseMapaV2() {
         esGM: Boolean(game.user?.isGM),
         sinDatos: !this.#muestraActual,
         alcanceLabel: game.i18n.format("LAGUNAK.MapaVivo.Alcance", { radio: MAPA_RADIO_MUNDO }),
+        puestosVista: PUESTOS_VISTA.map((id) => ({
+          id,
+          etiqueta: game.i18n.localize(`LAGUNAK.Puestos.${id}`),
+          activo: id === this.puestoVista,
+        })),
         detalle,
         leyenda: leyendaContactos(this.contactos).map((e) => ({
           color: e.color,

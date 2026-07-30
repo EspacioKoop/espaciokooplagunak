@@ -6,11 +6,13 @@ import { emitWorkspaceOrder } from "./station-order-wiring.mjs";
 import { ORDER_FORMS } from "./station-order-forms.mjs";
 import {
   AJUSTE_TELEMETRIA,
+  aceptarSensores,
   aceptarTelemetria,
   difundirTelemetria,
   esMasReciente,
 } from "./telemetria-difusion.mjs";
 import { pintarNave } from "./retro3d-lienzo.mjs";
+import { desmontarLamina, montarLaminaContacto } from "./lamina-contacto.mjs";
 import { CASCO_POR_DEFECTO, mallaDesdeCasco } from "./retro3d.mjs";
 import { PIXEL } from "./paleta.mjs";
 
@@ -39,14 +41,17 @@ function recibirTelemetria() {
   const sobre = game.settings?.get?.(configuredModuleId, AJUSTE_TELEMETRIA) ?? null;
   const ship = aceptarTelemetria(sobre);
   if (!ship) return;
+  const sensores = aceptarSensores(sobre);
   // Fuera de orden se descarta: dos escrituras seguidas pueden llegar cruzadas y
   // la consola parpadearía hacia atrás, que en un rumbo se ve como una sacudida.
   if (!esMasReciente(sobre, app.selloTelemetria)) return;
   app.selloTelemetria = sobre.sello;
-  // El GM conserva su propio sondeo como fuente: tiene los contactos, que no
-  // viajan por aquí, y pisarlo con el sobre recortado se los borraría.
+  // El GM conserva su propio sondeo como fuente: tiene los contactos SIN
+  // degradar, y pisarlo con el sobre recortado le quitaría precisión a quien
+  // dirige la escena.
   if (!game.user?.isGM) {
     app.statePayload = { ship };
+    app.sensores = sensores;
     app.connection = "ok";
     app.error = "";
   }
@@ -158,6 +163,9 @@ function workspaceContext(app) {
     i18n: game.i18n,
     statePayload: app.statePayload,
     contactsPayload: app.contactsPayload,
+    // Contactos degradados que llegaron por difusión (#331 paso 3). Solo los
+    // tiene la tripulación: el GM usa su propio sondeo, que es más preciso.
+    sensores: app.sensores,
     connection: app.connection,
     error: app.error,
   });
@@ -182,12 +190,15 @@ async function refreshTelemetry(app) {
     app.contactsPayload = contactsPayload;
     app.connection = "ok";
     // La tripulación no puede sondear el puente —no tiene token— así que el GM
-    // reparte lo que acaba de recibir (#331). Solo la nave propia: los contactos
-    // se quedan aquí hasta que se abran degradados.
+    // reparte lo que acaba de recibir (#331). La nave propia entera y los
+    // contactos YA degradados por el alcance del radar (paso 3): el crudo entra
+    // en `difundirTelemetria` y de ahí no sale, que es lo que hace que degradar
+    // signifique algo.
     // Publicar es escribir un ajuste de mundo, y eso solo lo puede hacer un GM:
     // la autorización la impone el servidor, no este `if`.
     const publicado = difundirTelemetria({
       statePayload,
+      contactsPayload,
       anterior: game.settings?.get?.(configuredModuleId, AJUSTE_TELEMETRIA) ?? null,
       publicar: (sobre) => game.settings?.set?.(configuredModuleId, AJUSTE_TELEMETRIA, sobre),
     });
@@ -249,6 +260,7 @@ async function handleWorkspaceAction(app, event) {
 // girando alegremente en el puente mientras la nave real mantiene el rumbo sería
 // una mentira pequeña, pero en una consola de mando no hay mentiras pequeñas.
 const MALLA_PROPIA = mallaDesdeCasco(CASCO_POR_DEFECTO);
+const SEMILLA_CIELO_PUENTE = 20362;
 
 function pintarCascoPropio(root, modelo) {
   const lienzo = root?.querySelector?.("[data-lagunak-casco]");
@@ -265,7 +277,45 @@ function pintarCascoPropio(root, modelo) {
     pitch: 0.42,
     posicion: [0, 0, 4.4],
     fov: 55,
+    // Cielo fijo (#384): la semilla es constante a propósito. El puente es
+    // siempre el mismo sitio y las estrellas de fuera no cambian porque se
+    // vuelva a abrir la consola; una semilla variable haría parpadear el
+    // universo entero en cada render.
+    cielo: { semilla: SEMILLA_CIELO_PUENTE },
   });
+}
+
+// Lámina del objetivo de atraque (#391, rebanada 6 de #362).
+//
+// Reutiliza entera la lámina del contacto: mismo pipeline, misma tabla de cascos
+// por clase, mismo cielo. Lo único propio es CUÁNDO existe —solo mientras hay
+// atraque— y que no depende de una selección: el objetivo lo dice el juego.
+//
+// GameCube y no PSX, por lo mismo que la lámina del contacto: esto se mira FIJO
+// para reconocer contra qué se está atracando; el casco propio se ve de reojo.
+// Y gira, porque una lámina no dice hacia dónde va nadie: dice qué forma tiene, y
+// girar es lo que enseña la silueta entera sin orbitar la cámara a mano.
+//
+// Es refuerzo y no la única vía: el estado y el nombre del sitio están en la
+// matriz de métricas, en texto, y quien use lector de pantalla no pierde nada.
+const SEMILLA_CIELO_ATRAQUE = 20391;
+// La ranura de la lámina de atraque. Se nombra una vez porque montarla y
+// pararla tienen que referirse a la MISMA, o el desmontaje no encontraría nada.
+const SELECTOR_ATRAQUE = "[data-lagunak-atraque]";
+
+function montarLaminaAtraque(root, modelo, app) {
+  // Desmontar SIEMPRE primero, también cuando el atraque ha terminado: si no, al
+  // soltar amarras el bucle seguiría girando contra un lienzo que ya no está en
+  // el documento. Va contra la instancia de la aplicación y no contra la raíz,
+  // por lo que aprendió #374: un render puede sustituir la raíz entera.
+  desmontarLamina(root, app, SELECTOR_ATRAQUE);
+  const atraque = modelo?.atraque;
+  if (!atraque) return null;
+  return montarLaminaContacto(
+    root,
+    { clase: atraque.clase, color: PIXEL.sinFaccion },
+    { dueño: app, selector: SELECTOR_ATRAQUE, cielo: { semilla: SEMILLA_CIELO_ATRAQUE } },
+  );
 }
 
 function bindWorkspaceRoot(root, app) {
@@ -273,6 +323,7 @@ function bindWorkspaceRoot(root, app) {
     element.addEventListener("click", (event) => handleWorkspaceAction(app, event));
   });
   pintarCascoPropio(root, app.ultimoModelo);
+  montarLaminaAtraque(root, app.ultimoModelo, app);
 }
 
 function initialiseApp(app) {
@@ -284,6 +335,7 @@ function initialiseApp(app) {
   // y lo dice, que es distinto de «no tienes permiso».
   app.connection = "loading";
   app.selloTelemetria = null;
+  app.sensores = null;
   app.error = "";
   app.loading = false;
   app.closed = false;
@@ -340,6 +392,10 @@ function createV2Class() {
     }
 
     _onClose(options) {
+      // Cerrar la consola con atraque en curso dejaba el requestAnimationFrame
+      // vivo contra un lienzo ya retirado: no habrá otro render que lo desmonte.
+      // Se para por la instancia, que es la clave del bucle.
+      desmontarLamina(this.element, this);
       releaseWorkspaceApp(this);
       super._onClose?.(options);
     }
@@ -414,10 +470,15 @@ function createV1Class() {
     activateListeners(html) {
       super.activateListeners(html);
       html.find("[data-workspace-action]").on("click", (event) => handleWorkspaceAction(this, event));
+      // Las dos rutas montan lo MISMO. Si esta se quedara solo con el casco
+      // propio, en el objetivo clásico v11 el atraque saldría en texto y la
+      // lámina simplemente no existiría, sin que nada lo dijera.
       pintarCascoPropio(raizDe(this), this.ultimoModelo);
+      montarLaminaAtraque(raizDe(this), this.ultimoModelo, this);
     }
 
     async close(options) {
+      desmontarLamina(raizDe(this), this);
       releaseWorkspaceApp(this);
       return super.close(options);
     }

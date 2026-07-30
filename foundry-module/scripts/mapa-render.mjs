@@ -22,6 +22,14 @@ const TAM_ESTRELLA_MIN = 1;
 const COLOR_DESTINO = "#ffd166"; // ámbar cálido: la ruta no compite con las facciones
 const RUTA_DESTINO = "rgba(255, 209, 102, 0.55)";
 
+// Los tres niveles de `proyeccion-puesto.mjs`, traducidos a opacidad. `tenue` no
+// baja de 0.3: por debajo desaparece, y la vista de un puesto no puede hacer que
+// un contacto deje de existir para quien mira.
+const OPACIDAD_ENFASIS = Object.freeze({ alto: 1, normal: 0.75, tenue: 0.3 });
+const VECTOR_LARGO_FIJO = 0.45; // sin velocidad máxima publicada
+const CALOR_FRIO = "rgba(56, 176, 0, 0.75)";
+const CALOR_CRITICO = "rgba(239, 35, 60, 0.85)";
+
 /**
  * Pinta un frame completo. `frame` es la salida de componerFrame; con
  * `sinDatos` se pinta solo el fondo y la retícula (pantalla «en espera»).
@@ -37,6 +45,12 @@ export function dibujarFrame(
     eventosFondo = [],
     moviendo = false,
     tMs = 0,
+    // Proyección del puesto que mira (#331, paso 2). Es opcional y, sin ella,
+    // el mapa se pinta exactamente como antes: la vista no es un modo aparte,
+    // es una lectura del mismo frame. El pintor NO decide qué se resalta —eso
+    // ya viene decidido y probado en `proyeccion-puesto.mjs`—; aquí solo se
+    // traduce `enfasis` a opacidad y se dibujan las capas que la vista pida.
+    vista = null,
   } = {},
 ) {
   ctx.imageSmoothingEnabled = false;
@@ -108,9 +122,12 @@ export function dibujarFrame(
 
   // Blips de contactos. La rotación de cabina (morro arriba) ya viene aplicada
   // en las coordenadas del frame; aquí solo se pintan cuadrados.
-  for (const blip of frame.blips ?? []) {
+  for (const blip of vista?.blips ?? frame.blips ?? []) {
     if (blip.esJugador) continue; // la nave propia se pinta al final, encima
     if (!blip.parpadeo) continue; // fase apagada del parpadeo retro
+    // Atenuar no es ocultar: un contacto en `tenue` sigue estando ahí y sigue
+    // pudiéndose pinchar. Lo que cambia es a qué presta atención la vista.
+    ctx.globalAlpha = OPACIDAD_ENFASIS[blip.enfasis] ?? 1;
     if (blip.dentro) {
       // Sprite pixel-art por tipo/facción en vez de un cuadrado (Neo Geo).
       dibujarNaveSprite(
@@ -126,7 +143,21 @@ export function dibujarFrame(
       ctx.fillStyle = blip.color;
       ctx.fillRect(Math.round(bx - 2), Math.round(by - 2), 4, 4);
     }
+    // Etiqueta de comunicaciones: solo si la proyección la dio. Sin dato no hay
+    // etiqueta, y aquí no se inventa un «?» que se leería como información.
+    if (blip.etiqueta && blip.dentro) {
+      ctx.font = "8px monospace";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = blip.color;
+      ctx.fillText(blip.etiqueta, Math.round(blip.x) + 7, Math.round(blip.y));
+    }
+    ctx.globalAlpha = 1;
   }
+
+  // Capas propias de la vista, entre los contactos y la nave propia: nunca por
+  // encima de la nave, que es la referencia que no se puede tapar.
+  dibujarCapasDeVista(ctx, vista, { cx, cy, radio, ancho });
 
   // Marca del destino: rombo ámbar con su nombre (issue #175). Dentro del
   // visor va sobre el punto real; fuera, recortado al anillo en su dirección
@@ -158,4 +189,50 @@ export function dibujarFrame(
     construirSpriteNave({ clave: clasificarNave(null, true), color: COLOR_JUGADOR }),
     { centroX: cx, centroY: cy, pixel: 4, moviendo, tMs },
   );
+}
+
+/**
+ * Anillos, vector y superposición térmica. Cada capa se dibuja solo si la
+ * proyección la trae: el pintor no elige, obedece.
+ */
+function dibujarCapasDeVista(ctx, vista, { cx, cy, radio, ancho }) {
+  if (!vista) return;
+
+  // Sensores: anillos de escala. Salen del alcance del propio visor, no de una
+  // distancia inventada.
+  for (const anillo of vista.anillos ?? []) {
+    ctx.strokeStyle = RETICULA;
+    ctx.globalAlpha = anillo.tenue ? 0.6 : 1;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radio * anillo.radio01, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  // Navegación: el morro va siempre arriba en cabina, así que el vector se
+  // dibuja hacia arriba y lo que informa es su largo. `magnitud01` en null
+  // significa «hay velocidad pero no contra qué compararla»: largo fijo, que no
+  // pretende ser una fracción de nada.
+  if (vista.vector) {
+    const fraccion = vista.vector.magnitud01 ?? VECTOR_LARGO_FIJO;
+    ctx.strokeStyle = COLOR_JUGADOR;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx, cy - radio * fraccion);
+    ctx.stroke();
+    ctx.lineWidth = 1;
+  }
+
+  // Ingeniería: barras de calor en una esquina. Los sistemas sin lectura no
+  // aparecen —no son barras de cero— y por eso la superposición trae su lista
+  // aparte: quien la consuma en texto puede decirlo, el mapa simplemente calla.
+  const filas = vista.superposicion?.filas ?? [];
+  const alto_barra = 4;
+  filas.forEach((fila, i) => {
+    const y = 8 + i * (alto_barra + 3);
+    const largo = Math.round((ancho / 4) * fila.valor01);
+    ctx.fillStyle = fila.critico ? CALOR_CRITICO : CALOR_FRIO;
+    ctx.fillRect(8, y, Math.max(1, largo), alto_barra);
+  });
 }

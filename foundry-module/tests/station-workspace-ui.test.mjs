@@ -232,3 +232,65 @@ test("updateUser sí refresca la consola abierta", async () => {
   hooks.updateUser();
   assert.deepEqual(app.renderCalls, [true, false]);
 });
+
+// La lámina del objetivo de atraque tiene DOS rutas de ciclo de vida (#391), y
+// las pruebas de la lámina la montan directamente: no ejercitan ninguna de las
+// dos. Aquí se entra por el lifecycle real de cada ruta, que es donde se colaba
+// que la clásica de v11 no montara nada y que ningún cierre parara el bucle.
+function raizConLaminaDeAtraque() {
+  const ordenes = [];
+  const ctx = new Proxy(
+    { fill: () => ordenes.push("fill") },
+    { get: (obj, prop) => obj[prop] ?? (() => ordenes.push(String(prop))), set: () => true },
+  );
+  const lienzo = { width: 112, height: 84, getContext: () => ctx };
+  return {
+    ordenes,
+    querySelectorAll: () => [],
+    querySelector: (sel) => (sel === "[data-lagunak-atraque]" ? lienzo : null),
+  };
+}
+
+for (const modern of [false, true]) {
+  const version = modern ? "ApplicationV2" : "v11";
+
+  test(`${version}: la lámina de atraque se monta al renderizar y se para al cerrar`, async () => {
+    const previo = {
+      raf: globalThis.requestAnimationFrame,
+      caf: globalThis.cancelAnimationFrame,
+    };
+    let siguienteId = 1;
+    const pendientes = [];
+    let cancelados = 0;
+    // No se ejecuta ningún fotograma encolado: lo que se mide es si el bucle
+    // queda vivo tras cerrar, no cuántas veces pinta.
+    globalThis.requestAnimationFrame = (fn) => {
+      pendientes.push(fn);
+      return siguienteId++;
+    };
+    globalThis.cancelAnimationFrame = () => { cancelados += 1; };
+    try {
+      const { module, instances } = await setup({ modern });
+      module.openWorkspaceApp();
+      const app = instances[0];
+      const raiz = raizConLaminaDeAtraque();
+      app.element = modern ? raiz : { 0: raiz, find: () => ({ on() {} }) };
+      app.ultimoModelo = { atraque: { estado: "docking", clase: "Station" } };
+
+      if (modern) app._onRender({}, {});
+      else app.activateListeners(app.element);
+      assert.ok(
+        raiz.ordenes.includes("fill"),
+        "la ruta clásica tiene que pintar la lámina igual que la moderna",
+      );
+      assert.equal(pendientes.length, 1, "y dejar un fotograma encadenado, o no gira");
+
+      if (modern) app._onClose({});
+      else await app.close();
+      assert.equal(cancelados, 1, "cerrar la consola cancela el fotograma en vuelo");
+    } finally {
+      globalThis.requestAnimationFrame = previo.raf;
+      globalThis.cancelAnimationFrame = previo.caf;
+    }
+  });
+}

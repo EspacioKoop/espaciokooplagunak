@@ -56,6 +56,18 @@
           <canvas data-lagunak-casco width="96" height="72"></canvas>
         </div>
 
+        {{!-- Lámina del objetivo de atraque (#391). Solo existe mientras hay
+              atraque: sin lectura no hay lienzo, y por tanto no hay nada que
+              interpretar. Va en GameCube y no en PSX por lo mismo que la lámina
+              del contacto: esto se mira FIJO para reconocer contra qué se está
+              atracando, no de reojo. Decorativo como el casco — el estado y el
+              nombre del sitio están en la matriz de métricas, en texto. --}}
+        {{#if atraque}}
+        <div class="lagunak-workspace__atraque" aria-hidden="true">
+          <canvas data-lagunak-atraque width="112" height="84"></canvas>
+        </div>
+        {{/if}}
+
         {{#if hasTelemetry}}
           <div class="lagunak-workspace__metrics">
             {{#each metrics}}
@@ -110,14 +122,24 @@
             <div class="lagunak-workspace__contacts">
               <div class="lagunak-workspace__list-heading">
                 <span>{{localize "LAGUNAK.Espacios.ContactosProximos"}}</span>
-                <span>{{localize "LAGUNAK.Espacios.SoloGM"}}</span>
+                {{!-- La cabecera dice de dónde sale la lectura: «solo GM» sobre
+                      una lectura degradada mentiría sobre su origen (#331). --}}
+                {{#if contactsDegradados}}
+                  <span>{{localize "LAGUNAK.Espacios.Sensores.Degradado"}}</span>
+                {{else}}
+                  <span>{{localize "LAGUNAK.Espacios.SoloGM"}}</span>
+                {{/if}}
               </div>
               {{#each contacts}}
-                <div class="lagunak-workspace__contact-row">
-                  <i class="fa-solid fa-diamond" aria-hidden="true"></i>
+                <div class="lagunak-workspace__contact-row{{#if eco}} lagunak-workspace__contact-row--eco{{/if}}">
+                  {{#if eco}}
+                    <i class="fa-solid fa-circle-question" aria-hidden="true"></i>
+                  {{else}}
+                    <i class="fa-solid fa-diamond" aria-hidden="true"></i>
+                  {{/if}}
                   <strong>{{callsign}}</strong>
                   <span>{{faction}}</span>
-                  <code>{{x}}, {{y}}</code>
+                  <code>{{lectura}}</code>
                 </div>
               {{/each}}
             </div>

@@ -185,7 +185,7 @@ sería una decisión aparte, con su ADR.
 
 ## Visión de juego
 
-Foundry conserva personajes, fichas, mapas narrativos, diarios, reglas y estado general de la campaña. Espaciokoop Lagunak ejecuta la vida operativa de la nave: trayectos, navegación, sistemas, recursos, averías, encuentros y coordinación de la tripulación.
+Espaciokoop Lagunak es la campaña: personajes, progreso, atlas, misiones y consecuencias viven en el núcleo, igual que la vida operativa de la nave —trayectos, navegación, sistemas, recursos, averías, encuentros y coordinación de la tripulación—. Foundry proyecta esa campaña en la mesa virtual: fichas, mapas narrativos, diarios y escenas con los que el grupo la juega, más sus documentos puramente locales.
 
 El trayecto no será una cuenta atrás pasiva. Durante el viaje, la tripulación podrá:
 
@@ -196,7 +196,7 @@ El trayecto no será una cuenta atrás pasiva. Durante el viaje, la tripulación
 - consumir y gestionar recursos de la nave;
 - detectar, diagnosticar y reparar averías;
 - reaccionar ante anomalías, encuentros y eventos del director de juego;
-- asumir consecuencias persistentes que vuelvan a la campaña de Foundry.
+- asumir consecuencias persistentes que el núcleo registra en la campaña y Foundry refleja en la mesa.
 
 El director de juego podrá pausar o acelerar el tiempo, introducir eventos y decidir cuánto detalle requiere cada trayecto. Así se pueden jugar viajes importantes en tiempo real y resumir desplazamientos rutinarios sin romper la campaña.
 
@@ -207,7 +207,7 @@ El director de juego podrá pausar o acelerar el tiempo, introducir eventos y de
 3. Los jugadores ocupan sus puestos y configuran la nave.
 4. La simulación avanza en tiempo real o con el factor temporal definido por el director de juego.
 5. El puente envía a Foundry eventos normalizados, nunca código Lua libre.
-6. Foundry actualiza diarios, recursos, estados y consecuencias narrativas.
+6. El núcleo aplica y persiste las consecuencias; Foundry actualiza diarios, recursos y estados para reflejarlas en la mesa.
 7. La sesión puede interrumpirse y reanudarse sin duplicar eventos.
 
 ## Arquitectura propuesta
@@ -215,13 +215,14 @@ El director de juego podrá pausar o acelerar el tiempo, introducir eventos y de
 ```text
 ┌─────────────────────┐       API limitada       ┌──────────────────────┐
 │ Módulo Foundry VTT  │ ◄──────────────────────► │ Puente de integración│
-│ campaña y narrativa │                           │ auth, reglas, eventos│
+│ proyección en mesa  │                           │ auth, reglas, eventos│
 └─────────────────────┘                           └──────────┬───────────┘
                                                            │ red privada
                                                            ▼
                                                 ┌────────────────────────┐
                                                 │ Espaciokoop Lagunak    │
-                                                │ simulación autoritativa│
+                                                │ campaña y simulación   │
+                                                │ autoritativas          │
                                                 └────────────────────────┘
 ```
 
@@ -239,7 +240,7 @@ El puente será un proceso separado. De este modo, Foundry y el juego pueden evo
 | Resultado táctico y daños simulados | Espaciokoop Lagunak |
 | Presentación en la mesa virtual: fichas, diarios y escenas de Foundry | Foundry VTT (proyección, no almacén) |
 | Documentos puramente locales de una mesa Foundry (notas del GM, escenas de atrezo) | Foundry VTT |
-| Traducción a consecuencias de campaña | Puente y módulo de Foundry |
+| Adaptación de eventos del núcleo a documentos de la mesa | Puente y módulo de Foundry (transporte y formato, no fuente) |
 
 Dos matices que evitan malentenderlo:
 

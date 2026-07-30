@@ -7,8 +7,9 @@ mismo string que el puente envía a ``/exec.lua``— contra un mundo simulado.
 
 Lo que se comprueba, y por qué cada cosa:
 
-- que el enum se normaliza llegue como número o como cadena, porque el binding
-  puede entregar cualquiera de las dos y de eso no manda el puente;
+- que el enum se acepta con la forma que el binding produce de verdad —cadena en
+  minúsculas con guión bajo, `src/script/enum.h`— y no una inventada: probar una
+  forma que el juego no entrega deja pasar un atraque invisible en partida;
 - que un valor no reconocido publica ``null`` y NO un estado inventado: la
   consola dibujaría un atraque que no está pasando;
 - que un objetivo con indicativo hostil (comillas, control, barra) sigue saliendo
@@ -98,16 +99,18 @@ def _objetivo_lua(callsign: str, dock_class: str | None) -> str:
 @pytest.mark.parametrize(
     "crudo,esperado",
     [
-        ("1", "docking"),
+        # Lo que el binding entrega de verdad (enum.h): minúsculas con guión bajo.
+        ('"docking"', "docking"),
+        ('"docked"', "docked"),
+        # Normalizado a minúsculas, para que una recapitalización aguas arriba
+        # no apague el atraque en silencio.
         ('"Docking"', "docking"),
-        ("2", "docked"),
-        ('"Docked"', "docked"),
+        ('"DOCKED"', "docked"),
     ],
 )
 def test_el_enum_se_normaliza_llegue_como_llegue(tmp_path, crudo, esperado):
-    # El binding puede entregar el enum como número o como cadena, y de eso no
-    # manda el puente: aceptar solo una forma dejaría el atraque invisible según
-    # cómo compile upstream.
+    # Las cadenas del binding real son las minúsculas; las capitalizadas pasan
+    # por la normalización. Aceptar solo una forma dejaría el atraque invisible.
     mundo = _mundo(
         "{ state = " + crudo + ", target = " + _objetivo_lua("Argia", "Station") + " }"
     )
@@ -116,10 +119,15 @@ def test_el_enum_se_normaliza_llegue_como_llegue(tmp_path, crudo, esperado):
     assert docking["target"] == {"callsign": "Argia", "class": "Station"}
 
 
-@pytest.mark.parametrize("crudo", ["0", "nil", '"Undocking"', "7", "{}"])
+@pytest.mark.parametrize(
+    "crudo",
+    ['"not_docking"', '"none"', "nil", '"Undocking"', "1", "2", "7", "{}"],
+)
 def test_lo_que_no_se_reconoce_es_null_y_no_un_estado_inventado(tmp_path, crudo):
-    # `NotDocking` (0) es «no está atracando»: publicar algo ahí haría que la
-    # consola dibujara un atraque que no está pasando, que es peor que no dibujar.
+    # `not_docking` es «no está atracando»: publicar algo ahí haría que la consola
+    # dibujara un atraque que no está pasando, que es peor que no dibujar. Los
+    # números tampoco valen: el binding no los produce, y tomar un 1 cualquiera
+    # por «atracando» convertiría un campo mal leído en un atraque inventado.
     mundo = _mundo("{ state = " + crudo + " }")
     assert _ejecutar_state_lua(tmp_path, mundo)["ship"]["docking"] is None
 
@@ -131,12 +139,12 @@ def test_sin_componente_de_atraque_no_hay_atraque(tmp_path):
 def test_atracando_sin_objetivo_legible_publica_el_estado(tmp_path):
     # «Estamos atracando» es cierto aunque no se sepa contra qué, y callarlo
     # entero perdería el dato que sí hay.
-    docking = _ejecutar_state_lua(tmp_path, _mundo("{ state = 1 }"))["ship"]["docking"]
+    docking = _ejecutar_state_lua(tmp_path, _mundo('{ state = "docking" }'))["ship"]["docking"]
     assert docking == {"state": "docking", "target": None}
 
 
 def test_objetivo_sin_clase_publicada_conserva_el_indicativo(tmp_path):
-    mundo = _mundo("{ state = 2, target = " + _objetivo_lua("Hondar 4", None) + " }")
+    mundo = _mundo('{ state = "docked", target = ' + _objetivo_lua("Hondar 4", None) + " }")
     docking = _ejecutar_state_lua(tmp_path, mundo)["ship"]["docking"]
     assert docking["target"] == {"callsign": "Hondar 4", "class": None}
 
@@ -146,7 +154,7 @@ def test_un_indicativo_hostil_no_rompe_el_json(tmp_path):
     # fuera el compartido, json.loads reventaría antes de llegar a la aserción.
     hostil = 'Bad" .. string.char(1) .. "\\\\Name'
     mundo = _mundo(
-        "{ state = 1, target = (function() local t = {} "
+        '{ state = "docking", target = (function() local t = {} '
         f'function t:getCallSign() return "{hostil}" end '
         "return t end)() }"
     )
@@ -166,6 +174,12 @@ def test_contrato_anclado_al_binding_real():
     assert 'ComponentHandler<DockingPort>::name("docking_port")' in components
     assert "BIND_MEMBER(DockingPort, state)" in components
     assert "BIND_MEMBER(DockingPort, target)" in components
+    # Y la forma EXACTA del enum, que es el bug que se colaría si solo se ancla
+    # el nombre del campo: el binding escribe minúsculas con guión bajo, y una
+    # plantilla que espere "Docking" publica `null` con las pruebas en verde.
+    enum_h = (raiz / "src" / "script" / "enum.h").read_text(encoding="utf-8")
+    assert 'case DockingPort::State::Docking: lua_pushstring(L, "docking")' in enum_h
+    assert 'case DockingPort::State::Docked: lua_pushstring(L, "docked")' in enum_h
     assert "object.components.docking_port" in bridge._CONTACTS_LUA
     assert "ship.components.docking_port" in bridge._STATE_LUA
 

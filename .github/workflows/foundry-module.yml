@@ -3,21 +3,33 @@ name: Foundry module
 on:
   push:
     branches: [main]
-    paths:
-      - "foundry-module/**"
-      - ".github/workflows/foundry-module.yml"
+  # Sin `paths:` a propósito (#361). Con el filtro en el disparador, un PR que no
+  # toca el módulo no producía NINGÚN check run, y un check requerido que no
+  # existe deja el PR esperando para siempre. El filtro vive ahora dentro, donde
+  # saltar un job lo deja `skipped` —reportado— en vez de inexistente.
   pull_request:
-    paths:
-      - "foundry-module/**"
-      - ".github/workflows/foundry-module.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
+  changes:
+    name: Filtro de rutas (módulo)
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.filtro.outputs.run }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+      - id: filtro
+        uses: ./.github/actions/filtro-rutas
+        with:
+          rutas: '^(foundry-module/|\.github/workflows/foundry-module\.yml$|\.github/actions/)'
+
   tests:
     name: Tests del módulo Foundry (Node)
+    needs: changes
+    if: ${{ needs.changes.outputs.run == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
@@ -36,3 +48,16 @@ jobs:
           done
       - name: Ejecutar tests del módulo
         run: node --test foundry-module/tests/*.test.mjs
+
+  puerta:
+    name: Puerta del módulo Foundry
+    # `always()` para que la puerta exista incluso cuando todo lo que vigila se
+    # ha saltado: ese es justo el caso que tiene que reportar verde.
+    if: always()
+    needs: [changes, tests]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+      - uses: ./.github/actions/puerta
+        with:
+          resultados: ${{ toJSON(needs) }}

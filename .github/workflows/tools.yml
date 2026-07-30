@@ -9,27 +9,33 @@ name: Tools
 on:
   push:
     branches: [main]
-    paths:
-      - "tools/**"
-      - ".github/workflows/tools.yml"
-      # La trazabilidad de nombres DP depende de estos dos ficheros tanto como
-      # de la propia herramienta (#310).
-      - "scripts/public_domain_names_scenario_utility.lua"
-      - "docs/DOMINIO_PUBLICO_SCIFI.md"
+  # El filtro se mudó del disparador a un job (#361): con `paths:` aquí, este
+  # check no existía en los PRs de otras áreas y por eso no se podía exigir.
   pull_request:
-    paths:
-      - "tools/**"
-      - ".github/workflows/tools.yml"
-      - "scripts/public_domain_names_scenario_utility.lua"
-      - "docs/DOMINIO_PUBLICO_SCIFI.md"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
+  changes:
+    name: Filtro de rutas (tools)
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.filtro.outputs.run }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+      - id: filtro
+        uses: ./.github/actions/filtro-rutas
+        with:
+          # La trazabilidad de nombres DP depende del escenario y del documento
+          # tanto como de la propia herramienta (#310).
+          rutas: '^(tools/|\.github/workflows/tools\.yml$|\.github/actions/|scripts/public_domain_names_scenario_utility\.lua$|docs/DOMINIO_PUBLICO_SCIFI\.md$)'
+
   tests:
     name: tools/tests (Linux)
+    needs: changes
+    if: ${{ needs.changes.outputs.run == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
@@ -37,8 +43,20 @@ jobs:
         with:
           python-version: "3.12"
       - name: Instalar dependencias de test
-        run: python3 -m pip install pytest polib==1.2.0
+        # pyyaml lo usa la guardia de las puertas de CI (#361).
+        run: python3 -m pip install pytest polib==1.2.0 pyyaml==6.0.2
       - name: Ejecutar tests de tools/
         run: python3 -m pytest tools/tests/ -q
       - name: Trazabilidad de nombres de dominio público (#310)
         run: python3 tools/check_public_domain_names.py
+
+  puerta:
+    name: Puerta de tools
+    if: always()
+    needs: [changes, tests]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+      - uses: ./.github/actions/puerta
+        with:
+          resultados: ${{ toJSON(needs) }}

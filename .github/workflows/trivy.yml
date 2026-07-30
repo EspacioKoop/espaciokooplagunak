@@ -3,18 +3,11 @@ name: Trivy — imágenes Docker
 on:
   push:
     branches: [main]
-    paths:
-      - ".github/workflows/trivy.yml"
-      - "docker/Dockerfile"
-      - "bridge/Dockerfile"
-      - "bridge/requirements.txt"
+  # El filtro se mudó del disparador a un job (#361). El escaneo sigue sin
+  # correr en los PRs que no tocan las imágenes: lo que cambia es que ahora lo
+  # dice —`skipped`— en vez de no existir.
   pull_request:
     branches: [main]
-    paths:
-      - ".github/workflows/trivy.yml"
-      - "docker/Dockerfile"
-      - "bridge/Dockerfile"
-      - "bridge/requirements.txt"
   schedule:
     - cron: "19 15 * * 1"
   workflow_dispatch:
@@ -27,10 +20,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    name: Filtro de rutas (imágenes)
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.filtro.outputs.run }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+      - id: filtro
+        uses: ./.github/actions/filtro-rutas
+        with:
+          rutas: '^(\.github/workflows/trivy\.yml$|\.github/actions/|docker/Dockerfile$|bridge/Dockerfile$|bridge/requirements\.txt$)'
+
   scan:
+    needs: changes
     # Los tokens de PR de forks no pueden subir SARIF. No usamos
     # pull_request_target porque construiría código no confiable con permisos.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    if: >-
+      needs.changes.outputs.run == 'true'
+      && (github.event_name != 'pull_request'
+          || github.event.pull_request.head.repo.full_name == github.repository)
     name: ${{ matrix.image.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -85,3 +94,14 @@ jobs:
           sarif_file: trivy-${{ matrix.image.name }}.sarif
           category: trivy-${{ matrix.image.name }}
           wait-for-processing: true
+
+  puerta:
+    name: Puerta de imágenes
+    if: always()
+    needs: [changes, scan]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+      - uses: ./.github/actions/puerta
+        with:
+          resultados: ${{ toJSON(needs) }}

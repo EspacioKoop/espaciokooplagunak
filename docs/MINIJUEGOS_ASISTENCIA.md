@@ -1,6 +1,9 @@
 # Asistencia entre puestos con minijuegos de habilidad
 
-- Estado: **diseño previo a implementación** (docs-only)
+- Estado: **diseño fijado; motor puro implementado y probado, sin interfaz ni cableado**
+  (`foundry-module/scripts/asistencia/`, suite `foundry-module/tests/asistencia-*.test.mjs`).
+  Nada de esto está integrado todavía en la interfaz del módulo ni conectado al relé: no hay
+  asistencia jugable en mesa.
 - Issue: [#309](https://github.com/VaroTv7/espaciokooplagunak/issues/309)
 - Fase: **4** (experiencia cooperativa). No forma parte del criterio de salida de Fase 3.
 - Depende de: contrato de minijuegos [#308](https://github.com/VaroTv7/espaciokooplagunak/issues/308)
@@ -263,7 +266,12 @@ Responde a las preguntas del issue y a los comentarios de revisión.
 
 ## Rebanada mínima (cuando llegue Fase 4)
 
-Un solo camino vertical, para validar el marco sin sobreconstruir:
+Un solo camino vertical, para validar el marco sin sobreconstruir. El **motor puro** de esta rebanada
+ya existe y está probado —`bandas.mjs` (banda desde margen, con la inversión de la salvación y la
+regla de la casa opt-in), `enfoques.mjs` (tareas, las tres clases, degradación sin ficha),
+`probabilidad.mjs` (rango de éxito) y `propuesta.mjs` (token efímero, presupuesto de concurrencia,
+consumo solo por el titular)—; lo que **no** existe es interfaz, minijuego de destreza real ni
+cableado con el relé, y esa parte sigue siendo Fase 4:
 
 - **Un puesto asistible**: ingeniería (estabilizar sistema caliente).
 - **Un modo**: propuesta consumible (Modo B) que el ingeniero gasta como su `set_system_coolant`.

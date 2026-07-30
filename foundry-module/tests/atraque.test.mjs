@@ -1,0 +1,79 @@
+// Lectura de atraque en la consola (#391, rebanada 6 de #362).
+//
+// Lo que se está protegiendo no es el formato de una etiqueta: es que la consola
+// no diga nada cuando el puente no ha dicho nada. `docking: null` significa dos
+// cosas a la vez —la nave está libre, o el componente no se pudo leer— y pintar
+// «sin atracar» elige una de las dos sin saberlo.
+
+import test from "node:test";
+import assert from "node:assert/strict";
+
+import { prepareDocking } from "../scripts/ship-view.mjs";
+
+const i18n = {
+  localize: (clave) => clave,
+  format: (clave, datos) => `${clave}:${datos?.target ?? ""}`,
+};
+
+test("sin lectura de atraque no hay nada que pintar", () => {
+  for (const nave of [null, undefined, {}, { docking: null }]) {
+    const salida = prepareDocking(nave, i18n);
+    assert.deepEqual(salida, { estado: null, objetivo: null, etiqueta: null });
+  }
+});
+
+test("un estado que no reconocemos NO se convierte en atraque", () => {
+  // El puente ya normaliza, pero esta capa no puede fiarse de eso: un puente
+  // viejo, un proxy o una prueba pueden entregar cualquier cosa, y de ahí no
+  // puede salir una lámina de atraque.
+  for (const state of ["undocking", "NotDocking", 0, 1, true, null, {}]) {
+    assert.equal(prepareDocking({ docking: { state } }, i18n).estado, null, String(state));
+  }
+});
+
+test("atracando y atracada son estados distintos y se dicen distinto", () => {
+  const atracando = prepareDocking({ docking: { state: "docking" } }, i18n);
+  const atracada = prepareDocking({ docking: { state: "docked" } }, i18n);
+  assert.equal(atracando.estado, "docking");
+  assert.equal(atracada.estado, "docked");
+  assert.equal(atracando.etiqueta, "LAGUNAK.Espacios.Atraque.Atracando");
+  assert.equal(atracada.etiqueta, "LAGUNAK.Espacios.Atraque.Atracada");
+});
+
+test("con objetivo se dice contra qué; sin él, solo el estado", () => {
+  const conObjetivo = prepareDocking(
+    { docking: { state: "docked", target: { callsign: "Argia", class: "Station" } } },
+    i18n,
+  );
+  assert.equal(conObjetivo.etiqueta, "LAGUNAK.Espacios.Atraque.AtracadaEn:Argia");
+  assert.deepEqual(conObjetivo.objetivo, { callsign: "Argia", clase: "Station" });
+
+  // «Estamos atracando» es cierto aunque no se sepa contra qué. La etiqueta NO
+  // rellena el hueco con un «desconocido», que se leería como el nombre del sitio.
+  const sinObjetivo = prepareDocking({ docking: { state: "docking", target: null } }, i18n);
+  assert.equal(sinObjetivo.etiqueta, "LAGUNAK.Espacios.Atraque.Atracando");
+  assert.equal(sinObjetivo.objetivo, null);
+});
+
+test("un objetivo a medias conserva lo que sí publicó el puente", () => {
+  const soloClase = prepareDocking(
+    { docking: { state: "docked", target: { callsign: "", class: "Station" } } },
+    i18n,
+  );
+  // Sin indicativo la etiqueta no lo inventa, pero la clase sigue disponible
+  // para quien quiera dibujar la silueta: son dos datos distintos.
+  assert.equal(soloClase.etiqueta, "LAGUNAK.Espacios.Atraque.Atracada");
+  assert.deepEqual(soloClase.objetivo, { callsign: null, clase: "Station" });
+
+  const soloIndicativo = prepareDocking(
+    { docking: { state: "docking", target: { callsign: "Hondar 4" } } },
+    i18n,
+  );
+  assert.deepEqual(soloIndicativo.objetivo, { callsign: "Hondar 4", clase: null });
+});
+
+test("sin i18n sigue devolviendo algo legible en vez de undefined", () => {
+  const salida = prepareDocking({ docking: { state: "docked", target: { callsign: "Argia" } } }, null);
+  assert.equal(typeof salida.etiqueta, "string");
+  assert.ok(salida.etiqueta.includes("Argia"));
+});

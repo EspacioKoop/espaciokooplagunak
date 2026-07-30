@@ -81,3 +81,11 @@ sigue vigente tras los cambios que upstream haya hecho en esa área:
 ## Contribuir al proyecto original
 
 Una corrección general que no dependa de Espaciokoop Lagunak puede proponerse también a EmptyEpsilon siguiendo sus reglas. La aceptación upstream no se presupone y la discusión debe mantener separados ambos repositorios.
+
+### Parches locales enviables aguas arriba
+
+Cambios nuestros sobre archivos heredados que **no** dependen de este fork y conviene ofrecer a EmptyEpsilon. Mientras no se acepten son divergencia, así que se listan aquí para no olvidarlos en la próxima sincronización:
+
+| Archivo | Qué hace | Origen | Estado |
+|---|---|---|---|
+| `CMakeLists.txt` (bloque `WITH_DISCORD`) + `cmake/DiscordGameSdk.cmake` | Comprueba la descarga y la extracción del SDK de Discord y aborta la configuración con un diagnóstico correcto. Antes, un archivo roto dejaba configurar y el build moría seis minutos después por una cabecera ausente, señalando al culpable equivocado. El propio módulo dice que conviene ofrecerlo aguas arriba; esta fila es lo que impide que ese «conviene» se pierda. | [#400](https://github.com/VaroTv7/espaciokooplagunak/issues/400) | sin enviar |

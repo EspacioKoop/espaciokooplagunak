@@ -1,3 +1,4 @@
+import { desmontarLamina, montarLaminaContacto } from "./lamina-contacto.mjs";
 import { proyectarParaPuesto } from "./proyeccion-puesto.mjs";
 import { prepareSystemRows } from "./ship-view.mjs";
 
@@ -334,6 +335,10 @@ export function crearClaseMapaV2() {
      * contacto ya seleccionado lo deselecciona. */
     _onRender(context, options) {
       super._onRender?.(context, options);
+      // Ver el comentario equivalente en la ruta V1: remontar detiene la lámina
+      // anterior, que es lo que evita bucles huérfanos al cambiar de selección,
+      // y la parada va contra `this` porque la raíz no sobrevive a un render.
+      montarLaminaContacto(this.element, this.detalleVigente, { dueño: this });
       // El selector no re-renderiza: basta con cambiar el puesto y el bucle de
       // animación ya pinta la vista nueva en el siguiente fotograma. Un render
       // aquí reconstruiría el DOM del part y cerraría el propio desplegable.
@@ -366,6 +371,7 @@ export function crearClaseMapaV2() {
     }
 
     _onClose(options) {
+      desmontarLamina(this.element, this);
       // Invalida cualquier #sondear en vuelo: su respuesta tardía morirá en
       // la comparación de generación sin rearmar el polling.
       this.#generacion += 1;
@@ -396,6 +402,10 @@ export function crearClaseMapaV2() {
           callsign: d.callsign,
           color: d.color,
           tipo: d.tipo ?? desconocido,
+          // La clase se escribe además de dibujarse: la lámina es refuerzo, no
+          // el único sitio donde se puede leer con qué se está uno encontrando.
+          clase: d.clase,
+          claseLabel: d.clase ?? desconocido,
           faccion: d.esJugador ? propia : d.faccion ?? desconocido,
           distanciaLabel: game.i18n.format("LAGUNAK.EstadoNave.DistanciaUnidades", {
             distance: Math.round(d.distancia),
@@ -405,6 +415,9 @@ export function crearClaseMapaV2() {
           }),
         };
       }
+      // Se conserva para el pintor de la lámina: al enganchar el DOM la
+      // plantilla ya está resuelta y el contexto no llega hasta allí.
+      this.detalleVigente = detalle;
       return {
         conexion: this.conexion,
         conexionOk: this.conexion === "ok",

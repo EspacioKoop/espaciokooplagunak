@@ -1,7 +1,7 @@
 import { STATIONS, normalizeStation } from "./station-assignment.mjs";
 import { isActionAllowed } from "./station-actions.mjs";
 import { SISTEMAS_INGENIERIA, NIVELES_POTENCIA, NIVELES_REFRIGERANTE } from "./ingenieria-control.mjs";
-import { prepareSystemRows } from "./ship-view.mjs";
+import { prepareDocking, prepareSystemRows } from "./ship-view.mjs";
 import { filasCrudas, filasDegradadas } from "./sensores-lista.mjs";
 import { retratoTripulanteDataUri } from "./retrato-tripulante.mjs";
 
@@ -166,11 +166,20 @@ function metricsFor(station, ship, contactsPayload, i18n, crewCount = 0) {
   const hull = percent(ship?.hull, ship?.hull_max);
   const energy = percent(ship?.energy, ship?.energy_max);
   const hot = hottestSystem(systems);
+  // Atraque (#391). Sin lectura del puente no se dibuja la fila: «sin atracar»
+  // sería una afirmación que nadie ha hecho —el puente publica null tanto si la
+  // nave está libre como si el componente no dijo nada— y esta consola no
+  // inventa el hueco (#353: ausencia no es cero).
+  const atraque = prepareDocking(ship, i18n);
 
   switch (station) {
     case "captain":
       return [
-        metric(i18n, "Nave", String(ship?.callsign ?? "—")),
+        // Atracada, el capitán quiere ver dónde está antes que el indicativo de
+        // su propia nave, que no ha cambiado desde que empezó la guardia.
+        atraque.estado
+          ? metric(i18n, "Atraque", atraque.etiqueta, "good")
+          : metric(i18n, "Nave", String(ship?.callsign ?? "—")),
         metric(i18n, "Casco", ratioLabel(ship?.hull, ship?.hull_max), hull < 35 ? "danger" : "normal", hull),
         metric(i18n, "Energia", ratioLabel(ship?.energy, ship?.energy_max), energy < 25 ? "danger" : "normal", energy),
         metric(i18n, "Escudos", localize(i18n, ship?.shields_active ? "LAGUNAK.Espacios.Activos" : "LAGUNAK.Espacios.Inactivos"), ship?.shields_active ? "good" : "warning"),
@@ -180,7 +189,9 @@ function metricsFor(station, ship, contactsPayload, i18n, crewCount = 0) {
         metric(i18n, "Rumbo", `${integer(ship?.heading)}°`),
         metric(i18n, "Velocidad", format(i18n, "LAGUNAK.Espacios.Valor.Velocidad", { value: velocity(ship) })),
         metric(i18n, "Posicion", `${integer(ship?.position?.x)}, ${integer(ship?.position?.y)}`),
-        metric(i18n, "Destino", String(ship?.destination?.name ?? "—")),
+        ...(atraque.estado
+          ? [metric(i18n, "Atraque", atraque.etiqueta, "good")]
+          : [metric(i18n, "Destino", String(ship?.destination?.name ?? "—"))]),
       ];
     case "engineering":
       return [
@@ -312,6 +323,10 @@ export function buildWorkspaceModel({
     ? contactsPayload
     : (sensores ? { contacts: sensores.contactos, degradado: true } : null);
   const crew = crewRows(users, moduleId, i18n);
+  // La misma lectura que usa `metricsFor`: si el texto y la lámina salieran de
+  // dos llamadas con criterios distintos, la consola podría dibujar un atraque
+  // que su propia matriz de métricas no menciona.
+  const atraque = prepareDocking(ship, i18n);
 
   if (!definition) {
     return {
@@ -329,6 +344,13 @@ export function buildWorkspaceModel({
     stationCode: localize(i18n, `LAGUNAK.Espacios.${normalized}.Codigo`),
     stationIcon: definition.icon,
     accent: definition.accent,
+    // Lo que la lámina 3D necesita, y NADA si no hay atraque (#391): el modelo
+    // no lleva un objeto vacío que la plantilla tenga que interpretar. La clase
+    // puede ser null y ahí la lámina cae en el casco de serie, como en #374 —
+    // una nave genérica dice «hay algo ahí», un hueco dice «esto está roto».
+    atraque: atraque.estado
+      ? { estado: atraque.estado, clase: atraque.objetivo?.clase ?? null }
+      : null,
     isNavigation: normalized === "navigation",
     // Acciones operativas por puesto (#236/#238/#240): disponibles aunque el
     // tripulante no tenga telemetría —la orden es intención, la simulación es

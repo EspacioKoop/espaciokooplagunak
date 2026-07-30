@@ -1,3 +1,4 @@
+import { desmontarLamina, montarLaminaContacto } from "./lamina-contacto.mjs";
 import { proyectarParaPuesto } from "./proyeccion-puesto.mjs";
 import { prepareSystemRows } from "./ship-view.mjs";
 
@@ -309,6 +310,12 @@ export function crearClaseMapaV1() {
      * clic selecciona, clic en el seleccionado deselecciona. */
     activateListeners(html) {
       super.activateListeners(html);
+      // Lámina del contacto seleccionado (#362). Se remonta en cada render:
+      // montar otra lámina de esta ventana detiene la anterior, así que cambiar
+      // de selección no deja un bucle huérfano pintando sobre un lienzo que ya
+      // no está en el documento. La parada se guarda contra `this` y no contra
+      // la raíz porque un render puede sustituir la raíz entera.
+      montarLaminaContacto(this.element?.[0], this.detalleVigente, { dueño: this });
       // Ver el comentario de la ruta V2: cambiar de vista no re-renderiza.
       html.find("[data-lagunak-puesto-vista]").on("change", (ev) => {
         this.puestoVista = ev.currentTarget?.value ?? "captain";
@@ -345,6 +352,7 @@ export function crearClaseMapaV1() {
     }
 
     async close(options) {
+      desmontarLamina(this.element?.[0], this);
       // Invalida cualquier #sondear en vuelo (ver comentario en #sondear).
       this.#generacion += 1;
       clearTimeout(this.#timer);
@@ -373,8 +381,13 @@ export function crearClaseMapaV1() {
         const d = prepararDetalleContacto(contactoSeleccionado, centro);
         detalle = {
           callsign: d.callsign,
+          clase: d.clase,
           color: d.color,
           tipo: d.tipo ?? desconocido,
+          // La clase se escribe además de dibujarse: la lámina es refuerzo, no
+          // el único sitio donde se puede leer con qué se está uno encontrando.
+          clase: d.clase,
+          claseLabel: d.clase ?? desconocido,
           faccion: d.esJugador ? propia : d.faccion ?? desconocido,
           distanciaLabel: game.i18n.format("LAGUNAK.EstadoNave.DistanciaUnidades", {
             distance: Math.round(d.distancia),
@@ -384,6 +397,9 @@ export function crearClaseMapaV1() {
           }),
         };
       }
+      // Se conserva para el pintor de la lámina: al enganchar el DOM la
+      // plantilla ya está resuelta y el contexto no llega hasta allí.
+      this.detalleVigente = detalle;
       return {
         conexion: this.conexion,
         conexionOk: this.conexion === "ok",

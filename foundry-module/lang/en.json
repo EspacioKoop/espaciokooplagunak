@@ -239,6 +239,11 @@
   "LAGUNAK.Espacios.Metrica.Velocidad": "Speed",
   "LAGUNAK.Espacios.Metrica.Posicion": "Position",
   "LAGUNAK.Espacios.Metrica.Destino": "Destination",
+  "LAGUNAK.Espacios.Metrica.Atraque": "Docking",
+  "LAGUNAK.Espacios.Atraque.Atracando": "Docking",
+  "LAGUNAK.Espacios.Atraque.AtracandoEn": "Docking at {target}",
+  "LAGUNAK.Espacios.Atraque.Atracada": "Docked",
+  "LAGUNAK.Espacios.Atraque.AtracadaEn": "Docked at {target}",
   "LAGUNAK.Espacios.Metrica.Sistemas": "Systems",
   "LAGUNAK.Espacios.Metrica.PicoTermico": "Heat peak",
   "LAGUNAK.Espacios.Metrica.Contactos": "Contacts",
@@ -426,5 +431,6 @@
   "LAGUNAK.Minijuegos.Ajustes.CiegaGrande.Pista": "Never drops below the small blind: that would be a table with the rules backwards.",
   "LAGUNAK.Minijuegos.Accion.SentarAutomatico": "Seat a bot",
   "LAGUNAK.Minijuegos.Accion.QuitarAutomatico": "Remove a bot",
-  "LAGUNAK.Minijuegos.Mesa.NombreAutomatico": "Bot {numero}"
+  "LAGUNAK.Minijuegos.Mesa.NombreAutomatico": "Bot {numero}",
+  "LAGUNAK.MapaVivo.Detalle.Clase": "Class"
 }

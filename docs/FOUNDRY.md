@@ -69,6 +69,18 @@ la vista no defendería nada. Sin lectura de radar no se difunde ningún contact
 calla. El GM conserva su sondeo crudo: degradar a la tripulación no le quita
 precisión a quien dirige.
 
+`/v1/state` publica además el atraque de la nave propia (#391) en `docking`:
+`state` vale `docking` o `docked` y **nunca un tercer valor**, con el objetivo en
+`target` (indicativo y clase) cuando se puede leer. Sale del componente
+`docking_port` del juego, que ya expone `state` y `target` a Lua, así que no hay
+divergencia con upstream. El binding entrega ese enum como cadena en minúsculas
+(`docking`, `docked`, `not_docking`, `none`: ver `src/script/enum.h`); el puente
+normaliza a minúsculas y descarta todo lo demás, `not_docking` incluido.
+`docking` es `null` tanto si la nave está libre como si el componente no se pudo leer: son dos cosas distintas que el juego no distingue
+desde fuera, y por eso la consola no dibuja «sin atracar» —afirmarlo sería elegir
+una de las dos sin saber cuál—. El estado va en texto en la consola; cualquier
+representación visual futura es refuerzo, no la única vía al dato.
+
 El control de tempo inicial es binario: `pauseGame()` / `unpauseGame()` son las
 únicas APIs verificadas en headless. No se ofrece aceleración ni se inventa un
 estado consultable porque `setGameSpeed`, `getGameSpeed` y un getter de pausa no

@@ -83,8 +83,13 @@ if(WITH_DISCORD)
   file(MAKE_DIRECTORY "${DISCORD_INCLUDE_PATH}")
   if(NOT EXISTS "${DISCORD_INCLUDE_PATH}/discord_game_sdk.h")
     set(DISCORD_GAME_SDK "${DOWNLOADS_DIR}/discord_game_sdk.zip")
-    file(DOWNLOAD "https://dl-game-sdk.discordapp.net/latest/discord_game_sdk.zip" "${DISCORD_GAME_SDK}" TIMEOUT 60 TLS_VERIFY ON)
-    execute_process(COMMAND ${CMAKE_COMMAND} -E tar -xf "${DISCORD_GAME_SDK}" WORKING_DIRECTORY "${EXTERNALS_DIR}/discord")
+    # Descarga y extracción comprobadas, en su propio módulo para que las
+    # pruebas puedan ejercitar los caminos de error (#400).
+    include(DiscordGameSdk)
+    discord_game_sdk_obtener(
+      "${EXTERNALS_DIR}/discord"
+      "${DISCORD_INCLUDE_PATH}/discord_game_sdk.h"
+      "${DISCORD_GAME_SDK}")
     if(WIN32 AND CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
       # Discord uses Windows.h (capital W) and that does not play nice when cross-compiling.
       # we want to patch with a lowercase windows.h

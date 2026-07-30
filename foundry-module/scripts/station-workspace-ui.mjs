@@ -299,19 +299,22 @@ function pintarCascoPropio(root, modelo) {
 // Es refuerzo y no la única vía: el estado y el nombre del sitio están en la
 // matriz de métricas, en texto, y quien use lector de pantalla no pierde nada.
 const SEMILLA_CIELO_ATRAQUE = 20391;
+// La ranura de la lámina de atraque. Se nombra una vez porque montarla y
+// pararla tienen que referirse a la MISMA, o el desmontaje no encontraría nada.
+const SELECTOR_ATRAQUE = "[data-lagunak-atraque]";
 
 function montarLaminaAtraque(root, modelo, app) {
   // Desmontar SIEMPRE primero, también cuando el atraque ha terminado: si no, al
   // soltar amarras el bucle seguiría girando contra un lienzo que ya no está en
   // el documento. Va contra la instancia de la aplicación y no contra la raíz,
   // por lo que aprendió #374: un render puede sustituir la raíz entera.
-  desmontarLamina(root, app);
+  desmontarLamina(root, app, SELECTOR_ATRAQUE);
   const atraque = modelo?.atraque;
   if (!atraque) return null;
   return montarLaminaContacto(
     root,
     { clase: atraque.clase, color: PIXEL.sinFaccion },
-    { dueño: app, selector: "[data-lagunak-atraque]", cielo: { semilla: SEMILLA_CIELO_ATRAQUE } },
+    { dueño: app, selector: SELECTOR_ATRAQUE, cielo: { semilla: SEMILLA_CIELO_ATRAQUE } },
   );
 }
 

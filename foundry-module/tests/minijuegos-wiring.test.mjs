@@ -49,6 +49,12 @@ async function crearMundo({ jugadores = ["p1", "p2"] } = {}) {
     const userDoc = {
       id,
       isGM,
+      // En Foundry la colección tiene a TODOS los usuarios y la conexión se
+      // lee de `active`; un desconectado sigue en `contents` con `active` en
+      // falso. `cliente` se define más abajo, pero el getter se evalúa tarde.
+      get active() {
+        return cliente.conectado;
+      },
       flags,
       getFlag: (mod, key) => flags[mod]?.[key],
       async setFlag(mod, key, valor) {
@@ -76,21 +82,34 @@ async function crearMundo({ jugadores = ["p1", "p2"] } = {}) {
     };
 
     const recibidas = [];
+    const accionesRecibidas = []; // en paralelo a `recibidas`, mismo índice
     const relevos = [];
     const cliente = {
       id,
       userDoc,
       hooks,
       recibidas, // vistas privadas que ESTE cliente aceptó
+      accionesRecibidas,
       relevos,
       conectado: true,
       game: {
         user: userDoc,
+        // Imita la COLECCIÓN de Foundry, no un array: producción lee
+        // `game.users.contents` y filtra por `u.active`. Con un array pelado y
+        // sin `active`, `usuariosConectados()` daba [] y el arnés validaba un
+        // reparto que en producción no ocurre.
         get users() {
-          const lista = clientes.filter((c) => c.conectado).map((c) => c.userDoc);
-          lista.activeGM = clientes.find((c) => c.conectado && c.userDoc.isGM)?.userDoc ?? null;
-          lista.get = (uid) => lista.find((u) => u.id === uid) ?? null;
-          return lista;
+          const todos = clientes.map((c) => c.userDoc);
+          return {
+            contents: todos,
+            [Symbol.iterator]: () => todos[Symbol.iterator](),
+            get: (uid) => todos.find((u) => u.id === uid) ?? null,
+            get activeGM() {
+              return todos.find((u) => u.active && u.isGM) ?? null;
+            },
+            filter: (fn) => todos.filter(fn),
+            map: (fn) => todos.map(fn),
+          };
         },
         settings: {
           register: (mod, key, cfg) => {
@@ -126,7 +145,10 @@ async function crearMundo({ jugadores = ["p1", "p2"] } = {}) {
       },
     };
 
-    hooks.on("lagunakMinijuegoVistaPrivada", (vista) => recibidas.push(vista));
+    hooks.on("lagunakMinijuegoVistaPrivada", (vista, acciones) => {
+      recibidas.push(vista);
+      accionesRecibidas.push(acciones);
+    });
     hooks.on("lagunakMinijuegoRelevoCoordinador", (info) => relevos.push(info ?? true));
     clientes.push(cliente);
     return cliente;
@@ -300,6 +322,29 @@ test("el botón rota: quien pagó la ciega pequeña no la vuelve a pagar", async
     pagoP1 !== 1 || pagoP2 !== 2,
     `p1 vuelve a pagar la ciega pequeña: no rota (p1 ${pagoP1}, p2 ${pagoP2})`,
   );
+});
+
+test("REGRESIÓN: el conectado que NO se ha sentado también recibe vista y acciones", async () => {
+  // Esta es la ruta que solo existe si `usuariosConectados()` devuelve algo:
+  // con lista vacía, `vistasPrivadas` recae en los jugadores SENTADOS y el
+  // mirón se queda sin vista, sin poder ofrecerle «sentarse». El fallback hacía
+  // que las demás pruebas siguieran en verde y tapaba el agujero.
+  const mesa = await crearMundo();
+  const [p1, p2] = mesa.jugadores;
+  const miron = await mesa.arrancar(mesa.crearCliente("miron"), "-miron");
+
+  mesa.gm.conHooks(() => mesa.gm.wiring.abrirMesa({ id: "mesa-1", nombreJuego: "poker" }));
+  await mesa.proponer(p1, "join");
+  await mesa.proponer(p2, "join");
+  await mesa.proponer(mesa.gm, "start");
+
+  const suya = miron.recibidas.at(-1);
+  assert.ok(suya, "el conectado sin sentarse no recibió NINGUNA vista dirigida");
+  // Se le manda exactamente la pública: ni mano ni secretos.
+  assert.equal(suya.juegoPrivado?.tuMano, undefined, "al mirón le llegó una mano");
+  // Y con sus acciones, que es lo que permite a la interfaz ofrecerle entrar.
+  const acciones = miron.accionesRecibidas.at(-1);
+  assert.ok(acciones, "el mirón recibió vista sin acciones: la ventana no puede ofrecerle nada");
 });
 
 test("REGRESIÓN: el sobre se lee del User, no del diferencial", async () => {

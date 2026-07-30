@@ -333,6 +333,22 @@ variantes y efectos sobre la campaña.
    reglas es una forma cara de acabar enseñando un botón que el coordinador va a
    rechazar.
 5. Arte pixel-art, teclado, reduced-motion e i18n.
+   **Implementado.** Las cartas se dibujan en
+   `foundry-module/scripts/minijuegos/cartas-pixelart.mjs` y entran en la vista
+   por `mesa-vista.mjs`, que las pide como data URI: no hay assets externos ni
+   peticiones de red desde la mesa. El teclado sale gratis porque las acciones
+   son `<button type="button">` en el orden DOM de la mesa, sin controles
+   sintéticos que reimplementen el foco. La fase de la mano vive en una región
+   `role="status" aria-live="polite"`, así que el cambio de turno se anuncia sin
+   robar el foco a quien esté decidiendo.
+
+   **Bajo `prefers-reduced-motion` no hay nada que detener**, y es una decisión,
+   no un olvido: el bloque `lagunak-mesa` de `foundry-module/styles/lagunak.css`
+   no declara ni una `animation` ni una `transition`. El reparto se pinta ya
+   repartido. Una mesa cuya información depende de una animación en curso es una
+   mesa que miente a quien tiene la preferencia puesta, y la alternativa —animar
+   y luego apagarlo— obliga a mantener dos veces la misma verdad. Si algún día
+   entra movimiento aquí, entra con su `@media` en el mismo commit.
 6. Smoke multijugador real con GM, dos jugadores, espectador, reconexión, pérdida
    del coordinador y cancelación/reinicio seguro de la mano.
 

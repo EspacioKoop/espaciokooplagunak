@@ -21,10 +21,28 @@
 # Este bloque es de EmptyEpsilon upstream y el fallo silencioso les afecta
 # igual: conviene ofrecerlo aguas arriba en vez de mantenerlo como divergencia.
 
+# VERSIÓN FIJADA, NO `latest`. Con `latest`, Discord puede cambiar la cabecera
+# bajo los pies entre dos builds del mismo commit: el árbol reproduce distinto
+# según el día, y un cambio incompatible aparecería como un fallo de compilación
+# nuestro. La URL versionada existe y sirve el mismo archivo que `latest`
+# (comprobado: 3.2.1 y `latest` comparten SHA-256). Subir de versión pasa a ser
+# un commit revisable, que es lo que era desde el principio.
+set(DISCORD_SDK_VERSION "3.2.1" CACHE STRING "Pinned Discord game SDK version")
+
 # URL del SDK. Es una variable de caché para que las pruebas puedan apuntar a un
 # archivo local (`file://…`); en un build normal nadie la toca.
-set(DISCORD_SDK_URL "https://dl-game-sdk.discordapp.net/latest/discord_game_sdk.zip"
+set(DISCORD_SDK_URL "https://dl-game-sdk.discordapp.net/${DISCORD_SDK_VERSION}/discord_game_sdk.zip"
     CACHE STRING "URL of the Discord game SDK archive")
+
+# Huella del archivo. Fijar la versión dice QUÉ se pide; el hash comprueba qué
+# llegó, que no es lo mismo: cubre tanto una URL versionada que cambie de
+# contenido como una descarga corrompida en el camino. Se comprueba antes de
+# extraer nada, así que un archivo alterado no llega a tocar el árbol.
+#
+# Vacío = sin comprobar. Es la vía de las pruebas, que sirven archivos propios, y
+# el escape para quien fije otra versión sin hash a mano.
+set(DISCORD_SDK_SHA256 "6757bb4a1f5b42aa7b6707cbf2158420278760ac5d80d40ca708bb01d20ae6b4"
+    CACHE STRING "Expected SHA-256 of the Discord game SDK archive (empty to skip)")
 
 # Deja el SDK extraído en `directorio`, o aborta el configure diciendo por qué.
 #
@@ -52,6 +70,13 @@ function(discord_game_sdk_obtener directorio ruta_cabecera zip)
   if(NOT codigo_descarga EQUAL 0)
     list(GET estado_descarga 1 error_descarga)
     _discord_abortar("Failed to download the Discord game SDK from ${DISCORD_SDK_URL}: ${error_descarga}.")
+  endif()
+
+  if(NOT DISCORD_SDK_SHA256 STREQUAL "")
+    file(SHA256 "${zip}" huella_descargada)
+    if(NOT huella_descargada STREQUAL DISCORD_SDK_SHA256)
+      _discord_abortar("The Discord game SDK archive downloaded from ${DISCORD_SDK_URL} does not match the expected SHA-256 (expected ${DISCORD_SDK_SHA256}, got ${huella_descargada}); it was NOT extracted.")
+    endif()
   endif()
 
   execute_process(

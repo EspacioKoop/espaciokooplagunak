@@ -269,9 +269,10 @@ Responde a las preguntas del issue y a los comentarios de revisión.
 Un solo camino vertical, para validar el marco sin sobreconstruir. El **motor puro** de esta rebanada
 ya existe y está probado —`bandas.mjs` (banda desde margen, con la inversión de la salvación y la
 regla de la casa opt-in), `enfoques.mjs` (tareas, las tres clases, degradación sin ficha),
-`probabilidad.mjs` (rango de éxito) y `propuesta.mjs` (token efímero, presupuesto de concurrencia,
-consumo solo por el titular)—; lo que **no** existe es interfaz, minijuego de destreza real ni
-cableado con el relé, y esa parte sigue siendo Fase 4:
+`probabilidad.mjs` (rango de éxito), `propuesta.mjs` (token efímero, presupuesto de concurrencia,
+consumo solo por el titular) y `temporizacion.mjs` (el reto de destreza determinista del camino
+sin dnd5e)—; lo que **no** existe es interfaz ni cableado con el relé, y esa parte sigue siendo
+Fase 4:
 
 - **Un puesto asistible**: ingeniería (estabilizar sistema caliente).
 - **Un modo**: propuesta consumible (Modo B) que el ingeniero gasta como su `set_system_coolant`.

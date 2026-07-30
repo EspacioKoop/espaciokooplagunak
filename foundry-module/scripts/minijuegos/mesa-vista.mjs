@@ -17,6 +17,13 @@
 // rechazaría la propuesta igual.
 
 import { cartaDataUri, dorsoDataUri } from "./cartas-pixelart.mjs";
+import { fichaDataUri, pilaDeFichas } from "./fichas-pixelart.mjs";
+
+// Cuántas cartas tiene una mano de Texas hold'em y cuántas llegan al tapete.
+// Vive aquí, y no en la plantilla, por la misma razón que `dorsosPropios`: la
+// plantilla no tiene por qué saber a qué se juega.
+const CARTAS_POR_MANO = 2;
+const COMUNITARIAS_TOTALES = 5;
 
 // Acciones del marco de sesión frente a acciones del juego, que llegan con
 // prefijo `act:`. La distinción ya la hace `sesion-motor.mjs`; aquí se
@@ -49,6 +56,28 @@ function carta(codigo) {
 /** Dorso: lo que se pinta donde hay una carta que NO se tiene derecho a ver. */
 function dorso() {
   return { codigo: null, imagen: dorsoDataUri() };
+}
+
+/**
+ * Montón de fichas de una cantidad: una ficha por denominación, con su cuenta.
+ *
+ * Es puro adorno con dos condiciones: no puede aparecer donde no hay cifra
+ * —una mesa antes del reparto no tiene stacks, y dibujar fichas ahí sería
+ * inventarse un estado— y no puede sustituir al número, que sigue escrito al
+ * lado para quien no vea el montón.
+ */
+function monton(cantidad) {
+  return pilaDeFichas(cantidad).map(({ valor, cuenta }) => ({
+    valor,
+    cuenta,
+    imagen: fichaDataUri(valor),
+  }));
+}
+
+/** Tantos huecos como cartas comunitarias falten por salir. */
+function huecos(repartidas) {
+  const faltan = Math.max(0, COMUNITARIAS_TOTALES - repartidas);
+  return Array.from({ length: faltan }, () => ({}));
 }
 
 /**
@@ -97,9 +126,13 @@ export function mesaVista(vista, { userId = "", acciones = [] } = {}) {
       !eresJugador && Array.isArray(vista.espectadores) && vista.espectadores.includes(userId),
     esTuTurno: Boolean(userId) && turno === userId,
     bote: publico?.bote ?? null,
+    botePila: monton(publico?.bote),
     apuestaActual: publico?.apuestaActual ?? null,
     subidaMinima: publico?.subidaMinima ?? null,
     comunitarias: (publico?.comunitarias ?? []).map(carta),
+    // Los huecos son la diferencia entre «aún no han salido» y «esta mano no
+    // llega al river»: sin ellos, el flop y el showdown se ven igual de llenos.
+    huecosComunitarios: huecos((publico?.comunitarias ?? []).length),
     tuMano,
     // Cuántos dorsos pintar cuando no hay mano propia: dos, que es lo que
     // reparte el Texas hold'em. Se dice aquí y no en la plantilla para que la
@@ -115,7 +148,17 @@ export function mesaVista(vista, { userId = "", acciones = [] } = {}) {
         // Lo que sigue puede ser null antes del reparto: la mesa existe
         // antes que la mano.
         stack: enJuego?.stack ?? null,
+        pila: monton(enJuego?.stack),
         apostadoRonda: enJuego?.apostadoRonda ?? null,
+        apuestaPila: monton(enJuego?.apostadoRonda),
+        // Cartas boca abajo del asiento AJENO: solo si esa persona sigue en la
+        // mano. La propia no se dobla aquí — se ve entera más abajo—, y quien
+        // se retiró no tiene cartas que enseñar. Es dorso, nunca deducción: de
+        // la mano ajena este módulo no sabe nada y no puede saberlo.
+        cartasOcultas:
+          !enJuego || enJuego.retirado || asiento.userId === userId
+            ? []
+            : Array.from({ length: CARTAS_POR_MANO }, dorso),
         retirado: enJuego?.retirado ?? false,
         allIn: enJuego?.allIn ?? false,
         controlador: enJuego?.controlador ?? asiento.controlador ?? null,

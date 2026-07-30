@@ -268,3 +268,82 @@ test("lo dirigido manda sobre el respaldo", () => {
     ["watch"],
   );
 });
+
+/* ---- Elementos visuales: fichas, cartas ajenas y huecos ------------------- */
+
+test("el bote y cada pila llevan su montón de fichas, y suma lo mismo que la cifra", () => {
+  const mesa = mesaConDosJugadores();
+  mesa.proponer("p1", "join");
+  mesa.proponer("p2", "join");
+  mesa.proponer("gm", "start");
+
+  const vista = mesaVista(vistaPublicaSesion(mesa.sesion), { userId: "p1" });
+  const suma = (pila) => pila.reduce((t, m) => t + m.valor * m.cuenta, 0);
+  assert.ok(vista.botePila.length > 0, "con ciegas puestas hay bote que dibujar");
+  assert.equal(suma(vista.botePila), vista.bote, "el montón del bote miente sobre el bote");
+  for (const jugador of vista.jugadores) {
+    assert.equal(suma(jugador.pila), jugador.stack, `la pila de ${jugador.userId} no cuadra`);
+    assert.equal(suma(jugador.apuestaPila), jugador.apostadoRonda);
+    for (const monton of jugador.pila) assert.match(monton.imagen, /^data:image\/svg\+xml,/);
+  }
+});
+
+test("antes del reparto no hay fichas que dibujar", () => {
+  // La mesa existe antes que la mano: un asiento sin stack no puede aparecer
+  // con un montón inventado delante.
+  const mesa = mesaConDosJugadores();
+  mesa.proponer("p1", "join");
+
+  const vista = mesaVista(vistaPublicaSesion(mesa.sesion), { userId: "p1" });
+  assert.deepEqual(vista.botePila, []);
+  assert.deepEqual(vista.jugadores[0].pila, []);
+  assert.deepEqual(vista.jugadores[0].apuestaPila, []);
+});
+
+test("el asiento ajeno enseña dorsos, y solo mientras siga en la mano", () => {
+  const mesa = mesaConDosJugadores();
+  mesa.proponer("p1", "join");
+  mesa.proponer("p2", "join");
+  mesa.proponer("gm", "start");
+
+  const vista = mesaVista(vistaPrivadaSesion(mesa.sesion, "p1", poker), { userId: "p1" });
+  const yo = vista.jugadores.find((j) => j.userId === "p1");
+  const otro = vista.jugadores.find((j) => j.userId === "p2");
+  assert.deepEqual(yo.cartasOcultas, [], "la mano propia se ve entera abajo, no doblada aquí");
+  assert.equal(otro.cartasOcultas.length, 2);
+  for (const carta of otro.cartasOcultas) {
+    assert.equal(carta.codigo, null, "un dorso no puede llevar código: sería filtrar la carta");
+  }
+});
+
+test("quien se retira deja de tener cartas que enseñar", () => {
+  const mesa = mesaConDosJugadores();
+  mesa.proponer("p1", "join");
+  mesa.proponer("p2", "join");
+  mesa.proponer("gm", "start");
+  const turno = vistaPublicaSesion(mesa.sesion).juegoPublico.turno;
+  mesa.proponer(turno, "act", { tipo: "fold" });
+
+  const vista = mesaVista(vistaPublicaSesion(mesa.sesion), { userId: "espectador" });
+  const retirado = vista.jugadores.find((j) => j.userId === turno);
+  assert.equal(retirado.retirado, true);
+  assert.deepEqual(retirado.cartasOcultas, []);
+});
+
+test("los huecos completan las cinco comunitarias, y desaparecen según salen", () => {
+  const mesa = mesaConDosJugadores();
+  mesa.proponer("p1", "join");
+  mesa.proponer("p2", "join");
+  mesa.proponer("gm", "start");
+
+  const vista = mesaVista(vistaPublicaSesion(mesa.sesion), { userId: "p1" });
+  assert.equal(vista.comunitarias.length + vista.huecosComunitarios.length, 5);
+  assert.equal(vista.huecosComunitarios.length, 5, "preflop no ha salido ninguna");
+});
+
+test("una mesa que no es póker no se queda con huecos de póker de más", () => {
+  // El modelo no puede inventar huecos donde ya hay cinco cartas ni números
+  // negativos si algún día un juego reparte más.
+  const conSeis = { juegoPublico: { comunitarias: ["As", "Kd", "Qc", "Jh", "Ts", "9d"] } };
+  assert.deepEqual(mesaVista(conSeis, { userId: "p1" }).huecosComunitarios, []);
+});

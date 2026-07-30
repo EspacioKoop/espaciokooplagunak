@@ -516,10 +516,71 @@
 }
 
 .lagunak-mesa-bote {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
   margin: 0 0 0.5rem;
   color: #ffd166;
   font-variant: small-caps;
   letter-spacing: 0.06em;
+}
+
+/* Montón de fichas: una ficha por denominación con su cuenta pegada. El dibujo
+ * es pixel-art de 16×16, así que escala en múltiplos enteros como las cartas.
+ * Es un ATAJO visual: la cifra sigue escrita al lado y el montón va
+ * `aria-hidden`, para no repetir el mismo número a quien escucha. */
+.lagunak-mesa-monton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.lagunak-mesa-monton img {
+  width: 32px; /* ×2 */
+  height: 32px;
+  image-rendering: pixelated;
+}
+
+.lagunak-mesa-cuenta {
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.9;
+}
+
+/* Lo apostado en la ronda, delante del jugador y separado de su pila: en una
+ * mesa son dos montones distintos y confundirlos cambia la lectura de la mano. */
+.lagunak-mesa-apuesta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0 0.25rem;
+  border-left: 2px solid #ff2e88;
+  color: #ffd166;
+}
+
+.lagunak-mesa-apuesta-cifra {
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Cartas boca abajo del asiento ajeno: pequeñas a propósito. Dicen «sigue en la
+ * mano», no se miran. */
+.lagunak-mesa-oculta {
+  width: 20px;
+  height: 28px;
+  image-rendering: pixelated;
+  border: 1px solid #1b263b;
+  flex: 0 0 auto;
+}
+
+/* Hueco de comunitaria por salir: mismo tamaño que la carta, sin dibujo. El
+ * borde punteado es lo que distingue «aún no ha salido» de «no hay carta». */
+.lagunak-mesa-hueco {
+  width: 90px; /* mismo ×3 que la comunitaria */
+  height: 126px;
+  border: 1px dashed rgba(224, 225, 221, 0.35);
+  background: rgba(3, 7, 30, 0.25);
+  box-sizing: border-box;
 }
 
 .lagunak-mesa-comunitarias,
@@ -561,6 +622,12 @@
   .lagunak-mesa-mano img {
     width: 90px; /* ×3 */
     height: 126px;
+  }
+
+  /* El hueco baja con la comunitaria o dejaría de ser su hueco. */
+  .lagunak-mesa-hueco {
+    width: 60px;
+    height: 84px;
   }
 }
 

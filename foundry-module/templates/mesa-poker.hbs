@@ -11,10 +11,20 @@
     {{/if}}
 
     <div class="lagunak-mesa-tapete">
-      <p class="lagunak-mesa-bote">{{boteTexto}}</p>
+      <p class="lagunak-mesa-bote">
+        {{boteTexto}}
+        {{#each botePila}}
+          <span class="lagunak-mesa-monton" aria-hidden="true"
+            ><img src="{{this.imagen}}" alt="" /><span class="lagunak-mesa-cuenta">{{this.cuenta}}</span
+          ></span>
+        {{/each}}
+      </p>
       <ul class="lagunak-mesa-comunitarias" aria-label="{{localize "LAGUNAK.Minijuegos.Mesa.Comunitarias"}}">
         {{#each comunitarias}}
           <li><img src="{{this.imagen}}" alt="{{this.codigo}}" /></li>
+        {{/each}}
+        {{#each huecosComunitarios}}
+          <li class="lagunak-mesa-hueco" aria-label="{{localize "LAGUNAK.Minijuegos.Mesa.PorSalir"}}"></li>
         {{/each}}
       </ul>
     </div>
@@ -25,7 +35,27 @@
           <span class="lagunak-mesa-nombre">{{this.nombre}}</span>
           {{#if this.esBoton}}<span class="lagunak-mesa-disco" title="{{localize "LAGUNAK.Minijuegos.Mesa.Boton"}}" aria-label="{{localize "LAGUNAK.Minijuegos.Mesa.Boton"}}">D</span>{{/if}}
           {{#if this.esAutomatico}}<span class="lagunak-mesa-npc">{{localize "LAGUNAK.Minijuegos.Mesa.Automatico"}}</span>{{/if}}
-          <span class="lagunak-mesa-fichas">{{this.fichasTexto}}</span>
+          {{#each this.cartasOcultas}}
+            <img class="lagunak-mesa-oculta" src="{{this.imagen}}" alt="{{localize "LAGUNAK.Minijuegos.Mesa.Dorso"}}" />
+          {{/each}}
+          {{#if this.apuestaPila.length}}
+            <span class="lagunak-mesa-apuesta" title="{{this.apuestaTexto}}">
+              {{#each this.apuestaPila}}
+                <span class="lagunak-mesa-monton" aria-hidden="true"
+                  ><img src="{{this.imagen}}" alt="" /><span class="lagunak-mesa-cuenta">{{this.cuenta}}</span
+                ></span>
+              {{/each}}
+              <span class="lagunak-mesa-apuesta-cifra">{{this.apuestaTexto}}</span>
+            </span>
+          {{/if}}
+          <span class="lagunak-mesa-fichas">
+            {{#each this.pila}}
+              <span class="lagunak-mesa-monton" aria-hidden="true"
+                ><img src="{{this.imagen}}" alt="" /><span class="lagunak-mesa-cuenta">{{this.cuenta}}</span
+              ></span>
+            {{/each}}
+            {{this.fichasTexto}}
+          </span>
           {{#if this.retirado}}<span class="lagunak-mesa-estado">{{localize "LAGUNAK.Minijuegos.Mesa.Retirado"}}</span>{{/if}}
           {{#if this.allIn}}<span class="lagunak-mesa-estado">{{localize "LAGUNAK.Minijuegos.Mesa.AllIn"}}</span>{{/if}}
         </li>

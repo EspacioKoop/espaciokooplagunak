@@ -360,6 +360,14 @@ int main()
                 == MapEditError::NotFound
             && mixed_session.document() == mixed_document,
         "a group naming a missing object moves NOTHING");
+    expect(mixed_session.removeObjects({"rock-a", "future-thing"})
+                == MapEditError::WrongKind
+            && mixed_session.document() == mixed_document,
+        "a group holding an unsupported object deletes NOTHING - the opaque JSON "
+        "#54 promises to preserve is not collateral of deleting a rock");
+    expect(mixed_session.removeObjects({"rock-a", "ghost"}) == MapEditError::NotFound
+            && mixed_session.document() == mixed_document,
+        "a group naming a missing object deletes NOTHING");
     expect(mixed_session.removeObjects({}) == MapEditError::NotFound
             && mixed_session.document() == mixed_document,
         "an empty group is not an edit");

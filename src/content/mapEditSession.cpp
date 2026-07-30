@@ -202,6 +202,15 @@ MapEditError MapEditSession::removeObjects(const std::vector<std::string>& ids)
 {
     if (ids.empty()) return MapEditError::NotFound;
     auto next = current_document;
+    // Se valida el grupo entero antes de tocar nada: un objeto no soportado es
+    // JSON opaco que el editor conserva sin interpretar, y borrarlo porque venía
+    // en el mismo lote que una roca perdería contenido que no sabemos rehacer.
+    for (const auto& id : ids)
+    {
+        const auto* object = findObject(next, id);
+        if (!object) return MapEditError::NotFound;
+        if (object->kind == MapObjectKind::Unsupported) return MapEditError::WrongKind;
+    }
     for (const auto& id : ids)
     {
         const auto it = std::find_if(next.objects.begin(), next.objects.end(),

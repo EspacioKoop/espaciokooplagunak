@@ -226,3 +226,17 @@ jobs:
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
     - name: Test if lua scripts parse
       run: find scripts/ -iname "*.lua" | xargs -P 4 -n 1 luac -p
+
+  puerta:
+    name: Puerta de build C++/Lua
+    # Los jobs de esta área ya reportaban (se saltan por `if:`, no por `paths:`),
+    # así que aquí la puerta no arregla nada roto: da un nombre estable que exigir
+    # y que no cambia si mañana se parte `linux` en dos o se renombra `luatest`.
+    if: always()
+    needs: [changes, linux, windows-cross, macos, windows, luatest]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+      - uses: ./.github/actions/puerta
+        with:
+          resultados: ${{ toJSON(needs) }}

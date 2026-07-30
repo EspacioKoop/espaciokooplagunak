@@ -229,13 +229,22 @@ El puente será un proceso separado. De este modo, Foundry y el juego pueden evo
 
 ## Autoridad de los datos
 
+**Standalone-first** ([ADR-0008](adr/0008-standalone-first-autoridad-del-nucleo.md), que sustituye a ADR-0002): la campaña pertenece al núcleo. Foundry es una integración **opcional** que proyecta y adapta; el juego tiene que ser jugable, guardable y reanudable sin él.
+
 | Dominio | Fuente autoritativa |
 |---|---|
-| Personajes, fichas, diarios y escenas | Foundry VTT |
+| Progreso de campaña, personajes, atlas, misiones y consecuencias | Espaciokoop Lagunak |
 | Posición, rumbo, velocidad y sistemas de la nave | Espaciokoop Lagunak |
-| Inicio de trayecto y contexto narrativo | Foundry VTT / director de juego |
+| Inicio de trayecto y contexto narrativo | Espaciokoop Lagunak / director de juego |
 | Resultado táctico y daños simulados | Espaciokoop Lagunak |
+| Presentación en la mesa virtual: fichas, diarios y escenas de Foundry | Foundry VTT (proyección, no almacén) |
+| Documentos puramente locales de una mesa Foundry (notas del GM, escenas de atrezo) | Foundry VTT |
 | Traducción a consecuencias de campaña | Puente y módulo de Foundry |
+
+Dos matices que evitan malentenderlo:
+
+- **Proyección no es copia autoritativa.** Que una ficha se vea en Foundry no la convierte en la fuente: si los dos discrepan, manda el núcleo, y el módulo se limita a volver a proyectar.
+- **Lo local sigue siendo local.** Una mesa puede tener sus notas, atrezo y escenas propias en Foundry sin que eso los convierta en campaña canónica. La frontera es si algo hace falta para seguir jugando cuando Foundry no está.
 
 Esta separación evita bucles de sincronización donde ambos sistemas intentan sobrescribir el mismo estado.
 

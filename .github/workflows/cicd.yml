@@ -87,6 +87,14 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
         with:
           path: EmptyEpsilon
+      - name: Discord game SDK cache
+        # El SDK se descarga de dl-game-sdk.discordapp.net en cada configure (#400).
+        # Cachearlo quita la dependencia de red en la mayoría de ejecuciones: el
+        # `if(NOT EXISTS ...)` de CMakeLists.txt se salta la descarga si ya está.
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: _build_win32/externals/discord
+          key: discord-game-sdk-win32-latest
       - name: Build
         run: |
           mkdir -p _build_win32

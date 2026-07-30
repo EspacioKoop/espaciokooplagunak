@@ -12,6 +12,7 @@ import {
   esMasReciente,
 } from "./telemetria-difusion.mjs";
 import { pintarNave } from "./retro3d-lienzo.mjs";
+import { desmontarLamina, montarLaminaContacto } from "./lamina-contacto.mjs";
 import { CASCO_POR_DEFECTO, mallaDesdeCasco } from "./retro3d.mjs";
 import { PIXEL } from "./paleta.mjs";
 
@@ -284,11 +285,45 @@ function pintarCascoPropio(root, modelo) {
   });
 }
 
+// Lámina del objetivo de atraque (#391, rebanada 6 de #362).
+//
+// Reutiliza entera la lámina del contacto: mismo pipeline, misma tabla de cascos
+// por clase, mismo cielo. Lo único propio es CUÁNDO existe —solo mientras hay
+// atraque— y que no depende de una selección: el objetivo lo dice el juego.
+//
+// GameCube y no PSX, por lo mismo que la lámina del contacto: esto se mira FIJO
+// para reconocer contra qué se está atracando; el casco propio se ve de reojo.
+// Y gira, porque una lámina no dice hacia dónde va nadie: dice qué forma tiene, y
+// girar es lo que enseña la silueta entera sin orbitar la cámara a mano.
+//
+// Es refuerzo y no la única vía: el estado y el nombre del sitio están en la
+// matriz de métricas, en texto, y quien use lector de pantalla no pierde nada.
+const SEMILLA_CIELO_ATRAQUE = 20391;
+// La ranura de la lámina de atraque. Se nombra una vez porque montarla y
+// pararla tienen que referirse a la MISMA, o el desmontaje no encontraría nada.
+const SELECTOR_ATRAQUE = "[data-lagunak-atraque]";
+
+function montarLaminaAtraque(root, modelo, app) {
+  // Desmontar SIEMPRE primero, también cuando el atraque ha terminado: si no, al
+  // soltar amarras el bucle seguiría girando contra un lienzo que ya no está en
+  // el documento. Va contra la instancia de la aplicación y no contra la raíz,
+  // por lo que aprendió #374: un render puede sustituir la raíz entera.
+  desmontarLamina(root, app, SELECTOR_ATRAQUE);
+  const atraque = modelo?.atraque;
+  if (!atraque) return null;
+  return montarLaminaContacto(
+    root,
+    { clase: atraque.clase, color: PIXEL.sinFaccion },
+    { dueño: app, selector: SELECTOR_ATRAQUE, cielo: { semilla: SEMILLA_CIELO_ATRAQUE } },
+  );
+}
+
 function bindWorkspaceRoot(root, app) {
   root?.querySelectorAll?.("[data-workspace-action]").forEach((element) => {
     element.addEventListener("click", (event) => handleWorkspaceAction(app, event));
   });
   pintarCascoPropio(root, app.ultimoModelo);
+  montarLaminaAtraque(root, app.ultimoModelo, app);
 }
 
 function initialiseApp(app) {
@@ -357,6 +392,10 @@ function createV2Class() {
     }
 
     _onClose(options) {
+      // Cerrar la consola con atraque en curso dejaba el requestAnimationFrame
+      // vivo contra un lienzo ya retirado: no habrá otro render que lo desmonte.
+      // Se para por la instancia, que es la clave del bucle.
+      desmontarLamina(this.element, this);
       releaseWorkspaceApp(this);
       super._onClose?.(options);
     }
@@ -431,10 +470,15 @@ function createV1Class() {
     activateListeners(html) {
       super.activateListeners(html);
       html.find("[data-workspace-action]").on("click", (event) => handleWorkspaceAction(this, event));
+      // Las dos rutas montan lo MISMO. Si esta se quedara solo con el casco
+      // propio, en el objetivo clásico v11 el atraque saldría en texto y la
+      // lámina simplemente no existiría, sin que nada lo dijera.
       pintarCascoPropio(raizDe(this), this.ultimoModelo);
+      montarLaminaAtraque(raizDe(this), this.ultimoModelo, this);
     }
 
     async close(options) {
+      desmontarLamina(raizDe(this), this);
       releaseWorkspaceApp(this);
       return super.close(options);
     }

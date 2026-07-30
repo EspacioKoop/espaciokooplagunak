@@ -333,8 +333,42 @@ variantes y efectos sobre la campaña.
    reglas es una forma cara de acabar enseñando un botón que el coordinador va a
    rechazar.
 5. Arte pixel-art, teclado, reduced-motion e i18n.
+   **Implementado.** Las cartas se dibujan en
+   `foundry-module/scripts/minijuegos/cartas-pixelart.mjs` y entran en la vista
+   por `mesa-vista.mjs`, que las pide como data URI: no hay assets externos ni
+   peticiones de red desde la mesa. El teclado sale gratis porque las acciones
+   son `<button type="button">` en el orden DOM de la mesa, sin controles
+   sintéticos que reimplementen el foco. La fase de la mano vive en una región
+   `role="status" aria-live="polite"`, así que el cambio de turno se anuncia sin
+   robar el foco a quien esté decidiendo.
+
+   **Bajo `prefers-reduced-motion` no hay nada que detener**, y es una decisión,
+   no un olvido: el bloque `lagunak-mesa` de `foundry-module/styles/lagunak.css`
+   no declara ni una `animation` ni una `transition`. El reparto se pinta ya
+   repartido. Una mesa cuya información depende de una animación en curso es una
+   mesa que miente a quien tiene la preferencia puesta, y la alternativa —animar
+   y luego apagarlo— obliga a mantener dos veces la misma verdad. Si algún día
+   entra movimiento aquí, entra con su `@media` en el mismo commit.
 6. Smoke multijugador real con GM, dos jugadores, espectador, reconexión, pérdida
    del coordinador y cancelación/reinicio seguro de la mano.
+
+   **La mitad ya no necesita humanos.**
+   `foundry-module/tests/minijuegos-wiring.test.mjs` corre GM + dos jugadores
+   contra `minijuegos-wiring.mjs` simulando lo justo de Foundry —ajustes de
+   mundo, `User` con flags, `updateUser` y socket—, y cubre reparto privado,
+   ausencia de secretos en el estado público, conservación de fichas entre
+   manos, rotación del botón, desconexión con reconexión por `pedirVista()` y
+   relevo del coordinador tras un F5 del GM. **Cada cliente es una instancia
+   distinta del módulo** (import con query propia): el cableado guarda estado a
+   nivel de módulo, así que compartir instancia le daría a los jugadores la
+   sesión viva del coordinador y la prueba de privacidad pasaría por
+   construcción en vez de por mérito.
+
+   Lo que sigue exigiendo dos navegadores de verdad es lo que el arnés no puede
+   fingir: que Foundry retransmita `module.<id>` (el fallo de `"socket": true`
+   no existe fuera de un servidor real), el render de las dos ventanas, el
+   pixel-art a tamaño real y la privacidad frente a un jugador que **inspecciona
+   la consola** — que es la prueba que #340 dejó abierta.
 
 El issue #309 puede consumir este marco cuando llegue la Fase 4, pero no puede
 usar el minijuego para emitir órdenes de nave ni saltarse permisos de puesto.

@@ -166,3 +166,39 @@ export function firmaEstadoNaveVisible({
     sistemas: (sistemas ?? []).map((sistema) => sistema.id),
   });
 }
+
+/**
+ * Estado de atraque de la nave propia (#391).
+ *
+ * El puente publica `docking` solo cuando el componente del juego dice que la
+ * nave está atracando o atracada; cualquier otra cosa llega como `null`. Aquí no
+ * se completa ese hueco: sin lectura, `estado: null` y quien lo pinte NO dibuja
+ * nada. Un «sin atracar» inventado es una afirmación, y esto no sabe si la nave
+ * está libre o si el puente simplemente no lo dijo.
+ *
+ * El objetivo es opcional aunque haya estado: «estamos atracando» es cierto
+ * aunque no se sepa contra qué, y el puente lo publica así a propósito.
+ *
+ * @returns {{estado: "docking"|"docked"|null, objetivo: {callsign: string|null,
+ *   clase: string|null}|null, etiqueta: string|null}}
+ */
+export function prepareDocking(ship, i18n) {
+  const crudo = ship?.docking ?? null;
+  const estado = crudo?.state === "docking" || crudo?.state === "docked" ? crudo.state : null;
+  if (!estado) return { estado: null, objetivo: null, etiqueta: null };
+
+  const callsign = typeof crudo.target?.callsign === "string" && crudo.target.callsign !== ""
+    ? crudo.target.callsign
+    : null;
+  const clase = typeof crudo.target?.class === "string" && crudo.target.class !== ""
+    ? crudo.target.class
+    : null;
+  const clave = estado === "docked" ? "Atracada" : "Atracando";
+  // Con indicativo se dice contra qué; sin él, solo el estado. La etiqueta nunca
+  // rellena el hueco con un «desconocido», que se leería como el nombre del sitio.
+  const etiqueta = callsign
+    ? i18n?.format?.(`LAGUNAK.Espacios.Atraque.${clave}En`, { target: callsign })
+      ?? `${clave} · ${callsign}`
+    : i18n?.localize?.(`LAGUNAK.Espacios.Atraque.${clave}`) ?? clave;
+  return { estado, objetivo: callsign || clase ? { callsign, clase } : null, etiqueta };
+}

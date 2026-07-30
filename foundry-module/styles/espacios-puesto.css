@@ -678,3 +678,25 @@ body.lagunak-alerta-roja .lagunak-workspace__crew-portrait::after { background: 
   height: 144px;
   image-rendering: pixelated;
 }
+
+/* Lámina del objetivo de atraque (#391). Comparte marco con el casco propio —es
+ * el mismo lenguaje— pero es un poco mayor: esta se mira fija para reconocer
+ * contra qué se está atracando, y el casco se ve de reojo.
+ *
+ * Aquí SÍ hay animación (la lámina gira), y la para el propio módulo al leer
+ * prefers-reduced-motion: con la preferencia puesta pinta un fotograma y se
+ * queda quieta, así que no hace falta nada en CSS. */
+.lagunak-workspace__atraque {
+  display: flex;
+  justify-content: center;
+  margin: 12px 0;
+  padding: 8px 0;
+  border: 1px solid var(--lagunak-line);
+  background: rgba(0, 0, 0, 0.32);
+}
+
+.lagunak-workspace__atraque canvas {
+  width: 224px;
+  height: 168px;
+  image-rendering: pixelated;
+}

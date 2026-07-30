@@ -378,6 +378,10 @@ function createV2Class() {
     }
 
     _onClose(options) {
+      // Cerrar la consola con atraque en curso dejaba el requestAnimationFrame
+      // vivo contra un lienzo ya retirado: no habrá otro render que lo desmonte.
+      // Se para por la instancia, que es la clave del bucle.
+      desmontarLamina(this.element, this);
       releaseWorkspaceApp(this);
       super._onClose?.(options);
     }
@@ -452,10 +456,15 @@ function createV1Class() {
     activateListeners(html) {
       super.activateListeners(html);
       html.find("[data-workspace-action]").on("click", (event) => handleWorkspaceAction(this, event));
+      // Las dos rutas montan lo MISMO. Si esta se quedara solo con el casco
+      // propio, en el objetivo clásico v11 el atraque saldría en texto y la
+      // lámina simplemente no existiría, sin que nada lo dijera.
       pintarCascoPropio(raizDe(this), this.ultimoModelo);
+      montarLaminaAtraque(raizDe(this), this.ultimoModelo, this);
     }
 
     async close(options) {
+      desmontarLamina(raizDe(this), this);
       releaseWorkspaceApp(this);
       return super.close(options);
     }

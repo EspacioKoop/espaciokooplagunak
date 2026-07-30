@@ -18,6 +18,7 @@
 #include "gui/gui2_textentry.h"
 #include "gui/gui2_togglebutton.h"
 
+#include <algorithm>
 #include <array>
 #include <cerrno>
 #include <cmath>
@@ -25,7 +26,9 @@
 #include <iomanip>
 #include <limits>
 #include <sstream>
+#include <string>
 #include <utility>
+#include <vector>
 
 namespace
 {
@@ -641,6 +644,26 @@ bool GuiContentEditor::beginMapDrag(float world_x, float world_y, float world_to
     if (map_drag.isDragging())
         setStatus(tr("content_editor", "Map object selected; drag to stage its position."));
     return map_drag.isDragging();
+}
+
+bool GuiContentEditor::toggleMapSelection(
+    float world_x, float world_y, float world_to_screen_scale)
+{
+    if (!map_edit_mode) return false;
+    // Con una colocación pendiente, SHIFT no toca la selección: el siguiente
+    // clic está reservado para poner el objeto nuevo y robárselo dejaría al GM
+    // sin saber por qué no aparece nada donde ha pinchado.
+    if (map_placement_kind != MapObjectKind::Unsupported) return false;
+    cancelMapDrag();
+    if (map_drag.toggleAt(map_edit_session, {world_x, world_y}, world_to_screen_scale)
+        != MapDocumentError::None)
+    {
+        setStatus(tr("content_editor", "Map object could not be selected."));
+        return false;
+    }
+    updateMapSelectionButtons();
+    setStatus(tr("content_editor", "Map selection updated; shift-click to add or remove."));
+    return true;
 }
 
 void GuiContentEditor::updateMapDrag(float world_x, float world_y)
@@ -1494,9 +1517,27 @@ const MapObject* GuiContentEditor::selectedMapObject() const
     return editableMapPreviewSelection(map_edit_session, map_drag, map_edit_mode);
 }
 
+std::vector<std::string> GuiContentEditor::selectedSupportedMapObjectIds() const
+{
+    std::vector<std::string> ids;
+    if (current_type != ContentResourceType::Map || !map_edit_mode) return ids;
+    const auto& objects = map_edit_session.document().objects;
+    for (const auto& id : map_drag.selectedIds())
+    {
+        const auto object = std::find_if(objects.begin(), objects.end(),
+            [&](const MapObject& item) { return item.id == id; });
+        // Los tipos futuros nunca fueron seleccionables y aquí tampoco se
+        // cuelan: se descartan en vez de hacer fallar el lote entero, porque el
+        // GM no los ha elegido —no puede— y no tiene forma de quitarlos.
+        if (object != objects.end() && object->kind != MapObjectKind::Unsupported)
+            ids.push_back(id);
+    }
+    return ids;
+}
+
 void GuiContentEditor::updateMapSelectionButtons()
 {
-    const bool enabled = selectedMapObject() != nullptr;
+    const bool enabled = !selectedSupportedMapObjectIds().empty();
     map_rotate_left_button->setEnable(enabled);
     map_rotate_right_button->setEnable(enabled);
     map_delete_selected_button->setEnable(enabled);
@@ -1504,11 +1545,13 @@ void GuiContentEditor::updateMapSelectionButtons()
 
 void GuiContentEditor::rotateSelectedMapObject(float delta_degrees)
 {
-    const auto* selected = selectedMapObject();
-    if (!selected)
+    const auto ids = selectedSupportedMapObjectIds();
+    if (ids.empty())
         return setStatus(tr("content_editor", "Select a supported map object on the radar first."));
-    const auto id = selected->id;
-    if (map_edit_session.rotateObject(id, delta_degrees) != MapEditError::None)
+    // Un solo lote y por tanto una sola entrada de deshacer: girar cinco rocas y
+    // deshacerlo tiene que devolverlas a la vez, no de cinco en cinco pulsaciones
+    // dejando el grupo a medio girar entre medias.
+    if (map_edit_session.rotateObjects(ids, delta_degrees) != MapEditError::None)
         return setStatus(tr("content_editor", "The selected map object could not be rotated."));
     pending_save = "";
     pending_file_export = "";
@@ -1519,11 +1562,10 @@ void GuiContentEditor::rotateSelectedMapObject(float delta_degrees)
 
 void GuiContentEditor::deleteSelectedMapObject()
 {
-    const auto* selected = selectedMapObject();
-    if (!selected)
+    const auto ids = selectedSupportedMapObjectIds();
+    if (ids.empty())
         return setStatus(tr("content_editor", "Select a supported map object on the radar first."));
-    const auto id = selected->id;
-    if (map_edit_session.removeObject(id) != MapEditError::None)
+    if (map_edit_session.removeObjects(ids) != MapEditError::None)
         return setStatus(tr("content_editor", "The selected map object could not be removed."));
     map_drag.clearSelection();
     pending_save = "";

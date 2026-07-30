@@ -4463,6 +4463,10 @@ msgid "Map object removed from staging."
 msgstr "Objeto de mapa eliminado del staging."
 
 msgctxt "content_editor"
+msgid "Map selection updated; shift-click to add or remove."
+msgstr "Selección de mapa actualizada; mayúsculas + clic para añadir o quitar."
+
+msgctxt "content_editor"
 msgid "Map object selected; drag to stage its position."
 msgstr "Objeto de mapa seleccionado; arrástralo para preparar su posición."
 

@@ -37,6 +37,21 @@ export const DIFICULTADES = Object.freeze({
 const MARGEN_BORDE = 0.12;
 
 /**
+ * Rango donde puede caer el CENTRO de la zona. El margen se le aplica al borde
+ * de la zona, no a su centro: si se colocara el centro en `[MARGEN_BORDE,
+ * 1 - MARGEN_BORDE]`, media zona podría quedarse fuera de la franja y el ancho
+ * alcanzable dependería de la semilla —dos retos de la misma dificultad con
+ * probabilidades distintas—. Con esto, `[objetivo - tolerancia, objetivo +
+ * tolerancia]` siempre cabe en `[0, 1]` y la dificultad vuelve a ser la única
+ * variable de balance.
+ */
+function rangoObjetivo(tolerancia) {
+  const minimo = MARGEN_BORDE + tolerancia;
+  const maximo = 1 - MARGEN_BORDE - tolerancia;
+  return { minimo, maximo };
+}
+
+/**
  * Prepara un reto. La zona se coloca con la semilla del coordinador, así que la
  * misma semilla da el mismo reto: se puede reproducir una asistencia sin haberla
  * grabado, igual que una mano de póker de #308.
@@ -45,8 +60,8 @@ export function crearReto({ semilla, dificultad = "normal", inicioMs = 0 }) {
   const ajuste = DIFICULTADES[dificultad];
   if (!ajuste) throw new RangeError(`dificultad desconocida: ${dificultad}`);
   const azar = crearAleatorio(semilla);
-  const libre = 1 - 2 * MARGEN_BORDE;
-  const objetivo = MARGEN_BORDE + azar.siguiente() * libre;
+  const { minimo, maximo } = rangoObjetivo(ajuste.tolerancia);
+  const objetivo = minimo + azar.siguiente() * (maximo - minimo);
   return Object.freeze({
     dificultad,
     objetivo,

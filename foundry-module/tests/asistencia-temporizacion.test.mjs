@@ -94,8 +94,6 @@ test("fuera de la zona no se «casi acierta»: precisión 0 y pifia", () => {
 test("la dificultad estrecha la zona: el mismo acierto vale menos", () => {
   const facil = crearReto({ semilla: "misma", dificultad: "facil" });
   const dificil = crearReto({ semilla: "misma", dificultad: "dificil" });
-  // Mismo objetivo (misma semilla), distinta tolerancia.
-  assert.equal(facil.objetivo, dificil.objetivo);
   assert.ok(dificil.tolerancia < facil.tolerancia);
   assert.ok(DIFICULTADES.dificil.limiteMs < DIFICULTADES.facil.limiteMs);
 });
@@ -130,4 +128,22 @@ test("produce las MISMAS bandas que la tirada: es lo que sostiene el balance", (
     assert.ok(Object.values(BANDAS).includes(banda), `banda desconocida: ${banda}`);
   }
   assert.ok(vistas.has(BANDAS.PIFIA) && vistas.has(BANDAS.CRITICO));
+});
+
+test("la zona cabe entera en la franja para toda semilla y dificultad", () => {
+  // El balance tiene que salir de la dificultad, no de la semilla: si media
+  // zona se saliera de [0, 1], el ancho alcanzable cambiaría de un reto a otro
+  // y la UI tendría que recortar una zona que se promete lejos de los extremos.
+  for (const dificultad of Object.keys(DIFICULTADES)) {
+    const tolerancia = DIFICULTADES[dificultad].tolerancia;
+    for (let i = 0; i < 500; i += 1) {
+      const reto = crearReto({ semilla: `barrido-${dificultad}-${i}`, dificultad });
+      const inferior = reto.objetivo - tolerancia;
+      const superior = reto.objetivo + tolerancia;
+      assert.ok(inferior >= 0, `${dificultad}/${i}: borde inferior ${inferior} < 0`);
+      assert.ok(superior <= 1, `${dificultad}/${i}: borde superior ${superior} > 1`);
+      // Y el ancho alcanzable es SIEMPRE el mismo: 2 * tolerancia.
+      assert.equal(Math.round((superior - inferior) * 1e9) / 1e9, 2 * tolerancia);
+    }
+  }
 });

@@ -17,7 +17,7 @@
 // rechazaría la propuesta igual.
 
 import { cartaDataUri, dorsoDataUri } from "./cartas-pixelart.mjs";
-import { fichaDataUri, pilaDeFichas } from "./fichas-pixelart.mjs";
+import { ANCHO, altoDePila, pilaDataUri, pilaDeFichas } from "./fichas-pixelart.mjs";
 
 // Cuántas cartas tiene una mano de Texas hold'em y cuántas llegan al tapete.
 // Vive aquí, y no en la plantilla, por la misma razón que `dorsosPropios`: la
@@ -70,7 +70,15 @@ function monton(cantidad) {
   return pilaDeFichas(cantidad).map(({ valor, cuenta }) => ({
     valor,
     cuenta,
-    imagen: fichaDataUri(valor),
+    // El montón se dibuja apilado: la altura es lo que se lee de un vistazo.
+    // `ancho`/`alto` son el tamaño del lienzo del arte y viajan con la imagen
+    // para escribirlos como atributos del `<img>`: con ellos el navegador
+    // reserva el hueco por proporción antes de decodificar el `data:` URI, y la
+    // fila del asiento no da un salto cada vez que alguien apuesta y el montón
+    // cambia de altura. El tamaño en pantalla lo sigue poniendo el CSS.
+    imagen: pilaDataUri(valor, cuenta),
+    ancho: ANCHO,
+    alto: altoDePila(cuenta),
   }));
 }
 

@@ -153,7 +153,9 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
   - **Arte procedural** — generado en el cliente, cero binarios en el repositorio. Los colores viven
     **solo** en `scripts/paleta.mjs`, con la frontera vivo/registrado y una prueba que falla si otro
     módulo de arte declara un color propio (#351). Grabado en `scripts/laminas-clasicas.mjs`;
-    pixelart en `scripts/nave-sprite.mjs` y `scripts/minijuegos/cartas-pixelart.mjs`; música
+    pixelart en `scripts/nave-sprite.mjs`, `scripts/minijuegos/cartas-pixelart.mjs` y
+    `scripts/minijuegos/fichas-pixelart.mjs` (volumen por planos de color, nunca degradados: el 3D
+    del casco es #362 y es otro lenguaje); música
     determinista por semilla en `scripts/musica-procedural.mjs`.
   - **Minijuegos** — `scripts/minijuegos/` (motor de póker, evaluador de manos, agente automático,
     sesión) y su enganche en `scripts/minijuegos-wiring.mjs` (#308). La sesión viva del coordinador

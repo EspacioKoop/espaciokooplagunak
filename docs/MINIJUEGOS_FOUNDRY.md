@@ -334,9 +334,15 @@ variantes y efectos sobre la campaña.
    rechazar.
 5. Arte pixel-art, teclado, reduced-motion e i18n.
    **Implementado.** Las cartas se dibujan en
-   `foundry-module/scripts/minijuegos/cartas-pixelart.mjs` y entran en la vista
-   por `mesa-vista.mjs`, que las pide como data URI: no hay assets externos ni
-   peticiones de red desde la mesa. El teclado sale gratis porque las acciones
+   `foundry-module/scripts/minijuegos/cartas-pixelart.mjs` y las fichas en
+   `fichas-pixelart.mjs`; ambas entran en la vista por `mesa-vista.mjs`, que las
+   pide como data URI: no hay assets externos ni peticiones de red desde la
+   mesa. Las fichas se apilan de verdad —la altura del montón es lo primero que
+   se lee de una mesa—, con el dibujo acotado a cinco fichas y la cuenta exacta
+   escrita al lado, que es la que no puede mentir. La denominación se distingue
+   por número de cuñas (2, 3, 4, 6, 8) visibles también en el canto, que es lo
+   que no tapa el montón, y la silueta va siempre en crema (12:1) contra el
+   fieltro: ningún tono de valor llega a 3:1 contra el tapete. El teclado sale gratis porque las acciones
    son `<button type="button">` en el orden DOM de la mesa, sin controles
    sintéticos que reimplementen el foco. La fase de la mano vive en una región
    `role="status" aria-live="polite"`, así que el cambio de turno se anuncia sin

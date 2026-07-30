@@ -15,7 +15,7 @@
         {{boteTexto}}
         {{#each botePila}}
           <span class="lagunak-mesa-monton" aria-hidden="true"
-            ><img src="{{this.imagen}}" alt="" /><span class="lagunak-mesa-cuenta">{{this.cuenta}}</span
+            ><img src="{{this.imagen}}" alt="" width="{{this.ancho}}" height="{{this.alto}}" /><span class="lagunak-mesa-cuenta">{{this.cuenta}}</span
           ></span>
         {{/each}}
       </p>
@@ -42,7 +42,7 @@
             <span class="lagunak-mesa-apuesta" title="{{this.apuestaTexto}}">
               {{#each this.apuestaPila}}
                 <span class="lagunak-mesa-monton" aria-hidden="true"
-                  ><img src="{{this.imagen}}" alt="" /><span class="lagunak-mesa-cuenta">{{this.cuenta}}</span
+                  ><img src="{{this.imagen}}" alt="" width="{{this.ancho}}" height="{{this.alto}}" /><span class="lagunak-mesa-cuenta">{{this.cuenta}}</span
                 ></span>
               {{/each}}
               <span class="lagunak-mesa-apuesta-cifra">{{this.apuestaTexto}}</span>
@@ -51,7 +51,7 @@
           <span class="lagunak-mesa-fichas">
             {{#each this.pila}}
               <span class="lagunak-mesa-monton" aria-hidden="true"
-                ><img src="{{this.imagen}}" alt="" /><span class="lagunak-mesa-cuenta">{{this.cuenta}}</span
+                ><img src="{{this.imagen}}" alt="" width="{{this.ancho}}" height="{{this.alto}}" /><span class="lagunak-mesa-cuenta">{{this.cuenta}}</span
               ></span>
             {{/each}}
             {{this.fichasTexto}}

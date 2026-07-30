@@ -531,13 +531,16 @@
  * `aria-hidden`, para no repetir el mismo número a quien escucha. */
 .lagunak-mesa-monton {
   display: inline-flex;
-  align-items: center;
+  align-items: flex-end; /* las fichas se apoyan en la mesa, no flotan */
   gap: 0.1rem;
 }
 
+/* El montón crece hacia ARRIBA: el alto depende de cuántas fichas lleve, así
+ * que se fija el ancho (×2 de los 22 px del arte) y el alto lo pone el
+ * `viewBox`. Un alto fijo aplastaría los montones altos. */
 .lagunak-mesa-monton img {
-  width: 32px; /* ×2 */
-  height: 32px;
+  width: 44px;
+  height: auto;
   image-rendering: pixelated;
 }
 
@@ -647,7 +650,8 @@
 
 .lagunak-mesa-asiento {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
+  min-height: 2.4rem;
   gap: 0.45rem;
   padding: 0.25rem 0.4rem;
   border-left: 3px solid transparent;

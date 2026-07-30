@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { lineasResultado, mesaVista, accionesVisibles } from "../scripts/minijuegos/mesa-vista.mjs";
+import { ANCHO, altoDePila } from "../scripts/minijuegos/fichas-pixelart.mjs";
 import * as poker from "../scripts/minijuegos/poker-motor.mjs";
 import { configuracionPoker } from "../scripts/minijuegos/mesa-config.mjs";
 import {
@@ -285,6 +286,27 @@ test("el bote y cada pila llevan su montón de fichas, y suma lo mismo que la ci
     assert.equal(suma(jugador.pila), jugador.stack, `la pila de ${jugador.userId} no cuadra`);
     assert.equal(suma(jugador.apuestaPila), jugador.apostadoRonda);
     for (const monton of jugador.pila) assert.match(monton.imagen, /^data:image\/svg\+xml,/);
+  }
+});
+
+test("cada montón lleva el tamaño de su lienzo, para que la fila no dé saltos", () => {
+  // El `<img>` escribe estos dos como atributos: sin ellos el navegador no sabe
+  // qué hueco reservar hasta decodificar el `data:` URI, y el asiento pega un
+  // salto cada vez que una apuesta cambia la altura del montón. Y `alto` tiene
+  // que ser el del dibujo de verdad: si mintiera, la ficha saldría estirada.
+  const mesa = mesaConDosJugadores();
+  mesa.proponer("p1", "join");
+  mesa.proponer("p2", "join");
+  mesa.proponer("gm", "start");
+
+  const vista = mesaVista(vistaPublicaSesion(mesa.sesion), { userId: "p1" });
+  const montones = [...vista.botePila, ...vista.jugadores.flatMap((j) => j.pila)];
+  assert.ok(montones.length > 0, "no hay montones que comprobar");
+  for (const monton of montones) {
+    assert.equal(monton.ancho, ANCHO);
+    assert.equal(monton.alto, altoDePila(monton.cuenta));
+    const svg = decodeURIComponent(monton.imagen.replace(/^data:image\/svg\+xml,/, ""));
+    assert.match(svg, new RegExp(`viewBox="0 0 ${monton.ancho} ${monton.alto}"`));
   }
 });
 

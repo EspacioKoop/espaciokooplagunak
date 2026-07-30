@@ -24,6 +24,28 @@ export const PROPUESTA_ERRORES = Object.freeze({
   ACCION_NO_AUTORIZADA: "accion-no-autorizada",
   PRESUPUESTO_AGOTADO: "presupuesto-agotado",
   YA_ASISTE: "ya-asiste",
+  YA_CONSUMIDA: "ya-consumida",
+  ACCION_SIN_MARGEN: "accion-sin-margen",
+  PARAMETRO_INVALIDO: "parametro-invalido",
+});
+
+/**
+ * Parámetro que el tier puede modelar, por acción, con el rango que el puente
+ * YA autoriza (`bridge/command_models.py`). Es una envolvente, no la autoridad:
+ * el puente revalida y el juego recorta por su cuenta.
+ *
+ * Una acción ausente aquí NO PUEDE producir propuesta. Es deliberado: sin un
+ * parámetro continuo donde colocar el tier, «éxito» y «crítico» darían
+ * exactamente la misma orden y el grado de éxito sería decorado. `set_shields`
+ * es booleana y `set_target_heading` es circular —a mitad de camino entre dos
+ * rumbos no hay «menos ayuda», hay otro rumbo—, así que ambas quedan fuera de
+ * este corte en vez de prometer un efecto que no existe.
+ */
+export const PARAMETRO_POR_ACCION = Object.freeze({
+  set_impulse: Object.freeze({ campo: "value", rango: Object.freeze([-1, 1]) }),
+  set_warp: Object.freeze({ campo: "level", rango: Object.freeze([0, 4]), entero: true }),
+  set_system_power: Object.freeze({ campo: "level", rango: Object.freeze([0, 3]) }),
+  set_system_coolant: Object.freeze({ campo: "level", rango: Object.freeze([0, 10]) }),
 });
 
 /**
@@ -96,6 +118,9 @@ export function crearPropuesta({
   if (!permitidas.includes(accion)) {
     return { ok: false, error: PROPUESTA_ERRORES.ACCION_NO_AUTORIZADA };
   }
+  if (!PARAMETRO_POR_ACCION[accion]) {
+    return { ok: false, error: PROPUESTA_ERRORES.ACCION_SIN_MARGEN };
+  }
   return {
     ok: true,
     propuesta: Object.freeze({
@@ -122,13 +147,17 @@ export function propuestaVigente(propuesta, ahora = Date.now()) {
  * bajo se queda en la mitad inferior del margen de ayuda y el alto llega al tope
  * de ese margen — nunca por encima del máximo autorizado.
  */
-export function acotarPorTier({ base, objetivo, rango, tier }) {
+export function acotarPorTier({ base, objetivo, rango, tier, entero = false }) {
   const [min, max] = rango;
   const acotar = (v) => Math.min(max, Math.max(min, v));
   const desde = acotar(Number(base));
   const hasta = acotar(Number(objetivo));
   const fraccion = tier === TIERS.ALTO ? 1 : 0.5;
-  return acotar(desde + (hasta - desde) * fraccion);
+  const valor = acotar(desde + (hasta - desde) * fraccion);
+  // Un warp 2.5 no existe: redondear hacia la base es lo conservador —el tier
+  // bajo nunca se pasa del alto por un redondeo.
+  if (!entero) return valor;
+  return hasta >= desde ? Math.floor(valor) : Math.ceil(valor);
 }
 
 /**
@@ -143,10 +172,18 @@ export function consumirPropuesta({
   emisorId,
   emisorPuesto,
   params = {},
+  base,
+  consumidos = [],
   ahora = Date.now(),
 }) {
   if (!propuestaVigente(propuesta, ahora)) {
     return { ok: false, error: PROPUESTA_ERRORES.CADUCADA };
+  }
+  // Antes que nada, el replay: una propuesta gastada no vuelve a servir aunque
+  // le queden 119 segundos de vigencia. Sin esto, un único éxito autorizaría
+  // órdenes ilimitadas durante toda la ventana y «consumible» sería una palabra.
+  if (consumidos.includes(propuesta.nonce)) {
+    return { ok: false, error: PROPUESTA_ERRORES.YA_CONSUMIDA, consumidos };
   }
   if (!emisorId || emisorPuesto !== propuesta.puestoAsistido) {
     return { ok: false, error: PROPUESTA_ERRORES.NO_ES_TITULAR };
@@ -155,9 +192,33 @@ export function consumirPropuesta({
   if (!permitidas.includes(propuesta.accion)) {
     return { ok: false, error: PROPUESTA_ERRORES.ACCION_NO_AUTORIZADA };
   }
+  const spec = PARAMETRO_POR_ACCION[propuesta.accion];
+  if (!spec) {
+    return { ok: false, error: PROPUESTA_ERRORES.ACCION_SIN_MARGEN };
+  }
+  // El tier no es una etiqueta en el crédito: decide DÓNDE, dentro del rango
+  // que la orden ya permitía, cae el parámetro. Por eso hace falta la lectura
+  // actual del puesto: la ayuda mueve desde donde está la nave hacia lo pedido,
+  // y el tier bajo se queda a mitad de ese trayecto.
+  const objetivo = Number(params?.[spec.campo]);
+  const desde = Number(base);
+  if (!Number.isFinite(objetivo) || !Number.isFinite(desde)) {
+    return { ok: false, error: PROPUESTA_ERRORES.PARAMETRO_INVALIDO };
+  }
+  const valor = acotarPorTier({
+    base: desde,
+    objetivo,
+    rango: spec.rango,
+    tier: propuesta.tier,
+    entero: spec.entero === true,
+  });
   return {
     ok: true,
-    orden: { action: propuesta.accion, params },
+    orden: { action: propuesta.accion, params: { ...params, [spec.campo]: valor } },
+    // Estado puro: quien llame guarda esto y lo vuelve a pasar. Ni Set mutable
+    // ni flag escondido, para que el rechazo del segundo consumo sea probable
+    // sin Foundry delante.
+    consumidos: Object.freeze([...consumidos, propuesta.nonce]),
     // Quién apoyó y quién decidió, por separado: la ayuda amplifica al
     // especialista, no diluye la identidad del puesto.
     credito: Object.freeze({

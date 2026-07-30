@@ -72,14 +72,17 @@ test("EL AYUDANTE NO EMITE: la orden solo sale si la gasta el titular", () => {
     propuesta,
     emisorId: "ingeniero-7",
     emisorPuesto: "engineering",
-    params: { system: "reactor", level: 0.8 },
+    params: { system: "reactor", level: 8 },
+    base: 4,
     ahora: T0,
   });
   assert.equal(titular.ok, true);
   // Y sale por el mismo camino que cualquier orden suya.
   const orden = buildStationOrder({ ...titular.orden, nonce: "n2" });
   assert.equal(orden.action, "set_system_coolant");
-  assert.equal(orden.params.level, 0.8);
+  // Tier bajo (éxito): a mitad de camino entre la lectura actual y lo pedido.
+  assert.equal(orden.params.level, 6);
+  assert.equal(orden.params.system, "reactor");
 });
 
 test("el crédito distingue quién decidió de quién apoyó", () => {
@@ -90,6 +93,8 @@ test("el crédito distingue quién decidió de quién apoyó", () => {
     propuesta,
     emisorId: "ingeniero-7",
     emisorPuesto: "engineering",
+    params: { system: "reactor", level: 8 },
+    base: 4,
     ahora: T0,
   });
   assert.equal(credito.asistenteId, "ayudante-1");
@@ -143,4 +148,122 @@ test("presupuesto de concurrencia: no todos ayudan siempre al ingeniero", () => 
     }).ok,
     true,
   );
+});
+
+test("una propuesta se gasta UNA vez: el segundo consumo se rechaza", () => {
+  // Sin esto, un único éxito autorizaría órdenes ilimitadas durante los 120 s
+  // de vigencia y «token consumible» no querría decir nada.
+  const { propuesta } = nueva();
+  const gasto = consumirPropuesta({
+    propuesta,
+    emisorId: "ingeniero-7",
+    emisorPuesto: "engineering",
+    params: { system: "reactor", level: 8 },
+    base: 4,
+    ahora: T0,
+  });
+  assert.equal(gasto.ok, true);
+  assert.deepEqual([...gasto.consumidos], ["n1"]);
+
+  const replay = consumirPropuesta({
+    propuesta,
+    emisorId: "ingeniero-7",
+    emisorPuesto: "engineering",
+    params: { system: "reactor", level: 8 },
+    base: 4,
+    consumidos: gasto.consumidos,
+    // Todavía dentro de la ventana: lo que lo rechaza es el gasto, no el reloj.
+    ahora: T0 + 1_000,
+  });
+  assert.equal(replay.ok, false);
+  assert.equal(replay.error, PROPUESTA_ERRORES.YA_CONSUMIDA);
+  assert.equal(propuestaVigente(propuesta, T0 + 1_000), true);
+});
+
+test("el tier no es decorado: bajo y alto emiten parámetros distintos", () => {
+  const consumo = (banda) => {
+    const { propuesta } = nueva({ banda, nonce: `n-${banda}` });
+    return consumirPropuesta({
+      propuesta,
+      emisorId: "ingeniero-7",
+      emisorPuesto: "engineering",
+      params: { system: "reactor", level: 8 },
+      base: 4,
+      ahora: T0,
+    });
+  };
+  const bajo = consumo(BANDAS.EXITO);
+  const alto = consumo(BANDAS.CRITICO);
+  assert.notEqual(bajo.orden.params.level, alto.orden.params.level);
+  assert.equal(bajo.orden.params.level, 6);
+  assert.equal(alto.orden.params.level, 8);
+  // Y ninguno sale del rango que la orden ya permitía (0..10 en el puente).
+  for (const r of [bajo, alto]) {
+    assert.ok(r.orden.params.level >= 0 && r.orden.params.level <= 10);
+  }
+});
+
+test("ni el crítico pasa del tope autorizado por pedir de más", () => {
+  const { propuesta } = nueva({ banda: BANDAS.CRITICO });
+  const r = consumirPropuesta({
+    propuesta,
+    emisorId: "ingeniero-7",
+    emisorPuesto: "engineering",
+    params: { system: "reactor", level: 999 },
+    base: 4,
+    ahora: T0,
+  });
+  assert.equal(r.orden.params.level, 10);
+});
+
+test("una acción sin parámetro donde colocar el tier no produce propuesta", () => {
+  // Preferimos no ofrecer la ayuda a ofrecerla mintiendo: en una orden booleana
+  // o circular, éxito y crítico darían exactamente la misma orden.
+  const rumbo = nueva({ puestoAsistido: "navigation", accion: "set_target_heading" });
+  assert.equal(rumbo.error, PROPUESTA_ERRORES.ACCION_SIN_MARGEN);
+  const escudos = nueva({ puestoAsistido: "weapons", accion: "set_shields" });
+  assert.equal(escudos.error, PROPUESTA_ERRORES.ACCION_SIN_MARGEN);
+});
+
+test("sin lectura actual del puesto no se emite nada", () => {
+  // El tier se mide DESDE algún sitio. Sin base no hay trayecto que partir, y
+  // adivinarla sería inventarse el efecto de la ayuda.
+  const { propuesta } = nueva();
+  const r = consumirPropuesta({
+    propuesta,
+    emisorId: "ingeniero-7",
+    emisorPuesto: "engineering",
+    params: { system: "reactor", level: 8 },
+    ahora: T0,
+  });
+  assert.equal(r.ok, false);
+  assert.equal(r.error, PROPUESTA_ERRORES.PARAMETRO_INVALIDO);
+});
+
+test("warp: el tier respeta que el rango sea entero y nunca supera al alto", () => {
+  const consumo = (banda) => {
+    const { propuesta } = crearPropuesta({
+      tareaId: "salto-limpio",
+      puestoAsistido: "navigation",
+      accion: "set_warp",
+      banda,
+      asistenteId: "ayudante-1",
+      nonce: `w-${banda}`,
+      ahora: T0,
+    });
+    return consumirPropuesta({
+      propuesta,
+      emisorId: "piloto-3",
+      emisorPuesto: "navigation",
+      params: { level: 3 },
+      base: 0,
+      ahora: T0,
+    });
+  };
+  const bajo = consumo(BANDAS.EXITO).orden.params.level;
+  const alto = consumo(BANDAS.CRITICO).orden.params.level;
+  assert.equal(Number.isInteger(bajo), true);
+  assert.equal(Number.isInteger(alto), true);
+  assert.ok(bajo < alto);
+  assert.ok(alto <= 4);
 });

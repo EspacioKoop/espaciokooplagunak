@@ -1,6 +1,9 @@
 # Asistencia entre puestos con minijuegos de habilidad
 
-- Estado: **diseño previo a implementación** (docs-only)
+- Estado: **diseño fijado; motor puro implementado y probado, sin interfaz ni cableado**
+  (`foundry-module/scripts/asistencia/`, suite `foundry-module/tests/asistencia-*.test.mjs`).
+  Nada de esto está integrado todavía en la interfaz del módulo ni conectado al relé: no hay
+  asistencia jugable en mesa.
 - Issue: [#309](https://github.com/VaroTv7/espaciokooplagunak/issues/309)
 - Fase: **4** (experiencia cooperativa). No forma parte del criterio de salida de Fase 3.
 - Depende de: contrato de minijuegos [#308](https://github.com/VaroTv7/espaciokooplagunak/issues/308)
@@ -202,6 +205,18 @@ El grado de éxito elige *dónde* dentro de un rango autorizado, nunca abre un r
 mecánico exigiera un modificador inexistente hoy en `STATION_ACTIONS`, **eso es otro issue del puente**,
 no algo que #309 arrastre de tapadillo.
 
+Dos consecuencias que el motor hace cumplir con código, no con prosa:
+
+- **El token se gasta una sola vez.** El consumo lleva `nonce` y estado explícito de gastados; un
+  segundo consumo se rechaza aunque queden 119 segundos de vigencia. La vigencia caduca la ayuda no
+  usada; lo que impide reutilizarla es el gasto.
+- **Solo hay propuesta donde el tier puede morder.** El tier se aplica al parámetro continuo de la
+  orden, desde la lectura actual del puesto hacia lo pedido: tier bajo se queda a mitad de camino,
+  tier alto llega al objetivo, y ninguno cruza el tope del puente. Una orden **booleana**
+  (`set_shields`) o **circular** (`set_target_heading`) no tiene ese margen —a mitad de camino entre
+  dos rumbos no hay «menos ayuda», hay otro rumbo—, así que **no produce token** en vez de prometer un
+  efecto que no existiría.
+
 ### dnd5e es enriquecimiento, no dependencia dura
 El módulo debe seguir funcionando **sin dnd5e**. Esto es un **gate adicional**, no la ruta moderna del
 smoke: la ruta moderna de #29 se ejercita **con dnd5e**, en la última versión estable de Foundry, y
@@ -263,7 +278,13 @@ Responde a las preguntas del issue y a los comentarios de revisión.
 
 ## Rebanada mínima (cuando llegue Fase 4)
 
-Un solo camino vertical, para validar el marco sin sobreconstruir:
+Un solo camino vertical, para validar el marco sin sobreconstruir. El **motor puro** de esta rebanada
+ya existe y está probado —`bandas.mjs` (banda desde margen, con la inversión de la salvación y la
+regla de la casa opt-in), `enfoques.mjs` (tareas, las tres clases, degradación sin ficha),
+`probabilidad.mjs` (rango de éxito), `propuesta.mjs` (token efímero, presupuesto de concurrencia,
+consumo solo por el titular) y `temporizacion.mjs` (el reto de destreza determinista del camino
+sin dnd5e)—; lo que **no** existe es interfaz ni cableado con el relé, y esa parte sigue siendo
+Fase 4:
 
 - **Un puesto asistible**: ingeniería (estabilizar sistema caliente).
 - **Un modo**: propuesta consumible (Modo B) que el ingeniero gasta como su `set_system_coolant`.

@@ -1,0 +1,346 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { inflateSync } from "node:zlib";
+
+import {
+  LADO_OBJETIVO,
+  MAX_DATA_URI,
+  construirRejillaFicha,
+  generarFichaNave,
+} from "../scripts/ficha-nave.mjs";
+import { MOTIVOS, describirNaveDeActor, planificarFichas } from "../scripts/ficha-nave-aplicacion.mjs";
+import {
+  adler32,
+  base64,
+  codificarPngIndexado,
+  crc32,
+  hexARgb,
+  pngADataUri,
+  zlibSinComprimir,
+} from "../scripts/png-indexado.mjs";
+import { PIXEL } from "../scripts/paleta.mjs";
+
+const RUTA_FICHA = new URL("../scripts/ficha-nave.mjs", import.meta.url);
+const RUTA_PNG = new URL("../scripts/png-indexado.mjs", import.meta.url);
+
+/** Descompone un PNG en la lista de sus chunks, para inspeccionarlo de verdad. */
+function leerChunks(bytes) {
+  const chunks = [];
+  let i = 8; // tras la firma
+  while (i < bytes.length) {
+    const len = new DataView(bytes.buffer, bytes.byteOffset + i, 4).getUint32(0);
+    const tipo = String.fromCharCode(...bytes.subarray(i + 4, i + 8));
+    chunks.push({ tipo, datos: bytes.subarray(i + 8, i + 8 + len) });
+    i += 12 + len;
+  }
+  return chunks;
+}
+
+// --- El codificador produce PNG de verdad, no algo que lo parezca ---
+
+test("crc32 y adler32 dan los valores canónicos de la especificación", () => {
+  const abc = Uint8Array.from([...("abc")].map((c) => c.charCodeAt(0)));
+  assert.equal(crc32(abc), 0x352441c2);
+  assert.equal(adler32(abc), 0x024d0127);
+});
+
+test("base64 propio coincide con el de la plataforma, también con relleno", () => {
+  for (const texto of ["", "a", "ab", "abc", "abcd", "\u0000\u00ff\u0080cualquiera"]) {
+    const bytes = Uint8Array.from([...texto].map((c) => c.charCodeAt(0)));
+    assert.equal(base64(bytes), Buffer.from(bytes).toString("base64"));
+  }
+});
+
+test("hexARgb acepta hex de 6 dígitos y rechaza cualquier otra forma", () => {
+  assert.deepEqual(hexARgb("#ffb703"), [255, 183, 3]);
+  assert.deepEqual(hexARgb("000000"), [0, 0, 0]);
+  for (const malo of ["#fff", "rgba(1,2,3,0.5)", "", "#gggggg"]) {
+    assert.throws(() => hexARgb(malo), /hexadecimal/);
+  }
+});
+
+test("el flujo zlib de bloques stored lo descomprime zlib de verdad", () => {
+  for (const largo of [0, 1, 1000, 65535, 65536, 70000]) {
+    const crudo = Uint8Array.from({ length: largo }, (_, i) => (i * 7) & 255);
+    const salida = inflateSync(Buffer.from(zlibSinComprimir(crudo)));
+    assert.deepEqual(Uint8Array.from(salida), crudo, `falla con ${largo} bytes`);
+  }
+});
+
+test("el PNG tiene firma, chunks en orden y CRC válido en todos", () => {
+  const bytes = codificarPngIndexado(construirRejillaFicha({ clave: "crucero", color: "#3aa0ff" }));
+  assert.deepEqual([...bytes.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
+
+  const chunks = leerChunks(bytes);
+  assert.deepEqual(chunks.map((c) => c.tipo), ["IHDR", "PLTE", "tRNS", "IDAT", "IEND"]);
+
+  // El CRC de cada chunk cubre tipo+datos; si el codificador se equivocara de
+  // tramo, cualquier visor rechazaría la imagen y aquí no se notaría sin esto.
+  let i = 8;
+  while (i < bytes.length) {
+    const len = new DataView(bytes.buffer, bytes.byteOffset + i, 4).getUint32(0);
+    const esperado = new DataView(bytes.buffer, bytes.byteOffset + i + 8 + len, 4).getUint32(0);
+    assert.equal(crc32(bytes.subarray(i + 4, i + 8 + len)), esperado);
+    i += 12 + len;
+  }
+
+  // IHDR: 8 bits por muestra, color type 3 (indexado), sin entrelazar.
+  const ihdr = chunks[0].datos;
+  assert.equal(ihdr[8], 8);
+  assert.equal(ihdr[9], 3);
+  assert.equal(ihdr[12], 0);
+
+  // tRNS deja transparente SOLO el índice 0: si marcara de más, la silueta
+  // saldría agujereada; si no marcara nada, la ficha pintaría un rectángulo.
+  assert.deepEqual([...chunks[2].datos], [0]);
+});
+
+test("los píxeles del PNG son los índices de la rejilla, fila a fila", () => {
+  const rejilla = construirRejillaFicha({ clave: "caza", color: "#3aa0ff", escala: 2, margen: 0 });
+  const chunks = leerChunks(codificarPngIndexado(rejilla));
+  const crudo = Uint8Array.from(inflateSync(Buffer.from(chunks[3].datos)));
+  for (let y = 0; y < rejilla.alto; y += 1) {
+    const inicio = y * (rejilla.ancho + 1);
+    assert.equal(crudo[inicio], 0, "cada fila va con filtro 0");
+    assert.deepEqual(
+      crudo.subarray(inicio + 1, inicio + 1 + rejilla.ancho),
+      rejilla.indices.subarray(y * rejilla.ancho, (y + 1) * rejilla.ancho),
+    );
+  }
+});
+
+// --- La ficha: silueta, tamaño y determinismo ---
+
+test("la rejilla amplía por bloques: cada celda es un cuadrado macizo", () => {
+  const escala = 4;
+  const { ancho, alto, indices } = construirRejillaFicha({
+    clave: "caza",
+    color: "#3aa0ff",
+    escala,
+    margen: 0,
+  });
+  assert.equal(ancho % escala, 0);
+  assert.equal(alto % escala, 0);
+  for (let by = 0; by < alto / escala; by += 1) {
+    for (let bx = 0; bx < ancho / escala; bx += 1) {
+      const referencia = indices[by * escala * ancho + bx * escala];
+      for (let y = 0; y < escala; y += 1) {
+        for (let x = 0; x < escala; x += 1) {
+          assert.equal(indices[(by * escala + y) * ancho + bx * escala + x], referencia);
+        }
+      }
+    }
+  }
+});
+
+test("el margen rodea la silueta de hueco transparente por los cuatro lados", () => {
+  const escala = 3;
+  const margen = 2;
+  const { ancho, alto, indices } = construirRejillaFicha({
+    clave: "crucero",
+    color: "#3aa0ff",
+    escala,
+    margen,
+  });
+  const borde = escala * margen;
+  for (let y = 0; y < alto; y += 1) {
+    for (let x = 0; x < ancho; x += 1) {
+      const enMargen = x < borde || y < borde || x >= ancho - borde || y >= alto - borde;
+      if (enMargen) assert.equal(indices[y * ancho + x], 0, `(${x},${y}) debería ser hueco`);
+    }
+  }
+});
+
+test("la clase desconocida cae en la silueta de serie, como en las láminas", () => {
+  const serie = generarFichaNave({ nave: { clase: "Vogon Constructor Fleet" } });
+  assert.equal(serie, generarFichaNave({ clave: "desconocido" }));
+  assert.notEqual(serie, generarFichaNave({ clave: "crucero" }));
+});
+
+test("la ficha depende solo de la descripción declarativa, no de dónde se use", () => {
+  // Misma nave descrita de dos maneras equivalentes → misma imagen exacta.
+  assert.equal(
+    generarFichaNave({ nave: { clase: "Atlantis Cruiser" }, color: "#ff0000" }),
+    generarFichaNave({ nave: { tipo: "cruiser" }, color: "#ff0000" }),
+  );
+});
+
+test("generarFichaNave es determinista byte a byte entre llamadas", () => {
+  const huella = (uri) => createHash("sha256").update(uri).digest("hex");
+  const a = generarFichaNave({ clave: "carguero", color: "#3aa0ff" });
+  const b = generarFichaNave({ clave: "carguero", color: "#3aa0ff" });
+  assert.equal(huella(a), huella(b));
+});
+
+test("el data-URI es autosuficiente: PNG embebido y ni una URL externa", () => {
+  const uri = generarFichaNave({ clave: "estacion", color: "#8fd694" });
+  // El ancla ^...$ ya es la garantía fuerte: tras el prefijo solo hay
+  // alfabeto base64, así que no cabe ninguna referencia externa. («//» sí
+  // aparece dentro del base64, y buscarlo daría un falso positivo.)
+  assert.match(uri, /^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/);
+  assert.doesNotMatch(uri, /https?:|modules\//);
+  // Redondea el viaje: lo que se decodifica vuelve a ser el PNG codificado.
+  const bytes = Uint8Array.from(Buffer.from(uri.slice("data:image/png;base64,".length), "base64"));
+  assert.deepEqual([...bytes.subarray(1, 4)], [80, 78, 71]);
+});
+
+test("la escala se deriva del lado objetivo y nunca lo supera", () => {
+  // Es la propiedad que hace predecible el peso: sin ella, la silueta más
+  // grande daba la imagen más grande y era la que rozaba el tope.
+  for (const clave of ["jugador", "caza", "carguero", "crucero", "estacion", "desconocido"]) {
+    const { ancho, alto } = construirRejillaFicha({ clave });
+    assert.ok(Math.max(ancho, alto) <= LADO_OBJETIVO, `${clave} mide ${ancho}x${alto}`);
+    // Y no se queda corta: subir un píxel por celda ya se pasaría del objetivo.
+    assert.ok(Math.max(ancho, alto) > LADO_OBJETIVO / 2, `${clave} desaprovecha el lado`);
+  }
+});
+
+test("una escala explícita manda sobre el lado objetivo", () => {
+  const { ancho } = construirRejillaFicha({ clave: "caza", escala: 3, margen: 0 });
+  assert.equal(ancho, 5 * 3); // la silueta del caza mide 5 celdas de ancho
+});
+
+test("todas las siluetas a escala por defecto caben de sobra en el tope", () => {
+  for (const clave of ["jugador", "caza", "carguero", "crucero", "estacion", "desconocido"]) {
+    const uri = generarFichaNave({ clave, color: PIXEL.neutro });
+    assert.ok(uri.length <= MAX_DATA_URI, `${clave} ocupa ${uri.length}`);
+  }
+});
+
+test("pasarse del tope es un error, no un aviso que se ignore", () => {
+  assert.throws(
+    () => generarFichaNave({ clave: "jugador", maxBytes: 100 }),
+    /tope/,
+  );
+});
+
+test("escala y margen no válidos se rechazan en vez de dar una imagen rara", () => {
+  for (const escala of [0, -1, 2.5]) {
+    assert.throws(() => construirRejillaFicha({ clave: "caza", escala }), /Escala/);
+  }
+  for (const margen of [-1, 0.5]) {
+    assert.throws(() => construirRejillaFicha({ clave: "caza", margen }), /Margen/);
+  }
+});
+
+test("el codificador rechaza dimensiones e índices incoherentes", () => {
+  assert.throws(
+    () => codificarPngIndexado({ ancho: 2, alto: 2, indices: new Uint8Array(3), paleta: ["#000000"] }),
+    /índices/,
+  );
+  assert.throws(
+    () => codificarPngIndexado({ ancho: 0, alto: 2, indices: new Uint8Array(0), paleta: ["#000000"] }),
+    /Dimensiones/,
+  );
+  assert.throws(
+    () => codificarPngIndexado({ ancho: 1, alto: 1, indices: new Uint8Array(1), paleta: [] }),
+    /paleta/,
+  );
+});
+
+// --- La prueba que pide el issue: esto NO cuelga de ningún sondeo ---
+
+test("el generador no se engancha a sondeos, hooks, red ni documentos", () => {
+  for (const ruta of [RUTA_FICHA, RUTA_PNG]) {
+    const fuente = readFileSync(ruta, "utf8");
+    // Se mira solo el código: los comentarios explican justamente por qué se
+    // descartaron los tokens vivos y nombran /v1/contacts al hacerlo.
+    const codigo = fuente
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/^\s*\/\/.*$/gm, "");
+    for (const prohibido of [
+      "Hooks", "setInterval", "setTimeout", "requestAnimationFrame",
+      "fetch(", "WebSocket", "/v1/", "bridge-client", "canvas.scene",
+      "game.", "TokenDocument", ".update(", ".createEmbeddedDocuments",
+    ]) {
+      assert.ok(!codigo.includes(prohibido), `${ruta.pathname} no debe mencionar ${prohibido}`);
+    }
+  }
+});
+
+test("el generador solo importa arte puro: paleta y siluetas", () => {
+  const importes = [...readFileSync(RUTA_FICHA, "utf8").matchAll(/from "([^"]+)"/g)].map((m) => m[1]);
+  assert.deepEqual(importes.sort(), ["./nave-sprite.mjs", "./paleta.mjs", "./png-indexado.mjs"]);
+  const importesPng = [...readFileSync(RUTA_PNG, "utf8").matchAll(/from "([^"]+)"/g)];
+  assert.equal(importesPng.length, 0, "el codificador no depende de nada");
+});
+
+test("generar la ficha no escribe nada: la misma entrada no deja estado detrás", () => {
+  // Si el generador guardara algo (caché, documento, contador), dos llamadas
+  // separadas por una tercera con otra entrada dejarían de coincidir.
+  const primera = generarFichaNave({ clave: "caza", color: "#3aa0ff" });
+  generarFichaNave({ clave: "estacion", color: "#ff0000" });
+  assert.equal(generarFichaNave({ clave: "caza", color: "#3aa0ff" }), primera);
+});
+
+test("pngADataUri no inventa cabecera: el prefijo es exactamente el de PNG", () => {
+  assert.equal(pngADataUri(Uint8Array.from([1, 2, 3])), "data:image/png;base64,AQID");
+});
+
+// --- Aplicar la ficha: solo el GM, solo a petición, solo al prototipo ---
+
+test("sin ser GM no se genera ni se planifica una sola escritura", () => {
+  const plan = planificarFichas({ actores: [{ system: {} }], isGM: false });
+  assert.equal(plan.ok, false);
+  assert.equal(plan.motivo, MOTIVOS.noGm);
+  assert.deepEqual(plan.parches, []);
+});
+
+test("sin selección no se escribe nada, y se dice por qué", () => {
+  for (const actores of [[], null, undefined, [null, false]]) {
+    const plan = planificarFichas({ actores, isGM: true });
+    assert.equal(plan.ok, false);
+    assert.equal(plan.motivo, MOTIVOS.sinSeleccion);
+    assert.deepEqual(plan.parches, []);
+  }
+});
+
+test("el parche toca SOLO la textura del token prototipo", () => {
+  const actor = { system: { nave: { clase: "Atlantis Cruiser" } } };
+  const { ok, parches } = planificarFichas({ actores: [actor], isGM: true });
+  assert.equal(ok, true);
+  assert.equal(parches.length, 1);
+  assert.equal(parches[0].actor, actor);
+  // Una sola clave, y con ruta de puntos: nada de reemplazar el prototipo
+  // entero, que se llevaría por delante tamaño, visión y disposición.
+  assert.deepEqual(Object.keys(parches[0].datos), ["prototypeToken.texture.src"]);
+  assert.match(parches[0].datos["prototypeToken.texture.src"], /^data:image\/png;base64,/);
+});
+
+test("planificar no escribe: devuelve el parche y deja el actor intacto", () => {
+  const actor = { system: { nave: { clase: "Fighter" } }, prototypeToken: { texture: { src: "previo.webp" } } };
+  planificarFichas({ actores: [actor], isGM: true });
+  assert.equal(actor.prototypeToken.texture.src, "previo.webp");
+});
+
+test("describirNaveDeActor acepta las formas usuales y tolera la ausencia", () => {
+  assert.deepEqual(describirNaveDeActor({ system: { nave: { clase: "Fighter" } } }).clase, "Fighter");
+  assert.deepEqual(describirNaveDeActor({ system: { ship: { class: "Freighter" } } }).clase, "Freighter");
+  assert.deepEqual(describirNaveDeActor({ system: { tipo: "station" } }).tipo, "station");
+  // Un actor sin nada: no revienta y cae en la silueta de serie.
+  const vacio = describirNaveDeActor({});
+  assert.deepEqual(vacio, { tipo: null, clase: null, subclase: null });
+  assert.equal(generarFichaNave({ nave: vacio }), generarFichaNave({ clave: "desconocido" }));
+});
+
+test("varios actores dan un parche cada uno, y la clase manda en el dibujo", () => {
+  const caza = { system: { nave: { clase: "Fighter" } } };
+  const estacion = { system: { nave: { clase: "Sensor Station" } } };
+  const { parches } = planificarFichas({ actores: [caza, estacion], isGM: true });
+  assert.equal(parches.length, 2);
+  assert.notEqual(
+    parches[0].datos["prototypeToken.texture.src"],
+    parches[1].datos["prototypeToken.texture.src"],
+  );
+});
+
+test("la aplicación tampoco se engancha a sondeos ni toca Foundry", () => {
+  const codigo = readFileSync(new URL("../scripts/ficha-nave-aplicacion.mjs", import.meta.url), "utf8")
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/^\s*\/\/.*$/gm, "");
+  for (const prohibido of ["Hooks", "setInterval", "fetch(", "/v1/", "game.", "canvas.", ".update("]) {
+    assert.ok(!codigo.includes(prohibido), `no debe mencionar ${prohibido}`);
+  }
+});

@@ -306,6 +306,8 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
     "lagunak-diagnostico",
     "lagunak-musica",
     "lagunak-decorado-aleatorio",
+    // Arte de ficha (#354): solo-GM, porque escribe un documento del mundo.
+    "lagunak-ficha-nave",
     // La mesa de minijuegos (#308) la ven todos: es la capa social, y un
     // minijuego al que solo pudiera entrar el GM no sería un minijuego.
     "lagunak-mesa",

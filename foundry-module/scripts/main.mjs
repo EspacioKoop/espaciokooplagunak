@@ -34,6 +34,7 @@ import {
   revokeBridgeTokenAccess,
 } from "./bridge-token-session.mjs";
 import { probarConexion } from "./diagnostico-conexion.mjs";
+import { MOTIVOS, planificarFichas } from "./ficha-nave-aplicacion.mjs";
 import { addStationControl, refrescarPuestos, registerStationFeature } from "./station-ui.mjs";
 import { MINIMO_POR_DEFECTO } from "./requisitos-puesto.mjs";
 import {
@@ -512,6 +513,13 @@ Hooks.on("getSceneControlButtons", (controls) => {
           button: true,
           onClick: () => regenerarDecoradoAleatorio(),
         },
+        {
+          name: "lagunak-ficha-nave",
+          title: "LAGUNAK.Controles.FichaNave",
+          icon: "fa-solid fa-image-portrait",
+          button: true,
+          onClick: () => aplicarFichaNave(),
+        },
       ]
     : [];
 
@@ -617,6 +625,41 @@ async function regenerarDecoradoAleatorio() {
   ui.notifications.info(
     game.i18n.format("LAGUNAK.Notificaciones.DecoradoRegenerado", { semilla: nuevaSemilla }),
   );
+}
+
+/* Arte de ficha para naves narrativas (#354). El GM selecciona en el lienzo los
+ * tokens de las naves que quiere ilustrar y pulsa el botón: se genera un PNG
+ * por Actor y se escribe en su token PROTOTIPO.
+ *
+ * El clic es la única vía. No hay hook que regenere la ficha cuando cambia la
+ * clase de la nave, ni sondeo que la mantenga «al día», porque eso convertiría
+ * un documento persistente del mundo en espejo de un estado efímero — lo que
+ * el issue descartó explícitamente al rechazar los tokens de contacto vivos.
+ *
+ * Se escribe el prototipo y NO los tokens ya colocados: el prototipo es la
+ * decisión editorial, mientras que un token colocado puede llevar retoques del
+ * GM que no hay por qué pisar. */
+async function aplicarFichaNave() {
+  const actores = [...new Set((canvas?.tokens?.controlled ?? []).map((t) => t.actor).filter(Boolean))];
+  const { ok, motivo, parches } = planificarFichas({ actores, isGM: Boolean(game.user?.isGM) });
+  if (!ok) {
+    if (motivo === MOTIVOS.sinSeleccion) {
+      ui.notifications.warn(game.i18n.localize("LAGUNAK.Ficha.SinSeleccion"));
+    }
+    return;
+  }
+  try {
+    for (const { actor, datos } of parches) await actor.update(datos);
+    ui.notifications.info(
+      game.i18n.format("LAGUNAK.Ficha.Hecha", { total: parches.length }),
+    );
+  } catch (error) {
+    // Generar es puro y no falla por su cuenta; lo que puede fallar es la
+    // escritura en la base del mundo, y callarlo dejaría al GM creyendo que
+    // el token cambió cuando no lo hizo.
+    console.error("Espaciokoop Lagunak | no se pudo escribir la ficha de nave", error);
+    ui.notifications.error(game.i18n.localize("LAGUNAK.Ficha.Fallo"));
+  }
 }
 
 /* La pausa de Foundry (game.paused) se muestra como dato informativo en la

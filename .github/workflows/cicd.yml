@@ -87,6 +87,21 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
         with:
           path: EmptyEpsilon
+      # El SDK de Discord se descarga en tiempo de configuración desde `latest`,
+      # sin versión fijada ni hash (#400). Este es el ÚNICO job que lo baja:
+      # WITH_DISCORD solo está ON en WIN32. Cada hipo de dl-game-sdk.discordapp.net
+      # tumbaba una build de seis minutos, y con los checks requeridos de #361 eso
+      # pasaría a bloquear el merge de cualquier PR por un problema de red.
+      #
+      # La clave es FIJA a propósito: la primera ejecución que baje el SDK lo
+      # congela para las siguientes, que es la reproducibilidad que hoy no da
+      # `latest`. Para adoptar un SDK nuevo, sube el sufijo (`-v1` → `-v2`).
+      # El `if(NOT EXISTS ...)` de CMakeLists.txt ya está preparado para esto.
+      - name: Caché del SDK de Discord
+        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+        with:
+          path: _build_win32/externals/discord
+          key: discord-sdk-win32-v1
       - name: Build
         run: |
           mkdir -p _build_win32

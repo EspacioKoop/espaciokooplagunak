@@ -83,8 +83,34 @@ if(WITH_DISCORD)
   file(MAKE_DIRECTORY "${DISCORD_INCLUDE_PATH}")
   if(NOT EXISTS "${DISCORD_INCLUDE_PATH}/discord_game_sdk.h")
     set(DISCORD_GAME_SDK "${DOWNLOADS_DIR}/discord_game_sdk.zip")
-    file(DOWNLOAD "https://dl-game-sdk.discordapp.net/latest/discord_game_sdk.zip" "${DISCORD_GAME_SDK}" TIMEOUT 60 TLS_VERIFY ON)
-    execute_process(COMMAND ${CMAKE_COMMAND} -E tar -xf "${DISCORD_GAME_SDK}" WORKING_DIRECTORY "${EXTERNALS_DIR}/discord")
+    set(DISCORD_GAME_SDK_URL "https://dl-game-sdk.discordapp.net/latest/discord_game_sdk.zip")
+    # Fail here, not six minutes later. Without STATUS, a failed or timed-out
+    # download leaves a truncated file behind and configuration still succeeds:
+    # the build then dies on a missing discord_game_sdk.h, which points at the
+    # wrong culprit. Same for the extraction step.
+    file(DOWNLOAD "${DISCORD_GAME_SDK_URL}" "${DISCORD_GAME_SDK}" TIMEOUT 60 TLS_VERIFY ON STATUS DISCORD_DOWNLOAD_STATUS)
+    list(GET DISCORD_DOWNLOAD_STATUS 0 DISCORD_DOWNLOAD_CODE)
+    list(GET DISCORD_DOWNLOAD_STATUS 1 DISCORD_DOWNLOAD_MESSAGE)
+    if(NOT DISCORD_DOWNLOAD_CODE EQUAL 0)
+      file(REMOVE "${DISCORD_GAME_SDK}")
+      message(FATAL_ERROR
+        "Could not download the Discord Game SDK from ${DISCORD_GAME_SDK_URL}: ${DISCORD_DOWNLOAD_MESSAGE}. "
+        "This is a network failure, not a source problem: retry, or configure with -DWITH_DISCORD=OFF.")
+    endif()
+    execute_process(COMMAND ${CMAKE_COMMAND} -E tar -xf "${DISCORD_GAME_SDK}" WORKING_DIRECTORY "${EXTERNALS_DIR}/discord" RESULT_VARIABLE DISCORD_EXTRACT_RESULT)
+    if(NOT DISCORD_EXTRACT_RESULT EQUAL 0)
+      file(REMOVE "${DISCORD_GAME_SDK}")
+      message(FATAL_ERROR
+        "Could not extract the Discord Game SDK archive (${DISCORD_GAME_SDK}): the download is most likely truncated. "
+        "Remove it and retry, or configure with -DWITH_DISCORD=OFF.")
+    endif()
+    # A zip that unpacks cleanly but does not contain the header we need is the
+    # same failure wearing a different hat; catch it while we still know why.
+    if(NOT EXISTS "${DISCORD_INCLUDE_PATH}/discord_game_sdk.h")
+      message(FATAL_ERROR
+        "The Discord Game SDK archive did not provide ${DISCORD_INCLUDE_PATH}/discord_game_sdk.h. "
+        "The upstream archive layout may have changed. Configure with -DWITH_DISCORD=OFF to keep building.")
+    endif()
     if(WIN32 AND CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
       # Discord uses Windows.h (capital W) and that does not play nice when cross-compiling.
       # we want to patch with a lowercase windows.h

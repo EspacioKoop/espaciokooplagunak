@@ -1,10 +1,14 @@
 # ADR-0002 — Autoridad de datos: Foundry = narrativa, simulación = nave
 
-- Estado: Aceptada
+- Estado: Sustituida por [ADR-0008](0008-standalone-first-autoridad-del-nucleo.md)
 - Fecha: registrada 2026-07-16 (diseño de fase 3)
 - Fuentes: `docs/FOUNDRY.md`, `docs/ARQUITECTURA.md`
 
 ## Contexto
+
+> Sustituida: la autoridad de campaña ya no es de Foundry sino del núcleo
+> (standalone-first, ADR-0008). El reparto de autoridad sobre el estado de la
+> nave y el contrato entre sistemas siguen vigentes.
 
 Dos sistemas con estado propio deben convivir en una misma campaña: Foundry VTT
 (personajes, diarios, escenas) y el simulador (posición, sistemas, daños). Sin

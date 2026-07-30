@@ -28,6 +28,10 @@ const MODULOS_DE_ARTE = [
   // Y el fondo estelar (#384) tampoco: el azul del cielo sale de `PIXEL`, donde
   // se ve al lado del crema de la nave propia y se puede decidir que no compitan.
   "../scripts/retro3d-estrellas.mjs",
+  // La ficha de nave (#354) reusa las siluetas y sus colores tal cual: lo único
+  // que podría haber declarado es el relleno del hueco transparente, y ese vive
+  // en el codificador PNG porque es un requisito del formato, no un color.
+  "../scripts/ficha-nave.mjs",
 ];
 
 test("los colores no cambian al mudarse: mismo valor que antes en cada módulo", () => {

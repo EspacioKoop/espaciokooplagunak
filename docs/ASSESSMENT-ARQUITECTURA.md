@@ -32,8 +32,10 @@ El inventario completo está en [`docs/adr/README.md`](adr/README.md)
 
 1. **ADR-0001** — `/exec.lua` jamás expuesto; el puente es el único cliente,
    con gate de CI (`guardia-exec-lua`).
-2. **ADR-0002** — autoridad de datos partida: Foundry = narrativa,
-   simulación = nave; el puente traduce con contrato v0 versionado.
+2. **ADR-0002** (sustituida por **ADR-0008**) — repartía la autoridad entre
+   Foundry (narrativa) y la simulación (nave). Con standalone-first, la campaña
+   es del núcleo y Foundry proyecta; sigue vigente que nadie escribe en el
+   estado ajeno y que el puente traduce con contrato v0 versionado.
 3. **ADR-0007** — frontera upstream: cero divergencia en `src/` heredado salvo
    PR previo a upstream; divergencias permanentes enumeradas (ADR-0006).
 

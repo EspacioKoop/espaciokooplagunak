@@ -12,9 +12,9 @@ Este documento investiga una integración/catálogo **opcional** para Foundry. E
 futuro juego standalone mantendrá su propio modelo autoritativo de campaña y
 atlas; Foundry no será requisito ni única fuente de datos. Cualquier formato
 definido aquí debe poder proyectarse desde/hacia el núcleo sin convertirlo en
-dependencia. Coherente con [ADR-0002](adr/0002-autoridad-de-datos-foundry-vs-simulacion.md)
-(Foundry = narrativa, simulación = nave) y [ADR-0007](adr/0007-frontera-upstream.md)
-(frontera upstream).
+dependencia. Coherente con [ADR-0008](adr/0008-standalone-first-autoridad-del-nucleo.md)
+(standalone-first: la campaña y el atlas son del núcleo; sustituye a ADR-0002) y
+[ADR-0007](adr/0007-frontera-upstream.md) (frontera upstream).
 
 ## Estado ya integrado: cosmografía v1 en Foundry (#214)
 
@@ -113,8 +113,10 @@ Un documento propio, independiente del `MapDocument`, que modela la jerarquía y
 Mantener el atlas íntegramente en Foundry (Journal/Scene) y enviar a Espaciokoop
 solo el sistema/mapa **operativo activo**.
 
-- **A favor:** cero formato nuevo en el repo; Foundry ya es autoritativo del
-  lore (ADR-0002); nada de lore ni código viaja al puente.
+- **A favor:** cero formato nuevo en el repo; ~~Foundry ya es autoritativo del
+  lore (ADR-0002)~~ *(argumento caducado: [ADR-0008](adr/0008-standalone-first-autoridad-del-nucleo.md)
+  sustituye a ADR-0002 y devuelve el atlas al núcleo)*; nada de lore ni código
+  viaja al puente.
 - **En contra:** sin esquema propio no hay validación, round-trip ni portabilidad
   hacia el futuro juego standalone; el atlas quedaría atado a Foundry, violando
   la frontera de producto.
@@ -130,6 +132,16 @@ mantiene **fuera**: es decoración de render, no datos de campaña.
 
 Esto conserva las tres invariantes: no rompe `MapDocument` (#204), respeta
 ADR-0002 (Foundry autoritativo de narrativa) y no envía lore ni código al puente.
+
+> **Sustituido por [ADR-0008](adr/0008-standalone-first-autoridad-del-nucleo.md).**
+> La preferencia de arriba se escribió bajo ADR-0002, cuando Foundry era
+> autoritativo del lore. Con el rumbo standalone-first, **el atlas es del
+> núcleo**: la campaña tiene que poder consultarse y avanzar sin Foundry, así
+> que la opción 3 queda descartada como fuente y el formato propio deja de ser
+> «de intercambio» para ser el canónico. Foundry conserva lo que aporta de
+> verdad —una superficie de edición y presentación cómoda— pero como proyección.
+> El texto anterior se mantiene porque explica de dónde viene la decisión; lo
+> que ya no vale es su conclusión sobre la autoridad.
 
 **Nota de estado:** #214 ya materializó un **primer corte** de esta preferencia —
 un documento cosmográfico separado, jerárquico, versionado y validable

@@ -205,6 +205,18 @@ El grado de éxito elige *dónde* dentro de un rango autorizado, nunca abre un r
 mecánico exigiera un modificador inexistente hoy en `STATION_ACTIONS`, **eso es otro issue del puente**,
 no algo que #309 arrastre de tapadillo.
 
+Dos consecuencias que el motor hace cumplir con código, no con prosa:
+
+- **El token se gasta una sola vez.** El consumo lleva `nonce` y estado explícito de gastados; un
+  segundo consumo se rechaza aunque queden 119 segundos de vigencia. La vigencia caduca la ayuda no
+  usada; lo que impide reutilizarla es el gasto.
+- **Solo hay propuesta donde el tier puede morder.** El tier se aplica al parámetro continuo de la
+  orden, desde la lectura actual del puesto hacia lo pedido: tier bajo se queda a mitad de camino,
+  tier alto llega al objetivo, y ninguno cruza el tope del puente. Una orden **booleana**
+  (`set_shields`) o **circular** (`set_target_heading`) no tiene ese margen —a mitad de camino entre
+  dos rumbos no hay «menos ayuda», hay otro rumbo—, así que **no produce token** en vez de prometer un
+  efecto que no existiría.
+
 ### dnd5e es enriquecimiento, no dependencia dura
 El módulo debe seguir funcionando **sin dnd5e**. Esto es un **gate adicional**, no la ruta moderna del
 smoke: la ruta moderna de #29 se ejercita **con dnd5e**, en la última versión estable de Foundry, y

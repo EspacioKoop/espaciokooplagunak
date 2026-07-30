@@ -185,7 +185,7 @@ sería una decisión aparte, con su ADR.
 
 ## Visión de juego
 
-Foundry conserva personajes, fichas, mapas narrativos, diarios, reglas y estado general de la campaña. Espaciokoop Lagunak ejecuta la vida operativa de la nave: trayectos, navegación, sistemas, recursos, averías, encuentros y coordinación de la tripulación.
+Espaciokoop Lagunak es la campaña: personajes, progreso, atlas, misiones y consecuencias viven en el núcleo, igual que la vida operativa de la nave —trayectos, navegación, sistemas, recursos, averías, encuentros y coordinación de la tripulación—. Foundry proyecta esa campaña en la mesa virtual: fichas, mapas narrativos, diarios y escenas con los que el grupo la juega, más sus documentos puramente locales.
 
 El trayecto no será una cuenta atrás pasiva. Durante el viaje, la tripulación podrá:
 
@@ -196,7 +196,7 @@ El trayecto no será una cuenta atrás pasiva. Durante el viaje, la tripulación
 - consumir y gestionar recursos de la nave;
 - detectar, diagnosticar y reparar averías;
 - reaccionar ante anomalías, encuentros y eventos del director de juego;
-- asumir consecuencias persistentes que vuelvan a la campaña de Foundry.
+- asumir consecuencias persistentes que el núcleo registra en la campaña y Foundry refleja en la mesa.
 
 El director de juego podrá pausar o acelerar el tiempo, introducir eventos y decidir cuánto detalle requiere cada trayecto. Así se pueden jugar viajes importantes en tiempo real y resumir desplazamientos rutinarios sin romper la campaña.
 
@@ -207,7 +207,7 @@ El director de juego podrá pausar o acelerar el tiempo, introducir eventos y de
 3. Los jugadores ocupan sus puestos y configuran la nave.
 4. La simulación avanza en tiempo real o con el factor temporal definido por el director de juego.
 5. El puente envía a Foundry eventos normalizados, nunca código Lua libre.
-6. Foundry actualiza diarios, recursos, estados y consecuencias narrativas.
+6. El núcleo aplica y persiste las consecuencias; Foundry actualiza diarios, recursos y estados para reflejarlas en la mesa.
 7. La sesión puede interrumpirse y reanudarse sin duplicar eventos.
 
 ## Arquitectura propuesta
@@ -215,13 +215,14 @@ El director de juego podrá pausar o acelerar el tiempo, introducir eventos y de
 ```text
 ┌─────────────────────┐       API limitada       ┌──────────────────────┐
 │ Módulo Foundry VTT  │ ◄──────────────────────► │ Puente de integración│
-│ campaña y narrativa │                           │ auth, reglas, eventos│
+│ proyección en mesa  │                           │ auth, reglas, eventos│
 └─────────────────────┘                           └──────────┬───────────┘
                                                            │ red privada
                                                            ▼
                                                 ┌────────────────────────┐
                                                 │ Espaciokoop Lagunak    │
-                                                │ simulación autoritativa│
+                                                │ campaña y simulación   │
+                                                │ autoritativas          │
                                                 └────────────────────────┘
 ```
 
@@ -229,13 +230,22 @@ El puente será un proceso separado. De este modo, Foundry y el juego pueden evo
 
 ## Autoridad de los datos
 
+**Standalone-first** ([ADR-0008](adr/0008-standalone-first-autoridad-del-nucleo.md), que sustituye a ADR-0002): la campaña pertenece al núcleo. Foundry es una integración **opcional** que proyecta y adapta; el juego tiene que ser jugable, guardable y reanudable sin él.
+
 | Dominio | Fuente autoritativa |
 |---|---|
-| Personajes, fichas, diarios y escenas | Foundry VTT |
+| Progreso de campaña, personajes, atlas, misiones y consecuencias | Espaciokoop Lagunak |
 | Posición, rumbo, velocidad y sistemas de la nave | Espaciokoop Lagunak |
-| Inicio de trayecto y contexto narrativo | Foundry VTT / director de juego |
+| Inicio de trayecto y contexto narrativo | Espaciokoop Lagunak / director de juego |
 | Resultado táctico y daños simulados | Espaciokoop Lagunak |
-| Traducción a consecuencias de campaña | Puente y módulo de Foundry |
+| Presentación en la mesa virtual: fichas, diarios y escenas de Foundry | Foundry VTT (proyección, no almacén) |
+| Documentos puramente locales de una mesa Foundry (notas del GM, escenas de atrezo) | Foundry VTT |
+| Adaptación de eventos del núcleo a documentos de la mesa | Puente y módulo de Foundry (transporte y formato, no fuente) |
+
+Dos matices que evitan malentenderlo:
+
+- **Proyección no es copia autoritativa.** Que una ficha se vea en Foundry no la convierte en la fuente: si los dos discrepan, manda el núcleo, y el módulo se limita a volver a proyectar.
+- **Lo local sigue siendo local.** Una mesa puede tener sus notas, atrezo y escenas propias en Foundry sin que eso los convierta en campaña canónica. La frontera es si algo hace falta para seguir jugando cuando Foundry no está.
 
 Esta separación evita bucles de sincronización donde ambos sistemas intentan sobrescribir el mismo estado.
 
@@ -342,6 +352,38 @@ es la verdad que cambia en cada sondeo—. Formulada como vivo/registrado predic
 bien los casos que vienen: la cartela de una lámina impresa es grabado aunque
 cuelgue de una consola, y una barra que sigue a `/v1/state` es pixel aunque viva
 dentro de un diario.
+
+#### Arte de ficha para naves narrativas (#354)
+
+El GM puede seleccionar tokens en el lienzo y pulsar «arte de ficha» en el grupo
+Lagunak: por cada Actor se genera un PNG a partir de la misma
+`construirSpriteNave()` que dibuja el mapa vivo, y se escribe en su token
+**prototipo**. Así el lenguaje visual del mapa llega al tablero donde juega la
+mesa, sin duplicar siluetas ni estilos.
+
+**No son tokens de contacto vivos, y la distinción es el fondo del asunto.**
+Nada aquí sondea: no hay hook que regenere la ficha al cambiar la clase, ni
+sincronización de posición. Un token cuya `x/y` saliera de `/v1/contacts`
+convertiría un documento persistente de Foundry en espejo de un estado que no
+posee —y al caer el puente el espejo se queda mintiendo, guardado en la base del
+mundo— además de trasladar «qué sabe la tripulación» de una decisión del GM a la
+visión de tokens. La lectura táctica es de la tripulación en sus estaciones; el
+lienzo de Foundry es la superficie narrativa. Si algún día se quiere lo otro,
+antes hace falta un ADR sobre qué parte de `/v1/contacts` es pública para la
+mesa: es una decisión de sensores, no de arte.
+
+Consecuencia práctica: la ficha es una decisión editorial congelada, así que un
+mundo reabierto meses después sigue teniendo sentido por sí solo.
+
+El PNG se codifica en `scripts/png-indexado.mjs`, en JavaScript puro y con
+DEFLATE sin comprimir: ni `canvas.toDataURL()` (ataría la generación al DOM y
+con ella la prueba) ni `zlib`/`CompressionStream` (existen cada uno en solo una
+de las dos plataformas donde corre el módulo). El color indexado compensa el
+tamaño, y `generarFichaNave()` **falla** si el data-URI se pasa del tope: la
+imagen vive en la base del mundo y se replica a cada cliente, así que el peso es
+requisito y no detalle. La escala se deriva de un lado objetivo para que todas
+las fichas pesen parecido, en vez de que la silueta más grande sea la que roce
+el límite.
 
 #### Retratos de tripulación (#352)
 

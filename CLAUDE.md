@@ -37,10 +37,14 @@ reproducible nativa y Docker, con publicación en GHCR por tag `v*`. Para QA loc
 `./build/EmptyEpsilon headless=<escenario>.lua` arranca sin ventana, escucha en TCP/UDP 35666
 (config en `~/.emptyepsilon`) y su stdin es una consola Lua.
 
-La **prioridad estratégica** es la integración con Foundry VTT para campañas tipo *Spelljammer*
-(diseño en [`docs/FOUNDRY.md`](docs/FOUNDRY.md)): Foundry es autoritativo para la narrativa
-(personajes, diarios, escenas); este juego es autoritativo para la simulación de nave (posición,
-sistemas, daños); un **puente** intermedio con API limitada y versionada conecta ambos. Regla de
+La dirección de producto es **standalone-first** (issue #219, ADR-0008, [`docs/ROADMAP_PRODUCTO.md`](docs/ROADMAP_PRODUCTO.md)):
+el juego debe poder jugarse, guardarse y reanudarse sin Foundry VTT. La autoridad de campaña
+(progreso, atlas, misiones, consecuencias) es del núcleo; la simulación es autoritativa para el
+estado de la nave (posición, sistemas, daños). La integración con Foundry VTT para campañas tipo
+*Spelljammer* (diseño en [`docs/FOUNDRY.md`](docs/FOUNDRY.md)) sigue siendo una línea de trabajo
+activa, pero **opcional**: un **puente** intermedio con API limitada y versionada le proyecta un
+subconjunto versionado del estado. Ante una funcionalidad nueva, pregunta primero «¿sigue siendo
+jugable si Foundry desaparece?»; si no, pertenece al núcleo. Regla de
 seguridad no negociable: el endpoint HTTP heredado `/exec.lua` (`src/httpScriptAccess.cpp`) ejecuta
 Lua arbitrario recibido por red y **nunca** se expone a Foundry, a una LAN no confiable ni a
 Internet; `/get.lua` y `/set.lua` están además marcados como incompletos.
@@ -154,7 +158,11 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     **solo** en `scripts/paleta.mjs`, con la frontera vivo/registrado y una prueba que falla si otro
     módulo de arte declara un color propio (#351). Grabado en `scripts/laminas-clasicas.mjs`;
     pixelart en `scripts/nave-sprite.mjs` y `scripts/minijuegos/cartas-pixelart.mjs`; música
-    determinista por semilla en `scripts/musica-procedural.mjs`.
+    determinista por semilla en `scripts/musica-procedural.mjs`. El arte de ficha de naves
+    narrativas (`scripts/ficha-nave.mjs`, con el codificador PNG puro de
+    `scripts/png-indexado.mjs`) se genera **solo por clic del GM** y escribe el token prototipo:
+    nunca sondea ni sincroniza posición, porque un documento persistente que espeje la simulación
+    se queda mintiendo cuando cae el puente (#354).
   - **Minijuegos** — `scripts/minijuegos/` (motor de póker, evaluador de manos, agente automático,
     sesión) y su enganche en `scripts/minijuegos-wiring.mjs` (#308). La sesión viva del coordinador
     no se persiste en ningún sitio: vive en memoria del GM.

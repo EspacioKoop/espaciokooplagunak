@@ -37,10 +37,14 @@ reproducible nativa y Docker, con publicación en GHCR por tag `v*`. Para QA loc
 `./build/EmptyEpsilon headless=<escenario>.lua` arranca sin ventana, escucha en TCP/UDP 35666
 (config en `~/.emptyepsilon`) y su stdin es una consola Lua.
 
-La **prioridad estratégica** es la integración con Foundry VTT para campañas tipo *Spelljammer*
-(diseño en [`docs/FOUNDRY.md`](docs/FOUNDRY.md)): Foundry es autoritativo para la narrativa
-(personajes, diarios, escenas); este juego es autoritativo para la simulación de nave (posición,
-sistemas, daños); un **puente** intermedio con API limitada y versionada conecta ambos. Regla de
+La dirección de producto es **standalone-first** (issue #219, ADR-0008, [`docs/ROADMAP_PRODUCTO.md`](docs/ROADMAP_PRODUCTO.md)):
+el juego debe poder jugarse, guardarse y reanudarse sin Foundry VTT. La autoridad de campaña
+(progreso, atlas, misiones, consecuencias) es del núcleo; la simulación es autoritativa para el
+estado de la nave (posición, sistemas, daños). La integración con Foundry VTT para campañas tipo
+*Spelljammer* (diseño en [`docs/FOUNDRY.md`](docs/FOUNDRY.md)) sigue siendo una línea de trabajo
+activa, pero **opcional**: un **puente** intermedio con API limitada y versionada le proyecta un
+subconjunto versionado del estado. Ante una funcionalidad nueva, pregunta primero «¿sigue siendo
+jugable si Foundry desaparece?»; si no, pertenece al núcleo. Regla de
 seguridad no negociable: el endpoint HTTP heredado `/exec.lua` (`src/httpScriptAccess.cpp`) ejecuta
 Lua arbitrario recibido por red y **nunca** se expone a Foundry, a una LAN no confiable ni a
 Internet; `/get.lua` y `/set.lua` están además marcados como incompletos.

@@ -21,20 +21,27 @@ Para la autoridad de cada dominio de datos y la visión de juego, ver
 
 ## Nivel 1 — Contexto del sistema
 
-Quién usa el sistema y con qué habla. Espaciokoop Lagunak es la simulación
-autoritativa de la nave; Foundry VTT (sistema externo) es autoritativo para
-la narrativa de campaña.
+Quién usa el sistema y con qué habla. Espaciokoop Lagunak es autoritativo para
+la simulación de la nave **y para la campaña** —progreso, personajes, atlas,
+misiones y consecuencias—; Foundry VTT (sistema externo) es una integración
+**opcional** que proyecta y adapta, sin poseer nada ([ADR-0008](adr/0008-standalone-first-autoridad-del-nucleo.md),
+que sustituye a ADR-0002).
+
+La consecuencia práctica es la pregunta que filtra cualquier propuesta: **¿sigue
+siendo jugable si Foundry desaparece?** El GM puede dirigir sin él; con él, gana
+una superficie de mesa más cómoda.
 
 ```mermaid
 C4Context
     Person(gm, "Director de juego", "Dirige la campaña, controla el tempo y anota consecuencias")
     Person(crew, "Tripulación", "Ocupa los puestos de la nave (timón, armas, ingeniería…)")
-    System_Ext(foundry, "Foundry VTT", "Mesa virtual: campaña, fichas, mapas narrativos y diarios")
-    System(lagunak, "Espaciokoop Lagunak", "Simulación autoritativa de la nave: posición, sistemas, daños, encuentros")
+    System_Ext(foundry, "Foundry VTT (opcional)", "Mesa virtual: proyecta la campaña y adapta fichas, mapas narrativos y diarios. No autoritativa")
+    System(lagunak, "Espaciokoop Lagunak", "Autoritativo: simulación de la nave (posición, sistemas, daños) y campaña (progreso, personajes, atlas, misiones)")
 
-    Rel(gm, foundry, "Dirige la campaña", "navegador")
+    Rel(gm, lagunak, "Dirige la campaña", "cliente nativo")
+    Rel(gm, foundry, "Dirige desde la mesa virtual, si la mesa la usa", "navegador")
     Rel(crew, lagunak, "Opera los puestos", "cliente nativo, LAN")
-    Rel(foundry, lagunak, "Lee estado/eventos y envía órdenes de lista blanca", "HTTP + Bearer, polling")
+    Rel(foundry, lagunak, "Lee estado/eventos proyectados y envía órdenes de lista blanca", "HTTP + Bearer, polling")
 ```
 
 ## Nivel 2 — Contenedores

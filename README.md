@@ -198,17 +198,20 @@ la simulación ni el puente):
 - [ ] Publicar notas de versión que separen cambios propios y de upstream.
 - [ ] Establecer una cadencia segura de sincronización con EmptyEpsilon.
 
-### Hipótesis en estudio — un juego standalone más allá de EmptyEpsilon y Foundry
+### Dirección de producto — standalone-first
 
-`docs/ATLAS_SPELLJAMMER.md` (issue #213) plantea, como investigación previa a
-decidir —**explícitamente no es un ADR ni una decisión adoptada**—, que un
-futuro juego standalone de Espaciokoop Lagunak podría mantener su propio
-modelo autoritativo de campaña y no depender de EmptyEpsilon ni de Foundry VTT
-como requisitos permanentes. Hoy ninguno de los dos deja de ser requisito:
-EmptyEpsilon sigue siendo el motor de simulación (ADR-0007 fija minimizar la
-divergencia con upstream) y Foundry sigue siendo la superficie narrativa
-prevista (ADR-0002). Esta sección se actualizará en cuanto Varo y Eloy cierren
-esa decisión en el issue.
+La hipótesis de un juego standalone quedó **decidida** en el issue #219: el
+producto principal será jugable, guardable y reanudable sin Foundry VTT, que
+pasa a ser una integración opcional para las campañas de rol del grupo. La
+autoridad de campaña (progreso, atlas, misiones, consecuencias) vive en el
+núcleo de Espaciokoop Lagunak; la simulación conserva la del estado de la nave
+(ADR-0008, que sustituye a ADR-0002). Divergir de EmptyEpsilon es aceptable
+cuando aporte mejora tangible, siguiendo `docs/UPSTREAM.md` y con ADR propio.
+
+Los principios innegociables, los no objetivos y las etapas con criterio de
+salida y métrica de éxito están en
+[`docs/ROADMAP_PRODUCTO.md`](docs/ROADMAP_PRODUCTO.md). La prioridad vigente es
+la etapa A: cerrar el bucle vertical de fase 3 sin Foundry.
 
 ## Estructura del repositorio
 

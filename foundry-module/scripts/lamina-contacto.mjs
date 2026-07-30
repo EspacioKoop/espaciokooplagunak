@@ -11,9 +11,14 @@
 // de reconocimiento, y girar es lo que deja ver la silueta entera —que es justo
 // el dato— sin que nadie tenga que orbitar la cámara a mano.
 //
-// El bucle se para solo: montar otra lámina de la misma ventana detiene la
+// El bucle se para solo: montar otra lámina en la MISMA ranura detiene la
 // anterior. Sin eso, cada cambio de selección dejaría un bucle huérfano pintando
 // sobre un lienzo que ya no está en el documento.
+//
+// Por ranura y no por ventana, desde que #391 añadió el selector: una ventana
+// puede tener a la vez la lámina del contacto y la del objetivo de atraque, y
+// pararlas todas al montar una apagaría la otra sin que nadie lo pidiera. El
+// cierre de la ventana sí las para todas, porque ahí no queda nada que pintar.
 //
 // La parada se guarda contra la ventana, no contra la raíz del DOM. Un render
 // estructural de Foundry puede sustituir la raíz entera: si la clave fuera el
@@ -32,16 +37,30 @@ function claveDe(raiz, dueño) {
 }
 
 /**
- * Detiene la lámina de esta ventana, si la había. Llamarlo de más no hace daño.
+ * Detiene láminas de esta ventana, si las había. Llamarlo de más no hace daño.
+ *
+ * Sin `selector` para TODAS las del dueño, que es lo que necesita un cierre de
+ * ventana: al cerrar no queda nada que pintar, y dejar viva una ranura que el
+ * cierre no conocía es exactamente el bucle huérfano que esto evita.
  *
  * @param {Element} raiz raíz de la ventana del mapa.
  * @param {object} [dueño] instancia de la aplicación, estable entre renders.
+ * @param {string} [selector] ranura concreta; si se omite, todas las del dueño.
  */
-export function desmontarLamina(raiz, dueño) {
+export function desmontarLamina(raiz, dueño, selector) {
   const clave = claveDe(raiz, dueño);
-  const parar = clave == null ? null : bucles.get(clave);
+  const ranuras = clave == null ? null : bucles.get(clave);
+  if (!ranuras || ranuras.size === 0) return false;
+  if (selector === undefined) {
+    for (const parar of ranuras.values()) parar();
+    ranuras.clear();
+    bucles.delete(clave);
+    return true;
+  }
+  const parar = ranuras.get(selector);
   if (!parar) return false;
-  bucles.delete(clave);
+  ranuras.delete(selector);
+  if (ranuras.size === 0) bucles.delete(clave);
   parar();
   return true;
 }
@@ -57,7 +76,10 @@ export function desmontarLamina(raiz, dueño) {
  */
 export function montarLaminaContacto(raiz, detalle, opciones = {}) {
   const { dueño, selector = "[data-lagunak-lamina]", ...restoOpciones } = opciones;
-  desmontarLamina(raiz, dueño);
+  // Solo se para la lámina de ESTA ranura. Pararlas todas apagaría la del mapa
+  // al montar la del atraque: son superficies distintas de la misma ventana, y
+  // el registro va por dueño porque es lo único que sobrevive a un remontaje.
+  desmontarLamina(raiz, dueño, selector);
   // El selector es parámetro desde #391: la misma lámina sirve para el contacto
   // seleccionado del mapa y para el objetivo de atraque de la consola. Lo que
   // cambia entre las dos es dónde se pinta y cuándo existe, no cómo se dibuja.
@@ -77,6 +99,8 @@ export function montarLaminaContacto(raiz, detalle, opciones = {}) {
     fov: 52,
     vueltaMs: 24000,
   });
-  bucles.set(claveDe(raiz, dueño), parar);
+  const claveVentana = claveDe(raiz, dueño);
+  if (!bucles.has(claveVentana)) bucles.set(claveVentana, new Map());
+  bucles.get(claveVentana).set(selector, parar);
   return { clase: clave, conocida };
 }

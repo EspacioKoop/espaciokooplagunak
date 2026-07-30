@@ -159,3 +159,84 @@ test("un objetivo sin clase publicada sigue trayendo lámina", () => {
   });
   assert.deepEqual(modelo.atraque, { estado: "docking", clase: null });
 });
+
+// ---- Las dos láminas conviven (#374 + #391) ---------------------------------
+
+/** Raíz con las DOS ranuras: la del contacto del mapa y la del objetivo. */
+function raizConDosLienzos() {
+  const lienzo = (nombre, ordenes) => {
+    const ctx = new Proxy(
+      { fill: () => ordenes.push(`fill:${nombre}`) },
+      { get: (obj, prop) => obj[prop] ?? (() => {}), set: () => true },
+    );
+    return { width: 112, height: 84, getContext: () => ctx };
+  };
+  const ordenes = [];
+  const mapa = lienzo("mapa", ordenes);
+  const atraque = lienzo("atraque", ordenes);
+  return {
+    ordenes,
+    querySelector: (sel) =>
+      sel === "[data-lagunak-lamina]" ? mapa : sel === "[data-lagunak-atraque]" ? atraque : null,
+  };
+}
+
+/** Bucle vivo con fotogramas controlados, para poder ver si lo paran. */
+function bucleEspia(etiqueta, cancelados) {
+  let siguiente = 0;
+  return {
+    movimientoReducido: () => false,
+    pedirFotograma: () => `${etiqueta}:${(siguiente += 1)}`,
+    cancelarFotograma: (id) => cancelados.push(id),
+  };
+}
+
+test("montar la lámina de atraque NO apaga la del contacto: son ranuras distintas", () => {
+  // El registro va por dueño, porque es lo único que sobrevive a un remontaje,
+  // pero el montaje va por ranura. Si el desmontaje previo no distinguiera la
+  // ranura, la ventana que enseña las dos perdería la primera en silencio: sin
+  // error, sin hueco, solo un lienzo que deja de girar.
+  const raiz = raizConDosLienzos();
+  const dueño = { nombre: "consola" };
+  const cancelados = [];
+
+  montarLaminaContacto(raiz, { clase: "Frigate" }, { ...bucleEspia("mapa", cancelados), dueño });
+  montarLaminaContacto(raiz, { clase: "Station" }, {
+    ...bucleEspia("atraque", cancelados),
+    dueño,
+    selector: "[data-lagunak-atraque]",
+  });
+
+  assert.deepEqual(cancelados, [], "montar una ranura ha parado el bucle de la otra");
+  assert.ok(raiz.ordenes.some((o) => o === "fill:mapa"), "la del mapa se pintó");
+  assert.ok(raiz.ordenes.some((o) => o === "fill:atraque"), "la del atraque se pintó");
+
+  // Y remontar la MISMA ranura sí para la anterior: si no, cada cambio de
+  // selección dejaría un bucle huérfano, que es el fallo que #374 ya cerró.
+  montarLaminaContacto(raiz, { clase: "Cruiser" }, { ...bucleEspia("mapa2", cancelados), dueño });
+  assert.ok(
+    cancelados.some((id) => String(id).startsWith("mapa:")),
+    "remontar la misma ranura debe parar su bucle anterior",
+  );
+});
+
+test("cerrar la ventana para TODAS sus láminas, no solo la última", () => {
+  // Al cerrar no queda nada que pintar. Parar solo una ranura dejaría la otra
+  // girando contra un lienzo fuera del documento, que es el bucle huérfano de
+  // siempre pero más difícil de ver, porque el cierre parece haber funcionado.
+  const raiz = raizConDosLienzos();
+  const dueño = { nombre: "consola" };
+  const cancelados = [];
+
+  montarLaminaContacto(raiz, { clase: "Frigate" }, { ...bucleEspia("mapa", cancelados), dueño });
+  montarLaminaContacto(raiz, { clase: "Station" }, {
+    ...bucleEspia("atraque", cancelados),
+    dueño,
+    selector: "[data-lagunak-atraque]",
+  });
+
+  assert.equal(desmontarLamina(raiz, dueño), true);
+  assert.ok(cancelados.some((id) => String(id).startsWith("mapa:")), "quedó viva la del mapa");
+  assert.ok(cancelados.some((id) => String(id).startsWith("atraque:")), "quedó viva la del atraque");
+  assert.equal(desmontarLamina(raiz, dueño), false, "llamarlo de más no debe hacer daño");
+});

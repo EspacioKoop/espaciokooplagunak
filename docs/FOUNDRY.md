@@ -353,6 +353,38 @@ bien los casos que vienen: la cartela de una lámina impresa es grabado aunque
 cuelgue de una consola, y una barra que sigue a `/v1/state` es pixel aunque viva
 dentro de un diario.
 
+#### Arte de ficha para naves narrativas (#354)
+
+El GM puede seleccionar tokens en el lienzo y pulsar «arte de ficha» en el grupo
+Lagunak: por cada Actor se genera un PNG a partir de la misma
+`construirSpriteNave()` que dibuja el mapa vivo, y se escribe en su token
+**prototipo**. Así el lenguaje visual del mapa llega al tablero donde juega la
+mesa, sin duplicar siluetas ni estilos.
+
+**No son tokens de contacto vivos, y la distinción es el fondo del asunto.**
+Nada aquí sondea: no hay hook que regenere la ficha al cambiar la clase, ni
+sincronización de posición. Un token cuya `x/y` saliera de `/v1/contacts`
+convertiría un documento persistente de Foundry en espejo de un estado que no
+posee —y al caer el puente el espejo se queda mintiendo, guardado en la base del
+mundo— además de trasladar «qué sabe la tripulación» de una decisión del GM a la
+visión de tokens. La lectura táctica es de la tripulación en sus estaciones; el
+lienzo de Foundry es la superficie narrativa. Si algún día se quiere lo otro,
+antes hace falta un ADR sobre qué parte de `/v1/contacts` es pública para la
+mesa: es una decisión de sensores, no de arte.
+
+Consecuencia práctica: la ficha es una decisión editorial congelada, así que un
+mundo reabierto meses después sigue teniendo sentido por sí solo.
+
+El PNG se codifica en `scripts/png-indexado.mjs`, en JavaScript puro y con
+DEFLATE sin comprimir: ni `canvas.toDataURL()` (ataría la generación al DOM y
+con ella la prueba) ni `zlib`/`CompressionStream` (existen cada uno en solo una
+de las dos plataformas donde corre el módulo). El color indexado compensa el
+tamaño, y `generarFichaNave()` **falla** si el data-URI se pasa del tope: la
+imagen vive en la base del mundo y se replica a cada cliente, así que el peso es
+requisito y no detalle. La escala se deriva de un lado objetivo para que todas
+las fichas pesen parecido, en vez de que la silueta más grande sea la que roce
+el límite.
+
 #### Retratos de tripulación (#352)
 
 La fila de tripulación de la consola de puesto lleva un retrato pixel por

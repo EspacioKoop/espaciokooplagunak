@@ -352,5 +352,23 @@ variantes y efectos sobre la campaña.
 6. Smoke multijugador real con GM, dos jugadores, espectador, reconexión, pérdida
    del coordinador y cancelación/reinicio seguro de la mano.
 
+   **La mitad ya no necesita humanos.**
+   `foundry-module/tests/minijuegos-wiring.test.mjs` corre GM + dos jugadores
+   contra `minijuegos-wiring.mjs` simulando lo justo de Foundry —ajustes de
+   mundo, `User` con flags, `updateUser` y socket—, y cubre reparto privado,
+   ausencia de secretos en el estado público, conservación de fichas entre
+   manos, rotación del botón, desconexión con reconexión por `pedirVista()` y
+   relevo del coordinador tras un F5 del GM. **Cada cliente es una instancia
+   distinta del módulo** (import con query propia): el cableado guarda estado a
+   nivel de módulo, así que compartir instancia le daría a los jugadores la
+   sesión viva del coordinador y la prueba de privacidad pasaría por
+   construcción en vez de por mérito.
+
+   Lo que sigue exigiendo dos navegadores de verdad es lo que el arnés no puede
+   fingir: que Foundry retransmita `module.<id>` (el fallo de `"socket": true`
+   no existe fuera de un servidor real), el render de las dos ventanas, el
+   pixel-art a tamaño real y la privacidad frente a un jugador que **inspecciona
+   la consola** — que es la prueba que #340 dejó abierta.
+
 El issue #309 puede consumir este marco cuando llegue la Fase 4, pero no puede
 usar el minijuego para emitir órdenes de nave ni saltarse permisos de puesto.

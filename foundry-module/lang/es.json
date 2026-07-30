@@ -431,5 +431,6 @@
   "LAGUNAK.Minijuegos.Ajustes.CiegaGrande.Pista": "Nunca queda por debajo de la pequeña: sería una mesa con las reglas al revés.",
   "LAGUNAK.Minijuegos.Accion.SentarAutomatico": "Sentar automático",
   "LAGUNAK.Minijuegos.Accion.QuitarAutomatico": "Quitar automático",
-  "LAGUNAK.Minijuegos.Mesa.NombreAutomatico": "Automático {numero}"
+  "LAGUNAK.Minijuegos.Mesa.NombreAutomatico": "Automático {numero}",
+  "LAGUNAK.MapaVivo.Detalle.Clase": "Clase"
 }

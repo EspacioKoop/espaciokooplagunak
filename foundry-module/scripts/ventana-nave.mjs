@@ -436,6 +436,12 @@ export function prepararDetalleContacto(contacto, centro) {
   return {
     callsign: contacto.callsign ?? "?",
     tipo: contacto.type ?? null,
+    // Clase semántica del juego (`ShipTemplate:setClass()`), que el puente ya
+    // publica. Es lo que da forma a la lámina de #362: sin ella todas las naves
+    // se dibujarían iguales.
+    // Se acepta la forma cruda del puente y la ya normalizada de los blips: el
+    // detalle se construye desde las dos según por dónde se seleccione.
+    clase: contacto.class ?? contacto.clase ?? null,
     faccion: contacto.faction ?? null,
     esJugador: Boolean(contacto.is_player),
     color: colorFaccion(contacto.faction ?? null, Boolean(contacto.is_player)),

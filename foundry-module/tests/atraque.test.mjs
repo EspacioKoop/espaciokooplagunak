@@ -77,3 +77,85 @@ test("sin i18n sigue devolviendo algo legible en vez de undefined", () => {
   assert.equal(typeof salida.etiqueta, "string");
   assert.ok(salida.etiqueta.includes("Argia"));
 });
+
+// ---- La lámina del objetivo (#391, rebanada 6 de #362) ----------------------
+
+import { montarLaminaContacto, desmontarLamina } from "../scripts/lamina-contacto.mjs";
+import { buildWorkspaceModel } from "../scripts/station-workspaces.mjs";
+
+function raizConLienzo(selector) {
+  const ordenes = [];
+  const ctx = new Proxy(
+    { fill: () => ordenes.push("fill") },
+    { get: (obj, prop) => obj[prop] ?? (() => ordenes.push(String(prop))), set: () => true },
+  );
+  const lienzo = { width: 112, height: 84, getContext: () => ctx };
+  return { ordenes, querySelector: (sel) => (sel === selector ? lienzo : null) };
+}
+
+test("la lámina se pinta en el lienzo que se le pida, no en uno fijo", () => {
+  // La misma lámina sirve al contacto del mapa y al objetivo de atraque; lo que
+  // cambia es dónde se pinta y cuándo existe, no cómo se dibuja.
+  const raiz = raizConLienzo("[data-lagunak-atraque]");
+  const opciones = { movimientoReducido: () => true, pedirFotograma: () => 0 };
+  // Con el selector por defecto no encuentra lienzo y no monta nada.
+  assert.equal(montarLaminaContacto(raiz, { clase: "Station" }, opciones), null);
+  const salida = montarLaminaContacto(
+    raiz,
+    { clase: "Station", color: "#7d8597" },
+    { ...opciones, selector: "[data-lagunak-atraque]" },
+  );
+  assert.deepEqual(salida, { clase: "station", conocida: true });
+  assert.ok(raiz.ordenes.includes("fill"));
+  desmontarLamina(raiz);
+});
+
+test("una clase de objetivo desconocida cae en el casco de serie, no en un hueco", () => {
+  // Un hueco donde debería haber una nave se lee como que el módulo está roto;
+  // una silueta genérica dice «hay algo ahí».
+  const raiz = raizConLienzo("[data-lagunak-atraque]");
+  const salida = montarLaminaContacto(
+    raiz,
+    { clase: "PlataformaOrbital" },
+    { movimientoReducido: () => true, pedirFotograma: () => 0, selector: "[data-lagunak-atraque]" },
+  );
+  assert.equal(salida.conocida, false);
+  assert.ok(raiz.ordenes.includes("fill"), "y aun así se pinta algo");
+  desmontarLamina(raiz);
+});
+
+test("SIN atraque el modelo no trae lámina: no hay lienzo que interpretar", () => {
+  const base = {
+    station: "navigation",
+    isGM: false,
+    users: [],
+    moduleId: "lagunak",
+    i18n: { localize: (k) => k, format: (k) => k },
+    connection: "ok",
+  };
+  const sinAtraque = buildWorkspaceModel({ ...base, statePayload: { ship: { systems: {} } } });
+  assert.equal(sinAtraque.atraque, null);
+
+  const conAtraque = buildWorkspaceModel({
+    ...base,
+    statePayload: {
+      ship: { systems: {}, docking: { state: "docked", target: { callsign: "Argia", class: "Station" } } },
+    },
+  });
+  assert.deepEqual(conAtraque.atraque, { estado: "docked", clase: "Station" });
+});
+
+test("un objetivo sin clase publicada sigue trayendo lámina", () => {
+  // La clase es opcional; el atraque no. Sin clase la lámina dibuja el casco de
+  // serie, que es información («hay algo ahí»), no un error.
+  const modelo = buildWorkspaceModel({
+    station: "captain",
+    isGM: false,
+    users: [],
+    moduleId: "lagunak",
+    i18n: { localize: (k) => k, format: (k) => k },
+    connection: "ok",
+    statePayload: { ship: { systems: {}, docking: { state: "docking", target: { callsign: "Hondar 4" } } } },
+  });
+  assert.deepEqual(modelo.atraque, { estado: "docking", clase: null });
+});

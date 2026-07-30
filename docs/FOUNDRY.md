@@ -75,8 +75,8 @@ precisión a quien dirige.
 `docking_port` del juego, que ya expone `state` y `target` a Lua, así que no hay
 divergencia con upstream. El binding entrega ese enum como cadena en minúsculas
 (`docking`, `docked`, `not_docking`, `none`: ver `src/script/enum.h`); el puente
-normaliza a minúsculas y descarta todo lo demás, `not_docking` incluido. `docking` es `null` tanto si la nave está libre como si
-el componente no se pudo leer: son dos cosas distintas que el juego no distingue
+normaliza a minúsculas y descarta todo lo demás, `not_docking` incluido.
+`docking` es `null` tanto si la nave está libre como si el componente no se pudo leer: son dos cosas distintas que el juego no distingue
 desde fuera, y por eso la consola no dibuja «sin atracar» —afirmarlo sería elegir
 una de las dos sin saber cuál—. El estado va en texto en la consola; cualquier
 representación visual futura es refuerzo, no la única vía al dato.

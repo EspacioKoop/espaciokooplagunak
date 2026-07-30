@@ -431,5 +431,6 @@
   "LAGUNAK.Minijuegos.Ajustes.CiegaGrande.Pista": "Never drops below the small blind: that would be a table with the rules backwards.",
   "LAGUNAK.Minijuegos.Accion.SentarAutomatico": "Seat a bot",
   "LAGUNAK.Minijuegos.Accion.QuitarAutomatico": "Remove a bot",
-  "LAGUNAK.Minijuegos.Mesa.NombreAutomatico": "Bot {numero}"
+  "LAGUNAK.Minijuegos.Mesa.NombreAutomatico": "Bot {numero}",
+  "LAGUNAK.MapaVivo.Detalle.Clase": "Class"
 }

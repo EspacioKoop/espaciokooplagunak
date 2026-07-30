@@ -36,6 +36,8 @@ La CI heredada contiene trabajos Linux, macOS, compilación cruzada para Windows
 
 CMake descarga `meshoptimizer` durante la configuración cuando no está disponible localmente. La integración de Discord está desactivada por defecto salvo en Windows.
 
+Cuando sí está activa, el SDK de Discord se descarga en una **versión fijada con SHA-256 esperado** (`DISCORD_SDK_VERSION` / `DISCORD_SDK_SHA256` en [`cmake/DiscordGameSdk.cmake`](../cmake/DiscordGameSdk.cmake)). Si la descarga falla o el archivo no cuadra, la configuración **aborta al instante** diciendo por qué, en vez de morir seis minutos después por una cabecera ausente; la salida siempre disponible es `-DWITH_DISCORD=OFF` (#400).
+
 ## Preparación recomendada
 
 Desde el directorio padre de ambos repositorios:

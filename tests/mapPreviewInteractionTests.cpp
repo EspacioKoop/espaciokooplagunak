@@ -269,6 +269,109 @@ int main()
             && delete_session.document().objects.front().opaque_json == opaque.opaque_json,
         "redo removes the object again while selection stays clear and opaque bytes stay exact");
 
+    // ---- Multi-selection (#54) ------------------------------------------
+    //
+    // The point of these checks is not that a list can hold two ids. It is that
+    // a group behaves like ONE thing: it keeps its shape while dragging, it
+    // lands as a single undo entry, and it cannot be shrunk by accident.
+    MapDocument group_document;
+    group_document.objects.push_back(asteroid("rock-a", 0.0f, 0.0f));
+    group_document.objects.push_back(asteroid("rock-b", 300.0f, 0.0f));
+    group_document.objects.push_back(nebula("cloud", -400.0f, 200.0f));
+    MapEditSession group_session(group_document);
+    MapPreviewDragSession group;
+
+    expect(group.begin(group_session, {0.0f, 0.0f}, 1.0f) == MapDocumentError::None
+            && group.selectionSize() == 1 && group.selectedId() == "rock-a",
+        "a plain click selects exactly one object");
+    group.cancel();
+    expect(group.toggleAt(group_session, {300.0f, 0.0f}, 1.0f) == MapDocumentError::None
+            && group.selectionSize() == 2 && group.isSelected("rock-a")
+            && group.isSelected("rock-b") && !group.isDragging(),
+        "additive pick grows the selection and never starts a drag");
+    expect(group.toggleAt(group_session, {300.0f, 0.0f}, 1.0f) == MapDocumentError::None
+            && group.selectionSize() == 1 && !group.isSelected("rock-b"),
+        "picking a selected object again removes it");
+    expect(group.toggleAt(group_session, {300.0f, 0.0f}, 1.0f) == MapDocumentError::None
+            && group.toggleAt(group_session, {9000.0f, 9000.0f}, 1.0f) == MapDocumentError::None
+            && group.selectionSize() == 2,
+        "an additive pick on empty space keeps the group instead of dropping it");
+
+    expect(group.begin(group_session, {0.0f, 0.0f}, 1.0f) == MapDocumentError::None
+            && group.isDragging() && group.selectionSize() == 2
+            && group.selectedId() == "rock-a",
+        "grabbing a member drags the whole group and anchors on what was grabbed");
+    expect(group.update({50.0f, -25.0f}) && group.commit(group_session) == MapEditError::None,
+        "the group move commits");
+    const auto* moved_a = &group_session.document().objects[0];
+    const auto* moved_b = &group_session.document().objects[1];
+    expect(moved_a->transform.x == 50.0f && moved_a->transform.y == -25.0f
+            && moved_b->transform.x == 350.0f && moved_b->transform.y == -25.0f,
+        "every member moves by the same delta, so the group keeps its shape");
+    expect(group_session.document().objects[2].transform.x == -400.0f,
+        "an object outside the selection is not touched");
+    expect(group_session.undo() && group_session.document() == group_document,
+        "the whole group move is a SINGLE undo entry");
+
+    expect(group_session.redo() && group.begin(group_session, {350.0f, -25.0f}, 1.0f)
+                == MapDocumentError::None
+            && group.selectionSize() == 2 && group.selectedId() == "rock-b",
+        "dragging by another member keeps the group and re-anchors");
+    group.cancel();
+
+    expect(group.begin(group_session, {-400.0f, 200.0f}, 1.0f) == MapDocumentError::None
+            && group.selectionSize() == 1 && group.selectedId() == "cloud",
+        "a plain click outside the group starts a fresh selection of one");
+    group.cancel();
+    expect(group.toggleAt(group_session, {50.0f, -25.0f}, 1.0f) == MapDocumentError::None
+            && group.begin(group_session, {9000.0f, 9000.0f}, 1.0f) == MapDocumentError::None
+            && group.selectionSize() == 0 && group.selectedId().empty(),
+        "a plain click on empty space is the gesture that drops a group");
+
+    // Group rotation and deletion, also one undo entry each.
+    MapEditSession batch_session(group_document);
+    const std::vector<std::string> both{"rock-a", "rock-b"};
+    expect(batch_session.rotateObjects(both, 15.0f) == MapEditError::None
+            && batch_session.document().objects[0].transform.rotation == 50.0f
+            && batch_session.document().objects[1].transform.rotation == 50.0f
+            && batch_session.document().objects[2].transform.rotation == 15.0f,
+        "batch rotation turns every member and leaves the rest alone");
+    expect(batch_session.undo() && batch_session.document() == group_document,
+        "batch rotation is a single undo entry");
+    expect(batch_session.removeObjects(both) == MapEditError::None
+            && batch_session.document().objects.size() == 1
+            && batch_session.undo() && batch_session.document() == group_document,
+        "batch removal deletes the group and undoes in one step");
+
+    // All-or-nothing: a half-applied group edit is the worst outcome, because
+    // the selection still looks like a group afterwards.
+    MapObject unsupported_member;
+    unsupported_member.id = "future-thing";
+    unsupported_member.kind = MapObjectKind::Unsupported;
+    unsupported_member.transform = {700.0f, 700.0f, 0.0f};
+    MapDocument mixed_document = group_document;
+    mixed_document.objects.push_back(unsupported_member);
+    MapEditSession mixed_session(mixed_document);
+    expect(mixed_session.rotateObjects({"rock-a", "future-thing"}, 15.0f)
+                == MapEditError::WrongKind
+            && mixed_session.document() == mixed_document,
+        "a group holding an unsupported object rotates NOTHING");
+    expect(mixed_session.moveObjects({{"rock-a", {5.0f, 5.0f, 0.0f}}, {"ghost", {0.0f, 0.0f, 0.0f}}})
+                == MapEditError::NotFound
+            && mixed_session.document() == mixed_document,
+        "a group naming a missing object moves NOTHING");
+    expect(mixed_session.removeObjects({"rock-a", "future-thing"})
+                == MapEditError::WrongKind
+            && mixed_session.document() == mixed_document,
+        "a group holding an unsupported object deletes NOTHING - the opaque JSON "
+        "#54 promises to preserve is not collateral of deleting a rock");
+    expect(mixed_session.removeObjects({"rock-a", "ghost"}) == MapEditError::NotFound
+            && mixed_session.document() == mixed_document,
+        "a group naming a missing object deletes NOTHING");
+    expect(mixed_session.removeObjects({}) == MapEditError::NotFound
+            && mixed_session.document() == mixed_document,
+        "an empty group is not an edit");
+
     std::cout << "MAP_PREVIEW_INTERACTION_TESTS_OK checks=" << checks << "\n";
     return 0;
 }

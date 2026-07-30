@@ -1,0 +1,66 @@
+---
+name: Filtro de rutas
+description: >-
+  Decide si un área del repo está tocada por el PR. Sustituye a los filtros
+  `paths:` del disparador, que impiden exigir el check (#361).
+
+# POR QUÉ EXISTE ESTA ACCIÓN, y no un `paths:` en el disparador.
+#
+# Un `paths:` en `on:` no «salta» el workflow: hace que NO EXISTA. GitHub no
+# publica ningún check run, y un check requerido que no existe deja el PR en
+# «Expected — waiting for status» para siempre, sin que nada haya fallado. Un
+# job saltado por `if:`, en cambio, sí se publica con conclusión `skipped`, y eso
+# satisface un check requerido. La diferencia entre las dos clases es la razón
+# entera de #361: hoy las pruebas del módulo Foundry son de la clase que no se
+# puede exigir, y son el check más valioso del repo.
+#
+# El coste de la mudanza es un runner de diez segundos por workflow y PR, que es
+# lo que cuesta el diff. Los jobs caros siguen sin ejecutarse.
+#
+# FALLO SEGURO, igual que el filtro de `cicd.yml`: ante cualquier duda —evento
+# que no es un PR, base que no se puede traer, diff que falla, diff vacío— se
+# ejecuta. Un job de más gasta minutos; un job de menos deja pasar una regresión
+# por una puerta que dice verde.
+
+inputs:
+  rutas:
+    description: >-
+      Expresión regular extendida (ERE) contra la que se compara cada ruta
+      cambiada. Si alguna casa, el área está tocada.
+    required: true
+
+outputs:
+  run:
+    description: "'true' si hay que ejecutar los jobs del área."
+    value: ${{ steps.filtro.outputs.run }}
+
+runs:
+  using: composite
+  steps:
+    - name: Decidir si el área está tocada
+      id: filtro
+      shell: bash
+      env:
+        RUTAS: ${{ inputs.rutas }}
+        EVENTO: ${{ github.event_name }}
+        BASE: ${{ github.base_ref }}
+      run: |
+        set -uo pipefail
+        ejecutar() { echo "$1"; echo "run=true" >> "$GITHUB_OUTPUT"; exit 0; }
+
+        [ "$EVENTO" = "pull_request" ] || ejecutar "Evento $EVENTO: se ejecuta siempre."
+
+        if ! git fetch --no-tags --depth=1 origin "+refs/heads/$BASE:refs/remotes/origin/$BASE"; then
+          ejecutar "No se pudo traer la base → se ejecuta por seguridad."
+        fi
+        if ! cambiados="$(git diff --name-only "origin/$BASE" HEAD)"; then
+          ejecutar "El diff falló → se ejecuta por seguridad."
+        fi
+        [ -n "$cambiados" ] || ejecutar "Diff vacío → se ejecuta por seguridad."
+
+        echo "Archivos cambiados en el PR:"; echo "$cambiados"
+        if echo "$cambiados" | grep -qE "$RUTAS"; then
+          ejecutar "Hay cambios en el área ($RUTAS) → se ejecuta."
+        fi
+        echo "Ningún cambio en el área ($RUTAS) → los jobs se saltan (y REPORTAN)."
+        echo "run=false" >> "$GITHUB_OUTPUT"

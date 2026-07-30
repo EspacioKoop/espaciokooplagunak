@@ -743,7 +743,15 @@ void GameMasterScreen::onMouseDown(sp::io::Pointer::Button button, glm::vec2 pos
             content_editor->show();
         }
         else if (button == sp::io::Pointer::Button::Left)
-            content_editor->beginMapDrag(position.x, position.y, main_radar->getScale());
+        {
+            // SHIFT añade o quita del grupo; sin él, el clic selecciona y
+            // arrastra como siempre. Es la misma tecla que ya significa «añadir
+            // a la selección» para las entidades vivas de esta pantalla.
+            if (SDL_GetModState() & KMOD_SHIFT)
+                content_editor->toggleMapSelection(position.x, position.y, main_radar->getScale());
+            else
+                content_editor->beginMapDrag(position.x, position.y, main_radar->getScale());
+        }
         return;
     }
     if (click_and_drag_state != ClickAndDragState::None) return;

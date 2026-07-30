@@ -56,6 +56,18 @@
           <canvas data-lagunak-casco width="96" height="72"></canvas>
         </div>
 
+        {{!-- Lámina del objetivo de atraque (#391). Solo existe mientras hay
+              atraque: sin lectura no hay lienzo, y por tanto no hay nada que
+              interpretar. Va en GameCube y no en PSX por lo mismo que la lámina
+              del contacto: esto se mira FIJO para reconocer contra qué se está
+              atracando, no de reojo. Decorativo como el casco — el estado y el
+              nombre del sitio están en la matriz de métricas, en texto. --}}
+        {{#if atraque}}
+        <div class="lagunak-workspace__atraque" aria-hidden="true">
+          <canvas data-lagunak-atraque width="112" height="84"></canvas>
+        </div>
+        {{/if}}
+
         {{#if hasTelemetry}}
           <div class="lagunak-workspace__metrics">
             {{#each metrics}}

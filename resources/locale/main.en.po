@@ -4685,6 +4685,10 @@ msgid "Map object removed from staging."
 msgstr ""
 
 msgctxt "content_editor"
+msgid "Map selection updated; shift-click to add or remove."
+msgstr ""
+
+msgctxt "content_editor"
 msgid "Map object selected; drag to stage its position."
 msgstr ""
 

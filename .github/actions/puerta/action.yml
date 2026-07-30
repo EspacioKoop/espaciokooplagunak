@@ -1,0 +1,63 @@
+---
+name: Puerta
+description: >-
+  Consolida el resultado de los jobs de un workflow en un único check exigible,
+  con tabla de verdad explícita (#361).
+
+# LA TABLA DE VERDAD, escrita aquí y no repartida por los workflows.
+#
+#   success   → PASA. Se ejecutó y salió bien.
+#   skipped   → PASA. No tocaba: el área no cambió en este PR. Un PR de
+#               documentación no puede quedarse bloqueado esperando a las
+#               pruebas del módulo Foundry, y ese es EL caso que rompe cualquier
+#               lista de checks mal elegida.
+#   failure   → FALLA. Obvio, y aun así hay que escribirlo.
+#   cancelled → FALLA. Y esto es lo que se escribe mal: un `if: always()`
+#               ingenuo trata «cancelado» como «no ha fallado» y la puerta se
+#               convierte en un sello de goma que aprueba PRs sin haberlos
+#               comprobado. Cancelar no es aprobar.
+#
+# Cualquier resultado que no esté en la tabla FALLA también. Si GitHub inventa
+# una conclusión nueva, el fallo seguro es no dejarla pasar: una puerta que
+# aprueba lo que no entiende no es una puerta.
+#
+# Por qué una puerta por workflow y no una sola para el repo: `needs` no cruza
+# workflows. Lo que se exige es el conjunto de puertas, y cada una es un nombre
+# estable que no cambia al añadir, renombrar o dividir jobs dentro de su área
+# —que es el otro motivo para tenerla, además de la tabla.
+
+inputs:
+  resultados:
+    description: "El contexto `needs` completo, pasado como `toJSON(needs)`."
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Consolidar resultados
+      shell: bash
+      env:
+        RESULTADOS: ${{ inputs.resultados }}
+      run: |
+        set -euo pipefail
+        echo "$RESULTADOS" | jq -r 'to_entries[] | "\(.key): \(.value.result)"'
+
+        # Un `needs` vacío significa que la puerta no vigila nada: eso es un
+        # error de configuración del workflow, no un visto bueno.
+        if [ "$(echo "$RESULTADOS" | jq 'length')" = "0" ]; then
+          echo '::error::La puerta no tiene ningún job vigilado: needs está vacío.'
+          exit 1
+        fi
+
+        malos="$(echo "$RESULTADOS" | jq -r '
+          to_entries
+          | map(select(.value.result != "success" and .value.result != "skipped"))
+          | .[]
+          | .key + " (" + (.value.result // "sin resultado") + ")"
+        ')"
+
+        if [ -n "$malos" ]; then
+          echo "::error::La puerta no pasa. Jobs en rojo o cancelados: $malos"
+          exit 1
+        fi
+        echo "Todos los jobs del área en success o skipped: la puerta pasa."

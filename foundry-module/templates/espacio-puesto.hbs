@@ -122,14 +122,24 @@
             <div class="lagunak-workspace__contacts">
               <div class="lagunak-workspace__list-heading">
                 <span>{{localize "LAGUNAK.Espacios.ContactosProximos"}}</span>
-                <span>{{localize "LAGUNAK.Espacios.SoloGM"}}</span>
+                {{!-- La cabecera dice de dónde sale la lectura: «solo GM» sobre
+                      una lectura degradada mentiría sobre su origen (#331). --}}
+                {{#if contactsDegradados}}
+                  <span>{{localize "LAGUNAK.Espacios.Sensores.Degradado"}}</span>
+                {{else}}
+                  <span>{{localize "LAGUNAK.Espacios.SoloGM"}}</span>
+                {{/if}}
               </div>
               {{#each contacts}}
-                <div class="lagunak-workspace__contact-row">
-                  <i class="fa-solid fa-diamond" aria-hidden="true"></i>
+                <div class="lagunak-workspace__contact-row{{#if eco}} lagunak-workspace__contact-row--eco{{/if}}">
+                  {{#if eco}}
+                    <i class="fa-solid fa-circle-question" aria-hidden="true"></i>
+                  {{else}}
+                    <i class="fa-solid fa-diamond" aria-hidden="true"></i>
+                  {{/if}}
                   <strong>{{callsign}}</strong>
                   <span>{{faction}}</span>
-                  <code>{{x}}, {{y}}</code>
+                  <code>{{lectura}}</code>
                 </div>
               {{/each}}
             </div>

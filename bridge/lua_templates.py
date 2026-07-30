@@ -74,22 +74,43 @@ if destination ~= nil then
         eta_json = string.format("%%.1f", distance / speed)
     end
 end
+-- Alcance real del radar de la nave propia (#331 paso 3). Sale del componente
+-- `long_range_radar`, que ya expone `short_range` y `long_range` a Lua: sin esto,
+-- degradar los contactos de la tripulación por distancia obligaría a inventarse
+-- dos constantes, y una banda inventada es una mentira con forma de sensor.
+--
+-- Es opcional como todo lo demás: sin componente, `null`. Y ahí la degradación
+-- falla cerrada —no se publica ningún contacto— en vez de abrir de par en par.
+local radar_json = "null"
+local ok_radar, radar = pcall(function() return ship.components.long_range_radar end)
+if ok_radar and radar ~= nil then
+    local ok_short, short_range = pcall(function() return radar.short_range end)
+    local ok_long, long_range = pcall(function() return radar.long_range end)
+    if ok_short and ok_long and type(short_range) == "number"
+        and type(long_range) == "number" then
+        radar_json = string.format(
+            '{"short_range":%%.1f,"long_range":%%.1f}', short_range, long_range)
+    end
+end
 -- Atraque de la nave propia (#391). El componente `docking_port` ya expone
 -- `state` y `target` a Lua (src/script/components.cpp), así que esto no necesita
 -- una sola línea de C++ nueva: es la regla de divergencia cero de #362.
 --
--- El enum puede llegar como número o como cadena según cómo lo entregue el
--- binding, así que se aceptan las dos formas y CUALQUIER OTRA COSA es null. Un
--- estado inventado sería peor que no publicar nada: la consola dibujaría un
--- atraque que no existe.
+-- El binding entrega el enum como cadena en minúsculas y con guión bajo
+-- (`src/script/enum.h`, Convert<DockingPort::State>::toLua): "not_docking",
+-- "docking", "docked", "none". Se normaliza a minúsculas antes de comparar —así
+-- una recapitalización aguas arriba no apaga el atraque— y CUALQUIER OTRA COSA
+-- es null, `not_docking` incluido. Un estado inventado sería peor que no
+-- publicar nada: la consola dibujaría un atraque que no existe.
 local docking_json = "null"
 local ok_port, port = pcall(function() return ship.components.docking_port end)
 if ok_port and port ~= nil then
     local ok_state, raw_state = pcall(function() return port.state end)
     local estado = nil
-    if ok_state then
-        if raw_state == 1 or raw_state == "Docking" then estado = "docking" end
-        if raw_state == 2 or raw_state == "Docked" then estado = "docked" end
+    if ok_state and type(raw_state) == "string" then
+        local normalizado = string.lower(raw_state)
+        if normalizado == "docking" then estado = "docking" end
+        if normalizado == "docked" then estado = "docked" end
     end
     if estado ~= nil then
         -- Sin objetivo legible se publica el estado igualmente: «estamos
@@ -132,13 +153,14 @@ return string.format(
     .. '"velocity":{"x":%%.2f,"y":%%.2f},"destination":%%s,'
     .. '"distance_to_destination":%%s,"eta_seconds":%%s,'
     .. '"hull":%%.1f,"hull_max":%%.1f,"energy":%%.1f,"energy_max":%%.1f,'
-    .. '"shields_active":%%s,"repair_crew":%%d,"docking":%%s,"systems":{%%s}}}',
+    .. '"shields_active":%%s,"repair_crew":%%d,"radar":%%s,"docking":%%s,'
+    .. '"systems":{%%s}}}',
     ship:getCallSign() or "?", x, y, ship:getHeading(), vx, vy,
     destination_json, distance_json, eta_json,
     ship:getHull(), ship:getHullMax(),
     ship:getEnergyLevel(), ship:getEnergyLevelMax(),
     tostring(ship:getShieldsActive()), ship:getRepairCrewCount(),
-    docking_json, table.concat(systems, ","))
+    radar_json, docking_json, table.concat(systems, ","))
 """ % ", ".join(f'"{name}"' for name in _SYSTEMS)
 _STATE_LUA = _JSON_ESCAPE_LUA + _STATE_LUA
 

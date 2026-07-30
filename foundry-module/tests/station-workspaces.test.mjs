@@ -245,10 +245,15 @@ test("sensores excluye la propia nave y no inventa hostilidad", () => {
     contactsPayload,
     connection: "ok",
   });
+  // La fila del GM lleva ahora `lectura` en vez de `x`/`y` sueltos (#331 paso 3):
+  // la misma plantilla sirve para su sondeo crudo y para la lectura degradada de
+  // la tripulación, y lo que cambia es el contenido, no la forma. El GM sigue
+  // viendo coordenadas exactas y sin márgenes.
   assert.deepEqual(model.contacts, [
-    { callsign: "Eco-1", faction: "LAGUNAK.Facciones.Independent", x: 10, y: 20 },
+    { eco: false, callsign: "Eco-1", faction: "LAGUNAK.Facciones.Independent", lectura: "10, 20" },
   ]);
   assert.equal(Object.hasOwn(model.contacts[0], "hostile"), false);
+  assert.equal(model.contactsDegradados, false, "el GM no lee degradado");
 });
 
 test("el modelo final entrega sistemas, facciones y códigos en español de España", () => {
@@ -451,4 +456,103 @@ test("REGRESIÓN: el casco lo ve la tripulación, no solo el GM", async () => {
   });
   assert.equal(jugador.hasTelemetry, false, "el jugador no recibe telemetría, como debe ser");
   assert.equal(jugador.cascoRumbo, null, "y sin lectura no se inventa un rumbo");
+});
+
+// ---- Contactos degradados en la consola de tripulación (#331, paso 3) -------
+
+test("la tripulación ve los contactos que le llegaron degradados, no el crudo", () => {
+  const crudo = {
+    contacts: [
+      { callsign: "Argia", faction: "Humanos", is_player: false, position: { x: 1000, y: 0 } },
+    ],
+    total: 9,
+    truncated: true,
+  };
+  const sensores = {
+    contactos: [
+      { banda: "largo", esJugador: false, callsign: null, faction: null, position: { x: 20000, y: 0 }, precision: 1000 },
+    ],
+    alcance: { corto: 5000, largo: 30000 },
+  };
+  const modelo = buildWorkspaceModel({
+    station: "sensors",
+    isGM: false,
+    users: [],
+    moduleId: "lagunak",
+    i18n: { localize: (k) => k, format: (k) => k },
+    statePayload: { ship: { callsign: "Lagunak", systems: {} } },
+    contactsPayload: crudo,
+    sensores,
+    connection: "ok",
+  });
+  const texto = JSON.stringify(modelo);
+  // Lo que importa: el crudo pasó por la función y NO salió por el otro lado.
+  assert.doesNotMatch(texto, /Argia/, "el indicativo del crudo no llega a la tripulación");
+  // Y el recuento es el de lo visible, no el total del GM: un «9» diría «hay
+  // ocho cosas más ahí fuera», que es el dato que el puesto tiene que ganarse.
+  const contactos = modelo.metrics.find((m) => m.label.endsWith("Contactos"));
+  assert.equal(contactos.value, "1");
+});
+
+test("sin difusión de sensores la tripulación no ve contactos, como antes", () => {
+  const modelo = buildWorkspaceModel({
+    station: "sensors",
+    isGM: false,
+    users: [],
+    moduleId: "lagunak",
+    i18n: { localize: (k) => k, format: (k) => k },
+    statePayload: { ship: { callsign: "Lagunak", systems: {} } },
+    contactsPayload: { contacts: [{ callsign: "Argia", is_player: false }], total: 4 },
+    sensores: null,
+    connection: "ok",
+  });
+  assert.doesNotMatch(JSON.stringify(modelo), /Argia/);
+  const contactos = modelo.metrics.find((m) => m.label.endsWith("Contactos"));
+  assert.equal(contactos.value, "0");
+});
+
+test("el GM sigue viendo su sondeo crudo, con su total", () => {
+  const modelo = buildWorkspaceModel({
+    station: "sensors",
+    isGM: true,
+    users: [],
+    moduleId: "lagunak",
+    i18n: { localize: (k) => k, format: (k) => k },
+    statePayload: { ship: { callsign: "Lagunak", systems: {} } },
+    contactsPayload: {
+      contacts: [{ callsign: "Argia", is_player: false, position: { x: 1000, y: 0 } }],
+      total: 9,
+    },
+    sensores: null,
+    connection: "ok",
+  });
+  const total = modelo.metrics.find((m) => m.label.endsWith("TotalSensor"));
+  assert.equal(total.value, "9", "degradar a la tripulación no le quita precisión al GM");
+});
+
+test("la tripulación ve la lectura degradada como filas, no como un número suelto", () => {
+  // El pago visible del paso 3: el dato estaba difundido y la consola solo
+  // enseñaba un recuento.
+  const modelo = buildWorkspaceModel({
+    station: "sensors",
+    isGM: false,
+    users: [],
+    moduleId: MODULE_ID,
+    i18n,
+    statePayload: { ship: { callsign: "Lagunak", systems: {} } },
+    contactsPayload: { contacts: [{ callsign: "SECRETO", is_player: false, position: { x: 1, y: 2 } }] },
+    sensores: {
+      contactos: [
+        { banda: "largo", callsign: null, faction: null, distancia: 20000, rumboDeg: 75, precision: 1000, rumboPrecision: 15 },
+        { banda: "corto", callsign: "Argia", faction: "Humanos", distancia: 1230, rumboDeg: 90, precision: 10, rumboPrecision: 1 },
+      ],
+    },
+    connection: "ok",
+  });
+  assert.equal(modelo.contacts.length, 2);
+  assert.equal(modelo.contacts[0].callsign, "Argia", "lo más cercano primero");
+  assert.equal(modelo.contacts[1].eco, true);
+  assert.equal(modelo.contactsDegradados, true, "y la cabecera dice de dónde sale");
+  // El crudo del GM no se cuela por esta ruta ni aunque venga en el mismo modelo.
+  assert.doesNotMatch(JSON.stringify(modelo.contacts), /SECRETO/);
 });

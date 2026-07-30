@@ -2,6 +2,7 @@ import { STATIONS, normalizeStation } from "./station-assignment.mjs";
 import { isActionAllowed } from "./station-actions.mjs";
 import { SISTEMAS_INGENIERIA, NIVELES_POTENCIA, NIVELES_REFRIGERANTE } from "./ingenieria-control.mjs";
 import { prepareDocking, prepareSystemRows } from "./ship-view.mjs";
+import { filasCrudas, filasDegradadas } from "./sensores-lista.mjs";
 import { retratoTripulanteDataUri } from "./retrato-tripulante.mjs";
 
 // Marca visible de «no hay lectura», distinta de cualquier valor real.
@@ -268,24 +269,24 @@ function crewRows(users, moduleId, i18n) {
     });
 }
 
-function visibleContacts(contactsPayload, i18n) {
-  const contacts = Array.isArray(contactsPayload?.contacts) ? contactsPayload.contacts : [];
-  return contacts
-    .filter((entry) => !entry?.is_player)
-    .slice(0, 6)
-    .map((entry) => ({
-      callsign: String(entry?.callsign ?? "?"),
-      faction: entry?.faction
-        ? localizeFaction(i18n, String(entry.faction))
-        : localize(i18n, "LAGUNAK.Facciones.SinFaccion"),
-      x: integer(entry?.position?.x),
-      y: integer(entry?.position?.y),
-    }));
+/**
+ * La lista de contactos del puesto. Dos fuentes que NO se mezclan (#331 paso 3):
+ * el GM lee su sondeo crudo con coordenadas exactas —es lo que necesita para
+ * dirigir— y la tripulación, la lectura degradada por el alcance del radar, con
+ * sus márgenes escritos. Fingir que son la misma tabla acabaría enseñándole a
+ * alguien un número que no le corresponde.
+ */
+function visibleContacts(contactsPayload, sensores, isGM, i18n) {
+  if (isGM) {
+    return filasCrudas(contactsPayload, i18n, (faccion) => localizeFaction(i18n, faccion));
+  }
+  return filasDegradadas(sensores, i18n);
 }
 
 export function buildWorkspaceModel({
   station,
   isGM,
+  sensores = null,
   users,
   moduleId,
   i18n,
@@ -314,7 +315,13 @@ export function buildWorkspaceModel({
   // debería decidir cuánto revela, y difundirlos crudos regalaría el trabajo del
   // puesto. Se abrirán degradados por distancia y salud de sensores, con su
   // propio módulo puro y sus pruebas.
-  const safeContactsPayload = isGM ? contactsPayload : null;
+  // El GM lee su sondeo crudo; la tripulación, lo que le llegó degradado por el
+  // alcance del radar (#331 paso 3). Si no llegó nada —sin lectura de radar, o
+  // sin GM conectado difundiendo— la tripulación no ve contactos, que es lo
+  // mismo que veía antes de este paso y nunca menos seguro.
+  const safeContactsPayload = isGM
+    ? contactsPayload
+    : (sensores ? { contacts: sensores.contactos, degradado: true } : null);
   const crew = crewRows(users, moduleId, i18n);
   // La misma lectura que usa `metricsFor`: si el texto y la lámina salieran de
   // dos llamadas con criterios distintos, la consola podría dibujar un atraque
@@ -384,7 +391,12 @@ export function buildWorkspaceModel({
     ship,
     metrics: ship ? metricsFor(normalized, ship, safeContactsPayload, i18n, crew.length) : [],
     systems: normalized === "engineering" ? prepareSystemRows(ship, i18n) : [],
-    contacts: normalized === "sensors" || normalized === "weapons" ? visibleContacts(safeContactsPayload, i18n) : [],
+    contacts: normalized === "sensors" || normalized === "weapons"
+      ? visibleContacts(contactsPayload, sensores, Boolean(isGM), i18n)
+      : [],
+    // La cabecera de la lista dice de dónde sale lo que se está leyendo: «solo
+    // GM» sobre una lectura degradada sería mentir sobre su origen.
+    contactsDegradados: !isGM,
     crew,
     crewCount: crew.length,
     activeCrew: crew.filter((member) => member.active).length,

@@ -83,21 +83,13 @@ if(WITH_DISCORD)
   file(MAKE_DIRECTORY "${DISCORD_INCLUDE_PATH}")
   if(NOT EXISTS "${DISCORD_INCLUDE_PATH}/discord_game_sdk.h")
     set(DISCORD_GAME_SDK "${DOWNLOADS_DIR}/discord_game_sdk.zip")
-    file(DOWNLOAD "https://dl-game-sdk.discordapp.net/latest/discord_game_sdk.zip" "${DISCORD_GAME_SDK}" TIMEOUT 60 TLS_VERIFY ON STATUS DISCORD_DOWNLOAD_STATUS)
-    list(GET DISCORD_DOWNLOAD_STATUS 0 DISCORD_DOWNLOAD_CODE)
-    if(NOT DISCORD_DOWNLOAD_CODE EQUAL 0)
-      list(GET DISCORD_DOWNLOAD_STATUS 1 DISCORD_DOWNLOAD_ERROR)
-      file(REMOVE "${DISCORD_GAME_SDK}")
-      message(FATAL_ERROR "Failed to download the Discord game SDK from dl-game-sdk.discordapp.net: ${DISCORD_DOWNLOAD_ERROR}. Retry, or configure with -DWITH_DISCORD=OFF to build without Discord support.")
-    endif()
-    execute_process(COMMAND ${CMAKE_COMMAND} -E tar -xf "${DISCORD_GAME_SDK}" WORKING_DIRECTORY "${EXTERNALS_DIR}/discord" RESULT_VARIABLE DISCORD_EXTRACT_RESULT)
-    if(NOT DISCORD_EXTRACT_RESULT EQUAL 0)
-      file(REMOVE "${DISCORD_GAME_SDK}")
-      message(FATAL_ERROR "Failed to extract the Discord game SDK archive (${DISCORD_GAME_SDK}): the download is likely truncated or corrupt. Retry, or configure with -DWITH_DISCORD=OFF to build without Discord support.")
-    endif()
-    if(NOT EXISTS "${DISCORD_INCLUDE_PATH}/discord_game_sdk.h")
-      message(FATAL_ERROR "The Discord game SDK archive did not contain c/discord_game_sdk.h. Retry, or configure with -DWITH_DISCORD=OFF to build without Discord support.")
-    endif()
+    # Descarga y extracción comprobadas, en su propio módulo para que las
+    # pruebas puedan ejercitar los caminos de error (#400).
+    include(DiscordGameSdk)
+    discord_game_sdk_obtener(
+      "${EXTERNALS_DIR}/discord"
+      "${DISCORD_INCLUDE_PATH}/discord_game_sdk.h"
+      "${DISCORD_GAME_SDK}")
     if(WIN32 AND CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
       # Discord uses Windows.h (capital W) and that does not play nice when cross-compiling.
       # we want to patch with a lowercase windows.h

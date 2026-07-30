@@ -6,6 +6,7 @@ import { emitWorkspaceOrder } from "./station-order-wiring.mjs";
 import { ORDER_FORMS } from "./station-order-forms.mjs";
 import {
   AJUSTE_TELEMETRIA,
+  aceptarSensores,
   aceptarTelemetria,
   difundirTelemetria,
   esMasReciente,
@@ -39,14 +40,17 @@ function recibirTelemetria() {
   const sobre = game.settings?.get?.(configuredModuleId, AJUSTE_TELEMETRIA) ?? null;
   const ship = aceptarTelemetria(sobre);
   if (!ship) return;
+  const sensores = aceptarSensores(sobre);
   // Fuera de orden se descarta: dos escrituras seguidas pueden llegar cruzadas y
   // la consola parpadearía hacia atrás, que en un rumbo se ve como una sacudida.
   if (!esMasReciente(sobre, app.selloTelemetria)) return;
   app.selloTelemetria = sobre.sello;
-  // El GM conserva su propio sondeo como fuente: tiene los contactos, que no
-  // viajan por aquí, y pisarlo con el sobre recortado se los borraría.
+  // El GM conserva su propio sondeo como fuente: tiene los contactos SIN
+  // degradar, y pisarlo con el sobre recortado le quitaría precisión a quien
+  // dirige la escena.
   if (!game.user?.isGM) {
     app.statePayload = { ship };
+    app.sensores = sensores;
     app.connection = "ok";
     app.error = "";
   }
@@ -158,6 +162,9 @@ function workspaceContext(app) {
     i18n: game.i18n,
     statePayload: app.statePayload,
     contactsPayload: app.contactsPayload,
+    // Contactos degradados que llegaron por difusión (#331 paso 3). Solo los
+    // tiene la tripulación: el GM usa su propio sondeo, que es más preciso.
+    sensores: app.sensores,
     connection: app.connection,
     error: app.error,
   });
@@ -182,12 +189,15 @@ async function refreshTelemetry(app) {
     app.contactsPayload = contactsPayload;
     app.connection = "ok";
     // La tripulación no puede sondear el puente —no tiene token— así que el GM
-    // reparte lo que acaba de recibir (#331). Solo la nave propia: los contactos
-    // se quedan aquí hasta que se abran degradados.
+    // reparte lo que acaba de recibir (#331). La nave propia entera y los
+    // contactos YA degradados por el alcance del radar (paso 3): el crudo entra
+    // en `difundirTelemetria` y de ahí no sale, que es lo que hace que degradar
+    // signifique algo.
     // Publicar es escribir un ajuste de mundo, y eso solo lo puede hacer un GM:
     // la autorización la impone el servidor, no este `if`.
     const publicado = difundirTelemetria({
       statePayload,
+      contactsPayload,
       anterior: game.settings?.get?.(configuredModuleId, AJUSTE_TELEMETRIA) ?? null,
       publicar: (sobre) => game.settings?.set?.(configuredModuleId, AJUSTE_TELEMETRIA, sobre),
     });
@@ -249,6 +259,7 @@ async function handleWorkspaceAction(app, event) {
 // girando alegremente en el puente mientras la nave real mantiene el rumbo sería
 // una mentira pequeña, pero en una consola de mando no hay mentiras pequeñas.
 const MALLA_PROPIA = mallaDesdeCasco(CASCO_POR_DEFECTO);
+const SEMILLA_CIELO_PUENTE = 20362;
 
 function pintarCascoPropio(root, modelo) {
   const lienzo = root?.querySelector?.("[data-lagunak-casco]");
@@ -265,6 +276,11 @@ function pintarCascoPropio(root, modelo) {
     pitch: 0.42,
     posicion: [0, 0, 4.4],
     fov: 55,
+    // Cielo fijo (#384): la semilla es constante a propósito. El puente es
+    // siempre el mismo sitio y las estrellas de fuera no cambian porque se
+    // vuelva a abrir la consola; una semilla variable haría parpadear el
+    // universo entero en cada render.
+    cielo: { semilla: SEMILLA_CIELO_PUENTE },
   });
 }
 
@@ -284,6 +300,7 @@ function initialiseApp(app) {
   // y lo dice, que es distinto de «no tienes permiso».
   app.connection = "loading";
   app.selloTelemetria = null;
+  app.sensores = null;
   app.error = "";
   app.loading = false;
   app.closed = false;

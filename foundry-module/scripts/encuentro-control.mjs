@@ -7,6 +7,13 @@
  * antes de tocar la red: el módulo nunca hardcodea arquetipos ni puede enviar
  * uno que el puente rechazaría. Foundry decide el *qué* (arquetipo) y como
  * mucho sugiere un rumbo grueso; el escenario es dueño del *cómo*.
+ *
+ * Y no tiene ventana propia a propósito (#276): la vista se prepara aquí y la
+ * pinta la ventana de estado del GM. Cuando llegue la consola caliente —la
+ * fusión de estado y mapa vivo, después del criterio de salida de fase 3— esto
+ * se convierte en una pestaña más sin reescribir nada, porque no hay una
+ * `Application` autónoma que reabsorber. Quien evolucione los encuentros hace
+ * bien en no crearla.
  */
 
 import { BridgeError } from "./bridge-client.mjs";

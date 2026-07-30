@@ -233,8 +233,11 @@ test("estado de nave: el orden de teclado va de tempo a encuentros, ingeniería,
 });
 
 test("mapa vivo: la ayuda se alcanza antes que la lista de contactos", () => {
+  // El selector de vista por puesto (#331, paso 2) va entre la ayuda y la lista
+  // a propósito: cambia lo que se ve en el lienzo, así que quien tabula debe
+  // encontrarlo ANTES de recorrer los contactos y no después de la lista entera.
   const controles = controlesInteractivos(read("templates/mapa-vivo.hbs"));
-  assert.deepEqual(controles.map((c) => c.tag), ["summary", "button"]);
+  assert.deepEqual(controles.map((c) => c.tag), ["summary", "select", "button"]);
 });
 
 test("gestión de puestos: un select de asignación por fila, sin controles fuera de orden", () => {

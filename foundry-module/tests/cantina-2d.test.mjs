@@ -80,38 +80,36 @@ test("la viñeta es por bandas, no un degradado", () => {
 });
 
 // Luz y humo (#423): las dos capas que el 3D no puede dar.
-test("los haces se abren hacia abajo y se apagan al bajar", () => {
+test("los haces caen desde su foco y se abren hacia el suelo", () => {
   const ctx = ctxFalso();
-  pintarHaces(ctx, MEDIDAS);
-  assert.ok(ctx.rects.length > 0);
+  const aire = [{ x: 200, y: 40, tipo: "haz", largo: 60, profundidad: 5 }];
+  assert.ok(pintarHaces(ctx, { aire, alto: MEDIDAS.alto }) > 0);
   const primero = ctx.rects[0];
   const ultimo = ctx.rects[ctx.rects.length - 1];
   assert.ok(ultimo.w >= primero.w, "el cono no se abre hacia el suelo");
-  for (const rect of ctx.rects) {
-    assert.ok(rect.x >= 0 && rect.x + rect.w <= MEDIDAS.ancho, "el haz se sale del cuadro");
-  }
+  assert.ok(ultimo.y > primero.y, "el haz no cae");
 });
 
-test("el humo deriva con el tiempo pero no salta al azar", () => {
+test("el aire ANCLADO se mueve con la sala: lo lejano se pinta más pequeño", () => {
+  // Es la diferencia entre aire y filtro. Un velo que no mengua con la
+  // distancia no es humo, es una calcomanía pegada al cristal.
+  const cerca = ctxFalso();
+  const lejos = ctxFalso();
+  pintarHumo(cerca, { aire: [{ x: 100, y: 100, tipo: "humo", largo: 120, profundidad: 2 }] });
+  pintarHumo(lejos, { aire: [{ x: 100, y: 100, tipo: "humo", largo: 20, profundidad: 20 }] });
+  assert.ok(cerca.rects[0].w > lejos.rects[0].w, "la distancia no cambia el tamaño");
+});
+
+test("el humo se mece con el tiempo, y el mismo instante da el mismo humo", () => {
+  const aire = [{ x: 200, y: 150, tipo: "humo", largo: 90, profundidad: 4 }];
   const quieto = ctxFalso();
   const movido = ctxFalso();
   const otraVez = ctxFalso();
-  pintarHumo(quieto, { ...MEDIDAS, ms: 0 });
-  pintarHumo(movido, { ...MEDIDAS, ms: 4000 });
-  pintarHumo(otraVez, { ...MEDIDAS, ms: 0 });
+  pintarHumo(quieto, { aire, ms: 0 });
+  pintarHumo(movido, { aire, ms: 4000 });
+  pintarHumo(otraVez, { aire, ms: 0 });
   assert.deepEqual(otraVez.rects, quieto.rects, "el mismo instante debe dar el mismo humo");
   assert.notDeepEqual(movido.rects, quieto.rects, "el humo no se mueve");
-});
-
-test("el humo se queda en el tercio central, que es donde se posa el aire", () => {
-  // Repartido por toda la sala sería niebla, y la niebla ya la pone el motor
-  // con la distancia.
-  const ctx = ctxFalso();
-  pintarHumo(ctx, { ...MEDIDAS, ms: 1500 });
-  for (const rect of ctx.rects) {
-    assert.ok(rect.y >= MEDIDAS.alto * 0.28, `veta demasiado alta: ${rect.y}`);
-    assert.ok(rect.y <= MEDIDAS.alto * 0.76, `veta demasiado baja: ${rect.y}`);
-  }
 });
 
 // Cachivaches (#423): detalle pintado, no modelado.

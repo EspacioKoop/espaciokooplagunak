@@ -1,0 +1,76 @@
+// La mesa de póker en 3D (#308 sobre #362).
+//
+// Lo que se afirma aquí es lo que no se ve mirando un tapete bonito: que los
+// huecos vacíos se pueden CONTAR, que la pila crece con las fichas, y que el
+// orden por pintor es global — que es el fallo que dejaría una ficha dibujada
+// debajo del tapete que tiene delante.
+
+import assert from "node:assert/strict";
+import test from "node:test";
+
+import { componerMesa, disco, huecosComunitarias, plazas } from "../scripts/minijuegos/poker-3d.mjs";
+import { EPOCAS } from "../scripts/retro3d.mjs";
+
+test("siempre hay cinco huecos, salgan las cartas que salgan", () => {
+  // El hueco vacío se ve, y por eso se cuenta cuántas faltan sin ponerlo en un
+  // texto. Si los huecos aparecieran solo al salir la carta, la mesa dejaría de
+  // decir en qué calle va la mano.
+  assert.equal(huecosComunitarias().length, 5);
+  for (const cuantas of [0, 3, 5]) {
+    const escena = componerMesa({ comunitarias: cuantas, jugadores: [{ fichas: 100 }] });
+    assert.ok(escena.poligonos.length > 0, `con ${cuantas} comunitarias no se pinta nada`);
+  }
+});
+
+test("una carta boca arriba tiene canto: no es una calcomanía", () => {
+  // Dos cajas por carta —canto oscuro y cara encima—, así que sacar cartas
+  // añade más polígonos que dejar el hueco.
+  const vacia = componerMesa({ comunitarias: 0, jugadores: [] });
+  const conFlop = componerMesa({ comunitarias: 3, jugadores: [] });
+  assert.ok(conFlop.poligonos.length > vacia.poligonos.length, "las cartas no tienen grosor");
+});
+
+test("la pila crece con las fichas, y no crece sin límite", () => {
+  const altura = (fichas) => componerMesa({ comunitarias: 0, jugadores: [{ fichas }] }).poligonos.length;
+  assert.ok(altura(300) > altura(30), "la pila no dice cuántas fichas hay");
+  // Y tiene tope: una pila de mil fichas sería una columna que sale del cuadro.
+  assert.equal(altura(100000), altura(1000));
+});
+
+test("las plazas se reparten por delante, nunca detrás del tapete", () => {
+  // Lo que no se ve no cuenta como estar en la mesa.
+  for (const cuantos of [1, 2, 4, 6]) {
+    const sitios = plazas(cuantos);
+    assert.equal(sitios.length, cuantos);
+    for (const [, , z] of sitios) assert.ok(z > 0, `una plaza ha quedado detrás: z=${z}`);
+  }
+  // Y no caben más de seis: una mesa de póker tiene los asientos que tiene.
+  assert.equal(plazas(50).length, 6);
+});
+
+test("el disco cierra su costado, como la ficha de la cantina", () => {
+  const malla = disco({ lados: 10 });
+  assert.equal(malla.vertices.length, 20);
+  assert.equal(malla.caras.length, 12);
+});
+
+test("el orden por pintor es global: lo lejano antes que lo cercano", () => {
+  // Concatenar las listas de cada pieza sin reordenar deja una ficha dibujada
+  // debajo del tapete que tiene delante.
+  const { poligonos } = componerMesa({ comunitarias: 5, jugadores: [{ fichas: 200 }, { fichas: 80 }] });
+  for (let i = 1; i < poligonos.length; i += 1) {
+    assert.ok(poligonos[i - 1].profundidad >= poligonos[i].profundidad, `rompe el orden en ${i}`);
+  }
+});
+
+test("la mesa se compone en las dos épocas y aguanta entrada rota", () => {
+  for (const epoca of EPOCAS) {
+    assert.ok(componerMesa({ comunitarias: 2, jugadores: [{ fichas: 50 }] }, { epoca }).poligonos.length > 0);
+  }
+  const rota = componerMesa({ comunitarias: NaN, jugadores: "no es una lista" }, { ancho: NaN });
+  for (const poligono of rota.poligonos) {
+    for (const punto of poligono.puntos) {
+      assert.ok(Number.isFinite(punto.x) && Number.isFinite(punto.y));
+    }
+  }
+});

@@ -425,6 +425,29 @@ export const MUEBLES = Object.freeze([
 export const FOV = 42;
 
 /**
+ * Dónde flota el humo y de dónde caen los haces, en coordenadas de MUNDO.
+ *
+ * Estaban dibujados en coordenadas de pantalla y por eso «no se notaba el 3D»:
+ * un velo que no se mueve con la sala es un filtro, no aire. Anclados, pasan por
+ * delante de lo cercano y por detrás de lo lejano, menguan con la distancia y
+ * salen del cuadro al girarse — que es el 90% de la sensación de volumen sin
+ * pagar el precio de un volumétrico de verdad (el rasterizador ordena por
+ * pintor y no tiene mezcla alfa; añadírsela sería otro proyecto).
+ */
+export const ANCLAS_AIRE = Object.freeze([
+  // Vetas de humo a media altura, repartidas por la sala en profundidad.
+  Object.freeze({ punto: [-2.2, -0.2, 1.6], tipo: "humo", largo: 3.2 }),
+  Object.freeze({ punto: [1.4, 0.1, 2.4], tipo: "humo", largo: 4.0 }),
+  Object.freeze({ punto: [-0.6, -0.35, 3.4], tipo: "humo", largo: 3.6 }),
+  Object.freeze({ punto: [2.6, 0.25, 4.2], tipo: "humo", largo: 3.0 }),
+  Object.freeze({ punto: [-3.0, 0.05, 5.0], tipo: "humo", largo: 2.6 }),
+  // Los haces, colgando de cada lámpara: el punto es el foco, no el suelo.
+  Object.freeze({ punto: [-2.6, 2.2, 2.4], tipo: "haz", largo: 3.6 }),
+  Object.freeze({ punto: [0, 2.2, 3.8], tipo: "haz", largo: 3.6 }),
+  Object.freeze({ punto: [2.6, 2.2, 2.4], tipo: "haz", largo: 3.6 }),
+]);
+
+/**
  * Dónde están atornillados los trastos electrónicos, en coordenadas de MUNDO.
  * Antes vivían en píxeles de pantalla y por eso flotaban como un HUD: un panel
  * es un objeto de la pared, no una capa de interfaz.
@@ -590,6 +613,31 @@ export function componerCantina(opciones = {}) {
     anclas.push({ x, y, escala: Math.max(0.35, Math.min(2.2, 6 / v[2])), tipo: ancla.tipo });
   }
 
+  // El aire, proyectado igual que los trastos. Se ordena de lejos a cerca para
+  // que quien pinte lo haga en ese orden y las vetas cercanas tapen a las
+  // lejanas, como haría cualquier cosa con volumen.
+  const aire = [];
+  for (const ancla of ANCLAS_AIRE) {
+    const v = transformar(
+      [ancla.punto[0] - camX, ancla.punto[1] - camY, ancla.punto[2] - camZ],
+      { yaw, pitch: encuadre.pitch, posicion: [0, 0, 0] },
+    );
+    if (!(v[2] > 0.5)) continue;
+    const { x, y } = proyectar(v, { ancho, alto, f, rejilla: 1 });
+    if (x < -ancho || x > ancho * 2) continue;
+    // Ancho aparente: lo que mide de largo en el mundo, llevado a pantalla por
+    // la misma focal que todo lo demás. Sin esto, el humo del fondo saldría tan
+    // grande como el de delante y delataría que es una calcomanía.
+    aire.push({
+      x,
+      y,
+      tipo: ancla.tipo,
+      largo: Math.max(4, (ancla.largo * f) / v[2]),
+      profundidad: v[2],
+    });
+  }
+  aire.sort((a, b) => b.profundidad - a.profundidad);
+
   // Y dónde cae en pantalla cada cosa que se puede hacer desde este plano. Es
   // lo que hace que las opciones sean OBVIAS —modelo GTA/RDR2— en vez de tener
   // que barrer la sala con el ratón a ver qué responde.
@@ -629,5 +677,6 @@ export function componerCantina(opciones = {}) {
     anclas,
     plano: encuadre.id,
     opciones: opcionesVisibles,
+    aire,
   };
 }

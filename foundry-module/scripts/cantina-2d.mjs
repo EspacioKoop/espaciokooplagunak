@@ -123,26 +123,23 @@ export function pintarPolvo(ctx, { ancho, alto, semilla = 1, cuantas = 18 }) {
  * flotando, no en la superficie iluminada. Dibujarlo plano encima es lo que
  * hacían las consolas de la época, y sigue siendo lo correcto.
  */
-export function pintarHaces(ctx, { ancho, alto, focos = 3, fuerza = 0.16 }) {
-  if (!ctx) return 0;
+export function pintarHaces(ctx, { aire = [], alto = 0, fuerza = 0.16 } = {}) {
+  if (!ctx || !Array.isArray(aire)) return 0;
   let bandas = 0;
-  const techo = Math.round(alto * 0.16);
-  const suelo = Math.round(alto * 0.78);
-  for (let f = 0; f < focos; f += 1) {
-    // Los focos se reparten el ancho y quedan centrados en su tramo.
-    const cx = Math.round((ancho * (f + 0.5)) / focos);
-    for (let y = techo; y < suelo; y += 1) {
-      const avance = (y - techo) / (suelo - techo);
-      // El cono se abre hacia abajo y a la vez se apaga: si solo se abriera,
-      // el suelo saldría más iluminado que la lámpara.
-      // Cono ancho: uno estrecho a esta resolución es una raya, no un haz.
-    const medio = Math.round(ancho * (0.04 + avance * 0.13));
+  for (const haz of aire) {
+    if (haz.tipo !== "haz") continue;
+    // El cono cae DESDE el foco proyectado, se abre hacia abajo y se apaga a la
+    // vez: si solo se abriera, el suelo saldría más iluminado que la lámpara.
+    const largo = Math.min(alto, Math.round(haz.largo));
+    for (let i = 0; i < largo; i += 1) {
+      const avance = i / largo;
+      const medio = Math.round(haz.largo * (0.06 + avance * 0.2));
       const alfa = fuerza * (1 - avance);
-      if (alfa <= 0.002) continue;
+      if (alfa <= 0.004) continue;
+      const y = Math.round(haz.y + i);
+      if (y < 0 || y > alto) continue;
       ctx.fillStyle = velo(CANTINA.lampara, alfa.toFixed(3));
-      const x0 = Math.max(0, cx - medio);
-      const x1 = Math.min(ancho, cx + medio);
-      ctx.fillRect(x0, y, x1 - x0, 1);
+      ctx.fillRect(Math.round(haz.x - medio), y, medio * 2, 1);
       bandas += 1;
     }
   }
@@ -158,30 +155,20 @@ export function pintarHaces(ctx, { ancho, alto, focos = 3, fuerza = 0.16 }) {
  * Va en el TERCIO CENTRAL y no por toda la sala: humo repartido por igual es
  * niebla, y la niebla ya la pone el motor con la distancia.
  */
-export function pintarHumo(ctx, { ancho, alto, ms = 0, vetas = 22, fuerza = 0.2 }) {
-  if (!ctx) return 0;
-  let puestas = 0;
-  const desde = Math.round(alto * 0.3);
-  const hasta = Math.round(alto * 0.72);
-  for (let i = 0; i < vetas; i += 1) {
-    // Cada veta tiene su altura, su grosor y su deriva; los números salen del
-    // índice y no de un sorteo, así que la sala es la misma en cada apertura.
-    const y = desde + Math.round(((hasta - desde) * ((i * 7) % vetas)) / vetas);
-    const grosor = 3 + (i % 4);
-    const velocidad = 0.004 + (i % 3) * 0.003;
-    // Deriva continua que da la vuelta: el humo cruza y vuelve a entrar por el
-    // otro lado en vez de acumularse en una esquina.
-    const deriva = Math.floor((ms * velocidad + i * 37) % (ancho * 2)) - ancho;
-    const largo = Math.round(ancho * (0.6 + (i % 3) * 0.2));
-    ctx.fillStyle = velo(CANTINA.lampara, (fuerza * (1 - (i % 3) * 0.25)).toFixed(3));
-    const x0 = Math.max(0, deriva);
-    const x1 = Math.min(ancho, deriva + largo);
-    if (x1 > x0) {
-      ctx.fillRect(x0, y, x1 - x0, grosor);
-      puestas += 1;
-    }
-  }
-  return puestas;
+export function pintarHumo(ctx, { aire = [], ms = 0, fuerza = 0.16 } = {}) {
+  if (!ctx || !Array.isArray(aire)) return 0;
+  const vetas = aire.filter((pieza) => pieza.tipo === "humo");
+  vetas.forEach((veta, i) => {
+    // Deriva lenta y de ida y vuelta: el humo se mece, no desfila. Va sobre la
+    // posición YA proyectada, así que la veta sigue pegada a su sitio de la
+    // sala mientras se mueve.
+    const vaiven = Math.sin(ms / (5200 + i * 900)) * veta.largo * 0.12;
+    const largo = Math.round(veta.largo);
+    const grosor = Math.max(1, Math.round(veta.largo / 22));
+    ctx.fillStyle = velo(CANTINA.lampara, (fuerza * (1 - (i % 3) * 0.22)).toFixed(3));
+    ctx.fillRect(Math.round(veta.x - largo / 2 + vaiven), Math.round(veta.y), largo, grosor);
+  });
+  return vetas.length;
 }
 
 /**
@@ -283,13 +270,13 @@ export function pintarOpciones(ctx, { opciones = [], resaltada = null } = {}) {
  * antes que las líneas (si no, las líneas se comen el halo) y la viñeta va la
  * última, porque tiene que oscurecer también lo que han puesto las demás.
  */
-export function pintarCapa2D(ctx, { ancho, alto, semilla = 1, ms = 0, anclas = [], opciones = [], resaltada = null } = {}) {
+export function pintarCapa2D(ctx, { ancho, alto, semilla = 1, ms = 0, anclas = [], aire = [], opciones = [], resaltada = null } = {}) {
   if (!ctx || !(ancho > 0) || !(alto > 0)) return false;
   pintarLuzAlta(ctx, { ancho, alto });
   // Luz y humo antes que las líneas: si fueran después, la trama se comería el
   // haz y el humo pasaría a ser una mancha con rayas.
-  pintarHaces(ctx, { ancho, alto });
-  pintarHumo(ctx, { ancho, alto, ms });
+  pintarHaces(ctx, { aire, alto });
+  pintarHumo(ctx, { aire, ms });
   // Los cachivaches van después de la luz —los baña, no los tapa— y antes del
   // polvo y las líneas, que son lo que los integra con el resto del cuadro.
   pintarCachivaches(ctx, { anclas, ms });

@@ -47,6 +47,12 @@ const MODULOS_DE_ARTE = [
   // decidan al lado del resto del arte y no en un módulo de minijuego.
   "../scripts/minijuegos/dados-3d.mjs",
   "../scripts/minijuegos/dados-lienzo.mjs",
+  // La mesa de póker en 3D (#308 sobre #362): fieltro, cartas y fichas salen de
+  // `FICHA` y `PIXEL`, igual que el dado.
+  "../scripts/minijuegos/poker-3d.mjs",
+  // Y los avatares de la cantina: pelo, piel, ropa y aceros, todos de paleta.
+  "../scripts/cantina-avatar.mjs",
+  "../scripts/cantina-ventana.mjs",
 ];
 
 test("los colores no cambian al mudarse: mismo valor que antes en cada módulo", () => {

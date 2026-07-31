@@ -71,6 +71,7 @@ export function arrancarCantina(piezas, opciones = {}) {
         alto: sala.height,
         ms,
         anclas: escena.anclas,
+        aire: escena.aire,
         opciones: escena.opciones,
         resaltada,
       });

@@ -202,21 +202,16 @@ export function pintarHumo(ctx, { ancho, alto, ms = 0, vetas = 14, fuerza = 0.11
  * derivado del índice. Una hilera parpadeando al unísono es una guirnalda de
  * Navidad, no una nave.
  */
-export function pintarCachivaches(ctx, { ancho, alto, ms = 0, cuantos = 6 }) {
-  if (!ctx) return 0;
+export function pintarCachivaches(ctx, { anclas = [], ms = 0 } = {}) {
+  if (!ctx || !Array.isArray(anclas)) return 0;
   let piezas = 0;
-  const margen = Math.round(ancho * 0.02);
-  const zonaIzq = Math.round(ancho * 0.2);
-  const zonaDer = Math.round(ancho * 0.8);
 
-  for (let i = 0; i < cuantos; i += 1) {
-    const izquierda = i % 2 === 0;
-    const paso = Math.floor(i / 2);
-    const x = izquierda ? margen + paso * Math.round(zonaIzq / 3.2) : zonaDer + paso * Math.round(zonaIzq / 3.2);
-    const y = Math.round(alto * (0.24 + (i % 3) * 0.13));
-    const w = Math.round(ancho * 0.055);
-    const h = Math.round(alto * 0.075);
-    if (x + w > ancho) continue;
+  anclas.forEach((ancla, i) => {
+    const escala = Number.isFinite(ancla?.escala) ? ancla.escala : 1;
+    const w = Math.max(4, Math.round(18 * escala));
+    const h = Math.max(3, Math.round(13 * escala));
+    const x = Math.round(ancla.x - w / 2);
+    const y = Math.round(ancla.y - h / 2);
 
     // Cuerpo del cacharro y su marco: dos rectángulos, y ya tiene relieve.
     ctx.fillStyle = CANTINA.nervio;
@@ -224,8 +219,12 @@ export function pintarCachivaches(ctx, { ancho, alto, ms = 0, cuantos = 6 }) {
     ctx.fillStyle = CANTINA.pantalla;
     ctx.fillRect(x + 1, y + 1, w - 2, h - 2);
     piezas += 2;
+    // Por debajo de este tamaño, el detalle interior es un borrón: el panel se
+    // queda como una placa y ya. Es la misma disciplina que el 3D, que descarta
+    // las caras sin área en vez de pintarlas.
+    if (w < 10 || h < 7) return;
 
-    if (i % 3 === 2) {
+    if (ancla.tipo === "barras") {
       // Lectura de barras: tres niveles distintos, como un ecualizador parado.
       for (let b = 0; b < 3; b += 1) {
         const alturaBarra = 1 + ((i + b) % 3);
@@ -244,15 +243,7 @@ export function pintarCachivaches(ctx, { ancho, alto, ms = 0, cuantos = 6 }) {
         piezas += 1;
       }
     }
-
-    // Un cable colgando hacia el suelo. Es el detalle más barato que existe y
-    // el que más dice «esto se ha reparado más de una vez».
-    if (i % 2 === 1) {
-      ctx.fillStyle = CANTINA.conducto;
-      ctx.fillRect(x + Math.round(w / 2), y + h, 1, Math.round(alto * 0.06));
-      piezas += 1;
-    }
-  }
+  });
   return piezas;
 }
 
@@ -261,7 +252,7 @@ export function pintarCachivaches(ctx, { ancho, alto, ms = 0, cuantos = 6 }) {
  * antes que las líneas (si no, las líneas se comen el halo) y la viñeta va la
  * última, porque tiene que oscurecer también lo que han puesto las demás.
  */
-export function pintarCapa2D(ctx, { ancho, alto, semilla = 1, ms = 0 } = {}) {
+export function pintarCapa2D(ctx, { ancho, alto, semilla = 1, ms = 0, anclas = [] } = {}) {
   if (!ctx || !(ancho > 0) || !(alto > 0)) return false;
   pintarLuzAlta(ctx, { ancho, alto });
   // Luz y humo antes que las líneas: si fueran después, la trama se comería el
@@ -270,7 +261,7 @@ export function pintarCapa2D(ctx, { ancho, alto, semilla = 1, ms = 0 } = {}) {
   pintarHumo(ctx, { ancho, alto, ms });
   // Los cachivaches van después de la luz —los baña, no los tapa— y antes del
   // polvo y las líneas, que son lo que los integra con el resto del cuadro.
-  pintarCachivaches(ctx, { ancho, alto, ms });
+  pintarCachivaches(ctx, { anclas, ms });
   pintarPolvo(ctx, { ancho, alto, semilla });
   pintarLineas(ctx, { ancho, alto });
   pintarVinieta(ctx, { ancho, alto });

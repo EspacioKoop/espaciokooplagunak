@@ -59,6 +59,29 @@ export function mirarDesdePunto(camara, { x, y }, rect) {
   return acotarCamara({ ...camara, yaw: p.x * MIRA.yaw, pitch: -p.y * MIRA.pitch });
 }
 
+/** Cuánto gira una pulsación de girar sobre uno mismo, en radianes. */
+export const PASO_GIRO = 0.22;
+
+const GIROS = Object.freeze({
+  q: -1,
+  e: 1,
+  Q: -1,
+  E: 1,
+  ArrowLeft: -1,
+  ArrowRight: 1,
+});
+
+/**
+ * Gira sobre uno mismo. SIN TOPE y sin normalizar a un rango: en una sala uno
+ * puede darse la vuelta entera, y acotar el giro a un cono es lo que convertía
+ * esto en «asomarse» en vez de estar de pie mirando donde quieras.
+ */
+export function girar(camara, tecla, paso = PASO_GIRO) {
+  const sentido = GIROS[tecla];
+  if (!sentido) return null;
+  return acotarCamara({ ...camara, yaw: (camara?.yaw ?? 0) + sentido * paso });
+}
+
 export function miradaDesdePunto({ x, y }, rect) {
   const ancho = rect?.width || 1;
   const alto = rect?.height || 1;
@@ -100,8 +123,6 @@ const ANDARES = Object.freeze({
   D: { frente: 0, lado: 1 },
   ArrowUp: { frente: 1, lado: 0 },
   ArrowDown: { frente: -1, lado: 0 },
-  ArrowLeft: { frente: 0, lado: -1 },
-  ArrowRight: { frente: 0, lado: 1 },
 });
 
 const TECLAS = Object.freeze({
@@ -159,16 +180,15 @@ export function arrancarCantina(piezas, opciones = {}) {
     const ms = ahora() - inicio;
     const ctx = sala?.getContext?.("2d");
     if (ctx) {
-      pintarEscena(
-        ctx,
-        componerCantina({ ancho: sala.width, alto: sala.height, epoca, camara }),
-        { fondo: CANTINA.ventana },
-      );
+      const escena = componerCantina({ ancho: sala.width, alto: sala.height, epoca, camara });
+      pintarEscena(ctx, escena, { fondo: CANTINA.ventana });
       // Y encima, el pixel-art plano: halo de las lámparas, filo del ventanal,
       // polvo, líneas y viñeta. Va DESPUÉS del 3D a propósito — es lo que tapa
       // las costuras que deja el pintor entre caras vecinas, y lo que pone la
       // luz que un sombreado por normal no puede dar.
-      pintarCapa2D(ctx, { ancho: sala.width, alto: sala.height, ms });
+      // Las anclas vienen proyectadas por la MISMA cámara que la sala: es lo
+      // que hace que los trastos estén en la pared y no encima del cristal.
+      pintarCapa2D(ctx, { ancho: sala.width, alto: sala.height, ms, anclas: escena.anclas });
     }
     for (const { lienzo, objeto } of objetos) {
       const ctxObjeto = lienzo?.getContext?.("2d");

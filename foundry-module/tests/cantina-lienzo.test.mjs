@@ -14,6 +14,7 @@ import {
   PASO_TECLADO,
   andar,
   arrancarCantina,
+  girar,
   miradaDesdePunto,
   mirarDesdePunto,
   miradaTrasTecla,
@@ -85,7 +86,7 @@ test("WASD anda igual que las flechas, en minúscula y en mayúscula", () => {
   // Quien viene de un juego usa las teclas de un juego; y con el bloqueo de
   // mayúsculas puesto la sala no puede dejar de responder sin explicación.
   const origen = { x: 0, z: 0, yaw: 0, pitch: 0 };
-  for (const [tecla, flecha] of [["a", "ArrowLeft"], ["d", "ArrowRight"], ["w", "ArrowUp"], ["s", "ArrowDown"]]) {
+  for (const [tecla, flecha] of [["w", "ArrowUp"], ["s", "ArrowDown"]]) {
     assert.deepEqual(andar(origen, tecla), andar(origen, flecha));
     assert.deepEqual(andar(origen, tecla.toUpperCase()), andar(origen, flecha));
   }
@@ -122,8 +123,9 @@ test("el ratón MIRA y no anda: cambia el giro, nunca el sitio", () => {
   assert.notEqual(mirando.yaw, camara.yaw, "mirar no ha girado nada");
 });
 
-test("una tecla que no anda devuelve null", () => {
+test("una tecla que no anda devuelve null, para que pueda probar a girar", () => {
   assert.equal(andar({ x: 0, z: 0 }, "Tab"), null);
+  // `q` no anda: gira. Si `andar` la reclamara, girar dejaría de funcionar.
   assert.equal(andar({ x: 0, z: 0 }, "q"), null);
 });
 
@@ -209,4 +211,26 @@ test("enfocar un objeto no exige que exista un lienzo de sala", () => {
     mando.situar({ x: 0.5, z: 0.5, yaw: 0.2, pitch: 0 });
     mando.detener();
   });
+});
+
+// Girar sobre uno mismo (#423): en una sala uno se da la vuelta entera.
+test("girar no tiene tope: se puede dar la vuelta completa", () => {
+  let camara = { x: 0, z: 0, yaw: 0, pitch: 0 };
+  for (let i = 0; i < 40; i += 1) camara = girar(camara, "e");
+  assert.ok(Math.abs(camara.yaw) > Math.PI * 2, "el giro se ha quedado atrapado en un cono");
+});
+
+test("Q y E giran en sentidos contrarios, y las flechas laterales también", () => {
+  const origen = { x: 0, z: 0, yaw: 0, pitch: 0 };
+  assert.equal(girar(origen, "q").yaw, -girar(origen, "e").yaw);
+  assert.deepEqual(girar(origen, "ArrowLeft"), girar(origen, "q"));
+  assert.deepEqual(girar(origen, "ArrowRight"), girar(origen, "e"));
+});
+
+test("girar no mueve el sitio, y andar no gira", () => {
+  const camara = { x: 1, z: 1, yaw: 0.3, pitch: 0 };
+  const girada = girar(camara, "e");
+  assert.equal(girada.x, camara.x);
+  assert.equal(girada.z, camara.z);
+  assert.equal(andar(camara, "w").yaw, camara.yaw);
 });

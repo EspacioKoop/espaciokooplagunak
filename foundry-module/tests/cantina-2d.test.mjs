@@ -115,26 +115,46 @@ test("el humo se queda en el tercio central, que es donde se posa el aire", () =
 });
 
 // Cachivaches (#423): detalle pintado, no modelado.
-test("los cachivaches se quedan en las bandas laterales, fuera del ventanal", () => {
-  // Taparlo con cacharros sería repetir el fallo que dejó la sala sin vacío.
+const ANCLAS = [
+  { x: 60, y: 80, escala: 1.4, tipo: "pilotos" },
+  { x: 400, y: 120, escala: 0.9, tipo: "barras" },
+];
+
+test("los cachivaches se pintan DONDE dice el ancla, no en una rejilla de pantalla", () => {
+  // Es la diferencia entre un objeto atornillado a la pared y una capa de
+  // interfaz: si esto vuelve a colocarlos por su cuenta, flotan como un HUD.
   const ctx = ctxFalso();
-  pintarCachivaches(ctx, { ...MEDIDAS, ms: 0 });
-  assert.ok(ctx.rects.length > 0);
+  assert.ok(pintarCachivaches(ctx, { anclas: ANCLAS, ms: 0 }) > 0);
   for (const rect of ctx.rects) {
-    const centro = rect.x + rect.w / 2;
-    const enElHueco = centro > MEDIDAS.ancho * 0.28 && centro < MEDIDAS.ancho * 0.72;
-    assert.ok(!enElHueco, `un cacharro se ha metido en el ventanal: x=${rect.x}`);
-    assert.ok(rect.x + rect.w <= MEDIDAS.ancho, "se sale por la derecha");
+    const cerca = ANCLAS.some(
+      (ancla) => Math.abs(rect.x - ancla.x) < 30 && Math.abs(rect.y - ancla.y) < 30,
+    );
+    assert.ok(cerca, `un cacharro se ha ido por libre: ${rect.x},${rect.y}`);
   }
+});
+
+test("lo lejano se pinta más pequeño, y muy lejos pierde el detalle interior", () => {
+  const cerca = ctxFalso();
+  const lejos = ctxFalso();
+  pintarCachivaches(cerca, { anclas: [{ x: 100, y: 100, escala: 2, tipo: "pilotos" }] });
+  pintarCachivaches(lejos, { anclas: [{ x: 100, y: 100, escala: 0.35, tipo: "pilotos" }] });
+  assert.ok(cerca.rects[0].w > lejos.rects[0].w, "la distancia no cambia el tamaño");
+  assert.ok(lejos.rects.length < cerca.rects.length, "de lejos sigue dibujando el detalle");
+});
+
+test("sin anclas no se pinta ningún cacharro", () => {
+  assert.equal(pintarCachivaches(ctxFalso(), { anclas: [] }), 0);
+  assert.equal(pintarCachivaches(ctxFalso()), 0);
 });
 
 test("los pilotos no parpadean todos a la vez", () => {
   // Al unísono es una guirnalda de Navidad, no una nave. Se compara el cuadro
   // entero en dos instantes: tiene que cambiar algo, pero no todo.
+  const muchas = [0, 1, 2, 3, 4].map((i) => ({ x: 40 + i * 60, y: 90, escala: 1.5, tipo: "pilotos" }));
   const a = ctxFalso();
   const b = ctxFalso();
-  pintarCachivaches(a, { ...MEDIDAS, ms: 0 });
-  pintarCachivaches(b, { ...MEDIDAS, ms: 1000 });
+  pintarCachivaches(a, { anclas: muchas, ms: 0 });
+  pintarCachivaches(b, { anclas: muchas, ms: 1000 });
   assert.equal(a.rects.length, b.rects.length, "el cuadro no puede cambiar de piezas");
   const iguales = a.estilos.filter((estilo, i) => estilo === b.estilos[i]).length;
   assert.ok(iguales > 0, "ha cambiado todo a la vez");

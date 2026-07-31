@@ -26,7 +26,7 @@
 // Frontera de arte (#351): no declara ni un color. Todos entran de `paleta.mjs`.
 
 import { CANTINA } from "./paleta.mjs";
-import { componerEscena } from "./retro3d.mjs";
+import { componerEscena, focal, proyectar, transformar } from "./retro3d.mjs";
 import { campoEstelar, proyectarEstrellas } from "./retro3d-estrellas.mjs";
 import { cuerpoMayor, cuerposPorLaVentana } from "./cantina-ventana.mjs";
 
@@ -349,6 +349,22 @@ export const PASEO = Object.freeze({
   alto: 0.55, // altura de los ojos sobre el suelo de la sala
 });
 
+/**
+ * Dónde están atornillados los trastos electrónicos, en coordenadas de MUNDO.
+ * Antes vivían en píxeles de pantalla y por eso flotaban como un HUD: un panel
+ * es un objeto de la pared, no una capa de interfaz.
+ */
+export const ANCLAS_CACHIVACHE = Object.freeze([
+  Object.freeze({ punto: [-4.9, 1.3, 2.0], tipo: "pilotos" }),
+  Object.freeze({ punto: [-4.9, 0.2, 3.6], tipo: "barras" }),
+  Object.freeze({ punto: [-4.9, 1.5, 5.0], tipo: "pilotos" }),
+  Object.freeze({ punto: [4.9, 1.3, 2.0], tipo: "barras" }),
+  Object.freeze({ punto: [4.9, 0.2, 3.6], tipo: "pilotos" }),
+  Object.freeze({ punto: [4.9, 1.5, 5.0], tipo: "barras" }),
+  Object.freeze({ punto: [-2.2, 2.0, 6.7], tipo: "pilotos" }),
+  Object.freeze({ punto: [2.2, 2.0, 6.7], tipo: "barras" }),
+]);
+
 /** Cuánto se mira a los lados y arriba/abajo con el ratón, en radianes. */
 export const MIRA = Object.freeze({ yaw: 0.55, pitch: 0.22 });
 
@@ -364,15 +380,41 @@ export function acotarCamara(camara = {}) {
   return {
     x: Math.max(PASEO.minX, Math.min(PASEO.maxX, x)),
     z: Math.max(PASEO.minZ, Math.min(PASEO.maxZ, z)),
+    // El giro NO se acota: en una sala uno se da la vuelta entera. Lo que se
+    // acota es dónde se está, no hacia dónde se mira.
     yaw: Number.isFinite(camara.yaw) ? camara.yaw : 0,
     pitch: Number.isFinite(camara.pitch) ? camara.pitch : 0,
   };
 }
 
+/**
+ * Lleva los puntos de un cuerpo lejano —que vienen en un plano, centrados en su
+ * punto áureo— a una dirección del mundo, y los proyecta con la misma cámara que
+ * la sala. Así el planeta se queda QUIETO ahí fuera mientras tú te mueves, que
+ * es lo que hace que exista un fuera.
+ */
+function proyectarCuerpo(puntos, { ancho, alto, yaw, pitch, distancia = 90 }) {
+  const f = focal(alto, FOV);
+  const salida = [];
+  for (const punto of puntos) {
+    // El plano del cuerpo se coloca a `distancia` delante, escalando lo que en
+    // pantalla eran píxeles a unidades de mundo por la misma focal.
+    const v = transformar(
+      [((punto.x - ancho / 2) * distancia) / f, ((alto / 2 - punto.y) * distancia) / f, distancia],
+      { yaw, pitch, posicion: [0, 0, 0] },
+    );
+    if (!(v[2] > 0.1)) continue;
+    const { x, y } = proyectar(v, { ancho, alto, f, rejilla: 1 });
+    if (x < 0 || y < 0 || x >= ancho || y >= alto) continue;
+    salida.push({ x, y, tam: punto.tam, color: punto.color });
+  }
+  return salida;
+}
+
 export function componerCantina(opciones = {}) {
   const {
-    ancho = 480,
-    alto = 270,
+    ancho = 640,
+    alto = 360,
     epoca,
     fondo = CANTINA.ventana,
     camara,
@@ -453,11 +495,34 @@ export function componerCantina(opciones = {}) {
   // Todo entra en la MISMA lista que las estrellas a propósito: el pintor las
   // dibuja antes que los polígonos, así que el mamparo las recorta solo y el
   // ojo de buey no necesita ni cristal ni máscara.
+  // El cuerpo mayor se proyecta como todo lo demás y NO se clava en un punto de
+  // pantalla: estaba puesto en un punto áureo fijo y por eso se quedaba pegado
+  // al cristal como una pegatina mientras la sala se movía detrás. La proporción
+  // áurea sigue mandando, pero sobre su DIRECCIÓN en el mundo, no sobre el
+  // píxel: se coloca fuera, en el espacio, y cae donde tenga que caer.
   const fuera = [
-    ...cuerpoMayor({ ancho, alto }),
+    ...proyectarCuerpo(cuerpoMayor({ ancho, alto }), { ancho, alto, yaw, pitch: puesto.pitch }),
     ...estrellas,
     ...cuerposPorLaVentana(espacio ?? {}, { ancho, alto }),
   ];
 
-  return { ancho, alto, epoca: partes[0]?.epoca, poligonos, estrellas: fuera };
+  // Dónde caen en pantalla los trastos de los mamparos. Se proyectan CON la
+  // cámara y viajan a la capa 2D: dibujados en coordenadas fijas parecían un
+  // HUD pegado al cristal, que es justo lo que no son — son objetos atornillados
+  // a una pared, y tienen que moverse con ella.
+  const anclas = [];
+  const f = focal(alto, FOV);
+  for (const ancla of ANCLAS_CACHIVACHE) {
+    const v = transformar(
+      [ancla.punto[0] - desvioX, ancla.punto[1] - PASEO.alto, ancla.punto[2] - puesto.z],
+      { yaw, pitch: puesto.pitch, posicion: [0, 0, 0] },
+    );
+    if (!(v[2] > 0.4)) continue;
+    const { x, y } = proyectar(v, { ancho, alto, f, rejilla: 1 });
+    if (x < -40 || y < -40 || x > ancho + 40 || y > alto + 40) continue;
+    // La escala mengua con la distancia, como cualquier cosa que se aleja.
+    anclas.push({ x, y, escala: Math.max(0.35, Math.min(2.2, 6 / v[2])), tipo: ancla.tipo });
+  }
+
+  return { ancho, alto, epoca: partes[0]?.epoca, poligonos, estrellas: fuera, anclas };
 }

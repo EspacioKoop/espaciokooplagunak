@@ -10,7 +10,7 @@
 
 import { MODULE_ID } from "./lagunak-constantes.mjs";
 import { puertasCantina } from "./cantina.mjs";
-import { andar, arrancarCantina, mirarDesdePunto } from "./cantina-lienzo.mjs";
+import { andar, arrancarCantina, girar, mirarDesdePunto } from "./cantina-lienzo.mjs";
 
 const PLANTILLA = `modules/${MODULE_ID}/templates/cantina.hbs`;
 
@@ -84,7 +84,10 @@ function encenderSala(raiz) {
   // en la plantilla dejaría una parada de tabulación vacía.
   sala.tabIndex = 0;
   sala.addEventListener("keydown", (ev) => {
-    const siguiente = andar(mando.donde(), ev.key);
+    // Andar y girar son teclas distintas: WASD anda, Q/E y las flechas
+    // laterales giran sobre uno mismo. Sin girar con teclado, quien no use el
+    // ratón no puede darse la vuelta, y media sala le queda a la espalda.
+    const siguiente = andar(mando.donde(), ev.key) ?? girar(mando.donde(), ev.key);
     if (!siguiente) return;
     // Solo se consume la tecla que se usa: las demás siguen su camino, que es
     // como se sigue pudiendo tabular fuera de aquí.
@@ -125,7 +128,7 @@ export function crearClaseCantinaV2({ alSeleccionar }) {
       id: "lagunak-cantina",
       classes: ["lagunak-cantina"],
       window: { title: "LAGUNAK.Cantina.Titulo", icon: "fa-solid fa-mug-saucer" },
-      position: { width: 560, height: "auto" },
+      position: { width: 700, height: "auto" },
     };
 
     static PARTS = { main: { template: PLANTILLA } };
@@ -179,7 +182,7 @@ export function crearClaseCantinaV1({ alSeleccionar }) {
         classes: ["lagunak-cantina"],
         title: game.i18n.localize("LAGUNAK.Cantina.Titulo"),
         template: PLANTILLA,
-        width: 560,
+        width: 700,
         height: "auto",
       });
     }

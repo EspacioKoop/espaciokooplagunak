@@ -170,8 +170,11 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     `sesion-motor.mjs` es COMÚN a todos —identidad, época, nonces, lobby, espectadores, ausencias—
     y aloja cada juego por su interfaz interna; los verticales son hermanos suyos y no ramas dentro
     de él: `poker-motor.mjs` (#308) y `dados-motor.mjs` (#413, con su dado en 3D retro legible en
-    `dados-3d.mjs`, que reusa `retro3d.mjs` sin tocarlo). Un juego nuevo aporta reglas y arte, nada
-    más. La sesión viva del coordinador no se persiste en ningún sitio: vive en memoria del GM.
+    `dados-3d.mjs`, que reusa `retro3d.mjs` sin tocarlo). El cableado los tiene en un CATÁLOGO POR
+    NOMBRE y resuelve el vertical por el que declara la mesa en su estado público: con una variable
+    única, dos mesas de juegos distintos se despacharían contra el motor equivocado. Un juego nuevo
+    aporta motor, política de sus NPC, configuración de mesa (si necesita) y ventana — nada más.
+    La sesión viva del coordinador no se persiste en ningún sitio: vive en memoria del GM.
   - **Asistencia entre puestos** — `scripts/asistencia/` (#309, diseño en
     [`docs/MINIJUEGOS_ASISTENCIA.md`](docs/MINIJUEGOS_ASISTENCIA.md)): motor puro más el reductor
     `sesion.mjs`. Ayudar NUNCA emite orden: produce un token que gasta el **titular** del puesto

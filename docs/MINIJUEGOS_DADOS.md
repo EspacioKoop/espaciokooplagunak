@@ -147,12 +147,41 @@ son efímeros y no representan nada fuera de la partida. Los ganchos narrativos
 opcionales que pida el GM se resuelven fuera del motor y nunca convierten esto en
 una economía.
 
+## La mesa, en Foundry
+
+Entra por **su propio botón** en el grupo Lagunak, no por un menú dentro de la
+mesa de póker: son dos juegos y no dos modos del mismo, y a qué se juega es lo
+primero que se decide, no algo que se cambia con la mesa puesta. Con una mesa ya
+abierta manda **ella**: pulsar el botón de dados sobre una partida de póker abre
+la mesa que existe, no una inventada.
+
+Lo que la ventana hace y la del póker no es **pintar**. Las cartas son imágenes y
+viajan en el modelo; los dados son geometría 3D y se pintan sobre un `<canvas>`
+tras cada render. El reparto es el de siempre: `dados-lienzo.mjs` sabe pintar y
+no sabe de Foundry; la ventana sabe de Foundry y no sabe de geometría.
+
+**La tirada se ve una vez.** Los dados ruedan cuando llega una tirada nueva, no
+en cada repintado: sin eso, cada apuesta al otro lado de la mesa pondría los
+dados de todos a dar vueltas otra vez, y una animación que se repite sin motivo
+deja de significar nada.
+
+**El lienzo nunca es la única vía.** Cada cubilete lleva al lado el mismo dato en
+texto, que es además su etiqueta accesible: es la regla de #362 —un visor 3D vale
+como refuerzo, nunca como único canal—. Y de un cubilete ajeno ese texto dice
+cuántos dados hay, jamás cuáles.
+
+### El cableado dejó de saber de póker
+
+`minijuegos-wiring.mjs` registraba **un** vertical en una variable. Con el
+segundo eso ya no valía: la mesa declara en su estado público a qué se juega, y
+el coordinador tiene que resolver el motor **por ese nombre**. Con una variable
+única, el último que se registrase mandaba sobre todas las mesas y las propuestas
+se despachaban contra el motor equivocado. Ahora es un mapa por nombre, y cada
+vertical aporta su motor, la política de sus NPC y cómo se compone su
+configuración de mesa —el póker necesita entrada y ciegas; los dados, ninguna—.
+
 ## Pendiente
 
-
-- La ventana de Foundry que aloja la mesa, y los textos ES/EN. El dado ya tiene
-  geometría, pintor y tirada animada: lo que falta es la superficie que los
-  coloca junto a la apuesta viva, el turno y el destape.
-- Cableado de la mesa como sesión de tipo `dados` en `minijuegos-wiring.mjs`.
-- Plan de pruebas multijugador real, que como en #308 espera a tener Foundry
-  delante.
+- Estética: la mesa hereda el pixel art del módulo pero no tiene arte propio de
+  cubilete ni de tapete.
+- Prueba multijugador real, que como en #308 espera a tener Foundry delante.

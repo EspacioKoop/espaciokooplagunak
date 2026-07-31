@@ -57,6 +57,11 @@ import {
   recordarVista,
   vistaRecordada,
 } from "./minijuegos/mesa-poker-app.mjs";
+import {
+  crearClaseMesaDadosV1,
+  crearClaseMesaDadosV2,
+  recordarVista as recordarVistaDados,
+} from "./minijuegos/mesa-dados-app.mjs";
 import { registrarAjusteAlerta, registrarEscuchaAlerta } from "./alerta-escena.mjs";
 import { AJUSTE_TELEMETRIA } from "./telemetria-difusion.mjs";
 import {
@@ -288,8 +293,13 @@ Hooks.once("ready", () => {
   // La ventana de la mesa se refresca con lo que llega dirigido a este cliente:
   // la vista y las acciones que el coordinador le concede. Se guarda aunque la
   // ventana esté cerrada, para que al abrirla la mesa ya esté puesta.
+  // Las dos ventanas guardan lo que llega: cuál está abierta depende de a qué
+  // se juegue, y la vista dice a qué se juega. Guardarlo en las dos es más
+  // barato que decidir aquí, y evita el fallo de abrir la mesa de dados con lo
+  // último que se recordó de una partida de póker.
   Hooks.on("lagunakMinijuegoVistaPrivada", (vista, acciones) => {
     recordarVista(vista, acciones);
+    recordarVistaDados(vista, acciones);
     refrescarMesa();
   });
   // Un rechazo tiene que verse: sin esto es indistinguible de un botón que no
@@ -316,7 +326,13 @@ function refrescarMesa() {
   mesaApp.render(foundry.applications?.api?.ApplicationV2 ? {} : false);
 }
 
-function claseMesa() {
+/** A qué se juega en la mesa viva. Lo dice ella misma en su estado público. */
+function juegoDeLaMesa() {
+  return estadoPublicoVigente()?.juego ?? null;
+}
+
+function claseMesa(nombreJuego) {
+  const esV2 = Boolean(foundry.applications?.api?.ApplicationV2);
   const inyeccion = {
     proponer: (accion) => proponerAccion(accion),
     // Solo se suelta la referencia si sigue siendo ESTA instancia: entre cerrar
@@ -326,27 +342,44 @@ function claseMesa() {
       if (mesaApp === app) mesaApp = null;
     },
   };
-  return foundry.applications?.api?.ApplicationV2
-    ? crearClaseMesaV2(inyeccion)
-    : crearClaseMesaV1(inyeccion);
+  if (nombreJuego === "dados") {
+    return esV2 ? crearClaseMesaDadosV2(inyeccion) : crearClaseMesaDadosV1(inyeccion);
+  }
+  return esV2 ? crearClaseMesaV2(inyeccion) : crearClaseMesaV1(inyeccion);
 }
 
-function abrirMesaMinijuegos() {
+function abrirMesaMinijuegos(nombreJuego = "poker") {
   // Si aún no ha llegado ninguna vista dirigida, se arranca con el estado
   // público, que es un ajuste de mundo y lo lee cualquiera. Sin acciones: los
   // botones los concede el coordinador, y llegarán con la primera vista.
-  if (!vistaRecordada().vista) recordarVista(estadoPublicoVigente(), []);
+  if (!vistaRecordada().vista) {
+    recordarVista(estadoPublicoVigente(), []);
+    recordarVistaDados(estadoPublicoVigente(), []);
+  }
   // Y se vuelve a pedir al abrir: si el reparto del arranque se perdió, esto lo
   // recupera sin recargar la página.
   pedirVista();
   // Abrir la mesa y sentarse son cosas distintas: esto solo pone la mesa (si
   // hace falta y si se puede) y enseña la ventana. Sentarse es una acción más,
   // con su botón, porque el GM puede querer repartir sin jugar.
-  if (game.user?.isGM && !estadoPublicoVigente()) abrirMesa({ nombreJuego: "poker" });
+  if (game.user?.isGM && !estadoPublicoVigente()) abrirMesa({ nombreJuego });
+  // Con una mesa ya puesta manda ELLA, no el botón que se pulsó: abrir la
+  // ventana de dados sobre una partida de póker enseñaría una mesa que no
+  // existe. Cambiar de juego es cerrar la mesa y poner otra, no cambiar de
+  // ventana.
+  const juego = juegoDeLaMesa() ?? nombreJuego;
+  // Si la ventana abierta es la del otro juego, se cierra: solo hay una mesa.
+  if (mesaApp && mesaApp.juegoMesa !== juego) {
+    mesaApp.close?.();
+    mesaApp = null;
+  }
   // Instancia nueva en cada apertura tras un cierre: una ApplicationV2 cerrada
   // no se reutiliza —renderizarla otra vez falla— y la ruta v11 se descarta
   // igual para que las dos tengan el mismo contrato.
-  if (!mesaApp) mesaApp = new (claseMesa())();
+  if (!mesaApp) {
+    mesaApp = new (claseMesa(juego))();
+    mesaApp.juegoMesa = juego;
+  }
   if (foundry.applications?.api?.ApplicationV2) mesaApp.render({ force: true });
   else mesaApp.render(true);
 }
@@ -543,7 +576,18 @@ Hooks.on("getSceneControlButtons", (controls) => {
       title: "LAGUNAK.Controles.AbrirMesa",
       icon: "fa-solid fa-diamond",
       button: true,
-      onClick: () => abrirMesaMinijuegos(),
+      onClick: () => abrirMesaMinijuegos("poker"),
+    },
+    {
+      // El segundo vertical (#413) entra por su propio botón y no por un menú
+      // dentro de la mesa: son dos juegos, no dos modos del mismo, y elegir a
+      // qué se juega es lo primero que se decide, no algo que se cambia con la
+      // mesa puesta.
+      name: "lagunak-mesa-dados",
+      title: "LAGUNAK.Controles.AbrirDados",
+      icon: "fa-solid fa-dice",
+      button: true,
+      onClick: () => abrirMesaMinijuegos("dados"),
     },
     {
       name: "lagunak-musica-audio",

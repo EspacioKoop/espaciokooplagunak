@@ -171,8 +171,10 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     no se persiste en ningún sitio: vive en memoria del GM.
   - **Asistencia entre puestos** — `scripts/asistencia/` (#309, diseño en
     [`docs/MINIJUEGOS_ASISTENCIA.md`](docs/MINIJUEGOS_ASISTENCIA.md)): motor puro más el reductor
-    `sesion.mjs`. Ayudar NUNCA emite orden: produce un token que gasta el **titular** del puesto
-    asistido como una de sus órdenes ya autorizadas, vía relé (#237). Sin interfaz todavía.
+    `sesion.mjs` y la costura `relevo.mjs`. Ayudar NUNCA emite orden: produce un token que gasta el
+    **titular** del puesto asistido como una de sus órdenes ya autorizadas, vía relé (#237) — el
+    consumo se cuelga de ese camino y no abre otro hacia el puente. Una ayuda caducada o ajena no
+    bloquea la orden del titular: la asistencia es bonus, no peaje. Sin interfaz todavía.
 - `resources/` y `packs/` — assets heredados de upstream.
 - La versión se calcula por fecha (`AAAA.MM.DD`) en `CMakeLists.txt` salvo override explícito.
 - `docs/` — documentación propia del fork: [`BUILDING.md`](docs/BUILDING.md),

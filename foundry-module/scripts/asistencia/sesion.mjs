@@ -233,6 +233,7 @@ export function consumir({
   nonce,
   emisorId,
   emisorPuesto,
+  accion,
   params = {},
   base,
   ahora = Date.now(),
@@ -251,6 +252,9 @@ export function consumir({
     propuesta,
     emisorId,
     emisorPuesto,
+    // La acción que se está emitiendo viaja hasta el fondo: la ayuda es para
+    // una acción concreta, no para el puesto entero.
+    accion,
     params,
     base,
     consumidos: [...podado.consumidos],

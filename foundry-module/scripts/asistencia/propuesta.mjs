@@ -26,6 +26,11 @@ export const PROPUESTA_ERRORES = Object.freeze({
   YA_ASISTE: "ya-asiste",
   YA_CONSUMIDA: "ya-consumida",
   ACCION_SIN_MARGEN: "accion-sin-margen",
+  /**
+   * El titular emitió UNA acción y la propuesta era para OTRA. La ayuda no se
+   * aplica y su orden sale intacta: ver `consumirPropuesta`.
+   */
+  ACCION_DISTINTA: "accion-distinta",
   PARAMETRO_INVALIDO: "parametro-invalido",
 });
 
@@ -167,10 +172,16 @@ export function acotarPorTier({ base, objetivo, rango, tier, entero = false }) {
  * `emisorPuesto` DEBE venir resuelto por la identidad autenticada del emisor (el
  * relé lo saca de `userDoc.id`), nunca de un campo declarado por el cliente.
  */
+/**
+ * @param {object} entrada
+ *   - `accion`: la acción que el TITULAR está emitiendo. Obligatoria: sin ella
+ *     no se puede saber si la ayuda es para lo que se está pidiendo.
+ */
 export function consumirPropuesta({
   propuesta,
   emisorId,
   emisorPuesto,
+  accion,
   params = {},
   base,
   consumidos = [],
@@ -187,6 +198,16 @@ export function consumirPropuesta({
   }
   if (!emisorId || emisorPuesto !== propuesta.puestoAsistido) {
     return { ok: false, error: PROPUESTA_ERRORES.NO_ES_TITULAR };
+  }
+  // La ayuda es para UNA acción concreta y no para el puesto entero. Sin esta
+  // comprobación, una propuesta de refrigerante se gastaba en una orden de
+  // potencia y la salida llevaba la acción de la PROPUESTA: la decisión que el
+  // titular había autenticado se convertía en otra distinta, y encima con
+  // parámetros validados contra el margen de una acción que no era la suya.
+  // Ambas están autorizadas para ingeniería, así que ningún otro control lo
+  // habría detenido.
+  if (accion !== propuesta.accion) {
+    return { ok: false, error: PROPUESTA_ERRORES.ACCION_DISTINTA };
   }
   const permitidas = STATION_ACTIONS[emisorPuesto] ?? [];
   if (!permitidas.includes(propuesta.accion)) {

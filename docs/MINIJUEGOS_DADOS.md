@@ -25,8 +25,10 @@ lo común ya estaba fuera del póker:
 | Reglas de la ronda | `minijuegos/dados-motor.mjs` | **nuevo** |
 | Motor 3D retro (proyección, sombreado, época) | `retro3d.mjs` | se reutiliza **sin tocar** |
 | Geometría del dado y orientación legible | `minijuegos/dados-3d.mjs` | **nuevo** |
-| Política del jugador automático | pendiente | nuevo |
-| Mesa y arte de cubilete | pendiente | nuevo |
+| Pintor de la fila de dados y animación de tirada | `minijuegos/dados-lienzo.mjs` | **nuevo** (sobre `retro3d-lienzo.mjs`) |
+| Andamio de turnos automáticos | `minijuegos/turnos-automaticos.mjs` | se reutiliza **sin tocar** |
+| Política del jugador automático | `minijuegos/dados-agente.mjs` | **nuevo** |
+| Mesa y ventana de Foundry | pendiente | nuevo |
 
 El motor de dados es **hermano** del de póker, no una rama dentro de él: dos
 juegos en un mismo reductor obligarían a cada regla a preguntar primero de qué
@@ -107,8 +109,25 @@ que no puede ser ambiguo es el número. La salida no es renunciar al volumen:
 - los puntos son **geometría**, cuadraditos despegados del cuerpo, no textura:
   una textura pediría un mapeado de UV que el motor no tiene, y un cuadradito
   ajustado a la rejilla es justo lo que hacía la consola que se imita;
-- un dado solo sale de canto **si se pide** (`giro`), que es lo que permitirá
-  animar la tirada y aterrizar en la orientación legible al pararse.
+- un dado solo sale de canto **si se pide** (`giro`), que es justo por donde
+  entra la tirada animada.
+
+### Y se mueven
+
+Los dados ruedan al tirar (`rodarDados`), con el mismo contrato que el giro de la
+nave, que no es cuestión de estilo:
+
+- **aterrizan legibles por construcción**: la vuelta que le queda por dar a cada
+  dado se multiplica por un factor que vale exactamente 0 al final, así que al
+  pararse el giro *es* la orientación de reposo. No se para «cerca» y se corrige
+  —eso es lo que produce el tirón del último fotograma— ni puede quedarse de
+  canto porque la animación acabara a destiempo;
+- **desaceleran** como un dado sobre la mesa, y ruedan desacompasados por un
+  desfase derivado del índice, no del azar: la misma tirada se ve igual dos veces;
+- **`prefers-reduced-motion` se consulta en cada fotograma**, no una vez al
+  arrancar: cambiar la preferencia con la ventana abierta para los dados en el
+  acto. Con la preferencia puesta se pinta un fotograma con el resultado ya a la
+  vista — **nunca** hace falta ver la animación para saber qué salió.
 
 Ningún color se declara en el módulo de dados: cuerpo y tinta salen de
 `paleta.mjs`, y la guardia de `paleta.test.mjs` lo comprueba.
@@ -130,11 +149,10 @@ una economía.
 
 ## Pendiente
 
-- Política del jugador automático para dados (`agente-automatico.mjs` es de
-  póker; `turnos-automaticos.mjs` ya admite cualquier política inyectada).
-- Mesa, cubilete y textos ES/EN. El dado ya tiene geometría; falta el lienzo que
-  la pinta (como `retro3d-lienzo.mjs` hace con las naves) y la animación de la
-  tirada, que rueda libre y aterriza en la orientación legible.
+
+- La ventana de Foundry que aloja la mesa, y los textos ES/EN. El dado ya tiene
+  geometría, pintor y tirada animada: lo que falta es la superficie que los
+  coloca junto a la apuesta viva, el turno y el destape.
 - Cableado de la mesa como sesión de tipo `dados` en `minijuegos-wiring.mjs`.
 - Plan de pruebas multijugador real, que como en #308 espera a tener Foundry
   delante.

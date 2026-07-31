@@ -397,6 +397,8 @@
   "LAGUNAK.Minijuegos.Mesa.Comunitarias": "Cartas comunitarias",
   "LAGUNAK.Minijuegos.Mesa.TuMano": "Tu mano",
   "LAGUNAK.Minijuegos.Mesa.Dorso": "Carta boca abajo",
+  "LAGUNAK.Minijuegos.Mesa.PorSalir": "Carta por salir",
+  "LAGUNAK.Minijuegos.Mesa.Apostado": "{fichas} apostadas",
   "LAGUNAK.Minijuegos.Mesa.Boton": "Botón (reparte)",
   "LAGUNAK.Minijuegos.Mesa.Automatico": "automático",
   "LAGUNAK.Minijuegos.Mesa.Retirado": "retirado",

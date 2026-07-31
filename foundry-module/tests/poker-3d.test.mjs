@@ -93,10 +93,32 @@ test("los rivales traen dorso y busto; tú, cartas boca arriba y sin busto", () 
   assert.ok(conRival.poligonos.length > solo.poligonos.length, "el rival no aporta nada al cuadro");
 });
 
-// PENDIENTE: las cartas de los rivales se generan pero NO llegan al cuadro —el
-// tapete y las fichas sí—, así que no hay test de «el retirado pierde sus
-// cartas» hasta que se vean. Escribirlo ahora sería fijar en verde algo que en
-// pantalla no ocurre, que es peor que no tenerlo.
+test("quien se ha retirado deja de tener cartas en la mesa", () => {
+  // Un dorso visible es la información de que ese jugador SIGUE en la mano. Este
+  // test estuvo fuera a propósito mientras las cartas no llegaban al cuadro:
+  // ponerlo en verde entonces habría fijado algo que en pantalla no ocurría.
+  const mesa = (enMano) => ({
+    comunitarias: 3,
+    jugadores: [{ fichas: 98, propio: true }, { fichas: 60, enMano }],
+  });
+  const dentro = componerMesa(mesa(true), { ancho: 480, alto: 280 });
+  const fuera = componerMesa(mesa(false), { ancho: 480, alto: 280 });
+  assert.ok(fuera.poligonos.length < dentro.poligonos.length, "el retirado conserva sus cartas");
+});
+
+test("la mesa cabe en el cuadro: ni se sale ni se ve de canto", () => {
+  // Los dos fallos que ya se colaron por poner la cámara a ojo: primero se
+  // proyectaba entera por encima del lienzo, después el tapete se veía como una
+  // banda de cincuenta píxeles. Esto mide dónde cae de verdad.
+  const escena = componerMesa(
+    { comunitarias: 5, jugadores: [{ fichas: 98, propio: true }, { fichas: 60 }, { fichas: 120 }] },
+    { ancho: 480, alto: 280 },
+  );
+  const ys = escena.poligonos.flatMap((p) => p.puntos.map((q) => q.y));
+  const alto = Math.max(...ys) - Math.min(...ys);
+  assert.ok(alto > 280 * 0.4, `la mesa ocupa solo ${alto.toFixed(0)} de 280: se ve de canto`);
+  assert.ok(Math.min(...ys) >= 0 && Math.max(...ys) <= 280, "la mesa se sale por arriba o por abajo");
+});
 
 test("hay espacio de fondo, y es el mismo para toda la mesa", () => {
   // Se juega dentro de una nave que vuela: una mesa recortada sobre negro

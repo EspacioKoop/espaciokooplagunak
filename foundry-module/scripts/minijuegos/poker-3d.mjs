@@ -46,11 +46,15 @@ const LADOS_FICHA = 10;
  * La cámara de la mesa: se mira desde delante y un poco por encima, como quien
  * está sentado. La inclinación es corta a propósito —desde muy alto el tapete
  * se convierte en un plano y se pierde el volumen que se venía a buscar—, y los
- * números NO están puestos a ojo: con los anteriores (altura 3.4, atrás 4.6) la
- * mesa entera se proyectaba por ENCIMA del cuadro y no se veía nada. Estos se
- * calcularon comprobando que el tapete y los asientos caen dentro del alto.
+ * números NO están puestos a ojo, y se han equivocado dos veces por ponerlos
+ * así: primero (altura 3.4, atrás 4.6) la mesa se proyectaba por ENCIMA del
+ * cuadro; después, con `pitch` 0.4, el tapete se veía CASI DE CANTO —una banda
+ * verde de cincuenta píxeles— porque una mesa mirada de frente no enseña su
+ * superficie. Estos salen de calcular dónde caen las esquinas del tapete y los
+ * asientos: con pitch 0.9 el tapete ocupa 108..267 de un alto de 280 y los
+ * bordes laterales quedan dentro del ancho.
  */
-export const VISTA = Object.freeze({ pitch: 0.4, yaw: 0, altura: -0.8, atras: 5.0, fov: 52 });
+export const VISTA = Object.freeze({ pitch: 0.9, yaw: 0, altura: -0.8, atras: 5.0, fov: 52 });
 
 /** Caja alineada a los ejes por centro y medidas. Misma primitiva que la
  * cantina: una mesa de consola de los noventa se construía con cajas. */
@@ -193,26 +197,54 @@ export function componerMesa(mesa = {}, opciones = {}) {
 
   // Las pilas. La altura dice cuántas fichas hay sin escribir el número, que es
   // lo que hace que una mesa se lea de un vistazo.
+  // LOS RIVALES. Cada uno con su pila, sus dos cartas y un busto que dice que
+  // ahí hay alguien. Esto es lo que convierte una mesa en una partida: ver de un
+  // vistazo quién sigue, cuánto le queda y que sus cartas están tapadas — el
+  // faroleo es mirar a los demás, no mirar el tapete.
   plazas(jugadores.length).forEach((plaza, i) => {
     const jugador = jugadores[i] ?? {};
-    const cuantas = Math.max(1, Math.min(12, Math.round((jugador.fichas ?? 0) / 20) || 1));
+    const [jx, jy, jz] = plaza;
+    const propio = Boolean(jugador.propio);
+
+    // La pila, a un lado del sitio. La altura dice cuántas fichas hay sin
+    // escribir el número, que es lo que hace que la mesa se lea de un vistazo.
+    const cuantas = Math.max(1, Math.min(10, Math.round((jugador.fichas ?? 0) / 25) || 1));
     const denominacion = FICHA.valores[jugador.denominacion] ?? FICHA.valores[5];
     for (let f = 0; f < cuantas; f += 1) {
-      const malla = disco();
       piezas.push({
-        malla: {
-          vertices: malla.vertices.map(([x, y, z]) => [
-            x + plaza[0],
-            // Fichas gordas: se apilan con su grosor entero y un pelo de aire,
-            // que es lo que hace que una pila se vea como fichas contadas y no
-            // como un cilindro pintado de rayas.
-            y + plaza[1] + f * 0.185,
-            z + plaza[2],
-          ]),
-          caras: malla.caras,
-        },
+        // Fichas gordas: se apilan con su grosor entero y un pelo de aire, que
+        // es lo que hace que una pila se vea como fichas contadas y no como un
+        // cilindro pintado de rayas.
+        malla: mover(disco(), [jx + 0.75, jy + f * 0.185, jz + 0.15]),
         color: denominacion,
       });
+    }
+
+    // Sus cartas, apoyadas en el tapete delante de él. Las tuyas con la cara
+    // clara; las ajenas con el dorso. UN DORSO ES INFORMACIÓN, no adorno: dice
+    // que ese jugador sigue en la mano.
+    if (jugador.enMano !== false) {
+      const haciaElCentro = jz > 0 ? -0.6 : 0.6;
+      for (let c = 0; c < 2; c += 1) {
+        const centro = [jx - 0.36 + c * (CARTA.ancho * 0.72), jy + 0.06, jz + haciaElCentro];
+        piezas.push({ malla: caja(centro, [CARTA.ancho, CARTA.alto, CARTA.largo]), color: PIXEL.borde });
+        piezas.push({
+          malla: caja(
+            [centro[0], centro[1] + CANTO_CARTA, centro[2]],
+            [CARTA.ancho - CANTO_CARTA * 2, CARTA.alto, CARTA.largo - CANTO_CARTA * 2],
+          ),
+          color: propio ? PIXEL.cara : PIXEL.dorsoFondo,
+        });
+      }
+    }
+
+    // Y el busto de quien está sentado, detrás de sus cartas. No hace falta más:
+    // a esta distancia una figura entera sería un muñeco de pie sobre la mesa.
+    // A ti no se te pinta — la cámara está donde estás tú, y sería tu nuca.
+    if (!propio) {
+      const detras = jz > 0 ? 0.9 : -0.9;
+      piezas.push({ malla: caja([jx, jy + 0.45, jz + detras], [0.85, 0.6, 0.4]), color: FICHA.valores[100] });
+      piezas.push({ malla: caja([jx, jy + 1.0, jz + detras], [0.5, 0.48, 0.44]), color: PIXEL.cara });
     }
   });
 

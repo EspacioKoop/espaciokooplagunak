@@ -133,13 +133,87 @@ export function pintarFiloVentanal(ctx, { ancho, alto }) {
 }
 
 /**
+ * Haces de luz cayendo de las lámparas. Trapecios: anchos abajo, estrechos
+ * arriba, porque una lámpara de techo abre el cono hacia el suelo.
+ *
+ * Esto es lo que el 3D NO puede dar. `retro3d.mjs` sombrea por normal de cara —
+ * cuánto mira una cara a la luz— y eso da volumen, pero no ilumina el AIRE: en
+ * un local en penumbra, la mitad de la sensación de luz está en el haz que se ve
+ * flotando, no en la superficie iluminada. Dibujarlo plano encima es lo que
+ * hacían las consolas de la época, y sigue siendo lo correcto.
+ */
+export function pintarHaces(ctx, { ancho, alto, focos = 3, fuerza = 0.05 }) {
+  if (!ctx) return 0;
+  let bandas = 0;
+  const techo = Math.round(alto * 0.16);
+  const suelo = Math.round(alto * 0.78);
+  for (let f = 0; f < focos; f += 1) {
+    // Los focos se reparten el ancho y quedan centrados en su tramo.
+    const cx = Math.round((ancho * (f + 0.5)) / focos);
+    for (let y = techo; y < suelo; y += 1) {
+      const avance = (y - techo) / (suelo - techo);
+      // El cono se abre hacia abajo y a la vez se apaga: si solo se abriera,
+      // el suelo saldría más iluminado que la lámpara.
+      const medio = Math.round(ancho * (0.03 + avance * 0.07));
+      const alfa = fuerza * (1 - avance);
+      if (alfa <= 0.002) continue;
+      ctx.fillStyle = velo(CANTINA.lampara, alfa.toFixed(3));
+      const x0 = Math.max(0, cx - medio);
+      const x1 = Math.min(ancho, cx + medio);
+      ctx.fillRect(x0, y, x1 - x0, 1);
+      bandas += 1;
+    }
+  }
+  return bandas;
+}
+
+/**
+ * Humo en suspensión: bandas horizontales lentas a media altura, donde se queda
+ * el aire de un local cerrado. Sembrado y sin reloj propio —el desplazamiento
+ * entra como `ms`— para que dos clientes vean lo mismo y para poder pintar un
+ * fotograma cualquiera sin haber pintado los anteriores.
+ *
+ * Va en el TERCIO CENTRAL y no por toda la sala: humo repartido por igual es
+ * niebla, y la niebla ya la pone el motor con la distancia.
+ */
+export function pintarHumo(ctx, { ancho, alto, ms = 0, vetas = 7, fuerza = 0.05 }) {
+  if (!ctx) return 0;
+  let puestas = 0;
+  const desde = Math.round(alto * 0.34);
+  const hasta = Math.round(alto * 0.66);
+  for (let i = 0; i < vetas; i += 1) {
+    // Cada veta tiene su altura, su grosor y su deriva; los números salen del
+    // índice y no de un sorteo, así que la sala es la misma en cada apertura.
+    const y = desde + Math.round(((hasta - desde) * ((i * 7) % vetas)) / vetas);
+    const grosor = 1 + (i % 2);
+    const velocidad = 0.004 + (i % 3) * 0.003;
+    // Deriva continua que da la vuelta: el humo cruza y vuelve a entrar por el
+    // otro lado en vez de acumularse en una esquina.
+    const deriva = Math.floor((ms * velocidad + i * 37) % (ancho * 2)) - ancho;
+    const largo = Math.round(ancho * (0.3 + (i % 3) * 0.12));
+    ctx.fillStyle = velo(CANTINA.lampara, (fuerza * (1 - (i % 3) * 0.25)).toFixed(3));
+    const x0 = Math.max(0, deriva);
+    const x1 = Math.min(ancho, deriva + largo);
+    if (x1 > x0) {
+      ctx.fillRect(x0, y, x1 - x0, grosor);
+      puestas += 1;
+    }
+  }
+  return puestas;
+}
+
+/**
  * Todas las capas, en el orden en que se pintan. El orden importa: la luz va
  * antes que las líneas (si no, las líneas se comen el halo) y la viñeta va la
  * última, porque tiene que oscurecer también lo que han puesto las demás.
  */
-export function pintarCapa2D(ctx, { ancho, alto, semilla = 1 } = {}) {
+export function pintarCapa2D(ctx, { ancho, alto, semilla = 1, ms = 0 } = {}) {
   if (!ctx || !(ancho > 0) || !(alto > 0)) return false;
   pintarLuzAlta(ctx, { ancho, alto });
+  // Luz y humo antes que las líneas: si fueran después, la trama se comería el
+  // haz y el humo pasaría a ser una mancha con rayas.
+  pintarHaces(ctx, { ancho, alto });
+  pintarHumo(ctx, { ancho, alto, ms });
   pintarFiloVentanal(ctx, { ancho, alto });
   pintarPolvo(ctx, { ancho, alto, semilla });
   pintarLineas(ctx, { ancho, alto });

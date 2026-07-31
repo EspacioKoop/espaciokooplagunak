@@ -99,7 +99,7 @@ export function arrancarCantina(piezas, opciones = {}) {
       // polvo, líneas y viñeta. Va DESPUÉS del 3D a propósito — es lo que tapa
       // las costuras que deja el pintor entre caras vecinas, y lo que pone la
       // luz que un sombreado por normal no puede dar.
-      pintarCapa2D(ctx, { ancho: sala.width, alto: sala.height });
+      pintarCapa2D(ctx, { ancho: sala.width, alto: sala.height, ms });
     }
     for (const { lienzo, objeto } of objetos) {
       const ctxObjeto = lienzo?.getContext?.("2d");

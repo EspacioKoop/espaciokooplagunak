@@ -9,6 +9,8 @@ import test from "node:test";
 
 import {
   pintarCapa2D,
+  pintarHaces,
+  pintarHumo,
   pintarLineas,
   pintarPolvo,
   pintarVinieta,
@@ -73,5 +75,40 @@ test("la viñeta es por bandas, no un degradado", () => {
   assert.ok(ctx.rects.length > 0);
   for (const rect of ctx.rects) {
     assert.ok(rect.w === 1 || rect.h === 1, "las bandas son de un píxel");
+  }
+});
+
+// Luz y humo (#423): las dos capas que el 3D no puede dar.
+test("los haces se abren hacia abajo y se apagan al bajar", () => {
+  const ctx = ctxFalso();
+  pintarHaces(ctx, MEDIDAS);
+  assert.ok(ctx.rects.length > 0);
+  const primero = ctx.rects[0];
+  const ultimo = ctx.rects[ctx.rects.length - 1];
+  assert.ok(ultimo.w >= primero.w, "el cono no se abre hacia el suelo");
+  for (const rect of ctx.rects) {
+    assert.ok(rect.x >= 0 && rect.x + rect.w <= MEDIDAS.ancho, "el haz se sale del cuadro");
+  }
+});
+
+test("el humo deriva con el tiempo pero no salta al azar", () => {
+  const quieto = ctxFalso();
+  const movido = ctxFalso();
+  const otraVez = ctxFalso();
+  pintarHumo(quieto, { ...MEDIDAS, ms: 0 });
+  pintarHumo(movido, { ...MEDIDAS, ms: 4000 });
+  pintarHumo(otraVez, { ...MEDIDAS, ms: 0 });
+  assert.deepEqual(otraVez.rects, quieto.rects, "el mismo instante debe dar el mismo humo");
+  assert.notDeepEqual(movido.rects, quieto.rects, "el humo no se mueve");
+});
+
+test("el humo se queda en el tercio central, que es donde se posa el aire", () => {
+  // Repartido por toda la sala sería niebla, y la niebla ya la pone el motor
+  // con la distancia.
+  const ctx = ctxFalso();
+  pintarHumo(ctx, { ...MEDIDAS, ms: 1500 });
+  for (const rect of ctx.rects) {
+    assert.ok(rect.y >= MEDIDAS.alto * 0.3, `veta demasiado alta: ${rect.y}`);
+    assert.ok(rect.y <= MEDIDAS.alto * 0.7, `veta demasiado baja: ${rect.y}`);
   }
 });

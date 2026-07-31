@@ -288,9 +288,12 @@ export const MUEBLES = Object.freeze([
  * el mamparo lejano da la profundidad que una imagen fija nunca da.
  */
 export const ASOMO = Object.freeze({
-  lado: 1.6, // unidades a izquierda y derecha
-  alto: 0.55, // agacharse o estirarse un poco
-  giro: 0.26, // radianes: la cabeza sigue al cuerpo
+  // Corto a propósito. Con el asomo largo la sala se deformaba al llegar al
+  // tope —perspectiva muy abierta vista desde muy de lado— y parecía rota en
+  // vez de mirada desde otro sitio. El paralaje se nota igual con la mitad.
+  lado: 0.8, // unidades a izquierda y derecha
+  alto: 0.3, // agacharse o estirarse un poco
+  giro: 0.1, // radianes: la cabeza sigue al cuerpo
 });
 
 /** Acota a [−limite, limite] y convierte lo que no es número en 0: un `NaN`

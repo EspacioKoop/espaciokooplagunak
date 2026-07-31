@@ -32,6 +32,10 @@ const MODULOS_DE_ARTE = [
   // que podría haber declarado es el relleno del hueco transparente, y ese vive
   // en el codificador PNG porque es un requisito del formato, no un color.
   "../scripts/ficha-nave.mjs",
+  // El dado en 3D retro (#413) reusa el motor de #362 y hereda su regla: el
+  // hueso del cuerpo y la tinta de los puntos entran desde `PIXEL`, para que se
+  // decidan al lado del resto del arte y no en un módulo de minijuego.
+  "../scripts/minijuegos/dados-3d.mjs",
 ];
 
 test("los colores no cambian al mudarse: mismo valor que antes en cada módulo", () => {

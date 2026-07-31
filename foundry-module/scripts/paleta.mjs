@@ -159,6 +159,10 @@ export const AVATAR = Object.freeze({
   acero: "#9aa5b1", // armas y armaduras
   madera: "#7a5230", // báculos, laúdes
   simbolo: "#e8d9a0", // el símbolo sagrado del clérigo
+  // Lo que se lleva en la mano según el gesto.
+  jarra: "#e0a33a", // el mismo ámbar de la cerveza de la barra
+  cigarro: "#e8e4d8",
+  brasa: "#ff6b35", // un píxel, y es lo único claro de una silueta que fuma
 });
 
 /** Trastos que llenan el local (#423). Cosas que alguien dejó ahí: cajas de

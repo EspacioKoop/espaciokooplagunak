@@ -50,6 +50,20 @@ export const CLASES = Object.freeze([
  */
 export const RAZAS = Object.freeze(["humano", "enano", "elfo", "mediano", "otra"]);
 
+/**
+ * Gestos de cuerpo. NO hay gestos de cara y no es un olvido: estos avatares no
+ * tienen ojos ni boca —es lo que los hace legibles a esta resolución, como en
+ * FF7— así que un guiño no tiene dónde ocurrir. Lo que sí tienen es cuerpo, y un
+ * cuerpo dice mucho: alguien encogido de hombros, alguien brindando, alguien
+ * dando una calada.
+ *
+ * Cada gesto es una POSTURA, no una animación: cambia dónde están las manos y
+ * qué lleva encima, y el bucle de la sala lo pinta como pinta todo lo demás.
+ * Animar interpolando entre posturas sería un motor de esqueletos, y esto son
+ * seis cajas.
+ */
+export const GESTOS = Object.freeze(["quieto", "saludo", "brindis", "fumar", "hombros", "pensar"]);
+
 /** Presencia, no género biológico: lo que cambia es la silueta, y hay tres
  * porque una silueta neutra es una opción de verdad y no un descarte. */
 export const SILUETAS = Object.freeze(["ancha", "estrecha", "neutra"]);
@@ -84,6 +98,7 @@ export function normalizarAvatar(descripcion = {}) {
     pelo: indiceValido(descripcion.pelo, AVATAR.pelos.length),
     piel: indiceValido(descripcion.piel, RETRATO.cascos.length),
     ropa: indiceValido(descripcion.ropa, FACCIONES.length),
+    gesto: GESTOS.includes(descripcion.gesto) ? descripcion.gesto : "quieto",
   };
 }
 
@@ -132,21 +147,76 @@ export function piezasAvatar(descripcion, { pies = [0, 0, 0], indice = 0 } = {})
     },
     // Manos como guantes, a los lados y grandes: es la firma de aquel estilo y
     // además es lo único que deja ver a distancia qué está haciendo alguien.
-    {
-      nombre: `${prefijo}ManoIzq`,
-      color: piel,
-      centro: [px - 0.3 * ancho, yTorso - altoTorso * 0.2, pz + 0.06],
-      medidas: [0.16, 0.16, 0.16],
-    },
-    {
-      nombre: `${prefijo}ManoDer`,
-      color: piel,
-      centro: [px + 0.3 * ancho, yTorso - altoTorso * 0.2, pz + 0.06],
-      medidas: [0.16, 0.16, 0.16],
-    },
+    // Por eso el gesto vive en las manos y no en la cara.
+    ...manosDelGesto(av.gesto, { px, pz, yTorso, altoTorso, yCabeza, ancho, piel, prefijo }),
     // Y lo que lleva encima, que es lo que dice la clase de un vistazo.
     ...distintivoDeClase(av.clase, { px, py: yTorso, pz, ancho, altoTorso, prefijo }),
   ].map((pieza) => Object.freeze(pieza));
+}
+
+/**
+ * Dónde caen las manos —y qué llevan— según el gesto. Un cigarro es una caja
+ * clara junto a la cabeza; una jarra, una caja ámbar en alto. A esta resolución
+ * eso basta: no hace falta modelar el humo del cigarro porque la sala ya tiene
+ * humo, y quien fuma lo alimenta (ver `ANCLAS_AIRE` en `cantina-escena.mjs`).
+ */
+function manosDelGesto(gesto, { px, pz, yTorso, altoTorso, yCabeza, ancho, piel, prefijo }) {
+  const mano = (lado, [dx, dy, dz], nombre = "Mano") => ({
+    nombre: `${prefijo}${nombre}${lado}`,
+    color: piel,
+    centro: [px + dx * ancho, dy, pz + dz],
+    medidas: [0.16, 0.16, 0.16],
+  });
+  const reposo = yTorso - altoTorso * 0.2;
+
+  switch (gesto) {
+    // Una mano en alto. El saludo es el gesto que más se usa y por eso es el más
+    // claro de leer: mano por encima del hombro y separada del cuerpo.
+    case "saludo":
+      return [mano("Izq", [-0.3, reposo, 0.06]), mano("Der", [0.42, yCabeza, 0.1])];
+    // Brindis: la jarra en alto, hacia delante. Se brinda CON alguien, así que
+    // el brazo va adelantado y no pegado al costado.
+    case "brindis":
+      return [
+        mano("Izq", [-0.3, reposo, 0.06]),
+        mano("Der", [0.34, yTorso + altoTorso * 0.35, 0.24]),
+        {
+          nombre: `${prefijo}Jarra`,
+          color: AVATAR.jarra,
+          centro: [px + 0.34 * ancho, yTorso + altoTorso * 0.55, pz + 0.24],
+          medidas: [0.18, 0.24, 0.18],
+        },
+      ];
+    // Fumar: la mano junto a la cara y el cigarro asomando. La brasa es un píxel
+    // y es lo único claro de la silueta, que es exactamente cómo se ve a alguien
+    // fumando en la penumbra.
+    case "fumar":
+      return [
+        mano("Izq", [-0.3, reposo, 0.06]),
+        mano("Der", [0.26, yCabeza - 0.12, 0.22]),
+        {
+          nombre: `${prefijo}Cigarro`,
+          color: AVATAR.cigarro,
+          centro: [px + 0.26 * ancho, yCabeza - 0.06, pz + 0.3],
+          medidas: [0.05, 0.05, 0.18],
+        },
+        {
+          nombre: `${prefijo}Brasa`,
+          color: AVATAR.brasa,
+          centro: [px + 0.26 * ancho, yCabeza - 0.06, pz + 0.4],
+          medidas: [0.06, 0.06, 0.06],
+        },
+      ];
+    // Hombros: las dos manos abiertas hacia fuera y arriba. «Yo qué sé».
+    case "hombros":
+      return [mano("Izq", [-0.46, yTorso, 0.16]), mano("Der", [0.46, yTorso, 0.16])];
+    // Pensar: una mano en la barbilla. En un juego de faroleo es el gesto más
+    // útil de todos, porque dice «me lo estoy pensando» sin decir qué.
+    case "pensar":
+      return [mano("Izq", [-0.3, reposo, 0.06]), mano("Der", [0.12, yCabeza - 0.16, 0.26])];
+    default:
+      return [mano("Izq", [-0.3, reposo, 0.06]), mano("Der", [0.3, reposo, 0.06])];
+  }
 }
 
 /**

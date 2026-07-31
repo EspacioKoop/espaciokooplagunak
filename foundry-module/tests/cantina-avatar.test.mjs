@@ -11,6 +11,7 @@ import test from "node:test";
 import {
   ALTO_BASE,
   CLASES,
+  GESTOS,
   RAZAS,
   SILUETAS,
   SITIOS,
@@ -96,4 +97,43 @@ test("nadie se sienta encima de nadie, y sobra gente antes que sitios", () => {
   assert.equal(cabezas.length, SITIOS.length, "se han colocado más avatares que sitios");
   const sitios = new Set(cabezas.map((p) => `${p.centro[0]},${p.centro[2]}`));
   assert.equal(sitios.size, cabezas.length, "hay dos personas en el mismo sitio");
+});
+
+// Gestos de cuerpo (#423): estos avatares no tienen cara, así que el gesto vive
+// en las manos — que además son la parte exagerada del estilo.
+test("cada gesto cambia dónde están las manos", () => {
+  const manos = (gesto) =>
+    JSON.stringify(
+      piezasAvatar({ gesto }, { pies: [0, 0, 0] })
+        .filter((p) => p.nombre.includes("Mano"))
+        .map((p) => p.centro),
+    );
+  const vistos = new Set(GESTOS.map(manos));
+  assert.equal(vistos.size, GESTOS.length, "hay dos gestos con la misma postura");
+});
+
+test("brindar saca una jarra y fumar saca cigarro con brasa", () => {
+  const nombres = (gesto) => piezasAvatar({ gesto }, { pies: [0, 0, 0] }).map((p) => p.nombre);
+  assert.ok(nombres("brindis").some((n) => n.endsWith("Jarra")));
+  const fumando = nombres("fumar");
+  assert.ok(fumando.some((n) => n.endsWith("Cigarro")));
+  // La brasa es un píxel y es lo único claro de una silueta que fuma en
+  // penumbra: sin ella, el cigarro no se ve y el gesto no se lee.
+  assert.ok(fumando.some((n) => n.endsWith("Brasa")));
+});
+
+test("un gesto que no existe deja a la persona quieta, no rota", () => {
+  const raro = piezasAvatar({ gesto: "bailar-break" }, { pies: [0, 0, 0] });
+  const quieto = piezasAvatar({ gesto: "quieto" }, { pies: [0, 0, 0] });
+  assert.deepEqual(raro, quieto);
+});
+
+test("no hay gestos de cara, y es a propósito", () => {
+  // Estos avatares no tienen ojos ni boca: es lo que los hace legibles a esta
+  // resolución. Si algún día se añade un guiño, hará falta darles cara primero,
+  // y eso es una decisión de estilo — no un gesto más.
+  for (const gesto of GESTOS) {
+    const piezas = piezasAvatar({ gesto }, { pies: [0, 0, 0] });
+    assert.ok(!piezas.some((p) => /Ojo|Boca|Ceja/.test(p.nombre)), `${gesto} ha inventado una cara`);
+  }
 });

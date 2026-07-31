@@ -74,10 +74,13 @@ export const PLANOS = Object.freeze([
     id: "mesaPoker",
     // Sentado a la mesa de babor. El ojo de buey entra por un borde: frío
     // contra cálido, que es lo que hace que la mesa se sienta un rincón.
-    posicion: [-3.4, OJOS_SENTADO, 4.0],
-    yaw: 0.5,
-    pitch: 0.06,
-    fov: 50,
+    // Sentado ANTES de la mesa, no encima. Estaba en z=4.0 con la mesa en 5.2 y
+    // las cajas de suministro en 5.6: la cámara quedaba dentro del mueble y el
+    // cuadro era un muro de madera. Un plano compuesto necesita aire delante.
+    posicion: [-2.5, OJOS_SENTADO, 2.6],
+    yaw: 0.34,
+    pitch: 0.1,
+    fov: 52,
     acciones: Object.freeze([
       Object.freeze({ tipo: "jugar", puerta: "poker", etiqueta: "LAGUNAK.Cantina.Puerta.Poker", ancla: [-3.4, -1.1, 5.2] }),
       Object.freeze({ tipo: "ir", destino: "entrada", etiqueta: "LAGUNAK.Cantina.Ir.Entrada", ancla: [0, -0.4, -2.2] }),
@@ -85,10 +88,10 @@ export const PLANOS = Object.freeze([
   }),
   Object.freeze({
     id: "mesaDados",
-    posicion: [3.9, OJOS_SENTADO, 2.7],
-    yaw: -0.42,
-    pitch: 0.06,
-    fov: 50,
+    posicion: [2.7, OJOS_SENTADO, 1.9],
+    yaw: -0.3,
+    pitch: 0.1,
+    fov: 52,
     acciones: Object.freeze([
       Object.freeze({ tipo: "jugar", puerta: "dados", etiqueta: "LAGUNAK.Cantina.Puerta.Dados", ancla: [3.9, -1.1, 3.9] }),
       Object.freeze({ tipo: "ir", destino: "entrada", etiqueta: "LAGUNAK.Cantina.Ir.Entrada", ancla: [0, -0.4, -2.2] }),
@@ -98,10 +101,14 @@ export const PLANOS = Object.freeze([
     id: "ventanal",
     // De pie contra el cristal, mirando fuera. Es el plano que existe para no
     // hacer nada: en un sitio acogedor tiene que poder no hacerse nada.
-    posicion: [0, OJOS_DE_PIE, 4.6],
+    // Contra el cristal, pero con la sala todavía en cuadro. Estaba tan pegado
+    // al ventanal que el plano era vacío con una franja de barra abajo: un
+    // cuadro de nada no es contemplativo, es un error. Desde aquí el mamparo y
+    // la estantería enmarcan el vacío, que es lo que hace que el vacío se lea.
+    posicion: [0, OJOS_DE_PIE, 2.4],
     yaw: 0,
-    pitch: 0.1,
-    fov: 34,
+    pitch: 0.06,
+    fov: 40,
     acciones: Object.freeze([
       Object.freeze({ tipo: "ir", destino: "barra", etiqueta: "LAGUNAK.Cantina.Ir.Barra", ancla: [0, -0.6, 3.2] }),
       Object.freeze({ tipo: "ir", destino: "entrada", etiqueta: "LAGUNAK.Cantina.Ir.Entrada", ancla: [0, -0.4, -2.2] }),

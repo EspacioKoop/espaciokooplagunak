@@ -340,3 +340,57 @@ test("el relevo no importa el cliente del puente: la ayuda nunca emite", async (
   const sinComentarios = fuente.replace(/^\s*(\/\/|\*|\/\*).*$/gm, "");
   assert.equal(/bridge-client|BridgeClient|fetch\(/.test(sinComentarios), false);
 });
+
+test("PEAJE NO: una ayuda de OTRA acción del mismo puesto no cambia la orden", () => {
+  // El bloqueo que reportó Varo. `set_system_power` y `set_system_coolant` están
+  // ambas autorizadas para ingeniería, así que ningún otro control las separa:
+  // sin comprobar la igualdad, una propuesta de refrigerante se gastaba en una
+  // orden de potencia y la salida llevaba la acción de LA PROPUESTA. La decisión
+  // que el titular había autenticado se convertía en otra distinta, y con
+  // parámetros acotados contra el margen de una acción que no era la suya.
+  const estado = conPropuesta(BANDAS.CRITICO); // propuesta de set_system_coolant
+  const salida = prepararOrdenAsistida({
+    estado,
+    userId: "ingeniera",
+    orden: {
+      action: "set_system_power",
+      params: { system: "reactor", level: 2 },
+      nonce: "o1",
+      [CAMPO_ASISTENCIA]: "n1",
+    },
+    resolverPuesto: () => "engineering",
+    leerBase: () => 0,
+    ahora: T0 + 2_000,
+  });
+
+  // La orden sale EXACTAMENTE como la mandó su titular.
+  assert.equal(salida.orden.action, "set_system_power");
+  assert.equal(salida.orden.params.level, 2);
+  assert.equal(salida.aviso, RELEVO_AVISOS.ASISTENCIA_NO_APLICADA);
+  assert.equal(salida.error, PROPUESTA_ERRORES.ACCION_DISTINTA);
+  assert.equal(salida.credito, null);
+  // Y la ayuda NO se gasta: sigue esperando a la orden para la que se ganó.
+  assert.equal(salida.estado.propuestas.length, 1);
+});
+
+test("la ayuda sí se aplica cuando la acción es la suya, para la misma mesa", () => {
+  // El contraste del caso anterior: mismo puesto, misma sesión, la acción que
+  // sí toca. Si esta prueba se rompe, la corrección se pasó de estricta.
+  const estado = conPropuesta(BANDAS.CRITICO);
+  const salida = prepararOrdenAsistida({
+    estado,
+    userId: "ingeniera",
+    orden: {
+      action: "set_system_coolant",
+      params: { system: "reactor", level: 10 },
+      nonce: "o1",
+      [CAMPO_ASISTENCIA]: "n1",
+    },
+    resolverPuesto: () => "engineering",
+    leerBase: () => 0,
+    ahora: T0 + 2_000,
+  });
+  assert.equal(salida.aviso, RELEVO_AVISOS.SIN_ASISTENCIA);
+  assert.ok(salida.credito);
+  assert.deepEqual(salida.estado.propuestas, []);
+});

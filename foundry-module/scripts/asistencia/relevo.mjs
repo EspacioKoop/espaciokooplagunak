@@ -229,6 +229,9 @@ export function prepararOrdenAsistida({
     nonce,
     emisorId: userId,
     emisorPuesto: puesto,
+    // La acción REALMENTE emitida, no la de la propuesta: si no coinciden, la
+    // ayuda no se aplica y la orden sale como la mandó su titular.
+    accion: base.action,
     params: base.params,
     base: lectura,
     ahora,

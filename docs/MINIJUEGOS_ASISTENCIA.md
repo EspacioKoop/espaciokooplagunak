@@ -312,8 +312,15 @@ lo que hace exigible ADR-0002 en vez de solo declararlo.
 - El titular emite su orden de siempre. Si lleva el nonce de una propuesta viva **de su puesto**, el
   parámetro sale mejorado dentro del rango que la orden ya permitía; el campo de reclamación no viaja
   al puente, porque no es un parámetro suyo.
-- Si la ayuda caducó, ya se gastó o era de otro puesto, **la orden sigue adelante sin mejorar**, con
-  un aviso. Bloquearla convertiría la ayuda en peaje y haría que el titular pagara el error de otro.
+- La ayuda es para **una acción concreta**, no para el puesto entero: si el titular emite otra, la
+  propuesta no se aplica ni se gasta. `set_system_power` y `set_system_coolant` están ambas
+  autorizadas para ingeniería, así que ningún otro control las separa — sin esta comprobación, una
+  ayuda de refrigerante se gastaba en una orden de potencia y la salida llevaba la acción de **la
+  propuesta**: la decisión que el titular había autenticado se convertía en otra distinta, con
+  parámetros acotados contra el margen de una acción que no era la suya.
+- Si la ayuda caducó, ya se gastó, era de otro puesto o era de otra acción, **la orden sigue adelante
+  sin mejorar**, con un aviso. Bloquearla convertiría la ayuda en peaje y haría que el titular pagara
+  el error de otro.
 
 Que este módulo no importe jamás un cliente del puente es una **prueba**, no una promesa
 (`asistencia-relevo.test.mjs`).

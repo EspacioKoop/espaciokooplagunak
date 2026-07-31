@@ -58,6 +58,7 @@ import {
   vistaRecordada,
 } from "./minijuegos/mesa-poker-app.mjs";
 import { crearClaseCantinaV1, crearClaseCantinaV2 } from "./cantina-app.mjs";
+import { puertaPorId } from "./cantina.mjs";
 import { registrarAjusteAlerta, registrarEscuchaAlerta } from "./alerta-escena.mjs";
 import { AJUSTE_TELEMETRIA } from "./telemetria-difusion.mjs";
 import {
@@ -332,7 +333,17 @@ function claseMesa() {
     : crearClaseMesaV1(inyeccion);
 }
 
-function abrirMesaMinijuegos() {
+function abrirMesaMinijuegos(idPuerta = "poker") {
+  // La puerta manda, y una que no esté en el catálogo no abre nada. Caer al
+  // póker "por si acaso" sería peor que no hacer nada: abriría una mesa que
+  // nadie ha pedido, y taparía justo el error que hay que ver — una puerta
+  // añadida al catálogo sin su mesa detrás.
+  const puerta = puertaPorId(idPuerta);
+  if (!puerta) {
+    console.warn(`${MODULE_ID} | puerta de cantina desconocida: ${idPuerta}`);
+    return;
+  }
+
   // Si aún no ha llegado ninguna vista dirigida, se arranca con el estado
   // público, que es un ajuste de mundo y lo lee cualquiera. Sin acciones: los
   // botones los concede el coordinador, y llegarán con la primera vista.
@@ -343,7 +354,7 @@ function abrirMesaMinijuegos() {
   // Abrir la mesa y sentarse son cosas distintas: esto solo pone la mesa (si
   // hace falta y si se puede) y enseña la ventana. Sentarse es una acción más,
   // con su botón, porque el GM puede querer repartir sin jugar.
-  if (game.user?.isGM && !estadoPublicoVigente()) abrirMesa({ nombreJuego: "poker" });
+  if (game.user?.isGM && !estadoPublicoVigente()) abrirMesa({ nombreJuego: puerta.juego });
   // Instancia nueva en cada apertura tras un cierre: una ApplicationV2 cerrada
   // no se reutiliza —renderizarla otra vez falla— y la ruta v11 se descarta
   // igual para que las dos tengan el mismo contrato.

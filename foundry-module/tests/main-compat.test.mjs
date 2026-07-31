@@ -1001,6 +1001,22 @@ async function abrirMesaPorCantina(controls, instances) {
   return instances.at(-1);
 }
 
+// Una puerta que no está en el catálogo no abre una mesa cualquiera. Caer al
+// póker por defecto convertiría "he añadido una puerta y me he olvidado de su
+// mesa" en "el póker se abre solo", que es un fallo mucho más caro de ver.
+test("una puerta desconocida no abre ninguna mesa", async () => {
+  const { hooks, instances } = await loadModule();
+  await arrancarReady(hooks);
+  const controls = [{ name: "token", tools: [] }];
+  hooks.getSceneControlButtons(controls);
+
+  const boton = toolByName(controls, "lagunak-cantina");
+  await boton.onClick();
+  const cantina = instances.at(-1);
+  cantina.seleccionarPuerta("mesa-que-no-existe");
+  assert.equal(instances.at(-1), cantina, "no se ha construido ninguna mesa");
+});
+
 test("v11: la mesa se puede cerrar y volver a abrir, con instancia nueva", async () => {
   // El singleton `mesaApp` solo se creaba cuando era null y ninguna ventana lo
   // soltaba al cerrarse: la segunda apertura reutilizaba una instancia cerrada.

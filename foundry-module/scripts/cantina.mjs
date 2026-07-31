@@ -16,11 +16,14 @@
  * la sala" (`cantina-app.mjs`).
  */
 
-/** Una entrada por mesa social disponible. `id` es lo que consume
- * `abrirMesaMinijuegos`. */
+/** Una entrada por mesa social disponible. `id` identifica la puerta; `juego`
+ * es el nombre con el que la conoce `sesion-motor.mjs`, y son campos distintos
+ * a propósito: el día que dos puertas lleven al mismo juego con reglas de casa
+ * distintas, la sala no tiene por qué enterarse. */
 export const PUERTAS = Object.freeze([
   Object.freeze({
     id: "poker",
+    juego: "poker",
     tituloClave: "LAGUNAK.Cantina.Puerta.Poker",
     icono: "fa-solid fa-diamond",
   }),

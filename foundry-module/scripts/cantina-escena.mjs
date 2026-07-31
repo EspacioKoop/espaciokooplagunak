@@ -95,11 +95,42 @@ const TONOS_BOTELLA = [CANTINA.botellaVerde, CANTINA.botellaAmbar, CANTINA.botel
  * vacío en un cartón pintado.
  */
 export const MUEBLES = Object.freeze([
-  // --- La caja de la sala ---------------------------------------------------
-  Object.freeze({ nombre: "suelo", color: CANTINA.suelo, centro: [0, -1.9, 4], medidas: [12, 0.3, 10] }),
-  Object.freeze({ nombre: "techo", color: CANTINA.techo, centro: [0, 2.9, 4], medidas: [12, 0.3, 10] }),
-  Object.freeze({ nombre: "paredIzq", color: CANTINA.mamparo, centro: [-5.2, 0.5, 4], medidas: [0.4, 5, 10] }),
-  Object.freeze({ nombre: "paredDer", color: CANTINA.mamparo, centro: [5.2, 0.5, 4], medidas: [0.4, 5, 10] }),
+  // --- La caja de la sala, POR TRAMOS --------------------------------------
+  //
+  // Un suelo de doce metros en una sola caja es EL fallo de un rasterizador por
+  // pintor: la profundidad de una cara es su media, y la media de una losa que
+  // cruza la sala entera cae en el centro, así que se pinta delante de lo que
+  // tiene detrás y detrás de lo que tiene delante — a la vez, y cambiando de
+  // criterio en cuanto la cámara se mueve. Eso era el temblor de la sala.
+  //
+  // Partido en tramos, cada uno tiene su profundidad de verdad y el orden deja
+  // de ser una lotería. Y de paso el suelo tiene juntas, que es lo que hace que
+  // se lea como plancha de nave y no como moqueta.
+  ...fila(6, (i) => ({
+    nombre: `suelo${i}`,
+    // Alternar dos tonos convierte la corrección en dibujo: se ven las planchas.
+    color: i % 2 === 0 ? CANTINA.suelo : CANTINA.techo,
+    centro: [0, -1.9, 0.2 + i * 1.7],
+    medidas: [12, 0.3, 1.6],
+  })),
+  ...fila(6, (i) => ({
+    nombre: `techo${i}`,
+    color: i % 2 === 0 ? CANTINA.techo : CANTINA.mamparo,
+    centro: [0, 2.9, 0.2 + i * 1.7],
+    medidas: [12, 0.3, 1.6],
+  })),
+  ...fila(6, (i) => ({
+    nombre: `paredIzq${i}`,
+    color: CANTINA.mamparo,
+    centro: [-5.2, 0.5, 0.2 + i * 1.7],
+    medidas: [0.4, 5, 1.6],
+  })),
+  ...fila(6, (i) => ({
+    nombre: `paredDer${i}`,
+    color: CANTINA.mamparo,
+    centro: [5.2, 0.5, 0.2 + i * 1.7],
+    medidas: [0.4, 5, 1.6],
+  })),
 
   // --- El fondo, con el hueco del ventanal ---------------------------------
   // EL VENTANAL MANDA. Es lo único que dice que esto vuela, así que se lleva el

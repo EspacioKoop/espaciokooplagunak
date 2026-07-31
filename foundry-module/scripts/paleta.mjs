@@ -121,6 +121,10 @@ export const CANTINA = Object.freeze({
   conducto: "#565f6b", // tubos por el techo, metal claro
   pantalla: "#1b4a5c", // monitores apagados del mamparo: azul de fósforo muerto
   baliza: "#ff6b35", // ámbar de emergencia, el único color que grita
+  // La capa 2D que va encima del 3D tiñe con estos dos y con nada más: sombra
+  // para viñeta y líneas, y el propio ámbar de las lámparas para el halo alto.
+  // Están aquí y no allí porque un velo ES un color, aunque venga con alfa.
+  sombra: "#000000",
 });
 
 /**

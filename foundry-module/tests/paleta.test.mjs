@@ -35,6 +35,9 @@ const MODULOS_DE_ARTE = [
   // nace, que es cuando aún no cuesta nada.
   "../scripts/cantina-escena.mjs",
   "../scripts/cantina-icono.mjs",
+  // Y la capa 2D que va encima: un velo ES un color, aunque venga con alfa, así
+  // que sus `rgba(...)` se componen desde `CANTINA` en vez de escribirse.
+  "../scripts/cantina-2d.mjs",
   // La ficha de nave (#354) reusa las siluetas y sus colores tal cual: lo único
   // que podría haber declarado es el relleno del hueco transparente, y ese vive
   // en el codificador PNG porque es un requisito del formato, no un color.

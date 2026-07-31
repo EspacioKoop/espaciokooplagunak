@@ -18,6 +18,7 @@
 import { componerCantina } from "./cantina-escena.mjs";
 import { componerIcono } from "./cantina-icono.mjs";
 import { CANTINA } from "./paleta.mjs";
+import { pintarCapa2D } from "./cantina-2d.mjs";
 import { pintarEscena } from "./retro3d-lienzo.mjs";
 
 /**
@@ -94,6 +95,11 @@ export function arrancarCantina(piezas, opciones = {}) {
         componerCantina({ ancho: sala.width, alto: sala.height, epoca, mirada }),
         { fondo: CANTINA.ventana },
       );
+      // Y encima, el pixel-art plano: halo de las lámparas, filo del ventanal,
+      // polvo, líneas y viñeta. Va DESPUÉS del 3D a propósito — es lo que tapa
+      // las costuras que deja el pintor entre caras vecinas, y lo que pone la
+      // luz que un sombreado por normal no puede dar.
+      pintarCapa2D(ctx, { ancho: sala.width, alto: sala.height });
     }
     for (const { lienzo, objeto } of objetos) {
       const ctxObjeto = lienzo?.getContext?.("2d");

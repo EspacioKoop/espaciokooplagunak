@@ -168,7 +168,12 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     se queda mintiendo cuando cae el puente (#354).
   - **Minijuegos** — `scripts/minijuegos/` (motor de póker, evaluador de manos, agente automático,
     sesión) y su enganche en `scripts/minijuegos-wiring.mjs` (#308). La sesión viva del coordinador
-    no se persiste en ningún sitio: vive en memoria del GM.
+    no se persiste en ningún sitio: vive en memoria del GM. La entrada única es la **cantina**
+    (`scripts/cantina.mjs`, catálogo puro de "puertas"; `scripts/cantina-app.mjs`, la ventana V1/V2,
+    #423): sustituye al botón de mesa suelto en los controles de escena, y un minijuego nuevo se
+    añade como una entrada más del catálogo, no como un botón nuevo en `main.mjs`. La cantina solo
+    pinta y traduce un clic en "abre esa mesa" — la autoridad la sigue resolviendo cada mesa por su
+    cuenta al abrirse, nunca la ventana que lleva hasta ella.
   - **Asistencia entre puestos** — `scripts/asistencia/` (#309, diseño en
     [`docs/MINIJUEGOS_ASISTENCIA.md`](docs/MINIJUEGOS_ASISTENCIA.md)): motor puro más el reductor
     `sesion.mjs` y la costura `relevo.mjs`. Ayudar NUNCA emite orden: produce un token que gasta el

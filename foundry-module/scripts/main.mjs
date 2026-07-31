@@ -57,6 +57,7 @@ import {
   recordarVista,
   vistaRecordada,
 } from "./minijuegos/mesa-poker-app.mjs";
+import { crearClaseCantinaV1, crearClaseCantinaV2 } from "./cantina-app.mjs";
 import { registrarAjusteAlerta, registrarEscuchaAlerta } from "./alerta-escena.mjs";
 import { AJUSTE_TELEMETRIA } from "./telemetria-difusion.mjs";
 import {
@@ -351,6 +352,18 @@ function abrirMesaMinijuegos() {
   else mesaApp.render(true);
 }
 
+/* Cantina (#423): la puerta única de la barra a las mesas sociales. Una
+ * ventana nueva por apertura, igual que la mesa — no hay estado que
+ * conservar entre una visita y la siguiente. */
+function abrirCantina() {
+  const Clase = foundry.applications?.api?.ApplicationV2
+    ? crearClaseCantinaV2({ alSeleccionar: abrirMesaMinijuegos })
+    : crearClaseCantinaV1({ alSeleccionar: abrirMesaMinijuegos });
+  const app = new Clase();
+  if (foundry.applications?.api?.ApplicationV2) app.render({ force: true });
+  else app.render(true);
+}
+
 /* Música de a bordo (#347): el GM manda, todos los clientes obedecen.
  *
  * El reproductor se crea aquí pero NO suena hasta que alguien pulsa el botón de
@@ -535,15 +548,18 @@ Hooks.on("getSceneControlButtons", (controls) => {
   const tools = [
     ...gmTools,
     {
-      // La mesa la ven todos: es la capa social, y un minijuego al que solo
-      // pudiera entrar el GM no sería un minijuego. El GM además la CREA si no
-      // hay ninguna abierta; a un jugador el botón le enseña la mesa puesta, o
-      // el aviso de que todavía no hay ninguna.
-      name: "lagunak-mesa",
-      title: "LAGUNAK.Controles.AbrirMesa",
-      icon: "fa-solid fa-diamond",
+      // La cantina la ve todo el mundo: es la capa social, y un minijuego al
+      // que solo pudiera entrar el GM no sería un minijuego (#423). Sustituye
+      // al botón de mesa suelto por una única puerta; de ahí para dentro
+      // decide el catálogo de `cantina.mjs`, no un botón nuevo por mesa. El GM
+      // sigue siendo quien CREA la mesa elegida si no hay ninguna abierta; a
+      // un jugador la puerta le lleva a la mesa puesta, o al aviso de que
+      // todavía no hay ninguna.
+      name: "lagunak-cantina",
+      title: "LAGUNAK.Controles.AbrirCantina",
+      icon: "fa-solid fa-mug-saucer",
       button: true,
-      onClick: () => abrirMesaMinijuegos(),
+      onClick: () => abrirCantina(),
     },
     {
       name: "lagunak-musica-audio",

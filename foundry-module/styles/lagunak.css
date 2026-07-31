@@ -703,3 +703,60 @@
   height: 135px;
   image-rendering: pixelated;
 }
+
+/* ---- Cantina (#423) --------------------------------------------------------
+ * Puerta única a las mesas sociales, con la misma vestimenta arcade que el
+ * resto del módulo. Secciones planas, esquinas duras, sin degradados — es la
+ * "sala" leída de un vistazo, no un decorado pintado a mano.
+ */
+.lagunak-cantina .window-content {
+  background: #03071e;
+  color: #e0e1dd;
+  padding: 0;
+}
+
+.lagunak-cantina-cuerpo {
+  padding: 0.6rem;
+}
+
+.lagunak-cantina-intro {
+  margin: 0 0 0.6rem;
+  font-variant: small-caps;
+  letter-spacing: 0.06em;
+  color: #00e5ff;
+}
+
+.lagunak-cantina-puertas {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.lagunak-cantina-puerta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border: 3px solid #1b263b;
+  border-left-color: #ff2e88;
+  background: #0d1b2a;
+  color: #e0e1dd;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.lagunak-cantina-puerta:hover,
+.lagunak-cantina-puerta:focus-visible {
+  border-left-color: #ffd166;
+  background: #14263d;
+}
+
+.lagunak-cantina-puerta i {
+  color: #ffd166;
+  width: 1.2rem;
+  text-align: center;
+}

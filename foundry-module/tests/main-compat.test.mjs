@@ -308,9 +308,10 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
     "lagunak-decorado-aleatorio",
     // Arte de ficha (#354): solo-GM, porque escribe un documento del mundo.
     "lagunak-ficha-nave",
-    // La mesa de minijuegos (#308) la ven todos: es la capa social, y un
-    // minijuego al que solo pudiera entrar el GM no sería un minijuego.
-    "lagunak-mesa",
+    // La cantina (#423) la ven todos: es la capa social, y un minijuego al
+    // que solo pudiera entrar el GM no sería un minijuego. Sustituye al botón
+    // de mesa suelto por una única puerta.
+    "lagunak-cantina",
     "lagunak-musica-audio",
     "lagunak-puestos",
     "lagunak-espacio-puesto",
@@ -706,9 +707,8 @@ test("un jugador no GM recibe asignación y espacio de puesto, sin controles GM"
   const grupo = controls.find((control) => control.name === "lagunak");
   assert.ok(grupo);
   assert.deepEqual(grupo.tools.map(({ name }) => name), [
-    // La mesa de minijuegos también, por lo mismo que el audio: es de la mesa,
-    // no del GM.
-    "lagunak-mesa",
+    // La cantina también, por lo mismo que el audio: es de la mesa, no del GM.
+    "lagunak-cantina",
     // El audio lo habilita cada cliente con su propio gesto, que el navegador
     // exige y que no se puede delegar en el GM: por eso este botón sí lo ve un
     // jugador. El MANDO de la música sigue siendo solo del GM.
@@ -990,6 +990,17 @@ test("REGRESIÓN: la ventana de puestos sigue los cambios del ajuste de requisit
   assert.deepEqual(ventana.renderCalls, [], "una ventana cerrada no se repinta");
 });
 
+// Abre la cantina desde su botón de escena y elige la puerta del póker: es el
+// camino equivalente al botón de mesa directo que existía antes de #423.
+async function abrirMesaPorCantina(controls, instances) {
+  const boton = toolByName(controls, "lagunak-cantina");
+  assert.ok(boton, "la cantina tiene su botón de escena");
+  await boton.onClick();
+  const cantina = instances.at(-1);
+  cantina.seleccionarPuerta("poker");
+  return instances.at(-1);
+}
+
 test("v11: la mesa se puede cerrar y volver a abrir, con instancia nueva", async () => {
   // El singleton `mesaApp` solo se creaba cuando era null y ninguna ventana lo
   // soltaba al cerrarse: la segunda apertura reutilizaba una instancia cerrada.
@@ -1000,16 +1011,12 @@ test("v11: la mesa se puede cerrar y volver a abrir, con instancia nueva", async
   await arrancarReady(hooks);
   const controls = [{ name: "token", tools: [] }];
   hooks.getSceneControlButtons(controls);
-  const boton = toolByName(controls, "lagunak-mesa");
-  assert.ok(boton, "la mesa tiene su botón de escena");
 
-  await boton.onClick();
-  const primera = instances.at(-1);
+  const primera = await abrirMesaPorCantina(controls, instances);
   assert.equal(primera.rendered, true);
 
   await primera.close();
-  await boton.onClick();
-  const segunda = instances.at(-1);
+  const segunda = await abrirMesaPorCantina(controls, instances);
   assert.notEqual(segunda, primera, "la reapertura construye otra ventana");
   assert.equal(segunda.rendered, true);
 
@@ -1027,14 +1034,11 @@ test("host moderno: misma regla de descarte para la mesa (ApplicationV2)", async
   await arrancarReady(hooks);
   const controls = [{ name: "token", tools: [] }];
   hooks.getSceneControlButtons(controls);
-  const boton = toolByName(controls, "lagunak-mesa");
 
-  await boton.onClick();
-  const primera = instances.at(-1);
+  const primera = await abrirMesaPorCantina(controls, instances);
   // En V2 el descarte llega por `_onClose`, que es lo que invoca el marco.
   primera._onClose({});
-  await boton.onClick();
-  const segunda = instances.at(-1);
+  const segunda = await abrirMesaPorCantina(controls, instances);
   assert.notEqual(segunda, primera);
 
   primera.renderCalls.length = 0;
@@ -1051,13 +1055,10 @@ test("cerrar una ventana que ya no es la vigente no deja huérfana a la nueva", 
   await arrancarReady(hooks);
   const controls = [{ name: "token", tools: [] }];
   hooks.getSceneControlButtons(controls);
-  const boton = toolByName(controls, "lagunak-mesa");
 
-  await boton.onClick();
-  const primera = instances.at(-1);
+  const primera = await abrirMesaPorCantina(controls, instances);
   await primera.close();
-  await boton.onClick();
-  const segunda = instances.at(-1);
+  const segunda = await abrirMesaPorCantina(controls, instances);
 
   await primera.close(); // cierre tardío de la vieja
   segunda.renderCalls.length = 0;

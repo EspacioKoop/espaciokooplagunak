@@ -1,0 +1,13 @@
+<div class="lagunak-cantina-cuerpo">
+  <p class="lagunak-cantina-intro">{{localize "LAGUNAK.Cantina.Intro"}}</p>
+  <ul class="lagunak-cantina-puertas">
+    {{#each puertas}}
+      <li>
+        <button type="button" class="lagunak-cantina-puerta" data-puerta="{{this.id}}">
+          <i class="{{this.icono}}" aria-hidden="true"></i>
+          <span>{{this.titulo}}</span>
+        </button>
+      </li>
+    {{/each}}
+  </ul>
+</div>

@@ -147,6 +147,23 @@ test("espacio de puesto: los iconos decorativos de acciones y estados no contami
   }
 });
 
+test("cantina: las puertas son botones nativos con nombre propio y lista etiquetada (#423)", () => {
+  const template = read("templates/cantina.hbs");
+  // Botón nativo, no un <div> con manejador: es lo que hace que Enter y
+  // Espacio abran la mesa sin escribir una sola línea de teclado a mano.
+  assert.match(template, /<button type="button" class="lagunak-cantina-puerta" data-puerta=/);
+  // El icono es adorno; el nombre accesible lo pone el <span> con el título.
+  for (const icon of template.matchAll(/<i class="\{\{this\.icono\}\}"[^>]*>/g)) {
+    assert.match(icon[0], /aria-hidden="true"/);
+  }
+  assert.match(template, /<ul class="lagunak-cantina-puertas" aria-label=/);
+});
+
+test("cantina: el foco de sus puertas se ve, como en el resto de controles propios", () => {
+  const css = read("styles/lagunak.css");
+  assert.ok(css.includes(".lagunak-cantina-puerta:focus-visible"));
+});
+
 test("los colores de texto de consola cumplen contraste AA sobre sus fondos", () => {
   const css = read("styles/lagunak-consola.css");
   const token = (name) => {
@@ -195,13 +212,14 @@ function controlesInteractivos(html) {
   return controles;
 }
 
-test("ninguna de las cinco superficies fija tabindex: el orden del DOM es el orden de teclado", () => {
+test("ninguna de las seis superficies fija tabindex: el orden del DOM es el orden de teclado", () => {
   for (const archivo of [
     "templates/estado-nave.hbs",
     "templates/mapa-vivo.hbs",
     "templates/puestos-tripulacion.hbs",
     "templates/token-puente.hbs",
     "templates/espacio-puesto.hbs",
+    "templates/cantina.hbs",
   ]) {
     const controles = controlesInteractivos(read(archivo));
     for (const control of controles) {

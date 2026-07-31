@@ -57,6 +57,9 @@ import {
   recordarVista,
   vistaRecordada,
 } from "./minijuegos/mesa-poker-app.mjs";
+import { sesionAgotada } from "./minijuegos/sesion-motor.mjs";
+import { crearClaseCantinaV1, crearClaseCantinaV2 } from "./cantina-app.mjs";
+import { puertaPorId } from "./cantina.mjs";
 import { registrarPreset as registrarPresetBaraja } from "./minijuegos/baraja-preset.mjs";
 import { registrarAjusteAlerta, registrarEscuchaAlerta } from "./alerta-escena.mjs";
 import { AJUSTE_TELEMETRIA } from "./telemetria-difusion.mjs";
@@ -337,7 +340,17 @@ function claseMesa() {
     : crearClaseMesaV1(inyeccion);
 }
 
-function abrirMesaMinijuegos() {
+function abrirMesaMinijuegos(idPuerta = "poker") {
+  // La puerta manda, y una que no esté en el catálogo no abre nada. Caer al
+  // póker "por si acaso" sería peor que no hacer nada: abriría una mesa que
+  // nadie ha pedido, y taparía justo el error que hay que ver — una puerta
+  // añadida al catálogo sin su mesa detrás.
+  const puerta = puertaPorId(idPuerta);
+  if (!puerta) {
+    console.warn(`${MODULE_ID} | puerta de cantina desconocida: ${idPuerta}`);
+    return;
+  }
+
   // Si aún no ha llegado ninguna vista dirigida, se arranca con el estado
   // público, que es un ajuste de mundo y lo lee cualquiera. Sin acciones: los
   // botones los concede el coordinador, y llegarán con la primera vista.
@@ -348,13 +361,33 @@ function abrirMesaMinijuegos() {
   // Abrir la mesa y sentarse son cosas distintas: esto solo pone la mesa (si
   // hace falta y si se puede) y enseña la ventana. Sentarse es una acción más,
   // con su botón, porque el GM puede querer repartir sin jugar.
-  if (game.user?.isGM && !estadoPublicoVigente()) abrirMesa({ nombreJuego: "poker" });
+  // Una mesa TERMINADA cuenta como no haber mesa. Antes bastaba con que
+  // existiera un estado publicado para no crear ninguna, y la mano cerrada de
+  // la sesión anterior se quedaba ahí para siempre: sin acciones que ofrecer
+  // (`accionesPermitidas` devuelve [] en "terminada") y sin forma de arrancar
+  // otra. Se entraba a una mesa muerta y no había salida. Con la cantina como
+  // puerta única eso pasó de molesto a callejón sin salida.
+  if (game.user?.isGM && sesionAgotada(estadoPublicoVigente())) {
+    abrirMesa({ nombreJuego: puerta.juego });
+  }
   // Instancia nueva en cada apertura tras un cierre: una ApplicationV2 cerrada
   // no se reutiliza —renderizarla otra vez falla— y la ruta v11 se descarta
   // igual para que las dos tengan el mismo contrato.
   if (!mesaApp) mesaApp = new (claseMesa())();
   if (foundry.applications?.api?.ApplicationV2) mesaApp.render({ force: true });
   else mesaApp.render(true);
+}
+
+/* Cantina (#423): la puerta única de la barra a las mesas sociales. Una
+ * ventana nueva por apertura, igual que la mesa — no hay estado que
+ * conservar entre una visita y la siguiente. */
+function abrirCantina() {
+  const Clase = foundry.applications?.api?.ApplicationV2
+    ? crearClaseCantinaV2({ alSeleccionar: abrirMesaMinijuegos })
+    : crearClaseCantinaV1({ alSeleccionar: abrirMesaMinijuegos });
+  const app = new Clase();
+  if (foundry.applications?.api?.ApplicationV2) app.render({ force: true });
+  else app.render(true);
 }
 
 /* Música de a bordo (#347): el GM manda, todos los clientes obedecen.
@@ -541,15 +574,18 @@ Hooks.on("getSceneControlButtons", (controls) => {
   const tools = [
     ...gmTools,
     {
-      // La mesa la ven todos: es la capa social, y un minijuego al que solo
-      // pudiera entrar el GM no sería un minijuego. El GM además la CREA si no
-      // hay ninguna abierta; a un jugador el botón le enseña la mesa puesta, o
-      // el aviso de que todavía no hay ninguna.
-      name: "lagunak-mesa",
-      title: "LAGUNAK.Controles.AbrirMesa",
-      icon: "fa-solid fa-diamond",
+      // La cantina la ve todo el mundo: es la capa social, y un minijuego al
+      // que solo pudiera entrar el GM no sería un minijuego (#423). Sustituye
+      // al botón de mesa suelto por una única puerta; de ahí para dentro
+      // decide el catálogo de `cantina.mjs`, no un botón nuevo por mesa. El GM
+      // sigue siendo quien CREA la mesa elegida si no hay ninguna abierta; a
+      // un jugador la puerta le lleva a la mesa puesta, o al aviso de que
+      // todavía no hay ninguna.
+      name: "lagunak-cantina",
+      title: "LAGUNAK.Controles.AbrirCantina",
+      icon: "fa-solid fa-mug-saucer",
       button: true,
-      onClick: () => abrirMesaMinijuegos(),
+      onClick: () => abrirCantina(),
     },
     {
       name: "lagunak-musica-audio",

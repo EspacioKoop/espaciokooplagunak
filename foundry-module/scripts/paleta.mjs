@@ -106,6 +106,16 @@ export const CANTINA = Object.freeze({
   lampara: "#ffd79a", // cálida, la única fuente de calor del local
   ventana: "#0a0f1f", // el vacío al otro lado del cristal
   neon: "#4ad9c4", // el rótulo: verde azulado de tubo, ajeno a la madera
+  // Lo que llena el local. Sin esto la sala es correcta y está vacía, que es
+  // justo lo que no puede ser una cantina.
+  nervio: "#3a424e", // costillas del mamparo: rompen la pared plana
+  estante: "#4a3320", // la trasera de la barra, madera en sombra
+  botellaVerde: "#2f7d5a", // botellería. Tres tonos, porque una fila de
+  botellaAmbar: "#c98a3a", // botellas del mismo color es un peine, no una
+  botellaAzul: "#41689e", // barra surtida.
+  taburete: "#6b7280", // metal de nave, frío contra la madera
+  mesa: "#5c4630", // las mesas del fondo: la misma madera, más apagada
+  techo: "#232830", // más oscuro que el mamparo: cierra la sala por arriba
 });
 
 /**

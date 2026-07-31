@@ -27,6 +27,7 @@
 
 import { CANTINA } from "./paleta.mjs";
 import { componerEscena } from "./retro3d.mjs";
+import { campoEstelar, proyectarEstrellas } from "./retro3d-estrellas.mjs";
 
 /**
  * Caja alineada a los ejes, dada por su centro y sus medidas. Es la única
@@ -69,26 +70,111 @@ export function caja([cx, cy, cz], [ancho, alto, fondo]) {
  * Las medidas están en las mismas unidades que usa el motor para los cascos: la
  * cámara se coloca fuera, en `componerCantina`, y no hay ninguna escala oculta.
  */
+/** Fila de piezas iguales repartidas por un eje. La botellería, las costillas
+ * del mamparo y los taburetes son lo mismo repetido, y escribir doce cajas a
+ * mano invita a que la trece salga descuadrada. */
+function fila(cuantas, hacer) {
+  return Array.from({ length: cuantas }, (_, i) => Object.freeze(hacer(i)));
+}
+
+/** Los tres tonos de botella, alternados. Una fila del mismo color es un peine
+ * y no una barra surtida; tres tonos bastan para que parezca contada. */
+const TONOS_BOTELLA = [CANTINA.botellaVerde, CANTINA.botellaAmbar, CANTINA.botellaAzul];
+
+/**
+ * Los muebles del local, con su material. El orden de la lista no importa —lo
+ * decide después la profundidad— pero se escribe de fuera hacia dentro porque
+ * así se lee como una descripción de la sala y no como una lista de cajas.
+ *
+ * Las medidas están en las mismas unidades que usa el motor para los cascos: la
+ * cámara se coloca fuera, en `componerCantina`, y no hay ninguna escala oculta.
+ *
+ * NO HAY CAJA DE VENTANA. El hueco del mamparo se deja VACÍO a propósito: por
+ * ahí se ven las estrellas, que las pinta el mismo campo estelar de #384 que usa
+ * el resto del 3D. Taparlo con una caja azul oscuro era más fácil y convertía el
+ * vacío en un cartón pintado.
+ */
 export const MUEBLES = Object.freeze([
-  // El vacío al otro lado, lo más lejano de la sala: es lo que se ve por el hueco del
-  // mamparo, y va primero para que nada dependa de que se pinte antes.
-  Object.freeze({ nombre: "ventana", color: CANTINA.ventana, centro: [0, 0.6, 7.4], medidas: [7, 2.6, 0.2] }),
-  Object.freeze({ nombre: "mamparoIzq", color: CANTINA.mamparo, centro: [-4.2, 0.4, 6.6], medidas: [2.6, 4.4, 0.6] }),
-  Object.freeze({ nombre: "mamparoDer", color: CANTINA.mamparo, centro: [4.2, 0.4, 6.6], medidas: [2.6, 4.4, 0.6] }),
-  Object.freeze({ nombre: "dintel", color: CANTINA.mamparo, centro: [0, 2.3, 6.6], medidas: [6, 0.8, 0.6] }),
+  // --- La caja de la sala ---------------------------------------------------
   Object.freeze({ nombre: "suelo", color: CANTINA.suelo, centro: [0, -1.9, 4], medidas: [12, 0.3, 10] }),
-  // La barra: cuerpo cálido y un canto más claro encima. Dos cajas y no una
-  // porque el canto es lo que recoge la luz de la lámpara, y con un solo color
-  // la barra se lee como un bloque de madera sin volumen.
-  Object.freeze({ nombre: "barra", color: CANTINA.barra, centro: [0, -1.1, 3.2], medidas: [7.5, 1.3, 1.6] }),
-  Object.freeze({ nombre: "barraCanto", color: CANTINA.barraCanto, centro: [0, -0.4, 3.2], medidas: [7.9, 0.2, 1.9] }),
-  // La lámpara cuelga por delante y ARRIBA del encuadre: casi no se ve entera,
-  // y es la intención. Lo que importa es que exista una fuente de calor en la
-  // parte alta de la sala, no mirarla de frente.
-  Object.freeze({ nombre: "lampara", color: CANTINA.lampara, centro: [0, 2.1, 2.2], medidas: [2.2, 0.25, 0.9] }),
-  // El rótulo de neón, en el mamparo del fondo y descentrado: un local con el
-  // cartel centrado parece un decorado, y este tiene que parecer usado.
-  Object.freeze({ nombre: "neon", color: CANTINA.neon, centro: [-2.6, 1.5, 6.2], medidas: [1.6, 0.3, 0.15] }),
+  Object.freeze({ nombre: "techo", color: CANTINA.techo, centro: [0, 2.9, 4], medidas: [12, 0.3, 10] }),
+  Object.freeze({ nombre: "paredIzq", color: CANTINA.mamparo, centro: [-5.2, 0.5, 4], medidas: [0.4, 5, 10] }),
+  Object.freeze({ nombre: "paredDer", color: CANTINA.mamparo, centro: [5.2, 0.5, 4], medidas: [0.4, 5, 10] }),
+
+  // --- El fondo, con el hueco del ventanal ---------------------------------
+  Object.freeze({ nombre: "mamparoIzq", color: CANTINA.mamparo, centro: [-3.9, 0.4, 6.8], medidas: [2.8, 4.4, 0.6] }),
+  Object.freeze({ nombre: "mamparoDer", color: CANTINA.mamparo, centro: [3.9, 0.4, 6.8], medidas: [2.8, 4.4, 0.6] }),
+  Object.freeze({ nombre: "dintel", color: CANTINA.mamparo, centro: [0, 2.2, 6.8], medidas: [5.2, 1, 0.6] }),
+  Object.freeze({ nombre: "antepecho", color: CANTINA.mamparo, centro: [0, -1.1, 6.8], medidas: [5.2, 1.4, 0.6] }),
+
+  // --- Costillas: lo que hace que una pared plana parezca una nave ---------
+  ...fila(4, (i) => ({
+    nombre: `nervioIzq${i}`,
+    color: CANTINA.nervio,
+    centro: [-4.95, 0.5, 1.2 + i * 1.5],
+    medidas: [0.25, 4.6, 0.35],
+  })),
+  ...fila(4, (i) => ({
+    nombre: `nervioDer${i}`,
+    color: CANTINA.nervio,
+    centro: [4.95, 0.5, 1.2 + i * 1.5],
+    medidas: [0.25, 4.6, 0.35],
+  })),
+
+  // --- La barra y su trastienda --------------------------------------------
+  // Cuerpo cálido y un canto más claro encima. Dos cajas y no una porque el
+  // canto es lo que recoge la luz de la lámpara, y con un solo color la barra se
+  // lee como un bloque de madera sin volumen.
+  Object.freeze({ nombre: "barra", color: CANTINA.barra, centro: [0, -1.1, 3.4], medidas: [7.5, 1.3, 1.6] }),
+  Object.freeze({ nombre: "barraCanto", color: CANTINA.barraCanto, centro: [0, -0.4, 3.4], medidas: [7.9, 0.2, 1.9] }),
+  // La estantería del fondo y su botellería: es lo que dice que aquí se sirve
+  // algo. Sin ella, la barra es un mostrador de recepción.
+  Object.freeze({ nombre: "estante", color: CANTINA.estante, centro: [0, 0.1, 6.1], medidas: [5.4, 0.18, 0.7] }),
+  Object.freeze({ nombre: "estanteAlto", color: CANTINA.estante, centro: [0, 1.1, 6.1], medidas: [5.4, 0.18, 0.7] }),
+  ...fila(9, (i) => ({
+    nombre: `botellaBaja${i}`,
+    color: TONOS_BOTELLA[i % TONOS_BOTELLA.length],
+    centro: [-2.2 + i * 0.55, 0.45, 6.1],
+    medidas: [0.22, 0.6, 0.22],
+  })),
+  ...fila(9, (i) => ({
+    nombre: `botellaAlta${i}`,
+    // Desfasadas respecto a la fila de abajo: dos filas alineadas se leen como
+    // una rejilla, y una estantería de verdad nunca lo está.
+    color: TONOS_BOTELLA[(i + 2) % TONOS_BOTELLA.length],
+    centro: [-2.05 + i * 0.55, 1.45, 6.1],
+    medidas: [0.22, 0.6, 0.22],
+  })),
+
+  // --- Quien se sienta ------------------------------------------------------
+  // Taburetes de metal frente a la barra: frío contra la madera, y dan la
+  // escala de la sala mejor que ningún otro mueble.
+  ...fila(4, (i) => ({
+    nombre: `taburete${i}`,
+    color: CANTINA.taburete,
+    centro: [-2.4 + i * 1.6, -1.45, 2.1],
+    medidas: [0.5, 0.9, 0.5],
+  })),
+  // Dos mesas al fondo, descentradas: el local sigue existiendo lejos de la
+  // barra, que es lo que separa una cantina de un mostrador.
+  Object.freeze({ nombre: "mesaIzq", color: CANTINA.mesa, centro: [-3.4, -1.2, 5.2], medidas: [1.6, 0.2, 1.6] }),
+  Object.freeze({ nombre: "mesaIzqPie", color: CANTINA.mesa, centro: [-3.4, -1.6, 5.2], medidas: [0.3, 0.7, 0.3] }),
+  Object.freeze({ nombre: "mesaDer", color: CANTINA.mesa, centro: [3.4, -1.2, 5.2], medidas: [1.6, 0.2, 1.6] }),
+  Object.freeze({ nombre: "mesaDerPie", color: CANTINA.mesa, centro: [3.4, -1.6, 5.2], medidas: [0.3, 0.7, 0.3] }),
+
+  // --- La luz ---------------------------------------------------------------
+  // Las lámparas cuelgan por delante y ARRIBA del encuadre: casi no se ven
+  // enteras, y es la intención. Importa que haya calor en la parte alta de la
+  // sala, no mirarlas de frente.
+  ...fila(3, (i) => ({
+    nombre: `lampara${i}`,
+    color: CANTINA.lampara,
+    centro: [-2.6 + i * 2.6, 2.35, 2.4 + (i % 2) * 1.4],
+    medidas: [1.4, 0.22, 0.7],
+  })),
+  // El rótulo de neón, descentrado: un local con el cartel centrado parece un
+  // decorado, y este tiene que parecer usado.
+  Object.freeze({ nombre: "neon", color: CANTINA.neon, centro: [-3.6, 1.6, 6.45], medidas: [1.8, 0.3, 0.15] }),
 ]);
 
 /**
@@ -128,7 +214,17 @@ function asomo(valor, limite) {
  *   forma que devuelve `componerEscena`, para que el pintor no distinga.
  */
 export function componerCantina(opciones = {}) {
-  const { ancho = 320, alto = 180, epoca, fondo = CANTINA.ventana, mirada = {} } = opciones;
+  const {
+    ancho = 320,
+    alto = 180,
+    epoca,
+    fondo = CANTINA.ventana,
+    mirada = {},
+    // El cielo se siembra: la misma semilla da siempre la misma ventana, y dos
+    // personas de la misma mesa ven el mismo vacío.
+    semillaCielo = 20260731,
+  } = opciones;
+  const cielo = campoEstelar(semillaCielo, { cantidad: 90 });
 
   const desvioX = asomo(mirada.x, 1) * ASOMO.lado;
   const desvioY = asomo(mirada.y, 1) * ASOMO.alto;
@@ -159,5 +255,23 @@ export function componerCantina(opciones = {}) {
     .flatMap((parte) => parte.poligonos)
     .sort((a, b) => b.profundidad - a.profundidad);
 
-  return { ancho, alto, epoca: partes[0]?.epoca, poligonos };
+  // Lo que se ve por el hueco del mamparo. El pintor dibuja las estrellas ANTES
+  // que los polígonos, así que el propio mamparo las recorta: no hace falta
+  // recortarlas a mano contra el hueco, y por eso el ventanal no lleva cristal.
+  //
+  // Hacia dónde va esto (#427): por esa ventana debería verse el MAPA VIVO —los
+  // contactos que la nave tiene delante— y no un cielo cualquiera. La forma ya
+  // está preparada para ello: la escena devuelve `estrellas` y quien pinta no
+  // pregunta de dónde salen, así que sustituir el campo por la lectura del
+  // puente no toca ni la sala ni el pintor.
+  const estrellas = proyectarEstrellas(cielo, {
+    ancho,
+    alto,
+    epoca,
+    yaw,
+    // Sin paralaje propio: están infinitamente lejos, que es lo que las hace
+    // leerse como cielo y no como confeti pegado al cristal.
+  });
+
+  return { ancho, alto, epoca: partes[0]?.epoca, poligonos, estrellas };
 }

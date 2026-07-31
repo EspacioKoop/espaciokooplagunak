@@ -112,3 +112,30 @@ test("entrada rota no propaga números rotos a la escena", () => {
     }
   }
 });
+
+// El ventanal (#423, camino a #427): por el hueco del mamparo se ve el vacío.
+test("hay cielo por la ventana, sembrado y estable", () => {
+  const a = componerCantina({ semillaCielo: 7 });
+  const b = componerCantina({ semillaCielo: 7 });
+  assert.ok(a.estrellas.length > 0, "no se ve nada por el ventanal");
+  assert.deepEqual(a.estrellas, b.estrellas, "la misma semilla debe dar el mismo cielo");
+  assert.notDeepEqual(componerCantina({ semillaCielo: 8 }).estrellas, a.estrellas);
+});
+
+test("no hay caja de ventana: el hueco lo tapa el mamparo, no un cartón", () => {
+  // Si alguien vuelve a meter un panel en el hueco, las estrellas dejan de
+  // verse y la sala parece tener una pared azul en vez de un vacío detrás.
+  assert.equal(MUEBLES.some((mueble) => mueble.nombre === "ventana"), false);
+});
+
+test("la sala está amueblada, no solo construida", () => {
+  // La primera versión era correcta y estaba vacía. Botellas, taburetes y
+  // costillas son lo que la hace un local en vez de una caja.
+  const nombres = MUEBLES.map((mueble) => mueble.nombre);
+  for (const prefijo of ["botella", "taburete", "nervio", "mesa", "lampara"]) {
+    assert.ok(
+      nombres.some((nombre) => nombre.startsWith(prefijo)),
+      `la sala se ha quedado sin ${prefijo}`,
+    );
+  }
+});

@@ -28,6 +28,7 @@
 import { CANTINA } from "./paleta.mjs";
 import { componerEscena } from "./retro3d.mjs";
 import { campoEstelar, proyectarEstrellas } from "./retro3d-estrellas.mjs";
+import { cuerpoMayor, cuerposPorLaVentana } from "./cantina-ventana.mjs";
 
 /**
  * Caja alineada a los ejes, dada por su centro y sus medidas. Es la única
@@ -375,6 +376,10 @@ export function componerCantina(opciones = {}) {
     epoca,
     fondo = CANTINA.ventana,
     camara,
+    // Lo que la nave tiene delante de verdad (`{ contactos, rumbo, centro }`,
+    // tal como los tiene el mapa vivo). Sin esto la ventana enseña solo cielo,
+    // que es lo que hay cuando el puente no responde.
+    espacio = null,
     // El cielo se siembra: la misma semilla da siempre la misma ventana, y dos
     // personas de la misma mesa ven el mismo vacío.
     semillaCielo = 20260731,
@@ -441,5 +446,18 @@ export function componerCantina(opciones = {}) {
     // leerse como cielo y no como confeti pegado al cristal.
   });
 
-  return { ancho, alto, epoca: partes[0]?.epoca, poligonos, estrellas };
+  // Por el ojo de buey se ve EL ESPACIO QUE TENEMOS, y en este orden: primero
+  // el cuerpo mayor —que es lo que da escala al vacío—, luego el cielo, y encima
+  // los contactos, que son lo único que se mueve y lo que hay que poder ver.
+  //
+  // Todo entra en la MISMA lista que las estrellas a propósito: el pintor las
+  // dibuja antes que los polígonos, así que el mamparo las recorta solo y el
+  // ojo de buey no necesita ni cristal ni máscara.
+  const fuera = [
+    ...cuerpoMayor({ ancho, alto }),
+    ...estrellas,
+    ...cuerposPorLaVentana(espacio ?? {}, { ancho, alto }),
+  ];
+
+  return { ancho, alto, epoca: partes[0]?.epoca, poligonos, estrellas: fuera };
 }

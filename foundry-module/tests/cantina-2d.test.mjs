@@ -109,8 +109,8 @@ test("el humo se queda en el tercio central, que es donde se posa el aire", () =
   const ctx = ctxFalso();
   pintarHumo(ctx, { ...MEDIDAS, ms: 1500 });
   for (const rect of ctx.rects) {
-    assert.ok(rect.y >= MEDIDAS.alto * 0.3, `veta demasiado alta: ${rect.y}`);
-    assert.ok(rect.y <= MEDIDAS.alto * 0.7, `veta demasiado baja: ${rect.y}`);
+    assert.ok(rect.y >= MEDIDAS.alto * 0.28, `veta demasiado alta: ${rect.y}`);
+    assert.ok(rect.y <= MEDIDAS.alto * 0.76, `veta demasiado baja: ${rect.y}`);
   }
 });
 

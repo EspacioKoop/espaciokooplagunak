@@ -165,3 +165,23 @@ test("el goblin sirve al fondo, no delante de la barra", () => {
     assert.ok(mueble.centro[2] > 4.5, `el goblin se ha venido al frente: z=${mueble.centro[2]}`);
   }
 });
+
+// La sala tiene que estar CERRADA (#423): girarse no puede ser asomarse al vacío.
+test("hay pared de entrada a la espalda de quien llega", () => {
+  const nombres = MUEBLES.map((mueble) => mueble.nombre);
+  assert.ok(nombres.some((nombre) => nombre.startsWith("paredEntrada")), "falta la pared de entrada");
+  assert.ok(nombres.includes("vanoEntrada"), "falta el vano por el que se entra");
+  // Y va DETRÁS del punto de partida: si estuviera delante, taparía la barra.
+  for (const mueble of MUEBLES.filter((m) => m.nombre.startsWith("paredEntrada"))) {
+    assert.ok(mueble.centro[2] < PASEO.minZ, `la entrada se ha colado en la sala: z=${mueble.centro[2]}`);
+  }
+});
+
+test("mires hacia donde mires desde el centro, hay sala", () => {
+  // Cuatro rumbos cardinales: en ninguno puede salir un cuadro vacío, que es lo
+  // que pasaba al darse la vuelta cuando la sala no tenía cuarta pared.
+  for (const yaw of [0, Math.PI / 2, Math.PI, -Math.PI / 2]) {
+    const escena = componerCantina({ camara: { x: 0, z: 0, yaw } });
+    assert.ok(escena.poligonos.length > 0, `mirando a ${yaw.toFixed(2)} no se ve nada`);
+  }
+});

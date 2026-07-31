@@ -133,6 +133,31 @@ export const MUEBLES = Object.freeze([
     medidas: [0.4, 5, 1.6],
   })),
 
+  // --- La entrada, a la espalda de quien llega -----------------------------
+  //
+  // Sin esto, girarse era asomarse al vacío: la sala se construyó para verse
+  // desde la puerta y no tenía puerta. Ahora al darte la vuelta ves de dónde
+  // vienes, que es lo que cierra un sitio — un local con una pared que no
+  // existe no es acogedor, es un decorado visto por detrás.
+  ...fila(4, (i) => ({
+    nombre: `paredEntrada${i}`,
+    color: CANTINA.mamparo,
+    // Dos tramos a cada lado del hueco de la puerta, que queda en el centro.
+    centro: [i < 2 ? -3.6 + i * 1.4 : 2.2 + (i - 2) * 1.4, 0.5, -2.6],
+    medidas: [1.3, 5, 0.5],
+  })),
+  Object.freeze({ nombre: "dintelEntrada", color: CANTINA.mamparo, centro: [0, 2.3, -2.6], medidas: [3.2, 1.4, 0.5] }),
+  // El vano de la puerta, iluminado desde el pasillo: es lo que dice «por aquí
+  // se sale» sin un cartel, y da una segunda fuente de luz al fondo opuesto.
+  Object.freeze({ nombre: "vanoEntrada", color: CANTINA.lampara, centro: [0, -0.1, -2.75], medidas: [3.0, 3.4, 0.12] }),
+  // Costillas de la pared de entrada, para que no sea una plancha lisa.
+  ...fila(2, (i) => ({
+    nombre: `nervioEntrada${i}`,
+    color: CANTINA.nervio,
+    centro: [i === 0 ? -1.7 : 1.7, 0.5, -2.35],
+    medidas: [0.25, 4.6, 0.3],
+  })),
+
   // --- El fondo, con el hueco del ventanal ---------------------------------
   // EL VENTANAL MANDA. Es lo único que dice que esto vuela, así que se lleva el
   // centro del encuadre y todo lo demás se aparta: la primera versión lo tenía

@@ -215,6 +215,15 @@ jobs:
           ref: master
       - name: Create Build Environment
         run: cmake -E make_directory ${{github.workspace}}/build
+      - name: Discord game SDK cache
+        # Mismo hueco que en Windows (Cross-Compile, #400): sin esto, cada
+        # ejecución de este job depende de dl-game-sdk.discordapp.net (#410).
+        # Este job configura desde build/, así que externals/ cae ahí y no en
+        # _build_win32 como en el cross-compile.
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: build/externals/discord
+          key: discord-game-sdk-win32-3.2.1
       - name: Configure CMake
         working-directory: ${{github.workspace}}/build
         run: >

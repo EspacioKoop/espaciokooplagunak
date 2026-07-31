@@ -11,9 +11,10 @@ import {
   difundirTelemetria,
   esMasReciente,
 } from "./telemetria-difusion.mjs";
-import { pintarNave } from "./retro3d-lienzo.mjs";
+import { pintarEscena, pintarNave } from "./retro3d-lienzo.mjs";
 import { desmontarLamina, montarLaminaContacto } from "./lamina-contacto.mjs";
 import { CASCO_POR_DEFECTO, mallaDesdeCasco } from "./retro3d.mjs";
+import { componerCascoPorDano } from "./casco-dano.mjs";
 import { PIXEL } from "./paleta.mjs";
 
 let configuredModuleId = null;
@@ -267,14 +268,17 @@ function pintarCascoPropio(root, modelo) {
   if (!lienzo) return null;
   const rumbo = modelo?.cascoRumbo;
   const hayLectura = Number.isFinite(rumbo);
-  return pintarNave(lienzo, {
+  const opciones = {
     malla: MALLA_PROPIA,
     // La nave propia lleva el crema reservado del mapa vivo: es la misma nave y
     // se toma de la paleta, no se elige aquí.
     color: hayLectura ? PIXEL.naveJugador : PIXEL.sinFaccion,
     // Rumbo del mundo a giro del visor. Sin lectura, morro al frente y quieta.
     yaw: hayLectura ? (rumbo * Math.PI) / 180 : 0,
-    pitch: 0.42,
+    // Ingeniería mira la cubierta superior: ahí están lomo y alas, las regiones
+    // que separan reactor, armas y maniobra. Los demás puestos conservan la
+    // perspectiva inferior que ya usaban antes de #419.
+    pitch: modelo?.station === "engineering" ? -0.42 : 0.42,
     posicion: [0, 0, 4.4],
     fov: 55,
     // Cielo fijo (#384): la semilla es constante a propósito. El puente es
@@ -282,7 +286,24 @@ function pintarCascoPropio(root, modelo) {
     // vuelva a abrir la consola; una semilla variable haría parpadear el
     // universo entero en cada render.
     cielo: { semilla: SEMILLA_CIELO_PUENTE },
-  });
+  };
+  const escena = pintarNave(lienzo, opciones);
+
+  // Solo ingeniería colorea el casco por región (#419). Las demás consolas
+  // conservan la nave propia crema/gris, y la matriz textual de sistemas sigue
+  // siendo el canal informativo y accesible. `pintarNave` prepara también el
+  // cielo estable; sustituimos únicamente sus polígonos y pintamos el conjunto
+  // una vez más para conservar ese cielo sin duplicar el motor 3D.
+  if (escena && modelo?.station === "engineering") {
+    const regional = componerCascoPorDano(MALLA_PROPIA, modelo.systems, {
+      ...opciones,
+      ancho: lienzo.width,
+      alto: lienzo.height,
+    });
+    escena.poligonos = regional.poligonos;
+    pintarEscena(lienzo.getContext?.("2d"), escena);
+  }
+  return escena;
 }
 
 // Lámina del objetivo de atraque (#391, rebanada 6 de #362).

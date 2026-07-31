@@ -43,6 +43,7 @@ const MODULOS_DE_ARTE = [
   // hueso del cuerpo y la tinta de los puntos entran desde `PIXEL`, para que se
   // decidan al lado del resto del arte y no en un módulo de minijuego.
   "../scripts/minijuegos/dados-3d.mjs",
+  "../scripts/minijuegos/dados-lienzo.mjs",
 ];
 
 test("los colores no cambian al mudarse: mismo valor que antes en cada módulo", () => {

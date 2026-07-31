@@ -30,6 +30,15 @@ export const PUERTAS = Object.freeze([
     // malla: el catálogo dice a qué se juega, no cómo se dibuja.
     objeto: "poker",
   }),
+  // El segundo vertical (#413). Nació con su propio botón de escena y aquí
+  // pierde el botón, no la independencia: sigue siendo otro juego con su motor,
+  // su ventana y sus NPC, y la cantina no sabe nada de sus reglas.
+  Object.freeze({
+    id: "dados",
+    juego: "dados",
+    tituloClave: "LAGUNAK.Cantina.Puerta.Dados",
+    icono: "fa-solid fa-dice",
+  }),
 ]);
 
 /** Catálogo completo, en orden estable. */

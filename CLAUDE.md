@@ -171,12 +171,15 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     `sesion-motor.mjs` es COMÚN a todos —identidad, época, nonces, lobby, espectadores, ausencias—
     y aloja cada juego por su interfaz interna; los verticales son hermanos suyos y no ramas dentro
     de él: `poker-motor.mjs` (#308) y `dados-motor.mjs` (#413, con su dado en 3D retro legible en
-    `dados-3d.mjs`, que reusa `retro3d.mjs` sin tocarlo). Un juego nuevo aporta reglas y arte, nada
-    más. La sesión viva del coordinador no se persiste en ningún sitio: vive en memoria del GM.
+    `dados-3d.mjs`, que reusa `retro3d.mjs` sin tocarlo). El cableado los tiene en un CATÁLOGO POR
+    NOMBRE y resuelve el vertical por el que declara la mesa en su estado público: con una variable
+    única, dos mesas de juegos distintos se despacharían contra el motor equivocado. Un juego nuevo
+    aporta motor, política de sus NPC, configuración de mesa (si necesita) y ventana — nada más.
+    La sesión viva del coordinador no se persiste en ningún sitio: vive en memoria del GM.
     La entrada única es la **cantina** (`scripts/cantina.mjs`, catálogo puro de "puertas";
-    `scripts/cantina-app.mjs`, la ventana V1/V2, #423): sustituye al botón de mesa suelto en los
-    controles de escena, y una mesa nueva se añade como una entrada más del catálogo, no como un
-    botón nuevo en `main.mjs`. La cantina solo pinta y traduce un clic en "abre esa mesa" — la
+    `scripts/cantina-app.mjs`, la ventana V1/V2, #423): sustituye a los botones de mesa sueltos en
+    los controles de escena, y una mesa nueva se añade como una entrada más del catálogo, no como
+    un botón nuevo en `main.mjs`. La cantina solo pinta y traduce un clic en "abre esa mesa" — la
     autoridad la sigue resolviendo cada mesa por su cuenta al abrirse, nunca la ventana que lleva
     hasta ella.
   - **Asistencia entre puestos** — `scripts/asistencia/` (#309, diseño en

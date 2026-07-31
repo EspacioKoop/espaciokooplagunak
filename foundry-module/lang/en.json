@@ -405,6 +405,7 @@
   "LAGUNAK.Cantina.Puerta.Poker": "Poker table",
   "LAGUNAK.Cantina.Puerta.Dados": "Dice table",
   "LAGUNAK.Minijuegos.Mesa.Titulo": "Poker table",
+  "LAGUNAK.Minijuegos.Mesa.VistaAlt": "The table seen in 3D: your cards and chips, the other players with their chips and face-down cards, and space in the background. All the exact detail is in the text below.",
   "LAGUNAK.Minijuegos.Mesa.SinMesa": "No table is open. The GM sets it up.",
   "LAGUNAK.Minijuegos.Mesa.Fase": "Table: {fase}",
   "LAGUNAK.Minijuegos.Mesa.Bote": "Pot: {fichas}",

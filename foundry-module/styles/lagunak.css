@@ -864,6 +864,18 @@
   outline-offset: 2px;
 }
 
+/* La mesa de póker en 3D. Misma disciplina que el resto: búfer pequeño de
+ * verdad, ampliado con `pixelated`. */
+.lagunak-mesa-3d {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-bottom: 0.6rem;
+  border: 3px solid #1b263b;
+  border-top-color: #ff2e88;
+  image-rendering: pixelated;
+}
+
 /* Las acciones del plano actual. Van justo debajo de la sala porque son de la
  * sala, no de la ventana: cambian en cada corte. */
 .lagunak-cantina-acciones {

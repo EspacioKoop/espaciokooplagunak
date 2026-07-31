@@ -18,8 +18,40 @@
  */
 
 import { MODULE_ID } from "../lagunak-constantes.mjs";
+import { PIXEL } from "../paleta.mjs";
 import { lineasResultado, mesaVista } from "./mesa-vista.mjs";
 import { PREFIJO_AUTOMATICO } from "./sesion-motor.mjs";
+import { componerMesa } from "./poker-3d.mjs";
+import { pintarEscena } from "../retro3d-lienzo.mjs";
+
+/**
+ * Pinta la mesa en 3D dentro de la raíz ya renderizada. Fuera de las dos clases
+ * hermanas a propósito: es cableado de DOM, no comportamiento de ventana, y
+ * duplicarlo aseguraría que un día el arreglo llegue a una sola de las dos.
+ *
+ * Sin lienzo no pasa nada: la mesa en texto es la verdad y sigue completa. El
+ * 3D es lo que hace que apostar se sienta apostar, no lo que dice qué hay.
+ */
+function pintarMesa3D(raiz, modelo) {
+  const lienzo = raiz?.querySelector?.(".lagunak-mesa-3d");
+  const ctx = lienzo?.getContext?.("2d");
+  if (!ctx || !modelo?.hayMesa) return false;
+  const escena = componerMesa(
+    {
+      comunitarias: Array.isArray(modelo.comunitarias) ? modelo.comunitarias.length : 0,
+      jugadores: (modelo.jugadores ?? []).map((jugador) => ({
+        fichas: jugador.stack,
+        // «Propio» es quien mira: sus cartas van boca arriba y no se le pinta
+        // busto, porque la cámara está donde está él.
+        propio: jugador.userId === game.user?.id,
+        enMano: jugador.estado !== "retirado" && !jugador.eliminado,
+      })),
+    },
+    { ancho: lienzo.width, alto: lienzo.height },
+  );
+  pintarEscena(ctx, escena, { fondo: PIXEL.dorsoFondo });
+  return true;
+}
 
 const PLANTILLA = `modules/${MODULE_ID}/templates/mesa-poker.hbs`;
 
@@ -156,6 +188,7 @@ export function crearClaseMesaV2({ proponer, alCerrar = () => {} }) {
       this.element?.querySelectorAll?.("[data-accion]")?.forEach((boton) => {
         boton.addEventListener("click", () => alPulsar(boton, this.element, proponer));
       });
+      pintarMesa3D(this.element, context);
     }
 
     // Una ApplicationV2 cerrada NO se reutiliza: hay que construir otra. Quien
@@ -191,6 +224,7 @@ export function crearClaseMesaV1({ proponer, alCerrar = () => {} }) {
       html.find("[data-accion]").on("click", (ev) => {
         alPulsar(ev.currentTarget, html[0], proponer);
       });
+      pintarMesa3D(html?.[0], contexto());
     }
 
     // La ruta v11 sí admitiría reutilizar la instancia, pero se descarta igual:

@@ -10,6 +10,14 @@
       <p class="lagunak-mesa-aviso" role="status">{{localize "LAGUNAK.Minijuegos.Mesa.ManoCancelada"}}</p>
     {{/if}}
 
+    {{!-- LA MESA, en 3D. Es la vista de juego: tus cartas y fichas, los rivales
+          con sus dorsos y sus pilas, y el espacio de fondo — se juega dentro de
+          una nave que vuela, y una mesa recortada sobre negro podría estar en
+          cualquier sótano. El detalle exacto (índices, palos, cifras) sigue
+          debajo en texto: el 3D acompaña, no sustituye. --}}
+    <canvas class="lagunak-mesa-3d" width="480" height="280"
+            role="img" aria-label="{{localize "LAGUNAK.Minijuegos.Mesa.VistaAlt"}}"></canvas>
+
     <div class="lagunak-mesa-tapete">
       <p class="lagunak-mesa-bote">
         {{boteTexto}}

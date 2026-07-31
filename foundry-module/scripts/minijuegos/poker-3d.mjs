@@ -21,6 +21,7 @@
 
 import { FICHA, PIXEL } from "../paleta.mjs";
 import { componerEscena } from "../retro3d.mjs";
+import { campoEstelar, proyectarEstrellas } from "../retro3d-estrellas.mjs";
 
 /**
  * Medidas de una carta tumbada. GRUESA A PROPÓSITO —"como un tazo"—: una carta
@@ -71,6 +72,14 @@ export function caja([cx, cy, cz], [ancho, alto, fondo]) {
     [0, 1, 5, 4],
   ];
   return { vertices, caras };
+}
+
+/** Mueve una malla sin tocar la original. */
+function mover(malla, [dx, dy, dz]) {
+  return {
+    vertices: malla.vertices.map(([x, y, z]) => [x + dx, y + dy, z + dz]),
+    caras: malla.caras,
+  };
 }
 
 /** Disco extruido: la ficha. */
@@ -131,7 +140,7 @@ export function plazas(cuantos) {
  *   hay boca arriba (0..5) y `jugadores` la lista con sus fichas.
  */
 export function componerMesa(mesa = {}, opciones = {}) {
-  const { ancho = 320, alto = 200, epoca, fondo = null } = opciones;
+  const { ancho = 320, alto = 200, epoca, fondo = null, semillaCielo = 20260731 } = opciones;
   const comunitarias = Math.max(0, Math.min(5, Math.trunc(mesa.comunitarias) || 0));
   const jugadores = Array.isArray(mesa.jugadores) ? mesa.jugadores.slice(0, 6) : [];
 
@@ -209,5 +218,15 @@ export function componerMesa(mesa = {}, opciones = {}) {
     .flatMap((parte) => parte.poligonos)
     .sort((a, b) => b.profundidad - a.profundidad);
 
-  return { ancho, alto, epoca: partes[0]?.epoca, poligonos };
+  // EL ESPACIO DE FONDO. Se juega dentro de una nave que está volando, y una
+  // mesa recortada sobre negro podría estar en cualquier sótano. El campo es el
+  // mismo de #384, sembrado: toda la mesa ve el mismo cielo.
+  const estrellas = proyectarEstrellas(campoEstelar(semillaCielo, { cantidad: 70 }), {
+    ancho,
+    alto,
+    epoca,
+    pitch: VISTA.pitch,
+  });
+
+  return { ancho, alto, epoca: partes[0]?.epoca, poligonos, estrellas };
 }

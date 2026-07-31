@@ -74,3 +74,31 @@ test("la mesa se compone en las dos épocas y aguanta entrada rota", () => {
     }
   }
 });
+
+// La vista de juego (#308): la mesa es donde se juega, y tiene que decir quién
+// está, cuánto le queda y que sus cartas están tapadas.
+test("los rivales traen dorso y busto; tú, cartas boca arriba y sin busto", () => {
+  // La cámara está donde estás tú: pintarte un busto sería pintarte la nuca.
+  const solo = componerMesa({ comunitarias: 0, jugadores: [{ fichas: 100, propio: true }] });
+  const conRival = componerMesa({
+    comunitarias: 0,
+    jugadores: [{ fichas: 100, propio: true }, { fichas: 100 }],
+  });
+  assert.ok(conRival.poligonos.length > solo.poligonos.length, "el rival no aporta nada al cuadro");
+});
+
+test("quien se ha retirado deja de tener cartas en la mesa", () => {
+  // Un dorso visible es la información de que ese jugador SIGUE en la mano.
+  const dentro = componerMesa({ comunitarias: 0, jugadores: [{ fichas: 50, enMano: true }] });
+  const fuera = componerMesa({ comunitarias: 0, jugadores: [{ fichas: 50, enMano: false }] });
+  assert.ok(fuera.poligonos.length < dentro.poligonos.length, "el retirado conserva sus cartas");
+});
+
+test("hay espacio de fondo, y es el mismo para toda la mesa", () => {
+  // Se juega dentro de una nave que vuela: una mesa recortada sobre negro
+  // podría estar en cualquier sótano.
+  const a = componerMesa({ comunitarias: 0, jugadores: [] }, { semillaCielo: 5 });
+  const b = componerMesa({ comunitarias: 0, jugadores: [] }, { semillaCielo: 5 });
+  assert.ok(a.estrellas.length > 0, "no se ve el espacio");
+  assert.deepEqual(a.estrellas, b.estrellas, "la misma semilla debe dar el mismo cielo");
+});

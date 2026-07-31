@@ -157,23 +157,28 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
   - **Arte procedural** — generado en el cliente, cero binarios en el repositorio. Los colores viven
     **solo** en `scripts/paleta.mjs`, con la frontera vivo/registrado y una prueba que falla si otro
     módulo de arte declara un color propio (#351). Grabado en `scripts/laminas-clasicas.mjs`;
-    pixelart en `scripts/nave-sprite.mjs` y `scripts/minijuegos/cartas-pixelart.mjs`; música
-    determinista por semilla en `scripts/musica-procedural.mjs`. El 3D de consola de los 90 vive en
-    `scripts/retro3d*.mjs` (#362): motor puro que devuelve polígonos, pintor de lienzo aparte, y la
-    **época** (PSX o GameCube) como parámetro —rejilla, tonos y niebla— y no como dos módulos. El
-    arte de ficha de naves
-    narrativas (`scripts/ficha-nave.mjs`, con el codificador PNG puro de
+    pixelart en `scripts/nave-sprite.mjs`, `scripts/minijuegos/cartas-pixelart.mjs` y
+    `scripts/minijuegos/fichas-pixelart.mjs` (volumen por planos de color, nunca degradados: el 3D
+    del casco es otro lenguaje); música determinista por semilla en
+    `scripts/musica-procedural.mjs`. El 3D de consola de los 90 vive en `scripts/retro3d*.mjs`
+    (#362): motor puro que devuelve polígonos, pintor de lienzo aparte, y la **época** (PSX o
+    GameCube) como parámetro —rejilla, tonos y niebla— y no como dos módulos. El arte de ficha de
+    naves narrativas (`scripts/ficha-nave.mjs`, con el codificador PNG puro de
     `scripts/png-indexado.mjs`) se genera **solo por clic del GM** y escribe el token prototipo:
     nunca sondea ni sincroniza posición, porque un documento persistente que espeje la simulación
     se queda mintiendo cuando cae el puente (#354).
-  - **Minijuegos** — `scripts/minijuegos/` (motor de póker, evaluador de manos, agente automático,
-    sesión) y su enganche en `scripts/minijuegos-wiring.mjs` (#308). La sesión viva del coordinador
-    no se persiste en ningún sitio: vive en memoria del GM. La entrada única es la **cantina**
-    (`scripts/cantina.mjs`, catálogo puro de "puertas"; `scripts/cantina-app.mjs`, la ventana V1/V2,
-    #423): sustituye al botón de mesa suelto en los controles de escena, y un minijuego nuevo se
-    añade como una entrada más del catálogo, no como un botón nuevo en `main.mjs`. La cantina solo
-    pinta y traduce un clic en "abre esa mesa" — la autoridad la sigue resolviendo cada mesa por su
-    cuenta al abrirse, nunca la ventana que lleva hasta ella.
+  - **Minijuegos** — `scripts/minijuegos/` y su enganche en `scripts/minijuegos-wiring.mjs` (#308).
+    `sesion-motor.mjs` es COMÚN a todos —identidad, época, nonces, lobby, espectadores, ausencias—
+    y aloja cada juego por su interfaz interna; los verticales son hermanos suyos y no ramas dentro
+    de él: `poker-motor.mjs` (#308) y `dados-motor.mjs` (#413, con su dado en 3D retro legible en
+    `dados-3d.mjs`, que reusa `retro3d.mjs` sin tocarlo). Un juego nuevo aporta reglas y arte, nada
+    más. La sesión viva del coordinador no se persiste en ningún sitio: vive en memoria del GM.
+    La entrada única es la **cantina** (`scripts/cantina.mjs`, catálogo puro de "puertas";
+    `scripts/cantina-app.mjs`, la ventana V1/V2, #423): sustituye al botón de mesa suelto en los
+    controles de escena, y una mesa nueva se añade como una entrada más del catálogo, no como un
+    botón nuevo en `main.mjs`. La cantina solo pinta y traduce un clic en "abre esa mesa" — la
+    autoridad la sigue resolviendo cada mesa por su cuenta al abrirse, nunca la ventana que lleva
+    hasta ella.
   - **Asistencia entre puestos** — `scripts/asistencia/` (#309, diseño en
     [`docs/MINIJUEGOS_ASISTENCIA.md`](docs/MINIJUEGOS_ASISTENCIA.md)): motor puro más el reductor
     `sesion.mjs` y la costura `relevo.mjs`. Ayudar NUNCA emite orden: produce un token que gasta el

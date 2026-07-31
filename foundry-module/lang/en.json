@@ -401,6 +401,8 @@
   "LAGUNAK.Minijuegos.Mesa.Comunitarias": "Community cards",
   "LAGUNAK.Minijuegos.Mesa.TuMano": "Your hand",
   "LAGUNAK.Minijuegos.Mesa.Dorso": "Face-down card",
+  "LAGUNAK.Minijuegos.Mesa.PorSalir": "Card yet to come",
+  "LAGUNAK.Minijuegos.Mesa.Apostado": "{fichas} bet",
   "LAGUNAK.Minijuegos.Mesa.Boton": "Button (dealer)",
   "LAGUNAK.Minijuegos.Mesa.Automatico": "automatic",
   "LAGUNAK.Minijuegos.Mesa.Retirado": "folded",

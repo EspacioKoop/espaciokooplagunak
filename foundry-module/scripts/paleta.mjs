@@ -145,6 +145,36 @@ export const SISTEMA = Object.freeze({
 });
 
 /**
+ * Fichas de la mesa de minijuegos (#308). Pixel, no grabado: la pila se repinta
+ * en cuanto alguien apuesta.
+ *
+ * El valor de una ficha NO viaja solo en su color —eso lo hace el número de
+ * cuñas del canto, que se cuenta sin distinguir tonos—, así que estos colores
+ * acompañan a la forma igual que en `SISTEMA`. Lo que sí tiene que cumplirse es
+ * que la ficha se despegue del tapete y del disco claro de su cara, y eso lo
+ * vigila `paleta.test.mjs`.
+ *
+ * `tapete` está aquí, y no solo en el CSS, porque es el fondo contra el que se
+ * mide todo lo anterior: una comprobación de contraste contra un valor que vive
+ * en otro archivo no es una comprobación.
+ */
+export const FICHA = Object.freeze({
+  tapete: "#0f3d2a", // fieltro de la mesa
+  canto: CREMA, // cuñas y cara de la ficha: el mismo crema del resto del arte
+  // Un color por denominación, de menor a mayor. Son los tonos de una mesa
+  // real (blanco-azul, rojo, verde, azul, púrpura) menos el negro del 100:
+  // sobre fieltro oscuro una ficha negra desaparece, y aquí la ficha tiene que
+  // verse antes de leerse.
+  valores: Object.freeze({
+    1: "#5a6b8c",
+    5: PIXEL.rojo,
+    25: "#2f9e5a",
+    100: "#3a86ff",
+    500: "#9d4edd",
+  }),
+});
+
+/**
  * Qué lenguaje toca. Se responde con una pregunta y no con una lista de
  * superficies, para que valga también para la superficie que aún no existe.
  *

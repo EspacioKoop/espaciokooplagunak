@@ -235,6 +235,14 @@ apuestan y no pueden emitir `act`. Pueden entrar o salir en cualquier fase. El
 póker debe seguir siendo legible para ellos: cartas comunitarias, bote, apuestas,
 turno y resultado sí son públicos; manos aún activas, no.
 
+## Verticales
+
+El **póker** es el primer vertical y va justo debajo. El segundo son los **dados
+de cubilete** (#413), cuyas reglas viven en [MINIJUEGOS_DADOS.md](MINIJUEGOS_DADOS.md):
+no repite nada de este contrato porque no le hace falta —la sesión aloja
+cualquier juego por su interfaz interna, y eso es exactamente lo que el segundo
+vertical demuestra—.
+
 ## Primer vertical: póker
 
 El primer corte implementará una sola mesa de Texas Hold'em simplificado:
@@ -334,9 +342,15 @@ variantes y efectos sobre la campaña.
    rechazar.
 5. Arte pixel-art, teclado, reduced-motion e i18n.
    **Implementado.** Las cartas se dibujan en
-   `foundry-module/scripts/minijuegos/cartas-pixelart.mjs` y entran en la vista
-   por `mesa-vista.mjs`, que las pide como data URI: no hay assets externos ni
-   peticiones de red desde la mesa. El teclado sale gratis porque las acciones
+   `foundry-module/scripts/minijuegos/cartas-pixelart.mjs` y las fichas en
+   `fichas-pixelart.mjs`; ambas entran en la vista por `mesa-vista.mjs`, que las
+   pide como data URI: no hay assets externos ni peticiones de red desde la
+   mesa. Las fichas se apilan de verdad —la altura del montón es lo primero que
+   se lee de una mesa—, con el dibujo acotado a cinco fichas y la cuenta exacta
+   escrita al lado, que es la que no puede mentir. La denominación se distingue
+   por número de cuñas (2, 3, 4, 6, 8) visibles también en el canto, que es lo
+   que no tapa el montón, y la silueta va siempre en crema (12:1) contra el
+   fieltro: ningún tono de valor llega a 3:1 contra el tapete. El teclado sale gratis porque las acciones
    son `<button type="button">` en el orden DOM de la mesa, sin controles
    sintéticos que reimplementen el foco. La fase de la mano vive en una región
    `role="status" aria-live="polite"`, así que el cambio de turno se anuncia sin

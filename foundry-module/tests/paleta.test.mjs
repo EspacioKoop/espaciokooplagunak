@@ -2,9 +2,10 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-import { FACCIONES, LENGUAJES, PIXEL, TINTA, canales, contraste, lenguajePara, luminancia } from "../scripts/paleta.mjs";
+import { FACCIONES, FICHA, LENGUAJES, PIXEL, TINTA, canales, contraste, lenguajePara, luminancia } from "../scripts/paleta.mjs";
 import { TINTA as TINTA_LAMINAS } from "../scripts/laminas-clasicas.mjs";
 import { PALETA } from "../scripts/minijuegos/cartas-pixelart.mjs";
+import { DENOMINACIONES } from "../scripts/minijuegos/fichas-pixelart.mjs";
 import { COLOR_JUGADOR, COLOR_NEUTRO, PALETA_FACCIONES } from "../scripts/ventana-nave.mjs";
 
 // Módulos de arte que deben tomar sus colores de la paleta común. `paleta.mjs`
@@ -18,6 +19,7 @@ const MODULOS_DE_ARTE = [
   "../scripts/laminas-clasicas.mjs",
   "../scripts/nave-sprite.mjs",
   "../scripts/minijuegos/cartas-pixelart.mjs",
+  "../scripts/minijuegos/fichas-pixelart.mjs",
   "../scripts/ventana-nave.mjs",
   "../scripts/iconos-sistema.mjs",
   "../scripts/retrato-tripulante.mjs",
@@ -32,6 +34,10 @@ const MODULOS_DE_ARTE = [
   // que podría haber declarado es el relleno del hueco transparente, y ese vive
   // en el codificador PNG porque es un requisito del formato, no un color.
   "../scripts/ficha-nave.mjs",
+  // El dado en 3D retro (#413) reusa el motor de #362 y hereda su regla: el
+  // hueso del cuerpo y la tinta de los puntos entran desde `PIXEL`, para que se
+  // decidan al lado del resto del arte y no en un módulo de minijuego.
+  "../scripts/minijuegos/dados-3d.mjs",
 ];
 
 test("los colores no cambian al mudarse: mismo valor que antes en cada módulo", () => {
@@ -160,4 +166,25 @@ test("las paletas son inmutables: nadie retoca un color en caliente", () => {
   assert.throws(() => {
     PIXEL.motor = "#ff0000";
   });
+});
+
+test("la ficha se ve sobre el fieltro aunque su color no llegue", () => {
+  // Los tonos de denominación NO llegan a 3:1 contra el tapete —el rojo se
+  // queda en 1,84— y eso está aceptado: la silueta la porta el canto crema, no
+  // el valor. Lo que sí es exigible es que el canto se despegue del fieltro y
+  // que cada denominación se despegue de la cara de su propia ficha, o el
+  // dibujo se convierte en una mancha.
+  const cantoSobreTapete = contraste(FICHA.canto, FICHA.tapete);
+  assert.ok(cantoSobreTapete >= 3, `canto sobre tapete: ${cantoSobreTapete.toFixed(2)} < 3`);
+  for (const { valor } of DENOMINACIONES) {
+    const razon = contraste(FICHA.valores[valor], FICHA.canto);
+    assert.ok(razon >= 3, `ficha de ${valor} sobre su cara: ${razon.toFixed(2)} < 3`);
+  }
+});
+
+test("no hay dos denominaciones del mismo color", () => {
+  // Serían indistinguibles para quien SÍ usa el color como atajo, que es para
+  // lo que está.
+  const colores = DENOMINACIONES.map(({ valor }) => FICHA.valores[valor]);
+  assert.equal(new Set(colores).size, colores.length);
 });

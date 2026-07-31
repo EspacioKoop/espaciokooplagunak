@@ -46,10 +46,27 @@ const EPOCA_RESPALDO = "psx";
  * - `profundidadPorPixel`: si hay z-buffer. La PSX no lo tenía y ordenaba por
  *   pintor, con los solapes que eso trae; se conserva porque es la mitad de su
  *   aspecto, no un defecto que haya que disimular.
+ * - `niebla`: `desde` es la fracción del alcance a partir de la cual empieza a
+ *   teñir, y `fuerza` cuánto llega a teñir en el plano lejano. La PSX tenía muy
+ *   poca distancia de dibujo y usaba la niebla para que la geometría no
+ *   APARECIERA de golpe en el borde: por eso su niebla llega a 1 —en el plano
+ *   lejano el polígono ES el fondo y el recorte no se ve—. La GameCube dibujaba
+ *   mucho más lejos y no necesitaba tapar nada, así que la suya es atmósfera y
+ *   se queda a medias: nunca se traga la nave.
  */
 export const AJUSTES_EPOCA = Object.freeze({
-  psx: Object.freeze({ rejilla: 1, tonos: 4, profundidadPorPixel: false }),
-  gamecube: Object.freeze({ rejilla: 0, tonos: 16, profundidadPorPixel: true }),
+  psx: Object.freeze({
+    rejilla: 1,
+    tonos: 4,
+    profundidadPorPixel: false,
+    niebla: Object.freeze({ desde: 0.45, fuerza: 1 }),
+  }),
+  gamecube: Object.freeze({
+    rejilla: 0,
+    tonos: 16,
+    profundidadPorPixel: true,
+    niebla: Object.freeze({ desde: 0.75, fuerza: 0.5 }),
+  }),
 });
 
 export function ajustesEpoca(epoca) {
@@ -265,6 +282,45 @@ export function sombrear(colorBase, intensidad) {
   return `#${hex}`;
 }
 
+// ---- Niebla ----------------------------------------------------------------
+
+/**
+ * Mezcla dos colores. `t` a 0 devuelve el primero; a 1, el segundo.
+ *
+ * Se mezcla en sRGB tal cual, sin pasar por lineal, porque es lo que hacía el
+ * hardware de entonces: una mezcla «correcta» daría una transición distinta de
+ * la que se está imitando.
+ */
+export function mezclar(colorA, colorB, t) {
+  const a = canales(colorA);
+  const b = canales(colorB);
+  // Sin los dos colores no hay mezcla posible: se devuelve el de partida en vez
+  // de inventar uno, igual que hace `sombrear` con un color ilegible.
+  if (!a || !b) return colorA;
+  const k = acotar(t, 0, 1, 0);
+  const hex = a
+    .map((c, i) => Math.round(Math.max(0, Math.min(255, (c + (b[i] - c) * k) * 255)))
+      .toString(16)
+      .padStart(2, "0"))
+    .join("");
+  return `#${hex}`;
+}
+
+/**
+ * Cuánta niebla le toca a una profundidad, en [0, 1].
+ *
+ * Lineal a propósito: la niebla exponencial es de la generación siguiente y se
+ * nota. Antes de `desde` no hay nada —la nave que estás mirando no se destiñe
+ * por existir—, y a partir de ahí sube hasta `fuerza` en el plano lejano.
+ */
+export function factorNiebla(profundidad, { cerca, lejos, niebla }) {
+  if (!niebla || !(niebla.fuerza > 0)) return 0;
+  const inicio = cerca + (lejos - cerca) * acotar(niebla.desde, 0, 1, 0.5);
+  if (!(lejos > inicio)) return 0;
+  const t = (finito(profundidad, 0) - inicio) / (lejos - inicio);
+  return Math.max(0, Math.min(1, t)) * acotar(niebla.fuerza, 0, 1, 1);
+}
+
 // ---- Escena ----------------------------------------------------------------
 
 /**
@@ -292,6 +348,17 @@ export function componerEscena(malla, opciones = {}) {
   const alto = acotar(opciones.alto, 1, 1e6, 120);
   const fov = acotar(opciones.fov, 1, 179, 60);
   const cerca = acotar(opciones.cerca, 1e-6, 1e6, 0.1);
+  // Alcance de dibujo. Existe por la misma razón que el plano cercano: sin él,
+  // la profundidad no tiene escala y «lejos» no significa nada, así que la
+  // niebla no sabría cuánto teñir. Un `lejos` por debajo del `cerca` sería un
+  // volumen de cámara vacío; se corrige aquí y no se propaga.
+  const lejos = Math.max(cerca * 2, acotar(opciones.lejos, 1e-6, 1e9, 80));
+  // El color al que se funde la distancia es el FONDO, y por eso entra desde
+  // fuera: teñir hacia un color inventado aquí dejaría un halo que no casa con
+  // lo que hay pintado detrás, y además metería un literal de color en el módulo
+  // que la guardia de `paleta.test.mjs` prohíbe. Sin fondo declarado —lienzo
+  // transparente— no hay hacia dónde fundir, así que no hay niebla.
+  const fondo = typeof opciones.fondo === "string" ? opciones.fondo : null;
   const yaw = finito(opciones.yaw, 0);
   const pitch = finito(opciones.pitch, 0);
   const roll = finito(opciones.roll, 0);
@@ -326,10 +393,20 @@ export function componerEscena(malla, opciones = {}) {
     // dejarlos sin área, que no se verían pero sí se pintarían.
     if (areaFirmada(puntos) <= 0) continue;
 
+    const profundidad = recortada.reduce((suma, v) => suma + v[2], 0) / recortada.length;
+    // Fuera del alcance no se pinta. Se mide por el vértice MÁS CERCANO y no por
+    // la media: una cara larga que entra en el volumen por un extremo se ve, y
+    // descartarla por su centro la haría desaparecer entera de golpe, que es
+    // exactamente el artefacto que la niebla existe para evitar.
+    if (Math.min(...recortada.map((v) => v[2])) > lejos) continue;
+
+    const sombreado = sombrear(color, intensidadCara(normal, ajustes.tonos));
+    const niebla = fondo ? factorNiebla(profundidad, { cerca, lejos, niebla: ajustes.niebla }) : 0;
     poligonos.push({
       puntos,
-      color: sombrear(color, intensidadCara(normal, ajustes.tonos)),
-      profundidad: recortada.reduce((suma, v) => suma + v[2], 0) / recortada.length,
+      color: niebla > 0 ? mezclar(sombreado, fondo, niebla) : sombreado,
+      profundidad,
+      niebla,
     });
   }
 
@@ -337,7 +414,16 @@ export function componerEscena(malla, opciones = {}) {
   // necesitaría, pero ordenar igual no le hace daño y deja un solo camino; lo
   // que cambia de verdad entre épocas es el temblor y los tonos.
   poligonos.sort((a, b) => b.profundidad - a.profundidad);
-  return { epoca: EPOCAS.includes(epoca) ? epoca : EPOCA_RESPALDO, ancho, alto, poligonos };
+  return {
+    epoca: EPOCAS.includes(epoca) ? epoca : EPOCA_RESPALDO,
+    ancho,
+    alto,
+    // El alcance sale en la escena porque una superficie que coloca cosas a
+    // distancia necesita saber a partir de dónde dejan de verse, y adivinarlo
+    // desde fuera sería duplicar el valor por defecto en dos sitios.
+    lejos,
+    poligonos,
+  };
 }
 
 /** Área firmada del polígono en pantalla. Positiva = mirándonos. */

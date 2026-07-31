@@ -86,6 +86,29 @@ export const PIXEL = Object.freeze({
 });
 
 /**
+ * La cantina (#423 sobre #362): el local donde la tripulación mata el rato.
+ *
+ * Referencias declaradas, porque el tono no es decorativo: la cantina de Mos
+ * Eisley (penumbra cálida, gente en la sombra), la estación de Solaris (metal
+ * cansado, habitado) y el interior de la Discovery de 2001 (blanco clínico,
+ * luz que viene de los paneles y no de bombillas). De ahí salen los tres
+ * planos: un mamparo frío y sin gracia, una barra cálida que es el único foco
+ * de calor de la sala, y una luz que baña por encima.
+ *
+ * Van juntos y aquí porque son un AMBIENTE: elegir el ámbar de la barra sin
+ * ver al lado el gris del mamparo es cómo se acaba con una sala que no cierra.
+ */
+export const CANTINA = Object.freeze({
+  mamparo: "#2b3038", // gris azulado de nave: el fondo no compite con nada
+  suelo: "#1d2128", // más oscuro que el mamparo: la sala tiene arriba y abajo
+  barra: "#7a4a22", // madera imposible en el espacio, y por eso acogedora
+  barraCanto: "#b8763a", // el borde que coge la luz de la lámpara
+  lampara: "#ffd79a", // cálida, la única fuente de calor del local
+  ventana: "#0a0f1f", // el vacío al otro lado del cristal
+  neon: "#4ad9c4", // el rótulo: verde azulado de tubo, ajeno a la madera
+});
+
+/**
  * Paleta arcade saturada de las facciones en el mapa vivo. Es una lista y no un
  * objeto porque el color se reparte por hash del nombre de facción: importa el
  * orden, no el nombre de cada entrada.

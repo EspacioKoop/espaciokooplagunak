@@ -30,6 +30,11 @@ const MODULOS_DE_ARTE = [
   // Y el fondo estelar (#384) tampoco: el azul del cielo sale de `PIXEL`, donde
   // se ve al lado del crema de la nave propia y se puede decidir que no compitan.
   "../scripts/retro3d-estrellas.mjs",
+  // La cantina (#423) es una sala entera de arte nuevo: mamparo, barra, lámpara
+  // y los objetos que giran en cada puerta. Entra en la guardia el mismo día que
+  // nace, que es cuando aún no cuesta nada.
+  "../scripts/cantina-escena.mjs",
+  "../scripts/cantina-icono.mjs",
   // La ficha de nave (#354) reusa las siluetas y sus colores tal cual: lo único
   // que podría haber declarado es el relleno del hueco transparente, y ese vive
   // en el codificador PNG porque es un requisito del formato, no un color.

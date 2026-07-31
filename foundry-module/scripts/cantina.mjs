@@ -26,6 +26,9 @@ export const PUERTAS = Object.freeze([
     juego: "poker",
     tituloClave: "LAGUNAK.Cantina.Puerta.Poker",
     icono: "fa-solid fa-diamond",
+    // Qué objeto gira en la puerta (`cantina-icono.mjs`). Es un nombre y no una
+    // malla: el catálogo dice a qué se juega, no cómo se dibuja.
+    objeto: "poker",
   }),
 ]);
 

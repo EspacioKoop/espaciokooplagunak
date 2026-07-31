@@ -3,12 +3,13 @@ import test from "node:test";
 
 import { PUERTAS, puertaPorId, puertasCantina } from "../scripts/cantina.mjs";
 
-test("el catálogo tiene hoy exactamente la puerta del póker", () => {
+test("el catálogo tiene hoy las dos mesas: póker y dados", () => {
   const puertas = puertasCantina();
-  assert.equal(puertas.length, 1);
-  assert.equal(puertas[0].id, "poker");
-  assert.ok(puertas[0].tituloClave.startsWith("LAGUNAK."));
-  assert.ok(puertas[0].icono.startsWith("fa-"));
+  assert.deepEqual(puertas.map((p) => p.id), ["poker", "dados"]);
+  for (const puerta of puertas) {
+    assert.ok(puerta.tituloClave.startsWith("LAGUNAK."));
+    assert.ok(puerta.icono.startsWith("fa-"));
+  }
 });
 
 // La puerta dice a qué juego lleva; quien la abre no lo adivina. Si esto se
@@ -30,7 +31,8 @@ test("puertasCantina() devuelve el mismo catálogo congelado, no una copia mutab
 
 test("puertaPorId encuentra la puerta existente y no inventa una para ids ajenos", () => {
   assert.equal(puertaPorId("poker")?.id, "poker");
-  assert.equal(puertaPorId("dados"), undefined);
+  assert.equal(puertaPorId("dados")?.id, "dados");
+  assert.equal(puertaPorId("tragaperras"), undefined);
   assert.equal(puertaPorId(""), undefined);
   assert.equal(puertaPorId(undefined), undefined);
 });

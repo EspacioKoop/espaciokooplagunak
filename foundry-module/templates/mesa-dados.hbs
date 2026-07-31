@@ -1,0 +1,70 @@
+<div class="lagunak-mesa-cuerpo lagunak-dados">
+  {{#unless hayMesa}}
+    <p class="lagunak-mesa-vacia" role="status">{{localize "LAGUNAK.Dados.Mesa.SinMesa"}}</p>
+  {{/unless}}
+
+  {{#if hayMesa}}
+    <p class="lagunak-mesa-fase" role="status" aria-live="polite">{{faseTexto}}</p>
+
+    {{#if rondaCancelada}}
+      <p class="lagunak-mesa-aviso" role="status">{{localize "LAGUNAK.Dados.Mesa.RondaCancelada"}}</p>
+    {{/if}}
+
+    <div class="lagunak-mesa-tapete">
+      <p class="lagunak-dados-apuesta" role="status" aria-live="polite">{{apuestaTexto}}</p>
+      <p class="lagunak-dados-recuento">{{recuentoTexto}}</p>
+      {{#if unosComodin}}
+        <p class="lagunak-dados-comodin">{{localize "LAGUNAK.Dados.Mesa.Comodines"}}</p>
+      {{/if}}
+    </div>
+
+    <ul class="lagunak-mesa-asientos">
+      {{#each jugadores}}
+        <li class="lagunak-mesa-asiento{{#if this.esTurno}} es-turno{{/if}}{{#if this.eliminado}} eliminado{{/if}}">
+          <span class="lagunak-mesa-nombre">{{this.nombre}}</span>
+          {{#if this.esAutomatico}}<span class="lagunak-mesa-npc">{{localize "LAGUNAK.Minijuegos.Mesa.Automatico"}}</span>{{/if}}
+          <span class="lagunak-dados-cuenta">{{this.dadosTexto}}</span>
+          {{#if this.eliminado}}<span class="lagunak-mesa-estado">{{localize "LAGUNAK.Dados.Mesa.SinDados"}}</span>{{/if}}
+          {{!-- El cubilete: 3D de verdad, pintado por el módulo. El texto de al
+                lado NO es decorativo — es el mismo dato sin depender de que se
+                vea el lienzo, que es la regla de accesibilidad de #362. --}}
+          <canvas class="lagunak-dados-cubilete"
+                  data-cubilete="{{this.userId}}"
+                  width="{{../anchoCubilete}}" height="{{../altoCubilete}}"
+                  role="img" aria-label="{{this.cubileteTexto}}"></canvas>
+          <span class="lagunak-dados-lectura">{{this.cubileteTexto}}</span>
+        </li>
+      {{/each}}
+    </ul>
+
+    {{#if destape}}
+      <p class="lagunak-dados-destape" role="status">{{destapeTexto}}</p>
+    {{/if}}
+
+    <div class="lagunak-mesa-acciones">
+      {{#if pideApuesta}}
+        <div class="lagunak-dados-formulario">
+          <label>
+            {{localize "LAGUNAK.Dados.Mesa.Cantidad"}}
+            <input type="number" name="cantidad" min="1" max="{{dadosEnJuego}}" step="1" value="{{sugerencia.cantidad}}" />
+          </label>
+          <label>
+            {{localize "LAGUNAK.Dados.Mesa.Cara"}}
+            {{!-- Las opciones vienen ya marcadas desde el contexto: el ayudante
+                  `eq` no existe en la v11 que este módulo sigue soportando, y
+                  una plantilla que solo funciona en la versión nueva es un fallo
+                  que no aparece hasta que alguien abre la mesa en la vieja. --}}
+            <select name="cara">
+              {{#each carasOpciones}}
+                <option value="{{this.valor}}" {{#if this.seleccionada}}selected{{/if}}>{{this.valor}}</option>
+              {{/each}}
+            </select>
+          </label>
+        </div>
+      {{/if}}
+      {{#each acciones}}
+        <button type="button" data-accion="{{this.tipo}}">{{localize this.etiqueta}}</button>
+      {{/each}}
+    </div>
+  {{/if}}
+</div>

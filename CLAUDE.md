@@ -169,6 +169,10 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
   - **Minijuegos** — `scripts/minijuegos/` (motor de póker, evaluador de manos, agente automático,
     sesión) y su enganche en `scripts/minijuegos-wiring.mjs` (#308). La sesión viva del coordinador
     no se persiste en ningún sitio: vive en memoria del GM.
+  - **Asistencia entre puestos** — `scripts/asistencia/` (#309, diseño en
+    [`docs/MINIJUEGOS_ASISTENCIA.md`](docs/MINIJUEGOS_ASISTENCIA.md)): motor puro más el reductor
+    `sesion.mjs`. Ayudar NUNCA emite orden: produce un token que gasta el **titular** del puesto
+    asistido como una de sus órdenes ya autorizadas, vía relé (#237). Sin interfaz todavía.
 - `resources/` y `packs/` — assets heredados de upstream.
 - La versión se calcula por fecha (`AAAA.MM.DD`) en `CMakeLists.txt` salvo override explícito.
 - `docs/` — documentación propia del fork: [`BUILDING.md`](docs/BUILDING.md),

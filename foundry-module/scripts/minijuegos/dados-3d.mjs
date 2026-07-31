@@ -82,6 +82,34 @@ export function orientacionParaValor(valor, inclinacion = INCLINACION) {
   };
 }
 
+/**
+ * Orientación DURANTE una tirada, con `t` de 0 (recién lanzado) a 1 (parado).
+ *
+ * El dado rueda y **aterriza legible por construcción**: la vuelta que le queda
+ * por dar se multiplica por un factor que vale 1 al principio y exactamente 0 al
+ * final, así que en `t = 1` lo que queda es `orientacionParaValor(valor)` y ni un
+ * radián más. No hay que «parar cerca» y corregir después —eso es lo que produce
+ * el tirón feo del último fotograma— ni existe el riesgo de que un dado se quede
+ * de canto porque la animación terminó a destiempo.
+ *
+ * `vueltas` es cuánto rueda antes de asentarse; `desfase` separa los dados de una
+ * misma fila para que no giren como un bloque. Ambos son datos, no azar: la
+ * misma tirada se ve igual dos veces.
+ */
+export function giroDeTirada(valor, t, { vueltas = 3, desfase = 0 } = {}) {
+  const destino = orientacionParaValor(valor);
+  const avance = Math.min(1, Math.max(0, Number(t) || 0));
+  // Desaceleración cúbica: mucho recorrido al principio, casi nada al final, que
+  // es como se para un dado de verdad sobre la mesa.
+  const restante = (1 - avance) ** 3;
+  const giro = 2 * Math.PI * vueltas * restante;
+  return {
+    yaw: destino.yaw + giro + desfase * restante,
+    pitch: destino.pitch + giro * 0.6 + desfase * restante,
+    roll: giro * 0.35,
+  };
+}
+
 // ---- Mallas ---------------------------------------------------------------
 
 // Los ocho vértices del cubo, en el orden en que los nombran las caras.

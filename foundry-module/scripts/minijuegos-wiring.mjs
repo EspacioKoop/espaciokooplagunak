@@ -16,6 +16,8 @@ import {
 import { MESA_POR_DEFECTO, configuracionPoker } from "./minijuegos/mesa-config.mjs";
 import * as poker from "./minijuegos/poker-motor.mjs";
 import { decidirAccionAutomatica } from "./minijuegos/agente-automatico.mjs";
+import * as dadosMotor from "./minijuegos/dados-motor.mjs";
+import { decidirJugadaDados } from "./minijuegos/dados-agente.mjs";
 import { resolverTurnosAutomaticos } from "./minijuegos/turnos-automaticos.mjs";
 
 // Cableado Foundry de las sesiones de minijuegos (#308, paso 3). Capa fina y no
@@ -291,10 +293,9 @@ export function registrarSesionesMinijuegos(moduleId) {
         // Sin esto, `start` fallaba SIEMPRE: la sesión deriva los asientos sin
         // fichas y el motor de póker exige un stack. La entrada de la mesa es
         // una decisión de la mesa, no una regla del juego.
-        configuracionJuego: configuracionPoker(
-          game.settings.get(moduleId, AJUSTE_SESION),
-          opcionesMesa(moduleId),
-        ),
+        // La configuración la compone el vertical, no el cableado: el póker
+        // necesita entrada y ciegas, y los dados no necesitan ninguna.
+        configuracionJuego: verticalActivo()?.configuracion?.(moduleId) ?? undefined,
         // Se reparte a TODOS los conectados, no solo a los sentados: quien
         // aún no juega necesita su vista y sus acciones para que la ventana
         // pueda ofrecerle sentarse o mirar. Al que no está sentado se le manda
@@ -347,7 +348,7 @@ function jugarTurnosAutomaticos(moduleId) {
   if (!sesionViva || !esCoordinador()) return;
   const { sesion, jugadas, cortadoPor } = resolverTurnosAutomaticos(sesionViva, {
     juego: juegoActivo(),
-    decidir: decidirAccionAutomatica,
+    decidir: verticalActivo()?.decidir ?? null,
   });
   if (jugadas.length === 0) {
     // Un corte con jugadas a cero y motivo es un turno automático atascado: la
@@ -363,22 +364,72 @@ function jugarTurnosAutomaticos(moduleId) {
   repartirVistas(moduleId);
 }
 
-// Verticales registrados. El cableado no conoce ninguno: se le inyecta el módulo
-// del juego, que solo tiene que cumplir la interfaz interna del contrato.
+// Verticales registrados, POR NOMBRE. El cableado no conoce las reglas de
+// ninguno: se le inyectan el motor, la política de sus NPC y cómo se compone su
+// configuración de mesa, y con eso ya sabe alojarlo.
 //
-// El póker se registra por defecto (#308) porque hasta ahora NADIE llamaba a
-// `registrarJuego`: `juegoActivo()` devolvía null y toda propuesta se
-// despachaba sin vertical, así que la mesa era inalcanzable desde Foundry.
-// Sigue siendo inyección —otro juego puede sustituirlo llamando a
-// `registrarJuego`—, solo que ya no arranca vacío.
-let juego = poker;
+// Fue un solo módulo mientras hubo un solo juego, y con el segundo (#413) eso ya
+// no valía: la mesa dice en su estado público a qué se juega, y el coordinador
+// tiene que resolver el vertical POR ESE NOMBRE. Con una variable única, abrir
+// una mesa de dados y otra de póker en el mismo mundo dejaba al último que
+// registrase mandando sobre las dos, y las propuestas se despachaban contra el
+// motor equivocado.
+const verticales = new Map();
 
-export function registrarJuego(moduloDeJuego) {
-  juego = moduloDeJuego;
+/**
+ * @param {string} nombre el que lleva la sesión en su estado público.
+ * @param {object} definicion
+ *   - `motor`: el módulo del juego (interfaz interna del contrato #308);
+ *   - `decidir`: política de los asientos automáticos, o null si no los admite;
+ *   - `configuracion(moduleId)`: configuración de la mano/ronda siguiente, o
+ *     null si el juego no necesita ninguna —los dados no la necesitan: sus
+ *     asientos los deriva la sesión y los dados los pone el propio motor—.
+ */
+export function registrarJuego(nombre, definicion) {
+  // Compatibilidad con la forma de un solo argumento, que registraba «el» juego
+  // cuando solo había uno: se toma como el póker, que es lo que se le pasaba.
+  if (typeof nombre !== "string") {
+    verticales.set("poker", { motor: nombre, decidir: decidirAccionAutomatica, configuracion: configuracionDePoker });
+    return;
+  }
+  verticales.set(nombre, {
+    motor: definicion?.motor ?? null,
+    decidir: definicion?.decidir ?? null,
+    configuracion: definicion?.configuracion ?? null,
+  });
+}
+
+function configuracionDePoker(moduleId) {
+  return configuracionPoker(
+    game.settings.get(moduleId, AJUSTE_SESION),
+    opcionesMesa(moduleId),
+  );
+}
+
+// Los dos verticales de serie. Se registran aquí y no en `main.mjs` porque son
+// del propio módulo: quien quiera sustituir uno o añadir un tercero llama a
+// `registrarJuego` igual, que para eso sigue siendo inyección.
+registrarJuego("poker", {
+  motor: poker,
+  decidir: decidirAccionAutomatica,
+  configuracion: configuracionDePoker,
+});
+registrarJuego("dados", {
+  motor: dadosMotor,
+  decidir: decidirJugadaDados,
+  // Sin configuración: los asientos los deriva la sesión de quien esté sentado y
+  // los dados de cada uno los pone el motor. Una mesa de dados no tiene entrada.
+  configuracion: null,
+});
+
+/** El vertical de la mesa viva, resuelto por el nombre que ella misma declara. */
+function verticalActivo() {
+  const nombre = sesionViva?.publico?.juego ?? "poker";
+  return verticales.get(nombre) ?? verticales.get("poker") ?? null;
 }
 
 function juegoActivo() {
-  return juego;
+  return verticalActivo()?.motor ?? null;
 }
 
 // Abre una mesa nueva. Solo el coordinador la crea, porque la sesión viva vive

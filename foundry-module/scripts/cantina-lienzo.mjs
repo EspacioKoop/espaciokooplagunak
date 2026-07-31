@@ -18,7 +18,7 @@
 import { componerCantina } from "./cantina-escena.mjs";
 import { componerIcono } from "./cantina-icono.mjs";
 import { CANTINA } from "./paleta.mjs";
-import { pintarCapa2D } from "./cantina-2d.mjs";
+import { estamparEscena, pintarCapa2D } from "./cantina-2d.mjs";
 import { pintarEscena } from "./retro3d-lienzo.mjs";
 
 /**
@@ -107,11 +107,12 @@ export function arrancarCantina(piezas, opciones = {}) {
     const ms = ahora() - inicio;
     const ctx = sala?.getContext?.("2d");
     if (ctx) {
-      pintarEscena(
-        ctx,
-        componerCantina({ ancho: sala.width, alto: sala.height, epoca, mirada }),
-        { fondo: CANTINA.ventana },
-      );
+      const escena = componerCantina({ ancho: sala.width, alto: sala.height, epoca, mirada });
+      pintarEscena(ctx, escena, { fondo: CANTINA.ventana });
+      // La textura de cada cara va inmediatamente después de la escena y ANTES
+      // de las capas de ambiente: es superficie, no atmósfera. Si fuera después,
+      // las planchas del suelo se dibujarían encima del humo.
+      estamparEscena(ctx, escena);
       // Y encima, el pixel-art plano: halo de las lámparas, filo del ventanal,
       // polvo, líneas y viñeta. Va DESPUÉS del 3D a propósito — es lo que tapa
       // las costuras que deja el pintor entre caras vecinas, y lo que pone la

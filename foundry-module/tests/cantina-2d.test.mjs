@@ -9,6 +9,8 @@ import test from "node:test";
 
 import {
   pintarCapa2D,
+  estamparCara,
+  estamparEscena,
   pintarCachivaches,
   pintarHaces,
   pintarHumo,
@@ -23,10 +25,43 @@ function ctxFalso() {
     rects: [],
     estilos: [],
     fillStyle: null,
+    // El recorte se apunta para poder exigir que cada cara lo abra y lo cierre:
+    // un `save` sin su `restore` deja el recorte puesto y la cara siguiente se
+    // pinta dentro de la anterior — que es un fallo invisible hasta que la sala
+    // entera desaparece detrás de un polígono.
+    saves: 0,
+    restores: 0,
+    clips: 0,
     fillRect(x, y, w, h) {
       this.rects.push({ x, y, w, h, estilo: this.fillStyle });
       this.estilos.push(this.fillStyle);
     },
+    save() {
+      this.saves += 1;
+    },
+    restore() {
+      this.restores += 1;
+    },
+    clip() {
+      this.clips += 1;
+    },
+    beginPath() {},
+    moveTo() {},
+    lineTo() {},
+    closePath() {},
+  };
+}
+
+/** Cara cuadrada con el patrón dado, en coordenadas de pantalla. */
+function caraFalsa(patron, lado = 40) {
+  return {
+    patron,
+    puntos: [
+      { x: 10, y: 10 },
+      { x: 10 + lado, y: 10 },
+      { x: 10 + lado, y: 10 + lado },
+      { x: 10, y: 10 + lado },
+    ],
   };
 }
 
@@ -139,4 +174,48 @@ test("los pilotos no parpadean todos a la vez", () => {
   const iguales = a.estilos.filter((estilo, i) => estilo === b.estilos[i]).length;
   assert.ok(iguales > 0, "ha cambiado todo a la vez");
   assert.ok(iguales < a.estilos.length, "no ha parpadeado nada");
+});
+
+
+// Textura por cara (#423): el detalle de superficie de la época.
+test("cada patrón deja su marca, y el liso no deja ninguna", () => {
+  for (const patron of ["plancha", "veta", "rejilla"]) {
+    const ctx = ctxFalso();
+    assert.ok(estamparCara(ctx, caraFalsa(patron)) > 0, `${patron} no estampa nada`);
+  }
+  assert.equal(estamparCara(ctxFalso(), caraFalsa("liso")), 0);
+  assert.equal(estamparCara(ctxFalso(), caraFalsa(undefined)), 0);
+});
+
+test("los tres patrones se distinguen entre sí", () => {
+  // Si dos dieran lo mismo, la sala tendría una textura y no tres, y nadie se
+  // enteraría de que el suelo y la barra están usando la misma.
+  // Se compara el DIBUJO y no el número de trazos: dos patrones distintos
+  // pueden coincidir en cuántas líneas usan y no parecerse en nada.
+  const dibujos = ["plancha", "veta", "rejilla"].map((patron) => {
+    const ctx = ctxFalso();
+    estamparCara(ctx, caraFalsa(patron));
+    return JSON.stringify(ctx.rects);
+  });
+  assert.equal(new Set(dibujos).size, 3, "hay dos patrones que dibujan lo mismo");
+});
+
+test("cada cara abre y cierra su recorte", () => {
+  const ctx = ctxFalso();
+  estamparEscena(ctx, {
+    poligonos: [caraFalsa("plancha"), caraFalsa("veta"), caraFalsa("rejilla")],
+  });
+  assert.equal(ctx.clips, 3);
+  assert.equal(ctx.saves, ctx.restores, "un recorte se ha quedado abierto");
+});
+
+test("una cara diminuta no se textura: sería ruido", () => {
+  assert.equal(estamparCara(ctxFalso(), caraFalsa("rejilla", 2)), 0);
+});
+
+test("un contexto sin recorte no revienta: se queda sin textura y ya", () => {
+  // Un contexto de mentira o un host raro puede no traer `clip`. Perder la
+  // textura es aceptable; tirar el bucle de pintado, no.
+  const pobre = { fillRect() {}, fillStyle: null };
+  assert.equal(estamparCara(pobre, caraFalsa("plancha")), 0);
 });

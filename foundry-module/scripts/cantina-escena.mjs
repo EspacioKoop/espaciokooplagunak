@@ -70,6 +70,26 @@ export function caja([cx, cy, cz], [ancho, alto, fondo]) {
  * Las medidas están en las mismas unidades que usa el motor para los cascos: la
  * cámara se coloca fuera, en `componerCantina`, y no hay ninguna escala oculta.
  */
+/**
+ * Qué textura lleva cada mueble. Se deduce del nombre en vez de escribirse
+ * pieza a pieza: hay más de setenta muebles y la mitad se generan en bucle, así
+ * que una tabla por nombre se desincronizaría el día que se añada la fila
+ * siguiente. Lo que decide es el MATERIAL, y el nombre ya lo dice.
+ */
+export function patronDe(mueble) {
+  const nombre = mueble?.nombre ?? "";
+  if (nombre.startsWith("suelo")) return "plancha";
+  if (nombre.startsWith("techo") || nombre.startsWith("pared")) return "rejilla";
+  if (nombre.startsWith("mamparo") || nombre.startsWith("dintel") || nombre.startsWith("antepecho")) {
+    return "rejilla";
+  }
+  if (nombre.startsWith("barra") || nombre.startsWith("mesa") || nombre.startsWith("estante")) {
+    return "veta";
+  }
+  // Lo pequeño se queda liso: una botella de seis píxeles con textura es ruido.
+  return "liso";
+}
+
 /** Fila de piezas iguales repartidas por un eje. La botellería, las costillas
  * del mamparo y los taburetes son lo mismo repetido, y escribir doce cajas a
  * mano invita a que la trece salga descuadrada. */
@@ -348,8 +368,9 @@ export function componerCantina(opciones = {}) {
   // cualquiera. Girando a favor, la sala se sale del encuadre y marea.
   const yaw = asomo(opciones.yaw, Math.PI) - asomo(mirada.x, 1) * ASOMO.giro;
 
-  const partes = MUEBLES.map((mueble) =>
-    componerEscena(caja(mueble.centro, mueble.medidas), {
+  const partes = MUEBLES.map((mueble) => ({
+    mueble,
+    escena: componerEscena(caja(mueble.centro, mueble.medidas), {
       ancho,
       alto,
       epoca,
@@ -366,13 +387,19 @@ export function componerCantina(opciones = {}) {
       // se lee desde la distancia a la que se entra en él, no desde el taburete.
       posicion: [desvioX, -0.55 + desvioY, 2.2],
     }),
-  );
+  }));
 
   // Fundido y reordenado global. Cada parte ya viene ordenada por su cuenta, y
   // el orden por pintor no es componible: dos listas correctas concatenadas dan
   // una lista incorrecta, y la barra acabaría dibujada detrás del mamparo.
+  // Cada cara se lleva el PATRÓN de su mueble hasta el pintor. Va aquí y no en
+  // el motor porque `retro3d.mjs` no sabe de materiales —recibe una malla y un
+  // color— y meterle texturas sería convertir un rasterizador de cascos en un
+  // motor de escenarios. La cara declara qué es; quien pinta decide cómo se ve.
   const poligonos = partes
-    .flatMap((parte) => parte.poligonos)
+    .flatMap(({ mueble, escena }) =>
+      escena.poligonos.map((poligono) => ({ ...poligono, patron: patronDe(mueble) })),
+    )
     .sort((a, b) => b.profundidad - a.profundidad);
 
   // Lo que se ve por el hueco del mamparo. El pintor dibuja las estrellas ANTES
@@ -394,5 +421,5 @@ export function componerCantina(opciones = {}) {
     // leerse como cielo y no como confeti pegado al cristal.
   });
 
-  return { ancho, alto, epoca: partes[0]?.epoca, poligonos, estrellas };
+  return { ancho, alto, epoca: partes[0]?.escena?.epoca, poligonos, estrellas };
 }

@@ -7,6 +7,7 @@ import {
   componerEscena,
   factorNiebla,
   mezclar,
+  recortarLejano,
 } from "../scripts/retro3d.mjs";
 import { PIXEL, canales } from "../scripts/paleta.mjs";
 
@@ -89,15 +90,63 @@ test("más allá del alcance no se pinta nada, y el alcance sale en la escena", 
   assert.equal(fuera.lejos, 12);
 });
 
-test("una cara que asoma por un extremo se ve: el recorte mide por el vértice más cercano", () => {
-  // La nave se coloca justo a caballo del plano lejano. Si el descarte usara la
-  // media, la mitad delantera desaparecería de golpe, que es el artefacto que la
-  // niebla existe para evitar.
-  const alBorde = escena({ posicion: [0, 0, 12.6], lejos: 12 });
+test("una cara que asoma por un extremo se ve, recortada contra el plano lejano", () => {
+  // La nave se coloca justo a caballo del plano lejano. Si se descartara la cara
+  // entera, la mitad delantera desaparecería de golpe, que es el artefacto que la
+  // niebla existe para evitar; pero lo que sobrevive no puede quedar detrás del
+  // plano, o el alcance no delimitaría nada.
+  const alBorde = escena({ posicion: [0, 0, 12.3], lejos: 12 });
   assert.ok(alBorde.poligonos.length > 0);
-  // Su centro cae YA FUERA del alcance y aun así se pinta: sobrevive por el
-  // extremo que sigue dentro, que es justo la diferencia entre las dos reglas.
-  assert.ok(Math.max(...profundidades(alBorde.poligonos)) > 12);
+  assert.ok(Math.max(...profundidades(alBorde.poligonos)) <= 12);
+});
+
+test("una cara larga se recorta en el plano lejano, no lo atraviesa entera", () => {
+  // El caso del revisor: un triángulo con un vértice dentro y dos muy lejos. Sin
+  // recorte conservaba los puntos a z=1000 y se pintaba con media niebla hasta
+  // que desaparecía de golpe.
+  const larga = {
+    vertices: [
+      [-2, -2, 3],
+      [2, -2, 3],
+      [0, 4, 1000],
+    ],
+    caras: [[0, 2, 1]],
+  };
+  const escenaLarga = componerEscena(larga, {
+    ancho: 160,
+    alto: 120,
+    color: PIXEL.neutro,
+    fondo: FONDO,
+    posicion: [0, 0, 0],
+    lejos: 10,
+  });
+  assert.ok(escenaLarga.poligonos.length > 0, "la parte dentro del alcance sigue viéndose");
+  for (const poligono of escenaLarga.poligonos) {
+    assert.ok(poligono.profundidad <= 10);
+    for (const punto of poligono.puntos) {
+      assert.ok(punto.z <= 10, "ningún punto conservado queda detrás del plano lejano");
+    }
+  }
+});
+
+test("recortarLejano corta el segmento en el plano y respeta lo que ya estaba dentro", () => {
+  const cortado = recortarLejano(
+    [
+      [0, 0, 2],
+      [0, 0, 20],
+      [4, 0, 20],
+    ],
+    10,
+  );
+  assert.ok(cortado.length >= 3);
+  for (const vertice of cortado) assert.ok(vertice[2] <= 10);
+  // Un polígono ya dentro sale intacto: el recorte no reescribe lo que no toca.
+  const intacto = [
+    [0, 0, 2],
+    [1, 0, 3],
+    [1, 1, 4],
+  ];
+  assert.deepEqual(recortarLejano(intacto, 10), intacto);
 });
 
 test("un alcance imposible se corrige y no propaga un volumen vacío", () => {

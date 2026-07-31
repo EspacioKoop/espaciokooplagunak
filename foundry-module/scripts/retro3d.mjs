@@ -221,14 +221,35 @@ export function proyectar(vertice, opciones = {}) {
 export function recortarCercano(vertices, cerca) {
   // Un plano cercano no finito o negativo deja pasar vértices detrás de la
   // cámara, que es justo lo que este recorte existe para impedir.
-  const plano = acotar(cerca, 1e-6, 1e6, 0.1);
+  return recortarContra(vertices, acotar(cerca, 1e-6, 1e6, 0.1), 1);
+}
+
+/**
+ * Recorta un polígono contra el plano lejano (`z <= lejos`), el mismo
+ * Sutherland-Hodgman con el signo cambiado.
+ *
+ * Descartar la cara entera cuando su vértice más cercano cruza el alcance no
+ * basta: una cara larga atraviesa el plano sin cortarse y luego desaparece de
+ * golpe todavía visible bajo la niebla, que es justo el salto que el alcance
+ * existe para evitar. Recortando, lo que sobrevive nunca queda detrás del plano
+ * y la cara se funde con el fondo antes de irse.
+ */
+export function recortarLejano(vertices, lejos) {
+  return recortarContra(vertices, acotar(lejos, 1e-6, 1e9, 80), -1);
+}
+
+/**
+ * Sutherland-Hodgman sobre un solo plano de profundidad. `signo` +1 conserva
+ * `z >= plano` (cercano) y -1 conserva `z <= plano` (lejano).
+ */
+function recortarContra(vertices, plano, signo) {
   const dentro = [];
   const n = vertices.length;
   for (let i = 0; i < n; i += 1) {
     const actual = vertices[i];
     const siguiente = vertices[(i + 1) % n];
-    const actualDentro = actual[2] >= plano;
-    const siguienteDentro = siguiente[2] >= plano;
+    const actualDentro = signo * (actual[2] - plano) >= 0;
+    const siguienteDentro = signo * (siguiente[2] - plano) >= 0;
     if (actualDentro) dentro.push(actual);
     if (actualDentro !== siguienteDentro) {
       const t = (plano - actual[2]) / (siguiente[2] - actual[2]);
@@ -377,7 +398,10 @@ export function componerEscena(malla, opciones = {}) {
     const crudos = cara.map((indice) => enCamara[indice]).filter(Boolean);
     if (crudos.length < 3) continue;
 
-    const recortada = recortarCercano(crudos, cerca);
+    // Primero el plano cercano y después el lejano: lo que quede está dentro del
+    // volumen de dibujo, así que ni la proyección ni la niebla ven geometría que
+    // el alcance ya no cubre.
+    const recortada = recortarLejano(recortarCercano(crudos, cerca), lejos);
     if (recortada.length < 3) continue;
 
     // La normal se toma de la cara SIN recortar: el recorte añade vértices sobre
@@ -393,12 +417,11 @@ export function componerEscena(malla, opciones = {}) {
     // dejarlos sin área, que no se verían pero sí se pintarían.
     if (areaFirmada(puntos) <= 0) continue;
 
+    // La profundidad se mide sobre la geometría YA recortada: es la que se
+    // pinta, y así la niebla nunca tiñe por un trozo de cara que quedó fuera del
+    // alcance. Una cara larga que entra en el volumen por un extremo se ve, pero
+    // solo hasta el plano lejano.
     const profundidad = recortada.reduce((suma, v) => suma + v[2], 0) / recortada.length;
-    // Fuera del alcance no se pinta. Se mide por el vértice MÁS CERCANO y no por
-    // la media: una cara larga que entra en el volumen por un extremo se ve, y
-    // descartarla por su centro la haría desaparecer entera de golpe, que es
-    // exactamente el artefacto que la niebla existe para evitar.
-    if (Math.min(...recortada.map((v) => v[2])) > lejos) continue;
 
     const sombreado = sombrear(color, intensidadCara(normal, ajustes.tonos));
     const niebla = fondo ? factorNiebla(profundidad, { cerca, lejos, niebla: ajustes.niebla }) : 0;

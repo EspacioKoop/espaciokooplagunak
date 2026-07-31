@@ -10,7 +10,7 @@
 
 import { MODULE_ID } from "./lagunak-constantes.mjs";
 import { puertasCantina } from "./cantina.mjs";
-import { andar, arrancarCantina, girar, mirarDesdePunto } from "./cantina-lienzo.mjs";
+import { arrancarCantina } from "./cantina-lienzo.mjs";
 
 const PLANTILLA = `modules/${MODULE_ID}/templates/cantina.hbs`;
 
@@ -33,7 +33,7 @@ function contexto() {
  * es cableado de DOM, no comportamiento de ventana, y duplicarlo entre v11 y
  * v12+ solo aseguraría que un día el arreglo llegue a una sola de las dos.
  */
-function encenderSala(raiz) {
+function encenderSala(raiz, alSeleccionar) {
   const sala = raiz?.querySelector?.(".lagunak-cantina-sala");
   if (!sala) return null;
 
@@ -63,36 +63,48 @@ function encenderSala(raiz) {
     },
   );
 
-  // Asomarse con el ratón. Se escucha sobre la SALA y no sobre la ventana
-  // entera: mover el ratón hacia los botones no debería estar moviendo también
-  // la cámara, que es lo que hace que una escena se sienta nerviosa.
-  sala.addEventListener("mousemove", (ev) => {
-    mando.situar(
-      mirarDesdePunto(mando.donde(), { x: ev.clientX, y: ev.clientY }, sala.getBoundingClientRect()),
-    );
-  });
-  // Al salir, la vista vuelve al frente pero NO al centro de la sala: se deja
-  // de mirar de lado, no se vuelve andando a la puerta. Perder el sitio al
-  // sacar el ratón sería deshacer lo único que se había hecho a propósito.
-  sala.addEventListener("mouseleave", () =>
-    mando.situar({ ...mando.donde(), yaw: 0, pitch: 0 }),
-  );
+  // El puntero solo SEÑALA: resalta la opción que hay debajo. La cámara está
+  // autorada y no se mueve con el ratón — mover el encuadre a mano deshacía la
+  // composición de cada plano, que es justo lo que los planos existen para
+  // proteger.
+  const puntoDelLienzo = (ev) => {
+    const rect = sala.getBoundingClientRect();
+    const escalaX = sala.width / (rect.width || 1);
+    const escalaY = sala.height / (rect.height || 1);
+    return { x: (ev.clientX - rect.left) * escalaX, y: (ev.clientY - rect.top) * escalaY };
+  };
+  const buscar = (ev) => {
+    const p = puntoDelLienzo(ev);
+    return mando
+      .opciones()
+      .reduce(
+        (mejor, opcion) => {
+          const d = Math.hypot(opcion.x - p.x, opcion.y - p.y);
+          return d < mejor.d && d <= 26 ? { opcion, d } : mejor;
+        },
+        { opcion: null, d: Infinity },
+      ).opcion;
+  };
 
-  // Y con el teclado, porque asomarse no puede ser solo de quien usa ratón. La
-  // sala es focalizable para poder recibir las flechas, y su `tabindex` va aquí
-  // y no en la plantilla: sin lienzo no hay nada que enfocar, y un `tabindex`
-  // en la plantilla dejaría una parada de tabulación vacía.
+  sala.addEventListener("mousemove", (ev) => {
+    const opcion = buscar(ev);
+    sala.style.cursor = opcion ? "pointer" : "default";
+    mando.resaltar(opcion);
+  });
+  sala.addEventListener("mouseleave", () => mando.resaltar(null));
+
+  sala.addEventListener("click", (ev) => elegir(buscar(ev), mando, alSeleccionar));
+
+  // Y con teclado: 1..9 recorren las opciones del plano, que es lo que hace que
+  // esto no sea solo de ratón. Tab sigue tabulando fuera de la sala.
   sala.tabIndex = 0;
   sala.addEventListener("keydown", (ev) => {
-    // Andar y girar son teclas distintas: WASD anda, Q/E y las flechas
-    // laterales giran sobre uno mismo. Sin girar con teclado, quien no use el
-    // ratón no puede darse la vuelta, y media sala le queda a la espalda.
-    const siguiente = andar(mando.donde(), ev.key) ?? girar(mando.donde(), ev.key);
-    if (!siguiente) return;
-    // Solo se consume la tecla que se usa: las demás siguen su camino, que es
-    // como se sigue pudiendo tabular fuera de aquí.
+    const n = Number.parseInt(ev.key, 10);
+    if (!Number.isInteger(n) || n < 1) return;
+    const opcion = mando.opciones()[n - 1];
+    if (!opcion) return;
     ev.preventDefault();
-    mando.situar(siguiente);
+    elegir(opcion, mando, alSeleccionar);
   });
 
   // El objeto de la puerta que se enfoca gira más rápido y se inclina. Vale
@@ -107,6 +119,14 @@ function encenderSala(raiz) {
   }
 
   return mando;
+}
+
+/** Qué pasa al elegir una opción del plano: o te lleva a otro sitio de la sala,
+ * o abre la mesa. Nada más — la cantina sigue sin decidir nada del juego. */
+function elegir(opcion, mando, alSeleccionar) {
+  if (!opcion) return;
+  if (opcion.tipo === "ir") mando.cortarA(opcion.destino);
+  else if (opcion.tipo === "jugar") alSeleccionar(opcion.puerta, { sentarse: true });
 }
 
 /* Al abrir la sala, el foco va a la primera puerta. Quien navega con teclado no
@@ -158,7 +178,7 @@ export function crearClaseCantinaV2({ alSeleccionar }) {
       // Una ventana que se repinta arranca OTRA sala: la anterior se para o
       // se quedan dos bucles pintando sobre el mismo lienzo.
       this.sala?.detener();
-      this.sala = encenderSala(this.element);
+      this.sala = encenderSala(this.element, alSeleccionar);
       enfocarPrimeraPuerta(this.element);
     }
 
@@ -212,7 +232,7 @@ export function crearClaseCantinaV1({ alSeleccionar }) {
       });
       // En v11 `html` es jQuery: el elemento real está en [0].
       this.sala?.detener();
-      this.sala = encenderSala(html?.[0]);
+      this.sala = encenderSala(html?.[0], alSeleccionar);
       enfocarPrimeraPuerta(html?.[0]);
     }
   };

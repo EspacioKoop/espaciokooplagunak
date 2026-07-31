@@ -9,16 +9,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import {
-  PASO_ANDAR,
-  PASO_TECLADO,
-  andar,
-  arrancarCantina,
-  girar,
-  miradaDesdePunto,
-  mirarDesdePunto,
-  miradaTrasTecla,
-} from "../scripts/cantina-lienzo.mjs";
+import { arrancarCantina } from "../scripts/cantina-lienzo.mjs";
+import { PLANOS } from "../scripts/cantina-planos.mjs";
 
 /** Lienzo de mentira que cuenta los volcados que recibe. */
 function lienzoFalso(ancho = 320, alto = 180) {
@@ -70,80 +62,6 @@ function relojFalso() {
   };
 }
 
-test("miradaDesdePunto normaliza a −1..1 con la Y invertida", () => {
-  const rect = { left: 0, top: 0, width: 200, height: 100 };
-  assert.deepEqual(miradaDesdePunto({ x: 100, y: 50 }, rect), { x: 0, y: 0 });
-  assert.deepEqual(miradaDesdePunto({ x: 200, y: 0 }, rect), { x: 1, y: 1 });
-  assert.deepEqual(miradaDesdePunto({ x: 0, y: 100 }, rect), { x: -1, y: -1 });
-});
-
-test("miradaDesdePunto no revienta con un rectángulo degenerado", () => {
-  const mirada = miradaDesdePunto({ x: 5, y: 5 }, { left: 0, top: 0, width: 0, height: 0 });
-  assert.ok(Number.isFinite(mirada.x) && Number.isFinite(mirada.y));
-});
-
-test("WASD anda igual que las flechas, en minúscula y en mayúscula", () => {
-  // Quien viene de un juego usa las teclas de un juego; y con el bloqueo de
-  // mayúsculas puesto la sala no puede dejar de responder sin explicación.
-  const origen = { x: 0, z: 0, yaw: 0, pitch: 0 };
-  for (const [tecla, flecha] of [["w", "ArrowUp"], ["s", "ArrowDown"]]) {
-    assert.deepEqual(andar(origen, tecla), andar(origen, flecha));
-    assert.deepEqual(andar(origen, tecla.toUpperCase()), andar(origen, flecha));
-  }
-});
-
-test("adelante es hacia donde se mira, no hacia el fondo de la sala", () => {
-  // Si `w` fuera siempre +z, girarse y seguir andando te llevaría de espaldas:
-  // eso convierte un paseo en un puzle.
-  const mirandoAlFrente = andar({ x: 0, z: 0, yaw: 0 }, "w");
-  assert.ok(Math.abs(mirandoAlFrente.z - PASO_ANDAR) < 1e-9);
-  assert.ok(Math.abs(mirandoAlFrente.x) < 1e-9);
-
-  const mirandoALaDerecha = andar({ x: 0, z: 0, yaw: Math.PI / 2 }, "w");
-  assert.ok(Math.abs(mirandoALaDerecha.x - PASO_ANDAR) < 1e-9, "girado, adelante sigue siendo +z");
-  assert.ok(Math.abs(mirandoALaDerecha.z) < 1e-9);
-});
-
-test("andar está acotado: no se sale de la sala por mucho que se insista", () => {
-  let camara = { x: 0, z: 0, yaw: 0, pitch: 0 };
-  for (let i = 0; i < 200; i += 1) camara = andar(camara, "w");
-  assert.ok(Number.isFinite(camara.z));
-  const otroPaso = andar(camara, "w");
-  assert.deepEqual(otroPaso, camara, "el tope no está topando");
-});
-
-test("el ratón MIRA y no anda: cambia el giro, nunca el sitio", () => {
-  // Es el reparto estándar de un juego en primera persona, y mezclarlo fue lo
-  // que hizo que el movimiento anterior no se leyera como moverse.
-  const camara = { x: 1, z: 2, yaw: 0, pitch: 0 };
-  const rect = { left: 0, top: 0, width: 200, height: 100 };
-  const mirando = mirarDesdePunto(camara, { x: 200, y: 0 }, rect);
-  assert.equal(mirando.x, camara.x, "mirar ha movido el sitio");
-  assert.equal(mirando.z, camara.z);
-  assert.notEqual(mirando.yaw, camara.yaw, "mirar no ha girado nada");
-});
-
-test("una tecla que no anda devuelve null, para que pueda probar a girar", () => {
-  assert.equal(andar({ x: 0, z: 0 }, "Tab"), null);
-  // `q` no anda: gira. Si `andar` la reclamara, girar dejaría de funcionar.
-  assert.equal(andar({ x: 0, z: 0 }, "q"), null);
-});
-
-test("las flechas mueven la mirada y se quedan dentro del rango", () => {
-  assert.deepEqual(miradaTrasTecla({ x: 0, y: 0 }, "ArrowRight"), { x: PASO_TECLADO, y: 0 });
-  assert.deepEqual(miradaTrasTecla({ x: 0, y: 0 }, "ArrowUp"), { x: 0, y: PASO_TECLADO });
-  assert.deepEqual(miradaTrasTecla({ x: 1, y: 0 }, "ArrowRight"), { x: 1, y: 0 }, "se acota");
-  assert.deepEqual(miradaTrasTecla({ x: -1, y: 0 }, "ArrowLeft"), { x: -1, y: 0 });
-});
-
-test("una tecla que no mueve devuelve null, para poder no consumirla", () => {
-  // Si esto devolviera la mirada actual, la ventana llamaría a preventDefault
-  // con cualquier tecla y no se podría ni tabular fuera de la sala.
-  assert.equal(miradaTrasTecla({ x: 0, y: 0 }, "Tab"), null);
-  assert.equal(miradaTrasTecla({ x: 0, y: 0 }, "Enter"), null);
-  assert.equal(miradaTrasTecla({ x: 0, y: 0 }, "q"), null);
-});
-
 test("arrancar pinta la sala y sus objetos de una", () => {
   const sala = lienzoFalso();
   const ficha = lienzoFalso(48, 48);
@@ -191,15 +109,15 @@ test("bajo prefers-reduced-motion no hay bucle, pero sí hay sala", () => {
   assert.ok(ficha.ctx.pintadas > 0, "el objeto tiene que verse, aunque no gire");
 });
 
-test("sin bucle, asomarse repinta igualmente", () => {
+test("sin bucle, cambiar de plano repinta igualmente", () => {
   // Es lo que hace que la sala siga siendo interactiva con el movimiento
   // apagado: mover la cámara es una respuesta a un gesto, no una animación.
   const reloj = relojFalso();
   const sala = lienzoFalso();
   const mando = arrancarCantina({ sala, objetos: [] }, { ...reloj, reducirMovimiento: true });
   const antes = sala.ctx.pintadas;
-  mando.situar({ ...mando.donde(), x: 1 });
-  assert.ok(sala.ctx.pintadas > antes, "asomarse no ha repintado");
+  mando.cortarA("barra");
+  assert.ok(sala.ctx.pintadas > antes, "cortar a otro plano no ha repintado");
 });
 
 test("enfocar un objeto no exige que exista un lienzo de sala", () => {
@@ -208,29 +126,32 @@ test("enfocar un objeto no exige que exista un lienzo de sala", () => {
   const mando = arrancarCantina({ sala: null, objetos: [] });
   assert.doesNotThrow(() => {
     mando.enfocar("poker");
-    mando.situar({ x: 0.5, z: 0.5, yaw: 0.2, pitch: 0 });
+    mando.cortarA("barra");
     mando.detener();
   });
 });
 
 // Girar sobre uno mismo (#423): en una sala uno se da la vuelta entera.
-test("girar no tiene tope: se puede dar la vuelta completa", () => {
-  let camara = { x: 0, z: 0, yaw: 0, pitch: 0 };
-  for (let i = 0; i < 40; i += 1) camara = girar(camara, "e");
-  assert.ok(Math.abs(camara.yaw) > Math.PI * 2, "el giro se ha quedado atrapado en un cono");
+
+
+
+// Los planos (#423): cámara autorada, opciones señaladas.
+test("cortar lleva a un plano del catálogo, y uno inventado no cuela", () => {
+  const sala = lienzoFalso();
+  const mando = arrancarCantina({ sala, objetos: [] });
+  assert.equal(mando.cortarA("barra"), true);
+  assert.equal(mando.donde(), "barra");
+  assert.equal(mando.cortarA("la-cocina"), false, "un destino inventado ha colado");
+  assert.equal(mando.donde(), "barra", "el plano ha cambiado a un sitio que no existe");
 });
 
-test("Q y E giran en sentidos contrarios, y las flechas laterales también", () => {
-  const origen = { x: 0, z: 0, yaw: 0, pitch: 0 };
-  assert.equal(girar(origen, "q").yaw, -girar(origen, "e").yaw);
-  assert.deepEqual(girar(origen, "ArrowLeft"), girar(origen, "q"));
-  assert.deepEqual(girar(origen, "ArrowRight"), girar(origen, "e"));
-});
-
-test("girar no mueve el sitio, y andar no gira", () => {
-  const camara = { x: 1, z: 1, yaw: 0.3, pitch: 0 };
-  const girada = girar(camara, "e");
-  assert.equal(girada.x, camara.x);
-  assert.equal(girada.z, camara.z);
-  assert.equal(andar(camara, "w").yaw, camara.yaw);
+test("desde cualquier plano se ve SIEMPRE alguna opción", () => {
+  // Es la regla del modelo GTA/RDR2: lo que se puede hacer se ve. Un plano sin
+  // salidas visibles es un callejón, y en una cantina eso es un fallo.
+  const sala = lienzoFalso();
+  const mando = arrancarCantina({ sala, objetos: [] });
+  for (const plano of PLANOS) {
+    mando.cortarA(plano.id);
+    assert.ok(mando.opciones().length > 0, `el plano ${plano.id} no ofrece nada`);
+  }
 });

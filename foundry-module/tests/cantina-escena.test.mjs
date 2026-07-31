@@ -8,7 +8,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { MUEBLES, PASEO, acotarCamara, caja, componerCantina } from "../scripts/cantina-escena.mjs";
+import { MUEBLES, caja, componerCantina } from "../scripts/cantina-escena.mjs";
+import { PLANOS } from "../scripts/cantina-planos.mjs";
 import { EPOCAS } from "../scripts/retro3d.mjs";
 
 test("la caja tiene ocho vértices, seis caras y las medidas que se le piden", () => {
@@ -65,57 +66,8 @@ test("la sala se compone en las dos épocas y ninguna se queda vacía", () => {
 });
 
 // Moverse por la sala (#423): la cámara se asoma, no viaja.
-test("andar y mirar son cosas distintas, y las dos cambian la vista", () => {
-  const quieto = componerCantina({ camara: { x: 0, z: 0, yaw: 0, pitch: 0 } });
-  const andado = componerCantina({ camara: { x: 0, z: 2, yaw: 0, pitch: 0 } });
-  const girado = componerCantina({ camara: { x: 0, z: 0, yaw: 0.4, pitch: 0 } });
-  const alzado = componerCantina({ camara: { x: 0, z: 0, yaw: 0, pitch: 0.2 } });
-  assert.notDeepEqual(andado.poligonos, quieto.poligonos, "andar no mueve nada");
-  assert.notDeepEqual(girado.poligonos, quieto.poligonos, "girar no mueve nada");
-  assert.notDeepEqual(alzado.poligonos, quieto.poligonos, "mirar arriba no mueve nada");
-  // Y no son lo mismo: andar de frente no puede dar la misma vista que girar.
-  assert.notDeepEqual(andado.poligonos, girado.poligonos);
-});
-
-test("el paseo está acotado: no se atraviesa la barra ni se sale de la sala", () => {
-  // Detrás de la barra no hay nada modelado; dejar entrar ahí es enseñar el
-  // decorado por dentro.
-  const tope = componerCantina({ camara: { x: PASEO.maxX, z: PASEO.maxZ } });
-  const pasado = componerCantina({ camara: { x: 900, z: 900 } });
-  assert.deepEqual(pasado.poligonos, tope.poligonos);
-  assert.deepEqual(acotarCamara({ x: -50, z: -50 }), {
-    x: PASEO.minX,
-    z: PASEO.minZ,
-    yaw: 0,
-    pitch: 0,
-  });
-});
-
-test("una cámara rota deja la sala centrada, no vacía", () => {
-  const rota = componerCantina({ camara: { x: NaN, z: undefined, yaw: NaN } });
-  assert.deepEqual(rota.poligonos, componerCantina().poligonos);
-  assert.ok(rota.poligonos.length > 0);
-});
-
-test("hay paralaje: al desplazarse, lo cercano se mueve más que lo lejano", () => {
-  // Es LA razón de que la cámara se mueva. Sin paralaje esto sería una imagen
-  // que se agita, y quien mire no leerá la sala como un espacio con fondo.
-  const quieto = componerCantina({ camara: { x: 0, z: 0 } });
-  const asomado = componerCantina({ camara: { x: 2, z: 0 } });
-  const centroX = (escena, indice) => {
-    const puntos = escena.poligonos[indice].puntos;
-    return puntos.reduce((suma, p) => suma + p.x, 0) / puntos.length;
-  };
-  // Los polígonos vienen ordenados de lejos a cerca: el primero y el último.
-  const lejano = Math.abs(centroX(asomado, 0) - centroX(quieto, 0));
-  const cercano = Math.abs(
-    centroX(asomado, asomado.poligonos.length - 1) - centroX(quieto, quieto.poligonos.length - 1),
-  );
-  assert.ok(cercano > lejano, `sin paralaje: cercano ${cercano}, lejano ${lejano}`);
-});
-
 test("entrada rota no propaga números rotos a la escena", () => {
-  const escena = componerCantina({ ancho: NaN, alto: undefined, camara: { yaw: NaN } });
+  const escena = componerCantina({ ancho: NaN, alto: undefined, plano: "no-existe" });
   for (const poligono of escena.poligonos) {
     for (const punto of poligono.puntos) {
       assert.ok(Number.isFinite(punto.x) && Number.isFinite(punto.y));
@@ -173,15 +125,28 @@ test("hay pared de entrada a la espalda de quien llega", () => {
   assert.ok(nombres.includes("vanoEntrada"), "falta el vano por el que se entra");
   // Y va DETRÁS del punto de partida: si estuviera delante, taparía la barra.
   for (const mueble of MUEBLES.filter((m) => m.nombre.startsWith("paredEntrada"))) {
-    assert.ok(mueble.centro[2] < PASEO.minZ, `la entrada se ha colado en la sala: z=${mueble.centro[2]}`);
+    assert.ok(mueble.centro[2] < -2, `la entrada se ha colado en la sala: z=${mueble.centro[2]}`);
   }
 });
 
-test("mires hacia donde mires desde el centro, hay sala", () => {
-  // Cuatro rumbos cardinales: en ninguno puede salir un cuadro vacío, que es lo
-  // que pasaba al darse la vuelta cuando la sala no tenía cuarta pared.
-  for (const yaw of [0, Math.PI / 2, Math.PI, -Math.PI / 2]) {
-    const escena = componerCantina({ camara: { x: 0, z: 0, yaw } });
-    assert.ok(escena.poligonos.length > 0, `mirando a ${yaw.toFixed(2)} no se ve nada`);
+test("todos los planos enseñan sala y ofrecen algo que hacer", () => {
+  // Un plano vacío o sin salidas es un callejón: la cámara está autorada, así
+  // que si un encuadre no funciona no hay forma de que el jugador lo arregle.
+  for (const plano of PLANOS) {
+    const escena = componerCantina({ plano: plano.id });
+    assert.ok(escena.poligonos.length > 20, `el plano ${plano.id} está casi vacío`);
+    assert.ok(escena.opciones.length > 0, `el plano ${plano.id} no ofrece nada`);
+    assert.equal(escena.plano, plano.id);
   }
+});
+
+test("una opción fuera de cuadro se pega al borde, no desaparece", () => {
+  // Descartarla sería esconder una salida. Se marca `fuera` para poder pintarla
+  // distinto: «está ahí» y «está por ahí» no son lo mismo.
+  const escena = componerCantina({ plano: "ventanal" });
+  for (const opcion of escena.opciones) {
+    assert.ok(opcion.x >= 0 && opcion.x <= escena.ancho);
+    assert.ok(opcion.y >= 0 && opcion.y <= escena.alto);
+  }
+  assert.ok(escena.opciones.some((o) => o.fuera), "ninguna se ha marcado como fuera");
 });

@@ -30,6 +30,7 @@ import { componerEscena, focal, proyectar, transformar } from "./retro3d.mjs";
 import { campoEstelar, proyectarEstrellas } from "./retro3d-estrellas.mjs";
 import { cuerpoMayor, cuerposPorLaVentana } from "./cantina-ventana.mjs";
 import { piezasDeLaGente } from "./cantina-avatar.mjs";
+import { PLANO_INICIAL, planoPorId } from "./cantina-planos.mjs";
 
 /**
  * Caja alineada a los ejes, dada por su centro y sus medidas. Es la única
@@ -371,29 +372,6 @@ export const MUEBLES = Object.freeze([
 export const FOV = 42;
 
 /**
- * Dónde puede estar quien anda por la cantina. La sala está construida para
- * verse desde la puerta, así que el paseo se acota a la mitad delantera: detrás
- * de la barra no hay nada modelado, y dejar entrar ahí es enseñar el decorado
- * por dentro. El tope de `z` es además la barra: no se atraviesa.
- */
-export const PASEO = Object.freeze({
-  minX: -3.4,
-  maxX: 3.4,
-  minZ: -1.5, // pegado a la puerta
-  maxZ: 2.6, // justo antes de la barra
-  // Altura de los ojos, en `y` ABSOLUTA. El suelo tiene su cara superior en
-  // −1.75, así que esto deja la mirada a 1.09 sobre el suelo y el canto de la
-  // barra a 0.75: proporción 1.45, la de una persona de pie ante una barra.
-  //
-  // Estaba en 0.55, o sea 2.3 sobre el suelo: proporción 3.07. Esa era la causa
-  // real de que la sala «quedara mal» y no se supiera decir por qué — se miraba
-  // como se mira una casa de muñecas, con los taburetes a la altura de la
-  // rodilla y el techo a seis metros. Todo lo demás (humo, luces, texturas) fue
-  // maquillar una fractura de escala.
-  alto: -0.66,
-});
-
-/**
  * Dónde están atornillados los trastos electrónicos, en coordenadas de MUNDO.
  * Antes vivían en píxeles de pantalla y por eso flotaban como un HUD: un panel
  * es un objeto de la pared, no una capa de interfaz.
@@ -409,36 +387,14 @@ export const ANCLAS_CACHIVACHE = Object.freeze([
   Object.freeze({ punto: [2.2, 2.0, 6.7], tipo: "barras" }),
 ]);
 
-/** Cuánto se mira a los lados y arriba/abajo con el ratón, en radianes. */
-export const MIRA = Object.freeze({ yaw: 0.55, pitch: 0.22 });
-
-/**
- * Sitúa a quien mira dentro de la sala, acotado al paseo. Es lo que convierte
- * el «asomarse» anterior en estar de pie en un sitio: la posición y la mirada
- * son cosas distintas, como en cualquier juego en primera persona, y por eso el
- * ratón MIRA y las teclas ANDAN en vez de compartir un único vaivén.
- */
-export function acotarCamara(camara = {}) {
-  const x = Number.isFinite(camara.x) ? camara.x : 0;
-  const z = Number.isFinite(camara.z) ? camara.z : 0;
-  return {
-    x: Math.max(PASEO.minX, Math.min(PASEO.maxX, x)),
-    z: Math.max(PASEO.minZ, Math.min(PASEO.maxZ, z)),
-    // El giro NO se acota: en una sala uno se da la vuelta entera. Lo que se
-    // acota es dónde se está, no hacia dónde se mira.
-    yaw: Number.isFinite(camara.yaw) ? camara.yaw : 0,
-    pitch: Number.isFinite(camara.pitch) ? camara.pitch : 0,
-  };
-}
-
 /**
  * Lleva los puntos de un cuerpo lejano —que vienen en un plano, centrados en su
  * punto áureo— a una dirección del mundo, y los proyecta con la misma cámara que
  * la sala. Así el planeta se queda QUIETO ahí fuera mientras tú te mueves, que
  * es lo que hace que exista un fuera.
  */
-function proyectarCuerpo(puntos, { ancho, alto, yaw, pitch, distancia = 90 }) {
-  const f = focal(alto, FOV);
+function proyectarCuerpo(puntos, { ancho, alto, yaw, pitch, fov = FOV, distancia = 90 }) {
+  const f = focal(alto, fov);
   const salida = [];
   for (const punto of puntos) {
     // El plano del cuerpo se coloca a `distancia` delante, escalando lo que en
@@ -461,7 +417,9 @@ export function componerCantina(opciones = {}) {
     alto = 360,
     epoca,
     fondo = CANTINA.ventana,
-    camara,
+    // Desde qué plano se mira. Es un id del catálogo de `cantina-planos.mjs`:
+    // la cámara ya no la pone quien llama, la pone el encuadre autorado.
+    plano = PLANO_INICIAL,
     // Quién está en la cantina ahora mismo. Las personas entran en la MISMA
     // lista que los muebles: para el pintor un avatar es un taburete con más
     // cajas, y así no hay ni un pintor nuevo ni una rama por tipo de cosa.
@@ -481,9 +439,12 @@ export function componerCantina(opciones = {}) {
   // y se mira en una dirección (`yaw`, `pitch`). El «asomo» anterior mezclaba
   // las dos cosas en un vaivén y por eso no se leía como moverse: desplazarse y
   // girar a la vez, siempre atado, es un travelling de cine, no andar.
-  const puesto = acotarCamara(camara);
-  const desvioX = puesto.x;
-  const yaw = puesto.yaw;
+  const encuadre = planoPorId(plano);
+  const [camX, camY, camZ] = encuadre.posicion;
+  const yaw = encuadre.yaw;
+  // Cada plano trae su objetivo: un general de sala y un primer plano de barra
+  // no se filman con la misma lente, y usar una sola los aplana a los dos.
+  const fovPlano = Number.isFinite(encuadre.fov) ? encuadre.fov : FOV;
 
   const habitantes = piezasDeLaGente(gente, { omitirId: yo });
   const partes = [...MUEBLES, ...habitantes].map((mueble) =>
@@ -492,21 +453,17 @@ export function componerCantina(opciones = {}) {
     // v' = R(yaw)·(v − cámara). Pasarla como `posicion` la aplicaría después de
     // girar, que es una cámara orbitando un punto en vez de andando por la sala.
     componerEscena(caja(
-      [
-        mueble.centro[0] - desvioX,
-        mueble.centro[1] - PASEO.alto,
-        mueble.centro[2] - puesto.z,
-      ],
+      [mueble.centro[0] - camX, mueble.centro[1] - camY, mueble.centro[2] - camZ],
       mueble.medidas,
     ), {
       ancho,
       alto,
       epoca,
-      fov: FOV,
+      fov: fovPlano,
       color: mueble.color,
       fondo,
       yaw,
-      pitch: puesto.pitch,
+      pitch: encuadre.pitch,
       posicion: [0, 0, 0],
     }),
   );
@@ -531,9 +488,9 @@ export function componerCantina(opciones = {}) {
     ancho,
     alto,
     epoca,
-    fov: FOV,
+    fov: fovPlano,
     yaw,
-    pitch: puesto.pitch,
+    pitch: encuadre.pitch,
     // Sin paralaje propio: están infinitamente lejos, que es lo que las hace
     // leerse como cielo y no como confeti pegado al cristal.
   });
@@ -551,7 +508,13 @@ export function componerCantina(opciones = {}) {
   // áurea sigue mandando, pero sobre su DIRECCIÓN en el mundo, no sobre el
   // píxel: se coloca fuera, en el espacio, y cae donde tenga que caer.
   const fuera = [
-    ...proyectarCuerpo(cuerpoMayor({ ancho, alto }), { ancho, alto, yaw, pitch: puesto.pitch }),
+    ...proyectarCuerpo(cuerpoMayor({ ancho, alto }), {
+      ancho,
+      alto,
+      yaw,
+      pitch: encuadre.pitch,
+      fov: fovPlano,
+    }),
     ...estrellas,
     ...cuerposPorLaVentana(espacio ?? {}, { ancho, alto }),
   ];
@@ -561,11 +524,11 @@ export function componerCantina(opciones = {}) {
   // HUD pegado al cristal, que es justo lo que no son — son objetos atornillados
   // a una pared, y tienen que moverse con ella.
   const anclas = [];
-  const f = focal(alto, FOV);
+  const f = focal(alto, fovPlano);
   for (const ancla of ANCLAS_CACHIVACHE) {
     const v = transformar(
-      [ancla.punto[0] - desvioX, ancla.punto[1] - PASEO.alto, ancla.punto[2] - puesto.z],
-      { yaw, pitch: puesto.pitch, posicion: [0, 0, 0] },
+      [ancla.punto[0] - camX, ancla.punto[1] - camY, ancla.punto[2] - camZ],
+      { yaw, pitch: encuadre.pitch, posicion: [0, 0, 0] },
     );
     if (!(v[2] > 0.4)) continue;
     const { x, y } = proyectar(v, { ancho, alto, f, rejilla: 1 });
@@ -574,5 +537,44 @@ export function componerCantina(opciones = {}) {
     anclas.push({ x, y, escala: Math.max(0.35, Math.min(2.2, 6 / v[2])), tipo: ancla.tipo });
   }
 
-  return { ancho, alto, epoca: partes[0]?.epoca, poligonos, estrellas: fuera, anclas };
+  // Y dónde cae en pantalla cada cosa que se puede hacer desde este plano. Es
+  // lo que hace que las opciones sean OBVIAS —modelo GTA/RDR2— en vez de tener
+  // que barrer la sala con el ratón a ver qué responde.
+  const opcionesVisibles = [];
+  const margen = Math.round(Math.min(ancho, alto) * 0.08);
+  for (const accion of encuadre.acciones ?? []) {
+    const v = transformar(
+      [accion.ancla[0] - camX, accion.ancla[1] - camY, accion.ancla[2] - camZ],
+      { yaw, pitch: encuadre.pitch, posicion: [0, 0, 0] },
+    );
+    // Una opción NUNCA se descarta por caer fuera del cuadro: se pega al borde
+    // por el que se sale, como el marcador de un objetivo a tu espalda en un
+    // juego de mundo abierto. Descartarla sería esconder una salida — y la
+    // regla de este plano es que lo que se puede hacer se VE, sin barrer la
+    // pantalla con el ratón a ver qué responde.
+    const detras = !(v[2] > 0.4);
+    const proyectado = detras ? null : proyectar(v, { ancho, alto, f, rejilla: 1 });
+    const acotar = (valor, tope) => Math.max(margen, Math.min(tope - margen, valor));
+    opcionesVisibles.push({
+      ...accion,
+      // A la espalda: abajo, y por el lado hacia el que habría que girarse.
+      x: detras ? (v[0] < 0 ? margen : ancho - margen) : acotar(proyectado.x, ancho),
+      y: detras ? alto - margen : acotar(proyectado.y, alto),
+      // `fuera` deja que quien pinta lo dibuje distinto: una cosa es «está
+      // ahí» y otra «está por ahí».
+      fuera: detras || proyectado.x < 0 || proyectado.y < 0 || proyectado.x > ancho || proyectado.y > alto,
+      profundidad: detras ? Infinity : v[2],
+    });
+  }
+
+  return {
+    ancho,
+    alto,
+    epoca: partes[0]?.epoca,
+    poligonos,
+    estrellas: fuera,
+    anclas,
+    plano: encuadre.id,
+    opciones: opcionesVisibles,
+  };
 }

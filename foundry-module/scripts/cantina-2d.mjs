@@ -248,11 +248,42 @@ export function pintarCachivaches(ctx, { anclas = [], ms = 0 } = {}) {
 }
 
 /**
+ * Los rótulos de lo que se puede hacer desde este plano. Es el modelo de GTA V
+ * o RDR2: la cámara está autorada, pero lo que puedes hacer desde donde estás
+ * está SEÑALADO — no hay que descubrirlo barriendo la pantalla con el ratón.
+ *
+ * Un punto en su sitio y una pastilla debajo. `fuera` marca lo que no cabe en
+ * el cuadro y se ha pegado al borde: se dibuja más apagado, porque «está ahí» y
+ * «está por ahí» no son lo mismo y confundirlos manda a la gente a ciegas.
+ */
+export function pintarOpciones(ctx, { opciones = [], resaltada = null } = {}) {
+  if (!ctx || !Array.isArray(opciones)) return 0;
+  let pintadas = 0;
+  for (const opcion of opciones) {
+    const activa = resaltada && opcion.destino === resaltada.destino && opcion.puerta === resaltada.puerta;
+    const r = activa ? 5 : 3;
+    // Halo: sin él, un punto claro sobre la madera clara desaparece.
+    ctx.fillStyle = velo(CANTINA.sombra, 0.5);
+    ctx.fillRect(opcion.x - r - 1, opcion.y - r - 1, r * 2 + 3, r * 2 + 3);
+    ctx.fillStyle = opcion.fuera ? CANTINA.nervio : CANTINA.lampara;
+    ctx.fillRect(opcion.x - r, opcion.y - r, r * 2, r * 2);
+    // Y el tallo hacia abajo, que es lo que ata el rótulo al suelo en vez de
+    // dejarlo flotando como un icono de interfaz.
+    if (!opcion.fuera) {
+      ctx.fillStyle = velo(CANTINA.lampara, 0.55);
+      ctx.fillRect(opcion.x, opcion.y + r, 1, 8);
+    }
+    pintadas += 1;
+  }
+  return pintadas;
+}
+
+/**
  * Todas las capas, en el orden en que se pintan. El orden importa: la luz va
  * antes que las líneas (si no, las líneas se comen el halo) y la viñeta va la
  * última, porque tiene que oscurecer también lo que han puesto las demás.
  */
-export function pintarCapa2D(ctx, { ancho, alto, semilla = 1, ms = 0, anclas = [] } = {}) {
+export function pintarCapa2D(ctx, { ancho, alto, semilla = 1, ms = 0, anclas = [], opciones = [], resaltada = null } = {}) {
   if (!ctx || !(ancho > 0) || !(alto > 0)) return false;
   pintarLuzAlta(ctx, { ancho, alto });
   // Luz y humo antes que las líneas: si fueran después, la trama se comería el
@@ -265,5 +296,8 @@ export function pintarCapa2D(ctx, { ancho, alto, semilla = 1, ms = 0, anclas = [
   pintarPolvo(ctx, { ancho, alto, semilla });
   pintarLineas(ctx, { ancho, alto });
   pintarVinieta(ctx, { ancho, alto });
+  // Las opciones van LAS ÚLTIMAS: son lo único que no puede quedar tapado por
+  // el ambiente. Si el humo se come una salida, la sala deja de ser navegable.
+  pintarOpciones(ctx, { opciones, resaltada });
   return true;
 }

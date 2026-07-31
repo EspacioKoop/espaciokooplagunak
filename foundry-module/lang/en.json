@@ -372,6 +372,7 @@
   "LAGUNAK.Ajustes.Requisitos.Pista": "When enabled, each station asks for a minimum score in one of its abilities (engineering asks for Intelligence or Wisdom, weapons for Dexterity or Strength, and so on). The GM is exempt and can always reassign anyone. It is a way to organise the table, not a hard barrier.",
   "LAGUNAK.Ajustes.RequisitosMinimo.Nombre": "Minimum score required",
   "LAGUNAK.Ajustes.RequisitosMinimo.Pista": "Only applies when the above is enabled. 12 is «above average» without being a filter.",
+  "LAGUNAK.Minijuegos.Baraja.Nombre": "Ship's deck (Lagunak)",
   "LAGUNAK.Minijuegos.Accion.Sentarse": "Take a seat",
   "LAGUNAK.Minijuegos.Accion.Mirar": "Watch the table",
   "LAGUNAK.Minijuegos.Accion.Levantarse": "Leave the table",

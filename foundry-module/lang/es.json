@@ -372,6 +372,7 @@
   "LAGUNAK.Ajustes.Requisitos.Pista": "Cuando está activo, cada puesto pide una puntuación mínima en alguna de sus características (ingeniería pide Inteligencia o Sabiduría, armas pide Destreza o Fuerza, etc.). El director de juego queda exento y puede recolocar a cualquiera. Es una ayuda para organizar la mesa, no una barrera infranqueable.",
   "LAGUNAK.Ajustes.RequisitosMinimo.Nombre": "Puntuación mínima exigida",
   "LAGUNAK.Ajustes.RequisitosMinimo.Pista": "Solo se aplica si lo anterior está activo. 12 es «por encima de la media» sin llegar a ser una criba.",
+  "LAGUNAK.Minijuegos.Baraja.Nombre": "Baraja de la nave (Lagunak)",
   "LAGUNAK.Minijuegos.Accion.Sentarse": "Sentarse",
   "LAGUNAK.Minijuegos.Accion.Mirar": "Mirar la mesa",
   "LAGUNAK.Minijuegos.Accion.Levantarse": "Levantarse",

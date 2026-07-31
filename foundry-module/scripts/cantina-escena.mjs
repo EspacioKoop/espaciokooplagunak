@@ -288,12 +288,15 @@ export const MUEBLES = Object.freeze([
  * el mamparo lejano da la profundidad que una imagen fija nunca da.
  */
 export const ASOMO = Object.freeze({
-  // Corto a propósito. Con el asomo largo la sala se deformaba al llegar al
-  // tope —perspectiva muy abierta vista desde muy de lado— y parecía rota en
-  // vez de mirada desde otro sitio. El paralaje se nota igual con la mitad.
-  lado: 0.8, // unidades a izquierda y derecha
-  alto: 0.3, // agacharse o estirarse un poco
-  giro: 0.1, // radianes: la cabeza sigue al cuerpo
+  // Recorrido amplio, que es lo que hace que la sala se sienta un sitio y no
+  // una foto que se agita. El primer intento largo deformaba la sala al llegar
+  // al tope, pero la culpa no era del recorrido sino del CAMPO DE VISIÓN: con
+  // 60° abiertos, mirar desde muy de lado estira las cajas de los bordes hasta
+  // que parecen rotas. Con el campo más cerrado (ver `FOV`) el mismo recorrido
+  // se lee como moverse, así que aquí se puede ser generoso.
+  lado: 2.2, // unidades a izquierda y derecha
+  alto: 0.75, // agacharse o estirarse
+  giro: 0.16, // radianes: la cabeza sigue al cuerpo, sin llegar a girarse
 });
 
 /** Acota a [−limite, limite] y convierte lo que no es número en 0: un `NaN`
@@ -315,6 +318,16 @@ function asomo(valor, limite) {
  * @returns {{ancho:number, alto:number, epoca:string, poligonos:Array}} misma
  *   forma que devuelve `componerEscena`, para que el pintor no distinga.
  */
+/**
+ * Campo de visión de la sala, en grados. Más cerrado que el del motor (60°) a
+ * propósito: un interior con gran angular exagera la profundidad y deforma todo
+ * lo que se aleja del centro, que es lo que hacía parecer rota la sala al
+ * asomarse. Un objetivo más largo es además lo que se usa para filmar
+ * interiores, y por eso esto se parece más a una nave y menos a una cámara de
+ * seguridad.
+ */
+export const FOV = 42;
+
 export function componerCantina(opciones = {}) {
   const {
     ancho = 480,
@@ -340,6 +353,7 @@ export function componerCantina(opciones = {}) {
       ancho,
       alto,
       epoca,
+      fov: FOV,
       color: mueble.color,
       fondo,
       yaw,
@@ -374,6 +388,7 @@ export function componerCantina(opciones = {}) {
     ancho,
     alto,
     epoca,
+    fov: FOV,
     yaw,
     // Sin paralaje propio: están infinitamente lejos, que es lo que las hace
     // leerse como cielo y no como confeti pegado al cristal.

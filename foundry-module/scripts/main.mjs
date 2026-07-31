@@ -310,6 +310,15 @@ Hooks.once("ready", () => {
     recordarVista(vista, acciones);
     recordarVistaDados(vista, acciones);
     refrescarMesa();
+    // Sentarse desde la cantina se resuelve AQUÍ y no al pulsar la puerta: al
+    // pulsarla puede que la mesa ni exista todavía —`abrirMesa` publica con un
+    // `settings.set` asíncrono— y proponer contra una mesa que aún no está
+    // publicada se rechaza por «esa mesa ya no existe». Se espera a la primera
+    // vista, que es cuando el coordinador ya reparte acciones de verdad.
+    if (sentarsePendiente && acciones?.includes?.("join")) {
+      sentarsePendiente = false;
+      proponerAccion({ tipo: "join" });
+    }
   });
   // Un rechazo tiene que verse: sin esto es indistinguible de un botón que no
   // funciona, que es exactamente lo que parece desde el otro lado.
@@ -357,7 +366,11 @@ function claseMesa(nombreJuego) {
   return esV2 ? crearClaseMesaV2(inyeccion) : crearClaseMesaV1(inyeccion);
 }
 
-function abrirMesaMinijuegos(idPuerta = "poker") {
+/* Quien cruzó la puerta pidiendo asiento. Es una intención, no un estado de la
+ * mesa: se consume con la primera vista que ofrezca `join` y se olvida. */
+let sentarsePendiente = false;
+
+function abrirMesaMinijuegos(idPuerta = "poker", { sentarse = false } = {}) {
   // La puerta manda, y una que no esté en el catálogo no abre nada. Caer al
   // póker "por si acaso" sería peor que no hacer nada: abriría una mesa que
   // nadie ha pedido, y taparía justo el error que hay que ver — una puerta
@@ -368,6 +381,9 @@ function abrirMesaMinijuegos(idPuerta = "poker") {
     return;
   }
   const nombreJuego = puerta.juego;
+  // Se apunta antes de abrir: la vista que resuelve la intención puede llegar
+  // durante la propia apertura.
+  sentarsePendiente = Boolean(sentarse);
 
 
   // Si aún no ha llegado ninguna vista dirigida, se arranca con el estado

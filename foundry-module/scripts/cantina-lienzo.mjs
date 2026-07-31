@@ -43,11 +43,28 @@ export function miradaDesdePunto({ x, y }, rect) {
  * el teclado tiene que poder recorrer el rango entero sin parecer un salto. */
 export const PASO_TECLADO = 0.25;
 
+/**
+ * Todas las formas de moverse por la sala. Flechas y WASD a la vez, y en
+ * minúscula y mayúscula: quien juega con el bloqueo de mayúsculas puesto no
+ * tiene por qué descubrir que la sala deja de responder, y quien viene de un
+ * juego usa las teclas de un juego sin tener que aprenderse las de este.
+ *
+ * Es una tabla y no un `switch` por lo mismo que el catálogo de puertas: añadir
+ * un esquema más —IJKL, un mando— es una entrada, no una rama.
+ */
 const TECLAS = Object.freeze({
   ArrowLeft: { x: -PASO_TECLADO, y: 0 },
   ArrowRight: { x: PASO_TECLADO, y: 0 },
   ArrowUp: { x: 0, y: PASO_TECLADO },
   ArrowDown: { x: 0, y: -PASO_TECLADO },
+  a: { x: -PASO_TECLADO, y: 0 },
+  d: { x: PASO_TECLADO, y: 0 },
+  w: { x: 0, y: PASO_TECLADO },
+  s: { x: 0, y: -PASO_TECLADO },
+  A: { x: -PASO_TECLADO, y: 0 },
+  D: { x: PASO_TECLADO, y: 0 },
+  W: { x: 0, y: PASO_TECLADO },
+  S: { x: 0, y: -PASO_TECLADO },
 });
 
 /** Mirada tras pulsar una tecla, acotada a −1..1. Devuelve `null` si esa tecla

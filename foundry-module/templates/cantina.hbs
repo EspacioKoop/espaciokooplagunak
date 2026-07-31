@@ -8,7 +8,7 @@
   <p class="lagunak-cantina-intro">{{localize "LAGUNAK.Cantina.Intro"}}</p>
   <ul class="lagunak-cantina-puertas" aria-label="{{localize "LAGUNAK.Cantina.Puertas"}}">
     {{#each puertas}}
-      <li>
+      <li class="lagunak-cantina-fila">
         <button type="button" class="lagunak-cantina-puerta" data-puerta="{{this.id}}">
           {{!-- El objeto que gira. Es adorno: el nombre accesible lo pone el
                 <span>, y si el lienzo no pinta, el botón sigue completo. --}}
@@ -16,6 +16,13 @@
                   data-objeto="{{this.objeto}}" aria-hidden="true"></canvas>
           <i class="{{this.icono}}" aria-hidden="true"></i>
           <span>{{this.titulo}}</span>
+        </button>
+        {{!-- Sentarse es una acción distinta de mirar, y por eso es un botón
+              aparte: el GM puede querer poner la mesa sin jugar, y quien pasa
+              puede querer mirar antes de comprometerse. --}}
+        <button type="button" class="lagunak-cantina-sentarse"
+                data-puerta="{{this.id}}" data-sentarse="1">
+          {{localize "LAGUNAK.Cantina.Sentarse"}}
         </button>
       </li>
     {{/each}}

@@ -134,16 +134,20 @@ export function crearClaseCantinaV2({ alSeleccionar }) {
     // Método propio y no un manejador anónimo: así el clic real y el test que
     // ejercita la decisión sin DOM (el arnés de `main-compat.test.mjs` no
     // simula clics dentro de una ventana) llaman a la misma ruta.
-    seleccionarPuerta(id) {
+    seleccionarPuerta(id, opciones = {}) {
       if (!id) return;
-      alSeleccionar(id);
+      alSeleccionar(id, opciones);
       this.close();
     }
 
     _onRender(context, options) {
       super._onRender?.(context, options);
       this.element?.querySelectorAll?.("[data-puerta]")?.forEach((boton) => {
-        boton.addEventListener("click", () => this.seleccionarPuerta(boton.dataset.puerta));
+        boton.addEventListener("click", () =>
+          this.seleccionarPuerta(boton.dataset.puerta, {
+            sentarse: boton.dataset.sentarse === "1",
+          }),
+        );
       });
       // Una ventana que se repinta arranca OTRA sala: la anterior se para o
       // se quedan dos bucles pintando sobre el mismo lienzo.
@@ -181,9 +185,9 @@ export function crearClaseCantinaV1({ alSeleccionar }) {
       return contexto();
     }
 
-    seleccionarPuerta(id) {
+    seleccionarPuerta(id, opciones = {}) {
       if (!id) return;
-      alSeleccionar(id);
+      alSeleccionar(id, opciones);
       this.close();
     }
 
@@ -196,7 +200,9 @@ export function crearClaseCantinaV1({ alSeleccionar }) {
     activateListeners(html) {
       super.activateListeners(html);
       html.find("[data-puerta]").on("click", (ev) => {
-        this.seleccionarPuerta(ev.currentTarget?.dataset?.puerta);
+        this.seleccionarPuerta(ev.currentTarget?.dataset?.puerta, {
+          sentarse: ev.currentTarget?.dataset?.sentarse === "1",
+        });
       });
       // En v11 `html` es jQuery: el elemento real está en [0].
       this.sala?.detener();

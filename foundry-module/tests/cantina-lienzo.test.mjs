@@ -78,6 +78,18 @@ test("miradaDesdePunto no revienta con un rectángulo degenerado", () => {
   assert.ok(Number.isFinite(mirada.x) && Number.isFinite(mirada.y));
 });
 
+test("WASD mueve igual que las flechas, en minúscula y en mayúscula", () => {
+  // Quien viene de un juego usa las teclas de un juego; y con el bloqueo de
+  // mayúsculas puesto la sala no puede dejar de responder sin explicación.
+  for (const [tecla, flecha] of [["a", "ArrowLeft"], ["d", "ArrowRight"], ["w", "ArrowUp"], ["s", "ArrowDown"]]) {
+    assert.deepEqual(miradaTrasTecla({ x: 0, y: 0 }, tecla), miradaTrasTecla({ x: 0, y: 0 }, flecha));
+    assert.deepEqual(
+      miradaTrasTecla({ x: 0, y: 0 }, tecla.toUpperCase()),
+      miradaTrasTecla({ x: 0, y: 0 }, flecha),
+    );
+  }
+});
+
 test("las flechas mueven la mirada y se quedan dentro del rango", () => {
   assert.deepEqual(miradaTrasTecla({ x: 0, y: 0 }, "ArrowRight"), { x: PASO_TECLADO, y: 0 });
   assert.deepEqual(miradaTrasTecla({ x: 0, y: 0 }, "ArrowUp"), { x: 0, y: PASO_TECLADO });
@@ -89,7 +101,8 @@ test("una tecla que no mueve devuelve null, para poder no consumirla", () => {
   // Si esto devolviera la mirada actual, la ventana llamaría a preventDefault
   // con cualquier tecla y no se podría ni tabular fuera de la sala.
   assert.equal(miradaTrasTecla({ x: 0, y: 0 }, "Tab"), null);
-  assert.equal(miradaTrasTecla({ x: 0, y: 0 }, "a"), null);
+  assert.equal(miradaTrasTecla({ x: 0, y: 0 }, "Enter"), null);
+  assert.equal(miradaTrasTecla({ x: 0, y: 0 }, "q"), null);
 });
 
 test("arrancar pinta la sala y sus objetos de una", () => {

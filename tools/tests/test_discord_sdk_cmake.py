@@ -210,7 +210,11 @@ def test_cmakelists_usa_el_modulo_y_no_una_copia_del_bloque(tmp_path):
 def test_la_clave_de_cache_de_ci_lleva_la_version_fijada():
     """Si la clave se queda atrás al subir de versión, CI serviría el SDK viejo
     desde la caché y la versión fijada dejaría de significar nada. Van a mano en
-    dos ficheros porque el `cmake` que sabe la versión aún no ha corrido."""
+    dos ficheros porque el `cmake` que sabe la versión aún no ha corrido.
+
+    Las claves son distintas a propósito: cross-compile parchea Windows.h para
+    Linux y la caché nativa no puede reutilizar esa cabecera modificada.
+    """
     modulo = MODULO.read_text(encoding="utf-8")
     version = None
     for linea in modulo.splitlines():
@@ -220,3 +224,6 @@ def test_la_clave_de_cache_de_ci_lleva_la_version_fijada():
     assert version, "no se encontró DISCORD_SDK_VERSION"
     flujo = (RAIZ / ".github" / "workflows" / "cicd.yml").read_text(encoding="utf-8")
     assert f"key: discord-game-sdk-win32-{version}" in flujo
+    assert f"key: discord-game-sdk-windows-native-{version}" in flujo
+    assert "path: _build_win32/externals/discord" in flujo
+    assert "path: build/externals/discord" in flujo

@@ -254,6 +254,37 @@ El primer corte implementará una sola mesa de Texas Hold'em simplificado:
 Quedan fuera del primer corte torneos, bots, dinero real, chat propio, múltiples
 variantes y efectos sobre la campaña.
 
+## El sistema nativo de cartas de Foundry (`Cards`)
+
+Decidido en #340: **el póker no se apoya en `Cards`**. La investigación con el
+código de Foundry 13.351 en mano encontró tres choques frontales con este
+contrato, y ninguna ventaja que los compense:
+
+- **Determinismo** (decisión 5): `Cards#shuffle()` baraja con el Mersenne
+  Twister global de Foundry, sin semilla nuestra. El barajado quedaría fuera del
+  reductor.
+- **Autoridad** (decisión 6): fuera de los mazos, cualquier cliente puede crear
+  cartas directamente en la base de datos del mundo. Nuestro modelo es el
+  contrario — el tripulante propone en un flag de su propio `User` y el
+  coordinador aplica.
+- **Estado efímero** (decisión 2): los `Cards` son documentos del mundo, con
+  barra lateral y persistencia entre sesiones.
+
+Y no regala privacidad: no se encontró filtrado por permiso en la lectura, así
+que persistir mazo y manos como documentos sería *más* expuesto que mantenerlos
+en memoria del coordinador, como hoy.
+
+Sí se toma prestado lo barato, que no toca ninguna decisión del contrato: la
+baraja se publica como **preset** en `CONFIG.Cards.presets` para que la mesa
+pueda jugar a las cartas fuera del póker, y se adopta la nomenclatura de `Card`
+(`suit`, `value`, `faces[].img`) como formato de intercambio.
+`foundry-module/scripts/minijuegos/baraja-preset.mjs` hace la traducción;
+`tools/generar-baraja-preset.mjs` vuelca el arte a `foundry-module/data/cartas/`
+como ficheros `.svg` — no como `data:` URI incrustado, que exigiría apoyarse en
+un hueco del saneador del servidor y engordaría la base de datos del mundo. Ese
+directorio es **derivado**: se regenera con el comando y una prueba falla si se
+edita a mano.
+
 ## UI y accesibilidad
 
 - Pixel art propio con backing bajo y `image-rendering: pixelated`, sin assets

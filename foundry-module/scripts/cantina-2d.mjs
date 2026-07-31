@@ -203,6 +203,78 @@ export function pintarHumo(ctx, { ancho, alto, ms = 0, vetas = 7, fuerza = 0.05 
 }
 
 /**
+ * Cachivaches electrónicos: los trastos que llenan un mamparo de nave —paneles
+ * con hileras de pilotos, lecturas de barras, un dial suelto, cableado visto—.
+ *
+ * VAN EN 2D Y NO EN 3D A PROPÓSITO. Un panel de veinte centímetros modelado con
+ * cajas cuesta doce polígonos, se ve como una mancha gris a esta resolución y
+ * encima entra en el orden por pintor a pelearse con el mamparo que tiene detrás.
+ * Dibujado plano cuesta cuatro rectángulos, se lee perfectamente y no puede
+ * ordenarse mal. Es exactamente el reparto que hacía una consola de la época: el
+ * volumen en 3D, el detalle pintado.
+ *
+ * SE COLOCAN EN LAS BANDAS LATERALES, nunca en el centro: ahí está el ventanal,
+ * y taparlo con cacharros sería repetir el fallo que dejó la sala sin vacío.
+ *
+ * Los pilotos parpadean, pero NO todos ni a la vez: cada uno tiene su periodo
+ * derivado del índice. Una hilera parpadeando al unísono es una guirnalda de
+ * Navidad, no una nave.
+ */
+export function pintarCachivaches(ctx, { ancho, alto, ms = 0, cuantos = 6 }) {
+  if (!ctx) return 0;
+  let piezas = 0;
+  const margen = Math.round(ancho * 0.02);
+  const zonaIzq = Math.round(ancho * 0.2);
+  const zonaDer = Math.round(ancho * 0.8);
+
+  for (let i = 0; i < cuantos; i += 1) {
+    const izquierda = i % 2 === 0;
+    const paso = Math.floor(i / 2);
+    const x = izquierda ? margen + paso * Math.round(zonaIzq / 3.2) : zonaDer + paso * Math.round(zonaIzq / 3.2);
+    const y = Math.round(alto * (0.24 + (i % 3) * 0.13));
+    const w = Math.round(ancho * 0.055);
+    const h = Math.round(alto * 0.075);
+    if (x + w > ancho) continue;
+
+    // Cuerpo del cacharro y su marco: dos rectángulos, y ya tiene relieve.
+    ctx.fillStyle = CANTINA.nervio;
+    ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = CANTINA.pantalla;
+    ctx.fillRect(x + 1, y + 1, w - 2, h - 2);
+    piezas += 2;
+
+    if (i % 3 === 2) {
+      // Lectura de barras: tres niveles distintos, como un ecualizador parado.
+      for (let b = 0; b < 3; b += 1) {
+        const alturaBarra = 1 + ((i + b) % 3);
+        ctx.fillStyle = CANTINA.neon;
+        ctx.fillRect(x + 2 + b * 2, y + h - 2 - alturaBarra, 1, alturaBarra);
+        piezas += 1;
+      }
+    } else {
+      // Hilera de pilotos. Cada uno con su periodo: el parpadeo al unísono
+      // convierte una consola en una guirnalda.
+      for (let p = 0; p < 3; p += 1) {
+        const periodo = 900 + ((i * 3 + p) % 5) * 420;
+        const encendido = Math.floor(ms / periodo) % 2 === 0;
+        ctx.fillStyle = encendido ? CANTINA.baliza : CANTINA.pantalla;
+        ctx.fillRect(x + 2 + p * 3, y + 2, 2, 2);
+        piezas += 1;
+      }
+    }
+
+    // Un cable colgando hacia el suelo. Es el detalle más barato que existe y
+    // el que más dice «esto se ha reparado más de una vez».
+    if (i % 2 === 1) {
+      ctx.fillStyle = CANTINA.conducto;
+      ctx.fillRect(x + Math.round(w / 2), y + h, 1, Math.round(alto * 0.06));
+      piezas += 1;
+    }
+  }
+  return piezas;
+}
+
+/**
  * Todas las capas, en el orden en que se pintan. El orden importa: la luz va
  * antes que las líneas (si no, las líneas se comen el halo) y la viñeta va la
  * última, porque tiene que oscurecer también lo que han puesto las demás.
@@ -215,6 +287,9 @@ export function pintarCapa2D(ctx, { ancho, alto, semilla = 1, ms = 0 } = {}) {
   pintarHaces(ctx, { ancho, alto });
   pintarHumo(ctx, { ancho, alto, ms });
   pintarFiloVentanal(ctx, { ancho, alto });
+  // Los cachivaches van después de la luz —los baña, no los tapa— y antes del
+  // polvo y las líneas, que son lo que los integra con el resto del cuadro.
+  pintarCachivaches(ctx, { ancho, alto, ms });
   pintarPolvo(ctx, { ancho, alto, semilla });
   pintarLineas(ctx, { ancho, alto });
   pintarVinieta(ctx, { ancho, alto });

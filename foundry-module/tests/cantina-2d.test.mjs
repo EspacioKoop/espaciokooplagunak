@@ -9,6 +9,7 @@ import test from "node:test";
 
 import {
   pintarCapa2D,
+  pintarCachivaches,
   pintarHaces,
   pintarHumo,
   pintarLineas,
@@ -111,4 +112,31 @@ test("el humo se queda en el tercio central, que es donde se posa el aire", () =
     assert.ok(rect.y >= MEDIDAS.alto * 0.3, `veta demasiado alta: ${rect.y}`);
     assert.ok(rect.y <= MEDIDAS.alto * 0.7, `veta demasiado baja: ${rect.y}`);
   }
+});
+
+// Cachivaches (#423): detalle pintado, no modelado.
+test("los cachivaches se quedan en las bandas laterales, fuera del ventanal", () => {
+  // Taparlo con cacharros sería repetir el fallo que dejó la sala sin vacío.
+  const ctx = ctxFalso();
+  pintarCachivaches(ctx, { ...MEDIDAS, ms: 0 });
+  assert.ok(ctx.rects.length > 0);
+  for (const rect of ctx.rects) {
+    const centro = rect.x + rect.w / 2;
+    const enElHueco = centro > MEDIDAS.ancho * 0.28 && centro < MEDIDAS.ancho * 0.72;
+    assert.ok(!enElHueco, `un cacharro se ha metido en el ventanal: x=${rect.x}`);
+    assert.ok(rect.x + rect.w <= MEDIDAS.ancho, "se sale por la derecha");
+  }
+});
+
+test("los pilotos no parpadean todos a la vez", () => {
+  // Al unísono es una guirnalda de Navidad, no una nave. Se compara el cuadro
+  // entero en dos instantes: tiene que cambiar algo, pero no todo.
+  const a = ctxFalso();
+  const b = ctxFalso();
+  pintarCachivaches(a, { ...MEDIDAS, ms: 0 });
+  pintarCachivaches(b, { ...MEDIDAS, ms: 1000 });
+  assert.equal(a.rects.length, b.rects.length, "el cuadro no puede cambiar de piezas");
+  const iguales = a.estilos.filter((estilo, i) => estilo === b.estilos[i]).length;
+  assert.ok(iguales > 0, "ha cambiado todo a la vez");
+  assert.ok(iguales < a.estilos.length, "no ha parpadeado nada");
 });

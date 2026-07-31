@@ -122,7 +122,7 @@ export function crearClaseCantinaV2({ alSeleccionar }) {
       id: "lagunak-cantina",
       classes: ["lagunak-cantina"],
       window: { title: "LAGUNAK.Cantina.Titulo", icon: "fa-solid fa-mug-saucer" },
-      position: { width: 360, height: "auto" },
+      position: { width: 560, height: "auto" },
     };
 
     static PARTS = { main: { template: PLANTILLA } };
@@ -172,7 +172,7 @@ export function crearClaseCantinaV1({ alSeleccionar }) {
         classes: ["lagunak-cantina"],
         title: game.i18n.localize("LAGUNAK.Cantina.Titulo"),
         template: PLANTILLA,
-        width: 360,
+        width: 560,
         height: "auto",
       });
     }

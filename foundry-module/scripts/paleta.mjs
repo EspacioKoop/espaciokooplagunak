@@ -116,6 +116,11 @@ export const CANTINA = Object.freeze({
   taburete: "#6b7280", // metal de nave, frío contra la madera
   mesa: "#5c4630", // las mesas del fondo: la misma madera, más apagada
   techo: "#232830", // más oscuro que el mamparo: cierra la sala por arriba
+  // Lo que dice «nave» y no «taberna»: tubería vista, pantallas de servicio y
+  // las balizas de suelo que marcan por dónde se anda cuando falla la luz.
+  conducto: "#565f6b", // tubos por el techo, metal claro
+  pantalla: "#1b4a5c", // monitores apagados del mamparo: azul de fósforo muerto
+  baliza: "#ff6b35", // ámbar de emergencia, el único color que grita
 });
 
 /**

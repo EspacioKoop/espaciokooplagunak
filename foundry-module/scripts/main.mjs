@@ -392,14 +392,21 @@ function abrirMesaMinijuegos(idPuerta = "poker") {
   //
   // Y con dos verticales esto además DESATASCA cambiar de juego: una mesa de
   // póker terminada ya no impide que la puerta de dados ponga la suya.
-  if (game.user?.isGM && sesionAgotada(estadoPublicoVigente())) {
-    abrirMesa({ nombreJuego });
-  }
+  const recienPuesta =
+    game.user?.isGM && sesionAgotada(estadoPublicoVigente()) ? abrirMesa({ nombreJuego }) : null;
+
   // Con una mesa VIVA manda ELLA, no la puerta que se cruzó: abrir la ventana
   // de dados sobre una partida de póker en curso enseñaría una mesa que no
   // existe. Cambiar de juego es cerrar la mesa y poner otra, no cambiar de
   // ventana.
-  const juego = juegoDeLaMesa() ?? nombreJuego;
+  //
+  // Pero la mesa que ACABA de ponerse manda por encima de las dos cosas, y hay
+  // que preguntárselo a ella y no al ajuste: `abrirMesa` publica con
+  // `settings.set`, que en Foundry es ASÍNCRONO, así que leer el ajuste en la
+  // línea siguiente devuelve todavía la partida anterior. Ese era el fallo de
+  // «no cambia bien entre minijuegos»: cruzabas la puerta de dados, se creaba
+  // la mesa de dados, y se abría la ventana del juego viejo sobre ella.
+  const juego = recienPuesta?.juego ?? juegoDeLaMesa() ?? nombreJuego;
   // Si la ventana abierta es la del otro juego, se cierra: solo hay una mesa.
   if (mesaApp && mesaApp.juegoMesa !== juego) {
     mesaApp.close?.();

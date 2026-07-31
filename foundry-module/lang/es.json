@@ -474,5 +474,11 @@
   "LAGUNAK.Dados.Accion.Tirar": "Tirar",
   "LAGUNAK.Dados.Accion.Apostar": "Apostar",
   "LAGUNAK.Dados.Accion.Dudar": "Dudar",
+  "LAGUNAK.Dados.Reglas.Titulo": "¿Cómo se juega?",
+  "LAGUNAK.Dados.Reglas.Objetivo": "Cada cual tira sus dados tapados y solo ve los suyos. Se apuesta sobre cuántos dados de una cara hay en TODA la mesa, contando los de los demás.",
+  "LAGUNAK.Dados.Reglas.Turno": "En tu turno tienes dos salidas: subir la apuesta o levantarte, que es decir que la anterior es mentira.",
+  "LAGUNAK.Dados.Reglas.Subir": "Subir es pedir más cantidad de la misma cara, o la misma cantidad de una cara más alta. No vale repetir la apuesta anterior.",
+  "LAGUNAK.Dados.Reglas.Levantarse": "Al levantarte se destapan todos los cubiletes y se cuenta. Si la apuesta se cumplía, pierdes un dado; si no, lo pierde quien apostó. Quien se queda sin dados, queda fuera.",
+  "LAGUNAK.Dados.Reglas.Unos": "Los unos son comodines y valen por cualquier cara — salvo cuando la apuesta es precisamente a unos, que entonces solo valen ellos.",
   "LAGUNAK.Controles.AbrirDados": "Abrir la mesa de dados"
 }

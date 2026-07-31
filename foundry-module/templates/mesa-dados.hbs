@@ -10,6 +10,19 @@
       <p class="lagunak-mesa-aviso" role="status">{{localize "LAGUNAK.Dados.Mesa.RondaCancelada"}}</p>
     {{/if}}
 
+    {{!-- Las reglas, a mano y plegadas. Un juego de faroleo con comodines no se
+          deduce mirando la mesa, y quien se sienta por primera vez no debería
+          tener que preguntar en voz alta. Mismo desplegable que el mapa vivo y
+          el estado de nave: es el patrón de ayuda del módulo, no uno nuevo. --}}
+    <details class="lagunak-ayuda lagunak-dados-reglas">
+      <summary>{{localize "LAGUNAK.Dados.Reglas.Titulo"}}</summary>
+      <p>{{localize "LAGUNAK.Dados.Reglas.Objetivo"}}</p>
+      <p>{{localize "LAGUNAK.Dados.Reglas.Turno"}}</p>
+      <p>{{localize "LAGUNAK.Dados.Reglas.Subir"}}</p>
+      <p>{{localize "LAGUNAK.Dados.Reglas.Levantarse"}}</p>
+      <p>{{localize "LAGUNAK.Dados.Reglas.Unos"}}</p>
+    </details>
+
     <div class="lagunak-mesa-tapete">
       <p class="lagunak-dados-apuesta" role="status" aria-live="polite">{{apuestaTexto}}</p>
       <p class="lagunak-dados-recuento">{{recuentoTexto}}</p>

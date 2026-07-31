@@ -734,6 +734,57 @@
   box-shadow: 0 0 0 1px #ff2e88;
 }
 
+/* El formulario de apuesta de los dados (#413).
+ *
+ * Heredaba la fila de `.lagunak-mesa-acciones` y quedaba aplastado entre los
+ * botones: el campo de cantidad salía de dos caracteres de ancho y el selector
+ * de cara, más estrecho todavía. Una apuesta que no se puede leer antes de
+ * confirmarla no es una apuesta, es una lotería — así que ocupa su propia línea
+ * completa y los dos controles se reparten el ancho. */
+.lagunak-dados-formulario {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  flex: 1 0 100%;
+  margin-bottom: 0.5rem;
+}
+
+.lagunak-dados-formulario label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex: 1 1 8rem;
+  font-variant: small-caps;
+  letter-spacing: 0.06em;
+  color: #00e5ff;
+}
+
+.lagunak-dados-formulario input,
+.lagunak-dados-formulario select {
+  width: 100%;
+  min-height: 2rem;
+  padding: 0.2rem 0.4rem;
+  border: 1px solid #00e5ff;
+  border-radius: 0;
+  /* Color y fondo explícitos también en las opciones: sin esto, el desplegable
+   * abierto hereda el tema claro del navegador y se lee negro sobre blanco en
+   * mitad de una ventana oscura (#287). */
+  background: #0d1b2a;
+  color: #e0e1dd;
+  font-size: 1rem;
+}
+
+.lagunak-dados-formulario select option {
+  background: #0d1b2a;
+  color: #e0e1dd;
+}
+
+.lagunak-dados-formulario input:focus-visible,
+.lagunak-dados-formulario select:focus-visible {
+  outline: 2px solid #ffd166;
+  outline-offset: 1px;
+}
+
 /* Foco visible: el teclado es un modo de juego, no una concesión. */
 .lagunak-mesa-acciones button:focus-visible,
 .lagunak-mesa-importe input:focus-visible {

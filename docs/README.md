@@ -3,6 +3,13 @@
 Índice de la documentación del fork. Si es tu primera visita, empieza por el
 [README principal](../README.md) del repositorio.
 
+## Dirección de producto
+
+| Documento | Qué cubre |
+|---|---|
+| [ROADMAP_PRODUCTO.md](ROADMAP_PRODUCTO.md) | Principios, no objetivos y etapas hacia el juego cooperativo standalone (#219) |
+| [adr/](adr/README.md) | Decisiones de arquitectura registradas |
+
 ## Quiero jugar o instalar
 
 | Documento | Qué cubre |

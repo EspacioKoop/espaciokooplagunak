@@ -11,6 +11,7 @@ por stderr y devuelve **0**, dejando extraída una cabecera corrupta que hace qu
 el siguiente configure se salte la descarga entera.
 """
 
+import hashlib
 import shutil
 import subprocess
 import zipfile
@@ -24,13 +25,19 @@ MODULO = RAIZ / "cmake" / "DiscordGameSdk.cmake"
 pytestmark = pytest.mark.skipif(shutil.which("cmake") is None, reason="requiere cmake")
 
 
-def _driver(tmp_path: Path, url: str) -> Path:
-    """Script que llama a la función igual que lo hace CMakeLists.txt."""
+def _driver(tmp_path: Path, url: str, sha256: str = "") -> Path:
+    """Script que llama a la función igual que lo hace CMakeLists.txt.
+
+    `sha256` vacío por defecto: estos archivos se fabrican aquí y no son el SDK,
+    así que la huella fijada del módulo no les aplica. Las pruebas que sí van del
+    hash lo pasan explícitamente.
+    """
     destino = tmp_path / "externals" / "discord"
     driver = tmp_path / "driver.cmake"
     driver.write_text(
         f'set(CMAKE_MODULE_PATH "{(RAIZ / "cmake").as_posix()}")\n'
         f'set(DISCORD_SDK_URL "{url}" CACHE STRING "")\n'
+        f'set(DISCORD_SDK_SHA256 "{sha256}" CACHE STRING "")\n'
         "include(DiscordGameSdk)\n"
         f'discord_game_sdk_obtener("{destino.as_posix()}"'
         f' "{(destino / "c" / "discord_game_sdk.h").as_posix()}"'
@@ -40,9 +47,9 @@ def _driver(tmp_path: Path, url: str) -> Path:
     return driver
 
 
-def _ejecutar(tmp_path: Path, url: str):
+def _ejecutar(tmp_path: Path, url: str, sha256: str = ""):
     return subprocess.run(
-        ["cmake", "-P", str(_driver(tmp_path, url))],
+        ["cmake", "-P", str(_driver(tmp_path, url, sha256))],
         capture_output=True,
         text=True,
         cwd=tmp_path,
@@ -155,6 +162,42 @@ def test_el_mensaje_ofrece_la_salida_sin_discord(tmp_path):
     assert "-DWITH_DISCORD=OFF" in proceso.stderr
 
 
+def test_hash_correcto_extrae_igual(tmp_path):
+    """La comprobación no puede estorbar a la ruta feliz."""
+    zip_sdk = _zip_sano(tmp_path / "sdk.zip")
+    huella = hashlib.sha256(zip_sdk.read_bytes()).hexdigest()
+    proceso = _ejecutar(tmp_path, _url(zip_sdk), huella)
+    assert proceso.returncode == 0, proceso.stderr
+    assert (tmp_path / "externals" / "discord" / "c" / "discord_game_sdk.h").exists()
+
+
+def test_hash_distinto_aborta_sin_extraer_nada(tmp_path):
+    """Un archivo que no es el que se fijó no llega ni a tocar el árbol: la
+    versión fijada dice qué se pide y el hash comprueba qué llegó."""
+    zip_sdk = _zip_sano(tmp_path / "sdk.zip")
+    proceso = _ejecutar(tmp_path, _url(zip_sdk), "0" * 64)
+    assert proceso.returncode != 0
+    assert "SHA-256" in proceso.stderr
+    assert not (tmp_path / "externals" / "discord" / "c" / "discord_game_sdk.h").exists()
+    assert not (tmp_path / "descarga.zip").exists()
+
+
+def test_la_url_por_defecto_esta_fijada_a_una_version(tmp_path):
+    """`latest` significa que Discord puede cambiar la cabecera bajo los pies
+    entre dos builds del mismo commit."""
+    modulo = MODULO.read_text(encoding="utf-8")
+    assert "/latest/" not in modulo
+    assert "${DISCORD_SDK_VERSION}/discord_game_sdk.zip" in modulo
+    # Y la huella fijada por defecto es una SHA-256 de verdad, no un hueco.
+    for linea in modulo.splitlines():
+        if linea.startswith('set(DISCORD_SDK_SHA256 "'):
+            valor = linea.split('"')[1]
+            assert len(valor) == 64 and all(c in "0123456789abcdef" for c in valor)
+            break
+    else:
+        pytest.fail("no se encontró DISCORD_SDK_SHA256 con valor por defecto")
+
+
 def test_cmakelists_usa_el_modulo_y_no_una_copia_del_bloque(tmp_path):
     """Si alguien vuelve a poner el bloque inline, estas pruebas dejarían de
     cubrir lo que se compila de verdad sin que ninguna falle."""
@@ -162,3 +205,18 @@ def test_cmakelists_usa_el_modulo_y_no_una_copia_del_bloque(tmp_path):
     assert "discord_game_sdk_obtener(" in cmakelists
     assert "dl-game-sdk.discordapp.net" not in cmakelists, "la URL vive en el módulo"
     assert MODULO.exists()
+
+
+def test_la_clave_de_cache_de_ci_lleva_la_version_fijada():
+    """Si la clave se queda atrás al subir de versión, CI serviría el SDK viejo
+    desde la caché y la versión fijada dejaría de significar nada. Van a mano en
+    dos ficheros porque el `cmake` que sabe la versión aún no ha corrido."""
+    modulo = MODULO.read_text(encoding="utf-8")
+    version = None
+    for linea in modulo.splitlines():
+        if linea.startswith('set(DISCORD_SDK_VERSION "'):
+            version = linea.split('"')[1]
+            break
+    assert version, "no se encontró DISCORD_SDK_VERSION"
+    flujo = (RAIZ / ".github" / "workflows" / "cicd.yml").read_text(encoding="utf-8")
+    assert f"key: discord-game-sdk-win32-{version}" in flujo

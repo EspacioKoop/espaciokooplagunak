@@ -10,6 +10,7 @@
 
 import { MODULE_ID } from "./lagunak-constantes.mjs";
 import { puertasCantina } from "./cantina.mjs";
+import { arrancarCantina, miradaDesdePunto, miradaTrasTecla } from "./cantina-lienzo.mjs";
 
 const PLANTILLA = `modules/${MODULE_ID}/templates/cantina.hbs`;
 
@@ -18,9 +19,88 @@ function contexto() {
     puertas: puertasCantina().map((puerta) => ({
       id: puerta.id,
       icono: puerta.icono,
+      objeto: puerta.objeto,
       titulo: game.i18n.localize(puerta.tituloClave),
     })),
   };
+}
+
+/**
+ * Enciende la sala dentro de una raíz ya renderizada y devuelve el mando (o
+ * `null` si aquí no hay DOM que pintar, como en el arnés de pruebas).
+ *
+ * Vive fuera de las dos clases a propósito, igual que `enfocarPrimeraPuerta`:
+ * es cableado de DOM, no comportamiento de ventana, y duplicarlo entre v11 y
+ * v12+ solo aseguraría que un día el arreglo llegue a una sola de las dos.
+ */
+function encenderSala(raiz) {
+  const sala = raiz?.querySelector?.(".lagunak-cantina-sala");
+  if (!sala) return null;
+
+  const objetos = [...(raiz.querySelectorAll?.("[data-objeto]") ?? [])].map((lienzo) => ({
+    lienzo,
+    objeto: lienzo.dataset?.objeto,
+  }));
+
+  // Respetar `prefers-reduced-motion` no es un extra: una sala que se mueve
+  // sola es exactamente lo que esa preferencia existe para apagar (#227).
+  const reducirMovimiento = Boolean(
+    globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches,
+  );
+
+  // Sin `requestAnimationFrame` no hay bucle, y eso es todo lo que pasa: se
+  // pinta un fotograma y la sala se queda quieta. Llamarlo a ciegas tiraba la
+  // ventana ENTERA —puertas incluidas— en cualquier entorno que no lo tenga, y
+  // una sala que no gira sigue siendo una sala; una cantina que no abre, no.
+  const puedeAnimar = typeof globalThis.requestAnimationFrame === "function";
+  const mando = arrancarCantina(
+    { sala, objetos },
+    {
+      reducirMovimiento,
+      ahora: () => globalThis.performance?.now?.() ?? Date.now(),
+      pedirFotograma: puedeAnimar ? (cb) => globalThis.requestAnimationFrame(cb) : null,
+      cancelarFotograma: puedeAnimar ? (id) => globalThis.cancelAnimationFrame(id) : null,
+    },
+  );
+
+  // Asomarse con el ratón. Se escucha sobre la SALA y no sobre la ventana
+  // entera: mover el ratón hacia los botones no debería estar moviendo también
+  // la cámara, que es lo que hace que una escena se sienta nerviosa.
+  sala.addEventListener("mousemove", (ev) => {
+    mando.mirar(miradaDesdePunto({ x: ev.clientX, y: ev.clientY }, sala.getBoundingClientRect()));
+  });
+  // Al salir, la sala vuelve al centro: quedarse torcida porque el ratón se fue
+  // por una esquina deja la cámara en una postura que nadie eligió.
+  sala.addEventListener("mouseleave", () => mando.mirar({ x: 0, y: 0 }));
+
+  // Y con el teclado, porque asomarse no puede ser solo de quien usa ratón. La
+  // sala es focalizable para poder recibir las flechas, y su `tabindex` va aquí
+  // y no en la plantilla: sin lienzo no hay nada que enfocar, y un `tabindex`
+  // en la plantilla dejaría una parada de tabulación vacía.
+  sala.tabIndex = 0;
+  let miradaTeclado = { x: 0, y: 0 };
+  sala.addEventListener("keydown", (ev) => {
+    const siguiente = miradaTrasTecla(miradaTeclado, ev.key);
+    if (!siguiente) return;
+    // Solo se consume la tecla que se usa: las demás siguen su camino, que es
+    // como se sigue pudiendo tabular fuera de aquí.
+    ev.preventDefault();
+    miradaTeclado = siguiente;
+    mando.mirar(siguiente);
+  });
+
+  // El objeto de la puerta que se enfoca gira más rápido y se inclina. Vale
+  // para ratón y para teclado sin escribir dos caminos: `focus`/`blur` los
+  // disparan los dos, y `mouseenter` solo añade el hover.
+  for (const boton of raiz.querySelectorAll?.("[data-puerta]") ?? []) {
+    const objeto = boton.querySelector?.("[data-objeto]")?.dataset?.objeto ?? null;
+    boton.addEventListener("mouseenter", () => mando.enfocar(objeto));
+    boton.addEventListener("focus", () => mando.enfocar(objeto));
+    boton.addEventListener("mouseleave", () => mando.enfocar(null));
+    boton.addEventListener("blur", () => mando.enfocar(null));
+  }
+
+  return mando;
 }
 
 /* Al abrir la sala, el foco va a la primera puerta. Quien navega con teclado no
@@ -65,7 +145,19 @@ export function crearClaseCantinaV2({ alSeleccionar }) {
       this.element?.querySelectorAll?.("[data-puerta]")?.forEach((boton) => {
         boton.addEventListener("click", () => this.seleccionarPuerta(boton.dataset.puerta));
       });
+      // Una ventana que se repinta arranca OTRA sala: la anterior se para o
+      // se quedan dos bucles pintando sobre el mismo lienzo.
+      this.sala?.detener();
+      this.sala = encenderSala(this.element);
       enfocarPrimeraPuerta(this.element);
+    }
+
+    _onClose(options) {
+      super._onClose?.(options);
+      // Sin esto, cerrar la cantina deja un `requestAnimationFrame` vivo
+      // pintando contra un lienzo que ya no está en el documento.
+      this.sala?.detener();
+      this.sala = null;
     }
   };
 }
@@ -95,12 +187,20 @@ export function crearClaseCantinaV1({ alSeleccionar }) {
       this.close();
     }
 
+    async close(options) {
+      this.sala?.detener();
+      this.sala = null;
+      return super.close(options);
+    }
+
     activateListeners(html) {
       super.activateListeners(html);
       html.find("[data-puerta]").on("click", (ev) => {
         this.seleccionarPuerta(ev.currentTarget?.dataset?.puerta);
       });
       // En v11 `html` es jQuery: el elemento real está en [0].
+      this.sala?.detener();
+      this.sala = encenderSala(html?.[0]);
       enfocarPrimeraPuerta(html?.[0]);
     }
   };

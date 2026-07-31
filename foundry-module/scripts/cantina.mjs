@@ -37,6 +37,7 @@ export const PUERTAS = Object.freeze([
     id: "dados",
     juego: "dados",
     tituloClave: "LAGUNAK.Cantina.Puerta.Dados",
+    objeto: "dados",
     icono: "fa-solid fa-dice",
   }),
 ]);

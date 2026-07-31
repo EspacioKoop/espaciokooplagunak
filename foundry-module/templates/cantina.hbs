@@ -1,9 +1,19 @@
 <div class="lagunak-cantina-cuerpo">
+  {{!-- La sala. `role="img"` con nombre: quien no la ve recibe una descripción,
+        no un lienzo anónimo. Lo que se puede HACER no está aquí dentro — está en
+        los botones de abajo, que son los mismos con lienzo o sin él. --}}
+  <canvas class="lagunak-cantina-sala" width="320" height="180"
+          role="img" aria-label="{{localize "LAGUNAK.Cantina.SalaAlt"}}"></canvas>
+
   <p class="lagunak-cantina-intro">{{localize "LAGUNAK.Cantina.Intro"}}</p>
   <ul class="lagunak-cantina-puertas" aria-label="{{localize "LAGUNAK.Cantina.Puertas"}}">
     {{#each puertas}}
       <li>
         <button type="button" class="lagunak-cantina-puerta" data-puerta="{{this.id}}">
+          {{!-- El objeto que gira. Es adorno: el nombre accesible lo pone el
+                <span>, y si el lienzo no pinta, el botón sigue completo. --}}
+          <canvas class="lagunak-cantina-objeto" width="48" height="48"
+                  data-objeto="{{this.objeto}}" aria-hidden="true"></canvas>
           <i class="{{this.icono}}" aria-hidden="true"></i>
           <span>{{this.titulo}}</span>
         </button>

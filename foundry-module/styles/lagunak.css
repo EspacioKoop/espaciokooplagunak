@@ -790,6 +790,37 @@
   padding: 0.6rem;
 }
 
+/* La sala en 3D retro (#423 sobre #362).
+ *
+ * LA RESOLUCIÓN INTERNA ES EL EFECTO: el lienzo tiene 320x180 píxeles de verdad
+ * y se estira aquí con `pixelated`. No se dibuja «pixelado» a tamaño grande —se
+ * dibuja pequeño y se amplía, que es lo que hacía la consola y lo que hace que
+ * el ajuste de vértices a rejilla se note. Misma disciplina que el mapa vivo. */
+.lagunak-cantina-sala {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-bottom: 0.6rem;
+  border: 3px solid #1b263b;
+  image-rendering: pixelated;
+  /* Es una superficie que responde al ratón y recibe flechas: que se note que
+   * se puede tocar, sin prometer que se puede pulsar. */
+  cursor: crosshair;
+}
+
+.lagunak-cantina-sala:focus-visible {
+  outline: 2px solid #ffd166;
+  outline-offset: 2px;
+}
+
+/* El objeto que gira dentro de cada botón. Mismo tratamiento de rejilla. */
+.lagunak-cantina-objeto {
+  width: 2.4rem;
+  height: 2.4rem;
+  flex: 0 0 auto;
+  image-rendering: pixelated;
+}
+
 .lagunak-cantina-intro {
   margin: 0 0 0.6rem;
   font-variant: small-caps;

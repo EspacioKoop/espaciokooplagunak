@@ -42,10 +42,15 @@ const CANTO_CARTA = 0.02;
  * treinta porque a esta resolución no se distinguen y sí se pagan. */
 const LADOS_FICHA = 10;
 
-/** Inclinación de la mesa: se mira desde arriba y desde delante, como quien
- * está sentado. Corta a propósito — ver el tapete desde muy alto convierte la
- * mesa en un plano y pierde el volumen que se venía a buscar. */
-export const VISTA = Object.freeze({ pitch: 0.72, yaw: 0, altura: 3.4, atras: 4.6 });
+/**
+ * La cámara de la mesa: se mira desde delante y un poco por encima, como quien
+ * está sentado. La inclinación es corta a propósito —desde muy alto el tapete
+ * se convierte en un plano y se pierde el volumen que se venía a buscar—, y los
+ * números NO están puestos a ojo: con los anteriores (altura 3.4, atrás 4.6) la
+ * mesa entera se proyectaba por ENCIMA del cuadro y no se veía nada. Estos se
+ * calcularon comprobando que el tapete y los asientos caen dentro del alto.
+ */
+export const VISTA = Object.freeze({ pitch: 0.4, yaw: 0, altura: -0.8, atras: 5.0, fov: 52 });
 
 /** Caja alineada a los ejes por centro y medidas. Misma primitiva que la
  * cantina: una mesa de consola de los noventa se construía con cajas. */
@@ -114,18 +119,28 @@ export function huecosComunitarias(cuantas = 5) {
 }
 
 /**
- * Dónde se apila la pila de cada jugador. Las plazas se reparten en un arco por
- * delante del tapete: la tuya abajo del todo, y las demás abriéndose a los
- * lados. Nunca detrás — lo que no se ve no cuenta como estar en la mesa.
+ * Los asientos, ALREDEDOR del tapete y no en su borde delantero.
+ *
+ * El primero es siempre el tuyo, en la orilla de acá; los demás se reparten por
+ * el lado de allá, que es donde tienen que estar para que se les VEA. La versión
+ * anterior los ponía a todos en un arco delantero y sus cartas caían fuera de
+ * cuadro: había rivales en los datos y no en la mesa, que es como no tenerlos.
+ *
+ * Posiciones fijas y en orden estable: quien se sienta no baila de sitio entre
+ * manos, porque reconocer «el de la izquierda» es parte de jugar.
  */
+const ASIENTOS = Object.freeze([
+  Object.freeze([0, 0.1, 2.35]), // tú, en primer término
+  Object.freeze([-2.35, 0.1, -0.7]), // enfrente a babor
+  Object.freeze([2.35, 0.1, -0.7]), // enfrente a estribor
+  Object.freeze([-2.7, 0.1, 1.1]), // a tu izquierda
+  Object.freeze([2.7, 0.1, 1.1]), // a tu derecha
+  Object.freeze([0, 0.1, -1.35]), // al fondo, de frente
+]);
+
 export function plazas(cuantos) {
-  const total = Math.max(1, Math.min(6, Math.trunc(cuantos) || 1));
-  return Array.from({ length: total }, (_, i) => {
-    // Semicírculo delantero, de izquierda a derecha.
-    const t = total === 1 ? 0.5 : i / (total - 1);
-    const angulo = Math.PI * (0.15 + t * 0.7);
-    return [Math.cos(angulo) * 2.5, 0.1, 1.9 + Math.sin(angulo) * 0.5];
-  });
+  const total = Math.max(1, Math.min(ASIENTOS.length, Math.trunc(cuantos) || 1));
+  return ASIENTOS.slice(0, total).map((asiento) => [...asiento]);
 }
 
 /**
@@ -208,6 +223,7 @@ export function componerMesa(mesa = {}, opciones = {}) {
       epoca,
       color: pieza.color,
       fondo,
+      fov: VISTA.fov,
       pitch: VISTA.pitch,
       yaw: VISTA.yaw,
       posicion: [0, VISTA.altura, VISTA.atras],
@@ -225,6 +241,7 @@ export function componerMesa(mesa = {}, opciones = {}) {
     ancho,
     alto,
     epoca,
+    fov: VISTA.fov,
     pitch: VISTA.pitch,
   });
 

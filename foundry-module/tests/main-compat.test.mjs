@@ -1096,6 +1096,41 @@ test("la puerta de dados abre la mesa de dados, no la de póker", async () => {
   assert.equal(publicado.juego, "dados", "la mesa creada no es de dados");
 });
 
+// La publicación del ajuste es ASÍNCRONA en Foundry: leerlo justo después de
+// crear la mesa devuelve la partida anterior, y la ventana se abría con el juego
+// viejo encima de la mesa nueva. Se reproduce con un `set` que tarda.
+test("la mesa recién puesta manda aunque el ajuste aún no se haya publicado", async () => {
+  const { hooks, instances } = await loadModule();
+  await arrancarReady(hooks);
+  const controls = [{ name: "token", tools: [] }];
+  hooks.getSceneControlButtons(controls);
+  game.users = { activeGM: game.user };
+
+  // Mesa de póker terminada: cruzar la puerta de dados debe poner una de dados.
+  await game.settings.set("espaciokoop-lagunak", "minijuegoSesionPublica", {
+    id: "poker-de-ayer",
+    juego: "poker",
+    fase: "terminada",
+    jugadores: [],
+  });
+
+  // A partir de aquí, publicar no tiene efecto inmediato sobre la lectura: es
+  // exactamente lo que hace Foundry, y lo que el arnés síncrono escondía.
+  const setReal = game.settings.set;
+  game.settings.set = async (...args) => {
+    await Promise.resolve();
+    return setReal.apply(game.settings, args);
+  };
+  try {
+    const boton = toolByName(controls, "lagunak-cantina");
+    await boton.onClick();
+    instances.at(-1).seleccionarPuerta("dados");
+    assert.equal(instances.at(-1).juegoMesa, "dados", "se abrió la ventana del juego viejo");
+  } finally {
+    game.settings.set = setReal;
+  }
+});
+
 test("con una mesa de póker VIVA, la puerta de dados no la barre", async () => {
   // Manda la mesa puesta, no la puerta que se cruzó: abrir dados sobre una
   // partida de póker en curso enseñaría una mesa que no existe.

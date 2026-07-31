@@ -1,0 +1,840 @@
+{
+  "name": "Baraja de la nave",
+  "type": "deck",
+  "description": "Baraja francesa de 52 cartas del módulo Espaciokoop Lagunak.",
+  "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg",
+  "cards": [
+    {
+      "name": "2♣",
+      "face": null,
+      "suit": "♣",
+      "value": 2,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "2♣",
+          "img": "modules/espaciokoop-lagunak/data/cartas/2c.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "3♣",
+      "face": null,
+      "suit": "♣",
+      "value": 3,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "3♣",
+          "img": "modules/espaciokoop-lagunak/data/cartas/3c.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "4♣",
+      "face": null,
+      "suit": "♣",
+      "value": 4,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "4♣",
+          "img": "modules/espaciokoop-lagunak/data/cartas/4c.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "5♣",
+      "face": null,
+      "suit": "♣",
+      "value": 5,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "5♣",
+          "img": "modules/espaciokoop-lagunak/data/cartas/5c.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "6♣",
+      "face": null,
+      "suit": "♣",
+      "value": 6,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "6♣",
+          "img": "modules/espaciokoop-lagunak/data/cartas/6c.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "7♣",
+      "face": null,
+      "suit": "♣",
+      "value": 7,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "7♣",
+          "img": "modules/espaciokoop-lagunak/data/cartas/7c.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "8♣",
+      "face": null,
+      "suit": "♣",
+      "value": 8,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "8♣",
+          "img": "modules/espaciokoop-lagunak/data/cartas/8c.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "9♣",
+      "face": null,
+      "suit": "♣",
+      "value": 9,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "9♣",
+          "img": "modules/espaciokoop-lagunak/data/cartas/9c.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "10♣",
+      "face": null,
+      "suit": "♣",
+      "value": 10,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "10♣",
+          "img": "modules/espaciokoop-lagunak/data/cartas/Tc.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "J♣",
+      "face": null,
+      "suit": "♣",
+      "value": 11,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "J♣",
+          "img": "modules/espaciokoop-lagunak/data/cartas/Jc.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "Q♣",
+      "face": null,
+      "suit": "♣",
+      "value": 12,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "Q♣",
+          "img": "modules/espaciokoop-lagunak/data/cartas/Qc.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "K♣",
+      "face": null,
+      "suit": "♣",
+      "value": 13,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "K♣",
+          "img": "modules/espaciokoop-lagunak/data/cartas/Kc.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "A♣",
+      "face": null,
+      "suit": "♣",
+      "value": 14,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "A♣",
+          "img": "modules/espaciokoop-lagunak/data/cartas/Ac.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "2♦",
+      "face": null,
+      "suit": "♦",
+      "value": 2,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "2♦",
+          "img": "modules/espaciokoop-lagunak/data/cartas/2d.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "3♦",
+      "face": null,
+      "suit": "♦",
+      "value": 3,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "3♦",
+          "img": "modules/espaciokoop-lagunak/data/cartas/3d.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "4♦",
+      "face": null,
+      "suit": "♦",
+      "value": 4,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "4♦",
+          "img": "modules/espaciokoop-lagunak/data/cartas/4d.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "5♦",
+      "face": null,
+      "suit": "♦",
+      "value": 5,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "5♦",
+          "img": "modules/espaciokoop-lagunak/data/cartas/5d.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "6♦",
+      "face": null,
+      "suit": "♦",
+      "value": 6,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "6♦",
+          "img": "modules/espaciokoop-lagunak/data/cartas/6d.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "7♦",
+      "face": null,
+      "suit": "♦",
+      "value": 7,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "7♦",
+          "img": "modules/espaciokoop-lagunak/data/cartas/7d.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "8♦",
+      "face": null,
+      "suit": "♦",
+      "value": 8,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "8♦",
+          "img": "modules/espaciokoop-lagunak/data/cartas/8d.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "9♦",
+      "face": null,
+      "suit": "♦",
+      "value": 9,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "9♦",
+          "img": "modules/espaciokoop-lagunak/data/cartas/9d.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "10♦",
+      "face": null,
+      "suit": "♦",
+      "value": 10,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "10♦",
+          "img": "modules/espaciokoop-lagunak/data/cartas/Td.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "J♦",
+      "face": null,
+      "suit": "♦",
+      "value": 11,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "J♦",
+          "img": "modules/espaciokoop-lagunak/data/cartas/Jd.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "Q♦",
+      "face": null,
+      "suit": "♦",
+      "value": 12,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "Q♦",
+          "img": "modules/espaciokoop-lagunak/data/cartas/Qd.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "K♦",
+      "face": null,
+      "suit": "♦",
+      "value": 13,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "K♦",
+          "img": "modules/espaciokoop-lagunak/data/cartas/Kd.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "A♦",
+      "face": null,
+      "suit": "♦",
+      "value": 14,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "A♦",
+          "img": "modules/espaciokoop-lagunak/data/cartas/Ad.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "2♥",
+      "face": null,
+      "suit": "♥",
+      "value": 2,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "2♥",
+          "img": "modules/espaciokoop-lagunak/data/cartas/2h.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "3♥",
+      "face": null,
+      "suit": "♥",
+      "value": 3,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "3♥",
+          "img": "modules/espaciokoop-lagunak/data/cartas/3h.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "4♥",
+      "face": null,
+      "suit": "♥",
+      "value": 4,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "4♥",
+          "img": "modules/espaciokoop-lagunak/data/cartas/4h.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "5♥",
+      "face": null,
+      "suit": "♥",
+      "value": 5,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "5♥",
+          "img": "modules/espaciokoop-lagunak/data/cartas/5h.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "6♥",
+      "face": null,
+      "suit": "♥",
+      "value": 6,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "6♥",
+          "img": "modules/espaciokoop-lagunak/data/cartas/6h.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "7♥",
+      "face": null,
+      "suit": "♥",
+      "value": 7,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "7♥",
+          "img": "modules/espaciokoop-lagunak/data/cartas/7h.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "8♥",
+      "face": null,
+      "suit": "♥",
+      "value": 8,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "8♥",
+          "img": "modules/espaciokoop-lagunak/data/cartas/8h.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "9♥",
+      "face": null,
+      "suit": "♥",
+      "value": 9,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "9♥",
+          "img": "modules/espaciokoop-lagunak/data/cartas/9h.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "10♥",
+      "face": null,
+      "suit": "♥",
+      "value": 10,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "10♥",
+          "img": "modules/espaciokoop-lagunak/data/cartas/Th.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "J♥",
+      "face": null,
+      "suit": "♥",
+      "value": 11,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "J♥",
+          "img": "modules/espaciokoop-lagunak/data/cartas/Jh.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "Q♥",
+      "face": null,
+      "suit": "♥",
+      "value": 12,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "Q♥",
+          "img": "modules/espaciokoop-lagunak/data/cartas/Qh.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "K♥",
+      "face": null,
+      "suit": "♥",
+      "value": 13,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "K♥",
+          "img": "modules/espaciokoop-lagunak/data/cartas/Kh.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "A♥",
+      "face": null,
+      "suit": "♥",
+      "value": 14,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "A♥",
+          "img": "modules/espaciokoop-lagunak/data/cartas/Ah.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "2♠",
+      "face": null,
+      "suit": "♠",
+      "value": 2,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "2♠",
+          "img": "modules/espaciokoop-lagunak/data/cartas/2s.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "3♠",
+      "face": null,
+      "suit": "♠",
+      "value": 3,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "3♠",
+          "img": "modules/espaciokoop-lagunak/data/cartas/3s.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "4♠",
+      "face": null,
+      "suit": "♠",
+      "value": 4,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "4♠",
+          "img": "modules/espaciokoop-lagunak/data/cartas/4s.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "5♠",
+      "face": null,
+      "suit": "♠",
+      "value": 5,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "5♠",
+          "img": "modules/espaciokoop-lagunak/data/cartas/5s.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "6♠",
+      "face": null,
+      "suit": "♠",
+      "value": 6,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "6♠",
+          "img": "modules/espaciokoop-lagunak/data/cartas/6s.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "7♠",
+      "face": null,
+      "suit": "♠",
+      "value": 7,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "7♠",
+          "img": "modules/espaciokoop-lagunak/data/cartas/7s.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "8♠",
+      "face": null,
+      "suit": "♠",
+      "value": 8,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "8♠",
+          "img": "modules/espaciokoop-lagunak/data/cartas/8s.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "9♠",
+      "face": null,
+      "suit": "♠",
+      "value": 9,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "9♠",
+          "img": "modules/espaciokoop-lagunak/data/cartas/9s.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "10♠",
+      "face": null,
+      "suit": "♠",
+      "value": 10,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "10♠",
+          "img": "modules/espaciokoop-lagunak/data/cartas/Ts.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "J♠",
+      "face": null,
+      "suit": "♠",
+      "value": 11,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "J♠",
+          "img": "modules/espaciokoop-lagunak/data/cartas/Js.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "Q♠",
+      "face": null,
+      "suit": "♠",
+      "value": 12,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "Q♠",
+          "img": "modules/espaciokoop-lagunak/data/cartas/Qs.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "K♠",
+      "face": null,
+      "suit": "♠",
+      "value": 13,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "K♠",
+          "img": "modules/espaciokoop-lagunak/data/cartas/Ks.svg",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "A♠",
+      "face": null,
+      "suit": "♠",
+      "value": 14,
+      "back": {
+        "img": "modules/espaciokoop-lagunak/data/cartas/dorso.svg"
+      },
+      "faces": [
+        {
+          "name": "A♠",
+          "img": "modules/espaciokoop-lagunak/data/cartas/As.svg",
+          "text": ""
+        }
+      ]
+    }
+  ]
+}

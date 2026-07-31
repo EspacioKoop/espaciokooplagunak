@@ -1,9 +1,10 @@
 # Asistencia entre puestos con minijuegos de habilidad
 
-- Estado: **diseño fijado; motor puro implementado y probado, sin interfaz ni cableado**
+- Estado: **diseño fijado; motor puro y reductor de sesión implementados y probados, sin interfaz**
   (`foundry-module/scripts/asistencia/`, suite `foundry-module/tests/asistencia-*.test.mjs`).
-  Nada de esto está integrado todavía en la interfaz del módulo ni conectado al relé: no hay
-  asistencia jugable en mesa.
+  El ciclo completo —abrir, resolver, consumir— ya es ejecutable y probable en Node, pero nada de
+  esto está integrado todavía en la interfaz del módulo ni conectado al relé: no hay asistencia
+  jugable en mesa.
 - Issue: [#309](https://github.com/VaroTv7/espaciokooplagunak/issues/309)
 - Fase: **4** (experiencia cooperativa). No forma parte del criterio de salida de Fase 3.
 - Depende de: contrato de minijuegos [#308](https://github.com/VaroTv7/espaciokooplagunak/issues/308)
@@ -282,9 +283,11 @@ Un solo camino vertical, para validar el marco sin sobreconstruir. El **motor pu
 ya existe y está probado —`bandas.mjs` (banda desde margen, con la inversión de la salvación y la
 regla de la casa opt-in), `enfoques.mjs` (tareas, las tres clases, degradación sin ficha),
 `probabilidad.mjs` (rango de éxito), `propuesta.mjs` (token efímero, presupuesto de concurrencia,
-consumo solo por el titular) y `temporizacion.mjs` (el reto de destreza determinista del camino
-sin dnd5e)—; lo que **no** existe es interfaz ni cableado con el relé, y esa parte sigue siendo
-Fase 4:
+consumo solo por el titular), `temporizacion.mjs` (el reto de destreza determinista del camino
+sin dnd5e) y `sesion.mjs` (el reductor que los ordena en el tiempo: reserva el hueco al **abrir**
+—para que el presupuesto se cobre antes de que nadie gaste un espacio de conjuro—, cierra con la
+banda venga del camino que venga, y entrega al titular la orden ya acotada)—; lo que **no** existe
+es interfaz ni cableado con el relé, y esa parte sigue siendo Fase 4:
 
 - **Un puesto asistible**: ingeniería (estabilizar sistema caliente).
 - **Un modo**: propuesta consumible (Modo B) que el ingeniero gasta como su `set_system_coolant`.

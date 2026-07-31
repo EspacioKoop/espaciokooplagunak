@@ -288,8 +288,9 @@ regla de la casa opt-in), `enfoques.mjs` (tareas, las tres clases, degradación 
 consumo solo por el titular), `temporizacion.mjs` (el reto de destreza determinista del camino
 sin dnd5e) y `sesion.mjs` (el reductor que los ordena en el tiempo: reserva el hueco al **abrir**
 —para que el presupuesto se cobre antes de que nadie gaste un espacio de conjuro—, cierra con la
-banda venga del camino que venga, y entrega al titular la orden ya acotada)—; lo que **no** existe
-es interfaz ni cableado con el relé, y esa parte sigue siendo Fase 4:
+banda venga del camino que venga, y entrega al titular la orden ya acotada) y `relevo.mjs` (la
+costura con el relé de órdenes)—; lo que **no** existe es **interfaz**, y esa parte sigue siendo
+Fase 4:
 
 - **Un puesto asistible**: ingeniería (estabilizar sistema caliente).
 - **Un modo**: propuesta consumible (Modo B) que el ingeniero gasta como su `set_system_coolant`.
@@ -298,6 +299,24 @@ es interfaz ni cableado con el relé, y esa parte sigue siendo Fase 4:
 - **Dos caminos de resolución que comparten bandas**: tirada de habilidad dnd5e (con «rango de éxito»)
   **y** minijuego de temporización de fallback.
 - Reutiliza relé (#237), matriz de puestos (#268) y marco de #308.
+
+### Cómo se cobra la ayuda, en concreto (`relevo.mjs`)
+
+La costura con el relé no abre un camino nuevo hacia el puente: se **cuelga del que ya había**, que es
+lo que hace exigible ADR-0002 en vez de solo declararlo.
+
+- El asistente deja su petición (`abrir` / `resolver`) en un flag de **su propio** documento `User`,
+  hermano del de órdenes: no declara identidad porque el documento ya la autentica.
+- El GM primario —y solo él, o dos coordinadores gastarían el mismo hueco del presupuesto— la aplica
+  a la sesión. Eso **no emite nada**: produce una propuesta.
+- El titular emite su orden de siempre. Si lleva el nonce de una propuesta viva **de su puesto**, el
+  parámetro sale mejorado dentro del rango que la orden ya permitía; el campo de reclamación no viaja
+  al puente, porque no es un parámetro suyo.
+- Si la ayuda caducó, ya se gastó o era de otro puesto, **la orden sigue adelante sin mejorar**, con
+  un aviso. Bloquearla convertiría la ayuda en peaje y haría que el titular pagara el error de otro.
+
+Que este módulo no importe jamás un cliente del puente es una **prueba**, no una promesa
+(`asistencia-relevo.test.mjs`).
 
 ## Naturaleza del cambio
 

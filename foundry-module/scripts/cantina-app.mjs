@@ -23,6 +23,15 @@ function contexto() {
   };
 }
 
+/* Al abrir la sala, el foco va a la primera puerta. Quien navega con teclado no
+ * tiene por qué recorrer el marco de la ventana para llegar a lo único que la
+ * cantina ofrece; y quien usa ratón no nota nada, porque `:focus-visible` solo
+ * pinta el anillo cuando el foco llegó por teclado. Sin DOM (arnés de pruebas)
+ * no hay nada que enfocar y la función calla. */
+function enfocarPrimeraPuerta(raiz) {
+  raiz?.querySelector?.("[data-puerta]")?.focus?.();
+}
+
 /* ---- v12+ --------------------------------------------------------------- */
 
 export function crearClaseCantinaV2({ alSeleccionar }) {
@@ -56,6 +65,7 @@ export function crearClaseCantinaV2({ alSeleccionar }) {
       this.element?.querySelectorAll?.("[data-puerta]")?.forEach((boton) => {
         boton.addEventListener("click", () => this.seleccionarPuerta(boton.dataset.puerta));
       });
+      enfocarPrimeraPuerta(this.element);
     }
   };
 }
@@ -90,6 +100,8 @@ export function crearClaseCantinaV1({ alSeleccionar }) {
       html.find("[data-puerta]").on("click", (ev) => {
         this.seleccionarPuerta(ev.currentTarget?.dataset?.puerta);
       });
+      // En v11 `html` es jQuery: el elemento real está en [0].
+      enfocarPrimeraPuerta(html?.[0]);
     }
   };
 }

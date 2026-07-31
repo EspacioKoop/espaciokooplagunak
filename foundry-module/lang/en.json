@@ -393,6 +393,7 @@
   "LAGUNAK.Controles.AbrirCantina": "Canteen",
   "LAGUNAK.Cantina.Titulo": "Canteen",
   "LAGUNAK.Cantina.Intro": "What are we playing today?",
+  "LAGUNAK.Cantina.Puertas": "Available tables",
   "LAGUNAK.Cantina.Puerta.Poker": "Poker table",
   "LAGUNAK.Minijuegos.Mesa.Titulo": "Poker table",
   "LAGUNAK.Minijuegos.Mesa.SinMesa": "No table is open. The GM sets it up.",

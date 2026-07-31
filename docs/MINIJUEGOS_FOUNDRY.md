@@ -235,6 +235,14 @@ apuestan y no pueden emitir `act`. Pueden entrar o salir en cualquier fase. El
 póker debe seguir siendo legible para ellos: cartas comunitarias, bote, apuestas,
 turno y resultado sí son públicos; manos aún activas, no.
 
+## Verticales
+
+El **póker** es el primer vertical y va justo debajo. El segundo son los **dados
+de cubilete** (#413), cuyas reglas viven en [MINIJUEGOS_DADOS.md](MINIJUEGOS_DADOS.md):
+no repite nada de este contrato porque no le hace falta —la sesión aloja
+cualquier juego por su interfaz interna, y eso es exactamente lo que el segundo
+vertical demuestra—.
+
 ## Primer vertical: póker
 
 El primer corte implementará una sola mesa de Texas Hold'em simplificado:

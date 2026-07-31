@@ -69,6 +69,11 @@ function contexto() {
       fichasTexto: game.i18n.format("LAGUNAK.Minijuegos.Mesa.Fichas", {
         fichas: cifra(jugador.stack),
       }),
+      // Lo apostado en esta ronda va con su cifra al lado del montón: el
+      // montón es el atajo, no el dato.
+      apuestaTexto: game.i18n.format("LAGUNAK.Minijuegos.Mesa.Apostado", {
+        fichas: cifra(jugador.apostadoRonda),
+      }),
     })),
     // El importe de una subida es «hasta cuánto», no «cuánto más»: es lo que
     // pide el motor y lo que se dice en una mesa. Se propone la subida mínima

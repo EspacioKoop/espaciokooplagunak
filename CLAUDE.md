@@ -157,12 +157,13 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
   - **Arte procedural** — generado en el cliente, cero binarios en el repositorio. Los colores viven
     **solo** en `scripts/paleta.mjs`, con la frontera vivo/registrado y una prueba que falla si otro
     módulo de arte declara un color propio (#351). Grabado en `scripts/laminas-clasicas.mjs`;
-    pixelart en `scripts/nave-sprite.mjs` y `scripts/minijuegos/cartas-pixelart.mjs`; música
-    determinista por semilla en `scripts/musica-procedural.mjs`. El 3D de consola de los 90 vive en
-    `scripts/retro3d*.mjs` (#362): motor puro que devuelve polígonos, pintor de lienzo aparte, y la
-    **época** (PSX o GameCube) como parámetro —rejilla, tonos y niebla— y no como dos módulos. El
-    arte de ficha de naves
-    narrativas (`scripts/ficha-nave.mjs`, con el codificador PNG puro de
+    pixelart en `scripts/nave-sprite.mjs`, `scripts/minijuegos/cartas-pixelart.mjs` y
+    `scripts/minijuegos/fichas-pixelart.mjs` (volumen por planos de color, nunca degradados: el 3D
+    del casco es otro lenguaje); música determinista por semilla en
+    `scripts/musica-procedural.mjs`. El 3D de consola de los 90 vive en `scripts/retro3d*.mjs`
+    (#362): motor puro que devuelve polígonos, pintor de lienzo aparte, y la **época** (PSX o
+    GameCube) como parámetro —rejilla, tonos y niebla— y no como dos módulos. El arte de ficha de
+    naves narrativas (`scripts/ficha-nave.mjs`, con el codificador PNG puro de
     `scripts/png-indexado.mjs`) se genera **solo por clic del GM** y escribe el token prototipo:
     nunca sondea ni sincroniza posición, porque un documento persistente que espeje la simulación
     se queda mintiendo cuando cae el puente (#354).

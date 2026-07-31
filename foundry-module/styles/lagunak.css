@@ -516,10 +516,74 @@
 }
 
 .lagunak-mesa-bote {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
   margin: 0 0 0.5rem;
   color: #ffd166;
   font-variant: small-caps;
   letter-spacing: 0.06em;
+}
+
+/* Montón de fichas: una ficha por denominación con su cuenta pegada. El dibujo
+ * es pixel-art de 16×16, así que escala en múltiplos enteros como las cartas.
+ * Es un ATAJO visual: la cifra sigue escrita al lado y el montón va
+ * `aria-hidden`, para no repetir el mismo número a quien escucha. */
+.lagunak-mesa-monton {
+  display: inline-flex;
+  align-items: flex-end; /* las fichas se apoyan en la mesa, no flotan */
+  gap: 0.1rem;
+}
+
+/* El montón crece hacia ARRIBA: el alto depende de cuántas fichas lleve, así
+ * que se fija el ancho (×2 de los 22 px del arte) y el alto lo pone el
+ * `viewBox`. Un alto fijo aplastaría los montones altos. */
+.lagunak-mesa-monton img {
+  width: 44px;
+  height: auto;
+  image-rendering: pixelated;
+}
+
+.lagunak-mesa-cuenta {
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.9;
+}
+
+/* Lo apostado en la ronda, delante del jugador y separado de su pila: en una
+ * mesa son dos montones distintos y confundirlos cambia la lectura de la mano. */
+.lagunak-mesa-apuesta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0 0.25rem;
+  border-left: 2px solid #ff2e88;
+  color: #ffd166;
+}
+
+.lagunak-mesa-apuesta-cifra {
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Cartas boca abajo del asiento ajeno: pequeñas a propósito. Dicen «sigue en la
+ * mano», no se miran. */
+.lagunak-mesa-oculta {
+  width: 20px;
+  height: 28px;
+  image-rendering: pixelated;
+  border: 1px solid #1b263b;
+  flex: 0 0 auto;
+}
+
+/* Hueco de comunitaria por salir: mismo tamaño que la carta, sin dibujo. El
+ * borde punteado es lo que distingue «aún no ha salido» de «no hay carta». */
+.lagunak-mesa-hueco {
+  width: 90px; /* mismo ×3 que la comunitaria */
+  height: 126px;
+  border: 1px dashed rgba(224, 225, 221, 0.35);
+  background: rgba(3, 7, 30, 0.25);
+  box-sizing: border-box;
 }
 
 .lagunak-mesa-comunitarias,
@@ -562,6 +626,12 @@
     width: 90px; /* ×3 */
     height: 126px;
   }
+
+  /* El hueco baja con la comunitaria o dejaría de ser su hueco. */
+  .lagunak-mesa-hueco {
+    width: 60px;
+    height: 84px;
+  }
 }
 
 .lagunak-mesa h4 {
@@ -580,7 +650,8 @@
 
 .lagunak-mesa-asiento {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
+  min-height: 2.4rem;
   gap: 0.45rem;
   padding: 0.25rem 0.4rem;
   border-left: 3px solid transparent;

@@ -8,7 +8,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { MUEBLES, caja, componerCantina } from "../scripts/cantina-escena.mjs";
+import { MUEBLES, PASEO, acotarCamara, caja, componerCantina } from "../scripts/cantina-escena.mjs";
 import { EPOCAS } from "../scripts/retro3d.mjs";
 
 test("la caja tiene ocho vértices, seis caras y las medidas que se le piden", () => {
@@ -65,33 +65,43 @@ test("la sala se compone en las dos épocas y ninguna se queda vacía", () => {
 });
 
 // Moverse por la sala (#423): la cámara se asoma, no viaja.
-test("asomarse cambia lo que se ve: la sala no es una imagen fija", () => {
-  const centro = componerCantina({ mirada: { x: 0, y: 0 } });
-  const izquierda = componerCantina({ mirada: { x: -1, y: 0 } });
-  const arriba = componerCantina({ mirada: { x: 0, y: 1 } });
-  assert.notDeepEqual(izquierda.poligonos, centro.poligonos);
-  assert.notDeepEqual(arriba.poligonos, centro.poligonos);
+test("andar y mirar son cosas distintas, y las dos cambian la vista", () => {
+  const quieto = componerCantina({ camara: { x: 0, z: 0, yaw: 0, pitch: 0 } });
+  const andado = componerCantina({ camara: { x: 0, z: 2, yaw: 0, pitch: 0 } });
+  const girado = componerCantina({ camara: { x: 0, z: 0, yaw: 0.4, pitch: 0 } });
+  const alzado = componerCantina({ camara: { x: 0, z: 0, yaw: 0, pitch: 0.2 } });
+  assert.notDeepEqual(andado.poligonos, quieto.poligonos, "andar no mueve nada");
+  assert.notDeepEqual(girado.poligonos, quieto.poligonos, "girar no mueve nada");
+  assert.notDeepEqual(alzado.poligonos, quieto.poligonos, "mirar arriba no mueve nada");
+  // Y no son lo mismo: andar de frente no puede dar la misma vista que girar.
+  assert.notDeepEqual(andado.poligonos, girado.poligonos);
 });
 
-test("el asomo está acotado: pasarse de rango no saca la cámara del decorado", () => {
-  // El ratón se sale del visor constantemente; eso no es un error, y tampoco
-  // puede ser un billete para ver la sala por detrás.
-  const tope = componerCantina({ mirada: { x: 1, y: 1 } });
-  const pasado = componerCantina({ mirada: { x: 40, y: 40 } });
+test("el paseo está acotado: no se atraviesa la barra ni se sale de la sala", () => {
+  // Detrás de la barra no hay nada modelado; dejar entrar ahí es enseñar el
+  // decorado por dentro.
+  const tope = componerCantina({ camara: { x: PASEO.maxX, z: PASEO.maxZ } });
+  const pasado = componerCantina({ camara: { x: 900, z: 900 } });
   assert.deepEqual(pasado.poligonos, tope.poligonos);
+  assert.deepEqual(acotarCamara({ x: -50, z: -50 }), {
+    x: PASEO.minX,
+    z: PASEO.minZ,
+    yaw: 0,
+    pitch: 0,
+  });
 });
 
-test("una mirada rota deja la sala centrada, no vacía", () => {
-  const rota = componerCantina({ mirada: { x: NaN, y: undefined } });
+test("una cámara rota deja la sala centrada, no vacía", () => {
+  const rota = componerCantina({ camara: { x: NaN, z: undefined, yaw: NaN } });
   assert.deepEqual(rota.poligonos, componerCantina().poligonos);
   assert.ok(rota.poligonos.length > 0);
 });
 
-test("hay paralaje: al asomarse, lo cercano se desplaza más que lo lejano", () => {
+test("hay paralaje: al desplazarse, lo cercano se mueve más que lo lejano", () => {
   // Es LA razón de que la cámara se mueva. Sin paralaje esto sería una imagen
   // que se agita, y quien mire no leerá la sala como un espacio con fondo.
-  const quieto = componerCantina({ mirada: { x: 0, y: 0 } });
-  const asomado = componerCantina({ mirada: { x: 1, y: 0 } });
+  const quieto = componerCantina({ camara: { x: 0, z: 0 } });
+  const asomado = componerCantina({ camara: { x: 2, z: 0 } });
   const centroX = (escena, indice) => {
     const puntos = escena.poligonos[indice].puntos;
     return puntos.reduce((suma, p) => suma + p.x, 0) / puntos.length;
@@ -105,7 +115,7 @@ test("hay paralaje: al asomarse, lo cercano se desplaza más que lo lejano", () 
 });
 
 test("entrada rota no propaga números rotos a la escena", () => {
-  const escena = componerCantina({ ancho: NaN, alto: undefined, yaw: NaN });
+  const escena = componerCantina({ ancho: NaN, alto: undefined, camara: { yaw: NaN } });
   for (const poligono of escena.poligonos) {
     for (const punto of poligono.puntos) {
       assert.ok(Number.isFinite(punto.x) && Number.isFinite(punto.y));
@@ -137,5 +147,21 @@ test("la sala está amueblada, no solo construida", () => {
       nombres.some((nombre) => nombre.startsWith(prefijo)),
       `la sala se ha quedado sin ${prefijo}`,
     );
+  }
+});
+
+// El goblin ciego (#423): el único habitante de la sala.
+test("el goblin está en la sala, con sus orejas, su venda y sus jarras", () => {
+  const nombres = MUEBLES.map((mueble) => mueble.nombre);
+  for (const pieza of ["goblinCuerpo", "goblinCabeza", "goblinOreja", "goblinVenda", "goblinBandeja", "jarra"]) {
+    assert.ok(nombres.some((nombre) => nombre.startsWith(pieza)), `falta ${pieza}`);
+  }
+});
+
+test("el goblin sirve al fondo, no delante de la barra", () => {
+  // Está a lo suyo, en la mesa del fondo. Si acaba en medio del encuadre deja
+  // de ser un habitante y pasa a ser un actor esperando su turno.
+  for (const mueble of MUEBLES.filter((m) => m.nombre.startsWith("goblin"))) {
+    assert.ok(mueble.centro[2] > 4.5, `el goblin se ha venido al frente: z=${mueble.centro[2]}`);
   }
 });

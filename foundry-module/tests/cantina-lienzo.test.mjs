@@ -10,9 +10,12 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  PASO_ANDAR,
   PASO_TECLADO,
+  andar,
   arrancarCantina,
   miradaDesdePunto,
+  mirarDesdePunto,
   miradaTrasTecla,
 } from "../scripts/cantina-lienzo.mjs";
 
@@ -78,16 +81,50 @@ test("miradaDesdePunto no revienta con un rectángulo degenerado", () => {
   assert.ok(Number.isFinite(mirada.x) && Number.isFinite(mirada.y));
 });
 
-test("WASD mueve igual que las flechas, en minúscula y en mayúscula", () => {
+test("WASD anda igual que las flechas, en minúscula y en mayúscula", () => {
   // Quien viene de un juego usa las teclas de un juego; y con el bloqueo de
   // mayúsculas puesto la sala no puede dejar de responder sin explicación.
+  const origen = { x: 0, z: 0, yaw: 0, pitch: 0 };
   for (const [tecla, flecha] of [["a", "ArrowLeft"], ["d", "ArrowRight"], ["w", "ArrowUp"], ["s", "ArrowDown"]]) {
-    assert.deepEqual(miradaTrasTecla({ x: 0, y: 0 }, tecla), miradaTrasTecla({ x: 0, y: 0 }, flecha));
-    assert.deepEqual(
-      miradaTrasTecla({ x: 0, y: 0 }, tecla.toUpperCase()),
-      miradaTrasTecla({ x: 0, y: 0 }, flecha),
-    );
+    assert.deepEqual(andar(origen, tecla), andar(origen, flecha));
+    assert.deepEqual(andar(origen, tecla.toUpperCase()), andar(origen, flecha));
   }
+});
+
+test("adelante es hacia donde se mira, no hacia el fondo de la sala", () => {
+  // Si `w` fuera siempre +z, girarse y seguir andando te llevaría de espaldas:
+  // eso convierte un paseo en un puzle.
+  const mirandoAlFrente = andar({ x: 0, z: 0, yaw: 0 }, "w");
+  assert.ok(Math.abs(mirandoAlFrente.z - PASO_ANDAR) < 1e-9);
+  assert.ok(Math.abs(mirandoAlFrente.x) < 1e-9);
+
+  const mirandoALaDerecha = andar({ x: 0, z: 0, yaw: Math.PI / 2 }, "w");
+  assert.ok(Math.abs(mirandoALaDerecha.x - PASO_ANDAR) < 1e-9, "girado, adelante sigue siendo +z");
+  assert.ok(Math.abs(mirandoALaDerecha.z) < 1e-9);
+});
+
+test("andar está acotado: no se sale de la sala por mucho que se insista", () => {
+  let camara = { x: 0, z: 0, yaw: 0, pitch: 0 };
+  for (let i = 0; i < 200; i += 1) camara = andar(camara, "w");
+  assert.ok(Number.isFinite(camara.z));
+  const otroPaso = andar(camara, "w");
+  assert.deepEqual(otroPaso, camara, "el tope no está topando");
+});
+
+test("el ratón MIRA y no anda: cambia el giro, nunca el sitio", () => {
+  // Es el reparto estándar de un juego en primera persona, y mezclarlo fue lo
+  // que hizo que el movimiento anterior no se leyera como moverse.
+  const camara = { x: 1, z: 2, yaw: 0, pitch: 0 };
+  const rect = { left: 0, top: 0, width: 200, height: 100 };
+  const mirando = mirarDesdePunto(camara, { x: 200, y: 0 }, rect);
+  assert.equal(mirando.x, camara.x, "mirar ha movido el sitio");
+  assert.equal(mirando.z, camara.z);
+  assert.notEqual(mirando.yaw, camara.yaw, "mirar no ha girado nada");
+});
+
+test("una tecla que no anda devuelve null", () => {
+  assert.equal(andar({ x: 0, z: 0 }, "Tab"), null);
+  assert.equal(andar({ x: 0, z: 0 }, "q"), null);
 });
 
 test("las flechas mueven la mirada y se quedan dentro del rango", () => {
@@ -159,7 +196,7 @@ test("sin bucle, asomarse repinta igualmente", () => {
   const sala = lienzoFalso();
   const mando = arrancarCantina({ sala, objetos: [] }, { ...reloj, reducirMovimiento: true });
   const antes = sala.ctx.pintadas;
-  mando.mirar({ x: 1, y: 0 });
+  mando.situar({ ...mando.donde(), x: 1 });
   assert.ok(sala.ctx.pintadas > antes, "asomarse no ha repintado");
 });
 
@@ -169,7 +206,7 @@ test("enfocar un objeto no exige que exista un lienzo de sala", () => {
   const mando = arrancarCantina({ sala: null, objetos: [] });
   assert.doesNotThrow(() => {
     mando.enfocar("poker");
-    mando.mirar({ x: 0.5, y: 0.5 });
+    mando.situar({ x: 0.5, z: 0.5, yaw: 0.2, pitch: 0 });
     mando.detener();
   });
 });

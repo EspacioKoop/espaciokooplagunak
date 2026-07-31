@@ -271,40 +271,46 @@ export const MUEBLES = Object.freeze([
     medidas: [0.3, 0.06, 0.5],
   })),
 
+  // --- El goblin ciego -----------------------------------------------------
+  //
+  // Sirve cervezas a la mesa del fondo, y lleva haciéndolo toda la vida: por eso
+  // no necesita ver. Es el único habitante de la sala, y está de espaldas —a lo
+  // suyo— porque una figura mirando a cámara convierte un local en un escenario
+  // con un actor esperando su turno.
+  //
+  // Cajas, como todo lo demás: a esta resolución una silueta de seis cajas se
+  // lee como alguien de pie mejor que una malla de doscientos polígonos.
+  Object.freeze({ nombre: "goblinCuerpo", color: CANTINA.goblinRopa, centro: [-2.9, -0.95, 5.2], medidas: [0.55, 1.1, 0.4] }),
+  Object.freeze({ nombre: "goblinCabeza", color: CANTINA.goblinPiel, centro: [-2.9, -0.25, 5.2], medidas: [0.4, 0.4, 0.38] }),
+  // Las orejas, que es lo que lo hace un goblin y no un tabernero bajito.
+  Object.freeze({ nombre: "goblinOrejaIzq", color: CANTINA.goblinPiel, centro: [-3.18, -0.2, 5.2], medidas: [0.22, 0.14, 0.12] }),
+  Object.freeze({ nombre: "goblinOrejaDer", color: CANTINA.goblinPiel, centro: [-2.62, -0.2, 5.2], medidas: [0.22, 0.14, 0.12] }),
+  // La venda: una banda clara a la altura de los ojos. Es el detalle que cuenta
+  // la historia entera sin una línea de texto.
+  Object.freeze({ nombre: "goblinVenda", color: CANTINA.goblinVenda, centro: [-2.9, -0.22, 5.02], medidas: [0.42, 0.12, 0.06] }),
+  // El brazo extendido con la bandeja, hacia la mesa de la izquierda.
+  Object.freeze({ nombre: "goblinBrazo", color: CANTINA.goblinPiel, centro: [-3.2, -0.7, 5.0], medidas: [0.5, 0.12, 0.12] }),
+  Object.freeze({ nombre: "goblinBandeja", color: CANTINA.taburete, centro: [-3.45, -0.62, 4.95], medidas: [0.42, 0.05, 0.35] }),
+  // Y las jarras que está sirviendo, en la bandeja y en la mesa del fondo.
+  ...fila(2, (i) => ({
+    nombre: `jarraBandeja${i}`,
+    color: CANTINA.cerveza,
+    centro: [-3.55 + i * 0.2, -0.48, 4.95],
+    medidas: [0.14, 0.22, 0.14],
+  })),
+  ...fila(3, (i) => ({
+    nombre: `jarraMesa${i}`,
+    color: CANTINA.cerveza,
+    centro: [-3.7 + i * 0.3, -1.0, 5.2],
+    medidas: [0.13, 0.2, 0.13],
+  })),
+
   // El rótulo de neón, descentrado: un local con el cartel centrado parece un
   // decorado, y este tiene que parecer usado.
   Object.freeze({ nombre: "neon", color: CANTINA.neon, centro: [-4.2, 1.95, 6.45], medidas: [1.6, 0.28, 0.15] }),
 ]);
 
-/**
- * Cuánto puede asomarse quien mira, como mucho. La cámara se MUEVE pero no
- * VIAJA: es alguien de pie en la puerta que se inclina a un lado y a otro, no
- * un personaje que cruza el local.
- *
- * El tope existe porque la sala está construida para verse desde la puerta —no
- * tiene techo, ni pared trasera, ni nada detrás de la barra—; dejar salir la
- * cámara de aquí es enseñar el decorado por fuera. Y el vaivén es lo que hace
- * que un decorado se lea como un espacio: el paralaje entre la barra cercana y
- * el mamparo lejano da la profundidad que una imagen fija nunca da.
- */
-export const ASOMO = Object.freeze({
-  // Recorrido amplio, que es lo que hace que la sala se sienta un sitio y no
-  // una foto que se agita. El primer intento largo deformaba la sala al llegar
-  // al tope, pero la culpa no era del recorrido sino del CAMPO DE VISIÓN: con
-  // 60° abiertos, mirar desde muy de lado estira las cajas de los bordes hasta
-  // que parecen rotas. Con el campo más cerrado (ver `FOV`) el mismo recorrido
-  // se lee como moverse, así que aquí se puede ser generoso.
-  lado: 2.2, // unidades a izquierda y derecha
-  alto: 0.75, // agacharse o estirarse
-  giro: 0.16, // radianes: la cabeza sigue al cuerpo, sin llegar a girarse
-});
 
-/** Acota a [−limite, limite] y convierte lo que no es número en 0: un `NaN`
- * en la cámara no deja una sala torcida, deja una sala sin geometría. */
-function asomo(valor, limite) {
-  if (!Number.isFinite(valor)) return 0;
-  return Math.max(-limite, Math.min(limite, valor));
-}
 
 /**
  * Compone el local entero desde donde esté mirando quien entra.
@@ -328,28 +334,74 @@ function asomo(valor, limite) {
  */
 export const FOV = 42;
 
+/**
+ * Dónde puede estar quien anda por la cantina. La sala está construida para
+ * verse desde la puerta, así que el paseo se acota a la mitad delantera: detrás
+ * de la barra no hay nada modelado, y dejar entrar ahí es enseñar el decorado
+ * por dentro. El tope de `z` es además la barra: no se atraviesa.
+ */
+export const PASEO = Object.freeze({
+  minX: -3.4,
+  maxX: 3.4,
+  minZ: -1.5, // pegado a la puerta
+  maxZ: 2.6, // justo antes de la barra
+  alto: 0.55, // altura de los ojos sobre el suelo de la sala
+});
+
+/** Cuánto se mira a los lados y arriba/abajo con el ratón, en radianes. */
+export const MIRA = Object.freeze({ yaw: 0.55, pitch: 0.22 });
+
+/**
+ * Sitúa a quien mira dentro de la sala, acotado al paseo. Es lo que convierte
+ * el «asomarse» anterior en estar de pie en un sitio: la posición y la mirada
+ * son cosas distintas, como en cualquier juego en primera persona, y por eso el
+ * ratón MIRA y las teclas ANDAN en vez de compartir un único vaivén.
+ */
+export function acotarCamara(camara = {}) {
+  const x = Number.isFinite(camara.x) ? camara.x : 0;
+  const z = Number.isFinite(camara.z) ? camara.z : 0;
+  return {
+    x: Math.max(PASEO.minX, Math.min(PASEO.maxX, x)),
+    z: Math.max(PASEO.minZ, Math.min(PASEO.maxZ, z)),
+    yaw: Number.isFinite(camara.yaw) ? camara.yaw : 0,
+    pitch: Number.isFinite(camara.pitch) ? camara.pitch : 0,
+  };
+}
+
 export function componerCantina(opciones = {}) {
   const {
     ancho = 480,
     alto = 270,
     epoca,
     fondo = CANTINA.ventana,
-    mirada = {},
+    camara,
     // El cielo se siembra: la misma semilla da siempre la misma ventana, y dos
     // personas de la misma mesa ven el mismo vacío.
     semillaCielo = 20260731,
   } = opciones;
   const cielo = campoEstelar(semillaCielo, { cantidad: 90 });
 
-  const desvioX = asomo(mirada.x, 1) * ASOMO.lado;
-  const desvioY = asomo(mirada.y, 1) * ASOMO.alto;
-  // La cabeza gira CONTRA el desplazamiento: al asomarse por la izquierda se
-  // sigue mirando al centro de la sala, que es lo que hace el cuello de
-  // cualquiera. Girando a favor, la sala se sale del encuadre y marea.
-  const yaw = asomo(opciones.yaw, Math.PI) - asomo(mirada.x, 1) * ASOMO.giro;
+  // UNA sola cámara, la de un walking simulator: se está en un sitio (`x`, `z`)
+  // y se mira en una dirección (`yaw`, `pitch`). El «asomo» anterior mezclaba
+  // las dos cosas en un vaivén y por eso no se leía como moverse: desplazarse y
+  // girar a la vez, siempre atado, es un travelling de cine, no andar.
+  const puesto = acotarCamara(camara);
+  const desvioX = puesto.x;
+  const yaw = puesto.yaw;
 
   const partes = MUEBLES.map((mueble) =>
-    componerEscena(caja(mueble.centro, mueble.medidas), {
+    // `transformar` gira alrededor del origen y DESPUÉS traslada, así que la
+    // posición de la cámara se resta aquí, en coordenadas de mundo:
+    // v' = R(yaw)·(v − cámara). Pasarla como `posicion` la aplicaría después de
+    // girar, que es una cámara orbitando un punto en vez de andando por la sala.
+    componerEscena(caja(
+      [
+        mueble.centro[0] - desvioX,
+        mueble.centro[1] - PASEO.alto,
+        mueble.centro[2] - puesto.z,
+      ],
+      mueble.medidas,
+    ), {
       ancho,
       alto,
       epoca,
@@ -357,14 +409,8 @@ export function componerCantina(opciones = {}) {
       color: mueble.color,
       fondo,
       yaw,
-      // La cámara está a la altura de quien entra por la puerta: por encima de
-      // la barra y por debajo del dintel. Bajarla convierte la barra en un muro.
-      // El asomo se suma aquí, que es lo que produce el paralaje.
-      //
-      // La cámara está ATRÁS y a la altura de quien entra por la puerta. Pegada
-      // a la barra, la barra era medio encuadre y la sala no se veía; el sitio
-      // se lee desde la distancia a la que se entra en él, no desde el taburete.
-      posicion: [desvioX, -0.55 + desvioY, 2.2],
+      pitch: puesto.pitch,
+      posicion: [0, 0, 0],
     }),
   );
 
@@ -390,6 +436,7 @@ export function componerCantina(opciones = {}) {
     epoca,
     fov: FOV,
     yaw,
+    pitch: puesto.pitch,
     // Sin paralaje propio: están infinitamente lejos, que es lo que las hace
     // leerse como cielo y no como confeti pegado al cristal.
   });

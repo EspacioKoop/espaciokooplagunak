@@ -125,6 +125,12 @@ export const CANTINA = Object.freeze({
   // para viñeta y líneas, y el propio ámbar de las lámparas para el halo alto.
   // Están aquí y no allí porque un velo ES un color, aunque venga con alfa.
   sombra: "#000000",
+  // El goblin de la barra. Verde apagado y no chillón: lleva toda la vida
+  // sirviendo aquí, no acaba de salir de un cuento.
+  goblinPiel: "#6f8f4a",
+  goblinRopa: "#8a5a3c", // delantal de cuero gastado
+  goblinVenda: "#d9cdb4", // la venda de los ojos, lo único claro que lleva
+  cerveza: "#e0a33a", // la jarra: el mismo ámbar de la luz, no un color nuevo
 });
 
 /**

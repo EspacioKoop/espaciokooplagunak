@@ -10,7 +10,7 @@
 
 import { MODULE_ID } from "./lagunak-constantes.mjs";
 import { puertasCantina } from "./cantina.mjs";
-import { arrancarCantina, miradaDesdePunto, miradaTrasTecla } from "./cantina-lienzo.mjs";
+import { andar, arrancarCantina, mirarDesdePunto } from "./cantina-lienzo.mjs";
 
 const PLANTILLA = `modules/${MODULE_ID}/templates/cantina.hbs`;
 
@@ -67,26 +67,29 @@ function encenderSala(raiz) {
   // entera: mover el ratón hacia los botones no debería estar moviendo también
   // la cámara, que es lo que hace que una escena se sienta nerviosa.
   sala.addEventListener("mousemove", (ev) => {
-    mando.mirar(miradaDesdePunto({ x: ev.clientX, y: ev.clientY }, sala.getBoundingClientRect()));
+    mando.situar(
+      mirarDesdePunto(mando.donde(), { x: ev.clientX, y: ev.clientY }, sala.getBoundingClientRect()),
+    );
   });
-  // Al salir, la sala vuelve al centro: quedarse torcida porque el ratón se fue
-  // por una esquina deja la cámara en una postura que nadie eligió.
-  sala.addEventListener("mouseleave", () => mando.mirar({ x: 0, y: 0 }));
+  // Al salir, la vista vuelve al frente pero NO al centro de la sala: se deja
+  // de mirar de lado, no se vuelve andando a la puerta. Perder el sitio al
+  // sacar el ratón sería deshacer lo único que se había hecho a propósito.
+  sala.addEventListener("mouseleave", () =>
+    mando.situar({ ...mando.donde(), yaw: 0, pitch: 0 }),
+  );
 
   // Y con el teclado, porque asomarse no puede ser solo de quien usa ratón. La
   // sala es focalizable para poder recibir las flechas, y su `tabindex` va aquí
   // y no en la plantilla: sin lienzo no hay nada que enfocar, y un `tabindex`
   // en la plantilla dejaría una parada de tabulación vacía.
   sala.tabIndex = 0;
-  let miradaTeclado = { x: 0, y: 0 };
   sala.addEventListener("keydown", (ev) => {
-    const siguiente = miradaTrasTecla(miradaTeclado, ev.key);
+    const siguiente = andar(mando.donde(), ev.key);
     if (!siguiente) return;
     // Solo se consume la tecla que se usa: las demás siguen su camino, que es
     // como se sigue pudiendo tabular fuera de aquí.
     ev.preventDefault();
-    miradaTeclado = siguiente;
-    mando.mirar(siguiente);
+    mando.situar(siguiente);
   });
 
   // El objeto de la puerta que se enfoca gira más rápido y se inclina. Vale

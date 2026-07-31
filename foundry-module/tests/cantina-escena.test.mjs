@@ -150,3 +150,21 @@ test("una opción fuera de cuadro se pega al borde, no desaparece", () => {
   }
   assert.ok(escena.opciones.some((o) => o.fuera), "ninguna se ha marcado como fuera");
 });
+
+// Un local usado, no solo construido (#423).
+test("la sala tiene trastos que alguien dejó ahí", () => {
+  // Es la diferencia entre una sala construida y una sala usada, y sale barato
+  // porque son cajas. Si esto se pierde, la cantina vuelve a ser un plano.
+  const nombres = MUEBLES.map((mueble) => mueble.nombre);
+  for (const trasto of ["tele", "gramola", "caja", "maceta", "hoja", "trapo", "jarraBarra"]) {
+    assert.ok(nombres.some((nombre) => nombre.startsWith(trasto)), `falta ${trasto}`);
+  }
+});
+
+test("la tele existe como objeto de la sala, no como capa encima", () => {
+  // Cuando se cablee el vídeo por enlace, irá anclado a ESTE rectángulo. Si la
+  // tele viviera solo en la interfaz, flotaría como flotaban los cachivaches.
+  const pantalla = MUEBLES.find((mueble) => mueble.nombre === "telePantalla");
+  assert.ok(pantalla, "la tele no está en la sala");
+  assert.ok(pantalla.medidas[2] > pantalla.medidas[1], "una tele es más ancha que alta");
+});

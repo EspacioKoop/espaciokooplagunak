@@ -315,7 +315,12 @@ Hooks.once("ready", () => {
     // `settings.set` asíncrono— y proponer contra una mesa que aún no está
     // publicada se rechaza por «esa mesa ya no existe». Se espera a la primera
     // vista, que es cuando el coordinador ya reparte acciones de verdad.
-    if (sentarsePendiente && acciones?.includes?.("join")) {
+    // Y solo se propone si la mesa ESTÁ PUBLICADA. La primera vista puede
+    // llegar antes de que `settings.set` haya terminado —es asíncrono— y
+    // proponer contra un ajuste todavía vacío se rechaza con «esa mesa ya no
+    // existe», que es exactamente lo que se veía al pulsar Sentarse. Si aún no
+    // está, la intención se conserva para la vista siguiente en vez de gastarse.
+    if (sentarsePendiente && acciones?.includes?.("join") && estadoPublicoVigente()) {
       sentarsePendiente = false;
       proponerAccion({ tipo: "join" });
     }

@@ -161,6 +161,21 @@ export const AVATAR = Object.freeze({
   simbolo: "#e8d9a0", // el símbolo sagrado del clérigo
 });
 
+/** Trastos que llenan el local (#423). Cosas que alguien dejó ahí: cajas de
+ * suministro, una planta que aguanta, la tele del bar, la gramola. Un sitio
+ * habitado tiene cosas que nadie ha colocado a propósito. */
+export const CACHARROS = Object.freeze({
+  cajaSuministro: "#6b5a3e", // cajas apiladas contra el mamparo
+  cajaFleje: "#404a56", // sus flejes metálicos
+  planta: "#3f7a45", // la planta de la esquina: lo único vivo que no habla
+  maceta: "#7a4a3a",
+  teleMarco: "#2f353d", // la tele colgada, apagada
+  telePantalla: "#101820",
+  gramola: "#8a3550", // la gramola, granate de local de carretera
+  gramolaLuz: "#ffd166",
+  trapo: "#c7bda6", // el trapo de la barra, el detalle más humano que hay
+});
+
 /**
  * Paleta arcade saturada de las facciones en el mapa vivo. Es una lista y no un
  * objeto porque el color se reparte por hash del nombre de facción: importa el

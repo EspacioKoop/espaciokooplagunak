@@ -25,7 +25,7 @@
 //
 // Frontera de arte (#351): no declara ni un color. Todos entran de `paleta.mjs`.
 
-import { CANTINA } from "./paleta.mjs";
+import { CACHARROS, CANTINA } from "./paleta.mjs";
 import { componerEscena, focal, proyectar, transformar } from "./retro3d.mjs";
 import { campoEstelar, proyectarEstrellas } from "./retro3d-estrellas.mjs";
 import { cuerpoMayor, cuerposPorLaVentana } from "./cantina-ventana.mjs";
@@ -258,6 +258,59 @@ export const MUEBLES = Object.freeze([
     centro: [-2.6 + i * 2.6, 2.35, 2.4 + (i % 2) * 1.4],
     medidas: [1.4, 0.22, 0.7],
   })),
+  // --- Lo que alguien dejó ahí ---------------------------------------------
+  //
+  // Un local habitado tiene cosas que nadie colocó a propósito. Esto no es
+  // decoración de más: es la diferencia entre una sala construida y una sala
+  // usada, y sale barato porque son cajas.
+
+  // La TELE del bar, colgada en alto a estribor. Va aquí, en el 3D, para que
+  // exista como objeto de la sala; el vídeo por enlace irá encima, anclado a
+  // este rectángulo, cuando se cablee (#423).
+  Object.freeze({ nombre: "teleMarco", color: CACHARROS.teleMarco, centro: [4.6, 1.35, 3.2], medidas: [0.28, 1.15, 1.9] }),
+  Object.freeze({ nombre: "telePantalla", color: CACHARROS.telePantalla, centro: [4.42, 1.35, 3.2], medidas: [0.06, 0.95, 1.65] }),
+  Object.freeze({ nombre: "teleSoporte", color: CACHARROS.cajaFleje, centro: [4.85, 1.9, 3.2], medidas: [0.5, 0.12, 0.12] }),
+
+  // La GRAMOLA, contra la pared de babor. Granate de local de carretera: el
+  // único mueble que no es ni madera ni metal de nave.
+  Object.freeze({ nombre: "gramola", color: CACHARROS.gramola, centro: [-4.6, -1.05, 1.2], medidas: [0.5, 1.4, 1.1] }),
+  Object.freeze({ nombre: "gramolaLuz", color: CACHARROS.gramolaLuz, centro: [-4.32, -0.7, 1.2], medidas: [0.06, 0.3, 0.8] }),
+
+  // CAJAS de suministro apiladas, con sus flejes. Nadie las ha subido todavía.
+  ...fila(3, (i) => ({
+    nombre: `caja${i}`,
+    color: CACHARROS.cajaSuministro,
+    centro: [-4.3 + (i % 2) * 0.8, -1.45 + Math.floor(i / 2) * 0.62, 5.6],
+    medidas: [0.7, 0.6, 0.7],
+  })),
+  ...fila(3, (i) => ({
+    nombre: `fleje${i}`,
+    color: CACHARROS.cajaFleje,
+    centro: [-4.3 + (i % 2) * 0.8, -1.45 + Math.floor(i / 2) * 0.62, 5.6],
+    medidas: [0.74, 0.08, 0.74],
+  })),
+
+  // La PLANTA de la esquina: lo único vivo de la sala que no habla, y lo que
+  // más dice que aquí vive gente y no solo trabaja.
+  Object.freeze({ nombre: "maceta", color: CACHARROS.maceta, centro: [4.4, -1.5, 5.9], medidas: [0.5, 0.5, 0.5] }),
+  ...fila(4, (i) => ({
+    nombre: `hoja${i}`,
+    color: CACHARROS.planta,
+    centro: [4.4 + (i % 2 === 0 ? -0.22 : 0.22), -0.95 + (i > 1 ? 0.35 : 0), 5.9 + (i > 1 ? 0.18 : -0.18)],
+    medidas: [0.34, 0.5, 0.16],
+  })),
+
+  // El TRAPO sobre la barra. Una caja de nada, y es el detalle más humano del
+  // local: alguien estaba limpiando y lo dejó ahí.
+  Object.freeze({ nombre: "trapo", color: CACHARROS.trapo, centro: [1.5, -0.95, 4.0], medidas: [0.4, 0.05, 0.3] }),
+  // Dos jarras servidas esperando en la barra.
+  ...fila(2, (i) => ({
+    nombre: `jarraBarra${i}`,
+    color: CANTINA.cerveza,
+    centro: [-1.2 + i * 0.35, -0.83, 4.0],
+    medidas: [0.14, 0.22, 0.14],
+  })),
+
   // --- Que se note que esto vuela ------------------------------------------
   // Tubería vista cruzando el techo de lado a lado. Es el detalle más barato
   // que existe y el que más dice: en una taberna los tubos van escondidos.

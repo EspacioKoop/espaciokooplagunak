@@ -159,15 +159,21 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     módulo de arte declara un color propio (#351). Grabado en `scripts/laminas-clasicas.mjs`;
     pixelart en `scripts/nave-sprite.mjs`, `scripts/minijuegos/cartas-pixelart.mjs` y
     `scripts/minijuegos/fichas-pixelart.mjs` (volumen por planos de color, nunca degradados: el 3D
-    del casco es #362 y es otro lenguaje); música determinista por semilla en
-    `scripts/musica-procedural.mjs`. El arte de ficha de naves
-    narrativas (`scripts/ficha-nave.mjs`, con el codificador PNG puro de
+    del casco es otro lenguaje); música determinista por semilla en
+    `scripts/musica-procedural.mjs`. El 3D de consola de los 90 vive en `scripts/retro3d*.mjs`
+    (#362): motor puro que devuelve polígonos, pintor de lienzo aparte, y la **época** (PSX o
+    GameCube) como parámetro —rejilla, tonos y niebla— y no como dos módulos. El arte de ficha de
+    naves narrativas (`scripts/ficha-nave.mjs`, con el codificador PNG puro de
     `scripts/png-indexado.mjs`) se genera **solo por clic del GM** y escribe el token prototipo:
     nunca sondea ni sincroniza posición, porque un documento persistente que espeje la simulación
     se queda mintiendo cuando cae el puente (#354).
   - **Minijuegos** — `scripts/minijuegos/` (motor de póker, evaluador de manos, agente automático,
     sesión) y su enganche en `scripts/minijuegos-wiring.mjs` (#308). La sesión viva del coordinador
     no se persiste en ningún sitio: vive en memoria del GM.
+  - **Asistencia entre puestos** — `scripts/asistencia/` (#309, diseño en
+    [`docs/MINIJUEGOS_ASISTENCIA.md`](docs/MINIJUEGOS_ASISTENCIA.md)): motor puro más el reductor
+    `sesion.mjs`. Ayudar NUNCA emite orden: produce un token que gasta el **titular** del puesto
+    asistido como una de sus órdenes ya autorizadas, vía relé (#237). Sin interfaz todavía.
 - `resources/` y `packs/` — assets heredados de upstream.
 - La versión se calcula por fecha (`AAAA.MM.DD`) en `CMakeLists.txt` salvo override explícito.
 - `docs/` — documentación propia del fork: [`BUILDING.md`](docs/BUILDING.md),

@@ -48,6 +48,7 @@ export function arrancarCantina(piezas, opciones = {}) {
   let plano = PLANO_INICIAL;
   let resaltada = null;
   let ultimasOpciones = [];
+  let avisoDeCorte = null;
   let fotograma = null;
   let vivo = true;
   const inicio = ahora();
@@ -114,7 +115,10 @@ export function arrancarCantina(piezas, opciones = {}) {
       if (!destinoValido(id)) return false;
       plano = id;
       resaltada = null;
-      if (!fotograma) pintarUnaVez();
+      // Se repinta SIEMPRE al cortar, haya bucle o no: las opciones del plano
+      // nuevo tienen que existir antes de que nadie pregunte por ellas.
+      pintarUnaVez();
+      avisoDeCorte?.(plano);
       return true;
     },
     /** En qué plano estamos. */
@@ -124,6 +128,11 @@ export function arrancarCantina(piezas, opciones = {}) {
     /** Lo que se puede hacer desde aquí, ya proyectado. */
     opciones() {
       return ultimasOpciones;
+    },
+    /** Avisa cuando se corta a otro plano, para repintar lo que hay fuera del
+     * lienzo (los botones de acción). */
+    alCortar(callback) {
+      avisoDeCorte = typeof callback === "function" ? callback : null;
     },
     /** Resalta la opción bajo el puntero (o ninguna). */
     resaltar(opcion) {

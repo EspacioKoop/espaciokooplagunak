@@ -864,6 +864,38 @@
   outline-offset: 2px;
 }
 
+/* Las acciones del plano actual. Van justo debajo de la sala porque son de la
+ * sala, no de la ventana: cambian en cada corte. */
+.lagunak-cantina-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+
+.lagunak-cantina-accion {
+  flex: 1 1 10rem;
+  padding: 0.4rem 0.6rem;
+  border: 2px solid #1b263b;
+  border-left-color: #ffd166;
+  background: #0d1b2a;
+  color: #e0e1dd;
+  font-variant: small-caps;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+
+.lagunak-cantina-accion:hover,
+.lagunak-cantina-accion:focus-visible {
+  border-left-color: #00e5ff;
+  background: #14263d;
+}
+
+.lagunak-cantina-accion:focus-visible {
+  outline: 2px solid #ffd166;
+  outline-offset: 2px;
+}
+
 /* El objeto que gira dentro de cada botón. Mismo tratamiento de rejilla. */
 .lagunak-cantina-objeto {
   width: 2.4rem;

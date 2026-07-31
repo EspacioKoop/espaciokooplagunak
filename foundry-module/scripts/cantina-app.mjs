@@ -86,6 +86,37 @@ function encenderSala(raiz, alSeleccionar) {
       ).opcion;
   };
 
+  // Los botones de plano. Se repintan en cada corte porque las opciones son
+  // del plano, no de la ventana.
+  const barra = raiz.querySelector?.(".lagunak-cantina-acciones");
+  const refrescarAcciones = () => {
+    // Sin DOM completo —arnés de pruebas, host raro— no hay botones y ya está:
+    // la sala se sigue pintando y los puntos sobre ella siguen siendo pulsables.
+    // Perder los botones es aceptable; tirar el encendido de la sala, no.
+    if (typeof barra?.replaceChildren !== "function") return;
+    if (typeof raiz.ownerDocument?.createElement !== "function") return;
+    barra.replaceChildren();
+    mando.opciones().forEach((opcion, i) => {
+      const boton = raiz.ownerDocument.createElement("button");
+      boton.type = "button";
+      boton.className = "lagunak-cantina-accion";
+      // El número es el atajo de teclado, y va delante para que se vea que lo
+      // tiene: un atajo que no se anuncia no lo usa nadie.
+      boton.textContent = `${i + 1}. ${game.i18n.localize(opcion.etiqueta)}`;
+      boton.addEventListener("click", () => {
+        elegir(opcion, mando, alSeleccionar);
+        refrescarAcciones();
+      });
+      boton.addEventListener("mouseenter", () => mando.resaltar(opcion));
+      boton.addEventListener("focus", () => mando.resaltar(opcion));
+      boton.addEventListener("mouseleave", () => mando.resaltar(null));
+      boton.addEventListener("blur", () => mando.resaltar(null));
+      barra.append(boton);
+    });
+  };
+  mando.alCortar(refrescarAcciones);
+  refrescarAcciones();
+
   sala.addEventListener("mousemove", (ev) => {
     const opcion = buscar(ev);
     sala.style.cursor = opcion ? "pointer" : "default";
@@ -93,7 +124,10 @@ function encenderSala(raiz, alSeleccionar) {
   });
   sala.addEventListener("mouseleave", () => mando.resaltar(null));
 
-  sala.addEventListener("click", (ev) => elegir(buscar(ev), mando, alSeleccionar));
+  sala.addEventListener("click", (ev) => {
+    elegir(buscar(ev), mando, alSeleccionar);
+    refrescarAcciones();
+  });
 
   // Y con teclado: 1..9 recorren las opciones del plano, que es lo que hace que
   // esto no sea solo de ratón. Tab sigue tabulando fuera de la sala.
@@ -105,6 +139,7 @@ function encenderSala(raiz, alSeleccionar) {
     if (!opcion) return;
     ev.preventDefault();
     elegir(opcion, mando, alSeleccionar);
+    refrescarAcciones();
   });
 
   // El objeto de la puerta que se enfoca gira más rápido y se inclina. Vale

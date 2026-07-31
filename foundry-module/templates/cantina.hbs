@@ -5,6 +5,12 @@
   <canvas class="lagunak-cantina-sala" width="640" height="360"
           role="img" aria-label="{{localize "LAGUNAK.Cantina.SalaAlt"}}"></canvas>
 
+  {{!-- Lo que se puede hacer desde el plano actual, TAMBIÉN como botones. Los
+        puntos sobre la sala dicen DÓNDE está cada cosa; estos botones dicen QUÉ
+        hay, y se leen con lector de pantalla. Un punto de cuatro píxeles sin
+        texto no es una opción: es un secreto. --}}
+  <nav class="lagunak-cantina-acciones" aria-label="{{localize "LAGUNAK.Cantina.Acciones"}}"></nav>
+
   <p class="lagunak-cantina-intro">{{localize "LAGUNAK.Cantina.Intro"}}</p>
   <ul class="lagunak-cantina-puertas" aria-label="{{localize "LAGUNAK.Cantina.Puertas"}}">
     {{#each puertas}}

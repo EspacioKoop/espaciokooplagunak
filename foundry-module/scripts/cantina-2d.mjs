@@ -158,7 +158,7 @@ export function pintarHaces(ctx, { ancho, alto, focos = 3, fuerza = 0.16 }) {
  * Va en el TERCIO CENTRAL y no por toda la sala: humo repartido por igual es
  * niebla, y la niebla ya la pone el motor con la distancia.
  */
-export function pintarHumo(ctx, { ancho, alto, ms = 0, vetas = 14, fuerza = 0.11 }) {
+export function pintarHumo(ctx, { ancho, alto, ms = 0, vetas = 22, fuerza = 0.2 }) {
   if (!ctx) return 0;
   let puestas = 0;
   const desde = Math.round(alto * 0.3);
@@ -167,12 +167,12 @@ export function pintarHumo(ctx, { ancho, alto, ms = 0, vetas = 14, fuerza = 0.11
     // Cada veta tiene su altura, su grosor y su deriva; los números salen del
     // índice y no de un sorteo, así que la sala es la misma en cada apertura.
     const y = desde + Math.round(((hasta - desde) * ((i * 7) % vetas)) / vetas);
-    const grosor = 2 + (i % 3);
+    const grosor = 3 + (i % 4);
     const velocidad = 0.004 + (i % 3) * 0.003;
     // Deriva continua que da la vuelta: el humo cruza y vuelve a entrar por el
     // otro lado en vez de acumularse en una esquina.
     const deriva = Math.floor((ms * velocidad + i * 37) % (ancho * 2)) - ancho;
-    const largo = Math.round(ancho * (0.45 + (i % 3) * 0.18));
+    const largo = Math.round(ancho * (0.6 + (i % 3) * 0.2));
     ctx.fillStyle = velo(CANTINA.lampara, (fuerza * (1 - (i % 3) * 0.25)).toFixed(3));
     const x0 = Math.max(0, deriva);
     const x1 = Math.min(ancho, deriva + largo);

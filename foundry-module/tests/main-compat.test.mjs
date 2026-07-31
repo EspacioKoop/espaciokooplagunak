@@ -108,6 +108,11 @@ async function loadModule({ modern = false, isGM = true, fetchImpl } = {}) {
       mergeObject(base, extra) {
         return { ...base, ...extra };
       },
+      // Ids de sesión: basta con que no se repitan dentro de una prueba.
+      randomID: (() => {
+        let n = 0;
+        return () => `id-${++n}`;
+      })(),
     },
   };
 
@@ -1015,6 +1020,55 @@ test("una puerta desconocida no abre ninguna mesa", async () => {
   const cantina = instances.at(-1);
   cantina.seleccionarPuerta("mesa-que-no-existe");
   assert.equal(instances.at(-1), cantina, "no se ha construido ninguna mesa");
+});
+
+// Regresión de smoke (v11.302, 31-jul): se entraba por la cantina y salía la
+// mesa CERRADA de la sesión anterior, sin una sola acción que pulsar y sin
+// forma de arrancar otra. El guardián miraba solo si había estado publicado, y
+// una mano terminada se queda publicada para siempre.
+test("una mesa terminada no bloquea la apertura: la cantina abre una nueva", async () => {
+  const { hooks, instances } = await loadModule();
+  await arrancarReady(hooks);
+  const controls = [{ name: "token", tools: [] }];
+  hooks.getSceneControlButtons(controls);
+  // Solo el coordinador crea mesas, y el coordinador es el GM activo.
+  game.users = { activeGM: game.user };
+
+  // Cadáver de la partida de ayer, publicado en el ajuste de mundo.
+  await game.settings.set("espaciokoop-lagunak", "minijuegoSesionPublica", {
+    id: "sesion-vieja",
+    juego: "poker",
+    fase: "terminada",
+    jugadores: [],
+  });
+
+  await abrirMesaPorCantina(controls, instances);
+
+  const publicado = game.settings.get("espaciokoop-lagunak", "minijuegoSesionPublica");
+  assert.notEqual(publicado.id, "sesion-vieja", "la mesa muerta sigue publicada");
+  assert.notEqual(publicado.fase, "terminada", "la mesa nueva nace ya terminada");
+});
+
+test("una mesa viva NO se reemplaza al volver a entrar por la cantina", async () => {
+  // La otra mitad de la regla: reabrir la puerta con una partida en marcha no
+  // puede barrer la mesa y las fichas de quienes están jugando.
+  const { hooks, instances } = await loadModule();
+  await arrancarReady(hooks);
+  const controls = [{ name: "token", tools: [] }];
+  hooks.getSceneControlButtons(controls);
+  game.users = { activeGM: game.user };
+
+  await game.settings.set("espaciokoop-lagunak", "minijuegoSesionPublica", {
+    id: "sesion-viva",
+    juego: "poker",
+    fase: "en_curso",
+    jugadores: [],
+  });
+
+  await abrirMesaPorCantina(controls, instances);
+
+  const publicado = game.settings.get("espaciokoop-lagunak", "minijuegoSesionPublica");
+  assert.equal(publicado.id, "sesion-viva", "la partida en curso se ha perdido");
 });
 
 test("v11: la mesa se puede cerrar y volver a abrir, con instancia nueva", async () => {

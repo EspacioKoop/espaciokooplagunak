@@ -12,8 +12,19 @@ import {
   sustituirCoordinador,
   reconectar,
   marcarAusente,
+  sesionAgotada,
   ERRORES,
 } from "../scripts/minijuegos/sesion-motor.mjs";
+
+// Una mesa terminada no ofrece acciones: si además cuenta como mesa viva, deja
+// a la sala en un callejón sin salida. Las dos mitades de esa regla van juntas.
+test("sesionAgotada: terminada o inexistente cuentan igual; lobby y en_curso no", () => {
+  assert.equal(sesionAgotada(null), true);
+  assert.equal(sesionAgotada(undefined), true);
+  assert.equal(sesionAgotada({ fase: "terminada" }), true);
+  assert.equal(sesionAgotada({ fase: "lobby" }), false);
+  assert.equal(sesionAgotada({ fase: "en_curso" }), false);
+});
 
 // Juego falso con la interfaz interna del contrato (#308). No es póker: sirve
 // justo para comprobar que la sesión aloja CUALQUIER vertical por su interfaz.

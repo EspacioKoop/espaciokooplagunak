@@ -131,6 +131,17 @@ export function crearSesion({ id, juego, anfitrionId, coordinadorId, limites = {
 // quien todavía no participa, sin preguntar por nadie en concreto.
 const FORASTERO = "\u0000forastero";
 
+/**
+ * ¿Esta mesa ya no da más de sí? Una sesión en fase "terminada" no ofrece
+ * ninguna acción (ver `accionesPermitidas`), así que seguir publicándola es
+ * enseñar una mesa muerta que nadie puede reabrir desde su silla. Quien decide
+ * abrir una nueva necesita poder distinguirla de una mesa viva, y `fase` es un
+ * detalle del estado público que la UI no debería estar interpretando a mano.
+ */
+export function sesionAgotada(publico) {
+  return !publico || publico.fase === "terminada";
+}
+
 export function vistaPublicaSesion(sesion) {
   const publico = estructuraClonada(sesion.publico);
   // Qué puede hacer quien NO está en la mesa (sentarse, mirar). Va en la vista

@@ -57,6 +57,7 @@ import {
   recordarVista,
   vistaRecordada,
 } from "./minijuegos/mesa-poker-app.mjs";
+import { sesionAgotada } from "./minijuegos/sesion-motor.mjs";
 import { crearClaseCantinaV1, crearClaseCantinaV2 } from "./cantina-app.mjs";
 import { puertaPorId } from "./cantina.mjs";
 import { registrarPreset as registrarPresetBaraja } from "./minijuegos/baraja-preset.mjs";
@@ -360,7 +361,15 @@ function abrirMesaMinijuegos(idPuerta = "poker") {
   // Abrir la mesa y sentarse son cosas distintas: esto solo pone la mesa (si
   // hace falta y si se puede) y enseña la ventana. Sentarse es una acción más,
   // con su botón, porque el GM puede querer repartir sin jugar.
-  if (game.user?.isGM && !estadoPublicoVigente()) abrirMesa({ nombreJuego: puerta.juego });
+  // Una mesa TERMINADA cuenta como no haber mesa. Antes bastaba con que
+  // existiera un estado publicado para no crear ninguna, y la mano cerrada de
+  // la sesión anterior se quedaba ahí para siempre: sin acciones que ofrecer
+  // (`accionesPermitidas` devuelve [] en "terminada") y sin forma de arrancar
+  // otra. Se entraba a una mesa muerta y no había salida. Con la cantina como
+  // puerta única eso pasó de molesto a callejón sin salida.
+  if (game.user?.isGM && sesionAgotada(estadoPublicoVigente())) {
+    abrirMesa({ nombreJuego: puerta.juego });
+  }
   // Instancia nueva en cada apertura tras un cierre: una ApplicationV2 cerrada
   // no se reutiliza —renderizarla otra vez falla— y la ruta v11 se descarta
   // igual para que las dos tengan el mismo contrato.

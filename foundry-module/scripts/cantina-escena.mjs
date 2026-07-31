@@ -29,6 +29,7 @@ import { CANTINA } from "./paleta.mjs";
 import { componerEscena, focal, proyectar, transformar } from "./retro3d.mjs";
 import { campoEstelar, proyectarEstrellas } from "./retro3d-estrellas.mjs";
 import { cuerpoMayor, cuerposPorLaVentana } from "./cantina-ventana.mjs";
+import { piezasDeLaGente } from "./cantina-avatar.mjs";
 
 /**
  * Caja alineada a los ejes, dada por su centro y sus medidas. Es la única
@@ -461,6 +462,11 @@ export function componerCantina(opciones = {}) {
     epoca,
     fondo = CANTINA.ventana,
     camara,
+    // Quién está en la cantina ahora mismo. Las personas entran en la MISMA
+    // lista que los muebles: para el pintor un avatar es un taburete con más
+    // cajas, y así no hay ni un pintor nuevo ni una rama por tipo de cosa.
+    gente = [],
+    yo = null,
     // Lo que la nave tiene delante de verdad (`{ contactos, rumbo, centro }`,
     // tal como los tiene el mapa vivo). Sin esto la ventana enseña solo cielo,
     // que es lo que hay cuando el puente no responde.
@@ -479,7 +485,8 @@ export function componerCantina(opciones = {}) {
   const desvioX = puesto.x;
   const yaw = puesto.yaw;
 
-  const partes = MUEBLES.map((mueble) =>
+  const habitantes = piezasDeLaGente(gente, { omitirId: yo });
+  const partes = [...MUEBLES, ...habitantes].map((mueble) =>
     // `transformar` gira alrededor del origen y DESPUÉS traslada, así que la
     // posición de la cámara se resta aquí, en coordenadas de mundo:
     // v' = R(yaw)·(v − cámara). Pasarla como `posicion` la aplicaría después de

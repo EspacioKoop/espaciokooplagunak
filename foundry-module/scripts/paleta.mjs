@@ -134,6 +134,34 @@ export const CANTINA = Object.freeze({
 });
 
 /**
+ * Avatares de la cantina (#423). Cajas sin cara, manos grandes y cabeza enorme:
+ * FF7 original por su lado técnico y Mii por su lado social — un muñeco
+ * simpático que se reconoce de un vistazo y no intenta parecerse a nadie.
+ *
+ * Editor tipo Hero Forge pero MUCHO más simple: cuatro decisiones y ninguna
+ * más. Un configurador de treinta controles convierte «entrar a la cantina» en
+ * rellenar un formulario, y lo que se busca es sentarse a jugar.
+ *
+ * Tonos cálidos y poco saturados a propósito: la gente tiene que verse acogedora
+ * dentro del local, no destacar como un icono de interfaz sobre la madera.
+ */
+export const AVATAR = Object.freeze({
+  // Pelo: lista corta, no selector libre. Elegir entre seis tonos que casan con
+  // la sala da mejor resultado que dieciséis millones que no.
+  pelos: Object.freeze([
+    "#2b2119", // negro cálido
+    "#5a3820", // castaño
+    "#a5642a", // cobre
+    "#d9c07a", // rubio ceniza
+    "#8f9aa8", // canoso
+    "#6a4b7a", // teñido: en una nave hay quien se lo tiñe
+  ]),
+  acero: "#9aa5b1", // armas y armaduras
+  madera: "#7a5230", // báculos, laúdes
+  simbolo: "#e8d9a0", // el símbolo sagrado del clérigo
+});
+
+/**
  * Paleta arcade saturada de las facciones en el mapa vivo. Es una lista y no un
  * objeto porque el color se reparte por hash del nombre de facción: importa el
  * orden, no el nombre de cada entrada.

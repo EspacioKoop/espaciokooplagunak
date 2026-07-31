@@ -210,7 +210,9 @@ Dos consecuencias que el motor hace cumplir con código, no con prosa:
 
 - **El token se gasta una sola vez.** El consumo lleva `nonce` y estado explícito de gastados; un
   segundo consumo se rechaza aunque queden 119 segundos de vigencia. La vigencia caduca la ayuda no
-  usada; lo que impide reutilizarla es el gasto.
+  usada; lo que impide reutilizarla es el gasto. Y el `nonce` es **único dentro de la sesión**: abrir
+  con uno que ya identifique una reserva viva, una propuesta viva o algo gastado se rechaza
+  (`nonce-repetido`), porque una colisión cancelaría la asistencia de otro puesto al resolver.
 - **Solo hay propuesta donde el tier puede morder.** El tier se aplica al parámetro continuo de la
   orden, desde la lectura actual del puesto hacia lo pedido: tier bajo se queda a mitad de camino,
   tier alto llega al objetivo, y ninguno cruza el tope del puente. Una orden **booleana**

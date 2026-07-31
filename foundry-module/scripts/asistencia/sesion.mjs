@@ -43,6 +43,8 @@ export const SESION_ERRORES = Object.freeze({
   MODO_NARRATIVO: "modo-narrativo",
   /** El nonce no corresponde a ninguna reserva viva: caducada o inventada. */
   RESERVA_DESCONOCIDA: "reserva-desconocida",
+  /** El nonce ya identifica algo vivo o ya gastado: abrir con él pisaría trabajo ajeno. */
+  NONCE_REPETIDO: "nonce-repetido",
 });
 
 /** Estado inicial. Vacío y congelado; todo lo demás sale de aquí. */
@@ -84,6 +86,15 @@ function ocupantes(estado, puesto) {
   ];
 }
 
+/** ¿Ese nonce ya identifica una reserva viva, una propuesta viva o algo gastado? */
+function nonceOcupado(estado, nonce) {
+  return (
+    estado.reservas.some((r) => r.nonce === nonce) ||
+    estado.propuestas.some((p) => p.nonce === nonce) ||
+    (estado.consumidos ?? []).includes(nonce)
+  );
+}
+
 /**
  * Abre una asistencia: comprueba el presupuesto, reserva el hueco y devuelve la
  * oferta que la interfaz pintará —qué vía hay (habilidad o destreza), qué
@@ -113,6 +124,16 @@ export function abrir({
   }
 
   const podado = podar(estado, ahora);
+  // El nonce identifica la asistencia durante toda su vida —reserva, propuesta,
+  // consumo—, así que tiene que ser único dentro de la sesión y no solo
+  // improbable: con dos reservas del mismo nonce, `resolver` resolvía una y
+  // borraba las dos, y la segunda perdía su hueco sin haber sido resuelta. Como
+  // el nonce entra desde fuera, la unicidad se comprueba aquí y no se confía a
+  // `randomID()`. Se mira DESPUÉS de podar: un nonce caducado vuelve a estar
+  // libre, pero uno consumido no, porque su coste ya se cobró.
+  if (nonceOcupado(podado, nonce)) {
+    return { ok: false, error: SESION_ERRORES.NONCE_REPETIDO, estado: podado };
+  }
   const enPuesto = ocupantes(podado, validada.puestoAsistido);
   if (enPuesto.some((x) => x.asistenteId === asistenteId)) {
     return { ok: false, error: SESION_ERRORES.YA_ASISTE, estado: podado };

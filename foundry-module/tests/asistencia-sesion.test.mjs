@@ -92,6 +92,48 @@ test("el mismo ayudante no abre dos retos sobre el mismo puesto", () => {
   assert.equal(otra.error, SESION_ERRORES.YA_ASISTE);
 });
 
+test("dos puestos no comparten nonce: la segunda apertura se rechaza sin tocar la primera", () => {
+  // El nonce identifica la asistencia hasta que se consume. Si se admitiera
+  // repetido, `resolver({ nonce })` resolvía una reserva y borraba las dos: la
+  // otra perdía su hueco sin haber sido resuelta.
+  const ingenieria = abrirUno(crearSesion());
+  const navegacion = abrir({
+    estado: ingenieria.estado,
+    tarea: { ...TAREA, id: "trazar-rumbo", puestoAsistido: "navigation", accionPropuesta: "set_impulse" },
+    asistenteId: "ayudante-2",
+    nonce: "n1",
+    ahora: T0,
+  });
+  assert.equal(navegacion.ok, false);
+  assert.equal(navegacion.error, SESION_ERRORES.NONCE_REPETIDO);
+  assert.deepEqual(navegacion.estado.reservas, ingenieria.estado.reservas);
+
+  // Y la reserva original resuelve como si nada hubiera pasado.
+  const resuelta = resolver({ estado: navegacion.estado, nonce: "n1", banda: BANDAS.EXITO, ahora: T0 });
+  assert.equal(resuelta.ok, true);
+  assert.equal(resuelta.estado.reservas.length, 0);
+  assert.equal(resuelta.estado.propuestas.length, 1);
+  assert.equal(resuelta.estado.propuestas[0].puestoAsistido, "engineering");
+});
+
+test("un nonce ya consumido no se puede reabrir: su coste ya se cobró", () => {
+  const abierta = abrirUno(crearSesion());
+  const resuelta = resolver({ estado: abierta.estado, nonce: "n1", banda: BANDAS.EXITO, ahora: T0 });
+  const gastada = consumir({
+    estado: resuelta.estado,
+    nonce: "n1",
+    emisorId: "ingeniero",
+    emisorPuesto: "engineering",
+    params: { system: "reactor", level: 10 },
+    base: 0,
+    ahora: T0,
+  });
+  assert.equal(gastada.ok, true);
+  const rebote = abrirUno(gastada.estado, { asistenteId: "ayudante-3" });
+  assert.equal(rebote.ok, false);
+  assert.equal(rebote.error, SESION_ERRORES.NONCE_REPETIDO);
+});
+
 test("una propuesta viva sigue ocupando el hueco del puesto", () => {
   const abierta = abrirUno(crearSesion());
   const resuelta = resolver({ estado: abierta.estado, nonce: "n1", banda: BANDAS.EXITO, ahora: T0 });

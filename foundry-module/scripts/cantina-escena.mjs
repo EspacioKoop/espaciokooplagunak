@@ -241,8 +241,10 @@ export const MUEBLES = Object.freeze([
   // barra, que es lo que separa una cantina de un mostrador.
   Object.freeze({ nombre: "mesaIzq", color: CANTINA.mesa, centro: [-3.4, -1.2, 5.2], medidas: [1.6, 0.2, 1.6] }),
   Object.freeze({ nombre: "mesaIzqPie", color: CANTINA.mesa, centro: [-3.4, -1.6, 5.2], medidas: [0.3, 0.7, 0.3] }),
-  Object.freeze({ nombre: "mesaDer", color: CANTINA.mesa, centro: [3.4, -1.2, 5.2], medidas: [1.6, 0.2, 1.6] }),
-  Object.freeze({ nombre: "mesaDerPie", color: CANTINA.mesa, centro: [3.4, -1.6, 5.2], medidas: [0.3, 0.7, 0.3] }),
+  // Descolocada respecto a la de babor, y más cerca: dos mesas enfrentadas a la
+  // misma distancia son un comedor de catálogo.
+  Object.freeze({ nombre: "mesaDer", color: CANTINA.mesa, centro: [3.9, -1.2, 3.9], medidas: [1.6, 0.2, 1.6] }),
+  Object.freeze({ nombre: "mesaDerPie", color: CANTINA.mesa, centro: [3.9, -1.6, 3.9], medidas: [0.3, 0.7, 0.3] }),
 
   // --- La luz ---------------------------------------------------------------
   // Las lámparas cuelgan por delante y ARRIBA del encuadre: casi no se ven
@@ -275,14 +277,20 @@ export const MUEBLES = Object.freeze([
   // Pantallas de servicio en los mamparos ciegos, apagadas. Encendidas serían
   // una promesa de información que la sala no da; apagadas son mobiliario de
   // nave, que es lo que hacen falta.
-  ...[-1, 1].flatMap((lado) =>
-    fila(2, (i) => ({
-      nombre: `pantalla${lado}${i}`,
-      color: CANTINA.pantalla,
-      centro: [lado * 4.98, 1.4 - i * 1.1, 2.6 + i * 1.6],
-      medidas: [0.12, 0.7, 1.1],
-    })),
-  ),
+  // Las pantallas van SOLO a babor. La sala era un espejo perfecto en X
+  // —paredes, costillas, estantes, pantallas, balizas, mesas— y una simetría
+  // total vista desde fuera del eje no se lee como Kubrick: se lee como papel
+  // pintado repetido. La simetría de Kubrick es un plano de un punto de fuga
+  // DESDE UN SITIO CONCRETO, no un decorado idéntico a los dos lados.
+  //
+  // Lo único que se mantiene simétrico es lo que enmarca el ojo de buey:
+  // mamparo de fondo, dintel y montantes. Ahí la simetría sí trabaja.
+  ...fila(2, (i) => ({
+    nombre: `pantalla${i}`,
+    color: CANTINA.pantalla,
+    centro: [-4.98, 1.4 - i * 1.1, 2.6 + i * 1.6],
+    medidas: [0.12, 0.7, 1.1],
+  })),
   // Balizas de suelo: la línea de emergencia por la que se sale a oscuras.
   ...fila(5, (i) => ({
     nombre: `baliza${i}`,
@@ -290,10 +298,11 @@ export const MUEBLES = Object.freeze([
     centro: [-4.7, -1.72, 0.6 + i * 1.5],
     medidas: [0.3, 0.06, 0.5],
   })),
-  ...fila(5, (i) => ({
+  // Las balizas, solo a estribor: la vía de evacuación es una, no dos.
+  ...fila(3, (i) => ({
     nombre: `balizaDer${i}`,
     color: CANTINA.baliza,
-    centro: [4.7, -1.72, 0.6 + i * 1.5],
+    centro: [4.7, -1.72, 1.4 + i * 1.8],
     medidas: [0.3, 0.06, 0.5],
   })),
 
@@ -371,7 +380,16 @@ export const PASEO = Object.freeze({
   maxX: 3.4,
   minZ: -1.5, // pegado a la puerta
   maxZ: 2.6, // justo antes de la barra
-  alto: 0.55, // altura de los ojos sobre el suelo de la sala
+  // Altura de los ojos, en `y` ABSOLUTA. El suelo tiene su cara superior en
+  // −1.75, así que esto deja la mirada a 1.09 sobre el suelo y el canto de la
+  // barra a 0.75: proporción 1.45, la de una persona de pie ante una barra.
+  //
+  // Estaba en 0.55, o sea 2.3 sobre el suelo: proporción 3.07. Esa era la causa
+  // real de que la sala «quedara mal» y no se supiera decir por qué — se miraba
+  // como se mira una casa de muñecas, con los taburetes a la altura de la
+  // rodilla y el techo a seis metros. Todo lo demás (humo, luces, texturas) fue
+  // maquillar una fractura de escala.
+  alto: -0.66,
 });
 
 /**

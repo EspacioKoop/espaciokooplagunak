@@ -27,6 +27,7 @@ const PUESTOS_VISTA = Object.freeze([
 import { BridgeClient, BridgeError } from "./bridge-client.mjs";
 import { getBridgeToken } from "./bridge-token-session.mjs";
 import { dibujarFrame } from "./mapa-render.mjs";
+import { resolverLoteMapa } from "./mapa-lote.mjs";
 import {
   colorFaccion,
   componerFrame,
@@ -122,6 +123,9 @@ export function crearClaseMapaV2() {
     naveVigente = null;
     conexion = "conectando";
     detalleError = "";
+    // Estado propio de la superficie de contactos (#276, paso 0): el puente
+    // responde, pero `/v1/contacts` no. La nave propia se sigue pintando.
+    contactosCaidos = false;
     bridgeAccessRevoked = false;
 
     #cliente() {
@@ -148,27 +152,29 @@ export function crearClaseMapaV2() {
       const firmaAnterior = firmaEstructuralContactos(this.contactos);
       const conexionAnterior = this.conexion;
       const detalleErrorAnterior = this.detalleError;
+      const contactosCaidosAnterior = this.contactosCaidos;
       let rotadas = null;
       let contactos = null;
       let destino = null;
       let nave = null;
       let fallo = null;
+      let falloContactos = null;
       try {
         const cliente = this.#cliente();
         await cliente.healthz();
         if (this.bridgeAccessRevoked || !game.user?.isGM) return;
         // Estado y contactos se solicitan juntos para reducir el desfase
         // temporal entre ambas fotografías confirmadas del simulador.
-        const resultados = await Promise.allSettled([
+        // El reparto de un lote a medio llegar lo decide `mapa-lote.mjs`, que
+        // es puro y está probado en Node: aquí solo se aplica (#276, paso 0).
+        const lote = resolverLoteMapa(...await Promise.allSettled([
           cliente.state(),
           cliente.contacts(),
-        ]);
-        const rechazado = resultados.find((resultado) => resultado.status === "rejected");
-        if (rechazado) throw rechazado.reason;
-        const [estado, respuestaContactos] = resultados.map((resultado) => resultado.value);
-        nave = estado?.ship ?? null;
-        contactos = normalizarContactosMapa(respuestaContactos?.contacts ?? []);
+        ]));
+        nave = lote.estado?.ship ?? null;
         destino = nave?.destination ?? null;
+        contactos = normalizarContactosMapa(lote.contactosCrudos);
+        falloContactos = lote.falloContactos;
         if (nave) {
           const centro = normalizarPosicionMapa(nave.position);
           if (!centro) throw new Error("Posición de nave no finita");
@@ -198,14 +204,21 @@ export function crearClaseMapaV2() {
         this.naveVigente = nave;
         this.conexion = "ok";
         this.detalleError = "";
+        // La caída de contactos NO toca `#fallosSeguidos`: el backoff frena el
+        // ciclo entero y lo que frena el ciclo es que el puente no conteste.
+        this.contactosCaidos = falloContactos !== null;
         this.#fallosSeguidos = 0;
       } else {
         this.conexion = "error";
         this.detalleError = fallo instanceof BridgeError ? fallo.message : game.i18n.localize("LAGUNAK.Errores.Desconocido");
+        // Con la conexión caída el aviso de contactos sobra: ya lo dice el de
+        // arriba, y dos mensajes de error para una sola causa confunden.
+        this.contactosCaidos = false;
         this.#fallosSeguidos = Math.min(this.#fallosSeguidos + 1, 10);
       }
       const cambioVisible = conexionAnterior !== this.conexion
         || detalleErrorAnterior !== this.detalleError
+        || contactosCaidosAnterior !== this.contactosCaidos
         || firmaAnterior !== firmaEstructuralContactos(this.contactos)
         || seleccionAnterior !== this.seleccion;
       // Una posición nueva alimenta el rAF sin sustituir el canvas. Solo los
@@ -385,6 +398,7 @@ export function crearClaseMapaV2() {
       this.#cacheDecorado.limpiar();
       this.#fallosSeguidos = 0;
       this.conexion = "conectando";
+      this.contactosCaidos = false;
       super._onClose?.(options);
     }
 
@@ -424,6 +438,7 @@ export function crearClaseMapaV2() {
         conexionError: this.conexion === "error",
         conexionConectando: this.conexion === "conectando",
         detalleError: this.detalleError,
+        contactosCaidos: this.contactosCaidos,
         esGM: Boolean(game.user?.isGM),
         sinDatos: !this.#muestraActual,
         alcanceLabel: game.i18n.format("LAGUNAK.MapaVivo.Alcance", { radio: MAPA_RADIO_MUNDO }),

@@ -507,5 +507,6 @@
   "LAGUNAK.Dados.Reglas.Subir": "Raising means asking for more of the same face, or the same amount of a higher face. Repeating the previous bet is not allowed.",
   "LAGUNAK.Dados.Reglas.Levantarse": "Calling uncovers every cup and counts. If the bet held, you lose a die; if not, the bettor does. Whoever runs out of dice is out.",
   "LAGUNAK.Dados.Reglas.Unos": "Ones are wild and count as any face — except when the bet is on ones, where only ones count.",
-  "LAGUNAK.Controles.AbrirDados": "Open the dice table"
+  "LAGUNAK.Controles.AbrirDados": "Open the dice table",
+  "LAGUNAK.MapaVivo.ContactosCaidos": "Contacts are unavailable: own-ship readings are still valid, but the map cannot draw what is around it."
 }

@@ -106,6 +106,21 @@
   opacity: 0.7;
 }
 
+/*
+ * Aviso de UNA superficie de la ventana, no de la ventana entera (#276, paso
+ * 0): el puente contesta y la nave propia se lee bien, pero los contactos no
+ * han llegado. Ámbar y no rojo a propósito —el rojo es «no hay puente», y esto
+ * es una lectura parcial—, y el texto es el canal real: el color solo acompaña
+ * (WCAG 1.4.1), igual que en `.lagunak-alerta-aviso`.
+ */
+.lagunak-aviso-superficie {
+  margin: 0 0 0.5rem 0;
+  padding: 4px 8px;
+  border-left: 3px solid #ffb703;
+  background: rgba(255, 183, 3, 0.08);
+  font-size: 0.85em;
+}
+
 .lagunak-mapa-alcance {
   margin: 0.25rem 0 0.5rem 0;
   font-family: monospace;

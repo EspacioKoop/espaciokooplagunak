@@ -1,7 +1,8 @@
 # Consola caliente del GM — especificación de ejecución
 
-- Estado: **especificación lista para ejecutar; nada implementado**. Este documento
-  no describe código que exista.
+- Estado: **especificación lista para ejecutar; solo el paso 0 está implementado**
+  (aislamiento de fallo por superficie en la ventana del mapa). Todo lo demás
+  —la fusión en sí— sigue sin escribir y espera a su puerta.
 - Issue: [#276](https://github.com/VaroTv7/espaciokooplagunak/issues/276) (el RFC, con la visión y la
   dirección de arte). Aquí está solo el **cómo**.
 - Fase: **3**, pero detrás de una puerta —ver [Cuándo](#cuándo-se-ejecuta-esto).
@@ -113,11 +114,14 @@ necesita ese trato: se repinta de una foto.
 ## Aislamiento de fallo por pestaña
 
 Es el criterio que pidió la revisión del RFC y **la parte que más importa de este
-documento**, porque hoy no se cumple ni dentro de una ventana.
+documento**, porque no se cumplía ni dentro de una ventana. **El paso 0 ya lo
+arregló para el mapa**; lo que sigue describe el defecto tal como estaba, porque
+es lo que la consola fusionada tiene que evitar por diseño.
 
-Hoy cada ventana tiene **un** campo `conexion` (`"ok" | "error" | "conectando"`)
-para todo su contenido. Y en `mapa-vivo-app-v2.mjs` las dos peticiones van en un
-`Promise.allSettled` cuyo primer rechazo se relanza:
+Cada ventana tenía **un** campo `conexion` (`"ok" | "error" | "conectando"`)
+para todo su contenido. Y en `mapa-vivo-app-v{1,2}` las dos peticiones iban en un
+`Promise.allSettled` cuyo primer rechazo se relanzaba —un `all` con pasos de
+más—:
 
 ```js
 const resultados = await Promise.allSettled([cliente.state(), cliente.contacts()]);
@@ -125,8 +129,8 @@ const rechazado = resultados.find((r) => r.status === "rejected");
 if (rechazado) throw rechazado.reason;
 ```
 
-Es decir: **si `contacts` falla, se tira también un `state` que llegó bien**, y la
-ventana entera queda en error. Con dos superficies eso es molesto; con cuatro
+Es decir: **si `contacts` fallaba, se tiraba también un `state` que llegó bien**, y
+la ventana entera quedaba en error. Con dos superficies eso es molesto; con cuatro
 pestañas colgando del mismo bucle sería inaceptable —un endpoint caído apagaría la
 consola de dirección al completo, con la escena en marcha—.
 
@@ -144,17 +148,22 @@ Regla, entonces:
 - La pestaña activa que entra en error **no cambia de pestaña sola**. Un salto
   automático con la escena en marcha le mueve la interfaz al GM debajo del ratón.
 
-Esto es implementable —y probable— **antes** de la fusión, porque es un arreglo
-del comportamiento actual. Ver «Orden de migración», paso 0.
+En el mapa esto ya está aplicado (paso 0): `mapa-lote.mjs` reparte el lote, la
+ventana publica `contactosCaidos` y la plantilla lo dice con palabras en vez de
+dejar un mapa vacío que parece «no hay nadie ahí fuera». Queda pendiente aplicar
+la misma regla a las demás superficies **al fusionarlas**, que es cuando existen
+como pestañas.
 
 ## Orden de migración
 
 Cada paso deja el módulo utilizable y se puede mergear solo.
 
-- **Paso 0 — el `allSettled` que sí aprovecha lo que llegó.** Arreglar el
-  comportamiento descrito arriba en `mapa-vivo-app-v{1,2}`, sin fusionar nada. Es
-  una mejora por sí misma y valida el modelo de estado por superficie con la
-  arquitectura de hoy. **No requiere la puerta de Fase 3.**
+- **Paso 0 — el `allSettled` que sí aprovecha lo que llegó. HECHO.** La decisión
+  vive en `mapa-lote.mjs` (puro, probado en Node) y la aplican las dos
+  generaciones; la ventana publica `contactosCaidos` y la plantilla lo dice con
+  palabras. Un `contacts` caído ya no tira el `state` que llegó bien, no vacía la
+  nave propia, no arranca el backoff del ciclo y no se rellena con contactos
+  viejos. No requería la puerta de Fase 3 y no la ha tocado.
 - **Paso 1 — extraer el bucle a un módulo puro.** Cadencia, backoff, conteo de
   fallos y estado por superficie, sin Foundry, con pruebas en Node. Las cuatro
   factorías lo consumen sin cambiar de forma.

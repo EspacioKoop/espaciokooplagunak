@@ -6,6 +6,15 @@
     {{#if conexionConectando}}{{localize "LAGUNAK.Conexion.Conectando"}}{{/if}}
   </p>
 
+  {{!-- El puente contesta pero /v1/contacts no (#276, paso 0). La nave propia
+        se sigue leyendo; lo que falta se dice con todas las letras en vez de
+        dejar un mapa vacío que parece «no hay nadie ahí fuera». --}}
+  {{#if contactosCaidos}}
+  <p class="lagunak-aviso-superficie" role="status" aria-live="polite">
+    {{localize "LAGUNAK.MapaVivo.ContactosCaidos"}}
+  </p>
+  {{/if}}
+
   <details class="lagunak-ayuda">
     <summary>{{localize "LAGUNAK.Ayuda.Titulo"}}</summary>
     <p>{{localize "LAGUNAK.Ayuda.MapaQueEs"}}</p>

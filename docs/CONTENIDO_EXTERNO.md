@@ -1,6 +1,6 @@
 # Contenido externo de dnd5e: integración opcional, solo 2014
 
-- Estado: **adaptador y clasificador implementados y probados, sin consumidores todavía**
+- Estado: **adaptador, clasificador y ventana de diagnóstico implementados y probados**
   (`foundry-module/scripts/contenido-externo/`, suites `foundry-module/tests/contenido-externo-*.test.mjs`).
   Nada del módulo lee aún este adaptador: la capa existe y es probable en Node, pero
   ninguna funcionalidad depende de ella. Engancharla es trabajo de #308, #309 y #213.
@@ -92,9 +92,7 @@ scripts/contenido-externo/
 
 ## Qué queda por hacer
 
-- Consumidores reales: minijuegos de combate ([#308](https://github.com/VaroTv7/espaciokooplagunak/issues/308)),
-  asistencia por habilidad ([#309](https://github.com/VaroTv7/espaciokooplagunak/issues/309)),
+- Consumidores de juego: minijuegos de combate ([#308](https://github.com/VaroTv7/espaciokooplagunak/issues/308)),
   atlas Spelljammer ([#213](https://github.com/VaroTv7/espaciokooplagunak/issues/213)).
 - Verificación de los campos de plutonium contra un mundo real, y ampliación de la lista blanca
   con lo comprobado.
-- Superficie de GM para el diagnóstico (hoy solo existe la función).

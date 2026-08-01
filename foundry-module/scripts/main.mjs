@@ -47,6 +47,11 @@ import {
 } from "./station-workspace-ui.mjs";
 import { registerStationOrders } from "./station-order-wiring.mjs";
 import { registrarAsistencia } from "./asistencia-wiring.mjs";
+import { addAsistenciaControl, registrarAsistenciaUI } from "./asistencia-ui.mjs";
+import {
+  addContenidoExternoControl,
+  registrarContenidoExterno,
+} from "./contenido-externo/ventana.mjs";
 import {
   abrirMesa,
   estadoPublicoVigente,
@@ -78,7 +83,13 @@ import {
   crearClaseMesaBlackjackV2,
   recordarVista as recordarVistaBlackjack,
 } from "./minijuegos/mesa-blackjack-app.mjs";
-import { registrarAjusteAlerta, registrarEscuchaAlerta } from "./alerta-escena.mjs";
+import { aplicarVariablesAlerta, registrarAjusteAlerta, registrarEscuchaAlerta } from "./alerta-escena.mjs";
+import {
+  AJUSTE_GRANO,
+  GRANO_APAGADO,
+  OPCIONES_GRANO,
+  registrarSincroniaFiltros,
+} from "./filtros-escena.mjs";
 import { AJUSTE_TELEMETRIA } from "./telemetria-difusion.mjs";
 import {
   IDIOMA_AUTOMATICO,
@@ -110,6 +121,7 @@ registerStationFeature(MODULE_ID);
 registerAvatarFeature(MODULE_ID);
 registerWorkspaceFeature(MODULE_ID);
 registerBridgeTokenFeature(MODULE_ID);
+registrarContenidoExterno(MODULE_ID);
 
 // Consola caliente del GM (#276): fusión de estado+mapa+encuentros+
 // previsualización con un solo bucle. Una sola ventana, V1 (Application,
@@ -179,6 +191,37 @@ Hooks.once("init", () => {
   // el GM y lo leen todos, así que un jugador que entra tarde ve la alerta en
   // curso sin esperar al siguiente sondeo del GM.
   registrarAjusteAlerta(MODULE_ID);
+
+  // Tinte de escena delegado en FXMaster (ver `filtros-escena.mjs` y
+  // docs/ECOSISTEMA_MODULOS_FOUNDRY.md). APAGADO por defecto y no por timidez:
+  // `setFilters` de FXMaster reemplaza el conjunto ENTERO de filtros de la
+  // escena, así que encenderlo es ceder la escena al módulo, no añadir una capa
+  // que convive con la niebla que el GM tuviera puesta. Eso lo decide el GM a
+  // sabiendas. Sin FXMaster instalado el ajuste no hace nada.
+  game.settings.register(MODULE_ID, "filtrosEscena", {
+    name: "LAGUNAK.Ajustes.FiltrosEscena.Nombre",
+    hint: "LAGUNAK.Ajustes.FiltrosEscena.Pista",
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+  });
+
+  // Grano de consola sobre la escena (#362). EJE APARTE del tinte de alerta: la
+  // época es un parámetro, así que esto elige CUÁL y no si sí o no. Depende del
+  // interruptor de arriba —apagarlo devuelve la escena entera al GM—, y sin
+  // FXMaster tampoco hace nada.
+  game.settings.register(MODULE_ID, AJUSTE_GRANO, {
+    name: "LAGUNAK.Ajustes.GranoRetro.Nombre",
+    hint: "LAGUNAK.Ajustes.GranoRetro.Pista",
+    scope: "world",
+    config: true,
+    type: String,
+    choices: Object.fromEntries(
+      OPCIONES_GRANO.map((opcion) => [opcion, `LAGUNAK.Ajustes.GranoRetro.Opcion.${opcion}`]),
+    ),
+    default: GRANO_APAGADO,
+  });
 
   game.settings.register(MODULE_ID, "decoradoSemilla", {
     name: "LAGUNAK.Ajustes.DecoradoSemilla.Nombre",
@@ -335,7 +378,16 @@ Hooks.once("ready", () => {
   // Nivel de alerta de la nave: TODOS los clientes escuchan, porque la alerta
   // es información de ambiente que la tripulación conocería de sobra. Solo el
   // GM la publica, desde el estado que solo él recibe.
+  // La paleta de alerta, como variables CSS. Antes de escuchar: si ya hay una
+  // alerta vigente, `registrarEscuchaAlerta` la pinta de inmediato y el borde
+  // tiene que encontrar su color ya publicado.
+  aplicarVariablesAlerta();
   registrarEscuchaAlerta(MODULE_ID);
+  // Y, si el GM lo ha encendido y FXMaster está, el mismo nivel tiñe además el
+  // lienzo. El cableado escucha los tres momentos en que el tinte puede quedar
+  // desfasado —cambio de nivel, encendido del ajuste, apertura de otra escena—
+  // porque los filtros son banderas POR ESCENA. Solo el GM escribe.
+  registrarSincroniaFiltros(MODULE_ID);
   // Relé de órdenes por puesto (#236): el GM registra el manejador del socket;
   // en clientes de tripulación es no-op (solo emiten).
   registerStationOrders(MODULE_ID);
@@ -344,6 +396,10 @@ Hooks.once("ready", () => {
   // del relé y no antes: la ayuda se cobra dentro de la orden del titular, así
   // que sin relé no habría dónde cobrarla.
   registrarAsistencia(MODULE_ID);
+  // Y su ventana, en TODOS los clientes: escucha las tres respuestas del
+  // coordinador aunque esté cerrada, para que quien pida ayuda y cierre sin
+  // querer no se quede con una reserva viva y ninguna forma de resolverla.
+  registrarAsistenciaUI(MODULE_ID);
   // Sesiones de minijuegos (#308): el GM coordinador recoge las propuestas por
   // updateUser; cualquier cliente escucha las vistas privadas dirigidas a él.
   registrarSesionesMinijuegos(MODULE_ID);
@@ -843,6 +899,12 @@ Hooks.on("getSceneControlButtons", (controls) => {
   addStationControl(controls);
   addAvatarControl(controls);
   addWorkspaceControl(controls);
+  // Y el diagnóstico de contenido importado, que sí es solo del GM: enseña el
+  // estado del MUNDO del anfitrión, no información de partida.
+  addContenidoExternoControl(controls);
+  // Y el de echar una mano, que ve TODA la tripulación: ayudar es cruzar de
+  // puesto por definición, y un botón solo-GM no sería cooperación.
+  addAsistenciaControl(controls);
 });
 
 /* Diagnóstico de conexión (issue #183): comprueba /healthz y después

@@ -4927,3 +4927,91 @@ msgstr "ninguno"
 msgctxt "content_editor"
 msgid "Linked campaigns: {campaigns} — Ship: {ship}"
 msgstr "Campañas vinculadas: {campaigns} — Nave: {ship}"
+
+msgctxt "content_editor"
+msgid "Impulse top speed (U/s)"
+msgstr "Velocidad máxima de impulso (U/s)"
+
+msgctxt "content_editor"
+msgid "Turn rate (deg/s)"
+msgstr "Velocidad de giro (°/s)"
+
+msgctxt "content_editor"
+msgid "Warp speed per level (U/s)"
+msgstr "Velocidad de curvatura por nivel (U/s)"
+
+msgctxt "content_editor"
+msgid "Homing"
+msgstr "Guiado"
+
+msgctxt "content_editor"
+msgid "Nuke"
+msgstr "Nuclear"
+
+msgctxt "content_editor"
+msgid "Mine"
+msgstr "Mina"
+
+msgctxt "content_editor"
+msgid "EMP"
+msgstr "PEM"
+
+msgctxt "content_editor"
+msgid "HVLI"
+msgstr "HVLI"
+
+msgctxt "content_editor"
+msgid "Engines"
+msgstr "Motores"
+
+msgctxt "content_editor"
+msgid "Allowed armament"
+msgstr "Armamento permitido"
+
+msgctxt "content_editor"
+msgid "Speed"
+msgstr "Velocidad"
+
+msgctxt "content_editor"
+msgid "Capacity"
+msgstr "Capacidad"
+
+msgctxt "content_editor"
+msgid "Set engine"
+msgstr "Aplicar motor"
+
+msgctxt "content_editor"
+msgid "Set armament"
+msgstr "Aplicar armamento"
+
+msgctxt "content_editor"
+msgid "Engine speed must be a finite positive number within its limit."
+msgstr "La velocidad del motor debe ser un número finito y positivo dentro de su límite."
+
+msgctxt "content_editor"
+msgid "Ship engine override staged."
+msgstr "Override de motor preparado."
+
+msgctxt "content_editor"
+msgid "Armament capacity must be a whole number from 0 to 1000."
+msgstr "La capacidad de armamento debe ser un número entero de 0 a 1000."
+
+msgctxt "content_editor"
+msgid "Ship armament override staged."
+msgstr "Override de armamento preparado."
+
+msgctxt "content_editor"
+msgid "The ship has no selected engine override."
+msgstr "La nave no tiene override para el motor seleccionado."
+
+msgctxt "content_editor"
+msgid "Ship engine override removed from staging."
+msgstr "Override de motor retirado del staging."
+
+msgctxt "content_editor"
+msgid "The ship has no selected armament override."
+msgstr "La nave no tiene override para el armamento seleccionado."
+
+msgctxt "content_editor"
+msgid "Ship armament override removed from staging."
+msgstr "Override de armamento retirado del staging."

@@ -39,6 +39,30 @@ Este comando extrae las llamadas `tr(msgid)` y `tr(contexto, msgid)` de `src/`
 y actualiza únicamente `resources/locale/main.en.po`. No modifica otros
 idiomas silenciosamente.
 
+Regenerar es un paso **manual**, y por tanto olvidable. La red que avisa cuando
+se olvidó es:
+
+```bash
+python3 tools/check_cpp_locale_coverage.py .
+```
+
+Comprueba que **cada `tr()`/`trMark()` con literal en `src/` tiene entrada en
+`main.en.po` y en `main.es.po`**, y la ejecuta CI en el job *Tools* (por eso el
+filtro de rutas de ese workflow incluye `src/` y `resources/locale/`).
+
+Es una comprobación distinta de `validate_es_locale.py`, y las dos hacen falta:
+aquel compara en-US contra es-ES, así que **no puede ver** una cadena que no
+llegó a ninguno de los dos catálogos —los dos coinciden en no tenerla—. Eso fue
+[#55](https://github.com/VaroTv7/espaciokooplagunak/issues/55): 22 `msgid` nuevos
+del editor de naves sin ninguna entrada, CI en verde y el editor saliendo medio
+en inglés en una partida en español. Uno mira código→catálogo; el otro,
+catálogo→catálogo.
+
+Límite declarado: solo se auditan las llamadas con el literal en la propia
+llamada. Un `tr()` sobre una variable no es extraíble sin compilar —tampoco por
+xgettext—, así que se ignora en vez de inventarse una cadena. Los `tr()`
+comentados no cuentan.
+
 ## Catálogo vivo del tutorial
 
 El tutorial carga su traducción según la ruta del script mediante

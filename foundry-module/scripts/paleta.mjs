@@ -86,6 +86,101 @@ export const PIXEL = Object.freeze({
 });
 
 /**
+ * La cantina (#423 sobre #362): el local donde la tripulación mata el rato.
+ *
+ * Referencias declaradas, porque el tono no es decorativo: la cantina de Mos
+ * Eisley (penumbra cálida, gente en la sombra), la estación de Solaris (metal
+ * cansado, habitado) y el interior de la Discovery de 2001 (blanco clínico,
+ * luz que viene de los paneles y no de bombillas). De ahí salen los tres
+ * planos: un mamparo frío y sin gracia, una barra cálida que es el único foco
+ * de calor de la sala, y una luz que baña por encima.
+ *
+ * Van juntos y aquí porque son un AMBIENTE: elegir el ámbar de la barra sin
+ * ver al lado el gris del mamparo es cómo se acaba con una sala que no cierra.
+ */
+export const CANTINA = Object.freeze({
+  mamparo: "#2b3038", // gris azulado de nave: el fondo no compite con nada
+  suelo: "#1d2128", // más oscuro que el mamparo: la sala tiene arriba y abajo
+  barra: "#7a4a22", // madera imposible en el espacio, y por eso acogedora
+  barraCanto: "#b8763a", // el borde que coge la luz de la lámpara
+  lampara: "#ffd79a", // cálida, la única fuente de calor del local
+  ventana: "#0a0f1f", // el vacío al otro lado del cristal
+  neon: "#4ad9c4", // el rótulo: verde azulado de tubo, ajeno a la madera
+  // Lo que llena el local. Sin esto la sala es correcta y está vacía, que es
+  // justo lo que no puede ser una cantina.
+  nervio: "#3a424e", // costillas del mamparo: rompen la pared plana
+  estante: "#4a3320", // la trasera de la barra, madera en sombra
+  botellaVerde: "#2f7d5a", // botellería. Tres tonos, porque una fila de
+  botellaAmbar: "#c98a3a", // botellas del mismo color es un peine, no una
+  botellaAzul: "#41689e", // barra surtida.
+  taburete: "#6b7280", // metal de nave, frío contra la madera
+  mesa: "#5c4630", // las mesas del fondo: la misma madera, más apagada
+  techo: "#232830", // más oscuro que el mamparo: cierra la sala por arriba
+  // Lo que dice «nave» y no «taberna»: tubería vista, pantallas de servicio y
+  // las balizas de suelo que marcan por dónde se anda cuando falla la luz.
+  conducto: "#565f6b", // tubos por el techo, metal claro
+  pantalla: "#1b4a5c", // monitores apagados del mamparo: azul de fósforo muerto
+  baliza: "#ff6b35", // ámbar de emergencia, el único color que grita
+  // La capa 2D que va encima del 3D tiñe con estos dos y con nada más: sombra
+  // para viñeta y líneas, y el propio ámbar de las lámparas para el halo alto.
+  // Están aquí y no allí porque un velo ES un color, aunque venga con alfa.
+  sombra: "#000000",
+  // El goblin de la barra. Verde apagado y no chillón: lleva toda la vida
+  // sirviendo aquí, no acaba de salir de un cuento.
+  goblinPiel: "#6f8f4a",
+  goblinRopa: "#8a5a3c", // delantal de cuero gastado
+  goblinVenda: "#d9cdb4", // la venda de los ojos, lo único claro que lleva
+  cerveza: "#e0a33a", // la jarra: el mismo ámbar de la luz, no un color nuevo
+});
+
+/**
+ * Avatares de la cantina (#423). Cajas sin cara, manos grandes y cabeza enorme:
+ * FF7 original por su lado técnico y Mii por su lado social — un muñeco
+ * simpático que se reconoce de un vistazo y no intenta parecerse a nadie.
+ *
+ * Editor tipo Hero Forge pero MUCHO más simple: cuatro decisiones y ninguna
+ * más. Un configurador de treinta controles convierte «entrar a la cantina» en
+ * rellenar un formulario, y lo que se busca es sentarse a jugar.
+ *
+ * Tonos cálidos y poco saturados a propósito: la gente tiene que verse acogedora
+ * dentro del local, no destacar como un icono de interfaz sobre la madera.
+ */
+export const AVATAR = Object.freeze({
+  // Pelo: lista corta, no selector libre. Elegir entre seis tonos que casan con
+  // la sala da mejor resultado que dieciséis millones que no.
+  pelos: Object.freeze([
+    "#2b2119", // negro cálido
+    "#5a3820", // castaño
+    "#a5642a", // cobre
+    "#d9c07a", // rubio ceniza
+    "#8f9aa8", // canoso
+    "#6a4b7a", // teñido: en una nave hay quien se lo tiñe
+  ]),
+  acero: "#9aa5b1", // armas y armaduras
+  madera: "#7a5230", // báculos, laúdes
+  simbolo: "#e8d9a0", // el símbolo sagrado del clérigo
+  // Lo que se lleva en la mano según el gesto.
+  jarra: "#e0a33a", // el mismo ámbar de la cerveza de la barra
+  cigarro: "#e8e4d8",
+  brasa: "#ff6b35", // un píxel, y es lo único claro de una silueta que fuma
+});
+
+/** Trastos que llenan el local (#423). Cosas que alguien dejó ahí: cajas de
+ * suministro, una planta que aguanta, la tele del bar, la gramola. Un sitio
+ * habitado tiene cosas que nadie ha colocado a propósito. */
+export const CACHARROS = Object.freeze({
+  cajaSuministro: "#6b5a3e", // cajas apiladas contra el mamparo
+  cajaFleje: "#404a56", // sus flejes metálicos
+  planta: "#3f7a45", // la planta de la esquina: lo único vivo que no habla
+  maceta: "#7a4a3a",
+  teleMarco: "#2f353d", // la tele colgada, apagada
+  telePantalla: "#101820",
+  gramola: "#8a3550", // la gramola, granate de local de carretera
+  gramolaLuz: "#ffd166",
+  trapo: "#c7bda6", // el trapo de la barra, el detalle más humano que hay
+});
+
+/**
  * Paleta arcade saturada de las facciones en el mapa vivo. Es una lista y no un
  * objeto porque el color se reparte por hash del nombre de facción: importa el
  * orden, no el nombre de cada entrada.

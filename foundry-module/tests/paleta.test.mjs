@@ -30,6 +30,14 @@ const MODULOS_DE_ARTE = [
   // Y el fondo estelar (#384) tampoco: el azul del cielo sale de `PIXEL`, donde
   // se ve al lado del crema de la nave propia y se puede decidir que no compitan.
   "../scripts/retro3d-estrellas.mjs",
+  // La cantina (#423) es una sala entera de arte nuevo: mamparo, barra, lámpara
+  // y los objetos que giran en cada puerta. Entra en la guardia el mismo día que
+  // nace, que es cuando aún no cuesta nada.
+  "../scripts/cantina-escena.mjs",
+  "../scripts/cantina-icono.mjs",
+  // Y la capa 2D que va encima: un velo ES un color, aunque venga con alfa, así
+  // que sus `rgba(...)` se componen desde `CANTINA` en vez de escribirse.
+  "../scripts/cantina-2d.mjs",
   // La ficha de nave (#354) reusa las siluetas y sus colores tal cual: lo único
   // que podría haber declarado es el relleno del hueco transparente, y ese vive
   // en el codificador PNG porque es un requisito del formato, no un color.
@@ -39,6 +47,12 @@ const MODULOS_DE_ARTE = [
   // decidan al lado del resto del arte y no en un módulo de minijuego.
   "../scripts/minijuegos/dados-3d.mjs",
   "../scripts/minijuegos/dados-lienzo.mjs",
+  // La mesa de póker en 3D (#308 sobre #362): fieltro, cartas y fichas salen de
+  // `FICHA` y `PIXEL`, igual que el dado.
+  "../scripts/minijuegos/poker-3d.mjs",
+  // Y los avatares de la cantina: pelo, piel, ropa y aceros, todos de paleta.
+  "../scripts/cantina-avatar.mjs",
+  "../scripts/cantina-ventana.mjs",
 ];
 
 test("los colores no cambian al mudarse: mismo valor que antes en cada módulo", () => {

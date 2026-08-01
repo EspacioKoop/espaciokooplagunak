@@ -26,6 +26,9 @@ export const PUERTAS = Object.freeze([
     juego: "poker",
     tituloClave: "LAGUNAK.Cantina.Puerta.Poker",
     icono: "fa-solid fa-diamond",
+    // Qué objeto gira en la puerta (`cantina-icono.mjs`). Es un nombre y no una
+    // malla: el catálogo dice a qué se juega, no cómo se dibuja.
+    objeto: "poker",
   }),
   // El segundo vertical (#413). Nació con su propio botón de escena y aquí
   // pierde el botón, no la independencia: sigue siendo otro juego con su motor,
@@ -34,6 +37,7 @@ export const PUERTAS = Object.freeze([
     id: "dados",
     juego: "dados",
     tituloClave: "LAGUNAK.Cantina.Puerta.Dados",
+    objeto: "dados",
     icono: "fa-solid fa-dice",
   }),
 ]);

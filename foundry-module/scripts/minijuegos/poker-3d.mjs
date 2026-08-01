@@ -1,0 +1,281 @@
+// La mesa de póker en 3D retro de consola (#308 sobre #362).
+//
+// QUÉ PROBLEMA RESUELVE. La mesa se leía perfectamente y no se parecía a una
+// mesa: una lista de cartas y una fila de fichas. Lo que falta no es
+// información —esa ya estaba— sino el OBJETO: un tapete visto en perspectiva
+// con las comunitarias tumbadas encima y las pilas de fichas delante de cada
+// quien. Eso es lo que hace que apostar se sienta apostar.
+//
+// LA LEGIBILIDAD MANDA SOBRE EL VOLUMEN, igual que en el dado de #413. Las
+// cartas se tumban con una inclinación CORTA: lo justo para que se vea que
+// tienen grosor y están sobre un tapete, no tanto como para que el índice se
+// escorce y haya que adivinar el palo. Una mesa bonita e ilegible no es una
+// mesa: en un juego de faroleo lo único que no puede ser ambiguo es qué hay.
+//
+// REUTILIZA EL MOTOR Y EL ARTE QUE YA HAY. El 3D es `retro3d.mjs` tal cual —ni
+// una línea de rasterizador nueva—, los colores salen de `paleta.mjs` y las
+// caras de las cartas las sigue dibujando `cartas-pixelart.mjs` encima, porque
+// una carta pintada píxel a píxel se lee mejor que una carta texturizada.
+//
+// Puro: ni Foundry, ni DOM, ni <canvas>, ni reloj, ni Math.random().
+
+import { FICHA, PIXEL } from "../paleta.mjs";
+import { componerEscena } from "../retro3d.mjs";
+import { campoEstelar, proyectarEstrellas } from "../retro3d-estrellas.mjs";
+
+/**
+ * Medidas de una carta tumbada. GRUESA A PROPÓSITO —"como un tazo"—: una carta
+ * de grosor realista, a esta resolución, es una lámina sin canto y se lee como
+ * una calcomanía pegada al fieltro. Con canto visible el objeto tiene peso, se
+ * ve que se puede coger, y el borde recoge la luz del sombreado por cara.
+ *
+ * No es un error de escala como el de la altura de los ojos: aquí la exageración
+ * es la que hace legible el objeto, igual que la cabeza enorme de los avatares.
+ */
+const CARTA = Object.freeze({ ancho: 0.62, alto: 0.16, largo: 0.9 });
+
+/** Canto de la carta: un reborde apenas más pequeño y de otro tono, para que el
+ * grosor se LEA en vez de solo estar. */
+const CANTO_CARTA = 0.02;
+
+/** La ficha: un disco de diez lados, como el de la cantina. Diez lados y no
+ * treinta porque a esta resolución no se distinguen y sí se pagan. */
+const LADOS_FICHA = 10;
+
+/**
+ * La cámara de la mesa: se mira desde delante y un poco por encima, como quien
+ * está sentado. La inclinación es corta a propósito —desde muy alto el tapete
+ * se convierte en un plano y se pierde el volumen que se venía a buscar—, y los
+ * números NO están puestos a ojo, y se han equivocado dos veces por ponerlos
+ * así: primero (altura 3.4, atrás 4.6) la mesa se proyectaba por ENCIMA del
+ * cuadro; después, con `pitch` 0.4, el tapete se veía CASI DE CANTO —una banda
+ * verde de cincuenta píxeles— porque una mesa mirada de frente no enseña su
+ * superficie. Estos salen de calcular dónde caen las esquinas del tapete y los
+ * asientos: con pitch 0.9 el tapete ocupa 108..267 de un alto de 280 y los
+ * bordes laterales quedan dentro del ancho.
+ */
+export const VISTA = Object.freeze({ pitch: 0.9, yaw: 0, altura: -0.8, atras: 5.0, fov: 52 });
+
+/** Caja alineada a los ejes por centro y medidas. Misma primitiva que la
+ * cantina: una mesa de consola de los noventa se construía con cajas. */
+export function caja([cx, cy, cz], [ancho, alto, fondo]) {
+  const x = ancho / 2;
+  const y = alto / 2;
+  const z = fondo / 2;
+  const vertices = [
+    [cx - x, cy - y, cz - z],
+    [cx + x, cy - y, cz - z],
+    [cx + x, cy + y, cz - z],
+    [cx - x, cy + y, cz - z],
+    [cx - x, cy - y, cz + z],
+    [cx + x, cy - y, cz + z],
+    [cx + x, cy + y, cz + z],
+    [cx - x, cy + y, cz + z],
+  ];
+  const caras = [
+    [0, 3, 2, 1],
+    [4, 5, 6, 7],
+    [0, 4, 7, 3],
+    [1, 2, 6, 5],
+    [3, 7, 6, 2],
+    [0, 1, 5, 4],
+  ];
+  return { vertices, caras };
+}
+
+/** Mueve una malla sin tocar la original. */
+function mover(malla, [dx, dy, dz]) {
+  return {
+    vertices: malla.vertices.map(([x, y, z]) => [x + dx, y + dy, z + dz]),
+    caras: malla.caras,
+  };
+}
+
+/** Disco extruido: la ficha. */
+export function disco({ radio = 0.3, grosor = 0.16, lados = LADOS_FICHA } = {}) {
+  const vertices = [];
+  for (const y of [-grosor / 2, grosor / 2]) {
+    for (let i = 0; i < lados; i += 1) {
+      const a = (i / lados) * Math.PI * 2;
+      vertices.push([Math.cos(a) * radio, y, Math.sin(a) * radio]);
+    }
+  }
+  const caras = [
+    [...Array(lados).keys()].map((i) => i + lados),
+    [...Array(lados).keys()].reverse(),
+  ];
+  for (let i = 0; i < lados; i += 1) {
+    const j = (i + 1) % lados;
+    caras.push([i, j, j + lados, i + lados]);
+  }
+  return { vertices, caras };
+}
+
+/**
+ * Dónde se tumba cada comunitaria. Cinco huecos fijos y centrados: el hueco
+ * vacío SE VE, que es lo que dice cuántas cartas faltan por salir sin ponerlo
+ * en un texto.
+ */
+export function huecosComunitarias(cuantas = 5) {
+  const paso = CARTA.ancho + 0.16;
+  const inicio = -((cuantas - 1) * paso) / 2;
+  return Array.from({ length: cuantas }, (_, i) => [inicio + i * paso, 0.08, 0]);
+}
+
+/**
+ * Los asientos, ALREDEDOR del tapete y no en su borde delantero.
+ *
+ * El primero es siempre el tuyo, en la orilla de acá; los demás se reparten por
+ * el lado de allá, que es donde tienen que estar para que se les VEA. La versión
+ * anterior los ponía a todos en un arco delantero y sus cartas caían fuera de
+ * cuadro: había rivales en los datos y no en la mesa, que es como no tenerlos.
+ *
+ * Posiciones fijas y en orden estable: quien se sienta no baila de sitio entre
+ * manos, porque reconocer «el de la izquierda» es parte de jugar.
+ */
+const ASIENTOS = Object.freeze([
+  Object.freeze([0, 0.1, 2.35]), // tú, en primer término
+  Object.freeze([-2.35, 0.1, -0.7]), // enfrente a babor
+  Object.freeze([2.35, 0.1, -0.7]), // enfrente a estribor
+  Object.freeze([-2.7, 0.1, 1.1]), // a tu izquierda
+  Object.freeze([2.7, 0.1, 1.1]), // a tu derecha
+  Object.freeze([0, 0.1, -1.35]), // al fondo, de frente
+]);
+
+export function plazas(cuantos) {
+  const total = Math.max(1, Math.min(ASIENTOS.length, Math.trunc(cuantos) || 1));
+  return ASIENTOS.slice(0, total).map((asiento) => [...asiento]);
+}
+
+/**
+ * La mesa entera en 3D: tapete, comunitarias (y sus huecos) y las pilas.
+ *
+ * Una llamada a `componerEscena` por material, como la cantina: el motor pinta
+ * una malla con UN color y una mesa tiene fieltro, cartas y fichas de varias
+ * denominaciones. Se funden reordenando por profundidad, porque el orden por
+ * pintor no es componible.
+ *
+ * @param {object} mesa `{ comunitarias, jugadores }` — `comunitarias` es cuántas
+ *   hay boca arriba (0..5) y `jugadores` la lista con sus fichas.
+ */
+export function componerMesa(mesa = {}, opciones = {}) {
+  const { ancho = 320, alto = 200, epoca, fondo = null, semillaCielo = 20260731 } = opciones;
+  const comunitarias = Math.max(0, Math.min(5, Math.trunc(mesa.comunitarias) || 0));
+  const jugadores = Array.isArray(mesa.jugadores) ? mesa.jugadores.slice(0, 6) : [];
+
+  const piezas = [
+    // El tapete, con su reborde: dos cajas y ya tiene canto.
+    { malla: caja([0, -0.12, 0.6], [6.4, 0.22, 4.4]), color: FICHA.tapete },
+    { malla: caja([0, -0.02, 0.6], [6.0, 0.06, 4.0]), color: FICHA.tapete },
+  ];
+
+  // Comunitarias: las que están boca arriba se pintan con la cara clara; los
+  // huecos que faltan, con el fieltro apenas levantado, para que se cuenten.
+  huecosComunitarias().forEach((centro, i) => {
+    const salida = i < comunitarias;
+    if (!salida) {
+      // El hueco vacío: una marca hundida en el fieltro. Se ve, y por eso se
+      // cuenta cuántas faltan por salir sin ponerlo en un texto.
+      piezas.push({ malla: caja(centro, [CARTA.ancho, 0.02, CARTA.largo]), color: FICHA.tapete });
+      return;
+    }
+    // Dos cajas por carta: el canto oscuro y la cara encima, un pelo más
+    // pequeña. Es lo que hace que el grosor se lea como un borde y no como un
+    // bloque de color del mismo tono que la cara.
+    piezas.push({
+      malla: caja(centro, [CARTA.ancho, CARTA.alto, CARTA.largo]),
+      color: PIXEL.borde,
+    });
+    piezas.push({
+      malla: caja(
+        [centro[0], centro[1] + CANTO_CARTA, centro[2]],
+        [CARTA.ancho - CANTO_CARTA * 2, CARTA.alto, CARTA.largo - CANTO_CARTA * 2],
+      ),
+      color: PIXEL.cara,
+    });
+  });
+
+  // Las pilas. La altura dice cuántas fichas hay sin escribir el número, que es
+  // lo que hace que una mesa se lea de un vistazo.
+  // LOS RIVALES. Cada uno con su pila, sus dos cartas y un busto que dice que
+  // ahí hay alguien. Esto es lo que convierte una mesa en una partida: ver de un
+  // vistazo quién sigue, cuánto le queda y que sus cartas están tapadas — el
+  // faroleo es mirar a los demás, no mirar el tapete.
+  plazas(jugadores.length).forEach((plaza, i) => {
+    const jugador = jugadores[i] ?? {};
+    const [jx, jy, jz] = plaza;
+    const propio = Boolean(jugador.propio);
+
+    // La pila, a un lado del sitio. La altura dice cuántas fichas hay sin
+    // escribir el número, que es lo que hace que la mesa se lea de un vistazo.
+    const cuantas = Math.max(1, Math.min(10, Math.round((jugador.fichas ?? 0) / 25) || 1));
+    const denominacion = FICHA.valores[jugador.denominacion] ?? FICHA.valores[5];
+    for (let f = 0; f < cuantas; f += 1) {
+      piezas.push({
+        // Fichas gordas: se apilan con su grosor entero y un pelo de aire, que
+        // es lo que hace que una pila se vea como fichas contadas y no como un
+        // cilindro pintado de rayas.
+        malla: mover(disco(), [jx + 0.75, jy + f * 0.185, jz + 0.15]),
+        color: denominacion,
+      });
+    }
+
+    // Sus cartas, apoyadas en el tapete delante de él. Las tuyas con la cara
+    // clara; las ajenas con el dorso. UN DORSO ES INFORMACIÓN, no adorno: dice
+    // que ese jugador sigue en la mano.
+    if (jugador.enMano !== false) {
+      const haciaElCentro = jz > 0 ? -0.6 : 0.6;
+      for (let c = 0; c < 2; c += 1) {
+        const centro = [jx - 0.36 + c * (CARTA.ancho * 0.72), jy + 0.06, jz + haciaElCentro];
+        piezas.push({ malla: caja(centro, [CARTA.ancho, CARTA.alto, CARTA.largo]), color: PIXEL.borde });
+        piezas.push({
+          malla: caja(
+            [centro[0], centro[1] + CANTO_CARTA, centro[2]],
+            [CARTA.ancho - CANTO_CARTA * 2, CARTA.alto, CARTA.largo - CANTO_CARTA * 2],
+          ),
+          color: propio ? PIXEL.cara : PIXEL.dorsoFondo,
+        });
+      }
+    }
+
+    // Y el busto de quien está sentado, detrás de sus cartas. No hace falta más:
+    // a esta distancia una figura entera sería un muñeco de pie sobre la mesa.
+    // A ti no se te pinta — la cámara está donde estás tú, y sería tu nuca.
+    if (!propio) {
+      const detras = jz > 0 ? 0.9 : -0.9;
+      piezas.push({ malla: caja([jx, jy + 0.45, jz + detras], [0.85, 0.6, 0.4]), color: FICHA.valores[100] });
+      piezas.push({ malla: caja([jx, jy + 1.0, jz + detras], [0.5, 0.48, 0.44]), color: PIXEL.cara });
+    }
+  });
+
+  const partes = piezas.map((pieza) =>
+    componerEscena(pieza.malla, {
+      ancho,
+      alto,
+      epoca,
+      color: pieza.color,
+      fondo,
+      fov: VISTA.fov,
+      pitch: VISTA.pitch,
+      yaw: VISTA.yaw,
+      posicion: [0, VISTA.altura, VISTA.atras],
+    }),
+  );
+
+  const poligonos = partes
+    .flatMap((parte) => parte.poligonos)
+    .sort((a, b) => b.profundidad - a.profundidad);
+
+  // EL ESPACIO DE FONDO. Se juega dentro de una nave que está volando, y una
+  // mesa recortada sobre negro podría estar en cualquier sótano. El campo es el
+  // mismo de #384, sembrado: toda la mesa ve el mismo cielo.
+  const estrellas = proyectarEstrellas(campoEstelar(semillaCielo, { cantidad: 70 }), {
+    ancho,
+    alto,
+    epoca,
+    fov: VISTA.fov,
+    pitch: VISTA.pitch,
+  });
+
+  return { ancho, alto, epoca: partes[0]?.epoca, poligonos, estrellas };
+}

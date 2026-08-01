@@ -99,20 +99,24 @@ lista en cada acción. Para mantener el selector accesible muestra como máximo
 los primeros 16 nombres ordenados; hay que mover o borrar los ya procesados para
 acceder a los siguientes.
 
-## Formato `espaciokoop-content` v6
+## Formato `espaciokoop-content` v7
 
-La versión 6 mantiene la envoltura, los objetos de mapa y los overrides de nave
-de v5, y añade máximos opcionales e independientes para los escudos frontal y
-trasero. El importador sigue aceptando documentos v1–v5; al volver a guardarlos
-o exportarlos se escriben como v6. Un mapa antiguo migra a `objects: []`, una
+La versión 7 mantiene la envoltura, los objetos de mapa y los overrides de nave
+de v6, y añade **motores y armamento permitido** (#55): tres velocidades
+opcionales —impulso, viraje y warp por nivel— y una lista de capacidad por tipo
+de misil. El importador sigue aceptando documentos v1–v6; al volver a guardarlos
+o exportarlos se escriben como v7. Un mapa antiguo migra a `objects: []`, una
 nave v1–v3 a colecciones de overrides vacías, una nave v4 conserva el casco de
-su plantilla y una nave v5 conserva los escudos de su plantilla, sin inventar
-valores.
+su plantilla, una nave v5 conserva los escudos y una nave v6 conserva motores y
+armamento, sin inventar valores.
+
+La versión del **sobre de la biblioteca** es independiente y no sube con esto:
+subir el esquema de recurso no reescribe la biblioteca entera.
 
 ```json
 {
   "format": "espaciokoop-content",
-  "version": 6,
+  "version": 7,
   "type": "map",
   "id": "sector-uno",
   "name": "Sector uno",
@@ -140,15 +144,43 @@ Tipos y campos específicos:
 | `campaign` | `map_ids` ordenados, `starting_map_id`, `character_ids`, `ship_ids`, `transitions` |
 | `map` | `scenario_file`, `recommended_players`, `objects` |
 | `character` | `crew_position_id`, `callsign`, `tags`, `ship_id` opcional, `legacy_role` para migración v1 |
-| `ship` | `template`, `faction`, `overrides` (`hull_max`, `front_shield_max`, `rear_shield_max`, `systems`, `resources`, `cargo`, `crew_positions`) |
+| `ship` | `template`, `faction`, `overrides` (`hull_max`, `front_shield_max`, `rear_shield_max`, `impulse_speed_max`, `turn_speed_max`, `warp_speed_per_level`, `missile_storage`, `systems`, `resources`, `cargo`, `crew_positions`) |
 
 Los overrides de nave son datos cerrados. `hull_max` es un override opcional
-representado siempre en v6: `null` conserva el casco de la plantilla y un número
+representado siempre en v7: `null` conserva el casco de la plantilla y un número
 debe ser finito, mayor que `0` y menor o igual que `1000000`.
 `front_shield_max` y `rear_shield_max` siguen la misma regla de forma
 independiente; al desplegar, el máximo y el nivel inicial del segmento quedan
 alineados. Si la plantilla no contiene el segmento solicitado, el spawn falla y
-retira la entidad parcial. Cada sistema usa
+retira la entidad parcial.
+
+Los **motores** —`impulse_speed_max`, `turn_speed_max` y
+`warp_speed_per_level`— son límites de capacidad del diseño («cuánto puede
+correr este casco»), nunca estado de operación («a cuánto va ahora»): esa es la
+separación entre estructura y progreso que pide el roadmap de campañas. Siguen
+la regla de los demás números opcionales: `null` hereda de la plantilla, y un
+valor debe ser finito y mayor que `0` bajo su techo (`100000` U/s de impulso,
+`3600` °/s de viraje, `100000` U/s por nivel de warp). Los techos son cotas
+contra un documento corrupto, no una opinión de equilibrio. El impulso override
+se aplica a marcha adelante **y** atrás: una variante que solo pudiera limitar
+la marcha adelante dejaría la nave más rápida marcha atrás sin decirlo.
+
+El **armamento permitido** (`missile_storage`) es una capacidad por tipo de
+misil sobre una lista cerrada —`homing`, `nuke`, `mine`, `emp`, `hvli`— con un
+máximo de `1000` por tipo. Es la única colección donde el **cero es un valor
+legítimo**: «esta nave no lleva nucleares» es exactamente lo que una variante
+existe para decir, y es distinto de no declarar el override, que hereda de la
+plantilla. Una capacidad negativa se rechaza en vez de recortarse a cero, para
+que un documento corrupto no se convierta en silencio en uno válido. Al
+desplegar, la carga actual se recorta a la capacidad declarada: una nave sin
+nucleares no puede salir con las de la plantilla en la santabárbara. El enum del
+documento es **propio y cerrado**, deliberadamente separado del `EMissileWeapons`
+del motor: el formato es portable y no puede cambiar de significado porque
+upstream reordene un enum. La correspondencia se escribe a mano en el punto de
+aplicación, con un `switch` que deja de compilar si upstream cambia — un cast
+habría seguido compilando y convertido nucleares en minas.
+
+Cada sistema usa
 uno de los nueve IDs canónicos y una salud entre `-1` y `1`; recursos y carga
 usan IDs portables y cantidades acotadas; los puestos usan IDs canónicos. Las
 cuatro colecciones son explícitas aunque estén vacías. No admiten callbacks, Lua
@@ -167,7 +199,7 @@ ID canónico. Un `role` histórico de texto libre se conserva íntegro en
 `legacy_role` y deja vacío `crew_position_id`, en vez de inventar una asignación
 operativa. El editor muestra ambos campos para que el GM pueda elegir un puesto
 canónico y borrar después el valor histórico; mientras tanto el documento sigue
-siendo válido y puede guardarse o exportarse como v6 sin perder el rol original.
+siendo válido y puede guardarse o exportarse como v7 sin perder el rol original.
 
 La ficha de personaje es asistida: el puesto y la nave se eligen con selectores
 canónicos (no se puede introducir un puesto o nave inexistente desde la UI), las
@@ -264,11 +296,13 @@ sesión avanza esa barrera para impedir ABA. Escape, clic derecho, una coordenad
 de rango o terminar el modo cancelan sin ensuciar el documento ni añadir historial.
 
 Las naves tienen un modelo tipado para overrides opcionales de casco máximo,
-máximos de escudos frontal/trasero, sistemas, recursos, carga y puestos. Rechaza
-IDs no canónicos, duplicados, valores no finitos y cantidades fuera de rango; v6
-ya lo persiste e intercambia con migración de v1–v5 sin inventar valores
+máximos de escudos frontal/trasero, velocidades de motor, armamento permitido,
+sistemas, recursos, carga y puestos. Rechaza
+IDs no canónicos, duplicados, valores no finitos y cantidades fuera de rango; v7
+ya lo persiste e intercambia con migración de v1–v6 sin inventar valores
 estructurales para documentos anteriores. El formulario ofrece controles GUI
-tipados para casco, ambos escudos, salud de sistemas, recursos, carga y puestos
+tipados para casco, ambos escudos, los tres motores, la capacidad de cada tipo
+de misil, salud de sistemas, recursos, carga y puestos
 canónicos de tripulación. Incluye IDs y valores validados, aplicar/quitar override
 y undo/redo compartido sobre el staging.
 Al guardar una nave consulta un catálogo read-only generado por los registros Lua

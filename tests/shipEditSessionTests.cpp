@@ -152,6 +152,51 @@ int main()
     expect(undo_count == 100 && bounded.document().systems[0].health == -0.99f,
         "ship history retains the newest 100 snapshots");
 
+    // --- Motores y armamento permitido (#55) ---------------------------------
+
+    ShipEditSession engines;
+    expect(engines.setEngineSpeed(ShipEngineId::Impulse, 120.0f) == ShipEditError::None
+            && engines.document().impulse_speed_max == 120.0f,
+        "an impulse override is recorded");
+    expect(engines.setEngineSpeed(ShipEngineId::Warp, 900.0f) == ShipEditError::None
+            && engines.document().warp_speed_per_level == 900.0f
+            && engines.document().impulse_speed_max == 120.0f,
+        "engines are independent of each other");
+    expect(engines.setEngineSpeed(ShipEngineId::Impulse, -1.0f) == ShipEditError::InvalidDocument
+            && engines.document().impulse_speed_max == 120.0f,
+        "an invalid engine speed is refused without touching the document");
+    expect(engines.undo() && engines.document().warp_speed_per_level == std::nullopt,
+        "an engine edit is undoable");
+    expect(engines.redo() && engines.document().warp_speed_per_level == 900.0f,
+        "an engine edit is redoable");
+    expect(engines.removeEngineOverride(ShipEngineId::Turn) == ShipEditError::NotFound,
+        "removing an engine override that was never set reports NotFound");
+    expect(engines.removeEngineOverride(ShipEngineId::Warp) == ShipEditError::None
+            && !engines.document().warp_speed_per_level,
+        "an engine override can be removed to fall back to the template");
+
+    ShipEditSession armament;
+    expect(armament.setMissileCapacity(ShipMissileId::Homing, 8) == ShipEditError::None
+            && armament.document().missile_storage.size() == 1,
+        "an armament capacity is recorded");
+    expect(armament.setMissileCapacity(ShipMissileId::Homing, 4) == ShipEditError::None
+            && armament.document().missile_storage.size() == 1
+            && armament.document().missile_storage[0].capacity == 4,
+        "setting the same missile twice updates instead of duplicating");
+    // Zero has to be storable: it is how a variant says "no nukes", and it is
+    // NOT the same as removing the override, which inherits the template.
+    expect(armament.setMissileCapacity(ShipMissileId::Nuke, 0) == ShipEditError::None
+            && armament.document().missile_storage.size() == 2,
+        "zero capacity is a real override and not a removal");
+    expect(armament.removeMissileOverride(ShipMissileId::Nuke) == ShipEditError::None
+            && armament.document().missile_storage.size() == 1,
+        "an armament override can be removed");
+    expect(armament.removeMissileOverride(ShipMissileId::Mine) == ShipEditError::NotFound,
+        "removing armament that was never overridden reports NotFound");
+    expect(armament.setMissileCapacity(ShipMissileId::EMP, SHIP_DOCUMENT_MAX_MISSILE_CAPACITY + 1)
+            == ShipEditError::InvalidDocument,
+        "a capacity over the ceiling never enters the document");
+
     std::cout << "SHIP_EDIT_SESSION_TESTS_OK checks=" << checks << "\n";
     return 0;
 }

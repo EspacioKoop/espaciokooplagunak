@@ -207,10 +207,13 @@ void testMapDocumentRoundTrip()
         "supported and opaque map objects survive atomic save/load");
     const auto canonical = nlohmann::json::parse(
         readAll(store.rootPath() / "library/library.json"));
-    expect(canonical["resources"][0]["version"] == 6
+    // El sobre de la biblioteca tiene su propia versión y NO sigue a la del
+    // recurso: subir el esquema de recurso a v7 (#55) no reescribe la
+    // biblioteca entera, que es justo lo que esa separación existe para evitar.
+    expect(canonical["resources"][0]["version"] == 7
             && canonical["resources"][0]["fields"]["objects"].size() == 2
             && canonical["version"] == 1,
-        "library stores canonical v6 resources without changing its envelope version");
+        "library stores canonical v7 resources without changing its envelope version");
 }
 
 void testShipDocumentRoundTripAndMigration()
@@ -242,12 +245,16 @@ void testShipDocumentRoundTripAndMigration()
         "store migrates a v3 ship to empty overrides without inventing state");
     const auto canonical = nlohmann::json::parse(
         readAll(store.rootPath() / "library/library.json"));
-    expect(canonical["resources"][0]["version"] == 6
+    expect(canonical["resources"][0]["version"] == 7
             && canonical["resources"][0]["fields"]["overrides"]["hull_max"].is_null()
             && canonical["resources"][0]["fields"]["overrides"]["front_shield_max"].is_null()
             && canonical["resources"][0]["fields"]["overrides"]["rear_shield_max"].is_null()
+            && canonical["resources"][0]["fields"]["overrides"]["impulse_speed_max"].is_null()
+            && canonical["resources"][0]["fields"]["overrides"]["turn_speed_max"].is_null()
+            && canonical["resources"][0]["fields"]["overrides"]["warp_speed_per_level"].is_null()
+            && canonical["resources"][0]["fields"]["overrides"]["missile_storage"].empty()
             && canonical["resources"][0]["fields"]["overrides"]["systems"].empty(),
-        "store rewrites migrated ship as canonical v6 without inventing structural values");
+        "store rewrites migrated ship as canonical v7 without inventing structural values");
 }
 
 void testCorruptionMigrationAndFutureVersion()

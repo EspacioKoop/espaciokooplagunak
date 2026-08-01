@@ -3,6 +3,7 @@
 #include "content/shipDocument.h"
 
 #include <cstddef>
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -27,6 +28,12 @@ public:
     ShipEditError removeHullOverride();
     ShipEditError setShieldMax(bool front, float shield_max);
     ShipEditError removeShieldOverride(bool front);
+    // Engines and allowed armament (#55). `ShipEngineId` names which speed is
+    // being edited so the three do not need three near-identical methods.
+    ShipEditError setEngineSpeed(ShipEngineId engine, float speed);
+    ShipEditError removeEngineOverride(ShipEngineId engine);
+    ShipEditError setMissileCapacity(ShipMissileId missile, std::uint32_t capacity);
+    ShipEditError removeMissileOverride(ShipMissileId missile);
     ShipEditError setResourceAmount(const std::string& id, float amount);
     ShipEditError removeResource(const std::string& id);
     ShipEditError setCargoQuantity(const std::string& id, std::uint32_t quantity);

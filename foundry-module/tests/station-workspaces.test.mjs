@@ -556,3 +556,51 @@ test("la tripulación ve la lectura degradada como filas, no como un número sue
   // El crudo del GM no se cuela por esta ruta ni aunque venga en el mismo modelo.
   assert.doesNotMatch(JSON.stringify(modelo.contacts), /SECRETO/);
 });
+
+test("el visor del piloto recibe la lectura de sensores, y solo pilotaje", () => {
+  // El visor 3D (#362) necesita distancia y marcación como NÚMEROS, no como las
+  // filas ya formateadas que consumen ciencia y artillería. Se le pasa la misma
+  // lectura degradada que ya se difunde a toda la tripulación, así que no abre
+  // ni un dato nuevo: lo único que hace es colocarlo en un cuadro.
+  const sensores = {
+    contactos: [
+      { banda: "corto", esJugador: false, callsign: "Argia", faction: "Humanos", distancia: 2000, rumboDeg: 45, precision: 10, rumboPrecision: 1 },
+    ],
+    alcance: { corto: 5000, largo: 30000 },
+  };
+  const comun = {
+    isGM: false,
+    users: [],
+    moduleId: "lagunak",
+    i18n: { localize: (k) => k, format: (k) => k },
+    statePayload: { ship: { callsign: "Lagunak", heading: 90, systems: {} } },
+    sensores,
+    connection: "ok",
+  };
+
+  const piloto = buildWorkspaceModel({ ...comun, station: "navigation" });
+  assert.equal(piloto.sensores, sensores, "pilotaje sí recibe la lectura cruda");
+  assert.equal(piloto.isNavigation, true);
+
+  // Las demás consolas no tienen visor, así que tampoco tienen por qué cargar
+  // con la lectura: lo que no se usa no se pasa.
+  for (const station of ["sensors", "weapons", "engineering", "communications", "captain"]) {
+    assert.equal(buildWorkspaceModel({ ...comun, station }).sensores, null, station);
+  }
+});
+
+test("sin sondeo el modelo de pilotaje lleva null, no un sondeo vacío", () => {
+  // `null` apaga el visor; `{contactos: []}` lo enciende diciendo «he mirado y
+  // no hay nada». Confundirlos es el cuarto estado (#353) al revés.
+  const modelo = buildWorkspaceModel({
+    station: "navigation",
+    isGM: false,
+    users: [],
+    moduleId: "lagunak",
+    i18n: { localize: (k) => k, format: (k) => k },
+    statePayload: { ship: { callsign: "Lagunak", systems: {} } },
+    sensores: null,
+    connection: "ok",
+  });
+  assert.equal(modelo.sensores, null);
+});

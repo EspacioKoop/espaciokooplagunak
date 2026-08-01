@@ -352,6 +352,17 @@ export function buildWorkspaceModel({
       ? { estado: atraque.estado, clase: atraque.objetivo?.clase ?? null }
       : null,
     isNavigation: normalized === "navigation",
+    // La lectura de sensores tal cual, SOLO para pilotaje y solo para pintar el
+    // visor del piloto (#362). Va cruda —no en filas de texto— porque el visor
+    // necesita distancia y marcación como números, no como etiquetas ya
+    // formateadas; la lista legible de contactos sigue siendo cosa de ciencia y
+    // artillería y no se duplica aquí.
+    //
+    // Es la MISMA lectura degradada que ve el resto de la tripulación
+    // (`contactos-degradados.mjs`), así que el visor no abre ni un dato nuevo:
+    // reordena en un cuadro lo que ya se difunde. Si no hay sondeo va `null`, y
+    // el visor se apaga en vez de dibujar un sector vacío sin comprobar (#353).
+    sensores: normalized === "navigation" ? (sensores ?? null) : null,
     // Acciones operativas por puesto (#236/#238/#240): disponibles aunque el
     // tripulante no tenga telemetría —la orden es intención, la simulación es
     // autoritativa—. Solo para tripulación (no-GM): el GM tiene sus controles

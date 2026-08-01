@@ -700,3 +700,29 @@ body.lagunak-alerta-roja .lagunak-workspace__crew-portrait::after { background: 
   height: 168px;
   image-rendering: pixelated;
 }
+
+/* Visor del piloto (#362). Apaisado y ancho, al contrario que el casco y la
+ * lámina: aquí lo que importa es cuánto sector cabe a los lados, no la silueta
+ * de una cosa. Es la proporción de una luna delantera y no la de una ficha.
+ *
+ * El lienzo interno es de 192x108 y se amplía al doble: la resolución baja ES el
+ * efecto, igual que en el resto del 3D del módulo.
+ *
+ * Sin regla de prefers-reduced-motion a propósito, y no por olvido: este visor
+ * no anima nada. Se repinta cuando llega telemetría nueva y se queda quieto el
+ * resto del tiempo, así que no hay movimiento que frenar. */
+.lagunak-workspace__visor {
+  display: flex;
+  justify-content: center;
+  margin: 12px 0;
+  padding: 8px 0;
+  border: 1px solid var(--lagunak-line);
+  background: rgba(0, 0, 0, 0.32);
+}
+
+.lagunak-workspace__visor canvas {
+  width: 384px;
+  max-width: 100%;
+  height: 216px;
+  image-rendering: pixelated;
+}

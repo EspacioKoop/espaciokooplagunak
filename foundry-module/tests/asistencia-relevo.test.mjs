@@ -373,6 +373,39 @@ test("PEAJE NO: una ayuda de OTRA acción del mismo puesto no cambia la orden", 
   assert.equal(salida.estado.propuestas.length, 1);
 });
 
+test("PEAJE NO: el `leerBase: () => null` del cableado no vale como lectura cero", () => {
+  // La frontera EXACTA de producción. `asistencia-wiring.mjs` conecta
+  // `leerBase: () => null` mientras no haya telemetría, y `Number(null)` es `0`:
+  // una ayuda EXITOSA bajaba un `level: 8` a 4 —la ayuda EMPEORANDO la orden del
+  // titular— y encima gastaba el token. Si alguien vuelve a colar la ausencia por
+  // una coerción numérica, esta prueba lo dice.
+  const estado = conPropuesta();
+  const salida = prepararOrdenAsistida({
+    estado,
+    userId: "ingeniera",
+    orden: {
+      action: "set_system_coolant",
+      params: { system: "reactor", level: 8 },
+      nonce: "o1",
+      [CAMPO_ASISTENCIA]: "n1",
+    },
+    resolverPuesto: () => "engineering",
+    // Literalmente lo que devuelve el cableado hoy.
+    leerBase: () => null,
+    ahora: T0 + 2_000,
+  });
+
+  assert.equal(salida.orden.action, "set_system_coolant");
+  assert.equal(salida.orden.params.level, 8, "la ayuda no puede mover la orden sin lectura");
+  assert.equal(salida.aviso, RELEVO_AVISOS.ASISTENCIA_NO_APLICADA);
+  assert.equal(salida.error, PROPUESTA_ERRORES.SIN_LECTURA);
+  assert.equal(salida.credito, null);
+  // Y el éxito de quien ayudó no se tira a la basura: sigue vivo para cuando la
+  // telemetría exista.
+  assert.equal(salida.estado.propuestas.length, 1);
+  assert.equal(salida.estado.consumidos.length, 0);
+});
+
 test("la ayuda sí se aplica cuando la acción es la suya, para la misma mesa", () => {
   // El contraste del caso anterior: mismo puesto, misma sesión, la acción que
   // sí toca. Si esta prueba se rompe, la corrección se pasó de estricta.

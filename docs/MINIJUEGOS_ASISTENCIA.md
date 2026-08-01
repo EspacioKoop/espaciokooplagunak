@@ -219,6 +219,16 @@ Dos consecuencias que el motor hace cumplir con código, no con prosa:
   (`set_shields`) o **circular** (`set_target_heading`) no tiene ese margen —a mitad de camino entre
   dos rumbos no hay «menos ayuda», hay otro rumbo—, así que **no produce token** en vez de prometer un
   efecto que no existiría.
+- **Sin lectura del puesto no hay ayuda, y ausencia no es cero.** El tier se mide *desde* el valor
+  actual de la nave, así que sin telemetría no hay trayecto que partir. Ese caso sale por
+  `sin-lectura`: la orden del titular va **exactamente** como la mandó y la propuesta **no se gasta**,
+  esperando a que haya lectura. La distinción es de tipo, no de valor: `null` y `undefined` se
+  reconocen como ausencia **antes** de cualquier coerción numérica, porque `Number(null)` es `0` y
+  tratarlo como lectura convertía «no sé a qué está el reactor» en «está a cero» —con lo que una ayuda
+  *exitosa* arrastraba la orden hacia abajo, que es el efecto contrario al que se ganó—.
+  Mientras el cableado no hable con el puente (`leerBase: () => null` en `asistencia-wiring.mjs`), la
+  asistencia está enchufada de extremo a extremo pero todavía no mueve ningún parámetro. Es
+  deliberado: preferimos ayuda inerte a ayuda que empeora.
 
 ### dnd5e es enriquecimiento, no dependencia dura
 El módulo debe seguir funcionando **sin dnd5e**. Esto es un **gate adicional**, no la ruta moderna del

@@ -32,6 +32,12 @@ export const PROPUESTA_ERRORES = Object.freeze({
    */
   ACCION_DISTINTA: "accion-distinta",
   PARAMETRO_INVALIDO: "parametro-invalido",
+  /**
+   * No hay lectura actual del puesto desde la que medir el trayecto. Distinto de
+   * un parámetro inválido: aquí no falla nadie, es que la telemetría todavía no
+   * está conectada. La orden sale intacta y la propuesta se conserva.
+   */
+  SIN_LECTURA: "sin-lectura",
 });
 
 /**
@@ -147,6 +153,23 @@ export function propuestaVigente(propuesta, ahora = Date.now()) {
 }
 
 /**
+ * Lectura numérica o nada, sin pasar por `Number()` a pelo.
+ *
+ * `Number(null)` es `0` y `Number("")` también: coerción directa, una ausencia de
+ * telemetría se convertía en «el reactor está a cero» y la ayuda arrastraba la
+ * orden del titular HACIA ABAJO desde un número que nadie había leído. La
+ * ausencia tiene que ser reconocible ANTES de tocar aritmética, así que aquí se
+ * distingue en el tipo y no en el valor resultante.
+ */
+function lecturaNumerica(valor) {
+  if (valor === null || valor === undefined) return null;
+  if (typeof valor === "boolean") return null;
+  if (typeof valor === "string" && valor.trim() === "") return null;
+  const n = Number(valor);
+  return Number.isFinite(n) ? n : null;
+}
+
+/**
  * Acota un valor propuesto al rango que la orden YA permitía, eligiendo el tramo
  * según el tier. `rango` es [min, max] del propio contrato del puente; el tier
  * bajo se queda en la mitad inferior del margen de ayuda y el alto llega al tope
@@ -221,10 +244,17 @@ export function consumirPropuesta({
   // que la orden ya permitía, cae el parámetro. Por eso hace falta la lectura
   // actual del puesto: la ayuda mueve desde donde está la nave hacia lo pedido,
   // y el tier bajo se queda a mitad de ese trayecto.
-  const objetivo = Number(params?.[spec.campo]);
-  const desde = Number(base);
-  if (!Number.isFinite(objetivo) || !Number.isFinite(desde)) {
+  const objetivo = lecturaNumerica(params?.[spec.campo]);
+  if (objetivo === null) {
     return { ok: false, error: PROPUESTA_ERRORES.PARAMETRO_INVALIDO };
+  }
+  // Sin lectura autoritativa no se inventa el punto de partida. Salir por aquí
+  // deja la orden del titular tal cual la mandó Y no gasta la propuesta: quien
+  // ayudó no pierde su éxito porque la telemetría no estuviera conectada, y sobre
+  // todo la ayuda nunca puede EMPEORAR una orden que se podía dar sin ella.
+  const desde = lecturaNumerica(base);
+  if (desde === null) {
+    return { ok: false, error: PROPUESTA_ERRORES.SIN_LECTURA };
   }
   const valor = acotarPorTier({
     base: desde,

@@ -203,10 +203,14 @@ export function prepararOrdenConAsistencia({ userId, order }) {
     resolverPuesto: puestoDe,
     // De dónde sale el valor ACTUAL sobre el que la ayuda mueve el parámetro. El
     // puente es de quien lo sabe y este archivo no habla con él, así que por
-    // ahora no hay base: sin ella `consumir` parte del propio objetivo del
-    // titular, que es conservador —la ayuda no puede empujar un número desde un
-    // sitio que nadie ha leído—. Conectarlo a la telemetría difundida es la
-    // rebanada siguiente y tiene su propio criterio de «ausencia no es cero».
+    // ahora no hay base y `leerBase` devuelve la ausencia explícitamente.
+    //
+    // El motor la reconoce como ausencia (`SIN_LECTURA`) y no como un cero: la
+    // orden del titular sale exactamente como la mandó y la propuesta se conserva
+    // para cuando haya lectura. Es decir, mientras esta línea siga devolviendo
+    // `null`, la asistencia está enchufada de extremo a extremo pero todavía no
+    // mueve ningún parámetro — y eso es preferible a moverlo desde un número
+    // inventado. Conectarlo a la telemetría difundida es la rebanada siguiente.
     leerBase: () => null,
   });
   sesion = resultado.estado ?? sesion;

@@ -313,9 +313,10 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
     "lagunak-decorado-aleatorio",
     // Arte de ficha (#354): solo-GM, porque escribe un documento del mundo.
     "lagunak-ficha-nave",
-    // La cantina (#423) la ven todos: es la capa social, y un minijuego al
-    // que solo pudiera entrar el GM no sería un minijuego. Sustituye al botón
-    // de mesa suelto por una única puerta.
+    // La cantina (#423) la ven todos: es la capa social, y un minijuego al que
+    // solo pudiera entrar el GM no sería un minijuego. Es la única puerta: los
+    // dos verticales (#308 póker, #413 dados) entran por ella, no por un botón
+    // suelto cada uno.
     "lagunak-cantina",
     "lagunak-musica-audio",
     "lagunak-puestos",
@@ -1069,6 +1070,90 @@ test("una mesa viva NO se reemplaza al volver a entrar por la cantina", async ()
 
   const publicado = game.settings.get("espaciokoop-lagunak", "minijuegoSesionPublica");
   assert.equal(publicado.id, "sesion-viva", "la partida en curso se ha perdido");
+});
+
+// #418 se mergeó contra su rama base y no contra `main`, así que la mesa de
+// dados existía y no había forma de llegar a ella. Ahora se llega por la
+// cantina, y esto lo fija: no basta con que la puerta esté en el catálogo, hay
+// que abrir LA VENTANA DE DADOS y no la de póker con otro nombre.
+test("la puerta de dados abre la mesa de dados, no la de póker", async () => {
+  const { hooks, instances } = await loadModule();
+  await arrancarReady(hooks);
+  const controls = [{ name: "token", tools: [] }];
+  hooks.getSceneControlButtons(controls);
+  game.users = { activeGM: game.user };
+  // Sin mesa puesta. Explícito: el ajuste sin valor devuelve el relleno del
+  // arnés, y una mesa que en realidad es un `2` no prueba nada.
+  await game.settings.set("espaciokoop-lagunak", "minijuegoSesionPublica", null);
+
+  const boton = toolByName(controls, "lagunak-cantina");
+  await boton.onClick();
+  instances.at(-1).seleccionarPuerta("dados");
+  const mesa = instances.at(-1);
+
+  assert.equal(mesa.juegoMesa, "dados");
+  const publicado = game.settings.get("espaciokoop-lagunak", "minijuegoSesionPublica");
+  assert.equal(publicado.juego, "dados", "la mesa creada no es de dados");
+});
+
+// La publicación del ajuste es ASÍNCRONA en Foundry: leerlo justo después de
+// crear la mesa devuelve la partida anterior, y la ventana se abría con el juego
+// viejo encima de la mesa nueva. Se reproduce con un `set` que tarda.
+test("la mesa recién puesta manda aunque el ajuste aún no se haya publicado", async () => {
+  const { hooks, instances } = await loadModule();
+  await arrancarReady(hooks);
+  const controls = [{ name: "token", tools: [] }];
+  hooks.getSceneControlButtons(controls);
+  game.users = { activeGM: game.user };
+
+  // Mesa de póker terminada: cruzar la puerta de dados debe poner una de dados.
+  await game.settings.set("espaciokoop-lagunak", "minijuegoSesionPublica", {
+    id: "poker-de-ayer",
+    juego: "poker",
+    fase: "terminada",
+    jugadores: [],
+  });
+
+  // A partir de aquí, publicar no tiene efecto inmediato sobre la lectura: es
+  // exactamente lo que hace Foundry, y lo que el arnés síncrono escondía.
+  const setReal = game.settings.set;
+  game.settings.set = async (...args) => {
+    await Promise.resolve();
+    return setReal.apply(game.settings, args);
+  };
+  try {
+    const boton = toolByName(controls, "lagunak-cantina");
+    await boton.onClick();
+    instances.at(-1).seleccionarPuerta("dados");
+    assert.equal(instances.at(-1).juegoMesa, "dados", "se abrió la ventana del juego viejo");
+  } finally {
+    game.settings.set = setReal;
+  }
+});
+
+test("con una mesa de póker VIVA, la puerta de dados no la barre", async () => {
+  // Manda la mesa puesta, no la puerta que se cruzó: abrir dados sobre una
+  // partida de póker en curso enseñaría una mesa que no existe.
+  const { hooks, instances } = await loadModule();
+  await arrancarReady(hooks);
+  const controls = [{ name: "token", tools: [] }];
+  hooks.getSceneControlButtons(controls);
+  game.users = { activeGM: game.user };
+
+  await game.settings.set("espaciokoop-lagunak", "minijuegoSesionPublica", {
+    id: "partida-de-poker",
+    juego: "poker",
+    fase: "en_curso",
+    jugadores: [],
+  });
+
+  const boton = toolByName(controls, "lagunak-cantina");
+  await boton.onClick();
+  instances.at(-1).seleccionarPuerta("dados");
+
+  const publicado = game.settings.get("espaciokoop-lagunak", "minijuegoSesionPublica");
+  assert.equal(publicado.id, "partida-de-poker", "la partida en curso se ha perdido");
+  assert.equal(instances.at(-1).juegoMesa, "poker", "manda la mesa, no la puerta");
 });
 
 test("v11: la mesa se puede cerrar y volver a abrir, con instancia nueva", async () => {

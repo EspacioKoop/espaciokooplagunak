@@ -30,7 +30,13 @@ jobs:
         with:
           # La trazabilidad de nombres DP depende del escenario y del documento
           # tanto como de la propia herramienta (#310).
-          rutas: '^(tools/|\.github/workflows/tools\.yml$|\.github/actions/|scripts/public_domain_names_scenario_utility\.lua$|docs/DOMINIO_PUBLICO_SCIFI\.md$)'
+          #
+          # `src/` y `resources/locale/` entran por la cobertura de i18n del C++
+          # (#55): una cadena nueva en una pantalla y su entrada de catálogo son
+          # las dos mitades de la misma costura, así que tocar cualquiera de las
+          # dos tiene que despertar esta auditoría. Sigue siendo un job de Python
+          # de segundos; no arrastra la build.
+          rutas: '^(tools/|\.github/workflows/tools\.yml$|\.github/actions/|scripts/public_domain_names_scenario_utility\.lua$|docs/DOMINIO_PUBLICO_SCIFI\.md$|src/|resources/locale/)'
 
   tests:
     name: tools/tests (Linux)
@@ -49,6 +55,13 @@ jobs:
         run: python3 -m pytest tools/tests/ -q
       - name: Trazabilidad de nombres de dominio público (#310)
         run: python3 tools/check_public_domain_names.py
+      - name: Cobertura i18n de las cadenas de C++ (#55)
+        # `validate_es_locale.py` compara en-US contra es-ES, así que no ve una
+        # cadena que no llegó a NINGUNO de los dos catálogos. Esto mira la otra
+        # costura: del código al catálogo.
+        run: python3 tools/check_cpp_locale_coverage.py .
+      - name: Paridad e invariantes del catálogo es-ES
+        run: python3 tools/validate_es_locale.py .
 
   puerta:
     name: Puerta de tools

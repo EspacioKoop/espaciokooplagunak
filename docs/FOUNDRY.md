@@ -372,6 +372,63 @@ hermanas V1/V2). Los tonos viven en `paleta.mjs` (`SECCION`); el color del daño
 lo sigue mandando `COLOR_REGION` de #419, para que un mismo casco no tenga dos
 colores según qué ventana lo mire.
 
+### El visor del piloto (#362)
+
+Lo que la nave tiene delante, dibujado en 3D retro PSX en la consola de
+pilotaje: los contactos colocados por su marcación y su distancia, vistos desde
+el morro.
+
+Es **la última superficie de #362 y llegó la última a propósito**. Las
+anteriores ambientan —el casco propio dice hacia dónde apuntas, la lámina de
+reconocimiento dice qué forma tiene aquello, la cantina es un sitio— y ninguna
+era la única vía para un dato. Esta **informa**, y por eso arrastra reglas que
+las otras no necesitaban:
+
+- **La distancia y la marcación siguen en texto.** El visor es refuerzo y va
+  `aria-hidden`: quien lo apague o no lo vea no pierde ni un número. Es la misma
+  regla que #338 y #353, escrita antes de tener el juguete delante. En concreto:
+  pilotaje arma la **lista de contactos** —la misma que ciencia y artillería—
+  desde la misma lectura degradada que el lienzo coloca, y la enseña bajo él.
+  Sin esa lista la regla es una frase, no una propiedad: durante la revisión de
+  #431 el visor fue la única vía a esos dos datos porque el modelo solo construía
+  filas para `sensors` y `weapons`. La regresión que lo impide vive en
+  `station-workspaces.test.mjs`.
+- **En pilotaje la lista es degradada también para el GM.** No por secreto —el GM
+  tiene su sondeo crudo en ciencia— sino por coherencia: la lista respalda al
+  visor, el visor pinta lo degradado, y unas coordenadas exactas al lado
+  describirían un cuadro distinto del que hay en pantalla.
+- **La profundidad está comprimida y no es una lectura.** Un contacto a 28.000 y
+  otro a 30.000 tienen que caber los dos en el cuadro y distinguirse, y a escala
+  real serían el mismo píxel. La compresión (raíz cuadrada sobre el alcance
+  largo) es **monótona** —lo más cercano se ve más cerca, siempre— pero no
+  proporcional. Lo único que este visor promete es el **orden**.
+- **El margen se dibuja.** `contactos-degradados.mjs` redondea un eco de banda
+  larga a 15° y le quita indicativo y facción; el visor lo pinta como un bloque
+  gris **tan ancho como esa incertidumbre**, nunca con la silueta afilada de un
+  contacto identificado. Deshacer al pintar la honestidad que el origen se toma
+  el trabajo de mantener no tendría ningún sentido.
+- **Todo cae en un plano.** La simulación es 2D: los contactos tienen `x` e `y`
+  y no tienen altura. Repartirlos en vertical quedaría mejor y sería inventar un
+  dato que nadie ha medido.
+- **Sin sondeo se apaga**, y además se limpia: dejar el fotograma anterior haría
+  pasar por actual un sondeo viejo. Un sondeo **vacío** sí se pinta, con su
+  cielo, porque «he mirado y no hay nada» es un dato y «no he mirado» no lo es.
+
+No abre ningún dato nuevo: consume la misma lectura degradada que ya se difunde
+a toda la tripulación, y lo único que hace es colocarla en un cuadro. Y no tiene
+bucle de animación —se repinta cuando llega telemetría— así que
+`prefers-reduced-motion` no tiene nada que frenar: interpolar entre dos sondeos
+daría movimiento suave y falso justo en la superficie que menos se lo puede
+permitir.
+
+PSX y no GameCube, que es lo que el propio #362 propuso para ella: esto se ve de
+reojo desde una cabina mientras se pilota. Lo que se mira fijo —la lámina de
+reconocimiento— es lo que se ganó los dieciséis tonos.
+
+Módulos: `visor-piloto.mjs` (colocación y mallas, puro) y
+`visor-piloto-lienzo.mjs` (el `<canvas>` y nada más). Reutilizan `retro3d.mjs`
+sin tocarlo, como ya hicieron la lámina, los dados y la cantina.
+
 ### Frontera de estilo: vivo frente a registrado
 
 El módulo genera dos artes en el cliente y comparten disciplina —ninguna usa

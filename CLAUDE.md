@@ -189,6 +189,21 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     puesto) — la sección no estrena ninguna. No da autoridad (#237: el puesto se lee para saber
     dónde pintarte, nunca al revés) y no inventa lecturas (sin sondeo la sala va neutra, no en
     cero). Una sala nueva es una entrada más de la planta, no un botón nuevo en `main.mjs`.
+  - **Visor del piloto** — `scripts/visor-piloto.mjs` (geometría pura) y
+    `scripts/visor-piloto-lienzo.mjs` (el <canvas>), #362. Lo que la nave tiene delante, en PSX,
+    en la consola de pilotaje. Es la primera superficie 3D del módulo que **informa** en vez de
+    ambientar, y de ahí sus tres reglas: la distancia y la marcación siguen en **texto** —el
+    visor es refuerzo y va `aria-hidden`, y pilotaje arma la lista de contactos desde la misma
+    lectura degradada para que ese texto exista de verdad, degradada también para el GM—; la
+    profundidad está **comprimida** (monótona, no
+    proporcional: conserva el orden, no es un telémetro); y el **margen se dibuja** —un eco de
+    banda larga sale como un bloque gris tan ancho como su incertidumbre, nunca con la silueta
+    afilada de un contacto identificado—. Todo cae en un plano porque la simulación es 2D:
+    repartir en vertical sería inventar altura. Lee la MISMA lectura degradada que ya se difunde
+    a la tripulación (`contactos-degradados.mjs`), así que no abre ningún dato nuevo. Sin sondeo
+    se apaga y limpia (#353); un sondeo vacío sí se pinta, porque «he mirado y no hay nada» es un
+    dato. No hay bucle de animación: se repinta con cada telemetría y por eso
+    `prefers-reduced-motion` no tiene nada que frenar.
   - **Asistencia entre puestos** — `scripts/asistencia/` (#309, diseño en
     [`docs/MINIJUEGOS_ASISTENCIA.md`](docs/MINIJUEGOS_ASISTENCIA.md)): motor puro más el reductor
     `sesion.mjs` y la costura `relevo.mjs`. Ayudar NUNCA emite orden: produce un token que gasta el

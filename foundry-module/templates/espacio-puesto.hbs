@@ -85,6 +85,24 @@
 
           {{#if ship}}
             {{#if isNavigation}}
+              {{!-- Visor del piloto (#362): lo que la nave tiene delante, en 3D
+                    retro PSX. Es la primera superficie 3D del módulo que INFORMA
+                    en vez de ambientar, así que hereda su regla entera: la
+                    distancia y la marcación de cada contacto siguen en texto, y
+                    esto es refuerzo. Por eso va decorativo — quien use lector de
+                    pantalla no pierde nada, porque no hay nada aquí que no esté
+                    escrito en otro sitio. Ese otro sitio es la lista de contactos
+                    de más abajo, que en pilotaje sale de la MISMA lectura
+                    degradada que este lienzo coloca: si alguien deja de armarla,
+                    esta afirmación deja de ser cierta y el visor se queda siendo
+                    la única vía a dos datos.
+
+                    Sin sondeo el lienzo se queda limpio y apagado, que no es lo
+                    mismo que un sector vacío: «no he mirado» y «he mirado y no
+                    hay nada» son distintos y se ven distintos. --}}
+              <div class="lagunak-workspace__visor" aria-hidden="true">
+                <canvas data-lagunak-visor-piloto width="192" height="108"></canvas>
+              </div>
               <div class="lagunak-workspace__nav-display">
                 <div class="lagunak-workspace__radar" role="img" aria-label="{{navigationAriaLabel}}" style="--lagunak-heading: {{navigationHeading}}deg">
                   <span class="lagunak-workspace__radar-ring" aria-hidden="true"></span>

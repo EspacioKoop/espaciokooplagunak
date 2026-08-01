@@ -16,10 +16,14 @@
 #include "components/contentship.h"
 #include "components/coolant.h"
 #include "components/hull.h"
+#include "components/impulse.h"
+#include "components/maneuveringthrusters.h"
+#include "components/missiletubes.h"
 #include "components/player.h"
 #include "components/reactor.h"
 #include "components/shields.h"
 #include "components/shipsystem.h"
+#include "components/warpdrive.h"
 #include <SDL_assert.h>
 
 P<GameGlobalInfo> gameGlobalInfo;
@@ -29,6 +33,24 @@ namespace
 ShipSystem::Type runtimeSystem(ShipSystemId system)
 {
     return static_cast<ShipSystem::Type>(static_cast<int>(system));
+}
+
+// The document enum is deliberately NOT the engine enum (see shipDocument.h),
+// so the mapping is written out here instead of being a cast. If upstream ever
+// reorders EMissileWeapons, this switch stops compiling and someone reads it —
+// a cast would have kept compiling and quietly turned nukes into mines.
+EMissileWeapons runtimeMissile(ShipMissileId missile)
+{
+    switch(missile)
+    {
+    case ShipMissileId::Homing: return MW_Homing;
+    case ShipMissileId::Nuke: return MW_Nuke;
+    case ShipMissileId::Mine: return MW_Mine;
+    case ShipMissileId::EMP: return MW_EMP;
+    case ShipMissileId::HVLI: return MW_HVLI;
+    case ShipMissileId::Count: break;
+    }
+    return MW_None;
 }
 }
 
@@ -419,6 +441,70 @@ bool GameGlobalInfo::createContentShip(const ShipDeploymentPlan& plan, sp::ecs::
         {
             shields->entries[1].max = *plan.overrides.rear_shield_max;
             shields->entries[1].level = *plan.overrides.rear_shield_max;
+        }
+    }
+
+    // Engines. Each override needs its component to exist: a template without a
+    // warp drive cannot honour a warp speed, and silently ignoring that would
+    // deploy a ship that does not match the plan the GM confirmed.
+    if (plan.overrides.impulse_speed_max)
+    {
+        auto* impulse = entity.getComponent<ImpulseEngine>();
+        if (!impulse)
+        {
+            entity.destroy();
+            return false;
+        }
+        // Forward and reverse move together: the document declares one top
+        // speed for the hull, and a variant that could only be overridden
+        // forwards would quietly leave the ship faster in reverse.
+        impulse->max_speed_forward = *plan.overrides.impulse_speed_max;
+        impulse->max_speed_reverse = *plan.overrides.impulse_speed_max;
+    }
+
+    if (plan.overrides.turn_speed_max)
+    {
+        auto* thrusters = entity.getComponent<ManeuveringThrusters>();
+        if (!thrusters)
+        {
+            entity.destroy();
+            return false;
+        }
+        thrusters->speed = *plan.overrides.turn_speed_max;
+    }
+
+    if (plan.overrides.warp_speed_per_level)
+    {
+        auto* warp = entity.getComponent<WarpDrive>();
+        if (!warp)
+        {
+            entity.destroy();
+            return false;
+        }
+        warp->speed_per_level = *plan.overrides.warp_speed_per_level;
+    }
+
+    // Allowed armament. The capacity is set AND the current load is clamped to
+    // it: a ship declared to carry no nukes must not deploy with the template's
+    // nukes still in the rack.
+    if (!plan.overrides.missile_storage.empty())
+    {
+        auto* tubes = entity.getComponent<MissileTubes>();
+        if (!tubes)
+        {
+            entity.destroy();
+            return false;
+        }
+        for (const auto& storage : plan.overrides.missile_storage)
+        {
+            const auto missile = runtimeMissile(storage.missile);
+            if (missile == MW_None)
+            {
+                entity.destroy();
+                return false;
+            }
+            tubes->storage_max[missile] = static_cast<int>(storage.capacity);
+            tubes->storage[missile] = std::min(tubes->storage[missile], tubes->storage_max[missile]);
         }
     }
 

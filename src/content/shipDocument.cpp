@@ -52,6 +52,63 @@ bool parseShipSystemId(const std::string& value, ShipSystemId& system)
     return false;
 }
 
+const char* shipMissileId(ShipMissileId missile)
+{
+    switch(missile)
+    {
+    case ShipMissileId::Homing: return "homing";
+    case ShipMissileId::Nuke: return "nuke";
+    case ShipMissileId::Mine: return "mine";
+    case ShipMissileId::EMP: return "emp";
+    case ShipMissileId::HVLI: return "hvli";
+    case ShipMissileId::Count: break;
+    }
+    return "";
+}
+
+bool parseShipMissileId(const std::string& value, ShipMissileId& missile)
+{
+    for (int index = 0; index < static_cast<int>(ShipMissileId::Count); ++index)
+    {
+        const auto candidate = static_cast<ShipMissileId>(index);
+        if (value == shipMissileId(candidate))
+        {
+            missile = candidate;
+            return true;
+        }
+    }
+    return false;
+}
+
+std::optional<float>& shipEngineSpeed(ShipDocument& document, ShipEngineId engine)
+{
+    switch(engine)
+    {
+    case ShipEngineId::Turn: return document.turn_speed_max;
+    case ShipEngineId::Warp: return document.warp_speed_per_level;
+    case ShipEngineId::Impulse:
+    case ShipEngineId::Count: break;
+    }
+    return document.impulse_speed_max;
+}
+
+const std::optional<float>& shipEngineSpeed(const ShipDocument& document, ShipEngineId engine)
+{
+    return shipEngineSpeed(const_cast<ShipDocument&>(document), engine);
+}
+
+float shipEngineSpeedCeiling(ShipEngineId engine)
+{
+    switch(engine)
+    {
+    case ShipEngineId::Turn: return SHIP_DOCUMENT_MAX_TURN_SPEED;
+    case ShipEngineId::Warp: return SHIP_DOCUMENT_MAX_WARP_SPEED;
+    case ShipEngineId::Impulse:
+    case ShipEngineId::Count: break;
+    }
+    return SHIP_DOCUMENT_MAX_IMPULSE_SPEED;
+}
+
 ShipDocumentError validateShipDocument(const ShipDocument& document)
 {
     if (document.hull_max
@@ -63,6 +120,32 @@ ShipDocumentError validateShipDocument(const ShipDocument& document)
             && (!std::isfinite(*shield_max) || *shield_max <= 0.0f
                 || *shield_max > SHIP_DOCUMENT_MAX_SHIELD))
             return ShipDocumentError::InvalidShieldMax;
+    // Engine speeds share one error because they share one rule: a speed is a
+    // positive, finite number under its ceiling. Splitting it into three errors
+    // would give the GM three ways to read the same sentence.
+    for (const auto& speed : {std::pair{document.impulse_speed_max, SHIP_DOCUMENT_MAX_IMPULSE_SPEED},
+                              std::pair{document.turn_speed_max, SHIP_DOCUMENT_MAX_TURN_SPEED},
+                              std::pair{document.warp_speed_per_level, SHIP_DOCUMENT_MAX_WARP_SPEED}})
+        if (speed.first
+            && (!std::isfinite(*speed.first) || *speed.first <= 0.0f || *speed.first > speed.second))
+            return ShipDocumentError::InvalidEngineSpeed;
+
+    if (document.missile_storage.size() > static_cast<std::size_t>(ShipMissileId::Count))
+        return ShipDocumentError::TooManyEntries;
+    std::set<ShipMissileId> missiles;
+    for (const auto& item : document.missile_storage)
+    {
+        if (item.missile < ShipMissileId::Homing || item.missile >= ShipMissileId::Count)
+            return ShipDocumentError::InvalidMissile;
+        if (!missiles.insert(item.missile).second) return ShipDocumentError::DuplicateMissile;
+        // Zero IS allowed here, unlike cargo: "carries no nukes" is exactly the
+        // kind of thing a variant exists to say, and forcing it to be expressed
+        // by absence would make it indistinguishable from "inherits from the
+        // template".
+        if (item.capacity > SHIP_DOCUMENT_MAX_MISSILE_CAPACITY)
+            return ShipDocumentError::InvalidMissileCapacity;
+    }
+
     if (document.systems.size() > static_cast<std::size_t>(ShipSystemId::Count)
         || document.resources.size() > SHIP_DOCUMENT_MAX_RESOURCES
         || document.cargo.size() > SHIP_DOCUMENT_MAX_CARGO
@@ -121,9 +204,21 @@ nlohmann::json shipDocumentOverridesJson(const ShipDocument& document)
     for (const auto& item : document.cargo)
         cargo.push_back({{"id", item.id}, {"quantity", item.quantity}});
 
+    nlohmann::json missile_storage = nlohmann::json::array();
+    for (const auto& item : document.missile_storage)
+        missile_storage.push_back({{"missile", shipMissileId(item.missile)}, {"capacity", item.capacity}});
+
+    const auto optional_number = [](const std::optional<float>& value) {
+        return value ? nlohmann::json(*value) : nlohmann::json(nullptr);
+    };
+
     return {{"hull_max", document.hull_max ? nlohmann::json(*document.hull_max) : nlohmann::json(nullptr)},
             {"front_shield_max", document.front_shield_max ? nlohmann::json(*document.front_shield_max) : nlohmann::json(nullptr)},
             {"rear_shield_max", document.rear_shield_max ? nlohmann::json(*document.rear_shield_max) : nlohmann::json(nullptr)},
+            {"impulse_speed_max", optional_number(document.impulse_speed_max)},
+            {"turn_speed_max", optional_number(document.turn_speed_max)},
+            {"warp_speed_per_level", optional_number(document.warp_speed_per_level)},
+            {"missile_storage", std::move(missile_storage)},
             {"systems", std::move(systems)},
             {"resources", std::move(resources)},
             {"cargo", std::move(cargo)},
@@ -134,13 +229,23 @@ ShipDocumentError parseShipDocumentOverrides(
     const nlohmann::json& overrides, ShipDocument& output, int schema_version)
 {
     if (!overrides.is_object()) return ShipDocumentError::InvalidStructure;
-    if (schema_version < 4 || schema_version > 6) return ShipDocumentError::InvalidStructure;
+    if (schema_version < 4 || schema_version > 7) return ShipDocumentError::InvalidStructure;
     std::set<std::string> allowed{"systems", "resources", "cargo", "crew_positions"};
     if (schema_version >= 5) allowed.insert("hull_max");
     if (schema_version >= 6)
     {
         allowed.insert("front_shield_max");
         allowed.insert("rear_shield_max");
+    }
+    // Schema 7 is engines and allowed armament (#55). Older documents keep
+    // parsing untouched and simply inherit both from their template, which is
+    // what the absence of an override has always meant here.
+    if (schema_version >= 7)
+    {
+        allowed.insert("impulse_speed_max");
+        allowed.insert("turn_speed_max");
+        allowed.insert("warp_speed_per_level");
+        allowed.insert("missile_storage");
     }
     for (auto it = overrides.begin(); it != overrides.end(); ++it)
         if (!allowed.count(it.key())) return ShipDocumentError::UnknownFields;
@@ -191,6 +296,56 @@ ShipDocumentError parseShipDocumentOverrides(
                 != ShipDocumentError::None)
             return ShipDocumentError::InvalidShieldMax;
     }
+    if (schema_version >= 7)
+    {
+        const auto parse_speed = [&](const char* key, float ceiling, std::optional<float>& output) {
+            const auto& speed = overrides[key];
+            if (speed.is_null()) return true;
+            if (!speed.is_number()) return false;
+            const double value = speed.get<double>();
+            if (!std::isfinite(value) || value <= 0.0 || value > static_cast<double>(ceiling))
+                return false;
+            output = static_cast<float>(value);
+            return true;
+        };
+        if (!parse_speed("impulse_speed_max", SHIP_DOCUMENT_MAX_IMPULSE_SPEED, candidate.impulse_speed_max)
+            || !parse_speed("turn_speed_max", SHIP_DOCUMENT_MAX_TURN_SPEED, candidate.turn_speed_max)
+            || !parse_speed("warp_speed_per_level", SHIP_DOCUMENT_MAX_WARP_SPEED, candidate.warp_speed_per_level))
+            return ShipDocumentError::InvalidEngineSpeed;
+
+        const auto& missile_storage = overrides["missile_storage"];
+        if (!missile_storage.is_array()) return ShipDocumentError::InvalidStructure;
+        if (missile_storage.size() > static_cast<std::size_t>(ShipMissileId::Count))
+            return ShipDocumentError::TooManyEntries;
+        for (const auto& item : missile_storage)
+        {
+            if (!item.is_object()) return ShipDocumentError::InvalidStructure;
+            for (auto it = item.begin(); it != item.end(); ++it)
+                if (it.key() != "missile" && it.key() != "capacity")
+                    return ShipDocumentError::UnknownFields;
+            if (item.size() != 2 || !item.contains("missile") || !item["missile"].is_string()
+                || !item.contains("capacity")) return ShipDocumentError::InvalidStructure;
+            ShipMissileStorage value;
+            if (!parseShipMissileId(item["missile"].get<std::string>(), value.missile))
+                return ShipDocumentError::InvalidMissile;
+            if (!item["capacity"].is_number_unsigned())
+            {
+                // A negative capacity is not a rounding accident, it is a broken
+                // document: reject it instead of clamping it to zero, which
+                // would silently turn "corrupt" into "carries none".
+                if (!item["capacity"].is_number_integer())
+                    return ShipDocumentError::InvalidMissileCapacity;
+                if (item["capacity"].get<std::int64_t>() < 0)
+                    return ShipDocumentError::InvalidMissileCapacity;
+            }
+            const auto capacity = item["capacity"].get<std::uint64_t>();
+            if (capacity > SHIP_DOCUMENT_MAX_MISSILE_CAPACITY)
+                return ShipDocumentError::InvalidMissileCapacity;
+            value.capacity = static_cast<std::uint32_t>(capacity);
+            candidate.missile_storage.push_back(value);
+        }
+    }
+
     for (const auto& item : systems)
     {
         if (!item.is_object()) return ShipDocumentError::InvalidStructure;

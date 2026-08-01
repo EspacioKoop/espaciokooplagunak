@@ -194,8 +194,8 @@ int main()
             && parsed.map_document.objects.empty(),
         "v2 map migrates in memory to an empty object document");
     const auto migrated_map = nlohmann::json::parse(serializeContentResource(parsed));
-    expect(migrated_map["version"] == 6 && migrated_map["fields"]["objects"].empty(),
-        "saving a migrated map emits canonical v6");
+    expect(migrated_map["version"] == 7 && migrated_map["fields"]["objects"].empty(),
+        "saving a migrated map emits canonical v7");
 
     auto invalid_visual = visual_json;
     invalid_visual["fields"]["objects"][0]["lua"] = "Asteroid()";
@@ -215,24 +215,42 @@ int main()
     expect(validateContentResource(non_ship_with_overrides) == ContentResourceError::InvalidShipDocument,
         "non-ship resource cannot carry ship overrides");
 
-    const auto ship_v6 = nlohmann::json::parse(
+    const auto ship_v7 = nlohmann::json::parse(
         serializeContentResource(validResource(ContentResourceType::Ship), 2));
-    expect(ship_v6["version"] == 6 && ship_v6["fields"]["overrides"]["systems"].size() == 2,
-        "ship serialization writes canonical v6 overrides");
-    expect(parseJson(ship_v6, parsed) == ContentResourceError::None
+    expect(ship_v7["version"] == 7 && ship_v7["fields"]["overrides"]["systems"].size() == 2,
+        "ship serialization writes canonical v7 overrides");
+    expect(parseJson(ship_v7, parsed) == ContentResourceError::None
             && parsed == validResource(ContentResourceType::Ship),
-        "v6 ship overrides round-trip through ContentResource");
+        "v7 ship overrides round-trip through ContentResource");
 
-    auto legacy_ship = ship_v6;
+    // A v6 document predates engines and armament (#55). It must still load, and
+    // must NOT gain an engine override it never declared: absence has always
+    // meant "inherit from the template" and a migration cannot start inventing.
+    auto ship_v6 = ship_v7;
+    ship_v6["version"] = 6;
+    ship_v6["fields"]["overrides"].erase("impulse_speed_max");
+    ship_v6["fields"]["overrides"].erase("turn_speed_max");
+    ship_v6["fields"]["overrides"].erase("warp_speed_per_level");
+    ship_v6["fields"]["overrides"].erase("missile_storage");
+    expect(parseJson(ship_v6, parsed) == ContentResourceError::None
+            && !parsed.ship_document.impulse_speed_max
+            && !parsed.ship_document.turn_speed_max
+            && !parsed.ship_document.warp_speed_per_level
+            && parsed.ship_document.missile_storage.empty(),
+        "v6 ship migrates without inventing engines or armament");
+
+    auto legacy_ship = ship_v7;
     legacy_ship["version"] = 3;
     legacy_ship["fields"].erase("overrides");
     expect(parseJson(legacy_ship, parsed) == ContentResourceError::None
             && parsed.ship_document == ShipDocument{},
         "v3 ship migrates in memory to an empty override document");
     const auto migrated_ship = nlohmann::json::parse(serializeContentResource(parsed));
-    expect(migrated_ship["version"] == 6
-            && migrated_ship["fields"]["overrides"]["systems"].empty(),
-        "saving a migrated ship emits canonical v6 empty overrides");
+    expect(migrated_ship["version"] == 7
+            && migrated_ship["fields"]["overrides"]["systems"].empty()
+            && migrated_ship["fields"]["overrides"]["missile_storage"].empty()
+            && migrated_ship["fields"]["overrides"]["impulse_speed_max"].is_null(),
+        "saving a migrated ship emits canonical v7 empty overrides");
 
     auto ship_v4 = ship_v6;
     ship_v4["version"] = 4;

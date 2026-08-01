@@ -32,6 +32,12 @@ ShipDocument validDocument()
     };
     document.resources = {{"energy", 800.0f}, {"coolant", 10.0f}};
     document.cargo = {{"medicine", 4}, {"spare-parts", 2}};
+    document.impulse_speed_max = 90.0f;
+    document.turn_speed_max = 12.5f;
+    document.warp_speed_per_level = 1200.0f;
+    // Nukes explicitly at zero: this ship is allowed to carry none, which is a
+    // DIFFERENT statement from not overriding the missile at all.
+    document.missile_storage = {{ShipMissileId::Homing, 12}, {ShipMissileId::Nuke, 0}};
     document.crew_position_ids = {"helms", "engineering", "relay"};
     return document;
 }
@@ -170,6 +176,10 @@ int main()
     legacy_v4.erase("hull_max");
     legacy_v4.erase("front_shield_max");
     legacy_v4.erase("rear_shield_max");
+    legacy_v4.erase("impulse_speed_max");
+    legacy_v4.erase("turn_speed_max");
+    legacy_v4.erase("warp_speed_per_level");
+    legacy_v4.erase("missile_storage");
     ShipDocument migrated_v4;
     expect(parseShipDocumentOverrides(legacy_v4, migrated_v4, 4) == ShipDocumentError::None
             && !migrated_v4.hull_max,
@@ -181,6 +191,10 @@ int main()
     auto legacy_v5 = overrides;
     legacy_v5.erase("front_shield_max");
     legacy_v5.erase("rear_shield_max");
+    legacy_v5.erase("impulse_speed_max");
+    legacy_v5.erase("turn_speed_max");
+    legacy_v5.erase("warp_speed_per_level");
+    legacy_v5.erase("missile_storage");
     ShipDocument migrated_v5;
     expect(parseShipDocumentOverrides(legacy_v5, migrated_v5, 5) == ShipDocumentError::None
             && migrated_v5.hull_max == 250.0f
@@ -221,6 +235,89 @@ int main()
     hostile["crew_positions"][0] = "helmsofficer";
     expect(parseShipDocumentOverrides(hostile, parsed_document) == ShipDocumentError::InvalidCrewPosition,
         "legacy crew aliases are rejected in v4 overrides");
+
+    // --- Motores y armamento permitido (#55) ---------------------------------
+
+    expect(overrides["impulse_speed_max"] == 90.0f && overrides["turn_speed_max"] == 12.5f
+            && overrides["warp_speed_per_level"] == 1200.0f,
+        "canonical overrides include the three engine speeds");
+    expect(overrides["missile_storage"].size() == 2
+            && overrides["missile_storage"][1]["missile"] == "nuke"
+            && overrides["missile_storage"][1]["capacity"] == 0,
+        "canonical overrides carry allowed armament, zero capacity included");
+
+    // Zero is a statement and absence is a different one. If these two collapsed
+    // into the same document, "carries no nukes" and "inherits the template's
+    // nukes" would be impossible to tell apart.
+    ShipDocument no_nukes;
+    no_nukes.missile_storage = {{ShipMissileId::Nuke, 0}};
+    expect(no_nukes != ShipDocument{},
+        "declaring zero capacity is not the same document as declaring nothing");
+
+    auto engines = overrides;
+    for (const char* key : {"impulse_speed_max", "turn_speed_max", "warp_speed_per_level"})
+    {
+        engines = overrides;
+        engines[key] = 0;
+        expect(parseShipDocumentOverrides(engines, parsed_document) == ShipDocumentError::InvalidEngineSpeed,
+            "a non-positive engine speed is rejected");
+        engines[key] = -5;
+        expect(parseShipDocumentOverrides(engines, parsed_document) == ShipDocumentError::InvalidEngineSpeed,
+            "a negative engine speed is rejected");
+        engines[key] = "fast";
+        expect(parseShipDocumentOverrides(engines, parsed_document) == ShipDocumentError::InvalidEngineSpeed,
+            "a non-numeric engine speed is rejected instead of coerced");
+    }
+    engines = overrides;
+    engines["turn_speed_max"] = SHIP_DOCUMENT_MAX_TURN_SPEED + 1.0f;
+    expect(parseShipDocumentOverrides(engines, parsed_document) == ShipDocumentError::InvalidEngineSpeed,
+        "an engine speed over its ceiling is rejected");
+
+    auto armament = overrides;
+    armament["missile_storage"][0]["missile"] = "photon";
+    expect(parseShipDocumentOverrides(armament, parsed_document) == ShipDocumentError::InvalidMissile,
+        "a missile outside the closed allowlist is rejected");
+    armament = overrides;
+    armament["missile_storage"][1]["missile"] = "homing";
+    expect(parseShipDocumentOverrides(armament, parsed_document) == ShipDocumentError::DuplicateMissile,
+        "the same missile cannot be declared twice");
+    armament = overrides;
+    armament["missile_storage"][0]["capacity"] = -1;
+    expect(parseShipDocumentOverrides(armament, parsed_document) == ShipDocumentError::InvalidMissileCapacity,
+        "a negative capacity is rejected, not clamped to zero");
+    armament = overrides;
+    armament["missile_storage"][0]["capacity"] = SHIP_DOCUMENT_MAX_MISSILE_CAPACITY + 1;
+    expect(parseShipDocumentOverrides(armament, parsed_document) == ShipDocumentError::InvalidMissileCapacity,
+        "a capacity over the ceiling is rejected");
+    armament = overrides;
+    armament["missile_storage"][0]["warhead"] = "antimatter";
+    expect(parseShipDocumentOverrides(armament, parsed_document) == ShipDocumentError::UnknownFields,
+        "unknown armament fields are rejected");
+
+    // A v6 document has no engines and no armament, and parsing it must not
+    // invent either: absence means "inherit from the template".
+    auto legacy_v6 = overrides;
+    legacy_v6.erase("impulse_speed_max");
+    legacy_v6.erase("turn_speed_max");
+    legacy_v6.erase("warp_speed_per_level");
+    legacy_v6.erase("missile_storage");
+    ShipDocument migrated_v6;
+    expect(parseShipDocumentOverrides(legacy_v6, migrated_v6, 6) == ShipDocumentError::None
+            && !migrated_v6.impulse_speed_max && !migrated_v6.turn_speed_max
+            && !migrated_v6.warp_speed_per_level && migrated_v6.missile_storage.empty()
+            && migrated_v6.hull_max == 250.0f,
+        "v6 overrides migrate without inventing engines or armament");
+    expect(parseShipDocumentOverrides(legacy_v6, migrated_v6, 7) == ShipDocumentError::InvalidStructure,
+        "v7 overrides require the engine and armament fields to be present");
+
+    // The document enum is independent from the engine's on purpose, so its
+    // wire names are part of the format and must not drift.
+    expect(std::string(shipMissileId(ShipMissileId::HVLI)) == "hvli", "missile ids are stable");
+    ShipMissileId round_trip = ShipMissileId::Count;
+    expect(parseShipMissileId("emp", round_trip) && round_trip == ShipMissileId::EMP,
+        "missile ids parse back");
+    expect(!parseShipMissileId("", round_trip) && !parseShipMissileId("torpedo", round_trip),
+        "unknown missile ids do not parse");
 
     std::cout << "SHIP_DOCUMENT_TESTS_OK checks=" << checks << "\n";
     return 0;

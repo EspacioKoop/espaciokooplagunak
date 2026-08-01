@@ -153,6 +153,61 @@ string shipSystemLabel(ShipSystemId system)
     return "";
 }
 
+// Motores (#55). El id de cadena es propio del selector y no viaja al
+// documento: el documento guarda la velocidad, no cuál de las tres se estaba
+// editando.
+const char* shipEngineIdValue(ShipEngineId engine)
+{
+    switch(engine)
+    {
+    case ShipEngineId::Turn: return "turn";
+    case ShipEngineId::Warp: return "warp";
+    case ShipEngineId::Impulse:
+    case ShipEngineId::Count: break;
+    }
+    return "impulse";
+}
+
+bool parseShipEngineIdValue(const string& value, ShipEngineId& engine)
+{
+    for (int index = 0; index < static_cast<int>(ShipEngineId::Count); ++index)
+    {
+        const auto candidate = static_cast<ShipEngineId>(index);
+        if (value == shipEngineIdValue(candidate))
+        {
+            engine = candidate;
+            return true;
+        }
+    }
+    return false;
+}
+
+string shipEngineLabel(ShipEngineId engine)
+{
+    switch(engine)
+    {
+    case ShipEngineId::Impulse: return tr("content_editor", "Impulse top speed (U/s)");
+    case ShipEngineId::Turn: return tr("content_editor", "Turn rate (deg/s)");
+    case ShipEngineId::Warp: return tr("content_editor", "Warp speed per level (U/s)");
+    case ShipEngineId::Count: break;
+    }
+    return "";
+}
+
+string shipMissileLabel(ShipMissileId missile)
+{
+    switch(missile)
+    {
+    case ShipMissileId::Homing: return tr("content_editor", "Homing");
+    case ShipMissileId::Nuke: return tr("content_editor", "Nuke");
+    case ShipMissileId::Mine: return tr("content_editor", "Mine");
+    case ShipMissileId::EMP: return tr("content_editor", "EMP");
+    case ShipMissileId::HVLI: return tr("content_editor", "HVLI");
+    case ShipMissileId::Count: break;
+    }
+    return "";
+}
+
 bool parseShipHealth(const string& input, float& output)
 {
     const std::string text = input;
@@ -402,6 +457,8 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
     ship_override_selector->addEntry(tr("content_editor", "Hull"), "hull");
     ship_override_selector->addEntry(tr("content_editor", "Front shield"), "front_shield");
     ship_override_selector->addEntry(tr("content_editor", "Rear shield"), "rear_shield");
+    ship_override_selector->addEntry(tr("content_editor", "Engines"), "engines");
+    ship_override_selector->addEntry(tr("content_editor", "Allowed armament"), "armament");
     ship_override_selector->addEntry(tr("content_editor", "Resources"), "resources");
     ship_override_selector->addEntry(tr("content_editor", "Cargo"), "cargo");
     ship_override_selector->addEntry(tr("content_editor", "Crew positions"), "crew");
@@ -416,6 +473,29 @@ GuiContentEditor::GuiContentEditor(GuiContainer* owner)
         ship_system_selector->addEntry(shipSystemLabel(system), shipSystemId(system));
     }
     ship_system_selector->setSelectionIndex(0)->setPosition(x + 180, 360)->setSize(240, 35)->hide();
+
+    // Motores y armamento permitido (#55). Cada uno con su selector, en la misma
+    // ranura que el de sistemas: son tres listas excluyentes y solo una de ellas
+    // tiene sentido a la vez.
+    ship_engine_selector = new GuiSelector(box, "SHIP_ENGINE", [this](int, string) {
+        updateShipOverrideEditor();
+    });
+    for (int index = 0; index < static_cast<int>(ShipEngineId::Count); ++index)
+    {
+        const auto engine = static_cast<ShipEngineId>(index);
+        ship_engine_selector->addEntry(shipEngineLabel(engine), shipEngineIdValue(engine));
+    }
+    ship_engine_selector->setSelectionIndex(0)->setPosition(x + 180, 360)->setSize(240, 35)->hide();
+
+    ship_missile_selector = new GuiSelector(box, "SHIP_MISSILE", [this](int, string) {
+        updateShipOverrideEditor();
+    });
+    for (int index = 0; index < static_cast<int>(ShipMissileId::Count); ++index)
+    {
+        const auto missile = static_cast<ShipMissileId>(index);
+        ship_missile_selector->addEntry(shipMissileLabel(missile), shipMissileId(missile));
+    }
+    ship_missile_selector->setSelectionIndex(0)->setPosition(x + 180, 360)->setSize(240, 35)->hide();
 
     ship_crew_selector = new GuiSelector(box, "SHIP_CREW_POSITION", [this](int, string) {
         updateShipOverrideEditor();
@@ -854,6 +934,8 @@ void GuiContentEditor::updateFieldPresentation(ContentResourceType type)
     {
         closeShipTemplatePicker();
         ship_system_selector->hide();
+        ship_engine_selector->hide();
+        ship_missile_selector->hide();
         ship_crew_selector->hide();
         ship_health_label->hide();
         ship_health_entry->hide();
@@ -1799,18 +1881,27 @@ void GuiContentEditor::updateShipOverrideEditor()
     const bool front_shield = mode == "front_shield";
     const bool rear_shield = mode == "rear_shield";
     const bool shield = front_shield || rear_shield;
+    const bool engines = mode == "engines";
+    const bool armament = mode == "armament";
     const bool items = resources || cargo;
-    const bool systems = !items && !crew && !hull && !shield;
+    const bool systems = !items && !crew && !hull && !shield && !engines && !armament;
     ship_system_selector->setVisible(systems);
+    ship_engine_selector->setVisible(engines);
+    ship_missile_selector->setVisible(armament);
     ship_crew_selector->setVisible(crew);
-    ship_health_label->setVisible(systems || hull || shield);
-    ship_health_entry->setVisible(systems || hull || shield);
+    // Motores y armamento reutilizan la misma casilla de número: una velocidad
+    // y una capacidad se teclean igual, y duplicar el campo solo habría dado dos
+    // sitios donde escribir lo mismo.
+    ship_health_label->setVisible(systems || hull || shield || engines || armament);
+    ship_health_entry->setVisible(systems || hull || shield || engines || armament);
     ship_resource_id_entry->setVisible(items);
     ship_resource_amount_label->setVisible(items || crew);
     ship_resource_amount_entry->setVisible(items);
     ship_health_label->setText(hull
         ? tr("content_editor", "Maximum hull")
         : shield ? tr("content_editor", "Maximum shield")
+        : engines ? tr("content_editor", "Speed")
+        : armament ? tr("content_editor", "Capacity")
                  : tr("content_editor", "Health [-1, 1]"));
     ship_resource_amount_label->setText(crew
         ? tr("content_editor", "Not assigned")
@@ -1822,7 +1913,38 @@ void GuiContentEditor::updateShipOverrideEditor()
                 : resources ? tr("content_editor", "Set resource")
                             : hull ? tr("content_editor", "Set hull")
                             : shield ? tr("content_editor", "Set shield")
+                            : engines ? tr("content_editor", "Set engine")
+                            : armament ? tr("content_editor", "Set armament")
                             : tr("content_editor", "Set system"));
+
+    if (engines)
+    {
+        ShipEngineId engine = ShipEngineId::Impulse;
+        if (parseShipEngineIdValue(ship_engine_selector->getSelectionValue(), engine))
+        {
+            const auto& value = shipEngineSpeed(ship_edit_session.document(), engine);
+            ship_health_entry->setText(value ? formatShipHealth(*value) : string(""));
+        }
+        return;
+    }
+
+    if (armament)
+    {
+        ShipMissileId missile = ShipMissileId::Homing;
+        string text;
+        if (parseShipMissileId(ship_missile_selector->getSelectionValue(), missile))
+            for (const auto& storage : ship_edit_session.document().missile_storage)
+                if (storage.missile == missile)
+                {
+                    // Un cero se escribe como cero y no como casilla vacía: la
+                    // casilla vacía significa «no hay override», y confundir las
+                    // dos es lo que haría imposible declarar «sin nucleares».
+                    text = string(static_cast<int>(storage.capacity));
+                    break;
+                }
+        ship_health_entry->setText(text);
+        return;
+    }
 
     if (hull || shield)
     {
@@ -1911,6 +2033,34 @@ void GuiContentEditor::setShipOverride()
         updateShipOverrideEditor();
         return setStatus(tr("content_editor", "Ship shield override staged."));
     }
+    if (mode == "engines")
+    {
+        ShipEngineId engine = ShipEngineId::Impulse;
+        float speed = 0.0f;
+        if (!parseShipEngineIdValue(ship_engine_selector->getSelectionValue(), engine)
+            || !parseShipHealth(ship_health_entry->getText(), speed)
+            || ship_edit_session.setEngineSpeed(engine, speed) != ShipEditError::None)
+            return setStatus(tr("content_editor", "Engine speed must be a finite positive number within its limit."));
+        pending_save = "";
+        pending_file_export = "";
+        discard_guard.reset();
+        updateShipOverrideEditor();
+        return setStatus(tr("content_editor", "Ship engine override staged."));
+    }
+    if (mode == "armament")
+    {
+        ShipMissileId missile = ShipMissileId::Homing;
+        std::uint32_t capacity = 0;
+        if (!parseShipMissileId(ship_missile_selector->getSelectionValue(), missile)
+            || !parseShipCargoQuantity(ship_health_entry->getText(), capacity)
+            || ship_edit_session.setMissileCapacity(missile, capacity) != ShipEditError::None)
+            return setStatus(tr("content_editor", "Armament capacity must be a whole number from 0 to 1000."));
+        pending_save = "";
+        pending_file_export = "";
+        discard_guard.reset();
+        updateShipOverrideEditor();
+        return setStatus(tr("content_editor", "Ship armament override staged."));
+    }
     if (ship_override_selector->getSelectionValue() == "hull")
     {
         float hull_max = 0.0f;
@@ -1989,6 +2139,30 @@ void GuiContentEditor::removeShipOverride()
         discard_guard.reset();
         updateShipOverrideEditor();
         return setStatus(tr("content_editor", "Ship shield override removed from staging."));
+    }
+    if (mode == "engines")
+    {
+        ShipEngineId engine = ShipEngineId::Impulse;
+        if (!parseShipEngineIdValue(ship_engine_selector->getSelectionValue(), engine)
+            || ship_edit_session.removeEngineOverride(engine) == ShipEditError::NotFound)
+            return setStatus(tr("content_editor", "The ship has no selected engine override."));
+        pending_save = "";
+        pending_file_export = "";
+        discard_guard.reset();
+        updateShipOverrideEditor();
+        return setStatus(tr("content_editor", "Ship engine override removed from staging."));
+    }
+    if (mode == "armament")
+    {
+        ShipMissileId missile = ShipMissileId::Homing;
+        if (!parseShipMissileId(ship_missile_selector->getSelectionValue(), missile)
+            || ship_edit_session.removeMissileOverride(missile) == ShipEditError::NotFound)
+            return setStatus(tr("content_editor", "The ship has no selected armament override."));
+        pending_save = "";
+        pending_file_export = "";
+        discard_guard.reset();
+        updateShipOverrideEditor();
+        return setStatus(tr("content_editor", "Ship armament override removed from staging."));
     }
     if (ship_override_selector->getSelectionValue() == "hull")
     {

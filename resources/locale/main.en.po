@@ -5149,3 +5149,91 @@ msgstr ""
 msgctxt "content_editor"
 msgid "Linked campaigns: {campaigns} — Ship: {ship}"
 msgstr ""
+
+msgctxt "content_editor"
+msgid "Impulse top speed (U/s)"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Turn rate (deg/s)"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Warp speed per level (U/s)"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Homing"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Nuke"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Mine"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "EMP"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "HVLI"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Engines"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Allowed armament"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Speed"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Capacity"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Set engine"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Set armament"
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Engine speed must be a finite positive number within its limit."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Ship engine override staged."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Armament capacity must be a whole number from 0 to 1000."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Ship armament override staged."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "The ship has no selected engine override."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Ship engine override removed from staging."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "The ship has no selected armament override."
+msgstr ""
+
+msgctxt "content_editor"
+msgid "Ship armament override removed from staging."
+msgstr ""

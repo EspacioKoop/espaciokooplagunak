@@ -133,6 +133,8 @@ private:
     GuiSelector* map_placement_selector;
     GuiSelector* ship_override_selector;
     GuiSelector* ship_system_selector;
+    GuiSelector* ship_engine_selector;
+    GuiSelector* ship_missile_selector;
     GuiSelector* ship_crew_selector;
     GuiLabel* ship_health_label;
     GuiTextEntry* ship_health_entry;

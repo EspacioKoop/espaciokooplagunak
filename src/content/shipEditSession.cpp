@@ -72,6 +72,45 @@ ShipEditError ShipEditSession::removeShieldOverride(bool front)
     return commit(std::move(next));
 }
 
+ShipEditError ShipEditSession::setEngineSpeed(ShipEngineId engine, float speed)
+{
+    if (engine < ShipEngineId::Impulse || engine >= ShipEngineId::Count)
+        return ShipEditError::InvalidDocument;
+    auto next = current_document;
+    shipEngineSpeed(next, engine) = speed;
+    return commit(std::move(next));
+}
+
+ShipEditError ShipEditSession::removeEngineOverride(ShipEngineId engine)
+{
+    if (engine < ShipEngineId::Impulse || engine >= ShipEngineId::Count)
+        return ShipEditError::NotFound;
+    if (!shipEngineSpeed(current_document, engine)) return ShipEditError::NotFound;
+    auto next = current_document;
+    shipEngineSpeed(next, engine).reset();
+    return commit(std::move(next));
+}
+
+ShipEditError ShipEditSession::setMissileCapacity(ShipMissileId missile, std::uint32_t capacity)
+{
+    auto next = current_document;
+    const auto it = std::find_if(next.missile_storage.begin(), next.missile_storage.end(),
+        [missile](const ShipMissileStorage& entry) { return entry.missile == missile; });
+    if (it != next.missile_storage.end()) it->capacity = capacity;
+    else next.missile_storage.push_back({missile, capacity});
+    return commit(std::move(next));
+}
+
+ShipEditError ShipEditSession::removeMissileOverride(ShipMissileId missile)
+{
+    auto next = current_document;
+    const auto it = std::find_if(next.missile_storage.begin(), next.missile_storage.end(),
+        [missile](const ShipMissileStorage& entry) { return entry.missile == missile; });
+    if (it == next.missile_storage.end()) return ShipEditError::NotFound;
+    next.missile_storage.erase(it);
+    return commit(std::move(next));
+}
+
 ShipEditError ShipEditSession::setResourceAmount(const std::string& id, float amount)
 {
     auto next = current_document;

@@ -1,6 +1,8 @@
 import { BridgeClient } from "./bridge-client.mjs";
 import { getBridgeToken } from "./bridge-token-session.mjs";
 import { normalizeStation } from "./station-assignment.mjs";
+import { prepararOrdenConAsistencia } from "./asistencia-wiring.mjs";
+import { RELEVO_AVISOS } from "./asistencia/relevo.mjs";
 import {
   STATION_ORDER_FLAG,
   buildStationOrder,
@@ -74,7 +76,17 @@ export function registerStationOrders(moduleId) {
       // ejecuta la orden (evita mandarla N veces al puente). Se evalúa por
       // orden, así que si el primario cambia (desconexión), el relevo pasa solo.
       canHandle: () => game.user === game.users?.activeGM,
-      onResult: () => {
+      // Donde se cobra una ayuda (#309), y el único sitio donde se cobra. La
+      // asistencia no tiene vía propia al puente: se cuelga de la orden que el
+      // titular ya iba a emitir, bajo su identidad, y como mucho mueve el
+      // parámetro dentro del rango que esa orden ya permitía. Si la ayuda
+      // caducó o no era de su puesto, la orden sale igual sin mejorar: la
+      // asistencia es sal, no un peaje.
+      prepareOrder: prepararOrdenConAsistencia,
+      onResult: (_result, { aviso } = {}) => {
+        if (aviso === RELEVO_AVISOS.ASISTENCIA_NO_APLICADA) {
+          ui.notifications?.warn?.(game.i18n.localize("LAGUNAK.Asistencia.NoAplicada"));
+        }
         ui.notifications?.info?.(game.i18n.localize("LAGUNAK.Espacios.Orden.Aplicada"));
       },
       onError: () => {

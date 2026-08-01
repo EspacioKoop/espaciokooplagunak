@@ -283,6 +283,25 @@ function visibleContacts(contactsPayload, sensores, isGM, i18n) {
   return filasDegradadas(sensores, i18n);
 }
 
+/**
+ * Puestos que ven la lista de contactos, y con qué lectura.
+ *
+ * `sensors` y `weapons` es su oficio: cada uno con la fuente que le toca. En
+ * `navigation` la lista existe por un motivo distinto —el visor 3D (#362) coloca
+ * contactos en un cuadro que va `aria-hidden`, así que la distancia y la
+ * marcación TIENEN que seguir en texto o desaparecen para quien no lo ve—, y por
+ * eso pilotaje lee siempre lo degradado, también el GM: el visor pinta lo
+ * degradado, y una lista de coordenadas exactas al lado no describiría lo que
+ * hay en pantalla. Pilotaje no gana con esta lista ni un dato que no tuviera.
+ */
+function contactosDeConsola(station, contactsPayload, sensores, isGM, i18n) {
+  if (station === "navigation") return filasDegradadas(sensores, i18n);
+  if (station === "sensors" || station === "weapons") {
+    return visibleContacts(contactsPayload, sensores, isGM, i18n);
+  }
+  return [];
+}
+
 export function buildWorkspaceModel({
   station,
   isGM,
@@ -352,6 +371,17 @@ export function buildWorkspaceModel({
       ? { estado: atraque.estado, clase: atraque.objetivo?.clase ?? null }
       : null,
     isNavigation: normalized === "navigation",
+    // La lectura de sensores tal cual, SOLO para pilotaje y solo para pintar el
+    // visor del piloto (#362). Va cruda —no en filas de texto— porque el visor
+    // necesita distancia y marcación como números, no como etiquetas ya
+    // formateadas; la lista legible de contactos sigue siendo cosa de ciencia y
+    // artillería y no se duplica aquí.
+    //
+    // Es la MISMA lectura degradada que ve el resto de la tripulación
+    // (`contactos-degradados.mjs`), así que el visor no abre ni un dato nuevo:
+    // reordena en un cuadro lo que ya se difunde. Si no hay sondeo va `null`, y
+    // el visor se apaga en vez de dibujar un sector vacío sin comprobar (#353).
+    sensores: normalized === "navigation" ? (sensores ?? null) : null,
     // Acciones operativas por puesto (#236/#238/#240): disponibles aunque el
     // tripulante no tenga telemetría —la orden es intención, la simulación es
     // autoritativa—. Solo para tripulación (no-GM): el GM tiene sus controles
@@ -391,12 +421,11 @@ export function buildWorkspaceModel({
     ship,
     metrics: ship ? metricsFor(normalized, ship, safeContactsPayload, i18n, crew.length) : [],
     systems: normalized === "engineering" ? prepareSystemRows(ship, i18n) : [],
-    contacts: normalized === "sensors" || normalized === "weapons"
-      ? visibleContacts(contactsPayload, sensores, Boolean(isGM), i18n)
-      : [],
+    contacts: contactosDeConsola(normalized, contactsPayload, sensores, Boolean(isGM), i18n),
     // La cabecera de la lista dice de dónde sale lo que se está leyendo: «solo
-    // GM» sobre una lectura degradada sería mentir sobre su origen.
-    contactsDegradados: !isGM,
+    // GM» sobre una lectura degradada sería mentir sobre su origen. En pilotaje
+    // la lectura es degradada para todo el mundo, GM incluido.
+    contactsDegradados: normalized === "navigation" ? true : !isGM,
     crew,
     crewCount: crew.length,
     activeCrew: crew.filter((member) => member.active).length,

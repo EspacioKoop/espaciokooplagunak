@@ -1,4 +1,9 @@
 import { resolveStationOrder } from "./station-actions.mjs";
+// Solo el NOMBRE del campo con el que una orden reclama una ayuda (#309). El relé
+// no sabe nada de asistencia y no debe: lo único que hace es no tirar ese campo a
+// la basura por el camino. Se importa en vez de repetir la cadena para que
+// renombrarlo en un sitio no deje al otro leyendo un campo que ya no existe.
+import { CAMPO_ASISTENCIA as ASSIST_FIELD } from "./asistencia/relevo.mjs";
 
 // Clave de flag donde el tripulante deja su orden pendiente EN SU PROPIO
 // documento User. La identidad del emisor NO viaja como campo declarable: es la
@@ -38,7 +43,14 @@ export function extractOrderFromChange({ changes, moduleId, userDoc }) {
   const order = userDoc?.flags?.[moduleId]?.[STATION_ORDER_FLAG] ?? tocado;
   if (!order || typeof order !== "object") return null;
   if (!order.action || !order.nonce) return null;
-  return { action: order.action, params: order.params ?? {}, nonce: order.nonce };
+  const extraida = { action: order.action, params: order.params ?? {}, nonce: order.nonce };
+  // Reclamación de asistencia (#309), si la orden la trae. NO es un parámetro
+  // del puente y no llega a salir de aquí: `prepararOrdenAsistida` la consume y
+  // devuelve la orden limpia. Se conserva en la extracción porque si se cayera
+  // aquí, la ayuda no tendría por dónde cobrarse y el titular emitiría su orden
+  // de siempre sin saber que alguien le había echado una mano.
+  if (order[ASSIST_FIELD]) extraida[ASSIST_FIELD] = order[ASSIST_FIELD];
+  return extraida;
 }
 
 // --- Lado GM -----------------------------------------------------------------
@@ -74,6 +86,17 @@ export async function handleStationOrder({ userId, order, resolveUserStation, br
 // - `userDoc`: documento User que cambió (su `id` es la identidad autenticada).
 // - `changes`: objeto de cambios que entrega Foundry al hook.
 // - `canHandle()`: solo el GM primario ejecuta, para no duplicar la orden.
+//
+// - `prepareOrder({ userId, order })`: última oportunidad de MODIFICAR la orden
+//   antes de que salga, sin poder ampliarla. Existe por la asistencia (#309): el
+//   parámetro que emite el titular puede venir mejorado dentro del rango que su
+//   orden ya permitía. Devuelve `{ orden, aviso }`; por defecto no toca nada, así
+//   que una orden sin ayuda recorre exactamente el camino de siempre.
+//
+//   No es una puerta de autoridad y no debe convertirse en una: el puesto ya se
+//   resolvió por identidad, la acción sigue pasando por `resolveStationOrder` y
+//   el puente revalida. Lo único que puede hacer quien se enganche aquí es mover
+//   un número dentro de lo que ya estaba autorizado.
 export function dispatchUserUpdate({
   userDoc,
   changes,
@@ -81,6 +104,7 @@ export function dispatchUserUpdate({
   resolveUserStation,
   bridge,
   canHandle = () => true,
+  prepareOrder = ({ order }) => ({ orden: order }),
   onResult = () => {},
   onError = () => {},
 }) {
@@ -89,7 +113,17 @@ export function dispatchUserUpdate({
   if (!canHandle()) return null;
   const userId = userDoc?.id;
   return Promise.resolve()
-    .then(() => handleStationOrder({ userId, order, resolveUserStation, bridge }))
-    .then((result) => { onResult(result, { userId, order }); return result; })
+    .then(() => {
+      const preparada = prepareOrder({ userId, order }) ?? {};
+      // Sin orden preparada se emite la original. Un `prepareOrder` que devuelva
+      // basura no puede dejar al titular sin poder dar una orden que era suya.
+      const emitible = preparada.orden ?? order;
+      return Promise.resolve()
+        .then(() => handleStationOrder({ userId, order: emitible, resolveUserStation, bridge }))
+        .then((result) => {
+          onResult(result, { userId, order: emitible, aviso: preparada.aviso ?? null });
+          return result;
+        });
+    })
     .catch((error) => { onError(error, { userId, order }); return null; });
 }

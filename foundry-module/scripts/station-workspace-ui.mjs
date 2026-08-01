@@ -13,6 +13,7 @@ import {
 } from "./telemetria-difusion.mjs";
 import { pintarEscena, pintarNave } from "./retro3d-lienzo.mjs";
 import { desmontarLamina, montarLaminaContacto } from "./lamina-contacto.mjs";
+import { pintarVisorPiloto } from "./visor-piloto-lienzo.mjs";
 import { CASCO_POR_DEFECTO, mallaDesdeCasco } from "./retro3d.mjs";
 import { componerCascoPorDano } from "./casco-dano.mjs";
 import { PIXEL } from "./paleta.mjs";
@@ -345,6 +346,7 @@ function bindWorkspaceRoot(root, app) {
   });
   pintarCascoPropio(root, app.ultimoModelo);
   montarLaminaAtraque(root, app.ultimoModelo, app);
+  pintarVisorPiloto(root, app.ultimoModelo);
 }
 
 function initialiseApp(app) {
@@ -496,6 +498,7 @@ function createV1Class() {
       // lámina simplemente no existiría, sin que nada lo dijera.
       pintarCascoPropio(raizDe(this), this.ultimoModelo);
       montarLaminaAtraque(raizDe(this), this.ultimoModelo, this);
+      pintarVisorPiloto(raizDe(this), this.ultimoModelo);
     }
 
     async close(options) {

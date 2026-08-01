@@ -189,12 +189,38 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     puesto) — la sección no estrena ninguna. No da autoridad (#237: el puesto se lee para saber
     dónde pintarte, nunca al revés) y no inventa lecturas (sin sondeo la sala va neutra, no en
     cero). Una sala nueva es una entrada más de la planta, no un botón nuevo en `main.mjs`.
+  - **Visor del piloto** — `scripts/visor-piloto.mjs` (geometría pura) y
+    `scripts/visor-piloto-lienzo.mjs` (el <canvas>), #362. Lo que la nave tiene delante, en PSX,
+    en la consola de pilotaje. Es la primera superficie 3D del módulo que **informa** en vez de
+    ambientar, y de ahí sus tres reglas: la distancia y la marcación siguen en **texto** —el
+    visor es refuerzo y va `aria-hidden`, y pilotaje arma la lista de contactos desde la misma
+    lectura degradada para que ese texto exista de verdad, degradada también para el GM—; la
+    profundidad está **comprimida** (monótona, no
+    proporcional: conserva el orden, no es un telémetro); y el **margen se dibuja** —un eco de
+    banda larga sale como un bloque gris tan ancho como su incertidumbre, nunca con la silueta
+    afilada de un contacto identificado—. Todo cae en un plano porque la simulación es 2D:
+    repartir en vertical sería inventar altura. Lee la MISMA lectura degradada que ya se difunde
+    a la tripulación (`contactos-degradados.mjs`), así que no abre ningún dato nuevo. Sin sondeo
+    se apaga y limpia (#353); un sondeo vacío sí se pinta, porque «he mirado y no hay nada» es un
+    dato. No hay bucle de animación: se repinta con cada telemetría y por eso
+    `prefers-reduced-motion` no tiene nada que frenar.
   - **Asistencia entre puestos** — `scripts/asistencia/` (#309, diseño en
     [`docs/MINIJUEGOS_ASISTENCIA.md`](docs/MINIJUEGOS_ASISTENCIA.md)): motor puro más el reductor
     `sesion.mjs` y la costura `relevo.mjs`. Ayudar NUNCA emite orden: produce un token que gasta el
     **titular** del puesto asistido como una de sus órdenes ya autorizadas, vía relé (#237) — el
     consumo se cuelga de ese camino y no abre otro hacia el puente. Una ayuda caducada o ajena no
-    bloquea la orden del titular: la asistencia es bonus, no peaje. Sin interfaz todavía.
+    bloquea la orden del titular: la asistencia es bonus, no peaje.
+    **Contenido**: `asistencia/catalogo.mjs` declara las tareas base (ingeniería, pilotaje y una
+    narrativa de sensores) y `crearCatalogo()` deja que una mesa traiga las suyas sin tocar el motor;
+    una tarea rota revienta al importar, no en mitad de una crisis.
+    **Cableado**: `asistencia-wiring.mjs`. El asistente pide por flag de su propio `User`, el GM
+    coordinador resuelve en `updateUser` y responde por socket dirigido; la sesión vive **en memoria
+    del GM** a propósito —caduca en dos minutos, no es dato de partida—. El consumo se engancha al
+    relé por `prepareOrder`, que solo puede mover un parámetro dentro del rango ya autorizado: no es
+    una puerta de autoridad y no debe convertirse en una. Dos ajustes de mundo, cerrados por defecto:
+    gastar recursos de la ficha y la regla de la casa del 1/20 natural.
+    **Falta la interfaz** (ventana del asistente y barra de temporización): hoy el camino está
+    completo de extremo a extremo pero no hay dónde pulsar.
 - `resources/` y `packs/` — assets heredados de upstream.
 - La versión se calcula por fecha (`AAAA.MM.DD`) en `CMakeLists.txt` salvo override explícito.
 - `docs/` — documentación propia del fork: [`BUILDING.md`](docs/BUILDING.md),

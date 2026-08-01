@@ -221,6 +221,16 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     gastar recursos de la ficha y la regla de la casa del 1/20 natural.
     **Falta la interfaz** (ventana del asistente y barra de temporización): hoy el camino está
     completo de extremo a extremo pero no hay dónde pulsar.
+  - **Contenido externo de dnd5e** — `scripts/contenido-externo/` (#332, doc en
+    [`docs/CONTENIDO_EXTERNO.md`](docs/CONTENIDO_EXTERNO.md)): lectura OPCIONAL del material que el
+    usuario ya tenga importado en su mundo (plutonium/5etools u otra vía), **filtrado al ruleset de
+    2014**. Detectar, no depender: sin proveedor —o con uno roto— devuelve listas vacías y el módulo
+    funciona igual. Nada de contenido de terceros entra en el repo y `module.json` no declara la
+    dependencia ni como `recommends` (guarda en `manifiesto.test.mjs`). El clasificador
+    **falla cerrado**: lo que no se pueda clasificar con certeza se descarta, los metadatos que se
+    contradicen se resuelven en contra, y cada descarte deja su `motivo`. Ampliar la lista blanca
+    suma, nunca sustituye. Solo `proveedor-foundry.mjs` sabe qué es Foundry; el resto es puro.
+    **Sin consumidores todavía**: la capa existe, pero #308/#309/#213 aún no la leen.
 - `resources/` y `packs/` — assets heredados de upstream.
 - La versión se calcula por fecha (`AAAA.MM.DD`) en `CMakeLists.txt` salvo override explícito.
 - `docs/` — documentación propia del fork: [`BUILDING.md`](docs/BUILDING.md),

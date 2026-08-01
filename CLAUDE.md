@@ -209,7 +209,18 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     `sesion.mjs` y la costura `relevo.mjs`. Ayudar NUNCA emite orden: produce un token que gasta el
     **titular** del puesto asistido como una de sus órdenes ya autorizadas, vía relé (#237) — el
     consumo se cuelga de ese camino y no abre otro hacia el puente. Una ayuda caducada o ajena no
-    bloquea la orden del titular: la asistencia es bonus, no peaje. Sin interfaz todavía.
+    bloquea la orden del titular: la asistencia es bonus, no peaje.
+    **Contenido**: `asistencia/catalogo.mjs` declara las tareas base (ingeniería, pilotaje y una
+    narrativa de sensores) y `crearCatalogo()` deja que una mesa traiga las suyas sin tocar el motor;
+    una tarea rota revienta al importar, no en mitad de una crisis.
+    **Cableado**: `asistencia-wiring.mjs`. El asistente pide por flag de su propio `User`, el GM
+    coordinador resuelve en `updateUser` y responde por socket dirigido; la sesión vive **en memoria
+    del GM** a propósito —caduca en dos minutos, no es dato de partida—. El consumo se engancha al
+    relé por `prepareOrder`, que solo puede mover un parámetro dentro del rango ya autorizado: no es
+    una puerta de autoridad y no debe convertirse en una. Dos ajustes de mundo, cerrados por defecto:
+    gastar recursos de la ficha y la regla de la casa del 1/20 natural.
+    **Falta la interfaz** (ventana del asistente y barra de temporización): hoy el camino está
+    completo de extremo a extremo pero no hay dónde pulsar.
 - `resources/` y `packs/` — assets heredados de upstream.
 - La versión se calcula por fecha (`AAAA.MM.DD`) en `CMakeLists.txt` salvo override explícito.
 - `docs/` — documentación propia del fork: [`BUILDING.md`](docs/BUILDING.md),

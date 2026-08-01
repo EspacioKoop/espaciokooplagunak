@@ -246,6 +246,74 @@ test("sin lectura actual del puesto no se emite nada", () => {
     ahora: T0,
   });
   assert.equal(r.ok, false);
+  assert.equal(r.error, PROPUESTA_ERRORES.SIN_LECTURA);
+});
+
+test("la ausencia de lectura es `null`, no un cero: la ayuda nunca empeora la orden", () => {
+  // La frontera EXACTA del cableado de producción: `asistencia-wiring.mjs`
+  // conecta `leerBase: () => null` mientras no haya telemetría. Con `Number(null)`
+  // eso era un cero autoritativo y una ayuda EXITOSA bajaba un `level: 8` a 4,
+  // gastando además el token. La regresión anterior no lo veía porque pasaba
+  // `undefined`, que sí caía en NaN.
+  for (const ausencia of [null, undefined, "", "  "]) {
+    const { propuesta } = nueva({ nonce: `sin-base-${String(ausencia)}` });
+    const r = consumirPropuesta({
+      propuesta,
+      emisorId: "ingeniero-7",
+      emisorPuesto: "engineering",
+      accion: propuesta.accion,
+      params: { system: "reactor", level: 8 },
+      base: ausencia,
+      consumidos: [],
+      ahora: T0,
+    });
+    assert.equal(r.ok, false, `base ${String(ausencia)} debería ser ausencia`);
+    assert.equal(r.error, PROPUESTA_ERRORES.SIN_LECTURA);
+    // Ni orden alterada ni token gastado: la propuesta sigue disponible para
+    // cuando la lectura exista.
+    assert.equal(r.orden, undefined);
+    assert.equal(r.consumidos, undefined);
+  }
+});
+
+test("un impulso también conserva su signo y su magnitud sin lectura", () => {
+  // El mismo fallo en un rango que cruza el cero: `0.5` caía a `0.25`.
+  const { propuesta } = crearPropuesta({
+    tareaId: "mano-firme",
+    puestoAsistido: "navigation",
+    accion: "set_impulse",
+    banda: BANDAS.EXITO,
+    asistenteId: "ayudante-1",
+    nonce: "imp-1",
+    ahora: T0,
+  });
+  const r = consumirPropuesta({
+    propuesta,
+    emisorId: "piloto-3",
+    emisorPuesto: "navigation",
+    accion: propuesta.accion,
+    params: { value: 0.5 },
+    base: null,
+    ahora: T0,
+  });
+  assert.equal(r.ok, false);
+  assert.equal(r.error, PROPUESTA_ERRORES.SIN_LECTURA);
+});
+
+test("un parámetro ausente del titular sigue siendo parámetro inválido, no lectura ausente", () => {
+  // Distinguirlos importa: uno es una orden mal formada y el otro es telemetría
+  // que aún no está conectada.
+  const { propuesta } = nueva();
+  const r = consumirPropuesta({
+    propuesta,
+    emisorId: "ingeniero-7",
+    emisorPuesto: "engineering",
+    accion: propuesta.accion,
+    params: { system: "reactor", level: null },
+    base: 4,
+    ahora: T0,
+  });
+  assert.equal(r.ok, false);
   assert.equal(r.error, PROPUESTA_ERRORES.PARAMETRO_INVALIDO);
 });
 

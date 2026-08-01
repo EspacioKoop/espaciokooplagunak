@@ -44,6 +44,7 @@ import {
   revokeWorkspaceAccess,
 } from "./station-workspace-ui.mjs";
 import { registerStationOrders } from "./station-order-wiring.mjs";
+import { registrarAsistencia } from "./asistencia-wiring.mjs";
 import {
   abrirMesa,
   estadoPublicoVigente,
@@ -226,6 +227,35 @@ Hooks.once("init", () => {
     default: null,
   });
 
+  // Asistencia entre puestos (#309). Las dos son puertas que abre el GM y que
+  // por defecto están cerradas, cada una por su motivo.
+  //
+  // Los enfoques que gastan hechizos o usos de clase mueven recursos de campaña
+  // REALES, no efímeros: si esta puerta se abriera sola, un jugador podría
+  // quemarse un espacio ayudando sin que en la mesa se hubiera hablado de que
+  // eso era una opción. El motor nunca fabrica recursos; como mucho consume los
+  // que el personaje ya tiene, y solo si aquí se dijo que sí.
+  game.settings.register(MODULE_ID, "asistenciaPermiteRecursos", {
+    name: "LAGUNAK.Ajustes.AsistenciaRecursos.Nombre",
+    hint: "LAGUNAK.Ajustes.AsistenciaRecursos.Pista",
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+  });
+  // Regla de la casa: el 1 y el 20 naturales como pifia y crítico automáticos en
+  // pruebas de habilidad. NO es la regla de 5e —ahí solo se aplican a tiradas de
+  // ataque— y por eso es opt-in en vez de estar cableada: una mesa que la da por
+  // supuesta y otra que no, jugarían dos juegos distintos sin enterarse.
+  game.settings.register(MODULE_ID, "asistenciaReglaCasaNatural", {
+    name: "LAGUNAK.Ajustes.AsistenciaNatural.Nombre",
+    hint: "LAGUNAK.Ajustes.AsistenciaNatural.Pista",
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+  });
+
   registrarAjustesMinijuegos(MODULE_ID);
 
   // Mando del GM sobre la música (#347). Ajuste de MUNDO: solo el GM escribe y
@@ -299,6 +329,11 @@ Hooks.once("ready", () => {
   // Relé de órdenes por puesto (#236): el GM registra el manejador del socket;
   // en clientes de tripulación es no-op (solo emiten).
   registerStationOrders(MODULE_ID);
+  // Asistencia entre puestos (#309): el GM coordina las peticiones que llegan por
+  // updateUser; cualquier cliente escucha la respuesta dirigida a él. Va DESPUÉS
+  // del relé y no antes: la ayuda se cobra dentro de la orden del titular, así
+  // que sin relé no habría dónde cobrarla.
+  registrarAsistencia(MODULE_ID);
   // Sesiones de minijuegos (#308): el GM coordinador recoge las propuestas por
   // updateUser; cualquier cliente escucha las vistas privadas dirigidas a él.
   registrarSesionesMinijuegos(MODULE_ID);
@@ -586,6 +621,9 @@ Hooks.on("updateUser", (user, changes) => {
   // El GM entrante gana el manejador, el saliente lo pierde
   // (registerStationOrders comprueba isGM).
   registerStationOrders(MODULE_ID);
+  // Mismo relevo para la asistencia: el coordinador es el GM activo, y si cambia
+  // sin recargar, el nuevo tiene que quedarse escuchando las peticiones.
+  registrarAsistencia(MODULE_ID);
   registrarSesionesMinijuegos(MODULE_ID);
   if (!user.isGM) void revokePrivilegedBridgeAccess();
 });

@@ -292,6 +292,46 @@ banda venga del camino que venga, y entrega al titular la orden ya acotada) y `r
 costura con el relé de órdenes)—; lo que **no** existe es **interfaz**, y esa parte sigue siendo
 Fase 4:
 
+### Lo que ya está enchufado
+
+El motor dejó de ser código muerto: `asistencia/catalogo.mjs` le da **contenido** y
+`asistencia-wiring.mjs` lo **enchufa a Foundry**. El camino está completo de extremo a extremo y lo
+único que falta para jugarlo es dónde pulsar.
+
+- **El catálogo es contenido, no lógica.** Tres tareas base —estabilizar un sistema caliente
+  (ingeniería, `set_system_coolant`), bordar una maniobra (pilotaje, `set_impulse`) y afinar un
+  contacto dudoso (sensores, **narrativa**, porque sensores no está en la matriz de autoridad y no
+  hay orden suya que prestar)—. Una mesa construye el suyo con `crearCatalogo([...TAREAS_BASE, ...])`
+  sin que el motor se entere de que hay más de uno. Se valida al importar: una tarea rota se cae en
+  carga y no en mesa. Una prueba comprueba que ninguna tarea proponga una acción fuera de
+  `STATION_ACTIONS` — si esa prueba falla, el catálogo está pidiendo autoridad por la puerta de atrás.
+- **El transporte de ida es el mismo que el de las órdenes.** El asistente escribe en un flag de su
+  propio `User`; el GM lo recoge en `updateUser`, donde el documento que cambió **es** la identidad
+  autenticada (#237). La respuesta sí va por socket dirigido, y eso no lo contradice: lo que viaja de
+  vuelta es la oferta que el GM calculó, y un cliente que se invente un mensaje solo consigue
+  pintarse una ventana bonita, porque la sesión vive en el GM.
+- **La sesión vive en memoria del GM, a propósito.** Persistirla en ajustes de mundo la convertiría
+  en dato de partida —recargar dejaría vivas propuestas de una crisis terminada— y escribiría en la
+  base del mundo a cada pulsación. Si el GM recarga, las ayudas en vuelo se pierden: exactamente lo
+  que ya le pasa a cualquier cosa que caduque en dos minutos, y la orden del titular sigue saliendo
+  igual, sin mejorar y con aviso.
+- **Dónde se cobra, y el único sitio donde se cobra.** `dispatchUserUpdate` acepta un `prepareOrder`
+  que por defecto no toca nada; la asistencia se engancha ahí. No es una puerta de autoridad: el
+  puesto ya se resolvió por identidad, la acción sigue pasando por `resolveStationOrder` y el puente
+  revalida. Lo único que puede hacer quien se enganche es mover un número dentro de lo ya autorizado.
+  Hay prueba de que un `prepareOrder` que devuelva basura **no** deja al titular sin su orden: la
+  ayuda es sal, no peaje, ni siquiera ante un error de programación nuestro.
+- **Quién puede ayudar.** Ni el titular del puesto a sí mismo —sería un rodeo para mejorar su propia
+  orden, y convertiría la ayuda en el peaje que todo titular pagaría siempre— ni el GM, que arbitra.
+  Lo demás lo decide el presupuesto de concurrencia dentro del motor.
+- **Dos ajustes de mundo, cerrados por defecto.** Gastar hechizos o usos de clase (coste de campaña
+  real: no se abre solo) y la regla de la casa del 1/20 natural en pruebas de habilidad (que **no**
+  es la regla de 5e, y por eso no está cableada).
+
+Lo que falta es la interfaz: la ventana donde el asistente elige enfoque y ve su rango de éxito, y la
+barra del reto de temporización para el camino sin dnd5e.
+
+
 - **Un puesto asistible**: ingeniería (estabilizar sistema caliente).
 - **Un modo**: propuesta consumible (Modo B) que el ingeniero gasta como su `set_system_coolant`.
 - **Una sola clase de enfoque**: la (a), prueba de habilidad/herramienta, sin recursos que consumir.

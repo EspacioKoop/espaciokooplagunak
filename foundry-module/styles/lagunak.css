@@ -957,3 +957,56 @@
   width: 1.2rem;
   text-align: center;
 }
+
+/* La sección de la nave (#427): el corte con todas las salas a la vez. Mismo
+ * trato que el resto del arte de rejilla — búfer pequeño de verdad, ampliado
+ * con `pixelated`, y nada de suavizado que convierta el plano en una acuarela. */
+.lagunak-seccion-plano {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-bottom: 0.6rem;
+  border: 3px solid #1b263b;
+  image-rendering: pixelated;
+  /* Hay salas pulsables, pero no todas: la cruz dice «señala aquí» sin
+   * prometer que cualquier punto abra algo. */
+  cursor: crosshair;
+}
+
+.lagunak-seccion-plano:focus-visible {
+  outline: 2px solid #ffd166;
+  outline-offset: 2px;
+}
+
+.lagunak-seccion-intro {
+  margin: 0 0 0.4rem;
+  opacity: 0.85;
+}
+
+.lagunak-seccion-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Una fila por sala, en rejilla y no en flex: las columnas tienen que
+ * alinearse entre filas para poder comparar de un vistazo la integridad de
+ * dos salas, que es justo para lo que existe esta lista. */
+.lagunak-seccion-fila {
+  display: grid;
+  grid-template-columns: minmax(6rem, 1fr) auto 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.25rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.lagunak-seccion-nombre {
+  font-weight: 600;
+}
+
+.lagunak-seccion-sistemas,
+.lagunak-seccion-gente {
+  font-size: 0.85em;
+  opacity: 0.8;
+}

@@ -318,6 +318,10 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
     // dos verticales (#308 póker, #413 dados) entran por ella, no por un botón
     // suelto cada uno.
     "lagunak-cantina",
+    // Y la sección (#427) por la misma regla: saber qué forma tiene la nave en
+    // la que vives no es información privilegiada. Lo que sí lo es —la lectura
+    // de daño— viaja aparte, y a quien no la tiene el plano le sale sin lectura.
+    "lagunak-seccion",
     "lagunak-musica-audio",
     "lagunak-puestos",
     "lagunak-espacio-puesto",
@@ -715,6 +719,9 @@ test("un jugador no GM recibe asignación y espacio de puesto, sin controles GM"
   assert.deepEqual(grupo.tools.map(({ name }) => name), [
     // La cantina también, por lo mismo que el audio: es de la mesa, no del GM.
     "lagunak-cantina",
+    // Y la sección de la nave, igual: es un plano de dónde vives, no una
+    // consola. Un jugador la abre y la ve sin lectura de daño.
+    "lagunak-seccion",
     // El audio lo habilita cada cliente con su propio gesto, que el navegador
     // exige y que no se puede delegar en el GM: por eso este botón sí lo ve un
     // jugador. El MANDO de la música sigue siendo solo del GM.
@@ -1021,6 +1028,43 @@ test("una puerta desconocida no abre ninguna mesa", async () => {
   const cantina = instances.at(-1);
   cantina.seleccionarPuerta("mesa-que-no-existe");
   assert.equal(instances.at(-1), cantina, "no se ha construido ninguna mesa");
+});
+
+// La sección de la nave (#427). Lo que hay que poder afirmar del cableado es
+// que el botón abre el plano y que entrar en una sala lleva al sitio que ya
+// existe — la sección no estrena ninguna vista propia, y ese es el punto.
+test("la sección abre desde su botón y la cantina se entra desde el plano", async () => {
+  const { hooks, instances } = await loadModule();
+  await arrancarReady(hooks);
+  const controls = [{ name: "token", tools: [] }];
+  hooks.getSceneControlButtons(controls);
+
+  const boton = toolByName(controls, "lagunak-seccion");
+  assert.ok(boton, "la sección tiene su botón de escena");
+  await boton.onClick();
+  const seccion = instances.at(-1);
+  assert.ok(seccion, "no se ha construido la ventana de la sección");
+
+  // Entrar a la cantina desde el plano abre la MISMA cantina de siempre.
+  seccion.entrarEnSala("cantina");
+  assert.notEqual(instances.at(-1), seccion, "entrar en la cantina no abrió nada");
+});
+
+// Una sala de mirar no puede llevar a ningún sitio. Si la bodega abriera algo
+// «por defecto», añadir una sala y olvidarse de su vista se convertiría en «se
+// abre la cantina sola», que es un fallo mucho más caro de ver.
+test("una sala sin vista propia no abre nada, y una sala inventada tampoco", async () => {
+  const { hooks, instances } = await loadModule();
+  await arrancarReady(hooks);
+  const controls = [{ name: "token", tools: [] }];
+  hooks.getSceneControlButtons(controls);
+
+  await toolByName(controls, "lagunak-seccion").onClick();
+  const seccion = instances.at(-1);
+  seccion.entrarEnSala("bodega");
+  assert.equal(instances.at(-1), seccion, "la bodega abrió una ventana que no tiene");
+  seccion.entrarEnSala("sala-que-no-existe");
+  assert.equal(instances.at(-1), seccion, "una sala inventada abrió algo");
 });
 
 // Regresión de smoke (v11.302, 31-jul): se entraba por la cantina y salía la

@@ -39,6 +39,7 @@ import { addStationControl, refrescarPuestos, registerStationFeature } from "./s
 import { MINIMO_POR_DEFECTO } from "./requisitos-puesto.mjs";
 import {
   addWorkspaceControl,
+  openWorkspaceApp,
   registerWorkspaceFeature,
   revokeWorkspaceAccess,
 } from "./station-workspace-ui.mjs";
@@ -60,6 +61,8 @@ import {
 import { sesionAgotada } from "./minijuegos/sesion-motor.mjs";
 import { crearClaseCantinaV1, crearClaseCantinaV2 } from "./cantina-app.mjs";
 import { puertaPorId } from "./cantina.mjs";
+import { crearClaseSeccionV1, crearClaseSeccionV2 } from "./seccion-nave-app.mjs";
+import { salaDePuesto } from "./seccion-nave.mjs";
 import { registrarPreset as registrarPresetBaraja } from "./minijuegos/baraja-preset.mjs";
 import {
   crearClaseMesaDadosV1,
@@ -456,6 +459,59 @@ function abrirCantina() {
   else app.render(true);
 }
 
+/* La sección de la nave (#427): el corte con todas las salas a la vez.
+ *
+ * La ve TODA la mesa, como la cantina. No es la vista agregada de estado —esa
+ * sigue siendo del GM y sigue estando bajo su candado—: aquí no hay telemetría
+ * de ruta, ni energía, ni mandos. Hay dónde están las salas, cómo de rota está
+ * cada una y quién anda por ellas, que es información de estar a bordo.
+ *
+ * La lectura de daño solo la tiene quien tiene el puente conectado, y por eso
+ * un jugador ve el plano SIN LECTURA en vez de un plano falso: la sección no
+ * inventa un casco intacto para rellenar el hueco. */
+function leerSistemasNave() {
+  if (!game.user?.isGM) return [];
+  const sistemas = estadoApp?.ultimoEstado?.ship?.systems;
+  return Array.isArray(sistemas) ? sistemas : [];
+}
+
+/* Quién está dónde. Hoy se deriva del puesto asignado y de nada más: no hay
+ * posición propia de tripulante todavía, y un avatar que se mueve es la
+ * rebanada siguiente. Quien no tiene puesto no aparece — y eso es correcto, no
+ * una carencia: no está en ningún sitio concreto de la nave. */
+function leerPresenciasNave() {
+  const usuarios = game.users?.contents ?? game.users ?? [];
+  return [...usuarios]
+    .filter((usuario) => usuario?.active)
+    .map((usuario) => ({
+      id: usuario.id,
+      nombre: usuario.name,
+      sala: salaDePuesto(usuario.getFlag?.(MODULE_ID, "station")),
+    }))
+    .filter((presencia) => presencia.sala);
+}
+
+function abrirSeccionNave() {
+  const opciones = {
+    leerSistemas: leerSistemasNave,
+    leerPresencias: leerPresenciasNave,
+    alEntrar: ({ destino, sala, puesto }) => {
+      // La sección no sabe abrir nada: traduce «entra ahí» a un sitio que ya
+      // existe. Hoy la cantina tiene interior y los puestos tienen consola;
+      // el resto de salas son de mirar, y por eso ni siquiera ofrecen entrar.
+      if (destino === "cantina") abrirCantina();
+      else if (destino === "puesto") openWorkspaceApp(puesto);
+      else console.warn(`${MODULE_ID} | sala sin vista propia todavía: ${sala}`);
+    },
+  };
+  const Clase = foundry.applications?.api?.ApplicationV2
+    ? crearClaseSeccionV2(opciones)
+    : crearClaseSeccionV1(opciones);
+  const app = new Clase();
+  if (foundry.applications?.api?.ApplicationV2) app.render({ force: true });
+  else app.render(true);
+}
+
 /* Música de a bordo (#347): el GM manda, todos los clientes obedecen.
  *
  * El reproductor se crea aquí pero NO suena hasta que alguien pulsa el botón de
@@ -657,6 +713,17 @@ Hooks.on("getSceneControlButtons", (controls) => {
       // resuelve lo mismo sin gastar barra: elegir a qué se juega sigue siendo
       // lo primero que se decide, solo que en una sala y no en un control.
       onClick: () => abrirCantina(),
+    },
+    {
+      // La sección la ve toda la mesa por la misma razón que la cantina: saber
+      // qué forma tiene la nave en la que vives no es información privilegiada
+      // (#427). La lectura de daño sí lo es, y por eso a quien no tiene puente
+      // el plano le sale sin lectura en vez de mentirle.
+      name: "lagunak-seccion",
+      title: "LAGUNAK.Controles.AbrirSeccion",
+      icon: "fa-solid fa-diagram-project",
+      button: true,
+      onClick: () => abrirSeccionNave(),
     },
     {
       name: "lagunak-musica-audio",

@@ -332,6 +332,46 @@ abrirla es otra decisión, con su autoridad y su fuga de sensores (#331).
 Módulo: `iconos-sistema.mjs` (lógica pura y SVG), consumido por las dos rutas de
 ventana y por sus parcheadores de telemetría.
 
+### La nave en sección (#427)
+
+El corte transversal de la nave: todas las salas a la vez, en 2D, con el daño de
+cada región tiñendo la sala que la ocupa. Es el **mapa**; la cantina (#423) es
+**estar dentro**. Una lleva a la otra —se pulsa una sala y se abre su vista
+propia—, y por eso no compiten: son las dos mitades de «moverse por la nave».
+
+Se eligió antes que andar en primera persona por los pasillos porque es
+**mucho más barata y se usa más rato**: una sección no necesita planta navegable
+ni colisiones —es una rejilla de salas— y responde de un vistazo a las dos
+preguntas que ninguna vista en primera persona contesta, que son quién está
+dónde y qué parte de la nave está rota.
+
+Reglas que hereda y no puede romper:
+
+- **No es autoridad** (#237). Dónde esté tu punto en el plano no da mandos de
+  nada: el puesto lo sigue resolviendo el relé. La flecha va en un solo sentido
+  —del puesto asignado a la sala donde se te pinta— y nunca al revés.
+- **Sin lectura no es cero** (#419/#353). Una sala sin región, o una nave sin
+  puente conectado, se pintan neutras y se leen «sin lectura». Un plano que
+  pinta de rojo una nave intacta es la peor mentira que puede contar un mapa.
+- **El color no es el único canal.** Una sala dañada además se **raya**, y la
+  lista de texto que acompaña al plano dice integridad, sistemas implicados y
+  quién está en cada sala. Todo lo pulsable del plano es pulsable en esa lista.
+- **Es de la mesa, no del GM**, igual que la cantina: saber qué forma tiene la
+  nave en la que vives no es información privilegiada. La lectura de daño sí lo
+  es, y por eso a quien no la tiene el plano le sale sin lectura, no falseado.
+
+La planta se declara **a mano** (`scripts/seccion-nave.mjs`): derivarla de la
+plantilla del simulador es más bonito y mucho más caro, y además la plantilla
+habla de cascos y sistemas, no de salas. Una sección tolera ser esquemática —esa
+es su virtud— así que el primer mapa se dibuja y ya se verá si #55 lo permite
+generar.
+
+Módulos: `seccion-nave.mjs` (planta y consultas, puro), `seccion-lienzo.mjs`
+(pintado 2D, puro y sin color propio) y `seccion-nave-app.mjs` (las dos ventanas
+hermanas V1/V2). Los tonos viven en `paleta.mjs` (`SECCION`); el color del daño
+lo sigue mandando `COLOR_REGION` de #419, para que un mismo casco no tenga dos
+colores según qué ventana lo mire.
+
 ### Frontera de estilo: vivo frente a registrado
 
 El módulo genera dos artes en el cliente y comparten disciplina —ninguna usa

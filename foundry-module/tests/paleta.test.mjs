@@ -53,6 +53,10 @@ const MODULOS_DE_ARTE = [
   // Y los avatares de la cantina: pelo, piel, ropa y aceros, todos de paleta.
   "../scripts/cantina-avatar.mjs",
   "../scripts/cantina-ventana.mjs",
+  // La sección de la nave (#427) es un plano, no una sala, y por eso estrena
+  // tonos propios en vez de reusar los de la cantina — pero los estrena EN la
+  // paleta, donde se ven al lado de los de todos los demás.
+  "../scripts/seccion-lienzo.mjs",
 ];
 
 test("los colores no cambian al mudarse: mismo valor que antes en cada módulo", () => {

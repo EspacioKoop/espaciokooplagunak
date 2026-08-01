@@ -212,7 +212,7 @@ function controlesInteractivos(html) {
   return controles;
 }
 
-test("ninguna de las seis superficies fija tabindex: el orden del DOM es el orden de teclado", () => {
+test("ninguna de las siete superficies fija tabindex: el orden del DOM es el orden de teclado", () => {
   for (const archivo of [
     "templates/estado-nave.hbs",
     "templates/mapa-vivo.hbs",
@@ -220,6 +220,7 @@ test("ninguna de las seis superficies fija tabindex: el orden del DOM es el orde
     "templates/token-puente.hbs",
     "templates/espacio-puesto.hbs",
     "templates/cantina.hbs",
+    "templates/seccion-nave.hbs",
   ]) {
     const controles = controlesInteractivos(read(archivo));
     for (const control of controles) {

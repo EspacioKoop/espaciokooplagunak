@@ -182,6 +182,13 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     un botón nuevo en `main.mjs`. La cantina solo pinta y traduce un clic en "abre esa mesa" — la
     autoridad la sigue resolviendo cada mesa por su cuenta al abrirse, nunca la ventana que lleva
     hasta ella.
+  - **Sección de la nave** — `scripts/seccion-nave.mjs` (planta declarativa y consultas, puro),
+    `scripts/seccion-lienzo.mjs` (pintado 2D, sin color propio) y `scripts/seccion-nave-app.mjs`
+    (ventana V1/V2), #427. El corte transversal con todas las salas a la vez: es el MAPA, y la
+    cantina es ESTAR dentro. Pulsar una sala abre la vista que ya existe (cantina o consola de
+    puesto) — la sección no estrena ninguna. No da autoridad (#237: el puesto se lee para saber
+    dónde pintarte, nunca al revés) y no inventa lecturas (sin sondeo la sala va neutra, no en
+    cero). Una sala nueva es una entrada más de la planta, no un botón nuevo en `main.mjs`.
   - **Asistencia entre puestos** — `scripts/asistencia/` (#309, diseño en
     [`docs/MINIJUEGOS_ASISTENCIA.md`](docs/MINIJUEGOS_ASISTENCIA.md)): motor puro más el reductor
     `sesion.mjs` y la costura `relevo.mjs`. Ayudar NUNCA emite orden: produce un token que gasta el

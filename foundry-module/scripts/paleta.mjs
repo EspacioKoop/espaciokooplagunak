@@ -181,6 +181,30 @@ export const CACHARROS = Object.freeze({
 });
 
 /**
+ * La sección de la nave (#427): el corte transversal que se lee como un plano,
+ * no como una sala.
+ *
+ * Por eso NO reusa los tonos de la cantina: aquella es un sitio con luz cálida
+ * y esto es un esquema técnico visto desde fuera. El casco es estructura, no
+ * ambiente, y las salas son huecos dentro de él. El único color que grita lo
+ * pone el daño, y ese no vive aquí: sale de `COLOR_REGION` (#419), para que un
+ * mismo estado del casco no tenga dos colores según qué ventana lo mire.
+ */
+export const SECCION = Object.freeze({
+  vacio: "#070a12", // el espacio alrededor del corte
+  casco: "#3b444f", // la estructura seccionada: metal frío y grueso
+  mamparo: "#222932", // el relleno entre salas, más oscuro que el casco
+  sala: "#151b24", // el suelo de una sala sin lectura de daño
+  salaBorde: "#4d5a68", // el canto que separa una sala de la siguiente
+  rotulo: "#c3ceda", // los nombres de sala
+  puerta: "#6f8296", // los tránsitos entre salas
+  entrable: "#4ad9c4", // el realce de una sala en la que SÍ se puede entrar:
+  // el mismo verde azulado del neón de la cantina, porque señala lo mismo.
+  foco: "#ffd79a", // la sala bajo el puntero
+  tripulante: "#fdfffc", // un punto por persona; el crema de la nave propia
+});
+
+/**
  * Paleta arcade saturada de las facciones en el mapa vivo. Es una lista y no un
  * objeto porque el color se reparte por hash del nombre de facción: importa el
  * orden, no el nombre de cada entrada.

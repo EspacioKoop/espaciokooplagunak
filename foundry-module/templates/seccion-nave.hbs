@@ -1,0 +1,31 @@
+<div class="lagunak-seccion-cuerpo">
+  {{!-- El corte. Es un ATAJO: todo lo que se puede hacer aquí se puede hacer
+        también en la lista de abajo, que sí se lee con lector de pantalla. Un
+        rectángulo pulsable sin texto no es una opción, es un secreto. --}}
+  <canvas class="lagunak-seccion-plano" width="720" height="360"
+          role="img" aria-label="{{localize "LAGUNAK.Seccion.PlanoAlt"}}"></canvas>
+
+  <p class="lagunak-seccion-intro">{{localize "LAGUNAK.Seccion.Intro"}}</p>
+
+  {{!-- La misma sección en texto: qué salas hay, cómo están y quién está en
+        ellas. Este es el canal accesible del plano, no un resumen. --}}
+  <ul class="lagunak-seccion-lista" aria-label="{{localize "LAGUNAK.Seccion.Salas"}}">
+    {{#each salas}}
+      <li class="lagunak-seccion-fila">
+        <span class="lagunak-seccion-nombre">{{this.titulo}}</span>
+        <span class="lagunak-seccion-salud">{{this.salud}}</span>
+        {{#if this.sistemas}}
+          <span class="lagunak-seccion-sistemas">{{this.sistemas}}</span>
+        {{/if}}
+        {{#if this.gente}}
+          <span class="lagunak-seccion-gente">{{this.gente}}</span>
+        {{/if}}
+        {{#if this.entrable}}
+          <button type="button" class="lagunak-seccion-entrar" data-sala="{{this.id}}">
+            {{localize "LAGUNAK.Seccion.Entrar"}}
+          </button>
+        {{/if}}
+      </li>
+    {{/each}}
+  </ul>
+</div>

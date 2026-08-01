@@ -193,7 +193,9 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     `scripts/visor-piloto-lienzo.mjs` (el <canvas>), #362. Lo que la nave tiene delante, en PSX,
     en la consola de pilotaje. Es la primera superficie 3D del módulo que **informa** en vez de
     ambientar, y de ahí sus tres reglas: la distancia y la marcación siguen en **texto** —el
-    visor es refuerzo y va `aria-hidden`—; la profundidad está **comprimida** (monótona, no
+    visor es refuerzo y va `aria-hidden`, y pilotaje arma la lista de contactos desde la misma
+    lectura degradada para que ese texto exista de verdad, degradada también para el GM—; la
+    profundidad está **comprimida** (monótona, no
     proporcional: conserva el orden, no es un telémetro); y el **margen se dibuja** —un eco de
     banda larga sale como un bloque gris tan ancho como su incertidumbre, nunca con la silueta
     afilada de un contacto identificado—. Todo cae en un plano porque la simulación es 2D:

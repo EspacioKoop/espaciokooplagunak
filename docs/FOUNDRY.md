@@ -386,7 +386,17 @@ las otras no necesitaban:
 
 - **La distancia y la marcación siguen en texto.** El visor es refuerzo y va
   `aria-hidden`: quien lo apague o no lo vea no pierde ni un número. Es la misma
-  regla que #338 y #353, escrita antes de tener el juguete delante.
+  regla que #338 y #353, escrita antes de tener el juguete delante. En concreto:
+  pilotaje arma la **lista de contactos** —la misma que ciencia y artillería—
+  desde la misma lectura degradada que el lienzo coloca, y la enseña bajo él.
+  Sin esa lista la regla es una frase, no una propiedad: durante la revisión de
+  #431 el visor fue la única vía a esos dos datos porque el modelo solo construía
+  filas para `sensors` y `weapons`. La regresión que lo impide vive en
+  `station-workspaces.test.mjs`.
+- **En pilotaje la lista es degradada también para el GM.** No por secreto —el GM
+  tiene su sondeo crudo en ciencia— sino por coherencia: la lista respalda al
+  visor, el visor pinta lo degradado, y unas coordenadas exactas al lado
+  describirían un cuadro distinto del que hay en pantalla.
 - **La profundidad está comprimida y no es una lectura.** Un contacto a 28.000 y
   otro a 30.000 tienen que caber los dos en el cuadro y distinguirse, y a escala
   real serían el mismo píxel. La compresión (raíz cuadrada sobre el alcance

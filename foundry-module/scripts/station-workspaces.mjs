@@ -283,6 +283,25 @@ function visibleContacts(contactsPayload, sensores, isGM, i18n) {
   return filasDegradadas(sensores, i18n);
 }
 
+/**
+ * Puestos que ven la lista de contactos, y con qué lectura.
+ *
+ * `sensors` y `weapons` es su oficio: cada uno con la fuente que le toca. En
+ * `navigation` la lista existe por un motivo distinto —el visor 3D (#362) coloca
+ * contactos en un cuadro que va `aria-hidden`, así que la distancia y la
+ * marcación TIENEN que seguir en texto o desaparecen para quien no lo ve—, y por
+ * eso pilotaje lee siempre lo degradado, también el GM: el visor pinta lo
+ * degradado, y una lista de coordenadas exactas al lado no describiría lo que
+ * hay en pantalla. Pilotaje no gana con esta lista ni un dato que no tuviera.
+ */
+function contactosDeConsola(station, contactsPayload, sensores, isGM, i18n) {
+  if (station === "navigation") return filasDegradadas(sensores, i18n);
+  if (station === "sensors" || station === "weapons") {
+    return visibleContacts(contactsPayload, sensores, isGM, i18n);
+  }
+  return [];
+}
+
 export function buildWorkspaceModel({
   station,
   isGM,
@@ -402,12 +421,11 @@ export function buildWorkspaceModel({
     ship,
     metrics: ship ? metricsFor(normalized, ship, safeContactsPayload, i18n, crew.length) : [],
     systems: normalized === "engineering" ? prepareSystemRows(ship, i18n) : [],
-    contacts: normalized === "sensors" || normalized === "weapons"
-      ? visibleContacts(contactsPayload, sensores, Boolean(isGM), i18n)
-      : [],
+    contacts: contactosDeConsola(normalized, contactsPayload, sensores, Boolean(isGM), i18n),
     // La cabecera de la lista dice de dónde sale lo que se está leyendo: «solo
-    // GM» sobre una lectura degradada sería mentir sobre su origen.
-    contactsDegradados: !isGM,
+    // GM» sobre una lectura degradada sería mentir sobre su origen. En pilotaje
+    // la lectura es degradada para todo el mundo, GM incluido.
+    contactsDegradados: normalized === "navigation" ? true : !isGM,
     crew,
     crewCount: crew.length,
     activeCrew: crew.filter((member) => member.active).length,

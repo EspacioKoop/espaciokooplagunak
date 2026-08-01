@@ -589,6 +589,61 @@ test("el visor del piloto recibe la lectura de sensores, y solo pilotaje", () =>
   }
 });
 
+test("en pilotaje la distancia y la marcación siguen en texto, no solo en el visor", () => {
+  // El bloqueante de la revisión de #431: el visor va `aria-hidden` y era la
+  // ÚNICA vía a esos dos datos en la consola de pilotaje —`contacts` se armaba
+  // solo para ciencia y artillería—, así que quien no lo viera los perdía
+  // enteros. El contrato de #362 dice lo contrario: el 3D es refuerzo, y lo que
+  // informa se lee escrito.
+  const sensores = {
+    contactos: [
+      { banda: "corto", esJugador: false, callsign: "Argia", faction: "Humanos", distancia: 2000, rumboDeg: 45, precision: 10, rumboPrecision: 1 },
+    ],
+    alcance: { corto: 5000, largo: 30000 },
+  };
+  const modelo = buildWorkspaceModel({
+    station: "navigation",
+    isGM: false,
+    users: [],
+    moduleId: MODULE_ID,
+    i18n,
+    statePayload: { ship: { callsign: "Lagunak", heading: 90, systems: {} } },
+    sensores,
+    connection: "ok",
+  });
+  assert.equal(modelo.contacts.length, 1, "pilotaje lista lo que su visor coloca");
+  const [fila] = modelo.contacts;
+  assert.match(fila.lectura, /2\D?000/, "la distancia, escrita");
+  assert.match(fila.lectura, /45°/, "y la marcación, escrita");
+  assert.equal(modelo.contactsDegradados, true);
+});
+
+test("pilotaje lee lo degradado también siendo GM: el visor no pinta otra cosa", () => {
+  // La lista de pilotaje existe para respaldar el visor, y el visor pinta la
+  // lectura degradada. Enseñar aquí coordenadas exactas describiría un cuadro
+  // distinto del que hay en pantalla; ciencia, que es donde el crudo tiene
+  // oficio, sigue viéndolo.
+  const comun = {
+    isGM: true,
+    users: [],
+    moduleId: MODULE_ID,
+    i18n,
+    statePayload: { ship: { callsign: "Lagunak", heading: 90, systems: {} } },
+    contactsPayload: { contacts: [{ callsign: "SECRETO", is_player: false, position: { x: 1234, y: 5678 } }] },
+    sensores: { contactos: [{ banda: "largo", esJugador: false, distancia: 20000, rumboDeg: 75, precision: 1000, rumboPrecision: 15 }] },
+    connection: "ok",
+  };
+
+  const piloto = buildWorkspaceModel({ ...comun, station: "navigation" });
+  assert.doesNotMatch(JSON.stringify(piloto.contacts), /SECRETO/);
+  assert.equal(piloto.contacts[0].eco, true);
+  assert.equal(piloto.contactsDegradados, true);
+
+  const ciencia = buildWorkspaceModel({ ...comun, station: "sensors" });
+  assert.match(JSON.stringify(ciencia.contacts), /SECRETO/, "el GM no pierde su sondeo donde le sirve");
+  assert.equal(ciencia.contactsDegradados, false);
+});
+
 test("sin sondeo el modelo de pilotaje lleva null, no un sondeo vacío", () => {
   // `null` apaga el visor; `{contactos: []}` lo enciende diciendo «he mirado y
   // no hay nada». Confundirlos es el cuarto estado (#353) al revés.

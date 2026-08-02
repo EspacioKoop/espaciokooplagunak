@@ -161,14 +161,26 @@ export function pedirDesdeVentana(tareaId) {
 /**
  * Elegir enfoque. Los que no exigen tirada se cierran al momento: su banda la
  * fija el motor, así que pedir un gesto extra sería teatro.
+ *
+ * Exportada por la misma razón que `pedirDesdeVentana`: el gesto solo existe
+ * colgado del DOM, y una máquina de estados que solo se puede pulsar dentro de
+ * Foundry es una máquina de estados sin pruebas.
  */
-function alElegirEnfoque(enfoqueId) {
+export function elegirEnfoqueDesdeVentana(enfoqueId) {
   if (estado.fase !== FASES.OFERTA) return;
   const enfoque = estado.oferta?.enfoques?.find((e) => e.id === enfoqueId);
   if (!enfoque) return;
   estado.enfoqueId = enfoqueId;
 
   if (!enfoque.conTirada) {
+    // Se sale de OFERTA ANTES de enviar, igual que hace `cerrarReto`. Quedarse
+    // en OFERTA deja los botones de enfoque vivos mientras vuela la respuesta:
+    // el segundo clic manda un `resolver` para un nonce cuya reserva el motor ya
+    // gastó, y lo que vuelve es un rechazo que cierra en falso una ayuda que en
+    // realidad salió bien. Además, sin repintar no hay ni una señal de que el
+    // clic haya hecho algo.
+    estado.fase = FASES.ESPERANDO;
+    repintar();
     resolverAsistencia({ nonce: estado.nonce, banda: enfoque.bandaFija, enfoqueId });
     return;
   }
@@ -276,7 +288,7 @@ function conectar(raiz) {
     boton.addEventListener("click", () => pedirDesdeVentana(boton.dataset.asistenciaTarea));
   });
   nodo?.querySelectorAll?.("[data-asistencia-enfoque]").forEach((boton) => {
-    boton.addEventListener("click", () => alElegirEnfoque(boton.dataset.asistenciaEnfoque));
+    boton.addEventListener("click", () => elegirEnfoqueDesdeVentana(boton.dataset.asistenciaEnfoque));
   });
   nodo?.querySelector?.("[data-asistencia-pulsar]")?.addEventListener("click", alPulsar);
   nodo?.querySelector?.("[data-asistencia-volver]")?.addEventListener("click", () => {

@@ -89,6 +89,38 @@ test("con la ventana en el menú, una respuesta tardía no la cierra", () => {
   }
 });
 
+/** Deja la ventana en OFERTA con un enfoque de banda fija, que no pide tirada. */
+function conOfertaSinTirada() {
+  const nonce = pidiendoAyuda();
+  Hooks.callAll("lagunakAsistenciaOferta", {
+    nonce,
+    oferta: {
+      via: "fija",
+      enfoques: [{ enfoque: { id: "guiar", clase: "apoyo", bandaFija: BANDAS.LOGRO }, rango: { via: "fija" } }],
+    },
+  });
+  return nonce;
+}
+
+test("elegir un enfoque sin tirada saca de la oferta antes de enviar", () => {
+  conOfertaSinTirada();
+  ui.elegirEnfoqueDesdeVentana("guiar");
+  const contexto = ui.contextoAsistencia();
+  assert.equal(contexto.enOferta, false, "los botones de enfoque no siguen vivos");
+  assert.equal(contexto.esperando, true, "se espera el veredicto del coordinador");
+  assert.equal(flags.at(-1).tipo, "resolver");
+});
+
+test("el segundo clic en un enfoque sin tirada no manda un resolver de más", () => {
+  // La reserva la gasta el primero. Un segundo `resolver` con el mismo nonce
+  // vuelve como rechazo y cerraría en falso una ayuda que salió bien.
+  conOfertaSinTirada();
+  ui.elegirEnfoqueDesdeVentana("guiar");
+  const enviados = flags.filter((f) => f.tipo === "resolver").length;
+  ui.elegirEnfoqueDesdeVentana("guiar");
+  assert.equal(flags.filter((f) => f.tipo === "resolver").length, enviados);
+});
+
 test("la barra se repinta sin re-renderizar la ventana", () => {
   // Un `render()` por fotograma reconstruiría la ventana entera y tiraría el
   // foco del teclado 60 veces por segundo.

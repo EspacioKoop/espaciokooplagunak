@@ -50,6 +50,13 @@ export const MOTIVOS = Object.freeze({
   FUENTE_2024: "fuente-2024",
   /** Hay fuente, pero no está clasificada. Falla cerrado. */
   FUENTE_DESCONOCIDA: "fuente-desconocida",
+  /**
+   * Hay un campo de reglas explícito y no dice ni 2014 ni 2024. Falla cerrado
+   * SIN mirar la fuente: quien declara reglas manda, y una declaración que no
+   * sabemos leer («2024-revised», una etiqueta nueva) no puede degradarse a
+   * «pues mira el libro», porque el libro puede ser blanco y colar 2024.
+   */
+  REGLAS_DESCONOCIDAS: "reglas-desconocidas",
   /** No hay metadatos de procedencia utilizables. Falla cerrado. */
   SIN_METADATOS: "sin-metadatos",
   /** Lo que se pasó no es un documento con forma reconocible. */
@@ -208,6 +215,16 @@ export function crearClasificador(opciones = {}) {
         return veredicto(EDICIONES.D2024, false, MOTIVOS.FUENTE_2024, fuenteBruta);
       }
       return veredicto(EDICIONES.D2014, true, MOTIVOS.REGLAS_EXPLICITAS, reglasDeclaradas(documento));
+    }
+    if (reglas !== "") {
+      // Declara reglas, pero no las sabemos leer. No se cae a la fuente: eso
+      // convertiría una etiqueta desconocida de 2024 en un «2014» aceptado en
+      // cuanto el libro estuviera en la lista blanca. Se descarta y se dice qué
+      // ponía, que es lo que permite ampliar el criterio a propósito y no a
+      // ciegas.
+      return veredicto(
+        EDICIONES.DESCONOCIDA, false, MOTIVOS.REGLAS_DESCONOCIDAS, reglasDeclaradas(documento),
+      );
     }
 
     // (2) Sin declaración: solo queda la fuente, contra lista blanca.

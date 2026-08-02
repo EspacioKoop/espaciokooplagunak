@@ -78,6 +78,38 @@ test("metadatos que se contradicen se resuelven EN CONTRA", () => {
   assert.equal(veredicto.motivo, MOTIVOS.FUENTE_2024);
 });
 
+test("una declaración de reglas que no sabemos leer NO cae a la fuente", () => {
+  // El caso que rompía el fallo cerrado: reglas raras + libro blanco. Si la
+  // declaración desconocida se ignorase, «PHB» aceptaría como 2014 algo que se
+  // anuncia a sí mismo como una variante de 2024.
+  const variante = { name: "Etiqueta nueva", system: { source: { rules: "2024-revised", book: "PHB" } } };
+  const veredicto = CLASIFICADOR.clasificar(variante);
+  assert.equal(veredicto.aceptado, false);
+  assert.equal(veredicto.edicion, EDICIONES.DESCONOCIDA);
+  assert.equal(veredicto.motivo, MOTIVOS.REGLAS_DESCONOCIDAS);
+  // Y dice qué ponía, para poder ampliar el criterio a propósito.
+  assert.equal(veredicto.detalle, "2024-revised");
+  assert.equal(esDe2014(variante), false);
+});
+
+test("cualquier declaración de reglas ajena a 2014/2024 se descarta", () => {
+  for (const rara of ["2024-revised", "5.5", "one", "2014-ish", "próximamente"]) {
+    const veredicto = CLASIFICADOR.clasificar({ name: "x", system: { source: { rules: rara, book: "MM" } } });
+    assert.equal(veredicto.aceptado, false, `«${rara}» no debería aceptarse`);
+    assert.equal(veredicto.motivo, MOTIVOS.REGLAS_DESCONOCIDAS);
+  }
+});
+
+test("la declaración de reglas se normaliza igual que la fuente", () => {
+  // « 2014 » sigue siendo 2014: el fallo cerrado nuevo no puede volverse tan
+  // estricto que rechace la misma declaración por venir con espacios.
+  for (const variante of [" 2014 ", "2.014", "2-0-1-4"]) {
+    const veredicto = CLASIFICADOR.clasificar({ name: "x", system: { source: { rules: variante, book: "MM" } } });
+    assert.equal(veredicto.aceptado, true, `«${variante}» debería normalizar a 2014`);
+    assert.equal(veredicto.motivo, MOTIVOS.REGLAS_EXPLICITAS);
+  }
+});
+
 test("la fuente se compara sin importar espacios, guiones ni mayúsculas", () => {
   for (const variante of ["mm", " M.M ", "M-M"]) {
     const veredicto = CLASIFICADOR.clasificar({ name: "x", system: { source: { book: variante } } });

@@ -38,6 +38,10 @@ son evidencia**: un mundo con una carpeta «2014» llena de material de 2024 es 
 Orden de decisión, en `scripts/contenido-externo/edicion.mjs`:
 
 1. **Declaración explícita de reglas** (`system.source.rules` / `.edition`): manda sobre todo.
+   Si dice algo que no es ni `2014` ni `2024` —una etiqueta nueva, `2024-revised`—, el documento
+   se descarta ahí mismo (`reglas-desconocidas`) **sin consultar la fuente**: quien declara
+   reglas manda también cuando no le entendemos, y caer a la lista blanca dejaría que un libro
+   aceptado colase material que se anuncia como otra cosa.
 2. **Fuente contra lista blanca** de libros del ruleset de 2014 (`FUENTES_2014`).
 3. **Todo lo demás se descarta.**
 

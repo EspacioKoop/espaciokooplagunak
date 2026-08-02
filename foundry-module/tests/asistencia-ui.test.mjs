@@ -48,8 +48,16 @@ test("una oferta con otro nonce se ignora: no se pinta la ayuda de otro", () => 
   assert.equal(ui.contextoAsistencia().enMenu, true, "seguimos en el menú");
 });
 
+/** Deja la ventana esperando respuesta, que es donde vive el nonce. */
+function pidiendoAyuda() {
+  const tareaId = ui.contextoAsistencia().tareas[0].id;
+  ui.pedirDesdeVentana(tareaId);
+  return "nonce-1";
+}
+
 test("un rechazo cierra con su motivo, y se puede volver al menú", () => {
-  Hooks.callAll("lagunakAsistenciaRechazo", { codigo: "presupuesto-agotado" });
+  const nonce = pidiendoAyuda();
+  Hooks.callAll("lagunakAsistenciaRechazo", { nonce, codigo: "presupuesto-agotado" });
   const contexto = ui.contextoAsistencia();
   assert.equal(contexto.cerrada, true);
   assert.equal(contexto.cierre.tipo, "rechazo");
@@ -57,8 +65,28 @@ test("un rechazo cierra con su motivo, y se puede volver al menú", () => {
 });
 
 test("un resultado sin fruto NO se cuenta como error: es el juego funcionando", () => {
-  Hooks.callAll("lagunakAsistenciaResultado", { propuesta: { accion: null, banda: BANDAS.FALLO } });
+  const nonce = pidiendoAyuda();
+  Hooks.callAll("lagunakAsistenciaResultado", { nonce, propuesta: { accion: null, banda: BANDAS.FALLO } });
   assert.equal(ui.contextoAsistencia().cierre.tipo, "sin-fruto");
+});
+
+test("un resultado con nonce ajeno no cierra la petición viva", () => {
+  // Llega la respuesta tardía a algo que ya no está en curso. Cerrar por ella
+  // mataría la petición SIGUIENTE, que no tiene nada que ver con esa.
+  pidiendoAyuda();
+  Hooks.callAll("lagunakAsistenciaResultado", { nonce: "de-otra", propuesta: { accion: null, banda: BANDAS.FALLO } });
+  const contexto = ui.contextoAsistencia();
+  assert.equal(contexto.cerrada, false);
+  assert.equal(contexto.esperando, true, "se sigue esperando la respuesta propia");
+});
+
+test("con la ventana en el menú, una respuesta tardía no la cierra", () => {
+  // Sin petición viva no hay nada que cerrar: quien volvió al menú se
+  // encontraría un cierre surgido de la nada.
+  for (const hook of ["lagunakAsistenciaResultado", "lagunakAsistenciaRechazo"]) {
+    Hooks.callAll(hook, { nonce: "nonce-1", codigo: "caducada", propuesta: null });
+    assert.equal(ui.contextoAsistencia().enMenu, true, `${hook} no debería sacarnos del menú`);
+  }
 });
 
 test("la barra se repinta sin re-renderizar la ventana", () => {

@@ -158,7 +158,10 @@ function alCambiarUsuario(userDoc, changes) {
   sesion = resultado.estado ?? sesion;
 
   if (!resultado.ok) {
-    responder(asistenteId, MENSAJE_RECHAZO, { codigo: resultado.error });
+    // El nonce viaja en las TRES respuestas, no solo en la oferta: sin él, quien
+    // pidió ayuda no puede distinguir la respuesta a lo que está esperando de la
+    // respuesta tardía a algo que ya abandonó.
+    responder(asistenteId, MENSAJE_RECHAZO, { nonce: peticion?.nonce ?? null, codigo: resultado.error });
     return;
   }
   if (resultado.reserva) {
@@ -172,7 +175,7 @@ function alCambiarUsuario(userDoc, changes) {
     return;
   }
   if (resultado.propuesta) {
-    responder(asistenteId, MENSAJE_RESULTADO, { propuesta: resultado.propuesta });
+    responder(asistenteId, MENSAJE_RESULTADO, { nonce: peticion?.nonce ?? null, propuesta: resultado.propuesta });
   }
 }
 

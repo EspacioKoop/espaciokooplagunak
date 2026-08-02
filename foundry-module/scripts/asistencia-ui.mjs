@@ -70,6 +70,20 @@ function reiniciar() {
   });
 }
 
+/**
+ * ¿Esta respuesta contesta a lo que esta ventana está esperando AHORA?
+ *
+ * Las tres respuestas del coordinador llegan por socket dirigido, así que son
+ * para nosotros; lo que no garantizan es que sean para la petición viva. Una
+ * caducidad que se anuncia tarde, o el rechazo de algo que ya se abandonó con
+ * «volver», llegarían igual y cerrarían de golpe un menú limpio o —peor— la
+ * petición SIGUIENTE, que no tiene nada que ver. Sin nonce vivo no hay nada que
+ * cerrar, y con nonce distinto la respuesta es de otra conversación.
+ */
+function esDeLaPeticionViva(carga) {
+  return Boolean(carga) && estado.nonce !== null && carga.nonce === estado.nonce;
+}
+
 export function registrarAsistenciaUI(moduleId) {
   moduloConfigurado = moduleId;
 
@@ -77,21 +91,23 @@ export function registrarAsistenciaUI(moduleId) {
   // esté cerrada: quien pide ayuda y cierra la ventana sin querer no debe
   // quedarse con una reserva viva y ninguna forma de resolverla.
   Hooks.on(HOOK_OFERTA, (carga) => {
-    if (!carga || carga.nonce !== estado.nonce) return;
+    if (!esDeLaPeticionViva(carga)) return;
     estado.oferta = vistaOferta(carga.oferta);
     estado.fase = estado.oferta ? FASES.OFERTA : FASES.MENU;
     repintar();
   });
 
   Hooks.on(HOOK_RESULTADO, (carga) => {
-    estado.cierre = vistaCierre({ propuesta: carga?.propuesta ?? null });
+    if (!esDeLaPeticionViva(carga)) return;
+    estado.cierre = vistaCierre({ propuesta: carga.propuesta ?? null });
     estado.fase = FASES.CERRADA;
     detenerBucle();
     repintar();
   });
 
   Hooks.on(HOOK_RECHAZO, (carga) => {
-    estado.cierre = vistaCierre({ rechazo: carga?.codigo ?? "desconocido" });
+    if (!esDeLaPeticionViva(carga)) return;
+    estado.cierre = vistaCierre({ rechazo: carga.codigo ?? "desconocido" });
     estado.fase = FASES.CERRADA;
     detenerBucle();
     repintar();
@@ -129,7 +145,12 @@ function ahora() {
 
 // --- Gestos ------------------------------------------------------------------
 
-function alPedir(tareaId) {
+/**
+ * Abrir una petición de ayuda. Es el único punto por el que nace un nonce, y se
+ * exporta porque la correlación de respuestas no se puede probar sin él: un test
+ * que fabricara el nonce a mano estaría probando otra máquina de estados.
+ */
+export function pedirDesdeVentana(tareaId) {
   if (estado.fase !== FASES.MENU) return;
   const nonce = pedirAsistencia(tareaId);
   if (!nonce) return;
@@ -252,7 +273,7 @@ function repintar() {
 function conectar(raiz) {
   const nodo = raizReal(raiz);
   nodo?.querySelectorAll?.("[data-asistencia-tarea]").forEach((boton) => {
-    boton.addEventListener("click", () => alPedir(boton.dataset.asistenciaTarea));
+    boton.addEventListener("click", () => pedirDesdeVentana(boton.dataset.asistenciaTarea));
   });
   nodo?.querySelectorAll?.("[data-asistencia-enfoque]").forEach((boton) => {
     boton.addEventListener("click", () => alElegirEnfoque(boton.dataset.asistenciaEnfoque));

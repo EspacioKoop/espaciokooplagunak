@@ -142,6 +142,21 @@ puede cambiar el resultado del encuentro.
 **Métrica de éxito:** en un playtest, ningún jugador puede describir su puesto
 como «mirar mientras otro juega».
 
+Desglose de coordinación en #459, con subissues verticales y grafo de
+dependencias explícito:
+
+- #460 — verificar y documentar pantallas nativas restantes (bloquea a los
+  siguientes cuatro);
+- #461 — modelo de permisos por puesto v1 (informa sin bloquear);
+- #462 — sensores/ciencia;
+- #463 — comunicaciones;
+- #464 — reparación por tripulación (ingeniería activa);
+- #465 — arma real más allá de escudos;
+- #466 — feedback interactivo en 3D por acción de puesto (depende de al menos
+  uno de los cuatro anteriores);
+- #467 — playtest de Etapa B, cierra la etapa (depende de todos los
+  anteriores).
+
 ### Etapa C — Nave persistente y progresión
 
 - esquema estable de nave, módulos y carga sobre el editor declarativo (#55);

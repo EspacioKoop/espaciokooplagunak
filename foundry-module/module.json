@@ -21,7 +21,8 @@
     "styles/lagunak.css",
     "styles/lagunak-consola.css",
     "styles/puestos-tripulacion.css",
-    "styles/espacios-puesto.css"
+    "styles/espacios-puesto.css",
+    "styles/avatar.css"
   ],
   "languages": [
     {

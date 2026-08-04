@@ -326,6 +326,7 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
     "lagunak-andar-nave",
     "lagunak-musica-audio",
     "lagunak-puestos",
+    "lagunak-avatar",
     "lagunak-espacio-puesto",
   ]);
   toolByName(controls, "lagunak-estado").onClick();
@@ -731,6 +732,7 @@ test("un jugador no GM recibe asignación y espacio de puesto, sin controles GM"
     // jugador. El MANDO de la música sigue siendo solo del GM.
     "lagunak-musica-audio",
     "lagunak-puestos",
+    "lagunak-avatar",
     "lagunak-espacio-puesto",
   ]);
   assert.equal(grupo.tools.find(({ name }) => name === "lagunak-musica"), undefined);

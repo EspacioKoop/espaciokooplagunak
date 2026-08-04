@@ -1,0 +1,36 @@
+<section class="lagunak-avatar__contenido">
+  <canvas class="lagunak-avatar__previa" data-avatar-previa width="200" height="260"
+    aria-hidden="true"></canvas>
+
+  <div class="lagunak-avatar__campos">
+    {{#each campos}}
+      <label class="lagunak-avatar__campo" for="lagunak-avatar-{{clave}}">
+        {{etiquetaCampo}}
+        <select id="lagunak-avatar-{{clave}}" data-avatar-campo="{{clave}}">
+          {{#each opciones}}
+            <option value="{{valor}}" {{#if selected}}selected{{/if}}>{{etiqueta}}</option>
+          {{/each}}
+        </select>
+      </label>
+    {{/each}}
+
+    {{#each indices}}
+      <div class="lagunak-avatar__indice">
+        <span>{{etiquetaCampo}}</span>
+        <button type="button" data-avatar-indice="{{clave}}" data-avatar-paso="-1"
+          aria-label="{{localize "LAGUNAK.Avatar.Anterior"}}">‹</button>
+        <span aria-live="polite">{{posicion}}</span>
+        <button type="button" data-avatar-indice="{{clave}}" data-avatar-paso="1"
+          aria-label="{{localize "LAGUNAK.Avatar.Siguiente"}}">›</button>
+      </div>
+    {{/each}}
+  </div>
+
+  {{#if tieneSugerencia}}
+    <button type="button" data-avatar-sugerir>{{localize "LAGUNAK.Avatar.Sugerir"}}</button>
+  {{/if}}
+
+  <button type="button" data-avatar-guardar class="lagunak-avatar__guardar">
+    {{localize "LAGUNAK.Avatar.GuardarBoton"}}
+  </button>
+</section>

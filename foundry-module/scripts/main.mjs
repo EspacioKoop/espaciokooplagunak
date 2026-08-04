@@ -36,6 +36,7 @@ import {
 import { probarConexion } from "./diagnostico-conexion.mjs";
 import { MOTIVOS, planificarFichas } from "./ficha-nave-aplicacion.mjs";
 import { addStationControl, refrescarPuestos, registerStationFeature } from "./station-ui.mjs";
+import { addAvatarControl, registerAvatarFeature } from "./avatar-ui.mjs";
 import { MINIMO_POR_DEFECTO } from "./requisitos-puesto.mjs";
 import {
   addWorkspaceControl,
@@ -107,6 +108,7 @@ import {
 import { crearReproductor } from "./musica-reproductor.mjs";
 
 registerStationFeature(MODULE_ID);
+registerAvatarFeature(MODULE_ID);
 registerWorkspaceFeature(MODULE_ID);
 registerBridgeTokenFeature(MODULE_ID);
 
@@ -840,6 +842,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
 
   // Botones de puesto para TODOS los usuarios, dentro del grupo propio.
   addStationControl(controls);
+  addAvatarControl(controls);
   addWorkspaceControl(controls);
 });
 

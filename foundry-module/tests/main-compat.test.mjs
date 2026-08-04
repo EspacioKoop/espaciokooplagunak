@@ -160,24 +160,48 @@ function toolByName(controls, name) {
   return controls.flatMap((control) => control.tools ?? []).find((tool) => tool.name === name);
 }
 
+// Panel de GM (#448): estado/mapa/token/diagnóstico/música/decorado/ficha ya
+// no son botones sueltos, sino entradas del panel. Abre el panel y elige la
+// entrada `id`, devolviendo la ventana real que abre (última instancia
+// creada) — igual patrón que `abrirMesaPorCantina` hace para la cantina.
+function panelGmTool(controls) {
+  return Array.isArray(controls) ? toolByName(controls, "lagunak-panel-gm") : controls.lagunak?.tools?.["lagunak-panel-gm"];
+}
+
+async function abrirDesdePanelGM(controls, instances, id) {
+  panelGmTool(controls).onClick();
+  const panel = instances.at(-1);
+  const antes = instances.length;
+  panel.seleccionarEntrada(id);
+  // Algunas acciones (token) hacen trabajo async antes de construir su
+  // ventana; el propio panel no espera a `alSeleccionar` (igual que
+  // `main.mjs`), así que aquí se deja drenar la cola de microtareas.
+  await new Promise((resolve) => setImmediate(resolve));
+  await new Promise((resolve) => setImmediate(resolve));
+  // Reabrir una entrada con ventana perezosa (mapa, estado) no crea instancia
+  // nueva: solo se sumó el panel. Devolver `instances.at(-1)` ahí devolvería
+  // el panel, no la ventana reutilizada — el llamador debe comparar con la
+  // referencia que ya tenía.
+  return instances.length > antes ? instances.at(-1) : null;
+}
+
 test("v11 abre la configuración efímera del token sin tocar red", async () => {
   const { hooks, instances, fetchCalls } = await loadModule();
   const controls = [{ name: "token", tools: [] }];
   hooks.getSceneControlButtons(controls);
 
-  await toolByName(controls, "lagunak-token").onClick();
-  assert.equal(instances.length, 1);
-  assert.deepEqual(instances[0].renderCalls, [true]);
+  const app = await abrirDesdePanelGM(controls, instances, "token");
+  assert.equal(instances.length, 2);
+  assert.deepEqual(app.renderCalls, [true]);
   assert.deepEqual(fetchCalls, []);
-  await instances[0].close();
+  await app.close();
 });
 
 test("updateUser revoca el token y cierra la ventana si el usuario local deja de ser GM", async () => {
   const { hooks, tokenSession, instances } = await loadModule();
   const controls = [{ name: "token", tools: [] }];
   hooks.getSceneControlButtons(controls);
-  await toolByName(controls, "lagunak-token").onClick();
-  const app = instances[0];
+  const app = await abrirDesdePanelGM(controls, instances, "token");
   assert.equal(app.rendered, true);
   assert.equal(tokenSession.getBridgeToken(), "test-token");
 
@@ -219,8 +243,7 @@ test("perder el rol GM sí revoca, con el mismo hook", async () => {
   const { hooks, tokenSession, instances } = await loadModule();
   const controls = [{ name: "token", tools: [] }];
   hooks.getSceneControlButtons(controls);
-  await toolByName(controls, "lagunak-token").onClick();
-  const app = instances[0];
+  const app = await abrirDesdePanelGM(controls, instances, "token");
 
   game.user.isGM = false;
   hooks.updateUser({ id: "local-user", isGM: false }, { role: 1 });
@@ -242,8 +265,7 @@ test("degradar durante healthz cierra la vista y no inicia peticiones autenticad
   const { hooks, tokenSession, instances, fetchCalls } = await loadModule({ modern: true, fetchImpl });
   const controls = {};
   hooks.getSceneControlButtons(controls);
-  controls.lagunak.tools["lagunak-consola"].onClick();
-  const app = instances[0];
+  const app = await abrirDesdePanelGM(controls, instances, "consola");
   let wipes = 0;
   app.element = { replaceChildren() { wipes += 1; } };
   app._onFirstRender();
@@ -270,27 +292,28 @@ test("degradar cierra y vacía la consola caliente y el workspace abiertos", asy
   const { hooks, instances } = await loadModule({ modern: true });
   const controls = { tokens: { tools: {} } };
   hooks.getSceneControlButtons(controls);
-  controls.lagunak.tools["lagunak-consola"].onClick();
+  const consolaApp = await abrirDesdePanelGM(controls, instances, "consola");
   controls.lagunak.tools["lagunak-espacio-puesto"].onClick();
-  assert.equal(instances.length, 2);
+  const workspaceApp = instances.at(-1);
+  const apps = [consolaApp, workspaceApp];
   const wipes = [0, 0];
-  instances.forEach((app, index) => {
+  apps.forEach((app, index) => {
     app.element = { replaceChildren() { wipes[index] += 1; } };
   });
-  instances[0].ultimoEstado = { ship: { callsign: "Agregado" } };
-  instances[0].contactos = [{ callsign: "Contacto" }];
-  instances[1].statePayload = { ship: { callsign: "Workspace" } };
+  consolaApp.ultimoEstado = { ship: { callsign: "Agregado" } };
+  consolaApp.contactos = [{ callsign: "Contacto" }];
+  workspaceApp.statePayload = { ship: { callsign: "Workspace" } };
 
   game.user.isGM = false;
   hooks.updateUser({ id: "local-user", isGM: false }, { role: 1 });
   await new Promise((resolve) => setImmediate(resolve));
 
-  assert.deepEqual(instances.map((app) => app.rendered), [false, false]);
+  assert.deepEqual(apps.map((app) => app.rendered), [false, false]);
   assert.deepEqual(wipes, [1, 1]);
-  assert.equal(instances[0].ultimoEstado, null);
-  assert.deepEqual(instances[0].contactos, []);
-  assert.equal(instances[1].statePayload, null);
-  assert.equal(instances[1].closed, true);
+  assert.equal(consolaApp.ultimoEstado, null);
+  assert.deepEqual(consolaApp.contactos, []);
+  assert.equal(workspaceApp.statePayload, null);
+  assert.equal(workspaceApp.closed, true);
 });
 
 test("v11 conecta los listeners de pausa y reanudación con el puente", async () => {
@@ -307,13 +330,10 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
   assert.ok(grupo);
   assert.equal(grupo.icon, "fa-solid fa-shuttle-space");
   assert.deepEqual(grupo.tools.map(({ name }) => name), [
-    "lagunak-consola",
-    "lagunak-token",
-    "lagunak-diagnostico",
-    "lagunak-musica",
-    "lagunak-decorado-aleatorio",
-    // Arte de ficha (#354): solo-GM, porque escribe un documento del mundo.
-    "lagunak-ficha-nave",
+    // Panel de GM (#448): sustituye los botones sueltos anteriores (consola
+    // caliente, token, diagnóstico, música, decorado, ficha) por una única
+    // puerta con catálogo interno — ver `panel-gm.test.mjs` para ese catálogo.
+    "lagunak-panel-gm",
     // La cantina (#423) la ven todos: es la capa social, y un minijuego al que
     // solo pudiera entrar el GM no sería un minijuego. Es la única puerta: los
     // dos verticales (#308 póker, #413 dados) entran por ella, no por un botón
@@ -330,10 +350,10 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
     "lagunak-avatar",
     "lagunak-espacio-puesto",
   ]);
-  toolByName(controls, "lagunak-consola").onClick();
+  const app = await abrirDesdePanelGM(controls, instances, "consola");
 
-  assert.equal(instances.length, 1);
-  assert.deepEqual(instances[0].renderCalls, [true]);
+  assert.equal(instances.length, 2);
+  assert.deepEqual(app.renderCalls, [true]);
 
   const bindings = new Map();
   const html = {
@@ -345,7 +365,7 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
       };
     },
   };
-  instances[0].activateListeners(html);
+  app.activateListeners(html);
 
   assert.equal(bindings.get('[data-action="pausar"]').event, "click");
   assert.equal(bindings.get('[data-action="reanudar"]').event, "click");
@@ -353,18 +373,18 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
   // El ACK del comando NO confirma: sin lectura de /v1/scenario no hay
   // estado confirmado ni notificación (autoridad del simulador).
   await bindings.get('[data-action="pausar"]').callback();
-  assert.equal(instances[0].pausaConfirmada, null);
+  assert.equal(app.pausaConfirmada, null);
   assert.deepEqual(notifications.info, []);
 
   // La confirmación llega únicamente de una lectura real de /v1/scenario.
-  instances[0]._registrarLecturaPausa({ paused: true });
-  assert.equal(instances[0].pausaConfirmada, true);
+  app._registrarLecturaPausa({ paused: true });
+  assert.equal(app.pausaConfirmada, true);
   assert.deepEqual(notifications.info, ["LAGUNAK.Tempo.Pausado"]);
 
   await bindings.get('[data-action="reanudar"]').callback();
-  assert.equal(instances[0].pausaConfirmada, true);
-  instances[0]._registrarLecturaPausa({ paused: false });
-  assert.equal(instances[0].pausaConfirmada, false);
+  assert.equal(app.pausaConfirmada, true);
+  app._registrarLecturaPausa({ paused: false });
+  assert.equal(app.pausaConfirmada, false);
 
   assert.deepEqual(pauseValues(fetchCalls), [true, false]);
   assert.deepEqual(notifications.info, ["LAGUNAK.Tempo.Pausado", "LAGUNAK.Tempo.Reanudado"]);
@@ -375,9 +395,9 @@ test("la bitácora normaliza la telemetría y no inserta HTML del puente", async
   const { hooks, instances, journalPages } = await loadModule();
   const controls = [{ name: "token", tools: [] }];
   hooks.getSceneControlButtons(controls);
-  toolByName(controls, "lagunak-consola").onClick();
+  const app = await abrirDesdePanelGM(controls, instances, "consola");
 
-  instances[0].ultimoEstado = {
+  app.ultimoEstado = {
     ship: {
       callsign: '<img src=x onerror="alert(1)">',
       position: { x: "<svg onload=alert(1)>", y: 25.4 },
@@ -391,7 +411,7 @@ test("la bitácora normaliza la telemetría y no inserta HTML del puente", async
   };
 
   const bindings = new Map();
-  instances[0].activateListeners({
+  app.activateListeners({
     find(selector) {
       return { on(_event, callback) { bindings.set(selector, callback); } };
     },
@@ -415,26 +435,26 @@ test("host moderno conecta las acciones de pausa y reanudación con el puente", 
   // Grupo propio con icono de nave (issue #125), record de tools en v13.
   assert.ok(controls.lagunak);
   assert.equal(controls.lagunak.icon, "fa-solid fa-shuttle-space");
-  assert.ok(controls.lagunak.tools["lagunak-consola"]);
-  controls.lagunak.tools["lagunak-consola"].onClick();
+  assert.ok(controls.lagunak.tools["lagunak-panel-gm"]);
+  const app = await abrirDesdePanelGM(controls, instances, "consola");
 
-  assert.equal(instances.length, 1);
-  assert.deepEqual(instances[0].renderCalls, [{ force: true }]);
-  const actions = instances[0].constructor.DEFAULT_OPTIONS.actions;
+  assert.equal(instances.length, 2);
+  assert.deepEqual(app.renderCalls, [{ force: true }]);
+  const actions = app.constructor.DEFAULT_OPTIONS.actions;
   assert.equal(typeof actions.pausar, "function");
   assert.equal(typeof actions.reanudar, "function");
 
   // ACK sin confirmación: sin lectura de /v1/scenario no hay estado.
-  await actions.pausar.call(instances[0]);
-  assert.equal(instances[0].pausaConfirmada, null);
+  await actions.pausar.call(app);
+  assert.equal(app.pausaConfirmada, null);
   assert.deepEqual(notifications.info, []);
 
-  instances[0]._registrarLecturaPausa({ paused: true });
-  assert.equal(instances[0].pausaConfirmada, true);
+  app._registrarLecturaPausa({ paused: true });
+  assert.equal(app.pausaConfirmada, true);
 
-  await actions.reanudar.call(instances[0]);
-  instances[0]._registrarLecturaPausa({ paused: false });
-  assert.equal(instances[0].pausaConfirmada, false);
+  await actions.reanudar.call(app);
+  app._registrarLecturaPausa({ paused: false });
+  assert.equal(app.pausaConfirmada, false);
 
   assert.deepEqual(pauseValues(fetchCalls), [true, false]);
   assert.deepEqual(notifications.info, ["LAGUNAK.Tempo.Pausado", "LAGUNAK.Tempo.Reanudado"]);
@@ -445,9 +465,7 @@ test("v11 conecta el listener de encuentro y envía la selección exacta una sol
   const { hooks, instances, fetchCalls } = await loadModule();
   const controls = [{ name: "token", tools: [] }];
   hooks.getSceneControlButtons(controls);
-  toolByName(controls, "lagunak-consola").onClick();
-
-  const app = instances[0];
+  const app = await abrirDesdePanelGM(controls, instances, "consola");
   app.catalogoEncuentros = { archetypes: ["derelict"], bearings: ["starboard"] };
   app.element = [{
     querySelector(selector) {
@@ -482,9 +500,7 @@ test("ApplicationV2 conecta la acción de encuentro y envía la selección exact
   const { hooks, instances, fetchCalls } = await loadModule({ modern: true });
   const controls = {};
   hooks.getSceneControlButtons(controls);
-  controls.lagunak.tools["lagunak-consola"].onClick();
-
-  const app = instances[0];
+  const app = await abrirDesdePanelGM(controls, instances, "consola");
   app.catalogoEncuentros = { archetypes: ["derelict"], bearings: ["ahead"] };
   app.element = {
     querySelector(selector) {
@@ -538,9 +554,7 @@ test("v11: un ACK tardío de encuentro tras revocar el rol GM no notifica ni rep
   const { hooks, instances, notifications } = await loadModule({ fetchImpl });
   const controls = [{ name: "token", tools: [] }];
   hooks.getSceneControlButtons(controls);
-  toolByName(controls, "lagunak-consola").onClick();
-
-  const app = instances[0];
+  const app = await abrirDesdePanelGM(controls, instances, "consola");
   app.catalogoEncuentros = raizEncuentroSel;
   app.element = [raizEncuentro()];
   const bindings = new Map();
@@ -570,9 +584,7 @@ test("ApplicationV2: un ACK tardío de encuentro tras revocar el rol GM no notif
   const { hooks, instances, notifications } = await loadModule({ modern: true, fetchImpl });
   const controls = {};
   hooks.getSceneControlButtons(controls);
-  controls.lagunak.tools["lagunak-consola"].onClick();
-
-  const app = instances[0];
+  const app = await abrirDesdePanelGM(controls, instances, "consola");
   app.catalogoEncuentros = raizEncuentroSel;
   app.element = raizEncuentro();
   const enVuelo = app.constructor.DEFAULT_OPTIONS.actions.encuentro.call(app);
@@ -595,10 +607,10 @@ test("v11: lectura discordante tras el ACK avisa y pasa a estado de error", asyn
   const { hooks, instances, notifications } = await loadModule();
   const controls = [];
   hooks.getSceneControlButtons(controls);
-  controls.find((c) => c.name === "lagunak").tools[0].onClick();
+  const app = await abrirDesdePanelGM(controls, instances, "consola");
 
   const bindings = new Map();
-  instances[0].activateListeners({
+  app.activateListeners({
     find(selector) {
       return { on(_event, callback) { bindings.set(selector, callback); } };
     },
@@ -607,12 +619,12 @@ test("v11: lectura discordante tras el ACK avisa y pasa a estado de error", asyn
 
   // Mientras espera confirmación, una segunda orden queda bloqueada.
   await bindings.get('[data-action="reanudar"]')();
-  assert.equal(instances[0].confirmacionPendiente, true);
+  assert.equal(app.confirmacionPendiente, true);
 
   // El simulador responde lo contrario de lo ordenado.
-  instances[0]._registrarLecturaPausa({ paused: false });
-  assert.equal(instances[0].pausaConfirmada, false);
-  assert.equal(instances[0].falloOrden, true);
+  app._registrarLecturaPausa({ paused: false });
+  assert.equal(app.pausaConfirmada, false);
+  assert.equal(app.falloOrden, true);
   assert.deepEqual(notifications.info, []);
   assert.deepEqual(notifications.warn, ["LAGUNAK.Tempo.Discordante"]);
 });
@@ -621,16 +633,16 @@ test("ApplicationV2: lectura discordante tras el ACK avisa y pasa a estado de er
   const { hooks, instances, notifications } = await loadModule({ modern: true });
   const controls = {};
   hooks.getSceneControlButtons(controls);
-  controls.lagunak.tools["lagunak-consola"].onClick();
+  const app = await abrirDesdePanelGM(controls, instances, "consola");
 
-  const actions = instances[0].constructor.DEFAULT_OPTIONS.actions;
-  await actions.pausar.call(instances[0]);
-  await actions.reanudar.call(instances[0]); // bloqueada: confirmación pendiente
-  assert.equal(instances[0].confirmacionPendiente, true);
+  const actions = app.constructor.DEFAULT_OPTIONS.actions;
+  await actions.pausar.call(app);
+  await actions.reanudar.call(app); // bloqueada: confirmación pendiente
+  assert.equal(app.confirmacionPendiente, true);
 
-  instances[0]._registrarLecturaPausa({ paused: false });
-  assert.equal(instances[0].pausaConfirmada, false);
-  assert.equal(instances[0].falloOrden, true);
+  app._registrarLecturaPausa({ paused: false });
+  assert.equal(app.pausaConfirmada, false);
+  assert.equal(app.falloOrden, true);
   assert.deepEqual(notifications.info, []);
   assert.deepEqual(notifications.warn, ["LAGUNAK.Tempo.Discordante"]);
 });
@@ -641,10 +653,10 @@ test("v11 muestra el error del puente sin emitir una confirmación falsa", async
   });
   const controls = [{ name: "token", tools: [] }];
   hooks.getSceneControlButtons(controls);
-  toolByName(controls, "lagunak-consola").onClick();
+  const app = await abrirDesdePanelGM(controls, instances, "consola");
 
   const bindings = new Map();
-  instances[0].activateListeners({
+  app.activateListeners({
     find(selector) {
       return { on(_event, callback) { bindings.set(selector, callback); } };
     },
@@ -663,10 +675,10 @@ test("ApplicationV2 muestra el error del puente sin emitir una confirmación fal
   });
   const controls = {};
   hooks.getSceneControlButtons(controls);
-  controls.lagunak.tools["lagunak-consola"].onClick();
+  const app = await abrirDesdePanelGM(controls, instances, "consola");
 
-  const actions = instances[0].constructor.DEFAULT_OPTIONS.actions;
-  await actions.reanudar.call(instances[0]);
+  const actions = app.constructor.DEFAULT_OPTIONS.actions;
+  await actions.reanudar.call(app);
 
   assert.deepEqual(pauseValues(fetchCalls), [false]);
   assert.deepEqual(notifications.info, []);
@@ -677,10 +689,10 @@ test("v11 bloquea la orden si el usuario deja de ser GM", async () => {
   const { hooks, instances, notifications, fetchCalls } = await loadModule();
   const controls = [{ name: "token", tools: [] }];
   hooks.getSceneControlButtons(controls);
-  toolByName(controls, "lagunak-consola").onClick();
+  const app = await abrirDesdePanelGM(controls, instances, "consola");
 
   const bindings = new Map();
-  instances[0].activateListeners({
+  app.activateListeners({
     find(selector) {
       return { on(_event, callback) { bindings.set(selector, callback); } };
     },
@@ -698,12 +710,12 @@ test("ApplicationV2 bloquea la orden si el usuario deja de ser GM", async () => 
   const { hooks, instances, notifications, fetchCalls } = await loadModule({ modern: true });
   const controls = {};
   hooks.getSceneControlButtons(controls);
-  controls.lagunak.tools["lagunak-consola"].onClick();
+  const app = await abrirDesdePanelGM(controls, instances, "consola");
   game.user.isGM = false;
 
-  const actions = instances[0].constructor.DEFAULT_OPTIONS.actions;
-  await actions.pausar.call(instances[0]);
-  await actions.reanudar.call(instances[0]);
+  const actions = app.constructor.DEFAULT_OPTIONS.actions;
+  await actions.pausar.call(app);
+  await actions.reanudar.call(app);
 
   assert.deepEqual(fetchCalls, []);
   assert.deepEqual(notifications.info, []);
@@ -749,49 +761,54 @@ test("v11 abre la consola caliente con Application clásica (rAF ausente: sin bu
   const controls = [];
 
   hooks.getSceneControlButtons(controls);
-  const consola = controls.find((c) => c.name === "lagunak").tools.find((t) => t.name === "lagunak-consola");
-  assert.ok(consola);
-  assert.equal(consola.button, true);
   // Abrir no debe romper aunque el arnés no tenga requestAnimationFrame:
   // la animación se auto-inhibe y la ventana sigue funcionando por sondeo.
-  consola.onClick();
+  const consola = await abrirDesdePanelGM(controls, instances, "consola");
 
-  assert.equal(instances.length, 1);
-  assert.deepEqual(instances[0].renderCalls, [true]);
-  assert.equal(instances[0].constructor.defaultOptions.id, "lagunak-consola-caliente");
+  assert.ok(consola);
+  assert.deepEqual(consola.renderCalls, [true]);
+  assert.equal(consola.constructor.defaultOptions.id, "lagunak-consola-caliente");
 
-  // Reabrir no crea una segunda instancia.
-  consola.onClick();
-  assert.equal(instances.length, 1);
+  // Reabrir no crea una segunda instancia de la consola (instancia perezosa
+  // compartida, #276): solo se suma el panel que hace falta para llegar
+  // hasta ella.
+  const totalPrevio = instances.length;
+  const reabierta = await abrirDesdePanelGM(controls, instances, "consola");
+  assert.equal(reabierta, null, "una consola ya abierta no crea instancia nueva");
+  assert.equal(instances.length, totalPrevio + 1, "solo se sumó el panel");
+  assert.equal(instances.filter((i) => i === consola).length, 1);
 });
 
-test("host moderno registra la consola caliente con onChange (v13) y la abre", async () => {
+test("host moderno registra el panel de GM con onChange (v13) y abre la consola caliente", async () => {
   const { hooks, instances } = await loadModule({ modern: true });
   const controls = {};
 
   hooks.getSceneControlButtons(controls);
-  const consola = controls.lagunak.tools["lagunak-consola"];
-  assert.ok(consola);
-  assert.equal(typeof consola.onClick, "function");
-  assert.equal(typeof consola.onChange, "function"); // v13 dispara onChange
-  consola.onClick();
+  const panelTool = controls.lagunak.tools["lagunak-panel-gm"];
+  assert.ok(panelTool);
+  assert.equal(typeof panelTool.onClick, "function");
+  assert.equal(typeof panelTool.onChange, "function"); // v13 dispara onChange
 
-  assert.equal(instances.length, 1);
-  assert.deepEqual(instances[0].renderCalls, [{ force: true }]);
-  assert.equal(instances[0].constructor.DEFAULT_OPTIONS.id, "lagunak-consola-caliente");
+  const consola = await abrirDesdePanelGM(controls, instances, "consola");
 
-  consola.onClick();
-  assert.equal(instances.length, 1);
+  assert.deepEqual(consola.renderCalls, [{ force: true }]);
+  assert.equal(consola.constructor.DEFAULT_OPTIONS.id, "lagunak-consola-caliente");
+
+  const totalPrevio = instances.length;
+  const reabierta = await abrirDesdePanelGM(controls, instances, "consola");
+  assert.equal(reabierta, null, "una consola ya abierta no crea instancia nueva");
+  assert.equal(instances.length, totalPrevio + 1, "solo se sumó el panel");
+  assert.equal(instances.filter((i) => i === consola).length, 1);
 });
 
 test("v11 conserva la ayuda abierta entre re-renderizados hasta que se cierra", async () => {
   const { hooks, instances } = await loadModule();
   const controls = [];
   hooks.getSceneControlButtons(controls);
-  controls.find((group) => group.name === "lagunak").tools[0].onClick();
+  const app = await abrirDesdePanelGM(controls, instances, "consola");
 
   const bindings = new Map();
-  instances[0].activateListeners({
+  app.activateListeners({
     find(selector) {
       return { on(event, callback) { bindings.set(selector, { event, callback }); } };
     },
@@ -799,19 +816,19 @@ test("v11 conserva la ayuda abierta entre re-renderizados hasta que se cierra", 
 
   const toggle = bindings.get(".lagunak-ayuda");
   assert.equal(toggle.event, "toggle");
-  assert.equal(instances[0].getData().ayudaAbierta, false);
+  assert.equal(app.getData().ayudaAbierta, false);
   toggle.callback({ currentTarget: { open: true } });
-  instances[0].render(false); // reemplazo de DOM equivalente al del sondeo
-  assert.equal(instances[0].getData().ayudaAbierta, true);
+  app.render(false); // reemplazo de DOM equivalente al del sondeo
+  assert.equal(app.getData().ayudaAbierta, true);
   toggle.callback({ currentTarget: { open: false } });
-  assert.equal(instances[0].getData().ayudaAbierta, false);
+  assert.equal(app.getData().ayudaAbierta, false);
 });
 
 test("ApplicationV2 conserva la ayuda abierta entre re-renderizados hasta que se cierra", async () => {
   const { hooks, instances } = await loadModule({ modern: true });
   const controls = {};
   hooks.getSceneControlButtons(controls);
-  controls.lagunak.tools["lagunak-consola"].onClick();
+  const app = await abrirDesdePanelGM(controls, instances, "consola");
 
   let onToggle = null;
   const details = {
@@ -820,17 +837,17 @@ test("ApplicationV2 conserva la ayuda abierta entre re-renderizados hasta que se
       if (event === "toggle") onToggle = callback;
     },
   };
-  instances[0].element = { querySelector: () => details };
-  instances[0]._onRender({}, {});
+  app.element = { querySelector: () => details };
+  app._onRender({}, {});
 
-  assert.equal((await instances[0]._prepareContext()).ayudaAbierta, false);
+  assert.equal((await app._prepareContext()).ayudaAbierta, false);
   details.open = true;
   onToggle({ currentTarget: details });
-  instances[0].render({ force: true });
-  assert.equal((await instances[0]._prepareContext()).ayudaAbierta, true);
+  app.render({ force: true });
+  assert.equal((await app._prepareContext()).ayudaAbierta, true);
   details.open = false;
   onToggle({ currentTarget: details });
-  assert.equal((await instances[0]._prepareContext()).ayudaAbierta, false);
+  assert.equal((await app._prepareContext()).ayudaAbierta, false);
 
   const template = await readFile(new URL("../templates/consola-caliente.hbs", import.meta.url), "utf8");
   assert.match(template, /\{\{#if ayudaAbierta\}\}open\{\{\/if\}\}/);
@@ -869,8 +886,7 @@ test("ApplicationV2: el patch de telemetría usa los campos reales (health/heat/
   const { hooks, instances } = await loadModule({ modern: true, fetchImpl });
   const controls = {};
   hooks.getSceneControlButtons(controls);
-  controls.lagunak.tools["lagunak-consola"].onClick();
-  const app = instances[0];
+  const app = await abrirDesdePanelGM(controls, instances, "consola");
 
   const nodos = {
     salud: { textContent: "" },
@@ -934,8 +950,7 @@ test("v11: el patch de telemetría usa los campos reales (health/heat/power) tra
   const { hooks, instances } = await loadModule({ fetchImpl });
   const controls = [];
   hooks.getSceneControlButtons(controls);
-  controls.find((group) => group.name === "lagunak").tools[0].onClick();
-  const app = instances[0];
+  const app = await abrirDesdePanelGM(controls, instances, "consola");
 
   const nodos = {
     salud: { textContent: "" },

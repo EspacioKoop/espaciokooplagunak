@@ -57,6 +57,11 @@ const MODULOS_DE_ARTE = [
   // tonos propios en vez de reusar los de la cantina — pero los estrena EN la
   // paleta, donde se ven al lado de los de todos los demás.
   "../scripts/seccion-lienzo.mjs",
+  // El muñeco de otros jugadores andando por la nave (#453): sin color propio
+  // (la malla no pinta nada) y con el crema de "una persona" ya reservado en
+  // `SECCION.tripulante` para quien lo compone.
+  "../scripts/nave-personaje-malla.mjs",
+  "../scripts/nave-jugadores-render.mjs",
 ];
 
 test("los colores no cambian al mudarse: mismo valor que antes en cada módulo", () => {

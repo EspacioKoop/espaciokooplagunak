@@ -1,8 +1,7 @@
 /* Ventana del prototipo de "andar por la nave" (#427). Envuelve
- * `nave-movimiento-lienzo.mjs` (el bucle) sobre las dos salas de pruebas de
- * `nave-movimiento-sala-prueba.mjs` (no la cantina — ver el porqué en ese
- * archivo), conectadas por una puerta a través del catálogo de
- * `nave-estancias.mjs`, y traduce teclado en pulsar/soltar/girar.
+ * `nave-movimiento-lienzo.mjs` (el bucle) sobre `nave-catalogo-andar.mjs`,
+ * que cose las dos salas de pruebas del motor CON la primera sala real, la
+ * cantina — y traduce teclado en pulsar/soltar/girar.
  *
  * Capa fina, igual que el resto del módulo: no decide colisión, cámara ni a
  * qué estancia lleva una puerta — eso ya lo resolvió el catálogo. Aquí solo
@@ -11,15 +10,15 @@
  * hermanas (`Application` v11, `ApplicationV2` v12+), sin código de ventana
  * compartido a propósito.
  *
- * ES UN PROTOTIPO, Y SE DICE EN LA PROPIA VENTANA. Las salas de pruebas no
- * son ninguna sala real de la nave; sirven para verificar que andar,
- * colisionar y cruzar una puerta se sienten bien antes de decidir la costura
- * con salas reales.
+ * SIGUE SIENDO UN PROTOTIPO TÉCNICO, Y SE DICE EN LA PROPIA VENTANA: la
+ * puerta hacia la cantina prueba que la costura aguanta con una sala de
+ * verdad, no que esa sea la geografía definitiva de la nave (ver
+ * `nave-catalogo-andar.mjs`).
  */
 
 import { MODULE_ID } from "./lagunak-constantes.mjs";
 import { arrancarAndar } from "./nave-movimiento-lienzo.mjs";
-import { CATALOGO_PRUEBA } from "./nave-movimiento-sala-prueba.mjs";
+import { CATALOGO_ANDAR } from "./nave-catalogo-andar.mjs";
 import { puntoDeLlegada } from "./nave-estancias.mjs";
 
 const ESTANCIA_INICIAL = "a";
@@ -38,7 +37,7 @@ const PLANTILLA = `modules/${MODULE_ID}/templates/andar-nave.hbs`;
 function leerPosicionGuardada() {
   try {
     const guardada = game.user?.getFlag?.(MODULE_ID, FLAG_POSICION);
-    if (guardada && CATALOGO_PRUEBA.tiene(guardada.estancia)) return guardada;
+    if (guardada && CATALOGO_ANDAR.tiene(guardada.estancia)) return guardada;
   } catch {
     // Sin ajuste registrado, o sin `game.user` resuelto todavía: se cae al
     // arranque de serie, que es la lectura segura.
@@ -137,7 +136,7 @@ function arrancar(raiz) {
   if (!lienzo) return null;
 
   const guardada = leerPosicionGuardada();
-  const inicial = CATALOGO_PRUEBA.obtener(guardada?.estancia ?? ESTANCIA_INICIAL);
+  const inicial = CATALOGO_ANDAR.obtener(guardada?.estancia ?? ESTANCIA_INICIAL);
   // Vive fuera del mando a propósito: `arrancarAndar` sabe de planta/render/
   // posición, pero nunca supo que existen "estancias" con nombre — ese
   // conocimiento es de este archivo y del catálogo, no del bucle.
@@ -154,7 +153,7 @@ function arrancar(raiz) {
     // cada puerta y con qué posición/orientación se llega. Esta ventana solo
     // aplica lo que `puntoDeLlegada` ya resolvió — no vuelve a decidir nada.
     alTocarPuerta: (destino) => {
-      const llegada = puntoDeLlegada(CATALOGO_PRUEBA, destino);
+      const llegada = puntoDeLlegada(CATALOGO_ANDAR, destino);
       if (!llegada) return;
       estanciaActual = llegada.estancia;
       mando.cambiarEstancia(llegada);

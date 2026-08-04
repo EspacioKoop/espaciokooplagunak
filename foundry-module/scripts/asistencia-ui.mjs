@@ -322,7 +322,13 @@ export function addAsistenciaControl(controls) {
 
 export function abrirAsistencia() {
   if (!moduloConfigurado) return;
-  ventana ??= new (claseVentana())();
+  // Una ApplicationV2 cerrada NO se reutiliza (renderizarla otra vez falla en
+  // v12+, ver el mismo criterio ya aplicado en main.mjs para la mesa de
+  // minijuegos): `ventana ??= ...` bastaba mientras la ventana nunca se
+  // cerrara, pero tras el primer cierre `ventana` seguía siendo la instancia
+  // vieja y `.render()` no volvía a abrir nada. Se construye una nueva salvo
+  // que la actual siga viva.
+  if (!ventana?.rendered) ventana = new (claseVentana())();
   if (foundry.applications?.api?.ApplicationV2) ventana.render({ force: true });
   else ventana.render(true);
 }

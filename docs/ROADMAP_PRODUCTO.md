@@ -142,20 +142,23 @@ puede cambiar el resultado del encuentro.
 **Métrica de éxito:** en un playtest, ningún jugador puede describir su puesto
 como «mirar mientras otro juega».
 
-Desglose de coordinación en #459, con subissues verticales y grafo de
-dependencias explícito:
+Desglose de coordinación del vertical de agencia en #459, con subissues
+formales y grafo de dependencias explícito:
 
-- #460 — verificar y documentar pantallas nativas restantes (bloquea a los
-  siguientes cuatro);
+- #460 — verificar y documentar pantallas nativas restantes (bloquea #462–#465);
 - #461 — modelo de permisos por puesto v1 (informa sin bloquear);
 - #462 — sensores/ciencia;
 - #463 — comunicaciones;
 - #464 — reparación por tripulación (ingeniería activa);
 - #465 — arma real más allá de escudos;
 - #466 — feedback interactivo en 3D por acción de puesto (depende de al menos
-  uno de los cuatro anteriores);
-- #467 — playtest de Etapa B, cierra la etapa (depende de todos los
-  anteriores).
+  uno de #462–#465);
+- #467 — playtest del vertical de agencia de Etapa B (depende de #460–#466).
+
+Este grafo valida el criterio de salida de agencia, pero no cierra por sí solo
+toda la Etapa B. Antes de declarar la etapa completada también deben quedar
+trazados y satisfechos sus otros frentes: navegación operacional, alarmas
+compartidas, guardias y relevo, y automatización de puestos vacíos.
 
 ### Etapa C — Nave persistente y progresión
 

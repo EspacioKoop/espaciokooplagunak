@@ -233,7 +233,13 @@ export function crearClaseCantinaV2({ alSeleccionar }) {
       // Una ventana que se repinta arranca OTRA sala: la anterior se para o
       // se quedan dos bucles pintando sobre el mismo lienzo.
       this.sala?.detener();
-      this.sala = encenderSala(this.element, alSeleccionar);
+      // El punto "jugar" del plano pasa por `seleccionarPuerta`, la misma
+      // ruta que los botones de la lista: las dos formas de sentarse deben
+      // cerrar la cantina igual, porque no hay estado que conservar entre
+      // una visita y la siguiente (ver `abrirCantina` en `main.mjs`) — dejar
+      // el plano abierto detrás de la mesa solo deja un lienzo pintando para
+      // nadie.
+      this.sala = encenderSala(this.element, (id, opciones) => this.seleccionarPuerta(id, opciones));
       enfocarPrimeraPuerta(this.element);
     }
 
@@ -287,7 +293,9 @@ export function crearClaseCantinaV1({ alSeleccionar }) {
       });
       // En v11 `html` es jQuery: el elemento real está en [0].
       this.sala?.detener();
-      this.sala = encenderSala(html?.[0], alSeleccionar);
+      // Misma razón que en v12+: el punto "jugar" del plano cierra la
+      // cantina igual que los botones de la lista.
+      this.sala = encenderSala(html?.[0], (id, opciones) => this.seleccionarPuerta(id, opciones));
       enfocarPrimeraPuerta(html?.[0]);
     }
   };

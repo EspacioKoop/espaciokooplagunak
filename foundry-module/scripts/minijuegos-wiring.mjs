@@ -13,11 +13,17 @@ import {
   reconectar,
   vistaPublicaSesion,
 } from "./minijuegos/sesion-motor.mjs";
-import { MESA_POR_DEFECTO, configuracionPoker } from "./minijuegos/mesa-config.mjs";
+import {
+  MESA_POR_DEFECTO,
+  MESA_POR_DEFECTO_BLACKJACK,
+  configuracionBlackjack,
+  configuracionPoker,
+} from "./minijuegos/mesa-config.mjs";
 import * as poker from "./minijuegos/poker-motor.mjs";
 import { decidirAccionAutomatica } from "./minijuegos/agente-automatico.mjs";
 import * as dadosMotor from "./minijuegos/dados-motor.mjs";
 import { decidirJugadaDados } from "./minijuegos/dados-agente.mjs";
+import * as blackjackMotor from "./minijuegos/blackjack-motor.mjs";
 import { resolverTurnosAutomaticos } from "./minijuegos/turnos-automaticos.mjs";
 
 // Cableado Foundry de las sesiones de minijuegos (#308, paso 3). Capa fina y no
@@ -73,6 +79,10 @@ function semillaCriptografica() {
 export const AJUSTE_FICHAS = "minijuegoFichasIniciales";
 export const AJUSTE_CIEGA_PEQUENA = "minijuegoCiegaPequena";
 export const AJUSTE_CIEGA_GRANDE = "minijuegoCiegaGrande";
+// Apuesta fija de blackjack: no hay ciegas ni botón, todos arriesgan lo mismo
+// cada mano. `AJUSTE_FICHAS` sí se comparte con el póker —es la misma idea de
+// "con cuánto se sienta cada uno"—, así que solo hace falta un ajuste nuevo.
+export const AJUSTE_APUESTA_BLACKJACK = "minijuegoApuestaBlackjack";
 
 // Opciones de mesa tal como las espera `configuracionPoker`, compuestas desde
 // los tres ajustes. `normalizarMesa` sigue acotando: son cifras que edita una
@@ -159,6 +169,12 @@ export function registrarAjustesMinijuegos(moduleId) {
     "LAGUNAK.Minijuegos.Ajustes.CiegaGrande.Nombre",
     "LAGUNAK.Minijuegos.Ajustes.CiegaGrande.Pista",
     MESA_POR_DEFECTO.ciegaGrande,
+  );
+  cifraDeMesa(
+    AJUSTE_APUESTA_BLACKJACK,
+    "LAGUNAK.Minijuegos.Ajustes.ApuestaBlackjack.Nombre",
+    "LAGUNAK.Minijuegos.Ajustes.ApuestaBlackjack.Pista",
+    MESA_POR_DEFECTO_BLACKJACK.apuesta,
   );
   game.settings.register(moduleId, AJUSTE_SESION, {
     scope: "world",
@@ -384,6 +400,11 @@ const verticales = new Map();
  *   - `configuracion(moduleId)`: configuración de la mano/ronda siguiente, o
  *     null si el juego no necesita ninguna —los dados no la necesitan: sus
  *     asientos los deriva la sesión y los dados los pone el propio motor—.
+ *   - `limites`: límites de mesa que pasa `abrirMesa` cuando quien la abre no
+ *     trae los suyos, o null para los de `sesion-motor.mjs` (dos jugadores
+ *     como mínimo). Solo hace falta declararlo cuando el juego se juega con
+ *     menos: el blackjack es el primer caso, porque un jugador solo contra la
+ *     banca ya es una mesa completa.
  */
 export function registrarJuego(nombre, definicion) {
   // Compatibilidad con la forma de un solo argumento, que registraba «el» juego
@@ -396,6 +417,7 @@ export function registrarJuego(nombre, definicion) {
     motor: definicion?.motor ?? null,
     decidir: definicion?.decidir ?? null,
     configuracion: definicion?.configuracion ?? null,
+    limites: definicion?.limites ?? null,
   });
 }
 
@@ -403,6 +425,16 @@ function configuracionDePoker(moduleId) {
   return configuracionPoker(
     game.settings.get(moduleId, AJUSTE_SESION),
     opcionesMesa(moduleId),
+  );
+}
+
+function configuracionDeBlackjack(moduleId) {
+  return configuracionBlackjack(
+    game.settings.get(moduleId, AJUSTE_SESION),
+    {
+      fichasIniciales: game.settings.get(moduleId, AJUSTE_FICHAS),
+      apuesta: game.settings.get(moduleId, AJUSTE_APUESTA_BLACKJACK),
+    },
   );
 }
 
@@ -421,6 +453,21 @@ registrarJuego("dados", {
   // los dados de cada uno los pone el motor. Una mesa de dados no tiene entrada.
   configuracion: null,
 });
+// El tercer vertical (#308, cerrado #340). Sin política de asientos automáticos
+// todavía: `decidir: null` dice que esta mesa no admite NPC, no que el motor no
+// pudiera jugarlos — nadie ha escrito aún la política de cuándo pedir o
+// plantarse. Un asiento "automatico" en una mesa de blackjack se queda sin
+// turno resuelto hasta que llegue esa política, igual que le pasaría a
+// cualquier otro vertical sin la suya.
+registrarJuego("blackjack", {
+  motor: blackjackMotor,
+  decidir: null,
+  configuracion: configuracionDeBlackjack,
+  // Único vertical que se juega con un solo jugador: no hay "banca" que se
+  // siente aparte, la banca es el propio motor. Con el mínimo de dos que trae
+  // `sesion-motor.mjs` una mesa para uno nunca podría arrancar `start`.
+  limites: { minJugadores: 1 },
+});
 
 /** El vertical de la mesa viva, resuelto por el nombre que ella misma declara. */
 function verticalActivo() {
@@ -434,14 +481,22 @@ function juegoActivo() {
 
 // Abre una mesa nueva. Solo el coordinador la crea, porque la sesión viva vive
 // en su memoria.
+//
+// Sin `limites` explícitos se toman los que declaró el propio vertical al
+// registrarse. Hace falta porque el mínimo de jugadores NO es el mismo para
+// todos: dos personas hacen falta para que una mano de póker o de dados
+// tengan sentido, pero una mesa de blackjack se juega igual de bien un
+// jugador solo contra la banca — si `abrirMesa` impusiera aquí el mínimo de
+// dos, una mesa de blackjack para uno nunca podría arrancar `start`.
 export function abrirMesa({ id, nombreJuego, limites } = {}) {
   if (!moduloConfigurado || !esCoordinador()) return null;
+  const nombre = nombreJuego ?? "poker";
   sesionViva = crearSesion({
     id: id ?? foundry.utils.randomID(),
-    juego: nombreJuego ?? "poker",
+    juego: nombre,
     anfitrionId: game.user.id,
     coordinadorId: game.user.id,
-    limites,
+    limites: limites ?? verticales.get(nombre)?.limites,
   });
   // Se publica la VISTA pública, no el estado interno a pelo: la vista añade
   // las acciones de forastero, que son el respaldo de quien no reciba su envío

@@ -40,12 +40,17 @@ test("REGRESIÓN: ningún ajuste visible es de tipo Object", async () => {
   assert.deepEqual(sospechosos, []);
 });
 
-test("la entrada y las ciegas son tres cifras editables", async () => {
+test("la entrada, las ciegas y la apuesta de blackjack son cifras editables", async () => {
   const registrados = await registrar();
   const cifras = registrados.filter((ajuste) => ajuste.config && ajuste.type === Number);
   assert.deepEqual(
     cifras.map((ajuste) => ajuste.clave).sort(),
-    ["minijuegoCiegaGrande", "minijuegoCiegaPequena", "minijuegoFichasIniciales"],
+    [
+      "minijuegoApuestaBlackjack",
+      "minijuegoCiegaGrande",
+      "minijuegoCiegaPequena",
+      "minijuegoFichasIniciales",
+    ],
   );
   for (const cifra of cifras) {
     assert.equal(cifra.scope, "world", "la mesa es de la partida, no de cada cliente");

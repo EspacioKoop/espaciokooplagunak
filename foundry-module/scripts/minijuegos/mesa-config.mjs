@@ -133,6 +133,74 @@ export function configuracionPoker(publico, opciones = {}) {
  * estado de juego— el botón arranca en el asiento 0, que es tan bueno como
  * cualquiera para la primera mano.
  */
+// ---- Blackjack --------------------------------------------------------------
+//
+// Mismo problema que el póker (#308, paso 4) y misma solución: `blackjack-motor.
+// crear` exige `apuesta` y `fichas` por jugador, y eso no es una regla del
+// juego —es cuánto se juega esta noche—, así que vive aquí y no en el motor.
+//
+// A diferencia del póker no hay ciegas ni botón: cada mano todos arriesgan la
+// MISMA apuesta fija, decidida por la mesa. Quien no llega a esa apuesta se
+// queda fuera de la mano, exactamente como en póker quien se queda a cero.
+
+export const MESA_POR_DEFECTO_BLACKJACK = Object.freeze({
+  fichasIniciales: 100,
+  apuesta: 5,
+});
+
+export function normalizarMesaBlackjack(opciones = {}) {
+  return {
+    fichasIniciales: entero(opciones.fichasIniciales, MESA_POR_DEFECTO_BLACKJACK.fichasIniciales, 1),
+    apuesta: entero(opciones.apuesta, MESA_POR_DEFECTO_BLACKJACK.apuesta, 1),
+  };
+}
+
+/**
+ * Fichas con las que cada asiento llega a la mano que va a empezar. Misma
+ * regla que en póker: la primera mano usa la entrada configurada; a partir de
+ * ahí manda lo que dejó la mano anterior, para que las fichas sigan siendo
+ * efímeras y repartir de nuevo la entrada no sea una recompra encubierta.
+ */
+function fichasDeBlackjack(publico, userId, fichasIniciales) {
+  const resueltos = publico?.resultado?.jugadores;
+  if (Array.isArray(resueltos)) {
+    const propio = resueltos.find((j) => j?.userId === userId);
+    if (propio && Number.isInteger(propio.fichas)) return propio.fichas;
+  }
+  const enJuego = publico?.juegoPublico?.jugadores;
+  if (Array.isArray(enJuego)) {
+    const asiento = enJuego.find((j) => j?.userId === userId);
+    if (asiento && Number.isInteger(asiento.fichas)) return asiento.fichas;
+  }
+  return fichasIniciales;
+}
+
+/**
+ * Construye la `configuracionJuego` que `sesion-motor.mjs` pasa a
+ * `blackjack-motor.crear`, a partir del estado público de la mesa.
+ *
+ * QUIEN NO LLEGA A LA APUESTA NO ENTRA A LA MANO. `blackjack.crear` exige
+ * fichas suficientes para la apuesta fija; el asiento se queda fuera del
+ * reparto, no fuera de la mesa — sigue sentado viendo jugar, igual que en
+ * póker.
+ *
+ * @param {object|null} publico estado público vigente de la sesión.
+ * @param {object} opciones opciones de mesa (sin normalizar).
+ */
+export function configuracionBlackjack(publico, opciones = {}) {
+  const mesa = normalizarMesaBlackjack(opciones);
+  const asientos = Array.isArray(publico?.jugadores) ? publico.jugadores : [];
+  const jugadores = asientos
+    .map((asiento) => ({
+      userId: asiento.userId,
+      fichas: fichasDeBlackjack(publico, asiento.userId, mesa.fichasIniciales),
+      apuesta: mesa.apuesta,
+      controlador: asiento.controlador === "automatico" ? "automatico" : "humano",
+    }))
+    .filter((jugador) => jugador.fichas >= jugador.apuesta);
+  return { jugadores };
+}
+
 function botonSiguiente(publico, jugadores) {
   if (jugadores.length === 0) return 0;
   const anterior = publico?.juegoPublico;

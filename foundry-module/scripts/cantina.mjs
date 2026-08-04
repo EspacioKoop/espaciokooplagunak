@@ -40,6 +40,16 @@ export const PUERTAS = Object.freeze([
     objeto: "dados",
     icono: "fa-solid fa-dice",
   }),
+  // El tercer vertical (#308, cerrado #340: motor propio, no `Cards` nativo).
+  // Misma independencia que los otros dos: su propio motor, su propia mesa,
+  // sus propios NPC — la cantina solo abre la puerta.
+  Object.freeze({
+    id: "blackjack",
+    juego: "blackjack",
+    tituloClave: "LAGUNAK.Cantina.Puerta.Blackjack",
+    objeto: "blackjack",
+    icono: "fa-solid fa-cards",
+  }),
 ]);
 
 /** Catálogo completo, en orden estable. */

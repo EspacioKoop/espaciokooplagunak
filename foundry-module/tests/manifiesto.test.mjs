@@ -26,3 +26,22 @@ test("el id del manifiesto es el que usan los scripts y los canales", async () =
   const { MODULE_ID } = await import("../scripts/lagunak-constantes.mjs");
   assert.equal((await manifiesto()).id, MODULE_ID);
 });
+
+test("el manifiesto NO declara dependencia de plutonium ni de 5etools (#332)", async () => {
+  // La integración con contenido importado por el usuario es OPCIONAL y de solo
+  // lectura: el módulo mira lo que ya hay en el mundo y nunca induce a instalar
+  // nada. Declarar la relación —aunque fuera `recommends`— convertiría en
+  // recomendación del proyecto una vía de importación de material con copyright
+  // sin licencia. Esta prueba es la guarda: si alguien la añade, falla aquí.
+  const { relationships = {} } = await manifiesto();
+  const declaradas = [
+    ...(relationships.requires ?? []),
+    ...(relationships.recommends ?? []),
+    ...(relationships.conflicts ?? []),
+    ...(relationships.systems ?? []),
+  ];
+  const texto = JSON.stringify(declaradas).toLowerCase();
+  for (const prohibida of ["plutonium", "5etools", "5e-tools"]) {
+    assert.equal(texto.includes(prohibida), false, `el manifiesto no debe nombrar ${prohibida}`);
+  }
+});

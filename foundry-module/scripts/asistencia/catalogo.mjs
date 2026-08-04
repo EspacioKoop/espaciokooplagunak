@@ -91,11 +91,12 @@ const BASE = [
     ],
   },
   {
-    // Sensores no está en la matriz de autoridad: no hay orden suya que prestar,
-    // así que esta tarea es NARRATIVA y el reductor la rechazará con
-    // `MODO_NARRATIVO`. Se declara igualmente porque el fruto existe —lo
-    // adjudica el GM— y porque tenerla escrita evita que alguien «arregle» el
-    // hueco dándole a sensores una orden que el puente no le autoriza.
+    // Deliberadamente NARRATIVA (no una limitación de la matriz de autoridad:
+    // desde #462 sensores sí tiene una orden real, `scan_object`). Afinar un
+    // contacto dudoso no es "pulsar escanear otra vez" — el fruto lo adjudica
+    // el GM sobre la lectura ya hecha, y el reductor la rechaza con
+    // `MODO_NARRATIVO` a propósito, para no fingir que ayudar aquí mueve un
+    // dato mecánico que en realidad no existe.
     id: "afinar-contacto-dudoso",
     puestoAsistido: "sensors",
     accionPropuesta: null,

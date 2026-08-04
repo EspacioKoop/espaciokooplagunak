@@ -133,8 +133,11 @@ token:
   cada pantalla de tripulación ve casco, energía y sistemas, así que ocultarlo
   aquí era un peor producto a cambio de cero seguridad. **Los contactos son la
   excepción** y siguen siendo recurso del GM: callsign, facción y coordenadas
-  exactas son lo que el sistema de sensores debe decidir cuánto revela, y se
-  abrirán degradados por distancia y salud de sensores.
+  exactas son lo que el sistema de sensores debe decidir cuánto revela. Se abren
+  degradados (`contactos-degradados.mjs`) por el **estado de escaneo real del
+  juego** (`ScanState`, campo `scan_state` de `/v1/contacts` desde #462) para el
+  indicativo y la facción, y por distancia/alcance de radar para la posición
+  (rumbo y distancia relativos, nunca coordenadas absolutas).
 - **Identidad de usuario no falsificable** (#237). El tripulante escribe la orden
   en su propio flag de usuario (`emitWorkspaceOrder`); el GM la recoge en el hook
   `updateUser`. El puesto **nunca** se declara en la orden: el GM lo resuelve
@@ -164,11 +167,13 @@ token:
 - **Matriz de autoridad cerrada** (`station-actions.mjs`, `STATION_ACTIONS`).
   Declara qué órdenes del whitelist del puente puede emitir cada puesto:
   `navigation` → `set_target_heading`, `set_impulse`, `set_warp`; `engineering`
-  → `set_system_power`, `set_system_coolant`; `weapons` → `set_shields`.
-  `captain`, `sensors` y
-  `communications` son de **observación/narrativa**: no emiten órdenes de control
-  de nave (coherente con el género bridge-sim; ratificado en #268). Añadir una
-  acción exige que el puente ya la autorice y que el puesto la necesite.
+  → `set_system_power`, `set_system_coolant`; `weapons` → `set_shields`;
+  `sensors` → `scan_object` (#462: traduce a orden de puente el
+  `ship:commandScan` nativo, referenciando el objetivo por indicativo).
+  `captain` y `communications` siguen siendo de **observación/narrativa**: no
+  emiten órdenes de control de nave (coherente con el género bridge-sim;
+  ratificado en #268). Añadir una acción exige que el puente ya la autorice y
+  que el puesto la necesite.
 - **Degradación explícita.** Un puesto desconocido o una acción no permitida se
   rechazan con un error tipado (`UNKNOWN_STATION` / `ACTION_NOT_ALLOWED`), nunca
   en silencio; la UI oculta de antemano los controles que el puesto no puede

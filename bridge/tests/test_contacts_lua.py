@@ -122,6 +122,51 @@ function getObjectsInRadius(x, y, r) return mundo end
 """
 
 
+# Mundo dedicado a `scan_state` (#462): tres objetivos con un componente
+# `scan_state` de tres formas distintas -sin entrada para la facción propia,
+# con entrada "fof", y sin componente en absoluto (fully scanned por
+# defecto)- más la nave propia, que debe salir "full" sin mirar su propio
+# componente (una nave no se escanea a sí misma).
+_MUNDO_SCAN_LUA = r"""
+local function obj(cs, fac, x, y, scan_state)
+    local o = {}
+    function o:getCallSign() return cs end
+    function o:getPosition() return x, y end
+    function o:getFaction() return fac end
+    if scan_state ~= nil then
+        o.components = { scan_state = scan_state }
+    end
+    return o
+end
+local ship_obj = obj("Itsaso 1", "Human Navy", 0.0, 0.0, nil)
+function ship_obj:getFactionId() return "human-navy-id" end
+-- Sin entrada para "human-navy-id": debe degradar a "none".
+local sin_faccion_propia = obj(
+    "Lapur 1", "Exuari", 100.0, 0.0,
+    {{faction = "kraylor-id", state = "full"}}
+)
+local identificado_fof = obj(
+    "Lapur 2", "Exuari", 200.0, 0.0,
+    {{faction = "human-navy-id", state = "fof"}}
+)
+-- Sin `components` en absoluto: nace fully scanned (estación de escenario).
+local sin_componente = obj("Argia", "Independent", 300.0, 0.0, nil)
+local mundo = {ship_obj, sin_faccion_propia, identificado_fof, sin_componente}
+function getPlayerShip(n) return ship_obj end
+function getObjectsInRadius(x, y, r) return mundo end
+"""
+
+
+def test_scan_state_usa_el_estado_real_por_faccion_no_la_distancia(tmp_path):
+    payload = _ejecutar_contacts_lua(tmp_path, mundo=_MUNDO_SCAN_LUA)
+    contactos = {c["callsign"]: c for c in payload["contacts"]}
+
+    assert contactos["Itsaso 1"]["scan_state"] == "full"  # la nave propia
+    assert contactos["Lapur 1"]["scan_state"] == "none"  # sin entrada para mi facción
+    assert contactos["Lapur 2"]["scan_state"] == "fof"  # identificado, no escaneado
+    assert contactos["Argia"]["scan_state"] == "full"  # sin componente = ya escaneado
+
+
 def _interprete_lua() -> str | None:
     for nombre in ("lua5.3", "lua5.4", "lua"):
         ruta = shutil.which(nombre)

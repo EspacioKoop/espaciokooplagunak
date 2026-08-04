@@ -16,9 +16,29 @@ const CENTRO = Object.freeze({ x: 0, y: 0 });
 const PAYLOAD = Object.freeze({
   contacts: [
     { callsign: "Lagunak", faction: "Humanos", is_player: true, position: { x: 3, y: 7 } },
-    { callsign: "Argia", faction: "Humanos", is_player: false, position: { x: 1234, y: 0 } },
-    { callsign: "Kraylor Uno", faction: "Kraylor", is_player: false, position: { x: 20456, y: 0 } },
-    { callsign: "Muy Lejos", faction: "Kraylor", is_player: false, position: { x: 99000, y: 0 } },
+    // scan_state "full" (#462): identificado por escaneo real, no por cercanía
+    // — el eje que decide indicativo/facción ya no es la banda de distancia.
+    {
+      callsign: "Argia",
+      faction: "Humanos",
+      is_player: false,
+      position: { x: 1234, y: 0 },
+      scan_state: "full",
+    },
+    {
+      callsign: "Kraylor Uno",
+      faction: "Kraylor",
+      is_player: false,
+      position: { x: 20456, y: 0 },
+      scan_state: "none",
+    },
+    {
+      callsign: "Muy Lejos",
+      faction: "Kraylor",
+      is_player: false,
+      position: { x: 99000, y: 0 },
+      scan_state: "full",
+    },
   ],
 });
 
@@ -51,9 +71,11 @@ test("lo que está fuera de alcance no sale, y tampoco se cuenta", () => {
   assert.equal(JSON.stringify(contactos).includes("99000"), false);
 });
 
-test("en banda larga se pierde quién es, no solo dónde está", () => {
+test("sin escaneo se pierde quién es, no solo dónde está", () => {
+  // "Kraylor Uno" no tiene scan_state "simple"/"full" (#462): sin importar la
+  // banda de distancia, no hay indicativo ni facción que enseñar.
   const { contactos } = degradarContactos(PAYLOAD, CENTRO, RADAR);
-  const lejano = contactos.find((c) => c.banda === "largo");
+  const lejano = contactos.find((c) => c.banda === "largo" && c.distancia === 20000);
   assert.equal(lejano.callsign, null, "un eco no tiene nombre");
   assert.equal(lejano.faction, null, "ni bandera");
   assert.equal(lejano.distancia, 20000, "distancia redondeada a la rejilla gruesa");
@@ -62,6 +84,55 @@ test("en banda larga se pierde quién es, no solo dónde está", () => {
   // sería fingir una lectura que no se tiene.
   assert.equal(lejano.rumboPrecision, 15);
   assert.equal(lejano.rumboDeg % 15, 0);
+});
+
+test("identidad y posición se degradan por ejes independientes (#462)", () => {
+  // Antes de #462 "cerca" e "identificado" eran la misma cosa (aproximación
+  // por banda). Ahora un objeto ya escaneado sigue identificado aunque se
+  // aleje, y uno sin escanear sigue siendo un eco aunque esté al lado.
+  const payload = {
+    contacts: [
+      {
+        callsign: "Escaneada Lejos",
+        faction: "Kraylor",
+        is_player: false,
+        position: { x: 20000, y: 0 }, // banda larga
+        scan_state: "full",
+      },
+      {
+        callsign: "Sin Escanear Cerca",
+        faction: "Kraylor",
+        is_player: false,
+        position: { x: 1000, y: 0 }, // banda corta
+        scan_state: "none",
+      },
+    ],
+  };
+  const { contactos } = degradarContactos(payload, CENTRO, RADAR);
+
+  const lejosEscaneada = contactos.find((c) => c.banda === "largo");
+  assert.equal(lejosEscaneada.callsign, "Escaneada Lejos", "lejos, pero identificada");
+  assert.equal(lejosEscaneada.faction, "Kraylor");
+
+  const cercaSinEscanear = contactos.find((c) => c.banda === "corto");
+  assert.equal(cercaSinEscanear.callsign, null, "cerca, pero sin escanear sigue siendo un eco");
+  assert.equal(cercaSinEscanear.faction, null);
+});
+
+test("la identificación acepta 'simple' además de 'full', pero no 'fof' ni 'none'", () => {
+  const base = { is_player: false, position: { x: 1000, y: 0 } };
+  const casos = [
+    { scan_state: "none", identificado: false },
+    { scan_state: "fof", identificado: false },
+    { scan_state: "simple", identificado: true },
+    { scan_state: "full", identificado: true },
+    { scan_state: undefined, identificado: false }, // sin campo, falla cerrado
+  ];
+  for (const { scan_state, identificado } of casos) {
+    const payload = { contacts: [{ ...base, callsign: "X", faction: "Kraylor", scan_state }] };
+    const [contacto] = degradarContactos(payload, CENTRO, RADAR).contactos;
+    assert.equal(contacto.callsign, identificado ? "X" : null, `scan_state=${scan_state}`);
+  }
 });
 
 test("NO se difunden coordenadas absolutas de nada", () => {
@@ -116,14 +187,30 @@ test("el borde exacto del alcance corto cuenta como identificado", () => {
   // Un contacto justo en el límite tiene que caer en una banda concreta y
   // siempre la misma, o el mismo objeto parpadearía entre identificado y eco.
   const enElBorde = {
-    contacts: [{ callsign: "Justa", faction: "Humanos", is_player: false, position: { x: 5000, y: 0 } }],
+    contacts: [
+      {
+        callsign: "Justa",
+        faction: "Humanos",
+        is_player: false,
+        position: { x: 5000, y: 0 },
+        scan_state: "full",
+      },
+    ],
   };
   const { contactos } = degradarContactos(enElBorde, CENTRO, RADAR);
   assert.equal(contactos[0].banda, "corto");
   assert.equal(contactos[0].callsign, "Justa");
 
   const justoFuera = {
-    contacts: [{ callsign: "Justa", faction: "Humanos", is_player: false, position: { x: 30000, y: 0 } }],
+    contacts: [
+      {
+        callsign: "Justa",
+        faction: "Humanos",
+        is_player: false,
+        position: { x: 30000, y: 0 },
+        scan_state: "full",
+      },
+    ],
   };
   assert.equal(degradarContactos(justoFuera, CENTRO, RADAR).contactos[0].banda, "largo");
 });
@@ -135,7 +222,13 @@ test("entradas rotas se descartan sin tumbar la lista", () => {
       { callsign: "Sin sitio", is_player: false },
       { callsign: "Coordenada mala", is_player: false, position: { x: "cerca", y: 0 } },
       { callsign: "Propia sin sitio", is_player: true },
-      { callsign: "Buena", faction: "Humanos", is_player: false, position: { x: 100, y: 0 } },
+      {
+        callsign: "Buena",
+        faction: "Humanos",
+        is_player: false,
+        position: { x: 100, y: 0 },
+        scan_state: "full",
+      },
     ],
   };
   const { contactos } = degradarContactos(sucio, CENTRO, RADAR);

@@ -68,6 +68,21 @@ test("armas sube y baja escudos, y solo ella", () => {
   );
 });
 
+test("sensores ordena el escaneo por indicativo, y solo ella (#462)", () => {
+  assert.equal(isActionAllowed("sensors", "scan_object"), true);
+  assert.equal(isActionAllowed("weapons", "scan_object"), false);
+  assert.equal(isActionAllowed("navigation", "scan_object"), false);
+  assert.deepEqual(STATION_ACTIONS.sensors, ["scan_object"]);
+  assert.deepEqual(
+    resolveStationOrder({
+      station: "sensors",
+      action: "scan_object",
+      params: { callsign: "Lapur 1" },
+    }),
+    { method: "scanObject", args: ["Lapur 1"] },
+  );
+});
+
 test("isActionAllowed no lanza ante entradas inválidas", () => {
   assert.equal(isActionAllowed("desconocido", "set_target_heading"), false);
   assert.equal(isActionAllowed(null, "set_target_heading"), false);

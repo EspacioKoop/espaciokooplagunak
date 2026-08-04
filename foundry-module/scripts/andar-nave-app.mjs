@@ -20,6 +20,8 @@ import { MODULE_ID } from "./lagunak-constantes.mjs";
 import { arrancarAndar } from "./nave-movimiento-lienzo.mjs";
 import { CATALOGO_ANDAR } from "./nave-catalogo-andar.mjs";
 import { puntoDeLlegada } from "./nave-estancias.mjs";
+import { iniciarSincroniaJugadores } from "./nave-jugadores-wiring.mjs";
+import { componerConJugadores } from "./nave-jugadores-render.mjs";
 
 const ESTANCIA_INICIAL = "a";
 
@@ -149,8 +151,14 @@ function arrancar(raiz) {
   // conocimiento es de este archivo y del catálogo, no del bucle.
   let estanciaActual = guardada?.estancia ?? ESTANCIA_INICIAL;
 
+  // Sincronía de red (#453): quién más anda por la nave. Vive por ventana
+  // (arranca y para con ella), igual que el propio `mando`.
+  const sincronia = iniciarSincroniaJugadores();
+  const conJugadoresDe = (componerSala) =>
+    componerConJugadores(componerSala, () => sincronia.jugadoresEnEstancia(estanciaActual));
+
   const mando = arrancarAndar(lienzo, {
-    componer: inicial.componer,
+    componer: conJugadoresDe(inicial.componer),
     planta: inicial.planta,
     puertas: inicial.puertas,
     x: guardada?.x ?? inicial.entrada.x,
@@ -163,7 +171,10 @@ function arrancar(raiz) {
       const llegada = puntoDeLlegada(CATALOGO_ANDAR, destino);
       if (!llegada) return;
       estanciaActual = llegada.estancia;
-      mando.cambiarEstancia(llegada);
+      // El componer de la sala nueva se envuelve otra vez: `estanciaActual` ya
+      // vale para la sala de llegada, así que el cierre de `conJugadoresDe`
+      // pintará a quien más haya ahí, no a quien había en la sala anterior.
+      mando.cambiarEstancia({ ...llegada, componer: conJugadoresDe(llegada.componer) });
       // Se guarda AQUÍ y no solo al cerrar: un refresco de página o un cierre
       // que no dispare `_onClose` no debería devolver a quien cruzó una
       // puerta a la estancia de la que salió.
@@ -173,8 +184,16 @@ function arrancar(raiz) {
     cancelarFotograma: (id) => globalThis.cancelAnimationFrame?.(id),
   });
   const desenganchar = engancharTeclado(raiz, mando);
+  // Muestreo a intervalo fijo (#453): la propia posición se deja lista para
+  // el próximo tick de envío de `sincronia`, con el mismo ritmo que documenta
+  // `nave-jugadores-wiring.mjs` — no cada fotograma.
+  const intervaloReporte = globalThis.setInterval?.(() => {
+    sincronia.reportar(estanciaActual, mando.posicion());
+  }, 200);
   return {
     detener() {
+      if (intervaloReporte !== undefined) globalThis.clearInterval?.(intervaloReporte);
+      sincronia.detener();
       guardarPosicion(estanciaActual, mando);
       desenganchar();
       mando.detener();

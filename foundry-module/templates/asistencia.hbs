@@ -1,0 +1,98 @@
+<div class="lagunak-asistencia-cuerpo">
+
+  {{#if esLista}}
+    <p class="lagunak-asistencia-intro">{{localize "LAGUNAK.Asistencia.Intro"}}</p>
+    <ul class="lagunak-asistencia-tareas">
+      {{#each tareas}}
+        <li class="lagunak-asistencia-tarea">
+          <span class="lagunak-asistencia-tarea-nombre">{{this.nombre}}</span>
+          <span class="lagunak-asistencia-tarea-puesto">{{this.puestoTexto}}</span>
+          {{#if this.narrativa}}
+            <span class="lagunak-asistencia-tarea-narrativa">{{localize "LAGUNAK.Asistencia.Narrativa"}}</span>
+          {{/if}}
+          <button type="button" data-action="pedir-asistencia" data-tarea="{{this.id}}">
+            {{localize "LAGUNAK.Asistencia.Accion.Ayudar"}}
+          </button>
+        </li>
+      {{/each}}
+    </ul>
+  {{/if}}
+
+  {{#if esEsperando}}
+    <p role="status" aria-live="polite">{{localize "LAGUNAK.Asistencia.Esperando"}}</p>
+  {{/if}}
+
+  {{#if esOferta}}
+    <p role="status" aria-live="polite">{{localize "LAGUNAK.Asistencia.EligeEnfoque"}}</p>
+    <ul class="lagunak-asistencia-enfoques">
+      {{#each oferta.enfoques}}
+        <li class="lagunak-asistencia-enfoque">
+          <span class="lagunak-asistencia-enfoque-nombre">{{this.nombre}}</span>
+
+          {{#if this.esBandaFija}}
+            <p>{{localize "LAGUNAK.Asistencia.BandaFija" banda=this.bandaFijaTexto}}</p>
+            {{#if this.coste}}
+              <p class="lagunak-asistencia-coste">{{localize "LAGUNAK.Asistencia.GastaRecurso"}}</p>
+            {{/if}}
+            <button type="button" data-action="tirar-enfoque" data-enfoque="{{this.id}}">
+              {{localize "LAGUNAK.Asistencia.Accion.Confirmar"}}
+            </button>
+          {{else}}
+            {{#if this.salvacion}}
+              <p>{{localize "LAGUNAK.Asistencia.TiraElObjetivo"}}</p>
+            {{/if}}
+            <p>
+              {{localize "LAGUNAK.Asistencia.DificultadModificador" cd=this.dificultad mod=this.modificador}}
+            </p>
+            <ul class="lagunak-asistencia-distribucion">
+              {{#each this.distribucion}}
+                <li class="lagunak-asistencia-banda lagunak-asistencia-banda-{{this.banda}}"
+                    style="--fraccion: {{this.fraccion}}">
+                  <span class="lagunak-asistencia-banda-etiqueta">{{this.etiqueta}}</span>
+                  <span class="lagunak-asistencia-banda-porcentaje">{{this.porcentaje}}%</span>
+                </li>
+              {{/each}}
+            </ul>
+            <p class="lagunak-asistencia-favorable">
+              {{localize "LAGUNAK.Asistencia.ProbabilidadFavorable" porcentaje=this.favorablePorcentaje}}
+            </p>
+            <label>
+              {{localize "LAGUNAK.Asistencia.TotalTirada"}}
+              <input type="number" data-total-de="{{this.id}}" min="1" step="1" />
+            </label>
+            <button type="button" data-action="tirar-enfoque" data-enfoque="{{this.id}}">
+              {{localize "LAGUNAK.Asistencia.Accion.Resolver"}}
+            </button>
+          {{/if}}
+        </li>
+      {{/each}}
+    </ul>
+    <button type="button" data-action="volver">{{localize "LAGUNAK.Asistencia.Accion.Cancelar"}}</button>
+  {{/if}}
+
+  {{#if esReto}}
+    <p role="status" aria-live="polite">
+      {{localize "LAGUNAK.Asistencia.Reto.Estado" zona=reto.zonaTexto segundos=reto.segundosRestantes}}
+    </p>
+    <div class="lagunak-asistencia-reto" aria-hidden="true">
+      <div class="lagunak-asistencia-reto-zona"
+           style="--desde: {{reto.zonaDesde}}; --hasta: {{reto.zonaHasta}}"></div>
+      <div class="lagunak-asistencia-reto-cursor" style="--posicion: {{reto.posicion}}"></div>
+    </div>
+    <button type="button" data-action="pulsar-reto">{{localize "LAGUNAK.Asistencia.Accion.Pulsar"}}</button>
+  {{/if}}
+
+  {{#if esResultado}}
+    <p role="status" aria-live="polite">
+      {{localize "LAGUNAK.Asistencia.Resultado" banda=resultado.bandaTexto}}
+    </p>
+    <p class="lagunak-asistencia-aviso">{{localize "LAGUNAK.Asistencia.QuedaAlTitular"}}</p>
+    <button type="button" data-action="volver">{{localize "LAGUNAK.Asistencia.Accion.Volver"}}</button>
+  {{/if}}
+
+  {{#if esRechazo}}
+    <p role="alert">{{rechazo.texto}}</p>
+    <button type="button" data-action="volver">{{localize "LAGUNAK.Asistencia.Accion.Volver"}}</button>
+  {{/if}}
+
+</div>

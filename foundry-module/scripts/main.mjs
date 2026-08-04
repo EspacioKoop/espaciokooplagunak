@@ -45,6 +45,7 @@ import {
 } from "./station-workspace-ui.mjs";
 import { registerStationOrders } from "./station-order-wiring.mjs";
 import { registrarAsistencia } from "./asistencia-wiring.mjs";
+import { crearClaseAsistenciaV1, crearClaseAsistenciaV2 } from "./asistencia-app.mjs";
 import {
   abrirMesa,
   estadoPublicoVigente,
@@ -547,6 +548,26 @@ function abrirSeccionNave() {
   else app.render(true);
 }
 
+/* Asistencia entre puestos (#309): la ve toda la mesa, como la cantina y la
+ * sección — pedir ayuda no es información privilegiada de nadie. Cada
+ * apertura es una ventana nueva, igual que la cantina: no hay estado que
+ * conservar entre una petición de ayuda y la siguiente, y la sesión en curso
+ * ya vive en memoria del GM coordinador (`asistencia-wiring.mjs`). */
+let asistenciaApp = null;
+
+function abrirAsistencia() {
+  if (asistenciaApp?.rendered) {
+    asistenciaApp.render({ force: true });
+    return;
+  }
+  const Clase = foundry.applications?.api?.ApplicationV2
+    ? crearClaseAsistenciaV2()
+    : crearClaseAsistenciaV1();
+  asistenciaApp = new Clase();
+  if (foundry.applications?.api?.ApplicationV2) asistenciaApp.render({ force: true });
+  else asistenciaApp.render(true);
+}
+
 /* Música de a bordo (#347): el GM manda, todos los clientes obedecen.
  *
  * El reproductor se crea aquí pero NO suena hasta que alguien pulsa el botón de
@@ -762,6 +783,15 @@ Hooks.on("getSceneControlButtons", (controls) => {
       icon: "fa-solid fa-diagram-project",
       button: true,
       onClick: () => abrirSeccionNave(),
+    },
+    {
+      // Pedir ayuda no es información privilegiada de nadie: toda la mesa ve
+      // este botón, igual que la cantina y la sección (#309).
+      name: "lagunak-asistencia",
+      title: "LAGUNAK.Asistencia.Titulo",
+      icon: "fa-solid fa-hands-helping",
+      button: true,
+      onClick: () => abrirAsistencia(),
     },
     {
       name: "lagunak-musica-audio",

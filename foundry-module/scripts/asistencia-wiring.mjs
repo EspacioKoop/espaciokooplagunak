@@ -248,6 +248,11 @@ export function tareasParaPuesto(puesto) {
   return catalogo.paraPuesto(puesto);
 }
 
+/** El catálogo entero, para la ventana que ofrece ayudar a cualquier puesto. */
+export function tareasCatalogo() {
+  return catalogo.tareas;
+}
+
 // --- Registro ----------------------------------------------------------------
 
 /**

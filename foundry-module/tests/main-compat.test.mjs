@@ -322,6 +322,9 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
     // la que vives no es información privilegiada. Lo que sí lo es —la lectura
     // de daño— viaja aparte, y a quien no la tiene el plano le sale sin lectura.
     "lagunak-seccion",
+    // Asistencia entre puestos (#309): igual regla que cantina/sección, la ve
+    // toda la mesa.
+    "lagunak-asistencia",
     "lagunak-musica-audio",
     "lagunak-puestos",
     "lagunak-espacio-puesto",
@@ -722,6 +725,8 @@ test("un jugador no GM recibe asignación y espacio de puesto, sin controles GM"
     // Y la sección de la nave, igual: es un plano de dónde vives, no una
     // consola. Un jugador la abre y la ve sin lectura de daño.
     "lagunak-seccion",
+    // Asistencia entre puestos (#309): igual regla, la ve toda la mesa.
+    "lagunak-asistencia",
     // El audio lo habilita cada cliente con su propio gesto, que el navegador
     // exige y que no se puede delegar en el GM: por eso este botón sí lo ve un
     // jugador. El MANDO de la música sigue siendo solo del GM.

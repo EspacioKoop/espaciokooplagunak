@@ -89,12 +89,19 @@ function encenderSala(raiz, alSeleccionar) {
   // Los botones de plano. Se repintan en cada corte porque las opciones son
   // del plano, no de la ventana.
   const barra = raiz.querySelector?.(".lagunak-cantina-acciones");
-  const refrescarAcciones = () => {
+  const refrescarAcciones = ({ trasCorte = false } = {}) => {
     // Sin DOM completo —arnés de pruebas, host raro— no hay botones y ya está:
     // la sala se sigue pintando y los puntos sobre ella siguen siendo pulsables.
     // Perder los botones es aceptable; tirar el encendido de la sala, no.
     if (typeof barra?.replaceChildren !== "function") return;
     if (typeof raiz.ownerDocument?.createElement !== "function") return;
+
+    // Rehacer los botones destruye el que tuviera el foco, y el foco se cae al
+    // `<body>`. Quien recorre la sala con teclado moviéndose de plano en plano
+    // perdía el foco EN CADA movimiento y tenía que volver tabulando: la ruta
+    // accesible existía y era impracticable, que es la peor de las dos formas
+    // de no tenerla.
+    const indicePrevio = [...barra.children].indexOf(raiz.ownerDocument.activeElement);
     barra.replaceChildren();
     mando.opciones().forEach((opcion, i) => {
       const boton = raiz.ownerDocument.createElement("button");
@@ -113,8 +120,21 @@ function encenderSala(raiz, alSeleccionar) {
       boton.addEventListener("blur", () => mando.resaltar(null));
       barra.append(boton);
     });
+
+    if (indicePrevio < 0) return;
+    // Tras un corte las opciones son OTRAS —son del plano, no de la ventana—,
+    // así que conservar la posición dejaría el foco en algo que no tiene nada
+    // que ver con lo que se acaba de pulsar; se va a la primera del plano
+    // nuevo. Sin corte, la lista es la misma y el sitio se conserva.
+    const botones = [...barra.children];
+    const destino = trasCorte
+      ? botones[0]
+      : botones[Math.min(indicePrevio, botones.length - 1)];
+    // Un plano sin opciones no puede tragarse el foco: cae en la sala, que es
+    // tabulable y desde donde 1..9 siguen funcionando.
+    (destino ?? sala).focus?.();
   };
-  mando.alCortar(refrescarAcciones);
+  mando.alCortar(() => refrescarAcciones({ trasCorte: true }));
   refrescarAcciones();
 
   sala.addEventListener("mousemove", (ev) => {

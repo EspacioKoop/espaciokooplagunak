@@ -108,6 +108,121 @@ test("v12+: pulsar una puerta la selecciona y cierra la sala", () => {
   assert.equal(app.cerrada, true);
 });
 
+/* ---- El foco al recorrer la sala con teclado ----------------------------- */
+
+/** Elemento de mentira con lo justo que toca `encenderSala`. */
+function elementoFalso(documento, extra = {}) {
+  return {
+    children: [],
+    dataset: {},
+    style: {},
+    manejadores: new Map(),
+    addEventListener(evento, fn) {
+      if (!this.manejadores.has(evento)) this.manejadores.set(evento, []);
+      this.manejadores.get(evento).push(fn);
+    },
+    disparar(evento, ev = {}) {
+      for (const fn of this.manejadores.get(evento) ?? []) fn(ev);
+    },
+    focus() {
+      documento.activeElement = this;
+    },
+    replaceChildren(...nodos) {
+      // Como el navegador: quitar del documento el nodo que tiene el foco lo
+      // devuelve al <body>. Sin emular esto, un test del foco pasaría igual
+      // aunque nadie lo recolocara.
+      if (this.children.includes(documento.activeElement)) documento.activeElement = documento.body;
+      this.children = nodos;
+    },
+    append(nodo) {
+      this.children.push(nodo);
+    },
+    querySelector: () => null,
+    querySelectorAll: () => [],
+    ...extra,
+  };
+}
+
+/** Lienzo de mentira: `cantina-lienzo.mjs` solo necesita un contexto 2D romo. */
+function lienzoFalso(documento, ancho, alto, objeto = null) {
+  const ctx = new Proxy({}, { get: () => () => {} });
+  return elementoFalso(documento, {
+    width: ancho,
+    height: alto,
+    dataset: objeto ? { objeto } : {},
+    getContext: () => ctx,
+    getBoundingClientRect: () => ({ left: 0, top: 0, width: ancho, height: alto }),
+  });
+}
+
+/** Una cantina de mentira entera: sala, barra de acciones y puertas. */
+function cantinaFalsa() {
+  const documento = { activeElement: null };
+  documento.body = elementoFalso(documento);
+  documento.activeElement = documento.body;
+  documento.createElement = () => elementoFalso(documento);
+
+  const sala = lienzoFalso(documento, 640, 360);
+  const barra = elementoFalso(documento);
+  const puerta = elementoFalso(documento, { dataset: { puerta: "poker" } });
+
+  const raiz = elementoFalso(documento, {
+    ownerDocument: documento,
+    querySelector: (sel) => {
+      if (sel === ".lagunak-cantina-sala") return sala;
+      if (sel === ".lagunak-cantina-acciones") return barra;
+      if (sel === "[data-puerta]") return puerta;
+      return null;
+    },
+    querySelectorAll: (sel) => (sel === "[data-puerta]" ? [puerta] : []),
+  });
+
+  return { documento, raiz, sala, barra };
+}
+
+test("recorrer la sala con teclado no tira el foco al <body>", () => {
+  // Los botones de acción se rehacen en cada corte porque las opciones son del
+  // plano. Si el que tenía el foco desaparece sin más, quien navega con teclado
+  // tiene que volver tabulando desde el marco de la ventana EN CADA movimiento:
+  // la ruta accesible existe y es impracticable.
+  prepararEntorno({ moderno: true });
+  const Clase = crearClaseCantinaV2({ alSeleccionar: () => {} });
+  const app = new Clase();
+  const { documento, raiz, barra } = cantinaFalsa();
+  app.element = raiz;
+
+  app._onRender({}, {});
+  assert.ok(barra.children.length >= 2, "el plano de entrada tiene acciones");
+
+  // Alguien tabula hasta la segunda acción y la pulsa: eso corta a otro plano.
+  const elegida = barra.children[1];
+  elegida.focus();
+  elegida.disparar("click");
+
+  assert.notEqual(documento.activeElement, documento.body, "el foco se cayó al body");
+  assert.equal(
+    documento.activeElement,
+    barra.children[0],
+    "tras el corte el foco va a la primera acción del plano nuevo",
+  );
+});
+
+test("el foco solo se recoloca si estaba en la barra de acciones", () => {
+  // Pulsar 1..9 con el foco en la sala es la otra ruta de teclado. Robarle el
+  // foco al lienzo dejaría de funcionar justo después de la primera pulsación.
+  prepararEntorno({ moderno: true });
+  const Clase = crearClaseCantinaV2({ alSeleccionar: () => {} });
+  const app = new Clase();
+  const { documento, raiz, sala } = cantinaFalsa();
+  app.element = raiz;
+
+  app._onRender({}, {});
+  sala.focus();
+  sala.disparar("keydown", { key: "1", preventDefault: () => {} });
+
+  assert.equal(documento.activeElement, sala, "el foco se queda en la sala");
+});
+
 test("sin DOM, renderizar no revienta: no hay nada que enfocar", () => {
   prepararEntorno({ moderno: true });
   const Clase = crearClaseCantinaV2({ alSeleccionar: () => {} });

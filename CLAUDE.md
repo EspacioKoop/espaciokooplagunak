@@ -132,10 +132,21 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
   prosa, y la responsabilidad es lo que no se deduce del nombre del archivo.
   - **Orquestación** — `scripts/main.mjs` es un orquestador puro (settings, hooks, scene controls):
     no contiene lógica de dominio. Constantes compartidas en `scripts/lagunak-constantes.mjs`.
-  - **Ventanas** — las cuatro factorías (estado de nave y mapa vivo, V1/V2, aisladas a propósito
-    entre sí) en `scripts/estado-nave-app-v{1,2}.mjs` y `scripts/mapa-vivo-app-v{1,2}.mjs`
-    (extracción del PR #283). `scripts/foco-render.mjs` conserva el foco entre reconstrucciones
-    del DOM (#227).
+  - **Ventanas** — las cuatro factorías originales (estado de nave y mapa vivo, V1/V2, aisladas a
+    propósito entre sí) siguen en `scripts/estado-nave-app-v{1,2}.mjs` y
+    `scripts/mapa-vivo-app-v{1,2}.mjs` (extracción del PR #283) y abren sus ventanas sueltas de
+    siempre desde los controles de escena. **Consola caliente del GM** (#276,
+    `docs/CONSOLA_CALIENTE_GM.md`): en hosts con `ApplicationV2` (v12+) hay además
+    `scripts/consola-caliente-v2.mjs`, que fusiona estado + mapa + encuentros en pestañas con UN
+    solo bucle de sondeo y backoff — el bucle en sí (cadencia, backoff, conteo de fallos, y el
+    reparto de un ciclo en `conexion` global solo-`healthz` + estado por pestaña que no se contagia
+    entre sí) es lógica pura y probada en Node en `scripts/consola-caliente-poll.mjs`. Entrega
+    parcial: solo se fusionó V2 (V1 se queda con sus dos ventanas sueltas, decisión explícita del
+    propio documento de spec — "¿V1 se fusiona o se congela?") y solo tres pestañas (Estado, Mapa,
+    Encuentros); la cuarta pestaña de previsualización por puesto (paso 4, migrar la rama `isGM` de
+    `station-workspaces.mjs`) no se hizo. Los botones de escena de estado/mapa sueltos tampoco se
+    retiraron: la consola fusionada convive con ellos como una entrada más, no los sustituye
+    todavía. `scripts/foco-render.mjs` conserva el foco entre reconstrucciones del DOM (#227).
   - **Mapa vivo** — lógica pura en `scripts/ventana-nave.mjs`, pintor Canvas en
     `scripts/mapa-render.mjs`, con `scripts/decorado-fondo.mjs` y `scripts/nave-sprite.mjs`. El
     mapa interpola únicamente muestras confirmadas y **nunca** extrapola.

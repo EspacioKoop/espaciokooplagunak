@@ -89,6 +89,7 @@ import { crearClaseV2 } from "./estado-nave-app-v2.mjs";
 import { crearClaseV1 } from "./estado-nave-app-v1.mjs";
 import { crearClaseMapaV2 } from "./mapa-vivo-app-v2.mjs";
 import { crearClaseMapaV1 } from "./mapa-vivo-app-v1.mjs";
+import { crearClaseConsolaCalienteV2 } from "./consola-caliente-v2.mjs";
 import {
   MODULE_ID,
   POLL_MIN_S,
@@ -114,6 +115,12 @@ registerBridgeTokenFeature(MODULE_ID);
 
 let estadoApp = null;
 let mapaApp = null;
+// Consola caliente del GM (#276): fusión de estado+mapa+encuentros con un
+// solo bucle, disponible SOLO en hosts con ApplicationV2 (v12+). En v11 no
+// hay clase fusionada todavía (ver docs/CONSOLA_CALIENTE_GM.md, paso 5,
+// pregunta abierta) y `estadoApp`/`mapaApp` de arriba siguen siendo las
+// ventanas sueltas de siempre.
+let consolaApp = null;
 
 Hooks.once("init", () => {
   // La baraja de la nave, disponible como preset de cartas de Foundry (#340).
@@ -683,6 +690,7 @@ async function revokePrivilegedBridgeAccess() {
     revokeWorkspaceAccess(),
     revokePrivilegedApp(estadoApp),
     revokePrivilegedApp(mapaApp),
+    revokePrivilegedApp(consolaApp),
   ]);
 }
 
@@ -714,6 +722,22 @@ Hooks.on("getSceneControlButtons", (controls) => {
           button: true,
           onClick: () => abrirMapaVivo(),
         },
+        // Consola caliente (#276): estado+mapa+encuentros fusionados con un
+        // solo bucle de sondeo. Solo en hosts modernos (ApplicationV2); en
+        // v11 no hay fusión todavía y los dos botones de arriba siguen
+        // siendo la única vía. Deliberadamente NO sustituye a los botones de
+        // arriba en esta entrega: retirarlos es la limpieza pendiente de
+        // cuando la consola fusionada esté jugada en mesa (ver informe de
+        // implementación de #276).
+        ...(foundry.applications?.api?.ApplicationV2
+          ? [{
+              name: "lagunak-consola",
+              title: "LAGUNAK.Controles.AbrirConsola",
+              icon: "fa-solid fa-gauge-high",
+              button: true,
+              onClick: () => abrirConsolaCaliente(),
+            }]
+          : []),
         {
           name: "lagunak-token",
           title: "LAGUNAK.Controles.ConfigurarToken",
@@ -927,6 +951,7 @@ Hooks.on("pauseGame", () => {
   if (estadoApp?.rendered) {
     estadoApp.render(foundry.applications?.api?.ApplicationV2 ? {} : false);
   }
+  if (consolaApp?.rendered) consolaApp.render({});
 });
 
 function abrirEstadoNave() {
@@ -966,4 +991,11 @@ function claseEstadoNave() {
 /** Misma regla de selección perezosa para la ventana del mapa vivo. */
 function claseMapaVivo() {
   return foundry.applications?.api?.ApplicationV2 ? crearClaseMapaV2() : crearClaseMapaV1();
+}
+
+/** Abre la consola caliente fusionada (#276). Solo GM, solo hosts modernos. */
+function abrirConsolaCaliente() {
+  if (!game.user?.isGM || !foundry.applications?.api?.ApplicationV2) return;
+  if (!consolaApp || consolaApp.bridgeAccessRevoked) consolaApp = new (crearClaseConsolaCalienteV2())();
+  consolaApp.render({ force: true });
 }

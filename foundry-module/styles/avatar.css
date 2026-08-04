@@ -1,0 +1,38 @@
+.lagunak-avatar__contenido {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.75rem;
+}
+
+.lagunak-avatar__previa {
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 0.25rem;
+  display: block;
+  margin: 0 auto;
+}
+
+.lagunak-avatar__campos {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.lagunak-avatar__campo {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.lagunak-avatar__campo select {
+  min-height: 2rem;
+  width: 100%;
+}
+
+.lagunak-avatar__indice {
+  align-items: center;
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: 1fr auto auto auto;
+}
+
+.lagunak-avatar__guardar {
+  font-weight: bold;
+}

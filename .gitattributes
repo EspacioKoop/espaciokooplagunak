@@ -1,0 +1,5 @@
+# Arte de cartas generado (tools/generar-baraja-preset.mjs escribe con LF).
+# Sin esto, un checkout Windows con core.autocrlf=true los convierte a CRLF y
+# minijuegos-baraja-preset.test.mjs falla comparando bytes contra lo recién
+# generado, aunque el contenido sea idéntico salvo el fin de línea.
+foundry-module/data/cartas/* text eol=lf

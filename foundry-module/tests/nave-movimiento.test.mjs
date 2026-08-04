@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { colisiona, crearPlanta, mover, vectorLocal } from "../scripts/nave-movimiento.mjs";
+import { colisiona, crearPlanta, mover, puertaTocada, vectorLocal } from "../scripts/nave-movimiento.mjs";
 
 test("crearPlanta exige medidas positivas", () => {
   assert.throws(() => crearPlanta({ ancho: 0, profundidad: 5 }), RangeError);
@@ -134,4 +134,27 @@ test("mover: nunca deja al andante fuera de los límites de la planta", () => {
     pos = mover({ ...pos, yaw: 0, activas, dt: 0.5, planta, velocidad: 3, radio: 0.4 });
   }
   assert.ok(pos.z + 0.4 <= planta.profundidad + 1e-9, `se salió del fondo: z=${pos.z}`);
+});
+
+test("puertaTocada: null sin solape, la puerta cuando se solapa", () => {
+  const puertas = [
+    { rect: { x: 4, z: 8, ancho: 2, profundidad: 0.5 }, destino: { estancia: "b" } },
+  ];
+  assert.equal(puertaTocada(1, 1, 0.3, puertas), null);
+  const tocada = puertaTocada(5, 8.2, 0.3, puertas);
+  assert.equal(tocada?.destino?.estancia, "b");
+});
+
+test("puertaTocada: una puerta no bloquea el paso, solo se detecta", () => {
+  // A diferencia de un obstáculo, una puerta jamás debería usarse dentro de
+  // `planta.obstaculos` — este test documenta que `mover` no la conoce en
+  // absoluto: la traspone sin más porque no es responsabilidad suya.
+  const planta = crearPlanta({ ancho: 10, profundidad: 10 });
+  const paso = mover({ x: 5, z: 4.5, yaw: 0, activas: new Set(["adelante"]), dt: 1, planta, velocidad: 2 });
+  assert.ok(paso.z > 4.5);
+});
+
+test("puertaTocada: sin puertas, o con lista vacía, no revienta", () => {
+  assert.equal(puertaTocada(1, 1, 0.3, []), null);
+  assert.equal(puertaTocada(1, 1, 0.3, undefined), null);
 });

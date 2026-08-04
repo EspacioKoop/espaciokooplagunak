@@ -1,8 +1,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { colisiona } from "../scripts/nave-movimiento.mjs";
-import { ALTURA_OJOS, PLANTA_PRUEBA, componerSalaPrueba } from "../scripts/nave-movimiento-sala-prueba.mjs";
+import { colisiona, puertaTocada } from "../scripts/nave-movimiento.mjs";
+import { puntoDeLlegada } from "../scripts/nave-estancias.mjs";
+import {
+  ALTURA_OJOS,
+  CATALOGO_PRUEBA,
+  PLANTA_PRUEBA,
+  PLANTA_PRUEBA_B,
+  componerSalaPrueba,
+} from "../scripts/nave-movimiento-sala-prueba.mjs";
 
 test("la planta de pruebas colisiona con sus columnas y no con el suelo libre", () => {
   // Una de las columnas declaradas está en x:3..3.8, z:3..3.8.
@@ -38,4 +45,28 @@ test("moverse cambia lo que se ve: mirar hacia una columna cercana la acerca", (
 
 test("la cámara mira desde la altura de ojos, no desde el suelo", () => {
   assert.ok(ALTURA_OJOS > 0 && ALTURA_OJOS < 3);
+});
+
+test("CATALOGO_PRUEBA: la puerta de A se puede alcanzar sin cruzar antes el muro", () => {
+  // El círculo (radio por defecto 0.35) debe poder tocar la puerta ANTES de
+  // colisionar con el límite de la planta — si no, la puerta sería
+  // inalcanzable y la costura entre salas no se podría probar nunca.
+  const puerta = CATALOGO_PRUEBA.obtener("a").puertas[0];
+  const zAcercandose = puerta.rect.z + 0.3; // dentro de la franja de la puerta
+  assert.equal(colisiona(4.5, zAcercandose, 0.35, PLANTA_PRUEBA), false);
+  assert.equal(puertaTocada(4.5, zAcercandose, 0.35, [puerta])?.destino?.estancia, "b");
+});
+
+test("CATALOGO_PRUEBA: cruzar hacia B no aparece dentro de la puerta de vuelta a A", () => {
+  const llegada = puntoDeLlegada(CATALOGO_PRUEBA, CATALOGO_PRUEBA.obtener("a").puertas[0].destino);
+  const puertaDeVuelta = CATALOGO_PRUEBA.obtener("b").puertas[0];
+  assert.equal(puertaTocada(llegada.x, llegada.z, 0.35, [puertaDeVuelta]), null);
+  assert.equal(colisiona(llegada.x, llegada.z, 0.35, PLANTA_PRUEBA_B), false);
+});
+
+test("CATALOGO_PRUEBA: cruzar de vuelta hacia A tampoco reactiva su propia puerta", () => {
+  const llegada = puntoDeLlegada(CATALOGO_PRUEBA, CATALOGO_PRUEBA.obtener("b").puertas[0].destino);
+  const puertaDeIda = CATALOGO_PRUEBA.obtener("a").puertas[0];
+  assert.equal(puertaTocada(llegada.x, llegada.z, 0.35, [puertaDeIda]), null);
+  assert.equal(colisiona(llegada.x, llegada.z, 0.35, PLANTA_PRUEBA), false);
 });

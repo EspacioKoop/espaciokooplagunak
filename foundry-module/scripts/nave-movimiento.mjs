@@ -59,6 +59,27 @@ export function colisiona(x, z, radio, planta) {
   return planta.obstaculos.some((rect) => colisionaConRect(x, z, radio, rect));
 }
 
+/**
+ * ¿Qué puerta toca un círculo de `radio` en `(x, z)`, si toca alguna?
+ *
+ * Una puerta es `{rect, destino}`: el mismo rectángulo esquina+medidas que un
+ * obstáculo, pero NO bloquea —es un disparador, no una pared— y `destino` es
+ * opaco para este módulo (lo interpreta quien gestione el catálogo de
+ * estancias, #427 rebanada siguiente). Se reutiliza la misma comprobación de
+ * cercanía que la colisión: solaparse con el rectángulo de la puerta es
+ * exactamente la misma pregunta que solaparse con un obstáculo, solo que la
+ * respuesta no para el paso, dispara otra cosa.
+ *
+ * Devuelve la PRIMERA puerta tocada, o `null`. Con puertas que se solapasen
+ * (no debería pasar en una planta bien hecha) manda el orden de la lista.
+ */
+export function puertaTocada(x, z, radio, puertas) {
+  for (const puerta of puertas ?? []) {
+    if (colisionaConRect(x, z, radio, puerta.rect)) return puerta;
+  }
+  return null;
+}
+
 /** Las cuatro direcciones que reconoce el motor. Nombradas por su efecto, no
  *  por la tecla física: quien cablee el teclado decide qué tecla es cuál. */
 export const DIRECCIONES = Object.freeze(["adelante", "atras", "izquierda", "derecha"]);

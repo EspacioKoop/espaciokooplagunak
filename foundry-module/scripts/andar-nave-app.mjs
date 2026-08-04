@@ -1,21 +1,28 @@
 /* Ventana del prototipo de "andar por la nave" (#427). Envuelve
- * `nave-movimiento-lienzo.mjs` (el bucle) sobre `nave-movimiento-sala-prueba.
- * mjs` (la sala de pruebas, no la cantina — ver el porqué en ese archivo) y
- * traduce teclado en pulsar/soltar/girar.
+ * `nave-movimiento-lienzo.mjs` (el bucle) sobre las dos salas de pruebas de
+ * `nave-movimiento-sala-prueba.mjs` (no la cantina — ver el porqué en ese
+ * archivo), conectadas por una puerta a través del catálogo de
+ * `nave-estancias.mjs`, y traduce teclado en pulsar/soltar/girar.
  *
- * Capa fina, igual que el resto del módulo: no decide colisión ni cámara,
- * solo cablea DOM. Dos clases hermanas (`Application` v11, `ApplicationV2`
- * v12+), sin código de ventana compartido a propósito.
+ * Capa fina, igual que el resto del módulo: no decide colisión, cámara ni a
+ * qué estancia lleva una puerta — eso ya lo resolvió el catálogo. Aquí solo
+ * se cablea DOM y se reacciona a `alTocarPuerta` llamando a
+ * `mando.cambiarEstancia(...)` con lo que el catálogo ya decidió. Dos clases
+ * hermanas (`Application` v11, `ApplicationV2` v12+), sin código de ventana
+ * compartido a propósito.
  *
- * ES UN PROTOTIPO, Y SE DICE EN LA PROPIA VENTANA. La sala de pruebas no es
- * ninguna sala real de la nave; sirve para verificar que andar y colisionar
- * se sienten bien antes de decidir la costura con salas reales (ver PR de
- * `nave-movimiento.mjs`, sección de pendientes).
+ * ES UN PROTOTIPO, Y SE DICE EN LA PROPIA VENTANA. Las salas de pruebas no
+ * son ninguna sala real de la nave; sirven para verificar que andar,
+ * colisionar y cruzar una puerta se sienten bien antes de decidir la costura
+ * con salas reales.
  */
 
 import { MODULE_ID } from "./lagunak-constantes.mjs";
 import { arrancarAndar } from "./nave-movimiento-lienzo.mjs";
-import { PLANTA_PRUEBA, componerSalaPrueba } from "./nave-movimiento-sala-prueba.mjs";
+import { CATALOGO_PRUEBA } from "./nave-movimiento-sala-prueba.mjs";
+import { puntoDeLlegada } from "./nave-estancias.mjs";
+
+const ESTANCIA_INICIAL = "a";
 
 const PLANTILLA = `modules/${MODULE_ID}/templates/andar-nave.hbs`;
 
@@ -101,9 +108,21 @@ function engancharTeclado(raiz, mando) {
 function arrancar(raiz) {
   const lienzo = raiz?.querySelector?.(".lagunak-andar-lienzo");
   if (!lienzo) return null;
+  const inicial = CATALOGO_PRUEBA.obtener(ESTANCIA_INICIAL);
   const mando = arrancarAndar(lienzo, {
-    componer: componerSalaPrueba,
-    planta: PLANTA_PRUEBA,
+    componer: inicial.componer,
+    planta: inicial.planta,
+    puertas: inicial.puertas,
+    x: inicial.entrada.x,
+    z: inicial.entrada.z,
+    yaw: inicial.entrada.yaw,
+    // La costura entre salas: el catálogo ya decidió a qué estancia lleva
+    // cada puerta y con qué posición/orientación se llega. Esta ventana solo
+    // aplica lo que `puntoDeLlegada` ya resolvió — no vuelve a decidir nada.
+    alTocarPuerta: (destino) => {
+      const llegada = puntoDeLlegada(CATALOGO_PRUEBA, destino);
+      if (llegada) mando.cambiarEstancia(llegada);
+    },
     pedirFotograma: (cb) => globalThis.requestAnimationFrame?.(cb),
     cancelarFotograma: (id) => globalThis.cancelAnimationFrame?.(id),
   });

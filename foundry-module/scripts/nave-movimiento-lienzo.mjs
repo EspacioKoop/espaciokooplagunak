@@ -25,7 +25,7 @@
 // aquí porque es la primera superficie del módulo donde `reducirMovimiento`
 // NO es la respuesta correcta, y conviene que quien la toque sepa por qué.
 
-import { mover } from "./nave-movimiento.mjs";
+import { mover, puertaTocada } from "./nave-movimiento.mjs";
 import { pintarEscena } from "./retro3d-lienzo.mjs";
 
 /** Ritmo al que gira la cámara mientras se mantiene "girar-izq"/"girar-der". */
@@ -39,6 +39,8 @@ const VELOCIDAD_GIRO = Math.PI * 0.6; // radianes por segundo
  * @param {{
  *   componer: (x:number, z:number, yaw:number) => object,
  *   planta: object,
+ *   puertas?: Array<{rect:object, destino:object}>,
+ *   alTocarPuerta?: (destino:object) => void,
  *   x?: number, z?: number, yaw?: number,
  *   velocidad?: number, radio?: number, velocidadGiro?: number,
  *   fondo?: string|null,
@@ -49,8 +51,6 @@ const VELOCIDAD_GIRO = Math.PI * 0.6; // radianes por segundo
  */
 export function arrancarAndar(lienzo, opciones = {}) {
   const {
-    componer,
-    planta,
     velocidad = 2.2,
     radio = 0.35,
     velocidadGiro = VELOCIDAD_GIRO,
@@ -60,9 +60,17 @@ export function arrancarAndar(lienzo, opciones = {}) {
     cancelarFotograma,
   } = opciones;
 
-  if (typeof componer !== "function") {
+  if (typeof opciones.componer !== "function") {
     throw new TypeError("arrancarAndar requiere `componer(x, z, yaw)`");
   }
+
+  // `planta`, `componer`, `puertas` y `alTocarPuerta` son mutables a
+  // propósito: `cambiarEstancia` los reemplaza sin reiniciar el bucle de
+  // fotogramas ni la ventana que lo contiene — es la costura entre salas.
+  let planta = opciones.planta;
+  let componer = opciones.componer;
+  let puertas = Array.isArray(opciones.puertas) ? opciones.puertas : [];
+  let alTocarPuerta = typeof opciones.alTocarPuerta === "function" ? opciones.alTocarPuerta : null;
 
   let x = Number.isFinite(opciones.x) ? opciones.x : planta.ancho / 2;
   let z = Number.isFinite(opciones.z) ? opciones.z : planta.profundidad / 2;
@@ -91,6 +99,15 @@ export function arrancarAndar(lienzo, opciones = {}) {
     x = siguiente.x;
     z = siguiente.z;
 
+    // Se comprueba DESPUÉS de mover, con la posición ya resuelta: una puerta
+    // no bloquea (`mover` no la conoce), así que su detección no puede
+    // adelantarse al desplazamiento sin leer una posición que todavía no es
+    // la real de este fotograma.
+    if (alTocarPuerta) {
+      const puerta = puertaTocada(x, z, radio, puertas);
+      if (puerta) alTocarPuerta(puerta.destino);
+    }
+
     pintarUnaVez();
     fotograma = pedirFotograma?.(paso) ?? null;
   }
@@ -115,6 +132,25 @@ export function arrancarAndar(lienzo, opciones = {}) {
      *  para guardarlas en un flag al cerrar la ventana). */
     posicion() {
       return { x, z, yaw };
+    },
+    /**
+     * Cambia de estancia SIN reiniciar el bucle de fotogramas: sustituye la
+     * planta de colisión, la composición de render, sus puertas y la
+     * posición/orientación de llegada. Es la costura entre salas — quien
+     * decide CUÁNDO llamarla (típicamente al recibir `alTocarPuerta`) es capa
+     * de arriba (el catálogo de estancias o quien lo consulte), nunca este
+     * módulo: aquí solo se aplica el cambio ya decidido.
+     */
+    cambiarEstancia({ planta: nuevaPlanta, componer: nuevoComponer, puertas: nuevasPuertas, x: nx, z: nz, yaw: nYaw }) {
+      if (nuevaPlanta) planta = nuevaPlanta;
+      if (typeof nuevoComponer === "function") componer = nuevoComponer;
+      puertas = Array.isArray(nuevasPuertas) ? nuevasPuertas : [];
+      if (Number.isFinite(nx)) x = nx;
+      if (Number.isFinite(nz)) z = nz;
+      if (Number.isFinite(nYaw)) yaw = nYaw;
+      // Sin bucle propio (lienzo de prueba), quien llama necesita ver el
+      // cambio reflejado de inmediato y no esperar a un `avanzar` posterior.
+      pintarUnaVez();
     },
     /** Sin bucle (lienzo de prueba o `pedirFotograma` ausente), avanza un
      *  paso a mano — es lo que usa un test para no depender de un reloj real. */

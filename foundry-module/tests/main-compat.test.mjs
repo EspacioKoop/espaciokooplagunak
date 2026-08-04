@@ -242,7 +242,7 @@ test("degradar durante healthz cierra la vista y no inicia peticiones autenticad
   const { hooks, tokenSession, instances, fetchCalls } = await loadModule({ modern: true, fetchImpl });
   const controls = {};
   hooks.getSceneControlButtons(controls);
-  controls.lagunak.tools["lagunak-estado"].onClick();
+  controls.lagunak.tools["lagunak-consola"].onClick();
   const app = instances[0];
   let wipes = 0;
   app.element = { replaceChildren() { wipes += 1; } };
@@ -264,32 +264,33 @@ test("degradar durante healthz cierra la vista y no inicia peticiones autenticad
   assert.equal(fetchCalls.length, 1);
 });
 
-test("degradar cierra y vacía estado, mapa y workspace abiertos", async () => {
+test("degradar cierra y vacía la consola caliente y el workspace abiertos", async () => {
+  // #276 fusionó estado+mapa en una sola ventana (la consola caliente), así
+  // que aquí solo hay DOS ventanas privilegiadas que revocar, no tres.
   const { hooks, instances } = await loadModule({ modern: true });
   const controls = { tokens: { tools: {} } };
   hooks.getSceneControlButtons(controls);
-  controls.lagunak.tools["lagunak-estado"].onClick();
-  controls.lagunak.tools["lagunak-mapa"].onClick();
+  controls.lagunak.tools["lagunak-consola"].onClick();
   controls.lagunak.tools["lagunak-espacio-puesto"].onClick();
-  assert.equal(instances.length, 3);
-  const wipes = [0, 0, 0];
+  assert.equal(instances.length, 2);
+  const wipes = [0, 0];
   instances.forEach((app, index) => {
     app.element = { replaceChildren() { wipes[index] += 1; } };
   });
   instances[0].ultimoEstado = { ship: { callsign: "Agregado" } };
-  instances[1].contactos = [{ callsign: "Contacto" }];
-  instances[2].statePayload = { ship: { callsign: "Workspace" } };
+  instances[0].contactos = [{ callsign: "Contacto" }];
+  instances[1].statePayload = { ship: { callsign: "Workspace" } };
 
   game.user.isGM = false;
   hooks.updateUser({ id: "local-user", isGM: false }, { role: 1 });
   await new Promise((resolve) => setImmediate(resolve));
 
-  assert.deepEqual(instances.map((app) => app.rendered), [false, false, false]);
-  assert.deepEqual(wipes, [1, 1, 1]);
+  assert.deepEqual(instances.map((app) => app.rendered), [false, false]);
+  assert.deepEqual(wipes, [1, 1]);
   assert.equal(instances[0].ultimoEstado, null);
-  assert.deepEqual(instances[1].contactos, []);
-  assert.equal(instances[2].statePayload, null);
-  assert.equal(instances[2].closed, true);
+  assert.deepEqual(instances[0].contactos, []);
+  assert.equal(instances[1].statePayload, null);
+  assert.equal(instances[1].closed, true);
 });
 
 test("v11 conecta los listeners de pausa y reanudación con el puente", async () => {
@@ -298,15 +299,15 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
 
   hooks.getSceneControlButtons(controls);
   // Issue #125: TODAS las herramientas del módulo viven en el grupo propio;
-  // nada se cuelga de Token Controls. El GM ve estado/mapa/token/diagnóstico
-  // más los botones de puesto.
+  // nada se cuelga de Token Controls. El GM ve consola/token/diagnóstico más
+  // los botones de puesto. #276 fusionó estado+mapa en la consola caliente:
+  // ya no hay botones sueltos de estado o mapa.
   assert.deepEqual(controls[0].tools.map(({ name }) => name), []);
   const grupo = controls.find((control) => control.name === "lagunak");
   assert.ok(grupo);
   assert.equal(grupo.icon, "fa-solid fa-shuttle-space");
   assert.deepEqual(grupo.tools.map(({ name }) => name), [
-    "lagunak-estado",
-    "lagunak-mapa",
+    "lagunak-consola",
     "lagunak-token",
     "lagunak-diagnostico",
     "lagunak-musica",
@@ -329,7 +330,7 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
     "lagunak-avatar",
     "lagunak-espacio-puesto",
   ]);
-  toolByName(controls, "lagunak-estado").onClick();
+  toolByName(controls, "lagunak-consola").onClick();
 
   assert.equal(instances.length, 1);
   assert.deepEqual(instances[0].renderCalls, [true]);
@@ -374,7 +375,7 @@ test("la bitácora normaliza la telemetría y no inserta HTML del puente", async
   const { hooks, instances, journalPages } = await loadModule();
   const controls = [{ name: "token", tools: [] }];
   hooks.getSceneControlButtons(controls);
-  toolByName(controls, "lagunak-estado").onClick();
+  toolByName(controls, "lagunak-consola").onClick();
 
   instances[0].ultimoEstado = {
     ship: {
@@ -414,8 +415,8 @@ test("host moderno conecta las acciones de pausa y reanudación con el puente", 
   // Grupo propio con icono de nave (issue #125), record de tools en v13.
   assert.ok(controls.lagunak);
   assert.equal(controls.lagunak.icon, "fa-solid fa-shuttle-space");
-  assert.ok(controls.lagunak.tools["lagunak-estado"]);
-  controls.lagunak.tools["lagunak-estado"].onClick();
+  assert.ok(controls.lagunak.tools["lagunak-consola"]);
+  controls.lagunak.tools["lagunak-consola"].onClick();
 
   assert.equal(instances.length, 1);
   assert.deepEqual(instances[0].renderCalls, [{ force: true }]);
@@ -444,7 +445,7 @@ test("v11 conecta el listener de encuentro y envía la selección exacta una sol
   const { hooks, instances, fetchCalls } = await loadModule();
   const controls = [{ name: "token", tools: [] }];
   hooks.getSceneControlButtons(controls);
-  toolByName(controls, "lagunak-estado").onClick();
+  toolByName(controls, "lagunak-consola").onClick();
 
   const app = instances[0];
   app.catalogoEncuentros = { archetypes: ["derelict"], bearings: ["starboard"] };
@@ -481,7 +482,7 @@ test("ApplicationV2 conecta la acción de encuentro y envía la selección exact
   const { hooks, instances, fetchCalls } = await loadModule({ modern: true });
   const controls = {};
   hooks.getSceneControlButtons(controls);
-  controls.lagunak.tools["lagunak-estado"].onClick();
+  controls.lagunak.tools["lagunak-consola"].onClick();
 
   const app = instances[0];
   app.catalogoEncuentros = { archetypes: ["derelict"], bearings: ["ahead"] };
@@ -537,7 +538,7 @@ test("v11: un ACK tardío de encuentro tras revocar el rol GM no notifica ni rep
   const { hooks, instances, notifications } = await loadModule({ fetchImpl });
   const controls = [{ name: "token", tools: [] }];
   hooks.getSceneControlButtons(controls);
-  toolByName(controls, "lagunak-estado").onClick();
+  toolByName(controls, "lagunak-consola").onClick();
 
   const app = instances[0];
   app.catalogoEncuentros = raizEncuentroSel;
@@ -569,7 +570,7 @@ test("ApplicationV2: un ACK tardío de encuentro tras revocar el rol GM no notif
   const { hooks, instances, notifications } = await loadModule({ modern: true, fetchImpl });
   const controls = {};
   hooks.getSceneControlButtons(controls);
-  controls.lagunak.tools["lagunak-estado"].onClick();
+  controls.lagunak.tools["lagunak-consola"].onClick();
 
   const app = instances[0];
   app.catalogoEncuentros = raizEncuentroSel;
@@ -620,7 +621,7 @@ test("ApplicationV2: lectura discordante tras el ACK avisa y pasa a estado de er
   const { hooks, instances, notifications } = await loadModule({ modern: true });
   const controls = {};
   hooks.getSceneControlButtons(controls);
-  controls.lagunak.tools["lagunak-estado"].onClick();
+  controls.lagunak.tools["lagunak-consola"].onClick();
 
   const actions = instances[0].constructor.DEFAULT_OPTIONS.actions;
   await actions.pausar.call(instances[0]);
@@ -640,7 +641,7 @@ test("v11 muestra el error del puente sin emitir una confirmación falsa", async
   });
   const controls = [{ name: "token", tools: [] }];
   hooks.getSceneControlButtons(controls);
-  toolByName(controls, "lagunak-estado").onClick();
+  toolByName(controls, "lagunak-consola").onClick();
 
   const bindings = new Map();
   instances[0].activateListeners({
@@ -662,7 +663,7 @@ test("ApplicationV2 muestra el error del puente sin emitir una confirmación fal
   });
   const controls = {};
   hooks.getSceneControlButtons(controls);
-  controls.lagunak.tools["lagunak-estado"].onClick();
+  controls.lagunak.tools["lagunak-consola"].onClick();
 
   const actions = instances[0].constructor.DEFAULT_OPTIONS.actions;
   await actions.reanudar.call(instances[0]);
@@ -676,7 +677,7 @@ test("v11 bloquea la orden si el usuario deja de ser GM", async () => {
   const { hooks, instances, notifications, fetchCalls } = await loadModule();
   const controls = [{ name: "token", tools: [] }];
   hooks.getSceneControlButtons(controls);
-  toolByName(controls, "lagunak-estado").onClick();
+  toolByName(controls, "lagunak-consola").onClick();
 
   const bindings = new Map();
   instances[0].activateListeners({
@@ -697,7 +698,7 @@ test("ApplicationV2 bloquea la orden si el usuario deja de ser GM", async () => 
   const { hooks, instances, notifications, fetchCalls } = await loadModule({ modern: true });
   const controls = {};
   hooks.getSceneControlButtons(controls);
-  controls.lagunak.tools["lagunak-estado"].onClick();
+  controls.lagunak.tools["lagunak-consola"].onClick();
   game.user.isGM = false;
 
   const actions = instances[0].constructor.DEFAULT_OPTIONS.actions;
@@ -738,53 +739,49 @@ test("un jugador no GM recibe asignación y espacio de puesto, sin controles GM"
   assert.equal(grupo.tools.find(({ name }) => name === "lagunak-musica"), undefined);
 });
 
-test("v11 abre el mapa vivo con Application clásica (rAF ausente: sin bucle)", async () => {
+// #276 fusionó estado+mapa+encuentros+previsualización en una sola ventana
+// (la consola caliente): ya no hay un botón ni una clase separada para el
+// mapa vivo. `abrirConsolaCaliente` elige V1 (Application clásica, v11) o V2
+// (ApplicationV2, v12+) según lo que ofrezca el anfitrión, con instancia
+// perezosa compartida (reabrir no crea una segunda).
+test("v11 abre la consola caliente con Application clásica (rAF ausente: sin bucle)", async () => {
   const { hooks, instances } = await loadModule();
   const controls = [];
 
   hooks.getSceneControlButtons(controls);
-  const mapa = controls.find((c) => c.name === "lagunak").tools.find((t) => t.name === "lagunak-mapa");
-  assert.ok(mapa);
-  assert.equal(mapa.button, true);
+  const consola = controls.find((c) => c.name === "lagunak").tools.find((t) => t.name === "lagunak-consola");
+  assert.ok(consola);
+  assert.equal(consola.button, true);
   // Abrir no debe romper aunque el arnés no tenga requestAnimationFrame:
   // la animación se auto-inhibe y la ventana sigue funcionando por sondeo.
-  mapa.onClick();
+  consola.onClick();
 
   assert.equal(instances.length, 1);
   assert.deepEqual(instances[0].renderCalls, [true]);
-  // Ventana propia, no la de estado.
-  assert.equal(instances[0].constructor.defaultOptions.id, "lagunak-mapa-vivo");
+  assert.equal(instances[0].constructor.defaultOptions.id, "lagunak-consola-caliente");
+
+  // Reabrir no crea una segunda instancia.
+  consola.onClick();
+  assert.equal(instances.length, 1);
 });
 
-test("host moderno registra el mapa vivo con onChange (v13) y lo abre", async () => {
+test("host moderno registra la consola caliente con onChange (v13) y la abre", async () => {
   const { hooks, instances } = await loadModule({ modern: true });
   const controls = {};
 
   hooks.getSceneControlButtons(controls);
-  const mapa = controls.lagunak.tools["lagunak-mapa"];
-  assert.ok(mapa);
-  assert.equal(typeof mapa.onClick, "function");
-  assert.equal(typeof mapa.onChange, "function"); // v13 dispara onChange
-  mapa.onClick();
+  const consola = controls.lagunak.tools["lagunak-consola"];
+  assert.ok(consola);
+  assert.equal(typeof consola.onClick, "function");
+  assert.equal(typeof consola.onChange, "function"); // v13 dispara onChange
+  consola.onClick();
 
   assert.equal(instances.length, 1);
   assert.deepEqual(instances[0].renderCalls, [{ force: true }]);
-  assert.equal(instances[0].constructor.DEFAULT_OPTIONS.id, "lagunak-mapa-vivo");
-});
+  assert.equal(instances[0].constructor.DEFAULT_OPTIONS.id, "lagunak-consola-caliente");
 
-test("las ventanas de estado y mapa son instancias separadas", async () => {
-  const { hooks, instances } = await loadModule({ modern: true });
-  const controls = {};
-
-  hooks.getSceneControlButtons(controls);
-  controls.lagunak.tools["lagunak-estado"].onClick();
-  controls.lagunak.tools["lagunak-mapa"].onClick();
-
-  assert.equal(instances.length, 2);
-  assert.notEqual(instances[0].constructor, instances[1].constructor);
-  // Reabrir no crea instancias nuevas (instancia perezosa compartida).
-  controls.lagunak.tools["lagunak-mapa"].onClick();
-  assert.equal(instances.length, 2);
+  consola.onClick();
+  assert.equal(instances.length, 1);
 });
 
 test("v11 conserva la ayuda abierta entre re-renderizados hasta que se cierra", async () => {
@@ -814,7 +811,7 @@ test("ApplicationV2 conserva la ayuda abierta entre re-renderizados hasta que se
   const { hooks, instances } = await loadModule({ modern: true });
   const controls = {};
   hooks.getSceneControlButtons(controls);
-  controls.lagunak.tools["lagunak-estado"].onClick();
+  controls.lagunak.tools["lagunak-consola"].onClick();
 
   let onToggle = null;
   const details = {
@@ -835,7 +832,7 @@ test("ApplicationV2 conserva la ayuda abierta entre re-renderizados hasta que se
   onToggle({ currentTarget: details });
   assert.equal((await instances[0]._prepareContext()).ayudaAbierta, false);
 
-  const template = await readFile(new URL("../templates/estado-nave.hbs", import.meta.url), "utf8");
+  const template = await readFile(new URL("../templates/consola-caliente.hbs", import.meta.url), "utf8");
   assert.match(template, /\{\{#if ayudaAbierta\}\}open\{\{\/if\}\}/);
 });
 
@@ -872,7 +869,7 @@ test("ApplicationV2: el patch de telemetría usa los campos reales (health/heat/
   const { hooks, instances } = await loadModule({ modern: true, fetchImpl });
   const controls = {};
   hooks.getSceneControlButtons(controls);
-  controls.lagunak.tools["lagunak-estado"].onClick();
+  controls.lagunak.tools["lagunak-consola"].onClick();
   const app = instances[0];
 
   const nodos = {

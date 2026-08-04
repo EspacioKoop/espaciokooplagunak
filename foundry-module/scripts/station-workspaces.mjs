@@ -48,6 +48,12 @@ export function workspaceDefinition(station) {
   return normalized ? DEFINITIONS[normalized] : null;
 }
 
+// `previewStation` sigue viva aquí: la sección de la nave (#427) manda al GM
+// directo a la consola de un puesto concreto al pulsar su sala
+// (`abrirSeccionNave` → `openWorkspaceApp(puesto)`), un salto de UN puesto, no
+// el selector de las seis pestañas. ESE selector —el branch `isGM` con
+// `tabs`— es el que se migró a la consola caliente (#276, paso 4) y por eso
+// ya no vive en `buildWorkspaceModel`.
 export function stationForWorkspace({ user, moduleId, previewStation = null }) {
   if (user?.isGM && previewStation) {
     try {
@@ -433,12 +439,5 @@ export function buildWorkspaceModel({
       number: index + 1,
       label: localize(i18n, `LAGUNAK.Espacios.${normalized}.Tarea.${task}`),
     })),
-    tabs: Boolean(isGM)
-      ? STATIONS.map((entry) => ({
-          station: entry,
-          label: localize(i18n, `LAGUNAK.Puestos.${entry}`),
-          selected: entry === normalized,
-        }))
-      : [],
   };
 }

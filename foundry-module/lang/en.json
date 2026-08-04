@@ -15,6 +15,7 @@
   "LAGUNAK.ConsolaCaliente.Estado": "Status",
   "LAGUNAK.ConsolaCaliente.Mapa": "Map",
   "LAGUNAK.ConsolaCaliente.Encuentros": "Encounters",
+  "LAGUNAK.ConsolaCaliente.Previsualizacion": "Station preview",
   "LAGUNAK.Controles.ConfigurarToken": "Configure bridge token (this session only)",
   "LAGUNAK.Controles.ProbarConexion": "Test bridge connection (Espaciokoop Lagunak)",
   "LAGUNAK.Controles.DecoradoAleatorio": "New random live map background (Espaciokoop Lagunak)",

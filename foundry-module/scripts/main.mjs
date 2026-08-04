@@ -13,11 +13,12 @@
  * la que se usa cuando el host la ofrece; para v11, donde
  * `foundry.applications.api` no existe, se usa una ventana `Application`
  * clásica equivalente y AISLADA (sin código compartido con la ruta v12+,
- * para no poder afectarla). Las cuatro factorías de ventana (estado de
- * nave y mapa vivo, V1/V2) viven en sus propios módulos
- * (estado-nave-app-v2.mjs, estado-nave-app-v1.mjs, mapa-vivo-app-v2.mjs,
- * mapa-vivo-app-v1.mjs); este archivo solo orquesta settings, hooks,
- * scene controls y la apertura/revocación de esas ventanas.
+ * para no poder afectarla). Consola caliente del GM (#276): estado, mapa,
+ * encuentros y previsualización de puesto fusionados en una sola ventana con
+ * un solo bucle de sondeo; sus dos réplicas AISLADAS viven en
+ * consola-caliente-v2.mjs (ApplicationV2, v12+) y consola-caliente-v1.mjs
+ * (Application clásica, v11). Este archivo solo orquesta settings, hooks,
+ * scene controls y la apertura/revocación de esa ventana.
  *
  * Seguridad: la URL es un ajuste de ámbito "client"; el token del puente vive
  * solo en memoria durante la sesión del navegador GM. Nunca entra en la base
@@ -85,11 +86,8 @@ import {
   opcionesIdioma,
   rutaIdioma,
 } from "./idioma-modulo.mjs";
-import { crearClaseV2 } from "./estado-nave-app-v2.mjs";
-import { crearClaseV1 } from "./estado-nave-app-v1.mjs";
-import { crearClaseMapaV2 } from "./mapa-vivo-app-v2.mjs";
-import { crearClaseMapaV1 } from "./mapa-vivo-app-v1.mjs";
 import { crearClaseConsolaCalienteV2 } from "./consola-caliente-v2.mjs";
+import { crearClaseConsolaCalienteV1 } from "./consola-caliente-v1.mjs";
 import {
   MODULE_ID,
   POLL_MIN_S,
@@ -113,13 +111,10 @@ registerAvatarFeature(MODULE_ID);
 registerWorkspaceFeature(MODULE_ID);
 registerBridgeTokenFeature(MODULE_ID);
 
-let estadoApp = null;
-let mapaApp = null;
-// Consola caliente del GM (#276): fusión de estado+mapa+encuentros con un
-// solo bucle, disponible SOLO en hosts con ApplicationV2 (v12+). En v11 no
-// hay clase fusionada todavía (ver docs/CONSOLA_CALIENTE_GM.md, paso 5,
-// pregunta abierta) y `estadoApp`/`mapaApp` de arriba siguen siendo las
-// ventanas sueltas de siempre.
+// Consola caliente del GM (#276): fusión de estado+mapa+encuentros+
+// previsualización con un solo bucle. Una sola ventana, V1 (Application,
+// v11) o V2 (ApplicationV2, v12+) según lo que ofrezca el anfitrión — las
+// antiguas ventanas sueltas de estado de nave y mapa vivo ya no existen.
 let consolaApp = null;
 
 Hooks.once("init", () => {
@@ -196,7 +191,7 @@ Hooks.once("init", () => {
     // en el cliente que escribe el ajuste como en el resto al sincronizar el
     // valor de mundo, así que un cambio desde ajustes o desde el botón "nuevo
     // decorado aleatorio" refresca a todos por igual (issue #215 review).
-    onChange: (semilla) => mapaApp?.regenerarDecorado?.(semilla),
+    onChange: (semilla) => consolaApp?.regenerarDecorado?.(semilla),
   });
 
   // Requisitos de característica por puesto. Ajuste de MUNDO: es una regla de
@@ -526,7 +521,7 @@ function abrirCantina() {
  * inventa un casco intacto para rellenar el hueco. */
 function leerSistemasNave() {
   if (!game.user?.isGM) return [];
-  const sistemas = estadoApp?.ultimoEstado?.ship?.systems;
+  const sistemas = consolaApp?.ultimoEstado?.ship?.systems;
   return Array.isArray(sistemas) ? sistemas : [];
 }
 
@@ -688,8 +683,6 @@ async function revokePrivilegedBridgeAccess() {
   await Promise.allSettled([
     revokeBridgeTokenAccess(),
     revokeWorkspaceAccess(),
-    revokePrivilegedApp(estadoApp),
-    revokePrivilegedApp(mapaApp),
     revokePrivilegedApp(consolaApp),
   ]);
 }
@@ -708,36 +701,18 @@ Hooks.on("getSceneControlButtons", (controls) => {
   // addWorkspaceControl para TODOS los usuarios, más abajo.
   const gmTools = isGM
     ? [
+        // Consola caliente (#276): estado+mapa+encuentros+previsualización
+        // fusionados con un solo bucle de sondeo. UN botón por generación de
+        // host —ya no quedan los botones sueltos de estado/mapa que fusionó—:
+        // `abrirConsolaCaliente` elige la clase V1 (Application, v11) o V2
+        // (ApplicationV2, v12+) según lo que ofrezca el anfitrión.
         {
-          name: "lagunak-estado",
-          title: "LAGUNAK.Controles.AbrirEstado",
+          name: "lagunak-consola",
+          title: "LAGUNAK.Controles.AbrirConsola",
           icon: "fa-solid fa-gauge-high",
           button: true,
-          onClick: () => abrirEstadoNave(),
+          onClick: () => abrirConsolaCaliente(),
         },
-        {
-          name: "lagunak-mapa",
-          title: "LAGUNAK.Controles.AbrirMapa",
-          icon: "fa-solid fa-satellite-dish",
-          button: true,
-          onClick: () => abrirMapaVivo(),
-        },
-        // Consola caliente (#276): estado+mapa+encuentros fusionados con un
-        // solo bucle de sondeo. Solo en hosts modernos (ApplicationV2); en
-        // v11 no hay fusión todavía y los dos botones de arriba siguen
-        // siendo la única vía. Deliberadamente NO sustituye a los botones de
-        // arriba en esta entrega: retirarlos es la limpieza pendiente de
-        // cuando la consola fusionada esté jugada en mesa (ver informe de
-        // implementación de #276).
-        ...(foundry.applications?.api?.ApplicationV2
-          ? [{
-              name: "lagunak-consola",
-              title: "LAGUNAK.Controles.AbrirConsola",
-              icon: "fa-solid fa-gauge-high",
-              button: true,
-              onClick: () => abrirConsolaCaliente(),
-            }]
-          : []),
         {
           name: "lagunak-token",
           title: "LAGUNAK.Controles.ConfigurarToken",
@@ -780,7 +755,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
   // puesto aquí, no en Token Controls (issue #125). Solo el GM ve además
   // estado/mapa/token/diagnóstico. activeTool apunta a una herramienta que
   // exista para el rol actual.
-  const activeTool = isGM ? "lagunak-estado" : "lagunak-puestos";
+  const activeTool = isGM ? "lagunak-consola" : "lagunak-puestos";
 
   // El audio lo habilita CADA cliente por su cuenta: el navegador exige un
   // gesto del usuario y ese gesto no se puede delegar en el GM. Por eso este
@@ -948,54 +923,23 @@ async function aplicarFichaNave() {
  * ventana de estado; este hook solo refresca la vista abierta. NO se propaga
  * en ninguna dirección (decisión de #125, ver docs/FOUNDRY.md). */
 Hooks.on("pauseGame", () => {
-  if (estadoApp?.rendered) {
-    estadoApp.render(foundry.applications?.api?.ApplicationV2 ? {} : false);
+  if (consolaApp?.rendered) {
+    consolaApp.render(foundry.applications?.api?.ApplicationV2 ? {} : false);
   }
-  if (consolaApp?.rendered) consolaApp.render({});
 });
 
-function abrirEstadoNave() {
-  // Candado explícito, no solo el del botón: la vista agregada de la nave es
-  // del GM. Mostrarla a un jugador rompería la asimetría de puestos que el
-  // reparto de pantallas del juego fragmenta a propósito.
-  if (!game.user?.isGM) return;
-  if (!estadoApp || estadoApp.bridgeAccessRevoked) estadoApp = new (claseEstadoNave())();
-  if (foundry.applications?.api?.ApplicationV2) {
-    estadoApp.render({ force: true });
-  } else {
-    estadoApp.render(true);
-  }
-}
-
-function abrirMapaVivo() {
-  // Mismo candado que el estado de nave: el mapa agrega los contactos de los
-  // sensores sin filtrar por puesto — es una vista de GM.
-  if (!game.user?.isGM) return;
-  if (!mapaApp || mapaApp.bridgeAccessRevoked) mapaApp = new (claseMapaVivo())();
-  if (foundry.applications?.api?.ApplicationV2) {
-    mapaApp.render({ force: true });
-  } else {
-    mapaApp.render(true);
-  }
-}
-
 /**
- * Elige la ventana según lo que ofrezca el ANFITRIÓN: `ApplicationV2`
- * moderna (v12+) o la clásica `Application` (v11). Se construye al primer
- * uso, no al importar, para no tocar `foundry.applications.api` en v11.
+ * Abre la consola caliente fusionada (#276). Solo GM. Elige la clase según
+ * lo que ofrezca el ANFITRIÓN: `ApplicationV2` moderna (v12+) o la clásica
+ * `Application` (v11). Se construye al primer uso, no al importar, para no
+ * tocar `foundry.applications.api` en v11.
  */
-function claseEstadoNave() {
-  return foundry.applications?.api?.ApplicationV2 ? crearClaseV2() : crearClaseV1();
-}
-
-/** Misma regla de selección perezosa para la ventana del mapa vivo. */
-function claseMapaVivo() {
-  return foundry.applications?.api?.ApplicationV2 ? crearClaseMapaV2() : crearClaseMapaV1();
-}
-
-/** Abre la consola caliente fusionada (#276). Solo GM, solo hosts modernos. */
 function abrirConsolaCaliente() {
-  if (!game.user?.isGM || !foundry.applications?.api?.ApplicationV2) return;
-  if (!consolaApp || consolaApp.bridgeAccessRevoked) consolaApp = new (crearClaseConsolaCalienteV2())();
-  consolaApp.render({ force: true });
+  if (!game.user?.isGM) return;
+  const esV2 = Boolean(foundry.applications?.api?.ApplicationV2);
+  if (!consolaApp || consolaApp.bridgeAccessRevoked) {
+    consolaApp = new (esV2 ? crearClaseConsolaCalienteV2() : crearClaseConsolaCalienteV1())();
+  }
+  if (esV2) consolaApp.render({ force: true });
+  else consolaApp.render(true);
 }

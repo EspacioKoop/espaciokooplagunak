@@ -15,6 +15,7 @@
   "LAGUNAK.ConsolaCaliente.Estado": "Estado",
   "LAGUNAK.ConsolaCaliente.Mapa": "Mapa",
   "LAGUNAK.ConsolaCaliente.Encuentros": "Encuentros",
+  "LAGUNAK.ConsolaCaliente.Previsualizacion": "Previsualización de puesto",
   "LAGUNAK.Controles.ConfigurarToken": "Configurar token del puente (solo esta sesión)",
   "LAGUNAK.Controles.ProbarConexion": "Probar conexión con el puente (Espaciokoop Lagunak)",
   "LAGUNAK.Controles.DecoradoAleatorio": "Nuevo decorado aleatorio del mapa vivo (Espaciokoop Lagunak)",

@@ -1,22 +1,20 @@
 /* ================================================================== */
-/* Consola caliente del GM (ApplicationV2, v12+) — #276.               */
+/* Consola caliente del GM (Application v1, SOLO v11) — #276.          */
 /*                                                                      */
-/* Fusiona lo que antes eran `estado-nave-app-v2.mjs` +                */
-/* `mapa-vivo-app-v2.mjs` en pestañas (Estado, Mapa, Encuentros) con UN */
-/* bucle de sondeo y un backoff, en vez de dos ventanas con dos bucles. */
-/*                                                                      */
-/* Aislamiento V1/V2: esta clase NO comparte código con                */
-/* `consola-caliente-v1.mjs` — misma disciplina que ya declaraban las   */
-/* cuatro factorías originales (ver cabecera de `mapa-vivo-app-v1.mjs`).*/
-/* Lo compartido entre generaciones es lo que ya lo era: los módulos    */
-/* puros importados aquí (ventana-nave.mjs, mapa-render.mjs,            */
-/* encuentro-control.mjs, ship-view.mjs...).                            */
+/* Réplica equivalente y AISLADA de `consola-caliente-v2.mjs`: mismo    */
+/* cuerpo de clase, cascarón Application v1 en vez de ApplicationV2 —   */
+/* misma disciplina que ya declaraban las cuatro factorías originales   */
+/* (ver cabecera de `mapa-vivo-app-v1.mjs`). NO se comparte código con  */
+/* la ruta v12+, solo los módulos puros que ya compartían las cuatro    */
+/* factorías (ventana-nave.mjs, mapa-render.mjs, encuentro-control.mjs, */
+/* ship-view.mjs, consola-caliente-poll.mjs...).                        */
 /*                                                                      */
 /* Aislamiento de fallo por pestaña (docs/CONSOLA_CALIENTE_GM.md):      */
 /* `conexion` global SOLO la fija `healthz`; cada pestaña tiene su      */
 /* propio estado de datos y un fallo suyo no toca a las demás; el       */
 /* backoff es del bucle, nunca de una pestaña suelta. La orquestación   */
 /* de ESO vive en `consola-caliente-poll.mjs`, puro y probado en Node.  */
+/* `this.element` es jQuery en v1: el DOM se busca vía `this.element?.[0]`. */
 /* ================================================================== */
 
 import { BridgeClient, BridgeError } from "./bridge-client.mjs";
@@ -117,38 +115,27 @@ function derivarMovimiento(app, centro, tMs) {
   return { moviendo, ambiente };
 }
 
-export function crearClaseConsolaCalienteV2() {
-  const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
+export function crearClaseConsolaCalienteV1() {
+  return class ConsolaCalienteAppV1 extends Application {
+    static get defaultOptions() {
+      return foundry.utils.mergeObject(super.defaultOptions, {
+        id: "lagunak-consola-caliente",
+        classes: ["lagunak-consola-caliente-shell"],
+        template: `modules/${MODULE_ID}/templates/consola-caliente.hbs`,
+        width: 640,
+        height: "auto",
+        resizable: true,
+      });
+    }
 
-  return class ConsolaCalienteApp extends HandlebarsApplicationMixin(ApplicationV2) {
-    static DEFAULT_OPTIONS = {
-      id: "lagunak-consola-caliente",
-      classes: ["lagunak-consola-caliente-shell"],
-      window: {
-        title: "LAGUNAK.ConsolaCaliente.Titulo",
-        icon: "fa-solid fa-gauge-high",
-      },
-      position: { width: 640, height: "auto" },
-      actions: {
-        anotar: ConsolaCalienteApp.onAnotar,
-        pausar: ConsolaCalienteApp.onPausar,
-        reanudar: ConsolaCalienteApp.onReanudar,
-        encuentro: ConsolaCalienteApp.onEncuentro,
-        ajustarIngenieria: ConsolaCalienteApp.onAjustarIngenieria,
-        ordenarImpulso: ConsolaCalienteApp.onOrdenarImpulso,
-        ordenarWarp: ConsolaCalienteApp.onOrdenarWarp,
-        ordenarRumbo: ConsolaCalienteApp.onOrdenarRumbo,
-        ordenarEscudos: ConsolaCalienteApp.onOrdenarEscudos,
-      },
-    };
-
-    static PARTS = {
-      main: { template: `modules/${MODULE_ID}/templates/consola-caliente.hbs` },
-    };
+    get title() {
+      return game.i18n.localize("LAGUNAK.ConsolaCaliente.Titulo");
+    }
 
     /* ---- Bucle único de sondeo (paso 1) ---- */
     #timer = null;
     #fallosSeguidos = 0;
+    #sondeando = false;
     #generacion = 0;
     #focoAConservar = null;
     #firmaVisibleAnterior = null;
@@ -156,9 +143,6 @@ export function crearClaseConsolaCalienteV2() {
     /* ---- Pestaña activa: SIEMPRE arranca en Estado, no se recuerda entre
        sesiones (decisión de producto del encargo). ---- */
     pestanaActiva = "estado";
-    // El mapa mantiene una ventana de reproducción (`rotarMuestras`) que se
-    // rompe si se queda sin muestras: una vez visto en este ciclo de vida de
-    // la ventana, sus extras se siguen pidiendo aunque quede oculto.
     #mapaVistoAlgunaVez = false;
 
     /* ---- Conexión global: SOLO la fija `healthz`. ---- */
@@ -207,10 +191,6 @@ export function crearClaseConsolaCalienteV2() {
     encuentroRumbo = null;
 
     /* ---- Pestaña Previsualización (#276, paso 4) ---- */
-    // Migrada desde el `isGM` branch de `station-workspaces.mjs`/`espacio-puesto.hbs`
-    // (#237/#331): el GM ve la consola de un puesto tal y como la vería su
-    // tripulante, sin abrir ningún dato nuevo — `buildWorkspaceModel` es el mismo
-    // módulo puro que ya usaba la ventana de espacio de puesto.
     previsualizacionEstacion = "captain";
     contactosPayloadCrudo = null;
 
@@ -231,11 +211,12 @@ export function crearClaseConsolaCalienteV2() {
     }
 
     #renderConservandoFoco() {
-      const activo = typeof document !== "undefined" && this.element?.contains?.(document.activeElement)
+      const raiz = this.element?.[0];
+      const activo = typeof document !== "undefined" && raiz?.contains?.(document.activeElement)
         ? document.activeElement
         : null;
-      this.#focoAConservar = describirFoco(activo, this.element);
-      this.render();
+      this.#focoAConservar = describirFoco(activo, raiz);
+      this.render(false);
     }
 
     #intervaloMs() {
@@ -245,9 +226,9 @@ export function crearClaseConsolaCalienteV2() {
 
     /** Plan de petición del ciclo (spec #276): healthz siempre; state una vez
      * compartido; extras solo de pestañas que podrían pintarse ahora mismo
-     * (Estado: scenario/events; Mapa: contacts, también si estuvo visible
-     * antes en este ciclo de vida, por la ventana de `rotarMuestras`);
-     * encounters una vez por sesión, perezoso. */
+     * (Estado: scenario/events; Mapa/Previsualización: contacts, también si
+     * el mapa estuvo visible antes en este ciclo de vida, por la ventana de
+     * `rotarMuestras`); encounters una vez por sesión, perezoso. */
     async #sondear() {
       if (this.bridgeAccessRevoked || !game.user?.isGM) return;
       const generacion = this.#generacion;
@@ -256,9 +237,6 @@ export function crearClaseConsolaCalienteV2() {
       const pideEstado = this.pestanaActiva === "estado";
       const pideMapa = this.pestanaActiva === "mapa" || this.#mapaVistoAlgunaVez;
       if (this.pestanaActiva === "mapa") this.#mapaVistoAlgunaVez = true;
-      // La previsualización necesita contactos crudos solo para sensores/armas,
-      // pero pedirlos siempre que la pestaña esté activa es más simple y barato
-      // que distinguir por puesto elegido dentro del plan de sondeo.
       const pidePrevisualizacion = this.pestanaActiva === "previsualizacion";
       const pideContactos = pideMapa || pidePrevisualizacion;
 
@@ -339,10 +317,6 @@ export function crearClaseConsolaCalienteV2() {
           ingenieriaFallo: this.ingenieriaFallo,
           sistemas,
         });
-        // `firmaEstadoNaveVisible` asumía una sola pestaña; la consola
-        // fusionada añade lo que le falta para que un cambio en la pestaña
-        // activa, o en Mapa/Encuentros (que esa firma no conoce), también
-        // dispare la reconstrucción del DOM en vez de quedarse obsoleto.
         const firmaActual = JSON.stringify({
           firmaEstadoBase,
           pestanaActiva: this.pestanaActiva,
@@ -362,7 +336,8 @@ export function crearClaseConsolaCalienteV2() {
         if (cambioVisible) this.#renderConservandoFoco();
         else this.#actualizarTelemetriaDom(nave, ruta, sistemas);
       }
-      this.#programar();
+      clearTimeout(this.#timer);
+      this.#timer = setTimeout(() => this.#sondear(), this.#intervaloMs());
     }
 
     async #aplicarEstadoTab(ciclo) {
@@ -503,13 +478,8 @@ export function crearClaseConsolaCalienteV2() {
       });
     }
 
-    #programar() {
-      clearTimeout(this.#timer);
-      this.#timer = setTimeout(() => this.#sondear(), this.#intervaloMs());
-    }
-
     #actualizarTelemetriaDom(nave, ruta, sistemas) {
-      const raiz = this.element;
+      const raiz = this.element?.[0];
       if (!raiz?.querySelector) return;
       const set = (selector, texto) => {
         const nodo = raiz.querySelector(selector);
@@ -540,14 +510,14 @@ export function crearClaseConsolaCalienteV2() {
           setBarra(`${base} [data-campo="salud"]`, textoPorcentaje(sistema.health), barras.salud);
           setBarra(`${base} [data-campo="calor"]`, textoPorcentaje(sistema.heat), barras.calor);
           setBarra(`${base} [data-campo="potencia"]`, textoPorcentaje(sistema.power), barras.potencia);
-          aplicarIconoDom(this.element?.[0] ?? this.element, base, sistema.id, barras.salud);
+          aplicarIconoDom(raiz, base, sistema.id, barras.salud);
         }
       }
       if (this.pestanaActiva === "mapa") this.#actualizarTelemetriaMapaDom();
     }
 
     #actualizarTelemetriaMapaDom() {
-      const raiz = this.element;
+      const raiz = this.element?.[0];
       const centro = this.#muestraActual?.centro ?? null;
       if (!raiz?.querySelectorAll || !centro) return;
       for (const boton of raiz.querySelectorAll("[data-contacto]")) {
@@ -599,7 +569,7 @@ export function crearClaseConsolaCalienteV2() {
       const relojRaf = Number.isFinite(rafMs) ? rafMs : (globalThis.performance?.now?.() ?? 0);
       const ahora = Date.now();
       if (!debeDibujar(this.#ultimoDibujoMs, relojRaf, MAPA_FPS)) return;
-      const canvas = this.element?.querySelector?.(".lagunak-mapa-canvas");
+      const canvas = this.element?.[0]?.querySelector?.(".lagunak-mapa-canvas");
       const ctx = canvas?.getContext?.("2d");
       if (!ctx) return;
       this.#ajustarBacking(canvas);
@@ -640,85 +610,92 @@ export function crearClaseConsolaCalienteV2() {
       this.#ultimoFrame = frame;
     }
 
-    _onFirstRender(context, options) {
-      super._onFirstRender?.(context, options);
-      this.#sondear();
-      this.#animar();
+    async _render(force, options) {
+      await super._render(force, options);
+      restaurarFoco(this.element?.[0], this.#focoAConservar);
+      this.#focoAConservar = null;
+      if (!this.#sondeando) {
+        this.#sondeando = true;
+        this.#sondear();
+        this.#animar();
+      }
     }
 
-    _onRender(context, options) {
-      super._onRender?.(context, options);
-      restaurarFoco(this.element, this.#focoAConservar);
-      this.#focoAConservar = null;
+    activateListeners(html) {
+      super.activateListeners(html);
+      html.find('[data-action="anotar"]').on("click", () => this.#anotar());
+      html.find('[data-action="pausar"]').on("click", () => this._cambiarPausa(true));
+      html.find('[data-action="reanudar"]').on("click", () => this._cambiarPausa(false));
+      html.find('[data-action="encuentro"]').on("click", () => this._introducirEncuentro());
+      html.find('[data-action="ajustarIngenieria"]').on("click", () => this._ajustarIngenieria());
+      html.find('[data-action="ordenarImpulso"]').on("click", (event) =>
+        this._emitirManiobra("impulse", Number(event.currentTarget?.dataset?.value)));
+      html.find('[data-action="ordenarWarp"]').on("click", (event) =>
+        this._emitirManiobra("warp", Number(event.currentTarget?.dataset?.value)));
+      html.find('[data-action="ordenarRumbo"]').on("click", () =>
+        this._emitirManiobra("heading", Number(html.find('[data-field="maniobra-rumbo"]').val())));
+      html.find('[data-action="ordenarEscudos"]').on("click", (event) =>
+        this._emitirManiobra("shields", event.currentTarget?.dataset?.value === "true"));
 
-      this.element?.querySelectorAll?.("[data-consola-tab]")?.forEach((boton) => {
-        boton.addEventListener("click", () => {
-          const id = boton.dataset.consolaTab;
-          if (!PESTANAS.includes(id) || id === this.pestanaActiva) return;
-          this.pestanaActiva = id;
-          this.render();
-        });
+      html.find("[data-consola-tab]").on("click", (event) => {
+        const id = event.currentTarget?.dataset?.consolaTab;
+        if (!PESTANAS.includes(id) || id === this.pestanaActiva) return;
+        this.pestanaActiva = id;
+        this.render(false);
       });
 
-      const ayuda = this.element?.querySelector?.(".lagunak-ayuda");
-      ayuda?.addEventListener?.("toggle", (event) => {
+      html.find(".lagunak-ayuda").on("toggle", (event) => {
         this.ayudaAbierta = Boolean(event.currentTarget?.open);
       });
-      this.element?.querySelector?.("[data-lagunak-encuentro-arquetipo]")?.addEventListener?.("change", (event) => {
+      html.find("[data-lagunak-encuentro-arquetipo]").on("change", (event) => {
         this.encuentroArquetipo = event.currentTarget?.value || null;
       });
-      this.element?.querySelector?.("[data-lagunak-encuentro-rumbo]")?.addEventListener?.("change", (event) => {
+      html.find("[data-lagunak-encuentro-rumbo]").on("change", (event) => {
         this.encuentroRumbo = event.currentTarget?.value || null;
       });
-      const sistema = this.element?.querySelector?.('[data-field="ingenieria-sistema"]');
-      sistema?.addEventListener?.("change", (event) => {
+      html.find('[data-field="ingenieria-sistema"]').on("change", (event) => {
         this.ingenieriaSistema = event.currentTarget?.value ?? null;
       });
-      const nivel = this.element?.querySelector?.('[data-field="ingenieria-nivel"]');
-      nivel?.addEventListener?.("change", (event) => {
+      html.find('[data-field="ingenieria-nivel"]').on("change", (event) => {
         const parsed = Number(event.currentTarget?.value);
         if (Number.isFinite(parsed)) this.ingenieriaNivel = parsed;
       });
-      this.element?.querySelectorAll?.("[data-lagunak-previsualizacion-estacion]")?.forEach((boton) => {
-        boton.addEventListener("click", () => {
-          const id = boton.dataset.lagunakPrevisualizacionEstacion;
-          if (!WORKSPACE_STATIONS.includes(id) || id === this.previsualizacionEstacion) return;
-          this.previsualizacionEstacion = id;
-          this.render();
-        });
+      html.find("[data-lagunak-previsualizacion-estacion]").on("click", (event) => {
+        const id = event.currentTarget?.dataset?.lagunakPrevisualizacionEstacion;
+        if (!WORKSPACE_STATIONS.includes(id) || id === this.previsualizacionEstacion) return;
+        this.previsualizacionEstacion = id;
+        this.render(false);
       });
 
-      montarLaminaContacto(this.element, this.detalleVigente, { dueño: this });
-      const selector = this.element?.querySelector?.("[data-lagunak-puesto-vista]");
-      selector?.addEventListener("change", (ev) => {
-        this.puestoVista = ev.target?.value ?? "captain";
+      montarLaminaContacto(this.element?.[0], this.detalleVigente, { dueño: this });
+      html.find("[data-lagunak-puesto-vista]").on("change", (ev) => {
+        this.puestoVista = ev.currentTarget?.value ?? "captain";
       });
-      this.element?.querySelectorAll?.("[data-contacto]")?.forEach((el) => {
-        el.addEventListener("click", () => {
-          const indice = Number.parseInt(el.dataset.contactoIndice ?? "", 10);
-          if (!Number.isInteger(indice)) return;
-          this.seleccion = indice === this.seleccion ? null : indice;
-          this.render();
-        });
+      html.find("[data-contacto]").on("click", (ev) => {
+        const indice = Number.parseInt(ev.currentTarget?.dataset?.contactoIndice ?? "", 10);
+        if (!Number.isInteger(indice)) return;
+        this.seleccion = indice === this.seleccion ? null : indice;
+        this.render(false);
       });
-      const canvas = this.element?.querySelector?.(".lagunak-mapa-canvas");
-      canvas?.addEventListener("click", (ev) => {
-        if (!this.#ultimoFrame) return;
+      html.find(".lagunak-mapa-canvas").on("click", (ev) => {
+        const canvas = ev.currentTarget;
+        if (!this.#ultimoFrame || !canvas) return;
         const rect = canvas.getBoundingClientRect();
         const x = ((ev.clientX - rect.left) / rect.width) * canvas.width;
         const y = ((ev.clientY - rect.top) / rect.height) * canvas.height;
         const indice = contactoEnPunto(this.#ultimoFrame.blips, x, y);
         if (indice === null) return;
         this.seleccion = indice === this.seleccion ? null : indice;
-        this.render();
+        this.render(false);
       });
     }
 
-    _onClose(options) {
-      desmontarLamina(this.element, this);
+    async close(options) {
+      desmontarLamina(this.element?.[0], this);
       this.#generacion += 1;
       clearTimeout(this.#timer);
       this.#timer = null;
+      this.#sondeando = false;
       if (this.#rafId != null && typeof cancelAnimationFrame === "function") {
         cancelAnimationFrame(this.#rafId);
       }
@@ -752,10 +729,10 @@ export function crearClaseConsolaCalienteV2() {
       this.contactosPayloadCrudo = null;
       this.#focoAConservar = null;
       this.#firmaVisibleAnterior = null;
-      super._onClose?.(options);
+      return super.close(options);
     }
 
-    async _prepareContext(_options) {
+    getData(_options) {
       const nave = this.ultimoEstado?.ship ?? null;
       const centro = this.#muestraActual?.centro ?? null;
       const desconocido = game.i18n.localize("LAGUNAK.MapaVivo.Desconocido");
@@ -893,7 +870,7 @@ export function crearClaseConsolaCalienteV2() {
 
     async _introducirEncuentro() {
       if (this.encuentroPendiente) return;
-      const raiz = this.element;
+      const raiz = this.element?.[0];
       const archetype = raiz?.querySelector?.("[data-lagunak-encuentro-arquetipo]")?.value
         ?? this.encuentroArquetipo
         ?? this.catalogoEncuentros?.archetypes?.[0];
@@ -925,10 +902,6 @@ export function crearClaseConsolaCalienteV2() {
       }
     }
 
-    static async onEncuentro() {
-      return this._introducirEncuentro();
-    }
-
     async _emitirManiobra(op, value) {
       if (this.maniobraPendiente || !game.user?.isGM || this.bridgeAccessRevoked) return;
       this.maniobraPendiente = true;
@@ -951,23 +924,6 @@ export function crearClaseConsolaCalienteV2() {
       }
     }
 
-    static async onOrdenarImpulso(_event, target) {
-      return this._emitirManiobra("impulse", Number(target?.dataset?.value));
-    }
-
-    static async onOrdenarWarp(_event, target) {
-      return this._emitirManiobra("warp", Number(target?.dataset?.value));
-    }
-
-    static async onOrdenarRumbo() {
-      const select = this.element?.querySelector?.('[data-field="maniobra-rumbo"]');
-      return this._emitirManiobra("heading", Number(select?.value));
-    }
-
-    static async onOrdenarEscudos(_event, target) {
-      return this._emitirManiobra("shields", target?.dataset?.value === "true");
-    }
-
     async _cambiarPausa(paused) {
       if (this.ordenPendiente !== null || this.confirmacionPendiente !== null) return;
       this.ordenPendiente = paused;
@@ -986,18 +942,6 @@ export function crearClaseConsolaCalienteV2() {
         this.ordenPendiente = null;
         if (this.rendered) this.#renderConservandoFoco();
       }
-    }
-
-    static async onPausar() {
-      return this._cambiarPausa(true);
-    }
-
-    static async onReanudar() {
-      return this._cambiarPausa(false);
-    }
-
-    static async onAjustarIngenieria() {
-      return this._ajustarIngenieria();
     }
 
     async _ajustarIngenieria() {
@@ -1031,7 +975,7 @@ export function crearClaseConsolaCalienteV2() {
       return vista.opcionesSistema[0]?.id ?? null;
     }
 
-    static async onAnotar() {
+    async #anotar() {
       if (!game.user?.isGM) return;
       const nave = this.ultimoEstado?.ship;
       if (!nave) {

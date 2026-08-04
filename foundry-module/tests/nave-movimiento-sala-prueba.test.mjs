@@ -23,7 +23,7 @@ test("la planta de pruebas colisiona en sus límites (los muros no se declaran d
 });
 
 test("componerSalaPrueba devuelve una escena con el tamaño pedido y polígonos", () => {
-  const escena = componerSalaPrueba(5, 5, 0, { ancho: 200, alto: 100 });
+  const escena = componerSalaPrueba(5, 0, 5, 0, { ancho: 200, alto: 100 });
   assert.equal(escena.ancho, 200);
   assert.equal(escena.alto, 100);
   assert.ok(escena.poligonos.length > 0);
@@ -38,13 +38,19 @@ test("moverse cambia lo que se ve: mirar hacia una columna cercana la acerca", (
   // acercándose a ella; de más lejos a más cerca hay menos polígonos visibles
   // recortados por el plano cercano en el mismo punto, así que basta comprobar
   // que la escena cambia con la posición (no un lienzo estático).
-  const lejos = componerSalaPrueba(8, 8, Math.PI, { ancho: 160, alto: 90 });
-  const cerca = componerSalaPrueba(2, 2, Math.PI, { ancho: 160, alto: 90 });
+  const lejos = componerSalaPrueba(8, 0, 8, Math.PI, { ancho: 160, alto: 90 });
+  const cerca = componerSalaPrueba(2, 0, 2, Math.PI, { ancho: 160, alto: 90 });
   assert.notDeepEqual(lejos.poligonos, cerca.poligonos);
 });
 
 test("la cámara mira desde la altura de ojos, no desde el suelo", () => {
   assert.ok(ALTURA_OJOS > 0 && ALTURA_OJOS < 3);
+});
+
+test("saltar (y>0) sube la cámara por encima de la altura de ojos en pie", () => {
+  const dePie = componerSalaPrueba(5, 0, 5, 0, { ancho: 160, alto: 90 });
+  const saltando = componerSalaPrueba(5, 0.5, 5, 0, { ancho: 160, alto: 90 });
+  assert.notDeepEqual(dePie.poligonos, saltando.poligonos);
 });
 
 test("CATALOGO_PRUEBA: la puerta de A se puede alcanzar sin cruzar antes el muro", () => {

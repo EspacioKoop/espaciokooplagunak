@@ -37,11 +37,11 @@ const VELOCIDAD_GIRO = Math.PI * 0.6; // radianes por segundo
  *
  * @param {HTMLCanvasElement} lienzo
  * @param {{
- *   componer: (x:number, z:number, yaw:number) => object,
+ *   componer: (x:number, y:number, z:number, yaw:number) => object,
  *   planta: object,
  *   puertas?: Array<{rect:object, destino:object}>,
  *   alTocarPuerta?: (destino:object) => void,
- *   x?: number, z?: number, yaw?: number,
+ *   x?: number, z?: number, y?: number, yaw?: number,
  *   velocidad?: number, radio?: number, velocidadGiro?: number,
  *   fondo?: string|null,
  *   ahora?: () => number,
@@ -61,7 +61,7 @@ export function arrancarAndar(lienzo, opciones = {}) {
   } = opciones;
 
   if (typeof opciones.componer !== "function") {
-    throw new TypeError("arrancarAndar requiere `componer(x, z, yaw)`");
+    throw new TypeError("arrancarAndar requiere `componer(x, y, z, yaw)`");
   }
 
   // `planta`, `componer`, `puertas` y `alTocarPuerta` son mutables a
@@ -74,6 +74,8 @@ export function arrancarAndar(lienzo, opciones = {}) {
 
   let x = Number.isFinite(opciones.x) ? opciones.x : planta.ancho / 2;
   let z = Number.isFinite(opciones.z) ? opciones.z : planta.profundidad / 2;
+  let y = Number.isFinite(opciones.y) ? opciones.y : 0;
+  let velocidadY = 0;
   let yaw = Number.isFinite(opciones.yaw) ? opciones.yaw : 0;
 
   const activas = new Set();
@@ -85,7 +87,7 @@ export function arrancarAndar(lienzo, opciones = {}) {
   function pintarUnaVez() {
     const ctx = lienzo?.getContext?.("2d");
     if (!ctx) return;
-    pintarEscena(ctx, componer(x, z, yaw), { fondo });
+    pintarEscena(ctx, componer(x, y, z, yaw), { fondo });
   }
 
   function paso(ms) {
@@ -95,9 +97,11 @@ export function arrancarAndar(lienzo, opciones = {}) {
     anterior = ahoraMs;
 
     if (girando !== 0) yaw += girando * velocidadGiro * dt;
-    const siguiente = mover({ x, z, yaw, activas, dt, planta, velocidad, radio });
+    const siguiente = mover({ x, z, y, velocidadY, yaw, activas, dt, planta, velocidad, radio });
     x = siguiente.x;
     z = siguiente.z;
+    y = siguiente.y;
+    velocidadY = siguiente.velocidadY;
 
     // Se comprueba DESPUÉS de mover, con la posición ya resuelta: una puerta
     // no bloquea (`mover` no la conoce), así que su detección no puede
@@ -129,9 +133,10 @@ export function arrancarAndar(lienzo, opciones = {}) {
       girando = Math.sign(sentido) || 0;
     },
     /** Posición y orientación actuales, para quien necesite leerlas (p. ej.
-     *  para guardarlas en un flag al cerrar la ventana). */
+     *  para guardarlas en un flag al cerrar la ventana). `y` es la altura de
+     *  salto/agachado, no la de ojos —ver `nave-movimiento.mover`. */
     posicion() {
-      return { x, z, yaw };
+      return { x, z, y, yaw };
     },
     /**
      * Cambia de estancia SIN reiniciar el bucle de fotogramas: sustituye la
@@ -148,6 +153,10 @@ export function arrancarAndar(lienzo, opciones = {}) {
       if (Number.isFinite(nx)) x = nx;
       if (Number.isFinite(nz)) z = nz;
       if (Number.isFinite(nYaw)) yaw = nYaw;
+      // Cruzar una puerta siempre aterriza de pie: un salto no sobrevive al
+      // corte de estancia, igual que ninguna otra inercia lo hace.
+      y = 0;
+      velocidadY = 0;
       // Sin bucle propio (lienzo de prueba), quien llama necesita ver el
       // cambio reflejado de inmediato y no esperar a un `avanzar` posterior.
       pintarUnaVez();

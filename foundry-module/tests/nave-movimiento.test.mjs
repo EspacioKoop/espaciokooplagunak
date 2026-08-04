@@ -1,7 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { colisiona, crearPlanta, mover, puertaTocada, vectorLocal } from "../scripts/nave-movimiento.mjs";
+import {
+  ALTURA_MAXIMA_SALTO,
+  colisiona,
+  crearPlanta,
+  mover,
+  puertaTocada,
+  vectorLocal,
+} from "../scripts/nave-movimiento.mjs";
 
 test("crearPlanta exige medidas positivas", () => {
   assert.throws(() => crearPlanta({ ancho: 0, profundidad: 5 }), RangeError);
@@ -50,9 +57,50 @@ test("vectorLocal acepta un objeto plano además de un Set", () => {
 test("mover: sin teclas activas, o sin dt, no cambia la posición", () => {
   const planta = crearPlanta({ ancho: 10, profundidad: 10 });
   const quieto = mover({ x: 5, z: 5, yaw: 0, activas: new Set(), dt: 1, planta });
-  assert.deepEqual(quieto, { x: 5, z: 5 });
+  assert.deepEqual(quieto, { x: 5, z: 5, y: 0, velocidadY: 0 });
   const sinTiempo = mover({ x: 5, z: 5, yaw: 0, activas: new Set(["adelante"]), dt: 0, planta });
-  assert.deepEqual(sinTiempo, { x: 5, z: 5 });
+  assert.deepEqual(sinTiempo, { x: 5, z: 5, y: 0, velocidadY: 0 });
+});
+
+test("mover: saltar en el suelo impulsa hacia arriba y la gravedad lo trae de vuelta", () => {
+  const planta = crearPlanta({ ancho: 10, profundidad: 10 });
+  const dt = 1 / 60; // ritmo de fotograma real, no un `dt` de test artificialmente grande
+  let estado = { x: 5, z: 5, y: 0, velocidadY: 0 };
+  estado = mover({ ...estado, yaw: 0, activas: new Set(["saltar"]), dt, planta });
+  assert.ok(estado.y > 0, `debería haber despegado: y=${estado.y}`);
+  assert.ok(estado.velocidadY > 0, "sube con velocidad vertical positiva");
+
+  // Seguir "manteniendo" saltar en el aire no debe reiniciar el impulso: solo
+  // cuenta al iniciar el salto desde el suelo.
+  let maximo = estado.y;
+  for (let i = 0; i < 200 && estado.y > 0; i += 1) {
+    estado = mover({ ...estado, yaw: 0, activas: new Set(["saltar"]), dt, planta });
+    maximo = Math.max(maximo, estado.y);
+  }
+  assert.equal(estado.y, 0, "vuelve a tocar el suelo");
+  assert.equal(estado.velocidadY, 0, "sin velocidad vertical al aterrizar");
+  // Integración discreta: el fotograma de despegue no frena por gravedad ese
+  // mismo paso, así que el pico real se pasa un poco del límite analítico
+  // (v²/2g) — el margen cubre ese error de discretización a 60fps, no lo
+  // reemplaza por un límite laxo.
+  assert.ok(maximo <= ALTURA_MAXIMA_SALTO * 1.2, `no debería superar el límite con margen: máximo=${maximo}`);
+});
+
+test("mover: agacharse en el suelo baja la cámara sin física de gravedad", () => {
+  const planta = crearPlanta({ ancho: 10, profundidad: 10 });
+  const agachado = mover({ x: 5, z: 5, y: 0, velocidadY: 0, yaw: 0, activas: new Set(["agachado"]), dt: 0.1, planta });
+  assert.ok(agachado.y < 0, `debería haber bajado: y=${agachado.y}`);
+  assert.equal(agachado.velocidadY, 0);
+
+  const dePie = mover({ ...agachado, yaw: 0, activas: new Set(), dt: 0.1, planta });
+  assert.equal(dePie.y, 0, "soltar la tecla vuelve a la altura normal");
+});
+
+test("mover: agacharse en el aire no hace nada, solo aplica en el suelo", () => {
+  const planta = crearPlanta({ ancho: 10, profundidad: 10 });
+  const enElAire = { x: 5, z: 5, y: 0.3, velocidadY: 1 };
+  const paso = mover({ ...enElAire, yaw: 0, activas: new Set(["agachado"]), dt: 0.1, planta });
+  assert.ok(paso.y > 0, "sigue en el aire, la gravedad sigue integrando, no se clava a -offset");
 });
 
 test("mover: adelante con yaw=0 avanza en +z, la velocidad es distancia/tiempo", () => {

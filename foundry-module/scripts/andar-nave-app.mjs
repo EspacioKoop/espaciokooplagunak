@@ -47,6 +47,10 @@ function leerPosicionGuardada() {
 
 function guardarPosicion(estanciaId, mando) {
   const { x, z, yaw } = mando.posicion();
+  // `y` (salto/agachado) NO se guarda a propósito: es inercia de un
+  // fotograma, no una postura que tenga sentido restaurar al reabrir la
+  // ventana — reaparecer a media zancadilla en el aire sería más raro que
+  // simplemente reaparecer de pie.
   // Sin esperar la promesa: es una comodidad de sesión, no una escritura de
   // la que dependa nada más — si falla, la próxima apertura arranca de serie.
   game.user?.setFlag?.(MODULE_ID, FLAG_POSICION, { estancia: estanciaId, x, z, yaw });
@@ -63,6 +67,9 @@ const TECLA_DIRECCION = Object.freeze({
   d: "derecha",
   ArrowUp: "adelante",
   ArrowDown: "atras",
+  " ": "saltar",
+  Control: "agachado",
+  c: "agachado",
 });
 
 const TECLA_GIRO = Object.freeze({ q: -1, e: 1, ArrowLeft: -1, ArrowRight: 1 });

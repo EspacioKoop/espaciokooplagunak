@@ -53,7 +53,8 @@ function caja([cx, cy, cz], [ancho, alto, fondo]) {
   };
 }
 
-/** A qué altura mira quien anda. Fija: esta rebanada no salta ni se agacha. */
+/** A qué altura mira quien anda, de pie. El salto/agachado (#446) suma su
+ *  propio offset por encima de esta base — ver `y` en `componer` abajo. */
 export const ALTURA_OJOS = 1.6;
 
 const ALTURA = 3;
@@ -198,16 +199,18 @@ function crearSalaCaja({
   const planta = crearPlanta({ ancho, profundidad, obstaculos: columnas });
 
   /**
-   * Compone la escena vista desde `(x, z)` mirando a `yaw`. La cámara se
+   * Compone la escena vista desde `(x, z)` mirando a `yaw`, con `y` el
+   * offset de salto/agachado (#446) sobre `ALTURA_OJOS` — mismo campo que
+   * devuelve `nave-movimiento.mover`, sin reinterpretarlo. La cámara se
    * coloca RESTANDO su posición a cada pieza antes de componer (mismo motivo
    * que `cantina-escena.mjs`): `transformar` gira alrededor del origen y
    * DESPUÉS traslada, así que pasar la posición de cámara como `posicion` la
    * aplicaría después de girar — una cámara orbitando un punto, no una
    * cámara andando por la sala.
    */
-  function componer(x, z, yaw, opciones = {}) {
+  function componer(x, y, z, yaw, opciones = {}) {
     const { ancho: anchoLienzo = 480, alto: altoLienzo = 270, epoca, fov = 62 } = opciones;
-    const camara = [x, ALTURA_OJOS, z];
+    const camara = [x, ALTURA_OJOS + y, z];
 
     const partes = piezas.map(({ malla, color }) =>
       componerEscena(trasladarMalla(malla, [-camara[0], -camara[1], -camara[2]]), {

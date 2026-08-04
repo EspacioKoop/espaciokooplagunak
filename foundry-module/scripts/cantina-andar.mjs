@@ -20,9 +20,10 @@ import { caja, MUEBLES } from "./cantina-escena.mjs";
 import { componerEscena } from "./retro3d.mjs";
 import { aNativo } from "./cantina-planta.mjs";
 
-/** A qué altura mira quien anda. Misma cifra que la sala de pruebas
+/** A qué altura mira quien anda, de pie. Misma cifra que la sala de pruebas
  *  (`nave-movimiento-sala-prueba.mjs`): no hay razón para que la cantina
- *  tenga un tripulante más alto o más bajo que el banco de pruebas. */
+ *  tenga un tripulante más alto o más bajo que el banco de pruebas. El
+ *  salto/agachado (#446) suma su propio offset por encima — ver `y` abajo. */
 export const ALTURA_OJOS = 1.6;
 
 const FOV = 62;
@@ -39,13 +40,14 @@ function trasladarMalla(malla, [dx, dy, dz]) {
 /**
  * Compone la cantina vista desde `(x, z)` de la PLANTA (no nativas: la
  * traducción la hace este archivo, quien llama no tiene por qué conocer el
- * desplazamiento de `cantina-planta.mjs`) mirando a `yaw`. Misma firma que
- * pide `nave-movimiento-lienzo.mjs`.
+ * desplazamiento de `cantina-planta.mjs`) mirando a `yaw`, con `y` el offset
+ * de salto/agachado (#446) sobre `ALTURA_OJOS`. Misma firma que pide
+ * `nave-movimiento-lienzo.mjs`.
  */
-export function componerCantinaAndar(x, z, yaw, opciones = {}) {
+export function componerCantinaAndar(x, y, z, yaw, opciones = {}) {
   const { ancho = 480, alto = 270, epoca, fov = FOV } = opciones;
   const nativo = aNativo(x, z);
-  const camara = [nativo.x, ALTURA_OJOS, nativo.z];
+  const camara = [nativo.x, ALTURA_OJOS + y, nativo.z];
 
   const partes = PIEZAS.map(({ malla, color }) =>
     componerEscena(trasladarMalla(malla, [-camara[0], -camara[1], -camara[2]]), {

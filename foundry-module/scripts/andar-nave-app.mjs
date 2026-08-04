@@ -24,7 +24,34 @@ import { puntoDeLlegada } from "./nave-estancias.mjs";
 
 const ESTANCIA_INICIAL = "a";
 
+/**
+ * Dónde se guarda la posición entre aperturas: flag del propio `User`,
+ * client-side, igual que `station` (#237) — es "dónde estoy yo", no un dato
+ * de partida que tenga que sobrevivir a que otro GM tome el relevo.
+ */
+const FLAG_POSICION = "posicionNave";
+
 const PLANTILLA = `modules/${MODULE_ID}/templates/andar-nave.hbs`;
+
+/** La posición guardada, o `null` si no hay ninguna o apunta a una estancia
+ *  que ya no existe (p. ej. tras cambiar el catálogo entre sesiones). */
+function leerPosicionGuardada() {
+  try {
+    const guardada = game.user?.getFlag?.(MODULE_ID, FLAG_POSICION);
+    if (guardada && CATALOGO_PRUEBA.tiene(guardada.estancia)) return guardada;
+  } catch {
+    // Sin ajuste registrado, o sin `game.user` resuelto todavía: se cae al
+    // arranque de serie, que es la lectura segura.
+  }
+  return null;
+}
+
+function guardarPosicion(estanciaId, mando) {
+  const { x, z, yaw } = mando.posicion();
+  // Sin esperar la promesa: es una comodidad de sesión, no una escritura de
+  // la que dependa nada más — si falla, la próxima apertura arranca de serie.
+  game.user?.setFlag?.(MODULE_ID, FLAG_POSICION, { estancia: estanciaId, x, z, yaw });
+}
 
 /** Tecla física → dirección lógica. WASD y flechas de traslación hacen lo
  *  mismo: cada persona tiene su preferencia y ninguna de las dos es "la
@@ -108,20 +135,33 @@ function engancharTeclado(raiz, mando) {
 function arrancar(raiz) {
   const lienzo = raiz?.querySelector?.(".lagunak-andar-lienzo");
   if (!lienzo) return null;
-  const inicial = CATALOGO_PRUEBA.obtener(ESTANCIA_INICIAL);
+
+  const guardada = leerPosicionGuardada();
+  const inicial = CATALOGO_PRUEBA.obtener(guardada?.estancia ?? ESTANCIA_INICIAL);
+  // Vive fuera del mando a propósito: `arrancarAndar` sabe de planta/render/
+  // posición, pero nunca supo que existen "estancias" con nombre — ese
+  // conocimiento es de este archivo y del catálogo, no del bucle.
+  let estanciaActual = guardada?.estancia ?? ESTANCIA_INICIAL;
+
   const mando = arrancarAndar(lienzo, {
     componer: inicial.componer,
     planta: inicial.planta,
     puertas: inicial.puertas,
-    x: inicial.entrada.x,
-    z: inicial.entrada.z,
-    yaw: inicial.entrada.yaw,
+    x: guardada?.x ?? inicial.entrada.x,
+    z: guardada?.z ?? inicial.entrada.z,
+    yaw: guardada?.yaw ?? inicial.entrada.yaw,
     // La costura entre salas: el catálogo ya decidió a qué estancia lleva
     // cada puerta y con qué posición/orientación se llega. Esta ventana solo
     // aplica lo que `puntoDeLlegada` ya resolvió — no vuelve a decidir nada.
     alTocarPuerta: (destino) => {
       const llegada = puntoDeLlegada(CATALOGO_PRUEBA, destino);
-      if (llegada) mando.cambiarEstancia(llegada);
+      if (!llegada) return;
+      estanciaActual = llegada.estancia;
+      mando.cambiarEstancia(llegada);
+      // Se guarda AQUÍ y no solo al cerrar: un refresco de página o un cierre
+      // que no dispare `_onClose` no debería devolver a quien cruzó una
+      // puerta a la estancia de la que salió.
+      guardarPosicion(estanciaActual, mando);
     },
     pedirFotograma: (cb) => globalThis.requestAnimationFrame?.(cb),
     cancelarFotograma: (id) => globalThis.cancelAnimationFrame?.(id),
@@ -129,6 +169,7 @@ function arrancar(raiz) {
   const desenganchar = engancharTeclado(raiz, mando);
   return {
     detener() {
+      guardarPosicion(estanciaActual, mando);
       desenganchar();
       mando.detener();
     },

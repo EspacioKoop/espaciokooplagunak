@@ -180,6 +180,33 @@ export class BridgeClient {
     return this.#command({ op: "scan_object", callsign });
   }
 
+  /**
+   * POST /v1/command — fija el objetivo de armas (#465, Bearer). Habilita el
+   * fuego automático de haces ya cargados; no dispara tubos de misiles por
+   * sí sola. Mismo indicativo y misma resolución que `scanObject`.
+   */
+  async setWeaponTarget(callsign) {
+    if (typeof callsign !== "string" || callsign === "") {
+      throw new BridgeError("El indicativo del objetivo debe ser una cadena", { kind: "parse" });
+    }
+    return this.#command({ op: "set_weapon_target", callsign });
+  }
+
+  /**
+   * POST /v1/command — dispara el tubo `index` contra `callsign` (#465,
+   * Bearer). Sin comprobar aquí si el tubo existe o está cargado: el juego
+   * ya lo valida server-side y no tiene efecto si no procede.
+   */
+  async fireTube(callsign, index) {
+    if (typeof callsign !== "string" || callsign === "") {
+      throw new BridgeError("El indicativo del objetivo debe ser una cadena", { kind: "parse" });
+    }
+    if (typeof index !== "number" || !Number.isInteger(index) || index < 0 || index > 15) {
+      throw new BridgeError("El índice de tubo debe ser un entero entre 0 y 15", { kind: "parse" });
+    }
+    return this.#command({ op: "fire_tube", callsign, index });
+  }
+
   /** POST /v1/command — pausa o reanuda la simulación (Bearer). */
   async setPause(paused) {
     if (typeof paused !== "boolean") {

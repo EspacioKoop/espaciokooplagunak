@@ -125,3 +125,37 @@ test("read() de escaneo no emite sin selección, con JSON roto, o sin distancia/
     "sin rumbo no debe emitir",
   );
 });
+
+test("read() de fijar objetivo de armas decodifica la lectura JSON del <select> (#465)", () => {
+  const spec = ORDER_FORMS["orden-fijar-objetivo-armas"];
+  const lectura = { distancia: 20000, rumboDeg: 90, precision: 1000, rumboPrecision: 15 };
+  assert.deepEqual(
+    spec.read(fakeRoot({ "lagunak-orden-objetivo-armas": JSON.stringify(lectura) })),
+    lectura,
+  );
+  assert.equal(spec.read(fakeRoot({})), null, "sin selección no debe emitir");
+});
+
+test("read() de disparar tubo exige objetivo Y tubo válido (#465)", () => {
+  const spec = ORDER_FORMS["orden-disparar-tubo"];
+  const lectura = { distancia: 20000, rumboDeg: 90 };
+  const conObjetivo = (tubo) =>
+    fakeRoot({ "lagunak-orden-objetivo-armas": JSON.stringify(lectura), "lagunak-orden-tubo": tubo });
+
+  assert.deepEqual(spec.read(conObjetivo("2")), {
+    distancia: 20000,
+    rumboDeg: 90,
+    precision: 0,
+    rumboPrecision: 0,
+    index: 2,
+  });
+  assert.equal(spec.read(conObjetivo("")), null, "tubo vacío no debe emitir");
+  assert.equal(spec.read(conObjetivo("-1")), null, "tubo negativo no debe emitir");
+  assert.equal(spec.read(conObjetivo("16")), null, "tubo fuera de la cota defensiva no debe emitir");
+  assert.equal(spec.read(conObjetivo("1.5")), null, "tubo no entero no debe emitir");
+  assert.equal(
+    spec.read(fakeRoot({ "lagunak-orden-tubo": "0" })),
+    null,
+    "sin objetivo seleccionado no debe emitir aunque el tubo sea válido",
+  );
+});

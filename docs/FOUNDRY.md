@@ -167,21 +167,29 @@ token:
 - **Matriz de autoridad cerrada** (`station-actions.mjs`, `STATION_ACTIONS`).
   Declara qué órdenes del whitelist del puente puede emitir cada puesto:
   `navigation` → `set_target_heading`, `set_impulse`, `set_warp`; `engineering`
-  → `set_system_power`, `set_system_coolant`; `weapons` → `set_shields`;
-  `sensors` → `scan_object` (#462: traduce a orden de puente el
-  `ship:commandScan` nativo, referenciando el objetivo por indicativo).
+  → `set_system_power`, `set_system_coolant`; `weapons` →
+  `set_shields`, `set_weapon_target`, `fire_tube` (#465: `set_weapon_target`
+  traduce `ship:commandSetTarget` —habilita el fuego automático de haces ya
+  cargados— y `fire_tube` traduce `ship:commandFireTubeAtTarget(index,
+  target)`; ninguna de las dos comprueba si el tubo existe o está cargado, el
+  juego ya lo valida server-side y no tiene efecto si no procede); `sensors`
+  → `scan_object` (#462: traduce a orden de puente el `ship:commandScan`
+  nativo, referenciando el objetivo por indicativo).
   `captain` y `communications` siguen siendo de **observación/narrativa**: no
   emiten órdenes de control de nave (coherente con el género bridge-sim;
   ratificado en #268). Añadir una acción exige que el puente ya la autorice y
   que el puesto la necesite.
-- **Selección de objetivo de escaneo sin indicativo** (#462). El jugador de
-  sensores nunca conoce el indicativo real de un eco sin escanear —es la
-  doctrina de sensores, no un hueco—, así que la consola de puesto solo puede
-  ofrecer "escanear el contacto a este rumbo y distancia aproximados"
-  (`scanTargetsFor` en `station-workspaces.mjs`, valor codificado en JSON, no
+- **Selección de objetivo sin indicativo** (#462, generalizado a armas en
+  #465). El jugador de sensores o de armas nunca conoce el indicativo real de
+  un eco sin escanear —es la doctrina de sensores, no un hueco—, así que la
+  consola de puesto solo puede ofrecer "actuar sobre el contacto a este rumbo
+  y distancia aproximados" (`objetivosDeLectura`/`scanTargetsFor`/
+  `weaponTargetsFor` en `station-workspaces.mjs`, valor codificado en JSON, no
   un indicativo). La resolución al objeto real vive en el **relé del GM**
   (`resolver-objetivo-sensores.mjs`, cableado en `station-order-wiring.mjs`
-  vía `prepareOrder`): busca, entre el `/v1/contacts` sin degradar que solo el
+  vía `prepareOrder` — comparte el mismo resolvedor entre `scan_object`,
+  `set_weapon_target` y `fire_tube`, ver `ACCIONES_CON_OBJETIVO_POR_LECTURA`):
+  busca, entre el `/v1/contacts` sin degradar que solo el
   GM puede leer, el candidato cuya posición real cae dentro del margen que la
   propia lectura degradada ya declaró. Sin candidato dentro de ese margen —el
   eco pudo salir de alcance entre que se listó y se pulsó escanear— la orden

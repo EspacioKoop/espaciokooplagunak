@@ -63,6 +63,7 @@ import { sesionAgotada } from "./minijuegos/sesion-motor.mjs";
 import { crearClaseCantinaV1, crearClaseCantinaV2 } from "./cantina-app.mjs";
 import { puertaPorId } from "./cantina.mjs";
 import { crearClaseSeccionV1, crearClaseSeccionV2 } from "./seccion-nave-app.mjs";
+import { crearClaseAndarV1, crearClaseAndarV2 } from "./andar-nave-app.mjs";
 import { salaDePuesto } from "./seccion-nave.mjs";
 import { registrarPreset as registrarPresetBaraja } from "./minijuegos/baraja-preset.mjs";
 import {
@@ -547,6 +548,23 @@ function abrirSeccionNave() {
   else app.render(true);
 }
 
+/* Prototipo de "andar por la nave" (#427): una sola instancia, igual que la
+ * sección o la cantina — no hay estado que conservar entre una apertura y la
+ * siguiente. La ve toda la mesa: no toca autoridad ni información privada,
+ * es un banco de pruebas del motor de movimiento sobre una sala inventada. */
+let andarApp = null;
+
+function abrirAndarNave() {
+  if (andarApp?.rendered) {
+    andarApp.render({ force: true });
+    return;
+  }
+  const Clase = foundry.applications?.api?.ApplicationV2 ? crearClaseAndarV2() : crearClaseAndarV1();
+  andarApp = new Clase();
+  if (foundry.applications?.api?.ApplicationV2) andarApp.render({ force: true });
+  else andarApp.render(true);
+}
+
 /* Música de a bordo (#347): el GM manda, todos los clientes obedecen.
  *
  * El reproductor se crea aquí pero NO suena hasta que alguien pulsa el botón de
@@ -762,6 +780,15 @@ Hooks.on("getSceneControlButtons", (controls) => {
       icon: "fa-solid fa-diagram-project",
       button: true,
       onClick: () => abrirSeccionNave(),
+    },
+    {
+      // Prototipo técnico de #427, visible a toda la mesa: no toca autoridad
+      // ni datos privados, es un banco de pruebas del motor de movimiento.
+      name: "lagunak-andar-nave",
+      title: "LAGUNAK.Controles.AbrirAndarNave",
+      icon: "fa-solid fa-person-walking",
+      button: true,
+      onClick: () => abrirAndarNave(),
     },
     {
       name: "lagunak-musica-audio",

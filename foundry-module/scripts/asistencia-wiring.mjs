@@ -38,6 +38,7 @@ import {
   prepararOrdenAsistida,
 } from "./asistencia/relevo.mjs";
 import { normalizeStation } from "./station-assignment.mjs";
+import { AJUSTE_TELEMETRIA } from "./telemetria-difusion.mjs";
 
 /** Mensajes de vuelta. El GM habla; el asistente escucha. */
 const MENSAJE_OFERTA = "asistencia-oferta";
@@ -201,20 +202,30 @@ export function prepararOrdenConAsistencia({ userId, order }) {
     userId,
     orden: order,
     resolverPuesto: puestoDe,
-    // De dónde sale el valor ACTUAL sobre el que la ayuda mueve el parámetro. El
-    // puente es de quien lo sabe y este archivo no habla con él, así que por
-    // ahora no hay base y `leerBase` devuelve la ausencia explícitamente.
-    //
-    // El motor la reconoce como ausencia (`SIN_LECTURA`) y no como un cero: la
-    // orden del titular sale exactamente como la mandó y la propuesta se conserva
-    // para cuando haya lectura. Es decir, mientras esta línea siga devolviendo
-    // `null`, la asistencia está enchufada de extremo a extremo pero todavía no
-    // mueve ningún parámetro — y eso es preferible a moverlo desde un número
-    // inventado. Conectarlo a la telemetría difundida es la rebanada siguiente.
-    leerBase: () => null,
+    leerBase,
   });
   sesion = resultado.estado ?? sesion;
   return { orden: resultado.orden, aviso: resultado.aviso };
+}
+
+/**
+ * El valor ACTUAL sobre el que la ayuda mueve el parámetro, leído de la
+ * telemetría que el GM ya difunde a toda la mesa (`telemetria-difusion.mjs`,
+ * el mismo ajuste de mundo que alimenta la consola de tripulación).
+ *
+ * `set_impulse`/`set_warp` no tienen lectura en el DTO v0 del puente (mismo
+ * límite documentado en `maniobra-control.mjs`): devolver `null` ahí no es un
+ * hueco de esta rebanada, es lo que hay. El motor reconoce `null` como
+ * ausencia (`SIN_LECTURA`) y no como cero: la orden del titular sale intacta
+ * y la propuesta se conserva para cuando haya lectura.
+ */
+function leerBase({ accion, params }) {
+  const sobre = game.settings?.get?.(moduloConfigurado, AJUSTE_TELEMETRIA);
+  const sistema = sobre?.ship?.systems?.[params?.system];
+  if (!sistema) return null;
+  if (accion === "set_system_power") return typeof sistema.power === "number" ? sistema.power : null;
+  if (accion === "set_system_coolant") return typeof sistema.coolant === "number" ? sistema.coolant : null;
+  return null;
 }
 
 // --- Lado asistente ----------------------------------------------------------

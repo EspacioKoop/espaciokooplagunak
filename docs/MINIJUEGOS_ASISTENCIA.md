@@ -226,9 +226,13 @@ Dos consecuencias que el motor hace cumplir con código, no con prosa:
   reconocen como ausencia **antes** de cualquier coerción numérica, porque `Number(null)` es `0` y
   tratarlo como lectura convertía «no sé a qué está el reactor» en «está a cero» —con lo que una ayuda
   *exitosa* arrastraba la orden hacia abajo, que es el efecto contrario al que se ganó—.
-  Mientras el cableado no hable con el puente (`leerBase: () => null` en `asistencia-wiring.mjs`), la
-  asistencia está enchufada de extremo a extremo pero todavía no mueve ningún parámetro. Es
-  deliberado: preferimos ayuda inerte a ayuda que empeora.
+  `leerBase` en `asistencia-wiring.mjs` lee la telemetría que el GM ya difunde a toda la mesa
+  (`telemetria-difusion.mjs`, el mismo ajuste de mundo que alimenta la consola de tripulación): para
+  `set_system_power`/`set_system_coolant` hay lectura (`ship.systems[system].power`/`.coolant`), y la
+  ayuda sí mueve el parámetro. `set_impulse`/`set_warp` siguen devolviendo `null` a propósito: el DTO
+  v0 del puente no publica su valor actual (mismo límite que documenta `maniobra-control.mjs`), así
+  que ahí la asistencia sigue enchufada pero inerte hasta que el puente lo publique — preferimos ayuda
+  inerte a ayuda que empeora.
 
 ### dnd5e es enriquecimiento, no dependencia dura
 El módulo debe seguir funcionando **sin dnd5e**. Esto es un **gate adicional**, no la ruta moderna del

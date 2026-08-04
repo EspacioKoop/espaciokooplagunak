@@ -204,6 +204,15 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     se apaga y limpia (#353); un sondeo vacío sí se pinta, porque «he mirado y no hay nada» es un
     dato. No hay bucle de animación: se repinta con cada telemetría y por eso
     `prefers-reduced-motion` no tiene nada que frenar.
+  - **Contenido externo (plutonium/5etools)** — `scripts/plutonium-filtro-edicion.mjs` (clasifica
+    cada documento importado como 2014/2024/desconocido; **falla cerrado**: lo no clasificable con
+    certeza se descarta, nunca se asume 2014, #332), `scripts/plutonium-adaptador.mjs` (contrato
+    funcional puro `resolverCriaturas`/`resolverObjetos`/`resolverHechizos`, nunca la estructura
+    interna de plutonium/5etools) y `scripts/plutonium-wiring.mjs` (detección de plutonium activo,
+    degradación a colecciones vacías si no lo está). `module.json` no declara relación alguna con
+    plutonium a propósito — es puro enriquecimiento opcional, sin contenido de terceros en el
+    repositorio. Falta el cableado a un consumidor real (minijuegos #308, asistencia #309, atlas
+    #213): hoy el adaptador está completo y probado pero nada lo invoca todavía.
   - **Asistencia entre puestos** — `scripts/asistencia/` (#309, diseño en
     [`docs/MINIJUEGOS_ASISTENCIA.md`](docs/MINIJUEGOS_ASISTENCIA.md)): motor puro más el reductor
     `sesion.mjs` y la costura `relevo.mjs`. Ayudar NUNCA emite orden: produce un token que gasta el

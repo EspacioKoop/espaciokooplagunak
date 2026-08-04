@@ -8,7 +8,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { crearClaseCantinaV1, crearClaseCantinaV2 } from "../scripts/cantina-app.mjs";
+import { crearClaseCantinaV1, crearClaseCantinaV2, gentePresente } from "../scripts/cantina-app.mjs";
+import { piezasDeLaGente, anclasHumoDeLaGente } from "../scripts/cantina-avatar.mjs";
 
 /** Botón de mentira: registra los focos y los clics que recibe. */
 function botonFalso(id) {
@@ -229,4 +230,66 @@ test("sin DOM, renderizar no revienta: no hay nada que enfocar", () => {
   const app = new Clase();
 
   assert.doesNotThrow(() => app._onRender({}, {}));
+});
+
+// Regresión (#456 sobre #439): el pipeline de humo del cigarro (`cantina-avatar.mjs`)
+// estaba completo y probado en Node, pero `encenderSala()` nunca pasaba población
+// real a `arrancarCantina()` — en producción `gente` siempre llegaba vacía a
+// `componerCantina`, así que ningún avatar (fumando o no) aparecía nunca en la
+// cantina real. `gentePresente()` es el cableado que faltaba: usuarios jugadores
+// activos + su avatar ya elegido (`avatar-assignment.mjs`, #450).
+
+function usuarioFalso({ id, name, isGM = false, active = true, avatar = {} }) {
+  return {
+    id,
+    name,
+    isGM,
+    active,
+    getFlag: (_moduleId, clave) => (clave === "avatar" ? avatar : undefined),
+  };
+}
+
+test("gentePresente(): sin usuarios conectados, no inventa gente", () => {
+  globalThis.game = { users: [] };
+  assert.deepEqual(gentePresente("espaciokoop-lagunak"), []);
+});
+
+test("gentePresente(): excluye al GM y a quien está desconectado, incluye al jugador activo con su avatar", () => {
+  globalThis.game = {
+    users: [
+      usuarioFalso({ id: "gm", name: "Directora", isGM: true }),
+      usuarioFalso({ id: "ausente", name: "Ausente", active: false }),
+      usuarioFalso({
+        id: "jugador-1",
+        name: "Jugador",
+        avatar: { raza: "elfo", clase: "explorador", gesto: "fumar" },
+      }),
+    ],
+  };
+
+  const gente = gentePresente("espaciokoop-lagunak");
+
+  assert.deepEqual(gente.map((persona) => persona.id), ["jugador-1"]);
+  assert.equal(gente[0].raza, "elfo");
+  assert.equal(gente[0].clase, "explorador");
+  assert.equal(gente[0].gesto, "fumar");
+});
+
+test("regresión: un usuario con gesto fumar produce avatar y ancla de humo en la escena real", () => {
+  // Este es el call path completo aplicación → escena que #456 encontró roto:
+  // gentePresente() (Foundry) → piezasDeLaGente()/anclasHumoDeLaGente() (puro,
+  // cantina-avatar.mjs) — antes de este arreglo, `gente` llegaba aquí vacía
+  // siempre, porque nadie construía esta lista fuera de las pruebas.
+  globalThis.game = {
+    users: [usuarioFalso({ id: "fumador", name: "Fumador", avatar: { gesto: "fumar" } })],
+  };
+
+  const gente = gentePresente("espaciokoop-lagunak");
+  assert.equal(gente.length, 1, "el usuario activo entra en la lista de gente");
+
+  const piezas = piezasDeLaGente(gente, { tiempo: 0 });
+  assert.ok(piezas.length > 0, "produce un avatar pintable");
+
+  const anclas = anclasHumoDeLaGente(gente);
+  assert.ok(anclas.length > 0, "el gesto fumar produce al menos un ancla de humo");
 });

@@ -5,6 +5,18 @@ Subissue [#460](https://github.com/VaroTv7/espaciokooplagunak/issues/460)
 sin sesión de playtest documentada: Science, Relay, Engineering avanzada,
 Operations, Comms y Damage Control.
 
+**Estado de #460: en curso, no cerrado por este documento.** Esta sesión
+confirma que cada pantalla funciona en solitario (un cliente por conexión),
+pero no repite el patrón completo de `SESION-FASE1.md` (varias personas
+reales conectadas a la vez narrando su experiencia) — entre otras cosas
+porque, según se documenta más abajo, no se consiguió mantener dos clientes
+simultáneos estables en esta build. Las conclusiones que este documento saca
+para B2 ([#462](https://github.com/VaroTv7/espaciokooplagunak/issues/462)) y
+B3 ([#463](https://github.com/VaroTv7/espaciokooplagunak/issues/463)) son
+**alcance provisional basado en código y en esta verificación parcial**, no
+un cierre definitivo — pueden cambiar si un playtest multijugador real
+revela algo distinto.
+
 ## Método
 
 Este documento combina dos pasadas:
@@ -100,8 +112,11 @@ en Windows nativo, este es el primer punto a reproducir.
   objetivo (`GuiHackingDialog`, si la nave tiene `HackingDevice`), abrir
   comunicaciones, cambiar el **nivel de alerta de la nave**
   (`GuiAlertLevelSelect`), centrar/zoom del radar.
-- **Información asimétrica:** reputación de facción del objetivo, reloj de
-  misión, disponibilidad de hackeo.
+- **Información asimétrica:** reputación de la **propia** facción
+  (`Faction::getInfo(my_spaceship).reputation_points`, `relayScreen.cpp:334`
+  — puntos globales del bando de la nave, no del objetivo), facción del
+  objetivo por separado (`info_faction`, visible solo tras escaneo simple,
+  `relayScreen.cpp:289-292`), reloj de misión, disponibilidad de hackeo.
 - **¿Autónoma?** Sí, y es la más rica de las seis: gestión táctica, sondas,
   hackeo y alerta de nave sin depender del GM.
 - **Solape:** waypoints/sondas/comms se duplican en Operations (versión
@@ -145,8 +160,9 @@ en Windows nativo, este es el primer punto a reproducir.
 - **Acciones:** todas las de Science (hereda la pantalla completa) más
   waypoints (crear/borrar) y comunicaciones — sin hackeo, sin lanzamiento de
   sondas, sin enlace ciencia-sonda, sin nivel de alerta.
-- **Información asimétrica:** la misma de Science más reputación/reloj de
-  misión (igual que en Relay).
+- **Información asimétrica:** la misma de Science más reputación de la propia
+  facción y reloj de misión (`operationsScreen.cpp:132`, igual patrón que
+  Relay — no es reputación del objetivo).
 - **¿Autónoma?** Sí — pensada para tripulaciones reducidas (crew4) como
   combinación ligera de Science+Relay.
 - **Solape:** no aporta ninguna acción propia nueva; es composición directa
@@ -264,14 +280,14 @@ del alcance de B0).
 
 - Diagnosticar el fallo de segundo cliente simultáneo en la build nativa de
   Windows (¿específico de esta máquina/GPU, de esta build no soportada, o un
-  bug real de multijugador?) — no bloquea B0 (cada pantalla ya se confirmó
-  individualmente) pero sí cualquier verificación futura de multijugador en
-  esta plataforma.
+  bug real de multijugador?) — bloquea justamente la parte de #460 que este
+  documento no cierra: una sesión con varias personas conectadas a la vez,
+  como sí tiene `SESION-FASE1.md`.
+- Repetir esa sesión multijugador real, con más de una persona conectada
+  simultáneamente narrando qué pudo decidir por sí misma, antes de dar #460
+  por cerrado.
 - Si se decide adoptar la compilación nativa de Windows como ruta soportada,
   documentarla en `docs/BUILDING.md` (dependencias exactas, script de
   configuración, y cómo obtener/colocar `SDL2.dll`) en un PR dedicado — aquí
   solo se registra como lo que permitió esta verificación, no como guía
   oficial.
-- Repetir, si es posible, el patrón completo de `SESION-FASE1.md` con más de
-  una persona conectada a la vez, una vez resuelta la limitación de segundo
-  cliente.

@@ -1,0 +1,41 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+
+import { colisiona } from "../scripts/nave-movimiento.mjs";
+import { ALTURA_OJOS, PLANTA_PRUEBA, componerSalaPrueba } from "../scripts/nave-movimiento-sala-prueba.mjs";
+
+test("la planta de pruebas colisiona con sus columnas y no con el suelo libre", () => {
+  // Una de las columnas declaradas está en x:3..3.8, z:3..3.8.
+  assert.equal(colisiona(3.4, 3.4, 0.2, PLANTA_PRUEBA), true);
+  assert.equal(colisiona(1, 1, 0.3, PLANTA_PRUEBA), false);
+});
+
+test("la planta de pruebas colisiona en sus límites (los muros no se declaran dos veces)", () => {
+  assert.equal(colisiona(-0.1, 5, 0.3, PLANTA_PRUEBA), true);
+  assert.equal(colisiona(PLANTA_PRUEBA.ancho + 0.1, 5, 0.3, PLANTA_PRUEBA), true);
+});
+
+test("componerSalaPrueba devuelve una escena con el tamaño pedido y polígonos", () => {
+  const escena = componerSalaPrueba(5, 5, 0, { ancho: 200, alto: 100 });
+  assert.equal(escena.ancho, 200);
+  assert.equal(escena.alto, 100);
+  assert.ok(escena.poligonos.length > 0);
+  // Todos los polígonos ya vienen ordenados de más lejos a más cerca.
+  for (let i = 1; i < escena.poligonos.length; i += 1) {
+    assert.ok(escena.poligonos[i - 1].profundidad >= escena.poligonos[i].profundidad);
+  }
+});
+
+test("moverse cambia lo que se ve: mirar hacia una columna cercana la acerca", () => {
+  // Desde el centro de la sala, la columna en (3,3) está más lejos que
+  // acercándose a ella; de más lejos a más cerca hay menos polígonos visibles
+  // recortados por el plano cercano en el mismo punto, así que basta comprobar
+  // que la escena cambia con la posición (no un lienzo estático).
+  const lejos = componerSalaPrueba(8, 8, Math.PI, { ancho: 160, alto: 90 });
+  const cerca = componerSalaPrueba(2, 2, Math.PI, { ancho: 160, alto: 90 });
+  assert.notDeepEqual(lejos.poligonos, cerca.poligonos);
+});
+
+test("la cámara mira desde la altura de ojos, no desde el suelo", () => {
+  assert.ok(ALTURA_OJOS > 0 && ALTURA_OJOS < 3);
+});

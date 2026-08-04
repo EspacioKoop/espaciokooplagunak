@@ -22,14 +22,14 @@
  *
  * @param {{
  *   planta: object,
- *   componer: (x:number, z:number, yaw:number, opciones?:object) => object,
+ *   componer: (x:number, y:number, z:number, yaw:number, opciones?:object) => object,
  *   puertas?: Array<{rect:object, destino:{estancia:string, x?:number, z?:number, yaw?:number}}>,
  *   entrada?: {x:number, z:number, yaw?:number},
  * }} definicion
  */
 export function declararEstancia(definicion) {
   if (!definicion?.planta || typeof definicion?.componer !== "function") {
-    throw new TypeError("declararEstancia requiere planta y componer(x, z, yaw)");
+    throw new TypeError("declararEstancia requiere planta y componer(x, y, z, yaw)");
   }
   return Object.freeze({
     planta: definicion.planta,

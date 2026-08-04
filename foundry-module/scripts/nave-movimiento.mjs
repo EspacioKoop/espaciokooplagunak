@@ -112,10 +112,9 @@ export function vectorLocal(activas) {
  *   dt:number, planta:object, velocidad?:number, radio?:number}} entrada
  * @returns {{x:number, z:number}}
  */
-export function mover({ x, z, yaw, activas, dt, planta, velocidad = 2.2, radio = 0.35 }) {
+function moverXZ({ x, z, yaw, activas, dt, planta, velocidad, radio }) {
   const local = vectorLocal(activas);
   if (local.x === 0 && local.z === 0) return { x, z };
-  if (!(dt > 0)) return { x, z };
 
   const distancia = velocidad * dt;
   const seno = Math.sin(yaw);
@@ -139,4 +138,90 @@ export function mover({ x, z, yaw, activas, dt, planta, velocidad = 2.2, radio =
     if (!colisiona(x + dx, nz, radio, planta)) nx = x + dx;
   }
   return { x: nx, z: nz };
+}
+
+/** Impulso vertical al iniciar un salto (m/s) y aceleración de la gravedad
+ *  (m/s², negativa: tira hacia el suelo). El TOPE del salto no es una
+ *  constante aparte que se pueda desincronizar del resto: sale solo de estos
+ *  dos números (v²/2g), así que basta con tocar `VELOCIDAD_SALTO` o
+ *  `GRAVEDAD` para que el límite se recalcule con ellos. */
+const VELOCIDAD_SALTO = 3.6;
+const GRAVEDAD = -9.8;
+
+/** Cuánto baja la cámara al agacharse. A diferencia del salto no hay
+ *  física que integrar: agacharse es una postura que se sostiene mientras la
+ *  tecla está pulsada, no un impulso que decae solo. */
+const OFFSET_AGACHADO = 0.5;
+
+/** Altura máxima que alcanza un salto con los valores de arriba — documentada
+ *  como constante derivada (no usada por `mover`, que ya la respeta al
+ *  integrar) para que quede claro que el salto tiene techo y cuál es. */
+export const ALTURA_MAXIMA_SALTO = (VELOCIDAD_SALTO * VELOCIDAD_SALTO) / (-2 * GRAVEDAD);
+
+/**
+ * Movimiento vertical: `y` es el desplazamiento de la cámara respecto a la
+ * altura de ojos en pie (0 = de pie en el suelo, >0 saltando, <0 agachado).
+ * `velocidadY` es la velocidad vertical actual, para poder seguir integrando
+ * la gravedad de un fotograma al siguiente sin que este módulo guarde estado
+ * propio (mismo contrato que el resto: quien llama conserva `y`/`velocidadY`
+ * y los pasa de vuelta en el siguiente paso, igual que hace con `x`/`z`).
+ *
+ * Agacharse SOLO aplica en el suelo (`y <= 0`): agacharse en el aire no tiene
+ * geometría que resolver todavía (la colisión sigue siendo 2D) y complicaría
+ * la integración de la gravedad sin ganar nada — se ignora la tecla mientras
+ * se está en el aire, en vez de fingir un comportamiento que nadie pidió.
+ */
+function moverY({ y, velocidadY, activas, dt, velocidadSalto, gravedad, offsetAgachado }) {
+  const enSuelo = y <= 0;
+  const saltar = activas?.has?.("saltar") || activas?.saltar;
+  const agachado = activas?.has?.("agachado") || activas?.agachado;
+
+  if (enSuelo && !saltar) {
+    return { y: agachado ? -offsetAgachado : 0, velocidadY: 0 };
+  }
+
+  const nVelocidadY = enSuelo ? velocidadSalto : velocidadY + gravedad * dt;
+  const ny = Math.max(0, y + nVelocidadY * dt);
+  return ny === 0 ? { y: 0, velocidadY: 0 } : { y: ny, velocidadY: nVelocidadY };
+}
+
+/**
+ * Un paso de movimiento completo: posición X/Z (ver `moverXZ`) y altura de
+ * cámara Y (ver `moverY`). Sin `dt` no cambia nada, en ninguno de los dos
+ * ejes — un `dt` de cero no tiene nada que integrar.
+ *
+ * @param {{x:number, z:number, y?:number, velocidadY?:number, yaw:number,
+ *   activas:Set<string>|object, dt:number, planta:object, velocidad?:number,
+ *   radio?:number, velocidadSalto?:number, gravedad?:number,
+ *   offsetAgachado?:number}} entrada
+ * @returns {{x:number, z:number, y:number, velocidadY:number}}
+ */
+export function mover({
+  x,
+  z,
+  y = 0,
+  velocidadY = 0,
+  yaw,
+  activas,
+  dt,
+  planta,
+  velocidad = 2.2,
+  radio = 0.35,
+  velocidadSalto = VELOCIDAD_SALTO,
+  gravedad = GRAVEDAD,
+  offsetAgachado = OFFSET_AGACHADO,
+}) {
+  if (!(dt > 0)) return { x, z, y, velocidadY };
+
+  const { x: nx, z: nz } = moverXZ({ x, z, yaw, activas, dt, planta, velocidad, radio });
+  const { y: ny, velocidadY: nVelocidadY } = moverY({
+    y,
+    velocidadY,
+    activas,
+    dt,
+    velocidadSalto,
+    gravedad,
+    offsetAgachado,
+  });
+  return { x: nx, z: nz, y: ny, velocidadY: nVelocidadY };
 }

@@ -125,6 +125,45 @@ test("un obstáculo en la planta para el avance, igual que en nave-movimiento", 
   mando.detener();
 });
 
+test("pulsar saltar sube y baja y, que llega a componer como segundo argumento", () => {
+  const valoresY = [];
+  const mando = arrancarAndar(lienzoFalso(), {
+    componer: (x, y) => {
+      valoresY.push(y);
+      return { ancho: 100, alto: 100, poligonos: [] };
+    },
+    planta: PLANTA,
+    x: 10,
+    z: 10,
+    yaw: 0,
+  });
+  mando.pulsar("saltar");
+  mando.avanzar(100);
+  mando.soltar("saltar");
+  for (let i = 0; i < 50; i += 1) mando.avanzar(50);
+
+  assert.ok(valoresY.some((y) => y > 0), "debería haber pasado por el aire");
+  assert.equal(mando.posicion().y, 0, "vuelve a aterrizar de pie");
+  mando.detener();
+});
+
+test("cambiarEstancia aterriza de pie: un salto en curso no sobrevive al cruce de puerta", () => {
+  const mando = arrancarAndar(lienzoFalso(), {
+    componer: () => ({ ancho: 100, alto: 100, poligonos: [] }),
+    planta: crearPlanta({ ancho: 10, profundidad: 10 }),
+    x: 5,
+    z: 5,
+    yaw: 0,
+  });
+  mando.pulsar("saltar");
+  mando.avanzar(50);
+  assert.ok(mando.posicion().y > 0, "en el aire antes del cambio");
+
+  mando.cambiarEstancia({ planta: crearPlanta({ ancho: 6, profundidad: 6 }), x: 1, z: 1, yaw: 0 });
+  assert.equal(mando.posicion().y, 0, "aterriza de pie al cambiar de estancia");
+  mando.detener();
+});
+
 test("alTocarPuerta se dispara al entrar en su rectángulo, con lo que traiga destino", () => {
   const puertas = [{ rect: { x: 4, z: 8, ancho: 2, profundidad: 1 }, destino: { estancia: "b", x: 1, z: 1 } }];
   const destinos = [];
@@ -189,7 +228,7 @@ test("cambiarEstancia sustituye planta, render y posición sin reiniciar el bucl
     yaw: Math.PI,
   });
 
-  assert.deepEqual(mando.posicion(), { x: 2, z: 2, yaw: Math.PI });
+  assert.deepEqual(mando.posicion(), { x: 2, z: 2, y: 0, yaw: Math.PI });
   assert.ok(vecesComponerB >= 1, "se repinta con la nueva composición al cambiar");
 
   // El bucle sigue siendo el MISMO: no se pidió un fotograma nuevo, solo se

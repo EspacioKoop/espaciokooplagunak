@@ -57,7 +57,7 @@ export function arrancarCantina(piezas, opciones = {}) {
     const ms = ahora() - inicio;
     const ctx = sala?.getContext?.("2d");
     if (ctx) {
-      const escena = componerCantina({ ancho: sala.width, alto: sala.height, epoca, plano, gente });
+      const escena = componerCantina({ ancho: sala.width, alto: sala.height, epoca, plano, gente, tiempo: ms });
       ultimasOpciones = escena.opciones;
       pintarEscena(ctx, escena, { fondo: CANTINA.ventana });
       // Y encima, el pixel-art plano: halo de las lámparas, filo del ventanal,

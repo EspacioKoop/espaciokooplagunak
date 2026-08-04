@@ -15,6 +15,8 @@ import {
   RAZAS,
   SILUETAS,
   SITIOS,
+  anclasHumoDeLaGente,
+  intensidadCalada,
   normalizarAvatar,
   piezasAvatar,
   piezasDeLaGente,
@@ -120,6 +122,57 @@ test("brindar saca una jarra y fumar saca cigarro con brasa", () => {
   // La brasa es un píxel y es lo único claro de una silueta que fuma en
   // penumbra: sin ella, el cigarro no se ve y el gesto no se lee.
   assert.ok(fumando.some((n) => n.endsWith("Brasa")));
+});
+
+// La punta encendida del cigarro (#439): sube de brillo en la calada y se
+// apaga entre una y la siguiente, en vez de arder fija todo el rato.
+test("la calada sube y baja, con pausas apagadas de por medio", () => {
+  assert.equal(intensidadCalada(0, 0), 0, "empieza apagada");
+  assert.ok(intensidadCalada(260, 0) > 0.9, "el pico de la calada está bien encendido");
+  assert.equal(intensidadCalada(3000, 0), 0, "hay pausa apagada entre caladas");
+  for (let ms = 0; ms < 5000; ms += 37) {
+    const v = intensidadCalada(ms, 0);
+    assert.ok(v >= 0 && v <= 1, `fuera de rango en ${ms}ms: ${v}`);
+  }
+});
+
+test("la calada es determinista: el mismo instante da siempre el mismo brillo", () => {
+  assert.equal(intensidadCalada(1234, 2), intensidadCalada(1234, 2));
+});
+
+test("dos fumadores no dan la calada a la vez", () => {
+  // El desfase es por sitio (`indice`), no por reloj: si coincidiera, una sala
+  // llena de fumadores parpadearía como un cartel, no como gente fumando.
+  const puntos = new Set();
+  for (let ms = 0; ms < 4200; ms += 50) {
+    puntos.add(`${intensidadCalada(ms, 0).toFixed(3)}|${intensidadCalada(ms, 1).toFixed(3)}`);
+  }
+  const enSincronia = [...puntos].every((par) => {
+    const [a, b] = par.split("|");
+    return a === b;
+  });
+  assert.ok(!enSincronia, "dos sitios distintos están dando la calada exactamente a la vez");
+});
+
+test("el humo solo sale de quien fuma, y sigue el punto del cigarro", () => {
+  const gente = [
+    { id: "a", gesto: "fumar" },
+    { id: "b", gesto: "brindis" },
+    { id: "c", gesto: "fumar" },
+  ];
+  const anclas = anclasHumoDeLaGente(gente);
+  assert.equal(anclas.length, 2, "solo dos de los tres fuman");
+  for (const ancla of anclas) {
+    assert.equal(ancla.tipo, "humo");
+    assert.ok(ancla.largo > 0);
+    assert.equal(ancla.punto.length, 3);
+  }
+});
+
+test("quien mira no alimenta su propio humo", () => {
+  const gente = [{ id: "yo", gesto: "fumar" }, { id: "otra", gesto: "fumar" }];
+  const anclas = anclasHumoDeLaGente(gente, { omitirId: "yo" });
+  assert.equal(anclas.length, 1);
 });
 
 test("un gesto que no existe deja a la persona quieta, no rota", () => {

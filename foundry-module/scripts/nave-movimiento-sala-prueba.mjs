@@ -59,12 +59,95 @@ export const ALTURA_OJOS = 1.6;
 const ALTURA = 3;
 const GROSOR_MURO = 0.4;
 
+/** Altura del hueco de una puerta: por debajo se puede cruzar, por encima
+ *  sigue habiendo muro (el dintel) — sin él, la pared "flotaría" cortada en
+ *  seco y perdería la silueta de puerta reconocible. */
+const ALTURA_PUERTA = 2.2;
+const TOLERANCIA_BORDE = 0.01;
+
+/** Rectángulo esquina+medidas a caja centro+medidas en Y = [y0, y1]. */
+function rectAColumnaEntre(rect, y0, y1) {
+  return caja(
+    [rect.x + rect.ancho / 2, (y0 + y1) / 2, rect.z + rect.profundidad / 2],
+    [rect.ancho, y1 - y0, rect.profundidad],
+  );
+}
+
 /** Rectángulo esquina+medidas a caja centro+medidas en Y = [0, altura]. */
 function rectAColumna(rect, altura) {
-  return caja(
-    [rect.x + rect.ancho / 2, altura / 2, rect.z + rect.profundidad / 2],
-    [rect.ancho, altura, rect.profundidad],
-  );
+  return rectAColumnaEntre(rect, 0, altura);
+}
+
+/**
+ * Recorta un muro `x`-orientado (los de norte/sur, que se extienden a lo
+ * largo de X) para dejar un hueco de puerta entre `[desde, hasta]`. Devuelve
+ * los tramos de pared que sobreviven (0, 1 o 2, según si el hueco está en un
+ * extremo o en medio).
+ */
+function recortarMuroX(muro, desde, hasta) {
+  const inicio = muro.x;
+  const fin = muro.x + muro.ancho;
+  const tramos = [];
+  if (desde > inicio) tramos.push({ ...muro, ancho: desde - inicio });
+  if (hasta < fin) tramos.push({ ...muro, x: hasta, ancho: fin - hasta });
+  return tramos;
+}
+
+/** Igual que `recortarMuroX`, para muros `z`-orientados (este/oeste). */
+function recortarMuroZ(muro, desde, hasta) {
+  const inicio = muro.z;
+  const fin = muro.z + muro.profundidad;
+  const tramos = [];
+  if (desde > inicio) tramos.push({ ...muro, profundidad: desde - inicio });
+  if (hasta < fin) tramos.push({ ...muro, z: hasta, profundidad: fin - hasta });
+  return tramos;
+}
+
+/**
+ * Convierte la lista de muros llenos y la lista de puertas (mismo rectángulo
+ * que ya usa `puertaTocada` como disparador, #427) en las piezas de pared
+ * que de verdad hay que dibujar: cada puerta abre un hueco en el muro que
+ * toca —a qué lado pertenece se decide por qué borde de la sala toca el
+ * rectángulo de la puerta, no por su orden en la lista— y añade el dintel
+ * por encima de `ALTURA_PUERTA` para que la pared no quede "flotando".
+ */
+function abrirPuertasEnMuros(muros, puertas, ancho, profundidad) {
+  const [norte, sur, oeste, este] = muros;
+  let tramosNorte = [norte];
+  let tramosSur = [sur];
+  let tramosOeste = [oeste];
+  let tramosEste = [este];
+  const dinteles = [];
+
+  for (const puerta of puertas) {
+    const { rect } = puerta;
+    const tocaNorte = rect.z <= TOLERANCIA_BORDE;
+    const tocaSur = rect.z + rect.profundidad >= profundidad - TOLERANCIA_BORDE;
+    const tocaOeste = rect.x <= TOLERANCIA_BORDE;
+    const tocaEste = rect.x + rect.ancho >= ancho - TOLERANCIA_BORDE;
+
+    if (tocaNorte) {
+      tramosNorte = tramosNorte.flatMap((m) => recortarMuroX(m, rect.x, rect.x + rect.ancho));
+      dinteles.push(rectAColumnaEntre({ ...norte, x: rect.x, ancho: rect.ancho }, ALTURA_PUERTA, ALTURA));
+    } else if (tocaSur) {
+      tramosSur = tramosSur.flatMap((m) => recortarMuroX(m, rect.x, rect.x + rect.ancho));
+      dinteles.push(rectAColumnaEntre({ ...sur, x: rect.x, ancho: rect.ancho }, ALTURA_PUERTA, ALTURA));
+    } else if (tocaOeste) {
+      tramosOeste = tramosOeste.flatMap((m) => recortarMuroZ(m, rect.z, rect.z + rect.profundidad));
+      dinteles.push(rectAColumnaEntre({ ...oeste, z: rect.z, profundidad: rect.profundidad }, ALTURA_PUERTA, ALTURA));
+    } else if (tocaEste) {
+      tramosEste = tramosEste.flatMap((m) => recortarMuroZ(m, rect.z, rect.z + rect.profundidad));
+      dinteles.push(rectAColumnaEntre({ ...este, z: rect.z, profundidad: rect.profundidad }, ALTURA_PUERTA, ALTURA));
+    }
+    // Una puerta que no toca ningún borde es un dato de planta mal formado
+    // (no debería pasar en un catálogo bien hecho): se ignora en vez de
+    // reventar el render por un rectángulo que la colisión igual respeta.
+  }
+
+  return {
+    muros: [...tramosNorte, ...tramosSur, ...tramosOeste, ...tramosEste],
+    dinteles,
+  };
 }
 
 /** Traslada una malla en coordenadas de mundo. */
@@ -81,18 +164,32 @@ function trasladarMalla(malla, [dx, dy, dz]) {
  * Devuelve `{planta, componer}`, la forma exacta que pide
  * `nave-estancias.declararEstancia` y `nave-movimiento-lienzo.arrancarAndar`.
  *
- * @param {{ancho:number, profundidad:number, columnas?:Array, colorMuro?:string, colorColumna?:string}} medidas
+ * `puertas` son los MISMOS rectángulos que se declaran como disparador en el
+ * catálogo de estancias (#427): pasarlos aquí abre un hueco real en la malla
+ * del muro que tocan, para que la puerta se vea y no sea solo una zona
+ * invisible dentro de una pared aparentemente sólida.
+ *
+ * @param {{ancho:number, profundidad:number, columnas?:Array, puertas?:Array<{rect:object}>, colorMuro?:string, colorColumna?:string}} medidas
  */
-function crearSalaCaja({ ancho, profundidad, columnas = [], colorMuro = SECCION.casco, colorColumna = SECCION.mamparo }) {
+function crearSalaCaja({
+  ancho,
+  profundidad,
+  columnas = [],
+  puertas = [],
+  colorMuro = SECCION.casco,
+  colorColumna = SECCION.mamparo,
+}) {
   const muros = [
     { x: -GROSOR_MURO, z: -GROSOR_MURO, ancho: ancho + GROSOR_MURO * 2, profundidad: GROSOR_MURO },
     { x: -GROSOR_MURO, z: profundidad, ancho: ancho + GROSOR_MURO * 2, profundidad: GROSOR_MURO },
     { x: -GROSOR_MURO, z: 0, ancho: GROSOR_MURO, profundidad },
     { x: ancho, z: 0, ancho: GROSOR_MURO, profundidad },
   ];
+  const { muros: tramosMuro, dinteles } = abrirPuertasEnMuros(muros, puertas, ancho, profundidad);
 
   const piezas = Object.freeze([
-    ...muros.map((rect) => ({ malla: rectAColumna(rect, ALTURA), color: colorMuro })),
+    ...tramosMuro.map((rect) => ({ malla: rectAColumna(rect, ALTURA), color: colorMuro })),
+    ...dinteles.map((malla) => ({ malla, color: colorMuro })),
     ...columnas.map((rect) => ({ malla: rectAColumna(rect, ALTURA), color: colorColumna })),
     { malla: caja([ancho / 2, -0.05, profundidad / 2], [ancho, 0.1, profundidad]), color: SECCION.sala },
     { malla: caja([ancho / 2, ALTURA + 0.05, profundidad / 2], [ancho, 0.1, profundidad]), color: SECCION.mamparo },
@@ -139,6 +236,20 @@ function crearSalaCaja({ ancho, profundidad, columnas = [], colorMuro = SECCION.
   return { planta, componer };
 }
 
+/**
+ * Rectángulos de puerta compartidos entre la malla de pared (arriba, el
+ * hueco que se ve) y los catálogos de estancias (abajo y en
+ * `nave-catalogo-andar.mjs`, el disparador que se cruza): la misma
+ * constante en los dos sitios es lo único que garantiza que el hueco
+ * dibujado y la zona que de verdad teletransporta coincidan.
+ */
+export const PUERTA_A_HACIA_B = { x: 4, z: 8.8, ancho: 2, profundidad: 1.2 };
+export const PUERTA_B_HACIA_A = { x: 2, z: 0, ancho: 2, profundidad: 1.2 };
+/** En el muro oeste de la sala A: no la usa `CATALOGO_PRUEBA` (solo conecta
+ *  A y B), pero sí `nave-catalogo-andar.mjs`, que añade la puerta a la
+ *  cantina real sobre esta misma sala A. */
+export const PUERTA_A_HACIA_CANTINA = { x: 0, z: 4, ancho: 1.2, profundidad: 2 };
+
 /** Sala A: la sala de pruebas original, con dos columnas para probar
  *  colisión y deslizamiento diagonal (ver los tests de `nave-movimiento.
  *  mjs`). Se conserva como export propio por compatibilidad con quien ya la
@@ -150,6 +261,7 @@ const SALA_A = crearSalaCaja({
     { x: 3, z: 3, ancho: 0.8, profundidad: 0.8 },
     { x: 6.2, z: 6.2, ancho: 0.8, profundidad: 0.8 },
   ],
+  puertas: [{ rect: PUERTA_A_HACIA_B }, { rect: PUERTA_A_HACIA_CANTINA }],
 });
 export const PLANTA_PRUEBA = SALA_A.planta;
 export const componerSalaPrueba = SALA_A.componer;
@@ -157,7 +269,7 @@ export const componerSalaPrueba = SALA_A.componer;
 /** Sala B: más pequeña y sin columnas — basta para demostrar que la costura
  *  entre estancias funciona con geometrías distintas de verdad, no con una
  *  copia de la misma sala. */
-const SALA_B = crearSalaCaja({ ancho: 6, profundidad: 6 });
+const SALA_B = crearSalaCaja({ ancho: 6, profundidad: 6, puertas: [{ rect: PUERTA_B_HACIA_A }] });
 export const PLANTA_PRUEBA_B = SALA_B.planta;
 export const componerSalaPruebaB = SALA_B.componer;
 
@@ -182,7 +294,7 @@ export const CATALOGO_PRUEBA = crearCatalogoEstancias({
       // radio que el jugador dejaría una franja de un dedo donde ni se activa
       // la puerta ni se puede seguir avanzando.
       {
-        rect: { x: 4, z: 8.8, ancho: 2, profundidad: 1.2 },
+        rect: PUERTA_A_HACIA_B,
         destino: { estancia: "b", x: 3, z: 2, yaw: 0 },
       },
     ],
@@ -193,7 +305,7 @@ export const CATALOGO_PRUEBA = crearCatalogoEstancias({
     puertas: [
       // Contra el muro de -z de esta sala (z = 0): misma lógica, hacia dentro.
       {
-        rect: { x: 2, z: 0, ancho: 2, profundidad: 1.2 },
+        rect: PUERTA_B_HACIA_A,
         // Aparece ANTES de la zona de la puerta de A (que empieza en z=8.8):
         // si cayera dentro, la propia llegada volvería a disparar el cruce.
         destino: { estancia: "a", x: 5, z: 8.3, yaw: Math.PI },

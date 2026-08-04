@@ -120,7 +120,12 @@ function crearSalaCaja({ ancho, profundidad, columnas = [], colorMuro = SECCION.
         fov,
         color,
         posicion: [0, 0, 0],
-        yaw,
+        // `retro3d.transformar` gira la escena en sentido contrario al que
+        // `nave-movimiento.mover` usa para decidir "adelante" (#427): sin este
+        // signo, girar a la derecha hace que la escena parezca girar a la
+        // izquierda, y moverse "adelante" tras cualquier giro lleva hacia
+        // donde en pantalla parece estar detrás.
+        yaw: -yaw,
       }),
     );
 

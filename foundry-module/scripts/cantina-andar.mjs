@@ -55,7 +55,10 @@ export function componerCantinaAndar(x, z, yaw, opciones = {}) {
       fov,
       color,
       posicion: [0, 0, 0],
-      yaw,
+      // Mismo signo que `nave-movimiento-sala-prueba.mjs`: la cámara de
+      // `retro3d.mjs` gira en sentido contrario al que usa el motor de
+      // movimiento para "adelante" (#427).
+      yaw: -yaw,
     }),
   );
 

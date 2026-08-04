@@ -3,10 +3,14 @@ import test from "node:test";
 
 import {
   MESA_POR_DEFECTO,
+  MESA_POR_DEFECTO_BLACKJACK,
+  configuracionBlackjack,
   configuracionPoker,
   normalizarMesa,
+  normalizarMesaBlackjack,
 } from "../scripts/minijuegos/mesa-config.mjs";
 import * as poker from "../scripts/minijuegos/poker-motor.mjs";
+import * as blackjack from "../scripts/minijuegos/blackjack-motor.mjs";
 import { aplicar, crearSesion, vistaPublicaSesion } from "../scripts/minijuegos/sesion-motor.mjs";
 
 function sobre(sesion, tipo, parametros, nonce) {
@@ -319,4 +323,119 @@ test("dos manos seguidas por el cableado real: la ciega pequeña cambia de dueñ
 
   assert.equal(paso("gm", "start", {}, configuracionPoker(sesion.publico)).ok, true);
   assert.notEqual(ciegaPequenaDe(), primera, "la ciega pequeña ha cambiado de dueño");
+});
+
+// ---- Blackjack --------------------------------------------------------------
+
+function sobreBJ(sesion, tipo, parametros, nonce) {
+  return {
+    sessionId: sesion.publico.id,
+    revision: sesion.publico.revision,
+    epocaCoordinador: sesion.publico.epocaCoordinador,
+    nonce,
+    tipo,
+    parametros,
+  };
+}
+
+test("REGRESIÓN blackjack: repartir funciona sin configuración de mesa", () => {
+  let sesion = crearSesion({ id: "bj", juego: "blackjack", anfitrionId: "gm", coordinadorId: "gm" });
+  let nonce = 0;
+  const paso = (actorId, tipo, parametros, configuracionJuego) => {
+    const res = aplicar(sesion, {
+      sobre: sobreBJ(sesion, tipo, parametros, `n${(nonce += 1)}`),
+      actorId,
+      juego: blackjack,
+      semilla: 99,
+      configuracionJuego,
+    });
+    if (res.ok) sesion = res.sesion;
+    return res;
+  };
+
+  paso("p1", "join", {});
+  paso("p2", "join", {});
+
+  const sinFichas = paso("gm", "start", {}, undefined);
+  assert.equal(sinFichas.ok, false);
+  assert.equal(sinFichas.codigo, "juego_rechazo");
+
+  const conFichas = paso("gm", "start", {}, configuracionBlackjack(sesion.publico));
+  assert.equal(conFichas.ok, true, `start seguía fallando: ${conFichas.codigo}`);
+  const publica = vistaPublicaSesion(sesion);
+  assert.equal(publica.manoEnCurso, true);
+  for (const jugador of publica.juegoPublico.jugadores) {
+    assert.equal(jugador.apuesta, MESA_POR_DEFECTO_BLACKJACK.apuesta);
+  }
+});
+
+test("cada asiento recibe la misma apuesta fija, en el orden que publica la sesión", () => {
+  const publico = { jugadores: [{ userId: "b" }, { userId: "a" }, { userId: "c" }] };
+  const config = configuracionBlackjack(publico, { apuesta: 20, fichasIniciales: 200 });
+  assert.deepEqual(config.jugadores.map((j) => j.userId), ["b", "a", "c"]);
+  for (const jugador of config.jugadores) {
+    assert.equal(jugador.fichas, 200);
+    assert.equal(jugador.apuesta, 20);
+  }
+});
+
+test("una errata en el ajuste de blackjack acota, no deja la mesa inarrancable", () => {
+  for (const basura of [{}, null, undefined, { apuesta: -5 }, { fichasIniciales: "cien" }]) {
+    const mesa = normalizarMesaBlackjack(basura ?? {});
+    assert.ok(mesa.fichasIniciales >= 1);
+    assert.ok(mesa.apuesta >= 1);
+  }
+  assert.deepEqual(normalizarMesaBlackjack({}), MESA_POR_DEFECTO_BLACKJACK);
+});
+
+test("quien no llega a la apuesta se queda fuera de la MANO, no de la mesa", () => {
+  const publico = {
+    jugadores: [{ userId: "p1" }, { userId: "p2" }, { userId: "p3" }],
+    resultado: { jugadores: [{ userId: "p1", fichas: 50 }, { userId: "p2", fichas: 2 }, { userId: "p3", fichas: 30 }] },
+  };
+  const config = configuracionBlackjack(publico, { apuesta: 5 });
+  assert.deepEqual(config.jugadores.map((j) => j.userId), ["p1", "p3"], "p2 no entra a repartir");
+});
+
+test("REGRESIÓN blackjack: la segunda mano hereda las fichas — repartir no es una recompra", () => {
+  // A diferencia del póker, una mesa de blackjack se juega igual de bien sola
+  // contra la banca: el mínimo de la mesa se abre a un jugador.
+  let sesion = crearSesion({
+    id: "bj",
+    juego: "blackjack",
+    anfitrionId: "gm",
+    coordinadorId: "gm",
+    limites: { minJugadores: 1 },
+  });
+  let nonce = 0;
+  const paso = (actorId, tipo, parametros, configuracionJuego) => {
+    const res = aplicar(sesion, {
+      sobre: sobreBJ(sesion, tipo, parametros, `n${(nonce += 1)}`),
+      actorId,
+      juego: blackjack,
+      semilla: 7,
+      configuracionJuego,
+    });
+    if (res.ok) sesion = res.sesion;
+    return res;
+  };
+
+  paso("p1", "join", {});
+  assert.equal(paso("gm", "start", {}, configuracionBlackjack(sesion.publico)).ok, true);
+
+  // Se termina la mano plantándose hasta que la banca resuelve.
+  while (vistaPublicaSesion(sesion).manoEnCurso) {
+    const enTurno = vistaPublicaSesion(sesion).juegoPublico.turno;
+    assert.ok(enTurno, "una mano en curso tiene turno");
+    assert.equal(paso(enTurno, "act", { tipo: "plantarse" }).ok, true);
+  }
+
+  const trasPrimera = sesion.publico.resultado?.jugadores;
+  assert.ok(trasPrimera, "la mano terminada publica sus fichas finales");
+
+  const segunda = configuracionBlackjack(sesion.publico);
+  for (const jugador of segunda.jugadores) {
+    const anterior = trasPrimera.find((j) => j.userId === jugador.userId);
+    assert.equal(jugador.fichas, anterior.fichas, `${jugador.userId} entra a la segunda mano con las fichas de la primera`);
+  }
 });

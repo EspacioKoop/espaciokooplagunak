@@ -83,6 +83,15 @@ export const ICONOS = Object.freeze({
     Object.freeze({ malla: caja([0, 0, 0], [1.3, 1.3, 1.3]), color: PIXEL.cara, centro: [-0.35, 0.15, 0] }),
     Object.freeze({ malla: caja([0, 0, 0], [0.95, 0.95, 0.95]), color: PIXEL.rojo, centro: [0.6, -0.35, 0.2] }),
   ]),
+  // Blackjack: dos cartas apoyadas la una en la otra, como un solitario a
+  // medio recoger. Dos cajas por carta —canto y cara, un pelo más pequeña—
+  // para que el grosor se lea, igual que en la mesa de verdad.
+  blackjack: Object.freeze([
+    Object.freeze({ malla: caja([0, 0, 0], [1.15, 0.16, 1.7]), color: PIXEL.borde, centro: [-0.3, -0.1, 0] }),
+    Object.freeze({ malla: caja([0, 0, 0], [1.05, 0.16, 1.56]), color: PIXEL.cara, centro: [-0.3, 0.02, 0] }),
+    Object.freeze({ malla: caja([0, 0, 0], [1.15, 0.16, 1.7]), color: PIXEL.borde, centro: [0.32, 0.32, 0.15] }),
+    Object.freeze({ malla: caja([0, 0, 0], [1.05, 0.16, 1.56]), color: PIXEL.dorsoFondo, centro: [0.32, 0.44, 0.15] }),
+  ]),
 });
 
 /** Objeto de respaldo para una puerta sin icono propio: un dado neutro. Una

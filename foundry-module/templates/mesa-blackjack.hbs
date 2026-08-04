@@ -1,0 +1,77 @@
+<div class="lagunak-mesa-cuerpo">
+  {{#unless hayMesa}}
+    <p class="lagunak-mesa-vacia" role="status">{{localize "LAGUNAK.Minijuegos.Mesa.SinMesa"}}</p>
+  {{/unless}}
+
+  {{#if hayMesa}}
+    <p class="lagunak-mesa-fase" role="status" aria-live="polite">{{faseTexto}}</p>
+
+    {{#if manoCancelada}}
+      <p class="lagunak-mesa-aviso" role="status">{{localize "LAGUNAK.Minijuegos.Mesa.ManoCancelada"}}</p>
+    {{/if}}
+
+    {{!-- LA MESA, en 3D. Es la vista de juego: la fila de la banca al fondo,
+          tapada mientras juega la mesa, y cada jugador con su fila de cartas
+          creciendo al pedir. El detalle exacto (códigos, totales, fichas)
+          sigue debajo en texto: el 3D acompaña, no sustituye. --}}
+    <canvas class="lagunak-mesa-3d" width="480" height="280"
+            role="img" aria-label="{{localize "LAGUNAK.Blackjack.Mesa.VistaAlt"}}"></canvas>
+
+    <div class="lagunak-mesa-tapete">
+      <h4>{{localize "LAGUNAK.Blackjack.Mesa.Banca"}}</h4>
+      <p class="lagunak-mesa-bote" role="status" aria-live="polite">{{bancaTexto}}</p>
+      <ul class="lagunak-mesa-mano">
+        {{#each banca.cartas}}
+          <li><img src="{{this.imagen}}" alt="{{#if this.codigo}}{{this.codigo}}{{else}}{{localize "LAGUNAK.Minijuegos.Mesa.Dorso"}}{{/if}}" /></li>
+        {{/each}}
+      </ul>
+    </div>
+
+    <ul class="lagunak-mesa-asientos">
+      {{#each jugadores}}
+        <li class="lagunak-mesa-asiento{{#if this.esTurno}} es-turno{{/if}}{{#if this.terminado}} retirado{{/if}}">
+          <span class="lagunak-mesa-nombre">{{this.nombre}}</span>
+          {{#if this.esAutomatico}}<span class="lagunak-mesa-npc">{{localize "LAGUNAK.Minijuegos.Mesa.Automatico"}}</span>{{/if}}
+
+          <ul class="lagunak-mesa-mano">
+            {{#each this.cartas}}
+              <li><img src="{{this.imagen}}" alt="{{this.codigo}}" /></li>
+            {{/each}}
+          </ul>
+          {{#if this.totalTexto}}<span class="lagunak-mesa-estado">{{this.totalTexto}}</span>{{/if}}
+
+          {{#if this.apuestaPila.length}}
+            <span class="lagunak-mesa-apuesta" title="{{this.apuestaTexto}}">
+              {{#each this.apuestaPila}}
+                <span class="lagunak-mesa-monton" aria-hidden="true"
+                  ><img src="{{this.imagen}}" alt="" width="{{this.ancho}}" height="{{this.alto}}" /><span class="lagunak-mesa-cuenta">{{this.cuenta}}</span
+                ></span>
+              {{/each}}
+              <span class="lagunak-mesa-apuesta-cifra">{{this.apuestaTexto}}</span>
+            </span>
+          {{/if}}
+          <span class="lagunak-mesa-fichas">
+            {{#each this.pila}}
+              <span class="lagunak-mesa-monton" aria-hidden="true"
+                ><img src="{{this.imagen}}" alt="" width="{{this.ancho}}" height="{{this.alto}}" /><span class="lagunak-mesa-cuenta">{{this.cuenta}}</span
+              ></span>
+            {{/each}}
+            {{this.fichasTexto}}
+          </span>
+
+          {{#if this.estadoTexto}}<span class="lagunak-mesa-estado">{{this.estadoTexto}}</span>{{/if}}
+        </li>
+      {{/each}}
+    </ul>
+
+    {{#if resultadoTexto}}
+      <p class="lagunak-mesa-resultado" role="status">{{resultadoTexto}}</p>
+    {{/if}}
+
+    <div class="lagunak-mesa-acciones">
+      {{#each acciones}}
+        <button type="button" data-accion="{{this.tipo}}">{{localize this.etiqueta}}</button>
+      {{/each}}
+    </div>
+  {{/if}}
+</div>

@@ -70,6 +70,11 @@ import {
   crearClaseMesaDadosV2,
   recordarVista as recordarVistaDados,
 } from "./minijuegos/mesa-dados-app.mjs";
+import {
+  crearClaseMesaBlackjackV1,
+  crearClaseMesaBlackjackV2,
+  recordarVista as recordarVistaBlackjack,
+} from "./minijuegos/mesa-blackjack-app.mjs";
 import { registrarAjusteAlerta, registrarEscuchaAlerta } from "./alerta-escena.mjs";
 import { AJUSTE_TELEMETRIA } from "./telemetria-difusion.mjs";
 import {
@@ -347,6 +352,7 @@ Hooks.once("ready", () => {
   Hooks.on("lagunakMinijuegoVistaPrivada", (vista, acciones) => {
     recordarVista(vista, acciones);
     recordarVistaDados(vista, acciones);
+    recordarVistaBlackjack(vista, acciones);
     refrescarMesa();
     // Sentarse desde la cantina se resuelve AQUÍ y no al pulsar la puerta: al
     // pulsarla puede que la mesa ni exista todavía —`abrirMesa` publica con un
@@ -406,6 +412,9 @@ function claseMesa(nombreJuego) {
   if (nombreJuego === "dados") {
     return esV2 ? crearClaseMesaDadosV2(inyeccion) : crearClaseMesaDadosV1(inyeccion);
   }
+  if (nombreJuego === "blackjack") {
+    return esV2 ? crearClaseMesaBlackjackV2(inyeccion) : crearClaseMesaBlackjackV1(inyeccion);
+  }
   return esV2 ? crearClaseMesaV2(inyeccion) : crearClaseMesaV1(inyeccion);
 }
 
@@ -435,6 +444,7 @@ function abrirMesaMinijuegos(idPuerta = "poker", { sentarse = false } = {}) {
   if (!vistaRecordada().vista) {
     recordarVista(estadoPublicoVigente(), []);
     recordarVistaDados(estadoPublicoVigente(), []);
+    recordarVistaBlackjack(estadoPublicoVigente(), []);
   }
   // Y se vuelve a pedir al abrir: si el reparto del arranque se perdió, esto lo
   // recupera sin recargar la página.

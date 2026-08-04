@@ -228,13 +228,18 @@ Ninguno de estos exige mesa real salvo el último.
 7. Una sesión en mesa con la consola fusionada no pierde ninguna capacidad que el
    GM tuviera con las ventanas sueltas.
 
-## Preguntas abiertas
+## Preguntas resueltas
 
-- **¿V1 se fusiona o se congela?** (paso 5). Congelarlo es defendible y barato;
-  fusionarlo duplica el trabajo de todos los pasos. Decisión de producto, no
-  técnica: depende de si alguna mesa real sigue en v11.
-- **¿La consola caliente recuerda la pestaña activa entre sesiones?** Recordarla
-  es cómodo; también significa abrir en Mapa una escena que empieza por Estado.
-- **¿Qué pasa con las dos ventanas actuales tras el paso 2?** Retirarlas del menú
-  de golpe es limpio pero irreversible en mitad de una campaña; dejarlas como
-  alias que abren la consola en la pestaña correspondiente es más amable.
+- **¿V1 se fusiona o se congela?** (paso 5). **Fusionado.** Decisión de producto
+  explícita: ambas generaciones se fusionan, aisladas entre sí (nada de clase o
+  mixin compartido, solo los módulos puros que ya compartían las cuatro
+  factorías) — `scripts/consola-caliente-v1.mjs` replica el mismo cuerpo de
+  clase que `consola-caliente-v2.mjs` sobre `Application` clásica en vez de
+  `ApplicationV2`.
+- **¿La consola caliente recuerda la pestaña activa entre sesiones?** No: arranca
+  siempre en Estado. Decisión de producto explícita del encargo original.
+- **¿Qué pasa con las dos ventanas actuales tras el paso 2?** Se retiraron: los
+  botones de escena de estado/mapa sueltos y las cuatro factorías que abrían
+  (`estado-nave-app-v{1,2}.mjs`, `mapa-vivo-app-v{1,2}.mjs`) ya no existen. Un
+  único botón (`lagunak-consola`) abre la consola fusionada, con instancia
+  perezosa reutilizada al reabrir.

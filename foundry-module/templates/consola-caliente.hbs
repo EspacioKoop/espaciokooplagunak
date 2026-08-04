@@ -1,0 +1,365 @@
+{{! Consola caliente del GM (#276): fusiona estado-nave.hbs + mapa-vivo.hbs
+    en pestañas con UN bucle de sondeo. Sigue el patrón ya resuelto en
+    espacio-puesto.hbs: un solo PARTS.main con un bloque {{#each tabs}}, no
+    una PART por pestaña (evita reconciliar foco por parte, ver #227). }}
+<div class="lagunak-consola-caliente">
+  {{! `conexion` global: SOLO la fija `healthz`. Es la única condición que
+      significa "no hay puente" — un fallo de una pestaña no la toca. }}
+  <p class="lagunak-conexion lagunak-conexion-{{conexion}}" role="status" aria-live="polite">
+    <span class="lagunak-punto" aria-hidden="true"></span>
+    {{#if conexionOk}}{{localize "LAGUNAK.Conexion.Ok"}}{{/if}}
+    {{#if conexionError}}{{localize "LAGUNAK.Conexion.Error"}} — {{detalleError}}{{/if}}
+    {{#if conexionConectando}}{{localize "LAGUNAK.Conexion.Conectando"}}{{/if}}
+  </p>
+
+  {{! Cabecera: pausa/tempo y maniobra directa, alcanzables desde CUALQUIER
+      pestaña (spec #276: "son lo que se toca con la escena ardiendo"). }}
+  <div class="lagunak-consola-cabecera">
+    <div class="lagunak-tempo">
+      <span class="lagunak-pausa-estado lagunak-pausa-{{pausa.estado}}" role="status">
+        <span class="lagunak-punto" aria-hidden="true"></span> {{pausa.etiqueta}}
+      </span>
+      <button type="button" data-action="pausar" {{#unless pausa.puedePausar}}disabled{{/unless}}>
+        <i class="fa-solid fa-pause" aria-hidden="true"></i> {{localize "LAGUNAK.Tempo.Pausar"}}
+      </button>
+      <button type="button" data-action="reanudar" {{#unless pausa.puedeReanudar}}disabled{{/unless}}>
+        <i class="fa-solid fa-play" aria-hidden="true"></i> {{localize "LAGUNAK.Tempo.Reanudar"}}
+      </button>
+      {{#if pausa.foundryPausado}}
+      <p class="lagunak-pausa-foundry">{{localize "LAGUNAK.Pausa.FoundryPausado"}}</p>
+      {{/if}}
+    </div>
+
+    <div class="lagunak-maniobra">
+      <div class="lagunak-maniobra-grupo" role="group" aria-label="{{localize "LAGUNAK.Maniobra.Impulso"}}">
+        <span class="lagunak-maniobra-etiqueta">{{localize "LAGUNAK.Maniobra.Impulso"}}</span>
+        {{#each maniobra.impulsos}}
+        <button type="button" data-action="ordenarImpulso" data-value="{{this.valor}}"
+          class="{{#if this.neutro}}lagunak-maniobra-neutro{{/if}}"
+          {{#unless ../maniobra.puedeOrdenar}}disabled{{/unless}}>{{this.etiqueta}}</button>
+        {{/each}}
+      </div>
+      <div class="lagunak-maniobra-grupo" role="group" aria-label="{{localize "LAGUNAK.Maniobra.Warp"}}">
+        <span class="lagunak-maniobra-etiqueta">{{localize "LAGUNAK.Maniobra.Warp"}}</span>
+        {{#each maniobra.warps}}
+        <button type="button" data-action="ordenarWarp" data-value="{{this.valor}}"
+          {{#unless ../maniobra.puedeOrdenar}}disabled{{/unless}}>{{this.etiqueta}}</button>
+        {{/each}}
+      </div>
+      <div class="lagunak-maniobra-grupo">
+        <label>
+          <span class="lagunak-maniobra-etiqueta">{{localize "LAGUNAK.Maniobra.Rumbo"}}</span>
+          <select data-field="maniobra-rumbo" {{#unless maniobra.puedeOrdenar}}disabled{{/unless}}>
+            {{#each maniobra.rumbos}}
+            <option value="{{this.valor}}">{{this.etiqueta}}</option>
+            {{/each}}
+          </select>
+        </label>
+        <button type="button" data-action="ordenarRumbo" {{#unless maniobra.puedeOrdenar}}disabled{{/unless}}>
+          {{localize "LAGUNAK.Maniobra.AplicarRumbo"}}
+        </button>
+      </div>
+      <div class="lagunak-maniobra-grupo" role="group" aria-label="{{localize "LAGUNAK.EstadoNave.Escudos"}}">
+        <span class="lagunak-maniobra-etiqueta">{{localize "LAGUNAK.EstadoNave.Escudos"}}</span>
+        <button type="button" data-action="ordenarEscudos" data-value="true"
+          class="{{#if maniobra.escudosActivos}}lagunak-maniobra-activo{{/if}}"
+          {{#unless maniobra.puedeOrdenar}}disabled{{/unless}}>
+          <i class="fa-solid fa-shield-halved" aria-hidden="true"></i> {{localize "LAGUNAK.Maniobra.EscudosSubir"}}
+        </button>
+        <button type="button" data-action="ordenarEscudos" data-value="false"
+          class="{{#if maniobra.escudosInactivos}}lagunak-maniobra-activo{{/if}}"
+          {{#unless maniobra.puedeOrdenar}}disabled{{/unless}}>
+          <i class="fa-solid fa-shield" aria-hidden="true"></i> {{localize "LAGUNAK.Maniobra.EscudosBajar"}}
+        </button>
+      </div>
+      {{#if maniobraFallo}}
+      <p class="lagunak-maniobra-fallo" role="status">{{localize "LAGUNAK.Maniobra.Fallo"}}</p>
+      {{/if}}
+    </div>
+  </div>
+
+  {{! Pestañas: patrón ya resuelto en espacio-puesto.hbs — un solo PARTS.main
+      con {{#each tabs}}, nunca una PART por pestaña. }}
+  <nav class="lagunak-consola-tabs" aria-label="{{localize "LAGUNAK.ConsolaCaliente.Pestanas"}}">
+    {{#each tabs}}
+    <button type="button" class="{{#if selected}}is-selected{{/if}}" aria-pressed="{{selected}}" data-consola-tab="{{id}}">
+      {{label}}
+    </button>
+    {{/each}}
+  </nav>
+
+  {{#if estadoActiva}}
+  <section class="lagunak-consola-panel" data-consola-panel="estado" aria-label="{{localize "LAGUNAK.EstadoNave.Titulo"}}">
+    {{#if estado.enError}}
+    <p class="lagunak-aviso-superficie" role="status" aria-live="polite">
+      {{localize "LAGUNAK.Conexion.Error"}} — {{estado.detalleError}}
+    </p>
+    {{else}}
+    {{#if estado.nave}}
+    <h3>{{estado.nave.callsign}}</h3>
+    <table class="lagunak-tabla" aria-label="{{localize "LAGUNAK.EstadoNave.Resumen"}}">
+      <tr><th>{{localize "LAGUNAK.EstadoNave.Posicion"}}</th><td data-field="nave-posicion">{{estado.nave.position.x}}, {{estado.nave.position.y}}</td></tr>
+      <tr><th>{{localize "LAGUNAK.EstadoNave.Rumbo"}}</th><td data-field="nave-rumbo">{{estado.nave.heading}}°</td></tr>
+      {{#if estado.ruta}}
+      <tr class="lagunak-ruta-{{estado.ruta.estado}}"><th>{{localize "LAGUNAK.EstadoNave.Destino"}}</th><td>{{estado.ruta.name}}</td></tr>
+      <tr class="lagunak-ruta-{{estado.ruta.estado}}"><th>{{localize "LAGUNAK.EstadoNave.Distancia"}}</th><td data-field="ruta-distancia">{{estado.ruta.distanceLabel}}</td></tr>
+      <tr class="lagunak-ruta-{{estado.ruta.estado}}"><th>{{localize "LAGUNAK.EstadoNave.Eta"}}</th><td data-field="ruta-eta">{{estado.ruta.etaLabel}}</td></tr>
+      {{/if}}
+      <tr>
+        <th>{{localize "LAGUNAK.EstadoNave.Casco"}}</th>
+        <td data-field="nave-casco" class="lagunak-celda-barra">
+          <span data-texto>{{estado.nave.hull}} / {{estado.nave.hull_max}}</span>
+          <span class="lagunak-barra" aria-hidden="true">
+            <span class="lagunak-barra__relleno" data-relleno data-nivel="{{estado.barras.casco.nivel}}" style="width: {{estado.barras.casco.pct}}%"></span>
+          </span>
+        </td>
+      </tr>
+      <tr>
+        <th>{{localize "LAGUNAK.EstadoNave.Energia"}}</th>
+        <td data-field="nave-energia" class="lagunak-celda-barra">
+          <span data-texto>{{estado.nave.energy}} / {{estado.nave.energy_max}}</span>
+          <span class="lagunak-barra" aria-hidden="true">
+            <span class="lagunak-barra__relleno" data-relleno data-nivel="{{estado.barras.energia.nivel}}" style="width: {{estado.barras.energia.pct}}%"></span>
+          </span>
+        </td>
+      </tr>
+      <tr><th>{{localize "LAGUNAK.EstadoNave.Escudos"}}</th><td>{{#if estado.nave.shields_active}}{{localize "LAGUNAK.EstadoNave.EscudosActivos"}}{{else}}{{localize "LAGUNAK.EstadoNave.EscudosInactivos"}}{{/if}}</td></tr>
+    </table>
+
+    <h4>{{localize "LAGUNAK.EstadoNave.Sistemas"}}</h4>
+    <table class="lagunak-tabla lagunak-sistemas" aria-label="{{localize "LAGUNAK.EstadoNave.EstadoSistemas"}}">
+      <tr>
+        <th>{{localize "LAGUNAK.EstadoNave.Sistema"}}</th>
+        <th>{{localize "LAGUNAK.EstadoNave.Salud"}}</th>
+        <th>{{localize "LAGUNAK.EstadoNave.Calor"}}</th>
+        <th>{{localize "LAGUNAK.EstadoNave.Potencia"}}</th>
+      </tr>
+      {{#each estado.sistemas}}
+      <tr data-sistema-id="{{this.id}}">
+        <td><img class="lagunak-icono-sistema" data-icono src="{{this.icono}}" alt="" aria-hidden="true" width="18" height="18"/> {{this.nombre}}</td>
+        <td data-campo="salud" class="lagunak-celda-barra">
+          <span data-texto>{{this.salud}}</span>
+          <span class="lagunak-barra" aria-hidden="true"><span class="lagunak-barra__relleno" data-relleno data-nivel="{{this.barras.salud.nivel}}" style="width: {{this.barras.salud.pct}}%"></span></span>
+        </td>
+        <td data-campo="calor" class="lagunak-celda-barra">
+          <span data-texto>{{this.calor}}</span>
+          <span class="lagunak-barra" aria-hidden="true"><span class="lagunak-barra__relleno" data-relleno data-nivel="{{this.barras.calor.nivel}}" style="width: {{this.barras.calor.pct}}%"></span></span>
+        </td>
+        <td data-campo="potencia" class="lagunak-celda-barra">
+          <span data-texto>{{this.potencia}}</span>
+          <span class="lagunak-barra" aria-hidden="true"><span class="lagunak-barra__relleno" data-relleno data-nivel="{{this.barras.potencia.nivel}}" style="width: {{this.barras.potencia.pct}}%"></span></span>
+        </td>
+      </tr>
+      {{/each}}
+    </table>
+
+    {{#if estado.ingenieria.disponible}}
+    <div class="lagunak-ingenieria">
+      <h4>{{localize "LAGUNAK.Ingenieria.Titulo"}}</h4>
+      {{#if estado.ingenieria.tieneReparadores}}
+      <p class="lagunak-ingenieria-reparadores">
+        <i class="fa-solid fa-user-gear" aria-hidden="true"></i>
+        {{localize "LAGUNAK.Ingenieria.Reparadores"}}: {{estado.ingenieria.reparadores}}
+      </p>
+      {{/if}}
+      <div class="lagunak-ingenieria-mando">
+        <label>
+          <span>{{localize "LAGUNAK.Ingenieria.Sistema"}}</span>
+          <select data-field="ingenieria-sistema" {{#unless estado.ingenieria.puedeAjustar}}disabled{{/unless}}>
+            {{#each estado.ingenieria.opcionesSistema}}
+            <option value="{{this.id}}" {{#if this.seleccionado}}selected{{/if}}>{{this.etiqueta}}</option>
+            {{/each}}
+          </select>
+        </label>
+        <label>
+          <span>{{localize "LAGUNAK.Ingenieria.Nivel"}}</span>
+          <select data-field="ingenieria-nivel" {{#unless estado.ingenieria.puedeAjustar}}disabled{{/unless}}>
+            {{#each estado.ingenieria.niveles}}
+            <option value="{{this.valor}}" {{#if this.seleccionado}}selected{{/if}}>{{this.etiqueta}}×{{#if this.nominal}} ({{localize "LAGUNAK.Ingenieria.Nominal"}}){{/if}}</option>
+            {{/each}}
+          </select>
+        </label>
+        <button type="button" data-action="ajustarIngenieria" {{#unless estado.ingenieria.puedeAjustar}}disabled{{/unless}}>
+          <i class="fa-solid fa-bolt" aria-hidden="true"></i>
+          {{#if estado.ingenieria.pendiente}}{{localize "LAGUNAK.Ingenieria.Aplicando"}}{{else}}{{localize "LAGUNAK.Ingenieria.Aplicar"}}{{/if}}
+        </button>
+      </div>
+      {{#if estado.ingenieriaFallo}}
+      <p class="lagunak-ingenieria-fallo" role="status">{{localize "LAGUNAK.Ingenieria.Fallo"}}</p>
+      {{/if}}
+      <p class="lagunak-ingenieria-nota">{{localize "LAGUNAK.Ingenieria.Nota"}}</p>
+    </div>
+    {{/if}}
+
+    <button type="button" data-action="anotar">
+      <i class="fa-solid fa-book" aria-hidden="true"></i> {{localize "LAGUNAK.Diario.Boton"}}
+    </button>
+    {{else}}
+    <p class="lagunak-sin-datos">{{localize "LAGUNAK.EstadoNave.SinDatos"}}</p>
+    {{/if}}
+    {{/if}}
+  </section>
+  {{/if}}
+
+  {{#if mapaActiva}}
+  <section class="lagunak-consola-panel" data-consola-panel="mapa" aria-label="{{localize "LAGUNAK.MapaVivo.Titulo"}}">
+    {{#if mapa.enError}}
+    <p class="lagunak-aviso-superficie" role="status" aria-live="polite">
+      {{localize "LAGUNAK.Conexion.Error"}} — {{mapa.detalleError}}
+    </p>
+    {{else}}
+    {{#if mapa.contactosCaidos}}
+    <p class="lagunak-aviso-superficie" role="status" aria-live="polite">
+      {{localize "LAGUNAK.MapaVivo.ContactosCaidos"}}
+    </p>
+    {{/if}}
+
+    <label class="lagunak-mapa-vista">
+      <span>{{localize "LAGUNAK.MapaVivo.Vista"}}</span>
+      <select data-lagunak-puesto-vista>
+        {{#each mapa.puestosVista}}
+        <option value="{{this.id}}" {{#if this.activo}}selected{{/if}}>{{this.etiqueta}}</option>
+        {{/each}}
+      </select>
+    </label>
+    <p class="lagunak-mapa-vista-ayuda">{{localize "LAGUNAK.MapaVivo.VistaAyuda"}}</p>
+
+    <div class="lagunak-mapa-visor">
+      <canvas class="lagunak-mapa-canvas" width="480" height="480" role="img" aria-label="{{localize "LAGUNAK.MapaVivo.Descripcion"}}">
+        {{localize "LAGUNAK.MapaVivo.Descripcion"}}
+      </canvas>
+    </div>
+    <p class="lagunak-mapa-alcance">{{mapa.alcanceLabel}}</p>
+
+    <h4>{{localize "LAGUNAK.MapaVivo.Leyenda"}}</h4>
+    <ul class="lagunak-mapa-claves">
+      {{#each mapa.leyenda}}
+      <li>
+        <span class="lagunak-mapa-color" style="background: {{this.color}}" aria-hidden="true"></span>
+        <span>{{this.etiqueta}}</span>
+      </li>
+      {{/each}}
+      <li class="lagunak-mapa-clave-texto">{{localize "LAGUNAK.MapaVivo.LeyendaParpadeo"}}</li>
+    </ul>
+
+    {{#if mapa.sinDatos}}
+    <p class="lagunak-sin-datos">{{localize "LAGUNAK.MapaVivo.SinDatos"}}</p>
+    {{else}}
+    <h4>{{localize "LAGUNAK.MapaVivo.Contactos"}}</h4>
+    <ul class="lagunak-mapa-leyenda">
+      {{#each mapa.contactos}}
+      <li>
+        <button type="button" class="lagunak-mapa-contacto {{#if this.seleccionado}}lagunak-seleccionado{{/if}}" aria-pressed="{{this.seleccionado}}" data-contacto="{{this.callsign}}" data-contacto-indice="{{@index}}">
+          <span class="lagunak-mapa-color" style="background: {{this.color}}" aria-hidden="true"></span>
+          <span class="lagunak-mapa-callsign">{{this.callsign}}</span>
+          <span class="lagunak-mapa-distancia">{{this.distanciaLabel}}</span>
+          <span class="lagunak-mapa-fuera" data-lagunak-fuera {{#unless this.fuera}}hidden{{/unless}}>{{localize "LAGUNAK.MapaVivo.FueraVisor"}}</span>
+        </button>
+      </li>
+      {{/each}}
+    </ul>
+
+    {{#if mapa.detalle}}
+    <div class="lagunak-mapa-detalle" role="status">
+      <h4><span class="lagunak-mapa-color" style="background: {{mapa.detalle.color}}" aria-hidden="true"></span> {{mapa.detalle.callsign}}</h4>
+      <div class="lagunak-mapa-lamina" aria-hidden="true">
+        <canvas data-lagunak-lamina width="120" height="90"></canvas>
+      </div>
+      <table class="lagunak-tabla">
+        <tr><th>{{localize "LAGUNAK.MapaVivo.Detalle.Tipo"}}</th><td>{{mapa.detalle.tipo}}</td></tr>
+        <tr><th>{{localize "LAGUNAK.MapaVivo.Detalle.Clase"}}</th><td>{{mapa.detalle.claseLabel}}</td></tr>
+        <tr><th>{{localize "LAGUNAK.MapaVivo.Detalle.Faccion"}}</th><td>{{mapa.detalle.faccion}}</td></tr>
+        <tr><th>{{localize "LAGUNAK.EstadoNave.Distancia"}}</th><td data-lagunak-detalle-distancia>{{mapa.detalle.distanciaLabel}}</td></tr>
+        <tr><th>{{localize "LAGUNAK.EstadoNave.Rumbo"}}</th><td data-lagunak-detalle-rumbo>{{mapa.detalle.rumboLabel}}</td></tr>
+      </table>
+    </div>
+    {{else}}
+    <p class="lagunak-mapa-sin-seleccion">{{localize "LAGUNAK.MapaVivo.SinSeleccion"}}</p>
+    {{/if}}
+    {{/if}}
+    {{/if}}
+  </section>
+  {{/if}}
+
+  {{#if encuentrosActiva}}
+  <section class="lagunak-consola-panel" data-consola-panel="encuentros" aria-label="{{localize "LAGUNAK.Encuentros.Titulo"}}">
+    {{#if encuentros.disponible}}
+    <div class="lagunak-encuentros">
+      <label for="lagunak-encuentro-arquetipo">{{localize "LAGUNAK.Encuentros.Titulo"}}</label>
+      <select id="lagunak-encuentro-arquetipo" data-lagunak-encuentro-arquetipo>
+        {{#each encuentros.arquetipos}}
+        <option value="{{this.id}}" {{#if this.seleccionado}}selected{{/if}}>{{this.etiqueta}}</option>
+        {{/each}}
+      </select>
+      <label for="lagunak-encuentro-rumbo" class="lagunak-visualmente-oculto">{{localize "LAGUNAK.Encuentros.RumboEtiqueta"}}</label>
+      <select id="lagunak-encuentro-rumbo" data-lagunak-encuentro-rumbo>
+        <option value="">{{localize "LAGUNAK.Encuentros.RumboEscenario"}}</option>
+        {{#each encuentros.rumbos}}
+        <option value="{{this.id}}" {{#if this.seleccionado}}selected{{/if}}>{{this.etiqueta}}</option>
+        {{/each}}
+      </select>
+      <button type="button" data-action="encuentro" {{#unless encuentros.puedeIntroducir}}disabled{{/unless}}>
+        <i class="fa-solid fa-satellite" aria-hidden="true"></i>
+        {{#if encuentros.pendiente}}{{localize "LAGUNAK.Encuentros.Enviando"}}{{else}}{{localize "LAGUNAK.Encuentros.Boton"}}{{/if}}
+      </button>
+    </div>
+    {{else}}
+    <p class="lagunak-sin-datos">{{localize "LAGUNAK.EstadoNave.SinDatos"}}</p>
+    {{/if}}
+  </section>
+  {{/if}}
+
+  {{! Previsualización (#276 paso 4): migrada del branch `isGM` de
+      station-workspaces.mjs/espacio-puesto.hbs — el GM ve la consola de un
+      puesto tal y como la vería su tripulante, con la MISMA `buildWorkspaceModel`
+      pura. Solo lectura: no dibuja casco 3D ni formularios de orden, que son
+      cosas de la ventana de cada puesto. }}
+  {{#if previsualizacionActiva}}
+  <section class="lagunak-consola-panel" data-consola-panel="previsualizacion" aria-label="{{localize "LAGUNAK.ConsolaCaliente.Previsualizacion"}}">
+    <nav class="lagunak-previsualizacion-estaciones" aria-label="{{localize "LAGUNAK.ConsolaCaliente.Previsualizacion"}}">
+      {{#each previsualizacion.estaciones}}
+      <button type="button" class="{{#if activo}}is-selected{{/if}}" aria-pressed="{{activo}}" data-lagunak-previsualizacion-estacion="{{id}}">
+        {{etiqueta}}
+      </button>
+      {{/each}}
+    </nav>
+
+    {{#if previsualizacion.modelo.hasStation}}
+    <h3><i class="{{previsualizacion.modelo.stationIcon}}" aria-hidden="true"></i> {{previsualizacion.modelo.stationLabel}}</h3>
+    <table class="lagunak-tabla" aria-label="{{previsualizacion.modelo.stationLabel}}">
+      {{#each previsualizacion.modelo.metrics}}
+      <tr class="lagunak-previsualizacion-tono-{{this.tone}}"><th>{{this.label}}</th><td>{{this.value}}</td></tr>
+      {{/each}}
+    </table>
+
+    {{#if previsualizacion.modelo.systems.length}}
+    <h4>{{localize "LAGUNAK.EstadoNave.Sistemas"}}</h4>
+    <ul class="lagunak-previsualizacion-sistemas">
+      {{#each previsualizacion.modelo.systems}}
+      <li>{{this.name}} — {{localize "LAGUNAK.EstadoNave.Salud"}} {{this.health}}% · {{localize "LAGUNAK.EstadoNave.Calor"}} {{this.heat}}% · {{localize "LAGUNAK.EstadoNave.Potencia"}} {{this.power}}%</li>
+      {{/each}}
+    </ul>
+    {{/if}}
+
+    {{#if previsualizacion.modelo.contacts.length}}
+    <h4>{{localize "LAGUNAK.MapaVivo.Contactos"}}</h4>
+    <ul class="lagunak-previsualizacion-contactos">
+      {{#each previsualizacion.modelo.contacts}}
+      <li>{{this.callsign}}</li>
+      {{/each}}
+    </ul>
+    {{/if}}
+    {{else}}
+    <p class="lagunak-sin-datos">{{localize "LAGUNAK.EstadoNave.SinDatos"}}</p>
+    {{/if}}
+  </section>
+  {{/if}}
+
+  <details class="lagunak-ayuda" {{#if ayudaAbierta}}open{{/if}}>
+    <summary>{{localize "LAGUNAK.Ayuda.Titulo"}}</summary>
+    <p>{{localize "LAGUNAK.Ayuda.EstadoQueEs"}}</p>
+    <p>{{localize "LAGUNAK.Ayuda.MapaQueEs"}}</p>
+    <p>{{localize "LAGUNAK.Ayuda.SoloLectura"}}</p>
+    <p>{{localize "LAGUNAK.Ayuda.Navegacion"}}</p>
+  </details>
+</div>

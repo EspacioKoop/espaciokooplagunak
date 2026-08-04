@@ -231,7 +231,6 @@ test("ingeniería recibe sistemas y alarmas medibles para la vista GM", () => {
   assert.equal(model.systems.length, 3);
   assert.equal(model.metrics[0].progress, 20);
   assert.match(model.metrics[3].value, /LAGUNAK\.Sistemas\.reactor · 92%/);
-  assert.equal(model.tabs.length, 6);
 });
 
 test("sensores excluye la propia nave y no inventa hostilidad", () => {

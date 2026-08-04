@@ -132,10 +132,22 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
   prosa, y la responsabilidad es lo que no se deduce del nombre del archivo.
   - **Orquestación** — `scripts/main.mjs` es un orquestador puro (settings, hooks, scene controls):
     no contiene lógica de dominio. Constantes compartidas en `scripts/lagunak-constantes.mjs`.
-  - **Ventanas** — las cuatro factorías (estado de nave y mapa vivo, V1/V2, aisladas a propósito
-    entre sí) en `scripts/estado-nave-app-v{1,2}.mjs` y `scripts/mapa-vivo-app-v{1,2}.mjs`
-    (extracción del PR #283). `scripts/foco-render.mjs` conserva el foco entre reconstrucciones
-    del DOM (#227).
+  - **Ventanas** — **Consola caliente del GM** (#276, `docs/CONSOLA_CALIENTE_GM.md`) fusionó las
+    cuatro factorías originales (estado de nave y mapa vivo, V1/V2) en una sola ventana con pestañas
+    (Estado, Mapa, Encuentros, Previsualización) y UN solo bucle de sondeo y backoff, sustituyendo
+    los botones sueltos de estado/mapa en los controles de escena — `main.mjs` abre
+    `scripts/consola-caliente-v1.mjs` (Application clásica, v11) o `scripts/consola-caliente-v2.mjs`
+    (ApplicationV2, v12+) según lo que ofrezca el anfitrión; ambas réplicas son deliberadamente
+    AISLADAS entre sí (nada de clase o mixin compartido), con la disciplina que ya declaraban las
+    cuatro factorías que sustituyen. El bucle en sí (cadencia, backoff, conteo de fallos, y el
+    reparto de un ciclo en `conexion` global solo-`healthz` + estado por pestaña que no se contagia
+    entre sí) es lógica pura y probada en Node en `scripts/consola-caliente-poll.mjs`. La pestaña de
+    Previsualización (paso 4) migró la rama `isGM` de `station-workspaces.mjs`/`espacio-puesto.hbs`:
+    el GM ve la consola de un puesto tal y como la vería su tripulante, con la misma
+    `buildWorkspaceModel` pura; ese archivo ya no bifurca por rol para esa selección de puesto (sigue
+    bifurcando por rol donde corresponde a autoridad real, como qué contactos ve un GM). Reabrir la
+    consola reusa la instancia perezosa en vez de crear una segunda. `scripts/foco-render.mjs`
+    conserva el foco entre reconstrucciones del DOM (#227).
   - **Mapa vivo** — lógica pura en `scripts/ventana-nave.mjs`, pintor Canvas en
     `scripts/mapa-render.mjs`, con `scripts/decorado-fondo.mjs` y `scripts/nave-sprite.mjs`. El
     mapa interpola únicamente muestras confirmadas y **nunca** extrapola.

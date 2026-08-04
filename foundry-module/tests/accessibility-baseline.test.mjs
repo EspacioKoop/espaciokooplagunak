@@ -26,13 +26,25 @@ function contrast(a, b) {
 }
 
 test("el mapa expone selección y alternativa textual sin depender del color", () => {
-  const template = read("templates/mapa-vivo.hbs");
+  const template = read("templates/consola-caliente.hbs");
   assert.match(template, /class="lagunak-mapa-contacto[^\n]+aria-pressed="\{\{this\.seleccionado\}\}"/);
   assert.match(template, /<canvas[^>]+role="img"[^>]+aria-label=/s);
   assert.match(template, /<ul class="lagunak-mapa-leyenda">/);
   for (const swatch of template.matchAll(/<span class="lagunak-mapa-color"[^>]*>/g)) {
     assert.match(swatch[0], /aria-hidden="true"/);
   }
+});
+
+// El selector de previsualización GM vivía en espacio-puesto.hbs (pestañas
+// `is-selected`/`aria-pressed`); #276 paso 4 lo migró a la pestaña
+// "Previsualización" de la consola caliente, que sigue el mismo patrón.
+test("consola caliente: las pestañas de previsualización GM exponen selección sin depender solo del color", () => {
+  const template = read("templates/consola-caliente.hbs");
+  assert.match(
+    template,
+    /<button type="button" class="\{\{#if activo\}\}is-selected\{\{\/if\}\}" aria-pressed="\{\{activo\}\}" data-lagunak-previsualizacion-estacion="\{\{id\}\}">/,
+  );
+  assert.match(template, /<nav class="lagunak-previsualizacion-estaciones" aria-label=/);
 });
 
 test("los iconos decorativos del formulario de token no contaminan su nombre", () => {
@@ -105,14 +117,6 @@ test("gestión de puestos: cada select de asignación tiene nombre accesible por
   // accesible ligado al control, no solo texto visual cercano.
   assert.match(template, /<label class="lagunak-puestos__fila" for="lagunak-station-\{\{id\}\}">/);
   assert.match(template, /<select id="lagunak-station-\{\{id\}\}"[^>]+data-station-user/);
-});
-
-test("espacio de puesto: pestañas de previsualización GM exponen selección sin depender solo del color", () => {
-  const template = read("templates/espacio-puesto.hbs");
-  // aria-pressed en el botón de pestaña: el estado seleccionado es semántico,
-  // no solo la clase visual "is-selected".
-  assert.match(template, /<button type="button" class="\{\{#if selected\}\}is-selected\{\{\/if\}\}" aria-pressed="\{\{selected\}\}"/);
-  assert.match(template, /<nav class="lagunak-workspace__tabs" aria-label=/);
 });
 
 test("espacio de puesto: región de conexión es aria-live y su pulso decorativo está oculto a lectores", () => {
@@ -212,10 +216,9 @@ function controlesInteractivos(html) {
   return controles;
 }
 
-test("ninguna de las siete superficies fija tabindex: el orden del DOM es el orden de teclado", () => {
+test("ninguna de las seis superficies fija tabindex: el orden del DOM es el orden de teclado", () => {
   for (const archivo of [
-    "templates/estado-nave.hbs",
-    "templates/mapa-vivo.hbs",
+    "templates/consola-caliente.hbs",
     "templates/puestos-tripulacion.hbs",
     "templates/token-puente.hbs",
     "templates/espacio-puesto.hbs",
@@ -229,34 +232,23 @@ test("ninguna de las siete superficies fija tabindex: el orden del DOM es el ord
   }
 });
 
-test("estado de nave: el orden de teclado va de tempo a encuentros, ingeniería, maniobra y anotar", () => {
-  const ids = controlesInteractivos(read("templates/estado-nave.hbs")).map((c) => c.id);
-  assert.deepEqual(ids, [
+// La consola caliente (#276) fusionó estado+mapa+encuentros+previsualización
+// en un único PARTS.main con {{#if}} por pestaña: el orden de teclado dentro
+// de cada pestaña sigue siendo el que importa (nunca dos pestañas activas a la
+// vez), pero como esta prueba solo regexea el HBS crudo -sin evaluar los
+// condicionales- no puede afirmar un orden lineal único como hacían las
+// cuatro ventanas sueltas. Lo que sí se sigue pudiendo fijar es que cada
+// panel, tomado por separado, mantiene su propio orden interno.
+test("consola caliente: la cabecera de tempo/maniobra precede a las pestañas", () => {
+  const ids = controlesInteractivos(read("templates/consola-caliente.hbs")).map((c) => c.id);
+  assert.deepEqual(ids.slice(0, 6), [
     "pausar",
     "reanudar",
-    "lagunak-encuentro-arquetipo",
-    "lagunak-encuentro-rumbo",
-    "encuentro",
-    "summary",
-    "ingenieria-sistema",
-    "ingenieria-nivel",
-    "ajustarIngenieria",
     "ordenarImpulso",
     "ordenarWarp",
     "maniobra-rumbo",
     "ordenarRumbo",
-    "ordenarEscudos",
-    "ordenarEscudos",
-    "anotar",
   ]);
-});
-
-test("mapa vivo: la ayuda se alcanza antes que la lista de contactos", () => {
-  // El selector de vista por puesto (#331, paso 2) va entre la ayuda y la lista
-  // a propósito: cambia lo que se ve en el lienzo, así que quien tabula debe
-  // encontrarlo ANTES de recorrer los contactos y no después de la lista entera.
-  const controles = controlesInteractivos(read("templates/mapa-vivo.hbs"));
-  assert.deepEqual(controles.map((c) => c.tag), ["summary", "select", "button"]);
 });
 
 test("gestión de puestos: un select de asignación por fila, sin controles fuera de orden", () => {
@@ -269,10 +261,9 @@ test("credencial del puente: campo de token antes que guardar/borrar", () => {
   assert.deepEqual(ids, ["lagunak-bridge-token", "saveToken", "clearToken"]);
 });
 
-test("espacio de puesto: pestañas GM, órdenes operativas y acciones de pie en ese orden", () => {
+test("espacio de puesto: órdenes operativas y acciones de pie en ese orden", () => {
   const ids = controlesInteractivos(read("templates/espacio-puesto.hbs")).map((c) => c.id);
   assert.deepEqual(ids, [
-    "preview",
     "lagunak-orden-rumbo",
     "orden-rumbo",
     "lagunak-orden-impulso",

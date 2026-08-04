@@ -16,15 +16,6 @@
       </div>
     </header>
 
-    {{#if isGM}}
-      <nav class="lagunak-workspace__tabs" aria-label="{{localize "LAGUNAK.Espacios.Previsualizar"}}">
-        {{#each tabs}}
-          <button type="button" class="{{#if selected}}is-selected{{/if}}" aria-pressed="{{selected}}" data-workspace-action="preview" data-station="{{station}}">
-            {{label}}
-          </button>
-        {{/each}}
-      </nav>
-    {{/if}}
 
     <div class="lagunak-workspace__connection lagunak-workspace__connection--{{connection}}" role="status" aria-live="polite">
       <span class="lagunak-workspace__pulse" aria-hidden="true"></span>

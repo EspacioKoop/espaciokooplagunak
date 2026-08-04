@@ -223,10 +223,6 @@ function actionFromEvent(event) {
   return event?.currentTarget?.dataset?.workspaceAction ?? null;
 }
 
-function stationFromEvent(event) {
-  return event?.currentTarget?.dataset?.station ?? null;
-}
-
 function submitStationOrder(app, spec) {
   const root = app.element?.[0] ?? app.element;
   const params = spec.read(root);
@@ -243,10 +239,6 @@ async function handleWorkspaceAction(app, event) {
   if (action === "refresh") return refreshTelemetry(app);
   if (action === "assignments") return openStationApp();
   if (ORDER_FORMS[action]) return submitStationOrder(app, ORDER_FORMS[action]);
-  if (action === "preview" && game.user?.isGM) {
-    app.setPreviewStation(stationFromEvent(event));
-    renderWorkspace();
-  }
   return undefined;
 }
 

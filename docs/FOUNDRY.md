@@ -174,6 +174,18 @@ token:
   emiten órdenes de control de nave (coherente con el género bridge-sim;
   ratificado en #268). Añadir una acción exige que el puente ya la autorice y
   que el puesto la necesite.
+- **Selección de objetivo de escaneo sin indicativo** (#462). El jugador de
+  sensores nunca conoce el indicativo real de un eco sin escanear —es la
+  doctrina de sensores, no un hueco—, así que la consola de puesto solo puede
+  ofrecer "escanear el contacto a este rumbo y distancia aproximados"
+  (`scanTargetsFor` en `station-workspaces.mjs`, valor codificado en JSON, no
+  un indicativo). La resolución al objeto real vive en el **relé del GM**
+  (`resolver-objetivo-sensores.mjs`, cableado en `station-order-wiring.mjs`
+  vía `prepareOrder`): busca, entre el `/v1/contacts` sin degradar que solo el
+  GM puede leer, el candidato cuya posición real cae dentro del margen que la
+  propia lectura degradada ya declaró. Sin candidato dentro de ese margen —el
+  eco pudo salir de alcance entre que se listó y se pulsó escanear— la orden
+  se rechaza con un aviso propio, no con un objetivo inventado.
 - **Degradación explícita.** Un puesto desconocido o una acción no permitida se
   rechazan con un error tipado (`UNKNOWN_STATION` / `ACTION_NOT_ALLOWED`), nunca
   en silencio; la UI oculta de antemano los controles que el puesto no puede

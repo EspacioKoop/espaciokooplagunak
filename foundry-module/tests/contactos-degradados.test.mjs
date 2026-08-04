@@ -259,6 +259,23 @@ test("un eco se llama eco, no «desconocido»", () => {
   assert.equal(fila.eco, true);
 });
 
+test("un eco se decide por indicativo, no por banda (#462)", () => {
+  // Cerca pero sin escanear sigue siendo eco; lejos pero ya escaneado sigue
+  // identificado. Antes de #462 ambas filas se habrían clasificado al revés.
+  const [cercaSinEscanear, lejosEscaneada] = filasDegradadas(
+    {
+      contactos: [
+        { banda: "corto", callsign: null, faction: null, distancia: 1000, rumboDeg: 10 },
+        { banda: "largo", callsign: "Lapur 1", faction: "Exuari", distancia: 20000, rumboDeg: 20 },
+      ],
+    },
+    i18nFalso,
+  );
+  assert.equal(cercaSinEscanear.eco, true, "cerca, pero sin escanear, sigue siendo un eco");
+  assert.equal(lejosEscaneada.eco, false, "lejos, pero ya escaneada, sigue identificada");
+  assert.equal(lejosEscaneada.callsign, "Lapur 1");
+});
+
 test("el margen se escribe, no se insinúa", () => {
   // «20 000» se lee como una medición; «≈20 000 ±1 000» se lee como lo que es.
   const [fila] = filasDegradadas(

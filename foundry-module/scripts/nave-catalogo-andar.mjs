@@ -26,6 +26,9 @@ import {
   PLANTA_PRUEBA_B,
   componerSalaPrueba,
   componerSalaPruebaB,
+  PUERTA_A_HACIA_B,
+  PUERTA_B_HACIA_A,
+  PUERTA_A_HACIA_CANTINA,
 } from "./nave-movimiento-sala-prueba.mjs";
 import { PLANTA_CANTINA } from "./cantina-planta.mjs";
 import { componerCantinaAndar } from "./cantina-andar.mjs";
@@ -39,13 +42,13 @@ export const CATALOGO_ANDAR = crearCatalogoEstancias({
       // La puerta original de la costura de pruebas (a <-> b): ver
       // `nave-movimiento-sala-prueba.mjs` para el porqué de estos números.
       {
-        rect: { x: 4, z: 8.8, ancho: 2, profundidad: 1.2 },
+        rect: PUERTA_A_HACIA_B,
         destino: { estancia: "b", x: 3, z: 2, yaw: 0 },
       },
       // La puerta nueva hacia la cantina real, en el muro oeste (x=0) de la
       // sala de pruebas: un lado que hasta ahora no tenía ninguna puerta.
       {
-        rect: { x: 0, z: 4, ancho: 1.2, profundidad: 2 },
+        rect: PUERTA_A_HACIA_CANTINA,
         // Bastante dentro (x=2.5) de la propia puerta de vuelta de la
         // cantina (que ocupa x:0..1.2) para no reactivarla al llegar.
         destino: { estancia: "cantina", x: 2.5, z: 4.5, yaw: 0 },
@@ -57,7 +60,7 @@ export const CATALOGO_ANDAR = crearCatalogoEstancias({
     componer: componerSalaPruebaB,
     puertas: [
       {
-        rect: { x: 2, z: 0, ancho: 2, profundidad: 1.2 },
+        rect: PUERTA_B_HACIA_A,
         destino: { estancia: "a", x: 5, z: 8.3, yaw: Math.PI },
       },
     ],

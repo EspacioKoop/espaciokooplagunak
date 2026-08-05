@@ -282,3 +282,31 @@ test("el aviso de una ayuda perdida llega a onResult sin frenar la orden", async
   assert.deepEqual(bridge.calls, [["setImpulse", 0.5]], "la orden sale igual");
   assert.deepEqual(vistos, ["asistencia-no-aplicada"], "y se puede contar que la ayuda se perdió");
 });
+
+test("prepareOrder puede devolver una promesa (#462: resolver un objetivo consultando el puente)", async () => {
+  // scan_object resuelve el objetivo real consultando bridge.state()/contacts()
+  // antes de poder devolver la orden preparada — prepareOrder no puede seguir
+  // siendo estrictamente síncrono para ese caso.
+  const bridge = fakeBridge();
+  bridge.scanObject = async function (callsign) {
+    this.calls.push(["scanObject", callsign]);
+    return { ok: true };
+  };
+  const vistos = [];
+  await dispatchUserUpdate({
+    userDoc: { id: "u1" },
+    changes: {
+      flags: {
+        [MOD]: { [STATION_ORDER_FLAG]: { action: "scan_object", params: { distancia: 20000 }, nonce: "n" } },
+      },
+    },
+    moduleId: MOD,
+    resolveUserStation: () => "sensors",
+    bridge,
+    prepareOrder: ({ order }) =>
+      Promise.resolve().then(() => ({ orden: { ...order, params: { callsign: "Lapur 1" } } })),
+    onResult: (_r, ctx) => vistos.push(ctx.order),
+  });
+  assert.deepEqual(bridge.calls, [["scanObject", "Lapur 1"]], "la resolución async llegó a la orden emitida");
+  assert.deepEqual(vistos, [{ action: "scan_object", params: { callsign: "Lapur 1" }, nonce: "n" }]);
+});

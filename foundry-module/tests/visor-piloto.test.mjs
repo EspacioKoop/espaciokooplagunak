@@ -119,7 +119,7 @@ test("cuanto peor es la lectura, más ancho es el borrón", () => {
   // de 15° con la misma anchura que uno de 1° deshace esa honestidad al pintar.
   const ancho = (rumboPrecision, distancia) => {
     const { malla } = piezaDeContacto(
-      contacto({ banda: "largo", rumboPrecision, distancia }),
+      contacto({ banda: "largo", callsign: null, faction: null, rumboPrecision, distancia }),
       { alcanceLargo: ALCANCE.largo },
     );
     return Math.max(...malla.vertices.map((v) => v[0]));

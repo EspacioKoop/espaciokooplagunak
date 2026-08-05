@@ -15,6 +15,9 @@
 // reenvía; sin esa lectura no se publica NINGÚN contacto —falla cerrada— porque
 // no se puede saber hasta dónde llegan los sensores de esta nave y abrir de par
 // en par «por si acaso» es exactamente lo que este módulo existe para no hacer.
+// Las bandas gradúan SOLO la posición (cuánto se redondea distancia/rumbo); la
+// identidad (indicativo, facción) la gradúa el escaneo real del juego
+// (`scan_state`, #462) — ver la nota completa en `entrada()` más abajo.
 //
 // NO SE PUBLICAN COORDENADAS ABSOLUTAS, sino distancia y rumbo relativo. Dos
 // motivos, y el segundo es el que manda:
@@ -117,12 +120,26 @@ export function degradarContactos(payload, centro, radar) {
 /**
  * Una entrada ya degradada.
  *
- * En banda larga se va el indicativo y se va la facción: es un eco, y de un eco
- * no se sabe quién es. Se conserva `is_player` a false y nada más que la posición
- * gruesa con su margen.
+ * La identidad (indicativo, facción) y la posición se degradan por DOS ejes
+ * independientes (#462), no por el mismo:
+ *
+ * - `scan_state` es el escaneo REAL del juego (`ScanState`, ver
+ *   `docs/SESION-PANTALLAS-NATIVAS.md`) para la facción de la nave propia, que
+ *   el puente ya resuelve en `/v1/contacts`. Sin escaneo — "none" o "fof",
+ *   identificación amigo/enemigo sin nombre — no hay indicativo ni facción que
+ *   enseñar; con "simple" o "full" sí, sin importar la distancia: un objeto
+ *   escaneado de cerca sigue identificado aunque luego se aleje.
+ * - la banda de distancia (`corto`/`largo`) sigue siendo solo la RESOLUCIÓN de
+ *   la posición (cuánto se redondea distancia y rumbo) — el alcance del radar,
+ *   no el nivel de escaneo.
+ *
+ * Antes de #462 ambos ejes se aproximaban con uno solo (banda de distancia),
+ * porque el puente no publicaba `scan_state`. `is_player` sigue siendo la
+ * excepción: la nave propia se conoce entera sin haberse escaneado a sí misma.
  */
 function entrada(contacto, distancia, rumbo, banda) {
-  const identificado = banda !== "largo";
+  const scanState = typeof contacto?.scan_state === "string" ? contacto.scan_state : "none";
+  const identificado = banda === "propia" || scanState === "simple" || scanState === "full";
   const rejilla = REJILLA[banda];
   return {
     banda,

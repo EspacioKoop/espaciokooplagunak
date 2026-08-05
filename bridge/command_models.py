@@ -11,7 +11,7 @@ from typing import Annotated, Literal, Union
 
 from pydantic import BaseModel, ConfigDict, Field, StrictBool
 
-from lua_templates import _command_lua
+from lua_templates import _command_lua, _scan_object_lua
 
 
 class SystemName(str, Enum):
@@ -235,6 +235,29 @@ class RepositionShip(BaseModel):
         )
 
 
+class ScanObject(BaseModel):
+    """Orden de escaneo de ciencia (#462): traduce ``ship:commandScan(target)``
+    -ya validado server-side por el propio juego, igual que cualquier orden de
+    tripulación- a una orden del contrato del puente.
+
+    El objetivo se referencia por indicativo (``callsign``) porque es el único
+    identificador estable que ``/v1/contacts`` expone hoy: el juego no tiene un
+    id de entidad público. El patrón acepta lo que genera el juego
+    (``generateCallSign``: letras, dígitos, espacio, apóstrofo, guion, punto) y
+    rechaza comillas, barras invertidas o caracteres de control — no hace falta
+    reenviar Lua ajeno, solo comparar un nombre dentro del Lua fijo de
+    ``_scan_object_lua``.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    op: Literal["scan_object"]
+    callsign: Annotated[str, Field(min_length=1, max_length=64, pattern=r"^[\w .'-]+$")]
+
+    def lua(self) -> str:
+        return _scan_object_lua(self.callsign)
+
+
 class SetPause(BaseModel):
     op: Literal["set_pause"]
     paused: StrictBool
@@ -260,6 +283,59 @@ class SetAutoRepair(BaseModel):
         return _command_lua(f"commandSetAutoRepair(ship, {str(self.enabled).lower()})")
 
 
+class AnswerCommHail(BaseModel):
+    """Contestar o ignorar una llamada entrante (#463): globals de
+    `PlayerInfo::commandAnswerCommHail`, ya registrados por el motor en todo
+    escenario — no hace falta cooperación de `getScriptStorage()`.
+    """
+
+    op: Literal["answer_comm_hail"]
+    accept: StrictBool
+
+    def lua(self) -> str:
+        return _command_lua(f"commandAnswerCommHail(ship, {str(self.accept).lower()})")
+
+
+class CloseComm(BaseModel):
+    """Cerrar/cancelar/reconocer el canal activo (#463)."""
+
+    op: Literal["close_comm"]
+
+    def lua(self) -> str:
+        return _command_lua("commandCloseTextComm(ship)")
+
+
+class SendCommReply(BaseModel):
+    """Elegir una opción de diálogo scripteado por su índice (#463).
+
+    `strict=True`: mismo motivo que `SetSystemHealth.value` — sin coacción de
+    booleanos. El índice corresponde al orden en que el escenario las añadió
+    con `addCommsReply()`; el puente no conoce la lista, el motor la valida
+    server-side (un índice fuera de las opciones reales no tiene efecto).
+    """
+
+    op: Literal["send_comm_reply"]
+    index: Annotated[int, Field(strict=True, ge=0, le=15)]
+
+    def lua(self) -> str:
+        return _command_lua(f"commandSendComm(ship, {self.index})")
+
+
+class SendCommMessage(BaseModel):
+    """Mensaje de chat libre a otra nave/GM con canal ya abierto (#463).
+
+    El límite de longitud es una cota de sanidad del puente, no una que
+    imponga el motor.
+    """
+
+    op: Literal["send_comm_message"]
+    message: Annotated[str, Field(min_length=1, max_length=256)]
+
+    def lua(self) -> str:
+        escaped = self.message.replace("\\", "\\\\").replace("'", "\\'")
+        return _command_lua(f"commandSendCommPlayer(ship, '{escaped}')")
+
+
 Command = Annotated[
     Union[
         SetImpulse,
@@ -273,6 +349,11 @@ Command = Annotated[
         RepositionShip,
         SetPause,
         SetAutoRepair,
+        ScanObject,
+        AnswerCommHail,
+        CloseComm,
+        SendCommReply,
+        SendCommMessage,
     ],
     Field(discriminator="op"),
 ]

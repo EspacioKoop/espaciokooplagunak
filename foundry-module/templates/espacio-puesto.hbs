@@ -237,6 +237,56 @@
             <small>{{localize "LAGUNAK.Espacios.Orden.EscudosAyuda"}}</small>
           </form>
         {{/if}}
+
+        {{#if canOrderScan}}
+          <form class="lagunak-workspace__orden" data-workspace-order="scan">
+            <label for="lagunak-orden-objetivo-escaneo">{{localize "LAGUNAK.Espacios.Orden.EscaneoLabel"}}</label>
+            {{#if scanTargets.length}}
+              <select id="lagunak-orden-objetivo-escaneo">
+                {{#each scanTargets}}<option value="{{value}}">{{label}}</option>{{/each}}
+              </select>
+              <button type="button" data-workspace-action="orden-escanear">{{localize "LAGUNAK.Espacios.Orden.FijarEscaneo"}}</button>
+            {{else}}
+              <p class="lagunak-workspace__orden-vacia">{{localize "LAGUNAK.Espacios.Sensores.SinObjetivos"}}</p>
+            {{/if}}
+            <small>{{localize "LAGUNAK.Espacios.Orden.EscaneoAyuda"}}</small>
+          </form>
+        {{/if}}
+
+        {{#if canOrderCommsHail}}
+          <form class="lagunak-workspace__orden" data-workspace-order="comms-hail">
+            <span class="lagunak-workspace__orden-label">{{localize "LAGUNAK.Espacios.Orden.CommsHailLabel"}}</span>
+            <button type="button" data-workspace-action="orden-comms-contestar">{{localize "LAGUNAK.Espacios.Orden.CommsContestar"}}</button>
+            <button type="button" data-workspace-action="orden-comms-ignorar">{{localize "LAGUNAK.Espacios.Orden.CommsIgnorar"}}</button>
+            <small>{{localize "LAGUNAK.Espacios.Orden.CommsHailAyuda"}}</small>
+          </form>
+        {{/if}}
+
+        {{#if canOrderCommsClose}}
+          <form class="lagunak-workspace__orden" data-workspace-order="comms-cerrar">
+            <span class="lagunak-workspace__orden-label">{{localize "LAGUNAK.Espacios.Orden.CommsCerrarLabel"}}</span>
+            <button type="button" data-workspace-action="orden-comms-cerrar">{{localize "LAGUNAK.Espacios.Orden.CommsCerrar"}}</button>
+            <small>{{localize "LAGUNAK.Espacios.Orden.CommsCerrarAyuda"}}</small>
+          </form>
+        {{/if}}
+
+        {{#if canOrderCommsReply}}
+          <form class="lagunak-workspace__orden" data-workspace-order="comms-opcion">
+            <label for="lagunak-orden-comms-opcion">{{localize "LAGUNAK.Espacios.Orden.CommsOpcionLabel"}}</label>
+            <input id="lagunak-orden-comms-opcion" name="index" type="number" min="0" max="15" step="1" inputmode="numeric" />
+            <button type="button" data-workspace-action="orden-comms-opcion">{{localize "LAGUNAK.Espacios.Orden.CommsFijarOpcion"}}</button>
+            <small>{{localize "LAGUNAK.Espacios.Orden.CommsOpcionAyuda"}}</small>
+          </form>
+        {{/if}}
+
+        {{#if canOrderCommsMessage}}
+          <form class="lagunak-workspace__orden" data-workspace-order="comms-mensaje">
+            <label for="lagunak-orden-comms-mensaje">{{localize "LAGUNAK.Espacios.Orden.CommsMensajeLabel"}}</label>
+            <input id="lagunak-orden-comms-mensaje" name="message" type="text" maxlength="256" />
+            <button type="button" data-workspace-action="orden-comms-mensaje">{{localize "LAGUNAK.Espacios.Orden.CommsEnviarMensaje"}}</button>
+            <small>{{localize "LAGUNAK.Espacios.Orden.CommsMensajeAyuda"}}</small>
+          </form>
+        {{/if}}
       </main>
 
       <aside class="lagunak-workspace__side">

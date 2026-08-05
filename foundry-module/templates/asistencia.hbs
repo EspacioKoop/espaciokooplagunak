@@ -1,0 +1,99 @@
+{{! Ventana del asistente (#309). Una fase visible cada vez: la ayuda es un
+    gesto corto, y enseñar las cuatro a la vez la haría parecer un formulario. }}
+<section class="lagunak-asistencia__panel">
+
+  {{#if enMenu}}
+    <p class="lagunak-asistencia__intro">{{localize "LAGUNAK.Asistencia.Intro"}}</p>
+    <ul class="lagunak-asistencia__tareas">
+      {{#each tareas}}
+        <li>
+          <button type="button" data-asistencia-tarea="{{id}}" class="lagunak-asistencia__tarea">
+            <span class="lagunak-asistencia__tarea-nombre">{{localize claveNombre}}</span>
+            <span class="lagunak-asistencia__tarea-puesto">{{localize clavePuesto}}</span>
+            {{! Una tarea narrativa se ofrece igual y dice lo que es: esconderla
+                haría creer que a ese puesto no se le puede ayudar. Lo que no
+                puede es prometer un efecto en la simulación. }}
+            {{#if narrativa}}
+              <span class="lagunak-asistencia__narrativa">{{localize "LAGUNAK.Asistencia.Narrativa"}}</span>
+            {{/if}}
+          </button>
+        </li>
+      {{else}}
+        <li class="lagunak-asistencia__vacio">{{localize "LAGUNAK.Asistencia.SinTareas"}}</li>
+      {{/each}}
+    </ul>
+  {{/if}}
+
+  {{#if esperando}}
+    <p class="lagunak-asistencia__espera" role="status">{{localize "LAGUNAK.Asistencia.Esperando"}}</p>
+  {{/if}}
+
+  {{#if enOferta}}
+    <p class="lagunak-asistencia__intro">{{localize "LAGUNAK.Asistencia.EligeEnfoque"}}</p>
+    <ul class="lagunak-asistencia__enfoques">
+      {{#each oferta.enfoques}}
+        <li>
+          <button type="button" data-asistencia-enfoque="{{id}}" class="lagunak-asistencia__enfoque">
+            <span class="lagunak-asistencia__enfoque-nombre">{{localize claveNombre}}</span>
+            {{! El número va en TEXTO y no solo como barra: una barra sola no la
+                lee un lector de pantalla ni quien no distingue relleno de fondo. }}
+            {{#if conTirada}}
+              <span class="lagunak-asistencia__probabilidad">
+                {{localize "LAGUNAK.Asistencia.Favorable"}} {{favorable}}%
+              </span>
+            {{else}}
+              <span class="lagunak-asistencia__probabilidad">{{localize "LAGUNAK.Asistencia.SinTirada"}}</span>
+            {{/if}}
+            {{! El coste, pegado a la opción y no en una confirmación posterior:
+                pagar un espacio de conjuro por sorpresa es cómo se consigue que
+                nadie vuelva a usar la ayuda. }}
+            {{#if coste.espacio}}
+              <span class="lagunak-asistencia__coste">
+                {{localize "LAGUNAK.Asistencia.CosteEspacio"}}
+              </span>
+            {{/if}}
+          </button>
+        </li>
+      {{/each}}
+    </ul>
+  {{/if}}
+
+  {{#if enReto}}
+    <p class="lagunak-asistencia__intro">{{localize "LAGUNAK.Asistencia.Reto.Intro"}}</p>
+    <div class="lagunak-asistencia__pista">
+      <span class="lagunak-asistencia__zona" data-asistencia-zona
+        style="left: {{reto.zonaDesde}}%; width: {{reto.zonaAncho}}%;"></span>
+      <span class="lagunak-asistencia__cursor" data-asistencia-cursor
+        style="left: {{reto.cursor}}%;"></span>
+    </div>
+    {{! El canal NO visual del reto. Obligatorio, no un extra: un minijuego que
+        solo se puede jugar viendo moverse una barra excluye a quien no la ve. }}
+    <p class="lagunak-asistencia__lectura" data-asistencia-lectura role="status" aria-live="polite"></p>
+    <button type="button" data-asistencia-pulsar class="lagunak-asistencia__pulsar">
+      {{localize "LAGUNAK.Asistencia.Reto.Pulsar"}}
+    </button>
+  {{/if}}
+
+  {{#if cerrada}}
+    <p class="lagunak-asistencia__cierre lagunak-asistencia__cierre--{{cierre.tipo}}" role="status">
+      {{localize cierre.claveTitular}}
+    </p>
+    {{#if cierre.claveBanda}}
+      <p class="lagunak-asistencia__banda">{{localize cierre.claveBanda}}</p>
+    {{/if}}
+    {{! Quién la gasta importa, y no es quien ayudó: el token lo consume el
+        titular dentro de una orden suya. }}
+    {{#if cierre.clavePuesto}}
+      <p class="lagunak-asistencia__destino">
+        {{localize "LAGUNAK.Asistencia.LaGastaElTitular"}} {{localize cierre.clavePuesto}}
+      </p>
+    {{/if}}
+    {{#if cierre.claveDetalle}}
+      <p class="lagunak-asistencia__detalle">{{localize cierre.claveDetalle}}</p>
+    {{/if}}
+    <button type="button" data-asistencia-volver class="lagunak-asistencia__volver">
+      {{localize "LAGUNAK.Asistencia.Volver"}}
+    </button>
+  {{/if}}
+
+</section>

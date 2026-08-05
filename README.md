@@ -182,8 +182,8 @@ Diseño inicial: [`docs/FOUNDRY.md`](docs/FOUNDRY.md).
 Capa de diversión y cohesión social (exploración, del lado de Foundry, sin tocar
 la simulación ni el puente):
 
-- [ ] Sistema de minijuegos a bordo, diegético y con estética Neo Geo; póker como
-      primer vertical (#308).
+- [x] Sistema de minijuegos a bordo, diegético y con estética Neo Geo; póker como
+      primer vertical (#308, ampliado con dados y blackjack).
 - [ ] Ayudar a otro puesto con mini-minijuegos de habilidad tipo *Skyrim*, con
       efecto acotado y coherente con los permisos por puesto (#309; **depende de
       #308**: consume su motor de minijuegos, y el efecto sobre la nave sale solo

@@ -97,6 +97,21 @@ def test_set_system_health_repara_a_tope(client, juego, auth):
     assert 'setSystemHealth("warp", 1.000)' in juego.ultimo_lua
 
 
+def test_scan_object_genera_lua_de_busqueda_y_comando(client, juego, auth):
+    r = client.post(CMD, headers=auth, json={"op": "scan_object", "callsign": "Lapur 1"})
+    assert r.status_code == 200
+    assert 'cs == "Lapur 1"' in juego.ultimo_lua
+    assert "ship:commandScan(target)" in juego.ultimo_lua
+    assert "getObjectsInRadius(sx, sy, 30000)" in juego.ultimo_lua
+
+
+@pytest.mark.parametrize("callsign", ["", "x" * 65])
+def test_scan_object_callsign_fuera_de_longitud_rechazado(client, juego, auth, callsign):
+    r = client.post(CMD, headers=auth, json={"op": "scan_object", "callsign": callsign})
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
 def test_set_pause_genera_solo_lua_fijo(client, juego, auth):
     r = client.post(CMD, headers=auth, json={"op": "set_pause", "paused": True})
     assert r.status_code == 200
@@ -256,6 +271,24 @@ def test_inyeccion_por_heading_rechazada(client, juego, auth):
     assert not juego.llamadas
 
 
+@pytest.mark.parametrize(
+    "callsign_malicioso",
+    [
+        'Lapur"); os.execute("rm -rf /"); --',
+        "Lapur' or victory('Exuari')",
+        "Lapur\\ y luego getPlayerShip(-1):destroy()",
+        "Lapur\nreturn '{\"ok\":true,\"pwn\":1}'",
+    ],
+)
+def test_scan_object_callsign_fuera_de_whitelist_rechazado(client, juego, auth, callsign_malicioso):
+    # El patrón solo admite letras/dígitos/espacio/apóstrofo/guion/punto: nada
+    # de comillas, barras invertidas ni saltos de línea puede llegar aquí, así
+    # que ni hace falta que el escapador de _lua_string_literal entre en juego.
+    r = client.post(CMD, headers=auth, json={"op": "scan_object", "callsign": callsign_malicioso})
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
 def test_lua_generado_es_solo_del_servidor(client, juego, auth):
     # Un valor legítimo en el borde: el Lua resultante contiene solo la llamada
     # canónica formateada por el servidor, sin rastro de entrada cruda.
@@ -406,3 +439,92 @@ def test_inyeccion_por_ancla_rechazada(client, juego, auth):
     )
     assert r.status_code == 422
     assert not juego.llamadas
+
+
+# --- Comunicaciones: contestar hail, cerrar canal, diálogo, chat libre (#463) --
+
+
+def test_answer_comm_hail_genera_lua(client, juego, auth):
+    r = client.post(CMD, headers=auth, json={"op": "answer_comm_hail", "accept": True})
+    assert r.status_code == 200
+    assert r.json()["op"] == "answer_comm_hail"
+    assert "commandAnswerCommHail(ship, true)" in juego.ultimo_lua
+    assert "getPlayerShip(-1)" in juego.ultimo_lua
+
+
+def test_answer_comm_hail_ignorar_serializa_false(client, juego, auth):
+    r = client.post(CMD, headers=auth, json={"op": "answer_comm_hail", "accept": False})
+    assert r.status_code == 200
+    assert "commandAnswerCommHail(ship, false)" in juego.ultimo_lua
+    assert "False" not in juego.ultimo_lua  # no el booleano de Python
+
+
+@pytest.mark.parametrize("valor", ["true", "false", 0, 1, None])
+def test_answer_comm_hail_exige_booleano_estricto(client, juego, auth, valor):
+    r = client.post(CMD, headers=auth, json={"op": "answer_comm_hail", "accept": valor})
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+def test_close_comm_genera_lua_fijo(client, juego, auth):
+    r = client.post(CMD, headers=auth, json={"op": "close_comm"})
+    assert r.status_code == 200
+    assert r.json()["op"] == "close_comm"
+    assert "commandCloseTextComm(ship)" in juego.ultimo_lua
+    assert "getPlayerShip(-1)" in juego.ultimo_lua
+
+
+def test_send_comm_reply_genera_lua(client, juego, auth):
+    r = client.post(CMD, headers=auth, json={"op": "send_comm_reply", "index": 2})
+    assert r.status_code == 200
+    assert "commandSendComm(ship, 2)" in juego.ultimo_lua
+
+
+@pytest.mark.parametrize("indice", [-1, 16, 100])
+def test_send_comm_reply_fuera_de_rango_rechazado(client, juego, auth, indice):
+    r = client.post(CMD, headers=auth, json={"op": "send_comm_reply", "index": indice})
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+@pytest.mark.parametrize("valor", [True, False])
+def test_send_comm_reply_booleano_rechazado(client, juego, auth, valor):
+    # strict=True: sin coacción de booleanos (true -> 1 colaría como índice).
+    r = client.post(CMD, headers=auth, json={"op": "send_comm_reply", "index": valor})
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+def test_send_comm_message_genera_lua(client, juego, auth):
+    r = client.post(
+        CMD, headers=auth, json={"op": "send_comm_message", "message": "Solicito atraque."}
+    )
+    assert r.status_code == 200
+    assert "commandSendCommPlayer(ship, 'Solicito atraque.')" in juego.ultimo_lua
+
+
+def test_send_comm_message_vacio_rechazado(client, juego, auth):
+    r = client.post(CMD, headers=auth, json={"op": "send_comm_message", "message": ""})
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+def test_send_comm_message_demasiado_largo_rechazado(client, juego, auth):
+    r = client.post(
+        CMD, headers=auth, json={"op": "send_comm_message", "message": "x" * 257}
+    )
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+def test_send_comm_message_escapa_comillas_simples(client, juego, auth):
+    # Anti-inyección: una comilla simple sin escapar rompería el literal Lua y
+    # dejaría código tras ella corriendo como Lua real.
+    r = client.post(
+        CMD,
+        headers=auth,
+        json={"op": "send_comm_message", "message": "hola'); os.execute('rm -rf /'); --"},
+    )
+    assert r.status_code == 200
+    assert "commandSendCommPlayer(ship, 'hola\\'); os.execute(\\'rm -rf /\\'); --')" in juego.ultimo_lua
+    assert juego.ultimo_lua.count("commandSendCommPlayer") == 1

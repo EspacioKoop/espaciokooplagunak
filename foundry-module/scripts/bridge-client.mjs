@@ -177,6 +177,54 @@ export class BridgeClient {
     return this.#command({ op: "set_auto_repair", enabled });
   }
 
+  /**
+   * POST /v1/command — ordena el escaneo nativo de un objetivo (#462, Bearer).
+   * `callsign` es el mismo indicativo que ya expone `/v1/contacts`; el puente
+   * resuelve la entidad y llama a `ship:commandScan(target)` (misma orden que
+   * el botón "Scan" nativo de Science). Sin objetivo con ese indicativo entre
+   * los contactos cercanos, el puente responde `target_not_found` — puede
+   * pasar si el objeto salió de rango entre que se listó y se pulsó escanear.
+   */
+  async scanObject(callsign) {
+    if (typeof callsign !== "string" || callsign === "") {
+      throw new BridgeError("El indicativo del objetivo debe ser una cadena", { kind: "parse" });
+    }
+    return this.#command({ op: "scan_object", callsign });
+  }
+
+  /** POST /v1/command — contesta (true) o ignora (false) una llamada entrante (Bearer). */
+  async answerCommHail(accept) {
+    if (typeof accept !== "boolean") {
+      throw new BridgeError("La respuesta al hail debe ser booleana", { kind: "parse" });
+    }
+    return this.#command({ op: "answer_comm_hail", accept });
+  }
+
+  /** POST /v1/command — cierra/cancela/reconoce el canal de comms activo (Bearer). */
+  async closeComm() {
+    return this.#command({ op: "close_comm" });
+  }
+
+  /**
+   * POST /v1/command — elige una opción de diálogo scripteado por su índice,
+   * 0..15 (Bearer). El índice corresponde al orden en que el escenario las
+   * añadió con `addCommsReply()`; el puente no conoce la lista de opciones.
+   */
+  async sendCommReply(index) {
+    if (typeof index !== "number" || !Number.isInteger(index) || index < 0 || index > 15) {
+      throw new BridgeError("El índice de respuesta debe ser un entero entre 0 y 15", { kind: "parse" });
+    }
+    return this.#command({ op: "send_comm_reply", index });
+  }
+
+  /** POST /v1/command — mensaje de chat libre por el canal ya abierto, 1..256 caracteres (Bearer). */
+  async sendCommMessage(message) {
+    if (typeof message !== "string" || message.length === 0 || message.length > 256) {
+      throw new BridgeError("El mensaje debe tener entre 1 y 256 caracteres", { kind: "parse" });
+    }
+    return this.#command({ op: "send_comm_message", message });
+  }
+
   /** POST /v1/command — pausa o reanuda la simulación (Bearer). */
   async setPause(paused) {
     if (typeof paused !== "boolean") {

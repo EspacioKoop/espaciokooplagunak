@@ -86,6 +86,35 @@ export const PIXEL = Object.freeze({
 });
 
 /**
+ * Nivel de alerta de la nave. Los mismos tonos que ya vivían sueltos en
+ * `lagunak.css`, traídos aquí porque los necesitan también el tinte de escena
+ * (`filtros-escena.mjs`) y las variables CSS que publica `alerta-escena.mjs`.
+ *
+ * BORDE Y TEXTO NO SON EL MISMO ROJO, y no es un descuido heredado. Los dos
+ * pasan el 4.5:1 de WCAG AA sobre el fondo del aviso —el borde por los pelos
+ * (4.59), el texto de sobra (9.22)—, así que no es una cuestión de cumplir o no:
+ * es el MARGEN. El aviso es texto pequeño, en negrita y versalitas, y ahí un
+ * contraste al filo se lee mal aunque el número dé; el borde es una superficie
+ * ancha de 6px que no necesita ese colchón y gana con el rojo más saturado.
+ * Unificarlos al del borde dejaría el aviso rozando el mínimo por comodidad.
+ * En amarillo sí coinciden: ese tono ya llega a 9.55 en ambos usos.
+ *
+ * `verde` no tiene entrada a propósito: la nave en verde no se tiñe de nada, y
+ * darle un color invitaría a pintar la pantalla cuando no pasa nada.
+ */
+export const ALERTA = Object.freeze({
+  // El fondo de la caja del aviso. Va aquí y no suelto en el CSS porque es
+  // contra ESTE color contra el que se miden los dos tonos de arriba: tenerlo
+  // en otro fichero es cómo se acaba retocando el fondo y descubriendo meses
+  // después que el aviso ya no se lee.
+  fondoAviso: "#06080e",
+  niveles: Object.freeze({
+    amarilla: Object.freeze({ borde: "#e2aa28", texto: "#e2aa28" }),
+    roja: Object.freeze({ borde: "#d1495b", texto: "#ff8f9d" }),
+  }),
+});
+
+/**
  * La cantina (#423 sobre #362): el local donde la tripulación mata el rato.
  *
  * Referencias declaradas, porque el tono no es decorativo: la cantina de Mos

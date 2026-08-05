@@ -126,14 +126,15 @@ export function situarContacto(contacto, { rumboPropio = 0, alcanceLargo } = {})
 /**
  * La malla de un contacto y su color, según lo que se sepa de él.
  *
- * En banda corta hay identidad —indicativo y facción— así que se dibuja una
- * silueta de nave con su color, la misma que ya usan el mapa vivo y la lámina.
- * En banda larga no se sabe ni quién es: se dibuja un bloque ancho y gris, y el
- * ancho es el margen de marcación traducido a tamaño. Cuanto peor es la lectura,
- * más gordo es el borrón, que es lo honesto.
+ * Con identidad conocida —indicativo y facción, escaneo real del juego, no
+ * cercanía (#462)— se dibuja una silueta de nave con su color, la misma que ya
+ * usan el mapa vivo y la lámina. Sin identidad no se sabe ni quién es: se
+ * dibuja un bloque ancho y gris, y el ancho es el margen de marcación
+ * traducido a tamaño. Cuanto peor es la lectura, más gordo es el borrón, que
+ * es lo honesto.
  */
 export function piezaDeContacto(contacto, { alcanceLargo } = {}) {
-  const eco = contacto?.banda === "largo";
+  const eco = typeof contacto?.callsign !== "string";
   if (!eco) {
     return {
       malla: mallaDesdeCasco(CASCO_POR_DEFECTO),

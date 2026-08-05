@@ -293,6 +293,34 @@ test("armas puede fijar objetivo y disparar tubos, con la misma lista de objetiv
   assert.deepEqual(navegacion.weaponTargets, []);
 });
 
+test("comunicaciones puede contestar/cerrar/dialogar/chatear como tripulación, no el GM ni otros puestos (#463)", () => {
+  const comms = buildWorkspaceModel({
+    station: "communications",
+    isGM: false,
+    users: [user({ id: "p1", station: "communications" })],
+    moduleId: MODULE_ID,
+    i18n,
+    connection: "restricted",
+  });
+  assert.equal(comms.canOrderCommsHail, true);
+  assert.equal(comms.canOrderCommsClose, true);
+  assert.equal(comms.canOrderCommsReply, true);
+  assert.equal(comms.canOrderCommsMessage, true);
+  assert.equal(comms.canOrderShields, false);
+
+  const gmComms = buildWorkspaceModel({ station: "communications", isGM: true, users: [], moduleId: MODULE_ID, i18n });
+  assert.equal(gmComms.canOrderCommsHail, false);
+  assert.equal(gmComms.canOrderCommsClose, false);
+  assert.equal(gmComms.canOrderCommsReply, false);
+  assert.equal(gmComms.canOrderCommsMessage, false);
+
+  const armas = buildWorkspaceModel({ station: "weapons", isGM: false, users: [], moduleId: MODULE_ID, i18n });
+  assert.equal(armas.canOrderCommsHail, false);
+  assert.equal(armas.canOrderCommsClose, false);
+  assert.equal(armas.canOrderCommsReply, false);
+  assert.equal(armas.canOrderCommsMessage, false);
+});
+
 test("ingeniería recibe sistemas y alarmas medibles para la vista GM", () => {
   const model = buildWorkspaceModel({
     station: "engineering",

@@ -221,6 +221,13 @@ test("órdenes directas envían solo la orden cerrada con Bearer", async () => {
     { call: (c) => c.scanObject("Lapur 1"), body: { op: "scan_object", callsign: "Lapur 1" } },
     { call: (c) => c.setWeaponTarget("Lapur 1"), body: { op: "set_weapon_target", callsign: "Lapur 1" } },
     { call: (c) => c.fireTube("Lapur 1", 2), body: { op: "fire_tube", callsign: "Lapur 1", index: 2 } },
+    { call: (c) => c.answerCommHail(true), body: { op: "answer_comm_hail", accept: true } },
+    { call: (c) => c.closeComm(), body: { op: "close_comm" } },
+    { call: (c) => c.sendCommReply(2), body: { op: "send_comm_reply", index: 2 } },
+    {
+      call: (c) => c.sendCommMessage("Solicito atraque."),
+      body: { op: "send_comm_message", message: "Solicito atraque." },
+    },
   ];
   for (const caso of casos) {
     const calls = [];
@@ -263,6 +270,12 @@ test("órdenes directas rechazan valores fuera de rango antes de tocar red", asy
   await assert.rejects(client.fireTube("Lapur 1", 16), BridgeError);
   await assert.rejects(client.fireTube("Lapur 1", 1.5), BridgeError);
   await assert.rejects(client.fireTube("Lapur 1", "2"), BridgeError);
+  await assert.rejects(client.answerCommHail("yes"), BridgeError);
+  await assert.rejects(client.sendCommReply(-1), BridgeError);
+  await assert.rejects(client.sendCommReply(16), BridgeError);
+  await assert.rejects(client.sendCommReply(1.5), BridgeError);
+  await assert.rejects(client.sendCommMessage(""), BridgeError);
+  await assert.rejects(client.sendCommMessage("x".repeat(257)), BridgeError);
   assert.equal(calls, 0);
 });
 

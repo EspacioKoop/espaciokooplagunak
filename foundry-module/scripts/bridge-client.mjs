@@ -207,6 +207,39 @@ export class BridgeClient {
     return this.#command({ op: "fire_tube", callsign, index });
   }
 
+  /** POST /v1/command — contesta (true) o ignora (false) una llamada entrante (Bearer). */
+  async answerCommHail(accept) {
+    if (typeof accept !== "boolean") {
+      throw new BridgeError("La respuesta al hail debe ser booleana", { kind: "parse" });
+    }
+    return this.#command({ op: "answer_comm_hail", accept });
+  }
+
+  /** POST /v1/command — cierra/cancela/reconoce el canal de comms activo (Bearer). */
+  async closeComm() {
+    return this.#command({ op: "close_comm" });
+  }
+
+  /**
+   * POST /v1/command — elige una opción de diálogo scripteado por su índice,
+   * 0..15 (Bearer). El índice corresponde al orden en que el escenario las
+   * añadió con `addCommsReply()`; el puente no conoce la lista de opciones.
+   */
+  async sendCommReply(index) {
+    if (typeof index !== "number" || !Number.isInteger(index) || index < 0 || index > 15) {
+      throw new BridgeError("El índice de respuesta debe ser un entero entre 0 y 15", { kind: "parse" });
+    }
+    return this.#command({ op: "send_comm_reply", index });
+  }
+
+  /** POST /v1/command — mensaje de chat libre por el canal ya abierto, 1..256 caracteres (Bearer). */
+  async sendCommMessage(message) {
+    if (typeof message !== "string" || message.length === 0 || message.length > 256) {
+      throw new BridgeError("El mensaje debe tener entre 1 y 256 caracteres", { kind: "parse" });
+    }
+    return this.#command({ op: "send_comm_message", message });
+  }
+
   /** POST /v1/command — pausa o reanuda la simulación (Bearer). */
   async setPause(paused) {
     if (typeof paused !== "boolean") {

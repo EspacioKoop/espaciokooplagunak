@@ -57,6 +57,10 @@ const MODULOS_DE_ARTE = [
   // tonos propios en vez de reusar los de la cantina — pero los estrena EN la
   // paleta, donde se ven al lado de los de todos los demás.
   "../scripts/seccion-lienzo.mjs",
+  // El tinte de escena delegado en FXMaster: el color del nivel de alerta sale
+  // de `ALERTA`, no del módulo ajeno ni de un literal aquí. Es lo que impide que
+  // integrar a un tercero se convierta en una puerta trasera a la paleta.
+  "../scripts/filtros-escena.mjs",
 ];
 
 test("los colores no cambian al mudarse: mismo valor que antes en cada módulo", () => {

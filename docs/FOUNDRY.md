@@ -174,11 +174,15 @@ token:
   target)`; ninguna de las dos comprueba si el tubo existe o está cargado, el
   juego ya lo valida server-side y no tiene efecto si no procede); `sensors`
   → `scan_object` (#462: traduce a orden de puente el `ship:commandScan`
-  nativo, referenciando el objetivo por indicativo).
-  `captain` y `communications` siguen siendo de **observación/narrativa**: no
-  emiten órdenes de control de nave (coherente con el género bridge-sim;
-  ratificado en #268). Añadir una acción exige que el puente ya la autorice y
-  que el puesto la necesite.
+  nativo, referenciando el objetivo por indicativo);
+  `communications` → `answer_comm_hail`, `close_comm`, `send_comm_reply`,
+  `send_comm_message` (#463) — reactivas sobre un canal ya abierto por
+  Relay/Operations, sin picker de objetivo propio: el Comms nativo tampoco lo
+  tiene (`docs/SESION-PANTALLAS-NATIVAS.md`).
+  `captain` sigue siendo de **observación/narrativa**: no emite órdenes de
+  control de nave (coherente con el género bridge-sim; ratificado en #268).
+  Añadir una acción exige que el puente ya la autorice y que el puesto la
+  necesite.
 - **Selección de objetivo sin indicativo** (#462, generalizado a armas en
   #465). El jugador de sensores o de armas nunca conoce el indicativo real de
   un eco sin escanear —es la doctrina de sensores, no un hueco—, así que la

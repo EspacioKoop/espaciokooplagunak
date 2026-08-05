@@ -11,7 +11,7 @@ from typing import Annotated, Literal, Union
 
 from pydantic import BaseModel, ConfigDict, Field, StrictBool
 
-from lua_templates import _command_lua
+from lua_templates import _command_lua, _scan_object_lua
 
 
 class SystemName(str, Enum):
@@ -235,6 +235,29 @@ class RepositionShip(BaseModel):
         )
 
 
+class ScanObject(BaseModel):
+    """Orden de escaneo de ciencia (#462): traduce ``ship:commandScan(target)``
+    -ya validado server-side por el propio juego, igual que cualquier orden de
+    tripulación- a una orden del contrato del puente.
+
+    El objetivo se referencia por indicativo (``callsign``) porque es el único
+    identificador estable que ``/v1/contacts`` expone hoy: el juego no tiene un
+    id de entidad público. El patrón acepta lo que genera el juego
+    (``generateCallSign``: letras, dígitos, espacio, apóstrofo, guion, punto) y
+    rechaza comillas, barras invertidas o caracteres de control — no hace falta
+    reenviar Lua ajeno, solo comparar un nombre dentro del Lua fijo de
+    ``_scan_object_lua``.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    op: Literal["scan_object"]
+    callsign: Annotated[str, Field(min_length=1, max_length=64, pattern=r"^[\w .'-]+$")]
+
+    def lua(self) -> str:
+        return _scan_object_lua(self.callsign)
+
+
 class SetPause(BaseModel):
     op: Literal["set_pause"]
     paused: StrictBool
@@ -326,6 +349,7 @@ Command = Annotated[
         RepositionShip,
         SetPause,
         SetAutoRepair,
+        ScanObject,
         AnswerCommHail,
         CloseComm,
         SendCommReply,

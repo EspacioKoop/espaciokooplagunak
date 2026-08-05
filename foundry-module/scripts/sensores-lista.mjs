@@ -69,7 +69,11 @@ export function filasDegradadas(sensores, i18n) {
     .sort((a, b) => Number(a?.distancia ?? 0) - Number(b?.distancia ?? 0))
     .slice(0, MAXIMO_FILAS)
     .map((contacto) => {
-      const eco = contacto?.banda === "largo";
+      // Eco = sin indicativo, no banda larga (#462): identidad y posición se
+      // degradan por ejes independientes desde que el puente publica el
+      // escaneo real (`scan_state`) — un contacto cercano sin escanear sigue
+      // siendo un eco, y uno escaneado sigue identificado aunque se aleje.
+      const eco = typeof contacto?.callsign !== "string";
       const distancia = entero(contacto?.distancia);
       const rumbo = entero(contacto?.rumboDeg);
       return {

@@ -97,6 +97,21 @@ def test_set_system_health_repara_a_tope(client, juego, auth):
     assert 'setSystemHealth("warp", 1.000)' in juego.ultimo_lua
 
 
+def test_scan_object_genera_lua_de_busqueda_y_comando(client, juego, auth):
+    r = client.post(CMD, headers=auth, json={"op": "scan_object", "callsign": "Lapur 1"})
+    assert r.status_code == 200
+    assert 'cs == "Lapur 1"' in juego.ultimo_lua
+    assert "ship:commandScan(target)" in juego.ultimo_lua
+    assert "getObjectsInRadius(sx, sy, 30000)" in juego.ultimo_lua
+
+
+@pytest.mark.parametrize("callsign", ["", "x" * 65])
+def test_scan_object_callsign_fuera_de_longitud_rechazado(client, juego, auth, callsign):
+    r = client.post(CMD, headers=auth, json={"op": "scan_object", "callsign": callsign})
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
 def test_set_pause_genera_solo_lua_fijo(client, juego, auth):
     r = client.post(CMD, headers=auth, json={"op": "set_pause", "paused": True})
     assert r.status_code == 200
@@ -252,6 +267,24 @@ def test_inyeccion_por_heading_rechazada(client, juego, auth):
         headers=auth,
         json={"op": "set_target_heading", "heading": "90); ship:destroy(); --"},
     )
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+@pytest.mark.parametrize(
+    "callsign_malicioso",
+    [
+        'Lapur"); os.execute("rm -rf /"); --',
+        "Lapur' or victory('Exuari')",
+        "Lapur\\ y luego getPlayerShip(-1):destroy()",
+        "Lapur\nreturn '{\"ok\":true,\"pwn\":1}'",
+    ],
+)
+def test_scan_object_callsign_fuera_de_whitelist_rechazado(client, juego, auth, callsign_malicioso):
+    # El patrón solo admite letras/dígitos/espacio/apóstrofo/guion/punto: nada
+    # de comillas, barras invertidas ni saltos de línea puede llegar aquí, así
+    # que ni hace falta que el escapador de _lua_string_literal entre en juego.
+    r = client.post(CMD, headers=auth, json={"op": "scan_object", "callsign": callsign_malicioso})
     assert r.status_code == 422
     assert not juego.llamadas
 

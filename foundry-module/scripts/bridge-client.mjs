@@ -177,6 +177,21 @@ export class BridgeClient {
     return this.#command({ op: "set_auto_repair", enabled });
   }
 
+  /**
+   * POST /v1/command — ordena el escaneo nativo de un objetivo (#462, Bearer).
+   * `callsign` es el mismo indicativo que ya expone `/v1/contacts`; el puente
+   * resuelve la entidad y llama a `ship:commandScan(target)` (misma orden que
+   * el botón "Scan" nativo de Science). Sin objetivo con ese indicativo entre
+   * los contactos cercanos, el puente responde `target_not_found` — puede
+   * pasar si el objeto salió de rango entre que se listó y se pulsó escanear.
+   */
+  async scanObject(callsign) {
+    if (typeof callsign !== "string" || callsign === "") {
+      throw new BridgeError("El indicativo del objetivo debe ser una cadena", { kind: "parse" });
+    }
+    return this.#command({ op: "scan_object", callsign });
+  }
+
   /** POST /v1/command — contesta (true) o ignora (false) una llamada entrante (Bearer). */
   async answerCommHail(accept) {
     if (typeof accept !== "boolean") {

@@ -229,6 +229,21 @@
           </form>
         {{/if}}
 
+        {{#if canOrderScan}}
+          <form class="lagunak-workspace__orden" data-workspace-order="scan">
+            <label for="lagunak-orden-objetivo-escaneo">{{localize "LAGUNAK.Espacios.Orden.EscaneoLabel"}}</label>
+            {{#if scanTargets.length}}
+              <select id="lagunak-orden-objetivo-escaneo">
+                {{#each scanTargets}}<option value="{{value}}">{{label}}</option>{{/each}}
+              </select>
+              <button type="button" data-workspace-action="orden-escanear">{{localize "LAGUNAK.Espacios.Orden.FijarEscaneo"}}</button>
+            {{else}}
+              <p class="lagunak-workspace__orden-vacia">{{localize "LAGUNAK.Espacios.Sensores.SinObjetivos"}}</p>
+            {{/if}}
+            <small>{{localize "LAGUNAK.Espacios.Orden.EscaneoAyuda"}}</small>
+          </form>
+        {{/if}}
+
         {{#if canOrderCommsHail}}
           <form class="lagunak-workspace__orden" data-workspace-order="comms-hail">
             <span class="lagunak-workspace__orden-label">{{localize "LAGUNAK.Espacios.Orden.CommsHailLabel"}}</span>

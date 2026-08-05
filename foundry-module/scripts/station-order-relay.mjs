@@ -113,8 +113,13 @@ export function dispatchUserUpdate({
   if (!canHandle()) return null;
   const userId = userDoc?.id;
   return Promise.resolve()
-    .then(() => {
-      const preparada = prepareOrder({ userId, order }) ?? {};
+    // `prepareOrder` puede devolver `{orden, aviso}` directo o una promesa de
+    // ello (#462: resolver un objetivo de escaneo necesita consultar el
+    // puente). Envolver en `Promise.resolve(...)` trata ambos casos igual sin
+    // que la asistencia síncrona existente tenga que volverse async.
+    .then(() => Promise.resolve(prepareOrder({ userId, order })))
+    .then((resultadoPrepare) => {
+      const preparada = resultadoPrepare ?? {};
       // Sin orden preparada se emite la original. Un `prepareOrder` que devuelva
       // basura no puede dejar al titular sin poder dar una orden que era suya.
       const emitible = preparada.orden ?? order;

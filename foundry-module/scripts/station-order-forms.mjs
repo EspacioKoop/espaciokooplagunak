@@ -74,6 +74,35 @@ export const ORDER_FORMS = Object.freeze({
     read: () => ({ active: false }),
     invalidKey: "LAGUNAK.Espacios.Orden.EscudosInvalido",
   },
+  // Escaneo (#462): el valor del <select> no es un indicativo -un eco no
+  // tiene uno que el jugador pueda conocer- sino la lectura degradada del
+  // contacto elegido (distancia/rumbo con su margen), codificada en JSON por
+  // `scanTargetsFor` en station-workspaces.mjs. Resolverla al objeto real
+  // ocurre después, en el relé del GM (resolver-objetivo-sensores.mjs), que
+  // es quien tiene el sondeo sin degradar.
+  "orden-escanear": {
+    action: "scan_object",
+    read: (root) => {
+      const raw = root?.querySelector?.("#lagunak-orden-objetivo-escaneo")?.value ?? "";
+      if (!raw) return null;
+      let lectura;
+      try {
+        lectura = JSON.parse(raw);
+      } catch {
+        return null;
+      }
+      const distancia = parseOrderValue(lectura?.distancia);
+      const rumboDeg = parseOrderValue(lectura?.rumboDeg);
+      if (distancia === null || rumboDeg === null) return null;
+      return {
+        distancia,
+        rumboDeg,
+        precision: parseOrderValue(lectura?.precision) ?? 0,
+        rumboPrecision: parseOrderValue(lectura?.rumboPrecision) ?? 0,
+      };
+    },
+    invalidKey: "LAGUNAK.Espacios.Orden.EscaneoInvalido",
+  },
   // Comunicaciones (#463): acciones reactivas, calcadas de los globales que el
   // motor ya expone (contestar/cerrar canal ya abierto, elegir diálogo,
   // mandar chat libre) — sin picker de objetivo propio.

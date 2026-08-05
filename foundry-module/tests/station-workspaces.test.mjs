@@ -216,6 +216,44 @@ test("armas puede subir/bajar escudos como tripulación, no el GM ni otros puest
   assert.equal(navegacion.canOrderShields, false);
 });
 
+test("sensores puede ordenar escaneo como tripulación, con un objetivo por contacto ajeno (#462)", () => {
+  const sensores = {
+    contactos: [
+      { banda: "corto", esJugador: false, callsign: "Argia", faction: "Humanos", distancia: 1230, rumboDeg: 90, precision: 10, rumboPrecision: 1 },
+      { banda: "largo", esJugador: false, callsign: null, faction: null, distancia: 20000, rumboDeg: 75, precision: 1000, rumboPrecision: 15 },
+      { banda: "propia", esJugador: true, callsign: "Lagunak", faction: "Humanos", distancia: 0, rumboDeg: 0, precision: 0, rumboPrecision: 0 },
+    ],
+    alcance: { corto: 5000, largo: 30000 },
+  };
+  const modelo = buildWorkspaceModel({
+    station: "sensors",
+    isGM: false,
+    users: [user({ id: "p1", station: "sensors" })],
+    moduleId: MODULE_ID,
+    i18n,
+    sensores,
+    connection: "restricted",
+  });
+  assert.equal(modelo.canOrderScan, true);
+  // La nave propia no es un objetivo de escaneo: no aparece en la lista.
+  assert.equal(modelo.scanTargets.length, 2, "un objetivo por contacto ajeno, ninguno para la propia nave");
+  const [identificado, eco] = modelo.scanTargets;
+  assert.deepEqual(JSON.parse(identificado.value), {
+    distancia: 1230,
+    rumboDeg: 90,
+    precision: 10,
+    rumboPrecision: 1,
+  });
+  assert.deepEqual(JSON.parse(eco.value), { distancia: 20000, rumboDeg: 75, precision: 1000, rumboPrecision: 15 });
+
+  const gmSensores = buildWorkspaceModel({ station: "sensors", isGM: true, users: [], moduleId: MODULE_ID, i18n, sensores });
+  assert.equal(gmSensores.canOrderScan, false, "el GM no emite órdenes de puesto");
+  assert.deepEqual(gmSensores.scanTargets, []);
+
+  const navegacion = buildWorkspaceModel({ station: "navigation", isGM: false, users: [], moduleId: MODULE_ID, i18n, sensores });
+  assert.equal(navegacion.canOrderScan, false);
+});
+
 test("comunicaciones puede contestar/cerrar/dialogar/chatear como tripulación, no el GM ni otros puestos (#463)", () => {
   const comms = buildWorkspaceModel({
     station: "communications",

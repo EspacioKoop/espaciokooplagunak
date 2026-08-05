@@ -87,6 +87,11 @@ test("read() rechaza valores fuera de rango de cada spec", () => {
   assert.equal(ORDER_FORMS["orden-warp"].read(fakeRoot({ "lagunak-orden-warp": "1.5" })), null);
 });
 
+test("auto-reparación: activar/desactivar son órdenes de valor fijo (#464)", () => {
+  assert.deepEqual(ORDER_FORMS["orden-reparacion-auto-activar"].read(fakeRoot({})), { enabled: true });
+  assert.deepEqual(ORDER_FORMS["orden-reparacion-auto-desactivar"].read(fakeRoot({})), { enabled: false });
+});
+
 test("read() de escaneo decodifica la lectura JSON del <select> (#462)", () => {
   const spec = ORDER_FORMS["orden-escanear"];
   const lectura = { distancia: 20000, rumboDeg: 90, precision: 1000, rumboPrecision: 15 };

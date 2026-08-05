@@ -7,7 +7,7 @@ import { normalizeStation } from "./station-assignment.mjs";
 // emitir ninguna orden operativa.
 export const STATION_ACTIONS = Object.freeze({
   navigation: Object.freeze(["set_target_heading", "set_impulse", "set_warp"]),
-  engineering: Object.freeze(["set_system_power", "set_system_coolant"]),
+  engineering: Object.freeze(["set_system_power", "set_system_coolant", "set_auto_repair"]),
   // #465: fijar objetivo habilita el fuego automático de haces ya cargados;
   // disparar un tubo es una orden aparte porque un tubo puede no estar
   // cargado o no tener arco de tiro — el juego decide, el puente solo pide.
@@ -50,6 +50,10 @@ const ACTION_DISPATCH = Object.freeze({
   set_shields: Object.freeze({
     method: "setShields",
     args: (params) => [params?.active],
+  }),
+  set_auto_repair: Object.freeze({
+    method: "setAutoRepair",
+    args: (params) => [params?.enabled],
   }),
   scan_object: Object.freeze({
     method: "scanObject",

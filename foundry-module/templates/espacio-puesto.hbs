@@ -220,6 +220,15 @@
           </form>
         {{/if}}
 
+        {{#if canOrderAutoRepair}}
+          <form class="lagunak-workspace__orden" data-workspace-order="auto-repair">
+            <span class="lagunak-workspace__orden-label">{{localize "LAGUNAK.Espacios.Orden.ReparacionAutoLabel"}}</span>
+            <button type="button" data-workspace-action="orden-reparacion-auto-activar">{{localize "LAGUNAK.Espacios.Orden.ReparacionAutoActivar"}}</button>
+            <button type="button" data-workspace-action="orden-reparacion-auto-desactivar">{{localize "LAGUNAK.Espacios.Orden.ReparacionAutoDesactivar"}}</button>
+            <small>{{localize "LAGUNAK.Espacios.Orden.ReparacionAutoAyuda"}}</small>
+          </form>
+        {{/if}}
+
         {{#if canOrderShields}}
           <form class="lagunak-workspace__orden" data-workspace-order="shields">
             <span class="lagunak-workspace__orden-label">{{localize "LAGUNAK.Espacios.Orden.EscudosLabel"}}</span>

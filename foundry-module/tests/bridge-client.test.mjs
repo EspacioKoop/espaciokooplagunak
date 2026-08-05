@@ -218,6 +218,7 @@ test("órdenes directas envían solo la orden cerrada con Bearer", async () => {
     { call: (c) => c.setWarp(3), body: { op: "set_warp", level: 3 } },
     { call: (c) => c.setTargetHeading(90), body: { op: "set_target_heading", heading: 90 } },
     { call: (c) => c.setShields(true), body: { op: "set_shields", active: true } },
+    { call: (c) => c.setAutoRepair(true), body: { op: "set_auto_repair", enabled: true } },
     { call: (c) => c.scanObject("Lapur 1"), body: { op: "scan_object", callsign: "Lapur 1" } },
     { call: (c) => c.setWeaponTarget("Lapur 1"), body: { op: "set_weapon_target", callsign: "Lapur 1" } },
     { call: (c) => c.fireTube("Lapur 1", 2), body: { op: "fire_tube", callsign: "Lapur 1", index: 2 } },
@@ -261,6 +262,7 @@ test("órdenes directas rechazan valores fuera de rango antes de tocar red", asy
   await assert.rejects(client.setTargetHeading(-1), BridgeError);
   await assert.rejects(client.setTargetHeading(361), BridgeError);
   await assert.rejects(client.setShields("up"), BridgeError);
+  await assert.rejects(client.setAutoRepair("on"), BridgeError);
   await assert.rejects(client.scanObject(""), BridgeError);
   await assert.rejects(client.scanObject(42), BridgeError);
   await assert.rejects(client.setWeaponTarget(""), BridgeError);

@@ -167,7 +167,12 @@ token:
 - **Matriz de autoridad cerrada** (`station-actions.mjs`, `STATION_ACTIONS`).
   Declara qué órdenes del whitelist del puente puede emitir cada puesto:
   `navigation` → `set_target_heading`, `set_impulse`, `set_warp`; `engineering`
-  → `set_system_power`, `set_system_coolant`; `weapons` →
+  → `set_system_power`, `set_system_coolant`, `set_auto_repair` (#464 —
+  decisión bajo presión: con la reparación automática desactivada, los
+  sistemas dañados no se reparan solos; el casco 3D de ingeniería, #419, lo
+  refleja: una región dañada cambia de color mientras la reparación
+  automática está activa, feedback real del toggle y no solo un cambio de
+  valor en texto, #466); `weapons` →
   `set_shields`, `set_weapon_target`, `fire_tube` (#465: `set_weapon_target`
   traduce `ship:commandSetTarget` —habilita el fuego automático de haces ya
   cargados— y `fire_tube` traduce `ship:commandFireTubeAtTarget(index,

@@ -98,6 +98,7 @@ objetos sin esos componentes devuelven `null`, nunca valores inventados.
 {"op": "spawn_encounter",    "archetype": "derelict", "bearing": "port"}
 {"op": "reposition_ship",    "anchor": "argia"}
 {"op": "set_pause",          "paused": true}
+{"op": "set_auto_repair",    "enabled": true}
 {"op": "answer_comm_hail",   "accept": true}
 {"op": "close_comm"}
 {"op": "send_comm_reply",    "index": 0}

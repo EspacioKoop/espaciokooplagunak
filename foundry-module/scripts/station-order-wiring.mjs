@@ -3,11 +3,41 @@ import { getBridgeToken } from "./bridge-token-session.mjs";
 import { normalizeStation } from "./station-assignment.mjs";
 import { prepararOrdenConAsistencia } from "./asistencia-wiring.mjs";
 import { RELEVO_AVISOS } from "./asistencia/relevo.mjs";
+import { resolverObjetivoEscaneo } from "./resolver-objetivo-sensores.mjs";
 import {
   STATION_ORDER_FLAG,
   buildStationOrder,
   dispatchUserUpdate,
 } from "./station-order-relay.mjs";
+
+// Aviso propio (no de asistencia): la lectura degradada que el jugador
+// seleccionó no encajó con ningún contacto real del sondeo del GM en el
+// momento de resolver la orden -pudo salir de alcance, o el margen del
+// sensor era tan grueso que no hay un único candidato defendible-.
+export const ESCANEO_AVISOS = Object.freeze({
+  OBJETIVO_NO_ENCONTRADO: "objetivo-no-encontrado",
+});
+
+// Resuelve `scan_object` de rumbo/distancia a indicativo real ANTES de que la
+// orden llegue a `resolveStationOrder` (#462). No es una puerta de autoridad:
+// el puesto y la acción ya se resolvieron por identidad; esto solo traduce
+// qué CONTACTO señalaba el jugador, con el sondeo sin degradar que solo el GM
+// tiene (`bridge.state()` para la posición propia, `bridge.contacts()` para
+// el crudo). Cualquier otra acción pasa intacta.
+async function resolverOrdenDeEscaneo({ order, bridge }) {
+  if (order?.action !== "scan_object") return { orden: order };
+  const { distancia, rumboDeg, precision, rumboPrecision } = order.params ?? {};
+  const [statePayload, contactsPayload] = await Promise.all([bridge.state(), bridge.contacts()]);
+  const callsign = resolverObjetivoEscaneo({
+    contactsPayload,
+    centro: statePayload?.ship?.position ?? null,
+    lectura: { distancia, rumboDeg, precision, rumboPrecision },
+  });
+  if (!callsign) {
+    return { orden: order, aviso: ESCANEO_AVISOS.OBJETIVO_NO_ENCONTRADO };
+  }
+  return { orden: { ...order, params: { callsign } } };
+}
 
 // Cableado Foundry del relé de órdenes por puesto. Capa fina y no testeable en
 // Node (usa globales de Foundry): toda la lógica de autoridad vive en los
@@ -82,15 +112,34 @@ export function registerStationOrders(moduleId) {
       // parámetro dentro del rango que esa orden ya permitía. Si la ayuda
       // caducó o no era de su puesto, la orden sale igual sin mejorar: la
       // asistencia es sal, no un peaje.
-      prepareOrder: prepararOrdenConAsistencia,
+      //
+      // El escaneo (#462) se resuelve PRIMERO: traduce rumbo/distancia a
+      // indicativo real antes de que la asistencia mueva nada dentro de la
+      // orden ya resuelta. Para cualquier acción que no sea `scan_object`,
+      // `resolverOrdenDeEscaneo` es un paso transparente.
+      prepareOrder: ({ userId, order }) =>
+        resolverOrdenDeEscaneo({ order, bridge }).then(({ orden, aviso: avisoEscaneo }) => {
+          const { orden: ordenFinal, aviso: avisoAsistencia } = prepararOrdenConAsistencia({
+            userId,
+            order: orden,
+          });
+          return { orden: ordenFinal, aviso: avisoEscaneo ?? avisoAsistencia };
+        }),
       onResult: (_result, { aviso } = {}) => {
         if (aviso === RELEVO_AVISOS.ASISTENCIA_NO_APLICADA) {
           ui.notifications?.warn?.(game.i18n.localize("LAGUNAK.Asistencia.NoAplicada"));
         }
         ui.notifications?.info?.(game.i18n.localize("LAGUNAK.Espacios.Orden.Aplicada"));
       },
-      onError: () => {
-        ui.notifications?.warn?.(game.i18n.localize("LAGUNAK.Espacios.Orden.Rechazada"));
+      // Sin objetivo resuelto, `resolverOrdenDeEscaneo` deja pasar la orden
+      // sin `callsign`: el puente la rechaza (BridgeError, "debe ser una
+      // cadena") y llega aquí, no a `onResult` — de ahí el mensaje específico
+      // en vez del genérico de "Rechazada" para esta acción en concreto.
+      onError: (_error, { order } = {}) => {
+        const clave = order?.action === "scan_object" && !order?.params?.callsign
+          ? "LAGUNAK.Espacios.Orden.EscaneoInvalido"
+          : "LAGUNAK.Espacios.Orden.Rechazada";
+        ui.notifications?.warn?.(game.i18n.localize(clave));
       },
     });
   };

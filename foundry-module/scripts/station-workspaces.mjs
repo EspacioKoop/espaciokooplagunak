@@ -282,6 +282,50 @@ function crewRows(users, moduleId, i18n) {
  * sus márgenes escritos. Fingir que son la misma tabla acabaría enseñándole a
  * alguien un número que no le corresponde.
  */
+const MAXIMO_OBJETIVOS_ESCANEO = 8;
+
+/**
+ * Objetivos escaneables para el puesto de sensores (#462): un `<option>` por
+ * contacto de la MISMA lectura degradada que ya ve la tripulación, nunca del
+ * sondeo crudo del GM.
+ *
+ * El VALOR que viaja no es un indicativo —un eco no tiene uno que el jugador
+ * pueda conocer, es la doctrina que `contactos-degradados.mjs` protege— sino
+ * la propia lectura degradada (distancia/rumbo con su margen). Resolverla al
+ * indicativo real es cosa del relé del GM (`resolver-objetivo-sensores.mjs`),
+ * que sí tiene el sondeo sin degradar: aquí solo se ofrece lo que el jugador
+ * ya sabe, tal cual lo sabe.
+ */
+function scanTargetsFor(sensores, i18n) {
+  const contactos = Array.isArray(sensores?.contactos) ? sensores.contactos : [];
+  return contactos
+    .filter((contacto) => !contacto?.esJugador)
+    .slice()
+    .sort((a, b) => Number(a?.distancia ?? 0) - Number(b?.distancia ?? 0))
+    .slice(0, MAXIMO_OBJETIVOS_ESCANEO)
+    .map((contacto) => {
+      const eco = typeof contacto?.callsign !== "string";
+      const distancia = Math.round(Number(contacto?.distancia ?? 0));
+      const rumbo = Math.round(Number(contacto?.rumboDeg ?? 0));
+      const etiqueta = eco
+        ? format(i18n, "LAGUNAK.Espacios.Sensores.EscanearEco", { distancia, rumbo })
+        : format(i18n, "LAGUNAK.Espacios.Sensores.EscanearIdentificado", {
+            callsign: contacto.callsign,
+          });
+      return {
+        // JSON, no el indicativo: es exactamente lo que `station-order-forms.mjs`
+        // debe leer y reenviar tal cual como parámetros de la orden.
+        value: JSON.stringify({
+          distancia: contacto.distancia,
+          rumboDeg: contacto.rumboDeg,
+          precision: contacto.precision ?? 0,
+          rumboPrecision: contacto.rumboPrecision ?? 0,
+        }),
+        label: etiqueta,
+      };
+    });
+}
+
 function visibleContacts(contactsPayload, sensores, isGM, i18n) {
   if (isGM) {
     return filasCrudas(contactsPayload, i18n, (faccion) => localizeFaction(i18n, faccion));
@@ -397,6 +441,10 @@ export function buildWorkspaceModel({
     canOrderWarp: !isGM && isActionAllowed(normalized, "set_warp"),
     canOrderPower: !isGM && isActionAllowed(normalized, "set_system_power"),
     canOrderShields: !isGM && isActionAllowed(normalized, "set_shields"),
+    canOrderScan: !isGM && isActionAllowed(normalized, "scan_object"),
+    scanTargets: !isGM && isActionAllowed(normalized, "scan_object")
+      ? scanTargetsFor(sensores, i18n)
+      : [],
     powerSystems: !isGM && isActionAllowed(normalized, "set_system_power")
       ? SISTEMAS_INGENIERIA.map((id) => ({ value: id, label: localize(i18n, `LAGUNAK.Sistemas.${id}`) }))
       : [],

@@ -280,6 +280,8 @@ test("espacio de puesto: órdenes operativas y acciones de pie en ese orden", ()
     "orden-reparacion-auto-desactivar",
     "orden-escudos-subir",
     "orden-escudos-bajar",
+    "lagunak-orden-objetivo-escaneo",
+    "orden-escanear",
     "orden-comms-contestar",
     "orden-comms-ignorar",
     "orden-comms-cerrar",

@@ -1,0 +1,56 @@
+{{! Diagnóstico del contenido dnd5e que el GM ya tiene importado (#332).
+    Enseña, no corrige: nada de aquí toca el mundo. }}
+<section class="lagunak-contenido__panel">
+  <p class="lagunak-contenido__titular" role="status">{{localize titular}}</p>
+
+  {{#unless compatible}}
+    <p class="lagunak-contenido__aviso">
+      {{#if sistema}}
+        {{localize "LAGUNAK.ContenidoExterno.SistemaIncompatible" sistema=sistema}}
+      {{else}}
+        {{localize "LAGUNAK.ContenidoExterno.SinSistema"}}
+      {{/if}}
+    </p>
+  {{/unless}}
+
+  <table class="lagunak-contenido__tabla">
+    <caption class="lagunak-contenido__caption">{{localize "LAGUNAK.ContenidoExterno.TablaCaption"}}</caption>
+    <thead>
+      <tr>
+        <th scope="col">{{localize "LAGUNAK.ContenidoExterno.Columna.Tipo"}}</th>
+        <th scope="col">{{localize "LAGUNAK.ContenidoExterno.Columna.Aceptados"}}</th>
+        <th scope="col">{{localize "LAGUNAK.ContenidoExterno.Columna.Descartados"}}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each tipos}}
+        <tr>
+          <th scope="row">
+            {{localize clave}}
+            {{! Los nombres son lo que permite reconocer «esto es mi material»
+                de un vistazo; una fila de números no dice si entró lo esperado. }}
+            {{#if ejemplos}}
+              <small class="lagunak-contenido__ejemplos">{{ejemplos}}</small>
+            {{/if}}
+          </th>
+          <td>{{aceptados}}</td>
+          <td>{{descartados}}</td>
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+
+  {{#if motivos}}
+    <h3 class="lagunak-contenido__subtitulo">{{localize "LAGUNAK.ContenidoExterno.PorQueFuera"}}</h3>
+    <ul class="lagunak-contenido__motivos">
+      {{#each motivos}}
+        <li>
+          <span class="lagunak-contenido__motivo">{{localize clave}}</span>
+          <span class="lagunak-contenido__cuenta">{{total}}</span>
+        </li>
+      {{/each}}
+    </ul>
+  {{/if}}
+
+  <p class="lagunak-contenido__nota">{{localize "LAGUNAK.ContenidoExterno.Nota"}}</p>
+</section>

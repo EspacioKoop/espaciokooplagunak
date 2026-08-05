@@ -162,7 +162,13 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     puesto se resuelve desde el `User` autenticado, nunca desde la orden (#237).
   - **Eventos y ambiente** — `scripts/event-journal.mjs` (deduplicado por `eventId`),
     `scripts/bitacora-nave.mjs`, `scripts/alertas-nave.mjs` y el nivel de alerta difundido a toda
-    la mesa (`scripts/nivel-alerta.mjs`, `scripts/alerta-escena.mjs`, #338).
+    la mesa (`scripts/nivel-alerta.mjs`, `scripts/alerta-escena.mjs`, #338). El tinte del lienzo
+    delegado en FXMaster es opcional y apagado por defecto (`scripts/filtros-escena.mjs`); el borde
+    accesible del `<body>` no depende de él.
+  - **Módulos ajenos** — el módulo no declara ninguna dependencia dura. Antes de añadir una, leer
+    `docs/ECOSISTEMA_MODULOS_FOUNDRY.md`: recoge la regla de admisión (una dependencia puede degradar
+    la presentación y nunca la autoridad), los descartes ya razonados —socketlib, sequencer/JB2A,
+    documentos `Cards`— y por qué FXMaster es la única integración aceptada.
   - **Telemetría a modelo visual** — `scripts/ship-view.mjs` y `scripts/barras-estado.mjs`
     convierten el estado crudo en porcentajes y niveles de severidad, sin tocar el DOM: las
     plantillas de V1/V2 solo consumen su salida.
@@ -240,8 +246,12 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     relé por `prepareOrder`, que solo puede mover un parámetro dentro del rango ya autorizado: no es
     una puerta de autoridad y no debe convertirse en una. Dos ajustes de mundo, cerrados por defecto:
     gastar recursos de la ficha y la regla de la casa del 1/20 natural.
-    **Falta la interfaz** (ventana del asistente y barra de temporización): hoy el camino está
-    completo de extremo a extremo pero no hay dónde pulsar.
+    **Interfaz**: `scripts/asistencia-ui.mjs` (máquina de estados, hooks, rAF y DOM) sobre
+    `scripts/asistencia/vista.mjs` (puro: qué se pinta en cada fase). La ventana no decide nada —
+    cada gesto acaba en `pedirAsistencia`/`resolverAsistencia`, y la autoridad sigue entera en el
+    GM coordinador. El reto de temporización se repinta tocando el DOM de la barra y no con
+    `render()`: un render por fotograma tira el foco 60 veces por segundo. Sin
+    `requestAnimationFrame` la barra no se anima pero el reto sigue siendo jugable.
   - **Contenido externo de dnd5e** — `scripts/contenido-externo/` (#332, doc en
     [`docs/CONTENIDO_EXTERNO.md`](docs/CONTENIDO_EXTERNO.md)): lectura OPCIONAL del material que el
     usuario ya tenga importado en su mundo (plutonium/5etools u otra vía), **filtrado al ruleset de
@@ -251,7 +261,11 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     **falla cerrado**: lo que no se pueda clasificar con certeza se descarta, los metadatos que se
     contradicen se resuelven en contra, y cada descarte deja su `motivo`. Ampliar la lista blanca
     suma, nunca sustituye. Solo `proveedor-foundry.mjs` sabe qué es Foundry; el resto es puro.
-    **Sin consumidores todavía**: la capa existe, pero #308/#309/#213 aún no la leen.
+    **Primer consumidor**: `contenido-externo/inventario.mjs` (puro) y `contenido-externo/ventana.mjs`
+    (superficie solo-GM, botón `lagunak-contenido-externo`), que es también lo único que construye
+    el proveedor. Diagnostica antes que consumir a propósito: el clasificador falla cerrado, así que
+    su modo de fallo natural es «no sale nada», indistinguible de «no tengo nada importado». Los
+    consumidores de juego (#308/#213) siguen pendientes.
 - `resources/` y `packs/` — assets heredados de upstream.
 - La versión se calcula por fecha (`AAAA.MM.DD`) en `CMakeLists.txt` salvo override explícito.
 - `docs/` — documentación propia del fork: [`BUILDING.md`](docs/BUILDING.md),

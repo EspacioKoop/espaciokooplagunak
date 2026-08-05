@@ -1,0 +1,13 @@
+<div class="lagunak-panel-gm-cuerpo">
+  <p class="lagunak-panel-gm-intro">{{localize "LAGUNAK.PanelGM.Intro"}}</p>
+  <ul class="lagunak-panel-gm-lista" aria-label="{{localize "LAGUNAK.PanelGM.Entradas"}}">
+    {{#each entradas}}
+      <li class="lagunak-panel-gm-fila">
+        <button type="button" class="lagunak-panel-gm-entrada" data-entrada="{{this.id}}">
+          <i class="{{this.icono}}" aria-hidden="true"></i>
+          <span>{{this.titulo}}</span>
+        </button>
+      </li>
+    {{/each}}
+  </ul>
+</div>

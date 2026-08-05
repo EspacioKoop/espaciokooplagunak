@@ -166,7 +166,10 @@ token:
   `navigation` → `set_target_heading`, `set_impulse`, `set_warp`; `engineering`
   → `set_system_power`, `set_system_coolant`, `set_auto_repair` (#464 —
   decisión bajo presión: con la reparación automática desactivada, los
-  sistemas dañados no se reparan solos); `weapons` → `set_shields`.
+  sistemas dañados no se reparan solos; el casco 3D de ingeniería, #419, lo
+  refleja: una región dañada cambia de color mientras la reparación
+  automática está activa, feedback real del toggle y no solo un cambio de
+  valor en texto, #466); `weapons` → `set_shields`.
   `captain`, `sensors` y
   `communications` son de **observación/narrativa**: no emiten órdenes de control
   de nave (coherente con el género bridge-sim; ratificado en #268). Añadir una

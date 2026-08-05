@@ -413,6 +413,9 @@ export function buildWorkspaceModel({
     // Auto-reparación (#464): decisión de ingeniería bajo presión — con ella
     // desactivada los sistemas dañados no se reparan solos.
     canOrderAutoRepair: !isGM && isActionAllowed(normalized, "set_auto_repair"),
+    // Feedback 3D del toggle (#466): sin lectura o desactivada pintan igual —
+    // el plano de siempre, ausencia no es cero (#353).
+    autoRepairActivo: Boolean(ship?.auto_repair),
     navigationHeading: integer(ship?.heading),
     // Casco propio en 3D (#362). `null` cuando no hay lectura, que NO es lo
     // mismo que rumbo cero: el visor se queda quieto y apagado en vez de

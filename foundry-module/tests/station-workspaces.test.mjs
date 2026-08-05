@@ -215,6 +215,31 @@ test("ingeniería activa/desactiva la reparación automática, no el GM ni otros
   assert.equal(navegacion.canOrderAutoRepair, false);
 });
 
+test("autoRepairActivo refleja el auto_repair publicado, y null/ausente no es cero (#464/#466)", () => {
+  const base = { station: "engineering", isGM: false, users: [], moduleId: MODULE_ID, i18n };
+
+  const activa = buildWorkspaceModel({
+    ...base,
+    statePayload: { ship: { ...statePayload.ship, auto_repair: true } },
+  });
+  assert.equal(activa.autoRepairActivo, true);
+
+  const inactiva = buildWorkspaceModel({
+    ...base,
+    statePayload: { ship: { ...statePayload.ship, auto_repair: false } },
+  });
+  assert.equal(inactiva.autoRepairActivo, false);
+
+  const sinLectura = buildWorkspaceModel({
+    ...base,
+    statePayload: { ship: { ...statePayload.ship, auto_repair: null } },
+  });
+  assert.equal(sinLectura.autoRepairActivo, false);
+
+  const sinTelemetria = buildWorkspaceModel(base);
+  assert.equal(sinTelemetria.autoRepairActivo, false);
+});
+
 test("armas puede subir/bajar escudos como tripulación, no el GM ni otros puestos", () => {
   const armas = buildWorkspaceModel({
     station: "weapons",

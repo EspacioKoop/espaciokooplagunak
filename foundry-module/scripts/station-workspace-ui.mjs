@@ -292,6 +292,9 @@ function pintarCascoPropio(root, modelo) {
       ...opciones,
       ancho: lienzo.width,
       alto: lienzo.height,
+      // Feedback 3D de la reparación automática (#464/#466): las regiones
+      // dañadas cambian de color cuando la tripulación la activa.
+      autoRepairActivo: modelo?.autoRepairActivo === true,
     });
     escena.poligonos = regional.poligonos;
     pintarEscena(lienzo.getContext?.("2d"), escena);

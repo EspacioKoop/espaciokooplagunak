@@ -261,6 +261,10 @@ export const SISTEMA = Object.freeze({
   // color justo en el módulo que existe para evitarlo.
   apagado: "#3a2b2f", // núcleo muerto: presente pero sin responder
   sinLectura: "#5b6472", // ni bueno ni malo: no se sabe
+  // Región dañada bajo reparación automática activa (#464/#466). Azul
+  // eléctrico: el único tono de esa familia en todo `SISTEMA`, no compite con
+  // el verde de `nucleo` ni el ámbar/granate de daño/crítico.
+  reparando: "#4fd3ff",
 });
 
 /**

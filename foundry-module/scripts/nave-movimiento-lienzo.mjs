@@ -37,7 +37,7 @@ const VELOCIDAD_GIRO = Math.PI * 0.6; // radianes por segundo
  *
  * @param {HTMLCanvasElement} lienzo
  * @param {{
- *   componer: (x:number, y:number, z:number, yaw:number) => object,
+ *   componer: (x:number, y:number, z:number, yaw:number, opciones?:{otrosJugadores?:Array}) => object,
  *   planta: object,
  *   puertas?: Array<{rect:object, destino:object}>,
  *   alTocarPuerta?: (destino:object) => void,
@@ -47,6 +47,7 @@ const VELOCIDAD_GIRO = Math.PI * 0.6; // radianes por segundo
  *   ahora?: () => number,
  *   pedirFotograma?: (cb: (ms:number) => void) => number,
  *   cancelarFotograma?: (id: number) => void,
+ *   otrosJugadores?: () => Array<{x:number, y:number, z:number, avatar?:object}>,
  * }} opciones
  */
 export function arrancarAndar(lienzo, opciones = {}) {
@@ -58,6 +59,11 @@ export function arrancarAndar(lienzo, opciones = {}) {
     ahora = () => globalThis.performance?.now?.() ?? Date.now(),
     pedirFotograma,
     cancelarFotograma,
+    // Función y no array a propósito: se evalúa en cada fotograma pintado,
+    // nunca una sola vez al arrancar — igual que `ahora`, este bucle no
+    // conoce el reloj/red por su cuenta, solo pide el dato fresco cuando le
+    // toca pintar (#498, follow-up de #453).
+    otrosJugadores = () => [],
   } = opciones;
 
   if (typeof opciones.componer !== "function") {
@@ -87,7 +93,7 @@ export function arrancarAndar(lienzo, opciones = {}) {
   function pintarUnaVez() {
     const ctx = lienzo?.getContext?.("2d");
     if (!ctx) return;
-    pintarEscena(ctx, componer(x, y, z, yaw), { fondo });
+    pintarEscena(ctx, componer(x, y, z, yaw, { otrosJugadores: otrosJugadores() }), { fondo });
   }
 
   function paso(ms) {

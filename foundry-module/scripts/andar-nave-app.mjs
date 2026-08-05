@@ -26,6 +26,7 @@ import {
   posicionesVisibles,
   programarMuestra,
 } from "./nave-movimiento-red.mjs";
+import { avatarDeUsuario } from "./avatar-assignment.mjs";
 
 const ESTANCIA_INICIAL = "a";
 
@@ -174,10 +175,23 @@ function arrancar(raiz) {
   let ultimoSelloEnviado = null;
 
   // Muestras en vivo de los demás jugadores (#453), acumuladas por
-  // `updateUser`. Sirve tal cual a un futuro PR de render (`posicionesVisibles`
-  // ya filtra por sala/frescura) — esta ventana no pinta ningún avatar ajeno
-  // todavía, ver la cabecera de `nave-movimiento-red.mjs` para el motivo.
+  // `updateUser`.
   const otrosJugadores = new Map();
+
+  /** Jugadores visibles ahora mismo en la MISMA sala, ya interpolados y con
+   *  el avatar que cada cual eligió (#450, mismo molde que la cantina) — la
+   *  forma exacta que consume `poligonosOtrosJugadores`
+   *  (`nave-avatares-render.mjs`, #498). */
+  function jugadoresParaRender() {
+    return posicionesVisibles(otrosJugadores, {
+      estanciaPropia: estanciaActual,
+      miUserId: game.user?.id,
+      ahoraMs: Date.now(),
+    }).map((jugador) => ({
+      ...jugador,
+      avatar: avatarDeUsuario(game.users?.get?.(jugador.userId), MODULE_ID),
+    }));
+  }
 
   const mando = arrancarAndar(lienzo, {
     componer: inicial.componer,
@@ -202,6 +216,9 @@ function arrancar(raiz) {
     },
     pedirFotograma: (cb) => globalThis.requestAnimationFrame?.(cb),
     cancelarFotograma: (id) => globalThis.cancelAnimationFrame?.(id),
+    // Se evalúa en cada fotograma pintado (#498): el bucle nunca ve un Map,
+    // solo la lista ya resuelta de ese instante.
+    otrosJugadores: jugadoresParaRender,
   });
   const desenganchar = engancharTeclado(raiz, mando);
 
@@ -229,15 +246,10 @@ function arrancar(raiz) {
   Hooks.on("updateUser", alCambiarUsuario);
 
   return {
-    /** Jugadores visibles ahora mismo en la MISMA sala, ya interpolados —
-     *  listo para que un futuro PR de render solo tenga que pintar. */
-    jugadoresVisibles() {
-      return posicionesVisibles(otrosJugadores, {
-        estanciaPropia: estanciaActual,
-        miUserId: game.user?.id,
-        ahoraMs: Date.now(),
-      });
-    },
+    /** Jugadores visibles ahora mismo en la MISMA sala, ya interpolados y
+     *  con avatar — lo mismo que consume el pintor en cada fotograma,
+     *  expuesto por si algo fuera de este archivo necesita leerlo. */
+    jugadoresVisibles: jugadoresParaRender,
     detener() {
       publicarPosicion(estanciaActual, mando, ultimoSelloEnviado, true);
       globalThis.clearInterval?.(intervaloPublicacion);

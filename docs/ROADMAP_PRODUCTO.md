@@ -156,9 +156,12 @@ formales y grafo de dependencias explícito:
 - #467 — playtest del vertical de agencia de Etapa B (depende de #460–#466).
 
 Este grafo valida el criterio de salida de agencia, pero no cierra por sí solo
-toda la Etapa B. Antes de declarar la etapa completada también deben quedar
-trazados y satisfechos sus otros frentes: navegación operacional, alarmas
-compartidas, guardias y relevo, y automatización de puestos vacíos.
+toda la Etapa B. Sus otros frentes están trazados en #479: #480 (navegación
+operacional), #481 (automatización de puestos vacíos), #482 (alarmas
+compartidas por dependencia entre sistemas), #483 (guardias y relevo) y #484
+(crisis que exijan coordinación entre al menos tres puestos, depende de
+#462–#465). Antes de declarar la etapa completada deben quedar todos
+trazados y satisfechos.
 
 ### Etapa C — Nave persistente y progresión
 

@@ -74,4 +74,39 @@ export const ORDER_FORMS = Object.freeze({
     read: () => ({ active: false }),
     invalidKey: "LAGUNAK.Espacios.Orden.EscudosInvalido",
   },
+  // Comunicaciones (#463): acciones reactivas, calcadas de los globales que el
+  // motor ya expone (contestar/cerrar canal ya abierto, elegir diálogo,
+  // mandar chat libre) — sin picker de objetivo propio.
+  "orden-comms-contestar": {
+    action: "answer_comm_hail",
+    read: () => ({ accept: true }),
+    invalidKey: "LAGUNAK.Espacios.Orden.CommsInvalido",
+  },
+  "orden-comms-ignorar": {
+    action: "answer_comm_hail",
+    read: () => ({ accept: false }),
+    invalidKey: "LAGUNAK.Espacios.Orden.CommsInvalido",
+  },
+  "orden-comms-cerrar": {
+    action: "close_comm",
+    read: () => ({}),
+    invalidKey: "LAGUNAK.Espacios.Orden.CommsInvalido",
+  },
+  "orden-comms-opcion": {
+    action: "send_comm_reply",
+    read: numericOrder(
+      "lagunak-orden-comms-opcion",
+      "index",
+      (n) => Number.isInteger(n) && n >= 0 && n <= 15,
+    ),
+    invalidKey: "LAGUNAK.Espacios.Orden.CommsOpcionInvalida",
+  },
+  "orden-comms-mensaje": {
+    action: "send_comm_message",
+    read: (root) => {
+      const message = root?.querySelector?.("#lagunak-orden-comms-mensaje")?.value?.trim() ?? "";
+      return message.length > 0 && message.length <= 256 ? { message } : null;
+    },
+    invalidKey: "LAGUNAK.Espacios.Orden.CommsMensajeInvalido",
+  },
 });

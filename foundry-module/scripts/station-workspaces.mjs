@@ -410,6 +410,12 @@ export function buildWorkspaceModel({
     coolantLevels: !isGM && isActionAllowed(normalized, "set_system_coolant")
       ? NIVELES_REFRIGERANTE.map((value) => ({ value, label: String(value) }))
       : [],
+    // Comunicaciones (#463): reactivas sobre el canal ya abierto — sin picker
+    // de objetivo propio, ver `docs/SESION-PANTALLAS-NATIVAS.md`.
+    canOrderCommsHail: !isGM && isActionAllowed(normalized, "answer_comm_hail"),
+    canOrderCommsClose: !isGM && isActionAllowed(normalized, "close_comm"),
+    canOrderCommsReply: !isGM && isActionAllowed(normalized, "send_comm_reply"),
+    canOrderCommsMessage: !isGM && isActionAllowed(normalized, "send_comm_message"),
     navigationHeading: integer(ship?.heading),
     // Casco propio en 3D (#362). `null` cuando no hay lectura, que NO es lo
     // mismo que rumbo cero: el visor se queda quieto y apagado en vez de

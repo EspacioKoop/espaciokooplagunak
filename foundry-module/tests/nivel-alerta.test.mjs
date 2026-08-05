@@ -5,11 +5,13 @@ import { NIVELES, motivosDeAlerta, nivelDeAlerta } from "../scripts/nivel-alerta
 import {
   AJUSTE_NIVEL_ALERTA,
   aplicarNivelAlBody,
+  aplicarVariablesAlerta,
   aplicarAvisoAlerta,
   normalizarAviso,
   publicarNivelAlerta,
   registrarEscuchaAlerta,
 } from "../scripts/alerta-escena.mjs";
+import { ALERTA, contraste } from "../scripts/paleta.mjs";
 
 const MODULO = "espaciokoop-lagunak";
 
@@ -297,4 +299,66 @@ test("la escucha pinta el aviso textual además del borde, para toda la mesa", (
   alCambiar({ key: `${MODULO}.${AJUSTE_NIVEL_ALERTA}`, value: { nivel: "verde", motivos: [] } });
   assert.equal(body.hijos.length, 0, "verde no deja rastro textual");
   assert.equal([...body.clases].filter((c) => c.startsWith("lagunak-alerta-")).length, 0);
+});
+
+test("las variables CSS publican los canales de la paleta, no un hexadecimal", () => {
+  // Canales sueltos («226, 170, 40») a propósito: así el alfa se queda en la
+  // hoja de estilos, que es donde se decide cuánto pesa un borde o un halo, y
+  // la paleta solo aporta el tono.
+  const puestas = new Map();
+  const raiz = { style: { setProperty: (k, v) => puestas.set(k, v) } };
+  const nombres = aplicarVariablesAlerta(raiz);
+
+  assert.deepEqual(nombres.sort(), [...puestas.keys()].sort());
+  assert.equal(puestas.get("--lagunak-alerta-amarilla-borde-rgb"), "226, 170, 40");
+  assert.equal(puestas.get("--lagunak-alerta-roja-borde-rgb"), "209, 73, 91");
+  assert.equal(puestas.get("--lagunak-alerta-roja-texto-rgb"), "255, 143, 157");
+  for (const valor of puestas.values()) {
+    assert.match(valor, /^\d{1,3}, \d{1,3}, \d{1,3}$/);
+  }
+});
+
+test("sin un elemento utilizable no revienta: la alerta se degrada al texto", () => {
+  assert.equal(aplicarVariablesAlerta(null), null);
+  assert.equal(aplicarVariablesAlerta({}), null);
+  assert.equal(aplicarVariablesAlerta({ style: {} }), null);
+});
+
+test("la hoja de estilos no reescribe ningún color de alerta por su cuenta", async () => {
+  // La guardia de la unificación: el día que alguien vuelva a pegar un
+  // «#ff8f9d» en el CSS, borde y tinte podrán decir cosas distintas sin que
+  // nadie se entere hasta verlo en la mesa.
+  const { readFile } = await import("node:fs/promises");
+  const css = await readFile(new URL("../styles/lagunak.css", import.meta.url), "utf8");
+  const bloque = css.slice(css.indexOf(".lagunak-alerta-amarilla::after"), css.indexOf(".lagunak-icono-sistema"));
+
+  assert.ok(bloque.includes("var(--lagunak-alerta-roja-borde-rgb)"), "el borde consume la variable");
+  assert.ok(bloque.includes("var(--lagunak-alerta-roja-texto-rgb)"), "el aviso consume la variable");
+  for (const nivel of ["amarilla", "roja"]) {
+    for (const uso of ["borde", "texto"]) {
+      const hex = ALERTA.niveles[nivel][uso].slice(1);
+      assert.ok(!bloque.toLowerCase().includes(hex.toLowerCase()), `${hex} no debe repetirse en el CSS`);
+    }
+  }
+  // Y tampoco en su forma decimal, que es como estaban escritos antes.
+  assert.ok(!/rgba\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,/.test(bloque), "ningún rgba con canales literales");
+});
+
+test("los dos rojos pasan AA, y el del aviso lo pasa con margen", () => {
+  // El motivo de que sean DOS rojos. No es que el del borde suspenda —da 4.59
+  // sobre el fondo del aviso, justo por encima del 4.5 de WCAG AA—: es que el
+  // aviso es texto pequeño en negrita y versalitas, donde un contraste al filo
+  // se lee mal aunque el número dé. El borde no necesita ese colchón.
+  const FONDO_AVISO = ALERTA.fondoAviso;
+  for (const nivel of ["amarilla", "roja"]) {
+    for (const uso of ["borde", "texto"]) {
+      assert.ok(contraste(ALERTA.niveles[nivel][uso], FONDO_AVISO) >= 4.5, `${nivel}.${uso} cumple AA`);
+    }
+  }
+  // Y la holgura que justifica el segundo tono: si alguien «unifica» los rojos
+  // al del borde, el aviso pierde ese margen y esta comprobación cae.
+  assert.ok(
+    contraste(ALERTA.niveles.roja.texto, FONDO_AVISO) >= 7,
+    "el aviso rojo va sobrado, no al filo",
+  );
 });

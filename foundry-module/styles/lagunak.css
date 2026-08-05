@@ -416,14 +416,23 @@
   border: 6px solid transparent;
 }
 
+/*
+ * El TONO viene de `paleta.mjs` por variables CSS que publica
+ * `aplicarVariablesAlerta()`; aquí solo se decide cuánto pesa. Se consumen los
+ * canales sueltos y no un hexadecimal porque el alfa es decisión de esta hoja
+ * —cuánto tiñe un borde, cuánto un halo— y no de la paleta. No hay valor de
+ * respaldo a propósito: un literal aquí sería exactamente la copia del color
+ * que este cambio viene a eliminar, y el aviso textual ya cubre el caso de que
+ * las variables no lleguen.
+ */
 .lagunak-alerta-amarilla::after {
-  border-color: rgba(226, 170, 40, 0.55);
-  box-shadow: inset 0 0 34px rgba(226, 170, 40, 0.28);
+  border-color: rgba(var(--lagunak-alerta-amarilla-borde-rgb), 0.55);
+  box-shadow: inset 0 0 34px rgba(var(--lagunak-alerta-amarilla-borde-rgb), 0.28);
 }
 
 .lagunak-alerta-roja::after {
-  border-color: rgba(209, 73, 91, 0.72);
-  box-shadow: inset 0 0 46px rgba(209, 73, 91, 0.4);
+  border-color: rgba(var(--lagunak-alerta-roja-borde-rgb), 0.72);
+  box-shadow: inset 0 0 46px rgba(var(--lagunak-alerta-roja-borde-rgb), 0.4);
   animation: lagunak-alerta-latido 2.4s ease-in-out infinite;
 }
 
@@ -464,15 +473,15 @@
   padding: 4px 14px;
   border: 1px solid currentColor;
   border-radius: 3px;
-  background: rgba(6, 8, 14, 0.88);
+  background: rgba(var(--lagunak-alerta-fondo-aviso-rgb), 0.88);
   font: 700 12px/1.4 var(--font-primary, sans-serif);
   letter-spacing: 0.12em;
   text-align: center;
   text-transform: uppercase;
 }
 
-.lagunak-alerta-aviso--amarilla { color: #e2aa28; }
-.lagunak-alerta-aviso--roja { color: #ff8f9d; }
+.lagunak-alerta-aviso--amarilla { color: rgb(var(--lagunak-alerta-amarilla-texto-rgb)); }
+.lagunak-alerta-aviso--roja { color: rgb(var(--lagunak-alerta-roja-texto-rgb)); }
 
 /* Icono de daño por sistema (#353). Acompaña al nombre en la tabla de sistemas;
  * el porcentaje y la barra siguen a su lado. Sin animación: nada que detener
@@ -1081,4 +1090,210 @@
 .lagunak-seccion-gente {
   font-size: 0.85em;
   opacity: 0.8;
+}
+
+/*
+ * Diagnóstico del contenido dnd5e importado (#332). Ventana de solo lectura:
+ * no hay controles porque no hay nada que tocar, solo que leer.
+ */
+.lagunak-contenido__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 8px 4px;
+}
+
+.lagunak-contenido__titular {
+  margin: 0;
+  font-weight: 700;
+}
+
+/* El aviso de sistema incompatible NO es un error: es la explicación más
+ * probable de «no me sale nada», así que se pinta como nota y no como alarma. */
+.lagunak-contenido__aviso {
+  margin: 0;
+  padding: 6px 8px;
+  border-left: 3px solid rgba(var(--lagunak-alerta-amarilla-borde-rgb), 0.8);
+  background: rgba(var(--lagunak-alerta-fondo-aviso-rgb), 0.35);
+  font-size: 12px;
+}
+
+.lagunak-contenido__tabla {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.lagunak-contenido__caption {
+  padding-bottom: 4px;
+  font-size: 11px;
+  opacity: 0.75;
+  text-align: left;
+}
+
+.lagunak-contenido__tabla th,
+.lagunak-contenido__tabla td {
+  padding: 4px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: left;
+}
+
+.lagunak-contenido__tabla td {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Los nombres de ejemplo van en su propia línea y atenuados: acompañan al tipo,
+ * no compiten con él. Se recortan si no caben en vez de ensanchar la ventana. */
+.lagunak-contenido__ejemplos {
+  display: block;
+  overflow: hidden;
+  max-width: 26ch;
+  opacity: 0.7;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lagunak-contenido__subtitulo {
+  margin: 0;
+  font-size: 13px;
+}
+
+.lagunak-contenido__motivos {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lagunak-contenido__motivos li {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  padding: 2px 0;
+  font-size: 12px;
+}
+
+.lagunak-contenido__cuenta {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.lagunak-contenido__nota {
+  margin: 0;
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+/*
+ * Ventana del asistente (#309). Una fase visible cada vez: la ayuda es un gesto
+ * corto, y enseñar las cuatro a la vez la convertiría en un formulario.
+ */
+.lagunak-asistencia__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 8px 4px;
+}
+
+.lagunak-asistencia__intro,
+.lagunak-asistencia__espera {
+  margin: 0;
+  font-size: 12px;
+}
+
+.lagunak-asistencia__tareas,
+.lagunak-asistencia__enfoques {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lagunak-asistencia__tarea,
+.lagunak-asistencia__enfoque {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: 6px 8px;
+  text-align: left;
+}
+
+.lagunak-asistencia__tarea-puesto,
+.lagunak-asistencia__narrativa,
+.lagunak-asistencia__probabilidad,
+.lagunak-asistencia__coste {
+  font-size: 11px;
+  opacity: 0.75;
+}
+
+/* El coste destaca sobre el resto de la letra pequeña: gastar un espacio de
+ * conjuro es un coste de campaña real y no puede leerse como una nota al pie. */
+.lagunak-asistencia__coste {
+  color: rgb(var(--lagunak-alerta-amarilla-texto-rgb));
+  opacity: 1;
+}
+
+/* La pista del reto de temporización. La zona y el cursor se posicionan desde
+ * JS en porcentaje: aquí solo está la caja. */
+.lagunak-asistencia__pista {
+  position: relative;
+  overflow: hidden;
+  height: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 3px;
+  background: rgba(var(--lagunak-alerta-fondo-aviso-rgb), 0.6);
+}
+
+.lagunak-asistencia__zona {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.lagunak-asistencia__cursor {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  width: 3px;
+  margin-left: -1px;
+  background: currentColor;
+}
+
+/* Dentro de la zona el cursor cambia de color, pero NO es el único canal: la
+ * lectura de texto de al lado dice lo mismo con palabras, igual que el aviso de
+ * alerta acompaña siempre al borde (WCAG 1.4.1). */
+.lagunak-asistencia__cursor--dentro {
+  color: rgb(var(--lagunak-alerta-amarilla-texto-rgb));
+}
+
+.lagunak-asistencia__lectura {
+  margin: 0;
+  font-size: 11px;
+  min-height: 1.2em;
+}
+
+.lagunak-asistencia__pulsar {
+  padding: 8px;
+  font-weight: 700;
+}
+
+.lagunak-asistencia__cierre {
+  margin: 0;
+  font-weight: 700;
+}
+
+.lagunak-asistencia__banda,
+.lagunak-asistencia__destino,
+.lagunak-asistencia__detalle {
+  margin: 0;
+  font-size: 12px;
+}
+
+.lagunak-asistencia__vacio {
+  font-size: 12px;
+  opacity: 0.7;
 }

@@ -222,10 +222,15 @@ return '{"events":[' .. table.concat(events, ",") .. ']}'
 
 # Contactos cercanos a la nave del jugador: base de datos para un mapa vivo en
 # Foundry (starfield + puntos). VISTA GM OMNISCIENTE, no de sensores: publica
-# indicativo y facción de todo objeto en radio sin filtrar por detección
-# (isScannedBy / nivel de identificación). Es deliberado — la consume la
-# ventana de mapa vivo, solo-GM, detrás del Bearer que solo tiene el GM — y NO
-# debe reutilizarse como contrato para jugadores sin añadir ese filtrado.
+# indicativo y facción de todo objeto en radio SIN recortar por nivel de
+# detección — eso sigue siendo deliberado, la consume la ventana de mapa vivo,
+# solo-GM, detrás del Bearer que solo tiene el GM. Lo que NO es omnisciente es
+# el campo `scan_state` (#462): es el `ScanState::State` real del juego para la
+# facción de `ship` (ver `estado_escaneo` más abajo), así que un consumidor
+# pensado para tripulación (`contactos-degradados.mjs`) puede degradar
+# indicativo/facción por ese campo en vez de aproximarlos por distancia. Seguir
+# publicando indicativo/facción crudos aquí sigue exigiendo ese filtrado en el
+# consumidor — este endpoint no lo hace por sí mismo.
 #
 # Solo lectura, radio y número acotados para limitar el tamaño de la
 # respuesta. El truncamiento es honesto: se ordenan TODOS los objetos del
@@ -260,6 +265,26 @@ for _, object in ipairs(getObjectsInRadius(x, y, 30000)) do
     end
 end
 table.sort(otros, function(a, b) return a.d2 < b.d2 end)
+-- Estado de escaneo REAL del juego (ScanState::State, ver src/script/enum.h),
+-- relativo a la facción de `ship` — no una aproximación por distancia. Sin
+-- componente `scan_state` el objeto nace ya escaneado del todo (asteroides,
+-- estaciones de escenario…, ver scripts/api/entity/spaceobject.lua); con
+-- componente pero sin entrada para esta facción, el estado es "none". Los
+-- valores posibles son exactamente "none"/"fof"/"simple"/"full" — el propio
+-- Convert<ScanState::State>::toLua los fija, así que no hace falta traducirlos.
+local function estado_escaneo(object, ship)
+    local ok, estado = pcall(function()
+        local ss = object.components.scan_state
+        if ss == nil then return "full" end
+        local mi_faccion = ship:getFactionId()
+        for n = 1, #ss do
+            if ss[n].faction == mi_faccion then return ss[n].state end
+        end
+        return "none"
+    end)
+    if ok and type(estado) == "string" then return estado end
+    return "full"
+end
 local function entrada(object, ox, oy, es_jugador)
     local ok_cs, callsign = pcall(function() return object:getCallSign() end)
     if not ok_cs or callsign == nil then callsign = "?" end
@@ -268,6 +293,8 @@ local function entrada(object, ox, oy, es_jugador)
     if ok_f and faction ~= nil and faction ~= "" then
         faction_json = json_escape(faction)
     end
+    -- La nave propia no se escanea a sí misma: siempre se conoce entera.
+    local scan_state = es_jugador == "true" and "full" or estado_escaneo(object, ship)
     local type_json = "null"
     -- Contrato real del juego: el componente ECS `typename` (registrado en
     -- src/script/components.cpp) con su campo `type_name`. Las entidades sin
@@ -289,8 +316,10 @@ local function entrada(object, ox, oy, es_jugador)
         if ok_sc and subclass ~= nil and subclass ~= "" then subclass_json = json_escape(subclass) end
     end
     return string.format(
-        '{"callsign":%s,"position":{"x":%.1f,"y":%.1f},"faction":%s,"type":%s,"class":%s,"subclass":%s,"is_player":%s}',
-        json_escape(callsign), ox, oy, faction_json, type_json, class_json, subclass_json, es_jugador)
+        '{"callsign":%s,"position":{"x":%.1f,"y":%.1f},"faction":%s,"type":%s,"class":%s,"subclass":%s,'
+        .. '"is_player":%s,"scan_state":%s}',
+        json_escape(callsign), ox, oy, faction_json, type_json, class_json, subclass_json, es_jugador,
+        json_escape(scan_state))
 end
 local contacts = {entrada(ship, x, y, "true")}
 for i = 1, math.min(#otros, limite - 1) do
@@ -306,5 +335,51 @@ def _command_lua(call: str) -> str:
         "local ship = getPlayerShip(-1)\n"
         "if ship == nil then return '{\"ok\":false,\"reason\":\"no_ship\"}' end\n"
         f"{call}\n"
+        "return '{\"ok\":true}'"
+    )
+
+
+def _lua_string_literal(value: str) -> str:
+    """Escapa ``value`` como literal de cadena Lua de una sola línea.
+
+    Uso estrecho: incrustar UN valor ya validado por Pydantic (whitelist de
+    caracteres, ver ``ScanObject.callsign`` en ``command_models.py``) en un
+    hueco de cadena de Lua fijo generado desde Python. Esto NO reabre la
+    prohibición de reenviar Lua recibido por la red (cabecera de
+    ``app.py``): el valor nunca se ejecuta como código, solo se compara
+    contra un indicativo con ``==`` dentro del Lua fijo de este módulo.
+    """
+    escaped = (
+        value.replace("\\", "\\\\")
+        .replace('"', '\\"')
+        .replace("\n", "\\n")
+        .replace("\r", "\\r")
+    )
+    return f'"{escaped}"'
+
+
+def _scan_object_lua(callsign: str) -> str:
+    """Localiza el objeto con este indicativo entre los cercanos a la nave del
+    jugador y ordena su escaneo (``ship:commandScan``, ver
+    ``scripts/api/entity/playerspaceship.lua``) — la misma orden que emite el
+    botón "Scan" nativo de Science. La resolución por indicativo, no por un id
+    de entidad, porque es el único identificador estable que el puente expone
+    hoy (``/v1/contacts``); ver la nota de ``ScanObject`` sobre esa limitación.
+    """
+    literal = _lua_string_literal(callsign)
+    return (
+        "local ship = getPlayerShip(-1)\n"
+        "if ship == nil then return '{\"ok\":false,\"reason\":\"no_ship\"}' end\n"
+        "local sx, sy = ship:getPosition()\n"
+        "local target = nil\n"
+        "for _, object in ipairs(getObjectsInRadius(sx, sy, 30000)) do\n"
+        "  local ok_cs, cs = pcall(function() return object:getCallSign() end)\n"
+        f"  if ok_cs and cs == {literal} then\n"
+        "    target = object\n"
+        "    break\n"
+        "  end\n"
+        "end\n"
+        "if target == nil then return '{\"ok\":false,\"reason\":\"target_not_found\"}' end\n"
+        "ship:commandScan(target)\n"
         "return '{\"ok\":true}'"
     )

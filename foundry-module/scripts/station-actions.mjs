@@ -9,6 +9,9 @@ export const STATION_ACTIONS = Object.freeze({
   navigation: Object.freeze(["set_target_heading", "set_impulse", "set_warp"]),
   engineering: Object.freeze(["set_system_power", "set_system_coolant"]),
   weapons: Object.freeze(["set_shields"]),
+  // #462: traduce a orden de puente el escaneo nativo (ship:commandScan) que
+  // ya existe en Science — ver docs/SESION-PANTALLAS-NATIVAS.md.
+  sensors: Object.freeze(["scan_object"]),
   communications: Object.freeze([
     "answer_comm_hail",
     "close_comm",
@@ -44,6 +47,10 @@ const ACTION_DISPATCH = Object.freeze({
   set_shields: Object.freeze({
     method: "setShields",
     args: (params) => [params?.active],
+  }),
+  scan_object: Object.freeze({
+    method: "scanObject",
+    args: (params) => [params?.callsign],
   }),
   answer_comm_hail: Object.freeze({
     method: "answerCommHail",

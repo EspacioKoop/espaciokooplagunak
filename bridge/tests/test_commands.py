@@ -112,6 +112,50 @@ def test_scan_object_callsign_fuera_de_longitud_rechazado(client, juego, auth, c
     assert not juego.llamadas
 
 
+def test_set_weapon_target_genera_lua_de_busqueda_y_comando(client, juego, auth):
+    r = client.post(CMD, headers=auth, json={"op": "set_weapon_target", "callsign": "Lapur 1"})
+    assert r.status_code == 200
+    assert 'cs == "Lapur 1"' in juego.ultimo_lua
+    assert "ship:commandSetTarget(target)" in juego.ultimo_lua
+    assert "getObjectsInRadius(sx, sy, 30000)" in juego.ultimo_lua
+
+
+@pytest.mark.parametrize("callsign", ["", "x" * 65])
+def test_set_weapon_target_callsign_fuera_de_longitud_rechazado(client, juego, auth, callsign):
+    r = client.post(CMD, headers=auth, json={"op": "set_weapon_target", "callsign": callsign})
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+def test_fire_tube_genera_lua_de_busqueda_y_comando(client, juego, auth):
+    r = client.post(CMD, headers=auth, json={"op": "fire_tube", "callsign": "Lapur 1", "index": 2})
+    assert r.status_code == 200
+    assert 'cs == "Lapur 1"' in juego.ultimo_lua
+    assert "ship:commandFireTubeAtTarget(2, target)" in juego.ultimo_lua
+
+
+@pytest.mark.parametrize("index", [-1, 16, 2.5])
+def test_fire_tube_indice_fuera_de_rango_rechazado(client, juego, auth, index):
+    r = client.post(CMD, headers=auth, json={"op": "fire_tube", "callsign": "Lapur 1", "index": index})
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+@pytest.mark.parametrize("index", [True, False])
+def test_fire_tube_indice_booleano_rechazado(client, juego, auth, index):
+    # strict=True: sin coacción de booleanos (true → tubo 1 colaría un disparo).
+    r = client.post(CMD, headers=auth, json={"op": "fire_tube", "callsign": "Lapur 1", "index": index})
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+@pytest.mark.parametrize("callsign", ["", "x" * 65])
+def test_fire_tube_callsign_fuera_de_longitud_rechazado(client, juego, auth, callsign):
+    r = client.post(CMD, headers=auth, json={"op": "fire_tube", "callsign": callsign, "index": 0})
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
 def test_set_pause_genera_solo_lua_fijo(client, juego, auth):
     r = client.post(CMD, headers=auth, json={"op": "set_pause", "paused": True})
     assert r.status_code == 200
@@ -260,6 +304,34 @@ def test_scan_object_callsign_fuera_de_whitelist_rechazado(client, juego, auth, 
     # de comillas, barras invertidas ni saltos de línea puede llegar aquí, así
     # que ni hace falta que el escapador de _lua_string_literal entre en juego.
     r = client.post(CMD, headers=auth, json={"op": "scan_object", "callsign": callsign_malicioso})
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+@pytest.mark.parametrize(
+    "callsign_malicioso",
+    [
+        'Lapur"); os.execute("rm -rf /"); --',
+        "Lapur' or victory('Exuari')",
+        "Lapur\\ y luego getPlayerShip(-1):destroy()",
+    ],
+)
+def test_set_weapon_target_callsign_fuera_de_whitelist_rechazado(client, juego, auth, callsign_malicioso):
+    r = client.post(CMD, headers=auth, json={"op": "set_weapon_target", "callsign": callsign_malicioso})
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+@pytest.mark.parametrize(
+    "callsign_malicioso",
+    [
+        'Lapur"); os.execute("rm -rf /"); --',
+        "Lapur' or victory('Exuari')",
+        "Lapur\\ y luego getPlayerShip(-1):destroy()",
+    ],
+)
+def test_fire_tube_callsign_fuera_de_whitelist_rechazado(client, juego, auth, callsign_malicioso):
+    r = client.post(CMD, headers=auth, json={"op": "fire_tube", "callsign": callsign_malicioso, "index": 0})
     assert r.status_code == 422
     assert not juego.llamadas
 

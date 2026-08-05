@@ -18,6 +18,7 @@
  */
 
 import { nivelDeAlerta, motivosDeAlerta } from "./nivel-alerta.mjs";
+import { ALERTA, canales } from "./paleta.mjs";
 
 export const AJUSTE_NIVEL_ALERTA = "nivelAlertaNave";
 const CLASE_BASE = "lagunak-alerta";
@@ -33,6 +34,37 @@ export function normalizarAviso(valor) {
   const nivel = typeof valor?.nivel === "string" ? valor.nivel : "verde";
   const motivos = Array.isArray(valor?.motivos) ? valor.motivos.filter((m) => typeof m === "string") : [];
   return { nivel, motivos };
+}
+
+/**
+ * Publica la paleta de alerta como variables CSS, para que el color viva SOLO
+ * en `paleta.mjs` y la hoja de estilos lo consuma en vez de repetirlo.
+ *
+ * Se publican los canales sueltos (`209, 73, 91`) y no el hexadecimal: así el
+ * alfa se queda en el CSS, que es donde se decide cuánto pesa un borde o un
+ * halo, y la paleta solo aporta el tono. Es lo que permite que la hoja escriba
+ * `rgba(var(--...), 0.72)` sin volver a escribir el color.
+ *
+ * Si esto no llegara a ejecutarse, el borde de alerta se queda sin color — pero
+ * el aviso TEXTUAL sigue apareciendo, que es el canal que exige WCAG 1.4.1. La
+ * alerta se degrada, no desaparece.
+ */
+export function aplicarVariablesAlerta(raiz = document.documentElement) {
+  if (!raiz?.style?.setProperty) return null;
+  const publicadas = [];
+  const publicar = (sufijo, color) => {
+    const rgb = canales(color);
+    if (!rgb) return;
+    const nombre = `--${CLASE_BASE}-${sufijo}-rgb`;
+    raiz.style.setProperty(nombre, rgb.map((c) => Math.round(c * 255)).join(", "));
+    publicadas.push(nombre);
+  };
+
+  for (const [nivel, usos] of Object.entries(ALERTA.niveles)) {
+    for (const [uso, color] of Object.entries(usos)) publicar(`${nivel}-${uso}`, color);
+  }
+  publicar("fondo-aviso", ALERTA.fondoAviso);
+  return publicadas;
 }
 
 export function registrarAjusteAlerta(moduleId, ajustes = game.settings) {

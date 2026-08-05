@@ -11,7 +11,7 @@ from typing import Annotated, Literal, Union
 
 from pydantic import BaseModel, ConfigDict, Field, StrictBool
 
-from lua_templates import _command_lua, _scan_object_lua
+from lua_templates import _command_lua, _fire_tube_lua, _scan_object_lua, _set_weapon_target_lua
 
 
 class SystemName(str, Enum):
@@ -235,27 +235,73 @@ class RepositionShip(BaseModel):
         )
 
 
+# Indicativo de un objeto cercano, tal como lo genera `generateCallSign`
+# (letras, dígitos, espacio, apóstrofo, guion, punto). Compartido por toda
+# orden que referencia un objetivo por indicativo (#462, #465): es el único
+# identificador estable que `/v1/contacts` expone hoy, y esta whitelist de
+# caracteres es lo que impide que un valor arbitrario del cliente se cuele en
+# el Lua fijo del servidor (`_find_target_lua`) — no hace falta reenviar Lua
+# ajeno, solo comparar un nombre.
+CallsignField = Annotated[str, Field(min_length=1, max_length=64, pattern=r"^[\w .'-]+$")]
+
+# Índice de tubo de armas: no negativo y con una cota defensiva (no un límite
+# real del juego, que no expone cuántos tubos tiene cada plantilla de nave por
+# esta vía) — el propio juego rechaza sin efecto un índice que la nave no
+# tenga (playerInfo.cpp), así que esta cota solo evita valores absurdos antes
+# de llegar ahí.
+TubeIndexField = Annotated[int, Field(strict=True, ge=0, le=15)]
+
+
 class ScanObject(BaseModel):
     """Orden de escaneo de ciencia (#462): traduce ``ship:commandScan(target)``
     -ya validado server-side por el propio juego, igual que cualquier orden de
     tripulación- a una orden del contrato del puente.
-
-    El objetivo se referencia por indicativo (``callsign``) porque es el único
-    identificador estable que ``/v1/contacts`` expone hoy: el juego no tiene un
-    id de entidad público. El patrón acepta lo que genera el juego
-    (``generateCallSign``: letras, dígitos, espacio, apóstrofo, guion, punto) y
-    rechaza comillas, barras invertidas o caracteres de control — no hace falta
-    reenviar Lua ajeno, solo comparar un nombre dentro del Lua fijo de
-    ``_scan_object_lua``.
     """
 
     model_config = ConfigDict(extra="forbid")
 
     op: Literal["scan_object"]
-    callsign: Annotated[str, Field(min_length=1, max_length=64, pattern=r"^[\w .'-]+$")]
+    callsign: CallsignField
 
     def lua(self) -> str:
         return _scan_object_lua(self.callsign)
+
+
+class SetWeaponTarget(BaseModel):
+    """Fija el objetivo de armas (#465): traduce ``ship:commandSetTarget``.
+
+    Habilita el fuego automático de los haces (beams) ya cargados y con arco
+    de tiro. No dispara tubos de misiles por sí sola — para eso está
+    ``fire_tube``, que además fija su propio objetivo con el mismo indicativo
+    en la misma llamada.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    op: Literal["set_weapon_target"]
+    callsign: CallsignField
+
+    def lua(self) -> str:
+        return _set_weapon_target_lua(self.callsign)
+
+
+class FireTube(BaseModel):
+    """Dispara un tubo de misiles contra un objetivo (#465): traduce
+    ``ship:commandFireTubeAtTarget(index, target)``.
+
+    Sin comprobar aquí si el tubo existe o está cargado -el juego ya lo
+    valida server-side y no tiene efecto si no procede, el mismo contrato que
+    el resto de órdenes de este archivo-.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    op: Literal["fire_tube"]
+    callsign: CallsignField
+    index: TubeIndexField
+
+    def lua(self) -> str:
+        return _fire_tube_lua(self.callsign, self.index)
 
 
 class SetPause(BaseModel):
@@ -333,6 +379,8 @@ Command = Annotated[
         RepositionShip,
         SetPause,
         ScanObject,
+        SetWeaponTarget,
+        FireTube,
         AnswerCommHail,
         CloseComm,
         SendCommReply,

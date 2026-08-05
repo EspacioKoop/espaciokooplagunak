@@ -285,18 +285,19 @@ function crewRows(users, moduleId, i18n) {
 const MAXIMO_OBJETIVOS_ESCANEO = 8;
 
 /**
- * Objetivos escaneables para el puesto de sensores (#462): un `<option>` por
- * contacto de la MISMA lectura degradada que ya ve la tripulación, nunca del
- * sondeo crudo del GM.
+ * Objetivos por lectura degradada: un `<option>` por contacto de la MISMA
+ * lectura que ya ve la tripulación, nunca del sondeo crudo del GM. Compartido
+ * por sensores (#462, "escanear") y armas (#465, "fijar objetivo"/"disparar")
+ * porque tienen exactamente el mismo problema: un eco sin escanear no tiene
+ * indicativo que el jugador pueda conocer.
  *
- * El VALOR que viaja no es un indicativo —un eco no tiene uno que el jugador
- * pueda conocer, es la doctrina que `contactos-degradados.mjs` protege— sino
- * la propia lectura degradada (distancia/rumbo con su margen). Resolverla al
- * indicativo real es cosa del relé del GM (`resolver-objetivo-sensores.mjs`),
- * que sí tiene el sondeo sin degradar: aquí solo se ofrece lo que el jugador
- * ya sabe, tal cual lo sabe.
+ * El VALOR que viaja no es un indicativo —es la doctrina que
+ * `contactos-degradados.mjs` protege— sino la propia lectura degradada
+ * (distancia/rumbo con su margen). Resolverla al indicativo real es cosa del
+ * relé del GM (`resolver-objetivo-sensores.mjs`), que sí tiene el sondeo sin
+ * degradar: aquí solo se ofrece lo que el jugador ya sabe, tal cual lo sabe.
  */
-function scanTargetsFor(sensores, i18n) {
+function objetivosDeLectura(sensores, i18n, { claveEco, claveIdentificado }) {
   const contactos = Array.isArray(sensores?.contactos) ? sensores.contactos : [];
   return contactos
     .filter((contacto) => !contacto?.esJugador)
@@ -308,10 +309,8 @@ function scanTargetsFor(sensores, i18n) {
       const distancia = Math.round(Number(contacto?.distancia ?? 0));
       const rumbo = Math.round(Number(contacto?.rumboDeg ?? 0));
       const etiqueta = eco
-        ? format(i18n, "LAGUNAK.Espacios.Sensores.EscanearEco", { distancia, rumbo })
-        : format(i18n, "LAGUNAK.Espacios.Sensores.EscanearIdentificado", {
-            callsign: contacto.callsign,
-          });
+        ? format(i18n, claveEco, { distancia, rumbo })
+        : format(i18n, claveIdentificado, { callsign: contacto.callsign });
       return {
         // JSON, no el indicativo: es exactamente lo que `station-order-forms.mjs`
         // debe leer y reenviar tal cual como parámetros de la orden.
@@ -324,6 +323,20 @@ function scanTargetsFor(sensores, i18n) {
         label: etiqueta,
       };
     });
+}
+
+function scanTargetsFor(sensores, i18n) {
+  return objetivosDeLectura(sensores, i18n, {
+    claveEco: "LAGUNAK.Espacios.Sensores.EscanearEco",
+    claveIdentificado: "LAGUNAK.Espacios.Sensores.EscanearIdentificado",
+  });
+}
+
+function weaponTargetsFor(sensores, i18n) {
+  return objetivosDeLectura(sensores, i18n, {
+    claveEco: "LAGUNAK.Espacios.Sensores.EscanearEco",
+    claveIdentificado: "LAGUNAK.Espacios.Sensores.EscanearIdentificado",
+  });
 }
 
 function visibleContacts(contactsPayload, sensores, isGM, i18n) {
@@ -444,6 +457,14 @@ export function buildWorkspaceModel({
     canOrderScan: !isGM && isActionAllowed(normalized, "scan_object"),
     scanTargets: !isGM && isActionAllowed(normalized, "scan_object")
       ? scanTargetsFor(sensores, i18n)
+      : [],
+    // #465: fijar objetivo y disparar comparten la MISMA lista de objetivos
+    // (misma lectura degradada, mismo resolvedor del GM) — dos acciones,
+    // un solo <select>.
+    canOrderWeaponTarget: !isGM && isActionAllowed(normalized, "set_weapon_target"),
+    canOrderFireTube: !isGM && isActionAllowed(normalized, "fire_tube"),
+    weaponTargets: !isGM && (isActionAllowed(normalized, "set_weapon_target") || isActionAllowed(normalized, "fire_tube"))
+      ? weaponTargetsFor(sensores, i18n)
       : [],
     powerSystems: !isGM && isActionAllowed(normalized, "set_system_power")
       ? SISTEMAS_INGENIERIA.map((id) => ({ value: id, label: localize(i18n, `LAGUNAK.Sistemas.${id}`) }))

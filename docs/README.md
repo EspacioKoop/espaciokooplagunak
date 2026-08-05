@@ -44,6 +44,7 @@
 | [MINIJUEGOS_DADOS.md](MINIJUEGOS_DADOS.md) | Reglas del segundo vertical: dados de cubilete, en 3D retro legible (#413) |
 | [MINIJUEGOS_ASISTENCIA.md](MINIJUEGOS_ASISTENCIA.md) | Diseño de asistencia entre puestos con minijuegos de habilidad y tiradas dnd5e (#309) |
 | [CONTENIDO_EXTERNO.md](CONTENIDO_EXTERNO.md) | Lectura opcional del contenido dnd5e ya importado por el usuario, filtrado a 2014 (#332) |
+| [ECOSISTEMA_MODULOS_FOUNDRY.md](ECOSISTEMA_MODULOS_FOUNDRY.md) | De qué módulos ajenos dependemos, cuáles imitamos y cuáles nos estorban |
 
 ## Investigación y diseño de contenido
 

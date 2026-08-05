@@ -97,6 +97,12 @@ export async function handleStationOrder({ userId, order, resolveUserStation, br
 //   resolvió por identidad, la acción sigue pasando por `resolveStationOrder` y
 //   el puente revalida. Lo único que puede hacer quien se enganche aquí es mover
 //   un número dentro de lo que ya estaba autorizado.
+//
+// - `onOrdenHuerfana({ userId, order, estacionEnEmision, estacionAlProcesar })`
+//   (#483): el emisor cambió de puesto entre que dejó la orden y que se
+//   procesó (la ventana la abre `prepareOrder`, que puede tardar un `await`
+//   real). La orden NO se ejecuta — ni bajo el puesto viejo (ya no es el
+//   suyo) ni bajo el nuevo (nunca la pidió desde ahí).
 export function dispatchUserUpdate({
   userDoc,
   changes,
@@ -107,11 +113,18 @@ export function dispatchUserUpdate({
   prepareOrder = ({ order }) => ({ orden: order }),
   onResult = () => {},
   onError = () => {},
+  onOrdenHuerfana = () => {},
 }) {
   const order = extractOrderFromChange({ changes, moduleId, userDoc });
   if (!order) return null;
   if (!canHandle()) return null;
   const userId = userDoc?.id;
+  // Puesto del emisor EN ESTE INSTANTE, antes de cualquier `await` (#483). Si
+  // cambia de puesto mientras `prepareOrder` resuelve —p. ej. #462, que
+  // consulta el puente para traducir rumbo/distancia a indicativo— la orden
+  // se queda huérfana de la identidad bajo la que se emitió: se descarta en
+  // vez de ejecutarse bajo la autoridad de un puesto nuevo que nunca la pidió.
+  const estacionEnEmision = resolveUserStation(userId);
   return Promise.resolve()
     // `prepareOrder` puede devolver `{orden, aviso}` directo o una promesa de
     // ello (#462: resolver un objetivo de escaneo necesita consultar el
@@ -123,6 +136,11 @@ export function dispatchUserUpdate({
       // Sin orden preparada se emite la original. Un `prepareOrder` que devuelva
       // basura no puede dejar al titular sin poder dar una orden que era suya.
       const emitible = preparada.orden ?? order;
+      const estacionAlProcesar = resolveUserStation(userId);
+      if (estacionAlProcesar !== estacionEnEmision) {
+        onOrdenHuerfana({ userId, order: emitible, estacionEnEmision, estacionAlProcesar });
+        return null;
+      }
       return Promise.resolve()
         .then(() => handleStationOrder({ userId, order: emitible, resolveUserStation, bridge }))
         .then((result) => {

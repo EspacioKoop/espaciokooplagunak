@@ -46,6 +46,7 @@ import {
   revokeWorkspaceAccess,
 } from "./station-workspace-ui.mjs";
 import { registerStationOrders } from "./station-order-wiring.mjs";
+import { registrarRelevoPuestos } from "./station-handover.mjs";
 import { registrarAsistencia } from "./asistencia-wiring.mjs";
 import { addAsistenciaControl, registrarAsistenciaUI } from "./asistencia-ui.mjs";
 import {
@@ -392,6 +393,12 @@ Hooks.once("ready", () => {
   // Relé de órdenes por puesto (#236): el GM registra el manejador del socket;
   // en clientes de tripulación es no-op (solo emiten).
   registerStationOrders(MODULE_ID);
+  // Relevo de puesto (#483): anota en la bitácora cuando alguien deja/asume/
+  // cambia de puesto en plena sesión. Se registra UNA vez para todos los
+  // clientes (no hace falta el mismo baile de re-registro que
+  // `registerStationOrders` al cambiar el GM activo: el gate de "quién es el
+  // GM activo ahora" se evalúa dentro del propio listener, en cada evento).
+  registrarRelevoPuestos(MODULE_ID);
   // Asistencia entre puestos (#309): el GM coordina las peticiones que llegan por
   // updateUser; cualquier cliente escucha la respuesta dirigida a él. Va DESPUÉS
   // del relé y no antes: la ayuda se cobra dentro de la orden del titular, así

@@ -167,7 +167,9 @@ token:
 - **Matriz de autoridad cerrada** (`station-actions.mjs`, `STATION_ACTIONS`).
   Declara qué órdenes del whitelist del puente puede emitir cada puesto:
   `navigation` → `set_target_heading`, `set_impulse`, `set_warp`; `engineering`
-  → `set_system_power`, `set_system_coolant`; `weapons` → `set_shields`;
+  → `set_system_power`, `set_system_coolant`, `set_auto_repair` (#464 —
+  decisión bajo presión: con la reparación automática desactivada, los
+  sistemas dañados no se reparan solos); `weapons` → `set_shields`;
   `sensors` → `scan_object` (#462: traduce a orden de puente el
   `ship:commandScan` nativo, referenciando el objetivo por indicativo);
   `communications` → `answer_comm_hail`, `close_comm`, `send_comm_reply`,

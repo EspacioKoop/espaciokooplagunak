@@ -131,6 +131,31 @@ def test_set_pause_exige_booleano_estricto(client, juego, auth, valor):
     assert not juego.llamadas
 
 
+# --- set_auto_repair: reparto automático de tripulación de reparación (#464) --
+
+
+def test_set_auto_repair_activa_genera_lua(client, juego, auth):
+    r = client.post(CMD, headers=auth, json={"op": "set_auto_repair", "enabled": True})
+    assert r.status_code == 200
+    assert r.json()["op"] == "set_auto_repair"
+    assert "commandSetAutoRepair(ship, true)" in juego.ultimo_lua
+    assert "getPlayerShip(-1)" in juego.ultimo_lua
+
+
+def test_set_auto_repair_desactiva_serializa_false(client, juego, auth):
+    r = client.post(CMD, headers=auth, json={"op": "set_auto_repair", "enabled": False})
+    assert r.status_code == 200
+    assert "commandSetAutoRepair(ship, false)" in juego.ultimo_lua
+    assert "False" not in juego.ultimo_lua  # no el booleano de Python
+
+
+@pytest.mark.parametrize("valor", ["true", "false", 0, 1, None])
+def test_set_auto_repair_exige_booleano_estricto(client, juego, auth, valor):
+    r = client.post(CMD, headers=auth, json={"op": "set_auto_repair", "enabled": valor})
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
 # --- Rechazos: fuera de la lista o fuera de rango -> 422 -----------------------
 
 

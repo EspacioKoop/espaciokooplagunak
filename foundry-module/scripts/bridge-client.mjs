@@ -166,6 +166,18 @@ export class BridgeClient {
   }
 
   /**
+   * POST /v1/command — activa/desactiva el reparto automático de tripulación
+   * de reparación (#464). Con auto-reparación desactivada, los sistemas
+   * dañados no se reparan solos.
+   */
+  async setAutoRepair(enabled) {
+    if (typeof enabled !== "boolean") {
+      throw new BridgeError("El estado de auto-reparación debe ser booleano", { kind: "parse" });
+    }
+    return this.#command({ op: "set_auto_repair", enabled });
+  }
+
+  /**
    * POST /v1/command — ordena el escaneo nativo de un objetivo (#462, Bearer).
    * `callsign` es el mismo indicativo que ya expone `/v1/contacts`; el puente
    * resuelve la entidad y llama a `ship:commandScan(target)` (misma orden que

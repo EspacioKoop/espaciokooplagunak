@@ -267,6 +267,22 @@ class SetPause(BaseModel):
         return f"{call}\nreturn '{{\"ok\":true}}'"
 
 
+class SetAutoRepair(BaseModel):
+    """Activa/desactiva el reparto automático de tripulación de reparación
+    (#464): `commandSetAutoRepair`, global ya registrado por el motor
+    (`src/script.cpp`). Con auto-reparación desactivada, los sistemas dañados
+    no se reparan solos — la tripulación de ingeniería decide si confía en el
+    reparto automático o se reserva el control (mover reparadores a mano sigue
+    siendo cosa de la pantalla nativa; ese comando no está expuesto a Lua).
+    """
+
+    op: Literal["set_auto_repair"]
+    enabled: StrictBool
+
+    def lua(self) -> str:
+        return _command_lua(f"commandSetAutoRepair(ship, {str(self.enabled).lower()})")
+
+
 class AnswerCommHail(BaseModel):
     """Contestar o ignorar una llamada entrante (#463): globals de
     `PlayerInfo::commandAnswerCommHail`, ya registrados por el motor en todo
@@ -332,6 +348,7 @@ Command = Annotated[
         SpawnEncounter,
         RepositionShip,
         SetPause,
+        SetAutoRepair,
         ScanObject,
         AnswerCommHail,
         CloseComm,

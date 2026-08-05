@@ -458,6 +458,9 @@ export function buildWorkspaceModel({
     coolantLevels: !isGM && isActionAllowed(normalized, "set_system_coolant")
       ? NIVELES_REFRIGERANTE.map((value) => ({ value, label: String(value) }))
       : [],
+    // Auto-reparación (#464): decisión de ingeniería bajo presión — con ella
+    // desactivada los sistemas dañados no se reparan solos.
+    canOrderAutoRepair: !isGM && isActionAllowed(normalized, "set_auto_repair"),
     // Comunicaciones (#463): reactivas sobre el canal ya abierto — sin picker
     // de objetivo propio, ver `docs/SESION-PANTALLAS-NATIVAS.md`.
     canOrderCommsHail: !isGM && isActionAllowed(normalized, "answer_comm_hail"),

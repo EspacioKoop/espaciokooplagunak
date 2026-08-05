@@ -197,6 +197,24 @@ test("ingeniería también puede repartir refrigerante 0..10, no el GM ni otros 
   assert.equal(navegacion.canOrderCoolant, false);
 });
 
+test("ingeniería activa/desactiva la reparación automática, no el GM ni otros puestos (#464)", () => {
+  const model = buildWorkspaceModel({
+    station: "engineering",
+    isGM: false,
+    users: [user({ id: "p1", station: "engineering" })],
+    moduleId: MODULE_ID,
+    i18n,
+    connection: "restricted",
+  });
+  assert.equal(model.canOrderAutoRepair, true);
+
+  const gmIng = buildWorkspaceModel({ station: "engineering", isGM: true, users: [], moduleId: MODULE_ID, i18n });
+  assert.equal(gmIng.canOrderAutoRepair, false);
+
+  const navegacion = buildWorkspaceModel({ station: "navigation", isGM: false, users: [], moduleId: MODULE_ID, i18n });
+  assert.equal(navegacion.canOrderAutoRepair, false);
+});
+
 test("armas puede subir/bajar escudos como tripulación, no el GM ni otros puestos", () => {
   const armas = buildWorkspaceModel({
     station: "weapons",

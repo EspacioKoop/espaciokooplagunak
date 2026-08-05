@@ -36,6 +36,9 @@ export const COLOR_REGION = Object.freeze({
   estable: SISTEMA.nucleo,
   danada: PIXEL.motor,
   critica: FACCIONES[5],
+  // Región dañada mientras la reparación automática está activa (#464/#466):
+  // feedback 3D real de la orden `set_auto_repair`, no un valor abstracto.
+  reparando: SISTEMA.reparando,
 });
 
 function saludLeida(value) {
@@ -60,10 +63,15 @@ export function saludPorRegion(sistemas = []) {
   }));
 }
 
-export function colorParaSalud(salud) {
+/**
+ * `reparando`: la reparación automática está activa (#464). Una región sana o
+ * sin lectura no cambia — reparar algo que no está roto no pinta nada
+ * distinto, y no hay dato no es cero (#353).
+ */
+export function colorParaSalud(salud, reparando = false) {
   if (!Number.isFinite(salud)) return COLOR_REGION.sinLectura;
-  if (salud < 35) return COLOR_REGION.critica;
-  if (salud < 70) return COLOR_REGION.danada;
+  if (salud < 35) return reparando ? COLOR_REGION.reparando : COLOR_REGION.critica;
+  if (salud < 70) return reparando ? COLOR_REGION.reparando : COLOR_REGION.danada;
   return COLOR_REGION.estable;
 }
 
@@ -71,9 +79,15 @@ export function colorParaSalud(salud) {
  * Compone una única escena con color por región y orden de profundidad global.
  * Cada composición usa exactamente la misma cámara; después se mezclan sus
  * polígonos y se reordena el conjunto para no romper el algoritmo del pintor.
+ *
+ * `opciones.autoRepairActivo` (#464/#466): feedback 3D real de la orden de
+ * ingeniería — las regiones dañadas cambian de color cuando la tripulación
+ * activa la reparación automática, sin animación ni reloj propio (el motor no
+ * lleva uno).
  */
 export function componerCascoPorDano(malla, sistemas, opciones = {}) {
   const salud = saludPorRegion(sistemas);
+  const reparando = opciones.autoRepairActivo === true;
   const poligonos = [];
 
   for (const [region, indices] of Object.entries(CARAS_CASCO_SERIE)) {
@@ -81,7 +95,7 @@ export function componerCascoPorDano(malla, sistemas, opciones = {}) {
     if (caras.length === 0) continue;
     const escena = componerEscena(
       { vertices: malla?.vertices ?? [], caras },
-      { ...opciones, color: colorParaSalud(salud[region]) },
+      { ...opciones, color: colorParaSalud(salud[region], reparando) },
     );
     poligonos.push(...escena.poligonos.map((poligono) => ({ ...poligono, region })));
   }

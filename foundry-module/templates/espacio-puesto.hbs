@@ -253,6 +253,29 @@
           </form>
         {{/if}}
 
+        {{#if weaponTargets.length}}
+          <form class="lagunak-workspace__orden" data-workspace-order="weapon-target">
+            <label for="lagunak-orden-objetivo-armas">{{localize "LAGUNAK.Espacios.Orden.ObjetivoArmasLabel"}}</label>
+            <select id="lagunak-orden-objetivo-armas">
+              {{#each weaponTargets}}<option value="{{value}}">{{label}}</option>{{/each}}
+            </select>
+            {{#if canOrderWeaponTarget}}
+              <button type="button" data-workspace-action="orden-fijar-objetivo-armas">{{localize "LAGUNAK.Espacios.Orden.FijarObjetivoArmas"}}</button>
+              <small>{{localize "LAGUNAK.Espacios.Orden.ObjetivoArmasAyuda"}}</small>
+            {{/if}}
+            {{#if canOrderFireTube}}
+              <label for="lagunak-orden-tubo">{{localize "LAGUNAK.Espacios.Orden.TuboLabel"}}</label>
+              <input id="lagunak-orden-tubo" name="tube" type="number" min="0" max="15" step="1" inputmode="numeric" />
+              <button type="button" data-workspace-action="orden-disparar-tubo">{{localize "LAGUNAK.Espacios.Orden.DispararTubo"}}</button>
+              <small>{{localize "LAGUNAK.Espacios.Orden.DispararTuboAyuda"}}</small>
+            {{/if}}
+          </form>
+        {{else}}
+          {{#if canOrderWeaponTarget}}
+            <p class="lagunak-workspace__orden-vacia">{{localize "LAGUNAK.Espacios.Armas.SinObjetivos"}}</p>
+          {{/if}}
+        {{/if}}
+
         {{#if canOrderCommsHail}}
           <form class="lagunak-workspace__orden" data-workspace-order="comms-hail">
             <span class="lagunak-workspace__orden-label">{{localize "LAGUNAK.Espacios.Orden.CommsHailLabel"}}</span>

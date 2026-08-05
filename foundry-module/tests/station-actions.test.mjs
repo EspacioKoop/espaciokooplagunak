@@ -82,6 +82,26 @@ test("armas sube y baja escudos, y solo ella", () => {
   );
 });
 
+test("armas también fija objetivo y dispara tubos, y solo ella (#465)", () => {
+  assert.equal(isActionAllowed("weapons", "set_weapon_target"), true);
+  assert.equal(isActionAllowed("weapons", "fire_tube"), true);
+  assert.equal(isActionAllowed("navigation", "set_weapon_target"), false);
+  assert.equal(isActionAllowed("sensors", "fire_tube"), false);
+  assert.deepEqual(STATION_ACTIONS.weapons, ["set_shields", "set_weapon_target", "fire_tube"]);
+  assert.deepEqual(
+    resolveStationOrder({ station: "weapons", action: "set_weapon_target", params: { callsign: "Lapur 1" } }),
+    { method: "setWeaponTarget", args: ["Lapur 1"] },
+  );
+  assert.deepEqual(
+    resolveStationOrder({
+      station: "weapons",
+      action: "fire_tube",
+      params: { callsign: "Lapur 1", index: 2 },
+    }),
+    { method: "fireTube", args: ["Lapur 1", 2] },
+  );
+});
+
 test("sensores ordena el escaneo por indicativo, y solo ella (#462)", () => {
   assert.equal(isActionAllowed("sensors", "scan_object"), true);
   assert.equal(isActionAllowed("weapons", "scan_object"), false);

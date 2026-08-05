@@ -372,13 +372,18 @@ def _lua_string_literal(value: str) -> str:
     return f'"{escaped}"'
 
 
-def _scan_object_lua(callsign: str) -> str:
-    """Localiza el objeto con este indicativo entre los cercanos a la nave del
-    jugador y ordena su escaneo (``ship:commandScan``, ver
-    ``scripts/api/entity/playerspaceship.lua``) — la misma orden que emite el
-    botón "Scan" nativo de Science. La resolución por indicativo, no por un id
-    de entidad, porque es el único identificador estable que el puente expone
-    hoy (``/v1/contacts``); ver la nota de ``ScanObject`` sobre esa limitación.
+def _find_target_lua(callsign: str) -> str:
+    """Fragmento Lua fijo compartido: busca entre los objetos cercanos a la
+    nave del jugador el que tiene este indicativo y lo deja en la variable
+    local ``target``. Si no aparece, la propia plantilla ya hace ``return``
+    con ``target_not_found`` — quien la use solo tiene que añadir la orden
+    que hace falta con ``target`` ya resuelto.
+
+    Compartido por toda orden que referencia un objetivo por indicativo
+    (``scan_object``, ``set_weapon_target``, ``fire_tube``, #462/#465): mismo
+    radio y mismo criterio de búsqueda para todas, así que un ajuste futuro
+    (radio, prioridad de desempate) no se puede arreglar en una y olvidar en
+    las demás.
     """
     literal = _lua_string_literal(callsign)
     return (
@@ -394,6 +399,38 @@ def _scan_object_lua(callsign: str) -> str:
         "  end\n"
         "end\n"
         "if target == nil then return '{\"ok\":false,\"reason\":\"target_not_found\"}' end\n"
-        "ship:commandScan(target)\n"
-        "return '{\"ok\":true}'"
+    )
+
+
+def _scan_object_lua(callsign: str) -> str:
+    """Ordena el escaneo (``ship:commandScan``, ver
+    ``scripts/api/entity/playerspaceship.lua``) del objeto con este
+    indicativo — la misma orden que emite el botón "Scan" nativo de Science.
+    La resolución por indicativo, no por un id de entidad, porque es el único
+    identificador estable que el puente expone hoy (``/v1/contacts``); ver la
+    nota de ``ScanObject`` sobre esa limitación.
+    """
+    return _find_target_lua(callsign) + 'ship:commandScan(target)\nreturn \'{"ok":true}\''
+
+
+def _set_weapon_target_lua(callsign: str) -> str:
+    """Fija el objetivo de armas (``ship:commandSetTarget``) al objeto con
+    este indicativo — habilita el fuego automático de los haces (beams) que
+    ya estén cargados y con arco de tiro; los tubos de misiles siguen
+    necesitando ``fire_tube`` para disparar de verdad (#465).
+    """
+    return _find_target_lua(callsign) + 'ship:commandSetTarget(target)\nreturn \'{"ok":true}\''
+
+
+def _fire_tube_lua(callsign: str, index: int) -> str:
+    """Dispara el tubo ``index`` contra el objeto con este indicativo
+    (``ship:commandFireTubeAtTarget``, #465). ``index`` ya viene validado
+    como entero no negativo por Pydantic antes de llegar aquí — el propio
+    juego rechaza (sin efecto) un índice de tubo que la nave no tenga, así
+    que no hace falta que el puente conozca cuántos tubos existen.
+    """
+    return (
+        _find_target_lua(callsign)
+        + f"ship:commandFireTubeAtTarget({int(index)}, target)\n"
+        + 'return \'{"ok":true}\''
     )

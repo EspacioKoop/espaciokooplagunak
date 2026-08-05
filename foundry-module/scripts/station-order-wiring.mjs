@@ -18,15 +18,23 @@ export const ESCANEO_AVISOS = Object.freeze({
   OBJETIVO_NO_ENCONTRADO: "objetivo-no-encontrado",
 });
 
-// Resuelve `scan_object` de rumbo/distancia a indicativo real ANTES de que la
-// orden llegue a `resolveStationOrder` (#462). No es una puerta de autoridad:
+// Acciones cuyo `params` de partida es una LECTURA degradada
+// (distancia/rumboDeg/precision/rumboPrecision), no un indicativo: sensores
+// (#462) y armas (#465) comparten exactamente el mismo problema —un eco sin
+// escanear no tiene indicativo que el jugador pueda conocer— y la misma
+// resolución. `fire_tube` conserva el resto de sus params (`index`) al
+// sustituir la lectura por el indicativo resuelto.
+const ACCIONES_CON_OBJETIVO_POR_LECTURA = new Set(["scan_object", "set_weapon_target", "fire_tube"]);
+
+// Resuelve una orden de objetivo-por-lectura a indicativo real ANTES de que
+// llegue a `resolveStationOrder` (#462/#465). No es una puerta de autoridad:
 // el puesto y la acción ya se resolvieron por identidad; esto solo traduce
 // qué CONTACTO señalaba el jugador, con el sondeo sin degradar que solo el GM
 // tiene (`bridge.state()` para la posición propia, `bridge.contacts()` para
 // el crudo). Cualquier otra acción pasa intacta.
 async function resolverOrdenDeEscaneo({ order, bridge }) {
-  if (order?.action !== "scan_object") return { orden: order };
-  const { distancia, rumboDeg, precision, rumboPrecision } = order.params ?? {};
+  if (!ACCIONES_CON_OBJETIVO_POR_LECTURA.has(order?.action)) return { orden: order };
+  const { distancia, rumboDeg, precision, rumboPrecision, ...resto } = order.params ?? {};
   const [statePayload, contactsPayload] = await Promise.all([bridge.state(), bridge.contacts()]);
   const callsign = resolverObjetivoEscaneo({
     contactsPayload,
@@ -36,7 +44,7 @@ async function resolverOrdenDeEscaneo({ order, bridge }) {
   if (!callsign) {
     return { orden: order, aviso: ESCANEO_AVISOS.OBJETIVO_NO_ENCONTRADO };
   }
-  return { orden: { ...order, params: { callsign } } };
+  return { orden: { ...order, params: { callsign, ...resto } } };
 }
 
 // Cableado Foundry del relé de órdenes por puesto. Capa fina y no testeable en
@@ -134,10 +142,10 @@ export function registerStationOrders(moduleId) {
       // Sin objetivo resuelto, `resolverOrdenDeEscaneo` deja pasar la orden
       // sin `callsign`: el puente la rechaza (BridgeError, "debe ser una
       // cadena") y llega aquí, no a `onResult` — de ahí el mensaje específico
-      // en vez del genérico de "Rechazada" para esta acción en concreto.
+      // en vez del genérico de "Rechazada" para estas acciones en concreto.
       onError: (_error, { order } = {}) => {
-        const clave = order?.action === "scan_object" && !order?.params?.callsign
-          ? "LAGUNAK.Espacios.Orden.EscaneoInvalido"
+        const clave = ACCIONES_CON_OBJETIVO_POR_LECTURA.has(order?.action) && !order?.params?.callsign
+          ? "LAGUNAK.Espacios.Orden.ObjetivoNoEncontrado"
           : "LAGUNAK.Espacios.Orden.Rechazada";
         ui.notifications?.warn?.(game.i18n.localize(clave));
       },

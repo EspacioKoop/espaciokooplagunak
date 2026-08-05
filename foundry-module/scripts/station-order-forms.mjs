@@ -89,31 +89,32 @@ export const ORDER_FORMS = Object.freeze({
   // Escaneo (#462): el valor del <select> no es un indicativo -un eco no
   // tiene uno que el jugador pueda conocer- sino la lectura degradada del
   // contacto elegido (distancia/rumbo con su margen), codificada en JSON por
-  // `scanTargetsFor` en station-workspaces.mjs. Resolverla al objeto real
-  // ocurre después, en el relé del GM (resolver-objetivo-sensores.mjs), que
-  // es quien tiene el sondeo sin degradar.
+  // `objetivosDeLectura`/`scanTargetsFor` en station-workspaces.mjs.
+  // Resolverla al objeto real ocurre después, en el relé del GM
+  // (resolver-objetivo-sensores.mjs), que es quien tiene el sondeo sin
+  // degradar.
   "orden-escanear": {
     action: "scan_object",
-    read: (root) => {
-      const raw = root?.querySelector?.("#lagunak-orden-objetivo-escaneo")?.value ?? "";
-      if (!raw) return null;
-      let lectura;
-      try {
-        lectura = JSON.parse(raw);
-      } catch {
-        return null;
-      }
-      const distancia = parseOrderValue(lectura?.distancia);
-      const rumboDeg = parseOrderValue(lectura?.rumboDeg);
-      if (distancia === null || rumboDeg === null) return null;
-      return {
-        distancia,
-        rumboDeg,
-        precision: parseOrderValue(lectura?.precision) ?? 0,
-        rumboPrecision: parseOrderValue(lectura?.rumboPrecision) ?? 0,
-      };
-    },
+    read: (root) => leerLecturaSeleccionada(root, "lagunak-orden-objetivo-escaneo"),
     invalidKey: "LAGUNAK.Espacios.Orden.EscaneoInvalido",
+  },
+  // Armas (#465): mismo problema y misma resolución que el escaneo — el
+  // <select> comparte el mismo id entre las dos acciones (un objetivo, dos
+  // órdenes posibles sobre él).
+  "orden-fijar-objetivo-armas": {
+    action: "set_weapon_target",
+    read: (root) => leerLecturaSeleccionada(root, "lagunak-orden-objetivo-armas"),
+    invalidKey: "LAGUNAK.Espacios.Orden.ObjetivoArmasInvalido",
+  },
+  "orden-disparar-tubo": {
+    action: "fire_tube",
+    read: (root) => {
+      const lectura = leerLecturaSeleccionada(root, "lagunak-orden-objetivo-armas");
+      const index = parseOrderValue(root?.querySelector?.("#lagunak-orden-tubo")?.value);
+      if (!lectura || index === null || !Number.isInteger(index) || index < 0 || index > 15) return null;
+      return { ...lectura, index };
+    },
+    invalidKey: "LAGUNAK.Espacios.Orden.DispararTuboInvalido",
   },
   // Comunicaciones (#463): acciones reactivas, calcadas de los globales que el
   // motor ya expone (contestar/cerrar canal ya abierto, elegir diálogo,
@@ -151,3 +152,29 @@ export const ORDER_FORMS = Object.freeze({
     invalidKey: "LAGUNAK.Espacios.Orden.CommsMensajeInvalido",
   },
 });
+
+/**
+ * Decodifica la lectura degradada (distancia/rumbo con su margen) que un
+ * `<select>` de objetivo dejó en su `value` como JSON — compartido por
+ * escaneo (#462) y armas (#465): mismo formato, mismo origen
+ * (`objetivosDeLectura` en station-workspaces.mjs).
+ */
+function leerLecturaSeleccionada(root, selectId) {
+  const raw = root?.querySelector?.(`#${selectId}`)?.value ?? "";
+  if (!raw) return null;
+  let lectura;
+  try {
+    lectura = JSON.parse(raw);
+  } catch {
+    return null;
+  }
+  const distancia = parseOrderValue(lectura?.distancia);
+  const rumboDeg = parseOrderValue(lectura?.rumboDeg);
+  if (distancia === null || rumboDeg === null) return null;
+  return {
+    distancia,
+    rumboDeg,
+    precision: parseOrderValue(lectura?.precision) ?? 0,
+    rumboPrecision: parseOrderValue(lectura?.rumboPrecision) ?? 0,
+  };
+}

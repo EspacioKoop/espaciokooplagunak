@@ -96,7 +96,7 @@ jobs:
         # subir de versión ahí sin tocarla aquí serviría el SDK viejo desde la
         # caché y la versión fijada no significaría nada. Van juntas a mano
         # porque el `cmake` que sabe la versión aún no ha corrido.
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: _build_win32/externals/discord
           key: discord-game-sdk-win32-3.2.1
@@ -218,7 +218,7 @@ jobs:
         # `externals/discord` viven bajo ese directorio. La clave es distinta de
         # cross-compile: aquel job parchea Windows.h para el filesystem de Linux
         # y no debe servir esa cabecera modificada al compilador nativo.
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: build/externals/discord
           key: discord-game-sdk-windows-native-3.2.1

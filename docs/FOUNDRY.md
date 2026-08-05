@@ -164,11 +164,15 @@ token:
 - **Matriz de autoridad cerrada** (`station-actions.mjs`, `STATION_ACTIONS`).
   Declara qué órdenes del whitelist del puente puede emitir cada puesto:
   `navigation` → `set_target_heading`, `set_impulse`, `set_warp`; `engineering`
-  → `set_system_power`, `set_system_coolant`; `weapons` → `set_shields`.
-  `captain`, `sensors` y
-  `communications` son de **observación/narrativa**: no emiten órdenes de control
-  de nave (coherente con el género bridge-sim; ratificado en #268). Añadir una
-  acción exige que el puente ya la autorice y que el puesto la necesite.
+  → `set_system_power`, `set_system_coolant`; `weapons` → `set_shields`;
+  `communications` → `answer_comm_hail`, `close_comm`, `send_comm_reply`,
+  `send_comm_message` (#463) — reactivas sobre un canal ya abierto por
+  Relay/Operations, sin picker de objetivo propio: el Comms nativo tampoco lo
+  tiene (`docs/SESION-PANTALLAS-NATIVAS.md`).
+  `captain` y `sensors` son de **observación/narrativa**: no emiten órdenes de
+  control de nave (coherente con el género bridge-sim; ratificado en #268).
+  Añadir una acción exige que el puente ya la autorice y que el puesto la
+  necesite.
 - **Degradación explícita.** Un puesto desconocido o una acción no permitida se
   rechazan con un error tipado (`UNKNOWN_STATION` / `ACTION_NOT_ALLOWED`), nunca
   en silencio; la UI oculta de antemano los controles que el puesto no puede

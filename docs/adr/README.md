@@ -17,3 +17,4 @@ Estados: **Aceptada** · **Sustituida por ADR-XXXX** · **Deprecada**.
 | [0006](0006-vendorizar-highlight-js.md) | Vendorizar highlight.js en `script_docs/` (CodeQL 8/9) | Aceptada |
 | [0007](0007-frontera-upstream.md) | Frontera upstream: arreglos en código heredado van primero a upstream | Aceptada |
 | [0008](0008-standalone-first-autoridad-del-nucleo.md) | Standalone-first: la autoridad de campaña vive en el núcleo | Aceptada |
+| [0009](0009-modelo-permisos-por-puesto-v1.md) | Modelo de permisos por puesto v1: formaliza sin migrar, no unifica con el motor nativo | Aceptada |

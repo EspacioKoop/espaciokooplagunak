@@ -12,6 +12,12 @@ export const STATION_ACTIONS = Object.freeze({
   // #462: traduce a orden de puente el escaneo nativo (ship:commandScan) que
   // ya existe en Science — ver docs/SESION-PANTALLAS-NATIVAS.md.
   sensors: Object.freeze(["scan_object"]),
+  communications: Object.freeze([
+    "answer_comm_hail",
+    "close_comm",
+    "send_comm_reply",
+    "send_comm_message",
+  ]),
 });
 
 // Correspondencia acción del contrato → método de BridgeClient. La validación
@@ -45,6 +51,22 @@ const ACTION_DISPATCH = Object.freeze({
   scan_object: Object.freeze({
     method: "scanObject",
     args: (params) => [params?.callsign],
+  }),
+  answer_comm_hail: Object.freeze({
+    method: "answerCommHail",
+    args: (params) => [params?.accept],
+  }),
+  close_comm: Object.freeze({
+    method: "closeComm",
+    args: () => [],
+  }),
+  send_comm_reply: Object.freeze({
+    method: "sendCommReply",
+    args: (params) => [params?.index],
+  }),
+  send_comm_message: Object.freeze({
+    method: "sendCommMessage",
+    args: (params) => [params?.message],
   }),
 });
 

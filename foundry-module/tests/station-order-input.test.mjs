@@ -125,3 +125,35 @@ test("read() de escaneo no emite sin selección, con JSON roto, o sin distancia/
     "sin rumbo no debe emitir",
   );
 });
+
+test("comunicaciones: contestar/ignorar/cerrar son órdenes de valor fijo (#463)", () => {
+  assert.deepEqual(ORDER_FORMS["orden-comms-contestar"].read(fakeRoot({})), { accept: true });
+  assert.deepEqual(ORDER_FORMS["orden-comms-ignorar"].read(fakeRoot({})), { accept: false });
+  assert.deepEqual(ORDER_FORMS["orden-comms-cerrar"].read(fakeRoot({})), {});
+});
+
+test("comunicaciones: orden-comms-opcion valida índice entero 0..15 (#463)", () => {
+  const spec = ORDER_FORMS["orden-comms-opcion"];
+  assert.deepEqual(spec.read(fakeRoot({ "lagunak-orden-comms-opcion": "0" })), { index: 0 });
+  assert.deepEqual(spec.read(fakeRoot({ "lagunak-orden-comms-opcion": "15" })), { index: 15 });
+  assert.equal(spec.read(fakeRoot({ "lagunak-orden-comms-opcion": "" })), null);
+  assert.equal(spec.read(fakeRoot({ "lagunak-orden-comms-opcion": "16" })), null);
+  assert.equal(spec.read(fakeRoot({ "lagunak-orden-comms-opcion": "-1" })), null);
+  assert.equal(spec.read(fakeRoot({ "lagunak-orden-comms-opcion": "1.5" })), null);
+});
+
+test("comunicaciones: orden-comms-mensaje valida texto no vacío hasta 256 caracteres (#463)", () => {
+  const spec = ORDER_FORMS["orden-comms-mensaje"];
+  assert.deepEqual(
+    spec.read(fakeRoot({ "lagunak-orden-comms-mensaje": "  Solicito atraque.  " })),
+    { message: "Solicito atraque." },
+  );
+  assert.equal(spec.read(fakeRoot({ "lagunak-orden-comms-mensaje": "" })), null);
+  assert.equal(spec.read(fakeRoot({ "lagunak-orden-comms-mensaje": "   " })), null);
+  assert.equal(spec.read(fakeRoot({})), null);
+  assert.equal(spec.read(fakeRoot({ "lagunak-orden-comms-mensaje": "x".repeat(257) })), null);
+  assert.deepEqual(
+    spec.read(fakeRoot({ "lagunak-orden-comms-mensaje": "x".repeat(256) })),
+    { message: "x".repeat(256) },
+  );
+});

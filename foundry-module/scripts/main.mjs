@@ -64,6 +64,7 @@ import {
 import { sesionAgotada } from "./minijuegos/sesion-motor.mjs";
 import { crearClaseCantinaV1, crearClaseCantinaV2 } from "./cantina-app.mjs";
 import { puertaPorId } from "./cantina.mjs";
+import { crearClasePanelGMV1, crearClasePanelGMV2 } from "./panel-gm-app.mjs";
 import { crearClaseSeccionV1, crearClaseSeccionV2 } from "./seccion-nave-app.mjs";
 import { crearClaseAndarV1, crearClaseAndarV2 } from "./andar-nave-app.mjs";
 import { salaDePuesto } from "./seccion-nave.mjs";
@@ -509,6 +510,37 @@ function abrirCantina() {
   else app.render(true);
 }
 
+/* Panel de GM (#448): sustituye los botones solo-GM sueltos de la barra de
+ * escena (consola caliente, token, diagnóstico, música, decorado, ficha) por
+ * una única puerta con catálogo interno — mismo patrón que la cantina (#423)
+ * y la sección de la nave (#427). Una instancia nueva por apertura, igual que
+ * ellas: no hay estado que conservar entre una visita y la siguiente. Qué
+ * hace cada entrada lo decide ESTA tabla, no `panel-gm.mjs`, que solo sabe
+ * qué entradas hay.
+ *
+ * La entrada "consola" abre la consola caliente (#276), que ya fusionó
+ * estado+mapa+encuentros+previsualización en una sola ventana: el panel no
+ * reabre esa fusión con entradas "estado"/"mapa" propias, porque esas
+ * ventanas ya no existen por separado. */
+const ACCIONES_PANEL_GM = {
+  consola: () => abrirConsolaCaliente(),
+  token: () => openBridgeTokenApp(),
+  diagnostico: () => diagnosticarConexion(),
+  musica: () => ciclarMusica(),
+  decorado: () => regenerarDecoradoAleatorio(),
+  ficha: () => aplicarFichaNave(),
+};
+
+function abrirPanelGM() {
+  if (!game.user?.isGM) return;
+  const Clase = foundry.applications?.api?.ApplicationV2
+    ? crearClasePanelGMV2({ alSeleccionar: (id) => ACCIONES_PANEL_GM[id]?.() })
+    : crearClasePanelGMV1({ alSeleccionar: (id) => ACCIONES_PANEL_GM[id]?.() });
+  const app = new Clase();
+  if (foundry.applications?.api?.ApplicationV2) app.render({ force: true });
+  else app.render(true);
+}
+
 /* La sección de la nave (#427): el corte con todas las salas a la vez.
  *
  * La ve TODA la mesa, como la cantina. No es la vista agregada de estado —esa
@@ -696,66 +728,34 @@ async function revokePrivilegedBridgeAccess() {
 Hooks.on("getSceneControlButtons", (controls) => {
   const isGM = Boolean(game.user?.isGM);
 
-  // Herramientas solo-GM del grupo (estado, mapa, token, diagnóstico). Los
-  // botones de puesto (asignación y consola) los añaden addStationControl y
-  // addWorkspaceControl para TODOS los usuarios, más abajo.
+  // Herramienta solo-GM del grupo: una única puerta al panel de GM (#448),
+  // que sustituye los botones sueltos (consola caliente, token, diagnóstico,
+  // música, decorado, ficha) por un catálogo interno — ver
+  // `ACCIONES_PANEL_GM` y `panel-gm.mjs`. La consola caliente (#276) ya había
+  // fusionado estado+mapa+encuentros+previsualización en una sola ventana con
+  // un solo bucle de sondeo; el panel de GM no reabre esa fusión, la trata
+  // como una entrada más de su catálogo (`ACCIONES_PANEL_GM.consola`) en vez
+  // de duplicar accesos "estado"/"mapa" que ya no existen como ventanas
+  // propias. Los botones de puesto (asignación y consola de puesto) los
+  // añaden addStationControl y addWorkspaceControl para TODOS los usuarios,
+  // más abajo.
   const gmTools = isGM
     ? [
-        // Consola caliente (#276): estado+mapa+encuentros+previsualización
-        // fusionados con un solo bucle de sondeo. UN botón por generación de
-        // host —ya no quedan los botones sueltos de estado/mapa que fusionó—:
-        // `abrirConsolaCaliente` elige la clase V1 (Application, v11) o V2
-        // (ApplicationV2, v12+) según lo que ofrezca el anfitrión.
         {
-          name: "lagunak-consola",
-          title: "LAGUNAK.Controles.AbrirConsola",
-          icon: "fa-solid fa-gauge-high",
+          name: "lagunak-panel-gm",
+          title: "LAGUNAK.Controles.AbrirPanelGM",
+          icon: "fa-solid fa-shuttle-space",
           button: true,
-          onClick: () => abrirConsolaCaliente(),
-        },
-        {
-          name: "lagunak-token",
-          title: "LAGUNAK.Controles.ConfigurarToken",
-          icon: "fa-solid fa-key",
-          button: true,
-          onClick: () => openBridgeTokenApp(),
-        },
-        {
-          name: "lagunak-diagnostico",
-          title: "LAGUNAK.Controles.ProbarConexion",
-          icon: "fa-solid fa-stethoscope",
-          button: true,
-          onClick: () => diagnosticarConexion(),
-        },
-        {
-          name: "lagunak-musica",
-          title: "LAGUNAK.Controles.CambiarMusica",
-          icon: "fa-solid fa-music",
-          button: true,
-          onClick: () => ciclarMusica(),
-        },
-        {
-          name: "lagunak-decorado-aleatorio",
-          title: "LAGUNAK.Controles.DecoradoAleatorio",
-          icon: "fa-solid fa-dice",
-          button: true,
-          onClick: () => regenerarDecoradoAleatorio(),
-        },
-        {
-          name: "lagunak-ficha-nave",
-          title: "LAGUNAK.Controles.FichaNave",
-          icon: "fa-solid fa-image-portrait",
-          button: true,
-          onClick: () => aplicarFichaNave(),
+          onClick: () => abrirPanelGM(),
         },
       ]
     : [];
 
   // El grupo propio es visible para TODOS: los jugadores ven sus botones de
-  // puesto aquí, no en Token Controls (issue #125). Solo el GM ve además
-  // estado/mapa/token/diagnóstico. activeTool apunta a una herramienta que
-  // exista para el rol actual.
-  const activeTool = isGM ? "lagunak-consola" : "lagunak-puestos";
+  // puesto aquí, no en Token Controls (issue #125). Solo el GM ve además el
+  // panel de GM. activeTool apunta a una herramienta que exista para el rol
+  // actual.
+  const activeTool = isGM ? "lagunak-panel-gm" : "lagunak-puestos";
 
   // El audio lo habilita CADA cliente por su cuenta: el navegador exige un
   // gesto del usuario y ese gesto no se puede delegar en el GM. Por eso este

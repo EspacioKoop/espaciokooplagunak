@@ -973,6 +973,63 @@
   text-align: center;
 }
 
+/* ---- Panel de GM (#448) -----------------------------------------------
+ * Puerta única a las entradas solo-GM (estado, mapa, token, diagnóstico,
+ * música, decorado, ficha), con la misma vestimenta arcade que la cantina.
+ * Sin lienzo procedural: es consolidación de botones, no una sala nueva.
+ */
+.lagunak-panel-gm .window-content {
+  background: #03071e;
+  color: #e0e1dd;
+  padding: 0;
+}
+
+.lagunak-panel-gm-cuerpo {
+  padding: 0.6rem;
+}
+
+.lagunak-panel-gm-intro {
+  margin: 0 0 0.6rem;
+  font-variant: small-caps;
+  letter-spacing: 0.06em;
+  color: #00e5ff;
+}
+
+.lagunak-panel-gm-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.lagunak-panel-gm-entrada {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border: 3px solid #1b263b;
+  border-left-color: #ff2e88;
+  background: #0d1b2a;
+  color: #e0e1dd;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.lagunak-panel-gm-entrada:hover,
+.lagunak-panel-gm-entrada:focus-visible {
+  border-left-color: #ffd166;
+  background: #14263d;
+}
+
+.lagunak-panel-gm-entrada i {
+  color: #ffd166;
+  width: 1.2rem;
+  text-align: center;
+}
+
 /* La sección de la nave (#427): el corte con todas las salas a la vez. Mismo
  * trato que el resto del arte de rejilla — búfer pequeño de verdad, ampliado
  * con `pixelated`, y nada de suavizado que convierta el plano en una acuarela. */

@@ -482,6 +482,9 @@ export function buildWorkspaceModel({
     // Auto-reparación (#464): decisión de ingeniería bajo presión — con ella
     // desactivada los sistemas dañados no se reparan solos.
     canOrderAutoRepair: !isGM && isActionAllowed(normalized, "set_auto_repair"),
+    // Feedback 3D del toggle (#466): sin lectura o desactivada pintan igual —
+    // el plano de siempre, ausencia no es cero (#353).
+    autoRepairActivo: Boolean(ship?.auto_repair),
     // Comunicaciones (#463): reactivas sobre el canal ya abierto — sin picker
     // de objetivo propio, ver `docs/SESION-PANTALLAS-NATIVAS.md`.
     canOrderCommsHail: !isGM && isActionAllowed(normalized, "answer_comm_hail"),

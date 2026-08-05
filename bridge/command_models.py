@@ -260,6 +260,59 @@ class SetAutoRepair(BaseModel):
         return _command_lua(f"commandSetAutoRepair(ship, {str(self.enabled).lower()})")
 
 
+class AnswerCommHail(BaseModel):
+    """Contestar o ignorar una llamada entrante (#463): globals de
+    `PlayerInfo::commandAnswerCommHail`, ya registrados por el motor en todo
+    escenario — no hace falta cooperación de `getScriptStorage()`.
+    """
+
+    op: Literal["answer_comm_hail"]
+    accept: StrictBool
+
+    def lua(self) -> str:
+        return _command_lua(f"commandAnswerCommHail(ship, {str(self.accept).lower()})")
+
+
+class CloseComm(BaseModel):
+    """Cerrar/cancelar/reconocer el canal activo (#463)."""
+
+    op: Literal["close_comm"]
+
+    def lua(self) -> str:
+        return _command_lua("commandCloseTextComm(ship)")
+
+
+class SendCommReply(BaseModel):
+    """Elegir una opción de diálogo scripteado por su índice (#463).
+
+    `strict=True`: mismo motivo que `SetSystemHealth.value` — sin coacción de
+    booleanos. El índice corresponde al orden en que el escenario las añadió
+    con `addCommsReply()`; el puente no conoce la lista, el motor la valida
+    server-side (un índice fuera de las opciones reales no tiene efecto).
+    """
+
+    op: Literal["send_comm_reply"]
+    index: Annotated[int, Field(strict=True, ge=0, le=15)]
+
+    def lua(self) -> str:
+        return _command_lua(f"commandSendComm(ship, {self.index})")
+
+
+class SendCommMessage(BaseModel):
+    """Mensaje de chat libre a otra nave/GM con canal ya abierto (#463).
+
+    El límite de longitud es una cota de sanidad del puente, no una que
+    imponga el motor.
+    """
+
+    op: Literal["send_comm_message"]
+    message: Annotated[str, Field(min_length=1, max_length=256)]
+
+    def lua(self) -> str:
+        escaped = self.message.replace("\\", "\\\\").replace("'", "\\'")
+        return _command_lua(f"commandSendCommPlayer(ship, '{escaped}')")
+
+
 Command = Annotated[
     Union[
         SetImpulse,
@@ -273,6 +326,10 @@ Command = Annotated[
         RepositionShip,
         SetPause,
         SetAutoRepair,
+        AnswerCommHail,
+        CloseComm,
+        SendCommReply,
+        SendCommMessage,
     ],
     Field(discriminator="op"),
 ]

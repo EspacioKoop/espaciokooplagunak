@@ -99,6 +99,10 @@ objetos sin esos componentes devuelven `null`, nunca valores inventados.
 {"op": "reposition_ship",    "anchor": "argia"}
 {"op": "set_pause",          "paused": true}
 {"op": "set_auto_repair",    "enabled": true}
+{"op": "answer_comm_hail",   "accept": true}
+{"op": "close_comm"}
+{"op": "send_comm_reply",    "index": 0}
+{"op": "send_comm_message",  "message": "Requesting permission to dock."}
 ```
 
 **`set_system_health` es la palanca de avería del GM**, no un panel de

@@ -82,6 +82,47 @@ test("armas sube y baja escudos, y solo ella", () => {
   );
 });
 
+test("comunicaciones contesta/cierra/dialoga/chatea, y solo ella (#463)", () => {
+  assert.deepEqual(STATION_ACTIONS.communications, [
+    "answer_comm_hail",
+    "close_comm",
+    "send_comm_reply",
+    "send_comm_message",
+  ]);
+  for (const action of ["answer_comm_hail", "close_comm", "send_comm_reply", "send_comm_message"]) {
+    assert.equal(isActionAllowed("communications", action), true);
+    assert.equal(isActionAllowed("weapons", action), false);
+  }
+  assert.deepEqual(
+    resolveStationOrder({
+      station: "communications",
+      action: "answer_comm_hail",
+      params: { accept: true },
+    }),
+    { method: "answerCommHail", args: [true] },
+  );
+  assert.deepEqual(
+    resolveStationOrder({ station: "communications", action: "close_comm", params: {} }),
+    { method: "closeComm", args: [] },
+  );
+  assert.deepEqual(
+    resolveStationOrder({
+      station: "communications",
+      action: "send_comm_reply",
+      params: { index: 2 },
+    }),
+    { method: "sendCommReply", args: [2] },
+  );
+  assert.deepEqual(
+    resolveStationOrder({
+      station: "communications",
+      action: "send_comm_message",
+      params: { message: "Solicito atraque." },
+    }),
+    { method: "sendCommMessage", args: ["Solicito atraque."] },
+  );
+});
+
 test("isActionAllowed no lanza ante entradas inválidas", () => {
   assert.equal(isActionAllowed("desconocido", "set_target_heading"), false);
   assert.equal(isActionAllowed(null, "set_target_heading"), false);

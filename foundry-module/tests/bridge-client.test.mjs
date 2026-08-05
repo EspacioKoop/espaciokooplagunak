@@ -219,6 +219,13 @@ test("órdenes directas envían solo la orden cerrada con Bearer", async () => {
     { call: (c) => c.setTargetHeading(90), body: { op: "set_target_heading", heading: 90 } },
     { call: (c) => c.setShields(true), body: { op: "set_shields", active: true } },
     { call: (c) => c.setAutoRepair(true), body: { op: "set_auto_repair", enabled: true } },
+    { call: (c) => c.answerCommHail(true), body: { op: "answer_comm_hail", accept: true } },
+    { call: (c) => c.closeComm(), body: { op: "close_comm" } },
+    { call: (c) => c.sendCommReply(2), body: { op: "send_comm_reply", index: 2 } },
+    {
+      call: (c) => c.sendCommMessage("Solicito atraque."),
+      body: { op: "send_comm_message", message: "Solicito atraque." },
+    },
   ];
   for (const caso of casos) {
     const calls = [];
@@ -253,6 +260,12 @@ test("órdenes directas rechazan valores fuera de rango antes de tocar red", asy
   await assert.rejects(client.setTargetHeading(361), BridgeError);
   await assert.rejects(client.setShields("up"), BridgeError);
   await assert.rejects(client.setAutoRepair("on"), BridgeError);
+  await assert.rejects(client.answerCommHail("yes"), BridgeError);
+  await assert.rejects(client.sendCommReply(-1), BridgeError);
+  await assert.rejects(client.sendCommReply(16), BridgeError);
+  await assert.rejects(client.sendCommReply(1.5), BridgeError);
+  await assert.rejects(client.sendCommMessage(""), BridgeError);
+  await assert.rejects(client.sendCommMessage("x".repeat(257)), BridgeError);
   assert.equal(calls, 0);
 });
 

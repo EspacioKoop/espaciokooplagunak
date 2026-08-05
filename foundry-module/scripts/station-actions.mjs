@@ -9,6 +9,12 @@ export const STATION_ACTIONS = Object.freeze({
   navigation: Object.freeze(["set_target_heading", "set_impulse", "set_warp"]),
   engineering: Object.freeze(["set_system_power", "set_system_coolant", "set_auto_repair"]),
   weapons: Object.freeze(["set_shields"]),
+  communications: Object.freeze([
+    "answer_comm_hail",
+    "close_comm",
+    "send_comm_reply",
+    "send_comm_message",
+  ]),
 });
 
 // Correspondencia acción del contrato → método de BridgeClient. La validación
@@ -42,6 +48,22 @@ const ACTION_DISPATCH = Object.freeze({
   set_auto_repair: Object.freeze({
     method: "setAutoRepair",
     args: (params) => [params?.enabled],
+  }),
+  answer_comm_hail: Object.freeze({
+    method: "answerCommHail",
+    args: (params) => [params?.accept],
+  }),
+  close_comm: Object.freeze({
+    method: "closeComm",
+    args: () => [],
+  }),
+  send_comm_reply: Object.freeze({
+    method: "sendCommReply",
+    args: (params) => [params?.index],
+  }),
+  send_comm_message: Object.freeze({
+    method: "sendCommMessage",
+    args: (params) => [params?.message],
   }),
 });
 

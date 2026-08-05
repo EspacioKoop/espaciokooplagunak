@@ -7,7 +7,7 @@ import { normalizeStation } from "./station-assignment.mjs";
 // emitir ninguna orden operativa.
 export const STATION_ACTIONS = Object.freeze({
   navigation: Object.freeze(["set_target_heading", "set_impulse", "set_warp"]),
-  engineering: Object.freeze(["set_system_power", "set_system_coolant"]),
+  engineering: Object.freeze(["set_system_power", "set_system_coolant", "set_auto_repair"]),
   weapons: Object.freeze(["set_shields"]),
 });
 
@@ -38,6 +38,10 @@ const ACTION_DISPATCH = Object.freeze({
   set_shields: Object.freeze({
     method: "setShields",
     args: (params) => [params?.active],
+  }),
+  set_auto_repair: Object.freeze({
+    method: "setAutoRepair",
+    args: (params) => [params?.enabled],
   }),
 });
 

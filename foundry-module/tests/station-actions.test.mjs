@@ -44,7 +44,7 @@ test("ingeniería también reparte refrigerante por sistema y solo ella (#301)",
   assert.equal(isActionAllowed("engineering", "set_system_coolant"), true);
   assert.equal(isActionAllowed("navigation", "set_system_coolant"), false);
   assert.equal(isActionAllowed("weapons", "set_system_coolant"), false);
-  assert.deepEqual(STATION_ACTIONS.engineering, ["set_system_power", "set_system_coolant"]);
+  assert.deepEqual(STATION_ACTIONS.engineering, ["set_system_power", "set_system_coolant", "set_auto_repair"]);
   assert.deepEqual(
     resolveStationOrder({
       station: "engineering",
@@ -52,6 +52,20 @@ test("ingeniería también reparte refrigerante por sistema y solo ella (#301)",
       params: { system: "impulse", level: 7 },
     }),
     { method: "setSystemCoolant", args: ["impulse", 7] },
+  );
+});
+
+test("ingeniería activa/desactiva la reparación automática, y solo ella (#464)", () => {
+  assert.equal(isActionAllowed("engineering", "set_auto_repair"), true);
+  assert.equal(isActionAllowed("navigation", "set_auto_repair"), false);
+  assert.equal(isActionAllowed("weapons", "set_auto_repair"), false);
+  assert.deepEqual(
+    resolveStationOrder({ station: "engineering", action: "set_auto_repair", params: { enabled: true } }),
+    { method: "setAutoRepair", args: [true] },
+  );
+  assert.deepEqual(
+    resolveStationOrder({ station: "engineering", action: "set_auto_repair", params: { enabled: false } }),
+    { method: "setAutoRepair", args: [false] },
   );
 });
 

@@ -164,7 +164,9 @@ token:
 - **Matriz de autoridad cerrada** (`station-actions.mjs`, `STATION_ACTIONS`).
   Declara qué órdenes del whitelist del puente puede emitir cada puesto:
   `navigation` → `set_target_heading`, `set_impulse`, `set_warp`; `engineering`
-  → `set_system_power`, `set_system_coolant`; `weapons` → `set_shields`.
+  → `set_system_power`, `set_system_coolant`, `set_auto_repair` (#464 —
+  decisión bajo presión: con la reparación automática desactivada, los
+  sistemas dañados no se reparan solos); `weapons` → `set_shields`.
   `captain`, `sensors` y
   `communications` son de **observación/narrativa**: no emiten órdenes de control
   de nave (coherente con el género bridge-sim; ratificado en #268). Añadir una

@@ -276,6 +276,8 @@ test("espacio de puesto: órdenes operativas y acciones de pie en ese orden", ()
     "lagunak-orden-sistema-refrig",
     "lagunak-orden-nivel-refrig",
     "orden-refrigerante",
+    "orden-reparacion-auto-activar",
+    "orden-reparacion-auto-desactivar",
     "orden-escudos-subir",
     "orden-escudos-bajar",
     "assignments",

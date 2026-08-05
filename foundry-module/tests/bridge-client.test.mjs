@@ -218,6 +218,7 @@ test("órdenes directas envían solo la orden cerrada con Bearer", async () => {
     { call: (c) => c.setWarp(3), body: { op: "set_warp", level: 3 } },
     { call: (c) => c.setTargetHeading(90), body: { op: "set_target_heading", heading: 90 } },
     { call: (c) => c.setShields(true), body: { op: "set_shields", active: true } },
+    { call: (c) => c.setAutoRepair(true), body: { op: "set_auto_repair", enabled: true } },
   ];
   for (const caso of casos) {
     const calls = [];
@@ -251,6 +252,7 @@ test("órdenes directas rechazan valores fuera de rango antes de tocar red", asy
   await assert.rejects(client.setTargetHeading(-1), BridgeError);
   await assert.rejects(client.setTargetHeading(361), BridgeError);
   await assert.rejects(client.setShields("up"), BridgeError);
+  await assert.rejects(client.setAutoRepair("on"), BridgeError);
   assert.equal(calls, 0);
 });
 

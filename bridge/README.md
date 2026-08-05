@@ -98,6 +98,7 @@ objetos sin esos componentes devuelven `null`, nunca valores inventados.
 {"op": "spawn_encounter",    "archetype": "derelict", "bearing": "port"}
 {"op": "reposition_ship",    "anchor": "argia"}
 {"op": "set_pause",          "paused": true}
+{"op": "set_auto_repair",    "enabled": true}
 ```
 
 **`set_system_health` es la palanca de avería del GM**, no un panel de

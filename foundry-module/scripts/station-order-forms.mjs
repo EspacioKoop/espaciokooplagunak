@@ -62,6 +62,18 @@ export const ORDER_FORMS = Object.freeze({
     },
     invalidKey: "LAGUNAK.Espacios.Orden.RefrigeranteInvalida",
   },
+  // Auto-reparación: dos acciones con valor fijo (no leen del DOM) que
+  // comparten la orden set_auto_repair con `enabled` true/false (#464).
+  "orden-reparacion-auto-activar": {
+    action: "set_auto_repair",
+    read: () => ({ enabled: true }),
+    invalidKey: "LAGUNAK.Espacios.Orden.ReparacionAutoInvalido",
+  },
+  "orden-reparacion-auto-desactivar": {
+    action: "set_auto_repair",
+    read: () => ({ enabled: false }),
+    invalidKey: "LAGUNAK.Espacios.Orden.ReparacionAutoInvalido",
+  },
   // Escudos: dos acciones con valor fijo (no leen del DOM) que comparten la
   // orden set_shields con `active` true/false.
   "orden-escudos-subir": {

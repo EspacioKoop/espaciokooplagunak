@@ -410,6 +410,9 @@ export function buildWorkspaceModel({
     coolantLevels: !isGM && isActionAllowed(normalized, "set_system_coolant")
       ? NIVELES_REFRIGERANTE.map((value) => ({ value, label: String(value) }))
       : [],
+    // Auto-reparación (#464): decisión de ingeniería bajo presión — con ella
+    // desactivada los sistemas dañados no se reparan solos.
+    canOrderAutoRepair: !isGM && isActionAllowed(normalized, "set_auto_repair"),
     navigationHeading: integer(ship?.heading),
     // Casco propio en 3D (#362). `null` cuando no hay lectura, que NO es lo
     // mismo que rumbo cero: el visor se queda quieto y apagado en vez de

@@ -165,6 +165,18 @@ export class BridgeClient {
     return this.#command({ op: "set_shields", active });
   }
 
+  /**
+   * POST /v1/command — activa/desactiva el reparto automático de tripulación
+   * de reparación (#464). Con auto-reparación desactivada, los sistemas
+   * dañados no se reparan solos.
+   */
+  async setAutoRepair(enabled) {
+    if (typeof enabled !== "boolean") {
+      throw new BridgeError("El estado de auto-reparación debe ser booleano", { kind: "parse" });
+    }
+    return this.#command({ op: "set_auto_repair", enabled });
+  }
+
   /** POST /v1/command — pausa o reanuda la simulación (Bearer). */
   async setPause(paused) {
     if (typeof paused !== "boolean") {

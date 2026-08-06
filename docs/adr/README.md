@@ -18,3 +18,4 @@ Estados: **Aceptada** · **Sustituida por ADR-XXXX** · **Deprecada**.
 | [0007](0007-frontera-upstream.md) | Frontera upstream: arreglos en código heredado van primero a upstream | Aceptada |
 | [0008](0008-standalone-first-autoridad-del-nucleo.md) | Standalone-first: la autoridad de campaña vive en el núcleo | Aceptada |
 | [0009](0009-modelo-permisos-por-puesto-v1.md) | Modelo de permisos por puesto v1: formaliza sin migrar, no unifica con el motor nativo | Aceptada |
+| [0010](0010-hackeo-solo-nativo.md) | El hackeo se queda solo-nativo: no se expone a Lua ni al puente | Aceptada |

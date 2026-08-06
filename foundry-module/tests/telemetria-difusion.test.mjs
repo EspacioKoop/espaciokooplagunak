@@ -148,3 +148,43 @@ test("una carga mal tipada no se convierte en un número inventado", () => {
     null,
   );
 });
+
+// --- Autodestrucción y calibrado en el sobre (#518) ---------------------------
+
+test("el sobre lleva si la secuencia está armada, pero JAMÁS un código", () => {
+  // El sobre acaba en un ajuste de mundo que toda la mesa puede leer: un código
+  // aquí sería un código público y el puzle de tres personas dejaría de existir.
+  const nave = recortarNave({
+    callsign: "Lagunak",
+    systems: {},
+    self_destruct: {
+      active: true,
+      countdown: 42.44,
+      code: [1111, 2222, 3333],
+      confirmed: [true, false, false],
+    },
+  });
+  assert.deepEqual(nave.self_destruct, { active: true, countdown: 42.4 });
+  const serializado = JSON.stringify(nave);
+  assert.doesNotMatch(serializado, /1111/);
+  assert.doesNotMatch(serializado, /confirmed/);
+});
+
+test("sin armar no viaja una cuenta atrás, y sin componente no viaja nada", () => {
+  assert.deepEqual(
+    recortarNave({ callsign: "Lagunak", systems: {}, self_destruct: { active: false, countdown: 0 } })
+      .self_destruct,
+    { active: false, countdown: null },
+  );
+  assert.equal(recortarNave({ callsign: "Lagunak", systems: {} }).self_destruct, null);
+});
+
+test("el calibrado de escudos viaja con su retardo", () => {
+  const nave = recortarNave({
+    callsign: "Lagunak",
+    systems: {},
+    shield_calibration: { frequency: 12, calibration_delay: 3.55 },
+  });
+  assert.deepEqual(nave.shield_calibration, { frequency: 12, calibration_delay: 3.6 });
+  assert.equal(recortarNave({ callsign: "Lagunak", systems: {} }).shield_calibration, null);
+});

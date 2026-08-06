@@ -20,11 +20,32 @@ export const STATION_ACTIONS = Object.freeze({
     "undock",
     "abort_dock",
   ]),
-  engineering: Object.freeze(["set_system_power", "set_system_coolant", "set_auto_repair"]),
+  // El capitán no tenía ninguna acción, y era deliberado (#268): coordina, no
+  // acciona. #518 le da exactamente UNA, y por un motivo que no vale para
+  // ninguna otra: confirmar un código de autodestrucción no es operar la nave,
+  // es asumir la decisión. Tres códigos exigen tres personas distintas
+  // (`SelfDestruct::max_codes`), y las tres sillas naturales son quien manda,
+  // quien conoce la nave y quien está en las armas.
+  //
+  // Ojo con leer esto como una grieta: el capitán sigue sin poder pilotar,
+  // repartir energía ni disparar. Una sola acción, la más pesada de todas.
+  captain: Object.freeze(["confirm_self_destruct_code"]),
+  // #518 añade la autodestrucción y la frecuencia de escudos, las dos
+  // decisiones de la pantalla nativa de Ingeniería que faltaban aquí.
+  // Recalibrar NO es un ajuste: deja los escudos caídos mientras dura.
+  engineering: Object.freeze([
+    "set_system_power",
+    "set_system_coolant",
+    "set_auto_repair",
+    "activate_self_destruct",
+    "cancel_self_destruct",
+    "confirm_self_destruct_code",
+    "set_shield_frequency",
+  ]),
   // #465: fijar objetivo habilita el fuego automático de haces ya cargados;
   // disparar un tubo es una orden aparte porque un tubo puede no estar
   // cargado o no tener arco de tiro — el juego decide, el puente solo pide.
-  weapons: Object.freeze(["set_shields", "set_weapon_target", "fire_tube"]),
+  weapons: Object.freeze(["set_shields", "set_weapon_target", "fire_tube", "confirm_self_destruct_code"]),
   // #462: traduce a orden de puente el escaneo nativo (ship:commandScan) que
   // ya existe en Science — ver docs/SESION-PANTALLAS-NATIVAS.md.
   sensors: Object.freeze(["scan_object"]),
@@ -71,6 +92,22 @@ const ACTION_DISPATCH = Object.freeze({
   abort_dock: Object.freeze({
     method: "abortDock",
     args: () => [],
+  }),
+  activate_self_destruct: Object.freeze({
+    method: "activateSelfDestruct",
+    args: () => [],
+  }),
+  cancel_self_destruct: Object.freeze({
+    method: "cancelSelfDestruct",
+    args: () => [],
+  }),
+  confirm_self_destruct_code: Object.freeze({
+    method: "confirmSelfDestructCode",
+    args: (params) => [params?.index, params?.code],
+  }),
+  set_shield_frequency: Object.freeze({
+    method: "setShieldFrequency",
+    args: (params) => [params?.frequency],
   }),
   set_system_power: Object.freeze({
     method: "setSystemPower",

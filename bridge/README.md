@@ -112,6 +112,10 @@ objetos sin esos componentes devuelven `null`, nunca valores inventados.
 {"op": "dock",               "callsign": "Argia"}
 {"op": "undock"}
 {"op": "abort_dock"}
+{"op": "activate_self_destruct"}
+{"op": "cancel_self_destruct"}
+{"op": "confirm_self_destruct_code", "index": 1, "code": 4321}
+{"op": "set_shield_frequency",       "frequency": 12}
 ```
 
 Las cuatro que siguen a `send_comm_message` ya existían y faltaban en esta
@@ -177,6 +181,30 @@ cinco órdenes llaman a globales que el motor ya registraba
   `docking`). `/v1/state` publica cuál de los dos hay.
 - `dock` referencia el objetivo por indicativo, con el mismo campo validado y la
   misma búsqueda en Lua fijo que `scan_object`.
+**La autodestrucción (#518) es cooperativa porque el motor la hizo así**, no
+porque el fork añada ceremonia: armarla no destruye nada, genera tres códigos
+(`SelfDestruct::max_codes`) y el juego reparte cada uno a una posición de
+tripulación distinta. Solo se puede desarmar antes de que arranque la cuenta.
+
+**El puente no conoce los códigos y no puede conocerlos.** El componente expone
+a Lua `active`, `countdown`, `damage` y `size`, pero **no** `code` ni
+`confirmed` (`src/script/components.cpp`). Eso no es un obstáculo a rodear: es
+lo que mantiene el puzle en pie. Quien teclea un código en
+`confirm_self_destruct_code` ha tenido que leerlo en la pantalla nativa que se
+lo mostró, o habérselo oído a quien lo leyó; el motor comprueba que case con su
+índice. Hay una prueba que afirma esa ausencia en el binding, para que el día
+que upstream la cambie sea una decisión y no una fuga.
+
+`/v1/state` publica en consecuencia solo `self_destruct: {active, countdown}`
+—y `countdown` únicamente con la secuencia armada, porque sin armar el campo del
+motor no significa "cero segundos para estallar"— más
+`shield_calibration: {frequency, calibration_delay}`. Una frecuencia de `-1`
+significa "estos escudos no tienen frecuencia" y se publica como `null`, nunca
+como el número.
+
+`set_shield_frequency` acepta 0..20 (`BeamWeaponSys::max_frequency`).
+Recalibrar **deja los escudos caídos** mientras dura: es una decisión de
+momento, no un ajuste.
 
 Cualquier otra operación devuelve `422`. Añadir una orden nueva implica
 añadir un modelo validado en `app.py` y documentarla aquí — nunca un

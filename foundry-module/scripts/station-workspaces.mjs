@@ -118,6 +118,56 @@ function rumboDeLectura(valor) {
   return null;
 }
 
+/**
+ * "Armada, quedan 42 s" o "desarmada". Sin componente no se escribe nada: la
+ * consola no debería hablar de una autodestrucción que esta nave no tiene.
+ */
+function textoDeAutodestruccion(selfDestruct, i18n) {
+  if (!selfDestruct || typeof selfDestruct !== "object") {
+    return localize(i18n, "LAGUNAK.Espacios.Orden.AutodestruccionSinLectura");
+  }
+  if (!selfDestruct.active) return localize(i18n, "LAGUNAK.Espacios.Orden.AutodestruccionDesarmada");
+  const countdown = Number(selfDestruct.countdown);
+  if (!Number.isFinite(countdown)) {
+    return localize(i18n, "LAGUNAK.Espacios.Orden.AutodestruccionArmada");
+  }
+  return format(i18n, "LAGUNAK.Espacios.Orden.AutodestruccionCuenta", {
+    segundos: Math.max(0, Math.round(countdown)),
+  });
+}
+
+/**
+ * Frecuencia actual y, si está recalibrando, el aviso de que los escudos están
+ * caídos mientras dura. Ese aviso es el dato que hace de esto una decisión.
+ */
+function textoDeFrecuencia(calibracion, i18n) {
+  const frecuencia = Number(calibracion?.frequency);
+  if (!Number.isFinite(frecuencia)) {
+    return localize(i18n, "LAGUNAK.Espacios.Orden.FrecuenciaSinLectura");
+  }
+  const retardo = Number(calibracion?.calibration_delay);
+  if (Number.isFinite(retardo) && retardo > 0) {
+    return format(i18n, "LAGUNAK.Espacios.Orden.FrecuenciaCalibrando", {
+      frecuencia,
+      segundos: Math.max(0, Math.round(retardo)),
+    });
+  }
+  return format(i18n, "LAGUNAK.Espacios.Orden.FrecuenciaActual", { frecuencia });
+}
+
+/**
+ * Copia la nave quitando cualquier código de autodestrucción. Ver la nota del
+ * modelo: la lista de campos que se caen es explícita a propósito, para que
+ * añadir uno nuevo al puente sea una decisión y no un descuido.
+ */
+function sinCodigosDeAutodestruccion(ship) {
+  if (!ship || typeof ship !== "object") return ship;
+  const autodestruccion = ship.self_destruct;
+  if (!autodestruccion || typeof autodestruccion !== "object") return ship;
+  const { code, codes, confirmed, ...resto } = autodestruccion;
+  return { ...ship, self_destruct: resto };
+}
+
 function integer(value) {
   return Math.round(finite(value));
 }
@@ -527,6 +577,26 @@ export function buildWorkspaceModel({
     dockTargets: !isGM && isActionAllowed(normalized, "dock")
       ? weaponTargetsFor(sensores, i18n)
       : [],
+    // Autodestrucción (#518). Se ofrece SOLO si la nave puede: sin componente
+    // `self_destruct` el puente publica `null`, y un botón que no hace nada es
+    // peor que no tener botón.
+    canOrderSelfDestruct:
+      !isGM && isActionAllowed(normalized, "activate_self_destruct") && Boolean(ship?.self_destruct),
+    // Confirmar código lo pueden tres puestos distintos —mando, ingeniería y
+    // armas— porque son tres códigos y tres personas. Aquí solo se ofrece con
+    // la secuencia ya armada: teclear un código antes de armar no significa
+    // nada.
+    canOrderDestructCode:
+      !isGM
+      && isActionAllowed(normalized, "confirm_self_destruct_code")
+      && Boolean(ship?.self_destruct?.active),
+    autodestruccionArmada: Boolean(ship?.self_destruct?.active),
+    autodestruccionTexto: textoDeAutodestruccion(ship?.self_destruct, i18n),
+    // Frecuencia de escudos. La lectura sale del puente; sin ella se dice que
+    // no la hay, porque una nave cuyos escudos no tienen frecuencia no es una
+    // nave con la frecuencia a cero.
+    canOrderShieldFrequency: !isGM && isActionAllowed(normalized, "set_shield_frequency"),
+    frecuenciaEscudosTexto: textoDeFrecuencia(ship?.shield_calibration, i18n),
     // Comunicaciones (#463): reactivas sobre el canal ya abierto — sin picker
     // de objetivo propio, ver `docs/SESION-PANTALLAS-NATIVAS.md`.
     canOrderCommsHail: !isGM && isActionAllowed(normalized, "answer_comm_hail"),
@@ -547,7 +617,13 @@ export function buildWorkspaceModel({
     connectionError: connection === "error",
     connectionRestricted: connection === "restricted",
     error,
-    ship,
+    // #518: la nave se pasa SIN los códigos de autodestrucción, aunque el
+    // puente hoy no los publique (el componente no los expone a Lua). Es una
+    // frontera y no una precaución sobrante: este modelo alimenta consolas de
+    // tripulación, y la telemetría que el GM reparte viaja por un ajuste de
+    // mundo que toda la mesa puede leer. Si algún día el juego llegara a
+    // exponerlos, aparecerían aquí solos y en público.
+    ship: sinCodigosDeAutodestruccion(ship),
     metrics: ship ? metricsFor(normalized, ship, safeContactsPayload, i18n, crew.length) : [],
     systems: normalized === "engineering" ? prepareSystemRows(ship, i18n) : [],
     contacts: contactosDeConsola(normalized, contactsPayload, sensores, Boolean(isGM), i18n),

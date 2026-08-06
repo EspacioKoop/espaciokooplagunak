@@ -164,6 +164,15 @@ token:
   del póker: el flag lo escribe el propio usuario, así que alguien con la consola
   del navegador abierta puede saltársela. Sirve para que una mesa se organice, no
   para defenderse de quien quiere hacer trampas.
+- **Autodestrucción y frecuencia de escudos (#518)** — las dos decisiones de la
+  pantalla nativa de Ingeniería que faltaban. La autodestrucción es cooperativa
+  porque el motor la hizo así: tres códigos, tres posiciones distintas. En
+  Foundry armar y desarmar son de `engineering`, y confirmar un código lo pueden
+  `captain`, `engineering` y `weapons` — es la única acción que tiene el capitán,
+  y lo es porque confirmar no es operar la nave sino asumir la decisión. **Los
+  códigos no viajan por aquí**: el componente no los expone a Lua, así que se
+  leen en la pantalla nativa o los dicta el director. Recalibrar los escudos deja
+  la nave sin ellos mientras dura, y la consola lo dice.
 - **Matriz de autoridad cerrada** (`station-actions.mjs`, `STATION_ACTIONS`).
   Declara qué órdenes del whitelist del puente puede emitir cada puesto:
   `navigation` → `set_target_heading`, `set_impulse`, `set_warp`,

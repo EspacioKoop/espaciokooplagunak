@@ -293,3 +293,103 @@ test("regresión: un usuario con gesto fumar produce avatar y ancla de humo en l
   const anclas = anclasHumoDeLaGente(gente);
   assert.ok(anclas.length > 0, "el gesto fumar produce al menos un ancla de humo");
 });
+
+// Las tres pruebas de arriba demuestran que `gentePresente()` alimenta el
+// pipeline puro, pero NINGUNA obliga a `encenderSala()` a seguir pasándoselo a
+// `arrancarCantina()` — que es justo el argumento que faltaba y el que dejó la
+// feature inalcanzable desde la aplicación. Borrar hoy `gente:` de esa llamada
+// las dejaría a las tres en verde. Estas dos recorren la ventana real (v11 y
+// v12+ por separado, como el resto del archivo) hasta el lienzo, y comparan la
+// sala con un fumador dentro contra la misma sala vacía: si la población deja de
+// llegar a la escena, los dos fotogramas se vuelven idénticos y esto falla.
+
+/** Contexto 2D de mentira: cuenta los trazos en vez de pintarlos. */
+function contextoFalso() {
+  const ctx = {
+    trazos: 0,
+    fillStyle: "",
+    strokeStyle: "",
+    lineWidth: 0,
+    beginPath() {},
+    closePath() {},
+    moveTo() {},
+    lineTo() {},
+    clearRect() {},
+    stroke() {},
+    fill() {
+      this.trazos += 1;
+    },
+    fillRect() {
+      this.trazos += 1;
+    },
+  };
+  return ctx;
+}
+
+/** Raíz con un lienzo de sala de verdad, para que `encenderSala()` no se rinda. */
+function raizConSala(ctx) {
+  const sala = {
+    width: 320,
+    height: 200,
+    dataset: {},
+    getContext: (tipo) => (tipo === "2d" ? ctx : null),
+    getBoundingClientRect: () => ({ left: 0, top: 0, width: 320, height: 200 }),
+    addEventListener() {},
+    removeEventListener() {},
+  };
+  const boton = botonFalso("poker");
+  return {
+    querySelector: (sel) => (sel === ".lagunak-cantina-sala" ? sala : boton),
+    querySelectorAll: (sel) => (sel === "[data-objeto]" ? [] : [boton]),
+  };
+}
+
+/** Trazos de un fotograma de la cantina, con la mesa que se le pase. */
+function trazosDeLaSala(usuarios, encender) {
+  globalThis.game.users = usuarios;
+  globalThis.game.user = { id: "mirando" };
+  const ctx = contextoFalso();
+  encender(raizConSala(ctx));
+  return ctx.trazos;
+}
+
+const FUMADOR = [usuarioFalso({ id: "fumador", name: "Fumador", avatar: { gesto: "fumar" } })];
+
+test("v12+: un fumador conectado llega hasta el lienzo por el call path real de la ventana", () => {
+  prepararEntorno({ moderno: true });
+  const Clase = crearClaseCantinaV2({ alSeleccionar: () => {} });
+
+  const encender = (raiz) => {
+    const app = new Clase();
+    app.element = raiz;
+    app._onRender({}, {});
+  };
+
+  const vacia = trazosDeLaSala([], encender);
+  const conFumador = trazosDeLaSala(FUMADOR, encender);
+
+  assert.ok(vacia > 0, "la sala vacía se pinta igual: sin gente sigue habiendo cantina");
+  assert.ok(
+    conFumador > vacia,
+    `un fumador debe añadir trazos (avatar + humo): vacía=${vacia}, con fumador=${conFumador}`,
+  );
+});
+
+test("v11: un fumador conectado llega hasta el lienzo por el call path real de la ventana", () => {
+  prepararEntorno({ moderno: false });
+  const Clase = crearClaseCantinaV1({ alSeleccionar: () => {} });
+
+  const encender = (raiz) => {
+    const app = new Clase();
+    app.activateListeners({ 0: raiz, find: () => ({ on: () => {} }) });
+  };
+
+  const vacia = trazosDeLaSala([], encender);
+  const conFumador = trazosDeLaSala(FUMADOR, encender);
+
+  assert.ok(vacia > 0, "la sala vacía se pinta igual: sin gente sigue habiendo cantina");
+  assert.ok(
+    conFumador > vacia,
+    `un fumador debe añadir trazos (avatar + humo): vacía=${vacia}, con fumador=${conFumador}`,
+  );
+});

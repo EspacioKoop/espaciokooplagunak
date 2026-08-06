@@ -339,6 +339,42 @@ function lamparaTecho(ancho, profundidad) {
 }
 
 /**
+ * Botones y una palanca sobre la cara SUPERIOR del cuerpo de una consola
+ * (#509 QA: "botones o palancas", más allá de solo pantalla) — deliberado en
+ * la cara de ARRIBA y no en la de la pantalla: el cuerpo es el mismo cubo en
+ * toda sala de puesto, pero qué cara lleva la pantalla cambia según hacia
+ * dónde mira esa sala (`nave-sala-ingenieria.mjs` la pone al sur,
+ * `nave-salas-puente.mjs` al oeste) — la tapa de arriba es la única
+ * superficie común a las dos, así que este detalle no necesita saber de
+ * orientación. Sin colisión propia: ya la cubre el cuerpo de la consola.
+ *
+ * `centroCuerpo`/`medidasCuerpo` son los mismos que ya recibe `caja()` para
+ * el cuerpo (`[x,y,z]`/`[ancho,alto,fondo]`) — el reparto se hace sobre SU
+ * ancho (eje X local), no sobre uno inventado aquí.
+ */
+export function detalleConsola([cx, cy, cz], [anchoCuerpo, altoCuerpo], opciones = {}) {
+  const { colorBoton = SECCION.salaBorde, colorPalanca = SECCION.entrable } = opciones;
+  const yTapa = cy + altoCuerpo / 2;
+  const margen = anchoCuerpo * 0.14;
+  const anchoBotones = anchoCuerpo * 0.62;
+  const botones = [-0.5, 0, 0.5].map((paso, i) => ({
+    nombre: `consolaBoton${i}`,
+    centro: [cx + paso * anchoBotones, yTapa + 0.03, cz],
+    medidas: [0.1, 0.06, 0.1],
+    color: colorBoton,
+    colision: false,
+  }));
+  const palanca = {
+    nombre: "consolaPalanca",
+    centro: [cx + anchoCuerpo / 2 - margen, yTapa + 0.12, cz],
+    medidas: [0.06, 0.24, 0.06],
+    color: colorPalanca,
+    colision: false,
+  };
+  return [...botones, palanca];
+}
+
+/**
  * Fabrica una sala-caja: cuatro muros por el límite de la planta, columnas
  * opcionales, puertas, VENTANAS, suelo y techo.
  *

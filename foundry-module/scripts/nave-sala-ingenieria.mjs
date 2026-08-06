@@ -19,7 +19,7 @@
 // Puro: solo compone `crearSalaCaja`, que ya es pura.
 
 import { SECCION } from "./paleta.mjs";
-import { crearSalaCaja } from "./nave-sala-caja.mjs";
+import { crearSalaCaja, detalleConsola } from "./nave-sala-caja.mjs";
 
 /** Puerta hacia el vestíbulo, en el muro sur: el mismo rectángulo que
  *  `PUERTA_VESTIBULO_HACIA_INGENIERIA` describe desde el otro lado, pero en
@@ -31,9 +31,12 @@ export const PUERTA_INGENIERIA_HACIA_VESTIBULO = { x: 3, z: 0, ancho: 2, profund
  *  #508 — un ojo de buey se perdía en un muro de 8. */
 const VENTANA_NORTE = { x: 1, z: 8, ancho: 6, profundidad: 1.2 };
 
-/** El mueble de la consola, con la pantalla mirando hacia la puerta (sur). */
+/** El mueble de la consola, con la pantalla mirando hacia la puerta (sur), y
+ *  botones/palanca en la tapa (#509 QA: "botones o palancas", no solo
+ *  pantalla) — ver `detalleConsola` para por qué van en la cara de arriba. */
+const CUERPO_CONSOLA = { centro: [4, 0.5, 5], medidas: [1.2, 1.0, 1.0] };
 const MOBILIARIO_CONSOLA = [
-  { nombre: "consolaCuerpo", centro: [4, 0.5, 5], medidas: [1.2, 1.0, 1.0], color: SECCION.mamparo },
+  { nombre: "consolaCuerpo", ...CUERPO_CONSOLA, color: SECCION.mamparo },
   {
     nombre: "consolaPantalla",
     centro: [4, 1.0, 4.45],
@@ -41,6 +44,7 @@ const MOBILIARIO_CONSOLA = [
     color: SECCION.entrable,
     colision: false,
   },
+  ...detalleConsola(CUERPO_CONSOLA.centro, CUERPO_CONSOLA.medidas),
 ];
 
 /** Zona de pie delante de la consola (#509): entre la entrada (z=2) y el

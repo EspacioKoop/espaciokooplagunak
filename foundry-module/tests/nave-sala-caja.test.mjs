@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { colisiona } from "../scripts/nave-movimiento.mjs";
-import { ALTURA_OJOS, crearSalaCaja, fraccionAbierta } from "../scripts/nave-sala-caja.mjs";
+import { ALTURA_OJOS, crearSalaCaja, detalleConsola, fraccionAbierta } from "../scripts/nave-sala-caja.mjs";
 
 test("una sala sin ventanas no proyecta estrellas", () => {
   const sala = crearSalaCaja({ ancho: 6, profundidad: 6 });
@@ -71,6 +71,23 @@ test("una puerta se compone sin reventar tanto lejos como pegada a ella", () => 
   const sala = crearSalaCaja({ ancho: 8, profundidad: 8, puertas: [{ rect: puerta }] });
   assert.doesNotThrow(() => sala.componer(4, 0, 6, 0, { ancho: 160, alto: 90 }));
   assert.doesNotThrow(() => sala.componer(4, 0, 0.7, 0, { ancho: 160, alto: 90 }));
+});
+
+test("detalleConsola pone botones y palanca sobre la tapa del cuerpo, sin colisión propia (#509 QA)", () => {
+  const centro = [4, 0.5, 5];
+  const medidas = [1.2, 1.0, 1.0];
+  const piezas = detalleConsola(centro, medidas);
+  assert.equal(piezas.length, 4, "tres botones y una palanca");
+  const yTapa = centro[1] + medidas[1] / 2;
+  for (const pieza of piezas) {
+    assert.equal(pieza.colision, false, `${pieza.nombre} no debe bloquear: ya lo cubre el cuerpo`);
+    assert.ok(pieza.centro[1] >= yTapa, `${pieza.nombre} debe apoyarse en la tapa, no atravesarla`);
+    // Ninguna pieza se sale del ancho del cuerpo que la sostiene.
+    assert.ok(
+      Math.abs(pieza.centro[0] - centro[0]) < medidas[0] / 2,
+      `${pieza.nombre} se sale del cuerpo de la consola`,
+    );
+  }
 });
 
 test("el rodapié y la lámpara de techo no bloquean el paso por el centro de una sala vacía", () => {

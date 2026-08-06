@@ -27,7 +27,7 @@
 // que ya son puros.
 
 import { SECCION } from "./paleta.mjs";
-import { crearSalaCaja } from "./nave-sala-caja.mjs";
+import { crearSalaCaja, detalleConsola } from "./nave-sala-caja.mjs";
 import { ESTACIONES } from "./nave-pasillo-puente.mjs";
 
 const ANCHO = 6;
@@ -64,14 +64,10 @@ export function entradaEstacion() {
  *  cantina, `SECCION.entrable`, el mismo que ya marca "aquí se puede
  *  entrar/interactuar" en el marco de las ventanas (#508)—. */
 const CENTRO_CONSOLA_X = 4;
+const CUERPO_CONSOLA = { centro: [CENTRO_CONSOLA_X, 0.5, PROFUNDIDAD / 2], medidas: [1.2, 1.0, 1.0] };
 function mobiliarioConsola() {
   return [
-    {
-      nombre: "consolaCuerpo",
-      centro: [CENTRO_CONSOLA_X, 0.5, PROFUNDIDAD / 2],
-      medidas: [1.2, 1.0, 1.0],
-      color: SECCION.mamparo,
-    },
+    { nombre: "consolaCuerpo", ...CUERPO_CONSOLA, color: SECCION.mamparo },
     {
       nombre: "consolaPantalla",
       centro: [CENTRO_CONSOLA_X - 0.55, 1.0, PROFUNDIDAD / 2],
@@ -81,6 +77,9 @@ function mobiliarioConsola() {
       // redundante y solo complicaría la colisión sin cambiar nada real.
       colision: false,
     },
+    // Botones/palanca en la tapa (#509 QA: "botones o palancas") — misma
+    // pieza compartida que usa `nave-sala-ingenieria.mjs`, ver `detalleConsola`.
+    ...detalleConsola(CUERPO_CONSOLA.centro, CUERPO_CONSOLA.medidas),
   ];
 }
 

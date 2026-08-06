@@ -17,7 +17,7 @@
 // que ya los tomó de `paleta.mjs`.
 
 import { caja, MUEBLES } from "./cantina-escena.mjs";
-import { componerEscena, compararProfundidad } from "./retro3d.mjs";
+import { componerEscena } from "./retro3d.mjs";
 import { aNativo } from "./cantina-planta.mjs";
 import { poligonosOtrosJugadores } from "./nave-avatares-render.mjs";
 
@@ -91,6 +91,6 @@ export function componerCantinaAndar(x, y, z, yaw, opciones = {}) {
   });
 
   const poligonos = [...partes.flatMap((parte) => parte.poligonos), ...poligonosJugadores]
-    .sort(compararProfundidad);
+    .sort((a, b) => b.profundidad - a.profundidad);
   return { ancho, alto, epoca: partes[0]?.epoca, poligonos };
 }

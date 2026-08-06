@@ -44,20 +44,16 @@ test("la sala se compone y todos sus muebles ponen polígonos", () => {
   assert.ok(colores.size >= 5, "la sala tiene varios materiales, no uno");
 });
 
-test("el orden por pintor es global: lo lejano se pinta antes que lo cercano (con el margen anti-parpadeo de #510)", () => {
+test("el orden por pintor es global: lo lejano se pinta antes que lo cercano", () => {
   // La regresión que este test existe para impedir: concatenar las listas de
   // cada mueble sin reordenar da una lista ordenada por tramos, correcta dentro
   // de cada mueble y falsa entre muebles.
-  //
-  // >= -EPSILON y no >= a secas: `compararProfundidad` trata como empate
-  // cualquier par a menos de 0.01 de diferencia (para no parpadear con el
-  // temblor de cámara, #510), así que un par empatado puede quedar en
-  // cualquier orden relativo dentro de ese margen — nunca por encima de él.
-  const EPSILON = 0.01 + 1e-9;
   const { poligonos } = componerCantina();
   for (let i = 1; i < poligonos.length; i += 1) {
-    const diferencia = poligonos[i - 1].profundidad - poligonos[i].profundidad;
-    assert.ok(diferencia >= -EPSILON, `polígono ${i} rompe el orden por pintor más allá del margen: ${diferencia}`);
+    assert.ok(
+      poligonos[i - 1].profundidad >= poligonos[i].profundidad,
+      `polígono ${i} rompe el orden por pintor`,
+    );
   }
 });
 

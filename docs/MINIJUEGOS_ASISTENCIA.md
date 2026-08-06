@@ -1,10 +1,13 @@
 # Asistencia entre puestos con minijuegos de habilidad
 
-- Estado: **diseño fijado; motor puro y reductor de sesión implementados y probados, sin interfaz**
+- Estado: **implementado y jugable en mesa** — motor puro, reductor de sesión, cableado
+  (`foundry-module/scripts/asistencia-wiring.mjs`) e interfaz (`foundry-module/scripts/asistencia-ui.mjs`
+  sobre `foundry-module/scripts/asistencia/vista.mjs`) integrados y enganchados en `main.mjs`
   (`foundry-module/scripts/asistencia/`, suite `foundry-module/tests/asistencia-*.test.mjs`).
-  El ciclo completo —abrir, resolver, consumir— ya es ejecutable y probable en Node, pero nada de
-  esto está integrado todavía en la interfaz del módulo ni conectado al relé: no hay asistencia
-  jugable en mesa.
+  El ciclo completo —pedir, resolver, consumir vía el relé del titular— es jugable de extremo a
+  extremo. Queda pendiente ampliar el repertorio de minijuegos más allá de temporización y leer
+  modificadores reales de la ficha dnd5e en vez de tratarla como booleano — ver
+  [#500](https://github.com/VaroTv7/espaciokooplagunak/issues/500).
 - Issue: [#309](https://github.com/VaroTv7/espaciokooplagunak/issues/309)
 - Fase: **4** (experiencia cooperativa). No forma parte del criterio de salida de Fase 3.
 - Depende de: contrato de minijuegos [#308](https://github.com/VaroTv7/espaciokooplagunak/issues/308)
@@ -299,14 +302,16 @@ consumo solo por el titular), `temporizacion.mjs` (el reto de destreza determini
 sin dnd5e) y `sesion.mjs` (el reductor que los ordena en el tiempo: reserva el hueco al **abrir**
 —para que el presupuesto se cobre antes de que nadie gaste un espacio de conjuro—, cierra con la
 banda venga del camino que venga, y entrega al titular la orden ya acotada) y `relevo.mjs` (la
-costura con el relé de órdenes)—; lo que **no** existe es **interfaz**, y esa parte sigue siendo
-Fase 4:
+costura con el relé de órdenes)—; la interfaz (`asistencia-ui.mjs`) también existe y está enganchada.
 
 ### Lo que ya está enchufado
 
-El motor dejó de ser código muerto: `asistencia/catalogo.mjs` le da **contenido** y
-`asistencia-wiring.mjs` lo **enchufa a Foundry**. El camino está completo de extremo a extremo y lo
-único que falta para jugarlo es dónde pulsar.
+El motor dejó de ser código muerto: `asistencia/catalogo.mjs` le da **contenido**,
+`asistencia-wiring.mjs` lo **enchufa a Foundry** y `asistencia-ui.mjs` (sobre
+`asistencia/vista.mjs`) es la ventana donde el asistente pulsa. El camino está completo de extremo
+a extremo y es jugable en mesa. Pendiente: ampliar el repertorio de minijuegos más allá de
+temporización y leer modificadores reales de la ficha dnd5e — ver
+[#500](https://github.com/VaroTv7/espaciokooplagunak/issues/500).
 
 - **El catálogo es contenido, no lógica.** Tres tareas base —estabilizar un sistema caliente
   (ingeniería, `set_system_coolant`), bordar una maniobra (pilotaje, `set_impulse`) y afinar un
@@ -338,16 +343,20 @@ El motor dejó de ser código muerto: `asistencia/catalogo.mjs` le da **contenid
   real: no se abre solo) y la regla de la casa del 1/20 natural en pruebas de habilidad (que **no**
   es la regla de 5e, y por eso no está cableada).
 
-Lo que falta es la interfaz: la ventana donde el asistente elige enfoque y ve su rango de éxito, y la
-barra del reto de temporización para el camino sin dnd5e.
+La interfaz ya existe: la ventana (`asistencia-ui.mjs`) donde el asistente elige enfoque y ve su
+rango de éxito, y la barra del reto de temporización para el camino sin dnd5e.
 
-
-- **Un puesto asistible**: ingeniería (estabilizar sistema caliente).
-- **Un modo**: propuesta consumible (Modo B) que el ingeniero gasta como su `set_system_coolant`.
-- **Una sola clase de enfoque**: la (a), prueba de habilidad/herramienta, sin recursos que consumir.
-  Las clases (b) y (c) llegan después, cuando el camino base esté validado.
+- **Tres puestos asistibles**: ingeniería (estabilizar sistema caliente), pilotaje (bordar una
+  maniobra) y sensores (afinar un contacto dudoso, narrativa). Una mesa amplía el catálogo con
+  `crearCatalogo([...TAREAS_BASE, ...])` sin tocar el motor.
+- **Un modo**: propuesta consumible (Modo B) que el titular gasta como una de sus órdenes ya
+  autorizadas.
+- **Una sola clase de enfoque cableada a Foundry**: la (a), prueba de habilidad/herramienta, sin
+  recursos que consumir. El motor soporta en abstracto las clases (b) y (c), pero su cableado real
+  a dnd5e (lectura de modificadores/CD de la ficha) sigue pendiente — ver #500.
 - **Dos caminos de resolución que comparten bandas**: tirada de habilidad dnd5e (con «rango de éxito»)
-  **y** minijuego de temporización de fallback.
+  **y** minijuego de temporización de fallback. Un segundo/tercer tipo de minijuego (precisión,
+  secuencia) está fuera de esta rebanada — ver #500.
 - Reutiliza relé (#237), matriz de puestos (#268) y marco de #308.
 
 ### Cómo se cobra la ayuda, en concreto (`relevo.mjs`)

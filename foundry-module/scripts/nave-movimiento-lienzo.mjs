@@ -16,6 +16,15 @@
 // mjs`: se prueba en Node con un lienzo de mentira y un `pedirFotograma` que
 // el test dispara a mano.
 //
+// PINTA CON Z-BUFFER REAL (`pintarEscenaConProfundidad`, #510), no por
+// orden: es justo el bucle donde se reportó el parpadeo (caras que
+// intercambiaban su orden de dibujo con el temblor de cámara de un
+// fotograma al siguiente), y un z-buffer no tiene ese problema porque no
+// depende de en qué orden lleguen los polígonos. Las cámaras fijas de la
+// cantina (#423) y el resto de superficies del módulo siguen con el pintor
+// por orden de siempre (`pintarEscena`) — este cambio es de este bucle, no
+// del motor entero.
+//
 // EL MOVIMIENTO ES OPCIONAL, NO DECORATIVO (mismo contrato que #227 y que
 // `cantina-lienzo.mjs`): bajo `prefers-reduced-motion` no hay bucle continuo,
 // pero aquí "movimiento" es la respuesta a pulsar una tecla, no un giro
@@ -26,7 +35,7 @@
 // NO es la respuesta correcta, y conviene que quien la toque sepa por qué.
 
 import { mover, puertaTocada } from "./nave-movimiento.mjs";
-import { pintarEscena } from "./retro3d-lienzo.mjs";
+import { pintarEscenaConProfundidad } from "./retro3d-lienzo.mjs";
 
 /** Ritmo al que gira la cámara mientras se mantiene "girar-izq"/"girar-der". */
 const VELOCIDAD_GIRO = Math.PI * 0.6; // radianes por segundo
@@ -41,6 +50,8 @@ const VELOCIDAD_GIRO = Math.PI * 0.6; // radianes por segundo
  *   planta: object,
  *   puertas?: Array<{rect:object, destino:object}>,
  *   alTocarPuerta?: (destino:object) => void,
+ *   consolas?: Array<{rect:object, puesto:string}>,
+ *   alTocarConsola?: (puesto:string) => void,
  *   x?: number, z?: number, y?: number, yaw?: number,
  *   velocidad?: number, radio?: number, velocidadGiro?: number,
  *   fondo?: string|null,
@@ -77,6 +88,34 @@ export function arrancarAndar(lienzo, opciones = {}) {
   let componer = opciones.componer;
   let puertas = Array.isArray(opciones.puertas) ? opciones.puertas : [];
   let alTocarPuerta = typeof opciones.alTocarPuerta === "function" ? opciones.alTocarPuerta : null;
+  let consolas = Array.isArray(opciones.consolas) ? opciones.consolas : [];
+  let alTocarConsola = typeof opciones.alTocarConsola === "function" ? opciones.alTocarConsola : null;
+  // Flanco de entrada, no nivel (#509): una consola no teletransporta, así
+  // que seguir de pie delante de ella no puede seguir disparando el aviso en
+  // cada fotograma —abriría el espacio de puesto sesenta veces por
+  // segundo—. Solo cambia de `null` a una consola, o de una consola a otra.
+  let consolaTocadaAntes = null;
+  // Mismo flanco de entrada para las puertas (QA: andar hacia atrás cerca de
+  // una puerta teletransportaba una y otra vez sin parar). Antes se
+  // comprobaba a NIVEL —`cambiarEstancia` en cada fotograma que el círculo
+  // siguiera dentro del rectángulo—, y si el punto de llegada de la sala
+  // destino cae cerca de su propia puerta de vuelta (o si el jugador sigue
+  // empujando hacia la puerta de la que viene), el primer fotograma en la
+  // sala nueva podía volver a tocarla y cruzar de vuelta de inmediato: un
+  // vaivén sin que nadie soltara ninguna tecla. El flanco (`null` → puerta)
+  // hace que cruzar sea un evento discreto, no un nivel que se compruebe
+  // sesenta veces por segundo.
+  let puertaTocadaAntes = null;
+  // Ventana de gracia tras cruzar (QA: manteniendo "atrás" pulsado de forma
+  // continua se podía cruzar la MISMA puerta en los dos sentidos sin parar —
+  // el flanco de entrada evita repetir en el sitio, pero no evita que el
+  // primer paso ya dentro de la sala nueva vuelva a tocar la puerta de
+  // vuelta, que suele caer cerca del punto de llegada). Mientras dura, no se
+  // dispara NINGÚN cruce: es más simple y más robusto que intentar excluir
+  // solo la puerta por la que se acaba de entrar (#237 no está en juego, es
+  // pura cinemática).
+  const GRACIA_PUERTA_MS = 400;
+  let bloqueadoPuertaHasta = 0;
 
   let x = Number.isFinite(opciones.x) ? opciones.x : planta.ancho / 2;
   let z = Number.isFinite(opciones.z) ? opciones.z : planta.profundidad / 2;
@@ -93,7 +132,7 @@ export function arrancarAndar(lienzo, opciones = {}) {
   function pintarUnaVez() {
     const ctx = lienzo?.getContext?.("2d");
     if (!ctx) return;
-    pintarEscena(ctx, componer(x, y, z, yaw, { otrosJugadores: otrosJugadores() }), { fondo });
+    pintarEscenaConProfundidad(ctx, componer(x, y, z, yaw, { otrosJugadores: otrosJugadores() }), { fondo });
   }
 
   function paso(ms) {
@@ -112,10 +151,27 @@ export function arrancarAndar(lienzo, opciones = {}) {
     // Se comprueba DESPUÉS de mover, con la posición ya resuelta: una puerta
     // no bloquea (`mover` no la conoce), así que su detección no puede
     // adelantarse al desplazamiento sin leer una posición que todavía no es
-    // la real de este fotograma.
-    if (alTocarPuerta) {
+    // la real de este fotograma. Flanco de entrada, igual que las consolas:
+    // cruzar es un evento discreto, no algo que se compruebe sesenta veces
+    // por segundo mientras el círculo siga solapando el rectángulo.
+    if (alTocarPuerta && ahoraMs >= bloqueadoPuertaHasta) {
       const puerta = puertaTocada(x, z, radio, puertas);
-      if (puerta) alTocarPuerta(puerta.destino);
+      if (puerta !== puertaTocadaAntes) {
+        if (puerta) alTocarPuerta(puerta.destino);
+        puertaTocadaAntes = puerta;
+      }
+    }
+
+    // Misma detección de contacto que una puerta (`puertaTocada` no le exige
+    // a su rectángulo tener `destino` — ver `nave-estancias.declararEstancia`
+    // para el porqué de compartir la forma), pero solo se avisa en el flanco
+    // de entrada.
+    if (alTocarConsola) {
+      const consola = puertaTocada(x, z, radio, consolas);
+      if (consola !== consolaTocadaAntes) {
+        if (consola) alTocarConsola(consola.puesto);
+        consolaTocadaAntes = consola;
+      }
     }
 
     pintarUnaVez();
@@ -152,10 +208,31 @@ export function arrancarAndar(lienzo, opciones = {}) {
      * de arriba (el catálogo de estancias o quien lo consulte), nunca este
      * módulo: aquí solo se aplica el cambio ya decidido.
      */
-    cambiarEstancia({ planta: nuevaPlanta, componer: nuevoComponer, puertas: nuevasPuertas, x: nx, z: nz, yaw: nYaw }) {
+    cambiarEstancia({
+      planta: nuevaPlanta,
+      componer: nuevoComponer,
+      puertas: nuevasPuertas,
+      consolas: nuevasConsolas,
+      x: nx,
+      z: nz,
+      yaw: nYaw,
+    }) {
       if (nuevaPlanta) planta = nuevaPlanta;
       if (typeof nuevoComponer === "function") componer = nuevoComponer;
       puertas = Array.isArray(nuevasPuertas) ? nuevasPuertas : [];
+      consolas = Array.isArray(nuevasConsolas) ? nuevasConsolas : [];
+      // La sala nueva empieza sin nadie tocando ninguna consola ni ninguna
+      // puerta: si el punto de llegada cayera sobre una por casualidad, el
+      // flanco de entrada de ESA sala tiene que poder dispararse, no darse
+      // por ya visto.
+      consolaTocadaAntes = null;
+      puertaTocadaAntes = null;
+      // Ningún cruce de puerta puede dispararse hasta pasado `GRACIA_PUERTA_MS`:
+      // el punto de llegada suele caer cerca de la puerta de vuelta (ver
+      // comentario de `bloqueadoPuertaHasta`), y sin esta ventana un "atrás"
+      // mantenido pulsado la cruzaría de nuevo en el primer paso ya dentro de
+      // la sala nueva.
+      bloqueadoPuertaHasta = anterior + GRACIA_PUERTA_MS;
       if (Number.isFinite(nx)) x = nx;
       if (Number.isFinite(nz)) z = nz;
       if (Number.isFinite(nYaw)) yaw = nYaw;

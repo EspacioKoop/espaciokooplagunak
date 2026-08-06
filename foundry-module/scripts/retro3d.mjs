@@ -225,6 +225,65 @@ export function recortarCercano(vertices, cerca) {
 }
 
 /**
+ * Recorta un polígono contra los CUATRO planos laterales del frustum
+ * (izquierda, derecha, arriba, abajo), derivados de `ancho`/`alto`/`f` — los
+ * mismos que usa `proyectar` para pasar de cámara a pantalla, así que un
+ * vértice que sobrevive a este recorte cae siempre dentro de `[0,ancho]` y
+ * `[0,alto]` una vez proyectado.
+ *
+ * OPCIONAL A PROPÓSITO (ver el comentario en `componerEscena`): sin él, un
+ * muro visto de canto —un pasillo mirado de frente, el caso normal— puede
+ * pasar el recorte cercano con un `x`/`y` de cámara moderado y `proyectar`
+ * lo dispara a miles de píxeles fuera de pantalla: matemáticamente es la
+ * perspectiva correcta de un punto casi tangente al ojo, pero ese punto
+ * nunca estuvo dentro del cono de visión — solo lo parecía por mirar solo la
+ * profundidad. `componerEscena({ recorteLateral: true })` lo activa.
+ */
+export function recortarLateral(vertices, { ancho, alto, f }) {
+  const anchoOk = acotar(ancho, 1, 1e6, 160);
+  const altoOk = acotar(alto, 1, 1e6, 120);
+  const fOk = acotar(f, 1e-6, 1e9, 1);
+  // Medio ancho/alto del volumen de vista a `z=1`: el plano se escala con
+  // `z` (más lejos, más ancho vale), la ecuación de un plano por el origen.
+  const mitadX = anchoOk / (2 * fOk);
+  const mitadY = altoOk / (2 * fOk);
+  let recortados = recortarContraPlano(vertices, (v) => v[2] * mitadX + v[0]); // izquierda
+  recortados = recortarContraPlano(recortados, (v) => v[2] * mitadX - v[0]); // derecha
+  recortados = recortarContraPlano(recortados, (v) => v[2] * mitadY + v[1]); // abajo
+  recortados = recortarContraPlano(recortados, (v) => v[2] * mitadY - v[1]); // arriba
+  return recortados;
+}
+
+/**
+ * Sutherland-Hodgman genérico: `evaluar(vertice)` es la distancia (con
+ * signo) de un vértice al plano — dentro cuando es `>= 0`. Sirve para
+ * cualquier plano que pase por el origen de cámara, que es lo que
+ * `recortarLateral` necesita y `recortarContra` (fijo al eje Z) no puede dar.
+ */
+function recortarContraPlano(vertices, evaluar) {
+  const dentro = [];
+  const n = vertices.length;
+  for (let i = 0; i < n; i += 1) {
+    const actual = vertices[i];
+    const siguiente = vertices[(i + 1) % n];
+    const dA = evaluar(actual);
+    const dB = evaluar(siguiente);
+    const actualDentro = dA >= 0;
+    const siguienteDentro = dB >= 0;
+    if (actualDentro) dentro.push(actual);
+    if (actualDentro !== siguienteDentro) {
+      const t = dA / (dA - dB);
+      dentro.push([
+        actual[0] + (siguiente[0] - actual[0]) * t,
+        actual[1] + (siguiente[1] - actual[1]) * t,
+        actual[2] + (siguiente[2] - actual[2]) * t,
+      ]);
+    }
+  }
+  return dentro;
+}
+
+/**
  * Recorta un polígono contra el plano lejano (`z <= lejos`), el mismo
  * Sutherland-Hodgman con el signo cambiado.
  *
@@ -352,7 +411,8 @@ export function factorNiebla(profundidad, { cerca, lejos, niebla }) {
  * Así esto se prueba en Node sin un `<canvas>` de mentira.
  *
  * @param {{vertices: number[][], caras: number[][]}} malla
- * @param {object} opciones
+ * @param {object} opciones `recorteLateral` (default `false`) activa el
+ *   recorte contra los cuatro planos del frustum, ver `recortarLateral`.
  */
 export function componerEscena(malla, opciones = {}) {
   // TODA la entrada se normaliza aquí, en el borde, y no en cada operación de
@@ -398,17 +458,49 @@ export function componerEscena(malla, opciones = {}) {
     const crudos = cara.map((indice) => enCamara[indice]).filter(Boolean);
     if (crudos.length < 3) continue;
 
-    // Primero el plano cercano y después el lejano: lo que quede está dentro del
-    // volumen de dibujo, así que ni la proyección ni la niebla ven geometría que
-    // el alcance ya no cubre.
-    const recortada = recortarLejano(recortarCercano(crudos, cerca), lejos);
+    // Primero el plano cercano, LUEGO opcionalmente los cuatro laterales, y
+    // después el lejano: lo que quede está dentro del volumen de dibujo, así
+    // que ni la proyección ni la niebla ven geometría que el alcance ya no
+    // cubre.
+    //
+    // `recorteLateral` es OPT-IN, no el comportamiento por defecto (#508 QA,
+    // documentado en #510): sin él, un vértice a `z` diminuto con un `x`/`y`
+    // de cámara moderado sigue pasando el recorte cercano y `proyectar` lo
+    // dispara a miles de píxeles fuera de pantalla — el bug real que motivó
+    // esto. Actívalo y arregla ese caso, pero las cámaras ya publicadas de la
+    // cantina (`cantina-planos.mjs`) cuentan HOY con que geometría fuera del
+    // cono de visión nominal se cuele sin recortar — activarlo por defecto
+    // recortaría de golpe planos ya afinados a ojo (hasta un 70% menos de
+    // polígonos en alguno), un cambio visual que necesita ojos delante de un
+    // cliente real, no una decisión de código. Actívalo explícitamente en
+    // escenas nuevas que ya se hayan comprobado sin ese riesgo.
+    let recortada = recortarCercano(crudos, cerca);
+    if (opciones.recorteLateral) recortada = recortarLateral(recortada, { ancho, alto, f });
+    recortada = recortarLejano(recortada, lejos);
     if (recortada.length < 3) continue;
 
     // La normal se toma de la cara SIN recortar: el recorte añade vértices sobre
     // el plano cercano y puede dejar los tres primeros casi alineados, lo que
     // daría una normal basura y un parpadeo de sombreado justo al pasar rozando
     // la cámara — que es cuando más se nota.
-    const normal = normalizar(cruz(resta(crudos[1], crudos[0]), resta(crudos[2], crudos[0])));
+    //
+    // `luzFija` (QA: "las paredes van cambiando de iluminación sin sentido al
+    // girar") decide DE QUÉ VÉRTICES sale esa normal. Por defecto sale de
+    // `crudos` —ya girados por `yaw`/`pitch`/`roll`—, y eso es lo correcto
+    // para una pieza que ROTA delante de una cámara fija (`girarNave`, dados,
+    // cartas: el efecto de "vitrina bajo una luz" es intencional, y por eso
+    // no se toca por defecto). Pero en el bucle de andar ese mismo `yaw` no es
+    // el giro de la pieza: es el giro de la CÁMARA fingido rotando el mundo
+    // al revés (ver la cabecera de `nave-sala-caja.mjs`) — con la normal
+    // saliendo de vértices ya girados así, la luz (un vector fijo, sin
+    // contrarrotar) queda pegada a hacia dónde mira el jugador, como un
+    // frontal en la cabeza, en vez de fija en el mundo. `luzFija: true` toma
+    // la normal de los vértices SIN ese giro de cámara —siguen ahí, en
+    // `vertices`, porque el giro se aplica en `enCamara` y no in-place—, que
+    // es la orientación real e inmóvil de la pared en el mundo.
+    const baseNormal = opciones.luzFija ? cara.map((indice) => vertices[indice]).filter(Boolean) : crudos;
+    if (baseNormal.length < 3) continue;
+    const normal = normalizar(cruz(resta(baseNormal[1], baseNormal[0]), resta(baseNormal[2], baseNormal[0])));
 
     const puntos = recortada.map((v) => proyectar(v, { ancho, alto, f, rejilla: ajustes.rejilla }));
 

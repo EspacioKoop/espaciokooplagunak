@@ -57,7 +57,16 @@ test("puntoDeLlegada: usa lo que fija la puerta y rellena lo que falta con la en
   });
   // La puerta fija x/z/yaw completos: manda ella, no la entrada de "a".
   const llegadaCompleta = puntoDeLlegada(catalogo, { estancia: "a", x: 7, z: 2, yaw: Math.PI });
-  assert.deepEqual(llegadaCompleta, { estancia: "a", planta: PLANTA_A, componer: catalogo.obtener("a").componer, puertas: [], x: 7, z: 2, yaw: Math.PI });
+  assert.deepEqual(llegadaCompleta, {
+    estancia: "a",
+    planta: PLANTA_A,
+    componer: catalogo.obtener("a").componer,
+    puertas: [],
+    consolas: [],
+    x: 7,
+    z: 2,
+    yaw: Math.PI,
+  });
 
   // Sin nada más que el id: cae en la entrada por defecto de "b" (su centro).
   const llegadaPorDefecto = puntoDeLlegada(catalogo, { estancia: "b" });
@@ -68,4 +77,46 @@ test("puntoDeLlegada: usa lo que fija la puerta y rellena lo que falta con la en
 test("puntoDeLlegada: estancia desconocida devuelve null, no revienta", () => {
   const catalogo = crearCatalogoEstancias({ a: { planta: PLANTA_A, componer: () => ({}) } });
   assert.equal(puntoDeLlegada(catalogo, { estancia: "z" }), null);
+});
+
+test("declararEstancia: sin consolas, la lista queda vacía (no undefined)", () => {
+  const estancia = declararEstancia({ planta: PLANTA_A, componer: () => ({}) });
+  assert.deepEqual(estancia.consolas, []);
+});
+
+test("declararEstancia: una consola no necesita destino, a diferencia de una puerta (#509)", () => {
+  const estancia = declararEstancia({
+    planta: PLANTA_A,
+    componer: () => ({}),
+    consolas: [{ rect: { x: 4, z: 4, ancho: 1, profundidad: 1 }, puesto: "engineering" }],
+  });
+  assert.equal(estancia.consolas.length, 1);
+  assert.equal(estancia.consolas[0].puesto, "engineering");
+});
+
+test("crearCatalogoEstancias no exige que una consola apunte a ninguna estancia: 'puesto' es opaco", () => {
+  // A diferencia de una puerta, una consola no referencia otra estancia del
+  // catálogo — validar su `puesto` contra algo sería mezclar "dónde está la
+  // nave" con "qué puestos existen", que es justo lo que este módulo no sabe.
+  assert.doesNotThrow(() =>
+    crearCatalogoEstancias({
+      a: {
+        planta: PLANTA_A,
+        componer: () => ({}),
+        consolas: [{ rect: { x: 4, z: 4, ancho: 1, profundidad: 1 }, puesto: "puesto-que-no-existe-en-ningun-sitio" }],
+      },
+    }),
+  );
+});
+
+test("puntoDeLlegada incluye las consolas de la estancia destino", () => {
+  const catalogo = crearCatalogoEstancias({
+    a: {
+      planta: PLANTA_A,
+      componer: () => ({}),
+      consolas: [{ rect: { x: 4, z: 4, ancho: 1, profundidad: 1 }, puesto: "engineering" }],
+    },
+  });
+  const llegada = puntoDeLlegada(catalogo, { estancia: "a" });
+  assert.deepEqual(llegada.consolas, [{ rect: { x: 4, z: 4, ancho: 1, profundidad: 1 }, puesto: "engineering" }]);
 });

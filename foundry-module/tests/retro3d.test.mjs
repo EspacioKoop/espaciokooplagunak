@@ -12,6 +12,7 @@ import {
   intensidadCara,
   proyectar,
   recortarCercano,
+  recortarLateral,
   sombrear,
   transformar,
 } from "../scripts/retro3d.mjs";
@@ -85,6 +86,81 @@ test("un vértice detrás de la cámara se recorta, no sale disparado", () => {
 test("una escena entera detrás de la cámara no produce polígonos", () => {
   const escena = componerEscena(MALLA_CAZA, { posicion: [0, 0, -20] });
   assert.deepEqual(escena.poligonos, []);
+});
+
+test("recortarLateral deja pasar un punto claramente dentro del cono de visión", () => {
+  const ancho = 640, alto = 360, f = focal(alto, 60);
+  const cuadrado = [[-1, -1, 5], [1, -1, 5], [1, 1, 5], [-1, 1, 5]];
+  assert.equal(recortarLateral(cuadrado, { ancho, alto, f }).length, 4);
+});
+
+test("recortarLateral descarta un vértice fuera del cono aunque z>0", () => {
+  const ancho = 640, alto = 360, f = focal(alto, 60);
+  // x=100 a z=1 está muy fuera del cono para cualquier FOV razonable.
+  const fueraDeCampo = [[100, 0, 1], [101, 0, 1], [101, 1, 1], [100, 1, 1]];
+  assert.deepEqual(recortarLateral(fueraDeCampo, { ancho, alto, f }), []);
+});
+
+// REGRESIÓN (#508/#510): un muro largo casi paralelo a la vista —el caso
+// normal de mirar de frente por un pasillo— podía pasar el recorte cercano
+// con un x/y de cámara moderado y `proyectar` lo disparaba a miles de
+// píxeles fuera de pantalla. `recorteLateral: true` es el arreglo.
+test("REGRESIÓN: con recorteLateral, ningún punto proyectado se dispara fuera de pantalla", () => {
+  const ancho = 480, alto = 270;
+  // Un muro largo (28 unidades) y fino, con la cámara metida dentro de su
+  // tramo mirando exactamente a lo largo de él — la geometría del pasillo
+  // de #508 que disparó el bug.
+  const muroLargo = {
+    vertices: [
+      [-0.2, 0, -14], [0.2, 0, -14], [0.2, 3, -14], [-0.2, 3, -14],
+      [-0.2, 0, 14], [0.2, 0, 14], [0.2, 3, 14], [-0.2, 3, 14],
+    ],
+    caras: [[0, 1, 2, 3], [4, 7, 6, 5], [0, 3, 7, 4], [1, 5, 6, 2]],
+  };
+  const escena = componerEscena(muroLargo, { ancho, alto, fov: 62, recorteLateral: true, posicion: [0, 0, 0] });
+  for (const poligono of escena.poligonos) {
+    for (const punto of poligono.puntos) {
+      assert.ok(Math.abs(punto.x) < ancho * 10, `x disparado: ${punto.x}`);
+      assert.ok(Math.abs(punto.y) < alto * 10, `y disparado: ${punto.y}`);
+    }
+  }
+});
+
+// REGRESIÓN (QA sobre #508/#509: "las paredes van cambiando de iluminación
+// sin sentido al girar"). Sin `luzFija`, la normal de cada cara sale de los
+// vértices YA girados por `yaw` — correcto para una pieza que rota delante
+// de una cámara fija (`girarNave`, dados, cartas: el efecto de "vitrina bajo
+// una luz" es intencional), pero en el bucle de andar ese `yaw` no es el
+// giro de la pieza: es el giro de la CÁMARA fingido rotando el mundo al
+// revés, así que la luz (un vector fijo) queda pegada a hacia dónde mira el
+// jugador en vez de fija en el mundo.
+// Devanado en sentido antihorario visto DESDE la cámara (mirando hacia +z):
+// con el orden [0,1,2,3] la cara mira hacia -z (de espaldas al origen) y se
+// descarta por completo, así que estos tests no verían ningún polígono. Con
+// GameCube (16 tonos, no los 4 de PSX por defecto) para que el cambio de
+// intensidad no caiga por casualidad en el mismo escalón en los dos ángulos.
+test("sin luzFija, el sombreado de una pared cambia solo con girar la cámara (el comportamiento de una vitrina)", () => {
+  const pared = {
+    vertices: [[-2, -2, 5], [2, -2, 5], [2, 2, 5], [-2, 2, 5]],
+    caras: [[3, 2, 1, 0]],
+  };
+  const mirandoDeFrente = componerEscena(pared, { yaw: 0, posicion: [0, 0, 0], epoca: "gamecube" });
+  const girada = componerEscena(pared, { yaw: 0.6, posicion: [0, 0, 0], epoca: "gamecube" });
+  assert.equal(mirandoDeFrente.poligonos.length, 1);
+  assert.equal(girada.poligonos.length, 1);
+  assert.notEqual(mirandoDeFrente.poligonos[0].color, girada.poligonos[0].color);
+});
+
+test("con luzFija, una pared quieta en el mundo se ve igual de iluminada gire lo que gire la cámara", () => {
+  const pared = {
+    vertices: [[-2, -2, 5], [2, -2, 5], [2, 2, 5], [-2, 2, 5]],
+    caras: [[3, 2, 1, 0]],
+  };
+  const mirandoDeFrente = componerEscena(pared, { yaw: 0, posicion: [0, 0, 0], epoca: "gamecube", luzFija: true });
+  const girada = componerEscena(pared, { yaw: 0.6, posicion: [0, 0, 0], epoca: "gamecube", luzFija: true });
+  assert.equal(mirandoDeFrente.poligonos.length, 1);
+  assert.equal(girada.poligonos.length, 1);
+  assert.equal(mirandoDeFrente.poligonos[0].color, girada.poligonos[0].color);
 });
 
 test("se pinta de lejos a cerca: el orden por pintor", () => {

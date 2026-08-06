@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { girarNave, pintarEscena, pintarNave } from "../scripts/retro3d-lienzo.mjs";
+import { girarNave, pintarEscena, pintarEscenaConProfundidad, pintarNave } from "../scripts/retro3d-lienzo.mjs";
 import { CASCO_POR_DEFECTO, MALLA_CAZA, componerEscena, mallaDesdeCasco } from "../scripts/retro3d.mjs";
 import { FACCIONES } from "../scripts/paleta.mjs";
 
@@ -191,4 +191,132 @@ test("el casco apunta al rumbo real, y sin lectura se queda quieto", async () =>
     conRumbo(360).poligonos.map((p) => p.color),
     conRumbo(0).poligonos.map((p) => p.color),
   );
+});
+
+// ---- pintarEscenaConProfundidad (#510): z-buffer real -----------------------
+
+function contextoConPixeles() {
+  const llamadas = [];
+  return { llamadas, putImageData(imagen) { llamadas.push(imagen); } };
+}
+
+function pixelEn(imagen, x, y) {
+  const o = (y * imagen.width + x) * 4;
+  return [imagen.data[o], imagen.data[o + 1], imagen.data[o + 2], imagen.data[o + 3]];
+}
+
+test("pintarEscenaConProfundidad: un triángulo pinta dentro y deja fondo fuera", () => {
+  const ctx = contextoConPixeles();
+  const escena = {
+    ancho: 8,
+    alto: 8,
+    poligonos: [{ color: "#ff0000", puntos: [{ x: 0, y: 0, z: 2 }, { x: 8, y: 0, z: 2 }, { x: 0, y: 8, z: 2 }] }],
+  };
+  pintarEscenaConProfundidad(ctx, escena, { fondo: "#000000" });
+  const imagen = ctx.llamadas[0];
+  assert.deepEqual(pixelEn(imagen, 1, 1), [255, 0, 0, 255], "dentro del triángulo");
+  assert.deepEqual(pixelEn(imagen, 6, 6), [0, 0, 0, 255], "fuera del triángulo, fondo");
+});
+
+test("pintarEscenaConProfundidad: un cuadrilátero (abanico de triángulos) se pinta entero", () => {
+  const ctx = contextoConPixeles();
+  const escena = {
+    ancho: 8,
+    alto: 8,
+    poligonos: [
+      {
+        color: "#00ff00",
+        puntos: [{ x: 1, y: 1, z: 3 }, { x: 7, y: 1, z: 3 }, { x: 7, y: 7, z: 3 }, { x: 1, y: 7, z: 3 }],
+      },
+    ],
+  };
+  pintarEscenaConProfundidad(ctx, escena, { fondo: "#000000" });
+  const imagen = ctx.llamadas[0];
+  // Las cuatro esquinas del cuadrilátero, no solo el primer triángulo del abanico.
+  for (const [x, y] of [[1, 1], [6, 1], [6, 6], [1, 6], [4, 4]]) {
+    assert.deepEqual(pixelEn(imagen, x, y), [0, 255, 0, 255], `esquina (${x},${y})`);
+  }
+});
+
+// La REGRESIÓN que este pintor existe para arreglar (#510, QA: "se
+// glitchean las texturas"): con el pintor por orden, cuál de dos piezas
+// casi empatadas se ve arriba dependía del orden de la lista, y ese orden
+// cambiaba con el temblor de cámara. Con z-buffer real no puede depender del
+// orden porque no HAY orden: cada píxel se decide por su propia profundidad.
+test("pintarEscenaConProfundidad: lo más cercano gana sin importar en qué orden se pinte (la regresión de #510)", () => {
+  const lejano = {
+    color: "#0000ff",
+    puntos: [{ x: 0, y: 0, z: 10 }, { x: 8, y: 0, z: 10 }, { x: 8, y: 8, z: 10 }, { x: 0, y: 8, z: 10 }],
+  };
+  const cercano = {
+    color: "#ff0000",
+    puntos: [{ x: 2, y: 2, z: 1 }, { x: 6, y: 2, z: 1 }, { x: 6, y: 6, z: 1 }, { x: 2, y: 6, z: 1 }],
+  };
+  const ctxA = contextoConPixeles();
+  pintarEscenaConProfundidad(ctxA, { ancho: 8, alto: 8, poligonos: [lejano, cercano] }, { fondo: "#000000" });
+  const ctxB = contextoConPixeles();
+  pintarEscenaConProfundidad(ctxB, { ancho: 8, alto: 8, poligonos: [cercano, lejano] }, { fondo: "#000000" });
+
+  assert.deepEqual(pixelEn(ctxA.llamadas[0], 4, 4), [255, 0, 0, 255], "orden A: gana lo cercano");
+  assert.deepEqual(pixelEn(ctxB.llamadas[0], 4, 4), [255, 0, 0, 255], "orden B: gana lo cercano igual");
+  assert.deepEqual(
+    Array.from(ctxA.llamadas[0].data),
+    Array.from(ctxB.llamadas[0].data),
+    "el resultado no puede depender de en qué orden llegaron los polígonos",
+  );
+});
+
+test("pintarEscenaConProfundidad: dos profundidades casi empatadas (0.001 de diferencia) siguen resolviéndose igual en cualquier orden", () => {
+  // El caso exacto que rompía el pintor por orden: no una diferencia grande
+  // como el test anterior, sino un empate casi perfecto — el que de verdad
+  // parpadeaba con el temblor de cámara.
+  const a = { color: "#0000ff", puntos: [{ x: 0, y: 0, z: 3.001 }, { x: 8, y: 0, z: 3.001 }, { x: 8, y: 8, z: 3.001 }, { x: 0, y: 8, z: 3.001 }] };
+  const b = { color: "#ff0000", puntos: [{ x: 0, y: 0, z: 3.002 }, { x: 8, y: 0, z: 3.002 }, { x: 8, y: 8, z: 3.002 }, { x: 0, y: 8, z: 3.002 }] };
+  const ctxA = contextoConPixeles();
+  pintarEscenaConProfundidad(ctxA, { ancho: 8, alto: 8, poligonos: [a, b] }, { fondo: "#000000" });
+  const ctxB = contextoConPixeles();
+  pintarEscenaConProfundidad(ctxB, { ancho: 8, alto: 8, poligonos: [b, a] }, { fondo: "#000000" });
+  assert.deepEqual(
+    Array.from(ctxA.llamadas[0].data),
+    Array.from(ctxB.llamadas[0].data),
+    "el ganador de un casi-empate no puede cambiar con el orden de dibujo",
+  );
+});
+
+test("pintarEscenaConProfundidad: una estrella nunca tapa geometría real, la pinte cuando la pinte", () => {
+  const cuadro = {
+    color: "#ff0000",
+    puntos: [{ x: 0, y: 0, z: 5 }, { x: 8, y: 0, z: 5 }, { x: 8, y: 8, z: 5 }, { x: 0, y: 8, z: 5 }],
+  };
+  const ctx = contextoConPixeles();
+  pintarEscenaConProfundidad(
+    ctx,
+    { ancho: 8, alto: 8, poligonos: [cuadro], estrellas: [{ x: 4, y: 4, tam: 2, color: "#ffffff" }] },
+    { fondo: "#000000" },
+  );
+  assert.deepEqual(pixelEn(ctx.llamadas[0], 4, 4), [255, 0, 0, 255], "el cuadro real tapa la estrella");
+});
+
+test("pintarEscenaConProfundidad: sin fondo, se pinta negro (un z-buffer no tiene transparente)", () => {
+  const ctx = contextoConPixeles();
+  pintarEscenaConProfundidad(ctx, { ancho: 4, alto: 4, poligonos: [] });
+  assert.deepEqual(pixelEn(ctx.llamadas[0], 0, 0), [0, 0, 0, 255]);
+});
+
+test("pintarEscenaConProfundidad: sin putImageData no rompe, devuelve 0", () => {
+  assert.equal(pintarEscenaConProfundidad({}, { ancho: 4, alto: 4, poligonos: [] }), 0);
+  assert.equal(pintarEscenaConProfundidad(null, { ancho: 4, alto: 4, poligonos: [] }), 0);
+});
+
+test("pintarEscenaConProfundidad: devuelve cuántos polígonos traía la escena", () => {
+  const ctx = contextoConPixeles();
+  const escena = {
+    ancho: 4,
+    alto: 4,
+    poligonos: [
+      { color: "#f00", puntos: [{ x: 0, y: 0, z: 1 }, { x: 4, y: 0, z: 1 }, { x: 0, y: 4, z: 1 }] },
+      { color: "#0f0", puntos: [{ x: 0, y: 0, z: 2 }, { x: 4, y: 0, z: 2 }, { x: 0, y: 4, z: 2 }] },
+    ],
+  };
+  assert.equal(pintarEscenaConProfundidad(ctx, escena), 2);
 });

@@ -70,6 +70,27 @@ test("un jugador sin avatar elegido no revienta: se normaliza a un cuerpo genér
   assert.ok(poligonos.length > 0);
 });
 
+test("un avatar visto de muy cerca no dispara vértices fuera de cuadro (#510)", () => {
+  // Mismo bug que ya se arregló en la geometría de la sala y en los planos
+  // fijos de la cantina: sin recorte lateral, un jugador casi encima de la
+  // cámara (cruzarse en un pasillo estrecho) infla su caja hasta cubrir la
+  // pantalla entera con coordenadas de miles de píxeles.
+  for (const yaw of [0, 0.3, 0.8, 1.0, 1.2, 1.4]) {
+    const poligonos = poligonosOtrosJugadores(
+      [{ x: 0.3, y: 0, z: 0.15, avatar: {} }],
+      { camara: [0, 1.45, 0], yaw, ancho: 480, alto: 270, fov: 62 },
+    );
+    for (const poligono of poligonos) {
+      for (const punto of poligono.puntos) {
+        assert.ok(
+          Math.abs(punto.x) < 5000 && Math.abs(punto.y) < 5000,
+          `yaw=${yaw}: vértice disparado (${punto.x}, ${punto.y})`,
+        );
+      }
+    }
+  }
+});
+
 test("el yaw de la cámara se traslada a la proyección de los avatares, igual que a la sala", () => {
   const sinGirar = poligonosOtrosJugadores([{ x: 0, y: 0, z: 3, avatar: {} }], { ...OPCIONES_BASE, yaw: 0 });
   const girado180 = poligonosOtrosJugadores([{ x: 0, y: 0, z: 3, avatar: {} }], {

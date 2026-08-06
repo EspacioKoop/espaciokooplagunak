@@ -86,6 +86,11 @@ export function recortarNave(ship) {
     // sería un código público y el puzle de tres personas dejaría de existir.
     self_destruct: recortarAutodestruccion(ship.self_destruct),
     shield_calibration: recortarCalibracion(ship.shield_calibration),
+    // La condición de alerta (#517) va a TODA la tripulación a propósito, no
+    // solo a Relay: que la nave esté en roja es justo lo que todo el mundo debe
+    // saber. Fijarla sigue siendo solo de Relay (#237); esto es leerla.
+    alert_level: recortarNivelAlerta(ship.alert_level),
+    probes: recortarSondas(ship.probes),
   };
 }
 
@@ -120,6 +125,21 @@ function recortarManiobra(maniobra) {
   const carga = Number(maniobra.charge);
   if (!Number.isFinite(carga)) return null;
   return { charge: Math.round(carga * 1000) / 1000 };
+}
+
+/** Los tres niveles del contrato, o `null`. Nunca se cae a "normal": eso diría
+ * que la nave está tranquila justo cuando no se sabe si lo está. */
+function recortarNivelAlerta(nivel) {
+  return nivel === "normal" || nivel === "yellow" || nivel === "red" ? nivel : null;
+}
+
+/** Sondas restantes y máximo. `0` es una lectura legítima —se han gastado— y se
+ * distingue de la ausencia de lanzador. */
+function recortarSondas(probes) {
+  const stock = Number(probes?.stock);
+  const max = Number(probes?.max);
+  if (!Number.isFinite(stock) || !Number.isFinite(max)) return null;
+  return { stock: Math.round(stock), max: Math.round(max) };
 }
 
 /** ¿Ha cambiado algo que se vea? Compara lo ya recortado, no el crudo. */

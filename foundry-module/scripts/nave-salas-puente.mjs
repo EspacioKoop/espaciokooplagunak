@@ -10,9 +10,18 @@
 // cinco veces en vez de inventar una geometría distinta por puesto es
 // deliberado: la sala no es donde vive el contenido de cada puesto —eso ya
 // lo tiene la consola de puesto, `station-workspaces.mjs`— es solo el sitio
-// físico al que se llega. Diferenciar su geometría sería decoración que nadie
-// pidió; #509 (abrir la consola al llegar) es donde de verdad se nota la
-// diferencia entre un puesto y otro.
+// físico al que se llega.
+//
+// LA CONSOLA (#509) es lo que sí distingue "estar en la sala" de "llegar al
+// puesto": un mueble con pantalla en el centro de la sala, y una ZONA delante
+// de él —separada a propósito del punto de entrada, para que acercarse sea un
+// gesto y no algo que ya haya pasado al cruzar la puerta— que dispara el
+// aviso hacia fuera (`nave-catalogo-andar.mjs` lo traduce a `puesto`). La
+// consola en sí NO abre nada: solo es la superficie física. Quien interpreta
+// el aviso y abre `station-workspaces.mjs` es quien tenga la ventana montada
+// (`andar-nave-app.mjs`) — la misma separación entre "aporta la estancia" y
+// "decide qué hacer con lo que pasa en ella" que ya sigue el resto del motor
+// de andar.
 //
 // Puro: solo compone `crearSalaCaja` y los datos de `nave-pasillo-puente.mjs`,
 // que ya son puros.
@@ -43,9 +52,44 @@ function ventanaEspacio() {
 }
 
 /** Dónde aparece quien entra desde el pasillo: pasado el hueco de la puerta,
- *  mirando hacia la ventana (yaw = +x). */
+ *  mirando hacia la ventana (yaw = +x). Delante a propósito de la ZONA de la
+ *  consola (ver `zonaConsola`), no encima: llegar a la sala y acercarse al
+ *  puesto son dos gestos distintos. */
 export function entradaEstacion() {
   return { x: 2, z: PROFUNDIDAD / 2, yaw: Math.PI / 2 };
+}
+
+/** El mueble de la consola: cuerpo y pantalla, centrado en la sala, entre la
+ *  entrada y la ventana. La pantalla mira hacia la puerta —el acento de la
+ *  cantina, `SECCION.entrable`, el mismo que ya marca "aquí se puede
+ *  entrar/interactuar" en el marco de las ventanas (#508)—. */
+const CENTRO_CONSOLA_X = 4;
+function mobiliarioConsola() {
+  return [
+    {
+      nombre: "consolaCuerpo",
+      centro: [CENTRO_CONSOLA_X, 0.5, PROFUNDIDAD / 2],
+      medidas: [1.2, 1.0, 1.0],
+      color: SECCION.mamparo,
+    },
+    {
+      nombre: "consolaPantalla",
+      centro: [CENTRO_CONSOLA_X - 0.55, 1.0, PROFUNDIDAD / 2],
+      medidas: [0.08, 0.6, 0.7],
+      color: SECCION.entrable,
+      // Ya la cubre el cuerpo de la consola: un segundo obstáculo sería
+      // redundante y solo complicaría la colisión sin cambiar nada real.
+      colision: false,
+    },
+  ];
+}
+
+/** Zona de pie, delante de la consola, donde acercarse dispara el aviso
+ *  (#509). Separada del punto de entrada (`entradaEstacion`, en x=2) y del
+ *  cuerpo de la consola (x:3.4-4.6): hay que caminar hasta ella, no basta con
+ *  cruzar la puerta. */
+export function zonaConsola() {
+  return { x: 2.6, z: Z_PUERTA, ancho: 0.8, profundidad: PROFUNDIDAD_PUERTA };
 }
 
 /** Puerta de vuelta al pasillo — la misma que `puertaHaciaPasillo()`, expuesta
@@ -59,6 +103,7 @@ const SALAS = new Map(
       profundidad: PROFUNDIDAD,
       puertas: [{ rect: puertaHaciaPasillo() }],
       ventanas: [{ rect: ventanaEspacio() }],
+      mobiliario: mobiliarioConsola(),
       colorMuro: SECCION.casco,
       // Una semilla por estación: cada ventana mira un trozo distinto del
       // mismo cielo (misma idea que `semillaCielo` en `cantina-escena.mjs`).

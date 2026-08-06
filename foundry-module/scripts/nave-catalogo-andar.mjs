@@ -32,7 +32,12 @@ import {
   PUERTA_VESTIBULO_HACIA_INGENIERIA,
   PUERTA_VESTIBULO_HACIA_PASILLO,
 } from "./nave-vestibulo.mjs";
-import { PLANTA_INGENIERIA, componerIngenieria, PUERTA_INGENIERIA_HACIA_VESTIBULO } from "./nave-sala-ingenieria.mjs";
+import {
+  PLANTA_INGENIERIA,
+  componerIngenieria,
+  PUERTA_INGENIERIA_HACIA_VESTIBULO,
+  ZONA_CONSOLA_INGENIERIA,
+} from "./nave-sala-ingenieria.mjs";
 import {
   PLANTA_PASILLO_PUENTE,
   componerPasilloPuente,
@@ -42,7 +47,7 @@ import {
   puertaHaciaEstacion,
   llegadaDesdeEstacion,
 } from "./nave-pasillo-puente.mjs";
-import { salaEstacion, entradaEstacion, PUERTA_ESTACION_HACIA_PASILLO } from "./nave-salas-puente.mjs";
+import { salaEstacion, entradaEstacion, zonaConsola, PUERTA_ESTACION_HACIA_PASILLO } from "./nave-salas-puente.mjs";
 
 export const CATALOGO_ANDAR = crearCatalogoEstancias({
   cantina: {
@@ -90,6 +95,9 @@ export const CATALOGO_ANDAR = crearCatalogoEstancias({
         destino: { estancia: "vestibulo", x: 3, z: 2, yaw: 0 },
       },
     ],
+    // #509: acercarse a la consola abre el puesto de ingeniería, como atajo
+    // a lo que ya existe por botón — nunca da mandos nuevos (#237).
+    consolas: [{ rect: ZONA_CONSOLA_INGENIERIA, puesto: "engineering" }],
   },
   "pasillo-puente": {
     planta: PLANTA_PASILLO_PUENTE,
@@ -123,6 +131,9 @@ export const CATALOGO_ANDAR = crearCatalogoEstancias({
             destino: { estancia: "pasillo-puente", ...llegadaDesdeEstacion(estacion) },
           },
         ],
+        // #509: acercarse a la consola abre ESE puesto, como atajo a lo que
+        // ya existe por botón — nunca da mandos nuevos (#237).
+        consolas: [{ rect: zonaConsola(), puesto: estacion.puesto }],
       },
     ]),
   ),

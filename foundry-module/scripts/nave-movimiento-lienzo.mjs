@@ -41,6 +41,8 @@ const VELOCIDAD_GIRO = Math.PI * 0.6; // radianes por segundo
  *   planta: object,
  *   puertas?: Array<{rect:object, destino:object}>,
  *   alTocarPuerta?: (destino:object) => void,
+ *   consolas?: Array<{rect:object, puesto:string}>,
+ *   alTocarConsola?: (puesto:string) => void,
  *   x?: number, z?: number, y?: number, yaw?: number,
  *   velocidad?: number, radio?: number, velocidadGiro?: number,
  *   fondo?: string|null,
@@ -77,6 +79,13 @@ export function arrancarAndar(lienzo, opciones = {}) {
   let componer = opciones.componer;
   let puertas = Array.isArray(opciones.puertas) ? opciones.puertas : [];
   let alTocarPuerta = typeof opciones.alTocarPuerta === "function" ? opciones.alTocarPuerta : null;
+  let consolas = Array.isArray(opciones.consolas) ? opciones.consolas : [];
+  let alTocarConsola = typeof opciones.alTocarConsola === "function" ? opciones.alTocarConsola : null;
+  // Flanco de entrada, no nivel (#509): una consola no teletransporta, así
+  // que seguir de pie delante de ella no puede seguir disparando el aviso en
+  // cada fotograma —abriría el espacio de puesto sesenta veces por
+  // segundo—. Solo cambia de `null` a una consola, o de una consola a otra.
+  let consolaTocadaAntes = null;
 
   let x = Number.isFinite(opciones.x) ? opciones.x : planta.ancho / 2;
   let z = Number.isFinite(opciones.z) ? opciones.z : planta.profundidad / 2;
@@ -118,6 +127,18 @@ export function arrancarAndar(lienzo, opciones = {}) {
       if (puerta) alTocarPuerta(puerta.destino);
     }
 
+    // Misma detección de contacto que una puerta (`puertaTocada` no le exige
+    // a su rectángulo tener `destino` — ver `nave-estancias.declararEstancia`
+    // para el porqué de compartir la forma), pero solo se avisa en el flanco
+    // de entrada.
+    if (alTocarConsola) {
+      const consola = puertaTocada(x, z, radio, consolas);
+      if (consola !== consolaTocadaAntes) {
+        if (consola) alTocarConsola(consola.puesto);
+        consolaTocadaAntes = consola;
+      }
+    }
+
     pintarUnaVez();
     fotograma = pedirFotograma?.(paso) ?? null;
   }
@@ -152,10 +173,23 @@ export function arrancarAndar(lienzo, opciones = {}) {
      * de arriba (el catálogo de estancias o quien lo consulte), nunca este
      * módulo: aquí solo se aplica el cambio ya decidido.
      */
-    cambiarEstancia({ planta: nuevaPlanta, componer: nuevoComponer, puertas: nuevasPuertas, x: nx, z: nz, yaw: nYaw }) {
+    cambiarEstancia({
+      planta: nuevaPlanta,
+      componer: nuevoComponer,
+      puertas: nuevasPuertas,
+      consolas: nuevasConsolas,
+      x: nx,
+      z: nz,
+      yaw: nYaw,
+    }) {
       if (nuevaPlanta) planta = nuevaPlanta;
       if (typeof nuevoComponer === "function") componer = nuevoComponer;
       puertas = Array.isArray(nuevasPuertas) ? nuevasPuertas : [];
+      consolas = Array.isArray(nuevasConsolas) ? nuevasConsolas : [];
+      // La sala nueva empieza sin nadie tocando ninguna consola: si el punto
+      // de llegada cayera sobre una por casualidad, el flanco de entrada de
+      // ESA sala tiene que poder dispararse, no darse por ya visto.
+      consolaTocadaAntes = null;
       if (Number.isFinite(nx)) x = nx;
       if (Number.isFinite(nz)) z = nz;
       if (Number.isFinite(nYaw)) yaw = nYaw;

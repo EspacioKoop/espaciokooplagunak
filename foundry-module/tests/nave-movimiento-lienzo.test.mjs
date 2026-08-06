@@ -184,6 +184,81 @@ test("alTocarPuerta se dispara al entrar en su rectángulo, con lo que traiga de
   mando.detener();
 });
 
+test("alTocarConsola se dispara al entrar en su zona, solo una vez (#509)", () => {
+  const consolas = [{ rect: { x: 4, z: 8, ancho: 2, profundidad: 1 }, puesto: "engineering" }];
+  const avisos = [];
+  const mando = arrancarAndar(lienzoFalso(), {
+    componer: () => ({ ancho: 100, alto: 100, poligonos: [] }),
+    planta: crearPlanta({ ancho: 10, profundidad: 10 }),
+    consolas,
+    alTocarConsola: (puesto) => avisos.push(puesto),
+    x: 5,
+    z: 7,
+    yaw: 0,
+    velocidad: 4,
+  });
+  mando.pulsar("adelante");
+  mando.avanzar(300); // z: 7 -> ~8.2, dentro de la zona
+  assert.deepEqual(avisos, ["engineering"], "un único aviso al entrar");
+
+  // Seguir de pie dentro no repite el aviso: es un flanco, no un nivel.
+  mando.avanzar(200);
+  mando.avanzar(200);
+  assert.deepEqual(avisos, ["engineering"]);
+
+  // Salir y volver a entrar sí lo dispara otra vez.
+  mando.soltar("adelante");
+  mando.pulsar("atras");
+  mando.avanzar(500);
+  mando.soltar("atras");
+  mando.pulsar("adelante");
+  mando.avanzar(500);
+  assert.equal(avisos.length, 2, "salir y reentrar dispara un segundo aviso");
+  mando.detener();
+});
+
+test("sin alTocarConsola, tocar una zona de consola no hace nada (no revienta)", () => {
+  const mando = arrancarAndar(lienzoFalso(), {
+    componer: () => ({ ancho: 100, alto: 100, poligonos: [] }),
+    planta: crearPlanta({ ancho: 10, profundidad: 10 }),
+    consolas: [{ rect: { x: 4, z: 8, ancho: 2, profundidad: 1 }, puesto: "engineering" }],
+    x: 5,
+    z: 8.3,
+    yaw: 0,
+  });
+  mando.avanzar(16);
+  mando.detener();
+});
+
+test("cambiarEstancia sustituye las consolas y reinicia el flanco de entrada", () => {
+  const avisos = [];
+  const mando = arrancarAndar(lienzoFalso(), {
+    componer: () => ({ ancho: 100, alto: 100, poligonos: [] }),
+    planta: crearPlanta({ ancho: 10, profundidad: 10 }),
+    consolas: [{ rect: { x: 4, z: 4, ancho: 2, profundidad: 2 }, puesto: "captain" }],
+    alTocarConsola: (puesto) => avisos.push(puesto),
+    x: 5,
+    z: 5, // ya dentro de la zona de la consola de "a"
+    yaw: 0,
+  });
+  mando.avanzar(16);
+  assert.deepEqual(avisos, ["captain"], "el punto de partida ya cuenta como entrada");
+
+  // La estancia nueva tiene su propia consola, en la MISMA zona local (5,5):
+  // el cambio de sala tiene que volver a disparar el aviso, no darlo por
+  // visto porque la posición numérica no cambió.
+  mando.cambiarEstancia({
+    planta: crearPlanta({ ancho: 10, profundidad: 10 }),
+    consolas: [{ rect: { x: 4, z: 4, ancho: 2, profundidad: 2 }, puesto: "engineering" }],
+    x: 5,
+    z: 5,
+    yaw: 0,
+  });
+  mando.avanzar(16);
+  assert.deepEqual(avisos, ["captain", "engineering"]);
+  mando.detener();
+});
+
 test("sin alTocarPuerta, tocar una puerta no hace nada (no revienta)", () => {
   const mando = arrancarAndar(lienzoFalso(), {
     componer: () => ({ ancho: 100, alto: 100, poligonos: [] }),

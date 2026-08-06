@@ -225,8 +225,15 @@ function trasladarMalla(malla, [dx, dy, dz]) {
  * declarar— y, a diferencia de una puerta, dejan la sala viendo el campo
  * estelar de `semillaCielo` por el hueco.
  *
+ * `mobiliario` (#509) son piezas sueltas dentro de la sala —una consola, una
+ * mesa— cada una `{centro:[x,y,z], medidas:[ancho,alto,fondo], color,
+ * colision?:boolean}`. Con `colision` (default `true`) la pieza también
+ * bloquea el paso, con su huella en el plano X/Z; una decoración que cuelga
+ * del techo o que no debe estorbar puede ponerlo a `false`.
+ *
  * @param {{ancho:number, profundidad:number, columnas?:Array,
  *   puertas?:Array<{rect:object}>, ventanas?:Array<{rect:object}>,
+ *   mobiliario?:Array<{centro:number[], medidas:number[], color:string, colision?:boolean}>,
  *   colorMuro?:string, colorColumna?:string, colorMarcoVentana?:string,
  *   semillaCielo?:number, cantidadEstrellas?:number}} medidas
  */
@@ -236,6 +243,7 @@ export function crearSalaCaja({
   columnas = [],
   puertas = [],
   ventanas = [],
+  mobiliario = [],
   colorMuro = SECCION.casco,
   colorColumna = SECCION.mamparo,
   // El acento de la cantina (#508 feedback): un cerco de neón alrededor del
@@ -257,16 +265,26 @@ export function crearSalaCaja({
   ];
   const { muros: tramosMuro, bandas, marcos } = abrirHuecosEnMuros(muros, huecos, ancho, profundidad);
 
+  const obstaculosMobiliario = mobiliario
+    .filter((pieza) => pieza.colision !== false)
+    .map(({ centro, medidas }) => ({
+      x: centro[0] - medidas[0] / 2,
+      z: centro[2] - medidas[2] / 2,
+      ancho: medidas[0],
+      profundidad: medidas[2],
+    }));
+
   const piezas = Object.freeze([
     ...tramosMuro.map((rect) => ({ malla: rectAColumna(rect, ALTURA), color: colorMuro })),
     ...marcos.map((malla) => ({ malla, color: colorMarcoVentana })),
     ...bandas.map((malla) => ({ malla, color: colorMuro })),
     ...columnas.map((rect) => ({ malla: rectAColumna(rect, ALTURA), color: colorColumna })),
+    ...mobiliario.map(({ centro, medidas, color }) => ({ malla: caja(centro, medidas), color })),
     { malla: caja([ancho / 2, -0.05, profundidad / 2], [ancho, 0.1, profundidad]), color: SECCION.sala },
     { malla: caja([ancho / 2, ALTURA + 0.05, profundidad / 2], [ancho, 0.1, profundidad]), color: SECCION.mamparo },
   ]);
 
-  const planta = crearPlanta({ ancho, profundidad, obstaculos: columnas });
+  const planta = crearPlanta({ ancho, profundidad, obstaculos: [...columnas, ...obstaculosMobiliario] });
   const tieneVentanas = ventanas.length > 0;
   const cielo = tieneVentanas ? campoEstelar(semillaCielo, { cantidad: cantidadEstrellas }) : null;
 

@@ -223,7 +223,15 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     (qué puerta lleva a dónde) sin que ninguna sala necesite saber de las demás — cada sala de puesto
     nueva es una entrada más de ese catálogo, no un cambio al motor. Las salas de prueba ("a"/"b")
     NUNCA aparecen en este catálogo: fue su papel mientras no había un nudo real, y lo dejó de ser en
-    cuanto lo hubo.
+    cuanto lo hubo. Cada sala de puesto real tiene una CONSOLA (#509): un mueble con pantalla y una
+    zona de pie delante —separada a propósito del punto de entrada, para que acercarse sea un gesto—
+    que `nave-estancias.mjs` declara con la misma forma que una puerta (`{rect, ...}`, reutilizando
+    `nave-movimiento.puertaTocada`) pero sin `destino`: dispara `puesto` hacia fuera, y
+    `nave-movimiento-lienzo.mjs` solo avisa en el flanco de ENTRADA (una vez, no cada fotograma
+    mientras se está de pie delante). `andar-nave-app.mjs` interpreta el aviso llamando a
+    `openWorkspaceApp(puesto)` (`station-workspace-ui.mjs`) — el mismo espacio que ya se abre por
+    botón; para quien no es GM ese parámetro no hace nada (abre siempre el propio puesto, #237), así
+    que caminar hasta una consola ajena no da ni enseña más de lo que ya daría el botón.
   - **Visor del piloto** — `scripts/visor-piloto.mjs` (geometría pura) y
     `scripts/visor-piloto-lienzo.mjs` (el <canvas>), #362. Lo que la nave tiene delante, en PSX,
     en la consola de pilotaje. Es la primera superficie 3D del módulo que **informa** en vez de

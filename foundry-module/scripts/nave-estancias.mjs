@@ -20,10 +20,20 @@
  * apunta a otra estancia del mismo catálogo. `entrada` es dónde se aparece si
  * nadie más lo dice (primera apertura, o una puerta que no fija `x`/`z`).
  *
+ * `consolas` (#509) son zonas de interacción DENTRO de la sala, no en un
+ * muro: acercarse a una NO cambia de estancia —`destino` no tiene sentido
+ * aquí—, dispara un aviso hacia fuera (`puesto`, opaco para este módulo,
+ * igual que `destino` en una puerta) que interpreta quien gestione el
+ * catálogo. Es a propósito la misma forma que una puerta (`{rect, ...}`)
+ * para poder reutilizar la misma detección de contacto
+ * (`nave-movimiento.puertaTocada`) sin que ese módulo necesite saber que las
+ * consolas existen.
+ *
  * @param {{
  *   planta: object,
  *   componer: (x:number, y:number, z:number, yaw:number, opciones?:object) => object,
  *   puertas?: Array<{rect:object, destino:{estancia:string, x?:number, z?:number, yaw?:number}}>,
+ *   consolas?: Array<{rect:object, puesto:string}>,
  *   entrada?: {x:number, z:number, yaw?:number},
  * }} definicion
  */
@@ -35,6 +45,7 @@ export function declararEstancia(definicion) {
     planta: definicion.planta,
     componer: definicion.componer,
     puertas: Object.freeze((definicion.puertas ?? []).map((p) => Object.freeze({ ...p }))),
+    consolas: Object.freeze((definicion.consolas ?? []).map((c) => Object.freeze({ ...c }))),
     entrada: Object.freeze({
       x: definicion.entrada?.x ?? definicion.planta.ancho / 2,
       z: definicion.entrada?.z ?? definicion.planta.profundidad / 2,
@@ -88,6 +99,7 @@ export function puntoDeLlegada(catalogo, destino) {
     planta: estancia.planta,
     componer: estancia.componer,
     puertas: estancia.puertas,
+    consolas: estancia.consolas,
     x: destino.x ?? estancia.entrada.x,
     z: destino.z ?? estancia.entrada.z,
     yaw: destino.yaw ?? estancia.entrada.yaw,

@@ -67,3 +67,45 @@ test("se puede ir y volver entre el pasillo del puente y cada sala de estación"
     cruzar(id, "pasillo-puente");
   }
 });
+
+// #509: cada sala de puesto real tiene exactamente una consola, hacia el
+// puesto que le corresponde.
+const PUESTO_DE_ESTACION = Object.freeze({
+  mando: "captain",
+  navegacion: "navigation",
+  sensores: "sensors",
+  comunicaciones: "communications",
+  armas: "weapons",
+});
+
+test("ingeniería tiene una consola hacia 'engineering'", () => {
+  const consolas = CATALOGO_ANDAR.obtener("ingenieria").consolas;
+  assert.equal(consolas.length, 1);
+  assert.equal(consolas[0].puesto, "engineering");
+});
+
+test("cada sala de estación tiene una consola hacia SU puesto, ninguna hacia otro", () => {
+  for (const id of ESTACIONES) {
+    const consolas = CATALOGO_ANDAR.obtener(id).consolas;
+    assert.equal(consolas.length, 1, `${id} debería tener exactamente una consola`);
+    assert.equal(consolas[0].puesto, PUESTO_DE_ESTACION[id]);
+  }
+});
+
+test("ninguna consola cae encima del punto de entrada de su sala: hay que caminar hasta ella", () => {
+  for (const id of ["ingenieria", ...ESTACIONES]) {
+    const estancia = CATALOGO_ANDAR.obtener(id);
+    const entrada = estancia.entrada;
+    for (const consola of estancia.consolas) {
+      const { rect } = consola;
+      const dentro = entrada.x >= rect.x && entrada.x <= rect.x + rect.ancho && entrada.z >= rect.z && entrada.z <= rect.z + rect.profundidad;
+      assert.equal(dentro, false, `${id}: la entrada ya cae dentro de la zona de su consola`);
+    }
+  }
+});
+
+test("cantina, vestíbulo y el pasillo del puente no tienen consola: son tránsito, no puesto", () => {
+  for (const id of ["cantina", "vestibulo", "pasillo-puente"]) {
+    assert.deepEqual(CATALOGO_ANDAR.obtener(id).consolas, []);
+  }
+});

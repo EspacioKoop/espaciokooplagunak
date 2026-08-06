@@ -14,13 +14,19 @@
  * Puro: ni Foundry, ni DOM, ni red — igual que `minijuegos-wiring.mjs` separa
  * el motor del cableado, aquí se separa "qué puertas hay" de "cómo se pinta
  * la sala" (`cantina-app.mjs`).
+ *
+ * El almacenamiento y la búsqueda por id son `crearCatalogoPuertas`
+ * (#448, item 4): mismo patrón exacto que `panel-gm.mjs`, factorizado una
+ * vez que hubo dos consumidores reales.
  */
+
+import { crearCatalogoPuertas } from "./puerta-catalogo.mjs";
 
 /** Una entrada por mesa social disponible. `id` identifica la puerta; `juego`
  * es el nombre con el que la conoce `sesion-motor.mjs`, y son campos distintos
  * a propósito: el día que dos puertas lleven al mismo juego con reglas de casa
  * distintas, la sala no tiene por qué enterarse. */
-export const PUERTAS = Object.freeze([
+const catalogo = crearCatalogoPuertas([
   Object.freeze({
     id: "poker",
     juego: "poker",
@@ -52,12 +58,14 @@ export const PUERTAS = Object.freeze([
   }),
 ]);
 
+export const PUERTAS = catalogo.congelado;
+
 /** Catálogo completo, en orden estable. */
 export function puertasCantina() {
-  return PUERTAS;
+  return catalogo.todas();
 }
 
 /** La puerta con ese id, o `undefined` si el catálogo no la tiene. */
 export function puertaPorId(id) {
-  return PUERTAS.find((puerta) => puerta.id === id);
+  return catalogo.porId(id);
 }

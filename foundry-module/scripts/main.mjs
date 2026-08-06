@@ -86,6 +86,8 @@ import {
   recordarVista as recordarVistaBlackjack,
 } from "./minijuegos/mesa-blackjack-app.mjs";
 import { aplicarVariablesAlerta, registrarAjusteAlerta, registrarEscuchaAlerta } from "./alerta-escena.mjs";
+import { registrarAjusteAlarmaCruzada, registrarEscuchaAlarmaCruzada } from "./alarma-cruzada-escena.mjs";
+import { normalizeStation } from "./station-assignment.mjs";
 import {
   AJUSTE_GRANO,
   GRANO_APAGADO,
@@ -193,6 +195,11 @@ Hooks.once("init", () => {
   // el GM y lo leen todos, así que un jugador que entra tarde ve la alerta en
   // curso sin esperar al siguiente sondeo del GM.
   registrarAjusteAlerta(MODULE_ID);
+
+  // Alarma cruzada por dependencia entre sistemas (#482): distinta del nivel
+  // de arriba —ver cabecera de `alarma-cruzada.mjs`—, ajuste de MUNDO por el
+  // mismo motivo: solo el GM calcula, todos leen.
+  registrarAjusteAlarmaCruzada(MODULE_ID);
 
   // Tinte de escena delegado en FXMaster (ver `filtros-escena.mjs` y
   // docs/ECOSISTEMA_MODULOS_FOUNDRY.md). APAGADO por defecto y no por timidez:
@@ -385,6 +392,18 @@ Hooks.once("ready", () => {
   // tiene que encontrar su color ya publicado.
   aplicarVariablesAlerta();
   registrarEscuchaAlerta(MODULE_ID);
+  // Alarma cruzada reactor/escudos (#482): solo ingeniería y armas la ven, con
+  // la variante causa/efecto que les toca. El puesto se resuelve del flag del
+  // propio usuario en cada repintado, para seguir el relevo sin recargar.
+  registrarEscuchaAlarmaCruzada(MODULE_ID, {
+    resolverPuesto: () => {
+      try {
+        return normalizeStation(game.user?.getFlag(MODULE_ID, "station") ?? null);
+      } catch {
+        return null;
+      }
+    },
+  });
   // Y, si el GM lo ha encendido y FXMaster está, el mismo nivel tiñe además el
   // lienzo. El cableado escucha los tres momentos en que el tinte puede quedar
   // desfasado —cambio de nivel, encendido del ajuste, apertura de otra escena—

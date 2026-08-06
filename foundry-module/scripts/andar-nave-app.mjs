@@ -20,13 +20,25 @@ import { MODULE_ID } from "./lagunak-constantes.mjs";
 import { arrancarAndar } from "./nave-movimiento-lienzo.mjs";
 import { CATALOGO_ANDAR } from "./nave-catalogo-andar.mjs";
 import { puntoDeLlegada } from "./nave-estancias.mjs";
+import {
+  construirMuestra,
+  debeMuestrear,
+  posicionesVisibles,
+  programarMuestra,
+} from "./nave-movimiento-red.mjs";
+import { avatarDeUsuario } from "./avatar-assignment.mjs";
 
 const ESTANCIA_INICIAL = "a";
 
 /**
- * Dónde se guarda la posición entre aperturas: flag del propio `User`,
- * client-side, igual que `station` (#237) — es "dónde estoy yo", no un dato
- * de partida que tenga que sobrevivir a que otro GM tome el relevo.
+ * Dónde se guarda la posición: flag del propio `User`, client-side, igual
+ * que `station` (#237) — es "dónde estoy yo", no un dato de partida que
+ * tenga que sobrevivir a que otro GM tome el relevo. Sirve dos propósitos a
+ * la vez con la misma escritura: checkpoint para reabrir la ventana Y
+ * muestra en vivo que el resto de la tripulación lee para verte moverse
+ * (#453) — cualquier cliente puede LEER el `User` de cualquier otro, solo la
+ * ESCRITURA está restringida al propio documento (ver cabecera de
+ * `nave-movimiento-red.mjs`).
  */
 const FLAG_POSICION = "posicionNave";
 
@@ -37,6 +49,10 @@ const PLANTILLA = `modules/${MODULE_ID}/templates/andar-nave.hbs`;
 function leerPosicionGuardada() {
   try {
     const guardada = game.user?.getFlag?.(MODULE_ID, FLAG_POSICION);
+    // `y` (salto/agachado) se ignora a propósito al RESTAURAR, aunque la
+    // muestra en vivo lo incluya: es inercia de un fotograma, no una postura
+    // que tenga sentido recuperar al reabrir la ventana — reaparecer a media
+    // zancadilla en el aire sería más raro que simplemente reaparecer de pie.
     if (guardada && CATALOGO_ANDAR.tiene(guardada.estancia)) return guardada;
   } catch {
     // Sin ajuste registrado, o sin `game.user` resuelto todavía: se cae al
@@ -45,15 +61,23 @@ function leerPosicionGuardada() {
   return null;
 }
 
-function guardarPosicion(estanciaId, mando) {
-  const { x, z, yaw } = mando.posicion();
-  // `y` (salto/agachado) NO se guarda a propósito: es inercia de un
-  // fotograma, no una postura que tenga sentido restaurar al reabrir la
-  // ventana — reaparecer a media zancadilla en el aire sería más raro que
-  // simplemente reaparecer de pie.
-  // Sin esperar la promesa: es una comodidad de sesión, no una escritura de
-  // la que dependa nada más — si falla, la próxima apertura arranca de serie.
-  game.user?.setFlag?.(MODULE_ID, FLAG_POSICION, { estancia: estanciaId, x, z, yaw });
+/**
+ * Publica la posición actual como muestra en vivo, respetando el throttle
+ * de `debeMuestrear` — salvo que `forzar` sea cierto (cruzar una puerta es
+ * un evento discreto real, se publica siempre). Devuelve el sello de la
+ * última publicación, para que el llamador seleccione el siguiente throttle.
+ * Sin esperar la promesa de `setFlag`: es una comodidad de sesión, no una
+ * escritura de la que dependa nada más — si falla, el siguiente intento (a
+ * lo sumo 150ms después) lo intenta de nuevo.
+ */
+function publicarPosicion(estanciaId, mando, ultimoSelloEnviado, forzar = false) {
+  const ahoraMs = Date.now();
+  if (!debeMuestrear({ ahoraMs, ultimoSelloEnviado, cambioDeEstancia: forzar })) {
+    return ultimoSelloEnviado;
+  }
+  const muestra = construirMuestra({ ...mando.posicion(), estancia: estanciaId }, ahoraMs);
+  game.user?.setFlag?.(MODULE_ID, FLAG_POSICION, muestra);
+  return muestra.sello;
 }
 
 /** Tecla física → dirección lógica. WASD y flechas de traslación hacen lo
@@ -148,6 +172,26 @@ function arrancar(raiz) {
   // posición, pero nunca supo que existen "estancias" con nombre — ese
   // conocimiento es de este archivo y del catálogo, no del bucle.
   let estanciaActual = guardada?.estancia ?? ESTANCIA_INICIAL;
+  let ultimoSelloEnviado = null;
+
+  // Muestras en vivo de los demás jugadores (#453), acumuladas por
+  // `updateUser`.
+  const otrosJugadores = new Map();
+
+  /** Jugadores visibles ahora mismo en la MISMA sala, ya interpolados y con
+   *  el avatar que cada cual eligió (#450, mismo molde que la cantina) — la
+   *  forma exacta que consume `poligonosOtrosJugadores`
+   *  (`nave-avatares-render.mjs`, #498). */
+  function jugadoresParaRender() {
+    return posicionesVisibles(otrosJugadores, {
+      estanciaPropia: estanciaActual,
+      miUserId: game.user?.id,
+      ahoraMs: Date.now(),
+    }).map((jugador) => ({
+      ...jugador,
+      avatar: avatarDeUsuario(game.users?.get?.(jugador.userId), MODULE_ID),
+    }));
+  }
 
   const mando = arrancarAndar(lienzo, {
     componer: inicial.componer,
@@ -164,18 +208,52 @@ function arrancar(raiz) {
       if (!llegada) return;
       estanciaActual = llegada.estancia;
       mando.cambiarEstancia(llegada);
-      // Se guarda AQUÍ y no solo al cerrar: un refresco de página o un cierre
-      // que no dispare `_onClose` no debería devolver a quien cruzó una
-      // puerta a la estancia de la que salió.
-      guardarPosicion(estanciaActual, mando);
+      // Se publica AQUÍ y no solo al cerrar/cada 150ms: un refresco de página
+      // no debería devolver a quien cruzó una puerta a la estancia de la que
+      // salió, y el resto de la tripulación no debería esperar hasta 150ms
+      // para saber que alguien cambió de sala.
+      ultimoSelloEnviado = publicarPosicion(estanciaActual, mando, ultimoSelloEnviado, true);
     },
     pedirFotograma: (cb) => globalThis.requestAnimationFrame?.(cb),
     cancelarFotograma: (id) => globalThis.cancelAnimationFrame?.(id),
+    // Se evalúa en cada fotograma pintado (#498): el bucle nunca ve un Map,
+    // solo la lista ya resuelta de ese instante.
+    otrosJugadores: jugadoresParaRender,
   });
   const desenganchar = engancharTeclado(raiz, mando);
+
+  // Publicación periódica mientras la ventana está abierta: `debeMuestrear`
+  // hace el throttle real (~150ms), este intervalo solo ofrece la
+  // oportunidad de comprobarlo con más frecuencia de la que hace falta
+  // publicar, no al revés.
+  const intervaloPublicacion = globalThis.setInterval?.(() => {
+    ultimoSelloEnviado = publicarPosicion(estanciaActual, mando, ultimoSelloEnviado);
+  }, 50);
+
+  // Recepción: cualquier cliente puede leer el `User` de cualquier otro (solo
+  // la escritura está restringida al propio documento), así que no hace
+  // falta relé del GM — se escucha `updateUser` directamente, mismo patrón
+  // de lectura que `station-order-relay.mjs` usa para la identidad del
+  // emisor, aplicado aquí a la posición en vez de a una orden.
+  const alCambiarUsuario = (userDoc, changes) => {
+    if (userDoc?.id === game.user?.id) return; // la propia muestra no se recibe de vuelta
+    if (!(FLAG_POSICION in (changes?.flags?.[MODULE_ID] ?? {}))) return; // cambio ajeno a la posición
+    const muestra = userDoc?.getFlag?.(MODULE_ID, FLAG_POSICION);
+    if (!muestra) return;
+    const anterior = otrosJugadores.get(userDoc.id) ?? null;
+    otrosJugadores.set(userDoc.id, programarMuestra(anterior, muestra, Date.now()));
+  };
+  Hooks.on("updateUser", alCambiarUsuario);
+
   return {
+    /** Jugadores visibles ahora mismo en la MISMA sala, ya interpolados y
+     *  con avatar — lo mismo que consume el pintor en cada fotograma,
+     *  expuesto por si algo fuera de este archivo necesita leerlo. */
+    jugadoresVisibles: jugadoresParaRender,
     detener() {
-      guardarPosicion(estanciaActual, mando);
+      publicarPosicion(estanciaActual, mando, ultimoSelloEnviado, true);
+      globalThis.clearInterval?.(intervaloPublicacion);
+      Hooks.off("updateUser", alCambiarUsuario);
       desenganchar();
       mando.detener();
     },

@@ -173,8 +173,8 @@ y [`SESION-NAVEGACION-OPERACIONAL.md`](SESION-NAVEGACION-OPERACIONAL.md):
 `set_target_heading`/`set_impulse`/`set_warp` ya son una decisión exclusiva
 del puesto que cambia el resultado de un encuentro), #481 (automatización de
 puestos vacíos — **verificado: no existe automatización nativa**, sistema sin
-tripulación queda congelado en su último valor; pendiente de diseño propio si
-se decide construirla, ver
+tripulación queda congelado en su último valor; la decisión de diseño sobre
+qué comportamiento adoptar queda trazada en #512, ver
 [`VERIFICACION-NAVEGACION-Y-AUTOMATIZACION.md`](VERIFICACION-NAVEGACION-Y-AUTOMATIZACION.md)),
 #482 (alarmas compartidas por dependencia entre sistemas), #483 (guardias y
 relevo) y #484 (crisis que exijan coordinación entre al menos tres puestos,

@@ -78,11 +78,12 @@ congelado en su último valor — escudos donde se dejaran, energía donde se
 dejara, sin nadie disparando ni escaneando. Diseñar automatización propia (en
 el puente/Foundry) para puestos vacíos parte de cero: tendría que decidir
 explícitamente su alcance (¿se congela el valor, que es lo que ya ocurre por
-defecto? ¿se aplica un valor de seguridad? ¿pasa a control del GM?) en un
-subissue de diseño propio, no asumir un comportamiento nativo que no existe.
+defecto? ¿se aplica un valor de seguridad? ¿pasa a control del GM?) — decisión
+trazada como subissue de diseño propio en #512, no asumir un comportamiento
+nativo que no existe.
 
 `docs/ROADMAP_PRODUCTO.md` queda actualizado para reflejar que este frente
-sigue sin resolver y requiere diseño explícito antes de construirse.
+sigue sin resolver y enlaza #512 como el subissue de diseño explícito.
 
 ## Fuera de alcance
 

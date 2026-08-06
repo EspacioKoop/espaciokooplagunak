@@ -191,7 +191,9 @@ for (const modern of [false, true]) {
       fetchCalls += 1;
       const payload = url.endsWith("/v1/state")
         ? { ship: { callsign: "Lagunak", systems: {} } }
-        : { contacts: [] };
+        : url.endsWith("/v1/database")
+          ? { entries: [], total: 0 }
+          : { contacts: [] };
       return { ok: true, async json() { return payload; } };
     };
     const { module, instances } = await setup({ isGM: true, modern, fetchImpl });
@@ -207,7 +209,11 @@ for (const modern of [false, true]) {
     assert.equal(reopened.closed, false);
     assert.equal(await reopened.refreshTelemetry(), true);
     assert.equal(reopened.statePayload.ship.callsign, "Lagunak");
-    assert.equal(fetchCalls, 2);
+    // Tres y no dos desde #520: estado, contactos y la base de datos científica.
+    // Esta última se pide UNA vez por consola (`cargarBaseDatos` no repite si ya
+    // la tiene), no en cada ciclo de sondeo — si esta cuenta creciera con los
+    // refrescos, sería que ese "una vez" se ha roto.
+    assert.equal(fetchCalls, 3);
   });
 }
 
@@ -294,3 +300,25 @@ for (const modern of [false, true]) {
     }
   });
 }
+
+test("la base de datos científica se pide una vez, no en cada sondeo (#520)", async () => {
+  // Es contenido de referencia casi inmóvil: repetirlo cada ciclo reenviaría
+  // siempre lo mismo, y además reescribiría el ajuste de mundo entero.
+  let dbCalls = 0;
+  const fetchImpl = async (url) => {
+    if (url.endsWith("/v1/database")) dbCalls += 1;
+    const payload = url.endsWith("/v1/state")
+      ? { ship: { callsign: "Lagunak", systems: {} } }
+      : url.endsWith("/v1/database")
+        ? { entries: [{ id: "Naves", name: "Naves" }], total: 1 }
+        : { contacts: [] };
+    return { ok: true, async json() { return payload; } };
+  };
+  const { module, instances } = await setup({ isGM: true, fetchImpl });
+  module.openWorkspaceApp();
+  const app = instances[0];
+  await app.refreshTelemetry();
+  await app.refreshTelemetry();
+  await app.refreshTelemetry();
+  assert.equal(dbCalls, 1);
+});

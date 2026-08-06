@@ -94,7 +94,7 @@ import {
   OPCIONES_GRANO,
   registrarSincroniaFiltros,
 } from "./filtros-escena.mjs";
-import { AJUSTE_TELEMETRIA } from "./telemetria-difusion.mjs";
+import { AJUSTE_BASE_DATOS, AJUSTE_TELEMETRIA } from "./telemetria-difusion.mjs";
 import {
   IDIOMA_AUTOMATICO,
   crearAplicadorIdioma,
@@ -283,6 +283,18 @@ Hooks.once("init", () => {
   // puede escribirlo, y esa comprobación la hace el servidor. `config: false`:
   // lo escribe el sondeo, no una persona.
   game.settings.register(MODULE_ID, AJUSTE_TELEMETRIA, {
+    scope: "world",
+    config: false,
+    type: Object,
+    default: null,
+  });
+
+  // Base de datos científica (#520). Ajuste APARTE del sobre de telemetría, y
+  // no un campo suyo: aquel se reescribe en cada sondeo y esto es contenido de
+  // referencia que se pide una vez. Meterlo dentro haría que cada ciclo
+  // reescribiera el catálogo entero. Mismo `scope: "world"` porque la
+  // tripulación no tiene token con el que pedirlo por su cuenta.
+  game.settings.register(MODULE_ID, AJUSTE_BASE_DATOS, {
     scope: "world",
     config: false,
     type: Object,

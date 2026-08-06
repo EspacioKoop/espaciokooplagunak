@@ -27,7 +27,13 @@ test("EL TOKEN NO VIAJA: el sobre lleva la nave y nada más", () => {
   // degradados en el origen. La lista es cerrada a propósito —si aparece una
   // clave nueva, esta prueba obliga a justificarla— porque este canal acaba en
   // un ajuste de mundo que toda la mesa puede leer.
-  assert.deepEqual(Object.keys(sobre).sort(), ["sello", "sensores", "ship", "tipo"]);
+  // `sensoresSonda` (#520) es la MISMA lectura degradada centrada en la sonda
+  // enlazada, no un dato nuevo: mismo alcance, mismo filtro, otro centro. La
+  // posición exacta de la sonda NO viaja por aquí.
+  assert.deepEqual(
+    Object.keys(sobre).sort(),
+    ["sello", "sensores", "sensoresSonda", "ship", "tipo"],
+  );
 });
 
 test("LOS CONTACTOS NO VIAJAN: es la excepción del issue, no un olvido", () => {
@@ -222,4 +228,58 @@ test("las sondas viajan con su máximo, y cero es una lectura", () => {
     { stock: 0, max: 8 },
   );
   assert.equal(recortarNave({ callsign: "Lagunak", systems: {} }).probes, null);
+});
+
+// --- Vista de sonda y enlace a ciencia (#520) ---------------------------------
+
+const CONTACTOS_LEJOS = {
+  contacts: [
+    { callsign: "Lapur 1", position: { x: 30000, y: 0 }, faction: "Exuari", scan_state: "none" },
+  ],
+};
+
+test("con sonda enlazada se difunde una segunda lectura centrada en ella", () => {
+  // Lo que hace útil la vista de sonda: ver lo que hay a su alrededor, lejos de
+  // la nave, con el MISMO alcance y la MISMA degradación. Otro centro, nada más.
+  const sobre = sobreTelemetria(
+    {
+      ship: {
+        ...estado.ship,
+        position: { x: 0, y: 0 },
+        radar: { short_range: 5000, long_range: 30000 },
+        science_link: { callsign: "P-1", position: { x: 29000, y: 0 } },
+      },
+    },
+    1,
+    CONTACTOS_LEJOS,
+  );
+  assert.ok(sobre.sensoresSonda, "hay lectura desde la sonda");
+  assert.ok(
+    sobre.sensoresSonda.contactos.length > 0,
+    "el contacto lejano sí se ve desde la sonda",
+  );
+  // Desde la sonda el mismo contacto está a un palmo; desde la nave, al borde.
+  const desdeSonda = sobre.sensoresSonda.contactos[0].distancia;
+  const desdeNave = sobre.sensores.contactos[0]?.distancia ?? Infinity;
+  assert.ok(desdeSonda < desdeNave, "la distancia se mide desde la sonda");
+});
+
+test("sin enlace no se difunde una vista de sonda vacía", () => {
+  // `null` apaga la vista. Una lista vacía diría «he mirado desde la sonda y no
+  // hay nada» sin haber sonda ninguna: el cuarto estado de #353 otra vez.
+  const sobre = sobreTelemetria(estado, 1, CONTACTOS_LEJOS);
+  assert.equal(sobre.sensoresSonda, null);
+});
+
+test("del enlace viaja el indicativo, nunca la posición de la sonda", () => {
+  // Este sobre acaba en un ajuste de mundo que toda la mesa puede leer: una
+  // coordenada exacta ahí sería una coordenada exacta para todos.
+  const nave = recortarNave({
+    callsign: "Lagunak",
+    systems: {},
+    science_link: { callsign: "P-1", position: { x: 12345, y: 6789 } },
+  });
+  assert.deepEqual(nave.science_link, { callsign: "P-1" });
+  assert.doesNotMatch(JSON.stringify(nave), /12345/);
+  assert.equal(recortarNave({ callsign: "Lagunak", systems: {} }).science_link, null);
 });

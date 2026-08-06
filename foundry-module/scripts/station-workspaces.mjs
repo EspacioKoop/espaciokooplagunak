@@ -199,6 +199,29 @@ function textoDeSondas(probes, i18n) {
   return format(i18n, "LAGUNAK.Espacios.Orden.SondasRestantes", { stock, max });
 }
 
+/**
+ * Cuántas fichas hay, o que no se ha consultado. La diferencia importa: una
+ * base de datos vacía es una respuesta, y no haberla pedido no lo es.
+ */
+function textoDeBaseDatos(base, i18n) {
+  if (base === null) return localize(i18n, "LAGUNAK.Espacios.Sensores.BaseDatosSinConsulta");
+  if ((base.entradas?.length ?? 0) === 0) {
+    return localize(i18n, "LAGUNAK.Espacios.Sensores.BaseDatosVacia");
+  }
+  return format(i18n, "LAGUNAK.Espacios.Sensores.BaseDatosFichas", {
+    total: base.entradas.length,
+  });
+}
+
+/** Qué sonda está enlazada, o que no hay ninguna. */
+function textoDeEnlaceSonda(enlace, i18n) {
+  const callsign = typeof enlace?.callsign === "string" && enlace.callsign !== ""
+    ? enlace.callsign
+    : null;
+  if (callsign === null) return localize(i18n, "LAGUNAK.Espacios.Sensores.SinEnlaceSonda");
+  return format(i18n, "LAGUNAK.Espacios.Sensores.EnlaceSondaActivo", { sonda: callsign });
+}
+
 function integer(value) {
   return Math.round(finite(value));
 }
@@ -464,6 +487,12 @@ export function buildWorkspaceModel({
   station,
   isGM,
   sensores = null,
+  // Lectura degradada centrada en la sonda enlazada (#520). Es la MISMA
+  // degradación con otro centro, no un dato nuevo. `null` cuando no hay sonda.
+  sensoresSonda = null,
+  // Payload ya normalizado de `/v1/database` (#520). `null` significa "no se ha
+  // consultado", que no es lo mismo que una base de datos vacía.
+  baseDatos = null,
   users,
   moduleId,
   i18n,
@@ -648,6 +677,17 @@ export function buildWorkspaceModel({
     // suponerla — la misma regla de "se lee, no se estima" del resto.
     alertaDeclarada: nivelDeclarado(ship?.alert_level),
     alertaDeclaradaTexto: textoDeAlerta(ship?.alert_level, i18n),
+    // Base de datos científica (#520). CONSULTA, no orden: no entra en la
+    // matriz de autoridad porque no hay nada que autorizar. Solo la ve
+    // sensores, que es de quien es el trabajo.
+    tieneBaseDatos: normalized === "sensors" && baseDatos !== null,
+    baseDatosEntradas: normalized === "sensors" ? (baseDatos?.entradas ?? []) : [],
+    baseDatosTexto: textoDeBaseDatos(normalized === "sensors" ? baseDatos : null, i18n),
+    // Vista de sonda (#520). Se ofrece solo con enlace Y con lectura desde ella:
+    // un botón que recentra sobre nada no recentra nada.
+    hayEnlaceSonda: Boolean(ship?.science_link?.callsign),
+    enlaceSondaTexto: textoDeEnlaceSonda(ship?.science_link, i18n),
+    sensoresSonda: normalized === "sensors" ? (sensoresSonda ?? null) : null,
     // Comunicaciones (#463): reactivas sobre el canal ya abierto — sin picker
     // de objetivo propio, ver `docs/SESION-PANTALLAS-NATIVAS.md`.
     canOrderCommsHail: !isGM && isActionAllowed(normalized, "answer_comm_hail"),

@@ -400,6 +400,39 @@
             <button type="button" data-workspace-action="orden-alerta-roja">{{localize "LAGUNAK.Espacios.Orden.Alerta.red"}}</button>
             <small>{{localize "LAGUNAK.Espacios.Orden.AlertaAyuda"}}</small>
           </form>
+        {{#if hayEnlaceSonda}}
+          <section class="lagunak-workspace__orden" data-workspace-order="probe-view">
+            <span class="lagunak-workspace__orden-label">{{localize "LAGUNAK.Espacios.Sensores.VistaSondaLabel"}}</span>
+            <p class="lagunak-workspace__orden-lectura" role="status" aria-live="polite">{{enlaceSondaTexto}}</p>
+            {{#if sensoresSonda.contactos.length}}
+              <ul class="lagunak-workspace__lista-sonda">
+                {{#each sensoresSonda.contactos}}
+                  <li>{{this.etiqueta}}</li>
+                {{/each}}
+              </ul>
+            {{else}}
+              <p class="lagunak-workspace__orden-vacia">{{localize "LAGUNAK.Espacios.Sensores.SondaSinContactos"}}</p>
+            {{/if}}
+            <small>{{localize "LAGUNAK.Espacios.Sensores.VistaSondaAyuda"}}</small>
+          </section>
+        {{/if}}
+
+        {{#if tieneBaseDatos}}
+          <section class="lagunak-workspace__orden" data-workspace-order="database">
+            <span class="lagunak-workspace__orden-label">{{localize "LAGUNAK.Espacios.Sensores.BaseDatosLabel"}}</span>
+            <p class="lagunak-workspace__orden-lectura">{{baseDatosTexto}}</p>
+            {{#if baseDatosEntradas.length}}
+              <ul class="lagunak-workspace__lista-fichas">
+                {{#each baseDatosEntradas}}
+                  <li>
+                    <strong>{{this.nombre}}</strong>
+                    {{#if this.descripcion}}<span>{{this.descripcion}}</span>{{/if}}
+                  </li>
+                {{/each}}
+              </ul>
+            {{/if}}
+            <small>{{localize "LAGUNAK.Espacios.Sensores.BaseDatosAyuda"}}</small>
+          </section>
         {{/if}}
 
         {{#if canOrderCommsHail}}

@@ -86,6 +86,31 @@ Cada contacto incluye `type` (nombre estable de plantilla cuando existe) y
 `class`/`subclass` cuando la plantilla publica el componente `docking_port`;
 objetos sin esos componentes devuelven `null`, nunca valores inventados.
 
+### Base de datos científica (`GET /v1/database`)
+
+Consulta, no orden (#520): el árbol de fichas que la pantalla nativa de Science
+deja mirar. **Recurso propio y no un campo de `/v1/state`** porque son cosas de
+ritmo distinto —el estado se sondea cada pocos segundos y describe lo que
+cambia; esto es contenido de referencia casi inmóvil y mucho más grande—, así
+que meterlo en el estado haría que cada ciclo reenviara siempre lo mismo.
+
+Cada entrada lleva `id`, `name`, `parent`, `description` y `values`. **El `id` es
+la ruta de nombres** (`"Naves/Exuari/Cazador"`): el juego no da uno estable, y la
+ruta es además cómo se navega el árbol en la pantalla nativa. Una entrada sin
+nombre no tiene ruta y se descarta entera en vez de colarse con un id inventado.
+
+Dos cotas y un tope: 400 entradas, 24 pares por entrada y 16 saltos de
+profundidad al subir por `parent`. El último no es decorativo: un `parent` en
+ciclo colgaría el juego **dentro** de `/exec.lua`, y el puente solo vería un
+timeout. El truncamiento se declara (`truncated`, `total`) en vez de
+disimularse.
+
+`/v1/state` publica además `science_link: {callsign, position}` cuando hay una
+sonda enlazada al radar de ciencia. Con eso, la vista de sonda de Foundry hace
+lo mismo que la nativa: recentra la lectura en la sonda **conservando los
+alcances de la nave** (`scienceScreen.cpp`), sin inventarle a la sonda un
+alcance propio que el juego no le da.
+
 ### Órdenes permitidas (`POST /v1/command`)
 
 ```json

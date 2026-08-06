@@ -13,6 +13,7 @@ Contrato v0 (ver docs/FOUNDRY.md):
   GET  /v1/scenario  — tiempo de escenario y metadatos (auth).
   GET  /v1/events    — eventos normalizados presentes en la sesión (auth).
   GET  /v1/contacts  — objetos cercanos a la nave, para un mapa vivo (auth).
+  GET  /v1/database  — base de datos científica del escenario, consulta (auth).
   GET  /v1/encounters — catálogo cerrado de encuentros del GM (auth).
   POST /v1/command   — órdenes de una lista blanca cerrada (auth).
 
@@ -67,6 +68,7 @@ from http_middleware import (
 )
 from lua_templates import (
     _CONTACTS_LUA,
+    _DATABASE_LUA,
     _EVENTS_LUA,
     _HEALTH_LUA,
     _SCENARIO_LUA,
@@ -164,6 +166,21 @@ async def events() -> Any:
 @app.get("/v1/contacts", dependencies=[Depends(_require_auth)])
 async def contacts() -> Any:
     return await _run_lua(_CONTACTS_LUA)
+
+
+@app.get("/v1/database", dependencies=[Depends(_require_auth)])
+async def database() -> Any:
+    """Base de datos científica del escenario: CONSULTA, no orden (#520).
+
+    Recurso propio y no un campo de ``/v1/state`` porque son cosas de ritmo
+    distinto: el estado se sondea cada pocos segundos y describe lo que cambia;
+    esto es contenido de referencia casi inmóvil y mucho más grande. Meterlo en
+    el estado haría que cada sondeo reenviara siempre lo mismo.
+
+    Es información asimétrica pura —el pilar 1 del roadmap de producto— sin
+    tocar la autoridad de nadie: no hay nada que ordenar aquí.
+    """
+    return await _run_lua(_DATABASE_LUA)
 
 
 @app.get("/v1/encounters", dependencies=[Depends(_require_auth)])

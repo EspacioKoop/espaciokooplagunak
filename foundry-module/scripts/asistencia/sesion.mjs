@@ -29,6 +29,7 @@
 import { bandaEsFavorable } from "./bandas.mjs";
 import { MODOS, modoDeTarea, resolucionDisponible, validarTarea } from "./enfoques.mjs";
 import { rangoDeExito } from "./probabilidad.mjs";
+import { modificadorDeFicha } from "./ficha-dnd5e.mjs";
 import {
   PRESUPUESTO_POR_DEFECTO,
   PROPUESTA_ERRORES,
@@ -109,6 +110,12 @@ export function abrir({
   asistenteId,
   nonce,
   tieneFicha = false,
+  // `system` de un Actor de dnd5e (#500), o `null`. De aquí sale el
+  // modificador REAL de cada enfoque con `habilidad` declarada; sin ella —o
+  // sin ficha— el enfoque sigue ofreciéndose con modificador 0, como antes de
+  // leer la ficha. `modificadores` sigue existiendo aparte para quien quiera
+  // forzar un número concreto (pruebas, o una mesa con su propia fuente).
+  ficha = null,
   gmPermiteRecursos = false,
   modificadores = {},
   reglaCasaNatural = false,
@@ -152,7 +159,10 @@ export function abrir({
           rango: rangoDeExito({
             enfoque,
             tarea: validada,
-            modificador: modificadores[enfoque.id] ?? 0,
+            // El override explícito manda; si no lo hay, se lee de la ficha
+            // real; si tampoco hay nada que leer (sin ficha, o el enfoque no
+            // declaró `habilidad`), 0 — el mismo valor de siempre.
+            modificador: modificadores[enfoque.id] ?? modificadorDeFicha(ficha, enfoque.habilidad) ?? 0,
             reglaCasaNatural,
           }),
         }),

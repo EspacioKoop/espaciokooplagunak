@@ -115,13 +115,25 @@ function responder(destinatarioId, tipo, carga) {
  * rodeo para mejorar su propia orden, y convertiría la ayuda en un peaje que todo
  * titular pagaría siempre. El GM tampoco asiste — arbitra—. Lo demás lo decide el
  * presupuesto de concurrencia dentro del motor, que es donde sabe contarse.
+ *
+ * `despacharPeticion` (relevo.mjs) aplica esta misma puerta a "abrir" Y a
+ * "resolver", pero una petición "resolver" NUNCA declara `tareaId` —la tarea
+ * ya quedó fijada en la reserva que abrió el nonce, y resolver no la repite
+ * (`construirPeticionAsistencia`). Sin este caso aparte, `catalogo.buscar(null)`
+ * devolvía `null` siempre y CUALQUIER resolución se rechazaba con
+ * "no-puede-asistir" antes de llegar al motor: la ayuda se podía pedir y ver
+ * la oferta, pero nunca cerrarse. El chequeo de "no te asistas a ti mismo"
+ * solo tiene sentido con una tarea que mirar, así que en resolver se deja a
+ * `despacharPeticion`, que ya comprueba aparte que el nonce es de quien lo
+ * resuelve (`RELEVO_ERRORES.NO_ES_SU_RESERVA`).
  */
 function puedeAsistir(tareaId) {
   return (asistenteId) => {
-    const tarea = catalogo.buscar(tareaId);
-    if (!tarea) return false;
     const usuario = game.users?.get(asistenteId);
     if (!usuario || usuario.isGM) return false;
+    if (!tareaId) return true;
+    const tarea = catalogo.buscar(tareaId);
+    if (!tarea) return false;
     return puestoDe(asistenteId) !== tarea.puestoAsistido;
   };
 }
@@ -141,11 +153,17 @@ function alCambiarUsuario(userDoc, changes) {
     canHandle: esCoordinador,
     opcionesApertura: {
       // Lo que el motor necesita saber de la hoja del asistente y de la mesa. La
-      // ficha entra como un booleano y no como el actor entero: sin dnd5e —o sin
-      // personaje— la asistencia se degrada al reto de temporización, que produce
-      // las MISMAS bandas, y esa degradación es lo que mantiene al módulo
-      // jugable sin sistema de juego.
+      // presencia de ficha entra como un booleano APARTE del `system` en sí: sin
+      // dnd5e —o sin personaje— la asistencia se degrada al reto de
+      // temporización, que produce las MISMAS bandas, y esa degradación es lo
+      // que mantiene al módulo jugable sin sistema de juego.
       tieneFicha: Boolean(game.users?.get(asistenteId)?.character),
+      // El `system` del Actor tal cual lo expone dnd5e (#500): de ahí sale el
+      // modificador real de cada enfoque con `habilidad` declarada. Es la única
+      // línea de este archivo que toca la forma de datos de dnd5e; el resto —
+      // `modificadorDeFicha`, en `ficha-dnd5e.mjs`— es puro y no sabe qué es un
+      // `User` de Foundry.
+      ficha: game.users?.get(asistenteId)?.character?.system ?? null,
       // Gastar un espacio de conjuro es un coste de campaña real, así que esa vía
       // la abre el GM o no existe. Sin el ajuste declarado, cerrada.
       gmPermiteRecursos: ajusteBooleano("asistenciaPermiteRecursos"),

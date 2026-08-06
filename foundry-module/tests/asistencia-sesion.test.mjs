@@ -48,6 +48,65 @@ test("abrir reserva el hueco y ofrece el rango de éxito antes de tirar", () => 
   assert.equal(estado.reservas.length, 1);
 });
 
+test("con habilidad declarada y ficha real, el modificador sale de la ficha (#500)", () => {
+  const tareaConHabilidad = {
+    ...TAREA,
+    enfoques: [{ id: "herramientas", clase: CLASES_ENFOQUE.PRUEBA, cd: 13, habilidad: "tool:tinker" }],
+  };
+  const ficha = { tools: { tinker: { total: 6 } } };
+  const { oferta } = abrir({
+    estado: crearSesion(),
+    tarea: tareaConHabilidad,
+    asistenteId: "ayudante-1",
+    nonce: "n1",
+    ahora: T0,
+    tieneFicha: true,
+    ficha,
+  });
+  assert.equal(oferta.enfoques[0].rango.modificador, 6);
+});
+
+test("un override explícito en `modificadores` gana a la ficha, no al revés", () => {
+  const tareaConHabilidad = {
+    ...TAREA,
+    enfoques: [{ id: "herramientas", clase: CLASES_ENFOQUE.PRUEBA, cd: 13, habilidad: "tool:tinker" }],
+  };
+  const ficha = { tools: { tinker: { total: 6 } } };
+  const { oferta } = abrir({
+    estado: crearSesion(),
+    tarea: tareaConHabilidad,
+    asistenteId: "ayudante-1",
+    nonce: "n1",
+    ahora: T0,
+    tieneFicha: true,
+    ficha,
+    modificadores: { herramientas: 99 },
+  });
+  assert.equal(oferta.enfoques[0].rango.modificador, 99);
+});
+
+test("sin `habilidad` declarada, o sin ficha, el modificador sigue siendo 0 como siempre", () => {
+  // Compatibilidad: una tarea escrita antes de #500 no cambia de comportamiento
+  // por el mero hecho de que ahora exista una ficha real.
+  const { oferta: sinHabilidad } = abrirUno(crearSesion(), { tieneFicha: true, ficha: { tools: { tinker: { total: 9 } } } });
+  assert.equal(sinHabilidad.enfoques[0].rango.modificador, 0);
+
+  const tareaConHabilidad = {
+    ...TAREA,
+    enfoques: [{ id: "herramientas", clase: CLASES_ENFOQUE.PRUEBA, cd: 13, habilidad: "tool:tinker" }],
+  };
+  const { oferta: sinFicha } = abrir({
+    estado: crearSesion(),
+    tarea: tareaConHabilidad,
+    asistenteId: "ayudante-1",
+    nonce: "n1",
+    ahora: T0,
+    tieneFicha: true,
+    ficha: null,
+  });
+  assert.equal(sinFicha.enfoques[0].rango.modificador, 0);
+});
+
 test("sin ficha la oferta se degrada al reto de destreza, no se cae", () => {
   const { ok, oferta } = abrirUno(crearSesion(), { tieneFicha: false });
   assert.equal(ok, true);

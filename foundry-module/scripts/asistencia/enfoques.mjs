@@ -34,6 +34,14 @@ export const MODOS = Object.freeze({
   PROPUESTA: "propuesta",
 });
 
+/**
+ * Minijuegos de destreza disponibles para el camino sin dnd5e (o sin ficha).
+ * Una tarea declara cuál usa; sin declararlo, se asume temporización, que fue
+ * el primero y el que ya conocen las mesas existentes (#500 amplía el
+ * repertorio, no lo sustituye).
+ */
+export const MINIJUEGOS_DESTREZA = Object.freeze(["temporizacion", "secuencia"]);
+
 export const ASISTENCIA_ERRORES = Object.freeze({
   TAREA_INVALIDA: "tarea-invalida",
   CLASE_DESCONOCIDA: "clase-desconocida",
@@ -42,6 +50,7 @@ export const ASISTENCIA_ERRORES = Object.freeze({
   SIN_BANDA_FIJA: "sin-banda-fija",
   BANDA_FIJA_CRITICA: "banda-fija-critica",
   ACCION_NO_AUTORIZADA: "accion-no-autorizada",
+  MINIJUEGO_DESCONOCIDO: "minijuego-desconocido",
 });
 
 export class AsistenciaError extends Error {
@@ -126,6 +135,12 @@ export function validarTarea(tarea) {
   if (!tarea?.id) fallar(ASISTENCIA_ERRORES.TAREA_INVALIDA, "tarea sin id");
   if (!Array.isArray(tarea.enfoques) || tarea.enfoques.length === 0) {
     fallar(ASISTENCIA_ERRORES.TAREA_INVALIDA, `${tarea.id}: sin enfoques`);
+  }
+  if (tarea.minijuegoDestreza != null && !MINIJUEGOS_DESTREZA.includes(tarea.minijuegoDestreza)) {
+    fallar(
+      ASISTENCIA_ERRORES.MINIJUEGO_DESCONOCIDO,
+      `${tarea.id}: minijuego de destreza «${tarea.minijuegoDestreza}» no existe`,
+    );
   }
   const modo = modoDeTarea(tarea);
   const enfoques = tarea.enfoques.map((e) => validarEnfoque(e, tarea));

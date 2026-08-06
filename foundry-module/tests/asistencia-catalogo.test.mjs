@@ -61,6 +61,14 @@ test("el conjuro de ingeniería entra sin tirada, con banda fija y pagando", () 
   assert.ok(tarea.enfoques.some((e) => !e.coste));
 });
 
+test("bordar-maniobra usa el minijuego de secuencia (#500), y no todas usan el mismo", () => {
+  // El repertorio de minijuegos se amplió justo para que no todas las tareas
+  // se jugaran igual sin dnd5e; si esta prueba falla, el catálogo dejó de
+  // ejercitar el segundo tipo.
+  assert.equal(CATALOGO_BASE.buscar("bordar-maniobra").minijuegoDestreza, "secuencia");
+  assert.equal(CATALOGO_BASE.buscar("estabilizar-sistema-caliente").minijuegoDestreza, undefined);
+});
+
 test("buscar una tarea que nadie declaró devuelve null en vez de reventar", () => {
   // El relevo ya sabe responder TAREA_DESCONOCIDA; un catálogo que lanza
   // convertiría una petición inventada en un error de consola del GM.

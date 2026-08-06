@@ -6,7 +6,15 @@ import { CATALOGO_BASE, TAREAS_BASE } from "../scripts/asistencia/catalogo.mjs";
 import { CLASES_ENFOQUE } from "../scripts/asistencia/enfoques.mjs";
 import { abrir, crearSesion } from "../scripts/asistencia/sesion.mjs";
 import { crearReto } from "../scripts/asistencia/temporizacion.mjs";
-import { FASES, vistaCierre, vistaOferta, vistaReto, vistaTareas } from "../scripts/asistencia/vista.mjs";
+import { crearReto as crearRetoSecuencia } from "../scripts/asistencia/secuencia.mjs";
+import {
+  FASES,
+  vistaCierre,
+  vistaOferta,
+  vistaReto,
+  vistaRetoSecuencia,
+  vistaTareas,
+} from "../scripts/asistencia/vista.mjs";
 
 /** Una oferta real, tal y como la produce el motor. Nada de datos inventados. */
 function ofertaReal(tareaId = "estabilizar-sistema-caliente", opciones = {}) {
@@ -137,6 +145,41 @@ test("«dentro» concuerda con la zona pintada, no se calcula por otro lado", ()
 
 test("sin reto no hay vista de reto, y no es un error", () => {
   assert.equal(vistaReto(null, 0), null);
+});
+
+test("la oferta lleva el minijuego de destreza para que la ventana sepa qué reto empezar", () => {
+  const conSecuencia = vistaOferta({ via: "destreza", minijuegoDestreza: "secuencia", enfoques: [] });
+  assert.equal(conSecuencia.via, "destreza");
+  assert.equal(conSecuencia.minijuegoDestreza, "secuencia");
+
+  // Sin declararlo, se asume temporización: compatibilidad con ofertas de
+  // antes de #500.
+  const sinDeclarar = vistaOferta({ via: "destreza", enfoques: [] });
+  assert.equal(sinDeclarar.minijuegoDestreza, "temporizacion");
+});
+
+test("el reto de secuencia sale en unidades de pintado, con el progreso del intento en curso", () => {
+  const reto = crearRetoSecuencia({ semilla: "s", dificultad: "facil", inicioMs: 0 });
+
+  // En fase «muestra»: hay un símbolo activo y ningún intento propio todavía.
+  const enMuestra = vistaRetoSecuencia(reto, [], 1);
+  assert.equal(enMuestra.fase, "muestra");
+  assert.equal(enMuestra.simboloActivo, reto.secuencia[0]);
+  assert.equal(enMuestra.progreso, 0);
+  assert.equal(enMuestra.longitud, reto.secuencia.length);
+  assert.deepEqual(Array.from(enMuestra.simbolos), Array.from({ length: reto.simbolos }, (_, i) => i));
+
+  // En fase «entrada»: el progreso refleja los intentos ya dados.
+  const intentos = [reto.secuencia[0]];
+  const enEntrada = vistaRetoSecuencia(reto, intentos, reto.finMuestraMs + 1);
+  assert.equal(enEntrada.fase, "entrada");
+  assert.equal(enEntrada.simboloActivo, null);
+  assert.equal(enEntrada.progreso, 1);
+  assert.equal(typeof enEntrada.lectura.segundosRestantes, "number");
+});
+
+test("sin reto de secuencia no hay vista, y no es un error", () => {
+  assert.equal(vistaRetoSecuencia(null, [], 0), null);
 });
 
 test("el cierre distingue los tres finales que un «no se pudo» aplasta", () => {

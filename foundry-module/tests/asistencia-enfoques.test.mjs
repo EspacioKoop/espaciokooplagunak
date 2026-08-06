@@ -6,6 +6,7 @@ import {
   ASISTENCIA_ERRORES,
   AsistenciaError,
   CLASES_ENFOQUE,
+  MINIJUEGOS_DESTREZA,
   MODOS,
   modoDeTarea,
   resolucionDisponible,
@@ -120,6 +121,27 @@ test("los enfoques que gastan recursos solo aparecen si el GM abre esa vía", ()
     gmPermiteRecursos: true,
   });
   assert.deepEqual(abierto.enfoques.map((e) => e.id), ["arcana", "reparar"]);
+});
+
+test("una tarea sin minijuegoDestreza declarado sigue validando: se asume temporización", () => {
+  // Compatibilidad hacia atrás: las tareas escritas antes de #500 no lo
+  // declaran, y no tienen por qué dejar de cargar.
+  const tarea = validarTarea(tareaIngenieria());
+  assert.equal(tarea.minijuegoDestreza, undefined);
+});
+
+test("un minijuego de destreza del repertorio se acepta y viaja con la tarea", () => {
+  for (const minijuego of MINIJUEGOS_DESTREZA) {
+    const tarea = validarTarea(tareaIngenieria({ minijuegoDestreza: minijuego }));
+    assert.equal(tarea.minijuegoDestreza, minijuego);
+  }
+});
+
+test("un minijuego de destreza inventado no se declara: falla al cargar, no en mesa", () => {
+  assert.equal(
+    codigo(() => validarTarea(tareaIngenieria({ minijuegoDestreza: "ruleta-rusa" }))),
+    ASISTENCIA_ERRORES.MINIJUEGO_DESCONOCIDO,
+  );
 });
 
 test("si el GM no abre recursos y TODO cuesta, queda la destreza", () => {

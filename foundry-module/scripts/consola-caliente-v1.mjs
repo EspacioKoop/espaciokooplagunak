@@ -29,6 +29,7 @@ import {
 } from "./encuentro-control.mjs";
 import { anotarAlertas, derivarAlertas } from "./alertas-nave.mjs";
 import { publicarNivelAlerta } from "./alerta-escena.mjs";
+import { publicarAlarmaCruzada } from "./alarma-cruzada-escena.mjs";
 import { prepararVistaPausa } from "./pausa-control.mjs";
 import {
   ajustarPotencia,
@@ -383,6 +384,7 @@ export function crearClaseConsolaCalienteV1() {
           sigueVigente: () => !this.bridgeAccessRevoked && Boolean(game.user?.isGM),
         });
         await publicarNivelAlerta({ moduleId: MODULE_ID, nave: this.ultimoEstado?.ship ?? null });
+        await publicarAlarmaCruzada({ moduleId: MODULE_ID, nave: this.ultimoEstado?.ship ?? null });
       }
     }
 

@@ -23,6 +23,7 @@ import { SECCION } from "./paleta.mjs";
 import { componerEscena } from "./retro3d.mjs";
 import { crearPlanta } from "./nave-movimiento.mjs";
 import { crearCatalogoEstancias } from "./nave-estancias.mjs";
+import { poligonosOtrosJugadores } from "./nave-avatares-render.mjs";
 
 /** Caja alineada a ejes por centro+medidas, caras en sentido antihorario
  *  vistas desde fuera (lo que `componerEscena` necesita para descartar las de
@@ -209,8 +210,9 @@ function crearSalaCaja({
    * cámara andando por la sala.
    */
   function componer(x, y, z, yaw, opciones = {}) {
-    const { ancho: anchoLienzo = 480, alto: altoLienzo = 270, epoca, fov = 62 } = opciones;
+    const { ancho: anchoLienzo = 480, alto: altoLienzo = 270, epoca, fov = 62, otrosJugadores = [] } = opciones;
     const camara = [x, ALTURA_OJOS + y, z];
+    const yawCamara = -yaw; // ver el comentario de `yaw` más abajo
 
     const partes = piezas.map(({ malla, color }) =>
       componerEscena(trasladarMalla(malla, [-camara[0], -camara[1], -camara[2]]), {
@@ -225,14 +227,27 @@ function crearSalaCaja({
         // signo, girar a la derecha hace que la escena parezca girar a la
         // izquierda, y moverse "adelante" tras cualquier giro lleva hacia
         // donde en pantalla parece estar detrás.
-        yaw: -yaw,
+        yaw: yawCamara,
       }),
     );
+
+    // Otros jugadores en esta sala (#498, follow-up de #453): mismo `camara`/
+    // `yaw` que la geometría de la sala, para que compartan exactamente la
+    // misma proyección — un avatar ajeno no es más que otra pieza más.
+    const poligonosJugadores = poligonosOtrosJugadores(otrosJugadores, {
+      camara,
+      yaw: yawCamara,
+      ancho: anchoLienzo,
+      alto: altoLienzo,
+      epoca,
+      fov,
+    });
 
     // Fundido y reordenado global, igual que en `cantina-escena.mjs`: cada
     // pieza ya viene ordenada por su cuenta, y el orden por pintor no es
     // componible — concatenar dos listas correctas da una lista incorrecta.
-    const poligonos = partes.flatMap((parte) => parte.poligonos).sort((a, b) => b.profundidad - a.profundidad);
+    const poligonos = [...partes.flatMap((parte) => parte.poligonos), ...poligonosJugadores]
+      .sort((a, b) => b.profundidad - a.profundidad);
     return { ancho: anchoLienzo, alto: altoLienzo, epoca: partes[0]?.epoca, poligonos };
   }
 

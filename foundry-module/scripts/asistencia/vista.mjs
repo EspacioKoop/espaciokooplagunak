@@ -24,6 +24,10 @@
 
 import { BANDAS_ORDENADAS } from "./bandas.mjs";
 import { estadoEn, lecturaAccesible } from "./temporizacion.mjs";
+import {
+  estadoEn as estadoEnSecuencia,
+  lecturaAccesible as lecturaAccesibleSecuencia,
+} from "./secuencia.mjs";
 
 /** Estados de la ventana. La ventana no tiene más; añadir uno es una decisión. */
 export const FASES = Object.freeze({
@@ -80,6 +84,9 @@ export function vistaOferta(oferta) {
 
   return Object.freeze({
     via: oferta.via ?? null,
+    // Solo se usa cuando `via === "destreza"`: qué reto empezar directamente,
+    // sin pasar por una lista de enfoques que en esa vía viene vacía.
+    minijuegoDestreza: oferta.minijuegoDestreza ?? "temporizacion",
     enfoques: Object.freeze(
       oferta.enfoques.map(({ enfoque, rango }) =>
         Object.freeze({
@@ -137,6 +144,36 @@ export function vistaReto(reto, tMs) {
     dentro: Math.abs(estado.posicion - estado.objetivo) <= estado.tolerancia,
     restanteMs: Math.max(0, Math.round(estado.restanteMs ?? 0)),
     lectura: lecturaAccesible(reto, tMs),
+  });
+}
+
+/**
+ * El estado del reto de SECUENCIA en un instante, en unidades de pintado.
+ *
+ * `intentos` entra porque el progreso —cuántos símbolos lleva acertados quien
+ * juega— no se puede leer del reto: el reto es la secuencia a adivinar, no lo
+ * que ya se ha pulsado. `simbolos` sale ya como la lista de índices a pintar,
+ * para que la plantilla no invente un rango.
+ *
+ * `lectura` es el canal NO visual, obligatorio por la misma razón que en
+ * temporización: unos símbolos que solo se distinguen por color o forma
+ * excluyen a quien no los ve igual que todos.
+ */
+export function vistaRetoSecuencia(reto, intentos, tMs) {
+  if (!reto) return null;
+  const estado = estadoEnSecuencia(reto, tMs);
+  return Object.freeze({
+    fase: estado.fase,
+    // Booleanos precalculados y no `fase === "muestra"` en la plantilla: este
+    // módulo no registra helpers de Handlebars (`eq` no existe aquí), y es el
+    // mismo patrón que ya usan `enOferta`/`enReto` en `asistencia-ui.mjs`.
+    enMuestra: estado.fase === "muestra",
+    simboloActivo: estado.simboloActivo,
+    simbolos: Object.freeze(Array.from({ length: reto.simbolos }, (_, i) => i)),
+    progreso: (intentos ?? []).length,
+    longitud: reto.secuencia.length,
+    restanteMs: Math.max(0, Math.round(estado.restanteMs ?? 0)),
+    lectura: lecturaAccesibleSecuencia(reto, tMs),
   });
 }
 

@@ -85,6 +85,10 @@ const BASE = [
     puestoAsistido: "navigation",
     accionPropuesta: "set_impulse",
     dificultad: 13,
+    // Cadencia es memoria de orden tanto como precisión de instante: la
+    // secuencia encaja mejor que la temporización con lo que la ficción ya
+    // describe (#500 amplía el repertorio de minijuegos de destreza).
+    minijuegoDestreza: "secuencia",
     enfoques: [
       // (a) Coordinar la cadencia: Interpretación. Cantar el ritmo de la
       // maniobra es ayudar sin tocar los mandos, que es exactamente lo que

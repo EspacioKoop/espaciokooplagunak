@@ -152,6 +152,10 @@ export function abrir({
   const disponible = resolucionDisponible({ tarea: validada, tieneFicha, gmPermiteRecursos });
   const oferta = Object.freeze({
     via: disponible.via,
+    // Solo importa en la vía «destreza» —sin ficha o sin dnd5e—, pero viaja
+    // siempre: es más simple que la interfaz lea un campo constante que uno
+    // que aparece y desaparece según la vía.
+    minijuegoDestreza: validada.minijuegoDestreza ?? "temporizacion",
     enfoques: Object.freeze(
       disponible.enfoques.map((enfoque) =>
         Object.freeze({

@@ -121,3 +121,30 @@ test("REGRESIÓN: la telemetría no se publica si nada ha cambiado", () => {
   assert.ok(tercera, "moverse sí publica");
   assert.equal(publicados.length, 2);
 });
+
+// --- Carga de maniobra en el sobre (#519) -------------------------------------
+
+test("la carga de maniobra llega a la tripulación y conserva el cero", () => {
+  // `recortarNave` es una lista blanca: sin esta copia, la consola de pilotaje
+  // no vería nunca la carga y el control aparecería sin lectura para siempre.
+  assert.deepEqual(
+    recortarNave({ callsign: "Lagunak", systems: {}, combat_maneuver: { charge: 0.4237 } })
+      .combat_maneuver,
+    { charge: 0.424 },
+  );
+  assert.deepEqual(
+    recortarNave({ callsign: "Lagunak", systems: {}, combat_maneuver: { charge: 0 } })
+      .combat_maneuver,
+    { charge: 0 },
+  );
+  // Sin componente no hay lectura, que no es lo mismo que estar a cero.
+  assert.equal(recortarNave({ callsign: "Lagunak", systems: {} }).combat_maneuver, null);
+});
+
+test("una carga mal tipada no se convierte en un número inventado", () => {
+  assert.equal(
+    recortarNave({ callsign: "Lagunak", systems: {}, combat_maneuver: { charge: "media" } })
+      .combat_maneuver,
+    null,
+  );
+});

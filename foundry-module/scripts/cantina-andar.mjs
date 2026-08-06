@@ -19,6 +19,7 @@
 import { caja, MUEBLES } from "./cantina-escena.mjs";
 import { componerEscena } from "./retro3d.mjs";
 import { aNativo } from "./cantina-planta.mjs";
+import { poligonosOtrosJugadores } from "./nave-avatares-render.mjs";
 
 /** A qué altura mira quien anda, de pie. Misma cifra que la sala de pruebas
  *  (`nave-movimiento-sala-prueba.mjs`): no hay razón para que la cantina
@@ -45,9 +46,10 @@ function trasladarMalla(malla, [dx, dy, dz]) {
  * `nave-movimiento-lienzo.mjs`.
  */
 export function componerCantinaAndar(x, y, z, yaw, opciones = {}) {
-  const { ancho = 480, alto = 270, epoca, fov = FOV } = opciones;
+  const { ancho = 480, alto = 270, epoca, fov = FOV, otrosJugadores = [] } = opciones;
   const nativo = aNativo(x, z);
   const camara = [nativo.x, ALTURA_OJOS + y, nativo.z];
+  const yawCamara = -yaw; // ver el comentario de `yaw` más abajo
 
   const partes = PIEZAS.map(({ malla, color }) =>
     componerEscena(trasladarMalla(malla, [-camara[0], -camara[1], -camara[2]]), {
@@ -60,10 +62,28 @@ export function componerCantinaAndar(x, y, z, yaw, opciones = {}) {
       // Mismo signo que `nave-movimiento-sala-prueba.mjs`: la cámara de
       // `retro3d.mjs` gira en sentido contrario al que usa el motor de
       // movimiento para "adelante" (#427).
-      yaw: -yaw,
+      yaw: yawCamara,
     }),
   );
 
-  const poligonos = partes.flatMap((parte) => parte.poligonos).sort((a, b) => b.profundidad - a.profundidad);
+  // Otros jugadores andando por la cantina (#498, follow-up de #453): sus
+  // x/z llegan en coordenadas de PLANTA, igual que las de la propia cámara
+  // —se traducen a nativas con el mismo `aNativo` que ya usa la cámara, no
+  // con uno inventado aquí.
+  const jugadoresNativos = otrosJugadores.map((jugador) => {
+    const posicionNativa = aNativo(jugador.x, jugador.z);
+    return { x: posicionNativa.x, y: jugador.y, z: posicionNativa.z, avatar: jugador.avatar };
+  });
+  const poligonosJugadores = poligonosOtrosJugadores(jugadoresNativos, {
+    camara,
+    yaw: yawCamara,
+    ancho,
+    alto,
+    epoca,
+    fov,
+  });
+
+  const poligonos = [...partes.flatMap((parte) => parte.poligonos), ...poligonosJugadores]
+    .sort((a, b) => b.profundidad - a.profundidad);
   return { ancho, alto, epoca: partes[0]?.epoca, poligonos };
 }

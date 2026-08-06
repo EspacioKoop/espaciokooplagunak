@@ -214,6 +214,49 @@ if ok_sh and shields ~= nil then
             '{"frequency":%%d,"calibration_delay":%%s}', frequency, calibrando_json)
     end
 end
+-- Condición de alerta DECLARADA por la tripulación (#517). `player_control` ya
+-- expone `alert_level` a Lua (src/script/components.cpp): sin C++ nuevo, mismo
+-- patrón opcional con pcall que `docking_json`.
+--
+-- No confundir con el nivel de alerta que el módulo Foundry deriva del daño
+-- (`nivel-alerta.mjs`, #338): aquello describe cómo está la nave, esto declara
+-- en qué postura la ha puesto su tripulación. Son cosas distintas y por eso
+-- conviven; lo que no puede pasar es que el puesto que fija la condición no
+-- pueda leerla de vuelta y tenga que suponerla.
+--
+-- El binding entrega el enum con las cadenas de `Convert<AlertLevel>::toLua`
+-- ("Normal", "YELLOW ALERT", "RED ALERT"). Se normalizan a los mismos valores
+-- que acepta la orden `set_alert_level` (normal/yellow/red) para que el
+-- contrato del puente sea uno solo en las dos direcciones. Cualquier otra cosa
+-- es null: un nivel inventado sería peor que no publicar ninguno.
+local alert_level_json = "null"
+local ok_control, control = pcall(function() return ship.components.player_control end)
+if ok_control and control ~= nil then
+    local ok_level, raw_level = pcall(function() return control.alert_level end)
+    if ok_level and type(raw_level) == "string" then
+        local normalizado = string.lower(raw_level)
+        if normalizado == "normal" then alert_level_json = '"normal"' end
+        if normalizado == "yellow alert" or normalizado == "yellow" then
+            alert_level_json = '"yellow"'
+        end
+        if normalizado == "red alert" or normalizado == "red" then
+            alert_level_json = '"red"'
+        end
+    end
+end
+-- Sondas disponibles (#517). `scan_probe_launcher` ya expone `stock` y `max`.
+-- Lanzar una sonda es una decisión con coste, y sin esta lectura el puesto de
+-- Relay tendría que contarlas de memoria. Se publican las dos: "quedan 3" sin
+-- saber de cuántas es la mitad de la frase.
+local probes_json = "null"
+local ok_launcher, launcher = pcall(function() return ship.components.scan_probe_launcher end)
+if ok_launcher and launcher ~= nil then
+    local ok_stock, stock = pcall(function() return launcher.stock end)
+    local ok_max, max_probes = pcall(function() return launcher.max end)
+    if ok_stock and ok_max and type(stock) == "number" and type(max_probes) == "number" then
+        probes_json = string.format('{"stock":%%d,"max":%%d}', stock, max_probes)
+    end
+end
 local systems = {}
 for _, name in ipairs({%s}) do
     systems[#systems + 1] = string.format(
@@ -228,14 +271,16 @@ return string.format(
     .. '"hull":%%.1f,"hull_max":%%.1f,"energy":%%.1f,"energy_max":%%.1f,'
     .. '"shields_active":%%s,"repair_crew":%%d,"radar":%%s,"docking":%%s,'
     .. '"auto_repair":%%s,"combat_maneuver":%%s,"self_destruct":%%s,'
-    .. '"shield_calibration":%%s,"systems":{%%s}}}',
+    .. '"shield_calibration":%%s,"alert_level":%%s,"probes":%%s,'
+    .. '"systems":{%%s}}}',
     ship:getCallSign() or "?", x, y, ship:getHeading(), vx, vy,
     destination_json, distance_json, eta_json,
     ship:getHull(), ship:getHullMax(),
     ship:getEnergyLevel(), ship:getEnergyLevelMax(),
     tostring(ship:getShieldsActive()), ship:getRepairCrewCount(),
     radar_json, docking_json, auto_repair_json, combat_maneuver_json,
-    self_destruct_json, shield_frequency_json, table.concat(systems, ","))
+    self_destruct_json, shield_frequency_json, alert_level_json, probes_json,
+    table.concat(systems, ","))
 """ % ", ".join(f'"{name}"' for name in _SYSTEMS)
 _STATE_LUA = _JSON_ESCAPE_LUA + _STATE_LUA
 

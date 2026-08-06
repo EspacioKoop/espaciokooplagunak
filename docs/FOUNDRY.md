@@ -173,6 +173,16 @@ token:
   códigos no viajan por aquí**: el componente no los expone a Lua, así que se
   leen en la pantalla nativa o los dicta el director. Recalibrar los escudos deja
   la nave sin ellos mientras dura, y la consola lo dice.
+- **Puesto `relay` (#517)** — séptimo puesto de `STATIONS`, con las siete
+  órdenes que la pantalla nativa de Relay ya tenía: puntos de ruta, sondas,
+  enlace sonda→ciencia y condición de alerta. Dos cosas que no son obvias:
+  los puntos de ruta y las sondas se señalan por **marcación y distancia** (la
+  consola de un puesto no publica coordenadas del mundo, y el relé del GM las
+  convierte con `resolver-posicion-relay.mjs`); y la **condición de alerta no
+  es** el aviso por daños de la escena (#338) — aquella es un diagnóstico
+  derivado del casco y la energía, esta una declaración de la tripulación, y
+  conviven sin sincronizarse porque derivar una de la otra borraría la decisión.
+  El hackeo queda fuera: el motor no lo expone a Lua (#521).
 - **Matriz de autoridad cerrada** (`station-actions.mjs`, `STATION_ACTIONS`).
   Declara qué órdenes del whitelist del puente puede emitir cada puesto:
   `navigation` → `set_target_heading`, `set_impulse`, `set_warp`,

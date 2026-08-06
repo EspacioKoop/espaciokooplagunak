@@ -34,6 +34,11 @@ const DEFINITIONS = Object.freeze({
     accent: "blue",
     tasks: ["Canales", "Mensajes", "Bitacora"],
   }),
+  relay: Object.freeze({
+    icon: "fa-solid fa-map-location-dot",
+    accent: "orange",
+    tasks: ["Rutas", "Sondas", "Condicion"],
+  }),
   weapons: Object.freeze({
     icon: "fa-solid fa-crosshairs",
     accent: "red",
@@ -136,6 +141,19 @@ function textoDeAutodestruccion(selfDestruct, i18n) {
   });
 }
 
+/** Los tres niveles que el puente publica, o `null` si no hay lectura. */
+function nivelDeclarado(valor) {
+  return valor === "normal" || valor === "yellow" || valor === "red" ? valor : null;
+}
+
+function textoDeAlerta(valor, i18n) {
+  const nivel = nivelDeclarado(valor);
+  if (nivel === null) return localize(i18n, "LAGUNAK.Espacios.Orden.AlertaSinLectura");
+  return format(i18n, "LAGUNAK.Espacios.Orden.AlertaActual", {
+    nivel: localize(i18n, `LAGUNAK.Espacios.Orden.Alerta.${nivel}`),
+  });
+}
+
 /**
  * Frecuencia actual y, si está recalibrando, el aviso de que los escudos están
  * caídos mientras dura. Ese aviso es el dato que hace de esto una decisión.
@@ -166,6 +184,19 @@ function sinCodigosDeAutodestruccion(ship) {
   if (!autodestruccion || typeof autodestruccion !== "object") return ship;
   const { code, codes, confirmed, ...resto } = autodestruccion;
   return { ...ship, self_destruct: resto };
+}
+
+/**
+ * "Quedan 3 de 8" o, sin lectura, que no la hay. El máximo va siempre: un
+ * número de sondas suelto no dice si son muchas o pocas.
+ */
+function textoDeSondas(probes, i18n) {
+  const stock = Number(probes?.stock);
+  const max = Number(probes?.max);
+  if (!Number.isFinite(stock) || !Number.isFinite(max)) {
+    return localize(i18n, "LAGUNAK.Espacios.Orden.SondasSinLectura");
+  }
+  return format(i18n, "LAGUNAK.Espacios.Orden.SondasRestantes", { stock, max });
 }
 
 function integer(value) {
@@ -597,6 +628,26 @@ export function buildWorkspaceModel({
     // nave con la frecuencia a cero.
     canOrderShieldFrequency: !isGM && isActionAllowed(normalized, "set_shield_frequency"),
     frecuenciaEscudosTexto: textoDeFrecuencia(ship?.shield_calibration, i18n),
+    // Relay (#517). Rutas, sondas y condición de alerta.
+    canOrderWaypoints: !isGM && isActionAllowed(normalized, "add_waypoint"),
+    canOrderProbe: !isGM && isActionAllowed(normalized, "launch_probe"),
+    canOrderScienceLink: !isGM && isActionAllowed(normalized, "set_science_link"),
+    canOrderAlertLevel: !isGM && isActionAllowed(normalized, "set_alert_level"),
+    // Objetivos para el enlace: la misma lectura degradada de siempre. Una
+    // sonda propia ya lanzada aparece ahí como un contacto más, que es
+    // exactamente lo que es desde el radar.
+    probeTargets: !isGM && isActionAllowed(normalized, "set_science_link")
+      ? weaponTargetsFor(sensores, i18n)
+      : [],
+    // Sondas restantes. Se LEE de la telemetría; sin lectura se dice que no la
+    // hay, y cero es una lectura legítima (se han gastado todas) que no puede
+    // confundirse con la ausencia.
+    sondasTexto: textoDeSondas(ship?.probes, i18n),
+    // Condición de alerta DECLARADA, no la derivada del daño (#338). Se
+    // muestra para que el puesto que la fija pueda confirmarla en vez de
+    // suponerla — la misma regla de "se lee, no se estima" del resto.
+    alertaDeclarada: nivelDeclarado(ship?.alert_level),
+    alertaDeclaradaTexto: textoDeAlerta(ship?.alert_level, i18n),
     // Comunicaciones (#463): reactivas sobre el canal ya abierto — sin picker
     // de objetivo propio, ver `docs/SESION-PANTALLAS-NATIVAS.md`.
     canOrderCommsHail: !isGM && isActionAllowed(normalized, "answer_comm_hail"),

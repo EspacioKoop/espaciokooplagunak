@@ -95,6 +95,8 @@ const PUESTOS_VISTA = Object.freeze([
   "sensors",
   "communications",
   "weapons",
+  // #517: Relay entra en la previsualización del GM como un puesto más.
+  "relay",
 ]);
 
 const PESTANAS = Object.freeze(["estado", "mapa", "encuentros", "previsualizacion"]);

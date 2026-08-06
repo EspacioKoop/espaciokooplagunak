@@ -271,8 +271,61 @@ test("atracar, soltar amarras y cancelar el acercamiento son tres órdenes disti
 
 test("ningún otro puesto puede maniobrar ni atracar", () => {
   // La matriz es cerrada: exponer agencia nativa no relaja la autoridad (#237).
-  for (const puesto of ["engineering", "weapons", "sensors", "communications"]) {
+  for (const puesto of ["engineering", "weapons", "sensors", "communications", "relay"]) {
     for (const accion of ["combat_maneuver_boost", "combat_maneuver_strafe", "dock", "undock", "abort_dock"]) {
+      assert.equal(isActionAllowed(puesto, accion), false, `${puesto} no puede ${accion}`);
+      assert.throws(() => resolveStationOrder({ station: puesto, action: accion }), {
+        code: STATION_ACTION_ERRORS.ACTION_NOT_ALLOWED,
+      });
+    }
+  }
+});
+
+// --- Relay (#517) -------------------------------------------------------------
+
+test("relay tiene las siete órdenes nativas, y el hackeo NO está entre ellas", () => {
+  assert.deepEqual(STATION_ACTIONS.relay, [
+    "add_waypoint",
+    "move_waypoint",
+    "remove_waypoint",
+    "launch_probe",
+    "set_science_link",
+    "clear_science_link",
+    "set_alert_level",
+  ]);
+  // El motor no expone el hackeo a Lua: prometerlo aquí sería una acción que
+  // el puente no puede cumplir (#521).
+  assert.equal(isActionAllowed("relay", "hack_target"), false);
+});
+
+test("las órdenes de relay encaminan a su método de BridgeClient", () => {
+  assert.deepEqual(
+    resolveStationOrder({ station: "relay", action: "add_waypoint", params: { x: 10, y: -20 } }),
+    { method: "addWaypoint", args: [10, -20] },
+  );
+  assert.deepEqual(
+    resolveStationOrder({
+      station: "relay",
+      action: "move_waypoint",
+      params: { index: 2, x: 10, y: -20 },
+    }),
+    { method: "moveWaypoint", args: [2, 10, -20] },
+  );
+  assert.deepEqual(
+    resolveStationOrder({ station: "relay", action: "set_alert_level", params: { level: "red" } }),
+    { method: "setAlertLevel", args: ["red"] },
+  );
+  assert.deepEqual(
+    resolveStationOrder({ station: "relay", action: "clear_science_link" }),
+    { method: "clearScienceLink", args: [] },
+  );
+});
+
+test("ningún otro puesto puede fijar la condición de alerta ni gastar sondas", () => {
+  // La condición de alerta es autoridad sobre la nave ENTERA ejercida desde un
+  // solo puesto: si se filtrara a otro, dejaría de ser una decisión de nadie.
+  for (const puesto of ["captain", "navigation", "engineering", "weapons", "sensors", "communications"]) {
+    for (const accion of STATION_ACTIONS.relay) {
       assert.equal(isActionAllowed(puesto, accion), false, `${puesto} no puede ${accion}`);
       assert.throws(() => resolveStationOrder({ station: puesto, action: accion }), {
         code: STATION_ACTION_ERRORS.ACTION_NOT_ALLOWED,
@@ -343,4 +396,11 @@ test("la frecuencia de escudos es de ingeniería y de nadie más", () => {
   // es tocar el sistema, y mientras dura la nave se queda sin escudos.
   assert.equal(isActionAllowed("engineering", "set_shield_frequency"), true);
   assert.equal(isActionAllowed("weapons", "set_shield_frequency"), false);
+});
+
+test("relay tampoco puede pilotar ni disparar", () => {
+  // El puesto nuevo no es una llave maestra: entra con lo suyo y nada más.
+  for (const accion of ["set_impulse", "set_warp", "fire_tube", "set_system_power", "scan_object"]) {
+    assert.equal(isActionAllowed("relay", accion), false);
+  }
 });

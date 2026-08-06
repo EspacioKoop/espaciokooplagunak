@@ -23,6 +23,25 @@ export class BridgeError extends Error {
   }
 }
 
+// Validaciones compartidas por las órdenes de Relay (#517). Duplican a
+// propósito las cotas del puente: aquí evitan un viaje de red inútil y dan un
+// mensaje legible, allí son la autoridad. Si divergen, gana el puente.
+const COORDENADA_MAXIMA = 500_000;
+const NIVELES_ALERTA = new Set(["normal", "yellow", "red"]);
+
+function esCoordenada(valor) {
+  return (
+    typeof valor === "number"
+    && Number.isFinite(valor)
+    && valor >= -COORDENADA_MAXIMA
+    && valor <= COORDENADA_MAXIMA
+  );
+}
+
+function esIndiceWaypoint(valor) {
+  return typeof valor === "number" && Number.isInteger(valor) && valor >= 0 && valor <= 63;
+}
+
 export class BridgeClient {
   /**
    * @param {object} opts
@@ -317,6 +336,80 @@ export class BridgeClient {
       throw new BridgeError("La frecuencia de escudos debe ser un entero entre 0 y 20", { kind: "parse" });
     }
     return this.#command({ op: "set_shield_frequency", frequency });
+  }
+
+  // --- Relay (#517) ---------------------------------------------------------
+  //
+  // Las coordenadas que llegan aquí YA vienen resueltas por el relé del GM
+  // (`station-order-wiring.mjs`) a partir del rumbo y la distancia que el
+  // tripulante señaló: nadie teclea coordenadas del mundo, que no se pueden
+  // conocer desde una consola de puesto.
+
+  /** POST /v1/command — coloca un punto de ruta en el mapa de la nave (Bearer). */
+  async addWaypoint(x, y) {
+    if (!esCoordenada(x) || !esCoordenada(y)) {
+      throw new BridgeError("Las coordenadas del punto de ruta no son válidas", { kind: "parse" });
+    }
+    return this.#command({ op: "add_waypoint", x, y });
+  }
+
+  /** POST /v1/command — mueve el punto de ruta `index` (Bearer). */
+  async moveWaypoint(index, x, y) {
+    if (!esIndiceWaypoint(index)) {
+      throw new BridgeError("El índice del punto de ruta debe ser un entero 0..63", { kind: "parse" });
+    }
+    if (!esCoordenada(x) || !esCoordenada(y)) {
+      throw new BridgeError("Las coordenadas del punto de ruta no son válidas", { kind: "parse" });
+    }
+    return this.#command({ op: "move_waypoint", index, x, y });
+  }
+
+  /** POST /v1/command — borra el punto de ruta `index` (Bearer). */
+  async removeWaypoint(index) {
+    if (!esIndiceWaypoint(index)) {
+      throw new BridgeError("El índice del punto de ruta debe ser un entero 0..63", { kind: "parse" });
+    }
+    return this.#command({ op: "remove_waypoint", index });
+  }
+
+  /**
+   * POST /v1/command — lanza una sonda hacia una coordenada (Bearer). Gasta
+   * stock: `/v1/state` publica cuánto queda (`probes`), y el juego valida.
+   */
+  async launchProbe(x, y) {
+    if (!esCoordenada(x) || !esCoordenada(y)) {
+      throw new BridgeError("Las coordenadas de la sonda no son válidas", { kind: "parse" });
+    }
+    return this.#command({ op: "launch_probe", x, y });
+  }
+
+  /**
+   * POST /v1/command — enlaza una sonda ya lanzada al radar de ciencia
+   * (Bearer). Cooperación entre puestos incorporada al motor: Relay la lanza y
+   * la enlaza, Sensores mira por ella.
+   */
+  async setScienceLink(callsign) {
+    if (typeof callsign !== "string" || callsign === "") {
+      throw new BridgeError("El indicativo de la sonda debe ser una cadena", { kind: "parse" });
+    }
+    return this.#command({ op: "set_science_link", callsign });
+  }
+
+  /** POST /v1/command — deshace el enlace sonda→ciencia (Bearer). */
+  async clearScienceLink() {
+    return this.#command({ op: "clear_science_link" });
+  }
+
+  /**
+   * POST /v1/command — fija la condición de alerta de toda la nave (Bearer).
+   * Catálogo cerrado `normal`/`yellow`/`red`, el mismo vocabulario que
+   * `/v1/state` devuelve en `alert_level`.
+   */
+  async setAlertLevel(level) {
+    if (!NIVELES_ALERTA.has(level)) {
+      throw new BridgeError("La condición de alerta debe ser normal, yellow o red", { kind: "parse" });
+    }
+    return this.#command({ op: "set_alert_level", level });
   }
 
   /** POST /v1/command — contesta (true) o ignora (false) una llamada entrante (Bearer). */

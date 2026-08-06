@@ -55,6 +55,23 @@ export const STATION_ACTIONS = Object.freeze({
     "send_comm_reply",
     "send_comm_message",
   ]),
+  // #517: el puesto con más decisiones por minuto después de ingeniería, y el
+  // que llevaba más tiempo sin existir aquí. Dos de ellas son cooperación
+  // incorporada al motor: el enlace sonda→ciencia le da a Sensores un radar
+  // que no tenía, y la condición de alerta es autoridad sobre la nave entera
+  // ejercida desde un solo sitio.
+  //
+  // El hackeo, que es la tercera pata del Relay nativo, NO está aquí: el motor
+  // no lo expone a Lua y exigiría binding en C++ (#521).
+  relay: Object.freeze([
+    "add_waypoint",
+    "move_waypoint",
+    "remove_waypoint",
+    "launch_probe",
+    "set_science_link",
+    "clear_science_link",
+    "set_alert_level",
+  ]),
 });
 
 // Correspondencia acción del contrato → método de BridgeClient. La validación
@@ -108,6 +125,34 @@ const ACTION_DISPATCH = Object.freeze({
   set_shield_frequency: Object.freeze({
     method: "setShieldFrequency",
     args: (params) => [params?.frequency],
+  }),
+  add_waypoint: Object.freeze({
+    method: "addWaypoint",
+    args: (params) => [params?.x, params?.y],
+  }),
+  move_waypoint: Object.freeze({
+    method: "moveWaypoint",
+    args: (params) => [params?.index, params?.x, params?.y],
+  }),
+  remove_waypoint: Object.freeze({
+    method: "removeWaypoint",
+    args: (params) => [params?.index],
+  }),
+  launch_probe: Object.freeze({
+    method: "launchProbe",
+    args: (params) => [params?.x, params?.y],
+  }),
+  set_science_link: Object.freeze({
+    method: "setScienceLink",
+    args: (params) => [params?.callsign],
+  }),
+  clear_science_link: Object.freeze({
+    method: "clearScienceLink",
+    args: () => [],
+  }),
+  set_alert_level: Object.freeze({
+    method: "setAlertLevel",
+    args: (params) => [params?.level],
   }),
   set_system_power: Object.freeze({
     method: "setSystemPower",

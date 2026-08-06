@@ -44,6 +44,8 @@ export const REQUISITOS_POR_DEFECTO = Object.freeze({
   communications: Object.freeze(["cha", "int"]),
   // Armas: pulso o empuje, las dos valen.
   weapons: Object.freeze(["dex", "str"]),
+  // Relay: llevar la cuenta de todo a la vez, o darse cuenta de lo que falta.
+  relay: Object.freeze(["int", "wis"]),
 });
 
 /** Puntuación mínima de serie. 12 es «por encima de la media» sin ser una criba. */

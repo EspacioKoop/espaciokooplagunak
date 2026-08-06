@@ -76,6 +76,7 @@ gana el código y este documento queda desactualizado hasta que se corrija
 | `sensors` | `scan_object` |
 | `communications` | `answer_comm_hail`, `close_comm`, `send_comm_reply`, `send_comm_message` |
 | `weapons` | `set_shields`, `set_weapon_target`, `fire_tube`, `confirm_self_destruct_code` |
+| `relay` | `add_waypoint`, `move_waypoint`, `remove_waypoint`, `launch_probe`, `set_science_link`, `clear_science_link`, `set_alert_level` |
 
 Esta tabla llevaba tiempo desactualizada: describía la superficie anterior a
 #462-#465, que ya habían ampliado sensores, comunicaciones, ingeniería y armas
@@ -138,6 +139,27 @@ pantalla nativa que se los muestra a cada persona, o que los dicte quien los
 tenga. Es una limitación real para una mesa que juegue *solo* en Foundry —ahí
 los tendrá que repartir el director, que sí ve el estado— y a la vez lo que
 impide que el puzle se convierta en un botón.
+
+`captain` sigue sin emitir órdenes de control de nave, coherente con el género
+bridge-sim (ratificado en #268) — no es una laguna.
+
+**`relay` es el séptimo puesto** y el primero que se añade a `STATIONS` desde
+que existe la lista. Va el último a propósito: insertarlo en medio reordenaría
+los puestos que la mesa ya tiene aprendidos en toda superficie que enumere
+`STATIONS`. Tres matices que la tabla no recoge:
+
+- **Los puntos de ruta y las sondas se señalan por marcación y distancia**, no
+  por coordenadas. La consola de un puesto no publica las coordenadas del mundo
+  —el mapa sin degradar es recurso del GM— así que pedirlas sería pedir que se
+  adivinen. El relé del GM las convierte con la posición real de la nave
+  (`resolver-posicion-relay.mjs`), igual que ya traducía un objetivo de escaneo.
+- **La condición de alerta no es el aviso de daños de la escena** (#338). Una es
+  una declaración de la tripulación y la otra un diagnóstico derivado del casco
+  y la energía; conviven sin sincronizarse, porque derivar una de la otra
+  borraría la decisión que hace de Relay un puesto. `/v1/state` publica la
+  declarada en `alert_level` para que quien la fija pueda confirmarla.
+- **El hackeo no está**, y no por olvido: el motor no lo expone a Lua y haría
+  falta binding en C++ (#521).
 
 Cada entrada de la tabla es reproducible en dos capas, nunca solo una:
 
@@ -206,9 +228,9 @@ réplica el uno del otro:**
   (qué ve un cliente nativo vs. qué puede pedir un jugador de mesa a través
   del puente).
 
-La correspondencia entre los 6 puestos de Foundry
+La correspondencia entre los 7 puestos de Foundry
 (`foundry-module/scripts/station-assignment.mjs`: `captain`, `navigation`,
-`engineering`, `sensors`, `communications`, `weapons`) y los 15
+`engineering`, `sensors`, `communications`, `weapons`, `relay`) y los 15
 `CrewPosition` nativos es una **simplificación narrativa deliberada** para
 una mesa reducida — agrupa roles que en una tripulación de 6-5 jugadores
 nativos estarían más repartidos — y no un mapeo formal que haya que mantener
@@ -220,8 +242,15 @@ sincronizado si el motor añade o renombra un `CrewPosition`:
 | `navigation` | `helmsOfficer`, `singlePilot` |
 | `engineering` | `engineering`, `engineeringAdvanced`, `powerManagement`, `damageControl` |
 | `sensors` | `scienceOfficer` |
-| `communications` | `relayOfficer`, `commsOnly`, `operationsOfficer` |
+| `communications` | `commsOnly`, `operationsOfficer` |
 | `weapons` | `weaponsOfficer`, `tacticalOfficer` |
+| `relay` | `relayOfficer`, `altRelay` |
+
+`relayOfficer` figuraba antes junto a `communications`, cuando Foundry no tenía
+puesto de Relay y sus decisiones no existían aquí. Con #517 pasa donde le
+corresponde. Sigue siendo orientativo: la pantalla nativa de Relay monta también
+el overlay de comunicaciones, así que en una mesa pequeña las dos cosas pueden
+seguir siendo la misma persona.
 
 ## Migración futura
 

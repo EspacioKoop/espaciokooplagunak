@@ -53,6 +53,23 @@ test("sin ficha la oferta se degrada al reto de destreza, no se cae", () => {
   assert.equal(ok, true);
   assert.equal(oferta.via, "destreza");
   assert.deepEqual(oferta.enfoques, []);
+  // Sin declarar minijuegoDestreza en la tarea, se asume temporización: es
+  // compatibilidad hacia atrás con las tareas escritas antes de #500.
+  assert.equal(oferta.minijuegoDestreza, "temporizacion");
+});
+
+test("la oferta lleva el minijuego de destreza que declaró la tarea (#500)", () => {
+  const tareaSecuencia = { ...TAREA, minijuegoDestreza: "secuencia" };
+  const { ok, oferta } = abrir({
+    estado: crearSesion(),
+    tarea: tareaSecuencia,
+    asistenteId: "ayudante-1",
+    nonce: "n1",
+    ahora: T0,
+    tieneFicha: false,
+  });
+  assert.equal(ok, true);
+  assert.equal(oferta.minijuegoDestreza, "secuencia");
 });
 
 test("el GM puede abrir la vía de los enfoques con coste", () => {

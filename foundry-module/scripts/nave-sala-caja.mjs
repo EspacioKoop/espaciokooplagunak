@@ -178,7 +178,7 @@ const DISTANCIA_TOTALMENTE_ABIERTA = 1.0;
 /** Punto de `rect` más cercano a `(x, z)` — misma geometría de tres líneas
  *  que `nave-movimiento.mjs`, duplicada porque esa función no se expone y
  *  aquí hace falta la distancia, no un booleano de colisión. */
-function distanciaARect(x, z, rect) {
+export function distanciaARect(x, z, rect) {
   const cx = Math.max(rect.x, Math.min(x, rect.x + rect.ancho));
   const cz = Math.max(rect.z, Math.min(z, rect.z + rect.profundidad));
   return Math.hypot(x - cx, z - cz);
@@ -201,7 +201,7 @@ export function fraccionAbierta(distancia) {
  * retira hacia SU lado —nunca hacia el centro— al abrirse, hasta desaparecer
  * por completo dentro del muro que la enmarca.
  */
-function piezasHojaPuerta({ base, y0, y1, alongX }, fraccion) {
+export function piezasHojaPuerta({ base, y0, y1, alongX }, fraccion) {
   if (alongX) {
     const mitad = base.ancho / 2;
     const deslizamiento = mitad * fraccion;

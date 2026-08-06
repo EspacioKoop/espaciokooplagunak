@@ -3,7 +3,11 @@
 //
 // REUTILIZA LA MISMA GEOMETRÍA QUE `cantina-escena.mjs` (`MUEBLES`, `caja`):
 // ni un mueble nuevo, ni un color nuevo, ni una línea de rasterizador nueva.
-// Lo único que aporta este archivo es OTRA CÁMARA sobre los mismos datos.
+// Lo único que aporta este archivo es OTRA CÁMARA sobre los mismos datos —con
+// UNA excepción: las hojas de la puerta oeste (#508 QA, "estilo Star Trek"),
+// que se abren según la distancia de ESTA cámara libre a la puerta y por eso
+// no pueden vivir en `MUEBLES` (estático, sin `x`/`z` de nadie). Reutilizan
+// la misma rampa de apertura que `nave-sala-caja.mjs` en vez de una propia.
 //
 // NO TOCA `componerCantina` NI `cantina-planos.mjs`. Esa cámara es la de
 // #423 —cortes secos entre encuadres fijos, "nunca travelling", a
@@ -16,10 +20,12 @@
 // Frontera de arte (#351): no declara ni un color — los toma de `MUEBLES`,
 // que ya los tomó de `paleta.mjs`.
 
-import { caja, MUEBLES } from "./cantina-escena.mjs";
+import { caja, MUEBLES, PUERTA_CANTINA_HACIA_VESTIBULO } from "./cantina-escena.mjs";
 import { componerEscena } from "./retro3d.mjs";
 import { aNativo } from "./cantina-planta.mjs";
 import { poligonosOtrosJugadores } from "./nave-avatares-render.mjs";
+import { distanciaARect, fraccionAbierta, piezasHojaPuerta } from "./nave-sala-caja.mjs";
+import { CANTINA } from "./paleta.mjs";
 
 /** A qué altura mira quien anda, de pie. Misma cifra que el resto de la nave
  *  (`nave-sala-caja.mjs`, 1.45 y no 1.6 — QA: "el personaje está demasiado
@@ -52,7 +58,17 @@ export function componerCantinaAndar(x, y, z, yaw, opciones = {}) {
   const camara = [nativo.x, ALTURA_OJOS + y, nativo.z];
   const yawCamara = -yaw; // ver el comentario de `yaw` más abajo
 
-  const partes = PIEZAS.map(({ malla, color }) =>
+  // La hoja de la puerta oeste, recalculada en cada llamada: su apertura es
+  // pura función de la distancia de ESTA cámara a la puerta (igual que en
+  // `nave-sala-caja.mjs`), así que no puede vivir en `PIEZAS` —congeladas una
+  // vez— sino que se genera aquí, con `nativo` ya conocido.
+  const fraccion = fraccionAbierta(distanciaARect(nativo.x, nativo.z, PUERTA_CANTINA_HACIA_VESTIBULO.base));
+  const piezasHojas = piezasHojaPuerta(PUERTA_CANTINA_HACIA_VESTIBULO, fraccion).map((malla) => ({
+    malla,
+    color: CANTINA.mamparo,
+  }));
+
+  const partes = [...PIEZAS, ...piezasHojas].map(({ malla, color }) =>
     componerEscena(trasladarMalla(malla, [-camara[0], -camara[1], -camara[2]]), {
       ancho,
       alto,

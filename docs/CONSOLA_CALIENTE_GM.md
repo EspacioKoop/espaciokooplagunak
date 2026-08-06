@@ -1,11 +1,19 @@
 # Consola caliente del GM — especificación de ejecución
 
-- Estado: **especificación lista para ejecutar; solo el paso 0 está implementado**
-  (aislamiento de fallo por superficie en la ventana del mapa). Todo lo demás
-  —la fusión en sí— sigue sin escribir y espera a su puerta.
+- Estado: **ejecutada por completo.** Los pasos 0-4 están en `main`
+  (`consola-caliente-v1.mjs`/`consola-caliente-v2.mjs`, `consola-caliente-poll.mjs`)
+  y probados en Node (`foundry-module/tests/consola-caliente-{v1,v2,poll}.test.mjs`).
+  El paso 5 se resolvió fusionando también V1 (ver
+  [Preguntas resueltas](#preguntas-resueltas)). La dirección de arte del RFC
+  (marcos como refuerzo estructural, pulso `lagunak-pulse` de acento único) está
+  aplicada en `foundry-module/styles/lagunak-consola.css`.
 - Issue: [#276](https://github.com/VaroTv7/espaciokooplagunak/issues/276) (el RFC, con la visión y la
   dirección de arte). Aquí está solo el **cómo**.
-- Fase: **3**, pero detrás de una puerta —ver [Cuándo](#cuándo-se-ejecuta-esto).
+- Fase: **3**. Se ejecutó (PR #455, 2026-08-04) antes de que la última casilla
+  de salida de Fase 3 (sesión completa en mesa, ver README) estuviera marcada
+  — el criterio de aceptación #7 de este documento ("una sesión en mesa no
+  pierde capacidad") sigue sin verificarse en mesa real; ver
+  [Cuándo](#cuándo-se-ejecuta-esto) para el razonamiento original de la puerta.
 
 El RFC decidió *qué* se fusiona y *por qué*. Lo que faltaba era que el día de
 ejecutarlo no hubiera que rediseñar nada: este documento fija el reparto de
@@ -148,11 +156,11 @@ Regla, entonces:
 - La pestaña activa que entra en error **no cambia de pestaña sola**. Un salto
   automático con la escena en marcha le mueve la interfaz al GM debajo del ratón.
 
-En el mapa esto ya está aplicado (paso 0): `mapa-lote.mjs` reparte el lote, la
+En el mapa esto se aplicó primero (paso 0): `mapa-lote.mjs` reparte el lote, la
 ventana publica `contactosCaidos` y la plantilla lo dice con palabras en vez de
-dejar un mapa vacío que parece «no hay nadie ahí fuera». Queda pendiente aplicar
-la misma regla a las demás superficies **al fusionarlas**, que es cuando existen
-como pestañas.
+dejar un mapa vacío que parece «no hay nadie ahí fuera». La fusión (pasos 1-5)
+aplicó la misma regla al resto de pestañas: cada una tiene su propio estado de
+datos y un fallo no toca a las demás.
 
 ## Orden de migración
 
@@ -164,20 +172,19 @@ Cada paso deja el módulo utilizable y se puede mergear solo.
   palabras. Un `contacts` caído ya no tira el `state` que llegó bien, no vacía la
   nave propia, no arranca el backoff del ciclo y no se rellena con contactos
   viejos. No requería la puerta de Fase 3 y no la ha tocado.
-- **Paso 1 — extraer el bucle a un módulo puro.** Cadencia, backoff, conteo de
-  fallos y estado por superficie, sin Foundry, con pruebas en Node. Las cuatro
-  factorías lo consumen sin cambiar de forma.
-- **Paso 2 — fusionar Estado + Mapa** en `ConsolaCalienteV2`, con las dos primeras
-  pestañas y un solo bucle. V1 se queda como está hasta que V2 esté jugada.
-- **Paso 3 — absorber Encuentros** como pestaña. `encuentro-control.mjs` ya son
-  funciones puras y su vista la pinta la plantilla: no hay que reescribirlo, solo
-  moverlo de sitio.
-- **Paso 4 — migrar la previsualización por puesto** desde la rama `isGM` de
-  `station-workspaces.mjs`. Esto es lo que además limpia ese archivo.
-- **Paso 5 — replicar en V1**, o decidir explícitamente que V1 se queda con las
-  ventanas sueltas. Es una decisión legítima: v11 es la mesa que no se mueve.
+- **Paso 1 — extraer el bucle a un módulo puro. HECHO** (`consola-caliente-poll.mjs`,
+  probado en Node).
+- **Paso 2 — fusionar Estado + Mapa. HECHO** en `ConsolaCalienteV2`.
+- **Paso 3 — absorber Encuentros como pestaña. HECHO.**
+- **Paso 4 — migrar la previsualización por puesto. HECHO**; `station-workspaces.mjs`
+  ya no bifurca por rol para esa selección de puesto.
+- **Paso 5 — replicar en V1. HECHO** (`consola-caliente-v1.mjs`): se fusionó
+  también V1 en vez de congelarlo (ver
+  [Preguntas resueltas](#preguntas-resueltas)); las cuatro factorías sueltas y
+  sus plantillas se retiraron.
 
-Los pasos 1 y siguientes son los que esperan a la puerta. El paso 0 no.
+Todos los pasos están en `main` (PR #455). Lo único que ninguno de ellos cierra
+es el criterio de aceptación #7 (mesa real), que sigue pendiente de playtest.
 
 ## Lo que NO cambia
 

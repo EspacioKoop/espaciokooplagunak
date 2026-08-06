@@ -146,25 +146,40 @@ Desglose de coordinación del vertical de agencia en #459, con subissues
 formales y grafo de dependencias explícito:
 
 - #460 — verificar y documentar pantallas nativas restantes (bloquea #462–#465);
-- #461 — modelo de permisos por puesto v1 (informa sin bloquear);
-- #462 — sensores/ciencia;
-- #463 — comunicaciones;
-- #464 — reparación por tripulación (ingeniería activa);
-- #465 — arma real más allá de escudos;
-- #466 — feedback interactivo en 3D por acción de puesto (depende de al menos
-  uno de #462–#465);
-- #467 — playtest del vertical de agencia de Etapa B (depende de #460–#466).
+  en revisión (PR #469).
+- #461 — **mergeado**: modelo de permisos por puesto v1
+  (`docs/PERMISOS_PUESTO.md`, ADR-0009, PR #478).
+- #462 — **mergeado**: `scan_object` en `STATION_ACTIONS.sensors`, backend
+  (PR #472) y UI de consola (PR #486).
+- #463 — **mergeado**: `answer_comm_hail`/`close_comm`/`send_comm_reply`/
+  `send_comm_message` en `STATION_ACTIONS.communications` (PR #475).
+- #464 — **mergeado**: `set_auto_repair` en `STATION_ACTIONS.engineering`
+  (PR #476) — mover reparadores a mano (`commandCrewSetTargetPosition`)
+  queda pendiente de un issue de seguimiento si se prioriza, porque exige
+  registrar un global Lua nuevo en C++.
+- #465 — **mergeado**: `set_weapon_target`/`fire_tube` en
+  `STATION_ACTIONS.weapons` (PR #474/#487).
+- #466 — **mergeado**: feedback 3D de `set_auto_repair` en el casco de
+  ingeniería, `casco-dano.mjs` (PR #477) — depende de al menos uno de
+  #462–#465.
+- #467 — playtest del vertical de agencia de Etapa B (depende de #460–#466;
+  #460 sigue en revisión).
 
 Este grafo valida el criterio de salida de agencia, pero no cierra por sí solo
 toda la Etapa B. Sus otros frentes están trazados en #479: #480 (navegación
 operacional — **satisfecho**, ver
-[`docs/SESION-NAVEGACION-OPERACIONAL.md`](SESION-NAVEGACION-OPERACIONAL.md):
+[`VERIFICACION-NAVEGACION-Y-AUTOMATIZACION.md`](VERIFICACION-NAVEGACION-Y-AUTOMATIZACION.md)
+y [`SESION-NAVEGACION-OPERACIONAL.md`](SESION-NAVEGACION-OPERACIONAL.md):
 `set_target_heading`/`set_impulse`/`set_warp` ya son una decisión exclusiva
 del puesto que cambia el resultado de un encuentro), #481 (automatización de
-puestos vacíos), #482 (alarmas compartidas por dependencia entre sistemas),
-#483 (guardias y relevo) y #484 (crisis que exijan coordinación entre al
-menos tres puestos, depende de #462–#465). Antes de declarar la etapa
-completada deben quedar todos trazados y satisfechos.
+puestos vacíos — **verificado: no existe automatización nativa**, sistema sin
+tripulación queda congelado en su último valor; la decisión de diseño sobre
+qué comportamiento adoptar queda trazada en #512, ver
+[`VERIFICACION-NAVEGACION-Y-AUTOMATIZACION.md`](VERIFICACION-NAVEGACION-Y-AUTOMATIZACION.md)),
+#482 (alarmas compartidas por dependencia entre sistemas), #483 (guardias y
+relevo) y #484 (crisis que exijan coordinación entre al menos tres puestos,
+depende de #462–#465). Antes de declarar la etapa completada deben quedar
+todos trazados y satisfechos.
 
 ### Etapa C — Nave persistente y progresión
 

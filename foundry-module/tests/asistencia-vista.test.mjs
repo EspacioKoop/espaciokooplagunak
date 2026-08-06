@@ -7,11 +7,13 @@ import { CLASES_ENFOQUE } from "../scripts/asistencia/enfoques.mjs";
 import { abrir, crearSesion } from "../scripts/asistencia/sesion.mjs";
 import { crearReto } from "../scripts/asistencia/temporizacion.mjs";
 import { crearReto as crearRetoSecuencia } from "../scripts/asistencia/secuencia.mjs";
+import { crearReto as crearRetoPuzzle } from "../scripts/asistencia/puzzle.mjs";
 import {
   FASES,
   vistaCierre,
   vistaOferta,
   vistaReto,
+  vistaRetoPuzzle,
   vistaRetoSecuencia,
   vistaTareas,
 } from "../scripts/asistencia/vista.mjs";
@@ -180,6 +182,31 @@ test("el reto de secuencia sale en unidades de pintado, con el progreso del inte
 
 test("sin reto de secuencia no hay vista, y no es un error", () => {
   assert.equal(vistaRetoSecuencia(null, [], 0), null);
+});
+
+test("el reto de puzzle muestra SIEMPRE el objetivo junto al estado actual del panel", () => {
+  const reto = crearRetoPuzzle({ semilla: "s", dificultad: "facil", inicioMs: 0 });
+  const panel = [true]; // solo la primera casilla encendida, venga o no a cuento
+  const vista = vistaRetoPuzzle(reto, panel, null, 100);
+
+  assert.equal(vista.celdas.length, reto.celdas);
+  for (let i = 0; i < reto.celdas; i += 1) {
+    assert.equal(vista.celdas[i].objetivo, reto.patronObjetivo[i]);
+    assert.equal(vista.celdas[i].encendida, i === 0);
+  }
+  assert.equal(vista.ultimoIntento, null);
+  assert.equal(typeof vista.lectura.segundosRestantes, "number");
+});
+
+test("el último intento de puzzle viaja a la vista sin cerrar nada por su cuenta", () => {
+  const reto = crearRetoPuzzle({ semilla: "s", dificultad: "facil", inicioMs: 0 });
+  const intento = { aciertos: 1, sobrantes: 1, encendidosObjetivo: 2, exacto: false, cerrado: false };
+  const vista = vistaRetoPuzzle(reto, [], intento, 100);
+  assert.deepEqual(vista.ultimoIntento, { aciertos: 1, sobrantes: 1 });
+});
+
+test("sin reto de puzzle no hay vista, y no es un error", () => {
+  assert.equal(vistaRetoPuzzle(null, [], null, 0), null);
 });
 
 test("el cierre distingue los tres finales que un «no se pudo» aplasta", () => {

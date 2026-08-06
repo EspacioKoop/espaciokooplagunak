@@ -166,7 +166,13 @@ token:
   para defenderse de quien quiere hacer trampas.
 - **Matriz de autoridad cerrada** (`station-actions.mjs`, `STATION_ACTIONS`).
   Declara qué órdenes del whitelist del puente puede emitir cada puesto:
-  `navigation` → `set_target_heading`, `set_impulse`, `set_warp`; `engineering`
+  `navigation` → `set_target_heading`, `set_impulse`, `set_warp`,
+  `combat_maneuver_boost`, `combat_maneuver_strafe`, `dock`, `undock`,
+  `abort_dock` (#519 — maniobra de combate y atraque, agencia nativa del timón
+  que Foundry no exponía; la carga de maniobra se lee de
+  `combat_maneuver.charge` en `/v1/state` y sin lectura se dice "sin lectura",
+  nunca cero, y `undock`/`abort_dock` son órdenes distintas del motor y no dos
+  nombres de lo mismo); `engineering`
   → `set_system_power`, `set_system_coolant`, `set_auto_repair` (#464 —
   decisión bajo presión: con la reparación automática desactivada, los
   sistemas dañados no se reparan solos; el casco 3D de ingeniería, #419, lo

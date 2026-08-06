@@ -13,7 +13,16 @@ test("navegación controla el movimiento: rumbo, impulso y warp", () => {
   assert.equal(isActionAllowed("navigation", "set_target_heading"), true);
   assert.equal(isActionAllowed("navigation", "set_impulse"), true);
   assert.equal(isActionAllowed("navigation", "set_warp"), true);
-  assert.deepEqual(STATION_ACTIONS.navigation, ["set_target_heading", "set_impulse", "set_warp"]);
+  assert.deepEqual(STATION_ACTIONS.navigation, [
+    "set_target_heading",
+    "set_impulse",
+    "set_warp",
+    "combat_maneuver_boost",
+    "combat_maneuver_strafe",
+    "dock",
+    "undock",
+    "abort_dock",
+  ]);
 });
 
 test("las órdenes de movimiento encaminan al método correcto de BridgeClient", () => {
@@ -204,4 +213,54 @@ test("resolveStationOrder no inventa acciones fuera del whitelist", () => {
     () => resolveStationOrder({ station: "navigation", action: "self_destruct" }),
     (error) => error.code === STATION_ACTION_ERRORS.ACTION_NOT_ALLOWED,
   );
+});
+
+// --- Navegación: maniobra de combate y atraque (#519) -------------------------
+
+test("la maniobra de combate encamina a su método, con los dos ejes separados", () => {
+  assert.deepEqual(
+    resolveStationOrder({
+      station: "navigation",
+      action: "combat_maneuver_boost",
+      params: { amount: 1 },
+    }),
+    { method: "combatManeuverBoost", args: [1] },
+  );
+  assert.deepEqual(
+    resolveStationOrder({
+      station: "navigation",
+      action: "combat_maneuver_strafe",
+      params: { amount: -0.5 },
+    }),
+    { method: "combatManeuverStrafe", args: [-0.5] },
+  );
+});
+
+test("atracar, soltar amarras y cancelar el acercamiento son tres órdenes distintas", () => {
+  // El motor las trata por separado: abortar un acercamiento no suelta un
+  // atraque hecho, y confundirlas dejaría a la nave amarrada creyendo que no.
+  assert.deepEqual(
+    resolveStationOrder({ station: "navigation", action: "dock", params: { callsign: "Argia" } }),
+    { method: "dock", args: ["Argia"] },
+  );
+  assert.deepEqual(
+    resolveStationOrder({ station: "navigation", action: "undock" }),
+    { method: "undock", args: [] },
+  );
+  assert.deepEqual(
+    resolveStationOrder({ station: "navigation", action: "abort_dock" }),
+    { method: "abortDock", args: [] },
+  );
+});
+
+test("ningún otro puesto puede maniobrar ni atracar", () => {
+  // La matriz es cerrada: exponer agencia nativa no relaja la autoridad (#237).
+  for (const puesto of ["engineering", "weapons", "sensors", "communications"]) {
+    for (const accion of ["combat_maneuver_boost", "combat_maneuver_strafe", "dock", "undock", "abort_dock"]) {
+      assert.equal(isActionAllowed(puesto, accion), false, `${puesto} no puede ${accion}`);
+      assert.throws(() => resolveStationOrder({ station: puesto, action: accion }), {
+        code: STATION_ACTION_ERRORS.ACTION_NOT_ALLOWED,
+      });
+    }
+  }
 });

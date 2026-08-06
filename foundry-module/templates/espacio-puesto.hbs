@@ -190,6 +190,42 @@
           </form>
         {{/if}}
 
+        {{#if canOrderCombatManeuver}}
+          <form class="lagunak-workspace__orden" data-workspace-order="combat-maneuver">
+            <span class="lagunak-workspace__orden-label">{{localize "LAGUNAK.Espacios.Orden.ManiobraLabel"}}</span>
+            <p class="lagunak-workspace__orden-lectura">{{maniobraCargaTexto}}</p>
+            <label for="lagunak-orden-maniobra-empuje">{{localize "LAGUNAK.Espacios.Orden.ManiobraEmpujeLabel"}}</label>
+            <input id="lagunak-orden-maniobra-empuje" name="maneuver-boost" type="number" min="0" max="1" step="0.1" inputmode="decimal" />
+            <button type="button" data-workspace-action="orden-maniobra-empuje">{{localize "LAGUNAK.Espacios.Orden.ManiobraEmpujar"}}</button>
+            <label for="lagunak-orden-maniobra-lateral">{{localize "LAGUNAK.Espacios.Orden.ManiobraLateralLabel"}}</label>
+            <input id="lagunak-orden-maniobra-lateral" name="maneuver-strafe" type="number" min="-1" max="1" step="0.1" inputmode="decimal" />
+            <button type="button" data-workspace-action="orden-maniobra-lateral">{{localize "LAGUNAK.Espacios.Orden.ManiobraDesplazar"}}</button>
+            <small>{{localize "LAGUNAK.Espacios.Orden.ManiobraAyuda"}}</small>
+          </form>
+        {{/if}}
+
+        {{#if canOrderDock}}
+          <form class="lagunak-workspace__orden" data-workspace-order="dock">
+            <span class="lagunak-workspace__orden-label">{{localize "LAGUNAK.Espacios.Orden.AtraqueLabel"}}</span>
+            {{#if dockTargets.length}}
+              <label for="lagunak-orden-objetivo-atraque">{{localize "LAGUNAK.Espacios.Orden.AtraqueObjetivoLabel"}}</label>
+              <select id="lagunak-orden-objetivo-atraque">
+                {{#each dockTargets}}<option value="{{value}}">{{label}}</option>{{/each}}
+              </select>
+              <button type="button" data-workspace-action="orden-atracar">{{localize "LAGUNAK.Espacios.Orden.Atracar"}}</button>
+            {{else}}
+              <p class="lagunak-workspace__orden-vacia">{{localize "LAGUNAK.Espacios.Armas.SinObjetivos"}}</p>
+            {{/if}}
+            {{#if canOrderUndock}}
+              <button type="button" data-workspace-action="orden-soltar-amarras">{{localize "LAGUNAK.Espacios.Orden.SoltarAmarras"}}</button>
+            {{/if}}
+            {{#if canOrderAbortDock}}
+              <button type="button" data-workspace-action="orden-cancelar-atraque">{{localize "LAGUNAK.Espacios.Orden.CancelarAtraque"}}</button>
+            {{/if}}
+            <small>{{localize "LAGUNAK.Espacios.Orden.AtraqueAyuda"}}</small>
+          </form>
+        {{/if}}
+
         {{#if canOrderPower}}
           <form class="lagunak-workspace__orden" data-workspace-order="power">
             <label for="lagunak-orden-sistema">{{localize "LAGUNAK.Espacios.Orden.SistemaLabel"}}</label>

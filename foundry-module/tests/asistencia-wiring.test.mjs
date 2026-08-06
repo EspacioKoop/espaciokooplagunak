@@ -109,6 +109,52 @@ test("la petición viaja por el flag del propio usuario, nunca por socket", () =
   assert.equal(emitido.length, 0, "pedir ayuda no emite por socket");
 });
 
+test("con un personaje real, el rango de éxito sale del modificador de su ficha (#500)", () => {
+  // "reparar-en-caliente" declara `habilidad: "tool:tinker"` en el catálogo
+  // base. Sin esto, la oferta se calculaba siempre con modificador 0. Va
+  // primero en el archivo, antes de que otro test deje una reserva de piloto
+  // en ingeniería sin resolver: el presupuesto es de un asistente por puesto,
+  // y una reserva viva de un test anterior tumbaría este con "ya-asiste".
+  usuarios.piloto.character = { system: { tools: { tinker: { total: 4 } } } };
+  try {
+    pideAyuda(usuarios.piloto, { tipo: "abrir", tareaId: TAREA, nonce: "n-ficha" });
+    const respuesta = respuestaA("piloto");
+    const enfoque = respuesta.carga.oferta.enfoques.find((e) => e.enfoque.id === "reparar-en-caliente");
+    assert.equal(enfoque.rango.modificador, 4);
+  } finally {
+    usuarios.piloto.character = null;
+    pideAyuda(usuarios.piloto, { tipo: "resolver", nonce: "n-ficha", banda: "fallo", enfoqueId: null });
+  }
+});
+
+test("sin personaje, la oferta se degrada y no revienta leyendo una ficha inexistente", () => {
+  pideAyuda(usuarios.piloto, { tipo: "abrir", tareaId: TAREA, nonce: "n-sin-ficha" });
+  const respuesta = respuestaA("piloto");
+  assert.equal(respuesta.carga.oferta.via, "destreza");
+  pideAyuda(usuarios.piloto, { tipo: "resolver", nonce: "n-sin-ficha", banda: "fallo", enfoqueId: null });
+});
+
+test("resolver cierra la ayuda de verdad, no la rechaza por sí sola (bug real: resolver nunca declara tareaId)", () => {
+  // `puedeAsistir(peticion?.tareaId)` se reconstruye con la petición ACTUAL en
+  // cada llamada. Una petición "resolver" nunca lleva tareaId —la tarea ya
+  // quedó fijada en la reserva que abrió el nonce, y no se repite—, así que
+  // sin el caso aparte de `puedeAsistir`, `catalogo.buscar(null)` daba
+  // siempre null y CUALQUIER resolución se rechazaba con "no-puede-asistir"
+  // antes de llegar al motor: se podía pedir ayuda y ver la oferta, pero
+  // nunca cerrarla.
+  pideAyuda(usuarios.piloto, { tipo: "abrir", tareaId: TAREA, nonce: "n-resolver" });
+  emitido.length = 0;
+  capturado.length = 0;
+  pideAyuda(usuarios.piloto, { tipo: "resolver", nonce: "n-resolver", banda: "exito", enfoqueId: null });
+  const respuesta = respuestaA("piloto");
+  assert.doesNotMatch(
+    respuesta.hook ?? respuesta.tipo,
+    /rechazo/i,
+    "resolver con una banda favorable debe producir un resultado, no un rechazo",
+  );
+  assert.ok(respuesta.carga.propuesta, "hay propuesta: la ayuda se cerró de verdad");
+});
+
 test("quien ocupa el puesto no puede asistirse a sí mismo", () => {
   // No es cooperación: es un rodeo para mejorar la propia orden, y convertiría la
   // ayuda en un peaje que todo titular pagaría siempre.

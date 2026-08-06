@@ -15,6 +15,7 @@
 
 import { BANDAS } from "./bandas.mjs";
 import { STATION_ACTIONS } from "../station-actions.mjs";
+import { TIPOS_HABILIDAD } from "./ficha-dnd5e.mjs";
 
 /** Las tres clases de enfoque del contrato. No hay más. */
 export const CLASES_ENFOQUE = Object.freeze({
@@ -50,6 +51,7 @@ export const ASISTENCIA_ERRORES = Object.freeze({
   SIN_BANDA_FIJA: "sin-banda-fija",
   BANDA_FIJA_CRITICA: "banda-fija-critica",
   ACCION_NO_AUTORIZADA: "accion-no-autorizada",
+  HABILIDAD_DESCONOCIDA: "habilidad-desconocida",
   MINIJUEGO_DESCONOCIDO: "minijuego-desconocido",
 });
 
@@ -95,6 +97,20 @@ export function validarEnfoque(enfoque, tarea = {}) {
   if (!enfoque?.id) fallar(ASISTENCIA_ERRORES.TAREA_INVALIDA, "enfoque sin id");
   const clase = enfoque.clase;
   const coste = enfoque.coste ?? null;
+  // `habilidad` es opcional (#500): sin ella, el rango de éxito se calcula con
+  // modificador 0, como antes de leer la ficha. Si SE declara, tiene que
+  // apuntar a un tipo real de entrada de la ficha — un prefijo inventado no se
+  // detectaría hasta que alguien intentara ayudar y el modificador saliera
+  // silenciosamente en 0, que es peor que fallar al cargar.
+  if (enfoque.habilidad != null) {
+    const tipo = String(enfoque.habilidad).split(":")[0];
+    if (!TIPOS_HABILIDAD.includes(tipo)) {
+      fallar(
+        ASISTENCIA_ERRORES.HABILIDAD_DESCONOCIDA,
+        `${enfoque.id}: habilidad «${enfoque.habilidad}» no empieza por ${TIPOS_HABILIDAD.map((t) => `${t}:`).join("/")}`,
+      );
+    }
+  }
   switch (clase) {
     case CLASES_ENFOQUE.PRUEBA: {
       if (!Number.isFinite(Number(enfoque.cd))) {

@@ -88,6 +88,30 @@ test("la clase (c) exige banda fija y nunca puede ser crítico", () => {
   assert.equal(validarEnfoque({ ...sinBanda, bandaFija: BANDAS.EXITO }, {}).bandaFija, BANDAS.EXITO);
 });
 
+test("la habilidad es opcional: sin ella, el enfoque sigue validando (#500)", () => {
+  const { habilidad, ...sinHabilidad } = prueba();
+  const validado = validarEnfoque(sinHabilidad, tareaIngenieria());
+  assert.equal(validado.habilidad, undefined);
+});
+
+test("con habilidad declarada, tiene que apuntar a un tipo real de la ficha", () => {
+  for (const tipo of ["skill", "tool", "ability"]) {
+    const validado = validarEnfoque(prueba({ habilidad: `${tipo}:x` }), tareaIngenieria());
+    assert.equal(validado.habilidad, `${tipo}:x`);
+  }
+});
+
+test("una habilidad con un tipo inventado no se declara: falla al cargar, no en mesa", () => {
+  assert.equal(
+    codigo(() => validarEnfoque(prueba({ habilidad: "hechizo:bola-de-fuego" }), tareaIngenieria())),
+    ASISTENCIA_ERRORES.HABILIDAD_DESCONOCIDA,
+  );
+  assert.equal(
+    codigo(() => validarEnfoque(prueba({ habilidad: "arc" }), tareaIngenieria())),
+    ASISTENCIA_ERRORES.HABILIDAD_DESCONOCIDA,
+  );
+});
+
 test("no hay cuarta vía: una clase inventada no se declara", () => {
   assert.equal(
     codigo(() => validarEnfoque({ id: "x", clase: "magia-libre" }, {})),
@@ -105,7 +129,7 @@ test("sin ficha la asistencia se degrada al minijuego de destreza, no se rompe",
 
 test("los enfoques que gastan recursos solo aparecen si el GM abre esa vía", () => {
   const conCoste = tareaIngenieria({
-    enfoques: [prueba({ id: "arcana", habilidad: "arc" }), {
+    enfoques: [prueba({ id: "arcana", habilidad: "skill:arc" }), {
       id: "reparar",
       clase: CLASES_ENFOQUE.SIN_TIRADA,
       bandaFija: BANDAS.EXITO,

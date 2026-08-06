@@ -15,6 +15,7 @@
 
 import { componerEscena } from "./retro3d.mjs";
 import { campoEstelar, estrellasEpoca, proyectarEstrellas } from "./retro3d-estrellas.mjs";
+import { canales } from "./paleta.mjs";
 
 /**
  * Vuelca una escena ya compuesta en un contexto 2D.
@@ -60,6 +61,187 @@ export function pintarEscena(ctx, escena, { fondo = null } = {}) {
     ctx.lineWidth = 1;
     ctx.stroke();
   }
+  return poligonos.length;
+}
+
+// ---- Pintor con z-buffer real (#510) ---------------------------------------
+//
+// `pintarEscena` (arriba) pinta por PINTOR: sin z-buffer, el orden es el
+// único algoritmo de visibilidad que hay, y dos caras a profundidades casi
+// iguales pueden invertir ese orden con el temblor de cámara de un fotograma
+// al siguiente — el parpadeo de #510. Ya se intentó "arreglar el orden"
+// (un margen de tolerancia con sort estable) y salió PEOR: el orden con el
+// que se declaran las piezas no tiene por qué acercarse al orden real de
+// profundidad, así que "estabilizar" ese orden solo congela un error en vez
+// de evitarlo a veces.
+//
+// La respuesta correcta no es ordenar mejor: es no necesitar orden. Un
+// z-buffer de verdad compara, PÍXEL A PÍXEL, la profundidad interpolada de
+// cada triángulo contra lo que ya hay pintado ahí — el resultado no depende
+// de en qué orden lleguen los polígonos, así que no hay nada que pueda
+// desestabilizarse con un temblor de cámara.
+//
+// OPT-IN, no sustituye a `pintarEscena`: las cámaras fijas de la cantina
+// (#423, `cantina-planos.mjs`) y el resto de superficies existentes siguen
+// con el pintor de siempre, sin ningún riesgo de regresión — esto solo lo usa
+// quien lo pida explícitamente (hoy, `nave-movimiento-lienzo.mjs`, el bucle
+// de "andar por la nave" donde se reportó el parpadeo).
+
+/** Interpolación PERSPECTIVE-CORRECT: 1/z (no z) es lo que varía linealmente
+ *  en el espacio de pantalla para una superficie plana, así que se interpola
+ *  1/z con los mismos pesos baricéntricos que x/y y NUNCA z directamente
+ *  —eso daría una profundidad con curvatura incorrecta—. Comparar por 1/z
+ *  funciona igual de bien que comparar por z (más cerca = 1/z más grande) y
+ *  ahorra la división final: el propio búfer de profundidad guarda 1/z. */
+function areaConSigno2(ax, ay, bx, by, cx, cy) {
+  return (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
+}
+
+/** Rasteriza UN triángulo (perspective-correct, ver arriba) contra el búfer
+ *  de profundidad compartido, con prueba de profundidad por píxel: solo
+ *  escribe donde su 1/z es mayor (más cerca) que lo que ya hay ahí. */
+function rasterizarTriangulo(pixeles, profundidades, ancho, alto, p0, p1, p2, r, g, b) {
+  const area = areaConSigno2(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y);
+  if (area === 0) return; // degenerado: los tres puntos en línea, sin superficie que pintar
+
+  const minX = Math.max(0, Math.floor(Math.min(p0.x, p1.x, p2.x)));
+  const maxX = Math.min(ancho - 1, Math.ceil(Math.max(p0.x, p1.x, p2.x)));
+  const minY = Math.max(0, Math.floor(Math.min(p0.y, p1.y, p2.y)));
+  const maxY = Math.min(alto - 1, Math.ceil(Math.max(p0.y, p1.y, p2.y)));
+  if (minX > maxX || minY > maxY) return; // el triángulo cae fuera del lienzo
+
+  const invArea = 1 / area;
+  // z<=0 no debería llegar aquí (recortarCercano ya lo impide), pero un 1/z
+  // de un z basura no puede colar un NaN al búfer de profundidad compartido.
+  const invZ0 = p0.z > 0 ? 1 / p0.z : 0;
+  const invZ1 = p1.z > 0 ? 1 / p1.z : 0;
+  const invZ2 = p2.z > 0 ? 1 / p2.z : 0;
+
+  for (let y = minY; y <= maxY; y += 1) {
+    const py = y + 0.5;
+    for (let x = minX; x <= maxX; x += 1) {
+      const px = x + 0.5;
+      // Pesos baricéntricos del píxel, con el mismo signo que `area`: los
+      // tres tienen que coincidir en signo (o ser cero) para estar dentro.
+      const w0 = areaConSigno2(p1.x, p1.y, p2.x, p2.y, px, py) * invArea;
+      const w1 = areaConSigno2(p2.x, p2.y, p0.x, p0.y, px, py) * invArea;
+      const w2 = 1 - w0 - w1;
+      if (w0 < 0 || w1 < 0 || w2 < 0) continue;
+
+      const invZ = w0 * invZ0 + w1 * invZ1 + w2 * invZ2;
+      const indice = y * ancho + x;
+      if (invZ <= profundidades[indice]) continue; // algo más cerca ya está ahí
+      profundidades[indice] = invZ;
+      const o = indice * 4;
+      pixeles[o] = r;
+      pixeles[o + 1] = g;
+      pixeles[o + 2] = b;
+      pixeles[o + 3] = 255;
+    }
+  }
+}
+
+/** Abanico desde el primer vértice: válido para cualquier polígono CONVEXO,
+ *  que es todo lo que compone `retro3d.mjs` (caras de cajas, siempre
+ *  convexas incluso recortadas contra un plano). */
+function paraCadaTrianguloDelAbanico(puntos, fn) {
+  for (let i = 1; i + 1 < puntos.length; i += 1) fn(puntos[0], puntos[i], puntos[i + 1]);
+}
+
+// Los búferes se reutilizan entre fotogramas, por tamaño de lienzo: son
+// arrays típicos de un puñado de cientos de KB (480×270×4 bytes ronda medio
+// MB) y reservarlos sesenta veces por segundo sería tirar memoria sin
+// necesidad, igual que ya hace `cielos` unas líneas más abajo con el campo
+// estelar.
+const buferes = new Map();
+
+function buferesDe(ancho, alto) {
+  const clave = `${ancho}x${alto}`;
+  let b = buferes.get(clave);
+  if (!b) {
+    b = { pixeles: new Uint8ClampedArray(ancho * alto * 4), profundidades: new Float32Array(ancho * alto) };
+    buferes.set(clave, b);
+  }
+  return b;
+}
+
+const coloresRGB = new Map();
+
+/** Canales 0-255 de un color, con caché: se repite mucho el mismo color
+ *  (todas las caras de un muro) y volver a parsear el mismo hexadecimal cada
+ *  vez sería trabajo tirado. */
+function rgbDe(color) {
+  let rgb = coloresRGB.get(color);
+  if (!rgb) {
+    const c = canales(color);
+    rgb = c ? [Math.round(c[0] * 255), Math.round(c[1] * 255), Math.round(c[2] * 255)] : [255, 0, 255];
+    coloresRGB.set(color, rgb);
+  }
+  return rgb;
+}
+
+/**
+ * Vuelca una escena con un z-buffer real: cada triángulo se compara PÍXEL A
+ * PÍXEL contra lo que ya hay pintado, así que el resultado no depende de en
+ * qué orden lleguen los polígonos — a diferencia de `pintarEscena`, que
+ * pinta por orden y por eso puede parpadear cuando dos caras están casi a la
+ * misma profundidad (#510).
+ *
+ * @param {CanvasRenderingContext2D} ctx necesita `putImageData`, no solo
+ *   `fillRect`/`fill` — es la diferencia con `pintarEscena`.
+ * @param {{poligonos: Array, ancho: number, alto: number}} escena
+ * @param {{fondo?: string|null}} opciones `fondo` null pinta negro: un
+ *   z-buffer no tiene "no pintar nada", cada píxel se decide una vez.
+ */
+export function pintarEscenaConProfundidad(ctx, escena, { fondo = null } = {}) {
+  if (!ctx?.putImageData || !escena) return 0;
+  const { ancho, alto, poligonos = [], estrellas = [] } = escena;
+  if (!(ancho > 0) || !(alto > 0)) return 0;
+
+  const { pixeles, profundidades } = buferesDe(ancho, alto);
+  profundidades.fill(0); // 0 = "infinitamente lejos": cualquier 1/z real (z finito y positivo) le gana
+
+  const [fr, fg, fb] = fondo ? rgbDe(fondo) : [0, 0, 0];
+  for (let i = 0; i < pixeles.length; i += 4) {
+    pixeles[i] = fr;
+    pixeles[i + 1] = fg;
+    pixeles[i + 2] = fb;
+    pixeles[i + 3] = 255;
+  }
+
+  // El cielo se pinta directo, sin pasar por el z-buffer: no tiene una
+  // profundidad de verdad (son puntos "en el infinito", ver
+  // `retro3d-estrellas.mjs`) y cualquier polígono con profundidad real debe
+  // poder tapar una estrella sin depender de en qué orden se pinten.
+  for (const estrella of estrellas) {
+    const x = Math.floor(estrella.x);
+    const y = Math.floor(estrella.y);
+    const [r, g, b] = rgbDe(estrella.color);
+    for (let dx = 0; dx < estrella.tam; dx += 1) {
+      for (let dy = 0; dy < estrella.tam; dy += 1) {
+        const px = x + dx, py = y + dy;
+        if (px < 0 || px >= ancho || py < 0 || py >= alto) continue;
+        const o = (py * ancho + px) * 4;
+        pixeles[o] = r;
+        pixeles[o + 1] = g;
+        pixeles[o + 2] = b;
+        pixeles[o + 3] = 255;
+      }
+    }
+  }
+
+  for (const poligono of poligonos) {
+    const puntos = poligono?.puntos;
+    if (!Array.isArray(puntos) || puntos.length < 3) continue;
+    const [r, g, b] = rgbDe(poligono.color);
+    paraCadaTrianguloDelAbanico(puntos, (p0, p1, p2) => {
+      rasterizarTriangulo(pixeles, profundidades, ancho, alto, p0, p1, p2, r, g, b);
+    });
+  }
+
+  const ImageDataCtor = globalThis.ImageData;
+  const imagen = ImageDataCtor ? new ImageDataCtor(pixeles, ancho, alto) : { data: pixeles, width: ancho, height: alto };
+  ctx.putImageData(imagen, 0, 0);
   return poligonos.length;
 }
 

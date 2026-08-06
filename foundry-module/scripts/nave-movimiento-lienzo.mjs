@@ -16,6 +16,15 @@
 // mjs`: se prueba en Node con un lienzo de mentira y un `pedirFotograma` que
 // el test dispara a mano.
 //
+// PINTA CON Z-BUFFER REAL (`pintarEscenaConProfundidad`, #510), no por
+// orden: es justo el bucle donde se reportó el parpadeo (caras que
+// intercambiaban su orden de dibujo con el temblor de cámara de un
+// fotograma al siguiente), y un z-buffer no tiene ese problema porque no
+// depende de en qué orden lleguen los polígonos. Las cámaras fijas de la
+// cantina (#423) y el resto de superficies del módulo siguen con el pintor
+// por orden de siempre (`pintarEscena`) — este cambio es de este bucle, no
+// del motor entero.
+//
 // EL MOVIMIENTO ES OPCIONAL, NO DECORATIVO (mismo contrato que #227 y que
 // `cantina-lienzo.mjs`): bajo `prefers-reduced-motion` no hay bucle continuo,
 // pero aquí "movimiento" es la respuesta a pulsar una tecla, no un giro
@@ -26,7 +35,7 @@
 // NO es la respuesta correcta, y conviene que quien la toque sepa por qué.
 
 import { mover, puertaTocada } from "./nave-movimiento.mjs";
-import { pintarEscena } from "./retro3d-lienzo.mjs";
+import { pintarEscenaConProfundidad } from "./retro3d-lienzo.mjs";
 
 /** Ritmo al que gira la cámara mientras se mantiene "girar-izq"/"girar-der". */
 const VELOCIDAD_GIRO = Math.PI * 0.6; // radianes por segundo
@@ -102,7 +111,7 @@ export function arrancarAndar(lienzo, opciones = {}) {
   function pintarUnaVez() {
     const ctx = lienzo?.getContext?.("2d");
     if (!ctx) return;
-    pintarEscena(ctx, componer(x, y, z, yaw, { otrosJugadores: otrosJugadores() }), { fondo });
+    pintarEscenaConProfundidad(ctx, componer(x, y, z, yaw, { otrosJugadores: otrosJugadores() }), { fondo });
   }
 
   function paso(ms) {

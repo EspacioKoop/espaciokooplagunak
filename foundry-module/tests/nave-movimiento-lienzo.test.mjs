@@ -4,7 +4,11 @@ import test from "node:test";
 import { arrancarAndar } from "../scripts/nave-movimiento-lienzo.mjs";
 import { crearPlanta } from "../scripts/nave-movimiento.mjs";
 
-/** Contexto 2D de mentira: solo hace falta que no reviente. */
+/** Contexto 2D de mentira: solo hace falta que no reviente. Incluye
+ *  `putImageData` porque el bucle pinta con z-buffer real (#510,
+ *  `pintarEscenaConProfundidad`), no por orden — las órdenes de trazado de
+ *  rutas (`fill`/`stroke`/...) ya no se usan aquí, pero se dejan por si
+ *  algún test las inspecciona. */
 function contextoFalso() {
   return {
     fillStyle: null,
@@ -18,6 +22,7 @@ function contextoFalso() {
     stroke() {},
     fillRect() {},
     clearRect() {},
+    putImageData() {},
   };
 }
 

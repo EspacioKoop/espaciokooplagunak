@@ -541,6 +541,15 @@ export function componerCantina(opciones = {}) {
       yaw,
       pitch: encuadre.pitch,
       posicion: [0, 0, 0],
+      // Recorte de frustum completo (#510, QA: "no se veía nada a través de
+      // la ventana"): sin esto, un mueble visto de cerca en algunos planos
+      // dispara un vértice fuera del cuadro, y el polígono resultante infla
+      // sus coordenadas a decenas de miles de píxeles — tapando toda la
+      // pantalla, estrellas incluidas, aunque el hueco del ventanal esté
+      // vacío. Mismo arreglo que ya lleva la cámara libre de #427
+      // (`cantina-andar.mjs`, `nave-sala-caja.mjs`), aplicado aquí a los
+      // encuadres fijos.
+      recorteLateral: true,
     }),
   );
 

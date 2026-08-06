@@ -28,6 +28,10 @@ import {
   estadoEn as estadoEnSecuencia,
   lecturaAccesible as lecturaAccesibleSecuencia,
 } from "./secuencia.mjs";
+import {
+  estadoEn as estadoEnPuzzle,
+  lecturaAccesible as lecturaAccesiblePuzzle,
+} from "./puzzle.mjs";
 
 /** Estados de la ventana. La ventana no tiene más; añadir uno es una decisión. */
 export const FASES = Object.freeze({
@@ -174,6 +178,35 @@ export function vistaRetoSecuencia(reto, intentos, tMs) {
     longitud: reto.secuencia.length,
     restanteMs: Math.max(0, Math.round(estado.restanteMs ?? 0)),
     lectura: lecturaAccesibleSecuencia(reto, tMs),
+  });
+}
+
+/**
+ * El estado del reto de PUZZLE en un instante, en unidades de pintado.
+ *
+ * `panel` es el estado ACTUAL del tablero —qué casillas ha encendido quien
+ * juega hasta ahora—, distinto del `patronObjetivo` del reto; por eso cada
+ * celda de la vista lleva las dos cosas: `objetivo` (lo que hay que lograr,
+ * SIEMPRE visible, igual que ve todo el mundo) y `encendida` (lo que hay
+ * ahora mismo). `ultimoIntento` es el resultado del último envío —aciertos y
+ * sobrantes—, para dar una pista sin cerrar el reto: un envío que no acierta
+ * del todo no cierra nada, solo informa.
+ */
+export function vistaRetoPuzzle(reto, panel, ultimoIntento, tMs) {
+  if (!reto) return null;
+  const estado = estadoEnPuzzle(reto, tMs);
+  const actual = panel ?? [];
+  return Object.freeze({
+    celdas: Object.freeze(
+      Array.from({ length: reto.celdas }, (_, i) =>
+        Object.freeze({ indice: i, objetivo: reto.patronObjetivo[i], encendida: Boolean(actual[i]) }),
+      ),
+    ),
+    ultimoIntento: ultimoIntento
+      ? Object.freeze({ aciertos: ultimoIntento.aciertos, sobrantes: ultimoIntento.sobrantes })
+      : null,
+    restanteMs: Math.max(0, Math.round(estado.restanteMs ?? 0)),
+    lectura: lecturaAccesiblePuzzle(reto, tMs),
   });
 }
 

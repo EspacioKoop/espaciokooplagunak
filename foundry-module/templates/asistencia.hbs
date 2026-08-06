@@ -144,6 +144,42 @@
     </p>
   {{/if}}
 
+  {{#if retoEsPuzzle}}
+    <p class="lagunak-asistencia__intro">{{localize "LAGUNAK.Asistencia.Reto.Puzzle.Intro"}}</p>
+    {{! El objetivo se ve SIEMPRE, no hay que memorizarlo ni adivinarlo a
+        ciegas: la casilla marca "objetivo" con una clase aparte de
+        "encendida" para que ambos estados se distingan sin depender solo
+        del color. }}
+    <ul class="lagunak-asistencia__celdas">
+      {{#each reto.celdas}}
+        <li>
+          <button type="button" data-asistencia-celda="{{indice}}"
+            class="lagunak-asistencia__celda
+              {{#if objetivo}}lagunak-asistencia__celda--objetivo{{/if}}
+              {{#if encendida}}lagunak-asistencia__celda--encendida{{/if}}"
+            aria-pressed="{{encendida}}"
+            aria-label="{{localize "LAGUNAK.Asistencia.Reto.Puzzle.Celda"}} {{indice}}"></button>
+        </li>
+      {{/each}}
+    </ul>
+    <button type="button" data-asistencia-enviar class="lagunak-asistencia__enviar">
+      {{localize "LAGUNAK.Asistencia.Reto.Puzzle.Enviar"}}
+    </button>
+    {{! El canal NO visual: qué casillas hay que encender (en base 1, las
+        mismas que se ven marcadas), la cuenta atrás, y el resultado del
+        último envío si lo hay — un intento incompleto no cierra el reto,
+        así que sin este texto no habría forma de saber por qué sigue
+        abierto sin contar de nuevo las casillas a mano. }}
+    <p class="lagunak-asistencia__lectura" role="status" aria-live="polite">
+      {{localize "LAGUNAK.Asistencia.Reto.Puzzle.Lectura"}}
+      {{reto.lectura.posiciones}} — {{reto.lectura.segundosRestantes}}s
+      {{#if reto.ultimoIntento}}
+        · {{localize "LAGUNAK.Asistencia.Reto.Puzzle.UltimoIntento"}}
+        {{reto.ultimoIntento.aciertos}}/{{reto.ultimoIntento.sobrantes}}
+      {{/if}}
+    </p>
+  {{/if}}
+
   {{#if cerrada}}
     <p class="lagunak-asistencia__cierre lagunak-asistencia__cierre--{{cierre.tipo}}" role="status">
       {{localize cierre.claveTitular}}

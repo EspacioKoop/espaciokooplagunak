@@ -122,8 +122,14 @@ export function pintarPolvo(ctx, { ancho, alto, semilla = 1, cuantas = 18 }) {
  * un local en penumbra, la mitad de la sensación de luz está en el haz que se ve
  * flotando, no en la superficie iluminada. Dibujarlo plano encima es lo que
  * hacían las consolas de la época, y sigue siendo lo correcto.
+ *
+ * `fuerza` a 0.32 y no 0.16 (QA: "tampoco se veía el humo ni la luz" en los
+ * planos fijos de #423): el dato ya llegaba —`aire` no estaba vacío en ningún
+ * plano— pero un trazo de 1px al 16% de opacidad es, en la práctica,
+ * indistinguible del fondo. No es un color nuevo (sigue siendo
+ * `CANTINA.lampara`), solo más presente.
  */
-export function pintarHaces(ctx, { aire = [], alto = 0, fuerza = 0.16 } = {}) {
+export function pintarHaces(ctx, { aire = [], alto = 0, fuerza = 0.32 } = {}) {
   if (!ctx || !Array.isArray(aire)) return 0;
   let bandas = 0;
   for (const haz of aire) {
@@ -155,7 +161,7 @@ export function pintarHaces(ctx, { aire = [], alto = 0, fuerza = 0.16 } = {}) {
  * Va en el TERCIO CENTRAL y no por toda la sala: humo repartido por igual es
  * niebla, y la niebla ya la pone el motor con la distancia.
  */
-export function pintarHumo(ctx, { aire = [], ms = 0, fuerza = 0.16 } = {}) {
+export function pintarHumo(ctx, { aire = [], ms = 0, fuerza = 0.32 } = {}) {
   if (!ctx || !Array.isArray(aire)) return 0;
   const vetas = aire.filter((pieza) => pieza.tipo === "humo");
   vetas.forEach((veta, i) => {

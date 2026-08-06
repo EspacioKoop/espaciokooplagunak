@@ -208,6 +208,51 @@ test("un clic dentro de la zona de precisión manda un resultado favorable", () 
   assert.equal(contexto.esperando, true);
   assert.equal(flags.at(-1).tipo, "resolver");
   assert.equal(flags.at(-1).nonce, nonce);
+});
+
+test("empezar destreza con minijuego de puzzle arranca puzzle, no otro tipo", () => {
+  conOfertaDestreza("puzzle");
+  ui.empezarDestrezaDesdeVentana();
+  const contexto = ui.contextoAsistencia();
+  assert.equal(contexto.retoEsPuzzle, true);
+  assert.equal(contexto.retoEsSecuencia, false);
+  assert.equal(contexto.retoEsTemporizacion, false);
+  assert.ok(Array.isArray(contexto.reto.celdas), "es la forma del reto de puzzle");
+});
+
+test("alternar una celda no cierra el reto: solo enviar lo juzga", () => {
+  conOfertaDestreza("puzzle");
+  ui.empezarDestrezaDesdeVentana();
+  ui.alternarCeldaDesdeVentana(2);
+  const contexto = ui.contextoAsistencia();
+  assert.equal(contexto.enReto, true, "sigue en el reto: alternar no envía");
+  assert.equal(contexto.reto.celdas[2].encendida, true);
+  ui.alternarCeldaDesdeVentana(2);
+  assert.equal(ui.contextoAsistencia().reto.celdas[2].encendida, false, "alternar dos veces vuelve a apagar");
+});
+
+test("enviar un patrón incompleto no cierra el reto: se puede seguir intentando", () => {
+  conOfertaDestreza("puzzle");
+  ui.empezarDestrezaDesdeVentana();
+  const antes = flags.length;
+  ui.enviarPuzzleDesdeVentana(); // panel vacío, nunca acierta
+  assert.equal(ui.contextoAsistencia().enReto, true, "un envío incompleto no cierra");
+  assert.equal(flags.length, antes, "y no manda nada al coordinador todavía");
+  assert.ok(ui.contextoAsistencia().reto.ultimoIntento, "pero deja constancia del intento");
+});
+
+test("enviar el patrón exacto cierra el reto y manda el resultado al coordinador", () => {
+  // Semilla determinista del reto: nonce fijo del arnés + ":destreza". Con
+  // esa semilla (dificultad normal) el patrón objetivo enciende las
+  // casillas 2, 4 y 5 (índice 0).
+  const nonce = conOfertaDestreza("puzzle");
+  ui.empezarDestrezaDesdeVentana();
+  for (const indice of [2, 4, 5]) ui.alternarCeldaDesdeVentana(indice);
+  ui.enviarPuzzleDesdeVentana();
+  const contexto = ui.contextoAsistencia();
+  assert.equal(contexto.esperando, true);
+  assert.equal(flags.at(-1).tipo, "resolver");
+  assert.equal(flags.at(-1).nonce, nonce);
   assert.equal(flags.at(-1).banda, BANDAS.CRITICO);
 });
 
@@ -228,6 +273,15 @@ test("elegir posición fuera de un reto de precisión no hace nada", () => {
   const antes = flags.length;
   ui.elegirPosicionDesdeVentana(0.5);
   assert.equal(flags.length, antes, "el reto activo es de secuencia, no de precisión");
+});
+
+test("alternar o enviar fuera de un reto de puzzle no hace nada", () => {
+  conOfertaDestreza("secuencia");
+  ui.empezarDestrezaDesdeVentana();
+  const antes = flags.length;
+  ui.alternarCeldaDesdeVentana(0);
+  ui.enviarPuzzleDesdeVentana();
+  assert.equal(flags.length, antes, "el reto activo es de secuencia, no de puzzle");
 });
 
 test("la barra se repinta sin re-renderizar la ventana", () => {

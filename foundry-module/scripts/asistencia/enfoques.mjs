@@ -41,7 +41,12 @@ export const MODOS = Object.freeze({
  * el primero y el que ya conocen las mesas existentes (#500 amplía el
  * repertorio, no lo sustituye).
  */
-export const MINIJUEGOS_DESTREZA = Object.freeze(["temporizacion", "secuencia", "precision"]);
+export const MINIJUEGOS_DESTREZA = Object.freeze([
+  "temporizacion",
+  "secuencia",
+  "precision",
+  "puzzle",
+]);
 
 export const ASISTENCIA_ERRORES = Object.freeze({
   TAREA_INVALIDA: "tarea-invalida",

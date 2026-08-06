@@ -5,9 +5,9 @@
   sobre `foundry-module/scripts/asistencia/vista.mjs`) integrados y enganchados en `main.mjs`
   (`foundry-module/scripts/asistencia/`, suite `foundry-module/tests/asistencia-*.test.mjs`).
   El ciclo completo —pedir, resolver, consumir vía el relé del titular— es jugable de extremo a
-  extremo, con tres minijuegos de destreza (temporización, secuencia, precisión) y lectura real de
-  modificadores dnd5e — ver [#500](https://github.com/VaroTv7/espaciokooplagunak/issues/500). Queda
-  pendiente un cuarto tipo (puzzle) si se decide que sigue en alcance.
+  extremo, con cuatro minijuegos de destreza (temporización, secuencia, precisión, puzzle) y
+  lectura real de modificadores dnd5e — ver
+  [#500](https://github.com/VaroTv7/espaciokooplagunak/issues/500).
 - Issue: [#309](https://github.com/VaroTv7/espaciokooplagunak/issues/309)
 - Fase: **4** (experiencia cooperativa). No forma parte del criterio de salida de Fase 3.
 - Depende de: contrato de minijuegos [#308](https://github.com/VaroTv7/espaciokooplagunak/issues/308)
@@ -309,9 +309,8 @@ costura con el relé de órdenes)—; la interfaz (`asistencia-ui.mjs`) también
 El motor dejó de ser código muerto: `asistencia/catalogo.mjs` le da **contenido**,
 `asistencia-wiring.mjs` lo **enchufa a Foundry** y `asistencia-ui.mjs` (sobre
 `asistencia/vista.mjs`) es la ventana donde el asistente pulsa. El camino está completo de extremo
-a extremo y es jugable en mesa, con tres minijuegos de destreza y lectura real de modificadores
-dnd5e — ver [#500](https://github.com/VaroTv7/espaciokooplagunak/issues/500) para el cuarto tipo
-(puzzle), si sigue en alcance.
+a extremo y es jugable en mesa, con cuatro minijuegos de destreza y lectura real de modificadores
+dnd5e — ver [#500](https://github.com/VaroTv7/espaciokooplagunak/issues/500).
 
 - **El catálogo es contenido, no lógica.** Tres tareas base —estabilizar un sistema caliente
   (ingeniería, `set_system_coolant`), bordar una maniobra (pilotaje, `set_impulse`) y afinar un
@@ -344,8 +343,8 @@ dnd5e — ver [#500](https://github.com/VaroTv7/espaciokooplagunak/issues/500) p
   es la regla de 5e, y por eso no está cableada).
 
 La interfaz ya existe: la ventana (`asistencia-ui.mjs`) donde el asistente elige enfoque, ve su
-rango de éxito y juega el reto de destreza que le toque — temporización, secuencia o precisión,
-según lo que declare la tarea (`minijuegoDestreza` en el catálogo).
+rango de éxito y juega el reto de destreza que le toque — temporización, secuencia, precisión o
+puzzle, según lo que declare la tarea (`minijuegoDestreza` en el catálogo).
 
 - **Tres puestos asistibles**: ingeniería (estabilizar sistema caliente, minijuego de precisión),
   pilotaje (bordar una maniobra, minijuego de secuencia) y sensores (afinar un contacto dudoso,
@@ -356,10 +355,9 @@ según lo que declare la tarea (`minijuegoDestreza` en el catálogo).
 - **Una sola clase de enfoque cableada a Foundry**: la (a), prueba de habilidad/herramienta, con
   modificador real leído de la ficha (`ficha-dnd5e.mjs`) cuando el enfoque declara `habilidad`. El
   motor soporta en abstracto las clases (b) y (c), pero su cableado real a dnd5e sigue pendiente.
-- **Tres minijuegos de destreza que comparten bandas**: temporización (reflejos), secuencia
-  (memoria de orden) y precisión (puntería sin reloj) — los tres producen las MISMAS bandas que una
-  tirada de habilidad. Un cuarto tipo (puzzle) sigue fuera de alcance — ver #500 si sigue siendo
-  objetivo.
+- **Cuatro minijuegos de destreza que comparten bandas**: temporización (reflejos), secuencia
+  (memoria de orden), precisión (puntería sin reloj) y puzzle (deducción sobre un patrón siempre
+  visible) — los cuatro producen las MISMAS bandas que una tirada de habilidad.
 - Reutiliza relé (#237), matriz de puestos (#268) y marco de #308.
 
 ### Cómo se cobra la ayuda, en concreto (`relevo.mjs`)

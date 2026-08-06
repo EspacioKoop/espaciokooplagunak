@@ -157,11 +157,14 @@ formales y grafo de dependencias explícito:
 
 Este grafo valida el criterio de salida de agencia, pero no cierra por sí solo
 toda la Etapa B. Sus otros frentes están trazados en #479: #480 (navegación
-operacional), #481 (automatización de puestos vacíos), #482 (alarmas
-compartidas por dependencia entre sistemas), #483 (guardias y relevo) y #484
-(crisis que exijan coordinación entre al menos tres puestos, depende de
-#462–#465). Antes de declarar la etapa completada deben quedar todos
-trazados y satisfechos.
+operacional — **satisfecho**, ver
+[`docs/SESION-NAVEGACION-OPERACIONAL.md`](SESION-NAVEGACION-OPERACIONAL.md):
+`set_target_heading`/`set_impulse`/`set_warp` ya son una decisión exclusiva
+del puesto que cambia el resultado de un encuentro), #481 (automatización de
+puestos vacíos), #482 (alarmas compartidas por dependencia entre sistemas),
+#483 (guardias y relevo) y #484 (crisis que exijan coordinación entre al
+menos tres puestos, depende de #462–#465). Antes de declarar la etapa
+completada deben quedar todos trazados y satisfechos.
 
 ### Etapa C — Nave persistente y progresión
 

@@ -1,19 +1,17 @@
-/* Ventana del prototipo de "andar por la nave" (#427). Envuelve
+/* Ventana de "andar por la nave" (#427). Envuelve
  * `nave-movimiento-lienzo.mjs` (el bucle) sobre `nave-catalogo-andar.mjs`,
- * que cose las dos salas de pruebas del motor CON la primera sala real, la
- * cantina — y traduce teclado en pulsar/soltar/girar.
+ * que cose la nave real que se puede recorrer hoy — cantina, vestíbulo,
+ * ingeniería y el pasillo del puente con sus cinco salas de estación (#508)
+ * — y traduce teclado en pulsar/soltar/girar.
  *
  * Capa fina, igual que el resto del módulo: no decide colisión, cámara ni a
  * qué estancia lleva una puerta — eso ya lo resolvió el catálogo. Aquí solo
  * se cablea DOM y se reacciona a `alTocarPuerta` llamando a
- * `mando.cambiarEstancia(...)` con lo que el catálogo ya decidió. Dos clases
- * hermanas (`Application` v11, `ApplicationV2` v12+), sin código de ventana
- * compartido a propósito.
- *
- * SIGUE SIENDO UN PROTOTIPO TÉCNICO, Y SE DICE EN LA PROPIA VENTANA: la
- * puerta hacia la cantina prueba que la costura aguanta con una sala de
- * verdad, no que esa sea la geografía definitiva de la nave (ver
- * `nave-catalogo-andar.mjs`).
+ * `mando.cambiarEstancia(...)` con lo que el catálogo ya decidió, y a
+ * `alTocarConsola` abriendo el espacio de puesto que toque (#509) — de
+ * nuevo, sin decidir nada que el catálogo o `openWorkspaceApp` no hayan
+ * decidido ya. Dos clases hermanas (`Application` v11, `ApplicationV2`
+ * v12+), sin código de ventana compartido a propósito.
  */
 
 import { MODULE_ID } from "./lagunak-constantes.mjs";
@@ -27,8 +25,27 @@ import {
   programarMuestra,
 } from "./nave-movimiento-red.mjs";
 import { avatarDeUsuario } from "./avatar-assignment.mjs";
+import { openWorkspaceApp } from "./station-workspace-ui.mjs";
+import { SECCION } from "./paleta.mjs";
 
-const ESTANCIA_INICIAL = "a";
+const ESTANCIA_INICIAL = "cantina";
+
+/**
+ * El lienzo no tiene fondo propio en CSS ni en la plantilla: sin uno, cada
+ * hueco sin geometría —el marco de cualquier puerta, cualquier borde que no
+ * llegue a cubrir el pintor— deja el `<canvas>` transparente y se ve el
+ * fondo claro del propio diálogo de Foundry por debajo (QA: "un espacio
+ * blanco absurdo").
+ *
+ * `SECCION.mamparo` y NO `SECCION.vacio`: lo que se ve por el hueco de una
+ * puerta es más NAVE sin renderizar todavía (la sala vecina no se compone
+ * hasta que se cruza), no el espacio exterior — `mamparo` ya es "el relleno
+ * entre salas" en la sección 2D (#427) y es justo ese significado. El vacío
+ * de verdad solo aparece donde de verdad hay vacío: por una VENTANA
+ * (`nave-sala-caja.mjs`, que pinta su propio campo de estrellas encima de
+ * este fondo).
+ */
+const FONDO_ENTRE_SALAS = SECCION.mamparo;
 
 /**
  * Dónde se guarda la posición: flag del propio `User`, client-side, igual
@@ -83,7 +100,20 @@ function publicarPosicion(estanciaId, mando, ultimoSelloEnviado, forzar = false)
 /** Tecla física → dirección lógica. WASD y flechas de traslación hacen lo
  *  mismo: cada persona tiene su preferencia y ninguna de las dos es "la
  *  correcta". Girar va aparte, en Q/E, para no pisar ArrowLeft/ArrowRight que
- *  aquí se dejan libres por si alguien los espera para trasladarse también. */
+ *  aquí se dejan libres por si alguien los espera para trasladarse también.
+ *
+ * SIN "Control" PARA AGACHARSE (QA: "crashea al agacharse", investigado con
+ * el registro de sucesos de Windows y los volcados de fallo del navegador —
+ * ninguno de los dos tenía nada, la señal de que NO era una excepción de
+ * JS). Agacharse mientras se avanza es el combo más natural del mundo:
+ * mantener W y pulsar Control. Pero Ctrl+W es "cerrar la pestaña" en todo
+ * navegador Chromium/Firefox, y es un atajo RESERVADO — ni `preventDefault`
+ * ni `stopPropagation` en la página pueden interceptarlo, por diseño de
+ * seguridad del navegador (una página no puede impedir que el usuario cierre
+ * su propia pestaña). El navegador cierra la ventana antes de que llegue a
+ * verse ni un error: eso explica que no quedara nada ni en la consola ni en
+ * ningún volcado de fallo. "c" solo, sin ese choque, es la tecla de
+ * agacharse que queda. */
 const TECLA_DIRECCION = Object.freeze({
   w: "adelante",
   s: "atras",
@@ -92,7 +122,6 @@ const TECLA_DIRECCION = Object.freeze({
   ArrowUp: "adelante",
   ArrowDown: "atras",
   " ": "saltar",
-  Control: "agachado",
   c: "agachado",
 });
 
@@ -114,16 +143,31 @@ function engancharTeclado(raiz, mando) {
     mando.girar(Math.sign(sentido));
   };
 
+  // `stopPropagation` y no solo `preventDefault`: sin ella, la tecla sigue
+  // subiendo por el DOM hasta el gestor de atajos GLOBAL de Foundry (o de
+  // cualquier módulo que escuche en `document`), que puede reaccionar a la
+  // misma tecla esperando un contexto —token seleccionado, escena activa—
+  // que este lienzo no tiene. `preventDefault` solo evita la acción por
+  // defecto del NAVEGADOR sobre teclas que el navegador deja interceptar; no
+  // aísla el evento de otros listeners de la propia página, que es justo lo
+  // que este lienzo necesita: sus teclas son suyas mientras tiene el foco, y
+  // de nadie más. NO basta contra atajos RESERVADOS del navegador (Ctrl+W
+  // cierra la pestaña, Ctrl+T abre una nueva...): esos ni preventDefault ni
+  // stopPropagation los paran nunca, por diseño — la única defensa real es
+  // no usar esas combinaciones, ver por qué "Control" ya no es tecla de
+  // agacharse más abajo.
   const onKeyDown = (ev) => {
     const direccion = TECLA_DIRECCION[ev.key];
     if (direccion) {
       ev.preventDefault();
+      ev.stopPropagation();
       mando.pulsar(direccion);
       return;
     }
     const giro = TECLA_GIRO[ev.key];
     if (giro) {
       ev.preventDefault();
+      ev.stopPropagation();
       girando.add(giro);
       actualizarGiro();
     }
@@ -131,11 +175,13 @@ function engancharTeclado(raiz, mando) {
   const onKeyUp = (ev) => {
     const direccion = TECLA_DIRECCION[ev.key];
     if (direccion) {
+      ev.stopPropagation();
       mando.soltar(direccion);
       return;
     }
     const giro = TECLA_GIRO[ev.key];
     if (giro) {
+      ev.stopPropagation();
       girando.delete(giro);
       actualizarGiro();
     }
@@ -197,6 +243,7 @@ function arrancar(raiz) {
     componer: inicial.componer,
     planta: inicial.planta,
     puertas: inicial.puertas,
+    consolas: inicial.consolas,
     x: guardada?.x ?? inicial.entrada.x,
     z: guardada?.z ?? inicial.entrada.z,
     yaw: guardada?.yaw ?? inicial.entrada.yaw,
@@ -214,6 +261,14 @@ function arrancar(raiz) {
       // para saber que alguien cambió de sala.
       ultimoSelloEnviado = publicarPosicion(estanciaActual, mando, ultimoSelloEnviado, true);
     },
+    // #509: acercarse a la consola de un puesto abre su espacio de trabajo —
+    // el MISMO que ya se abre por botón (`openWorkspaceApp`, #276). Un
+    // atajo, no autoridad nueva: para quien no es GM, `openWorkspaceApp`
+    // ignora el `puesto` que se le pasa y abre el propio (#237, ver la
+    // cabecera de `station-workspace-ui.mjs`) — caminar hasta una consola
+    // ajena no enseña nada que el relé no dejara ver igualmente por botón.
+    alTocarConsola: (puesto) => openWorkspaceApp(puesto),
+    fondo: FONDO_ENTRE_SALAS,
     pedirFotograma: (cb) => globalThis.requestAnimationFrame?.(cb),
     cancelarFotograma: (id) => globalThis.cancelAnimationFrame?.(id),
     // Se evalúa en cada fotograma pintado (#498): el bucle nunca ve un Map,
@@ -274,7 +329,12 @@ export function crearClaseAndarV2() {
       id: "lagunak-andar-nave",
       classes: ["lagunak-andar-nave"],
       window: { title: "LAGUNAK.AndarNave.Titulo", icon: "fa-solid fa-person-walking" },
-      position: { width: 520, height: "auto" },
+      // El lienzo interno sigue siendo pequeño a propósito (la resolución baja
+      // ES el efecto retro, ver espacios-puesto.css) pero se mostraba a tamaño
+      // NATIVO por no tener ni una regla de CSS que lo escalara (QA: "el marco
+      // tiene que ser mucho más grande") — la ventana crece para acompañar el
+      // lienzo ya escalado ×2 en `lagunak.css`.
+      position: { width: 1020, height: "auto" },
     };
 
     static PARTS = { main: { template: PLANTILLA } };
@@ -307,7 +367,7 @@ export function crearClaseAndarV1() {
         classes: ["lagunak-andar-nave"],
         title: game.i18n.localize("LAGUNAK.AndarNave.Titulo"),
         template: PLANTILLA,
-        width: 520,
+        width: 1020,
         height: "auto",
       });
     }

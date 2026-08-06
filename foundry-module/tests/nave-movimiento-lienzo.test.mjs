@@ -4,7 +4,11 @@ import test from "node:test";
 import { arrancarAndar } from "../scripts/nave-movimiento-lienzo.mjs";
 import { crearPlanta } from "../scripts/nave-movimiento.mjs";
 
-/** Contexto 2D de mentira: solo hace falta que no reviente. */
+/** Contexto 2D de mentira: solo hace falta que no reviente. Incluye
+ *  `putImageData` porque el bucle pinta con z-buffer real (#510,
+ *  `pintarEscenaConProfundidad`), no por orden — las órdenes de trazado de
+ *  rutas (`fill`/`stroke`/...) ya no se usan aquí, pero se dejan por si
+ *  algún test las inspecciona. */
 function contextoFalso() {
   return {
     fillStyle: null,
@@ -18,6 +22,7 @@ function contextoFalso() {
     stroke() {},
     fillRect() {},
     clearRect() {},
+    putImageData() {},
   };
 }
 
@@ -184,6 +189,105 @@ test("alTocarPuerta se dispara al entrar en su rectángulo, con lo que traiga de
   mando.detener();
 });
 
+test("alTocarPuerta es un flanco de entrada, no un nivel (QA: teletransportaba una y otra vez sin soltar la tecla)", () => {
+  // Este test NO llama a `cambiarEstancia` desde `alTocarPuerta` (a
+  // diferencia del uso real en `andar-nave-app.mjs`), así que el círculo se
+  // queda DENTRO del rectángulo de la puerta en los fotogramas siguientes.
+  // Con el disparo por nivel de antes, cada uno de esos fotogramas volvía a
+  // avisar; con el flanco, solo el primero.
+  const puertas = [{ rect: { x: 4, z: 8, ancho: 2, profundidad: 1 }, destino: { estancia: "b", x: 1, z: 1 } }];
+  const destinos = [];
+  const mando = arrancarAndar(lienzoFalso(), {
+    componer: () => ({ ancho: 100, alto: 100, poligonos: [] }),
+    planta: crearPlanta({ ancho: 10, profundidad: 10 }),
+    puertas,
+    alTocarPuerta: (destino) => destinos.push(destino),
+    x: 5,
+    z: 8.3, // ya dentro del rectángulo de la puerta desde el primer fotograma
+    yaw: 0,
+  });
+  mando.avanzar(16);
+  mando.avanzar(16);
+  mando.avanzar(16);
+  assert.equal(destinos.length, 1, "un único aviso, no uno por fotograma");
+  mando.detener();
+});
+
+test("alTocarConsola se dispara al entrar en su zona, solo una vez (#509)", () => {
+  const consolas = [{ rect: { x: 4, z: 8, ancho: 2, profundidad: 1 }, puesto: "engineering" }];
+  const avisos = [];
+  const mando = arrancarAndar(lienzoFalso(), {
+    componer: () => ({ ancho: 100, alto: 100, poligonos: [] }),
+    planta: crearPlanta({ ancho: 10, profundidad: 10 }),
+    consolas,
+    alTocarConsola: (puesto) => avisos.push(puesto),
+    x: 5,
+    z: 7,
+    yaw: 0,
+    velocidad: 4,
+  });
+  mando.pulsar("adelante");
+  mando.avanzar(300); // z: 7 -> ~8.2, dentro de la zona
+  assert.deepEqual(avisos, ["engineering"], "un único aviso al entrar");
+
+  // Seguir de pie dentro no repite el aviso: es un flanco, no un nivel.
+  mando.avanzar(200);
+  mando.avanzar(200);
+  assert.deepEqual(avisos, ["engineering"]);
+
+  // Salir y volver a entrar sí lo dispara otra vez.
+  mando.soltar("adelante");
+  mando.pulsar("atras");
+  mando.avanzar(500);
+  mando.soltar("atras");
+  mando.pulsar("adelante");
+  mando.avanzar(500);
+  assert.equal(avisos.length, 2, "salir y reentrar dispara un segundo aviso");
+  mando.detener();
+});
+
+test("sin alTocarConsola, tocar una zona de consola no hace nada (no revienta)", () => {
+  const mando = arrancarAndar(lienzoFalso(), {
+    componer: () => ({ ancho: 100, alto: 100, poligonos: [] }),
+    planta: crearPlanta({ ancho: 10, profundidad: 10 }),
+    consolas: [{ rect: { x: 4, z: 8, ancho: 2, profundidad: 1 }, puesto: "engineering" }],
+    x: 5,
+    z: 8.3,
+    yaw: 0,
+  });
+  mando.avanzar(16);
+  mando.detener();
+});
+
+test("cambiarEstancia sustituye las consolas y reinicia el flanco de entrada", () => {
+  const avisos = [];
+  const mando = arrancarAndar(lienzoFalso(), {
+    componer: () => ({ ancho: 100, alto: 100, poligonos: [] }),
+    planta: crearPlanta({ ancho: 10, profundidad: 10 }),
+    consolas: [{ rect: { x: 4, z: 4, ancho: 2, profundidad: 2 }, puesto: "captain" }],
+    alTocarConsola: (puesto) => avisos.push(puesto),
+    x: 5,
+    z: 5, // ya dentro de la zona de la consola de "a"
+    yaw: 0,
+  });
+  mando.avanzar(16);
+  assert.deepEqual(avisos, ["captain"], "el punto de partida ya cuenta como entrada");
+
+  // La estancia nueva tiene su propia consola, en la MISMA zona local (5,5):
+  // el cambio de sala tiene que volver a disparar el aviso, no darlo por
+  // visto porque la posición numérica no cambió.
+  mando.cambiarEstancia({
+    planta: crearPlanta({ ancho: 10, profundidad: 10 }),
+    consolas: [{ rect: { x: 4, z: 4, ancho: 2, profundidad: 2 }, puesto: "engineering" }],
+    x: 5,
+    z: 5,
+    yaw: 0,
+  });
+  mando.avanzar(16);
+  assert.deepEqual(avisos, ["captain", "engineering"]);
+  mando.detener();
+});
+
 test("sin alTocarPuerta, tocar una puerta no hace nada (no revienta)", () => {
   const mando = arrancarAndar(lienzoFalso(), {
     componer: () => ({ ancho: 100, alto: 100, poligonos: [] }),
@@ -194,6 +298,43 @@ test("sin alTocarPuerta, tocar una puerta no hace nada (no revienta)", () => {
     yaw: 0,
   });
   mando.avanzar(16);
+  mando.detener();
+});
+
+test("mantener \"atrás\" pulsado tras cruzar no dispara la puerta de vuelta en bucle (QA)", () => {
+  // El punto de llegada de la sala B cae A PROPÓSITO justo sobre la puerta
+  // de vuelta a A —el caso real que reportó el vaivén—: sin la ventana de
+  // gracia, el primer paso ya dentro de B volvería a cruzar de inmediato.
+  const cruces = [];
+  const mando = arrancarAndar(lienzoFalso(), {
+    componer: () => ({ ancho: 100, alto: 100, poligonos: [] }),
+    planta: crearPlanta({ ancho: 10, profundidad: 10 }),
+    puertas: [{ rect: { x: 4, z: 8, ancho: 2, profundidad: 1 }, destino: { estancia: "b" } }],
+    alTocarPuerta: (destino) => cruces.push(destino.estancia),
+    x: 5,
+    z: 8.3, // ya dentro de la zona de la puerta
+    yaw: 0,
+  });
+  mando.avanzar(16);
+  assert.deepEqual(cruces, ["b"]);
+
+  mando.cambiarEstancia({
+    planta: crearPlanta({ ancho: 10, profundidad: 10 }),
+    puertas: [{ rect: { x: 4, z: 8, ancho: 2, profundidad: 1 }, destino: { estancia: "a" } }],
+    x: 5,
+    z: 8.3, // el punto de llegada, otra vez encima de la puerta
+    yaw: Math.PI, // "atrás" mantenido empuja hacia +z, de vuelta a la puerta
+  });
+  mando.pulsar("atras");
+
+  // Varios pasos pequeños, todos dentro de la ventana de gracia (400ms):
+  // ni uno debe volver a cruzar.
+  for (let i = 0; i < 20; i += 1) mando.avanzar(16);
+  assert.deepEqual(cruces, ["b"], "la ventana de gracia debe absorber el vaivén");
+
+  // Pasada la ventana, la puerta vuelve a ser cruzable con normalidad.
+  for (let i = 0; i < 20; i += 1) mando.avanzar(16);
+  assert.deepEqual(cruces, ["b", "a"], "pasada la gracia, cruzar sigue funcionando");
   mando.detener();
 });
 

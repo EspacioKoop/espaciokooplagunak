@@ -207,6 +207,31 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     puesto) — la sección no estrena ninguna. No da autoridad (#237: el puesto se lee para saber
     dónde pintarte, nunca al revés) y no inventa lecturas (sin sondeo la sala va neutra, no en
     cero). Una sala nueva es una entrada más de la planta, no un botón nuevo en `main.mjs`.
+  - **Andar por la nave** — `scripts/nave-movimiento.mjs` (colisión círculo-caja y el paso continuo,
+    puro), `scripts/nave-estancias.mjs` (catálogo de estancias: qué sala lleva a cuál) y
+    `scripts/nave-movimiento-lienzo.mjs`/`nave-movimiento-red.mjs` (bucle de render y sincronización
+    de otros jugadores, #453/#498), #427. La fábrica de sala-caja (muros, puertas, columnas y
+    VENTANAS con cielo real detrás, #508) vive en `scripts/nave-sala-caja.mjs`, reutilizada tanto por
+    las dos salas de prueba del motor (`nave-movimiento-sala-prueba.mjs`, con su propio
+    `CATALOGO_PRUEBA` — deliberadamente FUERA de la nave real, ver más abajo) como por cada sala real:
+    `scripts/nave-vestibulo.mjs` (el nudo hacia cantina/ingeniería/puente, sin ventana — es tránsito),
+    `nave-sala-ingenieria.mjs` y las cinco salas del puente —mando, navegación, sensores,
+    comunicaciones, armas— declaradas juntas en `scripts/nave-salas-puente.mjs` (misma forma repetida
+    a propósito: la sala es solo el sitio físico, no donde vive el contenido del puesto) y repartidas
+    desde un único `scripts/nave-pasillo-puente.mjs`, cuya lista `ESTACIONES` es la única fuente de
+    las posiciones de puerta. `scripts/nave-catalogo-andar.mjs` cose esas estancias reales entre sí
+    (qué puerta lleva a dónde) sin que ninguna sala necesite saber de las demás — cada sala de puesto
+    nueva es una entrada más de ese catálogo, no un cambio al motor. Las salas de prueba ("a"/"b")
+    NUNCA aparecen en este catálogo: fue su papel mientras no había un nudo real, y lo dejó de ser en
+    cuanto lo hubo. Cada sala de puesto real tiene una CONSOLA (#509): un mueble con pantalla y una
+    zona de pie delante —separada a propósito del punto de entrada, para que acercarse sea un gesto—
+    que `nave-estancias.mjs` declara con la misma forma que una puerta (`{rect, ...}`, reutilizando
+    `nave-movimiento.puertaTocada`) pero sin `destino`: dispara `puesto` hacia fuera, y
+    `nave-movimiento-lienzo.mjs` solo avisa en el flanco de ENTRADA (una vez, no cada fotograma
+    mientras se está de pie delante). `andar-nave-app.mjs` interpreta el aviso llamando a
+    `openWorkspaceApp(puesto)` (`station-workspace-ui.mjs`) — el mismo espacio que ya se abre por
+    botón; para quien no es GM ese parámetro no hace nada (abre siempre el propio puesto, #237), así
+    que caminar hasta una consola ajena no da ni enseña más de lo que ya daría el botón.
   - **Visor del piloto** — `scripts/visor-piloto.mjs` (geometría pura) y
     `scripts/visor-piloto-lienzo.mjs` (el <canvas>), #362. Lo que la nave tiene delante, en PSX,
     en la consola de pilotaje. Es la primera superficie 3D del módulo que **informa** en vez de

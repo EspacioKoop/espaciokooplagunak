@@ -71,6 +71,12 @@ export function poligonosOtrosJugadores(jugadores, { camara, yaw, ancho, alto, e
         color: pieza.color,
         posicion: [0, 0, 0],
         yaw,
+        // Recorte de frustum completo (#510): un avatar visto de cerca —cruzarse
+        // con otro jugador en un pasillo estrecho— dispara el mismo vértice
+        // fuera de cuadro que ya se arregló para la geometría de la sala y para
+        // los planos fijos de la cantina; sin esto, la caja resultante se infla
+        // a miles de píxeles y tapa la pantalla.
+        recorteLateral: true,
       }),
     )
     .flatMap((parte) => parte.poligonos);

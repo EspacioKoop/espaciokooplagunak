@@ -100,7 +100,20 @@ function publicarPosicion(estanciaId, mando, ultimoSelloEnviado, forzar = false)
 /** Tecla física → dirección lógica. WASD y flechas de traslación hacen lo
  *  mismo: cada persona tiene su preferencia y ninguna de las dos es "la
  *  correcta". Girar va aparte, en Q/E, para no pisar ArrowLeft/ArrowRight que
- *  aquí se dejan libres por si alguien los espera para trasladarse también. */
+ *  aquí se dejan libres por si alguien los espera para trasladarse también.
+ *
+ * SIN "Control" PARA AGACHARSE (QA: "crashea al agacharse", investigado con
+ * el registro de sucesos de Windows y los volcados de fallo del navegador —
+ * ninguno de los dos tenía nada, la señal de que NO era una excepción de
+ * JS). Agacharse mientras se avanza es el combo más natural del mundo:
+ * mantener W y pulsar Control. Pero Ctrl+W es "cerrar la pestaña" en todo
+ * navegador Chromium/Firefox, y es un atajo RESERVADO — ni `preventDefault`
+ * ni `stopPropagation` en la página pueden interceptarlo, por diseño de
+ * seguridad del navegador (una página no puede impedir que el usuario cierre
+ * su propia pestaña). El navegador cierra la ventana antes de que llegue a
+ * verse ni un error: eso explica que no quedara nada ni en la consola ni en
+ * ningún volcado de fallo. "c" solo, sin ese choque, es la tecla de
+ * agacharse que queda. */
 const TECLA_DIRECCION = Object.freeze({
   w: "adelante",
   s: "atras",
@@ -109,7 +122,6 @@ const TECLA_DIRECCION = Object.freeze({
   ArrowUp: "adelante",
   ArrowDown: "atras",
   " ": "saltar",
-  Control: "agachado",
   c: "agachado",
 });
 
@@ -131,15 +143,19 @@ function engancharTeclado(raiz, mando) {
     mando.girar(Math.sign(sentido));
   };
 
-  // `stopPropagation` y no solo `preventDefault` (QA: agacharse — tecla "c" o
-  // Control — colgaba la ventana): sin ella, la tecla sigue subiendo por el
-  // DOM hasta el gestor de atajos GLOBAL de Foundry (o de cualquier módulo
-  // que escuche en `document`), que puede reaccionar a la misma tecla
-  // esperando un contexto —token seleccionado, escena activa— que este
-  // lienzo no tiene. `preventDefault` solo evita la acción por defecto del
-  // NAVEGADOR (p. ej. que Ctrl abra un menú); no aísla el evento de otros
-  // listeners de la propia página, que es justo lo que este lienzo necesita:
-  // sus teclas son suyas mientras tiene el foco, y de nadie más.
+  // `stopPropagation` y no solo `preventDefault`: sin ella, la tecla sigue
+  // subiendo por el DOM hasta el gestor de atajos GLOBAL de Foundry (o de
+  // cualquier módulo que escuche en `document`), que puede reaccionar a la
+  // misma tecla esperando un contexto —token seleccionado, escena activa—
+  // que este lienzo no tiene. `preventDefault` solo evita la acción por
+  // defecto del NAVEGADOR sobre teclas que el navegador deja interceptar; no
+  // aísla el evento de otros listeners de la propia página, que es justo lo
+  // que este lienzo necesita: sus teclas son suyas mientras tiene el foco, y
+  // de nadie más. NO basta contra atajos RESERVADOS del navegador (Ctrl+W
+  // cierra la pestaña, Ctrl+T abre una nueva...): esos ni preventDefault ni
+  // stopPropagation los paran nunca, por diseño — la única defensa real es
+  // no usar esas combinaciones, ver por qué "Control" ya no es tecla de
+  // agacharse más abajo.
   const onKeyDown = (ev) => {
     const direccion = TECLA_DIRECCION[ev.key];
     if (direccion) {

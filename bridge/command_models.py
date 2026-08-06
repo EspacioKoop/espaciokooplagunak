@@ -11,7 +11,13 @@ from typing import Annotated, Literal, Union
 
 from pydantic import BaseModel, ConfigDict, Field, StrictBool
 
-from lua_templates import _command_lua, _fire_tube_lua, _scan_object_lua, _set_weapon_target_lua
+from lua_templates import (
+    _command_lua,
+    _find_target_lua,
+    _fire_tube_lua,
+    _scan_object_lua,
+    _set_weapon_target_lua,
+)
 
 
 class SystemName(str, Enum):
@@ -382,6 +388,156 @@ class SendCommMessage(BaseModel):
         return _command_lua(f"commandSendCommPlayer(ship, '{escaped}')")
 
 
+# --- Relay (#517) ------------------------------------------------------------
+#
+# Coordenada del mundo del juego. Cota defensiva y deliberadamente holgada: el
+# mapa de un escenario cabe de sobra dentro, y su papel no es acotar el juego
+# sino impedir que un valor absurdo (o un infinito/NaN, que Pydantic ya rechaza
+# al exigir float finito) llegue al `string.format` del Lua fijo. El juego es
+# quien decide qué hace con una coordenada lejana.
+#
+# Importante: esto NO es la reposición de nave que ADR-0002 prohíbe pedir con
+# coordenadas crudas. Un punto de ruta o una sonda son marcas que el propio
+# tripulante coloca sobre SU radar; no mueven la nave ni escriben la verdad de
+# su posición. La autoridad sobre dónde está la nave sigue entera en el juego.
+CoordinateField = Annotated[float, Field(allow_inf_nan=False, ge=-500_000.0, le=500_000.0)]
+
+# Índice de punto de ruta. Cota defensiva, no un límite del juego: el motor ya
+# ignora sin efecto un índice que no exista (`luaCommandRemoveWaypoint` compara
+# contra el tamaño real de la lista antes de tocarla).
+WaypointIndexField = Annotated[int, Field(strict=True, ge=0, le=63)]
+
+
+class AddWaypoint(BaseModel):
+    """Coloca un punto de ruta (#517): `commandAddWaypoint`, global ya
+    registrada por el motor (`src/script.cpp`).
+
+    Los puntos de ruta son la moneda de coordinación de Relay con el resto del
+    puente ("rumbo al waypoint 3"), y hasta ahora no había forma de crearlos
+    desde Foundry.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    op: Literal["add_waypoint"]
+    x: CoordinateField
+    y: CoordinateField
+
+    def lua(self) -> str:
+        return _command_lua(f"commandAddWaypoint(ship, {self.x:.1f}, {self.y:.1f})")
+
+
+class MoveWaypoint(BaseModel):
+    """Mueve un punto de ruta ya colocado (#517): `commandMoveWaypoint`."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    op: Literal["move_waypoint"]
+    index: WaypointIndexField
+    x: CoordinateField
+    y: CoordinateField
+
+    def lua(self) -> str:
+        return _command_lua(
+            f"commandMoveWaypoint(ship, {self.index}, {self.x:.1f}, {self.y:.1f})"
+        )
+
+
+class RemoveWaypoint(BaseModel):
+    """Borra un punto de ruta por índice (#517): `commandRemoveWaypoint`."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    op: Literal["remove_waypoint"]
+    index: WaypointIndexField
+
+    def lua(self) -> str:
+        return _command_lua(f"commandRemoveWaypoint(ship, {self.index})")
+
+
+class LaunchProbe(BaseModel):
+    """Lanza una sonda hacia una coordenada (#517): `commandLaunchProbe`.
+
+    Decisión con coste real: la nave lleva un número finito de sondas y el
+    juego valida el stock server-side. El puente no lleva la cuenta — inventarla
+    aquí sería una segunda verdad sobre el inventario de la nave.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    op: Literal["launch_probe"]
+    x: CoordinateField
+    y: CoordinateField
+
+    def lua(self) -> str:
+        return _command_lua(f"commandLaunchProbe(ship, {self.x:.1f}, {self.y:.1f})")
+
+
+class SetScienceLink(BaseModel):
+    """Enlaza una sonda ya lanzada al radar de ciencia (#517):
+    `commandSetScienceLink`.
+
+    Es cooperación entre puestos incorporada al motor: Relay lanza y enlaza,
+    Ciencia mira por ella. La sonda se referencia por indicativo, con el mismo
+    `CallsignField` y el mismo `_find_target_lua` que `scan_object` — el puente
+    no acepta entidades del cliente, solo compara un nombre dentro de Lua fijo.
+
+    Si el indicativo no corresponde a una sonda, el motor ignora el enlace: el
+    puente no distingue tipos de objeto y no debe fingir que sí.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    op: Literal["set_science_link"]
+    callsign: CallsignField
+
+    def lua(self) -> str:
+        return (
+            _find_target_lua(self.callsign)
+            + "commandSetScienceLink(ship, target)\n"
+            + 'return \'{"ok":true}\''
+        )
+
+
+class ClearScienceLink(BaseModel):
+    """Deshace el enlace sonda→ciencia (#517): `commandClearScienceLink`."""
+
+    op: Literal["clear_science_link"]
+
+    def lua(self) -> str:
+        return _command_lua("commandClearScienceLink(ship)")
+
+
+class AlertLevelName(str, Enum):
+    """Niveles de alerta que acepta el motor.
+
+    Catálogo cerrado y con los valores EXACTOS que `Convert<AlertLevel>::fromLua`
+    (`src/script/enum.h`) reconoce en minúsculas. Importa más que en otras
+    órdenes: ahí un valor desconocido no se ignora, llama a `luaL_error`. Un
+    enum abierto convertiría una errata del cliente en un error de Lua.
+    """
+
+    normal = "normal"
+    yellow = "yellow"
+    red = "red"
+
+
+class SetAlertLevel(BaseModel):
+    """Fija el nivel de alerta de toda la nave (#517): `commandSetAlertLevel`.
+
+    Es autoridad sobre la nave entera ejercida desde un solo puesto, y por eso
+    vive en la matriz bajo `relay` y no en cualquier sitio.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    op: Literal["set_alert_level"]
+    level: AlertLevelName
+
+    def lua(self) -> str:
+        return _command_lua(f'commandSetAlertLevel(ship, "{self.level.value}")')
+
+
 Command = Annotated[
     Union[
         SetImpulse,
@@ -402,6 +558,13 @@ Command = Annotated[
         CloseComm,
         SendCommReply,
         SendCommMessage,
+        AddWaypoint,
+        MoveWaypoint,
+        RemoveWaypoint,
+        LaunchProbe,
+        SetScienceLink,
+        ClearScienceLink,
+        SetAlertLevel,
     ],
     Field(discriminator="op"),
 ]

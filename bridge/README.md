@@ -103,7 +103,22 @@ objetos sin esos componentes devuelven `null`, nunca valores inventados.
 {"op": "close_comm"}
 {"op": "send_comm_reply",    "index": 0}
 {"op": "send_comm_message",  "message": "Requesting permission to dock."}
+{"op": "set_system_coolant", "system": "impulse", "level": 7.5}
+{"op": "scan_object",        "callsign": "Lapur 1"}
+{"op": "set_weapon_target",  "callsign": "Lapur 1"}
+{"op": "fire_tube",          "callsign": "Lapur 1", "index": 0}
+{"op": "add_waypoint",       "x": 1200.5, "y": -800.0}
+{"op": "move_waypoint",      "index": 2, "x": 0.0, "y": 15.2}
+{"op": "remove_waypoint",    "index": 0}
+{"op": "launch_probe",       "x": -2500.0, "y": 900.0}
+{"op": "set_science_link",   "callsign": "P-1"}
+{"op": "clear_science_link"}
+{"op": "set_alert_level",    "level": "yellow"}
 ```
+
+Las cuatro primeras de la segunda mitad ya existían y faltaban en esta lista;
+se añaden aquí para que la enumeración vuelva a ser el whitelist completo y no
+un subconjunto que envejece en silencio.
 
 **`set_system_health` es la palanca de avería del GM**, no un panel de
 ingeniería: escribe la salud real de un sistema (rango del juego `-1.0..1.0`;
@@ -144,6 +159,31 @@ rechaza antes de mover la nave para no aceptar una reposición sin evento.
 Los nombres fuera del catálogo y los marcadores malformados se ignoran; una
 orden `not_supported`, `no_ship` o rechazada no publica evento. El DTO no
 contiene coordenadas, URL, token ni cabeceras.
+
+**El bloque de Relay (#517) traduce agencia nativa que ya existía**, no inventa
+capacidades: las siete órdenes llaman a globales que el motor ya registraba
+(`commandAddWaypoint`, `commandMoveWaypoint`, `commandRemoveWaypoint`,
+`commandLaunchProbe`, `commandSetScienceLink`, `commandClearScienceLink`,
+`commandSetAlertLevel`), así que no hay una línea de C++ nueva. Detalles del
+contrato:
+
+- Las coordenadas de `add_waypoint`/`move_waypoint`/`launch_probe` **no son la
+  reposición de nave que ADR-0002 prohíbe pedir con coordenadas crudas**: son
+  marcas que el tripulante coloca sobre su propio radar y no tocan la posición
+  de la nave. Van acotadas a ±500 000 y deben ser finitas (`inf`/`NaN` se
+  rechazan: formateados con `%.1f` producirían Lua que no compila).
+- `set_science_link` referencia la sonda **por indicativo**, con el mismo campo
+  validado y la misma búsqueda en Lua fijo que `scan_object`; el puente nunca
+  acepta entidades del cliente. Si el indicativo no es una sonda, el motor
+  ignora el enlace — el puente no distingue tipos de objeto y no finge que sí.
+- `set_alert_level` acepta exactamente `normal`, `yellow` o `red`. El catálogo
+  es cerrado con más motivo que en otras órdenes: `Convert<AlertLevel>::fromLua`
+  llama a `luaL_error` ante un valor desconocido, así que una errata del cliente
+  tiene que morir en la validación y no en el juego.
+
+Estas órdenes existen ya en el contrato del puente, pero **la tripulación
+todavía no puede emitirlas desde Foundry**: el puesto `relay` no está en la
+matriz de autoridad del módulo. Esa mitad es el resto de #517.
 
 Cualquier otra operación devuelve `422`. Añadir una orden nueva implica
 añadir un modelo validado en `app.py` y documentarla aquí — nunca un

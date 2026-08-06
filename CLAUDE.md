@@ -210,7 +210,16 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
   - **Andar por la nave** — `scripts/nave-movimiento.mjs` (colisión círculo-caja y el paso continuo,
     puro), `scripts/nave-estancias.mjs` (catálogo de estancias: qué sala lleva a cuál) y
     `scripts/nave-movimiento-lienzo.mjs`/`nave-movimiento-red.mjs` (bucle de render y sincronización
-    de otros jugadores, #453/#498), #427. La fábrica de sala-caja (muros, puertas, columnas y
+    de otros jugadores, #453/#498), #427. Ver a otros tripulantes está partido en tres capas que no
+    se mezclan: `nave-movimiento-red.mjs` es el **protocolo** (muestras discretas confirmadas,
+    interpolación local, nunca extrapola — revisado en #453 y que no se reabre por motivos de
+    render); `scripts/nave-presencia.mjs` es el **estado de presencia**, la única respuesta a «quién
+    está aquí y dónde», deliberadamente sin nada de cómo se dibuja nadie; y
+    `scripts/nave-avatares-render.mjs` es UNA vista de esa presencia —la que pinta cuerpos,
+    reutilizando `piezasAvatar` de la cantina—, no su forma canónica. El avatar de cada cual (#450)
+    se añade en el borde del render dentro de `andar-nave-app.mjs`, nunca aguas arriba: un indicador
+    de minimapa, una lista de ocupación o la interacción por proximidad consumen la misma presencia
+    sin heredar forma de avatar 3D. La fábrica de sala-caja (muros, puertas, columnas y
     VENTANAS con cielo real detrás, #508) vive en `scripts/nave-sala-caja.mjs`, reutilizada tanto por
     las dos salas de prueba del motor (`nave-movimiento-sala-prueba.mjs`, con su propio
     `CATALOGO_PRUEBA` — deliberadamente FUERA de la nave real, ver más abajo) como por cada sala real:

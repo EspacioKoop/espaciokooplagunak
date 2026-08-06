@@ -24,18 +24,22 @@ import { ESTACIONES } from "./nave-pasillo-puente.mjs";
 const ANCHO = 6;
 const PROFUNDIDAD = 6;
 const ANCHO_HUECO = 1.2;
-const PROFUNDIDAD_HUECO = 2;
+const PROFUNDIDAD_PUERTA = 2;
 /** Centrada en el muro: a media profundidad menos la mitad del hueco. */
-const Z_HUECO = PROFUNDIDAD / 2 - PROFUNDIDAD_HUECO / 2;
+const Z_PUERTA = PROFUNDIDAD / 2 - PROFUNDIDAD_PUERTA / 2;
+/** La ventana es más ancha que la puerta (#508 feedback: casi todo el muro,
+ *  margen de 1 a cada lado) — es lo que se mira al entrar, no un trámite. */
+const PROFUNDIDAD_VENTANA = 4;
+const Z_VENTANA = PROFUNDIDAD / 2 - PROFUNDIDAD_VENTANA / 2;
 
 /** Puerta al pasillo, en el muro oeste (x=0). */
 function puertaHaciaPasillo() {
-  return { x: 0, z: Z_HUECO, ancho: ANCHO_HUECO, profundidad: PROFUNDIDAD_HUECO };
+  return { x: 0, z: Z_PUERTA, ancho: ANCHO_HUECO, profundidad: PROFUNDIDAD_PUERTA };
 }
 
 /** Ventana al espacio, en el muro este (x=ancho), enfrente de la puerta. */
 function ventanaEspacio() {
-  return { x: ANCHO - ANCHO_HUECO, z: Z_HUECO, ancho: ANCHO_HUECO, profundidad: PROFUNDIDAD_HUECO };
+  return { x: ANCHO - ANCHO_HUECO, z: Z_VENTANA, ancho: ANCHO_HUECO, profundidad: PROFUNDIDAD_VENTANA };
 }
 
 /** Dónde aparece quien entra desde el pasillo: pasado el hueco de la puerta,

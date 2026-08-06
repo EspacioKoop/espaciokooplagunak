@@ -20,8 +20,10 @@ import { crearSalaCaja } from "./nave-sala-caja.mjs";
  *  pero en el sistema de coordenadas PROPIO de esta sala. */
 export const PUERTA_INGENIERIA_HACIA_A = { x: 3, z: 0, ancho: 2, profundidad: 1.2 };
 
-/** Ventana al espacio en el muro norte, enfrente de la entrada. */
-const VENTANA_NORTE = { x: 3, z: 8, ancho: 2, profundidad: 1.2 };
+/** Ventana al espacio en el muro norte, enfrente de la entrada: casi todo el
+ *  ancho de la sala (margen de 1 a cada lado), como pidió el feedback de
+ *  #508 — un ojo de buey se perdía en un muro de 8. */
+const VENTANA_NORTE = { x: 1, z: 8, ancho: 6, profundidad: 1.2 };
 
 const SALA = crearSalaCaja({
   ancho: 8,

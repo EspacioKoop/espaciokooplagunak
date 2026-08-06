@@ -67,8 +67,11 @@ function caja([cx, cy, cz], [ancho, alto, fondo]) {
  *  propio offset por encima de esta base. */
 export const ALTURA_OJOS = 1.6;
 
-/** Altura de los muros, de suelo a techo. */
-export const ALTURA = 3;
+/** Altura de los muros, de suelo a techo. 3.8 y no 3: a la altura de ojos
+ *  (1.6) un techo a 3 queda a menos de metro y medio por encima de la
+ *  cabeza, que en primera persona se lee como agachado bajo una tapa, no
+ *  como estar de pie en una sala. */
+export const ALTURA = 3.8;
 const GROSOR_MURO = 0.4;
 
 /** Altura del hueco de una puerta: por debajo se puede cruzar, por encima
@@ -77,8 +80,13 @@ const ALTURA_PUERTA = 2.2;
 /** Franja de una ventana: por debajo el antepecho, por encima el dintel —
  *  ninguno de los dos es cruzable, la ventana nunca es una puerta. */
 const ALTURA_ALFEIZAR = 0.9;
-const ALTURA_DINTEL_VENTANA = 2.3;
+const ALTURA_DINTEL_VENTANA = 2.9;
 const TOLERANCIA_BORDE = 0.01;
+/** Grosor visual del marco de una ventana (#508 feedback): un borde fino a
+ *  cada lado del hueco, para que se lea como un límite de cristal y no como
+ *  un boquete liso en el muro. Sin travesaño central — se probó y se leía
+ *  como una mira, no como una junta. */
+const GROSOR_MARCO = 0.08;
 
 /** Rectángulo esquina+medidas a caja centro+medidas en Y = [y0, y1]. */
 function rectAColumnaEntre(rect, y0, y1) {
@@ -117,14 +125,37 @@ function recortarMuroZ(muro, desde, hasta) {
 }
 
 /**
- * Convierte los muros llenos y una lista de HUECOS —puertas y ventanas por
- * igual, cada uno `{rect, y0, y1}`— en las piezas de pared que de verdad hay
- * que dibujar. Un hueco recorta su tramo horizontal del muro que toca —a qué
+ * El cerco de una ventana: un marco fino por los DOS bordes del hueco a lo
+ * largo del muro (sin travesaño central — un feedback de #508 descartó la
+ * cruz por leerse como una mira, no como una junta de cristal), para que se
+ * note un borde y no un boquete liso. `base` es el rectángulo del hueco ya
+ * resuelto por `abrirHuecosEnMuros` (con la profundidad real del muro, no la
+ * del hueco pedido); `alongX` dice si el muro corre a lo largo de X
+ * (norte/sur) o de Z (este/oeste) — el marco se reparte sobre ESE eje.
+ */
+function piezasMarcoVentana(base, y0, y1, alongX) {
+  if (alongX) {
+    return [
+      rectAColumnaEntre({ ...base, ancho: GROSOR_MARCO }, y0, y1),
+      rectAColumnaEntre({ ...base, x: base.x + base.ancho - GROSOR_MARCO, ancho: GROSOR_MARCO }, y0, y1),
+    ];
+  }
+  return [
+    rectAColumnaEntre({ ...base, profundidad: GROSOR_MARCO }, y0, y1),
+    rectAColumnaEntre({ ...base, z: base.z + base.profundidad - GROSOR_MARCO, profundidad: GROSOR_MARCO }, y0, y1),
+  ];
+}
+
+/**
+ * Convierte los muros llenos y una lista de HUECOS —puertas y ventanas,
+ * `{rect, y0, y1, esVentana}`— en las piezas de pared que de verdad hay que
+ * dibujar. Un hueco recorta su tramo horizontal del muro que toca —a qué
  * lado pertenece se decide por qué borde de la sala toca su rectángulo, no
  * por su orden en la lista— y añade banda(s) de relleno por debajo de `y0`
  * (si `y0 > 0`, el antepecho de una ventana) y por encima de `y1` (si
  * `y1 < ALTURA`, el dintel de una puerta o de una ventana): sin esas bandas
- * la pared quedaría "flotando" cortada en seco.
+ * la pared quedaría "flotando" cortada en seco. Una ventana además deja su
+ * cerco (`piezasMarcoVentana`) para leerse como una ventana con cristal.
  */
 function abrirHuecosEnMuros(muros, huecos, ancho, profundidad) {
   const [norte, sur, oeste, este] = muros;
@@ -133,15 +164,17 @@ function abrirHuecosEnMuros(muros, huecos, ancho, profundidad) {
   let tramosOeste = [oeste];
   let tramosEste = [este];
   const bandas = [];
+  const marcos = [];
 
   for (const hueco of huecos) {
-    const { rect, y0, y1 } = hueco;
+    const { rect, y0, y1, esVentana } = hueco;
     const tocaNorte = rect.z <= TOLERANCIA_BORDE;
     const tocaSur = rect.z + rect.profundidad >= profundidad - TOLERANCIA_BORDE;
     const tocaOeste = rect.x <= TOLERANCIA_BORDE;
     const tocaEste = rect.x + rect.ancho >= ancho - TOLERANCIA_BORDE;
 
     let base = null;
+    let alongX = true;
     if (tocaNorte) {
       tramosNorte = tramosNorte.flatMap((m) => recortarMuroX(m, rect.x, rect.x + rect.ancho));
       base = { ...norte, x: rect.x, ancho: rect.ancho };
@@ -151,9 +184,11 @@ function abrirHuecosEnMuros(muros, huecos, ancho, profundidad) {
     } else if (tocaOeste) {
       tramosOeste = tramosOeste.flatMap((m) => recortarMuroZ(m, rect.z, rect.z + rect.profundidad));
       base = { ...oeste, z: rect.z, profundidad: rect.profundidad };
+      alongX = false;
     } else if (tocaEste) {
       tramosEste = tramosEste.flatMap((m) => recortarMuroZ(m, rect.z, rect.z + rect.profundidad));
       base = { ...este, z: rect.z, profundidad: rect.profundidad };
+      alongX = false;
     }
     // Un hueco que no toca ningún borde es un dato de planta mal formado: se
     // ignora en vez de reventar el render por un rectángulo interior.
@@ -161,11 +196,13 @@ function abrirHuecosEnMuros(muros, huecos, ancho, profundidad) {
 
     if (y0 > 0) bandas.push(rectAColumnaEntre(base, 0, y0));
     if (y1 < ALTURA) bandas.push(rectAColumnaEntre(base, y1, ALTURA));
+    if (esVentana) marcos.push(...piezasMarcoVentana(base, y0, y1, alongX));
   }
 
   return {
     muros: [...tramosNorte, ...tramosSur, ...tramosOeste, ...tramosEste],
     bandas,
+    marcos,
   };
 }
 
@@ -190,8 +227,8 @@ function trasladarMalla(malla, [dx, dy, dz]) {
  *
  * @param {{ancho:number, profundidad:number, columnas?:Array,
  *   puertas?:Array<{rect:object}>, ventanas?:Array<{rect:object}>,
- *   colorMuro?:string, colorColumna?:string, semillaCielo?:number,
- *   cantidadEstrellas?:number}} medidas
+ *   colorMuro?:string, colorColumna?:string, colorMarcoVentana?:string,
+ *   semillaCielo?:number, cantidadEstrellas?:number}} medidas
  */
 export function crearSalaCaja({
   ancho,
@@ -201,6 +238,10 @@ export function crearSalaCaja({
   ventanas = [],
   colorMuro = SECCION.casco,
   colorColumna = SECCION.mamparo,
+  // El acento de la cantina (#508 feedback): un cerco de neón alrededor del
+  // hueco es lo que hace que se lea como una ventana con cristal y no como
+  // un boquete en el muro, sin que el motor sepa dibujar transparencias.
+  colorMarcoVentana = SECCION.entrable,
   semillaCielo = 20260731,
   cantidadEstrellas = 90,
 }) {
@@ -211,13 +252,14 @@ export function crearSalaCaja({
     { x: ancho, z: 0, ancho: GROSOR_MURO, profundidad },
   ];
   const huecos = [
-    ...puertas.map(({ rect }) => ({ rect, y0: 0, y1: ALTURA_PUERTA })),
-    ...ventanas.map(({ rect }) => ({ rect, y0: ALTURA_ALFEIZAR, y1: ALTURA_DINTEL_VENTANA })),
+    ...puertas.map(({ rect }) => ({ rect, y0: 0, y1: ALTURA_PUERTA, esVentana: false })),
+    ...ventanas.map(({ rect }) => ({ rect, y0: ALTURA_ALFEIZAR, y1: ALTURA_DINTEL_VENTANA, esVentana: true })),
   ];
-  const { muros: tramosMuro, bandas } = abrirHuecosEnMuros(muros, huecos, ancho, profundidad);
+  const { muros: tramosMuro, bandas, marcos } = abrirHuecosEnMuros(muros, huecos, ancho, profundidad);
 
   const piezas = Object.freeze([
     ...tramosMuro.map((rect) => ({ malla: rectAColumna(rect, ALTURA), color: colorMuro })),
+    ...marcos.map((malla) => ({ malla, color: colorMarcoVentana })),
     ...bandas.map((malla) => ({ malla, color: colorMuro })),
     ...columnas.map((rect) => ({ malla: rectAColumna(rect, ALTURA), color: colorColumna })),
     { malla: caja([ancho / 2, -0.05, profundidad / 2], [ancho, 0.1, profundidad]), color: SECCION.sala },

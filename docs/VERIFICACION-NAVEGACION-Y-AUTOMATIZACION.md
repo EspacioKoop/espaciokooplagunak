@@ -65,15 +65,26 @@ condicionada a ocupación de puesto en los sistemas de la nave).
   internos) con independencia de qué puestos de mando estén ocupados. Ya
   existe y ya está disponible hoy mismo, ocupado o no el puesto de
   Ingeniería.
+- `auto_repair_per_second` (`src/components/shipsystem.h:44`) es el otro
+  mecanismo nativo que actúa sin nadie al mando: `shipsystemssystem.cpp:47`
+  sube la salud de cada sistema a ese ritmo cada tick. Tampoco está
+  condicionado a ocupación de puesto — es un parámetro **por sistema y por
+  nave**, con valor por defecto `0.0f`, que solo un escenario o el GM
+  (`src/screens/gm/tweak.cpp:278`) pueden subir. Es decir: existe una palanca
+  nativa para que un sistema se recupere solo, pero está apagada por defecto y
+  no distingue si el puesto está cubierto.
 - `src/ai/` gobierna naves de facción (enemigos/NPC), no sustituye puestos
   vacíos en la nave del jugador. `singlePilot` (`src/crewPosition.h`,
   `src/screens/crew1/singlePilotScreen.cpp`) es una **elección manual** de un
   jugador para fusionar varios puestos bajo su control, no un mecanismo
   automático que se active al quedar un puesto vacío.
 
-**Conclusión:** no existe automatización nativa alguna para puestos sin
-tripulación asignada, más allá del interruptor general de reparación interna
-(que no distingue por puesto). Un sistema sin jugador que lo atienda queda
+**Conclusión:** no existe automatización nativa alguna **condicionada a un
+puesto vacío**. Lo único que actúa sin jugador son dos mecanismos de nave
+completa, ciegos a la ocupación: el interruptor de reparación interna
+(`auto_repair_enabled`) y la autorreparación pasiva por sistema
+(`auto_repair_per_second`, apagada por defecto). Ninguno cubre la decisión de
+un puesto: no hay quien dispare, escanee, reparta energía ni suba escudos. Un sistema sin jugador que lo atienda queda
 congelado en su último valor — escudos donde se dejaran, energía donde se
 dejara, sin nadie disparando ni escaneando. Diseñar automatización propia (en
 el puente/Foundry) para puestos vacíos parte de cero: tendría que decidir

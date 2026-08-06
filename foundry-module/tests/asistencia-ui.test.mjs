@@ -186,6 +186,50 @@ test("elegir símbolo fuera de un reto de secuencia no hace nada", () => {
   assert.equal(flags.length, antes, "el reto activo es de temporización, no de secuencia");
 });
 
+test("empezar destreza con minijuego de precisión arranca precisión, no temporización ni secuencia", () => {
+  conOfertaDestreza("precision");
+  ui.empezarDestrezaDesdeVentana();
+  const contexto = ui.contextoAsistencia();
+  assert.equal(contexto.retoEsPrecision, true);
+  assert.equal(contexto.retoEsTemporizacion, false);
+  assert.equal(contexto.retoEsSecuencia, false);
+  assert.equal("cursor" in contexto.reto, false, "es la forma del reto de precisión: sin cursor");
+  assert.ok(typeof contexto.reto.zonaDesde === "number");
+});
+
+test("un clic dentro de la zona de precisión manda un resultado favorable", () => {
+  // Semilla determinista del reto: nonce fijo del arnés + ":destreza". Con
+  // esa semilla la zona cae en torno a 0.584 (tolerancia 0.07 en dificultad
+  // normal): clavar el centro sirve para probar el gesto sin adivinar nada.
+  const nonce = conOfertaDestreza("precision");
+  ui.empezarDestrezaDesdeVentana();
+  ui.elegirPosicionDesdeVentana(0.584);
+  const contexto = ui.contextoAsistencia();
+  assert.equal(contexto.esperando, true);
+  assert.equal(flags.at(-1).tipo, "resolver");
+  assert.equal(flags.at(-1).nonce, nonce);
+  assert.equal(flags.at(-1).banda, BANDAS.CRITICO);
+});
+
+test("un clic fuera de la zona de precisión también cierra el reto, en pifia", () => {
+  const nonce = conOfertaDestreza("precision");
+  ui.empezarDestrezaDesdeVentana();
+  ui.elegirPosicionDesdeVentana(0.01);
+  const contexto = ui.contextoAsistencia();
+  assert.equal(contexto.esperando, true);
+  assert.equal(flags.at(-1).tipo, "resolver");
+  assert.equal(flags.at(-1).nonce, nonce);
+  assert.equal(flags.at(-1).banda, BANDAS.PIFIA);
+});
+
+test("elegir posición fuera de un reto de precisión no hace nada", () => {
+  conOfertaDestreza("secuencia");
+  ui.empezarDestrezaDesdeVentana();
+  const antes = flags.length;
+  ui.elegirPosicionDesdeVentana(0.5);
+  assert.equal(flags.length, antes, "el reto activo es de secuencia, no de precisión");
+});
+
 test("la barra se repinta sin re-renderizar la ventana", () => {
   // Un `render()` por fotograma reconstruiría la ventana entera y tiraría el
   // foco del teclado 60 veces por segundo.

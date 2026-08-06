@@ -28,6 +28,10 @@ import {
   estadoEn as estadoEnSecuencia,
   lecturaAccesible as lecturaAccesibleSecuencia,
 } from "./secuencia.mjs";
+import {
+  estadoEn as estadoEnPrecision,
+  lecturaAccesible as lecturaAccesiblePrecision,
+} from "./precision.mjs";
 
 /** Estados de la ventana. La ventana no tiene más; añadir uno es una decisión. */
 export const FASES = Object.freeze({
@@ -174,6 +178,29 @@ export function vistaRetoSecuencia(reto, intentos, tMs) {
     longitud: reto.secuencia.length,
     restanteMs: Math.max(0, Math.round(estado.restanteMs ?? 0)),
     lectura: lecturaAccesibleSecuencia(reto, tMs),
+  });
+}
+
+/**
+ * El estado del reto de PRECISIÓN en un instante, en unidades de pintado.
+ *
+ * A diferencia de `vistaReto` (temporización), aquí no hay `cursor`: la zona
+ * está quieta desde el principio y se ve entera, así que no hace falta
+ * pintar nada que se mueva — solo la zona misma y la cuenta atrás para
+ * decidir. `lectura` sigue siendo obligatoria por la misma razón que en los
+ * otros dos minijuegos: la cuenta atrás también tiene que oírse, no solo
+ * verse.
+ */
+export function vistaRetoPrecision(reto, tMs) {
+  if (!reto) return null;
+  const estado = estadoEnPrecision(reto, tMs);
+  const desde = Math.max(0, reto.objetivo - reto.tolerancia);
+  const hasta = Math.min(1, reto.objetivo + reto.tolerancia);
+  return Object.freeze({
+    zonaDesde: Math.round(desde * 1000) / 10,
+    zonaAncho: Math.round((hasta - desde) * 1000) / 10,
+    restanteMs: Math.max(0, Math.round(estado.restanteMs ?? 0)),
+    lectura: lecturaAccesiblePrecision(reto, tMs),
   });
 }
 

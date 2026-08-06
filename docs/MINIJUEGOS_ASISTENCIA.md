@@ -5,9 +5,9 @@
   sobre `foundry-module/scripts/asistencia/vista.mjs`) integrados y enganchados en `main.mjs`
   (`foundry-module/scripts/asistencia/`, suite `foundry-module/tests/asistencia-*.test.mjs`).
   El ciclo completo —pedir, resolver, consumir vía el relé del titular— es jugable de extremo a
-  extremo. Queda pendiente ampliar el repertorio de minijuegos más allá de temporización y leer
-  modificadores reales de la ficha dnd5e en vez de tratarla como booleano — ver
-  [#500](https://github.com/VaroTv7/espaciokooplagunak/issues/500).
+  extremo, con tres minijuegos de destreza (temporización, secuencia, precisión) y lectura real de
+  modificadores dnd5e — ver [#500](https://github.com/VaroTv7/espaciokooplagunak/issues/500). Queda
+  pendiente un cuarto tipo (puzzle) si se decide que sigue en alcance.
 - Issue: [#309](https://github.com/VaroTv7/espaciokooplagunak/issues/309)
 - Fase: **4** (experiencia cooperativa). No forma parte del criterio de salida de Fase 3.
 - Depende de: contrato de minijuegos [#308](https://github.com/VaroTv7/espaciokooplagunak/issues/308)
@@ -309,9 +309,9 @@ costura con el relé de órdenes)—; la interfaz (`asistencia-ui.mjs`) también
 El motor dejó de ser código muerto: `asistencia/catalogo.mjs` le da **contenido**,
 `asistencia-wiring.mjs` lo **enchufa a Foundry** y `asistencia-ui.mjs` (sobre
 `asistencia/vista.mjs`) es la ventana donde el asistente pulsa. El camino está completo de extremo
-a extremo y es jugable en mesa. Pendiente: ampliar el repertorio de minijuegos más allá de
-temporización y leer modificadores reales de la ficha dnd5e — ver
-[#500](https://github.com/VaroTv7/espaciokooplagunak/issues/500).
+a extremo y es jugable en mesa, con tres minijuegos de destreza y lectura real de modificadores
+dnd5e — ver [#500](https://github.com/VaroTv7/espaciokooplagunak/issues/500) para el cuarto tipo
+(puzzle), si sigue en alcance.
 
 - **El catálogo es contenido, no lógica.** Tres tareas base —estabilizar un sistema caliente
   (ingeniería, `set_system_coolant`), bordar una maniobra (pilotaje, `set_impulse`) y afinar un
@@ -343,20 +343,23 @@ temporización y leer modificadores reales de la ficha dnd5e — ver
   real: no se abre solo) y la regla de la casa del 1/20 natural en pruebas de habilidad (que **no**
   es la regla de 5e, y por eso no está cableada).
 
-La interfaz ya existe: la ventana (`asistencia-ui.mjs`) donde el asistente elige enfoque y ve su
-rango de éxito, y la barra del reto de temporización para el camino sin dnd5e.
+La interfaz ya existe: la ventana (`asistencia-ui.mjs`) donde el asistente elige enfoque, ve su
+rango de éxito y juega el reto de destreza que le toque — temporización, secuencia o precisión,
+según lo que declare la tarea (`minijuegoDestreza` en el catálogo).
 
-- **Tres puestos asistibles**: ingeniería (estabilizar sistema caliente), pilotaje (bordar una
-  maniobra) y sensores (afinar un contacto dudoso, narrativa). Una mesa amplía el catálogo con
-  `crearCatalogo([...TAREAS_BASE, ...])` sin tocar el motor.
+- **Tres puestos asistibles**: ingeniería (estabilizar sistema caliente, minijuego de precisión),
+  pilotaje (bordar una maniobra, minijuego de secuencia) y sensores (afinar un contacto dudoso,
+  narrativa). Una mesa amplía el catálogo con `crearCatalogo([...TAREAS_BASE, ...])` sin tocar el
+  motor.
 - **Un modo**: propuesta consumible (Modo B) que el titular gasta como una de sus órdenes ya
   autorizadas.
-- **Una sola clase de enfoque cableada a Foundry**: la (a), prueba de habilidad/herramienta, sin
-  recursos que consumir. El motor soporta en abstracto las clases (b) y (c), pero su cableado real
-  a dnd5e (lectura de modificadores/CD de la ficha) sigue pendiente — ver #500.
-- **Dos caminos de resolución que comparten bandas**: tirada de habilidad dnd5e (con «rango de éxito»)
-  **y** minijuego de temporización de fallback. Un segundo/tercer tipo de minijuego (precisión,
-  secuencia) está fuera de esta rebanada — ver #500.
+- **Una sola clase de enfoque cableada a Foundry**: la (a), prueba de habilidad/herramienta, con
+  modificador real leído de la ficha (`ficha-dnd5e.mjs`) cuando el enfoque declara `habilidad`. El
+  motor soporta en abstracto las clases (b) y (c), pero su cableado real a dnd5e sigue pendiente.
+- **Tres minijuegos de destreza que comparten bandas**: temporización (reflejos), secuencia
+  (memoria de orden) y precisión (puntería sin reloj) — los tres producen las MISMAS bandas que una
+  tirada de habilidad. Un cuarto tipo (puzzle) sigue fuera de alcance — ver #500 si sigue siendo
+  objetivo.
 - Reutiliza relé (#237), matriz de puestos (#268) y marco de #308.
 
 ### Cómo se cobra la ayuda, en concreto (`relevo.mjs`)

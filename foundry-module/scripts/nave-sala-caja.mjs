@@ -219,6 +219,54 @@ function trasladarMalla(malla, [dx, dy, dz]) {
   return { ...malla, vertices: malla.vertices.map(([x, y, z]) => [x + dx, y + dy, z + dz]) };
 }
 
+/** Grosor del rodapié: pegado a la cara interior de cada muro, nunca coincide
+ *  con su plano (el muro ocupa hasta x/z = 0, el rodapié EMPIEZA ahí). */
+const GROSOR_RODAPIE = 0.06;
+const ALTURA_RODAPIE = 0.16;
+
+/**
+ * Un cerco de rodapié al pie de las cuatro paredes (QA: "los objetos 3D son
+ * muy cutres, necesitan más detalle"): una sala sin nada donde el suelo se
+ * encuentra con el muro se lee como una caja vacía. Reusa `SECCION.salaBorde`
+ * —"el canto que separa una sala de la siguiente"— porque es exactamente eso:
+ * el canto entre el suelo y la pared, ningún color nuevo (#351).
+ */
+function rodapie(ancho, profundidad) {
+  const color = SECCION.salaBorde;
+  return [
+    { malla: caja([ancho / 2, ALTURA_RODAPIE / 2, GROSOR_RODAPIE / 2], [ancho, ALTURA_RODAPIE, GROSOR_RODAPIE]), color },
+    {
+      malla: caja(
+        [ancho / 2, ALTURA_RODAPIE / 2, profundidad - GROSOR_RODAPIE / 2],
+        [ancho, ALTURA_RODAPIE, GROSOR_RODAPIE],
+      ),
+      color,
+    },
+    { malla: caja([GROSOR_RODAPIE / 2, ALTURA_RODAPIE / 2, profundidad / 2], [GROSOR_RODAPIE, ALTURA_RODAPIE, profundidad]), color },
+    {
+      malla: caja(
+        [ancho - GROSOR_RODAPIE / 2, ALTURA_RODAPIE / 2, profundidad / 2],
+        [GROSOR_RODAPIE, ALTURA_RODAPIE, profundidad],
+      ),
+      color,
+    },
+  ];
+}
+
+/**
+ * Una lámpara de techo centrada (mismo QA que `rodapie`): un cuerpo colgado
+ * del techo con `SECCION.entrable` —el mismo acento que ya marca ventanas y
+ * consolas— para que se lea como una fuente de luz y no como una caja más.
+ * Sin colisión propia: cuelga por encima de donde se puede caminar.
+ */
+function lamparaTecho(ancho, profundidad) {
+  const lado = Math.min(ancho, profundidad) * 0.22;
+  return {
+    malla: caja([ancho / 2, ALTURA - 0.22, profundidad / 2], [lado, 0.12, lado]),
+    color: SECCION.entrable,
+  };
+}
+
 /**
  * Fabrica una sala-caja: cuatro muros por el límite de la planta, columnas
  * opcionales, puertas, VENTANAS, suelo y techo.
@@ -288,8 +336,10 @@ export function crearSalaCaja({
     ...bandas.map((malla) => ({ malla, color: colorMuro })),
     ...columnas.map((rect) => ({ malla: rectAColumna(rect, ALTURA), color: colorColumna })),
     ...mobiliario.map(({ centro, medidas, color }) => ({ malla: caja(centro, medidas), color })),
+    ...rodapie(ancho, profundidad),
     { malla: caja([ancho / 2, -0.05, profundidad / 2], [ancho, 0.1, profundidad]), color: SECCION.sala },
     { malla: caja([ancho / 2, ALTURA + 0.05, profundidad / 2], [ancho, 0.1, profundidad]), color: SECCION.mamparo },
+    lamparaTecho(ancho, profundidad),
   ]);
 
   const planta = crearPlanta({ ancho, profundidad, obstaculos: [...columnas, ...obstaculosMobiliario] });

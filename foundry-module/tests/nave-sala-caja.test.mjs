@@ -48,3 +48,14 @@ test("una puerta sigue dejando pasar y una ventana en el mismo muro no colisiona
 test("la cámara mira desde la altura de ojos, no desde el suelo", () => {
   assert.ok(ALTURA_OJOS > 0 && ALTURA_OJOS < 3);
 });
+
+test("el rodapié y la lámpara de techo no bloquean el paso por el centro de una sala vacía", () => {
+  const sala = crearSalaCaja({ ancho: 6, profundidad: 6 });
+  // Ni el rodapié (pegado a los muros) ni la lámpara (colgada del techo)
+  // aportan obstáculo: el centro de una sala vacía sigue libre.
+  assert.equal(colisiona(3, 3, 0.3, sala.planta), false);
+  const escena = sala.componer(3, 0, 3, 0, { ancho: 160, alto: 90 });
+  // Cuatro muros + suelo + techo ya darían un puñado de polígonos; el
+  // rodapié (4 piezas) y la lámpara (1 pieza) deben sumar visiblemente más.
+  assert.ok(escena.poligonos.length >= 10, `se esperaban al menos 10 polígonos, hubo ${escena.poligonos.length}`);
+});

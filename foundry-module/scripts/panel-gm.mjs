@@ -12,13 +12,19 @@
  * estado+mapa+encuentros+previsualización en una sola ventana con un solo
  * bucle de sondeo: este catálogo no reabre esa fusión con entradas propias de
  * "estado"/"mapa", porque esas ventanas ya no existen por separado.
+ *
+ * El almacenamiento y la búsqueda por id son `crearCatalogoPuertas`
+ * (#448, item 4): mismo patrón exacto que `cantina.mjs`, factorizado una vez
+ * que hubo dos consumidores reales.
  */
+
+import { crearCatalogoPuertas } from "./puerta-catalogo.mjs";
 
 /** Una entrada por acción de GM disponible. `id` identifica la entrada y es
  * lo que `panel-gm-app.mjs` pasa de vuelta al elegirla; la acción concreta
  * (qué función de `main.mjs` invoca) la decide quien conecta el panel, no
  * el catálogo. */
-export const ENTRADAS = Object.freeze([
+const catalogo = crearCatalogoPuertas([
   Object.freeze({
     id: "consola",
     tituloClave: "LAGUNAK.PanelGM.Entrada.Consola",
@@ -51,12 +57,14 @@ export const ENTRADAS = Object.freeze([
   }),
 ]);
 
+export const ENTRADAS = catalogo.congelado;
+
 /** Catálogo completo, en orden estable. */
 export function entradasPanelGM() {
-  return ENTRADAS;
+  return catalogo.todas();
 }
 
 /** La entrada con ese id, o `undefined` si el catálogo no la tiene. */
 export function entradaPorId(id) {
-  return ENTRADAS.find((entrada) => entrada.id === id);
+  return catalogo.porId(id);
 }

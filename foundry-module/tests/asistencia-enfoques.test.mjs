@@ -6,6 +6,7 @@ import {
   ASISTENCIA_ERRORES,
   AsistenciaError,
   CLASES_ENFOQUE,
+  MINIJUEGOS_DESTREZA,
   MODOS,
   modoDeTarea,
   resolucionDisponible,
@@ -87,6 +88,30 @@ test("la clase (c) exige banda fija y nunca puede ser crítico", () => {
   assert.equal(validarEnfoque({ ...sinBanda, bandaFija: BANDAS.EXITO }, {}).bandaFija, BANDAS.EXITO);
 });
 
+test("la habilidad es opcional: sin ella, el enfoque sigue validando (#500)", () => {
+  const { habilidad, ...sinHabilidad } = prueba();
+  const validado = validarEnfoque(sinHabilidad, tareaIngenieria());
+  assert.equal(validado.habilidad, undefined);
+});
+
+test("con habilidad declarada, tiene que apuntar a un tipo real de la ficha", () => {
+  for (const tipo of ["skill", "tool", "ability"]) {
+    const validado = validarEnfoque(prueba({ habilidad: `${tipo}:x` }), tareaIngenieria());
+    assert.equal(validado.habilidad, `${tipo}:x`);
+  }
+});
+
+test("una habilidad con un tipo inventado no se declara: falla al cargar, no en mesa", () => {
+  assert.equal(
+    codigo(() => validarEnfoque(prueba({ habilidad: "hechizo:bola-de-fuego" }), tareaIngenieria())),
+    ASISTENCIA_ERRORES.HABILIDAD_DESCONOCIDA,
+  );
+  assert.equal(
+    codigo(() => validarEnfoque(prueba({ habilidad: "arc" }), tareaIngenieria())),
+    ASISTENCIA_ERRORES.HABILIDAD_DESCONOCIDA,
+  );
+});
+
 test("no hay cuarta vía: una clase inventada no se declara", () => {
   assert.equal(
     codigo(() => validarEnfoque({ id: "x", clase: "magia-libre" }, {})),
@@ -104,7 +129,7 @@ test("sin ficha la asistencia se degrada al minijuego de destreza, no se rompe",
 
 test("los enfoques que gastan recursos solo aparecen si el GM abre esa vía", () => {
   const conCoste = tareaIngenieria({
-    enfoques: [prueba({ id: "arcana", habilidad: "arc" }), {
+    enfoques: [prueba({ id: "arcana", habilidad: "skill:arc" }), {
       id: "reparar",
       clase: CLASES_ENFOQUE.SIN_TIRADA,
       bandaFija: BANDAS.EXITO,
@@ -120,6 +145,27 @@ test("los enfoques que gastan recursos solo aparecen si el GM abre esa vía", ()
     gmPermiteRecursos: true,
   });
   assert.deepEqual(abierto.enfoques.map((e) => e.id), ["arcana", "reparar"]);
+});
+
+test("una tarea sin minijuegoDestreza declarado sigue validando: se asume temporización", () => {
+  // Compatibilidad hacia atrás: las tareas escritas antes de #500 no lo
+  // declaran, y no tienen por qué dejar de cargar.
+  const tarea = validarTarea(tareaIngenieria());
+  assert.equal(tarea.minijuegoDestreza, undefined);
+});
+
+test("un minijuego de destreza del repertorio se acepta y viaja con la tarea", () => {
+  for (const minijuego of MINIJUEGOS_DESTREZA) {
+    const tarea = validarTarea(tareaIngenieria({ minijuegoDestreza: minijuego }));
+    assert.equal(tarea.minijuegoDestreza, minijuego);
+  }
+});
+
+test("un minijuego de destreza inventado no se declara: falla al cargar, no en mesa", () => {
+  assert.equal(
+    codigo(() => validarTarea(tareaIngenieria({ minijuegoDestreza: "ruleta-rusa" }))),
+    ASISTENCIA_ERRORES.MINIJUEGO_DESCONOCIDO,
+  );
 });
 
 test("si el GM no abre recursos y TODO cuesta, queda la destreza", () => {

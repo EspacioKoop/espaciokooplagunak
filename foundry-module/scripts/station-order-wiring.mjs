@@ -149,6 +149,13 @@ export function registerStationOrders(moduleId) {
           : "LAGUNAK.Espacios.Orden.Rechazada";
         ui.notifications?.warn?.(game.i18n.localize(clave));
       },
+      // #483: el emisor cambió de puesto mientras la orden esperaba a
+      // procesarse. Aviso propio, distinto de "Rechazada": no es que el
+      // puente la rechazara, es que ya no hay identidad bajo la que
+      // ejecutarla.
+      onOrdenHuerfana: () => {
+        ui.notifications?.warn?.(game.i18n.localize("LAGUNAK.Espacios.Orden.Huerfana"));
+      },
     });
   };
   Hooks.on("updateUser", listener);

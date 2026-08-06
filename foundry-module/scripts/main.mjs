@@ -46,6 +46,7 @@ import {
   revokeWorkspaceAccess,
 } from "./station-workspace-ui.mjs";
 import { registerStationOrders } from "./station-order-wiring.mjs";
+import { registrarRelevoPuestos } from "./station-handover.mjs";
 import { registrarAsistencia } from "./asistencia-wiring.mjs";
 import { addAsistenciaControl, registrarAsistenciaUI } from "./asistencia-ui.mjs";
 import {
@@ -85,6 +86,8 @@ import {
   recordarVista as recordarVistaBlackjack,
 } from "./minijuegos/mesa-blackjack-app.mjs";
 import { aplicarVariablesAlerta, registrarAjusteAlerta, registrarEscuchaAlerta } from "./alerta-escena.mjs";
+import { registrarAjusteAlarmaCruzada, registrarEscuchaAlarmaCruzada } from "./alarma-cruzada-escena.mjs";
+import { normalizeStation } from "./station-assignment.mjs";
 import {
   AJUSTE_GRANO,
   GRANO_APAGADO,
@@ -192,6 +195,11 @@ Hooks.once("init", () => {
   // el GM y lo leen todos, así que un jugador que entra tarde ve la alerta en
   // curso sin esperar al siguiente sondeo del GM.
   registrarAjusteAlerta(MODULE_ID);
+
+  // Alarma cruzada por dependencia entre sistemas (#482): distinta del nivel
+  // de arriba —ver cabecera de `alarma-cruzada.mjs`—, ajuste de MUNDO por el
+  // mismo motivo: solo el GM calcula, todos leen.
+  registrarAjusteAlarmaCruzada(MODULE_ID);
 
   // Tinte de escena delegado en FXMaster (ver `filtros-escena.mjs` y
   // docs/ECOSISTEMA_MODULOS_FOUNDRY.md). APAGADO por defecto y no por timidez:
@@ -384,6 +392,18 @@ Hooks.once("ready", () => {
   // tiene que encontrar su color ya publicado.
   aplicarVariablesAlerta();
   registrarEscuchaAlerta(MODULE_ID);
+  // Alarma cruzada reactor/escudos (#482): solo ingeniería y armas la ven, con
+  // la variante causa/efecto que les toca. El puesto se resuelve del flag del
+  // propio usuario en cada repintado, para seguir el relevo sin recargar.
+  registrarEscuchaAlarmaCruzada(MODULE_ID, {
+    resolverPuesto: () => {
+      try {
+        return normalizeStation(game.user?.getFlag(MODULE_ID, "station") ?? null);
+      } catch {
+        return null;
+      }
+    },
+  });
   // Y, si el GM lo ha encendido y FXMaster está, el mismo nivel tiñe además el
   // lienzo. El cableado escucha los tres momentos en que el tinte puede quedar
   // desfasado —cambio de nivel, encendido del ajuste, apertura de otra escena—
@@ -392,6 +412,12 @@ Hooks.once("ready", () => {
   // Relé de órdenes por puesto (#236): el GM registra el manejador del socket;
   // en clientes de tripulación es no-op (solo emiten).
   registerStationOrders(MODULE_ID);
+  // Relevo de puesto (#483): anota en la bitácora cuando alguien deja/asume/
+  // cambia de puesto en plena sesión. Se registra UNA vez para todos los
+  // clientes (no hace falta el mismo baile de re-registro que
+  // `registerStationOrders` al cambiar el GM activo: el gate de "quién es el
+  // GM activo ahora" se evalúa dentro del propio listener, en cada evento).
+  registrarRelevoPuestos(MODULE_ID);
   // Asistencia entre puestos (#309): el GM coordina las peticiones que llegan por
   // updateUser; cualquier cliente escucha la respuesta dirigida a él. Va DESPUÉS
   // del relé y no antes: la ayuda se cobra dentro de la orden del titular, así

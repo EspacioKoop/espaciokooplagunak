@@ -24,6 +24,14 @@
 
 import { BANDAS_ORDENADAS } from "./bandas.mjs";
 import { estadoEn, lecturaAccesible } from "./temporizacion.mjs";
+import {
+  estadoEn as estadoEnSecuencia,
+  lecturaAccesible as lecturaAccesibleSecuencia,
+} from "./secuencia.mjs";
+import {
+  estadoEn as estadoEnPuzzle,
+  lecturaAccesible as lecturaAccesiblePuzzle,
+} from "./puzzle.mjs";
 
 /** Estados de la ventana. La ventana no tiene más; añadir uno es una decisión. */
 export const FASES = Object.freeze({
@@ -80,6 +88,9 @@ export function vistaOferta(oferta) {
 
   return Object.freeze({
     via: oferta.via ?? null,
+    // Solo se usa cuando `via === "destreza"`: qué reto empezar directamente,
+    // sin pasar por una lista de enfoques que en esa vía viene vacía.
+    minijuegoDestreza: oferta.minijuegoDestreza ?? "temporizacion",
     enfoques: Object.freeze(
       oferta.enfoques.map(({ enfoque, rango }) =>
         Object.freeze({
@@ -137,6 +148,65 @@ export function vistaReto(reto, tMs) {
     dentro: Math.abs(estado.posicion - estado.objetivo) <= estado.tolerancia,
     restanteMs: Math.max(0, Math.round(estado.restanteMs ?? 0)),
     lectura: lecturaAccesible(reto, tMs),
+  });
+}
+
+/**
+ * El estado del reto de SECUENCIA en un instante, en unidades de pintado.
+ *
+ * `intentos` entra porque el progreso —cuántos símbolos lleva acertados quien
+ * juega— no se puede leer del reto: el reto es la secuencia a adivinar, no lo
+ * que ya se ha pulsado. `simbolos` sale ya como la lista de índices a pintar,
+ * para que la plantilla no invente un rango.
+ *
+ * `lectura` es el canal NO visual, obligatorio por la misma razón que en
+ * temporización: unos símbolos que solo se distinguen por color o forma
+ * excluyen a quien no los ve igual que todos.
+ */
+export function vistaRetoSecuencia(reto, intentos, tMs) {
+  if (!reto) return null;
+  const estado = estadoEnSecuencia(reto, tMs);
+  return Object.freeze({
+    fase: estado.fase,
+    // Booleanos precalculados y no `fase === "muestra"` en la plantilla: este
+    // módulo no registra helpers de Handlebars (`eq` no existe aquí), y es el
+    // mismo patrón que ya usan `enOferta`/`enReto` en `asistencia-ui.mjs`.
+    enMuestra: estado.fase === "muestra",
+    simboloActivo: estado.simboloActivo,
+    simbolos: Object.freeze(Array.from({ length: reto.simbolos }, (_, i) => i)),
+    progreso: (intentos ?? []).length,
+    longitud: reto.secuencia.length,
+    restanteMs: Math.max(0, Math.round(estado.restanteMs ?? 0)),
+    lectura: lecturaAccesibleSecuencia(reto, tMs),
+  });
+}
+
+/**
+ * El estado del reto de PUZZLE en un instante, en unidades de pintado.
+ *
+ * `panel` es el estado ACTUAL del tablero —qué casillas ha encendido quien
+ * juega hasta ahora—, distinto del `patronObjetivo` del reto; por eso cada
+ * celda de la vista lleva las dos cosas: `objetivo` (lo que hay que lograr,
+ * SIEMPRE visible, igual que ve todo el mundo) y `encendida` (lo que hay
+ * ahora mismo). `ultimoIntento` es el resultado del último envío —aciertos y
+ * sobrantes—, para dar una pista sin cerrar el reto: un envío que no acierta
+ * del todo no cierra nada, solo informa.
+ */
+export function vistaRetoPuzzle(reto, panel, ultimoIntento, tMs) {
+  if (!reto) return null;
+  const estado = estadoEnPuzzle(reto, tMs);
+  const actual = panel ?? [];
+  return Object.freeze({
+    celdas: Object.freeze(
+      Array.from({ length: reto.celdas }, (_, i) =>
+        Object.freeze({ indice: i, objetivo: reto.patronObjetivo[i], encendida: Boolean(actual[i]) }),
+      ),
+    ),
+    ultimoIntento: ultimoIntento
+      ? Object.freeze({ aciertos: ultimoIntento.aciertos, sobrantes: ultimoIntento.sobrantes })
+      : null,
+    restanteMs: Math.max(0, Math.round(estado.restanteMs ?? 0)),
+    lectura: lecturaAccesiblePuzzle(reto, tMs),
   });
 }
 

@@ -310,3 +310,80 @@ test("prepareOrder puede devolver una promesa (#462: resolver un objetivo consul
   assert.deepEqual(bridge.calls, [["scanObject", "Lapur 1"]], "la resolución async llegó a la orden emitida");
   assert.deepEqual(vistos, [{ action: "scan_object", params: { callsign: "Lapur 1" }, nonce: "n" }]);
 });
+
+// --- Orden huérfana: relevo en plena resolución (#483) ----------------------
+
+test("una orden cuyo emisor cambió de puesto mientras se resolvía queda huérfana, no se ejecuta", async () => {
+  const bridge = fakeBridge();
+  let estacion = "sensors"; // el puesto que tenía AL EMITIR la orden
+  const huerfanas = [];
+  const resultados = [];
+  const errores = [];
+  await dispatchUserUpdate({
+    userDoc: { id: "u1" },
+    changes: {
+      flags: { [MOD]: { [STATION_ORDER_FLAG]: { action: "scan_object", params: { callsign: "Lapur 1" }, nonce: "n" } } },
+    },
+    moduleId: MOD,
+    // Se lee dos veces: una antes de prepareOrder (estacionEnEmision) y otra
+    // después (estacionAlProcesar). El propio prepareOrder simula el relevo
+    // ocurriendo DURANTE su await, como pasaría con #462 consultando el puente.
+    resolveUserStation: () => estacion,
+    bridge,
+    prepareOrder: ({ order }) =>
+      Promise.resolve().then(() => {
+        estacion = "weapons"; // el jugador se cambió de puesto mientras se resolvía
+        return { orden: order };
+      }),
+    onResult: (r) => resultados.push(r),
+    onError: (e) => errores.push(e),
+    onOrdenHuerfana: (ctx) => huerfanas.push(ctx),
+  });
+  assert.deepEqual(bridge.calls, [], "no se ejecuta ni bajo el puesto viejo ni bajo el nuevo");
+  assert.deepEqual(resultados, []);
+  assert.deepEqual(errores, []);
+  assert.equal(huerfanas.length, 1);
+  assert.deepEqual(huerfanas[0], {
+    userId: "u1",
+    order: { action: "scan_object", params: { callsign: "Lapur 1" }, nonce: "n" },
+    estacionEnEmision: "sensors",
+    estacionAlProcesar: "weapons",
+  });
+});
+
+test("sin cambio de puesto durante la resolución, la orden se ejecuta con normalidad", async () => {
+  const bridge = fakeBridge();
+  const huerfanas = [];
+  await dispatchUserUpdate({
+    userDoc: { id: "u1" },
+    changes: { flags: { [MOD]: { [STATION_ORDER_FLAG]: { action: "set_target_heading", params: { heading: 42 }, nonce: "n" } } } },
+    moduleId: MOD,
+    resolveUserStation: () => "navigation",
+    bridge,
+    onOrdenHuerfana: (ctx) => huerfanas.push(ctx),
+  });
+  assert.deepEqual(bridge.calls, [["setTargetHeading", 42]]);
+  assert.deepEqual(huerfanas, []);
+});
+
+test("de puesto A a ninguno (se levanta) durante la resolución también es huérfana, no solo A a B", async () => {
+  const bridge = fakeBridge();
+  let estacion = "navigation";
+  const huerfanas = [];
+  await dispatchUserUpdate({
+    userDoc: { id: "u1" },
+    changes: { flags: { [MOD]: { [STATION_ORDER_FLAG]: { action: "set_target_heading", params: { heading: 42 }, nonce: "n" } } } },
+    moduleId: MOD,
+    resolveUserStation: () => estacion,
+    bridge,
+    prepareOrder: ({ order }) =>
+      Promise.resolve().then(() => {
+        estacion = null;
+        return { orden: order };
+      }),
+    onOrdenHuerfana: (ctx) => huerfanas.push(ctx),
+  });
+  assert.deepEqual(bridge.calls, []);
+  assert.equal(huerfanas.length, 1);
+  assert.equal(huerfanas[0].estacionAlProcesar, null);
+});

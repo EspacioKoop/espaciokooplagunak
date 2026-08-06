@@ -29,36 +29,46 @@
   {{/if}}
 
   {{#if enOferta}}
-    <p class="lagunak-asistencia__intro">{{localize "LAGUNAK.Asistencia.EligeEnfoque"}}</p>
-    <ul class="lagunak-asistencia__enfoques">
-      {{#each oferta.enfoques}}
-        <li>
-          <button type="button" data-asistencia-enfoque="{{id}}" class="lagunak-asistencia__enfoque">
-            <span class="lagunak-asistencia__enfoque-nombre">{{localize claveNombre}}</span>
-            {{! El número va en TEXTO y no solo como barra: una barra sola no la
-                lee un lector de pantalla ni quien no distingue relleno de fondo. }}
-            {{#if conTirada}}
-              <span class="lagunak-asistencia__probabilidad">
-                {{localize "LAGUNAK.Asistencia.Favorable"}} {{favorable}}%
-              </span>
-            {{else}}
-              <span class="lagunak-asistencia__probabilidad">{{localize "LAGUNAK.Asistencia.SinTirada"}}</span>
-            {{/if}}
-            {{! El coste, pegado a la opción y no en una confirmación posterior:
-                pagar un espacio de conjuro por sorpresa es cómo se consigue que
-                nadie vuelva a usar la ayuda. }}
-            {{#if coste.espacio}}
-              <span class="lagunak-asistencia__coste">
-                {{localize "LAGUNAK.Asistencia.CosteEspacio"}}
-              </span>
-            {{/if}}
-          </button>
-        </li>
-      {{/each}}
-    </ul>
+    {{#if ofertaEsDestreza}}
+      {{! Sin dnd5e —o sin ficha— no hay enfoques entre los que elegir: la vía
+          «destreza» ofrece un único gesto, empezar, en vez de una lista de un
+          solo botón. }}
+      <p class="lagunak-asistencia__intro">{{localize "LAGUNAK.Asistencia.Reto.SinFicha"}}</p>
+      <button type="button" data-asistencia-destreza class="lagunak-asistencia__destreza">
+        {{localize "LAGUNAK.Asistencia.Reto.Empezar"}}
+      </button>
+    {{else}}
+      <p class="lagunak-asistencia__intro">{{localize "LAGUNAK.Asistencia.EligeEnfoque"}}</p>
+      <ul class="lagunak-asistencia__enfoques">
+        {{#each oferta.enfoques}}
+          <li>
+            <button type="button" data-asistencia-enfoque="{{id}}" class="lagunak-asistencia__enfoque">
+              <span class="lagunak-asistencia__enfoque-nombre">{{localize claveNombre}}</span>
+              {{! El número va en TEXTO y no solo como barra: una barra sola no la
+                  lee un lector de pantalla ni quien no distingue relleno de fondo. }}
+              {{#if conTirada}}
+                <span class="lagunak-asistencia__probabilidad">
+                  {{localize "LAGUNAK.Asistencia.Favorable"}} {{favorable}}%
+                </span>
+              {{else}}
+                <span class="lagunak-asistencia__probabilidad">{{localize "LAGUNAK.Asistencia.SinTirada"}}</span>
+              {{/if}}
+              {{! El coste, pegado a la opción y no en una confirmación posterior:
+                  pagar un espacio de conjuro por sorpresa es cómo se consigue que
+                  nadie vuelva a usar la ayuda. }}
+              {{#if coste.espacio}}
+                <span class="lagunak-asistencia__coste">
+                  {{localize "LAGUNAK.Asistencia.CosteEspacio"}}
+                </span>
+              {{/if}}
+            </button>
+          </li>
+        {{/each}}
+      </ul>
+    {{/if}}
   {{/if}}
 
-  {{#if enReto}}
+  {{#if retoEsTemporizacion}}
     <p class="lagunak-asistencia__intro">{{localize "LAGUNAK.Asistencia.Reto.Intro"}}</p>
     <div class="lagunak-asistencia__pista">
       <span class="lagunak-asistencia__zona" data-asistencia-zona
@@ -72,6 +82,82 @@
     <button type="button" data-asistencia-pulsar class="lagunak-asistencia__pulsar">
       {{localize "LAGUNAK.Asistencia.Reto.Pulsar"}}
     </button>
+  {{/if}}
+
+  {{#if retoEsSecuencia}}
+    <p class="lagunak-asistencia__intro">
+      {{#if reto.enMuestra}}
+        {{localize "LAGUNAK.Asistencia.Reto.Secuencia.Muestra"}}
+      {{else}}
+        {{localize "LAGUNAK.Asistencia.Reto.Secuencia.Entrada"}}
+      {{/if}}
+    </p>
+    {{! Los botones solo aparecen en la fase de entrada: mientras se muestra la
+        secuencia no hay nada que pulsar, solo mirar (y escuchar, vía lectura). }}
+    {{#unless reto.enMuestra}}
+      <p class="lagunak-asistencia__progreso">
+        {{reto.progreso}} / {{reto.longitud}}
+      </p>
+      <ul class="lagunak-asistencia__simbolos">
+        {{#each reto.simbolos}}
+          <li>
+            <button type="button" data-asistencia-simbolo="{{this}}" class="lagunak-asistencia__simbolo"
+              aria-label="{{localize "LAGUNAK.Asistencia.Reto.Secuencia.Simbolo"}} {{this}}"></button>
+          </li>
+        {{/each}}
+      </ul>
+    {{/unless}}
+    {{! El canal NO visual del reto: qué símbolo toca en la muestra, o cuánto
+        queda en la entrada. La misma razón que en temporización: un minijuego
+        que solo se juega viendo parpadear algo excluye a quien no lo ve.
+        Va directo en la plantilla y no por `pintarBarra`: la secuencia se
+        repinta con un `render()` completo en cada cambio, no a 60 Hz, así
+        que no hace falta el parcheo manual del DOM que sí necesita el cursor. }}
+    <p class="lagunak-asistencia__lectura" role="status" aria-live="polite">
+      {{#if reto.enMuestra}}
+        {{localize "LAGUNAK.Asistencia.Reto.Secuencia.LecturaMuestra"}}
+        {{reto.lectura.posicion}}/{{reto.lectura.deSecuencia}}
+      {{else}}
+        {{localize "LAGUNAK.Asistencia.Reto.Secuencia.LecturaEntrada"}}
+        {{reto.lectura.segundosRestantes}}s
+      {{/if}}
+    </p>
+  {{/if}}
+
+  {{#if retoEsPuzzle}}
+    <p class="lagunak-asistencia__intro">{{localize "LAGUNAK.Asistencia.Reto.Puzzle.Intro"}}</p>
+    {{! El objetivo se ve SIEMPRE, no hay que memorizarlo ni adivinarlo a
+        ciegas: la casilla marca "objetivo" con una clase aparte de
+        "encendida" para que ambos estados se distingan sin depender solo
+        del color. }}
+    <ul class="lagunak-asistencia__celdas">
+      {{#each reto.celdas}}
+        <li>
+          <button type="button" data-asistencia-celda="{{indice}}"
+            class="lagunak-asistencia__celda
+              {{#if objetivo}}lagunak-asistencia__celda--objetivo{{/if}}
+              {{#if encendida}}lagunak-asistencia__celda--encendida{{/if}}"
+            aria-pressed="{{encendida}}"
+            aria-label="{{localize "LAGUNAK.Asistencia.Reto.Puzzle.Celda"}} {{indice}}"></button>
+        </li>
+      {{/each}}
+    </ul>
+    <button type="button" data-asistencia-enviar class="lagunak-asistencia__enviar">
+      {{localize "LAGUNAK.Asistencia.Reto.Puzzle.Enviar"}}
+    </button>
+    {{! El canal NO visual: qué casillas hay que encender (en base 1, las
+        mismas que se ven marcadas), la cuenta atrás, y el resultado del
+        último envío si lo hay — un intento incompleto no cierra el reto,
+        así que sin este texto no habría forma de saber por qué sigue
+        abierto sin contar de nuevo las casillas a mano. }}
+    <p class="lagunak-asistencia__lectura" role="status" aria-live="polite">
+      {{localize "LAGUNAK.Asistencia.Reto.Puzzle.Lectura"}}
+      {{reto.lectura.posiciones}} — {{reto.lectura.segundosRestantes}}s
+      {{#if reto.ultimoIntento}}
+        · {{localize "LAGUNAK.Asistencia.Reto.Puzzle.UltimoIntento"}}
+        {{reto.ultimoIntento.aciertos}}/{{reto.ultimoIntento.sobrantes}}
+      {{/if}}
+    </p>
   {{/if}}
 
   {{#if cerrada}}

@@ -122,12 +122,27 @@ export const MUEBLES = Object.freeze([
     centro: [0, 2.9, 0.2 + i * 1.7],
     medidas: [12, 0.3, 1.6],
   })),
+  // El tramo `i===2` se sustituye más abajo por el hueco real de la puerta
+  // hacia el vestíbulo (#427/#508) — ver `PUERTA_CANTINA_HACIA_VESTIBULO`.
   ...fila(6, (i) => ({
     nombre: `paredIzq${i}`,
     color: CANTINA.mamparo,
     centro: [-5.2, 0.5, 0.2 + i * 1.7],
     medidas: [0.4, 5, 1.6],
-  })),
+  })).filter((_, i) => i !== 2),
+  // El dintel que queda sobre el hueco de la puerta: mismo tramo de muro que
+  // `paredIzq2`, pero solo por ENCIMA de la altura de puerta (1.6, misma
+  // proporción sobre la altura de la sala que `ALTURA_PUERTA`/`ALTURA` en
+  // `nave-sala-caja.mjs`) — por debajo queda libre de verdad, no una malla
+  // que se atraviesa por colisión sin verse. QA: hasta ahora este muro no
+  // tenía ningún hueco y la única puerta real de la cantina era invisible
+  // —un muro sólido que teletransportaba por debajo—, la única sala de la
+  // nave sin la puerta corredera que ya tienen el resto (#508 QA: "estilo
+  // Star Trek"). Las hojas correderas las pone `cantina-andar.mjs` (la
+  // cámara libre de #427); los planos fijos de #423 no miran nunca a este
+  // muro, así que para ellos es simplemente un hueco abierto, como una
+  // ventana sin cristal.
+  Object.freeze({ nombre: "dintelPuertaOeste", color: CANTINA.mamparo, centro: [-5.2, 2.3, 3.6], medidas: [0.4, 1.4, 1.6] }),
   ...fila(6, (i) => ({
     nombre: `paredDer${i}`,
     color: CANTINA.mamparo,
@@ -149,9 +164,15 @@ export const MUEBLES = Object.freeze([
     medidas: [1.3, 5, 0.5],
   })),
   Object.freeze({ nombre: "dintelEntrada", color: CANTINA.mamparo, centro: [0, 2.3, -2.6], medidas: [3.2, 1.4, 0.5] }),
-  // El vano de la puerta, iluminado desde el pasillo: es lo que dice «por aquí
-  // se sale» sin un cartel, y da una segunda fuente de luz al fondo opuesto.
-  Object.freeze({ nombre: "vanoEntrada", color: CANTINA.lampara, centro: [0, -0.1, -2.75], medidas: [3.0, 3.4, 0.12] }),
+  // Luz que se cuela por encima del dintel, desde el pasillo: da una segunda
+  // fuente de calor al fondo opuesto sin fingir una puerta que no lo es.
+  //
+  // QA (#508): esto medía 3.0×3.4 de suelo a dintel —EXACTAMENTE la silueta
+  // de una puerta abierta— y con la nave ya andable (#427) el hueco real por
+  // el que se sale está en el muro OESTE, no aquí. Una franja alta y delgada
+  // que no llega al suelo no se puede confundir con un hueco por el que
+  // caminar: es luz colándose por ARRIBA de una pared cerrada, no un vano.
+  Object.freeze({ nombre: "vanoEntrada", color: CANTINA.lampara, centro: [0, 1.55, -2.75], medidas: [2.4, 0.5, 0.12] }),
   // Costillas de la pared de entrada, para que no sea una plancha lisa.
   ...fila(2, (i) => ({
     nombre: `nervioEntrada${i}`,
@@ -400,6 +421,20 @@ export const MUEBLES = Object.freeze([
   Object.freeze({ nombre: "neon", color: CANTINA.neon, centro: [-4.2, 1.95, 6.45], medidas: [1.6, 0.28, 0.15] }),
 ]);
 
+/**
+ * El hueco de la puerta oeste, en el formato que pide `piezasHojaPuerta` de
+ * `nave-sala-caja.mjs` (mismo `base`/`y0`/`y1`/`alongX` que ya resuelve
+ * `abrirHuecosEnMuros` para las salas nuevas) — reutilizado por
+ * `cantina-andar.mjs` para dibujar sus hojas correderas SIN duplicar la
+ * geometría del hueco a mano en dos archivos.
+ */
+export const PUERTA_CANTINA_HACIA_VESTIBULO = Object.freeze({
+  base: Object.freeze({ x: -5.4, z: 2.8, ancho: 0.4, profundidad: 1.6 }),
+  y0: -2.0,
+  y1: 1.6,
+  alongX: false,
+});
+
 
 
 /**
@@ -541,6 +576,15 @@ export function componerCantina(opciones = {}) {
       yaw,
       pitch: encuadre.pitch,
       posicion: [0, 0, 0],
+      // Recorte de frustum completo (#510, QA: "no se veía nada a través de
+      // la ventana"): sin esto, un mueble visto de cerca en algunos planos
+      // dispara un vértice fuera del cuadro, y el polígono resultante infla
+      // sus coordenadas a decenas de miles de píxeles — tapando toda la
+      // pantalla, estrellas incluidas, aunque el hueco del ventanal esté
+      // vacío. Mismo arreglo que ya lleva la cámara libre de #427
+      // (`cantina-andar.mjs`, `nave-sala-caja.mjs`), aplicado aquí a los
+      // encuadres fijos.
+      recorteLateral: true,
     }),
   );
 

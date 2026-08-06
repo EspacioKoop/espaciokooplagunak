@@ -134,9 +134,31 @@ test("todos los planos enseñan sala y ofrecen algo que hacer", () => {
   // que si un encuadre no funciona no hay forma de que el jugador lo arregle.
   for (const plano of PLANOS) {
     const escena = componerCantina({ plano: plano.id });
-    assert.ok(escena.poligonos.length > 20, `el plano ${plano.id} está casi vacío`);
+    // El umbral bajó de 20 a 10 al arreglar #510 aquí (QA: "no se veía nada a
+    // través de la ventana"): el recuento viejo incluía un polígono inflado
+    // por un vértice sin recortar, que tapaba la pantalla entera y contaba
+    // como "sala visible" sin serlo. "ventanal" —mirando de frente al
+    // hueco— legítimamente enseña menos muro que el resto: es la cámara que
+    // más espacio vacío encuadra a propósito.
+    assert.ok(escena.poligonos.length > 10, `el plano ${plano.id} está casi vacío`);
     assert.ok(escena.opciones.length > 0, `el plano ${plano.id} no ofrece nada`);
     assert.equal(escena.plano, plano.id);
+  }
+});
+
+test("ningún polígono dispara sus coordenadas fuera del lienzo (#510, QA: no se veía nada por la ventana)", () => {
+  // Sin recorte lateral, un mueble visto de cerca dispara un vértice fuera
+  // del frustum y el polígono resultante infla sus coordenadas a decenas de
+  // miles de píxeles, tapando pantalla entera (estrellas incluidas) aunque
+  // el hueco del ventanal esté vacío de verdad. Mismo arreglo que ya lleva
+  // la cámara libre de #427.
+  for (const plano of PLANOS) {
+    const escena = componerCantina({ ancho: 640, alto: 360, plano: plano.id });
+    for (const poligono of escena.poligonos) {
+      for (const punto of poligono.puntos) {
+        assert.ok(Math.abs(punto.x) < 5000 && Math.abs(punto.y) < 5000, `${plano.id}: vértice disparado (${punto.x}, ${punto.y})`);
+      }
+    }
   }
 });
 

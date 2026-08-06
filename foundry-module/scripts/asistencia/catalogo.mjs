@@ -55,10 +55,15 @@ const BASE = [
     enfoques: [
       // (a) Reparar en caliente: el juego de herramientas de la ficha. Es el
       // enfoque que no gasta nada y por eso el que siempre está disponible.
-      { id: "reparar-en-caliente", clase: CLASES_ENFOQUE.PRUEBA, cd: 13 },
-      // (a) Recalcular márgenes: Arcana o Naturaleza. CD más alta porque es la
-      // vía del que no sabe de máquinas y lo suple con teoría.
-      { id: "recalcular-margenes", clase: CLASES_ENFOQUE.PRUEBA, cd: 15 },
+      // Herramientas de reparación como caso base: una mesa con otro juego de
+      // herramientas cambia la clave, no la mecánica.
+      { id: "reparar-en-caliente", clase: CLASES_ENFOQUE.PRUEBA, cd: 13, habilidad: "tool:tinker" },
+      // (a) Recalcular márgenes: Arcana (el enfoque solo puede leer UNA
+      // habilidad; "o Naturaleza" queda en la ficción de la tarjeta, no en el
+      // modificador — quien prefiera Naturaleza usa el enfoque como está y
+      // narra distinto, o una mesa clona el enfoque con otra clave). CD más
+      // alta porque es la vía del que no sabe de máquinas y lo suple con teoría.
+      { id: "recalcular-margenes", clase: CLASES_ENFOQUE.PRUEBA, cd: 15, habilidad: "skill:arc" },
       // (c) Reparar como conjuro: no hay a quién atacar ni CD que superar, así
       // que entra sin tirada, con banda fija y gastando recurso de verdad. Nunca
       // es crítico —el motor lo prohíbe— porque un efecto garantizado no compra
@@ -80,14 +85,18 @@ const BASE = [
     puestoAsistido: "navigation",
     accionPropuesta: "set_impulse",
     dificultad: 13,
+    // Cadencia es memoria de orden tanto como precisión de instante: la
+    // secuencia encaja mejor que la temporización con lo que la ficción ya
+    // describe (#500 amplía el repertorio de minijuegos de destreza).
+    minijuegoDestreza: "secuencia",
     enfoques: [
-      // (a) Coordinar la cadencia: Interpretación o Acrobacias. Cantar el ritmo
-      // de la maniobra es ayudar sin tocar los mandos, que es exactamente lo que
+      // (a) Coordinar la cadencia: Interpretación. Cantar el ritmo de la
+      // maniobra es ayudar sin tocar los mandos, que es exactamente lo que
       // «asistir» significa aquí.
-      { id: "coordinar-cadencia", clase: CLASES_ENFOQUE.PRUEBA, cd: 13 },
+      { id: "coordinar-cadencia", clase: CLASES_ENFOQUE.PRUEBA, cd: 13, habilidad: "skill:prf" },
       // (a) Leer la deriva: Percepción. Misma clase, otra ficción y otra hoja
       // que la aprovecha — de eso va ofrecer más de un enfoque.
-      { id: "leer-deriva", clase: CLASES_ENFOQUE.PRUEBA, cd: 14 },
+      { id: "leer-deriva", clase: CLASES_ENFOQUE.PRUEBA, cd: 14, habilidad: "skill:prc" },
     ],
   },
   {
@@ -102,8 +111,8 @@ const BASE = [
     accionPropuesta: null,
     dificultad: 13,
     enfoques: [
-      { id: "leer-el-patron", clase: CLASES_ENFOQUE.PRUEBA, cd: 13 },
-      { id: "corazonada", clase: CLASES_ENFOQUE.PRUEBA, cd: 15 },
+      { id: "leer-el-patron", clase: CLASES_ENFOQUE.PRUEBA, cd: 13, habilidad: "skill:inv" },
+      { id: "corazonada", clase: CLASES_ENFOQUE.PRUEBA, cd: 15, habilidad: "skill:ins" },
     ],
   },
 ];

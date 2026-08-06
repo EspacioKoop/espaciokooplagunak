@@ -121,6 +121,126 @@ test("el segundo clic en un enfoque sin tirada no manda un resolver de más", ()
   assert.equal(flags.filter((f) => f.tipo === "resolver").length, enviados);
 });
 
+/** Deja la ventana en OFERTA por la vía «destreza»: sin enfoques que elegir. */
+function conOfertaDestreza(minijuegoDestreza = "temporizacion") {
+  const nonce = pidiendoAyuda();
+  Hooks.callAll("lagunakAsistenciaOferta", {
+    nonce,
+    oferta: { via: "destreza", minijuegoDestreza, enfoques: [] },
+  });
+  return nonce;
+}
+
+test("la vía destreza llega sin enfoques: la ventana lo marca para ofrecer empezar directo", () => {
+  conOfertaDestreza();
+  const contexto = ui.contextoAsistencia();
+  assert.equal(contexto.enOferta, true);
+  assert.equal(contexto.ofertaEsDestreza, true);
+  assert.equal(contexto.oferta.enfoques.length, 0);
+});
+
+test("empezar destreza sin minijuego declarado arranca temporización (compatibilidad)", () => {
+  conOfertaDestreza();
+  ui.empezarDestrezaDesdeVentana();
+  const contexto = ui.contextoAsistencia();
+  assert.equal(contexto.enReto, true);
+  assert.equal(contexto.retoEsTemporizacion, true);
+  assert.equal(contexto.retoEsSecuencia, false);
+  assert.ok(typeof contexto.reto.cursor === "number", "es la forma del reto de temporización");
+});
+
+test("empezar destreza con minijuego de secuencia arranca secuencia, no temporización", () => {
+  conOfertaDestreza("secuencia");
+  ui.empezarDestrezaDesdeVentana();
+  const contexto = ui.contextoAsistencia();
+  assert.equal(contexto.retoEsSecuencia, true);
+  assert.equal(contexto.retoEsTemporizacion, false);
+  assert.ok(contexto.reto.longitud > 0, "es la forma del reto de secuencia");
+});
+
+test("empezar destreza fuera de una oferta de esa vía no hace nada", () => {
+  conOfertaSinTirada();
+  ui.empezarDestrezaDesdeVentana();
+  assert.equal(ui.contextoAsistencia().enOferta, true, "sigue en oferta: no había vía destreza que empezar");
+});
+
+test("un símbolo que no encaja en secuencia cierra el reto y manda el resultado al coordinador", () => {
+  const nonce = conOfertaDestreza("secuencia");
+  ui.empezarDestrezaDesdeVentana();
+  // Semilla determinista del reto: nonce fijo del arnés + ":destreza". El
+  // primer símbolo de esa secuencia no es 0, así que un solo clic ya rompe la
+  // cadena y cierra — no hace falta conocer la secuencia entera para probar
+  // que el gesto llega hasta `resolverAsistencia`.
+  ui.elegirSimboloDesdeVentana(0);
+  const contexto = ui.contextoAsistencia();
+  assert.equal(contexto.esperando, true);
+  assert.equal(flags.at(-1).tipo, "resolver");
+  assert.equal(flags.at(-1).nonce, nonce);
+});
+
+test("elegir símbolo fuera de un reto de secuencia no hace nada", () => {
+  conOfertaDestreza("temporizacion");
+  ui.empezarDestrezaDesdeVentana();
+  const antes = flags.length;
+  ui.elegirSimboloDesdeVentana(0);
+  assert.equal(flags.length, antes, "el reto activo es de temporización, no de secuencia");
+});
+
+test("empezar destreza con minijuego de puzzle arranca puzzle, no otro tipo", () => {
+  conOfertaDestreza("puzzle");
+  ui.empezarDestrezaDesdeVentana();
+  const contexto = ui.contextoAsistencia();
+  assert.equal(contexto.retoEsPuzzle, true);
+  assert.equal(contexto.retoEsSecuencia, false);
+  assert.equal(contexto.retoEsTemporizacion, false);
+  assert.ok(Array.isArray(contexto.reto.celdas), "es la forma del reto de puzzle");
+});
+
+test("alternar una celda no cierra el reto: solo enviar lo juzga", () => {
+  conOfertaDestreza("puzzle");
+  ui.empezarDestrezaDesdeVentana();
+  ui.alternarCeldaDesdeVentana(2);
+  const contexto = ui.contextoAsistencia();
+  assert.equal(contexto.enReto, true, "sigue en el reto: alternar no envía");
+  assert.equal(contexto.reto.celdas[2].encendida, true);
+  ui.alternarCeldaDesdeVentana(2);
+  assert.equal(ui.contextoAsistencia().reto.celdas[2].encendida, false, "alternar dos veces vuelve a apagar");
+});
+
+test("enviar un patrón incompleto no cierra el reto: se puede seguir intentando", () => {
+  conOfertaDestreza("puzzle");
+  ui.empezarDestrezaDesdeVentana();
+  const antes = flags.length;
+  ui.enviarPuzzleDesdeVentana(); // panel vacío, nunca acierta
+  assert.equal(ui.contextoAsistencia().enReto, true, "un envío incompleto no cierra");
+  assert.equal(flags.length, antes, "y no manda nada al coordinador todavía");
+  assert.ok(ui.contextoAsistencia().reto.ultimoIntento, "pero deja constancia del intento");
+});
+
+test("enviar el patrón exacto cierra el reto y manda el resultado al coordinador", () => {
+  // Semilla determinista del reto: nonce fijo del arnés + ":destreza". Con
+  // esa semilla (dificultad normal) el patrón objetivo enciende las
+  // casillas 2, 4 y 5 (índice 0).
+  const nonce = conOfertaDestreza("puzzle");
+  ui.empezarDestrezaDesdeVentana();
+  for (const indice of [2, 4, 5]) ui.alternarCeldaDesdeVentana(indice);
+  ui.enviarPuzzleDesdeVentana();
+  const contexto = ui.contextoAsistencia();
+  assert.equal(contexto.esperando, true);
+  assert.equal(flags.at(-1).tipo, "resolver");
+  assert.equal(flags.at(-1).nonce, nonce);
+  assert.equal(flags.at(-1).banda, BANDAS.CRITICO);
+});
+
+test("alternar o enviar fuera de un reto de puzzle no hace nada", () => {
+  conOfertaDestreza("secuencia");
+  ui.empezarDestrezaDesdeVentana();
+  const antes = flags.length;
+  ui.alternarCeldaDesdeVentana(0);
+  ui.enviarPuzzleDesdeVentana();
+  assert.equal(flags.length, antes, "el reto activo es de secuencia, no de puzzle");
+});
+
 test("la barra se repinta sin re-renderizar la ventana", () => {
   // Un `render()` por fotograma reconstruiría la ventana entera y tiraría el
   // foco del teclado 60 veces por segundo.

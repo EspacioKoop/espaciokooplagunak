@@ -168,14 +168,18 @@ formales y grafo de dependencias explícito:
 Este grafo valida el criterio de salida de agencia, pero no cierra por sí solo
 toda la Etapa B. Sus otros frentes están trazados en #479: #480 (navegación
 operacional — **satisfecho**, ver
+[`VERIFICACION-NAVEGACION-Y-AUTOMATIZACION.md`](VERIFICACION-NAVEGACION-Y-AUTOMATIZACION.md)
+y [`SESION-NAVEGACION-OPERACIONAL.md`](SESION-NAVEGACION-OPERACIONAL.md):
+`set_target_heading`/`set_impulse`/`set_warp` ya son una decisión exclusiva
+del puesto que cambia el resultado de un encuentro), #481 (automatización de
+puestos vacíos — **verificado: no existe automatización nativa**, sistema sin
+tripulación queda congelado en su último valor; pendiente de diseño propio si
+se decide construirla, ver
 [`VERIFICACION-NAVEGACION-Y-AUTOMATIZACION.md`](VERIFICACION-NAVEGACION-Y-AUTOMATIZACION.md)),
-#481 (automatización de puestos vacíos — **verificado: no existe
-automatización nativa**, sistema sin tripulación queda congelado en su último
-valor; pendiente de diseño propio si se decide construirla, ver el mismo
-documento), #482 (alarmas compartidas por dependencia entre sistemas), #483
-(guardias y relevo) y #484 (crisis que exijan coordinación entre al menos tres
-puestos, depende de #462–#465). Antes de declarar la etapa completada deben
-quedar todos trazados y satisfechos.
+#482 (alarmas compartidas por dependencia entre sistemas), #483 (guardias y
+relevo) y #484 (crisis que exijan coordinación entre al menos tres puestos,
+depende de #462–#465). Antes de declarar la etapa completada deben quedar
+todos trazados y satisfechos.
 
 ### Etapa C — Nave persistente y progresión
 

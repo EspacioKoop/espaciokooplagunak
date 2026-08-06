@@ -21,10 +21,22 @@
 //
 // ## Por qué el reto se repinta a mano y no re-renderizando
 //
-// El cursor se mueve a 60 Hz. Un `render()` de Foundry por fotograma reconstruye
-// la ventana entera, tira el foco del teclado y convierte un minijuego de
-// precisión en una presentación de diapositivas. Se toca el DOM de la barra
-// directamente y se deja el render para los cambios de fase, que son cuatro.
+// El cursor de temporización se mueve a 60 Hz. Un `render()` de Foundry por
+// fotograma reconstruye la ventana entera, tira el foco del teclado y
+// convierte un minijuego de precisión en una presentación de diapositivas. Se
+// toca el DOM de la barra directamente y se deja el render para los cambios
+// de fase.
+//
+// ## Varios motores de destreza, no uno (#500)
+//
+// Junto a la temporización (reflejos) están la secuencia (memoria de orden)
+// y el puzzle (deducción sobre un patrón siempre visible). Ninguna se mueve a
+// 60 Hz —la secuencia cambia de símbolo unas pocas veces por segundo, el
+// puzzle solo cuando alguien toca una casilla o envía—, así que ambas usan
+// `render()` completo en cada cambio: es barato a esa cadencia y evita
+// duplicar el parcheo manual de DOM que sí necesita la barra de
+// temporización. Qué motor usar lo decide la tarea (`minijuegoDestreza` en el
+// catálogo), no quien ayuda.
 
 import {
   HOOK_OFERTA,
@@ -35,8 +47,29 @@ import {
   tareasParaPuesto,
 } from "./asistencia-wiring.mjs";
 import { STATIONS } from "./station-assignment.mjs";
-import { crearReto, resolverExpiracion, resolverPulsacion } from "./asistencia/temporizacion.mjs";
-import { FASES, vistaCierre, vistaOferta, vistaReto, vistaTareas } from "./asistencia/vista.mjs";
+import {
+  crearReto as crearRetoTemporizacion,
+  resolverExpiracion as resolverExpiracionTemporizacion,
+  resolverPulsacion,
+} from "./asistencia/temporizacion.mjs";
+import {
+  crearReto as crearRetoSecuencia,
+  resolverIntentos as resolverIntentosSecuencia,
+} from "./asistencia/secuencia.mjs";
+import {
+  crearReto as crearRetoPuzzle,
+  resolverEnvio as resolverEnvioPuzzle,
+  resolverExpiracion as resolverExpiracionPuzzle,
+} from "./asistencia/puzzle.mjs";
+import {
+  FASES,
+  vistaCierre,
+  vistaOferta,
+  vistaReto,
+  vistaRetoPuzzle,
+  vistaRetoSecuencia,
+  vistaTareas,
+} from "./asistencia/vista.mjs";
 
 let moduloConfigurado = null;
 let ventana = null;
@@ -53,6 +86,18 @@ const estado = {
   oferta: null,
   cierre: null,
   reto: null,
+  // "temporizacion" | "secuencia" | "puzzle" | null. Fija qué motor y qué
+  // plantilla del reto se usan; no se puede leer del `reto` en sí porque
+  // cada motor devuelve objetos con forma distinta a propósito (#500).
+  tipoReto: null,
+  // Solo lo usa la secuencia: los símbolos pulsados en orden hasta ahora. La
+  // temporización no acumula nada entre pulsaciones.
+  intentos: [],
+  // Solo lo usa el puzzle: qué casillas están encendidas AHORA (se puede
+  // seguir tocando entre envíos), y el resultado del último envío, para dar
+  // pista sin cerrar el reto.
+  panel: [],
+  ultimoIntentoPuzzle: null,
   enfoqueId: null,
   bucle: null,
 };
@@ -66,6 +111,10 @@ function reiniciar() {
     oferta: null,
     cierre: null,
     reto: null,
+    tipoReto: null,
+    intentos: [],
+    panel: [],
+    ultimoIntentoPuzzle: null,
     enfoqueId: null,
   });
 }
@@ -121,13 +170,28 @@ export function contextoAsistencia({ tareas = tareasDisponibles() } = {}) {
     enMenu: estado.fase === FASES.MENU,
     esperando: estado.fase === FASES.ESPERANDO,
     enOferta: estado.fase === FASES.OFERTA,
+    // La vía «destreza» no tiene enfoques que elegir (la oferta llega con la
+    // lista vacía): en esa vía la ventana ofrece un único botón que empieza
+    // el reto directamente, no una lista.
+    ofertaEsDestreza: estado.fase === FASES.OFERTA && estado.oferta?.via === "destreza",
     enReto: estado.fase === FASES.RETO,
+    retoEsSecuencia: estado.fase === FASES.RETO && estado.tipoReto === "secuencia",
+    retoEsPuzzle: estado.fase === FASES.RETO && estado.tipoReto === "puzzle",
+    retoEsTemporizacion: estado.fase === FASES.RETO && estado.tipoReto === "temporizacion",
     cerrada: estado.fase === FASES.CERRADA,
     tareas: vistaTareas(tareas),
     oferta: estado.oferta,
     cierre: estado.cierre,
-    reto: estado.reto ? vistaReto(estado.reto, ahora()) : null,
+    reto: vistaDelRetoActual(),
   };
+}
+
+/** Qué vista de reto corresponde al motor activo ahora mismo, o `null` fuera de FASES.RETO. */
+function vistaDelRetoActual() {
+  if (estado.fase !== FASES.RETO || !estado.reto) return null;
+  if (estado.tipoReto === "secuencia") return vistaRetoSecuencia(estado.reto, estado.intentos, ahora());
+  if (estado.tipoReto === "puzzle") return vistaRetoPuzzle(estado.reto, estado.panel, estado.ultimoIntentoPuzzle, ahora());
+  return vistaReto(estado.reto, ahora());
 }
 
 /**
@@ -188,16 +252,95 @@ export function elegirEnfoqueDesdeVentana(enfoqueId) {
   // La semilla sale del nonce, que lo repartió el coordinador: el reto es el
   // mismo que habría salido en cualquier otra pantalla, y nadie puede repetirlo
   // hasta que le toque una zona cómoda.
-  estado.reto = crearReto({ semilla: `${estado.nonce}:${enfoqueId}`, inicioMs: ahora() });
+  estado.reto = crearRetoTemporizacion({ semilla: `${estado.nonce}:${enfoqueId}`, inicioMs: ahora() });
+  estado.tipoReto = "temporizacion";
+  estado.fase = FASES.RETO;
+  repintar();
+  arrancarBucle();
+}
+
+/**
+ * Empezar el reto de destreza directamente, sin elegir enfoque antes.
+ *
+ * Existe porque la vía «destreza» —sin ficha, o sin dnd5e— llega con la lista
+ * de enfoques vacía a propósito (`resolucionDisponible`): no hay entre qué
+ * elegir, así que la ventana no ofrece una lista de un solo botón, ofrece
+ * empezar. Qué motor usar lo decidió la tarea, no quien ayuda.
+ */
+const CREADORES_RETO_DESTREZA = Object.freeze({
+  secuencia: crearRetoSecuencia,
+  puzzle: crearRetoPuzzle,
+  temporizacion: crearRetoTemporizacion,
+});
+
+export function empezarDestrezaDesdeVentana() {
+  if (estado.fase !== FASES.OFERTA || estado.oferta?.via !== "destreza") return;
+  estado.enfoqueId = null;
+  const tipo = CREADORES_RETO_DESTREZA[estado.oferta.minijuegoDestreza] ? estado.oferta.minijuegoDestreza : "temporizacion";
+  const semilla = `${estado.nonce}:destreza`;
+  estado.tipoReto = tipo;
+  estado.intentos = [];
+  estado.panel = [];
+  estado.ultimoIntentoPuzzle = null;
+  estado.reto = CREADORES_RETO_DESTREZA[tipo]({ semilla, inicioMs: ahora() });
   estado.fase = FASES.RETO;
   repintar();
   arrancarBucle();
 }
 
 function alPulsar() {
-  if (estado.fase !== FASES.RETO || !estado.reto) return;
+  if (estado.fase !== FASES.RETO || estado.tipoReto !== "temporizacion" || !estado.reto) return;
   const resultado = resolverPulsacion(estado.reto, ahora());
   cerrarReto(resultado);
+}
+
+/**
+ * Pulsar un símbolo del reto de secuencia. Cada pulsación se acumula sobre
+ * las anteriores —el motor es puro y no recuerda nada por su cuenta— y solo
+ * cierra el reto cuando `resolverIntentos` dice que la cadena ya se cerró:
+ * completa, fallada, o el tiempo la cerró por su cuenta.
+ */
+export function elegirSimboloDesdeVentana(simbolo) {
+  if (estado.fase !== FASES.RETO || estado.tipoReto !== "secuencia" || !estado.reto) return;
+  estado.intentos = [...estado.intentos, Number(simbolo)];
+  const resultado = resolverIntentosSecuencia(estado.reto, estado.intentos, ahora());
+  if (resultado.cerrado) {
+    cerrarReto(resultado);
+    return;
+  }
+  repintar();
+}
+
+/**
+ * Encender o apagar una casilla del puzzle. No resuelve nada por sí sola
+ * —el patrón objetivo está siempre visible, así que tocar una casilla es
+ * solo decidir, no arriesgar—: hace falta el gesto de enviar para que el
+ * motor la juzgue.
+ */
+export function alternarCeldaDesdeVentana(indice) {
+  if (estado.fase !== FASES.RETO || estado.tipoReto !== "puzzle" || !estado.reto) return;
+  const i = Number(indice);
+  const panel = [...estado.panel];
+  panel[i] = !panel[i];
+  estado.panel = panel;
+  repintar();
+}
+
+/**
+ * Enviar el panel actual a juicio. A diferencia de secuencia o precisión,
+ * un envío que no acierta del todo NO cierra el reto —se puede seguir
+ * ajustando dentro del límite de tiempo—; solo cierra cuando el motor dice
+ * que el patrón es exacto, o cuando el tiempo ya se agotó.
+ */
+export function enviarPuzzleDesdeVentana() {
+  if (estado.fase !== FASES.RETO || estado.tipoReto !== "puzzle" || !estado.reto) return;
+  const resultado = resolverEnvioPuzzle(estado.reto, estado.panel, ahora());
+  estado.ultimoIntentoPuzzle = resultado;
+  if (resultado.cerrado) {
+    cerrarReto(resultado);
+    return;
+  }
+  repintar();
 }
 
 function cerrarReto(resultado) {
@@ -216,22 +359,63 @@ function detenerBucle() {
   estado.bucle = null;
 }
 
+/**
+ * El bucle repinta a dos ritmos distintos a propósito. La temporización se
+ * mueve a 60 Hz y por eso pinta la barra a mano en cada fotograma —un
+ * `render()` completo tiraría el foco 60 veces por segundo—. La secuencia
+ * cambia de símbolo activo unas pocas veces por segundo, así que un
+ * `render()` completo solo cuando ese símbolo (o la fase) cambia es barato y
+ * más simple que replicar el mismo pintado a mano para un reto que no lo
+ * necesita.
+ */
 function arrancarBucle() {
   detenerBucle();
   // Sin `requestAnimationFrame` (v11 en algunos hosts, y los tests) el reto no
-  // se anima, pero SIGUE siendo jugable: la barra se queda quieta y la pulsación
-  // se resuelve igual contra el reloj. Degradar es preferible a no ofrecerlo.
+  // se anima, pero SIGUE siendo jugable: el reto se queda quieto y la
+  // pulsación se resuelve igual contra el reloj. Degradar es preferible a no
+  // ofrecerlo.
   if (typeof globalThis.requestAnimationFrame !== "function") return;
+
+  let ultimaFase = null;
+  let ultimoSimbolo = null;
+  let ultimoSegundo = null;
 
   const paso = () => {
     if (estado.fase !== FASES.RETO || !estado.reto) return;
-    const vista = vistaReto(estado.reto, ahora());
-    pintarBarra(vista);
-    if (vista.lectura.expirado) {
-      // Se cierra solo: nadie puede dejar una asistencia abierta ocupando el
-      // presupuesto del puesto indefinidamente.
-      cerrarReto(resolverExpiracion());
-      return;
+
+    if (estado.tipoReto === "secuencia") {
+      const vista = vistaRetoSecuencia(estado.reto, estado.intentos, ahora());
+      if (vista.fase !== ultimaFase || vista.simboloActivo !== ultimoSimbolo) {
+        ultimaFase = vista.fase;
+        ultimoSimbolo = vista.simboloActivo;
+        repintar();
+      }
+      if (vista.lectura.expirado) {
+        // Se cierra solo: nadie puede dejar una asistencia abierta ocupando el
+        // presupuesto del puesto indefinidamente.
+        cerrarReto(resolverIntentosSecuencia(estado.reto, estado.intentos, ahora()));
+        return;
+      }
+    } else if (estado.tipoReto === "puzzle") {
+      // El panel solo cambia por gesto (alternar/enviar), no por el paso del
+      // tiempo: aquí solo hace falta vigilar la cuenta atrás y cerrar solo si
+      // se agota sin acertar.
+      const vista = vistaRetoPuzzle(estado.reto, estado.panel, estado.ultimoIntentoPuzzle, ahora());
+      if (vista.lectura.segundosRestantes !== ultimoSegundo) {
+        ultimoSegundo = vista.lectura.segundosRestantes;
+        repintar();
+      }
+      if (vista.lectura.expirado) {
+        cerrarReto(resolverExpiracionPuzzle(estado.reto));
+        return;
+      }
+    } else {
+      const vista = vistaReto(estado.reto, ahora());
+      pintarBarra(vista);
+      if (vista.lectura.expirado) {
+        cerrarReto(resolverExpiracionTemporizacion());
+        return;
+      }
     }
     estado.bucle = globalThis.requestAnimationFrame(paso);
   };
@@ -290,7 +474,15 @@ function conectar(raiz) {
   nodo?.querySelectorAll?.("[data-asistencia-enfoque]").forEach((boton) => {
     boton.addEventListener("click", () => elegirEnfoqueDesdeVentana(boton.dataset.asistenciaEnfoque));
   });
+  nodo?.querySelector?.("[data-asistencia-destreza]")?.addEventListener("click", empezarDestrezaDesdeVentana);
   nodo?.querySelector?.("[data-asistencia-pulsar]")?.addEventListener("click", alPulsar);
+  nodo?.querySelectorAll?.("[data-asistencia-simbolo]").forEach((boton) => {
+    boton.addEventListener("click", () => elegirSimboloDesdeVentana(boton.dataset.asistenciaSimbolo));
+  });
+  nodo?.querySelectorAll?.("[data-asistencia-celda]").forEach((boton) => {
+    boton.addEventListener("click", () => alternarCeldaDesdeVentana(boton.dataset.asistenciaCelda));
+  });
+  nodo?.querySelector?.("[data-asistencia-enviar]")?.addEventListener("click", enviarPuzzleDesdeVentana);
   nodo?.querySelector?.("[data-asistencia-volver]")?.addEventListener("click", () => {
     reiniciar();
     repintar();

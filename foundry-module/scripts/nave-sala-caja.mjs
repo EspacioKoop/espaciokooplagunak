@@ -315,6 +315,11 @@ export function crearSalaCaja({
         // contenido nuevo sin cámaras afinadas a ojo que dependan del recorte
         // laxo — activarlo aquí es justo el caso seguro que #510 documenta.
         recorteLateral: true,
+        // Luz fija en el mundo, no en la cámara (QA: "las paredes cambian de
+        // iluminación sin sentido al girar"): aquí `yaw` es el giro de la
+        // CÁMARA fingido rotando el mundo al revés, no el giro de una pieza
+        // en una vitrina — ver el comentario de `luzFija` en `retro3d.mjs`.
+        luzFija: true,
       }),
     );
 

@@ -70,6 +70,11 @@ export function componerCantinaAndar(x, y, z, yaw, opciones = {}) {
       // sin el recorte, un mueble ancho visto de cerca dispara un vértice
       // fuera de pantalla igual que el pasillo de #508.
       recorteLateral: true,
+      // Luz fija en el mundo, no en la cámara (QA: "las paredes cambian de
+      // iluminación sin sentido al girar") — mismo motivo que el recorte
+      // lateral: esta es la cámara LIBRE de #427, no un encuadre fijo, así
+      // que `yaw` es el giro del jugador y la luz no puede seguirlo.
+      luzFija: true,
     }),
   );
 

@@ -126,6 +126,43 @@ test("REGRESIÓN: con recorteLateral, ningún punto proyectado se dispara fuera 
   }
 });
 
+// REGRESIÓN (QA sobre #508/#509: "las paredes van cambiando de iluminación
+// sin sentido al girar"). Sin `luzFija`, la normal de cada cara sale de los
+// vértices YA girados por `yaw` — correcto para una pieza que rota delante
+// de una cámara fija (`girarNave`, dados, cartas: el efecto de "vitrina bajo
+// una luz" es intencional), pero en el bucle de andar ese `yaw` no es el
+// giro de la pieza: es el giro de la CÁMARA fingido rotando el mundo al
+// revés, así que la luz (un vector fijo) queda pegada a hacia dónde mira el
+// jugador en vez de fija en el mundo.
+// Devanado en sentido antihorario visto DESDE la cámara (mirando hacia +z):
+// con el orden [0,1,2,3] la cara mira hacia -z (de espaldas al origen) y se
+// descarta por completo, así que estos tests no verían ningún polígono. Con
+// GameCube (16 tonos, no los 4 de PSX por defecto) para que el cambio de
+// intensidad no caiga por casualidad en el mismo escalón en los dos ángulos.
+test("sin luzFija, el sombreado de una pared cambia solo con girar la cámara (el comportamiento de una vitrina)", () => {
+  const pared = {
+    vertices: [[-2, -2, 5], [2, -2, 5], [2, 2, 5], [-2, 2, 5]],
+    caras: [[3, 2, 1, 0]],
+  };
+  const mirandoDeFrente = componerEscena(pared, { yaw: 0, posicion: [0, 0, 0], epoca: "gamecube" });
+  const girada = componerEscena(pared, { yaw: 0.6, posicion: [0, 0, 0], epoca: "gamecube" });
+  assert.equal(mirandoDeFrente.poligonos.length, 1);
+  assert.equal(girada.poligonos.length, 1);
+  assert.notEqual(mirandoDeFrente.poligonos[0].color, girada.poligonos[0].color);
+});
+
+test("con luzFija, una pared quieta en el mundo se ve igual de iluminada gire lo que gire la cámara", () => {
+  const pared = {
+    vertices: [[-2, -2, 5], [2, -2, 5], [2, 2, 5], [-2, 2, 5]],
+    caras: [[3, 2, 1, 0]],
+  };
+  const mirandoDeFrente = componerEscena(pared, { yaw: 0, posicion: [0, 0, 0], epoca: "gamecube", luzFija: true });
+  const girada = componerEscena(pared, { yaw: 0.6, posicion: [0, 0, 0], epoca: "gamecube", luzFija: true });
+  assert.equal(mirandoDeFrente.poligonos.length, 1);
+  assert.equal(girada.poligonos.length, 1);
+  assert.equal(mirandoDeFrente.poligonos[0].color, girada.poligonos[0].color);
+});
+
 test("se pinta de lejos a cerca: el orden por pintor", () => {
   // Sin z-buffer el orden ES el algoritmo de visibilidad, no una optimización.
   const escena = componerEscena(MALLA_CAZA, { yaw: 0.7, pitch: 0.3 });

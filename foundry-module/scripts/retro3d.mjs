@@ -483,7 +483,24 @@ export function componerEscena(malla, opciones = {}) {
     // el plano cercano y puede dejar los tres primeros casi alineados, lo que
     // daría una normal basura y un parpadeo de sombreado justo al pasar rozando
     // la cámara — que es cuando más se nota.
-    const normal = normalizar(cruz(resta(crudos[1], crudos[0]), resta(crudos[2], crudos[0])));
+    //
+    // `luzFija` (QA: "las paredes van cambiando de iluminación sin sentido al
+    // girar") decide DE QUÉ VÉRTICES sale esa normal. Por defecto sale de
+    // `crudos` —ya girados por `yaw`/`pitch`/`roll`—, y eso es lo correcto
+    // para una pieza que ROTA delante de una cámara fija (`girarNave`, dados,
+    // cartas: el efecto de "vitrina bajo una luz" es intencional, y por eso
+    // no se toca por defecto). Pero en el bucle de andar ese mismo `yaw` no es
+    // el giro de la pieza: es el giro de la CÁMARA fingido rotando el mundo
+    // al revés (ver la cabecera de `nave-sala-caja.mjs`) — con la normal
+    // saliendo de vértices ya girados así, la luz (un vector fijo, sin
+    // contrarrotar) queda pegada a hacia dónde mira el jugador, como un
+    // frontal en la cabeza, en vez de fija en el mundo. `luzFija: true` toma
+    // la normal de los vértices SIN ese giro de cámara —siguen ahí, en
+    // `vertices`, porque el giro se aplica en `enCamara` y no in-place—, que
+    // es la orientación real e inmóvil de la pared en el mundo.
+    const baseNormal = opciones.luzFija ? cara.map((indice) => vertices[indice]).filter(Boolean) : crudos;
+    if (baseNormal.length < 3) continue;
+    const normal = normalizar(cruz(resta(baseNormal[1], baseNormal[0]), resta(baseNormal[2], baseNormal[0])));
 
     const puntos = recortada.map((v) => proyectar(v, { ancho, alto, f, rejilla: ajustes.rejilla }));
 

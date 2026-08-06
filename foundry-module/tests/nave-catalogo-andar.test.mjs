@@ -7,13 +7,59 @@ import { PLANTA_PRUEBA } from "../scripts/nave-movimiento-sala-prueba.mjs";
 import { PLANTA_CANTINA } from "../scripts/cantina-planta.mjs";
 import { CATALOGO_ANDAR } from "../scripts/nave-catalogo-andar.mjs";
 
-test("CATALOGO_ANDAR conoce las cuatro estancias", () => {
-  assert.deepEqual(CATALOGO_ANDAR.ids, ["a", "b", "cantina", "ingenieria"]);
+test("CATALOGO_ANDAR conoce las diez estancias", () => {
+  assert.deepEqual(CATALOGO_ANDAR.ids, [
+    "a",
+    "b",
+    "cantina",
+    "ingenieria",
+    "pasillo-puente",
+    "mando",
+    "navegacion",
+    "sensores",
+    "comunicaciones",
+    "armas",
+  ]);
 });
 
-test("la sala 'a' tiene tres puertas: a 'b', a la cantina y a ingeniería", () => {
+test("la sala 'a' tiene cuatro puertas: a 'b', a la cantina, a ingeniería y al pasillo del puente", () => {
   const destinos = CATALOGO_ANDAR.obtener("a").puertas.map((p) => p.destino.estancia);
-  assert.deepEqual(destinos.sort(), ["b", "cantina", "ingenieria"]);
+  assert.deepEqual(destinos.sort(), ["b", "cantina", "ingenieria", "pasillo-puente"]);
+});
+
+test("el pasillo del puente tiene una puerta a 'a' y una por cada una de las cinco estaciones", () => {
+  const destinos = CATALOGO_ANDAR.obtener("pasillo-puente").puertas.map((p) => p.destino.estancia);
+  assert.deepEqual(destinos.sort(), ["a", "armas", "comunicaciones", "mando", "navegacion", "sensores"]);
+});
+
+test("se puede ir y volver entre 'a' y el pasillo del puente sin colisionar ni reactivar la puerta", () => {
+  const puerta = CATALOGO_ANDAR.obtener("a").puertas.find((p) => p.destino.estancia === "pasillo-puente");
+  const llegada = puntoDeLlegada(CATALOGO_ANDAR, puerta.destino);
+  assert.equal(llegada.estancia, "pasillo-puente");
+  assert.equal(colisiona(llegada.x, llegada.z, 0.35, llegada.planta), false);
+
+  const puertaDeVuelta = CATALOGO_ANDAR.obtener("pasillo-puente").puertas.find((p) => p.destino.estancia === "a");
+  assert.equal(puertaTocada(llegada.x, llegada.z, 0.35, [puertaDeVuelta]), null);
+
+  const vuelta = puntoDeLlegada(CATALOGO_ANDAR, puertaDeVuelta.destino);
+  assert.equal(vuelta.estancia, "a");
+  assert.equal(colisiona(vuelta.x, vuelta.z, 0.35, vuelta.planta), false);
+});
+
+test("se puede ir y volver entre el pasillo del puente y cada sala de estación", () => {
+  for (const id of ["mando", "navegacion", "sensores", "comunicaciones", "armas"]) {
+    const puerta = CATALOGO_ANDAR.obtener("pasillo-puente").puertas.find((p) => p.destino.estancia === id);
+    const llegada = puntoDeLlegada(CATALOGO_ANDAR, puerta.destino);
+    assert.equal(llegada.estancia, id);
+    assert.equal(colisiona(llegada.x, llegada.z, 0.35, llegada.planta), false, `${id}: colisiona al llegar`);
+
+    const puertaDeVuelta = CATALOGO_ANDAR.obtener(id).puertas[0];
+    assert.equal(puertaTocada(llegada.x, llegada.z, 0.35, [puertaDeVuelta]), null, `${id}: reactiva su puerta`);
+
+    const vuelta = puntoDeLlegada(CATALOGO_ANDAR, puertaDeVuelta.destino);
+    assert.equal(vuelta.estancia, "pasillo-puente");
+    assert.equal(colisiona(vuelta.x, vuelta.z, 0.35, vuelta.planta), false, `${id}: colisiona al volver`);
+  }
 });
 
 test("cruzar de 'a' a ingeniería no colisiona con nada al llegar, y se puede volver", () => {

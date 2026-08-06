@@ -213,10 +213,14 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     de otros jugadores, #453/#498), #427. La fábrica de sala-caja (muros, puertas, columnas y
     VENTANAS con cielo real detrás, #508) vive en `scripts/nave-sala-caja.mjs`, reutilizada tanto por
     las dos salas de prueba del motor (`nave-movimiento-sala-prueba.mjs`, deliberadamente no
-    geografía real) como por cada sala de puesto real (`scripts/nave-sala-<puesto>.mjs`, empezando
-    por `nave-sala-ingenieria.mjs`). `scripts/nave-catalogo-andar.mjs` cose esas estancias entre sí
-    (qué puerta lleva a dónde) sin que ninguna sala necesite saber de las demás — cada sala de puesto
-    nueva es una entrada más de ese catálogo, no un cambio al motor.
+    geografía real) como por cada sala de puesto real: `nave-sala-ingenieria.mjs` (la primera,
+    aislada) y las cinco salas del puente —mando, navegación, sensores, comunicaciones, armas—
+    declaradas juntas en `scripts/nave-salas-puente.mjs` (misma forma repetida a propósito: la sala
+    es solo el sitio físico, no donde vive el contenido del puesto) y repartidas desde un único
+    `scripts/nave-pasillo-puente.mjs`, cuya lista `ESTACIONES` es la única fuente de las posiciones
+    de puerta. `scripts/nave-catalogo-andar.mjs` cose esas estancias entre sí (qué puerta lleva a
+    dónde) sin que ninguna sala necesite saber de las demás — cada sala de puesto nueva es una
+    entrada más de ese catálogo, no un cambio al motor.
   - **Visor del piloto** — `scripts/visor-piloto.mjs` (geometría pura) y
     `scripts/visor-piloto-lienzo.mjs` (el <canvas>), #362. Lo que la nave tiene delante, en PSX,
     en la consola de pilotaje. Es la primera superficie 3D del módulo que **informa** en vez de

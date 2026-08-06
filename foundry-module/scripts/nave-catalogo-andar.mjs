@@ -34,10 +34,21 @@ import {
   PUERTA_B_HACIA_A,
   PUERTA_A_HACIA_CANTINA,
   PUERTA_A_HACIA_INGENIERIA,
+  PUERTA_A_HACIA_PASILLO,
 } from "./nave-movimiento-sala-prueba.mjs";
 import { PLANTA_CANTINA } from "./cantina-planta.mjs";
 import { componerCantinaAndar } from "./cantina-andar.mjs";
 import { PLANTA_INGENIERIA, componerIngenieria, PUERTA_INGENIERIA_HACIA_A } from "./nave-sala-ingenieria.mjs";
+import {
+  PLANTA_PASILLO_PUENTE,
+  componerPasilloPuente,
+  ESTACIONES,
+  PUERTA_PASILLO_HACIA_A,
+  LLEGADA_DESDE_A,
+  puertaHaciaEstacion,
+  llegadaDesdeEstacion,
+} from "./nave-pasillo-puente.mjs";
+import { salaEstacion, entradaEstacion, PUERTA_ESTACION_HACIA_PASILLO } from "./nave-salas-puente.mjs";
 
 export const CATALOGO_ANDAR = crearCatalogoEstancias({
   a: {
@@ -67,6 +78,12 @@ export const CATALOGO_ANDAR = crearCatalogoEstancias({
         // Dentro (z=2) de la propia puerta de vuelta de ingeniería (que
         // ocupa z:0..1.2 en SU sistema de coordenadas) para no reactivarla.
         destino: { estancia: "ingenieria", x: 4, z: 2, yaw: 0 },
+      },
+      // La puerta hacia el pasillo del puente (#508), en el muro este (x=10)
+      // de la sala de pruebas: el cuarto y último lado libre.
+      {
+        rect: PUERTA_A_HACIA_PASILLO,
+        destino: { estancia: "pasillo-puente", ...LLEGADA_DESDE_A },
       },
     ],
   },
@@ -108,4 +125,42 @@ export const CATALOGO_ANDAR = crearCatalogoEstancias({
       },
     ],
   },
+  "pasillo-puente": {
+    planta: PLANTA_PASILLO_PUENTE,
+    componer: componerPasilloPuente,
+    entrada: LLEGADA_DESDE_A,
+    puertas: [
+      // Simétrica a la de "a" hacia aquí, en el muro oeste (x=0) del pasillo.
+      {
+        rect: PUERTA_PASILLO_HACIA_A,
+        // Lejos (z=8) de las zonas de puerta de "a" (b: z≈8.8; cantina: x=0,
+        // z:4-6; ingeniería: z:0-1.2; pasillo: x:8.8-10, z:4-6) para no
+        // reactivar ninguna al llegar.
+        destino: { estancia: "a", x: 7, z: 8, yaw: -Math.PI / 2 },
+      },
+      // Una puerta por estación, en el muro este del pasillo — la MISMA
+      // lista `ESTACIONES` que ya usa `nave-salas-puente.mjs`, así que una
+      // estación nueva es una entrada más de esa lista, no un cambio aquí.
+      ...ESTACIONES.map((estacion) => ({
+        rect: puertaHaciaEstacion(estacion),
+        destino: { estancia: estacion.id, ...entradaEstacion() },
+      })),
+    ],
+  },
+  ...Object.fromEntries(
+    ESTACIONES.map((estacion) => [
+      estacion.id,
+      {
+        planta: salaEstacion(estacion.id).planta,
+        componer: salaEstacion(estacion.id).componer,
+        entrada: entradaEstacion(),
+        puertas: [
+          {
+            rect: PUERTA_ESTACION_HACIA_PASILLO,
+            destino: { estancia: "pasillo-puente", ...llegadaDesdeEstacion(estacion) },
+          },
+        ],
+      },
+    ]),
+  ),
 });

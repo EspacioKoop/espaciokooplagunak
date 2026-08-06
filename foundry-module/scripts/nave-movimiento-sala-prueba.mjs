@@ -41,6 +41,9 @@ export const PUERTA_A_HACIA_CANTINA = { x: 0, z: 4, ancho: 1.2, profundidad: 2 }
  *  real (#508, `nave-sala-ingenieria.mjs`), en un lado que hasta ahora no
  *  tenía ninguna puerta. */
 export const PUERTA_A_HACIA_INGENIERIA = { x: 3, z: 0, ancho: 2, profundidad: 1.2 };
+/** En el muro este de la sala A: la puerta hacia el pasillo del puente
+ *  (#508, `nave-pasillo-puente.mjs`), el cuarto y último lado libre. */
+export const PUERTA_A_HACIA_PASILLO = { x: 8.8, z: 4, ancho: 1.2, profundidad: 2 };
 
 /** Sala A: la sala de pruebas original, con dos columnas para probar
  *  colisión y deslizamiento diagonal (ver los tests de `nave-movimiento.
@@ -57,6 +60,7 @@ const SALA_A = crearSalaCaja({
     { rect: PUERTA_A_HACIA_B },
     { rect: PUERTA_A_HACIA_CANTINA },
     { rect: PUERTA_A_HACIA_INGENIERIA },
+    { rect: PUERTA_A_HACIA_PASILLO },
   ],
 });
 export const PLANTA_PRUEBA = SALA_A.planta;

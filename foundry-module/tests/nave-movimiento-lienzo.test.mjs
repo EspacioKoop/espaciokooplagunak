@@ -189,6 +189,30 @@ test("alTocarPuerta se dispara al entrar en su rectángulo, con lo que traiga de
   mando.detener();
 });
 
+test("alTocarPuerta es un flanco de entrada, no un nivel (QA: teletransportaba una y otra vez sin soltar la tecla)", () => {
+  // Este test NO llama a `cambiarEstancia` desde `alTocarPuerta` (a
+  // diferencia del uso real en `andar-nave-app.mjs`), así que el círculo se
+  // queda DENTRO del rectángulo de la puerta en los fotogramas siguientes.
+  // Con el disparo por nivel de antes, cada uno de esos fotogramas volvía a
+  // avisar; con el flanco, solo el primero.
+  const puertas = [{ rect: { x: 4, z: 8, ancho: 2, profundidad: 1 }, destino: { estancia: "b", x: 1, z: 1 } }];
+  const destinos = [];
+  const mando = arrancarAndar(lienzoFalso(), {
+    componer: () => ({ ancho: 100, alto: 100, poligonos: [] }),
+    planta: crearPlanta({ ancho: 10, profundidad: 10 }),
+    puertas,
+    alTocarPuerta: (destino) => destinos.push(destino),
+    x: 5,
+    z: 8.3, // ya dentro del rectángulo de la puerta desde el primer fotograma
+    yaw: 0,
+  });
+  mando.avanzar(16);
+  mando.avanzar(16);
+  mando.avanzar(16);
+  assert.equal(destinos.length, 1, "un único aviso, no uno por fotograma");
+  mando.detener();
+});
+
 test("alTocarConsola se dispara al entrar en su zona, solo una vez (#509)", () => {
   const consolas = [{ rect: { x: 4, z: 8, ancho: 2, profundidad: 1 }, puesto: "engineering" }];
   const avisos = [];

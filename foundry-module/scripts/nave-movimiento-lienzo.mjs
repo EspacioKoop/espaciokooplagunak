@@ -95,6 +95,17 @@ export function arrancarAndar(lienzo, opciones = {}) {
   // cada fotograma —abriría el espacio de puesto sesenta veces por
   // segundo—. Solo cambia de `null` a una consola, o de una consola a otra.
   let consolaTocadaAntes = null;
+  // Mismo flanco de entrada para las puertas (QA: andar hacia atrás cerca de
+  // una puerta teletransportaba una y otra vez sin parar). Antes se
+  // comprobaba a NIVEL —`cambiarEstancia` en cada fotograma que el círculo
+  // siguiera dentro del rectángulo—, y si el punto de llegada de la sala
+  // destino cae cerca de su propia puerta de vuelta (o si el jugador sigue
+  // empujando hacia la puerta de la que viene), el primer fotograma en la
+  // sala nueva podía volver a tocarla y cruzar de vuelta de inmediato: un
+  // vaivén sin que nadie soltara ninguna tecla. El flanco (`null` → puerta)
+  // hace que cruzar sea un evento discreto, no un nivel que se compruebe
+  // sesenta veces por segundo.
+  let puertaTocadaAntes = null;
 
   let x = Number.isFinite(opciones.x) ? opciones.x : planta.ancho / 2;
   let z = Number.isFinite(opciones.z) ? opciones.z : planta.profundidad / 2;
@@ -130,10 +141,15 @@ export function arrancarAndar(lienzo, opciones = {}) {
     // Se comprueba DESPUÉS de mover, con la posición ya resuelta: una puerta
     // no bloquea (`mover` no la conoce), así que su detección no puede
     // adelantarse al desplazamiento sin leer una posición que todavía no es
-    // la real de este fotograma.
+    // la real de este fotograma. Flanco de entrada, igual que las consolas:
+    // cruzar es un evento discreto, no algo que se compruebe sesenta veces
+    // por segundo mientras el círculo siga solapando el rectángulo.
     if (alTocarPuerta) {
       const puerta = puertaTocada(x, z, radio, puertas);
-      if (puerta) alTocarPuerta(puerta.destino);
+      if (puerta !== puertaTocadaAntes) {
+        if (puerta) alTocarPuerta(puerta.destino);
+        puertaTocadaAntes = puerta;
+      }
     }
 
     // Misma detección de contacto que una puerta (`puertaTocada` no le exige
@@ -195,10 +211,12 @@ export function arrancarAndar(lienzo, opciones = {}) {
       if (typeof nuevoComponer === "function") componer = nuevoComponer;
       puertas = Array.isArray(nuevasPuertas) ? nuevasPuertas : [];
       consolas = Array.isArray(nuevasConsolas) ? nuevasConsolas : [];
-      // La sala nueva empieza sin nadie tocando ninguna consola: si el punto
-      // de llegada cayera sobre una por casualidad, el flanco de entrada de
-      // ESA sala tiene que poder dispararse, no darse por ya visto.
+      // La sala nueva empieza sin nadie tocando ninguna consola ni ninguna
+      // puerta: si el punto de llegada cayera sobre una por casualidad, el
+      // flanco de entrada de ESA sala tiene que poder dispararse, no darse
+      // por ya visto.
       consolaTocadaAntes = null;
+      puertaTocadaAntes = null;
       if (Number.isFinite(nx)) x = nx;
       if (Number.isFinite(nz)) z = nz;
       if (Number.isFinite(nYaw)) yaw = nYaw;

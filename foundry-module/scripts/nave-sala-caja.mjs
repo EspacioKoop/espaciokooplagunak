@@ -64,8 +64,11 @@ function caja([cx, cy, cz], [ancho, alto, fondo]) {
 }
 
 /** A qué altura mira quien anda, de pie. El salto/agachado (#446) suma su
- *  propio offset por encima de esta base. */
-export const ALTURA_OJOS = 1.6;
+ *  propio offset por encima de esta base. 1.45 y no 1.6 (QA: "el personaje
+ *  está demasiado alto") — más baja que la altura de ojos humana media a
+ *  propósito, porque lo que se reportó no fue una cifra sino una sensación
+ *  de mirar la sala desde demasiado arriba. */
+export const ALTURA_OJOS = 1.45;
 
 /** Altura de los muros, de suelo a techo. 3.8 y no 3: a la altura de ojos
  *  (1.6) un techo a 3 queda a menos de metro y medio por encima de la

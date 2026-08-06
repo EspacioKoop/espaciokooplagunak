@@ -21,11 +21,12 @@ import { componerEscena } from "./retro3d.mjs";
 import { aNativo } from "./cantina-planta.mjs";
 import { poligonosOtrosJugadores } from "./nave-avatares-render.mjs";
 
-/** A qué altura mira quien anda, de pie. Misma cifra que la sala de pruebas
- *  (`nave-movimiento-sala-prueba.mjs`): no hay razón para que la cantina
- *  tenga un tripulante más alto o más bajo que el banco de pruebas. El
- *  salto/agachado (#446) suma su propio offset por encima — ver `y` abajo. */
-export const ALTURA_OJOS = 1.6;
+/** A qué altura mira quien anda, de pie. Misma cifra que el resto de la nave
+ *  (`nave-sala-caja.mjs`, 1.45 y no 1.6 — QA: "el personaje está demasiado
+ *  alto"): no hay razón para que la cantina tenga un tripulante más alto o
+ *  más bajo que cualquier otra sala. El salto/agachado (#446) suma su propio
+ *  offset por encima — ver `y` abajo. */
+export const ALTURA_OJOS = 1.45;
 
 const FOV = 62;
 

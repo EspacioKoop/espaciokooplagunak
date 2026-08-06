@@ -63,6 +63,13 @@ export function componerCantinaAndar(x, y, z, yaw, opciones = {}) {
       // `retro3d.mjs` gira en sentido contrario al que usa el motor de
       // movimiento para "adelante" (#427).
       yaw: yawCamara,
+      // Recorte de frustum completo (#510): a diferencia de los encuadres
+      // fijos de `cantina-planos.mjs` (#423, "nunca travelling", afinados a
+      // ojo contando con el recorte laxo), esta es la cámara LIBRE de #427 —
+      // nadie la ha afinado todavía para depender de ese comportamiento, y
+      // sin el recorte, un mueble ancho visto de cerca dispara un vértice
+      // fuera de pantalla igual que el pasillo de #508.
+      recorteLateral: true,
     }),
   );
 

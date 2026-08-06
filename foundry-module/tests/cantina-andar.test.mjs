@@ -34,3 +34,22 @@ test("saltar (y>0) sube la cámara por encima de la altura de ojos en pie", () =
   const saltando = componerCantinaAndar(centro.x, 0.5, centro.z, 0, { ancho: 160, alto: 90 });
   assert.notDeepEqual(dePie.poligonos, saltando.poligonos);
 });
+
+// REGRESIÓN (#510, confirmado en vídeo de QA sobre #508/#509): de pie cerca
+// de la barra —un mueble de 6.4m de ancho— mirando a lo largo de ella, sin
+// el recorte lateral un vértice se disparaba a miles de píxeles fuera de
+// pantalla. La cantina caminable (a diferencia de los encuadres fijos de
+// #423) ya lo activa.
+test("REGRESIÓN: de pie junto a la barra, ningún punto proyectado se dispara fuera de pantalla", () => {
+  const ancho = 480, alto = 270;
+  // Cerca de la barra (native z≈4.2) y mirando a lo largo de ella (yaw hacia
+  // +x nativo, el eje largo del mueble).
+  const junto = desdeNativo(-2, 4);
+  const escena = componerCantinaAndar(junto.x, 0, junto.z, Math.PI / 2, { ancho, alto });
+  for (const poligono of escena.poligonos) {
+    for (const punto of poligono.puntos) {
+      assert.ok(Math.abs(punto.x) < ancho * 10, `x disparado: ${punto.x}`);
+      assert.ok(Math.abs(punto.y) < alto * 10, `y disparado: ${punto.y}`);
+    }
+  }
+});

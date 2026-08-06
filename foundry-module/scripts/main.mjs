@@ -671,11 +671,14 @@ function abrirSeccionNave() {
   const opciones = {
     leerSistemas: leerSistemasNave,
     leerPresencias: leerPresenciasNave,
-    alEntrar: ({ destino, sala, puesto }) => {
+    alEntrar: ({ destino, sala, estancia, puesto }) => {
       // La sección no sabe abrir nada: traduce «entra ahí» a un sitio que ya
-      // existe. Hoy la cantina tiene interior y los puestos tienen consola;
-      // el resto de salas son de mirar, y por eso ni siquiera ofrecen entrar.
+      // existe. Hoy la cantina tiene su ventana propia y el puente e
+      // ingeniería tienen interior recorrible (#508) — se entra ANDANDO, y la
+      // consola de puesto está dentro, a un paso de la puerta (#509). El resto
+      // de salas son de mirar, y por eso ni siquiera ofrecen entrar.
       if (destino === "cantina") abrirCantina();
+      else if (destino === "andar") abrirAndarNave(estancia);
       else if (destino === "puesto") openWorkspaceApp(puesto);
       else console.warn(`${MODULE_ID} | sala sin vista propia todavía: ${sala}`);
     },
@@ -694,13 +697,23 @@ function abrirSeccionNave() {
  * es un banco de pruebas del motor de movimiento sobre una sala inventada. */
 let andarApp = null;
 
-function abrirAndarNave() {
+/**
+ * @param {string|null} estancia adónde entrar, si quien abre la ventana lo
+ *   sabe (la sección al pulsar una sala, #508). Sin ella se vuelve a donde se
+ *   quedó, que es el comportamiento del botón de los controles de escena.
+ */
+function abrirAndarNave(estancia = null) {
   if (andarApp?.rendered) {
+    // Ya abierta: no se reinicia el bucle por un cambio de sala, se camina
+    // hasta allí en caliente (la ventana ya tiene su propio `irA`).
+    if (estancia) andarApp.irA(estancia);
     andarApp.render({ force: true });
     return;
   }
   const Clase = foundry.applications?.api?.ApplicationV2 ? crearClaseAndarV2() : crearClaseAndarV1();
   andarApp = new Clase();
+  // Antes de renderizar: el arranque del bucle lo consume en el primer render.
+  andarApp.estanciaPedida = estancia;
   if (foundry.applications?.api?.ApplicationV2) andarApp.render({ force: true });
   else andarApp.render(true);
 }

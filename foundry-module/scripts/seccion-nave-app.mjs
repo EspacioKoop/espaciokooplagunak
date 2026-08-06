@@ -122,7 +122,14 @@ function encenderPlano(raiz, { leerSistemas, leerPresencias, alEntrar }) {
 function entrar(id, alEntrar) {
   const sala = salaPorId(id);
   if (!sala?.destino) return false;
-  alEntrar({ destino: sala.destino, sala: sala.id, puesto: sala.puesto ?? null });
+  alEntrar({
+    destino: sala.destino,
+    sala: sala.id,
+    // Opacos los dos para esta ventana: los transporta tal cual hasta quien
+    // sabe abrir cada vista, sin mirarlos ni validarlos.
+    estancia: sala.estancia ?? null,
+    puesto: sala.puesto ?? null,
+  });
   return true;
 }
 

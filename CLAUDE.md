@@ -203,8 +203,13 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
   - **Sección de la nave** — `scripts/seccion-nave.mjs` (planta declarativa y consultas, puro),
     `scripts/seccion-lienzo.mjs` (pintado 2D, sin color propio) y `scripts/seccion-nave-app.mjs`
     (ventana V1/V2), #427. El corte transversal con todas las salas a la vez: es el MAPA, y la
-    cantina es ESTAR dentro. Pulsar una sala abre la vista que ya existe (cantina o consola de
-    puesto) — la sección no estrena ninguna. No da autoridad (#237: el puesto se lee para saber
+    cantina es ESTAR dentro. Pulsar una sala abre la vista que ya existe — la sección no estrena
+    ninguna: la cantina abre su ventana propia (#423) y el puente e ingeniería se entran ANDANDO
+    (`destino: "andar"` + `estancia`, #508), apareciendo dentro de la nave recorrible en vez de
+    abriendo la consola del puesto por botón; la consola queda a un paso, dentro de su sala (#509).
+    La `estancia` es un id OPACO para la sección: lo declara y lo transporta, pero quien lo resuelve
+    contra `nave-catalogo-andar.mjs` es `main.mjs` — un test comprueba que toda `estancia` declarada
+    exista de verdad en ese catálogo. No da autoridad (#237: el puesto se lee para saber
     dónde pintarte, nunca al revés) y no inventa lecturas (sin sondeo la sala va neutra, no en
     cero). Una sala nueva es una entrada más de la planta, no un botón nuevo en `main.mjs`.
   - **Andar por la nave** — `scripts/nave-movimiento.mjs` (colisión círculo-caja y el paso continuo,
@@ -241,6 +246,15 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     `openWorkspaceApp(puesto)` (`station-workspace-ui.mjs`) — el mismo espacio que ya se abre por
     botón; para quien no es GM ese parámetro no hace nada (abre siempre el propio puesto, #237), así
     que caminar hasta una consola ajena no da ni enseña más de lo que ya daría el botón.
+    **La planta es navegable por COMPOSICIÓN, no por casos especiales** (revisión externa en #508):
+    el motor solo sabe recorrer un grafo de espacios conectados y no conoce el nombre de ninguna
+    sala; el contenido decide qué hay dentro de cada una. Una enfermería, un hangar o unos camarotes
+    se añaden ampliando el catálogo —planta, composición, puertas, consolas— y no tocando la lógica
+    de movimiento. Si para meter una sala hace falta un `if` con su nombre en el motor, el diseño se
+    ha roto. Corolario: `resolverArranque` (`nave-estancias.mjs`) decide con qué estancia se abre la
+    ventana —lo pedido explícitamente (la sección, #508) manda sobre el checkpoint guardado, y un id
+    que el catálogo no conoce cae al siguiente escalón en vez de dejar a nadie en la nada—, y esa
+    decisión vive en el catálogo porque es sobre el catálogo, no en la ventana que la aplica.
   - **Visor del piloto** — `scripts/visor-piloto.mjs` (geometría pura) y
     `scripts/visor-piloto-lienzo.mjs` (el <canvas>), #362. Lo que la nave tiene delante, en PSX,
     en la consola de pilotaje. Es la primera superficie 3D del módulo que **informa** en vez de

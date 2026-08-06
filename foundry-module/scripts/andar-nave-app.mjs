@@ -17,7 +17,7 @@
 import { MODULE_ID } from "./lagunak-constantes.mjs";
 import { arrancarAndar } from "./nave-movimiento-lienzo.mjs";
 import { CATALOGO_ANDAR } from "./nave-catalogo-andar.mjs";
-import { puntoDeLlegada } from "./nave-estancias.mjs";
+import { puntoDeLlegada, resolverArranque } from "./nave-estancias.mjs";
 import { construirMuestra, debeMuestrear, programarMuestra } from "./nave-movimiento-red.mjs";
 import { presentesEn } from "./nave-presencia.mjs";
 import { avatarDeUsuario } from "./avatar-assignment.mjs";
@@ -204,16 +204,23 @@ function engancharTeclado(raiz, mando) {
   };
 }
 
-function arrancar(raiz) {
+function arrancar(raiz, estanciaPedida = null) {
   const lienzo = raiz?.querySelector?.(".lagunak-andar-lienzo");
   if (!lienzo) return null;
 
-  const guardada = leerPosicionGuardada();
-  const inicial = CATALOGO_ANDAR.obtener(guardada?.estancia ?? ESTANCIA_INICIAL);
+  // Qué manda entre «entra ahí» (#508) y el checkpoint guardado lo decide
+  // `resolverArranque`, que es lógica pura del catálogo y está probada aparte.
+  const arranque = resolverArranque(CATALOGO_ANDAR, {
+    pedida: estanciaPedida,
+    guardada: leerPosicionGuardada(),
+    porDefecto: ESTANCIA_INICIAL,
+  });
+  const guardada = arranque.guardada;
+  const inicial = CATALOGO_ANDAR.obtener(arranque.estancia);
   // Vive fuera del mando a propósito: `arrancarAndar` sabe de planta/render/
   // posición, pero nunca supo que existen "estancias" con nombre — ese
   // conocimiento es de este archivo y del catálogo, no del bucle.
-  let estanciaActual = guardada?.estancia ?? ESTANCIA_INICIAL;
+  let estanciaActual = arranque.estancia;
   let ultimoSelloEnviado = null;
 
   // Muestras en vivo de los demás jugadores (#453), acumuladas por
@@ -312,6 +319,25 @@ function arrancar(raiz) {
      *  dibujar decide su propia representación, como hace el pintor de
      *  avatares de esta misma ventana. */
     presentes,
+    /**
+     * Aparecer en otra estancia sin cruzar su puerta (#508): lo que necesita
+     * la sección de la nave cuando se pulsa una sala con la ventana de andar
+     * YA abierta. Es exactamente el mismo camino que cruzar una puerta
+     * —`puntoDeLlegada` sobre el mismo catálogo, `cambiarEstancia`, y la
+     * muestra se publica en el acto— así que el resto de la tripulación te ve
+     * cambiar de sala igual que si hubieras llegado andando.
+     *
+     * Devuelve `false` si esa estancia no existe, en vez de dejar al jugador
+     * en un sitio que nadie ha declarado.
+     */
+    irA(estanciaId) {
+      const llegada = puntoDeLlegada(CATALOGO_ANDAR, { estancia: estanciaId });
+      if (!llegada) return false;
+      estanciaActual = llegada.estancia;
+      mando.cambiarEstancia(llegada);
+      ultimoSelloEnviado = publicarPosicion(estanciaActual, mando, ultimoSelloEnviado, true);
+      return true;
+    },
     detener() {
       publicarPosicion(estanciaActual, mando, ultimoSelloEnviado, true);
       globalThis.clearInterval?.(intervaloPublicacion);
@@ -350,10 +376,24 @@ export function crearClaseAndarV2() {
       return contexto();
     }
 
+    /** Adónde entrar en el PRÓXIMO render, si alguien lo ha pedido (#508).
+     *  Se consume al usarlo: reabrir la ventana más tarde sin pedir nada debe
+     *  volver a donde se quedó, no al último sitio que pidió la sección. */
+    estanciaPedida = null;
+
+    /** Con la ventana ya abierta, ir a esa estancia en caliente. */
+    irA(estanciaId) {
+      if (this.mando) return this.mando.irA(estanciaId);
+      this.estanciaPedida = estanciaId;
+      return false;
+    }
+
     _onRender(context, options) {
       super._onRender?.(context, options);
       this.mando?.detener();
-      this.mando = arrancar(this.element);
+      const pedida = this.estanciaPedida;
+      this.estanciaPedida = null;
+      this.mando = arrancar(this.element, pedida);
     }
 
     _onClose(options) {
@@ -383,10 +423,21 @@ export function crearClaseAndarV1() {
       return contexto();
     }
 
+    /** Ver la gemela v12+: mismo contrato, sin código compartido. */
+    estanciaPedida = null;
+
+    irA(estanciaId) {
+      if (this.mando) return this.mando.irA(estanciaId);
+      this.estanciaPedida = estanciaId;
+      return false;
+    }
+
     activateListeners(html) {
       super.activateListeners(html);
       this.mando?.detener();
-      this.mando = arrancar(html?.[0]);
+      const pedida = this.estanciaPedida;
+      this.estanciaPedida = null;
+      this.mando = arrancar(html?.[0], pedida);
     }
 
     async close(options) {

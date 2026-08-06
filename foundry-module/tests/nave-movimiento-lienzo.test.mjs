@@ -301,6 +301,43 @@ test("sin alTocarPuerta, tocar una puerta no hace nada (no revienta)", () => {
   mando.detener();
 });
 
+test("mantener \"atrás\" pulsado tras cruzar no dispara la puerta de vuelta en bucle (QA)", () => {
+  // El punto de llegada de la sala B cae A PROPÓSITO justo sobre la puerta
+  // de vuelta a A —el caso real que reportó el vaivén—: sin la ventana de
+  // gracia, el primer paso ya dentro de B volvería a cruzar de inmediato.
+  const cruces = [];
+  const mando = arrancarAndar(lienzoFalso(), {
+    componer: () => ({ ancho: 100, alto: 100, poligonos: [] }),
+    planta: crearPlanta({ ancho: 10, profundidad: 10 }),
+    puertas: [{ rect: { x: 4, z: 8, ancho: 2, profundidad: 1 }, destino: { estancia: "b" } }],
+    alTocarPuerta: (destino) => cruces.push(destino.estancia),
+    x: 5,
+    z: 8.3, // ya dentro de la zona de la puerta
+    yaw: 0,
+  });
+  mando.avanzar(16);
+  assert.deepEqual(cruces, ["b"]);
+
+  mando.cambiarEstancia({
+    planta: crearPlanta({ ancho: 10, profundidad: 10 }),
+    puertas: [{ rect: { x: 4, z: 8, ancho: 2, profundidad: 1 }, destino: { estancia: "a" } }],
+    x: 5,
+    z: 8.3, // el punto de llegada, otra vez encima de la puerta
+    yaw: Math.PI, // "atrás" mantenido empuja hacia +z, de vuelta a la puerta
+  });
+  mando.pulsar("atras");
+
+  // Varios pasos pequeños, todos dentro de la ventana de gracia (400ms):
+  // ni uno debe volver a cruzar.
+  for (let i = 0; i < 20; i += 1) mando.avanzar(16);
+  assert.deepEqual(cruces, ["b"], "la ventana de gracia debe absorber el vaivén");
+
+  // Pasada la ventana, la puerta vuelve a ser cruzable con normalidad.
+  for (let i = 0; i < 20; i += 1) mando.avanzar(16);
+  assert.deepEqual(cruces, ["b", "a"], "pasada la gracia, cruzar sigue funcionando");
+  mando.detener();
+});
+
 test("cambiarEstancia sustituye planta, render y posición sin reiniciar el bucle", () => {
   const pendientes = [];
   let vecesComponerA = 0;

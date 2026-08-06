@@ -106,6 +106,16 @@ export function arrancarAndar(lienzo, opciones = {}) {
   // hace que cruzar sea un evento discreto, no un nivel que se compruebe
   // sesenta veces por segundo.
   let puertaTocadaAntes = null;
+  // Ventana de gracia tras cruzar (QA: manteniendo "atrás" pulsado de forma
+  // continua se podía cruzar la MISMA puerta en los dos sentidos sin parar —
+  // el flanco de entrada evita repetir en el sitio, pero no evita que el
+  // primer paso ya dentro de la sala nueva vuelva a tocar la puerta de
+  // vuelta, que suele caer cerca del punto de llegada). Mientras dura, no se
+  // dispara NINGÚN cruce: es más simple y más robusto que intentar excluir
+  // solo la puerta por la que se acaba de entrar (#237 no está en juego, es
+  // pura cinemática).
+  const GRACIA_PUERTA_MS = 400;
+  let bloqueadoPuertaHasta = 0;
 
   let x = Number.isFinite(opciones.x) ? opciones.x : planta.ancho / 2;
   let z = Number.isFinite(opciones.z) ? opciones.z : planta.profundidad / 2;
@@ -144,7 +154,7 @@ export function arrancarAndar(lienzo, opciones = {}) {
     // la real de este fotograma. Flanco de entrada, igual que las consolas:
     // cruzar es un evento discreto, no algo que se compruebe sesenta veces
     // por segundo mientras el círculo siga solapando el rectángulo.
-    if (alTocarPuerta) {
+    if (alTocarPuerta && ahoraMs >= bloqueadoPuertaHasta) {
       const puerta = puertaTocada(x, z, radio, puertas);
       if (puerta !== puertaTocadaAntes) {
         if (puerta) alTocarPuerta(puerta.destino);
@@ -217,6 +227,12 @@ export function arrancarAndar(lienzo, opciones = {}) {
       // por ya visto.
       consolaTocadaAntes = null;
       puertaTocadaAntes = null;
+      // Ningún cruce de puerta puede dispararse hasta pasado `GRACIA_PUERTA_MS`:
+      // el punto de llegada suele caer cerca de la puerta de vuelta (ver
+      // comentario de `bloqueadoPuertaHasta`), y sin esta ventana un "atrás"
+      // mantenido pulsado la cruzaría de nuevo en el primer paso ya dentro de
+      // la sala nueva.
+      bloqueadoPuertaHasta = anterior + GRACIA_PUERTA_MS;
       if (Number.isFinite(nx)) x = nx;
       if (Number.isFinite(nz)) z = nz;
       if (Number.isFinite(nYaw)) yaw = nYaw;

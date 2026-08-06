@@ -7,6 +7,7 @@ import {
   MALLA_CAZA,
   ajustesEpoca,
   areaFirmada,
+  compararProfundidad,
   componerEscena,
   focal,
   intensidadCara,
@@ -86,6 +87,41 @@ test("un vértice detrás de la cámara se recorta, no sale disparado", () => {
 test("una escena entera detrás de la cámara no produce polígonos", () => {
   const escena = componerEscena(MALLA_CAZA, { posicion: [0, 0, -20] });
   assert.deepEqual(escena.poligonos, []);
+});
+
+// #510 QA: "se glitchean las texturas" al andar/panear — caras a
+// profundidades casi iguales invertían su orden de dibujo con el temblor de
+// cámara de un fotograma al siguiente. `compararProfundidad` las trata como
+// empate por debajo de un margen, y `Array.prototype.sort` (estable) deja el
+// orden de entrada en vez de decidir nada nuevo por una diferencia de ruido.
+test("compararProfundidad: por debajo del margen, dos polígonos empatan (orden estable, no decide)", () => {
+  const lejos = { profundidad: 5 };
+  const cerca = { profundidad: 5.005 }; // 0.005 de diferencia: dentro del margen de 0.01
+  assert.equal(compararProfundidad(lejos, cerca), 0);
+  assert.equal(compararProfundidad(cerca, lejos), 0);
+});
+
+test("compararProfundidad: por encima del margen, sigue ordenando de lejos a cerca", () => {
+  const lejos = { profundidad: 5 };
+  const cerca = { profundidad: 4.9 }; // 0.1 de diferencia: por encima del margen
+  // Negativo = "a" (lejos) va antes que "b" (cerca), el mismo contrato que
+  // `Array.prototype.sort` espera de un comparador.
+  assert.ok(compararProfundidad(lejos, cerca) < 0, "lejos debería ir antes que cerca");
+  assert.ok(compararProfundidad(cerca, lejos) > 0);
+  assert.deepEqual([cerca, lejos].sort(compararProfundidad), [lejos, cerca]);
+});
+
+test("compararProfundidad: el empate por margen hace que el orden de entrada sea estable entre fotogramas", () => {
+  // Dos "fotogramas" con las MISMAS profundidades a un ruido despreciable de
+  // diferencia (el temblor de cámara real es de ese orden): el resultado
+  // ordenado tiene que ser idéntico, no solo "parecido".
+  const a1 = { nombre: "A", profundidad: 3.001 };
+  const b1 = { nombre: "B", profundidad: 3.004 };
+  const a2 = { nombre: "A", profundidad: 3.002 };
+  const b2 = { nombre: "B", profundidad: 3.003 };
+  const fotograma1 = [a1, b1].sort(compararProfundidad).map((p) => p.nombre);
+  const fotograma2 = [a2, b2].sort(compararProfundidad).map((p) => p.nombre);
+  assert.deepEqual(fotograma1, fotograma2);
 });
 
 test("recortarLateral deja pasar un punto claramente dentro del cono de visión", () => {

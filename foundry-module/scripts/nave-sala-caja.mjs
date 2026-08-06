@@ -29,7 +29,7 @@
 // `paleta.mjs` (`SECCION`, ya usada para materiales genéricos de nave).
 
 import { SECCION } from "./paleta.mjs";
-import { componerEscena } from "./retro3d.mjs";
+import { componerEscena, compararProfundidad } from "./retro3d.mjs";
 import { campoEstelar, proyectarEstrellas } from "./retro3d-estrellas.mjs";
 import { crearPlanta } from "./nave-movimiento.mjs";
 import { poligonosOtrosJugadores } from "./nave-avatares-render.mjs";
@@ -330,7 +330,7 @@ export function crearSalaCaja({
     // Fundido y reordenado global: cada pieza ya viene ordenada por su
     // cuenta, y el orden por pintor no es componible.
     const poligonos = [...partes.flatMap((parte) => parte.poligonos), ...poligonosJugadores]
-      .sort((a, b) => b.profundidad - a.profundidad);
+      .sort(compararProfundidad);
 
     // El cielo por la(s) ventana(s): mismo mecanismo que `cantina-escena.mjs`
     // ("Por el ojo de buey") — se pinta ANTES que los polígonos, así que el

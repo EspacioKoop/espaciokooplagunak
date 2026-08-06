@@ -401,6 +401,47 @@ export function factorNiebla(profundidad, { cerca, lejos, niebla }) {
   return Math.max(0, Math.min(1, t)) * acotar(niebla.fuerza, 0, 1, 1);
 }
 
+// ---- Orden por pintor --------------------------------------------------------
+
+/**
+ * Por debajo de este margen, dos polígonos se tratan como si estuvieran a la
+ * MISMA profundidad a efectos de orden — ver `compararProfundidad`. 0.01
+ * unidades de mundo es seguro a escala de SALA/MUEBLE (una pared, una barra,
+ * un vestíbulo miden metros), pero es demasiado ancho para geometría fina en
+ * el mismo mundo de unidades: los pips de un dado están a solo 0.006 de la
+ * cara del dado (`minijuegos/dados-3d.mjs`), así que este comparador NO es
+ * universal — ver a qué lo aplica cada consumidor más abajo.
+ */
+const EPSILON_PROFUNDIDAD = 0.01;
+
+/**
+ * Comparador de orden por pintor con margen, para fundir varias piezas en
+ * una sola escena a escala de sala/mueble: `nave-sala-caja.mjs`,
+ * `cantina-andar.mjs` y el fundido principal de `cantina-escena.mjs`. NO lo
+ * usan los dados/cartas/avatares ni el sombreado por cara de `componerEscena`
+ * — ahí la separación real entre piezas puede ser menor que el margen (ver
+ * `EPSILON_PROFUNDIDAD`), y tratarlas como empatadas escondería detalle de
+ * verdad en vez de solo apagar temblor.
+ *
+ * SIN EL MARGEN, LA SALA PARPADEA (#510 QA, confirmado con datos: en la
+ * cantina, 46 de 81 polígonos de una escena típica tienen profundidades a
+ * menos de 0.01 de diferencia). `profundidad` es un escalar aproximado —la
+ * media de la cara, no un z-buffer por píxel— y sin z-buffer real dos caras
+ * a profundidades casi iguales pueden invertir su orden con el temblor de
+ * cámara de un solo fotograma al siguiente: eso es un intercambio de qué
+ * cara tapa a cuál, sesenta veces por segundo, que se lee como parpadeo.
+ * Tratar profundidades casi iguales como EMPATE hace que `Array.prototype.
+ * sort` (estable desde ES2019 en todo motor moderno) conserve el orden que
+ * ya traían los polígonos —el mismo de un fotograma al siguiente, porque las
+ * piezas se componen siempre en el mismo orden— en vez de decidir de nuevo
+ * cada vez por una diferencia que no significa nada. Solo un desplazamiento
+ * de cámara de verdad, no su temblor, cambia ahora qué cara gana.
+ */
+export function compararProfundidad(a, b) {
+  const diferencia = b.profundidad - a.profundidad;
+  return Math.abs(diferencia) < EPSILON_PROFUNDIDAD ? 0 : diferencia;
+}
+
 // ---- Escena ----------------------------------------------------------------
 
 /**

@@ -26,7 +26,7 @@
 // Frontera de arte (#351): no declara ni un color. Todos entran de `paleta.mjs`.
 
 import { CACHARROS, CANTINA } from "./paleta.mjs";
-import { componerEscena, focal, proyectar, transformar } from "./retro3d.mjs";
+import { componerEscena, compararProfundidad, focal, proyectar, transformar } from "./retro3d.mjs";
 import { campoEstelar, proyectarEstrellas } from "./retro3d-estrellas.mjs";
 import { cuerpoMayor, cuerposPorLaVentana } from "./cantina-ventana.mjs";
 import { piezasDeLaGente } from "./cantina-avatar.mjs";
@@ -549,7 +549,7 @@ export function componerCantina(opciones = {}) {
   // una lista incorrecta, y la barra acabaría dibujada detrás del mamparo.
   const poligonos = partes
     .flatMap((parte) => parte.poligonos)
-    .sort((a, b) => b.profundidad - a.profundidad);
+    .sort(compararProfundidad);
 
   // Lo que se ve por el hueco del mamparo. El pintor dibuja las estrellas ANTES
   // que los polígonos, así que el propio mamparo las recorta: no hace falta

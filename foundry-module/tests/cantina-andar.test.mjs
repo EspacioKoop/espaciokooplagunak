@@ -20,11 +20,17 @@ test("moverse cambia lo que se ve, igual que en la sala de pruebas", () => {
   assert.notDeepEqual(a.poligonos, b.poligonos);
 });
 
-test("los polígonos salen ordenados de más lejos a más cerca", () => {
+test("los polígonos salen ordenados de más lejos a más cerca (con el margen anti-parpadeo de #510)", () => {
   const centro = desdeNativo(0, 2);
   const escena = componerCantinaAndar(centro.x, 0, centro.z, Math.PI, { ancho: 160, alto: 90 });
+  // >= -EPSILON y no >= a secas: `compararProfundidad` trata como empate
+  // cualquier par a menos de 0.01 de diferencia (para no parpadear con el
+  // temblor de cámara, #510), así que un par empatado puede quedar en
+  // cualquier orden relativo dentro de ese margen — nunca por encima de él.
+  const EPSILON = 0.01 + 1e-9;
   for (let i = 1; i < escena.poligonos.length; i += 1) {
-    assert.ok(escena.poligonos[i - 1].profundidad >= escena.poligonos[i].profundidad);
+    const diferencia = escena.poligonos[i - 1].profundidad - escena.poligonos[i].profundidad;
+    assert.ok(diferencia >= -EPSILON, `polígono ${i} rompe el orden por pintor más allá del margen: ${diferencia}`);
   }
 });
 

@@ -5,12 +5,12 @@ import { colisiona } from "../scripts/nave-movimiento.mjs";
 import {
   PLANTA_INGENIERIA,
   componerIngenieria,
-  PUERTA_INGENIERIA_HACIA_A,
+  PUERTA_INGENIERIA_HACIA_VESTIBULO,
 } from "../scripts/nave-sala-ingenieria.mjs";
 
-test("la sala de ingeniería colisiona en sus límites salvo en la puerta hacia 'a'", () => {
+test("la sala de ingeniería colisiona en sus límites salvo en la puerta hacia el vestíbulo", () => {
   assert.equal(colisiona(4, -0.1, 0.3, PLANTA_INGENIERIA), true);
-  assert.equal(colisiona(PUERTA_INGENIERIA_HACIA_A.x + 1, 0.5, 0.3, PLANTA_INGENIERIA), false);
+  assert.equal(colisiona(PUERTA_INGENIERIA_HACIA_VESTIBULO.x + 1, 0.5, 0.3, PLANTA_INGENIERIA), false);
 });
 
 test("componerIngenieria devuelve una escena con polígonos y estrellas por la ventana", () => {

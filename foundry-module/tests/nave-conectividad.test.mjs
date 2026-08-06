@@ -2,11 +2,11 @@
 // andando a cualquier sala de la nave, cruzando puertas reales del catálogo
 // (nave-catalogo-andar.mjs), sin colisionar ni quedarse atascado en ninguna.
 //
-// No comprueba GEOGRAFÍA (si "a" debería o no ser el nudo que reparte hacia
-// el resto de la nave, en vez de una conexión directa desde la cantina) —
-// esa es una decisión de diseño pendiente, no algo que un test deba fijar.
-// Comprueba CONECTIVIDAD: que el grafo de estancias no deja ninguna sala
-// real aislada de la cantina.
+// El vestíbulo (`nave-vestibulo.mjs`) es el nudo real hacia el resto de la
+// nave — sustituyó a la sala de pruebas "a" en cuanto existió una pieza de
+// geografía real que pudiera hacer ese papel. Este test comprueba
+// CONECTIVIDAD: que el grafo de estancias no deja ninguna sala real aislada
+// de la cantina, no la forma concreta que tome esa geografía.
 
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -38,10 +38,10 @@ test("desde la cantina se puede llegar a todas las estancias del catálogo", () 
   assert.deepEqual([...alcanzadas].sort(), [...CATALOGO_ANDAR.ids].sort());
 });
 
-test("recorrido real cantina -> a -> pasillo del puente -> mando, cruzando cada puerta", () => {
+test("recorrido real cantina -> vestíbulo -> pasillo del puente -> mando, cruzando cada puerta", () => {
   const pasos = [
-    { desde: "cantina", hacia: "a" },
-    { desde: "a", hacia: "pasillo-puente" },
+    { desde: "cantina", hacia: "vestibulo" },
+    { desde: "vestibulo", hacia: "pasillo-puente" },
     { desde: "pasillo-puente", hacia: "mando" },
   ];
   let posicion = null;

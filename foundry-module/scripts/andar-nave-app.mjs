@@ -1,7 +1,8 @@
-/* Ventana del prototipo de "andar por la nave" (#427). Envuelve
+/* Ventana de "andar por la nave" (#427). Envuelve
  * `nave-movimiento-lienzo.mjs` (el bucle) sobre `nave-catalogo-andar.mjs`,
- * que cose las dos salas de pruebas del motor CON la primera sala real, la
- * cantina — y traduce teclado en pulsar/soltar/girar.
+ * que cose la nave real que se puede recorrer hoy — cantina, vestíbulo,
+ * ingeniería y el pasillo del puente con sus cinco salas de estación (#508)
+ * — y traduce teclado en pulsar/soltar/girar.
  *
  * Capa fina, igual que el resto del módulo: no decide colisión, cámara ni a
  * qué estancia lleva una puerta — eso ya lo resolvió el catálogo. Aquí solo
@@ -9,11 +10,6 @@
  * `mando.cambiarEstancia(...)` con lo que el catálogo ya decidió. Dos clases
  * hermanas (`Application` v11, `ApplicationV2` v12+), sin código de ventana
  * compartido a propósito.
- *
- * SIGUE SIENDO UN PROTOTIPO TÉCNICO, Y SE DICE EN LA PROPIA VENTANA: la
- * puerta hacia la cantina prueba que la costura aguanta con una sala de
- * verdad, no que esa sea la geografía definitiva de la nave (ver
- * `nave-catalogo-andar.mjs`).
  */
 
 import { MODULE_ID } from "./lagunak-constantes.mjs";
@@ -28,7 +24,7 @@ import {
 } from "./nave-movimiento-red.mjs";
 import { avatarDeUsuario } from "./avatar-assignment.mjs";
 
-const ESTANCIA_INICIAL = "a";
+const ESTANCIA_INICIAL = "cantina";
 
 /**
  * Dónde se guarda la posición: flag del propio `User`, client-side, igual

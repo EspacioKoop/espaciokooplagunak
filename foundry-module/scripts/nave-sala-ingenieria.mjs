@@ -1,6 +1,6 @@
 // Sala de ingeniería (#508): la primera sala REAL de la nave hecha con la
-// fábrica de sala-caja (`nave-sala-caja.mjs`), conectada al banco de pruebas
-// de #427 (`nave-movimiento-sala-prueba.mjs`) por su muro norte.
+// fábrica de sala-caja (`nave-sala-caja.mjs`), conectada al vestíbulo
+// (`nave-vestibulo.mjs`) por su muro sur.
 //
 // POR QUÉ INGENIERÍA PRIMERO. Ya tiene sitio propio en la planta 2D de la
 // sección de la nave (`seccion-nave.mjs`, sala "ingenieria", destino
@@ -15,10 +15,10 @@
 import { SECCION } from "./paleta.mjs";
 import { crearSalaCaja } from "./nave-sala-caja.mjs";
 
-/** Puerta hacia la sala de pruebas "a" (#427), en el muro sur: el mismo
- *  rectángulo que `PUERTA_A_HACIA_INGENIERIA` describe desde el otro lado,
- *  pero en el sistema de coordenadas PROPIO de esta sala. */
-export const PUERTA_INGENIERIA_HACIA_A = { x: 3, z: 0, ancho: 2, profundidad: 1.2 };
+/** Puerta hacia el vestíbulo, en el muro sur: el mismo rectángulo que
+ *  `PUERTA_VESTIBULO_HACIA_INGENIERIA` describe desde el otro lado, pero en
+ *  el sistema de coordenadas PROPIO de esta sala. */
+export const PUERTA_INGENIERIA_HACIA_VESTIBULO = { x: 3, z: 0, ancho: 2, profundidad: 1.2 };
 
 /** Ventana al espacio en el muro norte, enfrente de la entrada: casi todo el
  *  ancho de la sala (margen de 1 a cada lado), como pidió el feedback de
@@ -28,7 +28,7 @@ const VENTANA_NORTE = { x: 1, z: 8, ancho: 6, profundidad: 1.2 };
 const SALA = crearSalaCaja({
   ancho: 8,
   profundidad: 8,
-  puertas: [{ rect: PUERTA_INGENIERIA_HACIA_A }],
+  puertas: [{ rect: PUERTA_INGENIERIA_HACIA_VESTIBULO }],
   ventanas: [{ rect: VENTANA_NORTE }],
   colorMuro: SECCION.casco,
   colorColumna: SECCION.mamparo,

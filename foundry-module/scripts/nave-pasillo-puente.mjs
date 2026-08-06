@@ -2,12 +2,9 @@
 // cinco salas de puesto del puente (mando, navegación, sensores,
 // comunicaciones, armas) — ver `nave-salas-puente.mjs` para las salas en sí.
 //
-// UN PASILLO, NO CINCO PUERTAS SUELTAS DESDE "a". La sala de pruebas de #427
-// ya tiene sus cuatro muros ocupados (b, cantina, ingeniería) y, aunque le
-// sobrara sitio, colgar cinco salas directamente de un banco de pruebas haría
-// que "a" dejara de ser un banco de pruebas y pasara a ser sin querer la
-// geografía real de la nave. El pasillo es la pieza que sí es geografía real:
-// una sola puerta lo conecta con "a", y de él cuelgan las cinco.
+// UN PASILLO, NO CINCO PUERTAS SUELTAS DESDE EL VESTÍBULO. Una sola puerta
+// lo conecta con el vestíbulo (`nave-vestibulo.mjs`, el nudo real hacia la
+// cantina y hacia ingeniería), y de él cuelgan las cinco.
 //
 // LA LISTA `ESTACIONES` ES LA ÚNICA FUENTE DE LAS POSICIONES DE PUERTA. La
 // reutiliza tanto este módulo (para abrir el hueco en el propio muro del
@@ -42,9 +39,9 @@ const PROFUNDIDAD = 28;
 const ANCHO_PUERTA = 1.2;
 const PROFUNDIDAD_PUERTA = 2;
 
-/** Puerta del pasillo hacia la sala de pruebas "a" (#427), en su muro oeste:
- *  el otro extremo de `PUERTA_A_HACIA_PASILLO`. */
-export const PUERTA_PASILLO_HACIA_A = { x: 0, z: 1, ancho: ANCHO_PUERTA, profundidad: PROFUNDIDAD_PUERTA };
+/** Puerta del pasillo hacia el vestíbulo, en su muro oeste: el otro extremo
+ *  de `PUERTA_VESTIBULO_HACIA_PASILLO`. */
+export const PUERTA_PASILLO_HACIA_VESTIBULO = { x: 0, z: 1, ancho: ANCHO_PUERTA, profundidad: PROFUNDIDAD_PUERTA };
 
 /** La puerta del pasillo hacia la sala de una estación, en su muro este. */
 export function puertaHaciaEstacion(estacion) {
@@ -58,15 +55,18 @@ export function llegadaDesdeEstacion(estacion) {
   return { x: 2, z: estacion.z + PROFUNDIDAD_PUERTA + 1, yaw: -Math.PI / 2 };
 }
 
-/** Dónde aparece quien entra al pasillo desde "a": pasado el hueco de la
- *  puerta de vuelta (z:1..3) y antes de la primera puerta de estación
+/** Dónde aparece quien entra al pasillo desde el vestíbulo: pasado el hueco
+ *  de la puerta de vuelta (z:1..3) y antes de la primera puerta de estación
  *  (z:6..8). */
-export const LLEGADA_DESDE_A = { x: 2, z: 4, yaw: 0 };
+export const LLEGADA_DESDE_VESTIBULO = { x: 2, z: 4, yaw: 0 };
 
 const SALA = crearSalaCaja({
   ancho: ANCHO,
   profundidad: PROFUNDIDAD,
-  puertas: [{ rect: PUERTA_PASILLO_HACIA_A }, ...ESTACIONES.map((estacion) => ({ rect: puertaHaciaEstacion(estacion) }))],
+  puertas: [
+    { rect: PUERTA_PASILLO_HACIA_VESTIBULO },
+    ...ESTACIONES.map((estacion) => ({ rect: puertaHaciaEstacion(estacion) })),
+  ],
   colorMuro: SECCION.mamparo,
 });
 

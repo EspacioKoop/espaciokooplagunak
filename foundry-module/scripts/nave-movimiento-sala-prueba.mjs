@@ -33,22 +33,13 @@ export { ALTURA_OJOS };
  */
 export const PUERTA_A_HACIA_B = { x: 4, z: 8.8, ancho: 2, profundidad: 1.2 };
 export const PUERTA_B_HACIA_A = { x: 2, z: 0, ancho: 2, profundidad: 1.2 };
-/** En el muro oeste de la sala A: no la usa `CATALOGO_PRUEBA` (solo conecta
- *  A y B), pero sí `nave-catalogo-andar.mjs`, que añade la puerta a la
- *  cantina real sobre esta misma sala A. */
-export const PUERTA_A_HACIA_CANTINA = { x: 0, z: 4, ancho: 1.2, profundidad: 2 };
-/** En el muro norte de la sala A: la puerta hacia la primera sala de puesto
- *  real (#508, `nave-sala-ingenieria.mjs`), en un lado que hasta ahora no
- *  tenía ninguna puerta. */
-export const PUERTA_A_HACIA_INGENIERIA = { x: 3, z: 0, ancho: 2, profundidad: 1.2 };
-/** En el muro este de la sala A: la puerta hacia el pasillo del puente
- *  (#508, `nave-pasillo-puente.mjs`), el cuarto y último lado libre. */
-export const PUERTA_A_HACIA_PASILLO = { x: 8.8, z: 4, ancho: 1.2, profundidad: 2 };
 
 /** Sala A: la sala de pruebas original, con dos columnas para probar
  *  colisión y deslizamiento diagonal (ver los tests de `nave-movimiento.
  *  mjs`). Se conserva como export propio por compatibilidad con quien ya la
- *  usa fuera del catálogo. */
+ *  usa fuera del catálogo. Solo su puerta hacia B: dejó de hacer de nudo
+ *  hacia la nave real cuando el vestíbulo (`nave-vestibulo.mjs`) tomó ese
+ *  papel — ver la cabecera de este archivo. */
 const SALA_A = crearSalaCaja({
   ancho: 10,
   profundidad: 10,
@@ -56,12 +47,7 @@ const SALA_A = crearSalaCaja({
     { x: 3, z: 3, ancho: 0.8, profundidad: 0.8 },
     { x: 6.2, z: 6.2, ancho: 0.8, profundidad: 0.8 },
   ],
-  puertas: [
-    { rect: PUERTA_A_HACIA_B },
-    { rect: PUERTA_A_HACIA_CANTINA },
-    { rect: PUERTA_A_HACIA_INGENIERIA },
-    { rect: PUERTA_A_HACIA_PASILLO },
-  ],
+  puertas: [{ rect: PUERTA_A_HACIA_B }],
 });
 export const PLANTA_PRUEBA = SALA_A.planta;
 export const componerSalaPrueba = SALA_A.componer;

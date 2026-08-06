@@ -67,7 +67,11 @@ const SALA = crearSalaCaja({
     { rect: PUERTA_PASILLO_HACIA_VESTIBULO },
     ...ESTACIONES.map((estacion) => ({ rect: puertaHaciaEstacion(estacion) })),
   ],
-  colorMuro: SECCION.mamparo,
+  // SECCION.casco (el valor por defecto) y NO SECCION.mamparo: el fondo
+  // entre estancias de `andar-nave-app.mjs` usa `mamparo`, así que unos
+  // muros del mismo color se camuflaban contra él y el pasillo se leía como
+  // vacío en vez de como un pasillo real (QA). Mismo tono que el resto de
+  // salas de la nave.
 });
 
 export const PLANTA_PASILLO_PUENTE = SALA.planta;

@@ -34,7 +34,13 @@ const SALA = crearSalaCaja({
     { rect: PUERTA_VESTIBULO_HACIA_INGENIERIA },
     { rect: PUERTA_VESTIBULO_HACIA_PASILLO },
   ],
-  colorMuro: SECCION.mamparo,
+  // SECCION.casco (el valor por defecto de crearSalaCaja) y NO
+  // SECCION.mamparo (QA: "hay un espacio vacío entre salas"): el fondo entre
+  // estancias de `andar-nave-app.mjs` usa justo `mamparo`, así que unos
+  // muros del mismo color se camuflan contra él — la sala entera se leía
+  // como vacío en vez de como una sala real. `casco` es el mismo tono que ya
+  // usan ingeniería y las salas de estación, así que de paso queda
+  // consistente en toda la nave.
 });
 
 export const PLANTA_VESTIBULO = SALA.planta;

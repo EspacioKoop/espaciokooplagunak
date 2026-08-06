@@ -288,6 +288,10 @@ export function crearSalaCaja({
         color,
         posicion: [0, 0, 0],
         yaw: yawCamara,
+        // Recorte de frustum completo (#510): las salas de #508 son
+        // contenido nuevo sin cámaras afinadas a ojo que dependan del recorte
+        // laxo — activarlo aquí es justo el caso seguro que #510 documenta.
+        recorteLateral: true,
       }),
     );
 

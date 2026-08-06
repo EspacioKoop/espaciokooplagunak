@@ -225,6 +225,65 @@ export function recortarCercano(vertices, cerca) {
 }
 
 /**
+ * Recorta un polígono contra los CUATRO planos laterales del frustum
+ * (izquierda, derecha, arriba, abajo), derivados de `ancho`/`alto`/`f` — los
+ * mismos que usa `proyectar` para pasar de cámara a pantalla, así que un
+ * vértice que sobrevive a este recorte cae siempre dentro de `[0,ancho]` y
+ * `[0,alto]` una vez proyectado.
+ *
+ * OPCIONAL A PROPÓSITO (ver el comentario en `componerEscena`): sin él, un
+ * muro visto de canto —un pasillo mirado de frente, el caso normal— puede
+ * pasar el recorte cercano con un `x`/`y` de cámara moderado y `proyectar`
+ * lo dispara a miles de píxeles fuera de pantalla: matemáticamente es la
+ * perspectiva correcta de un punto casi tangente al ojo, pero ese punto
+ * nunca estuvo dentro del cono de visión — solo lo parecía por mirar solo la
+ * profundidad. `componerEscena({ recorteLateral: true })` lo activa.
+ */
+export function recortarLateral(vertices, { ancho, alto, f }) {
+  const anchoOk = acotar(ancho, 1, 1e6, 160);
+  const altoOk = acotar(alto, 1, 1e6, 120);
+  const fOk = acotar(f, 1e-6, 1e9, 1);
+  // Medio ancho/alto del volumen de vista a `z=1`: el plano se escala con
+  // `z` (más lejos, más ancho vale), la ecuación de un plano por el origen.
+  const mitadX = anchoOk / (2 * fOk);
+  const mitadY = altoOk / (2 * fOk);
+  let recortados = recortarContraPlano(vertices, (v) => v[2] * mitadX + v[0]); // izquierda
+  recortados = recortarContraPlano(recortados, (v) => v[2] * mitadX - v[0]); // derecha
+  recortados = recortarContraPlano(recortados, (v) => v[2] * mitadY + v[1]); // abajo
+  recortados = recortarContraPlano(recortados, (v) => v[2] * mitadY - v[1]); // arriba
+  return recortados;
+}
+
+/**
+ * Sutherland-Hodgman genérico: `evaluar(vertice)` es la distancia (con
+ * signo) de un vértice al plano — dentro cuando es `>= 0`. Sirve para
+ * cualquier plano que pase por el origen de cámara, que es lo que
+ * `recortarLateral` necesita y `recortarContra` (fijo al eje Z) no puede dar.
+ */
+function recortarContraPlano(vertices, evaluar) {
+  const dentro = [];
+  const n = vertices.length;
+  for (let i = 0; i < n; i += 1) {
+    const actual = vertices[i];
+    const siguiente = vertices[(i + 1) % n];
+    const dA = evaluar(actual);
+    const dB = evaluar(siguiente);
+    const actualDentro = dA >= 0;
+    const siguienteDentro = dB >= 0;
+    if (actualDentro) dentro.push(actual);
+    if (actualDentro !== siguienteDentro) {
+      const t = dA / (dA - dB);
+      dentro.push([
+        actual[0] + (siguiente[0] - actual[0]) * t,
+        actual[1] + (siguiente[1] - actual[1]) * t,
+        actual[2] + (siguiente[2] - actual[2]) * t,
+      ]);
+    }
+  }
+  return dentro;
+}
+
+/**
  * Recorta un polígono contra el plano lejano (`z <= lejos`), el mismo
  * Sutherland-Hodgman con el signo cambiado.
  *
@@ -352,7 +411,8 @@ export function factorNiebla(profundidad, { cerca, lejos, niebla }) {
  * Así esto se prueba en Node sin un `<canvas>` de mentira.
  *
  * @param {{vertices: number[][], caras: number[][]}} malla
- * @param {object} opciones
+ * @param {object} opciones `recorteLateral` (default `false`) activa el
+ *   recorte contra los cuatro planos del frustum, ver `recortarLateral`.
  */
 export function componerEscena(malla, opciones = {}) {
   // TODA la entrada se normaliza aquí, en el borde, y no en cada operación de
@@ -398,10 +458,25 @@ export function componerEscena(malla, opciones = {}) {
     const crudos = cara.map((indice) => enCamara[indice]).filter(Boolean);
     if (crudos.length < 3) continue;
 
-    // Primero el plano cercano y después el lejano: lo que quede está dentro del
-    // volumen de dibujo, así que ni la proyección ni la niebla ven geometría que
-    // el alcance ya no cubre.
-    const recortada = recortarLejano(recortarCercano(crudos, cerca), lejos);
+    // Primero el plano cercano, LUEGO opcionalmente los cuatro laterales, y
+    // después el lejano: lo que quede está dentro del volumen de dibujo, así
+    // que ni la proyección ni la niebla ven geometría que el alcance ya no
+    // cubre.
+    //
+    // `recorteLateral` es OPT-IN, no el comportamiento por defecto (#508 QA,
+    // documentado en #510): sin él, un vértice a `z` diminuto con un `x`/`y`
+    // de cámara moderado sigue pasando el recorte cercano y `proyectar` lo
+    // dispara a miles de píxeles fuera de pantalla — el bug real que motivó
+    // esto. Actívalo y arregla ese caso, pero las cámaras ya publicadas de la
+    // cantina (`cantina-planos.mjs`) cuentan HOY con que geometría fuera del
+    // cono de visión nominal se cuele sin recortar — activarlo por defecto
+    // recortaría de golpe planos ya afinados a ojo (hasta un 70% menos de
+    // polígonos en alguno), un cambio visual que necesita ojos delante de un
+    // cliente real, no una decisión de código. Actívalo explícitamente en
+    // escenas nuevas que ya se hayan comprobado sin ese riesgo.
+    let recortada = recortarCercano(crudos, cerca);
+    if (opciones.recorteLateral) recortada = recortarLateral(recortada, { ancho, alto, f });
+    recortada = recortarLejano(recortada, lejos);
     if (recortada.length < 3) continue;
 
     // La normal se toma de la cara SIN recortar: el recorte añade vértices sobre

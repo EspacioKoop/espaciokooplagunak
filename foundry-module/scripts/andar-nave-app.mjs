@@ -26,8 +26,26 @@ import {
 } from "./nave-movimiento-red.mjs";
 import { avatarDeUsuario } from "./avatar-assignment.mjs";
 import { openWorkspaceApp } from "./station-workspace-ui.mjs";
+import { SECCION } from "./paleta.mjs";
 
 const ESTANCIA_INICIAL = "cantina";
+
+/**
+ * El lienzo no tiene fondo propio en CSS ni en la plantilla: sin uno, cada
+ * hueco sin geometría —el marco de cualquier puerta, cualquier borde que no
+ * llegue a cubrir el pintor— deja el `<canvas>` transparente y se ve el
+ * fondo claro del propio diálogo de Foundry por debajo (QA: "un espacio
+ * blanco absurdo").
+ *
+ * `SECCION.mamparo` y NO `SECCION.vacio`: lo que se ve por el hueco de una
+ * puerta es más NAVE sin renderizar todavía (la sala vecina no se compone
+ * hasta que se cruza), no el espacio exterior — `mamparo` ya es "el relleno
+ * entre salas" en la sección 2D (#427) y es justo ese significado. El vacío
+ * de verdad solo aparece donde de verdad hay vacío: por una VENTANA
+ * (`nave-sala-caja.mjs`, que pinta su propio campo de estrellas encima de
+ * este fondo).
+ */
+const FONDO_ENTRE_SALAS = SECCION.mamparo;
 
 /**
  * Dónde se guarda la posición: flag del propio `User`, client-side, igual
@@ -113,16 +131,27 @@ function engancharTeclado(raiz, mando) {
     mando.girar(Math.sign(sentido));
   };
 
+  // `stopPropagation` y no solo `preventDefault` (QA: agacharse — tecla "c" o
+  // Control — colgaba la ventana): sin ella, la tecla sigue subiendo por el
+  // DOM hasta el gestor de atajos GLOBAL de Foundry (o de cualquier módulo
+  // que escuche en `document`), que puede reaccionar a la misma tecla
+  // esperando un contexto —token seleccionado, escena activa— que este
+  // lienzo no tiene. `preventDefault` solo evita la acción por defecto del
+  // NAVEGADOR (p. ej. que Ctrl abra un menú); no aísla el evento de otros
+  // listeners de la propia página, que es justo lo que este lienzo necesita:
+  // sus teclas son suyas mientras tiene el foco, y de nadie más.
   const onKeyDown = (ev) => {
     const direccion = TECLA_DIRECCION[ev.key];
     if (direccion) {
       ev.preventDefault();
+      ev.stopPropagation();
       mando.pulsar(direccion);
       return;
     }
     const giro = TECLA_GIRO[ev.key];
     if (giro) {
       ev.preventDefault();
+      ev.stopPropagation();
       girando.add(giro);
       actualizarGiro();
     }
@@ -130,11 +159,13 @@ function engancharTeclado(raiz, mando) {
   const onKeyUp = (ev) => {
     const direccion = TECLA_DIRECCION[ev.key];
     if (direccion) {
+      ev.stopPropagation();
       mando.soltar(direccion);
       return;
     }
     const giro = TECLA_GIRO[ev.key];
     if (giro) {
+      ev.stopPropagation();
       girando.delete(giro);
       actualizarGiro();
     }
@@ -221,6 +252,7 @@ function arrancar(raiz) {
     // cabecera de `station-workspace-ui.mjs`) — caminar hasta una consola
     // ajena no enseña nada que el relé no dejara ver igualmente por botón.
     alTocarConsola: (puesto) => openWorkspaceApp(puesto),
+    fondo: FONDO_ENTRE_SALAS,
     pedirFotograma: (cb) => globalThis.requestAnimationFrame?.(cb),
     cancelarFotograma: (id) => globalThis.cancelAnimationFrame?.(id),
     // Se evalúa en cada fotograma pintado (#498): el bucle nunca ve un Map,

@@ -4,259 +4,29 @@
 // y la costura entre estancias (`nave-estancias.mjs`) antes de decidir qué
 // sala REAL de la nave se anda primero.
 //
-// A propósito NO son la cantina. `cantina-escena.mjs` tiene decenas de
-// muebles sin colisión definida todavía, y adivinar aquí esa colisión sin que
-// nadie la revise sería construir sobre una base sin verificar. Estas salas
-// son honestas sobre lo que son: un banco de pruebas, con la MISMA geometría
+// A propósito NO son la cantina, ni ninguna sala de puesto (#508: esas viven
+// en sus propios archivos, `nave-sala-*.mjs`, hechas con la misma fábrica que
+// este archivo usa). `cantina-escena.mjs` tiene decenas de muebles sin
+// colisión definida todavía, y adivinar aquí esa colisión sin que nadie la
+// revise sería construir sobre una base sin verificar. Estas salas son
+// honestas sobre lo que son: un banco de pruebas, con la MISMA geometría
 // exacta en el render que en la colisión — la caja física ES el obstáculo
 // visual, sin margen que ocultar entre las dos.
 //
-// Reutiliza el motor 3D (`retro3d.mjs`) sin tocarlo, igual que
-// `cantina-escena.mjs`/`dados-3d.mjs`: aporta solo mallas y su colocación.
+// La fábrica de sala-caja (muros, puertas, ventanas) vive en
+// `nave-sala-caja.mjs`: este archivo solo declara las DOS salas de prueba y
+// su puerta, no cómo se construye una caja.
 //
 // Puro: ni Foundry, ni DOM, ni <canvas>, ni reloj, ni Math.random().
-//
-// Frontera de arte (#351): no declara ni un color propio — todos vienen de
-// `paleta.mjs` (`SECCION`, ya usada para materiales genéricos de nave).
 
-import { SECCION } from "./paleta.mjs";
-import { componerEscena } from "./retro3d.mjs";
-import { crearPlanta } from "./nave-movimiento.mjs";
 import { crearCatalogoEstancias } from "./nave-estancias.mjs";
-import { poligonosOtrosJugadores } from "./nave-avatares-render.mjs";
+import { ALTURA_OJOS, crearSalaCaja } from "./nave-sala-caja.mjs";
 
-/** Caja alineada a ejes por centro+medidas, caras en sentido antihorario
- *  vistas desde fuera (lo que `componerEscena` necesita para descartar las de
- *  espaldas) — la misma primitiva que ya usa `cantina-escena.mjs`. */
-function caja([cx, cy, cz], [ancho, alto, fondo]) {
-  const x = ancho / 2;
-  const y = alto / 2;
-  const z = fondo / 2;
-  return {
-    vertices: [
-      [cx - x, cy - y, cz - z],
-      [cx + x, cy - y, cz - z],
-      [cx + x, cy + y, cz - z],
-      [cx - x, cy + y, cz - z],
-      [cx - x, cy - y, cz + z],
-      [cx + x, cy - y, cz + z],
-      [cx + x, cy + y, cz + z],
-      [cx - x, cy + y, cz + z],
-    ],
-    caras: [
-      [0, 3, 2, 1], // frente (−z)
-      [4, 5, 6, 7], // fondo (+z)
-      [0, 4, 7, 3], // izquierda
-      [1, 2, 6, 5], // derecha
-      [3, 7, 6, 2], // techo
-      [0, 1, 5, 4], // suelo
-    ],
-  };
-}
-
-/** A qué altura mira quien anda, de pie. El salto/agachado (#446) suma su
- *  propio offset por encima de esta base — ver `y` en `componer` abajo. */
-export const ALTURA_OJOS = 1.6;
-
-const ALTURA = 3;
-const GROSOR_MURO = 0.4;
-
-/** Altura del hueco de una puerta: por debajo se puede cruzar, por encima
- *  sigue habiendo muro (el dintel) — sin él, la pared "flotaría" cortada en
- *  seco y perdería la silueta de puerta reconocible. */
-const ALTURA_PUERTA = 2.2;
-const TOLERANCIA_BORDE = 0.01;
-
-/** Rectángulo esquina+medidas a caja centro+medidas en Y = [y0, y1]. */
-function rectAColumnaEntre(rect, y0, y1) {
-  return caja(
-    [rect.x + rect.ancho / 2, (y0 + y1) / 2, rect.z + rect.profundidad / 2],
-    [rect.ancho, y1 - y0, rect.profundidad],
-  );
-}
-
-/** Rectángulo esquina+medidas a caja centro+medidas en Y = [0, altura]. */
-function rectAColumna(rect, altura) {
-  return rectAColumnaEntre(rect, 0, altura);
-}
+export { ALTURA_OJOS };
 
 /**
- * Recorta un muro `x`-orientado (los de norte/sur, que se extienden a lo
- * largo de X) para dejar un hueco de puerta entre `[desde, hasta]`. Devuelve
- * los tramos de pared que sobreviven (0, 1 o 2, según si el hueco está en un
- * extremo o en medio).
- */
-function recortarMuroX(muro, desde, hasta) {
-  const inicio = muro.x;
-  const fin = muro.x + muro.ancho;
-  const tramos = [];
-  if (desde > inicio) tramos.push({ ...muro, ancho: desde - inicio });
-  if (hasta < fin) tramos.push({ ...muro, x: hasta, ancho: fin - hasta });
-  return tramos;
-}
-
-/** Igual que `recortarMuroX`, para muros `z`-orientados (este/oeste). */
-function recortarMuroZ(muro, desde, hasta) {
-  const inicio = muro.z;
-  const fin = muro.z + muro.profundidad;
-  const tramos = [];
-  if (desde > inicio) tramos.push({ ...muro, profundidad: desde - inicio });
-  if (hasta < fin) tramos.push({ ...muro, z: hasta, profundidad: fin - hasta });
-  return tramos;
-}
-
-/**
- * Convierte la lista de muros llenos y la lista de puertas (mismo rectángulo
- * que ya usa `puertaTocada` como disparador, #427) en las piezas de pared
- * que de verdad hay que dibujar: cada puerta abre un hueco en el muro que
- * toca —a qué lado pertenece se decide por qué borde de la sala toca el
- * rectángulo de la puerta, no por su orden en la lista— y añade el dintel
- * por encima de `ALTURA_PUERTA` para que la pared no quede "flotando".
- */
-function abrirPuertasEnMuros(muros, puertas, ancho, profundidad) {
-  const [norte, sur, oeste, este] = muros;
-  let tramosNorte = [norte];
-  let tramosSur = [sur];
-  let tramosOeste = [oeste];
-  let tramosEste = [este];
-  const dinteles = [];
-
-  for (const puerta of puertas) {
-    const { rect } = puerta;
-    const tocaNorte = rect.z <= TOLERANCIA_BORDE;
-    const tocaSur = rect.z + rect.profundidad >= profundidad - TOLERANCIA_BORDE;
-    const tocaOeste = rect.x <= TOLERANCIA_BORDE;
-    const tocaEste = rect.x + rect.ancho >= ancho - TOLERANCIA_BORDE;
-
-    if (tocaNorte) {
-      tramosNorte = tramosNorte.flatMap((m) => recortarMuroX(m, rect.x, rect.x + rect.ancho));
-      dinteles.push(rectAColumnaEntre({ ...norte, x: rect.x, ancho: rect.ancho }, ALTURA_PUERTA, ALTURA));
-    } else if (tocaSur) {
-      tramosSur = tramosSur.flatMap((m) => recortarMuroX(m, rect.x, rect.x + rect.ancho));
-      dinteles.push(rectAColumnaEntre({ ...sur, x: rect.x, ancho: rect.ancho }, ALTURA_PUERTA, ALTURA));
-    } else if (tocaOeste) {
-      tramosOeste = tramosOeste.flatMap((m) => recortarMuroZ(m, rect.z, rect.z + rect.profundidad));
-      dinteles.push(rectAColumnaEntre({ ...oeste, z: rect.z, profundidad: rect.profundidad }, ALTURA_PUERTA, ALTURA));
-    } else if (tocaEste) {
-      tramosEste = tramosEste.flatMap((m) => recortarMuroZ(m, rect.z, rect.z + rect.profundidad));
-      dinteles.push(rectAColumnaEntre({ ...este, z: rect.z, profundidad: rect.profundidad }, ALTURA_PUERTA, ALTURA));
-    }
-    // Una puerta que no toca ningún borde es un dato de planta mal formado
-    // (no debería pasar en un catálogo bien hecho): se ignora en vez de
-    // reventar el render por un rectángulo que la colisión igual respeta.
-  }
-
-  return {
-    muros: [...tramosNorte, ...tramosSur, ...tramosOeste, ...tramosEste],
-    dinteles,
-  };
-}
-
-/** Traslada una malla en coordenadas de mundo. */
-function trasladarMalla(malla, [dx, dy, dz]) {
-  return { ...malla, vertices: malla.vertices.map(([x, y, z]) => [x + dx, y + dy, z + dz]) };
-}
-
-/**
- * Fabrica una sala-caja: cuatro muros por el límite de la planta (sin
- * declararlos como obstáculos aparte — ya los cubre `ancho`/`profundidad` de
- * `crearPlanta`, y duplicarlos podría desincronizar render y colisión),
- * columnas opcionales, suelo y techo.
- *
- * Devuelve `{planta, componer}`, la forma exacta que pide
- * `nave-estancias.declararEstancia` y `nave-movimiento-lienzo.arrancarAndar`.
- *
- * `puertas` son los MISMOS rectángulos que se declaran como disparador en el
- * catálogo de estancias (#427): pasarlos aquí abre un hueco real en la malla
- * del muro que tocan, para que la puerta se vea y no sea solo una zona
- * invisible dentro de una pared aparentemente sólida.
- *
- * @param {{ancho:number, profundidad:number, columnas?:Array, puertas?:Array<{rect:object}>, colorMuro?:string, colorColumna?:string}} medidas
- */
-function crearSalaCaja({
-  ancho,
-  profundidad,
-  columnas = [],
-  puertas = [],
-  colorMuro = SECCION.casco,
-  colorColumna = SECCION.mamparo,
-}) {
-  const muros = [
-    { x: -GROSOR_MURO, z: -GROSOR_MURO, ancho: ancho + GROSOR_MURO * 2, profundidad: GROSOR_MURO },
-    { x: -GROSOR_MURO, z: profundidad, ancho: ancho + GROSOR_MURO * 2, profundidad: GROSOR_MURO },
-    { x: -GROSOR_MURO, z: 0, ancho: GROSOR_MURO, profundidad },
-    { x: ancho, z: 0, ancho: GROSOR_MURO, profundidad },
-  ];
-  const { muros: tramosMuro, dinteles } = abrirPuertasEnMuros(muros, puertas, ancho, profundidad);
-
-  const piezas = Object.freeze([
-    ...tramosMuro.map((rect) => ({ malla: rectAColumna(rect, ALTURA), color: colorMuro })),
-    ...dinteles.map((malla) => ({ malla, color: colorMuro })),
-    ...columnas.map((rect) => ({ malla: rectAColumna(rect, ALTURA), color: colorColumna })),
-    { malla: caja([ancho / 2, -0.05, profundidad / 2], [ancho, 0.1, profundidad]), color: SECCION.sala },
-    { malla: caja([ancho / 2, ALTURA + 0.05, profundidad / 2], [ancho, 0.1, profundidad]), color: SECCION.mamparo },
-  ]);
-
-  const planta = crearPlanta({ ancho, profundidad, obstaculos: columnas });
-
-  /**
-   * Compone la escena vista desde `(x, z)` mirando a `yaw`, con `y` el
-   * offset de salto/agachado (#446) sobre `ALTURA_OJOS` — mismo campo que
-   * devuelve `nave-movimiento.mover`, sin reinterpretarlo. La cámara se
-   * coloca RESTANDO su posición a cada pieza antes de componer (mismo motivo
-   * que `cantina-escena.mjs`): `transformar` gira alrededor del origen y
-   * DESPUÉS traslada, así que pasar la posición de cámara como `posicion` la
-   * aplicaría después de girar — una cámara orbitando un punto, no una
-   * cámara andando por la sala.
-   */
-  function componer(x, y, z, yaw, opciones = {}) {
-    const { ancho: anchoLienzo = 480, alto: altoLienzo = 270, epoca, fov = 62, otrosJugadores = [] } = opciones;
-    const camara = [x, ALTURA_OJOS + y, z];
-    const yawCamara = -yaw; // ver el comentario de `yaw` más abajo
-
-    const partes = piezas.map(({ malla, color }) =>
-      componerEscena(trasladarMalla(malla, [-camara[0], -camara[1], -camara[2]]), {
-        ancho: anchoLienzo,
-        alto: altoLienzo,
-        epoca,
-        fov,
-        color,
-        posicion: [0, 0, 0],
-        // `retro3d.transformar` gira la escena en sentido contrario al que
-        // `nave-movimiento.mover` usa para decidir "adelante" (#427): sin este
-        // signo, girar a la derecha hace que la escena parezca girar a la
-        // izquierda, y moverse "adelante" tras cualquier giro lleva hacia
-        // donde en pantalla parece estar detrás.
-        yaw: yawCamara,
-      }),
-    );
-
-    // Otros jugadores en esta sala (#498, follow-up de #453): mismo `camara`/
-    // `yaw` que la geometría de la sala, para que compartan exactamente la
-    // misma proyección — un avatar ajeno no es más que otra pieza más.
-    const poligonosJugadores = poligonosOtrosJugadores(otrosJugadores, {
-      camara,
-      yaw: yawCamara,
-      ancho: anchoLienzo,
-      alto: altoLienzo,
-      epoca,
-      fov,
-    });
-
-    // Fundido y reordenado global, igual que en `cantina-escena.mjs`: cada
-    // pieza ya viene ordenada por su cuenta, y el orden por pintor no es
-    // componible — concatenar dos listas correctas da una lista incorrecta.
-    const poligonos = [...partes.flatMap((parte) => parte.poligonos), ...poligonosJugadores]
-      .sort((a, b) => b.profundidad - a.profundidad);
-    return { ancho: anchoLienzo, alto: altoLienzo, epoca: partes[0]?.epoca, poligonos };
-  }
-
-  return { planta, componer };
-}
-
-/**
- * Rectángulos de puerta compartidos entre la malla de pared (arriba, el
- * hueco que se ve) y los catálogos de estancias (abajo y en
+ * Rectángulos de puerta compartidos entre la malla de pared (en
+ * `nave-sala-caja.mjs`) y los catálogos de estancias (abajo y en
  * `nave-catalogo-andar.mjs`, el disparador que se cruza): la misma
  * constante en los dos sitios es lo único que garantiza que el hueco
  * dibujado y la zona que de verdad teletransporta coincidan.
@@ -267,6 +37,10 @@ export const PUERTA_B_HACIA_A = { x: 2, z: 0, ancho: 2, profundidad: 1.2 };
  *  A y B), pero sí `nave-catalogo-andar.mjs`, que añade la puerta a la
  *  cantina real sobre esta misma sala A. */
 export const PUERTA_A_HACIA_CANTINA = { x: 0, z: 4, ancho: 1.2, profundidad: 2 };
+/** En el muro norte de la sala A: la puerta hacia la primera sala de puesto
+ *  real (#508, `nave-sala-ingenieria.mjs`), en un lado que hasta ahora no
+ *  tenía ninguna puerta. */
+export const PUERTA_A_HACIA_INGENIERIA = { x: 3, z: 0, ancho: 2, profundidad: 1.2 };
 
 /** Sala A: la sala de pruebas original, con dos columnas para probar
  *  colisión y deslizamiento diagonal (ver los tests de `nave-movimiento.
@@ -279,7 +53,11 @@ const SALA_A = crearSalaCaja({
     { x: 3, z: 3, ancho: 0.8, profundidad: 0.8 },
     { x: 6.2, z: 6.2, ancho: 0.8, profundidad: 0.8 },
   ],
-  puertas: [{ rect: PUERTA_A_HACIA_B }, { rect: PUERTA_A_HACIA_CANTINA }],
+  puertas: [
+    { rect: PUERTA_A_HACIA_B },
+    { rect: PUERTA_A_HACIA_CANTINA },
+    { rect: PUERTA_A_HACIA_INGENIERIA },
+  ],
 });
 export const PLANTA_PRUEBA = SALA_A.planta;
 export const componerSalaPrueba = SALA_A.componer;

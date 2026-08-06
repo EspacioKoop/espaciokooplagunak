@@ -7,13 +7,27 @@ import { PLANTA_PRUEBA } from "../scripts/nave-movimiento-sala-prueba.mjs";
 import { PLANTA_CANTINA } from "../scripts/cantina-planta.mjs";
 import { CATALOGO_ANDAR } from "../scripts/nave-catalogo-andar.mjs";
 
-test("CATALOGO_ANDAR conoce las tres estancias", () => {
-  assert.deepEqual(CATALOGO_ANDAR.ids, ["a", "b", "cantina"]);
+test("CATALOGO_ANDAR conoce las cuatro estancias", () => {
+  assert.deepEqual(CATALOGO_ANDAR.ids, ["a", "b", "cantina", "ingenieria"]);
 });
 
-test("la sala 'a' tiene dos puertas: a 'b' y a la cantina", () => {
+test("la sala 'a' tiene tres puertas: a 'b', a la cantina y a ingeniería", () => {
   const destinos = CATALOGO_ANDAR.obtener("a").puertas.map((p) => p.destino.estancia);
-  assert.deepEqual(destinos.sort(), ["b", "cantina"]);
+  assert.deepEqual(destinos.sort(), ["b", "cantina", "ingenieria"]);
+});
+
+test("cruzar de 'a' a ingeniería no colisiona con nada al llegar, y se puede volver", () => {
+  const puerta = CATALOGO_ANDAR.obtener("a").puertas.find((p) => p.destino.estancia === "ingenieria");
+  const llegada = puntoDeLlegada(CATALOGO_ANDAR, puerta.destino);
+  assert.equal(llegada.estancia, "ingenieria");
+  assert.equal(colisiona(llegada.x, llegada.z, 0.35, llegada.planta), false);
+
+  const puertaDeVuelta = CATALOGO_ANDAR.obtener("ingenieria").puertas[0];
+  assert.equal(puertaTocada(llegada.x, llegada.z, 0.35, [puertaDeVuelta]), null);
+
+  const vuelta = puntoDeLlegada(CATALOGO_ANDAR, puertaDeVuelta.destino);
+  assert.equal(vuelta.estancia, "a");
+  assert.equal(colisiona(vuelta.x, vuelta.z, 0.35, vuelta.planta), false);
 });
 
 test("cruzar de 'a' a la cantina no colisiona con nada al llegar", () => {

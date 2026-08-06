@@ -207,6 +207,16 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     puesto) — la sección no estrena ninguna. No da autoridad (#237: el puesto se lee para saber
     dónde pintarte, nunca al revés) y no inventa lecturas (sin sondeo la sala va neutra, no en
     cero). Una sala nueva es una entrada más de la planta, no un botón nuevo en `main.mjs`.
+  - **Andar por la nave** — `scripts/nave-movimiento.mjs` (colisión círculo-caja y el paso continuo,
+    puro), `scripts/nave-estancias.mjs` (catálogo de estancias: qué sala lleva a cuál) y
+    `scripts/nave-movimiento-lienzo.mjs`/`nave-movimiento-red.mjs` (bucle de render y sincronización
+    de otros jugadores, #453/#498), #427. La fábrica de sala-caja (muros, puertas, columnas y
+    VENTANAS con cielo real detrás, #508) vive en `scripts/nave-sala-caja.mjs`, reutilizada tanto por
+    las dos salas de prueba del motor (`nave-movimiento-sala-prueba.mjs`, deliberadamente no
+    geografía real) como por cada sala de puesto real (`scripts/nave-sala-<puesto>.mjs`, empezando
+    por `nave-sala-ingenieria.mjs`). `scripts/nave-catalogo-andar.mjs` cose esas estancias entre sí
+    (qué puerta lleva a dónde) sin que ninguna sala necesite saber de las demás — cada sala de puesto
+    nueva es una entrada más de ese catálogo, no un cambio al motor.
   - **Visor del piloto** — `scripts/visor-piloto.mjs` (geometría pura) y
     `scripts/visor-piloto-lienzo.mjs` (el <canvas>), #362. Lo que la nave tiene delante, en PSX,
     en la consola de pilotaje. Es la primera superficie 3D del módulo que **informa** en vez de

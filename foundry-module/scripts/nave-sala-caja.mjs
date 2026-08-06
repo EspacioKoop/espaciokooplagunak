@@ -75,11 +75,16 @@ export const ALTURA = 3.8;
 const GROSOR_MURO = 0.4;
 
 /** Altura del hueco de una puerta: por debajo se puede cruzar, por encima
- *  sigue habiendo muro (el dintel). */
-const ALTURA_PUERTA = 2.2;
+ *  sigue habiendo muro (el dintel). 2.8 y no 2.2 (QA: "parece gigante"): al
+ *  subir `ALTURA` de 3 a 3.8 la puerta se quedó con la medida vieja y dejó
+ *  de ser la referencia de escala humana que hace que una sala se LEA a
+ *  tamaño de persona — el techo creció pero nada más lo hizo con él. Ambas
+ *  cifras conservan la MISMA proporción sobre `ALTURA` que tenían con el
+ *  techo de 3 (puerta al 73%, antepecho al 30%), no un número nuevo a ojo. */
+const ALTURA_PUERTA = 2.8;
 /** Franja de una ventana: por debajo el antepecho, por encima el dintel —
  *  ninguno de los dos es cruzable, la ventana nunca es una puerta. */
-const ALTURA_ALFEIZAR = 0.9;
+const ALTURA_ALFEIZAR = 1.14;
 const ALTURA_DINTEL_VENTANA = 2.9;
 const TOLERANCIA_BORDE = 0.01;
 /** Grosor visual del marco de una ventana (#508 feedback): un borde fino a

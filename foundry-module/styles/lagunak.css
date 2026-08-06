@@ -493,6 +493,30 @@
   image-rendering: pixelated;
 }
 
+/* ---- Andar por la nave (#427/#508/#509) -----------------------------------
+ * El lienzo NUNCA tuvo una regla de CSS propia: se veía a su tamaño nativo
+ * (480×270), diminuto en una ventana de escritorio (QA: "el marco tiene que
+ * ser mucho más grande"). Se escala ×2 con `pixelated`, el mismo lenguaje que
+ * ya usa el resto del 3D retro del módulo (`espacios-puesto.css`: la
+ * resolución interna ES el efecto, no se dibuja grande directamente porque
+ * saldría un render moderno pequeño en vez de la rejilla PSX/GameCube).
+ */
+.lagunak-andar-nave-cuerpo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.lagunak-andar-lienzo {
+  width: 960px;
+  max-width: 100%;
+  height: 540px;
+  image-rendering: pixelated;
+  border: 1px solid var(--lagunak-line, #4d5a68);
+  background: #000;
+}
+
 /* ---- Mesa de minijuegos (#308) -------------------------------------------
  * Mismo mueble arcade que el resto del módulo: fondo oscuro, esquinas duras,
  * filo cian y acento magenta. El marco claro de Foundry v11 dejaba la mesa

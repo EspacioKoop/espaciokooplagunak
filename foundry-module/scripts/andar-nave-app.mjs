@@ -313,7 +313,12 @@ export function crearClaseAndarV2() {
       id: "lagunak-andar-nave",
       classes: ["lagunak-andar-nave"],
       window: { title: "LAGUNAK.AndarNave.Titulo", icon: "fa-solid fa-person-walking" },
-      position: { width: 520, height: "auto" },
+      // El lienzo interno sigue siendo pequeño a propósito (la resolución baja
+      // ES el efecto retro, ver espacios-puesto.css) pero se mostraba a tamaño
+      // NATIVO por no tener ni una regla de CSS que lo escalara (QA: "el marco
+      // tiene que ser mucho más grande") — la ventana crece para acompañar el
+      // lienzo ya escalado ×2 en `lagunak.css`.
+      position: { width: 1020, height: "auto" },
     };
 
     static PARTS = { main: { template: PLANTILLA } };
@@ -346,7 +351,7 @@ export function crearClaseAndarV1() {
         classes: ["lagunak-andar-nave"],
         title: game.i18n.localize("LAGUNAK.AndarNave.Titulo"),
         template: PLANTILLA,
-        width: 520,
+        width: 1020,
         height: "auto",
       });
     }

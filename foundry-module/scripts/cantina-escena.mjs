@@ -149,9 +149,15 @@ export const MUEBLES = Object.freeze([
     medidas: [1.3, 5, 0.5],
   })),
   Object.freeze({ nombre: "dintelEntrada", color: CANTINA.mamparo, centro: [0, 2.3, -2.6], medidas: [3.2, 1.4, 0.5] }),
-  // El vano de la puerta, iluminado desde el pasillo: es lo que dice «por aquí
-  // se sale» sin un cartel, y da una segunda fuente de luz al fondo opuesto.
-  Object.freeze({ nombre: "vanoEntrada", color: CANTINA.lampara, centro: [0, -0.1, -2.75], medidas: [3.0, 3.4, 0.12] }),
+  // Luz que se cuela por encima del dintel, desde el pasillo: da una segunda
+  // fuente de calor al fondo opuesto sin fingir una puerta que no lo es.
+  //
+  // QA (#508): esto medía 3.0×3.4 de suelo a dintel —EXACTAMENTE la silueta
+  // de una puerta abierta— y con la nave ya andable (#427) el hueco real por
+  // el que se sale está en el muro OESTE, no aquí. Una franja alta y delgada
+  // que no llega al suelo no se puede confundir con un hueco por el que
+  // caminar: es luz colándose por ARRIBA de una pared cerrada, no un vano.
+  Object.freeze({ nombre: "vanoEntrada", color: CANTINA.lampara, centro: [0, 1.55, -2.75], medidas: [2.4, 0.5, 0.12] }),
   // Costillas de la pared de entrada, para que no sea una plancha lisa.
   ...fila(2, (i) => ({
     nombre: `nervioEntrada${i}`,

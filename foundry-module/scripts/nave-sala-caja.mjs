@@ -154,6 +154,70 @@ function piezasMarcoVentana(base, y0, y1, alongX) {
   ];
 }
 
+// ---- Puertas correderas (QA: "estilo Star Trek, cerradas y se abren por
+// dentro deslizándose") -----------------------------------------------------
+//
+// DOS HOJAS QUE CUBREN EL HUECO ENTERO EN REPOSO y se retiran cada una hacia
+// SU lado del muro al acercarse alguien — nunca hacia arriba ni hacia fuera,
+// que es lo que distingue una corredera de una puerta batiente. Grosor de
+// muro real (`GROSOR_MURO`) para que no floten respecto al hueco que tapan.
+//
+// LA APERTURA ES PURA FUNCIÓN DE LA DISTANCIA, SIN ESTADO propio ni reloj:
+// el mismo estilo que el resto del módulo (`componer` ya recibe `x`/`z` en
+// cada llamada). Alguien que se acerca la ve abrirse progresivamente; nadie
+// tiene que recordar en qué fotograma empezó a abrirse.
+//
+// LA COLISIÓN NO CAMBIA: sigue siendo el mismo agujero siempre transitable
+// que ya documenta `nave-movimiento-lienzo.mjs` ("una puerta no bloquea").
+// Esto es una hoja visual, no un cerrojo — bloquear el paso mientras se abre
+// arriesgaría dejar a alguien atrapado contra una hoja que su propio cliente
+// ve entreabierta por la latencia de red.
+const DISTANCIA_EMPEZAR_A_ABRIR = 2.4;
+const DISTANCIA_TOTALMENTE_ABIERTA = 1.0;
+
+/** Punto de `rect` más cercano a `(x, z)` — misma geometría de tres líneas
+ *  que `nave-movimiento.mjs`, duplicada porque esa función no se expone y
+ *  aquí hace falta la distancia, no un booleano de colisión. */
+function distanciaARect(x, z, rect) {
+  const cx = Math.max(rect.x, Math.min(x, rect.x + rect.ancho));
+  const cz = Math.max(rect.z, Math.min(z, rect.z + rect.profundidad));
+  return Math.hypot(x - cx, z - cz);
+}
+
+/** 0 = cerrada del todo, 1 = abierta del todo, con una rampa lineal entre
+ *  ambas distancias — nada de golpe seco al cruzar un umbral. Exportada para
+ *  poder probar la rampa sin pasar por cámara ni proyección. */
+export function fraccionAbierta(distancia) {
+  if (distancia >= DISTANCIA_EMPEZAR_A_ABRIR) return 0;
+  if (distancia <= DISTANCIA_TOTALMENTE_ABIERTA) return 1;
+  return (DISTANCIA_EMPEZAR_A_ABRIR - distancia) / (DISTANCIA_EMPEZAR_A_ABRIR - DISTANCIA_TOTALMENTE_ABIERTA);
+}
+
+/**
+ * Las dos hojas de una puerta, YA desplazadas según cuánto deba estar
+ * abierta. `base`/`y0`/`y1`/`alongX` son los mismos que ya resuelve
+ * `abrirHuecosEnMuros` para esa puerta; `fraccion` es la que da
+ * `fraccionAbierta`. Cada hoja cubre media anchura del hueco en reposo y se
+ * retira hacia SU lado —nunca hacia el centro— al abrirse, hasta desaparecer
+ * por completo dentro del muro que la enmarca.
+ */
+function piezasHojaPuerta({ base, y0, y1, alongX }, fraccion) {
+  if (alongX) {
+    const mitad = base.ancho / 2;
+    const deslizamiento = mitad * fraccion;
+    return [
+      rectAColumnaEntre({ ...base, x: base.x - deslizamiento, ancho: mitad }, y0, y1),
+      rectAColumnaEntre({ ...base, x: base.x + mitad + deslizamiento, ancho: mitad }, y0, y1),
+    ];
+  }
+  const mitad = base.profundidad / 2;
+  const deslizamiento = mitad * fraccion;
+  return [
+    rectAColumnaEntre({ ...base, z: base.z - deslizamiento, profundidad: mitad }, y0, y1),
+    rectAColumnaEntre({ ...base, z: base.z + mitad + deslizamiento, profundidad: mitad }, y0, y1),
+  ];
+}
+
 /**
  * Convierte los muros llenos y una lista de HUECOS —puertas y ventanas,
  * `{rect, y0, y1, esVentana}`— en las piezas de pared que de verdad hay que
@@ -173,6 +237,7 @@ function abrirHuecosEnMuros(muros, huecos, ancho, profundidad) {
   let tramosEste = [este];
   const bandas = [];
   const marcos = [];
+  const puertasConBase = [];
 
   for (const hueco of huecos) {
     const { rect, y0, y1, esVentana } = hueco;
@@ -205,12 +270,18 @@ function abrirHuecosEnMuros(muros, huecos, ancho, profundidad) {
     if (y0 > 0) bandas.push(rectAColumnaEntre(base, 0, y0));
     if (y1 < ALTURA) bandas.push(rectAColumnaEntre(base, y1, ALTURA));
     if (esVentana) marcos.push(...piezasMarcoVentana(base, y0, y1, alongX));
+    // `base` ya trae el hueco resuelto con el grosor REAL del muro que toca
+    // (el `rect` de entrada no lo garantiza — sus ejes fuera del ancho de
+    // puerta son arbitrarios, ver `nave-vestibulo.PUERTA_*`), así que las
+    // hojas correderas se apoyan en él y no en `rect` directamente.
+    if (!esVentana) puertasConBase.push({ base, y0, y1, alongX });
   }
 
   return {
     muros: [...tramosNorte, ...tramosSur, ...tramosOeste, ...tramosEste],
     bandas,
     marcos,
+    puertasConBase,
   };
 }
 
@@ -319,7 +390,7 @@ export function crearSalaCaja({
     ...puertas.map(({ rect }) => ({ rect, y0: 0, y1: ALTURA_PUERTA, esVentana: false })),
     ...ventanas.map(({ rect }) => ({ rect, y0: ALTURA_ALFEIZAR, y1: ALTURA_DINTEL_VENTANA, esVentana: true })),
   ];
-  const { muros: tramosMuro, bandas, marcos } = abrirHuecosEnMuros(muros, huecos, ancho, profundidad);
+  const { muros: tramosMuro, bandas, marcos, puertasConBase } = abrirHuecosEnMuros(muros, huecos, ancho, profundidad);
 
   const obstaculosMobiliario = mobiliario
     .filter((pieza) => pieza.colision !== false)
@@ -355,7 +426,19 @@ export function crearSalaCaja({
     const camara = [x, ALTURA_OJOS + y, z];
     const yawCamara = -yaw; // ver el comentario de `yaw` en `cantina-escena.mjs`
 
-    const partes = piezas.map(({ malla, color }) =>
+    // Las hojas de cada puerta se recalculan en cada llamada: su apertura es
+    // pura función de la distancia de quien mira a esa puerta (ver la
+    // cabecera de "Puertas correderas"), así que no pueden vivir en `piezas`
+    // —congeladas una vez, en la construcción de la sala— sino que se
+    // generan aquí, con `x`/`z` ya conocidos.
+    const hojasPuertas = puertasConBase.flatMap((puerta) =>
+      piezasHojaPuerta(puerta, fraccionAbierta(distanciaARect(x, z, puerta.base))).map((malla) => ({
+        malla,
+        color: colorMuro,
+      })),
+    );
+
+    const partes = [...piezas, ...hojasPuertas].map(({ malla, color }) =>
       componerEscena(trasladarMalla(malla, [-camara[0], -camara[1], -camara[2]]), {
         ancho: anchoLienzo,
         alto: altoLienzo,

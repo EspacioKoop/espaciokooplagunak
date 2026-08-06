@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { colisiona } from "../scripts/nave-movimiento.mjs";
-import { ALTURA_OJOS, crearSalaCaja } from "../scripts/nave-sala-caja.mjs";
+import { ALTURA_OJOS, crearSalaCaja, fraccionAbierta } from "../scripts/nave-sala-caja.mjs";
 
 test("una sala sin ventanas no proyecta estrellas", () => {
   const sala = crearSalaCaja({ ancho: 6, profundidad: 6 });
@@ -47,6 +47,30 @@ test("una puerta sigue dejando pasar y una ventana en el mismo muro no colisiona
 
 test("la cámara mira desde la altura de ojos, no desde el suelo", () => {
   assert.ok(ALTURA_OJOS > 0 && ALTURA_OJOS < 3);
+});
+
+test("la puerta corredera está cerrada de lejos y abierta de cerca (QA: estilo Star Trek)", () => {
+  assert.equal(fraccionAbierta(10), 0, "lejos, cerrada del todo");
+  assert.equal(fraccionAbierta(1.0), 1, "a un metro, abierta del todo");
+  assert.equal(fraccionAbierta(0), 1, "encima del umbral, sigue abierta del todo");
+  const mitad = fraccionAbierta((2.4 + 1.0) / 2);
+  assert.ok(mitad > 0 && mitad < 1, "a medio camino entre los dos umbrales, ni cerrada ni abierta del todo");
+});
+
+test("colisionar sigue dejando pasar por el hueco de la puerta (visual, no física)", () => {
+  const puerta = { x: 3, z: 0, ancho: 2, profundidad: 1.2 };
+  const sala = crearSalaCaja({ ancho: 8, profundidad: 8, puertas: [{ rect: puerta }] });
+  // La hoja corredera es puramente visual (ver cabecera de "Puertas
+  // correderas"): la planta de colisión no sabe de ella y el hueco sigue
+  // siendo transitable exactamente igual que antes de #508 QA.
+  assert.equal(colisiona(4, 0.5, 0.3, sala.planta), false);
+});
+
+test("una puerta se compone sin reventar tanto lejos como pegada a ella", () => {
+  const puerta = { x: 3, z: 0, ancho: 2, profundidad: 1.2 };
+  const sala = crearSalaCaja({ ancho: 8, profundidad: 8, puertas: [{ rect: puerta }] });
+  assert.doesNotThrow(() => sala.componer(4, 0, 6, 0, { ancho: 160, alto: 90 }));
+  assert.doesNotThrow(() => sala.componer(4, 0, 0.7, 0, { ancho: 160, alto: 90 }));
 });
 
 test("el rodapié y la lámpara de techo no bloquean el paso por el centro de una sala vacía", () => {

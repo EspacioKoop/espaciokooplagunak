@@ -4,7 +4,10 @@
 - Fecha: registrada 2026-08-07 (Etapa B, issues #521 y #516)
 - Fuentes: `src/playerInfo.cpp` (`CMD_HACKING_FINISHED`),
   `src/screenComponents/hackingDialog.cpp`, `src/components/hacking.h`,
-  `src/script.cpp`, `docs/SESION-PANTALLAS-NATIVAS.md`
+  `src/script.cpp`. La auditoría de #460 (`docs/SESION-PANTALLAS-NATIVAS.md`)
+  motivó el issue, pero **vive todavía en la rama `test/460-pantallas-nativas`
+  y no en `main`**: esta decisión no depende de ella — se apoya en la lectura
+  directa del motor citada arriba.
 
 ## Contexto
 
@@ -76,6 +79,12 @@ Los motivos, en orden de peso:
   regresión de este fork, y solo importa en partidas con clientes no confiables
   — que es un supuesto que este proyecto no maneja hoy. Si alguna vez lo maneja,
   la conversación es con upstream y bajo ADR-0007.
+- **Hay que corregir la auditoría de #460 cuando se fusione.** Describe el
+  hackeo como «un minijuego completo con consecuencias» —cierto en pantalla—
+  sin haber mirado dónde vive el reto ni si el servidor lo valida. La frase no
+  es falsa, pero llevó a listar el hackeo como agencia trasladable cuando no lo
+  es. Que ese documento siga fuera de `main` es la ocasión de arreglarlo antes
+  de que se lea como establecido.
 - **Si la decisión cambia**, cambia con un ADR nuevo y con el orden correcto:
   primero la validación en el servidor (upstream), después el binding, y solo
   entonces la orden de puente. Nunca al revés.

@@ -46,6 +46,9 @@ export const REQUISITOS_POR_DEFECTO = Object.freeze({
   weapons: Object.freeze(["dex", "str"]),
   // Relay: llevar la cuenta de todo a la vez, o darse cuenta de lo que falta.
   relay: Object.freeze(["int", "wis"]),
+  // Control de daños: aguantar el tipo mientras la nave se cae a trozos, o
+  // saber qué se apaga primero.
+  damagecontrol: Object.freeze(["con", "int"]),
 });
 
 /** Puntuación mínima de serie. 12 es «por encima de la media» sin ser una criba. */

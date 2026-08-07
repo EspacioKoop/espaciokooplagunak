@@ -283,3 +283,42 @@ test("del enlace viaja el indicativo, nunca la posición de la sonda", () => {
   assert.doesNotMatch(JSON.stringify(nave), /12345/);
   assert.equal(recortarNave({ callsign: "Lagunak", systems: {} }).science_link, null);
 });
+// --- Interior de la nave en el sobre (#522) -----------------------------------
+
+test("el plano y los equipos llegan a la tripulación", () => {
+  // `recortarNave` es una lista blanca: sin esta copia, Damage Control no vería
+  // nunca su propia nave y el control aparecería sin plano para siempre.
+  const nave = recortarNave({
+    callsign: "Lagunak",
+    systems: {},
+    internal: {
+      rooms: [{ x: 0, y: 0, w: 2, h: 1, system: "reactor" }],
+      crews: [{ position: { x: 0, y: 0 }, target: { x: 1, y: 0 } }],
+    },
+  });
+  assert.deepEqual(nave.internal.rooms, [{ x: 0, y: 0, w: 2, h: 1, system: "reactor" }]);
+  assert.deepEqual(nave.internal.crews, [
+    { position: { x: 0, y: 0 }, target: { x: 1, y: 0 } },
+  ]);
+});
+
+test("una sala a medias no pinta un plano mentiroso", () => {
+  const nave = recortarNave({
+    callsign: "Lagunak",
+    systems: {},
+    internal: {
+      rooms: [{ x: 0, y: 0, w: 1 }, { x: 1, y: 1, w: 1, h: 1, system: null }],
+      crews: [],
+    },
+  });
+  assert.equal(nave.internal.rooms.length, 1);
+  assert.equal(nave.internal.rooms[0].system, null);
+});
+
+test("sin salas no viaja un interior vacío", () => {
+  assert.equal(recortarNave({ callsign: "Lagunak", systems: {} }).internal, null);
+  assert.equal(
+    recortarNave({ callsign: "Lagunak", systems: {}, internal: { rooms: [], crews: [] } }).internal,
+    null,
+  );
+});

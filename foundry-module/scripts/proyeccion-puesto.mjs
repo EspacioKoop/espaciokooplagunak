@@ -33,6 +33,8 @@ const PUESTOS = Object.freeze([
   "weapons",
   // #517: Relay. Su énfasis se declara abajo como el de cualquier otro.
   "relay",
+  // #522: Damage Control. Su vista mira dentro de la nave, no fuera.
+  "damagecontrol",
 ]);
 
 /**

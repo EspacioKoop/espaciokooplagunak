@@ -342,6 +342,74 @@ class CombatManeuverBoost(BaseModel):
         return _command_lua(f"commandCombatManeuverBoost(ship, {self.amount:.3f})")
 
 
+# --- Damage Control (#522) ----------------------------------------------------
+#
+# Coordenada de sala del interior de la nave. Entera y acotada: las plantas de
+# EmptyEpsilon son rejillas pequeñas (el `Phobos M3P` del escenario declara doce
+# salas), así que este rango es holgadísimo y solo está para que un valor absurdo
+# no llegue al `string.format` del Lua fijo.
+RoomCoordField = Annotated[int, Field(strict=True, ge=-128, le=128)]
+
+
+class RoomPoint(BaseModel):
+    """Una casilla del interior de la nave."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    x: RoomCoordField
+    y: RoomCoordField
+
+
+class MoveRepairCrew(BaseModel):
+    """Manda un equipo de reparación a otra sala (#522).
+
+    **El equipo se identifica por DÓNDE ESTÁ, no por un índice.** El orden en que
+    el motor devuelve las entidades no está garantizado, así que un índice podría
+    referirse a un equipo distinto entre dos sondeos, y mover al equipo
+    equivocado en mitad de una avería es peor que no mover a ninguno. Si en
+    ``origin`` ya no hay equipo cuando la orden llega —porque echó a andar entre
+    el sondeo y el clic— degrada a ``crew_not_found`` en vez de acertarle a otro.
+
+    **No hace falta C++ nuevo**, en contra de lo que suponía el issue: el
+    componente ``internal_crew`` expone ``target_position`` con SETTER
+    (``BIND_MEMBER`` en ``src/script/components.cpp``), así que el Lua fijo del
+    servidor escribe el destino directamente. Esa escritura es además la
+    autoritativa: ``commandCrewSetTargetPosition`` existe para que un *cliente*
+    se lo pida al servidor, y aquí ya estamos dentro del servidor.
+
+    Lo que se fija es el DESTINO. Que el equipo llegue —puertas, ruta, tiempo— lo
+    resuelve la simulación, y eso es lo que hace de esta una orden legítima y no
+    un efecto instantáneo (contraste deliberado con el hackeo, ADR-0010).
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    op: Literal["move_repair_crew"]
+    origin: RoomPoint
+    destination: RoomPoint
+
+    def lua(self) -> str:
+        no_ship = '\'{"ok":false,"reason":"no_ship"}\''
+        no_crew = '\'{"ok":false,"reason":"crew_not_found"}\''
+        return (
+            "local ship = getPlayerShip(-1)\n"
+            f"if ship == nil then return {no_ship} end\n"
+            "local elegido = nil\n"
+            "for _, entidad in ipairs(getEntitiesWithComponent('internal_crew')) do\n"
+            "  local ok, ic = pcall(function() return entidad.components.internal_crew end)\n"
+            "  if ok and ic ~= nil and ic.ship == ship and elegido == nil\n"
+            f"    and ic.position.x == {self.origin.x}"
+            f" and ic.position.y == {self.origin.y} then\n"
+            "    elegido = ic\n"
+            "  end\n"
+            "end\n"
+            f"if elegido == nil then return {no_crew} end\n"
+            f"elegido.target_position = {{x = {self.destination.x},"
+            f" y = {self.destination.y}}}\n"
+            "return '{\"ok\":true}'"
+        )
+
+
 class CombatManeuverStrafe(BaseModel):
     """Desplazamiento lateral de la maniobra de combate (#519):
     ``commandCombatManeuverStrafe``.
@@ -753,6 +821,7 @@ Command = Annotated[
         SetScienceLink,
         ClearScienceLink,
         SetAlertLevel,
+        MoveRepairCrew,
     ],
     Field(discriminator="op"),
 ]

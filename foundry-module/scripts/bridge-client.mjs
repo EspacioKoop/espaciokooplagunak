@@ -42,6 +42,16 @@ function esIndiceWaypoint(valor) {
   return typeof valor === "number" && Number.isInteger(valor) && valor >= 0 && valor <= 63;
 }
 
+// Casilla del interior de la nave (#522). Enteros y acotados: duplica la cota
+// del puente para evitar un viaje de red inútil y dar un mensaje legible. Si
+// divergen, gana el puente.
+function esCasilla(punto) {
+  if (!punto || typeof punto !== "object") return false;
+  return [punto.x, punto.y].every(
+    (v) => typeof v === "number" && Number.isInteger(v) && v >= -128 && v <= 128,
+  );
+}
+
 export class BridgeClient {
   /**
    * @param {object} opts
@@ -422,6 +432,22 @@ export class BridgeClient {
       throw new BridgeError("La condición de alerta debe ser normal, yellow o red", { kind: "parse" });
     }
     return this.#command({ op: "set_alert_level", level });
+  }
+
+  /**
+   * POST /v1/command — manda un equipo de reparación de una sala a otra (#522,
+   * Bearer).
+   *
+   * El equipo se identifica por DÓNDE ESTÁ (`origin`), no por un índice: el
+   * orden en que el motor devuelve las entidades no está garantizado. Si echó a
+   * andar entre el sondeo y el clic, el puente responde `crew_not_found` en vez
+   * de acertarle a otro.
+   */
+  async moveRepairCrew(origin, destination) {
+    if (!esCasilla(origin) || !esCasilla(destination)) {
+      throw new BridgeError("Las casillas de sala no son válidas", { kind: "parse" });
+    }
+    return this.#command({ op: "move_repair_crew", origin, destination });
   }
 
   /** POST /v1/command — contesta (true) o ignora (false) una llamada entrante (Bearer). */

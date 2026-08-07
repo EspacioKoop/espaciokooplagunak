@@ -193,6 +193,14 @@ token:
   centro —el de la sonda— y los alcances de la nave, igual que la pantalla
   nativa; sin enlace no se difunde, porque una lista vacía diría «he mirado
   desde la sonda» sin haber sonda.
+- **Puesto `damagecontrol` (#522)** — mover equipos de reparación por el interior
+  de la nave, la decisión clásica del puesto. **No hizo falta C++ nuevo**: aunque
+  `commandCrewSetTargetPosition` no está expuesto a Lua, el componente
+  `internal_crew` expone `target_position` con setter, y el Lua del servidor
+  escribe el destino directamente. El equipo se identifica por su casilla y no
+  por un índice (el orden de las entidades no está garantizado), y el plano que
+  se pinta es la **planta real del motor** publicada en `/v1/state`, no la planta
+  declarativa de la sección de la nave (#427), que existe para andar por ella.
 - **Matriz de autoridad cerrada** (`station-actions.mjs`, `STATION_ACTIONS`).
   Declara qué órdenes del whitelist del puente puede emitir cada puesto:
   `navigation` → `set_target_heading`, `set_impulse`, `set_warp`,

@@ -261,6 +261,21 @@ export const ORDER_FORMS = Object.freeze({
     read: () => ({ level: "red" }),
     invalidKey: "LAGUNAK.Espacios.Orden.AlertaInvalida",
   },
+  // Control de daños (#522). Dos desplegables: qué equipo (por la casilla en la
+  // que está) y a qué sala va. El equipo NO se elige por índice — el orden de
+  // las entidades no está garantizado y podría referirse a otro entre sondeos—,
+  // así que lo que viaja es su posición y el puente falla honestamente con
+  // `crew_not_found` si echó a andar mientras tanto.
+  "orden-mover-equipo": {
+    action: "move_repair_crew",
+    read: (root) => {
+      const origin = leerCasilla(root, "lagunak-orden-equipo");
+      const destination = leerCasilla(root, "lagunak-orden-sala-destino");
+      if (!origin || !destination) return null;
+      return { origin, destination };
+    },
+    invalidKey: "LAGUNAK.Espacios.Orden.MoverEquipoInvalido",
+  },
   // Comunicaciones (#463): acciones reactivas, calcadas de los globales que el
   // motor ya expone (contestar/cerrar canal ya abierto, elegir diálogo,
   // mandar chat libre) — sin picker de objetivo propio.
@@ -339,4 +354,24 @@ function leerRumboYDistancia(root, prefijo) {
   if (!Number.isFinite(rumboDeg) || rumboDeg < 0 || rumboDeg >= 360) return null;
   if (!Number.isFinite(distancia) || distancia < 0 || distancia > 500000) return null;
   return { rumboDeg, distancia };
+}
+
+/**
+ * Decodifica la casilla que un `<select>` dejó en su `value` como JSON (#522).
+ * Solo se aceptan enteros: las plantas del motor son rejillas, y un decimal
+ * significaría que el valor no viene de donde creemos.
+ */
+function leerCasilla(root, selectId) {
+  const raw = root?.querySelector?.(`#${selectId}`)?.value ?? "";
+  if (!raw) return null;
+  let casilla;
+  try {
+    casilla = JSON.parse(raw);
+  } catch {
+    return null;
+  }
+  const x = parseOrderValue(casilla?.x);
+  const y = parseOrderValue(casilla?.y);
+  if (x === null || y === null || !Number.isInteger(x) || !Number.isInteger(y)) return null;
+  return { x, y };
 }

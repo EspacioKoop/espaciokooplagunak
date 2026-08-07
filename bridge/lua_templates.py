@@ -278,6 +278,57 @@ if ok_link and radar_link ~= nil then
             science_link_json = string.format(
                 '{"callsign":%%s,"position":{"x":%%.1f,"y":%%.1f}}', cs_json, px, py)
         end
+-- Interior de la nave y equipos de reparación (#522). `internal_rooms` expone
+-- las salas (posición, tamaño y sistema) y `internal_crew` la posición y el
+-- destino de cada equipo, todo ya en Lua (src/script/components.cpp): esto NO
+-- necesita C++ nuevo, en contra de lo que suponía el issue.
+--
+-- Se publica la planta REAL del motor, no una parecida. La sección de la nave
+-- de Foundry (#427) tiene su propia planta declarativa, pensada para andar por
+-- ella; pintar equipos de reparación sobre aquella sería pintar sobre un plano
+-- que no es el de esta nave. Las dos plantas pueden convivir mientras cada una
+-- diga de dónde sale.
+local internal_json = "null"
+local ok_rooms2, rooms2 = pcall(function() return ship.components.internal_rooms end)
+if ok_rooms2 and rooms2 ~= nil then
+    local salas = {}
+    local ok_lista = pcall(function()
+        for i = 1, math.min(#rooms2, 64) do
+            local sala = rooms2[i]
+            local sistema_json = "null"
+            if type(sala.system) == "string" and sala.system ~= "" then
+                sistema_json = json_escape(sala.system)
+            end
+            salas[#salas + 1] = string.format(
+                '{"x":%%d,"y":%%d,"w":%%d,"h":%%d,"system":%%s}',
+                sala.position.x, sala.position.y, sala.size.x, sala.size.y, sistema_json)
+        end
+    end)
+    if not ok_lista then salas = {} end
+    -- Equipos: se identifican por DÓNDE ESTÁN, no por un índice. El orden en
+    -- que el motor devuelve las entidades no está garantizado, así que un
+    -- índice podría referirse a un equipo distinto entre dos sondeos — y mover
+    -- al equipo equivocado en mitad de una avería es peor que no moverlo.
+    local equipos = {}
+    local ok_crew = pcall(function()
+        for _, entidad in ipairs(getEntitiesWithComponent("internal_crew")) do
+            local ic = entidad.components.internal_crew
+            if ic ~= nil and ic.ship == ship and #equipos < 16 then
+                local destino_json = "null"
+                if ic.target_position ~= nil then
+                    destino_json = string.format('{"x":%%d,"y":%%d}',
+                        ic.target_position.x, ic.target_position.y)
+                end
+                equipos[#equipos + 1] = string.format(
+                    '{"position":{"x":%%d,"y":%%d},"target":%%s}',
+                    ic.position.x, ic.position.y, destino_json)
+            end
+        end
+    end)
+    if not ok_crew then equipos = {} end
+    if #salas > 0 then
+        internal_json = string.format('{"rooms":[%%s],"crews":[%%s]}',
+            table.concat(salas, ","), table.concat(equipos, ","))
     end
 end
 local systems = {}
@@ -296,6 +347,7 @@ return string.format(
     .. '"auto_repair":%%s,"combat_maneuver":%%s,"self_destruct":%%s,'
     .. '"shield_calibration":%%s,"alert_level":%%s,"probes":%%s,'
     .. '"science_link":%%s,"systems":{%%s}}}',
+    .. '"auto_repair":%%s,"internal":%%s,"systems":{%%s}}}',
     ship:getCallSign() or "?", x, y, ship:getHeading(), vx, vy,
     destination_json, distance_json, eta_json,
     ship:getHull(), ship:getHullMax(),
@@ -304,6 +356,8 @@ return string.format(
     radar_json, docking_json, auto_repair_json, combat_maneuver_json,
     self_destruct_json, shield_frequency_json, alert_level_json, probes_json,
     science_link_json, table.concat(systems, ","))
+    radar_json, docking_json, auto_repair_json, internal_json,
+    table.concat(systems, ","))
 """ % ", ".join(f'"{name}"' for name in _SYSTEMS)
 _STATE_LUA = _JSON_ESCAPE_LUA + _STATE_LUA
 

@@ -171,6 +171,49 @@ if ok_cm and cm ~= nil then
         combat_maneuver_json = string.format('{"charge":%%.3f}', charge)
     end
 end
+-- Autodestrucción (#518). `self_destruct` expone `active` y `countdown` a Lua,
+-- y NO expone `code` ni `confirmed` (src/script/components.cpp). Esa ausencia
+-- es deliberada aguas arriba y aquí se respeta: publicar los códigos sería
+-- disolver el puzle cooperativo del puesto, y además la telemetría que el GM
+-- reparte a la tripulación viaja por un ajuste de mundo que toda la mesa puede
+-- leer. Lo que se publica es solo si está armada y cuánto queda.
+--
+-- `countdown` se publica solo con la secuencia armada: sin armar, el campo del
+-- motor no significa "cero segundos para estallar".
+local self_destruct_json = "null"
+local ok_sd, sd = pcall(function() return ship.components.self_destruct end)
+if ok_sd and sd ~= nil then
+    local ok_active, active = pcall(function() return sd.active end)
+    if ok_active and type(active) == "boolean" then
+        local countdown_json = "null"
+        if active then
+            local ok_cd, countdown = pcall(function() return sd.countdown end)
+            if ok_cd and type(countdown) == "number" then
+                countdown_json = string.format("%%.1f", countdown)
+            end
+        end
+        self_destruct_json = string.format(
+            '{"active":%%s,"countdown":%%s}', tostring(active), countdown_json)
+    end
+end
+-- Frecuencia de escudos y su recalibrado (#518). `shields` expone `frequency`
+-- y `calibration_delay`. Una frecuencia de -1 significa "estos escudos no
+-- tienen frecuencia" (src/components/shields.h) y se publica como null, no
+-- como el número -1: un consumidor lo pintaría como una frecuencia válida.
+local shield_frequency_json = "null"
+local ok_sh, shields = pcall(function() return ship.components.shields end)
+if ok_sh and shields ~= nil then
+    local ok_freq, frequency = pcall(function() return shields.frequency end)
+    if ok_freq and type(frequency) == "number" and frequency >= 0 then
+        local calibrando_json = "null"
+        local ok_delay, delay = pcall(function() return shields.calibration_delay end)
+        if ok_delay and type(delay) == "number" then
+            calibrando_json = string.format("%%.1f", delay)
+        end
+        shield_frequency_json = string.format(
+            '{"frequency":%%d,"calibration_delay":%%s}', frequency, calibrando_json)
+    end
+end
 local systems = {}
 for _, name in ipairs({%s}) do
     systems[#systems + 1] = string.format(
@@ -184,14 +227,15 @@ return string.format(
     .. '"distance_to_destination":%%s,"eta_seconds":%%s,'
     .. '"hull":%%.1f,"hull_max":%%.1f,"energy":%%.1f,"energy_max":%%.1f,'
     .. '"shields_active":%%s,"repair_crew":%%d,"radar":%%s,"docking":%%s,'
-    .. '"auto_repair":%%s,"combat_maneuver":%%s,"systems":{%%s}}}',
+    .. '"auto_repair":%%s,"combat_maneuver":%%s,"self_destruct":%%s,'
+    .. '"shield_calibration":%%s,"systems":{%%s}}}',
     ship:getCallSign() or "?", x, y, ship:getHeading(), vx, vy,
     destination_json, distance_json, eta_json,
     ship:getHull(), ship:getHullMax(),
     ship:getEnergyLevel(), ship:getEnergyLevelMax(),
     tostring(ship:getShieldsActive()), ship:getRepairCrewCount(),
     radar_json, docking_json, auto_repair_json, combat_maneuver_json,
-    table.concat(systems, ","))
+    self_destruct_json, shield_frequency_json, table.concat(systems, ","))
 """ % ", ".join(f'"{name}"' for name in _SYSTEMS)
 _STATE_LUA = _JSON_ESCAPE_LUA + _STATE_LUA
 

@@ -294,6 +294,15 @@ test("espacio de puesto: órdenes operativas y acciones de pie en ese orden", ()
     "orden-fijar-objetivo-armas",
     "lagunak-orden-tubo",
     "orden-disparar-tubo",
+    "lagunak-orden-frecuencia-escudos",
+    "orden-frecuencia-escudos",
+    // Las dos ramas del bloque de autodestrucción salen aquí: esta prueba lee
+    // la plantilla, no un render, y en pantalla solo se ve una de las dos.
+    "orden-autodestruccion-desarmar",
+    "orden-autodestruccion-armar",
+    "lagunak-orden-codigo-indice",
+    "lagunak-orden-codigo",
+    "orden-autodestruccion-confirmar",
     "orden-comms-contestar",
     "orden-comms-ignorar",
     "orden-comms-cerrar",

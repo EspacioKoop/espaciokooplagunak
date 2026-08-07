@@ -405,6 +405,90 @@ class AbortDock(BaseModel):
         return _command_lua("commandAbortDock(ship)")
 
 
+# --- Ingeniería: autodestrucción y frecuencia de escudos (#518) ---------------
+#
+# Las cuatro llaman a globales que el motor ya registraba en src/script.cpp: sin
+# una línea de C++ nueva, como el resto del bloque de #516.
+
+
+class ActivateSelfDestruct(BaseModel):
+    """Arma la secuencia de autodestrucción (#518): ``commandActivateSelfDestruct``.
+
+    Armarla NO destruye la nave: genera los códigos y arranca el ritual. La
+    destrucción exige confirmar los tres (``SelfDestruct::max_codes``), y el
+    motor reparte cada código a una posición de tripulación distinta. Es
+    cooperación incorporada al motor, no una ceremonia añadida por el fork.
+    """
+
+    op: Literal["activate_self_destruct"]
+
+    def lua(self) -> str:
+        return _command_lua("commandActivateSelfDestruct(ship)")
+
+
+class CancelSelfDestruct(BaseModel):
+    """Desarma la secuencia (#518): ``commandCancelSelfDestruct``.
+
+    El motor solo deja cancelar mientras la cuenta atrás no ha empezado
+    (``countdown <= 0``): pasado ese punto ya no hay marcha atrás, y eso es
+    parte del peso de la decisión, no un fallo que el puente deba tapar.
+    """
+
+    op: Literal["cancel_self_destruct"]
+
+    def lua(self) -> str:
+        return _command_lua("commandCancelSelfDestruct(ship)")
+
+
+class ConfirmSelfDestructCode(BaseModel):
+    """Confirma uno de los códigos de autodestrucción (#518):
+    ``commandConfirmDestructCode``.
+
+    **El puente no conoce los códigos y no puede conocerlos**: el componente
+    ``SelfDestruct`` expone a Lua ``active``, ``countdown``, ``damage`` y
+    ``size``, pero NO ``code`` ni ``confirmed`` (ver
+    ``src/script/components.cpp``). Eso no es un obstáculo a rodear, es lo que
+    mantiene el puzle en pie: quien teclea aquí un código tiene que haberlo
+    leído en la pantalla nativa que se lo mostró a él, o habérselo oído a quien
+    lo leyó. El motor comprueba que el código case con el índice, así que la
+    validación de verdad no está aquí ni puede estarlo.
+
+    ``strict=True`` en los dos campos: sin coacción de booleanos ni de cadenas.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    op: Literal["confirm_self_destruct_code"]
+    # 0..2: SelfDestruct::max_codes es 3 (src/components/selfdestruct.h). El
+    # motor vuelve a comprobar el rango antes de tocar nada.
+    index: Annotated[int, Field(strict=True, ge=0, le=2)]
+    # Los códigos del motor son uint32. La cota superior es la de ese tipo, no
+    # una inventada: recortarla dejaría códigos legítimos sin poder teclearse.
+    code: Annotated[int, Field(strict=True, ge=0, le=4_294_967_295)]
+
+    def lua(self) -> str:
+        return _command_lua(f"commandConfirmDestructCode(ship, {self.index}, {self.code})")
+
+
+class SetShieldFrequency(BaseModel):
+    """Recalibra los escudos a una frecuencia (#518):
+    ``commandSetShieldFrequency``.
+
+    Rango 0..20, el del propio juego (``BeamWeaponSys::max_frequency``).
+    Decisión con coste real y no un ajuste: recalibrar arranca
+    ``calibration_delay`` y **deja los escudos caídos mientras dura**. Elegir el
+    momento es la decisión; el número solo es la mitad.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    op: Literal["set_shield_frequency"]
+    frequency: Annotated[int, Field(strict=True, ge=0, le=20)]
+
+    def lua(self) -> str:
+        return _command_lua(f"commandSetShieldFrequency(ship, {self.frequency})")
+
+
 class SetPause(BaseModel):
     op: Literal["set_pause"]
     paused: StrictBool
@@ -508,6 +592,10 @@ Command = Annotated[
         Dock,
         Undock,
         AbortDock,
+        ActivateSelfDestruct,
+        CancelSelfDestruct,
+        ConfirmSelfDestructCode,
+        SetShieldFrequency,
     ],
     Field(discriminator="op"),
 ]

@@ -688,3 +688,104 @@ def test_abort_dock_no_es_sinonimo_de_undock(client, juego, auth):
     assert r.status_code == 200
     assert "commandAbortDock(ship)" in juego.ultimo_lua
     assert "commandUndock(ship)" not in juego.ultimo_lua
+
+
+# --- Ingeniería: autodestrucción y frecuencia de escudos (#518) ----------------
+
+
+def test_activate_self_destruct_genera_lua_fijo(client, juego, auth):
+    r = client.post(CMD, headers=auth, json={"op": "activate_self_destruct"})
+    assert r.status_code == 200
+    assert r.json()["op"] == "activate_self_destruct"
+    assert "commandActivateSelfDestruct(ship)" in juego.ultimo_lua
+    assert "getPlayerShip(-1)" in juego.ultimo_lua
+
+
+def test_cancel_self_destruct_genera_lua_fijo(client, juego, auth):
+    r = client.post(CMD, headers=auth, json={"op": "cancel_self_destruct"})
+    assert r.status_code == 200
+    assert "commandCancelSelfDestruct(ship)" in juego.ultimo_lua
+
+
+def test_confirm_self_destruct_code_genera_lua(client, juego, auth):
+    r = client.post(
+        CMD, headers=auth, json={"op": "confirm_self_destruct_code", "index": 1, "code": 4321}
+    )
+    assert r.status_code == 200
+    assert "commandConfirmDestructCode(ship, 1, 4321)" in juego.ultimo_lua
+
+
+@pytest.mark.parametrize("indice", [-1, 3, 100])
+def test_confirm_indice_fuera_de_los_tres_codigos_rechazado(client, juego, auth, indice):
+    # SelfDestruct::max_codes es 3; pedir un cuarto código es una errata.
+    r = client.post(
+        CMD, headers=auth, json={"op": "confirm_self_destruct_code", "index": indice, "code": 1}
+    )
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+@pytest.mark.parametrize("valor", [True, False, 1.5, "1"])
+def test_confirm_exige_enteros_estrictos(client, juego, auth, valor):
+    for campo in ("index", "code"):
+        cuerpo = {"op": "confirm_self_destruct_code", "index": 0, "code": 1}
+        cuerpo[campo] = valor
+        r = client.post(CMD, headers=auth, json=cuerpo)
+        assert r.status_code == 422, (campo, valor)
+    assert not juego.llamadas
+
+
+def test_confirm_admite_un_codigo_uint32_completo(client, juego, auth):
+    # Los códigos del motor son uint32: recortar la cota dejaría códigos
+    # legítimos sin poder teclearse, y el jugador no tendría forma de saber
+    # por qué el suyo "no vale".
+    r = client.post(
+        CMD,
+        headers=auth,
+        json={"op": "confirm_self_destruct_code", "index": 2, "code": 4294967295},
+    )
+    assert r.status_code == 200
+    assert "commandConfirmDestructCode(ship, 2, 4294967295)" in juego.ultimo_lua
+
+
+def test_confirm_rechaza_campos_extra(client, juego, auth):
+    r = client.post(
+        CMD,
+        headers=auth,
+        json={"op": "confirm_self_destruct_code", "index": 0, "code": 1, "station": "captain"},
+    )
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+@pytest.mark.parametrize("frecuencia", [0, 10, 20])
+def test_set_shield_frequency_genera_lua(client, juego, auth, frecuencia):
+    r = client.post(
+        CMD, headers=auth, json={"op": "set_shield_frequency", "frequency": frecuencia}
+    )
+    assert r.status_code == 200
+    assert r.json()["op"] == "set_shield_frequency"
+    assert f"commandSetShieldFrequency(ship, {frecuencia})" in juego.ultimo_lua
+
+
+@pytest.mark.parametrize("frecuencia", [-1, 21, 1.5, True, "5"])
+def test_set_shield_frequency_fuera_de_rango_rechazada(client, juego, auth, frecuencia):
+    # 0..20 es BeamWeaponSys::max_frequency, no una cota inventada.
+    r = client.post(
+        CMD, headers=auth, json={"op": "set_shield_frequency", "frequency": frecuencia}
+    )
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+def test_ninguna_orden_de_autodestruccion_transporta_codigos_del_juego(client, juego, auth):
+    # El puente NO conoce los códigos: el componente no los expone a Lua. Esta
+    # prueba fija esa frontera — si alguien añadiera una orden que los leyera,
+    # el puzle cooperativo del puesto se disolvería en un botón.
+    for cuerpo in (
+        {"op": "activate_self_destruct"},
+        {"op": "cancel_self_destruct"},
+    ):
+        client.post(CMD, headers=auth, json=cuerpo)
+        assert "code" not in juego.ultimo_lua
+        assert "confirmed" not in juego.ultimo_lua

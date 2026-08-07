@@ -70,16 +70,43 @@ export function recortarNave(ship) {
     shields: Array.isArray(ship.shields) ? ship.shields.map(redondear) : null,
     destination: ship.destination ?? null,
     systems: sistemas,
-    // #519. OJO: esta función es una LISTA BLANCA. Un campo nuevo de
-    // `/v1/state` llega al GM (que sondea el puente) pero NO a las consolas de
-    // tripulación hasta que se copia aquí a mano, y el modo de fallo es
-    // silencioso: el control no aparece y no salta ningún error. Que sea una
-    // lista blanca es deliberado —lo que no se copia no puede escaparse por
-    // este canal— pero hay que acordarse al añadir lecturas.
+    // OJO: esta función es una LISTA BLANCA. Un campo nuevo de `/v1/state` llega
+    // al GM (que sondea el puente) pero NO a las consolas de tripulación hasta
+    // que se copia aquí a mano, y el modo de fallo es silencioso: el control no
+    // aparece y no salta ningún error. Que sea lista blanca es deliberado —lo
+    // que no se copia no puede escaparse por este canal— pero hay que acordarse
+    // al añadir lecturas.
     //
-    // La carga de maniobra se copia SIN redondear a un decimal como el resto:
-    // es una fracción 0..1, y `redondear` la dejaría en saltos del 10 %.
+    // La carga de maniobra (#519) se copia SIN redondear a un decimal como el
+    // resto: es una fracción 0..1, y `redondear` la dejaría en saltos del 10 %.
     combat_maneuver: recortarManiobra(ship.combat_maneuver),
+    // De la autodestrucción (#518) se copian SOLO `active` y `countdown`, y
+    // nunca un código, aunque el puente llegara a publicarlos: este sobre acaba
+    // en un ajuste de mundo que toda la mesa puede leer, así que un código aquí
+    // sería un código público y el puzle de tres personas dejaría de existir.
+    self_destruct: recortarAutodestruccion(ship.self_destruct),
+    shield_calibration: recortarCalibracion(ship.shield_calibration),
+  };
+}
+
+/** Solo si está armada y cuánto queda. Nunca códigos. */
+function recortarAutodestruccion(autodestruccion) {
+  if (!autodestruccion || typeof autodestruccion !== "object") return null;
+  if (typeof autodestruccion.active !== "boolean") return null;
+  return {
+    active: autodestruccion.active,
+    countdown: autodestruccion.active ? redondear(autodestruccion.countdown) : null,
+  };
+}
+
+/** Frecuencia actual y lo que le queda de recalibrado. */
+function recortarCalibracion(calibracion) {
+  if (!calibracion || typeof calibracion !== "object") return null;
+  const frecuencia = Number(calibracion.frequency);
+  if (!Number.isFinite(frecuencia)) return null;
+  return {
+    frequency: Math.round(frecuencia),
+    calibration_delay: redondear(calibracion.calibration_delay),
   };
 }
 

@@ -70,20 +70,38 @@ gana el código y este documento queda desactualizado hasta que se corrija
 
 | Puesto | Acciones (`STATION_ACTIONS`) |
 |---|---|
-| `captain` | ninguna — observación/narrativa |
+| `captain` | `confirm_self_destruct_code` |
 | `navigation` | `set_target_heading`, `set_impulse`, `set_warp`, `combat_maneuver_boost`, `combat_maneuver_strafe`, `dock`, `undock`, `abort_dock` |
-| `engineering` | `set_system_power`, `set_system_coolant`, `set_auto_repair` |
+| `engineering` | `set_system_power`, `set_system_coolant`, `set_auto_repair`, `activate_self_destruct`, `cancel_self_destruct`, `confirm_self_destruct_code`, `set_shield_frequency` |
 | `sensors` | `scan_object` |
 | `communications` | `answer_comm_hail`, `close_comm`, `send_comm_reply`, `send_comm_message` |
-| `weapons` | `set_shields`, `set_weapon_target`, `fire_tube` |
+| `weapons` | `set_shields`, `set_weapon_target`, `fire_tube`, `confirm_self_destruct_code` |
 
 Esta tabla llevaba tiempo desactualizada: describía la superficie anterior a
 #462-#465, que ya habían ampliado sensores, comunicaciones, ingeniería y armas
 sin que nadie la corrigiera aquí. Se pone al día junto con la ampliación de
 navegación de #519, que añade la maniobra de combate y el atraque.
 
-`captain` sigue sin emitir órdenes de control de nave, coherente con el género
-bridge-sim (ratificado en #268) — no es una laguna.
+**El capitán deja de tener cero acciones, y conviene entender la excepción.**
+Que no accionara nada era deliberado (#268): coordina, no opera. #518 le da
+exactamente UNA, y por un motivo que no vale para ninguna otra: confirmar un
+código de autodestrucción no es operar la nave, es asumir la decisión. El motor
+exige tres códigos confirmados (`SelfDestruct::max_codes`) repartidos entre
+posiciones distintas, así que hacen falta tres sillas; las naturales son quien
+manda, quien conoce la nave y quien está en las armas. El capitán sigue sin
+poder pilotar, repartir energía ni disparar, y hay una prueba que lo fija para
+que esta excepción no sea la primera grieta de una lista que crece.
+
+**Armar la secuencia es solo de ingeniería.** Confirmar se reparte; armar el
+ritual no. Si armar estuviera en tres sitios, empezaría por accidente con más
+facilidad.
+
+**Los códigos no viajan por Foundry.** El componente del juego no los expone a
+Lua, así que ni el puente ni el módulo los conocen: hay que leerlos en la
+pantalla nativa que se los muestra a cada persona, o que los dicte quien los
+tenga. Es una limitación real para una mesa que juegue *solo* en Foundry —ahí
+los reparte el director, que sí ve el estado— y a la vez lo que impide que el
+puzle se convierta en un botón.
 
 Las cinco acciones nuevas de `navigation` (#519) traducen agencia que la
 pantalla nativa de timón ya tenía y Foundry no exponía; ninguna necesitó código
@@ -96,6 +114,30 @@ C++ nuevo. Dos matices que la tabla no puede recoger:
 - **`undock` y `abort_dock` no son sinónimos.** El primero suelta un atraque
   consumado; el segundo cancela el acercamiento. Ofrecer solo uno dejaría a la
   tripulación sin poder deshacer la mitad de los casos.
+
+Esta tabla llevaba tiempo desactualizada: describía la superficie anterior a
+#462-#465. Se pone al día junto con la ampliación de ingeniería de #518.
+
+**El capitán deja de tener cero acciones, y conviene entender la excepción.**
+Que no accionara nada era deliberado (#268): coordina, no opera. #518 le da
+exactamente UNA, y por un motivo que no vale para ninguna otra: confirmar un
+código de autodestrucción no es operar la nave, es asumir la decisión. El motor
+exige tres códigos confirmados (`SelfDestruct::max_codes`) y reparte cada uno a
+una posición distinta, así que hacen falta tres sillas; las naturales son quien
+manda, quien conoce la nave y quien está en las armas. El capitán sigue sin
+poder pilotar, repartir energía ni disparar, y hay una prueba que lo fija para
+que esta excepción no sea la primera grieta de una lista que crece.
+
+**Armar la secuencia es solo de ingeniería.** Confirmar se reparte; armar el
+ritual no. Si armar estuviera en tres sitios, empezaría por accidente con más
+facilidad.
+
+**Los códigos no viajan por Foundry.** El componente del juego no los expone a
+Lua, así que ni el puente ni el módulo los conocen: hay que leerlos en la
+pantalla nativa que se los muestra a cada persona, o que los dicte quien los
+tenga. Es una limitación real para una mesa que juegue *solo* en Foundry —ahí
+los tendrá que repartir el director, que sí ve el estado— y a la vez lo que
+impide que el puzle se convierta en un botón.
 
 Cada entrada de la tabla es reproducible en dos capas, nunca solo una:
 

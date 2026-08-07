@@ -53,7 +53,17 @@ test("ingeniería también reparte refrigerante por sistema y solo ella (#301)",
   assert.equal(isActionAllowed("engineering", "set_system_coolant"), true);
   assert.equal(isActionAllowed("navigation", "set_system_coolant"), false);
   assert.equal(isActionAllowed("weapons", "set_system_coolant"), false);
-  assert.deepEqual(STATION_ACTIONS.engineering, ["set_system_power", "set_system_coolant", "set_auto_repair"]);
+  assert.deepEqual(STATION_ACTIONS.engineering, [
+    "set_system_power",
+    "set_system_coolant",
+    "set_auto_repair",
+    // #518: autodestrucción y frecuencia de escudos, las dos decisiones de la
+    // pantalla nativa que faltaban.
+    "activate_self_destruct",
+    "cancel_self_destruct",
+    "confirm_self_destruct_code",
+    "set_shield_frequency",
+  ]);
   assert.deepEqual(
     resolveStationOrder({
       station: "engineering",
@@ -96,7 +106,13 @@ test("armas también fija objetivo y dispara tubos, y solo ella (#465)", () => {
   assert.equal(isActionAllowed("weapons", "fire_tube"), true);
   assert.equal(isActionAllowed("navigation", "set_weapon_target"), false);
   assert.equal(isActionAllowed("sensors", "fire_tube"), false);
-  assert.deepEqual(STATION_ACTIONS.weapons, ["set_shields", "set_weapon_target", "fire_tube"]);
+  assert.deepEqual(STATION_ACTIONS.weapons, [
+    "set_shields",
+    "set_weapon_target",
+    "fire_tube",
+    // #518: una de las tres sillas que pueden confirmar un código.
+    "confirm_self_destruct_code",
+  ]);
   assert.deepEqual(
     resolveStationOrder({ station: "weapons", action: "set_weapon_target", params: { callsign: "Lapur 1" } }),
     { method: "setWeaponTarget", args: ["Lapur 1"] },
@@ -263,4 +279,68 @@ test("ningún otro puesto puede maniobrar ni atracar", () => {
       });
     }
   }
+});
+// --- Autodestrucción y frecuencia de escudos (#518) ---------------------------
+
+test("el capitán tiene exactamente UNA acción, y es asumir la autodestrucción", () => {
+  // El capitán no accionaba nada por decisión (#268). #518 le da una sola cosa,
+  // la más pesada. Esta prueba existe para que esa excepción siga siendo una
+  // excepción y no la primera grieta de una lista que crece.
+  assert.deepEqual(STATION_ACTIONS.captain, ["confirm_self_destruct_code"]);
+  for (const accion of ["set_impulse", "set_system_power", "fire_tube", "set_shields", "scan_object"]) {
+    assert.equal(isActionAllowed("captain", accion), false, `el capitán no puede ${accion}`);
+  }
+});
+
+test("tres códigos, tres sillas distintas: mando, ingeniería y armas", () => {
+  // La cooperación la impone el motor (SelfDestruct::max_codes), no el fork:
+  // aquí solo se reparten las sillas para que no sea una persona sola.
+  for (const puesto of ["captain", "engineering", "weapons"]) {
+    assert.equal(isActionAllowed(puesto, "confirm_self_destruct_code"), true, puesto);
+  }
+  for (const puesto of ["navigation", "sensors", "communications"]) {
+    assert.equal(isActionAllowed(puesto, "confirm_self_destruct_code"), false, puesto);
+  }
+});
+
+test("armar y desarmar la secuencia son solo de ingeniería", () => {
+  // Confirmar un código lo reparte la mesa; armar el ritual es del puesto que
+  // conoce la nave. Si armar estuviera en tres sitios, el ritual empezaría por
+  // accidente con más facilidad.
+  for (const accion of ["activate_self_destruct", "cancel_self_destruct"]) {
+    assert.equal(isActionAllowed("engineering", accion), true);
+    for (const puesto of ["captain", "weapons", "navigation", "sensors", "communications"]) {
+      assert.equal(isActionAllowed(puesto, accion), false, `${puesto} / ${accion}`);
+    }
+  }
+});
+
+test("las órdenes de #518 encaminan a su método de BridgeClient", () => {
+  assert.deepEqual(
+    resolveStationOrder({ station: "engineering", action: "activate_self_destruct" }),
+    { method: "activateSelfDestruct", args: [] },
+  );
+  assert.deepEqual(
+    resolveStationOrder({
+      station: "captain",
+      action: "confirm_self_destruct_code",
+      params: { index: 1, code: 4321 },
+    }),
+    { method: "confirmSelfDestructCode", args: [1, 4321] },
+  );
+  assert.deepEqual(
+    resolveStationOrder({
+      station: "engineering",
+      action: "set_shield_frequency",
+      params: { frequency: 12 },
+    }),
+    { method: "setShieldFrequency", args: [12] },
+  );
+});
+
+test("la frecuencia de escudos es de ingeniería y de nadie más", () => {
+  // Aunque los escudos on/off sean de armas: subirlos es táctico, recalibrarlos
+  // es tocar el sistema, y mientras dura la nave se queda sin escudos.
+  assert.equal(isActionAllowed("engineering", "set_shield_frequency"), true);
+  assert.equal(isActionAllowed("weapons", "set_shield_frequency"), false);
 });

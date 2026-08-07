@@ -158,6 +158,40 @@ export const ORDER_FORMS = Object.freeze({
     },
     invalidKey: "LAGUNAK.Espacios.Orden.DispararTuboInvalido",
   },
+  // Autodestrucción (#518). Armar y desarmar no llevan parámetro; confirmar
+  // lleva el índice del código Y el código, que el jugador ha tenido que leer
+  // en otro sitio —el puente no los conoce y no puede conocerlos—.
+  "orden-autodestruccion-armar": {
+    action: "activate_self_destruct",
+    read: () => ({}),
+    invalidKey: "LAGUNAK.Espacios.Orden.AutodestruccionInvalida",
+  },
+  "orden-autodestruccion-desarmar": {
+    action: "cancel_self_destruct",
+    read: () => ({}),
+    invalidKey: "LAGUNAK.Espacios.Orden.AutodestruccionInvalida",
+  },
+  "orden-autodestruccion-confirmar": {
+    action: "confirm_self_destruct_code",
+    read: (root) => {
+      const index = parseOrderValue(root?.querySelector?.("#lagunak-orden-codigo-indice")?.value);
+      const code = parseOrderValue(root?.querySelector?.("#lagunak-orden-codigo")?.value);
+      if (index === null || !Number.isInteger(index) || index < 0 || index > 2) return null;
+      if (code === null || !Number.isInteger(code) || code < 0 || code > 4294967295) return null;
+      return { index, code };
+    },
+    invalidKey: "LAGUNAK.Espacios.Orden.CodigoInvalido",
+  },
+  // Frecuencia de escudos: entero 0..20, el rango del juego.
+  "orden-frecuencia-escudos": {
+    action: "set_shield_frequency",
+    read: numericOrder(
+      "lagunak-orden-frecuencia-escudos",
+      "frequency",
+      (n) => Number.isInteger(n) && n >= 0 && n <= 20,
+    ),
+    invalidKey: "LAGUNAK.Espacios.Orden.FrecuenciaInvalida",
+  },
   // Comunicaciones (#463): acciones reactivas, calcadas de los globales que el
   // motor ya expone (contestar/cerrar canal ya abierto, elegir diálogo,
   // mandar chat libre) — sin picker de objetivo propio.

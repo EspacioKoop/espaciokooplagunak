@@ -269,6 +269,56 @@ export class BridgeClient {
     return this.#command({ op: "abort_dock" });
   }
 
+  // --- Autodestrucción y escudos (#518) --------------------------------------
+
+  /**
+   * POST /v1/command — arma la secuencia de autodestrucción (Bearer). Armarla
+   * no destruye la nave: genera los códigos y arranca el ritual. Hacen falta
+   * los tres confirmados, cada uno desde una silla distinta.
+   */
+  async activateSelfDestruct() {
+    return this.#command({ op: "activate_self_destruct" });
+  }
+
+  /**
+   * POST /v1/command — desarma la secuencia (Bearer). El motor solo deja
+   * cancelar mientras la cuenta atrás no ha empezado; pasado ese punto no hay
+   * marcha atrás, y eso es parte del peso de la decisión.
+   */
+  async cancelSelfDestruct() {
+    return this.#command({ op: "cancel_self_destruct" });
+  }
+
+  /**
+   * POST /v1/command — confirma uno de los tres códigos (Bearer).
+   *
+   * El código NO sale de aquí ni del puente: el componente del juego no lo
+   * expone a Lua, así que quien lo teclea tiene que haberlo leído en la
+   * pantalla nativa que se lo mostró, o habérselo oído a quien lo leyó. Es lo
+   * que mantiene el puzle en pie en vez de convertirlo en un botón.
+   */
+  async confirmSelfDestructCode(index, code) {
+    if (typeof index !== "number" || !Number.isInteger(index) || index < 0 || index > 2) {
+      throw new BridgeError("El índice del código debe ser 0, 1 o 2", { kind: "parse" });
+    }
+    if (typeof code !== "number" || !Number.isInteger(code) || code < 0 || code > 4294967295) {
+      throw new BridgeError("El código debe ser un entero sin signo", { kind: "parse" });
+    }
+    return this.#command({ op: "confirm_self_destruct_code", index, code });
+  }
+
+  /**
+   * POST /v1/command — recalibra los escudos a una frecuencia 0..20 (Bearer).
+   * Deja los escudos CAÍDOS mientras dura la calibración: elegir el momento es
+   * la decisión, el número solo es la mitad.
+   */
+  async setShieldFrequency(frequency) {
+    if (typeof frequency !== "number" || !Number.isInteger(frequency) || frequency < 0 || frequency > 20) {
+      throw new BridgeError("La frecuencia de escudos debe ser un entero entre 0 y 20", { kind: "parse" });
+    }
+    return this.#command({ op: "set_shield_frequency", frequency });
+  }
+
   /** POST /v1/command — contesta (true) o ignora (false) una llamada entrante (Bearer). */
   async answerCommHail(accept) {
     if (typeof accept !== "boolean") {

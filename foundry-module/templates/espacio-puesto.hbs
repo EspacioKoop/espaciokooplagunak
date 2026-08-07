@@ -312,6 +312,42 @@
           {{/if}}
         {{/if}}
 
+        {{#if canOrderShieldFrequency}}
+          <form class="lagunak-workspace__orden" data-workspace-order="shield-frequency">
+            <span class="lagunak-workspace__orden-label">{{localize "LAGUNAK.Espacios.Orden.FrecuenciaLabel"}}</span>
+            <p class="lagunak-workspace__orden-lectura" role="status" aria-live="polite">{{frecuenciaEscudosTexto}}</p>
+            <label for="lagunak-orden-frecuencia-escudos">{{localize "LAGUNAK.Espacios.Orden.FrecuenciaCampoLabel"}}</label>
+            <input id="lagunak-orden-frecuencia-escudos" name="shield-frequency" type="number" min="0" max="20" step="1" inputmode="numeric" />
+            <button type="button" data-workspace-action="orden-frecuencia-escudos">{{localize "LAGUNAK.Espacios.Orden.FrecuenciaRecalibrar"}}</button>
+            <small>{{localize "LAGUNAK.Espacios.Orden.FrecuenciaAyuda"}}</small>
+          </form>
+        {{/if}}
+
+        {{#if canOrderSelfDestruct}}
+          <form class="lagunak-workspace__orden lagunak-workspace__orden--grave" data-workspace-order="self-destruct">
+            <span class="lagunak-workspace__orden-label">{{localize "LAGUNAK.Espacios.Orden.AutodestruccionLabel"}}</span>
+            <p class="lagunak-workspace__orden-lectura" role="status" aria-live="polite">{{autodestruccionTexto}}</p>
+            {{#if autodestruccionArmada}}
+              <button type="button" data-workspace-action="orden-autodestruccion-desarmar">{{localize "LAGUNAK.Espacios.Orden.AutodestruccionDesarmar"}}</button>
+            {{else}}
+              <button type="button" data-workspace-action="orden-autodestruccion-armar">{{localize "LAGUNAK.Espacios.Orden.AutodestruccionArmar"}}</button>
+            {{/if}}
+            <small>{{localize "LAGUNAK.Espacios.Orden.AutodestruccionAyuda"}}</small>
+          </form>
+        {{/if}}
+
+        {{#if canOrderDestructCode}}
+          <form class="lagunak-workspace__orden lagunak-workspace__orden--grave" data-workspace-order="destruct-code">
+            <span class="lagunak-workspace__orden-label">{{localize "LAGUNAK.Espacios.Orden.CodigoLabel"}}</span>
+            <label for="lagunak-orden-codigo-indice">{{localize "LAGUNAK.Espacios.Orden.CodigoIndiceLabel"}}</label>
+            <input id="lagunak-orden-codigo-indice" name="destruct-index" type="number" min="0" max="2" step="1" inputmode="numeric" />
+            <label for="lagunak-orden-codigo">{{localize "LAGUNAK.Espacios.Orden.CodigoCampoLabel"}}</label>
+            <input id="lagunak-orden-codigo" name="destruct-code" type="number" min="0" step="1" inputmode="numeric" />
+            <button type="button" data-workspace-action="orden-autodestruccion-confirmar">{{localize "LAGUNAK.Espacios.Orden.CodigoConfirmar"}}</button>
+            <small>{{localize "LAGUNAK.Espacios.Orden.CodigoAyuda"}}</small>
+          </form>
+        {{/if}}
+
         {{#if canOrderCommsHail}}
           <form class="lagunak-workspace__orden" data-workspace-order="comms-hail">
             <span class="lagunak-workspace__orden-label">{{localize "LAGUNAK.Espacios.Orden.CommsHailLabel"}}</span>

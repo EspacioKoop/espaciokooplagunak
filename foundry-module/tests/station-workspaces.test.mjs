@@ -822,6 +822,20 @@ function pilotaje({ ship, sensores = null }) {
   });
 }
 
+// --- Autodestrucción y frecuencia de escudos en la consola (#518) -------------
+
+function ingenieria(ship) {
+  return buildWorkspaceModel({
+    station: "engineering",
+    isGM: false,
+    users: [user({ id: "p1", station: "engineering" })],
+    moduleId: MODULE_ID,
+    i18n: i18nEs,
+    statePayload: { ship },
+    connection: "ok",
+  });
+}
+
 test("pilotaje ofrece maniobra de combate y atraque, y solo pilotaje", () => {
   const modelo = pilotaje({ ship: { callsign: "Lagunak", systems: {} } });
   assert.equal(modelo.canOrderCombatManeuver, true);
@@ -885,4 +899,101 @@ test("los objetivos de atraque salen de la MISMA lectura degradada, no del crudo
 test("sin sondeo no hay objetivos de atraque inventados", () => {
   const modelo = pilotaje({ ship: { callsign: "Lagunak", systems: {} }, sensores: null });
   assert.deepEqual(modelo.dockTargets, []);
+});
+
+test("la autodestrucción no se ofrece si la nave no puede autodestruirse", () => {
+  // Sin componente el puente publica null. Un botón que no hace nada es peor
+  // que no tener botón: promete una salida que no existe.
+  const sinComponente = ingenieria({ callsign: "Lagunak", systems: {} });
+  assert.equal(sinComponente.canOrderSelfDestruct, false);
+
+  const conComponente = ingenieria({
+    callsign: "Lagunak",
+    systems: {},
+    self_destruct: { active: false, countdown: null },
+  });
+  assert.equal(conComponente.canOrderSelfDestruct, true);
+});
+
+test("confirmar código solo aparece con la secuencia ya armada", () => {
+  // Teclear un código antes de armar no significa nada, y ofrecerlo sugeriría
+  // que el ritual ya está en marcha.
+  const desarmada = ingenieria({
+    callsign: "Lagunak",
+    systems: {},
+    self_destruct: { active: false, countdown: null },
+  });
+  assert.equal(desarmada.canOrderDestructCode, false);
+
+  const armada = ingenieria({
+    callsign: "Lagunak",
+    systems: {},
+    self_destruct: { active: true, countdown: 42 },
+  });
+  assert.equal(armada.canOrderDestructCode, true);
+  assert.match(armada.autodestruccionTexto, /42/);
+});
+
+test("sin lectura de autodestrucción no se dice que esté desarmada", () => {
+  const sinLectura = ingenieria({ callsign: "Lagunak", systems: {} });
+  const desarmada = ingenieria({
+    callsign: "Lagunak",
+    systems: {},
+    self_destruct: { active: false, countdown: null },
+  });
+  assert.notEqual(sinLectura.autodestruccionTexto, desarmada.autodestruccionTexto);
+});
+
+test("el modelo NUNCA transporta códigos de autodestrucción", () => {
+  // La frontera que sostiene el puzle: la telemetría que el GM reparte viaja
+  // por un ajuste de mundo que toda la mesa puede leer, así que un código aquí
+  // sería un código público.
+  const modelo = ingenieria({
+    callsign: "Lagunak",
+    systems: {},
+    self_destruct: { active: true, countdown: 30, code: [1111, 2222, 3333] },
+  });
+  const serializado = JSON.stringify(modelo);
+  assert.doesNotMatch(serializado, /1111/);
+  assert.doesNotMatch(serializado, /2222/);
+});
+
+test("recalibrar avisa de que los escudos se caen mientras dura", () => {
+  // Ese aviso es lo que convierte un número en una decisión.
+  const calibrando = ingenieria({
+    callsign: "Lagunak",
+    systems: {},
+    shield_calibration: { frequency: 12, calibration_delay: 4 },
+  });
+  assert.match(calibrando.frecuenciaEscudosTexto, /12/);
+  assert.match(calibrando.frecuenciaEscudosTexto, /caíd/i);
+
+  const estable = ingenieria({
+    callsign: "Lagunak",
+    systems: {},
+    shield_calibration: { frequency: 12, calibration_delay: 0 },
+  });
+  assert.match(estable.frecuenciaEscudosTexto, /12/);
+  assert.doesNotMatch(estable.frecuenciaEscudosTexto, /caíd/i);
+
+  const sinLectura = ingenieria({ callsign: "Lagunak", systems: {} });
+  assert.notEqual(sinLectura.frecuenciaEscudosTexto, estable.frecuenciaEscudosTexto);
+});
+
+test("ningún otro puesto recibe el control de frecuencia ni el de armar", () => {
+  for (const puesto of ["navigation", "sensors", "communications", "weapons"]) {
+    const modelo = buildWorkspaceModel({
+      station: puesto,
+      isGM: false,
+      users: [user({ id: "p1", station: puesto })],
+      moduleId: MODULE_ID,
+      i18n: i18nEs,
+      statePayload: {
+        ship: { callsign: "Lagunak", systems: {}, self_destruct: { active: true, countdown: 10 } },
+      },
+      connection: "ok",
+    });
+    assert.equal(modelo.canOrderShieldFrequency, false, puesto);
+    assert.equal(modelo.canOrderSelfDestruct, false, puesto);
+  }
 });

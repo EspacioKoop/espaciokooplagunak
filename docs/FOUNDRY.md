@@ -183,6 +183,16 @@ token:
   derivado del casco y la energía, esta una declaración de la tripulación, y
   conviven sin sincronizarse porque derivar una de la otra borraría la decisión.
   El hackeo queda fuera: el motor no lo expone a Lua (#521).
+- **Base de datos científica y vista de sonda (#520)** — las dos cosas que la
+  pantalla nativa de Science daba y Foundry no. Ninguna es una orden y por eso
+  **ninguna entra en `STATION_ACTIONS`**: autorizar una lectura que no cambia
+  nada sería inventar una puerta donde no hace falta. La base de datos llega por
+  `GET /v1/database`, se pide **una vez** por consola (no en el bucle de sondeo)
+  y el GM la publica en su propio ajuste de mundo para que sensores la vea sin
+  token. La vista de sonda reusa la MISMA degradación de contactos con otro
+  centro —el de la sonda— y los alcances de la nave, igual que la pantalla
+  nativa; sin enlace no se difunde, porque una lista vacía diría «he mirado
+  desde la sonda» sin haber sonda.
 - **Matriz de autoridad cerrada** (`station-actions.mjs`, `STATION_ACTIONS`).
   Declara qué órdenes del whitelist del puente puede emitir cada puesto:
   `navigation` → `set_target_heading`, `set_impulse`, `set_warp`,

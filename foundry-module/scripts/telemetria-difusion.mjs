@@ -38,6 +38,13 @@ export const TIPO_TELEMETRIA = "lagunak:telemetria-nave";
 /** Ajuste de mundo donde el GM publica. Solo un GM puede escribirlo. */
 export const AJUSTE_TELEMETRIA = "telemetriaNave";
 
+/**
+ * Ajuste de mundo de la base de datos científica (#520). Aparte del sobre de
+ * telemetría a propósito: aquel se reescribe en cada sondeo y esto se pide una
+ * vez. No lleva nada sensible —son fichas de escenario— pero sí es grande.
+ */
+export const AJUSTE_BASE_DATOS = "baseDatosCientifica";
+
 /** Redondeo de lo que se publica. Ver la cabecera: sin esto se escribe siempre. */
 function redondear(valor) {
   const n = Number(valor);
@@ -91,6 +98,12 @@ export function recortarNave(ship) {
     // saber. Fijarla sigue siendo solo de Relay (#237); esto es leerla.
     alert_level: recortarNivelAlerta(ship.alert_level),
     probes: recortarSondas(ship.probes),
+    // Del enlace sonda→ciencia (#520) se copia solo el indicativo: la POSICIÓN
+    // de la sonda no viaja. No hace falta —la lectura desde la sonda ya se
+    // difunde degradada en `sensoresSonda`— y este sobre acaba en un ajuste de
+    // mundo que toda la mesa puede leer, así que una coordenada exacta ahí
+    // sería una coordenada exacta para todos.
+    science_link: recortarEnlaceCiencia(ship.science_link),
   };
 }
 
@@ -142,6 +155,15 @@ function recortarSondas(probes) {
   return { stock: Math.round(stock), max: Math.round(max) };
 }
 
+/** Solo el indicativo de la sonda enlazada. Nunca su posición. */
+function recortarEnlaceCiencia(enlace) {
+  if (!enlace || typeof enlace !== "object") return null;
+  const callsign = typeof enlace.callsign === "string" && enlace.callsign !== ""
+    ? enlace.callsign
+    : null;
+  return { callsign };
+}
+
 /** ¿Ha cambiado algo que se vea? Compara lo ya recortado, no el crudo. */
 export function hayCambio(nave, anterior) {
   return JSON.stringify(nave) !== JSON.stringify(anterior ?? null);
@@ -170,7 +192,20 @@ export function sobreTelemetria(statePayload, ahora = Date.now(), contactsPayloa
     statePayload?.ship?.position ?? null,
     statePayload?.ship?.radar ?? null,
   );
-  return { tipo: TIPO_TELEMETRIA, ship, sensores, sello: ahora };
+  // Vista de sonda (#520). La pantalla nativa de Science, con una sonda
+  // enlazada, RECENTRA el radar en ella conservando los alcances de la nave
+  // (`scienceScreen.cpp`). Aquí se hace lo mismo: la MISMA degradación, el
+  // MISMO alcance, otro centro. Eso es lo que la hace útil —ver lo que hay
+  // alrededor de la sonda, lejos— sin inventarle a la sonda un alcance propio
+  // que el juego no le da.
+  //
+  // Sin enlace no se difunde nada: `null` apaga la vista, y una lista vacía
+  // diría «he mirado desde la sonda y no hay nada» sin haber sonda.
+  const posicionSonda = statePayload?.ship?.science_link?.position ?? null;
+  const sensoresSonda = posicionSonda
+    ? degradarContactos(contactsPayload, posicionSonda, statePayload?.ship?.radar ?? null)
+    : null;
+  return { tipo: TIPO_TELEMETRIA, ship, sensores, sensoresSonda, sello: ahora };
 }
 
 /**
@@ -212,6 +247,21 @@ export function aceptarTelemetria(mensaje) {
 export function aceptarSensores(mensaje) {
   if (mensaje?.tipo !== TIPO_TELEMETRIA) return null;
   const sensores = mensaje.sensores;
+  if (!sensores || !Array.isArray(sensores.contactos)) return null;
+  return sensores;
+}
+
+/**
+ * La lectura degradada centrada en la sonda enlazada (#520), o `null`.
+ *
+ * Misma comprobación que `aceptarSensores` y por el mismo motivo: un sobre sin
+ * la forma esperada no se interpreta a medias. `null` apaga la vista de sonda,
+ * que es distinto de una lista vacía —«no hay sonda» frente a «desde la sonda
+ * no se ve nada»—.
+ */
+export function aceptarSensoresSonda(mensaje) {
+  if (mensaje?.tipo !== TIPO_TELEMETRIA) return null;
+  const sensores = mensaje.sensoresSonda;
   if (!sensores || !Array.isArray(sensores.contactos)) return null;
   return sensores;
 }

@@ -160,6 +160,13 @@ los puestos que la mesa ya tiene aprendidos en toda superficie que enumere
   declarada en `alert_level` para que quien la fija pueda confirmarla.
 - **El hackeo no está**, y no por olvido: el motor no lo expone a Lua y haría
   falta binding en C++ (#521).
+**No todo lo que un puesto gana es una orden.** #520 le da a sensores la base de
+datos científica y la vista de sonda, y **ninguna de las dos aparece en esta
+tabla** porque ninguna es una orden: son consultas. Autorizar una lectura que no
+cambia nada sería inventar una puerta donde no hace falta ninguna, y engordar la
+matriz con entradas que no gatean nada la haría menos legible justo donde tiene
+que serlo más. La asimetría de información —que un puesto sepa algo que los
+demás no— se consigue difundiéndole a él el dato, no dándole permiso.
 
 Cada entrada de la tabla es reproducible en dos capas, nunca solo una:
 

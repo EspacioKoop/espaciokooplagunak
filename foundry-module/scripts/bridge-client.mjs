@@ -83,6 +83,18 @@ export class BridgeClient {
     return this.#get("/v1/contacts", { auth: true });
   }
 
+  /**
+   * GET /v1/database — base de datos científica del escenario (#520, Bearer).
+   *
+   * CONSULTA, no orden: no hay nada que ordenar aquí. Recurso aparte de
+   * `/v1/state` porque es contenido de referencia casi inmóvil, y meterlo en el
+   * sondeo haría que cada ciclo reenviara siempre lo mismo — por eso el
+   * consumidor lo pide UNA vez y no en el bucle.
+   */
+  async database() {
+    return this.#get("/v1/database", { auth: true });
+  }
+
   /** GET /v1/encounters — catálogo cerrado de encuentros del GM (Bearer). */
   async encounters() {
     return this.#get("/v1/encounters", { auth: true });

@@ -826,6 +826,22 @@ function pilotaje({ ship, sensores = null }) {
   });
 }
 
+// --- Base de datos científica y vista de sonda (#520) -------------------------
+
+function sensoresDe({ ship = { callsign: "Lagunak", systems: {} }, baseDatos, sensoresSonda } = {}) {
+  return buildWorkspaceModel({
+    station: "sensors",
+    isGM: false,
+    users: [user({ id: "p1", station: "sensors" })],
+    moduleId: MODULE_ID,
+    i18n: i18nEs,
+    statePayload: { ship },
+    baseDatos,
+    sensoresSonda,
+    connection: "ok",
+  });
+}
+
 // --- Consola de Relay (#517) --------------------------------------------------
 
 function enlace(ship, sensores = null) {
@@ -1075,6 +1091,32 @@ test("ningún otro puesto recibe el control de frecuencia ni el de armar", () =>
   }
 });
 
+const BASE = {
+  entradas: [
+    { id: "Naves", nombre: "Naves", padre: null, descripcion: "Clasificación", valores: [] },
+  ],
+  total: 1,
+  truncada: false,
+};
+
+test("la base de datos es consulta y no orden: no entra en la matriz", () => {
+  // No hay `canOrder*` para esto a propósito. Autorizar una lectura que no
+  // cambia nada sería inventar una puerta donde no hace falta ninguna.
+  const modelo = sensoresDe({ baseDatos: BASE });
+  assert.equal(modelo.tieneBaseDatos, true);
+  assert.equal(modelo.canOrderBaseDatos, undefined);
+  assert.equal(modelo.baseDatosEntradas.length, 1);
+});
+
+test("no consultada y vacía se dicen distinto", () => {
+  // Una base vacía es una respuesta; no haberla pedido no lo es.
+  const sinConsultar = sensoresDe({});
+  const vacia = sensoresDe({ baseDatos: { entradas: [], total: 0, truncada: false } });
+  assert.equal(sinConsultar.tieneBaseDatos, false);
+  assert.equal(vacia.tieneBaseDatos, true);
+  assert.notEqual(sinConsultar.baseDatosTexto, vacia.baseDatosTexto);
+});
+
 test("ningún otro puesto recibe los controles de relay", () => {
   for (const puesto of ["captain", "navigation", "engineering", "sensors", "communications", "weapons"]) {
     const modelo = buildWorkspaceModel({
@@ -1089,4 +1131,50 @@ test("ningún otro puesto recibe los controles de relay", () => {
     assert.equal(modelo.canOrderAlertLevel, false, puesto);
     assert.equal(modelo.canOrderProbe, false, puesto);
   }
+});
+
+test("la base de datos solo la ve sensores", () => {
+  for (const puesto of ["captain", "navigation", "engineering", "communications", "weapons"]) {
+    const modelo = buildWorkspaceModel({
+      station: puesto,
+      isGM: false,
+      users: [user({ id: "p1", station: puesto })],
+      moduleId: MODULE_ID,
+      i18n: i18nEs,
+      statePayload: { ship: { callsign: "Lagunak", systems: {} } },
+      baseDatos: BASE,
+      connection: "ok",
+    });
+    assert.equal(modelo.tieneBaseDatos, false, puesto);
+    assert.deepEqual(modelo.baseDatosEntradas, [], puesto);
+  }
+});
+
+test("la vista de sonda solo aparece con enlace", () => {
+  const sinEnlace = sensoresDe({});
+  assert.equal(sinEnlace.hayEnlaceSonda, false);
+
+  const conEnlace = sensoresDe({
+    ship: { callsign: "Lagunak", systems: {}, science_link: { callsign: "P-1" } },
+    sensoresSonda: { contactos: [{ etiqueta: "eco a 900" }] },
+  });
+  assert.equal(conEnlace.hayEnlaceSonda, true);
+  assert.match(conEnlace.enlaceSondaTexto, /P-1/);
+  assert.equal(conEnlace.sensoresSonda.contactos.length, 1);
+});
+
+test("la lectura de la sonda no se le pasa a otros puestos", () => {
+  // Es trabajo de sensores. Repartirla a todos regalaría justo lo que hace de
+  // este puesto un puesto.
+  const armas = buildWorkspaceModel({
+    station: "weapons",
+    isGM: false,
+    users: [user({ id: "p1", station: "weapons" })],
+    moduleId: MODULE_ID,
+    i18n: i18nEs,
+    statePayload: { ship: { callsign: "Lagunak", systems: {}, science_link: { callsign: "P-1" } } },
+    sensoresSonda: { contactos: [{ etiqueta: "eco a 900" }] },
+    connection: "ok",
+  });
+  assert.equal(armas.sensoresSonda, null);
 });

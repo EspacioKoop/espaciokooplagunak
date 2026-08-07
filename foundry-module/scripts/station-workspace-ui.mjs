@@ -2,11 +2,14 @@ import { BridgeClient, BridgeError } from "./bridge-client.mjs";
 import { getBridgeToken } from "./bridge-token-session.mjs";
 import { openStationApp } from "./station-ui.mjs";
 import { buildWorkspaceModel, stationForWorkspace } from "./station-workspaces.mjs";
+import { normalizarBaseDatos } from "./base-datos-cientifica.mjs";
 import { emitWorkspaceOrder } from "./station-order-wiring.mjs";
 import { ORDER_FORMS } from "./station-order-forms.mjs";
 import {
+  AJUSTE_BASE_DATOS,
   AJUSTE_TELEMETRIA,
   aceptarSensores,
+  aceptarSensoresSonda,
   aceptarTelemetria,
   difundirTelemetria,
   esMasReciente,
@@ -44,6 +47,7 @@ function recibirTelemetria() {
   const ship = aceptarTelemetria(sobre);
   if (!ship) return;
   const sensores = aceptarSensores(sobre);
+  const sensoresSonda = aceptarSensoresSonda(sobre);
   // Fuera de orden se descarta: dos escrituras seguidas pueden llegar cruzadas y
   // la consola parpadearía hacia atrás, que en un rumbo se ve como una sacudida.
   if (!esMasReciente(sobre, app.selloTelemetria)) return;
@@ -54,6 +58,10 @@ function recibirTelemetria() {
   if (!game.user?.isGM) {
     app.statePayload = { ship };
     app.sensores = sensores;
+    app.sensoresSonda = sensoresSonda;
+    // La tripulación no tiene token: la base de datos le llega por el ajuste
+    // que publica el GM. `null` sigue siendo "sin consultar".
+    app.baseDatos = game.settings?.get?.(configuredModuleId, AJUSTE_BASE_DATOS) ?? null;
     app.connection = "ok";
     app.error = "";
   }
@@ -168,14 +176,52 @@ function workspaceContext(app) {
     // Contactos degradados que llegaron por difusión (#331 paso 3). Solo los
     // tiene la tripulación: el GM usa su propio sondeo, que es más preciso.
     sensores: app.sensores,
+    // Vista de sonda (#520): la misma lectura degradada con otro centro.
+    sensoresSonda: app.sensoresSonda ?? null,
+    // Base de datos científica (#520). Se pide UNA vez al abrir la consola y no
+    // en el bucle de sondeo: es contenido de referencia casi inmóvil, y
+    // repetirlo cada ciclo reenviaría siempre lo mismo.
+    baseDatos: app.baseDatos ?? null,
     connection: app.connection,
     error: app.error,
   });
   return app.ultimoModelo;
 }
 
+/**
+ * Pide la base de datos científica UNA vez y la difunde a la mesa (#520).
+ *
+ * Fuera del bucle de sondeo a propósito: es contenido de referencia casi
+ * inmóvil, y repetirlo cada ciclo reenviaría siempre lo mismo. Si falla se
+ * queda en `null` —«sin consultar»— y no en una lista vacía, que diría que el
+ * escenario no trae fichas.
+ */
+async function cargarBaseDatos(app, client) {
+  if (!game.user?.isGM || app.baseDatos || app.cargandoBaseDatos) return;
+  app.cargandoBaseDatos = true;
+  try {
+    const payload = await client.database();
+    if (app.closed) return;
+    app.baseDatos = normalizarBaseDatos(payload);
+    if (app.baseDatos && configuredModuleId) {
+      // Se publica para que la tripulación de sensores la vea: no tienen token
+      // con el que pedirla. No lleva nada sensible —son fichas de escenario— y
+      // por eso va en su propio ajuste y no dentro del sobre de telemetría, que
+      // se reescribe cada sondeo.
+      await game.settings?.set?.(configuredModuleId, AJUSTE_BASE_DATOS, app.baseDatos);
+    }
+    renderWorkspace();
+  } catch {
+    // Silencio deliberado: la consola ya dice "sin consultar", que es la
+    // verdad. Un aviso por una consulta opcional que falló sería ruido.
+  } finally {
+    app.cargandoBaseDatos = false;
+  }
+}
+
 async function refreshTelemetry(app) {
   if (!game.user?.isGM || app.loading || app.closed) return false;
+
   app.loading = true;
   app.connection = "loading";
   app.error = "";
@@ -183,6 +229,10 @@ async function refreshTelemetry(app) {
 
   try {
     const client = bridgeClient();
+    // La base de datos se pide con el MISMO cliente y NO se espera: es una
+    // consulta opcional que no debe retrasar la telemetría, que sí es lo que la
+    // mesa mira cada segundo. `cargarBaseDatos` no repite si ya la tiene.
+    cargarBaseDatos(app, client);
     const [statePayload, contactsPayload] = await Promise.all([
       client.state(),
       client.contacts(),
@@ -354,6 +404,8 @@ function initialiseApp(app) {
   app.connection = "loading";
   app.selloTelemetria = null;
   app.sensores = null;
+  app.sensoresSonda = null;
+  app.baseDatos = null;
   app.error = "";
   app.loading = false;
   app.closed = false;

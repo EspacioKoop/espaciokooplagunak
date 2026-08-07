@@ -257,6 +257,29 @@ if ok_launcher and launcher ~= nil then
         probes_json = string.format('{"stock":%%d,"max":%%d}', stock, max_probes)
     end
 end
+-- Enlace sonda→ciencia (#520). `radar_link` ya expone `linked_entity` a Lua
+-- (src/script/components.cpp), así que esto tampoco necesita C++ nuevo.
+--
+-- Lo que habilita es la VISTA DE SONDA: la pantalla nativa de Science, con una
+-- sonda enlazada, recentra el radar en ella conservando los alcances de la
+-- nave (src/screens/crew6/scienceScreen.cpp). Publicar la posición de la sonda
+-- permite hacer lo mismo en Foundry sin inventarse un alcance para la sonda,
+-- que no lo tiene propio.
+local science_link_json = "null"
+local ok_link, radar_link = pcall(function() return ship.components.radar_link end)
+if ok_link and radar_link ~= nil then
+    local ok_ent, enlazada = pcall(function() return radar_link.linked_entity end)
+    if ok_ent and enlazada ~= nil and enlazada then
+        local ok_pos, px, py = pcall(function() return enlazada:getPosition() end)
+        if ok_pos and type(px) == "number" and type(py) == "number" then
+            local cs_json = "null"
+            local ok_cs, cs = pcall(function() return enlazada:getCallSign() end)
+            if ok_cs and type(cs) == "string" and cs ~= "" then cs_json = json_escape(cs) end
+            science_link_json = string.format(
+                '{"callsign":%%s,"position":{"x":%%.1f,"y":%%.1f}}', cs_json, px, py)
+        end
+    end
+end
 local systems = {}
 for _, name in ipairs({%s}) do
     systems[#systems + 1] = string.format(
@@ -272,7 +295,7 @@ return string.format(
     .. '"shields_active":%%s,"repair_crew":%%d,"radar":%%s,"docking":%%s,'
     .. '"auto_repair":%%s,"combat_maneuver":%%s,"self_destruct":%%s,'
     .. '"shield_calibration":%%s,"alert_level":%%s,"probes":%%s,'
-    .. '"systems":{%%s}}}',
+    .. '"science_link":%%s,"systems":{%%s}}}',
     ship:getCallSign() or "?", x, y, ship:getHeading(), vx, vy,
     destination_json, distance_json, eta_json,
     ship:getHull(), ship:getHullMax(),
@@ -280,7 +303,7 @@ return string.format(
     tostring(ship:getShieldsActive()), ship:getRepairCrewCount(),
     radar_json, docking_json, auto_repair_json, combat_maneuver_json,
     self_destruct_json, shield_frequency_json, alert_level_json, probes_json,
-    table.concat(systems, ","))
+    science_link_json, table.concat(systems, ","))
 """ % ", ".join(f'"{name}"' for name in _SYSTEMS)
 _STATE_LUA = _JSON_ESCAPE_LUA + _STATE_LUA
 
@@ -540,3 +563,100 @@ def _fire_tube_lua(callsign: str, index: int) -> str:
         + f"ship:commandFireTubeAtTarget({int(index)}, target)\n"
         + 'return \'{"ok":true}\''
     )
+
+
+# Base de datos científica (#520): el árbol de fichas que la pantalla nativa de
+# Science deja consultar. Es CONSULTA, no orden — información asimétrica pura,
+# el pilar 1 del roadmap de producto sin tocar la autoridad de nadie.
+#
+# Por qué un recurso propio y no un campo de /v1/state: el estado se sondea cada
+# pocos segundos y describe lo que CAMBIA; esto es contenido de referencia, casi
+# inmóvil y mucho más grande. Meterlo en el estado multiplicaría el tamaño de
+# cada sondeo para reenviar siempre lo mismo.
+#
+# Las entradas son entidades con componente `science_database`, encadenadas por
+# `parent` (src/components/database.h). El identificador es la RUTA de nombres
+# ("Naves/Exuari/Cazador"), que es como se navega el árbol en la pantalla nativa
+# y sobrevive a que las entidades se recreen — un índice de entidad no.
+#
+# Cotas: número de entradas y de pares clave/valor. Una base de datos de mesa no
+# se acerca a ellas; están para que un escenario patológico no tumbe la
+# respuesta. El truncamiento se declara (`truncated`) en vez de disimularse.
+_DATABASE_LUA = _JSON_ESCAPE_LUA + r"""
+local limite = 400
+local limite_kv = 24
+local entradas = {}
+local ok_todas, todas = pcall(function()
+    return getEntitiesWithComponent("science_database")
+end)
+if not ok_todas or todas == nil then
+    return '{"entries":[],"truncated":false,"total":0}'
+end
+
+-- Nombre de una entrada, o nil si no lo tiene: sin nombre no hay ruta, y sin
+-- ruta no hay identificador estable, así que la entrada se descarta entera en
+-- vez de colarse con un id inventado.
+local function nombre_de(entidad)
+    local ok, db = pcall(function() return entidad.components.science_database end)
+    if not ok or db == nil then return nil end
+    local ok_n, n = pcall(function() return db.name end)
+    if not ok_n or type(n) ~= "string" or n == "" then return nil end
+    return n
+end
+
+-- Ruta completa subiendo por `parent`. El tope de profundidad no es decorativo:
+-- un `parent` en ciclo (dato corrupto o escenario raro) colgaría el juego
+-- entero dentro de /exec.lua, y el puente solo vería un timeout.
+local function ruta_de(entidad)
+    local partes = {}
+    local actual = entidad
+    for _ = 1, 16 do
+        if actual == nil or not actual then break end
+        local n = nombre_de(actual)
+        if n == nil then return nil end
+        table.insert(partes, 1, n)
+        local ok_p, padre = pcall(function() return actual.components.science_database.parent end)
+        if not ok_p or padre == nil or not padre then break end
+        actual = padre
+    end
+    if #partes == 0 then return nil end
+    return table.concat(partes, "/")
+end
+
+local total = 0
+for _, entidad in ipairs(todas) do
+    local ruta = ruta_de(entidad)
+    if ruta ~= nil then
+        total = total + 1
+        if #entradas < limite then
+            local db = entidad.components.science_database
+            local descripcion_json = "null"
+            local ok_d, d = pcall(function() return db.description end)
+            if ok_d and type(d) == "string" and d ~= "" then descripcion_json = json_escape(d) end
+            local padre_json = "null"
+            local ok_pp, padre = pcall(function() return db.parent end)
+            if ok_pp and padre ~= nil and padre then
+                local ruta_padre = ruta_de(padre)
+                if ruta_padre ~= nil then padre_json = json_escape(ruta_padre) end
+            end
+            local kv = {}
+            local ok_kv = pcall(function()
+                for i = 1, math.min(#db.key_values, limite_kv) do
+                    local par = db.key_values[i]
+                    if type(par.key) == "string" and par.key ~= "" then
+                        kv[#kv + 1] = string.format('{"key":%s,"value":%s}',
+                            json_escape(par.key), json_escape(tostring(par.value or "")))
+                    end
+                end
+            end)
+            if not ok_kv then kv = {} end
+            entradas[#entradas + 1] = string.format(
+                '{"id":%s,"name":%s,"parent":%s,"description":%s,"values":[%s]}',
+                json_escape(ruta), json_escape(nombre_de(entidad)), padre_json,
+                descripcion_json, table.concat(kv, ","))
+        end
+    end
+end
+return string.format('{"entries":[%s],"truncated":%s,"total":%d}',
+    table.concat(entradas, ","), tostring(total > #entradas), total)
+"""

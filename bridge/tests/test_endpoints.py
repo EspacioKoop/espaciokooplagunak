@@ -178,3 +178,18 @@ def test_anchors_publica_el_catalogo_cerrado(client, juego, auth):
 
 def test_anchors_requiere_auth(client, juego):
     assert client.get("/v1/anchors").status_code == 401
+
+
+def test_v1_database_exige_token(client, juego):
+    r = client.get("/v1/database")
+    assert r.status_code == 401
+    assert not juego.llamadas
+
+
+def test_v1_database_devuelve_lo_que_publica_el_juego(client, juego, auth):
+    juego.text = '{"entries":[{"id":"Naves","name":"Naves"}],"truncated":false,"total":1}'
+    r = client.get("/v1/database", headers=auth)
+    assert r.status_code == 200
+    assert r.json()["entries"][0]["id"] == "Naves"
+    # Es consulta pura: no emite ninguna orden ni toca el estado de la nave.
+    assert "command" not in juego.ultimo_lua

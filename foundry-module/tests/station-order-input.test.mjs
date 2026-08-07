@@ -196,3 +196,42 @@ test("comunicaciones: orden-comms-mensaje valida texto no vacío hasta 256 carac
     { message: "x".repeat(256) },
   );
 });
+
+// --- Maniobra de combate y atraque (#519) -------------------------------------
+
+test("los dos ejes de maniobra NO comparten rango", () => {
+  // El empuje del control nativo va 0..1 y el lateral -1..1. Igualarlos por
+  // simetría inventaría una marcha atrás que la nave no tiene.
+  const empuje = ORDER_FORMS["orden-maniobra-empuje"];
+  const lateral = ORDER_FORMS["orden-maniobra-lateral"];
+  assert.deepEqual(empuje.read(fakeRoot({ "lagunak-orden-maniobra-empuje": "1" })), { amount: 1 });
+  assert.equal(empuje.read(fakeRoot({ "lagunak-orden-maniobra-empuje": "-0.5" })), null);
+  assert.deepEqual(lateral.read(fakeRoot({ "lagunak-orden-maniobra-lateral": "-1" })), { amount: -1 });
+  assert.equal(lateral.read(fakeRoot({ "lagunak-orden-maniobra-lateral": "1.5" })), null);
+});
+
+test("el cero de maniobra sí es una orden (detener), no un campo vacío", () => {
+  const empuje = ORDER_FORMS["orden-maniobra-empuje"];
+  assert.deepEqual(empuje.read(fakeRoot({ "lagunak-orden-maniobra-empuje": "0" })), { amount: 0 });
+  assert.equal(empuje.read(fakeRoot({ "lagunak-orden-maniobra-empuje": "" })), null);
+});
+
+test("atracar exige objetivo; soltar y cancelar no lo necesitan", () => {
+  const atracar = ORDER_FORMS["orden-atracar"];
+  assert.equal(atracar.read(fakeRoot({})), null, "sin objetivo no se emite");
+  assert.deepEqual(
+    atracar.read(
+      fakeRoot({
+        "lagunak-orden-objetivo-atraque": JSON.stringify({ distancia: 900, rumboDeg: 12 }),
+      }),
+    ),
+    { distancia: 900, rumboDeg: 12, precision: 0, rumboPrecision: 0 },
+  );
+  assert.deepEqual(ORDER_FORMS["orden-soltar-amarras"].read(fakeRoot({})), {});
+  assert.deepEqual(ORDER_FORMS["orden-cancelar-atraque"].read(fakeRoot({})), {});
+});
+
+test("soltar amarras y cancelar el acercamiento emiten acciones distintas", () => {
+  assert.equal(ORDER_FORMS["orden-soltar-amarras"].action, "undock");
+  assert.equal(ORDER_FORMS["orden-cancelar-atraque"].action, "abort_dock");
+});

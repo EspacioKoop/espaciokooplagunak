@@ -86,6 +86,48 @@ export const ORDER_FORMS = Object.freeze({
     read: () => ({ active: false }),
     invalidKey: "LAGUNAK.Espacios.Orden.EscudosInvalido",
   },
+  // Maniobra de combate (#519). Dos ejes con rangos DISTINTOS a propósito, los
+  // del control nativo: el empuje solo va hacia adelante (0..1) y el lateral
+  // conserva el signo (−1..1, babor/estribor). Igualarlos "por simetría"
+  // inventaría una marcha atrás que la nave no tiene.
+  "orden-maniobra-empuje": {
+    action: "combat_maneuver_boost",
+    read: numericOrder(
+      "lagunak-orden-maniobra-empuje",
+      "amount",
+      (n) => Number.isFinite(n) && n >= 0 && n <= 1,
+    ),
+    invalidKey: "LAGUNAK.Espacios.Orden.ManiobraEmpujeInvalido",
+  },
+  "orden-maniobra-lateral": {
+    action: "combat_maneuver_strafe",
+    read: numericOrder(
+      "lagunak-orden-maniobra-lateral",
+      "amount",
+      (n) => Number.isFinite(n) && n >= -1 && n <= 1,
+    ),
+    invalidKey: "LAGUNAK.Espacios.Orden.ManiobraLateralInvalido",
+  },
+  // Atraque (#519). `orden-atracar` elige objetivo por lectura degradada, como
+  // escaneo y armas: el timón señala "eso de ahí", no un indicativo que no
+  // tiene por qué conocer. Soltar y cancelar no llevan objetivo —el juego sabe
+  // de qué atraque habla— y son órdenes distintas: `undock` suelta un atraque
+  // consumado, `abort_dock` cancela el acercamiento.
+  "orden-atracar": {
+    action: "dock",
+    read: (root) => leerLecturaSeleccionada(root, "lagunak-orden-objetivo-atraque"),
+    invalidKey: "LAGUNAK.Espacios.Orden.AtraqueInvalido",
+  },
+  "orden-soltar-amarras": {
+    action: "undock",
+    read: () => ({}),
+    invalidKey: "LAGUNAK.Espacios.Orden.AtraqueInvalido",
+  },
+  "orden-cancelar-atraque": {
+    action: "abort_dock",
+    read: () => ({}),
+    invalidKey: "LAGUNAK.Espacios.Orden.AtraqueInvalido",
+  },
   // Escaneo (#462): el valor del <select> no es un indicativo -un eco no
   // tiene uno que el jugador pueda conocer- sino la lectura degradada del
   // contacto elegido (distancia/rumbo con su margen), codificada en JSON por

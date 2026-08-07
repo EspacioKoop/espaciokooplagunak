@@ -70,7 +70,29 @@ export function recortarNave(ship) {
     shields: Array.isArray(ship.shields) ? ship.shields.map(redondear) : null,
     destination: ship.destination ?? null,
     systems: sistemas,
+    // #519. OJO: esta función es una LISTA BLANCA. Un campo nuevo de
+    // `/v1/state` llega al GM (que sondea el puente) pero NO a las consolas de
+    // tripulación hasta que se copia aquí a mano, y el modo de fallo es
+    // silencioso: el control no aparece y no salta ningún error. Que sea una
+    // lista blanca es deliberado —lo que no se copia no puede escaparse por
+    // este canal— pero hay que acordarse al añadir lecturas.
+    //
+    // La carga de maniobra se copia SIN redondear a un decimal como el resto:
+    // es una fracción 0..1, y `redondear` la dejaría en saltos del 10 %.
+    combat_maneuver: recortarManiobra(ship.combat_maneuver),
   };
+}
+
+/**
+ * Carga de la maniobra de combate. Conserva la diferencia entre "no hay
+ * lectura" (`null`) y "la hay y está a cero", que es la que separa «no sé si
+ * puedes maniobrar» de «no puedes».
+ */
+function recortarManiobra(maniobra) {
+  if (!maniobra || typeof maniobra !== "object") return null;
+  const carga = Number(maniobra.charge);
+  if (!Number.isFinite(carga)) return null;
+  return { charge: Math.round(carga * 1000) / 1000 };
 }
 
 /** ¿Ha cambiado algo que se vea? Compara lo ya recortado, no el crudo. */

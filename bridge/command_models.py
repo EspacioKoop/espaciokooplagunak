@@ -11,7 +11,13 @@ from typing import Annotated, Literal, Union
 
 from pydantic import BaseModel, ConfigDict, Field, StrictBool
 
-from lua_templates import _command_lua, _fire_tube_lua, _scan_object_lua, _set_weapon_target_lua
+from lua_templates import (
+    _command_lua,
+    _find_target_lua,
+    _fire_tube_lua,
+    _scan_object_lua,
+    _set_weapon_target_lua,
+)
 
 
 class SystemName(str, Enum):
@@ -304,6 +310,101 @@ class FireTube(BaseModel):
         return _fire_tube_lua(self.callsign, self.index)
 
 
+# --- Navegación: maniobra de combate y atraque (#519) -------------------------
+#
+# Ambas familias llaman a globales que el motor YA registraba en src/script.cpp:
+# no hay una línea de C++ nueva. Es la misma figura que el resto del bloque de
+# #516 — traducir a contrato de puente agencia nativa que Foundry no exponía.
+
+
+class CombatManeuverBoost(BaseModel):
+    """Empujón hacia adelante de la maniobra de combate (#519):
+    ``commandCombatManeuverBoost``.
+
+    Rango 0..1, el del propio juego: el eje de empuje del control nativo
+    (``GuiCombatManeuver``, ``glm::vec2(1.0, 0.0)`` en Y) solo va hacia
+    adelante. Un valor negativo aquí no es "marcha atrás", es una errata — y
+    por eso se rechaza en vez de recortarse.
+
+    Es un recurso que se gasta: ``CombatManeuveringThrusters::charge`` baja al
+    usarlo y tarda ``charge_time`` en rellenarse. El puente no lleva esa cuenta
+    (la publica ``/v1/state``, que sí la lee del juego); pedir empuje sin carga
+    simplemente no tiene efecto, como cualquier otra orden que el motor valida
+    server-side.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    op: Literal["combat_maneuver_boost"]
+    amount: Annotated[float, Field(allow_inf_nan=False, ge=0.0, le=1.0)]
+
+    def lua(self) -> str:
+        return _command_lua(f"commandCombatManeuverBoost(ship, {self.amount:.3f})")
+
+
+class CombatManeuverStrafe(BaseModel):
+    """Desplazamiento lateral de la maniobra de combate (#519):
+    ``commandCombatManeuverStrafe``.
+
+    Rango −1..1 (babor..estribor), el del eje X del control nativo. A
+    diferencia del empuje, aquí el signo sí es información.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    op: Literal["combat_maneuver_strafe"]
+    amount: Annotated[float, Field(allow_inf_nan=False, ge=-1.0, le=1.0)]
+
+    def lua(self) -> str:
+        return _command_lua(f"commandCombatManeuverStrafe(ship, {self.amount:.3f})")
+
+
+class Dock(BaseModel):
+    """Atraca con el objeto de este indicativo (#519): ``commandDock``.
+
+    Mismo camino que ``scan_object``: el objetivo se referencia por indicativo
+    y se resuelve dentro del Lua fijo con ``_find_target_lua``; el cliente
+    nunca envía una entidad. Que el objeto admita atraque, esté en rango y sea
+    de una facción que lo permita lo decide el juego — el puente solo pide.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    op: Literal["dock"]
+    callsign: CallsignField
+
+    def lua(self) -> str:
+        return (
+            _find_target_lua(self.callsign)
+            + "commandDock(ship, target)\n"
+            + 'return \'{"ok":true}\''
+        )
+
+
+class Undock(BaseModel):
+    """Suelta amarras (#519): ``commandUndock``."""
+
+    op: Literal["undock"]
+
+    def lua(self) -> str:
+        return _command_lua("commandUndock(ship)")
+
+
+class AbortDock(BaseModel):
+    """Cancela una maniobra de atraque en curso (#519): ``commandAbortDock``.
+
+    Es una orden distinta de ``undock`` y no un sinónimo: cancela el
+    *acercamiento* (estado ``docking``), mientras que ``undock`` suelta un
+    atraque ya consumado (estado ``docked``). ``/v1/state`` publica cuál de los
+    dos estados hay, así que la interfaz puede ofrecer la que toca.
+    """
+
+    op: Literal["abort_dock"]
+
+    def lua(self) -> str:
+        return _command_lua("commandAbortDock(ship)")
+
+
 class SetPause(BaseModel):
     op: Literal["set_pause"]
     paused: StrictBool
@@ -402,6 +503,11 @@ Command = Annotated[
         CloseComm,
         SendCommReply,
         SendCommMessage,
+        CombatManeuverBoost,
+        CombatManeuverStrafe,
+        Dock,
+        Undock,
+        AbortDock,
     ],
     Field(discriminator="op"),
 ]

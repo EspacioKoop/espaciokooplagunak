@@ -806,3 +806,83 @@ test("sin sondeo el modelo de pilotaje lleva null, no un sondeo vacío", () => {
   });
   assert.equal(modelo.sensores, null);
 });
+
+// --- Maniobra de combate y atraque en la consola de pilotaje (#519) -----------
+
+function pilotaje({ ship, sensores = null }) {
+  return buildWorkspaceModel({
+    station: "navigation",
+    isGM: false,
+    users: [user({ id: "p1", station: "navigation" })],
+    moduleId: MODULE_ID,
+    i18n: i18nEs,
+    statePayload: { ship },
+    sensores,
+    connection: "ok",
+  });
+}
+
+test("pilotaje ofrece maniobra de combate y atraque, y solo pilotaje", () => {
+  const modelo = pilotaje({ ship: { callsign: "Lagunak", systems: {} } });
+  assert.equal(modelo.canOrderCombatManeuver, true);
+  assert.equal(modelo.canOrderDock, true);
+  assert.equal(modelo.canOrderUndock, true);
+  assert.equal(modelo.canOrderAbortDock, true);
+
+  const ingenieria = buildWorkspaceModel({
+    station: "engineering",
+    isGM: false,
+    users: [user({ id: "p1", station: "engineering" })],
+    moduleId: MODULE_ID,
+    i18n: i18nEs,
+    statePayload: { ship: { callsign: "Lagunak", systems: {} } },
+    connection: "ok",
+  });
+  assert.equal(ingenieria.canOrderCombatManeuver, false);
+  assert.equal(ingenieria.canOrderDock, false);
+});
+
+test("la carga de maniobra se lee de la telemetría y no se estima", () => {
+  const modelo = pilotaje({
+    ship: { callsign: "Lagunak", systems: {}, combat_maneuver: { charge: 0.42 } },
+  });
+  assert.equal(modelo.maniobraCarga, 42);
+  assert.match(modelo.maniobraCargaTexto, /42/);
+});
+
+test("sin lectura de maniobra no se pinta un cero", () => {
+  // La distinción que sostiene el criterio de #519: `null` es «no sé si puedes
+  // maniobrar» y 0 es «no puedes». Colapsarlas convierte una ausencia de sondeo
+  // en una afirmación sobre la nave.
+  const sinComponente = pilotaje({ ship: { callsign: "Lagunak", systems: {} } });
+  assert.equal(sinComponente.maniobraCarga, null);
+  assert.doesNotMatch(sinComponente.maniobraCargaTexto, /0/);
+
+  const cargaCero = pilotaje({
+    ship: { callsign: "Lagunak", systems: {}, combat_maneuver: { charge: 0 } },
+  });
+  assert.equal(cargaCero.maniobraCarga, 0);
+  assert.match(cargaCero.maniobraCargaTexto, /0/);
+  assert.notEqual(cargaCero.maniobraCargaTexto, sinComponente.maniobraCargaTexto);
+});
+
+test("los objetivos de atraque salen de la MISMA lectura degradada, no del crudo", () => {
+  const sensores = {
+    contactos: [
+      { distancia: 1200, rumboDeg: 45, precision: 100, rumboPrecision: 5, indicativo: null },
+    ],
+  };
+  const modelo = pilotaje({ ship: { callsign: "Lagunak", systems: {} }, sensores });
+  assert.equal(modelo.dockTargets.length, 1);
+  // El valor que viaja es la lectura, no un indicativo: el timón no se entera
+  // del nombre de una estación solo por querer amarrar en ella; resolverlo es
+  // trabajo del relé del GM (#237, #462).
+  const valor = JSON.parse(modelo.dockTargets[0].value);
+  assert.equal(valor.distancia, 1200);
+  assert.equal(valor.indicativo, undefined);
+});
+
+test("sin sondeo no hay objetivos de atraque inventados", () => {
+  const modelo = pilotaje({ ship: { callsign: "Lagunak", systems: {} }, sensores: null });
+  assert.deepEqual(modelo.dockTargets, []);
+});

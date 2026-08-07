@@ -122,6 +122,20 @@ function integer(value) {
   return Math.round(finite(value));
 }
 
+/**
+ * Fracción 0..1 de la telemetría a porcentaje entero, conservando la ausencia
+ * (#519). A diferencia de `percent`, que devuelve 0 ante lo que no sabe leer,
+ * aquí `null` significa "no hay lectura" y 0 significa "la hay, y está a cero".
+ * Para la carga de maniobra esa diferencia es la que separa «no puedes
+ * maniobrar» de «no sé si puedes» — y solo la primera es una afirmación que el
+ * puesto puede permitirse hacer.
+ */
+function porcentajeDeLectura(valor) {
+  const n = rumboDeLectura(valor);
+  if (n === null) return null;
+  return Math.max(0, Math.min(100, Math.round(n * 100)));
+}
+
 function percent(value, maximum) {
   const max = finite(maximum);
   if (max <= 0) return 0;
@@ -485,6 +499,34 @@ export function buildWorkspaceModel({
     // Feedback 3D del toggle (#466): sin lectura o desactivada pintan igual —
     // el plano de siempre, ausencia no es cero (#353).
     autoRepairActivo: Boolean(ship?.auto_repair),
+    // Maniobra de combate (#519). La carga sale de la telemetría
+    // (`combat_maneuver.charge`), NUNCA se estima en el cliente: sin lectura va
+    // `null` y la plantilla dice "sin lectura", que no es lo mismo que decir
+    // que no queda maniobra. Misma regla que el visor del piloto y la sección
+    // de nave (#353).
+    canOrderCombatManeuver: !isGM && isActionAllowed(normalized, "combat_maneuver_boost"),
+    maniobraCarga: porcentajeDeLectura(ship?.combat_maneuver?.charge),
+    // El texto se arma aquí y no en la plantilla a propósito: distinguir
+    // `null` de 0 con helpers de Handlebars exigiría un `eq` que no todas las
+    // versiones anfitrionas traen, y esa distinción es justo la que no se
+    // puede perder.
+    maniobraCargaTexto:
+      porcentajeDeLectura(ship?.combat_maneuver?.charge) === null
+        ? localize(i18n, "LAGUNAK.Espacios.Orden.ManiobraSinLectura")
+        : format(i18n, "LAGUNAK.Espacios.Orden.ManiobraCarga", {
+            carga: porcentajeDeLectura(ship?.combat_maneuver?.charge),
+          }),
+    // Atraque (#519). `undock` y `abort_dock` son órdenes distintas del motor,
+    // así que se ofrecen por separado; la plantilla usa el estado ya publicado
+    // (`atraque`) para no invitar a soltar amarras de un atraque que aún no ha
+    // ocurrido. La lista de objetivos es la misma lectura degradada de siempre:
+    // el timón señala un sitio, no teclea un indicativo.
+    canOrderDock: !isGM && isActionAllowed(normalized, "dock"),
+    canOrderUndock: !isGM && isActionAllowed(normalized, "undock"),
+    canOrderAbortDock: !isGM && isActionAllowed(normalized, "abort_dock"),
+    dockTargets: !isGM && isActionAllowed(normalized, "dock")
+      ? weaponTargetsFor(sensores, i18n)
+      : [],
     // Comunicaciones (#463): reactivas sobre el canal ya abierto — sin picker
     // de objetivo propio, ver `docs/SESION-PANTALLAS-NATIVAS.md`.
     canOrderCommsHail: !isGM && isActionAllowed(normalized, "answer_comm_hail"),

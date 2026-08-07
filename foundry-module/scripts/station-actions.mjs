@@ -6,7 +6,20 @@ import { normalizeStation } from "./station-assignment.mjs";
 // ya la autorice y que el puesto la necesite. Un puesto ausente aquí no puede
 // emitir ninguna orden operativa.
 export const STATION_ACTIONS = Object.freeze({
-  navigation: Object.freeze(["set_target_heading", "set_impulse", "set_warp"]),
+  // #519: la maniobra de combate y el atraque son decisiones nativas del timón
+  // que Foundry no exponía. La maniobra gasta una carga que se recarga sola
+  // (se lee de `/v1/state`, no se estima); atracar y cancelar el acercamiento
+  // son órdenes distintas del motor, no dos nombres de lo mismo.
+  navigation: Object.freeze([
+    "set_target_heading",
+    "set_impulse",
+    "set_warp",
+    "combat_maneuver_boost",
+    "combat_maneuver_strafe",
+    "dock",
+    "undock",
+    "abort_dock",
+  ]),
   engineering: Object.freeze(["set_system_power", "set_system_coolant", "set_auto_repair"]),
   // #465: fijar objetivo habilita el fuego automático de haces ya cargados;
   // disparar un tubo es una orden aparte porque un tubo puede no estar
@@ -38,6 +51,26 @@ const ACTION_DISPATCH = Object.freeze({
   set_warp: Object.freeze({
     method: "setWarp",
     args: (params) => [params?.level],
+  }),
+  combat_maneuver_boost: Object.freeze({
+    method: "combatManeuverBoost",
+    args: (params) => [params?.amount],
+  }),
+  combat_maneuver_strafe: Object.freeze({
+    method: "combatManeuverStrafe",
+    args: (params) => [params?.amount],
+  }),
+  dock: Object.freeze({
+    method: "dock",
+    args: (params) => [params?.callsign],
+  }),
+  undock: Object.freeze({
+    method: "undock",
+    args: () => [],
+  }),
+  abort_dock: Object.freeze({
+    method: "abortDock",
+    args: () => [],
   }),
   set_system_power: Object.freeze({
     method: "setSystemPower",

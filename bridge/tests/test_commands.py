@@ -600,3 +600,91 @@ def test_send_comm_message_escapa_comillas_simples(client, juego, auth):
     assert r.status_code == 200
     assert "commandSendCommPlayer(ship, 'hola\\'); os.execute(\\'rm -rf /\\'); --')" in juego.ultimo_lua
     assert juego.ultimo_lua.count("commandSendCommPlayer") == 1
+
+
+# --- Navegación: maniobra de combate y atraque (#519) --------------------------
+
+
+@pytest.mark.parametrize("cantidad", [0.0, 0.5, 1.0])
+def test_combat_maneuver_boost_genera_lua(client, juego, auth, cantidad):
+    r = client.post(
+        CMD, headers=auth, json={"op": "combat_maneuver_boost", "amount": cantidad}
+    )
+    assert r.status_code == 200
+    assert r.json()["op"] == "combat_maneuver_boost"
+    assert f"commandCombatManeuverBoost(ship, {cantidad:.3f})" in juego.ultimo_lua
+    assert "getPlayerShip(-1)" in juego.ultimo_lua
+
+
+@pytest.mark.parametrize("cantidad", [-0.1, -1.0, 1.1])
+def test_combat_maneuver_boost_solo_hacia_adelante(client, juego, auth, cantidad):
+    # El eje de empuje del control nativo va 0..1: un valor negativo no es
+    # marcha atrás, es una errata. Se rechaza en vez de recortarse.
+    r = client.post(
+        CMD, headers=auth, json={"op": "combat_maneuver_boost", "amount": cantidad}
+    )
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+@pytest.mark.parametrize("cantidad", [-1.0, 0.0, 1.0])
+def test_combat_maneuver_strafe_conserva_el_signo(client, juego, auth, cantidad):
+    # A diferencia del empuje, aquí el signo es información: babor o estribor.
+    r = client.post(
+        CMD, headers=auth, json={"op": "combat_maneuver_strafe", "amount": cantidad}
+    )
+    assert r.status_code == 200
+    assert f"commandCombatManeuverStrafe(ship, {cantidad:.3f})" in juego.ultimo_lua
+
+
+@pytest.mark.parametrize("cantidad", [-1.1, 1.1, 100])
+def test_combat_maneuver_strafe_fuera_de_rango_rechazado(client, juego, auth, cantidad):
+    r = client.post(
+        CMD, headers=auth, json={"op": "combat_maneuver_strafe", "amount": cantidad}
+    )
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+@pytest.mark.parametrize("op", ["combat_maneuver_boost", "combat_maneuver_strafe"])
+def test_combat_maneuver_rechaza_campos_extra(client, juego, auth, op):
+    r = client.post(CMD, headers=auth, json={"op": op, "amount": 0.5, "duration": 10})
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+def test_dock_genera_lua_de_busqueda_y_comando(client, juego, auth):
+    r = client.post(CMD, headers=auth, json={"op": "dock", "callsign": "Argia"})
+    assert r.status_code == 200
+    assert r.json()["op"] == "dock"
+    # Misma búsqueda compartida que scan_object: comparación por nombre dentro
+    # del Lua fijo, nunca una entidad enviada por el cliente.
+    assert 'cs == "Argia"' in juego.ultimo_lua
+    assert "target_not_found" in juego.ultimo_lua
+    assert "commandDock(ship, target)" in juego.ultimo_lua
+
+
+@pytest.mark.parametrize(
+    "callsign_malicioso",
+    ['"); victory("Exuari"); ("', "Argia\nvictory('Exuari')", 'Arg"ia'],
+)
+def test_dock_callsign_fuera_de_whitelist_rechazado(client, juego, auth, callsign_malicioso):
+    r = client.post(CMD, headers=auth, json={"op": "dock", "callsign": callsign_malicioso})
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+def test_undock_genera_lua_fijo(client, juego, auth):
+    r = client.post(CMD, headers=auth, json={"op": "undock"})
+    assert r.status_code == 200
+    assert "commandUndock(ship)" in juego.ultimo_lua
+
+
+def test_abort_dock_no_es_sinonimo_de_undock(client, juego, auth):
+    # Cancelar el acercamiento y soltar un atraque consumado son órdenes
+    # distintas del motor; confundirlas dejaría a la nave amarrada creyendo que
+    # ha soltado.
+    r = client.post(CMD, headers=auth, json={"op": "abort_dock"})
+    assert r.status_code == 200
+    assert "commandAbortDock(ship)" in juego.ultimo_lua
+    assert "commandUndock(ship)" not in juego.ultimo_lua

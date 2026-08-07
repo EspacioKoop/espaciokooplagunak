@@ -71,15 +71,31 @@ gana el código y este documento queda desactualizado hasta que se corrija
 | Puesto | Acciones (`STATION_ACTIONS`) |
 |---|---|
 | `captain` | ninguna — observación/narrativa |
-| `navigation` | `set_target_heading`, `set_impulse`, `set_warp` |
-| `engineering` | `set_system_power`, `set_system_coolant` |
-| `sensors` | ninguna — observación/narrativa |
-| `communications` | ninguna — observación/narrativa |
-| `weapons` | `set_shields` |
+| `navigation` | `set_target_heading`, `set_impulse`, `set_warp`, `combat_maneuver_boost`, `combat_maneuver_strafe`, `dock`, `undock`, `abort_dock` |
+| `engineering` | `set_system_power`, `set_system_coolant`, `set_auto_repair` |
+| `sensors` | `scan_object` |
+| `communications` | `answer_comm_hail`, `close_comm`, `send_comm_reply`, `send_comm_message` |
+| `weapons` | `set_shields`, `set_weapon_target`, `fire_tube` |
 
-`captain`, `sensors` y `communications` no emiten órdenes de control de nave
-hoy, coherente con el género bridge-sim (ratificado en #268) — no es una
-laguna, es la superficie actual antes de que B2-B5 la amplíen.
+Esta tabla llevaba tiempo desactualizada: describía la superficie anterior a
+#462-#465, que ya habían ampliado sensores, comunicaciones, ingeniería y armas
+sin que nadie la corrigiera aquí. Se pone al día junto con la ampliación de
+navegación de #519, que añade la maniobra de combate y el atraque.
+
+`captain` sigue sin emitir órdenes de control de nave, coherente con el género
+bridge-sim (ratificado en #268) — no es una laguna.
+
+Las cinco acciones nuevas de `navigation` (#519) traducen agencia que la
+pantalla nativa de timón ya tenía y Foundry no exponía; ninguna necesitó código
+C++ nuevo. Dos matices que la tabla no puede recoger:
+
+- **La carga de maniobra se lee, no se estima.** `/v1/state` publica
+  `combat_maneuver.charge` y la consola la muestra; sin lectura dice "sin
+  lectura", nunca cero. Un cero afirma que no queda maniobra, y eso es una
+  frase distinta de no saberlo.
+- **`undock` y `abort_dock` no son sinónimos.** El primero suelta un atraque
+  consumado; el segundo cancela el acercamiento. Ofrecer solo uno dejaría a la
+  tripulación sin poder deshacer la mitad de los casos.
 
 Cada entrada de la tabla es reproducible en dos capas, nunca solo una:
 

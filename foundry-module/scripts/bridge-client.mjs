@@ -219,6 +219,56 @@ export class BridgeClient {
     return this.#command({ op: "fire_tube", callsign, index });
   }
 
+  /**
+   * POST /v1/command — empujón de maniobra de combate, 0..1 (#519, Bearer).
+   * Solo hacia adelante: es el rango del eje de empuje del control nativo, no
+   * un recorte nuestro. Gasta carga (`combat_maneuver.charge` de `/v1/state`);
+   * pedirlo sin carga no tiene efecto, lo decide el juego.
+   */
+  async combatManeuverBoost(amount) {
+    if (typeof amount !== "number" || !Number.isFinite(amount) || amount < 0 || amount > 1) {
+      throw new BridgeError("El empuje de maniobra debe estar entre 0 y 1", { kind: "parse" });
+    }
+    return this.#command({ op: "combat_maneuver_boost", amount });
+  }
+
+  /**
+   * POST /v1/command — desplazamiento lateral de maniobra de combate, −1..1
+   * (#519, Bearer). El signo es información: babor (negativo) o estribor.
+   */
+  async combatManeuverStrafe(amount) {
+    if (typeof amount !== "number" || !Number.isFinite(amount) || amount < -1 || amount > 1) {
+      throw new BridgeError("El desplazamiento lateral debe estar entre -1 y 1", { kind: "parse" });
+    }
+    return this.#command({ op: "combat_maneuver_strafe", amount });
+  }
+
+  /**
+   * POST /v1/command — atraca con el objeto de este indicativo (#519, Bearer).
+   * Mismo indicativo y misma resolución que `scanObject`. Que el objeto admita
+   * atraque, esté en rango y lo permita su facción lo decide el juego.
+   */
+  async dock(callsign) {
+    if (typeof callsign !== "string" || callsign === "") {
+      throw new BridgeError("El indicativo del objetivo debe ser una cadena", { kind: "parse" });
+    }
+    return this.#command({ op: "dock", callsign });
+  }
+
+  /** POST /v1/command — suelta amarras de un atraque consumado (#519, Bearer). */
+  async undock() {
+    return this.#command({ op: "undock" });
+  }
+
+  /**
+   * POST /v1/command — cancela un acercamiento de atraque en curso (#519,
+   * Bearer). NO es sinónimo de `undock`: esto aborta el estado `docking`,
+   * aquello suelta el estado `docked`. `/v1/state` publica cuál hay.
+   */
+  async abortDock() {
+    return this.#command({ op: "abort_dock" });
+  }
+
   /** POST /v1/command — contesta (true) o ignora (false) una llamada entrante (Bearer). */
   async answerCommHail(accept) {
     if (typeof accept !== "boolean") {

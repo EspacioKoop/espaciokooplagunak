@@ -103,7 +103,20 @@ objetos sin esos componentes devuelven `null`, nunca valores inventados.
 {"op": "close_comm"}
 {"op": "send_comm_reply",    "index": 0}
 {"op": "send_comm_message",  "message": "Requesting permission to dock."}
+{"op": "set_system_coolant", "system": "impulse", "level": 7.5}
+{"op": "scan_object",        "callsign": "Lapur 1"}
+{"op": "set_weapon_target",  "callsign": "Lapur 1"}
+{"op": "fire_tube",          "callsign": "Lapur 1", "index": 0}
+{"op": "combat_maneuver_boost",  "amount": 1.0}
+{"op": "combat_maneuver_strafe", "amount": -0.5}
+{"op": "dock",               "callsign": "Argia"}
+{"op": "undock"}
+{"op": "abort_dock"}
 ```
+
+Las cuatro que siguen a `send_comm_message` ya existían y faltaban en esta
+lista; se añaden para que la enumeración vuelva a ser el whitelist completo y no
+un subconjunto que envejece en silencio.
 
 **`set_system_health` es la palanca de avería del GM**, no un panel de
 ingeniería: escribe la salud real de un sistema (rango del juego `-1.0..1.0`;
@@ -144,6 +157,26 @@ rechaza antes de mover la nave para no aceptar una reposición sin evento.
 Los nombres fuera del catálogo y los marcadores malformados se ignoran; una
 orden `not_supported`, `no_ship` o rechazada no publica evento. El DTO no
 contiene coordenadas, URL, token ni cabeceras.
+
+**El bloque de navegación (#519) traduce agencia nativa que ya existía**: las
+cinco órdenes llaman a globales que el motor ya registraba
+(`commandCombatManeuverBoost`, `commandCombatManeuverStrafe`, `commandDock`,
+`commandUndock`, `commandAbortDock`), sin una línea de C++ nueva.
+
+- La **maniobra de combate** tiene dos ejes con rangos distintos a propósito:
+  el empuje va `0..1` (el eje del control nativo solo va hacia adelante; un
+  negativo es una errata, no marcha atrás) y el lateral `-1..1`, donde el signo
+  es información (babor/estribor). Gasta una carga que se rellena sola; el
+  puente no la contabiliza, la **publica**: `/v1/state` incluye ahora
+  `combat_maneuver.charge` leído de `combat_maneuvering_thrusters`. Sin
+  componente el campo es `null` — que no es lo mismo que `0.0`, y el consumidor
+  no debe colapsarlos: uno dice "no sé si puedes maniobrar" y el otro "no
+  puedes".
+- **`undock` y `abort_dock` no son sinónimos**: el primero suelta un atraque
+  consumado (estado `docked`), el segundo cancela el acercamiento (estado
+  `docking`). `/v1/state` publica cuál de los dos hay.
+- `dock` referencia el objetivo por indicativo, con el mismo campo validado y la
+  misma búsqueda en Lua fijo que `scan_object`.
 
 Cualquier otra operación devuelve `422`. Añadir una orden nueva implica
 añadir un modelo validado en `app.py` y documentarla aquí — nunca un

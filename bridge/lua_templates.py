@@ -155,6 +155,22 @@ if ok_rooms and rooms ~= nil then
         auto_repair_json = tostring(auto)
     end
 end
+-- Carga de la maniobra de combate (#519). `combat_maneuvering_thrusters` ya
+-- expone `charge` a Lua (src/script/components.cpp), así que esto tampoco
+-- necesita C++ nuevo: mismo patrón opcional con pcall que `docking_json`.
+--
+-- Se publica para que la consola de navegación NO tenga que estimar cuánta
+-- maniobra queda. Sin componente (una nave que sencillamente no la tiene) el
+-- valor es `null`, y la interfaz debe pintar "no hay lectura", no un cero: un
+-- cero dice "sin carga", que es una afirmación distinta y falsa.
+local combat_maneuver_json = "null"
+local ok_cm, cm = pcall(function() return ship.components.combat_maneuvering_thrusters end)
+if ok_cm and cm ~= nil then
+    local ok_charge, charge = pcall(function() return cm.charge end)
+    if ok_charge and type(charge) == "number" then
+        combat_maneuver_json = string.format('{"charge":%%.3f}', charge)
+    end
+end
 local systems = {}
 for _, name in ipairs({%s}) do
     systems[#systems + 1] = string.format(
@@ -168,13 +184,14 @@ return string.format(
     .. '"distance_to_destination":%%s,"eta_seconds":%%s,'
     .. '"hull":%%.1f,"hull_max":%%.1f,"energy":%%.1f,"energy_max":%%.1f,'
     .. '"shields_active":%%s,"repair_crew":%%d,"radar":%%s,"docking":%%s,'
-    .. '"auto_repair":%%s,"systems":{%%s}}}',
+    .. '"auto_repair":%%s,"combat_maneuver":%%s,"systems":{%%s}}}',
     ship:getCallSign() or "?", x, y, ship:getHeading(), vx, vy,
     destination_json, distance_json, eta_json,
     ship:getHull(), ship:getHullMax(),
     ship:getEnergyLevel(), ship:getEnergyLevelMax(),
     tostring(ship:getShieldsActive()), ship:getRepairCrewCount(),
-    radar_json, docking_json, auto_repair_json, table.concat(systems, ","))
+    radar_json, docking_json, auto_repair_json, combat_maneuver_json,
+    table.concat(systems, ","))
 """ % ", ".join(f'"{name}"' for name in _SYSTEMS)
 _STATE_LUA = _JSON_ESCAPE_LUA + _STATE_LUA
 

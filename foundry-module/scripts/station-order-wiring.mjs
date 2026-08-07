@@ -24,7 +24,15 @@ export const ESCANEO_AVISOS = Object.freeze({
 // escanear no tiene indicativo que el jugador pueda conocer— y la misma
 // resolución. `fire_tube` conserva el resto de sus params (`index`) al
 // sustituir la lectura por el indicativo resuelto.
-const ACCIONES_CON_OBJETIVO_POR_LECTURA = new Set(["scan_object", "set_weapon_target", "fire_tube"]);
+// `dock` (#519) entra por la misma puerta: el timón señala el sitio al que
+// quiere amarrar en su lectura degradada, no un indicativo — y no debería
+// enterarse del nombre de una estación solo por querer atracar en ella.
+const ACCIONES_CON_OBJETIVO_POR_LECTURA = new Set([
+  "scan_object",
+  "set_weapon_target",
+  "fire_tube",
+  "dock",
+]);
 
 // Resuelve una orden de objetivo-por-lectura a indicativo real ANTES de que
 // llegue a `resolveStationOrder` (#462/#465). No es una puerta de autoridad:

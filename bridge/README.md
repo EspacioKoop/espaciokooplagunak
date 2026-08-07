@@ -120,6 +120,17 @@ objetos sin esos componentes devuelven `null`, nunca valores inventados.
 
 Las cuatro que siguen a `send_comm_message` ya existían y faltaban en esta
 lista; se añaden para que la enumeración vuelva a ser el whitelist completo y no
+{"op": "add_waypoint",       "x": 1200.5, "y": -800.0}
+{"op": "move_waypoint",      "index": 2, "x": 0.0, "y": 15.2}
+{"op": "remove_waypoint",    "index": 0}
+{"op": "launch_probe",       "x": -2500.0, "y": 900.0}
+{"op": "set_science_link",   "callsign": "P-1"}
+{"op": "clear_science_link"}
+{"op": "set_alert_level",    "level": "yellow"}
+```
+
+Las cuatro primeras de la segunda mitad ya existían y faltaban en esta lista;
+se añaden aquí para que la enumeración vuelva a ser el whitelist completo y no
 un subconjunto que envejece en silencio.
 
 **`set_system_health` es la palanca de avería del GM**, no un panel de
@@ -205,6 +216,43 @@ como el número.
 `set_shield_frequency` acepta 0..20 (`BeamWeaponSys::max_frequency`).
 Recalibrar **deja los escudos caídos** mientras dura: es una decisión de
 momento, no un ajuste.
+**El bloque de Relay (#517) traduce agencia nativa que ya existía**, no inventa
+capacidades: las siete órdenes llaman a globales que el motor ya registraba
+(`commandAddWaypoint`, `commandMoveWaypoint`, `commandRemoveWaypoint`,
+`commandLaunchProbe`, `commandSetScienceLink`, `commandClearScienceLink`,
+`commandSetAlertLevel`), así que no hay una línea de C++ nueva. Detalles del
+contrato:
+
+- Las coordenadas de `add_waypoint`/`move_waypoint`/`launch_probe` **no son la
+  reposición de nave que ADR-0002 prohíbe pedir con coordenadas crudas**: son
+  marcas que el tripulante coloca sobre su propio radar y no tocan la posición
+  de la nave. Van acotadas a ±500 000 y deben ser finitas (`inf`/`NaN` se
+  rechazan: formateados con `%.1f` producirían Lua que no compila).
+- `set_science_link` referencia la sonda **por indicativo**, con el mismo campo
+  validado y la misma búsqueda en Lua fijo que `scan_object`; el puente nunca
+  acepta entidades del cliente. Si el indicativo no es una sonda, el motor
+  ignora el enlace — el puente no distingue tipos de objeto y no finge que sí.
+- `set_alert_level` acepta exactamente `normal`, `yellow` o `red`. El catálogo
+  es cerrado con más motivo que en otras órdenes: `Convert<AlertLevel>::fromLua`
+  llama a `luaL_error` ante un valor desconocido, así que una errata del cliente
+  tiene que morir en la validación y no en el juego.
+
+Estas órdenes existen ya en el contrato del puente, pero **la tripulación
+todavía no puede emitirlas desde Foundry**: el puesto `relay` no está en la
+matriz de autoridad del módulo. Esa mitad es el resto de #517.
+
+**`/v1/state` publica dos lecturas nuevas para Relay (#517)**, ambas desde
+componentes que ya exponían el dato a Lua y por tanto sin C++ nuevo:
+
+- `alert_level` — la condición **declarada** por la tripulación
+  (`player_control.alert_level`), normalizada a los mismos `normal`/`yellow`/
+  `red` que acepta la orden `set_alert_level`, para que el vocabulario del
+  contrato sea uno solo en las dos direcciones. Un valor que no se reconozca es
+  `null` y **nunca** `normal`: caer a "normal" diría que la nave está tranquila
+  justo cuando no se sabe si lo está.
+- `probes` — `{stock, max}` del lanzador de sondas. Se publican los dos porque
+  "quedan 3" sin saber de cuántas es media frase. Aquí `0` es una lectura
+  legítima (se han gastado) y se distingue de `null` (no hay lanzador).
 
 Cualquier otra operación devuelve `422`. Añadir una orden nueva implica
 añadir un modelo validado en `app.py` y documentarla aquí — nunca un

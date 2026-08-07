@@ -14,6 +14,12 @@ export const STATIONS = Object.freeze([
   "sensors",
   "communications",
   "weapons",
+  // #517: Relay existía en el juego nativo desde siempre —waypoints, sondas,
+  // enlace sonda→ciencia y condición de alerta— y no en esta lista, así que
+  // nadie podía ocuparlo desde Foundry. Va el último a propósito: añadirlo
+  // antes reordenaría los puestos ya existentes en toda superficie que
+  // enumere STATIONS, y ese orden es el que la mesa tiene aprendido.
+  "relay",
 ]);
 
 export function normalizeStation(value) {

@@ -345,6 +345,60 @@
             <input id="lagunak-orden-codigo" name="destruct-code" type="number" min="0" step="1" inputmode="numeric" />
             <button type="button" data-workspace-action="orden-autodestruccion-confirmar">{{localize "LAGUNAK.Espacios.Orden.CodigoConfirmar"}}</button>
             <small>{{localize "LAGUNAK.Espacios.Orden.CodigoAyuda"}}</small>
+        {{#if canOrderWaypoints}}
+          <form class="lagunak-workspace__orden" data-workspace-order="waypoints">
+            <span class="lagunak-workspace__orden-label">{{localize "LAGUNAK.Espacios.Orden.WaypointLabel"}}</span>
+            <label for="lagunak-orden-waypoint-rumbo">{{localize "LAGUNAK.Espacios.Orden.RumboRelativoLabel"}}</label>
+            <input id="lagunak-orden-waypoint-rumbo" name="waypoint-bearing" type="number" min="0" max="359" step="1" inputmode="numeric" />
+            <label for="lagunak-orden-waypoint-distancia">{{localize "LAGUNAK.Espacios.Orden.DistanciaLabel"}}</label>
+            <input id="lagunak-orden-waypoint-distancia" name="waypoint-range" type="number" min="0" step="100" inputmode="numeric" />
+            <button type="button" data-workspace-action="orden-waypoint-colocar">{{localize "LAGUNAK.Espacios.Orden.WaypointColocar"}}</button>
+            <label for="lagunak-orden-waypoint-indice">{{localize "LAGUNAK.Espacios.Orden.WaypointIndiceLabel"}}</label>
+            <input id="lagunak-orden-waypoint-indice" name="waypoint-index" type="number" min="0" max="63" step="1" inputmode="numeric" />
+            <button type="button" data-workspace-action="orden-waypoint-mover">{{localize "LAGUNAK.Espacios.Orden.WaypointMover"}}</button>
+            <button type="button" data-workspace-action="orden-waypoint-borrar">{{localize "LAGUNAK.Espacios.Orden.WaypointBorrar"}}</button>
+            <small>{{localize "LAGUNAK.Espacios.Orden.WaypointAyuda"}}</small>
+          </form>
+        {{/if}}
+
+        {{#if canOrderProbe}}
+          <form class="lagunak-workspace__orden" data-workspace-order="probe">
+            <span class="lagunak-workspace__orden-label">{{localize "LAGUNAK.Espacios.Orden.SondaLabel"}}</span>
+            <p class="lagunak-workspace__orden-lectura">{{sondasTexto}}</p>
+            <label for="lagunak-orden-sonda-rumbo">{{localize "LAGUNAK.Espacios.Orden.RumboRelativoLabel"}}</label>
+            <input id="lagunak-orden-sonda-rumbo" name="probe-bearing" type="number" min="0" max="359" step="1" inputmode="numeric" />
+            <label for="lagunak-orden-sonda-distancia">{{localize "LAGUNAK.Espacios.Orden.DistanciaLabel"}}</label>
+            <input id="lagunak-orden-sonda-distancia" name="probe-range" type="number" min="0" step="100" inputmode="numeric" />
+            <button type="button" data-workspace-action="orden-sonda-lanzar">{{localize "LAGUNAK.Espacios.Orden.SondaLanzar"}}</button>
+            <small>{{localize "LAGUNAK.Espacios.Orden.SondaAyuda"}}</small>
+          </form>
+        {{/if}}
+
+        {{#if canOrderScienceLink}}
+          <form class="lagunak-workspace__orden" data-workspace-order="science-link">
+            <span class="lagunak-workspace__orden-label">{{localize "LAGUNAK.Espacios.Orden.EnlaceSondaLabel"}}</span>
+            {{#if probeTargets.length}}
+              <label for="lagunak-orden-objetivo-sonda">{{localize "LAGUNAK.Espacios.Orden.EnlaceSondaObjetivoLabel"}}</label>
+              <select id="lagunak-orden-objetivo-sonda">
+                {{#each probeTargets}}<option value="{{value}}">{{label}}</option>{{/each}}
+              </select>
+              <button type="button" data-workspace-action="orden-sonda-enlazar">{{localize "LAGUNAK.Espacios.Orden.EnlaceSondaEnlazar"}}</button>
+            {{else}}
+              <p class="lagunak-workspace__orden-vacia">{{localize "LAGUNAK.Espacios.Armas.SinObjetivos"}}</p>
+            {{/if}}
+            <button type="button" data-workspace-action="orden-sonda-desenlazar">{{localize "LAGUNAK.Espacios.Orden.EnlaceSondaDesenlazar"}}</button>
+            <small>{{localize "LAGUNAK.Espacios.Orden.EnlaceSondaAyuda"}}</small>
+          </form>
+        {{/if}}
+
+        {{#if canOrderAlertLevel}}
+          <form class="lagunak-workspace__orden" data-workspace-order="alert-level">
+            <span class="lagunak-workspace__orden-label">{{localize "LAGUNAK.Espacios.Orden.AlertaLabel"}}</span>
+            <p class="lagunak-workspace__orden-lectura" role="status" aria-live="polite">{{alertaDeclaradaTexto}}</p>
+            <button type="button" data-workspace-action="orden-alerta-normal">{{localize "LAGUNAK.Espacios.Orden.Alerta.normal"}}</button>
+            <button type="button" data-workspace-action="orden-alerta-amarilla">{{localize "LAGUNAK.Espacios.Orden.Alerta.yellow"}}</button>
+            <button type="button" data-workspace-action="orden-alerta-roja">{{localize "LAGUNAK.Espacios.Orden.Alerta.red"}}</button>
+            <small>{{localize "LAGUNAK.Espacios.Orden.AlertaAyuda"}}</small>
           </form>
         {{/if}}
 

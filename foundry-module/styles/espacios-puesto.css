@@ -26,6 +26,11 @@
   --lagunak-puesto-sensors: #c494ff;
   --lagunak-puesto-communications: #6ba8ff;
   --lagunak-puesto-weapons: #ff626f;
+  /* Relay (#517): naranja, el hueco que quedaba entre el ámbar de mando y el
+   * rojo de armas. Vecino de los dos a propósito —relay trabaja pegado al
+   * mando y con la nave en condición de alerta— pero separable de un vistazo,
+   * que es lo que pide la matriz de acentos. */
+  --lagunak-puesto-relay: #ff9a3c;
 }
 
 .lagunak-workspace--amber { --lagunak-accent: var(--lagunak-puesto-captain); --lagunak-accent-rgb: 255, 200, 87; }
@@ -34,6 +39,7 @@
 .lagunak-workspace--violet { --lagunak-accent: var(--lagunak-puesto-sensors); --lagunak-accent-rgb: 196, 148, 255; }
 .lagunak-workspace--blue { --lagunak-accent: var(--lagunak-puesto-communications); --lagunak-accent-rgb: 107, 168, 255; }
 .lagunak-workspace--red { --lagunak-accent: var(--lagunak-puesto-weapons); --lagunak-accent-rgb: 255, 98, 111; }
+.lagunak-workspace--orange { --lagunak-accent: var(--lagunak-puesto-relay); --lagunak-accent-rgb: 255, 154, 60; }
 
 .lagunak-workspace__shell {
   position: relative;
@@ -437,6 +443,7 @@
 .lagunak-workspace__crew-portrait--sensors { border-color: var(--lagunak-puesto-sensors); }
 .lagunak-workspace__crew-portrait--communications { border-color: var(--lagunak-puesto-communications); }
 .lagunak-workspace__crew-portrait--weapons { border-color: var(--lagunak-puesto-weapons); }
+.lagunak-workspace__crew-portrait--relay { border-color: var(--lagunak-puesto-relay); }
 
 /* Tinte de alerta: la nave entera está en amarilla o roja, y los retratos viven
  * bajo esa misma luz. Es ambiente, no información nueva — el nivel ya se
@@ -590,6 +597,12 @@ body.lagunak-alerta-roja .lagunak-workspace__crew-portrait::after { background: 
 .lagunak-puesto-weapons { --lagunak-accent-2: #ff9d62; --lagunak-accent-2-rgb: 255, 157, 98; }
 .lagunak-puesto-weapons .lagunak-workspace__emblem {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Crect x='3' y='0' width='2' height='1' fill='rgb(255,98,111)'/%3E%3Crect x='3' y='7' width='2' height='1' fill='rgb(255,98,111)'/%3E%3Crect x='0' y='3' width='1' height='2' fill='rgb(255,98,111)'/%3E%3Crect x='7' y='3' width='1' height='2' fill='rgb(255,98,111)'/%3E%3Crect x='3' y='2' width='2' height='4' fill='rgb(255,98,111)'/%3E%3Crect x='2' y='3' width='4' height='2' fill='rgb(255,98,111)'/%3E%3C/svg%3E");
+}
+
+/* Enlace — rosa de los vientos (naranja) */
+.lagunak-puesto-relay { --lagunak-accent-2: #ffc857; --lagunak-accent-2-rgb: 255, 200, 87; }
+.lagunak-puesto-relay .lagunak-workspace__emblem {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Crect x='3' y='0' width='2' height='8' fill='rgb(255,154,60)'/%3E%3Crect x='0' y='3' width='8' height='2' fill='rgb(255,154,60)'/%3E%3Crect x='1' y='1' width='1' height='1' fill='rgb(255,154,60)'/%3E%3Crect x='6' y='1' width='1' height='1' fill='rgb(255,154,60)'/%3E%3Crect x='1' y='6' width='1' height='1' fill='rgb(255,154,60)'/%3E%3Crect x='6' y='6' width='1' height='1' fill='rgb(255,154,60)'/%3E%3C/svg%3E");
 }
 
 /* Formularios de órdenes de puesto (#125/#244): los inputs y botones nativos

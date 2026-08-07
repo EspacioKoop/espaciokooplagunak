@@ -235,3 +235,58 @@ test("soltar amarras y cancelar el acercamiento emiten acciones distintas", () =
   assert.equal(ORDER_FORMS["orden-soltar-amarras"].action, "undock");
   assert.equal(ORDER_FORMS["orden-cancelar-atraque"].action, "abort_dock");
 });
+
+// --- Relay (#517) -------------------------------------------------------------
+
+test("un punto de ruta se señala por marcación y distancia, no por coordenadas", () => {
+  // Lo que sale del formulario NO es `x`/`y`: es la pareja que el relé del GM
+  // convertirá con la posición real de la nave. Si esto emitiera coordenadas,
+  // estaría pidiéndole al jugador un dato que su consola no publica.
+  const spec = ORDER_FORMS["orden-waypoint-colocar"];
+  assert.deepEqual(
+    spec.read(fakeRoot({
+      "lagunak-orden-waypoint-rumbo": "45",
+      "lagunak-orden-waypoint-distancia": "1200",
+    })),
+    { rumboDeg: 45, distancia: 1200 },
+  );
+});
+
+test("la marcación se rechaza fuera de 0..359 y la distancia si es negativa", () => {
+  const spec = ORDER_FORMS["orden-sonda-lanzar"];
+  const caso = (rumbo, distancia) =>
+    spec.read(fakeRoot({
+      "lagunak-orden-sonda-rumbo": rumbo,
+      "lagunak-orden-sonda-distancia": distancia,
+    }));
+  assert.equal(caso("360", "100"), null, "360 es 0, no un rumbo aparte");
+  assert.equal(caso("-1", "100"), null);
+  assert.equal(caso("90", "-1"), null, "hacia atrás se dice con el rumbo");
+  assert.deepEqual(caso("0", "0"), { rumboDeg: 0, distancia: 0 }, "marcar aquí es válido");
+});
+
+test("mover un punto de ruta exige índice Y posición; borrarlo solo el índice", () => {
+  const mover = ORDER_FORMS["orden-waypoint-mover"];
+  const campos = {
+    "lagunak-orden-waypoint-rumbo": "90",
+    "lagunak-orden-waypoint-distancia": "500",
+  };
+  assert.equal(mover.read(fakeRoot(campos)), null, "sin índice no se mueve nada");
+  assert.deepEqual(
+    mover.read(fakeRoot({ ...campos, "lagunak-orden-waypoint-indice": "3" })),
+    { rumboDeg: 90, distancia: 500, index: 3 },
+  );
+  assert.deepEqual(
+    ORDER_FORMS["orden-waypoint-borrar"].read(fakeRoot({ "lagunak-orden-waypoint-indice": "0" })),
+    { index: 0 },
+  );
+});
+
+test("la condición de alerta es un botón por nivel, con catálogo cerrado", () => {
+  assert.deepEqual(ORDER_FORMS["orden-alerta-normal"].read(fakeRoot({})), { level: "normal" });
+  assert.deepEqual(ORDER_FORMS["orden-alerta-amarilla"].read(fakeRoot({})), { level: "yellow" });
+  assert.deepEqual(ORDER_FORMS["orden-alerta-roja"].read(fakeRoot({})), { level: "red" });
+  for (const id of ["orden-alerta-normal", "orden-alerta-amarilla", "orden-alerta-roja"]) {
+    assert.equal(ORDER_FORMS[id].action, "set_alert_level");
+  }
+});

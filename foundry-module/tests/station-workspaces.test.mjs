@@ -57,12 +57,16 @@ const contactsPayload = {
   truncated: false,
 };
 
-test("los seis puestos tienen identidad y lista de guardia propias", () => {
+test("cada puesto tiene identidad y lista de guardia propias", () => {
+  // #517 añadió `relay` y por eso esto ya no habla de "seis": la prueba mira
+  // que NINGÚN puesto comparta acento ni código, no que haya un número
+  // concreto. Un acento repetido haría dos consolas indistinguibles de reojo,
+  // que es justo para lo que sirve el acento.
   assert.deepEqual(WORKSPACE_STATIONS, [
-    "captain", "navigation", "engineering", "sensors", "communications", "weapons",
+    "captain", "navigation", "engineering", "sensors", "communications", "weapons", "relay",
   ]);
   const definitions = WORKSPACE_STATIONS.map(workspaceDefinition);
-  assert.equal(new Set(definitions.map(({ accent }) => accent)).size, 6);
+  assert.equal(new Set(definitions.map(({ accent }) => accent)).size, WORKSPACE_STATIONS.length);
   assert.ok(definitions.every(({ tasks }) => tasks.length === 3));
   const codes = WORKSPACE_STATIONS.map((station) => buildWorkspaceModel({
     station,
@@ -71,7 +75,7 @@ test("los seis puestos tienen identidad y lista de guardia propias", () => {
     moduleId: MODULE_ID,
     i18n,
   }).stationCode);
-  assert.equal(new Set(codes).size, 6);
+  assert.equal(new Set(codes).size, WORKSPACE_STATIONS.length);
 });
 
 test("el jugador abre su puesto y el GM puede previsualizar cualquier consola", () => {
@@ -822,6 +826,21 @@ function pilotaje({ ship, sensores = null }) {
   });
 }
 
+// --- Consola de Relay (#517) --------------------------------------------------
+
+function enlace(ship, sensores = null) {
+  return buildWorkspaceModel({
+    station: "relay",
+    isGM: false,
+    users: [user({ id: "p1", station: "relay" })],
+    moduleId: MODULE_ID,
+    i18n: i18nEs,
+    statePayload: { ship },
+    sensores,
+    connection: "ok",
+  });
+}
+
 // --- Autodestrucción y frecuencia de escudos en la consola (#518) -------------
 
 function ingenieria(ship) {
@@ -980,8 +999,66 @@ test("recalibrar avisa de que los escudos se caen mientras dura", () => {
   assert.notEqual(sinLectura.frecuenciaEscudosTexto, estable.frecuenciaEscudosTexto);
 });
 
+test("relay ofrece rutas, sondas, enlace y condición de alerta", () => {
+  const modelo = enlace({ callsign: "Lagunak", systems: {} });
+  assert.equal(modelo.canOrderWaypoints, true);
+  assert.equal(modelo.canOrderProbe, true);
+  assert.equal(modelo.canOrderScienceLink, true);
+  assert.equal(modelo.canOrderAlertLevel, true);
+});
+
+test("la condición declarada se lee del puente y no se deduce del daño", () => {
+  // La distinción que resuelve el choque con #338: esto es la postura que la
+  // tripulación ha declarado, no el aviso derivado de casco y energía. Una nave
+  // intacta puede estar en alerta roja, y una hecha trizas en normal.
+  const intactaEnRoja = enlace({
+    callsign: "Lagunak",
+    systems: {},
+    hull: 100,
+    hull_max: 100,
+    alert_level: "red",
+  });
+  assert.equal(intactaEnRoja.alertaDeclarada, "red");
+  assert.match(intactaEnRoja.alertaDeclaradaTexto, /roja/i);
+});
+
+test("sin lectura de condición no se dice 'normal'", () => {
+  // Caer a normal sería afirmar que la nave está tranquila justo cuando no se
+  // sabe si lo está.
+  const modelo = enlace({ callsign: "Lagunak", systems: {} });
+  assert.equal(modelo.alertaDeclarada, null);
+  assert.doesNotMatch(modelo.alertaDeclaradaTexto, /normal/i);
+});
+
+test("las sondas restantes se publican con su máximo, y cero es una lectura", () => {
+  const conStock = enlace({ callsign: "Lagunak", systems: {}, probes: { stock: 3, max: 8 } });
+  assert.match(conStock.sondasTexto, /3/);
+  assert.match(conStock.sondasTexto, /8/);
+
+  const agotadas = enlace({ callsign: "Lagunak", systems: {}, probes: { stock: 0, max: 8 } });
+  assert.match(agotadas.sondasTexto, /0/);
+
+  const sinLectura = enlace({ callsign: "Lagunak", systems: {} });
+  assert.notEqual(sinLectura.sondasTexto, agotadas.sondasTexto);
+});
+
+test("los objetivos de enlace salen de la lectura degradada, no del crudo", () => {
+  const sensores = {
+    contactos: [
+      { distancia: 4000, rumboDeg: 210, precision: 500, rumboPrecision: 10, indicativo: null },
+    ],
+  };
+  const modelo = enlace({ callsign: "Lagunak", systems: {} }, sensores);
+  assert.equal(modelo.probeTargets.length, 1);
+  const valor = JSON.parse(modelo.probeTargets[0].value);
+  assert.equal(valor.distancia, 4000);
+  assert.equal(valor.indicativo, undefined);
+
+  assert.deepEqual(enlace({ callsign: "Lagunak", systems: {} }).probeTargets, []);
+});
+
 test("ningún otro puesto recibe el control de frecuencia ni el de armar", () => {
-  for (const puesto of ["navigation", "sensors", "communications", "weapons"]) {
+  for (const puesto of ["navigation", "sensors", "communications", "weapons", "relay"]) {
     const modelo = buildWorkspaceModel({
       station: puesto,
       isGM: false,
@@ -995,5 +1072,21 @@ test("ningún otro puesto recibe el control de frecuencia ni el de armar", () =>
     });
     assert.equal(modelo.canOrderShieldFrequency, false, puesto);
     assert.equal(modelo.canOrderSelfDestruct, false, puesto);
+  }
+});
+
+test("ningún otro puesto recibe los controles de relay", () => {
+  for (const puesto of ["captain", "navigation", "engineering", "sensors", "communications", "weapons"]) {
+    const modelo = buildWorkspaceModel({
+      station: puesto,
+      isGM: false,
+      users: [user({ id: "p1", station: puesto })],
+      moduleId: MODULE_ID,
+      i18n: i18nEs,
+      statePayload: { ship: { callsign: "Lagunak", systems: {} } },
+      connection: "ok",
+    });
+    assert.equal(modelo.canOrderAlertLevel, false, puesto);
+    assert.equal(modelo.canOrderProbe, false, puesto);
   }
 });

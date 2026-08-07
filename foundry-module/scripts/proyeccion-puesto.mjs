@@ -31,6 +31,8 @@ const PUESTOS = Object.freeze([
   "sensors",
   "communications",
   "weapons",
+  // #517: Relay. Su énfasis se declara abajo como el de cualquier otro.
+  "relay",
 ]);
 
 /**
@@ -74,9 +76,12 @@ export function proyectarParaPuesto(frame, puesto, contexto = {}) {
  * - **navegación** e **ingeniería** atenúan los contactos enteros. No es
  *   desprecio: es que su pantalla tiene otra cosa encima —el vector, el calor—
  *   y con los blips a plena intensidad no se leería.
- * - **capitán** y **armas** no tocan nada. El capitán necesita la foto sin
- *   editar, y una vista de armas que subraye blancos sola es una decisión de
- *   diseño que nadie ha tomado.
+ * - **capitán**, **armas** y **relay** no tocan nada. El capitán necesita la
+ *   foto sin editar; una vista de armas que subraye blancos sola es una
+ *   decisión de diseño que nadie ha tomado; y relay (#517) trabaja sobre el
+ *   conjunto —rutas, sondas, condición de la nave—, así que atenuar una parte
+ *   sería quitarle justo lo que mira. Un énfasis propio para relay habría que
+ *   ganárselo con un motivo, no dárselo por tener puesto nuevo.
  */
 function enfasisDe(puesto, blip) {
   if (blip?.esJugador) return "alto";

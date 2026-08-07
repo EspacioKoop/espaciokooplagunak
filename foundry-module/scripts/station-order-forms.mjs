@@ -192,6 +192,75 @@ export const ORDER_FORMS = Object.freeze({
     ),
     invalidKey: "LAGUNAK.Espacios.Orden.FrecuenciaInvalida",
   },
+  // Relay (#517). Los puntos de ruta y las sondas se colocan por RUMBO Y
+  // DISTANCIA, no por coordenada: la consola de un puesto no publica las
+  // coordenadas del mundo y no debería, así que pedirlas sería pedir que se
+  // adivinen. El relé del GM las convierte con la posición exacta de la nave
+  // (`resolver-posicion-relay.mjs`), igual que ya traduce un objetivo de
+  // escaneo. Es además el vocabulario que la tripulación ya usa para hablar de
+  // lo que ve.
+  "orden-waypoint-colocar": {
+    action: "add_waypoint",
+    read: (root) => leerRumboYDistancia(root, "waypoint"),
+    invalidKey: "LAGUNAK.Espacios.Orden.WaypointInvalido",
+  },
+  "orden-waypoint-mover": {
+    action: "move_waypoint",
+    read: (root) => {
+      const posicion = leerRumboYDistancia(root, "waypoint");
+      const index = parseOrderValue(root?.querySelector?.("#lagunak-orden-waypoint-indice")?.value);
+      if (!posicion || index === null || !Number.isInteger(index) || index < 0 || index > 63) {
+        return null;
+      }
+      return { ...posicion, index };
+    },
+    invalidKey: "LAGUNAK.Espacios.Orden.WaypointInvalido",
+  },
+  "orden-waypoint-borrar": {
+    action: "remove_waypoint",
+    read: numericOrder(
+      "lagunak-orden-waypoint-indice",
+      "index",
+      (n) => Number.isInteger(n) && n >= 0 && n <= 63,
+    ),
+    invalidKey: "LAGUNAK.Espacios.Orden.WaypointIndiceInvalido",
+  },
+  "orden-sonda-lanzar": {
+    action: "launch_probe",
+    read: (root) => leerRumboYDistancia(root, "sonda"),
+    invalidKey: "LAGUNAK.Espacios.Orden.SondaInvalida",
+  },
+  // El enlace sonda→ciencia sí señala un OBJETO (la sonda ya lanzada), así que
+  // va por lectura degradada como el escaneo y las armas: la sonda es un
+  // contacto más, y Relay no tiene por qué saber qué indicativo le puso el
+  // juego a la suya.
+  "orden-sonda-enlazar": {
+    action: "set_science_link",
+    read: (root) => leerLecturaSeleccionada(root, "lagunak-orden-objetivo-sonda"),
+    invalidKey: "LAGUNAK.Espacios.Orden.EnlaceSondaInvalido",
+  },
+  "orden-sonda-desenlazar": {
+    action: "clear_science_link",
+    read: () => ({}),
+    invalidKey: "LAGUNAK.Espacios.Orden.EnlaceSondaInvalido",
+  },
+  // Condición de alerta: catálogo cerrado y una acción por nivel, no un campo
+  // libre. Tres botones dicen lo que hay; un desplegable con "otros" no.
+  "orden-alerta-normal": {
+    action: "set_alert_level",
+    read: () => ({ level: "normal" }),
+    invalidKey: "LAGUNAK.Espacios.Orden.AlertaInvalida",
+  },
+  "orden-alerta-amarilla": {
+    action: "set_alert_level",
+    read: () => ({ level: "yellow" }),
+    invalidKey: "LAGUNAK.Espacios.Orden.AlertaInvalida",
+  },
+  "orden-alerta-roja": {
+    action: "set_alert_level",
+    read: () => ({ level: "red" }),
+    invalidKey: "LAGUNAK.Espacios.Orden.AlertaInvalida",
+  },
   // Comunicaciones (#463): acciones reactivas, calcadas de los globales que el
   // motor ya expone (contestar/cerrar canal ya abierto, elegir diálogo,
   // mandar chat libre) — sin picker de objetivo propio.
@@ -253,4 +322,21 @@ function leerLecturaSeleccionada(root, selectId) {
     precision: parseOrderValue(lectura?.precision) ?? 0,
     rumboPrecision: parseOrderValue(lectura?.rumboPrecision) ?? 0,
   };
+}
+
+/**
+ * Lee el par rumbo/distancia de un bloque de Relay (#517). Devuelve la misma
+ * forma que una lectura degradada para que el relé del GM la convierta con
+ * `resolver-posicion-relay.mjs` sin tratar este caso aparte.
+ *
+ * La distancia admite el cero —marcar la propia posición es algo que un relay
+ * hace— pero no valores negativos: "hacia atrás" se dice con el rumbo.
+ */
+function leerRumboYDistancia(root, prefijo) {
+  const rumboDeg = parseOrderValue(root?.querySelector?.(`#lagunak-orden-${prefijo}-rumbo`)?.value);
+  const distancia = parseOrderValue(root?.querySelector?.(`#lagunak-orden-${prefijo}-distancia`)?.value);
+  if (rumboDeg === null || distancia === null) return null;
+  if (!Number.isFinite(rumboDeg) || rumboDeg < 0 || rumboDeg >= 360) return null;
+  if (!Number.isFinite(distancia) || distancia < 0 || distancia > 500000) return null;
+  return { rumboDeg, distancia };
 }

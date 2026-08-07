@@ -789,3 +789,126 @@ def test_ninguna_orden_de_autodestruccion_transporta_codigos_del_juego(client, j
         client.post(CMD, headers=auth, json=cuerpo)
         assert "code" not in juego.ultimo_lua
         assert "confirmed" not in juego.ultimo_lua
+
+
+# --- Relay: puntos de ruta, sondas, enlace a ciencia y nivel de alerta (#517) --
+
+
+def test_add_waypoint_genera_lua(client, juego, auth):
+    r = client.post(CMD, headers=auth, json={"op": "add_waypoint", "x": 1200.5, "y": -800.0})
+    assert r.status_code == 200
+    assert r.json()["op"] == "add_waypoint"
+    assert "commandAddWaypoint(ship, 1200.5, -800.0)" in juego.ultimo_lua
+    assert "getPlayerShip(-1)" in juego.ultimo_lua
+
+
+def test_move_waypoint_genera_lua(client, juego, auth):
+    r = client.post(
+        CMD, headers=auth, json={"op": "move_waypoint", "index": 2, "x": 0.0, "y": 15.25}
+    )
+    assert r.status_code == 200
+    assert "commandMoveWaypoint(ship, 2, 0.0, 15.2)" in juego.ultimo_lua
+
+
+def test_remove_waypoint_genera_lua(client, juego, auth):
+    r = client.post(CMD, headers=auth, json={"op": "remove_waypoint", "index": 0})
+    assert r.status_code == 200
+    assert "commandRemoveWaypoint(ship, 0)" in juego.ultimo_lua
+
+
+@pytest.mark.parametrize("indice", [-1, 64, 1000])
+def test_waypoint_indice_fuera_de_rango_rechazado(client, juego, auth, indice):
+    r = client.post(CMD, headers=auth, json={"op": "remove_waypoint", "index": indice})
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+@pytest.mark.parametrize("indice", [True, 1.5, "0"])
+def test_waypoint_indice_exige_entero_estricto(client, juego, auth, indice):
+    # Sin coacción: `true` como índice sería el waypoint 1 por accidente.
+    r = client.post(CMD, headers=auth, json={"op": "remove_waypoint", "index": indice})
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+@pytest.mark.parametrize("valor", [500_000.5, -500_000.5, 1e12])
+def test_coordenada_fuera_de_cota_rechazada(client, juego, auth, valor):
+    r = client.post(CMD, headers=auth, json={"op": "add_waypoint", "x": valor, "y": 0.0})
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+@pytest.mark.parametrize("valor", [float("inf"), float("nan")])
+def test_coordenada_no_finita_rechazada(client, juego, auth, valor):
+    # inf/NaN no llegan por JSON estándar, pero sí por el JSON laxo de muchos
+    # clientes; formateados con %.1f producirían Lua que no compila.
+    r = client.post(
+        CMD,
+        headers={**auth, "Content-Type": "application/json"},
+        content=f'{{"op":"add_waypoint","x":{valor},"y":0}}',
+    )
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+def test_add_waypoint_rechaza_campos_extra(client, juego, auth):
+    r = client.post(
+        CMD, headers=auth, json={"op": "add_waypoint", "x": 0.0, "y": 0.0, "faction": "Exuari"}
+    )
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+def test_launch_probe_genera_lua(client, juego, auth):
+    r = client.post(CMD, headers=auth, json={"op": "launch_probe", "x": -2500.0, "y": 900.0})
+    assert r.status_code == 200
+    assert r.json()["op"] == "launch_probe"
+    assert "commandLaunchProbe(ship, -2500.0, 900.0)" in juego.ultimo_lua
+
+
+def test_set_science_link_busca_la_sonda_por_indicativo(client, juego, auth):
+    r = client.post(CMD, headers=auth, json={"op": "set_science_link", "callsign": "P-1"})
+    assert r.status_code == 200
+    assert r.json()["op"] == "set_science_link"
+    # Misma búsqueda compartida que scan_object: comparación por nombre dentro
+    # del Lua fijo, nunca una entidad enviada por el cliente.
+    assert 'cs == "P-1"' in juego.ultimo_lua
+    assert "target_not_found" in juego.ultimo_lua
+    assert "commandSetScienceLink(ship, target)" in juego.ultimo_lua
+
+
+@pytest.mark.parametrize(
+    "callsign_malicioso",
+    ['"); victory("Exuari"); ("', "P-1\nvictory('Exuari')", 'P"1'],
+)
+def test_set_science_link_callsign_fuera_de_whitelist_rechazado(
+    client, juego, auth, callsign_malicioso
+):
+    r = client.post(
+        CMD, headers=auth, json={"op": "set_science_link", "callsign": callsign_malicioso}
+    )
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
+def test_clear_science_link_genera_lua_fijo(client, juego, auth):
+    r = client.post(CMD, headers=auth, json={"op": "clear_science_link"})
+    assert r.status_code == 200
+    assert "commandClearScienceLink(ship)" in juego.ultimo_lua
+
+
+@pytest.mark.parametrize("nivel", ["normal", "yellow", "red"])
+def test_set_alert_level_genera_lua(client, juego, auth, nivel):
+    r = client.post(CMD, headers=auth, json={"op": "set_alert_level", "level": nivel})
+    assert r.status_code == 200
+    assert r.json()["op"] == "set_alert_level"
+    assert f'commandSetAlertLevel(ship, "{nivel}")' in juego.ultimo_lua
+
+
+@pytest.mark.parametrize("nivel", ["YELLOW ALERT", "Normal", "azul", "", None, 1])
+def test_set_alert_level_fuera_del_catalogo_rechazado(client, juego, auth, nivel):
+    # El motor llama a luaL_error con un nivel desconocido: aquí un valor fuera
+    # del enum tiene que morir en la validación, no en el juego.
+    r = client.post(CMD, headers=auth, json={"op": "set_alert_level", "level": nivel})
+    assert r.status_code == 422
+    assert not juego.llamadas

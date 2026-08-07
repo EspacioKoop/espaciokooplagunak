@@ -4,6 +4,7 @@ import { normalizeStation } from "./station-assignment.mjs";
 import { prepararOrdenConAsistencia } from "./asistencia-wiring.mjs";
 import { RELEVO_AVISOS } from "./asistencia/relevo.mjs";
 import { resolverObjetivoEscaneo } from "./resolver-objetivo-sensores.mjs";
+import { resolverPosicionRelativa } from "./resolver-posicion-relay.mjs";
 import {
   STATION_ORDER_FLAG,
   buildStationOrder,
@@ -27,12 +28,24 @@ export const ESCANEO_AVISOS = Object.freeze({
 // `dock` (#519) entra por la misma puerta: el timón señala el sitio al que
 // quiere amarrar en su lectura degradada, no un indicativo — y no debería
 // enterarse del nombre de una estación solo por querer atracar en ella.
+
 const ACCIONES_CON_OBJETIVO_POR_LECTURA = new Set([
   "scan_object",
   "set_weapon_target",
   "fire_tube",
   "dock",
+  // #517: enlazar una sonda al radar de ciencia también señala un objeto, y la
+  // sonda es un contacto más de la misma lectura. Sin esto, Relay tendría que
+  // conocer el indicativo que el juego le puso a su propia sonda.
+  "set_science_link",
 ]);
+
+// Acciones de Relay que piden una COORDENADA del mundo (#517). El puesto
+// señala rumbo y distancia —el único vocabulario que su consola tiene— y el
+// GM lo convierte con la posición exacta de la nave. No es una puerta de
+// autoridad: el puesto y la acción ya se resolvieron por identidad, y esto es
+// aritmética sobre un punto vacío, no la elección de un objetivo.
+const ACCIONES_CON_POSICION_RELATIVA = new Set(["add_waypoint", "move_waypoint", "launch_probe"]);
 
 // Resuelve una orden de objetivo-por-lectura a indicativo real ANTES de que
 // llegue a `resolveStationOrder` (#462/#465). No es una puerta de autoridad:
@@ -53,6 +66,22 @@ async function resolverOrdenDeEscaneo({ order, bridge }) {
     return { orden: order, aviso: ESCANEO_AVISOS.OBJETIVO_NO_ENCONTRADO };
   }
   return { orden: { ...order, params: { callsign, ...resto } } };
+}
+
+// Convierte rumbo/distancia a `x`/`y` para las órdenes de Relay que lo piden.
+// Si no se puede resolver, la orden pasa TAL CUAL y el cliente del puente la
+// rechaza por coordenada inválida: es el mismo camino que ya sigue un escaneo
+// sin objetivo resuelto, y deja el aviso en un solo sitio.
+async function resolverOrdenDePosicion({ order, bridge }) {
+  if (!ACCIONES_CON_POSICION_RELATIVA.has(order?.action)) return { orden: order };
+  const { distancia, rumboDeg, precision, rumboPrecision, ...resto } = order.params ?? {};
+  const statePayload = await bridge.state();
+  const posicion = resolverPosicionRelativa({
+    centro: statePayload?.ship?.position ?? null,
+    lectura: { distancia, rumboDeg },
+  });
+  if (!posicion) return { orden: order, aviso: ESCANEO_AVISOS.OBJETIVO_NO_ENCONTRADO };
+  return { orden: { ...order, params: { ...resto, x: posicion.x, y: posicion.y } } };
 }
 
 // Cableado Foundry del relé de órdenes por puesto. Capa fina y no testeable en
@@ -134,7 +163,16 @@ export function registerStationOrders(moduleId) {
       // orden ya resuelta. Para cualquier acción que no sea `scan_object`,
       // `resolverOrdenDeEscaneo` es un paso transparente.
       prepareOrder: ({ userId, order }) =>
-        resolverOrdenDeEscaneo({ order, bridge }).then(({ orden, aviso: avisoEscaneo }) => {
+        resolverOrdenDeEscaneo({ order, bridge })
+          .then(({ orden, aviso }) =>
+            // Las dos resoluciones son excluyentes por construcción (ninguna
+            // acción está en los dos conjuntos), así que encadenarlas no puede
+            // pisar una lo que hizo la otra.
+            resolverOrdenDePosicion({ order: orden, bridge }).then((posicionada) => ({
+              orden: posicionada.orden,
+              aviso: aviso ?? posicionada.aviso,
+            })))
+          .then(({ orden, aviso: avisoEscaneo }) => {
           const { orden: ordenFinal, aviso: avisoAsistencia } = prepararOrdenConAsistencia({
             userId,
             order: orden,

@@ -34,6 +34,8 @@ test("los puestos canónicos son cerrados y los valores desconocidos se rechazan
     "sensors",
     "communications",
     "weapons",
+    // #517: Relay va el último para no reordenar los que la mesa ya conoce.
+    "relay",
   ]);
   assert.equal(normalizeStation("engineering"), "engineering");
   assert.equal(normalizeStation(""), null);

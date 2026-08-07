@@ -9,6 +9,23 @@
  *
  * Autoridad: la simulación es dueña de los valores; esto solo los traduce a una
  * lectura de presentación. No escribe de vuelta a la simulación ni acciona nada.
+ *
+ * NO CONFUNDIR CON LA CONDICIÓN DE ALERTA DE RELAY (#517). Desde que el puesto
+ * de Relay puede fijar `alert_level` en la simulación, hay dos cosas en esta
+ * mesa que se llaman «alerta», y conviene tener clarísimo que no son la misma:
+ *
+ * - Lo de aquí es un **diagnóstico**: lo deduce el módulo del casco, la energía
+ *   y los sistemas caídos. Nadie lo decide; describe cómo está la nave.
+ * - La condición de Relay es una **declaración**: la tripulación pone la nave
+ *   en amarilla o roja porque ha decidido hacerlo. La publica `/v1/state` en
+ *   `alert_level` y la consola de Relay la muestra tal cual.
+ *
+ * Conviven a propósito y no se sincronizan: una nave intacta puede estar en
+ * alerta roja porque viene algo, y una hecha trizas puede seguir en normal
+ * porque nadie ha dado la orden. Derivar una de la otra borraría justamente la
+ * decisión que hace de Relay un puesto. Lo que sí se cuida es que no se
+ * confundan en pantalla: los textos de la consola dicen «condición declarada»
+ * y este diagnóstico se presenta como aviso de la escena.
  */
 
 export const NIVELES = Object.freeze(["verde", "amarilla", "roja"]);

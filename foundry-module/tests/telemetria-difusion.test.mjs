@@ -188,3 +188,38 @@ test("el calibrado de escudos viaja con su retardo", () => {
   assert.deepEqual(nave.shield_calibration, { frequency: 12, calibration_delay: 3.6 });
   assert.equal(recortarNave({ callsign: "Lagunak", systems: {} }).shield_calibration, null);
 });
+
+// --- Condición de alerta y sondas en el sobre (#517) --------------------------
+
+test("la condición declarada llega a toda la tripulación, no solo a Relay", () => {
+  // Fijarla es de Relay (#237); saber que la nave está en roja es de todos.
+  // `recortarNave` es una lista blanca: sin esta copia no llegaría a nadie.
+  assert.equal(
+    recortarNave({ callsign: "Lagunak", systems: {}, alert_level: "red" }).alert_level,
+    "red",
+  );
+});
+
+test("un nivel desconocido no se cae a 'normal'", () => {
+  // Decir "normal" ante lo que no se entiende afirmaría que la nave está
+  // tranquila justo cuando no se sabe si lo está.
+  for (const crudo of ["azul", "RED ALERT", "", null, 5]) {
+    assert.equal(
+      recortarNave({ callsign: "Lagunak", systems: {}, alert_level: crudo }).alert_level,
+      null,
+      String(crudo),
+    );
+  }
+});
+
+test("las sondas viajan con su máximo, y cero es una lectura", () => {
+  assert.deepEqual(
+    recortarNave({ callsign: "Lagunak", systems: {}, probes: { stock: 3, max: 8 } }).probes,
+    { stock: 3, max: 8 },
+  );
+  assert.deepEqual(
+    recortarNave({ callsign: "Lagunak", systems: {}, probes: { stock: 0, max: 8 } }).probes,
+    { stock: 0, max: 8 },
+  );
+  assert.equal(recortarNave({ callsign: "Lagunak", systems: {} }).probes, null);
+});

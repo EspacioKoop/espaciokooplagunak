@@ -435,6 +435,27 @@
           </section>
         {{/if}}
 
+        {{#if canOrderRepairCrew}}
+          <form class="lagunak-workspace__orden" data-workspace-order="repair-crew">
+            <span class="lagunak-workspace__orden-label">{{localize "LAGUNAK.Espacios.Reparacion.Label"}}</span>
+            <p class="lagunak-workspace__orden-lectura" role="status" aria-live="polite">{{interiorTexto}}</p>
+            {{#if tieneInterior}}
+              <label for="lagunak-orden-equipo">{{localize "LAGUNAK.Espacios.Reparacion.EquipoLabel"}}</label>
+              <select id="lagunak-orden-equipo">
+                {{#each equiposReparacion}}
+                  <option value="{{this.valor}}">{{localize "LAGUNAK.Espacios.Reparacion.Equipo"}} {{this.numero}}</option>
+                {{/each}}
+              </select>
+              <label for="lagunak-orden-sala-destino">{{localize "LAGUNAK.Espacios.Reparacion.DestinoLabel"}}</label>
+              <select id="lagunak-orden-sala-destino">
+                {{#each plantaSalas}}<option value="{{this.valor}}">{{this.etiqueta}}</option>{{/each}}
+              </select>
+              <button type="button" data-workspace-action="orden-mover-equipo">{{localize "LAGUNAK.Espacios.Reparacion.Mover"}}</button>
+            {{/if}}
+            <small>{{localize "LAGUNAK.Espacios.Reparacion.Ayuda"}}</small>
+          </form>
+        {{/if}}
+
         {{#if canOrderCommsHail}}
           <form class="lagunak-workspace__orden" data-workspace-order="comms-hail">
             <span class="lagunak-workspace__orden-label">{{localize "LAGUNAK.Espacios.Orden.CommsHailLabel"}}</span>

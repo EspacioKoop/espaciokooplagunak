@@ -157,6 +157,11 @@ lista; se añaden para que la enumeración vuelva a ser el whitelist completo y 
 Las cuatro primeras de la segunda mitad ya existían y faltaban en esta lista;
 se añaden aquí para que la enumeración vuelva a ser el whitelist completo y no
 un subconjunto que envejece en silencio.
+{"op": "move_repair_crew",   "origin": {"x": 1, "y": 2}, "destination": {"x": 3, "y": 4}}
+```
+
+Las cuatro que siguen a `send_comm_message` ya existían y faltaban en esta
+lista; se añaden para que la enumeración vuelva a ser el whitelist completo.
 
 **`set_system_health` es la palanca de avería del GM**, no un panel de
 ingeniería: escribe la salud real de un sistema (rango del juego `-1.0..1.0`;
@@ -278,6 +283,29 @@ componentes que ya exponían el dato a Lua y por tanto sin C++ nuevo:
 - `probes` — `{stock, max}` del lanzador de sondas. Se publican los dos porque
   "quedan 3" sin saber de cuántas es media frase. Aquí `0` es una lectura
   legítima (se han gastado) y se distingue de `null` (no hay lanzador).
+**`move_repair_crew` no necesitó C++ nuevo** (#522), en contra de lo que suponía
+su issue. `commandCrewSetTargetPosition` no está expuesto a Lua, cierto — pero el
+componente `internal_crew` expone `target_position` **con setter**
+(`BIND_MEMBER` en `src/script/components.cpp`), así que el Lua fijo del servidor
+escribe el destino directamente. Esa escritura es además la autoritativa: el
+comando existe para que un *cliente* se lo pida al servidor, y el puente ya está
+dentro del servidor.
+
+**El equipo se identifica por dónde está, no por un índice.** El orden en que el
+motor devuelve las entidades no está garantizado, así que un índice podría
+referirse a otro equipo entre dos sondeos — y mover al equivocado en mitad de una
+avería es peor que no mover a ninguno. Si en `origin` ya no hay equipo, la
+respuesta es `crew_not_found` en vez de acertarle a otro. La búsqueda además
+filtra por `ic.ship == ship`: nunca se toca el equipo de otra nave.
+
+Lo que se fija es el **destino**; que el equipo llegue —puertas, ruta, tiempo— lo
+resuelve la simulación. Ese es justo el contraste con el hackeo (ADR-0010): aquí
+el servidor sí resuelve el efecto, y por eso esta orden sí pertenece al whitelist.
+
+`/v1/state` publica en consecuencia `internal: {rooms, crews}` con la **planta
+real** del motor: cada sala con posición, tamaño y sistema, y cada equipo con su
+casilla y su destino. Sin salas se publica `null` — una nave sin interior no es
+una nave con cero salas.
 
 Cualquier otra operación devuelve `422`. Añadir una orden nueva implica
 añadir un modelo validado en `app.py` y documentarla aquí — nunca un

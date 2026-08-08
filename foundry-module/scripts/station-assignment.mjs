@@ -20,6 +20,11 @@ export const STATIONS = Object.freeze([
   // antes reordenaría los puestos ya existentes en toda superficie que
   // enumere STATIONS, y ese orden es el que la mesa tiene aprendido.
   "relay",
+  // #522: Damage Control existía en el juego nativo con posición de tripulación
+  // propia (`CrewPosition::damageControl`) y no en esta lista. Va el último a
+  // propósito: insertarlo en medio reordenaría los puestos que la mesa ya tiene
+  // aprendidos en toda superficie que enumere STATIONS.
+  "damagecontrol",
 ]);
 
 export function normalizeStation(value) {

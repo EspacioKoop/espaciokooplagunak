@@ -758,6 +758,79 @@ def test_confirm_rechaza_campos_extra(client, juego, auth):
     assert not juego.llamadas
 
 
+# --- Damage Control: mover equipos de reparación (#522) -----------------------
+
+
+def test_move_repair_crew_identifica_al_equipo_por_donde_esta(client, juego, auth):
+    # Por posición y no por índice: el orden en que el motor devuelve las
+    # entidades no está garantizado, y mover al equipo equivocado en mitad de
+    # una avería es peor que no mover a ninguno.
+    r = client.post(
+        CMD,
+        headers=auth,
+        json={
+            "op": "move_repair_crew",
+            "origin": {"x": 1, "y": 2},
+            "destination": {"x": 3, "y": 4},
+        },
+    )
+    assert r.status_code == 200
+    assert r.json()["op"] == "move_repair_crew"
+    assert "ic.position.x == 1" in juego.ultimo_lua
+    assert "ic.position.y == 2" in juego.ultimo_lua
+    assert "elegido.target_position = {x = 3, y = 4}" in juego.ultimo_lua
+    assert "crew_not_found" in juego.ultimo_lua
+
+
+def test_move_repair_crew_solo_mira_equipos_de_la_nave_propia(client, juego, auth):
+    # Sin este filtro se podría mover el equipo de otra nave que casualmente
+    # estuviera en la misma casilla de SU plano.
+    client.post(
+        CMD,
+        headers=auth,
+        json={
+            "op": "move_repair_crew",
+            "origin": {"x": 0, "y": 0},
+            "destination": {"x": 1, "y": 1},
+        },
+    )
+    assert "ic.ship == ship" in juego.ultimo_lua
+    assert "getPlayerShip(-1)" in juego.ultimo_lua
+
+
+def test_move_repair_crew_no_acepta_entidades_ni_indices(client, juego, auth):
+    # `extra="forbid"`: un `index` o un `entity` colado rechaza la orden entera
+    # en vez de ignorarse. El puente nunca acepta entidades del cliente.
+    for extra in ({"index": 0}, {"crew": "entity-42"}, {"ship": "otra"}):
+        r = client.post(
+            CMD,
+            headers=auth,
+            json={
+                "op": "move_repair_crew",
+                "origin": {"x": 0, "y": 0},
+                "destination": {"x": 1, "y": 1},
+                **extra,
+            },
+        )
+        assert r.status_code == 422, extra
+    assert not juego.llamadas
+
+
+@pytest.mark.parametrize("valor", [-129, 129, 1.5, True, "2"])
+def test_coordenada_de_sala_fuera_de_rango_o_mal_tipada_rechazada(client, juego, auth, valor):
+    r = client.post(
+        CMD,
+        headers=auth,
+        json={
+            "op": "move_repair_crew",
+            "origin": {"x": valor, "y": 0},
+            "destination": {"x": 1, "y": 1},
+        },
+    )
+    assert r.status_code == 422
+    assert not juego.llamadas
+
+
 @pytest.mark.parametrize("frecuencia", [0, 10, 20])
 def test_set_shield_frequency_genera_lua(client, juego, auth, frecuencia):
     r = client.post(
@@ -911,4 +984,12 @@ def test_set_alert_level_fuera_del_catalogo_rechazado(client, juego, auth, nivel
     # del enum tiene que morir en la validación, no en el juego.
     r = client.post(CMD, headers=auth, json={"op": "set_alert_level", "level": nivel})
     assert r.status_code == 422
+def test_move_repair_crew_exige_las_dos_casillas(client, juego, auth):
+    for cuerpo in (
+        {"op": "move_repair_crew", "destination": {"x": 1, "y": 1}},
+        {"op": "move_repair_crew", "origin": {"x": 0, "y": 0}},
+        {"op": "move_repair_crew", "origin": {"x": 0}, "destination": {"x": 1, "y": 1}},
+    ):
+        r = client.post(CMD, headers=auth, json=cuerpo)
+        assert r.status_code == 422, cuerpo
     assert not juego.llamadas

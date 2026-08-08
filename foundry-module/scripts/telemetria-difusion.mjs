@@ -104,6 +104,49 @@ export function recortarNave(ship) {
     // mundo que toda la mesa puede leer, así que una coordenada exacta ahí
     // sería una coordenada exacta para todos.
     science_link: recortarEnlaceCiencia(ship.science_link),
+    // #522. OJO: esta función es una LISTA BLANCA. Un campo nuevo de
+    // `/v1/state` llega al GM (que sondea el puente) pero NO a las consolas de
+    // tripulación hasta que se copia aquí a mano, y el modo de fallo es
+    // silencioso: el control no aparece y no salta ningún error.
+    //
+    // El interior sí viaja entero: el plano de la propia nave y dónde están sus
+    // equipos no es información que ningún puesto tenga que ganarse — es la
+    // nave en la que van todos. Lo que se sigue sin difundir es lo de FUERA.
+    internal: recortarInterior(ship.internal),
+  };
+}
+
+/**
+ * Planta de la nave y equipos de reparación. Se copia tal cual (son enteros de
+ * rejilla, no hay nada que redondear) filtrando lo que no tenga forma: una sala
+ * a medias pintaría un plano mentiroso.
+ */
+function recortarInterior(interior) {
+  if (!interior || typeof interior !== "object") return null;
+  const rooms = Array.isArray(interior.rooms) ? interior.rooms : null;
+  if (rooms === null) return null;
+  const salas = rooms
+    .filter((sala) => ["x", "y", "w", "h"].every((k) => Number.isFinite(Number(sala?.[k]))))
+    .map((sala) => ({
+      x: Math.round(Number(sala.x)),
+      y: Math.round(Number(sala.y)),
+      w: Math.round(Number(sala.w)),
+      h: Math.round(Number(sala.h)),
+      system: typeof sala.system === "string" && sala.system !== "" ? sala.system : null,
+    }));
+  if (salas.length === 0) return null;
+  const crews = Array.isArray(interior.crews) ? interior.crews : [];
+  return {
+    rooms: salas,
+    crews: crews
+      .filter((eq) => Number.isFinite(Number(eq?.position?.x)) && Number.isFinite(Number(eq?.position?.y)))
+      .map((eq) => ({
+        position: { x: Math.round(Number(eq.position.x)), y: Math.round(Number(eq.position.y)) },
+        target:
+          Number.isFinite(Number(eq?.target?.x)) && Number.isFinite(Number(eq?.target?.y))
+            ? { x: Math.round(Number(eq.target.x)), y: Math.round(Number(eq.target.y)) }
+            : null,
+      })),
   };
 }
 

@@ -404,3 +404,33 @@ test("relay tampoco puede pilotar ni disparar", () => {
     assert.equal(isActionAllowed("relay", accion), false);
   }
 });
+
+// --- Damage Control (#522) ----------------------------------------------------
+
+test("control de daños tiene una sola orden, y solo él", () => {
+  // Una basta: lo que hace de esto una decisión no es la variedad de botones,
+  // sino que los equipos tardan en llegar y hay que elegir a dónde primero.
+  assert.deepEqual(STATION_ACTIONS.damagecontrol, ["move_repair_crew"]);
+  for (const puesto of ["captain", "navigation", "engineering", "sensors", "communications", "weapons"]) {
+    assert.equal(isActionAllowed(puesto, "move_repair_crew"), false, puesto);
+  }
+});
+
+test("mover un equipo encamina origen y destino, en ese orden", () => {
+  assert.deepEqual(
+    resolveStationOrder({
+      station: "damagecontrol",
+      action: "move_repair_crew",
+      params: { origin: { x: 1, y: 2 }, destination: { x: 3, y: 4 } },
+    }),
+    { method: "moveRepairCrew", args: [{ x: 1, y: 2 }, { x: 3, y: 4 }] },
+  );
+});
+
+test("control de daños no hereda nada de ingeniería", () => {
+  // Comparten tema —la nave rota— pero no autoridad: repartir energía y mover
+  // gente por dentro son dos puestos distintos en el juego nativo.
+  for (const accion of ["set_system_power", "set_system_coolant", "set_auto_repair"]) {
+    assert.equal(isActionAllowed("damagecontrol", accion), false, accion);
+  }
+});

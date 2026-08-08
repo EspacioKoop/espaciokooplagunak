@@ -290,3 +290,52 @@ test("la condición de alerta es un botón por nivel, con catálogo cerrado", ()
     assert.equal(ORDER_FORMS[id].action, "set_alert_level");
   }
 });
+
+// --- Control de daños (#522) --------------------------------------------------
+
+test("mover un equipo exige elegir equipo Y destino", () => {
+  const spec = ORDER_FORMS["orden-mover-equipo"];
+  assert.equal(spec.read(fakeRoot({})), null);
+  assert.equal(
+    spec.read(fakeRoot({ "lagunak-orden-equipo": JSON.stringify({ x: 0, y: 0 }) })),
+    null,
+    "sin destino no se emite",
+  );
+  assert.deepEqual(
+    spec.read(
+      fakeRoot({
+        "lagunak-orden-equipo": JSON.stringify({ x: 0, y: 0 }),
+        "lagunak-orden-sala-destino": JSON.stringify({ x: 2, y: 1 }),
+      }),
+    ),
+    { origin: { x: 0, y: 0 }, destination: { x: 2, y: 1 } },
+  );
+});
+
+test("una casilla decimal no viene de donde creemos y se rechaza", () => {
+  // Las plantas del motor son rejillas de enteros: un decimal significa que el
+  // valor no salió del desplegable que lo puso ahí.
+  const spec = ORDER_FORMS["orden-mover-equipo"];
+  assert.equal(
+    spec.read(
+      fakeRoot({
+        "lagunak-orden-equipo": JSON.stringify({ x: 0.5, y: 0 }),
+        "lagunak-orden-sala-destino": JSON.stringify({ x: 2, y: 1 }),
+      }),
+    ),
+    null,
+  );
+});
+
+test("un valor que no es JSON no rompe el formulario", () => {
+  const spec = ORDER_FORMS["orden-mover-equipo"];
+  assert.equal(
+    spec.read(
+      fakeRoot({
+        "lagunak-orden-equipo": "equipo-1",
+        "lagunak-orden-sala-destino": JSON.stringify({ x: 2, y: 1 }),
+      }),
+    ),
+    null,
+  );
+});

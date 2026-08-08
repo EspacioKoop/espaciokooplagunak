@@ -63,7 +63,8 @@ test("cada puesto tiene identidad y lista de guardia propias", () => {
   // concreto. Un acento repetido haría dos consolas indistinguibles de reojo,
   // que es justo para lo que sirve el acento.
   assert.deepEqual(WORKSPACE_STATIONS, [
-    "captain", "navigation", "engineering", "sensors", "communications", "weapons", "relay",
+    "captain", "navigation", "engineering", "sensors", "communications", "weapons",
+    "relay", "damagecontrol",
   ]);
   const definitions = WORKSPACE_STATIONS.map(workspaceDefinition);
   assert.equal(new Set(definitions.map(({ accent }) => accent)).size, WORKSPACE_STATIONS.length);
@@ -871,6 +872,20 @@ function ingenieria(ship) {
   });
 }
 
+// --- Consola de control de daños (#522) ---------------------------------------
+
+function control(ship) {
+  return buildWorkspaceModel({
+    station: "damagecontrol",
+    isGM: false,
+    users: [user({ id: "p1", station: "damagecontrol" })],
+    moduleId: MODULE_ID,
+    i18n: i18nEs,
+    statePayload: { ship },
+    connection: "ok",
+  });
+}
+
 test("pilotaje ofrece maniobra de combate y atraque, y solo pilotaje", () => {
   const modelo = pilotaje({ ship: { callsign: "Lagunak", systems: {} } });
   assert.equal(modelo.canOrderCombatManeuver, true);
@@ -1117,8 +1132,51 @@ test("no consultada y vacía se dicen distinto", () => {
   assert.notEqual(sinConsultar.baseDatosTexto, vacia.baseDatosTexto);
 });
 
+const INTERIOR = {
+  rooms: [
+    { x: 0, y: 0, w: 2, h: 1, system: "reactor" },
+    { x: 2, y: 0, w: 1, h: 1, system: null },
+  ],
+  crews: [
+    { position: { x: 0, y: 0 }, target: { x: 2, y: 0 } },
+    { position: { x: 1, y: 0 }, target: null },
+  ],
+};
+
+test("la planta que se pinta es la del motor, con su sistema por sala", () => {
+  // El riesgo que señalaba el issue: pintar equipos sobre la planta declarativa
+  // de la sección de la nave (#427) sería pintar sobre un plano que no es este.
+  const modelo = control({ callsign: "Lagunak", systems: {}, internal: INTERIOR });
+  assert.equal(modelo.tieneInterior, true);
+  assert.equal(modelo.plantaSalas.length, 2);
+  assert.match(modelo.plantaSalas[0].etiqueta, /reactor/i);
+  // Una sala sin sistema no se queda sin nombre: se llama pasillo.
+  assert.ok(modelo.plantaSalas[1].etiqueta.length > 0);
+});
+
+test("el valor que viaja del equipo es su POSICIÓN, no su índice", () => {
+  // El orden de las entidades no está garantizado: un índice podría referirse a
+  // otro equipo entre dos sondeos, y mover al equivocado en mitad de una avería
+  // es peor que no mover a ninguno.
+  const modelo = control({ callsign: "Lagunak", systems: {}, internal: INTERIOR });
+  const valor = JSON.parse(modelo.equiposReparacion[0].valor);
+  assert.deepEqual(valor, { x: 0, y: 0 });
+  // El número solo sirve para nombrarlo en pantalla.
+  assert.equal(modelo.equiposReparacion[0].numero, 1);
+  assert.equal(modelo.equiposReparacion[0].enMovimiento, true);
+  assert.equal(modelo.equiposReparacion[1].enMovimiento, false);
+});
+
+test("sin interior no se pinta un plano en blanco", () => {
+  // Una nave sin salas no es una nave con cero salas.
+  const modelo = control({ callsign: "Lagunak", systems: {} });
+  assert.equal(modelo.tieneInterior, false);
+  assert.deepEqual(modelo.plantaSalas, []);
+  assert.deepEqual(modelo.equiposReparacion, []);
+});
+
 test("ningún otro puesto recibe los controles de relay", () => {
-  for (const puesto of ["captain", "navigation", "engineering", "sensors", "communications", "weapons"]) {
+  for (const puesto of ["captain", "navigation", "engineering", "sensors", "weapons", "damagecontrol"]) {
     const modelo = buildWorkspaceModel({
       station: puesto,
       isGM: false,
@@ -1177,4 +1235,19 @@ test("la lectura de la sonda no se le pasa a otros puestos", () => {
     connection: "ok",
   });
   assert.equal(armas.sensoresSonda, null);
+});
+
+test("ningún otro puesto recibe el control de equipos", () => {
+  for (const puesto of ["captain", "navigation", "engineering", "sensors", "communications", "weapons", "relay"]) {
+    const modelo = buildWorkspaceModel({
+      station: puesto,
+      isGM: false,
+      users: [user({ id: "p1", station: puesto })],
+      moduleId: MODULE_ID,
+      i18n: i18nEs,
+      statePayload: { ship: { callsign: "Lagunak", systems: {}, internal: INTERIOR } },
+      connection: "ok",
+    });
+    assert.equal(modelo.canOrderRepairCrew, false, puesto);
+  }
 });

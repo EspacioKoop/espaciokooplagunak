@@ -167,6 +167,33 @@ cambia nada sería inventar una puerta donde no hace falta ninguna, y engordar l
 matriz con entradas que no gatean nada la haría menos legible justo donde tiene
 que serlo más. La asimetría de información —que un puesto sepa algo que los
 demás no— se consigue difundiéndole a él el dato, no dándole permiso.
+| `captain` | ninguna — observación/narrativa |
+| `navigation` | `set_target_heading`, `set_impulse`, `set_warp` |
+| `engineering` | `set_system_power`, `set_system_coolant`, `set_auto_repair` |
+| `sensors` | `scan_object` |
+| `communications` | `answer_comm_hail`, `close_comm`, `send_comm_reply`, `send_comm_message` |
+| `weapons` | `set_shields`, `set_weapon_target`, `fire_tube` |
+| `damagecontrol` | `move_repair_crew` |
+
+Esta tabla llevaba tiempo desactualizada: describía la superficie anterior a
+#462-#465. Se pone al día junto con la entrada de `damagecontrol` (#522).
+
+**`damagecontrol` tiene una sola acción, y con eso basta.** Lo que hace de este
+puesto una decisión no es la variedad de botones sino que los equipos **tardan en
+llegar**: se elige a dónde va cada uno mientras la nave se cae a trozos, y la
+simulación resuelve ruta y tiempo. Comparte tema con ingeniería —la nave rota—
+pero no autoridad: repartir energía y mover gente por dentro son dos puestos
+distintos también en el juego nativo.
+
+**El plano que se pinta es el del motor.** El puente publica la planta real
+(`internal.rooms`), no la planta declarativa de la sección de la nave (#427), que
+existe para otra cosa: andar por ella. Las dos pueden convivir mientras cada una
+diga de dónde sale; pintar equipos de reparación sobre la segunda sería pintar
+sobre un plano que no es el de esta nave.
+
+**El equipo se elige por su casilla, no por un índice.** El orden de las
+entidades no está garantizado, así que un índice podría referirse a otro equipo
+entre dos sondeos.
 
 Cada entrada de la tabla es reproducible en dos capas, nunca solo una:
 
@@ -238,6 +265,7 @@ réplica el uno del otro:**
 La correspondencia entre los 7 puestos de Foundry
 (`foundry-module/scripts/station-assignment.mjs`: `captain`, `navigation`,
 `engineering`, `sensors`, `communications`, `weapons`, `relay`) y los 15
+`engineering`, `sensors`, `communications`, `weapons`, `damagecontrol`) y los 15
 `CrewPosition` nativos es una **simplificación narrativa deliberada** para
 una mesa reducida — agrupa roles que en una tripulación de 6-5 jugadores
 nativos estarían más repartidos — y no un mapeo formal que haya que mantener
@@ -247,7 +275,7 @@ sincronizado si el motor añade o renombra un `CrewPosition`:
 |---|---|
 | `captain` | ninguno directo — coordinación, no una pantalla nativa concreta |
 | `navigation` | `helmsOfficer`, `singlePilot` |
-| `engineering` | `engineering`, `engineeringAdvanced`, `powerManagement`, `damageControl` |
+| `engineering` | `engineering`, `engineeringAdvanced`, `powerManagement` |
 | `sensors` | `scienceOfficer` |
 | `communications` | `commsOnly`, `operationsOfficer` |
 | `weapons` | `weaponsOfficer`, `tacticalOfficer` |
@@ -258,6 +286,10 @@ puesto de Relay y sus decisiones no existían aquí. Con #517 pasa donde le
 corresponde. Sigue siendo orientativo: la pantalla nativa de Relay monta también
 el overlay de comunicaciones, así que en una mesa pequeña las dos cosas pueden
 seguir siendo la misma persona.
+| `damagecontrol` | `damageControl` |
+
+`damageControl` colgaba antes de `engineering`, cuando Foundry no tenía puesto
+propio. Con #522 pasa donde le corresponde.
 
 ## Lo que deliberadamente NO se expone
 

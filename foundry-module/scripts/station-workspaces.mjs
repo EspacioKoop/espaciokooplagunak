@@ -39,6 +39,14 @@ const DEFINITIONS = Object.freeze({
     accent: "orange",
     tasks: ["Rutas", "Sondas", "Condicion"],
   }),
+  // El acento NO puede repetir el de relay (#517), que ya se quedó el naranja:
+  // dos consolas con el mismo color son indistinguibles de reojo, que es
+  // justamente para lo que sirve el acento. De ahí el verde azulado.
+  damagecontrol: Object.freeze({
+    icon: "fa-solid fa-fire-extinguisher",
+    accent: "teal",
+    tasks: ["Prioridades", "Equipos", "Contencion"],
+  }),
   weapons: Object.freeze({
     icon: "fa-solid fa-crosshairs",
     accent: "red",
@@ -220,6 +228,52 @@ function textoDeEnlaceSonda(enlace, i18n) {
     : null;
   if (callsign === null) return localize(i18n, "LAGUNAK.Espacios.Sensores.SinEnlaceSonda");
   return format(i18n, "LAGUNAK.Espacios.Sensores.EnlaceSondaActivo", { sonda: callsign });
+}
+
+/**
+ * Salas de la planta real, con su sistema ya traducido y un valor serializado
+ * para el `<select>` de destino. La casilla que se ofrece es la ESQUINA de la
+ * sala: es una casilla real del plano y no un centro calculado que podría caer
+ * fuera en salas de tamaño par.
+ */
+function salasParaPlanta(interior, i18n) {
+  const salas = Array.isArray(interior?.rooms) ? interior.rooms : [];
+  return salas.map((sala) => ({
+    x: sala.x,
+    y: sala.y,
+    ancho: sala.w,
+    alto: sala.h,
+    sistema: sala.system,
+    etiqueta: sala.system
+      ? localize(i18n, `LAGUNAK.Sistemas.${sala.system}`)
+      : localize(i18n, "LAGUNAK.Espacios.Reparacion.SalaSinSistema"),
+    valor: JSON.stringify({ x: sala.x, y: sala.y }),
+  }));
+}
+
+/** Equipos con su casilla y, si va a algún sitio, su destino. */
+function equiposParaPlanta(interior) {
+  const equipos = Array.isArray(interior?.crews) ? interior.crews : [];
+  return equipos.map((equipo, indice) => ({
+    // El número es solo para nombrarlo en pantalla ("Equipo 1"): la ORDEN va
+    // por posición, nunca por este índice, que puede bailar entre sondeos.
+    numero: indice + 1,
+    x: equipo.position.x,
+    y: equipo.position.y,
+    valor: JSON.stringify({ x: equipo.position.x, y: equipo.position.y }),
+    enMovimiento: equipo.target !== null,
+  }));
+}
+
+/** Cuántos equipos hay, o que no hay lectura del interior. */
+function textoDeInterior(interior, i18n) {
+  if (!interior?.rooms?.length) {
+    return localize(i18n, "LAGUNAK.Espacios.Reparacion.SinInterior");
+  }
+  return format(i18n, "LAGUNAK.Espacios.Reparacion.Equipos", {
+    total: interior.crews?.length ?? 0,
+    salas: interior.rooms.length,
+  });
 }
 
 function integer(value) {
@@ -688,6 +742,19 @@ export function buildWorkspaceModel({
     hayEnlaceSonda: Boolean(ship?.science_link?.callsign),
     enlaceSondaTexto: textoDeEnlaceSonda(ship?.science_link, i18n),
     sensoresSonda: normalized === "sensors" ? (sensoresSonda ?? null) : null,
+    // Control de daños (#522). La planta que se pinta es la REAL del motor,
+    // publicada por el puente — NO la planta declarativa de la sección de la
+    // nave (#427), que es otra cosa y para otra cosa (andar por ella). Pintar
+    // equipos sobre aquella sería pintar sobre un plano que no es el de esta
+    // nave; el issue lo pedía explícitamente: o se cose, o se pinta la del
+    // motor, pero no se aproxima.
+    canOrderRepairCrew: !isGM && isActionAllowed(normalized, "move_repair_crew"),
+    // Sin lectura de interior no hay plano. Una nave sin salas no es una nave
+    // con cero salas: la consola lo dice en vez de pintar un plano en blanco.
+    tieneInterior: Boolean(ship?.internal?.rooms?.length),
+    plantaSalas: salasParaPlanta(ship?.internal, i18n),
+    equiposReparacion: equiposParaPlanta(ship?.internal),
+    interiorTexto: textoDeInterior(ship?.internal, i18n),
     // Comunicaciones (#463): reactivas sobre el canal ya abierto — sin picker
     // de objetivo propio, ver `docs/SESION-PANTALLAS-NATIVAS.md`.
     canOrderCommsHail: !isGM && isActionAllowed(normalized, "answer_comm_hail"),

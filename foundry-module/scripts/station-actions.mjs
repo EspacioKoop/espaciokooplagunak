@@ -72,6 +72,11 @@ export const STATION_ACTIONS = Object.freeze({
     "clear_science_link",
     "set_alert_level",
   ]),
+  // #522: la decisión clásica del puesto —qué se repara primero mientras la
+  // nave se cae a trozos— es UNA sola orden, y con eso basta. Lo que la hace
+  // decisión no es la variedad de botones sino que los equipos tardan en
+  // llegar: la simulación resuelve la ruta y el tiempo.
+  damagecontrol: Object.freeze(["move_repair_crew"]),
 });
 
 // Correspondencia acción del contrato → método de BridgeClient. La validación
@@ -153,6 +158,10 @@ const ACTION_DISPATCH = Object.freeze({
   set_alert_level: Object.freeze({
     method: "setAlertLevel",
     args: (params) => [params?.level],
+  }),
+  move_repair_crew: Object.freeze({
+    method: "moveRepairCrew",
+    args: (params) => [params?.origin, params?.destination],
   }),
   set_system_power: Object.freeze({
     method: "setSystemPower",

@@ -74,9 +74,19 @@ Características propias integradas y verificadas:
 - servidor headless y puente seguro reproducibles;
 - módulo Foundry para el GM y la tripulación: estado en vivo, destino y ETA,
   mapa, bitácora deduplicada, controles GM cerrados y **espacios operativos de
-  puesto** donde cada tripulante emite las órdenes de su puesto (navegación;
-  ingeniería con energía y refrigerante; armas), gateadas por identidad no
-  falsificable;
+  puesto** donde cada tripulante emite las órdenes de su puesto, gateadas por
+  identidad no falsificable. Los ocho puestos de la matriz de autoridad están
+  cubiertos (navegación con maniobra de combate y atraque; ingeniería con
+  energía, refrigerante, autodestrucción y frecuencia de escudos; armas;
+  sensores; comunicaciones; enlace con waypoints, sondas y nivel de alerta;
+  control de daños con equipos móviles; y la confirmación de mando), toda orden
+  por la lista blanca versionada del puente y nunca por la API heredada;
+- **asistencia entre puestos**: ayudar produce un token que gasta el titular del
+  puesto asistido como una de sus órdenes ya autorizadas —nunca una orden
+  propia—, con cuatro minijuegos de destreza deterministas por semilla
+  (temporización, secuencia, precisión y puzzle) y lectura de los modificadores
+  reales de la ficha dnd5e cuando existe
+  ([`docs/MINIJUEGOS_ASISTENCIA.md`](docs/MINIJUEGOS_ASISTENCIA.md));
 - primera fase del editor integrado de campañas, mapas, personajes y naves,
   con intercambio JSON individual desde Game Master
   ([guía](docs/CONTENT_EDITOR.md));

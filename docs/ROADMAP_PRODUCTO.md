@@ -145,8 +145,11 @@ como «mirar mientras otro juega».
 Desglose de coordinación del vertical de agencia en #459, con subissues
 formales y grafo de dependencias explícito:
 
-- #460 — verificar y documentar pantallas nativas restantes (bloquea #462–#465);
-  en revisión (PR #469).
+- #460 — **cerrado**: auditoría de las pantallas nativas restantes
+  ([`SESION-PANTALLAS-NATIVAS.md`](SESION-PANTALLAS-NATIVAS.md), PR #515). Su
+  conclusión cambió el plan de la etapa: las seis pantallas **sí** tienen
+  agencia real, así que el hueco no era construirla sino exponerla — de ahí
+  nació #516.
 - #461 — **mergeado**: modelo de permisos por puesto v1
   (`docs/PERMISOS_PUESTO.md`, ADR-0009, PR #478).
 - #462 — **mergeado**: `scan_object` en `STATION_ACTIONS.sensors`, backend
@@ -162,8 +165,20 @@ formales y grafo de dependencias explícito:
 - #466 — **mergeado**: feedback 3D de `set_auto_repair` en el casco de
   ingeniería, `casco-dano.mjs` (PR #477) — depende de al menos uno de
   #462–#465.
-- #467 — playtest del vertical de agencia de Etapa B (depende de #460–#466;
-  #460 sigue en revisión).
+- #467 — playtest del vertical de agencia de Etapa B: **único subissue abierto**
+  del grafo, y no se puede cerrar desde código porque exige una sesión con 3+
+  personas en puestos distintos.
+- #516 — **cerrado**: B8, exponer la agencia nativa que ya existía en el núcleo,
+  nacido del hallazgo de #460. Sus seis subissues resueltos: #517 Relay entero
+  (PR #529), #518 ingeniería —autodestrucción y frecuencia de escudos— (PR
+  #530), #519 navegación —maniobra de combate y atraque— (PR #528), #520
+  sensores —base de datos científica y vista de sonda— (PR #531), #522 Damage
+  Control (PR #533), y #521 hackeo de Relay resuelto **por decisión y no por
+  código**: se queda solo-nativo, registrado en
+  [ADR-0010](adr/0010-hackeo-solo-nativo.md) en vez de abrir un binding C++
+  nuevo. Ninguna orden nueva relajó la matriz de autoridad: el puesto se sigue
+  resolviendo desde el `User` autenticado (#237) y todo entra por la lista
+  blanca versionada del puente.
 
 Este grafo valida el criterio de salida de agencia, pero no cierra por sí solo
 toda la Etapa B. Sus otros frentes están trazados en #479: #480 (navegación
@@ -176,10 +191,18 @@ puestos vacíos — **verificado: no existe automatización nativa**, sistema si
 tripulación queda congelado en su último valor; la decisión de diseño sobre
 qué comportamiento adoptar queda trazada en #512, ver
 [`VERIFICACION-NAVEGACION-Y-AUTOMATIZACION.md`](VERIFICACION-NAVEGACION-Y-AUTOMATIZACION.md)),
-#482 (alarmas compartidas por dependencia entre sistemas), #483 (guardias y
-relevo) y #484 (crisis que exijan coordinación entre al menos tres puestos,
-depende de #462–#465). Antes de declarar la etapa completada deben quedar
-todos trazados y satisfechos.
+#482 (alarmas compartidas por dependencia entre sistemas — **mergeado**, PR
+#494: es dependencia entre sistemas, distinta del nivel de alerta de #338 en
+`nivel-alerta.mjs`), #483 (guardias y relevo — **mergeado**, PR #496) y #484
+(crisis que exijan coordinación entre al menos tres puestos, ya desbloqueado
+porque #462–#465 están en `main`). Antes de declarar la etapa completada deben
+quedar todos trazados y satisfechos.
+
+**Estado a 2026-08-08**: de los dos grafos de la etapa solo quedan abiertos
+#484 (crisis multi-puesto, diseño de escenario Lua) y los dos que no se pueden
+cerrar escribiendo código — #467 (playtest con 3+ personas) y #512 (decisión de
+producto sobre qué comportamiento adoptar para los puestos sin tripulación, que
+#481 dejó trazada al verificar que hoy no hay automatización nativa alguna).
 
 ### Etapa C — Nave persistente y progresión
 

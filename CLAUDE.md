@@ -271,7 +271,7 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     `scripts/nave-sala-caja.mjs` sigue siendo la fábrica de sala —muros, puertas, columnas y
     VENTANAS con cielo real detrás—, y ahora la ventana se **decide** en vez de escribirse: un muro
     sin vecino es casco, y el casco ve el espacio.
-    El **punto de vista** (primera o tercera persona, tecla `C`) es lógica pura en
+    El **punto de vista** (primera o tercera persona, tecla `V` — `c` ya es agacharse desde #446) es lógica pura en
     `scripts/nave-camara.mjs` y no de la fábrica ni del bucle: la regla es la misma para las catorce
     estancias. En tercera persona el propio cuerpo entra como un avatar más por
     `poligonosOtrosJugadores`, así que el render de presencia no sabe que uno de ellos eres tú.

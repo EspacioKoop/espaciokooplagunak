@@ -110,7 +110,7 @@ function publicarPosicion(estanciaId, mando, ultimoSelloEnviado, forzar = false)
  * verse ni un error: eso explica que no quedara nada ni en la consola ni en
  * ningún volcado de fallo. "c" solo, sin ese choque, es la tecla de
  * agacharse que queda. */
-const TECLA_DIRECCION = Object.freeze({
+export const TECLA_DIRECCION = Object.freeze({
   w: "adelante",
   s: "atras",
   a: "izquierda",
@@ -121,7 +121,19 @@ const TECLA_DIRECCION = Object.freeze({
   c: "agachado",
 });
 
-const TECLA_GIRO = Object.freeze({ q: -1, e: 1, ArrowLeft: -1, ArrowRight: 1 });
+export const TECLA_GIRO = Object.freeze({ q: -1, e: 1, ArrowLeft: -1, ArrowRight: 1 });
+
+/**
+ * Teclas que NO son ni dirección ni giro, con lo que hacen.
+ *
+ * Existe para que el reparto de teclas sea comprobable: `onKeyDown` consulta
+ * `TECLA_DIRECCION` primero y hace `return`, así que una tecla repetida aquí
+ * queda como CÓDIGO MUERTO en silencio. Pasó de verdad — la cámara se ató a `c`,
+ * que ya era agacharse, y no alternaba nada; lo cazó el QA leyendo el commit y no
+ * una prueba. `andar-nave-app.test.mjs` compara las tres tablas y falla si un
+ * mapa pisa a otro.
+ */
+export const TECLAS_ACCION = Object.freeze({ v: "camara", V: "camara" });
 
 /**
  * Engancha teclado a un mando de `arrancarAndar`. Vive fuera de las dos
@@ -169,8 +181,15 @@ function engancharTeclado(raiz, mando) {
       return;
     }
     // Punto de vista (QA 2026-08-08). En el flanco de PULSACIÓN y no mantenida:
-    // es un interruptor, no una dirección. `C` de cámara, libre en ambos mapas.
-    if (ev.key === "c" || ev.key === "C") {
+    // es un interruptor, no una dirección.
+    //
+    // `V` de vista, y NO `C`: `c` ya es agacharse desde que "Control" se retiró
+    // por el cierre de ventana que investigó #446. Peor aún, con `C` esta rama
+    // era código MUERTO —`TECLA_DIRECCION` se consulta antes y hace `return`—,
+    // así que la cámara no alternaba nada. Lo cazó el QA leyendo el commit, no
+    // una prueba: de ahí `TECLAS_RESERVADAS` abajo, para que el próximo choque
+    // lo cace la suite.
+    if (TECLAS_ACCION[ev.key] === "camara") {
       ev.preventDefault();
       ev.stopPropagation();
       mando.alternarCamara();

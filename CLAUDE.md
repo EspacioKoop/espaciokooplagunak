@@ -132,6 +132,13 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
   prosa, y la responsabilidad es lo que no se deduce del nombre del archivo.
   - **Orquestación** — `scripts/main.mjs` es un orquestador puro (settings, hooks, scene controls):
     no contiene lógica de dominio. Constantes compartidas en `scripts/lagunak-constantes.mjs`.
+    La barra de escena tiene UN solo injerto (#448): `scripts/control-escena.mjs` es el único sitio
+    que conoce la diferencia de forma entre v11/v12 (arrays, `onClick`) y v13 (records, `order` +
+    `onChange`) — estaba copiada verbatim en cinco registradores más `main.mjs`, que es el número de
+    sitios que habría que arreglar el día que v14 la cambie. `main.mjs` decide QUÉ botones hay y
+    quién los ve; nunca cómo se injertan. Un botón nuevo se añade como entrada de un catálogo de
+    puerta existente (`scripts/puerta-catalogo.mjs`, y `panel-gm.mjs`/`cantina.mjs` como
+    consumidores), no como una herramienta suelta más.
   - **Alcanzabilidad** — `tests/modulos-alcanzables.test.mjs` (#523) recorre el grafo de imports
     desde los `esmodules` que declara `module.json` y falla si algún módulo de `scripts/` queda
     fuera sin estar declarado en su lista `HUERFANOS_DECLARADOS`, con motivo Y número de issue. Un

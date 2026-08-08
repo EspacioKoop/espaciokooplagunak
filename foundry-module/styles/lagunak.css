@@ -57,6 +57,15 @@
   padding: 0.5rem;
 }
 
+/* Lámina grabada del mapa (#526). El relleno es lo que deja ver el filete: sin
+   él el marco quedaría justo debajo del bisel del visor y no se vería nada. El
+   SVG lo pone `mapa-marco.mjs` como imagen de fondo en el atributo `style`, con
+   el interior hueco, así que el mapa no cambia ni un píxel. */
+.lagunak-mapa-lamina {
+  padding: 14px;
+  line-height: 0;
+}
+
 .lagunak-mapa-visor {
   position: relative;
   border: 4px solid #1b263b;

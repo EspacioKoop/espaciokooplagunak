@@ -255,10 +255,16 @@
     </label>
     <p class="lagunak-mapa-vista-ayuda">{{localize "LAGUNAK.MapaVivo.VistaAyuda"}}</p>
 
-    <div class="lagunak-mapa-visor">
-      <canvas class="lagunak-mapa-canvas" width="480" height="480" role="img" aria-label="{{localize "LAGUNAK.MapaVivo.Descripcion"}}">
-        {{localize "LAGUNAK.MapaVivo.Descripcion"}}
-      </canvas>
+    {{! Lámina grabada ALREDEDOR del visor, no encima (#526): el bisel arcade
+        del visor es una decisión de estilo ya tomada y esto no la pisa. El
+        marco no lleva tics ni rosa de los vientos —serían una escala y una
+        marcación que nadie ha calculado— y va aria-hidden. }}
+    <div class="lagunak-mapa-lamina" style="{{estiloMarcoMapa}}">
+      <div class="lagunak-mapa-visor">
+        <canvas class="lagunak-mapa-canvas" width="480" height="480" role="img" aria-label="{{localize "LAGUNAK.MapaVivo.Descripcion"}}">
+          {{localize "LAGUNAK.MapaVivo.Descripcion"}}
+        </canvas>
+      </div>
     </div>
     <p class="lagunak-mapa-alcance">{{mapa.alcanceLabel}}</p>
 

@@ -192,7 +192,14 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     plantillas de V1/V2 solo consumen su salida.
   - **Arte procedural** — generado en el cliente, cero binarios en el repositorio. Los colores viven
     **solo** en `scripts/paleta.mjs`, con la frontera vivo/registrado y una prueba que falla si otro
-    módulo de arte declara un color propio (#351). Grabado en `scripts/laminas-clasicas.mjs`;
+    módulo de arte declara un color propio (#351). Grabado en `scripts/laminas-clasicas.mjs`, cuyo
+    único consumidor es `scripts/mapa-marco.mjs` (#526): el marco del mapa vivo, que va **alrededor**
+    del visor y no encima —el bisel arcade del visor es una decisión de estilo ya tomada—, y que
+    apaga a propósito los tics del limbo y la rosa de los vientos, porque sobre un instrumento que
+    sí se lee serían una escala y una marcación que nadie ha calculado. Esa es la regla general para
+    adornar cualquier superficie con lectura: el ornamento no puede abrir por detrás la lectura
+    falsa que la superficie cierra por delante. Las dos opciones (`tics`, `rosa`) van encendidas por
+    defecto, así que la lámina completa sigue siendo el registro de serie;
     pixelart en `scripts/nave-sprite.mjs`, `scripts/minijuegos/cartas-pixelart.mjs` y
     `scripts/minijuegos/fichas-pixelart.mjs` (volumen por planos de color, nunca degradados: el 3D
     del casco es otro lenguaje); música determinista por semilla en

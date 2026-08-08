@@ -58,14 +58,6 @@ const HUERFANOS_DECLARADOS = Object.freeze({
       "es la propiedad que se le exige — el día que se cuele en el catálogo de la " +
       "nave real, las salas 'a' y 'b' aparecerían en la partida.",
   },
-  "laminas-clasicas.mjs": {
-    cimiento: false,
-    issue: 526,
-    motivo:
-      "Grabado procedural en SVG que ningún módulo pinta. Su propia cabecera dice " +
-      "que es material de interfaz para el mapa vivo y el códice; ese cableado " +
-      "nunca ocurrió. Cablear o retirar se decide en #526.",
-  },
   "mapa-lote.mjs": {
     cimiento: false,
     issue: 536,

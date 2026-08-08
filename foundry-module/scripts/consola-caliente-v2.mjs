@@ -62,6 +62,9 @@ import { contenidoEstadoBitacora, fechaLocal } from "./bitacora-nave.mjs";
 import { desmontarLamina, montarLaminaContacto } from "./lamina-contacto.mjs";
 import { proyectarParaPuesto } from "./proyeccion-puesto.mjs";
 import { dibujarFrame } from "./mapa-render.mjs";
+// #526: el marco grabado del mapa. Ornamento con el interior hueco: no pinta
+// dentro del lienzo ni añade ninguna lectura (sin tics de escala ni rosa).
+import { estiloMarcoMapa } from "./mapa-marco.mjs";
 import { calcularIntervaloMs, resolverCicloConsola, siguienteFallosSeguidos } from "./consola-caliente-poll.mjs";
 import { buildWorkspaceModel, WORKSPACE_STATIONS } from "./station-workspaces.mjs";
 import {
@@ -850,6 +853,11 @@ export function crearClaseConsolaCalienteV2() {
         reposicion: this.#vistaReposicion(),
         reposicionAviso: this.reposicionAviso,
         reposicionFallo: this.reposicionFallo,
+        estiloMarcoMapa: estiloMarcoMapa({
+          ancho: 508,
+          alto: 508,
+          titulo: this.naveVigente?.callsign ?? "",
+        }),
         tabs: PESTANAS.map((id) => ({
           id,
           label: game.i18n.localize(`LAGUNAK.ConsolaCaliente.${ETIQUETA_PESTANA[id]}`),

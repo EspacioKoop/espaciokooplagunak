@@ -16,7 +16,7 @@ import {
 } from "../scripts/nave-planta-phobos.mjs";
 import { CATALOGO_ANDAR } from "../scripts/nave-catalogo-andar.mjs";
 import { PLANTA_CANTINA_SALA } from "../scripts/cantina-sala.mjs";
-import { mover, puertaTocada } from "../scripts/nave-movimiento.mjs";
+import { colisiona, mover, puertaTocada } from "../scripts/nave-movimiento.mjs";
 
 /** El mismo radio que usa `nave-movimiento-lienzo.mjs` para el jugador. */
 const RADIO_JUGADOR = 0.35;
@@ -323,4 +323,57 @@ test("toda sala del casco tiene ventana, y ninguna sala interior se la inventa",
     assert.ok(sala, `${id} debería existir`);
   }
   assert.ok(true);
+});
+
+test("ninguna entrada ni llegada cae DENTRO de un obstáculo", () => {
+  // El fallo que el QA describió como «ya no se puede mover»: al reconstruir la
+  // cantina con sus 126 muebles, tanto su entrada como la llegada desde la sala
+  // vecina cayeron sobre mobiliario. El motor rechaza entonces todos los pasos y
+  // la ventana se queda muerta sin decir por qué — no hay error, simplemente no
+  // te mueves.
+  //
+  // Las pruebas de arriba comprobaban que el punto estaba DENTRO de la sala y que
+  // no pisaba una puerta. Ninguna comprobaba lo más básico: que quepa el jugador.
+  for (const [id, estancia] of todasLasEstancias()) {
+    assert.equal(
+      colisiona(estancia.entrada.x, estancia.entrada.z, RADIO_JUGADOR, estancia.planta),
+      false,
+      `la entrada de ${id} cae dentro de un obstáculo: ${JSON.stringify(estancia.entrada)}`,
+    );
+    for (const puerta of estancia.puertas) {
+      const destino = CATALOGO_ANDAR.obtener(puerta.destino.estancia);
+      const x = puerta.destino.x ?? destino.entrada.x;
+      const z = puerta.destino.z ?? destino.entrada.z;
+      assert.equal(
+        colisiona(x, z, RADIO_JUGADOR, destino.planta),
+        false,
+        `llegando de ${id} a ${puerta.destino.estancia} se aparece dentro de un obstáculo: ${JSON.stringify({ x, z })}`,
+      );
+    }
+  }
+});
+
+test("desde la entrada de cada sala se puede DAR UN PASO", () => {
+  // La consecuencia observable, comprobada aparte de su causa: aunque el punto
+  // esté libre, si está encajonado entre muebles el jugador aparece y no puede
+  // avanzar en ninguna dirección. Es lo que se ve como «no se puede mover».
+  for (const [id, estancia] of todasLasEstancias()) {
+    const salidas = ["adelante", "atras", "izquierda", "derecha"].filter((direccion) => {
+      const paso = mover({
+        x: estancia.entrada.x,
+        z: estancia.entrada.z,
+        yaw: estancia.entrada.yaw ?? 0,
+        activas: new Set([direccion]),
+        dt: 0.1,
+        planta: estancia.planta,
+        velocidad: 3,
+        radio: RADIO_JUGADOR,
+      });
+      return Math.abs(paso.x - estancia.entrada.x) > 1e-6 || Math.abs(paso.z - estancia.entrada.z) > 1e-6;
+    });
+    assert.ok(
+      salidas.length >= 2,
+      `en ${id} solo se puede salir de la entrada hacia [${salidas.join(", ")}]: está encajonada`,
+    );
+  }
 });

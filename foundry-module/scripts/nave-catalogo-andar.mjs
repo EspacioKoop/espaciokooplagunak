@@ -20,6 +20,7 @@
 // Puro: compone objetos y funciones que ya son puras.
 
 import { crearCatalogoEstancias } from "./nave-estancias.mjs";
+import { puntoLibreCerca } from "./nave-movimiento.mjs";
 import { crearSalaCaja } from "./nave-sala-caja.mjs";
 import { PLANTA_CANTINA_SALA, PUERTA_OESTE, componerCantinaSala } from "./cantina-sala.mjs";
 import {
@@ -90,6 +91,14 @@ function zonaConsola(sala) {
 
 function puestoDe(sala) {
   return sala.sistema ? PUESTO_POR_SISTEMA[sala.sistema] : PUESTO_POR_SALA_LIBRE[sala.id];
+}
+
+/** Radio del jugador, el mismo que usa `nave-movimiento-lienzo.mjs`. */
+const RADIO_JUGADOR = 0.35;
+
+/** Un punto de la cantina garantizado libre de mobiliario. */
+function libreEnCantina(x, z) {
+  return puntoLibreCerca(x, z, RADIO_JUGADOR, PLANTA_CANTINA_SALA);
 }
 
 /** La cantina cuelga del muro libre de esta sala. */
@@ -175,7 +184,7 @@ function definirSala(sala, salientes) {
       rect: puertaCantina(sala),
       // Se llega a la cantina por su puerta oeste, así que se aparece dentro y
       // separado de ella para no reactivarla de vuelta.
-      destino: { estancia: "cantina", x: 3, z: 5, yaw: Math.PI / 2 },
+      destino: { estancia: "cantina", ...libreEnCantina(3, 5), yaw: Math.PI / 2 },
     });
   }
 
@@ -214,9 +223,11 @@ export const CATALOGO_ANDAR = crearCatalogoEstancias({
   cantina: {
     planta: PLANTA_CANTINA_SALA,
     componer: componerCantinaSala,
-    // Junto a la puerta y mirando al fondo de la sala, que es lo que hay que ver
-    // al entrar: la barra a la derecha y los ventanales.
-    entrada: { x: 2.4, z: 8.6, yaw: Math.PI },
+    // Junto a la puerta y mirando al fondo de la sala. El punto se AJUSTA al
+    // libre más cercano en vez de fiarse del número escrito: la cantina tiene 126
+    // muebles y aparecer dentro de uno deja al jugador sin poder moverse (QA
+    // 2026-08-08). Mismo motivo en el destino de la puerta de vuelta.
+    entrada: { ...libreEnCantina(2.4, 8.6), yaw: Math.PI },
     puertas: [
       {
         // El disparador lo declara la propia sala, junto al hueco que abre en su

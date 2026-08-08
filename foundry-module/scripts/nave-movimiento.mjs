@@ -225,3 +225,41 @@ export function mover({
   });
   return { x: nx, z: nz, y: ny, velocidadY: nVelocidadY };
 }
+
+/**
+ * El punto LIBRE más cercano a `(x, z)` donde cabe un círculo de `radio`.
+ *
+ * Existe porque un punto de aparición escrito a mano es una bomba de relojería:
+ * basta que alguien mueva un mueble para que el jugador aparezca DENTRO de él, y
+ * entonces el motor rechaza todos los pasos y la ventana se queda muerta sin
+ * decir por qué. Pasó de verdad con la cantina (QA 2026-08-08: «ya no se puede
+ * mover»), donde tanto la entrada como la llegada desde la sala vecina caían
+ * sobre mobiliario.
+ *
+ * Busca en anillos crecientes para que el resultado sea el más próximo a lo
+ * pedido, no el primero que salga de un barrido por filas: quien declara una
+ * entrada está diciendo «por aquí», y conviene respetarlo tanto como se pueda.
+ *
+ * @returns {{x:number, z:number}} el punto pedido si ya era libre, o el más
+ *   cercano que lo sea. Si la planta entera está ocupada devuelve el original —
+ *   no hay respuesta mejor, y mentir con otra sería peor.
+ */
+export function puntoLibreCerca(x, z, radio, planta, { paso = 0.25, alcance = 6 } = {}) {
+  if (!colisiona(x, z, radio, planta)) return { x, z };
+  const pasos = Math.ceil(alcance / paso);
+  for (let anillo = 1; anillo <= pasos; anillo += 1) {
+    const d = anillo * paso;
+    // Ocho direcciones por anillo: suficiente para salir de un mueble sin
+    // convertir esto en un barrido cuadrático de toda la sala.
+    for (const [dx, dz] of [
+      [d, 0], [-d, 0], [0, d], [0, -d],
+      [d, d], [d, -d], [-d, d], [-d, -d],
+    ]) {
+      const cx = x + dx;
+      const cz = z + dz;
+      if (cx < 0 || cz < 0 || cx > planta.ancho || cz > planta.profundidad) continue;
+      if (!colisiona(cx, cz, radio, planta)) return { x: cx, z: cz };
+    }
+  }
+  return { x, z };
+}

@@ -1,7 +1,20 @@
-{{! Consola caliente del GM (#276): fusiona estado-nave.hbs + mapa-vivo.hbs
+{{!-- Consola caliente del GM (#276): fusiona estado-nave.hbs + mapa-vivo.hbs
     en pestañas con UN bucle de sondeo. Sigue el patrón ya resuelto en
     espacio-puesto.hbs: un solo PARTS.main con un bloque {{#each tabs}}, no
-    una PART por pestaña (evita reconciliar foco por parte, ver #227). }}
+    una PART por pestaña (evita reconciliar foco por parte, ver #227).
+
+    OJO con la forma del comentario: este va en la forma de BLOQUE (la de los
+    guiones) y no en la corta, porque el texto menciona una expresión. Un
+    comentario corto termina en su primer cierre de llaves, así que la frase de
+    arriba se partía en «un bloque {{#each tabs}}» y el resto salía como texto
+    suelto antes del primer <div>. En v11 eso no es cosmético: `_renderInner`
+    hace `$(html)`, jQuery ve una cadena que no empieza por `<`, la toma por un
+    selector CSS y lanza «unrecognized expression» — la consola no abría en
+    absoluto. Lo vigila `tests/plantillas-comentarios.test.mjs`.
+
+    Y por lo mismo, aquí no se escriben los delimitadores literales de un
+    comentario: el de bloque se cierra en su primera aparición, así que
+    mencionarlo se corta a sí mismo. La prueba también pilla eso. --}}
 <div class="lagunak-consola-caliente">
   {{! `conexion` global: SOLO la fija `healthz`. Es la única condición que
       significa "no hay puente" — un fallo de una pestaña no la toca. }}
@@ -109,8 +122,9 @@
     </div>
   </div>
 
-  {{! Pestañas: patrón ya resuelto en espacio-puesto.hbs — un solo PARTS.main
-      con {{#each tabs}}, nunca una PART por pestaña. }}
+  {{!-- Pestañas: patrón ya resuelto en espacio-puesto.hbs — un solo PARTS.main
+      con {{#each tabs}}, nunca una PART por pestaña. Forma de bloque por lo
+      mismo que el comentario de la cabecera. --}}
   <nav class="lagunak-consola-tabs" aria-label="{{localize "LAGUNAK.ConsolaCaliente.Pestanas"}}">
     {{#each tabs}}
     <button type="button" class="{{#if selected}}is-selected{{/if}}" aria-pressed="{{selected}}" data-consola-tab="{{id}}">

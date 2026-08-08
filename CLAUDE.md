@@ -242,7 +242,7 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     consolas, y `resolverArranque`) y `scripts/nave-movimiento-lienzo.mjs`/`nave-movimiento-red.mjs`
     (bucle de render y sincronización de otros jugadores, #453/#498), #427.
     **La planta sale de la nave REAL, no se inventa** (#540): el Phobos M3P declara su interior en
-    `scripts/shipTemplates/frigates.lua` —trece salas sobre una rejilla, nueve con sistema— y esa es
+    `scripts/shiptemplates/frigates.lua` —trece salas sobre una rejilla, nueve con sistema— y esa es
     la planta que pinta el Control de daños nativo y que el puente publica en `ship.internal.rooms`
     (#522). `scripts/nave-planta-phobos.mjs` la copia como dato del módulo y deriva de ella la
     geometría: una única `CELDA` en metros (el mando de escala de toda la nave), puerta entre TODA

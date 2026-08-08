@@ -3,7 +3,7 @@
 //
 // Antes cosía a mano una geografía inventada —vestíbulo, pasillo del puente y
 // cinco salas de estación idénticas— mientras la nave ya declaraba su interior
-// en `scripts/shipTemplates/frigates.lua`. Aquello producía los cuatro fallos
+// en `scripts/shiptemplates/frigates.lua`. Aquello producía los cuatro fallos
 // de #539: huecos entre salas, puertas contra las que te golpeabas, ninguna
 // estancia alcanzable salvo la cantina y una escala distinta por sala. Nada de
 // eso puede volver a pasar por construcción:

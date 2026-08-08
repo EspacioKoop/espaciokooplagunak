@@ -41,7 +41,12 @@ test("las salas copiadas son EXACTAMENTE las del shipTemplate del Phobos M3P", (
   // La planta es estática por decisión de #540 (standalone-first: sin puente
   // también hay que poder andar). El precio de copiar es que la copia se
   // desactualice, así que se compara contra el .lua de verdad.
-  const lua = readFileSync(join(raiz, "scripts", "shipTemplates", "frigates.lua"), "utf8");
+  // OJO con las mayúsculas: el repositorio tiene `scripts/shiptemplates/` en
+  // minúsculas. Escrito como `shipTemplates` funciona en Windows y macOS —
+  // sistemas de archivos insensibles a mayúsculas— y revienta con ENOENT en el
+  // Linux de CI. Pasó: la suite estaba en verde en local y en rojo en CI, y este
+  // es el único sitio del módulo que lee un archivo del repositorio por ruta.
+  const lua = readFileSync(join(raiz, "scripts", "shiptemplates", "frigates.lua"), "utf8");
   const desdeM3P = lua.slice(lua.indexOf('copy("Phobos M3P")'));
   const bloque = desdeM3P.slice(0, desdeM3P.indexOf("addDoor"));
 
@@ -60,7 +65,7 @@ test("las salas copiadas son EXACTAMENTE las del shipTemplate del Phobos M3P", (
   assert.deepEqual(
     SALAS_PHOBOS.map(clave).sort(),
     declaradas.map(clave).sort(),
-    "la copia de SALAS_PHOBOS ya no coincide con scripts/shipTemplates/frigates.lua",
+    "la copia de SALAS_PHOBOS ya no coincide con scripts/shiptemplates/frigates.lua",
   );
 });
 

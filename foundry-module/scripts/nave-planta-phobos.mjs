@@ -2,7 +2,7 @@
 //
 // Hasta ahora la ventana de andar recorría una geografía INVENTADA —vestíbulo,
 // pasillo del puente, cinco salas de estación idénticas— mientras la nave ya
-// declaraba su interior completo en `scripts/shipTemplates/frigates.lua`: trece
+// declaraba su interior completo en `scripts/shiptemplates/frigates.lua`: trece
 // salas sobre una rejilla, nueve de ellas con sistema. Esa planta no es un dato
 // muerto: es la que pinta la pantalla nativa de Control de daños, por la que
 // caminan los equipos de reparación, y la que el puente ya publica en
@@ -51,7 +51,7 @@ export const GROSOR_PUERTA = 1.2;
 
 /**
  * Las trece salas del Phobos M3P, copiadas de `addRoom`/`addRoomSystem` en
- * `scripts/shipTemplates/frigates.lua`.
+ * `scripts/shiptemplates/frigates.lua`.
  *
  * `celda` es {x, y, w, h} en la rejilla del motor, tal cual. `sistema` es el
  * nombre del sistema de EmptyEpsilon, o `null` en las cuatro salas libres.

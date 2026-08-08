@@ -18,12 +18,8 @@ import { MODULE_ID } from "./lagunak-constantes.mjs";
 import { arrancarAndar } from "./nave-movimiento-lienzo.mjs";
 import { CATALOGO_ANDAR } from "./nave-catalogo-andar.mjs";
 import { puntoDeLlegada } from "./nave-estancias.mjs";
-import {
-  construirMuestra,
-  debeMuestrear,
-  posicionesVisibles,
-  programarMuestra,
-} from "./nave-movimiento-red.mjs";
+import { construirMuestra, debeMuestrear, programarMuestra } from "./nave-movimiento-red.mjs";
+import { presentesEn } from "./nave-presencia.mjs";
 import { avatarDeUsuario } from "./avatar-assignment.mjs";
 import { openWorkspaceApp } from "./station-workspace-ui.mjs";
 import { SECCION } from "./paleta.mjs";
@@ -224,16 +220,26 @@ function arrancar(raiz) {
   // `updateUser`.
   const otrosJugadores = new Map();
 
-  /** Jugadores visibles ahora mismo en la MISMA sala, ya interpolados y con
-   *  el avatar que cada cual eligió (#450, mismo molde que la cantina) — la
-   *  forma exacta que consume `poligonosOtrosJugadores`
-   *  (`nave-avatares-render.mjs`, #498). */
-  function jugadoresParaRender() {
-    return posicionesVisibles(otrosJugadores, {
+  /** Quién está aquí y dónde: presencia pura, sin nada de cómo se dibuja
+   *  (`nave-presencia.mjs`, revisión externa de Odiseo en #498). Es el
+   *  contrato que se expone hacia fuera y el que reutilizaría un indicador
+   *  de minimapa, una lista de ocupación o la interacción por proximidad. */
+  function presentes() {
+    return presentesEn(otrosJugadores, {
       estanciaPropia: estanciaActual,
       miUserId: game.user?.id,
       ahoraMs: Date.now(),
-    }).map((jugador) => ({
+    });
+  }
+
+  /** UNA vista de esa presencia: la que pinta avatares. Decora cada
+   *  tripulante con el aspecto que eligió (#450, mismo molde que la
+   *  cantina) para dárselo a `poligonosOtrosJugadores`
+   *  (`nave-avatares-render.mjs`). El avatar entra AQUÍ, en el borde del
+   *  render, y no aguas arriba: otra vista de lo mismo (marcador, silueta,
+   *  punto en un plano) no tendría por qué arrastrarlo. */
+  function jugadoresParaRender() {
+    return presentes().map((jugador) => ({
       ...jugador,
       avatar: avatarDeUsuario(game.users?.get?.(jugador.userId), MODULE_ID),
     }));
@@ -301,10 +307,11 @@ function arrancar(raiz) {
   Hooks.on("updateUser", alCambiarUsuario);
 
   return {
-    /** Jugadores visibles ahora mismo en la MISMA sala, ya interpolados y
-     *  con avatar — lo mismo que consume el pintor en cada fotograma,
-     *  expuesto por si algo fuera de este archivo necesita leerlo. */
-    jugadoresVisibles: jugadoresParaRender,
+    /** Quién está aquí y dónde, ya interpolado y filtrado por sala. El
+     *  contrato de presencia, DELIBERADAMENTE sin avatar: quien necesite
+     *  dibujar decide su propia representación, como hace el pintor de
+     *  avatares de esta misma ventana. */
+    presentes,
     detener() {
       publicarPosicion(estanciaActual, mando, ultimoSelloEnviado, true);
       globalThis.clearInterval?.(intervaloPublicacion);

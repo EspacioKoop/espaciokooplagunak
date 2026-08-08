@@ -42,7 +42,7 @@ que #516 anotaba para Relay se cierra **por escrito** en vez de con código.
 
 Los motivos, en orden de peso:
 
-1. **Exponerlo como orden atómica no arriesgaría dissolver el minijuego: sería
+1. **Exponerlo como orden atómica no arriesgaría disolver el minijuego: sería
    la disolución.** Como el reto solo existe en el cliente, una orden
    `hack_target` es exactamente «este sistema queda hackeado», sin coste ni
    destreza. No estaríamos trasladando una agencia; estaríamos sustituyéndola

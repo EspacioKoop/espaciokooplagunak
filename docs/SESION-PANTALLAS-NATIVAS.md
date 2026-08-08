@@ -129,6 +129,18 @@ en Windows nativo, este es el primer punto a reproducir.
   guardia y el aviso de tráfico Exuari) en el panel de comunicaciones
   incrustado, con `Reputation` y `Clock` — confirma que Relay incluye comms
   completas, como documenta el código.
+- **El hackeo NO es agencia trasladable al puente**
+  ([ADR-0010](adr/0010-hackeo-solo-nativo.md)). Esta sección lo lista como una
+  acción más porque en pantalla lo es, pero conviene no leerlo como candidato a
+  `STATION_ACTIONS`: el minijuego (`mineSweeper.h` / `lightsOut.h`) vive entero
+  en el cliente, y al servidor solo le llega `CMD_HACKING_FINISHED` con objetivo
+  y sistema. El manejador (`src/playerInfo.cpp`) comprueba únicamente que la nave
+  tenga componente `HackingDevice` y suma su `effectiveness` al `hacked_level`:
+  no valida distancia, ni tiempo, ni que se haya jugado nada. Lo que hace del
+  hackeo una decisión —la destreza y el rato que cuesta— no existe en la
+  simulación, así que exponerlo como orden sería sustituirlo por un botón. Es la
+  única acción de las revisadas aquí sin validación server-side, y por eso #521
+  se cerró por escrito en vez de con código.
 
 ### Engineering avanzada (`src/screens/crew4/engineeringAdvancedScreen.{h,cpp}`, sobre `src/screens/crew6/engineeringScreen.{h,cpp}`)
 
@@ -219,6 +231,22 @@ en Windows nativo, este es el primer punto a reproducir.
   dentro de Engineering avanzada, confirmando el solape documentado por
   código.
 
+### Referencia — Power Management (`src/screens/extra/powerManagement.{h,cpp}`)
+
+Una **séptima pantalla que el alcance de #460 no listaba** y que sí tiene
+`CrewPosition` propia (`CrewPosition::powerManagement`), así que merece constar
+aunque quede fuera de las seis. Duplica el reparto de energía y refrigerante de
+Ingeniería sin la vista de salud del casco: es Ingeniería recortada, pensada
+para mesas grandes que separan ese rol. No aporta ninguna decisión que no esté
+ya contabilizada en Ingeniería avanzada, así que hereda sus conclusiones y no
+necesita verificación aparte.
+
+Lo interesante es que la duplicación **está reconocida en el propio código
+heredado**: `src/screens/crew6/engineeringScreen.cpp:581` lleva el comentario
+*"Note the code duplication with extra/powerManagement"*. Es la misma
+duplicación anotada más abajo como cosa a vigilar, no a resolver en Etapa B.
+No se verificó en vivo (fuera del alcance de B0).
+
 ### Referencia — Database (`src/screens/extra/databaseScreen.{h,cpp}`)
 
 No es una de las seis del alcance, pero es relevante por reutilizar el mismo
@@ -234,11 +262,16 @@ del alcance de B0).
 | Pantalla | Acciones que cambian estado | ¿Autónoma? | Solape principal | Verificado en vivo |
 |---|---|---|---|---|
 | Science | Escanear, seleccionar objetivo, zoom, vista de sonda | Sí | Base de Operations | Sí |
-| Relay | Waypoints, sondas, enlace ciencia-sonda, hackeo, alerta, comms | Sí (la más completa) | Subconjunto duplicado en Operations | Sí |
+| Relay | Waypoints, sondas, enlace ciencia-sonda, hackeo¹, alerta, comms | Sí (la más completa) | Subconjunto duplicado en Operations | Sí |
 | Engineering avanzada | Potencia/refrigerante por sistema, autodestrucción, mover reparadores, escudos manuales | Sí | Reparadores = Damage Control; posible duplicación con `powerManagement` | Sí |
 | Operations | Science completo + waypoints + comms | Sí | Composición de Science+Relay, sin acción propia nueva | Sí |
 | Comms | Contestar/cancelar/chatear/elegir diálogo | Parcial (no inicia comms) | Mismo `GuiCommsOverlay` que Relay/Operations | Sí |
 | Damage Control | Seleccionar y mover reparadores | Sí | Subconjunto exacto de Engineering avanzada | Sí |
+| *(ref.)* Power Management | Energía/refrigerante, sin vista de salud | Sí | Duplicación reconocida en el código con Engineering | No |
+
+¹ El hackeo es agencia **en pantalla**, no trasladable al puente: el reto vive
+en el cliente y el servidor no valida su resultado
+([ADR-0010](adr/0010-hackeo-solo-nativo.md), detalle en la sección de Relay).
 
 ## Conclusiones para el resto de Etapa B
 
@@ -246,10 +279,21 @@ del alcance de B0).
   #459 de que "quizá ya hay agencia nativa que solo falta documentar" se
   confirma: Science, Relay, Engineering, Operations y Damage Control ya dan
   decisiones reales, verificadas ahora tanto por código como en juego. Lo que
-  falta no es agencia nativa, sino **exponerla desde Foundry**
-  (`STATION_ACTIONS` en `foundry-module/scripts/station-actions.mjs` solo
-  cubre navegación, potencia/refrigerante y escudos — una fracción de lo que
-  el nativo ya permite).
+  falta no es agencia nativa, sino **exponerla desde Foundry**.
+- **Estado de la exposición al escribirse esta sesión (4 de agosto de 2026):**
+  `STATION_ACTIONS` (`foundry-module/scripts/station-actions.mjs`) cubría solo
+  navegación, potencia/refrigerante y escudos — una fracción de lo nativo, y
+  ni Relay ni Damage Control existían en la matriz. **Ese hueco ya se cerró
+  después**: #517 añadió Relay (rutas, sondas, enlace sonda→ciencia y nivel de
+  alerta), #520 la base de datos científica y la vista de sonda, y #522 el
+  movimiento de equipos de reparación. Se deja anotado con fecha en vez de
+  reescrito, porque el valor de esta auditoría es haber identificado el hueco;
+  quien consulte la matriz al día debe leerla en el código, no aquí.
+- **No hay duplicación con lo ya implementado.** Contrastando pantalla por
+  pantalla contra `station-actions.mjs`, lo entregado en #462/#463/#464
+  encamina agencia nativa existente en vez de reinventarla. La única acción sin
+  equivalente nativo directo es `set_auto_repair`, que es una automatización
+  propia del fork y no un control de la pantalla de Ingeniería.
 - **Comunicaciones (Comms) es la excepción real**: por diseño nativo depende
   de que otro puesto (Relay/Operations) abra el canal, no tiene agencia
   propia de iniciar contacto — confirmado en vivo (Comms solo mostró el canal
@@ -260,10 +304,12 @@ del alcance de B0).
   nuevo en un hipotético puesto de comms aislado.
 - **Sensores/ciencia (B2, [#462](https://github.com/VaroTv7/espaciokooplagunak/issues/462))**
   ya tiene una mecánica nativa completa de escaneo progresivo
-  (`ScanState`) que Foundry no expone en absoluto hoy: la acción a añadir a
-  `STATION_ACTIONS` es sobre todo "traducir a orden de puente" lo que ya
+  (`ScanState`) que Foundry no exponía al escribirse esto: la acción a añadir a
+  `STATION_ACTIONS` era sobre todo "traducir a orden de puente" lo que ya
   existe nativo (iniciar escaneo de un objetivo, consultar su nivel actual),
-  no diseñar una mecánica nueva desde cero.
+  no diseñar una mecánica nueva desde cero. Es la ruta que siguieron después
+  #462 (`scan_object`) y #520 (base de datos y vista de sonda), y el pronóstico
+  se sostuvo: no hizo falta mecánica nueva.
 - **Duplicación interna a vigilar, no a resolver en Etapa B:** Engineering
   avanzada y Damage Control comparten literalmente el mismo componente de
   gestión de reparadores (confirmado también en vivo: mismo plano interior en

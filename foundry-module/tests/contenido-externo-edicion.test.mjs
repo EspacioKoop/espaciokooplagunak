@@ -63,6 +63,46 @@ test("sin declaración de reglas, la lista blanca decide", () => {
   assert.equal(veredicto.motivo, MOTIVOS.FUENTE_EN_LISTA);
 });
 
+// Migrado de `plutonium-filtro-edicion.mjs` al retirarlo (#524): era lo único
+// que ese filtro tenía y este no.
+test("una fuente desconocida con el patrón de 2024 se rechaza DICIENDO que es de 2024", () => {
+  // XSRD no está en ninguna de las dos listas. Rechazado estaría de todos
+  // modos; lo que se gana es el motivo honesto en vez de «no la conozco».
+  const veredicto = CLASIFICADOR.clasificar({ name: "Básico revisado", system: { source: { book: "XSRD" } } });
+  assert.equal(veredicto.aceptado, false);
+  assert.equal(veredicto.motivo, MOTIVOS.FUENTE_2024);
+  assert.equal(veredicto.edicion, EDICIONES.D2024);
+});
+
+test("el patrón de 2024 NO puede rechazar una fuente de 2014 que empiece por X", () => {
+  // La razón por la que el patrón va después de la lista blanca y no antes.
+  // El filtro anterior lo aplicaba primero y habría tirado XGE; no se notaba
+  // porque su lista blanca era PHB/DMG/MM/SRD y XGE no estaba en ella.
+  for (const libro of FUENTES_2014.filter((fuente) => /^X/.test(fuente))) {
+    const veredicto = CLASIFICADOR.clasificar({ name: "De la lista", system: { source: { book: libro } } });
+    assert.equal(veredicto.aceptado, true, `${libro} es de 2014 y se ha rechazado por su nombre`);
+    assert.equal(veredicto.motivo, MOTIVOS.FUENTE_EN_LISTA);
+  }
+});
+
+test("una X suelta no es el patrón de 2024: sigue siendo fuente desconocida", () => {
+  // El patrón es "X" + abreviatura, no "empieza por X". Una fuente casera
+  // llamada «X» no es una revisión de nada, y decir que es de 2024 sería
+  // inventarse una procedencia.
+  const veredicto = CLASIFICADOR.clasificar({ name: "Casero", system: { source: { book: "X" } } });
+  assert.equal(veredicto.aceptado, false);
+  assert.equal(veredicto.motivo, MOTIVOS.FUENTE_DESCONOCIDA);
+});
+
+test("un añadido de mesa a la lista blanca gana al patrón de 2024", () => {
+  // Ampliar la lista es una decisión explícita de mesa; el patrón es una
+  // heurística de último recurso y no puede pisarla.
+  const clasificador = crearClasificador({ fuentes2014: ["XCASA"] });
+  const veredicto = clasificador.clasificar({ name: "De la casa", system: { source: { book: "XCASA" } } });
+  assert.equal(veredicto.aceptado, true);
+  assert.equal(veredicto.motivo, MOTIVOS.FUENTE_EN_LISTA);
+});
+
 test("un libro de 2024 sin declaración de reglas se rechaza por la fuente", () => {
   const veredicto = CLASIFICADOR.clasificar({ name: "Nuevo", system: { source: { book: "XPHB" } } });
   assert.equal(veredicto.aceptado, false);

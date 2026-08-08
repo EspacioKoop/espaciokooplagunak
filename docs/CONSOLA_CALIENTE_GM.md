@@ -156,19 +156,21 @@ Regla, entonces:
 - La pestaña activa que entra en error **no cambia de pestaña sola**. Un salto
   automático con la escena en marcha le mueve la interfaz al GM debajo del ratón.
 
-En el mapa esto se aplicó primero (paso 0): `mapa-lote.mjs` reparte el lote, la
-ventana publica `contactosCaidos` y la plantilla lo dice con palabras en vez de
-dejar un mapa vacío que parece «no hay nadie ahí fuera». La fusión (pasos 1-5)
-aplicó la misma regla al resto de pestañas: cada una tiene su propio estado de
-datos y un fallo no toca a las demás.
+En el mapa esto se aplicó primero (paso 0), en un módulo aparte: la ventana
+publica `contactosCaidos` y la plantilla lo dice con palabras en vez de dejar un
+mapa vacío que parece «no hay nadie ahí fuera». La fusión (pasos 1-5) aplicó la
+misma regla al resto de pestañas: cada una tiene su propio estado de datos y un
+fallo no toca a las demás. Desde #536 esa regla tiene UNA sola copia, la de
+`consola-caliente-poll.mjs` (`dependeDeState`), que además no tumba la vuelta
+entera cuando falla `state`: solo las pestañas que dependen de él.
 
 ## Orden de migración
 
 Cada paso deja el módulo utilizable y se puede mergear solo.
 
 - **Paso 0 — el `allSettled` que sí aprovecha lo que llegó. HECHO.** La decisión
-  vive en `mapa-lote.mjs` (puro, probado en Node) y la aplican las dos
-  generaciones; la ventana publica `contactosCaidos` y la plantilla lo dice con
+  vive en `consola-caliente-poll.mjs` (puro, probado en Node) y la aplican las
+  dos generaciones; la ventana publica `contactosCaidos` y la plantilla lo dice con
   palabras. Un `contacts` caído ya no tira el `state` que llegó bien, no vacía la
   nave propia, no arranca el backoff del ciclo y no se rellena con contactos
   viejos. No requería la puerta de Fase 3 y no la ha tocado.

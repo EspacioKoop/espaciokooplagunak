@@ -166,6 +166,14 @@ function engancharTeclado(raiz, mando) {
       ev.stopPropagation();
       girando.add(giro);
       actualizarGiro();
+      return;
+    }
+    // Punto de vista (QA 2026-08-08). En el flanco de PULSACIÓN y no mantenida:
+    // es un interruptor, no una dirección. `C` de cámara, libre en ambos mapas.
+    if (ev.key === "c" || ev.key === "C") {
+      ev.preventDefault();
+      ev.stopPropagation();
+      mando.alternarCamara();
     }
   };
   const onKeyUp = (ev) => {

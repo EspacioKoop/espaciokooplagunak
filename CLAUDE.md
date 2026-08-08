@@ -257,11 +257,24 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     volver por construcción, y hay prueba de **alcanzabilidad sobre el catálogo real** —no solo sobre
     `CATALOGO_PRUEBA`—, que es lo que faltaba: el motor tenía sus pruebas y la nave no.
     La **cantina** es la única sala que no sale de la rejilla (el interior nativo no la tiene) y
-    conserva su planta y su arte hechos a mano (#423); cuelga del muro libre de `acceso-cantina`. Las
+    conserva sus 126 muebles hechos a mano (#423); cuelga del muro libre de `acceso-cantina`. Pero
+    **ya no es un caso especial**: `scripts/cantina-sala.mjs` la construye con la MISMA fábrica y sus
+    muebles entran como `mobiliario`. Era la única que no lo hacía, y de ahí salían los cuatro fallos
+    que el QA repitió tres veces —puerta pintada sobre muro macizo con su disparador desalineado casi
+    un metro, ninguna ventana (no había, literalmente), suelo visible por el que no se podía andar, y
+    los ojos a 3,35 m del suelo porque la cámara se ponía en altura absoluta sobre un suelo en −1,9—.
+    Todos tenían la misma causa: colisión y dibujo salían de dos declaraciones distintas. Retirados
+    con ella `cantina-andar.mjs` y `cantina-planta.mjs`, que solo existían para traducir entre esos
+    dos sistemas. **No la devuelvas a mano**: si una sala necesita algo que la fábrica no da, se
+    amplía la fábrica. Las
     salas de prueba ("a"/"b", `nave-movimiento-sala-prueba.mjs`) NUNCA aparecen en el catálogo real.
     `scripts/nave-sala-caja.mjs` sigue siendo la fábrica de sala —muros, puertas, columnas y
     VENTANAS con cielo real detrás—, y ahora la ventana se **decide** en vez de escribirse: un muro
     sin vecino es casco, y el casco ve el espacio.
+    El **punto de vista** (primera o tercera persona, tecla `C`) es lógica pura en
+    `scripts/nave-camara.mjs` y no de la fábrica ni del bucle: la regla es la misma para las catorce
+    estancias. En tercera persona el propio cuerpo entra como un avatar más por
+    `poligonosOtrosJugadores`, así que el render de presencia no sabe que uno de ellos eres tú.
     Cada sala con sistema tiene una CONSOLA (#509) que abre el puesto del sistema que ALOJA —el
     reactor abre ingeniería—, con su zona de pie separada del punto de entrada para que acercarse sea
     un gesto; `nave-estancias.mjs` la declara con la misma forma que una puerta (`{rect, ...}`,

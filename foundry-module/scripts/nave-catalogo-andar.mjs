@@ -21,10 +21,7 @@
 
 import { crearCatalogoEstancias } from "./nave-estancias.mjs";
 import { crearSalaCaja } from "./nave-sala-caja.mjs";
-import { PLANTA_CANTINA } from "./cantina-planta.mjs";
-import { componerCantinaAndar } from "./cantina-andar.mjs";
-import { desdeNativo } from "./cantina-planta.mjs";
-import { PUERTA_CANTINA_HACIA_VESTIBULO } from "./cantina-escena.mjs";
+import { PLANTA_CANTINA_SALA, PUERTA_OESTE, componerCantinaSala } from "./cantina-sala.mjs";
 import {
   ANCHO_PUERTA,
   GROSOR_PUERTA,
@@ -93,23 +90,6 @@ function zonaConsola(sala) {
 
 function puestoDe(sala) {
   return sala.sistema ? PUESTO_POR_SISTEMA[sala.sistema] : PUESTO_POR_SALA_LIBRE[sala.id];
-}
-
-/**
- * Zona disparadora de la puerta oeste de la cantina, derivada de la hoja pintada
- * y ensanchada hacia DENTRO de la sala: la hoja vive en el grosor del muro, que
- * es justo donde el jugador no puede estar, así que un rect que solo cubriera la
- * hoja no se dispararía nunca.
- */
-function rectDisparadorCantina() {
-  const base = PUERTA_CANTINA_HACIA_VESTIBULO.base;
-  const dentro = desdeNativo(base.x, base.z);
-  return {
-    x: Math.max(dentro.x, 0),
-    z: dentro.z,
-    ancho: 1.2,
-    profundidad: base.profundidad,
-  };
 }
 
 /** La cantina cuelga del muro libre de esta sala. */
@@ -232,18 +212,17 @@ export const CATALOGO_ANDAR = crearCatalogoEstancias({
   // planta y su arte hechos a mano (#423) — y su tamaño, que es la referencia
   // con la que se eligió `CELDA`.
   cantina: {
-    planta: PLANTA_CANTINA,
-    componer: componerCantinaAndar,
-    entrada: { x: 1.5, z: 4, yaw: 0 },
+    planta: PLANTA_CANTINA_SALA,
+    componer: componerCantinaSala,
+    // Junto a la puerta y mirando al fondo de la sala, que es lo que hay que ver
+    // al entrar: la barra a la derecha y los ventanales.
+    entrada: { x: 2.4, z: 8.6, yaw: Math.PI },
     puertas: [
       {
-        // El disparador se CALCULA de la hoja que se pinta
-        // (`PUERTA_CANTINA_HACIA_VESTIBULO`) en vez de escribirse a mano. Antes
-        // eran dos números en dos archivos distintos y estaban desalineados casi
-        // un metro: se veía una puerta en un sitio y se cruzaba en otro — el
-        // «puerta extraña que no da a ninguna parte» del QA. Ahora no pueden
-        // separarse sin que alguien lo haga a propósito.
-        rect: rectDisparadorCantina(),
+        // El disparador lo declara la propia sala, junto al hueco que abre en su
+        // muro: antes eran dos números en dos archivos y estaban desalineados
+        // casi un metro — el «puerta extraña que no da a ninguna parte» del QA.
+        rect: PUERTA_OESTE,
         destino: { estancia: SALA_DE_LA_CANTINA, x: 11, z: 3, yaw: Math.PI },
       },
     ],

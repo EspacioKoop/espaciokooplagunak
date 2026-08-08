@@ -15,7 +15,7 @@ import {
   rectPuerta,
 } from "../scripts/nave-planta-phobos.mjs";
 import { CATALOGO_ANDAR } from "../scripts/nave-catalogo-andar.mjs";
-import { PLANTA_CANTINA } from "../scripts/cantina-planta.mjs";
+import { PLANTA_CANTINA_SALA } from "../scripts/cantina-sala.mjs";
 import { mover, puertaTocada } from "../scripts/nave-movimiento.mjs";
 
 /** El mismo radio que usa `nave-movimiento-lienzo.mjs` para el jugador. */
@@ -97,12 +97,12 @@ test("el contacto es simétrico y con lados opuestos", () => {
 test("toda sala es más grande que la cantina, incluida la más pequeña", () => {
   // El criterio de escala que fijó Varo: la cantina se siente pequeña, así que
   // ninguna sala de la rejilla debe quedar por debajo de ella.
-  const areaCantina = PLANTA_CANTINA.ancho * PLANTA_CANTINA.profundidad;
+  const areaCantina = PLANTA_CANTINA_SALA.ancho * PLANTA_CANTINA_SALA.profundidad;
   for (const sala of SALAS_PHOBOS) {
     const { ancho, profundidad } = medidasSala(sala);
     assert.ok(
       ancho * profundidad > areaCantina,
-      `${sala.id} mide ${ancho}×${profundidad} y no supera la cantina (${PLANTA_CANTINA.ancho}×${PLANTA_CANTINA.profundidad})`,
+      `${sala.id} mide ${ancho}×${profundidad} y no supera la cantina (${PLANTA_CANTINA_SALA.ancho}×${PLANTA_CANTINA_SALA.profundidad})`,
     );
     assert.ok(ancho >= CELDA && profundidad >= CELDA, `${sala.id} mide menos de una celda`);
   }

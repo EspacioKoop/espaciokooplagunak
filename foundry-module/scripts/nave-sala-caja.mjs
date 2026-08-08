@@ -30,6 +30,7 @@
 
 import { SECCION } from "./paleta.mjs";
 import { componerEscena } from "./retro3d.mjs";
+import { resolverCamara } from "./nave-camara.mjs";
 import { campoEstelar, proyectarEstrellas } from "./retro3d-estrellas.mjs";
 import { crearPlanta } from "./nave-movimiento.mjs";
 import { poligonosOtrosJugadores } from "./nave-avatares-render.mjs";
@@ -458,8 +459,14 @@ export function crearSalaCaja({
    * offset de salto/agachado (#446) sobre `ALTURA_OJOS`.
    */
   function componer(x, y, z, yaw, opciones = {}) {
-    const { ancho: anchoLienzo = 480, alto: altoLienzo = 270, epoca, fov = 62, otrosJugadores = [] } = opciones;
-    const camara = [x, ALTURA_OJOS + y, z];
+    const {
+      ancho: anchoLienzo = 480, alto: altoLienzo = 270, epoca, fov = 62, otrosJugadores = [],
+      // Punto de vista (QA 2026-08-08). La regla vive en `nave-camara.mjs`
+      // porque es la misma para las catorce estancias; aquí solo se consume.
+      modoCamara,
+      avatarPropio = {},
+    } = opciones;
+    const { camara, dibujarPropio } = resolverCamara({ x, z, y, yaw, modo: modoCamara });
     const yawCamara = -yaw; // ver el comentario de `yaw` en `cantina-escena.mjs`
 
     // Las hojas de cada puerta se recalculan en cada llamada: su apertura es
@@ -495,7 +502,15 @@ export function crearSalaCaja({
       }),
     );
 
-    const poligonosJugadores = poligonosOtrosJugadores(otrosJugadores, {
+    // En tercera persona el propio cuerpo entra como un avatar más: reusa
+    // `piezasAvatar` sin que el render de presencia sepa que uno de ellos eres
+    // tú. En primera no se pinta —estarías dentro de tu propia cabeza—, y esa es
+    // la única diferencia real entre los dos modos aparte de dónde va la cámara.
+    const cuerpos = dibujarPropio
+      ? [...otrosJugadores, { x, y, z, yaw, avatar: avatarPropio }]
+      : otrosJugadores;
+
+    const poligonosJugadores = poligonosOtrosJugadores(cuerpos, {
       camara,
       yaw: yawCamara,
       ancho: anchoLienzo,

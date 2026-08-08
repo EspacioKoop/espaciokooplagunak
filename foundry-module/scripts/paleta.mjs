@@ -192,6 +192,9 @@ export const AVATAR = Object.freeze({
   jarra: "#e0a33a", // el mismo ámbar de la cerveza de la barra
   cigarro: "#e8e4d8",
   brasa: "#ff6b35", // un píxel, y es lo único claro de una silueta que fuma
+  // Más clara que `brasa`, para la calada (#439): el punto sube de brillo
+  // cuando se tira del cigarro y baja entre caladas, sin salir de la paleta.
+  brasaCalada: "#ffd899",
 });
 
 /** Trastos que llenan el local (#423). Cosas que alguien dejó ahí: cajas de

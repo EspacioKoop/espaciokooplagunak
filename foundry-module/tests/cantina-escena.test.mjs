@@ -33,6 +33,17 @@ test("cada cara de la caja usa cuatro vértices distintos", () => {
   }
 });
 
+test("el cigarro de quien fuma alimenta el humo de la sala (#439)", () => {
+  const sinNadie = componerCantina({ ancho: 320, alto: 180 });
+  const conFumadora = componerCantina({
+    ancho: 320,
+    alto: 180,
+    gente: [{ id: "a", gesto: "fumar" }],
+  });
+  const vetas = (escena) => escena.aire.filter((a) => a.tipo === "humo").length;
+  assert.equal(vetas(conFumadora), vetas(sinNadie) + 1, "el cigarro no añade una veta de humo");
+});
+
 test("la sala se compone y todos sus muebles ponen polígonos", () => {
   const escena = componerCantina({ ancho: 320, alto: 180 });
   assert.ok(escena.poligonos.length > 0);

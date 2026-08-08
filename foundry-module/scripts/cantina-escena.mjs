@@ -29,7 +29,7 @@ import { CACHARROS, CANTINA } from "./paleta.mjs";
 import { componerEscena, focal, proyectar, transformar } from "./retro3d.mjs";
 import { campoEstelar, proyectarEstrellas } from "./retro3d-estrellas.mjs";
 import { cuerpoMayor, cuerposPorLaVentana } from "./cantina-ventana.mjs";
-import { piezasDeLaGente } from "./cantina-avatar.mjs";
+import { anclasHumoDeLaGente, piezasDeLaGente } from "./cantina-avatar.mjs";
 import { PLANO_INICIAL, planoPorId } from "./cantina-planos.mjs";
 
 /**
@@ -543,6 +543,10 @@ export function componerCantina(opciones = {}) {
     // El cielo se siembra: la misma semilla da siempre la misma ventana, y dos
     // personas de la misma mesa ven el mismo vacío.
     semillaCielo = 20260731,
+    // Cuándo es "ahora": mueve la calada de quien fuma (#439). Sin reloj —
+    // `tiempo: 0`— la brasa sale apagada y ya está, que es una escena válida y
+    // no un error.
+    tiempo = 0,
   } = opciones;
   const cielo = campoEstelar(semillaCielo, { cantidad: 90 });
 
@@ -557,7 +561,7 @@ export function componerCantina(opciones = {}) {
   // no se filman con la misma lente, y usar una sola los aplana a los dos.
   const fovPlano = Number.isFinite(encuadre.fov) ? encuadre.fov : FOV;
 
-  const habitantes = piezasDeLaGente(gente, { omitirId: yo });
+  const habitantes = piezasDeLaGente(gente, { omitirId: yo, tiempo });
   const partes = [...MUEBLES, ...habitantes].map((mueble) =>
     // `transformar` gira alrededor del origen y DESPUÉS traslada, así que la
     // posición de la cámara se resta aquí, en coordenadas de mundo:
@@ -661,7 +665,11 @@ export function componerCantina(opciones = {}) {
   // que quien pinte lo haga en ese orden y las vetas cercanas tapen a las
   // lejanas, como haría cualquier cosa con volumen.
   const aire = [];
-  for (const ancla of ANCLAS_AIRE) {
+  // El humo de la sala y el de cada cigarro encendido (#439) son la misma
+  // clase de cosa para el pintor —vetas ancladas al mundo— así que entran en
+  // la MISMA lista y se proyectan con el mismo bucle: nadie tiene que enseñar
+  // a `pintarHumo` a distinguir un cigarro de un cenicero de pared.
+  for (const ancla of [...ANCLAS_AIRE, ...anclasHumoDeLaGente(gente, { omitirId: yo })]) {
     const v = transformar(
       [ancla.punto[0] - camX, ancla.punto[1] - camY, ancla.punto[2] - camZ],
       { yaw, pitch: encuadre.pitch, posicion: [0, 0, 0] },

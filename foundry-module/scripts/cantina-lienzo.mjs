@@ -41,6 +41,9 @@ export function arrancarCantina(piezas, opciones = {}) {
 
   const sala = piezas?.sala ?? null;
   const gente = Array.isArray(piezas?.gente) ? piezas.gente : [];
+  // Quien mira la sala no se pinta a sí mismo: la cámara es su punto de vista,
+  // no un cuerpo más en la escena.
+  const yo = piezas?.yo ?? null;
   const objetos = Array.isArray(piezas?.objetos) ? piezas.objetos : [];
   // Se enfoca a lo sumo un objeto, y se guarda por su nombre y no por su
   // lienzo: dos puertas del mismo juego enfocarían las dos a la vez.
@@ -57,7 +60,7 @@ export function arrancarCantina(piezas, opciones = {}) {
     const ms = ahora() - inicio;
     const ctx = sala?.getContext?.("2d");
     if (ctx) {
-      const escena = componerCantina({ ancho: sala.width, alto: sala.height, epoca, plano, gente });
+      const escena = componerCantina({ ancho: sala.width, alto: sala.height, epoca, plano, gente, yo, tiempo: ms });
       ultimasOpciones = escena.opciones;
       pintarEscena(ctx, escena, { fondo: CANTINA.ventana });
       // Y encima, el pixel-art plano: halo de las lámparas, filo del ventanal,

@@ -8,7 +8,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { crearClaseCantinaV1, crearClaseCantinaV2 } from "../scripts/cantina-app.mjs";
+import { crearClaseCantinaV1, crearClaseCantinaV2, gentePresente } from "../scripts/cantina-app.mjs";
+import { piezasDeLaGente, anclasHumoDeLaGente } from "../scripts/cantina-avatar.mjs";
 
 /** Botón de mentira: registra los focos y los clics que recibe. */
 function botonFalso(id) {
@@ -229,4 +230,166 @@ test("sin DOM, renderizar no revienta: no hay nada que enfocar", () => {
   const app = new Clase();
 
   assert.doesNotThrow(() => app._onRender({}, {}));
+});
+
+// Regresión (#456 sobre #439): el pipeline de humo del cigarro (`cantina-avatar.mjs`)
+// estaba completo y probado en Node, pero `encenderSala()` nunca pasaba población
+// real a `arrancarCantina()` — en producción `gente` siempre llegaba vacía a
+// `componerCantina`, así que ningún avatar (fumando o no) aparecía nunca en la
+// cantina real. `gentePresente()` es el cableado que faltaba: usuarios jugadores
+// activos + su avatar ya elegido (`avatar-assignment.mjs`, #450).
+
+function usuarioFalso({ id, name, isGM = false, active = true, avatar = {} }) {
+  return {
+    id,
+    name,
+    isGM,
+    active,
+    getFlag: (_moduleId, clave) => (clave === "avatar" ? avatar : undefined),
+  };
+}
+
+test("gentePresente(): sin usuarios conectados, no inventa gente", () => {
+  globalThis.game = { users: [] };
+  assert.deepEqual(gentePresente("espaciokoop-lagunak"), []);
+});
+
+test("gentePresente(): excluye al GM y a quien está desconectado, incluye al jugador activo con su avatar", () => {
+  globalThis.game = {
+    users: [
+      usuarioFalso({ id: "gm", name: "Directora", isGM: true }),
+      usuarioFalso({ id: "ausente", name: "Ausente", active: false }),
+      usuarioFalso({
+        id: "jugador-1",
+        name: "Jugador",
+        avatar: { raza: "elfo", clase: "explorador", gesto: "fumar" },
+      }),
+    ],
+  };
+
+  const gente = gentePresente("espaciokoop-lagunak");
+
+  assert.deepEqual(gente.map((persona) => persona.id), ["jugador-1"]);
+  assert.equal(gente[0].raza, "elfo");
+  assert.equal(gente[0].clase, "explorador");
+  assert.equal(gente[0].gesto, "fumar");
+});
+
+test("regresión: un usuario con gesto fumar produce avatar y ancla de humo en la escena real", () => {
+  // Este es el call path completo aplicación → escena que #456 encontró roto:
+  // gentePresente() (Foundry) → piezasDeLaGente()/anclasHumoDeLaGente() (puro,
+  // cantina-avatar.mjs) — antes de este arreglo, `gente` llegaba aquí vacía
+  // siempre, porque nadie construía esta lista fuera de las pruebas.
+  globalThis.game = {
+    users: [usuarioFalso({ id: "fumador", name: "Fumador", avatar: { gesto: "fumar" } })],
+  };
+
+  const gente = gentePresente("espaciokoop-lagunak");
+  assert.equal(gente.length, 1, "el usuario activo entra en la lista de gente");
+
+  const piezas = piezasDeLaGente(gente, { tiempo: 0 });
+  assert.ok(piezas.length > 0, "produce un avatar pintable");
+
+  const anclas = anclasHumoDeLaGente(gente);
+  assert.ok(anclas.length > 0, "el gesto fumar produce al menos un ancla de humo");
+});
+
+// Las tres pruebas de arriba demuestran que `gentePresente()` alimenta el
+// pipeline puro, pero NINGUNA obliga a `encenderSala()` a seguir pasándoselo a
+// `arrancarCantina()` — que es justo el argumento que faltaba y el que dejó la
+// feature inalcanzable desde la aplicación. Borrar hoy `gente:` de esa llamada
+// las dejaría a las tres en verde. Estas dos recorren la ventana real (v11 y
+// v12+ por separado, como el resto del archivo) hasta el lienzo, y comparan la
+// sala con un fumador dentro contra la misma sala vacía: si la población deja de
+// llegar a la escena, los dos fotogramas se vuelven idénticos y esto falla.
+
+/** Contexto 2D de mentira: cuenta los trazos en vez de pintarlos. */
+function contextoFalso() {
+  const ctx = {
+    trazos: 0,
+    fillStyle: "",
+    strokeStyle: "",
+    lineWidth: 0,
+    beginPath() {},
+    closePath() {},
+    moveTo() {},
+    lineTo() {},
+    clearRect() {},
+    stroke() {},
+    fill() {
+      this.trazos += 1;
+    },
+    fillRect() {
+      this.trazos += 1;
+    },
+  };
+  return ctx;
+}
+
+/** Raíz con un lienzo de sala de verdad, para que `encenderSala()` no se rinda. */
+function raizConSala(ctx) {
+  const sala = {
+    width: 320,
+    height: 200,
+    dataset: {},
+    getContext: (tipo) => (tipo === "2d" ? ctx : null),
+    getBoundingClientRect: () => ({ left: 0, top: 0, width: 320, height: 200 }),
+    addEventListener() {},
+    removeEventListener() {},
+  };
+  const boton = botonFalso("poker");
+  return {
+    querySelector: (sel) => (sel === ".lagunak-cantina-sala" ? sala : boton),
+    querySelectorAll: (sel) => (sel === "[data-objeto]" ? [] : [boton]),
+  };
+}
+
+/** Trazos de un fotograma de la cantina, con la mesa que se le pase. */
+function trazosDeLaSala(usuarios, encender) {
+  globalThis.game.users = usuarios;
+  globalThis.game.user = { id: "mirando" };
+  const ctx = contextoFalso();
+  encender(raizConSala(ctx));
+  return ctx.trazos;
+}
+
+const FUMADOR = [usuarioFalso({ id: "fumador", name: "Fumador", avatar: { gesto: "fumar" } })];
+
+test("v12+: un fumador conectado llega hasta el lienzo por el call path real de la ventana", () => {
+  prepararEntorno({ moderno: true });
+  const Clase = crearClaseCantinaV2({ alSeleccionar: () => {} });
+
+  const encender = (raiz) => {
+    const app = new Clase();
+    app.element = raiz;
+    app._onRender({}, {});
+  };
+
+  const vacia = trazosDeLaSala([], encender);
+  const conFumador = trazosDeLaSala(FUMADOR, encender);
+
+  assert.ok(vacia > 0, "la sala vacía se pinta igual: sin gente sigue habiendo cantina");
+  assert.ok(
+    conFumador > vacia,
+    `un fumador debe añadir trazos (avatar + humo): vacía=${vacia}, con fumador=${conFumador}`,
+  );
+});
+
+test("v11: un fumador conectado llega hasta el lienzo por el call path real de la ventana", () => {
+  prepararEntorno({ moderno: false });
+  const Clase = crearClaseCantinaV1({ alSeleccionar: () => {} });
+
+  const encender = (raiz) => {
+    const app = new Clase();
+    app.activateListeners({ 0: raiz, find: () => ({ on: () => {} }) });
+  };
+
+  const vacia = trazosDeLaSala([], encender);
+  const conFumador = trazosDeLaSala(FUMADOR, encender);
+
+  assert.ok(vacia > 0, "la sala vacía se pinta igual: sin gente sigue habiendo cantina");
+  assert.ok(
+    conFumador > vacia,
+    `un fumador debe añadir trazos (avatar + humo): vacía=${vacia}, con fumador=${conFumador}`,
+  );
 });

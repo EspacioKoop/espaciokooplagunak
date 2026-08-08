@@ -11,6 +11,7 @@
 import { MODULE_ID } from "./lagunak-constantes.mjs";
 import { puertasCantina } from "./cantina.mjs";
 import { arrancarCantina } from "./cantina-lienzo.mjs";
+import { avatarDeUsuario } from "./avatar-assignment.mjs";
 
 const PLANTILLA = `modules/${MODULE_ID}/templates/cantina.hbs`;
 
@@ -23,6 +24,24 @@ function contexto() {
       titulo: game.i18n.localize(puerta.tituloClave),
     })),
   };
+}
+
+/**
+ * Quién está presente en la cantina, con el avatar que cada cual eligió
+ * (`avatar-assignment.mjs`, #450) — el mismo molde que `stationRows` usa
+ * para la tripulación (`station-assignment.mjs`), pero para el aspecto en
+ * vez del puesto. Sin usuarios jugadores conectados (arnés de pruebas, mesa
+ * vacía) devuelve una lista vacía: la sala se pinta igual, solo que sin
+ * nadie dentro — nunca se inventa gente para no dejarla "vacía de verdad".
+ *
+ * El GM se excluye a propósito, igual que `visibleCrew`: dirige la partida,
+ * no está sentado en la cantina.
+ */
+export function gentePresente(moduleId) {
+  const usuarios = Array.from(game?.users ?? []).filter(
+    (user) => !user.isGM && user.active,
+  );
+  return usuarios.map((user) => ({ id: user.id, ...avatarDeUsuario(user, moduleId) }));
 }
 
 /**
@@ -54,7 +73,7 @@ function encenderSala(raiz, alSeleccionar) {
   // una sala que no gira sigue siendo una sala; una cantina que no abre, no.
   const puedeAnimar = typeof globalThis.requestAnimationFrame === "function";
   const mando = arrancarCantina(
-    { sala, objetos },
+    { sala, objetos, gente: gentePresente(MODULE_ID), yo: game.user?.id ?? null },
     {
       reducirMovimiento,
       ahora: () => globalThis.performance?.now?.() ?? Date.now(),

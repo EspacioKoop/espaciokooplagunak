@@ -21,6 +21,7 @@
 
 import { AVATAR, FACCIONES, PIXEL, RETRATO } from "./paleta.mjs";
 import { caja } from "./cantina-escena.mjs";
+import { mezclar } from "./retro3d.mjs";
 
 /**
  * Clases del SRD 5.1 (CC-BY-4.0). Se nombran por su clave y la traducción vive
@@ -113,7 +114,7 @@ function indiceValido(valor, cuantos) {
  * medidas}`— para que la escena no distinga a una persona de un taburete y no
  * haga falta ni un pintor nuevo ni una rama en `componerCantina`.
  */
-export function piezasAvatar(descripcion, { pies = [0, 0, 0], indice = 0 } = {}) {
+export function piezasAvatar(descripcion, { pies = [0, 0, 0], indice = 0, tiempo = 0 } = {}) {
   const av = normalizarAvatar(descripcion);
   const cuerpo = CUERPO_POR_RAZA[av.raza];
   const escala = ALTO_BASE * cuerpo.alto;
@@ -148,10 +149,38 @@ export function piezasAvatar(descripcion, { pies = [0, 0, 0], indice = 0 } = {})
     // Manos como guantes, a los lados y grandes: es la firma de aquel estilo y
     // además es lo único que deja ver a distancia qué está haciendo alguien.
     // Por eso el gesto vive en las manos y no en la cara.
-    ...manosDelGesto(av.gesto, { px, pz, yTorso, altoTorso, yCabeza, ancho, piel, prefijo }),
+    ...manosDelGesto(av.gesto, { px, pz, yTorso, altoTorso, yCabeza, ancho, piel, prefijo, indice, tiempo }),
     // Y lo que lleva encima, que es lo que dice la clase de un vistazo.
     ...distintivoDeClase(av.clase, { px, py: yTorso, pz, ancho, altoTorso, prefijo }),
   ].map((pieza) => Object.freeze(pieza));
+}
+
+/** Dónde queda la punta del cigarro en el mundo, junto a la boca. Un único
+ * sitio para esta cuenta: lo usa tanto la brasa (#439) como el humo que sube
+ * desde ella, y escribirla dos veces es la forma segura de que un día
+ * diverjan. */
+function puntaDelCigarro({ px, pz, yCabeza, ancho }) {
+  return [px + 0.26 * ancho, yCabeza - 0.06, pz + 0.4];
+}
+
+/**
+ * Brillo de la brasa en `[0, 1]` para el instante `tiempoMs` (#439): una
+ * calada es una subida y bajada breve —inhalar, ver el punto avivarse,
+ * soltarlo— con una pausa larga detrás, no una respiración senoidal continua
+ * que temblaría todo el rato y no leería como "dar una calada".
+ *
+ * `offset` desincroniza a cada fumador de los demás: es el `indice` de su
+ * sitio, no un reloj propio, así que dos capturas del mismo instante siguen
+ * dando el mismo resultado para la misma persona.
+ */
+export function intensidadCalada(tiempoMs = 0, offset = 0) {
+  const ciclo = 4200; // una calada completa, de una pausa a la siguiente
+  const pico = 520; // cuánto dura el propio tirón, al principio del ciclo
+  const ms = Number.isFinite(tiempoMs) ? tiempoMs : 0;
+  const desfase = (Number.isFinite(offset) ? offset : 0) * 733; // primo: sin resonancias entre sitios
+  const fase = (((ms + desfase) % ciclo) + ciclo) % ciclo;
+  if (fase > pico) return 0;
+  return Math.sin((fase / pico) * Math.PI);
 }
 
 /**
@@ -160,7 +189,7 @@ export function piezasAvatar(descripcion, { pies = [0, 0, 0], indice = 0 } = {})
  * eso basta: no hace falta modelar el humo del cigarro porque la sala ya tiene
  * humo, y quien fuma lo alimenta (ver `ANCLAS_AIRE` en `cantina-escena.mjs`).
  */
-function manosDelGesto(gesto, { px, pz, yTorso, altoTorso, yCabeza, ancho, piel, prefijo }) {
+function manosDelGesto(gesto, { px, pz, yTorso, altoTorso, yCabeza, ancho, piel, prefijo, indice = 0, tiempo = 0 }) {
   const mano = (lado, [dx, dy, dz], nombre = "Mano") => ({
     nombre: `${prefijo}${nombre}${lado}`,
     color: piel,
@@ -190,7 +219,12 @@ function manosDelGesto(gesto, { px, pz, yTorso, altoTorso, yCabeza, ancho, piel,
     // Fumar: la mano junto a la cara y el cigarro asomando. La brasa es un píxel
     // y es lo único claro de la silueta, que es exactamente cómo se ve a alguien
     // fumando en la penumbra.
-    case "fumar":
+    case "fumar": {
+      // La brasa sube de brillo en la calada y se apaga entre una y la
+      // siguiente (#439): cada avatar tira en un momento distinto —de ahí el
+      // desfase por `indice`— porque una sala entera dando la calada a la vez
+      // se lee como un parpadeo de escenario, no como gente fumando.
+      const calada = intensidadCalada(tiempo, indice);
       return [
         mano("Izq", [-0.3, reposo, 0.06]),
         mano("Der", [0.26, yCabeza - 0.12, 0.22]),
@@ -202,11 +236,12 @@ function manosDelGesto(gesto, { px, pz, yTorso, altoTorso, yCabeza, ancho, piel,
         },
         {
           nombre: `${prefijo}Brasa`,
-          color: AVATAR.brasa,
-          centro: [px + 0.26 * ancho, yCabeza - 0.06, pz + 0.4],
+          color: mezclar(AVATAR.brasa, AVATAR.brasaCalada, calada),
+          centro: puntaDelCigarro({ px, pz, yCabeza, ancho }),
           medidas: [0.06, 0.06, 0.06],
         },
       ];
+    }
     // Hombros: las dos manos abiertas hacia fuera y arriba. «Yo qué sé».
     case "hombros":
       return [mano("Izq", [-0.46, yTorso, 0.16]), mano("Der", [0.46, yTorso, 0.16])];
@@ -276,22 +311,65 @@ export const SITIOS = Object.freeze([
 ]);
 
 /**
- * Las piezas de toda la gente que hay en la sala.
- *
- * @param {Array<object>} gente descripciones de avatar, en orden estable.
- * @param {{omitirId?: string}} opciones `omitirId` es quien mira: no se pinta a
- *   sí mismo, porque la cámara está en sus ojos y solo vería su propia nuca.
+ * Empareja gente con sitio, en el mismo orden estable que usa el pintor. Vive
+ * aparte porque tanto `piezasDeLaGente` como `anclasHumoDeLaGente` (#439)
+ * necesitan saber quién se sienta dónde, y repetir el bucle en los dos sitios
+ * es la forma segura de que un día se desincronicen.
  */
-export function piezasDeLaGente(gente = [], { omitirId = null } = {}) {
+function gentePorSitio(gente, { omitirId = null } = {}) {
   if (!Array.isArray(gente)) return [];
-  const piezas = [];
+  const asientos = [];
   let sitio = 0;
   for (const persona of gente) {
     if (!persona) continue;
     if (omitirId && persona.id === omitirId) continue;
     if (sitio >= SITIOS.length) break;
-    piezas.push(...piezasAvatar(persona, { pies: SITIOS[sitio].pies, indice: sitio }));
+    asientos.push({ persona, pies: SITIOS[sitio].pies, indice: sitio });
     sitio += 1;
   }
+  return asientos;
+}
+
+/**
+ * Las piezas de toda la gente que hay en la sala.
+ *
+ * @param {Array<object>} gente descripciones de avatar, en orden estable.
+ * @param {{omitirId?: string, tiempo?: number}} opciones `omitirId` es quien
+ *   mira: no se pinta a sí mismo, porque la cámara está en sus ojos y solo
+ *   vería su propia nuca. `tiempo` mueve la calada de quien fuma (#439).
+ */
+export function piezasDeLaGente(gente = [], { omitirId = null, tiempo = 0 } = {}) {
+  const piezas = [];
+  for (const { persona, pies, indice } of gentePorSitio(gente, { omitirId })) {
+    piezas.push(...piezasAvatar(persona, { pies, indice, tiempo }));
+  }
   return piezas;
+}
+
+/**
+ * Dónde flota el humo de cada cigarro encendido, en el mismo formato que
+ * `ANCLAS_AIRE` de `cantina-escena.mjs` — así el pintor no distingue el humo
+ * de una persona del humo de la sala y no hace falta ni una rama nueva en
+ * `pintarHumo` (#439). Solo fuma quien tiene el gesto `fumar`: el resto de la
+ * gente no alimenta el aire.
+ */
+export function anclasHumoDeLaGente(gente = [], { omitirId = null } = {}) {
+  const anclas = [];
+  for (const { persona, pies, indice } of gentePorSitio(gente, { omitirId })) {
+    const av = normalizarAvatar(persona);
+    if (av.gesto !== "fumar") continue;
+    const cuerpo = CUERPO_POR_RAZA[av.raza];
+    const escala = ALTO_BASE * cuerpo.alto;
+    const ancho = cuerpo.ancho * SILUETA_ANCHO[av.silueta];
+    const altoCabeza = escala * 0.26;
+    const altoTorso = escala * 0.36;
+    const altoPiernas = escala - altoCabeza - altoTorso;
+    const [px, py, pz] = pies;
+    const yCabeza = py + altoPiernas + altoTorso + altoCabeza / 2;
+    const [hx, hy, hz] = puntaDelCigarro({ px, pz, yCabeza, ancho });
+    anclas.push(
+      Object.freeze({ punto: [hx, hy, hz], tipo: "humo", largo: 1.4, indice }),
+    );
+  }
+  return anclas;
 }

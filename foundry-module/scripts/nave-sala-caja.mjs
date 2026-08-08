@@ -79,6 +79,10 @@ export const ALTURA_OJOS = 1.45;
 export const ALTURA = 3.8;
 const GROSOR_MURO = 0.4;
 
+/** Tonos del detalle de la hoja. Del casco, no colores nuevos (#351). */
+const DETALLE_HOJA = SECCION.mamparo;
+const FRANJA_HOJA = "#ffb703";
+
 /** Altura del hueco de una puerta: por debajo se puede cruzar, por encima
  *  sigue habiendo muro (el dintel). 2.8 y no 2.2 (QA: "parece gigante"): al
  *  subir `ALTURA` de 3 a 3.8 la puerta se quedó con la medida vieja y dejó
@@ -230,21 +234,68 @@ export function fraccionAbierta(distancia) {
  * retira hacia SU lado —nunca hacia el centro— al abrirse, hasta desaparecer
  * por completo dentro del muro que la enmarca.
  */
-export function piezasHojaPuerta({ base, y0, y1, alongX }, fraccion) {
+/**
+ * Los RECTS de las dos hojas, ya deslizadas.
+ *
+ * Se separa de `piezasHojaPuerta` para que el detalle pixelart de la hoja salga de
+ * los MISMOS rects que la hoja: con dos cálculos, la franja de aviso se quedaría
+ * quieta mientras la puerta se abre.
+ */
+export function rectsHojaPuerta({ base, alongX }, fraccion) {
   if (alongX) {
     const mitad = base.ancho / 2;
     const deslizamiento = mitad * fraccion;
     return [
-      rectAColumnaEntre({ ...base, x: base.x - deslizamiento, ancho: mitad }, y0, y1),
-      rectAColumnaEntre({ ...base, x: base.x + mitad + deslizamiento, ancho: mitad }, y0, y1),
+      { ...base, x: base.x - deslizamiento, ancho: mitad },
+      { ...base, x: base.x + mitad + deslizamiento, ancho: mitad },
     ];
   }
   const mitad = base.profundidad / 2;
   const deslizamiento = mitad * fraccion;
   return [
-    rectAColumnaEntre({ ...base, z: base.z - deslizamiento, profundidad: mitad }, y0, y1),
-    rectAColumnaEntre({ ...base, z: base.z + mitad + deslizamiento, profundidad: mitad }, y0, y1),
+    { ...base, z: base.z - deslizamiento, profundidad: mitad },
+    { ...base, z: base.z + mitad + deslizamiento, profundidad: mitad },
   ];
+}
+
+export function piezasHojaPuerta(puerta, fraccion) {
+  const { y0, y1 } = puerta;
+  return rectsHojaPuerta(puerta, fraccion).map((rect) => rectAColumnaEntre(rect, y0, y1));
+}
+
+/**
+ * Detalle pixelart SOBRE la hoja de una puerta (QA 2026-08-08: «no hay pixelart
+ * en la puerta»).
+ *
+ * El marco ya dice DÓNDE está la puerta; esto dice QUÉ es. En un lenguaje de
+ * bloques el detalle son piezas finas resaltadas sobre el plano de la hoja, no un
+ * mapa de bits: tres bandas horizontales de refuerzo y una franja de aviso a la
+ * altura de la mano, que es como se marca una esclusa de verdad.
+ *
+ * Sobresalen un pelo del plano de la hoja (`RESALTE`) porque dos superficies
+ * coplanares se pelean por el orden del pintor y parpadean.
+ */
+const RESALTE = 0.03;
+const ALTURAS_BANDA = Object.freeze([0.55, 0.75]);
+const ALTURA_FRANJA = 0.42;
+
+function piezasDetalleHoja({ base, y0, y1, alongX }, hoja) {
+  const alto = y1 - y0;
+  const piezas = [];
+  const grueso = 0.09;
+
+  const bandaEn = (fraccion, grosorBanda, color) => {
+    const cy = y0 + alto * fraccion;
+    const rect = alongX
+      ? { ...hoja, z: hoja.z - RESALTE, profundidad: hoja.profundidad + RESALTE * 2 }
+      : { ...hoja, x: hoja.x - RESALTE, ancho: hoja.ancho + RESALTE * 2 };
+    piezas.push({ malla: rectAColumnaEntre(rect, cy - grosorBanda / 2, cy + grosorBanda / 2), color });
+  };
+
+  for (const fraccion of ALTURAS_BANDA) bandaEn(fraccion, grueso, DETALLE_HOJA);
+  // La franja de aviso va más ancha y en ámbar: es la que se lee de lejos.
+  bandaEn(ALTURA_FRANJA, grueso * 2, FRANJA_HOJA);
+  return piezas;
 }
 
 /**
@@ -516,12 +567,15 @@ export function crearSalaCaja({
     // cabecera de "Puertas correderas"), así que no pueden vivir en `piezas`
     // —congeladas una vez, en la construcción de la sala— sino que se
     // generan aquí, con `x`/`z` ya conocidos.
-    const hojasPuertas = puertasConBase.flatMap((puerta) =>
-      piezasHojaPuerta(puerta, fraccionAbierta(distanciaARect(x, z, puerta.base))).map((malla) => ({
-        malla,
-        color: colorMuro,
-      })),
-    );
+    const hojasPuertas = puertasConBase.flatMap((puerta) => {
+      const fraccion = fraccionAbierta(distanciaARect(x, z, puerta.base));
+      const rects = rectsHojaPuerta(puerta, fraccion);
+      return [
+        ...rects.map((rect) => ({ malla: rectAColumnaEntre(rect, puerta.y0, puerta.y1), color: colorMuro })),
+        // El detalle sale de los MISMOS rects, así que viaja con la hoja al abrirse.
+        ...rects.flatMap((rect) => piezasDetalleHoja(puerta, rect)),
+      ];
+    });
 
     const vistaVentanas = ventanas.flatMap(({ rect }) =>
       piezasDeVentana({ rect, sala: { ancho, profundidad }, sensores, rumboNave }),

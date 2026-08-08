@@ -1344,7 +1344,16 @@
    Sobre el visor y con el acento del mueble, para que se lea como el letrero de
    un mamparo y no como texto de ayuda. */
 .lagunak-andar-nave-sala {
+  /* Ámbar sobre el fondo CLARO de la ventana de Foundry era ilegible (QA
+     2026-08-08: «no es legible al ser casi el mismo color»). Se le da su propio
+     fondo oscuro en vez de buscar un ámbar más subido: así el contraste no
+     depende del tema del anfitrión, y de paso se lee como el letrero de un
+     mamparo, que era la intención. */
+  display: inline-block;
   margin: 0 0 6px;
+  padding: 3px 10px;
+  border-left: 3px solid #ffd166;
+  background: #14171a;
   color: #ffd166;
   font-family: "Roboto Condensed", "Arial Narrow", sans-serif;
   font-size: 13px;

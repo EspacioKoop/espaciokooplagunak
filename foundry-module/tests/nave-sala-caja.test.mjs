@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { colisiona } from "../scripts/nave-movimiento.mjs";
-import { ALTURA_OJOS, crearSalaCaja, detalleConsola, fraccionAbierta } from "../scripts/nave-sala-caja.mjs";
+import { ALTURA_OJOS, crearSalaCaja, detalleConsola, fraccionAbierta, rectsHojaPuerta } from "../scripts/nave-sala-caja.mjs";
 
 test("una sala sin ventanas no proyecta estrellas", () => {
   const sala = crearSalaCaja({ ancho: 6, profundidad: 6 });
@@ -144,4 +144,29 @@ test("una puerta trae MARCO: jambas y dintel, para que se lea como puerta", () =
     return r > b * 1.5;
   });
   assert.ok(calidos.length > 0, "el marco ámbar debería aportar tonos cálidos a la escena");
+});
+
+test("el detalle de la hoja se DESPLAZA con ella al abrirse", () => {
+  // QA 2026-08-08: «no hay pixelart en la puerta». El marco dice dónde está la
+  // puerta; el detalle de la hoja dice qué es. Y tiene que salir de los MISMOS
+  // rects que la hoja: con dos cálculos, la franja de aviso se quedaría quieta
+  // mientras la puerta se abre, que es peor que no tenerla.
+  const puerta = { base: { x: 0, z: 4, ancho: 1.2, profundidad: 2.4 }, y0: 0, y1: 2.8, alongX: false };
+  const cerrada = rectsHojaPuerta(puerta, 0);
+  const abierta = rectsHojaPuerta(puerta, 1);
+  assert.notDeepEqual(cerrada, abierta, "las hojas tienen que moverse");
+
+  // El detalle no se exporta: se comprueba por lo observable, que la hoja de la
+  // que sale cambia de sitio. Exportar una función interna solo para medirla
+  // ataría la prueba a la implementación en vez de al comportamiento.
+  assert.notEqual(cerrada[0].z, abierta[0].z, "la hoja izquierda debería haberse retirado");
+});
+
+test("una puerta cerrada tapa el hueco entero, y abierta lo despeja", () => {
+  const puerta = { base: { x: 0, z: 4, ancho: 1.2, profundidad: 2.4 }, y0: 0, y1: 2.8, alongX: false };
+  const [izq, der] = rectsHojaPuerta(puerta, 0);
+  // Cerradas, las dos mitades cubren el hueco sin dejar rendija.
+  assert.equal(izq.profundidad + der.profundidad, puerta.base.profundidad);
+  assert.equal(izq.z, puerta.base.z);
+  assert.equal(der.z + der.profundidad, puerta.base.z + puerta.base.profundidad);
 });

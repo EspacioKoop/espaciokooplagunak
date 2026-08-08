@@ -19,103 +19,81 @@
  * Puro: ni Foundry, ni DOM, ni red, ni color.
  */
 
-import { SISTEMAS_POR_REGION_CASCO_SERIE, saludPorRegion } from "./casco-dano.mjs";
+import { ID_CANTINA, celdasConCantina, rejillaDelPlano } from "./nave-planta-phobos.mjs";
 
 /**
  * Rejilla de la sección, en celdas. Las salas se colocan sobre ella y el lienzo
  * escala después: la planta se piensa en celdas para que mover una sala sea
  * cambiar un número entero y no recalcular píxeles.
  */
-export const REJILLA = Object.freeze({ columnas: 12, filas: 6 });
+/**
+ * Rejilla y salas: la planta REAL del Phobos M3P (#542).
+ *
+ * Hasta aquí la sección declaraba seis salas a mano —puente, enfermería, bodega,
+ * camarotes…— con el argumento de que «la plantilla no dice nada de salas: dice
+ * cascos y sistemas». Ese argumento resultó FALSO: el `shipTemplate` declara
+ * trece salas con sus sistemas (`addRoom`/`addRoomSystem`), y #540 ya las usó
+ * para la nave que se recorre. Mantener las seis inventadas dejaba dos naves
+ * distintas en el mismo módulo, con una enfermería y una bodega que no existen y
+ * nueve salas reales sin dibujar.
+ *
+ * La planta la declara `nave-planta-phobos.mjs` y aquí solo se le añade lo que
+ * es propio de la sección: qué se abre al pulsar cada sala.
+ */
+export const REJILLA = Object.freeze(rejillaDelPlano());
 
 /**
- * La planta de la nave de serie, a mano y esquemática.
+ * Qué puesto abre la consola de cada sala, por su SISTEMA.
  *
- * A MANO A PROPÓSITO. Derivarla de la plantilla del simulador es más bonito y
- * mucho más caro, y además la plantilla no dice nada de salas: dice cascos y
- * sistemas. Una sección tolera ser esquemática —es su virtud— así que el primer
- * mapa se dibuja y ya se verá si #55 permite generarlo.
- *
- * Cada sala declara:
- * - `caja`: dónde está, en celdas de `REJILLA`.
- * - `region`: qué región del casco de #419 la gobierna, o `null` si es interior
- *   y no recibe daño directo. La salud NO se inventa aquí.
- * - `destino`: qué se abre al pulsarla. `null` es una sala que se mira y no se
- *   entra — que son la mayoría, y está bien: la sección es primero un mapa.
- * - `estancia`: para `destino: "andar"`, en qué estancia del catálogo de andar
- *   (`nave-catalogo-andar.mjs`) se aparece. Es un id OPACO aquí: este módulo no
- *   importa ese catálogo ni lo valida — solo lo transporta hasta quien sí sabe
- *   abrir la ventana de andar. La sección declara adónde lleva cada sala; el
- *   motor de andar no necesita saber que existe una sección.
+ * Es el mismo reparto que usa la ventana de andar (`nave-catalogo-andar.mjs`) y
+ * por el mismo motivo: la consola del reactor abre ingeniería porque ahí está el
+ * reactor. Se repite aquí en vez de importarse para no crear una dependencia
+ * entre la sección y el catálogo de andar — la sección declara adónde lleva cada
+ * sala, y el motor de andar no necesita saber que existe una sección.
  */
-export const SALAS = Object.freeze([
-  Object.freeze({
-    id: "puente",
-    tituloClave: "LAGUNAK.Seccion.Sala.Puente",
-    caja: Object.freeze({ x: 8, y: 1, ancho: 4, alto: 2 }),
-    region: "lomo",
-    // Entrar al puente es APARECER EN ÉL, no abrir su consola (#508): el
-    // puente ya tiene interior recorrible —un pasillo y las cinco salas de
-    // puesto que cuelgan de él— y llegar andando a tu puesto era justo lo que
-    // pedía la issue. La consola sigue a un paso: acercarse a ella dentro de
-    // su sala la abre (#509), igual que el botón de siempre. Y sigue sin dar
-    // mandos: estar de pie en una sala no es autoridad (#237).
-    destino: "andar",
-    // #540: la planta de andar salió de la inventada (pasillo + cinco salas
-    // iguales) a la REAL del Phobos M3P. Se entra por la pasarela de proa, que
-    // es la sala que cose maniobra y armas — el equivalente más cercano a «el
-    // puente» en un interior donde las salas son sistemas y no puestos.
-    estancia: "pasarela-proa",
-    puesto: "captain",
-  }),
-  Object.freeze({
-    id: "cantina",
-    tituloClave: "LAGUNAK.Seccion.Sala.Cantina",
-    caja: Object.freeze({ x: 4, y: 1, ancho: 4, alto: 2 }),
-    region: null,
-    // La cantina abre SU ventana propia (los cinco planos fijos de #423) y no
-    // la de andar, aunque también sea una estancia recorrible: es la vista
-    // hecha a medida de esta sala —la barra, las mesas, sentarse a jugar— y
-    // sustituirla por el motor genérico de andar sería perder algo, no ganarlo.
-    // Desde dentro se sigue pudiendo salir a la nave por su puerta oeste.
-    destino: "cantina",
-  }),
-  Object.freeze({
-    id: "enfermeria",
-    tituloClave: "LAGUNAK.Seccion.Sala.Enfermeria",
-    caja: Object.freeze({ x: 1, y: 1, ancho: 3, alto: 2 }),
-    region: "costados",
-    destino: null,
-  }),
-  Object.freeze({
-    id: "ingenieria",
-    tituloClave: "LAGUNAK.Seccion.Sala.Ingenieria",
-    caja: Object.freeze({ x: 8, y: 3, ancho: 4, alto: 2 }),
-    region: "popa",
-    // Misma decisión que el puente: se entra andando, y la consola está dentro.
-    destino: "andar",
-    // #540: la sala de ingeniería de la nave real es la del REACTOR, y su
-    // consola abre ingeniería porque ahí está el reactor.
-    estancia: "reactor",
-    puesto: "engineering",
-  }),
-  Object.freeze({
-    id: "bodega",
-    tituloClave: "LAGUNAK.Seccion.Sala.Bodega",
-    caja: Object.freeze({ x: 4, y: 3, ancho: 4, alto: 2 }),
-    region: "quilla",
-    destino: null,
-  }),
-  Object.freeze({
-    id: "camarotes",
-    tituloClave: "LAGUNAK.Seccion.Sala.Camarotes",
-    caja: Object.freeze({ x: 1, y: 3, ancho: 3, alto: 2 }),
-    region: null,
-    destino: null,
-  }),
-]);
+const PUESTO_POR_SISTEMA = Object.freeze({
+  Reactor: "engineering",
+  BeamWeapons: "weapons",
+  MissileSystem: "weapons",
+  FrontShield: "weapons",
+  RearShield: "weapons",
+  Maneuver: "navigation",
+  Impulse: "navigation",
+  Warp: "navigation",
+  JumpDrive: "navigation",
+});
 
-/** Catálogo completo, en orden estable de lectura (proa arriba). */
+/** Puestos sin sistema propio, alojados en las pasarelas. Igual que en #540. */
+const PUESTO_POR_SALA = Object.freeze({
+  "pasarela-proa": "sensors",
+  "pasarela-popa": "communications",
+});
+
+/**
+ * Las salas de la sección.
+ *
+ * `destino` es «andar» para TODAS menos la cantina: ahora que la planta es la
+ * real, cada sala de la sección es una estancia recorrible de verdad, y ya no
+ * hace falta la traducción a mano que #540 tuvo que poner (`puente →
+ * pasarela-proa`, `ingenieria → reactor`) para que el clic no muriera. El
+ * `estancia` es el propio id.
+ *
+ * La cantina conserva `destino: "cantina"`: abre su ventana propia de cinco
+ * planos fijos (#423), que es la vista hecha a medida de esa sala.
+ */
+export const SALAS = Object.freeze(celdasConCantina().map((celda) => Object.freeze({
+  id: celda.id,
+  // Los nombres ya existían para la ventana de andar: una sala tiene UN nombre.
+  tituloClave: ["LAGUNAK", "AndarNave", "Sala", celda.id].join("."),
+  caja: Object.freeze({ x: celda.x, y: celda.y, ancho: celda.w, alto: celda.h }),
+  /** El sistema que ALOJA, o `null`. Sustituye a la `region` inventada: la
+   *  salud de una sala es la de su sistema, no la de un trozo de casco. */
+  sistema: celda.sistema,
+  destino: celda.id === ID_CANTINA ? "cantina" : "andar",
+  estancia: celda.id === ID_CANTINA ? null : celda.id,
+  puesto: celda.sistema ? (PUESTO_POR_SISTEMA[celda.sistema] ?? null) : (PUESTO_POR_SALA[celda.id] ?? null),
+})));
+
 export function salasSeccion() {
   return SALAS;
 }
@@ -147,18 +125,30 @@ export function salaEnCelda(x, y) {
  * contar un mapa de daños.
  */
 export function componerSeccion(sistemas = []) {
-  const salud = saludPorRegion(sistemas);
+  // La salud de una sala es la de SU sistema. Antes se agrupaba por regiones de
+  // casco inventadas y una sala podía teñirse por una avería que no estaba en
+  // ella; ahora el reactor se pone en rojo cuando se rompe el reactor.
+  const porId = new Map(
+    (Array.isArray(sistemas) ? sistemas : [])
+      .filter((sistema) => typeof sistema?.id === "string")
+      .map((sistema) => [sistema.id.toLowerCase(), sistema?.health]),
+  );
+  const saludDe = (sala) => {
+    if (!sala.sistema) return null;
+    const leida = porId.get(sala.sistema.toLowerCase());
+    return typeof leida === "number" && Number.isFinite(leida) ? leida : null;
+  };
   return {
     rejilla: REJILLA,
     salas: SALAS.map((sala) => ({
       id: sala.id,
       tituloClave: sala.tituloClave,
       caja: sala.caja,
-      region: sala.region,
+      sistema: sala.sistema,
       destino: sala.destino,
       estancia: sala.estancia ?? null,
       puesto: sala.puesto ?? null,
-      salud: sala.region ? (salud[sala.region] ?? null) : null,
+      salud: saludDe(sala),
     })),
   };
 }
@@ -187,14 +177,16 @@ export function tripulacionPorSala(presencias = []) {
  * punto— sería regalar los mandos a quien se ponga en el sitio correcto, y es
  * justo lo que este issue promete no hacer.
  */
-export const SALA_DE_PUESTO = Object.freeze({
-  captain: "puente",
-  navigation: "puente",
-  sensors: "puente",
-  communications: "puente",
-  weapons: "puente",
-  engineering: "ingenieria",
-});
+export const SALA_DE_PUESTO = Object.freeze(
+  // Se INVIERTE el reparto de consolas en vez de escribirse aparte: con dos
+  // tablas, un puesto podía pintarse en una sala cuya consola abre otro puesto.
+  // Cuando un puesto tiene varias salas (pilotaje aloja maniobra, impulso, warp
+  // y salto) gana la primera del plano, que es la más a proa.
+  SALAS.reduce((mapa, sala) => {
+    if (sala.puesto && !mapa[sala.puesto]) mapa[sala.puesto] = sala.id;
+    return mapa;
+  }, {}),
+);
 
 /** La sala de ese puesto, o `null` si el puesto no tiene sitio en la planta. */
 export function salaDePuesto(puesto) {
@@ -208,6 +200,7 @@ export function salaDePuesto(puesto) {
  */
 export function sistemasDeSala(id) {
   const sala = salaPorId(id);
-  if (!sala?.region) return [];
-  return SISTEMAS_POR_REGION_CASCO_SERIE[sala.region] ?? [];
+  // Una sala aloja UN sistema o ninguno: ya no hay que traducir por regiones de
+  // casco. Se devuelve lista para no cambiar el contrato de quien la pinta.
+  return sala?.sistema ? [sala.sistema.toLowerCase()] : [];
 }

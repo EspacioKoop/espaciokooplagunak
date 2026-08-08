@@ -280,11 +280,15 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     distinto de un cielo vacío: una ventana con estrellas quietas afirmaría que no hay nada ahí
     fuera. Y por eso **no** se traen los skybox de EmptyEpsilon: serían 16 MB de binarios contra la
     regla de arte del módulo, para enseñar un espacio que no es el de esta partida.
-    Un **minimapa** (`scripts/nave-minimapa.mjs` + `nave-minimapa-lienzo.mjs`) dice dónde estás:
-    reusa el PINTOR de la sección (`seccion-lienzo.mjs`) pero NO su lista de salas, porque la sección
-    declara seis salas inventadas y la nave que se recorre tiene catorce — un minimapa sacado de ella
-    te situaría en un plano que no es el tuyo. Va `aria-hidden` porque el rótulo de sala ya da la
-    lectura en texto. Que la sección siga enseñando otra nave es el último resto del problema de #540.
+    Un **minimapa** (`scripts/nave-minimapa.mjs` + `nave-minimapa-lienzo.mjs`) dice dónde estás,
+    reusando el pintor de la sección. Va `aria-hidden` porque el rótulo de sala ya da la lectura en
+    texto. **Una sola planta para todo el módulo** (#542): `nave-planta-phobos.celdasConCantina()` es
+    el plano canónico —las trece salas del modelo más la cantina, que cuelga encima de su acceso— y
+    de ahí salen la ventana de andar, el minimapa y la sección. La sección tenía seis salas
+    inventadas (puente, enfermería, bodega…), y con ellas se fueron dos cosas: la traducción a mano
+    `puente → pasarela-proa` que #540 tuvo que poner para que el clic no muriera, y la salud por
+    «regiones de casco», que podía teñir una sala por una avería que no estaba en ella — ahora la
+    salud de una sala es la de SU sistema.
     El **punto de vista** (primera o tercera persona, tecla `V` — `c` ya es agacharse desde #446) es lógica pura en
     `scripts/nave-camara.mjs` y no de la fábrica ni del bucle: la regla es la misma para las catorce
     estancias. En tercera persona el propio cuerpo entra como un avatar más por

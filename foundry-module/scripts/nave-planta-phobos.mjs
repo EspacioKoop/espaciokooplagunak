@@ -230,3 +230,44 @@ export function conexiones(salas = SALAS_PHOBOS) {
 export function porId(salas = SALAS_PHOBOS) {
   return new Map(salas.map((sala) => [sala.id, sala]));
 }
+
+/**
+ * La cantina no está en el interior nativo: cuelga del muro norte de
+ * `acceso-cantina` (#540). Para cualquier PLANO de la nave —minimapa, sección—
+ * se le da la celda inmediatamente encima, que es donde está de verdad respecto
+ * al resto.
+ *
+ * Vive aquí y no en cada plano porque hay dos que la necesitan, y tener la nave
+ * declarada en dos sitios es exactamente el problema que resolvió #540. Las
+ * celdas salen normalizadas a (0,0): la fila de la cantina es negativa en la
+ * rejilla nativa, y eso obligaría a cada pintor a conocer el caso raro.
+ */
+export const ID_CANTINA = "cantina";
+const SOSTIENE_LA_CANTINA = "acceso-cantina";
+
+export function celdasConCantina(salas = SALAS_PHOBOS) {
+  const sostiene = salas.find((sala) => sala.id === SOSTIENE_LA_CANTINA);
+  const celdas = salas.map((sala) => ({ id: sala.id, ...sala.celda, sistema: sala.sistema ?? null }));
+  if (sostiene) {
+    celdas.push({
+      id: ID_CANTINA,
+      x: sostiene.celda.x,
+      y: sostiene.celda.y - 1,
+      w: sostiene.celda.w,
+      h: 1,
+      sistema: null,
+    });
+  }
+  const minX = Math.min(...celdas.map((c) => c.x));
+  const minY = Math.min(...celdas.map((c) => c.y));
+  return celdas.map((c) => ({ ...c, x: c.x - minX, y: c.y - minY }));
+}
+
+/** Tamaño de la rejilla que ocupan esas celdas. */
+export function rejillaDelPlano(salas = SALAS_PHOBOS) {
+  const celdas = celdasConCantina(salas);
+  return {
+    columnas: Math.max(...celdas.map((c) => c.x + c.w)),
+    filas: Math.max(...celdas.map((c) => c.y + c.h)),
+  };
+}

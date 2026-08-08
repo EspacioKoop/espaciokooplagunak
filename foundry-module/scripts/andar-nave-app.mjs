@@ -250,6 +250,21 @@ function arrancar(raiz, estanciaPedida = null) {
   // posición, pero nunca supo que existen "estancias" con nombre — ese
   // conocimiento es de este archivo y del catálogo, no del bucle.
   let estanciaActual = arranque.estancia;
+
+  /**
+   * Rotula en qué sala estás (QA: «no sé en qué sala estoy»).
+   *
+   * El nombre sale de i18n por id de estancia, y si falta la clave se enseña el
+   * id crudo en vez de dejar el rótulo vacío: saber que estás en «warp» es peor
+   * que leer «Motor de warp» y muchísimo mejor que no saber nada.
+   */
+  function rotularSala(estanciaId) {
+    const nodo = raiz?.querySelector?.("[data-andar-sala]");
+    if (!nodo) return;
+    const clave = ["LAGUNAK", "AndarNave", "Sala", estanciaId].join(".");
+    const nombre = game.i18n?.has?.(clave) ? game.i18n.localize(clave) : estanciaId;
+    nodo.textContent = game.i18n?.format?.("LAGUNAK.AndarNave.EstasEn", { sala: nombre }) ?? nombre;
+  }
   let ultimoSelloEnviado = null;
 
   // Muestras en vivo de los demás jugadores (#453), acumuladas por
@@ -309,6 +324,7 @@ function arrancar(raiz, estanciaPedida = null) {
     return game.settings?.get?.(MODULE_ID, AJUSTE_TELEMETRIA) ?? null;
   }
 
+  // Rótulo inicial: el resto de llamadas van en los cambios de estancia.
   const mando = arrancarAndar(lienzo, {
     sensores: () => aceptarSensores(sobreTelemetria()),
     rumboNave: () => {
@@ -333,6 +349,7 @@ function arrancar(raiz, estanciaPedida = null) {
       const llegada = puntoDeLlegada(CATALOGO_ANDAR, destino);
       if (!llegada) return;
       estanciaActual = llegada.estancia;
+      rotularSala(estanciaActual);
       mando.cambiarEstancia(llegada);
       // Se publica AQUÍ y no solo al cerrar/cada 150ms: un refresco de página
       // no debería devolver a quien cruzó una puerta a la estancia de la que
@@ -400,6 +417,7 @@ function arrancar(raiz, estanciaPedida = null) {
       const llegada = puntoDeLlegada(CATALOGO_ANDAR, { estancia: estanciaId });
       if (!llegada) return false;
       estanciaActual = llegada.estancia;
+      rotularSala(estanciaActual);
       mando.cambiarEstancia(llegada);
       ultimoSelloEnviado = publicarPosicion(estanciaActual, mando, ultimoSelloEnviado, true);
       return true;

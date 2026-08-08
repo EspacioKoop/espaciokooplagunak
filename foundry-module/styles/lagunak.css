@@ -1339,3 +1339,20 @@
   font-size: 12px;
   opacity: 0.7;
 }
+
+/* Rótulo de sala en la ventana de andar (QA: «no sé en qué sala estoy»).
+   Sobre el visor y con el acento del mueble, para que se lea como el letrero de
+   un mamparo y no como texto de ayuda. */
+.lagunak-andar-nave-sala {
+  margin: 0 0 6px;
+  color: #ffd166;
+  font-family: "Roboto Condensed", "Arial Narrow", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+}
+
+.lagunak-andar-nave-sala:empty {
+  display: none;
+}

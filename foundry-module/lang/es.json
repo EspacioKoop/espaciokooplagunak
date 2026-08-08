@@ -837,5 +837,20 @@
   "LAGUNAK.Dados.Reglas.Levantarse": "Al levantarte se destapan todos los cubiletes y se cuenta. Si la apuesta se cumplía, pierdes un dado; si no, lo pierde quien apostó. Quien se queda sin dados, queda fuera.",
   "LAGUNAK.Dados.Reglas.Unos": "Los unos son comodines y valen por cualquier cara — salvo cuando la apuesta es precisamente a unos, que entonces solo valen ellos.",
   "LAGUNAK.Controles.AbrirDados": "Abrir la mesa de dados",
-  "LAGUNAK.MapaVivo.ContactosCaidos": "No llegan contactos: la lectura de la nave propia sigue siendo válida, pero el mapa no puede pintar lo que hay alrededor."
+  "LAGUNAK.MapaVivo.ContactosCaidos": "No llegan contactos: la lectura de la nave propia sigue siendo válida, pero el mapa no puede pintar lo que hay alrededor.",
+  "LAGUNAK.AndarNave.EstasEn": "Estás en: {sala}",
+  "LAGUNAK.AndarNave.Sala.maniobra": "Maniobra",
+  "LAGUNAK.AndarNave.Sala.armas-haz": "Cañones de haz",
+  "LAGUNAK.AndarNave.Sala.pasarela-proa": "Pasarela de proa",
+  "LAGUNAK.AndarNave.Sala.escudo-popa": "Escudo de popa",
+  "LAGUNAK.AndarNave.Sala.reactor": "Reactor",
+  "LAGUNAK.AndarNave.Sala.warp": "Motor de warp",
+  "LAGUNAK.AndarNave.Sala.salto": "Motor de salto",
+  "LAGUNAK.AndarNave.Sala.acceso-cantina": "Acceso a la cantina",
+  "LAGUNAK.AndarNave.Sala.camarotes": "Camarotes",
+  "LAGUNAK.AndarNave.Sala.escudo-proa": "Escudo de proa",
+  "LAGUNAK.AndarNave.Sala.pasarela-popa": "Pasarela de popa",
+  "LAGUNAK.AndarNave.Sala.misiles": "Tubos de misiles",
+  "LAGUNAK.AndarNave.Sala.impulso": "Impulsores",
+  "LAGUNAK.AndarNave.Sala.cantina": "Cantina"
 }

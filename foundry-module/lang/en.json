@@ -837,5 +837,20 @@
   "LAGUNAK.Dados.Reglas.Levantarse": "Calling uncovers every cup and counts. If the bet held, you lose a die; if not, the bettor does. Whoever runs out of dice is out.",
   "LAGUNAK.Dados.Reglas.Unos": "Ones are wild and count as any face — except when the bet is on ones, where only ones count.",
   "LAGUNAK.Controles.AbrirDados": "Open the dice table",
-  "LAGUNAK.MapaVivo.ContactosCaidos": "Contacts are unavailable: own-ship readings are still valid, but the map cannot draw what is around it."
+  "LAGUNAK.MapaVivo.ContactosCaidos": "Contacts are unavailable: own-ship readings are still valid, but the map cannot draw what is around it.",
+  "LAGUNAK.AndarNave.EstasEn": "You are in: {sala}",
+  "LAGUNAK.AndarNave.Sala.maniobra": "Maneuvering",
+  "LAGUNAK.AndarNave.Sala.armas-haz": "Beam weapons",
+  "LAGUNAK.AndarNave.Sala.pasarela-proa": "Forward walkway",
+  "LAGUNAK.AndarNave.Sala.escudo-popa": "Aft shield",
+  "LAGUNAK.AndarNave.Sala.reactor": "Reactor",
+  "LAGUNAK.AndarNave.Sala.warp": "Warp drive",
+  "LAGUNAK.AndarNave.Sala.salto": "Jump drive",
+  "LAGUNAK.AndarNave.Sala.acceso-cantina": "Cantina access",
+  "LAGUNAK.AndarNave.Sala.camarotes": "Quarters",
+  "LAGUNAK.AndarNave.Sala.escudo-proa": "Forward shield",
+  "LAGUNAK.AndarNave.Sala.pasarela-popa": "Aft walkway",
+  "LAGUNAK.AndarNave.Sala.misiles": "Missile tubes",
+  "LAGUNAK.AndarNave.Sala.impulso": "Impulse engines",
+  "LAGUNAK.AndarNave.Sala.cantina": "Cantina"
 }

@@ -156,6 +156,33 @@ function piezasMarcoVentana(base, y0, y1, alongX) {
   ];
 }
 
+/**
+ * Marco de PUERTA: jambas a los lados y una banda de dintel encima del hueco.
+ *
+ * Un hueco sin marco no se lee como puerta (QA 2026-08-08: «hay que hacer
+ * texturas para que se entienda que son puertas»). En este lenguaje de bloques no
+ * hay texturas propiamente: lo que hace que algo se lea como puerta es el
+ * CONTORNO —dos jambas verticales y un dintel— en un color distinto del muro, que
+ * es exactamente cómo se señalizan las esclusas de verdad.
+ *
+ * Va hasta `ALTURA_PUERTA` y no hasta el techo: el dintel tiene que verse como el
+ * borde superior del paso, no como una viga.
+ */
+function piezasMarcoPuerta(base, y0, y1, alongX) {
+  const jambas = alongX
+    ? [
+        rectAColumnaEntre({ ...base, ancho: GROSOR_MARCO }, y0, y1),
+        rectAColumnaEntre({ ...base, x: base.x + base.ancho - GROSOR_MARCO, ancho: GROSOR_MARCO }, y0, y1),
+      ]
+    : [
+        rectAColumnaEntre({ ...base, profundidad: GROSOR_MARCO }, y0, y1),
+        rectAColumnaEntre({ ...base, z: base.z + base.profundidad - GROSOR_MARCO, profundidad: GROSOR_MARCO }, y0, y1),
+      ];
+  // Dintel: una banda fina justo encima del hueco, del ancho entero del paso.
+  const dintel = rectAColumnaEntre(base, y1 - GROSOR_MARCO, y1);
+  return [...jambas, dintel];
+}
+
 // ---- Puertas correderas (QA: "estilo Star Trek, cerradas y se abren por
 // dentro deslizándose") -----------------------------------------------------
 //
@@ -239,6 +266,7 @@ function abrirHuecosEnMuros(muros, huecos, ancho, profundidad) {
   let tramosEste = [este];
   const bandas = [];
   const marcos = [];
+  const marcosPuerta = [];
   const puertasConBase = [];
 
   for (const hueco of huecos) {
@@ -272,6 +300,7 @@ function abrirHuecosEnMuros(muros, huecos, ancho, profundidad) {
     if (y0 > 0) bandas.push(rectAColumnaEntre(base, 0, y0));
     if (y1 < ALTURA) bandas.push(rectAColumnaEntre(base, y1, ALTURA));
     if (esVentana) marcos.push(...piezasMarcoVentana(base, y0, y1, alongX));
+    else marcosPuerta.push(...piezasMarcoPuerta(base, y0, y1, alongX));
     // `base` ya trae el hueco resuelto con el grosor REAL del muro que toca
     // (el `rect` de entrada no lo garantiza — sus ejes fuera del ancho de
     // puerta son arbitrarios, ver `nave-vestibulo.PUERTA_*`), así que las
@@ -283,6 +312,7 @@ function abrirHuecosEnMuros(muros, huecos, ancho, profundidad) {
     muros: [...tramosNorte, ...tramosSur, ...tramosOeste, ...tramosEste],
     bandas,
     marcos,
+    marcosPuerta,
     puertasConBase,
   };
 }
@@ -415,6 +445,8 @@ export function crearSalaCaja({
   // hueco es lo que hace que se lea como una ventana con cristal y no como
   // un boquete en el muro, sin que el motor sepa dibujar transparencias.
   colorMarcoVentana = SECCION.entrable,
+  // Ámbar de señalización: el mismo que ya usa el módulo para «esto se acciona».
+  colorMarcoPuerta = "#ffb703",
   semillaCielo = 20260731,
   cantidadEstrellas = 90,
 }) {
@@ -428,7 +460,8 @@ export function crearSalaCaja({
     ...puertas.map(({ rect }) => ({ rect, y0: 0, y1: ALTURA_PUERTA, esVentana: false })),
     ...ventanas.map(({ rect }) => ({ rect, y0: ALTURA_ALFEIZAR, y1: ALTURA_DINTEL_VENTANA, esVentana: true })),
   ];
-  const { muros: tramosMuro, bandas, marcos, puertasConBase } = abrirHuecosEnMuros(muros, huecos, ancho, profundidad);
+  const { muros: tramosMuro, bandas, marcos, marcosPuerta, puertasConBase } =
+    abrirHuecosEnMuros(muros, huecos, ancho, profundidad);
 
   const obstaculosMobiliario = mobiliario
     .filter((pieza) => pieza.colision !== false)
@@ -442,6 +475,9 @@ export function crearSalaCaja({
   const piezas = Object.freeze([
     ...tramosMuro.map((rect) => ({ malla: rectAColumna(rect, ALTURA), color: colorMuro })),
     ...marcos.map((malla) => ({ malla, color: colorMarcoVentana })),
+    // El marco de puerta lleva su propio color: es lo que la hace reconocible
+    // como paso a otra sala y no como un boquete en el muro.
+    ...marcosPuerta.map((malla) => ({ malla, color: colorMarcoPuerta })),
     ...bandas.map((malla) => ({ malla, color: colorMuro })),
     ...columnas.map((rect) => ({ malla: rectAColumna(rect, ALTURA), color: colorColumna })),
     ...mobiliario.map(({ centro, medidas, color }) => ({ malla: caja(centro, medidas), color })),
@@ -537,7 +573,12 @@ export function crearSalaCaja({
     // El cielo por la(s) ventana(s): mismo mecanismo que `cantina-escena.mjs`
     // ("Por el ojo de buey") — se pinta ANTES que los polígonos, así que el
     // propio muro lo recorta y no hace falta máscara.
-    const estrellas = cielo
+    // El campo estelar solo con LECTURA: es el fondo del espacio, y detrás de una
+    // persiana bajada no hay fondo que ver. Sin esta condición se colaban
+    // estrellas por las rendijas de las lamas y la persiana dejaba de leerse como
+    // «no hay vista» para parecer «hay vista y está vacía» (#541).
+    const hayLectura = Boolean(sensores && Array.isArray(sensores.contactos) && rumboNave !== null && rumboNave !== undefined);
+    const estrellas = cielo && hayLectura
       ? proyectarEstrellas(cielo, { ancho: anchoLienzo, alto: altoLienzo, epoca, fov, yaw: yawCamara })
       : [];
 

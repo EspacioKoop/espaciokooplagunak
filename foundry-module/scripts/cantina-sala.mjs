@@ -116,17 +116,21 @@ export const PUERTA_OESTE = (() => {
 })();
 
 /**
- * Ventanales al espacio.
+ * Ventanales al espacio, en el muro del FONDO (sur).
  *
- * En el muro ESTE, el largo y sin puerta, y en el del fondo. Es lo que faltaba:
- * la cantina de una nave que nunca enseñaba el espacio era la sala menos
- * espacial de la nave. Dos huecos anchos en vez de uno estrecho porque este muro
- * mide casi doce metros y una tronera se pierde.
+ * La primera versión los puso en el muro este, el más largo, y el QA no vio nada:
+ * ese muro es justo el ocupado. Barriendo los 126 muebles a la altura del hueco
+ * (1.14–2.4 m), `mamparoDer`, los nervios, un estante y sus botellas quedaban
+ * delante — un ventanal detrás de una estantería es un ventanal que no existe.
+ * De los cuatro muros, el sur es el ÚNICO con tramos despejados; el norte lo
+ * ocupa la entrada y el oeste la puerta.
+ *
+ * Dos huecos anchos y no uno: el muro mide diez metros y una tronera se pierde.
  */
 const ANCHO_VENTANAL = 3.6;
 export const VENTANAS = Object.freeze([
-  { rect: { x: ANCHO - 0.4, z: 2.2, ancho: 0.4, profundidad: ANCHO_VENTANAL } },
-  { rect: { x: ANCHO - 0.4, z: 7.2, ancho: 0.4, profundidad: ANCHO_VENTANAL } },
+  { rect: { x: 1.0, z: PROFUNDIDAD - 0.4, ancho: ANCHO_VENTANAL, profundidad: 0.4 } },
+  { rect: { x: 5.4, z: PROFUNDIDAD - 0.4, ancho: ANCHO_VENTANAL, profundidad: 0.4 } },
 ]);
 
 const SALA = crearSalaCaja({

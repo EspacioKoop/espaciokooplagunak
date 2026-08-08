@@ -20,6 +20,7 @@
 // Puro: compone objetos y funciones que ya son puras.
 
 import { crearCatalogoEstancias } from "./nave-estancias.mjs";
+import { SECCION } from "./paleta.mjs";
 import { puntoLibreCerca } from "./nave-movimiento.mjs";
 import { crearSalaCaja } from "./nave-sala-caja.mjs";
 import { PLANTA_CANTINA_SALA, PUERTA_OESTE, componerCantinaSala } from "./cantina-sala.mjs";
@@ -197,6 +198,10 @@ function definirSala(sala, salientes) {
     profundidad,
     puertas: puertas.map(({ rect }) => ({ rect })),
     ventanas: ventanasAlExterior(sala, salientes),
+    // Mismo motivo que en la cantina: el marco de serie es `SECCION.entrable`,
+    // un turquesa de señalización de la sección que sobre un muro entero se lee
+    // como un error de pintado (QA: «lo del color es muy feo»).
+    colorMarcoVentana: SECCION.mamparo,
     // Semilla por sala: cada ventana da a un trozo de cielo distinto, y el
     // mismo siempre. Sin esto todas las salas mirarían a las mismas estrellas.
     semillaCielo: 20260808 + sala.celda.x * 31 + sala.celda.y * 7,

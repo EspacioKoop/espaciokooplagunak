@@ -377,3 +377,49 @@ test("desde la entrada de cada sala se puede DAR UN PASO", () => {
     );
   }
 });
+
+test("desde la entrada de cada sala se llega ANDANDO a todas sus puertas", () => {
+  // La prueba que faltaba, y la más importante de este archivo. Las anteriores
+  // comprobaban que existiera ALGUNA posición legal que dispara cada puerta; esta
+  // exige que se llegue desde donde apareces, inundando el suelo libre paso a
+  // paso.
+  //
+  // La diferencia no es teórica: la cantina tiene 126 muebles que parten su suelo
+  // en zonas incomunicadas, y su entrada caía en una que no daba a la puerta. Se
+  // podía andar y no se podía salir — QA: «no puedo acceder a ninguna otra sala»,
+  // con todas las demás pruebas en verde.
+  const PASO = 0.1;
+  for (const [id, estancia] of todasLasEstancias()) {
+    const libre = (x, z) =>
+      x > 0 && z > 0 && x < estancia.planta.ancho && z < estancia.planta.profundidad &&
+      !colisiona(x, z, RADIO_JUGADOR, estancia.planta);
+    const clave = (x, z) => `${Math.round(x / PASO)},${Math.round(z / PASO)}`;
+
+    const vistos = new Set([clave(estancia.entrada.x, estancia.entrada.z)]);
+    const pendientes = [[estancia.entrada.x, estancia.entrada.z]];
+    while (pendientes.length) {
+      const [x, z] = pendientes.pop();
+      for (const [dx, dz] of [[PASO, 0], [-PASO, 0], [0, PASO], [0, -PASO]]) {
+        const nx = x + dx;
+        const nz = z + dz;
+        if (vistos.has(clave(nx, nz)) || !libre(nx, nz)) continue;
+        vistos.add(clave(nx, nz));
+        pendientes.push([nx, nz]);
+      }
+    }
+
+    const alcanzadas = new Set();
+    for (const celda of vistos) {
+      const [a, b] = celda.split(",");
+      const tocada = puertaTocada(a * PASO, b * PASO, RADIO_JUGADOR, estancia.puertas);
+      if (tocada) alcanzadas.add(tocada.destino.estancia);
+    }
+    for (const puerta of estancia.puertas) {
+      assert.ok(
+        alcanzadas.has(puerta.destino.estancia),
+        `en ${id} no se llega a la puerta hacia ${puerta.destino.estancia} desde la entrada: ` +
+          "el mobiliario parte la sala en zonas incomunicadas",
+      );
+    }
+  }
+});

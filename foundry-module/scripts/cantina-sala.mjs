@@ -135,10 +135,15 @@ const SALA = crearSalaCaja({
   puertas: [{ rect: PUERTA_OESTE }],
   ventanas: VENTANAS,
   mobiliario: mobiliario(),
-  // Los muros y el marco salen de la paleta de la cantina y no de la del casco:
-  // la sala sigue siendo ella, no una sala de máquinas con sillas.
-  colorMuro: CANTINA.casco ?? undefined,
-  colorColumna: CANTINA.mamparo ?? undefined,
+  // Los muros salen de la paleta de la CANTINA, no de la del casco: la sala
+  // sigue siendo ella. Y el marco de ventana también, porque el de serie es
+  // `SECCION.entrable` (#4ad9c4), un turquesa de señalización que sobre un muro
+  // entero se lee como un error de pintado — QA: «lo del color es muy feo».
+  // (`CANTINA.casco` no existe en la paleta: el `?? undefined` de antes caía al
+  // valor de serie sin avisar, que es como llegó aquí el turquesa.)
+  colorMuro: CANTINA.mamparo,
+  colorColumna: CANTINA.nervio,
+  colorMarcoVentana: CANTINA.nervio,
   semillaCielo: 20260808,
 });
 

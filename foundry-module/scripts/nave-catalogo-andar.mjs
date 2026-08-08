@@ -184,7 +184,11 @@ function definirSala(sala, salientes) {
       rect: puertaCantina(sala),
       // Se llega a la cantina por su puerta oeste, así que se aparece dentro y
       // separado de ella para no reactivarla de vuelta.
-      destino: { estancia: "cantina", ...libreEnCantina(3, 5), yaw: Math.PI / 2 },
+      destino: {
+        estancia: "cantina",
+        ...libreEnCantina(PUERTA_OESTE.x + PUERTA_OESTE.ancho + 0.6, PUERTA_OESTE.z + PUERTA_OESTE.profundidad / 2),
+        yaw: Math.PI / 2,
+      },
     });
   }
 
@@ -223,11 +227,13 @@ export const CATALOGO_ANDAR = crearCatalogoEstancias({
   cantina: {
     planta: PLANTA_CANTINA_SALA,
     componer: componerCantinaSala,
-    // Junto a la puerta y mirando al fondo de la sala. El punto se AJUSTA al
-    // libre más cercano en vez de fiarse del número escrito: la cantina tiene 126
-    // muebles y aparecer dentro de uno deja al jugador sin poder moverse (QA
-    // 2026-08-08). Mismo motivo en el destino de la puerta de vuelta.
-    entrada: { ...libreEnCantina(2.4, 8.6), yaw: Math.PI },
+    // DELANTE DE LA PUERTA, no en un rincón bonito (QA 2026-08-08: «no puedo
+    // acceder a ninguna otra sala»). Los 126 muebles de la cantina parten su
+    // suelo libre en zonas incomunicadas, y la entrada anterior caía en una que
+    // no daba a la puerta: se podía andar, pero no salir. Naciendo junto a la
+    // única salida, estar en su misma zona está garantizado por construcción, y
+    // una prueba de inundación lo comprueba para todas las salas.
+    entrada: { ...libreEnCantina(PUERTA_OESTE.x + PUERTA_OESTE.ancho + 0.6, PUERTA_OESTE.z + PUERTA_OESTE.profundidad / 2), yaw: Math.PI / 2 },
     puertas: [
       {
         // El disparador lo declara la propia sala, junto al hueco que abre en su

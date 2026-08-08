@@ -23,6 +23,7 @@ import { presentesEn } from "./nave-presencia.mjs";
 import { avatarDeUsuario } from "./avatar-assignment.mjs";
 import { openWorkspaceApp } from "./station-workspace-ui.mjs";
 import { SECCION } from "./paleta.mjs";
+import { AJUSTE_TELEMETRIA, aceptarSensores, aceptarTelemetria } from "./telemetria-difusion.mjs";
 
 const ESTANCIA_INICIAL = "cantina";
 
@@ -279,7 +280,26 @@ function arrancar(raiz, estanciaPedida = null) {
     }));
   }
 
+  /**
+   * Lo que se ve por las ventanas (#541): la MISMA lectura degradada que el
+   * puente ya difunde a toda la tripulación, la que alimenta el visor del
+   * piloto. No abre ningún dato nuevo — un tripulante ve por la ventana lo que
+   * ya podía saber— y sin telemetría devuelve `null`, que es lo que baja la
+   * persiana en vez de inventar un cielo.
+   *
+   * Se lee del ajuste en cada fotograma en vez de suscribirse: es una lectura en
+   * memoria, y así una telemetría nueva se ve sin coordinar dos relojes.
+   */
+  function sobreTelemetria() {
+    return game.settings?.get?.(MODULE_ID, AJUSTE_TELEMETRIA) ?? null;
+  }
+
   const mando = arrancarAndar(lienzo, {
+    sensores: () => aceptarSensores(sobreTelemetria()),
+    rumboNave: () => {
+      const ship = aceptarTelemetria(sobreTelemetria());
+      return typeof ship?.heading === "number" ? ship.heading : null;
+    },
     componer: inicial.componer,
     planta: inicial.planta,
     puertas: inicial.puertas,

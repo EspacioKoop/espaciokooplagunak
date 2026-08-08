@@ -32,6 +32,7 @@ import { SECCION } from "./paleta.mjs";
 import { componerEscena } from "./retro3d.mjs";
 import { resolverCamara } from "./nave-camara.mjs";
 import { campoEstelar, proyectarEstrellas } from "./retro3d-estrellas.mjs";
+import { piezasDeVentana } from "./nave-ventana-espacio.mjs";
 import { crearPlanta } from "./nave-movimiento.mjs";
 import { poligonosOtrosJugadores } from "./nave-avatares-render.mjs";
 
@@ -465,6 +466,11 @@ export function crearSalaCaja({
       // porque es la misma para las catorce estancias; aquí solo se consume.
       modoCamara,
       avatarPropio = {},
+      // #541: lo que se ve por la ventana es el MISMO espacio que la nave tiene
+      // alrededor, no un cielo de adorno. Sin lectura baja una persiana, que lo
+      // decide `nave-ventana-espacio.mjs`: aquí no se inventa relleno.
+      sensores = null,
+      rumboNave = null,
     } = opciones;
     const { camara, dibujarPropio } = resolverCamara({ x, z, y, yaw, modo: modoCamara });
     const yawCamara = -yaw; // ver el comentario de `yaw` en `cantina-escena.mjs`
@@ -481,7 +487,11 @@ export function crearSalaCaja({
       })),
     );
 
-    const partes = [...piezas, ...hojasPuertas].map(({ malla, color }) =>
+    const vistaVentanas = ventanas.flatMap(({ rect }) =>
+      piezasDeVentana({ rect, sala: { ancho, profundidad }, sensores, rumboNave }),
+    );
+
+    const partes = [...piezas, ...hojasPuertas, ...vistaVentanas].map(({ malla, color }) =>
       componerEscena(trasladarMalla(malla, [-camara[0], -camara[1], -camara[2]]), {
         ancho: anchoLienzo,
         alto: altoLienzo,

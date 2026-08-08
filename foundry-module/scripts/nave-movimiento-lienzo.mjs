@@ -80,6 +80,12 @@ export function arrancarAndar(lienzo, opciones = {}) {
     // dónde va la cámara vive en `nave-camara.mjs` y la aplica quien compone.
     modoCamara: modoCamaraInicial = PRIMERA,
     avatarPropio = () => ({}),
+    // #541: lo que se ve por las ventanas. Se pasan como FUNCIONES y no como
+    // valores porque cambian con cada telemetría, y el bucle solo las transporta:
+    // qué hacer con ellas —incluida la persiana cuando no hay lectura— lo decide
+    // `nave-ventana-espacio.mjs`.
+    sensores = () => null,
+    rumboNave = () => null,
   } = opciones;
 
   if (typeof opciones.componer !== "function") {
@@ -140,7 +146,13 @@ export function arrancarAndar(lienzo, opciones = {}) {
     if (!ctx) return;
     pintarEscenaConProfundidad(
       ctx,
-      componer(x, y, z, yaw, { otrosJugadores: otrosJugadores(), modoCamara, avatarPropio: avatarPropio() }),
+      componer(x, y, z, yaw, {
+        otrosJugadores: otrosJugadores(),
+        modoCamara,
+        avatarPropio: avatarPropio(),
+        sensores: sensores(),
+        rumboNave: rumboNave(),
+      }),
       { fondo },
     );
   }

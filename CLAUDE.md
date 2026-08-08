@@ -269,8 +269,17 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     amplía la fábrica. Las
     salas de prueba ("a"/"b", `nave-movimiento-sala-prueba.mjs`) NUNCA aparecen en el catálogo real.
     `scripts/nave-sala-caja.mjs` sigue siendo la fábrica de sala —muros, puertas, columnas y
-    VENTANAS con cielo real detrás—, y ahora la ventana se **decide** en vez de escribirse: un muro
-    sin vecino es casco, y el casco ve el espacio.
+    VENTANAS—, y la ventana se **decide** en vez de escribirse: un muro sin vecino es casco, y el
+    casco ve el espacio. Lo que se ve por ella es **otra vista del espacio real** y no un cielo de
+    adorno (`scripts/nave-ventana-espacio.mjs`, #541): reusa `visor-piloto.mjs` para situar los
+    contactos por marcación, pasándole el rumbo de la nave MÁS el del muro, así que la vista gira con
+    la nave y cada ventana mira a donde le toca. No abre ningún dato nuevo —es la MISMA lectura
+    degradada que ya se difunde a la tripulación— y conserva su disciplina: lo que queda a la espalda
+    no se pinta, un eco sin identidad sale como borrón y no como silueta, y una lectura VACÍA sí se
+    pinta, porque «he mirado y no hay nada» es un dato. Sin telemetría baja una **persiana**, que es
+    distinto de un cielo vacío: una ventana con estrellas quietas afirmaría que no hay nada ahí
+    fuera. Y por eso **no** se traen los skybox de EmptyEpsilon: serían 16 MB de binarios contra la
+    regla de arte del módulo, para enseñar un espacio que no es el de esta partida.
     El **punto de vista** (primera o tercera persona, tecla `V` — `c` ya es agacharse desde #446) es lógica pura en
     `scripts/nave-camara.mjs` y no de la fábrica ni del bucle: la regla es la misma para las catorce
     estancias. En tercera persona el propio cuerpo entra como un avatar más por

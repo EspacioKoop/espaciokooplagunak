@@ -16,7 +16,10 @@ import {
 } from "../scripts/nave-planta-phobos.mjs";
 import { CATALOGO_ANDAR } from "../scripts/nave-catalogo-andar.mjs";
 import { PLANTA_CANTINA } from "../scripts/cantina-planta.mjs";
-import { puertaTocada } from "../scripts/nave-movimiento.mjs";
+import { mover, puertaTocada } from "../scripts/nave-movimiento.mjs";
+
+/** El mismo radio que usa `nave-movimiento-lienzo.mjs` para el jugador. */
+const RADIO_JUGADOR = 0.35;
 
 const raiz = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -125,17 +128,49 @@ test("todo rect de puerta cae dentro de su sala y pegado a un muro", () => {
 test("el punto de llegada NO cae sobre la puerta de vuelta: nada de rebotes", () => {
   // El fallo que describía el smoke como «te golpeas con el dintel»: aparecer
   // encima del rect disparador reactiva la puerta y devuelve al jugador.
+  //
+  // OJO con la firma: `puertaTocada(x, z, radio, puertas)` lleva el RADIO como
+  // tercer argumento. La primera versión de esta prueba lo omitía, así que
+  // comparaba contra `undefined` y pasaba en vacío — no comprobaba nada.
   for (const [id, estancia] of todasLasEstancias()) {
     for (const puerta of estancia.puertas) {
       const destino = CATALOGO_ANDAR.obtener(puerta.destino.estancia);
-      if (!destino) continue;
       const x = puerta.destino.x ?? destino.entrada.x;
       const z = puerta.destino.z ?? destino.entrada.z;
-      const vuelta = puertaTocada(x, z, destino.puertas);
+      const vuelta = puertaTocada(x, z, RADIO_JUGADOR, destino.puertas);
       assert.equal(
-        vuelta?.destino?.estancia,
-        undefined,
+        vuelta ?? null,
+        null,
         `llegando de ${id} a ${puerta.destino.estancia} se pisa una puerta (${JSON.stringify({ x, z })})`,
+      );
+    }
+  }
+});
+
+test("TODA puerta declarada se puede ALCANZAR andando, no solo existe", () => {
+  // La prueba que #539 echaba en falta de verdad, y que la de conectividad del
+  // grafo no da: barre cada sala en rejilla fina, descarta las posiciones donde
+  // el jugador no cabe (colisión con muros y muebles) y comprueba que desde
+  // alguna posición legal se dispara cada puerta. Una puerta declarada detrás de
+  // un mueble está en el grafo y no existe para quien juega.
+  for (const [id, estancia] of todasLasEstancias()) {
+    const alcanzables = new Set();
+    for (let x = 0.05; x < estancia.planta.ancho; x += 0.1) {
+      for (let z = 0.05; z < estancia.planta.profundidad; z += 0.1) {
+        // Un paso nulo desde (x,z): si el motor lo corrige, ahí no se puede estar.
+        const paso = mover({
+          x, z, yaw: 0, activas: new Set(), dt: 0,
+          planta: estancia.planta, velocidad: 1, radio: RADIO_JUGADOR,
+        });
+        if (Math.abs(paso.x - x) > 1e-6 || Math.abs(paso.z - z) > 1e-6) continue;
+        const tocada = puertaTocada(x, z, RADIO_JUGADOR, estancia.puertas);
+        if (tocada) alcanzables.add(tocada.destino.estancia);
+      }
+    }
+    for (const puerta of estancia.puertas) {
+      assert.ok(
+        alcanzables.has(puerta.destino.estancia),
+        `en ${id} la puerta a ${puerta.destino.estancia} está declarada pero no se puede alcanzar andando`,
       );
     }
   }

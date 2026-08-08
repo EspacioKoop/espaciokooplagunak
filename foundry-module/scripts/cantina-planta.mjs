@@ -25,11 +25,12 @@
 // Puro: ni Foundry, ni DOM, ni reloj, ni Math.random().
 
 import { crearPlanta } from "./nave-movimiento.mjs";
+import { MUEBLES } from "./cantina-escena.mjs";
 
 /** Cuánto sumar a una coordenada NATIVA de `cantina-escena.mjs` para caer
  *  dentro de la planta (siempre positivo). Ver la cabecera del archivo. */
-export const DESPLAZAMIENTO_X = 4.8;
-export const DESPLAZAMIENTO_Z = 2.0;
+export const DESPLAZAMIENTO_X = 5.0;
+export const DESPLAZAMIENTO_Z = 2.35;
 
 /** Traduce una posición de la PLANTA a coordenadas nativas de la cantina. */
 export function aNativo(x, z) {
@@ -52,22 +53,64 @@ function aPlanta({ x, z, ancho, profundidad }) {
 // aproxima, con su centro/medidas nativos, para que corregirlo sea cotejar
 // dos archivos y no adivinar de dónde salió el número.
 
-/** `barra`: centro [0, -1.45, 4.2], medidas [6.4, 0.9, 1.2]. */
-const BARRA = { x: -3.2, z: 3.6, ancho: 6.4, profundidad: 1.2 };
-/** `mesaIzq`: centro [-3.4, -1.2, 5.2], medidas [1.6, 0.2, 1.6]. */
-const MESA_IZQ = { x: -4.2, z: 4.4, ancho: 1.6, profundidad: 1.6 };
-/** `mesaDer`: centro [3.9, -1.2, 3.9], medidas [1.6, 0.2, 1.6]. */
-const MESA_DER = { x: 3.1, z: 3.1, ancho: 1.6, profundidad: 1.6 };
-
 /**
- * La planta. Límites conservadores en coordenadas NATIVAS: x de −4.8 a 4.8
- * (dentro de las caras interiores de `paredIzq`/`paredDer`, en ±5.0, con
- * margen para el radio de quien anda) y z de −2.0 a 6.3 (dentro del hueco de
- * la entrada por un lado y ANTES del ventanal por el otro —el ventanal es
- * justo lo que no se puede arriesgar a atravesar por error de margen—).
+ * Los obstáculos se DERIVAN de `MUEBLES`, no se transcriben (QA 2026-08-08).
+ *
+ * Antes eran tres rects escritos a mano —barra y dos mesas— mientras la sala
+ * tenía decenas de piezas: estanterías, botellas, taburetes. Todo lo demás se
+ * atravesaba, y peor aún, la planta se recortaba en z para «no arriesgarse» con
+ * el fondo de la sala, dejando un tercio amueblado y visible al que no se podía
+ * entrar. Eso es lo que el QA describió como «un vacío absurdo frente a la
+ * pared»: no era un vacío, era la parte de la cantina que la colisión no dejaba
+ * pisar.
+ *
+ * Ahora la regla es una y se aplica sola: una pieza estorba si ocupa el tramo
+ * por el que pasa un CUERPO. Se necesitan las dos condiciones, y por separado
+ * ninguna sirve:
+ *
+ *  - que llegue lo bastante alto para tropezar (si no, es una tarima o un
+ *    rodapié y se pisa);
+ *  - que empiece lo bastante bajo (si no, es una estantería alta, un neón o un
+ *    dintel, y se pasa por DEBAJO). Sin esta segunda condición, las botellas de
+ *    los estantes altos bloqueaban el paso desde el techo, y la sala andable
+ *    caía al 45 %.
+ *
+ * Los muros y dinteles se excluyen aparte porque el límite de la sala ya lo pone
+ * la propia planta, y una pieza contada dos veces solo la estrecha sin motivo.
  */
+const SUELO = -2.0;
+/** Por debajo de esto, se pisa y no estorba. */
+const UMBRAL_TROPIEZO = 0.35;
+/** Por encima de esto, se pasa por debajo. Altura de pecho, no de ojos: se
+ *  agacha la cabeza, no el tronco. */
+const UMBRAL_AGACHARSE = 1.15;
+
+function esFrontera(nombre) {
+  return /^(pared|dintel|muro|suelo|techo)/i.test(nombre ?? "");
+}
+
+function obstaculosDesdeMuebles(muebles) {
+  const rects = [];
+  for (const pieza of muebles ?? []) {
+    if (esFrontera(pieza.nombre)) continue;
+    if (pieza.colision === false) continue;
+    const [cx, cy, cz] = pieza.centro;
+    const [w, h, d] = pieza.medidas;
+    if (cy + h / 2 < SUELO + UMBRAL_TROPIEZO) continue;
+    if (cy - h / 2 > SUELO + UMBRAL_AGACHARSE) continue;
+    rects.push(aPlanta({ x: cx - w / 2, z: cz - d / 2, ancho: w, profundidad: d }));
+  }
+  return rects;
+}
+
 export const PLANTA_CANTINA = crearPlanta({
-  ancho: 9.6,
-  profundidad: 8.3,
-  obstaculos: [BARRA, MESA_IZQ, MESA_DER].map(aPlanta),
+  // Las caras interiores REALES de los muros de `cantina-escena.mjs`:
+  // x de −5.0 a 5.0, z de −2.35 (cara interior de `paredEntrada`) a 9.5 (final
+  // de `paredIzq5`/`paredDer5`). El margen para el radio de quien anda lo pone
+  // ya el motor; recortarlo otra vez aquí es lo que dejó fuera un tercio de la
+  // sala. Lo vigila `cantina-planta.test.mjs`, que compara estos números con la
+  // geometría pintada en vez de confiar en que nadie los toque.
+  ancho: 10.0,
+  profundidad: 11.85,
+  obstaculos: obstaculosDesdeMuebles(MUEBLES),
 });

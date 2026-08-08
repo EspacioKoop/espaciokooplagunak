@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { crearPlanta } from "../scripts/nave-movimiento.mjs";
-import { crearCatalogoEstancias, declararEstancia, puntoDeLlegada } from "../scripts/nave-estancias.mjs";
+import { crearCatalogoEstancias, declararEstancia, puntoDeLlegada, resolverArranque } from "../scripts/nave-estancias.mjs";
 
 const PLANTA_A = crearPlanta({ ancho: 10, profundidad: 10 });
 const PLANTA_B = crearPlanta({ ancho: 6, profundidad: 6 });
@@ -119,4 +119,45 @@ test("puntoDeLlegada incluye las consolas de la estancia destino", () => {
   });
   const llegada = puntoDeLlegada(catalogo, { estancia: "a" });
   assert.deepEqual(llegada.consolas, [{ rect: { x: 4, z: 4, ancho: 1, profundidad: 1 }, puesto: "engineering" }]);
+});
+
+/* ---- resolverArranque (#508) --------------------------------------------- */
+
+const CATALOGO_ARRANQUE = crearCatalogoEstancias({
+  a: { planta: PLANTA_A, componer: () => ({}) },
+  b: { planta: PLANTA_B, componer: () => ({}) },
+});
+
+test("resolverArranque: lo pedido manda sobre lo guardado, y sin heredar sus coordenadas", () => {
+  // Pedir entrar a "b" y reaparecer en "a" porque es donde se cerró la ventana
+  // sería no obedecer; y llegar a "b" con las coordenadas de "a" dejaría al
+  // jugador en un punto de OTRA sala, que puede estar dentro de un muro.
+  const arranque = resolverArranque(CATALOGO_ARRANQUE, {
+    pedida: "b",
+    guardada: { estancia: "a", x: 1, z: 2 },
+    porDefecto: "a",
+  });
+  assert.deepEqual(arranque, { estancia: "b", guardada: null });
+});
+
+test("resolverArranque: sin nada pedido se vuelve a donde se quedó", () => {
+  const guardada = { estancia: "b", x: 1, z: 2 };
+  assert.deepEqual(resolverArranque(CATALOGO_ARRANQUE, { guardada, porDefecto: "a" }), {
+    estancia: "b",
+    guardada,
+  });
+});
+
+test("resolverArranque: un id que el catálogo no conoce cae al siguiente escalón", () => {
+  // Ni una sala de la sección que apunte a una estancia retirada, ni un
+  // checkpoint de una sesión con otro catálogo, dejan a nadie en la nada.
+  assert.deepEqual(
+    resolverArranque(CATALOGO_ARRANQUE, { pedida: "no-existe", guardada: { estancia: "b" }, porDefecto: "a" }),
+    { estancia: "b", guardada: { estancia: "b" } },
+  );
+  assert.deepEqual(
+    resolverArranque(CATALOGO_ARRANQUE, { pedida: "no-existe", guardada: { estancia: "tampoco" }, porDefecto: "a" }),
+    { estancia: "a", guardada: null },
+  );
+  assert.deepEqual(resolverArranque(CATALOGO_ARRANQUE, { porDefecto: "a" }), { estancia: "a", guardada: null });
 });

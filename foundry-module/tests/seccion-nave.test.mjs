@@ -12,6 +12,7 @@ import {
   sistemasDeSala,
   tripulacionPorSala,
 } from "../scripts/seccion-nave.mjs";
+import { CATALOGO_ANDAR } from "../scripts/nave-catalogo-andar.mjs";
 
 test("la planta cabe dentro de la rejilla y ninguna sala pisa a otra", () => {
   // Una sección con salas solapadas no es un plano, es un error de dibujo que
@@ -42,6 +43,33 @@ test("cada sala se puede nombrar y las entrables dicen adónde llevan", () => {
   assert.equal(salaPorId("cantina")?.destino, "cantina");
   assert.equal(salaPorId("bodega")?.destino, null, "la bodega es de mirar, no de entrar");
   assert.equal(salaPorId("no-existe"), undefined);
+});
+
+test("las salas que se entran andando existen de verdad en el catálogo de andar", () => {
+  // #508: el puente y la ingeniería ya no abren su consola desde la sección,
+  // se entra en ellas ANDANDO. Una `estancia` que el catálogo no conociera
+  // dejaría un clic muerto que ningún test de este archivo vería —por eso se
+  // comprueba contra el catálogo real y no contra una lista repetida aquí.
+  let alguna = false;
+  for (const sala of salasSeccion()) {
+    if (sala.destino !== "andar") continue;
+    alguna = true;
+    assert.ok(
+      CATALOGO_ANDAR.tiene(sala.estancia),
+      `${sala.id} lleva a la estancia "${sala.estancia}", que no existe en el catálogo de andar`,
+    );
+  }
+  assert.ok(alguna, "ninguna sala de la sección se entra andando");
+  assert.equal(salaPorId("puente")?.estancia, "pasillo-puente");
+  assert.equal(salaPorId("ingenieria")?.estancia, "ingenieria");
+});
+
+test("componerSeccion transporta la estancia, y null donde no hay ninguna", () => {
+  const seccion = componerSeccion([]);
+  const puente = seccion.salas.find((sala) => sala.id === "puente");
+  const bodega = seccion.salas.find((sala) => sala.id === "bodega");
+  assert.equal(puente.estancia, "pasillo-puente");
+  assert.equal(bodega.estancia, null, "una sala que no se entra no inventa estancia");
 });
 
 test("una celda de mamparo no es ninguna sala", () => {

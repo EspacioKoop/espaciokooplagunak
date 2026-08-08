@@ -84,6 +84,34 @@ export function crearCatalogoEstancias(estancias = {}) {
 }
 
 /**
+ * Con qué estancia se abre la ventana de andar. Tres fuentes, en este orden:
+ *
+ * 1. `pedida` — alguien ha dicho explícitamente «entra AHÍ» (la sección de la
+ *    nave al pulsar una sala, #508). MANDA SOBRE LA GUARDADA a propósito:
+ *    pedir entrar al puente y reaparecer en la cantina porque es donde se
+ *    cerró la ventana la última vez sería no obedecer. Y se aparece en la
+ *    `entrada` de serie de esa estancia —por eso devuelve `guardada: null`—,
+ *    no en unas coordenadas que son de OTRA sala.
+ * 2. `guardada`, el checkpoint normal de quien vuelve a abrir la ventana.
+ * 3. `porDefecto`, la lectura segura de la primera vez.
+ *
+ * Un id que el catálogo no conoce se ignora y cae al siguiente escalón (un
+ * catálogo cambiado entre sesiones, o una sala de la sección que apunte a una
+ * estancia que ya no existe): mejor arrancar en un sitio declarado que en uno
+ * que nadie declaró.
+ *
+ * Aquí y no en la ventana porque es una DECISIÓN sobre el catálogo, que es lo
+ * único que hace este módulo; la ventana solo la aplica.
+ */
+export function resolverArranque(catalogo, { pedida = null, guardada = null, porDefecto } = {}) {
+  if (pedida && catalogo.tiene(pedida)) return { estancia: pedida, guardada: null };
+  if (guardada?.estancia && catalogo.tiene(guardada.estancia)) {
+    return { estancia: guardada.estancia, guardada };
+  }
+  return { estancia: porDefecto, guardada: null };
+}
+
+/**
  * Resuelve dónde aparece quien cruza una puerta: la puerta puede fijar
  * `x`/`z`/`yaw` exactos (para dejar de espaldas a la puerta por la que se
  * entra, por ejemplo), y lo que no fije cae en la `entrada` por defecto de la

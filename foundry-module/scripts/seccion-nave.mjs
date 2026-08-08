@@ -42,6 +42,11 @@ export const REJILLA = Object.freeze({ columnas: 12, filas: 6 });
  *   y no recibe daño directo. La salud NO se inventa aquí.
  * - `destino`: qué se abre al pulsarla. `null` es una sala que se mira y no se
  *   entra — que son la mayoría, y está bien: la sección es primero un mapa.
+ * - `estancia`: para `destino: "andar"`, en qué estancia del catálogo de andar
+ *   (`nave-catalogo-andar.mjs`) se aparece. Es un id OPACO aquí: este módulo no
+ *   importa ese catálogo ni lo valida — solo lo transporta hasta quien sí sabe
+ *   abrir la ventana de andar. La sección declara adónde lleva cada sala; el
+ *   motor de andar no necesita saber que existe una sección.
  */
 export const SALAS = Object.freeze([
   Object.freeze({
@@ -49,10 +54,14 @@ export const SALAS = Object.freeze([
     tituloClave: "LAGUNAK.Seccion.Sala.Puente",
     caja: Object.freeze({ x: 8, y: 1, ancho: 4, alto: 2 }),
     region: "lomo",
-    // Entrar al puente es abrir la consola de puesto que ya existe: la sección
-    // es un atajo hacia lo que hay, no una consola nueva. Y sigue sin dar
-    // mandos — la consola enseña lo que el relé permita a quien la abra.
-    destino: "puesto",
+    // Entrar al puente es APARECER EN ÉL, no abrir su consola (#508): el
+    // puente ya tiene interior recorrible —un pasillo y las cinco salas de
+    // puesto que cuelgan de él— y llegar andando a tu puesto era justo lo que
+    // pedía la issue. La consola sigue a un paso: acercarse a ella dentro de
+    // su sala la abre (#509), igual que el botón de siempre. Y sigue sin dar
+    // mandos: estar de pie en una sala no es autoridad (#237).
+    destino: "andar",
+    estancia: "pasillo-puente",
     puesto: "captain",
   }),
   Object.freeze({
@@ -60,9 +69,11 @@ export const SALAS = Object.freeze([
     tituloClave: "LAGUNAK.Seccion.Sala.Cantina",
     caja: Object.freeze({ x: 4, y: 1, ancho: 4, alto: 2 }),
     region: null,
-    // La única sala que hoy tiene interior de verdad. Que sea la única no es
-    // una carencia de la sección: es lo que hace que la sección valga la pena
-    // ya, en vez de esperar a tener seis salas habitables.
+    // La cantina abre SU ventana propia (los cinco planos fijos de #423) y no
+    // la de andar, aunque también sea una estancia recorrible: es la vista
+    // hecha a medida de esta sala —la barra, las mesas, sentarse a jugar— y
+    // sustituirla por el motor genérico de andar sería perder algo, no ganarlo.
+    // Desde dentro se sigue pudiendo salir a la nave por su puerta oeste.
     destino: "cantina",
   }),
   Object.freeze({
@@ -77,7 +88,9 @@ export const SALAS = Object.freeze([
     tituloClave: "LAGUNAK.Seccion.Sala.Ingenieria",
     caja: Object.freeze({ x: 8, y: 3, ancho: 4, alto: 2 }),
     region: "popa",
-    destino: "puesto",
+    // Misma decisión que el puente: se entra andando, y la consola está dentro.
+    destino: "andar",
+    estancia: "ingenieria",
     puesto: "engineering",
   }),
   Object.freeze({
@@ -137,6 +150,7 @@ export function componerSeccion(sistemas = []) {
       caja: sala.caja,
       region: sala.region,
       destino: sala.destino,
+      estancia: sala.estancia ?? null,
       puesto: sala.puesto ?? null,
       salud: sala.region ? (salud[sala.region] ?? null) : null,
     })),

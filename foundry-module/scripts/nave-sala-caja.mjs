@@ -30,7 +30,9 @@
 
 import { SECCION } from "./paleta.mjs";
 import { componerEscena } from "./retro3d.mjs";
+import { resolverCamara } from "./nave-camara.mjs";
 import { campoEstelar, proyectarEstrellas } from "./retro3d-estrellas.mjs";
+import { piezasDeVentana } from "./nave-ventana-espacio.mjs";
 import { crearPlanta } from "./nave-movimiento.mjs";
 import { poligonosOtrosJugadores } from "./nave-avatares-render.mjs";
 
@@ -76,6 +78,10 @@ export const ALTURA_OJOS = 1.45;
  *  como estar de pie en una sala. */
 export const ALTURA = 3.8;
 const GROSOR_MURO = 0.4;
+
+/** Tonos del detalle de la hoja. Del casco, no colores nuevos (#351). */
+const DETALLE_HOJA = SECCION.mamparo;
+const FRANJA_HOJA = "#ffb703";
 
 /** Altura del hueco de una puerta: por debajo se puede cruzar, por encima
  *  sigue habiendo muro (el dintel). 2.8 y no 2.2 (QA: "parece gigante"): al
@@ -154,6 +160,33 @@ function piezasMarcoVentana(base, y0, y1, alongX) {
   ];
 }
 
+/**
+ * Marco de PUERTA: jambas a los lados y una banda de dintel encima del hueco.
+ *
+ * Un hueco sin marco no se lee como puerta (QA 2026-08-08: «hay que hacer
+ * texturas para que se entienda que son puertas»). En este lenguaje de bloques no
+ * hay texturas propiamente: lo que hace que algo se lea como puerta es el
+ * CONTORNO —dos jambas verticales y un dintel— en un color distinto del muro, que
+ * es exactamente cómo se señalizan las esclusas de verdad.
+ *
+ * Va hasta `ALTURA_PUERTA` y no hasta el techo: el dintel tiene que verse como el
+ * borde superior del paso, no como una viga.
+ */
+function piezasMarcoPuerta(base, y0, y1, alongX) {
+  const jambas = alongX
+    ? [
+        rectAColumnaEntre({ ...base, ancho: GROSOR_MARCO }, y0, y1),
+        rectAColumnaEntre({ ...base, x: base.x + base.ancho - GROSOR_MARCO, ancho: GROSOR_MARCO }, y0, y1),
+      ]
+    : [
+        rectAColumnaEntre({ ...base, profundidad: GROSOR_MARCO }, y0, y1),
+        rectAColumnaEntre({ ...base, z: base.z + base.profundidad - GROSOR_MARCO, profundidad: GROSOR_MARCO }, y0, y1),
+      ];
+  // Dintel: una banda fina justo encima del hueco, del ancho entero del paso.
+  const dintel = rectAColumnaEntre(base, y1 - GROSOR_MARCO, y1);
+  return [...jambas, dintel];
+}
+
 // ---- Puertas correderas (QA: "estilo Star Trek, cerradas y se abren por
 // dentro deslizándose") -----------------------------------------------------
 //
@@ -201,21 +234,68 @@ export function fraccionAbierta(distancia) {
  * retira hacia SU lado —nunca hacia el centro— al abrirse, hasta desaparecer
  * por completo dentro del muro que la enmarca.
  */
-export function piezasHojaPuerta({ base, y0, y1, alongX }, fraccion) {
+/**
+ * Los RECTS de las dos hojas, ya deslizadas.
+ *
+ * Se separa de `piezasHojaPuerta` para que el detalle pixelart de la hoja salga de
+ * los MISMOS rects que la hoja: con dos cálculos, la franja de aviso se quedaría
+ * quieta mientras la puerta se abre.
+ */
+export function rectsHojaPuerta({ base, alongX }, fraccion) {
   if (alongX) {
     const mitad = base.ancho / 2;
     const deslizamiento = mitad * fraccion;
     return [
-      rectAColumnaEntre({ ...base, x: base.x - deslizamiento, ancho: mitad }, y0, y1),
-      rectAColumnaEntre({ ...base, x: base.x + mitad + deslizamiento, ancho: mitad }, y0, y1),
+      { ...base, x: base.x - deslizamiento, ancho: mitad },
+      { ...base, x: base.x + mitad + deslizamiento, ancho: mitad },
     ];
   }
   const mitad = base.profundidad / 2;
   const deslizamiento = mitad * fraccion;
   return [
-    rectAColumnaEntre({ ...base, z: base.z - deslizamiento, profundidad: mitad }, y0, y1),
-    rectAColumnaEntre({ ...base, z: base.z + mitad + deslizamiento, profundidad: mitad }, y0, y1),
+    { ...base, z: base.z - deslizamiento, profundidad: mitad },
+    { ...base, z: base.z + mitad + deslizamiento, profundidad: mitad },
   ];
+}
+
+export function piezasHojaPuerta(puerta, fraccion) {
+  const { y0, y1 } = puerta;
+  return rectsHojaPuerta(puerta, fraccion).map((rect) => rectAColumnaEntre(rect, y0, y1));
+}
+
+/**
+ * Detalle pixelart SOBRE la hoja de una puerta (QA 2026-08-08: «no hay pixelart
+ * en la puerta»).
+ *
+ * El marco ya dice DÓNDE está la puerta; esto dice QUÉ es. En un lenguaje de
+ * bloques el detalle son piezas finas resaltadas sobre el plano de la hoja, no un
+ * mapa de bits: tres bandas horizontales de refuerzo y una franja de aviso a la
+ * altura de la mano, que es como se marca una esclusa de verdad.
+ *
+ * Sobresalen un pelo del plano de la hoja (`RESALTE`) porque dos superficies
+ * coplanares se pelean por el orden del pintor y parpadean.
+ */
+const RESALTE = 0.03;
+const ALTURAS_BANDA = Object.freeze([0.55, 0.75]);
+const ALTURA_FRANJA = 0.42;
+
+function piezasDetalleHoja({ base, y0, y1, alongX }, hoja) {
+  const alto = y1 - y0;
+  const piezas = [];
+  const grueso = 0.09;
+
+  const bandaEn = (fraccion, grosorBanda, color) => {
+    const cy = y0 + alto * fraccion;
+    const rect = alongX
+      ? { ...hoja, z: hoja.z - RESALTE, profundidad: hoja.profundidad + RESALTE * 2 }
+      : { ...hoja, x: hoja.x - RESALTE, ancho: hoja.ancho + RESALTE * 2 };
+    piezas.push({ malla: rectAColumnaEntre(rect, cy - grosorBanda / 2, cy + grosorBanda / 2), color });
+  };
+
+  for (const fraccion of ALTURAS_BANDA) bandaEn(fraccion, grueso, DETALLE_HOJA);
+  // La franja de aviso va más ancha y en ámbar: es la que se lee de lejos.
+  bandaEn(ALTURA_FRANJA, grueso * 2, FRANJA_HOJA);
+  return piezas;
 }
 
 /**
@@ -237,6 +317,7 @@ function abrirHuecosEnMuros(muros, huecos, ancho, profundidad) {
   let tramosEste = [este];
   const bandas = [];
   const marcos = [];
+  const marcosPuerta = [];
   const puertasConBase = [];
 
   for (const hueco of huecos) {
@@ -270,6 +351,7 @@ function abrirHuecosEnMuros(muros, huecos, ancho, profundidad) {
     if (y0 > 0) bandas.push(rectAColumnaEntre(base, 0, y0));
     if (y1 < ALTURA) bandas.push(rectAColumnaEntre(base, y1, ALTURA));
     if (esVentana) marcos.push(...piezasMarcoVentana(base, y0, y1, alongX));
+    else marcosPuerta.push(...piezasMarcoPuerta(base, y0, y1, alongX));
     // `base` ya trae el hueco resuelto con el grosor REAL del muro que toca
     // (el `rect` de entrada no lo garantiza — sus ejes fuera del ancho de
     // puerta son arbitrarios, ver `nave-vestibulo.PUERTA_*`), así que las
@@ -281,6 +363,7 @@ function abrirHuecosEnMuros(muros, huecos, ancho, profundidad) {
     muros: [...tramosNorte, ...tramosSur, ...tramosOeste, ...tramosEste],
     bandas,
     marcos,
+    marcosPuerta,
     puertasConBase,
   };
 }
@@ -413,6 +496,8 @@ export function crearSalaCaja({
   // hueco es lo que hace que se lea como una ventana con cristal y no como
   // un boquete en el muro, sin que el motor sepa dibujar transparencias.
   colorMarcoVentana = SECCION.entrable,
+  // Ámbar de señalización: el mismo que ya usa el módulo para «esto se acciona».
+  colorMarcoPuerta = "#ffb703",
   semillaCielo = 20260731,
   cantidadEstrellas = 90,
 }) {
@@ -426,7 +511,8 @@ export function crearSalaCaja({
     ...puertas.map(({ rect }) => ({ rect, y0: 0, y1: ALTURA_PUERTA, esVentana: false })),
     ...ventanas.map(({ rect }) => ({ rect, y0: ALTURA_ALFEIZAR, y1: ALTURA_DINTEL_VENTANA, esVentana: true })),
   ];
-  const { muros: tramosMuro, bandas, marcos, puertasConBase } = abrirHuecosEnMuros(muros, huecos, ancho, profundidad);
+  const { muros: tramosMuro, bandas, marcos, marcosPuerta, puertasConBase } =
+    abrirHuecosEnMuros(muros, huecos, ancho, profundidad);
 
   const obstaculosMobiliario = mobiliario
     .filter((pieza) => pieza.colision !== false)
@@ -440,6 +526,9 @@ export function crearSalaCaja({
   const piezas = Object.freeze([
     ...tramosMuro.map((rect) => ({ malla: rectAColumna(rect, ALTURA), color: colorMuro })),
     ...marcos.map((malla) => ({ malla, color: colorMarcoVentana })),
+    // El marco de puerta lleva su propio color: es lo que la hace reconocible
+    // como paso a otra sala y no como un boquete en el muro.
+    ...marcosPuerta.map((malla) => ({ malla, color: colorMarcoPuerta })),
     ...bandas.map((malla) => ({ malla, color: colorMuro })),
     ...columnas.map((rect) => ({ malla: rectAColumna(rect, ALTURA), color: colorColumna })),
     ...mobiliario.map(({ centro, medidas, color }) => ({ malla: caja(centro, medidas), color })),
@@ -458,8 +547,19 @@ export function crearSalaCaja({
    * offset de salto/agachado (#446) sobre `ALTURA_OJOS`.
    */
   function componer(x, y, z, yaw, opciones = {}) {
-    const { ancho: anchoLienzo = 480, alto: altoLienzo = 270, epoca, fov = 62, otrosJugadores = [] } = opciones;
-    const camara = [x, ALTURA_OJOS + y, z];
+    const {
+      ancho: anchoLienzo = 480, alto: altoLienzo = 270, epoca, fov = 62, otrosJugadores = [],
+      // Punto de vista (QA 2026-08-08). La regla vive en `nave-camara.mjs`
+      // porque es la misma para las catorce estancias; aquí solo se consume.
+      modoCamara,
+      avatarPropio = {},
+      // #541: lo que se ve por la ventana es el MISMO espacio que la nave tiene
+      // alrededor, no un cielo de adorno. Sin lectura baja una persiana, que lo
+      // decide `nave-ventana-espacio.mjs`: aquí no se inventa relleno.
+      sensores = null,
+      rumboNave = null,
+    } = opciones;
+    const { camara, dibujarPropio } = resolverCamara({ x, z, y, yaw, modo: modoCamara });
     const yawCamara = -yaw; // ver el comentario de `yaw` en `cantina-escena.mjs`
 
     // Las hojas de cada puerta se recalculan en cada llamada: su apertura es
@@ -467,14 +567,21 @@ export function crearSalaCaja({
     // cabecera de "Puertas correderas"), así que no pueden vivir en `piezas`
     // —congeladas una vez, en la construcción de la sala— sino que se
     // generan aquí, con `x`/`z` ya conocidos.
-    const hojasPuertas = puertasConBase.flatMap((puerta) =>
-      piezasHojaPuerta(puerta, fraccionAbierta(distanciaARect(x, z, puerta.base))).map((malla) => ({
-        malla,
-        color: colorMuro,
-      })),
+    const hojasPuertas = puertasConBase.flatMap((puerta) => {
+      const fraccion = fraccionAbierta(distanciaARect(x, z, puerta.base));
+      const rects = rectsHojaPuerta(puerta, fraccion);
+      return [
+        ...rects.map((rect) => ({ malla: rectAColumnaEntre(rect, puerta.y0, puerta.y1), color: colorMuro })),
+        // El detalle sale de los MISMOS rects, así que viaja con la hoja al abrirse.
+        ...rects.flatMap((rect) => piezasDetalleHoja(puerta, rect)),
+      ];
+    });
+
+    const vistaVentanas = ventanas.flatMap(({ rect }) =>
+      piezasDeVentana({ rect, sala: { ancho, profundidad }, sensores, rumboNave }),
     );
 
-    const partes = [...piezas, ...hojasPuertas].map(({ malla, color }) =>
+    const partes = [...piezas, ...hojasPuertas, ...vistaVentanas].map(({ malla, color }) =>
       componerEscena(trasladarMalla(malla, [-camara[0], -camara[1], -camara[2]]), {
         ancho: anchoLienzo,
         alto: altoLienzo,
@@ -495,7 +602,15 @@ export function crearSalaCaja({
       }),
     );
 
-    const poligonosJugadores = poligonosOtrosJugadores(otrosJugadores, {
+    // En tercera persona el propio cuerpo entra como un avatar más: reusa
+    // `piezasAvatar` sin que el render de presencia sepa que uno de ellos eres
+    // tú. En primera no se pinta —estarías dentro de tu propia cabeza—, y esa es
+    // la única diferencia real entre los dos modos aparte de dónde va la cámara.
+    const cuerpos = dibujarPropio
+      ? [...otrosJugadores, { x, y, z, yaw, avatar: avatarPropio }]
+      : otrosJugadores;
+
+    const poligonosJugadores = poligonosOtrosJugadores(cuerpos, {
       camara,
       yaw: yawCamara,
       ancho: anchoLienzo,
@@ -512,7 +627,12 @@ export function crearSalaCaja({
     // El cielo por la(s) ventana(s): mismo mecanismo que `cantina-escena.mjs`
     // ("Por el ojo de buey") — se pinta ANTES que los polígonos, así que el
     // propio muro lo recorta y no hace falta máscara.
-    const estrellas = cielo
+    // El campo estelar solo con LECTURA: es el fondo del espacio, y detrás de una
+    // persiana bajada no hay fondo que ver. Sin esta condición se colaban
+    // estrellas por las rendijas de las lamas y la persiana dejaba de leerse como
+    // «no hay vista» para parecer «hay vista y está vacía» (#541).
+    const hayLectura = Boolean(sensores && Array.isArray(sensores.contactos) && rumboNave !== null && rumboNave !== undefined);
+    const estrellas = cielo && hayLectura
       ? proyectarEstrellas(cielo, { ancho: anchoLienzo, alto: altoLienzo, epoca, fov, yaw: yawCamara })
       : [];
 

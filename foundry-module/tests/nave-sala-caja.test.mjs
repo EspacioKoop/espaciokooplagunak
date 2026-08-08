@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { colisiona } from "../scripts/nave-movimiento.mjs";
-import { ALTURA_OJOS, crearSalaCaja, detalleConsola, fraccionAbierta } from "../scripts/nave-sala-caja.mjs";
+import { ALTURA_OJOS, crearSalaCaja, detalleConsola, fraccionAbierta, rectsHojaPuerta } from "../scripts/nave-sala-caja.mjs";
 
 test("una sala sin ventanas no proyecta estrellas", () => {
   const sala = crearSalaCaja({ ancho: 6, profundidad: 6 });
@@ -20,12 +20,24 @@ test("una sala con ventana proyecta estrellas y sigue colisionando en sus límit
 
   // Mirando de frente hacia la ventana debe haber algún punto de cielo en
   // pantalla — si no, la ventana estaría ahí pero no se vería nada por ella.
-  const escena = sala.componer(3, 0, 3, 0, { ancho: 320, alto: 180 });
+  //
+  // Hace falta LECTURA para que haya cielo (#541): el campo estelar es el fondo
+  // del espacio, y detrás de una persiana bajada no hay fondo. Antes se pintaba
+  // siempre, y las estrellas se colaban por las rendijas de las lamas haciendo
+  // que la persiana pareciera «hay vista y está vacía».
+  const conLectura = { sensores: { contactos: [], alcance: { corto: 5000, largo: 30000 } }, rumboNave: 0 };
+  const escena = sala.componer(3, 0, 3, 0, { ancho: 320, alto: 180, ...conLectura });
   assert.ok(escena.estrellas.length > 0);
   for (const estrella of escena.estrellas) {
     assert.ok(estrella.x >= 0 && estrella.x < 320);
     assert.ok(estrella.y >= 0 && estrella.y < 180);
   }
+});
+
+test("sin lectura no hay cielo: detrás de la persiana no se ve espacio (#541)", () => {
+  const sala = crearSalaCaja({ ancho: 6, profundidad: 6, ventanas: [{ rect: { x: 2, z: 6, ancho: 2, profundidad: 1.2 } }] });
+  const escena = sala.componer(3, 0, 3, 0, { ancho: 320, alto: 180 });
+  assert.deepEqual(escena.estrellas, [], "una persiana bajada no puede tener estrellas detrás");
 });
 
 test("misma semilla de cielo, mismo campo estelar entre dos composiciones", () => {
@@ -99,4 +111,62 @@ test("el rodapié y la lámpara de techo no bloquean el paso por el centro de un
   // Cuatro muros + suelo + techo ya darían un puñado de polígonos; el
   // rodapié (4 piezas) y la lámpara (1 pieza) deben sumar visiblemente más.
   assert.ok(escena.poligonos.length >= 10, `se esperaban al menos 10 polígonos, hubo ${escena.poligonos.length}`);
+});
+
+test("una puerta trae MARCO: jambas y dintel, para que se lea como puerta", () => {
+  // QA 2026-08-08: «hay que hacer texturas para que se entienda que son
+  // puertas». En un lenguaje de bloques no hay textura: lo que hace que un hueco
+  // se lea como puerta es el CONTORNO en otro color. Antes solo las ventanas
+  // tenían marco (`if (esVentana)`) y las puertas eran un boquete.
+  const sinPuerta = crearSalaCaja({ ancho: 11, profundidad: 11 });
+  const conPuerta = crearSalaCaja({
+    ancho: 11, profundidad: 11,
+    puertas: [{ rect: { x: 0, z: 4, ancho: 1.2, profundidad: 2.4 } }],
+  });
+
+  // Mirando al muro oeste, que es donde está la puerta (yaw -PI/2 mira a -x).
+  const vista = (sala) => sala.componer(3, 0, 5.2, -Math.PI / 2, { ancho: 320, alto: 180 });
+  assert.ok(
+    vista(conPuerta).poligonos.length > vista(sinPuerta).poligonos.length,
+    "la puerta y su marco tienen que aportar piezas al mirarla de frente",
+  );
+
+  // Y el marco se pinta con SU color, no con el del muro. Se compara por
+  // familia y no por hex exacto: el pintor sombrea cada cara, así que
+  // `#ffb703` llega a la escena como varios tonos suyos — comprobar el hex
+  // literal daría un falso negativo (me pasó al verificarlo a mano).
+  const conMarcoVisible = conPuerta.componer(3, 0, 5.2, -Math.PI / 2, {
+    ancho: 320, alto: 180,
+  }).poligonos.map((pieza) => pieza.color);
+  const calidos = conMarcoVisible.filter((color) => {
+    const r = parseInt(color.slice(1, 3), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+    return r > b * 1.5;
+  });
+  assert.ok(calidos.length > 0, "el marco ámbar debería aportar tonos cálidos a la escena");
+});
+
+test("el detalle de la hoja se DESPLAZA con ella al abrirse", () => {
+  // QA 2026-08-08: «no hay pixelart en la puerta». El marco dice dónde está la
+  // puerta; el detalle de la hoja dice qué es. Y tiene que salir de los MISMOS
+  // rects que la hoja: con dos cálculos, la franja de aviso se quedaría quieta
+  // mientras la puerta se abre, que es peor que no tenerla.
+  const puerta = { base: { x: 0, z: 4, ancho: 1.2, profundidad: 2.4 }, y0: 0, y1: 2.8, alongX: false };
+  const cerrada = rectsHojaPuerta(puerta, 0);
+  const abierta = rectsHojaPuerta(puerta, 1);
+  assert.notDeepEqual(cerrada, abierta, "las hojas tienen que moverse");
+
+  // El detalle no se exporta: se comprueba por lo observable, que la hoja de la
+  // que sale cambia de sitio. Exportar una función interna solo para medirla
+  // ataría la prueba a la implementación en vez de al comportamiento.
+  assert.notEqual(cerrada[0].z, abierta[0].z, "la hoja izquierda debería haberse retirado");
+});
+
+test("una puerta cerrada tapa el hueco entero, y abierta lo despeja", () => {
+  const puerta = { base: { x: 0, z: 4, ancho: 1.2, profundidad: 2.4 }, y0: 0, y1: 2.8, alongX: false };
+  const [izq, der] = rectsHojaPuerta(puerta, 0);
+  // Cerradas, las dos mitades cubren el hueco sin dejar rendija.
+  assert.equal(izq.profundidad + der.profundidad, puerta.base.profundidad);
+  assert.equal(izq.z, puerta.base.z);
+  assert.equal(der.z + der.profundidad, puerta.base.z + puerta.base.profundidad);
 });

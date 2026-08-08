@@ -15,7 +15,10 @@
  */
 
 import { MODULE_ID } from "./lagunak-constantes.mjs";
-import { arrancarAndar } from "./nave-movimiento-lienzo.mjs";
+import { arrancarAndar, RADIO_ANDAR } from "./nave-movimiento-lienzo.mjs";
+import { colisiona } from "./nave-movimiento.mjs";
+import { modeloMinimapa } from "./nave-minimapa.mjs";
+import { pintarMinimapa } from "./nave-minimapa-lienzo.mjs";
 import { CATALOGO_ANDAR } from "./nave-catalogo-andar.mjs";
 import { puntoDeLlegada, resolverArranque } from "./nave-estancias.mjs";
 import { construirMuestra, debeMuestrear, programarMuestra } from "./nave-movimiento-red.mjs";
@@ -23,6 +26,7 @@ import { presentesEn } from "./nave-presencia.mjs";
 import { avatarDeUsuario } from "./avatar-assignment.mjs";
 import { openWorkspaceApp } from "./station-workspace-ui.mjs";
 import { SECCION } from "./paleta.mjs";
+import { AJUSTE_TELEMETRIA, aceptarSensores, aceptarTelemetria } from "./telemetria-difusion.mjs";
 
 const ESTANCIA_INICIAL = "cantina";
 
@@ -110,7 +114,7 @@ function publicarPosicion(estanciaId, mando, ultimoSelloEnviado, forzar = false)
  * verse ni un error: eso explica que no quedara nada ni en la consola ni en
  * ningún volcado de fallo. "c" solo, sin ese choque, es la tecla de
  * agacharse que queda. */
-const TECLA_DIRECCION = Object.freeze({
+export const TECLA_DIRECCION = Object.freeze({
   w: "adelante",
   s: "atras",
   a: "izquierda",
@@ -121,7 +125,19 @@ const TECLA_DIRECCION = Object.freeze({
   c: "agachado",
 });
 
-const TECLA_GIRO = Object.freeze({ q: -1, e: 1, ArrowLeft: -1, ArrowRight: 1 });
+export const TECLA_GIRO = Object.freeze({ q: -1, e: 1, ArrowLeft: -1, ArrowRight: 1 });
+
+/**
+ * Teclas que NO son ni dirección ni giro, con lo que hacen.
+ *
+ * Existe para que el reparto de teclas sea comprobable: `onKeyDown` consulta
+ * `TECLA_DIRECCION` primero y hace `return`, así que una tecla repetida aquí
+ * queda como CÓDIGO MUERTO en silencio. Pasó de verdad — la cámara se ató a `c`,
+ * que ya era agacharse, y no alternaba nada; lo cazó el QA leyendo el commit y no
+ * una prueba. `andar-nave-app.test.mjs` compara las tres tablas y falla si un
+ * mapa pisa a otro.
+ */
+export const TECLAS_ACCION = Object.freeze({ v: "camara", V: "camara" });
 
 /**
  * Engancha teclado a un mando de `arrancarAndar`. Vive fuera de las dos
@@ -166,6 +182,21 @@ function engancharTeclado(raiz, mando) {
       ev.stopPropagation();
       girando.add(giro);
       actualizarGiro();
+      return;
+    }
+    // Punto de vista (QA 2026-08-08). En el flanco de PULSACIÓN y no mantenida:
+    // es un interruptor, no una dirección.
+    //
+    // `V` de vista, y NO `C`: `c` ya es agacharse desde que "Control" se retiró
+    // por el cierre de ventana que investigó #446. Peor aún, con `C` esta rama
+    // era código MUERTO —`TECLA_DIRECCION` se consulta antes y hace `return`—,
+    // así que la cámara no alternaba nada. Lo cazó el QA leyendo el commit, no
+    // una prueba: de ahí `TECLAS_RESERVADAS` abajo, para que el próximo choque
+    // lo cace la suite.
+    if (TECLAS_ACCION[ev.key] === "camara") {
+      ev.preventDefault();
+      ev.stopPropagation();
+      mando.alternarCamara();
     }
   };
   const onKeyUp = (ev) => {
@@ -221,6 +252,22 @@ function arrancar(raiz, estanciaPedida = null) {
   // posición, pero nunca supo que existen "estancias" con nombre — ese
   // conocimiento es de este archivo y del catálogo, no del bucle.
   let estanciaActual = arranque.estancia;
+
+  /**
+   * Rotula en qué sala estás (QA: «no sé en qué sala estoy»).
+   *
+   * El nombre sale de i18n por id de estancia, y si falta la clave se enseña el
+   * id crudo en vez de dejar el rótulo vacío: saber que estás en «warp» es peor
+   * que leer «Motor de warp» y muchísimo mejor que no saber nada.
+   */
+  function rotularSala(estanciaId) {
+    pintarSituacion(estanciaId);
+    const nodo = raiz?.querySelector?.("[data-andar-sala]");
+    if (!nodo) return;
+    const clave = ["LAGUNAK", "AndarNave", "Sala", estanciaId].join(".");
+    const nombre = game.i18n?.has?.(clave) ? game.i18n.localize(clave) : estanciaId;
+    nodo.textContent = game.i18n?.format?.("LAGUNAK.AndarNave.EstasEn", { sala: nombre }) ?? nombre;
+  }
   let ultimoSelloEnviado = null;
 
   // Muestras en vivo de los demás jugadores (#453), acumuladas por
@@ -252,14 +299,60 @@ function arrancar(raiz, estanciaPedida = null) {
     }));
   }
 
+  /** Minimapa: dónde estás dentro del plano real de la nave. */
+  function pintarSituacion(estanciaId) {
+    const lienzoMapa = raiz?.querySelector?.("[data-andar-minimapa]");
+    const ctx = lienzoMapa?.getContext?.("2d");
+    if (!ctx) return;
+    pintarMinimapa(ctx, modeloMinimapa(estanciaId));
+  }
+
+  /**
+   * Posición de arranque utilizable: la guardada si hoy sigue siendo válida, y la
+   * entrada de la estancia si no. Devuelve `{x, z, yaw}` para volcarlo tal cual.
+   */
+  function arranqueValido(guardadaPosible, estancia) {
+    const x = guardadaPosible?.x;
+    const z = guardadaPosible?.z;
+    const sirve =
+      typeof x === "number" && typeof z === "number" &&
+      !colisiona(x, z, RADIO_ANDAR, estancia.planta);
+    if (sirve) return { x, z, yaw: guardadaPosible?.yaw ?? estancia.entrada.yaw };
+    return { x: estancia.entrada.x, z: estancia.entrada.z, yaw: estancia.entrada.yaw };
+  }
+
+  /**
+   * Lo que se ve por las ventanas (#541): la MISMA lectura degradada que el
+   * puente ya difunde a toda la tripulación, la que alimenta el visor del
+   * piloto. No abre ningún dato nuevo — un tripulante ve por la ventana lo que
+   * ya podía saber— y sin telemetría devuelve `null`, que es lo que baja la
+   * persiana en vez de inventar un cielo.
+   *
+   * Se lee del ajuste en cada fotograma en vez de suscribirse: es una lectura en
+   * memoria, y así una telemetría nueva se ve sin coordinar dos relojes.
+   */
+  function sobreTelemetria() {
+    return game.settings?.get?.(MODULE_ID, AJUSTE_TELEMETRIA) ?? null;
+  }
+
+  // Rótulo inicial: el resto de llamadas van en los cambios de estancia.
   const mando = arrancarAndar(lienzo, {
+    sensores: () => aceptarSensores(sobreTelemetria()),
+    rumboNave: () => {
+      const ship = aceptarTelemetria(sobreTelemetria());
+      return typeof ship?.heading === "number" ? ship.heading : null;
+    },
     componer: inicial.componer,
     planta: inicial.planta,
     puertas: inicial.puertas,
     consolas: inicial.consolas,
-    x: guardada?.x ?? inicial.entrada.x,
-    z: guardada?.z ?? inicial.entrada.z,
-    yaw: guardada?.yaw ?? inicial.entrada.yaw,
+    // El checkpoint se VALIDA antes de usarse (QA 2026-08-08: «sigue el bug de
+    // no poder moverse»). Un flag guardado en una sesión anterior puede caer hoy
+    // dentro de un mueble —la cantina cambió de sistema de coordenadas Y de
+    // colisión al pasar por la fábrica— y con el punto de partida bloqueado el
+    // motor rechaza todos los pasos: no hay error, simplemente no te mueves.
+    // Confiar en un dato persistido es confiar en la geometría de ayer.
+    ...arranqueValido(guardada, inicial),
     // La costura entre salas: el catálogo ya decidió a qué estancia lleva
     // cada puerta y con qué posición/orientación se llega. Esta ventana solo
     // aplica lo que `puntoDeLlegada` ya resolvió — no vuelve a decidir nada.
@@ -267,6 +360,7 @@ function arrancar(raiz, estanciaPedida = null) {
       const llegada = puntoDeLlegada(CATALOGO_ANDAR, destino);
       if (!llegada) return;
       estanciaActual = llegada.estancia;
+      rotularSala(estanciaActual);
       mando.cambiarEstancia(llegada);
       // Se publica AQUÍ y no solo al cerrar/cada 150ms: un refresco de página
       // no debería devolver a quien cruzó una puerta a la estancia de la que
@@ -334,6 +428,7 @@ function arrancar(raiz, estanciaPedida = null) {
       const llegada = puntoDeLlegada(CATALOGO_ANDAR, { estancia: estanciaId });
       if (!llegada) return false;
       estanciaActual = llegada.estancia;
+      rotularSala(estanciaActual);
       mando.cambiarEstancia(llegada);
       ultimoSelloEnviado = publicarPosicion(estanciaActual, mando, ultimoSelloEnviado, true);
       return true;

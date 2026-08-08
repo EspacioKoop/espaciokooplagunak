@@ -34,6 +34,16 @@
 // aquí porque es la primera superficie del módulo donde `reducirMovimiento`
 // NO es la respuesta correcta, y conviene que quien la toque sepa por qué.
 
+import { alternarModo, PRIMERA } from "./nave-camara.mjs";
+
+/**
+ * Radio de colisión de quien anda.
+ *
+ * Se EXPORTA porque quien decide dónde aparece alguien necesita el mismo número
+ * para comprobar que ahí cabe: con dos copias, un checkpoint podía validarse
+ * contra un radio y luego moverse con otro (QA 2026-08-08).
+ */
+export const RADIO_ANDAR = 0.35;
 import { mover, puertaTocada } from "./nave-movimiento.mjs";
 import { pintarEscenaConProfundidad } from "./retro3d-lienzo.mjs";
 
@@ -64,7 +74,7 @@ const VELOCIDAD_GIRO = Math.PI * 0.6; // radianes por segundo
 export function arrancarAndar(lienzo, opciones = {}) {
   const {
     velocidad = 2.2,
-    radio = 0.35,
+    radio = RADIO_ANDAR,
     velocidadGiro = VELOCIDAD_GIRO,
     fondo = null,
     ahora = () => globalThis.performance?.now?.() ?? Date.now(),
@@ -75,6 +85,16 @@ export function arrancarAndar(lienzo, opciones = {}) {
     // conoce el reloj/red por su cuenta, solo pide el dato fresco cuando le
     // toca pintar (#498, follow-up de #453).
     otrosJugadores = () => [],
+    // Punto de vista (QA 2026-08-08). El bucle solo lo TRANSPORTA: la regla de
+    // dónde va la cámara vive en `nave-camara.mjs` y la aplica quien compone.
+    modoCamara: modoCamaraInicial = PRIMERA,
+    avatarPropio = () => ({}),
+    // #541: lo que se ve por las ventanas. Se pasan como FUNCIONES y no como
+    // valores porque cambian con cada telemetría, y el bucle solo las transporta:
+    // qué hacer con ellas —incluida la persiana cuando no hay lectura— lo decide
+    // `nave-ventana-espacio.mjs`.
+    sensores = () => null,
+    rumboNave = () => null,
   } = opciones;
 
   if (typeof opciones.componer !== "function") {
@@ -124,6 +144,7 @@ export function arrancarAndar(lienzo, opciones = {}) {
   let yaw = Number.isFinite(opciones.yaw) ? opciones.yaw : 0;
 
   const activas = new Set();
+  let modoCamara = modoCamaraInicial;
   let girando = 0; // -1 izquierda, 0 quieto, +1 derecha
   let vivo = true;
   let fotograma = null;
@@ -132,7 +153,17 @@ export function arrancarAndar(lienzo, opciones = {}) {
   function pintarUnaVez() {
     const ctx = lienzo?.getContext?.("2d");
     if (!ctx) return;
-    pintarEscenaConProfundidad(ctx, componer(x, y, z, yaw, { otrosJugadores: otrosJugadores() }), { fondo });
+    pintarEscenaConProfundidad(
+      ctx,
+      componer(x, y, z, yaw, {
+        otrosJugadores: otrosJugadores(),
+        modoCamara,
+        avatarPropio: avatarPropio(),
+        sensores: sensores(),
+        rumboNave: rumboNave(),
+      }),
+      { fondo },
+    );
   }
 
   function paso(ms) {
@@ -189,6 +220,22 @@ export function arrancarAndar(lienzo, opciones = {}) {
     /** Suelta una dirección. Soltar una que no estaba activa no hace nada. */
     soltar(direccion) {
       activas.delete(direccion);
+    },
+    /**
+     * Alterna entre primera y tercera persona y devuelve el modo resultante.
+     *
+     * Repinta al instante en vez de esperar al siguiente fotograma: sin bucle de
+     * animación (`prefers-reduced-motion`, o un anfitrión sin rAF) el cambio no
+     * se vería hasta que alguien se moviera.
+     */
+    alternarCamara() {
+      modoCamara = alternarModo(modoCamara);
+      pintarUnaVez();
+      return modoCamara;
+    },
+    /** Qué punto de vista está activo, para rotularlo fuera. */
+    camara() {
+      return modoCamara;
     },
     /** Gira mientras se mantenga: -1 izquierda, 0 quieto, 1 derecha. */
     girar(sentido) {

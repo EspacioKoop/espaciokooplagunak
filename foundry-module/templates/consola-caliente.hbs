@@ -88,6 +88,37 @@
       {{#if maniobraFallo}}
       <p class="lagunak-maniobra-fallo" role="status">{{localize "LAGUNAK.Maniobra.Fallo"}}</p>
       {{/if}}
+      {{! Reposición a un ancla NOMBRADA (#176, cableada en #537). Va en el
+          grupo de maniobra porque es la misma clase de gesto —el GM moviendo
+          la nave— pero deliberadamente NO comparte su fila de botones: es la
+          única de estas órdenes que teletransporta, y un clic de más aquí no
+          se parece a subir un punto de impulso. De ahí el select + botón
+          aparte en vez de un botón por ancla. }}
+      {{#if reposicion.disponible}}
+      <div class="lagunak-maniobra-grupo lagunak-reposicion"
+        role="group" aria-label="{{localize "LAGUNAK.Reposicion.Titulo"}}">
+        <label>
+          <span class="lagunak-maniobra-etiqueta">{{localize "LAGUNAK.Reposicion.AnclaEtiqueta"}}</span>
+          <select data-field="reposicion-ancla" {{#unless reposicion.puedeReposicionar}}disabled{{/unless}}>
+            {{#each reposicion.anclas}}
+            <option value="{{this.id}}" {{#if this.seleccionada}}selected{{/if}}>{{this.etiqueta}}</option>
+            {{/each}}
+          </select>
+        </label>
+        <button type="button" data-action="reposicionar"
+          {{#unless reposicion.puedeReposicionar}}disabled{{/unless}}>
+          <i class="fa-solid fa-location-crosshairs" aria-hidden="true"></i>
+          {{#if reposicion.pendiente}}
+          {{localize "LAGUNAK.Reposicion.Enviando"}}
+          {{else}}
+          {{localize "LAGUNAK.Reposicion.Boton"}}
+          {{/if}}
+        </button>
+      </div>
+      {{#if reposicionAviso}}
+      <p class="{{#if reposicionFallo}}lagunak-maniobra-fallo{{/if}}" role="status">{{localize reposicionAviso}}</p>
+      {{/if}}
+      {{/if}}
     </div>
   </div>
 
@@ -238,10 +269,16 @@
     </label>
     <p class="lagunak-mapa-vista-ayuda">{{localize "LAGUNAK.MapaVivo.VistaAyuda"}}</p>
 
-    <div class="lagunak-mapa-visor">
-      <canvas class="lagunak-mapa-canvas" width="480" height="480" role="img" aria-label="{{localize "LAGUNAK.MapaVivo.Descripcion"}}">
-        {{localize "LAGUNAK.MapaVivo.Descripcion"}}
-      </canvas>
+    {{! Lámina grabada ALREDEDOR del visor, no encima (#526): el bisel arcade
+        del visor es una decisión de estilo ya tomada y esto no la pisa. El
+        marco no lleva tics ni rosa de los vientos —serían una escala y una
+        marcación que nadie ha calculado— y va aria-hidden. }}
+    <div class="lagunak-mapa-lamina" style="{{estiloMarcoMapa}}">
+      <div class="lagunak-mapa-visor">
+        <canvas class="lagunak-mapa-canvas" width="480" height="480" role="img" aria-label="{{localize "LAGUNAK.MapaVivo.Descripcion"}}">
+          {{localize "LAGUNAK.MapaVivo.Descripcion"}}
+        </canvas>
+      </div>
     </div>
     <p class="lagunak-mapa-alcance">{{mapa.alcanceLabel}}</p>
 

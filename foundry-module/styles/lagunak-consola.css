@@ -10,7 +10,13 @@
 .lagunak-estado,
 .lagunak-puestos,
 .lagunak-token-puente,
-.lagunak-mapa {
+.lagunak-mapa,
+/* La consola caliente (#276) fusionó Estado + Mapa + Encuentros +
+   Previsualización en una ventana, pero su cascarón nuevo nunca entró en estos
+   grupos: se veía con la cara por defecto de Foundry mientras sus piezas de
+   dentro sí tenían estilo. Añadida en #526/#537, cuando el primer smoke real en
+   v11 lo dejó a la vista. */
+.lagunak-consola-caliente-shell {
   --lagunak-accent: #42d7ff;
   --lagunak-accent-rgb: 66, 215, 255;
   --lagunak-bg: #071017;
@@ -26,7 +32,8 @@
 .lagunak-estado .window-content,
 .lagunak-puestos .window-content,
 .lagunak-token-puente .window-content,
-.lagunak-mapa .window-content {
+.lagunak-mapa .window-content,
+.lagunak-consola-caliente-shell .window-content {
   padding: 0;
   background: #050b10;
 }
@@ -35,7 +42,8 @@
 .lagunak-estado-cuerpo,
 .lagunak-puestos__contenido,
 .lagunak-token-form,
-.lagunak-mapa-cuerpo {
+.lagunak-mapa-cuerpo,
+.lagunak-consola-caliente {
   position: relative;
   min-height: 100%;
   padding: 16px 18px;
@@ -51,7 +59,8 @@
 .lagunak-estado-cuerpo::after,
 .lagunak-puestos__contenido::after,
 .lagunak-token-form::after,
-.lagunak-mapa-cuerpo::after {
+.lagunak-mapa-cuerpo::after,
+.lagunak-consola-caliente::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -64,7 +73,8 @@
 /* --- Encabezados con acento --- */
 .lagunak-estado-cuerpo h3,
 .lagunak-mapa-cuerpo h3,
-.lagunak-token-form h3 {
+.lagunak-token-form h3,
+.lagunak-consola-caliente h3 {
   margin: 14px 0 8px;
   color: var(--lagunak-text);
   border: 0;
@@ -76,7 +86,8 @@
 }
 
 .lagunak-estado-cuerpo h4,
-.lagunak-mapa-cuerpo h4 {
+.lagunak-mapa-cuerpo h4,
+.lagunak-consola-caliente h4 {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -161,12 +172,14 @@
   text-align: right;
 }
 
-.lagunak-estado .lagunak-sistemas tr:first-child th {
+.lagunak-estado .lagunak-sistemas tr:first-child th,
+.lagunak-consola-caliente-shell .lagunak-sistemas tr:first-child th {
   color: var(--lagunak-accent);
   background: rgba(var(--lagunak-accent-rgb), 0.06);
 }
 
-.lagunak-estado .lagunak-sistemas td:first-child {
+.lagunak-estado .lagunak-sistemas td:first-child,
+.lagunak-consola-caliente-shell .lagunak-sistemas td:first-child {
   color: var(--lagunak-muted);
   text-transform: capitalize;
 }
@@ -431,15 +444,210 @@
 /* Tabla de sistemas compacta: es una rejilla de vigilancia, no un formulario.
  * Filas bajas para que la docena de sistemas quepa sin scroll. */
 .lagunak-estado .lagunak-sistemas td,
-.lagunak-estado .lagunak-sistemas th {
+.lagunak-estado .lagunak-sistemas th,
+.lagunak-consola-caliente-shell .lagunak-sistemas td,
+.lagunak-consola-caliente-shell .lagunak-sistemas th {
   padding: 3px 8px;
 }
 
-.lagunak-estado .lagunak-sistemas td {
+.lagunak-estado .lagunak-sistemas td,
+.lagunak-consola-caliente-shell .lagunak-sistemas td {
   font-size: 12px;
   line-height: 1.25;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .lagunak-barra__relleno { transition: none; }
+}
+
+/* ================= Cascarón de la consola caliente (#276) =================
+ * Lo que la fusión estrenó y nunca se vistió: barra de pestañas, paneles y la
+ * cabecera de pausa+maniobra. Los grupos de arriba ya le dan a la ventana el
+ * mueble oscuro, los tokens y las scanlines; aquí solo va lo que no existía en
+ * ninguna de las cuatro ventanas originales porque ninguna tenía pestañas.
+ *
+ * Mismo lenguaje que el resto, sin colores propios: `--lagunak-accent` y
+ * compañía salen de los tokens compartidos. Esquinas duras a propósito, como
+ * el visor del mapa: mueble, no app.
+ */
+
+.lagunak-consola-cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--lagunak-line);
+}
+
+.lagunak-consola-cabecera > * {
+  flex: 1 1 18rem;
+  min-width: 0;
+}
+
+/* Pestañas: fichas de un selector físico, no botones de sistema. La
+ * seleccionada se marca con una barra de acento arriba —el mismo recurso que la
+ * franja del visor del mapa— y no solo con color de texto, que en un tema claro
+ * se pierde. */
+.lagunak-consola-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin: 0 0 -1px;
+  padding: 0;
+  border-bottom: 1px solid var(--lagunak-line);
+}
+
+.lagunak-consola-tabs button {
+  flex: 0 1 auto;
+  margin: 0;
+  padding: 7px 14px;
+  border: 1px solid var(--lagunak-line);
+  border-bottom-color: transparent;
+  border-radius: 0;
+  border-top: 2px solid transparent;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--lagunak-muted);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.lagunak-consola-tabs button:hover {
+  background: rgba(var(--lagunak-accent-rgb), 0.10);
+  color: var(--lagunak-text);
+}
+
+.lagunak-consola-tabs button[aria-pressed="true"] {
+  border-top-color: var(--lagunak-accent);
+  background: var(--lagunak-panel);
+  color: var(--lagunak-text);
+  box-shadow: inset 0 -1px 0 var(--lagunak-panel);
+}
+
+/* El foco tiene que verse: estas pestañas se recorren con teclado y el
+ * `outline` por defecto se pierde sobre el fondo oscuro. */
+.lagunak-consola-tabs button:focus-visible {
+  outline: 2px solid var(--lagunak-accent);
+  outline-offset: -2px;
+}
+
+.lagunak-consola-panel {
+  padding: 14px 0 0;
+  border-top: 1px solid var(--lagunak-line);
+}
+
+.lagunak-consola-panel > h3:first-child,
+.lagunak-consola-panel > h4:first-child {
+  margin-top: 0;
+}
+
+/* Bloque de ingeniería dentro del panel de Estado: caja del mismo mueble, para
+ * que no parezca una lista más de botones. (La reposición ya tiene su regla en
+ * lagunak.css, junto al grupo de maniobra del que forma parte.) */
+.lagunak-ingenieria {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--lagunak-line);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.lagunak-ingenieria-nota,
+.lagunak-ingenieria-mando {
+  margin: 6px 0 0;
+  color: var(--lagunak-muted);
+  font-size: 12px;
+}
+
+.lagunak-ingenieria-fallo {
+  margin: 6px 0 0;
+  color: var(--lagunak-danger);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.lagunak-ingenieria-reparadores {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35em;
+}
+
+/* ================= Mesa de dados (#413) =================
+ * Estaba a medio vestir: el dado 3D y el tapete tenían estilo, los rótulos de
+ * apuesta, recuento y reglas no. Se apoya en los mismos tokens.
+ */
+.lagunak-dados {
+  --lagunak-accent: #ffd166;
+  --lagunak-accent-rgb: 255, 209, 102;
+  color: var(--lagunak-text);
+}
+
+.lagunak-dados-cubilete,
+.lagunak-dados-recuento {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4em;
+  margin: 8px 0;
+}
+
+.lagunak-dados-apuesta,
+.lagunak-dados-cuenta,
+.lagunak-dados-lectura {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+}
+
+.lagunak-dados-cuenta {
+  font-weight: 700;
+}
+
+/* El comodín es la única pieza que cambia el valor de una tirada: se marca con
+ * el acento, no con un icono más. */
+.lagunak-dados-comodin {
+  color: var(--lagunak-accent);
+  font-weight: 700;
+}
+
+.lagunak-dados-destape {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--lagunak-line);
+}
+
+.lagunak-dados-reglas {
+  margin: 8px 0 0;
+  color: var(--lagunak-muted);
+  font-size: 12px;
+}
+
+/* ================= Andar por la nave (#427) =================
+ * El lienzo ya se pinta solo; lo que faltaba era el aviso y la fila de
+ * controles de debajo, que salían como texto suelto de Foundry.
+ */
+.lagunak-andar-nave-controles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5em;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--lagunak-line);
+  color: var(--lagunak-muted);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+.lagunak-andar-nave-aviso {
+  margin: 8px 0 0;
+  padding: 6px 10px;
+  border-left: 2px solid var(--lagunak-accent);
+  background: rgba(var(--lagunak-accent-rgb), 0.08);
+  color: var(--lagunak-text);
+  font-size: 12px;
 }

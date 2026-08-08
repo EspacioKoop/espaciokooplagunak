@@ -60,9 +60,12 @@ test("de celda a píxel y de vuelta: la misma celda", () => {
 test("dos salas vecinas no dejan hueco ni se solapan un píxel", () => {
   // Cada caja se redondea contra la MISMA rejilla, así que el canto derecho de
   // una es exactamente el izquierdo de la siguiente.
+  // #542: la enfermería y la cantina ya no son vecinas —la enfermería era una
+  // sala inventada y no existe—. Se usan dos salas contiguas de la planta REAL:
+  // el reactor y el warp comparten la arista x=3 de la rejilla.
   const m = medidas({ ...MEDIDAS, rejilla: componerSeccion([]).rejilla });
-  const izquierda = cajaEnPixeles(salaPorId("enfermeria").caja, m);
-  const derecha = cajaEnPixeles(salaPorId("cantina").caja, m);
+  const izquierda = cajaEnPixeles(salaPorId("reactor").caja, m);
+  const derecha = cajaEnPixeles(salaPorId("warp").caja, m);
   assert.equal(izquierda.x + izquierda.ancho, derecha.x);
 });
 

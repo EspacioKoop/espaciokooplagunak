@@ -200,8 +200,23 @@ function temblor(aleatorio, amplitud = 0.6) {
   return Number(((aleatorio.siguiente() - 0.5) * 2 * amplitud).toFixed(2));
 }
 
+/**
+ * Carta grabada en SVG.
+ *
+ * `tics` y `rosa` existen para poder usar esta lámina sobre un instrumento que
+ * SÍ se lee (#526). Sobre una ilustración, los tics del limbo y la rosa de los
+ * vientos son adorno; sobre el mapa vivo serían una escala y una marcación que
+ * nadie ha calculado, y el mapa tiene la regla de no inventar lecturas. Apagarlos
+ * deja el encuadre —doble filete y cartela— que es lo que hace que parezca una
+ * lámina impresa, sin añadir ni un signo que se pueda confundir con un dato.
+ *
+ * Por defecto van encendidos: es el registro completo de Hevelius y ninguna
+ * llamada existente cambia de aspecto.
+ */
 export function cartografiaSvg(opciones = {}) {
   const { ancho, alto, marcasX, marcasY, titulo } = cartografia(opciones);
+  const conTics = opciones.tics !== false;
+  const conRosa = opciones.rosa !== false;
   const escalaTic = 6;
   // La semilla sale de las medidas: la misma carta tiembla siempre igual, así
   // que no parpadea entre renders.
@@ -242,8 +257,8 @@ export function cartografiaSvg(opciones = {}) {
     `stroke="${TINTA.linea}" stroke-width="1"/>` +
     `<rect x="4.5" y="4.5" width="${ancho - 9}" height="${alto - 9}" fill="none" ` +
     `stroke="${TINTA.lineaSuave}" stroke-width="0.6"/>` +
-    ticsSuperior + ticsInferior + ticsIzquierda + ticsDerecha +
-    `<g transform="translate(${ancho - 26} 26)">${brazos}</g>` +
+    (conTics ? ticsSuperior + ticsInferior + ticsIzquierda + ticsDerecha : "") +
+    (conRosa ? `<g transform="translate(${ancho - 26} 26)">${brazos}</g>` : "") +
     cartela +
     `</svg>`
   );

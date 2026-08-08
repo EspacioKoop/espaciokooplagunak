@@ -57,6 +57,15 @@
   padding: 0.5rem;
 }
 
+/* Lámina grabada del mapa (#526). El relleno es lo que deja ver el filete: sin
+   él el marco quedaría justo debajo del bisel del visor y no se vería nada. El
+   SVG lo pone `mapa-marco.mjs` como imagen de fondo en el atributo `style`, con
+   el interior hueco, así que el mapa no cambia ni un píxel. */
+.lagunak-mapa-lamina {
+  padding: 14px;
+  line-height: 0;
+}
+
 .lagunak-mapa-visor {
   position: relative;
   border: 4px solid #1b263b;
@@ -359,6 +368,15 @@
 .lagunak-maniobra-grupo button[disabled] {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+/* Reposición (#537): reusa el layout de `lagunak-maniobra-grupo` y solo añade
+   la separación. Es la única de estas órdenes que TELETRANSPORTA la nave, así
+   que no debe leerse como un botón más de la misma fila que el impulso. */
+.lagunak-reposicion {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .lagunak-maniobra-neutro {
@@ -1320,4 +1338,45 @@
 .lagunak-asistencia__vacio {
   font-size: 12px;
   opacity: 0.7;
+}
+
+/* Rótulo de sala en la ventana de andar (QA: «no sé en qué sala estoy»).
+   Sobre el visor y con el acento del mueble, para que se lea como el letrero de
+   un mamparo y no como texto de ayuda. */
+.lagunak-andar-nave-sala {
+  /* Ámbar sobre el fondo CLARO de la ventana de Foundry era ilegible (QA
+     2026-08-08: «no es legible al ser casi el mismo color»). Se le da su propio
+     fondo oscuro en vez de buscar un ámbar más subido: así el contraste no
+     depende del tema del anfitrión, y de paso se lee como el letrero de un
+     mamparo, que era la intención. */
+  display: inline-block;
+  margin: 0 0 6px;
+  padding: 3px 10px;
+  border-left: 3px solid #ffd166;
+  background: #14171a;
+  color: #ffd166;
+  font-family: "Roboto Condensed", "Arial Narrow", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+}
+
+.lagunak-andar-nave-sala:empty {
+  display: none;
+}
+
+/* Situación: rótulo de sala + minimapa, en la misma fila (QA 2026-08-08). */
+.lagunak-andar-nave-situacion {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.lagunak-andar-minimapa {
+  flex: 0 0 auto;
+  border: 2px solid #1b263b;
+  background: #03071e;
+  /* Píxel gordo, como el visor del mapa: el plano se escala sin suavizar. */
+  image-rendering: pixelated;
 }

@@ -57,6 +57,11 @@ async function construirConsola(t, { fallar = {} } = {}) {
       return respuesta({ contacts: [] });
     }
     if (url.endsWith("/v1/encounters")) return respuesta({ archetypes: ["pirates"], bearings: [] });
+    // #537: catálogo de anclas de reposición, también perezoso y una sola vez.
+    if (url.endsWith("/v1/anchors")) {
+      if (fallar.anchors) throw new TypeError("anchors inaccesible");
+      return respuesta({ anchors: ["lagunak", "argia"] });
+    }
     throw new Error(`Ruta inesperada: ${url}`);
   };
 
@@ -168,4 +173,110 @@ test("cerrar invalida el sondeo en vuelo: no queda ningún timer vivo", async (t
   await vaciarMicrotareas();
   app._onClose();
   assert.equal(timers.some((tm) => tm.activo), false);
+});
+
+/* ---- Reposición del GM (#176, cableada en #537) ----
+   Réplica AISLADA de los casos de consola-caliente-v1.test.mjs, como el resto de
+   este archivo: mismas garantías sobre el cascarón ApplicationV2. Lo que se
+   prueba es el CABLEADO, no la lógica —`reposicion-control.mjs` ya tiene su
+   suite—, porque lo que #537 destapó es que un módulo puro impecable con
+   pruebas en verde puede no estar enchufado a nada. */
+
+test("pide el catálogo de anclas una sola vez y lo ofrece al GM", async (t) => {
+  const { app, llamadas } = await construirConsola(t);
+  app._onFirstRender();
+  await vaciarMicrotareas();
+
+  assert.equal(llamadas.filter((url) => url.endsWith("/v1/anchors")).length, 1, "catálogo perezoso, una vez");
+  const contexto = await app._prepareContext({});
+  assert.equal(contexto.reposicion.disponible, true);
+  assert.deepEqual(contexto.reposicion.anclas.map((a) => a.id), ["lagunak", "argia"]);
+  assert.equal(contexto.reposicion.puedeReposicionar, true);
+  app._onClose();
+});
+
+test("reposicionar envía el ancla elegida al puente y anuncia el resultado", async (t) => {
+  const { app } = await construirConsola(t);
+  app._onFirstRender();
+  await vaciarMicrotareas();
+
+  const enviados = [];
+  const original = globalThis.fetch;
+  globalThis.fetch = async (url, opciones) => {
+    if (url.endsWith("/v1/command")) {
+      enviados.push(JSON.parse(opciones.body));
+      return respuesta({ result: { ok: true } });
+    }
+    return original(url, opciones);
+  };
+
+  await app._reposicionar("argia");
+
+  assert.equal(enviados.length, 1, "la orden tiene que llegar al puente");
+  assert.equal(enviados[0].op, "reposition_ship");
+  assert.equal(enviados[0].anchor, "argia");
+  assert.equal(app.reposicionFallo, false);
+  assert.equal(app.reposicionAviso, "LAGUNAK.Reposicion.Hecha");
+  assert.equal(app.reposicionPendiente, false, "el pendiente se suelta siempre");
+  app._onClose();
+});
+
+test("un ancla fuera del catálogo no llega a la red", async (t) => {
+  const { app } = await construirConsola(t);
+  app._onFirstRender();
+  await vaciarMicrotareas();
+
+  const enviados = [];
+  const original = globalThis.fetch;
+  globalThis.fetch = async (url, opciones) => {
+    if (url.endsWith("/v1/command")) {
+      enviados.push(url);
+      return respuesta({ result: { ok: true } });
+    }
+    return original(url, opciones);
+  };
+
+  await app._reposicionar("orbita-inventada");
+
+  assert.deepEqual(enviados, [], "un ancla fuera de catálogo no puede tocar la red");
+  assert.equal(app.reposicionFallo, true);
+  app._onClose();
+});
+
+test("quien no es GM no reposiciona, ni con el ancla correcta", async (t) => {
+  const { app } = await construirConsola(t);
+  app._onFirstRender();
+  await vaciarMicrotareas();
+  const catalogo = app.catalogoAnclas;
+
+  const enviados = [];
+  const original = globalThis.fetch;
+  globalThis.fetch = async (url, opciones) => {
+    if (url.endsWith("/v1/command")) {
+      enviados.push(url);
+      return respuesta({ result: { ok: true } });
+    }
+    return original(url, opciones);
+  };
+  globalThis.game.user.isGM = false;
+  app.catalogoAnclas = catalogo;
+
+  await app._reposicionar("lagunak");
+
+  assert.deepEqual(enviados, [], "sin GM no hay reposición");
+  app._onClose();
+});
+
+test("un catálogo de anclas caído se reintenta, no apaga el bloque para siempre", async (t) => {
+  const { app, llamadas } = await construirConsola(t, { fallar: { anchors: true } });
+  app._onFirstRender();
+  await vaciarMicrotareas();
+
+  assert.equal(app.catalogoAnclas, null, "un fallo no debe guardar un catálogo vacío");
+  const contexto = await app._prepareContext({});
+  assert.equal(contexto.reposicion.disponible, false, "sin catálogo no se ofrece el bloque");
+  // Y la conexión global no se contagia: /v1/anchors no es healthz ni state.
+  assert.equal(app.conexion, "ok");
+  assert.ok(llamadas.some((url) => url.endsWith("/v1/anchors")));
+  app._onClose();
 });

@@ -278,6 +278,8 @@ if ok_link and radar_link ~= nil then
             science_link_json = string.format(
                 '{"callsign":%%s,"position":{"x":%%.1f,"y":%%.1f}}', cs_json, px, py)
         end
+    end
+end
 -- Interior de la nave y equipos de reparación (#522). `internal_rooms` expone
 -- las salas (posición, tamaño y sistema) y `internal_crew` la posición y el
 -- destino de cada equipo, todo ya en Lua (src/script/components.cpp): esto NO
@@ -346,8 +348,7 @@ return string.format(
     .. '"shields_active":%%s,"repair_crew":%%d,"radar":%%s,"docking":%%s,'
     .. '"auto_repair":%%s,"combat_maneuver":%%s,"self_destruct":%%s,'
     .. '"shield_calibration":%%s,"alert_level":%%s,"probes":%%s,'
-    .. '"science_link":%%s,"systems":{%%s}}}',
-    .. '"auto_repair":%%s,"internal":%%s,"systems":{%%s}}}',
+    .. '"science_link":%%s,"internal":%%s,"systems":{%%s}}}',
     ship:getCallSign() or "?", x, y, ship:getHeading(), vx, vy,
     destination_json, distance_json, eta_json,
     ship:getHull(), ship:getHullMax(),
@@ -355,9 +356,7 @@ return string.format(
     tostring(ship:getShieldsActive()), ship:getRepairCrewCount(),
     radar_json, docking_json, auto_repair_json, combat_maneuver_json,
     self_destruct_json, shield_frequency_json, alert_level_json, probes_json,
-    science_link_json, table.concat(systems, ","))
-    radar_json, docking_json, auto_repair_json, internal_json,
-    table.concat(systems, ","))
+    science_link_json, internal_json, table.concat(systems, ","))
 """ % ", ".join(f'"{name}"' for name in _SYSTEMS)
 _STATE_LUA = _JSON_ESCAPE_LUA + _STATE_LUA
 

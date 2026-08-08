@@ -1,3 +1,24 @@
+// Validador del formato de atlas: planos, sistemas estelares y planetas, con
+// procedencia y licencia por entrada, continuidad declarada y errores tipados.
+// Puro: ni Foundry, ni DOM, ni red.
+//
+// ## CIMIENTO SIN CONSUMIDOR, A PROPÓSITO (#525)
+//
+// Ningún módulo importa esto, y es una decisión tomada, no un descuido. Es la
+// base de datos del atlas de #213, que sigue siendo **investigación a validar**
+// a la espera de que Varo y Eloy cierren la decisión en su issue. Cablearlo por
+// iniciativa propia promovería a hecho una decisión que no está tomada, que es
+// justo lo que prohíbe la sección de mantenimiento de documentación de
+// `CLAUDE.md`.
+//
+// La alternativa que se descartó fue retirarlo y recuperarlo de git cuando #213
+// se decida: el formato ya está pensado y probado, y borrarlo solo garantiza que
+// el siguiente que lo necesite lo escriba otra vez peor.
+//
+// Está declarado en `HUERFANOS_DECLARADOS` (`tests/modulos-alcanzables.test.mjs`)
+// con `cimiento: true`, así que la guarda de alcanzabilidad de #523 no se queja
+// de él — pero fallará el día que se cablee y nadie actualice esa lista.
+
 const FORMAT = "espaciokoop-cosmography";
 const VERSION = 1;
 const MAX_ENTRIES = 2000;

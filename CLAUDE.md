@@ -132,6 +132,16 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
   prosa, y la responsabilidad es lo que no se deduce del nombre del archivo.
   - **Orquestación** — `scripts/main.mjs` es un orquestador puro (settings, hooks, scene controls):
     no contiene lógica de dominio. Constantes compartidas en `scripts/lagunak-constantes.mjs`.
+  - **Alcanzabilidad** — `tests/modulos-alcanzables.test.mjs` (#523) recorre el grafo de imports
+    desde los `esmodules` que declara `module.json` y falla si algún módulo de `scripts/` queda
+    fuera sin estar declarado en su lista `HUERFANOS_DECLARADOS`, con motivo Y número de issue. Un
+    módulo huérfano tiene el MISMO verde que uno cableado —su suite lo importa directamente—, así
+    que sin esta guarda «escrito y probado» se confunde con «alcanzable jugando». Ojo: un
+    comentario que nombre el módulo no cuenta como consumidor; contarlos así es lo que le hizo
+    pasar por alto tres huérfanos al barrido manual de #523. Hay dos categorías y no da igual cuál:
+    `cimiento: true` es lo que se espera que siga sin consumidor (el banco de pruebas del andar,
+    `catalogo-cosmografico.mjs` a la espera de #213); `cimiento: false` es un hueco conocido con su
+    issue abierto (#526, #536, #537), y la entrada es el registro de que se sabe, no un permiso.
   - **Ventanas** — **Consola caliente del GM** (#276, `docs/CONSOLA_CALIENTE_GM.md`) fusionó las
     cuatro factorías originales (estado de nave y mapa vivo, V1/V2) en una sola ventana con pestañas
     (Estado, Mapa, Encuentros, Previsualización) y UN solo bucle de sondeo y backoff, sustituyendo
@@ -156,7 +166,12 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     devuelve cadena vacía a quien no lo sea, y el valor legado en almacenamiento se borra en el
     arranque, #183) y `scripts/diagnostico-conexion.mjs`.
   - **Controles del GM** — un módulo por superficie: `scripts/{tempo,pausa,ingenieria,maniobra,
-    reposicion,encuentro}-control.mjs`. Todos solo-GM y de catálogo cerrado.
+    reposicion,encuentro}-control.mjs`. Todos solo-GM y de catálogo cerrado. **Cinco de los seis
+    están cableados**: la consola caliente importa `encuentro`, `pausa`, `ingenieria`, `maniobra` y
+    `tempo`, y `reposicion-control.mjs` se quedó sin importador —probablemente al fusionar las cuatro
+    factorías en #276—, así que hoy la reposición a un ancla nombrada no es alcanzable jugando (#537).
+    No lo cables sin leer ese issue: el módulo puro está bien y la disciplina que lo hacía seguro
+    (anclas por nombre desde `/v1/anchors`, nunca coordenadas crudas, ADR-0002) sigue en pie.
   - **Puestos de tripulación** — `scripts/station-*.mjs`. La matriz de autoridad vive en
     `scripts/station-actions.mjs` y el relé que la aplica en `scripts/station-order-relay.mjs`: el
     puesto se resuelve desde el `User` autenticado, nunca desde la orden (#237).

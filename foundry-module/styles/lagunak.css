@@ -361,6 +361,15 @@
   cursor: not-allowed;
 }
 
+/* Reposición (#537): reusa el layout de `lagunak-maniobra-grupo` y solo añade
+   la separación. Es la única de estas órdenes que TELETRANSPORTA la nave, así
+   que no debe leerse como un botón más de la misma fila que el impulso. */
+.lagunak-reposicion {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+}
+
 .lagunak-maniobra-neutro {
   font-weight: bold;
 }

@@ -75,14 +75,6 @@ const HUERFANOS_DECLARADOS = Object.freeze({
       "cuenta al fusionar las cuatro factorías. Hay dos copias de la misma regla y " +
       "solo una corre.",
   },
-  "reposicion-control.mjs": {
-    cimiento: false,
-    issue: 537,
-    motivo:
-      "Superficie de reposición del GM (#176). La consola caliente importa cinco de " +
-      "los seis controles del GM y este es el que falta, así que hoy no es " +
-      "alcanzable jugando. No es un cimiento: es una regresión de la fusión de #276.",
-  },
 });
 
 /** Recorre `scripts/` y devuelve rutas relativas con separador POSIX. */

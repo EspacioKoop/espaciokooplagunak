@@ -43,6 +43,12 @@ import {
   ordenarManiobra,
   prepararVistaManiobra,
 } from "./maniobra-control.mjs";
+import {
+  claveResultadoReposicion,
+  normalizarCatalogoAnclas,
+  prepararVistaReposicion,
+  reposicionarNave,
+} from "./reposicion-control.mjs";
 import { firmaEstadoNaveVisible, prepareRoute, prepareSystemRows } from "./ship-view.mjs";
 import {
   barraRecurso,
@@ -144,6 +150,7 @@ export function crearClaseConsolaCalienteV2() {
         ordenarWarp: ConsolaCalienteApp.onOrdenarWarp,
         ordenarRumbo: ConsolaCalienteApp.onOrdenarRumbo,
         ordenarEscudos: ConsolaCalienteApp.onOrdenarEscudos,
+        reposicionar: ConsolaCalienteApp.onReposicionar,
       },
     };
 
@@ -185,6 +192,17 @@ export function crearClaseConsolaCalienteV2() {
     ingenieriaFallo = false;
     maniobraPendiente = false;
     maniobraFallo = false;
+    /* Reposición (#176, cableada en #537). El catálogo de anclas se pide UNA vez
+       —igual que el de encuentros— porque lo publica el escenario cargado y no
+       cambia mientras esté cargado. `reposicionAviso` guarda la clave i18n del
+       último resultado: a diferencia de maniobra, el acierto también se dice,
+       porque teletransportar la nave sin confirmación visible dejaría al GM sin
+       saber si el clic llegó. */
+    catalogoAnclas = null;
+    reposicionAncla = null;
+    reposicionPendiente = false;
+    reposicionFallo = false;
+    reposicionAviso = "";
 
     /* ---- Pestaña Mapa ---- */
     #rafId = null;
@@ -273,6 +291,7 @@ export function crearClaseConsolaCalienteV2() {
       let eventsResultado = null;
       let contactsResultado = null;
       let catalogoResultado = null;
+      let anclasResultado = null;
 
       const salud = await Promise.allSettled([cliente.healthz()]);
       healthzResultado = salud[0];
@@ -291,6 +310,9 @@ export function crearClaseConsolaCalienteV2() {
         if (this.catalogoEncuentros === null) {
           indices.encounters = peticiones.push(cliente.encounters()) - 1;
         }
+        if (this.catalogoAnclas === null) {
+          indices.anchors = peticiones.push(cliente.anchors()) - 1;
+        }
         const resultados = await Promise.allSettled(peticiones);
         if (generacion !== this.#generacion || this.bridgeAccessRevoked || !game.user?.isGM) return;
         stateResultado = resultados[indices.state];
@@ -298,6 +320,7 @@ export function crearClaseConsolaCalienteV2() {
         eventsResultado = indices.events !== undefined ? resultados[indices.events] : null;
         contactsResultado = indices.contacts !== undefined ? resultados[indices.contacts] : null;
         catalogoResultado = indices.encounters !== undefined ? resultados[indices.encounters] : null;
+        anclasResultado = indices.anchors !== undefined ? resultados[indices.anchors] : null;
       }
 
       const ciclo = resolverCicloConsola({
@@ -321,6 +344,7 @@ export function crearClaseConsolaCalienteV2() {
       await this.#aplicarEstadoTab(ciclo);
       this.#aplicarMapaTab(ciclo);
       this.#aplicarEncuentrosTab(catalogoResultado);
+      this.#aplicarCatalogoAnclas(anclasResultado);
 
       if (generacion !== this.#generacion || this.bridgeAccessRevoked || !game.user?.isGM) return;
 
@@ -340,6 +364,8 @@ export function crearClaseConsolaCalienteV2() {
           encuentros: this.#vistaEncuentros(),
           maniobra: this.#vistaManiobra(nave),
           maniobraFallo: this.maniobraFallo,
+          reposicion: this.#vistaReposicion(),
+          reposicionAviso: this.reposicionAviso,
           ingenieria: this.#vistaIngenieria(nave),
           ingenieriaFallo: this.ingenieriaFallo,
           sistemas,
@@ -467,6 +493,18 @@ export function crearClaseConsolaCalienteV2() {
       }
     }
 
+    /**
+     * Un catálogo de anclas que falla se queda en `null` a propósito, para que
+     * el siguiente ciclo lo reintente. Guardar un catálogo vacío apagaría el
+     * bloque de reposición para siempre por un fallo de red pasajero, y el GM
+     * no tendría forma de saber que existió.
+     */
+    #aplicarCatalogoAnclas(anclasResultado) {
+      if (anclasResultado?.status === "fulfilled") {
+        this.catalogoAnclas = normalizarCatalogoAnclas(anclasResultado.value);
+      }
+    }
+
     #vistaPausa() {
       return prepararVistaPausa({
         conexion: this.conexion,
@@ -485,6 +523,16 @@ export function crearClaseConsolaCalienteV2() {
         pendiente: this.encuentroPendiente,
         seleccionArquetipo: this.encuentroArquetipo,
         seleccionRumbo: this.encuentroRumbo,
+        i18n: game.i18n,
+      });
+    }
+
+    #vistaReposicion() {
+      return prepararVistaReposicion({
+        conexion: this.conexion,
+        catalogo: this.catalogoAnclas,
+        pendiente: this.reposicionPendiente,
+        seleccionAncla: this.reposicionAncla,
         i18n: game.i18n,
       });
     }
@@ -753,6 +801,11 @@ export function crearClaseConsolaCalienteV2() {
       this.ingenieriaFallo = false;
       this.maniobraPendiente = false;
       this.maniobraFallo = false;
+      this.catalogoAnclas = null;
+      this.reposicionAncla = null;
+      this.reposicionPendiente = false;
+      this.reposicionFallo = false;
+      this.reposicionAviso = "";
       this.contactosCaidos = false;
       this.previsualizacionEstacion = "captain";
       this.contactosPayloadCrudo = null;
@@ -794,6 +847,9 @@ export function crearClaseConsolaCalienteV2() {
         pausa: this.#vistaPausa(),
         maniobra: this.#vistaManiobra(nave),
         maniobraFallo: this.maniobraFallo,
+        reposicion: this.#vistaReposicion(),
+        reposicionAviso: this.reposicionAviso,
+        reposicionFallo: this.reposicionFallo,
         tabs: PESTANAS.map((id) => ({
           id,
           label: game.i18n.localize(`LAGUNAK.ConsolaCaliente.${ETIQUETA_PESTANA[id]}`),
@@ -955,6 +1011,53 @@ export function crearClaseConsolaCalienteV2() {
         this.maniobraPendiente = false;
         if (!this.bridgeAccessRevoked && game.user?.isGM && this.rendered) this.#renderConservandoFoco();
       }
+    }
+
+    /**
+     * Reposiciona la nave a un ancla NOMBRADA (#176, cableada en #537).
+     *
+     * `reposicionarNave` valida el ancla contra el catálogo del puente antes de
+     * tocar la red, así que un `<select>` manipulado desde el inspector no
+     * consigue enviar una coordenada ni un ancla inventada: se queda en un
+     * `BridgeError` local. La misma guarda post-await que #201 dejó como
+     * lección, porque un `await` de red puede volver con la ventana cerrada o
+     * con el acceso al puente revocado.
+     */
+    async _reposicionar(anchor) {
+      if (this.reposicionPendiente || !game.user?.isGM || this.bridgeAccessRevoked) return;
+      if (anchor === "") return;
+      this.reposicionAncla = anchor;
+      this.reposicionPendiente = true;
+      this.reposicionFallo = false;
+      this.reposicionAviso = "";
+      if (this.rendered) this.#renderConservandoFoco();
+      try {
+        const respuesta = await reposicionarNave({
+          anchor,
+          isGM: Boolean(game.user?.isGM),
+          catalogo: this.catalogoAnclas,
+          client: this.#cliente(),
+        });
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        const { ok, clave } = claveResultadoReposicion(respuesta);
+        this.reposicionFallo = !ok;
+        this.reposicionAviso = clave;
+        (ok ? ui.notifications.info : ui.notifications.warn).call(ui.notifications, game.i18n.localize(clave));
+      } catch (err) {
+        if (this.bridgeAccessRevoked || !game.user?.isGM) return;
+        this.reposicionFallo = true;
+        this.reposicionAviso = "LAGUNAK.Reposicion.Fallo";
+        const message = err instanceof BridgeError ? err.message : game.i18n.localize("LAGUNAK.Errores.Desconocido");
+        ui.notifications.error(message);
+      } finally {
+        this.reposicionPendiente = false;
+        if (!this.bridgeAccessRevoked && game.user?.isGM && this.rendered) this.#renderConservandoFoco();
+      }
+    }
+
+    static async onReposicionar() {
+      const select = this.element?.querySelector?.('[data-field="reposicion-ancla"]');
+      return this._reposicionar(String(select?.value ?? ""));
     }
 
     static async onOrdenarImpulso(_event, target) {

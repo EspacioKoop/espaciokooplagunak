@@ -168,10 +168,13 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
   - **Controles del GM** — un módulo por superficie: `scripts/{tempo,pausa,ingenieria,maniobra,
     reposicion,encuentro}-control.mjs`. Todos solo-GM y de catálogo cerrado. **Cinco de los seis
     están cableados**: la consola caliente importa `encuentro`, `pausa`, `ingenieria`, `maniobra` y
-    `tempo`, y `reposicion-control.mjs` se quedó sin importador —probablemente al fusionar las cuatro
-    factorías en #276—, así que hoy la reposición a un ancla nombrada no es alcanzable jugando (#537).
-    No lo cables sin leer ese issue: el módulo puro está bien y la disciplina que lo hacía seguro
-    (anclas por nombre desde `/v1/anchors`, nunca coordenadas crudas, ADR-0002) sigue en pie.
+    `tempo` y `reposicion`. La reposición se cableó en #537, cuatro semanas después de escribirse: su
+    commit original entregó puente, Lua, i18n, módulo puro y pruebas, y **ninguna superficie** — nació
+    huérfana y la guarda de alcanzabilidad fue lo que la encontró. Va con el grupo de maniobra pero
+    con su propio `<select>` + botón, porque es la única de esas órdenes que teletransporta y no debe
+    parecerse a subir un punto de impulso. La disciplina que la hace segura sigue intacta: anclas
+    **por nombre** desde `/v1/anchors`, validadas contra el catálogo antes de tocar la red, nunca
+    coordenadas crudas (ADR-0002).
   - **Puestos de tripulación** — `scripts/station-*.mjs`. La matriz de autoridad vive en
     `scripts/station-actions.mjs` y el relé que la aplica en `scripts/station-order-relay.mjs`: el
     puesto se resuelve desde el `User` autenticado, nunca desde la orden (#237).

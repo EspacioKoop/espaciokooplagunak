@@ -60,15 +60,15 @@ test("las salas que se entran andando existen de verdad en el catálogo de andar
     );
   }
   assert.ok(alguna, "ninguna sala de la sección se entra andando");
-  assert.equal(salaPorId("puente")?.estancia, "pasillo-puente");
-  assert.equal(salaPorId("ingenieria")?.estancia, "ingenieria");
+  assert.equal(salaPorId("puente")?.estancia, "pasarela-proa");
+  assert.equal(salaPorId("ingenieria")?.estancia, "reactor");
 });
 
 test("componerSeccion transporta la estancia, y null donde no hay ninguna", () => {
   const seccion = componerSeccion([]);
   const puente = seccion.salas.find((sala) => sala.id === "puente");
   const bodega = seccion.salas.find((sala) => sala.id === "bodega");
-  assert.equal(puente.estancia, "pasillo-puente");
+  assert.equal(puente.estancia, "pasarela-proa");
   assert.equal(bodega.estancia, null, "una sala que no se entra no inventa estancia");
 });
 

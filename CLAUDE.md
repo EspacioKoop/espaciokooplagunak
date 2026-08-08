@@ -238,48 +238,54 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     dónde pintarte, nunca al revés) y no inventa lecturas (sin sondeo la sala va neutra, no en
     cero). Una sala nueva es una entrada más de la planta, no un botón nuevo en `main.mjs`.
   - **Andar por la nave** — `scripts/nave-movimiento.mjs` (colisión círculo-caja y el paso continuo,
-    puro), `scripts/nave-estancias.mjs` (catálogo de estancias: qué sala lleva a cuál) y
-    `scripts/nave-movimiento-lienzo.mjs`/`nave-movimiento-red.mjs` (bucle de render y sincronización
-    de otros jugadores, #453/#498), #427. Ver a otros tripulantes está partido en tres capas que no
-    se mezclan: `nave-movimiento-red.mjs` es el **protocolo** (muestras discretas confirmadas,
-    interpolación local, nunca extrapola — revisado en #453 y que no se reabre por motivos de
-    render); `scripts/nave-presencia.mjs` es el **estado de presencia**, la única respuesta a «quién
-    está aquí y dónde», deliberadamente sin nada de cómo se dibuja nadie; y
-    `scripts/nave-avatares-render.mjs` es UNA vista de esa presencia —la que pinta cuerpos,
-    reutilizando `piezasAvatar` de la cantina—, no su forma canónica. El avatar de cada cual (#450)
-    se añade en el borde del render dentro de `andar-nave-app.mjs`, nunca aguas arriba: un indicador
-    de minimapa, una lista de ocupación o la interacción por proximidad consumen la misma presencia
-    sin heredar forma de avatar 3D. La fábrica de sala-caja (muros, puertas, columnas y
-    VENTANAS con cielo real detrás, #508) vive en `scripts/nave-sala-caja.mjs`, reutilizada tanto por
-    las dos salas de prueba del motor (`nave-movimiento-sala-prueba.mjs`, con su propio
-    `CATALOGO_PRUEBA` — deliberadamente FUERA de la nave real, ver más abajo) como por cada sala real:
-    `scripts/nave-vestibulo.mjs` (el nudo hacia cantina/ingeniería/puente, sin ventana — es tránsito),
-    `nave-sala-ingenieria.mjs` y las cinco salas del puente —mando, navegación, sensores,
-    comunicaciones, armas— declaradas juntas en `scripts/nave-salas-puente.mjs` (misma forma repetida
-    a propósito: la sala es solo el sitio físico, no donde vive el contenido del puesto) y repartidas
-    desde un único `scripts/nave-pasillo-puente.mjs`, cuya lista `ESTACIONES` es la única fuente de
-    las posiciones de puerta. `scripts/nave-catalogo-andar.mjs` cose esas estancias reales entre sí
-    (qué puerta lleva a dónde) sin que ninguna sala necesite saber de las demás — cada sala de puesto
-    nueva es una entrada más de ese catálogo, no un cambio al motor. Las salas de prueba ("a"/"b")
-    NUNCA aparecen en este catálogo: fue su papel mientras no había un nudo real, y lo dejó de ser en
-    cuanto lo hubo. Cada sala de puesto real tiene una CONSOLA (#509): un mueble con pantalla y una
-    zona de pie delante —separada a propósito del punto de entrada, para que acercarse sea un gesto—
-    que `nave-estancias.mjs` declara con la misma forma que una puerta (`{rect, ...}`, reutilizando
-    `nave-movimiento.puertaTocada`) pero sin `destino`: dispara `puesto` hacia fuera, y
-    `nave-movimiento-lienzo.mjs` solo avisa en el flanco de ENTRADA (una vez, no cada fotograma
-    mientras se está de pie delante). `andar-nave-app.mjs` interpreta el aviso llamando a
-    `openWorkspaceApp(puesto)` (`station-workspace-ui.mjs`) — el mismo espacio que ya se abre por
-    botón; para quien no es GM ese parámetro no hace nada (abre siempre el propio puesto, #237), así
-    que caminar hasta una consola ajena no da ni enseña más de lo que ya daría el botón.
+    puro), `scripts/nave-estancias.mjs` (contrato de estancia: planta + composición + puertas +
+    consolas, y `resolverArranque`) y `scripts/nave-movimiento-lienzo.mjs`/`nave-movimiento-red.mjs`
+    (bucle de render y sincronización de otros jugadores, #453/#498), #427.
+    **La planta sale de la nave REAL, no se inventa** (#540): el Phobos M3P declara su interior en
+    `scripts/shipTemplates/frigates.lua` —trece salas sobre una rejilla, nueve con sistema— y esa es
+    la planta que pinta el Control de daños nativo y que el puente publica en `ship.internal.rooms`
+    (#522). `scripts/nave-planta-phobos.mjs` la copia como dato del módulo y deriva de ella la
+    geometría: una única `CELDA` en metros (el mando de escala de toda la nave), puerta entre TODA
+    pareja de salas contiguas calculada del solapamiento real de sus aristas, y punto de llegada
+    separado del rect de vuelta para que nadie rebote entre dos salas. Es **estática** a propósito y
+    no leída del puente: la distribución no cambia durante la partida y leerla por red dejaría la
+    ventana sin geografía cuando no hay puente (standalone-first). El precio —que la copia se
+    desactualice— lo cubre una prueba que la compara con el `.lua`.
+    Esto sustituyó a una geografía inventada (vestíbulo, pasillo del puente y cinco salas de
+    estación idénticas, #508) que producía los cuatro fallos de #539: huecos entre salas, puertas
+    contra las que te golpeabas, solo la cantina alcanzable y una escala por sala. Ninguno puede
+    volver por construcción, y hay prueba de **alcanzabilidad sobre el catálogo real** —no solo sobre
+    `CATALOGO_PRUEBA`—, que es lo que faltaba: el motor tenía sus pruebas y la nave no.
+    La **cantina** es la única sala que no sale de la rejilla (el interior nativo no la tiene) y
+    conserva su planta y su arte hechos a mano (#423); cuelga del muro libre de `acceso-cantina`. Las
+    salas de prueba ("a"/"b", `nave-movimiento-sala-prueba.mjs`) NUNCA aparecen en el catálogo real.
+    `scripts/nave-sala-caja.mjs` sigue siendo la fábrica de sala —muros, puertas, columnas y
+    VENTANAS con cielo real detrás—, y ahora la ventana se **decide** en vez de escribirse: un muro
+    sin vecino es casco, y el casco ve el espacio.
+    Cada sala con sistema tiene una CONSOLA (#509) que abre el puesto del sistema que ALOJA —el
+    reactor abre ingeniería—, con su zona de pie separada del punto de entrada para que acercarse sea
+    un gesto; `nave-estancias.mjs` la declara con la misma forma que una puerta (`{rect, ...}`,
+    reutilizando `nave-movimiento.puertaTocada`) pero sin `destino`, y `nave-movimiento-lienzo.mjs`
+    solo avisa en el flanco de ENTRADA. `andar-nave-app.mjs` interpreta el aviso llamando a
+    `openWorkspaceApp(puesto)` — el mismo espacio que ya se abre por botón; para quien no es GM ese
+    parámetro no hace nada (#237), así que caminar hasta una consola ajena no da ni enseña más.
+    Sensores y comunicaciones no son sistemas con sala en EmptyEpsilon: se les asigna una pasarela, y
+    esa es la única parte inventada del reparto, aislada en su propia tabla para poder revisarla.
+    Ver a otros tripulantes está partido en tres capas que no se mezclan:
+    `nave-movimiento-red.mjs` es el **protocolo** (muestras discretas confirmadas, interpolación
+    local, nunca extrapola — revisado en #453 y que no se reabre por motivos de render);
+    `scripts/nave-presencia.mjs` es el **estado de presencia**, la única respuesta a «quién está aquí
+    y dónde», deliberadamente sin nada de cómo se dibuja nadie; y `scripts/nave-avatares-render.mjs`
+    es UNA vista de esa presencia, no su forma canónica. El avatar de cada cual (#450) se añade en el
+    borde del render dentro de `andar-nave-app.mjs`, nunca aguas arriba.
     **La planta es navegable por COMPOSICIÓN, no por casos especiales** (revisión externa en #508):
     el motor solo sabe recorrer un grafo de espacios conectados y no conoce el nombre de ninguna
-    sala; el contenido decide qué hay dentro de cada una. Una enfermería, un hangar o unos camarotes
-    se añaden ampliando el catálogo —planta, composición, puertas, consolas— y no tocando la lógica
-    de movimiento. Si para meter una sala hace falta un `if` con su nombre en el motor, el diseño se
-    ha roto. Corolario: `resolverArranque` (`nave-estancias.mjs`) decide con qué estancia se abre la
-    ventana —lo pedido explícitamente (la sección, #508) manda sobre el checkpoint guardado, y un id
-    que el catálogo no conoce cae al siguiente escalón en vez de dejar a nadie en la nada—, y esa
-    decisión vive en el catálogo porque es sobre el catálogo, no en la ventana que la aplica.
+    sala. #540 fue su primera prueba de fuego —se cambió la planta entera y el motor no se tocó—; si
+    para meter una sala hace falta un `if` con su nombre en el motor, el diseño se ha roto. Corolario:
+    `resolverArranque` decide con qué estancia se abre la ventana —lo pedido explícitamente (la
+    sección, #508) manda sobre el checkpoint guardado, y un id que el catálogo no conoce cae al
+    siguiente escalón en vez de dejar a nadie en la nada—, y esa decisión vive en el catálogo porque
+    es sobre el catálogo, no en la ventana que la aplica.
   - **Visor del piloto** — `scripts/visor-piloto.mjs` (geometría pura) y
     `scripts/visor-piloto-lienzo.mjs` (el <canvas>), #362. Lo que la nave tiene delante, en PSX,
     en la consola de pilotaje. Es la primera superficie 3D del módulo que **informa** en vez de

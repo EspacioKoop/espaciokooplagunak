@@ -61,7 +61,11 @@ export const SALAS = Object.freeze([
     // su sala la abre (#509), igual que el botón de siempre. Y sigue sin dar
     // mandos: estar de pie en una sala no es autoridad (#237).
     destino: "andar",
-    estancia: "pasillo-puente",
+    // #540: la planta de andar salió de la inventada (pasillo + cinco salas
+    // iguales) a la REAL del Phobos M3P. Se entra por la pasarela de proa, que
+    // es la sala que cose maniobra y armas — el equivalente más cercano a «el
+    // puente» en un interior donde las salas son sistemas y no puestos.
+    estancia: "pasarela-proa",
     puesto: "captain",
   }),
   Object.freeze({
@@ -90,7 +94,9 @@ export const SALAS = Object.freeze([
     region: "popa",
     // Misma decisión que el puente: se entra andando, y la consola está dentro.
     destino: "andar",
-    estancia: "ingenieria",
+    // #540: la sala de ingeniería de la nave real es la del REACTOR, y su
+    // consola abre ingeniería porque ahí está el reactor.
+    estancia: "reactor",
     puesto: "engineering",
   }),
   Object.freeze({

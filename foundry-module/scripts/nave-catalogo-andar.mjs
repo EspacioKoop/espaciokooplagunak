@@ -1,140 +1,226 @@
-// El catálogo de estancias que usa la ventana de andar (#427): la nave real
-// que se puede recorrer hoy — cantina, vestíbulo, ingeniería, el pasillo del
-// puente y sus cinco salas de estación (#508).
+// El catálogo de estancias que usa la ventana de andar (#427), DERIVADO de la
+// planta real del Phobos M3P (#540) más la cantina como sala añadida.
 //
-// SIN "a" NI "b". Esas dos siguen existiendo (`nave-movimiento-sala-prueba.
-// mjs`) como banco de pruebas del motor de andar, pero ya no forman parte de
-// la geografía de la nave: hicieron ese papel mientras se demostraba que la
-// costura entre estancias (`nave-estancias.mjs`) aguantaba con una sala real
-// además de las de prueba, y en cuanto existió un nudo real —el vestíbulo,
-// `nave-vestibulo.mjs`— dejaron de hacer falta aquí. `CATALOGO_PRUEBA`, en su
-// propio archivo, sigue sirviendo para probar el motor sin arrastrar la
-// geografía real a esos tests.
+// Antes cosía a mano una geografía inventada —vestíbulo, pasillo del puente y
+// cinco salas de estación idénticas— mientras la nave ya declaraba su interior
+// en `scripts/shipTemplates/frigates.lua`. Aquello producía los cuatro fallos
+// de #539: huecos entre salas, puertas contra las que te golpeabas, ninguna
+// estancia alcanzable salvo la cantina y una escala distinta por sala. Nada de
+// eso puede volver a pasar por construcción:
 //
-// Vive en su propio archivo y no dentro de `cantina-planta.mjs`/
-// `cantina-andar.mjs`/`nave-sala-ingenieria.mjs`/`nave-vestibulo.mjs`/
-// `nave-pasillo-puente.mjs`/`nave-salas-puente.mjs` a propósito: cada uno de
-// esos módulos se queda hablando solo de lo suyo (la colisión de la cantina,
-// su render, cada sala), y coser QUÉ PUERTA LLEVA A DÓNDE es la única
-// responsabilidad de este archivo — la misma separación que ya seguía el
-// resto del módulo entre "aporta la estancia" y "decide qué estancia toca
-// ahora" (`nave-estancias.mjs`).
+//   - la rejilla es CONTIGUA, así que dos salas vecinas comparten muro y no
+//     queda vacío entre ellas;
+//   - hay puerta entre TODA pareja contigua, calculada del solapamiento real de
+//     sus aristas, así que ninguna puerta cae donde no se puede llegar;
+//   - todas las salas miden múltiplos de la MISMA celda (`CELDA`).
 //
-// Puro: solo compone objetos y funciones que ya son puras.
+// Este archivo sigue teniendo una sola responsabilidad —coser qué puerta lleva
+// a dónde— y ya no declara ni una medida: las saca de `nave-planta-phobos.mjs`.
+//
+// Puro: compone objetos y funciones que ya son puras.
 
 import { crearCatalogoEstancias } from "./nave-estancias.mjs";
+import { crearSalaCaja } from "./nave-sala-caja.mjs";
 import { PLANTA_CANTINA } from "./cantina-planta.mjs";
 import { componerCantinaAndar } from "./cantina-andar.mjs";
 import {
-  PLANTA_VESTIBULO,
-  componerVestibulo,
-  PUERTA_VESTIBULO_HACIA_CANTINA,
-  PUERTA_VESTIBULO_HACIA_INGENIERIA,
-  PUERTA_VESTIBULO_HACIA_PASILLO,
-} from "./nave-vestibulo.mjs";
-import {
-  PLANTA_INGENIERIA,
-  componerIngenieria,
-  PUERTA_INGENIERIA_HACIA_VESTIBULO,
-  ZONA_CONSOLA_INGENIERIA,
-} from "./nave-sala-ingenieria.mjs";
-import {
-  PLANTA_PASILLO_PUENTE,
-  componerPasilloPuente,
-  ESTACIONES,
-  PUERTA_PASILLO_HACIA_VESTIBULO,
-  LLEGADA_DESDE_VESTIBULO,
-  puertaHaciaEstacion,
-  llegadaDesdeEstacion,
-} from "./nave-pasillo-puente.mjs";
-import { salaEstacion, entradaEstacion, zonaConsola, PUERTA_ESTACION_HACIA_PASILLO } from "./nave-salas-puente.mjs";
+  ANCHO_PUERTA,
+  GROSOR_PUERTA,
+  SALAS_PHOBOS,
+  conexiones,
+  llegada,
+  medidasSala,
+  rectPuerta,
+} from "./nave-planta-phobos.mjs";
+
+/**
+ * Qué puesto abre la consola de cada sala con sistema (#509).
+ *
+ * Sale del sistema que la sala ALOJA, no de un reparto inventado: es la mejora
+ * que trajo #540 frente a las cinco salas de puente idénticas de antes —
+ * acercarse a la consola del reactor abre ingeniería porque ahí está el reactor.
+ *
+ * Los escudos van a `weapons` porque `set_shields` es una orden de armas en la
+ * matriz de autoridad, no de ingeniería. No da mandos nuevos: es un atajo a la
+ * consola que ese tripulante ya podía abrir por botón (#237).
+ */
+const PUESTO_POR_SISTEMA = Object.freeze({
+  Reactor: "engineering",
+  BeamWeapons: "weapons",
+  MissileSystem: "weapons",
+  FrontShield: "weapons",
+  RearShield: "weapons",
+  Maneuver: "navigation",
+  Impulse: "navigation",
+  Warp: "navigation",
+  JumpDrive: "navigation",
+});
+
+/**
+ * Consolas en salas SIN sistema.
+ *
+ * Sensores y comunicaciones no son sistemas con sala en EmptyEpsilon, así que la
+ * planta real no les da sitio. Se les asigna una pasarela para que sus
+ * tripulantes puedan llegar andando a su consola como los demás; es la parte
+ * inventada de esto y por eso está aquí, aislada y con su nombre, en vez de
+ * disimulada dentro de la tabla de sistemas. Revisable sin tocar nada más.
+ *
+ * Enlace, mando y control de daños se quedan sin consola andando a propósito:
+ * no tienen un sitio en la nave que justifique estar ahí de pie. Siguen
+ * abriéndose por botón, que es como se abren hoy.
+ */
+const PUESTO_POR_SALA_LIBRE = Object.freeze({
+  "pasarela-proa": "sensors",
+  "pasarela-popa": "communications",
+});
+
+/**
+ * Zona de la consola: un cuadrado donde ponerse de pie, apartado del centro
+ * para que acercarse sea un gesto y no un accidente al cruzar la sala.
+ */
+function zonaConsola(sala) {
+  const { ancho, profundidad } = medidasSala(sala);
+  const lado = 1.6;
+  return {
+    x: Math.max(ancho * 0.72 - lado / 2, GROSOR_PUERTA + 0.4),
+    z: Math.max(profundidad * 0.72 - lado / 2, GROSOR_PUERTA + 0.4),
+    ancho: lado,
+    profundidad: lado,
+  };
+}
+
+function puestoDe(sala) {
+  return sala.sistema ? PUESTO_POR_SISTEMA[sala.sistema] : PUESTO_POR_SALA_LIBRE[sala.id];
+}
+
+/** La cantina cuelga del muro libre de esta sala. */
+const SALA_DE_LA_CANTINA = "acceso-cantina";
+
+/**
+ * Puerta a la cantina: en el muro norte de `acceso-cantina`, que es el único de
+ * esa sala sin vecino en la rejilla. Si algún día la planta cambia y ese muro
+ * pasa a tener vecino, la prueba de solapes lo cazará en vez de dejar dos
+ * puertas pisándose.
+ */
+function puertaCantina(sala) {
+  const { ancho } = medidasSala(sala);
+  return {
+    x: Math.max(ancho / 2 - ANCHO_PUERTA / 2, 0),
+    z: 0,
+    ancho: ANCHO_PUERTA,
+    profundidad: GROSOR_PUERTA,
+  };
+}
+
+/**
+ * Ventanas al espacio en los muros que dan AL EXTERIOR (#508, generalizado en
+ * #540).
+ *
+ * La sala de ingeniería inventada tenía una ventana escrita a mano, y era lo
+ * mejor que tenía: con cielo real detrás, la sala deja de ser una caja. Al
+ * derivar la planta de la rejilla eso se puede decidir en vez de escribir — un
+ * muro sin vecino es casco, y el casco puede tener ventana.
+ *
+ * El vestíbulo no tenía ventana a propósito («es tránsito»); esa distinción se
+ * pierde aquí, y a cambio se gana que ninguna sala del casco se quede ciega sin
+ * que nadie lo haya decidido. Si alguna debe ir a oscuras, se excluye por id.
+ */
+const ANCHO_VENTANA = 4;
+
+function ventanasAlExterior(sala, salientes) {
+  const { ancho, profundidad } = medidasSala(sala);
+  const ocupados = new Set(salientes.map((conexion) => conexion.contacto.lado));
+  // El muro por el que se sale a la cantina tampoco lleva ventana: ya tiene
+  // hueco de puerta, y dos huecos en el mismo muro se pisarían.
+  if (sala.id === SALA_DE_LA_CANTINA) ocupados.add("norte");
+
+  const ventanas = [];
+  const centrado = (largo) => Math.max(largo / 2 - ANCHO_VENTANA / 2, 0);
+  if (!ocupados.has("norte")) {
+    ventanas.push({ rect: { x: centrado(ancho), z: 0, ancho: ANCHO_VENTANA, profundidad: GROSOR_PUERTA } });
+  }
+  if (!ocupados.has("sur")) {
+    ventanas.push({
+      rect: { x: centrado(ancho), z: profundidad - GROSOR_PUERTA, ancho: ANCHO_VENTANA, profundidad: GROSOR_PUERTA },
+    });
+  }
+  if (!ocupados.has("oeste")) {
+    ventanas.push({ rect: { x: 0, z: centrado(profundidad), ancho: GROSOR_PUERTA, profundidad: ANCHO_VENTANA } });
+  }
+  if (!ocupados.has("este")) {
+    ventanas.push({
+      rect: { x: ancho - GROSOR_PUERTA, z: centrado(profundidad), ancho: GROSOR_PUERTA, profundidad: ANCHO_VENTANA },
+    });
+  }
+  return ventanas;
+}
+
+/** Agrupa las conexiones por sala de origen. */
+function conexionesPorSala() {
+  const mapa = new Map(SALAS_PHOBOS.map((sala) => [sala.id, []]));
+  for (const conexion of conexiones()) {
+    mapa.get(conexion.de.id).push(conexion);
+  }
+  return mapa;
+}
+
+function definirSala(sala, salientes) {
+  const { ancho, profundidad } = medidasSala(sala);
+  const puertas = salientes.map((conexion) => ({
+    rect: rectPuerta(sala, conexion.contacto),
+    destino: { estancia: conexion.a.id, ...llegada(conexion.a, conexion.contacto) },
+  }));
+
+  if (sala.id === SALA_DE_LA_CANTINA) {
+    puertas.push({
+      rect: puertaCantina(sala),
+      // Se llega a la cantina por su puerta oeste, así que se aparece dentro y
+      // separado de ella para no reactivarla de vuelta.
+      destino: { estancia: "cantina", x: 3, z: 5, yaw: Math.PI / 2 },
+    });
+  }
+
+  const caja = crearSalaCaja({
+    ancho,
+    profundidad,
+    puertas: puertas.map(({ rect }) => ({ rect })),
+    ventanas: ventanasAlExterior(sala, salientes),
+    // Semilla por sala: cada ventana da a un trozo de cielo distinto, y el
+    // mismo siempre. Sin esto todas las salas mirarían a las mismas estrellas.
+    semillaCielo: 20260808 + sala.celda.x * 31 + sala.celda.y * 7,
+  });
+
+  const puesto = puestoDe(sala);
+  return {
+    planta: caja.planta,
+    componer: caja.componer,
+    // Sin puerta de entrada preferente: se aparece en el centro solo en la
+    // primera apertura, porque cualquier llegada real trae su `x`/`z`.
+    entrada: { x: ancho / 2, z: profundidad / 2, yaw: 0 },
+    puertas,
+    consolas: puesto ? [{ rect: zonaConsola(sala), puesto }] : [],
+  };
+}
+
+const porSala = conexionesPorSala();
 
 export const CATALOGO_ANDAR = crearCatalogoEstancias({
+  ...Object.fromEntries(
+    SALAS_PHOBOS.map((sala) => [sala.id, definirSala(sala, porSala.get(sala.id))]),
+  ),
+  // La cantina NO sale de la rejilla: el interior nativo no tiene cantina, y es
+  // el único sitio donde inventar geografía está justificado (#540). Conserva su
+  // planta y su arte hechos a mano (#423) — y su tamaño, que es la referencia
+  // con la que se eligió `CELDA`.
   cantina: {
     planta: PLANTA_CANTINA,
     componer: componerCantinaAndar,
     entrada: { x: 1.5, z: 4, yaw: 0 },
     puertas: [
-      // En el muro oeste de la cantina (coordenada nativa x≈−4.8, la cara
-      // interior de `paredIzq`).
       {
         rect: { x: 0, z: 4, ancho: 1.2, profundidad: 2 },
-        destino: { estancia: "vestibulo", x: 2, z: 3, yaw: Math.PI / 2 },
+        destino: { estancia: SALA_DE_LA_CANTINA, x: 11, z: 3, yaw: Math.PI },
       },
     ],
   },
-  vestibulo: {
-    planta: PLANTA_VESTIBULO,
-    componer: componerVestibulo,
-    entrada: { x: 3, z: 3, yaw: 0 },
-    puertas: [
-      {
-        rect: PUERTA_VESTIBULO_HACIA_CANTINA,
-        // Dentro (x=3) de la propia puerta de vuelta de la cantina (que
-        // ocupa x:0..1.2 en su sistema de coordenadas) para no reactivarla.
-        destino: { estancia: "cantina", x: 3, z: 5, yaw: Math.PI / 2 },
-      },
-      {
-        rect: PUERTA_VESTIBULO_HACIA_INGENIERIA,
-        destino: { estancia: "ingenieria", x: 4, z: 2, yaw: 0 },
-      },
-      {
-        rect: PUERTA_VESTIBULO_HACIA_PASILLO,
-        destino: { estancia: "pasillo-puente", ...LLEGADA_DESDE_VESTIBULO },
-      },
-    ],
-  },
-  ingenieria: {
-    planta: PLANTA_INGENIERIA,
-    componer: componerIngenieria,
-    entrada: { x: 4, z: 2, yaw: 0 },
-    puertas: [
-      // Simétrica a la del vestíbulo hacia aquí, en el muro sur (z=0).
-      {
-        rect: PUERTA_INGENIERIA_HACIA_VESTIBULO,
-        destino: { estancia: "vestibulo", x: 3, z: 2, yaw: 0 },
-      },
-    ],
-    // #509: acercarse a la consola abre el puesto de ingeniería, como atajo
-    // a lo que ya existe por botón — nunca da mandos nuevos (#237).
-    consolas: [{ rect: ZONA_CONSOLA_INGENIERIA, puesto: "engineering" }],
-  },
-  "pasillo-puente": {
-    planta: PLANTA_PASILLO_PUENTE,
-    componer: componerPasilloPuente,
-    entrada: LLEGADA_DESDE_VESTIBULO,
-    puertas: [
-      // Simétrica a la del vestíbulo hacia aquí, en el muro oeste (x=0).
-      {
-        rect: PUERTA_PASILLO_HACIA_VESTIBULO,
-        destino: { estancia: "vestibulo", x: 3, z: 4.5, yaw: -Math.PI / 2 },
-      },
-      // Una puerta por estación, en el muro este del pasillo — la MISMA
-      // lista `ESTACIONES` que ya usa `nave-salas-puente.mjs`, así que una
-      // estación nueva es una entrada más de esa lista, no un cambio aquí.
-      ...ESTACIONES.map((estacion) => ({
-        rect: puertaHaciaEstacion(estacion),
-        destino: { estancia: estacion.id, ...entradaEstacion() },
-      })),
-    ],
-  },
-  ...Object.fromEntries(
-    ESTACIONES.map((estacion) => [
-      estacion.id,
-      {
-        planta: salaEstacion(estacion.id).planta,
-        componer: salaEstacion(estacion.id).componer,
-        entrada: entradaEstacion(),
-        puertas: [
-          {
-            rect: PUERTA_ESTACION_HACIA_PASILLO,
-            destino: { estancia: "pasillo-puente", ...llegadaDesdeEstacion(estacion) },
-          },
-        ],
-        // #509: acercarse a la consola abre ESE puesto, como atajo a lo que
-        // ya existe por botón — nunca da mandos nuevos (#237).
-        consolas: [{ rect: zonaConsola(), puesto: estacion.puesto }],
-      },
-    ]),
-  ),
 });

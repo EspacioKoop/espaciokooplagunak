@@ -35,6 +35,15 @@
 // NO es la respuesta correcta, y conviene que quien la toque sepa por qué.
 
 import { alternarModo, PRIMERA } from "./nave-camara.mjs";
+
+/**
+ * Radio de colisión de quien anda.
+ *
+ * Se EXPORTA porque quien decide dónde aparece alguien necesita el mismo número
+ * para comprobar que ahí cabe: con dos copias, un checkpoint podía validarse
+ * contra un radio y luego moverse con otro (QA 2026-08-08).
+ */
+export const RADIO_ANDAR = 0.35;
 import { mover, puertaTocada } from "./nave-movimiento.mjs";
 import { pintarEscenaConProfundidad } from "./retro3d-lienzo.mjs";
 
@@ -65,7 +74,7 @@ const VELOCIDAD_GIRO = Math.PI * 0.6; // radianes por segundo
 export function arrancarAndar(lienzo, opciones = {}) {
   const {
     velocidad = 2.2,
-    radio = 0.35,
+    radio = RADIO_ANDAR,
     velocidadGiro = VELOCIDAD_GIRO,
     fondo = null,
     ahora = () => globalThis.performance?.now?.() ?? Date.now(),

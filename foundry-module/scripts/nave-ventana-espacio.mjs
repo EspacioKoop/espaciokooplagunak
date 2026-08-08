@@ -54,6 +54,17 @@ const HACIA_FUERA = Object.freeze({
   oeste: [-1, 0],
 });
 
+/**
+ * Altura a la que se centra lo que se ve por la ventana.
+ *
+ * A media altura del hueco (alféizar 1.14, dintel 2.4). NO a ras de suelo, que
+ * es donde caía antes: `situarContacto` devuelve `y = 0` porque la simulación es
+ * 2D y el visor del piloto pinta a la altura de la cámara, pero aquí el hueco
+ * empieza a 1.14 m — un contacto en el suelo queda ENTERO detrás del muro y la
+ * ventana se ve vacía. Es lo que el QA reportó como «no se ve».
+ */
+const ALTURA_VISTA = (1.14 + 2.4) / 2;
+
 /** Color de la persiana. Del casco, porque una persiana es parte del casco. */
 const COLOR_PERSIANA = SECCION.mamparo;
 /** Lamas de la persiana: suficientes para leerse como persiana, no como reja. */
@@ -134,7 +145,7 @@ export function piezasDeVentana({ rect, sala, sensores, rumboNave }) {
     if (lz <= 0) continue;
     const { malla, color } = piezaDeContacto(contacto, { alcanceLargo });
     const [sx, sz] = aSala(lado, centro, lx, lz);
-    piezas.push({ malla: trasladar(malla, [sx, 0, sz]), color });
+    piezas.push({ malla: trasladar(malla, [sx, ALTURA_VISTA, sz]), color });
   }
   return piezas;
 }

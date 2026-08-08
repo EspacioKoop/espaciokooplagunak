@@ -15,7 +15,8 @@
  */
 
 import { MODULE_ID } from "./lagunak-constantes.mjs";
-import { arrancarAndar } from "./nave-movimiento-lienzo.mjs";
+import { arrancarAndar, RADIO_ANDAR } from "./nave-movimiento-lienzo.mjs";
+import { colisiona } from "./nave-movimiento.mjs";
 import { CATALOGO_ANDAR } from "./nave-catalogo-andar.mjs";
 import { puntoDeLlegada, resolverArranque } from "./nave-estancias.mjs";
 import { construirMuestra, debeMuestrear, programarMuestra } from "./nave-movimiento-red.mjs";
@@ -281,6 +282,20 @@ function arrancar(raiz, estanciaPedida = null) {
   }
 
   /**
+   * Posición de arranque utilizable: la guardada si hoy sigue siendo válida, y la
+   * entrada de la estancia si no. Devuelve `{x, z, yaw}` para volcarlo tal cual.
+   */
+  function arranqueValido(guardadaPosible, estancia) {
+    const x = guardadaPosible?.x;
+    const z = guardadaPosible?.z;
+    const sirve =
+      typeof x === "number" && typeof z === "number" &&
+      !colisiona(x, z, RADIO_ANDAR, estancia.planta);
+    if (sirve) return { x, z, yaw: guardadaPosible?.yaw ?? estancia.entrada.yaw };
+    return { x: estancia.entrada.x, z: estancia.entrada.z, yaw: estancia.entrada.yaw };
+  }
+
+  /**
    * Lo que se ve por las ventanas (#541): la MISMA lectura degradada que el
    * puente ya difunde a toda la tripulación, la que alimenta el visor del
    * piloto. No abre ningún dato nuevo — un tripulante ve por la ventana lo que
@@ -304,9 +319,13 @@ function arrancar(raiz, estanciaPedida = null) {
     planta: inicial.planta,
     puertas: inicial.puertas,
     consolas: inicial.consolas,
-    x: guardada?.x ?? inicial.entrada.x,
-    z: guardada?.z ?? inicial.entrada.z,
-    yaw: guardada?.yaw ?? inicial.entrada.yaw,
+    // El checkpoint se VALIDA antes de usarse (QA 2026-08-08: «sigue el bug de
+    // no poder moverse»). Un flag guardado en una sesión anterior puede caer hoy
+    // dentro de un mueble —la cantina cambió de sistema de coordenadas Y de
+    // colisión al pasar por la fábrica— y con el punto de partida bloqueado el
+    // motor rechaza todos los pasos: no hay error, simplemente no te mueves.
+    // Confiar en un dato persistido es confiar en la geometría de ayer.
+    ...arranqueValido(guardada, inicial),
     // La costura entre salas: el catálogo ya decidió a qué estancia lleva
     // cada puerta y con qué posición/orientación se llega. Esta ventana solo
     // aplica lo que `puntoDeLlegada` ya resolvió — no vuelve a decidir nada.

@@ -137,3 +137,24 @@ test("la forma de `sensores` es la que publica el puente DE VERDAD, no una inven
   assert.equal(piezas.length, 1, "un contacto a estribor tiene que verse por la ventana de estribor");
   assert.notEqual(piezas[0].color, SECCION.mamparo, "no debería ser la persiana: hay lectura");
 });
+
+test("lo que se ve por la ventana está A LA ALTURA del hueco, no en el suelo", () => {
+  // El fallo que el QA reportó como «no se ve». `situarContacto` devuelve `y = 0`
+  // porque la simulación es 2D, pero el hueco de ventana de la fábrica empieza a
+  // 1.14 m: un contacto a ras de suelo queda ENTERO detrás del muro. La ventana
+  // se veía vacía con telemetría buena, que además es el peor estado posible
+  // porque afirma «he mirado y no hay nada».
+  const ALFEIZAR = 1.14;
+  const DINTEL = 2.4;
+  const piezas = piezasDeVentana({ rect: VENTANA_ESTE, sala: SALA, sensores, rumboNave: 0 });
+  assert.ok(piezas.length > 0, "debería haber algo que ver");
+  for (const pieza of piezas) {
+    const ys = pieza.malla.vertices.map((v) => v[1]);
+    const arriba = Math.max(...ys);
+    const abajo = Math.min(...ys);
+    assert.ok(
+      arriba > ALFEIZAR && abajo < DINTEL,
+      `la pieza ocupa y de ${abajo.toFixed(2)} a ${arriba.toFixed(2)}: fuera del hueco (${ALFEIZAR}–${DINTEL})`,
+    );
+  }
+});

@@ -124,6 +124,26 @@
     </p>
   {{/if}}
 
+  {{#if retoEsPrecision}}
+    <p class="lagunak-asistencia__intro">{{localize "LAGUNAK.Asistencia.Reto.Precision.Intro"}}</p>
+    {{! Sin cursor: la zona está quieta y visible desde el principio, y el
+        clic en cualquier punto de la pista ES la respuesta — no hace falta
+        un botón aparte como el de temporización. }}
+    <div class="lagunak-asistencia__pista lagunak-asistencia__pista--precision" data-asistencia-precision-pista>
+      <span class="lagunak-asistencia__zona" data-asistencia-zona
+        style="left: {{reto.zonaDesde}}%; width: {{reto.zonaAncho}}%;"></span>
+    </div>
+    {{! El canal NO visual del reto: aquí no hay nada que describir sobre una
+        posición propia —no hay cursor hasta que se pulsa—, solo la cuenta
+        atrás para decidir. Va directo en la plantilla, igual que en
+        secuencia: no hay nada que se mueva a 60 Hz que justifique el
+        parcheo manual del DOM. }}
+    <p class="lagunak-asistencia__lectura" role="status" aria-live="polite">
+      {{localize "LAGUNAK.Asistencia.Reto.Precision.Lectura"}}
+      {{reto.lectura.segundosRestantes}}s
+    </p>
+  {{/if}}
+
   {{#if retoEsPuzzle}}
     <p class="lagunak-asistencia__intro">{{localize "LAGUNAK.Asistencia.Reto.Puzzle.Intro"}}</p>
     {{! El objetivo se ve SIEMPRE, no hay que memorizarlo ni adivinarlo a

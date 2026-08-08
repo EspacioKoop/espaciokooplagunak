@@ -52,6 +52,9 @@ const BASE = [
     puestoAsistido: "engineering",
     accionPropuesta: "set_system_coolant",
     dificultad: 13,
+    // Ajustar el refrigerante en su punto exacto es puntería, no reflejos ni
+    // memoria: encaja con el tercer minijuego de destreza (#500).
+    minijuegoDestreza: "precision",
     enfoques: [
       // (a) Reparar en caliente: el juego de herramientas de la ficha. Es el
       // enfoque que no gasta nada y por eso el que siempre está disponible.

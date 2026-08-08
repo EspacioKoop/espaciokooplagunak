@@ -7,12 +7,14 @@ import { CLASES_ENFOQUE } from "../scripts/asistencia/enfoques.mjs";
 import { abrir, crearSesion } from "../scripts/asistencia/sesion.mjs";
 import { crearReto } from "../scripts/asistencia/temporizacion.mjs";
 import { crearReto as crearRetoSecuencia } from "../scripts/asistencia/secuencia.mjs";
+import { crearReto as crearRetoPrecision } from "../scripts/asistencia/precision.mjs";
 import { crearReto as crearRetoPuzzle } from "../scripts/asistencia/puzzle.mjs";
 import {
   FASES,
   vistaCierre,
   vistaOferta,
   vistaReto,
+  vistaRetoPrecision,
   vistaRetoPuzzle,
   vistaRetoSecuencia,
   vistaTareas,
@@ -182,6 +184,22 @@ test("el reto de secuencia sale en unidades de pintado, con el progreso del inte
 
 test("sin reto de secuencia no hay vista, y no es un error", () => {
   assert.equal(vistaRetoSecuencia(null, [], 0), null);
+});
+
+test("el reto de precisión sale en unidades de pintado, sin cursor: la zona ya está quieta", () => {
+  const reto = crearRetoPrecision({ semilla: "s", dificultad: "facil", inicioMs: 0 });
+  const vista = vistaRetoPrecision(reto, 100);
+
+  assert.equal("cursor" in vista, false, "no hay nada que se mueva en precisión");
+  for (const clave of ["zonaDesde", "zonaAncho"]) {
+    assert.ok(vista[clave] >= 0 && vista[clave] <= 100, `${clave} en 0–100`);
+  }
+  assert.ok(vista.zonaDesde + vista.zonaAncho <= 100.001, "la zona no se sale de la pista");
+  assert.equal(typeof vista.lectura.segundosRestantes, "number");
+});
+
+test("sin reto de precisión no hay vista, y no es un error", () => {
+  assert.equal(vistaRetoPrecision(null, 0), null);
 });
 
 test("el reto de puzzle muestra SIEMPRE el objetivo junto al estado actual del panel", () => {

@@ -35,7 +35,7 @@
  * Metros de lado de una celda de la rejilla.
  *
  * Único mando de escala de toda la nave. Elegido con la cantina (9,6 × 8,3 m)
- * como referencia de qué se siente bien andando: Varo la describió como
+ * como referencia de qué se siente bien andando: el QA la describió como
  * pequeña, así que la sala más chica de la rejilla —una de 1×1— tiene que
  * quedar por encima de eso. Subir o bajar este número reescala la nave entera
  * sin tocar nada más, que es la razón de que sea una constante y no un tamaño

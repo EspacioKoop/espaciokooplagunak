@@ -95,7 +95,7 @@ test("el contacto es simétrico y con lados opuestos", () => {
 });
 
 test("toda sala es más grande que la cantina, incluida la más pequeña", () => {
-  // El criterio de escala que fijó Varo: la cantina se siente pequeña, así que
+  // El criterio de escala que fijó el QA: la cantina se siente pequeña, así que
   // ninguna sala de la rejilla debe quedar por debajo de ella.
   const areaCantina = PLANTA_CANTINA_SALA.ancho * PLANTA_CANTINA_SALA.profundidad;
   for (const sala of SALAS_PHOBOS) {

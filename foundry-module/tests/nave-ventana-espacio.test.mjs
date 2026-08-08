@@ -10,7 +10,7 @@ const VENTANA_NORTE = { x: 3, z: 0, ancho: 3.6, profundidad: 0.4 };
 
 const identificado = { rumboDeg: 90, distancia: 5000, callsign: "EKL-2", faccion: "Human Navy" };
 const eco = { rumboDeg: 270, distancia: 5000 };
-const sensores = { alcanceLargo: 20000, contactos: [identificado, eco] };
+const sensores = { alcance: { corto: 5000, largo: 20000 }, contactos: [identificado, eco] };
 
 test("cada ventana sabe a qué muro pertenece", () => {
   assert.equal(ladoDeVentana(VENTANA_ESTE, SALA), "este");
@@ -60,7 +60,7 @@ test("la persiana llena el hueco con lamas horizontales", () => {
 test("lo que queda A LA ESPALDA de la ventana no se pinta", () => {
   // Un contacto a babor no puede salir por la ventana de estribor: sería una
   // lectura falsa, del tipo que este módulo existe para no cometer.
-  const soloBabor = { alcanceLargo: 20000, contactos: [{ rumboDeg: 270, distancia: 5000, callsign: "X", faccion: "Human Navy" }] };
+  const soloBabor = { alcance: { corto: 5000, largo: 20000 }, contactos: [{ rumboDeg: 270, distancia: 5000, callsign: "X", faccion: "Human Navy" }] };
   const piezas = piezasDeVentana({ rect: VENTANA_ESTE, sala: SALA, sensores: soloBabor, rumboNave: 0 });
   assert.deepEqual(piezas, [], "con rumbo 0 y ventana a estribor, un contacto a babor no se ve");
 });
@@ -84,8 +84,8 @@ test("la vista GIRA con el rumbo de la nave", () => {
 test("un eco sin identidad se dibuja como borrón, no como silueta", () => {
   // Misma disciplina que el visor del piloto: el margen se dibuja. Un eco de
   // banda ancha no puede tener el perfil afilado de un contacto identificado.
-  const soloEco = { alcanceLargo: 20000, contactos: [{ rumboDeg: 90, distancia: 5000 }] };
-  const soloNave = { alcanceLargo: 20000, contactos: [{ rumboDeg: 90, distancia: 5000, callsign: "EKL-2", faccion: "Human Navy" }] };
+  const soloEco = { alcance: { corto: 5000, largo: 20000 }, contactos: [{ rumboDeg: 90, distancia: 5000 }] };
+  const soloNave = { alcance: { corto: 5000, largo: 20000 }, contactos: [{ rumboDeg: 90, distancia: 5000, callsign: "EKL-2", faccion: "Human Navy" }] };
   const piezasEco = piezasDeVentana({ rect: VENTANA_ESTE, sala: SALA, sensores: soloEco, rumboNave: 0 });
   const piezasNave = piezasDeVentana({ rect: VENTANA_ESTE, sala: SALA, sensores: soloNave, rumboNave: 0 });
   assert.equal(piezasEco.length, 1);
@@ -97,7 +97,7 @@ test("un eco sin identidad se dibuja como borrón, no como silueta", () => {
 test("un contacto sin marcación legible se descarta en silencio", () => {
   for (const roto of [{ distancia: 5000 }, { rumboDeg: null, distancia: 5000 }, { rumboDeg: "90", distancia: 5000 }]) {
     const piezas = piezasDeVentana({
-      rect: VENTANA_ESTE, sala: SALA, sensores: { alcanceLargo: 20000, contactos: [roto] }, rumboNave: 0,
+      rect: VENTANA_ESTE, sala: SALA, sensores: { alcance: { corto: 5000, largo: 20000 }, contactos: [roto] }, rumboNave: 0,
     });
     assert.deepEqual(piezas, [], `no se debe colocar un contacto con rumbo ${JSON.stringify(roto.rumboDeg)}`);
   }
@@ -107,7 +107,33 @@ test("una lectura vacía SÍ se pinta: «he mirado y no hay nada» es un dato", 
   // Distinto de no tener lectura. Con sondeo vivo y cero contactos, la ventana
   // se abre y no se ve nada — no baja la persiana.
   const piezas = piezasDeVentana({
-    rect: VENTANA_ESTE, sala: SALA, sensores: { alcanceLargo: 20000, contactos: [] }, rumboNave: 0,
+    rect: VENTANA_ESTE, sala: SALA, sensores: { alcance: { corto: 5000, largo: 20000 }, contactos: [] }, rumboNave: 0,
   });
   assert.deepEqual(piezas, [], "sin contactos no hay piezas, pero tampoco persiana");
+});
+
+test("la forma de `sensores` es la que publica el puente DE VERDAD, no una inventada", async () => {
+  // Esta prueba existe porque las fixtures de arriba mintieron: leían un campo
+  // `sensores.alcanceLargo` que no existe. La forma real es `alcance.largo`, y
+  // como `profundidadDe(d, undefined)` devuelve null, la ventana descartaba TODOS
+  // los contactos y se quedaba vacía y sin persiana, con la suite en verde.
+  //
+  // Así que aquí el sobre no se escribe a mano: lo construye el mismo código que
+  // lo construye en producción.
+  const { sobreTelemetria } = await import("../scripts/telemetria-difusion.mjs");
+  const sobre = sobreTelemetria(
+    { ship: { position: { x: 0, y: 0 }, heading: 0, radar: { short_range: 5000, long_range: 30000 } } },
+    1,
+    { contacts: [{ position: { x: 12000, y: 0 } }] },
+  );
+  assert.ok(sobre?.sensores?.contactos?.length, "el sobre real debería traer contactos");
+
+  const piezas = piezasDeVentana({
+    rect: VENTANA_ESTE,
+    sala: SALA,
+    sensores: sobre.sensores,
+    rumboNave: sobre.ship.heading,
+  });
+  assert.equal(piezas.length, 1, "un contacto a estribor tiene que verse por la ventana de estribor");
+  assert.notEqual(piezas[0].color, SECCION.mamparo, "no debería ser la persiana: hay lectura");
 });

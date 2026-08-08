@@ -115,7 +115,14 @@ export function piezasDeVentana({ rect, sala, sensores, rumboNave }) {
   // Se mira hacia fuera del muro: el rumbo propio efectivo es el de la nave más
   // el del muro, y así `situarContacto` devuelve ya el sector correcto.
   const rumboPropio = rumboNave + RUMBO_DEL_MURO[lado];
-  const alcanceLargo = sensores.alcanceLargo;
+  // `alcance.largo`, que es la forma REAL que publica `degradarContactos` y la
+  // que documenta `componerVisorPiloto`. La primera versión de esto leía un
+  // `sensores.alcanceLargo` inexistente, y como `profundidadDe(d, undefined)`
+  // devuelve null, se descartaban TODOS los contactos: la ventana se quedaba
+  // vacía y sin persiana. Las pruebas no lo vieron porque sus fixtures inventaban
+  // ese campo — ahora una de ellas construye el sobre con `sobreTelemetria` para
+  // que no pueda volver a pasar.
+  const alcanceLargo = sensores.alcance?.largo;
 
   const piezas = [];
   for (const contacto of sensores.contactos) {

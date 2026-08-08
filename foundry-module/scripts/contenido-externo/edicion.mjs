@@ -96,6 +96,23 @@ export const FUENTES_2014 = Object.freeze([
 export const FUENTES_2024 = Object.freeze(["XPHB", "XMM", "XDMG"]);
 
 /**
+ * Prefijo con que 5etools nombra la revisión de 2024 (`js/parser.js`): "X" más
+ * la abreviatura de 2014 — XPHB frente a PHB, XMM frente a MM.
+ *
+ * Se usa SOLO como último recurso, después de la lista blanca, y solo para
+ * mejorar el `motivo`: un XSRD acaba rechazado igual por no estar en la lista,
+ * pero decir «es de 2024» en vez de «no la conozco» es la diferencia entre un
+ * diagnóstico útil y uno que invita a ampliar la lista blanca a lo bruto.
+ *
+ * El orden NO es cosmético: hay fuentes de 2014 que empiezan por X —XGE, la
+ * guía de Xanathar— y aplicar esto antes de la lista blanca las rechazaría por
+ * la forma de su nombre. Es exactamente el fallo que tenía el filtro anterior
+ * (`plutonium-filtro-edicion.mjs`, retirado en #524), cuya lista blanca era tan
+ * corta —PHB/DMG/MM/SRD— que el choque no se veía.
+ */
+const PREFIJO_2024 = /^X./;
+
+/**
  * Campos donde puede venir la procedencia, en orden de preferencia.
  *
  * OJO: esto es lo ÚNICO que este archivo sabe de la forma ajena, y está aquí
@@ -239,7 +256,13 @@ export function crearClasificador(opciones = {}) {
     if (blancas.has(fuente)) {
       return veredicto(EDICIONES.D2014, true, MOTIVOS.FUENTE_EN_LISTA, fuenteBruta);
     }
-    // (3) Hay fuente y no la conocemos. Fuera, y se dice cuál era.
+    // (3) Ni en blanca ni en negra: si sigue el patrón de nombre de la revisión
+    // de 2024, se puede decir POR QUÉ se rechaza. No cambia el veredicto —ya
+    // estaba fuera— solo el motivo.
+    if (PREFIJO_2024.test(fuente)) {
+      return veredicto(EDICIONES.D2024, false, MOTIVOS.FUENTE_2024, fuenteBruta);
+    }
+    // (4) Hay fuente y no la conocemos. Fuera, y se dice cuál era.
     return veredicto(EDICIONES.DESCONOCIDA, false, MOTIVOS.FUENTE_DESCONOCIDA, fuenteBruta);
   }
 

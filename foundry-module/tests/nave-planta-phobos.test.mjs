@@ -423,3 +423,32 @@ test("desde la entrada de cada sala se llega ANDANDO a todas sus puertas", () =>
     }
   }
 });
+
+test("ninguna puerta tiene un MUEBLE delante", () => {
+  // La puerta de la cantina estaba en el muro oeste, ocupado entero por muebles a
+  // altura de puerta: se podía cruzar —el disparador es un rect, no le importa lo
+  // que haya dibujado— pero no se veía ni se entendía. QA: «no tiene sentido que
+  // la puerta esté ahí cuando hay otra pared vacía».
+  //
+  // Las pruebas de alcanzabilidad no lo veían porque el punto de aparición estaba
+  // en el mismo hueco entre muebles que la puerta: alcanzable y absurdo a la vez.
+  // Esto mide otra cosa: que delante del paso quede sitio para plantarse.
+  const HOLGURA = 0.9;
+  for (const [id, estancia] of todasLasEstancias()) {
+    for (const puerta of estancia.puertas) {
+      const r = puerta.rect;
+      const centro = { x: r.x + r.ancho / 2, z: r.z + r.profundidad / 2 };
+      const libres = [];
+      for (const [dx, dz] of [[HOLGURA, 0], [-HOLGURA, 0], [0, HOLGURA], [0, -HOLGURA]]) {
+        const x = centro.x + dx;
+        const z = centro.z + dz;
+        if (x <= 0 || z <= 0 || x >= estancia.planta.ancho || z >= estancia.planta.profundidad) continue;
+        if (!colisiona(x, z, RADIO_JUGADOR, estancia.planta)) libres.push(`${dx},${dz}`);
+      }
+      assert.ok(
+        libres.length > 0,
+        `en ${id}, la puerta a ${puerta.destino.estancia} no tiene sitio libre delante: está tapada`,
+      );
+    }
+  }
+});

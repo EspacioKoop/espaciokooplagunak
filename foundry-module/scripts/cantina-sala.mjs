@@ -104,16 +104,27 @@ function aLocal(rect) {
 }
 
 /**
- * La puerta oeste, la misma que ya declaraba la escena. Ahora es un hueco de
- * verdad en el muro, con su hoja corredera, porque la abre quien pinta el muro.
+ * La salida de la cantina, en el muro SUR y centrada.
+ *
+ * Estaba en el muro oeste, que es donde la declaraba la escena original — y ese
+ * muro está OCUPADO ENTERO por muebles a altura de puerta. Una puerta detrás de
+ * una estantería no es una puerta: es lo que el QA describió como que no tiene
+ * sentido que esté ahí. Barriendo los cuatro muros, el sur es el único con
+ * espacio de sobra; el norte lo ocupa la entrada y el este la barra.
+ *
+ * Va centrada y no en una esquina porque es la ÚNICA salida de la sala: lo
+ * primero que hay que encontrar al querer irse.
  */
-export const PUERTA_OESTE = (() => {
-  const local = aLocal(PUERTA_CANTINA_HACIA_VESTIBULO.base);
-  // La hoja vive en el GROSOR del muro (x local negativo), que es justo donde el
-  // jugador no puede estar: un rect que solo la cubriera no se dispararía nunca.
-  // Se ancla al muro y se ensancha hacia dentro, como en las salas de la rejilla.
-  return { x: 0, z: local.z, ancho: 1.2, profundidad: local.profundidad };
-})();
+const ANCHO_PUERTA_CANTINA = 2.4;
+export const PUERTA_SALIDA = Object.freeze({
+  x: (ANCHO - ANCHO_PUERTA_CANTINA) / 2,
+  z: PROFUNDIDAD - 1.2,
+  ancho: ANCHO_PUERTA_CANTINA,
+  profundidad: 1.2,
+});
+
+/** Nombre anterior, conservado para no romper a quien lo importe. */
+export const PUERTA_OESTE = PUERTA_SALIDA;
 
 /**
  * Ventanales al espacio, en el muro del FONDO (sur).
@@ -125,18 +136,20 @@ export const PUERTA_OESTE = (() => {
  * De los cuatro muros, el sur es el ÚNICO con tramos despejados; el norte lo
  * ocupa la entrada y el oeste la puerta.
  *
- * Dos huecos anchos y no uno: el muro mide diez metros y una tronera se pierde.
+ * Comparten muro con la puerta, que va centrada: un ventanal a cada lado. Por eso
+ * miden 3.0 y no 3.6 — con la puerta en medio, tres huecos de 3.6 no caben en
+ * diez metros.
  */
-const ANCHO_VENTANAL = 3.6;
+const ANCHO_VENTANAL = 3.0;
 export const VENTANAS = Object.freeze([
-  { rect: { x: 1.0, z: PROFUNDIDAD - 0.4, ancho: ANCHO_VENTANAL, profundidad: 0.4 } },
-  { rect: { x: 5.4, z: PROFUNDIDAD - 0.4, ancho: ANCHO_VENTANAL, profundidad: 0.4 } },
+  { rect: { x: 0.6, z: PROFUNDIDAD - 0.4, ancho: ANCHO_VENTANAL, profundidad: 0.4 } },
+  { rect: { x: 6.9, z: PROFUNDIDAD - 0.4, ancho: ANCHO_VENTANAL, profundidad: 0.4 } },
 ]);
 
 const SALA = crearSalaCaja({
   ancho: ANCHO,
   profundidad: PROFUNDIDAD,
-  puertas: [{ rect: PUERTA_OESTE }],
+  puertas: [{ rect: PUERTA_SALIDA }],
   ventanas: VENTANAS,
   mobiliario: mobiliario(),
   // Los muros salen de la paleta de la CANTINA, no de la del casco: la sala

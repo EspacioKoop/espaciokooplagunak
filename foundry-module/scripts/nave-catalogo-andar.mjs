@@ -23,7 +23,7 @@ import { crearCatalogoEstancias } from "./nave-estancias.mjs";
 import { SECCION } from "./paleta.mjs";
 import { puntoLibreCerca } from "./nave-movimiento.mjs";
 import { crearSalaCaja } from "./nave-sala-caja.mjs";
-import { PLANTA_CANTINA_SALA, PUERTA_OESTE, componerCantinaSala } from "./cantina-sala.mjs";
+import { PLANTA_CANTINA_SALA, PUERTA_SALIDA, componerCantinaSala } from "./cantina-sala.mjs";
 import {
   ANCHO_PUERTA,
   GROSOR_PUERTA,
@@ -187,8 +187,10 @@ function definirSala(sala, salientes) {
       // separado de ella para no reactivarla de vuelta.
       destino: {
         estancia: "cantina",
-        ...libreEnCantina(PUERTA_OESTE.x + PUERTA_OESTE.ancho + 0.6, PUERTA_OESTE.z + PUERTA_OESTE.profundidad / 2),
-        yaw: Math.PI / 2,
+        // Delante de la puerta y mirando hacia DENTRO de la cantina (yaw 0 mira
+        // a +z, así que hacia el interior desde el muro sur es π).
+        ...libreEnCantina(PUERTA_SALIDA.x + PUERTA_SALIDA.ancho / 2, PUERTA_SALIDA.z - 1.6),
+        yaw: Math.PI,
       },
     });
   }
@@ -238,13 +240,13 @@ export const CATALOGO_ANDAR = crearCatalogoEstancias({
     // no daba a la puerta: se podía andar, pero no salir. Naciendo junto a la
     // única salida, estar en su misma zona está garantizado por construcción, y
     // una prueba de inundación lo comprueba para todas las salas.
-    entrada: { ...libreEnCantina(PUERTA_OESTE.x + PUERTA_OESTE.ancho + 0.6, PUERTA_OESTE.z + PUERTA_OESTE.profundidad / 2), yaw: Math.PI / 2 },
+    entrada: { ...libreEnCantina(PUERTA_SALIDA.x + PUERTA_SALIDA.ancho / 2, PUERTA_SALIDA.z - 1.6), yaw: Math.PI },
     puertas: [
       {
         // El disparador lo declara la propia sala, junto al hueco que abre en su
         // muro: antes eran dos números en dos archivos y estaban desalineados
         // casi un metro — el «puerta extraña que no da a ninguna parte» del QA.
-        rect: PUERTA_OESTE,
+        rect: PUERTA_SALIDA,
         destino: { estancia: SALA_DE_LA_CANTINA, x: 11, z: 3, yaw: Math.PI },
       },
     ],

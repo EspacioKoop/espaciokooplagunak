@@ -5,7 +5,14 @@
   {{!-- Dónde estás. QA: «no sé en qué sala estoy». Es una región `status` y no
         un adorno: quien use lector de pantalla también necesita saberlo, y al
         cruzar una puerta el cambio se anuncia. --}}
-  <p class="lagunak-andar-nave-sala" role="status" aria-live="polite" data-andar-sala></p>
+  <div class="lagunak-andar-nave-situacion">
+    <p class="lagunak-andar-nave-sala" role="status" aria-live="polite" data-andar-sala></p>
+    {{!-- Minimapa: orientación, no panel de estado. Va `aria-hidden` porque el
+          rótulo de arriba ya dice dónde estás en texto — que es la lectura de
+          verdad; esto es refuerzo visual, igual que el visor del piloto. --}}
+    <canvas class="lagunak-andar-minimapa" width="108" height="96"
+            aria-hidden="true" data-andar-minimapa></canvas>
+  </div>
   <canvas class="lagunak-andar-lienzo" width="480" height="270"
           role="img" aria-label="{{localize "LAGUNAK.AndarNave.VistaAlt"}}"></canvas>
   <p class="lagunak-andar-nave-controles">

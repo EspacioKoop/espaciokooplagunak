@@ -1365,3 +1365,18 @@
 .lagunak-andar-nave-sala:empty {
   display: none;
 }
+
+/* Situación: rótulo de sala + minimapa, en la misma fila (QA 2026-08-08). */
+.lagunak-andar-nave-situacion {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.lagunak-andar-minimapa {
+  flex: 0 0 auto;
+  border: 2px solid #1b263b;
+  background: #03071e;
+  /* Píxel gordo, como el visor del mapa: el plano se escala sin suavizar. */
+  image-rendering: pixelated;
+}

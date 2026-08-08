@@ -17,6 +17,8 @@
 import { MODULE_ID } from "./lagunak-constantes.mjs";
 import { arrancarAndar, RADIO_ANDAR } from "./nave-movimiento-lienzo.mjs";
 import { colisiona } from "./nave-movimiento.mjs";
+import { modeloMinimapa } from "./nave-minimapa.mjs";
+import { pintarMinimapa } from "./nave-minimapa-lienzo.mjs";
 import { CATALOGO_ANDAR } from "./nave-catalogo-andar.mjs";
 import { puntoDeLlegada, resolverArranque } from "./nave-estancias.mjs";
 import { construirMuestra, debeMuestrear, programarMuestra } from "./nave-movimiento-red.mjs";
@@ -259,6 +261,7 @@ function arrancar(raiz, estanciaPedida = null) {
    * que leer «Motor de warp» y muchísimo mejor que no saber nada.
    */
   function rotularSala(estanciaId) {
+    pintarSituacion(estanciaId);
     const nodo = raiz?.querySelector?.("[data-andar-sala]");
     if (!nodo) return;
     const clave = ["LAGUNAK", "AndarNave", "Sala", estanciaId].join(".");
@@ -294,6 +297,14 @@ function arrancar(raiz, estanciaPedida = null) {
       ...jugador,
       avatar: avatarDeUsuario(game.users?.get?.(jugador.userId), MODULE_ID),
     }));
+  }
+
+  /** Minimapa: dónde estás dentro del plano real de la nave. */
+  function pintarSituacion(estanciaId) {
+    const lienzoMapa = raiz?.querySelector?.("[data-andar-minimapa]");
+    const ctx = lienzoMapa?.getContext?.("2d");
+    if (!ctx) return;
+    pintarMinimapa(ctx, modeloMinimapa(estanciaId));
   }
 
   /**

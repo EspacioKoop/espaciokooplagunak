@@ -259,6 +259,19 @@ corresponde. Sigue siendo orientativo: la pantalla nativa de Relay monta tambié
 el overlay de comunicaciones, así que en una mesa pequeña las dos cosas pueden
 seguir siendo la misma persona.
 
+## Lo que deliberadamente NO se expone
+
+**El hackeo de Relay** (ADR-0010). No es un hueco pendiente: el minijuego vive
+entero en el cliente nativo y el servidor no valida su resultado, así que una
+orden de puente sería «este sistema queda hackeado» sin coste ni destreza. Se
+juega en la pantalla nativa de Relay. Si alguna vez se expone, el orden es
+primero la validación en el servidor (upstream, ADR-0007), después el binding y
+solo entonces la orden.
+
+Es también el criterio general para cualquier candidato futuro: **una acción
+entra en esta matriz si el juego valida su efecto server-side.** Si el único
+control está en la GUI que la pide, exponerla no traslada la agencia, la borra.
+
 ## Migración futura
 
 Si `STATION_ACTIONS` se generaliza más allá de la matriz cerrada actual

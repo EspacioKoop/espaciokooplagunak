@@ -18,17 +18,20 @@
 // misma regla que el mural se impone a sí mismo (#548) y que aquí se había
 // colado.
 //
-// LO CÁLIDO VA EN LOS COSTADOS, NO EN EL DIFUSOR, y esto no es una preferencia
-// sino una consecuencia del motor. `intensidadCara` deja un suelo de luz
-// ambiente de 0,35 y la luz viene de arriba, así que TODA cara que mire hacia
-// abajo está en el mínimo: un difusor ámbar puesto boca abajo llega al ojo como
-// un marrón sucio. En este motor el techo es estructuralmente la superficie más
-// oscura de la sala y ninguna pieza suya puede parecer brillante por su color.
-// Lo que sí funciona es que el resplandor salga por los costados de la carcasa
-// —caras verticales, bien iluminadas—, que además es como se ve de verdad una
-// pantalla empotrada. Es la misma lección que el suelo de #552, llevada al otro
-// extremo: cada orientación tiene su tramo de rampa y copiar el del vecino apaga
-// la superficie sin que nadie sepa por qué.
+// EL DIFUSOR ES EMISIVO, Y ES LA ÚNICA FORMA DE QUE PAREZCA ENCENDIDO.
+// `intensidadCara` deja un suelo de luz ambiente de 0,35 y la luz del motor
+// viene de arriba, así que TODA cara que mire hacia abajo está en el mínimo: en
+// este motor el techo es estructuralmente la superficie más oscura de la sala.
+// Pintado con sombreado normal, un difusor ámbar llega al ojo como un marrón
+// sucio — se probó, y las luminarias parecían fundidas. `componerEscena` acepta
+// `emisivo` (#555): esa malla se pinta a intensidad plena, que es exactamente lo
+// que hacía la máquina de referencia con las luces y las pantallas.
+//
+// EMISIVO NO ES UNA LUZ. El difusor no alumbra a nadie: el muro de enfrente no
+// se aclara por tener una luminaria delante, y la sombra de una sala sigue
+// saliendo de una única direccional fija. Poner luces de verdad —puntuales, con
+// caída— es otra decisión: cambia el aspecto de TODAS las superficies y cuesta
+// por cara y por lámpara. Va en #556, no de tapadillo aquí.
 //
 // Nada que se pueda leer (#526): carcasa y difusor. Ningún piloto que cambie de
 // color, porque un piloto afirma un estado.
@@ -179,14 +182,16 @@ export function piezasLuminarias({ ancho, profundidad, altura }) {
     difusores.push(difusorHaciaAbajo([x, yCarcasa - 0.055, z], medidasDifusor));
   }
 
-  // El ORDEN de estas tres importa, y es donde está la decisión del módulo (ver
-  // la cabecera): lo cálido va en los COSTADOS, que son las caras verticales y
-  // las únicas que reciben luz de verdad. Lo que mira hacia abajo va en tonos de
-  // metal, porque a esa orientación cualquier color llega apagado y pintarlo de
-  // ámbar solo produce un marrón sucio.
   return [
+    // La carcasa, metal normal: recibe la luz como cualquier otra pieza.
     { malla: fundir(bajos), color: MURAL.sombra },
-    { malla: fundir(difusores), color: MURAL.brillo },
-    { malla: fundir(costados), color: LUZ_CALIDA },
+    { malla: fundir(costados), color: MURAL.medio },
+    // El DIFUSOR es lo único emisivo de la nave: se pinta a intensidad plena,
+    // sin sombreado por normal. Sin eso, una cara que mira hacia abajo cae al
+    // suelo ambiente (0,35) y el ámbar llega al ojo como un marrón sucio — se
+    // probó, y las luminarias parecían apagadas. No alumbra a nadie: el motor no
+    // tiene luces de verdad (#556). Solo se exceptúa de la sombra, que es lo que
+    // hacía la máquina de referencia con las luces y las pantallas.
+    { malla: fundir(difusores), color: LUZ_CALIDA, emisivo: true },
   ];
 }

@@ -11,6 +11,7 @@ import assert from "node:assert/strict";
 import { ANCHO, CAIDA, LARGO, PASO, piezasLuminarias, reparto } from "../scripts/nave-luminaria.mjs";
 import { LUZ_CALIDA, MURAL, SECCION } from "../scripts/paleta.mjs";
 import { ALTURA, crearSalaCaja } from "../scripts/nave-sala-caja.mjs";
+import { componerEscena } from "../scripts/retro3d.mjs";
 
 const caras = (piezas) => piezas.reduce((n, p) => n + p.malla.caras.length, 0);
 
@@ -65,16 +66,53 @@ test("cuelgan del techo y no lo atraviesan", () => {
   }
 });
 
-test("lo cálido va en los COSTADOS, que es lo único que el motor ilumina", () => {
+test("el difusor es lo ÚNICO emisivo, y mira hacia abajo", () => {
   // En este motor toda cara que mira hacia abajo está en el suelo de luz
-  // ambiente: un difusor ámbar boca abajo llega al ojo como un marrón sucio. El
-  // resplandor tiene que salir por las caras verticales.
+  // ambiente (0,35): sin `emisivo`, un difusor ámbar llega al ojo como un marrón
+  // sucio y la luminaria parece fundida. Y solo el difusor: una carcasa emisiva
+  // sería una caja de luz, no una lámpara.
   const piezas = piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA });
-  const calida = piezas.find((p) => p.color === LUZ_CALIDA);
-  assert.ok(calida, "algo cálido tiene que haber");
-  for (const cara of calida.malla.caras) {
-    const ys = cara.map((i) => calida.malla.vertices[i][1]);
-    assert.ok(Math.max(...ys) - Math.min(...ys) > 0, "una cara vertical, no una horizontal");
+  const emisivas = piezas.filter((p) => p.emisivo === true);
+  assert.equal(emisivas.length, 1, "una sola pieza emisiva por luminaria");
+  assert.equal(emisivas[0].color, LUZ_CALIDA);
+  for (const cara of emisivas[0].malla.caras) {
+    const ys = cara.map((i) => emisivas[0].malla.vertices[i][1]);
+    assert.ok(Math.max(...ys) - Math.min(...ys) < 1e-9, "una cara horizontal, mirando abajo");
+  }
+});
+
+test("emisivo llega a pantalla con su color entero; sin él, sombreado", () => {
+  // El contrato del motor que hace posible una lámpara encendida (#555), probado
+  // donde vive y no a través de una sala: qué cámara ve el techo de qué
+  // habitación es otra pregunta, y mezclarlas hace un test que falla por el
+  // motivo equivocado.
+  const quad = {
+    vertices: [
+      [-1, 0, 4],
+      [1, 0, 4],
+      [1, 2, 4],
+      [-1, 2, 4],
+    ],
+    // Giro antihorario visto desde la cámara (en el origen), o el motor la
+    // descarta por estar de espaldas y no hay polígono que mirar.
+    caras: [[0, 3, 2, 1]],
+  };
+  const ajustes = { ancho: 320, alto: 180, epoca: "psx", color: LUZ_CALIDA, posicion: [0, 0, 0] };
+  const conLuz = componerEscena(quad, { ...ajustes, emisivo: true });
+  const sinLuz = componerEscena(quad, ajustes);
+  assert.equal(conLuz.poligonos[0].color, LUZ_CALIDA, "emisivo: el color entero");
+  assert.notEqual(sinLuz.poligonos[0].color, LUZ_CALIDA, "sin emisivo: el motor lo sombrea");
+});
+
+test("emisivo NO es una luz: no se contagia a la pieza de al lado", () => {
+  // La distinción que hay que sostener. `emisivo` solo exceptúa a ESA malla del
+  // sombreado; no alumbra a nadie. Poner luces de verdad es #556 y cambiaría el
+  // aspecto de todas las superficies — no puede colarse por aquí.
+  const sala = crearSalaCaja({ ancho: 8, profundidad: 6, muralPixel: false, pielSuelo: false });
+  const escena = sala.componer(4, 0, 3, 0, { ancho: 320, alto: 180, epoca: "psx" });
+  const crudos = new Set(Object.values(MURAL));
+  for (const poligono of escena.poligonos) {
+    assert.ok(!crudos.has(poligono.color), `${poligono.color} llegó sin sombrear: el emisivo se contagió`);
   }
 });
 

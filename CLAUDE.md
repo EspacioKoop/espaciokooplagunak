@@ -347,12 +347,16 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     que había sobrevivido en el techo. Ahora una sala grande tiene MÁS luminarias, no una mayor —que
     además es lo que la hace leerse grande—. Dos reglas: **una luminaria ilumina, no señala**, así
     que va en `LUZ_CALIDA` (recogido en `paleta.mjs` al llegar su tercer consumidor) y no en el
-    turquesa de `SECCION.entrable`, que marca lo accionable y no se gasta en adornos; y **lo cálido
-    va en los COSTADOS**, porque `intensidadCara` deja un suelo ambiente de 0,35 y la luz viene de
-    arriba: toda cara que mire hacia abajo está en el mínimo, el techo es estructuralmente la
-    superficie más oscura de la sala y un difusor ámbar boca abajo llega al ojo como un marrón
-    sucio. Es la lección del suelo (#552) en el otro extremo: cada orientación tiene su tramo de
-    rampa, y copiar el del vecino apaga la superficie sin que nadie sepa por qué.
+    turquesa de `SECCION.entrable`, que marca lo accionable y no se gasta en adornos; y el difusor es
+    **la única malla EMISIVA del módulo** (`componerEscena({emisivo: true})`, #555): se pinta a
+    intensidad plena sin sombreado por normal, que es lo que hacía la máquina de referencia con
+    luces y pantallas. Sin eso parecía fundida — `intensidadCara` deja un suelo ambiente de 0,35 y
+    la luz viene de arriba, así que toda cara que mire hacia abajo está en el mínimo y el techo es
+    estructuralmente la superficie más oscura de la sala. Es la lección del suelo (#552) en el otro
+    extremo: cada orientación tiene su tramo de rampa. **Emisivo NO es una luz**: el difusor no
+    alumbra a nadie y el muro de enfrente no se aclara por tenerlo delante; el motor sigue con UNA
+    direccional fija y poner luces de verdad —con posición y caída— es una decisión abierta en #556
+    que cambiaría el aspecto de todas las superficies del módulo.
     Un **minimapa** (`scripts/nave-minimapa.mjs` + `nave-minimapa-lienzo.mjs`) dice dónde estás,
     reusando el pintor de la sección. Va `aria-hidden` porque el rótulo de sala ya da la lectura en
     texto. **Una sola planta para todo el módulo** (#542): `nave-planta-phobos.celdasConCantina()` es

@@ -618,13 +618,15 @@ export function crearSalaCaja({
       piezasDeVentana({ rect, sala: { ancho, profundidad }, sensores, rumboNave }),
     );
 
-    const partes = [...piezas, ...hojasPuertas, ...vistaVentanas].map(({ malla, color }) =>
+    const partes = [...piezas, ...hojasPuertas, ...vistaVentanas].map(({ malla, color, emisivo }) =>
       componerEscena(trasladarMalla(malla, [-camara[0], -camara[1], -camara[2]]), {
         ancho: anchoLienzo,
         alto: altoLienzo,
         epoca,
         fov,
         color,
+        // Solo lo que de verdad emite: hoy, el difusor de una luminaria (#555).
+        emisivo: emisivo === true,
         posicion: [0, 0, 0],
         yaw: yawCamara,
         // Recorte de frustum completo (#510): las salas de #508 son

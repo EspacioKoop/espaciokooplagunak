@@ -85,8 +85,9 @@ abrir un solo campo nuevo hacia el puente es el resultado que interesa conservar
 
 ## Estado
 
-Suites del puente (pytest) y del módulo (Node) en verde en local; la sintaxis Lua la verifica el job
-`LuaTest` de CI (`luac -p` sobre `scripts/`), no se comprobó en la máquina de desarrollo. **Falta el playtest
+Suites del puente (pytest) y del módulo (Node) en verde en local. Sintaxis Lua verificada con
+`luac -p` sobre todo `scripts/` (0 fallos) — en local con Lua 5.5, mientras que el job `LuaTest` de
+CI usa 5.3: es esa segunda pasada la que vale como registro. **Falta el playtest
 con personas**, que es [#467](https://github.com/VaroTv7/espaciokooplagunak/issues/467) y puede usar
 esta crisis como su escenario de prueba: hasta entonces, la cadena está demostrada en el código y no
 en la mesa.

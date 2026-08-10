@@ -141,6 +141,30 @@ export const ALERTA = Object.freeze({
  */
 export const LUZ_CALIDA = "#ffd79a";
 
+/**
+ * El fósforo de una pantalla encendida (#557). El segundo —y último— color
+ * emisivo del módulo, junto a `LUZ_CALIDA`.
+ *
+ * Es pariente de `CANTINA.pantalla` (#1b4a5c, «monitores apagados del mamparo:
+ * azul de fósforo muerto»): el mismo tubo, encendido. Esa relación es el motivo
+ * de que sea un azul verdoso y no un blanco — una pantalla apagada y la misma
+ * encendida tienen que reconocerse como el mismo aparato.
+ *
+ * Apagado de tono a propósito: es un color EMISIVO, o sea que llega al ojo tal
+ * cual, sin sombrear. Un cian saturado a intensidad plena en una sala oscura no
+ * se lee como un monitor encendido sino como un rectángulo de error —se probó, y
+ * la primera versión parecía una pantalla azul de las malas—. La luz de un tubo
+ * de fósforo es tenue; lo que la hace visible es el contraste con la sala, no su
+ * saturación.
+ *
+ * Va ENCENDIDO Y VACÍO. Un monitor iluminado no afirma nada; un monitor con un
+ * gráfico afirma una lectura que nadie ha calculado, y sería la infracción más
+ * creíble posible de #526 — precisamente porque una consola es el sitio donde un
+ * dato SÍ tendría sentido. El dato de verdad está en el espacio de puesto que se
+ * abre al llegar; el mueble solo dice «aquí hay un puesto».
+ */
+export const LUZ_FOSFORO = "#2f7f8f";
+
 export const CANTINA = Object.freeze({
   mamparo: "#2b3038", // gris azulado de nave: el fondo no compite con nada
   suelo: "#1d2128", // más oscuro que el mamparo: la sala tiene arriba y abajo

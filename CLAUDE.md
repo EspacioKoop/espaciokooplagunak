@@ -371,7 +371,18 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     estancias. En tercera persona el propio cuerpo entra como un avatar más por
     `poligonosOtrosJugadores`, así que el render de presencia no sabe que uno de ellos eres tú.
     Cada sala con sistema tiene una CONSOLA (#509) que abre el puesto del sistema que ALOJA —el
-    reactor abre ingeniería—, con su zona de pie separada del punto de entrada para que acercarse sea
+    reactor abre ingeniería— y que desde #557 **se ve**: hasta entonces era solo un rectángulo
+    disparador y se activaba pisando un trozo de suelo vacío (y `detalleConsola`, escrita y probada
+    desde #509, no la llamaba nadie — un *export* huérfano dentro de un módulo cableado, la variante
+    que la guarda de #523 no ve). `scripts/nave-consola.mjs` la construye como mobiliario: cuerpo con
+    piel, tapa, monitor y pantalla. Dos reglas: **se arrima a la pared**, nunca al centro de su zona
+    —el rect es donde te PONES, y un cuerpo sólido ahí bloquearía su propio disparador—, y la zona se
+    elige en el cuarto de sala más lejos de las PUERTAS, porque con la colocación fija de antes caía
+    justo donde se aparece al cruzar desde la sala vecina (lo cazó `nave-planta-phobos.test.mjs`). La
+    pantalla va **encendida y VACÍA** (`emisivo`, #555): un monitor iluminado no afirma nada, uno con
+    un gráfico afirma una lectura que nadie ha calculado — y es la infracción más creíble posible de
+    #526, precisamente porque una consola es el único sitio donde un dato tendría sentido. El dato de
+    verdad está en el espacio de puesto que se abre al llegar. con su zona de pie separada del punto de entrada para que acercarse sea
     un gesto; `nave-estancias.mjs` la declara con la misma forma que una puerta (`{rect, ...}`,
     reutilizando `nave-movimiento.puertaTocada`) pero sin `destino`, y `nave-movimiento-lienzo.mjs`
     solo avisa en el flanco de ENTRADA. `andar-nave-app.mjs` interpreta el aviso llamando a

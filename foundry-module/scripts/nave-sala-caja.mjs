@@ -543,7 +543,13 @@ export function crearSalaCaja({
     ...marcosPuerta.map((malla) => ({ malla, color: colorMarcoPuerta })),
     ...bandas.map((malla) => ({ malla, color: colorMuro })),
     ...columnas.map((rect) => ({ malla: rectAColumna(rect, ALTURA), color: colorColumna })),
-    ...mobiliario.map(({ centro, medidas, color }) => ({ malla: caja(centro, medidas), color })),
+    ...mobiliario.map(({ centro, medidas, color, emisivo }) => ({
+      malla: caja(centro, medidas),
+      color,
+      // Un mueble puede declararse emisivo (#557, la pantalla de una consola):
+      // se pinta a intensidad plena, sin sombreado por normal.
+      emisivo: emisivo === true,
+    })),
     // Piel de los objetos (#550). Va DESPUÉS de las cajas que viste, y solo la
     // reciben los que son arquitectura de la sala: `piezasPielObjeto` filtra por
     // tamaño, así que las 126 piezas de mobiliario de la cantina no se convierten

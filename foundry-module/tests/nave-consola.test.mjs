@@ -112,7 +112,16 @@ test("una sala sin puesto no tiene consola", () => {
   // ofrecer un puesto que no existe.
   const camarotes = CATALOGO_ANDAR.obtener("camarotes");
   assert.deepEqual(camarotes.consolas, []);
-  assert.deepEqual(camarotes.planta.obstaculos, [], "y por tanto tampoco su mueble");
+  // Y tampoco su mueble. No se comprueba que la sala esté VACÍA —desde #560
+  // lleva maquinaria—, sino que no hay nada con la huella del cuerpo de una
+  // consola: eso es lo que significaba la comprobación original.
+  const cuerpo = piezasConsola({ zona: ZONA, sala: SALA }).find((p) => p.nombre === "consolaCuerpo");
+  const [anchoCuerpo, , fondoCuerpo] = cuerpo.medidas;
+  for (const obstaculo of camarotes.planta.obstaculos) {
+    const comoConsola =
+      Math.abs(obstaculo.ancho - anchoCuerpo) < 1e-6 && Math.abs(obstaculo.profundidad - fondoCuerpo) < 1e-6;
+    assert.ok(!comoConsola, "hay un mueble con la huella de una consola en una sala sin puesto");
+  }
 });
 
 test("ni un color propio", () => {

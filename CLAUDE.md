@@ -357,6 +357,17 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     alumbra a nadie y el muro de enfrente no se aclara por tenerlo delante; el motor sigue con UNA
     direccional fija y poner luces de verdad —con posición y caída— es una decisión abierta en #556
     que cambiaría el aspecto de todas las superficies del módulo.
+    La **maquinaria de sala** es `scripts/nave-mobiliario-sala.mjs` (#560), y su regla es la misma
+    que gobierna todo lo demás en esta nave: **el dato ya existe**. `SALAS_PHOBOS` declara el sistema
+    de cada sala, y de ahí sale qué le toca —bancadas, armarios, conductos, cajas de registro— igual
+    que la planta salió del `.lua` (#540) y la consola de tener puesto (#557). Es una tabla por
+    SISTEMA y no por sala: dos salas del mismo sistema traen el mismo material, que es lo correcto en
+    una nave, y lo que las diferencia es dónde cae cada pieza. Lo que **no** decide este módulo es el
+    contenido narrativo —qué cuelga de las paredes, qué se ha dejado la tripulación— que es de quien
+    escribe la campaña. Se mantiene la DENSIDAD y no el número (una pieza cada seis metros de muro,
+    igual que las luminarias mantienen cadencia), todo va pegado al muro para no cortar el paso, y
+    nada se coloca cerca de una PUERTA — los puntos de llegada los declaran las salas vecinas y aquí
+    no se conocen, pero una llegada siempre cae cerca de su puerta, que es el mismo apaño de #557.
     Un **minimapa** (`scripts/nave-minimapa.mjs` + `nave-minimapa-lienzo.mjs`) dice dónde estás,
     reusando el pintor de la sección. Va `aria-hidden` porque el rótulo de sala ya da la lectura en
     texto. **Una sola planta para todo el módulo** (#542): `nave-planta-phobos.celdasConCantina()` es

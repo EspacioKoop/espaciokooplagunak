@@ -24,6 +24,7 @@ import { SECCION } from "./paleta.mjs";
 import { puntoLibreCerca } from "./nave-movimiento.mjs";
 import { crearSalaCaja } from "./nave-sala-caja.mjs";
 import { piezasConsola } from "./nave-consola.mjs";
+import { piezasMobiliarioSala } from "./nave-mobiliario-sala.mjs";
 import { PLANTA_CANTINA_SALA, PUERTA_SALIDA, componerCantinaSala } from "./cantina-sala.mjs";
 import {
   ANCHO_PUERTA,
@@ -232,7 +233,19 @@ function definirSala(sala, salientes) {
   const caja = crearSalaCaja({
     ancho,
     profundidad,
-    mobiliario: puestoDeLaSala ? piezasConsola({ zona: rectConsola, sala: { ancho, profundidad } }) : [],
+    mobiliario: [
+      ...(puestoDeLaSala ? piezasConsola({ zona: rectConsola, sala: { ancho, profundidad } }) : []),
+      // La maquinaria de la sala (#560): sale de su SISTEMA, no se inventa.
+      ...piezasMobiliarioSala({
+        sala: { ancho, profundidad },
+        sistema: sala.sistema ?? null,
+        puertas,
+        consola: puestoDeLaSala ? rectConsola : null,
+        // Semilla por celda, como el cielo de sus ventanas: la misma sala se
+        // amuebla igual siempre, y dos salas distintas no salen calcadas.
+        semilla: 20260810 + sala.celda.x * 131 + sala.celda.y * 17,
+      }),
+    ],
     puertas: puertas.map(({ rect }) => ({ rect })),
     ventanas: ventanasAlExterior(sala, salientes),
     // Mismo motivo que en la cantina: el marco de serie es `SECCION.entrable`,

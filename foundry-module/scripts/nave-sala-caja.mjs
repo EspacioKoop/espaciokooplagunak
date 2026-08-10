@@ -36,6 +36,7 @@ import { piezasDeVentana } from "./nave-ventana-espacio.mjs";
 import { piezasMuralPixel } from "./nave-mural-pixel.mjs";
 import { piezasPielHoja } from "./nave-piel-puerta.mjs";
 import { piezasPielColumna, piezasPielObjeto } from "./nave-piel-objeto.mjs";
+import { piezasPielSuelo, piezasPielTecho } from "./nave-piel-suelo.mjs";
 import { crearPlanta } from "./nave-movimiento.mjs";
 import { poligonosOtrosJugadores } from "./nave-avatares-render.mjs";
 
@@ -515,6 +516,7 @@ export function crearSalaCaja({
   // en las salas de prueba por el mismo motivo que el mural.
   pielPuertas = true,
   pielObjetos = true,
+  pielSuelo = true,
 }) {
   const muros = [
     { x: -GROSOR_MURO, z: -GROSOR_MURO, ancho: ancho + GROSOR_MURO * 2, profundidad: GROSOR_MURO },
@@ -569,6 +571,14 @@ export function crearSalaCaja({
     ...rodapie(ancho, profundidad),
     { malla: caja([ancho / 2, -0.05, profundidad / 2], [ancho, 0.1, profundidad]), color: SECCION.sala },
     { malla: caja([ancho / 2, ALTURA + 0.05, profundidad / 2], [ancho, 0.1, profundidad]), color: SECCION.mamparo },
+    // Suelo y techo (#552). Van con su propio interruptor, como el resto de la
+    // piel, y detrás de sus dos losas: son chapa encima, no las sustituyen.
+    ...(pielSuelo
+      ? [
+          ...piezasPielSuelo({ ancho, profundidad, semilla: semillaMural }),
+          ...piezasPielTecho({ ancho, profundidad, altura: ALTURA }),
+        ]
+      : []),
     lamparaTecho(ancho, profundidad),
   ]);
 

@@ -302,8 +302,8 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     veces. Sin las dos cosas, este dibujo no cabe en un fotograma. La celda bajó de 20 a 10 cm en #551 al caerse su argumento original: «fidelidad al
     hardware» era la regla equivocada (Neo Geo y SIGNALIS usan más detalle por metro del que la
     máquina de referencia movía), la buena es el LOOK —paleta corta, sin filtrado, sin degradados—,
-    que se conserva entero. El presupuesto medido (20–86 → 122–327 con #550 → 871–1055 con #551; 0,4
-    → 1,45 → 4,11 ms la peor sala) está en la cabecera del módulo: es lo que se vuelve a medir antes
+    que se conserva entero. El presupuesto medido (20–86 → 122–327 con #550 → 871–1055 con #551 → 886–1135 con #552; 0,4
+    → 1,45 → 4,11 → 4,19 ms la peor sala) está en la cabecera del módulo: es lo que se vuelve a medir antes
     de subir nada, y si algún día no cabe se recorta la densidad de greebles, nunca la rejilla —media
     resolución se nota en todo el muro, media plancha sin escotilla no la echa nadie de menos.
     La **misma rejilla** viste puertas (`scripts/nave-piel-puerta.mjs`) y objetos
@@ -327,6 +327,19 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     material equivocado— y cualquier mueble puede renunciar a ella con `piel: false` sin sacar a la
     sala entera del sistema; y **sin semilla**, al revés que el muro: una puerta y un armario son
     piezas de serie, y sortear sus remaches los convierte en artesanía.
+    **Suelo y techo** son `scripts/nave-piel-suelo.mjs` (#552), y su cabecera explica por qué un
+    plano horizontal NO es un muro girado: la rejilla es 2D de verdad, el presupuesto es otro —el
+    suelo está en cuadro SIEMPRE, así que su dibujo es a propósito más pobre que el de un muro— y
+    sobre todo la luz les llega distinta, hasta el punto de que la losa de suelo se queda casi en su
+    tono crudo y **una junta de suelo no puede ser una sombra**: por debajo de ella no hay dónde ir,
+    tiene que ser una línea un punto más clara, y solo un punto —con más, las juntas longitudinales
+    convergen en perspectiva y el suelo se lee como el carril de una autopista—. Dos reglas propias:
+    **ninguna señal en el suelo** (ni líneas guía ni flechas: es la regla de #526 donde más fácil
+    sería saltársela, porque una marca que parezca indicar por dónde ir afirma algo que nadie ha
+    decidido), y **todo o nada** al pasarse del tope —en un muro recortar quita rasgos anecdóticos y
+    sigue siendo un muro; en un suelo deja media sala con juntas y media lisa, que se lee como un
+    fallo—. La sala mayor (22x22 m) es la que fija el coste, no la media, y por eso se dibujan las
+    juntas y no las planchas: rellenar plancha a plancha son trescientos rectángulos allí.
     Un **minimapa** (`scripts/nave-minimapa.mjs` + `nave-minimapa-lienzo.mjs`) dice dónde estás,
     reusando el pintor de la sección. Va `aria-hidden` porque el rótulo de sala ya da la lectura en
     texto. **Una sola planta para todo el módulo** (#542): `nave-planta-phobos.celdasConCantina()` es

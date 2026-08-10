@@ -142,6 +142,13 @@ class EncounterArchetype(str, Enum):
     patrol = "patrol"
     freighter = "freighter"
     sentry = "sentry"
+    # #484: el unico arquetipo que no materializa UNA nave sino un grupo con su
+    # propia maquina de estados en el escenario (la crisis multipuesto de la
+    # Etapa B). Para esta frontera no cambia nada —sigue siendo un nombre de un
+    # catalogo cerrado, sin coordenadas ni definicion de objeto desde el
+    # cliente—, y esa es justamente la propiedad que se queria conservar: una
+    # crisis coordinada no necesito abrir ni un campo nuevo hacia el puente.
+    ambush = "ambush"
 
 
 class EncounterBearing(str, Enum):

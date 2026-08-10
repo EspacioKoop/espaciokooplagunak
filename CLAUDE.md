@@ -121,7 +121,17 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
   la activa, `/exec.lua` ejecuta el POST y devuelve su `return` o `{"ERROR": ...}`, y `/get.lua`
   NO está implementado — devuelve el literal `TODO`).
 - `scripts/` — escenarios Lua (`scenario_*.lua`), la API Lua expuesta a misiones en `scripts/api/`,
-  y utilidades reutilizables (`comms_*.lua`, `*_scenario_utility.lua`).
+  y utilidades reutilizables (`comms_*.lua`, `*_scenario_utility.lua`). La **crisis multipuesto**
+  (#484, `lagunak_crisis_scenario_utility.lua`, doc en
+  [`docs/CRISIS_MULTIPUESTO.md`](docs/CRISIS_MULTIPUESTO.md)) es una utilidad, no una parte del
+  escenario 90: el escenario solo despacha el arquetipo `ambush` y avanza las crisis vivas. Su regla
+  de diseño es que la coordinación sea una **cadena** y no cuatro tareas paralelas —comunicaciones
+  sostiene el parlamento, sin el cual el escaneo se borra; sensores identifica al buque trampa entre
+  tres cascos idénticos; armas dispara al correcto y matar a un señuelo es la forma de perder—, y que
+  la necesidad del cuarto puesto no se finja: ingeniería gana la frecuencia de escudos revelada por
+  el escaneo, pero eso depende de un ajuste de servidor que el anfitrión puede apagar, así que no
+  se le cuelga ninguna condición de victoria. No añade ninguna orden nueva al puente ni a la matriz
+  de autoridad: las cuatro que la resuelven ya existían.
 - `script_docs/` — generador de `script_reference.html` (heredado de upstream) con una divergencia
   propia (issue #87): highlight.js va vendorizado en `script_docs/vendor/` y `main.py` lo incrusta
   inline vía la etiqueta `{{inline ...}}` en vez de cargarlo de un CDN sin `integrity` (alertas

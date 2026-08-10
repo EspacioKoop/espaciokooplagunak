@@ -175,8 +175,11 @@ de `health`/`heat`/`power`.
 Foundry decide el *qué* (un arquetipo de catálogo cerrado) y el escenario decide
 el *cómo* (plantilla, posición exacta, facción, estado, orden de IA). El catálogo
 admitido hoy es `derelict` (pecio civil averiado y quieto), `patrol` (cazador
-Exuari hostil en ronda), `freighter` (mercante neutral) y `sentry` (plataforma de
-defensa hostil que guarda su posición). Un arquetipo que el puente conoce pero el
+Exuari hostil en ronda), `freighter` (mercante neutral), `sentry` (plataforma de
+defensa hostil que guarda su posición) y `ambush` (la crisis multipuesto de #484:
+un convoy de tres contactos idénticos con un buque trampa entre ellos, cuya
+resolución correcta exige comunicaciones, sensores y armas en cadena — ver
+`docs/CRISIS_MULTIPUESTO.md`). Un arquetipo que el puente conoce pero el
 escenario cargado no honra degrada a `not_supported`, nunca inventa un objeto.
 `bearing` es opcional (`ahead`/`astern`/`port`/`starboard`), un rumbo grueso
 relativo a la nave que el escenario puede honrar laxamente — **nunca se aceptan

@@ -403,7 +403,9 @@ def test_spawn_encounter_con_rumbo(client, juego, auth):
     assert 'spawn("derelict", "port")' in juego.ultimo_lua
 
 
-@pytest.mark.parametrize("archetype", ["derelict", "patrol", "freighter", "sentry"])
+@pytest.mark.parametrize(
+    "archetype", ["derelict", "patrol", "freighter", "sentry", "ambush"]
+)
 def test_spawn_encounter_todos_los_arquetipos_del_catalogo(client, juego, auth, archetype):
     # Cada arquetipo del enum se acepta y viaja como cadena literal al callback;
     # el Lua emitido sigue siendo fijo (no depende del arquetipo).
@@ -417,7 +419,7 @@ def test_spawn_encounter_todos_los_arquetipos_del_catalogo(client, juego, auth, 
 def test_spawn_encounter_arquetipos_expuestos_coinciden_con_el_enum():
     # El catálogo cerrado y la documentación no se separan sin que un test avise.
     valores = {a.value for a in bridge.EncounterArchetype}
-    assert valores == {"derelict", "patrol", "freighter", "sentry"}
+    assert valores == {"derelict", "patrol", "freighter", "sentry", "ambush"}
 
 
 def test_spawn_encounter_arquetipo_fuera_de_catalogo_rechazado(client, juego, auth):

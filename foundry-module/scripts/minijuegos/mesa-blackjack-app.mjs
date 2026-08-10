@@ -111,7 +111,6 @@ function contexto() {
   // echó en falta, y va por delante del resto del contexto porque es lo primero
   // que se lee.
   const lectura = lecturaBlackjack(modelo, opcionesDeMesa());
-  const frase = ({ clave, datos }) => game.i18n.format(clave, datos ?? {});
 
   const nombre = (id) => {
     if (typeof id === "string" && id.startsWith(PREFIJO_AUTOMATICO)) {
@@ -122,6 +121,14 @@ function contexto() {
     return game.users?.get?.(id)?.name ?? id;
   };
   const cifra = (valor) => (Number.isInteger(valor) ? String(valor) : "—");
+  // La lectura trabaja con `userId` porque es puro y no conoce a nadie; quien sí
+  // sabe traducir un id a un nombre es esta capa, y aquí es donde toca hacerlo.
+  // Sin este paso, «Juega {userId}» se leería como un identificador en crudo.
+  const frase = ({ clave, datos }) => {
+    const partes = { ...(datos ?? {}) };
+    if (typeof partes.userId === "string") partes.userId = nombre(partes.userId);
+    return game.i18n.format(clave, partes);
+  };
 
   return {
     ...modelo,

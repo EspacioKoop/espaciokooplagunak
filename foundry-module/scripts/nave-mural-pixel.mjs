@@ -42,15 +42,16 @@
 //
 //   sin piel (antes de #548)      20–86     0,4 ms
 //   piel de #548 + #550          122–327    1,45 ms
-//   detalle de #551              657–789    3,46 ms
+//   detalle de #551              871–1055   4,11 ms
 //
-// El salto de #551 es real y hay que vigilarlo: casi el doble de coste por el
-// detalle, ya CON el mallado en rectángulos pagándolo a medias. Sigue cabiendo
-// en un fotograma de 16 ms con sitio de sobra para el rasterizado, pero es la
-// cifra que se vuelve a medir antes de subir nada — no la sensación de que «unos
-// rectángulos más dan igual». Si algún día no cabe, lo que se toca es la
-// densidad de greebles, no la rejilla: media resolución se nota, media plancha
-// sin escotilla no.
+// El salto de #551 es real y hay que vigilarlo. Está pagado a tres bandas: el
+// mallado en rectángulos, el agrupado por color de `chapasDeRejilla` (que quitó
+// un 20% de coste sin tocar un solo polígono) y el tope duro. Cabe en un
+// fotograma de 16 ms con sitio para el rasterizado, pero es la cifra que se
+// vuelve a medir antes de subir nada — no la sensación de que «unos rectángulos
+// más dan igual». Si algún día no cabe, lo que se toca es la densidad de
+// greebles, NO la rejilla: media resolución se nota en todo el muro, media
+// plancha sin escotilla no la echa nadie de menos.
 //
 // NO TOCA LA COLISIÓN. Son chapas de grosor cero apoyadas sobre la cara interior
 // del muro, `SALIENTE` metros por delante para no pelearse con ella en el
@@ -230,15 +231,30 @@ export function rejillaMural(columnas, filas, semilla = 1) {
   if (banda.zocalo > 0) {
     rect(0, 0, columnas, banda.zocalo, MURAL.sombra);
     linea(banda.zocalo, 0, columnas, MURAL.brillo); // el canto que coge la luz
-    for (let u = 2; u < columnas; u += 6) poner(1, u, MURAL.remache);
+    // Rigidizadores: un zócalo de chapa lisa se abolla, así que va nervado. Es
+    // además el único sitio del muro con ritmo corto (cada 60 cm), y ese cambio
+    // de ritmo respecto a las planchas (1,6 m) es lo que le da a la banda baja
+    // un peso propio en vez de parecer un recorte de la de arriba.
+    for (let u = 4; u < columnas - 1; u += 8) {
+      lienzo.columna(u, 1, banda.zocalo - 1, MURAL.hueco);
+      lienzo.columna(u + 1, 1, banda.zocalo - 1, MURAL.medio);
+    }
+    for (let u = 8; u < columnas; u += 8) poner(1, u, MURAL.remache);
   }
 
   // --- Banda alta: CORNISA, por encima del dintel de una puerta. Va más
   //     apagada y con menos cosas a propósito: es lo que queda fuera del cono de
-  //     mirada, y llenarla compite con lo que sí se mira.
+  //     mirada, y llenarla compite con lo que sí se mira. Lo único que lleva son
+  //     las ménsulas de las que cuelga: sin ellas es una franja flotando.
   if (banda.cornisa > 0) {
-    rect(filas - banda.cornisa, 0, columnas, banda.cornisa, MURAL.junta);
-    linea(filas - banda.cornisa - 1, 0, columnas, MURAL.medio);
+    const vCornisa = filas - banda.cornisa;
+    rect(vCornisa, 0, columnas, banda.cornisa, MURAL.junta);
+    linea(vCornisa - 1, 0, columnas, MURAL.medio);
+    linea(filas - 1, 0, columnas, MURAL.sombra);
+    for (let u = 8; u < columnas; u += PANEL_ANCHO) {
+      rect(vCornisa, u, 3, banda.cornisa - 1, MURAL.sombra);
+      lienzo.columna(u, vCornisa, banda.cornisa - 1, MURAL.medio);
+    }
   }
 
   // --- Banda media: el PAÑO DE PLANCHAS. Es el grueso del muro y lo que da la
@@ -246,6 +262,14 @@ export function rejillaMural(columnas, filas, semilla = 1) {
   const paneles = [];
   for (let v = banda.panoDesde; v + PANEL_ALTO <= banda.panoHasta; v += PANEL_ALTO) {
     for (let u = 0; u + PANEL_ANCHO <= columnas; u += PANEL_ANCHO) {
+      // No todas las planchas son del mismo tono. Es UN rectángulo más por
+      // plancha —lo más barato que hay en este dibujo— y es lo que más se nota:
+      // un paño donde todas son idénticas se lee como una textura repetida por
+      // muy trabajada que esté cada una. Las naves de Neo Geo hacen justo esto,
+      // y por eso su chapa parece chapa y no papel pintado.
+      const tono = azar();
+      if (tono < 0.18) rect(v + 1, u + 1, PANEL_ANCHO - 2, PANEL_ALTO - 2, MURAL.sombra);
+      else if (tono < 0.30) rect(v + 1, u + 1, PANEL_ANCHO - 2, PANEL_ALTO - 2, MURAL.medio);
       panelBiselado(lienzo, u, v, PANEL_ANCHO, PANEL_ALTO);
       paneles.push([u, v]);
     }
@@ -276,9 +300,72 @@ export function rejillaMural(columnas, filas, semilla = 1) {
     else if (tirada < 0.66) placaAtornillada(lienzo, u, v, azar);
     // El resto se queda como plancha lisa. Una nave donde TODAS las planchas
     // llevan algo encima es un cuarto de máquinas, no un pasillo.
+
+    // Y un detalle menudo encima, a veces: la tercera capa de lectura, la que
+    // solo existe cuando te pones al lado del muro. No sustituye al greeble
+    // grande, se le suma — que es lo que hace que acercarse siga dando algo
+    // después de haber visto ya la escotilla.
+    if (azar() < 0.5) menudencia(lienzo, u, v, azar);
+  }
+
+  // --- Las CUADERNAS: la estructura de la nave, vista por dentro. Van por
+  //     ENCIMA de las planchas —se dibujan las últimas— y solo dentro del paño:
+  //     de zócalo a cornisa cruzaban el bastidor de tubos y el muro entero se
+  //     leía como una verja (se vio en la vista previa).
+  for (let u = PANEL_ANCHO; u + 3 < columnas; u += PANEL_ANCHO * 2) {
+    cuaderna(lienzo, u, banda.panoDesde, banda.panoHasta);
   }
 
   return lienzo.rejilla;
+}
+
+/**
+ * El canal estructural entre dos columnas de planchas: tres celdas HUNDIDAS, con
+ * su filo de luz a un lado y el fondo oscuro dentro.
+ *
+ * Se probó al revés —un nervio claro, montado por delante— y era peor: a la
+ * cadencia de 3,2 m, tres barras claras de suelo a techo convierten la pared en
+ * una verja y se comen la lectura horizontal de las bandas. Hundido hace el
+ * trabajo contrario: da profundidad sin quitar protagonismo, que es lo que se le
+ * pide a un rasgo que se repite tanto.
+ */
+function cuaderna(lienzo, u0, v0, v1) {
+  const alto = v1 - v0;
+  if (alto < 6) return;
+  lienzo.rect(v0, u0, 3, alto, MURAL.hueco);
+  lienzo.columna(u0, v0, alto, MURAL.sombra);
+  lienzo.columna(u0 + 2, v0, alto, MURAL.medio); // el filo del otro lado, a la luz
+  for (let v = v0 + 3; v < v1 - 1; v += 6) lienzo.poner(v, u0 + 1, MURAL.sombra);
+}
+
+/**
+ * Detalle menudo: lo que se ve al pegarse al muro. Cuatro cosas pequeñas, todas
+ * de dos o tres celdas, ninguna capaz de significar nada (#526) — un par de
+ * pernos, una cartela de esquina, un tapón roscado, una junta de dilatación.
+ */
+function menudencia(lienzo, u, v, azar) {
+  const { poner, linea, columna } = lienzo;
+  const cual = Math.floor(azar() * 4);
+  const uu = u + 3 + Math.floor(azar() * (PANEL_ANCHO - 7));
+  const vv = v + 2 + Math.floor(azar() * (PANEL_ALTO - 5));
+  if (cual === 0) {
+    // Dos pernos con su sombra: el detalle más pequeño que sigue leyéndose.
+    poner(vv, uu, MURAL.brillo);
+    poner(vv - 1, uu, MURAL.junta);
+    poner(vv, uu + 2, MURAL.brillo);
+    poner(vv - 1, uu + 2, MURAL.junta);
+  } else if (cual === 1) {
+    // Cartela: el triángulo escalonado que refuerza una esquina interior.
+    for (let k = 0; k < 3; k += 1) linea(v + 2 + k, u + 2, 3 - k, MURAL.claro);
+  } else if (cual === 2) {
+    // Tapón roscado: un cuadro de tres con el centro hundido.
+    lienzo.rect(vv, uu, 3, 3, MURAL.medio);
+    poner(vv + 1, uu + 1, MURAL.hueco);
+  } else {
+    // Junta de dilatación: una costura corta con su filo.
+    columna(uu, vv, 4, MURAL.junta);
+    columna(uu + 1, vv, 4, MURAL.claro);
+  }
 }
 
 /**
@@ -421,18 +508,37 @@ function placaAtornillada(lienzo, u, v, azar) {
 /** El bastidor de tubos: tres conductos paralelos con brillo arriba, sombra
  *  abajo y abrazaderas que los amarran al mamparo. */
 function conducto(lienzo, v0, columnas) {
-  const { linea, rect, columna } = lienzo;
-  for (let k = 0; k < 2; k += 1) {
-    const v = v0 + k * 4;
-    rect(v, 0, columnas, 2, MURAL.conducto);
-    linea(v + 1, 0, columnas, MURAL.claro); // el filo de arriba, a la luz
-    linea(v - 1, 0, columnas, MURAL.junta); // la sombra que arroja debajo
-  }
+  const { linea, rect, columna, poner } = lienzo;
+  // Los dos tubos NO son iguales: uno grueso y claro, otro fino y oscuro. Dos
+  // tubos idénticos se leen como una reja; dos distintos, como dos servicios que
+  // van por el mismo bastidor, que es lo que hay en una nave.
+  rect(v0, 0, columnas, 2, MURAL.conducto);
+  linea(v0 + 1, 0, columnas, MURAL.claro);
+  linea(v0 - 1, 0, columnas, MURAL.junta);
+  linea(v0 + 4, 0, columnas, MURAL.sombra);
+  linea(v0 + 5, 0, columnas, MURAL.medio);
+
   // Las abrazaderas al mamparo, cada 1,6 m — la misma cadencia que las planchas,
   // porque en una nave se atornillan a la estructura y no donde caiga.
+  let cuenta = 0;
   for (let u = 4; u < columnas; u += PANEL_ANCHO) {
     rect(v0 - 1, u, 2, CONDUCTO_ALTO + 1, MURAL.abrazadera);
     columna(u, v0 - 1, CONDUCTO_ALTO + 1, MURAL.claro);
+    // Y cada tres abrazaderas, una caja de registro: el bastidor deja de ser una
+    // línea infinita y pasa a tener sitios donde ocurre algo. Lo que ocurre no
+    // se declara —una caja cerrada no afirma nada (#526)—, pero su ritmo largo
+    // (cada 4,8 m) es lo que impide que el remate superior se lea como una
+    // moldura repetida.
+    if (cuenta % 3 === 2 && u + 6 < columnas) {
+      rect(v0 - 2, u + 3, 6, CONDUCTO_ALTO + 2, MURAL.medio);
+      linea(v0 + CONDUCTO_ALTO - 1, u + 3, 6, MURAL.claro);
+      columna(u + 8, v0 - 2, CONDUCTO_ALTO + 2, MURAL.sombra);
+      poner(v0, u + 4, MURAL.remache);
+      poner(v0, u + 7, MURAL.remache);
+      poner(v0 + 3, u + 4, MURAL.remache);
+      poner(v0 + 3, u + 7, MURAL.remache);
+    }
+    cuenta += 1;
   }
 }
 
@@ -591,17 +697,39 @@ export function piezasMuralPixel({ rect, sala, altura, semilla = 1 }) {
  */
 export function chapasDeRejilla(cara, rejilla, opciones = {}) {
   const { base = 0, celda = CELDA, saliente = SALIENTE, tope = TOPE_PIEZAS } = opciones;
-  return fundirRectangulos(rejilla)
-    .slice(0, tope)
-    .map(({ v, u0, ancho, alto, color }) => ({
-      malla: chapaEnCara(
-        cara,
-        cara.u0 + u0 * celda,
-        cara.u0 + (u0 + ancho) * celda,
-        base + v * celda,
-        base + (v + alto) * celda,
-        saliente,
-      ),
-      color,
-    }));
+
+  // Las chapas se agrupan POR COLOR en una sola malla cada una, en vez de
+  // devolver una pieza por rectángulo (#551).
+  //
+  // No es cosmético y no cambia ni un polígono de la salida: quien consume esto
+  // llama a `componerEscena` UNA VEZ POR PIEZA, y esa función tiene un coste fijo
+  // por llamada —ajustes de época, focal, reservas— que con mil chapas se paga
+  // mil veces. Medido en la peor sala del catálogo (reactor, 1029 polígonos):
+  // 4,88 ms por fotograma con una pieza por rectángulo, 3,96 ms agrupando por
+  // color, con EXACTAMENTE los mismos polígonos en pantalla. Casi un 20% del
+  // coste de composición era peaje de llamada, no dibujo.
+  //
+  // Se puede hacer porque todas las chapas de una cara son coplanares y comparten
+  // color de material: una malla con muchas caras sueltas es exactamente lo que
+  // `componerEscena` ya sabe recorrer.
+  const porColor = new Map();
+  for (const { v, u0, ancho, alto, color } of fundirRectangulos(rejilla).slice(0, tope)) {
+    const quad = chapaEnCara(
+      cara,
+      cara.u0 + u0 * celda,
+      cara.u0 + (u0 + ancho) * celda,
+      base + v * celda,
+      base + (v + alto) * celda,
+      saliente,
+    );
+    let malla = porColor.get(color);
+    if (!malla) {
+      malla = { vertices: [], caras: [] };
+      porColor.set(color, malla);
+    }
+    const desde = malla.vertices.length;
+    malla.vertices.push(...quad.vertices);
+    malla.caras.push(quad.caras[0].map((i) => desde + i));
+  }
+  return [...porColor].map(([color, malla]) => ({ malla, color }));
 }

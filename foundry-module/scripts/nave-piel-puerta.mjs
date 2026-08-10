@@ -155,6 +155,23 @@ export function rejillaHoja(columnas, filas) {
     poner(v, columnas - 2, MURAL.remache);
   }
 
+  // 7. El CANTO DE CIERRE: el borde por el que esta hoja se junta con la otra.
+  //    Es la parte más característica de una puerta de nave y la que estaba sin
+  //    dibujar —la hoja tenía menos detalle que el muro que la rodea, y eso se
+  //    nota justo cuando te plantas delante—. Va más grueso que el resto del
+  //    bisel y con sus dientes de engrane, que es lo que dice que las dos hojas
+  //    encajan y no solo se tocan.
+  columna(columnas - 2, 1, filas - 2, MURAL.medio);
+  for (let v = fila(ZOCALO) + 2; v < filas - 3; v += 3) {
+    poner(v, columnas - 3, MURAL.sombra);
+    poner(v + 1, columnas - 3, MURAL.claro);
+  }
+
+  // 8. Guías de rodadura arriba y abajo: una puerta corredera va colgada de algo.
+  linea(filas - 2, 1, columnas - 2, MURAL.medio);
+  linea(filas - 3, 1, columnas - 2, MURAL.hueco);
+  for (let u = 2; u < columnas - 2; u += 3) poner(filas - 3, u, MURAL.sombra);
+
   return rejilla;
 }
 
@@ -169,7 +186,7 @@ export function rejillaHoja(columnas, filas) {
  *   ESTA media hoja, ya desplazado por su apertura.
  * @returns {{malla:object, color:string}[]}
  */
-export function piezasPielHoja({ y0, y1, alongX }, hoja) {
+export function piezasPielHoja({ y0, y1, alongX, base }, hoja) {
   const largo = alongX ? hoja.ancho : hoja.profundidad;
   const columnas = Math.floor(largo / CELDA);
   const filas = Math.floor((y1 - y0) / CELDA);
@@ -180,7 +197,21 @@ export function piezasPielHoja({ y0, y1, alongX }, hoja) {
   // sino un trozo de puerta.
   if (columnas < 4 || filas < 12) return [];
 
+  // Por qué lado CIERRA esta media hoja. `rejillaHoja` dibuja siempre el canto
+  // de cierre a la derecha, y para la hoja que corre al otro lado se espeja la
+  // rejilla entera. Sin esto, las dos hojas salen con el canto grueso en el
+  // mismo lado y la puerta se lee torcida — se vio en la vista previa, y es un
+  // fallo que ningún test de conteo habría cazado.
+  //
+  // Cuál es cuál se deduce de su sitio dentro del hueco, no de un índice: quien
+  // llama recorre `rectsHojaPuerta` y no tiene por qué saber qué significa el
+  // orden de esa lista.
+  const inicioHoja = alongX ? hoja.x : hoja.z;
+  const inicioHueco = base ? (alongX ? base.x : base.z) : inicioHoja;
+  const cierraALaDerecha = inicioHoja <= inicioHueco + largo / 2;
+
   const rejilla = rejillaHoja(columnas, filas);
+  if (!cierraALaDerecha) rejilla.forEach((f) => f.reverse());
   // Las dos caras planas de la hoja. `eje` es el que RECORRE la hoja, igual que
   // en `caraInterior`: una hoja larga en x se mira desde ±z.
   const caras = alongX

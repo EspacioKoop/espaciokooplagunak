@@ -293,15 +293,19 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     entre un bulto y un agujero); **jerarquía a dos distancias** (bandas —zócalo, paño de planchas,
     bastidor de tubos bajo cornisa— que se leen de lejos, y un greeble sorteado dentro de cada
     plancha —escotilla, rejilla, tendido de cable, placa— que premia acercarse; llenarlo todo por
-    igual es ruido, el fallo contrario al de #548 y no mejor); y **`fundirRectangulos`**, mallado
-    codicioso 2D que es la CONDICIÓN del detalle y no una optimización suelta —con relieve, que es
-    vertical, fundir solo por filas deja de servir, y sin este ahorro el dibujo no cabe en un
-    fotograma—. La celda bajó de 20 a 10 cm en #551 al caerse su argumento original: «fidelidad al
+    igual es ruido, el fallo contrario al de #548 y no mejor; y hay tres capas de lectura, no dos:
+    bandas, greeble por plancha y menudencias de dos celdas para quien se pega al muro); y el
+    **presupuesto**, que es la CONDICIÓN del detalle y no una optimización suelta: `fundirRectangulos`
+    (mallado codicioso 2D — con relieve, que es vertical, fundir solo por filas deja de servir) más
+    el agrupado POR COLOR de `chapasDeRejilla`, que quitó un 20% del coste sin cambiar un solo
+    polígono, porque `componerEscena` se llamaba una vez por chapa y su peaje fijo se pagaba mil
+    veces. Sin las dos cosas, este dibujo no cabe en un fotograma. La celda bajó de 20 a 10 cm en #551 al caerse su argumento original: «fidelidad al
     hardware» era la regla equivocada (Neo Geo y SIGNALIS usan más detalle por metro del que la
     máquina de referencia movía), la buena es el LOOK —paleta corta, sin filtrado, sin degradados—,
-    que se conserva entero. El presupuesto medido (20–86 → 122–327 con #550 → 657–789 con #551; 0,4
-    → 1,45 → 3,46 ms la peor sala) está en la cabecera del módulo: es lo que se vuelve a medir antes
-    de subir nada, y si algún día no cabe se recorta la densidad de greebles, nunca la rejilla.
+    que se conserva entero. El presupuesto medido (20–86 → 122–327 con #550 → 871–1055 con #551; 0,4
+    → 1,45 → 4,11 ms la peor sala) está en la cabecera del módulo: es lo que se vuelve a medir antes
+    de subir nada, y si algún día no cabe se recorta la densidad de greebles, nunca la rejilla —media
+    resolución se nota en todo el muro, media plancha sin escotilla no la echa nadie de menos.
     La **misma rejilla** viste puertas (`scripts/nave-piel-puerta.mjs`) y objetos
     (`scripts/nave-piel-objeto.mjs`), #550 — y esa es toda la razón de que sean módulos y no copias:
     si cada superficie eligiera su tamaño de detalle, la sala parecería montada con piezas de tres

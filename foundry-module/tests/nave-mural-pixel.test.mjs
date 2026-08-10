@@ -54,12 +54,15 @@ test("dos muros iguales de la misma sala no salen idénticos", () => {
   // Sin mezclar la posición del tramo en la semilla, norte y sur (mismo largo)
   // saldrían con los parches en el mismo sitio y la sala se leería como una
   // habitación de espejos.
-  const norte = piezasMuralPixel({ rect: MURO_NORTE, sala: SALA, altura: ALTURA, semilla: 3 });
-  const sur = piezasMuralPixel({ rect: MURO_SUR, sala: SALA, altura: ALTURA, semilla: 3 });
-  assert.notEqual(
-    JSON.stringify(norte.map((p) => p.color)),
-    JSON.stringify(sur.map((p) => p.color)),
-  );
+  // Se comparan las chapas por su forma y no por la lista de colores: desde que
+  // se agrupan por color (#551) los dos muros usan los mismos tonos en el mismo
+  // orden aunque el dibujo sea distinto, y comparar solo colores dejaría de
+  // detectar nada.
+  const conteo = (rect) =>
+    piezasMuralPixel({ rect, sala: SALA, altura: ALTURA, semilla: 3 })
+      .map(({ color, malla }) => `${color}:${malla.caras.length}`)
+      .join("|");
+  assert.notEqual(conteo(MURO_NORTE), conteo(MURO_SUR));
 });
 
 test("el mural no pinta el fondo: solo lo que no es muro pelado", () => {

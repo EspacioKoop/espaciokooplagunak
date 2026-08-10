@@ -37,6 +37,7 @@ import { piezasMuralPixel } from "./nave-mural-pixel.mjs";
 import { piezasPielHoja } from "./nave-piel-puerta.mjs";
 import { piezasPielColumna, piezasPielObjeto } from "./nave-piel-objeto.mjs";
 import { piezasPielSuelo, piezasPielTecho } from "./nave-piel-suelo.mjs";
+import { piezasLuminarias } from "./nave-luminaria.mjs";
 import { crearPlanta } from "./nave-movimiento.mjs";
 import { poligonosOtrosJugadores } from "./nave-avatares-render.mjs";
 
@@ -411,19 +412,6 @@ function rodapie(ancho, profundidad) {
   ];
 }
 
-/**
- * Una lámpara de techo centrada (mismo QA que `rodapie`): un cuerpo colgado
- * del techo con `SECCION.entrable` —el mismo acento que ya marca ventanas y
- * consolas— para que se lea como una fuente de luz y no como una caja más.
- * Sin colisión propia: cuelga por encima de donde se puede caminar.
- */
-function lamparaTecho(ancho, profundidad) {
-  const lado = Math.min(ancho, profundidad) * 0.22;
-  return {
-    malla: caja([ancho / 2, ALTURA - 0.22, profundidad / 2], [lado, 0.12, lado]),
-    color: SECCION.entrable,
-  };
-}
 
 /**
  * Botones y una palanca sobre la cara SUPERIOR del cuerpo de una consola
@@ -579,7 +567,7 @@ export function crearSalaCaja({
           ...piezasPielTecho({ ancho, profundidad, altura: ALTURA }),
         ]
       : []),
-    lamparaTecho(ancho, profundidad),
+    ...piezasLuminarias({ ancho, profundidad, altura: ALTURA }),
   ]);
 
   const planta = crearPlanta({ ancho, profundidad, obstaculos: [...columnas, ...obstaculosMobiliario] });

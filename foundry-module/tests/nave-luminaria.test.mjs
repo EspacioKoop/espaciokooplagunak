@@ -1,0 +1,110 @@
+// Luminarias del techo (#555).
+//
+// El fallo que cierra este módulo es de ESCALA, así que casi todo lo que se
+// prueba aquí es que una pieza de mobiliario no crezca con la habitación que la
+// contiene — que es el error que #540 corrigió en la planta y que había
+// sobrevivido en el techo.
+
+import test from "node:test";
+import assert from "node:assert/strict";
+
+import { ANCHO, CAIDA, LARGO, PASO, piezasLuminarias, reparto } from "../scripts/nave-luminaria.mjs";
+import { LUZ_CALIDA, MURAL, SECCION } from "../scripts/paleta.mjs";
+import { ALTURA, crearSalaCaja } from "../scripts/nave-sala-caja.mjs";
+
+const caras = (piezas) => piezas.reduce((n, p) => n + p.malla.caras.length, 0);
+
+/** La caja envolvente de una malla, para medir la pieza de verdad. */
+function medidas({ vertices }) {
+  const eje = (i) => vertices.map((v) => v[i]);
+  return [0, 1, 2].map((i) => Math.max(...eje(i)) - Math.min(...eje(i)));
+}
+
+test("una luminaria mide lo mismo en una sala grande que en una pequeña", () => {
+  // EL fallo de #555: `lamparaTecho` medía `min(ancho, profundidad) * 0.22`, o
+  // sea 4,84 m de lado en el reactor. Una luminaria es una pieza de catálogo.
+  // La envolvente de la malla FUNDIDA crece con la sala porque contiene más
+  // luminarias; lo que no puede crecer es cada una. Se mide la primera caja de
+  // la malla —sus ocho primeros vértices— en las dos salas.
+  const primeraCaja = (piezas) => medidas({ vertices: piezas[0].malla.vertices.slice(0, 8) });
+  const pequena = primeraCaja(piezasLuminarias({ ancho: 6, profundidad: 6, altura: ALTURA }));
+  const grande = primeraCaja(piezasLuminarias({ ancho: 22, profundidad: 22, altura: ALTURA }));
+  // Con tolerancia y no `deepEqual`: las dos salas colocan sus luminarias en
+  // coordenadas distintas, así que las medidas salen iguales hasta el último bit
+  // flotante y no más. Exigir igualdad exacta sería probar la aritmética.
+  grande.forEach((lado, i) => assert.ok(Math.abs(lado - pequena[i]) < 1e-9, "la misma pieza en una sala de 6 m y en una de 22"));
+  assert.ok(Math.max(pequena[0], pequena[2]) <= LARGO + 1e-9, "y del tamaño de catálogo");
+  assert.ok(Math.min(pequena[0], pequena[2]) <= ANCHO + 1e-9);
+
+  const puntos = reparto(22, 22);
+  assert.ok(Math.abs(Math.abs(puntos[1].x - puntos[0].x) - PASO) < 1.5, "cadencia métrica");
+  assert.ok(reparto(22, 22).length > reparto(6, 6).length, "una sala grande tiene MÁS, no una mayor");
+});
+
+test("las luminarias se reparten centradas, sin banda oscura a un lado", () => {
+  // Con el reparto desde una esquina, una sala cuyo ancho no es múltiplo del
+  // paso se queda con las luminarias pegadas a un lado y un vacío en el otro.
+  const puntos = reparto(10, 4);
+  const xs = puntos.map((p) => p.x);
+  const margenIzquierdo = Math.min(...xs);
+  const margenDerecho = 10 - Math.max(...xs);
+  assert.ok(Math.abs(margenIzquierdo - margenDerecho) < 1e-9, "los dos márgenes iguales");
+});
+
+test("una sala diminuta lleva una, no ninguna", () => {
+  // Redondear a cero dejaría a oscuras cualquier sala menor que el paso.
+  assert.equal(reparto(1.5, 1.5).length, 1);
+});
+
+test("cuelgan del techo y no lo atraviesan", () => {
+  for (const { malla } of piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA })) {
+    for (const [, y] of malla.vertices) {
+      assert.ok(y < ALTURA, "por debajo del techo");
+      assert.ok(y > ALTURA - CAIDA - 0.2, "y colgando poco: no es una lámpara de mesa");
+    }
+  }
+});
+
+test("lo cálido va en los COSTADOS, que es lo único que el motor ilumina", () => {
+  // En este motor toda cara que mira hacia abajo está en el suelo de luz
+  // ambiente: un difusor ámbar boca abajo llega al ojo como un marrón sucio. El
+  // resplandor tiene que salir por las caras verticales.
+  const piezas = piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA });
+  const calida = piezas.find((p) => p.color === LUZ_CALIDA);
+  assert.ok(calida, "algo cálido tiene que haber");
+  for (const cara of calida.malla.caras) {
+    const ys = cara.map((i) => calida.malla.vertices[i][1]);
+    assert.ok(Math.max(...ys) - Math.min(...ys) > 0, "una cara vertical, no una horizontal");
+  }
+});
+
+test("la luz NO usa el acento de señalización", () => {
+  // Lo que hacía la lámpara vieja: `SECCION.entrable` marca ventanas, consolas y
+  // salas entrables. Gastarlo en un adorno del techo deja a la tripulación sin
+  // la única señal que tiene para encontrar lo accionable.
+  const colores = piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA }).map((p) => p.color);
+  assert.ok(!colores.includes(SECCION.entrable), "el turquesa no es una luz");
+  const permitidos = new Set([...Object.values(MURAL), LUZ_CALIDA]);
+  for (const color of colores) assert.ok(permitidos.has(color), `${color} fuera de paleta (#351)`);
+});
+
+test("solo se emiten las caras que pueden verse", () => {
+  // Una luminaria se mira desde abajo: su tapa superior está contra el mamparo y
+  // no se ve nunca, pero costaría transformarse y proyectarse igual. En el
+  // reactor son 36 luminarias, así que la diferencia no es teórica.
+  const reactor = piezasLuminarias({ ancho: 22, profundidad: 22, altura: ALTURA });
+  const porLuminaria = caras(reactor) / reparto(22, 22).length;
+  assert.ok(porLuminaria <= 6, `${porLuminaria} caras por luminaria: sobra algo que no se ve`);
+});
+
+test("no tocan la colisión: se anda por debajo", () => {
+  const con = crearSalaCaja({ ancho: 8, profundidad: 6 });
+  // El centro de la sala, justo debajo de una luminaria, sigue libre.
+  assert.equal(con.planta.obstaculos.some((o) => o.x < 4 && o.x + o.ancho > 4), false);
+});
+
+test("la sala las emite y se ven al mirar al techo", () => {
+  const sala = crearSalaCaja({ ancho: 8, profundidad: 6, muralPixel: false, pielSuelo: false });
+  const escena = sala.componer(4, 0, 3, 0, { ancho: 320, alto: 180 });
+  assert.ok(escena.poligonos.length > 0);
+});

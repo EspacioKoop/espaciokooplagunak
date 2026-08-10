@@ -127,12 +127,26 @@ export const ALERTA = Object.freeze({
  * Van juntos y aquí porque son un AMBIENTE: elegir el ámbar de la barra sin
  * ver al lado el gris del mamparo es cómo se acaba con una sala que no cierra.
  */
+/**
+ * La luz cálida del módulo: el ámbar claro de una lámpara encendida.
+ *
+ * Estaba ya dos veces con el mismo valor —la lámpara de la cantina y la sala
+ * bajo el puntero en la sección— y se reúne aquí al llegar el tercer consumidor
+ * (#555, las luminarias de las salas), por lo mismo que `AMBAR_SENAL`.
+ *
+ * NO es `AMBAR_SENAL` ni `SECCION.entrable`, y esa distancia es lo importante:
+ * una lámpara ilumina, no señala. Pintarla con el acento de «esto se acciona»
+ * —que es lo que hacía `lamparaTecho`— gasta en un adorno la única señal que la
+ * tripulación tiene para encontrar lo accionable.
+ */
+export const LUZ_CALIDA = "#ffd79a";
+
 export const CANTINA = Object.freeze({
   mamparo: "#2b3038", // gris azulado de nave: el fondo no compite con nada
   suelo: "#1d2128", // más oscuro que el mamparo: la sala tiene arriba y abajo
   barra: "#7a4a22", // madera imposible en el espacio, y por eso acogedora
   barraCanto: "#b8763a", // el borde que coge la luz de la lámpara
-  lampara: "#ffd79a", // cálida, la única fuente de calor del local
+  lampara: LUZ_CALIDA, // cálida, la única fuente de calor del local
   ventana: "#0a0f1f", // el vacío al otro lado del cristal
   neon: "#4ad9c4", // el rótulo: verde azulado de tubo, ajeno a la madera
   // Lo que llena el local. Sin esto la sala es correcta y está vacía, que es
@@ -232,7 +246,7 @@ export const SECCION = Object.freeze({
   puerta: "#6f8296", // los tránsitos entre salas
   entrable: "#4ad9c4", // el realce de una sala en la que SÍ se puede entrar:
   // el mismo verde azulado del neón de la cantina, porque señala lo mismo.
-  foco: "#ffd79a", // la sala bajo el puntero
+  foco: LUZ_CALIDA, // la sala bajo el puntero: la misma luz cálida
   tripulante: "#fdfffc", // un punto por persona; el crema de la nave propia
 });
 
@@ -259,6 +273,7 @@ export const SECCION = Object.freeze({
  * pasa a ser una decisión de color sin dueño.
  */
 export const AMBAR_SENAL = "#ffb703";
+
 
 export const MURAL = Object.freeze({
   // --- La rampa. Seis pasos de un mismo metal, del brillo al fondo de un

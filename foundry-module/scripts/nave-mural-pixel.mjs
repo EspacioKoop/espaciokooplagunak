@@ -44,6 +44,7 @@
 //   piel de #548 + #550          122–327    1,45 ms
 //   detalle de #551              871–1055   4,11 ms
 //   suelo y techo (#552)         886–1135   4,19 ms
+//   luminarias (#555)            894–1173   4,21 ms
 //
 // El salto de #551 es real y hay que vigilarlo. Está pagado a tres bandas: el
 // mallado en rectángulos, el agrupado por color de `chapasDeRejilla` (que quitó

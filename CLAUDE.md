@@ -302,8 +302,8 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     veces. Sin las dos cosas, este dibujo no cabe en un fotograma. La celda bajó de 20 a 10 cm en #551 al caerse su argumento original: «fidelidad al
     hardware» era la regla equivocada (Neo Geo y SIGNALIS usan más detalle por metro del que la
     máquina de referencia movía), la buena es el LOOK —paleta corta, sin filtrado, sin degradados—,
-    que se conserva entero. El presupuesto medido (20–86 → 122–327 con #550 → 871–1055 con #551 → 886–1135 con #552; 0,4
-    → 1,45 → 4,11 → 4,19 ms la peor sala) está en la cabecera del módulo: es lo que se vuelve a medir antes
+    que se conserva entero. El presupuesto medido (20–86 → 122–327 con #550 → 871–1055 con #551 → 886–1135 con #552 →
+    894–1173 con #555; 0,4 → 1,45 → 4,11 → 4,19 → 4,21 ms la peor sala) está en la cabecera del módulo: es lo que se vuelve a medir antes
     de subir nada, y si algún día no cabe se recorta la densidad de greebles, nunca la rejilla —media
     resolución se nota en todo el muro, media plancha sin escotilla no la echa nadie de menos.
     La **misma rejilla** viste puertas (`scripts/nave-piel-puerta.mjs`) y objetos
@@ -340,6 +340,19 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     sigue siendo un muro; en un suelo deja media sala con juntas y media lisa, que se lee como un
     fallo—. La sala mayor (22x22 m) es la que fija el coste, no la media, y por eso se dibujan las
     juntas y no las planchas: rellenar plancha a plancha son trescientos rectángulos allí.
+    Las **luminarias** son `scripts/nave-luminaria.mjs` (#555). Sustituyen a una lámpara que medía
+    `min(ancho, profundidad) * 0.22` —o sea, 4,84 m de lado en el reactor—: una luminaria es una
+    PIEZA de medida fija que se repite, igual que una plancha mide 1,6 m mida lo que mida el muro, y
+    que un objeto escale con la sala que lo contiene es el error que #540 corrigió en la planta y
+    que había sobrevivido en el techo. Ahora una sala grande tiene MÁS luminarias, no una mayor —que
+    además es lo que la hace leerse grande—. Dos reglas: **una luminaria ilumina, no señala**, así
+    que va en `LUZ_CALIDA` (recogido en `paleta.mjs` al llegar su tercer consumidor) y no en el
+    turquesa de `SECCION.entrable`, que marca lo accionable y no se gasta en adornos; y **lo cálido
+    va en los COSTADOS**, porque `intensidadCara` deja un suelo ambiente de 0,35 y la luz viene de
+    arriba: toda cara que mire hacia abajo está en el mínimo, el techo es estructuralmente la
+    superficie más oscura de la sala y un difusor ámbar boca abajo llega al ojo como un marrón
+    sucio. Es la lección del suelo (#552) en el otro extremo: cada orientación tiene su tramo de
+    rampa, y copiar el del vecino apaga la superficie sin que nadie sepa por qué.
     Un **minimapa** (`scripts/nave-minimapa.mjs` + `nave-minimapa-lienzo.mjs`) dice dónde estás,
     reusando el pintor de la sección. Va `aria-hidden` porque el rótulo de sala ya da la lectura en
     texto. **Una sola planta para todo el módulo** (#542): `nave-planta-phobos.celdasConCantina()` es

@@ -498,9 +498,6 @@ export function crearSalaCaja({
   // al leer qué está midiendo el test— y no como preferencia de estilo.
   muralPixel = true,
   semillaMural = 20260810,
-  // La rampa del mural. Una sala puede traer la suya (#558: la cantina) sin
-  // salirse del sistema — es el MISMO dibujo en otro material, no otro dibujo.
-  tonosMural = undefined,
   // Piel de puertas y objetos (#550). Van con su propio interruptor y no con el
   // del mural porque son decisiones separables: una sala puede querer sus muros
   // desnudos y sus puertas marcadas. Ambas encendidas de serie, y ambas apagadas
@@ -537,13 +534,7 @@ export function crearSalaCaja({
     // demás: es parte de la pared, no mobiliario colgado de ella.
     ...(muralPixel
       ? tramosMuro.flatMap((rect) =>
-          piezasMuralPixel({
-            rect,
-            sala: { ancho, profundidad },
-            altura: ALTURA,
-            semilla: semillaMural,
-            ...(tonosMural ? { tonos: tonosMural } : {}),
-          }),
+          piezasMuralPixel({ rect, sala: { ancho, profundidad }, altura: ALTURA, semilla: semillaMural }),
         )
       : []),
     ...marcos.map((malla) => ({ malla, color: colorMarcoVentana })),

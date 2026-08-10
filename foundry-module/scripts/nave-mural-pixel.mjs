@@ -220,9 +220,9 @@ export function caraInterior(rect, sala) {
  * @param {number} semilla
  * @returns {(string|null)[][]} `[fila][columna]`, fila 0 = la del suelo
  */
-export function rejillaMural(columnas, filas, semilla = 1, tonos = MURAL) {
+export function rejillaMural(columnas, filas, semilla = 1) {
   const azar = rngSemilla(semilla >>> 0);
-  const lienzo = crearLienzo(columnas, filas, tonos);
+  const lienzo = crearLienzo(columnas, filas);
   const { poner, rect, linea } = lienzo;
   const banda = bandas(filas);
 
@@ -231,17 +231,17 @@ export function rejillaMural(columnas, filas, semilla = 1, tonos = MURAL) {
   //     más gruesa, atornillada aparte y rematada por un canto. Aquí hace
   //     además el trabajo de composición de anclar el muro al suelo.
   if (banda.zocalo > 0) {
-    rect(0, 0, columnas, banda.zocalo, tonos.sombra);
-    linea(banda.zocalo, 0, columnas, tonos.brillo); // el canto que coge la luz
+    rect(0, 0, columnas, banda.zocalo, MURAL.sombra);
+    linea(banda.zocalo, 0, columnas, MURAL.brillo); // el canto que coge la luz
     // Rigidizadores: un zócalo de chapa lisa se abolla, así que va nervado. Es
     // además el único sitio del muro con ritmo corto (cada 60 cm), y ese cambio
     // de ritmo respecto a las planchas (1,6 m) es lo que le da a la banda baja
     // un peso propio en vez de parecer un recorte de la de arriba.
     for (let u = 4; u < columnas - 1; u += 8) {
-      lienzo.columna(u, 1, banda.zocalo - 1, tonos.hueco);
-      lienzo.columna(u + 1, 1, banda.zocalo - 1, tonos.medio);
+      lienzo.columna(u, 1, banda.zocalo - 1, MURAL.hueco);
+      lienzo.columna(u + 1, 1, banda.zocalo - 1, MURAL.medio);
     }
-    for (let u = 8; u < columnas; u += 8) poner(1, u, tonos.remache);
+    for (let u = 8; u < columnas; u += 8) poner(1, u, MURAL.remache);
   }
 
   // --- Banda alta: CORNISA, por encima del dintel de una puerta. Va más
@@ -250,12 +250,12 @@ export function rejillaMural(columnas, filas, semilla = 1, tonos = MURAL) {
   //     las ménsulas de las que cuelga: sin ellas es una franja flotando.
   if (banda.cornisa > 0) {
     const vCornisa = filas - banda.cornisa;
-    rect(vCornisa, 0, columnas, banda.cornisa, tonos.junta);
-    linea(vCornisa - 1, 0, columnas, tonos.medio);
-    linea(filas - 1, 0, columnas, tonos.sombra);
+    rect(vCornisa, 0, columnas, banda.cornisa, MURAL.junta);
+    linea(vCornisa - 1, 0, columnas, MURAL.medio);
+    linea(filas - 1, 0, columnas, MURAL.sombra);
     for (let u = 8; u < columnas; u += PANEL_ANCHO) {
-      rect(vCornisa, u, 3, banda.cornisa - 1, tonos.sombra);
-      lienzo.columna(u, vCornisa, banda.cornisa - 1, tonos.medio);
+      rect(vCornisa, u, 3, banda.cornisa - 1, MURAL.sombra);
+      lienzo.columna(u, vCornisa, banda.cornisa - 1, MURAL.medio);
     }
   }
 
@@ -270,8 +270,8 @@ export function rejillaMural(columnas, filas, semilla = 1, tonos = MURAL) {
       // muy trabajada que esté cada una. Las naves de Neo Geo hacen justo esto,
       // y por eso su chapa parece chapa y no papel pintado.
       const tono = azar();
-      if (tono < 0.18) rect(v + 1, u + 1, PANEL_ANCHO - 2, PANEL_ALTO - 2, tonos.sombra);
-      else if (tono < 0.30) rect(v + 1, u + 1, PANEL_ANCHO - 2, PANEL_ALTO - 2, tonos.medio);
+      if (tono < 0.18) rect(v + 1, u + 1, PANEL_ANCHO - 2, PANEL_ALTO - 2, MURAL.sombra);
+      else if (tono < 0.30) rect(v + 1, u + 1, PANEL_ANCHO - 2, PANEL_ALTO - 2, MURAL.medio);
       panelBiselado(lienzo, u, v, PANEL_ANCHO, PANEL_ALTO);
       paneles.push([u, v]);
     }
@@ -332,13 +332,12 @@ export function rejillaMural(columnas, filas, semilla = 1, tonos = MURAL) {
  * pide a un rasgo que se repite tanto.
  */
 function cuaderna(lienzo, u0, v0, v1) {
-  const { tonos } = lienzo;
   const alto = v1 - v0;
   if (alto < 6) return;
-  lienzo.rect(v0, u0, 3, alto, tonos.hueco);
-  lienzo.columna(u0, v0, alto, tonos.sombra);
-  lienzo.columna(u0 + 2, v0, alto, tonos.medio); // el filo del otro lado, a la luz
-  for (let v = v0 + 3; v < v1 - 1; v += 6) lienzo.poner(v, u0 + 1, tonos.sombra);
+  lienzo.rect(v0, u0, 3, alto, MURAL.hueco);
+  lienzo.columna(u0, v0, alto, MURAL.sombra);
+  lienzo.columna(u0 + 2, v0, alto, MURAL.medio); // el filo del otro lado, a la luz
+  for (let v = v0 + 3; v < v1 - 1; v += 6) lienzo.poner(v, u0 + 1, MURAL.sombra);
 }
 
 /**
@@ -347,27 +346,27 @@ function cuaderna(lienzo, u0, v0, v1) {
  * pernos, una cartela de esquina, un tapón roscado, una junta de dilatación.
  */
 function menudencia(lienzo, u, v, azar) {
-  const { poner, linea, columna, tonos } = lienzo;
+  const { poner, linea, columna } = lienzo;
   const cual = Math.floor(azar() * 4);
   const uu = u + 3 + Math.floor(azar() * (PANEL_ANCHO - 7));
   const vv = v + 2 + Math.floor(azar() * (PANEL_ALTO - 5));
   if (cual === 0) {
     // Dos pernos con su sombra: el detalle más pequeño que sigue leyéndose.
-    poner(vv, uu, tonos.brillo);
-    poner(vv - 1, uu, tonos.junta);
-    poner(vv, uu + 2, tonos.brillo);
-    poner(vv - 1, uu + 2, tonos.junta);
+    poner(vv, uu, MURAL.brillo);
+    poner(vv - 1, uu, MURAL.junta);
+    poner(vv, uu + 2, MURAL.brillo);
+    poner(vv - 1, uu + 2, MURAL.junta);
   } else if (cual === 1) {
     // Cartela: el triángulo escalonado que refuerza una esquina interior.
-    for (let k = 0; k < 3; k += 1) linea(v + 2 + k, u + 2, 3 - k, tonos.claro);
+    for (let k = 0; k < 3; k += 1) linea(v + 2 + k, u + 2, 3 - k, MURAL.claro);
   } else if (cual === 2) {
     // Tapón roscado: un cuadro de tres con el centro hundido.
-    lienzo.rect(vv, uu, 3, 3, tonos.medio);
-    poner(vv + 1, uu + 1, tonos.hueco);
+    lienzo.rect(vv, uu, 3, 3, MURAL.medio);
+    poner(vv + 1, uu + 1, MURAL.hueco);
   } else {
     // Junta de dilatación: una costura corta con su filo.
-    columna(uu, vv, 4, tonos.junta);
-    columna(uu + 1, vv, 4, tonos.claro);
+    columna(uu, vv, 4, MURAL.junta);
+    columna(uu + 1, vv, 4, MURAL.claro);
   }
 }
 
@@ -381,7 +380,7 @@ function menudencia(lienzo, u, v, azar) {
 /** Un lienzo de celdas con las brochas que usa todo el dibujo. Se pasa entero a
  *  cada motivo para que ninguno tenga que redeclarar sus límites — que es donde
  *  se cuelan los desbordes de uno en el motivo de al lado. */
-export function crearLienzo(columnas, filas, tonos = MURAL) {
+export function crearLienzo(columnas, filas) {
   const rejilla = Array.from({ length: filas }, () => new Array(columnas).fill(null));
   const poner = (v, u, color) => {
     if (v < 0 || v >= filas || u < 0 || u >= columnas) return;
@@ -391,12 +390,6 @@ export function crearLienzo(columnas, filas, tonos = MURAL) {
     rejilla,
     columnas,
     filas,
-    // La RAMPA con la que dibuja esta superficie (#558). Viaja en el lienzo y no
-    // como parámetro suelto de cada motivo para que ninguno pueda dibujar con
-    // una paleta distinta de la de su vecino: el mural de una sala tiene que ser
-    // de un solo material, y con nueve funciones de dibujo eso solo se garantiza
-    // si todas leen del mismo sitio.
-    tonos,
     poner,
     /** Franja horizontal de una celda de alto. */
     linea(v, u0, largo, color) {
@@ -430,21 +423,20 @@ export function crearLienzo(columnas, filas, tonos = MURAL) {
  * dibujado a mano, y es el motivo de que esto sea UNA función y no un bisel
  * copiado dentro de cada motivo.
  */
-export function panelBiselado(lienzo, u0, v0, ancho, alto) {
-  const { linea, columna, poner, tonos } = lienzo;
-  linea(v0 + alto - 1, u0, ancho, tonos.claro); // canto superior, a la luz
-  linea(v0, u0, ancho, tonos.junta); // canto inferior, en sombra
-  columna(u0, v0, alto, tonos.claro); // costado izquierdo, a la luz
-  columna(u0 + ancho - 1, v0, alto, tonos.sombra); // costado derecho, en sombra
+export function panelBiselado({ linea, columna, poner }, u0, v0, ancho, alto) {
+  linea(v0 + alto - 1, u0, ancho, MURAL.claro); // canto superior, a la luz
+  linea(v0, u0, ancho, MURAL.junta); // canto inferior, en sombra
+  columna(u0, v0, alto, MURAL.claro); // costado izquierdo, a la luz
+  columna(u0 + ancho - 1, v0, alto, MURAL.sombra); // costado derecho, en sombra
   // Las dos esquinas donde se cruzan luz y sombra van a un tono intermedio: sin
   // esto el bisel hace una escalera de contraste que canta más que el relieve.
-  poner(v0, u0, tonos.sombra);
-  poner(v0 + alto - 1, u0 + ancho - 1, tonos.medio);
+  poner(v0, u0, MURAL.sombra);
+  poner(v0 + alto - 1, u0 + ancho - 1, MURAL.medio);
   // Remaches en las cuatro esquinas de la plancha, ya por dentro del bisel.
-  poner(v0 + 1, u0 + 1, tonos.remache);
-  poner(v0 + 1, u0 + ancho - 2, tonos.remache);
-  poner(v0 + alto - 2, u0 + 1, tonos.remache);
-  poner(v0 + alto - 2, u0 + ancho - 2, tonos.remache);
+  poner(v0 + 1, u0 + 1, MURAL.remache);
+  poner(v0 + 1, u0 + ancho - 2, MURAL.remache);
+  poner(v0 + alto - 2, u0 + 1, MURAL.remache);
+  poner(v0 + alto - 2, u0 + ancho - 2, MURAL.remache);
 }
 
 /**
@@ -453,105 +445,100 @@ export function panelBiselado(lienzo, u0, v0, ancho, alto) {
  * agujero de un bulto. Devuelve el rectángulo interior para que el motivo que
  * lo pidió lo rellene.
  */
-export function hundir(lienzo, u0, v0, ancho, alto) {
-  const { linea, columna, rect, tonos } = lienzo;
-  rect(v0, u0, ancho, alto, tonos.hueco);
-  linea(v0 + alto - 1, u0, ancho, tonos.sombra);
-  columna(u0, v0, alto, tonos.sombra);
-  linea(v0, u0, ancho, tonos.claro);
-  columna(u0 + ancho - 1, v0, alto, tonos.claro);
+export function hundir({ linea, columna, rect }, u0, v0, ancho, alto) {
+  rect(v0, u0, ancho, alto, MURAL.hueco);
+  linea(v0 + alto - 1, u0, ancho, MURAL.sombra);
+  columna(u0, v0, alto, MURAL.sombra);
+  linea(v0, u0, ancho, MURAL.claro);
+  columna(u0 + ancho - 1, v0, alto, MURAL.claro);
   return { u0: u0 + 1, v0: v0 + 1, ancho: Math.max(0, ancho - 2), alto: Math.max(0, alto - 2) };
 }
 
 /** Escotilla de acceso: un hueco con su tapa dentro y dos tiradores. Lo que hay
  *  detrás no se declara, y por eso no miente sobre nada. */
 function escotilla(lienzo, u, v, azar) {
-  const { tonos } = lienzo;
   const ancho = 6 + Math.floor(azar() * 3);
   const alto = 6 + Math.floor(azar() * 3);
   const u0 = u + 2 + Math.floor(azar() * Math.max(1, PANEL_ANCHO - ancho - 3));
   const v0 = v + 2 + Math.floor(azar() * Math.max(1, PANEL_ALTO - alto - 3));
   const dentro = hundir(lienzo, u0, v0, ancho, alto);
-  lienzo.rect(dentro.v0, dentro.u0, dentro.ancho, dentro.alto, tonos.medio);
+  lienzo.rect(dentro.v0, dentro.u0, dentro.ancho, dentro.alto, MURAL.medio);
   // Los dos tiradores, a media altura: son lo que dice «esto se abre».
   const vt = dentro.v0 + Math.floor(dentro.alto / 2);
-  lienzo.linea(vt, dentro.u0 + 1, 2, tonos.brillo);
-  lienzo.linea(vt, dentro.u0 + dentro.ancho - 3, 2, tonos.brillo);
+  lienzo.linea(vt, dentro.u0 + 1, 2, MURAL.brillo);
+  lienzo.linea(vt, dentro.u0 + dentro.ancho - 3, 2, MURAL.brillo);
 }
 
 /** Rejilla de ventilación: lamas horizontales dentro de un hueco. Cada lama es
  *  una línea de hueco con su filo claro debajo — así se dibuja una lama, y no
  *  una raya. */
 function rejillaVentilacion(lienzo, u, v) {
-  const { tonos } = lienzo;
   const dentro = hundir(lienzo, u + 3, v + 3, PANEL_ANCHO - 6, PANEL_ALTO - 6);
   for (let k = 0; k + 1 < dentro.alto; k += 2) {
-    lienzo.linea(dentro.v0 + k, dentro.u0, dentro.ancho, tonos.ventilacion);
-    lienzo.linea(dentro.v0 + k + 1, dentro.u0, dentro.ancho, tonos.medio);
+    lienzo.linea(dentro.v0 + k, dentro.u0, dentro.ancho, MURAL.ventilacion);
+    lienzo.linea(dentro.v0 + k + 1, dentro.u0, dentro.ancho, MURAL.medio);
   }
 }
 
 /** Tendido de cables por fuera del mamparo, con sus grapas. Va en VERTICAL
  *  porque es lo que rompe un paño lleno de líneas horizontales. */
 function tendidoCables(lienzo, u, v, azar) {
-  const { tonos } = lienzo;
   const u0 = u + 2 + Math.floor(azar() * (PANEL_ANCHO - 5));
   const alto = PANEL_ALTO - 4;
-  lienzo.columna(u0, v + 2, alto, tonos.sombra);
-  lienzo.columna(u0 + 1, v + 2, alto, tonos.medio);
-  for (let k = 2; k < alto; k += 5) lienzo.linea(v + 2 + k, u0 - 1, 4, tonos.claro);
+  lienzo.columna(u0, v + 2, alto, MURAL.sombra);
+  lienzo.columna(u0 + 1, v + 2, alto, MURAL.medio);
+  for (let k = 2; k < alto; k += 5) lienzo.linea(v + 2 + k, u0 - 1, 4, MURAL.claro);
 }
 
 /** Placa atornillada encima de la plancha: la reparación de toda nave vieja. Es
  *  una pieza MONTADA, así que lleva el bisel en el sentido de un bulto. */
 function placaAtornillada(lienzo, u, v, azar) {
-  const { tonos } = lienzo;
   const ancho = 5 + Math.floor(azar() * 4);
   const alto = 4 + Math.floor(azar() * 3);
   const u0 = u + 2 + Math.floor(azar() * Math.max(1, PANEL_ANCHO - ancho - 3));
   const v0 = v + 2 + Math.floor(azar() * Math.max(1, PANEL_ALTO - alto - 3));
-  lienzo.rect(v0, u0, ancho, alto, tonos.parche);
-  lienzo.linea(v0 + alto - 1, u0, ancho, tonos.claro);
-  lienzo.linea(v0, u0, ancho, tonos.junta);
-  lienzo.columna(u0 + ancho - 1, v0, alto, tonos.sombra);
+  lienzo.rect(v0, u0, ancho, alto, MURAL.parche);
+  lienzo.linea(v0 + alto - 1, u0, ancho, MURAL.claro);
+  lienzo.linea(v0, u0, ancho, MURAL.junta);
+  lienzo.columna(u0 + ancho - 1, v0, alto, MURAL.sombra);
   for (let k = 1; k < ancho - 1; k += 3) {
-    lienzo.poner(v0 + 1, u0 + k, tonos.remache);
-    lienzo.poner(v0 + alto - 2, u0 + k, tonos.remache);
+    lienzo.poner(v0 + 1, u0 + k, MURAL.remache);
+    lienzo.poner(v0 + alto - 2, u0 + k, MURAL.remache);
   }
 }
 
 /** El bastidor de tubos: tres conductos paralelos con brillo arriba, sombra
  *  abajo y abrazaderas que los amarran al mamparo. */
 function conducto(lienzo, v0, columnas) {
-  const { linea, rect, columna, poner, tonos } = lienzo;
+  const { linea, rect, columna, poner } = lienzo;
   // Los dos tubos NO son iguales: uno grueso y claro, otro fino y oscuro. Dos
   // tubos idénticos se leen como una reja; dos distintos, como dos servicios que
   // van por el mismo bastidor, que es lo que hay en una nave.
-  rect(v0, 0, columnas, 2, tonos.conducto);
-  linea(v0 + 1, 0, columnas, tonos.claro);
-  linea(v0 - 1, 0, columnas, tonos.junta);
-  linea(v0 + 4, 0, columnas, tonos.sombra);
-  linea(v0 + 5, 0, columnas, tonos.medio);
+  rect(v0, 0, columnas, 2, MURAL.conducto);
+  linea(v0 + 1, 0, columnas, MURAL.claro);
+  linea(v0 - 1, 0, columnas, MURAL.junta);
+  linea(v0 + 4, 0, columnas, MURAL.sombra);
+  linea(v0 + 5, 0, columnas, MURAL.medio);
 
   // Las abrazaderas al mamparo, cada 1,6 m — la misma cadencia que las planchas,
   // porque en una nave se atornillan a la estructura y no donde caiga.
   let cuenta = 0;
   for (let u = 4; u < columnas; u += PANEL_ANCHO) {
-    rect(v0 - 1, u, 2, CONDUCTO_ALTO + 1, tonos.abrazadera);
-    columna(u, v0 - 1, CONDUCTO_ALTO + 1, tonos.claro);
+    rect(v0 - 1, u, 2, CONDUCTO_ALTO + 1, MURAL.abrazadera);
+    columna(u, v0 - 1, CONDUCTO_ALTO + 1, MURAL.claro);
     // Y cada tres abrazaderas, una caja de registro: el bastidor deja de ser una
     // línea infinita y pasa a tener sitios donde ocurre algo. Lo que ocurre no
     // se declara —una caja cerrada no afirma nada (#526)—, pero su ritmo largo
     // (cada 4,8 m) es lo que impide que el remate superior se lea como una
     // moldura repetida.
     if (cuenta % 3 === 2 && u + 6 < columnas) {
-      rect(v0 - 2, u + 3, 6, CONDUCTO_ALTO + 2, tonos.medio);
-      linea(v0 + CONDUCTO_ALTO - 1, u + 3, 6, tonos.claro);
-      columna(u + 8, v0 - 2, CONDUCTO_ALTO + 2, tonos.sombra);
-      poner(v0, u + 4, tonos.remache);
-      poner(v0, u + 7, tonos.remache);
-      poner(v0 + 3, u + 4, tonos.remache);
-      poner(v0 + 3, u + 7, tonos.remache);
+      rect(v0 - 2, u + 3, 6, CONDUCTO_ALTO + 2, MURAL.medio);
+      linea(v0 + CONDUCTO_ALTO - 1, u + 3, 6, MURAL.claro);
+      columna(u + 8, v0 - 2, CONDUCTO_ALTO + 2, MURAL.sombra);
+      poner(v0, u + 4, MURAL.remache);
+      poner(v0, u + 7, MURAL.remache);
+      poner(v0 + 3, u + 4, MURAL.remache);
+      poner(v0 + 3, u + 7, MURAL.remache);
     }
     cuenta += 1;
   }
@@ -682,7 +669,7 @@ export function chapaEnCara({ eje, plano, sentido }, u0, u1, v0, v1, saliente = 
  * @returns {{malla:object, color:string}[]} vacío si el rectángulo no es un muro
  *   perimetral o si no cabe ni una celda.
  */
-export function piezasMuralPixel({ rect, sala, altura, semilla = 1, tonos = MURAL }) {
+export function piezasMuralPixel({ rect, sala, altura, semilla = 1 }) {
   const cara = caraInterior(rect, sala);
   if (!cara) return [];
   const columnas = Math.floor(cara.largo / CELDA);
@@ -693,7 +680,7 @@ export function piezasMuralPixel({ rect, sala, altura, semilla = 1, tonos = MURA
   // mismo largo no pueden salir con los parches en el mismo sitio, o la sala se
   // lee como una habitación de espejos.
   const semillaTramo = (semilla ^ Math.round(rect.x * 97) ^ Math.round(rect.z * 8191)) >>> 0;
-  return chapasDeRejilla(cara, rejillaMural(columnas, filas, semillaTramo, tonos));
+  return chapasDeRejilla(cara, rejillaMural(columnas, filas, semillaTramo));
 }
 
 /**

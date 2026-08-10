@@ -327,34 +327,6 @@ export const MURAL = Object.freeze({
 });
 
 /**
- * La rampa del mural EN LA CANTINA (#558).
- *
- * Mismos papeles que `MURAL` y el mismo dibujo: lo que cambia es el material. La
- * cantina no es casco visto por dentro, es un local dentro de la nave, y con la
- * rampa de casco sus muros pasaron a cantar más que la barra —el sitio se leía
- * como una sala de máquinas con una barra dentro, en vez de como una taberna.
- *
- * Dos diferencias y ninguna más: arranca del gris azulado de la propia cantina
- * (`CANTINA.mamparo`, no de `SECCION.casco`) y tiene MENOS recorrido de claro a
- * oscuro. Un mural apagado no es un mural peor: es el que deja que la madera y
- * la lámpara sean lo más brillante de la sala, que es lo que hace acogedor un
- * local.
- */
-export const MURAL_CANTINA = Object.freeze({
-  brillo: "#3f4652",
-  claro: "#363c47",
-  medio: "#2f353f",
-  sombra: "#2b3038",
-  junta: "#232830",
-  hueco: "#1a1e25",
-  remache: "#3f4652",
-  conducto: "#2f353f",
-  abrazadera: "#2b3038",
-  parche: "#2f353f",
-  ventilacion: "#1a1e25",
-});
-
-/**
  * Paleta arcade saturada de las facciones en el mapa vivo. Es una lista y no un
  * objeto porque el color se reparte por hash del nombre de facción: importa el
  * orden, no el nombre de cada entrada.

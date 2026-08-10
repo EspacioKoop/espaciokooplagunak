@@ -35,7 +35,7 @@
 
 import { crearSalaCaja } from "./nave-sala-caja.mjs";
 import { MUEBLES, PUERTA_CANTINA_HACIA_VESTIBULO } from "./cantina-escena.mjs";
-import { CANTINA, MURAL_CANTINA } from "./paleta.mjs";
+import { CANTINA } from "./paleta.mjs";
 
 /**
  * Medidas de la sala, tomadas de las caras interiores REALES de los muros que
@@ -159,16 +159,6 @@ const SALA = crearSalaCaja({
   // (`CANTINA.casco` no existe en la paleta: el `?? undefined` de antes caía al
   // valor de serie sin avisar, que es como llegó aquí el turquesa.)
   colorMuro: CANTINA.mamparo,
-  // Y la piel de los muros va con la rampa de la CANTINA, no con la del casco
-  // (#558). Es el mismo dibujo en otro material: con la rampa de casco los
-  // muros pasaron a ser lo más claro de la sala y el local se leía como un
-  // cuarto de máquinas con una barra dentro. Un mural apagado no es un mural
-  // peor — es el que deja que la madera y la lámpara sean lo más brillante,
-  // que es de lo que va una taberna.
-  //
-  // Si algún día se prefiere al revés, esta línea es lo único que hay que
-  // quitar; y si se prefiere sin mural, `muralPixel: false`.
-  tonosMural: MURAL_CANTINA,
   colorColumna: CANTINA.nervio,
   colorMarcoVentana: CANTINA.nervio,
   semillaCielo: 20260808,

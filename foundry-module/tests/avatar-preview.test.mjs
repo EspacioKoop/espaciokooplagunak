@@ -2,13 +2,11 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { componerAvatarPreview } from "../scripts/avatar-preview.mjs";
+import { afirmarOrdenPorPintor } from "./ayuda-orden-pintor.mjs";
 
 test("compone una escena con polígonos ordenados por profundidad", () => {
   const escena = componerAvatarPreview({ raza: "humano", clase: "guerrero", gesto: "saludo" });
-  assert.ok(escena.poligonos.length > 0);
-  for (let i = 1; i < escena.poligonos.length; i += 1) {
-    assert.ok(escena.poligonos[i - 1].profundidad >= escena.poligonos[i].profundidad);
-  }
+  afirmarOrdenPorPintor(escena.poligonos, "el avatar de previsualización");
 });
 
 test("cada polígono trae un color de la paleta, no un literal", () => {

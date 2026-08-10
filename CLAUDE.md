@@ -205,7 +205,14 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     del casco es otro lenguaje); música determinista por semilla en
     `scripts/musica-procedural.mjs`. El 3D de consola de los 90 vive en `scripts/retro3d*.mjs`
     (#362): motor puro que devuelve polígonos, pintor de lienzo aparte, y la **época** (PSX o
-    GameCube) como parámetro —rejilla, tonos y niebla— y no como dos módulos. El arte de ficha de
+    GameCube) como parámetro —rejilla, tonos y niebla— y no como dos módulos. La **visibilidad no
+    es un parámetro de época** (#510): quién tapa a quién es una garantía geométrica del motor y
+    vale igual para las dos consolas, así que fundir varias piezas en una escena se hace con
+    `fundirEscenas(...)` y no con el `flatMap` + `sort` que ocho consumidores copiaban. Ese orden
+    es hoy por centroide de cara y es la deuda viva de #510 —empata entre caras que se tocan, que
+    es el parpadeo que ve QA—; lo ya intentado y descartado (epsilon con orden estable; Newell sin
+    partir caras, que empeora la medida) está escrito en la cabecera de `retro3d.mjs` para no
+    repetirlo por cuarta vez. El arte de ficha de
     naves narrativas (`scripts/ficha-nave.mjs`, con el codificador PNG puro de
     `scripts/png-indexado.mjs`) se genera **solo por clic del GM** y escribe el token prototipo:
     nunca sondea ni sincroniza posición, porque un documento persistente que espeje la simulación

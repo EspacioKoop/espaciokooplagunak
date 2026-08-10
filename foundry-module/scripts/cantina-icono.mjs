@@ -25,7 +25,7 @@
 // Frontera de arte (#351): no declara ni un color.
 
 import { FICHA, PIXEL } from "./paleta.mjs";
-import { componerEscena } from "./retro3d.mjs";
+import { componerEscena, fundirEscenas } from "./retro3d.mjs";
 import { caja } from "./cantina-escena.mjs";
 
 /** Vuelta completa de reposo, en milisegundos. Lento: es respiración, no prisa. */
@@ -139,9 +139,11 @@ export function componerIcono(idIcono, opciones = {}) {
     }),
   );
 
-  const poligonos = partes
-    .flatMap((parte) => parte.poligonos)
-    .sort((a, b) => b.profundidad - a.profundidad);
+  // Un solo orden de pintor global para todas las piezas (`fundirEscenas`,
+  // #510): concatenar dos listas ya ordenadas da una lista incorrecta en cuanto
+  // dos piezas se solapan, y hasta #510 cada consumidor repetía este mismo
+  // fundido a mano.
+  const { poligonos } = fundirEscenas(partes);
 
   return { ancho, alto, epoca: partes[0]?.epoca, poligonos, yaw };
 }

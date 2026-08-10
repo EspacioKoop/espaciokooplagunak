@@ -26,7 +26,7 @@
 // tinta de los puntos entran desde `paleta.mjs`, igual que hace el motor.
 
 import { PIXEL } from "../paleta.mjs";
-import { componerEscena } from "../retro3d.mjs";
+import { componerEscena, fundirEscenas } from "../retro3d.mjs";
 
 /** Media arista del cubo. La malla vive en [-0.5, 0.5]. */
 const MEDIO = 0.5;
@@ -239,8 +239,10 @@ export function escenaDado(opciones = {}) {
   const cuerpo = componerEscena(mallaDado(), { ...comun, color: opciones.color ?? PIXEL.cara });
   const puntos = componerEscena(mallaPuntos(), { ...comun, color: opciones.tinta ?? PIXEL.borde });
 
-  const poligonos = [...cuerpo.poligonos, ...puntos.poligonos]
-    .sort((a, b) => b.profundidad - a.profundidad);
+  // Los puntos van incrustados en las caras del cuerpo, así que el orden entre
+  // ambas listas es justo el caso que `fundirEscenas` (#510) resuelve por
+  // geometría en vez de por centroide.
+  const { poligonos } = fundirEscenas([cuerpo, puntos]);
 
   return { ...cuerpo, valor, poligonos };
 }

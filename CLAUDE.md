@@ -284,7 +284,11 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     EN EL MUNDO —el motor no mapea texturas y no va a hacerlo—, sobre una rejilla métrica única
     (`CELDA` = 10 cm, el mando de escala de la piel igual que la `CELDA` de la planta lo es de la
     geografía), determinista por semilla y encendida de serie en la fábrica; solo las salas de prueba
-    la apagan. Y **nada que se pueda leer**: es la regla de #526 en la superficie que más de cerca se
+    la apagan. La RAMPA es un parámetro (`tonosMural`, #558): la cantina trae la suya —el mismo
+    dibujo en otro material— porque con la del casco sus muros pasaban a ser lo más claro de la sala
+    y el local se leía como un cuarto de máquinas con una barra dentro. No es casco visto por
+    dentro. Queda abierto en #558 si además debería ir SIN mural: hoy sus paredes llevan escotillas
+    y tendidos de cable, que es contenido de sala de máquinas aunque el tono ya sea el correcto. Y **nada que se pueda leer**: es la regla de #526 en la superficie que más de cerca se
     mira —un dial pintado en el muro sería una medida que nadie ha calculado, y quien anda por la
     nave no tiene cómo saber que ese no cuenta—; lo que hay detrás de una escotilla tampoco se
     declara, por lo mismo. Tres cosas la hacen funcionar y ninguna es «más rayas»:

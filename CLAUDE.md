@@ -268,8 +268,8 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     dos sistemas. **No la devuelvas a mano**: si una sala necesita algo que la fábrica no da, se
     amplía la fábrica. Las
     salas de prueba ("a"/"b", `nave-movimiento-sala-prueba.mjs`) NUNCA aparecen en el catálogo real.
-    `scripts/nave-sala-caja.mjs` sigue siendo la fábrica de sala —muros, puertas, columnas y
-    VENTANAS—, y la ventana se **decide** en vez de escribirse: un muro sin vecino es casco, y el
+    `scripts/nave-sala-caja.mjs` sigue siendo la fábrica de sala —muros, puertas, columnas,
+    VENTANAS y la PIEL de los muros—, y la ventana se **decide** en vez de escribirse: un muro sin vecino es casco, y el
     casco ve el espacio. Lo que se ve por ella es **otra vista del espacio real** y no un cielo de
     adorno (`scripts/nave-ventana-espacio.mjs`, #541): reusa `visor-piloto.mjs` para situar los
     contactos por marcación, pasándole el rumbo de la nave MÁS el del muro, así que la vista gira con
@@ -280,6 +280,16 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     distinto de un cielo vacío: una ventana con estrellas quietas afirmaría que no hay nada ahí
     fuera. Y por eso **no** se traen los skybox de EmptyEpsilon: serían 16 MB de binarios contra la
     regla de arte del módulo, para enseñar un espacio que no es el de esta partida.
+    La **piel de los muros** es `scripts/nave-mural-pixel.mjs` (#548): pixelart EN EL MUNDO —el motor
+    no mapea texturas y no va a hacerlo—, sobre una rejilla métrica única (`CELDA`, el mando de
+    escala de la piel igual que la `CELDA` de la planta lo es de la geografía), determinista por
+    semilla y encendida de serie en la fábrica; solo las salas de prueba la apagan. Pinta juntas,
+    remaches, un conducto y parches de blindaje, y **nada que se pueda leer**: es la regla de #526
+    en la superficie que más de cerca se mira —un dial pintado en el muro sería una medida que nadie
+    ha calculado, y quien anda por la nave no tiene cómo saber que ese no cuenta—. Solo emite lo que
+    NO es el color del muro y funde cada tirada horizontal en un polígono, con tope duro por tramo:
+    el presupuesto medido (20–86 → 122–299 polígonos por fotograma, 1,3 ms la peor sala) está en la
+    cabecera del módulo, y es lo que hay que volver a medir antes de subir la densidad.
     Un **minimapa** (`scripts/nave-minimapa.mjs` + `nave-minimapa-lienzo.mjs`) dice dónde estás,
     reusando el pintor de la sección. Va `aria-hidden` porque el rótulo de sala ya da la lectura en
     texto. **Una sola planta para todo el módulo** (#542): `nave-planta-phobos.celdasConCantina()` es

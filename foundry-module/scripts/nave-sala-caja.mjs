@@ -33,6 +33,7 @@ import { componerEscena } from "./retro3d.mjs";
 import { resolverCamara } from "./nave-camara.mjs";
 import { campoEstelar, proyectarEstrellas } from "./retro3d-estrellas.mjs";
 import { piezasDeVentana } from "./nave-ventana-espacio.mjs";
+import { piezasMuralPixel } from "./nave-mural-pixel.mjs";
 import { crearPlanta } from "./nave-movimiento.mjs";
 import { poligonosOtrosJugadores } from "./nave-avatares-render.mjs";
 
@@ -500,6 +501,12 @@ export function crearSalaCaja({
   colorMarcoPuerta = "#ffb703",
   semillaCielo = 20260731,
   cantidadEstrellas = 90,
+  // Pixelart de casco sobre los muros (#548). Encendido de serie: un muro plano
+  // es una caja gris, y la piel es lo que hace que la sala se lea como nave.
+  // El interruptor existe para las salas de prueba —donde el mural solo estorba
+  // al leer qué está midiendo el test— y no como preferencia de estilo.
+  muralPixel = true,
+  semillaMural = 20260810,
 }) {
   const muros = [
     { x: -GROSOR_MURO, z: -GROSOR_MURO, ancho: ancho + GROSOR_MURO * 2, profundidad: GROSOR_MURO },
@@ -525,6 +532,13 @@ export function crearSalaCaja({
 
   const piezas = Object.freeze([
     ...tramosMuro.map((rect) => ({ malla: rectAColumna(rect, ALTURA), color: colorMuro })),
+    // La piel va justo detrás del muro que la sostiene y antes que todo lo
+    // demás: es parte de la pared, no mobiliario colgado de ella.
+    ...(muralPixel
+      ? tramosMuro.flatMap((rect) =>
+          piezasMuralPixel({ rect, sala: { ancho, profundidad }, altura: ALTURA, semilla: semillaMural }),
+        )
+      : []),
     ...marcos.map((malla) => ({ malla, color: colorMarcoVentana })),
     // El marco de puerta lleva su propio color: es lo que la hace reconocible
     // como paso a otra sala y no como un boquete en el muro.

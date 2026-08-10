@@ -237,6 +237,25 @@ export const SECCION = Object.freeze({
 });
 
 /**
+ * Piel de los muros por dentro (#548). Todos los tonos son PARIENTES de
+ * `SECCION.casco`, el color del muro pelado: el mural es chapa sobre chapa, no
+ * un mural pintado, y en cuanto un tono se despega del casco deja de leerse como
+ * la misma pared y pasa a leerse como un cartel.
+ *
+ * Por eso no hay aquí ningún acento vivo —ni el ámbar de señalización ni el
+ * verde azulado de «esto se acciona»—: esos dos colores ya SIGNIFICAN en esta
+ * misma sala (marco de puerta, ventana, consola), y repetirlos como adorno de
+ * pared gastaría la única señal que la tripulación tiene para encontrarlos.
+ */
+export const MURAL = Object.freeze({
+  junta: "#2c343e", // la línea entre dos planchas: casco en sombra
+  remache: "#596573", // el punto que coge la luz en el cruce de juntas
+  conducto: "#4a5461", // el tubo de servicio que cruza por encima de la cabeza
+  abrazadera: "#333c47", // lo que lo sujeta al mamparo cada metro y medio
+  parche: "#454f5b", // chapa remachada encima: la misma plancha, más nueva
+});
+
+/**
  * Paleta arcade saturada de las facciones en el mapa vivo. Es una lista y no un
  * objeto porque el color se reparte por hash del nombre de facción: importa el
  * orden, no el nombre de cada entrada.

@@ -33,9 +33,13 @@ test("solo se viste lo que es arquitectura de la sala", () => {
 });
 
 test("la piel de un objeto usa la misma celda que el muro y la puerta", () => {
+  // Clavado a la rejilla, no «una celda de alto»: desde que se funde en
+  // rectángulos (#551) las piezas son más altas, y lo que importa es que la
+  // escala del dibujo sea la del casco.
+  const base = ARMARIO.centro[1] - ARMARIO.medidas[1] / 2;
+  const enRejilla = (n) => Math.abs(n / CELDA - Math.round(n / CELDA)) < 1e-6;
   for (const { malla } of piezasPielObjeto(ARMARIO)) {
-    const alturas = malla.vertices.map(([, y]) => y);
-    assert.ok(Math.abs(Math.max(...alturas) - Math.min(...alturas) - CELDA) < 1e-9);
+    for (const [, y] of malla.vertices) assert.ok(enRejilla(y - base), "toda altura cae en la rejilla");
   }
 });
 
@@ -76,9 +80,14 @@ test("el dibujo no lleva color propio ni nada que se pueda leer", () => {
   // Regla de #526: cantos, un refuerzo y una rejilla de ventilación. Ningún
   // piloto encendido, que sí afirmaría un estado. Lo que informa en esta nave
   // son las consolas, y esas tienen su propio lenguaje.
-  const rejilla = rejillaObjeto(8, 9);
+  const rejilla = rejillaObjeto(16, 18);
   assert.ok(rejilla.flat().some((c) => c === null), "el color del objeto sigue siendo el fondo");
-  assert.ok(!rejilla[0].some(Boolean), "la fila del suelo va limpia: un canto a ras de suelo es una sombra mal puesta");
+  // El relieve va en el sentido de la luz del motor, que viene de arriba: canto
+  // claro arriba, oscuro abajo. Invertido, el objeto se leería hundido en vez de
+  // montado — y ese error, repetido por toda la sala, es lo que hace que un
+  // decorado parezca un molde en negativo.
+  assert.equal(rejilla[rejilla.length - 1][4], MURAL.claro, "el canto de arriba coge la luz");
+  assert.equal(rejilla[0][4], MURAL.junta, "el de abajo queda en sombra");
 });
 
 test("dos objetos iguales salen iguales", () => {

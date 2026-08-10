@@ -10,25 +10,47 @@
 // piel en vez de para la planta.
 //
 // NO PINTA NADA QUE SE PUEDA LEER. Es la regla de #526 aplicada a una superficie
-// que sí se mira de cerca: juntas de panel, remaches, un conducto y parches de
-// blindaje. Ni una barra, ni una cifra, ni una escala, ni una marcación — un
-// dial pintado en el muro sería un instrumento que nadie ha calculado, y quien
-// anda por la nave no tiene forma de saber que ese no cuenta. Lo que hay aquí
-// es chapa: no admite lectura ni siquiera equivocándose.
+// que sí se mira de cerca: planchas, remaches, escotillas, rejillas de
+// ventilación, tendidos de cable y conductos. Ni una barra, ni una cifra, ni una
+// escala, ni una marcación — un dial pintado en el muro sería un instrumento que
+// nadie ha calculado, y quien anda por la nave no tiene forma de saber que ese
+// no cuenta. Lo que hay aquí es chapa: no admite lectura ni equivocándose. Lo
+// que hay DETRÁS de una escotilla tampoco se declara, por lo mismo.
 //
-// EL FONDO NO SE PINTA. Solo se emiten los píxeles que NO son el color del muro,
-// y las tiradas contiguas de un mismo color se funden en UN polígono
-// (`fundirTiradas`). Sin eso, un muro de 8 m serían 40x19 = 760 caras por muro y
-// por fotograma; con eso son unas pocas decenas. `piezasMuralPixel` respeta un
-// tope duro (`TOPE_PIEZAS`) y prefiere quedarse corta a hundir el fotograma:
-// el mural es adorno, y un adorno no puede costar la fluidez de andar.
+// SE LEE A DOS DISTANCIAS, y eso es lo que separa una pared trabajada de una
+// pared llena (#551). El muro se parte en tres bandas —zócalo, paño de planchas
+// y bastidor de tubos bajo la cornisa— que dan la lectura de lejos; dentro de
+// cada plancha va, o no, un greeble que premia acercarse. Llenarlo todo por
+// igual produce ruido, que es el fallo contrario al de #548 y no es mejor.
+//
+// EL RELIEVE ES LA MITAD DEL TRABAJO. Un dibujo plano con más rayas sigue siendo
+// plano: lo que da volumen es el bisel —canto claro arriba, oscuro abajo— sobre
+// una rampa de seis tonos, y que el sentido de ese bisel coincida con la luz del
+// motor. Una pieza montada y un hueco recortado llevan el bisel al revés el uno
+// del otro, y esa es toda la diferencia entre un bulto y un agujero.
+//
+// EL FONDO NO SE PINTA. Solo se emiten las celdas que NO son el color del muro,
+// y las contiguas del mismo color se funden en RECTÁNGULOS por mallado codicioso
+// (`fundirRectangulos`). Sin eso, el dibujo de #551 pide del orden de mil caras
+// por muro y por fotograma. `piezasMuralPixel` respeta además un tope duro
+// (`TOPE_PIEZAS`) y prefiere quedarse corta a hundir el fotograma: el mural es
+// adorno, y un adorno no puede costar la fluidez de andar.
 //
 // Medido sobre el catálogo real (2026-08-10, las catorce estancias, 480x270,
-// época psx): los polígonos VISIBLES por fotograma pasan de 20–86 a 122–299, y
-// componer la peor sala (la cantina) cuesta 1,3 ms. Con la piel de puertas y
-// objetos encima (#550) el techo queda en 327 y 1,45 ms. Cabe de sobra, y es la
-// cifra que hay que volver a medir antes de subir la densidad de cualquiera de
-// las tres — no la sensación de que «unos rectángulos más dan igual».
+// psx, mirando a los cuatro rumbos). Polígonos visibles por fotograma y coste de
+// componer la peor sala:
+//
+//   sin piel (antes de #548)      20–86     0,4 ms
+//   piel de #548 + #550          122–327    1,45 ms
+//   detalle de #551              657–789    3,46 ms
+//
+// El salto de #551 es real y hay que vigilarlo: casi el doble de coste por el
+// detalle, ya CON el mallado en rectángulos pagándolo a medias. Sigue cabiendo
+// en un fotograma de 16 ms con sitio de sobra para el rasterizado, pero es la
+// cifra que se vuelve a medir antes de subir nada — no la sensación de que «unos
+// rectángulos más dan igual». Si algún día no cabe, lo que se toca es la
+// densidad de greebles, no la rejilla: media resolución se nota, media plancha
+// sin escotilla no.
 //
 // NO TOCA LA COLISIÓN. Son chapas de grosor cero apoyadas sobre la cara interior
 // del muro, `SALIENTE` metros por delante para no pelearse con ella en el
@@ -48,13 +70,23 @@ import { MURAL } from "./paleta.mjs";
 import { rngSemilla } from "./ventana-nave.mjs";
 
 /**
- * El píxel del mural, en metros. 0.2 y no 0.1: a la altura de ojos (1.45) y con
- * la resolución interna baja de la época PSX, un píxel de 10 cm se convierte en
- * ruido a dos pasos de la pared —el mismo motivo por el que el cielo `psx` lleva
- * pocas estrellas y crudas—. A 20 cm un remache sigue siendo un remache cuando
- * te acercas y no desaparece cuando te alejas.
+ * El píxel del mural, en metros.
+ *
+ * 0.1 desde #551. En #548 era 0.2, y el argumento era la fidelidad al hardware:
+ * «a la resolución interna de PSX, 10 cm es ruido». Ese argumento estaba mal
+ * planteado, y las referencias de la época lo desmienten — Metal Slug, Pulstar o
+ * Blazing Star en Neo Geo tienen naves con más detalle por metro que esto, y
+ * SIGNALIS, que es la referencia moderna de este mismo look, corre a 640x360 y
+ * usa a propósito textura MÁS fina de la que una PS1 movía en la práctica. La
+ * regla correcta no es «tanta resolución como daba la máquina» sino «el LOOK de
+ * la máquina»: paleta corta, sin filtrado, sin degradados. Eso se conserva
+ * entero al bajar a 10 cm; lo único que se pierde es la pobreza.
+ *
+ * A 10 cm una plancha de casco mide 16x18 celdas, que es sitio para bisel,
+ * remaches y un greeble dentro. A 20 cm medía 8x9 y no cabía nada: por eso el
+ * mural de #548 solo podía ser rayas.
  */
-export const CELDA = 0.2;
+export const CELDA = 0.1;
 
 /**
  * Cuánto sobresale la chapa de la cara del muro. Suficiente para que el z-buffer
@@ -63,26 +95,84 @@ export const CELDA = 0.2;
  */
 export const SALIENTE = 0.01;
 
-/** Ancho de un panel de casco, en píxeles de mural: 8 x 0.2 = 1.6 m. */
-const PANEL_ANCHO = 8;
-/** Alto de un panel: 9 x 0.2 = 1.8 m, apenas por encima de una persona. */
-const PANEL_ALTO = 9;
+/** Ancho de una plancha de casco, en celdas: 16 x 0.1 = 1.6 m. */
+const PANEL_ANCHO = 16;
+/**
+ * Alto de una plancha: 10 x 0.1 = 1 m.
+ *
+ * No es una medida de chapa real, es una decisión de composición: con planchas
+ * de 1,8 m solo cabía UNA fila entre el zócalo y el bastidor de tubos, y un
+ * muro con una sola fila de planchas se lee como un friso a media altura, no
+ * como un mamparo. Con 1 m caben dos, y dos filas es lo que hace que la pared
+ * tenga arriba y abajo.
+ */
+const PANEL_ALTO = 10;
 
 /**
- * Tope duro de polígonos por tramo de muro. Un muro de 8 m da del orden de 60
- * piezas ya fundidas; 160 deja margen de sobra para una sala grande y aun así
- * corta en seco un mural que se desbocara. Se corta por el final de la lista
- * (los rasgos van de más estructural a más anecdótico), así que lo que se pierde
- * primero son los parches, no las juntas.
+ * Las tres bandas horizontales en que se parte el muro. NO son adorno: son la
+ * jerarquía que hace que el mural se lea a dos distancias, que es lo que
+ * distingue una pared trabajada de una pared llena. De lejos se ven tres franjas
+ * y las planchas; de cerca, lo que hay dentro de cada plancha.
+ *
+ * `ZOCALO_ALTO` = 4 celdas = 40 cm, la altura a la que se golpea una pared con
+ * lo que se arrastra. `CORNISA_ALTO` = 5 = 50 cm, por encima del dintel (2.8 m)
+ * en un muro de 3.8: lo que queda fuera del cono de mirada.
  */
-export const TOPE_PIEZAS = 160;
+const ZOCALO_ALTO = 4;
+const CORNISA_ALTO = 5;
 
 /**
- * A qué fila va el conducto de servicio. 13 x 0.2 = 2.6 m: por encima de la
- * cabeza y por debajo del dintel de una puerta (2.8), así que cruza el muro sin
- * chocar con ningún hueco a la altura a la que se mira.
+ * Tope duro de polígonos por tramo de muro.
+ *
+ * Sube de 160 (#548) a 420 con el detalle de #551, y lo que lo hace pagable no
+ * es haber subido el número: es `fundirRectangulos`. Con el fundido por tiradas
+ * anterior, este mismo dibujo pedía del orden de mil piezas por muro; en
+ * rectángulos baja a un tercio largo. El tope sigue existiendo para lo mismo:
+ * cortar en seco un muro absurdamente largo antes de que se coma el fotograma.
  */
-const FILA_CONDUCTO = 13;
+export const TOPE_PIEZAS = 420;
+
+/**
+ * Cuántas filas ocupa el bastidor de tubos: dos tubos con su filo y su sombra.
+ *
+ * Fueron tres y ocupaban 0,9 m del muro. Se vio en la vista previa: el bastidor
+ * pesaba más que el paño de planchas y el muro se leía como una reja con un
+ * friso debajo. El detalle de una superficie no se reparte a partes iguales —lo
+ * que manda es el paño, y los tubos son el remate.
+ */
+const CONDUCTO_ALTO = 6;
+
+/**
+ * Reparte el alto del muro en sus bandas.
+ *
+ * Se calcula y no se escribe con números fijos porque la piel la piden también
+ * la hoja de una puerta (2,8 m) y un objeto (0,6 m): con filas hardcodeadas, el
+ * bastidor de tubos de un muro de 3,8 m caía encima de la cornisa en cuanto el
+ * alto cambiaba, que es exactamente el fallo que tenía la primera versión de
+ * #551. Cada banda cede en el orden en que deja de tener sentido: primero el
+ * bastidor —una pared baja no tiene tubos por encima de la cabeza—, luego la
+ * cornisa, y el zócalo es el último en irse porque un muro sin él flota.
+ */
+export function bandas(filas) {
+  const zocalo = filas >= 12 ? ZOCALO_ALTO : 0;
+  const cornisa = filas >= 20 ? CORNISA_ALTO : 0;
+  const hayConducto = filas >= 30;
+  const conducto = hayConducto ? CONDUCTO_ALTO : 0;
+  return {
+    zocalo,
+    cornisa,
+    // Dónde empieza el bastidor, o `null` si esta superficie no lo lleva.
+    filaConducto: hayConducto ? filas - cornisa - conducto : null,
+    // El paño de planchas: lo que queda en medio. `panoHasta` es EXCLUSIVO —la
+    // primera fila que ya no es paño—, y no «la última que sí»: escrito como
+    // límite inferior se perdía una fila de planchas enteras por un off-by-one
+    // que no revienta nada, solo deja el muro con la mitad del dibujo.
+    panoDesde: zocalo + (zocalo > 0 ? 1 : 0),
+    // Una fila de aire entre el paño y los tubos: sin ella el bastidor se apoya
+    // en la última plancha y las dos cosas se leen como una sola pieza rara.
+    panoHasta: filas - cornisa - conducto - (hayConducto ? 1 : 0),
+  };
+}
 
 /**
  * De qué muro es este tramo y hacia dónde mira su cara interior.
@@ -129,63 +219,221 @@ export function caraInterior(rect, sala) {
  */
 export function rejillaMural(columnas, filas, semilla = 1) {
   const azar = rngSemilla(semilla >>> 0);
+  const lienzo = crearLienzo(columnas, filas);
+  const { poner, rect, linea } = lienzo;
+  const banda = bandas(filas);
+
+  // --- Banda baja: ZÓCALO. La chapa de abajo se golpea con todo lo que se
+  //     arrastra por un pasillo, así que en una nave de verdad es otra pieza:
+  //     más gruesa, atornillada aparte y rematada por un canto. Aquí hace
+  //     además el trabajo de composición de anclar el muro al suelo.
+  if (banda.zocalo > 0) {
+    rect(0, 0, columnas, banda.zocalo, MURAL.sombra);
+    linea(banda.zocalo, 0, columnas, MURAL.brillo); // el canto que coge la luz
+    for (let u = 2; u < columnas; u += 6) poner(1, u, MURAL.remache);
+  }
+
+  // --- Banda alta: CORNISA, por encima del dintel de una puerta. Va más
+  //     apagada y con menos cosas a propósito: es lo que queda fuera del cono de
+  //     mirada, y llenarla compite con lo que sí se mira.
+  if (banda.cornisa > 0) {
+    rect(filas - banda.cornisa, 0, columnas, banda.cornisa, MURAL.junta);
+    linea(filas - banda.cornisa - 1, 0, columnas, MURAL.medio);
+  }
+
+  // --- Banda media: el PAÑO DE PLANCHAS. Es el grueso del muro y lo que da la
+  //     escala de la sala.
+  const paneles = [];
+  for (let v = banda.panoDesde; v + PANEL_ALTO <= banda.panoHasta; v += PANEL_ALTO) {
+    for (let u = 0; u + PANEL_ANCHO <= columnas; u += PANEL_ANCHO) {
+      panelBiselado(lienzo, u, v, PANEL_ANCHO, PANEL_ALTO);
+      paneles.push([u, v]);
+    }
+    // El sobrante de la derecha, cuando el muro no mide un número entero de
+    // planchas: media plancha es lo que se ve en una nave real, y dejar ese
+    // trozo liso delataría la rejilla más que cualquier junta.
+    const resto = columnas % PANEL_ANCHO;
+    if (resto >= 3) panelBiselado(lienzo, columnas - resto, v, resto, PANEL_ALTO);
+  }
+
+  // --- El BASTIDOR DE SERVICIO, a la altura a la que pasan los tubos en
+  //     cualquier nave dibujada: por encima de la cabeza y por debajo del
+  //     dintel. Un conducto no afirma ningún caudal, que es lo que lo hace
+  //     admisible como adorno (#526).
+  if (banda.filaConducto !== null) conducto(lienzo, banda.filaConducto, columnas);
+
+  // --- Los GREEBLES: uno por plancha como mucho, sorteado. Es lo que hace que
+  //     el paño no sea papel pintado, y lo que premia acercarse — de lejos se
+  //     ven las planchas, de cerca cada una es distinta.
+  //
+  //     El sorteo recorre la lista de planchas SIEMPRE en el mismo orden, así
+  //     que la semilla fija el muro entero.
+  for (const [u, v] of paneles) {
+    const tirada = azar();
+    if (tirada < 0.2) escotilla(lienzo, u, v, azar);
+    else if (tirada < 0.36) rejillaVentilacion(lienzo, u, v);
+    else if (tirada < 0.52) tendidoCables(lienzo, u, v, azar);
+    else if (tirada < 0.66) placaAtornillada(lienzo, u, v, azar);
+    // El resto se queda como plancha lisa. Una nave donde TODAS las planchas
+    // llevan algo encima es un cuarto de máquinas, no un pasillo.
+  }
+
+  return lienzo.rejilla;
+}
+
+/**
+ * El VOCABULARIO compartido del pixelart de la nave (#551): el lienzo de celdas
+ * y las dos piezas con las que se dibuja todo —una pieza montada y un hueco
+ * recortado—. Se exporta porque puertas y objetos dibujan con lo MISMO, y el
+ * sentido del bisel es justo lo que no puede divergir entre superficies: dos
+ * relieves iluminados al revés en la misma sala se ven a la primera.
+ */
+/** Un lienzo de celdas con las brochas que usa todo el dibujo. Se pasa entero a
+ *  cada motivo para que ninguno tenga que redeclarar sus límites — que es donde
+ *  se cuelan los desbordes de uno en el motivo de al lado. */
+export function crearLienzo(columnas, filas) {
   const rejilla = Array.from({ length: filas }, () => new Array(columnas).fill(null));
   const poner = (v, u, color) => {
     if (v < 0 || v >= filas || u < 0 || u >= columnas) return;
     rejilla[v][u] = color;
   };
-
-  // 1. Juntas de panel. La chapa de una nave viene en planchas, y la junta entre
-  //    dos planchas es lo único que hace que una pared plana tenga tamaño: sin
-  //    ellas no hay con qué medir a ojo lo grande que es la sala.
-  for (let u = PANEL_ANCHO; u < columnas; u += PANEL_ANCHO) {
-    for (let v = 0; v < filas; v += 1) poner(v, u, MURAL.junta);
-  }
-  for (let v = PANEL_ALTO; v < filas; v += PANEL_ALTO) {
-    for (let u = 0; u < columnas; u += 1) poner(v, u, MURAL.junta);
-  }
-
-  // 2. Remaches en los cruces de junta. Un píxel suelto y claro: es el rasgo que
-  //    se lee de cerca, cuando las juntas ya son demasiado grandes para verse.
-  for (let u = PANEL_ANCHO; u < columnas; u += PANEL_ANCHO) {
-    for (let v = PANEL_ALTO; v < filas; v += PANEL_ALTO) poner(v, u, MURAL.remache);
-  }
-
-  // 3. El conducto de servicio: una línea horizontal continua por encima de la
-  //    cabeza, con abrazaderas cada metro y medio. Es lo que dice «esto es un
-  //    barco y por dentro pasan cosas» sin decir qué pasa por ahí — un conducto
-  //    no afirma ningún caudal.
-  if (filas > FILA_CONDUCTO + 1) {
-    for (let u = 0; u < columnas; u += 1) poner(FILA_CONDUCTO, u, MURAL.conducto);
-    for (let u = 3; u < columnas; u += 7) {
-      poner(FILA_CONDUCTO, u, MURAL.abrazadera);
-      poner(FILA_CONDUCTO + 1, u, MURAL.abrazadera);
-    }
-  }
-
-  // 4. Parches de blindaje, uno como mucho por panel y solo si sale. Rompen la
-  //    repetición: con juntas perfectamente regulares y nada más, el muro se lee
-  //    como papel pintado. La tirada se hace panel a panel y SIEMPRE en el mismo
-  //    orden, así que la semilla fija el resultado entero.
-  for (let panelU = 0; panelU * PANEL_ANCHO < columnas; panelU += 1) {
-    for (let panelV = 0; panelV * PANEL_ALTO < filas; panelV += 1) {
-      if (azar() > 0.45) continue;
-      const anchoParche = 2 + Math.floor(azar() * 3);
-      const altoParche = 2 + Math.floor(azar() * 2);
-      const u0 = panelU * PANEL_ANCHO + 1 + Math.floor(azar() * Math.max(1, PANEL_ANCHO - anchoParche - 1));
-      const v0 = panelV * PANEL_ALTO + 1 + Math.floor(azar() * Math.max(1, PANEL_ALTO - altoParche - 1));
-      for (let du = 0; du < anchoParche; du += 1) {
-        for (let dv = 0; dv < altoParche; dv += 1) {
-          // El parche no pisa el conducto: una chapa remachada por encima de un
-          // tubo de servicio es justo lo que nadie monta.
-          if (v0 + dv === FILA_CONDUCTO) continue;
-          poner(v0 + dv, u0 + du, MURAL.parche);
-        }
+  return {
+    rejilla,
+    columnas,
+    filas,
+    poner,
+    /** Franja horizontal de una celda de alto. */
+    linea(v, u0, largo, color) {
+      for (let u = u0; u < u0 + largo; u += 1) poner(v, u, color);
+    },
+    /** Franja vertical de una celda de ancho. */
+    columna(u, v0, alto, color) {
+      for (let v = v0; v < v0 + alto; v += 1) poner(v, u, color);
+    },
+    /** Rectángulo macizo. */
+    rect(v0, u0, ancho, alto, color) {
+      for (let v = v0; v < v0 + alto; v += 1) {
+        for (let u = u0; u < u0 + ancho; u += 1) poner(v, u, color);
       }
-    }
-  }
+    },
+  };
+}
 
-  return rejilla;
+/**
+ * Una plancha con RELIEVE: canto claro arriba y a la izquierda, canto oscuro
+ * abajo y a la derecha, interior sin pintar (o sea, el color del muro).
+ *
+ * Es la pieza que sostiene todo el mural. Sin bisel no hay volumen, y sin
+ * volumen el mural es un plano con rayas por muy denso que se ponga — que es
+ * exactamente lo que era en #548.
+ *
+ * El SENTIDO del bisel no es decorativo: la luz del motor viene de arriba
+ * (`LUZ` en `retro3d.mjs`), así que el canto de arriba es el que la coge. Si se
+ * invirtiera, las planchas se leerían hundidas en vez de montadas y el muro
+ * entero parecería un molde en negativo. Es el error clásico del relieve
+ * dibujado a mano, y es el motivo de que esto sea UNA función y no un bisel
+ * copiado dentro de cada motivo.
+ */
+export function panelBiselado({ linea, columna, poner }, u0, v0, ancho, alto) {
+  linea(v0 + alto - 1, u0, ancho, MURAL.claro); // canto superior, a la luz
+  linea(v0, u0, ancho, MURAL.junta); // canto inferior, en sombra
+  columna(u0, v0, alto, MURAL.claro); // costado izquierdo, a la luz
+  columna(u0 + ancho - 1, v0, alto, MURAL.sombra); // costado derecho, en sombra
+  // Las dos esquinas donde se cruzan luz y sombra van a un tono intermedio: sin
+  // esto el bisel hace una escalera de contraste que canta más que el relieve.
+  poner(v0, u0, MURAL.sombra);
+  poner(v0 + alto - 1, u0 + ancho - 1, MURAL.medio);
+  // Remaches en las cuatro esquinas de la plancha, ya por dentro del bisel.
+  poner(v0 + 1, u0 + 1, MURAL.remache);
+  poner(v0 + 1, u0 + ancho - 2, MURAL.remache);
+  poner(v0 + alto - 2, u0 + 1, MURAL.remache);
+  poner(v0 + alto - 2, u0 + ancho - 2, MURAL.remache);
+}
+
+/**
+ * Un hueco RECORTADO en la plancha: el bisel al revés que el de una pieza
+ * montada —sombra arriba, luz abajo—, porque eso es justo lo que distingue un
+ * agujero de un bulto. Devuelve el rectángulo interior para que el motivo que
+ * lo pidió lo rellene.
+ */
+export function hundir({ linea, columna, rect }, u0, v0, ancho, alto) {
+  rect(v0, u0, ancho, alto, MURAL.hueco);
+  linea(v0 + alto - 1, u0, ancho, MURAL.sombra);
+  columna(u0, v0, alto, MURAL.sombra);
+  linea(v0, u0, ancho, MURAL.claro);
+  columna(u0 + ancho - 1, v0, alto, MURAL.claro);
+  return { u0: u0 + 1, v0: v0 + 1, ancho: Math.max(0, ancho - 2), alto: Math.max(0, alto - 2) };
+}
+
+/** Escotilla de acceso: un hueco con su tapa dentro y dos tiradores. Lo que hay
+ *  detrás no se declara, y por eso no miente sobre nada. */
+function escotilla(lienzo, u, v, azar) {
+  const ancho = 6 + Math.floor(azar() * 3);
+  const alto = 6 + Math.floor(azar() * 3);
+  const u0 = u + 2 + Math.floor(azar() * Math.max(1, PANEL_ANCHO - ancho - 3));
+  const v0 = v + 2 + Math.floor(azar() * Math.max(1, PANEL_ALTO - alto - 3));
+  const dentro = hundir(lienzo, u0, v0, ancho, alto);
+  lienzo.rect(dentro.v0, dentro.u0, dentro.ancho, dentro.alto, MURAL.medio);
+  // Los dos tiradores, a media altura: son lo que dice «esto se abre».
+  const vt = dentro.v0 + Math.floor(dentro.alto / 2);
+  lienzo.linea(vt, dentro.u0 + 1, 2, MURAL.brillo);
+  lienzo.linea(vt, dentro.u0 + dentro.ancho - 3, 2, MURAL.brillo);
+}
+
+/** Rejilla de ventilación: lamas horizontales dentro de un hueco. Cada lama es
+ *  una línea de hueco con su filo claro debajo — así se dibuja una lama, y no
+ *  una raya. */
+function rejillaVentilacion(lienzo, u, v) {
+  const dentro = hundir(lienzo, u + 3, v + 3, PANEL_ANCHO - 6, PANEL_ALTO - 6);
+  for (let k = 0; k + 1 < dentro.alto; k += 2) {
+    lienzo.linea(dentro.v0 + k, dentro.u0, dentro.ancho, MURAL.ventilacion);
+    lienzo.linea(dentro.v0 + k + 1, dentro.u0, dentro.ancho, MURAL.medio);
+  }
+}
+
+/** Tendido de cables por fuera del mamparo, con sus grapas. Va en VERTICAL
+ *  porque es lo que rompe un paño lleno de líneas horizontales. */
+function tendidoCables(lienzo, u, v, azar) {
+  const u0 = u + 2 + Math.floor(azar() * (PANEL_ANCHO - 5));
+  const alto = PANEL_ALTO - 4;
+  lienzo.columna(u0, v + 2, alto, MURAL.sombra);
+  lienzo.columna(u0 + 1, v + 2, alto, MURAL.medio);
+  for (let k = 2; k < alto; k += 5) lienzo.linea(v + 2 + k, u0 - 1, 4, MURAL.claro);
+}
+
+/** Placa atornillada encima de la plancha: la reparación de toda nave vieja. Es
+ *  una pieza MONTADA, así que lleva el bisel en el sentido de un bulto. */
+function placaAtornillada(lienzo, u, v, azar) {
+  const ancho = 5 + Math.floor(azar() * 4);
+  const alto = 4 + Math.floor(azar() * 3);
+  const u0 = u + 2 + Math.floor(azar() * Math.max(1, PANEL_ANCHO - ancho - 3));
+  const v0 = v + 2 + Math.floor(azar() * Math.max(1, PANEL_ALTO - alto - 3));
+  lienzo.rect(v0, u0, ancho, alto, MURAL.parche);
+  lienzo.linea(v0 + alto - 1, u0, ancho, MURAL.claro);
+  lienzo.linea(v0, u0, ancho, MURAL.junta);
+  lienzo.columna(u0 + ancho - 1, v0, alto, MURAL.sombra);
+  for (let k = 1; k < ancho - 1; k += 3) {
+    lienzo.poner(v0 + 1, u0 + k, MURAL.remache);
+    lienzo.poner(v0 + alto - 2, u0 + k, MURAL.remache);
+  }
+}
+
+/** El bastidor de tubos: tres conductos paralelos con brillo arriba, sombra
+ *  abajo y abrazaderas que los amarran al mamparo. */
+function conducto(lienzo, v0, columnas) {
+  const { linea, rect, columna } = lienzo;
+  for (let k = 0; k < 2; k += 1) {
+    const v = v0 + k * 4;
+    rect(v, 0, columnas, 2, MURAL.conducto);
+    linea(v + 1, 0, columnas, MURAL.claro); // el filo de arriba, a la luz
+    linea(v - 1, 0, columnas, MURAL.junta); // la sombra que arroja debajo
+  }
+  // Las abrazaderas al mamparo, cada 1,6 m — la misma cadencia que las planchas,
+  // porque en una nave se atornillan a la estructura y no donde caiga.
+  for (let u = 4; u < columnas; u += PANEL_ANCHO) {
+    rect(v0 - 1, u, 2, CONDUCTO_ALTO + 1, MURAL.abrazadera);
+    columna(u, v0 - 1, CONDUCTO_ALTO + 1, MURAL.claro);
+  }
 }
 
 /**
@@ -215,6 +463,62 @@ export function fundirTiradas(rejilla) {
     }
   });
   return tiradas;
+}
+
+/**
+ * Funde la rejilla en RECTÁNGULOS, no solo en tiradas de una fila: mallado
+ * codicioso clásico —extender a la derecha mientras el color siga, luego hacia
+ * arriba mientras la franja entera repita— que es óptimo de sobra para dibujos
+ * como estos y cabe en veinte líneas.
+ *
+ * Sustituye a `fundirTiradas` como fundido de serie (#551). La versión anterior
+ * solo fundía en horizontal y su comentario decía que fundir en vertical
+ * «ahorra poco»: era CIERTO con el mural disperso de #548 —cuatro rasgos, casi
+ * todos líneas horizontales— y dejó de serlo en cuanto el dibujo se llenó de
+ * relieve, que es vertical por definición (el canto claro de un panel es una
+ * columna de N celdas). Con tiradas, un panel biselado de 8x9 costaba 22
+ * polígonos; en rectángulos cuesta 4. Ese ahorro es justo lo que paga el
+ * detalle nuevo, así que no es una optimización suelta: es su condición.
+ *
+ * `fundirTiradas` se conserva exportada porque sigue siendo la forma de mirar
+ * una rejilla fila a fila en un test, que es más fácil de leer que un mallado.
+ *
+ * @returns {{v:number, u0:number, ancho:number, alto:number, color:string}[]}
+ */
+export function fundirRectangulos(rejilla) {
+  const filas = rejilla.length;
+  const columnas = filas > 0 ? rejilla[0].length : 0;
+  const gastada = rejilla.map((fila) => fila.map(() => false));
+  const piezas = [];
+
+  for (let v = 0; v < filas; v += 1) {
+    for (let u = 0; u < columnas; u += 1) {
+      const color = rejilla[v][u];
+      if (!color || gastada[v][u]) continue;
+
+      let ancho = 1;
+      while (u + ancho < columnas && rejilla[v][u + ancho] === color && !gastada[v][u + ancho]) ancho += 1;
+
+      let alto = 1;
+      while (v + alto < filas) {
+        let cabe = true;
+        for (let du = 0; du < ancho; du += 1) {
+          if (rejilla[v + alto][u + du] !== color || gastada[v + alto][u + du]) {
+            cabe = false;
+            break;
+          }
+        }
+        if (!cabe) break;
+        alto += 1;
+      }
+
+      for (let dv = 0; dv < alto; dv += 1) {
+        for (let du = 0; du < ancho; du += 1) gastada[v + dv][u + du] = true;
+      }
+      piezas.push({ v, u0: u, ancho, alto, color });
+    }
+  }
+  return piezas;
 }
 
 /**
@@ -287,15 +591,15 @@ export function piezasMuralPixel({ rect, sala, altura, semilla = 1 }) {
  */
 export function chapasDeRejilla(cara, rejilla, opciones = {}) {
   const { base = 0, celda = CELDA, saliente = SALIENTE, tope = TOPE_PIEZAS } = opciones;
-  return fundirTiradas(rejilla)
+  return fundirRectangulos(rejilla)
     .slice(0, tope)
-    .map(({ v, u0, ancho, color }) => ({
+    .map(({ v, u0, ancho, alto, color }) => ({
       malla: chapaEnCara(
         cara,
         cara.u0 + u0 * celda,
         cara.u0 + (u0 + ancho) * celda,
         base + v * celda,
-        base + (v + 1) * celda,
+        base + (v + alto) * celda,
         saliente,
       ),
       color,

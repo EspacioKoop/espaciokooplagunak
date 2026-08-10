@@ -19,10 +19,14 @@ const HOJA = { x: 3, z: -0.4, ancho: 0.6, profundidad: 0.4 };
 test("la puerta usa la misma celda que el muro, no una escala propia", () => {
   // El módulo entero existe por esto: si el detalle de la puerta midiera otra
   // cosa, al pasar de la pared a la hoja el tamaño del pixelart cambiaría y la
-  // puerta parecería de otra nave.
+  // puerta parecería de otra nave. Se comprueba que todo cae CLAVADO en la
+  // rejilla; el alto de cada pieza ya no es una celda desde que se funde en
+  // rectángulos (#551), y exigirlo era describir el fundido, no la escala.
+  const enRejilla = (n) => Math.abs(n / CELDA - Math.round(n / CELDA)) < 1e-6;
   for (const { malla } of piezasPielHoja(PUERTA, HOJA)) {
     const alturas = malla.vertices.map(([, y]) => y);
-    assert.ok(Math.abs(Math.max(...alturas) - Math.min(...alturas) - CELDA) < 1e-9);
+    assert.ok(alturas.every(enRejilla), "toda altura cae en la rejilla del casco");
+    assert.ok(enRejilla(Math.max(...alturas) - Math.min(...alturas)));
   }
 });
 
@@ -53,11 +57,11 @@ test("la piel viaja con la hoja al abrirse", () => {
 test("una hoja estrecha se sigue leyendo, y una hoja diminuta se queda lisa", () => {
   // Media hoja de una puerta de 1,2 m son TRES celdas: el dibujo está diseñado
   // para eso y no puede depender de tener anchura.
-  assert.ok(piezasPielHoja(PUERTA, HOJA).length > 0, "tres celdas de ancho sí llevan dibujo");
+  assert.ok(piezasPielHoja(PUERTA, HOJA).length > 0, "seis celdas de ancho sí llevan dibujo");
   const diminuta = { ...HOJA, ancho: 0.3 };
-  assert.deepEqual(piezasPielHoja(PUERTA, diminuta), [], "por debajo de dos celdas, mejor lisa que ruidosa");
-  const bajita = { y0: 0, y1: 0.5, alongX: true };
-  assert.deepEqual(piezasPielHoja(bajita, HOJA), []);
+  assert.deepEqual(piezasPielHoja(PUERTA, diminuta), [], "por debajo de 40 cm, mejor lisa que ruidosa");
+  const bajita = { y0: 0, y1: 0.9, alongX: true };
+  assert.deepEqual(piezasPielHoja(bajita, HOJA), [], "en 90 cm no cabe ni el zócalo ni la franja");
 });
 
 test("el ámbar de la franja es el de señalización, no un tono nuevo", () => {

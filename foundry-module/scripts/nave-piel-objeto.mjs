@@ -26,7 +26,7 @@
 // Puro y sin color propio (#351): todo de `MURAL`.
 
 import { MURAL } from "./paleta.mjs";
-import { CELDA, SALIENTE, chapasDeRejilla } from "./nave-mural-pixel.mjs";
+import { CELDA, SALIENTE, chapasDeRejilla, crearLienzo, hundir, panelBiselado } from "./nave-mural-pixel.mjs";
 
 /**
  * Qué tiene que medir un objeto para merecer piel. 0.6 m son tres celdas: por
@@ -49,37 +49,52 @@ export const TOPE_OBJETO = 24;
  * están en sitios distintos, no que uno tenga los remaches torcidos.
  */
 export function rejillaObjeto(columnas, filas) {
-  const rejilla = Array.from({ length: filas }, () => new Array(columnas).fill(null));
-  const poner = (v, u, color) => {
-    if (v < 0 || v >= filas || u < 0 || u >= columnas) return;
-    rejilla[v][u] = color;
-  };
+  const lienzo = crearLienzo(columnas, filas);
+  const { linea, columna, rect, poner } = lienzo;
 
-  // 1. El canto de arriba: el borde que coge la luz y separa el objeto del aire.
-  //    El de abajo no se pinta — ahí está el suelo, y un canto inferior a ras de
-  //    suelo se lee como una sombra mal puesta.
-  for (let u = 0; u < columnas; u += 1) poner(filas - 1, u, MURAL.junta);
+  // 1. El objeto es un BULTO: bisel completo con la luz arriba y a la izquierda,
+  //    el mismo `panelBiselado` que las planchas del muro y las hojas de puerta.
+  //    Va aparte de la caja de color que ya dibuja la fábrica y no la sustituye:
+  //    la caja pone el volumen 3D, esto pone la chapa.
+  panelBiselado(lienzo, 0, 0, columnas, filas);
 
-  // 2. Refuerzo a media altura: le da a la caja un arriba y un abajo. Solo si hay
-  //    sitio para que no se pegue al canto.
-  const medio = Math.floor(filas / 2);
-  if (medio > 0 && medio < filas - 1) {
-    for (let u = 0; u < columnas; u += 1) poner(medio, u, MURAL.conducto);
+  // 2. La tapa superior, que es por donde se ve un objeto a la altura de la
+  //    cintura: una franja más clara rematada por su filo.
+  if (filas >= 6) {
+    linea(filas - 2, 1, columnas - 2, MURAL.medio);
+    linea(filas - 3, 1, columnas - 2, MURAL.junta);
   }
 
-  // 3. Rejilla de ventilación: tres celdas alternas justo debajo del refuerzo, y
-  //    solo si la cara es lo bastante ancha para que quepa sin tocar los bordes.
-  if (columnas >= 5 && medio - 1 > 0) {
-    for (let u = 1; u < columnas - 1; u += 2) poner(medio - 1, u, MURAL.abrazadera);
+  // 3. Una puerta de armario o de registro, hundida, ocupando el cuerpo. Es lo
+  //    que convierte una caja en un mueble de nave: los objetos de servicio se
+  //    abren. Lo que hay dentro no se declara (#526).
+  if (columnas >= 8 && filas >= 10) {
+    const dentro = hundir(lienzo, 2, 2, columnas - 4, filas - 6);
+    // El tirador, en el canto derecho de la puerta y a media altura.
+    const vt = dentro.v0 + Math.floor(dentro.alto / 2);
+    linea(vt, dentro.u0 + dentro.ancho - 3, 2, MURAL.brillo);
+    // Y una rejilla de ventilación en su mitad de abajo: un armario de máquinas
+    // respira, y son las lamas lo que dice que ahí dentro hay algo funcionando
+    // sin afirmar qué ni cuánto.
+    for (let v = dentro.v0 + 1; v < vt - 1; v += 2) {
+      linea(v, dentro.u0 + 1, Math.max(0, dentro.ancho - 6), MURAL.ventilacion);
+    }
+  } else if (columnas >= 4 && filas >= 5) {
+    // Un objeto pequeño no admite puerta: se queda con una banda de refuerzo,
+    // que a ese tamaño es todo lo que se distingue.
+    linea(Math.floor(filas / 2), 1, columnas - 2, MURAL.medio);
+    for (let u = 2; u < columnas - 2; u += 3) poner(Math.floor(filas / 2) - 1, u, MURAL.remache);
   }
 
-  // 4. Remaches en las dos esquinas de arriba. Abajo no: no se miran.
-  if (filas >= 3) {
-    poner(filas - 2, 0, MURAL.remache);
-    poner(filas - 2, columnas - 1, MURAL.remache);
+  // 4. Patas: el objeto no nace del suelo, se apoya en él. Dos escotaduras en
+  //    los bajos, que es lo que hace que no parezca un bloque enterrado.
+  if (columnas >= 8 && filas >= 8) {
+    rect(1, 3, columnas - 6, 2, MURAL.hueco);
+    columna(2, 1, 2, MURAL.sombra);
+    columna(columnas - 3, 1, 2, MURAL.sombra);
   }
 
-  return rejilla;
+  return lienzo.rejilla;
 }
 
 /**

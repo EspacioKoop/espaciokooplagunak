@@ -13,6 +13,7 @@ import {
   SALIENTE,
   TOPE_PIEZAS,
   caraInterior,
+  fundirRectangulos,
   fundirTiradas,
   piezasMuralPixel,
   rejillaMural,
@@ -168,14 +169,51 @@ test("la fábrica emite la piel de serie y el interruptor la apaga", () => {
 });
 
 test("el mural no dibuja nada que se pueda leer como una medida", () => {
-  // La regla de #526 sobre una superficie que sí se mira de cerca. No se puede
-  // testear «no parece un dial», pero sí lo que lo haría posible: el mural solo
-  // emite rectángulos horizontales de una celda de alto, así que no hay forma de
-  // que dibuje una barra que crezca, una escala graduada ni un número.
-  const rejilla = rejillaMural(24, 19, 9);
+  // La regla de #526 sobre la superficie que más de cerca se mira. No se puede
+  // testear «no parece un dial», pero sí lo que lo haría posible.
+  //
+  // Este test decía antes «una celda de alto, ni más ni menos», y eso no era la
+  // regla: era el fundido por tiradas de #548 escrito como si fuera una promesa.
+  // Al fundir en rectángulos (#551) las piezas son más altas y el test se
+  // rompió sin que nada del dibujo hubiera cambiado de naturaleza. Lo exigible
+  // es que TODA pieza esté clavada a la rejilla —posición y tamaño en múltiplos
+  // enteros de `CELDA`—, que es lo que impide una barra que crezca, una escala
+  // graduada o un glifo: nada de eso cabe en celdas enteras de un dibujo fijo.
+  const rejilla = rejillaMural(24, 38, 9);
   for (const { color } of fundirTiradas(rejilla)) assert.ok(Object.values(MURAL).includes(color));
+
+  const enRejilla = (n) => Math.abs(n / CELDA - Math.round(n / CELDA)) < 1e-6;
   for (const { malla } of piezasMuralPixel({ rect: MURO_NORTE, sala: SALA, altura: ALTURA, semilla: 9 })) {
     const alturas = malla.vertices.map(([, y]) => y);
-    assert.ok(Math.max(...alturas) - Math.min(...alturas) - CELDA < 1e-9, "una celda de alto, ni más ni menos");
+    assert.ok(alturas.every(enRejilla), "toda altura cae en la rejilla");
+    assert.ok(enRejilla(Math.max(...alturas) - Math.min(...alturas)), "y todo alto es un número entero de celdas");
   }
+});
+
+test("el fundido en rectángulos dibuja lo mismo que celda a celda", () => {
+  // La red de seguridad del cambio de #548 a #551: un mallado codicioso es fácil
+  // de escribir con un solapamiento o un hueco, y ninguna de las dos cosas se ve
+  // en una captura. Se reconstruye la rejilla desde los rectángulos y tiene que
+  // salir idéntica —ni una celda pisada dos veces, ni una sin cubrir.
+  const rejilla = rejillaMural(37, 38, 4);
+  const reconstruida = rejilla.map((fila) => fila.map(() => null));
+  for (const { v, u0, ancho, alto, color } of fundirRectangulos(rejilla)) {
+    for (let dv = 0; dv < alto; dv += 1) {
+      for (let du = 0; du < ancho; du += 1) {
+        assert.equal(reconstruida[v + dv][u0 + du], null, "dos rectángulos se pisan");
+        reconstruida[v + dv][u0 + du] = color;
+      }
+    }
+  }
+  assert.deepEqual(reconstruida, rejilla);
+});
+
+test("fundir en rectángulos cuesta bastante menos que fundir en tiradas", () => {
+  // Es la condición del detalle nuevo, no una optimización suelta: sin este
+  // ahorro, el dibujo de #551 no cabía en el presupuesto de un fotograma.
+  const rejilla = rejillaMural(37, 38, 4);
+  assert.ok(
+    fundirRectangulos(rejilla).length < fundirTiradas(rejilla).length * 0.6,
+    "el mallado 2D tiene que ahorrar al menos un 40%",
+  );
 });

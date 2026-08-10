@@ -280,21 +280,39 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     distinto de un cielo vacío: una ventana con estrellas quietas afirmaría que no hay nada ahí
     fuera. Y por eso **no** se traen los skybox de EmptyEpsilon: serían 16 MB de binarios contra la
     regla de arte del módulo, para enseñar un espacio que no es el de esta partida.
-    La **piel de los muros** es `scripts/nave-mural-pixel.mjs` (#548): pixelart EN EL MUNDO —el motor
-    no mapea texturas y no va a hacerlo—, sobre una rejilla métrica única (`CELDA`, el mando de
-    escala de la piel igual que la `CELDA` de la planta lo es de la geografía), determinista por
-    semilla y encendida de serie en la fábrica; solo las salas de prueba la apagan. Pinta juntas,
-    remaches, un conducto y parches de blindaje, y **nada que se pueda leer**: es la regla de #526
-    en la superficie que más de cerca se mira —un dial pintado en el muro sería una medida que nadie
-    ha calculado, y quien anda por la nave no tiene cómo saber que ese no cuenta—. Solo emite lo que
-    NO es el color del muro y funde cada tirada horizontal en un polígono, con tope duro por tramo:
-    el presupuesto medido (20–86 → 122–299 polígonos por fotograma, 1,3 ms la peor sala) está en la
-    cabecera del módulo, y es lo que hay que volver a medir antes de subir la densidad.
+    La **piel de los muros** es `scripts/nave-mural-pixel.mjs` (#548, reelaborada en #551): pixelart
+    EN EL MUNDO —el motor no mapea texturas y no va a hacerlo—, sobre una rejilla métrica única
+    (`CELDA` = 10 cm, el mando de escala de la piel igual que la `CELDA` de la planta lo es de la
+    geografía), determinista por semilla y encendida de serie en la fábrica; solo las salas de prueba
+    la apagan. Y **nada que se pueda leer**: es la regla de #526 en la superficie que más de cerca se
+    mira —un dial pintado en el muro sería una medida que nadie ha calculado, y quien anda por la
+    nave no tiene cómo saber que ese no cuenta—; lo que hay detrás de una escotilla tampoco se
+    declara, por lo mismo. Tres cosas la hacen funcionar y ninguna es «más rayas»:
+    **rampa y relieve** (seis tonos y bisel, con el sentido atado a la luz del motor: una pieza
+    montada y un hueco recortado lo llevan al revés el uno del otro, y esa es toda la diferencia
+    entre un bulto y un agujero); **jerarquía a dos distancias** (bandas —zócalo, paño de planchas,
+    bastidor de tubos bajo cornisa— que se leen de lejos, y un greeble sorteado dentro de cada
+    plancha —escotilla, rejilla, tendido de cable, placa— que premia acercarse; llenarlo todo por
+    igual es ruido, el fallo contrario al de #548 y no mejor); y **`fundirRectangulos`**, mallado
+    codicioso 2D que es la CONDICIÓN del detalle y no una optimización suelta —con relieve, que es
+    vertical, fundir solo por filas deja de servir, y sin este ahorro el dibujo no cabe en un
+    fotograma—. La celda bajó de 20 a 10 cm en #551 al caerse su argumento original: «fidelidad al
+    hardware» era la regla equivocada (Neo Geo y SIGNALIS usan más detalle por metro del que la
+    máquina de referencia movía), la buena es el LOOK —paleta corta, sin filtrado, sin degradados—,
+    que se conserva entero. El presupuesto medido (20–86 → 122–327 con #550 → 657–789 con #551; 0,4
+    → 1,45 → 3,46 ms la peor sala) está en la cabecera del módulo: es lo que se vuelve a medir antes
+    de subir nada, y si algún día no cabe se recorta la densidad de greebles, nunca la rejilla.
     La **misma rejilla** viste puertas (`scripts/nave-piel-puerta.mjs`) y objetos
     (`scripts/nave-piel-objeto.mjs`), #550 — y esa es toda la razón de que sean módulos y no copias:
     si cada superficie eligiera su tamaño de detalle, la sala parecería montada con piezas de tres
     maquetas. Comparten el primitivo de #548 (`chapaEnCara`/`chapasDeRejilla`, donde vive el tope,
-    porque un tope que solo cumple uno de los tres consumidores no es un tope) y se separan en lo que
+    porque un tope que solo cumple uno de los tres consumidores no es un tope) y, desde #551, también
+    el VOCABULARIO de dibujo (`crearLienzo`, `panelBiselado`, `hundir`): el sentido del bisel es justo
+    lo que no puede divergir entre superficies, porque dos relieves iluminados al revés en la misma
+    sala se ven a la primera. Ojo con las medidas: en la piel de una puerta van en METROS y se
+    convierten a filas, nunca escritas como índice de fila — al bajar la celda en #551, todo lo que
+    estaba en filas se partió por la mitad en silencio y la franja de aviso se fue a la rodilla. Se
+    separan en lo que
     de verdad difiere: la hoja de una puerta es ESTRECHA —media hoja de 1,2 m son tres celdas, así
     que el dibujo se declara fila a fila y ninguna decisión depende de tener anchura—, va por sus dos
     caras y lleva el ámbar de `AMBAR_SENAL`, que ahí no adorna sino que repite lo que ya dice el marco

@@ -38,16 +38,33 @@ import { CELDA, chapasDeRejilla } from "./nave-mural-pixel.mjs";
  */
 export const RESALTE_HOJA = 0.03;
 
-/**
- * A qué fila va la franja de aviso, contando desde el suelo de la hoja: 5 y 6
- * sobre `CELDA` = de 1,0 a 1,4 m. Es la altura de la mano, que es donde se marca
- * una esclusa de verdad y donde queda a la vista aunque haya alguien delante.
- */
-const FILAS_AVISO = Object.freeze([5, 6]);
+// Las alturas van EN METROS y se convierten a filas con `CELDA`, nunca escritas
+// como índice de fila. Al bajar la celda de 0,2 a 0,1 (#551) todas las medidas
+// escritas en filas se partieron por la mitad sin que nada fallara: la franja de
+// aviso se fue a la altura de la rodilla y la puerta se quedó lisa por arriba.
+// Un índice de fila no dice a qué altura está; un metro sí.
+const fila = (metros) => Math.round(metros / CELDA);
 
-/** Refuerzos horizontales: bajo y alto, para que la hoja tenga estructura y no
- *  sea un rectángulo con una pegatina en medio. */
-const FILAS_REFUERZO = Object.freeze([2, 11]);
+/** Altura de la mano: donde se marca una esclusa de verdad, y donde la marca
+ *  sigue a la vista aunque haya alguien plantado delante. */
+const AVISO_DESDE = 1.05;
+// 20 cm de franja y no 40: a cuatro filas la alternancia deja de leerse como una
+// banda de peligro y empieza a leerse como una dentadura (se vio en la vista
+// previa). Una franja de aviso es una LÍNEA, y lo que la hace visible es el
+// contraste, no el grosor.
+const AVISO_HASTA = 1.25;
+/** El zócalo de la hoja: la parte que se lleva las patadas y los carros. */
+const ZOCALO = 0.4;
+/** Refuerzos horizontales, para que la hoja tenga estructura y no sea un
+ *  rectángulo con una pegatina en medio. */
+const REFUERZOS = Object.freeze([0.7, 2.3]);
+/** El registro de inspección: un hueco con lamas, entre el aviso y el dintel. */
+const REGISTRO_DESDE = 1.7;
+const REGISTRO_HASTA = 2.2;
+/** Su gemelo liso por debajo de la franja, para que la hoja no tenga todo el
+ *  peso arriba. */
+const PANEL_BAJO_DESDE = 0.55;
+const PANEL_BAJO_HASTA = 0.95;
 
 /**
  * El dibujo de media hoja, en celdas. `[fila][columna]`, fila 0 la del suelo.
@@ -66,37 +83,76 @@ export function rejillaHoja(columnas, filas) {
     if (v < 0 || v >= filas || u < 0 || u >= columnas) return;
     rejilla[v][u] = color;
   };
+  const linea = (v, u0, largo, color) => {
+    for (let u = u0; u < u0 + largo; u += 1) poner(v, u, color);
+  };
+  const columna = (u, v0, alto, color) => {
+    for (let v = v0; v < v0 + alto; v += 1) poner(v, u, color);
+  };
+  const rect = (v0, u0, ancho, alto, color) => {
+    for (let v = v0; v < v0 + alto; v += 1) linea(v, u0, ancho, color);
+  };
 
-  // 1. Canto superior e inferior: la hoja se cierra contra algo por arriba y por
-  //    abajo, y sin esas dos líneas flota dentro de su propio hueco.
-  for (let u = 0; u < columnas; u += 1) {
-    poner(0, u, MURAL.junta);
-    poner(filas - 1, u, MURAL.junta);
+  // 1. La hoja es un BULTO, no un rectángulo pintado: bisel completo, con la luz
+  //    arriba y a la izquierda igual que las planchas del muro (ver
+  //    `panelBiselado`). Es lo que hace que se lea como una plancha que corre por
+  //    delante de la pared y no como un agujero más oscuro.
+  columna(0, 0, filas, MURAL.claro);
+  columna(columnas - 1, 0, filas, MURAL.sombra);
+  linea(filas - 1, 0, columnas, MURAL.claro);
+  linea(0, 0, columnas, MURAL.junta);
+
+  // 2. Zócalo: la parte que se lleva las patadas y los carros. En una puerta de
+  //    servicio es siempre otra chapa, más gruesa y sin nada encima.
+  rect(1, 1, columnas - 2, fila(ZOCALO), MURAL.sombra);
+  linea(fila(ZOCALO) + 1, 1, columnas - 2, MURAL.medio);
+
+  // 3. Refuerzos horizontales.
+  for (const metros of REFUERZOS) {
+    const v = fila(metros);
+    if (v <= 1 || v >= filas - 2) continue;
+    linea(v, 1, columnas - 2, MURAL.medio);
+    linea(v - 1, 1, columnas - 2, MURAL.junta); // su sombra: le da grosor
   }
 
-  // 2. Refuerzos. Solo si hay alto para que se distingan del canto.
-  for (const v of FILAS_REFUERZO) {
-    if (v <= 0 || v >= filas - 1) continue;
-    for (let u = 0; u < columnas; u += 1) poner(v, u, MURAL.conducto);
-  }
+  // 4. Registro de inspección: un hueco con lamas. Lo que hay detrás no se
+  //    declara, así que no miente sobre nada (#526) — y es el rasgo que premia
+  //    acercarse a una puerta, que antes era lisa de la franja para arriba.
+  const hueco = (desde, hasta, conLamas) => {
+    const v0 = fila(desde);
+    const v1 = fila(hasta);
+    if (columnas < 5 || v1 >= filas - 2 || v1 - v0 < 3) return;
+    rect(v0, 2, columnas - 4, v1 - v0, MURAL.hueco);
+    linea(v1 - 1, 2, columnas - 4, MURAL.sombra); // en un hueco la sombra va ARRIBA
+    linea(v0, 2, columnas - 4, MURAL.claro);
+    if (conLamas) for (let v = v0 + 1; v < v1 - 1; v += 2) linea(v, 3, columnas - 6, MURAL.medio);
+  };
+  hueco(REGISTRO_DESDE, REGISTRO_HASTA, true);
+  // Y su gemelo por debajo de la franja, liso: una hoja con todo el peso en la
+  // mitad de arriba se lee descompensada, y el sitio para equilibrarla es donde
+  // no hay nada que decir — así que va vacío, no con otro registro inventado.
+  hueco(PANEL_BAJO_DESDE, PANEL_BAJO_HASTA, false);
 
-  // 3. Franja de aviso a bandas alternas: es lo que se lee de lejos, y alternar
-  //    celda sí celda no funciona igual con tres columnas que con veinte —que es
-  //    justo lo que no consigue un galón diagonal en una hoja estrecha.
-  FILAS_AVISO.forEach((v, indice) => {
-    if (v <= 0 || v >= filas - 1) return;
-    for (let u = 0; u < columnas; u += 1) {
-      // El desfase por fila hace que las dos filas juntas se lean como bandas
-      // inclinadas, sin necesitar ancho para dibujar una diagonal de verdad.
-      poner(v, u, (u + indice) % 2 === 0 ? AMBAR_SENAL : MURAL.junta);
+  // 5. Franja de aviso a bandas alternas: lo que se lee de lejos. Alternar celda
+  //    sí celda no funciona igual con seis columnas que con veinte, que es justo
+  //    lo que no consigue un galón diagonal en una hoja estrecha.
+  const av0 = fila(AVISO_DESDE);
+  const av1 = fila(AVISO_HASTA);
+  linea(av0 - 1, 1, columnas - 2, MURAL.junta);
+  for (let v = av0; v < av1 && v < filas - 1; v += 1) {
+    for (let u = 1; u < columnas - 1; u += 1) {
+      // El desfase por fila hace que las bandas se lean inclinadas sin dibujar
+      // una diagonal de verdad, que en seis columnas no cabría.
+      poner(v, u, (u + Math.floor((v - av0) / 2)) % 2 === 0 ? AMBAR_SENAL : MURAL.junta);
     }
-  });
+  }
+  linea(av1, 1, columnas - 2, MURAL.brillo);
 
-  // 4. Remaches en las cuatro esquinas de la hoja. El detalle que aparece al
+  // 6. Remaches por el canto de la hoja, cada 40 cm. El detalle que aparece al
   //    acercarse, cuando los refuerzos ya son demasiado grandes para mirarlos.
-  for (const v of [1, filas - 2]) {
-    poner(v, 0, MURAL.remache);
-    poner(v, columnas - 1, MURAL.remache);
+  for (let v = fila(ZOCALO) + 3; v < filas - 2; v += 4) {
+    poner(v, 1, MURAL.remache);
+    poner(v, columnas - 2, MURAL.remache);
   }
 
   return rejilla;
@@ -117,9 +173,12 @@ export function piezasPielHoja({ y0, y1, alongX }, hoja) {
   const largo = alongX ? hoja.ancho : hoja.profundidad;
   const columnas = Math.floor(largo / CELDA);
   const filas = Math.floor((y1 - y0) / CELDA);
-  // Una hoja de menos de dos celdas en cualquier eje no admite dibujo: se queda
-  // lisa en vez de recibir un canto que sería toda ella.
-  if (columnas < 2 || filas < 4) return [];
+  // Una hoja demasiado pequeña no admite el dibujo y se queda lisa, en vez de
+  // recibir un bisel que sería toda ella. Los mínimos están en CELDAS pero
+  // significan 40 cm de ancho y 1,2 m de alto: por debajo de eso no caben ni el
+  // zócalo ni la franja de aviso, y lo que saldría no sería una puerta pequeña
+  // sino un trozo de puerta.
+  if (columnas < 4 || filas < 12) return [];
 
   const rejilla = rejillaHoja(columnas, filas);
   // Las dos caras planas de la hoja. `eje` es el que RECORRE la hoja, igual que

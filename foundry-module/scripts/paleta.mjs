@@ -261,11 +261,30 @@ export const SECCION = Object.freeze({
 export const AMBAR_SENAL = "#ffb703";
 
 export const MURAL = Object.freeze({
-  junta: "#2c343e", // la línea entre dos planchas: casco en sombra
-  remache: "#596573", // el punto que coge la luz en el cruce de juntas
-  conducto: "#4a5461", // el tubo de servicio que cruza por encima de la cabeza
-  abrazadera: "#333c47", // lo que lo sujeta al mamparo cada metro y medio
-  parche: "#454f5b", // chapa remachada encima: la misma plancha, más nueva
+  // --- La rampa. Seis pasos de un mismo metal, del brillo al fondo de un
+  // hueco. Es lo que convierte un dibujo plano en chapa con VOLUMEN: un panel
+  // no es un rectángulo de color, es un canto claro arriba, una base que es el
+  // muro y un canto oscuro abajo. Sin rampa no hay bisel, y sin bisel el mural
+  // es un plano con rayas por muy denso que se ponga (#551).
+  //
+  // Seis y no tres: en la época que se toma de referencia —Neo Geo, PSX— las
+  // naves no eran pobres, eran de paleta CORTA y muy bien repartida, y lo que
+  // hace ese trabajo son los pasos intermedios. Con tres, el bisel se lee como
+  // un borde dibujado; con seis, como luz.
+  brillo: "#8492a3", // el filo que da a la luz: solo cantos, nunca superficies
+  claro: "#657386", // cara iluminada de un relieve
+  medio: "#4a5462", // metal a media luz — el tono de las piezas montadas
+  sombra: "#333b46", // cara en sombra de un relieve
+  junta: "#252c35", // la línea entre dos planchas
+  hueco: "#161b22", // el fondo de una rendija o de un hueco recortado
+
+  // --- Los papeles. Nombres de lo que se dibuja, no de tonos, para que el
+  // dibujo se lea al escribirlo y se pueda recolorear sin tocar el motivo.
+  remache: "#8492a3", // el punto que coge la luz
+  conducto: "#4a5462", // el tubo de servicio
+  abrazadera: "#333b46", // lo que lo sujeta al mamparo
+  parche: "#4a5462", // chapa remachada encima: la misma plancha, más nueva
+  ventilacion: "#161b22", // las lamas de una rejilla: hueco, no pieza
 });
 
 /**

@@ -290,6 +290,21 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     NO es el color del muro y funde cada tirada horizontal en un polígono, con tope duro por tramo:
     el presupuesto medido (20–86 → 122–299 polígonos por fotograma, 1,3 ms la peor sala) está en la
     cabecera del módulo, y es lo que hay que volver a medir antes de subir la densidad.
+    La **misma rejilla** viste puertas (`scripts/nave-piel-puerta.mjs`) y objetos
+    (`scripts/nave-piel-objeto.mjs`), #550 — y esa es toda la razón de que sean módulos y no copias:
+    si cada superficie eligiera su tamaño de detalle, la sala parecería montada con piezas de tres
+    maquetas. Comparten el primitivo de #548 (`chapaEnCara`/`chapasDeRejilla`, donde vive el tope,
+    porque un tope que solo cumple uno de los tres consumidores no es un tope) y se separan en lo que
+    de verdad difiere: la hoja de una puerta es ESTRECHA —media hoja de 1,2 m son tres celdas, así
+    que el dibujo se declara fila a fila y ninguna decisión depende de tener anchura—, va por sus dos
+    caras y lleva el ámbar de `AMBAR_SENAL`, que ahí no adorna sino que repite lo que ya dice el marco
+    de esa puerta. Tres reglas propias: **no todo objeto lleva piel** (`MINIMO_LADO`/`MINIMO_ALTO`, o
+    los 126 muebles de la cantina se multiplican por cuatro caras para poner dos píxeles en algo que
+    mide dos píxeles); **la piel es chapa remachada, o sea un MATERIAL**, así que la cantina la apaga
+    para sus muebles —una barra de madera con remaches de casco no es un detalle de más, es un
+    material equivocado— y cualquier mueble puede renunciar a ella con `piel: false` sin sacar a la
+    sala entera del sistema; y **sin semilla**, al revés que el muro: una puerta y un armario son
+    piezas de serie, y sortear sus remaches los convierte en artesanía.
     Un **minimapa** (`scripts/nave-minimapa.mjs` + `nave-minimapa-lienzo.mjs`) dice dónde estás,
     reusando el pintor de la sección. Va `aria-hidden` porque el rótulo de sala ya da la lectura en
     texto. **Una sola planta para todo el módulo** (#542): `nave-planta-phobos.celdasConCantina()` es

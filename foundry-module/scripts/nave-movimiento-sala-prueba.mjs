@@ -48,10 +48,12 @@ const SALA_A = crearSalaCaja({
     { x: 6.2, z: 6.2, ancho: 0.8, profundidad: 0.8 },
   ],
   puertas: [{ rect: PUERTA_A_HACIA_B }],
-  // Sin piel de casco (#548): estas dos salas son un banco de pruebas, y un
-  // test que cuente polígonos o busque una cara concreta no debería tener que
-  // colar antes unas decenas de chapas decorativas.
+  // Sin piel de casco (#548/#550) en muros, puertas ni objetos: estas dos salas
+  // son un banco de pruebas, y un test que cuente polígonos o busque una cara
+  // concreta no debería tener que colar antes unas decenas de chapas decorativas.
   muralPixel: false,
+  pielPuertas: false,
+  pielObjetos: false,
 });
 export const PLANTA_PRUEBA = SALA_A.planta;
 export const componerSalaPrueba = SALA_A.componer;
@@ -59,7 +61,7 @@ export const componerSalaPrueba = SALA_A.componer;
 /** Sala B: más pequeña y sin columnas — basta para demostrar que la costura
  *  entre estancias funciona con geometrías distintas de verdad, no con una
  *  copia de la misma sala. */
-const SALA_B = crearSalaCaja({ ancho: 6, profundidad: 6, puertas: [{ rect: PUERTA_B_HACIA_A }], muralPixel: false });
+const SALA_B = crearSalaCaja({ ancho: 6, profundidad: 6, puertas: [{ rect: PUERTA_B_HACIA_A }], muralPixel: false, pielPuertas: false, pielObjetos: false });
 export const PLANTA_PRUEBA_B = SALA_B.planta;
 export const componerSalaPruebaB = SALA_B.componer;
 

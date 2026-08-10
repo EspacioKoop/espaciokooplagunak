@@ -246,7 +246,20 @@ export const SECCION = Object.freeze({
  * verde azulado de «esto se acciona»—: esos dos colores ya SIGNIFICAN en esta
  * misma sala (marco de puerta, ventana, consola), y repetirlos como adorno de
  * pared gastaría la única señal que la tripulación tiene para encontrarlos.
+ *
+ * La piel de una PUERTA (#550) sí lleva el ámbar, y no es una excepción a lo
+ * anterior sino su consecuencia: allí el ámbar no adorna, dice lo mismo que ya
+ * dice el marco de esa puerta. Lo toma de `AMBAR_SENAL`, no como tono nuevo.
  */
+/**
+ * El ámbar de señalización del módulo: «esto se acciona» o «cuidado aquí». Vivía
+ * como literal repetido en `nave-sala-caja.mjs` (marco de puerta y franja de la
+ * hoja) y se recoge aquí al llegar el tercer consumidor (#550, la piel de las
+ * puertas), que es justo cuando un literal repetido deja de ser un literal y
+ * pasa a ser una decisión de color sin dueño.
+ */
+export const AMBAR_SENAL = "#ffb703";
+
 export const MURAL = Object.freeze({
   junta: "#2c343e", // la línea entre dos planchas: casco en sombra
   remache: "#596573", // el punto que coge la luz en el cruce de juntas

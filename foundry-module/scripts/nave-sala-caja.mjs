@@ -28,12 +28,14 @@
 // Frontera de arte (#351): no declara ni un color propio — todos vienen de
 // `paleta.mjs` (`SECCION`, ya usada para materiales genéricos de nave).
 
-import { SECCION } from "./paleta.mjs";
+import { AMBAR_SENAL, SECCION } from "./paleta.mjs";
 import { componerEscena } from "./retro3d.mjs";
 import { resolverCamara } from "./nave-camara.mjs";
 import { campoEstelar, proyectarEstrellas } from "./retro3d-estrellas.mjs";
 import { piezasDeVentana } from "./nave-ventana-espacio.mjs";
 import { piezasMuralPixel } from "./nave-mural-pixel.mjs";
+import { piezasPielHoja } from "./nave-piel-puerta.mjs";
+import { piezasPielColumna, piezasPielObjeto } from "./nave-piel-objeto.mjs";
 import { crearPlanta } from "./nave-movimiento.mjs";
 import { poligonosOtrosJugadores } from "./nave-avatares-render.mjs";
 
@@ -82,7 +84,7 @@ const GROSOR_MURO = 0.4;
 
 /** Tonos del detalle de la hoja. Del casco, no colores nuevos (#351). */
 const DETALLE_HOJA = SECCION.mamparo;
-const FRANJA_HOJA = "#ffb703";
+const FRANJA_HOJA = AMBAR_SENAL;
 
 /** Altura del hueco de una puerta: por debajo se puede cruzar, por encima
  *  sigue habiendo muro (el dintel). 2.8 y no 2.2 (QA: "parece gigante"): al
@@ -498,7 +500,7 @@ export function crearSalaCaja({
   // un boquete en el muro, sin que el motor sepa dibujar transparencias.
   colorMarcoVentana = SECCION.entrable,
   // Ámbar de señalización: el mismo que ya usa el módulo para «esto se acciona».
-  colorMarcoPuerta = "#ffb703",
+  colorMarcoPuerta = AMBAR_SENAL,
   semillaCielo = 20260731,
   cantidadEstrellas = 90,
   // Pixelart de casco sobre los muros (#548). Encendido de serie: un muro plano
@@ -507,6 +509,12 @@ export function crearSalaCaja({
   // al leer qué está midiendo el test— y no como preferencia de estilo.
   muralPixel = true,
   semillaMural = 20260810,
+  // Piel de puertas y objetos (#550). Van con su propio interruptor y no con el
+  // del mural porque son decisiones separables: una sala puede querer sus muros
+  // desnudos y sus puertas marcadas. Ambas encendidas de serie, y ambas apagadas
+  // en las salas de prueba por el mismo motivo que el mural.
+  pielPuertas = true,
+  pielObjetos = true,
 }) {
   const muros = [
     { x: -GROSOR_MURO, z: -GROSOR_MURO, ancho: ancho + GROSOR_MURO * 2, profundidad: GROSOR_MURO },
@@ -546,6 +554,18 @@ export function crearSalaCaja({
     ...bandas.map((malla) => ({ malla, color: colorMuro })),
     ...columnas.map((rect) => ({ malla: rectAColumna(rect, ALTURA), color: colorColumna })),
     ...mobiliario.map(({ centro, medidas, color }) => ({ malla: caja(centro, medidas), color })),
+    // Piel de los objetos (#550). Va DESPUÉS de las cajas que viste, y solo la
+    // reciben los que son arquitectura de la sala: `piezasPielObjeto` filtra por
+    // tamaño, así que las 126 piezas de mobiliario de la cantina no se convierten
+    // en 126 objetos vestidos — pasan las pocas que se ven de cerca.
+    ...(pielObjetos
+      ? [
+          ...columnas.flatMap((rect) => piezasPielColumna(rect, ALTURA)),
+          ...mobiliario
+            .filter((pieza) => pieza.piel !== false)
+            .flatMap(({ centro, medidas }) => piezasPielObjeto({ centro, medidas })),
+        ]
+      : []),
     ...rodapie(ancho, profundidad),
     { malla: caja([ancho / 2, -0.05, profundidad / 2], [ancho, 0.1, profundidad]), color: SECCION.sala },
     { malla: caja([ancho / 2, ALTURA + 0.05, profundidad / 2], [ancho, 0.1, profundidad]), color: SECCION.mamparo },
@@ -586,8 +606,13 @@ export function crearSalaCaja({
       const rects = rectsHojaPuerta(puerta, fraccion);
       return [
         ...rects.map((rect) => ({ malla: rectAColumnaEntre(rect, puerta.y0, puerta.y1), color: colorMuro })),
-        // El detalle sale de los MISMOS rects, así que viaja con la hoja al abrirse.
-        ...rects.flatMap((rect) => piezasDetalleHoja(puerta, rect)),
+        // El detalle sale de los MISMOS rects, así que viaja con la hoja al
+        // abrirse. En rejilla (#550) para que el detalle de la puerta mida lo
+        // mismo que el del muro que la rodea; sin piel, la hoja se queda con las
+        // bandas lisas de siempre, que siguen siendo mejor que una hoja pelada.
+        ...rects.flatMap((rect) =>
+          pielPuertas ? piezasPielHoja(puerta, rect) : piezasDetalleHoja(puerta, rect),
+        ),
       ];
     });
 

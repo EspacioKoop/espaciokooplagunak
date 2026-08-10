@@ -25,9 +25,10 @@
 //
 // Medido sobre el catálogo real (2026-08-10, las catorce estancias, 480x270,
 // época psx): los polígonos VISIBLES por fotograma pasan de 20–86 a 122–299, y
-// componer la peor sala (la cantina) cuesta 1,3 ms. Cabe de sobra, y es la cifra
-// que hay que volver a medir antes de subir la densidad del mural — no la
-// sensación de que «unos rectángulos más dan igual».
+// componer la peor sala (la cantina) cuesta 1,3 ms. Con la piel de puertas y
+// objetos encima (#550) el techo queda en 327 y 1,45 ms. Cabe de sobra, y es la
+// cifra que hay que volver a medir antes de subir la densidad de cualquiera de
+// las tres — no la sensación de que «unos rectángulos más dan igual».
 //
 // NO TOCA LA COLISIÓN. Son chapas de grosor cero apoyadas sobre la cara interior
 // del muro, `SALIENTE` metros por delante para no pelearse con ella en el
@@ -216,11 +217,24 @@ export function fundirTiradas(rejilla) {
   return tiradas;
 }
 
-/** Un rectángulo de mural como cara suelta, con el mismo sentido de giro que la
- *  cara del muro sobre la que se apoya (antihorario vista desde la sala), para
- *  que `componerEscena` no la descarte de espaldas ni la ilumine al revés. */
-function chapa({ eje, plano, sentido }, u0, u1, v0, v1) {
-  const p = plano + SALIENTE * sentido;
+/**
+ * Un rectángulo de piel como cara suelta, con el mismo sentido de giro que la
+ * cara sobre la que se apoya (antihorario vista desde donde se mira), para que
+ * `componerEscena` no la descarte de espaldas ni la ilumine al revés.
+ *
+ * Se EXPORTA (#550) porque la piel de una puerta y la de un objeto se apoyan en
+ * caras exactamente igual de planas y alineadas a ejes que la de un muro: lo que
+ * cambia entre las tres es QUÉ se dibuja, no cómo se apoya una chapa. Con esto
+ * copiado, el signo invertido del eje `z` que se comenta abajo se habría copiado
+ * mal en dos sitios más.
+ *
+ * @param {{eje:"x"|"z", plano:number, sentido:1|-1}} cara
+ * @param {number} u0 @param {number} u1 a lo largo de la cara, en metros
+ * @param {number} v0 @param {number} v1 en altura, en metros
+ * @param {number} saliente cuánto se despega del plano
+ */
+export function chapaEnCara({ eje, plano, sentido }, u0, u1, v0, v1, saliente = SALIENTE) {
+  const p = plano + saliente * sentido;
   const punto = eje === "x" ? (u, v) => [u, v, p] : (u, v) => [p, v, u];
   // Cuál de los dos giros toca sale de las caras equivalentes de `caja` en
   // `nave-sala-caja.mjs` (frente/fondo para un muro largo en x, izquierda/
@@ -254,16 +268,36 @@ export function piezasMuralPixel({ rect, sala, altura, semilla = 1 }) {
   // mismo largo no pueden salir con los parches en el mismo sitio, o la sala se
   // lee como una habitación de espejos.
   const semillaTramo = (semilla ^ Math.round(rect.x * 97) ^ Math.round(rect.z * 8191)) >>> 0;
-  const tiradas = fundirTiradas(rejillaMural(columnas, filas, semillaTramo));
+  return chapasDeRejilla(cara, rejillaMural(columnas, filas, semillaTramo));
+}
 
-  return tiradas.slice(0, TOPE_PIEZAS).map(({ v, u0, ancho, color }) => ({
-    malla: chapa(
-      cara,
-      cara.u0 + u0 * CELDA,
-      cara.u0 + (u0 + ancho) * CELDA,
-      v * CELDA,
-      (v + 1) * CELDA,
-    ),
-    color,
-  }));
+/**
+ * Traduce una rejilla de celdas a piezas sobre una cara: funde, corta por el
+ * tope y coloca cada tirada en su sitio.
+ *
+ * Es la mitad de abajo de `piezasMuralPixel`, exportada para que puertas y
+ * objetos (#550) no la repitan — es donde vive el tope de presupuesto, y un tope
+ * que solo cumple uno de los tres consumidores no es un tope.
+ *
+ * @param {{eje:"x"|"z", plano:number, sentido:1|-1, u0:number}} cara
+ * @param {(string|null)[][]} rejilla
+ * @param {{base?:number, celda?:number, saliente?:number, tope?:number}} opciones
+ *   `base` es la altura del suelo de la rejilla (0 en un muro, `y0` en la hoja
+ *   de una puerta, la cara inferior en un objeto).
+ */
+export function chapasDeRejilla(cara, rejilla, opciones = {}) {
+  const { base = 0, celda = CELDA, saliente = SALIENTE, tope = TOPE_PIEZAS } = opciones;
+  return fundirTiradas(rejilla)
+    .slice(0, tope)
+    .map(({ v, u0, ancho, color }) => ({
+      malla: chapaEnCara(
+        cara,
+        cara.u0 + u0 * celda,
+        cara.u0 + (u0 + ancho) * celda,
+        base + v * celda,
+        base + (v + 1) * celda,
+        saliente,
+      ),
+      color,
+    }));
 }

@@ -20,6 +20,7 @@ import { pintarVisorPiloto } from "./visor-piloto-lienzo.mjs";
 import { CASCO_POR_DEFECTO, mallaDesdeCasco } from "./retro3d.mjs";
 import { componerCascoPorDano } from "./casco-dano.mjs";
 import { PIXEL } from "./paleta.mjs";
+import { anadirHerramienta } from "./control-escena.mjs";
 
 let configuredModuleId = null;
 let workspaceApp = null;
@@ -77,16 +78,7 @@ export function addWorkspaceControl(controls) {
     onClick: () => openWorkspaceApp(),
   };
 
-  if (Array.isArray(controls)) {
-    const grupo = controls.find?.((group) => group.name === "lagunak");
-    if (grupo) grupo.tools.push(tool);
-    return;
-  }
-
-  const group = controls?.lagunak;
-  if (group?.tools && !Array.isArray(group.tools)) {
-    group.tools[tool.name] = { ...tool, order: Object.keys(group.tools).length, onChange: tool.onClick };
-  }
+  anadirHerramienta(controls, tool);
 }
 
 export function openWorkspaceApp(previewStation = null) {

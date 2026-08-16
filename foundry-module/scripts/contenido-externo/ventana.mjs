@@ -21,6 +21,7 @@
 import { crearAdaptadorContenido } from "./adaptador.mjs";
 import { crearProveedorFoundry, sistemaCompatible } from "./proveedor-foundry.mjs";
 import { inventarioContenido, titularInventario } from "./inventario.mjs";
+import { anadirHerramienta } from "../control-escena.mjs";
 
 let moduloConfigurado = null;
 let ventana = null;
@@ -79,16 +80,7 @@ export function addContenidoExternoControl(controls) {
     onClick: () => abrirContenidoExterno(),
   };
 
-  if (Array.isArray(controls)) {
-    const grupo = controls.find?.((group) => group.name === "lagunak");
-    if (grupo) grupo.tools.push(tool);
-    return;
-  }
-
-  const group = controls?.lagunak;
-  if (group?.tools && !Array.isArray(group.tools)) {
-    group.tools[tool.name] = { ...tool, order: Object.keys(group.tools).length, onChange: tool.onClick };
-  }
+  anadirHerramienta(controls, tool);
 }
 
 export function abrirContenidoExterno() {

@@ -5,6 +5,7 @@ import {
   STATION_ASSIGNMENT_ERRORS,
 } from "./station-assignment.mjs";
 import { caracteristicasDeActor } from "./requisitos-puesto.mjs";
+import { anadirHerramienta } from "./control-escena.mjs";
 
 let stationApp = null;
 let configuredModuleId = null;
@@ -42,16 +43,7 @@ export function addStationControl(controls) {
     onClick: () => openStationApp(),
   };
 
-  if (Array.isArray(controls)) {
-    const grupo = controls.find?.((group) => group.name === "lagunak");
-    if (grupo) grupo.tools.push(tool);
-    return;
-  }
-
-  const group = controls?.lagunak;
-  if (group?.tools && !Array.isArray(group.tools)) {
-    group.tools[tool.name] = { ...tool, order: Object.keys(group.tools).length, onChange: tool.onClick };
-  }
+  anadirHerramienta(controls, tool);
 }
 
 export function openStationApp() {

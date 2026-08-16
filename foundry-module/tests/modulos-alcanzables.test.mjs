@@ -58,15 +58,6 @@ const HUERFANOS_DECLARADOS = Object.freeze({
       "es la propiedad que se le exige — el día que se cuele en el catálogo de la " +
       "nave real, las salas 'a' y 'b' aparecerían en la partida.",
   },
-  "mapa-lote.mjs": {
-    cimiento: false,
-    issue: 536,
-    motivo:
-      "Regla de lote a medio llegar del mapa (#276, paso 0). `consola-caliente-poll.mjs` " +
-      "la cita en un comentario pero NO la importa: reimplementó el criterio por su " +
-      "cuenta al fusionar las cuatro factorías. Hay dos copias de la misma regla y " +
-      "solo una corre.",
-  },
 });
 
 /** Recorre `scripts/` y devuelve rutas relativas con separador POSIX. */

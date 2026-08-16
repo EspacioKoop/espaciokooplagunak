@@ -35,7 +35,7 @@
 // Frontera de arte (#351): no declara ni un color. Todos entran de `paleta.mjs`.
 
 import { PIXEL } from "./paleta.mjs";
-import { componerEscena, mallaDesdeCasco, CASCO_POR_DEFECTO } from "./retro3d.mjs";
+import { componerEscena, fundirEscenas, mallaDesdeCasco, CASCO_POR_DEFECTO } from "./retro3d.mjs";
 import { campoEstelar, proyectarEstrellas } from "./retro3d-estrellas.mjs";
 import { colorFaccion } from "./ventana-nave.mjs";
 
@@ -219,12 +219,11 @@ export function componerVisorPiloto(sensores, opciones = {}) {
     partes.push(componerEscena(malla, { ...comun, color, posicion, yaw: 0, pitch: 0 }));
   }
 
-  // Fundido y reordenado global, por lo mismo que en la cantina: el orden por
-  // pintor no es componible, y dos listas correctas concatenadas dan una lista
-  // incorrecta en cuanto dos contactos se solapan.
-  const poligonos = partes
-    .flatMap((parte) => parte.poligonos)
-    .sort((a, b) => b.profundidad - a.profundidad);
+  // Un solo orden de pintor global para todas las piezas (`fundirEscenas`,
+  // #510): concatenar dos listas ya ordenadas da una lista incorrecta en cuanto
+  // dos piezas se solapan, y hasta #510 cada consumidor repetía este mismo
+  // fundido a mano.
+  const { poligonos } = fundirEscenas(partes);
 
   // El cielo va detrás de todo y NO gira con el rumbo por ahora: son estrellas
   // fijas de fondo, no una lectura. Girarlas con el morro sugeriría que dicen

@@ -39,7 +39,21 @@ export const ERRORES = Object.freeze({
   MANO_TERMINADA: "mano_terminada",
 });
 
-const LIMITE_PLANTADO_BANCA = 17;
+/**
+ * Reglas de la casa que este motor APLICA, exportadas para que quien las
+ * escriba en pantalla las lea de aquí (#553).
+ *
+ * Un cartel de reglas escrito a mano al lado del tapete es peor que no tener
+ * cartel: no falla, se desincroniza — sigue diciendo cómo se jugaba antes del
+ * último cambio de motor, y nadie se entera hasta que alguien pierde una mano
+ * por creérselo. Con las constantes exportadas, el cartel no puede divergir del
+ * juego y hay un test que lo sujeta.
+ */
+export const LIMITE_PLANTADO_BANCA = 17;
+/** Lo que paga un blackjack sobre la apuesta, redondeando hacia abajo. */
+export const PAGO_BLACKJACK = 1.5;
+/** Con cuántas cartas se puede doblar: solo con la mano de salida. */
+export const CARTAS_PARA_DOBLAR = 2;
 
 // ---- Valor de cartas --------------------------------------------------------
 
@@ -211,7 +225,8 @@ export function accionesPermitidas(estado, userId) {
   const jugador = estado.jugadores[estado.turnoIndice];
   if (jugador.userId !== userId) return [];
   const acciones = ["pedir", "plantarse"];
-  const puedeDoblar = jugador.cartas.length === 2 && jugador.fichas >= jugador.apuesta * 2;
+  const puedeDoblar =
+    jugador.cartas.length === CARTAS_PARA_DOBLAR && jugador.fichas >= jugador.apuesta * 2;
   if (puedeDoblar) acciones.push("doblar");
   return acciones;
 }
@@ -333,7 +348,7 @@ function calcularResultado(estado) {
       ganancia = 0;
     } else if (jugador.motivo === "blackjack") {
       desenlace = "blackjack";
-      ganancia = Math.floor(jugador.apuesta * 1.5);
+      ganancia = Math.floor(jugador.apuesta * PAGO_BLACKJACK);
     } else if (estado.banca.blackjackInicial) {
       desenlace = "pierde";
       ganancia = -jugador.apuesta;

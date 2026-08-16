@@ -2,7 +2,7 @@
 // (#419). Este módulo es puro: declara dónde vive cada sistema y compone las
 // caras mediante el motor 3D existente, sin tocar Canvas ni Foundry.
 
-import { componerEscena } from "./retro3d.mjs";
+import { componerEscena, fundirEscenas } from "./retro3d.mjs";
 import { FACCIONES, PIXEL, SISTEMA } from "./paleta.mjs";
 
 /**
@@ -100,6 +100,7 @@ export function componerCascoPorDano(malla, sistemas, opciones = {}) {
     poligonos.push(...escena.poligonos.map((poligono) => ({ ...poligono, region })));
   }
 
-  poligonos.sort((a, b) => b.profundidad - a.profundidad);
-  return { salud, poligonos };
+  // `fundirEscenas` (#510) sobre una lista suelta: los polígonos ya llevan su
+  // `region` colgada y el orden global es lo único que falta.
+  return { salud, poligonos: fundirEscenas([poligonos]).poligonos };
 }

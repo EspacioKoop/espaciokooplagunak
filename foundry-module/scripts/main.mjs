@@ -120,6 +120,7 @@ import {
   siguienteOrden,
 } from "./musica-mando.mjs";
 import { crearReproductor } from "./musica-reproductor.mjs";
+import { crearGrupo } from "./control-escena.mjs";
 
 registerStationFeature(MODULE_ID);
 registerAvatarFeature(MODULE_ID);
@@ -831,7 +832,11 @@ async function revokePrivilegedBridgeAccess() {
  * Rama v11/v12: array de grupos con `tools` array; rama v13: record de grupos
  * con `tools` record. En ambas, el grupo usa la capa "controls" (existe en
  * todas las versiones soportadas) porque sus herramientas son botones puros:
- * activar el grupo no debe tocar ninguna capa de fichas. */
+ * activar el grupo no debe tocar ninguna capa de fichas.
+ *
+ * La bifurcación de forma en sí vive en `control-escena.mjs` (#448), que es
+ * también lo que usan los cinco registradores de más abajo: aquí queda QUÉ
+ * botones hay y quién los ve, no cómo se injertan. */
 Hooks.on("getSceneControlButtons", (controls) => {
   const isGM = Boolean(game.user?.isGM);
 
@@ -917,34 +922,12 @@ Hooks.on("getSceneControlButtons", (controls) => {
     },
   ];
 
-  if (Array.isArray(controls)) {
-    controls.push({
-      name: "lagunak",
-      title: "LAGUNAK.Controles.Grupo",
-      icon: "fa-solid fa-shuttle-space",
-      layer: "controls",
-      visible: true,
-      activeTool,
-      tools,
-    });
-  } else if (controls && typeof controls === "object") {
-    const registro = {};
-    tools.forEach((tool, order) => {
-      registro[tool.name] = { ...tool, order, onChange: tool.onClick };
-    });
-    controls.lagunak = {
-      name: "lagunak",
-      title: "LAGUNAK.Controles.Grupo",
-      icon: "fa-solid fa-shuttle-space",
-      layer: "controls",
-      visible: true,
-      activeTool,
-      order: Object.keys(controls).length,
-      onChange: () => {},
-      onToolChange: () => {},
-      tools: registro,
-    };
-  }
+  crearGrupo(controls, {
+    tools,
+    activeTool,
+    title: "LAGUNAK.Controles.Grupo",
+    icon: "fa-solid fa-shuttle-space",
+  });
 
   // Botones de puesto para TODOS los usuarios, dentro del grupo propio.
   addStationControl(controls);

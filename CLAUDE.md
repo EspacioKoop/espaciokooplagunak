@@ -121,7 +121,17 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
   la activa, `/exec.lua` ejecuta el POST y devuelve su `return` o `{"ERROR": ...}`, y `/get.lua`
   NO está implementado — devuelve el literal `TODO`).
 - `scripts/` — escenarios Lua (`scenario_*.lua`), la API Lua expuesta a misiones en `scripts/api/`,
-  y utilidades reutilizables (`comms_*.lua`, `*_scenario_utility.lua`).
+  y utilidades reutilizables (`comms_*.lua`, `*_scenario_utility.lua`). La **crisis multipuesto**
+  (#484, `lagunak_crisis_scenario_utility.lua`, doc en
+  [`docs/CRISIS_MULTIPUESTO.md`](docs/CRISIS_MULTIPUESTO.md)) es una utilidad, no una parte del
+  escenario 90: el escenario solo despacha el arquetipo `ambush` y avanza las crisis vivas. Su regla
+  de diseño es que la coordinación sea una **cadena** y no cuatro tareas paralelas —comunicaciones
+  sostiene el parlamento, sin el cual el escaneo se borra; sensores identifica al buque trampa entre
+  tres cascos idénticos; armas dispara al correcto y matar a un señuelo es la forma de perder—, y que
+  la necesidad del cuarto puesto no se finja: ingeniería gana la frecuencia de escudos revelada por
+  el escaneo, pero eso depende de un ajuste de servidor que el anfitrión puede apagar, así que no
+  se le cuelga ninguna condición de victoria. No añade ninguna orden nueva al puente ni a la matriz
+  de autoridad: las cuatro que la resuelven ya existían.
 - `script_docs/` — generador de `script_reference.html` (heredado de upstream) con una divergencia
   propia (issue #87): highlight.js va vendorizado en `script_docs/vendor/` y `main.py` lo incrusta
   inline vía la etiqueta `{{inline ...}}` en vez de cargarlo de un CDN sin `integrity` (alertas
@@ -132,6 +142,13 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
   prosa, y la responsabilidad es lo que no se deduce del nombre del archivo.
   - **Orquestación** — `scripts/main.mjs` es un orquestador puro (settings, hooks, scene controls):
     no contiene lógica de dominio. Constantes compartidas en `scripts/lagunak-constantes.mjs`.
+    La barra de escena tiene UN solo injerto (#448): `scripts/control-escena.mjs` es el único sitio
+    que conoce la diferencia de forma entre v11/v12 (arrays, `onClick`) y v13 (records, `order` +
+    `onChange`) — estaba copiada verbatim en cinco registradores más `main.mjs`, que es el número de
+    sitios que habría que arreglar el día que v14 la cambie. `main.mjs` decide QUÉ botones hay y
+    quién los ve; nunca cómo se injertan. Un botón nuevo se añade como entrada de un catálogo de
+    puerta existente (`scripts/puerta-catalogo.mjs`, y `panel-gm.mjs`/`cantina.mjs` como
+    consumidores), no como una herramienta suelta más.
   - **Alcanzabilidad** — `tests/modulos-alcanzables.test.mjs` (#523) recorre el grafo de imports
     desde los `esmodules` que declara `module.json` y falla si algún módulo de `scripts/` queda
     fuera sin estar declarado en su lista `HUERFANOS_DECLARADOS`, con motivo Y número de issue. Un
@@ -141,7 +158,10 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     pasar por alto tres huérfanos al barrido manual de #523. Hay dos categorías y no da igual cuál:
     `cimiento: true` es lo que se espera que siga sin consumidor (el banco de pruebas del andar,
     `catalogo-cosmografico.mjs` a la espera de #213); `cimiento: false` es un hueco conocido con su
-    issue abierto (#526, #536, #537), y la entrada es el registro de que se sabe, no un permiso.
+    issue abierto, y la entrada es el registro de que se sabe, no un permiso — **no una plaza fija**:
+    #526 y #537 se cablearon, #536 se retiró, y hoy no queda ninguna. Que la categoría esté vacía es
+    su estado sano; si vuelve a llenarse, es deuda con fecha, no inventario. No enumeres aquí los
+    huecos vivos: esa lista es `HUERFANOS_DECLARADOS` y se desincroniza en cuanto uno se cierra.
   - **Ventanas** — **Consola caliente del GM** (#276, `docs/CONSOLA_CALIENTE_GM.md`) fusionó las
     cuatro factorías originales (estado de nave y mapa vivo, V1/V2) en una sola ventana con pestañas
     (Estado, Mapa, Encuentros, Previsualización) y UN solo bucle de sondeo y backoff, sustituyendo
@@ -205,12 +225,25 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     del casco es otro lenguaje); música determinista por semilla en
     `scripts/musica-procedural.mjs`. El 3D de consola de los 90 vive en `scripts/retro3d*.mjs`
     (#362): motor puro que devuelve polígonos, pintor de lienzo aparte, y la **época** (PSX o
-    GameCube) como parámetro —rejilla, tonos y niebla— y no como dos módulos. El arte de ficha de
+    GameCube) como parámetro —rejilla, tonos y niebla— y no como dos módulos. La **visibilidad no
+    es un parámetro de época** (#510): quién tapa a quién es una garantía geométrica del motor y
+    vale igual para las dos consolas, así que fundir varias piezas en una escena se hace con
+    `fundirEscenas(...)` y no con el `flatMap` + `sort` que ocho consumidores copiaban. Ese orden
+    es hoy por centroide de cara y es la deuda viva de #510 —empata entre caras que se tocan, que
+    es el parpadeo que ve QA—; lo ya intentado y descartado (epsilon con orden estable; Newell sin
+    partir caras, que empeora la medida) está escrito en la cabecera de `retro3d.mjs` para no
+    repetirlo por cuarta vez. El arte de ficha de
     naves narrativas (`scripts/ficha-nave.mjs`, con el codificador PNG puro de
     `scripts/png-indexado.mjs`) se genera **solo por clic del GM** y escribe el token prototipo:
     nunca sondea ni sincroniza posición, porque un documento persistente que espeje la simulación
     se queda mintiendo cuando cae el puente (#354).
   - **Minijuegos** — `scripts/minijuegos/` y su enganche en `scripts/minijuegos-wiring.mjs` (#308).
+    La mesa de blackjack (#553) añade una **lectura** aparte de la vista
+    (`minijuegos/blackjack-lectura.mjs`): qué pasa ahora, en qué estado va cada asiento y las reglas
+    de la casa. Es solo PALABRAS —no concede nada, las acciones siguen viniendo del coordinador— y
+    su regla dura es que el cartel de reglas se DERIVA de las constantes del motor
+    (`LIMITE_PLANTADO_BANCA`, `PAGO_BLACKJACK`, `CARTAS_PARA_DOBLAR`), nunca se escribe al lado: un
+    cartel escrito a mano no falla, se desincroniza, y sigue anunciando cómo se jugaba antes.
     `sesion-motor.mjs` es COMÚN a todos —identidad, época, nonces, lobby, espectadores, ausencias—
     y aloja cada juego por su interfaz interna; los verticales son hermanos suyos y no ramas dentro
     de él: `poker-motor.mjs` (#308) y `dados-motor.mjs` (#413, con su dado en 3D retro legible en

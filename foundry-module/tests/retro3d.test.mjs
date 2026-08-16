@@ -48,8 +48,13 @@ test("PSX ajusta los vértices a la rejilla; GameCube no", () => {
 
   assert.equal(AJUSTES_EPOCA.psx.rejilla, 1);
   assert.equal(AJUSTES_EPOCA.gamecube.rejilla, 0);
-  assert.equal(AJUSTES_EPOCA.gamecube.profundidadPorPixel, true, "sí tenía z-buffer");
-  assert.equal(AJUSTES_EPOCA.psx.profundidadPorPixel, false, "y la PSX no");
+  // La visibilidad NO es un parámetro de época (#510): `profundidadPorPixel`
+  // declaraba z-buffer para la GameCube, no lo leía nadie, y quién tapa a quién
+  // lo resuelve hoy `ordenarPorPintor` igual para las dos. Esta guarda impide
+  // que el dato muerto vuelva por la puerta de atrás.
+  for (const epoca of Object.values(AJUSTES_EPOCA)) {
+    assert.ok(!("profundidadPorPixel" in epoca), "la visibilidad no se declara por época");
+  }
 });
 
 test("una época desconocida cae en una válida en vez de romper", () => {

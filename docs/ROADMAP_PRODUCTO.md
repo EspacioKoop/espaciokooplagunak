@@ -194,13 +194,17 @@ qué comportamiento adoptar queda trazada en #512, ver
 #482 (alarmas compartidas por dependencia entre sistemas — **mergeado**, PR
 #494: es dependencia entre sistemas, distinta del nivel de alerta de #338 en
 `nivel-alerta.mjs`), #483 (guardias y relevo — **mergeado**, PR #496) y #484
-(crisis que exijan coordinación entre al menos tres puestos, ya desbloqueado
-porque #462–#465 están en `main`). Antes de declarar la etapa completada deben
+(crisis que exijan coordinación entre al menos tres puestos — **en revisión**,
+PR abierto: el arquetipo `ambush`, la emboscada de ecos, es el caso concreto del
+criterio de salida de la etapa; qué puesto hace qué y por qué es necesario está
+en [`CRISIS_MULTIPUESTO.md`](CRISIS_MULTIPUESTO.md), y su playtest con personas
+sigue siendo #467). Antes de declarar la etapa completada deben
 quedar todos trazados y satisfechos.
 
-**Estado a 2026-08-08**: de los dos grafos de la etapa solo quedan abiertos
-#484 (crisis multi-puesto, diseño de escenario Lua) y los dos que no se pueden
-cerrar escribiendo código — #467 (playtest con 3+ personas) y #512 (decisión de
+**Estado a 2026-08-08**: de los dos grafos de la etapa, #484 está en revisión y
+con eso no quedaría nada más que se cierre escribiendo código. Los otros dos no
+se pueden cerrar así — #467 (playtest con 3+ personas, que puede usar la crisis
+de #484 como su escenario de prueba) y #512 (decisión de
 producto sobre qué comportamiento adoptar para los puestos sin tripulación, que
 #481 dejó trazada al verificar que hoy no hay automatización nativa alguna).
 

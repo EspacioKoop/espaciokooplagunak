@@ -18,8 +18,12 @@
 //   2. Cada pestaña tiene su propio estado de datos (`ok` / `sin-datos` /
 //      `error`), con su propio motivo. Un fallo de una pestaña no toca a
 //      las demás.
-//   3. Un dato que llegó bien SE USA, aunque su compañero de lote fallase
-//      (extiende el criterio ya aplicado en `mapa-lote.mjs`).
+//   3. Un dato que llegó bien SE USA, aunque su compañero de lote fallase. Lo
+//      que no llegó NO se rellena con lo anterior: unos contactos de hace tres
+//      sondeos pintados como si fueran de ahora no se distinguen de los buenos.
+//      La jerarquía tampoco es simétrica — sin `state` no hay centro, y unos
+//      contactos sin nave propia son coordenadas sin origen: por eso `contacts`
+//      declara `dependeDeState` y hereda su error, y no al revés.
 //   4. El backoff es del bucle (lo disparan `healthz`/`state`), nunca de una
 //      pestaña suelta: un `contacts` con hipo no debe frenar el sondeo.
 

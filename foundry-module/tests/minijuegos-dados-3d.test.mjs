@@ -15,6 +15,7 @@ import {
   puntosDeCara,
 } from "../scripts/minijuegos/dados-3d.mjs";
 import { EPOCAS, areaFirmada, componerEscena, transformar } from "../scripts/retro3d.mjs";
+import { afirmarOrdenPorPintor } from "./ayuda-orden-pintor.mjs";
 
 const VALORES = [1, 2, 3, 4, 5, 6];
 
@@ -128,8 +129,7 @@ test("LEGIBILIDAD: se ven los puntos que hay que contar, en cualquier época", (
 
 test("los polígonos salen ordenados de lejos a cerca, listos para pintar", () => {
   const escena = escenaDado({ valor: 5, ancho: 64, alto: 64 });
-  const profundidades = escena.poligonos.map((p) => p.profundidad);
-  assert.deepEqual(profundidades, [...profundidades].sort((a, b) => b - a));
+  afirmarOrdenPorPintor(escena.poligonos, "el dado");
   // Y todos miran a cámara: el motor ya descartó los de espaldas.
   assert.ok(escena.poligonos.every((p) => areaFirmada(p.puntos) > 0));
 });

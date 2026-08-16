@@ -4,7 +4,18 @@
   {{/unless}}
 
   {{#if hayMesa}}
-    <p class="lagunak-mesa-fase" role="status" aria-live="polite">{{faseTexto}}</p>
+    {{!-- LA SITUACIÓN va la primera y no la fase (#553, del QA #449): «lobby» o
+          «turnos» es vocabulario del motor, y lo que hace falta saber al mirar
+          es qué pasa AHORA y si me toca. La fase se queda debajo, en pequeño,
+          para quien depure. --}}
+    <p class="lagunak-mesa-situacion{{#if esTuTurno}} es-tu-turno{{/if}}" role="status" aria-live="polite">{{situacionTexto}}</p>
+    <p class="lagunak-mesa-fase">{{faseTexto}}</p>
+
+    {{#if noPuedesDoblarTexto}}
+      {{!-- Por qué está apagado el botón de doblar. Del QA: no había forma de
+            saber si es la mesa la que no lo permite o son tus fichas. --}}
+      <p class="lagunak-mesa-aviso" role="status">{{noPuedesDoblarTexto}}</p>
+    {{/if}}
 
     {{#if manoCancelada}}
       <p class="lagunak-mesa-aviso" role="status">{{localize "LAGUNAK.Minijuegos.Mesa.ManoCancelada"}}</p>
@@ -67,6 +78,17 @@
     {{#if resultadoTexto}}
       <p class="lagunak-mesa-resultado" role="status">{{resultadoTexto}}</p>
     {{/if}}
+
+    {{!-- El cartel de reglas de la casa. Sale del motor (#553), así que no puede
+          desincronizarse de cómo se juega de verdad. --}}
+    <details class="lagunak-mesa-reglas">
+      <summary>{{localize "LAGUNAK.Blackjack.Mesa.Reglas"}}</summary>
+      <ul>
+        {{#each reglasTexto}}
+          <li>{{this}}</li>
+        {{/each}}
+      </ul>
+    </details>
 
     <div class="lagunak-mesa-acciones">
       {{#each acciones}}

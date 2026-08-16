@@ -11,6 +11,7 @@ import test from "node:test";
 
 import { componerMesa, disco, plazas } from "../scripts/minijuegos/blackjack-3d.mjs";
 import { EPOCAS } from "../scripts/retro3d.mjs";
+import { afirmarOrdenPorPintor } from "./ayuda-orden-pintor.mjs";
 
 test("la banca tapada siempre pinta dos cartas, aunque diga tener más", () => {
   const dosCartas = componerMesa({ banca: { cartas: 2, oculta: true }, jugadores: [] }).poligonos.length;
@@ -66,9 +67,7 @@ test("el orden por pintor es global: lo lejano antes que lo cercano", () => {
     banca: { cartas: 2, oculta: true },
     jugadores: [{ cartas: 3, apuesta: 40 }, { cartas: 2, apuesta: 10 }],
   });
-  for (let i = 1; i < poligonos.length; i += 1) {
-    assert.ok(poligonos[i - 1].profundidad >= poligonos[i].profundidad, `rompe el orden en ${i}`);
-  }
+  afirmarOrdenPorPintor(poligonos, "la mesa de blackjack");
 });
 
 test("la mesa se compone en las dos épocas y aguanta entrada rota", () => {

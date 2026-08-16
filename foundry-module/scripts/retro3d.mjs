@@ -9,10 +9,22 @@
 // aspecto y la diferencia no es nostalgia suelta: la PSX rasterizaba sin coma
 // flotante y sin z-buffer, y de ahí salen sus dos firmas —el temblor de los
 // vértices ajustados a la rejilla y los solapes del orden por pintor—. La
-// GameCube tenía hardware honesto: sin temblor, con profundidad por píxel y más
+// GameCube tenía hardware honesto: sin temblor y más
 // tonos, pero silueta de pocos polígonos. Con la época como parámetro, cada
 // superficie elige: el visor del piloto puede ir sucio y la lámina del GM
 // legible, sin duplicar el motor. Es la misma forma de decidir que `lenguajePara()`.
+//
+// LA VISIBILIDAD NO ES UN PARÁMETRO DE ÉPOCA (#510). Lo fue en el papel: había
+// un `profundidadPorPixel` en `AJUSTES_EPOCA` que declaraba z-buffer para la
+// GameCube y no para la PSX, y que NO LO LEÍA NADIE — dato muerto durante todo
+// #362. Retirado en vez de implementado, y las dos mitades de esa decisión
+// importan. No se implementa porque sobre un `<canvas>` 2D no hay dónde poner
+// un z-buffer por píxel. Y no se declara por época porque quién tapa a quién es
+// una GARANTÍA GEOMÉTRICA del motor y no un efecto (revisión externa de #510):
+// el orden por pintor de más abajo es el mismo para las dos consolas, y lo que
+// sigue cambiando entre ellas es el temblor, los tonos y la niebla, que sí son
+// aspecto. Ese orden es hoy la parte más floja del motor —ver la sección
+// «Orden por pintor», con lo ya intentado— pero es floja IGUAL para las dos.
 //
 // Frontera de arte (#351): esto es lenguaje PIXEL —se repinta con telemetría—,
 // así que rejilla, paleta corta y ni un degradado. Los tonos NO se declaran
@@ -43,9 +55,6 @@ const EPOCA_RESPALDO = "psx";
  *   rasterizaba con enteros y por eso los vértices saltan; a 1 se reproduce
  *   sobre el búfer interno. A 0 no se ajusta nada.
  * - `tonos`: escalones del sombreado. Pocos y duros contra muchos y suaves.
- * - `profundidadPorPixel`: si hay z-buffer. La PSX no lo tenía y ordenaba por
- *   pintor, con los solapes que eso trae; se conserva porque es la mitad de su
- *   aspecto, no un defecto que haya que disimular.
  * - `niebla`: `desde` es la fracción del alcance a partir de la cual empieza a
  *   teñir, y `fuerza` cuánto llega a teñir en el plano lejano. La PSX tenía muy
  *   poca distancia de dibujo y usaba la niebla para que la geometría no
@@ -58,13 +67,11 @@ export const AJUSTES_EPOCA = Object.freeze({
   psx: Object.freeze({
     rejilla: 1,
     tonos: 4,
-    profundidadPorPixel: false,
     niebla: Object.freeze({ desde: 0.45, fuerza: 1 }),
   }),
   gamecube: Object.freeze({
     rejilla: 0,
     tonos: 16,
-    profundidadPorPixel: true,
     niebla: Object.freeze({ desde: 0.75, fuerza: 0.5 }),
   }),
 });
@@ -401,6 +408,139 @@ export function factorNiebla(profundidad, { cerca, lejos, niebla }) {
   return Math.max(0, Math.min(1, t)) * acotar(niebla.fuerza, 0, 1, 1);
 }
 
+// ---- Orden por pintor ------------------------------------------------------
+//
+// El orden es por el CENTROIDE de profundidad de cada cara, y sigue siéndolo.
+// Es la parte más floja del motor y está documentada como tal en #510: dos
+// caras que se tocan tienen centroides casi iguales, y cuál va antes lo decide
+// el tercer decimal. Medido durante el QA de #508/#509, componiendo la cantina
+// caminable dos veces con 0,002 rad de diferencia de yaw —el temblor de estar
+// de pie quieto—, 13 de 81 polígonos cambiaban de sitio en la lista. Eso es lo
+// que QA describe como «se glitchean las texturas».
+//
+// LO QUE YA SE HA PROBADO Y NO VALE, para que no se intente una cuarta vez:
+//
+//  1. Un epsilon con orden estable (#510, revertido). Congela el orden de
+//     declaración de las piezas, que es narrativo y no tiene relación con la
+//     profundidad: cambia un parpadeo que acierta a ratos por un orden fijo que
+//     puede estar mal siempre.
+//  2. El algoritmo de Newell SIN partir caras (#510, descartado antes de
+//     entregarse). Probar cada par en conflicto por geometría —solape de rangos
+//     de profundidad, cajas de pantalla, lados del plano y solape real en
+//     pantalla— y adelantar el que tape, sin el paso de CORTAR la cara cuando
+//     el conflicto es cíclico. Medido sobre 672 encuadres de la cantina
+//     caminable, INTRODUCE una clase de error que el centroide casi no comete:
+//     pares en los que una cara queda enteramente detrás de otra, se solapan en
+//     pantalla y aun así se pinta después (1575 pares con centroide, 6579 con
+//     Newell sin cortes). El motivo es el propio ciclo: al adelantar una cara se
+//     salta por encima de otras que ya estaban resueltas, y sin el corte no hay
+//     forma de deshacer ese conflicto nuevo. Newell es correcto CON el corte;
+//     media implementación de Newell es peor que ninguna.
+//
+// Lo que sí queda de ese intento y se usa: `seSolapanEnPantalla`, que es la
+// pregunta «¿comparten estas dos caras un solo píxel?» —la que separa un
+// desorden que se ve de uno que no—, y la geometría de cámara que ahora viaja
+// con cada polígono (`camara`), sin la cual no se puede decidir nada de esto.
+
+/**
+ * ¿Se solapan de verdad los dos polígonos EN PANTALLA? Eje separador sobre las
+ * normales de las aristas de ambos: si existe una recta que los deja a cada
+ * lado, no comparten ni un píxel y su orden de dibujo da igual.
+ *
+ * Existe para poder hablar del orden por pintor sin confundir dos cosas muy
+ * distintas: que dos caras cambien de sitio en la lista, y que ese cambio se
+ * VEA. Solo lo segundo es un defecto, y separarlas es lo que permitió medir el
+ * intento de Newell de #510 en vez de opinar sobre él.
+ *
+ * Los polígonos que llegan aquí son convexos y con área firmada positiva —caras
+ * convexas recortadas por planos siguen siéndolo, y el motor descarta antes las
+ * de espaldas—, que es lo que este test exige.
+ *
+ * `TOLERANCIA_SOLAPE` está en píxeles y existe por el caso más común de todos:
+ * dos caras que COMPARTEN ARISTA (el lomo y el costado de un casco, dos muros
+ * de una sala en su esquina). Ahí la separación es exactamente cero y sin
+ * margen se leerían como solapadas.
+ */
+const TOLERANCIA_SOLAPE = 1e-6;
+
+export function seSolapanEnPantalla(a, b) {
+  const puntosA = Array.isArray(a?.puntos) ? a.puntos : [];
+  const puntosB = Array.isArray(b?.puntos) ? b.puntos : [];
+  return !hayEjeSeparador(puntosA, puntosB) && !hayEjeSeparador(puntosB, puntosA);
+}
+
+function hayEjeSeparador(puntosA, puntosB) {
+  const n = puntosA.length;
+  if (n < 3 || puntosB.length < 3) return true;
+  for (let i = 0; i < n; i += 1) {
+    const p = puntosA[i];
+    const q = puntosA[(i + 1) % n];
+    // Normal EXTERIOR de la arista, para el sentido de giro que garantiza
+    // `areaFirmada > 0`. Lo de dentro del polígono queda con proyección
+    // negativa, así que un `min` no negativo sobre el otro polígono significa
+    // que está entero fuera de esta arista: eje separador.
+    const ex = q.y - p.y;
+    const ey = p.x - q.x;
+    const largo = Math.hypot(ex, ey);
+    if (!(largo > 0)) continue;
+    let minB = Infinity;
+    for (const v of puntosB) {
+      const d = ((v.x - p.x) * ex + (v.y - p.y) * ey) / largo;
+      if (d < minB) minB = d;
+    }
+    if (minB >= -TOLERANCIA_SOLAPE) return true;
+  }
+  return false;
+}
+
+/** Orden de pintor de una lista de polígonos: primero lo que va debajo. */
+function ordenarPorPintor(poligonos) {
+  return [...poligonos].sort((a, b) => b.profundidad - a.profundidad);
+}
+
+/**
+ * Funde varias escenas en una sola, con UN orden de pintor global.
+ *
+ * Existe porque el orden por pintor NO ES COMPONIBLE —dos listas correctas
+ * concatenadas dan una lista incorrecta en cuanto dos piezas se solapan— y
+ * hasta #510 cada consumidor lo resolvía a mano con el mismo `flatMap` +
+ * `sort` copiado en ocho módulos (cantina, visor del piloto, dados, póker,
+ * blackjack, avatar, sala de la nave, casco dañado). Ocho copias de una regla
+ * que el motor no ofrecía es también la razón de que mejorar esa regla fuera
+ * imposible sin tocar ocho archivos: la primitiva vive aquí para que el día que
+ * el orden mejore (#510) mejore en todas a la vez.
+ *
+ * Acepta escenas (`{poligonos}`) y listas sueltas de polígonos, porque los
+ * avatares de otros jugadores llegan ya como lista. Lo que no tenga polígonos
+ * se ignora en silencio: fundir con una escena que no se pudo componer es
+ * normal —sin telemetría no hay contactos que pintar—, no un error.
+ *
+ * Devuelve una escena con los metadatos de la PRIMERA que los traiga (época,
+ * ancho, alto, lejos): fundir escenas compuestas con cámaras distintas no
+ * tendría sentido geométrico, así que no se intenta reconciliar nada.
+ */
+export function fundirEscenas(escenas) {
+  const partes = Array.isArray(escenas) ? escenas : [];
+  const poligonos = [];
+  let base = null;
+  for (const parte of partes) {
+    if (Array.isArray(parte)) {
+      poligonos.push(...parte);
+      continue;
+    }
+    if (!parte || !Array.isArray(parte.poligonos)) continue;
+    poligonos.push(...parte.poligonos);
+    if (!base) base = parte;
+  }
+  return {
+    epoca: base?.epoca,
+    ancho: base?.ancho,
+    alto: base?.alto,
+    lejos: base?.lejos,
+    poligonos: ordenarPorPintor(poligonos),
+  };
+}
+
 // ---- Escena ----------------------------------------------------------------
 
 /**
@@ -534,13 +674,15 @@ export function componerEscena(malla, opciones = {}) {
       color: niebla > 0 ? mezclar(sombreado, fondo, niebla) : sombreado,
       profundidad,
       niebla,
+      // La geometría de cámara ya recortada viaja con el polígono porque el
+      // orden por pintor la necesita: decidir quién tapa a quién exige el plano
+      // real de la cara, y en pantalla ese plano ya no existe (la perspectiva no
+      // conserva la planaridad en `x,y,z`). Va aquí y no en un canal aparte para
+      // que sobreviva al `flatMap` con el que los consumidores funden escenas.
+      camara: recortada,
     });
   }
 
-  // Orden por pintor: primero lo lejano. La GameCube tenía z-buffer y no lo
-  // necesitaría, pero ordenar igual no le hace daño y deja un solo camino; lo
-  // que cambia de verdad entre épocas es el temblor y los tonos.
-  poligonos.sort((a, b) => b.profundidad - a.profundidad);
   return {
     epoca: EPOCAS.includes(epoca) ? epoca : EPOCA_RESPALDO,
     ancho,
@@ -549,7 +691,10 @@ export function componerEscena(malla, opciones = {}) {
     // distancia necesita saber a partir de dónde dejan de verse, y adivinarlo
     // desde fuera sería duplicar el valor por defecto en dos sitios.
     lejos,
-    poligonos,
+    // Ordenados por el mismo camino que usa `fundirEscenas`: una escena de una
+    // sola malla es el caso de una sola pieza, no un caso aparte, y así el día
+    // que ese orden mejore mejora en los dos sitios.
+    poligonos: ordenarPorPintor(poligonos),
   };
 }
 

@@ -61,13 +61,30 @@ const PLANO_RAIZ = Object.freeze({
   }),
 });
 
-/** La procedencia que se le pone a cada estrella importada. */
-const PROCEDENCIA_HYG = Object.freeze({
-  kind: "cc",
-  source: "HYG Database (AstroNexus)",
-  license: "CC BY-SA-4.0",
-  source_url: "https://codeberg.org/astronexus/hyg",
-});
+/** La versión de HYG que se supone si quien importa no declara otra.
+ *
+ * HYG tiene historial: la documentación identifica **4.x** como CC BY-SA 4.0, y
+ * versiones anteriores llevaban otras condiciones. Por eso la versión viaja
+ * dentro de la procedencia y no solo en la cabeza de quien ejecutó el importador
+ * —un catálogo generado hoy no debe poder confundirse después con otro generado
+ * a partir de una versión distinta, que es justo cuando la licencia deja de ser
+ * la que dice el fichero—. El CSV no declara su propia versión, así que es dato
+ * de quien importa. */
+const VERSION_HYG_POR_DEFECTO = "4.x";
+
+/** La procedencia que se le pone a cada estrella importada.
+ *
+ * La versión va en `source` y no en una clave nueva porque el contrato
+ * cosmográfico fija exactamente las claves de `provenance`: ampliarlo por un
+ * importador sería la cola moviendo al perro. */
+function procedenciaHyg(version) {
+  return Object.freeze({
+    kind: "cc",
+    source: `HYG Database ${version} (AstroNexus)`,
+    license: "CC BY-SA-4.0",
+    source_url: "https://codeberg.org/astronexus/hyg",
+  });
+}
 
 /**
  * Pasa un nombre propio a ID portable.
@@ -189,12 +206,15 @@ function soloRaiz() {
  * Convierte el CSV de HYG en un catálogo cosmográfico.
  *
  * @param {string} csv Contenido del fichero, tal cual lo trae quien juega.
- * @param {{maximo?: number}} opciones `maximo` acota cuántas estrellas entran;
- *   no se puede subir por encima del tope del formato, y bajarlo sirve para
- *   quedarse solo con las más brillantes.
+ * @param {{maximo?: number, versionHyg?: string}} opciones `maximo` acota
+ *   cuántas estrellas entran; no se puede subir por encima del tope del formato,
+ *   y bajarlo sirve para quedarse solo con las más brillantes. `versionHyg`
+ *   queda escrito en la procedencia de cada estrella: es lo que permite saber
+ *   después de qué edición del catálogo salió este atlas.
  * @returns {{format: string, version: number, entries: object[]}}
  */
-export function atlasDesdeHyg(csv, { maximo = MAX_ESTRELLAS } = {}) {
+export function atlasDesdeHyg(csv, { maximo = MAX_ESTRELLAS, versionHyg = VERSION_HYG_POR_DEFECTO } = {}) {
+  const procedencia = procedenciaHyg(textoSeguro(String(versionHyg)) || VERSION_HYG_POR_DEFECTO);
   const lineas = String(csv ?? "").split(/\r?\n/u).filter((l) => l.trim() !== "");
   if (lineas.length < 2) return soloRaiz();
 
@@ -257,7 +277,7 @@ export function atlasDesdeHyg(csv, { maximo = MAX_ESTRELLAS } = {}) {
       name: { es: estrella.propio, en: estrella.propio },
       summary: resumen(estrella),
       continuity: "original",
-      provenance: { ...PROCEDENCIA_HYG },
+      provenance: { ...procedencia },
     });
   }
 

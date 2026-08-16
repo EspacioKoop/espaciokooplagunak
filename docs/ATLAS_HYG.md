@@ -16,6 +16,7 @@ import { atlasDesdeHyg } from "./scripts/atlas-hyg.mjs";
 
 const atlas = atlasDesdeHyg(csvComoTexto);           // todas las que tengan nombre
 const cortito = atlasDesdeHyg(csvComoTexto, { maximo: 100 }); // las 100 más brillantes
+const trazable = atlasDesdeHyg(csvComoTexto, { versionHyg: "4.1" }); // la edición usada
 ```
 
 Sale un `{ format, version, entries }` listo para `validateCosmography`. Una prueba lo
@@ -34,6 +35,21 @@ Descarga: <https://codeberg.org/astronexus/hyg> (o AT-HYG, con la misma licencia
 **La atribución viaja con el dato.** Cada entrada generada lleva su `provenance` con
 fuente, licencia y URL — que es exactamente el mecanismo que el formato ya tenía previsto,
 y la forma de cumplir CC BY-SA sin pelearse con la GPL.
+
+**Y con la versión.** HYG tiene historial: su documentación identifica **4.x** como
+CC BY-SA 4.0, y ediciones anteriores llevaban otras condiciones. El CSV no declara cuál
+es, así que lo declara quien importa con `versionHyg`, y queda escrito en el `source` de
+cada estrella (`HYG Database 4.1 (AstroNexus)`). Va dentro de `source` y no en una clave
+nueva porque el contrato cosmográfico fija exactamente las claves de `provenance`, y
+ampliarlo por comodidad de un importador sería la cola moviendo al perro. Sin esto, un
+catálogo generado hoy y otro generado de una edición distinta son indistinguibles después
+—y con ellos, la licencia que declaran deja de ser comprobable—. Por defecto se escribe
+`4.x`, que es lo que corresponde a la licencia declarada.
+
+**Que no haya CSV no es un error.** Sin fichero simplemente no hay atlas HYG: el
+adaptador devuelve un catálogo con solo el plano raíz, que es válido, y quien lo consuma
+sigue funcionando. No se lanza nada ni se avisa de nada, igual que en
+[CONTENIDO_EXTERNO.md](CONTENIDO_EXTERNO.md).
 
 ## Qué decide el adaptador, y por qué
 

@@ -61,6 +61,23 @@ test("cada estrella viaja con su licencia y su fuente, que es cómo se atribuye"
   assert.equal(plano.provenance.kind, "original");
 });
 
+test("la procedencia dice de QUÉ versión de HYG salió el atlas", () => {
+  // HYG tiene historial y las condiciones no son las mismas en todas las
+  // versiones: sin la versión escrita en el dato, dos catálogos generados de
+  // ediciones distintas son indistinguibles después, y la licencia declarada
+  // deja de ser comprobable.
+  const porDefecto = atlasDesdeHyg(CSV).entries.find((e) => e.type === "star_system");
+  assert.match(porDefecto.provenance.source, /HYG Database 4\.x/u);
+
+  const declarada = atlasDesdeHyg(CSV, { versionHyg: "4.1" });
+  for (const sistema of declarada.entries.filter((e) => e.type === "star_system")) {
+    assert.equal(sistema.provenance.source, "HYG Database 4.1 (AstroNexus)");
+  }
+  // El contrato cosmográfico fija las claves de `provenance`: la versión entra
+  // en `source`, no como clave nueva, y el catálogo sigue validando.
+  assert.equal(validateCosmography(declarada), true);
+});
+
 test("el resumen sale de los datos, y lo que falta no se inventa", () => {
   const atlas = atlasDesdeHyg(CSV);
   const rigel = atlas.entries.find((e) => e.name.es === "Rigel");

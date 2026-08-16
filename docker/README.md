@@ -132,6 +132,31 @@ Argumentos extra al contenedor `game` se pasan tal cual al binario, p. ej.
 - Las imágenes se etiquetan con versión (`0.1.0-dev`), nunca `latest` para
   despliegues estables.
 
+## Superficie vulnerable de las imágenes
+
+Trivy analiza ambas imágenes ([`trivy.yml`](../.github/workflows/trivy.yml)) y
+publica los HIGH/CRITICAL en Code Scanning. Decisiones de base tomadas para
+reducir esa superficie:
+
+- **Servidor**: se compila en `debian:bookworm-slim` (toolchain conocida) pero
+  se ejecuta en `debian:trixie-slim`. La glibc de trixie es más nueva que la de
+  bookworm, así que el binario funciona, y desaparecen los CVE sin parche de
+  bookworm (expat, zlib/minizip, libssh2, libldap).
+- **Servidor**: sin `curl`. Solo servía para el `HEALTHCHECK` y arrastraba
+  `libcurl4`/`libssh2-1`/`libldap`; la sonda usa el `/dev/tcp` de bash.
+- **Puente**: base `python:3.14-alpine`, no Debian slim. Todas las
+  dependencias traen rueda `musllinux`, y así la imagen no incluye
+  `perl-base`, `util-linux` ni `ncurses`.
+- **Puente**: `pip` y `setuptools` se quedan en la etapa de construcción (las
+  dependencias se instalan en un venv que se copia). La imagen final no
+  instala nada, así que el gestor de paquetes solo aportaría CVE.
+
+Lo que queda abierto en el servidor son paquetes de Debian **sin versión
+corregida disponible** (`perl-base`, `util-linux`, `ncurses`, `gzip`,
+`libacl1`) más `libxml2`/`libsndfile1`, que entran como dependencias duras de
+`libsdl2-2.0-0`. No hay parche que aplicar: quitarlos exigiría una imagen
+distroless con SDL compilado a medida.
+
 ## Límites conocidos
 
 - El healthcheck del juego usa la raíz del servidor HTTP heredado; comprueba

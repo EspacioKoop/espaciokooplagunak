@@ -319,11 +319,27 @@ function recortarContra(vertices, plano, signo) {
     if (actualDentro) dentro.push(actual);
     if (actualDentro !== siguienteDentro) {
       const t = (plano - actual[2]) / (siguiente[2] - actual[2]);
-      dentro.push([
-        actual[0] + (siguiente[0] - actual[0]) * t,
-        actual[1] + (siguiente[1] - actual[1]) * t,
-        plano,
-      ]);
+      // TODAS las componentes se interpolan, no solo las tres primeras (#573).
+      // Un vértice es `[x, y, z]` o `[x, y, z, u, v]` según lleve textura, y el
+      // corte tiene que producir un vértice con la MISMA forma: si las UV no se
+      // interpolan aquí, un muro texturado que cruce el plano cercano pierde sus
+      // coordenadas justo en el trozo que sí se ve, y la textura salta.
+      //
+      // Genérico en vez de un caso especial para `u,v`: el día que un vértice
+      // lleve una tercera coordenada —un color por vértice, por ejemplo— esto ya
+      // funciona, y un recortador que solo sabe de UV habría que volver a tocarlo.
+      const cortado = new Array(Math.max(actual.length, siguiente.length));
+      for (let k = 0; k < cortado.length; k += 1) {
+        const a = actual[k] ?? 0;
+        const b = siguiente[k] ?? 0;
+        cortado[k] = a + (b - a) * t;
+      }
+      // La componente del plano se fija EXACTA en vez de dejarla interpolada:
+      // el redondeo de coma flotante puede dejarla un pelo al otro lado y el
+      // vértice que acabamos de meter dentro volvería a salirse en el siguiente
+      // recorte.
+      cortado[2] = plano;
+      dentro.push(cortado);
     }
   }
   return dentro;
@@ -601,13 +617,36 @@ export function componerEscena(malla, opciones = {}) {
   const f = focal(alto, fov);
   const vertices = Array.isArray(malla?.vertices) ? malla.vertices : [];
   const caras = Array.isArray(malla?.caras) ? malla.caras : [];
+  // TEXTURA OPCIONAL (#573). La malla puede traer `uvs`: una lista paralela a
+  // `caras` con un `[u, v]` por vértice de cada cara. Es paralela a `caras` y no
+  // a `vertices` a propósito: un cubo texturado necesita UV DISTINTAS para el
+  // mismo vértice según qué cara se pinte, y atarlas al vértice obligaría a
+  // duplicar geometría —justo lo que hace que una caja de ocho vértices pase a
+  // tener veinticuatro— para nada.
+  //
+  // Sin textura no cambia absolutamente nada: los vértices siguen siendo
+  // `[x, y, z]` y el polígono sale sin `textura`, así que todas las superficies
+  // que ya existen pintan exactamente igual.
+  const textura = opciones.textura ?? null;
+  const uvs = textura && Array.isArray(malla?.uvs) ? malla.uvs : null;
 
   const enCamara = vertices.map((v) => transformar(v, { yaw, pitch, roll, posicion }));
 
   const poligonos = [];
-  for (const cara of caras) {
+  for (const [indiceCara, cara] of caras.entries()) {
     if (!Array.isArray(cara) || cara.length < 3) continue;
-    const crudos = cara.map((indice) => enCamara[indice]).filter(Boolean);
+    // Con textura, el vértice que entra al recorte lleva sus UV pegadas
+    // (`[x, y, z, u, v]`): así el recortador —que interpola TODAS las
+    // componentes— las corta con el mismo `t` que la posición, sin saber qué son.
+    const uvCara = uvs?.[indiceCara];
+    const crudos = cara
+      .map((indice, k) => {
+        const v = enCamara[indice];
+        if (!v) return null;
+        const uv = uvCara?.[k];
+        return uv ? [v[0], v[1], v[2], finito(uv[0], 0), finito(uv[1], 0)] : v;
+      })
+      .filter(Boolean);
     if (crudos.length < 3) continue;
 
     // Primero el plano cercano, LUEGO opcionalmente los cuatro laterales, y
@@ -654,7 +693,13 @@ export function componerEscena(malla, opciones = {}) {
     if (baseNormal.length < 3) continue;
     const normal = normalizar(cruz(resta(baseNormal[1], baseNormal[0]), resta(baseNormal[2], baseNormal[0])));
 
-    const puntos = recortada.map((v) => proyectar(v, { ancho, alto, f, rejilla: ajustes.rejilla }));
+    const puntos = recortada.map((v) => {
+      const p = proyectar(v, { ancho, alto, f, rejilla: ajustes.rejilla });
+      // Las UV viajan en el punto de pantalla porque el rasterizador las
+      // necesita ahí: `proyectar` es geometría y no tiene por qué saber de
+      // texturas, así que se le pegan después en vez de ensuciar su firma.
+      return v.length > 3 ? { ...p, u: v[3], v: v[4] } : p;
+    });
 
     // Caras de espaldas fuera, medido en pantalla: es más barato que en 3D y,
     // además, descarta los polígonos que el ajuste a rejilla ha aplastado hasta
@@ -674,6 +719,16 @@ export function componerEscena(malla, opciones = {}) {
       color: niebla > 0 ? mezclar(sombreado, fondo, niebla) : sombreado,
       profundidad,
       niebla,
+      // La textura viaja con el polígono, no con la escena: dos mallas fundidas
+      // con `fundirEscenas` pueden traer texturas distintas, y una textura por
+      // escena obligaría a fundir también eso. `intensidad` es el sombreado de
+      // la cara SIN aplicar al color: con textura no se puede premultiplicar el
+      // color como se hace arriba —cada téxel es distinto—, así que el
+      // rasterizador multiplica téxel por intensidad, que es lo que hacía la
+      // máquina de referencia con su modulación por vértice.
+      ...(textura && uvCara
+        ? { textura, intensidad: emisivo ? 1 : intensidadCara(normal, ajustes.tonos) }
+        : {}),
       // La geometría de cámara ya recortada viaja con el polígono porque el
       // orden por pintor la necesita: decidir quién tapa a quién exige el plano
       // real de la cara, y en pantalla ese plano ya no existe (la perspectiva no

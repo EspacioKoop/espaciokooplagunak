@@ -97,10 +97,44 @@ function areaConSigno2(ax, ay, bx, by, cx, cy) {
   return (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
 }
 
+/**
+ * Muestrea un téxel de una textura indexada, con envoltura (`repeat`).
+ *
+ * SIN FILTRADO, Y ES EL EFECTO. Se coge el téxel más cercano y ya: el filtrado
+ * bilineal es de la generación siguiente, y suavizar aquí borraría exactamente
+ * lo que hace que una textura se lea como de la época. Es el mismo criterio que
+ * `image-rendering: pixelated` en la superficie.
+ *
+ * La envoltura es con `((n % m) + m) % m` y no con `n % m`: en JavaScript el
+ * resto de un negativo es negativo, y una UV por debajo de cero —que sale sola
+ * en cuanto una cara se recorta— indexaría fuera del búfer.
+ */
+export function muestrearTextura(textura, u, v) {
+  const { ancho, alto, indices } = textura;
+  const x = Math.floor(u * ancho);
+  const y = Math.floor(v * alto);
+  const xa = ((x % ancho) + ancho) % ancho;
+  const ya = ((y % alto) + alto) % alto;
+  return indices[ya * ancho + xa];
+}
+
 /** Rasteriza UN triángulo (perspective-correct, ver arriba) contra el búfer
  *  de profundidad compartido, con prueba de profundidad por píxel: solo
- *  escribe donde su 1/z es mayor (más cerca) que lo que ya hay ahí. */
-function rasterizarTriangulo(pixeles, profundidades, ancho, alto, p0, p1, p2, r, g, b) {
+ *  escribe donde su 1/z es mayor (más cerca) que lo que ya hay ahí.
+ *
+ *  Con `tex` rasteriza TEXTURADO. El interpolado de UV depende de la época y no
+ *  es un ajuste de calidad, es la época (#573):
+ *
+ *  - **PSX: afín.** Se interpolan `u,v` linealmente en pantalla, SIN dividir por
+ *    z. Eso deforma la textura cuando un polígono se ve muy inclinado — el
+ *    famoso bamboleo de la PSX, que no era un fallo del juego sino que la
+ *    consola no tenía división por píxel. Reproducirlo es el objetivo, igual que
+ *    el temblor de vértices que ya hace `rejilla`.
+ *  - **GameCube: perspectiva corregida.** Se interpolan `u/z` y `v/z` y se
+ *    divide por el `1/z` que ya se calcula para el z-buffer. Coste: una división
+ *    por píxel, que es justo lo que aquella máquina sí podía pagar.
+ */
+function rasterizarTriangulo(pixeles, profundidades, ancho, alto, p0, p1, p2, r, g, b, tex) {
   const area = areaConSigno2(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y);
   if (area === 0) return; // degenerado: los tres puntos en línea, sin superficie que pintar
 
@@ -133,6 +167,37 @@ function rasterizarTriangulo(pixeles, profundidades, ancho, alto, p0, p1, p2, r,
       if (invZ <= profundidades[indice]) continue; // algo más cerca ya está ahí
       profundidades[indice] = invZ;
       const o = indice * 4;
+
+      if (tex) {
+        let u;
+        let v;
+        if (tex.afin) {
+          // PSX: lineal en pantalla, sin dividir. La deformación ES el efecto.
+          u = w0 * p0.u + w1 * p1.u + w2 * p2.u;
+          v = w0 * p0.v + w1 * p1.v + w2 * p2.v;
+        } else {
+          // GameCube: u/z y v/z sí varían linealmente en pantalla; se dividen
+          // por el 1/z ya interpolado para volver a u,v.
+          const uz = w0 * p0.u * invZ0 + w1 * p1.u * invZ1 + w2 * p2.u * invZ2;
+          const vz = w0 * p0.v * invZ0 + w1 * p1.v * invZ1 + w2 * p2.v * invZ2;
+          u = invZ > 0 ? uz / invZ : 0;
+          v = invZ > 0 ? vz / invZ : 0;
+        }
+        const rgb = tex.paletaRGB[muestrearTextura(tex.textura, u, v)];
+        if (rgb) {
+          // Téxel POR intensidad de la cara: el sombreado no se puede
+          // premultiplicar en un color único cuando cada téxel es distinto.
+          pixeles[o] = rgb[0] * tex.intensidad;
+          pixeles[o + 1] = rgb[1] * tex.intensidad;
+          pixeles[o + 2] = rgb[2] * tex.intensidad;
+          pixeles[o + 3] = 255;
+          continue;
+        }
+        // Índice fuera de paleta: se cae al color plano de la cara en vez de
+        // pintar basura o de no pintar —un agujero en un muro se lee como un
+        // fallo de geometría y manda a buscar el error donde no está.
+      }
+
       pixeles[o] = r;
       pixeles[o + 1] = g;
       pixeles[o + 2] = b;
@@ -163,6 +228,26 @@ function buferesDe(ancho, alto) {
     buferes.set(clave, b);
   }
   return b;
+}
+
+// La paleta de una textura, resuelta a canales UNA vez por textura y no por
+// píxel. Sin esto, un muro de 100×100 téxeles vuelve a parsear el mismo puñado
+// de hexadecimales diez mil veces por fotograma. `WeakMap` y no `Map` porque la
+// clave es la propia textura: si la superficie la deja de usar, se recoge sola
+// en vez de quedarse viva por estar cacheada.
+const paletasRGB = new WeakMap();
+
+function paletaRGBDe(textura) {
+  let tabla = paletasRGB.get(textura);
+  if (!tabla) {
+    const paleta = Array.isArray(textura?.paleta) ? textura.paleta : [];
+    tabla = paleta.map((color) => {
+      const c = canales(color);
+      return c ? [c[0] * 255, c[1] * 255, c[2] * 255] : null;
+    });
+    paletasRGB.set(textura, tabla);
+  }
+  return tabla;
 }
 
 const coloresRGB = new Map();
@@ -230,12 +315,28 @@ export function pintarEscenaConProfundidad(ctx, escena, { fondo = null } = {}) {
     }
   }
 
+  // La época decide el interpolado de UV, y viene en la escena. Se lee UNA vez
+  // por volcado en vez de por polígono: es la misma para toda la escena.
+  const afin = escena.epoca !== "gamecube";
+
   for (const poligono of poligonos) {
     const puntos = poligono?.puntos;
     if (!Array.isArray(puntos) || puntos.length < 3) continue;
     const [r, g, b] = rgbDe(poligono.color);
+    // Solo se textura si el polígono trae textura Y todos sus puntos traen UV:
+    // un abanico con un vértice sin coordenadas produciría `NaN` y una franja de
+    // basura, y prefiero un muro liso a un muro roto.
+    const tex =
+      poligono.textura && puntos.every((p) => Number.isFinite(p?.u) && Number.isFinite(p?.v))
+        ? {
+            textura: poligono.textura,
+            paletaRGB: paletaRGBDe(poligono.textura),
+            intensidad: Number.isFinite(poligono.intensidad) ? poligono.intensidad : 1,
+            afin,
+          }
+        : null;
     paraCadaTrianguloDelAbanico(puntos, (p0, p1, p2) => {
-      rasterizarTriangulo(pixeles, profundidades, ancho, alto, p0, p1, p2, r, g, b);
+      rasterizarTriangulo(pixeles, profundidades, ancho, alto, p0, p1, p2, r, g, b, tex);
     });
   }
 

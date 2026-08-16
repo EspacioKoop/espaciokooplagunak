@@ -29,6 +29,14 @@ compatibilidad de licencias **no es simétrica**:
 nunca para copiar código. Y esa es la mayoría del vecindario, porque casi todo lo bueno
 del género se relicenció a v3.
 
+**La licencia del proyecto no es la licencia de la pieza.** Para código suele coincidir;
+para repositorios de assets y datasets, no. Un `LICENSE` en la raíz dice bajo qué
+condiciones publica ese proyecto **lo suyo**, no acredita la procedencia de cada archivo
+que contiene. Así que el veredicto de la tabla se aplica a la fuente, y la entrada
+concreta que queramos importar se verifica igual: es el mismo criterio que
+[DOMINIO_PUBLICO_SCIFI.md](DOMINIO_PUBLICO_SCIFI.md) ya aplica al contenido de
+ambientación, y la razón por la que el atlas guarda procedencia y licencia POR ENTRADA.
+
 Los cuatro veredictos que se usan abajo:
 
 - **Depender** — entra como dependencia declarada.
@@ -62,7 +70,7 @@ funcionando.
 | Fuente | Licencia | Veredicto | Por qué |
 |---|---|---|---|
 | [Kenney](https://kenney.nl/assets) (Space Kit, UI Pack Sci-Fi, Sci-fi Sounds, UI Audio) | **CC0** | **Depender**, si alguna vez hace falta arte que no sea nuestro | CC0 es lo más limpio que existe: sin atribución y sin condiciones. Es la fuente por defecto para sonido de interfaz |
-| [NASA 3D Resources](https://github.com/nasa/NASA-3D-Resources) | Sin copyright en EE.UU. | **Depender** con cautela | Modelos y texturas reales de misión. La cautela es de MARCA, no de copyright: no se puede usar de forma que insinúe que la NASA respalda nada |
+| [NASA 3D Resources](https://github.com/nasa/NASA-3D-Resources) | NASA Open Source Agreement 1.3 en el repositorio, con material de terceros posible | **Caso a caso**, pieza a pieza | Modelos y texturas reales de misión. Los materiales de NASA generalmente no están sujetos a copyright en EE. UU., pero **eso no se extrapola al repositorio entero**: la NASA advierte que ocasionalmente incluye material de terceros protegido, y hay que verificar procedencia y condiciones de la pieza concreta que se quiera importar. Además, marcas e identificadores de la NASA tienen sus propias restricciones: no se puede usar de forma que insinúe que la NASA respalda nada |
 | [OpenGameArt](https://opengameart.org) | Mezcla; hay que mirar entrada por entrada | **Caso a caso** | Mismo criterio que ya aplica `DOMINIO_PUBLICO_SCIFI.md`: sin licencia verificada, se descarta |
 
 **Advertencia que este proyecto ya se ha ganado:** la estética es propia y deliberada
@@ -75,7 +83,7 @@ tiene estética propia — sonido de interfaz—, no los muros de la nave.
 | Fuente | Licencia | Veredicto | Por qué |
 |---|---|---|---|
 | [HYG / AT-HYG](https://codeberg.org/astronexus/athyg) | CC BY-SA-4.0 | **Depender** — el mejor candidato del documento | Catálogo estelar real (Hipparcos, Yale, Gliese, Tycho-2, Gaia DR3) **con los nombres propios oficiales de la IAU**. `catalogo-cosmografico.mjs` ya exige procedencia y licencia POR ENTRADA: HYG encaja en ese formato sin tocarlo. Es la diferencia entre un atlas de sistemas inventados y uno donde el cielo es el de verdad |
-| [NASA Image and Video Library](https://images.nasa.gov) | Sin copyright en EE.UU. | **Depender** con la misma cautela de marca | Fondos y referencia visual |
+| [NASA Image and Video Library](https://images.nasa.gov) | Generalmente sin copyright en EE. UU., con excepciones de terceros | **Caso a caso**, con la misma cautela de marca | Fondos y referencia visual. Mismo criterio que 3D Resources: la excepción de terceros se comprueba en la entrada concreta, no se presume del conjunto |
 | [Open MCT](https://github.com/nasa/openmct) | Apache-2.0 | **Inspiración**, y nada más | Marco web de control de misión de la NASA: telemetría en vivo, paneles componibles. Es exactamente nuestro problema en la consola del GM ([#276](https://github.com/VaroTv7/espaciokooplagunak/issues/276))… y **su licencia no entra en un GPL-2.0**. Se mira cómo resuelven la composición de paneles y se escribe lo nuestro |
 
 **El aviso de CC BY-SA:** obliga a atribuir **y** a compartir igual las obras derivadas de

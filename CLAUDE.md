@@ -157,7 +157,9 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     comentario que nombre el módulo no cuenta como consumidor; contarlos así es lo que le hizo
     pasar por alto tres huérfanos al barrido manual de #523. Hay dos categorías y no da igual cuál:
     `cimiento: true` es lo que se espera que siga sin consumidor (el banco de pruebas del andar,
-    `catalogo-cosmografico.mjs` a la espera de #213); `cimiento: false` es un hueco conocido con su
+    y `catalogo-cosmografico.mjs` con su adaptador `atlas-hyg.mjs` a la espera de #213 — el formato
+    y el importador de datos reales están escritos y probados, pero cablearlos metería en la partida
+    un atlas que no está aprobado); `cimiento: false` es un hueco conocido con su
     issue abierto, y la entrada es el registro de que se sabe, no un permiso — **no una plaza fija**:
     #526 y #537 se cablearon, #536 se retiró, y hoy no queda ninguna. Que la categoría esté vacía es
     su estado sano; si vuelve a llenarse, es deuda con fecha, no inventario. No enumeres aquí los

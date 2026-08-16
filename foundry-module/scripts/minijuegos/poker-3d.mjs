@@ -45,16 +45,54 @@ const LADOS_FICHA = 10;
 /**
  * La cámara de la mesa: se mira desde delante y un poco por encima, como quien
  * está sentado. La inclinación es corta a propósito —desde muy alto el tapete
- * se convierte en un plano y se pierde el volumen que se venía a buscar—, y los
- * números NO están puestos a ojo, y se han equivocado dos veces por ponerlos
- * así: primero (altura 3.4, atrás 4.6) la mesa se proyectaba por ENCIMA del
- * cuadro; después, con `pitch` 0.4, el tapete se veía CASI DE CANTO —una banda
- * verde de cincuenta píxeles— porque una mesa mirada de frente no enseña su
- * superficie. Estos salen de calcular dónde caen las esquinas del tapete y los
- * asientos: con pitch 0.9 el tapete ocupa 108..267 de un alto de 280 y los
- * bordes laterales quedan dentro del ancho.
+ * se convierte en un plano y se pierde el volumen que se venía a buscar.
+ *
+ * EL PITCH VA EN NEGATIVO, Y ESE ERA EL TERCER ERROR (#566, igual que #559 en
+ * la mesa de blackjack). En `transformar` la rotación se aplica ANTES de la
+ * traslación, así que la cámara ORBITA el origen: con `pitch` positivo orbita
+ * por DEBAJO del tapete y se mira el fieltro por su cara inferior, con toda la
+ * mesa entre el ojo y las cartas. Los dos intentos anteriores —(3.4, 4.6), que
+ * proyectaba la mesa por encima del cuadro, y `pitch` 0.4, que la enseñaba de
+ * canto— se afinaron contra ese signo equivocado, que es la razón de que
+ * hicieran falta dos: se estaba buscando a ojo un encuadre bueno desde un sitio
+ * desde el que no lo hay.
+ *
+ * Con el pitch en negativo la cámara sube, pero orbitar por arriba también la
+ * cruza al otro lado de la mesa, y eso invertiría quién es «tú» y quiénes los
+ * rivales: `yaw: Math.PI` la devuelve a su sitio sin mover ni una coordenada de
+ * los asientos.
  */
-export const VISTA = Object.freeze({ pitch: 0.9, yaw: 0, altura: -0.8, atras: 5.0, fov: 52 });
+export const VISTA = Object.freeze({ pitch: -0.75, yaw: Math.PI, altura: 0.0, atras: 6.4, fov: 52 });
+
+/** En cuántas franjas de profundidad se corta el tapete (#566).
+ *
+ * NO BASTABA CON ARREGLAR LA CÁMARA. Con el ojo ya por encima del fieltro, las
+ * comunitarias seguían sin verse, y por un motivo distinto: el orden por pintor
+ * usa la profundidad MEDIA de cada cara, y las comunitarias están en el CENTRO
+ * del tapete — justo donde su media empata con la del tapete entero. Una media
+ * es un resumen, y un tapete de 4 de fondo resume en un número toda la mesa: el
+ * empate lo ganaba el fieltro, que se pintaba después y las enterraba.
+ *
+ * La mesa de blackjack no necesitó esto porque sus manos están en el borde de
+ * delante, lejos del centro, y ahí no hay empate que perder.
+ *
+ * Cortarlo en franjas hace que la profundidad de cada trozo esté cerca de lo que
+ * se apoya sobre ÉL, que es lo que el orden por pintor necesita para acertar. No
+ * arregla el motor —la deuda de #510 sigue— sino que deja de darle un caso que
+ * no sabe resolver. Se corta solo en profundidad: lo que decide el orden es la
+ * distancia, y partir también a lo ancho multiplicaría polígonos sin mover ni un
+ * orden. */
+const FRANJAS_TAPETE = 6;
+
+/** Un tapete cortado en franjas de profundidad, de fondo a frente. */
+function losetasDeTapete([cx, cy, cz], [ancho, alto, fondo], color) {
+  const paso = fondo / FRANJAS_TAPETE;
+  const inicio = cz - fondo / 2 + paso / 2;
+  return [...Array(FRANJAS_TAPETE).keys()].map((i) => ({
+    malla: caja([cx, cy, inicio + i * paso], [ancho, alto, paso]),
+    color,
+  }));
+}
 
 /** Caja alineada a los ejes por centro y medidas. Misma primitiva que la
  * cantina: una mesa de consola de los noventa se construía con cajas. */
@@ -164,9 +202,11 @@ export function componerMesa(mesa = {}, opciones = {}) {
   const jugadores = Array.isArray(mesa.jugadores) ? mesa.jugadores.slice(0, 6) : [];
 
   const piezas = [
-    // El tapete, con su reborde: dos cajas y ya tiene canto.
-    { malla: caja([0, -0.12, 0.6], [6.4, 0.22, 4.4]), color: FICHA.tapete },
-    { malla: caja([0, -0.02, 0.6], [6.0, 0.06, 4.0]), color: FICHA.tapete },
+    // El tapete, con su reborde: dos capas y ya tiene canto, pero cada una
+    // cortada en franjas de profundidad (#566) para que el fieltro no gane el
+    // empate de profundidad con las comunitarias — ver `FRANJAS_TAPETE`.
+    ...losetasDeTapete([0, -0.12, 0.6], [6.4, 0.22, 4.4], FICHA.tapete),
+    ...losetasDeTapete([0, -0.02, 0.6], [6.0, 0.06, 4.0], FICHA.tapete),
   ];
 
   // Comunitarias: las que están boca arriba se pintan con la cara clara; los

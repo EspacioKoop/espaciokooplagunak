@@ -45,6 +45,7 @@
 | [MINIJUEGOS_ASISTENCIA.md](MINIJUEGOS_ASISTENCIA.md) | Diseño de asistencia entre puestos con minijuegos de habilidad y tiradas dnd5e (#309) |
 | [CONTENIDO_EXTERNO.md](CONTENIDO_EXTERNO.md) | Lectura opcional del contenido dnd5e ya importado por el usuario, filtrado a 2014 (#332) |
 | [ECOSISTEMA_MODULOS_FOUNDRY.md](ECOSISTEMA_MODULOS_FOUNDRY.md) | De qué módulos ajenos dependemos, cuáles imitamos y cuáles nos estorban |
+| [ASSETS_LIBRES.md](ASSETS_LIBRES.md) | Fuentes de arte y audio libres (CC0, dominio público, CC BY) y por qué la mayoría no encaja todavía (#568) |
 | [ATLAS_HYG.md](ATLAS_HYG.md) | Adaptador del catálogo estelar HYG al formato de atlas de #213, sin cablear (#568) |
 
 ## Investigación y diseño de contenido

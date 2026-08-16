@@ -20,7 +20,7 @@
 // Puro: ni Foundry, ni DOM, ni <canvas>, ni reloj, ni Math.random().
 
 import { FICHA, PIXEL } from "../paleta.mjs";
-import { componerEscena } from "../retro3d.mjs";
+import { componerEscena, fundirEscenas } from "../retro3d.mjs";
 import { campoEstelar, proyectarEstrellas } from "../retro3d-estrellas.mjs";
 
 /**
@@ -262,9 +262,11 @@ export function componerMesa(mesa = {}, opciones = {}) {
     }),
   );
 
-  const poligonos = partes
-    .flatMap((parte) => parte.poligonos)
-    .sort((a, b) => b.profundidad - a.profundidad);
+  // Un solo orden de pintor global para todas las piezas (`fundirEscenas`,
+  // #510): concatenar dos listas ya ordenadas da una lista incorrecta en cuanto
+  // dos piezas se solapan, y hasta #510 cada consumidor repetía este mismo
+  // fundido a mano.
+  const { poligonos } = fundirEscenas(partes);
 
   // EL ESPACIO DE FONDO. Se juega dentro de una nave que está volando, y una
   // mesa recortada sobre negro podría estar en cualquier sótano. El campo es el

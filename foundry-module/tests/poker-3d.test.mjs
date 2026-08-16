@@ -10,6 +10,7 @@ import test from "node:test";
 
 import { componerMesa, disco, huecosComunitarias, plazas } from "../scripts/minijuegos/poker-3d.mjs";
 import { EPOCAS } from "../scripts/retro3d.mjs";
+import { afirmarOrdenPorPintor } from "./ayuda-orden-pintor.mjs";
 
 test("siempre hay cinco huecos, salgan las cartas que salgan", () => {
   // El hueco vacío se ve, y por eso se cuenta cuántas faltan sin ponerlo en un
@@ -64,9 +65,7 @@ test("el orden por pintor es global: lo lejano antes que lo cercano", () => {
   // Concatenar las listas de cada pieza sin reordenar deja una ficha dibujada
   // debajo del tapete que tiene delante.
   const { poligonos } = componerMesa({ comunitarias: 5, jugadores: [{ fichas: 200 }, { fichas: 80 }] });
-  for (let i = 1; i < poligonos.length; i += 1) {
-    assert.ok(poligonos[i - 1].profundidad >= poligonos[i].profundidad, `rompe el orden en ${i}`);
-  }
+  afirmarOrdenPorPintor(poligonos, "la mesa de póker");
 });
 
 test("la mesa se compone en las dos épocas y aguanta entrada rota", () => {

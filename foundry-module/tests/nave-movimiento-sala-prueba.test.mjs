@@ -3,6 +3,7 @@ import test from "node:test";
 
 import { colisiona, puertaTocada } from "../scripts/nave-movimiento.mjs";
 import { puntoDeLlegada } from "../scripts/nave-estancias.mjs";
+import { afirmarOrdenPorPintor } from "./ayuda-orden-pintor.mjs";
 import {
   ALTURA_OJOS,
   CATALOGO_PRUEBA,
@@ -27,10 +28,8 @@ test("componerSalaPrueba devuelve una escena con el tamaño pedido y polígonos"
   assert.equal(escena.ancho, 200);
   assert.equal(escena.alto, 100);
   assert.ok(escena.poligonos.length > 0);
-  // Todos los polígonos ya vienen ordenados de más lejos a más cerca.
-  for (let i = 1; i < escena.poligonos.length; i += 1) {
-    assert.ok(escena.poligonos[i - 1].profundidad >= escena.poligonos[i].profundidad);
-  }
+  // Y nada que esté enteramente detrás se pinta después.
+  afirmarOrdenPorPintor(escena.poligonos, "la sala de prueba", 6); // deuda medida de #510
 });
 
 test("moverse cambia lo que se ve: mirar hacia una columna cercana la acerca", () => {

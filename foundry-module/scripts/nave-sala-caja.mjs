@@ -29,7 +29,7 @@
 // `paleta.mjs` (`SECCION`, ya usada para materiales genéricos de nave).
 
 import { SECCION } from "./paleta.mjs";
-import { componerEscena } from "./retro3d.mjs";
+import { componerEscena, fundirEscenas } from "./retro3d.mjs";
 import { resolverCamara } from "./nave-camara.mjs";
 import { campoEstelar, proyectarEstrellas } from "./retro3d-estrellas.mjs";
 import { piezasDeVentana } from "./nave-ventana-espacio.mjs";
@@ -620,9 +620,10 @@ export function crearSalaCaja({
     });
 
     // Fundido y reordenado global: cada pieza ya viene ordenada por su
-    // cuenta, y el orden por pintor no es componible.
-    const poligonos = [...partes.flatMap((parte) => parte.poligonos), ...poligonosJugadores]
-      .sort((a, b) => b.profundidad - a.profundidad);
+    // cuenta, y el orden por pintor no es componible. `fundirEscenas` (#510)
+    // acepta tanto escenas como listas sueltas, que es como llegan los avatares
+    // de los demás jugadores.
+    const { poligonos } = fundirEscenas([...partes, poligonosJugadores]);
 
     // El cielo por la(s) ventana(s): mismo mecanismo que `cantina-escena.mjs`
     // ("Por el ojo de buey") — se pinta ANTES que los polígonos, así que el

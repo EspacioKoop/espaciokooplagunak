@@ -301,8 +301,8 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     dos sistemas. **No la devuelvas a mano**: si una sala necesita algo que la fábrica no da, se
     amplía la fábrica. Las
     salas de prueba ("a"/"b", `nave-movimiento-sala-prueba.mjs`) NUNCA aparecen en el catálogo real.
-    `scripts/nave-sala-caja.mjs` sigue siendo la fábrica de sala —muros, puertas, columnas y
-    VENTANAS—, y la ventana se **decide** en vez de escribirse: un muro sin vecino es casco, y el
+    `scripts/nave-sala-caja.mjs` sigue siendo la fábrica de sala —muros, puertas, columnas,
+    VENTANAS y la PIEL de los muros—, y la ventana se **decide** en vez de escribirse: un muro sin vecino es casco, y el
     casco ve el espacio. Lo que se ve por ella es **otra vista del espacio real** y no un cielo de
     adorno (`scripts/nave-ventana-espacio.mjs`, #541): reusa `visor-piloto.mjs` para situar los
     contactos por marcación, pasándole el rumbo de la nave MÁS el del muro, así que la vista gira con
@@ -313,6 +313,94 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     distinto de un cielo vacío: una ventana con estrellas quietas afirmaría que no hay nada ahí
     fuera. Y por eso **no** se traen los skybox de EmptyEpsilon: serían 16 MB de binarios contra la
     regla de arte del módulo, para enseñar un espacio que no es el de esta partida.
+    La **piel de los muros** es `scripts/nave-mural-pixel.mjs` (#548, reelaborada en #551): pixelart
+    EN EL MUNDO —el motor no mapea texturas y no va a hacerlo—, sobre una rejilla métrica única
+    (`CELDA` = 10 cm, el mando de escala de la piel igual que la `CELDA` de la planta lo es de la
+    geografía), determinista por semilla y encendida de serie en la fábrica; solo las salas de prueba
+    la apagan. Y **nada que se pueda leer**: es la regla de #526 en la superficie que más de cerca se
+    mira —un dial pintado en el muro sería una medida que nadie ha calculado, y quien anda por la
+    nave no tiene cómo saber que ese no cuenta—; lo que hay detrás de una escotilla tampoco se
+    declara, por lo mismo. Tres cosas la hacen funcionar y ninguna es «más rayas»:
+    **rampa y relieve** (seis tonos y bisel, con el sentido atado a la luz del motor: una pieza
+    montada y un hueco recortado lo llevan al revés el uno del otro, y esa es toda la diferencia
+    entre un bulto y un agujero); **jerarquía a dos distancias** (bandas —zócalo, paño de planchas,
+    bastidor de tubos bajo cornisa— que se leen de lejos, y un greeble sorteado dentro de cada
+    plancha —escotilla, rejilla, tendido de cable, placa— que premia acercarse; llenarlo todo por
+    igual es ruido, el fallo contrario al de #548 y no mejor; y hay tres capas de lectura, no dos:
+    bandas, greeble por plancha y menudencias de dos celdas para quien se pega al muro); y el
+    **presupuesto**, que es la CONDICIÓN del detalle y no una optimización suelta: `fundirRectangulos`
+    (mallado codicioso 2D — con relieve, que es vertical, fundir solo por filas deja de servir) más
+    el agrupado POR COLOR de `chapasDeRejilla`, que quitó un 20% del coste sin cambiar un solo
+    polígono, porque `componerEscena` se llamaba una vez por chapa y su peaje fijo se pagaba mil
+    veces. Sin las dos cosas, este dibujo no cabe en un fotograma. La celda bajó de 20 a 10 cm en #551 al caerse su argumento original: «fidelidad al
+    hardware» era la regla equivocada (Neo Geo y SIGNALIS usan más detalle por metro del que la
+    máquina de referencia movía), la buena es el LOOK —paleta corta, sin filtrado, sin degradados—,
+    que se conserva entero. El presupuesto medido (20–86 → 122–327 con #550 → 871–1055 con #551 → 886–1135 con #552 →
+    894–1173 con #555; 0,4 → 1,45 → 4,11 → 4,19 → 4,21 ms la peor sala) está en la cabecera del módulo: es lo que se vuelve a medir antes
+    de subir nada, y si algún día no cabe se recorta la densidad de greebles, nunca la rejilla —media
+    resolución se nota en todo el muro, media plancha sin escotilla no la echa nadie de menos.
+    La **misma rejilla** viste puertas (`scripts/nave-piel-puerta.mjs`) y objetos
+    (`scripts/nave-piel-objeto.mjs`), #550 — y esa es toda la razón de que sean módulos y no copias:
+    si cada superficie eligiera su tamaño de detalle, la sala parecería montada con piezas de tres
+    maquetas. Comparten el primitivo de #548 (`chapaEnCara`/`chapasDeRejilla`, donde vive el tope,
+    porque un tope que solo cumple uno de los tres consumidores no es un tope) y, desde #551, también
+    el VOCABULARIO de dibujo (`crearLienzo`, `panelBiselado`, `hundir`): el sentido del bisel es justo
+    lo que no puede divergir entre superficies, porque dos relieves iluminados al revés en la misma
+    sala se ven a la primera. Ojo con las medidas: en la piel de una puerta van en METROS y se
+    convierten a filas, nunca escritas como índice de fila — al bajar la celda en #551, todo lo que
+    estaba en filas se partió por la mitad en silencio y la franja de aviso se fue a la rodilla. Se
+    separan en lo que
+    de verdad difiere: la hoja de una puerta es ESTRECHA —media hoja de 1,2 m son tres celdas, así
+    que el dibujo se declara fila a fila y ninguna decisión depende de tener anchura—, va por sus dos
+    caras y lleva el ámbar de `AMBAR_SENAL`, que ahí no adorna sino que repite lo que ya dice el marco
+    de esa puerta. Tres reglas propias: **no todo objeto lleva piel** (`MINIMO_LADO`/`MINIMO_ALTO`, o
+    los 126 muebles de la cantina se multiplican por cuatro caras para poner dos píxeles en algo que
+    mide dos píxeles); **la piel es chapa remachada, o sea un MATERIAL**, así que la cantina la apaga
+    para sus muebles —una barra de madera con remaches de casco no es un detalle de más, es un
+    material equivocado— y cualquier mueble puede renunciar a ella con `piel: false` sin sacar a la
+    sala entera del sistema; y **sin semilla**, al revés que el muro: una puerta y un armario son
+    piezas de serie, y sortear sus remaches los convierte en artesanía.
+    **Suelo y techo** son `scripts/nave-piel-suelo.mjs` (#552), y su cabecera explica por qué un
+    plano horizontal NO es un muro girado: la rejilla es 2D de verdad, el presupuesto es otro —el
+    suelo está en cuadro SIEMPRE, así que su dibujo es a propósito más pobre que el de un muro— y
+    sobre todo la luz les llega distinta, hasta el punto de que la losa de suelo se queda casi en su
+    tono crudo y **una junta de suelo no puede ser una sombra**: por debajo de ella no hay dónde ir,
+    tiene que ser una línea un punto más clara, y solo un punto —con más, las juntas longitudinales
+    convergen en perspectiva y el suelo se lee como el carril de una autopista—. Dos reglas propias:
+    **ninguna señal en el suelo** (ni líneas guía ni flechas: es la regla de #526 donde más fácil
+    sería saltársela, porque una marca que parezca indicar por dónde ir afirma algo que nadie ha
+    decidido), y **todo o nada** al pasarse del tope —en un muro recortar quita rasgos anecdóticos y
+    sigue siendo un muro; en un suelo deja media sala con juntas y media lisa, que se lee como un
+    fallo—. La sala mayor (22x22 m) es la que fija el coste, no la media, y por eso se dibujan las
+    juntas y no las planchas: rellenar plancha a plancha son trescientos rectángulos allí.
+    Las **luminarias** son `scripts/nave-luminaria.mjs` (#555). Sustituyen a una lámpara que medía
+    `min(ancho, profundidad) * 0.22` —o sea, 4,84 m de lado en el reactor—: una luminaria es una
+    PIEZA de medida fija que se repite, igual que una plancha mide 1,6 m mida lo que mida el muro, y
+    que un objeto escale con la sala que lo contiene es el error que #540 corrigió en la planta y
+    que había sobrevivido en el techo. Ahora una sala grande tiene MÁS luminarias, no una mayor —que
+    además es lo que la hace leerse grande—. Dos reglas: **una luminaria ilumina, no señala**, así
+    que va en `LUZ_CALIDA` (recogido en `paleta.mjs` al llegar su tercer consumidor) y no en el
+    turquesa de `SECCION.entrable`, que marca lo accionable y no se gasta en adornos; y el difusor es
+    **la única malla EMISIVA del módulo** (`componerEscena({emisivo: true})`, #555): se pinta a
+    intensidad plena sin sombreado por normal, que es lo que hacía la máquina de referencia con
+    luces y pantallas. Sin eso parecía fundida — `intensidadCara` deja un suelo ambiente de 0,35 y
+    la luz viene de arriba, así que toda cara que mire hacia abajo está en el mínimo y el techo es
+    estructuralmente la superficie más oscura de la sala. Es la lección del suelo (#552) en el otro
+    extremo: cada orientación tiene su tramo de rampa. **Emisivo NO es una luz**: el difusor no
+    alumbra a nadie y el muro de enfrente no se aclara por tenerlo delante; el motor sigue con UNA
+    direccional fija y poner luces de verdad —con posición y caída— es una decisión abierta en #556
+    que cambiaría el aspecto de todas las superficies del módulo.
+    La **maquinaria de sala** es `scripts/nave-mobiliario-sala.mjs` (#560), y su regla es la misma
+    que gobierna todo lo demás en esta nave: **el dato ya existe**. `SALAS_PHOBOS` declara el sistema
+    de cada sala, y de ahí sale qué le toca —bancadas, armarios, conductos, cajas de registro— igual
+    que la planta salió del `.lua` (#540) y la consola de tener puesto (#557). Es una tabla por
+    SISTEMA y no por sala: dos salas del mismo sistema traen el mismo material, que es lo correcto en
+    una nave, y lo que las diferencia es dónde cae cada pieza. Lo que **no** decide este módulo es el
+    contenido narrativo —qué cuelga de las paredes, qué se ha dejado la tripulación— que es de quien
+    escribe la campaña. Se mantiene la DENSIDAD y no el número (una pieza cada seis metros de muro,
+    igual que las luminarias mantienen cadencia), todo va pegado al muro para no cortar el paso, y
+    nada se coloca cerca de una PUERTA — los puntos de llegada los declaran las salas vecinas y aquí
+    no se conocen, pero una llegada siempre cae cerca de su puerta, que es el mismo apaño de #557.
     Un **minimapa** (`scripts/nave-minimapa.mjs` + `nave-minimapa-lienzo.mjs`) dice dónde estás,
     reusando el pintor de la sección. Va `aria-hidden` porque el rótulo de sala ya da la lectura en
     texto. **Una sola planta para todo el módulo** (#542): `nave-planta-phobos.celdasConCantina()` es
@@ -327,7 +415,18 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     estancias. En tercera persona el propio cuerpo entra como un avatar más por
     `poligonosOtrosJugadores`, así que el render de presencia no sabe que uno de ellos eres tú.
     Cada sala con sistema tiene una CONSOLA (#509) que abre el puesto del sistema que ALOJA —el
-    reactor abre ingeniería—, con su zona de pie separada del punto de entrada para que acercarse sea
+    reactor abre ingeniería— y que desde #557 **se ve**: hasta entonces era solo un rectángulo
+    disparador y se activaba pisando un trozo de suelo vacío (y `detalleConsola`, escrita y probada
+    desde #509, no la llamaba nadie — un *export* huérfano dentro de un módulo cableado, la variante
+    que la guarda de #523 no ve). `scripts/nave-consola.mjs` la construye como mobiliario: cuerpo con
+    piel, tapa, monitor y pantalla. Dos reglas: **se arrima a la pared**, nunca al centro de su zona
+    —el rect es donde te PONES, y un cuerpo sólido ahí bloquearía su propio disparador—, y la zona se
+    elige en el cuarto de sala más lejos de las PUERTAS, porque con la colocación fija de antes caía
+    justo donde se aparece al cruzar desde la sala vecina (lo cazó `nave-planta-phobos.test.mjs`). La
+    pantalla va **encendida y VACÍA** (`emisivo`, #555): un monitor iluminado no afirma nada, uno con
+    un gráfico afirma una lectura que nadie ha calculado — y es la infracción más creíble posible de
+    #526, precisamente porque una consola es el único sitio donde un dato tendría sentido. El dato de
+    verdad está en el espacio de puesto que se abre al llegar. con su zona de pie separada del punto de entrada para que acercarse sea
     un gesto; `nave-estancias.mjs` la declara con la misma forma que una puerta (`{rect, ...}`,
     reutilizando `nave-movimiento.puertaTocada`) pero sin `destino`, y `nave-movimiento-lienzo.mjs`
     solo avisa en el flanco de ENTRADA. `andar-nave-app.mjs` interpreta el aviso llamando a

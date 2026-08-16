@@ -119,11 +119,17 @@ test("captura del presupuesto de polígonos por escena conocida", () => {
   // La cantina CAMINABLE es la escena más cargada del módulo (sus 126 muebles
   // hechos a mano más la sala) y la que QA señaló en #510. Se acota en vez de
   // fijarse porque depende de dónde esté el jugador mirando.
+  //
+  // La cota subió de 400 a 1000 al entrar la piel pixelart (#548/#551/#552):
+  // el relieve, las bandas y los greebles de muros, suelo y techo SON
+  // polígonos, así que el pico medido pasó de <400 a 823. Es crecimiento a
+  // propósito y por eso se mueve el número aquí y no en silencio; sigue siendo
+  // una cota, no un objetivo, y lo que vigila es el siguiente crecimiento.
   for (let yaw = 0; yaw < Math.PI * 2; yaw += Math.PI / 4) {
     const escena = componerCantinaSala(5, 1.6, 6, yaw, { ancho: 480, alto: 320 });
     assert.ok(escena.poligonos.length > 0, `mirando a ${yaw.toFixed(2)} no se ve nada`);
     assert.ok(
-      escena.poligonos.length < 400,
+      escena.poligonos.length < 1000,
       `mirando a ${yaw.toFixed(2)} salen ${escena.poligonos.length} polígonos`,
     );
   }

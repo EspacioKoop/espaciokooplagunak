@@ -118,9 +118,13 @@ test("una puerta trae MARCO: jambas y dintel, para que se lea como puerta", () =
   // puertas». En un lenguaje de bloques no hay textura: lo que hace que un hueco
   // se lea como puerta es el CONTORNO en otro color. Antes solo las ventanas
   // tenían marco (`if (esVentana)`) y las puertas eran un boquete.
-  const sinPuerta = crearSalaCaja({ ancho: 11, profundidad: 11 });
+  // Sin piel de casco (#548): el mural se recorta con el muro, así que abrir un
+  // hueco le QUITA chapas al mismo tiempo que la puerta añade jambas, y la
+  // comparación por conteo dejaría de medir lo que dice medir.
+  const sinPuerta = crearSalaCaja({ ancho: 11, profundidad: 11, muralPixel: false });
   const conPuerta = crearSalaCaja({
     ancho: 11, profundidad: 11,
+    muralPixel: false,
     puertas: [{ rect: { x: 0, z: 4, ancho: 1.2, profundidad: 2.4 } }],
   });
 

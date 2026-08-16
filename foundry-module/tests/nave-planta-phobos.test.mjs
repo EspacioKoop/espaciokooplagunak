@@ -457,3 +457,66 @@ test("ninguna puerta tiene un MUEBLE delante", () => {
     }
   }
 });
+
+test("y también se llega a la CONSOLA, y desde donde te dejan las vecinas (#560)", () => {
+  // Dos huecos del test de arriba, que hasta #560 no importaban y ahora sí:
+  //
+  //   1. Inunda desde `entrada`, que es donde se aparece la PRIMERA vez. Quien
+  //      llega cruzando una puerta aparece en el destino que declara la sala
+  //      vecina, y ese punto puede caer en otra zona de la sala.
+  //   2. Comprueba puertas y no consolas. Una consola encerrada por maquinaria
+  //      es un puesto al que no se puede llegar andando, con todo en verde.
+  //
+  // Se escribió por poco duplicando el de arriba —lo pisé al añadirlo, y al
+  // restaurarlo vi que ya hacía la mitad—. Va aparte y no dentro de aquel para
+  // que quede claro qué añade cada uno.
+  const PASO = 0.1;
+
+  const llegadasPorSala = new Map();
+  for (const [, estancia] of todasLasEstancias()) {
+    for (const puerta of estancia.puertas ?? []) {
+      const destino = puerta.destino ?? {};
+      if (!destino.estancia) continue;
+      const lista = llegadasPorSala.get(destino.estancia) ?? [];
+      lista.push(destino);
+      llegadasPorSala.set(destino.estancia, lista);
+    }
+  }
+
+  for (const [id, estancia] of todasLasEstancias()) {
+    const { planta } = estancia;
+    const libre = (x, z) =>
+      x > 0 && z > 0 && x < planta.ancho && z < planta.profundidad && !colisiona(x, z, RADIO_JUGADOR, planta);
+    const clave = (x, z) => `${Math.round(x / PASO)},${Math.round(z / PASO)}`;
+
+    const arranques = [estancia.entrada, ...(llegadasPorSala.get(id) ?? [])].filter(
+      (punto) => punto && libre(punto.x, punto.z),
+    );
+    assert.ok(arranques.length > 0, `en ${id} no hay ni un punto de aparición legal`);
+
+    const vistos = new Set(arranques.map((p) => clave(p.x, p.z)));
+    const pendientes = arranques.map((p) => [p.x, p.z]);
+    while (pendientes.length) {
+      const [x, z] = pendientes.pop();
+      for (const [dx, dz] of [[PASO, 0], [-PASO, 0], [0, PASO], [0, -PASO]]) {
+        const nx = x + dx;
+        const nz = z + dz;
+        if (vistos.has(clave(nx, nz)) || !libre(nx, nz)) continue;
+        vistos.add(clave(nx, nz));
+        pendientes.push([nx, nz]);
+      }
+    }
+
+    for (const consola of estancia.consolas ?? []) {
+      let llega = false;
+      for (const celda of vistos) {
+        const [a, b] = celda.split(",");
+        if (puertaTocada(a * PASO, b * PASO, RADIO_JUGADOR, [consola])) {
+          llega = true;
+          break;
+        }
+      }
+      assert.ok(llega, `en ${id} la consola de ${consola.puesto} queda encerrada por la maquinaria`);
+    }
+  }
+});

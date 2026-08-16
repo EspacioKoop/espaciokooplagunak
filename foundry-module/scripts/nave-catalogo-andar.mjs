@@ -23,6 +23,8 @@ import { crearCatalogoEstancias } from "./nave-estancias.mjs";
 import { SECCION } from "./paleta.mjs";
 import { puntoLibreCerca } from "./nave-movimiento.mjs";
 import { crearSalaCaja } from "./nave-sala-caja.mjs";
+import { piezasConsola } from "./nave-consola.mjs";
+import { piezasMobiliarioSala } from "./nave-mobiliario-sala.mjs";
 import { PLANTA_CANTINA_SALA, PUERTA_SALIDA, componerCantinaSala } from "./cantina-sala.mjs";
 import {
   ANCHO_PUERTA,
@@ -76,18 +78,47 @@ const PUESTO_POR_SALA_LIBRE = Object.freeze({
 });
 
 /**
- * Zona de la consola: un cuadrado donde ponerse de pie, apartado del centro
- * para que acercarse sea un gesto y no un accidente al cruzar la sala.
+ * Zona de la consola: un cuadrado donde ponerse de pie, apartado del centro para
+ * que acercarse sea un gesto y no un accidente al cruzar la sala.
+ *
+ * Se elige el CUARTO DE SALA MÁS LEJOS DE LAS PUERTAS, no siempre el mismo
+ * (#557). Mientras la consola era un rectángulo invisible daba igual dónde
+ * cayera; en cuanto pasó a ser un mueble sólido dejó de darlo: en `armas-haz`
+ * aterrizaba justo en el punto donde se aparece al cruzar desde `pasarela-proa`,
+ * y quien llegaba se materializaba dentro de la mesa. Lo cazó
+ * `nave-planta-phobos.test.mjs`, que ya comprobaba justo eso.
+ *
+ * Se mide contra las PUERTAS y no contra los puntos de llegada porque los de
+ * esta sala los declaran las salas vecinas y aquí no se conocen — pero una
+ * llegada siempre cae cerca de su puerta, así que apartarse de las puertas basta
+ * y no acopla `definirSala` con el resto del catálogo.
  */
-function zonaConsola(sala) {
+function zonaConsola(sala, puertas = []) {
   const { ancho, profundidad } = medidasSala(sala);
   const lado = 1.6;
-  return {
-    x: Math.max(ancho * 0.72 - lado / 2, GROSOR_PUERTA + 0.4),
-    z: Math.max(profundidad * 0.72 - lado / 2, GROSOR_PUERTA + 0.4),
-    ancho: lado,
-    profundidad: lado,
+  const margen = GROSOR_PUERTA + 0.4;
+  const centrosPuerta = puertas.map(({ rect }) => ({
+    x: rect.x + rect.ancho / 2,
+    z: rect.z + rect.profundidad / 2,
+  }));
+  const candidatas = [0.72, 0.28].flatMap((fx) =>
+    [0.72, 0.28].map((fz) => ({
+      x: Math.min(Math.max(ancho * fx - lado / 2, margen), Math.max(margen, ancho - lado - margen)),
+      z: Math.min(Math.max(profundidad * fz - lado / 2, margen), Math.max(margen, profundidad - lado - margen)),
+      ancho: lado,
+      profundidad: lado,
+    })),
+  );
+  // La primera candidata (72%/72%) sigue siendo la preferida: el `reduce` solo
+  // la sustituye por una ESTRICTAMENTE mejor, así que una sala sin puertas —o
+  // con todas igual de lejos— conserva la colocación de siempre.
+  const holgura = (zona) => {
+    if (centrosPuerta.length === 0) return Infinity;
+    const cx = zona.x + zona.ancho / 2;
+    const cz = zona.z + zona.profundidad / 2;
+    return Math.min(...centrosPuerta.map((p) => Math.hypot(cx - p.x, cz - p.z)));
   };
+  return candidatas.reduce((mejor, actual) => (holgura(actual) > holgura(mejor) ? actual : mejor));
 }
 
 function puestoDe(sala) {
@@ -195,9 +226,26 @@ function definirSala(sala, salientes) {
     });
   }
 
+  // La consola se declara ANTES de la sala porque es mobiliario suyo: hasta #557
+  // el rect existía solo como disparador y no se dibujaba nada encima.
+  const puestoDeLaSala = puestoDe(sala);
+  const rectConsola = zonaConsola(sala, puertas);
   const caja = crearSalaCaja({
     ancho,
     profundidad,
+    mobiliario: [
+      ...(puestoDeLaSala ? piezasConsola({ zona: rectConsola, sala: { ancho, profundidad } }) : []),
+      // La maquinaria de la sala (#560): sale de su SISTEMA, no se inventa.
+      ...piezasMobiliarioSala({
+        sala: { ancho, profundidad },
+        sistema: sala.sistema ?? null,
+        puertas,
+        consola: puestoDeLaSala ? rectConsola : null,
+        // Semilla por celda, como el cielo de sus ventanas: la misma sala se
+        // amuebla igual siempre, y dos salas distintas no salen calcadas.
+        semilla: 20260810 + sala.celda.x * 131 + sala.celda.y * 17,
+      }),
+    ],
     puertas: puertas.map(({ rect }) => ({ rect })),
     ventanas: ventanasAlExterior(sala, salientes),
     // Mismo motivo que en la cantina: el marco de serie es `SECCION.entrable`,
@@ -209,7 +257,6 @@ function definirSala(sala, salientes) {
     semillaCielo: 20260808 + sala.celda.x * 31 + sala.celda.y * 7,
   });
 
-  const puesto = puestoDe(sala);
   return {
     planta: caja.planta,
     componer: caja.componer,
@@ -217,7 +264,7 @@ function definirSala(sala, salientes) {
     // primera apertura, porque cualquier llegada real trae su `x`/`z`.
     entrada: { x: ancho / 2, z: profundidad / 2, yaw: 0 },
     puertas,
-    consolas: puesto ? [{ rect: zonaConsola(sala), puesto }] : [],
+    consolas: puestoDeLaSala ? [{ rect: rectConsola, puesto: puestoDeLaSala }] : [],
   };
 }
 

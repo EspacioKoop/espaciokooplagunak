@@ -580,6 +580,18 @@ export function componerEscena(malla, opciones = {}) {
   // que la guardia de `paleta.test.mjs` prohíbe. Sin fondo declarado —lienzo
   // transparente— no hay hacia dónde fundir, así que no hay niebla.
   const fondo = typeof opciones.fondo === "string" ? opciones.fondo : null;
+  // Malla EMISIVA: sus caras se pintan a intensidad plena, sin sombreado por
+  // normal (#555). Es lo que hace que una lámpara se lea encendida en un motor
+  // que solo tiene una luz direccional y un suelo ambiente — y es exactamente lo
+  // que hacía la máquina de referencia: los polígonos de una luz, una pantalla o
+  // un motor iban «fullbright», sin iluminar. No es una luz: no alumbra a nadie,
+  // solo se exceptúa de la sombra. Poner luces de verdad es otra decisión, más
+  // cara y que cambiaría el aspecto de todas las superficies (#556).
+  //
+  // La NIEBLA sí se le aplica: una luminaria al fondo de una nave larga tiene que
+  // apagarse con la distancia como todo lo demás, o el pasillo pierde la
+  // profundidad que la niebla le da.
+  const emisivo = opciones.emisivo === true;
   const yaw = finito(opciones.yaw, 0);
   const pitch = finito(opciones.pitch, 0);
   const roll = finito(opciones.roll, 0);
@@ -655,7 +667,7 @@ export function componerEscena(malla, opciones = {}) {
     // solo hasta el plano lejano.
     const profundidad = recortada.reduce((suma, v) => suma + v[2], 0) / recortada.length;
 
-    const sombreado = sombrear(color, intensidadCara(normal, ajustes.tonos));
+    const sombreado = emisivo ? color : sombrear(color, intensidadCara(normal, ajustes.tonos));
     const niebla = fondo ? factorNiebla(profundidad, { cerca, lejos, niebla: ajustes.niebla }) : 0;
     poligonos.push({
       puntos,

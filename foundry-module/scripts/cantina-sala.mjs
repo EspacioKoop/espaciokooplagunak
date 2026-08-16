@@ -162,6 +162,11 @@ const SALA = crearSalaCaja({
   colorColumna: CANTINA.nervio,
   colorMarcoVentana: CANTINA.nervio,
   semillaCielo: 20260808,
+  // Sin piel de objetos (#550). La piel de serie es CHAPA REMACHADA, y aquí los
+  // muebles son de madera: una barra de taberna con remaches de casco no es un
+  // detalle de más, es un material equivocado. La sala se queda con la piel de
+  // sus muros —que sí son casco— y sus 126 muebles siguen como estaban (#423).
+  pielObjetos: false,
 });
 
 export const PLANTA_CANTINA_SALA = SALA.planta;

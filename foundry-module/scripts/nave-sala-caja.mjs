@@ -28,11 +28,16 @@
 // Frontera de arte (#351): no declara ni un color propio — todos vienen de
 // `paleta.mjs` (`SECCION`, ya usada para materiales genéricos de nave).
 
-import { SECCION } from "./paleta.mjs";
+import { AMBAR_SENAL, SECCION } from "./paleta.mjs";
 import { componerEscena, fundirEscenas } from "./retro3d.mjs";
 import { resolverCamara } from "./nave-camara.mjs";
 import { campoEstelar, proyectarEstrellas } from "./retro3d-estrellas.mjs";
 import { piezasDeVentana } from "./nave-ventana-espacio.mjs";
+import { piezasMuralPixel } from "./nave-mural-pixel.mjs";
+import { piezasPielHoja } from "./nave-piel-puerta.mjs";
+import { piezasPielColumna, piezasPielObjeto } from "./nave-piel-objeto.mjs";
+import { piezasPielSuelo, piezasPielTecho } from "./nave-piel-suelo.mjs";
+import { piezasLuminarias } from "./nave-luminaria.mjs";
 import { crearPlanta } from "./nave-movimiento.mjs";
 import { poligonosOtrosJugadores } from "./nave-avatares-render.mjs";
 
@@ -81,7 +86,7 @@ const GROSOR_MURO = 0.4;
 
 /** Tonos del detalle de la hoja. Del casco, no colores nuevos (#351). */
 const DETALLE_HOJA = SECCION.mamparo;
-const FRANJA_HOJA = "#ffb703";
+const FRANJA_HOJA = AMBAR_SENAL;
 
 /** Altura del hueco de una puerta: por debajo se puede cruzar, por encima
  *  sigue habiendo muro (el dintel). 2.8 y no 2.2 (QA: "parece gigante"): al
@@ -407,19 +412,6 @@ function rodapie(ancho, profundidad) {
   ];
 }
 
-/**
- * Una lámpara de techo centrada (mismo QA que `rodapie`): un cuerpo colgado
- * del techo con `SECCION.entrable` —el mismo acento que ya marca ventanas y
- * consolas— para que se lea como una fuente de luz y no como una caja más.
- * Sin colisión propia: cuelga por encima de donde se puede caminar.
- */
-function lamparaTecho(ancho, profundidad) {
-  const lado = Math.min(ancho, profundidad) * 0.22;
-  return {
-    malla: caja([ancho / 2, ALTURA - 0.22, profundidad / 2], [lado, 0.12, lado]),
-    color: SECCION.entrable,
-  };
-}
 
 /**
  * Botones y una palanca sobre la cara SUPERIOR del cuerpo de una consola
@@ -497,9 +489,22 @@ export function crearSalaCaja({
   // un boquete en el muro, sin que el motor sepa dibujar transparencias.
   colorMarcoVentana = SECCION.entrable,
   // Ámbar de señalización: el mismo que ya usa el módulo para «esto se acciona».
-  colorMarcoPuerta = "#ffb703",
+  colorMarcoPuerta = AMBAR_SENAL,
   semillaCielo = 20260731,
   cantidadEstrellas = 90,
+  // Pixelart de casco sobre los muros (#548). Encendido de serie: un muro plano
+  // es una caja gris, y la piel es lo que hace que la sala se lea como nave.
+  // El interruptor existe para las salas de prueba —donde el mural solo estorba
+  // al leer qué está midiendo el test— y no como preferencia de estilo.
+  muralPixel = true,
+  semillaMural = 20260810,
+  // Piel de puertas y objetos (#550). Van con su propio interruptor y no con el
+  // del mural porque son decisiones separables: una sala puede querer sus muros
+  // desnudos y sus puertas marcadas. Ambas encendidas de serie, y ambas apagadas
+  // en las salas de prueba por el mismo motivo que el mural.
+  pielPuertas = true,
+  pielObjetos = true,
+  pielSuelo = true,
 }) {
   const muros = [
     { x: -GROSOR_MURO, z: -GROSOR_MURO, ancho: ancho + GROSOR_MURO * 2, profundidad: GROSOR_MURO },
@@ -525,17 +530,50 @@ export function crearSalaCaja({
 
   const piezas = Object.freeze([
     ...tramosMuro.map((rect) => ({ malla: rectAColumna(rect, ALTURA), color: colorMuro })),
+    // La piel va justo detrás del muro que la sostiene y antes que todo lo
+    // demás: es parte de la pared, no mobiliario colgado de ella.
+    ...(muralPixel
+      ? tramosMuro.flatMap((rect) =>
+          piezasMuralPixel({ rect, sala: { ancho, profundidad }, altura: ALTURA, semilla: semillaMural }),
+        )
+      : []),
     ...marcos.map((malla) => ({ malla, color: colorMarcoVentana })),
     // El marco de puerta lleva su propio color: es lo que la hace reconocible
     // como paso a otra sala y no como un boquete en el muro.
     ...marcosPuerta.map((malla) => ({ malla, color: colorMarcoPuerta })),
     ...bandas.map((malla) => ({ malla, color: colorMuro })),
     ...columnas.map((rect) => ({ malla: rectAColumna(rect, ALTURA), color: colorColumna })),
-    ...mobiliario.map(({ centro, medidas, color }) => ({ malla: caja(centro, medidas), color })),
+    ...mobiliario.map(({ centro, medidas, color, emisivo }) => ({
+      malla: caja(centro, medidas),
+      color,
+      // Un mueble puede declararse emisivo (#557, la pantalla de una consola):
+      // se pinta a intensidad plena, sin sombreado por normal.
+      emisivo: emisivo === true,
+    })),
+    // Piel de los objetos (#550). Va DESPUÉS de las cajas que viste, y solo la
+    // reciben los que son arquitectura de la sala: `piezasPielObjeto` filtra por
+    // tamaño, así que las 126 piezas de mobiliario de la cantina no se convierten
+    // en 126 objetos vestidos — pasan las pocas que se ven de cerca.
+    ...(pielObjetos
+      ? [
+          ...columnas.flatMap((rect) => piezasPielColumna(rect, ALTURA)),
+          ...mobiliario
+            .filter((pieza) => pieza.piel !== false)
+            .flatMap(({ centro, medidas }) => piezasPielObjeto({ centro, medidas })),
+        ]
+      : []),
     ...rodapie(ancho, profundidad),
     { malla: caja([ancho / 2, -0.05, profundidad / 2], [ancho, 0.1, profundidad]), color: SECCION.sala },
     { malla: caja([ancho / 2, ALTURA + 0.05, profundidad / 2], [ancho, 0.1, profundidad]), color: SECCION.mamparo },
-    lamparaTecho(ancho, profundidad),
+    // Suelo y techo (#552). Van con su propio interruptor, como el resto de la
+    // piel, y detrás de sus dos losas: son chapa encima, no las sustituyen.
+    ...(pielSuelo
+      ? [
+          ...piezasPielSuelo({ ancho, profundidad, semilla: semillaMural }),
+          ...piezasPielTecho({ ancho, profundidad, altura: ALTURA }),
+        ]
+      : []),
+    ...piezasLuminarias({ ancho, profundidad, altura: ALTURA }),
   ]);
 
   const planta = crearPlanta({ ancho, profundidad, obstaculos: [...columnas, ...obstaculosMobiliario] });
@@ -572,8 +610,13 @@ export function crearSalaCaja({
       const rects = rectsHojaPuerta(puerta, fraccion);
       return [
         ...rects.map((rect) => ({ malla: rectAColumnaEntre(rect, puerta.y0, puerta.y1), color: colorMuro })),
-        // El detalle sale de los MISMOS rects, así que viaja con la hoja al abrirse.
-        ...rects.flatMap((rect) => piezasDetalleHoja(puerta, rect)),
+        // El detalle sale de los MISMOS rects, así que viaja con la hoja al
+        // abrirse. En rejilla (#550) para que el detalle de la puerta mida lo
+        // mismo que el del muro que la rodea; sin piel, la hoja se queda con las
+        // bandas lisas de siempre, que siguen siendo mejor que una hoja pelada.
+        ...rects.flatMap((rect) =>
+          pielPuertas ? piezasPielHoja(puerta, rect) : piezasDetalleHoja(puerta, rect),
+        ),
       ];
     });
 
@@ -581,13 +624,15 @@ export function crearSalaCaja({
       piezasDeVentana({ rect, sala: { ancho, profundidad }, sensores, rumboNave }),
     );
 
-    const partes = [...piezas, ...hojasPuertas, ...vistaVentanas].map(({ malla, color }) =>
+    const partes = [...piezas, ...hojasPuertas, ...vistaVentanas].map(({ malla, color, emisivo }) =>
       componerEscena(trasladarMalla(malla, [-camara[0], -camara[1], -camara[2]]), {
         ancho: anchoLienzo,
         alto: altoLienzo,
         epoca,
         fov,
         color,
+        // Solo lo que de verdad emite: hoy, el difusor de una luminaria (#555).
+        emisivo: emisivo === true,
         posicion: [0, 0, 0],
         yaw: yawCamara,
         // Recorte de frustum completo (#510): las salas de #508 son

@@ -51,8 +51,14 @@ sonoro.
 | [USGS Astrogeology](https://astrogeology.usgs.gov/search) | Mosaicos y mapas topográficos planetarios reales | Materia prima de mapas planetarios |
 
 **La cautela con la NASA es de MARCA, no de derechos.** El material no tiene copyright en
-EE. UU., pero no se puede usar de forma que insinúe que la NASA respalda el proyecto. Un
-logo de la NASA en una nave del juego cruza esa línea; un mapa de Marte, no.
+EE. UU., pero no se puede usar de forma que insinúe que la NASA respalda el proyecto.
+
+**Regla del proyecto, y no admite matices:** la NASA se menciona **solo en los créditos**.
+Ni en el nombre de un asset visible, ni en un texto de la interfaz, ni en una nave, ni en
+un escenario, ni en el nombre de una sala. El material se usa; la marca no se pasea. Esto
+vale igual para cualquier otra agencia u organismo real cuyo material entre por dominio
+público — el criterio es el mismo que ya aplica `DOMINIO_PUBLICO_SCIFI.md` al separar
+copyright de marca.
 
 ### CC BY (usable con atribución)
 

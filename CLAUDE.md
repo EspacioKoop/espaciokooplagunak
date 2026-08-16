@@ -389,9 +389,21 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     la luz viene de arriba, así que toda cara que mire hacia abajo está en el mínimo y el techo es
     estructuralmente la superficie más oscura de la sala. Es la lección del suelo (#552) en el otro
     extremo: cada orientación tiene su tramo de rampa. **Emisivo NO es una luz**: el difusor no
-    alumbra a nadie y el muro de enfrente no se aclara por tenerlo delante; el motor sigue con UNA
-    direccional fija y poner luces de verdad —con posición y caída— es una decisión abierta en #556
-    que cambiaría el aspecto de todas las superficies del módulo.
+    alumbra a nadie y el muro de enfrente no se aclara por tenerlo delante. Esa frontera sigue
+    intacta ahora que el motor SÍ tiene **luces de punto** (`componerEscena({focos})`, #556): lo que
+    alumbra es un foco declarado por la escena, y `emisivo` sigue diciendo solo cómo se ve la propia
+    luminaria. La luz de punto se evalúa **en el centroide de cada cara** y entra por
+    `intensidadCara` sumada a la direccional de siempre, sin tocar el rasterizador ni el orden por
+    pintor: son las mismas caras con otro tono. Eso no valía la pena cuando un muro era un
+    cuadrilátero grande —una lámpara al lado no daba un charco de luz, sino un muro que cambiaba de
+    tono de golpe—, y lo vale ahora porque la piel pixelart de #548–#552 dejó 742 de 768 caras por
+    debajo del 0,5 % del cuadro. Tres reglas de contrato: se **suman todas las luces y se escalona
+    después** (escalonar por foco haría que dos focos débiles no equivalieran a uno fuerte), se
+    conserva el **suelo ambiente de 0,35** (una cara fuera de todo charco no puede caer a negro), y
+    el presupuesto es de `TOPE_FOCOS` focos por escena, los más cercanos al observador, porque el
+    coste es por cara y una sala son ~800. **Sin focos declarados nada cambia**, y hoy no los declara
+    ninguna escena: qué luminarias son foco, con qué caída y cuántas, es arte y quiere ojos delante.
+    Nada de sombras: proyectarlas exige resolver visibilidad, que es la deuda abierta de #510.
     La **maquinaria de sala** es `scripts/nave-mobiliario-sala.mjs` (#560), y su regla es la misma
     que gobierna todo lo demás en esta nave: **el dato ya existe**. `SALAS_PHOBOS` declara el sistema
     de cada sala, y de ahí sale qué le toca —bancadas, armarios, conductos, cajas de registro— igual

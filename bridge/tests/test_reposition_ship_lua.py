@@ -134,6 +134,7 @@ def test_escenario_publica_evento_solo_para_reposicion_aceptada(tmp_path: Path):
     driver = f'''
 package.loaded["utils.lua"] = true
 package.loaded["public_domain_names_scenario_utility.lua"] = true
+package.loaded["lagunak_crisis_scenario_utility.lua"] = true
 dofile({json.dumps(str(escenario))})
 
 local markers = {{}}
@@ -200,6 +201,7 @@ def test_escenario_rechaza_antes_de_mover_al_agotar_secuencia(tmp_path: Path):
     driver = f'''
 package.loaded["utils.lua"] = true
 package.loaded["public_domain_names_scenario_utility.lua"] = true
+package.loaded["lagunak_crisis_scenario_utility.lua"] = true
 dofile({json.dumps(str(escenario))})
 
 local markers = {{}}

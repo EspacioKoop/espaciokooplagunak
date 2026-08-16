@@ -151,7 +151,13 @@ def test_encounters_publica_el_catalogo_cerrado(client, juego, auth):
     r = client.get("/v1/encounters", headers=auth)
     assert r.status_code == 200
     cuerpo = r.json()
-    assert cuerpo["archetypes"] == ["derelict", "patrol", "freighter", "sentry"]
+    assert cuerpo["archetypes"] == [
+        "derelict",
+        "patrol",
+        "freighter",
+        "sentry",
+        "ambush",
+    ]
     assert cuerpo["bearings"] == ["ahead", "astern", "port", "starboard"]
     # Catálogo estático: nunca ejecuta Lua contra el juego.
     assert juego.llamadas == []

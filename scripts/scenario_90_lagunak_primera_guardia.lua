@@ -17,6 +17,11 @@ require("utils.lua")
 -- dan un "nombre de casco" evocador a pecios y mercantes de origen ajeno sin tocar el
 -- indicativo vasco que el puente/Foundry rastrean por prefijo.
 require("public_domain_names_scenario_utility.lua")
+-- Crisis multipuesto de la Etapa B (#484): el arquetipo `ambush` no es una nave
+-- suelta sino un grupo con su propia maquina de estados, que vive en su utilidad
+-- para que cualquier escenario pueda montarla. Ver la cabecera de ese archivo
+-- para el razonamiento de por que hacen falta tres puestos en cadena.
+require("lagunak_crisis_scenario_utility.lua")
 
 -- Globales (sin "local") a proposito: permiten sondear el estado desde la
 -- consola Lua del modo headless o via /exec.lua en QA local.
@@ -41,6 +46,10 @@ function init()
     marcadoresEventosEncuentro = {}
     marcadoresEventosReposicion = {}
     contadorReposiciones = 0
+    -- Global a proposito, como el resto del estado del escenario: permite
+    -- sondear la crisis desde la consola Lua del modo headless
+    -- (`crisisActivas[1]:estado()`) durante el QA de #484.
+    crisisActivas = {}
     modoPruebaIndividual = esModoPruebaIndividual()
 
     estacionLagunak = SpaceStation()
@@ -223,6 +232,19 @@ function lagunakSpawnEncounter(arquetipo, rumbo)
     if nave == nil then
         return false
     end
+    -- `ambush` (#484) no es una nave suelta: es un grupo con maquina de estados
+    -- propia. Se despacha antes que la tabla de arquetipos de una sola nave
+    -- porque no comparte forma con ella, no porque sea un caso especial del
+    -- catalogo — para el puente y para Foundry es un arquetipo mas.
+    if arquetipo == "ambush" then
+        local crisis = lagunakCrisisEmboscada(nave, rumbo)
+        if crisis == nil then
+            return false
+        end
+        table.insert(crisisActivas, crisis)
+        return true
+    end
+
     local spec = ARQUETIPOS_ENCUENTRO[arquetipo]
     if spec == nil then
         return false
@@ -396,9 +418,34 @@ Espaciokoop Lagunak — primera guardia superada.]]), formatTime(timer)))
     end
 end
 
+-- Avanza cada crisis multipuesto viva y retira las ya resueltas. El desenlace
+-- se anuncia a toda la mesa pero NO termina el escenario: la crisis es un
+-- encuentro dentro de la guardia, no la guardia. Perder los senuelos no hace
+-- fracasar la mision — deja constancia de que se resolvio mal, que es
+-- exactamente lo que #484 pide poder observar.
+function actualizarCrisis(delta)
+    for indice = #crisisActivas, 1, -1 do
+        local crisis = crisisActivas[indice]
+        local desenlace = crisis:actualizar(delta)
+        if desenlace ~= nil then
+            table.remove(crisisActivas, indice)
+            if desenlace == "resuelta" then
+                globalMessage(_("msgMainscreen", [[Amenaza neutralizada.
+
+El buque trampa ha caido y los dos cargueros civiles siguen enteros. Asi se hace.]]))
+            elseif desenlace == "con_bajas" then
+                globalMessage(_("msgMainscreen", [[Amenaza neutralizada, con bajas civiles.
+
+El buque trampa ha caido, pero no todos los supervivientes del convoy llegaran a Argia.]]))
+            end
+        end
+    end
+end
+
 function update(delta)
     timer = timer + delta
     actualizarMarcadoresEventosEncuentro()
+    actualizarCrisis(delta)
 
     if fase == "guardia" then
         if not briefEnviado and timer > 5.0 then

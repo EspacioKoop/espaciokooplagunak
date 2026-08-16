@@ -106,6 +106,7 @@ def test_escenario_crea_y_conserva_marcador_de_evento(tmp_path):
     escenario = raiz / "scripts" / "scenario_90_lagunak_primera_guardia.lua"
     driver = f'''
 package.preload["utils.lua"] = function() end
+package.preload["lagunak_crisis_scenario_utility.lua"] = function() end
 package.preload["public_domain_names_scenario_utility.lua"] = function()
     function getPublicDomainName(theme)
         assert(theme == "lovecraft" or theme == "verne")
@@ -165,6 +166,83 @@ assert(marker.x == 700 and marker.y == 800)
 io.write("ok")
 '''
     ruta = tmp_path / "scenario-encounter-driver.lua"
+    ruta.write_text(driver, encoding="utf-8")
+    proc = subprocess.run([lua, str(ruta)], capture_output=True, timeout=10)
+    assert proc.returncode == 0, proc.stderr.decode("utf-8", "replace")
+    assert proc.stdout == b"ok"
+
+
+def test_escenario_despacha_ambush_a_la_crisis_y_no_a_la_tabla_de_nave_suelta(tmp_path):
+    """`ambush` (#484) es un grupo con máquina de estados, no un arquetipo de una nave.
+
+    Esta regresión existe porque el vertical de #484 llegó sin ninguna prueba de
+    su propio despacho: lo único que rompió al añadirlo fue el `require` nuevo
+    en los drivers de estos tests, y eso no dice nada sobre si el arquetipo hace
+    lo que dice. Fija las dos mitades: que delega en la utilidad pasándole nave
+    y rumbo, y que NO toca el camino de una sola nave (ni `CpuShip`, ni marcador
+    de evento, ni el contador de encuentros).
+    """
+    lua = _interprete_lua()
+    if lua is None:
+        pytest.skip("no hay intérprete Lua para probar el escenario real")
+    lua = cast(str, lua)
+    raiz = Path(__file__).resolve().parents[2]
+    escenario = raiz / "scripts" / "scenario_90_lagunak_primera_guardia.lua"
+    driver = f'''
+package.preload["utils.lua"] = function() end
+package.preload["public_domain_names_scenario_utility.lua"] = function()
+    function getPublicDomainName(_) return "Kadath" end
+end
+-- Doble de la utilidad: el escenario solo debe conocer su nombre y su contrato
+-- (recibe nave y rumbo, devuelve una crisis o nil). La crisis de verdad se
+-- prueba jugando (#467), no desde aquí.
+local recibido = nil
+local devolver = nil
+package.preload["lagunak_crisis_scenario_utility.lua"] = function()
+    function lagunakCrisisEmboscada(nave, rumbo)
+        recibido = {{ nave = nave, rumbo = rumbo }}
+        return devolver
+    end
+end
+local naves = 0
+local marcadores = 0
+function CpuShip() naves = naves + 1 return setmetatable({{}}, {{ __index = function()
+    return function(self) return self end
+end }}) end
+function Artifact() marcadores = marcadores + 1 return setmetatable({{}}, {{ __index = function()
+    return function(self) return self end
+end }}) end
+local ship = {{}}
+function ship:getPosition() return 10, 20 end
+function ship:getHeading() return 0 end
+function ship:isValid() return true end
+function getPlayerShip(_) return ship end
+assert(loadfile({json.dumps(str(escenario))}))()
+eventoLlegadaId = "654321"
+marcadoresEventosEncuentro = {{}}
+crisisActivas = {{}}
+contadorEncuentros = nil
+
+-- 1) Despacho normal: delega y guarda la crisis viva.
+devolver = {{ soyLaCrisis = true }}
+assert(lagunakSpawnEncounter("ambush", "starboard") == true)
+assert(recibido.nave == ship, "la crisis debe recibir la nave del jugador")
+assert(recibido.rumbo == "starboard", "el rumbo grueso debe llegar tal cual")
+assert(#crisisActivas == 1 and crisisActivas[1].soyLaCrisis)
+-- La propiedad que importa: no se ha materializado ninguna nave suelta ni
+-- marcador por el camino de ARQUETIPOS_ENCUENTRO.
+assert(naves == 0, "ambush no debe crear una CpuShip desde la tabla de arquetipos")
+assert(marcadores == 0, "ambush no debe crear marcador de evento de encuentro")
+assert(contadorEncuentros == nil, "ambush no debe consumir el contador de encuentros")
+assert(#marcadoresEventosEncuentro == 0)
+
+-- 2) Si la utilidad no puede montarla, se rechaza y no queda basura viva.
+devolver = nil
+assert(lagunakSpawnEncounter("ambush", "ahead") == false)
+assert(#crisisActivas == 1, "una crisis rechazada no debe encolarse")
+io.write("ok")
+'''
+    ruta = tmp_path / "scenario-ambush-driver.lua"
     ruta.write_text(driver, encoding="utf-8")
     proc = subprocess.run([lua, str(ruta)], capture_output=True, timeout=10)
     assert proc.returncode == 0, proc.stderr.decode("utf-8", "replace")

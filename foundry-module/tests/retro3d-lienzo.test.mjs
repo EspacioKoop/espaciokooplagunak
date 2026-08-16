@@ -1,7 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { girarNave, pintarEscena, pintarEscenaConProfundidad, pintarNave } from "../scripts/retro3d-lienzo.mjs";
+import {
+  girarNave,
+  muestrearTextura,
+  texturaUtilizable,
+  pintarEscena,
+  pintarEscenaConProfundidad,
+  pintarNave,
+} from "../scripts/retro3d-lienzo.mjs";
 import { CASCO_POR_DEFECTO, MALLA_CAZA, componerEscena, mallaDesdeCasco } from "../scripts/retro3d.mjs";
 import { FACCIONES } from "../scripts/paleta.mjs";
 
@@ -319,4 +326,281 @@ test("pintarEscenaConProfundidad: devuelve cuántos polígonos traía la escena"
     ],
   };
   assert.equal(pintarEscenaConProfundidad(ctx, escena), 2);
+});
+
+// ---- Mapeado de texturas (#573) --------------------------------------------
+//
+// Lo que se afirma aquí no es «se ve bonito» sino las tres cosas que distinguen
+// un mapeado de la época de uno moderno: que el téxel se coge sin filtrar, que
+// el interpolado de UV lo decide la ÉPOCA (afín en PSX, con perspectiva en
+// GameCube), y que sin UV válidas se cae al color plano en vez de pintar basura.
+
+/** Textura de 2×2 en damero, con paleta de dos colores. */
+const DAMERO = Object.freeze({
+  ancho: 2,
+  alto: 2,
+  indices: Uint8Array.from([0, 1, 1, 0]),
+  paleta: Object.freeze(["#ff0000", "#00ff00"]),
+});
+
+test("muestrearTextura coge el téxel más cercano y envuelve, también en negativo", () => {
+  assert.equal(muestrearTextura(DAMERO, 0.1, 0.1), 0);
+  assert.equal(muestrearTextura(DAMERO, 0.9, 0.1), 1);
+  assert.equal(muestrearTextura(DAMERO, 0.9, 0.9), 0);
+  // Envoltura: una UV fuera de [0,1) sale sola en cuanto una cara se recorta.
+  // En JavaScript el resto de un negativo es NEGATIVO, así que sin corregirlo
+  // esto indexaría fuera del búfer.
+  assert.equal(muestrearTextura(DAMERO, 1.1, 0.1), muestrearTextura(DAMERO, 0.1, 0.1));
+  assert.equal(muestrearTextura(DAMERO, -0.9, 0.1), muestrearTextura(DAMERO, 0.1, 0.1));
+  assert.equal(muestrearTextura(DAMERO, -3.9, -3.9), muestrearTextura(DAMERO, 0.1, 0.1));
+});
+
+test("un polígono con textura pinta téxeles, no su color plano", () => {
+  const ctx = contextoConPixeles();
+  const escena = {
+    ancho: 8,
+    alto: 8,
+    epoca: "psx",
+    poligonos: [
+      {
+        color: "#0000ff", // el color plano NO debe verse en ningún píxel texturado
+        textura: DAMERO,
+        intensidad: 1,
+        puntos: [
+          { x: 0, y: 0, z: 2, u: 0, v: 0 },
+          { x: 8, y: 0, z: 2, u: 1, v: 0 },
+          { x: 8, y: 8, z: 2, u: 1, v: 1 },
+          { x: 0, y: 8, z: 2, u: 0, v: 1 },
+        ],
+      },
+    ],
+  };
+  pintarEscenaConProfundidad(ctx, escena, { fondo: "#000000" });
+  const imagen = ctx.llamadas[0];
+  assert.deepEqual(pixelEn(imagen, 1, 1), [255, 0, 0, 255], "esquina de arriba a la izquierda: téxel 0");
+  assert.deepEqual(pixelEn(imagen, 6, 1), [0, 255, 0, 255], "esquina de arriba a la derecha: téxel 1");
+  assert.deepEqual(pixelEn(imagen, 6, 6), [255, 0, 0, 255], "abajo a la derecha: vuelve el téxel 0");
+});
+
+test("la intensidad de la cara modula el téxel, no lo sustituye", () => {
+  const ctx = contextoConPixeles();
+  pintarEscenaConProfundidad(
+    ctx,
+    {
+      ancho: 4,
+      alto: 4,
+      epoca: "psx",
+      poligonos: [
+        {
+          color: "#0000ff",
+          textura: DAMERO,
+          intensidad: 0.5,
+          puntos: [
+            { x: 0, y: 0, z: 2, u: 0, v: 0 },
+            { x: 4, y: 0, z: 2, u: 0, v: 0 },
+            { x: 4, y: 4, z: 2, u: 0, v: 0 },
+            { x: 0, y: 4, z: 2, u: 0, v: 0 },
+          ],
+        },
+      ],
+    },
+    { fondo: "#000000" },
+  );
+  // Téxel 0 es #ff0000 a intensidad 0.5: rojo a la mitad, no negro y no rojo pleno.
+  const [r, g, b] = pixelEn(ctx.llamadas[0], 2, 2);
+  assert.ok(r > 100 && r < 160, `el rojo tenía que quedar a media luz, salió ${r}`);
+  assert.equal(g, 0);
+  assert.equal(b, 0);
+});
+
+/** Un suelo que se aleja: la mitad de arriba está lejos y la de abajo cerca.
+ *  Es el caso donde afín y perspectiva se separan de verdad. */
+function sueloInclinado(epoca) {
+  return {
+    ancho: 16,
+    alto: 16,
+    epoca,
+    poligonos: [
+      {
+        color: "#0000ff",
+        textura: DAMERO,
+        intensidad: 1,
+        puntos: [
+          { x: 0, y: 0, z: 20, u: 0, v: 0 },
+          { x: 16, y: 0, z: 20, u: 1, v: 0 },
+          { x: 16, y: 16, z: 2, u: 1, v: 1 },
+          { x: 0, y: 16, z: 2, u: 0, v: 1 },
+        ],
+      },
+    ],
+  };
+}
+
+test("la época decide el interpolado de UV: PSX afín, GameCube con perspectiva", () => {
+  // ESTO NO ES UN AJUSTE DE CALIDAD, ES LA ÉPOCA. La PSX no dividía por z al
+  // interpolar UV y por eso sus texturas bailaban en las superficies muy
+  // inclinadas; reproducirlo es el objetivo, igual que el temblor de vértices.
+  // OJO CON EL BÚFER COMPARTIDO: `pintarEscenaConProfundidad` reutiliza el mismo
+  // Uint8ClampedArray entre volcados del mismo tamaño (a propósito: reservar
+  // medio MB sesenta veces por segundo sería tirar memoria). La `ImageData` que
+  // entrega lo ENVUELVE, no lo copia, así que quedarse con dos imágenes de dos
+  // volcados y compararlas después es comparar una consigo misma. En producción
+  // no se nota porque `putImageData` copia al instante; aquí hay que copiar.
+  const instantanea = (escena) => {
+    const ctx = contextoConPixeles();
+    pintarEscenaConProfundidad(ctx, escena, { fondo: "#000000" });
+    const imagen = ctx.llamadas[0];
+    return { width: imagen.width, height: imagen.height, data: Uint8ClampedArray.from(imagen.data) };
+  };
+  const psx = instantanea(sueloInclinado("psx"));
+  const cubo = instantanea(sueloInclinado("gamecube"));
+
+  const distintos = [];
+  for (let y = 0; y < 16; y += 1) {
+    for (let x = 0; x < 16; x += 1) {
+      if (pixelEn(psx, x, y).join() !== pixelEn(cubo, x, y).join()) distintos.push([x, y]);
+    }
+  }
+  assert.ok(
+    distintos.length > 0,
+    "sobre un suelo muy inclinado, afín y perspectiva TIENEN que dar imágenes distintas",
+  );
+});
+
+test("sin UV válidas se cae al color plano en vez de pintar basura", () => {
+  const ctx = contextoConPixeles();
+  pintarEscenaConProfundidad(
+    ctx,
+    {
+      ancho: 4,
+      alto: 4,
+      epoca: "psx",
+      poligonos: [
+        {
+          color: "#0000ff",
+          textura: DAMERO,
+          intensidad: 1,
+          // Un vértice sin UV: el abanico daría NaN y una franja de basura.
+          puntos: [
+            { x: 0, y: 0, z: 2, u: 0, v: 0 },
+            { x: 4, y: 0, z: 2 },
+            { x: 4, y: 4, z: 2, u: 1, v: 1 },
+          ],
+        },
+      ],
+    },
+    { fondo: "#000000" },
+  );
+  assert.deepEqual(pixelEn(ctx.llamadas[0], 2, 1), [0, 0, 255, 255], "muro liso mejor que muro roto");
+});
+
+test("un índice fuera de paleta cae al color plano, no deja un agujero", () => {
+  const ctx = contextoConPixeles();
+  const rota = { ancho: 1, alto: 1, indices: Uint8Array.from([7]), paleta: ["#ff0000"] };
+  pintarEscenaConProfundidad(
+    ctx,
+    {
+      ancho: 4,
+      alto: 4,
+      epoca: "psx",
+      poligonos: [
+        {
+          color: "#0000ff",
+          textura: rota,
+          intensidad: 1,
+          puntos: [
+            { x: 0, y: 0, z: 2, u: 0, v: 0 },
+            { x: 4, y: 0, z: 2, u: 1, v: 0 },
+            { x: 4, y: 4, z: 2, u: 1, v: 1 },
+          ],
+        },
+      ],
+    },
+    { fondo: "#000000" },
+  );
+  // Un agujero se leería como fallo de geometría y mandaría a buscar el error
+  // donde no está.
+  assert.deepEqual(pixelEn(ctx.llamadas[0], 2, 1), [0, 0, 255, 255]);
+});
+
+test("texturaUtilizable cierra la puerta a texturas estructuralmente rotas", () => {
+  assert.equal(texturaUtilizable(DAMERO), true);
+  assert.equal(texturaUtilizable(null), false);
+  assert.equal(texturaUtilizable({}), false);
+  assert.equal(texturaUtilizable({ ancho: 0, alto: 2, indices: Uint8Array.from([0]) }), false);
+  assert.equal(texturaUtilizable({ ancho: 2, alto: 0, indices: Uint8Array.from([0]) }), false);
+  assert.equal(texturaUtilizable({ ancho: 1.5, alto: 2, indices: Uint8Array.from([0, 0, 0]) }), false);
+  assert.equal(texturaUtilizable({ ancho: NaN, alto: 2, indices: Uint8Array.from([0, 0]) }), false);
+  // Menos téxeles de los que anuncia: se leería fuera del búfer.
+  assert.equal(texturaUtilizable({ ancho: 2, alto: 2, indices: Uint8Array.from([0, 1]) }), false);
+});
+
+test("una textura con dimensiones inválidas cae al color plano, no a NaN", () => {
+  const ctx = contextoConPixeles();
+  // `% 0` daría NaN y leería una posición inválida si no se cerrase la entrada.
+  const rota = { ancho: 0, alto: 0, indices: Uint8Array.from([]), paleta: ["#ff0000"] };
+  pintarEscenaConProfundidad(
+    ctx,
+    {
+      ancho: 4,
+      alto: 4,
+      epoca: "psx",
+      poligonos: [
+        {
+          color: "#0000ff",
+          textura: rota,
+          intensidad: 1,
+          puntos: [
+            { x: 0, y: 0, z: 2, u: 0, v: 0 },
+            { x: 4, y: 0, z: 2, u: 1, v: 0 },
+            { x: 4, y: 4, z: 2, u: 1, v: 1 },
+          ],
+        },
+      ],
+    },
+    { fondo: "#000000" },
+  );
+  assert.deepEqual(pixelEn(ctx.llamadas[0], 2, 1), [0, 0, 255, 255], "muro liso mejor que muro roto");
+});
+
+test("las UV sobreviven al recorte contra el plano cercano", () => {
+  // La regresión que el recortador genérico evita: una cara que cruza el plano
+  // cercano gana vértices NUEVOS, y si esos vértices no traen UV interpoladas,
+  // la textura salta justo en el trozo que sí se ve.
+  const malla = {
+    vertices: [
+      [-1, -1, 1],
+      [1, -1, 1],
+      [1, -1, -5], // detrás de la cámara: fuerza el recorte
+      [-1, -1, -5],
+    ],
+    caras: [[0, 1, 2, 3]],
+    uvs: [[[0, 0], [1, 0], [1, 1], [0, 1]]],
+  };
+  const escena = componerEscena(malla, {
+    ancho: 32,
+    alto: 32,
+    textura: DAMERO,
+    posicion: [0, 0, 0],
+  });
+  assert.ok(escena.poligonos.length > 0, "la cara recortada tiene que seguir viéndose");
+  for (const poligono of escena.poligonos) {
+    assert.ok(poligono.textura, "el polígono conserva su textura tras el recorte");
+    for (const punto of poligono.puntos) {
+      assert.ok(
+        Number.isFinite(punto.u) && Number.isFinite(punto.v),
+        "un vértice creado por el recorte se quedó sin UV",
+      );
+    }
+  }
+});
+
+test("sin textura no cambia nada: el polígono sale exactamente como antes", () => {
+  const malla = { vertices: [[-1, -1, 1], [1, -1, 1], [0, 1, 1]], caras: [[0, 1, 2]] };
+  const escena = componerEscena(malla, { ancho: 16, alto: 16 });
+  for (const poligono of escena.poligonos) {
+    assert.equal(poligono.textura, undefined, "sin pedir textura no aparece ninguna");
+    assert.equal(poligono.intensidad, undefined);
+    for (const punto of poligono.puntos) assert.equal(punto.u, undefined);
+  }
 });

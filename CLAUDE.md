@@ -141,7 +141,10 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     pasar por alto tres huérfanos al barrido manual de #523. Hay dos categorías y no da igual cuál:
     `cimiento: true` es lo que se espera que siga sin consumidor (el banco de pruebas del andar,
     `catalogo-cosmografico.mjs` a la espera de #213); `cimiento: false` es un hueco conocido con su
-    issue abierto (#526, #536, #537), y la entrada es el registro de que se sabe, no un permiso.
+    issue abierto, y la entrada es el registro de que se sabe, no un permiso — **no una plaza fija**:
+    #526 y #537 se cablearon, #536 se retiró, y hoy no queda ninguna. Que la categoría esté vacía es
+    su estado sano; si vuelve a llenarse, es deuda con fecha, no inventario. No enumeres aquí los
+    huecos vivos: esa lista es `HUERFANOS_DECLARADOS` y se desincroniza en cuanto uno se cierra.
   - **Ventanas** — **Consola caliente del GM** (#276, `docs/CONSOLA_CALIENTE_GM.md`) fusionó las
     cuatro factorías originales (estado de nave y mapa vivo, V1/V2) en una sola ventana con pestañas
     (Estado, Mapa, Encuentros, Previsualización) y UN solo bucle de sondeo y backoff, sustituyendo

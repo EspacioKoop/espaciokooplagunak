@@ -86,6 +86,34 @@ El control de tempo inicial es binario: `pauseGame()` / `unpauseGame()` son las
 estado consultable porque `setGameSpeed`, `getGameSpeed` y un getter de pausa no
 existen en la API Lua observada.
 
+### La barra de escena: qué se agrupa y qué no (#448)
+
+Toda herramienta del módulo vive en el **grupo propio `lagunak`** de la barra de
+controles de escena, nunca mezclada con Token Controls (#125). El grupo lo crea
+`main.mjs`; las herramientas entran por `control-escena.mjs`, que es quien
+absorbe la diferencia de forma entre generaciones de Foundry (array de grupos en
+v11/v12, registro por nombre con `order`/`onChange` en v13).
+
+Cuando varias entradas son variaciones de la misma acción, se sustituyen por una
+**puerta con catálogo interno** (`puerta-catalogo.mjs`), como ya hacen la cantina
+(#423), la sección de la nave (#427) y el panel de GM (#457).
+
+El criterio para decidir qué entra en una puerta **no es el permiso ni el número
+de botones**, sino la frecuencia de uso:
+
+> Agrupar lo que se utiliza puntualmente; mantener accesible lo que se utiliza
+> durante la partida.
+
+Por eso el espacio de puesto no se esconde tras una puerta aunque comparta rol
+con otras entradas: es la consola que un tripulante usa toda la sesión, y
+enterrarla le cobra un clic extra cada vez a cambio de un botón menos. Agrupar
+por permisos, o reducir el número de botones al mínimo, convierte el catálogo en
+una carpeta donde se mete cualquier cosa para hacer desaparecer botones.
+
+Una puerta **solo pinta**: no transporta identidad. Cada superficie resuelve su
+propia autoridad leyendo `game.user` al abrirse, así que meter una entrada en una
+puerta no añade caminos nuevos hacia el relé (#237).
+
 ### Superficies de control del GM
 
 La ventana **Estado de nave** del módulo agrupa las órdenes cerradas que el GM

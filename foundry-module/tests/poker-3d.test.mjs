@@ -8,8 +8,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { componerMesa, disco, huecosComunitarias, plazas } from "../scripts/minijuegos/poker-3d.mjs";
-import { EPOCAS } from "../scripts/retro3d.mjs";
+import { componerMesa, disco, huecosComunitarias, plazas, VISTA } from "../scripts/minijuegos/poker-3d.mjs";
+import { componerEscena, EPOCAS } from "../scripts/retro3d.mjs";
+import { FICHA, PIXEL } from "../scripts/paleta.mjs";
 import { afirmarOrdenPorPintor } from "./ayuda-orden-pintor.mjs";
 
 test("siempre hay cinco huecos, salgan las cartas que salgan", () => {
@@ -126,4 +127,70 @@ test("hay espacio de fondo, y es el mismo para toda la mesa", () => {
   const b = componerMesa({ comunitarias: 0, jugadores: [] }, { semillaCielo: 5 });
   assert.ok(a.estrellas.length > 0, "no se ve el espacio");
   assert.deepEqual(a.estrellas, b.estrellas, "la misma semilla debe dar el mismo cielo");
+});
+
+test("se ve el tapete por arriba, no por debajo (#566)", () => {
+  // El mismo defecto que #559 en la mesa de blackjack: con `pitch` positivo la
+  // cámara orbita por DEBAJO del tapete —la rotación va antes de la traslación
+  // en `transformar`— y se mira el fieltro por su cara inferior. Se le pregunta
+  // al motor, que es quien decide qué cara sobrevive al descarte de espaldas.
+  const ALTO = 0.06;
+  const cara = (arriba) => {
+    const y = arriba ? ALTO / 2 : -ALTO / 2;
+    const vertices = [
+      [-3, y, -1.4],
+      [3, y, -1.4],
+      [3, y, 2.6],
+      [-3, y, 2.6],
+    ];
+    return componerEscena(
+      { vertices, caras: [arriba ? [3, 2, 1, 0] : [0, 1, 2, 3]] },
+      {
+        ancho: 480,
+        alto: 320,
+        color: FICHA.tapete,
+        fov: VISTA.fov,
+        pitch: VISTA.pitch,
+        yaw: VISTA.yaw,
+        posicion: [0, VISTA.altura, VISTA.atras],
+      },
+    ).poligonos.length;
+  };
+
+  assert.equal(cara(true), 1, "el tapete tiene que verse por su cara de arriba");
+  assert.equal(cara(false), 0, "si se ve el fieltro por debajo, la cámara está bajo la mesa");
+});
+
+test("las comunitarias no quedan enterradas bajo el fieltro (#566)", () => {
+  // La segunda mitad de #566, y la que NO tenía la mesa de blackjack: las
+  // comunitarias están en el centro del tapete, justo donde su profundidad
+  // media empata con la del fieltro, y el empate lo ganaba el tapete. Cortarlo
+  // en franjas es lo que rompe el empate; esto lo comprueba.
+  const escena = componerMesa(
+    { comunitarias: 5, jugadores: [{ fichas: 100, propio: true }, { fichas: 60 }] },
+    { ancho: 480, alto: 320 },
+  );
+  const marco = (poligono) => {
+    const xs = poligono.puntos.map((p) => p.x);
+    const ys = poligono.puntos.map((p) => p.y);
+    return [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+  };
+  const contiene = (fuera, dentro) =>
+    fuera[0] <= dentro[0] && fuera[1] >= dentro[1] && fuera[2] <= dentro[2] && fuera[3] >= dentro[3];
+
+  const caras = escena.poligonos
+    .map((poligono, i) => ({ poligono, i }))
+    .filter(({ poligono }) => poligono.color === PIXEL.cara);
+  const fieltro = escena.poligonos
+    .map((poligono, i) => ({ poligono, i }))
+    .filter(({ poligono }) => poligono.color === FICHA.tapete);
+  assert.ok(caras.length >= 5, "las cinco comunitarias tienen que estar compuestas");
+  assert.ok(fieltro.length > 2, "el tapete tiene que ir cortado en franjas");
+
+  for (const { poligono, i } of caras) {
+    const tapada = fieltro.some(
+      ({ poligono: verde, i: j }) => j > i && contiene(marco(verde), marco(poligono)),
+    );
+    assert.ok(!tapada, `una carta se pinta debajo del fieltro (polígono ${i})`);
+  }
 });

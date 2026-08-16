@@ -17,6 +17,9 @@
 import { MODULE_ID } from "../lagunak-constantes.mjs";
 import { PIXEL } from "../paleta.mjs";
 import { blackjackVista } from "./blackjack-vista.mjs";
+import { lecturaBlackjack } from "./blackjack-lectura.mjs";
+import { normalizarMesaBlackjack } from "./mesa-config.mjs";
+import { AJUSTE_APUESTA_BLACKJACK, AJUSTE_FICHAS } from "../minijuegos-wiring.mjs";
 import { PREFIJO_AUTOMATICO } from "./sesion-motor.mjs";
 import { componerMesa } from "./blackjack-3d.mjs";
 import { pintarEscena } from "../retro3d-lienzo.mjs";
@@ -78,11 +81,36 @@ const ETIQUETA_DESENLACE = Object.freeze({
   blackjack: "LAGUNAK.Blackjack.Mesa.Desenlace.blackjack",
 });
 
+/**
+ * Las opciones de ESTA mesa, leídas de los mismos ajustes que usa el
+ * coordinador para construir la mano (`configuracionDeBlackjack`).
+ *
+ * Se leen aquí y no llegan con la vista a propósito: el cartel de reglas es
+ * información de la MESA, no del reparto, y tiene que poder pintarse antes de
+ * que se reparta la primera carta — que es justo cuando alguien necesita leerlo.
+ */
+function opcionesDeMesa() {
+  try {
+    return normalizarMesaBlackjack({
+      fichasIniciales: game.settings?.get?.(MODULE_ID, AJUSTE_FICHAS),
+      apuesta: game.settings?.get?.(MODULE_ID, AJUSTE_APUESTA_BLACKJACK),
+    });
+  } catch {
+    // Un ajuste que todavía no existe no puede dejar la mesa sin abrir: sin
+    // cifras, el cartel pierde la línea de la apuesta y conserva el resto.
+    return normalizarMesaBlackjack({});
+  }
+}
+
 /** Contexto de plantilla a partir del modelo puro, ya localizado. */
 function contexto() {
   const userId = game.user?.id ?? "";
   const modelo = blackjackVista(ultimaVista, { userId, acciones: ultimasAcciones });
   if (!modelo.hayMesa) return modelo;
+  // La lectura (#553): qué pasa ahora y con qué reglas se juega. Es lo que el QA
+  // echó en falta, y va por delante del resto del contexto porque es lo primero
+  // que se lee.
+  const lectura = lecturaBlackjack(modelo, opcionesDeMesa());
 
   const nombre = (id) => {
     if (typeof id === "string" && id.startsWith(PREFIJO_AUTOMATICO)) {
@@ -93,9 +121,21 @@ function contexto() {
     return game.users?.get?.(id)?.name ?? id;
   };
   const cifra = (valor) => (Number.isInteger(valor) ? String(valor) : "—");
+  // La lectura trabaja con `userId` porque es puro y no conoce a nadie; quien sí
+  // sabe traducir un id a un nombre es esta capa, y aquí es donde toca hacerlo.
+  // Sin este paso, «Juega {userId}» se leería como un identificador en crudo.
+  const frase = ({ clave, datos }) => {
+    const partes = { ...(datos ?? {}) };
+    if (typeof partes.userId === "string") partes.userId = nombre(partes.userId);
+    return game.i18n.format(clave, partes);
+  };
 
   return {
     ...modelo,
+    situacionTexto: frase(lectura.situacion),
+    esTuTurno: lectura.situacion.esTuTurno,
+    reglasTexto: lectura.reglas.map(frase),
+    noPuedesDoblarTexto: lectura.noPuedesDoblar ? frase(lectura.noPuedesDoblar) : "",
     faseTexto: game.i18n.format("LAGUNAK.Minijuegos.Mesa.Fase", {
       fase: game.i18n.localize(`LAGUNAK.Minijuegos.Fase.${modelo.fase ?? "lobby"}`),
     }),

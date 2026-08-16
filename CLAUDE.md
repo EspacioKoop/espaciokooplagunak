@@ -238,6 +238,12 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     nunca sondea ni sincroniza posición, porque un documento persistente que espeje la simulación
     se queda mintiendo cuando cae el puente (#354).
   - **Minijuegos** — `scripts/minijuegos/` y su enganche en `scripts/minijuegos-wiring.mjs` (#308).
+    La mesa de blackjack (#553) añade una **lectura** aparte de la vista
+    (`minijuegos/blackjack-lectura.mjs`): qué pasa ahora, en qué estado va cada asiento y las reglas
+    de la casa. Es solo PALABRAS —no concede nada, las acciones siguen viniendo del coordinador— y
+    su regla dura es que el cartel de reglas se DERIVA de las constantes del motor
+    (`LIMITE_PLANTADO_BANCA`, `PAGO_BLACKJACK`, `CARTAS_PARA_DOBLAR`), nunca se escribe al lado: un
+    cartel escrito a mano no falla, se desincroniza, y sigue anunciando cómo se jugaba antes.
     `sesion-motor.mjs` es COMÚN a todos —identidad, época, nonces, lobby, espectadores, ausencias—
     y aloja cada juego por su interfaz interna; los verticales son hermanos suyos y no ramas dentro
     de él: `poker-motor.mjs` (#308) y `dados-motor.mjs` (#413, con su dado en 3D retro legible en

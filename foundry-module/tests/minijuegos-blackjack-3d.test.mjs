@@ -9,8 +9,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { componerMesa, disco, plazas } from "../scripts/minijuegos/blackjack-3d.mjs";
-import { EPOCAS } from "../scripts/retro3d.mjs";
+import { componerMesa, disco, plazas, VISTA } from "../scripts/minijuegos/blackjack-3d.mjs";
+import { FICHA, PIXEL } from "../scripts/paleta.mjs";
+import { componerEscena, EPOCAS } from "../scripts/retro3d.mjs";
 import { afirmarOrdenPorPintor } from "./ayuda-orden-pintor.mjs";
 
 test("la banca tapada siempre pinta dos cartas, aunque diga tener más", () => {
@@ -97,4 +98,73 @@ test("el propio jugador no lleva busto; el resto sí", () => {
     jugadores: [{ cartas: 2, apuesta: 10, propio: false }],
   }).poligonos.length;
   assert.ok(ajeno > propio, "el rival no trae busto propio");
+});
+
+test("se ve el tapete por arriba, que es lo que hacía invisibles las cartas (#559)", () => {
+  // LA REGRESIÓN, tal cual la contó QA: «la mesa es un plano verde». No
+  // faltaban cartas en la escena —estaban todas y las otras pruebas las
+  // cuentan— sino que la cámara orbitaba por DEBAJO del tapete: se miraba el
+  // fieltro por su cara inferior, con toda la mesa entre el ojo y las manos.
+  // Desde ahí ninguna carta podía verse, y no había nada mal ordenado que
+  // detectar: el motor tapaba bien lo que de verdad estaba delante.
+  //
+  // Por eso lo que se afirma es el PUNTO DE VISTA, y se le pregunta al propio
+  // motor en vez de mirar el número: con la cámara de la mesa, la cara de
+  // arriba del tapete se ve y la de abajo no. Si alguien vuelve a poner la
+  // cámara bajo la mesa, esto se cae.
+  const ALTO = 0.06;
+  const cara = (arriba) => {
+    const y = arriba ? ALTO / 2 : -ALTO / 2;
+    const vertices = [
+      [-3, y, -2.2],
+      [3, y, -2.2],
+      [3, y, 2.2],
+      [-3, y, 2.2],
+    ];
+    return componerEscena(
+      { vertices, caras: [arriba ? [3, 2, 1, 0] : [0, 1, 2, 3]] },
+      {
+        ancho: 480,
+        alto: 320,
+        color: FICHA.tapete,
+        fov: VISTA.fov,
+        pitch: VISTA.pitch,
+        yaw: VISTA.yaw,
+        posicion: [0, VISTA.altura, VISTA.atras],
+      },
+    ).poligonos.length;
+  };
+
+  assert.equal(cara(true), 1, "el tapete tiene que verse por su cara de arriba");
+  assert.equal(cara(false), 0, "si se ve el fieltro por debajo, la cámara está bajo la mesa");
+});
+
+test("con la cámara de la mesa, las cartas caen dentro del cuadro (#559)", () => {
+  // La otra mitad del defecto: subir la cámara sin más cruzaba al otro lado y
+  // dejaba el reparto de la banca fuera de pantalla. Se comprueba que todas las
+  // cartas compuestas caen en el lienzo, no solo que existan.
+  const mesa = componerMesa(
+    {
+      banca: { cartas: 2, oculta: true },
+      jugadores: [
+        { cartas: 2, apuesta: 10, propio: true },
+        { cartas: 3, apuesta: 5 },
+        { cartas: 2, apuesta: 15 },
+      ],
+    },
+    { ancho: 480, alto: 320 },
+  );
+  const caras = mesa.poligonos.filter((p) => p.color === PIXEL.cara);
+  assert.ok(caras.length >= 6, "las cartas boca arriba tienen que estar compuestas");
+  for (const poligono of caras) {
+    const dentro = poligono.puntos.some(
+      (p) => p.x >= 0 && p.x <= 480 && p.y >= 0 && p.y <= 320,
+    );
+    assert.ok(dentro, "una carta se compone entera fuera del lienzo");
+  }
+});
+
+test("la cámara mira el tapete desde arriba, no desde debajo (#559)", () => {  // La forma corta de la misma afirmación, para que si alguien vuelve a tocar
+  // el encuadre sepa qué se le pide: el signo del pitch ES el bug.
+  assert.ok(VISTA.pitch < 0, "pitch positivo pone la cámara bajo el tapete");
 });

@@ -36,9 +36,30 @@ const CARTA = Object.freeze({ ancho: 0.62, alto: 0.16, largo: 0.9 });
 const CANTO_CARTA = 0.02;
 const LADOS_FICHA = 10;
 
-/** La cámara de la mesa: igual de baja y cercana que en póker, para que el
- * tapete tenga volumen en vez de leerse como un plano visto desde arriba. */
-export const VISTA = Object.freeze({ pitch: 0.9, yaw: 0, altura: -0.8, atras: 5.0, fov: 52 });
+/** La cámara de la mesa: baja y cercana, para que el tapete tenga volumen en
+ * vez de leerse como un plano visto desde arriba.
+ *
+ * EL PITCH VA EN NEGATIVO, Y NO ES UN DETALLE (#559). En `transformar` la
+ * rotación se aplica ANTES de la traslación, así que la cámara ORBITA el
+ * origen: con `pitch` positivo orbita por DEBAJO del tapete. Eso es exactamente
+ * lo que el issue describe como «la mesa es un plano verde» — no era que
+ * faltaran las cartas, es que se estaba mirando el fieltro por su cara
+ * inferior, con toda la mesa entre el ojo y las manos. Desde ahí ninguna carta
+ * podía verse, y las de la banca asomaban como una losa oscura porque lo que se
+ * colaba por el borde era su canto, nunca su cara.
+ *
+ * Con el pitch en negativo la cámara sube por encima del tapete, pero orbitar
+ * por arriba también la cruza al otro lado de la mesa: sin más, la banca queda
+ * en primer término y tú al fondo, justo del revés que el arco de `ASIENTOS`.
+ * `yaw: Math.PI` la devuelve a su sitio sin mover ni una coordenada de la mesa:
+ * tú delante, la banca al fondo. La altura y la distancia se reajustan a la
+ * vista nueva (0.2 y 5.6) porque desde arriba los números de antes dejaban el
+ * reparto de la banca fuera de cuadro.
+ *
+ * La mesa de póker tiene el pitch positivo por lo mismo y con el mismo efecto
+ * en sus comunitarias; no se toca aquí porque reencuadrar otro minijuego ya
+ * publicado merece su propio issue. */
+export const VISTA = Object.freeze({ pitch: -0.75, yaw: Math.PI, altura: 0.2, atras: 5.6, fov: 52 });
 
 /** Caja alineada a los ejes por centro y medidas. */
 export function caja([cx, cy, cz], [ancho, alto, fondo]) {

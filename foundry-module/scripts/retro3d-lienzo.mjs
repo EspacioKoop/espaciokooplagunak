@@ -109,6 +109,21 @@ function areaConSigno2(ax, ay, bx, by, cx, cy) {
  * resto de un negativo es negativo, y una UV por debajo de cero —que sale sola
  * en cuanto una cara se recorta— indexaría fuera del búfer.
  */
+/**
+ * ¿Es la textura estructuralmente utilizable? Se comprueba UNA vez por polígono,
+ * no por téxel, y cierra la entrada al camino texturado en vez de dejar que
+ * `muestrearTextura` haga `% 0` y lea una posición inválida.
+ *
+ * Es la misma degradación deliberada que ya se aplica con UV no finitas y con
+ * índices fuera de paleta: textura inválida → color plano de la cara.
+ */
+export function texturaUtilizable(textura) {
+  if (!textura) return false;
+  const { ancho, alto, indices } = textura;
+  if (!Number.isInteger(ancho) || !Number.isInteger(alto) || ancho <= 0 || alto <= 0) return false;
+  return indices != null && indices.length >= ancho * alto;
+}
+
 export function muestrearTextura(textura, u, v) {
   const { ancho, alto, indices } = textura;
   const x = Math.floor(u * ancho);
@@ -323,11 +338,13 @@ export function pintarEscenaConProfundidad(ctx, escena, { fondo = null } = {}) {
     const puntos = poligono?.puntos;
     if (!Array.isArray(puntos) || puntos.length < 3) continue;
     const [r, g, b] = rgbDe(poligono.color);
-    // Solo se textura si el polígono trae textura Y todos sus puntos traen UV:
-    // un abanico con un vértice sin coordenadas produciría `NaN` y una franja de
-    // basura, y prefiero un muro liso a un muro roto.
+    // Solo se textura si la textura es estructuralmente utilizable Y todos los
+    // puntos traen UV: un abanico con un vértice sin coordenadas —o una textura
+    // con `ancho: 0`— produciría `NaN` y una franja de basura, y prefiero un
+    // muro liso a un muro roto.
     const tex =
-      poligono.textura && puntos.every((p) => Number.isFinite(p?.u) && Number.isFinite(p?.v))
+      texturaUtilizable(poligono.textura) &&
+      puntos.every((p) => Number.isFinite(p?.u) && Number.isFinite(p?.v))
         ? {
             textura: poligono.textura,
             paletaRGB: paletaRGBDe(poligono.textura),

@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   girarNave,
   muestrearTextura,
+  texturaUtilizable,
   pintarEscena,
   pintarEscenaConProfundidad,
   pintarNave,
@@ -520,6 +521,46 @@ test("un índice fuera de paleta cae al color plano, no deja un agujero", () => 
   // Un agujero se leería como fallo de geometría y mandaría a buscar el error
   // donde no está.
   assert.deepEqual(pixelEn(ctx.llamadas[0], 2, 1), [0, 0, 255, 255]);
+});
+
+test("texturaUtilizable cierra la puerta a texturas estructuralmente rotas", () => {
+  assert.equal(texturaUtilizable(DAMERO), true);
+  assert.equal(texturaUtilizable(null), false);
+  assert.equal(texturaUtilizable({}), false);
+  assert.equal(texturaUtilizable({ ancho: 0, alto: 2, indices: Uint8Array.from([0]) }), false);
+  assert.equal(texturaUtilizable({ ancho: 2, alto: 0, indices: Uint8Array.from([0]) }), false);
+  assert.equal(texturaUtilizable({ ancho: 1.5, alto: 2, indices: Uint8Array.from([0, 0, 0]) }), false);
+  assert.equal(texturaUtilizable({ ancho: NaN, alto: 2, indices: Uint8Array.from([0, 0]) }), false);
+  // Menos téxeles de los que anuncia: se leería fuera del búfer.
+  assert.equal(texturaUtilizable({ ancho: 2, alto: 2, indices: Uint8Array.from([0, 1]) }), false);
+});
+
+test("una textura con dimensiones inválidas cae al color plano, no a NaN", () => {
+  const ctx = contextoConPixeles();
+  // `% 0` daría NaN y leería una posición inválida si no se cerrase la entrada.
+  const rota = { ancho: 0, alto: 0, indices: Uint8Array.from([]), paleta: ["#ff0000"] };
+  pintarEscenaConProfundidad(
+    ctx,
+    {
+      ancho: 4,
+      alto: 4,
+      epoca: "psx",
+      poligonos: [
+        {
+          color: "#0000ff",
+          textura: rota,
+          intensidad: 1,
+          puntos: [
+            { x: 0, y: 0, z: 2, u: 0, v: 0 },
+            { x: 4, y: 0, z: 2, u: 1, v: 0 },
+            { x: 4, y: 4, z: 2, u: 1, v: 1 },
+          ],
+        },
+      ],
+    },
+    { fondo: "#000000" },
+  );
+  assert.deepEqual(pixelEn(ctx.llamadas[0], 2, 1), [0, 0, 255, 255], "muro liso mejor que muro roto");
 });
 
 test("las UV sobreviven al recorte contra el plano cercano", () => {

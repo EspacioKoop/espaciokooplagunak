@@ -127,6 +127,10 @@ test("en el catálogo real ninguna sala se queda sin nada ni se llena de más", 
     // Aplicarle esta cota diría que una playa con rocas y matojos está «llena de
     // más», que es medir una cosa con la regla de otra.
     if (id === "playa") continue;
+    // La terraza (#579) tampoco: está amueblada a mano desde el vocabulario
+    // común, como la cantina. Su tope no es «cuántas máquinas caben en un cuarto
+    // de reactor», que es lo único que mide esta prueba.
+    if (id === "terraza") continue;
     const { obstaculos } = estancia.planta;
     assert.ok(obstaculos.length > 0, `${id} sigue vacía`);
     // Un tope por sala, no por mueble: lo que se paga es el conjunto.

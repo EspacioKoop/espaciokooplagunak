@@ -26,7 +26,14 @@ import { puntoLibreCerca } from "./nave-movimiento.mjs";
 import { crearSalaCaja } from "./nave-sala-caja.mjs";
 import { piezasConsola } from "./nave-consola.mjs";
 import { piezasMobiliarioSala } from "./nave-mobiliario-sala.mjs";
-import { PLANTA_CANTINA_SALA, PUERTA_SALIDA, componerCantinaSala } from "./cantina-sala.mjs";
+import { PLANTA_CANTINA_SALA, PUERTA_SALIDA, PUERTA_TERRAZA, componerCantinaSala } from "./cantina-sala.mjs";
+import {
+  ENTRADA as ENTRADA_TERRAZA,
+  INTERACCIONES as INTERACCIONES_TERRAZA,
+  PUERTA_CANTINA,
+  PLANTA_TERRAZA,
+  componerTerraza,
+} from "./terraza-cantina.mjs";
 import {
   ENTRADA as ENTRADA_PLAYA,
   INTERACCIONES as INTERACCIONES_PLAYA,
@@ -315,6 +322,41 @@ export const CATALOGO_ANDAR = crearCatalogoEstancias({
         // casi un metro — el «puerta extraña que no da a ninguna parte» del QA.
         rect: PUERTA_SALIDA,
         destino: { estancia: SALA_DE_LA_CANTINA, x: 11, z: 3, yaw: Math.PI },
+      },
+      {
+        // Y la salida a la terraza (#579), por el muro oeste. Se sale mirando al
+        // borde: lo primero que tiene que pasar al salir a una terraza es darse
+        // cuenta de que estás fuera.
+        rect: PUERTA_TERRAZA,
+        destino: { estancia: "terraza", ...ENTRADA_TERRAZA },
+      },
+    ],
+  },
+  /**
+   * La terraza de la cantina (#579).
+   *
+   * Es una estancia más del MISMO catálogo, no una escena aparte: la nave tiene
+   * una sola geografía y la terraza es un sitio dentro de ella, al que se llega
+   * andando desde la cantina y del que se vuelve por la misma puerta.
+   */
+  terraza: {
+    planta: PLANTA_TERRAZA,
+    componer: componerTerraza,
+    entrada: ENTRADA_TERRAZA,
+    interacciones: INTERACCIONES_TERRAZA,
+    // Al aire libre y con la nave detrás: el fondo es el vacío, no el mamparo de
+    // «más nave todavía sin renderizar».
+    fondo: SECCION.vacio,
+    puertas: [
+      {
+        rect: PUERTA_CANTINA,
+        // De vuelta a la cantina, apareciendo dentro y separado de su puerta
+        // para no reactivarla en el mismo paso. Mirando a la sala, no al muro.
+        destino: {
+          estancia: "cantina",
+          ...libreEnCantina(PUERTA_TERRAZA.ancho + 1.2, PUERTA_TERRAZA.z + PUERTA_TERRAZA.profundidad / 2),
+          yaw: Math.PI / 2,
+        },
       },
     ],
   },

@@ -10,8 +10,15 @@ test("el plano son las salas REALES del Phobos, más la cantina", () => {
   // sección declara seis salas inventadas y la nave que se recorre tiene catorce.
   // Un minimapa sacado de la sección te situaría en un plano que no es el tuyo.
   const celdas = celdasMinimapa();
-  assert.equal(celdas.length, SALAS_PHOBOS.length + 1, "las trece del interior nativo, más la cantina");
+  assert.equal(
+    celdas.length,
+    SALAS_PHOBOS.length + 2,
+    "las trece del interior nativo, más la cantina y su terraza",
+  );
   assert.ok(celdas.some((c) => c.id === "cantina"));
+  // La terraza (#579) también: se anda por ella, y un plano que no dibuja un
+  // sitio por el que se anda miente justo al perderse.
+  assert.ok(celdas.some((c) => c.id === "terraza"));
 });
 
 /**

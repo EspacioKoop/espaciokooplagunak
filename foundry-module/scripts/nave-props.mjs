@@ -178,6 +178,7 @@ const DEFINICIONES = {
    */
   cana: {
     color: CACHARROS.cajaSuministro,
+    colision: false,
     partes: [
       // Una caña ES un cono, y eran tres listones. Cada tramo se estrecha, y el
       // último acaba en punta.
@@ -237,6 +238,13 @@ export function definirVocabulario(definiciones) {
               }),
             ),
           ),
+          // Hay props que se DIBUJAN y no estorban. Una caña de pescar apoyada
+          // en su soporte sobresale por encima del borde, y bloquear el sitio
+          // desde el que se pesca porque «hay una caña delante» es exactamente
+          // el fallo que la cantina ya resolvió con las botellas de los estantes.
+          // Va en el prop y no en la escena: una caña no es un muro en ningún
+          // sitio, no solo en la terraza.
+          colision: prop.colision !== false,
           ancla: prop.ancla
             ? Object.freeze({
                 centro: Object.freeze([...prop.ancla.centro]),
@@ -319,6 +327,7 @@ export function colocarProp(clave, { x, z, cuartos = 0, nombre = clave, vocabula
       medidas,
       malla,
       color: parte.color,
+      colision: prop.colision,
       // Lo que no es una caja no lleva piel pixelart (#550): esa piel dibuja
       // cantos y remaches suponiendo cuatro caras planas, y sobre un tubo saldría
       // pegada de cualquier manera.

@@ -62,6 +62,14 @@ Vocabulario compartido (#583). Cada prop es una lista de partes.
 | `barandilla` | 2 cajas + montantes de 6 lados | **Hecho** |
 | `cana` | 3 tramos cónicos, el último en punta | **Hecho** |
 
+Primer consumidor real de todo esto: la **terraza de la cantina** (#579), que no
+declara ni una medida de mueble — mesa, sillas, soporte, cañas, barandilla y
+taburete salen de aquí, y su punto de pesca del ancla del soporte.
+
+Un prop puede declarar `colision: false` (la caña): se dibuja y no estorba. Es la
+misma decisión que la cantina tomó con las botellas de sus estantes, pero en el
+prop y no en la escena — una caña no es un muro en ningún sitio.
+
 ## Cantina — `cantina-escena.mjs`
 
 28 piezas nombradas que se multiplican por bucles hasta las ~126 que cita el

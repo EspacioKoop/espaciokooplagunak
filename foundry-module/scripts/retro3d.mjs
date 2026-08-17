@@ -462,13 +462,20 @@ export function focosCercanos(focos, referencia, tope = TOPE_FOCOS) {
  *   los focos van en el MISMO espacio que la normal (ver `luzFija`).
  */
 export function intensidadCara(normal, tonos, opciones) {
+  // AMBIENTE DECLARABLE (#587). El suelo de luz de serie (0,35) es el de un
+  // interior de nave, donde lo que no toca la direccional lo rellenan cuatro
+  // mamparos oscuros. A la intemperie el relleno es la BÓVEDA DEL CIELO entera,
+  // que es enorme y clara: con 0,35 y un sol rasante, la arena de una playa a
+  // pleno día salía al 57% de su color y se veía embarrada. No es un truco de
+  // brillo, es que un exterior tiene otra luz de relleno.
+  const ambiente = Number.isFinite(opciones?.ambiente) ? Math.max(0, Math.min(1, opciones.ambiente)) : AMBIENTE;
   // La dirección de la luz puede venir de la escena. Se normaliza aquí y no se
   // exige normalizada al llamador: un vector a ojo («el sol está por allí») es
   // exactamente como se escribe una luz, y obligar a normalizarlo fuera es
   // pedirle al que ambienta que haga trigonometría.
   const direccion = Array.isArray(opciones?.luz) ? normalizar(triple(opciones.luz, LUZ)) : LUZ;
   const lambert = Math.max(0, punto(normal, direccion));
-  let crudo = AMBIENTE + 0.65 * lambert;
+  let crudo = ambiente + (1 - ambiente) * lambert;
 
   const focos = opciones?.focos;
   const centroide = opciones?.centroide;
@@ -769,6 +776,7 @@ export function componerEscena(malla, opciones = {}) {
   // escena existente cambia ni un píxel. Va en el MISMO espacio que las normales
   // —el del mundo cuando hay `luzFija`—, igual que los focos.
   const luz = Array.isArray(opciones.luz) ? opciones.luz : null;
+  const ambiente = Number.isFinite(opciones.ambiente) ? opciones.ambiente : null;
   // Y de qué COLOR es esa luz, y de qué color la sombra que rellena el cielo.
   // Los dos vienen de fuera porque son decisiones de ambientación, no del motor:
   // aquí no se sabe si es mediodía o si el sol está entrando en el mar.
@@ -899,7 +907,7 @@ export function componerEscena(malla, opciones = {}) {
     // — luz que se desplaza sola, que es justo el defecto que `luzFija` existe
     // para evitar. Solo se calcula si hay focos.
     const centroide = focos.length > 0 ? centro(baseNormal) : null;
-    const intensidad = emisivo ? 1 : intensidadCara(normal, ajustes.tonos, { centroide, focos, luz });
+    const intensidad = emisivo ? 1 : intensidadCara(normal, ajustes.tonos, { centroide, focos, luz, ambiente });
 
     const sombreado = emisivo ? color : sombrear(color, intensidad, tinte);
     const niebla = fondo ? factorNiebla(profundidad, { cerca, lejos, niebla: ajustes.niebla }) : 0;

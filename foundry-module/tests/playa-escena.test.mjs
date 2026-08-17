@@ -17,6 +17,7 @@ import {
   PROFUNDIDAD,
   RUMBO_SOMBRA,
   SOL,
+  VIENTO,
   VOCABULARIO_PLAYA,
   componerPlaya,
 } from "../scripts/playa-escena.mjs";
@@ -153,6 +154,40 @@ test("las sombras van pegadas al suelo: ninguna se despega de la arena", () => {
     }
   }
   assert.ok(escena.poligonos.length > 100, "con rocas, matojos y sombras tiene que haber bastante más que antes");
+});
+
+/* ---- el viento ------------------------------------------------------------- */
+
+test("el viento sopla al este, y el este es el mar", () => {
+  // Con el norte en la cabina (+z), el este es +x. Un viento terral que soplara
+  // hacia la duna dejaría sin sentido la hierba tumbada, los rizos y la espuma.
+  assert.deepEqual([...VIENTO], [1, 0]);
+});
+
+test("la hierba está tumbada a sotavento, no de pie", () => {
+  // Cada manojo son dos tramos: uno que sale del suelo y otro ya rendido. Lo que
+  // se comprueba es que los rendidos caen hacia el este.
+  const tumbados = VOCABULARIO_PLAYA.matojo.partes.filter(({ medidas }) => medidas[0] > medidas[1]);
+  assert.ok(tumbados.length >= 3, "sin tramos tumbados la hierba está de pie y no hay viento");
+  const alEste = tumbados.filter(({ centro }) => centro[0] > 0);
+  assert.equal(alEste.length, tumbados.length, "hay hierba tumbada contra el viento");
+});
+
+test("la manga de viento se estrecha hacia el este: dice la dirección sola", () => {
+  const cono = VOCABULARIO_PLAYA.manga.partes.filter(({ medidas }) => medidas[0] >= 1);
+  assert.ok(cono.length >= 3, "un cono de un tramo no se afila");
+  const porX = [...cono].sort((a, b) => a.centro[0] - b.centro[0]);
+  for (let i = 1; i < porX.length; i += 1) {
+    assert.ok(porX[i].medidas[1] < porX[i - 1].medidas[1], "el cono tiene que ir estrechándose");
+  }
+});
+
+test("la escena entera cabe en un presupuesto de época", () => {
+  // Con arena rizada, oleaje, marcas de marea, restos, planetas y sombras, el
+  // riesgo deja de ser que se vea plano y pasa a ser que no vaya. Se fija el
+  // tope aquí para que se note al cruzarlo, no en la máquina de alguien.
+  const escena = componerPlaya(ENTRADA.x, 0, ENTRADA.z, ENTRADA.yaw, {});
+  assert.ok(escena.poligonos.length < 900, `${escena.poligonos.length} polígonos en pantalla`);
 });
 
 /* ---- la cabina como salida (#582) ----------------------------------------- */

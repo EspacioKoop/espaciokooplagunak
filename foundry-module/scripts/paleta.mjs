@@ -441,6 +441,27 @@ export const PLAYA = Object.freeze({
   matojoSeco: "#9a9463", // la que ya no
   boya: "#d9683c", // naranja de señal: los únicos puntos vivos del agua
   sombra: "#6a6252", // la que proyectan las cosas sobre la arena
+
+  // --- El cielo de una playa que NO es de la Tierra. Es lo que recuerda, sin
+  // decirlo, que esto lo mira gente que vive en una nave. Colores lavados y de
+  // poco contraste entre sí: un planeta saturado en el cielo se lee como un
+  // globo pintado encima, no como un cuerpo a doscientos kilómetros.
+  planetaOcre: "#c2a486",
+  planetaPalido: "#b9c3cc",
+  planetaRojizo: "#b07f6e",
+  anillo: "#cfc3ae",
+  luna: "#cdd3d6",
+
+  // --- El agua, por bandas. Un mar de un solo color no tiene ni profundidad ni
+  // superficie: lo que se lee como hondo es que el bajío sea distinto.
+  marBajio: "#5d9aab", // donde se ve el fondo
+  cresta: "#a9cdd6", // el filo de una ola antes de romper
+  marMarca: "#7b6e58", // la lengua que dejó la marea al bajar
+  alga: "#4f5a3c", // lo que trae el agua y se queda en la raya de restos
+  rizo: "#b6a37c", // la cresta de un rizo de arena, con el sol rasante
+  rizoDuna: "#c3b088", // el mismo rizo, en la arena más clara de la duna
+  manga: "#e07a3a", // la manga de viento: naranja de señal, se ve de lejos
+  mangaFranja: "#f0e6d8", // sus franjas claras
 });
 
 /**

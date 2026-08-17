@@ -56,6 +56,7 @@ import { componerEscena, fundirEscenas } from "./retro3d.mjs";
 import { resolverCamara } from "./nave-camara.mjs";
 import { poligonosOtrosJugadores } from "./nave-avatares-render.mjs";
 import { crearPlanta } from "./nave-movimiento.mjs";
+import { rngSemilla } from "./ventana-nave.mjs";
 import { colocarProp, definirVocabulario } from "./nave-props.mjs";
 import { declararInteracciones } from "./nave-interaccion.mjs";
 
@@ -109,6 +110,25 @@ const SUBIDA_DUNA = 0.06;
 const DUNA_INFRANQUEABLE = 0.3;
 /** La duna sigue más allá del borde jugable: cortarla en seco delataría la caja. */
 const DUNA_HASTA = -16;
+
+/* ---- la rosa de los vientos ------------------------------------------------ */
+
+// EL NORTE ES LA CABINA. Se fija aquí, una vez, porque en cuanto la escena tiene
+// viento hay que poder decir de dónde sopla sin señalar con el dedo:
+//
+//   Norte = +z  (hacia la cabina, el fondo del camino)
+//   Este  = +x  (el mar)
+//   Sur   = -z  (por donde se entra)
+//   Oeste = -x  (la duna)
+//
+// EL VIENTO SOPLA HACIA EL ESTE: de la duna al mar. Es viento TERRAL, y eso no
+// es un detalle decorativo — decide cómo se ve todo lo blando de la escena:
+// la hierba se tumba hacia el mar, los rizos de arena se forman de norte a sur
+// (siempre perpendiculares al viento), el agua de la orilla queda planchada
+// porque el viento la empuja hacia fuera, y la espuma que se levanta sale
+// disparada mar adentro. Un viento que no hace todo eso a la vez es un viento
+// que no se cree nadie.
+export const VIENTO = Object.freeze([1, 0]); // hacia el este (+x)
 
 /* ---- el sol ---------------------------------------------------------------- */
 
@@ -239,10 +259,40 @@ export const VOCABULARIO_PLAYA = definirVocabulario({
   matojo: {
     color: PLAYA.matojo,
     partes: [
-      { medidas: [0.1, 0.55, 0.1], centro: [0, 0.27, 0] },
-      { medidas: [0.09, 0.42, 0.09], centro: [0.16, 0.21, 0.1] },
-      { medidas: [0.08, 0.48, 0.08], centro: [-0.14, 0.24, 0.12] },
-      { medidas: [0.08, 0.36, 0.08], centro: [0.05, 0.18, -0.15], color: PLAYA.matojoSeco },
+      // TUMBADA HACIA EL ESTE. Cada manojo son dos tramos: el que sale del suelo
+      // casi vertical y el que ya se ha rendido y se va con el viento. Es la
+      // única forma de inclinar algo en un motor que solo compone cajas
+      // alineadas con los ejes, y a este tamaño se lee perfectamente como
+      // hierba peinada — que es lo que hace un terral constante.
+      { medidas: [0.09, 0.38, 0.09], centro: [0, 0.19, 0] },
+      { medidas: [0.34, 0.1, 0.09], centro: [0.18, 0.42, 0] },
+      { medidas: [0.08, 0.3, 0.08], centro: [-0.13, 0.15, 0.12] },
+      { medidas: [0.28, 0.09, 0.08], centro: [0.04, 0.33, 0.12] },
+      { medidas: [0.07, 0.26, 0.07], centro: [0.14, 0.13, -0.14], color: PLAYA.matojoSeco },
+      { medidas: [0.3, 0.08, 0.07], centro: [0.33, 0.29, -0.14], color: PLAYA.matojoSeco },
+    ],
+    ancla: null,
+  },
+
+  /**
+   * Manga de viento: el mástil y el cono, que se estrecha hacia el este.
+   *
+   * Es el prop que dice el viento SIN que haya que deducirlo. Todo lo demás
+   * —hierba tumbada, rizos, espuma a sotavento— es coherente con él, pero
+   * requiere saber mirar; una manga hinchada la lee cualquiera de un vistazo, y
+   * además dice la dirección exacta, que es justo lo que un dato ambiental
+   * debería hacer.
+   *
+   * El cono va en tres tramos que se estrechan: es la única forma de que un
+   * motor de cajas dibuje algo que se afila.
+   */
+  manga: {
+    color: PLAYA.manga,
+    partes: [
+      { medidas: [0.16, 3.6, 0.16], centro: [0, 1.8, 0] },
+      { medidas: [1.0, 0.7, 0.7], centro: [0.62, 3.3, 0], color: PLAYA.mangaFranja },
+      { medidas: [1.0, 0.55, 0.55], centro: [1.58, 3.28, 0] },
+      { medidas: [1.0, 0.38, 0.38], centro: [2.5, 3.24, 0], color: PLAYA.mangaFranja },
     ],
     ancla: null,
   },
@@ -423,6 +473,10 @@ function propsColocados() {
   const enPlaya = (clave) => (sitio, indice) =>
     colocarProp(clave, { ...sitio, nombre: `${clave}-${indice}`, vocabulario: VOCABULARIO_PLAYA });
 
+  // La manga, junto al primer poste y a la altura por la que se entra: se ve
+  // desde el arranque sin tener que buscarla.
+  puestos.push(colocarProp("manga", { x: 4.6, z: 5, nombre: "manga", vocabulario: VOCABULARIO_PLAYA }));
+
   puestos.push(
     ...ROCAS.map(enPlaya("roca")),
     ...MADERAS.map(enPlaya("madera")),
@@ -441,6 +495,129 @@ function propsColocados() {
   }
 
   return puestos;
+}
+
+/** El mar sigue mucho más allá del borde jugable, o se vería su canto. */
+const MAR_HASTA = 380;
+
+/* ---- arena y mar: lo que hace el viento ------------------------------------ */
+
+/**
+ * Los rizos de la arena.
+ *
+ * PERPENDICULARES AL VIENTO, no en cualquier dirección: el viento sopla al este,
+ * así que las crestas corren de norte a sur. Es la única orientación posible y
+ * por eso sale del propio `VIENTO` en vez de escribirse. Si alguien gira el
+ * viento, los rizos giran con él.
+ *
+ * Van sobre la arena seca del camino y sobre la duna, y NO sobre los cinco
+ * metros lisos: ahí el agua acaba de pasar y los ha borrado. Que la arena mojada
+ * esté lisa y la seca rizada es medio motivo de que se distingan.
+ */
+const PASO_RIZO = 0.55;
+const ALTO_RIZO = 0.035;
+
+function rizosDeArena(desde, hasta, z0, z1, base, color) {
+  const piezas = [];
+  const azar = rngSemilla(20260817);
+  for (let x = desde; x < hasta; x += PASO_RIZO) {
+    // La cresta se desvía un poco en cada tramo: un rizo perfectamente recto de
+    // cuarenta metros es un listón, no arena.
+    const desvio = (azar() - 0.5) * 0.12;
+    piezas.push({
+      malla: caja(
+        [x + desvio, base + ALTO_RIZO / 2, (z0 + z1) / 2],
+        [0.16, ALTO_RIZO, z1 - z0],
+      ),
+      color,
+    });
+  }
+  return piezas;
+}
+
+/**
+ * Las lenguas de agua que dejó la marea al bajar.
+ *
+ * Arcos de arena más oscura sobre los cinco metros lisos. Son lo que convierte
+ * una franja plana en una PLAYA: sin ellas, la arena mojada es un rectángulo de
+ * otro color, y es exactamente lo que se veía.
+ */
+function marcasDeMarea() {
+  const azar = rngSemilla(20260818);
+  const piezas = [];
+  for (let z = -4; z < PROFUNDIDAD + 6; z += 3.1) {
+    const alcance = ORILLA - 1.2 - azar() * 3.4;
+    const largo = 1.9 + azar() * 1.5;
+    piezas.push({
+      malla: caja([(alcance + ORILLA) / 2, 0.008, z], [ORILLA - alcance, 0.02, largo]),
+      color: PLAYA.marMarca,
+    });
+  }
+  return piezas;
+}
+
+/**
+ * La línea de restos que marca hasta dónde llegó el agua: algas y astillas.
+ *
+ * Un solo detalle, y es el que más playa aporta por polígono gastado — es lo
+ * primero que el ojo reconoce de una playa de verdad.
+ */
+function lineaDeRestos() {
+  const azar = rngSemilla(20260819);
+  const piezas = [];
+  for (let z = -4; z < PROFUNDIDAD + 6; z += 0.7) {
+    if (azar() > 0.62) continue;
+    const x = LISO_DESDE + 0.4 + azar() * 1.3;
+    piezas.push({
+      malla: caja([x, 0.02, z + azar() * 0.4], [0.18 + azar() * 0.35, 0.05, 0.1 + azar() * 0.2]),
+      color: azar() > 0.5 ? PLAYA.alga : PLAYA.madera,
+    });
+  }
+  return piezas;
+}
+
+/**
+ * Las bandas del mar.
+ *
+ * Un mar de un solo color no tiene ni profundidad ni superficie. Tres bandas
+ * paralelas a la orilla —bajío, medio, abierto— y encima las crestas.
+ */
+const BANDAS_MAR = Object.freeze([
+  { desde: ORILLA, hasta: 27, color: PLAYA.marBajio },
+  { desde: 27, hasta: 58, color: PLAYA.mar },
+  { desde: 58, hasta: MAR_HASTA, color: PLAYA.marLejos },
+]);
+
+/**
+ * Las crestas del oleaje, y la espuma que el viento les arranca.
+ *
+ * PARALELAS A LA ORILLA, porque las olas rompen contra la costa vengan de donde
+ * vengan. Lo que sí dice el viento es qué le pasa a la espuma: con terral se la
+ * lleva HACIA EL ESTE, mar adentro, y por eso cada penacho sale del lado de
+ * fuera de su cresta y no del de dentro. Es el detalle que hace que el viento no
+ * haya que explicarlo.
+ */
+function oleaje() {
+  const azar = rngSemilla(20260820);
+  const piezas = [];
+  const [vx] = VIENTO;
+  for (let x = ORILLA + 2.5; x < 70; x += 2.6 + azar() * 1.4) {
+    for (let z = -10; z < PROFUNDIDAD + 12; z += 5 + azar() * 6) {
+      const largo = 2.4 + azar() * 4;
+      piezas.push({
+        malla: caja([x, -0.075, z], [0.5, 0.05, largo]),
+        color: PLAYA.cresta,
+      });
+      // El penacho: solo en algunas, y siempre a sotavento.
+      if (azar() > 0.55) {
+        piezas.push({
+          malla: caja([x + vx * (0.7 + azar() * 0.9), -0.06, z], [0.9, 0.04, largo * 0.55]),
+          color: PLAYA.espuma,
+        });
+      }
+    }
+  }
+  return piezas;
 }
 
 /* ---- sombras, sol y reflejo ------------------------------------------------ */
@@ -506,6 +683,94 @@ function sombraDeProp(piezas) {
     centro: alta.centro,
     medidas: [anchoTotal, alta.centro[1] + alta.medidas[1] / 2, fondoTotal],
   });
+}
+
+/**
+ * Una esfera facetada, del tamaño de malla que sabe leer el motor.
+ *
+ * POCOS MERIDIANOS A PROPÓSITO. Una esfera de mil caras no se vería más redonda:
+ * el motor sombrea PLANO por cara, así que lo que da la vuelta es la escalera de
+ * tonos entre facetas, y con demasiadas la escalera desaparece y queda un disco
+ * liso. Ocho por seis es donde una esfera se lee como esfera y sigue teniendo
+ * facetas visibles, que es exactamente el aspecto de la época.
+ *
+ * Y es la primitiva que hacía falta: hasta ahora TODO el módulo se dibujaba con
+ * cajas. Un planeta no se puede fingir con una caja.
+ */
+function esfera([cx, cy, cz], radio, meridianos = 8, paralelos = 6) {
+  const vertices = [];
+  const caras = [];
+  for (let i = 0; i <= paralelos; i += 1) {
+    const phi = (i / paralelos) * Math.PI;
+    for (let j = 0; j < meridianos; j += 1) {
+      const theta = (j / meridianos) * 2 * Math.PI;
+      vertices.push([
+        cx + radio * Math.sin(phi) * Math.cos(theta),
+        cy + radio * Math.cos(phi),
+        cz + radio * Math.sin(phi) * Math.sin(theta),
+      ]);
+    }
+  }
+  const indice = (i, j) => i * meridianos + (j % meridianos);
+  for (let i = 0; i < paralelos; i += 1) {
+    for (let j = 0; j < meridianos; j += 1) {
+      // Antihorario visto desde fuera, que es lo que `componerEscena` necesita
+      // para descartar las caras de espaldas.
+      caras.push([indice(i, j), indice(i + 1, j), indice(i + 1, j + 1), indice(i, j + 1)]);
+    }
+  }
+  return { vertices, caras };
+}
+
+/** Un anillo plano alrededor de un centro, en cuadriláteros. */
+function anillo([cx, cy, cz], interior, exterior, lados = 16, inclinacion = 0.22) {
+  const vertices = [];
+  const caras = [];
+  for (let j = 0; j < lados; j += 1) {
+    const t = (j / lados) * 2 * Math.PI;
+    const [co, si] = [Math.cos(t), Math.sin(t)];
+    for (const r of [interior, exterior]) {
+      // Inclinado: un anillo de canto perfecto desaparece, y uno de plano parece
+      // un plato. La inclinación es lo que lo hace leerse como órbita.
+      vertices.push([cx + r * co, cy + r * si * inclinacion, cz + r * si]);
+    }
+  }
+  for (let j = 0; j < lados; j += 1) {
+    const a = (j * 2) % (lados * 2);
+    const b = (j * 2 + 1) % (lados * 2);
+    const c = (j * 2 + 3) % (lados * 2);
+    const d = (j * 2 + 2) % (lados * 2);
+    caras.push([a, b, c, d]);
+  }
+  return { vertices, caras };
+}
+
+/**
+ * Los planetas.
+ *
+ * Son lo que recuerda, sin decir una palabra, que esta playa la mira gente que
+ * vive en una nave. Y con el sol ya declarado salen gratis en lo que importa:
+ * una esfera facetada iluminada por una luz rasante enseña TERMINADOR —una cara
+ * cálida, un borde de facetas girando y un lado frío—, que es justo la lectura
+ * que una caja no puede dar por muchas caras que tenga.
+ *
+ * Colocados FUERA del camino de sol y a distintas alturas: agrupados o alineados
+ * se leerían como decoración repetida en vez de como cielo.
+ */
+const PLANETAS = Object.freeze([
+  { centro: [-95, 92, 175], radio: 25, color: PLAYA.planetaOcre, facetas: [10, 7] },
+  { centro: [-30, 138, 215], radio: 11, color: PLAYA.luna, facetas: [8, 5] },
+  { centro: [95, 118, 205], radio: 17, color: PLAYA.planetaRojizo, facetas: [9, 6], anillo: [26, 38] },
+  { centro: [-175, 62, 95], radio: 9, color: PLAYA.planetaPalido, facetas: [7, 5] },
+]);
+
+function piezasPlanetas() {
+  return PLANETAS.flatMap(({ centro, radio, color, facetas, anillo: medidasAnillo }) => [
+    { malla: esfera(centro, radio, facetas[0], facetas[1]), color },
+    ...(medidasAnillo
+      ? [{ malla: anillo(centro, medidasAnillo[0], medidasAnillo[1]), color: PLAYA.anillo }]
+      : []),
+  ]);
 }
 
 /**
@@ -613,12 +878,22 @@ function cables() {
   return piezas;
 }
 
+/**
+ * El suelo de luz a la intemperie.
+ *
+ * 0,62 contra el 0,35 de interior de nave. No es subirle el brillo: con un sol
+ * a 21° la cara de arriba de la arena recibe poquísima direccional, y lo que la
+ * ilumina de verdad es el cielo entero. Con el ambiente de interior, la playa a
+ * pleno día salía del color del barro.
+ */
+const AMBIENTE_EXTERIOR = 0.62;
+
+/** Alcance para lo que está en el CIELO: sin niebla que se lo coma. */
+const ALCANCE_CIELO = 4000;
+
 /** Hasta dónde dibuja esta escena. Los aerogeneradores están a 170 m y el mar
  *  llega al horizonte: con los 80 de serie no habría ni mar ni parque eólico. */
 const ALCANCE = 420;
-
-/** El mar sigue mucho más allá del borde jugable, o se vería su canto. */
-const MAR_HASTA = 380;
 
 const PROPS = propsColocados();
 
@@ -630,10 +905,12 @@ const PIEZAS = Object.freeze([
   franja({ desde: ORILLA - 0.5, hasta: ORILLA + 0.4, z0: -8, z1: PROFUNDIDAD + 8, alto: -0.02, color: PLAYA.espuma }),
   franja({ desde: LISO_DESDE, hasta: ORILLA, z0: -8, z1: PROFUNDIDAD + 8, alto: 0, color: PLAYA.arenaMojada }),
   franja({ desde: CAMINO_DESDE, hasta: LISO_DESDE, z0: -8, z1: PROFUNDIDAD + 8, alto: 0.02, color: PLAYA.arena }),
+  // El cielo va PRIMERO: es el fondo de todo lo demás.
+  ...piezasPlanetas().map((pieza) => ({ ...pieza, lejos: ALCANCE_CIELO })),
   ...terrazasDuna(),
   // El reguero de sol va sobre el agua y antes que nada de lo que hay en tierra.
   ...caminoDeSol(),
-  { malla: discoDelSol(), color: PLAYA.sol, emisivo: true },
+  { malla: discoDelSol(), color: PLAYA.sol, emisivo: true, lejos: ALCANCE_CIELO },
   // LAS SOMBRAS ANTES QUE LO QUE LAS PROYECTA: van pegadas al suelo, y así el
   // orden por pintor no tiene que desempatar dos superficies casi coplanares.
   ...PROPS.map(({ piezas }) => sombraDeProp(piezas))
@@ -720,7 +997,7 @@ export function componerPlaya(x, y, z, yaw, opciones = {}) {
   const { camara, dibujarPropio } = resolverCamara({ x, z, y, yaw, modo: modoCamara });
   const yawCamara = -yaw;
 
-  const partes = PIEZAS.map(({ malla, color, emisivo }) =>
+  const partes = PIEZAS.map(({ malla, color, emisivo, lejos }) =>
     componerEscena(
       { ...malla, vertices: malla.vertices.map(([vx, vy, vz]) => [vx - camara[0], vy - camara[1], vz - camara[2]]) },
       {
@@ -734,7 +1011,15 @@ export function componerPlaya(x, y, z, yaw, opciones = {}) {
         recorteLateral: true,
         luzFija: true,
         emisivo: emisivo === true,
-        lejos: ALCANCE,
+        // El cielo se dibuja con un alcance MUCHO mayor que el suelo (#587): un
+        // sol y unos planetas a doscientos metros caían en plena niebla y se
+        // los tragaba el propio color del cielo hacia el que se funde. Y es
+        // correcto además de práctico: la perspectiva aérea la produce el AIRE
+        // que hay entre medias, y entre el observador y un planeta no hay
+        // playa. Lo lejano de la tierra se lava; lo del cielo, no.
+        lejos: lejos ?? ALCANCE,
+        // Un exterior lo rellena la bóveda del cielo entera, no cuatro mamparos.
+        ambiente: AMBIENTE_EXTERIOR,
         // El sol de ESTA escena, no la direccional de interior de nave. Va en
         // coordenadas del mundo, que es lo que exige `luzFija`.
         luz: SOL,

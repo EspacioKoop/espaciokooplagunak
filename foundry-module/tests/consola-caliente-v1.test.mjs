@@ -11,6 +11,13 @@ function respuesta(json) {
   return { ok: true, status: 200, async json() { return json; } };
 }
 
+// `llamadas` guarda URLs completas. Comparamos por igualdad exacta en lugar de
+// dejar que la aserción parezca una comprobación por subcadena sobre una URL
+// (patrón que el análisis estático marca como sanitización incompleta).
+function pidio(llamadas, url) {
+  return llamadas.some((llamada) => llamada === url);
+}
+
 async function vaciarMicrotareas() {
   for (let i = 0; i < 24; i += 1) await Promise.resolve();
 }
@@ -130,12 +137,12 @@ test("V1: arranca en la pestaña Estado y pide healthz+state+scenario+events (no
   assert.equal(app.pestanaActiva, "estado");
   await app._render(true);
   await vaciarMicrotareas();
-  assert.ok(llamadas.includes("http://bridge.test/healthz"));
-  assert.ok(llamadas.includes("http://bridge.test/v1/state"));
-  assert.ok(llamadas.includes("http://bridge.test/v1/scenario"));
-  assert.ok(llamadas.includes("http://bridge.test/v1/events"));
-  assert.ok(llamadas.includes("http://bridge.test/v1/encounters"), "catálogo perezoso, una vez");
-  assert.equal(llamadas.includes("http://bridge.test/v1/contacts"), false, "Mapa oculto: sin contacts");
+  assert.ok(pidio(llamadas, "http://bridge.test/healthz"));
+  assert.ok(pidio(llamadas, "http://bridge.test/v1/state"));
+  assert.ok(pidio(llamadas, "http://bridge.test/v1/scenario"));
+  assert.ok(pidio(llamadas, "http://bridge.test/v1/events"));
+  assert.ok(pidio(llamadas, "http://bridge.test/v1/encounters"), "catálogo perezoso, una vez");
+  assert.equal(pidio(llamadas, "http://bridge.test/v1/contacts"), false, "Mapa oculto: sin contacts");
   assert.equal(app.conexion, "ok");
   assert.equal(app.estadoStatus, "ok");
   await app.close();

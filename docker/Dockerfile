@@ -35,10 +35,19 @@ RUN cmake -S EmptyEpsilon -B /build -G Ninja \
         -DSERIOUS_PROTON_DIR=/src/SeriousProton \
     && cmake --build /build
 
-FROM debian:bookworm-slim AS runtime
+# La etapa de compilación se queda en bookworm (toolchain conocida), pero la
+# imagen que se publica —y la que analiza Trivy— usa trixie: su glibc es más
+# nueva que la de bookworm, así que el binario compilado arriba funciona, y a
+# cambio se retiran decenas de CVE de paquetes que en bookworm ya no reciben
+# parche (expat, zlib/minizip, libssh2…).
+FROM debian:trixie-slim AS runtime
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        libsdl2-2.0-0 libfreetype6 curl ca-certificates \
+# Sin curl: era solo para el HEALTHCHECK, y arrastraba libcurl4, libssh2-1 y
+# libldap con vulnerabilidades HIGH sin corregir. La sonda de salud usa ahora
+# el /dev/tcp de bash, que ya viene en la imagen base.
+RUN apt-get update && apt-get upgrade -y \
+    && apt-get install -y --no-install-recommends \
+        libsdl2-2.0-0 libfreetype6 ca-certificates \
     && rm -rf /var/lib/apt/lists/* \
     && useradd --system --create-home --uid 10001 espaciokoop
 
@@ -65,6 +74,8 @@ USER espaciokoop
 EXPOSE 35666/tcp 35666/udp 8080/tcp
 
 HEALTHCHECK --interval=15s --timeout=5s --start-period=45s --retries=5 \
-    CMD curl -fsS "http://localhost:${EE_HTTP_PORT}/" > /dev/null || exit 1
+    CMD bash -c 'exec 3<>/dev/tcp/127.0.0.1/${EE_HTTP_PORT} \
+        && printf "GET / HTTP/1.0\r\n\r\n" >&3 \
+        && head -c 15 <&3 | grep -q "200"' || exit 1
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

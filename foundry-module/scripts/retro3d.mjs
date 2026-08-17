@@ -106,6 +106,13 @@ function normalizar(v) {
 
 const punto = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 
+/** Centroide de un polígono: la media de sus vértices. */
+function centro(vertices) {
+  const suma = vertices.reduce((acc, v) => [acc[0] + v[0], acc[1] + v[1], acc[2] + v[2]], [0, 0, 0]);
+  const n = vertices.length || 1;
+  return [suma[0] / n, suma[1] / n, suma[2] / n];
+}
+
 /**
  * Rota un vértice en el orden yaw (Y) → pitch (X) → roll (Z) y lo traslada.
  * El orden es fijo y se escribe porque componer rotaciones no es conmutativo:
@@ -350,18 +357,121 @@ function recortarContra(vertices, plano, signo) {
 const LUZ = normalizar([-0.4, 0.8, -0.45]);
 
 /**
- * Intensidad lambertiana de una cara, ya escalonada según la época. Se deja un
- * suelo de luz ambiente: una cara a oscuras total se funde con el fondo y la
- * silueta se rompe, que en un visor pequeño se lee como un agujero.
+ * Suelo de luz ambiente. Una cara a oscuras total se funde con el fondo y la
+ * silueta se rompe, que en un visor pequeño se lee como un agujero — y con
+ * focos (abajo) el riesgo crece, porque una cara fuera de todos ellos podría
+ * quedarse en negro absoluto dentro de una sala interior.
  */
-export function intensidadCara(normal, tonos) {
+const AMBIENTE = 0.35;
+
+/**
+ * Cuántos focos se evalúan como mucho en una escena (#556). El coste es por
+ * CARA y no por píxel, y una sala son ~800 caras: es barato, pero el límite se
+ * escribe antes de que crezca solo. Se quedan los más cercanos a la cámara,
+ * que son los que producen un charco de luz visible.
+ */
+export const TOPE_FOCOS = 4;
+
+/**
+ * Aportación de un foco a una cara, evaluada en su CENTROIDE (#556).
+ *
+ * Por qué en el centroide y no por píxel: el motor sombrea plano por cara, así
+ * que un foco ilumina la cara entera con un solo valor. Eso antes no valía la
+ * pena —un muro era uno o dos cuadriláteros grandes y encender una lámpara al
+ * lado no daba un charco de luz, sino un muro que cambiaba de tono de golpe—,
+ * pero la piel pixelart de #548–#552 partió los muros en cientos de caras
+ * pequeñas: medido en la sala del reactor, 742 de 768 caras ocupan menos del
+ * 0,5% del cuadro. A esa granularidad una intensidad por cara ya se lee como un
+ * degradado. La condición que faltaba la cumple la geometría que YA existe: no
+ * se subdivide nada a propósito para iluminar, ni se toca el rasterizador.
+ *
+ * La caída es lineal hasta `alcance` y ahí se corta. No es física —la física es
+ * inversa del cuadrado, que no llega nunca a cero— y esa es justo la razón: un
+ * foco con alcance finito se puede presupuestar, y la máquina de referencia
+ * tampoco hacía otra cosa.
+ *
+ * Un foco NO es una superficie emisiva. `emisivo` (#555) dice cómo se ve la
+ * propia luminaria —fullbright, sin sombreado—; un foco dice cómo modifica la
+ * intensidad de las DEMÁS caras. Mezclarlas es como se acaba con superficies
+ * que se iluminan a sí mismas dos veces.
+ *
+ * @param {{posicion:number[], potencia?:number, alcance?:number}} foco
+ * @param {number[]} centroide - centro de la cara, en el mismo espacio que el foco.
+ * @param {number[]} normal - normal de la cara, ya unitaria.
+ * @returns {number} aportación en [0, potencia].
+ */
+export function contribucionFoco(foco, centroide, normal) {
+  if (!foco) return 0;
+  const posicion = triple(foco.posicion, [0, 0, 0]);
+  const potencia = acotar(foco.potencia, 0, 4, 1);
+  const alcance = acotar(foco.alcance, 1e-6, 1e6, 6);
+  const hacia = resta(posicion, centroide);
+  const distancia = Math.hypot(hacia[0], hacia[1], hacia[2]);
+  if (distancia >= alcance) return 0;
+  // Un foco EN el plano de la cara (distancia 0) no tiene dirección: se toma
+  // como iluminación frontal en vez de devolver NaN al normalizar el vector nulo.
+  const lambert = distancia === 0 ? 1 : Math.max(0, punto(normal, normalizar(hacia)));
+  return potencia * lambert * (1 - distancia / alcance);
+}
+
+/**
+ * Los `TOPE_FOCOS` focos más cercanos a un punto (la cámara), en orden. El
+ * recorte se hace UNA VEZ por escena y no por cara: así el coste de tener seis
+ * lámparas declaradas en una sala no se multiplica por sus ochocientas caras.
+ */
+export function focosCercanos(focos, referencia, tope = TOPE_FOCOS) {
+  if (!Array.isArray(focos) || focos.length === 0) return [];
+  const desde = triple(referencia, [0, 0, 0]);
+  return focos
+    .filter((foco) => foco && Array.isArray(foco.posicion))
+    .map((foco) => {
+      const p = triple(foco.posicion, [0, 0, 0]);
+      return { foco, d: Math.hypot(p[0] - desde[0], p[1] - desde[1], p[2] - desde[2]) };
+    })
+    .sort((a, b) => a.d - b.d)
+    .slice(0, Math.max(0, acotar(tope, 0, 64, TOPE_FOCOS)))
+    .map((entrada) => entrada.foco);
+}
+
+/**
+ * Intensidad de una cara, ya escalonada según la época: la direccional fija de
+ * siempre más la aportación de los focos declarados por la escena (#556).
+ *
+ * El orden importa y es contrato, no detalle: **se suman TODAS las luces y solo
+ * después se escalona**. Escalonar cada foco por separado haría que dos focos
+ * débiles dieran un resultado distinto del de un foco equivalente más fuerte, y
+ * metería escalones donde no los pide ninguna luz.
+ *
+ * Sin focos —`opciones` ausente o lista vacía— el resultado es exactamente el
+ * de antes: la suma se queda en el término direccional y el techo de 1 ya lo
+ * tenía (0,35 + 0,65). Una escena sin focos declarados se ve idéntica.
+ *
+ * @param {number[]} normal
+ * @param {number} tonos
+ * @param {{centroide?:number[], focos?:object[]}} [opciones] - el centroide y
+ *   los focos van en el MISMO espacio que la normal (ver `luzFija`).
+ */
+export function intensidadCara(normal, tonos, opciones) {
   const lambert = Math.max(0, punto(normal, LUZ));
-  const crudo = 0.35 + 0.65 * lambert;
+  let crudo = AMBIENTE + 0.65 * lambert;
+
+  const focos = opciones?.focos;
+  const centroide = opciones?.centroide;
+  if (centroide && Array.isArray(focos) && focos.length > 0) {
+    for (const foco of focos) crudo += contribucionFoco(foco, centroide, normal);
+    // El techo se aplica ANTES de escalonar, por la misma razón que la suma:
+    // recortar después dejaría el último escalón haciendo de tope y comiéndose
+    // el penúltimo.
+    crudo = Math.min(1, crudo);
+  }
+
   // Negado a propósito, y no `tonos <= 1`: así un `tonos` que no sea número cae
   // también aquí en vez de colarse y devolver NaN.
   if (!(tonos > 1)) return crudo;
   // Escalonado: el sombreado suave es justo lo que no queremos: delata el
-  // render moderno y rompe la frontera de paleta corta.
+  // render moderno y rompe la frontera de paleta corta. Sigue siendo el
+  // parámetro de época de #362, y por eso ocurre también con focos: una luz
+  // suave sin escalonar sería un cambio de época encubierto.
   return Math.round(crudo * (tonos - 1)) / (tonos - 1);
 }
 
@@ -630,6 +740,19 @@ export function componerEscena(malla, opciones = {}) {
   const textura = opciones.textura ?? null;
   const uvs = textura && Array.isArray(malla?.uvs) ? malla.uvs : null;
 
+  // FOCOS (#556). Luces de punto declaradas por la escena, evaluadas en el
+  // centroide de cada cara. Se declaran en el MISMO espacio del que sale la
+  // normal —el del mundo con `luzFija`, el de la cámara sin él—, porque una luz
+  // y la cara que ilumina tienen que medirse en el mismo sitio o la distancia
+  // entre ambas no significa nada. Sin focos, ni se calcula el centroide.
+  //
+  // `observador` es dónde está la cámara EN ESE MISMO ESPACIO, y solo sirve
+  // para quedarse con los `TOPE_FOCOS` más cercanos. Por defecto es el origen,
+  // que es exactamente donde está la cámara en espacio de cámara; una escena
+  // con `luzFija` declara sus focos en el mundo y es la única que sabe dónde
+  // está el jugador ahí, así que lo pasa ella.
+  const focos = focosCercanos(opciones.focos, opciones.observador ?? [0, 0, 0]);
+
   const enCamara = vertices.map((v) => transformar(v, { yaw, pitch, roll, posicion }));
 
   const poligonos = [];
@@ -712,7 +835,15 @@ export function componerEscena(malla, opciones = {}) {
     // solo hasta el plano lejano.
     const profundidad = recortada.reduce((suma, v) => suma + v[2], 0) / recortada.length;
 
-    const sombreado = emisivo ? color : sombrear(color, intensidadCara(normal, ajustes.tonos));
+    // El centroide sale de los MISMOS vértices que la normal (`baseNormal`), no
+    // de los recortados: el recorte mueve el centro de la cara hacia el borde
+    // de la pantalla, y con él se movería el charco de luz al girar la cámara
+    // — luz que se desplaza sola, que es justo el defecto que `luzFija` existe
+    // para evitar. Solo se calcula si hay focos.
+    const centroide = focos.length > 0 ? centro(baseNormal) : null;
+    const intensidad = emisivo ? 1 : intensidadCara(normal, ajustes.tonos, { centroide, focos });
+
+    const sombreado = emisivo ? color : sombrear(color, intensidad);
     const niebla = fondo ? factorNiebla(profundidad, { cerca, lejos, niebla: ajustes.niebla }) : 0;
     poligonos.push({
       puntos,
@@ -726,9 +857,7 @@ export function componerEscena(malla, opciones = {}) {
       // color como se hace arriba —cada téxel es distinto—, así que el
       // rasterizador multiplica téxel por intensidad, que es lo que hacía la
       // máquina de referencia con su modulación por vértice.
-      ...(textura && uvCara
-        ? { textura, intensidad: emisivo ? 1 : intensidadCara(normal, ajustes.tonos) }
-        : {}),
+      ...(textura && uvCara ? { textura, intensidad } : {}),
       // La geometría de cámara ya recortada viaja con el polígono porque el
       // orden por pintor la necesita: decidir quién tapa a quién exige el plano
       // real de la cara, y en pantalla ese plano ya no existe (la perspectiva no

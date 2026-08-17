@@ -185,11 +185,14 @@ export const VOCABULARIO_PLAYA = definirVocabulario({
   poste: {
     color: PLAYA.poste,
     partes: [
-      { medidas: [0.22, 5.4, 0.22], centro: [0, 2.7, 0] },
+      // El mástil es un TRONCO descortezado: redondo y más fino arriba. Era una
+      // caja, y con cuatro aristas vivas se leía como una viga.
+      { medidas: [0.22, 5.4, 0.22], centro: [0, 2.7, 0], lados: 8, punta: 0.7 },
       { medidas: [1.5, 0.1, 0.1], centro: [0, 5.1, 0] },
       { medidas: [1.1, 0.09, 0.09], centro: [0, 4.6, 0] },
-      { medidas: [0.12, 0.5, 0.12], centro: [0, 4.15, 0.55] },
-      { medidas: [0.4, 0.16, 0.4], centro: [0, 3.85, 0.55] },
+      { medidas: [0.12, 0.5, 0.12], centro: [0, 4.15, 0.55], lados: 6 },
+      // La pantalla de la luminaria, cónica y abierta hacia abajo.
+      { medidas: [0.4, 0.16, 0.4], centro: [0, 3.85, 0.55], lados: 8, punta: 1.6 },
     ],
     ancla: null,
   },
@@ -242,9 +245,10 @@ export const VOCABULARIO_PLAYA = definirVocabulario({
   madera: {
     color: PLAYA.madera,
     partes: [
-      { medidas: [2.6, 0.28, 0.3], centro: [0, 0.14, 0] },
-      { medidas: [0.7, 0.14, 0.14], centro: [1.1, 0.22, 0.28] },
-      { medidas: [0.5, 0.12, 0.12], centro: [-0.9, 0.2, -0.24] },
+      // Tumbado, que es como está la madera de deriva: eje X, no Y.
+      { medidas: [2.6, 0.28, 0.3], centro: [0, 0.16, 0], lados: 6, eje: "x", punta: 0.75 },
+      { medidas: [0.7, 0.14, 0.14], centro: [1.1, 0.24, 0.28], lados: 6, eje: "x", punta: 0.4 },
+      { medidas: [0.5, 0.12, 0.12], centro: [-0.9, 0.22, -0.24], lados: 6, eje: "x", punta: 0.4 },
     ],
     ancla: null,
   },
@@ -289,10 +293,12 @@ export const VOCABULARIO_PLAYA = definirVocabulario({
   manga: {
     color: PLAYA.manga,
     partes: [
-      { medidas: [0.16, 3.6, 0.16], centro: [0, 1.8, 0] },
-      { medidas: [1.0, 0.7, 0.7], centro: [0.62, 3.3, 0], color: PLAYA.mangaFranja },
-      { medidas: [1.0, 0.55, 0.55], centro: [1.58, 3.28, 0] },
-      { medidas: [1.0, 0.38, 0.38], centro: [2.5, 3.24, 0], color: PLAYA.mangaFranja },
+      { medidas: [0.16, 3.6, 0.16], centro: [0, 1.8, 0], lados: 8, punta: 0.8 },
+      // El cono, en tres tramos de sección REDONDA. Una manga es una manga de
+      // tela: en cajas parecían tres cajones enfilados.
+      { medidas: [1.0, 0.7, 0.7], centro: [0.62, 3.3, 0], lados: 8, eje: "x", punta: 0.8, color: PLAYA.mangaFranja },
+      { medidas: [1.0, 0.55, 0.55], centro: [1.58, 3.28, 0], lados: 8, eje: "x", punta: 0.75 },
+      { medidas: [1.0, 0.38, 0.38], centro: [2.5, 3.24, 0], lados: 8, eje: "x", punta: 0.8, color: PLAYA.mangaFranja },
     ],
     ancla: null,
   },
@@ -301,9 +307,9 @@ export const VOCABULARIO_PLAYA = definirVocabulario({
   boya: {
     color: PLAYA.boya,
     partes: [
-      { medidas: [0.8, 0.6, 0.8], centro: [0, 0.3, 0] },
-      { medidas: [0.12, 1.1, 0.12], centro: [0, 1.1, 0] },
-      { medidas: [0.3, 0.16, 0.3], centro: [0, 1.7, 0] },
+      { medidas: [0.8, 0.6, 0.8], centro: [0, 0.3, 0], lados: 8 },
+      { medidas: [0.12, 1.1, 0.12], centro: [0, 1.1, 0], lados: 6 },
+      { medidas: [0.3, 0.16, 0.3], centro: [0, 1.7, 0], lados: 6 },
     ],
     ancla: null,
   },
@@ -322,7 +328,8 @@ export const VOCABULARIO_PLAYA = definirVocabulario({
   aerogenerador: {
     color: PLAYA.torre,
     partes: [
-      { medidas: [3.2, 44, 3.2], centro: [0, 22, 0] },
+      // La torre se estrecha, como todas: es lo primero que se ve de lejos.
+      { medidas: [3.2, 44, 3.2], centro: [0, 22, 0], lados: 8, punta: 0.55 },
       { medidas: [3.0, 3.2, 6.0], centro: [0, 44.5, 0] },
       { medidas: [1.4, 34, 0.6], centro: [0, 44.5, -3.2], color: PLAYA.aspa },
       { medidas: [34, 1.4, 0.6], centro: [0, 44.5, -3.2], color: PLAYA.aspa },

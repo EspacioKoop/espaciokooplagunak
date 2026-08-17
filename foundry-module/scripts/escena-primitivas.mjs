@@ -72,7 +72,19 @@ export function caja([cx, cy, cz], [ancho, alto, fondo]) {
  * redonda conservando las facetas de la época, que es exactamente el criterio con
  * el que se eligió la resolución de la esfera.
  */
-export function prisma([cx, cy, cz], { radioAbajo, radioArriba = radioAbajo, alto, lados = 8, giro = 0 }) {
+export function prisma(
+  [cx, cy, cz],
+  { radioAbajo, radioArriba = radioAbajo, alto, lados = 8, giro = 0, tapaAbajo = false, eje = "y" },
+) {
+  // EL EJE PUEDE NO SER VERTICAL. Un poste, un pie de mesa o un tiesto crecen
+  // hacia arriba, pero un tronco tumbado en la arena y la manga de un
+  // aeródromo no: se tumban. Sin esto, la manga de viento salía de pie como un
+  // farol y dejaba de decir hacia dónde sopla, que era su único trabajo.
+  const colocar = (a, b, largo) => {
+    if (eje === "x") return [cx + largo, cy + b, cz + a];
+    if (eje === "z") return [cx + a, cy + b, cz + largo];
+    return [cx + a, cy + largo, cz + b];
+  };
   const vertices = [];
   for (const [nivel, radio] of [
     [0, radioAbajo],
@@ -80,7 +92,7 @@ export function prisma([cx, cy, cz], { radioAbajo, radioArriba = radioAbajo, alt
   ]) {
     for (let j = 0; j < lados; j += 1) {
       const t = giro + (j / lados) * 2 * Math.PI;
-      vertices.push([cx + radio * Math.cos(t), cy + nivel, cz + radio * Math.sin(t)]);
+      vertices.push(colocar(radio * Math.cos(t), radio * Math.sin(t), nivel));
     }
   }
   const caras = [];
@@ -91,9 +103,11 @@ export function prisma([cx, cy, cz], { radioAbajo, radioArriba = radioAbajo, alt
     // silueta—, que es el mismo fallo que borró la ladera de la duna.
     caras.push([j, lados + j, lados + k, k]);
   }
-  // La tapa de arriba se cierra. La de abajo no: se apoya en el suelo y no se ve
-  // nunca, y una cara que no se ve es una cara que se paga por nada.
+  // La tapa de arriba se cierra. La de abajo, solo si se pide: lo que se planta
+  // en el suelo se apoya y no la enseña nunca, y una cara que no se ve es una
+  // cara que se paga por nada. Una ficha tumbada sobre una mesa sí la necesita.
   caras.push(Array.from({ length: lados }, (_, j) => lados + (lados - 1 - j)));
+  if (tapaAbajo) caras.push(Array.from({ length: lados }, (_, j) => j));
   return { vertices, caras };
 }
 
@@ -174,4 +188,20 @@ export function rampa([a, b, c, d]) {
 /** Traslada una malla. */
 export function trasladar(malla, [dx, dy, dz]) {
   return { ...malla, vertices: malla.vertices.map(([x, y, z]) => [x + dx, y + dy, z + dz]) };
+}
+
+/**
+ * Un disco extruido, centrado en su grosor: la ficha de los minijuegos.
+ *
+ * Estaba escrito dos veces —`poker-3d.mjs` y `blackjack-3d.mjs`— y era, sin
+ * decirlo, un `prisma` de N lados. Es el caso que mejor resume por qué existe
+ * este módulo: la forma que le faltaba al resto del módulo llevaba meses
+ * escrita, escondida dentro de una ficha de póker.
+ *
+ * Se centra en `y` y no se apoya en la base, a diferencia de `prisma`, porque
+ * una ficha se tumba sobre una mesa y lo que se coloca es su centro. Cambiarlo
+ * movería todas las fichas de sitio para no ganar nada.
+ */
+export function disco({ radio = 0.3, grosor = 0.16, lados = 10 } = {}) {
+  return prisma([0, -grosor / 2, 0], { radioAbajo: radio, alto: grosor, lados, tapaAbajo: true });
 }

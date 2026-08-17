@@ -9,7 +9,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { anillo, caja, esfera, losa, prisma, rampa, trasladar } from "../scripts/escena-primitivas.mjs";
+import { anillo, caja, disco, esfera, losa, prisma, rampa, trasladar } from "../scripts/escena-primitivas.mjs";
 
 /** Normal de una cara por el método del área firmada (Newell), ya unitaria. */
 function normalDe(malla, indice) {
@@ -128,4 +128,29 @@ test("trasladar mueve los vértices y no toca las caras", () => {
   const movida = trasladar(original, [3, 4, 5]);
   assert.deepEqual(movida.caras, original.caras);
   assert.deepEqual(movida.vertices[0], [-0.5 + 3, -0.5 + 4, -0.5 + 5]);
+});
+
+test("un prisma puede tumbarse: no todo lo que es redondo crece hacia arriba", () => {
+  // La manga de viento salía de pie como un farol y dejaba de decir hacia dónde
+  // sopla, que era su único trabajo. Un tronco de deriva, lo mismo.
+  const tumbado = prisma([0, 0, 0], { radioAbajo: 0.2, alto: 3, lados: 6, eje: "x" });
+  const equis = tumbado.vertices.map(([x]) => x);
+  assert.equal(Math.min(...equis), 0);
+  assert.equal(Math.max(...equis), 3);
+  // Y su sección está en el plano perpendicular, no aplastada contra el suelo.
+  const alturas = tumbado.vertices.map(([, y]) => y);
+  assert.ok(Math.max(...alturas) - Math.min(...alturas) > 0.3, "el prisma tumbado se ha quedado plano");
+});
+
+test("el disco de las fichas cierra sus DOS tapas y enseña el canto", () => {
+  // El canto de una ficha llevaba meses descartándose: sus costados estaban
+  // bobinados hacia dentro. La cuenta de caras se conserva —diez lados y dos
+  // tapas— y ahora además se ven.
+  const malla = disco({ lados: 10 });
+  assert.equal(malla.vertices.length, 20);
+  assert.equal(malla.caras.length, 12);
+  const cara = malla.caras[0].map((i) => malla.vertices[i]);
+  const centro = cara.reduce((a, v) => [a[0] + v[0] / 4, 0, a[2] + v[2] / 4], [0, 0, 0]);
+  const normal = normalDe(malla, 0);
+  assert.ok(normal[0] * centro[0] + normal[2] * centro[2] > 0, "el canto de la ficha da la espalda");
 });

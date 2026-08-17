@@ -36,6 +36,7 @@
 // ya acepta `crearSalaCaja`.
 
 import { CACHARROS, MURAL, SECCION } from "./paleta.mjs";
+import { caja, prisma } from "./escena-primitivas.mjs";
 
 /** Un cuarto de vuelta, la unidad en la que se gira un prop. */
 const CUARTO = Math.PI / 2;
@@ -52,13 +53,26 @@ const CUARTO = Math.PI / 2;
  * `ancla` es dónde se planta y hacia dónde mira quien interactúa con él,
  * relativo también al origen: declararla aquí es lo que evita que #579 tenga que
  * deducir a ojo dónde se pesca.
+ *
+ * UNA PARTE PUEDE NO SER UNA CAJA. Con `lados`, se dibuja como prisma de ese
+ * número de caras inscrito en sus medidas; con `punta`, además se estrecha hacia
+ * arriba (0 = cono, 1 = recto). Es la corrección del inventario 3D: una caja es
+ * un prisma de CUATRO lados, y cuatro es el único número que no puede parecer
+ * redondo — por eso un conducto de reactor se leía como un pilar cuadrado y el
+ * pie de una mesa como un ladrillo.
+ *
+ * Las `medidas` siguen siendo las de siempre aunque la forma cambie: son la
+ * huella, y de ellas salen la colisión y la piel. Un tubo redondo ocupa el mismo
+ * sitio que la caja en la que cabe.
  */
 const DEFINICIONES = {
   /* ---- maquinaria (#560): una caja, porque eso es lo que son ---- */
 
   bancada: { partes: [{ medidas: [1.8, 0.95, 0.8] }], color: SECCION.casco },
   armario: { partes: [{ medidas: [1.0, 1.9, 0.6] }], color: SECCION.mamparo },
-  conducto: { partes: [{ medidas: [0.5, 3.8, 0.5] }], color: MURAL.medio },
+  // Redondo: es un TUBO de servicio, va de suelo a techo y se ve entero. Era la
+  // pieza que más delataba que el módulo entero se dibujaba con cajas.
+  conducto: { partes: [{ medidas: [0.5, 3.8, 0.5], lados: 8 }], color: MURAL.medio },
   registro: { partes: [{ medidas: [0.7, 0.7, 0.45] }], color: SECCION.casco },
 
   /* ---- mobiliario de estar (#583, para #579) ---- */
@@ -76,10 +90,12 @@ const DEFINICIONES = {
     partes: [
       { medidas: [0.44, 0.06, 0.44], centro: [0, 0.45, 0] },
       { medidas: [0.44, 0.46, 0.06], centro: [0, 0.71, -0.19] },
-      { medidas: [0.05, 0.42, 0.05], centro: [-0.17, 0.21, -0.17] },
-      { medidas: [0.05, 0.42, 0.05], centro: [0.17, 0.21, -0.17] },
-      { medidas: [0.05, 0.42, 0.05], centro: [-0.17, 0.21, 0.17] },
-      { medidas: [0.05, 0.42, 0.05], centro: [0.17, 0.21, 0.17] },
+      // Patas torneadas, de seis lados: a cinco centímetros no dan para ocho, y
+      // con cuatro se ven las aristas justo a la altura a la que se mira.
+      { medidas: [0.05, 0.42, 0.05], centro: [-0.17, 0.21, -0.17], lados: 6, punta: 0.8 },
+      { medidas: [0.05, 0.42, 0.05], centro: [0.17, 0.21, -0.17], lados: 6, punta: 0.8 },
+      { medidas: [0.05, 0.42, 0.05], centro: [-0.17, 0.21, 0.17], lados: 6, punta: 0.8 },
+      { medidas: [0.05, 0.42, 0.05], centro: [0.17, 0.21, 0.17], lados: 6, punta: 0.8 },
     ],
     ancla: { centro: [0, 0.7], orientacion: Math.PI },
   },
@@ -91,9 +107,10 @@ const DEFINICIONES = {
   taburete: {
     color: MURAL.medio,
     partes: [
-      { medidas: [0.36, 0.06, 0.36], centro: [0, 0.6, 0] },
-      { medidas: [0.09, 0.57, 0.09], centro: [0, 0.3, 0] },
-      { medidas: [0.34, 0.04, 0.34], centro: [0, 0.02, 0] },
+      // Un taburete es redondo de arriba abajo: asiento, pie y base.
+      { medidas: [0.36, 0.06, 0.36], centro: [0, 0.6, 0], lados: 10 },
+      { medidas: [0.09, 0.57, 0.09], centro: [0, 0.3, 0], lados: 8 },
+      { medidas: [0.34, 0.04, 0.34], centro: [0, 0.02, 0], lados: 10 },
     ],
     ancla: null,
   },
@@ -107,7 +124,9 @@ const DEFINICIONES = {
     color: SECCION.casco,
     partes: [
       { medidas: [1.3, 0.07, 0.9], centro: [0, 0.74, 0] },
-      { medidas: [0.18, 0.71, 0.18], centro: [0, 0.38, 0] },
+      // El pie sí: un pie de mesa cuadrado se lee como un ladrillo puesto de
+      // canto. El tablero y la base se quedan rectos porque lo son.
+      { medidas: [0.18, 0.71, 0.18], centro: [0, 0.38, 0], lados: 8 },
       { medidas: [0.7, 0.05, 0.5], centro: [0, 0.03, 0] },
     ],
     ancla: null,
@@ -122,8 +141,8 @@ const DEFINICIONES = {
     color: MURAL.abrazadera,
     partes: [
       { medidas: [0.9, 0.08, 0.3], centro: [0, 0.04, 0] },
-      { medidas: [0.08, 1.0, 0.08], centro: [-0.35, 0.5, 0] },
-      { medidas: [0.08, 1.0, 0.08], centro: [0.35, 0.5, 0] },
+      { medidas: [0.08, 1.0, 0.08], centro: [-0.35, 0.5, 0], lados: 6 },
+      { medidas: [0.08, 1.0, 0.08], centro: [0.35, 0.5, 0], lados: 6 },
       { medidas: [0.86, 0.07, 0.07], centro: [0, 1.02, 0] },
     ],
     ancla: { centro: [0, 0.75], orientacion: Math.PI },
@@ -140,11 +159,13 @@ const DEFINICIONES = {
   barandilla: {
     color: SECCION.casco,
     partes: [
+      // El pasamanos es lo único de la nave que se AGARRA, y un pasamanos
+      // cuadrado no se agarra. Los montantes, por coherencia con él.
       { medidas: [2.4, 0.08, 0.09], centro: [0, 1.01, 0] },
       { medidas: [2.4, 0.06, 0.07], centro: [0, 0.18, 0] },
-      { medidas: [0.07, 1.0, 0.07], centro: [-1.15, 0.5, 0] },
-      { medidas: [0.07, 1.0, 0.07], centro: [0, 0.5, 0] },
-      { medidas: [0.07, 1.0, 0.07], centro: [1.15, 0.5, 0] },
+      { medidas: [0.07, 1.0, 0.07], centro: [-1.15, 0.5, 0], lados: 6 },
+      { medidas: [0.07, 1.0, 0.07], centro: [0, 0.5, 0], lados: 6 },
+      { medidas: [0.07, 1.0, 0.07], centro: [1.15, 0.5, 0], lados: 6 },
     ],
     ancla: null,
   },
@@ -158,9 +179,11 @@ const DEFINICIONES = {
   cana: {
     color: CACHARROS.cajaSuministro,
     partes: [
-      { medidas: [0.05, 0.05, 0.5], centro: [0, 0.35, -0.3] },
-      { medidas: [0.04, 0.04, 0.6], centro: [0, 0.75, 0.15] },
-      { medidas: [0.03, 0.03, 0.5], centro: [0, 1.1, 0.65] },
+      // Una caña ES un cono, y eran tres listones. Cada tramo se estrecha, y el
+      // último acaba en punta.
+      { medidas: [0.05, 0.05, 0.5], centro: [0, 0.35, -0.3], lados: 6, punta: 0.8 },
+      { medidas: [0.04, 0.04, 0.6], centro: [0, 0.75, 0.15], lados: 6, punta: 0.7 },
+      { medidas: [0.03, 0.03, 0.5], centro: [0, 1.1, 0.65], lados: 6, punta: 0.2 },
     ],
     ancla: null,
   },
@@ -201,6 +224,12 @@ export function definirVocabulario(definiciones) {
               Object.freeze({
                 medidas: Object.freeze([...parte.medidas]),
                 centro: Object.freeze([...(parte.centro ?? [0, parte.medidas[1] / 2, 0])]),
+                lados: Number.isFinite(parte.lados) ? parte.lados : null,
+                punta: Number.isFinite(parte.punta) ? parte.punta : 1,
+                // Por qué eje crece la pieza. Vertical de serie —casi todo lo
+                // que se planta en el suelo—, pero un tronco tumbado o una manga
+                // de viento se tumban, y de pie dejan de ser lo que son.
+                eje: ["x", "y", "z"].includes(parte.eje) ? parte.eje : "y",
                 // Una parte puede llevar color propio (#587: los cristales de la
                 // cabina no son del color de la cabina). Sin declararlo, hereda
                 // el del prop, que es el caso normal.
@@ -259,14 +288,41 @@ export function colocarProp(clave, { x, z, cuartos = 0, nombre = clave, vocabula
   const piezas = prop.partes.map((parte, indice) => {
     const [dx, dz] = girarEnPlanta([parte.centro[0], parte.centro[2]], cuartos);
     const [ancho, alto, fondo] = parte.medidas;
+    const medidas = impar ? [fondo, alto, ancho] : [ancho, alto, fondo];
+    const centro = [x + dx, parte.centro[1], z + dz];
+    // La malla se construye AQUÍ, con la pieza ya colocada y girada. Quien la
+    // dibuje no tiene que saber qué forma tiene: recibe una malla y ya está.
+    // Un cuarto de vuelta intercambia los ejes X y Z, así que también el eje por
+    // el que crece la pieza: si no, una silla girada tendría las patas bien y el
+    // tronco de al lado seguiría apuntando al norte.
+    const eje = impar && parte.eje !== "y" ? (parte.eje === "x" ? "z" : "x") : parte.eje;
+    const indiceEje = { x: 0, y: 1, z: 2 }[eje];
+    const largo = medidas[indiceEje];
+    const grueso = Math.min(...medidas.filter((_, i) => i !== indiceEje));
+    const base = [...centro];
+    base[indiceEje] -= largo / 2;
+    const malla = parte.lados
+      ? prisma(base, {
+          radioAbajo: grueso / 2,
+          radioArriba: (grueso / 2) * parte.punta,
+          alto: largo,
+          lados: parte.lados,
+          eje,
+        })
+      : caja(centro, medidas);
     return {
       // Una pieza por parte, numerada: el nombre es lo único por lo que una
       // prueba puede señalar «esta pata», y dos piezas con el mismo nombre no
       // se distinguen.
       nombre: prop.partes.length === 1 ? nombre : `${nombre}-${indice}`,
-      centro: [x + dx, parte.centro[1], z + dz],
-      medidas: impar ? [fondo, alto, ancho] : [ancho, alto, fondo],
+      centro,
+      medidas,
+      malla,
       color: parte.color,
+      // Lo que no es una caja no lleva piel pixelart (#550): esa piel dibuja
+      // cantos y remaches suponiendo cuatro caras planas, y sobre un tubo saldría
+      // pegada de cualquier manera.
+      piel: parte.lados ? false : undefined,
     };
   });
 

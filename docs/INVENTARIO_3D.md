@@ -15,19 +15,24 @@ reinventada hay.
 
 | Forma | Dónde vive hoy | Estado |
 |---|---|---|
-| `caja` | `cantina-escena.mjs:43`, `minijuegos/poker-3d.mjs:99`, `minijuegos/blackjack-3d.mjs:65` | **Triplicada.** La playa la importa de la cantina — un exterior dependiendo del bar de la nave |
-| `disco` (prisma de N lados, extruido) | `poker-3d.mjs:133`, `blackjack-3d.mjs:98` | **Duplicada.** Es un prisma genérico disfrazado de ficha de póker |
-| `prisma` (N lados, con conicidad) | `escena-primitivas.mjs` | Nuevo. **Es `disco` generalizado** — hay que unificarlos, no tener los dos |
-| `esfera` facetada | `playa-escena.mjs` | Nuevo (planetas) |
-| `anillo` inclinable | `playa-escena.mjs` | Nuevo (anillo planetario) |
-| `losa` / `rampa` (cuadrilátero libre) | `playa-escena.mjs` | Nuevo (sombras, ladera) |
+| `caja` | `escena-primitivas.mjs` | **Unificada.** Estaba triplicada; cantina y minijuegos la reexportan |
+| `disco` | `escena-primitivas.mjs` | **Unificada sobre `prisma`.** Cantina y minijuegos la reexportan |
+| `prisma` (N lados, con conicidad) | `escena-primitivas.mjs` | La forma que faltaba |
+| `esfera` facetada | `escena-primitivas.mjs` | Planetas |
+| `anillo` inclinable | `escena-primitivas.mjs` | Anillo planetario |
+| `losa` / `rampa` (cuadrilátero libre) | `escena-primitivas.mjs` | Sombras, laderas |
 | `sector` circular en un plano | `playa-escena.mjs` (reloj) | Específico, pero generalizable |
 | `fundir` mallas del mismo color | `nave-luminaria.mjs:45` | Útil y escondido en un módulo de lámparas |
 | `mover`/`trasladar` malla | `poker-3d.mjs:125`, `nave-sala-caja.mjs:377` | Duplicada |
 
-**Primer caso a resolver, y es de fontanería:** una sola casa para estas formas
-(`escena-primitivas.mjs`, ya creado) y que los cinco módulos tiren de ahí. Con
-una escena más, la copia de `caja` se vuelve cuatro.
+**Hecho.** Todas viven en `escena-primitivas.mjs`, con pruebas que comprueban la
+**normal de cada cara**. Esa prueba no es ceremonia: una cara con el bobinado al
+revés no se dibuja mal, no se dibuja, y ya ha pasado dos veces —la ladera de la
+duna desapareció entera, y el costado de las fichas de los minijuegos llevaba
+meses descartándose sin que nadie lo viera—.
+
+Sigue pendiente: `fundir`, `trasladar`/`mover` y el `sector` circular del reloj,
+que aún viven en sus módulos.
 
 ## El problema de fondo: cuatro lados
 
@@ -49,13 +54,13 @@ Vocabulario compartido (#583). Cada prop es una lista de partes.
 | `bancada` | 1 caja | **Correcto como caja.** Una bancada ES un bloque |
 | `armario` | 1 caja | **Correcto.** Un armario cerrado es una caja |
 | `registro` | 1 caja | **Correcto** |
-| `conducto` | 1 caja de 3,8 m | **A prisma.** Un tubo de servicio cuadrado es lo que más delata el motor, y mide de suelo a techo: se ve entero |
-| `silla` | 6 cajas | Se lee. Patas a prisma de 6 lados si sobra presupuesto |
-| `taburete` | 3 cajas | **Pie a prisma.** Un taburete de pie cuadrado no existe |
-| `mesa` | 3 cajas | **Pie a prisma.** Tablero y base se quedan |
-| `soporte` | 4 cajas | **Montantes a prisma** |
-| `barandilla` | 5 cajas | **Montantes y pasamanos a prisma.** Un pasamanos cuadrado no se agarra |
-| `cana` | 3 cajas escalonadas | **A prisma cónico.** Una caña ES un cono; ahora son tres listones |
+| `conducto` | prisma de 8 lados | **Hecho** |
+| `silla` | 2 cajas + 4 patas torneadas de 6 lados | **Hecho** |
+| `taburete` | prismas de 10/8/10 lados | **Hecho.** Redondo de arriba abajo |
+| `mesa` | 2 cajas + pie de 8 lados | **Hecho** |
+| `soporte` | 2 cajas + montantes de 6 lados | **Hecho** |
+| `barandilla` | 2 cajas + montantes de 6 lados | **Hecho** |
+| `cana` | 3 tramos cónicos, el último en punta | **Hecho** |
 
 ## Cantina — `cantina-escena.mjs`
 

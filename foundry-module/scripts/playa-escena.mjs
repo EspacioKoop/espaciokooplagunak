@@ -1,8 +1,15 @@
 // La playa de pruebas (#587): el primer EXTERIOR del módulo.
 //
-// PARA QUÉ ESTÁ. Es un banco de pruebas de los puntos de interacción (#582) y
-// del vocabulario de props (#583) antes de gastarlos en la terraza de #579, que
-// sí tiene que quedar bien. Una sala de nave más no probaría nada que las trece
+// QUÉ ES. La ESCENA DE REFERENCIA del kit (#589): el sitio donde se prueba cada
+// primitiva y cada sistema nuevo antes de gastarlos en contenido que ve la mesa.
+// Nació como «banco de pruebas» y el nombre se le quedó corto en cuanto tuvo una
+// cabina y un reloj varado — pero tampoco es contenido de campaña, y esa segunda
+// mitad importa igual: es solo-GM, no guarda estado y no concede nada (la regla
+// está en `docs/FOUNDRY.md`). Un exterior accesible por botón, sin trayecto ni
+// motivo, le enseñaría a la mesa que las escenas son un menú.
+//
+// Aquí se estrenaron los puntos de interacción (#582) y el vocabulario de props
+// (#583) antes de gastarlos en la terraza de #579, que sí tiene que quedar bien. Una sala de nave más no probaría nada que las trece
 // del Phobos no prueben ya; un exterior rompe TODOS los supuestos de
 // `crearSalaCaja` a la vez —no hay caja, ni techo, ni rodapié, el suelo tiene
 // pendiente, hay geometría a cientos de metros y el fondo no es gris de

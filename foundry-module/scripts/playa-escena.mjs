@@ -52,7 +52,7 @@
 
 import { PLAYA } from "./paleta.mjs";
 import { caja } from "./cantina-escena.mjs";
-import { componerEscena, fundirEscenas } from "./retro3d.mjs";
+import { componerEscena, fundirEscenas, mezclar } from "./retro3d.mjs";
 import { resolverCamara } from "./nave-camara.mjs";
 import { poligonosOtrosJugadores } from "./nave-avatares-render.mjs";
 import { crearPlanta } from "./nave-movimiento.mjs";
@@ -396,30 +396,39 @@ function franja({ desde, hasta, z0, z1, alto, color }) {
   };
 }
 
-/** Las terrazas de la duna, de dentro hacia fuera, con su canto en sombra. */
-function terrazasDuna() {
+/**
+ * La duna, como PENDIENTE de verdad y no como escalera.
+ *
+ * Fueron terrazas: losas horizontales, cada una un escalón más alta. Sobre el
+ * papel daba igual —seis centímetros no se ven— y en la práctica no: de cerca y
+ * a ras de suelo los cantos se alinean y la duna se lee como una escalinata de
+ * piedra. Es el fallo clásico de aproximar una pendiente por escalones y luego
+ * mirarla justo desde donde los escalones se ven de canto.
+ *
+ * Cada tramo es ahora un cuadrilátero INCLINADO: sus dos bordes están a alturas
+ * distintas, así que la superficie sube de verdad. No cuesta ni un polígono más
+ * y no hay escalón que alinear porque no hay escalones. Se puede hacer porque
+ * una malla no tiene por qué ser una caja — lo mismo que permitió los planetas y
+ * el reloj.
+ */
+function laderaDeDuna() {
   const piezas = [];
-  let alto = 0;
+  const z0 = -8;
+  const z1 = PROFUNDIDAD + 8;
   for (let x = CAMINO_DESDE; x > DUNA_HASTA; x -= PASO_DUNA) {
-    alto += SUBIDA_DUNA;
-    piezas.push(
-      franja({ desde: x - PASO_DUNA, hasta: x, z0: -8, z1: PROFUNDIDAD + 8, alto, color: PLAYA.duna }),
-      // El canto: sin él, dos terrazas del mismo color son un plano. Va justo en
-      // el escalón, mirando al mar, que es de donde viene la luz.
-      //
-      // Fino a propósito (la mitad del escalón, no el escalón entero). Con el
-      // canto completo la duna se leía como campo arado —rayas negras paralelas
-      // de arriba abajo del cuadro— en vez de como arena. A la mitad se lee como
-      // lo que es: la cresta de un rizo de arena, que además es exactamente lo
-      // que un sol rasante dibuja en una duna de verdad.
-      {
-        malla: caja(
-          [x, alto - SUBIDA_DUNA / 4, PROFUNDIDAD / 2 - 4],
-          [0.04, SUBIDA_DUNA / 2, PROFUNDIDAD + 16],
-        ),
-        color: PLAYA.dunaSombra,
+    const dentro = x - PASO_DUNA;
+    piezas.push({
+      malla: {
+        vertices: [
+          [dentro, terrenoEn(dentro), z0],
+          [x, terrenoEn(x), z0],
+          [x, terrenoEn(x), z1],
+          [dentro, terrenoEn(dentro), z1],
+        ],
+        caras: [[0, 1, 2, 3]],
       },
-    );
+      color: PLAYA.duna,
+    });
   }
   return piezas;
 }
@@ -497,8 +506,22 @@ function propsColocados() {
   return puestos;
 }
 
-/** El mar sigue mucho más allá del borde jugable, o se vería su canto. */
-const MAR_HASTA = 380;
+/**
+ * Hasta dónde llega el mar. MUY por detrás del plano lejano, y ese es el truco.
+ *
+ * Estuvo en 380 con un alcance de dibujo de 420, y el resultado era la raya rara
+ * del horizonte: el canto del mar caía DENTRO del alcance, o sea a un 78% de
+ * niebla, no al 100%. Un borde teñido casi —pero no del todo— del color del
+ * cielo es justo lo que el ojo caza: se lee como que el mar termina y como que
+ * está levantado, porque una banda clara ancha por encima del agua parece
+ * inclinación.
+ *
+ * Pasándolo del plano lejano, el mar YA NO TIENE canto visible: lo corta el
+ * recorte lejano, y ahí la niebla vale exactamente 1, así que el polígono ES el
+ * color del cielo. El horizonte deja de ser geometría y pasa a ser lo que es de
+ * verdad — el sitio donde el agua se acaba de teñir de aire.
+ */
+const MAR_HASTA = 1400;
 
 /* ---- arena y mar: lo que hace el viento ------------------------------------ */
 
@@ -517,13 +540,17 @@ const MAR_HASTA = 380;
 const PASO_RIZO = 0.55;
 const ALTO_RIZO = 0.035;
 
-function rizosDeArena(desde, hasta, z0, z1, base, color) {
+function rizosDeArena(desde, hasta, z0, z1, color) {
   const piezas = [];
   const azar = rngSemilla(20260817);
   for (let x = desde; x < hasta; x += PASO_RIZO) {
     // La cresta se desvía un poco en cada tramo: un rizo perfectamente recto de
     // cuarenta metros es un listón, no arena.
     const desvio = (azar() - 0.5) * 0.12;
+    // La altura sale del TERRENO, no de un número fijo: sobre la duna, unos
+    // rizos a cota constante se hundirían cuesta arriba y flotarían cuesta
+    // abajo. Que salga de `terrenoEn` es lo que los deja pegados a la ladera.
+    const base = terrenoEn(x + desvio);
     piezas.push({
       malla: caja(
         [x + desvio, base + ALTO_RIZO / 2, (z0 + z1) / 2],
@@ -579,14 +606,62 @@ function lineaDeRestos() {
 /**
  * Las bandas del mar.
  *
- * Un mar de un solo color no tiene ni profundidad ni superficie. Tres bandas
- * paralelas a la orilla —bajío, medio, abierto— y encima las crestas.
+ * MUCHAS Y NO TRES, y el motivo es del motor y no del gusto: la niebla se calcula
+ * **por polígono, en su centroide**. Un mar de tres cuadriláteros enormes recibe
+ * tres valores de niebla en total, así que el agua entera se tiñe a saltos y su
+ * borde de fuera es un canto duro contra el cielo. Eso era la «raya rara del
+ * horizonte», y no se arregla estirando el mar: se arregla dándole al motor más
+ * polígonos donde repartir el degradado.
+ *
+ * Crecen geométricamente hacia fuera —las de cerca estrechas, las de lejos muy
+ * anchas— porque así es como cae la perspectiva: en pantalla ocupan más o menos
+ * lo mismo, y el degradado sale regular para el que mira, que es lo que cuenta.
+ *
+ * La última pasa del plano lejano a propósito. Ahí la niebla vale 1, el polígono
+ * ES el color del cielo, y el horizonte deja de ser geometría para pasar a ser
+ * lo que de verdad es: el sitio donde el agua acaba de teñirse de aire.
  */
-const BANDAS_MAR = Object.freeze([
-  { desde: ORILLA, hasta: 27, color: PLAYA.marBajio },
-  { desde: 27, hasta: 58, color: PLAYA.mar },
-  { desde: 58, hasta: MAR_HASTA, color: PLAYA.marLejos },
-]);
+const BANDAS_MAR = (() => {
+  const bandas = [];
+  let desde = ORILLA;
+  let ancho = 2.2;
+  while (desde < MAR_HASTA) {
+    const hasta = Math.min(desde + ancho, MAR_HASTA);
+    // El color va del bajío al mar abierto en la primera parte del recorrido, y
+    // de ahí a la niebla se encarga el motor.
+    // Dos mezclas encadenadas. La primera es el AGUA: del bajío al mar abierto
+    // en los primeros sesenta metros. La segunda es el AIRE que hay entre medias:
+    // de ese azul al color del cielo, hasta casi tocarlo en la última banda.
+    //
+    // Y esto lo hace la PALETA, no la niebla del motor, aunque la niebla exista y
+    // esté bien. El motivo es concreto: la niebla solo llega a 1 en el plano
+    // lejano, y ahí la geometría ya está recortada — o sea, el único sitio donde
+    // el agua se fundiría del todo es justo donde ya no hay agua. Cerrando el
+    // horizonte por color, la última banda que se dibuja YA es prácticamente
+    // cielo, y no hay canto que ver. Es lo mismo que hace un pintor cuando
+    // afloja el último término hasta que se pierde: el horizonte no se dibuja,
+    // se deja de dibujar.
+    const agua = Math.min(1, (desde - ORILLA) / 60);
+    const aire = Math.min(1, ((desde - ORILLA) / 175) ** 0.8);
+    const azul =
+      agua < 0.5 ? mezclar(PLAYA.marBajio, PLAYA.mar, agua * 2) : mezclar(PLAYA.mar, PLAYA.marLejos, (agua - 0.5) * 2);
+    // Y las últimas bandas van EMISIVAS. No porque brillen: emisivo aquí
+    // significa «no la sombrees», y es la única forma de que el color que se ha
+    // calculado llegue intacto al lienzo. Una banda pintada del color exacto del
+    // cielo pero sombreada por el sol sale distinta del cielo —el cielo es el
+    // fondo del lienzo y ese no lo sombrea nadie— y esa diferencia de un pelo,
+    // repetida a lo largo de todo el horizonte, ES la raya que se veía.
+    bandas.push({
+      desde,
+      hasta,
+      color: mezclar(azul, PLAYA.cielo, aire * 0.94),
+      emisivo: aire > 0.72,
+    });
+    desde = hasta;
+    ancho *= 1.42;
+  }
+  return Object.freeze(bandas);
+})();
 
 /* ---- lo que el viento MUEVE ------------------------------------------------ */
 
@@ -660,26 +735,31 @@ function terrenoEn(x) {
  * con terral, y es lo que hace que el agua se lea como líquido y no como una
  * chapa pintada.
  */
-const CRESTAS = 54;
+const CRESTAS = 88;
 
 function oleaje(segundos) {
   const azar = rngSemilla(20260820);
   const piezas = [];
   const [vx] = VIENTO;
-  const recorrido = 52;
+  const recorrido = 115;
   for (let i = 0; i < CRESTAS; i += 1) {
-    const z = -12 + azar() * (PROFUNDIDAD + 24);
+    const z = -14 + azar() * (PROFUNDIDAD + 28);
     const largo = 2.4 + azar() * 4.5;
     const velocidad = 1.5 + azar() * 1.1;
     // Hacia la orilla: de mar abierto (+x) hacia ORILLA. De ahí el signo menos.
+    //
+    // El recorrido llega hasta más de cien metros, y no a cincuenta: con el
+    // campo corto, el agua se quedaba lisa de golpe a media distancia y esa raya
+    // —donde acababan las crestas— era el segundo borde falso del horizonte.
     const x = ORILLA + 2 + ciclo(azar() * recorrido - segundos * velocidad, recorrido);
     // Cabecea: una cresta que no sube y baja es una raya.
     const alto = -0.085 + 0.03 * Math.sin(segundos * 2.3 + i * 1.7);
-    piezas.push({ malla: caja([x, alto, z], [0.55, 0.05, largo]), color: PLAYA.cresta });
+    piezas.push({ malla: caja([x, alto, z], [0.55, 0.05, largo]), color: PLAYA.cresta, lejos: ALCANCE_AGUA });
     if (azar() > 0.5) {
       piezas.push({
         malla: caja([x + vx * (0.8 + azar()), alto + 0.02, z], [1.0, 0.04, largo * 0.5]),
         color: PLAYA.espuma,
+        lejos: ALCANCE_AGUA,
       });
     }
   }
@@ -1106,15 +1186,31 @@ function cables() {
 /**
  * El suelo de luz a la intemperie.
  *
- * 0,62 contra el 0,35 de interior de nave. No es subirle el brillo: con un sol
+ * 0,78 contra el 0,35 de interior de nave. No es subirle el brillo: con un sol
  * a 21° la cara de arriba de la arena recibe poquísima direccional, y lo que la
  * ilumina de verdad es el cielo entero. Con el ambiente de interior, la playa a
  * pleno día salía del color del barro.
  */
-const AMBIENTE_EXTERIOR = 0.62;
+const AMBIENTE_EXTERIOR = 0.78;
 
 /** Alcance para lo que está en el CIELO: sin niebla que se lo coma. */
 const ALCANCE_CIELO = 4000;
+
+/**
+ * Alcance del agua. El mismo que el del resto de la escena, y a propósito.
+ *
+ * Aquí está la raya rara del horizonte, y no era donde parecía. El mar sí llega
+ * lejísimos, pero a partir de unos doscientos metros una lámina horizontal vista
+ * desde 1,45 m de altura subtiende MENOS DE UN PÍXEL y desaparece sola. Con el
+ * alcance general (420 m), a esa distancia la niebla iba solo por el 20%: el
+ * agua se esfumaba estando todavía azul, y el salto a cielo era un canto duro.
+ *
+ * Dándole al agua su propio alcance, la niebla llega al 93% justo donde el agua
+ * deja de tener grosor en pantalla. Se funde en vez de terminarse. Es el mismo
+ * ajuste que hace un pintor cuando afloja el último término hasta que se pierde:
+ * el horizonte no se dibuja, se deja de dibujar.
+ */
+const ALCANCE_AGUA = 420;
 
 /** Hasta dónde dibuja esta escena. Los aerogeneradores están a 170 m y el mar
  *  llega al horizonte: con los 80 de serie no habría ni mar ni parque eólico. */
@@ -1123,15 +1219,27 @@ const ALCANCE = 420;
 const PROPS = propsColocados();
 
 const PIEZAS = Object.freeze([
-  // De lejos a cerca, que es como se lee la escena y como conviene escribirla.
-  franja({ desde: 60, hasta: MAR_HASTA, z0: -MAR_HASTA, z1: MAR_HASTA, alto: -0.1, color: PLAYA.marLejos }),
-  franja({ desde: ORILLA, hasta: 60, z0: -MAR_HASTA, z1: MAR_HASTA, alto: -0.1, color: PLAYA.mar }),
-  // La lengua de espuma, justo en la orilla y un pelo por encima del agua.
-  franja({ desde: LISO_DESDE, hasta: ORILLA, z0: -8, z1: PROFUNDIDAD + 8, alto: 0, color: PLAYA.arenaMojada }),
-  franja({ desde: CAMINO_DESDE, hasta: LISO_DESDE, z0: -8, z1: PROFUNDIDAD + 8, alto: 0.02, color: PLAYA.arena }),
   // El cielo va PRIMERO: es el fondo de todo lo demás.
   ...piezasPlanetas().map((pieza) => ({ ...pieza, lejos: ALCANCE_CIELO })),
-  ...terrazasDuna(),
+  // EL MAR, en muchas bandas y con su propio alcance de dibujo: entre las dos
+  // cosas se reparte el degradado del horizonte (ver `BANDAS_MAR` y
+  // `ALCANCE_AGUA`, que es donde está explicada la «raya rara»).
+  ...BANDAS_MAR.map(({ desde, hasta, color, emisivo }) => ({
+    ...franja({ desde, hasta, z0: -MAR_HASTA, z1: MAR_HASTA, alto: -0.1, color }),
+    lejos: ALCANCE_AGUA,
+    emisivo,
+  })),
+  // La arena que acaba de dejar el mar, con lo que el agua se dejó encima. Sin
+  // rizos: el agua acaba de pasar por ahí y los ha borrado.
+  franja({ desde: LISO_DESDE, hasta: ORILLA, z0: -8, z1: PROFUNDIDAD + 8, alto: 0, color: PLAYA.arenaMojada }),
+  ...marcasDeMarea(),
+  ...lineaDeRestos(),
+  // El camino de arena fina, y sus rizos de norte a sur porque el viento va al este.
+  franja({ desde: CAMINO_DESDE, hasta: LISO_DESDE, z0: -8, z1: PROFUNDIDAD + 8, alto: 0.02, color: PLAYA.arena }),
+  ...rizosDeArena(CAMINO_DESDE, LISO_DESDE, -8, PROFUNDIDAD + 8, PLAYA.rizo),
+  // La duna, como pendiente de verdad y no como escalera.
+  ...laderaDeDuna(),
+  ...rizosDeArena(DUNA_HASTA, CAMINO_DESDE, -8, PROFUNDIDAD + 8, PLAYA.rizoDuna),
   // El reguero de sol va sobre el agua y antes que nada de lo que hay en tierra.
   ...caminoDeSol(),
   { malla: discoDelSol(), color: PLAYA.sol, emisivo: true, lejos: ALCANCE_CIELO },

@@ -156,6 +156,24 @@ test("las sombras van pegadas al suelo: ninguna se despega de la arena", () => {
   assert.ok(escena.poligonos.length > 100, "con rocas, matojos y sombras tiene que haber bastante más que antes");
 });
 
+test("el horizonte cierra: la última banda de agua ES prácticamente el cielo", () => {
+  // La «raya rara del horizonte» del playtest. Se intentó arreglar estirando el
+  // mar y no era eso: la niebla del motor solo llega a 1 en el plano lejano, o
+  // sea, el único sitio donde el agua se fundiría del todo es justo donde ya no
+  // hay agua. Se cierra por PALETA —las bandas de fuera se mezclan hasta el
+  // color del cielo— y van emisivas, porque una banda del color exacto del cielo
+  // pero SOMBREADA sale distinta del cielo, que es el fondo del lienzo y no lo
+  // sombrea nadie. Esa diferencia de un pelo, repetida a lo ancho del horizonte,
+  // era la raya.
+  const escena = componerPlaya(ENTRADA.x, 0, ENTRADA.z, Math.PI / 2, {});
+  const masLejos = [...escena.poligonos].sort((a, b) => b.profundidad - a.profundidad)[0];
+  const canal = (color, i) => parseInt(color.slice(1 + i * 2, 3 + i * 2), 16);
+  for (const i of [0, 1, 2]) {
+    const diferencia = Math.abs(canal(masLejos.color, i) - canal(PLAYA.cielo, i));
+    assert.ok(diferencia <= 12, `el agua más lejana se despega del cielo en ${diferencia} niveles: eso es la raya`);
+  }
+});
+
 /* ---- el viento ------------------------------------------------------------- */
 
 test("el viento sopla al este, y el este es el mar", () => {

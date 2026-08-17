@@ -77,7 +77,7 @@ export function arrancarAndar(lienzo, opciones = {}) {
     velocidad = 2.2,
     radio = RADIO_ANDAR,
     velocidadGiro = VELOCIDAD_GIRO,
-    fondo = null,
+    fondo: fondoInicial = null,
     ahora = () => globalThis.performance?.now?.() ?? Date.now(),
     pedirFotograma,
     cancelarFotograma,
@@ -117,6 +117,9 @@ export function arrancarAndar(lienzo, opciones = {}) {
   // cada fotograma —abriría el espacio de puesto sesenta veces por
   // segundo—. Solo cambia de `null` a un punto, o de un punto a otro.
   let interaccionAlcanzadaAntes = null;
+  // Mutable como la planta y el `componer`: cruzar a un exterior cambia lo que
+  // hay DETRÁS de la geometría, no solo la geometría (#587).
+  let fondo = fondoInicial;
   // Mismo flanco de entrada para las puertas (QA: andar hacia atrás cerca de
   // una puerta teletransportaba una y otra vez sin parar). Antes se
   // comprobaba a NIVEL —`cambiarEstancia` en cada fotograma que el círculo
@@ -262,6 +265,7 @@ export function arrancarAndar(lienzo, opciones = {}) {
       componer: nuevoComponer,
       puertas: nuevasPuertas,
       interacciones: nuevasInteracciones,
+      fondo: nuevoFondo,
       x: nx,
       z: nz,
       yaw: nYaw,
@@ -270,6 +274,10 @@ export function arrancarAndar(lienzo, opciones = {}) {
       if (typeof nuevoComponer === "function") componer = nuevoComponer;
       puertas = Array.isArray(nuevasPuertas) ? nuevasPuertas : [];
       interacciones = Array.isArray(nuevasInteracciones) ? nuevasInteracciones : [];
+      // `null` NO borra el fondo: significa «esta estancia no opina», y quien no
+      // opina se queda con el de la ventana.
+      if (typeof nuevoFondo === "string") fondo = nuevoFondo;
+      else if (nuevoFondo === null) fondo = fondoInicial;
       // La sala nueva empieza sin nadie tocando ningún punto ni ninguna
       // puerta: si el punto de llegada cayera sobre uno por casualidad, el
       // flanco de entrada de ESA sala tiene que poder dispararse, no darse

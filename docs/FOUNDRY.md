@@ -114,6 +114,14 @@ Una puerta **solo pinta**: no transporta identidad. Cada superficie resuelve su
 propia autoridad leyendo `game.user` al abrirse, así que meter una entrada en una
 puerta no añade caminos nuevos hacia el relé (#237).
 
+Hay una herramienta del grupo que es **solo-GM sin ser información
+privilegiada**: la playa de pruebas (#587). No se oculta porque revele nada —una
+playa no dice nada de la partida— sino porque **no es contenido**: es un banco de
+pruebas del motor de exteriores, y ofrecérsela a la tripulación en la misma barra
+que su puesto afirmaría que forma parte del juego. El criterio, entonces, no es
+solo «permiso» ni «frecuencia», sino también *qué se le está diciendo a quien lo
+ve*.
+
 ### Superficies de control del GM
 
 La ventana **Estado de nave** del módulo agrupa las órdenes cerradas que el GM

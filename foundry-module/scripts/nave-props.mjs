@@ -177,37 +177,52 @@ function envolvente(partes) {
 }
 
 /**
- * El vocabulario ya congelado, con la huella de cada prop calculada.
+ * Congela un vocabulario y le calcula la huella de cada prop.
+ *
+ * Se exporta porque la nave no es el único sitio con props: la playa de pruebas
+ * (#587) tiene postes de luz, una cabina de teléfono y aerogeneradores, y meter
+ * eso en la lista de la nave sería tener un vocabulario largo con piezas que no
+ * pintan nada juntas — justo lo que este módulo dice evitar. Lo que se comparte
+ * es la MAQUINARIA (partes, giro, ancla, envolvente), no la lista.
  *
  * `medidas` es la envolvente y no un dato escrito a mano: con seis cajas por
  * silla, una medida declarada aparte es una medida que se queda vieja en cuanto
  * alguien mueve una pata.
  */
-export const VOCABULARIO = Object.freeze(
-  Object.fromEntries(
-    Object.entries(DEFINICIONES).map(([clave, prop]) => [
-      clave,
-      Object.freeze({
-        color: prop.color,
-        partes: Object.freeze(
-          prop.partes.map((parte) =>
-            Object.freeze({
-              medidas: Object.freeze([...parte.medidas]),
-              centro: Object.freeze([...(parte.centro ?? [0, parte.medidas[1] / 2, 0])]),
-            }),
+export function definirVocabulario(definiciones) {
+  return Object.freeze(
+    Object.fromEntries(
+      Object.entries(definiciones).map(([clave, prop]) => [
+        clave,
+        Object.freeze({
+          color: prop.color,
+          partes: Object.freeze(
+            prop.partes.map((parte) =>
+              Object.freeze({
+                medidas: Object.freeze([...parte.medidas]),
+                centro: Object.freeze([...(parte.centro ?? [0, parte.medidas[1] / 2, 0])]),
+                // Una parte puede llevar color propio (#587: los cristales de la
+                // cabina no son del color de la cabina). Sin declararlo, hereda
+                // el del prop, que es el caso normal.
+                color: parte.color ?? prop.color,
+              }),
+            ),
           ),
-        ),
-        ancla: prop.ancla
-          ? Object.freeze({
-              centro: Object.freeze([...prop.ancla.centro]),
-              orientacion: prop.ancla.orientacion,
-            })
-          : null,
-        medidas: envolvente(prop.partes),
-      }),
-    ]),
-  ),
-);
+          ancla: prop.ancla
+            ? Object.freeze({
+                centro: Object.freeze([...prop.ancla.centro]),
+                orientacion: prop.ancla.orientacion,
+              })
+            : null,
+          medidas: envolvente(prop.partes),
+        }),
+      ]),
+    ),
+  );
+}
+
+/** El vocabulario de la NAVE. */
+export const VOCABULARIO = definirVocabulario(DEFINICIONES);
 
 /** Gira `[x, z]` un número entero de cuartos de vuelta alrededor del origen. */
 function girarEnPlanta([x, z], cuartos) {
@@ -233,8 +248,8 @@ function girarEnPlanta([x, z], cuartos) {
  *   el prop la declara, ya está en coordenadas de la sala y lista para
  *   convertirse en un punto de interacción (#582).
  */
-export function colocarProp(clave, { x, z, cuartos = 0, nombre = clave } = {}) {
-  const prop = VOCABULARIO[clave];
+export function colocarProp(clave, { x, z, cuartos = 0, nombre = clave, vocabulario = VOCABULARIO } = {}) {
+  const prop = vocabulario[clave];
   if (!prop) throw new RangeError(`colocarProp: "${clave}" no está en el vocabulario`);
   if (!Number.isInteger(cuartos)) {
     throw new RangeError(`colocarProp("${clave}"): solo se gira en cuartos de vuelta enteros`);
@@ -251,7 +266,7 @@ export function colocarProp(clave, { x, z, cuartos = 0, nombre = clave } = {}) {
       nombre: prop.partes.length === 1 ? nombre : `${nombre}-${indice}`,
       centro: [x + dx, parte.centro[1], z + dz],
       medidas: impar ? [fondo, alto, ancho] : [ancho, alto, fondo],
-      color: prop.color,
+      color: parte.color,
     };
   });
 

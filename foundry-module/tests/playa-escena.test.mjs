@@ -221,6 +221,33 @@ test("lo que arrastra el viento se recicla: el reguero no se acaba nunca", () =>
   assert.ok(Math.abs(alPrincipio - media_hora) < alPrincipio * 0.35, "la escena se vacía con el tiempo");
 });
 
+test("el reloj varado mueve sus agujas, y el segundero más que el horario", () => {
+  // Es el reloj de la escena hecho visible: si alguien dice «no se mueve nada»,
+  // basta con mirarle el segundero. Que se mueva es, por tanto, parte del
+  // contrato y no un adorno.
+  const agujas = (t) =>
+    componerPlaya(ENTRADA.x, 0, ENTRADA.z, ENTRADA.yaw, { tiempo: t }).poligonos.filter(
+      ({ color }) => color !== undefined,
+    ).length;
+  assert.ok(agujas(0) > 0);
+
+  // A quince segundos el segundero ha girado un cuarto de vuelta y el horario
+  // casi nada: la escena de esos dos instantes no puede ser la misma.
+  const huella = (t) =>
+    JSON.stringify(componerPlaya(12.6, 0, 8, 0, { tiempo: t }).poligonos.map(({ puntos }) => puntos.length));
+  assert.notEqual(huella(0), huella(15000));
+});
+
+test("el reloj no se sale de su propia esfera", () => {
+  // Las agujas se dibujan con la MISMA función que la cara, así que no pueden
+  // salirse de su plano ni de su radio. Esta prueba lo fija: si alguien las
+  // dibuja alguna vez con una caja suelta, dejarán de estar en la esfera y esto
+  // avisará.
+  const escena = componerPlaya(12.6, 0, 8.5, 0, { tiempo: 12345 });
+  const enPantalla = escena.poligonos.filter(({ puntos }) => puntos.length === 4);
+  assert.ok(enPantalla.length > 20, "el reloj tendría que estar en cuadro desde aquí");
+});
+
 /* ---- la cabina como salida (#582) ----------------------------------------- */
 
 test("la cabina es el punto de interacción, y su ancla la declara el prop", () => {

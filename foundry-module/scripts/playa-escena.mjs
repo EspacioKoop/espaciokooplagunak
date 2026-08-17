@@ -703,6 +703,143 @@ function lenguaDeOrilla(segundos) {
   };
 }
 
+/**
+ * El reloj varado en la arena (#587).
+ *
+ * QUÉ ES. Una esfera de reloj de latón, del tamaño de una tapa de alcantarilla,
+ * medio enterrada e inclinada hacia quien llega. Sus agujas marcan **el reloj de
+ * la escena**: el mismo que mueve la arena y las olas, hecho visible.
+ *
+ * POR QUÉ ESTÁ BIEN QUE ESTÉ. Tres cosas a la vez, y ninguna sobra:
+ *
+ *  - Cuenta algo. Un objeto fabricado, caro y roto, tirado en una playa vacía,
+ *    dice que aquí pasó algo sin que nadie tenga que explicarlo. Es lo mismo que
+ *    hace la cabina de teléfono, y por eso funcionan juntos.
+ *  - Es la referencia obvia —un reloj blando en un paisaje desierto— y es la
+ *    clase de guiño que la mesa pilla sola.
+ *  - Y es honestamente útil: enseña que el reloj de la escena corre. Cuando
+ *    alguien diga «no se mueve nada», bastará mirar el segundero.
+ *
+ * ESCALA DE LO QUE MARCA. El segundero da la vuelta en un minuto y el horario en
+ * una hora, contando desde que se abrió la ventana. No es la hora del mundo: es
+ * cuánto llevas aquí. Un reloj varado en una playa no tendría por qué saber qué
+ * hora es en ningún otro sitio.
+ */
+const RELOJ = Object.freeze({
+  centro: [12.6, 0.02, 10.5],
+  radio: 0.62,
+  // Inclinación desde la vertical. A 38° la cara mira arriba y al sur, que es
+  // por donde se entra: se lee andando hacia la cabina, sin buscarlo.
+  inclinacion: (38 * Math.PI) / 180,
+  // Cuánto se ha tragado la arena. Casi la mitad — enterrado del todo no se ve,
+  // y de pie parecería colocado ahí por alguien.
+  enterrado: 0.42,
+});
+
+/** Los dos ejes del plano de la esfera: `u` a su derecha, `v` hacia sus doce. */
+function ejesDelReloj() {
+  const { inclinacion } = RELOJ;
+  return {
+    u: [1, 0, 0],
+    v: [0, Math.cos(inclinacion), -Math.sin(inclinacion)],
+  };
+}
+
+/** Un punto de la esfera, a `radio` y en el ángulo `t` (0 = las doce). */
+function enLaEsfera(radio, t) {
+  const { u, v } = ejesDelReloj();
+  const [cx, cy, cz] = RELOJ.centro;
+  const [su, sv] = [Math.sin(t), Math.cos(t)];
+  return [
+    cx + (u[0] * su + v[0] * sv) * radio,
+    cy + (u[1] * su + v[1] * sv) * radio,
+    cz + (u[2] * su + v[2] * sv) * radio,
+  ];
+}
+
+/**
+ * Un sector de la esfera, entre dos ángulos y dos radios.
+ *
+ * Con esto se dibuja todo: la cara (del centro al cerco), el cerco (un anillo
+ * estrecho), las marcas de las horas y las propias agujas. Una sola función
+ * porque todas son lo mismo —un trozo de corona circular en el plano de la
+ * esfera— y tenerlo escrito una vez es lo que hace que las agujas no puedan
+ * salirse del plano de la cara.
+ */
+function sectorDelReloj(desde, hasta, radioInterior, radioExterior) {
+  return {
+    vertices: [
+      enLaEsfera(radioInterior, desde),
+      enLaEsfera(radioExterior, desde),
+      enLaEsfera(radioExterior, hasta),
+      enLaEsfera(radioInterior, hasta),
+    ],
+    caras: [[0, 1, 2, 3]],
+  };
+}
+
+/** Hasta dónde se ve la esfera: lo de debajo se lo ha tragado la arena. */
+const ARCO_VISIBLE = Math.acos(RELOJ.enterrado * 2 - 1);
+
+function piezasReloj(segundos) {
+  const { radio } = RELOJ;
+  const piezas = [];
+
+  // La cara, en gajos: un solo cuadrilátero no sería redondo, y con doce se lee
+  // como disco sin dejar de tener las facetas de la época.
+  const gajos = 14;
+  for (let i = 0; i < gajos; i += 1) {
+    const a = -ARCO_VISIBLE + ((2 * ARCO_VISIBLE) / gajos) * i;
+    const b = a + (2 * ARCO_VISIBLE) / gajos;
+    piezas.push({ malla: sectorDelReloj(a, b, 0, radio * 0.9), color: PLAYA.relojCara });
+    piezas.push({ malla: sectorDelReloj(a, b, radio * 0.9, radio), color: PLAYA.relojCerco });
+  }
+
+  // Las marcas de las horas que quedan por encima de la arena.
+  for (let h = 0; h < 12; h += 1) {
+    const t = (h / 12) * 2 * Math.PI;
+    const normalizado = t > Math.PI ? t - 2 * Math.PI : t;
+    if (Math.abs(normalizado) > ARCO_VISIBLE - 0.08) continue;
+    const ancho = h % 3 === 0 ? 0.09 : 0.045;
+    piezas.push({
+      malla: sectorDelReloj(normalizado - ancho, normalizado + ancho, radio * 0.72, radio * 0.87),
+      color: PLAYA.relojMarca,
+    });
+  }
+
+  // Y las agujas, que es a lo que ha venido. El segundero da la vuelta en un
+  // minuto; el horario, en una hora. Se cuenta desde que se abrió la ventana.
+  const agujas = [
+    { vuelta: 3600, largo: 0.42, grosor: 0.05 },
+    { vuelta: 60, largo: 0.66, grosor: 0.028 },
+  ];
+  for (const { vuelta, largo, grosor } of agujas) {
+    const t = ((segundos % vuelta) / vuelta) * 2 * Math.PI;
+    piezas.push({
+      malla: sectorDelReloj(t - grosor, t + grosor, 0, radio * largo),
+      color: PLAYA.relojAguja,
+    });
+  }
+
+  return piezas;
+}
+
+/**
+ * El montón de arena que lo entierra.
+ *
+ * Va DESPUÉS de la esfera en la lista y por delante en el mundo: el motor ordena
+ * por pintor, así que lo que tapa se dibuja encima. Es lo que convierte «un
+ * reloj apoyado en el suelo» en «un reloj que la playa se está comiendo».
+ */
+function monticuloDelReloj() {
+  const [cx, , cz] = RELOJ.centro;
+  return [
+    { malla: caja([cx, 0.06, cz + 0.42], [RELOJ.radio * 2.3, 0.16, 0.5]), color: PLAYA.arena },
+    { malla: caja([cx - 0.5, 0.05, cz + 0.2], [0.5, 0.13, 0.5]), color: PLAYA.arena },
+    { malla: caja([cx + 0.55, 0.05, cz + 0.22], [0.45, 0.12, 0.45]), color: PLAYA.arena },
+  ];
+}
+
 /* ---- sombras, sol y reflejo ------------------------------------------------ */
 
 /** Un cuadrilátero horizontal a la altura `y`, con los vértices que se le den. */
@@ -1094,6 +1231,8 @@ export function componerPlaya(x, y, z, yaw, opciones = {}) {
   // Son unas decenas de cuadriláteros, el mismo orden de magnitud que las hojas
   // de puerta que `crearSalaCaja` ya rehace en cada pasada.
   const enMovimiento = [
+    ...piezasReloj(segundos),
+    ...monticuloDelReloj(),
     ...oleaje(segundos),
     lenguaDeOrilla(segundos),
     ...arenaVolando(segundos),

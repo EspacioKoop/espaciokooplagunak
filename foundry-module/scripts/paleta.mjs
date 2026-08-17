@@ -463,6 +463,13 @@ export const PLAYA = Object.freeze({
   manga: "#e07a3a", // la manga de viento: naranja de señal, se ve de lejos
   mangaFranja: "#f0e6d8", // sus franjas claras
   arenaVolada: "#e2d3ae", // la lengua de arena que cruza corriendo a ras de suelo
+
+  // --- El reloj varado. Latón y esmalte: los dos materiales que no son ni
+  // arena ni agua ni casco, y por eso el objeto salta a la vista sin gritar.
+  relojCara: "#e8e0cc", // el esmalte de la esfera
+  relojCerco: "#b08a3e", // el latón del cerco, ya sin brillo
+  relojAguja: "#2d2a24", // las agujas: casi negro, para que se lean a distancia
+  relojMarca: "#6b6047", // las marcas de las horas
 });
 
 /**

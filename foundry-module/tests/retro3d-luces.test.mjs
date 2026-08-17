@@ -20,6 +20,7 @@ import {
   contribucionFoco,
   focosCercanos,
   intensidadCara,
+  sombrear,
 } from "../scripts/retro3d.mjs";
 
 /** Cuadrado vertical mirando a +z, partido en dos caras a distinta altura. */
@@ -185,4 +186,55 @@ test("una malla emisiva no la modifica ningún foco", () => {
     focos: [{ posicion: [0, 0, 4.5], potencia: 4, alcance: 20 }],
   });
   assert.deepEqual(conFoco.poligonos.map((p) => p.color), sinFoco.poligonos.map((p) => p.color));
+});
+
+/* ---- El sol de la escena y la oposición cálido/frío (#587) ---------------- */
+
+test("sin `luz` declarada manda la direccional de siempre: nada cambia", () => {
+  // La condición que hace que esto sea una extensión y no una regresión: las
+  // trece salas del Phobos están calibradas con la direccional de interior.
+  const normal = [0, 1, 0];
+  assert.equal(intensidadCara(normal, 4), intensidadCara(normal, 4, {}));
+  assert.equal(intensidadCara(normal, 4), intensidadCara(normal, 4, { luz: null }));
+});
+
+test("una escena puede poner su sol donde quiera, y la cara que lo mira se ilumina", () => {
+  // Un sol bajo a la derecha ilumina la cara que mira a la derecha, no la de
+  // arriba. Es justo lo que hace que un exterior no se vea plano (#587).
+  const solBajo = [1, 0.2, 0];
+  const alDerecho = intensidadCara([1, 0, 0], 0, { luz: solBajo });
+  const alCielo = intensidadCara([0, 1, 0], 0, { luz: solBajo });
+  assert.ok(alDerecho > alCielo, "con el sol a la derecha, la cara derecha tiene que ser la clara");
+});
+
+test("la luz no hace falta normalizarla: se escribe a ojo", () => {
+  // «El sol está por allí» es como se escribe una luz. Pedir un vector unitario
+  // sería pedirle trigonometría a quien ambienta.
+  assert.equal(intensidadCara([1, 0, 0], 0, { luz: [3, 0, 0] }), intensidadCara([1, 0, 0], 0, { luz: [1, 0, 0] }));
+});
+
+test("sin tinte, sombrear es exactamente lo que era", () => {
+  assert.equal(sombrear("#8090a0", 0.5), sombrear("#8090a0", 0.5, null));
+  assert.equal(sombrear("#8090a0", 0.5), sombrear("#8090a0", 0.5, {}));
+});
+
+test("con tinte, lo iluminado tira a cálido y lo sombreado a frío", () => {
+  // La regla que separa una escena con degradado de una escena con LUZ: sin
+  // esta oposición, claro y oscuro son el mismo color a dos brillos.
+  const gris = "#808080";
+  const tinte = { calida: "#ffd9a0", fria: "#5f7f9c" };
+  const razonRojoAzul = (color) => parseInt(color.slice(1, 3), 16) / parseInt(color.slice(5, 7), 16);
+  assert.ok(razonRojoAzul(sombrear(gris, 1, tinte)) > 1, "a plena luz tiene que tirar a cálido");
+  assert.ok(razonRojoAzul(sombrear(gris, 0.15, tinte)) < 1, "en sombra tiene que tirar a frío");
+});
+
+test("el tinte realza, no repinta: el color propio de cada cosa sobrevive", () => {
+  // Pasado cierto punto la arena deja de ser arena y la escena entera vira a la
+  // luz, que es el error opuesto al de no teñir nada.
+  const arena = "#c9b48c";
+  const teñido = sombrear(arena, 1, { calida: "#ffd9a0", fria: "#5f7f9c" });
+  const canal = (color, i) => parseInt(color.slice(1 + i * 2, 3 + i * 2), 16);
+  for (const i of [0, 1, 2]) {
+    assert.ok(Math.abs(canal(teñido, i) - canal(arena, i)) < 60, "el tinte se ha comido el color base");
+  }
 });

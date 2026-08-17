@@ -422,6 +422,25 @@ export const PLAYA = Object.freeze({
   cristal: "#7fa7ae", // los vidrios: agua reflejada, no transparencia (no la hay)
   torre: "#e4e7e2", // el blanco roto de un aerogenerador
   aspa: "#f2f4f0", // un punto más claro: las aspas cogen el sol antes que la torre
+
+  // --- La luz. Los dos colores que hacen que la escena no sea plana: el sol
+  // baja tiñe de cálido lo que ilumina, y lo que queda en sombra lo rellena el
+  // cielo, que es frío. Sin esa OPOSICIÓN, sombrear es solo bajar el brillo del
+  // mismo color y todo se lee como cartón recortado.
+  luzSol: "#ffd9a0", // el cálido que se suma a lo iluminado
+  sombraCielo: "#5f7f9c", // el frío con el que el cielo rellena la sombra
+  sol: "#fff2cf", // el disco, casi blanco: es lo más claro del cuadro
+  destello: "#ffe7b8", // el camino de sol sobre el agua
+
+  // --- Lo que llena la playa. Un sitio sin nada suelto no es una playa, es una
+  // rampa: lo que la hace creíble son las cosas que nadie ha colocado.
+  roca: "#7d7566",
+  rocaClara: "#9b9182", // la cara que da al sol, para que una roca sea redonda
+  madera: "#8a7458", // madera de deriva, descolorida por el sal y el sol
+  matojo: "#6f7a4e", // la hierba que agarra la duna
+  matojoSeco: "#9a9463", // la que ya no
+  boya: "#d9683c", // naranja de señal: los únicos puntos vivos del agua
+  sombra: "#6a6252", // la que proyectan las cosas sobre la arena
 });
 
 /**

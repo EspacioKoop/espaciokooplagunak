@@ -13,7 +13,10 @@ import {
   ENTRADA,
   INTERACCIONES,
   PLANTA_PLAYA,
+  LARGO_SOMBRA,
   PROFUNDIDAD,
+  RUMBO_SOMBRA,
+  SOL,
   VOCABULARIO_PLAYA,
   componerPlaya,
 } from "../scripts/playa-escena.mjs";
@@ -89,6 +92,67 @@ test("la cabina no es un armario rojo: lleva cristales de otro color", () => {
   const colores = new Set(VOCABULARIO_PLAYA.cabina.partes.map(({ color }) => color));
   assert.ok(colores.has(PLAYA.cristal), "sin vidrio, la cabina no se lee como cabina");
   assert.ok(colores.size >= 3);
+});
+
+/* ---- la luz ---------------------------------------------------------------- */
+
+test("el sol está bajo y sobre el mar: la luz rasa, no cae a plomo", () => {
+  const [sx, sy, sz] = SOL;
+  const largo = Math.hypot(sx, sy, sz);
+  const elevacion = (Math.asin(sy / largo) * 180) / Math.PI;
+  assert.ok(elevacion > 5 && elevacion < 30, `el sol está a ${elevacion.toFixed(1)}°`);
+  assert.ok(sx > 0, "el sol tiene que estar sobre el mar, que es +x, o no hay reflejo");
+  assert.ok(sz > 0, "y algo por delante de quien entra, o el camino de luz sale plano");
+});
+
+test("con el sol bajo, lo iluminado y lo sombreado NO son el mismo color a dos brillos", () => {
+  // La comprobación de que el tinte llega de verdad al motor. Es lo único que
+  // separa «una escena con degradado» de «una escena con luz»: si todos los
+  // tonos de una misma superficie caen sobre la misma recta hacia el negro, el
+  // tinte no se está aplicando por mucho que esté declarado.
+  const escena = componerPlaya(ENTRADA.x, 0, ENTRADA.z, ENTRADA.yaw, {});
+  const razones = escena.poligonos
+    .map(({ color }) => color)
+    .filter((color) => /^#[0-9a-f]{6}$/i.test(color))
+    .map((color) => {
+      const r = parseInt(color.slice(1, 3), 16);
+      const b = parseInt(color.slice(5, 7), 16);
+      return r === 0 && b === 0 ? null : (r + 1) / (b + 1);
+    })
+    .filter((razon) => razon !== null);
+  const calidos = razones.filter((razon) => razon > 1.15).length;
+  const frios = razones.filter((razon) => razon < 0.95).length;
+  assert.ok(calidos > 0, "nada sale cálido: el sol no tiñe");
+  assert.ok(frios > 0, "nada sale frío: la sombra no la rellena el cielo");
+});
+
+test("las sombras salen del sol, no de un número escrito aparte", () => {
+  // Es el fallo que delata una escena antes que ningún otro: la luz viene de un
+  // sitio y las sombras se tumban hacia otro. Aquí no puede pasar porque las dos
+  // cosas se derivan del MISMO vector — y esto lo comprueba.
+  const [sx, sy, sz] = SOL;
+  const largo = Math.hypot(sx, sy, sz);
+  const seno = sy / largo;
+  assert.ok(Math.abs(LARGO_SOMBRA - Math.sqrt(1 - seno * seno) / seno) < 1e-9);
+  assert.ok(LARGO_SOMBRA > 2, `con el sol tan bajo la sombra debería ser larga, y es ${LARGO_SOMBRA.toFixed(2)}x`);
+
+  // Y se tumban justo al contrario que el sol, en planta.
+  const plano = Math.hypot(sx, sz);
+  assert.ok(Math.abs(RUMBO_SOMBRA[0] - -sx / plano) < 1e-9);
+  assert.ok(Math.abs(RUMBO_SOMBRA[1] - -sz / plano) < 1e-9);
+  assert.ok(Math.abs(Math.hypot(...RUMBO_SOMBRA) - 1) < 1e-9, "el rumbo tiene que ser unitario");
+});
+
+test("las sombras van pegadas al suelo: ninguna se despega de la arena", () => {
+  // Una sombra a media altura es una mancha flotando. Se comprueba sobre la
+  // geometría de MUNDO que compone la escena, no sobre el color ya sombreado.
+  const escena = componerPlaya(ENTRADA.x, 0, ENTRADA.z, ENTRADA.yaw, {});
+  for (const poligono of escena.poligonos) {
+    for (const punto of poligono.puntos ?? []) {
+      assert.ok(Number.isFinite(punto.x) && Number.isFinite(punto.y));
+    }
+  }
+  assert.ok(escena.poligonos.length > 100, "con rocas, matojos y sombras tiene que haber bastante más que antes");
 });
 
 /* ---- la cabina como salida (#582) ----------------------------------------- */

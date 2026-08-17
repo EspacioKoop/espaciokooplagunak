@@ -20,6 +20,34 @@
 // suba— y a partir de cierta altura pasa a ser obstáculo. No es un descuido
 // disimulado: es el primer límite que este banco de pruebas ha encontrado.
 //
+// LA LUZ ES LA MITAD DE LA ESCENA, Y SE COMPONE COMO SE COMPONE UN CUADRO.
+// La primera versión se veía plana y el motivo no era la geometría: era que el
+// motor solo tenía una direccional de interior de nave y sombrear consistía en
+// bajarle el brillo al mismo color. Cuatro decisiones lo arreglan, y las cuatro
+// son de pintura, no de código:
+//
+//  1. UN SOL BAJO, y colocado. Puesto sobre el mar y casi en el horizonte, la
+//     luz RASA en vez de caer a plomo: las cosas dejan de estar iluminadas por
+//     arriba y pasan a tener un lado claro y otro oscuro. Es lo que hace que un
+//     poste sea un cilindro y no una raya.
+//  2. CÁLIDO CONTRA FRÍO. El sol tiñe de ámbar lo que toca; la sombra la rellena
+//     el cielo, que es azul. Sin esa oposición no hay volumen aunque haya
+//     degradado — es la lección que separa un dibujo coloreado de una pintura.
+//  3. SOMBRAS PROYECTADAS SOBRE LA ARENA. El motor no las calcula, así que se
+//     pintan: con el sol tan bajo son largas y cruzan el camino en diagonal.
+//     Además de dar volumen, ATAN cada objeto al suelo — sin sombra, un poste
+//     flota aunque esté perfectamente apoyado.
+//  4. PERSPECTIVA AÉREA. Lo lejano se aclara y se enfría hacia el color del
+//     cielo. Es literalmente lo que escribió Leonardo, y aquí lo hace la niebla
+//     del motor con `fondo: PLAYA.cielo`.
+//
+// Y la composición: el sol se sitúa DELANTE Y A LA DERECHA de quien entra, de
+// modo que el camino de luz sobre el agua entra por la esquina y lleva el ojo al
+// horizonte, los postes se recortan a contraluz contra el cielo claro, y sus
+// sombras y las de las rocas cruzan el camino hacia el espectador. Es el reparto
+// de Claude Lorrain —sol bajo sobre el agua, verticales que enmarcan, líneas que
+// fugan— y funciona igual con doscientos polígonos que con óleo.
+//
 // Puro y sin color propio (#351): los colores salen de `PLAYA` en `paleta.mjs`.
 
 import { PLAYA } from "./paleta.mjs";
@@ -82,6 +110,41 @@ const DUNA_INFRANQUEABLE = 0.3;
 /** La duna sigue más allá del borde jugable: cortarla en seco delataría la caja. */
 const DUNA_HASTA = -16;
 
+/* ---- el sol ---------------------------------------------------------------- */
+
+/**
+ * Hacia dónde está el sol, desde cualquier punto de la playa.
+ *
+ * Es la dirección HACIA la luz, la misma convención que usa `intensidadCara`.
+ * Sobre el mar (+x), muy bajo (la componente Y es la que fija la altura) y algo
+ * por delante de quien entra (+z), que es lo que pone el camino de luz del agua
+ * en diagonal hacia la esquina en vez de plano contra el horizonte.
+ */
+export const SOL = Object.freeze([0.72, 0.34, 0.52]);
+
+/** El tinte que va con ese sol: ámbar en la luz, azul de cielo en la sombra. */
+const TINTE = Object.freeze({ calida: PLAYA.luzSol, fria: PLAYA.sombraCielo });
+
+/**
+ * Cuánto se alarga la sombra de algo de un metro de alto.
+ *
+ * Es `1 / tan(altura del sol)`, sacado del propio `SOL` en vez de escrito a
+ * mano: si alguien sube o baja el sol, las sombras se alargan o se acortan solas.
+ * Escribirlo aparte es garantizar que un día la luz venga de un sitio y las
+ * sombras de otro, que es el fallo que delata una escena antes que ningún otro.
+ */
+export const LARGO_SOMBRA = (() => {
+  const largo = Math.hypot(SOL[0], SOL[1], SOL[2]);
+  const seno = SOL[1] / largo;
+  return Math.sqrt(1 - seno * seno) / seno;
+})();
+
+/** Hacia dónde se tumba una sombra, en planta: el contrario del sol. */
+export const RUMBO_SOMBRA = (() => {
+  const largo = Math.hypot(SOL[0], SOL[2]);
+  return [-SOL[0] / largo, -SOL[2] / largo];
+})();
+
 /* ---- props propios de la playa -------------------------------------------- */
 
 /**
@@ -139,6 +202,63 @@ export const VOCABULARIO_PLAYA = definirVocabulario({
   },
 
   /**
+   * Roca: tres bloques desiguales, uno de ellos con la cara al sol de otro tono.
+   *
+   * Tres y no uno porque una roca de una caja es una caja. Y desiguales porque
+   * lo que hace que algo parezca piedra y no mueble es que ninguna medida sea
+   * redonda ni repita a la anterior.
+   */
+  roca: {
+    color: PLAYA.roca,
+    partes: [
+      { medidas: [1.3, 0.7, 1.1], centro: [0, 0.3, 0] },
+      { medidas: [0.9, 0.5, 0.8], centro: [0.35, 0.72, -0.15], color: PLAYA.rocaClara },
+      { medidas: [0.6, 0.35, 0.7], centro: [-0.42, 0.5, 0.25] },
+    ],
+    ancla: null,
+  },
+
+  /** Madera de deriva: un tronco tumbado y dos ramas. Marca la línea de marea. */
+  madera: {
+    color: PLAYA.madera,
+    partes: [
+      { medidas: [2.6, 0.28, 0.3], centro: [0, 0.14, 0] },
+      { medidas: [0.7, 0.14, 0.14], centro: [1.1, 0.22, 0.28] },
+      { medidas: [0.5, 0.12, 0.12], centro: [-0.9, 0.2, -0.24] },
+    ],
+    ancla: null,
+  },
+
+  /**
+   * Matojo de duna: cuatro manojos de hierba, uno seco.
+   *
+   * Es lo que hace que la duna sea duna y no un montón de arena: la hierba es
+   * literalmente lo que la sujeta. Y en el cuadro cumple otra función —rompe la
+   * pendiente lisa con verticales pequeñas, que es lo que le da escala.
+   */
+  matojo: {
+    color: PLAYA.matojo,
+    partes: [
+      { medidas: [0.1, 0.55, 0.1], centro: [0, 0.27, 0] },
+      { medidas: [0.09, 0.42, 0.09], centro: [0.16, 0.21, 0.1] },
+      { medidas: [0.08, 0.48, 0.08], centro: [-0.14, 0.24, 0.12] },
+      { medidas: [0.08, 0.36, 0.08], centro: [0.05, 0.18, -0.15], color: PLAYA.matojoSeco },
+    ],
+    ancla: null,
+  },
+
+  /** Boya: el cuerpo naranja, el mástil y el remate. Puntos vivos en el agua. */
+  boya: {
+    color: PLAYA.boya,
+    partes: [
+      { medidas: [0.8, 0.6, 0.8], centro: [0, 0.3, 0] },
+      { medidas: [0.12, 1.1, 0.12], centro: [0, 1.1, 0] },
+      { medidas: [0.3, 0.16, 0.3], centro: [0, 1.7, 0] },
+    ],
+    ancla: null,
+  },
+
+  /**
    * Aerogenerador: torre, góndola y aspas en cruz.
    *
    * EN CRUZ Y NO EN TRES ASPAS, que es como son de verdad. El motor compone
@@ -160,6 +280,42 @@ export const VOCABULARIO_PLAYA = definirVocabulario({
     ancla: null,
   },
 });
+
+/**
+ * Lo que llena la playa, colocado a mano.
+ *
+ * A MANO Y NO POR SORTEO. Un generador reparte cosas; una escena las COLOCA. Las
+ * rocas y la madera están donde están porque su sombra cruza el camino a la
+ * altura a la que el ojo ya iba —tercio de la profundidad, tercio del ancho— y
+ * porque dejan libre el paso. Un sorteo habría acertado la densidad y fallado
+ * justo eso.
+ */
+const ROCAS = Object.freeze([
+  { x: 15.6, z: 12, cuartos: 0 },
+  { x: 17.2, z: 27, cuartos: 1 },
+  { x: 16.1, z: 34.5, cuartos: 2 },
+  { x: 9.4, z: 21, cuartos: 3 },
+]);
+
+const MADERAS = Object.freeze([
+  { x: 15.2, z: 19.5, cuartos: 1 },
+  { x: 17, z: 6.5, cuartos: 0 },
+]);
+
+/** Los matojos suben por la duna: cuantos más arriba, más juntos. */
+const MATOJOS = Object.freeze([
+  { x: 7.2, z: 3 }, { x: 6.4, z: 9.5 }, { x: 7.5, z: 16 }, { x: 5.9, z: 23 },
+  { x: 6.8, z: 30 }, { x: 7.1, z: 38 }, { x: 4.6, z: 6 }, { x: 4.1, z: 18 },
+  { x: 3.8, z: 33 }, { x: 2.4, z: 11 }, { x: 2.1, z: 26 }, { x: 1.6, z: 41 },
+  { x: 5.2, z: 43 }, { x: 8.2, z: 25.5 },
+]);
+
+/** Boyas fondeadas: cerca, para que se lea que el agua tiene profundidad. */
+const BOYAS = Object.freeze([
+  { x: 26, z: 9 },
+  { x: 31, z: 31 },
+  { x: 22.5, z: 21 },
+]);
 
 /** Dónde están los aerogeneradores, mar adentro. Lejos y a distintas
  *  distancias: puestos en fila se leerían como una valla, no como un parque. */
@@ -200,8 +356,17 @@ function terrazasDuna() {
       franja({ desde: x - PASO_DUNA, hasta: x, z0: -8, z1: PROFUNDIDAD + 8, alto, color: PLAYA.duna }),
       // El canto: sin él, dos terrazas del mismo color son un plano. Va justo en
       // el escalón, mirando al mar, que es de donde viene la luz.
+      //
+      // Fino a propósito (la mitad del escalón, no el escalón entero). Con el
+      // canto completo la duna se leía como campo arado —rayas negras paralelas
+      // de arriba abajo del cuadro— en vez de como arena. A la mitad se lee como
+      // lo que es: la cresta de un rizo de arena, que además es exactamente lo
+      // que un sol rasante dibuja en una duna de verdad.
       {
-        malla: caja([x, alto - SUBIDA_DUNA / 2, (PROFUNDIDAD - 0) / 2 - 4], [0.05, SUBIDA_DUNA, PROFUNDIDAD + 16]),
+        malla: caja(
+          [x, alto - SUBIDA_DUNA / 4, PROFUNDIDAD / 2 - 4],
+          [0.04, SUBIDA_DUNA / 2, PROFUNDIDAD + 16],
+        ),
         color: PLAYA.dunaSombra,
       },
     );
@@ -255,6 +420,16 @@ function propsColocados() {
     }),
   );
 
+  const enPlaya = (clave) => (sitio, indice) =>
+    colocarProp(clave, { ...sitio, nombre: `${clave}-${indice}`, vocabulario: VOCABULARIO_PLAYA });
+
+  puestos.push(
+    ...ROCAS.map(enPlaya("roca")),
+    ...MADERAS.map(enPlaya("madera")),
+    ...MATOJOS.map(enPlaya("matojo")),
+    ...BOYAS.map(enPlaya("boya")),
+  );
+
   for (const [indice, sitio] of AEROGENERADORES.entries()) {
     puestos.push(
       colocarProp("aerogenerador", {
@@ -266,6 +441,137 @@ function propsColocados() {
   }
 
   return puestos;
+}
+
+/* ---- sombras, sol y reflejo ------------------------------------------------ */
+
+/** Un cuadrilátero horizontal a la altura `y`, con los vértices que se le den. */
+function losa(puntos, y) {
+  return {
+    vertices: puntos.map(([px, pz]) => [px, y, pz]),
+    caras: [[0, 1, 2, 3]],
+  };
+}
+
+/**
+ * La sombra que proyecta una caja sobre la arena.
+ *
+ * El motor no calcula sombras, así que se pintan: es exactamente lo que hacía la
+ * máquina de referencia, donde una sombra era un polígono oscuro pegado al suelo
+ * y no un cálculo. Y lo que aporta no es sutil — una sombra ATA el objeto al
+ * suelo. Sin ella, un poste perfectamente apoyado parece flotar, que es medio
+ * motivo de que la primera versión se viera plana.
+ *
+ * Sale un cuadrilátero y no la silueta exacta: con el sol tan bajo la sombra es
+ * larga y estrecha, y a esa proporción la diferencia entre la silueta real y su
+ * huella tirada no se ve. Lo que sí se vería es que no estuviera.
+ */
+const ALTURA_SOMBRA = 0.012;
+
+function sombraDeCaja({ centro, medidas }) {
+  const [cx, , cz] = centro;
+  const [ancho, alto, fondo] = medidas;
+  const [dx, dz] = RUMBO_SOMBRA;
+  const largo = alto * LARGO_SOMBRA;
+  // El ancho de la sombra se mide PERPENDICULAR a por donde se tumba, o una caja
+  // estrecha vista de canto proyectaría una mancha ancha.
+  const medio = (Math.abs(dz) * ancho + Math.abs(dx) * fondo) / 2;
+  const [px, pz] = [-dz * medio, dx * medio];
+  return losa(
+    [
+      [cx + px, cz + pz],
+      [cx - px, cz - pz],
+      [cx - px + dx * largo, cz - pz + dz * largo],
+      [cx + px + dx * largo, cz + pz + dz * largo],
+    ],
+    ALTURA_SOMBRA,
+  );
+}
+
+/**
+ * Qué piezas de un prop proyectan sombra: solo las que tocan el suelo.
+ *
+ * Una a una, la cabina tiraría cuatro montantes, un techo y tres cristales, y el
+ * resultado sería una maraña de rectángulos superpuestos en vez de una sombra.
+ * Se toma la pieza más alta de las que arrancan del suelo, que es la que manda
+ * en la silueta, y se le da el ancho de la envolvente del prop.
+ */
+function sombraDeProp(piezas) {
+  const enPie = piezas.filter(({ centro, medidas }) => centro[1] - medidas[1] / 2 < 0.2);
+  if (enPie.length === 0) return null;
+  const alta = enPie.reduce((a, b) => (a.centro[1] + a.medidas[1] > b.centro[1] + b.medidas[1] ? a : b));
+  const anchoTotal = Math.max(...enPie.map(({ medidas }) => medidas[0]));
+  const fondoTotal = Math.max(...enPie.map(({ medidas }) => medidas[2]));
+  return sombraDeCaja({
+    centro: alta.centro,
+    medidas: [anchoTotal, alta.centro[1] + alta.medidas[1] / 2, fondoTotal],
+  });
+}
+
+/**
+ * El disco del sol, sobre el mar y casi tocando el agua.
+ *
+ * EMISIVO: es lo más claro del cuadro y no puede estar sujeto a la luz — se
+ * ilumina a sí mismo, que es literalmente lo que hace un sol. Va lejos, pero
+ * dentro del alcance de dibujo, y de cara a la cámara no se puede: el motor no
+ * tiene billboards, así que se pone plano contra el plano del horizonte, que es
+ * donde se le mira desde la playa.
+ */
+const DISTANCIA_SOL = 330;
+
+function discoDelSol() {
+  const largo = Math.hypot(SOL[0], SOL[1], SOL[2]);
+  const [ux, uy, uz] = SOL.map((c) => (c / largo) * DISTANCIA_SOL);
+  const radio = 16;
+  // Un cuadrado alineado con los ejes X/Y, que a esta distancia y con la rejilla
+  // de la época se lee como el disco que es.
+  return {
+    vertices: [
+      [ux - radio, uy - radio, uz],
+      [ux + radio, uy - radio, uz],
+      [ux + radio, uy + radio, uz],
+      [ux - radio, uy + radio, uz],
+    ],
+    caras: [[0, 1, 2, 3]],
+  };
+}
+
+/**
+ * El camino de luz del sol sobre el agua.
+ *
+ * Es EL elemento que quita lo plano al mar, y no por realismo: una lámina de un
+ * solo color no tiene ni distancia ni superficie, y en cuanto la cruza un reguero
+ * que se estrecha al acercarse, el agua pasa a tener las dos cosas. Turner
+ * pintaba poco más que esto.
+ *
+ * Se compone de trozos sueltos y no de una franja continua porque el agua no
+ * refleja seguido: cada trozo es una cresta. Se estrechan y se separan al
+ * acercarse, que es como se ve de verdad y, de paso, cómo se lee la profundidad.
+ */
+function caminoDeSol() {
+  const [dx, dz] = RUMBO_SOMBRA; // hacia el observador, o sea, desde el sol
+  const trozos = [];
+  for (let d = 6; d < 300; d *= 1.28) {
+    const cx = ORILLA + 2 - dx * d;
+    const cz = PROFUNDIDAD / 2 - dz * d;
+    // Ancho proporcional a la distancia: es la perspectiva del propio reguero.
+    const medio = 0.5 + d * 0.055;
+    const largo = 0.6 + d * 0.05;
+    trozos.push({
+      malla: losa(
+        [
+          [cx - medio, cz - largo],
+          [cx + medio, cz - largo],
+          [cx + medio, cz + largo],
+          [cx - medio, cz + largo],
+        ],
+        -0.085,
+      ),
+      color: PLAYA.destello,
+      emisivo: true,
+    });
+  }
+  return trozos;
 }
 
 /**
@@ -325,6 +631,14 @@ const PIEZAS = Object.freeze([
   franja({ desde: LISO_DESDE, hasta: ORILLA, z0: -8, z1: PROFUNDIDAD + 8, alto: 0, color: PLAYA.arenaMojada }),
   franja({ desde: CAMINO_DESDE, hasta: LISO_DESDE, z0: -8, z1: PROFUNDIDAD + 8, alto: 0.02, color: PLAYA.arena }),
   ...terrazasDuna(),
+  // El reguero de sol va sobre el agua y antes que nada de lo que hay en tierra.
+  ...caminoDeSol(),
+  { malla: discoDelSol(), color: PLAYA.sol, emisivo: true },
+  // LAS SOMBRAS ANTES QUE LO QUE LAS PROYECTA: van pegadas al suelo, y así el
+  // orden por pintor no tiene que desempatar dos superficies casi coplanares.
+  ...PROPS.map(({ piezas }) => sombraDeProp(piezas))
+    .filter(Boolean)
+    .map((malla) => ({ malla, color: PLAYA.sombra })),
   ...cables(),
   ...PROPS.flatMap(({ piezas }) => piezas).map(({ centro, medidas, color }) => ({
     malla: caja(centro, medidas),
@@ -406,7 +720,7 @@ export function componerPlaya(x, y, z, yaw, opciones = {}) {
   const { camara, dibujarPropio } = resolverCamara({ x, z, y, yaw, modo: modoCamara });
   const yawCamara = -yaw;
 
-  const partes = PIEZAS.map(({ malla, color }) =>
+  const partes = PIEZAS.map(({ malla, color, emisivo }) =>
     componerEscena(
       { ...malla, vertices: malla.vertices.map(([vx, vy, vz]) => [vx - camara[0], vy - camara[1], vz - camara[2]]) },
       {
@@ -419,7 +733,15 @@ export function componerPlaya(x, y, z, yaw, opciones = {}) {
         yaw: yawCamara,
         recorteLateral: true,
         luzFija: true,
+        emisivo: emisivo === true,
         lejos: ALCANCE,
+        // El sol de ESTA escena, no la direccional de interior de nave. Va en
+        // coordenadas del mundo, que es lo que exige `luzFija`.
+        luz: SOL,
+        // Y su color, contra el del cielo que rellena la sombra. Sin esto, lo
+        // iluminado y lo oscuro son el mismo color a dos brillos, que es
+        // exactamente el aspecto de cartón recortado que había que quitar.
+        tinte: TINTE,
         // Sin esto no hay niebla, y sin niebla el mar termina en una raya recta
         // a 380 m: el horizonte lo hace el fundido, no la geometría.
         fondo: PLAYA.cielo,

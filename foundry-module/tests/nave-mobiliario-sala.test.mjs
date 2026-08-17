@@ -122,6 +122,11 @@ test("en el catálogo real ninguna sala se queda sin nada ni se llena de más", 
   for (const id of CATALOGO_ANDAR.ids) {
     const estancia = CATALOGO_ANDAR.obtener(id);
     if (id === "cantina") continue; // la cantina trae sus 126 muebles a mano (#423)
+    // La playa (#587) tampoco es una sala amueblada: es un exterior, y su tope
+    // no es «cuántos muebles caben en un cuarto» sino cuánto se puede dibujar.
+    // Aplicarle esta cota diría que una playa con rocas y matojos está «llena de
+    // más», que es medir una cosa con la regla de otra.
+    if (id === "playa") continue;
     const { obstaculos } = estancia.planta;
     assert.ok(obstaculos.length > 0, `${id} sigue vacía`);
     // Un tope por sala, no por mueble: lo que se paga es el conjunto.

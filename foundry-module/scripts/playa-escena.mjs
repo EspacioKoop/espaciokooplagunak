@@ -588,36 +588,119 @@ const BANDAS_MAR = Object.freeze([
   { desde: 58, hasta: MAR_HASTA, color: PLAYA.marLejos },
 ]);
 
+/* ---- lo que el viento MUEVE ------------------------------------------------ */
+
 /**
- * Las crestas del oleaje, y la espuma que el viento les arranca.
+ * Un viento que no mueve nada no es viento: es una hierba torcida.
  *
- * PARALELAS A LA ORILLA, porque las olas rompen contra la costa vengan de donde
- * vengan. Lo que sí dice el viento es qué le pasa a la espuma: con terral se la
- * lleva HACIA EL ESTE, mar adentro, y por eso cada penacho sale del lado de
- * fuera de su cresta y no del de dentro. Es el detalle que hace que el viento no
- * haya que explicarlo.
+ * Esa fue la corrección más útil de todo el playtest. La primera versión tenía
+ * la hierba tumbada, los rizos perpendiculares y la espuma a sotavento —todo
+ * coherente— y aun así no se notaba, porque **quieto no hay viento que valga**.
+ * El ojo no deduce viento de una forma; lo reconoce de un movimiento.
+ *
+ * Lo que se mueve va aparte de `PIEZAS` y se regenera en cada fotograma con el
+ * reloj que pasa el bucle. Es barato —unas decenas de cuadriláteros— y es lo que
+ * separa un decorado de un sitio donde hace un día de viento.
  */
-function oleaje() {
+
+/** A qué velocidad corre lo que arrastra el viento, en metros por segundo. */
+const VELOCIDAD_VIENTO = 7.5;
+
+/** Módulo positivo: `%` en JS conserva el signo y con tiempos grandes da saltos. */
+function ciclo(valor, periodo) {
+  return ((valor % periodo) + periodo) % periodo;
+}
+
+/**
+ * La arena que corre a ras de suelo.
+ *
+ * Es LO que hace ver el viento en una playa de verdad: no la duna ni la hierba,
+ * sino esas lenguas bajas que cruzan la arena y desaparecen. Van pegadas al
+ * suelo, son alargadas en la dirección del viento y se reciclan por el borde de
+ * poniente para que el reguero no se acabe nunca.
+ */
+const LENGUAS_ARENA = 26;
+
+function arenaVolando(segundos) {
+  const azar = rngSemilla(20260821);
+  const piezas = [];
+  const anchoBarrido = LISO_DESDE - DUNA_HASTA;
+  for (let i = 0; i < LENGUAS_ARENA; i += 1) {
+    // Cada lengua tiene su carril, su fase y su velocidad: a la misma velocidad
+    // se leerían como una rejilla desplazándose, no como arena suelta.
+    const z = -6 + azar() * (PROFUNDIDAD + 12);
+    const velocidad = VELOCIDAD_VIENTO * (0.7 + azar() * 0.6);
+    const x = DUNA_HASTA + ciclo(azar() * anchoBarrido + segundos * velocidad, anchoBarrido);
+    const largo = 1.2 + azar() * 2.6;
+    // Se levanta un poco a media carrera y vuelve a caer: la arena no vuela a
+    // altura constante, y ese subir y bajar es la mitad de la lectura.
+    const alturaBase = terrenoEn(x);
+    const soplo = 0.02 + 0.09 * Math.abs(Math.sin(segundos * 1.7 + i));
+    piezas.push({
+      malla: caja([x, alturaBase + soplo, z], [largo, 0.05, 0.14]),
+      color: PLAYA.arenaVolada,
+    });
+  }
+  return piezas;
+}
+
+/** A qué altura está el terreno en `x`, para que lo que vuela lo haga sobre él. */
+function terrenoEn(x) {
+  if (x >= LISO_DESDE) return 0;
+  if (x >= CAMINO_DESDE) return 0.02;
+  return 0.02 + (CAMINO_DESDE - x) * SUBIDA_DUNA;
+}
+
+/**
+ * El oleaje, ahora en movimiento.
+ *
+ * Las crestas avanzan hacia la orilla —las olas rompen contra la costa, sople
+ * lo que sople— y el penacho de espuma de cada una sale a sotavento, hacia el
+ * este. Que las dos cosas vayan en direcciones distintas es justo lo que se ve
+ * con terral, y es lo que hace que el agua se lea como líquido y no como una
+ * chapa pintada.
+ */
+const CRESTAS = 54;
+
+function oleaje(segundos) {
   const azar = rngSemilla(20260820);
   const piezas = [];
   const [vx] = VIENTO;
-  for (let x = ORILLA + 2.5; x < 70; x += 2.6 + azar() * 1.4) {
-    for (let z = -10; z < PROFUNDIDAD + 12; z += 5 + azar() * 6) {
-      const largo = 2.4 + azar() * 4;
+  const recorrido = 52;
+  for (let i = 0; i < CRESTAS; i += 1) {
+    const z = -12 + azar() * (PROFUNDIDAD + 24);
+    const largo = 2.4 + azar() * 4.5;
+    const velocidad = 1.5 + azar() * 1.1;
+    // Hacia la orilla: de mar abierto (+x) hacia ORILLA. De ahí el signo menos.
+    const x = ORILLA + 2 + ciclo(azar() * recorrido - segundos * velocidad, recorrido);
+    // Cabecea: una cresta que no sube y baja es una raya.
+    const alto = -0.085 + 0.03 * Math.sin(segundos * 2.3 + i * 1.7);
+    piezas.push({ malla: caja([x, alto, z], [0.55, 0.05, largo]), color: PLAYA.cresta });
+    if (azar() > 0.5) {
       piezas.push({
-        malla: caja([x, -0.075, z], [0.5, 0.05, largo]),
-        color: PLAYA.cresta,
+        malla: caja([x + vx * (0.8 + azar()), alto + 0.02, z], [1.0, 0.04, largo * 0.5]),
+        color: PLAYA.espuma,
       });
-      // El penacho: solo en algunas, y siempre a sotavento.
-      if (azar() > 0.55) {
-        piezas.push({
-          malla: caja([x + vx * (0.7 + azar() * 0.9), -0.06, z], [0.9, 0.04, largo * 0.55]),
-          color: PLAYA.espuma,
-        });
-      }
     }
   }
   return piezas;
+}
+
+/**
+ * La orilla: la lámina que sube y baja sobre la arena mojada.
+ *
+ * Un solo cuadrilátero, y arregla lo que más delataba al mar — que la línea
+ * donde el agua toca la arena estuviera clavada. Que respire ya la hace agua.
+ */
+function lenguaDeOrilla(segundos) {
+  const avance = 0.9 * Math.sin(segundos * 0.55);
+  return {
+    malla: caja(
+      [ORILLA - 0.9 + avance, -0.015, PROFUNDIDAD / 2 - 4],
+      [1.8, 0.03, PROFUNDIDAD + 16],
+    ),
+    color: PLAYA.espuma,
+  };
 }
 
 /* ---- sombras, sol y reflejo ------------------------------------------------ */
@@ -758,10 +841,15 @@ function anillo([cx, cy, cz], interior, exterior, lados = 16, inclinacion = 0.22
  * se leerían como decoración repetida en vez de como cielo.
  */
 const PLANETAS = Object.freeze([
-  { centro: [-95, 92, 175], radio: 25, color: PLAYA.planetaOcre, facetas: [10, 7] },
-  { centro: [-30, 138, 215], radio: 11, color: PLAYA.luna, facetas: [8, 5] },
-  { centro: [95, 118, 205], radio: 17, color: PLAYA.planetaRojizo, facetas: [9, 6], anillo: [26, 38] },
-  { centro: [-175, 62, 95], radio: 9, color: PLAYA.planetaPalido, facetas: [7, 5] },
+  // Medidos por el ÁNGULO que ocupan, no por su radio: lo que importa es cuánto
+  // cuadro se comen. La primera versión puso uno de 25 m a 205, o sea catorce
+  // grados —cuatro veces la luna llena— y salía como un pegote de barro cortado
+  // por el borde de la ventana. Estos rondan los tres o cuatro grados: se leen
+  // como cuerpos lejanos, que es lo que son, y dejan el cielo siendo cielo.
+  { centro: [-320, 240, 620], radio: 26, color: PLAYA.planetaPalido, facetas: [10, 7] },
+  { centro: [190, 300, 700], radio: 17, color: PLAYA.luna, facetas: [8, 5] },
+  { centro: [430, 205, 560], radio: 21, color: PLAYA.planetaOcre, facetas: [9, 6], anillo: [30, 44] },
+  { centro: [-540, 165, 380], radio: 12, color: PLAYA.planetaRojizo, facetas: [7, 5] },
 ]);
 
 function piezasPlanetas() {
@@ -902,7 +990,6 @@ const PIEZAS = Object.freeze([
   franja({ desde: 60, hasta: MAR_HASTA, z0: -MAR_HASTA, z1: MAR_HASTA, alto: -0.1, color: PLAYA.marLejos }),
   franja({ desde: ORILLA, hasta: 60, z0: -MAR_HASTA, z1: MAR_HASTA, alto: -0.1, color: PLAYA.mar }),
   // La lengua de espuma, justo en la orilla y un pelo por encima del agua.
-  franja({ desde: ORILLA - 0.5, hasta: ORILLA + 0.4, z0: -8, z1: PROFUNDIDAD + 8, alto: -0.02, color: PLAYA.espuma }),
   franja({ desde: LISO_DESDE, hasta: ORILLA, z0: -8, z1: PROFUNDIDAD + 8, alto: 0, color: PLAYA.arenaMojada }),
   franja({ desde: CAMINO_DESDE, hasta: LISO_DESDE, z0: -8, z1: PROFUNDIDAD + 8, alto: 0.02, color: PLAYA.arena }),
   // El cielo va PRIMERO: es el fondo de todo lo demás.
@@ -993,11 +1080,26 @@ export function componerPlaya(x, y, z, yaw, opciones = {}) {
     otrosJugadores = [],
     modoCamara,
     avatarPropio = {},
+    // El reloj que pasa el bucle (#587). Sin él la escena se dibuja parada, que
+    // es lo correcto para una prueba y para cualquier anfitrión sin
+    // `requestAnimationFrame`: lo que se mueve simplemente se queda quieto, y
+    // todo lo demás sale igual.
+    tiempo = 0,
   } = opciones;
+  const segundos = Number.isFinite(tiempo) ? tiempo / 1000 : 0;
   const { camara, dibujarPropio } = resolverCamara({ x, z, y, yaw, modo: modoCamara });
   const yawCamara = -yaw;
 
-  const partes = PIEZAS.map(({ malla, color, emisivo, lejos }) =>
+  // Lo quieto está calculado una vez; lo que el viento mueve, en cada fotograma.
+  // Son unas decenas de cuadriláteros, el mismo orden de magnitud que las hojas
+  // de puerta que `crearSalaCaja` ya rehace en cada pasada.
+  const enMovimiento = [
+    ...oleaje(segundos),
+    lenguaDeOrilla(segundos),
+    ...arenaVolando(segundos),
+  ];
+
+  const partes = [...PIEZAS, ...enMovimiento].map(({ malla, color, emisivo, lejos }) =>
     componerEscena(
       { ...malla, vertices: malla.vertices.map(([vx, vy, vz]) => [vx - camara[0], vy - camara[1], vz - camara[2]]) },
       {

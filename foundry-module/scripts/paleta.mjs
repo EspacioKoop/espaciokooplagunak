@@ -462,6 +462,7 @@ export const PLAYA = Object.freeze({
   rizoDuna: "#c3b088", // el mismo rizo, en la arena más clara de la duna
   manga: "#e07a3a", // la manga de viento: naranja de señal, se ve de lejos
   mangaFranja: "#f0e6d8", // sus franjas claras
+  arenaVolada: "#e2d3ae", // la lengua de arena que cruza corriendo a ras de suelo
 });
 
 /**

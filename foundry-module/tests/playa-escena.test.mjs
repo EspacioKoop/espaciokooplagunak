@@ -190,6 +190,37 @@ test("la escena entera cabe en un presupuesto de época", () => {
   assert.ok(escena.poligonos.length < 900, `${escena.poligonos.length} polígonos en pantalla`);
 });
 
+test("sin reloj la escena se dibuja parada, y sigue siendo una escena entera", () => {
+  // Un anfitrión sin `requestAnimationFrame`, o una prueba: lo que se mueve se
+  // queda quieto y todo lo demás sale igual. Que la falta de reloj apague la
+  // escena sería peor que no animarla.
+  const parada = componerPlaya(ENTRADA.x, 0, ENTRADA.z, ENTRADA.yaw, {});
+  assert.ok(parada.poligonos.length > 100);
+});
+
+test("con el reloj corriendo, la escena CAMBIA: eso es el viento", () => {
+  // La corrección del playtest: «no se nota el viento». Tenía la hierba
+  // tumbada, los rizos perpendiculares y la espuma a sotavento —todo coherente—
+  // y aun así no se notaba, porque quieto no hay viento que valga. Esta prueba
+  // defiende justo eso: que dos instantes distintos no se dibujen igual.
+  const huella = (t) =>
+    JSON.stringify(
+      componerPlaya(ENTRADA.x, 0, ENTRADA.z, ENTRADA.yaw, { tiempo: t }).poligonos.map((p) => p.profundidad),
+    );
+  assert.notEqual(huella(0), huella(900), "a un segundo vista no se ha movido nada");
+  assert.notEqual(huella(900), huella(2400));
+});
+
+test("lo que arrastra el viento se recicla: el reguero no se acaba nunca", () => {
+  // Con el tiempo muy avanzado tiene que seguir habiendo tanta arena volando
+  // como al principio. Sin reciclado, a los pocos minutos la playa se queda
+  // quieta y nadie sabe por qué.
+  const cuantos = (t) => componerPlaya(ENTRADA.x, 0, ENTRADA.z, ENTRADA.yaw, { tiempo: t }).poligonos.length;
+  const alPrincipio = cuantos(0);
+  const media_hora = cuantos(1000 * 60 * 30);
+  assert.ok(Math.abs(alPrincipio - media_hora) < alPrincipio * 0.35, "la escena se vacía con el tiempo");
+});
+
 /* ---- la cabina como salida (#582) ----------------------------------------- */
 
 test("la cabina es el punto de interacción, y su ancla la declara el prop", () => {

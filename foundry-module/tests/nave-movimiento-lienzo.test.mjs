@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { declararInteracciones } from "../scripts/nave-interaccion.mjs";
 import { arrancarAndar } from "../scripts/nave-movimiento-lienzo.mjs";
 import { crearPlanta } from "../scripts/nave-movimiento.mjs";
 
@@ -213,14 +214,16 @@ test("alTocarPuerta es un flanco de entrada, no un nivel (QA: teletransportaba u
   mando.detener();
 });
 
-test("alTocarConsola se dispara al entrar en su zona, solo una vez (#509)", () => {
-  const consolas = [{ rect: { x: 4, z: 8, ancho: 2, profundidad: 1 }, puesto: "engineering" }];
+test("alAlcanzarInteraccion se dispara al entrar en la zona, solo una vez (#509, #582)", () => {
+  const interacciones = declararInteracciones([
+    { id: "consola-engineering", zona: { x: 4, z: 8, ancho: 2, profundidad: 1 }, accion: "engineering" },
+  ]);
   const avisos = [];
   const mando = arrancarAndar(lienzoFalso(), {
     componer: () => ({ ancho: 100, alto: 100, poligonos: [] }),
     planta: crearPlanta({ ancho: 10, profundidad: 10 }),
-    consolas,
-    alTocarConsola: (puesto) => avisos.push(puesto),
+    interacciones,
+    alAlcanzarInteraccion: ({ accion }) => avisos.push(accion),
     x: 5,
     z: 7,
     yaw: 0,
@@ -246,11 +249,13 @@ test("alTocarConsola se dispara al entrar en su zona, solo una vez (#509)", () =
   mando.detener();
 });
 
-test("sin alTocarConsola, tocar una zona de consola no hace nada (no revienta)", () => {
+test("sin alAlcanzarInteraccion, tocar un punto no hace nada (no revienta)", () => {
   const mando = arrancarAndar(lienzoFalso(), {
     componer: () => ({ ancho: 100, alto: 100, poligonos: [] }),
     planta: crearPlanta({ ancho: 10, profundidad: 10 }),
-    consolas: [{ rect: { x: 4, z: 8, ancho: 2, profundidad: 1 }, puesto: "engineering" }],
+    interacciones: declararInteracciones([
+      { id: "consola-engineering", zona: { x: 4, z: 8, ancho: 2, profundidad: 1 } },
+    ]),
     x: 5,
     z: 8.3,
     yaw: 0,
@@ -259,13 +264,15 @@ test("sin alTocarConsola, tocar una zona de consola no hace nada (no revienta)",
   mando.detener();
 });
 
-test("cambiarEstancia sustituye las consolas y reinicia el flanco de entrada", () => {
+test("cambiarEstancia sustituye las interacciones y reinicia el flanco de entrada", () => {
   const avisos = [];
   const mando = arrancarAndar(lienzoFalso(), {
     componer: () => ({ ancho: 100, alto: 100, poligonos: [] }),
     planta: crearPlanta({ ancho: 10, profundidad: 10 }),
-    consolas: [{ rect: { x: 4, z: 4, ancho: 2, profundidad: 2 }, puesto: "captain" }],
-    alTocarConsola: (puesto) => avisos.push(puesto),
+    interacciones: declararInteracciones([
+      { id: "consola-captain", zona: { x: 4, z: 4, ancho: 2, profundidad: 2 }, accion: "captain" },
+    ]),
+    alAlcanzarInteraccion: ({ accion }) => avisos.push(accion),
     x: 5,
     z: 5, // ya dentro de la zona de la consola de "a"
     yaw: 0,
@@ -273,12 +280,14 @@ test("cambiarEstancia sustituye las consolas y reinicia el flanco de entrada", (
   mando.avanzar(16);
   assert.deepEqual(avisos, ["captain"], "el punto de partida ya cuenta como entrada");
 
-  // La estancia nueva tiene su propia consola, en la MISMA zona local (5,5):
+  // La estancia nueva tiene su propio punto, en la MISMA zona local (5,5):
   // el cambio de sala tiene que volver a disparar el aviso, no darlo por
   // visto porque la posición numérica no cambió.
   mando.cambiarEstancia({
     planta: crearPlanta({ ancho: 10, profundidad: 10 }),
-    consolas: [{ rect: { x: 4, z: 4, ancho: 2, profundidad: 2 }, puesto: "engineering" }],
+    interacciones: declararInteracciones([
+      { id: "consola-engineering", zona: { x: 4, z: 4, ancho: 2, profundidad: 2 }, accion: "engineering" },
+    ]),
     x: 5,
     z: 5,
     yaw: 0,

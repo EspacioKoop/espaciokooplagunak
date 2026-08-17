@@ -8,7 +8,8 @@
  * qué estancia lleva una puerta — eso ya lo resolvió el catálogo. Aquí solo
  * se cablea DOM y se reacciona a `alTocarPuerta` llamando a
  * `mando.cambiarEstancia(...)` con lo que el catálogo ya decidió, y a
- * `alTocarConsola` abriendo el espacio de puesto que toque (#509) — de
+ * `alAlcanzarInteraccion` traduciendo la `accion` declarada a lo que Foundry
+ * sabe hacer, que hoy es abrir el espacio de puesto de una consola (#509) — de
  * nuevo, sin decidir nada que el catálogo o `openWorkspaceApp` no hayan
  * decidido ya. Dos clases hermanas (`Application` v11, `ApplicationV2`
  * v12+), sin código de ventana compartido a propósito.
@@ -345,7 +346,7 @@ function arrancar(raiz, estanciaPedida = null) {
     componer: inicial.componer,
     planta: inicial.planta,
     puertas: inicial.puertas,
-    consolas: inicial.consolas,
+    interacciones: inicial.interacciones,
     // El checkpoint se VALIDA antes de usarse (QA 2026-08-08: «sigue el bug de
     // no poder moverse»). Un flag guardado en una sesión anterior puede caer hoy
     // dentro de un mueble —la cantina cambió de sistema de coordenadas Y de
@@ -368,13 +369,21 @@ function arrancar(raiz, estanciaPedida = null) {
       // para saber que alguien cambió de sala.
       ultimoSelloEnviado = publicarPosicion(estanciaActual, mando, ultimoSelloEnviado, true);
     },
+    // Qué significa cada punto de interacción se decide AQUÍ y no en el bucle
+    // (#582): el lienzo transporta la `accion` declarada por el catálogo y esta
+    // ventana la traduce a lo que Foundry sabe hacer. Un tipo nuevo —el punto de
+    // pesca de #579, la mesa de #553— se añade a este reparto, sin tocar ni el
+    // motor de movimiento ni el de render.
+    //
     // #509: acercarse a la consola de un puesto abre su espacio de trabajo —
     // el MISMO que ya se abre por botón (`openWorkspaceApp`, #276). Un
     // atajo, no autoridad nueva: para quien no es GM, `openWorkspaceApp`
     // ignora el `puesto` que se le pasa y abre el propio (#237, ver la
     // cabecera de `station-workspace-ui.mjs`) — caminar hasta una consola
     // ajena no enseña nada que el relé no dejara ver igualmente por botón.
-    alTocarConsola: (puesto) => openWorkspaceApp(puesto),
+    alAlcanzarInteraccion: ({ accion }) => {
+      if (accion?.tipo === "consola") openWorkspaceApp(accion.puesto);
+    },
     fondo: FONDO_ENTRE_SALAS,
     pedirFotograma: (cb) => globalThis.requestAnimationFrame?.(cb),
     cancelarFotograma: (id) => globalThis.cancelAnimationFrame?.(id),

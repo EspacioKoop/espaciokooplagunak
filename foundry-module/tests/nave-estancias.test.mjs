@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { declararInteracciones } from "../scripts/nave-interaccion.mjs";
 import { crearPlanta } from "../scripts/nave-movimiento.mjs";
 import { crearCatalogoEstancias, declararEstancia, puntoDeLlegada, resolverArranque } from "../scripts/nave-estancias.mjs";
 
@@ -62,7 +63,7 @@ test("puntoDeLlegada: usa lo que fija la puerta y rellena lo que falta con la en
     planta: PLANTA_A,
     componer: catalogo.obtener("a").componer,
     puertas: [],
-    consolas: [],
+    interacciones: [],
     x: 7,
     z: 2,
     yaw: Math.PI,
@@ -79,46 +80,50 @@ test("puntoDeLlegada: estancia desconocida devuelve null, no revienta", () => {
   assert.equal(puntoDeLlegada(catalogo, { estancia: "z" }), null);
 });
 
-test("declararEstancia: sin consolas, la lista queda vacía (no undefined)", () => {
+test("declararEstancia: sin interacciones, la lista queda vacía (no undefined)", () => {
   const estancia = declararEstancia({ planta: PLANTA_A, componer: () => ({}) });
-  assert.deepEqual(estancia.consolas, []);
+  assert.deepEqual(estancia.interacciones, []);
 });
 
-test("declararEstancia: una consola no necesita destino, a diferencia de una puerta (#509)", () => {
+test("declararEstancia: una interacción no necesita destino, a diferencia de una puerta (#509)", () => {
   const estancia = declararEstancia({
     planta: PLANTA_A,
     componer: () => ({}),
-    consolas: [{ rect: { x: 4, z: 4, ancho: 1, profundidad: 1 }, puesto: "engineering" }],
+    interacciones: declararInteracciones([
+      { id: "consola-engineering", zona: { x: 4, z: 4, ancho: 1, profundidad: 1 }, accion: { puesto: "engineering" } },
+    ]),
   });
-  assert.equal(estancia.consolas.length, 1);
-  assert.equal(estancia.consolas[0].puesto, "engineering");
+  assert.equal(estancia.interacciones.length, 1);
+  assert.equal(estancia.interacciones[0].accion.puesto, "engineering");
 });
 
-test("crearCatalogoEstancias no exige que una consola apunte a ninguna estancia: 'puesto' es opaco", () => {
-  // A diferencia de una puerta, una consola no referencia otra estancia del
-  // catálogo — validar su `puesto` contra algo sería mezclar "dónde está la
-  // nave" con "qué puestos existen", que es justo lo que este módulo no sabe.
+test("crearCatalogoEstancias no exige que una interacción apunte a ninguna estancia: 'accion' es opaca", () => {
+  // A diferencia de una puerta, una interacción no referencia otra estancia del
+  // catálogo — validar su `accion` contra algo sería mezclar "dónde está la
+  // nave" con "qué se puede hacer en ella", que es justo lo que este módulo no
+  // sabe.
   assert.doesNotThrow(() =>
     crearCatalogoEstancias({
       a: {
         planta: PLANTA_A,
         componer: () => ({}),
-        consolas: [{ rect: { x: 4, z: 4, ancho: 1, profundidad: 1 }, puesto: "puesto-que-no-existe-en-ningun-sitio" }],
+        interacciones: declararInteracciones([
+          { id: "cualquiera", punto: [4, 4], accion: { puesto: "puesto-que-no-existe-en-ningun-sitio" } },
+        ]),
       },
     }),
   );
 });
 
-test("puntoDeLlegada incluye las consolas de la estancia destino", () => {
+test("puntoDeLlegada incluye las interacciones de la estancia destino", () => {
+  const interacciones = declararInteracciones([
+    { id: "consola-engineering", zona: { x: 4, z: 4, ancho: 1, profundidad: 1 } },
+  ]);
   const catalogo = crearCatalogoEstancias({
-    a: {
-      planta: PLANTA_A,
-      componer: () => ({}),
-      consolas: [{ rect: { x: 4, z: 4, ancho: 1, profundidad: 1 }, puesto: "engineering" }],
-    },
+    a: { planta: PLANTA_A, componer: () => ({}), interacciones },
   });
   const llegada = puntoDeLlegada(catalogo, { estancia: "a" });
-  assert.deepEqual(llegada.consolas, [{ rect: { x: 4, z: 4, ancho: 1, profundidad: 1 }, puesto: "engineering" }]);
+  assert.deepEqual(llegada.interacciones, interacciones);
 });
 
 /* ---- resolverArranque (#508) --------------------------------------------- */

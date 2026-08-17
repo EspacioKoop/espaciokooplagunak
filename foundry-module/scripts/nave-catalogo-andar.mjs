@@ -25,7 +25,18 @@ import { puntoLibreCerca } from "./nave-movimiento.mjs";
 import { crearSalaCaja } from "./nave-sala-caja.mjs";
 import { piezasConsola } from "./nave-consola.mjs";
 import { piezasMobiliarioSala } from "./nave-mobiliario-sala.mjs";
-import { PLANTA_CANTINA_SALA, PUERTA_SALIDA, componerCantinaSala } from "./cantina-sala.mjs";
+import {
+  PLANTA_CANTINA_SALA,
+  PUERTA_SALIDA,
+  PUERTA_TERRAZA,
+  componerCantinaSala,
+} from "./cantina-sala.mjs";
+import {
+  ENTRADA as ENTRADA_TERRAZA,
+  PLANTA_TERRAZA,
+  PUERTA_CANTINA as PUERTA_TERRAZA_A_CANTINA,
+  componerTerraza,
+} from "./terraza-cantina.mjs";
 import {
   ANCHO_PUERTA,
   GROSOR_PUERTA,
@@ -295,6 +306,38 @@ export const CATALOGO_ANDAR = crearCatalogoEstancias({
         // casi un metro — el «puerta extraña que no da a ninguna parte» del QA.
         rect: PUERTA_SALIDA,
         destino: { estancia: SALA_DE_LA_CANTINA, x: 11, z: 3, yaw: Math.PI },
+      },
+      {
+        // A la terraza (#579), por el muro OESTE y junto al sur: el porqué de
+        // ese lado —alcanzabilidad, no despeje— está donde se declara el hueco,
+        // en `cantina-sala.mjs`, que es quien lo abre en su propio muro.
+        rect: PUERTA_TERRAZA,
+        destino: { estancia: "terraza", ...ENTRADA_TERRAZA },
+      },
+    ],
+  },
+  // La terraza cuelga de la cantina, igual que la cantina cuelga de la rejilla:
+  // no está en el interior nativo de la nave porque el .lua no tiene terrazas.
+  // No es una geografía paralela — es una estancia más de la de andar (#577).
+  terraza: {
+    planta: PLANTA_TERRAZA,
+    componer: componerTerraza,
+    entrada: ENTRADA_TERRAZA,
+    puertas: [
+      {
+        rect: PUERTA_TERRAZA_A_CANTINA,
+        // Se vuelve a la cantina junto al hueco por el que se entra —su muro
+        // OESTE— y mirando hacia dentro (yaw π/2 mira a +x, porque el frente es
+        // `(sen yaw, cos yaw)`), un radio y medio adentro para no caer sobre el
+        // propio disparador y rebotar de vuelta a la terraza.
+        destino: {
+          estancia: "cantina",
+          ...libreEnCantina(
+            PUERTA_TERRAZA.x + PUERTA_TERRAZA.ancho + 1.6,
+            PUERTA_TERRAZA.z + PUERTA_TERRAZA.profundidad / 2,
+          ),
+          yaw: Math.PI / 2,
+        },
       },
     ],
   },

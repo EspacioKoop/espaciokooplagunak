@@ -174,3 +174,78 @@ test("una puerta cerrada tapa el hueco entero, y abierta lo despeja", () => {
   assert.equal(izq.z, puerta.base.z);
   assert.equal(der.z + der.profundidad, puerta.base.z + puerta.base.profundidad);
 });
+
+// ---- Estancias al aire libre y muros a media altura (#579) ------------------
+
+test("al aire libre no hay techo, y con techo sí lo hay", () => {
+  // El interruptor existe para que una terraza no tenga que ser un caso especial
+  // fuera de esta fábrica, que es lo que le costó a la cantina tres QA (#540).
+  const medidas = { ancho: 6, profundidad: 5, muralPixel: false, pielSuelo: false };
+  const barrido = (sala) => {
+    let total = 0;
+    for (let i = 0; i < 8; i += 1) {
+      total += sala.componer(3, 0, 2.5, (i * Math.PI) / 4, { ancho: 480, alto: 270, fov: 100 })
+        .poligonos.length;
+    }
+    return total;
+  };
+  assert.ok(
+    barrido(crearSalaCaja({ ...medidas, alAireLibre: true })) < barrido(crearSalaCaja(medidas)),
+    "sin techo ni luminarias se dibuja menos, no lo mismo",
+  );
+});
+
+test("alturaMuros baja los lados que nombra y deja los demás como estaban", () => {
+  const medidas = { ancho: 6, profundidad: 5, muralPixel: false, pielSuelo: false, alAireLibre: true };
+  // `componer` no recorta lo que queda fuera del encuadre: la escena lleva los
+  // cuatro muros mire donde mire, así que el máximo global de la sala no dice
+  // nada de UN lado — lo fija siempre el muro entero de enfrente. Para medir un
+  // lado hay que aislarlo, y se aísla por distancia: con la cámara pegada al
+  // lado contrario, el muro mirado es lo ÚNICO cuyos vértices caen todos lejos
+  // (los laterales van de un extremo a otro, así que siempre tienen alguno
+  // cerca).
+  const alturaDelMuroDeEnfrente = (sala, { z, yaw }) =>
+    Math.max(
+      ...sala
+        .componer(3, 0, z, yaw, { ancho: 480, alto: 270, fov: 100 })
+        .poligonos.filter((p) => p.camara.every((v) => v[2] > 3.5))
+        .flatMap((p) => p.camara.map((v) => v[1])),
+    );
+  // `yaw` π mira a -z, que es el muro norte; 0 mira a +z, el sur. En cada caso
+  // la cámara se planta en el lado opuesto al que se mide.
+  const norte = { z: 4, yaw: Math.PI };
+  const sur = { z: 1, yaw: 0 };
+
+  const entero = crearSalaCaja(medidas);
+  const conAntepecho = crearSalaCaja({ ...medidas, alturaMuros: { norte: 1 } });
+
+  assert.ok(
+    alturaDelMuroDeEnfrente(conAntepecho, norte) < alturaDelMuroDeEnfrente(entero, norte) - 0.2,
+    "el muro norte deja de llegar arriba",
+  );
+  assert.equal(
+    alturaDelMuroDeEnfrente(conAntepecho, sur),
+    alturaDelMuroDeEnfrente(entero, sur),
+    "y el sur, que no se nombra, se queda como estaba",
+  );
+});
+
+test("una pieza de mobiliario con malla propia se dibuja tal cual", () => {
+  // #579: un prop con silueta —una silla— no se puede decir con una caja, y la
+  // fábrica no tiene por qué saber de sillas.
+  const triangulo = {
+    vertices: [[2, 0, 2], [3, 0, 2], [2.5, 1, 2.5]],
+    caras: [[0, 1, 2]],
+  };
+  const sala = crearSalaCaja({
+    ancho: 6,
+    profundidad: 5,
+    muralPixel: false,
+    pielSuelo: false,
+    pielObjetos: false,
+    mobiliario: [{ centro: [2.5, 0.5, 2.2], medidas: [1, 1, 0.5], color: "#808080", malla: triangulo }],
+  });
+  // La huella sigue estorbando aunque la malla sea otra: dibujo y colisión de la
+  // misma declaración.
+  assert.ok(colisiona(2.5, 2.2, 0.3, sala.planta), "el prop sigue siendo un obstáculo");
+});

@@ -365,7 +365,14 @@ function abrirHuecosEnMuros(muros, huecos, ancho, profundidad) {
   }
 
   return {
-    muros: [...tramosNorte, ...tramosSur, ...tramosOeste, ...tramosEste],
+    // Cada tramo dice de qué muro salió: sin eso, todos se levantan a la misma
+    // altura y un antepecho de terraza no se puede declarar (#579).
+    muros: [
+      ...tramosNorte.map((rect) => ({ rect, lado: "norte" })),
+      ...tramosSur.map((rect) => ({ rect, lado: "sur" })),
+      ...tramosOeste.map((rect) => ({ rect, lado: "oeste" })),
+      ...tramosEste.map((rect) => ({ rect, lado: "este" })),
+    ],
     bandas,
     marcos,
     marcosPuerta,
@@ -469,6 +476,20 @@ export function detalleConsola([cx, cy, cz], [anchoCuerpo, altoCuerpo], opciones
  * bloquea el paso, con su huella en el plano X/Z; una decoración que cuelga
  * del techo o que no debe estorbar puede ponerlo a `false`.
  *
+ * Una pieza puede traer además su propia `malla` (#579): entonces se dibuja esa
+ * y no la caja implícita, y `centro`/`medidas` se quedan solo como la HUELLA de
+ * colisión. Es lo que permite que una silla se lea como silla sin que la
+ * fábrica sepa nada de sillas — la geometría vive en `nave-props.mjs`. Sin
+ * `malla` no cambia nada: las 126 piezas de la cantina siguen siendo cajas.
+ *
+ * `alAireLibre` (#579) quita el techo, su piel y sus luminarias: una terraza no
+ * tiene techo, y el suelo, los muros y las puertas siguen saliendo de la misma
+ * declaración que en cualquier otra estancia. Es el interruptor MÍNIMO para que
+ * un espacio exterior no tenga que ser un caso especial fuera de esta fábrica —
+ * que es exactamente el error que la cantina pagó durante tres QA (#540).
+ * `alturaMuros` acompaña: un número, o un mapa por lado, para que el borde
+ * abierto de una terraza sea un antepecho y no una tapia.
+ *
  * @param {{ancho:number, profundidad:number, columnas?:Array,
  *   puertas?:Array<{rect:object}>, ventanas?:Array<{rect:object}>,
  *   mobiliario?:Array<{centro:number[], medidas:number[], color:string, colision?:boolean}>,
@@ -505,7 +526,16 @@ export function crearSalaCaja({
   pielPuertas = true,
   pielObjetos = true,
   pielSuelo = true,
+  alAireLibre = false,
+  alturaMuros = ALTURA,
 }) {
+  // Altura de cada lado. Un número vale para los cuatro; un mapa parcial deja
+  // los lados que no nombra a la altura de siempre, así que una terraza declara
+  // solo su antepecho y no vuelve a escribir la altura de la nave.
+  const alturaLado = (lado) => {
+    const declarada = typeof alturaMuros === "number" ? alturaMuros : alturaMuros?.[lado];
+    return typeof declarada === "number" && declarada > 0 ? declarada : ALTURA;
+  };
   const muros = [
     { x: -GROSOR_MURO, z: -GROSOR_MURO, ancho: ancho + GROSOR_MURO * 2, profundidad: GROSOR_MURO },
     { x: -GROSOR_MURO, z: profundidad, ancho: ancho + GROSOR_MURO * 2, profundidad: GROSOR_MURO },
@@ -529,12 +559,12 @@ export function crearSalaCaja({
     }));
 
   const piezas = Object.freeze([
-    ...tramosMuro.map((rect) => ({ malla: rectAColumna(rect, ALTURA), color: colorMuro })),
+    ...tramosMuro.map(({ rect, lado }) => ({ malla: rectAColumna(rect, alturaLado(lado)), color: colorMuro })),
     // La piel va justo detrás del muro que la sostiene y antes que todo lo
     // demás: es parte de la pared, no mobiliario colgado de ella.
     ...(muralPixel
-      ? tramosMuro.flatMap((rect) =>
-          piezasMuralPixel({ rect, sala: { ancho, profundidad }, altura: ALTURA, semilla: semillaMural }),
+      ? tramosMuro.flatMap(({ rect, lado }) =>
+          piezasMuralPixel({ rect, sala: { ancho, profundidad }, altura: alturaLado(lado), semilla: semillaMural }),
         )
       : []),
     ...marcos.map((malla) => ({ malla, color: colorMarcoVentana })),
@@ -543,8 +573,10 @@ export function crearSalaCaja({
     ...marcosPuerta.map((malla) => ({ malla, color: colorMarcoPuerta })),
     ...bandas.map((malla) => ({ malla, color: colorMuro })),
     ...columnas.map((rect) => ({ malla: rectAColumna(rect, ALTURA), color: colorColumna })),
-    ...mobiliario.map(({ centro, medidas, color, emisivo }) => ({
-      malla: caja(centro, medidas),
+    ...mobiliario.map(({ centro, medidas, color, emisivo, malla }) => ({
+      // Con `malla` propia se dibuja esa (#579): un prop con silueta —una silla,
+      // una caña— no se puede decir con una caja. Sin ella, la caja de siempre.
+      malla: malla ?? caja(centro, medidas),
       color,
       // Un mueble puede declararse emisivo (#557, la pantalla de una consola):
       // se pinta a intensidad plena, sin sombreado por normal.
@@ -558,22 +590,29 @@ export function crearSalaCaja({
       ? [
           ...columnas.flatMap((rect) => piezasPielColumna(rect, ALTURA)),
           ...mobiliario
-            .filter((pieza) => pieza.piel !== false)
+            // Un prop con malla propia nunca lleva piel: la piel de #550 viste
+            // CAJAS, y envolver una silla en chapa remachada de su envolvente le
+            // taparía justo la silueta por la que se modeló.
+            .filter((pieza) => pieza.piel !== false && !pieza.malla)
             .flatMap(({ centro, medidas }) => piezasPielObjeto({ centro, medidas })),
         ]
       : []),
     ...rodapie(ancho, profundidad),
     { malla: caja([ancho / 2, -0.05, profundidad / 2], [ancho, 0.1, profundidad]), color: SECCION.sala },
-    { malla: caja([ancho / 2, ALTURA + 0.05, profundidad / 2], [ancho, 0.1, profundidad]), color: SECCION.mamparo },
+    // Sin techo al aire libre (#579): ni la losa, ni su piel, ni las luminarias
+    // que cuelgan de ella. Una terraza con techo es un cuarto.
+    ...(alAireLibre
+      ? []
+      : [{ malla: caja([ancho / 2, ALTURA + 0.05, profundidad / 2], [ancho, 0.1, profundidad]), color: SECCION.mamparo }]),
     // Suelo y techo (#552). Van con su propio interruptor, como el resto de la
     // piel, y detrás de sus dos losas: son chapa encima, no las sustituyen.
     ...(pielSuelo
       ? [
           ...piezasPielSuelo({ ancho, profundidad, semilla: semillaMural }),
-          ...piezasPielTecho({ ancho, profundidad, altura: ALTURA }),
+          ...(alAireLibre ? [] : piezasPielTecho({ ancho, profundidad, altura: ALTURA })),
         ]
       : []),
-    ...piezasLuminarias({ ancho, profundidad, altura: ALTURA }),
+    ...(alAireLibre ? [] : piezasLuminarias({ ancho, profundidad, altura: ALTURA })),
   ]);
 
   const planta = crearPlanta({ ancho, profundidad, obstaculos: [...columnas, ...obstaculosMobiliario] });

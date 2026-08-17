@@ -127,6 +127,29 @@ export const PUERTA_SALIDA = Object.freeze({
 export const PUERTA_OESTE = PUERTA_SALIDA;
 
 /**
+ * Paso a la terraza (#579), en el muro OESTE y junto al sur.
+ *
+ * Se declara aquí, con el resto de huecos de la cantina, y no en la terraza: el
+ * hueco lo abre la sala en cuyo muro está. Declararlo desde fuera es exactamente
+ * como se llegó a tener el disparador y el hueco de la salida desalineados casi
+ * un metro.
+ *
+ * **Por qué no en el muro norte, que es el que está despejado.** Porque estar
+ * despejado no es estar ALCANZABLE: los 126 muebles parten el suelo de la
+ * cantina en zonas incomunicadas, y la franja del norte no comunica con la
+ * franja del sur, que es donde se aparece al entrar. Una puerta allí sería otra
+ * «puerta que no da a ninguna parte» — se vería y no se podría llegar a ella.
+ * Va, por tanto, en la única banda que conecta con la entrada: la del sur, en el
+ * muro oeste. Lo comprueba la prueba de inundación de la planta.
+ */
+export const PUERTA_TERRAZA = Object.freeze({
+  x: 0,
+  z: PROFUNDIDAD - 2.4 - 0.6,
+  ancho: 1.2,
+  profundidad: ANCHO_PUERTA_CANTINA,
+});
+
+/**
  * Ventanales al espacio, en el muro del FONDO (sur).
  *
  * La primera versión los puso en el muro este, el más largo, y el QA no vio nada:
@@ -149,7 +172,7 @@ export const VENTANAS = Object.freeze([
 const SALA = crearSalaCaja({
   ancho: ANCHO,
   profundidad: PROFUNDIDAD,
-  puertas: [{ rect: PUERTA_SALIDA }],
+  puertas: [{ rect: PUERTA_SALIDA }, { rect: PUERTA_TERRAZA }],
   ventanas: VENTANAS,
   mobiliario: mobiliario(),
   // Los muros salen de la paleta de la CANTINA, no de la del casco: la sala

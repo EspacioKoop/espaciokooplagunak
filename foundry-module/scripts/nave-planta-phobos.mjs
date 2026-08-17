@@ -243,6 +243,7 @@ export function porId(salas = SALAS_PHOBOS) {
  * rejilla nativa, y eso obligaría a cada pintor a conocer el caso raro.
  */
 export const ID_CANTINA = "cantina";
+export const ID_TERRAZA = "terraza";
 const SOSTIENE_LA_CANTINA = "acceso-cantina";
 
 export function celdasConCantina(salas = SALAS_PHOBOS) {
@@ -254,6 +255,19 @@ export function celdasConCantina(salas = SALAS_PHOBOS) {
       x: sostiene.celda.x,
       y: sostiene.celda.y - 1,
       w: sostiene.celda.w,
+      h: 1,
+      sistema: null,
+    });
+    // La terraza cuelga a su vez del costado OESTE de la cantina (#579), que es
+    // por donde tiene su puerta. Va en el plano por la misma razón que la
+    // cantina: se puede andar por ella, y un minimapa que no dibuja una sala en
+    // la que puedes estar miente justo cuando más se necesita. Ocupa una celda
+    // entera aunque sea menor que una sala: el plano orienta, no mide.
+    celdas.push({
+      id: ID_TERRAZA,
+      x: sostiene.celda.x - 1,
+      y: sostiene.celda.y - 1,
+      w: 1,
       h: 1,
       sistema: null,
     });

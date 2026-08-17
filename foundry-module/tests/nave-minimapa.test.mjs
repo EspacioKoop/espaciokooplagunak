@@ -5,13 +5,18 @@ import { celdasMinimapa, estaEnElPlano, modeloMinimapa } from "../scripts/nave-m
 import { SALAS_PHOBOS } from "../scripts/nave-planta-phobos.mjs";
 import { CATALOGO_ANDAR } from "../scripts/nave-catalogo-andar.mjs";
 
-test("el plano son las salas REALES del Phobos, más la cantina", () => {
+test("el plano son las salas REALES del Phobos, más la cantina y su terraza", () => {
   // La razón de que este módulo exista en vez de reusar `seccion-nave.mjs`: la
   // sección declara seis salas inventadas y la nave que se recorre tiene catorce.
   // Un minimapa sacado de la sección te situaría en un plano que no es el tuyo.
   const celdas = celdasMinimapa();
-  assert.equal(celdas.length, SALAS_PHOBOS.length + 1, "las trece del interior nativo, más la cantina");
+  assert.equal(
+    celdas.length,
+    SALAS_PHOBOS.length + 2,
+    "las trece del interior nativo, más la cantina y la terraza (#579)",
+  );
   assert.ok(celdas.some((c) => c.id === "cantina"));
+  assert.ok(celdas.some((c) => c.id === "terraza"));
 });
 
 test("toda estancia por la que se anda aparece en el plano", () => {

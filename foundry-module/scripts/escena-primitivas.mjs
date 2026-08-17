@@ -1,0 +1,177 @@
+// Las formas con las que se construye TODO lo 3D del módulo (#589).
+//
+// POR QUÉ EXISTE. `caja` estaba copiada tres veces —`cantina-escena.mjs`,
+// `minijuegos/poker-3d.mjs`, `minijuegos/blackjack-3d.mjs`— y la playa la
+// importaba de la cantina, o sea, un exterior dependiendo del bar de la nave.
+// Con una escena más generada, esa copia se vuelve cuatro. Es el mismo problema
+// que #550 declaró inaceptable para la piel: si cada superficie elige su tamaño
+// de detalle, la nave parece montada con piezas de tres maquetas.
+//
+// Y HAY UNA RAZÓN MÁS FUERTE QUE LA DUPLICACIÓN. Todo el módulo se dibujaba con
+// cajas, y una caja es un prisma de CUATRO lados: un poste de madera salía con
+// cuatro aristas vivas y se leía como una viga; un conducto de reactor, como un
+// pilar cuadrado; el pie de una mesa, como un ladrillo. Cuatro lados es el único
+// número que no puede parecer redondo. Con ocho —y algo de conicidad— la misma
+// pieza pasa a leerse como lo que dice ser, y cuesta unas pocas caras.
+//
+// No es «más polígonos, más realismo». Es que faltaba la forma.
+//
+// TODAS DEVUELVEN `{vertices, caras}`, la malla que consume `componerEscena`.
+// Las caras van en sentido ANTIHORARIO VISTAS DESDE FUERA, que es lo que el
+// motor necesita para descartar las de espaldas: una cara con el bobinado al
+// revés no se dibuja mal, no se dibuja. Pasó de verdad —la ladera de la duna
+// desapareció entera y solo quedaron sus rizos flotando sobre el cielo— y por
+// eso las primitivas se escriben una vez, aquí, con su prueba.
+//
+// Puras: ni Foundry, ni DOM, ni color. El color lo pone quien las usa.
+
+/**
+ * Una caja alineada con los ejes, por su centro y sus medidas.
+ *
+ * La forma de trabajo de casi todo el módulo, y sigue siendo la correcta para lo
+ * que de verdad es una caja: un armario, un cajón de registro, un tablero.
+ */
+export function caja([cx, cy, cz], [ancho, alto, fondo]) {
+  const x = ancho / 2;
+  const y = alto / 2;
+  const z = fondo / 2;
+  const vertices = [
+    [cx - x, cy - y, cz - z],
+    [cx + x, cy - y, cz - z],
+    [cx + x, cy + y, cz - z],
+    [cx - x, cy + y, cz - z],
+    [cx - x, cy - y, cz + z],
+    [cx + x, cy - y, cz + z],
+    [cx + x, cy + y, cz + z],
+    [cx - x, cy + y, cz + z],
+  ];
+  const caras = [
+    [0, 3, 2, 1], // frente (−z)
+    [4, 5, 6, 7], // fondo (+z)
+    [0, 4, 7, 3], // izquierda
+    [1, 2, 6, 5], // derecha
+    [3, 7, 6, 2], // techo
+    [0, 1, 5, 4], // suelo
+  ];
+  return { vertices, caras };
+}
+
+/**
+ * Un prisma de `lados` caras, opcionalmente afilado hacia arriba.
+ *
+ * Se apoya en `centro` —que es su base, no su centro de masas— porque colocar
+ * algo que se planta en el suelo es decir dónde toca el suelo, no dónde está su
+ * mitad.
+ *
+ * `radioArriba` distinto de `radioAbajo` da conicidad: un poste que se estrecha,
+ * una boya que se afila, y con radio cero arriba, un cono entero. Es el mismo
+ * generador porque son la misma forma con otro número.
+ *
+ * OCHO LADOS DE SERIE. Con seis todavía se cuentan las aristas; con doce ya no se
+ * gana nada visible y se paga en caras. Ocho es donde una pieza se lee como
+ * redonda conservando las facetas de la época, que es exactamente el criterio con
+ * el que se eligió la resolución de la esfera.
+ */
+export function prisma([cx, cy, cz], { radioAbajo, radioArriba = radioAbajo, alto, lados = 8, giro = 0 }) {
+  const vertices = [];
+  for (const [nivel, radio] of [
+    [0, radioAbajo],
+    [alto, radioArriba],
+  ]) {
+    for (let j = 0; j < lados; j += 1) {
+      const t = giro + (j / lados) * 2 * Math.PI;
+      vertices.push([cx + radio * Math.cos(t), cy + nivel, cz + radio * Math.sin(t)]);
+    }
+  }
+  const caras = [];
+  for (let j = 0; j < lados; j += 1) {
+    const k = (j + 1) % lados;
+    // Hacia AFUERA: subiendo por el vértice j y bajando por el k. Al revés, el
+    // prisma se dibuja del revés —se le ve el interior y desaparece su
+    // silueta—, que es el mismo fallo que borró la ladera de la duna.
+    caras.push([j, lados + j, lados + k, k]);
+  }
+  // La tapa de arriba se cierra. La de abajo no: se apoya en el suelo y no se ve
+  // nunca, y una cara que no se ve es una cara que se paga por nada.
+  caras.push(Array.from({ length: lados }, (_, j) => lados + (lados - 1 - j)));
+  return { vertices, caras };
+}
+
+/**
+ * Una esfera facetada.
+ *
+ * POCOS MERIDIANOS A PROPÓSITO. El motor sombrea plano por cara, así que lo que
+ * hace que una esfera gire es la escalera de tonos entre facetas: con demasiadas
+ * la escalera desaparece y queda un disco liso. Ocho por seis es donde se lee
+ * como esfera y todavía tiene facetas, que es el aspecto de la época.
+ */
+export function esfera([cx, cy, cz], radio, meridianos = 8, paralelos = 6) {
+  const vertices = [];
+  const caras = [];
+  for (let i = 0; i <= paralelos; i += 1) {
+    const phi = (i / paralelos) * Math.PI;
+    for (let j = 0; j < meridianos; j += 1) {
+      const theta = (j / meridianos) * 2 * Math.PI;
+      vertices.push([
+        cx + radio * Math.sin(phi) * Math.cos(theta),
+        cy + radio * Math.cos(phi),
+        cz + radio * Math.sin(phi) * Math.sin(theta),
+      ]);
+    }
+  }
+  const indice = (i, j) => i * meridianos + (j % meridianos);
+  for (let i = 0; i < paralelos; i += 1) {
+    for (let j = 0; j < meridianos; j += 1) {
+      caras.push([indice(i, j), indice(i + 1, j), indice(i + 1, j + 1), indice(i, j + 1)]);
+    }
+  }
+  return { vertices, caras };
+}
+
+/** Un anillo plano —inclinable— alrededor de un centro. */
+export function anillo([cx, cy, cz], interior, exterior, lados = 16, inclinacion = 0.22) {
+  const vertices = [];
+  const caras = [];
+  for (let j = 0; j < lados; j += 1) {
+    const t = (j / lados) * 2 * Math.PI;
+    const [co, si] = [Math.cos(t), Math.sin(t)];
+    for (const r of [interior, exterior]) {
+      vertices.push([cx + r * co, cy + r * si * inclinacion, cz + r * si]);
+    }
+  }
+  for (let j = 0; j < lados; j += 1) {
+    caras.push([(j * 2) % (lados * 2), (j * 2 + 1) % (lados * 2), (j * 2 + 3) % (lados * 2), (j * 2 + 2) % (lados * 2)]);
+  }
+  return { vertices, caras };
+}
+
+/**
+ * Un cuadrilátero horizontal a la altura `y`, por sus esquinas en planta.
+ *
+ * Para todo lo que va pegado al suelo y no tiene grosor que enseñar: una sombra
+ * proyectada, un reflejo, una mancha de humedad. Los puntos se dan en orden
+ * antihorario visto desde arriba.
+ */
+export function losa(puntos, y) {
+  return {
+    vertices: puntos.map(([px, pz]) => [px, y, pz]),
+    caras: [[0, 1, 2, 3]],
+  };
+}
+
+/**
+ * Una superficie de cuatro esquinas a alturas cualesquiera.
+ *
+ * Es la que permite una pendiente DE VERDAD en vez de una escalera de losas
+ * horizontales. La duna de la playa fueron terrazas hasta que se vio de cerca:
+ * seis centímetros de escalón no se ven de frente, pero de canto y a ras de
+ * suelo se alinean y aquello se lee como una escalinata de piedra.
+ */
+export function rampa([a, b, c, d]) {
+  return { vertices: [a, b, c, d], caras: [[0, 1, 2, 3]] };
+}
+
+/** Traslada una malla. */
+export function trasladar(malla, [dx, dy, dz]) {
+  return { ...malla, vertices: malla.vertices.map(([x, y, z]) => [x + dx, y + dy, z + dz]) };
+}

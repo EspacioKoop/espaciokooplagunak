@@ -51,7 +51,7 @@
 // Puro y sin color propio (#351): los colores salen de `PLAYA` en `paleta.mjs`.
 
 import { PLAYA } from "./paleta.mjs";
-import { caja } from "./cantina-escena.mjs";
+import { anillo, caja, esfera, losa, rampa } from "./escena-primitivas.mjs";
 import { componerEscena, fundirEscenas, mezclar } from "./retro3d.mjs";
 import { resolverCamara } from "./nave-camara.mjs";
 import { poligonosOtrosJugadores } from "./nave-avatares-render.mjs";
@@ -417,16 +417,17 @@ function laderaDeDuna() {
   const z1 = PROFUNDIDAD + 8;
   for (let x = CAMINO_DESDE; x > DUNA_HASTA; x -= PASO_DUNA) {
     const dentro = x - PASO_DUNA;
+    // El bobinado importa: esta cara se descartó ENTERA por tenerlo al revés y la
+    // duna desapareció, dejando solo sus rizos flotando sobre el cielo. Por eso
+    // la primitiva vive en `escena-primitivas.mjs` con su regla escrita, en vez
+    // de escribirse a mano cada vez que hace falta una superficie inclinada.
     piezas.push({
-      malla: {
-        vertices: [
-          [dentro, terrenoEn(dentro), z0],
-          [x, terrenoEn(x), z0],
-          [x, terrenoEn(x), z1],
-          [dentro, terrenoEn(dentro), z1],
-        ],
-        caras: [[0, 1, 2, 3]],
-      },
+      malla: rampa([
+        [dentro, terrenoEn(dentro), z0],
+        [dentro, terrenoEn(dentro), z1],
+        [x, terrenoEn(x), z1],
+        [x, terrenoEn(x), z0],
+      ]),
       color: PLAYA.duna,
     });
   }
@@ -922,14 +923,6 @@ function monticuloDelReloj() {
 
 /* ---- sombras, sol y reflejo ------------------------------------------------ */
 
-/** Un cuadrilátero horizontal a la altura `y`, con los vértices que se le den. */
-function losa(puntos, y) {
-  return {
-    vertices: puntos.map(([px, pz]) => [px, y, pz]),
-    caras: [[0, 1, 2, 3]],
-  };
-}
-
 /**
  * La sombra que proyecta una caja sobre la arena.
  *
@@ -983,66 +976,6 @@ function sombraDeProp(piezas) {
     centro: alta.centro,
     medidas: [anchoTotal, alta.centro[1] + alta.medidas[1] / 2, fondoTotal],
   });
-}
-
-/**
- * Una esfera facetada, del tamaño de malla que sabe leer el motor.
- *
- * POCOS MERIDIANOS A PROPÓSITO. Una esfera de mil caras no se vería más redonda:
- * el motor sombrea PLANO por cara, así que lo que da la vuelta es la escalera de
- * tonos entre facetas, y con demasiadas la escalera desaparece y queda un disco
- * liso. Ocho por seis es donde una esfera se lee como esfera y sigue teniendo
- * facetas visibles, que es exactamente el aspecto de la época.
- *
- * Y es la primitiva que hacía falta: hasta ahora TODO el módulo se dibujaba con
- * cajas. Un planeta no se puede fingir con una caja.
- */
-function esfera([cx, cy, cz], radio, meridianos = 8, paralelos = 6) {
-  const vertices = [];
-  const caras = [];
-  for (let i = 0; i <= paralelos; i += 1) {
-    const phi = (i / paralelos) * Math.PI;
-    for (let j = 0; j < meridianos; j += 1) {
-      const theta = (j / meridianos) * 2 * Math.PI;
-      vertices.push([
-        cx + radio * Math.sin(phi) * Math.cos(theta),
-        cy + radio * Math.cos(phi),
-        cz + radio * Math.sin(phi) * Math.sin(theta),
-      ]);
-    }
-  }
-  const indice = (i, j) => i * meridianos + (j % meridianos);
-  for (let i = 0; i < paralelos; i += 1) {
-    for (let j = 0; j < meridianos; j += 1) {
-      // Antihorario visto desde fuera, que es lo que `componerEscena` necesita
-      // para descartar las caras de espaldas.
-      caras.push([indice(i, j), indice(i + 1, j), indice(i + 1, j + 1), indice(i, j + 1)]);
-    }
-  }
-  return { vertices, caras };
-}
-
-/** Un anillo plano alrededor de un centro, en cuadriláteros. */
-function anillo([cx, cy, cz], interior, exterior, lados = 16, inclinacion = 0.22) {
-  const vertices = [];
-  const caras = [];
-  for (let j = 0; j < lados; j += 1) {
-    const t = (j / lados) * 2 * Math.PI;
-    const [co, si] = [Math.cos(t), Math.sin(t)];
-    for (const r of [interior, exterior]) {
-      // Inclinado: un anillo de canto perfecto desaparece, y uno de plano parece
-      // un plato. La inclinación es lo que lo hace leerse como órbita.
-      vertices.push([cx + r * co, cy + r * si * inclinacion, cz + r * si]);
-    }
-  }
-  for (let j = 0; j < lados; j += 1) {
-    const a = (j * 2) % (lados * 2);
-    const b = (j * 2 + 1) % (lados * 2);
-    const c = (j * 2 + 3) % (lados * 2);
-    const d = (j * 2 + 2) % (lados * 2);
-    caras.push([a, b, c, d]);
-  }
-  return { vertices, caras };
 }
 
 /**

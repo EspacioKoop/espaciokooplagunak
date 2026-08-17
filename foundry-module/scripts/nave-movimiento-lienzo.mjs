@@ -44,6 +44,7 @@ import { alternarModo, PRIMERA } from "./nave-camara.mjs";
  * contra un radio y luego moverse con otro (QA 2026-08-08).
  */
 export const RADIO_ANDAR = 0.35;
+import { interaccionAlAlcance } from "./nave-interaccion.mjs";
 import { mover, puertaTocada } from "./nave-movimiento.mjs";
 import { pintarEscenaConProfundidad } from "./retro3d-lienzo.mjs";
 
@@ -60,8 +61,8 @@ const VELOCIDAD_GIRO = Math.PI * 0.6; // radianes por segundo
  *   planta: object,
  *   puertas?: Array<{rect:object, destino:object}>,
  *   alTocarPuerta?: (destino:object) => void,
- *   consolas?: Array<{rect:object, puesto:string}>,
- *   alTocarConsola?: (puesto:string) => void,
+ *   interacciones?: Array<object>,
+ *   alAlcanzarInteraccion?: (interaccion:object) => void,
  *   x?: number, z?: number, y?: number, yaw?: number,
  *   velocidad?: number, radio?: number, velocidadGiro?: number,
  *   fondo?: string|null,
@@ -108,13 +109,14 @@ export function arrancarAndar(lienzo, opciones = {}) {
   let componer = opciones.componer;
   let puertas = Array.isArray(opciones.puertas) ? opciones.puertas : [];
   let alTocarPuerta = typeof opciones.alTocarPuerta === "function" ? opciones.alTocarPuerta : null;
-  let consolas = Array.isArray(opciones.consolas) ? opciones.consolas : [];
-  let alTocarConsola = typeof opciones.alTocarConsola === "function" ? opciones.alTocarConsola : null;
-  // Flanco de entrada, no nivel (#509): una consola no teletransporta, así
+  let interacciones = Array.isArray(opciones.interacciones) ? opciones.interacciones : [];
+  let alAlcanzarInteraccion =
+    typeof opciones.alAlcanzarInteraccion === "function" ? opciones.alAlcanzarInteraccion : null;
+  // Flanco de entrada, no nivel (#509): una interacción no teletransporta, así
   // que seguir de pie delante de ella no puede seguir disparando el aviso en
   // cada fotograma —abriría el espacio de puesto sesenta veces por
-  // segundo—. Solo cambia de `null` a una consola, o de una consola a otra.
-  let consolaTocadaAntes = null;
+  // segundo—. Solo cambia de `null` a un punto, o de un punto a otro.
+  let interaccionAlcanzadaAntes = null;
   // Mismo flanco de entrada para las puertas (QA: andar hacia atrás cerca de
   // una puerta teletransportaba una y otra vez sin parar). Antes se
   // comprobaba a NIVEL —`cambiarEstancia` en cada fotograma que el círculo
@@ -182,8 +184,8 @@ export function arrancarAndar(lienzo, opciones = {}) {
     // Se comprueba DESPUÉS de mover, con la posición ya resuelta: una puerta
     // no bloquea (`mover` no la conoce), así que su detección no puede
     // adelantarse al desplazamiento sin leer una posición que todavía no es
-    // la real de este fotograma. Flanco de entrada, igual que las consolas:
-    // cruzar es un evento discreto, no algo que se compruebe sesenta veces
+    // la real de este fotograma. Flanco de entrada, igual que los puntos de
+    // interacción: cruzar es un evento discreto, no algo que se compruebe
     // por segundo mientras el círculo siga solapando el rectángulo.
     if (alTocarPuerta && ahoraMs >= bloqueadoPuertaHasta) {
       const puerta = puertaTocada(x, z, radio, puertas);
@@ -193,15 +195,15 @@ export function arrancarAndar(lienzo, opciones = {}) {
       }
     }
 
-    // Misma detección de contacto que una puerta (`puertaTocada` no le exige
-    // a su rectángulo tener `destino` — ver `nave-estancias.declararEstancia`
-    // para el porqué de compartir la forma), pero solo se avisa en el flanco
-    // de entrada.
-    if (alTocarConsola) {
-      const consola = puertaTocada(x, z, radio, consolas);
-      if (consola !== consolaTocadaAntes) {
-        if (consola) alTocarConsola(consola.puesto);
-        consolaTocadaAntes = consola;
+    // Los puntos de interacción de la sala (#582): quién está al alcance lo
+    // decide `nave-interaccion.mjs` —incluido el desempate cuando hay dos—, y
+    // aquí solo se avisa en el flanco de entrada. Este bucle no sabe qué es una
+    // consola ni qué es una caña de pescar: transporta la `accion` declarada.
+    if (alAlcanzarInteraccion) {
+      const interaccion = interaccionAlAlcance(x, z, radio, interacciones);
+      if (interaccion !== interaccionAlcanzadaAntes) {
+        if (interaccion) alAlcanzarInteraccion(interaccion);
+        interaccionAlcanzadaAntes = interaccion;
       }
     }
 
@@ -259,7 +261,7 @@ export function arrancarAndar(lienzo, opciones = {}) {
       planta: nuevaPlanta,
       componer: nuevoComponer,
       puertas: nuevasPuertas,
-      consolas: nuevasConsolas,
+      interacciones: nuevasInteracciones,
       x: nx,
       z: nz,
       yaw: nYaw,
@@ -267,12 +269,12 @@ export function arrancarAndar(lienzo, opciones = {}) {
       if (nuevaPlanta) planta = nuevaPlanta;
       if (typeof nuevoComponer === "function") componer = nuevoComponer;
       puertas = Array.isArray(nuevasPuertas) ? nuevasPuertas : [];
-      consolas = Array.isArray(nuevasConsolas) ? nuevasConsolas : [];
-      // La sala nueva empieza sin nadie tocando ninguna consola ni ninguna
-      // puerta: si el punto de llegada cayera sobre una por casualidad, el
+      interacciones = Array.isArray(nuevasInteracciones) ? nuevasInteracciones : [];
+      // La sala nueva empieza sin nadie tocando ningún punto ni ninguna
+      // puerta: si el punto de llegada cayera sobre uno por casualidad, el
       // flanco de entrada de ESA sala tiene que poder dispararse, no darse
       // por ya visto.
-      consolaTocadaAntes = null;
+      interaccionAlcanzadaAntes = null;
       puertaTocadaAntes = null;
       // Ningún cruce de puerta puede dispararse hasta pasado `GRACIA_PUERTA_MS`:
       // el punto de llegada suele caer cerca de la puerta de vuelta (ver

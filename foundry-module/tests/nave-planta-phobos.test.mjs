@@ -3,6 +3,7 @@ import test from "node:test";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { consolasDe } from "./ayuda-consolas.mjs";
 
 import {
   ANCHO_PUERTA,
@@ -268,7 +269,7 @@ test("la consola de cada sala con sistema abre el puesto de ESE sistema", () => 
     impulso: "navigation",
   };
   for (const [id, puesto] of Object.entries(esperado)) {
-    const consolas = CATALOGO_ANDAR.obtener(id).consolas;
+    const consolas = consolasDe(CATALOGO_ANDAR.obtener(id));
     assert.equal(consolas.length, 1, `${id} debería tener una consola`);
     assert.equal(consolas[0].puesto, puesto);
   }
@@ -278,7 +279,7 @@ test("la zona de consola no pisa ninguna puerta de su sala", () => {
   // Si la consola cae sobre una puerta, acercarse a ella te cambiaría de sala en
   // vez de abrir el puesto.
   for (const [id, estancia] of todasLasEstancias()) {
-    for (const consola of estancia.consolas) {
+    for (const consola of consolasDe(estancia)) {
       const c = consola.rect;
       for (const puerta of estancia.puertas) {
         const p = puerta.rect;
@@ -301,7 +302,7 @@ test("ninguna consola cae encima del punto de entrada de su sala", () => {
   // inventada: acercarse a la consola tiene que ser un GESTO. Si la entrada ya
   // cae dentro de su zona, entrar en la sala abriría el puesto solo.
   for (const [id, estancia] of todasLasEstancias()) {
-    for (const { rect } of estancia.consolas) {
+    for (const { rect } of consolasDe(estancia)) {
       const dentro =
         estancia.entrada.x >= rect.x &&
         estancia.entrada.x <= rect.x + rect.ancho &&
@@ -314,7 +315,7 @@ test("ninguna consola cae encima del punto de entrada de su sala", () => {
 
 test("las salas de tránsito y la cantina no tienen consola: no son puesto", () => {
   for (const id of ["cantina", "acceso-cantina", "camarotes"]) {
-    assert.deepEqual(CATALOGO_ANDAR.obtener(id).consolas, [], `${id} no debería tener consola`);
+    assert.deepEqual(consolasDe(CATALOGO_ANDAR.obtener(id)), [], `${id} no debería tener consola`);
   }
 });
 
@@ -507,7 +508,7 @@ test("y también se llega a la CONSOLA, y desde donde te dejan las vecinas (#560
       }
     }
 
-    for (const consola of estancia.consolas ?? []) {
+    for (const consola of consolasDe(estancia)) {
       let llega = false;
       for (const celda of vistos) {
         const [a, b] = celda.split(",");

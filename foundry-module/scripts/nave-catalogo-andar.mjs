@@ -20,6 +20,7 @@
 // Puro: compone objetos y funciones que ya son puras.
 
 import { crearCatalogoEstancias } from "./nave-estancias.mjs";
+import { declararInteracciones } from "./nave-interaccion.mjs";
 import { SECCION } from "./paleta.mjs";
 import { puntoLibreCerca } from "./nave-movimiento.mjs";
 import { crearSalaCaja } from "./nave-sala-caja.mjs";
@@ -264,7 +265,19 @@ function definirSala(sala, salientes) {
     // primera apertura, porque cualquier llegada real trae su `x`/`z`.
     entrada: { x: ancho / 2, z: profundidad / 2, yaw: 0 },
     puertas,
-    consolas: puestoDeLaSala ? [{ rect: rectConsola, puesto: puestoDeLaSala }] : [],
+    // La consola es un punto de interacción como cualquier otro desde #582: su
+    // zona sigue siendo el mismo rectángulo de siempre —el disparador no cambia—
+    // y lo que antes era el campo `puesto` viaja ahora dentro de `accion`, que
+    // es lo único que el bucle de andar transporta sin interpretar.
+    interacciones: puestoDeLaSala
+      ? declararInteracciones([
+          {
+            id: `consola-${puestoDeLaSala}`,
+            zona: rectConsola,
+            accion: { tipo: "consola", puesto: puestoDeLaSala },
+          },
+        ])
+      : [],
   };
 }
 

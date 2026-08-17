@@ -44,11 +44,23 @@ function puntoMasCercano(x, z, rect) {
   };
 }
 
-function colisionaConRect(x, z, radio, rect) {
+/**
+ * Distancia de `(x, z)` al borde de `rect`, o 0 si el punto está dentro.
+ *
+ * Se exporta —y no solo la comprobación booleana de más abajo— porque «¿toca?»
+ * y «¿cuánto le falta?» son la misma cuenta, y el segundo dato hace falta fuera:
+ * `nave-interaccion.mjs` ordena por cercanía los puntos que sí están al alcance
+ * (#582). Recalcularlo allí sería tener dos veces la misma geometría, que es
+ * exactamente cómo la puerta de la cantina acabó desalineada casi un metro de su
+ * hueco (ver `nave-catalogo-andar.mjs`).
+ */
+export function distanciaARect(x, z, rect) {
   const cerca = puntoMasCercano(x, z, rect);
-  const dx = x - cerca.x;
-  const dz = z - cerca.z;
-  return dx * dx + dz * dz < radio * radio;
+  return Math.hypot(x - cerca.x, z - cerca.z);
+}
+
+function colisionaConRect(x, z, radio, rect) {
+  return distanciaARect(x, z, rect) < radio;
 }
 
 /** ¿Un círculo de `radio` centrado en `(x, z)` cabe en la planta? */

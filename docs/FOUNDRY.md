@@ -353,6 +353,44 @@ El director de juego podrá pausar o acelerar el tiempo, introducir eventos y de
 6. El núcleo aplica y persiste las consecuencias; Foundry actualiza diarios, recursos y estados para reflejarlas en la mesa.
 7. La sesión puede interrumpirse y reanudarse sin duplicar eventos.
 
+### El contrato de escena (#589)
+
+Hoy se deduce leyendo la playa. Escrito, un agente lo cumple sin leerse el módulo
+entero — que es exactamente la diferencia entre una escena nueva en un PR y una
+escena nueva en cinco.
+
+Un módulo de escena exporta cinco cosas, y el catálogo de `Andar`
+(`nave-catalogo-andar.mjs`) no le pide ninguna más:
+
+| Qué | Forma | Para qué |
+|---|---|---|
+| `planta` | lo que devuelve `crearPlanta({ ancho, profundidad, obstaculos })` | por dónde se puede andar |
+| `componer` | `(x, y, z, yaw, opciones) => escena` | pintar el cuadro desde donde está quien mira |
+| `entrada` | `{ x, z, yaw }` | dónde se aparece, y mirando a qué |
+| `interacciones` | lo que devuelve `declararInteracciones([...])` (#582) | todo lo que se puede tocar, por un solo raíl |
+| `fondo` | un color de `paleta.mjs` | qué hay detrás: mamparo dentro, cielo o vacío fuera |
+
+La firma de `componer` es la de `crearSalaCaja` a propósito: el bucle de andar no
+distingue una sala de un exterior, y esa es la razón de que un exterior no haya
+necesitado tocarlo.
+
+**Lo que una escena NO debería tener que escribir**, porque ya está en el kit:
+
+- formas — `escena-primitivas.mjs`: `caja`, `prisma`, `esfera`, `anillo`, `losa`,
+  `rampa`, `disco`, `trasladar`;
+- exteriores — `escena-exteriores.mjs`: `declararSol` y todo lo que cuelga de él
+  (largo y rumbo de sombra, `sombraDeCaja`, `sombraDeProp`, el disco del sol),
+  más `franja` de terreno, `huellaDe` y `ciclo`;
+- props — `nave-props.mjs`: `definirVocabulario` (#583) y `colocarProp`. Los
+  vocabularios son por ambiente y se MEZCLAN: el de la nave y el de la playa
+  están aparte porque un aerogenerador en el catálogo del Phobos haría largo
+  justo el catálogo que se mantiene corto a propósito.
+
+El criterio de que el kit está terminado (#589) es medible: **una escena nueva de
+complejidad parecida a la playa se entrega en tres PRs o menos, y el último no
+toca ningún módulo compartido**. Mientras la escena N+1 siga necesitando tocar el
+motor, lo que falte va al kit y no a la escena.
+
 ## Arquitectura propuesta
 
 ```text

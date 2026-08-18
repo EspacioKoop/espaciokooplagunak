@@ -66,6 +66,7 @@ import { crearPlanta } from "./nave-movimiento.mjs";
 import { rngSemilla } from "./ventana-nave.mjs";
 import { colocarProp, definirVocabulario } from "./nave-props.mjs";
 import { declararInteracciones } from "./nave-interaccion.mjs";
+import { ciclo, declararSol, franja, huellaDe } from "./escena-exteriores.mjs";
 
 /* ---- medidas de la playa -------------------------------------------------- */
 
@@ -147,30 +148,20 @@ export const VIENTO = Object.freeze([1, 0]); // hacia el este (+x)
  * por delante de quien entra (+z), que es lo que pone el camino de luz del agua
  * en diagonal hacia la esquina en vez de plano contra el horizonte.
  */
-export const SOL = Object.freeze([0.72, 0.34, 0.52]);
+const SOL_PLAYA = declararSol([0.72, 0.34, 0.52]);
+
+export const SOL = SOL_PLAYA.direccion;
 
 /** El tinte que va con ese sol: ámbar en la luz, azul de cielo en la sombra. */
 const TINTE = Object.freeze({ calida: PLAYA.luzSol, fria: PLAYA.sombraCielo });
 
 /**
- * Cuánto se alarga la sombra de algo de un metro de alto.
- *
- * Es `1 / tan(altura del sol)`, sacado del propio `SOL` en vez de escrito a
- * mano: si alguien sube o baja el sol, las sombras se alargan o se acortan solas.
- * Escribirlo aparte es garantizar que un día la luz venga de un sitio y las
- * sombras de otro, que es el fallo que delata una escena antes que ningún otro.
+ * Cuánto se alarga la sombra de algo de un metro de alto, y hacia dónde se
+ * tumba. Los calcula el kit a partir del propio `SOL` (#589): si alguien sube o
+ * baja el sol, las sombras se alargan o se acortan solas.
  */
-export const LARGO_SOMBRA = (() => {
-  const largo = Math.hypot(SOL[0], SOL[1], SOL[2]);
-  const seno = SOL[1] / largo;
-  return Math.sqrt(1 - seno * seno) / seno;
-})();
-
-/** Hacia dónde se tumba una sombra, en planta: el contrario del sol. */
-export const RUMBO_SOMBRA = (() => {
-  const largo = Math.hypot(SOL[0], SOL[2]);
-  return [-SOL[0] / largo, -SOL[2] / largo];
-})();
+export const LARGO_SOMBRA = SOL_PLAYA.largoSombra;
+export const RUMBO_SOMBRA = SOL_PLAYA.rumboSombra;
 
 /* ---- props propios de la playa -------------------------------------------- */
 
@@ -391,24 +382,6 @@ const AEROGENERADORES = Object.freeze([
 ]);
 
 /* ---- el terreno ----------------------------------------------------------- */
-
-/**
- * Una franja de suelo: una losa fina cuya CARA SUPERIOR queda a `alto`.
- *
- * Losa y no plano porque el motor descarta las caras de espaldas, y un plano sin
- * grosor desaparece en cuanto se mira desde el otro lado — la orilla se ve desde
- * los dos.
- */
-function franja({ desde, hasta, z0, z1, alto, color }) {
-  const GRUESO = 0.4;
-  return {
-    malla: caja(
-      [(desde + hasta) / 2, alto - GRUESO / 2, (z0 + z1) / 2],
-      [hasta - desde, GRUESO, z1 - z0],
-    ),
-    color,
-  };
-}
 
 /**
  * La duna, como PENDIENTE de verdad y no como escalera.
@@ -696,11 +669,6 @@ const BANDAS_MAR = (() => {
 /** A qué velocidad corre lo que arrastra el viento, en metros por segundo. */
 const VELOCIDAD_VIENTO = 7.5;
 
-/** Módulo positivo: `%` en JS conserva el signo y con tiempos grandes da saltos. */
-function ciclo(valor, periodo) {
-  return ((valor % periodo) + periodo) % periodo;
-}
-
 /**
  * La arena que corre a ras de suelo.
  *
@@ -938,61 +906,6 @@ function monticuloDelReloj() {
 /* ---- sombras, sol y reflejo ------------------------------------------------ */
 
 /**
- * La sombra que proyecta una caja sobre la arena.
- *
- * El motor no calcula sombras, así que se pintan: es exactamente lo que hacía la
- * máquina de referencia, donde una sombra era un polígono oscuro pegado al suelo
- * y no un cálculo. Y lo que aporta no es sutil — una sombra ATA el objeto al
- * suelo. Sin ella, un poste perfectamente apoyado parece flotar, que es medio
- * motivo de que la primera versión se viera plana.
- *
- * Sale un cuadrilátero y no la silueta exacta: con el sol tan bajo la sombra es
- * larga y estrecha, y a esa proporción la diferencia entre la silueta real y su
- * huella tirada no se ve. Lo que sí se vería es que no estuviera.
- */
-const ALTURA_SOMBRA = 0.012;
-
-function sombraDeCaja({ centro, medidas }) {
-  const [cx, , cz] = centro;
-  const [ancho, alto, fondo] = medidas;
-  const [dx, dz] = RUMBO_SOMBRA;
-  const largo = alto * LARGO_SOMBRA;
-  // El ancho de la sombra se mide PERPENDICULAR a por donde se tumba, o una caja
-  // estrecha vista de canto proyectaría una mancha ancha.
-  const medio = (Math.abs(dz) * ancho + Math.abs(dx) * fondo) / 2;
-  const [px, pz] = [-dz * medio, dx * medio];
-  return losa(
-    [
-      [cx + px, cz + pz],
-      [cx - px, cz - pz],
-      [cx - px + dx * largo, cz - pz + dz * largo],
-      [cx + px + dx * largo, cz + pz + dz * largo],
-    ],
-    ALTURA_SOMBRA,
-  );
-}
-
-/**
- * Qué piezas de un prop proyectan sombra: solo las que tocan el suelo.
- *
- * Una a una, la cabina tiraría cuatro montantes, un techo y tres cristales, y el
- * resultado sería una maraña de rectángulos superpuestos en vez de una sombra.
- * Se toma la pieza más alta de las que arrancan del suelo, que es la que manda
- * en la silueta, y se le da el ancho de la envolvente del prop.
- */
-function sombraDeProp(piezas) {
-  const enPie = piezas.filter(({ centro, medidas }) => centro[1] - medidas[1] / 2 < 0.2);
-  if (enPie.length === 0) return null;
-  const alta = enPie.reduce((a, b) => (a.centro[1] + a.medidas[1] > b.centro[1] + b.medidas[1] ? a : b));
-  const anchoTotal = Math.max(...enPie.map(({ medidas }) => medidas[0]));
-  const fondoTotal = Math.max(...enPie.map(({ medidas }) => medidas[2]));
-  return sombraDeCaja({
-    centro: alta.centro,
-    medidas: [anchoTotal, alta.centro[1] + alta.medidas[1] / 2, fondoTotal],
-  });
-}
-
-/**
  * Los planetas.
  *
  * Son lo que recuerda, sin decir una palabra, que esta playa la mira gente que
@@ -1023,34 +936,6 @@ function piezasPlanetas() {
       ? [{ malla: anillo(centro, medidasAnillo[0], medidasAnillo[1]), color: PLAYA.anillo }]
       : []),
   ]);
-}
-
-/**
- * El disco del sol, sobre el mar y casi tocando el agua.
- *
- * EMISIVO: es lo más claro del cuadro y no puede estar sujeto a la luz — se
- * ilumina a sí mismo, que es literalmente lo que hace un sol. Va lejos, pero
- * dentro del alcance de dibujo, y de cara a la cámara no se puede: el motor no
- * tiene billboards, así que se pone plano contra el plano del horizonte, que es
- * donde se le mira desde la playa.
- */
-const DISTANCIA_SOL = 330;
-
-function discoDelSol() {
-  const largo = Math.hypot(SOL[0], SOL[1], SOL[2]);
-  const [ux, uy, uz] = SOL.map((c) => (c / largo) * DISTANCIA_SOL);
-  const radio = 16;
-  // Un cuadrado alineado con los ejes X/Y, que a esta distancia y con la rejilla
-  // de la época se lee como el disco que es.
-  return {
-    vertices: [
-      [ux - radio, uy - radio, uz],
-      [ux + radio, uy - radio, uz],
-      [ux + radio, uy + radio, uz],
-      [ux - radio, uy + radio, uz],
-    ],
-    caras: [[0, 1, 2, 3]],
-  };
 }
 
 /**
@@ -1189,10 +1074,10 @@ const PIEZAS = Object.freeze([
   ...rizosDeArena(DUNA_HASTA, CAMINO_DESDE, -8, PROFUNDIDAD + 8, PLAYA.rizoDuna),
   // El reguero de sol va sobre el agua y antes que nada de lo que hay en tierra.
   ...caminoDeSol(),
-  { malla: discoDelSol(), color: PLAYA.sol, emisivo: true, lejos: ALCANCE_CIELO },
+  { malla: SOL_PLAYA.disco(), color: PLAYA.sol, emisivo: true, lejos: ALCANCE_CIELO },
   // LAS SOMBRAS ANTES QUE LO QUE LAS PROYECTA: van pegadas al suelo, y así el
   // orden por pintor no tiene que desempatar dos superficies casi coplanares.
-  ...PROPS.map(({ piezas }) => sombraDeProp(piezas))
+  ...PROPS.map(({ piezas }) => SOL_PLAYA.sombraDeProp(piezas))
     .filter(Boolean)
     .map((malla) => ({ malla, color: PLAYA.sombra })),
   ...cables(),
@@ -1223,20 +1108,6 @@ export const INTERACCIONES = declararInteracciones([
     accion: { tipo: "estancia", estancia: "cantina" },
   },
 ]);
-
-/** La huella en planta de un prop colocado, para que no se pueda atravesar. */
-function huellaDe(piezas) {
-  return piezas
-    // Lo que está por encima de la cabeza no estorba al andar: las aspas de un
-    // aerogenerador a 44 m de altura no son un muro.
-    .filter(({ centro, medidas }) => centro[1] - medidas[1] / 2 < 2)
-    .map(({ centro, medidas }) => ({
-      x: centro[0] - medidas[0] / 2,
-      z: centro[2] - medidas[2] / 2,
-      ancho: medidas[0],
-      profundidad: medidas[2],
-    }));
-}
 
 export const PLANTA_PLAYA = crearPlanta({
   ancho: ANCHO,

@@ -286,3 +286,49 @@ export function trasladar(malla, [dx, dy, dz]) {
 export function disco({ radio = 0.3, grosor = 0.16, lados = 10 } = {}) {
   return prisma([0, -grosor / 2, 0], { radioAbajo: radio, alto: grosor, lados, tapaAbajo: true });
 }
+
+/* ---- UV para malla importada ---------------------------------------------- */
+
+/** La normal de una cara, para decidir a qué plano mira. */
+function normalDeCara(vertices, cara) {
+  const [a, b, c] = cara.map((i) => vertices[i]);
+  const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
+  const w = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
+  const n = [u[1] * w[2] - u[2] * w[1], u[2] * w[0] - u[0] * w[2], u[0] * w[1] - u[1] * w[0]];
+  const largo = Math.hypot(...n) || 1;
+  return n.map((k) => k / largo);
+}
+
+/**
+ * UV por proyección TRIPLANAR: cada cara se proyecta sobre el plano al que más
+ * mira.
+ *
+ * ES LA VÍA GENERAL PARA MALLA IMPORTADA (#590), y se eligió comparándola con
+ * las otras dos en una hoja de contactos. Una malla de fuera no trae UV, así que
+ * hay que inventárselas, y hay tres maneras:
+ *
+ *  - PLANA, como una diapositiva sobre un plano fijo: tres líneas, y se estira
+ *    hasta el borrón en todo lo que mire de lado. En una figura de bulto, la
+ *    mitad de la superficie.
+ *  - CILÍNDRICA, envolviendo el eje vertical: perfecta para una columna o un
+ *    ánfora —cuerpos de revolución—, y hay que coser la costura a mano. En algo
+ *    que no es un cilindro aprieta el patrón donde la pieza se estrecha.
+ *  - TRIPLANAR: no se estira en ningún sitio, no hay costura que coser, y no
+ *    supone nada sobre la forma de la pieza. El precio es una junta visible
+ *    donde dos caras vecinas eligen ejes distintos, que a la escala de téxel de
+ *    este motor se confunde con la propia facetación.
+ *
+ * La escala va en metros, igual que en la caja y el prisma: el grano tiene que
+ * medir lo mismo en una estatua que en un tablón, o la escena se lee a dos
+ * tamaños distintos a la vez.
+ */
+export function uvsTriplanar({ vertices, caras }, metrosPorTextura = METROS_POR_TEXTURA) {
+  return caras.map((cara) => {
+    const n = normalDeCara(vertices, cara).map(Math.abs);
+    // A qué plano mira más: se descarta el eje dominante y se proyecta sobre los
+    // otros dos, que es exactamente lo que evita el estirado.
+    const eje = n[0] >= n[1] && n[0] >= n[2] ? 0 : n[1] >= n[2] ? 1 : 2;
+    const [a, b] = eje === 0 ? [2, 1] : eje === 1 ? [0, 2] : [0, 1];
+    return cara.map((i) => [vertices[i][a] / metrosPorTextura, vertices[i][b] / metrosPorTextura]);
+  });
+}

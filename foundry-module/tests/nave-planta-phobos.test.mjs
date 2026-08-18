@@ -30,8 +30,21 @@ const raiz = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
  * dejaría pasar en falso todas las pruebas de abajo, que es justo lo que hizo
  * la primera versión de este archivo.
  */
+/**
+ * Estancias que NO son la nave y que por tanto no entran en las invariantes de
+ * este archivo, que son todas sobre el Phobos.
+ *
+ * La playa (#587) es un banco de pruebas de exteriores al que se entra por
+ * herramienta de GM: no cuelga de ninguna puerta —colgarla de un mamparo sería
+ * contar una historia que nadie ha decidido— y no tiene consolas ni maquinaria.
+ * Exigirle «ser alcanzable andando desde la cantina» sería exigirle ser nave.
+ */
+const FUERA_DE_LA_NAVE = new Set(["playa"]);
+
 function todasLasEstancias() {
-  const pares = CATALOGO_ANDAR.ids.map((id) => [id, CATALOGO_ANDAR.obtener(id)]);
+  const pares = CATALOGO_ANDAR.ids
+    .filter((id) => !FUERA_DE_LA_NAVE.has(id))
+    .map((id) => [id, CATALOGO_ANDAR.obtener(id)]);
   assert.ok(pares.length > 5, "el catálogo llega vacío: el recorrido está roto");
   return pares;
 }

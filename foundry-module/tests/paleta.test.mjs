@@ -38,6 +38,11 @@ const MODULOS_DE_ARTE = [
   // Y la capa 2D que va encima: un velo ES un color, aunque venga con alfa, así
   // que sus `rgba(...)` se componen desde `CANTINA` en vez de escribirse.
   "../scripts/cantina-2d.mjs",
+  // Y la playa (#587), que es una escena entera de arte nuevo —arena, mar,
+  // cielo, cabina— y el primer exterior: entra en la guardia el mismo día que
+  // nace, que es cuando aún no cuesta nada.
+  "../scripts/playa-escena.mjs",
+  "../scripts/nave-props.mjs",
   // La ficha de nave (#354) reusa las siluetas y sus colores tal cual: lo único
   // que podría haber declarado es el relleno del hueco transparente, y ese vive
   // en el codificador PNG porque es un requisito del formato, no un color.

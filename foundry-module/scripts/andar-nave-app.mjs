@@ -18,7 +18,7 @@
 import { MODULE_ID } from "./lagunak-constantes.mjs";
 import { arrancarAndar, RADIO_ANDAR } from "./nave-movimiento-lienzo.mjs";
 import { colisiona } from "./nave-movimiento.mjs";
-import { modeloMinimapa } from "./nave-minimapa.mjs";
+import { estaEnElPlano, modeloMinimapa } from "./nave-minimapa.mjs";
 import { pintarMinimapa } from "./nave-minimapa-lienzo.mjs";
 import { CATALOGO_ANDAR } from "./nave-catalogo-andar.mjs";
 import { puntoDeLlegada, resolverArranque } from "./nave-estancias.mjs";
@@ -300,11 +300,22 @@ function arrancar(raiz, estanciaPedida = null) {
     }));
   }
 
-  /** Minimapa: dónde estás dentro del plano real de la nave. */
+  /**
+   * Minimapa: dónde estás dentro del plano real de la nave.
+   *
+   * Estando FUERA de la nave (#587: la playa de pruebas) se limpia y no se
+   * dibuja nada. Pintar el plano del Phobos sin nadie marcado en él sería peor
+   * que no pintarlo: un plano sin «estás aquí» se lee como que el minimapa se ha
+   * roto, no como que no estás en la nave.
+   */
   function pintarSituacion(estanciaId) {
     const lienzoMapa = raiz?.querySelector?.("[data-andar-minimapa]");
     const ctx = lienzoMapa?.getContext?.("2d");
     if (!ctx) return;
+    if (!estaEnElPlano(estanciaId)) {
+      ctx.clearRect?.(0, 0, lienzoMapa.width ?? 0, lienzoMapa.height ?? 0);
+      return;
+    }
     pintarMinimapa(ctx, modeloMinimapa(estanciaId));
   }
 
@@ -383,6 +394,12 @@ function arrancar(raiz, estanciaPedida = null) {
     // ajena no enseña nada que el relé no dejara ver igualmente por botón.
     alAlcanzarInteraccion: ({ accion }) => {
       if (accion?.tipo === "consola") openWorkspaceApp(accion.puesto);
+      // Un punto que lleva a otra estancia (#587: la cabina de teléfono de la
+      // playa devuelve a la nave). Reusa EXACTAMENTE el camino de una puerta en
+      // vez de tener su propio salto: cambiar de estancia ya está resuelto, y
+      // dos formas de hacerlo es como se desincronizan el rótulo de sala y la
+      // posición publicada.
+      else if (accion?.tipo === "estancia") irAEstancia(accion.estancia);
     },
     fondo: FONDO_ENTRE_SALAS,
     pedirFotograma: (cb) => globalThis.requestAnimationFrame?.(cb),
@@ -416,6 +433,25 @@ function arrancar(raiz, estanciaPedida = null) {
   };
   Hooks.on("updateUser", alCambiarUsuario);
 
+  /**
+   * Aparecer en otra estancia sin cruzar su puerta (#508).
+   *
+   * Función declarada —y no un método del objeto de vuelta— porque tiene DOS
+   * llamadores y uno de ellos la necesita antes de que ese objeto exista: el
+   * reparto de interacciones (#582) se pasa a `arrancarAndar` más arriba. Que
+   * los dos pasen por aquí es justo lo que evita que el rótulo de sala y la
+   * muestra publicada se desincronicen.
+   */
+  function irAEstancia(estanciaId) {
+    const llegada = puntoDeLlegada(CATALOGO_ANDAR, { estancia: estanciaId });
+    if (!llegada) return false;
+    estanciaActual = llegada.estancia;
+    rotularSala(estanciaActual);
+    mando.cambiarEstancia(llegada);
+    ultimoSelloEnviado = publicarPosicion(estanciaActual, mando, ultimoSelloEnviado, true);
+    return true;
+  }
+
   return {
     /** Quién está aquí y dónde, ya interpolado y filtrado por sala. El
      *  contrato de presencia, DELIBERADAMENTE sin avatar: quien necesite
@@ -433,15 +469,7 @@ function arrancar(raiz, estanciaPedida = null) {
      * Devuelve `false` si esa estancia no existe, en vez de dejar al jugador
      * en un sitio que nadie ha declarado.
      */
-    irA(estanciaId) {
-      const llegada = puntoDeLlegada(CATALOGO_ANDAR, { estancia: estanciaId });
-      if (!llegada) return false;
-      estanciaActual = llegada.estancia;
-      rotularSala(estanciaActual);
-      mando.cambiarEstancia(llegada);
-      ultimoSelloEnviado = publicarPosicion(estanciaActual, mando, ultimoSelloEnviado, true);
-      return true;
-    },
+    irA: irAEstancia,
     detener() {
       publicarPosicion(estanciaActual, mando, ultimoSelloEnviado, true);
       globalThis.clearInterval?.(intervaloPublicacion);

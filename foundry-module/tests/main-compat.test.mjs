@@ -334,6 +334,10 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
     // caliente, token, diagnóstico, música, decorado, ficha) por una única
     // puerta con catálogo interno — ver `panel-gm.test.mjs` para ese catálogo.
     "lagunak-panel-gm",
+    // La playa (#587) es lo segundo que ve el GM y nadie más: no es contenido
+    // sino un banco de pruebas del motor de exteriores, y ofrecérselo a la
+    // tripulación en la misma barra que su puesto diría que forma parte del juego.
+    "lagunak-playa",
     // La cantina (#423) la ven todos: es la capa social, y un minijuego al que
     // solo pudiera entrar el GM no sería un minijuego. Es la única puerta: los
     // dos verticales (#308 póker, #413 dados) entran por ella, no por un botón

@@ -64,6 +64,7 @@ test("puntoDeLlegada: usa lo que fija la puerta y rellena lo que falta con la en
     componer: catalogo.obtener("a").componer,
     puertas: [],
     interacciones: [],
+    fondo: null,
     x: 7,
     z: 2,
     yaw: Math.PI,

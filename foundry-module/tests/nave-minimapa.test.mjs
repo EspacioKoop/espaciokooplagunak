@@ -14,11 +14,27 @@ test("el plano son las salas REALES del Phobos, más la cantina", () => {
   assert.ok(celdas.some((c) => c.id === "cantina"));
 });
 
-test("toda estancia por la que se anda aparece en el plano", () => {
+/**
+ * Estancias que son NAVE. La playa de pruebas (#587) no lo es: se entra por
+ * herramienta de GM, no anda por ella la tripulación, y el minimapa se apaga
+ * mientras se está fuera en vez de enseñar un plano del Phobos sin nadie
+ * marcado en él (ver `pintarSituacion` en `andar-nave-app.mjs`).
+ */
+const FUERA_DE_LA_NAVE = new Set(["playa"]);
+const ESTANCIAS_DE_LA_NAVE = CATALOGO_ANDAR.ids.filter((id) => !FUERA_DE_LA_NAVE.has(id));
+
+test("toda estancia de la nave por la que se anda aparece en el plano", () => {
   // Si se pudiera entrar en una sala que el minimapa no dibuja, el minimapa
   // mentiría justo cuando más se necesita: al perderse.
-  for (const id of CATALOGO_ANDAR.ids) {
+  for (const id of ESTANCIAS_DE_LA_NAVE) {
     assert.ok(estaEnElPlano(id), `se puede andar por "${id}" y no sale en el minimapa`);
+  }
+});
+
+test("lo que NO es la nave no sale en el plano, y por eso el minimapa se apaga", () => {
+  for (const id of FUERA_DE_LA_NAVE) {
+    assert.ok(CATALOGO_ANDAR.tiene(id), `${id} debería seguir existiendo como estancia`);
+    assert.equal(estaEnElPlano(id), false);
   }
 });
 

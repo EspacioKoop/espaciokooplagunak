@@ -37,6 +37,7 @@
  *   componer: (x:number, y:number, z:number, yaw:number, opciones?:object) => object,
  *   puertas?: Array<{rect:object, destino:{estancia:string, x?:number, z?:number, yaw?:number}}>,
  *   interacciones?: Array<object>,
+ *   fondo?: string|null,
  *   entrada?: {x:number, z:number, yaw?:number},
  * }} definicion
  */
@@ -52,6 +53,12 @@ export function declararEstancia(definicion) {
     // garantiza que la lista existe, para que nadie tenga que comprobar
     // `?? []` al recorrerla.
     interacciones: Object.freeze([...(definicion.interacciones ?? [])]),
+    // Con qué color se limpia el lienzo detrás de esta estancia (#587). Es
+    // propiedad de la ESTANCIA y no de la ventana porque el gris de mamparo que
+    // vale para «más nave sin renderizar todavía» no vale para un exterior: en
+    // la playa, lo que hay detrás de la geometría es cielo. `null` deja el que
+    // traiga la ventana, que es lo que hacen las trece salas de la nave.
+    fondo: definicion.fondo ?? null,
     entrada: Object.freeze({
       x: definicion.entrada?.x ?? definicion.planta.ancho / 2,
       z: definicion.entrada?.z ?? definicion.planta.profundidad / 2,
@@ -134,6 +141,7 @@ export function puntoDeLlegada(catalogo, destino) {
     componer: estancia.componer,
     puertas: estancia.puertas,
     interacciones: estancia.interacciones,
+    fondo: estancia.fondo,
     x: destino.x ?? estancia.entrada.x,
     z: destino.z ?? estancia.entrada.z,
     yaw: destino.yaw ?? estancia.entrada.yaw,

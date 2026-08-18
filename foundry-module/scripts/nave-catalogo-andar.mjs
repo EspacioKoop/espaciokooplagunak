@@ -28,6 +28,13 @@ import { piezasConsola } from "./nave-consola.mjs";
 import { piezasMobiliarioSala } from "./nave-mobiliario-sala.mjs";
 import { PLANTA_CANTINA_SALA, PUERTA_SALIDA, componerCantinaSala } from "./cantina-sala.mjs";
 import {
+  ENTRADA as ENTRADA_PLAYA,
+  INTERACCIONES as INTERACCIONES_PLAYA,
+  PLANTA_PLAYA,
+  componerPlaya,
+} from "./playa-escena.mjs";
+import { PLAYA } from "./paleta.mjs";
+import {
   ANCHO_PUERTA,
   GROSOR_PUERTA,
   SALAS_PHOBOS,
@@ -310,5 +317,22 @@ export const CATALOGO_ANDAR = crearCatalogoEstancias({
         destino: { estancia: SALA_DE_LA_CANTINA, x: 11, z: 3, yaw: Math.PI },
       },
     ],
+  },
+  // La playa de pruebas (#587). NO cuelga de ninguna puerta de la nave: no es un
+  // sitio al que se llegue andando desde el Phobos, y colgarla de un mamparo
+  // sería contar una historia que nadie ha decidido. Se entra por la herramienta
+  // solo-GM de la barra de escena, y se vuelve por la cabina de teléfono — que
+  // es su único punto de interacción y la prueba de que #582 sirve para algo más
+  // que abrir consolas.
+  playa: {
+    planta: PLANTA_PLAYA,
+    componer: componerPlaya,
+    entrada: ENTRADA_PLAYA,
+    interacciones: INTERACCIONES_PLAYA,
+    // Un exterior no se limpia con gris de mamparo: detrás de la geometría hay
+    // cielo, y sin esto el mar termina contra el color de «más nave todavía sin
+    // renderizar».
+    fondo: PLAYA.cielo,
+    puertas: [],
   },
 });

@@ -40,6 +40,17 @@ const raizScripts = join(raizModulo, "scripts");
  * la entrada es el registro de que se sabe, no un permiso.
  */
 const HUERFANOS_DECLARADOS = Object.freeze({
+  "audio-ficheros.mjs": {
+    cimiento: true,
+    issue: 571,
+    motivo:
+      "Reproductor de ficheros de audio, al lado de la síntesis de #318. No lo " +
+      "importa nadie todavía porque NO HAY NI UN FICHERO DE AUDIO en el " +
+      "repositorio: traerlo es la decisión de #571, y cablear un reproductor a " +
+      "un catálogo vacío no reproduce nada. Existe primero a propósito, porque " +
+      "sin consumidor no tenía sentido ni listar fuentes de audio — que es " +
+      "justo lo que `docs/ASSETS_LIBRES.md` explica en su tabla de categorías.",
+  },
   "horizonte-preset.mjs": {
     cimiento: false,
     issue: 584,

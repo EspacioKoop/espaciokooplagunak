@@ -28,6 +28,7 @@
 // NADA QUE SE PUEDA LEER (#526): son vetas, remaches y motas. Ni letras ni
 // símbolos.
 
+import { METROS_POR_TEXTURA } from "./escena-primitivas.mjs";
 import { canales } from "./paleta.mjs";
 import { mezclar } from "./retro3d.mjs";
 import { rngSemilla } from "./ventana-nave.mjs";
@@ -207,6 +208,27 @@ function tela(base) {
  * real lo necesita.
  */
 const GENERADORES = Object.freeze({ veta, chapa, hormigon, piedra, tela });
+
+/**
+ * A cuántos metros tilea cada material, cuando no es el medio metro de serie.
+ *
+ * NO ES UN AJUSTE FINO, ES PARTE DE QUÉ ES EL MATERIAL. Una plancha de chapa
+ * mide lo que mide —medio metro es una plancha— y una veta de madera también.
+ * Pero las manchas de una piedra no tienen un tamaño «de fábrica»: son tan
+ * grandes como la piedra. A medio metro, una roca de metro y medio enseñaba el
+ * patrón dos veces y media y salía MOTEADA COMO UN CAMUFLAJE, con el dibujo
+ * leyéndose antes que la forma. A metro y medio, la roca enseña una sola mancha
+ * grande, que es lo que se ve en una piedra de verdad.
+ *
+ * El hormigón va al revés por el mismo razonamiento: su árido es fino y fijo, y
+ * a medio metro salía demasiado gordo para una peana.
+ */
+const ESCALAS = Object.freeze({ piedra: 1.5, hormigon: 0.3 });
+
+/** A cuántos metros tilea un material. */
+export function metrosPorTextura(material) {
+  return ESCALAS[material] ?? METROS_POR_TEXTURA;
+}
 
 /** Los nombres válidos, para que quien declare un material se entere pronto de
  *  haberlo escrito mal. */

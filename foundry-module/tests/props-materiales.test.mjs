@@ -3,7 +3,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { LADO, MATERIALES, texturaMaterial } from "../scripts/props-materiales.mjs";
+import { LADO, MATERIALES, metrosPorTextura, texturaMaterial } from "../scripts/props-materiales.mjs";
 import { METROS_POR_TEXTURA, caja, prisma } from "../scripts/escena-primitivas.mjs";
 import { colocarProp, definirVocabulario } from "../scripts/nave-props.mjs";
 import { VOCABULARIO_URBANO, VOCABULARIO_COSTA } from "../scripts/props-exteriores.mjs";
@@ -98,6 +98,25 @@ test("un material no tiene huecos: es la cara de algo opaco", () => {
 test("un material mal escrito sale liso, no tumba la escena", () => {
   assert.equal(texturaMaterial("marmol", "#ffffff"), null);
   assert.equal(texturaMaterial("veta", "no-es-un-color"), null);
+});
+
+test("la escala del tileado la manda el material, no la pieza", () => {
+  // Las manchas de una piedra son grandes lleve el tamaño que lleve la roca. A
+  // la escala de serie, una roca de metro y medio enseñaba el patrón dos veces y
+  // media y salía moteada como un camuflaje: el dibujo se leía antes que la
+  // forma, y la roca dejaba de ser una roca para ser un objeto con dibujos.
+  assert.ok(metrosPorTextura("piedra") > METROS_POR_TEXTURA * 2);
+  // El hormigón al revés: su árido es fino y fijo.
+  assert.ok(metrosPorTextura("hormigon") < METROS_POR_TEXTURA);
+  assert.equal(metrosPorTextura("chapa"), METROS_POR_TEXTURA, "una plancha mide lo que mide");
+});
+
+test("la malla de una pieza de piedra tilea más despacio que una de chapa", () => {
+  const roca = colocarProp("roca", { x: 0, z: 0, vocabulario: VOCABULARIO_COSTA });
+  const cabina = colocarProp("cabina", { x: 0, z: 0, vocabulario: VOCABULARIO_URBANO });
+  const repeticionesPorMetro = ({ malla, medidas }) =>
+    Math.max(...malla.uvs[0].map(([u]) => u)) / medidas[0];
+  assert.ok(repeticionesPorMetro(roca.piezas[0]) < repeticionesPorMetro(cabina.piezas[2]));
 });
 
 /* ---- de qué está hecho cada prop ------------------------------------------- */

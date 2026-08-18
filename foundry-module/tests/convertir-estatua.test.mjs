@@ -189,6 +189,20 @@ const CATALOGO = [
   ["loba", LOBA_CAPITOLINA],
 ];
 
+/** Todo lo que hay en `data/mallas/`, cargado del disco: así una pieza nueva
+ *  entra automáticamente en las pruebas de higiene y nadie puede meter una malla
+ *  sin que se le mire. */
+const TODAS = await (async () => {
+  const { readdir } = await import("node:fs/promises");
+  const dir = path.join(RAIZ, "foundry-module", "data", "mallas");
+  const salida = [];
+  for (const f of (await readdir(dir)).sort()) {
+    const modulo = await import(path.join(dir, f));
+    salida.push([f, Object.values(modulo)[0]]);
+  }
+  return salida;
+})();
+
 test("cada pieza del catálogo está apoyada en el suelo y de pie", () => {
   for (const [nombre, malla] of CATALOGO) {
     const ys = malla.vertices.map(([, y]) => y);
@@ -215,6 +229,31 @@ test("el catálogo cubre culturas distintas, que es el punto de #590", () => {
   // Una estatua dice quién estuvo antes; cuatro de la misma cultura dicen menos
   // que cuatro de cuatro sitios.
   assert.ok(CATALOGO.length >= 4);
+});
+
+test("TODAS las mallas del árbol pasan la higiene, no solo las citadas", () => {
+  // Cargadas del directorio, no de una lista escrita a mano: una pieza nueva
+  // entra sola en la prueba, y nadie puede meter una malla sin que se le mire.
+  assert.ok(TODAS.length >= 18, `solo ${TODAS.length} mallas`);
+  for (const [nombre, malla] of TODAS) {
+    assert.deepEqual(Object.keys(malla).sort(), ["caras", "vertices"], `${nombre}: solo geometría`);
+    assert.ok(malla.caras.length < 1200, `${nombre}: ${malla.caras.length} caras es pasarse`);
+    const ys = malla.vertices.map(([, y]) => y);
+    assert.ok(Math.min(...ys) >= -1e-6, `${nombre} no apoya en el suelo`);
+    for (const cara of malla.caras) {
+      assert.equal(new Set(cara).size, 3, `${nombre}: cara degenerada`);
+      for (const i of cara) assert.ok(i >= 0 && i < malla.vertices.length, `${nombre}: índice fuera`);
+    }
+  }
+});
+
+test("cada malla del árbol tiene su ficha, sin excepción", async () => {
+  const { FICHAS } = await import("../../tools/convertir-estatua.mjs");
+  for (const [nombre] of TODAS) {
+    const clave = nombre.replace(/\.mjs$/, "");
+    assert.ok(FICHAS[clave], `${clave} está en el árbol y no tiene ficha`);
+    assert.match(FICHAS[clave].licencia, /CC0/, `${clave} no declara CC0`);
+  }
 });
 
 test("cada malla del árbol tiene ficha en la herramienta", async () => {

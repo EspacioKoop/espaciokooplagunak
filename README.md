@@ -180,6 +180,43 @@ Hitos verticales:
 
 Diseño inicial: [`docs/FOUNDRY.md`](docs/FOUNDRY.md).
 
+#### El otro frente de fase 3: espacios andables dentro del módulo
+
+Empezó como una ventana al espacio y ha acabado siendo un motor de escenas
+propio, `retro3d`, con su lenguaje visual y su catálogo. No es una desviación:
+es lo que hace que la nave sea un SITIO y no un panel de mandos, y por eso tiene
+su propia cadena de trabajo.
+
+- [x] **Motor `retro3d`**: composición por pintor con búfer de profundidad,
+      recorte de frustum, luz por cara y focos (#510, #556), y **mapeado de
+      texturas** con corrección afín o perspectiva según la época (#573).
+- [x] **Andar por la nave**: trece salas del Phobos con puertas, ventanas,
+      luminarias y presencia de otros jugadores. Andar es la navegación
+      principal; la sección es el mapa y la cantina un atajo (#577).
+- [x] **Lenguaje de superficies**: piel de muros, puertas, objetos, suelo y
+      techo (#548, #550, #551, #552), y **materiales** que salen del color de
+      cada pieza en vez de una imagen por tono.
+- [x] **Kit de escenas** (#589): primitivas compartidas, kit de exteriores con
+      sol declarado y sombras derivadas, vocabularios de props **por ambiente y
+      mezclables**, y un contrato de escena escrito.
+- [x] **Exteriores**: la playa de pruebas (#587) y la terraza de la cantina
+      (#579), con matte painting multiplano del horizonte.
+- [x] **Assets de terceros con procedencia** (#590): entrada de malla ajena con
+      decimado por colapso de aristas, UV triplanar y **ficha obligatoria** —
+      obra, qué es el fichero, autoría, licencia, enlace y sha256.
+- [ ] **Museo, enciclopedia y bestiario** (#598): el segundo consumidor del
+      catálogo con procedencia, y la prueba de que el kit sirve para contenido
+      y no solo para el banco de pruebas.
+- [ ] **Que una escena nueva cueste 1–3 PRs** y el último no toque ningún módulo
+      compartido. Es la métrica de #589, y hasta que no se cumpla en una escena
+      de verdad, el kit no está terminado.
+
+Documentación: [`docs/FOUNDRY.md`](docs/FOUNDRY.md) (contrato de escena y reglas
+de autoridad), [`docs/ASSETS_LIBRES.md`](docs/ASSETS_LIBRES.md) (qué fuentes
+libres tienen dónde entrar y cuáles no) y
+[`docs/PROCEDENCIA_ASSETS.md`](docs/PROCEDENCIA_ASSETS.md) (la ficha de cada
+asset de terceros que hay en el árbol).
+
 ### Fase 4 — Experiencia cooperativa
 
 - [ ] Recoger feedback de partidas mediante issues.

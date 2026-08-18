@@ -295,6 +295,38 @@ intervención directa de quienes lo desarrollan.
 - Un render, un endpoint o un editor aislado no cierran una etapa sin su bucle
   jugable.
 
+## El frente paralelo: espacios andables y catálogo de contenido
+
+Hay una cadena de trabajo que no aparece en las etapas de arriba y que ha crecido
+mucho: el motor de escenas del módulo de Foundry (`retro3d`), los espacios por
+los que se anda dentro de la nave, el kit de escenas de #589 y el catálogo de
+assets con procedencia (#571, #590, #598). Dejarla sin mencionar haría que este
+documento describiera un proyecto que ya no es el que hay.
+
+**No es una etapa nueva ni compite con la A.** Es infraestructura de contenido, y
+su sitio en este roadmap es el de una herramienta: existe para que las etapas C
+(nave persistente), D (exploración) y E (encuentros y expediciones) puedan
+producir sitios sin que cada uno sea un proyecto de ingeniería.
+
+Su disciplina propia, que la mantiene subordinada:
+
+- **Se mide por coste de escena, no por features.** La métrica de #589 es que una
+  escena nueva salga en 1–3 PRs y el último no toque ningún módulo compartido.
+  Mientras la escena N+1 siga obligando a tocar el motor, el kit no está
+  terminado por muchas piezas que tenga.
+- **No concede, no cuenta y no recuerda.** Una escena de Foundry puede enseñar,
+  transportar y ambientar; la autoridad de campaña sigue siendo del núcleo. La
+  regla está escrita en [`FOUNDRY.md`](FOUNDRY.md) y es lo que impide que este
+  frente se convierta en un juego paralelo dentro del módulo.
+- **Nada de arte ajeno sin ficha.** Obra, qué es el fichero, autoría del archivo,
+  licencia exacta, enlace y sha256 — y la herramienta de importación se niega a
+  convertir lo que no la tenga.
+
+**Qué NO justifica.** No justifica adelantar contenido de campaña antes de la
+etapa A, ni construir sitios que la mesa no vaya a visitar. La playa es un banco
+de pruebas y está declarada como tal; el día que un exterior sea contenido, entra
+por el bucle de producto y no por el de infraestructura.
+
 ## Prioridad vigente
 
 La **etapa A** es la única prioridad de producto hasta completar un playtest

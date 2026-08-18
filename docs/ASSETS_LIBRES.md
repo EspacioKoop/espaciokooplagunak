@@ -1,103 +1,158 @@
-# Assets libres: 3D, texturas, pixelart y audio — qué sirve de verdad aquí
+# Fuentes libres de arte y audio, y qué haría falta para usarlas
 
-> **De dónde sale:** continuación de [#568](https://github.com/VaroTv7/espaciokooplagunak/issues/568)
-> ([ECOSISTEMA_OPEN_SOURCE.md](ECOSISTEMA_OPEN_SOURCE.md) cubre el **código**; esto cubre el **arte**).
-> **Qué NO es:** una autorización para descargar nada. Ningún asset de aquí está en el
-> repositorio, y meter el primero es una decisión aparte — ver «El precio de entrada».
+Continuación de #568, que cubría el código; esto cubre el **arte**. La pregunta
+útil no es «¿qué hay disponible?» —hay muchísimo— sino **«¿qué tiene dónde
+entrar?»**, y son cosas muy distintas: los catálogos más citados (texturas PBR
+4K, escaneos fotogramétricos de cien mil triángulos) son justo los que este
+motor no puede consumir tal cual.
 
-## Empieza por aquí: la mitad de los catálogos de assets no nos sirven, y no es por la licencia
+Por eso el filtro técnico va **delante** de la lista.
 
-Antes de mirar ni un enlace hay dos hechos de este repositorio que descartan categorías
-enteras:
+---
 
-1. **No hay ni un asset binario en el árbol.** Cero `.png`, `.jpg`, `.glb`, `.ogg`. Todo el
-   arte se **genera en código**: el pixelart de la nave es procedimental
-   (`nave-mural-pixel.mjs`), los retratos salen como SVG, y hasta el PNG de los tokens se
-   escribe a mano con un codificador propio (`png-indexado.mjs`, #354).
-2. **`retro3d.mjs` no tiene mapeado de texturas.** Un polígono tiene **un color plano**, y
-   ya. No hay coordenadas UV, ni muestreo, ni material.
+## 1. Corrección de una premisa
 
-De ahí sale el filtro que ordena todo lo demás:
+#571 se planteó afirmando que «`retro3d.mjs` no tiene mapeado de texturas — un
+polígono es un color plano». **Eso ya no es cierto**, y lo señaló #584:
 
-| Categoría de asset | ¿Tiene dónde entrar hoy? |
+- un vértice es `[x,y,z]` o `[x,y,z,u,v]`, el recorte interpola las UV y la
+  textura viaja con el polígono;
+- `retro3d-lienzo.mjs` muestrea texturas indexadas sin filtrado, que es el
+  aspecto de la época;
+- lo que falta es corrección de perspectiva, y eso es #573.
+
+Desde #584 hay superficies texturadas de verdad en producción (el matte del
+horizonte), desde #596 los props llevan material, y desde #590 entra malla de
+terceros. El motor consume más de lo que este issue suponía.
+
+---
+
+## 2. Qué tiene consumidor hoy, y qué no
+
+| Categoría | ¿Entra? | Por dónde |
+|---|---|---|
+| **Malla 3D** | **Sí** | `tools/convertir-estatua.mjs` (#590): STL → decimado por colapso de aristas → `{vertices, caras}`. UV por `uvsTriplanar` |
+| **Textura tileable** | **Sí**, pero rara vez hace falta | `retro3d-lienzo.mjs` consume `{ancho, alto, indices, paleta}`. Ojo: los materiales de #596 se **generan** del color de la pieza, así que una textura ajena compite con algo que ya funciona y no tiene que mantenerse |
+| **Audio (ambiente y efectos)** | **Sí, desde #571** | `audio-ficheros.mjs`. La música sigue siendo procedural (#318) y no cambia |
+| **Pixelart 2D** | **Sí** | `png-indexado.mjs` codifica y descodifica PNG indexado |
+| **Texturas PBR** (albedo + normal + rugosidad) | **No** | El motor no tiene modelo de iluminación que las use. Se aprovecharía el albedo y se tiraría el resto: es traer 40 MB para usar 2 |
+| **Malla con esqueleto / animación** | **No** | No hay sistema de animación de malla. Los avatares son geometría compuesta por código |
+| **Fuentes tipográficas** | **No hace falta** | El texto lo pone Foundry |
+
+**Regla de oro:** una categoría sin consumidor no se lista aunque el material sea
+excelente. Traer lo que no se puede usar es exactamente cómo un repositorio
+acaba con veinte binarios y ninguno cableado.
+
+---
+
+## 3. La trampa, antes que la lista
+
+**Que la obra sea de dominio público no implica que el archivo lo sea.** Una
+escultura de hace dos mil años no tiene derechos; el escaneo o la fotografía que
+alguien hizo de ella, normalmente sí. Hay que comprobar la licencia del
+**archivo**.
+
+No es teórico: el primer candidato de #590 fue un escaneo fotogramétrico de una
+Afrodita en Wikimedia Commons, obra antiquísima y archivo bajo `CC BY-SA 4.0`.
+Descartado.
+
+Y una segunda trampa, más silenciosa: **`CC BY-NC` no es libre** para este
+proyecto. Aparece constantemente en catálogos de modelos 3D para impresión, y es
+la licencia por defecto de buena parte de Scan the World en MyMiniFactory.
+
+---
+
+## 4. Fuentes, y cómo se verificó cada una
+
+Se distingue **verificado** (lo comprobé contra la fuente durante #590/#571) de
+**por verificar** (razonable, sin comprobar).
+
+### Wikimedia Commons — **verificado**
+
+Lo mejor que hay para pieza suelta, por un motivo que no es el catálogo sino el
+**proceso**: Commons tiene revisión de licencia (`LicenseReview`), en la que un
+revisor humano comprueba la licencia en el origen y lo deja sellado con fecha.
+
+Es lo que sostuvo al León de Al-Lāt cuando `newpalmyra.org` se cayó de la red: la
+fuente original ya no responde, y la verificación sigue en pie.
+
+- API sin autenticación: `commons.wikimedia.org/w/api.php`, con `extmetadata`
+  para leer licencia y autoría por fichero.
+- Se puede filtrar por `filetype:3d` y comprobar `License` en bloque.
+- **Cuidado:** la mayoría de los ficheros 3D de Commons son CC BY-SA, no CC0.
+  Filtrar es obligatorio, y de una búsqueda de 120 salieron unos 58 libres, casi
+  todos figuras geométricas y piezas de impresión, no escultura.
+
+### Smithsonian Open Access — **verificado (API)**
+
+Más de dos mil modelos 3D liberados, y lo importante para que un catálogo grande
+sea viable: **la licencia es un campo consultable por pieza**. La API devuelve
+`metadata_usage: {"access": "CC0"}` en cada resultado, así que se puede filtrar
+CC0 **en bloque** en vez de a mano.
+
+Eso es lo que separa «traer una pieza» de «traer una sala» (#598): sin filtro
+programable, treinta piezas son treinta verificaciones manuales.
+
+- API: `api.si.edu/openaccess/api/v1.0/search` (necesita clave; `DEMO_KEY`
+  responde para pruebas).
+- **Cuidado:** su web (`si.edu/openaccess`, `3d.si.edu`) responde 403 a clientes
+  automatizados. La API sí responde.
+
+### The Met, Rijksmuseum, Art Institute of Chicago — **por verificar**
+
+Programas de acceso abierto muy citados, sobre todo de **imagen**. Para 3D el
+material es escaso. Útiles como referencia visual y para pixelart derivado, no
+como fuente de malla.
+
+### Scan the World / MyMiniFactory — **por verificar, con reserva**
+
+El catálogo de escultura más grande que existe, y por eso hay que decirlo: buena
+parte está bajo **CC BY-NC**, que no sirve aquí. Cada pieza necesita su
+comprobación individual, y muchas requieren cuenta para descargar. Alto valor,
+alto coste de verificación.
+
+### Audio: Freesound y bancos CC0 — **por verificar**
+
+Ahora tienen consumidor (`audio-ficheros.mjs`), así que por primera vez tiene
+sentido mirarlos. Freesound mezcla CC0, CC BY y CC BY-NC en el mismo sitio: hay
+que filtrar por licencia, y su API la expone.
+
+**Lo que hace falta es poco y corto**: mar, viento, una puerta, una alarma. No un
+banco de mil efectos.
+
+---
+
+## 5. El precio de entrada, medido
+
+De #590, que es la única pieza que ha hecho el recorrido completo:
+
+| Paso | Coste real |
 |---|---|
-| Texturas PBR, HDRIs | **No.** El motor no puede mapear una textura. Valen como *referencia visual*, no como archivo |
-| Modelos 3D escaneados (glTF/OBJ, decenas de miles de triángulos) | **No directamente.** Habría que convertirlos a `{vertices, caras}` y bajarlos a unos cientos de caras planas |
-| Imágenes 2D (PNG) | **Sí.** El lado Foundry sí consume imágenes: `prototypeToken.texture.src`, tiles y fondos de escena |
-| Audio | **Sí.** No hay ninguna restricción de motor; hoy no se usa porque la música es procedimental (#318) |
-| Paletas de color | **No hace falta.** La paleta es propia y cerrada (#351), y es una frontera deliberada |
+| Encontrar candidato y **verificar la licencia del archivo** | **Lo caro.** Dos candidatos para una pieza |
+| Descarga y comprobación por sha256 | Minutos |
+| Conversión y decimado | 1,6 s de máquina; el trabajo fue *escribir* el decimador |
+| Ficha de procedencia | Minutos |
+| Colocarla para que se lea | **Lo segundo más caro.** El León es un relieve: solo se lee desde un lado, y hubo que probar cuatro orientaciones |
 
-**Traducción práctica:** los sitios de texturas 4K y de escaneos fotogramétricos —que son
-los que más se citan— son justo los que menos encajan. Lo que sí encaja es lo 2D y lo
-sonoro.
+**El cuello es la verificación de licencia, no la conversión.** Cualquier plan
+que suponga lo contrario está mal presupuestado.
 
-## Fuentes verificadas
+---
 
-### CC0 (dominio público efectivo: sin atribución, sin condiciones)
+## 6. Reglas para traer algo
 
-| Fuente | Qué tiene | Veredicto aquí |
-|---|---|---|
-| [Kenney](https://kenney.nl/assets) | Sprites, modelos low-poly, UI sci-fi, **sonidos de interfaz** | **La mejor puerta de entrada.** El sonido de UI es lo único de la pila sin estética propia que defender |
-| [Smithsonian Open Access](https://www.si.edu/openaccess) | +2.000 modelos 3D escaneados (OBJ/glTF), entre ellos el **módulo de mando del Apollo 11**, y 2,8 M de imágenes | 3D: solo tras convertir y decimar. Imágenes: directamente usables |
-| [Poly Haven](https://polyhaven.com/license) | HDRIs, texturas y modelos, **todo CC0** | **Referencia visual.** Sus texturas no tienen dónde entrar |
-| [ambientCG](https://ambientcg.com/) | +2.000 materiales PBR y HDRIs, CC0 | Igual: referencia |
-
-### Dominio público por ser obra del gobierno de EE. UU.
-
-| Fuente | Qué tiene | Veredicto aquí |
-|---|---|---|
-| [NASA 3D Resources](https://github.com/nasa/NASA-3D-Resources) | Modelos y texturas de misión reales | Útil como **geometría de referencia** para naves y estaciones propias |
-| [NASA Image and Video Library](https://images.nasa.gov) | Fotografía e imagen de misión | Usable en el lado Foundry |
-| [USGS Astrogeology](https://astrogeology.usgs.gov/search) | Mosaicos y mapas topográficos planetarios reales | Materia prima de mapas planetarios |
-
-**La cautela con la NASA es de MARCA, no de derechos.** El material no tiene copyright en
-EE. UU., pero no se puede usar de forma que insinúe que la NASA respalda el proyecto.
-
-**Regla del proyecto, y no admite matices:** la NASA se menciona **solo en los créditos**.
-Ni en el nombre de un asset visible, ni en un texto de la interfaz, ni en una nave, ni en
-un escenario, ni en el nombre de una sala. El material se usa; la marca no se pasea. Esto
-vale igual para cualquier otra agencia u organismo real cuyo material entre por dominio
-público — el criterio es el mismo que ya aplica `DOMINIO_PUBLICO_SCIFI.md` al separar
-copyright de marca.
-
-### CC BY (usable con atribución)
-
-| Fuente | Qué tiene | Veredicto aquí |
-|---|---|---|
-| [Solar System Scope](https://www.solarsystemscope.com/textures/) — **CC BY 4.0**, verificado | Mapas planetarios en proyección equirectangular, basados en datos NASA | **El candidato 2D más concreto.** Un planeta en una escena de Foundry es una imagen, no una malla: aquí sí hay dónde entrar. Encaja además con el atlas de #213, que ya guarda licencia por entrada |
-
-### Con reservas
-
-| Fuente | Reserva |
-|---|---|
-| [OpenGameArt](https://opengameart.org) | Licencias mezcladas **por entrada**. Sirve, pero cada archivo se verifica solo, igual que ya exige `DOMINIO_PUBLICO_SCIFI.md` |
-| [Lospec](https://lospec.com/palette-list) | La licencia es **por paleta**, no uniforme, y las imágenes de ejemplo pueden tener autoría propia. Da igual: no necesitamos paletas ajenas |
-| Cualquier cosa marcada **NC** o **ND** | Fuera. `NC` choca con la GPL del módulo y `ND` prohíbe justo lo que haríamos: adaptar |
-
-## El precio de entrada: qué costaría de verdad usar un modelo 3D
-
-No es descargar. Es esto, y conviene tenerlo escrito antes de que alguien abra un PR con un
-`.glb` dentro:
-
-1. **Convertir** de OBJ/glTF a `{ vertices, caras }`, que es lo único que `componerEscena` acepta.
-2. **Decimar** de decenas de miles de triángulos a unos cientos: el rasterizador es JS y
-   ordena por pintor en cada cuadro. Una sala entera de la nave son ~800 caras.
-3. **Asignar un color plano por cara**, porque no hay texturas — y ese color tiene que salir
-   de `paleta.mjs` o rompe la frontera de arte de #351.
-4. **Meter el binario en el repositorio**, con su licencia y su atribución, en un proyecto
-   que hoy no tiene ninguno.
-
-Los pasos 1–3 son una herramienta que no existe. El paso 4 es una decisión de proyecto. Por
-eso este documento **no propone traer ningún modelo**: propone saber qué hay para cuando
-esa herramienta se justifique.
-
-## La frontera que nada de esto puede cruzar
-
-La estética es propia y deliberada: rejilla de pixelart única para toda la nave, paleta
-corta, escalonado de tonos por época (#362). Un pack ajeno bien hecho **estorba** si rompe
-esa unidad — un muro con textura fotográfica al lado de uno procedimental no se lee como
-mejor, se lee como dos juegos pegados.
-
-Por eso el orden recomendado, si algún día se entra por aquí, es: **primero el audio de
-interfaz** (no compite con nada visual), después **imágenes 2D del lado Foundry** (tokens y
-fondos, que ya viven fuera del motor retro), y el 3D **el último**, si es que llega.
+1. **Ficha o no entra.** `docs/PROCEDENCIA_ASSETS.md`, con obra, qué es el
+   fichero (escaneo, fotogrametría o reconstrucción: no es lo mismo), autoría del
+   archivo, licencia exacta, enlace a donde consta, sha256 y el comando de
+   conversión.
+2. **CC0 o dominio público.** CC BY obliga a atribución en un sitio que hay que
+   decidir; CC BY-SA y CC BY-NC, fuera.
+3. **El binario de origen no vive en el repositorio.** Se comprueba por sha256 y
+   lo que se versiona es el resultado convertido, que es texto y se revisa en un
+   PR.
+4. **La frontera de arte de #351 se mantiene**: lo importado aporta GEOMETRÍA (o
+   forma de onda). El color, el material y la paleta los pone el módulo. Una
+   textura ajena pegada a una malla ajena convierte la escena en un collage de
+   tres maquetas, que es lo que la estética propia existe para evitar.
+5. **Nada sin consumidor.** Si la categoría no está en la tabla del punto 2, no
+   entra: primero el consumidor, después el asset.

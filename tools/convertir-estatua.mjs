@@ -467,6 +467,46 @@ export const ${nombre.toUpperCase().replace(/-/g, "_")} = Object.freeze({
 `;
 }
 
+/**
+ * La procedencia de cada pieza, EN EL CÓDIGO y no solo en la prosa.
+ *
+ * Está aquí para que convertir sin ficha sea imposible, no solo desaconsejado:
+ * la herramienta se niega. `docs/PROCEDENCIA_ASSETS.md` es la versión legible
+ * para humanos, con el porqué de cada decisión; esto es lo que se estampa dentro
+ * del módulo generado, para que la malla lleve su licencia pegada aunque alguien
+ * la copie a otro sitio.
+ */
+export const FICHAS = Object.freeze({
+  "leon-al-lat": {
+    obra: "León de Al-Lāt (Asad Al-Lāt), Palmira",
+    modelo: "reconstrucción digital, no escaneo",
+    autoria: "Georges Dahdouh, optimización de Jim Ellis — #NEWPALMYRA / RSSSD",
+    fuente: "Wikimedia Commons, File:Asad Al-Lat.stl",
+    licencia: "CC0 1.0 (revisión de licencia de Commons, 2018-02-22)",
+  },
+  "venus-de-milo": {
+    obra: "Afrodita de Melos (Venus de Milo) — vaciado en yeso, KAS434",
+    modelo: "escaneo del VACIADO de la Colección Real de Vaciados, no del original",
+    autoria: "Statens Museum for Kunst (Copenhague)",
+    fuente: "Wikimedia Commons, colección SMK",
+    licencia: "CC0 1.0 sobre el escaneo; la obra, dominio público (Licensed-PD-Art)",
+  },
+  "farao-amasis": {
+    obra: "Retrato del faraón Amasis II (563–525 a. C.) — vaciado en yeso, KAS576",
+    modelo: "escaneo del VACIADO de la Colección Real de Vaciados, no del original",
+    autoria: "Statens Museum for Kunst (Copenhague)",
+    fuente: "Wikimedia Commons, colección SMK",
+    licencia: "CC0 1.0 sobre el escaneo; la obra, dominio público (Licensed-PD-Art)",
+  },
+  "loba-capitolina": {
+    obra: "Loba (Ulvinde) — vaciado en yeso, KAS837",
+    modelo: "escaneo del VACIADO de la Colección Real de Vaciados, no del original",
+    autoria: "Statens Museum for Kunst (Copenhague)",
+    fuente: "Wikimedia Commons, colección SMK",
+    licencia: "CC0 1.0 sobre el escaneo; la obra, dominio público (Licensed-PD-Art)",
+  },
+});
+
 // ---- ejecución -------------------------------------------------------------
 
 /**
@@ -498,14 +538,15 @@ async function principal() {
 
   const destino = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "foundry-module", "data", "mallas");
   await mkdir(destino, { recursive: true });
-  const ficha = {
-    obra: "León de Al-Lāt (Asad Al-Lāt), Palmira",
-    modelo: "reconstrucción digital, no escaneo",
-    autoria: "Georges Dahdouh, optimización de Jim Ellis — #NEWPALMYRA / RSSSD",
-    fuente: "Wikimedia Commons, File:Asad Al-Lat.stl",
-    licencia: "CC0 1.0 (revisión de licencia de Commons, 2018-02-22)",
-    sha256,
-  };
+  const declarada = FICHAS[nombre];
+  if (!declarada) {
+    console.error(
+      `No hay ficha para "${nombre}". Un asset sin procedencia comprobable no entra, ` +
+        "por bueno que sea: añádela a FICHAS y a docs/PROCEDENCIA_ASSETS.md antes de convertir.",
+    );
+    process.exit(2);
+  }
+  const ficha = { ...declarada, sha256 };
   await writeFile(path.join(destino, `${nombre}.mjs`), moduloDeMalla(nombre, malla, ficha), "utf8");
 
   console.log(

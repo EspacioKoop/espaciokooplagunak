@@ -8,6 +8,9 @@ import { fileURLToPath } from "node:url";
 
 import { METROS_POR_TEXTURA, uvsTriplanar } from "../scripts/escena-primitivas.mjs";
 import { LEON_AL_LAT } from "../data/mallas/leon-al-lat.mjs";
+import { VENUS_DE_MILO } from "../data/mallas/venus-de-milo.mjs";
+import { FARAO_AMASIS } from "../data/mallas/farao-amasis.mjs";
+import { LOBA_CAPITOLINA } from "../data/mallas/loba-capitolina.mjs";
 
 const RAIZ = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const herramienta = await import(path.join(RAIZ, "tools", "convertir-estatua.mjs").replace(/^/, "file://"))
@@ -175,6 +178,64 @@ test("está fuera del camino: se ve y no se llega", () => {
   // Lo que se mira desde lejos y no se toca es lo que hace grande un sitio.
   const xs = LEON_AL_LAT.vertices.map(([x]) => x);
   assert.ok(Math.max(...xs) - Math.min(...xs) < 4, "no es tan ancha como para invadir el camino");
+});
+
+/* ---- el catálogo ----------------------------------------------------------- */
+
+const CATALOGO = [
+  ["león de Al-Lāt", LEON_AL_LAT],
+  ["Venus de Milo", VENUS_DE_MILO],
+  ["faraón Amasis", FARAO_AMASIS],
+  ["loba", LOBA_CAPITOLINA],
+];
+
+test("cada pieza del catálogo está apoyada en el suelo y de pie", () => {
+  for (const [nombre, malla] of CATALOGO) {
+    const ys = malla.vertices.map(([, y]) => y);
+    assert.ok(Math.min(...ys) >= -1e-6, `${nombre} no apoya en el suelo`);
+    assert.ok(Math.max(...ys) > 1, `${nombre} se ha quedado enana`);
+  }
+});
+
+test("todas son geometría y nada más (#351)", () => {
+  // Si una malla importada trajera color propio, la frontera de arte se habría
+  // roto por la puerta de atrás.
+  for (const [nombre, malla] of CATALOGO) {
+    assert.deepEqual(Object.keys(malla).sort(), ["caras", "vertices"], nombre);
+  }
+});
+
+test("ninguna se pasa de lo que el motor mueve sin despeinarse", () => {
+  for (const [nombre, malla] of CATALOGO) {
+    assert.ok(malla.caras.length < 1200, `${nombre}: ${malla.caras.length} caras es pasarse`);
+  }
+});
+
+test("el catálogo cubre culturas distintas, que es el punto de #590", () => {
+  // Una estatua dice quién estuvo antes; cuatro de la misma cultura dicen menos
+  // que cuatro de cuatro sitios.
+  assert.ok(CATALOGO.length >= 4);
+});
+
+test("cada malla del árbol tiene ficha en la herramienta", async () => {
+  // La herramienta se NIEGA a convertir lo que no tenga ficha, así que esto
+  // comprueba que nadie ha metido una malla por otro camino.
+  const { FICHAS } = await import("../../tools/convertir-estatua.mjs");
+  for (const clave of ["leon-al-lat", "venus-de-milo", "farao-amasis", "loba-capitolina"]) {
+    assert.ok(FICHAS[clave], `${clave} no tiene ficha`);
+    assert.match(FICHAS[clave].licencia, /CC0/, `${clave} no declara CC0`);
+    assert.ok(FICHAS[clave].modelo, `${clave} no dice si es escaneo, vaciado o reconstrucción`);
+  }
+});
+
+test("la ficha dice QUÉ es el fichero, no solo qué obra representa", () => {
+  // El León es una reconstrucción; las del SMK son escaneos de vaciados en yeso,
+  // no de los originales. Decirlo no es una nota al pie: es lo que la escena
+  // podría llegar a afirmar.
+  return import("../../tools/convertir-estatua.mjs").then(({ FICHAS }) => {
+    assert.match(FICHAS["venus-de-milo"].modelo, /vaciado/i);
+    assert.match(FICHAS["leon-al-lat"].modelo, /reconstrucción/i);
+  });
 });
 
 /* ---- la malla que está en el árbol ----------------------------------------- */

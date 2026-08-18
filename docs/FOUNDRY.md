@@ -145,6 +145,44 @@ cuarta puerta de la barra: se añade como estancia de Andar con su paso desde la
 estancia vecina, y si merece atajo, el atajo es una entrada más — nunca su única
 forma de existir.
 
+### Qué puede hacer una escena de Foundry, y qué no
+
+Los exteriores (#587, y los que vengan por el kit de escenas de #589) plantearon
+una duda razonable sobre el ADR-0008: si el módulo se inventa una playa entera
+que el núcleo no conoce, ¿sigue siendo cierto que la partida es jugable sin
+Foundry?
+
+La pregunta útil **no es «¿dónde vive la escena?» sino «¿la escena concede
+algo?»**. El ADR no dice que Foundry no pueda pintar; dice que la autoridad de
+campaña —progreso, atlas, misiones, consecuencias— es del núcleo, y que el módulo
+es proyección y adaptación, no almacenamiento. La regla, entonces:
+
+> Una escena de Foundry puede **enseñar, transportar y ambientar**. No puede
+> **conceder, contar ni recordar**.
+
+La playa la cumple hoy: su único punto de interacción cambia de estancia, o sea,
+mueve la cámara. Andar por ella no da nada, no lleva la cuenta de nada y no deja
+rastro. Si Foundry desaparece, no se pierde partida: se pierde un sitio bonito.
+
+El día que un exterior tenga pesca que dé un recurso, un hallazgo que abra una
+misión o una estatua que registre un descubrimiento, **ese estado es del núcleo y
+la escena solo pinta el efecto** — el mismo reparto que ya sigue la asistencia
+entre puestos, que no emite órdenes sino que produce algo que gasta su titular.
+Diseñar dónde se guarda un pez antes de que exista la pesca es adelantarse; tener
+escrito que no se guarda en Foundry, no.
+
+Corolario para el cielo de la playa: **sus planetas son cielo, no atlas**. Ningún
+punto de interacción los nombra ni los cruza con el catálogo cosmográfico, porque
+en cuanto lo hicieran pasarían a afirmar cosmografía que nadie ha decidido.
+
+Hay también una herramienta del grupo que es **solo-GM sin ser información
+privilegiada**: la playa (#587). No se oculta porque revele nada —una
+playa no dice nada de la partida— sino porque **no es contenido**: es un banco de
+pruebas del motor de exteriores, y ofrecérsela a la tripulación en la misma barra
+que su puesto afirmaría que forma parte del juego. El criterio, entonces, no es
+solo «permiso» ni «frecuencia», sino también *qué se le está diciendo a quien lo
+ve*.
+
 ### Superficies de control del GM
 
 La ventana **Estado de nave** del módulo agrupa las órdenes cerradas que el GM
@@ -345,6 +383,44 @@ El director de juego podrá pausar o acelerar el tiempo, introducir eventos y de
 5. El puente envía a Foundry eventos normalizados, nunca código Lua libre.
 6. El núcleo aplica y persiste las consecuencias; Foundry actualiza diarios, recursos y estados para reflejarlas en la mesa.
 7. La sesión puede interrumpirse y reanudarse sin duplicar eventos.
+
+### El contrato de escena (#589)
+
+Hoy se deduce leyendo la playa. Escrito, un agente lo cumple sin leerse el módulo
+entero — que es exactamente la diferencia entre una escena nueva en un PR y una
+escena nueva en cinco.
+
+Un módulo de escena exporta cinco cosas, y el catálogo de `Andar`
+(`nave-catalogo-andar.mjs`) no le pide ninguna más:
+
+| Qué | Forma | Para qué |
+|---|---|---|
+| `planta` | lo que devuelve `crearPlanta({ ancho, profundidad, obstaculos })` | por dónde se puede andar |
+| `componer` | `(x, y, z, yaw, opciones) => escena` | pintar el cuadro desde donde está quien mira |
+| `entrada` | `{ x, z, yaw }` | dónde se aparece, y mirando a qué |
+| `interacciones` | lo que devuelve `declararInteracciones([...])` (#582) | todo lo que se puede tocar, por un solo raíl |
+| `fondo` | un color de `paleta.mjs` | qué hay detrás: mamparo dentro, cielo o vacío fuera |
+
+La firma de `componer` es la de `crearSalaCaja` a propósito: el bucle de andar no
+distingue una sala de un exterior, y esa es la razón de que un exterior no haya
+necesitado tocarlo.
+
+**Lo que una escena NO debería tener que escribir**, porque ya está en el kit:
+
+- formas — `escena-primitivas.mjs`: `caja`, `prisma`, `esfera`, `anillo`, `losa`,
+  `rampa`, `disco`, `trasladar`;
+- exteriores — `escena-exteriores.mjs`: `declararSol` y todo lo que cuelga de él
+  (largo y rumbo de sombra, `sombraDeCaja`, `sombraDeProp`, el disco del sol),
+  más `franja` de terreno, `huellaDe` y `ciclo`;
+- props — `nave-props.mjs`: `definirVocabulario` (#583) y `colocarProp`. Los
+  vocabularios son por ambiente y se MEZCLAN: el de la nave y el de la playa
+  están aparte porque un aerogenerador en el catálogo del Phobos haría largo
+  justo el catálogo que se mantiene corto a propósito.
+
+El criterio de que el kit está terminado (#589) es medible: **una escena nueva de
+complejidad parecida a la playa se entrega en tres PRs o menos, y el último no
+toca ningún módulo compartido**. Mientras la escena N+1 siga necesitando tocar el
+motor, lo que falte va al kit y no a la escena.
 
 ## Arquitectura propuesta
 

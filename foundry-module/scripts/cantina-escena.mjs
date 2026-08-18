@@ -31,39 +31,18 @@ import { campoEstelar, proyectarEstrellas } from "./retro3d-estrellas.mjs";
 import { cuerpoMayor, cuerposPorLaVentana } from "./cantina-ventana.mjs";
 import { anclasHumoDeLaGente, piezasDeLaGente } from "./cantina-avatar.mjs";
 import { PLANO_INICIAL, planoPorId } from "./cantina-planos.mjs";
+import { caja } from "./escena-primitivas.mjs";
 
-/**
- * Caja alineada a los ejes, dada por su centro y sus medidas. Es la única
- * primitiva del módulo: una cantina de consola de los noventa se construía con
- * cajas y no hay razón para más aquí, donde cada pieza es un mueble.
- *
- * Las caras se listan en sentido antihorario vistas desde fuera, que es lo que
- * `componerEscena` necesita para descartar las de espaldas.
- */
-export function caja([cx, cy, cz], [ancho, alto, fondo]) {
-  const x = ancho / 2;
-  const y = alto / 2;
-  const z = fondo / 2;
-  const vertices = [
-    [cx - x, cy - y, cz - z],
-    [cx + x, cy - y, cz - z],
-    [cx + x, cy + y, cz - z],
-    [cx - x, cy + y, cz - z],
-    [cx - x, cy - y, cz + z],
-    [cx + x, cy - y, cz + z],
-    [cx + x, cy + y, cz + z],
-    [cx - x, cy + y, cz + z],
-  ];
-  const caras = [
-    [0, 3, 2, 1], // frente (−z)
-    [4, 5, 6, 7], // fondo (+z)
-    [0, 4, 7, 3], // izquierda
-    [1, 2, 6, 5], // derecha
-    [3, 7, 6, 2], // techo
-    [0, 1, 5, 4], // suelo
-  ];
-  return { vertices, caras };
-}
+// `caja` vive ahora en `escena-primitivas.mjs` (#589). Estaba copiada aquí, en
+// el póker y en el blackjack, y la playa la importaba DE ESTE MÓDULO — un
+// exterior dependiendo del bar de la nave. Se reexporta para no romper a quien
+// ya la traía de aquí, y porque este sigue siendo su sitio natural de lectura.
+//
+// Y ya no es «la única primitiva del módulo», que es lo que decía este
+// comentario: hay prisma, esfera, anillo, losa y rampa. Una cantina se construye
+// con cajas porque una barra y un armario SON cajas, no porque no hubiera más.
+export { caja };
+
 
 /**
  * Los muebles del local, con su material. El orden de la lista no importa —lo

@@ -860,6 +860,19 @@ Hooks.on("getSceneControlButtons", (controls) => {
           button: true,
           onClick: () => abrirPanelGM(),
         },
+        {
+          // La playa de pruebas (#587). SOLO GM, y no por privilegio de
+          // información —una playa no revela nada de la partida— sino porque no
+          // es contenido: es un banco de pruebas del motor de exteriores, y
+          // ofrecérselo a la tripulación en la misma barra que su puesto sería
+          // decir que forma parte del juego. Se vuelve a la nave por la cabina
+          // de teléfono, que es su único punto de interacción.
+          name: "lagunak-playa",
+          title: "LAGUNAK.Controles.AbrirPlaya",
+          icon: "fa-solid fa-umbrella-beach",
+          button: true,
+          onClick: () => abrirAndarNave("playa"),
+        },
       ]
     : [];
 

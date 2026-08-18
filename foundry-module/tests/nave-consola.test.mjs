@@ -10,6 +10,7 @@ import assert from "node:assert/strict";
 
 import { ladoDeApoyo, piezasConsola } from "../scripts/nave-consola.mjs";
 import { CATALOGO_ANDAR } from "../scripts/nave-catalogo-andar.mjs";
+import { consolasDe } from "./ayuda-consolas.mjs";
 import { colisiona } from "../scripts/nave-movimiento.mjs";
 import { RADIO_ANDAR } from "../scripts/nave-movimiento-lienzo.mjs";
 import { LUZ_FOSFORO, MURAL, SECCION } from "../scripts/paleta.mjs";
@@ -22,7 +23,7 @@ const ZONA = { x: 6.6, z: 5.2, ancho: 1.6, profundidad: 1.6 };
 function salasConConsola() {
   return CATALOGO_ANDAR.ids
     .map((id) => ({ id, estancia: CATALOGO_ANDAR.obtener(id) }))
-    .filter(({ estancia }) => (estancia.consolas ?? []).length > 0);
+    .filter(({ estancia }) => consolasDe(estancia).length > 0);
 }
 
 test("en TODA sala con consola queda sitio para plantarse dentro de su zona", () => {
@@ -32,7 +33,7 @@ test("en TODA sala con consola queda sitio para plantarse dentro de su zona", ()
   const salas = salasConConsola();
   assert.ok(salas.length >= 9, "el Phobos tiene nueve salas con sistema, más las pasarelas");
   for (const { id, estancia } of salas) {
-    const { rect } = estancia.consolas[0];
+    const { rect } = consolasDe(estancia)[0];
     let hueco = false;
     for (let fx = 0.1; fx <= 0.9 && !hueco; fx += 0.1) {
       for (let fz = 0.1; fz <= 0.9 && !hueco; fz += 0.1) {
@@ -111,7 +112,7 @@ test("una sala sin puesto no tiene consola", () => {
   // Camarotes y la cantina no alojan sistema: plantarles una consola sería
   // ofrecer un puesto que no existe.
   const camarotes = CATALOGO_ANDAR.obtener("camarotes");
-  assert.deepEqual(camarotes.consolas, []);
+  assert.deepEqual(consolasDe(camarotes), []);
   // Y tampoco su mueble. No se comprueba que la sala esté VACÍA —desde #560
   // lleva maquinaria—, sino que no hay nada con la huella del cuerpo de una
   // consola: eso es lo que significaba la comprobación original.

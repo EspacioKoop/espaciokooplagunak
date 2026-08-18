@@ -245,6 +245,8 @@ export function porId(salas = SALAS_PHOBOS) {
 export const ID_CANTINA = "cantina";
 const SOSTIENE_LA_CANTINA = "acceso-cantina";
 
+export const ID_TERRAZA = "terraza";
+
 export function celdasConCantina(salas = SALAS_PHOBOS) {
   const sostiene = salas.find((sala) => sala.id === SOSTIENE_LA_CANTINA);
   const celdas = salas.map((sala) => ({ id: sala.id, ...sala.celda, sistema: sala.sistema ?? null }));
@@ -254,6 +256,18 @@ export function celdasConCantina(salas = SALAS_PHOBOS) {
       x: sostiene.celda.x,
       y: sostiene.celda.y - 1,
       w: sostiene.celda.w,
+      h: 1,
+      sistema: null,
+    });
+    // Y la terraza (#579), colgada del costado OESTE de la cantina. Va en el
+    // plano por lo mismo que la cantina: se anda por ella, y un minimapa que no
+    // dibuja un sitio por el que se anda miente justo cuando más se necesita —al
+    // perderse. Media celda, porque es media sala: un balcón, no un cuarto.
+    celdas.push({
+      id: ID_TERRAZA,
+      x: sostiene.celda.x - 1,
+      y: sostiene.celda.y - 1,
+      w: 1,
       h: 1,
       sistema: null,
     });

@@ -354,6 +354,16 @@ function recortarContra(vertices, plano, signo) {
 
 // ---- Sombreado -------------------------------------------------------------
 
+/**
+ * La direccional de serie: alta y de tres cuartos, la luz de interior de nave
+ * con la que se calibraron las trece salas del Phobos.
+ *
+ * Sigue siendo el valor por defecto —ninguna escena existente cambia— pero ya no
+ * es la ÚNICA: una escena puede declarar la suya (#587). El primer exterior del
+ * módulo lo pide de verdad: un sol bajo sobre el mar no es la misma luz que un
+ * fluorescente de mamparo, y forzarle esta dirección era la razón principal de
+ * que la playa se viera plana.
+ */
 const LUZ = normalizar([-0.4, 0.8, -0.45]);
 
 /**
@@ -452,8 +462,20 @@ export function focosCercanos(focos, referencia, tope = TOPE_FOCOS) {
  *   los focos van en el MISMO espacio que la normal (ver `luzFija`).
  */
 export function intensidadCara(normal, tonos, opciones) {
-  const lambert = Math.max(0, punto(normal, LUZ));
-  let crudo = AMBIENTE + 0.65 * lambert;
+  // AMBIENTE DECLARABLE (#587). El suelo de luz de serie (0,35) es el de un
+  // interior de nave, donde lo que no toca la direccional lo rellenan cuatro
+  // mamparos oscuros. A la intemperie el relleno es la BÓVEDA DEL CIELO entera,
+  // que es enorme y clara: con 0,35 y un sol rasante, la arena de una playa a
+  // pleno día salía al 57% de su color y se veía embarrada. No es un truco de
+  // brillo, es que un exterior tiene otra luz de relleno.
+  const ambiente = Number.isFinite(opciones?.ambiente) ? Math.max(0, Math.min(1, opciones.ambiente)) : AMBIENTE;
+  // La dirección de la luz puede venir de la escena. Se normaliza aquí y no se
+  // exige normalizada al llamador: un vector a ojo («el sol está por allí») es
+  // exactamente como se escribe una luz, y obligar a normalizarlo fuera es
+  // pedirle al que ambienta que haga trigonometría.
+  const direccion = Array.isArray(opciones?.luz) ? normalizar(triple(opciones.luz, LUZ)) : LUZ;
+  const lambert = Math.max(0, punto(normal, direccion));
+  let crudo = ambiente + (1 - ambiente) * lambert;
 
   const focos = opciones?.focos;
   const centroide = opciones?.centroide;
@@ -483,17 +505,48 @@ export function intensidadCara(normal, tonos, opciones) {
  * de `paleta.test.mjs` lo comprueba, y así una nave nueva no puede colar su
  * propio verde.
  */
-export function sombrear(colorBase, intensidad) {
+export function sombrear(colorBase, intensidad, tinte = null) {
   const rgb = canales(colorBase);
   // Un color ilegible no se adivina: se devuelve tal cual y quien pinte verá el
   // valor original en vez de un negro silencioso que parece un fallo de luz.
   if (!rgb) return colorBase;
   const k = acotar(intensidad, 0, 1, 1);
+  // TINTE OPCIONAL (#587). Sin él, sombrear es lo que siempre fue: multiplicar
+  // el color por la intensidad, o sea, lo iluminado es el mismo color más claro
+  // y lo oscuro el mismo color más apagado. Eso es exactamente lo que se ve como
+  // PLANO en un exterior: en la realidad —y en cualquier pintura que se haya
+  // molestado en mirarla— la luz del sol es cálida y la sombra la rellena el
+  // cielo, que es frío. Sin esa oposición, un objeto redondo no gira y una
+  // superficie grande no tiene aire encima.
+  //
+  // Se aplica ANTES del multiplicativo, sobre el color base: teñir después
+  // arrastraría el tinte al negro y las sombras se irían todas al mismo azul,
+  // perdiendo el color propio de cada cosa.
+  if (tinte && (tinte.calida || tinte.fria)) {
+    const haciaLuz = tinte.calida ? mezclar(colorBase, tinte.calida, FUERZA_TINTE * k) : colorBase;
+    const teñido = tinte.fria ? mezclar(haciaLuz, tinte.fria, FUERZA_TINTE * (1 - k)) : haciaLuz;
+    const rgbTeñido = canales(teñido);
+    if (rgbTeñido) {
+      const hexT = rgbTeñido
+        .map((c) => Math.round(Math.max(0, Math.min(255, c * 255 * k))).toString(16).padStart(2, "0"))
+        .join("");
+      return `#${hexT}`;
+    }
+  }
   const hex = rgb
     .map((c) => Math.round(Math.max(0, Math.min(255, c * 255 * k))).toString(16).padStart(2, "0"))
     .join("");
   return `#${hex}`;
 }
+
+/**
+ * Cuánto llega a teñir el tinte en los extremos de la escala de luz.
+ *
+ * 0,3 y no más: pasado ese punto el color propio de la arena deja de ser arena y
+ * la escena entera vira a la luz, que es el error opuesto al de no teñir nada.
+ * Es un realce de la oposición cálido/frío, no un filtro.
+ */
+const FUERZA_TINTE = 0.3;
 
 // ---- Niebla ----------------------------------------------------------------
 
@@ -718,6 +771,19 @@ export function componerEscena(malla, opciones = {}) {
   // apagarse con la distancia como todo lo demás, o el pasillo pierde la
   // profundidad que la niebla le da.
   const emisivo = opciones.emisivo === true;
+  // EL SOL DE LA ESCENA (#587), opcional. Sin él manda `LUZ`, la direccional de
+  // interior con la que están calibradas las trece salas del Phobos: ninguna
+  // escena existente cambia ni un píxel. Va en el MISMO espacio que las normales
+  // —el del mundo cuando hay `luzFija`—, igual que los focos.
+  const luz = Array.isArray(opciones.luz) ? opciones.luz : null;
+  const ambiente = Number.isFinite(opciones.ambiente) ? opciones.ambiente : null;
+  // Y de qué COLOR es esa luz, y de qué color la sombra que rellena el cielo.
+  // Los dos vienen de fuera porque son decisiones de ambientación, no del motor:
+  // aquí no se sabe si es mediodía o si el sol está entrando en el mar.
+  const tinte =
+    opciones.tinte && (opciones.tinte.calida || opciones.tinte.fria)
+      ? { calida: opciones.tinte.calida ?? null, fria: opciones.tinte.fria ?? null }
+      : null;
   const yaw = finito(opciones.yaw, 0);
   const pitch = finito(opciones.pitch, 0);
   const roll = finito(opciones.roll, 0);
@@ -841,9 +907,9 @@ export function componerEscena(malla, opciones = {}) {
     // — luz que se desplaza sola, que es justo el defecto que `luzFija` existe
     // para evitar. Solo se calcula si hay focos.
     const centroide = focos.length > 0 ? centro(baseNormal) : null;
-    const intensidad = emisivo ? 1 : intensidadCara(normal, ajustes.tonos, { centroide, focos });
+    const intensidad = emisivo ? 1 : intensidadCara(normal, ajustes.tonos, { centroide, focos, luz, ambiente });
 
-    const sombreado = emisivo ? color : sombrear(color, intensidad);
+    const sombreado = emisivo ? color : sombrear(color, intensidad, tinte);
     const niebla = fondo ? factorNiebla(profundidad, { cerca, lejos, niebla: ajustes.niebla }) : 0;
     poligonos.push({
       puntos,

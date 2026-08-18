@@ -127,6 +127,31 @@ export const PUERTA_SALIDA = Object.freeze({
 export const PUERTA_OESTE = PUERTA_SALIDA;
 
 /**
+ * La puerta a la terraza (#579), en el muro OESTE y al fondo.
+ *
+ * ELEGIDA POR DONDE SE PUEDE ANDAR, no por donde el muro está libre, y la
+ * diferencia resultó ser todo. Barriendo los muebles a altura de hueco, el muro
+ * oeste tiene sitio de sobra entre z=0 y z=2,5 — y ahí la puerta era inútil:
+ * los 126 muebles de la sala parten su suelo en zonas incomunicadas, y desde la
+ * entrada NO SE LLEGA a ese tramo. Lo cazó la prueba de alcanzabilidad, que ya
+ * existía por el mismo susto de #423.
+ *
+ * Inundando la sala desde su entrada, lo andable es una franja a lo largo del
+ * muro sur, entre z≈9,8 y z≈11,3. La puerta va en el trozo de muro oeste que da
+ * a esa franja: es el único sitio donde una puerta es una puerta y no un dibujo
+ * de una puerta.
+ *
+ * Sale al costado de la cantina, que es casco al descubierto: exactamente donde
+ * puede colgar una terraza sin inventarse geografía de la nave.
+ */
+export const PUERTA_TERRAZA = Object.freeze({
+  x: 0,
+  z: 9.9,
+  ancho: 1.0,
+  profundidad: 1.4,
+});
+
+/**
  * Ventanales al espacio, en el muro del FONDO (sur).
  *
  * La primera versión los puso en el muro este, el más largo, y el QA no vio nada:
@@ -149,7 +174,7 @@ export const VENTANAS = Object.freeze([
 const SALA = crearSalaCaja({
   ancho: ANCHO,
   profundidad: PROFUNDIDAD,
-  puertas: [{ rect: PUERTA_SALIDA }],
+  puertas: [{ rect: PUERTA_SALIDA }, { rect: PUERTA_TERRAZA }],
   ventanas: VENTANAS,
   mobiliario: mobiliario(),
   // Los muros salen de la paleta de la CANTINA, no de la del casco: la sala

@@ -390,6 +390,89 @@ export const SISTEMA = Object.freeze({
 });
 
 /**
+ * La playa de pruebas (#587).
+ *
+ * El primer EXTERIOR del módulo, y por eso paleta propia: todo lo demás es
+ * interior de nave —metal frío, mamparo, fósforo— y meter arena y mar en
+ * `SECCION` haría que «casco» y «duna» convivieran en el mismo grupo sin tener
+ * nada que ver.
+ *
+ * De día y con el sol bajo, que es la hora a la que se leen las referencias
+ * (Kingdom Hearts, Digimon Adventure): la arena tira a cálida, el mar a frío, y
+ * el cielo es lo bastante claro como para que una silueta a contraluz —un poste,
+ * un aerogenerador— se recorte contra él sin necesitar contorno dibujado.
+ *
+ * La niebla del motor funde hacia `cielo`, así que ese color hace dos trabajos a
+ * la vez: es el fondo del lienzo y es hacia donde se apaga lo que está lejos. Si
+ * se cambia uno hay que cambiar el otro, o el horizonte deja de cerrar.
+ */
+export const PLAYA = Object.freeze({
+  cielo: "#bcd4e0", // claro y desaturado: es fondo, no protagonista
+  mar: "#3f7a91", // el agua cerca, todavía con color
+  marLejos: "#6f9fb0", // hacia el horizonte el agua se lava y se acerca al cielo
+  espuma: "#d8e6ea", // la lengua de agua que sube y baja
+  arenaMojada: "#8f8168", // los cinco metros lisos: arena que acaba de dejar el mar
+  arena: "#c9b48c", // el camino de arena fina, la superficie por la que se anda
+  duna: "#d8c69e", // más clara que el camino: le da la luz de lleno
+  dunaSombra: "#a89673", // el canto de cada terraza, o la duna sería un plano
+  poste: "#6e6152", // madera vieja de un poste de la luz
+  cable: "#3a352e", // casi silueta: un cable es una línea oscura contra el cielo
+  cabina: "#a83a32", // el rojo de la cabina, el único acento saturado de la escena
+  cabinaTecho: "#82291f", // su remate, un paso más oscuro
+  cristal: "#7fa7ae", // los vidrios: agua reflejada, no transparencia (no la hay)
+  torre: "#e4e7e2", // el blanco roto de un aerogenerador
+  aspa: "#f2f4f0", // un punto más claro: las aspas cogen el sol antes que la torre
+
+  // --- La luz. Los dos colores que hacen que la escena no sea plana: el sol
+  // baja tiñe de cálido lo que ilumina, y lo que queda en sombra lo rellena el
+  // cielo, que es frío. Sin esa OPOSICIÓN, sombrear es solo bajar el brillo del
+  // mismo color y todo se lee como cartón recortado.
+  luzSol: "#ffd9a0", // el cálido que se suma a lo iluminado
+  sombraCielo: "#5f7f9c", // el frío con el que el cielo rellena la sombra
+  sol: "#fff2cf", // el disco, casi blanco: es lo más claro del cuadro
+  destello: "#ffe7b8", // el camino de sol sobre el agua
+
+  // --- Lo que llena la playa. Un sitio sin nada suelto no es una playa, es una
+  // rampa: lo que la hace creíble son las cosas que nadie ha colocado.
+  roca: "#7d7566",
+  rocaClara: "#9b9182", // la cara que da al sol, para que una roca sea redonda
+  madera: "#8a7458", // madera de deriva, descolorida por el sal y el sol
+  matojo: "#6f7a4e", // la hierba que agarra la duna
+  matojoSeco: "#9a9463", // la que ya no
+  boya: "#d9683c", // naranja de señal: los únicos puntos vivos del agua
+  sombra: "#6a6252", // la que proyectan las cosas sobre la arena
+
+  // --- El cielo de una playa que NO es de la Tierra. Es lo que recuerda, sin
+  // decirlo, que esto lo mira gente que vive en una nave. Colores lavados y de
+  // poco contraste entre sí: un planeta saturado en el cielo se lee como un
+  // globo pintado encima, no como un cuerpo a doscientos kilómetros.
+  planetaOcre: "#c2a486",
+  planetaPalido: "#b9c3cc",
+  planetaRojizo: "#b07f6e",
+  anillo: "#cfc3ae",
+  luna: "#cdd3d6",
+
+  // --- El agua, por bandas. Un mar de un solo color no tiene ni profundidad ni
+  // superficie: lo que se lee como hondo es que el bajío sea distinto.
+  marBajio: "#5d9aab", // donde se ve el fondo
+  cresta: "#a9cdd6", // el filo de una ola antes de romper
+  marMarca: "#7b6e58", // la lengua que dejó la marea al bajar
+  alga: "#4f5a3c", // lo que trae el agua y se queda en la raya de restos
+  rizo: "#b6a37c", // la cresta de un rizo de arena, con el sol rasante
+  rizoDuna: "#c3b088", // el mismo rizo, en la arena más clara de la duna
+  manga: "#e07a3a", // la manga de viento: naranja de señal, se ve de lejos
+  mangaFranja: "#f0e6d8", // sus franjas claras
+  arenaVolada: "#e2d3ae", // la lengua de arena que cruza corriendo a ras de suelo
+
+  // --- El reloj varado. Latón y esmalte: los dos materiales que no son ni
+  // arena ni agua ni casco, y por eso el objeto salta a la vista sin gritar.
+  relojCara: "#e8e0cc", // el esmalte de la esfera
+  relojCerco: "#b08a3e", // el latón del cerco, ya sin brillo
+  relojAguja: "#2d2a24", // las agujas: casi negro, para que se lean a distancia
+  relojMarca: "#6b6047", // las marcas de las horas
+});
+
+/**
  * Fichas de la mesa de minijuegos (#308). Pixel, no grabado: la pila se repinta
  * en cuanto alguien apuesta.
  *

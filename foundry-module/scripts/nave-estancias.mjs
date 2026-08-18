@@ -20,20 +20,24 @@
  * apunta a otra estancia del mismo catálogo. `entrada` es dónde se aparece si
  * nadie más lo dice (primera apertura, o una puerta que no fija `x`/`z`).
  *
- * `consolas` (#509) son zonas de interacción DENTRO de la sala, no en un
- * muro: acercarse a una NO cambia de estancia —`destino` no tiene sentido
- * aquí—, dispara un aviso hacia fuera (`puesto`, opaco para este módulo,
- * igual que `destino` en una puerta) que interpreta quien gestione el
- * catálogo. Es a propósito la misma forma que una puerta (`{rect, ...}`)
- * para poder reutilizar la misma detección de contacto
- * (`nave-movimiento.puertaTocada`) sin que ese módulo necesite saber que las
- * consolas existen.
+ * `interacciones` (#582, antes `consolas` de #509) son puntos de interacción
+ * DENTRO de la sala, no en un muro: acercarse a uno NO cambia de estancia
+ * —`destino` no tiene sentido aquí—, dispara un aviso hacia fuera con su
+ * `accion`, opaca para este módulo igual que `destino` en una puerta, que
+ * interpreta quien gestione el catálogo.
+ *
+ * Nacieron como `consolas`, con la forma de una puerta (`{rect, puesto}`) para
+ * reutilizar `nave-movimiento.puertaTocada`. Esa forma solo daba para lo que ya
+ * había —una zona rectangular y un puesto—: ni ancla, ni orientación, ni id por
+ * el que buscarlas. La declaración vive ahora en `nave-interaccion.mjs` y aquí
+ * solo se transporta.
  *
  * @param {{
  *   planta: object,
  *   componer: (x:number, y:number, z:number, yaw:number, opciones?:object) => object,
  *   puertas?: Array<{rect:object, destino:{estancia:string, x?:number, z?:number, yaw?:number}}>,
- *   consolas?: Array<{rect:object, puesto:string}>,
+ *   interacciones?: Array<object>,
+ *   fondo?: string|null,
  *   entrada?: {x:number, z:number, yaw?:number},
  * }} definicion
  */
@@ -45,7 +49,16 @@ export function declararEstancia(definicion) {
     planta: definicion.planta,
     componer: definicion.componer,
     puertas: Object.freeze((definicion.puertas ?? []).map((p) => Object.freeze({ ...p }))),
-    consolas: Object.freeze((definicion.consolas ?? []).map((c) => Object.freeze({ ...c }))),
+    // Ya vienen validadas y congeladas de `declararInteraccion`: aquí solo se
+    // garantiza que la lista existe, para que nadie tenga que comprobar
+    // `?? []` al recorrerla.
+    interacciones: Object.freeze([...(definicion.interacciones ?? [])]),
+    // Con qué color se limpia el lienzo detrás de esta estancia (#587). Es
+    // propiedad de la ESTANCIA y no de la ventana porque el gris de mamparo que
+    // vale para «más nave sin renderizar todavía» no vale para un exterior: en
+    // la playa, lo que hay detrás de la geometría es cielo. `null` deja el que
+    // traiga la ventana, que es lo que hacen las trece salas de la nave.
+    fondo: definicion.fondo ?? null,
     entrada: Object.freeze({
       x: definicion.entrada?.x ?? definicion.planta.ancho / 2,
       z: definicion.entrada?.z ?? definicion.planta.profundidad / 2,
@@ -127,7 +140,8 @@ export function puntoDeLlegada(catalogo, destino) {
     planta: estancia.planta,
     componer: estancia.componer,
     puertas: estancia.puertas,
-    consolas: estancia.consolas,
+    interacciones: estancia.interacciones,
+    fondo: estancia.fondo,
     x: destino.x ?? estancia.entrada.x,
     z: destino.z ?? estancia.entrada.z,
     yaw: destino.yaw ?? estancia.entrada.yaw,

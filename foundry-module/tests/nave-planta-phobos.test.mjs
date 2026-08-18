@@ -3,6 +3,7 @@ import test from "node:test";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { consolasDe } from "./ayuda-consolas.mjs";
 
 import {
   ANCHO_PUERTA,
@@ -29,8 +30,21 @@ const raiz = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
  * dejaría pasar en falso todas las pruebas de abajo, que es justo lo que hizo
  * la primera versión de este archivo.
  */
+/**
+ * Estancias que NO son la nave y que por tanto no entran en las invariantes de
+ * este archivo, que son todas sobre el Phobos.
+ *
+ * La playa (#587) es un banco de pruebas de exteriores al que se entra por
+ * herramienta de GM: no cuelga de ninguna puerta —colgarla de un mamparo sería
+ * contar una historia que nadie ha decidido— y no tiene consolas ni maquinaria.
+ * Exigirle «ser alcanzable andando desde la cantina» sería exigirle ser nave.
+ */
+const FUERA_DE_LA_NAVE = new Set(["playa"]);
+
 function todasLasEstancias() {
-  const pares = CATALOGO_ANDAR.ids.map((id) => [id, CATALOGO_ANDAR.obtener(id)]);
+  const pares = CATALOGO_ANDAR.ids
+    .filter((id) => !FUERA_DE_LA_NAVE.has(id))
+    .map((id) => [id, CATALOGO_ANDAR.obtener(id)]);
   assert.ok(pares.length > 5, "el catálogo llega vacío: el recorrido está roto");
   return pares;
 }
@@ -268,7 +282,7 @@ test("la consola de cada sala con sistema abre el puesto de ESE sistema", () => 
     impulso: "navigation",
   };
   for (const [id, puesto] of Object.entries(esperado)) {
-    const consolas = CATALOGO_ANDAR.obtener(id).consolas;
+    const consolas = consolasDe(CATALOGO_ANDAR.obtener(id));
     assert.equal(consolas.length, 1, `${id} debería tener una consola`);
     assert.equal(consolas[0].puesto, puesto);
   }
@@ -278,7 +292,7 @@ test("la zona de consola no pisa ninguna puerta de su sala", () => {
   // Si la consola cae sobre una puerta, acercarse a ella te cambiaría de sala en
   // vez de abrir el puesto.
   for (const [id, estancia] of todasLasEstancias()) {
-    for (const consola of estancia.consolas) {
+    for (const consola of consolasDe(estancia)) {
       const c = consola.rect;
       for (const puerta of estancia.puertas) {
         const p = puerta.rect;
@@ -301,7 +315,7 @@ test("ninguna consola cae encima del punto de entrada de su sala", () => {
   // inventada: acercarse a la consola tiene que ser un GESTO. Si la entrada ya
   // cae dentro de su zona, entrar en la sala abriría el puesto solo.
   for (const [id, estancia] of todasLasEstancias()) {
-    for (const { rect } of estancia.consolas) {
+    for (const { rect } of consolasDe(estancia)) {
       const dentro =
         estancia.entrada.x >= rect.x &&
         estancia.entrada.x <= rect.x + rect.ancho &&
@@ -314,7 +328,7 @@ test("ninguna consola cae encima del punto de entrada de su sala", () => {
 
 test("las salas de tránsito y la cantina no tienen consola: no son puesto", () => {
   for (const id of ["cantina", "acceso-cantina", "camarotes"]) {
-    assert.deepEqual(CATALOGO_ANDAR.obtener(id).consolas, [], `${id} no debería tener consola`);
+    assert.deepEqual(consolasDe(CATALOGO_ANDAR.obtener(id)), [], `${id} no debería tener consola`);
   }
 });
 
@@ -507,7 +521,7 @@ test("y también se llega a la CONSOLA, y desde donde te dejan las vecinas (#560
       }
     }
 
-    for (const consola of estancia.consolas ?? []) {
+    for (const consola of consolasDe(estancia)) {
       let llega = false;
       for (const celda of vistos) {
         const [a, b] = celda.split(",");

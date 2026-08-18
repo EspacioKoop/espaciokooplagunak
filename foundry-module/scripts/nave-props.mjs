@@ -258,6 +258,38 @@ export function definirVocabulario(definiciones) {
   );
 }
 
+/**
+ * Mezcla varios vocabularios en uno, para escenas que tiran de más de un ambiente.
+ *
+ * Es lo que hace que los vocabularios puedan ser POR AMBIENTE en vez de uno solo
+ * (#589): una escena de puerto pide el marítimo y el urbano, y no hereda la duna
+ * de la playa ni la maquinaria del Phobos.
+ *
+ * UNA CLAVE REPETIDA ES UN ERROR, no un ganador. Que el último callara al
+ * primero sería la peor variante posible de este módulo: la escena pediría
+ * `mesa` creyendo que es la de la cantina y saldría la de la terraza, sin fallo
+ * en ningún sitio y con un cuadro sutilmente equivocado. Vale más romper al
+ * mezclar —una línea, un mensaje, se renombra— que buscar eso a ojo en una
+ * escena entera.
+ */
+export function mezclarVocabularios(...vocabularios) {
+  const mezcla = {};
+  const deQuien = new Map();
+  vocabularios.forEach((vocabulario, indice) => {
+    for (const [clave, prop] of Object.entries(vocabulario)) {
+      if (clave in mezcla) {
+        throw new Error(
+          `mezclarVocabularios: "${clave}" está en el vocabulario ${deQuien.get(clave)} y en el ${indice}. ` +
+            "Dos props distintos con el mismo nombre: renombra uno antes de mezclarlos.",
+        );
+      }
+      deQuien.set(clave, indice);
+      mezcla[clave] = prop;
+    }
+  });
+  return Object.freeze(mezcla);
+}
+
 /** El vocabulario de la NAVE. */
 export const VOCABULARIO = definirVocabulario(DEFINICIONES);
 

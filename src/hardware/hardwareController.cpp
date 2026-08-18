@@ -54,7 +54,7 @@ void HardwareController::loadConfiguration(string filename)
     while(fgets(buffer, sizeof(buffer), f))
     {
         string line = string(buffer).strip();
-        if(line.find("#") > -1)
+        if(line.find("#") != string::npos)
             line = line.substr(0, line.find("#")).strip();
         if (line.startswith("[") && line.endswith("]"))
         {

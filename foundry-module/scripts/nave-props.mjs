@@ -37,6 +37,7 @@
 
 import { CACHARROS, MURAL, SECCION } from "./paleta.mjs";
 import { caja, prisma } from "./escena-primitivas.mjs";
+import { metrosPorTextura, texturaMaterial } from "./props-materiales.mjs";
 
 /** Un cuarto de vuelta, la unidad en la que se gira un prop. */
 const CUARTO = Math.PI / 2;
@@ -235,6 +236,16 @@ export function definirVocabulario(definiciones) {
                 // cabina no son del color de la cabina). Sin declararlo, hereda
                 // el del prop, que es el caso normal.
                 color: parte.color ?? prop.color,
+                // DE QUÉ ESTÁ HECHA la parte (#584). Se hereda del prop, igual
+                // que el color, porque lo normal es que una pieza entera sea de
+                // un material y lo raro es la excepción.
+                //
+                // Y `material: null` EN LA PARTE SIGNIFICA LISO, no «no dicho».
+                // Es la diferencia que hace falta para el cristal de la cabina:
+                // la cabina entera es chapa, y sus vidrios no. Con `??` no se
+                // podía expresar —null cuenta como ausente y heredaría chapa—,
+                // así que se mira si la parte trae la clave.
+                material: "material" in parte ? parte.material : (prop.material ?? null),
               }),
             ),
           ),
@@ -341,6 +352,9 @@ export function colocarProp(clave, { x, z, cuartos = 0, nombre = clave, vocabula
     const grueso = Math.min(...medidas.filter((_, i) => i !== indiceEje));
     const base = [...centro];
     base[indiceEje] -= largo / 2;
+    // La escala de la textura la manda el MATERIAL, no la pieza: las manchas de
+    // una piedra son grandes lleve el tamaño que lleve la roca.
+    const escalaUV = parte.material ? metrosPorTextura(parte.material) : undefined;
     const malla = parte.lados
       ? prisma(base, {
           radioAbajo: grueso / 2,
@@ -348,9 +362,15 @@ export function colocarProp(clave, { x, z, cuartos = 0, nombre = clave, vocabula
           alto: largo,
           lados: parte.lados,
           eje,
+          ...(escalaUV ? { metrosPorTextura: escalaUV } : {}),
         })
-      : caja(centro, medidas);
+      : caja(centro, medidas, escalaUV ? { metrosPorTextura: escalaUV } : undefined);
     return {
+      // La textura del material, resuelta AQUÍ y no por quien dibuje: es lo
+      // único que hace falta para que una escena entera se texture sin que
+      // ninguna escena sepa qué es un material. Sin material declarado sale
+      // `null`, y una pieza sin textura se pinta de su color plano.
+      textura: parte.material ? texturaMaterial(parte.material, parte.color) : null,
       // Una pieza por parte, numerada: el nombre es lo único por lo que una
       // prueba puede señalar «esta pata», y dos piezas con el mismo nombre no
       // se distinguen.

@@ -989,9 +989,16 @@ const PIEZAS = Object.freeze([
     .filter(Boolean)
     .map((malla) => ({ malla, color: PLAYA.sombra })),
   ...cables(),
-  ...PROPS.flatMap(({ piezas }) => piezas).map(({ centro, medidas, color }) => ({
-    malla: caja(centro, medidas),
+  // LA MALLA DEL PROP, no una caja rehecha a partir de su envolvente. Estaba
+  // reconstruyendo `caja(centro, medidas)` y con eso un mástil de ocho lados se
+  // dibujaba como un tablón cuadrado — la conicidad y las facetas que
+  // `colocarProp` había calculado se tiraban a la basura en la última línea. Y
+  // ahora además se llevaría por delante las UV, que es lo que texturarlo
+  // necesita (#584).
+  ...PROPS.flatMap(({ piezas }) => piezas).map(({ malla, color, textura }) => ({
+    malla,
     color,
+    textura,
   })),
 ]);
 

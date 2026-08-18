@@ -40,6 +40,7 @@ export const VOCABULARIO_COSTA = definirVocabulario({
 
   roca: {
     color: PLAYA.roca,
+    material: "piedra",
     partes: [
       { medidas: [1.3, 0.7, 1.1], centro: [0, 0.3, 0] },
       { medidas: [0.9, 0.5, 0.8], centro: [0.35, 0.72, -0.15], color: PLAYA.rocaClara },
@@ -52,6 +53,7 @@ export const VOCABULARIO_COSTA = definirVocabulario({
 
   madera: {
     color: PLAYA.madera,
+    material: "veta",
     partes: [
       // Tumbado, que es como está la madera de deriva: eje X, no Y.
       { medidas: [2.6, 0.28, 0.3], centro: [0, 0.16, 0], lados: 6, eje: "x", punta: 0.75 },
@@ -100,6 +102,7 @@ export const VOCABULARIO_MARITIMO = definirVocabulario({
 
   boya: {
     color: PLAYA.boya,
+    material: "chapa",
     partes: [
       { medidas: [0.8, 0.6, 0.8], centro: [0, 0.3, 0], lados: 8 },
       { medidas: [0.12, 1.1, 0.12], centro: [0, 1.1, 0], lados: 6 },
@@ -123,6 +126,7 @@ export const VOCABULARIO_MARITIMO = definirVocabulario({
 
   manga: {
     color: PLAYA.manga,
+    material: "tela",
     partes: [
       { medidas: [0.16, 3.6, 0.16], centro: [0, 1.8, 0], lados: 8, punta: 0.8 },
       // El cono, en tres tramos de sección REDONDA. Una manga es una manga de
@@ -148,6 +152,7 @@ export const VOCABULARIO_MARITIMO = definirVocabulario({
 
   aerogenerador: {
     color: PLAYA.torre,
+    material: "chapa",
     partes: [
       // La torre se estrecha, como todas: es lo primero que se ve de lejos.
       { medidas: [3.2, 44, 3.2], centro: [0, 22, 0], lados: 8, punta: 0.55 },
@@ -172,6 +177,7 @@ export const VOCABULARIO_MARITIMO = definirVocabulario({
    */
   noray: {
     color: PUERTO.hierro,
+    material: "chapa",
     partes: [
       { medidas: [0.62, 0.1, 0.62], centro: [0, 0.05, 0], lados: 8 },
       { medidas: [0.34, 0.52, 0.34], centro: [0, 0.34, 0], lados: 8, punta: 1.25 },
@@ -191,6 +197,7 @@ export const VOCABULARIO_MARITIMO = definirVocabulario({
    */
   pilote: {
     color: PUERTO.pilote,
+    material: "veta",
     partes: [
       { medidas: [0.26, 2.6, 0.26], centro: [0, 1.3, 0], lados: 8, punta: 0.85 },
       { medidas: [0.28, 0.55, 0.28], centro: [0, 0.28, 0], lados: 8, color: PUERTO.piloteFango },
@@ -212,6 +219,7 @@ export const VOCABULARIO_MARITIMO = definirVocabulario({
    */
   barca: {
     color: PUERTO.casco,
+    material: "veta",
     partes: [
       { medidas: [3.4, 0.62, 1.15], centro: [0, 0.31, 0], lados: 6, eje: "x", punta: 0.45 },
       { medidas: [2.6, 0.08, 0.8], centro: [0, 0.6, 0], color: PUERTO.interiorBarca },
@@ -243,6 +251,7 @@ export const VOCABULARIO_URBANO = definirVocabulario({
 
   poste: {
     color: PLAYA.poste,
+    material: "veta",
     partes: [
       // El mástil es un TRONCO descortezado: redondo y más fino arriba. Era una
       // caja, y con cuatro aristas vivas se leía como una viga.
@@ -289,6 +298,7 @@ export const VOCABULARIO_URBANO = definirVocabulario({
    */
   cabina: {
     color: PLAYA.cabina,
+    material: "chapa",
     partes: [
       // --- La peana, en dos escalones: el de hormigón y el rodapié de la cabina.
       { medidas: [1.32, 0.1, 1.32], centro: [0, 0.05, 0], color: PUERTO.hormigon },
@@ -307,16 +317,16 @@ export const VOCABULARIO_URBANO = definirVocabulario({
 
       // --- Los paños laterales y el trasero, cuarteados: peinazo a media altura
       //     y un montante fino que parte el vidrio en dos hojas.
-      { medidas: [0.76, 0.9, 0.05], centro: [0, 0.92, -0.47], color: PLAYA.cristal },
-      { medidas: [0.76, 0.85, 0.05], centro: [0, 1.92, -0.47], color: PLAYA.cristal },
+      { medidas: [0.76, 0.9, 0.05], centro: [0, 0.92, -0.47], color: PLAYA.cristal, material: null },
+      { medidas: [0.76, 0.85, 0.05], centro: [0, 1.92, -0.47], color: PLAYA.cristal, material: null },
       { medidas: [0.8, 0.09, 0.07], centro: [0, 1.44, -0.47] },
       { medidas: [0.06, 1.8, 0.07], centro: [0, 1.4, -0.47] },
-      { medidas: [0.05, 0.9, 0.76], centro: [-0.47, 0.92, 0], color: PLAYA.cristal },
-      { medidas: [0.05, 0.85, 0.76], centro: [-0.47, 1.92, 0], color: PLAYA.cristal },
+      { medidas: [0.05, 0.9, 0.76], centro: [-0.47, 0.92, 0], color: PLAYA.cristal, material: null },
+      { medidas: [0.05, 0.85, 0.76], centro: [-0.47, 1.92, 0], color: PLAYA.cristal, material: null },
       { medidas: [0.07, 0.09, 0.8], centro: [-0.47, 1.44, 0] },
       { medidas: [0.07, 1.8, 0.06], centro: [-0.47, 1.4, 0] },
-      { medidas: [0.05, 0.9, 0.76], centro: [0.47, 0.92, 0], color: PLAYA.cristal },
-      { medidas: [0.05, 0.85, 0.76], centro: [0.47, 1.92, 0], color: PLAYA.cristal },
+      { medidas: [0.05, 0.9, 0.76], centro: [0.47, 0.92, 0], color: PLAYA.cristal, material: null },
+      { medidas: [0.05, 0.85, 0.76], centro: [0.47, 1.92, 0], color: PLAYA.cristal, material: null },
       { medidas: [0.07, 0.09, 0.8], centro: [0.47, 1.44, 0] },
       { medidas: [0.07, 1.8, 0.06], centro: [0.47, 1.4, 0] },
 
@@ -334,16 +344,16 @@ export const VOCABULARIO_URBANO = definirVocabulario({
       { medidas: [0.72, 0.1, 0.05], centro: [0, 2.2, 0.43] },
       { medidas: [0.72, 0.14, 0.05], centro: [0, 0.42, 0.43] },
       { medidas: [0.72, 0.09, 0.05], centro: [0, 1.42, 0.43] },
-      { medidas: [0.58, 0.9, 0.03], centro: [0, 0.94, 0.44], color: PLAYA.cristal },
-      { medidas: [0.58, 0.7, 0.03], centro: [0, 1.82, 0.44], color: PLAYA.cristal },
+      { medidas: [0.58, 0.9, 0.03], centro: [0, 0.94, 0.44], color: PLAYA.cristal, material: null },
+      { medidas: [0.58, 0.7, 0.03], centro: [0, 1.82, 0.44], color: PLAYA.cristal, material: null },
       // El tirador, por delante de todo: es lo que da la escala humana.
       { medidas: [0.05, 0.44, 0.05], centro: [0.24, 1.2, 0.48], color: PLAYA.cabinaTecho },
 
       // --- La cornisa y el rótulo: lo que remata la silueta contra el cielo.
       { medidas: [1.12, 0.14, 1.12], centro: [0, 2.57, 0] },
       { medidas: [1.02, 0.2, 1.02], centro: [0, 2.74, 0], color: PLAYA.cabinaTecho },
-      { medidas: [0.86, 0.13, 1.06], centro: [0, 2.74, 0], color: PLAYA.cristal },
-      { medidas: [1.06, 0.13, 0.86], centro: [0, 2.74, 0], color: PLAYA.cristal },
+      { medidas: [0.86, 0.13, 1.06], centro: [0, 2.74, 0], color: PLAYA.cristal, material: null },
+      { medidas: [1.06, 0.13, 0.86], centro: [0, 2.74, 0], color: PLAYA.cristal, material: null },
       { medidas: [1.16, 0.09, 1.16], centro: [0, 2.88, 0] },
       // El remate de arriba, más pequeño: una cabina no acaba en plano.
       { medidas: [0.5, 0.1, 0.5], centro: [0, 2.97, 0], lados: 8, color: PLAYA.cabinaTecho },
@@ -353,6 +363,7 @@ export const VOCABULARIO_URBANO = definirVocabulario({
 
   banco: {
     color: PUERTO.tablazon,
+    material: "veta",
     partes: [
       { medidas: [0.18, 0.42, 0.5], centro: [-0.7, 0.21, 0], color: PUERTO.hormigon },
       { medidas: [0.18, 0.42, 0.5], centro: [0.7, 0.21, 0], color: PUERTO.hormigon },
@@ -374,6 +385,7 @@ export const VOCABULARIO_URBANO = definirVocabulario({
    */
   papelera: {
     color: PUERTO.chapa,
+    material: "chapa",
     partes: [
       { medidas: [0.44, 0.62, 0.44], centro: [0, 0.5, 0], lados: 8, punta: 1.15 },
       { medidas: [0.5, 0.06, 0.5], centro: [0, 0.83, 0], lados: 8, color: PUERTO.hierroPulido },
@@ -393,6 +405,7 @@ export const VOCABULARIO_URBANO = definirVocabulario({
    */
   cajas: {
     color: PUERTO.caja,
+    material: "veta",
     partes: [
       { medidas: [0.9, 0.62, 0.8], centro: [0, 0.31, 0] },
       { medidas: [0.95, 0.06, 0.85], centro: [0, 0.34, 0], color: PUERTO.cajaFleje },

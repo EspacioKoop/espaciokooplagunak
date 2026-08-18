@@ -26,12 +26,29 @@
 // Puras: ni Foundry, ni DOM, ni color. El color lo pone quien las usa.
 
 /**
+ * Cuántos metros mide un lado de la textura de un material.
+ *
+ * ESTA CONSTANTE ES LA QUE HACE QUE EL GRANO SEA GRANO. Con UV de 0 a 1 por cara
+ * —que es lo que sale solo— la misma imagen se estira sobre la cara sea cual sea
+ * su tamaño: la veta de un tablón de tres metros saldría con el mismo número de
+ * rayas que la de un listón de diez centímetros, o sea treinta veces más gorda.
+ * Y el ojo lee ESO antes que ninguna otra cosa, porque el tamaño del grano es
+ * como se estima el tamaño de un objeto cuando no hay nada al lado para
+ * comparar.
+ *
+ * Midiendo las UV en metros, la textura TILEA a densidad constante y una pieza
+ * grande simplemente enseña más repeticiones. Es lo que `muestrearTextura` ya
+ * permite: envuelve con módulo, así que una `u` de 7,3 es perfectamente válida.
+ */
+export const METROS_POR_TEXTURA = 0.5;
+
+/**
  * Una caja alineada con los ejes, por su centro y sus medidas.
  *
  * La forma de trabajo de casi todo el módulo, y sigue siendo la correcta para lo
  * que de verdad es una caja: un armario, un cajón de registro, un tablero.
  */
-export function caja([cx, cy, cz], [ancho, alto, fondo]) {
+export function caja([cx, cy, cz], [ancho, alto, fondo], { metrosPorTextura = METROS_POR_TEXTURA } = {}) {
   const x = ancho / 2;
   const y = alto / 2;
   const z = fondo / 2;
@@ -53,7 +70,36 @@ export function caja([cx, cy, cz], [ancho, alto, fondo]) {
     [3, 7, 6, 2], // techo
     [0, 1, 5, 4], // suelo
   ];
-  return { vertices, caras };
+  return { vertices, caras, uvs: uvsDeCaja(ancho, alto, fondo, metrosPorTextura) };
+}
+
+
+/**
+ * Las UV de una caja, una por cara y medidas en metros.
+ *
+ * Cada cara toma como ejes de la textura sus dos dimensiones REALES, no un
+ * cuadrado normalizado: la cara frontal se mide en (ancho, alto), la lateral en
+ * (fondo, alto) y las horizontales en (ancho, fondo). Así una caja larga y baja
+ * enseña la textura estirada a lo largo, que es lo que se ve en un tablón, y no
+ * una imagen deformada.
+ */
+export function uvsDeCaja(ancho, alto, fondo, metrosPorTextura = METROS_POR_TEXTURA) {
+  const u = (metros) => Math.abs(metros) / metrosPorTextura;
+  const [a, h, f] = [u(ancho), u(alto), u(fondo)];
+  const rect = (ancho2, alto2) => [
+    [0, alto2],
+    [0, 0],
+    [ancho2, 0],
+    [ancho2, alto2],
+  ];
+  return [
+    rect(a, h), // frente
+    rect(a, h), // fondo
+    rect(f, h), // izquierda
+    rect(f, h), // derecha
+    rect(a, f), // techo
+    rect(a, f), // suelo
+  ];
 }
 
 /**
@@ -74,7 +120,16 @@ export function caja([cx, cy, cz], [ancho, alto, fondo]) {
  */
 export function prisma(
   [cx, cy, cz],
-  { radioAbajo, radioArriba = radioAbajo, alto, lados = 8, giro = 0, tapaAbajo = false, eje = "y" },
+  {
+    radioAbajo,
+    radioArriba = radioAbajo,
+    alto,
+    lados = 8,
+    giro = 0,
+    tapaAbajo = false,
+    eje = "y",
+    metrosPorTextura = METROS_POR_TEXTURA,
+  },
 ) {
   // EL EJE PUEDE NO SER VERTICAL. Un poste, un pie de mesa o un tiesto crecen
   // hacia arriba, pero un tronco tumbado en la arena y la manga de un
@@ -108,7 +163,33 @@ export function prisma(
   // cara que se paga por nada. Una ficha tumbada sobre una mesa sí la necesita.
   caras.push(Array.from({ length: lados }, (_, j) => lados + (lados - 1 - j)));
   if (tapaAbajo) caras.push(Array.from({ length: lados }, (_, j) => j));
-  return { vertices, caras };
+
+  // Las UV del costado, medidas en metros como las de la caja: `u` recorre el
+  // PERÍMETRO y `v` la altura, que es como se envuelve una etiqueta en una lata.
+  // Un poste alto enseña más repeticiones a lo largo; uno gordo, más a lo ancho.
+  const perimetro = 2 * Math.PI * Math.max(radioAbajo, radioArriba);
+  const paso = perimetro / lados / metrosPorTextura;
+  const v1 = Math.abs(alto) / metrosPorTextura;
+  const uvs = [];
+  for (let j = 0; j < lados; j += 1) {
+    const u0 = j * paso;
+    uvs.push([
+      [u0, 0],
+      [u0, v1],
+      [u0 + paso, v1],
+      [u0 + paso, 0],
+    ]);
+  }
+  // Las tapas se resuelven con un cuadrado del tamaño del prisma: son pequeñas y
+  // casi siempre se ven de canto, así que no compensa proyectarlas en polar.
+  const lado = ((radioArriba * 2) / metrosPorTextura) || 1;
+  const tapa = Array.from({ length: lados }, (_, j) => {
+    const t = (j / lados) * 2 * Math.PI;
+    return [((Math.cos(t) + 1) / 2) * lado, ((Math.sin(t) + 1) / 2) * lado];
+  });
+  uvs.push(tapa);
+  if (tapaAbajo) uvs.push(tapa);
+  return { vertices, caras, uvs };
 }
 
 /**

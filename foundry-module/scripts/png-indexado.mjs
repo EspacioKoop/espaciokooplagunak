@@ -175,6 +175,103 @@ export function codificarPngIndexado({ ancho, alto, indices, paleta }) {
   ]);
 }
 
+/**
+ * Lee un PNG indexado de los que emite `codificarPngIndexado`.
+ *
+ * POR QUÉ HAY DECODIFICADOR. Sin él, prerenderizar (#584) sería un viaje de ida:
+ * se emitiría el PNG y el módulo tendría que volver a pedirle al navegador que
+ * lo pinte en un lienzo para leer sus píxeles — o sea, decodificar en cada
+ * cliente en cada carga, que es justo lo que se quería evitar. Con él, el asset
+ * entra directamente en la forma `{ancho, alto, indices, paleta}` que
+ * `retro3d-lienzo.mjs` ya consume.
+ *
+ * NO ES UN DECODIFICADOR DE PNG GENERAL, y no debe llegar a serlo. Solo entiende
+ * lo que este módulo escribe: color indexado, 8 bits, sin entrelazar y con los
+ * datos en bloques `stored`. Cualquier otra cosa —un PNG de fuera, uno
+ * comprimido de verdad— se rechaza en vez de intentar adivinar. Aceptar más
+ * sería aceptar arte de terceros por la puerta de atrás, y esa puerta es #571.
+ */
+export function decodificarPngIndexado(bytes) {
+  const datos = bytes instanceof Uint8Array ? bytes : Uint8Array.from(bytes);
+  for (const [i, byte] of FIRMA.entries()) {
+    if (datos[i] !== byte) throw new Error("No es un PNG: la firma no coincide.");
+  }
+
+  const leerU32 = (pos) =>
+    ((datos[pos] << 24) | (datos[pos + 1] << 16) | (datos[pos + 2] << 8) | datos[pos + 3]) >>> 0;
+
+  const trozos = new Map();
+  let pos = FIRMA.length;
+  while (pos + 8 <= datos.length) {
+    const largo = leerU32(pos);
+    const tipo = String.fromCharCode(...datos.subarray(pos + 4, pos + 8));
+    trozos.set(tipo, datos.subarray(pos + 8, pos + 8 + largo));
+    pos += 12 + largo; // longitud, tipo, datos y CRC
+    if (tipo === "IEND") break;
+  }
+
+  const ihdr = trozos.get("IHDR");
+  const plte = trozos.get("PLTE");
+  const idat = trozos.get("IDAT");
+  if (!ihdr || !plte || !idat) throw new Error("Al PNG le falta IHDR, PLTE o IDAT.");
+
+  const u32De = (buf, i) => ((buf[i] << 24) | (buf[i + 1] << 16) | (buf[i + 2] << 8) | buf[i + 3]) >>> 0;
+  const ancho = u32De(ihdr, 0);
+  const alto = u32De(ihdr, 4);
+  const [profundidad, tipoColor, compresion, filtro, entrelazado] = ihdr.subarray(8, 13);
+  if (profundidad !== 8 || tipoColor !== 3) {
+    throw new Error(`Solo se leen PNG indexados de 8 bits, y este es ${profundidad}/${tipoColor}.`);
+  }
+  if (compresion !== 0 || filtro !== 0 || entrelazado !== 0) {
+    throw new Error("Solo se leen PNG sin entrelazar y con filtrado estándar.");
+  }
+
+  const crudo = inflarSinComprimir(idat);
+  const esperado = alto * (ancho + 1);
+  if (crudo.length !== esperado) {
+    throw new Error(`Se esperaban ${esperado} bytes de píxel y llegaron ${crudo.length}.`);
+  }
+
+  const indices = new Uint8Array(ancho * alto);
+  for (let y = 0; y < alto; y += 1) {
+    // El byte de filtro de cada fila tiene que ser 0: es lo que escribe el
+    // codificador, y aplicar filtros de verdad sería el paso a decodificador
+    // general que este módulo no quiere dar.
+    if (crudo[y * (ancho + 1)] !== 0) throw new Error(`La fila ${y} usa un filtro no soportado.`);
+    indices.set(crudo.subarray(y * (ancho + 1) + 1, (y + 1) * (ancho + 1)), y * ancho);
+  }
+
+  // La entrada 0 de PLTE es el hueco que añade el codificador, y no forma parte
+  // de la paleta declarada: se descarta al leer, igual que se añadió al escribir.
+  const paleta = [];
+  for (let i = 3; i + 2 < plte.length; i += 3) {
+    paleta.push(`#${[plte[i], plte[i + 1], plte[i + 2]].map((c) => c.toString(16).padStart(2, "0")).join("")}`);
+  }
+
+  return { ancho, alto, indices, paleta };
+}
+
+/** Deshace el `zlibSinComprimir` de arriba: bloques `stored`, y nada más. */
+function inflarSinComprimir(flujo) {
+  if (flujo[0] !== 0x78) throw new Error("El IDAT no lleva cabecera zlib.");
+  const salida = [];
+  let pos = 2;
+  for (;;) {
+    if (pos + 5 > flujo.length) throw new Error("Bloque zlib truncado.");
+    const cabecera = flujo[pos];
+    const ultimo = cabecera & 1;
+    if ((cabecera >>> 1) & 3) {
+      throw new Error("El IDAT viene comprimido de verdad, y aquí solo se leen bloques «stored».");
+    }
+    const len = flujo[pos + 1] | (flujo[pos + 2] << 8);
+    pos += 5;
+    for (let i = 0; i < len; i += 1) salida.push(flujo[pos + i]);
+    pos += len;
+    if (ultimo) break;
+  }
+  return Uint8Array.from(salida);
+}
+
 /** El PNG ya codificado, como data-URI listo para un `src`. */
 export function pngADataUri(bytes) {
   return `data:image/png;base64,${base64(bytes)}`;

@@ -287,11 +287,19 @@ function recortarContraPlano(vertices, evaluar) {
     if (actualDentro) dentro.push(actual);
     if (actualDentro !== siguienteDentro) {
       const t = dA / (dA - dB);
-      dentro.push([
-        actual[0] + (siguiente[0] - actual[0]) * t,
-        actual[1] + (siguiente[1] - actual[1]) * t,
-        actual[2] + (siguiente[2] - actual[2]) * t,
-      ]);
+      // TODAS las componentes, igual que en el recorte cercano y en el lejano
+      // (#573). Este se quedó fuera de aquel arreglo y el fallo tardó en salir
+      // porque hasta el matte del horizonte (#584) ninguna superficie texturada
+      // llegaba a los bordes del cuadro: un polígono cortado por el lateral
+      // perdía sus UV y volvía al color plano de la cara, o sea, el horizonte
+      // se quedaba liso justo en los dos extremos de la pantalla.
+      const cortado = new Array(Math.max(actual.length, siguiente.length));
+      for (let k = 0; k < cortado.length; k += 1) {
+        const a = actual[k] ?? 0;
+        const b = siguiente[k] ?? 0;
+        cortado[k] = a + (b - a) * t;
+      }
+      dentro.push(cortado);
     }
   }
   return dentro;

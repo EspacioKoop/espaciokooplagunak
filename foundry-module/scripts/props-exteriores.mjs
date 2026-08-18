@@ -257,45 +257,100 @@ export const VOCABULARIO_URBANO = definirVocabulario({
   },
 
   /**
-   * Cabina de teléfono: cuatro montantes, techo, base y tres cristales.
+   * Cabina de teléfono: la caja, la puerta, los cristales cuarteados y el rótulo.
    *
-   * Los cristales son parte con COLOR PROPIO, no una cabina de un solo tono: sin
-   * ellos la cabina es un armario rojo. El motor no dibuja transparencias, así
-   * que el vidrio se resuelve como lo resolvía la época — un color frío que se
-   * lee como reflejo del cielo.
+   * ES EL ELEMENTO QUE CONVIERTE LA PLAYA EN UN SITIO —viene de Digimon, y no es
+   * un chiste interno: sin ella esto es un degradado de arena; con ella, alguien
+   * pregunta qué hace ahí—. O sea que es el prop de la escena que más se mira,
+   * y el que menos podía permitirse ser un armario rojo con tres cristales, que
+   * es lo que era.
    *
+   * QUÉ SE LE HA AÑADIDO Y POR QUÉ, que es donde está el trabajo:
+   *
+   *  - UN ZÓCALO. Estaba apoyada en el suelo por su propia base y flotaba: una
+   *    cabina de verdad va sobre una peana de hormigón que sobresale, y ese
+   *    reborde es lo que la ATA al suelo aunque ya haya sombra.
+   *  - MONTANTES CON CANTO. Cuatro palos de sección cuadrada leen como andamio.
+   *    Doblando cada uno en dos piezas —el perfil y su canto más claro— aparece
+   *    el chaflán, que es lo que dice «carpintería metálica» sin un polígono de
+   *    más en la silueta.
+   *  - LA PUERTA SE LEE COMO PUERTA. Antes había un cristal donde debería haber
+   *    una puerta. Ahora hay marco, hoja retranqueada y tirador vertical: es el
+   *    único sitio donde el ojo busca escala humana, y una hoja de 1,7 m con
+   *    tirador dice el tamaño de la cabina entera.
+   *  - CRISTALES CUARTEADOS. Un paño liso de color frío se lee como plástico.
+   *    Partidos por un peinazo horizontal y dos montantes finos, se leen como
+   *    vidrio en carpintería — y de paso cada trozo coge la luz distinta.
+   *  - EL RÓTULO Y LA CORNISA. La banda de arriba es lo que remata la silueta
+   *    contra el cielo. Sin ella la cabina termina en un canto y parece cortada.
+   *
+   * NADA QUE SE PUEDA LEER (#526): el rótulo es una banda de color, no letras.
    * La puerta mira a +z; el ancla se planta delante, mirándola.
    */
-
   cabina: {
     color: PLAYA.cabina,
     partes: [
-      { medidas: [1.0, 0.12, 1.0], centro: [0, 0.06, 0] },
-      { medidas: [0.12, 2.3, 0.12], centro: [-0.44, 1.2, -0.44] },
-      { medidas: [0.12, 2.3, 0.12], centro: [0.44, 1.2, -0.44] },
-      { medidas: [0.12, 2.3, 0.12], centro: [-0.44, 1.2, 0.44] },
-      { medidas: [0.12, 2.3, 0.12], centro: [0.44, 1.2, 0.44] },
-      { medidas: [1.1, 0.22, 1.1], centro: [0, 2.44, 0] },
-      { medidas: [1.05, 0.1, 1.05], centro: [0, 2.62, 0], color: PLAYA.cabinaTecho },
-      { medidas: [0.8, 1.7, 0.06], centro: [0, 1.35, -0.46], color: PLAYA.cristal },
-      { medidas: [0.06, 1.7, 0.8], centro: [-0.46, 1.35, 0], color: PLAYA.cristal },
-      { medidas: [0.06, 1.7, 0.8], centro: [0.46, 1.35, 0], color: PLAYA.cristal },
+      // --- La peana, en dos escalones: el de hormigón y el rodapié de la cabina.
+      { medidas: [1.32, 0.1, 1.32], centro: [0, 0.05, 0], color: PUERTO.hormigon },
+      { medidas: [1.16, 0.06, 1.16], centro: [0, 0.13, 0], color: PUERTO.hormigonSombra },
+      { medidas: [1.0, 0.14, 1.0], centro: [0, 0.23, 0] },
+
+      // --- Los cuatro montantes, cada uno con su canto a la luz.
+      { medidas: [0.13, 2.2, 0.13], centro: [-0.44, 1.4, -0.44] },
+      { medidas: [0.05, 2.2, 0.05], centro: [-0.47, 1.4, -0.47], color: PLAYA.cabinaTecho },
+      { medidas: [0.13, 2.2, 0.13], centro: [0.44, 1.4, -0.44] },
+      { medidas: [0.05, 2.2, 0.05], centro: [0.47, 1.4, -0.47], color: PLAYA.cabinaTecho },
+      { medidas: [0.13, 2.2, 0.13], centro: [-0.44, 1.4, 0.44] },
+      { medidas: [0.05, 2.2, 0.05], centro: [-0.47, 1.4, 0.47], color: PLAYA.cabinaTecho },
+      { medidas: [0.13, 2.2, 0.13], centro: [0.44, 1.4, 0.44] },
+      { medidas: [0.05, 2.2, 0.05], centro: [0.47, 1.4, 0.47], color: PLAYA.cabinaTecho },
+
+      // --- Los paños laterales y el trasero, cuarteados: peinazo a media altura
+      //     y un montante fino que parte el vidrio en dos hojas.
+      { medidas: [0.76, 0.9, 0.05], centro: [0, 0.92, -0.47], color: PLAYA.cristal },
+      { medidas: [0.76, 0.85, 0.05], centro: [0, 1.92, -0.47], color: PLAYA.cristal },
+      { medidas: [0.8, 0.09, 0.07], centro: [0, 1.44, -0.47] },
+      { medidas: [0.06, 1.8, 0.07], centro: [0, 1.4, -0.47] },
+      { medidas: [0.05, 0.9, 0.76], centro: [-0.47, 0.92, 0], color: PLAYA.cristal },
+      { medidas: [0.05, 0.85, 0.76], centro: [-0.47, 1.92, 0], color: PLAYA.cristal },
+      { medidas: [0.07, 0.09, 0.8], centro: [-0.47, 1.44, 0] },
+      { medidas: [0.07, 1.8, 0.06], centro: [-0.47, 1.4, 0] },
+      { medidas: [0.05, 0.9, 0.76], centro: [0.47, 0.92, 0], color: PLAYA.cristal },
+      { medidas: [0.05, 0.85, 0.76], centro: [0.47, 1.92, 0], color: PLAYA.cristal },
+      { medidas: [0.07, 0.09, 0.8], centro: [0.47, 1.44, 0] },
+      { medidas: [0.07, 1.8, 0.06], centro: [0.47, 1.4, 0] },
+
+      // --- LA PUERTA, a +z: marco, hoja retranqueada, vidrio partido y tirador.
+      { medidas: [0.9, 0.1, 0.08], centro: [0, 2.45, 0.46] },
+      { medidas: [0.1, 2.1, 0.08], centro: [-0.4, 1.35, 0.46] },
+      { medidas: [0.1, 2.1, 0.08], centro: [0.4, 1.35, 0.46] },
+      // La hoja es un MARCO, no un panel. Maciza tapaba su propio vidrio desde
+      // fuera —se vio en la primera vista previa: una puerta ciega en una cabina
+      // de teléfono, que es justo lo contrario de lo que una cabina es—. Con
+      // largueros, peinazo y travesaños el hueco queda abierto y el cristal se
+      // ve por él.
+      { medidas: [0.09, 1.9, 0.05], centro: [-0.32, 1.3, 0.43] },
+      { medidas: [0.09, 1.9, 0.05], centro: [0.32, 1.3, 0.43] },
+      { medidas: [0.72, 0.1, 0.05], centro: [0, 2.2, 0.43] },
+      { medidas: [0.72, 0.14, 0.05], centro: [0, 0.42, 0.43] },
+      { medidas: [0.72, 0.09, 0.05], centro: [0, 1.42, 0.43] },
+      { medidas: [0.58, 0.9, 0.03], centro: [0, 0.94, 0.44], color: PLAYA.cristal },
+      { medidas: [0.58, 0.7, 0.03], centro: [0, 1.82, 0.44], color: PLAYA.cristal },
+      // El tirador, por delante de todo: es lo que da la escala humana.
+      { medidas: [0.05, 0.44, 0.05], centro: [0.24, 1.2, 0.48], color: PLAYA.cabinaTecho },
+
+      // --- La cornisa y el rótulo: lo que remata la silueta contra el cielo.
+      { medidas: [1.12, 0.14, 1.12], centro: [0, 2.57, 0] },
+      { medidas: [1.02, 0.2, 1.02], centro: [0, 2.74, 0], color: PLAYA.cabinaTecho },
+      { medidas: [0.86, 0.13, 1.06], centro: [0, 2.74, 0], color: PLAYA.cristal },
+      { medidas: [1.06, 0.13, 0.86], centro: [0, 2.74, 0], color: PLAYA.cristal },
+      { medidas: [1.16, 0.09, 1.16], centro: [0, 2.88, 0] },
+      // El remate de arriba, más pequeño: una cabina no acaba en plano.
+      { medidas: [0.5, 0.1, 0.5], centro: [0, 2.97, 0], lados: 8, color: PLAYA.cabinaTecho },
     ],
     ancla: { centro: [0, 1.3], orientacion: Math.PI },
   },
 
-  /**
-   * Banco: dos pies de hormigón, tres tablas y un respaldo escalonado.
-   *
-   * TRES TABLAS Y NO UNA LOSA. Un banco de una pieza es un poyete; lo que se lee
-   * como banco son las juntas, porque son lo que dice que alguien lo montó con
-   * listones. Cuestan dos cajas más y son la diferencia entre mobiliario urbano
-   * y un bloque a la altura de sentarse.
-   *
-   * El respaldo va en dos tramos escalonados, que es como se inclina algo en un
-   * motor de cajas alineadas — el mismo recurso que la hierba peinada del matojo
-   * y la duna. Recto sería una valla; escalonado ya se sienta.
-   */
   banco: {
     color: PUERTO.tablazon,
     partes: [

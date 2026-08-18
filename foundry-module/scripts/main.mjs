@@ -873,6 +873,16 @@ Hooks.on("getSceneControlButtons", (controls) => {
           button: true,
           onClick: () => abrirAndarNave("playa"),
         },
+        {
+          // La sala del museo (#598). Solo GM por el mismo motivo que la playa:
+          // no es contenido de campaña, es un sitio que ENSEÑA piezas con su
+          // procedencia. No concede nada y no recuerda la visita.
+          name: "lagunak-museo",
+          title: "LAGUNAK.Controles.AbrirMuseo",
+          icon: "fa-solid fa-landmark",
+          button: true,
+          onClick: () => abrirAndarNave("museo"),
+        },
       ]
     : [];
 

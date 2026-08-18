@@ -463,6 +463,35 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     sección, #508) manda sobre el checkpoint guardado, y un id que el catálogo no conoce cae al
     siguiente escalón en vez de dejar a nadie en la nada—, y esa decisión vive en el catálogo porque
     es sobre el catálogo, no en la ventana que la aplica.
+  - **Catálogos con procedencia, y el museo** — `scripts/procedencia-catalogo.mjs` es la ÚNICA
+    regla de licencia del módulo (#598): qué es una procedencia aceptable, con errores tipados por
+    `code` + `path`. La consumen el atlas (`catalogo-cosmografico.mjs`, #525, que sigue siendo
+    cimiento sin cablear a la espera de #213) y el catálogo de piezas (`catalogo-piezas.mjs`), y esa
+    unificación es el punto: dos validadores de licencia se desincronizan, y una licencia
+    desincronizada no es un fallo de forma. `catalogo-piezas.mjs` es lo que faltaba para unir las dos
+    mitades que #590 y #525 habían dejado sin hablarse — texto con procedencia por un lado, malla con
+    procedencia por otro—: una ficha declara `malla`, y el validador exige que ese ID exista de
+    verdad (el registro se le pasa desde fuera, así que sigue siendo puro). Su campo `naturaleza`
+    (escaneo, escaneo-de-vaciado, fotogrametría, reconstrucción, obra propia) es obligatorio y NO es
+    metadato: es lo que impide que una cartela diga «así era» de una pieza que es una reconstrucción
+    hecha después de que destruyeran el original, o que llame mármol a un vaciado en yeso. El crédito
+    de la cartela se **deriva** de la procedencia y no se escribe al lado, misma regla que el cartel
+    de reglas del blackjack (#553). La **sala del museo** (`scripts/museo-escena.mjs` +
+    `museo-piezas.mjs`, con `MUSEO` en `paleta.mjs`) es su primer consumidor real: tres piezas sobre
+    pedestales, andable, solo-GM, con la entrada por herramienta de la barra de escena y la salida
+    por un punto de interacción — la misma forma que la playa (#587), y por el mismo motivo (el
+    Phobos no tiene un museo, y colgarlo de un mamparo contaría una historia que nadie ha decidido).
+    Por eso está fuera de las invariantes de la nave en `nave-planta-phobos.test.mjs` y del minimapa.
+    Lo que el museo NO hace es la mitad del diseño: **enseña y ya está**. La cartela se pinta al
+    acercarse y se retira al apartarse (`accion: {tipo: "cartela"}` + el flanco de salida
+    `alSalirDeInteraccion` de #598); no marca piezas como vistas, no lleva la cuenta ni deja rastro,
+    porque la regla de `docs/FOUNDRY.md` es que una escena puede enseñar, transportar y ambientar,
+    pero no conceder, contar ni recordar. Un **bestiario** que registre qué ha encontrado la
+    tripulación sí recuerda, y por eso #598 lo deja fuera hasta que el núcleo tenga dónde guardar un
+    avistamiento. Tres piezas y no treinta es la disciplina de #590: lo caro no es convertir malla
+    —las dieciocho ya están en el árbol— sino escribir cada cartela, que es trabajo humano. Y la
+    copia de procedencia no se puede pudrir en silencio: una prueba la compara con las `FICHAS` de
+    `tools/convertir-estatua.mjs`, igual que la planta del Phobos se compara con su `.lua`.
   - **Visor del piloto** — `scripts/visor-piloto.mjs` (geometría pura) y
     `scripts/visor-piloto-lienzo.mjs` (el <canvas>), #362. Lo que la nave tiene delante, en PSX,
     en la consola de pilotaje. Es la primera superficie 3D del módulo que **informa** en vez de

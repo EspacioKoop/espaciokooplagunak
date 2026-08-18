@@ -510,6 +510,31 @@ export const PUERTO = Object.freeze({
 });
 
 /**
+ * La sala del museo (#598).
+ *
+ * Paleta propia y no `SECCION` por el mismo motivo que la playa tiene la suya:
+ * un museo no es interior de nave. Aquí el color hace un trabajo concreto y
+ * medible — que la PIEDRA se despegue del muro. Si el yeso de un vaciado y el
+ * mamparo tuvieran el mismo valor, tres estatuas de metro y medio se leerían
+ * como bultos pegados a la pared, que es exactamente lo que pasa cuando una
+ * sala de exposición se pinta del color de lo que expone.
+ *
+ * Por eso el muro va OSCURO y la pieza CLARA, que es como se cuelga de verdad:
+ * el fondo se retira y la pieza avanza. Y por eso el pedestal queda en medio de
+ * los dos, ni fundido con el suelo ni compitiendo con lo que sostiene.
+ */
+export const MUSEO = Object.freeze({
+  muro: "#2e3138", // gris de sala de exposición: oscuro, neutro, sin tirar a azul
+  zocalo: "#23262b", // un paso más abajo, para que el muro no toque el suelo a pelo
+  suelo: "#3a3d43", // el que se pisa: entre el muro y el pedestal
+  pedestal: "#5a5d63", // el bloque que sostiene, claramente más claro que el muro
+  pedestalCanto: "#6d7076", // su coronilla, o el pedestal es una silueta plana
+  yeso: "#d9d2c4", // el vaciado en yeso: crema, cálido, lo más claro de la sala
+  piedra: "#b8ae9c", // la reconstrucción, que no es yeso y no debe parecerlo
+  cartel: "#cdb894", // la cartela junto a cada pieza: papel viejo bajo luz cálida
+});
+
+/**
  * Fichas de la mesa de minijuegos (#308). Pixel, no grabado: la pila se repinta
  * en cuanto alguien apuesta.
  *

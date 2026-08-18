@@ -22,12 +22,12 @@ test("el plano son las salas REALES del Phobos, más la cantina", () => {
 });
 
 /**
- * Estancias que son NAVE. La playa de pruebas (#587) no lo es: se entra por
- * herramienta de GM, no anda por ella la tripulación, y el minimapa se apaga
- * mientras se está fuera en vez de enseñar un plano del Phobos sin nadie
- * marcado en él (ver `pintarSituacion` en `andar-nave-app.mjs`).
+ * Estancias que son NAVE. La playa de pruebas (#587) y la sala del museo (#598)
+ * no lo son: se entra por herramienta de GM, no anda por ellas la tripulación, y
+ * el minimapa se apaga mientras se está fuera en vez de enseñar un plano del
+ * Phobos sin nadie marcado en él (ver `pintarSituacion` en `andar-nave-app.mjs`).
  */
-const FUERA_DE_LA_NAVE = new Set(["playa"]);
+const FUERA_DE_LA_NAVE = new Set(["playa", "museo"]);
 const ESTANCIAS_DE_LA_NAVE = CATALOGO_ANDAR.ids.filter((id) => !FUERA_DE_LA_NAVE.has(id));
 
 test("toda estancia de la nave por la que se anda aparece en el plano", () => {

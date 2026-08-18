@@ -40,7 +40,13 @@ import {
   PLANTA_PLAYA,
   componerPlaya,
 } from "./playa-escena.mjs";
-import { PLAYA } from "./paleta.mjs";
+import {
+  ENTRADA as ENTRADA_MUSEO,
+  INTERACCIONES as INTERACCIONES_MUSEO,
+  PLANTA_MUSEO,
+  componerMuseo,
+} from "./museo-escena.mjs";
+import { MUSEO, PLAYA } from "./paleta.mjs";
 import {
   ANCHO_PUERTA,
   GROSOR_PUERTA,
@@ -375,6 +381,20 @@ export const CATALOGO_ANDAR = crearCatalogoEstancias({
     // cielo, y sin esto el mar termina contra el color de «más nave todavía sin
     // renderizar».
     fondo: PLAYA.cielo,
+    puertas: [],
+  },
+  // La sala del museo (#598). Como la playa: NO cuelga de ninguna puerta de la
+  // nave —el Phobos no tiene un museo— y se entra por la herramienta solo-GM de
+  // la barra de escena. Se vuelve por la salida, su punto de interacción.
+  museo: {
+    planta: PLANTA_MUSEO,
+    componer: componerMuseo,
+    entrada: ENTRADA_MUSEO,
+    interacciones: INTERACCIONES_MUSEO,
+    // Interior cerrado y sin ventanas: lo que asome por un hueco es más sala sin
+    // pintar, no el vacío. Su propio gris, y no el de mamparo, para que el borde
+    // de la sala no se lea como casco de nave.
+    fondo: MUSEO.zocalo,
     puertas: [],
   },
 });

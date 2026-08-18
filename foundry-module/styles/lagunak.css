@@ -1366,6 +1366,47 @@
   display: none;
 }
 
+/* La cartela de una pieza de museo (#598). Debajo del visor y no encima: tapar
+   la pieza con su propia ficha es justo lo que no hace una cartela de museo. Va
+   oculta por `hidden` salvo cuando hay algo delante que leer. */
+.lagunak-museo-cartela {
+  margin: 8px 0 0;
+  padding: 8px 12px;
+  border-left: 3px solid #cdb894;
+  background: #14171a;
+  color: #e6e1d6;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.lagunak-museo-cartela[hidden] {
+  display: none;
+}
+
+.lagunak-museo-cartela p {
+  margin: 0 0 4px;
+}
+
+.lagunak-museo-cartela-titulo {
+  color: #cdb894;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Qué es el FICHERO —un vaciado escaneado, una reconstrucción— va antes que el
+   texto y en cursiva: es la advertencia, no el pie de foto. */
+.lagunak-museo-cartela-naturaleza {
+  font-style: italic;
+  opacity: 0.85;
+}
+
+.lagunak-museo-cartela-credito {
+  margin-bottom: 0;
+  font-size: 11px;
+  opacity: 0.75;
+}
+
 /* Situación: rótulo de sala + minimapa, en la misma fila (QA 2026-08-08). */
 .lagunak-andar-nave-situacion {
   display: flex;

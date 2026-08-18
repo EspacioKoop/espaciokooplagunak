@@ -473,6 +473,57 @@ export const PLAYA = Object.freeze({
 });
 
 /**
+ * EL PUERTO: obra portuaria y mobiliario de calle (#589).
+ *
+ * Paleta aparte de `PLAYA` por el mismo motivo por el que los vocabularios se
+ * separaron: los props de puerto y de calle no son de la playa, están EN la
+ * playa. Meterlos en `PLAYA` habría vuelto a atar a un sitio concreto lo que
+ * acaba de dejar de estarlo — y una farola no es más de arena que de asfalto.
+ *
+ * Colores de cosa USADA, no de cosa nueva. Un noray recién pintado no existe: lo
+ * que hay en un muelle es hierro comido de sal, madera gris de intemperie y
+ * pintura desconchada. Es lo que separa un puerto de un decorado de puerto, y
+ * cuesta lo mismo que elegir los colores bonitos.
+ */
+export const PUERTO = Object.freeze({
+  // El hierro de los norays y las bitas: oscuro, mate, con la coronilla pulida
+  // por las estachas que rozan siempre por el mismo sitio.
+  hierro: "#4a4f55",
+  hierroPulido: "#7d8288",
+  // Madera de muelle y de barca: gris de intemperie, no marrón de mueble.
+  tablazon: "#8b8375",
+  tablazonSombra: "#6a6357",
+  // El pilote clavado en el agua, con la banda oscura de lo que moja la marea.
+  pilote: "#6f6558",
+  piloteFango: "#4b4238",
+  // La barca: casco pintado y desconchado, e interior en sombra.
+  casco: "#9a5f4a",
+  cascoDesconchado: "#b98a70",
+  interiorBarca: "#5c4a41",
+  // Mobiliario de calle: hormigón, y la chapa pintada de una papelera.
+  hormigon: "#9b9994",
+  hormigonSombra: "#77756f",
+  chapa: "#4f6b5e",
+  // Cajas de carga apiladas, y sus flejes.
+  caja: "#a98a5c",
+  cajaFleje: "#6b5a3e",
+});
+
+/**
+ * Fichas de la mesa de minijuegos (#308). Pixel, no grabado: la pila se repinta
+ * en cuanto alguien apuesta.
+ *
+ * El valor de una ficha NO viaja solo en su color —eso lo hace el número de
+ * cuñas del canto, que se cuenta sin distinguir tonos—, así que estos colores
+ * acompañan a la forma igual que en `SISTEMA`. Lo que sí tiene que cumplirse es
+ * que la ficha se despegue del tapete y del disco claro de su cara, y eso lo
+ * vigila `paleta.test.mjs`.
+ *
+ * `tapete` está aquí, y no solo en el CSS, porque es el fondo contra el que se
+ * mide todo lo anterior: una comprobación de contraste contra un valor que vive
+ * en otro archivo no es una comprobación.
+ */
+/**
  * Fichas de la mesa de minijuegos (#308). Pixel, no grabado: la pila se repinta
  * en cuanto alguien apuesta.
  *

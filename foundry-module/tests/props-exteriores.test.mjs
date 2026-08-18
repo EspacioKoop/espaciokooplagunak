@@ -13,6 +13,17 @@ import { VOCABULARIO_PLAYA } from "../scripts/playa-escena.mjs";
 
 /* ---- la mezcla ------------------------------------------------------------- */
 
+test("con lo que hay se puede montar un puerto sin modelar nada (#589)", () => {
+  // Es la medida del punto 5: un catálogo pobre obliga a modelar, y modelar es
+  // lo que hace que una escena cueste cinco PRs en vez de uno. Un muelle
+  // necesita por dónde amarrar, algo clavado en el agua, algo que flote, y
+  // calle: si algo de eso falta, la escena siguiente empieza modelando.
+  const puerto = mezclarVocabularios(VOCABULARIO_MARITIMO, VOCABULARIO_URBANO);
+  for (const clave of ["noray", "pilote", "barca", "boya", "poste", "banco", "papelera", "cajas"]) {
+    assert.ok(puerto[clave], `un puerto sin ${clave} obliga a modelar`);
+  }
+});
+
 test("una escena de puerto pide marítimo y urbano, y no hereda la duna", () => {
   // Es el ejemplo literal de #589, y la razón de que los ambientes estén
   // separados: con una lista sola, el puerto se trae el matojo de duna.

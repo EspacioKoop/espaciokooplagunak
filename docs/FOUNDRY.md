@@ -412,10 +412,13 @@ necesitado tocarlo.
 - exteriores — `escena-exteriores.mjs`: `declararSol` y todo lo que cuelga de él
   (largo y rumbo de sombra, `sombraDeCaja`, `sombraDeProp`, el disco del sol),
   más `franja` de terreno, `huellaDe` y `ciclo`;
-- props — `nave-props.mjs`: `definirVocabulario` (#583) y `colocarProp`. Los
-  vocabularios son por ambiente y se MEZCLAN: el de la nave y el de la playa
-  están aparte porque un aerogenerador en el catálogo del Phobos haría largo
-  justo el catálogo que se mantiene corto a propósito.
+- props — `nave-props.mjs`: `definirVocabulario` (#583), `colocarProp` y
+  `mezclarVocabularios`. Los vocabularios son **por ambiente** y se mezclan: la
+  nave (`nave-props.mjs`) y los tres de exterior (`props-exteriores.mjs`: costa,
+  marítimo, urbano). Una escena pide los que le tocan — un puerto, el marítimo y
+  el urbano; la playa, los tres — y no arrastra los que no. Una clave repetida
+  **rompe al mezclar**: que el último callara al primero daría una escena
+  sutilmente equivocada sin fallo en ningún sitio.
 
 El criterio de que el kit está terminado (#589) es medible: **una escena nueva de
 complejidad parecida a la playa se entrega en tres PRs o menos, y el último no

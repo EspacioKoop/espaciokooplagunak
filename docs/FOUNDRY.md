@@ -114,8 +114,38 @@ Una puerta **solo pinta**: no transporta identidad. Cada superficie resuelve su
 propia autoridad leyendo `game.user` al abrirse, así que meter una entrada en una
 puerta no añade caminos nuevos hacia el relé (#237).
 
-Hay una herramienta del grupo que es **solo-GM sin ser información
-privilegiada**: la playa de pruebas (#587). No se oculta porque revele nada —una
+### Qué puede hacer una escena de Foundry, y qué no
+
+Los exteriores (#587, y los que vengan por el kit de escenas de #589) plantearon
+una duda razonable sobre el ADR-0008: si el módulo se inventa una playa entera
+que el núcleo no conoce, ¿sigue siendo cierto que la partida es jugable sin
+Foundry?
+
+La pregunta útil **no es «¿dónde vive la escena?» sino «¿la escena concede
+algo?»**. El ADR no dice que Foundry no pueda pintar; dice que la autoridad de
+campaña —progreso, atlas, misiones, consecuencias— es del núcleo, y que el módulo
+es proyección y adaptación, no almacenamiento. La regla, entonces:
+
+> Una escena de Foundry puede **enseñar, transportar y ambientar**. No puede
+> **conceder, contar ni recordar**.
+
+La playa la cumple hoy: su único punto de interacción cambia de estancia, o sea,
+mueve la cámara. Andar por ella no da nada, no lleva la cuenta de nada y no deja
+rastro. Si Foundry desaparece, no se pierde partida: se pierde un sitio bonito.
+
+El día que un exterior tenga pesca que dé un recurso, un hallazgo que abra una
+misión o una estatua que registre un descubrimiento, **ese estado es del núcleo y
+la escena solo pinta el efecto** — el mismo reparto que ya sigue la asistencia
+entre puestos, que no emite órdenes sino que produce algo que gasta su titular.
+Diseñar dónde se guarda un pez antes de que exista la pesca es adelantarse; tener
+escrito que no se guarda en Foundry, no.
+
+Corolario para el cielo de la playa: **sus planetas son cielo, no atlas**. Ningún
+punto de interacción los nombra ni los cruza con el catálogo cosmográfico, porque
+en cuanto lo hicieran pasarían a afirmar cosmografía que nadie ha decidido.
+
+Hay también una herramienta del grupo que es **solo-GM sin ser información
+privilegiada**: la playa (#587). No se oculta porque revele nada —una
 playa no dice nada de la partida— sino porque **no es contenido**: es un banco de
 pruebas del motor de exteriores, y ofrecérsela a la tripulación en la misma barra
 que su puesto afirmaría que forma parte del juego. El criterio, entonces, no es

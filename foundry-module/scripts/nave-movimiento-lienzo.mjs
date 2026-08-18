@@ -166,6 +166,12 @@ export function arrancarAndar(lienzo, opciones = {}) {
         avatarPropio: avatarPropio(),
         sensores: sensores(),
         rumboNave: rumboNave(),
+        // Reloj de la escena (#587). El bucle YA sabe qué hora es —lo necesita
+        // para integrar el movimiento— y hasta ahora se lo guardaba. Sin él una
+        // escena solo puede dibujar cosas quietas, y hay ambiente que no se
+        // puede contar quieto: un viento que no mueve nada no es viento, es una
+        // hierba torcida. Las trece salas de la nave lo ignoran y no cambian.
+        tiempo: ahora(),
       }),
       { fondo },
     );

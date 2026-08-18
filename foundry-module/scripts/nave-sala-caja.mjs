@@ -543,8 +543,12 @@ export function crearSalaCaja({
     ...marcosPuerta.map((malla) => ({ malla, color: colorMarcoPuerta })),
     ...bandas.map((malla) => ({ malla, color: colorMuro })),
     ...columnas.map((rect) => ({ malla: rectAColumna(rect, ALTURA), color: colorColumna })),
-    ...mobiliario.map(({ centro, medidas, color, emisivo }) => ({
-      malla: caja(centro, medidas),
+    ...mobiliario.map(({ centro, medidas, color, emisivo, malla }) => ({
+      // Una pieza puede traer su PROPIA malla: desde el inventario 3D, un prop
+      // puede ser un prisma en vez de una caja (un conducto redondo, el pie de
+      // una mesa). Sin `malla` se sigue construyendo la caja de siempre, así que
+      // todo lo que ya había no cambia ni un vértice.
+      malla: malla ?? caja(centro, medidas),
       color,
       // Un mueble puede declararse emisivo (#557, la pantalla de una consola):
       // se pinta a intensidad plena, sin sombreado por normal.

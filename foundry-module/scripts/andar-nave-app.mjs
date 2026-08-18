@@ -401,7 +401,11 @@ function arrancar(raiz, estanciaPedida = null) {
       // posición publicada.
       else if (accion?.tipo === "estancia") irAEstancia(accion.estancia);
     },
-    fondo: FONDO_ENTRE_SALAS,
+    // El de la estancia de ARRANQUE, no el de la nave (#587). Sin esto, abrir
+    // directamente en un exterior pintaba su cielo con el gris de entre salas y
+    // solo se corregía al cambiar de estancia — que en la playa no pasa nunca,
+    // porque se entra por herramienta y no por una puerta.
+    fondo: inicial.fondo ?? FONDO_ENTRE_SALAS,
     pedirFotograma: (cb) => globalThis.requestAnimationFrame?.(cb),
     cancelarFotograma: (id) => globalThis.cancelAnimationFrame?.(id),
     // Se evalúa en cada fotograma pintado (#498): el bucle nunca ve un Map,

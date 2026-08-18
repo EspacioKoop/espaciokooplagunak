@@ -422,6 +422,54 @@ export const PLAYA = Object.freeze({
   cristal: "#7fa7ae", // los vidrios: agua reflejada, no transparencia (no la hay)
   torre: "#e4e7e2", // el blanco roto de un aerogenerador
   aspa: "#f2f4f0", // un punto más claro: las aspas cogen el sol antes que la torre
+
+  // --- La luz. Los dos colores que hacen que la escena no sea plana: el sol
+  // baja tiñe de cálido lo que ilumina, y lo que queda en sombra lo rellena el
+  // cielo, que es frío. Sin esa OPOSICIÓN, sombrear es solo bajar el brillo del
+  // mismo color y todo se lee como cartón recortado.
+  luzSol: "#ffd9a0", // el cálido que se suma a lo iluminado
+  sombraCielo: "#5f7f9c", // el frío con el que el cielo rellena la sombra
+  sol: "#fff2cf", // el disco, casi blanco: es lo más claro del cuadro
+  destello: "#ffe7b8", // el camino de sol sobre el agua
+
+  // --- Lo que llena la playa. Un sitio sin nada suelto no es una playa, es una
+  // rampa: lo que la hace creíble son las cosas que nadie ha colocado.
+  roca: "#7d7566",
+  rocaClara: "#9b9182", // la cara que da al sol, para que una roca sea redonda
+  madera: "#8a7458", // madera de deriva, descolorida por el sal y el sol
+  matojo: "#6f7a4e", // la hierba que agarra la duna
+  matojoSeco: "#9a9463", // la que ya no
+  boya: "#d9683c", // naranja de señal: los únicos puntos vivos del agua
+  sombra: "#6a6252", // la que proyectan las cosas sobre la arena
+
+  // --- El cielo de una playa que NO es de la Tierra. Es lo que recuerda, sin
+  // decirlo, que esto lo mira gente que vive en una nave. Colores lavados y de
+  // poco contraste entre sí: un planeta saturado en el cielo se lee como un
+  // globo pintado encima, no como un cuerpo a doscientos kilómetros.
+  planetaOcre: "#c2a486",
+  planetaPalido: "#b9c3cc",
+  planetaRojizo: "#b07f6e",
+  anillo: "#cfc3ae",
+  luna: "#cdd3d6",
+
+  // --- El agua, por bandas. Un mar de un solo color no tiene ni profundidad ni
+  // superficie: lo que se lee como hondo es que el bajío sea distinto.
+  marBajio: "#5d9aab", // donde se ve el fondo
+  cresta: "#a9cdd6", // el filo de una ola antes de romper
+  marMarca: "#7b6e58", // la lengua que dejó la marea al bajar
+  alga: "#4f5a3c", // lo que trae el agua y se queda en la raya de restos
+  rizo: "#b6a37c", // la cresta de un rizo de arena, con el sol rasante
+  rizoDuna: "#c3b088", // el mismo rizo, en la arena más clara de la duna
+  manga: "#e07a3a", // la manga de viento: naranja de señal, se ve de lejos
+  mangaFranja: "#f0e6d8", // sus franjas claras
+  arenaVolada: "#e2d3ae", // la lengua de arena que cruza corriendo a ras de suelo
+
+  // --- El reloj varado. Latón y esmalte: los dos materiales que no son ni
+  // arena ni agua ni casco, y por eso el objeto salta a la vista sin gritar.
+  relojCara: "#e8e0cc", // el esmalte de la esfera
+  relojCerco: "#b08a3e", // el latón del cerco, ya sin brillo
+  relojAguja: "#2d2a24", // las agujas: casi negro, para que se lean a distancia
+  relojMarca: "#6b6047", // las marcas de las horas
 });
 
 /**

@@ -27,6 +27,7 @@
 
 import { FICHA, PIXEL } from "../paleta.mjs";
 import { componerEscena, fundirEscenas } from "../retro3d.mjs";
+import { caja, disco } from "../escena-primitivas.mjs";
 import { campoEstelar, proyectarEstrellas } from "../retro3d-estrellas.mjs";
 
 /** Medidas de una carta tumbada. Mismas proporciones que en póker: canto
@@ -61,31 +62,13 @@ const LADOS_FICHA = 10;
  * publicado merece su propio issue. */
 export const VISTA = Object.freeze({ pitch: -0.75, yaw: Math.PI, altura: 0.2, atras: 5.6, fov: 52 });
 
-/** Caja alineada a los ejes por centro y medidas. */
-export function caja([cx, cy, cz], [ancho, alto, fondo]) {
-  const x = ancho / 2;
-  const y = alto / 2;
-  const z = fondo / 2;
-  const vertices = [
-    [cx - x, cy - y, cz - z],
-    [cx + x, cy - y, cz - z],
-    [cx + x, cy + y, cz - z],
-    [cx - x, cy + y, cz - z],
-    [cx - x, cy - y, cz + z],
-    [cx + x, cy - y, cz + z],
-    [cx + x, cy + y, cz + z],
-    [cx - x, cy + y, cz + z],
-  ];
-  const caras = [
-    [0, 3, 2, 1],
-    [4, 5, 6, 7],
-    [0, 4, 7, 3],
-    [1, 2, 6, 5],
-    [3, 7, 6, 2],
-    [0, 1, 5, 4],
-  ];
-  return { vertices, caras };
-}
+// `caja` y `disco` viven ahora en `escena-primitivas.mjs` (#589): estaban
+// copiadas en los dos minijuegos y en la cantina. `disco` era, sin decirlo, un
+// prisma de N lados — el mismo generador que le faltaba al resto del módulo para
+// que un poste dejara de leerse como una viga. Se reexportan las dos para no
+// romper a quien ya las importaba de aquí.
+export { caja, disco };
+
 
 function mover(malla, [dx, dy, dz]) {
   return {
@@ -94,25 +77,6 @@ function mover(malla, [dx, dy, dz]) {
   };
 }
 
-/** Disco extruido: la ficha, igual que en la mesa de póker y en la cantina. */
-export function disco({ radio = 0.3, grosor = 0.16, lados = LADOS_FICHA } = {}) {
-  const vertices = [];
-  for (const y of [-grosor / 2, grosor / 2]) {
-    for (let i = 0; i < lados; i += 1) {
-      const a = (i / lados) * Math.PI * 2;
-      vertices.push([Math.cos(a) * radio, y, Math.sin(a) * radio]);
-    }
-  }
-  const caras = [
-    [...Array(lados).keys()].map((i) => i + lados),
-    [...Array(lados).keys()].reverse(),
-  ];
-  for (let i = 0; i < lados; i += 1) {
-    const j = (i + 1) % lados;
-    caras.push([i, j, j + lados, i + lados]);
-  }
-  return { vertices, caras };
-}
 
 /**
  * Los sitios de los jugadores: un arco delantero, no un círculo. Al contrario

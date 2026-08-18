@@ -64,3 +64,81 @@ en un PR como cualquier otro cambio.
 escena con la paleta del módulo (frontera de arte de #351), con UV por proyección
 triplanar (`uvsTriplanar`) y material `piedra`. La textura del original, si la
 tuviera, no se usa.
+
+---
+
+## La Colección Real de Vaciados (SMK) — 186 piezas bajo una sola plantilla
+
+El hallazgo que cambia el cálculo de #590. El **Statens Museum for Kunst** de
+Copenhague ha subido a Commons 186 modelos 3D de su *Kongelige
+Afstøbningssamling* (Colección Real de Vaciados), **todos con la misma
+plantilla**:
+
+```
+{{Licensed-PD-Art|PD-old-100-expired|Cc-zero}}
+```
+
+Esa plantilla separa exactamente las dos capas que este documento avisa que hay
+que separar: la **obra** está en dominio público por antigüedad, y el **escaneo**
+lo dedica el museo a **CC0**. Verificado una a una en cinco piezas antes de
+traer ninguna.
+
+**Por qué importa más que las piezas concretas:** el cuello de la importación es
+la verificación de licencia, no la conversión. Con 186 piezas bajo una plantilla
+uniforme, verificar la colección una vez convierte el coste por pieza en un
+trámite. Es lo que hace viable un catálogo —y una sala de museo (#598)— en vez de
+piezas sueltas.
+
+**Y un matiz que va en cada ficha, no en una nota al pie:** son escaneos de
+**vaciados en yeso**, no de los originales. La Venus de Milo de aquí es el
+vaciado que hay en Copenhague, no el mármol del Louvre. Igual que el León es una
+reconstrucción y no un escaneo: lo honesto es decir qué se está enseñando.
+
+| Pieza | Inventario | Cultura | sha256 del origen |
+|---|---|---|---|
+| Afrodita de Melos (Venus de Milo) | KAS434 | Griega | `96e9c5a8e380c3b932526fc561233dffb3c9dbd0549ed9efc956a47851511020` |
+| Retrato del faraón Amasis II (563–525 a. C.) | KAS576 | Egipcia | `42db40d2d4dc32e410925ce60d74004017a91bcfe20924d486790febdf5e944b` |
+| Loba (Ulvinde) | KAS837 | Romana | `8639d994cd3366e1bc2fcddd21c94a129c59a179c76ca0329d748b9b7db59a32` |
+
+### El lote
+
+Verificadas una a una contra la plantilla antes de descargar ninguna. La
+herramienta rechazó además una descarga que había traído una página de error en
+vez del STL — la comprobación de tamaño del punto 1 hizo su trabajo.
+
+| Pieza | Inventario | Cultura | sha256 del origen |
+|---|---|---|---|
+| Poseidón (o Zeus) de Artemisión | KAS2100 | griega | `855a92ebe9d5b6133328b0d2bfb427e27c8d11bf8e82ac763fefacff39509179` |
+| Doríforo (el portador de lanza), de Policleto | KAS1242 | griega | `196c3d1848fcb1894e0503316c906fe14dc44cb59e9d20581dc16bb821316470` |
+| Koré con quitón y epíblema | KAS1800 | griega arcaica | `3d430723b9e84d331ebfa5e9239c7dc8b4100f606cd5341d48c437c3b4743ea7` |
+| Heracles Farnesio | KAS701 | griega | `582bf914ba61ef18e99453450fcf62449b903110726d3b9882c8d8052b6576a8` |
+| Laocoonte y sus hijos | KAS385 | helenística | `288aba62cd966aebc67d8b62edc79d6467766c2f794c1c7f354bf3eac2c7d707` |
+| Penélope sentada | KAS202 | griega | `efaa8ba5bb6013417104b03376c6962fcd3b16dea8d1bcaf8b89f17a7b5c9ebe` |
+| Venus Capitolina | KAS493 | romana | `d3adef824abb1b7e7c60d11a800af4795763e236d63cd9c84358be0784463104` |
+| Retrato de Marco Aurelio, emperador (161–180 d. C.) | KAS979 | romana | `17c5d2ee27079dcefddfac74f0ef2e00bc71dc4b526bdc0c6fa9c8825e1a9e31` |
+| Julio César | KAS297 | romana | `3777e48425b4e940a5e2be37ca8289ac91b71d4187f863e104779938a7f7054e` |
+| Princesa de Amarna | KAS2226 | egipcia | `da28f85b79bc1a2628efd9c68791bbcda7e73133b1755a68fab39df43cb1d5c8` |
+| Jabalí sentado (el Porcellino) | KAS2157 | romana | `bfdc040a40272c211bde8b39471ee9ce693bf8d8759d254f1ecfb04b1b995eec` |
+| Caballo de la estatua ecuestre de Marco Aurelio | KAS1133/2 | romana | `a6d4d06a68694aee41ef145b825da7827bb0dce8b0b1ddfe04fe72aefb78153f` |
+| Cabeza del David, de Miguel Ángel | KAS2232 | renacentista | `ba9f6b5e67981f340bae43a5b2b284a35b5f108cc9c6d654e43309e9e08d0e66` |
+| Retrato de Homero | KAS210 | griega | `de9b1ce2813673dde14befe5956089ca3bd3dfc389d90aac65b3699534fb03df` |
+
+Todas: autoría del escaneo **Statens Museum for Kunst**, fuente **Wikimedia
+Commons**, licencia **CC0 1.0 sobre el escaneo**.
+
+**Conversión:**
+
+```
+node tools/convertir-estatua.mjs KAS434.stl venus-de-milo   --caras 900 --alto 2.0
+node tools/convertir-estatua.mjs KAS576.stl farao-amasis    --caras 800 --alto 1.5
+node tools/convertir-estatua.mjs KAS837.stl loba-capitolina --caras 900 --alto 1.2
+```
+
+Los originales traen entre 274 000 y 1 128 000 triángulos, así que el decimado
+recorta más del 99,7 %. Que se lean igual de bien a 900 caras que el León a 882
+dice que el nivel elegido no era casualidad de aquella pieza.
+
+**La ficha vive también en el código.** `tools/convertir-estatua.mjs` tiene una
+tabla `FICHAS` y **se niega a convertir** lo que no esté en ella. Este documento
+es la versión para humanos, con el porqué; aquella es la que hace imposible
+saltarse el paso.

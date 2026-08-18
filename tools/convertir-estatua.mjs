@@ -467,6 +467,144 @@ export const ${nombre.toUpperCase().replace(/-/g, "_")} = Object.freeze({
 `;
 }
 
+/**
+ * La procedencia de cada pieza, EN EL CÓDIGO y no solo en la prosa.
+ *
+ * Está aquí para que convertir sin ficha sea imposible, no solo desaconsejado:
+ * la herramienta se niega. `docs/PROCEDENCIA_ASSETS.md` es la versión legible
+ * para humanos, con el porqué de cada decisión; esto es lo que se estampa dentro
+ * del módulo generado, para que la malla lleve su licencia pegada aunque alguien
+ * la copie a otro sitio.
+ */
+export const FICHAS = Object.freeze({
+  "leon-al-lat": {
+    obra: "León de Al-Lāt (Asad Al-Lāt), Palmira",
+    modelo: "reconstrucción digital, no escaneo",
+    autoria: "Georges Dahdouh, optimización de Jim Ellis — #NEWPALMYRA / RSSSD",
+    fuente: "Wikimedia Commons, File:Asad Al-Lat.stl",
+    licencia: "CC0 1.0 (revisión de licencia de Commons, 2018-02-22)",
+  },
+  "venus-de-milo": {
+    obra: "Afrodita de Melos (Venus de Milo) — vaciado en yeso, KAS434",
+    modelo: "escaneo del VACIADO de la Colección Real de Vaciados, no del original",
+    autoria: "Statens Museum for Kunst (Copenhague)",
+    fuente: "Wikimedia Commons, colección SMK",
+    licencia: "CC0 1.0 sobre el escaneo; la obra, dominio público (Licensed-PD-Art)",
+  },
+  "farao-amasis": {
+    obra: "Retrato del faraón Amasis II (563–525 a. C.) — vaciado en yeso, KAS576",
+    modelo: "escaneo del VACIADO de la Colección Real de Vaciados, no del original",
+    autoria: "Statens Museum for Kunst (Copenhague)",
+    fuente: "Wikimedia Commons, colección SMK",
+    licencia: "CC0 1.0 sobre el escaneo; la obra, dominio público (Licensed-PD-Art)",
+  },
+  "loba-capitolina": {
+    obra: "Loba (Ulvinde) — vaciado en yeso, KAS837",
+    modelo: "escaneo del VACIADO de la Colección Real de Vaciados, no del original",
+    autoria: "Statens Museum for Kunst (Copenhague)",
+    fuente: "Wikimedia Commons, colección SMK",
+    licencia: "CC0 1.0 sobre el escaneo; la obra, dominio público (Licensed-PD-Art)",
+  },
+  "poseidon-artemision": {
+    obra: "Poseidón (o Zeus) de Artemisión — vaciado en yeso, KAS2100",
+    modelo: "escaneo del VACIADO de la Colección Real de Vaciados, no del original",
+    autoria: "Statens Museum for Kunst (Copenhague)",
+    fuente: "Wikimedia Commons, colección SMK",
+    licencia: "CC0 1.0 sobre el escaneo; la obra, dominio público (Licensed-PD-Art)",
+  },
+  "doriforo": {
+    obra: "Doríforo (el portador de lanza), de Policleto — vaciado en yeso, KAS1242",
+    modelo: "escaneo del VACIADO de la Colección Real de Vaciados, no del original",
+    autoria: "Statens Museum for Kunst (Copenhague)",
+    fuente: "Wikimedia Commons, colección SMK",
+    licencia: "CC0 1.0 sobre el escaneo; la obra, dominio público (Licensed-PD-Art)",
+  },
+  "kore-chiton": {
+    obra: "Koré con quitón y epíblema — vaciado en yeso, KAS1800",
+    modelo: "escaneo del VACIADO de la Colección Real de Vaciados, no del original",
+    autoria: "Statens Museum for Kunst (Copenhague)",
+    fuente: "Wikimedia Commons, colección SMK",
+    licencia: "CC0 1.0 sobre el escaneo; la obra, dominio público (Licensed-PD-Art)",
+  },
+  "herakles-farnese": {
+    obra: "Heracles Farnesio — vaciado en yeso, KAS701",
+    modelo: "escaneo del VACIADO de la Colección Real de Vaciados, no del original",
+    autoria: "Statens Museum for Kunst (Copenhague)",
+    fuente: "Wikimedia Commons, colección SMK",
+    licencia: "CC0 1.0 sobre el escaneo; la obra, dominio público (Licensed-PD-Art)",
+  },
+  "laocoonte": {
+    obra: "Laocoonte y sus hijos — vaciado en yeso, KAS385",
+    modelo: "escaneo del VACIADO de la Colección Real de Vaciados, no del original",
+    autoria: "Statens Museum for Kunst (Copenhague)",
+    fuente: "Wikimedia Commons, colección SMK",
+    licencia: "CC0 1.0 sobre el escaneo; la obra, dominio público (Licensed-PD-Art)",
+  },
+  "penelope": {
+    obra: "Penélope sentada — vaciado en yeso, KAS202",
+    modelo: "escaneo del VACIADO de la Colección Real de Vaciados, no del original",
+    autoria: "Statens Museum for Kunst (Copenhague)",
+    fuente: "Wikimedia Commons, colección SMK",
+    licencia: "CC0 1.0 sobre el escaneo; la obra, dominio público (Licensed-PD-Art)",
+  },
+  "venus-capitolina": {
+    obra: "Venus Capitolina — vaciado en yeso, KAS493",
+    modelo: "escaneo del VACIADO de la Colección Real de Vaciados, no del original",
+    autoria: "Statens Museum for Kunst (Copenhague)",
+    fuente: "Wikimedia Commons, colección SMK",
+    licencia: "CC0 1.0 sobre el escaneo; la obra, dominio público (Licensed-PD-Art)",
+  },
+  "marco-aurelio": {
+    obra: "Retrato de Marco Aurelio, emperador (161–180 d. C.) — vaciado en yeso, KAS979",
+    modelo: "escaneo del VACIADO de la Colección Real de Vaciados, no del original",
+    autoria: "Statens Museum for Kunst (Copenhague)",
+    fuente: "Wikimedia Commons, colección SMK",
+    licencia: "CC0 1.0 sobre el escaneo; la obra, dominio público (Licensed-PD-Art)",
+  },
+  "julio-cesar": {
+    obra: "Julio César — vaciado en yeso, KAS297",
+    modelo: "escaneo del VACIADO de la Colección Real de Vaciados, no del original",
+    autoria: "Statens Museum for Kunst (Copenhague)",
+    fuente: "Wikimedia Commons, colección SMK",
+    licencia: "CC0 1.0 sobre el escaneo; la obra, dominio público (Licensed-PD-Art)",
+  },
+  "prinsesse-amarna": {
+    obra: "Princesa de Amarna — vaciado en yeso, KAS2226",
+    modelo: "escaneo del VACIADO de la Colección Real de Vaciados, no del original",
+    autoria: "Statens Museum for Kunst (Copenhague)",
+    fuente: "Wikimedia Commons, colección SMK",
+    licencia: "CC0 1.0 sobre el escaneo; la obra, dominio público (Licensed-PD-Art)",
+  },
+  "jabali": {
+    obra: "Jabalí sentado (el Porcellino) — vaciado en yeso, KAS2157",
+    modelo: "escaneo del VACIADO de la Colección Real de Vaciados, no del original",
+    autoria: "Statens Museum for Kunst (Copenhague)",
+    fuente: "Wikimedia Commons, colección SMK",
+    licencia: "CC0 1.0 sobre el escaneo; la obra, dominio público (Licensed-PD-Art)",
+  },
+  "caballo-marco-aurelio": {
+    obra: "Caballo de la estatua ecuestre de Marco Aurelio — vaciado en yeso, KAS1133/2",
+    modelo: "escaneo del VACIADO de la Colección Real de Vaciados, no del original",
+    autoria: "Statens Museum for Kunst (Copenhague)",
+    fuente: "Wikimedia Commons, colección SMK",
+    licencia: "CC0 1.0 sobre el escaneo; la obra, dominio público (Licensed-PD-Art)",
+  },
+  "david-cabeza": {
+    obra: "Cabeza del David, de Miguel Ángel — vaciado en yeso, KAS2232",
+    modelo: "escaneo del VACIADO de la Colección Real de Vaciados, no del original",
+    autoria: "Statens Museum for Kunst (Copenhague)",
+    fuente: "Wikimedia Commons, colección SMK",
+    licencia: "CC0 1.0 sobre el escaneo; la obra, dominio público (Licensed-PD-Art)",
+  },
+  "homero": {
+    obra: "Retrato de Homero — vaciado en yeso, KAS210",
+    modelo: "escaneo del VACIADO de la Colección Real de Vaciados, no del original",
+    autoria: "Statens Museum for Kunst (Copenhague)",
+    fuente: "Wikimedia Commons, colección SMK",
+    licencia: "CC0 1.0 sobre el escaneo; la obra, dominio público (Licensed-PD-Art)",
+  },
+});
+
 // ---- ejecución -------------------------------------------------------------
 
 /**
@@ -498,14 +636,15 @@ async function principal() {
 
   const destino = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "foundry-module", "data", "mallas");
   await mkdir(destino, { recursive: true });
-  const ficha = {
-    obra: "León de Al-Lāt (Asad Al-Lāt), Palmira",
-    modelo: "reconstrucción digital, no escaneo",
-    autoria: "Georges Dahdouh, optimización de Jim Ellis — #NEWPALMYRA / RSSSD",
-    fuente: "Wikimedia Commons, File:Asad Al-Lat.stl",
-    licencia: "CC0 1.0 (revisión de licencia de Commons, 2018-02-22)",
-    sha256,
-  };
+  const declarada = FICHAS[nombre];
+  if (!declarada) {
+    console.error(
+      `No hay ficha para "${nombre}". Un asset sin procedencia comprobable no entra, ` +
+        "por bueno que sea: añádela a FICHAS y a docs/PROCEDENCIA_ASSETS.md antes de convertir.",
+    );
+    process.exit(2);
+  }
+  const ficha = { ...declarada, sha256 };
   await writeFile(path.join(destino, `${nombre}.mjs`), moduloDeMalla(nombre, malla, ficha), "utf8");
 
   console.log(

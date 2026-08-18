@@ -150,6 +150,33 @@ test("la escala va en metros, como en la caja y el prisma", () => {
   assert.ok(alcance(fina) > alcance(gruesa) * 2.5);
 });
 
+/* ---- plantada en la playa -------------------------------------------------- */
+
+test("la ruina llega al cuadro, y texturada", async () => {
+  const { componerPlaya } = await import("../scripts/playa-escena.mjs");
+  const escena = componerPlaya(9.5, 0, 30.5, -0.85, { tiempo: 0 });
+  // La malla del León tiene cientos de caras y ninguna otra pieza de la escena
+  // se le acerca: si aparece un bloque grande de polígonos texturados por esa
+  // zona, es ella.
+  const texturados = escena.poligonos.filter((p) => p.textura);
+  assert.ok(texturados.length > 100, `solo ${texturados.length} polígonos texturados en cuadro`);
+});
+
+test("no se puede atravesar: es piedra maciza", async () => {
+  // Cruzarla andando desmentiría de golpe todo lo que la ruina cuenta.
+  const { PLANTA_PLAYA } = await import("../scripts/playa-escena.mjs");
+  const tapa = PLANTA_PLAYA.obstaculos.some(
+    (r) => r.x < 5.5 && r.x + r.ancho > 3.5 && r.z < 34 && r.z + r.profundidad > 32,
+  );
+  assert.ok(tapa, "la estatua tendría que estorbar donde está");
+});
+
+test("está fuera del camino: se ve y no se llega", () => {
+  // Lo que se mira desde lejos y no se toca es lo que hace grande un sitio.
+  const xs = LEON_AL_LAT.vertices.map(([x]) => x);
+  assert.ok(Math.max(...xs) - Math.min(...xs) < 4, "no es tan ancha como para invadir el camino");
+});
+
 /* ---- la malla que está en el árbol ----------------------------------------- */
 
 test("el León está apoyado en el suelo y de pie", () => {

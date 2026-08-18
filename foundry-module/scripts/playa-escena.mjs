@@ -73,6 +73,9 @@ import {
 import { declararInteracciones } from "./nave-interaccion.mjs";
 import { ciclo, declararSol, franja, huellaDe } from "./escena-exteriores.mjs";
 import { piezasHorizonte, texturasHorizonte } from "./horizonte-matte.mjs";
+import { LEON_AL_LAT } from "../data/mallas/leon-al-lat.mjs";
+import { uvsTriplanar } from "./escena-primitivas.mjs";
+import { metrosPorTextura, texturaMaterial } from "./props-materiales.mjs";
 
 /* ---- medidas de la playa -------------------------------------------------- */
 
@@ -927,6 +930,71 @@ const ALCANCE_CIELO = 4000;
  */
 const TEXTURAS_MATTE = texturasHorizonte();
 
+/* ---- la ruina -------------------------------------------------------------- */
+
+/**
+ * El León de Al-Lāt, medio enterrado en la duna (#590).
+ *
+ * ES LO ÚNICO DE ESTA ESCENA QUE DICE QUIÉN ESTUVO ANTES. Una playa con una
+ * cabina de teléfono es un sitio; una playa con un león de piedra hundido en la
+ * arena es un sitio con historia, y nadie tiene que explicar nada — la mesa
+ * pregunta sola. Para una campaña que va de sitio en sitio es la herramienta más
+ * barata que hay para que un lugar tenga pasado.
+ *
+ * SE QUEDAN LOS SILLARES, y es una decisión, no una comodidad. El modelo trae
+ * los bloques del muro en el que el relieve estaba encajado —el León de Al-Lāt
+ * no era un bulto redondo sino un alto relieve en la fachada del templo—, y
+ * recortarlos habría dado una estatua suelta, o sea un monumento. Un monumento
+ * dice que alguien lo puso ahí y alguien lo mantiene. Con sus bloques dice otra
+ * cosa: que esto fue un edificio, que el edificio ya no está, y que nadie ha
+ * vuelto. Es más historia por menos trabajo.
+ *
+ * ORIENTADA PARA QUE SE LLEGUE A ELLA DE FRENTE. Un relieve solo se lee por un
+ * lado: de canto es mampostería con un hueco. Se probaron las cuatro
+ * orientaciones desde el camino y esta es la única en la que se le distingue la
+ * cabeza al pasar. No es un ajuste fino — con otra, la pieza no se lee y da igual
+ * lo buena que sea la malla.
+ *
+ * HUNDIDA, y no apoyada sobre una peana: se baja por debajo de la cota de la
+ * duna y la arena la recorta sola. No cuesta un polígono y es la diferencia
+ * entre una ruina y una escultura expuesta.
+ *
+ * EN LA DUNA Y NO EN EL CAMINO: se ve y no se llega. Lo que se mira desde lejos
+ * y no se toca es lo que hace grande un sitio.
+ *
+ * Se pinta con NUESTRA paleta y nuestro material (frontera de arte de #351): la
+ * malla solo aporta geometría. Su ficha está en `docs/PROCEDENCIA_ASSETS.md`, y
+ * sin ficha no habría entrado.
+ */
+const ESTATUA = Object.freeze({ x: 4.6, z: 33, hundida: 0.62, giro: 4.71 });
+
+const MALLA_ESTATUA = (() => {
+  const cos = Math.cos(ESTATUA.giro);
+  const sen = Math.sin(ESTATUA.giro);
+  const vertices = LEON_AL_LAT.vertices.map(([x, y, z]) => [
+    ESTATUA.x + x * cos - z * sen,
+    y - ESTATUA.hundida,
+    ESTATUA.z + x * sen + z * cos,
+  ]);
+  const malla = { vertices, caras: LEON_AL_LAT.caras };
+  // Las UV se calculan sobre la malla YA colocada: el grano de la piedra es del
+  // mundo y no de la pieza, así que dos ruinas juntas no repetirían el mismo
+  // dibujo en el mismo sitio de su cuerpo.
+  return { ...malla, uvs: uvsTriplanar(malla, metrosPorTextura("piedra")) };
+})();
+
+const TEXTURA_ESTATUA = texturaMaterial("piedra", PLAYA.roca);
+
+/** Su huella en planta, para que no se pueda atravesar. Es piedra maciza, y
+ *  cruzarla andando desmentiría de golpe todo lo que la ruina cuenta. */
+const HUELLA_ESTATUA = (() => {
+  const xs = MALLA_ESTATUA.vertices.map(([x]) => x);
+  const zs = MALLA_ESTATUA.vertices.map(([, , z]) => z);
+  const x0 = Math.min(...xs);
+  const z0 = Math.min(...zs);
+  return { x: x0, z: z0, ancho: Math.max(...xs) - x0, profundidad: Math.max(...zs) - z0 };
+})();
+
 /**
  * Alcance del agua. El mismo que el del resto de la escena, y a propósito.
  *
@@ -995,6 +1063,7 @@ const PIEZAS = Object.freeze([
   // `colocarProp` había calculado se tiraban a la basura en la última línea. Y
   // ahora además se llevaría por delante las UV, que es lo que texturarlo
   // necesita (#584).
+  { malla: MALLA_ESTATUA, color: PLAYA.roca, textura: TEXTURA_ESTATUA },
   ...PROPS.flatMap(({ piezas }) => piezas).map(({ malla, color, textura }) => ({
     malla,
     color,
@@ -1034,6 +1103,7 @@ export const PLANTA_PLAYA = crearPlanta({
     ...PROPS.filter(({ lejano }) => !lejano)
       .flatMap(({ piezas }) => huellaDe(piezas))
       .filter((rect) => rect.x < ANCHO),
+    HUELLA_ESTATUA,
   ],
 });
 

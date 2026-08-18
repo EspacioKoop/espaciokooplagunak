@@ -114,6 +114,37 @@ Una puerta **solo pinta**: no transporta identidad. Cada superficie resuelve su
 propia autoridad leyendo `game.user` al abrirse, así que meter una entrada en una
 puerta no añade caminos nuevos hacia el relé (#237).
 
+### Andar, sección y cantina: una geografía y tres puertas (#577)
+
+Que dos entradas de la barra estén juntas o separadas es la decisión anterior;
+esta es otra: tres de ellas —`lagunak-andar-nave` (#444), `lagunak-seccion`
+(#427/#276) y `lagunak-cantina` (#423)— dan acceso a **la misma geografía**, la
+nave. Aparecer como puertas independientes no las hace tres naves distintas, y
+sin decidir cuál manda se acaban manteniendo varias representaciones del mismo
+sitio con estados que se van separando.
+
+La jerarquía es:
+
+> **Andar es la navegación principal; la sección es el mapa; la cantina es un
+> acceso directo.**
+
+- **Andar** — la superficie principal. Es donde el jugador está realmente dentro
+  de la nave y recorre su geografía. Toda estancia por la que se pueda caminar es
+  una estancia **de Andar**, aunque no salga de la rejilla nativa: así entraron
+  la cantina (#540) y la terraza (#579), y así entrará lo que venga.
+- **Sección** — vista general de esa misma nave. Sirve para orientarse y elegir
+  destino (`seleccionar sala → abrir Andar en esa sala`), no para estar.
+- **Cantina** — atajo a una sala concreta. Es una comodidad legítima, igual que
+  un mapa lo es aunque el sitio se pueda recorrer a pie, pero **no** una
+  geografía paralela.
+
+De ahí sale la regla operativa: llegar a un sitio por el atajo y llegar andando
+dejan en el **mismo estado espacial canónico**, y pueden diferir solo en la
+cámara o el punto de entrada. Un espacio nuevo no se añade, por tanto, como una
+cuarta puerta de la barra: se añade como estancia de Andar con su paso desde la
+estancia vecina, y si merece atajo, el atajo es una entrada más — nunca su única
+forma de existir.
+
 ### Qué puede hacer una escena de Foundry, y qué no
 
 Los exteriores (#587, y los que vengan por el kit de escenas de #589) plantearon

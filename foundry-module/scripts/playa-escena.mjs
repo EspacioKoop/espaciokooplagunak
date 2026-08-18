@@ -72,6 +72,7 @@ import {
 } from "./props-exteriores.mjs";
 import { declararInteracciones } from "./nave-interaccion.mjs";
 import { ciclo, declararSol, franja, huellaDe } from "./escena-exteriores.mjs";
+import { piezasHorizonte, texturasHorizonte } from "./horizonte-matte.mjs";
 
 /* ---- medidas de la playa -------------------------------------------------- */
 
@@ -98,7 +99,36 @@ const X_POSTES = CAMINO_DESDE - 5;
 
 /** Cada cuánto hay un poste, a lo largo de Z. */
 const PASO_POSTES = 8;
-const Z_POSTES = Object.freeze([4, 12, 20, 28, 36]);
+/**
+ * Hasta dónde se dibuja tierra y todo lo que la puebla.
+ *
+ * MÁS ALLÁ DEL ALCANCE, a propósito. `ALCANCE` (420 m) es donde el motor recorta;
+ * si la arena se acabara antes, se vería su canto flotando en el aire, que es
+ * exactamente lo que pasaba: la playa terminaba a cincuenta metros y detrás no
+ * había nada. Llegando más lejos que el recorte, lo último que se ve ya está
+ * fundido con el color del cielo y el horizonte cierra solo.
+ */
+const HASTA_NIEBLA = 520;
+
+/**
+ * Dónde va cada poste. La línea NO SE ACABA: sigue hasta la niebla.
+ *
+ * Una hilera de cinco postes que termina en seco dice que el mundo termina ahí.
+ * Una que se pierde en la bruma dice que sigue habiendo costa, y no cuesta nada
+ * —son cuatro cajas por poste y los lejanos ocupan tres píxeles—. Es de las
+ * cosas que más barato compran la sensación de que hay mundo fuera del decorado.
+ *
+ * Los cercanos son los que se ven de verdad y los que llevan el ancla y la
+ * sombra; de ahí en adelante son perfil contra el cielo.
+ */
+const Z_POSTES = Object.freeze(
+  Array.from({ length: Math.ceil((HASTA_NIEBLA - 4) / PASO_POSTES) }, (_, i) => 4 + i * PASO_POSTES),
+);
+
+/** Cuántos de ellos son «de cerca»: los que proyectan sombra y cuentan como
+ *  obstáculo. Más allá, la sombra sería un pelo de un píxel y el obstáculo
+ *  estaría fuera de la planta por la que se anda. */
+const POSTES_CERCANOS = 5;
 
 /**
  * La cabina, al fondo y AL BORDE del camino, no en medio.
@@ -302,15 +332,19 @@ function propsColocados() {
     // Girados media vuelta: la luminaria cuelga hacia el camino, que está a la
     // derecha (+x) de los postes... y el prop la declara hacia +z, así que un
     // cuarto de vuelta la lleva a +x.
-    puestos.push(
-      colocarProp("poste", {
+    puestos.push({
+      ...colocarProp("poste", {
         x: X_POSTES,
         z,
         cuartos: 1,
         nombre: `poste-${indice}`,
         vocabulario: VOCABULARIO_PLAYA,
       }),
-    );
+      // Los lejanos son PERFIL Y NADA MÁS: ni sombra ni estorbo. Su sombra sería
+      // un pelo de un píxel y su huella cae fuera de la planta por la que se
+      // anda, así que calcularlas es pagar por nada sesenta y tantas veces.
+      lejano: indice >= POSTES_CERCANOS,
+    });
   }
 
   puestos.push(
@@ -885,6 +919,15 @@ const AMBIENTE_EXTERIOR = 0.78;
 const ALCANCE_CIELO = 4000;
 
 /**
+ * Las texturas del matte, generadas una sola vez.
+ *
+ * A nivel de módulo y no dentro de `componerPlaya`: son tres imágenes de
+ * 256×48 y no cambian nunca, así que rehacerlas en cada fotograma sería pagar
+ * sesenta veces por segundo por un dibujo idéntico.
+ */
+const TEXTURAS_MATTE = texturasHorizonte();
+
+/**
  * Alcance del agua. El mismo que el del resto de la escena, y a propósito.
  *
  * Aquí está la raya rara del horizonte, y no era donde parecía. El mar sí llega
@@ -917,6 +960,14 @@ const PIEZAS = Object.freeze([
     lejos: ALCANCE_AGUA,
     emisivo,
   })),
+  // LA TIERRA LEJANA, primero y por debajo de todo lo demás: las mismas franjas
+  // pero llegando hasta la niebla. Sin ellas la playa se acababa a cincuenta
+  // metros y se veía su canto flotando, con el mar por detrás y un vacío en
+  // medio. Van lisas —ni rizos, ni marcas de marea, ni restos— porque a esa
+  // distancia no se distingue un rizo de la nada, y sí se distinguiría el gasto.
+  franja({ desde: LISO_DESDE, hasta: ORILLA, z0: -HASTA_NIEBLA, z1: HASTA_NIEBLA, alto: 0, color: PLAYA.arenaMojada }),
+  franja({ desde: CAMINO_DESDE, hasta: LISO_DESDE, z0: -HASTA_NIEBLA, z1: HASTA_NIEBLA, alto: 0.02, color: PLAYA.arena }),
+  franja({ desde: DUNA_HASTA, hasta: CAMINO_DESDE, z0: -HASTA_NIEBLA, z1: HASTA_NIEBLA, alto: 0.02, color: PLAYA.duna }),
   // La arena que acaba de dejar el mar, con lo que el agua se dejó encima. Sin
   // rizos: el agua acaba de pasar por ahí y los ha borrado.
   franja({ desde: LISO_DESDE, hasta: ORILLA, z0: -8, z1: PROFUNDIDAD + 8, alto: 0, color: PLAYA.arenaMojada }),
@@ -933,7 +984,8 @@ const PIEZAS = Object.freeze([
   { malla: SOL_PLAYA.disco(), color: PLAYA.sol, emisivo: true, lejos: ALCANCE_CIELO },
   // LAS SOMBRAS ANTES QUE LO QUE LAS PROYECTA: van pegadas al suelo, y así el
   // orden por pintor no tiene que desempatar dos superficies casi coplanares.
-  ...PROPS.map(({ piezas }) => SOL_PLAYA.sombraDeProp(piezas))
+  ...PROPS.filter(({ lejano }) => !lejano)
+    .map(({ piezas }) => SOL_PLAYA.sombraDeProp(piezas))
     .filter(Boolean)
     .map((malla) => ({ malla, color: PLAYA.sombra })),
   ...cables(),
@@ -972,7 +1024,9 @@ export const PLANTA_PLAYA = crearPlanta({
     ...obstaculosDeTerreno(),
     // Los aerogeneradores están mar adentro, fuera de la planta: su huella no
     // llega. Se filtran para no meter obstáculos con coordenadas de otro mundo.
-    ...PROPS.flatMap(({ piezas }) => huellaDe(piezas)).filter((rect) => rect.x < ANCHO),
+    ...PROPS.filter(({ lejano }) => !lejano)
+      .flatMap(({ piezas }) => huellaDe(piezas))
+      .filter((rect) => rect.x < ANCHO),
   ],
 });
 
@@ -1020,7 +1074,17 @@ export function componerPlaya(x, y, z, yaw, opciones = {}) {
     ...arenaVolando(segundos),
   ];
 
-  const partes = [...PIEZAS, ...enMovimiento].map(({ malla, color, emisivo, lejos }) =>
+  // El horizonte va DELANTE de la lista y por eso se pinta primero: es el fondo
+  // del todo, y sus capas ya vienen ordenadas de lejos a cerca.
+  const horizonte = piezasHorizonte({ camara, segundos, texturas: TEXTURAS_MATTE }).map((capa) => ({
+    malla: capa.malla,
+    color: PLAYA.cielo,
+    emisivo: true,
+    lejos: ALCANCE_CIELO,
+    textura: capa.textura,
+  }));
+
+  const partes = [...horizonte, ...PIEZAS, ...enMovimiento].map(({ malla, color, emisivo, lejos, textura }) =>
     componerEscena(
       { ...malla, vertices: malla.vertices.map(([vx, vy, vz]) => [vx - camara[0], vy - camara[1], vz - camara[2]]) },
       {
@@ -1041,6 +1105,10 @@ export function componerPlaya(x, y, z, yaw, opciones = {}) {
         // que hay entre medias, y entre el observador y un planeta no hay
         // playa. Lo lejano de la tierra se lava; lo del cielo, no.
         lejos: lejos ?? ALCANCE,
+        // La textura de ESTA pieza. El motor admite una por llamada y funde
+        // después, así que tres capas de matte con imágenes distintas no
+        // necesitan ni atlas ni tocar el motor (#584).
+        textura: textura ?? null,
         // Un exterior lo rellena la bóveda del cielo entera, no cuatro mamparos.
         ambiente: AMBIENTE_EXTERIOR,
         // El sol de ESTA escena, no la direccional de interior de nave. Va en

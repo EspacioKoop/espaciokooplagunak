@@ -40,6 +40,17 @@ const raizScripts = join(raizModulo, "scripts");
  * la entrada es el registro de que se sabe, no un permiso.
  */
 const HUERFANOS_DECLARADOS = Object.freeze({
+  "horizonte-preset.mjs": {
+    cimiento: false,
+    issue: 584,
+    motivo:
+      "Volcado del matte del horizonte a PNG indexados. No lo importa el módulo " +
+      "en caliente A PROPÓSITO: lo usan `tools/prerender-horizonte.mjs` para " +
+      "escribir los assets y `horizonte-matte.test.mjs` para verificar que los " +
+      "del árbol corresponden al generador. Cablearlo al arranque significaría " +
+      "codificar tres PNG en cada carga para no mirarlos, que es justo lo " +
+      "contrario de prerenderizar.",
+  },
   "catalogo-cosmografico.mjs": {
     cimiento: true,
     issue: 525,

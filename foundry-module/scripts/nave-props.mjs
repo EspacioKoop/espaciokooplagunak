@@ -1,0 +1,269 @@
+// El vocabulario de props de la nave (#583).
+//
+// DE DÓNDE VIENE. `nave-mobiliario-sala.mjs` (#560) traía un catálogo de cuatro
+// piezas —bancada, armario, conducto, registro— y una tabla de qué maquinaria le
+// toca a cada sistema. Esa tabla sigue siendo suya y no se toca aquí: es
+// ambientación por sistema y se lee y se discute donde está.
+//
+// Lo que se separa es el VOCABULARIO. La cantina trae sus 126 muebles por su
+// cuenta (#423) y la terraza de #579 necesita mesa, sillas, soporte y
+// barandilla. Con el reparto anterior, la terraza los modelaría a medida, el
+// siguiente espacio volvería a improvisar sus primitivas y la nave acabaría
+// siendo un decorado montado con piezas de tres maquetas — que es exactamente lo
+// que #579 dice querer evitar, pero acotado a su propio espacio. Un catálogo
+// compartido tiene que existir ANTES que su primer consumidor o no será
+// compartido: será el catálogo de la terraza con otros usándolo.
+//
+// UN PROP SON VARIAS CAJAS, NO UNA. Es la diferencia que hace útil este módulo.
+// «Nada de cubos como representación final» (#579): una silla puede tener
+// poquísimos polígonos, pero tiene que leerse INEQUÍVOCAMENTE como silla —
+// respaldo, asiento y patas—. La lectura es el requisito; el detalle, no. Las
+// cuatro piezas de maquinaria siguen siendo de una sola caja porque eso es lo
+// que son: un armario cerrado ES una caja.
+//
+// MATERIAL DE SERIE. El catálogo es corto a propósito, por el mismo motivo que
+// lo era el de #560: un catálogo largo es la vía rápida a que cada sala parezca
+// de otra nave. Se amplía cuando un espacio real lo necesita, no por gusto.
+//
+// NADA QUE SE PUEDA LEER (#526): ni etiquetas, ni diales, ni pilotos.
+//
+// GIROS DE CUARTO DE VUELTA Y NO OTROS. El render de sala compone cajas
+// alineadas con los ejes (`crearSalaCaja`), así que una silla a 30° no se puede
+// representar: se representaría su caja envolvente, que es peor que no girarla.
+// Vale más rechazarlo que dibujar algo que no es lo pedido.
+//
+// Puro y sin color propio (#351): devuelve piezas con la forma `mobiliario` que
+// ya acepta `crearSalaCaja`.
+
+import { CACHARROS, MURAL, SECCION } from "./paleta.mjs";
+
+/** Un cuarto de vuelta, la unidad en la que se gira un prop. */
+const CUARTO = Math.PI / 2;
+
+/**
+ * Los props, en metros.
+ *
+ * Cada parte es una caja `{medidas: [ancho, alto, fondo], centro: [x, y, z]}`
+ * relativa al ORIGEN del prop, que es su centro en planta y el suelo en altura
+ * — así colocarlo es sumar dos números y no hay que acordarse de dividir la
+ * altura por dos en cada sitio.
+ *
+ * El prop mira a +z, la misma convención de yaw que usa todo lo demás. El
+ * `ancla` es dónde se planta y hacia dónde mira quien interactúa con él,
+ * relativo también al origen: declararla aquí es lo que evita que #579 tenga que
+ * deducir a ojo dónde se pesca.
+ */
+const DEFINICIONES = {
+  /* ---- maquinaria (#560): una caja, porque eso es lo que son ---- */
+
+  bancada: { partes: [{ medidas: [1.8, 0.95, 0.8] }], color: SECCION.casco },
+  armario: { partes: [{ medidas: [1.0, 1.9, 0.6] }], color: SECCION.mamparo },
+  conducto: { partes: [{ medidas: [0.5, 3.8, 0.5] }], color: MURAL.medio },
+  registro: { partes: [{ medidas: [0.7, 0.7, 0.45] }], color: SECCION.casco },
+
+  /* ---- mobiliario de estar (#583, para #579) ---- */
+
+  /**
+   * Silla: respaldo, asiento y cuatro patas. Seis cajas es mucho al lado de un
+   * armario, y es el mínimo con el que una silla se lee como silla — con menos
+   * patas se lee como un taburete raro, y sin respaldo no es una silla.
+   *
+   * Se entra por delante (+z), que es hacia donde mira; quien se sienta acaba
+   * mirando al revés, y por eso el ancla gira media vuelta.
+   */
+  silla: {
+    color: MURAL.medio,
+    partes: [
+      { medidas: [0.44, 0.06, 0.44], centro: [0, 0.45, 0] },
+      { medidas: [0.44, 0.46, 0.06], centro: [0, 0.71, -0.19] },
+      { medidas: [0.05, 0.42, 0.05], centro: [-0.17, 0.21, -0.17] },
+      { medidas: [0.05, 0.42, 0.05], centro: [0.17, 0.21, -0.17] },
+      { medidas: [0.05, 0.42, 0.05], centro: [-0.17, 0.21, 0.17] },
+      { medidas: [0.05, 0.42, 0.05], centro: [0.17, 0.21, 0.17] },
+    ],
+    ancla: { centro: [0, 0.7], orientacion: Math.PI },
+  },
+
+  /**
+   * Taburete: asiento, pie y base. Sin respaldo y sin lado, así que tampoco
+   * tiene ancla propia — se sienta uno desde donde llegue.
+   */
+  taburete: {
+    color: MURAL.medio,
+    partes: [
+      { medidas: [0.36, 0.06, 0.36], centro: [0, 0.6, 0] },
+      { medidas: [0.09, 0.57, 0.09], centro: [0, 0.3, 0] },
+      { medidas: [0.34, 0.04, 0.34], centro: [0, 0.02, 0] },
+    ],
+    ancla: null,
+  },
+
+  /**
+   * Mesa: tablero, pie y base. De pie central y no de cuatro patas porque
+   * alrededor van sillas, y cuatro patas en las esquinas se pelean con ellas a
+   * esta escala.
+   */
+  mesa: {
+    color: SECCION.casco,
+    partes: [
+      { medidas: [1.3, 0.07, 0.9], centro: [0, 0.74, 0] },
+      { medidas: [0.18, 0.71, 0.18], centro: [0, 0.38, 0] },
+      { medidas: [0.7, 0.05, 0.5], centro: [0, 0.03, 0] },
+    ],
+    ancla: null,
+  },
+
+  /**
+   * Soporte de cañas: base y dos montantes con horquilla. Las cañas NO son
+   * parte del soporte —son props aparte— pero el ancla sí es suya: se coge una
+   * poniéndose delante del soporte, mirándolo.
+   */
+  soporte: {
+    color: MURAL.abrazadera,
+    partes: [
+      { medidas: [0.9, 0.08, 0.3], centro: [0, 0.04, 0] },
+      { medidas: [0.08, 1.0, 0.08], centro: [-0.35, 0.5, 0] },
+      { medidas: [0.08, 1.0, 0.08], centro: [0.35, 0.5, 0] },
+      { medidas: [0.86, 0.07, 0.07], centro: [0, 1.02, 0] },
+    ],
+    ancla: { centro: [0, 0.75], orientacion: Math.PI },
+  },
+
+  /**
+   * Barandilla: pasamanos, rodapié y tres montantes, de 2,4 m — la medida a la
+   * que se encadenan varias sin dejar un tramo suelto.
+   *
+   * Llega a 1,05 m, por debajo de la altura de los ojos: una barandilla que
+   * tapa lo que protege de mirar es un muro. Al borde del espacio (#579) eso es
+   * justo el punto.
+   */
+  barandilla: {
+    color: SECCION.casco,
+    partes: [
+      { medidas: [2.4, 0.08, 0.09], centro: [0, 1.01, 0] },
+      { medidas: [2.4, 0.06, 0.07], centro: [0, 0.18, 0] },
+      { medidas: [0.07, 1.0, 0.07], centro: [-1.15, 0.5, 0] },
+      { medidas: [0.07, 1.0, 0.07], centro: [0, 0.5, 0] },
+      { medidas: [0.07, 1.0, 0.07], centro: [1.15, 0.5, 0] },
+    ],
+    ancla: null,
+  },
+
+  /**
+   * Caña de pescar apoyada: puño, tramo y puntera, inclinada de la única forma
+   * que sabe representar el motor — tres tramos escalonados hacia arriba. No es
+   * un objeto que se recoja (#579): las cañas viven en su soporte y la futura
+   * pesca asigna una.
+   */
+  cana: {
+    color: CACHARROS.cajaSuministro,
+    partes: [
+      { medidas: [0.05, 0.05, 0.5], centro: [0, 0.35, -0.3] },
+      { medidas: [0.04, 0.04, 0.6], centro: [0, 0.75, 0.15] },
+      { medidas: [0.03, 0.03, 0.5], centro: [0, 1.1, 0.65] },
+    ],
+    ancla: null,
+  },
+};
+
+/** Caja envolvente de un prop, `[ancho, alto, fondo]`. */
+function envolvente(partes) {
+  const ejes = [0, 1, 2].map((eje) => {
+    const min = Math.min(...partes.map((p) => (p.centro?.[eje] ?? 0) - p.medidas[eje] / 2));
+    const max = Math.max(...partes.map((p) => (p.centro?.[eje] ?? 0) + p.medidas[eje] / 2));
+    return max - min;
+  });
+  return Object.freeze(ejes);
+}
+
+/**
+ * El vocabulario ya congelado, con la huella de cada prop calculada.
+ *
+ * `medidas` es la envolvente y no un dato escrito a mano: con seis cajas por
+ * silla, una medida declarada aparte es una medida que se queda vieja en cuanto
+ * alguien mueve una pata.
+ */
+export const VOCABULARIO = Object.freeze(
+  Object.fromEntries(
+    Object.entries(DEFINICIONES).map(([clave, prop]) => [
+      clave,
+      Object.freeze({
+        color: prop.color,
+        partes: Object.freeze(
+          prop.partes.map((parte) =>
+            Object.freeze({
+              medidas: Object.freeze([...parte.medidas]),
+              centro: Object.freeze([...(parte.centro ?? [0, parte.medidas[1] / 2, 0])]),
+            }),
+          ),
+        ),
+        ancla: prop.ancla
+          ? Object.freeze({
+              centro: Object.freeze([...prop.ancla.centro]),
+              orientacion: prop.ancla.orientacion,
+            })
+          : null,
+        medidas: envolvente(prop.partes),
+      }),
+    ]),
+  ),
+);
+
+/** Gira `[x, z]` un número entero de cuartos de vuelta alrededor del origen. */
+function girarEnPlanta([x, z], cuartos) {
+  switch (((cuartos % 4) + 4) % 4) {
+    case 1:
+      return [z, -x];
+    case 2:
+      return [-x, -z];
+    case 3:
+      return [-z, x];
+    default:
+      return [x, z];
+  }
+}
+
+/**
+ * Coloca un prop del vocabulario en `(x, z)`, girado `cuartos` cuartos de
+ * vuelta.
+ *
+ * @returns {{piezas:Array<{nombre:string, centro:number[], medidas:number[], color:string}>,
+ *            ancla:{punto:number[], orientacion:number}|null}}
+ *   `piezas` tiene la forma `mobiliario` que acepta `crearSalaCaja`; `ancla`, si
+ *   el prop la declara, ya está en coordenadas de la sala y lista para
+ *   convertirse en un punto de interacción (#582).
+ */
+export function colocarProp(clave, { x, z, cuartos = 0, nombre = clave } = {}) {
+  const prop = VOCABULARIO[clave];
+  if (!prop) throw new RangeError(`colocarProp: "${clave}" no está en el vocabulario`);
+  if (!Number.isInteger(cuartos)) {
+    throw new RangeError(`colocarProp("${clave}"): solo se gira en cuartos de vuelta enteros`);
+  }
+  const impar = Math.abs(cuartos % 2) === 1;
+
+  const piezas = prop.partes.map((parte, indice) => {
+    const [dx, dz] = girarEnPlanta([parte.centro[0], parte.centro[2]], cuartos);
+    const [ancho, alto, fondo] = parte.medidas;
+    return {
+      // Una pieza por parte, numerada: el nombre es lo único por lo que una
+      // prueba puede señalar «esta pata», y dos piezas con el mismo nombre no
+      // se distinguen.
+      nombre: prop.partes.length === 1 ? nombre : `${nombre}-${indice}`,
+      centro: [x + dx, parte.centro[1], z + dz],
+      medidas: impar ? [fondo, alto, ancho] : [ancho, alto, fondo],
+      color: prop.color,
+    };
+  });
+
+  const ancla = prop.ancla
+    ? (() => {
+        const [ax, az] = girarEnPlanta(prop.ancla.centro, cuartos);
+        return {
+          punto: [x + ax, z + az],
+          orientacion: prop.ancla.orientacion + cuartos * CUARTO,
+        };
+      })()
+    : null;
+
+  return { piezas, ancla };
+}

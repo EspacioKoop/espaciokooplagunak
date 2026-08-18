@@ -32,24 +32,27 @@
 // Puro y sin color propio (#351). Devuelve piezas con la forma `mobiliario` que
 // ya acepta `crearSalaCaja`.
 
-import { MURAL, SECCION } from "./paleta.mjs";
+import { VOCABULARIO, colocarProp } from "./nave-props.mjs";
 import { rngSemilla } from "./ventana-nave.mjs";
 
 /**
- * El catálogo. CERRADO y corto a propósito: cuatro piezas que se combinan, no
- * un mueble distinto por sala. Una nave se monta con material de serie, y un
- * catálogo largo es la vía rápida a que cada sala parezca de otra nave — el
- * mismo argumento que fija una sola `CELDA` para toda la piel.
+ * La MAQUINARIA: qué props del vocabulario común (#583) puede plantar este
+ * módulo.
  *
- * Las medidas están en metros y son de MÁQUINA: nada llega a la altura de los
- * ojos (1,45) salvo el conducto, que es lo único que se mira hacia arriba.
+ * Sigue siendo una lista CERRADA y corta a propósito: cuatro piezas que se
+ * combinan, no un mueble distinto por sala. Lo que cambió en #583 es dónde viven
+ * sus medidas —en `nave-props.mjs`, con las del resto de la nave, bajo la misma
+ * rejilla— y no cuáles son. Una silla no aparece aquí aunque esté en el
+ * vocabulario: en un cuarto de reactor no pinta nada.
+ *
+ * Las medidas son de MÁQUINA: nada llega a la altura de los ojos (1,45) salvo el
+ * conducto, que es lo único que se mira hacia arriba.
  */
-export const CATALOGO = Object.freeze({
-  bancada: { medidas: [1.8, 0.95, 0.8], color: SECCION.casco },
-  armario: { medidas: [1.0, 1.9, 0.6], color: SECCION.mamparo },
-  conducto: { medidas: [0.5, 3.8, 0.5], color: MURAL.medio },
-  registro: { medidas: [0.7, 0.7, 0.45], color: SECCION.casco },
-});
+const MAQUINARIA = Object.freeze(["bancada", "armario", "conducto", "registro"]);
+
+export const CATALOGO = Object.freeze(
+  Object.fromEntries(MAQUINARIA.map((clave) => [clave, VOCABULARIO[clave]])),
+);
 
 /**
  * Qué maquinaria le toca a cada sistema, y cuánta.
@@ -163,18 +166,16 @@ export function piezasMobiliarioSala({ sala, sistema, puertas = [], consola = nu
     .sort((a, b) => a.orden - b.orden)
     .map(({ sitio }) => sitio);
 
-  return receta.slice(0, barajados.length).map((clave, indice) => {
-    const { medidas, color } = CATALOGO[clave];
+  return receta.slice(0, barajados.length).flatMap((clave, indice) => {
     const sitio = barajados[indice];
     // Un mueble se apoya de LARGO contra su muro: girado, sobresaldría hacia el
-    // paso en vez de pegarse a la pared.
-    const [largo, alto, fondo] = medidas;
-    const medidasColocadas = sitio.alLargoDeX ? [largo, alto, fondo] : [fondo, alto, largo];
-    return {
+    // paso en vez de pegarse a la pared. Un cuarto de vuelta es exactamente el
+    // intercambio de ancho y fondo que se hacía a mano antes de #583.
+    return colocarProp(clave, {
+      x: sitio.x,
+      z: sitio.z,
+      cuartos: sitio.alLargoDeX ? 0 : 1,
       nombre: `maquina-${clave}-${indice}`,
-      centro: [sitio.x, alto / 2, sitio.z],
-      medidas: medidasColocadas,
-      color,
-    };
+    }).piezas;
   });
 }

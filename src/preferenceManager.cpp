@@ -39,7 +39,7 @@ void PreferencesManager::load(string filename)
         while(fgets(buffer, sizeof(buffer), f))
         {
             string line = string(buffer).strip();
-            if (line.find("=") > -1)
+            if (line.find("=") != string::npos)
             {
                 if(line.find("#") != 0) {
                     string key = line.substr(0, line.find("="));

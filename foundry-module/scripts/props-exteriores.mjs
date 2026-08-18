@@ -19,7 +19,7 @@
 //
 // Puro y sin color propio (#351): los colores salen de `PLAYA` en `paleta.mjs`.
 
-import { PLAYA } from "./paleta.mjs";
+import { PLAYA, PUERTO } from "./paleta.mjs";
 import { definirVocabulario } from "./nave-props.mjs";
 
 /**
@@ -157,6 +157,71 @@ export const VOCABULARIO_MARITIMO = definirVocabulario({
     ],
     ancla: null,
   },
+
+  /**
+   * Noray: la peana, el fuste y la cabeza en seta.
+   *
+   * Es LA pieza que dice «esto es un muelle y no una acera junto al agua», y
+   * cuesta cuatro cajas. La cabeza vuela sobre el fuste a propósito: sin ese
+   * vuelo un noray es un bolardo de tráfico, y lo que impide que la estacha se
+   * salte por arriba es justo el reborde.
+   *
+   * La coronilla va en `hierroPulido` porque en un noray de verdad está pulida:
+   * es el único sitio por el que rozan todos los cabos. Un detalle de USO vale
+   * más que un detalle de forma.
+   */
+  noray: {
+    color: PUERTO.hierro,
+    partes: [
+      { medidas: [0.62, 0.1, 0.62], centro: [0, 0.05, 0], lados: 8 },
+      { medidas: [0.34, 0.52, 0.34], centro: [0, 0.34, 0], lados: 8, punta: 1.25 },
+      { medidas: [0.52, 0.16, 0.52], centro: [0, 0.66, 0], lados: 8, punta: 0.8 },
+      { medidas: [0.4, 0.06, 0.4], centro: [0, 0.75, 0], lados: 8, color: PUERTO.hierroPulido },
+    ],
+    ancla: null,
+  },
+
+  /**
+   * Pilote: el poste clavado en el agua, con su banda de marea y el remate.
+   *
+   * La BANDA OSCURA es la mitad del prop. Un pilote de un solo tono es un palo;
+   * con la franja de lo que moja la marea, el mismo palo dice a qué altura está
+   * el agua ahora y a cuál estuvo — que es información de escena gratis, y de
+   * las pocas que puede dar un objeto quieto.
+   */
+  pilote: {
+    color: PUERTO.pilote,
+    partes: [
+      { medidas: [0.26, 2.6, 0.26], centro: [0, 1.3, 0], lados: 8, punta: 0.85 },
+      { medidas: [0.28, 0.55, 0.28], centro: [0, 0.28, 0], lados: 8, color: PUERTO.piloteFango },
+      { medidas: [0.34, 0.12, 0.34], centro: [0, 2.66, 0], lados: 8 },
+    ],
+    ancla: null,
+  },
+
+  /**
+   * Barca varada: casco, dos bancadas y el interior en sombra.
+   *
+   * El INTERIOR EN SOMBRA es lo que la convierte en barca. Un casco macizo se
+   * lee como una cuña de madera; una lámina oscura hundida entre las bordas dice
+   * que hay hueco dentro, y el ojo completa el resto sin que haya que modelar
+   * cuadernas que a esta escala no se verían.
+   *
+   * Tumbada en X, como está una barca en seco. Y con ancla: es de los pocos
+   * props de exterior a los que uno se acerca A algo — a mirar dentro.
+   */
+  barca: {
+    color: PUERTO.casco,
+    partes: [
+      { medidas: [3.4, 0.62, 1.15], centro: [0, 0.31, 0], lados: 6, eje: "x", punta: 0.45 },
+      { medidas: [2.6, 0.08, 0.8], centro: [0, 0.6, 0], color: PUERTO.interiorBarca },
+      { medidas: [3.5, 0.12, 0.16], centro: [0, 0.62, -0.5], eje: "x", color: PUERTO.cascoDesconchado },
+      { medidas: [3.5, 0.12, 0.16], centro: [0, 0.62, 0.5], eje: "x", color: PUERTO.cascoDesconchado },
+      { medidas: [0.14, 0.1, 0.9], centro: [-0.7, 0.63, 0], color: PUERTO.tablazon },
+      { medidas: [0.14, 0.1, 0.9], centro: [0.75, 0.63, 0], color: PUERTO.tablazon },
+    ],
+    ancla: { centro: [0, 1.15], orientacion: Math.PI },
+  },
 });
 
 /**
@@ -217,5 +282,69 @@ export const VOCABULARIO_URBANO = definirVocabulario({
       { medidas: [0.06, 1.7, 0.8], centro: [0.46, 1.35, 0], color: PLAYA.cristal },
     ],
     ancla: { centro: [0, 1.3], orientacion: Math.PI },
+  },
+
+  /**
+   * Banco: dos pies de hormigón, tres tablas y un respaldo escalonado.
+   *
+   * TRES TABLAS Y NO UNA LOSA. Un banco de una pieza es un poyete; lo que se lee
+   * como banco son las juntas, porque son lo que dice que alguien lo montó con
+   * listones. Cuestan dos cajas más y son la diferencia entre mobiliario urbano
+   * y un bloque a la altura de sentarse.
+   *
+   * El respaldo va en dos tramos escalonados, que es como se inclina algo en un
+   * motor de cajas alineadas — el mismo recurso que la hierba peinada del matojo
+   * y la duna. Recto sería una valla; escalonado ya se sienta.
+   */
+  banco: {
+    color: PUERTO.tablazon,
+    partes: [
+      { medidas: [0.18, 0.42, 0.5], centro: [-0.7, 0.21, 0], color: PUERTO.hormigon },
+      { medidas: [0.18, 0.42, 0.5], centro: [0.7, 0.21, 0], color: PUERTO.hormigon },
+      { medidas: [1.8, 0.07, 0.14], centro: [0, 0.45, -0.17] },
+      { medidas: [1.8, 0.07, 0.14], centro: [0, 0.45, 0] },
+      { medidas: [1.8, 0.07, 0.14], centro: [0, 0.45, 0.17] },
+      { medidas: [1.8, 0.09, 0.12], centro: [0, 0.62, 0.22], color: PUERTO.tablazonSombra },
+      { medidas: [1.8, 0.09, 0.12], centro: [0, 0.76, 0.28], color: PUERTO.tablazonSombra },
+    ],
+    ancla: { centro: [0, -0.75], orientacion: 0 },
+  },
+
+  /**
+   * Papelera: el cuerpo de chapa, el aro y el pie.
+   *
+   * Es el prop más humilde del catálogo y el que más trabajo hace: una calle sin
+   * papeleras, sin bancos y sin farolas no es una calle, es un pasillo al aire
+   * libre. Lo que llena un sitio no son los monumentos.
+   */
+  papelera: {
+    color: PUERTO.chapa,
+    partes: [
+      { medidas: [0.44, 0.62, 0.44], centro: [0, 0.5, 0], lados: 8, punta: 1.15 },
+      { medidas: [0.5, 0.06, 0.5], centro: [0, 0.83, 0], lados: 8, color: PUERTO.hierroPulido },
+      { medidas: [0.12, 0.22, 0.12], centro: [0, 0.11, 0], lados: 6, color: PUERTO.hierro },
+      { medidas: [0.34, 0.05, 0.34], centro: [0, 0.02, 0], lados: 8, color: PUERTO.hierro },
+    ],
+    ancla: null,
+  },
+
+  /**
+   * Cajas de carga: tres apiladas, las de arriba descuadradas.
+   *
+   * DESCUADRADAS A PROPÓSITO. Tres cajas perfectamente alineadas se leen como
+   * una torre de un solo objeto; movidas un poco, la pila se lee como cosas que
+   * alguien dejó ahí. Es la misma razón por la que la roca son tres bloques
+   * desiguales: lo que delata a un decorado es la simetría.
+   */
+  cajas: {
+    color: PUERTO.caja,
+    partes: [
+      { medidas: [0.9, 0.62, 0.8], centro: [0, 0.31, 0] },
+      { medidas: [0.95, 0.06, 0.85], centro: [0, 0.34, 0], color: PUERTO.cajaFleje },
+      { medidas: [0.82, 0.55, 0.74], centro: [0.06, 0.9, -0.05] },
+      { medidas: [0.87, 0.05, 0.79], centro: [0.06, 0.92, -0.05], color: PUERTO.cajaFleje },
+      { medidas: [0.6, 0.42, 0.66], centro: [-0.12, 1.38, 0.08] },
+    ],
+    ancla: null,
   },
 });

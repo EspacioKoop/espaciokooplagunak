@@ -412,6 +412,13 @@ necesitado tocarlo.
 - exteriores — `escena-exteriores.mjs`: `declararSol` y todo lo que cuelga de él
   (largo y rumbo de sombra, `sombraDeCaja`, `sombraDeProp`, el disco del sol),
   más `franja` de terreno, `huellaDe` y `ciclo`;
+- materiales — `props-materiales.mjs`: `veta`, `chapa`, `hormigon`, `piedra`,
+  `tela`. Un material **no es una imagen, es una función del color**: toma el de
+  la pieza y saca sus tonos de él, así que la veta de un tablón gris sale gris y
+  la del casco rojo sale roja con el mismo generador. Una parte lo hereda del
+  prop; `material: null` en la parte significa **liso** (el vidrio de una cabina
+  de chapa). El grano se mide en metros (`METROS_POR_TEXTURA`), no por cara, o un
+  listón tendría la veta treinta veces más gorda que un tablón.
 - props — `nave-props.mjs`: `definirVocabulario` (#583), `colocarProp` y
   `mezclarVocabularios`. Los vocabularios son **por ambiente** y se mezclan: la
   nave (`nave-props.mjs`) y los tres de exterior (`props-exteriores.mjs`: costa,

@@ -34,6 +34,7 @@ import { resolverCamara } from "./nave-camara.mjs";
 import { campoEstelar, proyectarEstrellas } from "./retro3d-estrellas.mjs";
 import { piezasDeVentana } from "./nave-ventana-espacio.mjs";
 import { piezasMuralPixel } from "./nave-mural-pixel.mjs";
+import { ANCHO_TESELA, METROS_POR_TEXEL, texturaMuro } from "./piel-textura.mjs";
 import { piezasPielHoja } from "./nave-piel-puerta.mjs";
 import { piezasPielColumna, piezasPielObjeto } from "./nave-piel-objeto.mjs";
 import { piezasPielSuelo, piezasPielTecho } from "./nave-piel-suelo.mjs";
@@ -450,6 +451,89 @@ export function detalleConsola([cx, cy, cz], [anchoCuerpo, altoCuerpo], opciones
 }
 
 /**
+ * Cuánta luz de relleno recibe un paño texturado.
+ *
+ * Un cuadrilátero plano recibe UNA intensidad, mientras que las chapas de la
+ * piel de geometría cogían luz por muchas caras a la vez. Sin compensarlo, el
+ * muro texturado sale bastante más oscuro que el que sustituye — se vio en la
+ * comparación lado a lado, no es una suposición. El valor iguala el brillo de
+ * las dos maneras de dibujar lo mismo.
+ */
+const AMBIENTE_PANO = 0.62;
+
+/**
+ * La tesela del muro, generada UNA vez por semilla.
+ *
+ * Todas las salas de una nave comparten semilla, así que sin caché se generaría
+ * la misma imagen trece veces por carga. Con ella, una.
+ */
+const teselas = new Map();
+
+function texturaDelMuro(semilla) {
+  let textura = teselas.get(semilla);
+  if (!textura) {
+    textura = texturaMuro({
+      ancho: Math.round(ANCHO_TESELA / METROS_POR_TEXEL),
+      alto: Math.round(ALTURA / METROS_POR_TEXEL),
+      semilla,
+    });
+    teselas.set(semilla, textura);
+  }
+  return textura;
+}
+
+/** Cuánto se despega el paño de la cara del muro. Lo justo para que el z-buffer
+ *  lo resuelva por delante, y demasiado poco para que se vea el canto — el mismo
+ *  criterio y el mismo orden de magnitud que el saliente de las chapas de #548. */
+const SALIENTE_PANO = 0.02;
+
+/**
+ * Los paños texturados de un tramo de muro: UNO POR CARA.
+ *
+ * La primera versión ponía un solo cuadrilátero en el eje del tramo y no se veía
+ * nada — quedaba enterrado dentro del muro macizo que lo sostiene. Un tramo
+ * tiene dos caras y puede separar dos salas, así que se pintan las dos, cada una
+ * despegada hacia SU lado y mirando hacia fuera del muro.
+ *
+ * La `u` se mide en teselas a lo largo del vano —un tramo de 7 m enseña 2,2
+ * repeticiones— y la `v` va de 0 a 1 porque la tesela mide exactamente la altura
+ * de la sala. Que esa coincidencia exista es lo que permite que este camino no
+ * tenga que decidir ningún tamaño ni enumerar ningún catálogo de vanos.
+ */
+function panosTexturados(rect, altura) {
+  const { x, z, ancho: anchoRect, profundidad } = rect;
+  const alLargoDeX = anchoRect >= profundidad;
+  const u1 = (alLargoDeX ? anchoRect : profundidad) / ANCHO_TESELA;
+
+  // EL ORDEN DE LOS DOS PUNTOS ES LA NORMAL, y estaba del revés: con el sentido
+  // contrario la cara mira hacia DENTRO del muro, el motor la descarta por dar
+  // la espalda, y el paño no se ve — que es exactamente lo que pasaba, y cuesta
+  // encontrarlo porque no hay error en ningún sitio, simplemente no aparece.
+  const caras = alLargoDeX
+    ? [
+        { a: [x + anchoRect, z - SALIENTE_PANO], b: [x, z - SALIENTE_PANO] },
+        { a: [x, z + profundidad + SALIENTE_PANO], b: [x + anchoRect, z + profundidad + SALIENTE_PANO] },
+      ]
+    : [
+        { a: [x - SALIENTE_PANO, z], b: [x - SALIENTE_PANO, z + profundidad] },
+        { a: [x + anchoRect + SALIENTE_PANO, z + profundidad], b: [x + anchoRect + SALIENTE_PANO, z] },
+      ];
+
+  return caras.map(({ a, b }) => ({
+    malla: {
+      vertices: [
+        [a[0], 0, a[1]],
+        [b[0], 0, b[1]],
+        [b[0], altura, b[1]],
+        [a[0], altura, a[1]],
+      ],
+      caras: [[0, 1, 2, 3]],
+      uvs: [[[0, 1], [u1, 1], [u1, 0], [0, 0]]],
+    },
+  }));
+}
+
+/**
  * Fabrica una sala-caja: cuatro muros por el límite de la planta, columnas
  * opcionales, puertas, VENTANAS, suelo y techo.
  *
@@ -497,6 +581,25 @@ export function crearSalaCaja({
   // El interruptor existe para las salas de prueba —donde el mural solo estorba
   // al leer qué está midiendo el test— y no como preferencia de estilo.
   muralPixel = true,
+  /**
+   * Cómo se dibuja la piel del muro (#584).
+   *
+   * `"geometria"` es lo que hay desde #548: miles de chapas de diez centímetros,
+   * cada una cogiendo la luz por su cuenta. `"textura"` pinta el mismo muro con
+   * una tesela de `piel-textura.mjs` sobre un cuadrilátero por paño.
+   *
+   * POR QUÉ HAY DOS Y NO UNA. La textura gana en todo lo medible —227 de los 253
+   * polígonos de una sala son la piel, y texturada baja a uno por pared— y en
+   * detalle, porque a dos centímetros y medio por téxel caben los remaches, el
+   * nervado y las juntas finas que en cajas de diez centímetros no caben. Lo que
+   * pierde es el moteado vivo de la luz por chapa: pasa a ser relieve PINTADO.
+   *
+   * Eso cambia el aspecto de las trece salas del Phobos a la vez, así que el
+   * cambio de serie es una decisión de arte y se toma aparte. Aquí está el
+   * camino, probado y listo; cambiar este valor por defecto es la línea que lo
+   * enciende.
+   */
+  pielMuro = "geometria",
   semillaMural = 20260810,
   // Piel de puertas y objetos (#550). Van con su propio interruptor y no con el
   // del mural porque son decisiones separables: una sala puede querer sus muros
@@ -532,10 +635,26 @@ export function crearSalaCaja({
     ...tramosMuro.map((rect) => ({ malla: rectAColumna(rect, ALTURA), color: colorMuro })),
     // La piel va justo detrás del muro que la sostiene y antes que todo lo
     // demás: es parte de la pared, no mobiliario colgado de ella.
-    ...(muralPixel
+    ...(muralPixel && pielMuro === "geometria"
       ? tramosMuro.flatMap((rect) =>
           piezasMuralPixel({ rect, sala: { ancho, profundidad }, altura: ALTURA, semilla: semillaMural }),
         )
+      : []),
+    // La piel texturada: un cuadrilátero por paño, con la tesela repitiéndose a
+    // lo largo del vano. La `v` va de 0 a 1 clavada porque la tesela mide
+    // exactamente `ALTURA`, y por eso este camino no necesita decidir ningún
+    // tamaño ni enumerar ningún catálogo de vanos.
+    ...(muralPixel && pielMuro === "textura"
+      ? tramosMuro.flatMap((rect) => panosTexturados(rect, ALTURA)).map((pano) => ({
+          ...pano,
+          color: colorMuro,
+          textura: texturaDelMuro(semillaMural),
+          // Un paño plano recibe una sola intensidad donde las chapas cogían luz
+          // por muchas caras, así que sin esto sale bastante más oscuro que lo
+          // que sustituye. No es un retoque de gusto: es igualar el brillo de
+          // dos maneras distintas de dibujar lo mismo.
+          ambiente: AMBIENTE_PANO,
+        }))
       : []),
     ...marcos.map((malla) => ({ malla, color: colorMarcoVentana })),
     // El marco de puerta lleva su propio color: es lo que la hace reconocible
@@ -628,7 +747,7 @@ export function crearSalaCaja({
       piezasDeVentana({ rect, sala: { ancho, profundidad }, sensores, rumboNave }),
     );
 
-    const partes = [...piezas, ...hojasPuertas, ...vistaVentanas].map(({ malla, color, emisivo }) =>
+    const partes = [...piezas, ...hojasPuertas, ...vistaVentanas].map(({ malla, color, emisivo, textura, ambiente }) =>
       componerEscena(trasladarMalla(malla, [-camara[0], -camara[1], -camara[2]]), {
         ancho: anchoLienzo,
         alto: altoLienzo,
@@ -637,6 +756,13 @@ export function crearSalaCaja({
         color,
         // Solo lo que de verdad emite: hoy, el difusor de una luminaria (#555).
         emisivo: emisivo === true,
+        // La textura de ESTA pieza, si la trae (#584). El motor admite una por
+        // llamada y funde después, así que una sala con paños texturados y
+        // mobiliario liso no necesita ni atlas ni cambio de motor.
+        textura: textura ?? null,
+        // Y su luz de relleno, si la pide: un paño plano necesita más que una
+        // caja para brillar lo mismo. Sin declararla, la sala manda la suya.
+        ...(Number.isFinite(ambiente) ? { ambiente } : {}),
         posicion: [0, 0, 0],
         yaw: yawCamara,
         // Recorte de frustum completo (#510): las salas de #508 son

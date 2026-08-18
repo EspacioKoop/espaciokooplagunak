@@ -126,6 +126,60 @@ hacer y cuyo contexto ya está cargado.
 
 ---
 
+## El reparto tiene nombres, y no es decoración
+
+La convención la empezó **Odiseo**, el revisor externo (ChatGPT) que firma las revisiones de
+los issues. Se sigue: cada pieza automática lleva nombre mitológico, y el nombre **dice qué
+hace y qué NO hace**, que es lo que de verdad hay que recordar al delegarle algo.
+
+| Nombre | Qué es | Qué aporta — y dónde acaba |
+|---|---|---|
+| **Odiseo** | Revisión externa (ChatGPT) | Criterio de diseño sobre trabajo ya hecho. No escribe código |
+| **Mnemósine** | `tools/issues_similares.py` + `all-minilm` (~45 MB) | **Memoria del tablero**: qué issue se parece a cuál. No razona, no clasifica, no cierra nada — ordena por parecido y lo lee una persona |
+| **Eco** | Un chat local pequeño (`qwen3:1.7b`) | Repite con otra forma: reformatear, extraer campos, pasar prosa a JSON. **Sin voz propia**: medido en 0 de 3 cuando se le pidió criterio |
+| **Hermes** | El framework de agentes ya instalado | Mensajería y orquestación entre superficies |
+
+La regla que ordena la tabla: **que el modelo genere candidatos y que decida siempre otra
+cosa** — un test, un script o una persona. Si no sabes escribir lo que juzga la salida, la
+tarea no es delegable; y si sabes escribirlo, plantéate si no basta con eso.
+
+## Cómo se lanza Mnemósine desde fuera de una sesión
+
+Requisitos, una sola vez:
+
+```bash
+ollama pull all-minilm          # ~45 MB, corre en CPU sin GPU
+```
+
+A mano, cuando quieras mirar el tablero:
+
+```bash
+cd <raíz del repo>
+gh issue list --state open --limit 100 --json number,title,body > /tmp/issues.json
+python3 tools/issues_similares.py /tmp/issues.json --umbral 0.62      # todo el tablero
+python3 tools/issues_similares.py /tmp/issues.json --issue 598        # solo una
+```
+
+El `--umbral` es el mando: 0.5 enseña de más, 0.7 solo lo muy parecido. 0.62 es lo que
+separaba señal de ruido en el tablero de agosto de 2026.
+
+Para **dejarlo activado** sin depender de ninguna sesión, una línea de `crontab -e` — lunes
+a las 9, con el resultado en un fichero que se lee cuando apetece:
+
+```cron
+0 9 * * 1 cd /ruta/al/repo && gh issue list --state open --limit 100 --json number,title,body > /tmp/issues.json && python3 tools/issues_similares.py /tmp/issues.json --umbral 0.62 > /tmp/mnemosine.txt 2>&1
+```
+
+Tres avisos, para que no falle en silencio:
+
+- **`gh` necesita estar autenticado** en el usuario que lanza el cron (`gh auth status`).
+- **Ollama tiene que estar levantado** (`systemctl is-active ollama`). Si no lo está, el
+  script lo dice y sale con error en vez de inventarse una lista — que es justo por lo que
+  no tiene camino de respaldo.
+- El cron **no avisa a nadie**: escribe un fichero. Si quieres que te llegue, el gateway de
+  Hermes ya sabe hablar por Telegram y tiene su propio `cron`; ese es el sitio para
+  engancharlo, no un `mail` desde crontab.
+
 ## Antes de empezar, y al terminar
 
 Antes:

@@ -1,0 +1,181 @@
+587	CLOSED	feat(foundry): escena de playa como banco de pruebas de exteriores (#582, #583)	enhancement, area:foundry	2026-08-18T08:43:27Z
+583	CLOSED	feat(foundry): un vocabulario de props para toda la nave, no un catálogo de maquinaria por sala	enhancement, area:foundry	2026-08-18T08:42:56Z
+582	CLOSED	feat(foundry): puntos de interacción declarados por las salas — un solo raíl para todo lo que se puede tocar	enhancement, area:foundry	2026-08-18T08:42:58Z
+579	CLOSED	feat(foundry): terraza exterior de la cantina — mesa, sillas y cañas de pescar 3D	enhancement, area:foundry	2026-08-18T08:43:01Z
+577	CLOSED	design(foundry): sección, andar y cantina son tres puertas a la misma geografía — decidir el modelo de navegación	decision, area:foundry	2026-08-18T08:43:02Z
+573	CLOSED	feat(retro3d): mapeado de texturas en el motor — afín en PSX, con perspectiva en GameCube	enhancement, area:foundry	2026-08-18T20:42:57Z
+566	CLOSED	fix(foundry): la mesa de póker tiene la cámara bajo el tapete, igual que tenía la de blackjack	bug, area:foundry	2026-08-16T08:20:28Z
+560	CLOSED	feat(foundry): las trece salas del Phobos están vacías — maquinaria de sala derivada de su sistema	enhancement, area:foundry	2026-08-16T07:25:16Z
+559	CLOSED	bug(foundry): en la mesa de blackjack las cartas no llegan a verse — la mesa es un plano verde	bug, area:foundry	2026-08-16T07:21:11Z
+558	CLOSED	design(foundry): la cantina con la rampa del casco se lee como un cuarto de máquinas	decision, area:foundry	2026-08-10T09:16:38Z
+557	CLOSED	feat(foundry): las consolas de sala no existen — se activan pisando un trozo de suelo vacío	enhancement, area:foundry	2026-08-16T07:25:14Z
+555	CLOSED	feat(foundry): la lámpara de techo crece con la sala — luminarias de medida fija y techo con piel	enhancement, area:foundry	2026-08-18T20:42:39Z
+553	CLOSED	feat(foundry): la mesa de blackjack no dice ni en qué punto va la mano ni con qué reglas se juega	enhancement, area:foundry	2026-08-18T20:42:36Z
+552	CLOSED	feat(foundry): suelo y techo también — son un tercio del cuadro y siguen lisos	enhancement, area:foundry	2026-08-18T20:42:34Z
+551	CLOSED	feat(foundry): el pixelart de la nave tiene que ser mucho más elaborado — relieve, bandas y greebles	enhancement, area:foundry	2026-08-18T20:42:11Z
+550	CLOSED	feat(foundry): pixelart también en puertas y objetos — una sola rejilla para toda la nave	enhancement, area:foundry	2026-08-18T20:42:08Z
+548	CLOSED	feat(foundry): pixelart en los muros de la nave — que las paredes se lean como nave espacial	enhancement, area:foundry	2026-08-18T20:41:52Z
+542	CLOSED	chore(foundry): la sección de la nave sigue enseñando una nave inventada, no el Phobos		2026-08-08T09:04:57Z
+541	CLOSED	design(foundry): el espacio tras las ventanas debe venir del que ya tiene EmptyEpsilon, no de estrellas procedurales		2026-08-08T09:04:55Z
+540	CLOSED	design(foundry): la planta para andar debe salir del interior REAL de la nave (shipTemplate), no de una inventada		2026-08-08T09:04:53Z
+539	CLOSED	fix(foundry): andar por la nave es injugable — solo se llega a la cantina, huecos entre salas y escala inconsistente		2026-08-08T09:04:52Z
+537	CLOSED	fix(foundry): la reposición del GM (#176) no es alcanzable jugando — reposicion-control.mjs sin importador		2026-08-08T09:04:12Z
+536	CLOSED	chore(foundry): mapa-lote.mjs no lo importa nadie — hay dos copias de la regla de lote a medio llegar		2026-08-16T09:00:11Z
+526	CLOSED	chore(foundry): laminas-clasicas.mjs sin consumidor — el grabado procedural que nadie pinta	area:foundry	2026-08-08T09:04:10Z
+525	CLOSED	chore(foundry): catalogo-cosmografico.mjs sin consumidor — cablear al atlas o declararlo cimiento de #213	area:foundry	2026-08-08T09:04:08Z
+524	CLOSED	chore(foundry): decidir el destino de plutonium-*.mjs, aparentemente superado por contenido-externo/	decision, area:foundry	2026-08-08T09:04:06Z
+523	CLOSED	chore(foundry): módulos escritos y probados que ningún consumidor importa (desglose en subissues)	enhancement, area:foundry, Calidad	2026-08-08T09:04:50Z
+522	CLOSED	feat(juego): exponer a Lua el movimiento de equipos de reparación (Damage Control, binding C++ nuevo)	enhancement, cpp, area:juego	2026-08-08T01:11:29Z
+521	CLOSED	feat(juego): exponer a Lua el hackeo de Relay (binding C++ nuevo)	enhancement, cpp, area:juego	2026-08-08T01:11:27Z
+520	CLOSED	feat(foundry): completar Sensores — base de datos científica y vista de sonda	enhancement, area:foundry	2026-08-08T01:11:25Z
+519	CLOSED	feat(foundry): completar Navegación — maniobra de combate y atraque	enhancement, area:bridge, area:foundry	2026-08-08T01:11:23Z
+518	CLOSED	feat(foundry): completar Ingeniería — autodestrucción y frecuencia de escudos	enhancement, area:bridge, area:foundry	2026-08-08T01:11:21Z
+517	CLOSED	feat(foundry): puesto Relay en la matriz de autoridad — waypoints, sondas, enlace sonda→ciencia y nivel de alerta	enhancement, area:bridge, area:foundry, python, javascript	2026-08-08T01:11:19Z
+516	CLOSED	Etapa B (B8): exponer a la tripulación la agencia nativa que ya existe en el núcleo (desglose en subissues)	enhancement, area:bridge, area:foundry	2026-08-08T01:11:59Z
+509	CLOSED	feat(foundry): abrir la consola de puesto al llegar a su sala en 3D (#427, rebanada 6)	enhancement, area:foundry	2026-08-08T01:11:36Z
+508	CLOSED	feat(foundry): planta completa de la nave en 3D retro, con al menos una sala por puesto (#427, rebanada 3)	enhancement, area:foundry	2026-08-08T01:11:35Z
+500	CLOSED	feat(cooperación): más tipos de minijuego de asistencia (precisión, secuencia, puzzle) y lectura real de modificadores dnd5e	enhancement, area:foundry, Fase 4	2026-08-08T01:11:57Z
+498	CLOSED	feat(foundry): pintar el avatar de otros jugadores al andar por la nave	enhancement, area:foundry	2026-08-08T01:11:33Z
+483	CLOSED	feat(foundry): guardias y relevo de puestos	enhancement, area:foundry	2026-08-06T08:27:02Z
+482	CLOSED	feat(foundry): alarmas compartidas por dependencia entre sistemas	enhancement, area:foundry	2026-08-08T01:11:38Z
+481	CLOSED	test(juego): verificar comportamiento nativo de sistemas sin tripulación asignada	area:foundry, area:juego	2026-08-06T21:52:11Z
+480	CLOSED	test(foundry): verificar si navegación operacional ya cumple el criterio de salida de Etapa B	area:foundry, area:juego	2026-08-06T20:48:35Z
+466	CLOSED	feat(foundry): feedback interactivo en 3D por acción de puesto ampliada	enhancement, area:foundry	2026-08-05T15:58:19Z
+465	CLOSED	feat(foundry): arma real más allá de escudos (disparo/selección de objetivo)	enhancement, area:foundry	2026-08-05T15:58:17Z
+464	CLOSED	feat(foundry): reparación por tripulación (ingeniería activa, no solo GM)	enhancement, area:foundry	2026-08-05T15:58:15Z
+463	CLOSED	feat(foundry): ampliar STATION_ACTIONS con comunicaciones	enhancement, area:foundry	2026-08-05T15:58:13Z
+462	CLOSED	feat(foundry): ampliar STATION_ACTIONS con sensores/ciencia	enhancement, area:foundry	2026-08-05T15:58:11Z
+461	CLOSED	design(foundry): modelo de permisos por puesto v1 (qué puede ver y ordenar cada puesto)	decision, area:foundry	2026-08-05T15:58:09Z
+460	CLOSED	test(juego): verificar y documentar pantallas nativas restantes (Science, Relay, Engineering avanzada, Operations, Comms, Damage Control)	area:juego	2026-08-08T01:11:40Z
+453	CLOSED	feat(foundry): sincronizar por red la posición/altura de otros jugadores al andar por la nave	enhancement, area:foundry	2026-08-08T01:11:31Z
+450	CLOSED	feat(foundry): que cada usuario pueda modelar su propio monigote de la cantina	enhancement, area:foundry	2026-08-04T19:50:13Z
+448	CLOSED	chore(foundry): consolidar los botones de la barra de escena del módulo	enhancement, area:foundry	2026-08-16T09:02:14Z
+446	CLOSED	feat(foundry): saltar/agacharse al andar por la nave (#427)	enhancement, area:foundry	2026-08-04T22:48:43Z
+423	CLOSED	feat(foundry): explorar la cantina como sala procedural que unifica las mesas de minijuegos	enhancement, triage, decision, area:foundry, Fase 4	2026-08-04T22:48:40Z
+420	CLOSED	feat(foundry): planetas del decorado con volumen de consola, sin invadir el mapa táctico (rebanada 4 de #362)	enhancement, area:foundry	2026-07-31T09:38:36Z
+419	CLOSED	feat(foundry): el casco de ingeniería enseña el daño por región (rebanada 4 de #362)	enhancement, decision, area:foundry, Accesibilidad	2026-07-31T13:49:53Z
+413	CLOSED	feat(cooperación): sistema social de dados para la tripulación		2026-08-04T21:26:06Z
+410	CLOSED	chore(ci): cachear también el SDK de Discord en el job de Windows nativo (escindido de #400)	automation	2026-07-31T10:11:46Z
+400	CLOSED	La descarga del SDK de Discord falla en silencio y tumba el build seis minutos después		2026-07-31T12:41:08Z
+396	CLOSED	Buenas		2026-08-16T07:40:27Z
+391	CLOSED	feat(foundry): la estación al atracar, en 3D retro (#362, rebanada 6)	enhancement, area:bridge, area:foundry	2026-07-30T15:29:56Z
+384	CLOSED	feat(foundry): fondo estelar 3D real para las superficies retro (#362, rebanada 5)	enhancement, area:foundry	2026-07-29T20:55:22Z
+374	CLOSED	feat(foundry): lámina de reconocimiento retro 3D para contactos		2026-07-30T15:27:14Z
+371	CLOSED	feat(foundry): exigir características al ocupar un puesto (opcional, apagado de serie)	enhancement, decision, area:foundry	2026-07-29T08:40:12Z
+362	CLOSED	feat(foundry): 3D retro de consola (PSX / GameCube) para las superficies que hoy fingen la profundidad	enhancement, decision, area:foundry	2026-08-04T22:48:38Z
+361	CLOSED	chore(ci): puerta única que reporte siempre, para poder exigir los checks que hoy no se pueden exigir (escindido de #225)	decision, Coordinación, automation	2026-07-30T23:58:56Z
+353	CLOSED	feat(foundry): el daño de cada sistema se dibuja, no solo se colorea (cuatro estados, con «sin lectura»)	enhancement, area:foundry, Accesibilidad	2026-07-28T18:18:07Z
+352	CLOSED	feat(foundry): retratos pixel de tripulación en la consola de puesto (presencia y puesto, no identidad)	enhancement, area:foundry, Accesibilidad	2026-07-29T06:37:38Z
+351	CLOSED	chore(foundry): frontera de estilo vivo/registrado y paleta compartida (prerrequisito del arte procedural)	enhancement, area:foundry	2026-07-28T08:03:41Z
+349	CLOSED	docs(#318 escindido): arte clásico y cine primitivo — evidencia y reglas de plazo propias	documentation	2026-07-29T02:33:02Z
+347	CLOSED	feat(foundry): el GM manda sobre la música de a bordo (override del registro automático)	enhancement, area:foundry	2026-07-28T12:07:58Z
+344	CLOSED	feat(foundry): aplicar el lenguaje visual y sonoro del arte clásico (cartografía, grabado, música)	enhancement, area:foundry, Accesibilidad	2026-07-29T13:19:51Z
+342	CLOSED	docs(repo): actualizar el banner al estado actual de Espaciokoop Lagunak		2026-07-27T21:30:44Z
+341	CLOSED	feat(editor-ship): overrides seguros de escudos máximos	enhancement	2026-07-28T07:52:48Z
+340	CLOSED	[Decisión] ¿Apoyar el póker en el sistema nativo de cartas de Foundry (Cards)? Investigación con código de v13 en mano	decision, area:foundry, Fase 4	2026-08-04T19:56:58Z
+339	CLOSED	bug(foundry): los encuentros inyectados por el GM no llegan a la bitácora	bug, enhancement, area:foundry	2026-07-27T23:47:52Z
+338	CLOSED	feat(foundry): nivel de alerta de la nave visible y audible para toda la mesa	enhancement, area:foundry, Accesibilidad	2026-07-28T20:21:57Z
+336	CLOSED	[Bug]: el arte de la baraja no sabe dibujar 20 de las 52 cartas reales (códigos incompatibles con naipes.mjs)	bug, area:foundry	2026-07-27T21:26:00Z
+334	CLOSED	feat(foundry): lectura periférica del estado de nave (barras de casco, energía y sistemas)	enhancement, area:foundry, Accesibilidad	2026-07-28T01:51:10Z
+331	CLOSED	feat(foundry): estímulos visuales propios por puesto — vista del espacio común filtrada por rol	enhancement, decision, area:foundry	2026-07-31T08:11:30Z
+319	CLOSED	feat(editor-ship): override declarativo y seguro de casco máximo	enhancement, area:juego	2026-07-26T22:58:32Z
+310	CLOSED	research(contenido): guiños de dominio público del imaginario scifi/pulp (con verificación legal)	documentation, area:foundry, area:escenarios, Fase 4	2026-07-28T01:51:07Z
+308	CLOSED	feat(diversión): sistema de minijuegos a bordo (póker primero) — capa social diegética	enhancement, decision, area:foundry, Fase 4	2026-08-04T22:48:35Z
+301	CLOSED	feat(ingenieria): refrigerante como orden de puesto (set_system_coolant, hoy dormido)	enhancement, area:bridge, area:foundry, Fase 3, javascript	2026-07-22T19:25:21Z
+290	CLOSED	design(foundry): legibilidad del decorado de planetas apelotonados en el mapa vivo		2026-07-26T22:58:34Z
+289	CLOSED	feat(foundry): unificar «Probar conexión» dentro del flujo de token del puente		2026-07-21T21:10:23Z
+287	CLOSED	a11y: contraste ilegible en las opciones abiertas de los <select> del panel de estado de nave		2026-07-21T21:10:15Z
+272	CLOSED	chore(security): programar revisión periódica de httpScriptAccess (sin tocar desde 2021)	seguridad, Coordinación	2026-07-21T15:23:05Z
+268	CLOSED	design(bridge): permisos por puesto de tripulación en el token del bridge	enhancement, decision, area:bridge, area:foundry, Fase 3	2026-07-22T21:13:42Z
+263	CLOSED	bug(foundry): la consola de puesto queda obsoleta al cambiar de estación (necesita F5)	bug, area:foundry	2026-07-28T13:24:17Z
+260	CLOSED	feat(foundry): robustez del decorado del mapa por debajo de 320×320 (nebulosas se degradan al reducir)	enhancement, area:foundry, Fase 3	2026-07-21T21:25:44Z
+259	CLOSED	feat(foundry): al pinchar un objeto del mapa vivo, mostrar un cuadrito con su información	enhancement, area:foundry, Fase 3	2026-07-21T15:23:04Z
+258	CLOSED	bug(foundry): colisión de claves i18n en LAGUNAK.Maniobra.Rumbo rompe TODA la localización del módulo	bug, area:foundry	2026-07-21T15:23:04Z
+251	CLOSED	docs: reference ADRs from bridge README	Fase 3, AECF	2026-07-21T11:25:06Z
+250	CLOSED	docs(security): clarify GM trust assumptions	Fase 3, AECF	2026-07-21T11:25:03Z
+249	CLOSED	docs(security): document authentication lifecycle	Fase 3, AECF	2026-07-21T11:25:11Z
+248	CLOSED	tests(security): add oversized request tests	Fase 3, AECF	2026-07-21T11:07:50Z
+247	CLOSED	docs(api): document bridge security guarantees	Fase 3, AECF	2026-07-21T15:13:59Z
+246	CLOSED	docs(security): document bridge threat model	Fase 3, AECF	2026-07-20T20:44:07Z
+244	CLOSED	feat(foundry): identidad visual propia por puesto de tripulación	enhancement, area:foundry, Fase 3, Accesibilidad	2026-07-21T15:23:03Z
+242	CLOSED	feat(crew): armas sube y baja escudos desde su consola	enhancement, area:foundry, Fase 3	2026-07-21T15:23:03Z
+240	CLOSED	feat(crew): ingeniería reparte energía por sistema desde su consola	enhancement, area:foundry, Fase 3	2026-07-21T15:23:02Z
+238	CLOSED	feat(crew): navegación completa el control de movimiento — impulso y warp	enhancement, area:foundry, Fase 3	2026-07-21T15:23:02Z
+236	CLOSED	feat(crew): acciones operativas por puesto — relé de órdenes tripulante→GM→puente	enhancement, decision, area:bridge, area:foundry, Fase 3	2026-07-21T15:23:01Z
+232	CLOSED	feat(content): rotar y eliminar objetos seleccionados del mapa en staging	enhancement, Fase 3, cpp, area:juego	2026-07-21T15:23:01Z
+228	CLOSED	docs(foundry): alinear README y FOUNDRY con el estado integrado de Fase 3	documentation, area:foundry, Fase 3, Calidad	2026-07-21T15:23:00Z
+227	CLOSED	test(foundry): cerrar la baseline de accesibilidad del módulo	area:foundry, Fase 3, Accesibilidad, Calidad, javascript	2026-07-22T21:13:41Z
+226	CLOSED	security(ci): fijar CodeQL Actions a SHA inmutable	seguridad, automation, github_actions, Calidad	2026-07-21T15:23:00Z
+223	CLOSED	feat(foundry): anotar reposiciones GM en Journal con eventId idempotente	enhancement, area:bridge, area:foundry, area:escenarios, Fase 3	2026-07-22T18:12:20Z
+216	CLOSED	feat(foundry): panel de ingeniería del GM — repartir energía por sistema desde Foundry	enhancement, area:foundry, Fase 3, javascript	2026-07-19T17:06:58Z
+204	CLOSED	feat(content): colocar objetos de mapa nuevos desde el radar GM	enhancement, Fase 3, cpp, area:juego	2026-07-19T15:34:40Z
+203	CLOSED	feat(foundry): decorado de fondo del mapa vivo — planetas, nebulosas y asteroides (sensación de espacio)	enhancement, area:foundry, Fase 3, javascript	2026-07-22T05:52:30Z
+199	CLOSED	feat(events): normalizar encounter_started desde Primera Guardia	enhancement, area:bridge, area:escenarios, Fase 3	2026-07-19T15:33:01Z
+197	CLOSED	docs(foundry): alinear spawn_encounter con la frontera ScriptStorage	documentation, area:bridge	2026-07-21T15:22:59Z
+190	CLOSED	fix(www): dar nombre accesible a los cinco controles de la sandbox HTTP	bug, Accesibilidad, Calidad	2026-07-21T15:22:59Z
+185	CLOSED	Foundry: suavizar movimiento del mapa vivo entre sondeos		2026-07-21T15:22:58Z
+183	CLOSED	feat(security) Automatización de la configuración del token para evitar input humano	enhancement, triage, seguridad, Fase 3	2026-07-18T15:15:31Z
+182	CLOSED	ci(security): fijar a SHA las acciones mutables del workflow Semgrep	seguridad, Fase 3, automation, github_actions	2026-07-16T22:23:24Z
+178	CLOSED	docs(wiki): actualizar estado, navegación y terminología de las páginas iniciales	documentation, help wanted, good first issue, Fase 3	2026-07-17T14:03:07Z
+176	CLOSED	feat(gm): control rápido de nave desde Foundry — teletransporte, aceleración, órdenes directas	enhancement, decision, area:bridge, area:foundry, Fase 3	2026-07-22T21:13:39Z
+175	CLOSED	feat(foundry): dibujar el destino y su ruta en el mapa vivo	enhancement, area:foundry, Fase 3, javascript	2026-07-17T07:48:13Z
+173	CLOSED	feat(foundry): espacios de trabajo diferenciados para cada puesto de tripulación	enhancement, area:foundry, Fase 3, javascript	2026-07-16T21:33:53Z
+170	CLOSED	fix(scenarios): erratas ejecutables en escenarios upstream detectadas por LuaLS	Fix	2026-07-21T15:22:58Z
+165	CLOSED	docs(arquitectura): representar el módulo Foundry en el navegador del GM	documentation, area:foundry	2026-07-16T19:21:24Z
+162	CLOSED	feat(foundry): elección de puesto por jugador con corrección GM	enhancement, area:foundry, Fase 3, javascript	2026-07-16T19:31:06Z
+155	CLOSED	feat(content): aplicar un mapa como lote ECS reversible	enhancement, area:bridge, area:foundry, area:escenarios, Fase 3, cpp, area:juego	2026-07-18T20:41:41Z
+154	CLOSED	feat(editor): selectores de relaciones y renombrado transaccional de recursos	enhancement, area:bridge, area:foundry, area:escenarios, Fase 3, cpp, area:juego	2026-07-16T21:27:49Z
+153	CLOSED	feat(content): desplegar una nave personalizada con confirmación GM y rollback	enhancement, area:bridge, area:foundry, area:escenarios, Fase 3, cpp, area:juego	2026-07-18T20:27:58Z
+152	CLOSED	feat(content): crear fichas de personaje con selectores canónicos	enhancement, area:bridge, area:foundry, area:escenarios, Fase 3, cpp, area:juego	2026-07-18T16:06:31Z
+151	CLOSED	feat(content): construir historias con un grafo visual de campaña	enhancement, area:bridge, area:foundry, area:escenarios, Fase 3, cpp, area:juego	2026-07-18T20:41:38Z
+150	CLOSED	feat(content): mover objetos de mapa visualmente en staging	enhancement, area:bridge, area:foundry, area:escenarios, Fase 3, cpp, area:juego	2026-07-17T14:45:25Z
+148	CLOSED	feat(content): previsualizar la plantilla de nave en 3D	Fase 3	2026-07-15T21:03:45Z
+146	CLOSED	docs: corregir la instantánea #14 y conservar la arquitectura del mapa	documentation	2026-07-16T08:01:35Z
+142	CLOSED	security(ci): silenciar en Trivy los CVE sin parche disponible (438 alertas sin acción posible)	seguridad, Fase 3, automation, AECF	2026-07-15T21:32:08Z
+140	CLOSED	docs: adelgazar CLAUDE.md — estado volátil fuera, hechos duraderos dentro	documentation, decision, Fase 3	2026-07-15T19:14:43Z
+137	CLOSED	fix(ci): retirar PMD Java no aplicable al repositorio	bug, automation	2026-07-15T20:56:08Z
+136	CLOSED	security(ci): analizar las dos imágenes Docker con Trivy	area:docker, seguridad, automation	2026-07-15T20:56:08Z
+134	CLOSED	test(ci): dry-run seguro del workflow de publicación Docker en PR	area:docker, automation	2026-07-15T20:56:07Z
+126	CLOSED	ux(foundry): onboarding jugable para mapa, navegación y ETA	enhancement, area:foundry, Fase 3, Accesibilidad, javascript	2026-07-17T07:31:37Z
+125	CLOSED	ux(foundry): control propio de nave y estado inequívoco de pausa	enhancement, area:foundry, Fase 3, javascript	2026-07-16T19:21:00Z
+124	CLOSED	decision(seguridad): definir contrato operativo y de datos de Codacy	documentation, decision, seguridad	2026-07-15T16:44:23Z
+123	CLOSED	chore(ci): migrar y fijar actions privilegiadas de Codacy	seguridad, automation	2026-07-15T16:44:28Z
+122	CLOSED	fix(ci): corregir categorías SARIF duplicadas de Codacy	bug, seguridad, automation	2026-07-15T16:44:25Z
+117	CLOSED	feat(gm): encuentros inyectados por el GM — la mitad que falta de la palanca narrativa (Fase 3)	enhancement, decision, area:bridge, area:foundry, area:escenarios, Fase 3	2026-07-22T21:13:37Z
+116	CLOSED	i18n: resources/locale/tutorial.*.po es un fósil que nadie carga (y va una versión por detrás)	Fase 3, Fix, area:juego	2026-07-16T16:05:05Z
+92	CLOSED	[Bug]: el puente no envía CORS y el módulo Foundry no puede conectar desde ningún navegador	bug, area:bridge, area:foundry, seguridad	2026-07-15T16:31:46Z
+88	CLOSED	[Propuesta]: Coordinar y procedimentar esfuerzos de seguridad, accesibilidad, mantenimiento, etc...	documentation, enhancement, help wanted, decision, area:docker, area:bridge, area:foundry, area:escenarios, seguridad, Coordinación, Accesibilidad	2026-07-15T16:40:13Z
+87	CLOSED	[Security]: Alert-fix-8 y alert-fix-9	bug, seguridad	2026-07-15T16:44:43Z
+86	CLOSED	[Bug]: No funciona el primer link dentro de SECURITY.md	bug, documentation, help wanted, good first issue	2026-07-15T16:38:08Z
+82	CLOSED	Publicar las imágenes Docker del servidor y del puente (fleco de Fase 2)	enhancement, area:docker, automation, github_actions, Fase 2	2026-07-16T16:05:07Z
+80	CLOSED	Avería como palanca del GM: set_system_health en el puente y coolant/repair_crew en /v1/state	enhancement, area:bridge, Fase 3, python	2026-07-16T16:05:10Z
+75	CLOSED	ci: declarar permisos mínimos en el workflow heredado	seguridad, automation, github_actions	2026-07-16T16:05:12Z
+66	CLOSED	test(foundry): cubrir acciones de pausa hasta el cliente del puente	area:foundry, Fase 3, Calidad, javascript	2026-07-16T16:05:14Z
+64	CLOSED	fix(i18n): unificar acciones de Omicron con la interfaz	Fase 3, Fix, area:juego	2026-07-16T16:05:16Z
+63	CLOSED	fix(editor): proteger cambios sin guardar y probar el codec JSON	bug, Fase 3, Fix, cpp, area:juego	2026-07-16T18:03:22Z
+62	CLOSED	test(ci): ejecutar tools/tests en Linux	automation, github_actions, python, Calidad	2026-07-16T16:05:18Z
+60	CLOSED	fix(i18n): auditar cabeceras de scripts anidados	Fase 3, Fix, area:juego	2026-07-16T16:05:20Z
+58	CLOSED	fix(security): limitar el puente a loopback por defecto	area:bridge, seguridad, Fase 3, Fix, python	2026-07-16T16:05:22Z
+56	CLOSED	feat(editor): campañas y personajes vinculados a mapas, naves y puestos	enhancement, Fase 3, cpp, area:juego	2026-07-16T16:05:24Z
+55	CLOSED	feat(editor-ship): editor declarativo de naves y aplicación a plantillas	enhancement, area:bridge, area:foundry, area:escenarios, Fase 3, cpp, area:juego	2026-08-04T19:55:00Z
+54	CLOSED	feat(editor-map): conectar documentos de mapa con el editor visual GM	enhancement, area:bridge, area:foundry, area:escenarios, Fase 3, cpp, area:juego	2026-08-04T19:54:58Z
+53	CLOSED	feat(editor): persistencia local atómica e importación desde archivos	enhancement, Fase 3, cpp, area:juego	2026-07-16T16:05:26Z
+51	CLOSED	feat: editor integrado de campañas, mapas, personajes y naves	enhancement, Fase 3, cpp, area:juego	2026-07-16T16:05:28Z
+41	CLOSED	fix(i18n): traducir Quit como Salir en Español (España)	Fase 3, Fix, area:juego	2026-07-16T16:05:30Z
+39	CLOSED	feat(scenario): modo de prueba individual para Primera Guardia	enhancement	2026-07-21T15:22:57Z
+36	CLOSED	build(foundry): paquetizado reproducible del módulo	enhancement, area:foundry	2026-07-21T15:22:57Z
+34	CLOSED	feat(foundry): pausa y reanudación de la simulación para el GM	enhancement, area:bridge, area:foundry, Fase 3	2026-07-16T16:05:32Z
+32	CLOSED	feat(foundry): destino, distancia y ETA en el estado de nave	enhancement, area:bridge, area:foundry, Fase 3	2026-07-16T16:05:35Z
+30	CLOSED	feat(foundry): evento de llegada deduplicado de Primera Guardia	enhancement, area:bridge, area:foundry, Fase 3	2026-07-16T16:05:37Z
+27	CLOSED	docs: fijar una sola nave como alcance del contrato v0	documentation, decision, area:bridge, Fase 3	2026-07-21T15:22:56Z
+22	CLOSED	[Fase 3.5] Tests del puente (pytest sobre bridge/app.py)	area:bridge, Fase 3, python, Calidad	2026-07-16T16:05:40Z
+19	CLOSED	feat(i18n): traducción completa Español (España) / es-ES	enhancement, Fase 3, area:juego	2026-07-21T15:22:56Z
+14	CLOSED	[Coordinación] Estado del proyecto y traspaso de testigo — 2026-07-12	documentation, Fase 3, Coordinación	2026-08-04T20:12:20Z
+12	CLOSED	[Fase 1] Identidad visible de Espaciokoop Lagunak sin eliminar créditos originales	Fase 1	2026-07-15T16:43:51Z
+11	CLOSED	[Fase 1] Escenario Lua mínimo propio: «Lagunak: Primera guardia»	enhancement, area:escenarios, Fase 1, Fase 2	2026-07-15T18:06:00Z
+8	CLOSED	[Fase 3] Esqueleto del módulo Foundry VTT contra el contrato v0 del puente	enhancement, triage, area:foundry	2026-07-15T16:31:18Z
+7	CLOSED	[Decisión]: Versión mínima de Foundry VTT y sistema de la campaña Spelljammer	triage, decision, area:foundry	2026-07-15T16:34:06Z
+6	CLOSED	[Decisión]: Protocolo puente ↔ Foundry — polling HTTP, WebSocket o ambos	triage, decision, area:bridge, area:foundry	2026-07-15T16:34:05Z
+5	CLOSED	[Fase 2] Ejecución reproducible con Docker + puente de integración seguro	enhancement, area:docker, area:bridge	2026-07-15T16:37:17Z
+4	CLOSED	Registrar el estado verificado del API HTTP heredado (/exec.lua, /get.lua, /set.lua)	documentation, Fase 2	2026-07-15T16:51:56Z
+2	CLOSED	Documentar la compilación limpia verificada en Linux (fase 0)	documentation	2026-07-15T16:34:17Z

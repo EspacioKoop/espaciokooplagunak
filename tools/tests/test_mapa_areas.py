@@ -38,12 +38,9 @@ SIN_RUTAS = {"Documentación"}
 # poder nombrarlo sin mentir. Esta lista es la excepción explícita, con su PR, y
 # se limpia sola: si una de estas rutas ya existe, la prueba EXIGE retirarla de
 # aquí — una excepción caducada es cómo una guarda se convierte en decoración.
-EN_VUELO = {
-    "foundry-module/scripts/museo-escena.mjs": "PR #606",
-    "foundry-module/scripts/museo-piezas.mjs": "PR #606",
-    "foundry-module/scripts/procedencia-*.mjs": "PR #606",
-    "foundry-module/scripts/rig-esqueleto.mjs": "PR #609",
-}
+# Vacía porque #606 y #609 ya aterrizaron: sus cuatro rutas están en el árbol y
+# la prueba de abajo exigió retirarlas. La categoría vacía es su estado sano.
+EN_VUELO: dict[str, str] = {}
 
 
 def _tabla() -> list[tuple[str, list[str]]]:

@@ -15,6 +15,17 @@
   </div>
   <canvas class="lagunak-andar-lienzo" width="480" height="270"
           role="img" aria-label="{{localize "LAGUNAK.AndarNave.VistaAlt"}}"></canvas>
+  {{!-- La cartela de una pieza de museo (#598). Vacía y oculta salvo cuando se
+        está delante de algo que la tiene: es una superficie de LECTURA, no un
+        panel de estado, y no recuerda lo que ya se ha visto. Región `status`
+        por lo mismo que el rótulo de sala — quien use lector de pantalla lee
+        la cartela igual que quien la ve. --}}
+  <div class="lagunak-museo-cartela" role="status" aria-live="polite" data-andar-cartela hidden>
+    <p class="lagunak-museo-cartela-titulo" data-cartela-titulo></p>
+    <p class="lagunak-museo-cartela-naturaleza" data-cartela-naturaleza></p>
+    <p class="lagunak-museo-cartela-texto" data-cartela-texto></p>
+    <p class="lagunak-museo-cartela-credito" data-cartela-credito></p>
+  </div>
   <p class="lagunak-andar-nave-controles">
     {{localize "LAGUNAK.AndarNave.Controles"}}
   </p>

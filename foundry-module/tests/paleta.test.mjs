@@ -42,6 +42,9 @@ const MODULOS_DE_ARTE = [
   // cielo, cabina— y el primer exterior: entra en la guardia el mismo día que
   // nace, que es cuando aún no cuesta nada.
   "../scripts/playa-escena.mjs",
+  // Y la sala del museo (#598), que es otra escena entera de arte nuevo: muro,
+  // pedestal, yeso y cartela. Mismo trato que la playa, y el mismo día.
+  "../scripts/museo-escena.mjs",
   "../scripts/nave-props.mjs",
   // La ficha de nave (#354) reusa las siluetas y sus colores tal cual: lo único
   // que podría haber declarado es el relleno del hueco transparente, y ese vive

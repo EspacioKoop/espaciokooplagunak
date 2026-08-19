@@ -38,8 +38,12 @@ const raiz = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
  * herramienta de GM: no cuelga de ninguna puerta —colgarla de un mamparo sería
  * contar una historia que nadie ha decidido— y no tiene consolas ni maquinaria.
  * Exigirle «ser alcanzable andando desde la cantina» sería exigirle ser nave.
+ *
+ * La sala del museo (#598) está fuera por lo mismo y con más motivo: el Phobos
+ * no tiene un museo. Se entra por herramienta y se sale por su propio punto de
+ * interacción, igual que la playa se sale por la cabina de teléfono.
  */
-const FUERA_DE_LA_NAVE = new Set(["playa"]);
+const FUERA_DE_LA_NAVE = new Set(["playa", "museo"]);
 
 function todasLasEstancias() {
   const pares = CATALOGO_ANDAR.ids

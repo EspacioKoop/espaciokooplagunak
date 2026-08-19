@@ -204,9 +204,15 @@ su propia cadena de trabajo.
 - [x] **Assets de terceros con procedencia** (#590): entrada de malla ajena con
       decimado por colapso de aristas, UV triplanar y **ficha obligatoria** —
       obra, qué es el fichero, autoría, licencia, enlace y sha256.
-- [ ] **Museo, enciclopedia y bestiario** (#598): el segundo consumidor del
-      catálogo con procedencia, y la prueba de que el kit sirve para contenido
-      y no solo para el banco de pruebas.
+- [x] **La sala del museo** (#598): el consumidor que le faltaba al catálogo con
+      procedencia. Una ficha ya puede apuntar a una malla —una sola regla de
+      licencia para texto y geometría— y tres piezas se enseñan en una sala
+      andable, con su cartela diciendo qué es cada fichero: un vaciado en yeso
+      escaneado no es el mármol, y una reconstrucción no es «así era».
+- [ ] **Enciclopedia y bestiario** (#598): la enciclopedia cabe como superficie
+      de consulta; el bestiario **no**, hasta que el núcleo tenga dónde guardar
+      un avistamiento — registrar qué ha encontrado la tripulación es recordar,
+      y eso no es de una escena de Foundry.
 - [ ] **Que una escena nueva cueste 1–3 PRs** y el último no toque ningún módulo
       compartido. Es la métrica de #589, y hasta que no se cumpla en una escena
       de verdad, el kit no está terminado.

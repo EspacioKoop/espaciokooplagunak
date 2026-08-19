@@ -105,13 +105,18 @@ def main() -> None:
     )
     args = ap.parse_args()
 
-    issues = json.load(open(args.fichero, encoding="utf-8"))
+    with open(args.fichero, encoding="utf-8") as f:
+        issues = json.load(f)
     if not issues:
         sys.exit("el fichero no trae ninguna issue")
     titulos = {i["number"]: i.get("title", "") for i in issues}
+    # `strict`: si Ollama devolviera menos vectores que issues, un zip flojo
+    # recortaría por la cola en silencio y la lista de vecinos saldría plausible
+    # y equivocada — que es justo lo que este script promete no hacer.
     vectores = dict(zip(
         (i["number"] for i in issues),
         embeber([texto_de(i) for i in issues]),
+        strict=True,
     ))
 
     objetivos = [args.issue] if args.issue else sorted(vectores)

@@ -23,19 +23,66 @@ P_VCS='gh[pousr]_[A-Za-z0-9]{36,}|xox[baprs]-[A-Za-z0-9-]{10,}|SCW[A-Z0-9]{17}'
 P_GEN='-----BEGIN [A-Z ]*PRIVATE'' KEY-----|aws_secret''_access_key'
 PATTERNS="($P_LLM|$P_VCS|$P_GEN)"
 
-# El propio hook se excluye: su tabla de patrones no es una credencial.
-ficheros=$(git diff --cached --name-only --diff-filter=ACM | grep -v 'hook-secretos.sh' || true)
-[ -z "$ficheros" ] && exit 0
+# QUE SE MIRA, SEGUN EL HOOK QUE SEA.
+#
+# En pre-commit lo que va a entrar es el indice. En pre-push NO hay indice: lo
+# que se publica son commits que ya existen, asi que mirar `--cached` deja el
+# hook en nada. Comprobado: con la version que solo miraba el indice, un commit
+# con credencial hecho antes de instalar el hook (o con SKIP_SECRET_SCAN) se
+# empujaba al remoto sin una sola queja — justo el caso que este fichero existe
+# para impedir en un repositorio publico.
+NULO=0000000000000000000000000000000000000000
+case "$(basename "$0")" in
+  pre-push)
+    ACCION="PUSH"
+    # git entrega por la entrada estandar: <ref local> <sha local> <ref remota> <sha remoto>
+    commits=""
+    while read -r _ local _ remoto; do
+      [ "$local" = "$NULO" ] && continue          # borrado de rama: no publica nada
+      if [ "$remoto" = "$NULO" ]; then
+        # Rama nueva: lo que ninguna otra rama remota tenga ya.
+        nuevos=$(git rev-list "$local" --not --remotes 2>/dev/null)
+      else
+        nuevos=$(git rev-list "$remoto..$local" 2>/dev/null)
+      fi
+      commits="$commits $nuevos"
+    done
+    [ -z "${commits// /}" ] && exit 0
+    hits=""
+    for commit in $(echo "$commits" | tr ' ' '\n' | sort -u); do
+      # Se nombra el fichero, no la linea: en un push la linea puede venir de un
+      # commit viejo y recortarla a doce caracteres no dice donde mirar.
+      f=$(git show --no-color -U0 --format= --name-only "$commit" \
+          -- . ':(exclude)*hook-secretos.sh' | tr '\n' ' ')
+      h=$(git show --no-color -U0 --format= "$commit" -- . ':(exclude)*hook-secretos.sh' \
+          | grep -E '^\+' | grep -EI "$PATTERNS" || true)
+      [ -n "$h" ] && hits="$hits
+  ${commit:0:9} en: $f"
+    done
+    ;;
+  *)
+    ACCION="COMMIT"
+    # El propio hook se excluye: su tabla de patrones no es una credencial.
+    hits=$(git diff --cached --no-color -U0 -- . ':(exclude)*hook-secretos.sh' \
+           | grep -E '^\+' | grep -EI "$PATTERNS" || true)
+    ;;
+esac
 
-hits=$(git diff --cached --no-color -U0 -- $ficheros | grep -E '^\+' | grep -EI "$PATTERNS" || true)
-if [ -n "$hits" ]; then
+if [ -n "${hits// /}" ]; then
   echo "════════════════════════════════════════════════════════════"
-  echo " COMMIT BLOQUEADO: parece haber una credencial en el diff"
+  echo " $ACCION BLOQUEADO: parece haber una credencial"
   echo "════════════════════════════════════════════════════════════"
-  echo "$hits" | head -10 | sed -E 's/(.{12}).*/\1…[recortado]/'
+  # El pre-commit recorta la linea (el secreto esta en ella); el pre-push ya
+  # trae solo commit y fichero, que no hay que recortar.
+  if [ "$ACCION" = "PUSH" ]; then
+    echo "$hits" | head -10
+  else
+    echo "$hits" | head -10 | sed -E 's/(.{12}).*/\1…[recortado]/'
+  fi
   echo
-  echo "Quita el secreto del commit. Si de verdad es un falso positivo:"
-  echo "  SKIP_SECRET_SCAN=1 git commit ..."
+  echo "Quita el secreto. Si ya esta en el historial no basta con borrarlo del"
+  echo "fichero: hay que reescribir el historial Y rotar la credencial."
+  echo "Si de verdad es un falso positivo:  SKIP_SECRET_SCAN=1 git ..."
   exit 1
 fi
 exit 0

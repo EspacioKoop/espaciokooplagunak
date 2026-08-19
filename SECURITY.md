@@ -84,7 +84,12 @@ Lo activa una persona con permiso de administración en
 ### 2. Hook local
 
 [`tools/hook-secretos.sh`](tools/hook-secretos.sh) bloquea commits y pushes que
-contengan credenciales. Instálalo con `core.hooksPath` global y no solo en
+contengan credenciales. El mismo fichero sirve para los dos hooks y mira cosas
+distintas segun cual sea: en `pre-commit`, el indice; en `pre-push`, los commits
+que se van a publicar. Esa distincion no es un detalle — un `pre-push` que mire
+el indice no mira nada, porque al empujar no hay nada preparado, y deja pasar
+justo el caso que importa: una credencial que ya esta en un commit hecho antes
+de instalar el hook o con `SKIP_SECRET_SCAN`. Instálalo con `core.hooksPath` global y no solo en
 `.git/hooks`: los agentes **clonan** el repositorio en directorios de trabajo
 propios, y un hook instalado únicamente en el clon de la persona no los cubre.
 

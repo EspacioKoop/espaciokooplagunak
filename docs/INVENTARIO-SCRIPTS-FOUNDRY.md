@@ -16,9 +16,7 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 - **contenido-externo/:** 5 scripts
 - **minijuegos/:** 27 scripts
 
-## Agrupación Temática
-
-### 1. Nave y Sistemas de Navegación (42 scripts)
+### 1. Nave y Sistemas de Navegación (40 scripts)
 - `andar-nave-app.mjs`
 - `nave-avatares-render.mjs`
 - `nave-camara.mjs`
@@ -60,7 +58,7 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 - `seccion-nave.mjs`
 - `seccion-lienzo.mjs`
 
-### 2. Estaciones y Puertos Espaciales (12 scripts)
+### 2. Estaciones y Puertos Espaciales (11 scripts)
 - `station-actions.mjs`
 - `station-assignment.mjs`
 - `station-handover.mjs`
@@ -73,7 +71,7 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 - `proyeccion-puesto.mjs`
 - `requisitos-puesto.mjs`
 
-### 3. Cantina y Áreas Sociales (12 scripts)
+### 3. Cantina y Áreas Sociales (11 scripts)
 - `cantina-2d.mjs`
 - `cantina-app.mjs`
 - `cantina-avatar.mjs`
@@ -85,9 +83,8 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 - `cantina-sala.mjs`
 - `cantina-ventana.mjs`
 - `terraza-cantina.mjs`
-- `musica-reproductor.mjs`
 
-### 4. Minijuegos (27 scripts en subdirectorio)
+### 4. Minijuegos (27 scripts)
 - `adaptador-sesion.mjs`
 - `agente-automatico.mjs`
 - `aleatorio.mjs`
@@ -116,7 +113,7 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 - `sesion-motor.mjs`
 - `turnos-automaticos.mjs`
 
-### 5. Asistencia y Utilidades (13 scripts en subdirectorio)
+### 5. Asistencia y Utilidades (13 scripts)
 - `bandas.mjs`
 - `catalogo.mjs`
 - `enfoques.mjs`
@@ -129,8 +126,9 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 - `secuencia.mjs`
 - `sesion.mjs`
 - `temporizacion.mjs`
+- `vista.mjs`
 
-### 6. Contenido Externo (5 scripts en subdirectorio)
+### 6. Contenido Externo (5 scripts)
 - `adaptador.mjs`
 - `edicion.mjs`
 - `inventario.mjs`
@@ -168,7 +166,7 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 - `retrato-tripulante.mjs`
 - `lamina-contacto.mjs`
 
-### 10. Interfaz de Usuario y Paneles (10 scripts)
+### 10. Interfaz de Usuario y Paneles (9 scripts)
 - `asistencia-ui.mjs`
 - `asistencia-wiring.mjs`
 - `iconos-sistema.mjs`
@@ -176,7 +174,6 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 - `panel-gm-app.mjs`
 - `panel-gm.mjs`
 - `pausa-control.mjs`
-- `station-ui.mjs`
 - `ventana-nave.mjs`
 - `laminas-clasicas.mjs`
 
@@ -207,16 +204,13 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 - `consola-caliente-poll.mjs`
 - `diagnostico-conexion.mjs`
 
-### 15. Renderizado y Gráficos (9 scripts)
+### 15. Renderizado y Gráficos (6 scripts)
 - `barras-estado.mjs`
 - `foco-render.mjs`
 - `mapa-marco.mjs`
 - `mapa-render.mjs`
 - `piel-textura.mjs`
 - `contactos-degradados.mjs`
-- `horizonte-matte.mjs`
-- `nave-ventana-espacio.mjs`
-- `ventana-nave.mjs`
 
 ### 16. Core y Configuración Principal (2 scripts)
 - `main.mjs`

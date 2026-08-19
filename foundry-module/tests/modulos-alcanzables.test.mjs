@@ -62,6 +62,17 @@ const HUERFANOS_DECLARADOS = Object.freeze({
       "codificar tres PNG en cada carga para no mirarlos, que es justo lo " +
       "contrario de prerenderizar.",
   },
+  "rig-esqueleto.mjs": {
+    cimiento: false,
+    issue: 603,
+    motivo:
+      "Deformación de malla por huesos, fase 1 de #603. No lo importa nadie " +
+      "todavía porque su consumidor es la fase 4 (bustos, PC/NPC y criaturas con " +
+      "partes importadas) y esa fase depende de una decisión de arte que sigue " +
+      "abierta en el issue: avatares todo-escaneado o todo-estilizado. Cablearlo " +
+      "antes de esa decisión es exactamente cómo sale la opción incoherente del " +
+      "medio, que es la que el issue avisa que sale sola si nadie decide.",
+  },
   "catalogo-cosmografico.mjs": {
     cimiento: true,
     issue: 525,

@@ -249,6 +249,39 @@ test("alAlcanzarInteraccion se dispara al entrar en la zona, solo una vez (#509,
   mando.detener();
 });
 
+test("alSalirDeInteraccion avisa al APARTARSE, y solo entonces (#598)", () => {
+  // La cartela de una pieza de museo se retira al alejarse. Va por su propio
+  // callback y no por `alAlcanzarInteraccion(null)`: quien no lo pide no tiene
+  // que defenderse de un nulo.
+  const eventos = [];
+  const mando = arrancarAndar(lienzoFalso(), {
+    componer: () => ({ ancho: 100, alto: 100, poligonos: [] }),
+    planta: crearPlanta({ ancho: 10, profundidad: 10 }),
+    interacciones: declararInteracciones([
+      { id: "pieza", zona: { x: 4, z: 8, ancho: 2, profundidad: 1 }, accion: "cartela" },
+    ]),
+    alAlcanzarInteraccion: ({ accion }) => eventos.push(`entra:${accion}`),
+    alSalirDeInteraccion: () => eventos.push("sale"),
+    x: 5,
+    z: 7,
+    yaw: 0,
+    velocidad: 4,
+  });
+  mando.pulsar("adelante");
+  mando.avanzar(300); // dentro de la zona
+  assert.deepEqual(eventos, ["entra:cartela"]);
+
+  // Quedarse quieto dentro no repite ni avisa de salida: sigue siendo un flanco.
+  mando.avanzar(200);
+  assert.deepEqual(eventos, ["entra:cartela"]);
+
+  mando.soltar("adelante");
+  mando.pulsar("atras");
+  mando.avanzar(600);
+  assert.deepEqual(eventos, ["entra:cartela", "sale"], "apartarse retira la cartela");
+  mando.detener();
+});
+
 test("sin alAlcanzarInteraccion, tocar un punto no hace nada (no revienta)", () => {
   const mando = arrancarAndar(lienzoFalso(), {
     componer: () => ({ ancho: 100, alto: 100, poligonos: [] }),

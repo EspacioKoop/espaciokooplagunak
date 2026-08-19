@@ -27,6 +27,8 @@ import { presentesEn } from "./nave-presencia.mjs";
 import { avatarDeUsuario } from "./avatar-assignment.mjs";
 import { openWorkspaceApp } from "./station-workspace-ui.mjs";
 import { SECCION } from "./paleta.mjs";
+import { cartelaDe, piezaPorId } from "./catalogo-piezas.mjs";
+import { CATALOGO_MUSEO } from "./museo-piezas.mjs";
 import { AJUSTE_TELEMETRIA, aceptarSensores, aceptarTelemetria } from "./telemetria-difusion.mjs";
 
 const ESTANCIA_INICIAL = "cantina";
@@ -269,6 +271,38 @@ function arrancar(raiz, estanciaPedida = null) {
     const nombre = game.i18n?.has?.(clave) ? game.i18n.localize(clave) : estanciaId;
     nodo.textContent = game.i18n?.format?.("LAGUNAK.AndarNave.EstasEn", { sala: nombre }) ?? nombre;
   }
+  /**
+   * Pinta —o retira— la cartela de la pieza que se tiene delante (#598).
+   *
+   * `textContent` y nunca HTML: el texto viene de un catálogo de datos, y una
+   * cartela que interpretara etiquetas sería una superficie de inyección a
+   * cambio de nada.
+   */
+  function pintarCartela(piezaId) {
+    const nodo = raiz?.querySelector?.("[data-andar-cartela]");
+    if (!nodo) return;
+    const pieza = piezaId ? piezaPorId(CATALOGO_MUSEO, piezaId) : null;
+    if (!pieza) {
+      nodo.hidden = true;
+      return;
+    }
+    const cartela = cartelaDe(pieza, game.i18n?.lang);
+    const escribir = (selector, texto) => {
+      const destino = nodo.querySelector?.(selector);
+      if (destino) destino.textContent = texto;
+    };
+    escribir("[data-cartela-titulo]", cartela.titulo);
+    escribir(
+      "[data-cartela-naturaleza]",
+      game.i18n?.has?.(cartela.claveNaturaleza)
+        ? game.i18n.localize(cartela.claveNaturaleza)
+        : "",
+    );
+    escribir("[data-cartela-texto]", cartela.texto);
+    escribir("[data-cartela-credito]", cartela.credito);
+    nodo.hidden = false;
+  }
+
   let ultimoSelloEnviado = null;
 
   // Muestras en vivo de los demás jugadores (#453), acumuladas por
@@ -394,13 +428,25 @@ function arrancar(raiz, estanciaPedida = null) {
     // ajena no enseña nada que el relé no dejara ver igualmente por botón.
     alAlcanzarInteraccion: ({ accion }) => {
       if (accion?.tipo === "consola") openWorkspaceApp(accion.puesto);
+      // La cartela de una pieza de museo (#598). Es LECTURA y nada más: no
+      // abre ventana, no marca la pieza como vista y no toca ningún documento.
+      // El texto sale del catálogo —que es el dato— y solo el nombre de la
+      // naturaleza sale de i18n, que es interfaz.
+      else if (accion?.tipo === "cartela") pintarCartela(accion.pieza);
       // Un punto que lleva a otra estancia (#587: la cabina de teléfono de la
       // playa devuelve a la nave). Reusa EXACTAMENTE el camino de una puerta en
       // vez de tener su propio salto: cambiar de estancia ya está resuelto, y
       // dos formas de hacerlo es como se desincronizan el rótulo de sala y la
       // posición publicada.
       else if (accion?.tipo === "estancia") irAEstancia(accion.estancia);
+      // Y cualquier otro punto retira la cartela anterior: quedarse puesta al
+      // pasar a la pieza de al lado sería atribuirle el texto equivocado.
+      else pintarCartela(null);
     },
+    // Alejarse la retira (#598). Va por el flanco de SALIDA del bucle y no por
+    // un temporizador: una cartela se deja de leer cuando te apartas, no cuando
+    // pasan unos segundos.
+    alSalirDeInteraccion: () => pintarCartela(null),
     // El de la estancia de ARRANQUE, no el de la nave (#587). Sin esto, abrir
     // directamente en un exterior pintaba su cielo con el gris de entre salas y
     // solo se corregía al cambiar de estancia — que en la playa no pasa nunca,

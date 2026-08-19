@@ -19,99 +19,40 @@
 // con `cimiento: true`, así que la guarda de alcanzabilidad de #523 no se queja
 // de él — pero fallará el día que se cablee y nadie actualice esa lista.
 
+import {
+  ErrorDeCatalogo,
+  PATRON_ID as ID_PATTERN,
+  clavesExactas as exactKeys,
+  esObjetoSimple as isPlainObject,
+  fallo as fail,
+  tamanoSerializado as serializedSize,
+  textoLocalizado as localizedText,
+  validarProcedencia as validateProvenance,
+} from "./procedencia-catalogo.mjs";
+
 const FORMAT = "espaciokoop-cosmography";
 const VERSION = 1;
 const MAX_ENTRIES = 2000;
 const MAX_SERIALIZED_BYTES = 1024 * 1024;
-const ID_PATTERN = /^[a-z0-9][a-z0-9_-]{0,63}$/;
 const ENTRY_TYPES = new Set(["plane", "star_system", "planet"]);
-const PROVENANCE_KINDS = new Set(["original", "cc", "user_supplied"]);
 const CONTINUITIES = new Set(["original", "homebrew", "spelljammer-5e", "spelljammer-legacy"]);
 const ENTRY_KEYS = new Set([
   "id", "type", "parent_id", "name", "summary", "continuity", "provenance",
 ]);
-const PROVENANCE_KEYS = new Set(["kind", "source", "license", "source_url"]);
-const LOCALIZED_KEYS = new Set(["es", "en"]);
 
 export const COSMOGRAPHY_FORMAT = FORMAT;
 export const COSMOGRAPHY_VERSION = VERSION;
 export const COSMOGRAPHY_ENTRY_TYPES = Object.freeze(["plane", "star_system", "planet"]);
 
-export class CosmographyValidationError extends Error {
-  constructor(code, path, message) {
-    super(`${path}: ${message}`);
-    this.name = "CosmographyValidationError";
-    this.code = code;
-    this.path = path;
-  }
-}
-
-function fail(code, path, message) {
-  throw new CosmographyValidationError(code, path, message);
-}
-
-function isPlainObject(value) {
-  if (value === null || typeof value !== "object" || Array.isArray(value)) return false;
-  const prototype = Object.getPrototypeOf(value);
-  return prototype === Object.prototype || prototype === null;
-}
-
-function exactKeys(value, allowed, required, path) {
-  if (!isPlainObject(value)) fail("invalid_object", path, "debe ser un objeto simple");
-  for (const key of Object.keys(value)) {
-    if (!allowed.has(key)) fail("unknown_field", `${path}.${key}`, "campo no permitido");
-  }
-  for (const key of required) {
-    if (!Object.hasOwn(value, key)) fail("missing_field", `${path}.${key}`, "campo obligatorio ausente");
-  }
-}
-
-function plainText(value, path, maxLength) {
-  if (
-    typeof value !== "string"
-    || value.length === 0
-    || value.length > maxLength
-    || value.trim() !== value
-  ) {
-    fail("invalid_text", path, `debe contener entre 1 y ${maxLength} caracteres sin espacios exteriores`);
-  }
-  if (/[\u0000-\u001f\u007f<>]/u.test(value)) {
-    fail("unsafe_text", path, "solo admite texto plano sin controles ni etiquetas");
-  }
-}
-
-function localizedText(value, path, maxLength) {
-  exactKeys(value, LOCALIZED_KEYS, LOCALIZED_KEYS, path);
-  plainText(value.es, `${path}.es`, maxLength);
-  plainText(value.en, `${path}.en`, maxLength);
-}
-
-function validateProvenance(value, path) {
-  exactKeys(value, PROVENANCE_KEYS, new Set(["kind", "source", "license"]), path);
-  if (!PROVENANCE_KINDS.has(value.kind)) {
-    fail("invalid_provenance", `${path}.kind`, "procedencia no admitida");
-  }
-  plainText(value.source, `${path}.source`, 160);
-  plainText(value.license, `${path}.license`, 80);
-  if (Object.hasOwn(value, "source_url")) {
-    plainText(value.source_url, `${path}.source_url`, 500);
-    let parsed;
-    try {
-      parsed = new URL(value.source_url);
-    } catch {
-      fail("invalid_url", `${path}.source_url`, "URL inválida");
-    }
-    if (parsed.protocol !== "https:") {
-      fail("invalid_url", `${path}.source_url`, "la fuente debe usar HTTPS");
-    }
-    if (parsed.username || parsed.password) {
-      fail("invalid_url", `${path}.source_url`, "la fuente no admite credenciales embebidas");
-    }
-  }
-  if (value.kind === "cc" && !Object.hasOwn(value, "source_url")) {
-    fail("missing_field", `${path}.source_url`, "el contenido CC necesita una fuente HTTPS");
-  }
-}
+/**
+ * El error de este catálogo ES el de cualquier catálogo con procedencia (#598).
+ *
+ * Se conserva el nombre exportado porque es el contrato que ya usan sus pruebas
+ * y quien lo importe: lo que cambió es que la clase la define
+ * `procedencia-catalogo.mjs`, para que un `instanceof` valga igual atrapando un
+ * error del atlas que uno del museo.
+ */
+export { ErrorDeCatalogo as CosmographyValidationError };
 
 function validateEntryShape(entry, index) {
   const path = `entries[${index}]`;
@@ -143,17 +84,6 @@ function validateEntryShape(entry, index) {
     fail("invalid_continuity", `${path}.continuity`, "continuidad no admitida");
   }
   validateProvenance(entry.provenance, `${path}.provenance`);
-}
-
-function serializedSize(value) {
-  let serialized;
-  try {
-    serialized = JSON.stringify(value);
-  } catch {
-    fail("not_serializable", "$", "el catálogo no se puede serializar como JSON");
-  }
-  if (serialized === undefined) fail("not_serializable", "$", "el catálogo no se puede serializar como JSON");
-  return new TextEncoder().encode(serialized).byteLength;
 }
 
 export function validateCosmography(catalog) {

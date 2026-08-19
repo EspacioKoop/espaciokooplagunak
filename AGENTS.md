@@ -40,6 +40,8 @@ Antes de trabajar, comprueba issues, pull requests y ramas para evitar duplicado
 
 Si hay cambios locales ajenos o instrucciones contradictorias, detente y solicita decisión humana. Si el cambio puede dividirse, evita editar los mismos archivos que otro colaborador.
 
+Para repartir trabajo entre varios agentes —qué áreas pueden ir en paralelo, qué archivos son puntos de colisión conocidos y cómo se parte un issue en unidades entregables— la guía es [`docs/TRABAJO_PARALELO_AGENTES.md`](docs/TRABAJO_PARALELO_AGENTES.md). Los agentes especializados del proyecto están versionados en [`.claude/agents/`](.claude/agents): úsalos en vez de improvisar uno.
+
 ## Entrega requerida
 
 Cada contribución debe resumir:

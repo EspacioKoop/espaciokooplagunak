@@ -9,6 +9,12 @@ léelo antes de modificar nada; sus reglas prevalecen sobre cualquier hábito po
 condicionan el trabajo diario:
 
 - No desarrolles sobre `main`: crea rama y entrega por pull request (flujo en [`CONTRIBUTING.md`](CONTRIBUTING.md)).
+- Si trabajas en paralelo con otro agente, mira el mapa de áreas y los puntos de colisión conocidos en
+  [`docs/TRABAJO_PARALELO_AGENTES.md`](docs/TRABAJO_PARALELO_AGENTES.md) ANTES de elegir por dónde
+  empezar: media docena de archivos (este mismo, `lang/*.json`, `main.mjs`, `paleta.mjs` y sus
+  guardas) los toca casi cualquier trabajo del módulo, y ahí es donde chocan dos ramas que por lo
+  demás no se rozan. Los agentes especializados del proyecto van versionados en
+  [`.claude/agents/`](.claude/agents).
 - No afirmes que algo compila, arranca o funciona si no has ejecutado la comprobación correspondiente.
 - Nada de `push --force`, `reset --hard`, squash del historial heredado ni reescritura de historial
   sin autorización humana explícita.
@@ -161,9 +167,9 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     y el importador de datos reales están escritos y probados, pero cablearlos metería en la partida
     un atlas que no está aprobado); `cimiento: false` es un hueco conocido con su
     issue abierto, y la entrada es el registro de que se sabe, no un permiso — **no una plaza fija**:
-    #526 y #537 se cablearon, #536 se retiró, y hoy no queda ninguna. Que la categoría esté vacía es
-    su estado sano; si vuelve a llenarse, es deuda con fecha, no inventario. No enumeres aquí los
-    huecos vivos: esa lista es `HUERFANOS_DECLARADOS` y se desincroniza en cuanto uno se cierra.
+    #526 y #537 se cablearon y #536 se retiró. La categoría vacía es su estado sano; mientras tenga
+    entradas, son deuda con fecha y no inventario. No enumeres aquí los huecos vivos: esa lista es
+    `HUERFANOS_DECLARADOS` y se desincroniza en cuanto uno se cierra.
   - **Ventanas** — **Consola caliente del GM** (#276, `docs/CONSOLA_CALIENTE_GM.md`) fusionó las
     cuatro factorías originales (estado de nave y mapa vivo, V1/V2) en una sola ventana con pestañas
     (Estado, Mapa, Encuentros, Previsualización) y UN solo bucle de sondeo y backoff, sustituyendo
@@ -463,6 +469,50 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     sección, #508) manda sobre el checkpoint guardado, y un id que el catálogo no conoce cae al
     siguiente escalón en vez de dejar a nadie en la nada—, y esa decisión vive en el catálogo porque
     es sobre el catálogo, no en la ventana que la aplica.
+  - **Catálogos con procedencia, y el museo** — `scripts/procedencia-catalogo.mjs` es la ÚNICA
+    regla de licencia del módulo (#598): qué es una procedencia aceptable, con errores tipados por
+    `code` + `path`. La consumen el atlas (`catalogo-cosmografico.mjs`, #525, que sigue siendo
+    cimiento sin cablear a la espera de #213) y el catálogo de piezas (`catalogo-piezas.mjs`), y esa
+    unificación es el punto: dos validadores de licencia se desincronizan, y una licencia
+    desincronizada no es un fallo de forma. `catalogo-piezas.mjs` es lo que faltaba para unir las dos
+    mitades que #590 y #525 habían dejado sin hablarse — texto con procedencia por un lado, malla con
+    procedencia por otro—: una ficha declara `malla`, y el validador exige que ese ID exista de
+    verdad (el registro se le pasa desde fuera, así que sigue siendo puro). Su campo `naturaleza`
+    (escaneo, escaneo-de-vaciado, fotogrametría, reconstrucción, obra propia) es obligatorio y NO es
+    metadato: es lo que impide que una cartela diga «así era» de una pieza que es una reconstrucción
+    hecha después de que destruyeran el original, o que llame mármol a un vaciado en yeso. El crédito
+    de la cartela se **deriva** de la procedencia y no se escribe al lado, misma regla que el cartel
+    de reglas del blackjack (#553). La **sala del museo** (`scripts/museo-escena.mjs` +
+    `museo-piezas.mjs`, con `MUSEO` en `paleta.mjs`) es su primer consumidor real: tres piezas sobre
+    pedestales, andable, solo-GM, con la entrada por herramienta de la barra de escena y la salida
+    por un punto de interacción — la misma forma que la playa (#587), y por el mismo motivo (el
+    Phobos no tiene un museo, y colgarlo de un mamparo contaría una historia que nadie ha decidido).
+    Por eso está fuera de las invariantes de la nave en `nave-planta-phobos.test.mjs` y del minimapa.
+    Lo que el museo NO hace es la mitad del diseño: **enseña y ya está**. La cartela se pinta al
+    acercarse y se retira al apartarse (`accion: {tipo: "cartela"}` + el flanco de salida
+    `alSalirDeInteraccion` de #598); no marca piezas como vistas, no lleva la cuenta ni deja rastro,
+    porque la regla de `docs/FOUNDRY.md` es que una escena puede enseñar, transportar y ambientar,
+    pero no conceder, contar ni recordar. Un **bestiario** que registre qué ha encontrado la
+    tripulación sí recuerda, y por eso #598 lo deja fuera hasta que el núcleo tenga dónde guardar un
+    avistamiento. Tres piezas y no treinta es la disciplina de #590: lo caro no es convertir malla
+    —las dieciocho ya están en el árbol— sino escribir cada cartela, que es trabajo humano. Y la
+    copia de procedencia no se puede pudrir en silencio: una prueba la compara con las `FICHAS` de
+    `tools/convertir-estatua.mjs`, igual que la planta del Phobos se compara con su `.lua`.
+  - **Huesos y deformación de malla** — `scripts/rig-esqueleto.mjs` (#603, fase 1). La capa que le
+    faltaba al motor para que una malla importada pueda DOBLARSE: jerarquía de huesos con su pose de
+    reposo, pesos por vértice (máximo cuatro influencias, normalizados en el binding y no en cada
+    evaluación) y mezcla lineal de matrices. Se eligió esqueleto y no cortar por planos porque está
+    medido: una estatua escaneada es UNA sola pieza conectada, así que «detectar el brazo» no se
+    resuelve por topología, y cortar da piezas estáticas cuando lo que se quiere son cosas que se
+    mueven. **El motor no se toca**: esto entra y sale en `{vertices, caras}` y se compone la malla ya
+    deformada — un esqueleto dentro del rasterizador ataría la deformación a una época de consola
+    cuando es geometría y vale para las dos (#362). El reposo se declara **solo por traslación** (la
+    cabeza del hueso), y por eso no hay una sola inversión de matriz en el módulo: la inversa de un
+    reposo trasladado es restar el punto. Es la fase 1 y se para ahí: no hay pesos automáticos
+    (fase 2), ni retargeting entre esqueletos (fase 3), ni clips. Sigue **sin consumidor y declarado**
+    en `HUERFANOS_DECLARADOS`, porque la fase 4 depende de una decisión de arte que #603 deja abierta
+    —avatares todo-escaneado o todo-estilizado— y cablearlo antes es exactamente como sale la opción
+    incoherente del medio.
   - **Visor del piloto** — `scripts/visor-piloto.mjs` (geometría pura) y
     `scripts/visor-piloto-lienzo.mjs` (el <canvas>), #362. Lo que la nave tiene delante, en PSX,
     en la consola de pilotaje. Es la primera superficie 3D del módulo que **informa** en vez de

@@ -9,6 +9,12 @@ léelo antes de modificar nada; sus reglas prevalecen sobre cualquier hábito po
 condicionan el trabajo diario:
 
 - No desarrolles sobre `main`: crea rama y entrega por pull request (flujo en [`CONTRIBUTING.md`](CONTRIBUTING.md)).
+- Si trabajas en paralelo con otro agente, mira el mapa de áreas y los puntos de colisión conocidos en
+  [`docs/TRABAJO_PARALELO_AGENTES.md`](docs/TRABAJO_PARALELO_AGENTES.md) ANTES de elegir por dónde
+  empezar: media docena de archivos (este mismo, `lang/*.json`, `main.mjs`, `paleta.mjs` y sus
+  guardas) los toca casi cualquier trabajo del módulo, y ahí es donde chocan dos ramas que por lo
+  demás no se rozan. Los agentes especializados del proyecto van versionados en
+  [`.claude/agents/`](.claude/agents).
 - No afirmes que algo compila, arranca o funciona si no has ejecutado la comprobación correspondiente.
 - Nada de `push --force`, `reset --hard`, squash del historial heredado ni reescritura de historial
   sin autorización humana explícita.

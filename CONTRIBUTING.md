@@ -28,6 +28,8 @@ Prefijos recomendados:
 
 Tras el bootstrap inicial, todo cambio debe llegar a `main` mediante pull request. No uses `push --force` sobre ramas compartidas.
 
+Si hay varias personas o agentes trabajando a la vez, [`docs/TRABAJO_PARALELO_AGENTES.md`](docs/TRABAJO_PARALELO_AGENTES.md) dice qué áreas pueden ir en paralelo, qué archivos son puntos de colisión conocidos y cómo se parte un issue en unidades que se puedan entregar por separado.
+
 ## Issues
 
 Un issue útil incluye:

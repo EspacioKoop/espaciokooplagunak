@@ -2,7 +2,7 @@
 
 ## Resumen General
 
-**Total de scripts:** 171
+**Total de scripts:** 176
 
 Comando utilizado para el conteo:
 ```bash
@@ -11,7 +11,7 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 
 ## Distribución por Subdirectorio
 
-- **Raíz (scripts/):** 126 scripts
+- **Raíz (scripts/):** 131 scripts
 - **asistencia/:** 13 scripts  
 - **contenido-externo/:** 5 scripts
 - **minijuegos/:** 27 scripts
@@ -135,7 +135,7 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 - `proveedor-foundry.mjs`
 - `ventana.mjs`
 
-### 7. Escenas y Entornos (15 scripts)
+### 7. Escenas y Entornos (17 scripts)
 - `escena-exteriores.mjs`
 - `escena-primitivas.mjs`
 - `control-escena.mjs`
@@ -151,6 +151,8 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 - `retro3d-estrellas.mjs`
 - `retro3d-lienzo.mjs`
 - `retro3d.mjs`
+- `museo-escena.mjs`
+- `museo-piezas.mjs`
 
 ### 8. Audio y Música (4 scripts)
 - `audio-ficheros.mjs`
@@ -187,10 +189,12 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 - `resolver-objetivo-sensores.mjs`
 - `resolver-posicion-relay.mjs`
 
-### 12. Base de Datos y Catálogos (5 scripts)
+### 12. Base de Datos y Catálogos (7 scripts)
 - `atlas-hyg.mjs`
 - `base-datos-cientifica.mjs`
 - `catalogo-cosmografico.mjs`
+- `catalogo-piezas.mjs`
+- `procedencia-catalogo.mjs`
 - `paleta.mjs`
 - `png-indexado.mjs`
 
@@ -204,13 +208,14 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 - `consola-caliente-poll.mjs`
 - `diagnostico-conexion.mjs`
 
-### 15. Renderizado y Gráficos (6 scripts)
+### 15. Renderizado y Gráficos (7 scripts)
 - `barras-estado.mjs`
 - `foco-render.mjs`
 - `mapa-marco.mjs`
 - `mapa-render.mjs`
 - `piel-textura.mjs`
 - `contactos-degradados.mjs`
+- `rig-esqueleto.mjs`
 
 ### 16. Core y Configuración Principal (2 scripts)
 - `main.mjs`
@@ -223,7 +228,7 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 
 ## Verificación
 
-**Suma de agrupaciones temáticas:** 42 + 12 + 12 + 27 + 13 + 5 + 15 + 4 + 6 + 10 + 8 + 5 + 3 + 3 + 9 + 2 + 3 = 171
+**Suma de agrupaciones temáticas:** 40 + 11 + 11 + 27 + 13 + 5 + 17 + 4 + 6 + 9 + 8 + 7 + 3 + 3 + 7 + 2 + 3 = 176
 
 La suma coincide con el total de scripts encontrados, confirmando que todos los scripts han sido contabilizados y agrupados correctamente.
 

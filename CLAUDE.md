@@ -161,9 +161,9 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     y el importador de datos reales están escritos y probados, pero cablearlos metería en la partida
     un atlas que no está aprobado); `cimiento: false` es un hueco conocido con su
     issue abierto, y la entrada es el registro de que se sabe, no un permiso — **no una plaza fija**:
-    #526 y #537 se cablearon, #536 se retiró, y hoy no queda ninguna. Que la categoría esté vacía es
-    su estado sano; si vuelve a llenarse, es deuda con fecha, no inventario. No enumeres aquí los
-    huecos vivos: esa lista es `HUERFANOS_DECLARADOS` y se desincroniza en cuanto uno se cierra.
+    #526 y #537 se cablearon y #536 se retiró. La categoría vacía es su estado sano; mientras tenga
+    entradas, son deuda con fecha y no inventario. No enumeres aquí los huecos vivos: esa lista es
+    `HUERFANOS_DECLARADOS` y se desincroniza en cuanto uno se cierra.
   - **Ventanas** — **Consola caliente del GM** (#276, `docs/CONSOLA_CALIENTE_GM.md`) fusionó las
     cuatro factorías originales (estado de nave y mapa vivo, V1/V2) en una sola ventana con pestañas
     (Estado, Mapa, Encuentros, Previsualización) y UN solo bucle de sondeo y backoff, sustituyendo
@@ -492,6 +492,21 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     —las dieciocho ya están en el árbol— sino escribir cada cartela, que es trabajo humano. Y la
     copia de procedencia no se puede pudrir en silencio: una prueba la compara con las `FICHAS` de
     `tools/convertir-estatua.mjs`, igual que la planta del Phobos se compara con su `.lua`.
+  - **Huesos y deformación de malla** — `scripts/rig-esqueleto.mjs` (#603, fase 1). La capa que le
+    faltaba al motor para que una malla importada pueda DOBLARSE: jerarquía de huesos con su pose de
+    reposo, pesos por vértice (máximo cuatro influencias, normalizados en el binding y no en cada
+    evaluación) y mezcla lineal de matrices. Se eligió esqueleto y no cortar por planos porque está
+    medido: una estatua escaneada es UNA sola pieza conectada, así que «detectar el brazo» no se
+    resuelve por topología, y cortar da piezas estáticas cuando lo que se quiere son cosas que se
+    mueven. **El motor no se toca**: esto entra y sale en `{vertices, caras}` y se compone la malla ya
+    deformada — un esqueleto dentro del rasterizador ataría la deformación a una época de consola
+    cuando es geometría y vale para las dos (#362). El reposo se declara **solo por traslación** (la
+    cabeza del hueso), y por eso no hay una sola inversión de matriz en el módulo: la inversa de un
+    reposo trasladado es restar el punto. Es la fase 1 y se para ahí: no hay pesos automáticos
+    (fase 2), ni retargeting entre esqueletos (fase 3), ni clips. Sigue **sin consumidor y declarado**
+    en `HUERFANOS_DECLARADOS`, porque la fase 4 depende de una decisión de arte que #603 deja abierta
+    —avatares todo-escaneado o todo-estilizado— y cablearlo antes es exactamente como sale la opción
+    incoherente del medio.
   - **Visor del piloto** — `scripts/visor-piloto.mjs` (geometría pura) y
     `scripts/visor-piloto-lienzo.mjs` (el <canvas>), #362. Lo que la nave tiene delante, en PSX,
     en la consola de pilotaje. Es la primera superficie 3D del módulo que **informa** en vez de

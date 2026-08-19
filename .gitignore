@@ -72,3 +72,6 @@ bridge/.venv/
 # Configuración local de análisis SonarQube
 sonar-project.properties
 .evidencia-tinte/
+
+# Worktrees de tareas de agentes automáticos (ver SECURITY.md)
+.worktrees/

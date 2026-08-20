@@ -34,9 +34,11 @@ export const celdasMinimapa = celdasConCantina;
  * Modelo del minimapa con una sala marcada como la actual.
  *
  * @param {string|null} estanciaActual id de la estancia donde está el jugador.
- * @returns {{columnas:number, filas:number, salas:Array}}
+ * @param {Array} salas lista de salas a considerar (por defecto SALAS_PHOBOS)
+ * @param {Array} presencia array de objetos de presencia (userId, estancia, etc.)
+ * @returns {{columnas:number, filas:number, salas:Array, marcas:Array}}
  */
-export function modeloMinimapa(estanciaActual = null, salas = SALAS_PHOBOS) {
+export function modeloMinimapa(estanciaActual = null, salas = SALAS_PHOBOS, presencia = []) {
   const celdas = celdasConCantina(salas);
   return {
     ...rejillaDelPlano(salas),
@@ -50,6 +52,15 @@ export function modeloMinimapa(estanciaActual = null, salas = SALAS_PHOBOS) {
       // legible el plano de un vistazo. No dice CUÁL: eso sería otra lectura.
       conSistema: Boolean(c.sistema),
     })),
+    // Dónde está cada tripulante, para pintarlo encima de su sala.
+    //
+    // Se DESCARTA a quien esté en una estancia que el plano no dibuja —las salas
+    // de prueba, por ejemplo—. Una marca sobre una sala que no existe en la
+    // rejilla no se puede pintar en ninguna parte: o se cae al dibujar, o
+    // aparece en una celda que no le corresponde. Mejor no emitirla.
+    marcas: presencia
+      .filter((p) => estaEnElPlano(p.estancia, salas))
+      .map((p) => ({ sala: p.estancia, userId: p.userId })),
   };
 }
 

@@ -93,10 +93,29 @@ Características propias integradas y verificadas:
 - **nivel de alerta compartido con toda la mesa**: el GM es el único que recibe
   telemetría, pero la alerta se difunde a todos los clientes —incluido quien
   entra tarde— porque una tripulación sabría de sobra que está en roja (#338);
-- **arte y música procedurales generados en el cliente**, sin un solo binario en
-  el repositorio ni contenido ajeno distribuido: grabado clásico, pixelart y
-  registros musicales deterministas por semilla, con la frontera de estilo
-  vigilada por pruebas ([`docs/FOUNDRY.md`](docs/FOUNDRY.md)).
+- **arte y música procedurales generados en el cliente**: grabado clásico,
+  pixelart y registros musicales deterministas por semilla, con la frontera de
+  estilo vigilada por pruebas ([`docs/FOUNDRY.md`](docs/FOUNDRY.md)). La regla
+  sigue siendo generar y no distribuir, pero **ya no es absoluta**, y conviene
+  decirlo aquí en vez de descubrirlo leyendo el árbol:
+  - Hay **cuatro PNG** en el módulo. Tres son el horizonte prerrenderizado y el
+    cuarto es la textura de muro (#584), que se prerrenderiza porque generarla
+    en cada arranque costaba más de lo que valía. No son arte ajeno: los produce
+    generadores que viven en `tools/`. La textura de muro tiene **puerta de CI**
+    (`tools/prerender-piel.mjs --check`): el binario no puede divergir de su
+    fuente sin que alguien se entere. Los tres del horizonte **todavía no la
+    tienen** —su generador no admite `--check`—, aunque sí son deterministas.
+  - El museo **sí distribuye contenido ajeno**: escaneos 3D de vaciados del
+    *Statens Museum for Kunst*, todos **CC0 1.0**, cada uno con su ficha de
+    procedencia en la cabecera de su fichero y en
+    [`docs/PROCEDENCIA_ASSETS.md`](docs/PROCEDENCIA_ASSETS.md). La regla que se
+    aplica no es «nada ajeno», es **«nada sin ficha»**, y se comprueba con
+    pruebas que exigen que la cartela no mienta sobre lo que hay delante.
+- **espacios por los que se anda dentro de la nave**, en 3D retro de consola de
+  los 90: camarotes amueblados, luminarias que cuelgan del techo, minimapa que
+  muestra dónde está cada tripulante, y dos escenas de banco de pruebas —una
+  playa y una sala de museo— que hoy abre **solo el GM** desde la barra de
+  escena, porque no cuelgan de ninguna puerta de la nave.
 
 Infraestructura propia disponible:
 

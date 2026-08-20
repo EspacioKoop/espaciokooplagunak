@@ -101,10 +101,12 @@ Características propias integradas y verificadas:
   - Hay **cuatro PNG** en el módulo. Tres son el horizonte prerrenderizado y el
     cuarto es la textura de muro (#584), que se prerrenderiza porque generarla
     en cada arranque costaba más de lo que valía. No son arte ajeno: los produce
-    generadores que viven en `tools/`. La textura de muro tiene **puerta de CI**
-    (`tools/prerender-piel.mjs --check`): el binario no puede divergir de su
-    fuente sin que alguien se entere. Los tres del horizonte **todavía no la
-    tienen** —su generador no admite `--check`—, aunque sí son deterministas.
+    generadores que viven en `tools/`, y **los cuatro están vigilados**: si el
+    binario del árbol deja de corresponder a su generador, CI falla. La textura
+    de muro por una puerta en el flujo de trabajo
+    (`tools/prerender-piel.mjs --check`) y los tres del horizonte por
+    `horizonte-matte.test.mjs`, que lee los PNG guardados y los compara con lo
+    que el generador produce ahora. Distinto mecanismo, misma garantía.
   - El museo **sí distribuye contenido ajeno**: escaneos 3D de vaciados del
     *Statens Museum for Kunst*, todos **CC0 1.0**, cada uno con su ficha de
     procedencia en la cabecera de su fichero y en

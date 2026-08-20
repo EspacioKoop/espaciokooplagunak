@@ -43,14 +43,15 @@ import { CATALOGO_MUSEO, MALLAS_MUSEO } from "./museo-piezas.mjs";
  * tres piezas, más superficie no da amplitud, da vacío — y andar diez segundos
  * entre estatua y estatua es lo que convierte un museo en un pasillo.
  */
-export const ANCHO = 9.0;
-export const PROFUNDIDAD = 7.0;
+// La sala creció de 9x7 a 12x9 (#590): con 18 mallas de vaciados en el árbol y
+// tres pedestales cabiendo, el museo era el cuello de botella de su propio
+// catálogo. A 12x9 caben exactamente las 18 que hay, con el paso de una persona
+// entre pieza y pieza. No es un número redondo: sale de la aritmética de abajo.
+export const ANCHO = 12.0;
+export const PROFUNDIDAD = 9.0;
 
-/** Los pedestales van contra el fondo, alineados y a la misma cota: es la
- *  disposición de una sala de vaciados de verdad, y además deja todo el frente
- *  libre para mirar de lejos antes de acercarse. */
-const Z_PEDESTALES = 5.0;
-const X_PEDESTALES = Object.freeze([2.0, 4.5, 7.0]);
+/** La fila del fondo, a dos metros del muro: lo justo para rodear una pieza. */
+const Z_PEDESTALES = PROFUNDIDAD - 2.0;
 
 /** Medidas del pedestal, en metros. 0,6 de alto es lo que sube una pieza hasta
  *  que su masa queda a la altura del pecho de quien la mira, que es donde una
@@ -79,15 +80,29 @@ const FILAS_QUE_CABEN = Math.max(
 );
 
 /**
- * Cuántas piezas caben de verdad en esta sala: **6**.
+ * Las columnas SALEN DE LO QUE MIDE LA SALA, no de una lista escrita a mano.
  *
- * Sale de la aritmética de arriba y no de una preferencia. Se declara porque es
- * un límite que hay que saber ANTES de ampliar el catálogo: la sala mide 9x7 m,
- * un pedestal 1,15, y entre filas hay que dejar por dónde pasar.
+ * Estaban fijas en `[2.0, 4.5, 7.0]`, así que ensanchar la sala no metía ni una
+ * pieza más: el ancho crecía y los tres pedestales seguían donde estaban. Ahora
+ * se reparten centradas, tantas como quepan guardando `PASO_ENTRE_FILAS`.
+ */
+const X_PEDESTALES = Object.freeze(
+  (() => {
+    const util = ANCHO - PEDESTAL.lado;
+    const columnas = Math.max(1, Math.floor(util / PASO_ENTRE_FILAS) + 1);
+    if (columnas === 1) return [ANCHO / 2];
+    const separacion = util / (columnas - 1);
+    return Array.from({ length: columnas }, (_, i) => PEDESTAL.lado / 2 + i * separacion);
+  })(),
+);
+
+/**
+ * Cuántas piezas caben de verdad. Con 12x9 m son **18**, que son exactamente las
+ * mallas de vaciados que hay hoy en `foundry-module/data/mallas/`.
  *
- * Ensancharla es una decisión de diseño con dos salidas —más columnas (con 5
- * caben 10, pero los pedestales quedan pegados a los muros laterales) o una sala
- * mayor—, y ninguna de las dos se toma desde aquí.
+ * Se declara porque es un límite que hay que saber ANTES de ampliar el catálogo,
+ * y porque ahora depende de las medidas de la sala: tocar `ANCHO` o
+ * `PROFUNDIDAD` cambia esto solo, sin listas que actualizar a mano.
  */
 export const CAPACIDAD = X_PEDESTALES.length * FILAS_QUE_CABEN;
 

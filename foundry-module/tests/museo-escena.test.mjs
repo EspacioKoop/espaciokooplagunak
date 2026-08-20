@@ -179,3 +179,27 @@ test("el catalogo del museo no supera lo que cabe en la sala", () => {
     `el catalogo trae ${CATALOGO_MUSEO.piezas.length} piezas y la sala admite ${MUSEO_INTERNO.CAPACIDAD}`,
   );
 });
+
+test("la capacidad sale del tamaño de la sala, no de una lista escrita a mano", () => {
+  // Las columnas estaban fijas en [2.0, 4.5, 7.0]: ensanchar la sala no metia ni
+  // una pieza mas. Este test exige que la aritmetica siga viva.
+  const { CAPACIDAD, ANCHO, PROFUNDIDAD, PEDESTAL } = MUSEO_INTERNO;
+  assert.ok(CAPACIDAD >= 18, `la sala de ${ANCHO}x${PROFUNDIDAD} solo admite ${CAPACIDAD}`);
+
+  // Y que ningun pedestal se salga por los muros laterales.
+  const medio = PEDESTAL.lado / 2;
+  for (let i = 0; i < CAPACIDAD; i++) {
+    const { x, z } = MUSEO_INTERNO.obtenerPosicionPedestal(i);
+    assert.ok(x - medio >= -1e-9 && x + medio <= ANCHO + 1e-9, `el pedestal ${i} se sale por x=${x}`);
+    assert.ok(z - medio >= -1e-9 && z + medio <= PROFUNDIDAD + 1e-9, `el pedestal ${i} se sale por z=${z}`);
+  }
+});
+
+test("caben todas las mallas de vaciados que hay en el arbol", () => {
+  // El museo era el cuello de botella de su propio catalogo: 18 mallas y sitio
+  // para tres. Si alguien encoge la sala, esto lo dice.
+  assert.ok(
+    MUSEO_INTERNO.CAPACIDAD >= 18,
+    `hay 18 mallas y la sala admite ${MUSEO_INTERNO.CAPACIDAD}`,
+  );
+});

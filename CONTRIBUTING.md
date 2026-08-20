@@ -78,6 +78,8 @@ Se mantienen inicialmente las convenciones originales de EmptyEpsilon:
 
 Evita reformateos masivos mezclados con cambios funcionales.
 
+- En SeriousProton la clase `string` sobrescribe `find` para devolver `int` y `-1` cuando no encuentra (no `size_t` ni `string::npos`). Por tanto, el idioma establecido en el repositorio es `find(x) > -1`. Escribir `find(x) != string::npos` funciona por accidente porque `-1` convertido a `size_t` es exactamente `npos`, pero engaña a quien lo lee y ha provocado cambios innecesarios (PRs #605 y #607). Siempre usar `> -1`.
+
 ## Localización es-ES
 
 Toda traducción automática requiere revisión humana y contextual. Usa la [guía editorial de localización es-ES](docs/i18n-es-style-guide.md) para terminología, registro, placeholders y validación de catálogos.

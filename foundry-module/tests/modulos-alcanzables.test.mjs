@@ -40,6 +40,18 @@ const raizScripts = join(raizModulo, "scripts");
  * la entrada es el registro de que se sabe, no un permiso.
  */
 const HUERFANOS_DECLARADOS = Object.freeze({
+  "convocatoria-estancia.mjs": {
+    cimiento: true,
+    issue: 587,
+    motivo:
+      "Resuelve a donde llega la tripulacion cuando el GM la convoca a una " +
+      "estancia. No lo importa nadie TODAVIA porque el cableado a la ventana de " +
+      "Andar es su propia tarjeta: la playa (#587) y el museo (#598) no cuelgan " +
+      "de ninguna puerta de la nave, asi que hoy solo los abre el GM y la " +
+      "tripulacion no los pisa. Se entrega antes el modulo puro para que la " +
+      "decision de quien puede convocar y de donde se aparece viva en un sitio " +
+      "probable sin Foundry delante, en vez de nacer enredada en la interfaz.",
+  },
   "audio-ficheros.mjs": {
     cimiento: true,
     issue: 571,
@@ -177,8 +189,10 @@ test("todo módulo de scripts/ es alcanzable desde el manifiesto, o está declar
       noDeclarados.map((modulo) => `  - scripts/${modulo}`).join("\n") +
       "\n\nCablea el módulo a un consumidor real, retíralo, o —si hace falta " +
       "dejarlo— añádelo a HUERFANOS_DECLARADOS en este archivo con su motivo y el " +
-      "issue donde se decide, y anótalo en la sección de Arquitectura de " +
-      "CLAUDE.md (#523). Un comentario que nombre el módulo NO cuenta como " +
+      "issue donde se decide (#523). NO lo enumeres ademas en CLAUDE.md: ese " +
+      "documento dice expresamente que los huecos VIVOS se listan aqui, porque " +
+      "alli se desincronizan en cuanto uno se cierra. Un comentario que nombre " +
+      "el módulo NO cuenta como " +
       "consumidor: es justo lo que se le escapó al barrido manual de #523.",
   );
 });

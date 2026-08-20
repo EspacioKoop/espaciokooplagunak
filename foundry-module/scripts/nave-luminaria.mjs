@@ -38,7 +38,7 @@
 //
 // Puro y sin color propio (#351). Se prueba desde Node.
 
-import { LUZ_CALIDA, MURAL } from "./paleta.mjs";
+import { LUZ_CALIDA, MURAL, ALERTA } from "./paleta.mjs";
 
 /**
  * Medidas de una luminaria, en metros. Fijas, que es todo el punto.
@@ -219,4 +219,24 @@ export function focosLuminarias({ ancho, profundidad, altura }) {
     focos.push({ posicion: [x, yFoco, z] });
   }
   return focos;
+}
+
+/**
+ * Devuelve el color apropiado para la luminaria de alerta basado en el nivel.
+ * @param {string|null|undefined} nivelAlerta - Nivel de alerta ("amarilla", "roja", o null/undefined)
+ * @returns {string} - Código de color hexadecimal
+ */
+export function tonoLuminaria(nivelAlerta) {
+  if (nivelAlerta === null || nivelAlerta === undefined) {
+    return LUZ_CALIDA;
+  }
+
+  const nivel = ALERTA.niveles[nivelAlerta];
+  if (!nivel) {
+    // Si el nivel no existe, por defecto devolver LUZ_CALIDA (sin alerta)
+    return LUZ_CALIDA;
+  }
+
+  // Devolver el color de texto como representa el tono/luminosidad de la alerta
+  return nivel.texto;
 }

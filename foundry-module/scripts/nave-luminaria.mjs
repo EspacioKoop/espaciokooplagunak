@@ -195,3 +195,16 @@ export function piezasLuminarias({ ancho, profundidad, altura }) {
     { malla: fundir(difusores), color: LUZ_CALIDA, emisivo: true },
   ];
 }
+
+export function focosLuminarias({ ancho, profundidad, altura }) {
+  const puntos = reparto(ancho, profundidad);
+  if (puntos.length === 0) return [];
+  const yCarcasa = altura - CAIDA;
+  const yFoco = yCarcasa - 0.055; // same y as the diffuser in piezasLuminarias
+
+  const focos = [];
+  for (const { x, z } of puntos) {
+    focos.push({ posicion: [x, yFoco, z] });
+  }
+  return focos;
+}

@@ -8,7 +8,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { ANCHO, CAIDA, LARGO, PASO, piezasLuminarias, reparto } from "../scripts/nave-luminaria.mjs";
+import { ANCHO, CAIDA, LARGO, PASO, piezasLuminarias, reparto, focosLuminarias } from "../scripts/nave-luminaria.mjs";
 import { LUZ_CALIDA, MURAL, SECCION } from "../scripts/paleta.mjs";
 import { ALTURA, crearSalaCaja } from "../scripts/nave-sala-caja.mjs";
 import { componerEscena } from "../scripts/retro3d.mjs";
@@ -142,7 +142,21 @@ test("no tocan la colisión: se anda por debajo", () => {
 });
 
 test("la sala las emite y se ven al mirar al techo", () => {
-  const sala = crearSalaCaja({ ancho: 8, profundidad: 6, muralPixel: false, pielSuelo: false });
-  const escena = sala.componer(4, 0, 3, 0, { ancho: 320, alto: 180 });
-  assert.ok(escena.poligonos.length > 0);
+ const sala = crearSalaCaja({ ancho: 8, profundidad: 6, muralPixel: false, pielSuelo: false });
+ const escena = sala.componer(4, 0, 3, 0, { ancho: 320, alto: 180 });
+ assert.ok(escena.poligonos.length > 0);
+});
+test("focosLuminarias devuelve un foco por difusor en la misma x/z", () => {
+  const ancho = 8, profundidad = 6, altura = ALTURA;
+  const puntos = reparto(ancho, profundidad);
+  const focos = focosLuminarias({ ancho, profundidad, altura });
+  assert.equal(focos.length, puntos.length);
+  const yEsperado = altura - CAIDA - 0.055;
+  for (let i = 0; i < puntos.length; i++) {
+    const { x, z } = puntos[i];
+    const foco = focos[i];
+    assert.equal(foco.posicion[0], x, `foco ${i} x`);
+    assert.equal(foco.posicion[1], yEsperado, `foco ${i} y`);
+    assert.equal(foco.posicion[2], z, `foco ${i} z`);
+  }
 });

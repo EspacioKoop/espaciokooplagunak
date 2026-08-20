@@ -39,6 +39,7 @@
 // Puro y sin color propio (#351). Se prueba desde Node.
 
 import { LUZ_CALIDA, MURAL, ALERTA } from "./paleta.mjs";
+import { normalizarAviso } from "./alerta-escena.mjs";
 
 /**
  * Medidas de una luminaria, en metros. Fijas, que es todo el punto.
@@ -222,21 +223,29 @@ export function focosLuminarias({ ancho, profundidad, altura }) {
 }
 
 /**
- * Devuelve el color apropiado para la luminaria de alerta basado en el nivel.
- * @param {string|null|undefined} nivelAlerta - Nivel de alerta ("amarilla", "roja", o null/undefined)
- * @returns {string} - Código de color hexadecimal
+ * El tono de la luminaria segun el nivel de alerta.
+ *
+ * USA EL TONO DEL **BORDE**, y no el del texto, por la razon que ya dejo escrita
+ * `filtros-escena.mjs` al teñir la escena: el rojo del texto esta ACLARADO para
+ * leerse en tamaño pequeño sobre el fondo del aviso. Una luminaria es una
+ * superficie ancha, igual que el tinte y que el borde, y con el tono aclarado
+ * la nave en alerta roja se lava a rosa en vez de teñirse.
+ *
+ * Elegir el mismo campo que el tinte de escena no es solo consistencia: es que
+ * las dos cosas se ven A LA VEZ, y con tonos distintos se pelearian.
+ *
+ * `verde` no lleva color a proposito (ver `ALERTA` en `paleta.mjs`): la nave sin
+ * alerta no se tiñe de nada, asi que devuelve la luz calida de siempre. Y la
+ * AUSENCIA de lectura tampoco es una alerta — un dato que no ha llegado no puede
+ * pintar la nave de rojo.
+ *
+ * El nivel se normaliza con `normalizarAviso`, que es el unico sitio donde se
+ * decide que significa un aviso mal formado.
+ *
+ * @param {string|{nivel:string}|null|undefined} aviso nivel o aviso completo.
+ * @returns {string} color hexadecimal.
  */
-export function tonoLuminaria(nivelAlerta) {
-  if (nivelAlerta === null || nivelAlerta === undefined) {
-    return LUZ_CALIDA;
-  }
-
-  const nivel = ALERTA.niveles[nivelAlerta];
-  if (!nivel) {
-    // Si el nivel no existe, por defecto devolver LUZ_CALIDA (sin alerta)
-    return LUZ_CALIDA;
-  }
-
-  // Devolver el color de texto como representa el tono/luminosidad de la alerta
-  return nivel.texto;
+export function tonoLuminaria(aviso) {
+  const { nivel } = normalizarAviso(aviso);
+  return ALERTA.niveles[nivel]?.borde ?? LUZ_CALIDA;
 }

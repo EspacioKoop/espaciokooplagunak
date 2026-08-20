@@ -181,26 +181,37 @@ test("el foco cuelga exactamente del difusor que se ve encendido", () => {
 
 // Tests for tonoLuminaria(nivelAlerta) function
 
-test("tonoLuminaria(devuelve LUZ_CALIDA cuando nivelAlerta es null)", () => {
-  assert.equal(tonoLuminaria(null), LUZ_CALIDA);
+test("tonoLuminaria: sin lectura de alerta, la luz calida de siempre", () => {
+  // Un dato que no ha llegado no puede pintar la nave de rojo.
+  for (const vacio of [null, undefined, "", {}]) {
+    assert.equal(tonoLuminaria(vacio), LUZ_CALIDA, `${JSON.stringify(vacio)} no es una alerta`);
+  }
 });
 
-test("tonoLuminaria(devuelve LUZ_CALIDA cuando nivelAlerta es undefined)", () => {
-  assert.equal(tonoLuminaria(undefined), LUZ_CALIDA);
+test("tonoLuminaria: en verde tampoco se tiñe", () => {
+  // `verde` no tiene entrada en ALERTA a proposito: la nave sin alerta no se
+  // tiñe de nada. Si algun dia se le diera color, este test lo cazaria.
+  assert.equal(tonoLuminaria("verde"), LUZ_CALIDA);
+  assert.equal(ALERTA.niveles.verde, undefined, "verde sigue sin color, como manda paleta.mjs");
 });
 
-test("tonoLuminaria(devuelve LUZ_CALIDA cuando nivelAlerta es string vacío)", () => {
-  assert.equal(tonoLuminaria(""), LUZ_CALIDA);
+test("tonoLuminaria usa el tono del BORDE, no el del texto", () => {
+  // La razon esta en filtros-escena.mjs: el rojo del texto esta ACLARADO para
+  // leerse pequeño, y una luminaria es una superficie ancha. Con el aclarado, la
+  // nave en alerta roja se lava a rosa.
+  //
+  // En AMARILLA los dos tonos coinciden, asi que ese nivel NO distingue: es roja
+  // la que protege esta decision. Se comprueba la premisa para que el dia que la
+  // paleta cambie, este test diga por que dejo de valer.
+  assert.notEqual(ALERTA.niveles.roja.borde, ALERTA.niveles.roja.texto, "premisa: en roja difieren");
+  assert.equal(tonoLuminaria("roja"), ALERTA.niveles.roja.borde);
+  assert.notEqual(tonoLuminaria("roja"), ALERTA.niveles.roja.texto);
+
+  assert.equal(ALERTA.niveles.amarilla.borde, ALERTA.niveles.amarilla.texto, "premisa: en amarilla coinciden");
+  assert.equal(tonoLuminaria("amarilla"), ALERTA.niveles.amarilla.borde);
 });
 
-test("tonoLuminaria(devuelve LUZ_CALIDA cuando nivelAlerta no existe en ALERTA)", () => {
-  assert.equal(tonoLuminaria("inexistente"), LUZ_CALIDA);
-});
-
-test("tonoLuminaria(devuelve color texto de alerta amarilla)", () => {
-  assert.equal(tonoLuminaria("amarilla"), ALERTA.niveles.amarilla.texto);
-});
-
-test("tonoLuminaria(devuelve color texto de alerta roja)", () => {
-  assert.equal(tonoLuminaria("roja"), ALERTA.niveles.roja.texto);
+test("tonoLuminaria acepta el aviso entero, no solo la cadena", () => {
+  // Es lo que devuelve normalizarAviso y lo que circula por alerta-escena.
+  assert.equal(tonoLuminaria({ nivel: "roja", motivos: ["casco"] }), ALERTA.niveles.roja.borde);
 });

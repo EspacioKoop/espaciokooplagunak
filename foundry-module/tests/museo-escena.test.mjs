@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { MUSEO } from "../scripts/paleta.mjs";
+import * as MUSEO_INTERNO from "../scripts/museo-escena.mjs";
 import { validarCatalogoPiezas } from "../scripts/catalogo-piezas.mjs";
 import { CATALOGO_MUSEO, MALLAS_MUSEO } from "../scripts/museo-piezas.mjs";
 import {
@@ -112,15 +113,15 @@ test("los colores de la sala son de la paleta y están todos declarados (#351)",
 });
 
 test("dos piezas nunca comparten sitio", () => {
-  // Create a dummy piece object (the properties needed by colocarPieza: id, naturaleza, malla)
-  const dummyPieza = { id: 'dummy', naturaleza: 'reconstruccion', malla: Object.keys(MALLAS_MUSEO)[0] };
+  // Una pieza de mentira: a colocarPieza solo le hacen falta id, naturaleza y malla.
+  const piezaFicticia = { id: "ficticia", naturaleza: "reconstruccion", malla: Object.keys(MALLAS_MUSEO)[0] };
   const puestos = [];
-  for (let indice = 0; indice < 12; indice++) {
-    const colocada = colocarPieza(dummyPieza, indice);
+  for (let indice = 0; indice < MUSEO_INTERNO.CAPACIDAD; indice++) {
+    const colocada = colocarPieza(piezaFicticia, indice);
     const [x, , z] = colocada.centro;
     puestos.push({ x, z });
   }
-  // Now check for duplicates in puestos
+  // Y ahora se buscan repetidos.
   const sitios = new Set();
   for (const puesto of puestos) {
     const clave = `${puesto.x},${puesto.z}`;
@@ -129,4 +130,52 @@ test("dos piezas nunca comparten sitio", () => {
     }
     sitios.add(clave);
   }
+});
+/* ---- lo que «sitios distintos» NO garantizaba -------------------------- */
+
+// El test de sitios repetidos exigia coordenadas DISTINTAS, y eso lo cumplia un
+// reparto cuyas filas iban a 1 m con pedestales de 1,15: distintas y solapadas
+// 15 cm. Dos piezas no comparten sitio y aun asi se meten la una en la otra.
+test("dos pedestales nunca se solapan, por muchas piezas que haya", () => {
+  const { obtenerPosicionPedestal, PEDESTAL } = MUSEO_INTERNO;
+  for (let n = 1; n <= MUSEO_INTERNO.CAPACIDAD; n++) {
+    const sitios = Array.from({ length: n }, (_, i) => obtenerPosicionPedestal(i));
+    for (let a = 0; a < sitios.length; a++) {
+      for (let b = a + 1; b < sitios.length; b++) {
+        const dx = Math.abs(sitios[a].x - sitios[b].x);
+        const dz = Math.abs(sitios[a].z - sitios[b].z);
+        assert.ok(
+          dx >= PEDESTAL.lado || dz >= PEDESTAL.lado,
+          `con ${n} piezas, los pedestales ${a} y ${b} se solapan (dx=${dx.toFixed(2)}, dz=${dz.toFixed(2)})`,
+        );
+      }
+    }
+  }
+});
+
+test("ningun pedestal se planta encima de la entrada", () => {
+  const { obtenerPosicionPedestal, PEDESTAL } = MUSEO_INTERNO;
+  const medio = PEDESTAL.lado / 2;
+  for (let i = 0; i < MUSEO_INTERNO.CAPACIDAD; i++) {
+    const { x, z } = obtenerPosicionPedestal(i);
+    const tapa = Math.abs(x - ENTRADA.x) < medio && Math.abs(z - ENTRADA.z) < medio;
+    assert.ok(!tapa, `el pedestal ${i} cae sobre la entrada (${x}, ${z})`);
+  }
+});
+
+test("pasarse de la capacidad falla a gritos, no amontona", () => {
+  // El reparto anterior hacia `% filas` y las piezas de mas volvian al fondo,
+  // encima de las que ya estaban: el catalogo crecia y la sala se veia igual.
+  assert.throws(
+    () => MUSEO_INTERNO.obtenerPosicionPedestal(MUSEO_INTERNO.CAPACIDAD),
+    RangeError,
+  );
+  assert.doesNotThrow(() => MUSEO_INTERNO.obtenerPosicionPedestal(MUSEO_INTERNO.CAPACIDAD - 1));
+});
+
+test("el catalogo del museo no supera lo que cabe en la sala", () => {
+  assert.ok(
+    CATALOGO_MUSEO.piezas.length <= MUSEO_INTERNO.CAPACIDAD,
+    `el catalogo trae ${CATALOGO_MUSEO.piezas.length} piezas y la sala admite ${MUSEO_INTERNO.CAPACIDAD}`,
+  );
 });

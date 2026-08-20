@@ -11,6 +11,7 @@ import {
   PIEZAS_COLOCADAS,
   PLANTA_MUSEO,
   componerMuseo,
+  colocarPieza,
 } from "../scripts/museo-escena.mjs";
 import { FICHAS } from "../../tools/convertir-estatua.mjs";
 import { colisiona } from "../scripts/nave-movimiento.mjs";
@@ -32,8 +33,8 @@ test("LA GUARDA DE PROCEDENCIA: lo que declara el museo no se separa de la ficha
     const ficha = FICHAS[pieza.malla];
     assert.ok(ficha, `${pieza.malla} no tiene ficha en tools/convertir-estatua.mjs`);
     // El campo que de verdad puede mentir en una cartela es QUÉ ES EL FICHERO.
-    // La ficha lo dice en prosa ("reconstrucción digital, no escaneo" / "escaneo
-    // del VACIADO..."); aquí se comprueba que la `naturaleza` declarada dice lo
+    // La ficha lo dice en prosa (\"reconstrucción digital, no escaneo\" / \"escaneo
+    // del VACIADO...\"); aquí se comprueba que la `naturaleza` declarada dice lo
     // mismo, para que nadie pueda convertir un vaciado en un original editando
     // solo el catálogo.
     const modelo = ficha.modelo.toLowerCase();
@@ -108,4 +109,24 @@ test("los colores de la sala son de la paleta y están todos declarados (#351)",
   // alta. Aquí solo se comprueba que el grupo existe y está bien formado.
   assert.ok(Object.keys(MUSEO).length >= 6);
   assert.ok(Object.values(MUSEO).every((color) => /^#[0-9a-f]{6}$/.test(color)));
+});
+
+test("dos piezas nunca comparten sitio", () => {
+  // Create a dummy piece object (the properties needed by colocarPieza: id, naturaleza, malla)
+  const dummyPieza = { id: 'dummy', naturaleza: 'reconstruccion', malla: Object.keys(MALLAS_MUSEO)[0] };
+  const puestos = [];
+  for (let indice = 0; indice < 12; indice++) {
+    const colocada = colocarPieza(dummyPieza, indice);
+    const [x, , z] = colocada.centro;
+    puestos.push({ x, z });
+  }
+  // Now check for duplicates in puestos
+  const sitios = new Set();
+  for (const puesto of puestos) {
+    const clave = `${puesto.x},${puesto.z}`;
+    if (sitios.has(clave)) {
+      assert.fail(`Dos piezas comparten el sitio (${puesto.x},${puesto.z})`);
+    }
+    sitios.add(clave);
+  }
 });

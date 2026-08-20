@@ -52,6 +52,18 @@ export const PROFUNDIDAD = 7.0;
 const Z_PEDESTALES = 5.0;
 const X_PEDESTALES = Object.freeze([2.0, 4.5, 7.0]);
 
+/**
+ * Devuelve la posición (x, z) del pedestal para el índice dado.
+ * Usa múltiples filas hacia adelante si hay más piezas que columnas.
+ */
+function obtenerPosicionPedestal(indice) {
+  const fila = Math.floor(indice / X_PEDESTALES.length);
+  const indiceEnFila = indice % X_PEDESTALES.length;
+  const x = X_PEDESTALES[indiceEnFila];
+  const z = Z_PEDESTALES - fila * 1.0; // cada fila está a 1 metro hacia adelante
+  return { x, z };
+}
+
 /** Medidas del pedestal, en metros. 0,6 de alto es lo que sube una pieza hasta
  *  que su masa queda a la altura del pecho de quien la mira, que es donde una
  *  escultura se lee mejor de pie. */
@@ -98,8 +110,7 @@ function limitesDe(malla) {
  */
 function colocarPieza(pieza, indice) {
   const malla = MALLAS_MUSEO[pieza.malla];
-  const x = X_PEDESTALES[indice % X_PEDESTALES.length];
-  const z = Z_PEDESTALES;
+  const { x, z } = obtenerPosicionPedestal(indice);
   const cota = PEDESTAL.alto + CORONILLA.alto;
   const limites = limitesDe(malla);
   const trasladada = Object.freeze({
@@ -222,3 +233,4 @@ const SALA = crearSalaCaja({
 
 export const PLANTA_MUSEO = SALA.planta;
 export const componerMuseo = SALA.componer;
+export { colocarPieza };

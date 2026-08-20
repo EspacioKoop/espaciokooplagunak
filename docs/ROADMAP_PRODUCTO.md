@@ -303,6 +303,13 @@ los que se anda dentro de la nave, el kit de escenas de #589 y el catálogo de
 assets con procedencia (#571, #590, #598). Dejarla sin mencionar haría que este
 documento describiera un proyecto que ya no es el que hay.
 
+- **Línea experimental de `retro3d`** (#603): esqueleto, deformación y
+  retargeting para PC, NPC y bestiario, en una línea separada del kit de
+  escenas (#589).
+- **Audición opcional con Freesound** (#604): búsqueda y escucha sin ingestión
+  de assets, y sin saltarse la ficha de procedencia cuando un sonido entra al
+  árbol.
+
 **No es una etapa nueva ni compite con la A.** Es infraestructura de contenido, y
 su sitio en este roadmap es el de una herramienta: existe para que las etapas C
 (nave persistente), D (exploración) y E (encuentros y expediciones) puedan

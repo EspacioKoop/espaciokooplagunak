@@ -43,19 +43,97 @@ import { CATALOGO_MUSEO, MALLAS_MUSEO } from "./museo-piezas.mjs";
  * tres piezas, más superficie no da amplitud, da vacío — y andar diez segundos
  * entre estatua y estatua es lo que convierte un museo en un pasillo.
  */
-export const ANCHO = 9.0;
-export const PROFUNDIDAD = 7.0;
+// La sala creció de 9x7 a 12x9 (#590): con 18 mallas de vaciados en el árbol y
+// tres pedestales cabiendo, el museo era el cuello de botella de su propio
+// catálogo. A 12x9 caben exactamente las 18 que hay, con el paso de una persona
+// entre pieza y pieza. No es un número redondo: sale de la aritmética de abajo.
+export const ANCHO = 12.0;
+export const PROFUNDIDAD = 9.0;
 
-/** Los pedestales van contra el fondo, alineados y a la misma cota: es la
- *  disposición de una sala de vaciados de verdad, y además deja todo el frente
- *  libre para mirar de lejos antes de acercarse. */
-const Z_PEDESTALES = 5.0;
-const X_PEDESTALES = Object.freeze([2.0, 4.5, 7.0]);
+/** La fila del fondo, a dos metros del muro: lo justo para rodear una pieza. */
+const Z_PEDESTALES = PROFUNDIDAD - 2.0;
 
 /** Medidas del pedestal, en metros. 0,6 de alto es lo que sube una pieza hasta
  *  que su masa queda a la altura del pecho de quien la mira, que es donde una
  *  escultura se lee mejor de pie. */
 const PEDESTAL = Object.freeze({ lado: 1.15, alto: 0.6 });
+
+/** La z de la entrada. Se usa para no plantar un pedestal encima de la puerta. */
+const Z_ENTRADA = 1.8;
+
+/**
+ * Cuánto separa una fila de pedestales de la siguiente, en metros.
+ *
+ * NO es un número redondo elegido a ojo, y por eso está aquí y no incrustado: un
+ * pedestal mide `PEDESTAL.lado` (1,15 m), así que a un metro las filas SE
+ * SOLAPAN —se probó y se metían 15 cm la una en la otra—. Al lado del ancho hay
+ * que dejar además por dónde pasar: `PASO_ENTRE_FILAS` es el lado más el hueco
+ * de una persona andando de frente.
+ */
+const HUECO_PARA_ANDAR = 0.8;
+const PASO_ENTRE_FILAS = PEDESTAL.lado + HUECO_PARA_ANDAR;
+
+/** Cuántas filas caben del fondo hacia la entrada sin llegar a taparla. */
+const FILAS_QUE_CABEN = Math.max(
+  1,
+  Math.floor((Z_PEDESTALES - Z_ENTRADA - PEDESTAL.lado) / PASO_ENTRE_FILAS) + 1,
+);
+
+/**
+ * Las columnas SALEN DE LO QUE MIDE LA SALA, no de una lista escrita a mano.
+ *
+ * Estaban fijas en `[2.0, 4.5, 7.0]`, así que ensanchar la sala no metía ni una
+ * pieza más: el ancho crecía y los tres pedestales seguían donde estaban. Ahora
+ * se reparten centradas, tantas como quepan guardando `PASO_ENTRE_FILAS`.
+ */
+const X_PEDESTALES = Object.freeze(
+  (() => {
+    const util = ANCHO - PEDESTAL.lado;
+    const columnas = Math.max(1, Math.floor(util / PASO_ENTRE_FILAS) + 1);
+    if (columnas === 1) return [ANCHO / 2];
+    const separacion = util / (columnas - 1);
+    return Array.from({ length: columnas }, (_, i) => PEDESTAL.lado / 2 + i * separacion);
+  })(),
+);
+
+/**
+ * Cuántas piezas caben de verdad. Con 12x9 m son **18**, que son exactamente las
+ * mallas de vaciados que hay hoy en `foundry-module/data/mallas/`.
+ *
+ * Se declara porque es un límite que hay que saber ANTES de ampliar el catálogo,
+ * y porque ahora depende de las medidas de la sala: tocar `ANCHO` o
+ * `PROFUNDIDAD` cambia esto solo, sin listas que actualizar a mano.
+ */
+export const CAPACIDAD = X_PEDESTALES.length * FILAS_QUE_CABEN;
+
+/**
+ * Dónde va el pedestal número `indice`.
+ *
+ * Se llena la fila del fondo y se avanza hacia la entrada. La sala se queda sin
+ * filas antes de llegar a ella: `FILAS_QUE_CABEN` está calculado para que el
+ * último pedestal deje libre la puerta por la que se entra —con 12 piezas y el
+ * paso de un metro, un pedestal caía justo encima de `ENTRADA`—. Pasado ese
+ * tope se reparte otra vez desde el fondo en vez de invadirla: amontonar dos
+ * piezas se ve raro, pero tapar la salida deja a la gente encerrada.
+ */
+function obtenerPosicionPedestal(indice) {
+  // Pasarse de la capacidad NO se apaña en silencio. La version anterior hacia
+  // `% FILAS_QUE_CABEN` y las piezas de mas volvian al fondo, encima de las que
+  // ya estaban: el catalogo crecia, la sala se veia igual y nadie se enteraba.
+  if (indice >= CAPACIDAD) {
+    throw new RangeError(
+      `El museo admite ${CAPACIDAD} piezas y se ha pedido la ${indice + 1}. ` +
+        "Ensanchar la sala es una decision de diseno, no un ajuste: mira CAPACIDAD.",
+    );
+  }
+  const columnas = X_PEDESTALES.length;
+  const fila = Math.floor(indice / columnas);
+  return {
+    x: X_PEDESTALES[indice % columnas],
+    z: Z_PEDESTALES - fila * PASO_ENTRE_FILAS,
+  };
+}
+
 /** La coronilla: una losa fina y más clara sobre el bloque. Sin ella el pedestal
  *  es un prisma plano y la pieza parece brotar de él. */
 const CORONILLA = Object.freeze({ lado: 1.3, alto: 0.08 });
@@ -98,8 +176,7 @@ function limitesDe(malla) {
  */
 function colocarPieza(pieza, indice) {
   const malla = MALLAS_MUSEO[pieza.malla];
-  const x = X_PEDESTALES[indice % X_PEDESTALES.length];
-  const z = Z_PEDESTALES;
+  const { x, z } = obtenerPosicionPedestal(indice);
   const cota = PEDESTAL.alto + CORONILLA.alto;
   const limites = limitesDe(malla);
   const trasladada = Object.freeze({
@@ -143,7 +220,7 @@ const SALIDA = Object.freeze({
 });
 
 /** Donde se aparece al entrar: en el centro del frente, mirando a las piezas. */
-export const ENTRADA = Object.freeze({ x: ANCHO / 2, z: 1.8, yaw: 0 });
+export const ENTRADA = Object.freeze({ x: ANCHO / 2, z: Z_ENTRADA, yaw: 0 });
 
 /* ---- la sala --------------------------------------------------------------- */
 
@@ -222,3 +299,6 @@ const SALA = crearSalaCaja({
 
 export const PLANTA_MUSEO = SALA.planta;
 export const componerMuseo = SALA.componer;
+// Se exportan para las pruebas: el reparto es la parte que hay que poder
+// interrogar con mas piezas de las que hoy tiene el catalogo.
+export { colocarPieza, obtenerPosicionPedestal, PEDESTAL };

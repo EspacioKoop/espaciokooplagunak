@@ -41,16 +41,16 @@ def test_candidatos_wikidata_loads_json(tmp_path: Path) -> None:
     }
 
     # Check that we got two candidates
-    candidates = candidato.load_candidates_from_json(sample_data)
+    candidates = candidato.candidatos_desde_json(sample_data)
     assert len(candidates) == 2
 
     # Check the first candidate
     assert candidates[0]["obra"] == "Escultura de ejemplo"
     assert candidates[0]["descripción"] == "Una escultura de prueba"
     assert candidates[0]["imagen"] == "http://commons.wikimedia.org/wiki/Special:FilePath/Escultura_ejemplo.jpg"
-    assert candidates[0]["inception"] == "-0500-01-01T00:00:00Z"
-    assert candidates[0]["colección"] == "http://www.wikidata.org/entity/Q456"
-    assert candidates[0]["colección_label"] == "Colección de ejemplo"
+    assert candidates[0]["fecha"] == "-0500-01-01T00:00:00Z"
+    assert candidates[0]["coleccion_uri"] == "http://www.wikidata.org/entity/Q456"
+    assert candidates[0]["coleccion"] == "Colección de ejemplo"
     # Check the required fields from PROCEDENCIA_ASSETS.md
     assert candidates[0]["qué es el fichero"] == "DESCONOCIDO"
     assert candidates[0]["autoría"] == ""
@@ -63,9 +63,9 @@ def test_candidatos_wikidata_loads_json(tmp_path: Path) -> None:
     assert candidates[1]["obra"] == "Otra escultura"
     assert candidates[1]["descripción"] == "Otra escultura de prueba"
     assert candidates[1]["imagen"] == ""  # Default to empty string when missing
-    assert candidates[1]["inception"] == ""
-    assert candidates[1]["colección"] == ""
-    assert candidates[1]["colección_label"] == ""
+    assert candidates[1]["fecha"] == ""
+    assert candidates[1]["coleccion_uri"] == ""
+    assert candidates[1]["coleccion"] == ""
 
 
 def test_candidatos_wikidata_integration(tmp_path: Path) -> None:

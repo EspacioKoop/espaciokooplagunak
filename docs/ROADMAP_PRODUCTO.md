@@ -349,9 +349,11 @@ cumpliera:
   que falta no es licencia ni código: es la **cartela** de cada pieza, que es
   trabajo humano y no escala con el código. Ya lo decía #590 y sigue siendo el
   cuello de botella real de este frente.
-- **La textura de muro tiene puerta de CI y el horizonte no.** Los tres PNG del
-  horizonte son deterministas, pero su generador no admite `--check`, así que
-  nada impide que el binario del árbol se separe de su fuente.
+- **Los cuatro PNG del módulo están vigilados**, por dos mecanismos distintos: la
+  textura de muro con una puerta en el flujo de trabajo y los tres del horizonte
+  con `horizonte-matte.test.mjs`, que compara lo guardado con lo que el generador
+  produce. Que el generador del horizonte no acepte `--check` no es un agujero:
+  es que su comprobación vive en la suite, no en la línea de órdenes.
 
 ## Prioridad vigente
 

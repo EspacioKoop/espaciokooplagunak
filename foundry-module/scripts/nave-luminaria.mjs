@@ -177,7 +177,7 @@ function fundir(mallas) {
  * @param {{ancho:number, profundidad:number, altura:number}} sala
  * @returns {{malla:object, color:string}[]}
  */
-export function piezasLuminarias({ ancho, profundidad, altura }) {
+export function piezasLuminarias({ ancho, profundidad, altura, health = null, timeMs = 0 }) {
   const puntos = reparto(ancho, profundidad);
   if (puntos.length === 0) return [];
   const alLargoDeX = ancho >= profundidad;
@@ -194,6 +194,17 @@ export function piezasLuminarias({ ancho, profundidad, altura }) {
     difusores.push(difusorHaciaAbajo([x, yCarcasa - CAIDA_DIFUSOR, z], medidasDifusor));
   }
 
+  // Determinar si el difusor debe parpadear basado en la salud del sistema y el tiempo.
+  let difusoColor = LUZ_CALIDA;
+  let difusoEmisivo = true;
+  if (health !== null) {
+    // Parpadeo con periodo de 1 segundo (500ms encendido, 500ms apagado) cuando hay daño.
+    const parpadeo = Math.floor(timeMs / 500) % 2 === 0;
+    difusoColor = parpadeo ? LUZ_CALIDA : 0x000000; // Negro cuando apagado
+    // Mantener emisivo verdadero para que el color negro se emita como luz negra (apagado).
+    // Si estableciéramos emisivo en falso, el material estaría sombreado por la luz ambiente.
+  }
+
   return [
     // La carcasa, metal normal: recibe la luz como cualquier otra pieza.
     { malla: fundir(bajos), color: MURAL.sombra },
@@ -204,7 +215,7 @@ export function piezasLuminarias({ ancho, profundidad, altura }) {
     // probó, y las luminarias parecían apagadas. No alumbra a nadie: el motor no
     // tiene luces de verdad (#556). Solo se exceptúa de la sombra, que es lo que
     // hacía la máquina de referencia con las luces y las pantallas.
-    { malla: fundir(difusores), color: LUZ_CALIDA, emisivo: true },
+    { malla: fundir(difusores), color: difusoColor, emisivo: difusoEmisivo },
   ];
 }
 

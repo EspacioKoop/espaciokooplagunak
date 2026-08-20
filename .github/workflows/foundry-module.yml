@@ -48,6 +48,8 @@ jobs:
           done
       - name: Ejecutar tests del módulo
         run: node --test foundry-module/tests/*.test.mjs
+      - name: El PNG prerenderizado corresponde al generador
+        run: node tools/prerender-piel.mjs --check
 
   puerta:
     name: Puerta del módulo Foundry

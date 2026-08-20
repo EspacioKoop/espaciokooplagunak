@@ -8,7 +8,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { ANCHO, CAIDA, LARGO, PASO, piezasLuminarias, reparto, focosLuminarias } from "../scripts/nave-luminaria.mjs";
+import { ANCHO, CAIDA, CAIDA_DIFUSOR, LARGO, PASO, piezasLuminarias, reparto, focosLuminarias } from "../scripts/nave-luminaria.mjs";
 import { LUZ_CALIDA, MURAL, SECCION } from "../scripts/paleta.mjs";
 import { ALTURA, crearSalaCaja } from "../scripts/nave-sala-caja.mjs";
 import { componerEscena } from "../scripts/retro3d.mjs";
@@ -151,12 +151,33 @@ test("focosLuminarias devuelve un foco por difusor en la misma x/z", () => {
   const puntos = reparto(ancho, profundidad);
   const focos = focosLuminarias({ ancho, profundidad, altura });
   assert.equal(focos.length, puntos.length);
-  const yEsperado = altura - CAIDA - 0.055;
+  const yEsperado = altura - CAIDA - CAIDA_DIFUSOR;
   for (let i = 0; i < puntos.length; i++) {
     const { x, z } = puntos[i];
     const foco = focos[i];
     assert.equal(foco.posicion[0], x, `foco ${i} x`);
     assert.equal(foco.posicion[1], yEsperado, `foco ${i} y`);
     assert.equal(foco.posicion[2], z, `foco ${i} z`);
+  }
+});
+
+// Este es el invariante que de verdad importa, y el que faltaba: el foco tiene
+// que estar DONDE ESTA EL DIFUSOR, no donde diga un numero copiado. Se lee la y
+// de la malla emisiva que devuelve `piezasLuminarias` y se exige que coincida.
+// Asi, si alguien mueve el difusor, esto falla — que es justo lo que un
+// comentario pidiendo «la misma y» no conseguia.
+test("el foco cuelga exactamente del difusor que se ve encendido", () => {
+  const sala = { ancho: 8, profundidad: 6, altura: ALTURA };
+  const emisiva = piezasLuminarias(sala).find((pieza) => pieza.emisivo);
+  assert.ok(emisiva, "tiene que haber una pieza emisiva: el difusor");
+
+  const alturasDifusor = new Set(emisiva.malla.vertices.map((v) => v[1]));
+  assert.equal(alturasDifusor.size, 1, "el difusor es plano: una sola y");
+  const yDifusor = [...alturasDifusor][0];
+
+  const focos = focosLuminarias(sala);
+  assert.ok(focos.length > 0);
+  for (const [i, foco] of focos.entries()) {
+    assert.equal(foco.posicion[1], yDifusor, `foco ${i} no cuelga del difusor`);
   }
 });

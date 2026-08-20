@@ -60,6 +60,17 @@ export const CAIDA = 0.18;
 export const PASO = 4;
 
 /**
+ * Cuánto queda el difusor por debajo del eje de la carcasa, en metros.
+ *
+ * Estaba escrito tres veces —la carcasa, el foco y el test— con un comentario
+ * pidiendo que coincidieran. Nada lo obligaba: si una cambiaba, el foco se iba
+ * del difusor en silencio y el test seguía verde, porque repetía el mismo
+ * número en vez de leerlo. Ahora sale de aquí, y desalinearlas exige editar
+ * esta línea.
+ */
+export const CAIDA_DIFUSOR = 0.055;
+
+/**
  * Dónde va cada luminaria de una sala. Se expone aparte de la geometría para
  * poder comprobar el REPARTO sin montar mallas: que sean de medida fija y que
  * una sala grande tenga más, no una mayor, es justo lo que se rompió antes.
@@ -179,7 +190,7 @@ export function piezasLuminarias({ ancho, profundidad, altura }) {
     const yCarcasa = altura - CAIDA;
     costados.push(cajaColgada([x, yCarcasa, z], medidasCarcasa, true));
     bajos.push(cajaColgada([x, yCarcasa, z], medidasCarcasa, false));
-    difusores.push(difusorHaciaAbajo([x, yCarcasa - 0.055, z], medidasDifusor));
+    difusores.push(difusorHaciaAbajo([x, yCarcasa - CAIDA_DIFUSOR, z], medidasDifusor));
   }
 
   return [
@@ -200,7 +211,8 @@ export function focosLuminarias({ ancho, profundidad, altura }) {
   const puntos = reparto(ancho, profundidad);
   if (puntos.length === 0) return [];
   const yCarcasa = altura - CAIDA;
-  const yFoco = yCarcasa - 0.055; // same y as the diffuser in piezasLuminarias
+  // A la altura exacta del difusor: el foco alumbra desde donde se ve la luz.
+  const yFoco = yCarcasa - CAIDA_DIFUSOR;
 
   const focos = [];
   for (const { x, z } of puntos) {

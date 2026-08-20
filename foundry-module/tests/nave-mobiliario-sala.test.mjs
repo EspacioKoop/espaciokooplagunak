@@ -103,9 +103,13 @@ test("un mueble se apoya de largo contra su muro", () => {
   }
 });
 
-test("nada llega a la altura de los ojos salvo el conducto", () => {
+test("nada hace de muro interior salvo el conducto", () => {
   // Es maquinaria de sala: si te tapa la vista, deja de ser mobiliario y pasa a
   // ser un muro interior que nadie ha puesto en la planta.
+  //
+  // El nombre de este test decia «la altura de los ojos» (1,45) y lo que
+  // comprobaba eran 1,95. `armario` mide 1,9 y pasaba tan tranquilo. Se deja el
+  // umbral que de verdad se aplica y se nombra por lo que hace.
   for (const [clave, { medidas }] of Object.entries(CATALOGO)) {
     if (clave === "conducto") continue;
     assert.ok(medidas[1] <= ALTURA_OJOS + 0.5, `${clave} tapa la vista`);
@@ -136,4 +140,40 @@ test("en el catálogo real ninguna sala se queda sin nada ni se llena de más", 
     // Un tope por sala, no por mueble: lo que se paga es el conjunto.
     assert.ok(obstaculos.length <= 24, `${id} tiene ${obstaculos.length} obstáculos`);
   }
+});
+
+/* ---- receta explicita: los camarotes ------------------------------------- */
+
+test("una receta explicita manda sobre lo que dicta el sistema", () => {
+  // El nombre viene prefijado y numerado (`maquina-litera-1`): interesa la clave.
+  const clave = (p) => p.nombre.replace(/^maquina-/, "").replace(/-\d+$/, "");
+  const claves = piezas({ receta: ["registro", "litera", "taquilla"] }).map(clave);
+  assert.ok(claves.length > 0, "algo tiene que plantar");
+  assert.deepEqual([...new Set(claves)].sort(), ["litera", "registro", "taquilla"]);
+});
+
+test("sin receta, la densidad de siempre: la explicita no se cuela sola", () => {
+  // La regresion que importa: al meter el parametro `receta`, el camino de
+  // siempre tiene que quedar exactamente igual. Aqui no hay camarotes.
+  const texto = piezas().map((p) => p.nombre).join(" ");
+  assert.ok(!texto.includes("litera"), "una litera en un cuarto de reactor no pinta nada");
+  assert.ok(!texto.includes("taquilla"), "ni una taquilla");
+});
+
+test("la receta no se salta la puerta ni el tope de sitios libres", () => {
+  // Una receta larga no puede plantar mas muebles que huecos hay: se recorta.
+  const larga = Array.from({ length: 200 }, () => "litera");
+  const salidas = piezas({ receta: larga });
+  assert.ok(salidas.length <= sitiosJuntoAlMuro(SALA).length, "mas muebles que sitios");
+  for (const pieza of salidas) {
+    const [x, , z] = pieza.centro;
+    const dentroDeLaPuerta =
+      x >= PUERTA.rect.x && x <= PUERTA.rect.x + PUERTA.rect.ancho &&
+      z >= PUERTA.rect.z && z <= PUERTA.rect.z + PUERTA.rect.profundidad;
+    assert.ok(!dentroDeLaPuerta, "una receta explicita tampoco tapa la puerta");
+  }
+});
+
+test("los camarotes existen en el catalogo por el que se anda", () => {
+  assert.ok(CATALOGO_ANDAR.tiene("camarotes"), "sin camarotes, la receta no llega a nadie");
 });

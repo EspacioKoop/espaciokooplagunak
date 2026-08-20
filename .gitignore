@@ -75,3 +75,6 @@ sonar-project.properties
 
 # Worktrees de tareas de agentes automáticos (ver SECURITY.md)
 .worktrees/
+
+# Residuo de las herramientas de auditoria, no es del repositorio
+.datos-auditoria/

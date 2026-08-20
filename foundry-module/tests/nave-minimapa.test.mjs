@@ -99,3 +99,36 @@ test("la rejilla declara su tamaño y cubre todas las salas", () => {
     assert.ok(sala.caja.y + sala.caja.alto <= modelo.filas, `${sala.id} se sale por abajo`);
   }
 });
+
+test("con presencia vacía el modelo sale SIN marcas", () => {
+  const modelo = modeloMinimapa(null, SALAS_PHOBOS, []);
+  assert.deepEqual(modelo.marcas, []);
+});
+
+test("con dos tripulantes salen dos marcas en las salas correctas", () => {
+  const presencia = [
+    { userId: "tripulante1", estancia: "reactor" },
+    { userId: "tripulante2", estancia: "cantina" }
+  ];
+  const modelo = modeloMinimapa(null, SALAS_PHOBOS, presencia);
+  assert.equal(modelo.marcas.length, 2);
+  const marca1 = modelo.marcas.find(m => m.userId === "tripulante1");
+  const marca2 = modelo.marcas.find(m => m.userId === "tripulante2");
+  assert.ok(marca1, "falta la marca de tripulante1");
+  assert.ok(marca2, "falta la marca de tripulante2");
+  assert.equal(marca1.sala, "reactor");
+  assert.equal(marca2.sala, "cantina");
+});
+
+test("a quien este fuera del plano no se le pinta marca", () => {
+  // Una sala de prueba no esta en la rejilla: una marca ahi no se puede dibujar.
+  const inventada = "sala-que-no-esta-en-el-plano";
+  assert.equal(estaEnElPlano(inventada, SALAS_PHOBOS), false, "premisa del test");
+
+  const modelo = modeloMinimapa(null, SALAS_PHOBOS, [
+    { userId: "dentro", estancia: "cantina" },
+    { userId: "fuera", estancia: inventada },
+  ]);
+
+  assert.deepEqual(modelo.marcas.map((m) => m.userId), ["dentro"]);
+});

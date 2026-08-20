@@ -265,6 +265,7 @@ function definirSala(sala, salientes) {
         // Semilla por celda, como el cielo de sus ventanas: la misma sala se
         // amuebla igual siempre, y dos salas distintas no salen calcadas.
         semilla: 20260810 + sala.celda.x * 131 + sala.celda.y * 17,
+        receta: sala.id === "camarotes" ? ["registro", "litera", "taquilla"] : undefined,
       }),
     ],
     puertas: puertas.map(({ rect }) => ({ rect })),

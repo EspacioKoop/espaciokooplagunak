@@ -334,6 +334,25 @@ etapa A, ni construir sitios que la mesa no vaya a visitar. La playa es un banco
 de pruebas y está declarada como tal; el día que un exterior sea contenido, entra
 por el bucle de producto y no por el de infraestructura.
 
+### Dónde está hoy este frente, y su deuda
+
+Medido el 2026-08-20, para que la regla de arriba no se lea como si ya se
+cumpliera:
+
+- **La mesa todavía no visita nada de esto.** La playa (#587) y la sala del museo
+  (#598) no cuelgan de ninguna puerta de la nave —su lista de puertas está
+  vacía—, así que las abre el GM desde la barra de escena y nadie más las pisa.
+  Cada pieza que se les añada la ve una sola persona. Es la deuda que hay que
+  pagar antes de meter más contenido, no después.
+- **Hay 18 mallas 3D en el árbol y el museo enseña 3.** Todas con procedencia
+  verificada (escaneos de vaciados del *Statens Museum for Kunst*, CC0 1.0). Lo
+  que falta no es licencia ni código: es la **cartela** de cada pieza, que es
+  trabajo humano y no escala con el código. Ya lo decía #590 y sigue siendo el
+  cuello de botella real de este frente.
+- **La textura de muro tiene puerta de CI y el horizonte no.** Los tres PNG del
+  horizonte son deterministas, pero su generador no admite `--check`, así que
+  nada impide que el binario del árbol se separe de su fuente.
+
 ## Prioridad vigente
 
 La **etapa A** es la única prioridad de producto hasta completar un playtest

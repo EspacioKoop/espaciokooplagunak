@@ -635,3 +635,13 @@ rutas que otro documento describe en prosa, sin que ningún test lo detecte). Al
 
 Regla general: el PR que cambia el código es también el lugar de corregir la prosa que ese código
 invalida — no una tarea de "documentación" aparte que se pospone.
+
+## Notas específicas sobre SeriousProton string
+
+La clase `SeriousProton::string` (en `SeriousProton/src/stringImproved.h`) sobrescribe `find` para devolver `int` y `-1` cuando no se encuentra, en lugar de `size_t` y `npos` como `std::string
+
+Para evitar confusiones y PRs innecesarios:
+- Usa la comparación `find(...) > -1` (no `!= string::npos`).
+- El valor `-1` es intencional; no es un error.
+- Si necesitas un constante nombrada, considera proponer `no_encontrado = -1` en upstream.
+- Esta nota evita que agentes y contribuyentes intenten "arreglar" lo que no está roto.

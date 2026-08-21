@@ -636,12 +636,19 @@ rutas que otro documento describe en prosa, sin que ningún test lo detecte). Al
 Regla general: el PR que cambia el código es también el lugar de corregir la prosa que ese código
 invalida — no una tarea de "documentación" aparte que se pospone.
 
-## Notas específicas sobre SeriousProton string
+## `SeriousProton::string::find` devuelve `int`, y `-1` es "no encontrado"
 
-La clase `SeriousProton::string` (en `SeriousProton/src/stringImproved.h`) sobrescribe `find` para devolver `int` y `-1` cuando no se encuentra, en lugar de `size_t` y `npos` como `std::string
+`SeriousProton::string` (en `SeriousProton/src/stringImproved.h`) redefine `find` con firma
+`int find(std::string_view sub, int start=0) const`: devuelve `int`, no `size_t`, y **`-1`**
+cuando no encuentra, no `std::string::npos`. La propia cabecera se apoya en ello
+(`if (find('\n') > -1 && ...)`), igual que `strip`, `split` y `replace`.
 
-Para evitar confusiones y PRs innecesarios:
-- Usa la comparación `find(...) > -1` (no `!= string::npos`).
-- El valor `-1` es intencional; no es un error.
-- Si necesitas un constante nombrada, considera proponer `no_encontrado = -1` en upstream.
-- Esta nota evita que agentes y contribuyentes intenten "arreglar" lo que no está roto.
+Consecuencias al tocar C++ de este repositorio:
+
+- La comparación correcta es `find(...) > -1` (o `!= -1`), **nunca** `!= std::string::npos`:
+  comparar un `int` negativo con `npos` es siempre cierto y el resultado es un bug silencioso.
+- No es un descuido de upstream que haya que "arreglar": cambiarlo rompería todos los usos
+  existentes. Si molesta la constante mágica, es una propuesta para upstream
+  (ver [ADR-0007](docs/adr/0007-frontera-upstream.md)), no un cambio local.
+- `std::string::find` sigue comportándose como siempre; la excepción es sólo la clase de
+  SeriousProton, así que hay que mirar el tipo antes de asumir.

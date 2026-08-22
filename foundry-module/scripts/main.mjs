@@ -61,6 +61,7 @@ import {
   registrarAjustesMinijuegos,
   registrarSesionesMinijuegos,
 } from "./minijuegos-wiring.mjs";
+import { convocarYTransmitir, registrarConvocatoriaEstancia } from "./convocatoria-difusion.mjs";
 import {
   crearClaseMesaV1,
   crearClaseMesaV2,
@@ -443,6 +444,9 @@ Hooks.once("ready", () => {
   // Sesiones de minijuegos (#308): el GM coordinador recoge las propuestas por
   // updateUser; cualquier cliente escucha las vistas privadas dirigidas a él.
   registrarSesionesMinijuegos(MODULE_ID);
+  // Convocatoria de estancias: el GM convoca y la posición se difunde a todos
+  // los clientes para abrir la ventana de Andar en el punto correcto.
+  registrarConvocatoriaEstancia(MODULE_ID);
   // La ventana de la mesa se refresca con lo que llega dirigido a este cliente:
   // la vista y las acciones que el coordinador le concede. Se guarda aunque la
   // ventana esté cerrada, para que al abrirla la mesa ya esté puesta.
@@ -871,7 +875,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
           title: "LAGUNAK.Controles.AbrirPlaya",
           icon: "fa-solid fa-umbrella-beach",
           button: true,
-          onClick: () => abrirAndarNave("playa"),
+          onClick: () => convocarYTransmitir("playa"),
         },
         {
           // La sala del museo (#598). Solo GM por el mismo motivo que la playa:
@@ -881,7 +885,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
           title: "LAGUNAK.Controles.AbrirMuseo",
           icon: "fa-solid fa-landmark",
           button: true,
-          onClick: () => abrirAndarNave("museo"),
+          onClick: () => convocarYTransmitir("museo"),
         },
       ]
     : [];

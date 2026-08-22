@@ -40,18 +40,6 @@ const raizScripts = join(raizModulo, "scripts");
  * la entrada es el registro de que se sabe, no un permiso.
  */
 const HUERFANOS_DECLARADOS = Object.freeze({
-  "convocatoria-estancia.mjs": {
-    cimiento: true,
-    issue: 587,
-    motivo:
-      "Resuelve a donde llega la tripulacion cuando el GM la convoca a una " +
-      "estancia. No lo importa nadie TODAVIA porque el cableado a la ventana de " +
-      "Andar es su propia tarjeta: la playa (#587) y el museo (#598) no cuelgan " +
-      "de ninguna puerta de la nave, asi que hoy solo los abre el GM y la " +
-      "tripulacion no los pisa. Se entrega antes el modulo puro para que la " +
-      "decision de quien puede convocar y de donde se aparece viva en un sitio " +
-      "probable sin Foundry delante, en vez de nacer enredada en la interfaz.",
-  },
   "audio-ficheros.mjs": {
     cimiento: true,
     issue: 571,

@@ -12,7 +12,7 @@ Comprueba:
   3. Si se le pasa --contra <directorio>, que los ficheros citados existan y
      que no falte ninguno de los reales.
 
-Uso: doc-coherencia.py DOCUMENTO.md [--contra DIRECTORIO] [--patron '*.mjs,*.js']
+Uso: tools/doc-coherencia.py DOCUMENTO.md [--contra DIRECTORIO] [--patron '*.mjs,*.js']
 Sale con 1 si algo no cuadra, para poder usarlo como criterio de aceptacion.
 """
 import os, re, sys
@@ -46,6 +46,19 @@ def main():
                           f" (diferencia {suma - total:+d})")
         else:
             print(f"✓ aritmetica: {len(partes)} grupos suman {suma} = total declarado")
+
+    # 1b. Sumas escritas a mano: "a + b + c = N" tiene que sumar de verdad.
+    #
+    # Sale de un fallo real: la seccion «Verificacion» del inventario arrastro
+    # los sumandos de ANTES de corregir la agrupacion —sumaban 179— mientras
+    # afirmaba «= 171». Los encabezados ya estaban bien, asi que la comprobacion
+    # 1 pasaba y la mentira seguia ahi, en la seccion que existe para negarla.
+    for expresion, declarado in re.findall(r"((?:\d+\s*\+\s*)+\d+)\s*=\s*(\d+)", txt):
+        sumandos = [int(n) for n in re.findall(r"\d+", expresion)]
+        if sum(sumandos) != int(declarado):
+            fallos.append(
+                f"la suma escrita «{expresion} = {declarado}» da {sum(sumandos)}"
+            )
 
     # 2. Elementos repetidos.
     items = re.findall(r"^\s*[-*]\s+`([^`]+)`", txt, re.M)

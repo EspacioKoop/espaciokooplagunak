@@ -6,10 +6,16 @@ listados, **32 casillas sin marcar** y **cero comandos ejecutados**. Paso su
 criterio de aceptacion porque el criterio miraba el fichero de ENTRADA, no el
 resultado. La leccion: el criterio de hecho examina la salida.
 
-Exige, por cada seccion de issue:
-  - ninguna casilla '- [ ]' sin marcar ni marcador de 'por completar'
-  - una comprobacion con comando real (bloque ``` o linea con $)
-  - una seccion de opciones no vacia
+Exige:
+  - ninguna casilla '- [ ]' sin marcar ni marcador de 'por completar' en todo
+    el documento;
+  - por cada seccion de issue, una comprobacion con comando real (bloque ```
+    o linea que empiece por $);
+  - al menos --minimo secciones de issue (por defecto 1).
+
+Lo que NO comprueba: que las opciones propuestas digan algo. Un comando existe
+o no existe, y eso se puede mirar; si una opcion vale la pena, no. Prometerlo
+seria la misma clase de mentira que el script existe para cazar.
 
 Uso: auditoria-completa.py DOCUMENTO.md [--minimo N]
 """

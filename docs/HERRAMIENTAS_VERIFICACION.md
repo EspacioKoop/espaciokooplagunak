@@ -4,7 +4,7 @@ Lista de scripts de verificación ubicados en `tools/`.
 
 ## doc-coherencia.py
 
-- **Qué comprueba**: La coherencia interna de un documento de inventario en Markdown: verifica que la suma de los grupos `(N ...)` coincida con el total declarado, que no haya elementos entre comillas invertidas duplicados, y opcionalmente que los archivos citados existan en un directorio.
+- **Qué comprueba**: La coherencia interna de un documento de inventario en Markdown: verifica que la suma de los grupos `(N ...)` coincida con el total declarado, que las sumas escritas a mano (`a + b + c = N`) sumen de verdad, que no haya elementos entre comillas invertidas duplicados, y opcionalmente que los archivos citados existan en un directorio.
 - **Cómo se invoca**: `python3 tools/doc-coherencia.py DOCUMENTO.md [--contra DIRECTORIO] [--patron '*.mjs,*.js']`
 - **Código de salida**: 0 si todo es coherente, 1 si hay alguna incoherencia, 2 si se invoca sin argumentos (muestra ayuda).
 
@@ -22,8 +22,8 @@ Lista de scripts de verificación ubicados en `tools/`.
 
 ## auditoria-completa.py
 
-- **Qué comprueba**: Realiza una auditoría de trabajo realizado frente a un inventario esperado, validando que las tareas completadas coincidan con lo registrado, sin depender de meras casillas marcadas.
-- **Cómo se invoca**: `python3 tools/auditoria-completa.py` (consultar su ayuda para opciones específicas).
+- **Qué comprueba**: Que un documento de auditoría contenga trabajo y no andamiaje: ninguna casilla `- [ ]` sin marcar ni marcador de «por completar», y una comprobación respaldada por un comando real (bloque de código o línea que empiece por `$`) en cada sección de issue. **No** comprueba que las opciones propuestas digan algo: eso no se puede mirar, y prometerlo sería la misma clase de mentira que el script existe para cazar.
+- **Cómo se invoca**: `python3 tools/auditoria-completa.py DOCUMENTO.md [--minimo N]`
 - **Código de salida**: 0 si la auditoría pasa, 1 si detecta discrepancias, 2 si se invoca incorrectamente.
 
 > **Nota para CI**: Todos los scripts devuelven código de salida 1 cuando detectan un fallo, por lo que pueden usarse directamente como pasos de comprobación en integración continua.

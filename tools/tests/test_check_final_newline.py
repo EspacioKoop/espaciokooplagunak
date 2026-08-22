@@ -36,3 +36,15 @@ def test_no_mira_fuera_del_fork():
 
 def test_el_arbol_actual_esta_limpio():
     assert mod.main() == 0
+
+
+def test_no_depende_del_directorio_de_trabajo(tmp_path, monkeypatch):
+    """La guarda tiene que mirar el arbol del repositorio, no el cwd de turno.
+
+    Sin `cwd=RAIZ` esto devolvia una lista vacia desde cualquier otro
+    directorio: cero ficheros que revisar, salida 0, puerta en verde sin haber
+    mirado nada.
+    """
+    monkeypatch.chdir(tmp_path)
+    assert len(list(mod.nuestros())) > 0
+    assert mod.main() == 0

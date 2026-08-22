@@ -19,8 +19,11 @@ Se ejecuta sin argumentos desde la raíz. Salida 0 si todo termina bien.
 """
 from __future__ import annotations
 
+import pathlib
 import subprocess
 import sys
+
+RAIZ = pathlib.Path(__file__).resolve().parent.parent
 
 AREAS = ("foundry-module/", "docs/", "tools/", "bridge/", ".github/")
 EXT = (".mjs", ".js", ".py", ".md", ".json", ".yml", ".yaml",
@@ -28,15 +31,24 @@ EXT = (".mjs", ".js", ".py", ".md", ".json", ".yml", ".yaml",
 
 
 def nuestros():
-    salida = subprocess.run(["git", "ls-files"], capture_output=True, text=True)
+    # `cwd=RAIZ` y `check=True` no son adorno: sin lo primero la guarda mira el
+    # árbol equivocado según desde dónde se la invoque, y sin lo segundo un git
+    # que falla devuelve stdout vacío — o sea, la guarda pasaría en VERDE sin
+    # haber mirado un solo fichero. Una puerta que se abre sola cuando se rompe
+    # es peor que no tenerla, porque además tranquiliza.
+    salida = subprocess.run(["git", "ls-files"], cwd=RAIZ, check=True,
+                            capture_output=True, text=True)
     for ruta in salida.stdout.splitlines():
         if ruta.startswith(AREAS) and ruta.endswith(EXT):
             yield ruta
 
 
 def sin_salto(ruta: str) -> bool:
+    # Las rutas vienen de `git ls-files`, o sea relativas a la RAIZ, no al
+    # directorio desde el que se invoque esto.
     try:
-        with open(ruta, "rb") as f:
+        with open(RAIZ / ruta if not pathlib.Path(ruta).is_absolute() else ruta,
+                  "rb") as f:
             f.seek(0, 2)
             if f.tell() == 0:
                 return False          # vacío: no hay última línea que cerrar

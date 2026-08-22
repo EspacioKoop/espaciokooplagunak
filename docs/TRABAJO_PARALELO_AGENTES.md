@@ -196,3 +196,77 @@ tenga que esperar a que ese mergee.
 Al terminar, la entrega es la de [`AGENTS.md`](../AGENTS.md), con una adición que hace posible el
 relevo: **di explícitamente qué NO has hecho y por qué**. Un alcance recortado en silencio es lo que
 obliga al siguiente a releer todo el diff para averiguar dónde se quedó el anterior.
+
+---
+
+## Cómo fallan los agentes en este repositorio
+
+Los cuatro patrones de abajo se midieron aquí, no salen de un manual. Todos tienen la misma forma:
+**el agente cree haber cumplido, y lo que dice es literalmente falso**. Ninguno se detecta leyendo
+el resumen del propio agente, que es precisamente por qué están escritos.
+
+### 1. Cerrar en verde con la rama rota
+
+Un agente cambió una llamada para pasarle dos parámetros nuevos y nunca los declaró en la firma de
+la función. `ReferenceError` en tres tests. Cerró la tarea afirmando que sus comprobaciones pasaban.
+
+**La regla:** el criterio de entrega de una tarea es un comando que devuelve 0, ejecutado antes de
+cerrar, con la salida pegada. Un criterio que nadie ejecuta se cumple por confianza, y la confianza
+no compila. Para este repositorio:
+
+```bash
+node --test foundry-module/tests/*.test.mjs
+```
+
+Ojo con la ruta: `node --test foundry-module/tests/` **sin el glob** falla siempre, y es fácil creer
+que el fallo es tuyo.
+
+### 2. Entregar en el árbol equivocado
+
+Otro agente escribió su documento en el checkout principal —que estaba en la rama de un PR ajeno
+abierto— en vez de en su worktree. Resultado: cero commits propios, el entregable a un paso de
+colarse en el PR de otra persona, y la tarea cerrada como hecha.
+
+**La regla:** un fichero sin confirmar en tu rama no es un entregable. Antes de cerrar:
+
+```bash
+git log origin/main..HEAD --name-only    # ¿está tu entregable aquí?
+git status --porcelain                   # ¿te dejas algo sin confirmar?
+```
+
+Y el checkout principal no es de nadie que trabaje en paralelo: cada unidad de trabajo vive en su
+propia rama.
+
+### 3. Cumplir la letra del criterio y perder la intención
+
+Un documento tenía que publicar el comando que producía cada una de sus cifras. Las cifras eran
+correctas; el comando publicado **no las producía** —un `awk` con el volcado dentro de un bloque
+`END`, que solo emitía el último registro—. El criterio automático solo comprobaba que la cadena
+`git log` apareciera en el texto, y apareció.
+
+**La regla:** una comprobación que busca una *cadena* es débil; una que **ejecuta lo que el
+documento afirma** es fuerte. Si publicas un comando, ejecútalo pegado tal cual sale del documento,
+no de memoria. Un número cuyo comando no se ha ejecutado no está verificado, aunque el número sea
+cierto.
+
+### 4. Contar solo el primer nivel y llamarlo total
+
+`grep` sobre `foundry-module/scripts/*.mjs` ve 132 ficheros; el árbol tiene 169, porque hay
+subdirectorios. Contar el primer nivel y presentarlo como total es el error de conteo más repetido
+aquí, y lo cometen tanto los agentes como quien los revisa.
+
+Relacionado: para enumerar llamantes de una función, `grep` cuenta comentarios, cadenas y el propio
+`export`. Una búsqueda estructural distingue una llamada real de una mención:
+
+```bash
+ast-grep run --pattern 'miFuncion($$$ARGS)' --lang js foundry-module/scripts
+```
+
+En un caso real dio 5 llamadas frente a los 28 aciertos de `grep`.
+
+### El patrón común
+
+Los cuatro comparten raíz: **la verificación la hacía quien había hecho el trabajo, leyendo su propia
+conclusión**. Una revisión que empieza por el resumen del autor devuelve el resumen del autor. Quien
+revise debe recibir el contrato (qué había que cumplir) y el artefacto (el diff), y leer las
+conclusiones del autor al final, si acaso.

@@ -42,6 +42,7 @@
 | [CONSOLA_CALIENTE_GM.md](CONSOLA_CALIENTE_GM.md) | Cómo se ejecuta la fusión de consolas del GM cuando se abra su puerta (#276) |
 | [MINIJUEGOS_FOUNDRY.md](MINIJUEGOS_FOUNDRY.md) | Contrato previo para minijuegos sociales y primer vertical de póker (#308) |
 | [MINIJUEGOS_DADOS.md](MINIJUEGOS_DADOS.md) | Reglas del segundo vertical: dados de cubilete, en 3D retro legible (#413) |
+| [NPC_GENERADOR.md](NPC_GENERADOR.md) | Motor del generador de NPC: ficha 5e del SRD 5.1, afinidades y reparto de acciones (#676) |
 | [MINIJUEGOS_ASISTENCIA.md](MINIJUEGOS_ASISTENCIA.md) | Diseño de asistencia entre puestos con minijuegos de habilidad y tiradas dnd5e (#309) |
 | [CONTENIDO_EXTERNO.md](CONTENIDO_EXTERNO.md) | Lectura opcional del contenido dnd5e ya importado por el usuario, filtrado a 2014 (#332) |
 | [ECOSISTEMA_MODULOS_FOUNDRY.md](ECOSISTEMA_MODULOS_FOUNDRY.md) | De qué módulos ajenos dependemos, cuáles imitamos y cuáles nos estorban |

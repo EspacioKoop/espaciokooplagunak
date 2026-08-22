@@ -104,6 +104,27 @@ const HUERFANOS_DECLARADOS = Object.freeze({
       "Eloy no han aprobado. Que lo que produce es válido lo comprueba " +
       "`atlas-hyg.test.mjs` contra el validador, sin necesidad de consumidor.",
   },
+  "npc-tablas.mjs": {
+    cimiento: true,
+    issue: 676,
+    motivo:
+      "Tablas propias del generador de NPC: silabas, arquetipos, elementos y " +
+      "lineas. Solo lo importa npc-generador.mjs, que a su vez todavia no " +
+      "cuelga de ninguna puerta.",
+  },
+  "npc-generador.mjs": {
+    cimiento: true,
+    issue: 676,
+    motivo:
+      "Motor puro del generador de NPC: semilla mas valor de desafio dan una " +
+      "ficha. No lo importa nadie TODAVIA a proposito. Lo que falta para que " +
+      "se llegue jugando no es cableado sino una decision que no se toma de " +
+      "paso: un habitante al que has conocido es algo que se RECUERDA, y " +
+      "docs/FOUNDRY.md deja recordar fuera de la escena. Es el mismo reparto " +
+      "que #598 dejo abierto para el bestiario. Se entrega antes el motor para " +
+      "que la matematica del SRD y la limpieza de nombres se prueben sin " +
+      "Foundry delante.",
+  },
   "nave-movimiento-sala-prueba.mjs": {
     cimiento: true,
     issue: 427,

@@ -87,3 +87,10 @@ tools/.artic_search*.json
 tools/.nasa3d_meta.json
 lagunak-artic-*.json
 lagunak-apis.sqlite
+
+# Artefactos de cobertura de node/nyc: los deja cualquier pasada de
+# `--experimental-test-coverage` o de nyc en el arbol, y no son entregables.
+# El 2026-08-22 un `git add -A` estuvo a punto de meter 17 ficheros de estos
+# en un PR de seguridad.
+.nyc_output/
+coverage/

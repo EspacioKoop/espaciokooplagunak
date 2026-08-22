@@ -3,7 +3,8 @@
 
 """
 Obras del Art Institute of Chicago (AIC) en dominio público con imagen.
-UNA sola petición por consulta, cache en disco, salida JSON.
+UNA sola petición por consulta, cache en disco (via tools/apis/core.py),
+espaciado por host y presupuesto diario, salida JSON.
 
 NOTA: El endpoint verificado que funciona es:
   curl -G 'https://api.artic.edu/api/v1/artworks/search' \
@@ -19,20 +20,32 @@ con query parameters como arriba es el que devuelve 200 y datos correctos.
 
 import argparse
 import json
-import os
-import tempfile
-import urllib.request
+import pathlib
 import sys
 import urllib.parse
 
+# Usa el cliente compartido: cache SQLite, ritmo por host, presupuesto diario.
 # Sin dependencias fuera del árbol: urllib de la biblioteca estándar basta.
-# La versión anterior cargaba un cliente por ruta, con un valor por defecto que
-# apuntaba al directorio personal de alguien, y este repositorio es público.
+#
+# EL IMPORT TIENE QUE VALER DE LAS DOS FORMAS EN QUE SE EJECUTA ESTO, y por eso
+# no es una línea a secas:
+#
+#   python3 tools/artic.py ...      → sys.path[0] es `tools/`, no la raíz
+#   python3 -m tools.artic ...      → sys.path[0] es la raíz, `tools` es paquete
+#
+# `from apis.core import pedir` solo funciona en la primera; `from tools.apis...`
+# solo en la segunda. La suite usa la segunda (test_artic.py) y las herramientas
+# se invocan a mano con la primera, así que elegir una rompe la otra — que es
+# justo lo que pasó: `ModuleNotFoundError: No module named 'apis'` en CI.
+#
+# Se resuelve poniendo la RAÍZ en sys.path y usando siempre la ruta completa.
+# Hay una prueba por cada forma de invocación: la que falla sin esto es la única
+# que demuestra algo.
+_RAIZ = str(pathlib.Path(__file__).resolve().parent.parent)
+if _RAIZ not in sys.path:
+    sys.path.insert(0, _RAIZ)
 
-CACHE_FILE = os.path.join(
-    os.environ.get('LAGUNAK_CACHE') or tempfile.gettempdir(),
-    'lagunak-artic-cache.json')
-USER_AGENT = 'EspaciokoopLagunak/1.0 (https://github.com/VaroTv7/espaciokooplagunak)'
+from tools.apis.core import pedir
 
 # El endpoint search del AIC con filtro is_public_domain=true y fields
 # NOTA: la skill declara POST con JSON body, pero GET con query params funciona
@@ -47,28 +60,6 @@ DEFAULT_FIELDS = 'id,title,image_id,artist_title,date_display,is_public_domain'
 DEFAULT_LIMIT = 10
 
 
-def _cache_key(texto, fields=None, limit=None):
-    """Genera una clave de caché única para la consulta."""
-    import hashlib
-    key_data = f"{texto}|{fields or DEFAULT_FIELDS}|{limit or DEFAULT_LIMIT}"
-    return hashlib.sha256(key_data.encode()).hexdigest()[:16]
-
-
-def _cache_path(texto, fields=None, limit=None):
-    """Ruta del fichero de caché de esta consulta.
-
-    NO va junto al módulo. La versión anterior usaba `os.path.dirname(__file__)`
-    y dejaba `.artic_search_*.json` sueltos dentro de `tools/`, que es el árbol
-    del repositorio: aparecían como ficheros sin seguir en cuanto alguien
-    ejecutaba una búsqueda, y acababan colándose en la rama de quien tocara algo
-    después. Se detectó al preparar otro PR, no por un test.
-    """
-    key = _cache_key(texto, fields, limit)
-    base_dir = os.environ.get('LAGUNAK_CACHE') or tempfile.gettempdir()
-    os.makedirs(base_dir, exist_ok=True)
-    return os.path.join(base_dir, f'lagunak-artic-{key}.json')
-
-
 def _construir_url(texto, fields=None, limit=None):
     """Construye la URL de búsqueda con los parámetros codificados."""
     params = []
@@ -80,21 +71,6 @@ def _construir_url(texto, fields=None, limit=None):
     # urllib.parse.urlencode maneja los corchetes correctamente
     query_string = urllib.parse.urlencode(params)
     return f'{SEARCH_URL}?{query_string}'
-
-
-def pedir_a_artic(texto, fields=None, limit=None):
-    """UNA sola petición al AIC. Devuelve el JSON crudo de la API."""
-    url = _construir_url(texto, fields, limit)
-
-    peticion = urllib.request.Request(url, headers={
-        'Accept': 'application/json',
-        'User-Agent': USER_AGENT,
-    })
-    try:
-        with urllib.request.urlopen(peticion, timeout=30) as r:
-            return json.loads(r.read().decode('utf-8'))
-    except Exception as e:
-        raise RuntimeError(f'No se pudo leer el Art Institute of Chicago: {e}')
 
 
 def obras_desde_json(data):
@@ -147,29 +123,13 @@ def main():
             print(f'Error: Invalid JSON in {args.desde_fichero}: {e}', file=sys.stderr)
             sys.exit(1)
     else:
-        # Try to load from cache if exists (cache is per-query)
-        cache_path = _cache_path(args.texto, args.fields, args.limit)
-        if os.path.exists(cache_path):
-            try:
-                with open(cache_path, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-            except (json.JSONDecodeError, IOError) as e:
-                print(f'Warning: Could not read cache file {cache_path}: {e}', file=sys.stderr)
-                data = pedir_a_artic(args.texto, args.fields, args.limit)
-                # Save to cache
-                try:
-                    with open(cache_path, 'w', encoding='utf-8') as f:
-                        json.dump(data, f, indent=2)
-                except IOError as e:
-                    print(f'Warning: Could not write cache file {cache_path}: {e}', file=sys.stderr)
-        else:
-            data = pedir_a_artic(args.texto, args.fields, args.limit)
-            # Save to cache
-            try:
-                with open(cache_path, 'w', encoding='utf-8') as f:
-                    json.dump(data, f, indent=2)
-            except IOError as e:
-                print(f'Warning: Could not write cache file {cache_path}: {e}', file=sys.stderr)
+        # Use shared API client with cache, rate limiting, and budget
+        url = _construir_url(args.texto, args.fields, args.limit)
+        data = pedir(url, cabeceras={'AIC-User-Agent': 'lagunak-verificador'})
+        if data is None:
+            from tools.apis.core import ULTIMO_MOTIVO
+            print(f'Error: No se pudo leer el Art Institute of Chicago ({ULTIMO_MOTIVO})', file=sys.stderr)
+            sys.exit(1)
 
     obras = obras_desde_json(data)
     # Output as JSON to stdout

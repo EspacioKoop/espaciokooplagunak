@@ -108,6 +108,35 @@ def test_artic_loads_json() -> None:
     assert "Public Domain No Image" not in titles
 
 
+def test_artic_se_ejecuta_como_script_suelto(tmp_path: Path) -> None:
+    """La otra forma de invocarlo, que es la que nadie probaba.
+
+    `artic.py` se ejecuta de DOS maneras y cada una monta un `sys.path`
+    distinto: como script suelto la raíz del repositorio no está dentro, y como
+    módulo sí. Un import escrito para una de las dos rompe la otra en silencio
+    —fue `ModuleNotFoundError: No module named 'apis'` en CI—, y la suite solo
+    cubría la forma de módulo, así que el fallo llegó hasta el CI sin que nada
+    lo parase antes.
+
+    Esta prueba es la mitad que faltaba. Sin ella, arreglar el import en un
+    sentido y romperlo en el otro vuelve a pasar desapercibido.
+    """
+    sample_file = tmp_path / "artic_sample.json"
+    sample_file.write_text(json.dumps(SAMPLE_AIC_RESPONSE), encoding="utf-8")
+
+    raiz = Path(__file__).resolve().parent.parent.parent
+    result = subprocess.run(
+        [sys.executable, str(raiz / "tools" / "artic.py"),
+         "--desde-fichero", str(sample_file)],
+        capture_output=True,
+        text=True,
+        cwd=raiz,
+    )
+    assert result.returncode == 0, f"Como script suelto falla: {result.stderr}"
+    salida = json.loads(result.stdout.strip())
+    assert salida[0]["title"] == "Water Lilies"
+
+
 def test_artic_integration(tmp_path: Path) -> None:
     """Test the script integration with --desde-fichero."""
     sample_file = tmp_path / "artic_sample.json"

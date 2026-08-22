@@ -1,0 +1,42 @@
+name: Check SeriousProton anchor
+on:
+  schedule:
+    - cron: '0 0 * * 1'   # every Monday at 00:00 UTC
+  workflow_dispatch:
+jobs:
+  check-anchor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract anchored SHA
+        id: extract
+        run: |
+          ANCHORED_SHA=$(grep '^ARG SERIOUS_PROTON_REF=' docker/Dockerfile | cut -d'=' -f2 | tr -d '[:space:]')
+          echo "anchored_sha=$ANCHORED_SHA" >> $GITHUB_OUTPUT
+      - name: Clone SeriousProton
+        run: |
+          git clone --depth 200 https://github.com/daid/SeriousProton.git
+          cd SeriousProton
+          if ! git rev-parse --verify ${{ steps.extract.outputs.anchored_sha }} >/dev/null 2>&1; then
+            echo "Anchored SHA not found in shallow clone, fetching..."
+            git fetch --depth=200 origin ${{ steps.extract.outputs.anchored_sha }}
+          fi
+          COMMITS_BEHIND=$(git rev-list --count ${{ steps.extract.outputs.anchored_sha }}..HEAD)
+          echo "commits_behind=$COMMITS_BEHIND" >> $GITHUB_OUTPUT
+          ANCHORED_TS=$(git show -s --format=%ct ${{ steps.extract.outputs.anchored_sha }})
+          echo "anchored_ts=$ANCHORED_TS" >> $GITHUB_OUTPUT
+      - name: Check thresholds
+        run: |
+          COMMITS_BEHIND=${{ steps.extract.outputs.commits_behind }}
+          ANCHORED_TS=${{ steps.extract.outputs.anchored_ts }}
+          CURRENT_TS=$(date +%s)
+          SECONDS_BEHIND=$((CURRENT_TS - ANCHORED_TS))
+          DAYS_BEHIND=$((SECONDS_BEHIND / 86400))
+          MAX_COMMITS_BEHIND=50
+          MAX_DAYS_BEHIND=30
+          if [ $COMMITS_BEHIND -gt $MAX_COMMITS_BEHIND ] || [ $DAYS_BEHIND -gt $MAX_DAYS_BEHIND ]; then
+            echo "::error::SeriousProton anchor is outdated: $COMMITS_BEHIND commits behind (max $MAX_COMMITS_BEHIND) and $DAYS_BEHIND days behind (max $MAX_DAYS_BEHIND)."
+            exit 1
+          else
+            echo "SeriousProton anchor is up to date: $COMMITS_BEHIND commits behind, $DAYS_BEHIND days behind."
+          fi

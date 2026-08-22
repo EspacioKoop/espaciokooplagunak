@@ -10,7 +10,7 @@ Antes de escribir **una sola línea** de código contra una fuente externa, ejec
 
 ### 1. Resuelve la URL real (no la que dice la skill / el README / el blog)
 
-```bash
+```bash no-ejecutar
 curl -s -o /dev/null -w "%{http_code}" "URL_CANDIDATA" && echo ""
 ```
 - Debe devolver `200`. Cualquier otra cosa (301, 302, 404, 403) significa que la URL publicada **no es la que responde**.
@@ -18,7 +18,7 @@ curl -s -o /dev/null -w "%{http_code}" "URL_CANDIDATA" && echo ""
 
 ### 2. Descarga y examina la respuesta real (no el ejemplo de la docs)
 
-```bash
+```bash no-ejecutar
 curl -s "URL_REAL" | head -200
 ```
 - Verifica que el **esquema** (claves, arrays, tipado) coincide con lo que la skill afirma.
@@ -26,7 +26,7 @@ curl -s "URL_REAL" | head -200
 
 ### 3. Comprueba la licencia **del archivo**, no del repositorio
 
-```bash
+```bash no-ejecutar
 curl -s "URL_LICENSE_O_METADATA" | grep -i license
 ```
 - La licencia del repo (p. ej. `NASA Open Source Agreement 1.3` en la raíz) **no acredita** la licencia de cada pieza.

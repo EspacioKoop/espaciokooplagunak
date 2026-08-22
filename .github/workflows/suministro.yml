@@ -39,10 +39,16 @@ jobs:
         with:
           # Vulnerabilidades: falla de moderada para arriba.
           fail-on-severity: moderate
-          # Y licencias, que aquí no es un detalle: docs/ASSETS_LIBRES.md deja
-          # CC BY-SA y CC BY-NC fuera, y el repositorio es GPL-2.0. Una
-          # dependencia con licencia incompatible es el mismo problema que un
-          # asset con licencia incompatible, y hasta hoy solo se miraba el
-          # segundo.
-          deny-licenses: AGPL-3.0, AGPL-3.0-only, AGPL-3.0-or-later, SSPL-1.0, BUSL-1.1
+          # Y licencias, que aquí no es un detalle: el repositorio es GPL-2.0 y
+          # docs/ASSETS_LIBRES.md ya deja CC BY-SA y CC BY-NC fuera para los
+          # assets. Una dependencia con licencia incompatible es el mismo
+          # problema que un asset con licencia incompatible, así que la lista
+          # cubre las DOS familias, no solo la primera:
+          #   - copyleft de red / fuente no libre: AGPL, SSPL, BUSL
+          #   - las mismas CC que ya se rechazan en los assets, que aparecen en
+          #     paquetes de datos con más frecuencia de la que parece
+          deny-licenses: >-
+            AGPL-3.0, AGPL-3.0-only, AGPL-3.0-or-later,
+            SSPL-1.0, BUSL-1.1,
+            CC-BY-NC-4.0, CC-BY-NC-SA-4.0, CC-BY-SA-4.0
           comment-summary-in-pr: on-failure

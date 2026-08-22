@@ -9,71 +9,41 @@ import argparse
 import json
 import os
 import sys
-import urllib.parse
 
-# El cliente de APIs (cache, tope diario por host, User-Agent identificado) vive
-# todavia FUERA del arbol. La ruta se lee del entorno y NUNCA se incrusta: este
-# repositorio es publico, y una ruta /home/alguien publica el nombre de una
-# persona ademas de romperse para quien clone. Cuando `tools/apis/` exista, esto
-# se sustituye por un import normal.
-RUTA_APIS = os.path.expanduser(os.environ.get('LAGUNAK_APIS', '~/.hermes/bin/lagunak_apis.py'))
-
-
-def _cargar_apis():
-    import importlib.util as i
-    spec = i.spec_from_file_location('apis', RUTA_APIS)
-    if spec is None or not os.path.exists(RUTA_APIS):
-        raise RuntimeError(
-            f'No se encuentra el cliente de APIs en {RUTA_APIS}. '
-            'Indica su ruta en la variable de entorno LAGUNAK_APIS.'
-        )
-    modulo = i.module_from_spec(spec)
-    spec.loader.exec_module(modulo)
-    return modulo
+# El cliente de APIs ya vive en el arbol: import normal, sin rutas del entorno.
+# `core` se importa como modulo y no `ULTIMO_MOTIVO` por valor: el motivo del
+# ultimo fallo lo reescribe `pedir` en cada llamada, y un `from ... import` lo
+# congelaria en el valor que tuviera al arrancar.
+from .apis import core
+from .apis.wikidata import wikidata
 
 CACHE_FILE = os.path.join(os.path.dirname(__file__), '.wikidata_sculptures.json')
 USER_AGENT = 'EspaciokoopLagunak/1.0 (https://github.com/VaroTv7/espaciokooplagunak)'
 
-SPARQL_QUERY = """
-SELECT ?item ?itemLabel ?itemDescription ?image ?inception ?collection ?collectionLabel
+SPARQL_QUERY = """SELECT ?item ?itemLabel ?itemDescription ?image ?inception ?collection ?collectionLabel
 WHERE
 {
   ?item wdt:P31/wdt:P279* wd:Q860861 .
   OPTIONAL { ?item wdt:P18 ?image . }
   OPTIONAL { ?item wdt:P571 ?inception . }
   OPTIONAL { ?item wdt:P195 ?collection . }
-  SERVICE wikibase:label { bd:serviceParam wikibase:language "es,en" . }
-}
-"""
+  SERVICE wikibase:label { bd:serviceParam wikibase:language \"es,en\" . }
+}"""
 
 def pedir_a_wikidata():
     """UNA sola consulta SPARQL. Devuelve el JSON crudo de Wikidata."""
-    # Wikidata SPARQL endpoint
-    url = 'https://query.wikidata.org/sparql'
-
-    # For Wikidata SPARQL, we can use GET with query parameter
-    # Format: https://query.wikidata.org/sparql?query=URL_ENCODED_QUERY&format=json
-    encoded_query = urllib.parse.quote(SPARQL_QUERY)
-    full_url = f'{url}?query={encoded_query}&format=json'
-
-    # Use lagunak_apis.pedir which handles caching, rate limiting, etc.
-    try:
-        apis = _cargar_apis()
-        result = apis.pedir(full_url)
-        if result is None:
-            # Por que fallo
-            if hasattr(apis, 'ULTIMO_MOTIVO'):
-                if apis.ULTIMO_MOTIVO == 'presupuesto':
-                    raise RuntimeError('Presupuesto diario agotado para Wikidata')
-                elif apis.ULTIMO_MOTIVO == 'no_encontrado':
-                    raise RuntimeError('No se obtuvo respuesta de Wikidata')
-                elif apis.ULTIMO_MOTIVO == 'cache_fallo':
-                    raise RuntimeError('Falló la caché de Wikidata')
-            else:
-                raise RuntimeError('Failed to fetch from Wikidata (reason unknown)')
-        return result
-    except Exception as e:
-        raise RuntimeError(f'Failed to fetch from Wikidata: {e}')
+    result = wikidata(SPARQL_QUERY)
+    if result is None:
+        # Por que fallo
+        if core.ULTIMO_MOTIVO == 'presupuesto':
+            raise RuntimeError('Presupuesto diario agotado para Wikidata')
+        elif core.ULTIMO_MOTIVO == 'no_encontrado':
+            raise RuntimeError('No se obtuvo respuesta de Wikidata')
+        elif core.ULTIMO_MOTIVO == 'cache_fallo':
+            raise RuntimeError('Falló la caché de Wikidata')
+        else:
+            raise RuntimeError('Failed to fetch from Wikidata (reason unknown)')
+    return result
 
 def candidatos_desde_json(data):
     """Load candidates from the Wikidata JSON response."""

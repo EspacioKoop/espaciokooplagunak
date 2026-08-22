@@ -1,286 +1,157 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""Catálogo de NASA 3D Resources, con la procedencia que se pueda demostrar.
 
-"""
-NASA 3D Resources catalog search tool.
-Provides a single query interface to NASA 3D Resources metadata.
-Outputs JSON with fields for provenance verification.
+Cataloga; no descarga. La salida lleva los campos que `arte-verificar.py`
+necesita para juzgar si una pieza puede entrar en el árbol.
+
+QUÉ NO DECLARA, Y POR QUÉ. El repositorio `nasa/NASA-3D-Resources` **no trae
+fichero de licencia** —la API de GitHub devuelve `license: null`— y su README
+remite a las condiciones de uso de medios de NASA. Así que este módulo publica
+`licencia_declarada: null` y el enlace a esas condiciones, y **no afirma dominio
+público**. Que un material sea de una agencia pública no es una licencia, y
+rellenar ese campo a ojo es exactamente lo que la verificación de procedencia
+existe para impedir.
+
+UNA SOLA PETICIÓN. El árbol recursivo completo son 1.583 entradas sin truncar,
+así que una llamada trae el catálogo entero y se guarda en caché. Nada de una
+petición por modelo.
+
+ANÓNIMO. Ni credenciales, ni correo, ni rutas de nadie: este repositorio es
+público. La caché va donde diga el entorno, y si no, al directorio temporal
+del sistema.
 """
 
 import argparse
 import json
 import os
 import sys
-import urllib.parse
+import tempfile
+import time
+import urllib.request
+from urllib.parse import quote
 
-# The API client (cache, daily quota per host, identified User-Agent) lives
-# outside the tree. The path is read from the environment and NEVER hardcoded:
-# this repository is public, and a hardcoded /home/user would leak a username
-# and break for anyone else cloning. When `tools/apis/` exists, this should be
-# replaced by a normal import.
-RUTA_APIS = os.path.expanduser(os.environ.get('LAGUNAK_APIS', '~/.hermes/bin/lagunak_apis.py'))
+REPO = "nasa/NASA-3D-Resources"
+ARBOL = f"https://api.github.com/repos/{REPO}/git/trees/HEAD?recursive=1"
+FICHA = f"https://github.com/{REPO}/tree/master/"
+CONDICIONES = "https://www.nasa.gov/nasa-brand-center/images-and-media"
+CRUDO = f"https://raw.githubusercontent.com/{REPO}/master/"
 
+# Lo que sirve como malla, y lo que sirve como textura que la acompaña.
+MALLAS = (".glb", ".stl", ".obj", ".blend", ".3ds", ".fbx")
+TEXTURAS = (".png", ".jpg", ".jpeg", ".tif", ".tiff", ".webp")
 
-def _cargar_apis():
-    """Load the lagunak_apis module from the given path."""
-    import importlib.util as i
-    spec = i.spec_from_file_location('apis', RUTA_APIS)
-    if spec is None or not os.path.exists(RUTA_APIS):
-        raise RuntimeError(
-            f'API client not found at {RUTA_APIS}. '
-            'Set the LAGUNAK_APIS environment variable to its path.'
-        )
-    modulo = i.module_from_spec(spec)
-    spec.loader.exec_module(modulo)
-    return modulo
+CADUCA = 24 * 3600  # segundos
 
 
-def _get_meta_json():
+def ruta_cache():
+    base = os.environ.get("LAGUNAK_CACHE") or os.path.join(tempfile.gettempdir(), "lagunak-apis")
+    os.makedirs(base, exist_ok=True)
+    return os.path.join(base, "nasa3d-arbol.json")
+
+
+def traer_arbol(sin_cache=False, timeout=30):
+    """El árbol completo, de la caché si vale, y si no de una sola petición."""
+    cache = ruta_cache()
+    if not sin_cache and os.path.exists(cache):
+        if time.time() - os.path.getmtime(cache) < CADUCA:
+            with open(cache, encoding="utf-8") as f:
+                return json.load(f)
+    pet = urllib.request.Request(ARBOL, headers={
+        "Accept": "application/vnd.github+json",
+        "User-Agent": "lagunak-catalogo/1.0 (+https://github.com/VaroTv7/espaciokooplagunak)",
+    })
+    with urllib.request.urlopen(pet, timeout=timeout) as r:
+        datos = json.loads(r.read().decode("utf-8"))
+    with open(cache, "w", encoding="utf-8") as f:
+        json.dump(datos, f)
+    return datos
+
+
+def _escapa(ruta):
+    return quote(ruta)
+
+
+def piezas(arbol):
+    """Una entrada por MODELO: su carpeta, sus mallas y sus texturas.
+
+    El catálogo de NASA no es un índice: es la propia jerarquía de carpetas.
+    `3D Models/<nombre>/<ficheros>` y `3D Printing/<nombre>/<ficheros>`.
     """
-    Fetch and cache the NASA 3D Resources meta.json from GitHub.
-    Uses lagunak_apis for caching and rate limiting.
-    Returns the parsed JSON data.
-    """
-    CACHE_FILE = os.path.join(os.path.dirname(__file__), '.nasa3d_meta.json')
-    GITHUB_META_URL = 'https://raw.githubusercontent.com/nasa/3D-Resources/master/meta.json'
+    porcarpeta = {}
+    for nodo in arbol.get("tree", []):
+        if nodo.get("type") != "blob":
+            continue
+        ruta = nodo["path"]
+        trozos = ruta.split("/")
+        if len(trozos) < 3:
+            continue
+        seccion, nombre = trozos[0], trozos[1]
+        if seccion not in ("3D Models", "3D Printing", "Images and Textures"):
+            continue
+        ext = os.path.splitext(ruta)[1].lower()
+        if ext not in MALLAS + TEXTURAS:
+            continue
+        clave = (seccion, nombre)
+        e = porcarpeta.setdefault(clave, {
+            "identificador": f"{seccion}/{nombre}",
+            "titulo": nombre,
+            "seccion": seccion,
+            "url_ficha": FICHA + _escapa(f"{seccion}/{nombre}"),
+            # Lo que de verdad se sabe de las condiciones. Ver la cabecera:
+            # ausencia de licencia declarada NO es dominio público.
+            "licencia_declarada": None,
+            "url_condiciones": CONDICIONES,
+            "fuente": REPO,
+            "mallas": [],
+            "texturas": [],
+        })
+        destino = "mallas" if ext in MALLAS else "texturas"
+        e[destino].append({
+            "ruta": ruta,
+            "url_fichero": CRUDO + _escapa(ruta),
+            "formato": ext.lstrip("."),
+            "bytes": nodo.get("size"),
+            "sha": nodo.get("sha"),
+        })
+    return [e for e in porcarpeta.values() if e["mallas"]]
 
-    # Try to load from cache first
-    if os.path.exists(CACHE_FILE):
-        try:
-            with open(CACHE_FILE, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-                # Basic validation: check if it's a dict with 'models' key
-                if isinstance(data, dict) and 'models' in data:
-                    return data
-        except (json.JSONDecodeError, IOError) as e:
-            # If cache is corrupted, we'll re-download
-            pass
 
-    # Cache miss or invalid: download from GitHub
+def filtrar(items, texto=None, formato=None):
+    fuera = []
+    for e in items:
+        if texto and texto.lower() not in e["titulo"].lower():
+            continue
+        if formato:
+            ms = [m for m in e["mallas"] if m["formato"] == formato.lower()]
+            if not ms:
+                continue
+            e = dict(e, mallas=ms)
+        fuera.append(e)
+    return sorted(fuera, key=lambda x: x["identificador"])
+
+
+def main(argv=None):
+    p = argparse.ArgumentParser(description="Cataloga NASA 3D Resources. No descarga nada.")
+    p.add_argument("--buscar", help="filtra por texto en el título")
+    p.add_argument("--formato", help="solo modelos con malla en este formato (glb, stl…)")
+    p.add_argument("--limite", type=int, default=0, help="corta la salida a N modelos")
+    p.add_argument("--sin-cache", action="store_true", help="fuerza la petición")
+    a = p.parse_args(argv)
+
     try:
-        apis = _cargar_apis()
-        result = apis.pedir(GITHUB_META_URL)
-        if result is None:
-            # Check why it failed
-            if hasattr(apis, 'ULTIMO_MOTIVO'):
-                if apis.ULTIMO_MOTIVO == 'presupuesto':
-                    raise RuntimeError('Daily budget exhausted for GitHub')
-                elif apis.ULTIMO_MOTIVO == 'no_encontrado':
-                    raise RuntimeError('meta.json not found on GitHub')
-                elif apis.ULTIMO_MOTIVO == 'cache_fallo':
-                    raise RuntimeError('GitHub cache failed')
-            else:
-                raise RuntimeError('Failed to fetch meta.json from GitHub (unknown reason)')
-        # Parse the JSON
-        data = json.loads(result)
-        # Save to cache
-        try:
-            with open(CACHE_FILE, 'w', encoding='utf-8') as f:
-                json.dump(data, f, indent=2)
-        except IOError as e:
-            # Non-fatal: warn but continue
-            print(f'Warning: Could not write cache file {CACHE_FILE}: {e}', file=sys.stderr)
-        return data
+        arbol = traer_arbol(sin_cache=a.sin_cache)
     except Exception as e:
-        raise RuntimeError(f'Failed to fetch and parse meta.json: {e}')
+        print(json.dumps({"error": f"no se pudo leer el catálogo: {e}"}, ensure_ascii=False))
+        return 1
+
+    items = filtrar(piezas(arbol), a.buscar, a.formato)
+    if a.limite:
+        items = items[:a.limite]
+    print(json.dumps({"fuente": REPO, "total": len(items), "piezas": items},
+                     ensure_ascii=False, indent=1))
+    return 0
 
 
-def _build_download_url(file_path):
-    """
-    Convert a GitHub file path to a NASA CDN download URL.
-    Based on nasa-3d-model-downloader skill.
-    """
-    base_cdn = "https://assets.science.nasa.gov/content/dam/science/cds/3d/resources"
-    
-    # Handle empty or invalid paths
-    if not file_path:
-        return f'{base_cdn}/?emrc=auto'
-    
-    # Split the path into components
-    components = file_path.split('/')
-    
-    if len(components) == 0:
-        return f'{base_cdn}/?emrc=auto'
-    
-    # Map the first component (special prefix)
-    prefix_map = {
-        '3D Models': 'model',
-        '3D Printing': 'printable', 
-        'Images and Textures': 'texture'
-    }
-    
-    first_component = components[0]
-    if first_component in prefix_map:
-        transformed_first = prefix_map[first_component]
-    else:
-        # If not a known prefix, keep it as-is but lowercase
-        transformed_first = first_component.lower()
-    
-    # If there's only one component (just a filename), handle it specially
-    if len(components) == 1:
-        # Just a filename, URL encode spaces
-        path = components[0].replace(' ', '%20')
-        return f'{base_cdn}/{path}?emrc=auto'
-    
-    # Transform directory name components (middle parts)
-    transformed_dirs = []
-    for i in range(1, len(components) - 1):
-        original = components[i]
-        transformed = _transform_directory_name(original)
-        transformed_dirs.append(transformed)
-    
-    # Transform filename (last component)
-    original_filename = components[-1]
-    transformed_filename = _transform_filename(original_filename)
-    
-    # Reassemble the path
-    if transformed_dirs:
-        # Join directory components with forward slash
-        dirs_str = '/'.join(transformed_dirs)
-        path = f'{transformed_first}/{dirs_str}/{transformed_filename}'
-    else:
-        path = f'{transformed_first}/{transformed_filename}'
-    
-    return f'{base_cdn}/{path}?emrc=auto'
-
-
-def _transform_directory_name(original):
-    """
-    Transform a directory name component for the CDN path.
-    Converts to lowercase, replaces spaces with hyphens, and triplicates 
-    the hyphen after any 2-digit number.
-    """
-    import re
-    
-    # Convert to lowercase and replace spaces with hyphens
-    result = original.lower().replace(' ', '-')
-    
-    # Find all occurrences of 2-digit numbers and triplicate the hyphen after them
-    # We do this by finding patterns like "-dd-" and replacing with "-dd---"
-    def replace_hyphen_after_digits(match):
-        # match.group() is the entire match like "-11-"
-        # We want to change it to "-11---"
-        return match.group(0) + '--'
-    
-    # Pattern: hyphen, exactly two digits, hyphen
-    # We look for this pattern and add two more hyphens
-    result = re.sub(r'-(\d{2})-', r'-\1---', result)
-    
-    return result
-
-
-def _transform_filename(original):
-    """
-    Transform a filename for the CDN path.
-    URL encodes spaces (replaces spaces with %20).
-    """
-    # URL encode spaces
-    return original.replace(' ', '%20')
-
-
-def _build_model_page_url(model_name):
-    """
-    Construct the NASA 3D Resources model page URL from the model name.
-    Uses a simple slug format: lower case, spaces to hyphens.
-    """
-    # Basic sanitization for URL slug
-    slug = model_name.lower().replace(' ', '-')
-    # Remove any characters that are not alphanumeric, hyphen, or underscore
-    import re
-    slug = re.sub(r'[^a-z0-9\-_]', '', slug)
-    return f'https://science.nasa.gov/3d-resources/{slug}/'
-
-
-def buscar_modelos(query=''):
-    """
-    Search NASA 3D Resources models by query string.
-    Returns a list of dictionaries with the following keys:
-        - titulo: model name
-        - identificador: model name (used as unique identifier)
-        - url de la ficha: URL to the model's page on NASA site
-        - licencia declarada: 'Public Domain' (as all NASA 3D Resources are public domain)
-        - url del fichero: direct download URL for the first available file (prefers GLB, then STL, then first)
-    """
-    try:
-        meta_data = _get_meta_json()
-    except RuntimeError as e:
-        # If we cannot get meta.json, we cannot search
-        print(f'Error: {e}', file=sys.stderr)
-        return []
-
-    models = meta_data.get('models', [])
-    if not isinstance(models, list):
-        return []
-
-    query_lower = query.lower()
-    results = []
-
-    for model in models:
-        if not isinstance(model, dict):
-            continue
-        name = model.get('name', '')
-        description = model.get('description', '').lower()
-        # Match if query is empty or appears in name or description
-        if query and query_lower not in name.lower() and query_lower not in description:
-            continue
-
-        files = model.get('files', [])
-        if not isinstance(files, list) or not files:
-            # Skip models with no files
-            continue
-
-        # Determine the best file to show: prefer GLB, then STL, then first
-        selected_file = None
-        for f in files:
-            if isinstance(f, dict) and 'path' in f:
-                path = f['path'].lower()
-                if path.endswith('.glb'):
-                    selected_file = f
-                    break
-                if path.endswith('.stl') and selected_file is None:
-                    selected_file = f
-        if selected_file is None:
-            selected_file = files[0]  # fallback to first file
-
-        # Build the result dictionary
-        result = {
-            'titulo': name,
-            'identificador': name,  # using name as identifier; could be improved with a slug
-            'url de la ficha': _build_model_page_url(name),
-            'licencia declarada': 'Public Domain',
-            'url del fichero': _build_download_url(selected_file['path'])
-        }
-        results.append(result)
-
-    return results
-
-
-def main():
-    parser = argparse.ArgumentParser(description='Search NASA 3D Resources models.')
-    parser.add_argument('query', nargs='?', default='', help='Search query (model name or description)')
-    parser.add_argument('--desde-fichero', help='Load meta.json from a file instead of fetching from GitHub (for testing)')
-    args = parser.parse_args()
-
-    if args.desde_fichero:
-        # For testing: load meta.json from a local file
-        try:
-            with open(args.desde_fichero, 'r', encoding='utf-8') as f:
-                meta_data = json.load(f)
-            # Temporarily override _get_meta_json to return this data
-            global _get_meta_json
-            _get_meta_json = lambda: meta_data
-        except (IOError, json.JSONDecodeError) as e:
-            print(f'Error loading meta.json from {args.desde_fichero}: {e}', file=sys.stderr)
-            sys.exit(1)
-
-    try:
-        resultados = buscar_modelos(args.query)
-        json.dump(resultados, sys.stdout, indent=2, ensure_ascii=False)
-        print()  # newline for clean output
-    except RuntimeError as e:
-        print(f'Error: {e}', file=sys.stderr)
-        sys.exit(1)
-
-
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    sys.exit(main())

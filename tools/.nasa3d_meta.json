@@ -1,0 +1,41 @@
+{
+  "models": [
+    {
+      "name": "Perseverance Rover",
+      "description": "NASA's Mars 2020 Perseverance Rover",
+      "category": "3D Models",
+      "files": [
+        {
+          "path": "3D Models/Mars 2020 Perseverance Rover/Mars 2020 Perseverance Rover.glb",
+          "size": 1234567
+        },
+        {
+          "path": "3D Models/Mars 2020 Perseverance Rover/Mars 2020 Perseverance Rover.stl",
+          "size": 890123
+        }
+      ]
+    },
+    {
+      "name": "Apollo 11 Landing Site",
+      "description": "The Apollo 11 landing site on the Moon",
+      "category": "3D Printing",
+      "files": [
+        {
+          "path": "3D Printing/Apollo 11 Landing Site/Apollo 11 Landing Site.stl",
+          "size": 456789
+        }
+      ]
+    },
+    {
+      "name": "Hubble Space Telescope",
+      "description": "NASA's Hubble Space Telescope",
+      "category": "3D Models",
+      "files": [
+        {
+          "path": "Images and Textures/Hubble/Hubble.texture",
+          "size": 12345
+        }
+      ]
+    }
+  ]
+}

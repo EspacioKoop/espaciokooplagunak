@@ -278,6 +278,4 @@ export function cartografiaDataUri(opciones = {}) {
   return `data:image/svg+xml,${encodeURIComponent(cartografiaSvg(opciones))}`;
 }
 
-export function discoLunarDataUri(semilla, opciones = {}) {
-  return `data:image/svg+xml,${encodeURIComponent(discoLunarSvg(semilla, opciones))}`;
-}
+

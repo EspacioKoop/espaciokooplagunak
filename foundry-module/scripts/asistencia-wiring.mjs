@@ -319,7 +319,4 @@ export function registrarAsistencia(moduleId, { catalogo: propio = null } = {}) 
  * Se exporta para la interfaz que pinte «quién está ayudando», que sí necesita
  * poder refrescar la lista sin provocar un cambio de juego.
  */
-export function podarAsistencias() {
-  if (!esCoordinador()) return;
-  sesion = podar(sesion);
-}
+

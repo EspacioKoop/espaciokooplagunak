@@ -266,6 +266,23 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     un botón nuevo en `main.mjs`. La cantina solo pinta y traduce un clic en "abre esa mesa" — la
     autoridad la sigue resolviendo cada mesa por su cuenta al abrirse, nunca la ventana que lleva
     hasta ella.
+  - **Generador de NPC** — `scripts/npc-tablas.mjs` (tablas propias) y
+    `scripts/npc-generador.mjs` (motor puro), #676. Semilla más valor de desafío dan una ficha
+    completa, y la misma semilla da siempre el mismo NPC. Cuatro capas y **una sola importable**:
+    la ficha 5e sale del **SRD 5.1 (CC-BY-4.0)** con sus fórmulas de verdad —modificador,
+    competencia por VD, PG por dado de golpe—, y de Shin Megami Tensei, Persona y Pokémon se toma
+    solo la MECÁNICA (afinidades de seis grados, matriz de efectividad, etapas): ni un nombre.
+    De Argon HUD solo la FORMA del dato (acción/adicional/reacción/movimiento), y ahí no es
+    preferencia: `enhancedcombathud` es GPL-3.0 y este árbol GPL-2.0, que son **incompatibles** —no
+    se puede copiar ni adaptar código suyo—. Las mecánicas no se registran; los nombres y el arte
+    sí, y eso va **codificado**: una prueba recorre cada cadena que el generador puede emitir
+    —tablas y trescientas fichas generadas— y falla si aparece un término de esas obras. No es
+    teórico: pilló que la tabla de sílabas componía *Maranmir* y *Marasai* por llevar «Mar».
+    La matriz de efectividad se **deriva** de lo que cada elemento declara en vez de escribir
+    veintiocho casillas, y un elemento desconocido **falla** en vez de valer ×1, que convertiría una
+    errata en un NPC inmune a nada sin que saltara ninguna alarma. Es cimiento declarado: nadie lo
+    importa todavía porque *recordar* a quién has conocido es del núcleo y no de la escena, el mismo
+    reparto que #598 dejó abierto para el bestiario. Ver [docs/NPC_GENERADOR.md](docs/NPC_GENERADOR.md).
   - **Sección de la nave** — `scripts/seccion-nave.mjs` (planta declarativa y consultas, puro),
     `scripts/seccion-lienzo.mjs` (pintado 2D, sin color propio) y `scripts/seccion-nave-app.mjs`
     (ventana V1/V2), #427. El corte transversal con todas las salas a la vez: es el MAPA, y la

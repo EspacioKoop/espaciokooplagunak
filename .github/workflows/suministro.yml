@@ -1,0 +1,48 @@
+# Cadena de suministro: que nadie meta código de terceros sin querer.
+#
+# SIN `paths:` A PROPÓSITO. Un check con filtro de rutas nunca reporta éxito en
+# los PRs que no tocan esas rutas, así que exigirlo como obligatorio bloquea el
+# repositorio entero (#361). Estos dos jobs son baratos y corren siempre.
+name: Suministro
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  acciones-fijadas:
+    name: Acciones fijadas por SHA
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v5.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v6.0.0
+        with:
+          python-version: '3.12'
+      # Comprobador PROPIO, no una acción del mercado: la puerta que impide
+      # traer código de terceros no se implementa trayendo código de terceros.
+      - run: python3 tools/check_actions_pinned.py
+
+  revision-dependencias:
+    name: Revision de dependencias
+    # Solo en PR: la acción compara la base con la cabeza, y en un push a main
+    # no hay dos lados que comparar.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v5.0.1
+      - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294  # v5.0.0
+        with:
+          # Vulnerabilidades: falla de moderada para arriba.
+          fail-on-severity: moderate
+          # Y licencias, que aquí no es un detalle: docs/ASSETS_LIBRES.md deja
+          # CC BY-SA y CC BY-NC fuera, y el repositorio es GPL-2.0. Una
+          # dependencia con licencia incompatible es el mismo problema que un
+          # asset con licencia incompatible, y hasta hoy solo se miraba el
+          # segundo.
+          deny-licenses: AGPL-3.0, AGPL-3.0-only, AGPL-3.0-or-later, SSPL-1.0, BUSL-1.1
+          comment-summary-in-pr: on-failure

@@ -20,6 +20,7 @@ import {
   VIENTO,
   VOCABULARIO_PLAYA,
   componerPlaya,
+  ESTATUA,
 } from "../scripts/playa-escena.mjs";
 import { colisiona } from "../scripts/nave-movimiento.mjs";
 import { interaccionAlAlcance } from "../scripts/nave-interaccion.mjs";
@@ -269,8 +270,9 @@ test("el reloj no se sale de su propia esfera", () => {
 /* ---- la cabina como salida (#582) ----------------------------------------- */
 
 test("la cabina es el punto de interacción, y su ancla la declara el prop", () => {
-  assert.equal(INTERACCIONES.length, 1);
-  const [cabina] = INTERACCIONES;
+  assert.equal(INTERACCIONES.length, 2);
+  const [cabina] = INTERACCIONES.filter((i) => i.id === "cabina-telefono");
+  assert.ok(cabina, "la cabina debería estar en las interacciones");
   assert.equal(cabina.id, "cabina-telefono");
   assert.deepEqual(cabina.accion, { tipo: "estancia", estancia: "cantina" });
   assert.ok(Number.isFinite(cabina.orientacion), "el prop declara hacia dónde se mira, no se deduce a ojo");
@@ -296,10 +298,34 @@ test("la playa es una estancia del catálogo, con cielo por fondo y sin puertas"
   assert.ok(playa, "no se podría abrir desde la herramienta de GM");
   assert.deepEqual(playa.puertas, [], "no cuelga de ningún mamparo de la nave");
   assert.equal(playa.fondo, PLAYA.cielo);
-  assert.equal(playa.interacciones.length, 1);
+  assert.equal(playa.interacciones.length, 2);
 });
 
 test("la escena cabe en su planta declarada", () => {
   assert.equal(PLANTA_PLAYA.ancho, ANCHO);
   assert.equal(PLANTA_PLAYA.profundidad, PROFUNDIDAD);
+});
+
+/* ---- el león de Al-Lāt ---------------------------------------------------- */
+
+test("el león tiene un punto de interacción", () => {
+  const leon = INTERACCIONES.find((i) => i.id === "leon-al-lat");
+  assert.ok(leon, "el león debería tener un punto de interacción");
+  assert.equal(leon.id, "leon-al-lat");
+  assert.ok(Number.isFinite(leon.punto[0]) && Number.isFinite(leon.punto[1]), "el punto debe tener coordenadas válidas");
+});
+
+test("el punto de interacción del león no colisiona con la estatua", () => {
+  const leon = INTERACCIONES.find((i) => i.id === "leon-al-lat");
+  assert.ok(leon, "el león debería tener un punto de interacción");
+  const [x, z] = leon.punto;
+  assert.equal(colisiona(x, z, RADIO, PLANTA_PLAYA), false, "el punto de interacción del león está dentro de la estatua");
+});
+
+test("el punto de interacción del león está cerca de la estatua", () => {
+  const leon = INTERACCIONES.find((i) => i.id === "leon-al-lat");
+  assert.ok(leon, "el león debería tener un punto de interacción");
+  const [x, z] = leon.punto;
+  const distancia = Math.hypot(x - ESTATUA.x, z - ESTATUA.z);
+  assert.ok(distancia < 3, `el punto de interacción está a ${distancia.toFixed(2)} m de la estatua, debería estar más cerca`);
 });

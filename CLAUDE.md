@@ -645,8 +645,11 @@ cuando no encuentra, no `std::string::npos`. La propia cabecera se apoya en ello
 
 Consecuencias al tocar C++ de este repositorio:
 
-- La comparación correcta es `find(...) > -1` (o `!= -1`), **nunca** `!= std::string::npos`:
-  comparar un `int` negativo con `npos` es siempre cierto y el resultado es un bug silencioso.
+- El idioma del repositorio es `find(...) > -1` (o `!= -1`). Escribir `!= std::string::npos`
+  **no** es un bug: el `-1` convertido a `size_t` es exactamente `npos`, así que da el mismo
+  resultado. Es peor por otro motivo — sugiere una semántica de `std::string` que esta clase
+  no tiene, y ya ha provocado dos PRs de "arreglo" que eran no-ops (#605 y #607). Por eso se
+  escribe `> -1` siempre: no por corrección, por legibilidad.
 - No es un descuido de upstream que haya que "arreglar": cambiarlo rompería todos los usos
   existentes. Si molesta la constante mágica, es una propuesta para upstream
   (ver [ADR-0007](docs/adr/0007-frontera-upstream.md)), no un cambio local.

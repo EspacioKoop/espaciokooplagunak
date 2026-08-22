@@ -215,3 +215,38 @@ test("tonoLuminaria acepta el aviso entero, no solo la cadena", () => {
   // Es lo que devuelve normalizarAviso y lo que circula por alerta-escena.
   assert.equal(tonoLuminaria({ nivel: "roja", motivos: ["casco"] }), ALERTA.niveles.roja.borde);
 });
+
+// NEW TESTS FOR BLINKING LUMINARIA
+
+test("luminaria parpadea cuando hay daño", () => {
+  // Salud dañada (por ejemplo, 0.5)
+  const health = 0.5;
+  // En tiempo 0, debe estar encendida
+  let pieza = piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA, health, timeMs: 0 })[2]; // la pieza emisiva es la tercera
+  assert.equal(pieza.color, LUZ_CALIDA);
+  assert.equal(pieza.emisivo, true);
+
+  // En tiempo 500 ms, debe estar apagada (negro)
+  pieza = piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA, health, timeMs: 500 })[2];
+  assert.equal(pieza.color, 0x000000);
+  assert.equal(pieza.emisivo, true); // sigue siendo emisivo, pero el color es negro
+
+  // En tiempo 1000 ms, debe estar encendida nuevamente
+  pieza = piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA, health, timeMs: 1000 })[2];
+  assert.equal(pieza.color, LUZ_CALIDA);
+  assert.equal(pieza.emisivo, true);
+});
+
+test("luminaria no parpadea cuando health es null", () => {
+  const health = null;
+  // En cualquier tiempo, debe estar encendida
+  const pieza1 = piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA, health, timeMs: 0 })[2];
+  const pieza2 = piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA, health, timeMs: 500 })[2];
+  const pieza3 = piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA, health, timeMs: 1000 })[2];
+  assert.equal(pieza1.color, LUZ_CALIDA);
+  assert.equal(pieza2.color, LUZ_CALIDA);
+  assert.equal(pieza3.color, LUZ_CALIDA);
+  assert.equal(pieza1.emisivo, true);
+  assert.equal(pieza2.emisivo, true);
+  assert.equal(pieza3.emisivo, true);
+});

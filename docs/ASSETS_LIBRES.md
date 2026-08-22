@@ -32,11 +32,12 @@ terceros. El motor consume más de lo que este issue suponía.
 | Categoría | ¿Entra? | Por dónde |
 |---|---|---|
 | **Malla 3D** | **Sí** | `tools/convertir-estatua.mjs` (#590): STL → decimado por colapso de aristas → `{vertices, caras}`. UV por `uvsTriplanar` |
-| **Textura tileable** | **Sí**, pero rara vez hace falta | `retro3d-lienzo.mjs` consume `{ancho, alto, indices, paleta}`. Ojo: los materiales de #596 se **generan** del color de la pieza, así que una textura ajena compite con algo que ya funciona y no tiene que mantenerse |
+| **Textura tileable** | **Sí, y desde #600 con consumidor de primera** | `piel-textura.mjs` tilea la piel del muro; `retro3d-lienzo.mjs` consume `{ancho, alto, indices, paleta}`. La tesela mide `ANCHO_TESELA` 3,2 m a `METROS_POR_TEXEL` 0,025, o sea **128 téxeles de ancho**, y el alto lo clava la altura de sala. Lo que hace falta son **patrones tileables de poca resolución y pocos colores**, no packs 4K |
 | **Audio (ambiente y efectos)** | **Sí, desde #571** | `audio-ficheros.mjs`. La música sigue siendo procedural (#318) y no cambia |
 | **Pixelart 2D** | **Sí** | `png-indexado.mjs` codifica y descodifica PNG indexado |
 | **Texturas PBR** (albedo + normal + rugosidad) | **No** | El motor no tiene modelo de iluminación que las use. Se aprovecharía el albedo y se tiraría el resto: es traer 40 MB para usar 2 |
-| **Malla con esqueleto / animación** | **No** | No hay sistema de animación de malla. Los avatares son geometría compuesta por código |
+| **Malla con esqueleto** | **Parcial, desde #603 fase 1** | `rig-esqueleto.mjs` tiene formato de rig, pesos y `deformarMalla`. **No** hay asignación automática de pesos (fase 2) ni retargeting (fase 3), así que un rig ajeno no se puede consumir todavía: entra la malla, el rig se hace a mano |
+| **Clips de animación interpolados** | **No** | Fuera de alcance de #603 por decisión, no por falta de tiempo |
 | **Fuentes tipográficas** | **No hace falta** | El texto lo pone Foundry |
 
 **Regla de oro:** una categoría sin consumidor no se lista aunque el material sea

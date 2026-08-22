@@ -34,7 +34,7 @@ PR: cada área se verifica sola, y por eso se pueden entregar por separado.
 | Módulo: puente y telemetría | `foundry-module/scripts/bridge-*.mjs`, `foundry-module/scripts/telemetria-*.mjs`, `foundry-module/scripts/contactos-*.mjs`, `foundry-module/scripts/sensores-*.mjs`, `foundry-module/scripts/resolver-*.mjs`, `foundry-module/scripts/casco-*.mjs`, `foundry-module/scripts/ship-view.mjs`, `foundry-module/scripts/barras-estado.mjs`, `foundry-module/scripts/base-datos-cientifica.mjs`, `foundry-module/scripts/lamina-contacto.mjs`, `foundry-module/scripts/*-control.mjs`, `foundry-module/scripts/consola-caliente-*.mjs`, `foundry-module/scripts/panel-gm*.mjs` | `node --test foundry-module/tests/*.test.mjs` |
 | Módulo: puestos y autoridad | `foundry-module/scripts/station-*.mjs`, `foundry-module/scripts/requisitos-puesto.mjs`, `foundry-module/scripts/proyeccion-puesto.mjs`, `foundry-module/scripts/asistencia*.mjs`, `foundry-module/scripts/asistencia/**` | `node --test foundry-module/tests/*.test.mjs` |
 | Módulo: eventos y ambiente | `foundry-module/scripts/alarma-*.mjs`, `foundry-module/scripts/alerta*.mjs`, `foundry-module/scripts/nivel-alerta.mjs`, `foundry-module/scripts/alertas-nave.mjs`, `foundry-module/scripts/bitacora-nave.mjs`, `foundry-module/scripts/event-journal.mjs`, `foundry-module/scripts/musica-*.mjs`, `foundry-module/scripts/audio-*.mjs` | `node --test foundry-module/tests/*.test.mjs` |
-| Módulo: escenas y 3D | `foundry-module/scripts/nave-*.mjs`, `foundry-module/scripts/retro3d*.mjs`, `foundry-module/scripts/escena-*.mjs`, `foundry-module/scripts/props-*.mjs`, `foundry-module/scripts/piel-textura.mjs`, `foundry-module/scripts/playa-escena.mjs`, `foundry-module/scripts/museo-escena.mjs`, `foundry-module/scripts/cantina*.mjs`, `foundry-module/scripts/terraza-cantina.mjs`, `foundry-module/scripts/seccion-*.mjs`, `foundry-module/scripts/horizonte-*.mjs`, `foundry-module/scripts/visor-piloto*.mjs`, `foundry-module/scripts/mapa-*.mjs`, `foundry-module/scripts/decorado-fondo.mjs`, `foundry-module/scripts/ventana-nave.mjs`, `foundry-module/scripts/andar-nave-app.mjs`, `foundry-module/scripts/rig-esqueleto.mjs` | `node --test foundry-module/tests/*.test.mjs` |
+| Módulo: escenas y 3D | `foundry-module/scripts/nave-*.mjs`, `foundry-module/scripts/retro3d*.mjs`, `foundry-module/scripts/escena-*.mjs`, `foundry-module/scripts/props-*.mjs`, `foundry-module/scripts/piel-textura.mjs`, `foundry-module/scripts/playa-escena.mjs`, `foundry-module/scripts/museo-escena.mjs`, `foundry-module/scripts/cantina*.mjs`, `foundry-module/scripts/terraza-cantina.mjs`, `foundry-module/scripts/seccion-*.mjs`, `foundry-module/scripts/horizonte-*.mjs`, `foundry-module/scripts/visor-piloto*.mjs`, `foundry-module/scripts/mapa-*.mjs`, `foundry-module/scripts/decorado-fondo.mjs`, `foundry-module/scripts/ventana-nave.mjs`, `foundry-module/scripts/andar-nave-app.mjs`, `foundry-module/scripts/rig-esqueleto.mjs`, `foundry-module/scripts/convocatoria-estancia.mjs` | `node --test foundry-module/tests/*.test.mjs` |
 | Módulo: arte y avatares | `foundry-module/scripts/paleta.mjs`, `foundry-module/scripts/avatar-*.mjs`, `foundry-module/scripts/retrato-tripulante.mjs`, `foundry-module/scripts/ficha-nave*.mjs`, `foundry-module/scripts/iconos-sistema.mjs`, `foundry-module/scripts/laminas-clasicas.mjs`, `foundry-module/scripts/png-indexado.mjs` | `node --test foundry-module/tests/*.test.mjs` |
 | Módulo: minijuegos | `foundry-module/scripts/minijuegos/**`, `foundry-module/scripts/minijuegos-wiring.mjs` | `node --test foundry-module/tests/*.test.mjs` |
 | Módulo: catálogos con procedencia | `foundry-module/scripts/catalogo-*.mjs`, `foundry-module/scripts/procedencia-*.mjs`, `foundry-module/scripts/museo-piezas.mjs`, `foundry-module/scripts/atlas-hyg.mjs`, `foundry-module/data/**` | `node --test foundry-module/tests/*.test.mjs` |
@@ -196,3 +196,77 @@ tenga que esperar a que ese mergee.
 Al terminar, la entrega es la de [`AGENTS.md`](../AGENTS.md), con una adición que hace posible el
 relevo: **di explícitamente qué NO has hecho y por qué**. Un alcance recortado en silencio es lo que
 obliga al siguiente a releer todo el diff para averiguar dónde se quedó el anterior.
+
+---
+
+## Cómo fallan los agentes en este repositorio
+
+Los cuatro patrones de abajo se midieron aquí, no salen de un manual. Todos tienen la misma forma:
+**el agente cree haber cumplido, y lo que dice es literalmente falso**. Ninguno se detecta leyendo
+el resumen del propio agente, que es precisamente por qué están escritos.
+
+### 1. Cerrar en verde con la rama rota
+
+Un agente cambió una llamada para pasarle dos parámetros nuevos y nunca los declaró en la firma de
+la función. `ReferenceError` en tres tests. Cerró la tarea afirmando que sus comprobaciones pasaban.
+
+**La regla:** el criterio de entrega de una tarea es un comando que devuelve 0, ejecutado antes de
+cerrar, con la salida pegada. Un criterio que nadie ejecuta se cumple por confianza, y la confianza
+no compila. Para este repositorio:
+
+```bash
+node --test foundry-module/tests/*.test.mjs
+```
+
+Ojo con la ruta: `node --test foundry-module/tests/` **sin el glob** falla siempre, y es fácil creer
+que el fallo es tuyo.
+
+### 2. Entregar en el árbol equivocado
+
+Otro agente escribió su documento en el checkout principal —que estaba en la rama de un PR ajeno
+abierto— en vez de en su worktree. Resultado: cero commits propios, el entregable a un paso de
+colarse en el PR de otra persona, y la tarea cerrada como hecha.
+
+**La regla:** un fichero sin confirmar en tu rama no es un entregable. Antes de cerrar:
+
+```bash
+git log origin/main..HEAD --name-only    # ¿está tu entregable aquí?
+git status --porcelain                   # ¿te dejas algo sin confirmar?
+```
+
+Y el checkout principal no es de nadie que trabaje en paralelo: cada unidad de trabajo vive en su
+propia rama.
+
+### 3. Cumplir la letra del criterio y perder la intención
+
+Un documento tenía que publicar el comando que producía cada una de sus cifras. Las cifras eran
+correctas; el comando publicado **no las producía** —un `awk` con el volcado dentro de un bloque
+`END`, que solo emitía el último registro—. El criterio automático solo comprobaba que la cadena
+`git log` apareciera en el texto, y apareció.
+
+**La regla:** una comprobación que busca una *cadena* es débil; una que **ejecuta lo que el
+documento afirma** es fuerte. Si publicas un comando, ejecútalo pegado tal cual sale del documento,
+no de memoria. Un número cuyo comando no se ha ejecutado no está verificado, aunque el número sea
+cierto.
+
+### 4. Contar solo el primer nivel y llamarlo total
+
+`grep` sobre `foundry-module/scripts/*.mjs` ve 132 ficheros; el árbol tiene 169, porque hay
+subdirectorios. Contar el primer nivel y presentarlo como total es el error de conteo más repetido
+aquí, y lo cometen tanto los agentes como quien los revisa.
+
+Relacionado: para enumerar llamantes de una función, `grep` cuenta comentarios, cadenas y el propio
+`export`. Una búsqueda estructural distingue una llamada real de una mención:
+
+```bash
+ast-grep run --pattern 'miFuncion($$$ARGS)' --lang js foundry-module/scripts
+```
+
+En un caso real dio 5 llamadas frente a los 28 aciertos de `grep`.
+
+### El patrón común
+
+Los cuatro comparten raíz: **la verificación la hacía quien había hecho el trabajo, leyendo su propia
+conclusión**. Una revisión que empieza por el resumen del autor devuelve el resumen del autor. Quien
+revise debe recibir el contrato (qué había que cumplir) y el artefacto (el diff), y leer las
+conclusiones del autor al final, si acaso.

@@ -696,7 +696,7 @@ export function crearSalaCaja({
           ...piezasPielTecho({ ancho, profundidad, altura: ALTURA }),
         ]
       : []),
-    ...piezasLuminarias({ ancho, profundidad, altura: ALTURA }),
+    ...piezasLuminarias({ ancho, profundidad, altura: ALTURA, health, timeMs }),
   ]);
 
   const planta = crearPlanta({ ancho, profundidad, obstaculos: [...columnas, ...obstaculosMobiliario] });

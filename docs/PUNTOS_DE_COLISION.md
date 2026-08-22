@@ -63,7 +63,7 @@ En él se registran herramientas GM, pestañas de estación, paneles de nave, mi
 ```bash
 git for-each-ref --format='%(refname:short)' refs/heads/ refs/remotes/origin/ \
   | grep -v '^main$' | grep -v '^origin/main$' | grep -v '^origin/HEAD$' | grep -v '^wt/' \
-  | while read b; do git log main.."$b" --since=2026-07-01 --pretty=format: --name-only 2>/dev/null | grep -q '^foundry-module/scripts/main.mjs$' && echo "$b"; done
+  | while read b; do git log main.."$b" --since=2026-07-01 --pretty=format: --name-only 2>/dev/null | grep -q '^foundry-module/scripts/main.mjs$' && echo "$b" || true; done
 # → 24 ramas distintas (dato de la tabla de ramas exclusivas)
 ```
 
@@ -156,7 +156,7 @@ git for-each-ref --format='%(refname:short)' refs/heads/ refs/remotes/origin/ \
       git log main.."$b" --since=2026-07-01 --pretty=format: --name-only 2>/dev/null \
       | grep -q '^foundry-module/scripts/station-workspaces.mjs$' && \
       git log main.."$b" --since=2026-07-01 --pretty=format: --name-only 2>/dev/null \
-      | grep -q '^foundry-module/scripts/station-workspace-ui.mjs$' && echo "$b"
+      | grep -q '^foundry-module/scripts/station-workspace-ui.mjs$' && echo "$b" || true
     done
 # → 6 ramas (feat/331-telemetria-abierta, feat/362-casco-consola, prueba/conjunta-20260728, prueba/conjunta-20260731, test/227-ruido-aria-live-estado-nave, test/227-ruido-aria-live-estado-nave-v1)
 ```

@@ -1,0 +1,69 @@
+{
+  "preference": null,
+  "pagination": {
+    "total": 62046,
+    "limit": 5,
+    "offset": 0,
+    "total_pages": 12410,
+    "current_page": 1
+  },
+  "data": [
+    {
+      "_score": 95.824265,
+      "id": 454,
+      "title": "Statuette of a Seated Girl",
+      "date_display": "330-320 BCE",
+      "is_public_domain": true,
+      "artist_title": "Ancient Greek",
+      "image_id": "38ea638d-c8f7-f916-da08-ac7730b6ed5a"
+    },
+    {
+      "_score": 81.858086,
+      "id": 158,
+      "title": "Pelike (Storage Jar)",
+      "date_display": "about 510-500 BCE",
+      "is_public_domain": true,
+      "artist_title": "Ancient Greek",
+      "image_id": "48d485ec-6102-b7ec-062c-8b351055ca5f"
+    },
+    {
+      "_score": 81.47674,
+      "id": 614,
+      "title": "Amphoriskos (Container for Oil)",
+      "date_display": "600-575 BCE",
+      "is_public_domain": true,
+      "artist_title": "Ancient Greek",
+      "image_id": "36a3f0f7-9bda-2c93-fee8-7c264d5ce01f"
+    },
+    {
+      "_score": 81.23574,
+      "id": 616,
+      "title": "Pyxis (Container for Personal Objects)",
+      "date_display": "430-420 BCE",
+      "is_public_domain": true,
+      "artist_title": "Ancient Greek",
+      "image_id": "aeb6ae53-78e6-b76d-1993-dd108da55710"
+    },
+    {
+      "_score": 80.97019,
+      "id": 164,
+      "title": "Column-Krater (Mixing Bowl)",
+      "date_display": "about 460 BCE",
+      "is_public_domain": true,
+      "artist_title": "Ancient Greek",
+      "image_id": "f7c96efa-2b60-565e-3b03-a3acf7f79ea9"
+    }
+  ],
+  "info": {
+    "license_text": "The `description` field in this response is licensed under a Creative Commons Attribution 4.0 Generic License (CC-By) and the Terms and Conditions of artic.edu. All other data in this response is licensed under a Creative Commons Zero (CC0) 1.0 designation and the Terms and Conditions of artic.edu.",
+    "license_links": [
+      "https://creativecommons.org/publicdomain/zero/1.0/",
+      "https://www.artic.edu/terms"
+    ],
+    "version": "1.14"
+  },
+  "config": {
+    "iiif_url": "https://www.artic.edu/iiif/2",
+    "website_url": "http://www.artic.edu"
+  }
+}

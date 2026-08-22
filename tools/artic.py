@@ -12,7 +12,7 @@ NOTA: El endpoint verificado que funciona es:
     --data-urlencode 'fields=id,title,image_id,artist_title,date_display' \
     --data-urlencode 'limit=10'
 
-La skill /home/eloy/.hermes/skills/research/artic-api/SKILL.md declara endpoints
+La skill `artic-api` del enjambre declara endpoints
 diferentes (p.ej. POST a /artworks/search con JSON body), pero el endpoint GET
 con query parameters como arriba es el que devuelve 200 y datos correctos.
 """
@@ -20,37 +20,29 @@ con query parameters como arriba es el que devuelve 200 y datos correctos.
 import argparse
 import json
 import os
+import tempfile
+import urllib.request
 import sys
 import urllib.parse
 
-# El cliente de APIs (cache, tope diario por host, User-Agent identificado) vive
-# todavia FUERA del arbol. La ruta se lee del entorno y NUNCA se incrusta: este
-# repositorio es publico, y una ruta /home/alguien publica el nombre de una
-# persona ademas de romperse para quien clone. Cuando `tools/apis/` exista, esto
-# se sustituye por un import normal.
-RUTA_APIS = os.path.expanduser(os.environ.get('LAGUNAK_APIS', '~/.hermes/bin/lagunak_apis.py'))
+# Sin dependencias fuera del árbol: urllib de la biblioteca estándar basta.
+# La versión anterior cargaba un cliente por ruta, con un valor por defecto que
+# apuntaba al directorio personal de alguien, y este repositorio es público.
 
-
-def _cargar_apis():
-    import importlib.util as i
-    spec = i.spec_from_file_location('apis', RUTA_APIS)
-    if spec is None or not os.path.exists(RUTA_APIS):
-        raise RuntimeError(
-            f'No se encuentra el cliente de APIs en {RUTA_APIS}. '
-            'Indica su ruta en la variable de entorno LAGUNAK_APIS.'
-        )
-    modulo = i.module_from_spec(spec)
-    spec.loader.exec_module(modulo)
-    return modulo
-
-
-CACHE_FILE = os.path.join(os.path.dirname(__file__), '.artic_search.json')
+CACHE_FILE = os.path.join(
+    os.environ.get('LAGUNAK_CACHE') or tempfile.gettempdir(),
+    'lagunak-artic-cache.json')
 USER_AGENT = 'EspaciokoopLagunak/1.0 (https://github.com/VaroTv7/espaciokooplagunak)'
 
 # El endpoint search del AIC con filtro is_public_domain=true y fields
 # NOTA: la skill declara POST con JSON body, pero GET con query params funciona
 # y es mas simple. El header AIC-User-Agent es cortesía recomendada en su doc.
 SEARCH_URL = 'https://api.artic.edu/api/v1/artworks/search'
+# Las condiciones que declara el museo. No se inventa una licencia: se enlaza
+# lo que el AIC publica, y `dominio_publico` es lo que ÉL afirma, no lo que
+# nosotros deduzcamos.
+CONDICIONES = 'https://www.artic.edu/terms'
+
 DEFAULT_FIELDS = 'id,title,image_id,artist_title,date_display,is_public_domain'
 DEFAULT_LIMIT = 10
 
@@ -86,24 +78,15 @@ def pedir_a_artic(texto, fields=None, limit=None):
     """UNA sola petición al AIC. Devuelve el JSON crudo de la API."""
     url = _construir_url(texto, fields, limit)
 
-    # Use lagunak_apis.pedir which handles caching, rate limiting, etc.
+    peticion = urllib.request.Request(url, headers={
+        'Accept': 'application/json',
+        'User-Agent': USER_AGENT,
+    })
     try:
-        apis = _cargar_apis()
-        result = apis.pedir(url, cabeceras={'AIC-User-Agent': USER_AGENT})
-        if result is None:
-            # Por qué falló
-            if hasattr(apis, 'ULTIMO_MOTIVO'):
-                if apis.ULTIMO_MOTIVO == 'presupuesto':
-                    raise RuntimeError('Presupuesto diario agotado para Art Institute of Chicago')
-                elif apis.ULTIMO_MOTIVO == 'no_encontrado':
-                    raise RuntimeError('No se obtuvo respuesta de Art Institute of Chicago')
-                elif apis.ULTIMO_MOTIVO == 'cache_fallo':
-                    raise RuntimeError('Falló la caché de Art Institute of Chicago')
-            else:
-                raise RuntimeError('Failed to fetch from Art Institute of Chicago (reason unknown)')
-        return result
+        with urllib.request.urlopen(peticion, timeout=30) as r:
+            return json.loads(r.read().decode('utf-8'))
     except Exception as e:
-        raise RuntimeError(f'Failed to fetch from Art Institute of Chicago: {e}')
+        raise RuntimeError(f'No se pudo leer el Art Institute of Chicago: {e}')
 
 
 def obras_desde_json(data):
@@ -126,6 +109,12 @@ def obras_desde_json(data):
             'iiif_base': f'https://www.artic.edu/iiif/2/{item.get("image_id")}' if item.get('image_id') else None,
             'source': 'artic',
             'source_url': f'https://api.artic.edu/api/v1/artworks/{item.get("id")}',
+            # La afirmación de procedencia VIAJA con la obra. El filtro del
+            # servidor no basta: quien consuma esto tiene que poder ver, en el
+            # propio dato, que el museo declara la obra en dominio público. Un
+            # filtro que no deja rastro obliga a fiarse, y aquí no nos fiamos.
+            'dominio_publico': bool(item.get('is_public_domain')),
+            'url_condiciones': CONDICIONES,
         }
         obras.append(obra)
     return obras

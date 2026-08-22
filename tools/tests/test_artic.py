@@ -6,7 +6,9 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
+import unittest
 from pathlib import Path
 import subprocess
 
@@ -134,3 +136,32 @@ if __name__ == "__main__":
     # When run directly, run the tests
     import pytest
     sys.exit(pytest.main([__file__]))
+
+class FixtureRealDeDisco(unittest.TestCase):
+    """La captura real, tal cual la devolvió el AIC, sin recortar a mano.
+
+    El JSON incrustado más arriba lleva a propósito una obra con
+    is_public_domain False, para demostrar que el filtro la descarta. Esta otra
+    fixture es una respuesta literal de la API, y sirve para lo contrario: que
+    lo que el módulo promete se cumple sobre datos que nadie ha tocado.
+    """
+
+    def setUp(self):
+        import json as _json
+        ruta = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            'fixtures_artic.json')
+        with open(ruta, encoding='utf-8') as f:
+            self.datos = _json.load(f)
+
+    def test_la_captura_trae_obras(self):
+        self.assertTrue(self.datos['data'])
+
+    def test_toda_obra_devuelta_declara_dominio_publico_y_tiene_imagen(self):
+        for obra in artic.obras_desde_json(self.datos):
+            self.assertTrue(obra['dominio_publico'])
+            self.assertTrue(obra['image_id'])
+
+    def test_la_procedencia_viaja_con_cada_obra(self):
+        for obra in artic.obras_desde_json(self.datos):
+            self.assertIn('url_condiciones', obra)
+            self.assertIn('source_url', obra)

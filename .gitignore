@@ -78,3 +78,12 @@ sonar-project.properties
 
 # Residuo de las herramientas de auditoria, no es del repositorio
 .datos-auditoria/
+
+# Cache de los clientes de API. Se colo en el PR #658 por un `git add -A`:
+# `artic.py` escribia sus ficheros junto al propio modulo, dentro del arbol.
+# La ruta ya esta corregida —van al directorio temporal— pero la red queda
+# puesta, porque este fallo no lo detecta ningun test.
+tools/.artic_search*.json
+tools/.nasa3d_meta.json
+lagunak-artic-*.json
+lagunak-apis.sqlite

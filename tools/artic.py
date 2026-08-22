@@ -55,10 +55,18 @@ def _cache_key(texto, fields=None, limit=None):
 
 
 def _cache_path(texto, fields=None, limit=None):
-    """Ruta del archivo de caché para esta consulta específica."""
-    base_dir = os.path.dirname(__file__)
+    """Ruta del fichero de caché de esta consulta.
+
+    NO va junto al módulo. La versión anterior usaba `os.path.dirname(__file__)`
+    y dejaba `.artic_search_*.json` sueltos dentro de `tools/`, que es el árbol
+    del repositorio: aparecían como ficheros sin seguir en cuanto alguien
+    ejecutaba una búsqueda, y acababan colándose en la rama de quien tocara algo
+    después. Se detectó al preparar otro PR, no por un test.
+    """
     key = _cache_key(texto, fields, limit)
-    return os.path.join(base_dir, f'.artic_search_{key}.json')
+    base_dir = os.environ.get('LAGUNAK_CACHE') or tempfile.gettempdir()
+    os.makedirs(base_dir, exist_ok=True)
+    return os.path.join(base_dir, f'lagunak-artic-{key}.json')
 
 
 def _construir_url(texto, fields=None, limit=None):

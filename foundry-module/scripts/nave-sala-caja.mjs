@@ -608,6 +608,11 @@ export function crearSalaCaja({
   pielPuertas = true,
   pielObjetos = true,
   pielSuelo = true,
+  // Salud del sistema de la sala e instante, para que la luminaria parpadee
+  // cuando el sistema está dañado (#e8a36cf5). OPCIONALES a propósito: quien no
+  // los pase ve exactamente lo que veía antes, con la luminaria entera.
+  health = null,
+  timeMs = 0,
 }) {
   const muros = [
     { x: -GROSOR_MURO, z: -GROSOR_MURO, ancho: ancho + GROSOR_MURO * 2, profundidad: GROSOR_MURO },
@@ -696,7 +701,7 @@ export function crearSalaCaja({
           ...piezasPielTecho({ ancho, profundidad, altura: ALTURA }),
         ]
       : []),
-    ...piezasLuminarias({ ancho, profundidad, altura: ALTURA }),
+    ...piezasLuminarias({ ancho, profundidad, altura: ALTURA, health, timeMs }),
   ]);
 
   const planta = crearPlanta({ ancho, profundidad, obstaculos: [...columnas, ...obstaculosMobiliario] });

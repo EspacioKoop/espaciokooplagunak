@@ -13,27 +13,19 @@ import argparse
 import json
 import os
 import sys
+import tempfile
+import urllib.request
 
-# El cliente de APIs (cache, tope diario por host, User-Agent identificado) vive
-# todavia FUERA del arbol. La ruta se lee del entorno y NUNCA se incrusta: este
-# repositorio es publico, y una ruta /home/alguien publica el nombre de una
-# persona ademas de romperse para quien clone. Cuando `tools/apis/` exista, esto
-# se sustituye por un import normal.
-RUTA_APIS = os.path.expanduser(os.environ.get('LAGUNAK_APIS', '~/.hermes/bin/lagunak_apis.py'))
+# Sin dependencias fuera del árbol: urllib de la biblioteca estándar basta.
+#
+# La versión anterior cargaba un cliente de APIs por ruta, con un valor por
+# defecto que apuntaba al directorio personal de alguien. Este repositorio es
+# público: una ruta así publica el nombre de una persona y además se rompe para
+# quien clone. Es el mismo fallo que ya se corrigió en tools/nasa3d.py.
 
-def _cargar_apis():
-    import importlib.util as i
-    spec = i.spec_from_file_location('apis', RUTA_APIS)
-    if spec is None or not os.path.exists(RUTA_APIS):
-        raise RuntimeError(
-            f'No se encuentra el cliente de APIs en {RUTA_APIS}. '
-            'Indica su ruta en la variable de entorno LAGUNAK_APIS.'
-        )
-    modulo = i.module_from_spec(spec)
-    spec.loader.exec_module(modulo)
-    return modulo
-
-CACHE_FILE = os.path.join(os.path.dirname(__file__), '.srd2014_cache.json')
+CACHE_FILE = os.path.join(
+    os.environ.get('LAGUNAK_CACHE') or tempfile.gettempdir(),
+    'lagunak-srd2014-cache.json')
 USER_AGENT = 'EspaciokoopLagunak/1.0 (https://github.com/VaroTv7/espaciokooplagunak)'
 API_BASE = 'https://www.dnd5eapi.co'
 
@@ -58,19 +50,12 @@ def pedir_a_srd(ruta):
     # Fetch from API
     url = API_BASE + ruta
     try:
-        apis = _cargar_apis()
-        result = apis.pedir(url)
-        if result is None:
-            # Por que fallo
-            if hasattr(apis, 'ULTIMO_MOTIVO'):
-                if apis.ULTIMO_MOTIVO == 'presupuesto':
-                    raise RuntimeError('Presupuesto diario agotado para dnd5eapi.co')
-                elif apis.ULTIMO_MOTIVO == 'no_encontrado':
-                    raise RuntimeError('No se obtuvo respuesta de dnd5eapi.co')
-                elif apis.ULTIMO_MOTIVO == 'cache_fallo':
-                    raise RuntimeError('Falló la caché de dnd5eapi.co')
-            else:
-                raise RuntimeError('Failed to fetch from dnd5eapi.co (reason unknown)')
+        peticion = urllib.request.Request(url, headers={
+            'Accept': 'application/json',
+            'User-Agent': USER_AGENT,
+        })
+        with urllib.request.urlopen(peticion, timeout=30) as r:
+            result = json.loads(r.read().decode('utf-8'))
         # Save to cache
         try:
             with open(CACHE_FILE, 'w', encoding='utf-8') as f:
@@ -165,3 +150,18 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+def atribucion():
+    """La atribución que CC-BY-4.0 obliga a mostrar, para pintarla en pantalla.
+
+    CC-BY no es dominio público: usar el SRD sin atribuir incumple la licencia.
+    Por eso esto es una función pública y no un detalle interno.
+    """
+    return {
+        'fuente': 'dnd5eapi.co',
+        'obra': 'System Reference Document 5.1 (SRD 5.1)',
+        'licencia': 'CC-BY-4.0',
+        'url': API_BASE,
+        'url_licencia': 'https://creativecommons.org/licenses/by/4.0/',
+        'texto': 'Datos del SRD 5.1 vía dnd5eapi.co, bajo licencia CC-BY-4.0.',
+    }

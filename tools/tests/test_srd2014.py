@@ -9,7 +9,7 @@ import json
 import os
 import tempfile
 import unittest
-from unittest.mock import patch, mock_open
+from unittest.mock import patch, MagicMock, mock_open
 
 # Import the module to test
 import sys
@@ -84,8 +84,8 @@ class TestSrd2014(unittest.TestCase):
             srd2014.pedir_a_srd('/api/2014monsters/goblin')  # missing slash
         self.assertIn('La ruta debe comenzar con /api/2014/', str(cm.exception))
 
-    @patch('tools.srd2014._cargar_apis')
-    def test_pedir_a_srd_uses_cache(self, mock_cargar_apis):
+    @patch('tools.srd2014.urllib.request.urlopen')
+    def test_pedir_a_srd_uses_cache(self, mock_urlopen):
         """Test that pedir_a_srd uses cache when available."""
         # Create a temporary directory and cache file
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -95,19 +95,21 @@ class TestSrd2014(unittest.TestCase):
                 json.dump(REAL_GOBLIN_FIXTURE, f)
             # Patch the CACHE_FILE constant in the module to point to our temporary cache
             with patch.object(srd2014, 'CACHE_FILE', cache_path):
-                # We don't need to mock _cargar_apis because we won't call the API
+                # No hace falta simular la red: con caché no debe tocarla.
                 result = srd2014.pedir_a_srd('/api/2014/monsters/goblin')
                 # Since we are using cache, the function should return the cached data
                 self.assertEqual(result, REAL_GOBLIN_FIXTURE)
                 # The API's pedir method should not have been called
-                mock_cargar_apis.assert_not_called()
+                mock_urlopen.assert_not_called()
 
-    @patch('tools.srd2014._cargar_apis')
-    def test_pedir_a_srd_fetch_and_cache(self, mock_cargar_apis):
-        """Test that pedir_a_srd fetches and caches when cache doesn't exist."""
-        # Mock the API client
-        mock_apis = mock_cargar_apis.return_value
-        mock_apis.pedir.return_value = REAL_GOBLIN_FIXTURE
+    @patch('tools.srd2014.urllib.request.urlopen')
+    def test_pedir_a_srd_fetch_and_cache(self, mock_urlopen):
+        """Sin caché, pide a la red UNA vez y guarda lo que recibe."""
+        respuesta = MagicMock()
+        respuesta.read.return_value = json.dumps(REAL_GOBLIN_FIXTURE).encode('utf-8')
+        respuesta.__enter__ = lambda s: s
+        respuesta.__exit__ = lambda s, *a: False
+        mock_urlopen.return_value = respuesta
         # Create a temporary directory; ensure cache file does not exist
         with tempfile.TemporaryDirectory() as tmpdir:
             cache_path = os.path.join(tmpdir, '.srd2014_cache.json')
@@ -119,7 +121,10 @@ class TestSrd2014(unittest.TestCase):
                 result = srd2014.pedir_a_srd('/api/2014/monsters/goblin')
                 self.assertEqual(result, REAL_GOBLIN_FIXTURE)
                 # The API's pedir method should have been called
-                mock_apis.pedir.assert_called_once_with('https://www.dnd5eapi.co/api/2014/monsters/goblin')
+                self.assertEqual(mock_urlopen.call_count, 1)
+                pedida = mock_urlopen.call_args[0][0]
+                self.assertEqual(pedida.full_url,
+                                 'https://www.dnd5eapi.co/api/2014/monsters/goblin')
                 # Check that a cache file was created
                 self.assertTrue(os.path.exists(cache_path))
                 # Optionally, check the content of the cache file

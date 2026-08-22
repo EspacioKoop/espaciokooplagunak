@@ -38,8 +38,10 @@ from .core import pedir, ULTIMO_MOTIVO
 from .met import met
 from .rijks import rijks
 from .aic import aic
+from .europeana import europeana
+from .freesound import freesound
 
 __all__ = [
     'pedir', 'ULTIMO_MOTIVO',
-    'met', 'rijks', 'aic'
+    'met', 'rijks', 'aic', 'europeana', 'freesound'
 ]

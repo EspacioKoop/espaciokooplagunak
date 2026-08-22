@@ -116,6 +116,32 @@ export const CAPACIDAD = X_PEDESTALES.length * FILAS_QUE_CABEN;
  * tope se reparte otra vez desde el fondo en vez de invadirla: amontonar dos
  * piezas se ve raro, pero tapar la salida deja a la gente encerrada.
  */
+/**
+ * Devuelve el sitio (x, z) para colocar una pieza según su índice.
+ * Distribuye los pedestales entre el muro del fondo (z = 5.0) y un lateral (x = 0.5).
+ * Para los primeros tres mantiene las posiciones originales.
+ * A partir del cuarto, alterna entre pared lateral y fondo.
+ */
+function getSitioParaPieza(indice) {
+  if (indice === 0) return [2.0, 5.0];
+  if (indice === 1) return [4.5, 5.0];
+  if (indice === 2) return [7.0, 5.0];
+  const extra = indice - 3;
+  // Pared lateral: x = 0.5, z desde 2.0 en adelante
+  const sideCount = 5; // z = 2.0, 3.0, 4.0, 5.0, 6.0
+  if (extra < sideCount) {
+    return [0.5, 2.0 + extra];
+  }
+  // Pared fondo extra: x = 1.0, 3.0, 6.0, 8.0 (evitando los ya usados)
+  const backExtraX = [1.0, 3.0, 6.0, 8.0];
+  const backIndex = extra - sideCount;
+  if (backIndex < backExtraX.length) {
+    return [backExtraX[backIndex], 5.0];
+  }
+  // En caso de más piezas (no debería pasar para ≤12), repetimos patrón lateral
+  return [0.5, 2.0 + (extra % sideCount)];
+}
+
 function obtenerPosicionPedestal(indice) {
   // Pasarse de la capacidad NO se apaña en silencio. La version anterior hacia
   // `% FILAS_QUE_CABEN` y las piezas de mas volvian al fondo, encima de las que

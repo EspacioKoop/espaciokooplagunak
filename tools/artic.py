@@ -20,12 +20,32 @@ con query parameters como arriba es el que devuelve 200 y datos correctos.
 
 import argparse
 import json
+import pathlib
 import sys
 import urllib.parse
 
 # Usa el cliente compartido: cache SQLite, ritmo por host, presupuesto diario.
 # Sin dependencias fuera del árbol: urllib de la biblioteca estándar basta.
-from apis.core import pedir
+#
+# EL IMPORT TIENE QUE VALER DE LAS DOS FORMAS EN QUE SE EJECUTA ESTO, y por eso
+# no es una línea a secas:
+#
+#   python3 tools/artic.py ...      → sys.path[0] es `tools/`, no la raíz
+#   python3 -m tools.artic ...      → sys.path[0] es la raíz, `tools` es paquete
+#
+# `from apis.core import pedir` solo funciona en la primera; `from tools.apis...`
+# solo en la segunda. La suite usa la segunda (test_artic.py) y las herramientas
+# se invocan a mano con la primera, así que elegir una rompe la otra — que es
+# justo lo que pasó: `ModuleNotFoundError: No module named 'apis'` en CI.
+#
+# Se resuelve poniendo la RAÍZ en sys.path y usando siempre la ruta completa.
+# Hay una prueba por cada forma de invocación: la que falla sin esto es la única
+# que demuestra algo.
+_RAIZ = str(pathlib.Path(__file__).resolve().parent.parent)
+if _RAIZ not in sys.path:
+    sys.path.insert(0, _RAIZ)
+
+from tools.apis.core import pedir
 
 # El endpoint search del AIC con filtro is_public_domain=true y fields
 # NOTA: la skill declara POST con JSON body, pero GET con query params funciona
@@ -107,7 +127,7 @@ def main():
         url = _construir_url(args.texto, args.fields, args.limit)
         data = pedir(url, cabeceras={'AIC-User-Agent': 'lagunak-verificador'})
         if data is None:
-            from apis.core import ULTIMO_MOTIVO
+            from tools.apis.core import ULTIMO_MOTIVO
             print(f'Error: No se pudo leer el Art Institute of Chicago ({ULTIMO_MOTIVO})', file=sys.stderr)
             sys.exit(1)
 

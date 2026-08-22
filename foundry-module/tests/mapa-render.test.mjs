@@ -26,6 +26,14 @@ function ctxFalso(overrides = {}) {
   let lastFont = "";
   let lastTextAlign = "";
   let lastTextBaseline = "";
+  // HISTORIALES, no solo el ultimo valor. Guardar `lastGlobalAlpha` sola hace
+  // que una prueba de opacidad no pruebe nada: el render pone 0.3, pinta, y
+  // devuelve la opacidad a 1 antes de terminar, asi que al final las tres
+  // variantes valen 1 y el assert pasa igual aunque el enfasis desaparezca.
+  // Lo mismo con los colores: el ultimo no dice de que color se pinto ESTO.
+  const alphas = [];
+  const fillStyles = [];
+  const strokeStyles = [];
 
   return {
     get fillRects() { return fillRects; },
@@ -44,6 +52,9 @@ function ctxFalso(overrides = {}) {
     get lastFont() { return lastFont; },
     get lastTextAlign() { return lastTextAlign; },
     get lastTextBaseline() { return lastTextBaseline; },
+    get alphas() { return alphas; },
+    get fillStyles() { return fillStyles; },
+    get strokeStyles() { return strokeStyles; },
     fillStyle: "",
     strokeStyle: "",
     lineWidth: 0,
@@ -66,11 +77,12 @@ function ctxFalso(overrides = {}) {
     set globalAlpha(v) {
       globalAlphaSets += 1;
       lastGlobalAlpha = v;
+      alphas.push(v);
     },
     get globalAlpha() { return lastGlobalAlpha; },
-    set fillStyle(v) { lastFillStyle = v; },
+    set fillStyle(v) { lastFillStyle = v; fillStyles.push(v); },
     get fillStyle() { return lastFillStyle; },
-    set strokeStyle(v) { lastStrokeStyle = v; },
+    set strokeStyle(v) { lastStrokeStyle = v; strokeStyles.push(v); },
     get strokeStyle() { return lastStrokeStyle; },
     set lineWidth(v) { lastLineWidth = v; },
     get lineWidth() { return lastLineWidth; },
@@ -116,13 +128,16 @@ test("dibujarFrame sí pinta eventos de fondo fuera de la pantalla en espera", (
 
 // Estrellas: duplicados de borde cuando la estrella queda a caballo del lienzo
 test("dibujarFrame pinta duplicados de borde para estrellas que cruzan el límite derecho/inferior", () => {
-  // Estrella con x=318, r=2 → tam=2, x+tam=320 > ancho(320) → duplicado en x-ancho
-  // Estrella con y=318, r=2 → tam=2, y+tam=320 > alto(320) → duplicado en y-alto
+  // La condicion del render es `x + tam > ancho`, ESTRICTA. Con x=318 y tam=2
+  // sale 320 > 320, que es falso: la version anterior de esta prueba usaba 318
+  // y no llegaba a ejecutar la rama de duplicados ni una vez. Pasaba igual,
+  // porque contaba fillRect totales y el sprite de la nave propia ya pinta de
+  // sobra. Con 319 el borde se cruza de verdad.
   const capaConBorde = {
     estrellas: [
-      { x: 318, y: 160, r: 2, brillo: 1 }, // cruza borde derecho
-      { x: 160, y: 318, r: 2, brillo: 1 }, // cruza borde inferior
-      { x: 318, y: 318, r: 2, brillo: 1 }, // cruza ambas esquinas (4 fillRect)
+      { x: 319, y: 160, r: 2, brillo: 1 }, // 319+2=321 > 320: cruza el borde derecho
+      { x: 160, y: 319, r: 2, brillo: 1 }, // cruza el borde inferior
+      { x: 319, y: 319, r: 2, brillo: 1 }, // cruza los dos: 2 duplicados
     ],
     dx: 0,
     dy: 0,
@@ -132,10 +147,27 @@ test("dibujarFrame pinta duplicados de borde para estrellas que cruzan el límit
   const ctx = ctxFalso();
   dibujarFrame(ctx, frame, { ancho: 320, alto: 320, decorado: [], tMs: 0 });
 
-  // Fondo (1) + estrellas base (3) + duplicados derecho (1) + duplicados inferior (1) + esquina (2) + nave propia (múltiples) = > 12
-  // La nave propia pinta muchos fillRect (sprite pixel-art), así que solo verificamos que hay MÁS que solo fondo+estrellas base
-  // 1 fondo + 3 base + 4 duplicados = 8 mínimo, más la nave
-  assert.ok(ctx.fillRects >= 12);
+  // Un contador absoluto no sirve de prueba aqui: la nave propia pinta un
+  // sprite entero de fillRect, asi que `>= 12` seguiria pasando aunque los
+  // duplicados de borde desaparecieran. Lo que si aisla el efecto es la
+  // DIFERENCIA contra el mismo frame con las estrellas separadas del borde:
+  // todo lo demas que se pinta es identico.
+  const capaSinBorde = {
+    estrellas: [
+      { x: 160, y: 160, r: 2, brillo: 1 },
+      { x: 100, y: 100, r: 2, brillo: 1 },
+      { x: 200, y: 60, r: 2, brillo: 1 },
+    ],
+    dx: 0,
+    dy: 0,
+  };
+  const ctxSinBorde = ctxFalso();
+  dibujarFrame(ctxSinBorde, { sinDatos: false, capas: [capaSinBorde], blips: [], destino: null },
+    { ancho: 320, alto: 320, decorado: [], tMs: 0 });
+
+  // Derecho (1) + inferior (1) + la esquina, que cruza las dos (2) = 4.
+  assert.equal(ctx.fillRects - ctxSinBorde.fillRects, 4,
+    "cuatro duplicados de borde: derecho, inferior y los dos de la esquina");
 });
 
 // Ruta al destino: línea punteada desde el centro al destino
@@ -176,9 +208,10 @@ test("dibujarFrame pinta sprites de nave para contactos dentro del alcance", () 
   const ctx = ctxFalso();
   dibujarFrame(ctx, frame, { ancho: 320, alto: 320, decorado: [], tMs: 0 });
 
-  // Cada sprite de nave pinta múltiples fillRect (celdas del sprite)
-  // Al menos el fondo + retícula + sprites
-  assert.ok(ctx.fillRects > 1);
+  // Que se pinte «bastante» no dice que se pintaran ESTOS contactos. El color
+  // si: cada blip lleva el suyo, y solo puede aparecer si su sprite se dibujo.
+  assert.ok(ctx.fillStyles.includes("#ff2e88"), "el primer contacto pinta con su color");
+  assert.ok(ctx.fillStyles.includes("#00e5ff"), "el segundo contacto pinta con el suyo");
   // globalAlpha se debe restaurar a 1 al final de cada blip
   assert.equal(ctx.lastGlobalAlpha, 1);
 });
@@ -197,8 +230,16 @@ test("dibujarFrame pinta marca en el borde para contactos fuera de alcance", () 
   const ctx = ctxFalso();
   dibujarFrame(ctx, frame, { ancho: 320, alto: 320, decorado: [], tMs: 0 });
 
-  // Fondo + retícula + 1 fillRect para la marca de borde (4x4)
-  assert.ok(ctx.fillRects >= 3);
+  // El contacto esta FUERA del alcance, asi que no se pinta su sprite: lo unico
+  // que puede llevar su color al lienzo es la marca del borde. Si la marca
+  // desaparece, el color no aparece, y esto falla — cosa que `>= 3` no haria.
+  assert.ok(ctx.fillStyles.includes("#38b000"),
+    "la marca de borde se pinta con el color del contacto fuera de alcance");
+
+  const ctxSinBlips = ctxFalso();
+  dibujarFrame(ctxSinBlips, { sinDatos: false, capas: [], blips: [], destino: null },
+    { ancho: 320, alto: 320, decorado: [], tMs: 0 });
+  assert.equal(ctx.fillRects - ctxSinBlips.fillRects, 1, "exactamente una marca de borde");
 });
 
 // Contactos con etiqueta: se pinta el texto solo si está dentro y tiene etiqueta
@@ -312,8 +353,18 @@ test("dibujarFrame aplica opacidad según blip.enfasis", () => {
   const ctxTenue = ctxFalso();
   dibujarFrame(ctxTenue, frameTenue, { ancho: 320, alto: 320, decorado: [], tMs: 0 });
 
-  // No podemos ver el globalAlpha internamente durante el dibujo, pero podemos
-  // verificar que se restaura a 1 al final
+  // El historial es lo que hace que esta prueba pruebe algo. Mirando solo el
+  // ultimo valor, las tres variantes acaban en 1 —el render restaura la
+  // opacidad antes de salir— y el assert pasaria igual aunque el enfasis
+  // dejara de aplicarse. La tabla es OPACIDAD_ENFASIS: alto 1, normal 0.75,
+  // tenue 0.3.
+  assert.ok(ctxTenue.alphas.includes(0.3), "el enfasis tenue pinta a 0.3");
+  assert.ok(ctxNormal.alphas.includes(0.75), "el enfasis normal pinta a 0.75");
+  assert.ok(!ctxAlto.alphas.includes(0.3) && !ctxAlto.alphas.includes(0.75),
+    "el enfasis alto no baja la opacidad");
+
+  // Y que se restaure a 1 al salir sigue importando: si no, el proximo frame
+  // heredaria la opacidad del blip anterior.
   assert.equal(ctxAlto.lastGlobalAlpha, 1);
   assert.equal(ctxNormal.lastGlobalAlpha, 1);
   assert.equal(ctxTenue.lastGlobalAlpha, 1);

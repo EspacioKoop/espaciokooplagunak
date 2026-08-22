@@ -40,8 +40,11 @@ from .rijks import rijks
 from .aic import aic
 from .europeana import europeana
 from .freesound import freesound
+from .nasa import nasa, nasa_asset
+from .lospec import lospec, lospec_aleatoria
 
 __all__ = [
     'pedir', 'ULTIMO_MOTIVO',
-    'met', 'rijks', 'aic', 'europeana', 'freesound'
+    'met', 'rijks', 'aic', 'europeana', 'freesound',
+    'nasa', 'nasa_asset', 'lospec', 'lospec_aleatoria'
 ]

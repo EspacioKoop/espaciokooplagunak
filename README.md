@@ -367,3 +367,6 @@ Espaciokoop Lagunak no está afiliado ni respaldado oficialmente por el equipo d
 - [Puente de integración — contrato v0](bridge/README.md)
 - [Inventario del API HTTP heredado](docs/API_HTTP.md)
 - [Relación y sincronización con upstream](docs/UPSTREAM.md)
+
+## 📦 Versionado
+Este proyecto sigue [SemVer](https://semver.org/lang/es/). Ver [VERSIONING.md](VERSIONING.md) para detalles.

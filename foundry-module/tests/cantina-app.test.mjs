@@ -232,6 +232,38 @@ test("sin DOM, renderizar no revienta: no hay nada que enfocar", () => {
   assert.doesNotThrow(() => app._onRender({}, {}));
 });
 
+// ---------------------------------------------------------------------------
+// New test: ensure that `refreshAcciones` (the button-creation logic) is
+// exercised.  We use the helper `cantinaFalsa`, defined earlier in this file,
+// which returns a fully featured fake root containing the sala, barra, and
+// a single puerta.  After rendering, the array of actions should be
+// rendered as buttons inside the barra.  Clicking the first button must
+// trigger the `alSeleccionar` callback passed to the application.
+//
+// This test punches higher-level code paths that were previously only
+// reached indirectly (through low-level dummy button handlers).  By exercising the
+// click event, we get coverage for lines 111-122 of `encenderSala`, which were
+// missing in the original test suite.
+// ---------------------------------------------------------------------------
+test("v12+: refreshAcciones creates buttons and click triggers selection", () => {
+  prepararEntorno({ moderno: true });
+  const { documento, raiz, sala, barra } = cantinaFalsa();
+  let inaugurated = null;
+  const Clase = crearClaseCantinaV2({ alSeleccionar: (id) => { inaugurated = id; } });
+  const app = new Clase();
+  app.element = raiz;
+  app._onRender({}, {});
+  // After rendering, the barra should contain the generated buttons.
+  assert.ok(barra.children.length > 0, "barra has buttons after refrescarAcciones");
+  const firstButton = barra.children[0];
+  const clickHandlers = firstButton.manejadores.get('click');
+  assert.ok(clickHandlers && clickHandlers.length > 0, "button has click handler");
+  // Trigger the first click handler.
+  clickHandlers[0]();
+  // The mocked alSeleccionar should be called with the id of the first puerta.
+  assert.equal(inaugurado, "poker", "alSeleccionar was called with first door id");
+});
+
 // Regresión (#456 sobre #439): el pipeline de humo del cigarro (`cantina-avatar.mjs`)
 // estaba completo y probado en Node, pero `encenderSala()` nunca pasaba población
 // real a `arrancarCantina()` — en producción `gente` siempre llegaba vacía a

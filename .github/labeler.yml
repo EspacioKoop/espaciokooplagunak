@@ -32,3 +32,8 @@ automation:
           - ".github/workflows/**"
           - ".github/dependabot.yml"
           - ".github/labeler.yml"
+
+# ADRs
+documentation:
+  - changed-files:
+      - any-glob-to-any-file: 'docs/adr/**/*'

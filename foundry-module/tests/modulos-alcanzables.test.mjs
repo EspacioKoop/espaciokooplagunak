@@ -85,25 +85,6 @@ const HUERFANOS_DECLARADOS = Object.freeze({
       "antes de esa decisión es exactamente cómo sale la opción incoherente del " +
       "medio, que es la que el issue avisa que sale sola si nadie decide.",
   },
-  "catalogo-cosmografico.mjs": {
-    cimiento: true,
-    issue: 525,
-    motivo:
-      "Validador del formato de atlas (planos, sistemas, planetas, con procedencia " +
-      "y licencia por entrada). Cimiento de #213, que sigue siendo investigación a " +
-      "validar por Varo y Eloy: cablearlo por iniciativa propia promovería a hecho " +
-      "una decisión que no está tomada.",
-  },
-  "atlas-hyg.mjs": {
-    cimiento: true,
-    issue: 568,
-    motivo:
-      "Adaptador del catálogo estelar HYG al formato de atlas. Cimiento del " +
-      "MISMO issue sin decidir que `catalogo-cosmografico.mjs` (#213): traduce " +
-      "datos al formato, y cablearlo metería en la partida un atlas que Varo y " +
-      "Eloy no han aprobado. Que lo que produce es válido lo comprueba " +
-      "`atlas-hyg.test.mjs` contra el validador, sin necesidad de consumidor.",
-  },
   "npc-tablas.mjs": {
     cimiento: true,
     issue: 676,

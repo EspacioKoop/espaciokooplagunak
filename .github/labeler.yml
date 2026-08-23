@@ -32,3 +32,17 @@ automation:
           - ".github/workflows/**"
           - ".github/dependabot.yml"
           - ".github/labeler.yml"
+
+# Añadido por Teseo (Qwen3.7) para Issue #717
+'area: documentation':
+  - changed-files:
+      - any-glob-to-any-file: ['docs/**', '*.md']
+'area: tests':
+  - changed-files:
+      - any-glob-to-any-file: ['tests/**', '**/*.test.js', '**/*.spec.ts']
+'language: python':
+  - changed-files:
+      - any-glob-to-any-file: ['**/*.py']
+'language: javascript':
+  - changed-files:
+      - any-glob-to-any-file: ['**/*.js', '**/*.ts']

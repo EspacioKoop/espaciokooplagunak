@@ -39,7 +39,6 @@ test("sin userId no hay relevo que atribuir a nadie", () => {
   assert.equal(derivarRelevo({ userId: null, estacionAnterior: "navigation", estacionNueva: "weapons" }), null);
   assert.equal(derivarRelevo({ estacionAnterior: "navigation", estacionNueva: "weapons" }), null);
 });
-
 // ---- anotarRelevo: escritor de bitácora, con game/JournalEntry mockeados --
 function gameFalso({ isGM = true, nombreUsuario = "Jon" } = {}) {
   return {
@@ -100,6 +99,8 @@ test("un relevo real se anota en la bitácora, visible para toda la mesa (no una
   assert.deepEqual(ui.avisos, ["LAGUNAK.Relevo.Anotado"]);
 });
 
+// solo el GM anota; un jugador no escribe nada
+
 test("solo el GM anota; un jugador no escribe nada", async () => {
   const game = gameFalso({ isGM: false });
   const JournalEntry = journalEntryFalso();
@@ -151,6 +152,8 @@ test("sin relevo (null) no escribe nada", async () => {
   assert.equal(creado, false);
 });
 
+// el mismo relevo
+
 test("el mismo relevo (mismo sello y nonce) no se anota dos veces", async () => {
   const game = gameFalso();
   const JournalEntry = journalEntryFalso();
@@ -162,6 +165,8 @@ test("el mismo relevo (mismo sello y nonce) no se anota dos veces", async () => 
   const journal = await JournalEntry.create();
   assert.equal(journal.pages.length, 1, "no se duplica");
 });
+
+// same pair different time
 
 test("el mismo par de puestos en OTRO momento (sello distinto) SÍ se anota: ida y vuelta son informativas", async () => {
   const game = gameFalso();
@@ -182,6 +187,8 @@ test("el mismo par de puestos en OTRO momento (sello distinto) SÍ se anota: ida
   const journal = await JournalEntry.create();
   assert.equal(journal.pages.length, 2, "el va y viene deja dos entradas, no se pierde la primera");
 });
+
+// three variants
 
 test("las tres variantes (asume/deja/traslada) usan claves i18n distintas", async () => {
   const game = gameFalso();
@@ -205,6 +212,8 @@ test("las tres variantes (asume/deja/traslada) usan claves i18n distintas", asyn
   assert.match(journal.pages[2].name, /Traslada\.Titulo/);
 });
 
+// sigueVigente se respeta: una autorización caducada no escribe
+
 test("sigueVigente se respeta: una autorización caducada no escribe", async () => {
   const game = gameFalso();
   const JournalEntry = journalEntryFalso();
@@ -221,3 +230,17 @@ test("sigueVigente se respeta: una autorización caducada no escribe", async () 
   assert.deepEqual(ui.avisos, []);
 });
 
+// NEW TEST: ensure station names with special characters are escaped correctly
+
+test("anotarRelevo properly escapes station names with special characters", async () => {
+  const game = gameFalso();
+  const JournalEntry = journalEntryFalso();
+  const ui = uiFalso();
+  const relevo = { userId: "u1", estacionAnterior: "<>&", estacionNueva: "\"'" };
+  const creado = await anotarRelevo({ relevo, nonce: "special", sello: 100, game, JournalEntry, ui });
+  assert.equal(creado, true);
+  const journal = await JournalEntry.create();
+  const pageName = journal.pages[0].name;
+  // Check that special HTML entities are escaped
+  assert.ok(pageName.includes("&#60;") && pageName.includes("&#38;") && pageName.includes("&#62;") && pageName.includes("&#34;") && pageName.includes("&#39;"));
+});

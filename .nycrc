@@ -1,0 +1,5 @@
+{
+  "include": ["foundry-module/scripts/**/*.mjs"],
+  "extension": [".mjs", ".js"],
+  "exclude-node-modules": false
+}

@@ -41,7 +41,6 @@ test("sin userId no hay relevo que atribuir a nadie", () => {
 });
 
 // ---- anotarRelevo: escritor de bitácora, con game/JournalEntry mockeados --
-
 function gameFalso({ isGM = true, nombreUsuario = "Jon" } = {}) {
   return {
     user: { isGM },
@@ -76,14 +75,24 @@ function uiFalso() {
   return { avisos, notifications: { info: (msg) => avisos.push(msg) } };
 }
 
+// ------------------------------------------------------------------
+// Helpers de prueba adicionales
+function escapeHtmlTest(value) {
+  return String(value).replace(/[&<>\"']/g, (character) => `&#${character.codePointAt(0)};`);
+}
+
+function localizeStationTest(station, i18n) {
+  return station ? i18n.localize(`LAGUNAK.Puestos.${station}`) : i18n.localize("LAGUNAK.Puestos.SinAsignar");
+}
+
+// Tests originales continuacion
+
 test("un relevo real se anota en la bitácora, visible para toda la mesa (no una notificación privada)", async () => {
   const game = gameFalso();
   const JournalEntry = journalEntryFalso();
   const ui = uiFalso();
   const relevo = { userId: "u1", estacionAnterior: "navigation", estacionNueva: "weapons" };
-
   const creado = await anotarRelevo({ relevo, nonce: "n1", sello: 1000, game, JournalEntry, ui });
-
   assert.equal(creado, true);
   const journal = await JournalEntry.create();
   assert.equal(journal.pages.length, 1);
@@ -106,6 +115,34 @@ test("solo el GM anota; un jugador no escribe nada", async () => {
   assert.deepEqual(ui.avisos, []);
 });
 
+// DERIVARRELEVO EDGE CASES
+
+test("estacionNueva undefined se trata como null", () => {
+  const res = derivarRelevo({ userId: "u1", estacionAnterior: "navigation", estacionNueva: undefined });
+  assert.deepEqual(res, { userId: "u1", estacionAnterior: "navigation", estacionNueva: null });
+});
+
+test("estacionAnterior undefined siempre produce null, incluso con estacionNueva null", () => {
+  const res = derivarRelevo({ userId: "u1", estacionAnterior: undefined, estacionNueva: null });
+  assert.equal(res, null);
+});
+
+// ANOTARRELEVO ESCAPE SPECIAL CHARACTERS
+
+test("usuario con caracteres especiales se escapa antes de usar", async () => {
+  const game = gameFalso({ nombreUsuario: "Jon & <script>" });
+  const JournalEntry = journalEntryFalso();
+  const ui = uiFalso();
+  const relevo = { userId: "u1", estacionAnterior: "navigation", estacionNueva: "weapons" };
+  const creado = await anotarRelevo({ relevo, nonce: "special", sello: 100, game, JournalEntry, ui });
+  assert.equal(creado, true);
+  const journal = await JournalEntry.create();
+  const pageName = journal.pages[0].name;
+  assert.ok(pageName.includes("&#38;") && pageName.includes("&#60;"));
+});
+
+// Following tests continued
+
 test("sin relevo (null) no escribe nada", async () => {
   const game = gameFalso();
   const JournalEntry = journalEntryFalso();
@@ -119,10 +156,8 @@ test("el mismo relevo (mismo sello y nonce) no se anota dos veces", async () => 
   const JournalEntry = journalEntryFalso();
   const ui = uiFalso();
   const relevo = { userId: "u1", estacionAnterior: "navigation", estacionNueva: "weapons" };
-
   await anotarRelevo({ relevo, nonce: "n1", sello: 500, game, JournalEntry, ui });
   const segundaVez = await anotarRelevo({ relevo, nonce: "n1", sello: 500, game, JournalEntry, ui });
-
   assert.equal(segundaVez, false);
   const journal = await JournalEntry.create();
   assert.equal(journal.pages.length, 1, "no se duplica");
@@ -132,7 +167,6 @@ test("el mismo par de puestos en OTRO momento (sello distinto) SÍ se anota: ida
   const game = gameFalso();
   const JournalEntry = journalEntryFalso();
   const ui = uiFalso();
-
   await anotarRelevo({
     relevo: { userId: "u1", estacionAnterior: "navigation", estacionNueva: "weapons" },
     nonce: "n1",
@@ -145,7 +179,6 @@ test("el mismo par de puestos en OTRO momento (sello distinto) SÍ se anota: ida
     sello: 2,
     game, JournalEntry, ui,
   });
-
   const journal = await JournalEntry.create();
   assert.equal(journal.pages.length, 2, "el va y viene deja dos entradas, no se pierde la primera");
 });
@@ -154,7 +187,6 @@ test("las tres variantes (asume/deja/traslada) usan claves i18n distintas", asyn
   const game = gameFalso();
   const JournalEntry = journalEntryFalso();
   const ui = uiFalso();
-
   await anotarRelevo({
     relevo: { userId: "u1", estacionAnterior: null, estacionNueva: "sensors" },
     nonce: "n", sello: 1, game, JournalEntry, ui,
@@ -167,7 +199,6 @@ test("las tres variantes (asume/deja/traslada) usan claves i18n distintas", asyn
     relevo: { userId: "u1", estacionAnterior: "sensors", estacionNueva: "weapons" },
     nonce: "n", sello: 3, game, JournalEntry, ui,
   });
-
   const journal = await JournalEntry.create();
   assert.match(journal.pages[0].name, /AsumePuesto\.Titulo/);
   assert.match(journal.pages[1].name, /DejaPuesto\.Titulo/);
@@ -189,3 +220,4 @@ test("sigueVigente se respeta: una autorización caducada no escribe", async () 
   assert.equal(creado, false);
   assert.deepEqual(ui.avisos, []);
 });
+

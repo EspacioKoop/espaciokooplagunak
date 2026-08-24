@@ -33,16 +33,17 @@ automation:
           - ".github/dependabot.yml"
           - ".github/labeler.yml"
 
-# Añadido por Teseo (Qwen3.7) para Issue #717
-'area: documentation':
+python:
   - changed-files:
-      - any-glob-to-any-file: ['docs/**', '*.md']
-'area: tests':
+      - any-glob-to-any-file:
+          - '**/*.py'
+
+javascript:
   - changed-files:
-      - any-glob-to-any-file: ['tests/**', '**/*.test.js', '**/*.spec.ts']
-'language: python':
-  - changed-files:
-      - any-glob-to-any-file: ['**/*.py']
-'language: javascript':
-  - changed-files:
-      - any-glob-to-any-file: ['**/*.js', '**/*.ts']
+      - any-glob-to-any-file:
+          - '**/*.js'
+          - '**/*.mjs'
+          - '**/*.ts'
+          - '**/*.test.js'
+          - '**/*.test.mjs'
+          - '**/*.spec.ts'

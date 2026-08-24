@@ -3,8 +3,7 @@
 
 """
 Obras del Art Institute of Chicago (AIC) en dominio público con imagen.
-UNA sola petición por consulta, cache en disco (via tools/apis/core.py),
-espaciado por host y presupuesto diario, salida JSON.
+UNA sola petición por consulta, cache en disco (SQLite via tools.apis), salida JSON.
 
 NOTA: El endpoint verificado que funciona es:
   curl -G 'https://api.artic.edu/api/v1/artworks/search' \
@@ -20,32 +19,30 @@ con query parameters como arriba es el que devuelve 200 y datos correctos.
 
 import argparse
 import json
-import pathlib
+import os
 import sys
 import urllib.parse
 
-# Usa el cliente compartido: cache SQLite, ritmo por host, presupuesto diario.
-# Sin dependencias fuera del árbol: urllib de la biblioteca estándar basta.
-#
-# EL IMPORT TIENE QUE VALER DE LAS DOS FORMAS EN QUE SE EJECUTA ESTO, y por eso
-# no es una línea a secas:
-#
+# EL IMPORT TIENE QUE VALER DE LAS DOS FORMAS EN QUE SE EJECUTA ESTO:
 #   python3 tools/artic.py ...      → sys.path[0] es `tools/`, no la raíz
 #   python3 -m tools.artic ...      → sys.path[0] es la raíz, `tools` es paquete
-#
 # `from apis.core import pedir` solo funciona en la primera; `from tools.apis...`
 # solo en la segunda. La suite usa la segunda (test_artic.py) y las herramientas
 # se invocan a mano con la primera, así que elegir una rompe la otra — que es
 # justo lo que pasó: `ModuleNotFoundError: No module named 'apis'` en CI.
-#
 # Se resuelve poniendo la RAÍZ en sys.path y usando siempre la ruta completa.
-# Hay una prueba por cada forma de invocación: la que falla sin esto es la única
-# que demuestra algo.
-_RAIZ = str(pathlib.Path(__file__).resolve().parent.parent)
+_RAIZ = str(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if _RAIZ not in sys.path:
     sys.path.insert(0, _RAIZ)
 
-from tools.apis.core import pedir
+from tools.apis.core import pedir, ULTIMO_MOTIVO
+
+# Sin dependencias fuera del árbol: urllib de la biblioteca estándar basta.
+# La versión anterior cargaba un cliente por ruta, con un valor por defecto que
+# apuntaba al directorio personal de alguien, y este repositorio es público.
+# AHORA usa tools.apis.core.pedir que gestiona caché SQLite, ritmo y presupuesto.
+
+USER_AGENT = 'EspaciokoopLagunak/1.0 (https://github.com/VaroTv7/espaciokooplagunak)'
 
 # El endpoint search del AIC con filtro is_public_domain=true y fields
 # NOTA: la skill declara POST con JSON body, pero GET con query params funciona
@@ -60,6 +57,30 @@ DEFAULT_FIELDS = 'id,title,image_id,artist_title,date_display,is_public_domain'
 DEFAULT_LIMIT = 10
 
 
+def _cache_key(texto, fields=None, limit=None):
+    """Genera una clave de caché única para la consulta.
+    
+    Mantenida por compatibilidad, pero ya no se usa para ficheros:
+    tools.apis.core usa su propia clave interna (URL completa).
+    """
+    import hashlib
+    key_data = f"{texto}|{fields or DEFAULT_FIELDS}|{limit or DEFAULT_LIMIT}"
+    return hashlib.sha256(key_data.encode()).hexdigest()[:16]
+
+
+def _cache_path(texto, fields=None, limit=None):
+    """Ruta del fichero de caché de esta consulta.
+    
+    Mantenida por compatibilidad, pero ya no se usa para ficheros:
+    tools.apis.core gestiona su propia caché SQLite en LAGUNAK_CACHE o /tmp.
+    Esta función se conserva por si algún código externo la importaba.
+    """
+    key = _cache_key(texto, fields, limit)
+    base_dir = os.environ.get('LAGUNAK_CACHE') or '/tmp'
+    os.makedirs(base_dir, exist_ok=True)
+    return os.path.join(base_dir, f'lagunak-artic-{key}.json')
+
+
 def _construir_url(texto, fields=None, limit=None):
     """Construye la URL de búsqueda con los parámetros codificados."""
     params = []
@@ -71,6 +92,29 @@ def _construir_url(texto, fields=None, limit=None):
     # urllib.parse.urlencode maneja los corchetes correctamente
     query_string = urllib.parse.urlencode(params)
     return f'{SEARCH_URL}?{query_string}'
+
+
+def pedir_a_artic(texto, fields=None, limit=None):
+    """UNA sola petición al AIC via tools.apis.core.pedir. Devuelve el JSON crudo de la API."""
+    url = _construir_url(texto, fields, limit)
+
+    cabeceras = {
+        'Accept': 'application/json',
+        'AIC-User-Agent': USER_AGENT,
+    }
+    data = pedir(url, cabeceras=cabeceras)
+    if data is None:
+        # `ULTIMO_MOTIVO` explica por qué no se pudo pedir
+        motivo = ULTIMO_MOTIVO
+        if motivo == 'presupuesto':
+            raise RuntimeError('Presupuesto diario agotado para Art Institute of Chicago')
+        elif motivo == 'no_encontrado':
+            raise RuntimeError('No se obtuvo respuesta de Art Institute of Chicago')
+        elif motivo == 'cache_fallo':
+            raise RuntimeError('Falló la caché de Art Institute of Chicago')
+        else:
+            raise RuntimeError(f'Failed to fetch from Art Institute of Chicago (reason: {motivo})')
+    return data
 
 
 def obras_desde_json(data):
@@ -123,13 +167,9 @@ def main():
             print(f'Error: Invalid JSON in {args.desde_fichero}: {e}', file=sys.stderr)
             sys.exit(1)
     else:
-        # Use shared API client with cache, rate limiting, and budget
-        url = _construir_url(args.texto, args.fields, args.limit)
-        data = pedir(url, cabeceras={'AIC-User-Agent': 'lagunak-verificador'})
-        if data is None:
-            from tools.apis.core import ULTIMO_MOTIVO
-            print(f'Error: No se pudo leer el Art Institute of Chicago ({ULTIMO_MOTIVO})', file=sys.stderr)
-            sys.exit(1)
+        # tools.apis.core.pedir ya gestiona caché, ritmo y presupuesto.
+        # No hace falta lógica de caché manual aquí.
+        data = pedir_a_artic(args.texto, args.fields, args.limit)
 
     obras = obras_desde_json(data)
     # Output as JSON to stdout

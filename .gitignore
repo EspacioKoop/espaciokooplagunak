@@ -72,3 +72,38 @@ bridge/.venv/
 # Configuración local de análisis SonarQube
 sonar-project.properties
 .evidencia-tinte/
+
+# Worktrees de tareas de agentes automáticos (ver SECURITY.md)
+.worktrees/
+
+# Residuo de las herramientas de auditoria, no es del repositorio
+.datos-auditoria/
+
+# Cache de los clientes de API. Se colo en el PR #658 por un `git add -A`:
+# `artic.py` escribia sus ficheros junto al propio modulo, dentro del arbol.
+# La ruta ya esta corregida —van al directorio temporal— pero la red queda
+# puesta, porque este fallo no lo detecta ningun test.
+tools/.artic_search*.json
+tools/.nasa3d_meta.json
+lagunak-artic-*.json
+lagunak-apis.sqlite
+
+# Artefactos de cobertura de node/nyc: los deja cualquier pasada de
+# `--experimental-test-coverage` o de nyc en el arbol, y no son entregables.
+# El 2026-08-22 un `git add -A` estuvo a punto de meter 17 ficheros de estos
+# en un PR de seguridad.
+.nyc_output/
+coverage/
+
+# Y lo que deja el `npm install` que instala ese nyc. El arbol no es un proyecto
+# npm —el modulo se prueba con `node --test` a secas, sin dependencias— asi que
+# estos tres ficheros son siempre restos de una herramienta de paso, nunca algo
+# que se entregue.
+#
+# El 2026-08-22 aparecieron los tres en el checkout principal a media sesion. Es
+# la misma historia que la de arriba con `.nyc_output/`, y la razon de anotarla
+# es que la de arriba NO los cubria: ignorar la salida de una herramienta y no
+# lo que esa herramienta necesita para correr deja la mitad del rastro fuera.
+node_modules/
+package.json
+package-lock.json

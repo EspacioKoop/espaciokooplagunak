@@ -1,0 +1,46 @@
+{
+ "pagination": {
+  "total": 62046
+ },
+ "data": [
+  {
+   "_score": 95.68657,
+   "id": 454,
+   "title": "Statuette of a Seated Girl",
+   "date_display": "330-320 BCE",
+   "is_public_domain": true,
+   "artist_title": "Ancient Greek",
+   "image_id": "38ea638d-c8f7-f916-da08-ac7730b6ed5a"
+  },
+  {
+   "_score": 82.01551,
+   "id": 158,
+   "title": "Pelike (Storage Jar)",
+   "date_display": "about 510-500 BCE",
+   "is_public_domain": true,
+   "artist_title": "Ancient Greek",
+   "image_id": "48d485ec-6102-b7ec-062c-8b351055ca5f"
+  },
+  {
+   "_score": 81.63343,
+   "id": 614,
+   "title": "Amphoriskos (Container for Oil)",
+   "date_display": "600-575 BCE",
+   "is_public_domain": true,
+   "artist_title": "Ancient Greek",
+   "image_id": "36a3f0f7-9bda-2c93-fee8-7c264d5ce01f"
+  },
+  {
+   "_score": 81.39197,
+   "id": 616,
+   "title": "Pyxis (Container for Personal Objects)",
+   "date_display": "430-420 BCE",
+   "is_public_domain": true,
+   "artist_title": "Ancient Greek",
+   "image_id": "aeb6ae53-78e6-b76d-1993-dd108da55710"
+  }
+ ],
+ "info": {
+  "license_text": "The `description` field in this response is licensed under a Creative Commons Attribution 4.0 Generic License (CC-By) an"
+ }
+}

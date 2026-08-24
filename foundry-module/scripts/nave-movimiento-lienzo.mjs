@@ -63,6 +63,7 @@ const VELOCIDAD_GIRO = Math.PI * 0.6; // radianes por segundo
  *   alTocarPuerta?: (destino:object) => void,
  *   interacciones?: Array<object>,
  *   alAlcanzarInteraccion?: (interaccion:object) => void,
+ *   alSalirDeInteraccion?: () => void,
  *   x?: number, z?: number, y?: number, yaw?: number,
  *   velocidad?: number, radio?: number, velocidadGiro?: number,
  *   fondo?: string|null,
@@ -112,6 +113,15 @@ export function arrancarAndar(lienzo, opciones = {}) {
   let interacciones = Array.isArray(opciones.interacciones) ? opciones.interacciones : [];
   let alAlcanzarInteraccion =
     typeof opciones.alAlcanzarInteraccion === "function" ? opciones.alAlcanzarInteraccion : null;
+  // El flanco de SALIDA, y va aparte del de entrada a propósito (#598). La
+  // mayoría de las interacciones no lo necesitan —abrir la consola de un puesto
+  // no se "cierra" al dar dos pasos atrás— pero una cartela de museo sí: es un
+  // cartel que se lee estando delante, y que siguiera puesto al otro lado de la
+  // sala sería un rótulo pegado a la cámara. Callback separado y no
+  // `alAlcanzarInteraccion(null)`, porque eso obligaría a todos los consumidores
+  // a defenderse de un nulo para dar servicio a un caso que no usan.
+  let alSalirDeInteraccion =
+    typeof opciones.alSalirDeInteraccion === "function" ? opciones.alSalirDeInteraccion : null;
   // Flanco de entrada, no nivel (#509): una interacción no teletransporta, así
   // que seguir de pie delante de ella no puede seguir disparando el aviso en
   // cada fotograma —abriría el espacio de puesto sesenta veces por
@@ -208,10 +218,11 @@ export function arrancarAndar(lienzo, opciones = {}) {
     // decide `nave-interaccion.mjs` —incluido el desempate cuando hay dos—, y
     // aquí solo se avisa en el flanco de entrada. Este bucle no sabe qué es una
     // consola ni qué es una caña de pescar: transporta la `accion` declarada.
-    if (alAlcanzarInteraccion) {
+    if (alAlcanzarInteraccion || alSalirDeInteraccion) {
       const interaccion = interaccionAlAlcance(x, z, radio, interacciones);
       if (interaccion !== interaccionAlcanzadaAntes) {
-        if (interaccion) alAlcanzarInteraccion(interaccion);
+        if (interaccion) alAlcanzarInteraccion?.(interaccion);
+        else alSalirDeInteraccion?.();
         interaccionAlcanzadaAntes = interaccion;
       }
     }
@@ -289,6 +300,9 @@ export function arrancarAndar(lienzo, opciones = {}) {
       // flanco de entrada de ESA sala tiene que poder dispararse, no darse
       // por ya visto.
       interaccionAlcanzadaAntes = null;
+      // Y lo que hubiera puesto la interacción anterior se retira con ella: la
+      // cartela de una pieza no puede seguir en pantalla en la sala siguiente.
+      alSalirDeInteraccion?.();
       puertaTocadaAntes = null;
       // Ningún cruce de puerta puede dispararse hasta pasado `GRACIA_PUERTA_MS`:
       // el punto de llegada suele caer cerca de la puerta de vuelta (ver

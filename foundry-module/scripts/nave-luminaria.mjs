@@ -38,7 +38,8 @@
 //
 // Puro y sin color propio (#351). Se prueba desde Node.
 
-import { LUZ_CALIDA, MURAL } from "./paleta.mjs";
+import { LUZ_CALIDA, MURAL, ALERTA } from "./paleta.mjs";
+import { normalizarAviso } from "./alerta-escena.mjs";
 
 /**
  * Medidas de una luminaria, en metros. Fijas, que es todo el punto.
@@ -58,6 +59,17 @@ export const CAIDA = 0.18;
  * oscuras entre una y otra.
  */
 export const PASO = 4;
+
+/**
+ * Cuánto queda el difusor por debajo del eje de la carcasa, en metros.
+ *
+ * Estaba escrito tres veces —la carcasa, el foco y el test— con un comentario
+ * pidiendo que coincidieran. Nada lo obligaba: si una cambiaba, el foco se iba
+ * del difusor en silencio y el test seguía verde, porque repetía el mismo
+ * número en vez de leerlo. Ahora sale de aquí, y desalinearlas exige editar
+ * esta línea.
+ */
+export const CAIDA_DIFUSOR = 0.055;
 
 /**
  * Dónde va cada luminaria de una sala. Se expone aparte de la geometría para
@@ -165,7 +177,7 @@ function fundir(mallas) {
  * @param {{ancho:number, profundidad:number, altura:number}} sala
  * @returns {{malla:object, color:string}[]}
  */
-export function piezasLuminarias({ ancho, profundidad, altura }) {
+export function piezasLuminarias({ ancho, profundidad, altura, health = null, timeMs = 0 }) {
   const puntos = reparto(ancho, profundidad);
   if (puntos.length === 0) return [];
   const alLargoDeX = ancho >= profundidad;
@@ -179,7 +191,18 @@ export function piezasLuminarias({ ancho, profundidad, altura }) {
     const yCarcasa = altura - CAIDA;
     costados.push(cajaColgada([x, yCarcasa, z], medidasCarcasa, true));
     bajos.push(cajaColgada([x, yCarcasa, z], medidasCarcasa, false));
-    difusores.push(difusorHaciaAbajo([x, yCarcasa - 0.055, z], medidasDifusor));
+    difusores.push(difusorHaciaAbajo([x, yCarcasa - CAIDA_DIFUSOR, z], medidasDifusor));
+  }
+
+  // Determinar si el difusor debe parpadear basado en la salud del sistema y el tiempo.
+  let difusoColor = LUZ_CALIDA;
+  let difusoEmisivo = true;
+  if (health !== null) {
+    // Parpadeo con periodo de 1 segundo (500ms encendido, 500ms apagado) cuando hay daño.
+    const parpadeo = Math.floor(timeMs / 500) % 2 === 0;
+    difusoColor = parpadeo ? LUZ_CALIDA : 0x000000; // Negro cuando apagado
+    // Mantener emisivo verdadero para que el color negro se emita como luz negra (apagado).
+    // Si estableciéramos emisivo en falso, el material estaría sombreado por la luz ambiente.
   }
 
   return [
@@ -192,6 +215,48 @@ export function piezasLuminarias({ ancho, profundidad, altura }) {
     // probó, y las luminarias parecían apagadas. No alumbra a nadie: el motor no
     // tiene luces de verdad (#556). Solo se exceptúa de la sombra, que es lo que
     // hacía la máquina de referencia con las luces y las pantallas.
-    { malla: fundir(difusores), color: LUZ_CALIDA, emisivo: true },
+    { malla: fundir(difusores), color: difusoColor, emisivo: difusoEmisivo },
   ];
+}
+
+export function focosLuminarias({ ancho, profundidad, altura }) {
+  const puntos = reparto(ancho, profundidad);
+  if (puntos.length === 0) return [];
+  const yCarcasa = altura - CAIDA;
+  // A la altura exacta del difusor: el foco alumbra desde donde se ve la luz.
+  const yFoco = yCarcasa - CAIDA_DIFUSOR;
+
+  const focos = [];
+  for (const { x, z } of puntos) {
+    focos.push({ posicion: [x, yFoco, z] });
+  }
+  return focos;
+}
+
+/**
+ * El tono de la luminaria segun el nivel de alerta.
+ *
+ * USA EL TONO DEL **BORDE**, y no el del texto, por la razon que ya dejo escrita
+ * `filtros-escena.mjs` al teñir la escena: el rojo del texto esta ACLARADO para
+ * leerse en tamaño pequeño sobre el fondo del aviso. Una luminaria es una
+ * superficie ancha, igual que el tinte y que el borde, y con el tono aclarado
+ * la nave en alerta roja se lava a rosa en vez de teñirse.
+ *
+ * Elegir el mismo campo que el tinte de escena no es solo consistencia: es que
+ * las dos cosas se ven A LA VEZ, y con tonos distintos se pelearian.
+ *
+ * `verde` no lleva color a proposito (ver `ALERTA` en `paleta.mjs`): la nave sin
+ * alerta no se tiñe de nada, asi que devuelve la luz calida de siempre. Y la
+ * AUSENCIA de lectura tampoco es una alerta — un dato que no ha llegado no puede
+ * pintar la nave de rojo.
+ *
+ * El nivel se normaliza con `normalizarAviso`, que es el unico sitio donde se
+ * decide que significa un aviso mal formado.
+ *
+ * @param {string|{nivel:string}|null|undefined} aviso nivel o aviso completo.
+ * @returns {string} color hexadecimal.
+ */
+export function tonoLuminaria(aviso) {
+  const { nivel } = normalizarAviso(aviso);
+  return ALERTA.niveles[nivel]?.borde ?? LUZ_CALIDA;
 }

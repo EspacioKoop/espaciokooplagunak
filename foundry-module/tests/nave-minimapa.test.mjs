@@ -22,12 +22,12 @@ test("el plano son las salas REALES del Phobos, más la cantina", () => {
 });
 
 /**
- * Estancias que son NAVE. La playa de pruebas (#587) no lo es: se entra por
- * herramienta de GM, no anda por ella la tripulación, y el minimapa se apaga
- * mientras se está fuera en vez de enseñar un plano del Phobos sin nadie
- * marcado en él (ver `pintarSituacion` en `andar-nave-app.mjs`).
+ * Estancias que son NAVE. La playa de pruebas (#587) y la sala del museo (#598)
+ * no lo son: se entra por herramienta de GM, no anda por ellas la tripulación, y
+ * el minimapa se apaga mientras se está fuera en vez de enseñar un plano del
+ * Phobos sin nadie marcado en él (ver `pintarSituacion` en `andar-nave-app.mjs`).
  */
-const FUERA_DE_LA_NAVE = new Set(["playa"]);
+const FUERA_DE_LA_NAVE = new Set(["playa", "museo"]);
 const ESTANCIAS_DE_LA_NAVE = CATALOGO_ANDAR.ids.filter((id) => !FUERA_DE_LA_NAVE.has(id));
 
 test("toda estancia de la nave por la que se anda aparece en el plano", () => {
@@ -98,4 +98,37 @@ test("la rejilla declara su tamaño y cubre todas las salas", () => {
     assert.ok(sala.caja.x + sala.caja.ancho <= modelo.columnas, `${sala.id} se sale por la derecha`);
     assert.ok(sala.caja.y + sala.caja.alto <= modelo.filas, `${sala.id} se sale por abajo`);
   }
+});
+
+test("con presencia vacía el modelo sale SIN marcas", () => {
+  const modelo = modeloMinimapa(null, SALAS_PHOBOS, []);
+  assert.deepEqual(modelo.marcas, []);
+});
+
+test("con dos tripulantes salen dos marcas en las salas correctas", () => {
+  const presencia = [
+    { userId: "tripulante1", estancia: "reactor" },
+    { userId: "tripulante2", estancia: "cantina" }
+  ];
+  const modelo = modeloMinimapa(null, SALAS_PHOBOS, presencia);
+  assert.equal(modelo.marcas.length, 2);
+  const marca1 = modelo.marcas.find(m => m.userId === "tripulante1");
+  const marca2 = modelo.marcas.find(m => m.userId === "tripulante2");
+  assert.ok(marca1, "falta la marca de tripulante1");
+  assert.ok(marca2, "falta la marca de tripulante2");
+  assert.equal(marca1.sala, "reactor");
+  assert.equal(marca2.sala, "cantina");
+});
+
+test("a quien este fuera del plano no se le pinta marca", () => {
+  // Una sala de prueba no esta en la rejilla: una marca ahi no se puede dibujar.
+  const inventada = "sala-que-no-esta-en-el-plano";
+  assert.equal(estaEnElPlano(inventada, SALAS_PHOBOS), false, "premisa del test");
+
+  const modelo = modeloMinimapa(null, SALAS_PHOBOS, [
+    { userId: "dentro", estancia: "cantina" },
+    { userId: "fuera", estancia: inventada },
+  ]);
+
+  assert.deepEqual(modelo.marcas.map((m) => m.userId), ["dentro"]);
 });

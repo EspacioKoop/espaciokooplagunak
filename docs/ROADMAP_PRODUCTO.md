@@ -303,6 +303,13 @@ los que se anda dentro de la nave, el kit de escenas de #589 y el catálogo de
 assets con procedencia (#571, #590, #598). Dejarla sin mencionar haría que este
 documento describiera un proyecto que ya no es el que hay.
 
+- **Línea experimental de `retro3d`** (#603): esqueleto, deformación y
+  retargeting para PC, NPC y bestiario, en una línea separada del kit de
+  escenas (#589).
+- **Audición opcional con Freesound** (#604): búsqueda y escucha sin ingestión
+  de assets, y sin saltarse la ficha de procedencia cuando un sonido entra al
+  árbol.
+
 **No es una etapa nueva ni compite con la A.** Es infraestructura de contenido, y
 su sitio en este roadmap es el de una herramienta: existe para que las etapas C
 (nave persistente), D (exploración) y E (encuentros y expediciones) puedan
@@ -326,6 +333,27 @@ Su disciplina propia, que la mantiene subordinada:
 etapa A, ni construir sitios que la mesa no vaya a visitar. La playa es un banco
 de pruebas y está declarada como tal; el día que un exterior sea contenido, entra
 por el bucle de producto y no por el de infraestructura.
+
+### Dónde está hoy este frente, y su deuda
+
+Medido el 2026-08-20, para que la regla de arriba no se lea como si ya se
+cumpliera:
+
+- **La mesa todavía no visita nada de esto.** La playa (#587) y la sala del museo
+  (#598) no cuelgan de ninguna puerta de la nave —su lista de puertas está
+  vacía—, así que las abre el GM desde la barra de escena y nadie más las pisa.
+  Cada pieza que se les añada la ve una sola persona. Es la deuda que hay que
+  pagar antes de meter más contenido, no después.
+- **Hay 18 mallas 3D en el árbol y el museo enseña 3.** Todas con procedencia
+  verificada (escaneos de vaciados del *Statens Museum for Kunst*, CC0 1.0). Lo
+  que falta no es licencia ni código: es la **cartela** de cada pieza, que es
+  trabajo humano y no escala con el código. Ya lo decía #590 y sigue siendo el
+  cuello de botella real de este frente.
+- **Los cuatro PNG del módulo están vigilados**, por dos mecanismos distintos: la
+  textura de muro con una puerta en el flujo de trabajo y los tres del horizonte
+  con `horizonte-matte.test.mjs`, que compara lo guardado con lo que el generador
+  produce. Que el generador del horizonte no acepte `--check` no es un agujero:
+  es que su comprobación vive en la suite, no en la línea de órdenes.
 
 ## Prioridad vigente
 

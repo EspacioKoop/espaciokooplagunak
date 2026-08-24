@@ -75,6 +75,8 @@ const DEFINICIONES = {
   // pieza que más delataba que el módulo entero se dibujaba con cajas.
   conducto: { partes: [{ medidas: [0.5, 3.8, 0.5], lados: 8 }], color: MURAL.medio },
   registro: { partes: [{ medidas: [0.7, 0.7, 0.45] }], color: SECCION.casco },
+  litera: { partes: [{ medidas: [0.9, 1.8, 0.6] }], color: SECCION.casco },
+  taquilla: { partes: [{ medidas: [0.5, 1.8, 0.5] }], color: SECCION.casco },
 
   /* ---- mobiliario de estar (#583, para #579) ---- */
 

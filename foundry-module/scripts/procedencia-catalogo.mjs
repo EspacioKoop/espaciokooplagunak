@@ -1,0 +1,137 @@
+// La procedencia de una entrada de catálogo, validada en UN solo sitio (#598).
+//
+// POR QUÉ EXISTE. `catalogo-cosmografico.mjs` (#525) ya validaba entradas con
+// `provenance: {kind, source, license, source_url}` — texto con su licencia. El
+// tubo de #590 metió en el árbol geometría con EXACTAMENTE los mismos campos,
+// escritos en la ficha de `docs/PROCEDENCIA_ASSETS.md`. Dos mitades que no se
+// hablaban: texto con procedencia por un lado, malla con procedencia por otro.
+//
+// El museo de #598 es lo que las une, y unirlas COPIANDO el validador habría
+// dejado dos reglas de licencia que se desincronizan a la primera. La regla de
+// qué procedencia se admite es una sola, y vive aquí.
+//
+// LA REGLA DURA es la de `docs/PROCEDENCIA_ASSETS.md`: que la obra sea de
+// dominio público no dice nada del ARCHIVO. Por eso `kind: "cc"` exige URL
+// HTTPS —a la página que declara la licencia, no al fichero— y por eso no hay
+// forma de declarar una entrada sin licencia.
+//
+// Puro: ni Foundry, ni DOM, ni red. Se prueba desde Node.
+
+/** IDs portables: minúsculas, dígitos, guion y guion bajo. Valen como nombre de
+ *  archivo, como clave y como fragmento de URL sin escapar nada. */
+export const PATRON_ID = /^[a-z0-9][a-z0-9_-]{0,63}$/;
+
+const CLAVES_PROCEDENCIA = new Set(["kind", "source", "license", "source_url"]);
+const TIPOS_PROCEDENCIA = new Set(["original", "cc", "user_supplied"]);
+const CLAVES_LOCALIZADAS = new Set(["es", "en"]);
+
+/**
+ * Error tipado de validación de catálogo.
+ *
+ * `code` es para el programa y `path` para quien escribe el dato: sin la ruta,
+ * «campo obligatorio ausente» en un catálogo de treinta entradas no dice cuál.
+ */
+export class ErrorDeCatalogo extends Error {
+  constructor(code, path, message) {
+    super(`${path}: ${message}`);
+    this.name = "ErrorDeCatalogo";
+    this.code = code;
+    this.path = path;
+  }
+}
+
+export function fallo(code, path, message) {
+  throw new ErrorDeCatalogo(code, path, message);
+}
+
+/** Objeto literal y nada más: ni array, ni instancia con prototipo propio. */
+export function esObjetoSimple(valor) {
+  if (valor === null || typeof valor !== "object" || Array.isArray(valor)) return false;
+  const prototipo = Object.getPrototypeOf(valor);
+  return prototipo === Object.prototype || prototipo === null;
+}
+
+/**
+ * Claves EXACTAS: ni de más ni de menos.
+ *
+ * Rechazar lo desconocido es lo que convierte una errata (`licence`) en un error
+ * con su ruta, en vez de en un campo ignorado en silencio — que en un catálogo
+ * de licencias no es un descuido de forma.
+ */
+export function clavesExactas(valor, permitidas, obligatorias, path) {
+  if (!esObjetoSimple(valor)) fallo("invalid_object", path, "debe ser un objeto simple");
+  for (const clave of Object.keys(valor)) {
+    if (!permitidas.has(clave)) fallo("unknown_field", `${path}.${clave}`, "campo no permitido");
+  }
+  for (const clave of obligatorias) {
+    if (!Object.hasOwn(valor, clave)) fallo("missing_field", `${path}.${clave}`, "campo obligatorio ausente");
+  }
+}
+
+/** Texto plano: sin controles, sin etiquetas y sin espacios exteriores. */
+export function textoPlano(valor, path, maxLongitud) {
+  if (
+    typeof valor !== "string"
+    || valor.length === 0
+    || valor.length > maxLongitud
+    || valor.trim() !== valor
+  ) {
+    fallo("invalid_text", path, `debe contener entre 1 y ${maxLongitud} caracteres sin espacios exteriores`);
+  }
+  if (/[\x00-\x1f\x7f<>]/u.test(valor)) {
+    fallo("unsafe_text", path, "solo admite texto plano sin controles ni etiquetas");
+  }
+}
+
+/** Los dos idiomas del módulo, ambos obligatorios: una cartela a medio traducir
+ *  se descubre en la mesa, no aquí. */
+export function textoLocalizado(valor, path, maxLongitud) {
+  clavesExactas(valor, CLAVES_LOCALIZADAS, CLAVES_LOCALIZADAS, path);
+  textoPlano(valor.es, `${path}.es`, maxLongitud);
+  textoPlano(valor.en, `${path}.en`, maxLongitud);
+}
+
+/**
+ * Valida el bloque de procedencia de una entrada, sea de texto o de malla.
+ *
+ * @param {object} valor bloque `{kind, source, license, source_url?}`.
+ * @param {string} path ruta para el error.
+ */
+export function validarProcedencia(valor, path) {
+  clavesExactas(valor, CLAVES_PROCEDENCIA, new Set(["kind", "source", "license"]), path);
+  if (!TIPOS_PROCEDENCIA.has(valor.kind)) {
+    fallo("invalid_provenance", `${path}.kind`, "procedencia no admitida");
+  }
+  textoPlano(valor.source, `${path}.source`, 160);
+  textoPlano(valor.license, `${path}.license`, 80);
+  if (Object.hasOwn(valor, "source_url")) {
+    textoPlano(valor.source_url, `${path}.source_url`, 500);
+    let analizada;
+    try {
+      analizada = new URL(valor.source_url);
+    } catch {
+      fallo("invalid_url", `${path}.source_url`, "URL inválida");
+    }
+    if (analizada.protocol !== "https:") {
+      fallo("invalid_url", `${path}.source_url`, "la fuente debe usar HTTPS");
+    }
+    if (analizada.username || analizada.password) {
+      fallo("invalid_url", `${path}.source_url`, "la fuente no admite credenciales embebidas");
+    }
+  }
+  if (valor.kind === "cc" && !Object.hasOwn(valor, "source_url")) {
+    fallo("missing_field", `${path}.source_url`, "el contenido CC necesita una fuente HTTPS");
+  }
+}
+
+/** Tamaño serializado en bytes, o error si el catálogo no es serializable. */
+export function tamanoSerializado(valor) {
+  let serializado;
+  try {
+    serializado = JSON.stringify(valor);
+  } catch {
+    fallo("not_serializable", "$", "el catálogo no se puede serializar como JSON");
+  }
+  if (serializado === undefined) fallo("not_serializable", "$", "el catálogo no se puede serializar como JSON");
+  return new TextEncoder().encode(serializado).byteLength;
+}

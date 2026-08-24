@@ -1,0 +1,86 @@
+{
+ "sha": "11ebb4ee043715aefbba6aeec8a61746fad67fa7",
+ "truncated": false,
+ "tree": [
+  {
+   "path": "3D Models/Cassini Assembly",
+   "type": "tree",
+   "sha": "8525499e080df951b8103c359673f103b6e9c0a5"
+  },
+  {
+   "path": "3D Models/Cassini Assembly/Cassini Assembly.glb",
+   "type": "blob",
+   "sha": "9ad8b39420271dc8ae64158dd99eb560d87e0b9b",
+   "size": 2388308
+  },
+  {
+   "path": "3D Models/Cassini Assembly/Cassini Assembly.png",
+   "type": "blob",
+   "sha": "fe771233a14a4c8f1531aa3ec2d1a55b848be4da",
+   "size": 740858
+  },
+  {
+   "path": "3D Models/Cassini-Huygens (A)",
+   "type": "tree",
+   "sha": "9426df1852def1ff9db35bed47f35a7c9c933ba0"
+  },
+  {
+   "path": "3D Models/Cassini-Huygens (A)/Cassini-Huygens (A) (without Cassini).glb",
+   "type": "blob",
+   "sha": "508e2e573ed4755aeb6d2a91669f745a350433c2",
+   "size": 1014092
+  },
+  {
+   "path": "3D Models/Cassini-Huygens (A)/Cassini-Huygens (A) (without Hyugens).glb",
+   "type": "blob",
+   "sha": "383db9a4041ca1c83f2deadc6bd35142d94c5012",
+   "size": 1653316
+  },
+  {
+   "path": "3D Models/Cassini-Huygens (A)/Cassini-Huygens (A).glb",
+   "type": "blob",
+   "sha": "a53183813d5aa4155873b52bec8c336c40c5b296",
+   "size": 1660492
+  },
+  {
+   "path": "3D Models/Cassini-Huygens (A)/Cassini-Huygens (A).png",
+   "type": "blob",
+   "sha": "40528e17bc79be741e5b16e5015efaf0ae48b1ec",
+   "size": 1146299
+  },
+  {
+   "path": "3D Models/Cassini-Huygens (B)",
+   "type": "tree",
+   "sha": "15bc46b69a6575808925db938968df8a665d9d73"
+  },
+  {
+   "path": "3D Models/Cassini-Huygens (B)/Cassini-Huygens (B).glb",
+   "type": "blob",
+   "sha": "ad652a1f2cb6b1f28fb48b1cdcfba2386de0ddca",
+   "size": 413640
+  },
+  {
+   "path": "3D Models/Cassini-Huygens (B)/Cassini-Huygens (B).png",
+   "type": "blob",
+   "sha": "aa124d7ed7d426092a93690a4a88c4cf1badfe4a",
+   "size": 1271898
+  },
+  {
+   "path": "3D Printing/Apollo 11 - Landing Site",
+   "type": "tree",
+   "sha": "c5362de2c7f661b0be76367c2673c26330b4fa62"
+  },
+  {
+   "path": "3D Printing/Apollo 11 - Landing Site/Apollo 11 - Landing Site.png",
+   "type": "blob",
+   "sha": "d9e6d6c5d05b9c3360c7929f418d2713678a957a",
+   "size": 1169854
+  },
+  {
+   "path": "3D Printing/Apollo 11 - Landing Site/Apollo 11 - Landing Site.stl",
+   "type": "blob",
+   "sha": "39fc0de3c44fb933f23149edf6a1debe35cb2155",
+   "size": 7138484
+  }
+ ]
+}

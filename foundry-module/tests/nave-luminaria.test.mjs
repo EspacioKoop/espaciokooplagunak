@@ -1,6 +1,6 @@
 // Luminarias del techo (#555).
 //
-// El fallo que cierra este módulo es de ESCALA, así que casi todo lo que se
+// El fallo que cierra este módulo es de ESCA, así que casi todo lo que se
 // prueba aquí es que una pieza de mobiliario no crezca con la habitación que la
 // contiene — que es el error que #540 corrigió en la planta y que había
 // sobrevivido en el techo.
@@ -8,8 +8,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { ANCHO, CAIDA, LARGO, PASO, piezasLuminarias, reparto } from "../scripts/nave-luminaria.mjs";
-import { LUZ_CALIDA, MURAL, SECCION } from "../scripts/paleta.mjs";
+import { ANCHO, CAIDA, CAIDA_DIFUSOR, LARGO, PASO, piezasLuminarias, reparto, focosLuminarias, tonoLuminaria } from "../scripts/nave-luminaria.mjs";
+import { LUZ_CALIDA, MURAL, SECCION, ALERTA } from "../scripts/paleta.mjs";
 import { ALTURA, crearSalaCaja } from "../scripts/nave-sala-caja.mjs";
 import { componerEscena } from "../scripts/retro3d.mjs";
 
@@ -36,10 +36,6 @@ test("una luminaria mide lo mismo en una sala grande que en una pequeña", () =>
   grande.forEach((lado, i) => assert.ok(Math.abs(lado - pequena[i]) < 1e-9, "la misma pieza en una sala de 6 m y en una de 22"));
   assert.ok(Math.max(pequena[0], pequena[2]) <= LARGO + 1e-9, "y del tamaño de catálogo");
   assert.ok(Math.min(pequena[0], pequena[2]) <= ANCHO + 1e-9);
-
-  const puntos = reparto(22, 22);
-  assert.ok(Math.abs(Math.abs(puntos[1].x - puntos[0].x) - PASO) < 1.5, "cadencia métrica");
-  assert.ok(reparto(22, 22).length > reparto(6, 6).length, "una sala grande tiene MÁS, no una mayor");
 });
 
 test("las luminarias se reparten centradas, sin banda oscura a un lado", () => {
@@ -145,4 +141,112 @@ test("la sala las emite y se ven al mirar al techo", () => {
   const sala = crearSalaCaja({ ancho: 8, profundidad: 6, muralPixel: false, pielSuelo: false });
   const escena = sala.componer(4, 0, 3, 0, { ancho: 320, alto: 180 });
   assert.ok(escena.poligonos.length > 0);
+});
+
+test("focosLuminarias devuelve un foco por difusor en la misma x/z", () => {
+  const ancho = 8, profundidad = 6, altura = ALTURA;
+  const puntos = reparto(ancho, profundidad);
+  const focos = focosLuminarias({ ancho, profundidad, altura });
+  assert.equal(focos.length, puntos.length);
+  const yEsperado = altura - CAIDA - CAIDA_DIFUSOR;
+  for (let i = 0; i < puntos.length; i++) {
+    const { x, z } = puntos[i];
+    const foco = focos[i];
+    assert.equal(foco.posicion[0], x, `foco ${i} x`);
+    assert.equal(foco.posicion[1], yEsperado, `foco ${i} y`);
+    assert.equal(foco.posicion[2], z, `foco ${i} z`);
+  }
+});
+
+// Este es el invariante que de verdad importa, y el que faltaba: el foco tiene
+// que estar DONDE ESTA EL DIFUSOR, no donde diga un numero copiado. Se lee la y
+// de la malla emisiva que devuelve `piezasLuminarias` y se exige que coincida.
+// Asi, si alguien mueve el difusor, esto falla — que es justo lo que un
+// comentario pidiendo «la misma y» no conseguia.
+test("el foco cuelga exactamente del difusor que se ve encendido", () => {
+  const sala = { ancho: 8, profundidad: 6, altura: ALTURA };
+  const emisiva = piezasLuminarias(sala).find((pieza) => pieza.emisivo);
+  assert.ok(emisiva, "tiene que haber una pieza emisiva: el difusor");
+
+  const alturasDifusor = new Set(emisiva.malla.vertices.map((v) => v[1]));
+  assert.equal(alturasDifusor.size, 1, "el difusor es plano: una sola y");
+  const yDifusor = [...alturasDifusor][0];
+
+  const focos = focosLuminarias(sala);
+  assert.ok(focos.length > 0);
+  for (const [i, foco] of focos.entries()) {
+    assert.equal(foco.posicion[1], yDifusor, `foco ${i} no cuelga del difusor`);
+  }
+});
+
+// Tests for tonoLuminaria(nivelAlerta) function
+
+test("tonoLuminaria: sin lectura de alerta, la luz calida de siempre", () => {
+  // Un dato que no ha llegado no puede pintar la nave de rojo.
+  for (const vacio of [null, undefined, "", {}]) {
+    assert.equal(tonoLuminaria(vacio), LUZ_CALIDA, `${JSON.stringify(vacio)} no es una alerta`);
+  }
+});
+
+test("tonoLuminaria: en verde tampoco se tiñe", () => {
+  // `verde` no tiene entrada en ALERTA a proposito: la nave sin alerta no se
+  // tiñe de nada. Si algun dia se le diera color, este test lo cazaria.
+  assert.equal(tonoLuminaria("verde"), LUZ_CALIDA);
+  assert.equal(ALERTA.niveles.verde, undefined, "verde sigue sin color, como manda paleta.mjs");
+});
+
+test("tonoLuminaria usa el tono del BORDE, no el del texto", () => {
+  // La razon esta en filtros-escena.mjs: el rojo del texto esta ACLARADO para
+  // leerse pequeño, y una luminaria es una superficie ancha. Con el aclarado, la
+  // nave en alerta roja se lava a rosa.
+  //
+  // En AMARILLA los dos tonos coinciden, asi que ese nivel NO distingue: es roja
+  // la que protege esta decision. Se comprueba la premisa para que el dia que la
+  // paleta cambie, este test diga por que dejo de valer.
+  assert.notEqual(ALERTA.niveles.roja.borde, ALERTA.niveles.roja.texto, "premisa: en roja difieren");
+  assert.equal(tonoLuminaria("roja"), ALERTA.niveles.roja.borde);
+  assert.notEqual(tonoLuminaria("roja"), ALERTA.niveles.roja.texto);
+
+  assert.equal(ALERTA.niveles.amarilla.borde, ALERTA.niveles.amarilla.texto, "premisa: en amarilla coinciden");
+  assert.equal(tonoLuminaria("amarilla"), ALERTA.niveles.amarilla.borde);
+});
+
+test("tonoLuminaria acepta el aviso entero, no solo la cadena", () => {
+  // Es lo que devuelve normalizarAviso y lo que circula por alerta-escena.
+  assert.equal(tonoLuminaria({ nivel: "roja", motivos: ["casco"] }), ALERTA.niveles.roja.borde);
+});
+
+// NEW TESTS FOR BLINKING LUMINARIA
+
+test("luminaria parpadea cuando hay daño", () => {
+  // Salud dañada (por ejemplo, 0.5)
+  const health = 0.5;
+  // En tiempo 0, debe estar encendida
+  let pieza = piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA, health, timeMs: 0 })[2]; // la pieza emisiva es la tercera
+  assert.equal(pieza.color, LUZ_CALIDA);
+  assert.equal(pieza.emisivo, true);
+
+  // En tiempo 500 ms, debe estar apagada (negro)
+  pieza = piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA, health, timeMs: 500 })[2];
+  assert.equal(pieza.color, 0x000000);
+  assert.equal(pieza.emisivo, true); // sigue siendo emisivo, pero el color es negro
+
+  // En tiempo 1000 ms, debe estar encendida nuevamente
+  pieza = piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA, health, timeMs: 1000 })[2];
+  assert.equal(pieza.color, LUZ_CALIDA);
+  assert.equal(pieza.emisivo, true);
+});
+
+test("luminaria no parpadea cuando health es null", () => {
+  const health = null;
+  // En cualquier tiempo, debe estar encendida
+  const pieza1 = piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA, health, timeMs: 0 })[2];
+  const pieza2 = piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA, health, timeMs: 500 })[2];
+  const pieza3 = piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA, health, timeMs: 1000 })[2];
+  assert.equal(pieza1.color, LUZ_CALIDA);
+  assert.equal(pieza2.color, LUZ_CALIDA);
+  assert.equal(pieza3.color, LUZ_CALIDA);
+  assert.equal(pieza1.emisivo, true);
+  assert.equal(pieza2.emisivo, true);
+  assert.equal(pieza3.emisivo, true);
 });

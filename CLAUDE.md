@@ -9,6 +9,12 @@ léelo antes de modificar nada; sus reglas prevalecen sobre cualquier hábito po
 condicionan el trabajo diario:
 
 - No desarrolles sobre `main`: crea rama y entrega por pull request (flujo en [`CONTRIBUTING.md`](CONTRIBUTING.md)).
+- Si trabajas en paralelo con otro agente, mira el mapa de áreas y los puntos de colisión conocidos en
+  [`docs/TRABAJO_PARALELO_AGENTES.md`](docs/TRABAJO_PARALELO_AGENTES.md) ANTES de elegir por dónde
+  empezar: media docena de archivos (este mismo, `lang/*.json`, `main.mjs`, `paleta.mjs` y sus
+  guardas) los toca casi cualquier trabajo del módulo, y ahí es donde chocan dos ramas que por lo
+  demás no se rozan. Los agentes especializados del proyecto van versionados en
+  [`.claude/agents/`](.claude/agents).
 - No afirmes que algo compila, arranca o funciona si no has ejecutado la comprobación correspondiente.
 - Nada de `push --force`, `reset --hard`, squash del historial heredado ni reescritura de historial
   sin autorización humana explícita.
@@ -161,9 +167,9 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     y el importador de datos reales están escritos y probados, pero cablearlos metería en la partida
     un atlas que no está aprobado); `cimiento: false` es un hueco conocido con su
     issue abierto, y la entrada es el registro de que se sabe, no un permiso — **no una plaza fija**:
-    #526 y #537 se cablearon, #536 se retiró, y hoy no queda ninguna. Que la categoría esté vacía es
-    su estado sano; si vuelve a llenarse, es deuda con fecha, no inventario. No enumeres aquí los
-    huecos vivos: esa lista es `HUERFANOS_DECLARADOS` y se desincroniza en cuanto uno se cierra.
+    #526 y #537 se cablearon y #536 se retiró. La categoría vacía es su estado sano; mientras tenga
+    entradas, son deuda con fecha y no inventario. No enumeres aquí los huecos vivos: esa lista es
+    `HUERFANOS_DECLARADOS` y se desincroniza en cuanto uno se cierra.
   - **Ventanas** — **Consola caliente del GM** (#276, `docs/CONSOLA_CALIENTE_GM.md`) fusionó las
     cuatro factorías originales (estado de nave y mapa vivo, V1/V2) en una sola ventana con pestañas
     (Estado, Mapa, Encuentros, Previsualización) y UN solo bucle de sondeo y backoff, sustituyendo
@@ -260,6 +266,23 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     un botón nuevo en `main.mjs`. La cantina solo pinta y traduce un clic en "abre esa mesa" — la
     autoridad la sigue resolviendo cada mesa por su cuenta al abrirse, nunca la ventana que lleva
     hasta ella.
+  - **Generador de NPC** — `scripts/npc-tablas.mjs` (tablas propias) y
+    `scripts/npc-generador.mjs` (motor puro), #676. Semilla más valor de desafío dan una ficha
+    completa, y la misma semilla da siempre el mismo NPC. Cuatro capas y **una sola importable**:
+    la ficha 5e sale del **SRD 5.1 (CC-BY-4.0)** con sus fórmulas de verdad —modificador,
+    competencia por VD, PG por dado de golpe—, y de Shin Megami Tensei, Persona y Pokémon se toma
+    solo la MECÁNICA (afinidades de seis grados, matriz de efectividad, etapas): ni un nombre.
+    De Argon HUD solo la FORMA del dato (acción/adicional/reacción/movimiento), y ahí no es
+    preferencia: `enhancedcombathud` es GPL-3.0 y este árbol GPL-2.0, que son **incompatibles** —no
+    se puede copiar ni adaptar código suyo—. Las mecánicas no se registran; los nombres y el arte
+    sí, y eso va **codificado**: una prueba recorre cada cadena que el generador puede emitir
+    —tablas y trescientas fichas generadas— y falla si aparece un término de esas obras. No es
+    teórico: pilló que la tabla de sílabas componía *Maranmir* y *Marasai* por llevar «Mar».
+    La matriz de efectividad se **deriva** de lo que cada elemento declara en vez de escribir
+    veintiocho casillas, y un elemento desconocido **falla** en vez de valer ×1, que convertiría una
+    errata en un NPC inmune a nada sin que saltara ninguna alarma. Es cimiento declarado: nadie lo
+    importa todavía porque *recordar* a quién has conocido es del núcleo y no de la escena, el mismo
+    reparto que #598 dejó abierto para el bestiario. Ver [docs/NPC_GENERADOR.md](docs/NPC_GENERADOR.md).
   - **Sección de la nave** — `scripts/seccion-nave.mjs` (planta declarativa y consultas, puro),
     `scripts/seccion-lienzo.mjs` (pintado 2D, sin color propio) y `scripts/seccion-nave-app.mjs`
     (ventana V1/V2), #427. El corte transversal con todas las salas a la vez: es el MAPA, y la
@@ -463,6 +486,50 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     sección, #508) manda sobre el checkpoint guardado, y un id que el catálogo no conoce cae al
     siguiente escalón en vez de dejar a nadie en la nada—, y esa decisión vive en el catálogo porque
     es sobre el catálogo, no en la ventana que la aplica.
+  - **Catálogos con procedencia, y el museo** — `scripts/procedencia-catalogo.mjs` es la ÚNICA
+    regla de licencia del módulo (#598): qué es una procedencia aceptable, con errores tipados por
+    `code` + `path`. La consumen el atlas (`catalogo-cosmografico.mjs`, #525, que sigue siendo
+    cimiento sin cablear a la espera de #213) y el catálogo de piezas (`catalogo-piezas.mjs`), y esa
+    unificación es el punto: dos validadores de licencia se desincronizan, y una licencia
+    desincronizada no es un fallo de forma. `catalogo-piezas.mjs` es lo que faltaba para unir las dos
+    mitades que #590 y #525 habían dejado sin hablarse — texto con procedencia por un lado, malla con
+    procedencia por otro—: una ficha declara `malla`, y el validador exige que ese ID exista de
+    verdad (el registro se le pasa desde fuera, así que sigue siendo puro). Su campo `naturaleza`
+    (escaneo, escaneo-de-vaciado, fotogrametría, reconstrucción, obra propia) es obligatorio y NO es
+    metadato: es lo que impide que una cartela diga «así era» de una pieza que es una reconstrucción
+    hecha después de que destruyeran el original, o que llame mármol a un vaciado en yeso. El crédito
+    de la cartela se **deriva** de la procedencia y no se escribe al lado, misma regla que el cartel
+    de reglas del blackjack (#553). La **sala del museo** (`scripts/museo-escena.mjs` +
+    `museo-piezas.mjs`, con `MUSEO` en `paleta.mjs`) es su primer consumidor real: tres piezas sobre
+    pedestales, andable, solo-GM, con la entrada por herramienta de la barra de escena y la salida
+    por un punto de interacción — la misma forma que la playa (#587), y por el mismo motivo (el
+    Phobos no tiene un museo, y colgarlo de un mamparo contaría una historia que nadie ha decidido).
+    Por eso está fuera de las invariantes de la nave en `nave-planta-phobos.test.mjs` y del minimapa.
+    Lo que el museo NO hace es la mitad del diseño: **enseña y ya está**. La cartela se pinta al
+    acercarse y se retira al apartarse (`accion: {tipo: "cartela"}` + el flanco de salida
+    `alSalirDeInteraccion` de #598); no marca piezas como vistas, no lleva la cuenta ni deja rastro,
+    porque la regla de `docs/FOUNDRY.md` es que una escena puede enseñar, transportar y ambientar,
+    pero no conceder, contar ni recordar. Un **bestiario** que registre qué ha encontrado la
+    tripulación sí recuerda, y por eso #598 lo deja fuera hasta que el núcleo tenga dónde guardar un
+    avistamiento. Tres piezas y no treinta es la disciplina de #590: lo caro no es convertir malla
+    —las dieciocho ya están en el árbol— sino escribir cada cartela, que es trabajo humano. Y la
+    copia de procedencia no se puede pudrir en silencio: una prueba la compara con las `FICHAS` de
+    `tools/convertir-estatua.mjs`, igual que la planta del Phobos se compara con su `.lua`.
+  - **Huesos y deformación de malla** — `scripts/rig-esqueleto.mjs` (#603, fase 1). La capa que le
+    faltaba al motor para que una malla importada pueda DOBLARSE: jerarquía de huesos con su pose de
+    reposo, pesos por vértice (máximo cuatro influencias, normalizados en el binding y no en cada
+    evaluación) y mezcla lineal de matrices. Se eligió esqueleto y no cortar por planos porque está
+    medido: una estatua escaneada es UNA sola pieza conectada, así que «detectar el brazo» no se
+    resuelve por topología, y cortar da piezas estáticas cuando lo que se quiere son cosas que se
+    mueven. **El motor no se toca**: esto entra y sale en `{vertices, caras}` y se compone la malla ya
+    deformada — un esqueleto dentro del rasterizador ataría la deformación a una época de consola
+    cuando es geometría y vale para las dos (#362). El reposo se declara **solo por traslación** (la
+    cabeza del hueso), y por eso no hay una sola inversión de matriz en el módulo: la inversa de un
+    reposo trasladado es restar el punto. Es la fase 1 y se para ahí: no hay pesos automáticos
+    (fase 2), ni retargeting entre esqueletos (fase 3), ni clips. Sigue **sin consumidor y declarado**
+    en `HUERFANOS_DECLARADOS`, porque la fase 4 depende de una decisión de arte que #603 deja abierta
+    —avatares todo-escaneado o todo-estilizado— y cablearlo antes es exactamente como sale la opción
+    incoherente del medio.
   - **Visor del piloto** — `scripts/visor-piloto.mjs` (geometría pura) y
     `scripts/visor-piloto-lienzo.mjs` (el <canvas>), #362. Lo que la nave tiene delante, en PSX,
     en la consola de pilotaje. Es la primera superficie 3D del módulo que **informa** en vez de
@@ -585,3 +652,23 @@ rutas que otro documento describe en prosa, sin que ningún test lo detecte). Al
 
 Regla general: el PR que cambia el código es también el lugar de corregir la prosa que ese código
 invalida — no una tarea de "documentación" aparte que se pospone.
+
+## `SeriousProton::string::find` devuelve `int`, y `-1` es "no encontrado"
+
+`SeriousProton::string` (en `SeriousProton/src/stringImproved.h`) redefine `find` con firma
+`int find(std::string_view sub, int start=0) const`: devuelve `int`, no `size_t`, y **`-1`**
+cuando no encuentra, no `std::string::npos`. La propia cabecera se apoya en ello
+(`if (find('\n') > -1 && ...)`), igual que `strip`, `split` y `replace`.
+
+Consecuencias al tocar C++ de este repositorio:
+
+- El idioma del repositorio es `find(...) > -1` (o `!= -1`). Escribir `!= std::string::npos`
+  **no** es un bug: el `-1` convertido a `size_t` es exactamente `npos`, así que da el mismo
+  resultado. Es peor por otro motivo — sugiere una semántica de `std::string` que esta clase
+  no tiene, y ya ha provocado dos PRs de "arreglo" que eran no-ops (#605 y #607). Por eso se
+  escribe `> -1` siempre: no por corrección, por legibilidad.
+- No es un descuido de upstream que haya que "arreglar": cambiarlo rompería todos los usos
+  existentes. Si molesta la constante mágica, es una propuesta para upstream
+  (ver [ADR-0007](docs/adr/0007-frontera-upstream.md)), no un cambio local.
+- `std::string::find` sigue comportándose como siempre; la excepción es sólo la clase de
+  SeriousProton, así que hay que mirar el tipo antes de asumir.

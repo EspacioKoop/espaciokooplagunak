@@ -93,10 +93,31 @@ Características propias integradas y verificadas:
 - **nivel de alerta compartido con toda la mesa**: el GM es el único que recibe
   telemetría, pero la alerta se difunde a todos los clientes —incluido quien
   entra tarde— porque una tripulación sabría de sobra que está en roja (#338);
-- **arte y música procedurales generados en el cliente**, sin un solo binario en
-  el repositorio ni contenido ajeno distribuido: grabado clásico, pixelart y
-  registros musicales deterministas por semilla, con la frontera de estilo
-  vigilada por pruebas ([`docs/FOUNDRY.md`](docs/FOUNDRY.md)).
+- **arte y música procedurales generados en el cliente**: grabado clásico,
+  pixelart y registros musicales deterministas por semilla, con la frontera de
+  estilo vigilada por pruebas ([`docs/FOUNDRY.md`](docs/FOUNDRY.md)). La regla
+  sigue siendo generar y no distribuir, pero **ya no es absoluta**, y conviene
+  decirlo aquí en vez de descubrirlo leyendo el árbol:
+  - Hay **cuatro PNG** en el módulo. Tres son el horizonte prerrenderizado y el
+    cuarto es la textura de muro (#584), que se prerrenderiza porque generarla
+    en cada arranque costaba más de lo que valía. No son arte ajeno: los produce
+    generadores que viven en `tools/`, y **los cuatro están vigilados**: si el
+    binario del árbol deja de corresponder a su generador, CI falla. La textura
+    de muro por una puerta en el flujo de trabajo
+    (`tools/prerender-piel.mjs --check`) y los tres del horizonte por
+    `horizonte-matte.test.mjs`, que lee los PNG guardados y los compara con lo
+    que el generador produce ahora. Distinto mecanismo, misma garantía.
+  - El museo **sí distribuye contenido ajeno**: escaneos 3D de vaciados del
+    *Statens Museum for Kunst*, todos **CC0 1.0**, cada uno con su ficha de
+    procedencia en la cabecera de su fichero y en
+    [`docs/PROCEDENCIA_ASSETS.md`](docs/PROCEDENCIA_ASSETS.md). La regla que se
+    aplica no es «nada ajeno», es **«nada sin ficha»**, y se comprueba con
+    pruebas que exigen que la cartela no mienta sobre lo que hay delante.
+- **espacios por los que se anda dentro de la nave**, en 3D retro de consola de
+  los 90: camarotes amueblados, luminarias que cuelgan del techo, minimapa que
+  muestra dónde está cada tripulante, y dos escenas de banco de pruebas —una
+  playa y una sala de museo— que hoy abre **solo el GM** desde la barra de
+  escena, porque no cuelgan de ninguna puerta de la nave.
 
 Infraestructura propia disponible:
 
@@ -204,9 +225,15 @@ su propia cadena de trabajo.
 - [x] **Assets de terceros con procedencia** (#590): entrada de malla ajena con
       decimado por colapso de aristas, UV triplanar y **ficha obligatoria** —
       obra, qué es el fichero, autoría, licencia, enlace y sha256.
-- [ ] **Museo, enciclopedia y bestiario** (#598): el segundo consumidor del
-      catálogo con procedencia, y la prueba de que el kit sirve para contenido
-      y no solo para el banco de pruebas.
+- [x] **La sala del museo** (#598): el consumidor que le faltaba al catálogo con
+      procedencia. Una ficha ya puede apuntar a una malla —una sola regla de
+      licencia para texto y geometría— y tres piezas se enseñan en una sala
+      andable, con su cartela diciendo qué es cada fichero: un vaciado en yeso
+      escaneado no es el mármol, y una reconstrucción no es «así era».
+- [ ] **Enciclopedia y bestiario** (#598): la enciclopedia cabe como superficie
+      de consulta; el bestiario **no**, hasta que el núcleo tenga dónde guardar
+      un avistamiento — registrar qué ha encontrado la tripulación es recordar,
+      y eso no es de una escena de Foundry.
 - [ ] **Que una escena nueva cueste 1–3 PRs** y el último no toque ningún módulo
       compartido. Es la métrica de #589, y hasta que no se cumpla en una escena
       de verdad, el kit no está terminado.

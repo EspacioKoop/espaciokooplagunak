@@ -39,16 +39,21 @@ import { rngSemilla } from "./ventana-nave.mjs";
  * La MAQUINARIA: qué props del vocabulario común (#583) puede plantar este
  * módulo.
  *
- * Sigue siendo una lista CERRADA y corta a propósito: cuatro piezas que se
+ * Sigue siendo una lista CERRADA y corta a propósito: unas pocas piezas que se
  * combinan, no un mueble distinto por sala. Lo que cambió en #583 es dónde viven
  * sus medidas —en `nave-props.mjs`, con las del resto de la nave, bajo la misma
  * rejilla— y no cuáles son. Una silla no aparece aquí aunque esté en el
  * vocabulario: en un cuarto de reactor no pinta nada.
  *
- * Las medidas son de MÁQUINA: nada llega a la altura de los ojos (1,45) salvo el
- * conducto, que es lo único que se mira hacia arriba.
+ * Sobre la ALTURA, dicho como es y no como se contaba: lo que se respeta es que
+ * nada haga de muro interior. El tope real son 1,95 m —lo que mide un armario—,
+ * no los 1,45 de la altura de los ojos: `armario` lleva 1,9 desde antes de que
+ * existiera esta nota, y `litera` y `taquilla` miden 1,8. Por encima del tope
+ * solo pasa el `conducto`, que va de suelo a techo y es lo único que se mira
+ * hacia arriba. El test comprobaba 1,95 mientras el texto decía 1,45: quien
+ * viniera a añadir un mueble se creía una regla que nadie aplicaba.
  */
-const MAQUINARIA = Object.freeze(["bancada", "armario", "conducto", "registro"]);
+const MAQUINARIA = Object.freeze(["bancada", "armario", "conducto", "registro", "litera", "taquilla"]);
 
 export const CATALOGO = Object.freeze(
   Object.fromEntries(MAQUINARIA.map((clave) => [clave, VOCABULARIO[clave]])),
@@ -144,16 +149,21 @@ function despejado(sitio, { puertas, consola }) {
  * @param {number} opciones.semilla
  * @returns {Array<{nombre:string, centro:number[], medidas:number[], color:string}>}
  */
-export function piezasMobiliarioSala({ sala, sistema, puertas = [], consola = null, semilla = 1 }) {
+export function piezasMobiliarioSala({ sala, sistema, puertas = [], consola = null, semilla = 1, receta }) {
   const base = POR_SISTEMA[sistema] ?? SIN_SISTEMA;
-  // La receta se REPITE con el tamaño de la sala. Con una pasada fija, el
-  // reactor (22x22 m) se quedaba con cinco muebles perdidos en un descampado y
-  // una sala pequeña salía abarrotada con los mismos cinco. Lo que se mantiene
-  // constante es la DENSIDAD —una pieza cada seis metros de muro—, igual que las
-  // luminarias mantienen su cadencia en vez de su número (#555).
-  const perimetro = 2 * (sala.ancho + sala.profundidad);
-  const pasadas = Math.max(1, Math.min(TOPE_PASADAS, Math.round(perimetro / (base.length * 6))));
-  const receta = Array.from({ length: pasadas }, () => base).flat();
+  let recetaFinal;
+  if (receta) {
+    recetaFinal = receta;
+  } else {
+    // La receta se REPITE con el tamaño de la sala. Con una pasada fija, el
+    // reactor (22x22 m) se quedaba con cinco muebles perdidos en un descampado y
+    // una sala pequeña salía abarrotada con los mismos cinco. Lo que se mantiene
+    // constante es la DENSIDAD —una pieza cada seis metros de muro—, igual que las
+    // luminarias mantienen su cadencia en vez de su número (#555).
+    const perimetro = 2 * (sala.ancho + sala.profundidad);
+    const pasadas = Math.max(1, Math.min(TOPE_PASADAS, Math.round(perimetro / (base.length * 6))));
+    recetaFinal = Array.from({ length: pasadas }, () => base).flat();
+  }
   const libres = sitiosJuntoAlMuro(sala).filter((sitio) => despejado(sitio, { puertas, consola }));
   if (libres.length === 0) return [];
 
@@ -166,7 +176,7 @@ export function piezasMobiliarioSala({ sala, sistema, puertas = [], consola = nu
     .sort((a, b) => a.orden - b.orden)
     .map(({ sitio }) => sitio);
 
-  return receta.slice(0, barajados.length).flatMap((clave, indice) => {
+  return recetaFinal.slice(0, barajados.length).flatMap((clave, indice) => {
     const sitio = barajados[indice];
     // Un mueble se apoya de LARGO contra su muro: girado, sobresaldría hacia el
     // paso en vez de pegarse a la pared. Un cuarto de vuelta es exactamente el

@@ -28,6 +28,26 @@ Prefijos recomendados:
 
 Tras el bootstrap inicial, todo cambio debe llegar a `main` mediante pull request. No uses `push --force` sobre ramas compartidas.
 
+### Protección de `main`
+
+La protección activa de `main` exige:
+
+- una aprobación humana de alguien distinto de quien realizó el último cambio;
+- todas las conversaciones de revisión resueltas;
+- `Puerta de build C++/Lua`, `Puerta del módulo Foundry`, `Puerta de tools`,
+  `Puerta de docker y puente`, `Puerta de imágenes`, `CodeQL` y `semgrep` en
+  estado aceptado por GitHub;
+- la misma política para administradores, sin force-push ni borrado de la rama.
+
+No se exige actualizar la rama con `main` antes de integrar (`strict: false`). Si
+una incidencia de infraestructura obliga a modificar temporalmente la regla, el
+propietario debe dejar constancia en el issue afectado, limitar el cambio a la
+recuperación, restaurar la política inmediatamente y volver a verificarla por
+API. Al cambiar los workflows principales, revisa que estos siete nombres sigan
+correspondiendo a checks reales que se publican en toda pull request.
+
+Si hay varias personas o agentes trabajando a la vez, [`docs/TRABAJO_PARALELO_AGENTES.md`](docs/TRABAJO_PARALELO_AGENTES.md) dice qué áreas pueden ir en paralelo, qué archivos son puntos de colisión conocidos y cómo se parte un issue en unidades que se puedan entregar por separado.
+
 ## Issues
 
 Un issue útil incluye:
@@ -75,6 +95,8 @@ Se mantienen inicialmente las convenciones originales de EmptyEpsilon:
 - Escenarios y lógica de misión en Lua.
 
 Evita reformateos masivos mezclados con cambios funcionales.
+
+- En SeriousProton la clase `string` sobrescribe `find` para devolver `int` y `-1` cuando no encuentra (no `size_t` ni `string::npos`). Por tanto, el idioma establecido en el repositorio es `find(x) > -1`. Escribir `find(x) != string::npos` funciona por accidente porque `-1` convertido a `size_t` es exactamente `npos`, pero engaña a quien lo lee y ha provocado cambios innecesarios (PRs #605 y #607). Siempre usar `> -1`.
 
 ## Localización es-ES
 

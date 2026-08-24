@@ -40,6 +40,18 @@ const raizScripts = join(raizModulo, "scripts");
  * la entrada es el registro de que se sabe, no un permiso.
  */
 const HUERFANOS_DECLARADOS = Object.freeze({
+  "convocatoria-estancia.mjs": {
+    cimiento: true,
+    issue: 587,
+    motivo:
+      "Resuelve a donde llega la tripulacion cuando el GM la convoca a una " +
+      "estancia. No lo importa nadie TODAVIA porque el cableado a la ventana de " +
+      "Andar es su propia tarjeta: la playa (#587) y el museo (#598) no cuelgan " +
+      "de ninguna puerta de la nave, asi que hoy solo los abre el GM y la " +
+      "tripulacion no los pisa. Se entrega antes el modulo puro para que la " +
+      "decision de quien puede convocar y de donde se aparece viva en un sitio " +
+      "probable sin Foundry delante, en vez de nacer enredada en la interfaz.",
+  },
   "audio-ficheros.mjs": {
     cimiento: true,
     issue: 571,
@@ -62,6 +74,17 @@ const HUERFANOS_DECLARADOS = Object.freeze({
       "codificar tres PNG en cada carga para no mirarlos, que es justo lo " +
       "contrario de prerenderizar.",
   },
+  "rig-esqueleto.mjs": {
+    cimiento: false,
+    issue: 603,
+    motivo:
+      "Deformación de malla por huesos, fase 1 de #603. No lo importa nadie " +
+      "todavía porque su consumidor es la fase 4 (bustos, PC/NPC y criaturas con " +
+      "partes importadas) y esa fase depende de una decisión de arte que sigue " +
+      "abierta en el issue: avatares todo-escaneado o todo-estilizado. Cablearlo " +
+      "antes de esa decisión es exactamente cómo sale la opción incoherente del " +
+      "medio, que es la que el issue avisa que sale sola si nadie decide.",
+  },
   "catalogo-cosmografico.mjs": {
     cimiento: true,
     issue: 525,
@@ -80,6 +103,27 @@ const HUERFANOS_DECLARADOS = Object.freeze({
       "datos al formato, y cablearlo metería en la partida un atlas que Varo y " +
       "Eloy no han aprobado. Que lo que produce es válido lo comprueba " +
       "`atlas-hyg.test.mjs` contra el validador, sin necesidad de consumidor.",
+  },
+  "npc-tablas.mjs": {
+    cimiento: true,
+    issue: 676,
+    motivo:
+      "Tablas propias del generador de NPC: silabas, arquetipos, elementos y " +
+      "lineas. Solo lo importa npc-generador.mjs, que a su vez todavia no " +
+      "cuelga de ninguna puerta.",
+  },
+  "npc-generador.mjs": {
+    cimiento: true,
+    issue: 676,
+    motivo:
+      "Motor puro del generador de NPC: semilla mas valor de desafio dan una " +
+      "ficha. No lo importa nadie TODAVIA a proposito. Lo que falta para que " +
+      "se llegue jugando no es cableado sino una decision que no se toma de " +
+      "paso: un habitante al que has conocido es algo que se RECUERDA, y " +
+      "docs/FOUNDRY.md deja recordar fuera de la escena. Es el mismo reparto " +
+      "que #598 dejo abierto para el bestiario. Se entrega antes el motor para " +
+      "que la matematica del SRD y la limpieza de nombres se prueben sin " +
+      "Foundry delante.",
   },
   "nave-movimiento-sala-prueba.mjs": {
     cimiento: true,
@@ -166,8 +210,10 @@ test("todo módulo de scripts/ es alcanzable desde el manifiesto, o está declar
       noDeclarados.map((modulo) => `  - scripts/${modulo}`).join("\n") +
       "\n\nCablea el módulo a un consumidor real, retíralo, o —si hace falta " +
       "dejarlo— añádelo a HUERFANOS_DECLARADOS en este archivo con su motivo y el " +
-      "issue donde se decide, y anótalo en la sección de Arquitectura de " +
-      "CLAUDE.md (#523). Un comentario que nombre el módulo NO cuenta como " +
+      "issue donde se decide (#523). NO lo enumeres ademas en CLAUDE.md: ese " +
+      "documento dice expresamente que los huecos VIVOS se listan aqui, porque " +
+      "alli se desincronizan en cuanto uno se cierra. Un comentario que nombre " +
+      "el módulo NO cuenta como " +
       "consumidor: es justo lo que se le escapó al barrido manual de #523.",
   );
 });

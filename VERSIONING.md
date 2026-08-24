@@ -1,34 +1,29 @@
-# Política de Versionado Semántico (SemVer)
+# Política de versionado
 
-Este proyecto sigue estrictamente las reglas de [Versionado Semántico 2.0.0](https://semver.org/lang/es/).
+Los releases públicos de Espaciokoop Lagunak usan [SemVer 2.0.0](https://semver.org/lang/es/).
+La fuente canónica de la versión de un release es su etiqueta Git `vMAJOR.MINOR.PATCH`.
+El número `0.4.0` de `foundry-module/module.json` describe la versión del módulo Foundry
+y no sustituye a la etiqueta del release del repositorio. CMake conserva su versión
+calendario heredada mientras no se acuerde una migración independiente.
 
-## Estructura de Versión: `MAJOR.MINOR.PATCH`
+## Incrementos
 
-1. **MAJOR**: Incremento incompatible con versiones anteriores.
-   - Ejemplo: Cambios en la API pública que rompen integraciones existentes.
-   - Ejemplo: Eliminación de funcionalidades críticas.
-2. **MINOR**: Nuevas funcionalidades compatibles hacia atrás.
-   - Ejemplo: Añadir nuevos módulos o características sin afectar lo existente.
-3. **PATCH**: Correcciones de bugs compatibles hacia atrás.
-   - Ejemplo: Arreglos de seguridad o errores lógicos menores.
+- **MAJOR**: cambio incompatible con la API o el formato publicado.
+- **MINOR**: funcionalidad compatible hacia atrás.
+- **PATCH**: corrección compatible hacia atrás.
 
-## Proceso de Release
+Las versiones preliminares siguen el formato SemVer (`1.0.0-rc.1`), pero el helper
+actual solo propone incrementos de versiones estables. Una política de promoción de
+pre-releases se añadirá cuando exista un primer release que la necesite.
 
-1. **Preparación**:
-   - Actualizar el número de versión en `package.json` o configuración principal.
-   - Generar `CHANGELOG.md` automático o manual.
-2. **Etiquetado (Tagging)**:
-   - Crear tag firmado: `git tag -s v1.2.3 -m "Release v1.2.3"`
-3. **Publicación**:
-   - Push de tags: `git push origin --tags`
-   - Crear Release en GitHub asociado al tag.
+## Flujo reproducible
 
-## Pre-Release Versions
+1. Asegura que estás en la rama de release, sincronizado con su remoto y con el árbol limpio.
+2. Ejecuta `scripts/release_helper.sh {major|minor|patch} --dry-run` y revisa la propuesta.
+3. Ejecuta el mismo comando con `--create-tag` cuando la propuesta esté aprobada.
+4. Revisa `git show vX.Y.Z` y publica únicamente esa etiqueta: `git push origin vX.Y.Z`.
+5. Crea el release de GitHub asociado al tag y documenta cambios, pruebas y compatibilidad.
 
-Para versiones de prueba (alpha, beta, rc):
-- Formato: `1.0.0-alpha.1`, `1.0.0-beta.2`, `1.0.0-rc.1`
-- Estas versiones no siguen estrictamente SemVer en cuanto a estabilidad garantizada.
-
----
-*Documento generado como parte del Issue #720*
-*Firmado por: Teseo (Qwen3.7)*
+El helper nunca publica tags, usa `git push --tags`, modifica archivos de versión ni
+requiere una clave GPG implícitamente. La firma de tags, si se convierte en requisito,
+deberá documentarse y automatizarse como una decisión separada.

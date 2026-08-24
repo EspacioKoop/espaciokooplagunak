@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "declarations": [
+    {
+      "module": "audio-ficheros.mjs",
+      "status": "declared-orphan",
+      "reason": "Reproductor preparado antes de incorporar ficheros de audio.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-08-24",
+      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/571"}
+    },
+    {
+      "module": "atlas-hyg.mjs",
+      "status": "declared-orphan",
+      "reason": "Adaptador de catálogo pendiente de aprobación del atlas.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-08-24",
+      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/568"}
+    },
+    {
+      "module": "catalogo-cosmografico.mjs",
+      "status": "declared-orphan",
+      "reason": "Validador de atlas conservado hasta decidir su integración.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-08-24",
+      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/525"}
+    },
+    {
+      "module": "convocatoria-estancia.mjs",
+      "status": "declared-orphan",
+      "reason": "Módulo preparado para el flujo de convocatoria de estancias.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-08-24",
+      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/587"}
+    },
+    {
+      "module": "horizonte-preset.mjs",
+      "status": "declared-orphan",
+      "reason": "Generador usado por herramientas de prerender y no por el arranque.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-08-24",
+      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/584"}
+    },
+    {
+      "module": "npc-generador.mjs",
+      "status": "declared-orphan",
+      "reason": "Motor de NPC preparado antes de decidir su puerta narrativa.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-08-24",
+      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/676"}
+    },
+    {
+      "module": "npc-tablas.mjs",
+      "status": "declared-orphan",
+      "reason": "Tablas del generador de NPC pendientes de cableado narrativo.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-08-24",
+      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/676"}
+    },
+    {
+      "module": "nave-movimiento-sala-prueba.mjs",
+      "status": "declared-orphan",
+      "reason": "Banco de pruebas deliberadamente fuera del catálogo jugable.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-08-24",
+      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/427"}
+    },
+    {
+      "module": "rig-esqueleto.mjs",
+      "status": "declared-orphan",
+      "reason": "Rig preparado para la fase de avatares y criaturas.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-08-24",
+      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/603"}
+    }
+  ]
+}

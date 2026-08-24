@@ -38,7 +38,7 @@ import { ANCHO_TESELA, METROS_POR_TEXEL, texturaMuro } from "./piel-textura.mjs"
 import { piezasPielHoja } from "./nave-piel-puerta.mjs";
 import { piezasPielColumna, piezasPielObjeto } from "./nave-piel-objeto.mjs";
 import { piezasPielSuelo, piezasPielTecho } from "./nave-piel-suelo.mjs";
-import { piezasLuminarias } from "./nave-luminaria.mjs";
+import { piezasLuminarias, focosLuminarias } from "./nave-luminaria.mjs";
 import { crearPlanta } from "./nave-movimiento.mjs";
 import { poligonosOtrosJugadores } from "./nave-avatares-render.mjs";
 
@@ -608,11 +608,6 @@ export function crearSalaCaja({
   pielPuertas = true,
   pielObjetos = true,
   pielSuelo = true,
-  // Salud del sistema de la sala e instante, para que la luminaria parpadee
-  // cuando el sistema está dañado (#e8a36cf5). OPCIONALES a propósito: quien no
-  // los pase ve exactamente lo que veía antes, con la luminaria entera.
-  health = null,
-  timeMs = 0,
 }) {
   const muros = [
     { x: -GROSOR_MURO, z: -GROSOR_MURO, ancho: ancho + GROSOR_MURO * 2, profundidad: GROSOR_MURO },
@@ -701,12 +696,13 @@ export function crearSalaCaja({
           ...piezasPielTecho({ ancho, profundidad, altura: ALTURA }),
         ]
       : []),
-    ...piezasLuminarias({ ancho, profundidad, altura: ALTURA, health, timeMs }),
+    ...piezasLuminarias({ ancho, profundidad, altura: ALTURA }),
   ]);
 
   const planta = crearPlanta({ ancho, profundidad, obstaculos: [...columnas, ...obstaculosMobiliario] });
   const tieneVentanas = ventanas.length > 0;
   const cielo = tieneVentanas ? campoEstelar(semillaCielo, { cantidad: cantidadEstrellas }) : null;
+  const focos = focosLuminarias({ ancho, profundidad, altura: ALTURA });
 
   /**
    * Compone la escena vista desde `(x, z)` mirando a `yaw`, con `y` el
@@ -779,6 +775,8 @@ export function crearSalaCaja({
         // CÁMARA fingido rotando el mundo al revés, no el giro de una pieza
         // en una vitrina — ver el comentario de `luzFija` en `retro3d.mjs`.
         luzFija: true,
+        focos,
+        observador: camara,
       }),
     );
 

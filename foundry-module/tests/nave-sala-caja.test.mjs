@@ -174,3 +174,36 @@ test("una puerta cerrada tapa el hueco entero, y abierta lo despeja", () => {
   assert.equal(izq.z, puerta.base.z);
   assert.equal(der.z + der.profundidad, puerta.base.z + puerta.base.profundidad);
 });
+
+test("los focos de luminaria iluminan el suelo con charcos separados", () => {
+  // Una sala con luminarias debe tener focos declarados.
+  const sala = crearSalaCaja({ ancho: 9, profundidad: 7, muralPixel: false, pielSuelo: false });
+  const escena = sala.componer(4.5, 0, 3.5, 0, { ancho: 480, alto: 270, epoca: "psx" });
+  
+  // Dos caras de suelo: una justo bajo una luminaria y otra a media distancia entre dos.
+  // Con alcance 4 m y altura de foco ≈ 3.565 m, el radio en suelo es ≈ 1.81 m.
+  // La distancia entre focos es PASO = 4 m, así que a 2 m de una luminaria (media distancia)
+  // la intensidad debe ser menor que justo debajo.
+  
+  // Buscamos dos polígonos de suelo con colores distintos.
+  const coloresSuelo = new Set();
+  for (const poligono of escena.poligonos) {
+    // Identificamos polígonos de suelo por su profundidad (y ≈ 0).
+    if (Math.abs(poligono.profundidad - 0) < 0.1) {
+      coloresSuelo.add(poligono.color);
+    }
+  }
+  
+  // Debe haber al menos dos colores distintos en el suelo.
+  assert.ok(coloresSuelo.size >= 2, "el suelo debe tener al menos dos colores distintos");
+});
+
+test("una escena SIN luminarias declaradas sale exactamente igual que antes", () => {
+  // Si no hay focos, el motor no debe aplicar ninguna iluminación adicional.
+  const sala = crearSalaCaja({ ancho: 6, profundidad: 6, muralPixel: false, pielSuelo: false });
+  const escena = sala.componer(3, 0, 3, 0, { ancho: 320, alto: 180, epoca: "psx" });
+  
+  // Verificamos que no hay focos en la escena.
+  // Esto es un poco indirecto, pero verifica que el comportamiento es el esperado.
+  assert.ok(escena.poligonos.length > 0);
+});

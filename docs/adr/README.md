@@ -1,24 +1,32 @@
-# Architecture Decision Records (ADRs)
+# Registro de decisiones de arquitectura (ADR)
 
-Este directorio contiene los registros de decisiones de arquitectura del proyecto Espacio Kooplagunak.
+Este directorio contiene las decisiones arquitectónicas de Espaciokoop
+Lagunak. Las propuestas se discuten primero en issues; cada ADR registra una
+decisión tomada y verificada en `main`.
 
-## ¿Qué es un ADR?
-Un ADR es un documento que captura una decisión arquitectónica importante junto con su contexto y consecuencias.
+## Proceso y convenciones
 
-## Proceso de creación
-1. Copiar `0000-template.md` como `NNNN-titulo-descriptivo.md`
-2. Rellenar todas las secciones
-3. Enviar como PR para discusión
-4. Una vez aprobado, cambiar estado a "Aceptado"
+1. Abrir un issue con el contexto y las alternativas.
+2. Copiar `0000-template.md` como `NNNN-titulo-corto-en-kebab-case.md`.
+3. Completarlo y enviarlo como PR.
+4. Tras su aceptación, no editar el ADR: crear otro que lo sustituya si cambia
+   la decisión.
 
-## Estados posibles
-- Propuesto
-- Aceptado
-- Rechazado
-- Obsoleto
+Estados: **Propuesta** · **Aceptada** · **Sustituida por ADR-NNNN** ·
+**Deprecada**.
 
-## Plantilla
-Ver `0000-template.md`
+## Índice
 
----
-*Documentación institucionalizada por Teseo (Qwen3.7)*
+| ADR | Título | Estado |
+|---|---|---|
+| [0001](0001-exec-lua-nunca-expuesto.md) | `/exec.lua` nunca expuesto; el puente es el único cliente | Aceptada |
+| [0002](0002-autoridad-de-datos-foundry-vs-simulacion.md) | Autoridad de datos: Foundry = narrativa, simulación = nave | Sustituida por ADR-0008 |
+| [0003](0003-transporte-polling-http.md) | Transporte del contrato v0: polling HTTP, WebSocket aplazado | Aceptada |
+| [0004](0004-seriousproton-hermano-fijado-por-sha.md) | SeriousProton como repo hermano fijado por SHA (no submódulo) | Aceptada |
+| [0005](0005-cobertura-cortada-en-fase-3.md) | Cobertura de línea/rama cortada deliberadamente en fase 3 | Aceptada |
+| [0006](0006-vendorizar-highlight-js.md) | Vendorizar highlight.js en `script_docs/` (CodeQL 8/9) | Aceptada |
+| [0007](0007-frontera-upstream.md) | Frontera upstream: arreglos en código heredado van primero a upstream | Aceptada |
+| [0008](0008-standalone-first-autoridad-del-nucleo.md) | Standalone-first: la autoridad de campaña vive en el núcleo | Aceptada |
+| [0009](0009-modelo-permisos-por-puesto-v1.md) | Modelo de permisos por puesto v1 | Aceptada |
+| [0010](0010-hackeo-solo-nativo.md) | El hackeo se queda solo-nativo | Aceptada |
+| [0011](0011-riesgos-de-seguridad-y-defensa-en-profundidad.md) | Riesgos de seguridad del fork y defensa en profundidad | Propuesta |

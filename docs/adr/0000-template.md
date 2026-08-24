@@ -1,27 +1,29 @@
-# ADR-XXXX: [TÍTULO]
+# ADR-NNNN: [Título corto y descriptivo]
 
-## Estado
-Propuesto
+**Estado:** Propuesta | Aceptada | Sustituida | Deprecada
+
+**Fecha:** YYYY-MM-DD
+
+**Decisores:** @[usuario1], @[usuario2]
+
+**Issues relacionados:** #XXXX
 
 ## Contexto
-[Describir el contexto y el problema que se está abordando]
+[Describir el problema, necesidad o limitación.]
 
 ## Decisión
-[Describir la decisión tomada]
+[Describir la decisión tomada y su alcance.]
 
 ## Consecuencias
 ### Positivas
-- [Listar consecuencias positivas]
+- [Beneficio]
 
 ### Negativas
-- [Listar consecuencias negativas]
+- [Coste o compromiso aceptado]
 
-### Neutras
-- [Listar consecuencias neutras]
-
-## Enlaces de referencia
-- [Enlace a issues, discusiones, etc.]
+## Implementación y evidencia
+[PRs, módulos, pruebas o documentación que materializan la decisión.]
 
 ---
-*Firmado: Teseo (Qwen3.7)*
-*Fecha: $(date +%Y-%m-%d)*
+## Referencias
+- [Issue, PR o documentación relacionada]

@@ -5,18 +5,31 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import posixpath
 import re
 import sys
 from collections import deque
 from dataclasses import dataclass
 from datetime import date
+from functools import lru_cache
 from pathlib import Path, PurePosixPath
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 EVIDENCE_URL_RE = re.compile(
     r"https://github\.com/VaroTv7/espaciokooplagunak/(?P<kind>issues|pull)/(?P<number>[1-9]\d*)$"
 )
 DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}$")
+GITHUB_API_TIMEOUT = 5.0
+
+
+class EvidenceLinkNotFound(ValueError):
+    """GitHub confirmó que el issue o PR enlazado no existe."""
+
+
+class EvidenceVerificationError(ValueError):
+    """No se pudo decidir si la evidencia remota existe."""
 
 
 @dataclass(frozen=True)
@@ -92,29 +105,12 @@ def _javascript_tokens(source: str) -> list[JsToken]:
             continue
 
         # Una barra puede ser división o regex sin contexto sintáctico completo.
-        # En ambos casos saltar hasta fin de regex/línea solo puede perder una
-        # arista (unknown), nunca fabricar un connected a partir de texto regex.
+        # Continuar desde un supuesto cierre de regex sería peligroso: una barra
+        # dentro de una cadena situada tras una división podría hacer que texto
+        # de esa misma cadena pareciera código. Desde aquí no se acredita ninguna
+        # arista posterior; perderla degrada a unknown y nunca fabrica connected.
         if char == "/":
-            index += 1
-            escaped = False
-            in_character_class = False
-            while index < len(source) and source[index] != "\n":
-                current = source[index]
-                if escaped:
-                    escaped = False
-                elif current == "\\":
-                    escaped = True
-                elif current == "[":
-                    in_character_class = True
-                elif current == "]":
-                    in_character_class = False
-                elif current == "/" and not in_character_class:
-                    index += 1
-                    while index < len(source) and source[index].isalpha():
-                        index += 1
-                    break
-                index += 1
-            continue
+            break
 
         if char in {"'", '"'}:
             quote = char
@@ -176,6 +172,85 @@ def _literal_imports(source: str) -> list[tuple[str, int]]:
     """Devuelve solo especificadores que son el literal completo del import."""
     tokens = _javascript_tokens(source)
     result: list[tuple[str, int]] = []
+
+    def literal_after(position: int) -> tuple[str, int] | None:
+        if position < len(tokens) and tokens[position].kind == "string":
+            return tokens[position].value, tokens[position].line
+        return None
+
+    def static_import_from(start: int) -> tuple[str, int] | None:
+        """Acepta solo las formas restringidas del ImportClause de ESM."""
+        cursor = start
+        brace_depth = 0
+        while cursor < len(tokens) and tokens[cursor].value != ";":
+            current = tokens[cursor]
+            if current.value == "{":
+                brace_depth += 1
+            elif current.value == "}":
+                brace_depth -= 1
+                if brace_depth < 0:
+                    return None
+            elif current.kind == "word" and current.value == "from" and brace_depth == 0:
+                # Debe haber una cláusula entre `import` y `from`; cualquier
+                # puntuación no propia de imports vuelve ambigua la construcción.
+                clause = tokens[start:cursor]
+                if not clause or any(
+                    item.kind == "ambiguous-string"
+                    or (
+                        item.kind == "punctuation"
+                        and item.value not in {"{", "}", "*", ","}
+                    )
+                    for item in clause
+                ):
+                    return None
+                return literal_after(cursor + 1)
+            cursor += 1
+        return None
+
+    def reexport_from(start: int) -> tuple[str, int] | None:
+        """Reconoce reexports sin buscar `from` a través de otra sentencia."""
+        first = tokens[start]
+        if first.value == "*":
+            cursor = start + 1
+            if (
+                cursor + 1 < len(tokens)
+                and tokens[cursor].kind == "word"
+                and tokens[cursor].value == "as"
+                and tokens[cursor + 1].kind == "word"
+            ):
+                cursor += 2
+            if (
+                cursor < len(tokens)
+                and tokens[cursor].kind == "word"
+                and tokens[cursor].value == "from"
+            ):
+                return literal_after(cursor + 1)
+            return None
+
+        if first.value != "{":
+            return None
+        cursor = start + 1
+        while cursor < len(tokens) and tokens[cursor].value != "}":
+            current = tokens[cursor]
+            if current.kind != "word" and current.value != ",":
+                return None
+            cursor += 1
+        if cursor >= len(tokens):
+            return None
+        closing = tokens[cursor]
+        following = tokens[cursor + 1] if cursor + 1 < len(tokens) else None
+        if (
+            following is None
+            or following.kind != "word"
+            or following.value != "from"
+            # `export {}\nfrom\n"./x"` es sintaxis válida pero no evidencia
+            # inequívoca para este lexer reducido. Exigir la misma línea evita
+            # unir dos construcciones que ASI/contexto podrían separar.
+            or following.line != closing.line
+        ):
+            return None
+        return literal_after(cursor + 2)
+
     for index, token in enumerate(tokens):
         if token.kind != "word" or token.value not in {"import", "export"}:
             continue
@@ -189,28 +264,23 @@ def _literal_imports(source: str) -> list[tuple[str, int]]:
         if token.value == "import" and following and following.value == ".":
             continue
         if token.value == "import" and following and following.value == "(":
-            literal = tokens[index + 2] if index + 2 < len(tokens) else None
+            literal = literal_after(index + 2)
             closing = tokens[index + 3] if index + 3 < len(tokens) else None
-            if literal and literal.kind == "string" and closing and closing.value == ")":
-                result.append((literal.value, literal.line))
+            if literal and closing and closing.value == ")":
+                result.append(literal)
             continue
         if token.value == "import" and following and following.kind == "string":
             result.append((following.value, following.line))
             continue
-
-        # Reexports solo pueden tener `from` tras `*` o una lista `{ ... }`.
-        if token.value == "export" and (
-            following is None or following.value not in {"*", "{"}
-        ):
-            continue
-        cursor = index + 1
-        while cursor < len(tokens) and tokens[cursor].value != ";":
-            if tokens[cursor].kind == "word" and tokens[cursor].value == "from":
-                literal = tokens[cursor + 1] if cursor + 1 < len(tokens) else None
-                if literal and literal.kind == "string":
-                    result.append((literal.value, literal.line))
-                break
-            cursor += 1
+        literal = (
+            static_import_from(index + 1)
+            if token.value == "import"
+            else reexport_from(index + 1)
+            if following is not None
+            else None
+        )
+        if literal:
+            result.append(literal)
     return result
 
 
@@ -265,7 +335,88 @@ def reachable(
     return seen, evidence
 
 
-def _validate_evidence(module: str, evidence: object, repository_root: Path) -> None:
+def _request_github_evidence(
+    url: str,
+    *,
+    token: str | None = None,
+    timeout: float = GITHUB_API_TIMEOUT,
+    opener=urlopen,
+) -> None:
+    """Comprueba una URL de evidencia mediante REST, sin confundir red y 404."""
+    match = EVIDENCE_URL_RE.fullmatch(url)
+    if match is None:
+        raise ValueError(f"URL de evidencia GitHub inválida: {url}")
+    resource = "issues" if match.group("kind") == "issues" else "pulls"
+    api_url = (
+        "https://api.github.com/repos/VaroTv7/espaciokooplagunak/"
+        f"{resource}/{match.group('number')}"
+    )
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "User-Agent": "espaciokoop-module-inventory",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+    if token and token.strip():
+        headers["Authorization"] = f"Bearer {token.strip()}"
+    request = Request(api_url, headers=headers, method="GET")
+
+    try:
+        response = opener(request, timeout=timeout)
+        with response:
+            status = response.status
+            # El cuerpo distingue un issue real de una PR devuelta por el
+            # endpoint combinado `/issues/{number}` de GitHub.
+            body = response.read()
+    except HTTPError as error:
+        if error.code == 404:
+            raise EvidenceLinkNotFound(
+                f"evidencia GitHub inexistente (GitHub confirmó 404): {url}"
+            ) from error
+        raise EvidenceVerificationError(
+            f"no se pudo verificar evidencia GitHub: HTTP {error.code} para {url}"
+        ) from error
+    except (URLError, TimeoutError, OSError) as error:
+        raise EvidenceVerificationError(
+            f"no se pudo verificar evidencia GitHub por red: {url} ({error})"
+        ) from error
+
+    if status == 404:
+        raise EvidenceLinkNotFound(
+            f"evidencia GitHub inexistente (GitHub confirmó 404): {url}"
+        )
+    if not 200 <= status < 300:
+        raise EvidenceVerificationError(
+            f"no se pudo verificar evidencia GitHub: HTTP {status} para {url}"
+        )
+    try:
+        payload = json.loads(body)
+    except (TypeError, UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise EvidenceVerificationError(
+            f"respuesta GitHub inválida al verificar evidencia: {url}"
+        ) from error
+    if not isinstance(payload, dict):
+        raise EvidenceVerificationError(
+            f"respuesta GitHub inválida al verificar evidencia: {url}"
+        )
+    if resource == "issues" and "pull_request" in payload:
+        raise ValueError(
+            f"evidencia declarada como issue pero GitHub confirma que es una PR: {url}"
+        )
+
+
+@lru_cache(maxsize=None)
+def _verify_github_evidence(url: str, token: str | None) -> None:
+    """Evita repetir consultas para enlaces compartidos por varias declaraciones."""
+    _request_github_evidence(url, token=token)
+
+
+def _validate_evidence(
+    module: str,
+    evidence: object,
+    repository_root: Path,
+    *,
+    verify_github: bool = False,
+) -> None:
     if not isinstance(evidence, dict):
         raise TypeError(f"falta evidencia enlazada en {module}")
     evidence_type = evidence.get("type")
@@ -275,6 +426,9 @@ def _validate_evidence(module: str, evidence: object, repository_root: Path) -> 
         expected_kind = "issues" if evidence_type == "issue" else "pull"
         if not match or match.group("kind") != expected_kind:
             raise ValueError(f"evidencia {evidence_type} inválida en {module}")
+        if verify_github:
+            token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+            _verify_github_evidence(url, token)
         return
     if evidence_type == "test":
         path = evidence.get("path")
@@ -296,7 +450,10 @@ def _validate_evidence(module: str, evidence: object, repository_root: Path) -> 
 
 
 def load_declarations(
-    path: Path, repository_root: Path
+    path: Path,
+    repository_root: Path,
+    *,
+    verify_github: bool = False,
 ) -> tuple[dict[str, dict], set[str]]:
     data = json.loads(path.read_text(encoding="utf-8"))
     if data.get("schemaVersion") != 1:
@@ -335,7 +492,12 @@ def load_declarations(
             entry.get("foundation"), bool
         ):
             raise ValueError(f"declaración huérfana sin decisión de cimiento en {module}")
-        _validate_evidence(module, entry.get("evidence"), repository_root)
+        _validate_evidence(
+            module,
+            entry.get("evidence"),
+            repository_root,
+            verify_github=verify_github,
+        )
         if module in declarations:
             raise ValueError(f"declaración duplicada: {module}")
         declarations[module] = entry
@@ -351,10 +513,19 @@ def load_declarations(
     return declarations, art_modules
 
 
-def inventory(root: Path, declaration_path: Path) -> list[dict]:
+def inventory(
+    root: Path,
+    declaration_path: Path,
+    *,
+    verify_github: bool = False,
+) -> list[dict]:
     all_modules = modules(root)
     repository_root = root.resolve().parent
-    declarations, art_modules = load_declarations(declaration_path, repository_root)
+    declarations, art_modules = load_declarations(
+        declaration_path,
+        repository_root,
+        verify_github=verify_github,
+    )
     unknown_inventory_modules = (set(declarations) | art_modules) - all_modules
     if unknown_inventory_modules:
         raise ValueError(
@@ -424,9 +595,18 @@ def main() -> int:
         action="store_true",
         help="valida el inventario en modo CI (la validación también protege la salida normal)",
     )
+    parser.add_argument(
+        "--check-github-evidence",
+        action="store_true",
+        help="verifica una vez por ejecución que los issues y PR enlazados existen",
+    )
     args = parser.parse_args()
     try:
-        results = inventory(args.root, args.declarations)
+        results = inventory(
+            args.root,
+            args.declarations,
+            verify_github=args.check_github_evidence,
+        )
     except (OSError, KeyError, TypeError, ValueError, json.JSONDecodeError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 2

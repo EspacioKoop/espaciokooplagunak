@@ -12,6 +12,8 @@ on:
 
 permissions:
   contents: read
+  issues: read
+  pull-requests: read
 
 jobs:
   changes:
@@ -53,7 +55,9 @@ jobs:
       - name: Probar el inventario conservador de módulos
         run: python3 -m unittest discover -s scripts/tests -p 'test_check_orphan_modules.py'
       - name: Verificar inventario conservador de módulos
-        run: python3 scripts/check_orphan_modules.py --check
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 scripts/check_orphan_modules.py --check --check-github-evidence
       - name: El PNG prerenderizado corresponde al generador
         run: node tools/prerender-piel.mjs --check
 

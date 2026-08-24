@@ -164,20 +164,27 @@ que suponga lo contrario está mal presupuestado.
 
 **The Spriters Resource** y sitios equivalentes son **extracciones de juegos
 comerciales**. El fichero que se descarga no es dominio público: es una copia
-de la obra de otra editorial. Que la obra original tenga derechos no importa
-para el criterio de este repositorio —lo que importa es la **licencia del
-archivo concreto**, y esa no es CC0 ni dominio público. Por eso no entra.
+de la obra de otra editorial. Que el sitio permita descargarlo gratis no cambia
+el criterio de este repositorio: importa la **licencia del archivo concreto**,
+y esa no es CC0 ni dominio público. Por eso no entra.
 
-**Generadores de IA** (SpriteCook.ai, Midjourney, Stable Diffusion, etc.)
-producen ficheros **sin procedencia verificable**. No hay autor humano
-identificable, no hay licencia del archivo que se pueda consultar, y no hay
-forma de demostrar que el resultado no incorpora material protegido. El
-criterio de `tools/arte-verificar.py` exige dominio público **del fichero**, no
-de la idea; sin ficha de procedencia del archivo, no entra.
+**Generadores de IA externos** (SpriteCook.ai, Midjourney, Stable Diffusion,
+etc.) producen ficheros para los que el proyecto no dispone de una cadena de
+procedencia y licencia verificable. Las reglas de incorporación de este
+documento exigen una licencia admisible **del fichero**, no de la idea; sin
+ficha de procedencia del archivo, no cumple el criterio de incorporación al
+árbol.
 
-**Dribbble y referencias visuales**: mirar una paleta, una composición o un
-estilo en Dribbble **no es copiar un fichero**. La parte admisible de Dribbble
-es usarlo como referencia visual para crear algo propio; la parte no admisible
-es descargar el PNG de otro y meterlo en el árbol. La distinción es intencional:
-prohibir la referencia visual sería inútil y falso; prohibir el fichero ajeno
-sin procedencia es el criterio que ya se aplica a todo lo demás.
+**Generación procedural determinista del propio repositorio**: esta prohibición
+no afecta al contenido producido por código versionado del proyecto. Cuando el
+generador, la semilla y el proceso están registrados, el resultado es
+reproducible y auditable y sí dispone de procedencia verificable. La frontera no
+es «hecho por una máquina», sino **procedencia verificable o no verificable**.
+
+**Dribbble y sitios de referencias visuales equivalentes**: mirar una paleta,
+una composición o un estilo en Dribbble **no es copiar un fichero**. La parte
+admisible de Dribbble es usarlo como referencia visual para crear algo propio;
+la parte no admisible es descargar el PNG de otro y meterlo en el árbol. La
+distinción es intencional: prohibir la referencia visual sería inútil y falso;
+prohibir el fichero ajeno sin procedencia es el criterio que ya se aplica a
+todo lo demás.

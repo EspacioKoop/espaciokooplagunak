@@ -18,7 +18,7 @@ export class ImportadorAtlasError extends CosmographyValidationError {
 
 /**
  * Detecta si el contenido es CSV de HYG (cabecera con columnas conocidas).
- * HYG siempre trae 'proper' como una de sus columnas.
+ * HYG trae una combinación de columnas que no debe confundirse con cualquier CSV.
  * @param {string} contenido
  * @returns {boolean}
  */
@@ -27,8 +27,8 @@ function esCSV_HYG(contenido) {
   const primeraLinea = contenido.split(/\r?\n/u)[0]?.trim();
   if (!primeraLinea) return false;
   const columnas = primeraLinea.split(",").map((c) => c.trim().toLowerCase());
-  // HYG mínimo: proper, dist, mag, spect (por nombre, no por posición)
-  return columnas.includes("proper");
+  // HYG mínimo: estas columnas se reconocen por nombre, no por posición.
+  return ["proper", "dist", "mag", "spect"].every((columna) => columnas.includes(columna));
 }
 
 /**
@@ -48,7 +48,7 @@ function esJSON_Cosmografico(contenido) {
       Array.isArray(objeto.entries)
     );
   } catch {
-    return false;
+    return /"format"\s*:\s*"espaciokoop-cosmography"/u.test(recortado);
   }
 }
 
@@ -86,7 +86,7 @@ export async function importarAtlas(contenido, opciones = {}) {
     throw new ImportadorAtlasError(
       "unknown_format",
       "$",
-      "formato no reconocido: se esperaba CSV de HYG (con columna 'proper') o JSON cosmográfico v1"
+      "formato no reconocido: se esperaba CSV de HYG o JSON cosmográfico v1"
     );
   }
 

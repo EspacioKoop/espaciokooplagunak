@@ -39,7 +39,7 @@ const JSON_COSMOGRAFICO_VALIDO = {
   ],
 };
 
-test("detecta CSV de HYG por la cabecera 'proper'", () => {
+test("detecta CSV de HYG por sus columnas canónicas", async () => {
   const catalogo = await importarAtlas(CSV_HYG_MINIMO);
   assert.equal(catalogo.format, "espaciokoop-cosmography");
   assert.equal(catalogo.version, 1);
@@ -47,7 +47,7 @@ test("detecta CSV de HYG por la cabecera 'proper'", () => {
   assert.equal(sistemas.length, 3);
 });
 
-test("detecta JSON cosmográfico válido y lo valida", () => {
+test("detecta JSON cosmográfico válido y lo valida", async () => {
   const catalogo = await importarAtlas(JSON.stringify(JSON_COSMOGRAFICO_VALIDO));
   assert.deepEqual(catalogo, JSON_COSMOGRAFICO_VALIDO);
 });
@@ -108,20 +108,20 @@ test("CSV sin columna 'proper' lanza unknown_format", () => {
   );
 });
 
-test("opciones se pasan a atlasDesdeHyg (maximo)", () => {
+test("opciones se pasan a atlasDesdeHyg (maximo)", async () => {
   const catalogo = await importarAtlas(CSV_HYG_MINIMO, { maximo: 1 });
   const sistemas = catalogo.entries.filter((e) => e.type === "star_system");
   assert.equal(sistemas.length, 1);
   assert.equal(sistemas[0].name.es, "Sol"); // la más brillante
 });
 
-test("opciones se pasan a atlasDesdeHyg (versionHyg)", () => {
+test("opciones se pasan a atlasDesdeHyg (versionHyg)", async () => {
   const catalogo = await importarAtlas(CSV_HYG_MINIMO, { versionHyg: "4.1" });
   const sistema = catalogo.entries.find((e) => e.type === "star_system");
   assert.equal(sistema.provenance.source, "HYG Database 4.1 (AstroNexus)");
 });
 
-test("ImportadorAtlasError extiende CosmographyValidationError para instanceof", () => {
+test("ImportadorAtlasError extiende CosmographyValidationError para instanceof", async () => {
   // El error del importador ES un error del validador
   const jsonInvalido = JSON.stringify({
     ...JSON_COSMOGRAFICO_VALIDO,
@@ -141,7 +141,7 @@ test("ImportadorAtlasError extiende CosmographyValidationError para instanceof",
   }
 });
 
-test("CSV vacío o solo cabecera devuelve catálogo con solo plano raíz (validado)", () => {
+test("CSV vacío o solo cabecera devuelve catálogo con solo plano raíz (validado)", async () => {
   const catalogo = await importarAtlas("id,proper,dist,mag,spect\n");
   assert.equal(catalogo.entries.length, 1);
   assert.equal(catalogo.entries[0].type, "plane");
@@ -161,7 +161,7 @@ test("JSON que parece cosmográfico pero falla JSON.parse lanza invalid_json", (
   );
 });
 
-test("lo que sale del importador siempre pasa validateCosmography", () => {
+test("lo que sale del importador siempre pasa validateCosmography", async () => {
   // CSV
   const deCSV = await importarAtlas(CSV_HYG_MINIMO);
   assert.equal(validateCosmography(deCSV), true);

@@ -85,6 +85,21 @@ const HUERFANOS_DECLARADOS = Object.freeze({
       "antes de esa decisión es exactamente cómo sale la opción incoherente del " +
       "medio, que es la que el issue avisa que sale sola si nadie decide.",
   },
+  "catalogo-cosmografico.mjs": {
+    cimiento: true,
+    issue: 525,
+    motivo: "Validador del formato de atlas conservado como cimiento hasta aprobar su integración.",
+  },
+  "atlas-hyg.mjs": {
+    cimiento: true,
+    issue: 568,
+    motivo: "Adaptador del catálogo estelar HYG conservado hasta aprobar su integración.",
+  },
+  "importador-atlas.mjs": {
+    cimiento: true,
+    issue: 634,
+    motivo: "Importador puro probado de forma aislada; la puerta de consumo aún está pendiente.",
+  },
   "npc-tablas.mjs": {
     cimiento: true,
     issue: 676,

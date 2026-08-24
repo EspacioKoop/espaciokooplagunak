@@ -199,12 +199,14 @@ def test_v1_database_devuelve_lo_que_publica_el_juego(client, juego, auth):
     assert r.json()["entries"][0]["id"] == "Naves"
     # Es consulta pura: no emite ninguna orden ni toca el estado de la nave.
     assert "command" not in juego.ultimo_lua
-def test_scenario_error_manejado(client, juego, auth):
-    '''Simula un fallo en la llamada a /v1/scenario y verifica que el puente responde con error y que el estado del juego pasa a 'error'.'''
-    # Forzar una excepción en la llamada al juego simulando un fallo del endpoint scenario
-    juego.error = httpx.HTTPError("Fallo simulado del escenario")
-    r = client.get("/v1/scenario", headers=auth)
-    # El puente debe traducir el error a 502
-    assert r.status_code == 502
-    # Comprobar que el último script Lua enviado contiene la palabra "ERROR"
-    assert "ERROR" in juego.ultimo_lua
+
+
+def test_scenario_traduce_error_http_del_juego_a_502(client, juego, auth):
+    import httpx
+
+    juego.error = httpx.ConnectError("Fallo simulado del escenario")
+    respuesta = client.get("/v1/scenario", headers=auth)
+
+    assert respuesta.status_code == 502
+    assert respuesta.json() == {"detail": "El servidor de juego no responde"}
+    assert len(juego.llamadas) == 1

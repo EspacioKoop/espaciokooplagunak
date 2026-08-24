@@ -367,3 +367,4 @@ Espaciokoop Lagunak no está afiliado ni respaldado oficialmente por el equipo d
 - [Puente de integración — contrato v0](bridge/README.md)
 - [Inventario del API HTTP heredado](docs/API_HTTP.md)
 - [Relación y sincronización con upstream](docs/UPSTREAM.md)
+- [Política de versionado y releases](VERSIONING.md)

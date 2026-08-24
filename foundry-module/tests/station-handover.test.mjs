@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { anotarRelevo, derivarRelevo } from "../scripts/station-handover.mjs";
+import { anotarRelevo, derivarRelevo, registrarRelevoPuestos } from "../scripts/station-handover.mjs";
 
 // ---- derivarRelevo: lógica pura --------------------------------------------
 
@@ -11,6 +11,10 @@ test("sin línea base conocida (undefined) no hay relevo que anunciar", () => {
 
 test("sin cambio de puesto no hay relevo", () => {
   assert.equal(derivarRelevo({ userId: "u1", estacionAnterior: "navigation", estacionNueva: "navigation" }), null);
+  assert.equal(derivarRelevo({ userId: "u1", estacionAnterior: null, estacionNueva: null }), null);
+});
+
+test("sin puesto anterior ni nuevo no hay relevo", () => {
   assert.equal(derivarRelevo({ userId: "u1", estacionAnterior: null, estacionNueva: null }), null);
 });
 
@@ -38,6 +42,20 @@ test("asumir un puesto vacío (de null a uno) es un relevo, no solo un cambio en
 test("sin userId no hay relevo que atribuir a nadie", () => {
   assert.equal(derivarRelevo({ userId: null, estacionAnterior: "navigation", estacionNueva: "weapons" }), null);
   assert.equal(derivarRelevo({ estacionAnterior: "navigation", estacionNueva: "weapons" }), null);
+});
+
+test("registrarRelevoPuestos registra un listener y devuelve su destructor", () => {
+  const hookCalls = [];
+  globalThis.Hooks = {
+    on: (event, fn) => hookCalls.push({ event, fn }),
+    off: () => {},
+  };
+  globalThis.foundry = { utils: { randomID: () => "abc" } };
+
+  const remover = registrarRelevoPuestos("espaciokoop-lagunak");
+  assert.equal(typeof remover, "function");
+  assert.equal(hookCalls.length, 1);
+  assert.equal(hookCalls[0].event, "updateUser");
 });
 // ---- anotarRelevo: escritor de bitácora, con game/JournalEntry mockeados --
 function gameFalso({ isGM = true, nombreUsuario = "Jon" } = {}) {

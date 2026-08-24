@@ -32,3 +32,18 @@ automation:
           - ".github/workflows/**"
           - ".github/dependabot.yml"
           - ".github/labeler.yml"
+
+python:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.py'
+
+javascript:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.js'
+          - '**/*.mjs'
+          - '**/*.ts'
+          - '**/*.test.js'
+          - '**/*.test.mjs'
+          - '**/*.spec.ts'

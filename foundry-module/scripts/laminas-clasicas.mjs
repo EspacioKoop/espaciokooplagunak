@@ -277,5 +277,3 @@ function escapar(texto) {
 export function cartografiaDataUri(opciones = {}) {
   return `data:image/svg+xml,${encodeURIComponent(cartografiaSvg(opciones))}`;
 }
-
-

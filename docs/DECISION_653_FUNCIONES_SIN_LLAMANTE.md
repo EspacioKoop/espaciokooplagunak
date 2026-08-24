@@ -8,24 +8,42 @@
 
 ## Resultado del análisis
 
-Con ast-grep y búsquedas de texto se confirmó que ninguna de estas funciones es llamada desde ningún otro archivo del proyecto (ni en scripts, tests ni demás código). Solo aparecen en su propia definición y en la exportación.
+El barrido estructural y la búsqueda de referencias confirman que ninguna tiene
+consumidores en scripts, tests, plantillas ni documentación funcional. Solo
+aparecían en su propia definición.
 
 ## Decisión aplicada
 
-Para cada una se ha elegido **retirarla** del código, ya que no hay consumidor interno que la requiera. Al ser funciones puras sin efectos secundarios y sin uso, su eliminación no afecta la funcionalidad del sistema.
+Las tres se retiran. Son adaptadores sin consumidor y no forman parte de ningún
+flujo de juego actual:
 
-- Se eliminó el cuerpo completo de cada función, dejando solo una línea en blanco en su lugar (para mantener el estilo del archivo y evitar cambios mayores).
-- No se eliminaron las funciones relacionadas que sí son usadas (como `discoLunar`, `discoLunarSvg`, `tramaGrabado`, etc.) porque esas sí tienen consumidores.
-- No había tests específicos para estas funciones retiradas, por lo que no fue necesario borrar tests.
+- `discoLunarDataUri`: se conservan `discoLunar` y `discoLunarSvg`, que sí tienen
+  consumidores.
+- `podarAsistencias`: se elimina también su importación no usada de `podar`. El
+  motor ya poda en cada transición; no se añade un temporizador sin efecto.
+- `texturaHorizonte`: se conservan las primitivas de rejilla, textura y PNG que
+  sí utiliza el pipeline del matte.
+
+Si aparece la futura interfaz de «quién está ayudando» o un consumidor directo
+del matte, el adaptador correspondiente se reintroducirá junto a ese consumidor
+y su prueba; no antes.
 
 ## Archivos modificados
 
-- `foundry-module/scripts/laminas-clasicas.mjs`: eliminada `discoLunarDataUri`
-- `foundry-module/scripts/asistencia-wiring.mjs`: eliminada `podarAsistencias`
-- `foundry-module/scripts/horizonte-matte.mjs`: eliminada `texturaHorizonte`
+- `foundry-module/scripts/laminas-clasicas.mjs`: retirada
+  `discoLunarDataUri`.
+- `foundry-module/scripts/asistencia-wiring.mjs`: retirada
+  `podarAsistencias` y su importación huérfana.
+- `foundry-module/scripts/horizonte-matte.mjs`: retirada
+  `texturaHorizonte`.
 
 ## Verificación
 
-Se volvieron a ejecutar las búsquedas de referencias y no se encontró ninguna aparición fuera de las propias definiciones (que ya fueron borradas). Los tests existentes pasan (no se ejecutaron en este paso, pero la eliminación es segura porque no eran usados).
+Se ejecutaron las comprobaciones de sintaxis de los tres módulos modificados y
+la suite completa del módulo Foundry: **2268/2268 tests en verde**. La batería
+focal de asistencia, láminas, horizonte y módulos alcanzables pasó **48/48**.
+La búsqueda final no deja imports ni comentarios huérfanos para las funciones
+retiradas.
 
-Con esto se cumple el objetivo del issue: ninguna de las tres funciones permanece sin decidir; todas fueron retiradas.
+Con esto ninguna de las tres funciones permanece sin decidir: todas quedan
+retiradas y sus primitivas con consumidores se conservan.

@@ -9,11 +9,23 @@ import { PALETA } from "../scripts/minijuegos/cartas-pixelart.mjs";
 import { DENOMINACIONES } from "../scripts/minijuegos/fichas-pixelart.mjs";
 import { COLOR_JUGADOR, COLOR_NEUTRO, PALETA_FACCIONES } from "../scripts/ventana-nave.mjs";
 
-// El inventario machine-readable de #701 evita mantener esta lista compartida aquí.
+// La lista y su justificación viven juntas en el inventario machine-readable de #701.
 const inventarioModulos = JSON.parse(
   readFileSync(new URL("../../docs/orphan-declarations.json", import.meta.url), "utf8"),
 );
 const MODULOS_DE_ARTE = inventarioModulos.artModules.map((modulo) => `../scripts/${modulo}`);
+
+test("el inventario conserva el alcance y las excepciones razonadas de la paleta", () => {
+  const rationale = inventarioModulos.artInventoryRationale;
+  assert.match(rationale?.scope ?? "", /paleta\.mjs/);
+  assert.match(rationale?.excluded ?? "", /decorado-fondo\.mjs/);
+  assert.match(rationale?.excluded ?? "", /mapa-render\.mjs/);
+  assert.match(rationale?.excluded ?? "", /#351/);
+  assert.ok(
+    Array.isArray(rationale?.history) && rationale.history.length >= 5,
+    "docs/orphan-declarations.json debe conservar la procedencia de artModules",
+  );
+});
 
 test("los colores no cambian al mudarse: mismo valor que antes en cada módulo", () => {
   // Esta es la garantía de que la refactorización es invisible en pantalla.

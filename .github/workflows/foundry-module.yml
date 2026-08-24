@@ -24,7 +24,9 @@ jobs:
       - id: filtro
         uses: ./.github/actions/filtro-rutas
         with:
-          rutas: '^(foundry-module/|scripts/check_orphan_modules\.py$|scripts/tests/test_check_orphan_modules\.py$|docs/orphan-declarations\.json$|\.github/workflows/foundry-module\.yml$|\.github/actions/)'
+          # `scripts/` es deliberadamente prefijo: helpers y regresiones futuros
+          # del inventario también deben despertar la puerta, no solo dos nombres.
+          rutas: '^(foundry-module/|scripts/|docs/orphan-declarations\.json$|\.github/workflows/foundry-module\.yml$|\.github/actions/)'
 
   tests:
     name: Tests del módulo Foundry (Node)

@@ -65,6 +65,13 @@ def run(root, declarations_path, *extra):
     )
 
 
+def assert_valid_javascript(test_case, path):
+    result = subprocess.run(
+        ["node", "--check", str(path)], capture_output=True, text=True, check=False
+    )
+    test_case.assertEqual(result.returncode, 0, result.stderr)
+
+
 class OrphanModuleInventoryTests(unittest.TestCase):
     def test_inventory_distinguishes_all_three_states_and_preserves_evidence(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -96,6 +103,83 @@ class OrphanModuleInventoryTests(unittest.TestCase):
                     'registerModule("./dynamic.mjs", () => globalThis.dynamicFactory);\n'
                 ),
             )
+            result = run(root, declarations_path, "--format", "json", "--check")
+            self.assertEqual(result.returncode, 0, result.stderr)
+            inventory = {item["module"]: item for item in json.loads(result.stdout)}
+            self.assertEqual(inventory["dynamic.mjs"]["status"], "unknown")
+
+    def test_complete_literal_dynamic_import_is_connected(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            root, declarations_path = write_fixture(
+                base, main_source='import("./dynamic.mjs");\n'
+            )
+            assert_valid_javascript(self, root / "scripts" / "main.mjs")
+            result = run(root, declarations_path, "--format", "json", "--check")
+            self.assertEqual(result.returncode, 0, result.stderr)
+            inventory = {item["module"]: item for item in json.loads(result.stdout)}
+            self.assertEqual(inventory["dynamic.mjs"]["status"], "connected")
+
+    def test_concatenated_dynamic_import_target_is_unknown(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            root, declarations_path = write_fixture(
+                base,
+                main_source='const suffix = ".backup"; import("./dynamic.mjs" + suffix);\n',
+            )
+            assert_valid_javascript(self, root / "scripts" / "main.mjs")
+            result = run(root, declarations_path, "--format", "json", "--check")
+            self.assertEqual(result.returncode, 0, result.stderr)
+            inventory = {item["module"]: item for item in json.loads(result.stdout)}
+            self.assertEqual(inventory["dynamic.mjs"]["status"], "unknown")
+
+    def test_concatenated_dynamic_import_prefix_is_unknown_not_error(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            root, declarations_path = write_fixture(
+                base,
+                main_source='const name = "dynamic.mjs"; import("./" + name);\n',
+            )
+            assert_valid_javascript(self, root / "scripts" / "main.mjs")
+            result = run(root, declarations_path, "--format", "json", "--check")
+            self.assertEqual(result.returncode, 0, result.stderr)
+            inventory = {item["module"]: item for item in json.loads(result.stdout)}
+            self.assertEqual(inventory["dynamic.mjs"]["status"], "unknown")
+
+    def test_template_dynamic_import_is_unknown(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            root, declarations_path = write_fixture(
+                base,
+                main_source='const name = "dynamic"; import(`./${name}.mjs`);\n',
+            )
+            assert_valid_javascript(self, root / "scripts" / "main.mjs")
+            result = run(root, declarations_path, "--format", "json", "--check")
+            self.assertEqual(result.returncode, 0, result.stderr)
+            inventory = {item["module"]: item for item in json.loads(result.stdout)}
+            self.assertEqual(inventory["dynamic.mjs"]["status"], "unknown")
+
+    def test_nested_template_text_cannot_create_import_edge(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            root, declarations_path = write_fixture(
+                base,
+                main_source='const message = `outer ${`import("./dynamic.mjs")`} tail`;\n',
+            )
+            assert_valid_javascript(self, root / "scripts" / "main.mjs")
+            result = run(root, declarations_path, "--format", "json", "--check")
+            self.assertEqual(result.returncode, 0, result.stderr)
+            inventory = {item["module"]: item for item in json.loads(result.stdout)}
+            self.assertEqual(inventory["dynamic.mjs"]["status"], "unknown")
+
+    def test_import_named_object_method_is_not_an_import_edge(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            root, declarations_path = write_fixture(
+                base,
+                main_source='globalThis.loader.import("./dynamic.mjs");\n',
+            )
+            assert_valid_javascript(self, root / "scripts" / "main.mjs")
             result = run(root, declarations_path, "--format", "json", "--check")
             self.assertEqual(result.returncode, 0, result.stderr)
             inventory = {item["module"]: item for item in json.loads(result.stdout)}
@@ -136,7 +220,7 @@ class OrphanModuleInventoryTests(unittest.TestCase):
             self.assertEqual(result.returncode, 2)
             self.assertIn("declared-orphan ya conectada", result.stderr)
 
-    def test_comment_and_string_do_not_count_as_consumers(self):
+    def test_comment_string_and_regex_do_not_count_as_consumers(self):
         with tempfile.TemporaryDirectory() as temporary:
             base = Path(temporary)
             root, declarations_path = write_fixture(
@@ -145,8 +229,23 @@ class OrphanModuleInventoryTests(unittest.TestCase):
                     'import "./used.mjs";\n'
                     '// import "./dynamic.mjs";\n'
                     'const example = \'import "./dynamic.mjs"\';\n'
+                    'const pattern = /import(".\\/dynamic.mjs")/;\n'
                 ),
             )
+            assert_valid_javascript(self, root / "scripts" / "main.mjs")
+            result = run(root, declarations_path, "--format", "json", "--check")
+            self.assertEqual(result.returncode, 0, result.stderr)
+            inventory = {item["module"]: item for item in json.loads(result.stdout)}
+            self.assertEqual(inventory["dynamic.mjs"]["status"], "unknown")
+
+    def test_regex_with_backtick_is_ignored_without_lexer_error(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            root, declarations_path = write_fixture(
+                base,
+                main_source='const pattern = /[`]import(".\\/dynamic.mjs")/;\n',
+            )
+            assert_valid_javascript(self, root / "scripts" / "main.mjs")
             result = run(root, declarations_path, "--format", "json", "--check")
             self.assertEqual(result.returncode, 0, result.stderr)
             inventory = {item["module"]: item for item in json.loads(result.stdout)}
@@ -171,6 +270,23 @@ class OrphanModuleInventoryTests(unittest.TestCase):
                 inventory["used.mjs"]["evidence"]["module"], "sub/consumer.mjs"
             )
 
+    def test_static_import_and_reexport_are_connected(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            root, declarations_path = write_fixture(
+                base,
+                main_source=(
+                    'import { used } from "./used.mjs";\n'
+                    'export { dynamic } from "./dynamic.mjs";\n'
+                ),
+            )
+            assert_valid_javascript(self, root / "scripts" / "main.mjs")
+            result = run(root, declarations_path, "--format", "json", "--check")
+            self.assertEqual(result.returncode, 0, result.stderr)
+            inventory = {item["module"]: item for item in json.loads(result.stdout)}
+            self.assertEqual(inventory["used.mjs"]["status"], "connected")
+            self.assertEqual(inventory["dynamic.mjs"]["status"], "connected")
+
     def test_output_is_stable(self):
         with tempfile.TemporaryDirectory() as temporary:
             base = Path(temporary)
@@ -180,6 +296,51 @@ class OrphanModuleInventoryTests(unittest.TestCase):
             self.assertEqual(first.returncode, 0, first.stderr)
             self.assertEqual(second.returncode, 0, second.stderr)
             self.assertEqual(first.stdout, second.stdout)
+
+    def test_calendar_date_must_exist(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            root, declarations_path = write_fixture(
+                base,
+                declarations=[declaration("dynamic.mjs", declaredAt="2026-02-30")],
+            )
+            result = run(root, declarations_path, "--check")
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("fecha de declaración inválida", result.stderr)
+
+    def test_local_test_evidence_must_exist(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            root, declarations_path = write_fixture(
+                base,
+                declarations=[
+                    declaration(
+                        "dynamic.mjs",
+                        evidence={"type": "test", "path": "module/tests/missing.test.mjs"},
+                    )
+                ],
+            )
+            result = run(root, declarations_path, "--check")
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("evidencia test inexistente", result.stderr)
+
+    def test_existing_local_test_evidence_is_accepted(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            evidence_path = base / "module" / "tests" / "dynamic.test.mjs"
+            evidence_path.parent.mkdir(parents=True)
+            evidence_path.write_text("// evidencia local\n", encoding="utf-8")
+            root, declarations_path = write_fixture(
+                base,
+                declarations=[
+                    declaration(
+                        "dynamic.mjs",
+                        evidence={"type": "test", "path": "module/tests/dynamic.test.mjs"},
+                    )
+                ],
+            )
+            result = run(root, declarations_path, "--check")
+            self.assertEqual(result.returncode, 0, result.stderr)
 
 
 if __name__ == "__main__":

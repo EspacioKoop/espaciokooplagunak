@@ -83,6 +83,17 @@
       "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/603"}
     }
   ],
+  "artInventoryRationale": {
+    "scope": "Módulos de arte que deben tomar sus colores de la paleta común; paleta.mjs queda fuera por definición porque es donde viven esos colores.",
+    "excluded": "decorado-fondo.mjs y mapa-render.mjs no entran todavía: sus colores son catálogos de contenido (tipos de planeta y nebulosas) y tonos de lienzo. Decidir si eso es paleta compartida o dato de decorado sigue siendo una discusión de diseño registrada en #351, no una mudanza mecánica.",
+    "history": [
+      "retro3d.mjs recibe el color base y solo lo sombrea; retro3d-estrellas.mjs obtiene el azul del cielo desde PIXEL.",
+      "La cantina, la playa y el museo entraron en la guardia al nacer como escenas completas de arte nuevo; cantina-2d.mjs compone incluso sus velos rgba desde CANTINA.",
+      "ficha-nave.mjs reutiliza siluetas y colores; el relleno transparente pertenece al requisito del codificador PNG, no a una paleta propia.",
+      "Los dados y la mesa de póker 3D reutilizan FICHA y PIXEL; los avatares de la cantina toman pelo, piel, ropa y aceros de la paleta.",
+      "seccion-lienzo.mjs declara sus tonos de plano dentro de la paleta común, y filtros-escena.mjs toma de ALERTA el tinte que delega en FXMaster."
+    ]
+  },
   "artModules": [
     "laminas-clasicas.mjs",
     "nave-sprite.mjs",

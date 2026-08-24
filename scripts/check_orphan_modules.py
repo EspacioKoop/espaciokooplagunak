@@ -10,14 +10,9 @@ import re
 import sys
 from collections import deque
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path, PurePosixPath
 
-_STRING_TOKEN = r"__JS_STRING_\d+__"
-IMPORT_RE = re.compile(
-    rf"(?<![\w$.])import\s*(?:\(\s*)?({_STRING_TOKEN})"
-    rf"|(?<![\w$.])(?:import|export)\b[^;]*?\bfrom\s*({_STRING_TOKEN})",
-    re.DOTALL,
-)
 EVIDENCE_URL_RE = re.compile(
     r"https://github\.com/VaroTv7/espaciokooplagunak/(?P<kind>issues|pull)/(?P<number>[1-9]\d*)$"
 )
@@ -28,6 +23,13 @@ DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}$")
 class ImportEvidence:
     target: str
     importer: str
+    line: int
+
+
+@dataclass(frozen=True)
+class JsToken:
+    kind: str
+    value: str
     line: int
 
 
@@ -54,94 +56,168 @@ def modules(root: Path) -> set[str]:
     }
 
 
-def _mask_comments_and_strings(source: str) -> tuple[str, dict[str, tuple[str, int]]]:
-    """Oculta comentarios/strings sin ocultar los literales que luego referencia el patrón."""
-    masked: list[str] = []
-    strings: dict[str, tuple[str, int]] = {}
+def _javascript_tokens(source: str) -> list[JsToken]:
+    """Tokeniza solo lo necesario para demostrar imports literales completos.
+
+    No pretende validar JavaScript. Ante regex, templates o escapes que exigirían
+    un parser completo, omite el token en vez de inventar una arista del grafo.
+    La sintaxis de los ``.mjs`` se valida por separado con ``node --check``.
+    """
+    tokens: list[JsToken] = []
     index = 0
     line = 1
-    string_index = 0
 
     while index < len(source):
         char = source[index]
         following = source[index + 1] if index + 1 < len(source) else ""
 
+        if char.isspace():
+            if char == "\n":
+                line += 1
+            index += 1
+            continue
+
         if char == "/" and following in {"/", "*"}:
             block = following == "*"
-            masked.extend("  ")
             index += 2
             while index < len(source):
                 if block and source[index:index + 2] == "*/":
-                    masked.extend("  ")
                     index += 2
                     break
                 if not block and source[index] == "\n":
                     break
-                masked.append("\n" if source[index] == "\n" else " ")
                 if source[index] == "\n":
                     line += 1
                 index += 1
             continue
 
-        if char in {"'", '"', "`"}:
+        # Una barra puede ser división o regex sin contexto sintáctico completo.
+        # En ambos casos saltar hasta fin de regex/línea solo puede perder una
+        # arista (unknown), nunca fabricar un connected a partir de texto regex.
+        if char == "/":
+            index += 1
+            escaped = False
+            in_character_class = False
+            while index < len(source) and source[index] != "\n":
+                current = source[index]
+                if escaped:
+                    escaped = False
+                elif current == "\\":
+                    escaped = True
+                elif current == "[":
+                    in_character_class = True
+                elif current == "]":
+                    in_character_class = False
+                elif current == "/" and not in_character_class:
+                    index += 1
+                    while index < len(source) and source[index].isalpha():
+                        index += 1
+                    break
+                index += 1
+            continue
+
+        if char in {"'", '"'}:
             quote = char
             start_line = line
             value: list[str] = []
-            cursor = index + 1
-            string_lines = 0
+            index += 1
             closed = False
-            while cursor < len(source):
-                current = source[cursor]
-                # Las comillas simples/dobles no cruzan líneas en JavaScript. Si
-                # no cierran antes, esta comilla puede pertenecer a una regex.
-                if current == "\n" and quote != "`":
+            ambiguous = False
+            while index < len(source):
+                current = source[index]
+                if current == "\n":
                     break
-                if current == "\\" and cursor + 1 < len(source):
-                    value.append(source[cursor + 1])
-                    if source[cursor + 1] == "\n":
-                        string_lines += 1
-                    cursor += 2
+                if current == "\\":
+                    # El valor cocinado de escapes JavaScript requiere semántica
+                    # propia. Un import así queda deliberadamente sin demostrar.
+                    ambiguous = True
+                    index += 2
                     continue
                 if current == quote:
-                    cursor += 1
+                    index += 1
                     closed = True
                     break
                 value.append(current)
-                if current == "\n":
-                    string_lines += 1
-                cursor += 1
-            if not closed:
-                if quote == "`":
-                    raise ValueError(f"literal JavaScript sin cerrar en línea {start_line}")
-                masked.append(char)
                 index += 1
-                continue
-            index = cursor
-            line += string_lines
-            if quote == "`":
-                masked.append(" ")
-            else:
-                token = f"__JS_STRING_{string_index}__"
-                string_index += 1
-                strings[token] = ("".join(value), start_line)
-                masked.append(f" {token} ")
+            if closed:
+                tokens.append(
+                    JsToken(
+                        kind="ambiguous-string" if ambiguous else "string",
+                        value="".join(value),
+                        line=start_line,
+                    )
+                )
             continue
 
-        masked.append(char)
-        if char == "\n":
-            line += 1
+        if char == "`":
+            # Sin parser completo no se puede distinguir con seguridad texto de
+            # `${expresiones}` ni templates anidados. Desde aquí el fichero queda
+            # ambiguo: conservar los tokens anteriores solo puede degradar ramas
+            # posteriores a unknown, nunca acreditar texto del template.
+            break
+
+        if char.isalpha() or char in {"_", "$"}:
+            start = index
+            index += 1
+            while index < len(source) and (
+                source[index].isalnum() or source[index] in {"_", "$"}
+            ):
+                index += 1
+            tokens.append(JsToken(kind="word", value=source[start:index], line=line))
+            continue
+
+        tokens.append(JsToken(kind="punctuation", value=char, line=line))
         index += 1
 
-    return "".join(masked), strings
+    return tokens
+
+
+def _literal_imports(source: str) -> list[tuple[str, int]]:
+    """Devuelve solo especificadores que son el literal completo del import."""
+    tokens = _javascript_tokens(source)
+    result: list[tuple[str, int]] = []
+    for index, token in enumerate(tokens):
+        if token.kind != "word" or token.value not in {"import", "export"}:
+            continue
+
+        previous = tokens[index - 1] if index > 0 else None
+        if previous and previous.value == ".":
+            # `loader.import("./x.mjs")` es una llamada ordinaria, no sintaxis
+            # import de JavaScript y por tanto no demuestra conexión.
+            continue
+        following = tokens[index + 1] if index + 1 < len(tokens) else None
+        if token.value == "import" and following and following.value == ".":
+            continue
+        if token.value == "import" and following and following.value == "(":
+            literal = tokens[index + 2] if index + 2 < len(tokens) else None
+            closing = tokens[index + 3] if index + 3 < len(tokens) else None
+            if literal and literal.kind == "string" and closing and closing.value == ")":
+                result.append((literal.value, literal.line))
+            continue
+        if token.value == "import" and following and following.kind == "string":
+            result.append((following.value, following.line))
+            continue
+
+        # Reexports solo pueden tener `from` tras `*` o una lista `{ ... }`.
+        if token.value == "export" and (
+            following is None or following.value not in {"*", "{"}
+        ):
+            continue
+        cursor = index + 1
+        while cursor < len(tokens) and tokens[cursor].value != ";":
+            if tokens[cursor].kind == "word" and tokens[cursor].value == "from":
+                literal = tokens[cursor + 1] if cursor + 1 < len(tokens) else None
+                if literal and literal.kind == "string":
+                    result.append((literal.value, literal.line))
+                break
+            cursor += 1
+    return result
 
 
 def imports(root: Path, module: str) -> list[ImportEvidence]:
     source = (root / "scripts" / module).read_text(encoding="utf-8")
-    masked, strings = _mask_comments_and_strings(source)
     result = []
-    for match in IMPORT_RE.finditer(masked):
-        token = match.group(1) or match.group(2)
-        specifier, line = strings[token]
+    for specifier, line in _literal_imports(source):
         if not specifier.startswith("."):
             continue
         target = posixpath.normpath(posixpath.join(posixpath.dirname(module), specifier))
@@ -189,7 +265,7 @@ def reachable(
     return seen, evidence
 
 
-def _validate_evidence(module: str, evidence: object) -> None:
+def _validate_evidence(module: str, evidence: object, repository_root: Path) -> None:
     if not isinstance(evidence, dict):
         raise TypeError(f"falta evidencia enlazada en {module}")
     evidence_type = evidence.get("type")
@@ -202,18 +278,26 @@ def _validate_evidence(module: str, evidence: object) -> None:
         return
     if evidence_type == "test":
         path = evidence.get("path")
+        pure_path = PurePosixPath(path) if isinstance(path, str) else None
         if (
-            not isinstance(path, str)
+            pure_path is None
             or not path.endswith(".test.mjs")
-            or PurePosixPath(path).is_absolute()
-            or ".." in PurePosixPath(path).parts
+            or pure_path.is_absolute()
+            or ".." in pure_path.parts
         ):
             raise ValueError(f"evidencia test inválida en {module}")
+        evidence_path = (repository_root / path).resolve()
+        if not evidence_path.is_relative_to(repository_root.resolve()):
+            raise ValueError(f"evidencia test fuera del repositorio en {module}")
+        if not evidence_path.is_file():
+            raise ValueError(f"evidencia test inexistente en {module}: {path}")
         return
     raise ValueError(f"falta evidencia enlazada en {module}")
 
 
-def load_declarations(path: Path) -> tuple[dict[str, dict], set[str]]:
+def load_declarations(
+    path: Path, repository_root: Path
+) -> tuple[dict[str, dict], set[str]]:
     data = json.loads(path.read_text(encoding="utf-8"))
     if data.get("schemaVersion") != 1:
         raise ValueError("schemaVersion debe ser 1")
@@ -231,20 +315,27 @@ def load_declarations(path: Path) -> tuple[dict[str, dict], set[str]]:
             "connected",
         }:
             raise ValueError(f"declaración inválida: {entry!r}")
+        declared_at = entry.get("declaredAt")
         if (
             not isinstance(entry.get("reason"), str)
             or not entry["reason"].strip()
             or not isinstance(entry.get("declaredBy"), str)
             or not entry["declaredBy"].strip()
-            or not isinstance(entry.get("declaredAt"), str)
-            or not DATE_RE.fullmatch(entry["declaredAt"])
+            or not isinstance(declared_at, str)
+            or not DATE_RE.fullmatch(declared_at)
         ):
             raise ValueError(f"falta procedencia en {module}")
+        try:
+            parsed_date = date.fromisoformat(declared_at)
+        except ValueError as error:
+            raise ValueError(f"fecha de declaración inválida en {module}: {declared_at}") from error
+        if parsed_date.isoformat() != declared_at:
+            raise ValueError(f"fecha de declaración inválida en {module}: {declared_at}")
         if entry["status"] == "declared-orphan" and not isinstance(
             entry.get("foundation"), bool
         ):
             raise ValueError(f"declaración huérfana sin decisión de cimiento en {module}")
-        _validate_evidence(module, entry.get("evidence"))
+        _validate_evidence(module, entry.get("evidence"), repository_root)
         if module in declarations:
             raise ValueError(f"declaración duplicada: {module}")
         declarations[module] = entry
@@ -262,7 +353,8 @@ def load_declarations(path: Path) -> tuple[dict[str, dict], set[str]]:
 
 def inventory(root: Path, declaration_path: Path) -> list[dict]:
     all_modules = modules(root)
-    declarations, art_modules = load_declarations(declaration_path)
+    repository_root = root.resolve().parent
+    declarations, art_modules = load_declarations(declaration_path, repository_root)
     unknown_inventory_modules = (set(declarations) | art_modules) - all_modules
     if unknown_inventory_modules:
         raise ValueError(

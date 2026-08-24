@@ -26,115 +26,17 @@ const aqui = dirname(fileURLToPath(import.meta.url));
 const raizModulo = resolve(aqui, "..");
 const raizScripts = join(raizModulo, "scripts");
 
-/**
- * Módulos sin importador, cada uno con su motivo Y su issue.
- *
- * El `issue` es obligatorio a propósito. #523 avisó de que el desenlace legítimo
- * de un huérfano puede ser cablearlo, retirarlo o declararlo cimiento, pero que
- * «ninguno es dejarlo como está sin decirlo». Exigir un número de issue impide
- * que esta lista se convierta en el sitio donde se deja lo que no se quiere
- * mirar: para silenciar la guarda hay que haber abierto la conversación.
- *
- * `cimiento: true` significa que se espera que siga sin consumidor por ahora.
- * `cimiento: false` significa que NO debería estar aquí: es un hueco conocido y
- * la entrada es el registro de que se sabe, no un permiso.
- */
-const HUERFANOS_DECLARADOS = Object.freeze({
-  "convocatoria-estancia.mjs": {
-    cimiento: true,
-    issue: 587,
-    motivo:
-      "Resuelve a donde llega la tripulacion cuando el GM la convoca a una " +
-      "estancia. No lo importa nadie TODAVIA porque el cableado a la ventana de " +
-      "Andar es su propia tarjeta: la playa (#587) y el museo (#598) no cuelgan " +
-      "de ninguna puerta de la nave, asi que hoy solo los abre el GM y la " +
-      "tripulacion no los pisa. Se entrega antes el modulo puro para que la " +
-      "decision de quien puede convocar y de donde se aparece viva en un sitio " +
-      "probable sin Foundry delante, en vez de nacer enredada en la interfaz.",
-  },
-  "audio-ficheros.mjs": {
-    cimiento: true,
-    issue: 571,
-    motivo:
-      "Reproductor de ficheros de audio, al lado de la síntesis de #318. No lo " +
-      "importa nadie todavía porque NO HAY NI UN FICHERO DE AUDIO en el " +
-      "repositorio: traerlo es la decisión de #571, y cablear un reproductor a " +
-      "un catálogo vacío no reproduce nada. Existe primero a propósito, porque " +
-      "sin consumidor no tenía sentido ni listar fuentes de audio — que es " +
-      "justo lo que `docs/ASSETS_LIBRES.md` explica en su tabla de categorías.",
-  },
-  "horizonte-preset.mjs": {
-    cimiento: false,
-    issue: 584,
-    motivo:
-      "Volcado del matte del horizonte a PNG indexados. No lo importa el módulo " +
-      "en caliente A PROPÓSITO: lo usan `tools/prerender-horizonte.mjs` para " +
-      "escribir los assets y `horizonte-matte.test.mjs` para verificar que los " +
-      "del árbol corresponden al generador. Cablearlo al arranque significaría " +
-      "codificar tres PNG en cada carga para no mirarlos, que es justo lo " +
-      "contrario de prerenderizar.",
-  },
-  "rig-esqueleto.mjs": {
-    cimiento: false,
-    issue: 603,
-    motivo:
-      "Deformación de malla por huesos, fase 1 de #603. No lo importa nadie " +
-      "todavía porque su consumidor es la fase 4 (bustos, PC/NPC y criaturas con " +
-      "partes importadas) y esa fase depende de una decisión de arte que sigue " +
-      "abierta en el issue: avatares todo-escaneado o todo-estilizado. Cablearlo " +
-      "antes de esa decisión es exactamente cómo sale la opción incoherente del " +
-      "medio, que es la que el issue avisa que sale sola si nadie decide.",
-  },
-  "catalogo-cosmografico.mjs": {
-    cimiento: true,
-    issue: 525,
-    motivo:
-      "Validador del formato de atlas (planos, sistemas, planetas, con procedencia " +
-      "y licencia por entrada). Cimiento de #213, que sigue siendo investigación a " +
-      "validar por Varo y Eloy: cablearlo por iniciativa propia promovería a hecho " +
-      "una decisión que no está tomada.",
-  },
-  "atlas-hyg.mjs": {
-    cimiento: true,
-    issue: 568,
-    motivo:
-      "Adaptador del catálogo estelar HYG al formato de atlas. Cimiento del " +
-      "MISMO issue sin decidir que `catalogo-cosmografico.mjs` (#213): traduce " +
-      "datos al formato, y cablearlo metería en la partida un atlas que Varo y " +
-      "Eloy no han aprobado. Que lo que produce es válido lo comprueba " +
-      "`atlas-hyg.test.mjs` contra el validador, sin necesidad de consumidor.",
-  },
-  "npc-tablas.mjs": {
-    cimiento: true,
-    issue: 676,
-    motivo:
-      "Tablas propias del generador de NPC: silabas, arquetipos, elementos y " +
-      "lineas. Solo lo importa npc-generador.mjs, que a su vez todavia no " +
-      "cuelga de ninguna puerta.",
-  },
-  "npc-generador.mjs": {
-    cimiento: true,
-    issue: 676,
-    motivo:
-      "Motor puro del generador de NPC: semilla mas valor de desafio dan una " +
-      "ficha. No lo importa nadie TODAVIA a proposito. Lo que falta para que " +
-      "se llegue jugando no es cableado sino una decision que no se toma de " +
-      "paso: un habitante al que has conocido es algo que se RECUERDA, y " +
-      "docs/FOUNDRY.md deja recordar fuera de la escena. Es el mismo reparto " +
-      "que #598 dejo abierto para el bestiario. Se entrega antes el motor para " +
-      "que la matematica del SRD y la limpieza de nombres se prueben sin " +
-      "Foundry delante.",
-  },
-  "nave-movimiento-sala-prueba.mjs": {
-    cimiento: true,
-    issue: 427,
-    motivo:
-      "Banco de pruebas del motor de andar: dos cajas conectadas, deliberadamente " +
-      "FUERA de `nave-catalogo-andar.mjs`. No tener importador no es un descuido, " +
-      "es la propiedad que se le exige — el día que se cuele en el catálogo de la " +
-      "nave real, las salas 'a' y 'b' aparecerían en la partida.",
-  },
-});
+/** El inventario machine-readable de #701 sustituye la lista compartida local. */
+const inventarioModulos = JSON.parse(
+  readFileSync(resolve(raizModulo, "..", "docs", "orphan-declarations.json"), "utf8"),
+);
+const HUERFANOS_DECLARADOS = Object.freeze(
+  Object.fromEntries(
+    inventarioModulos.declarations
+      .filter(({ status }) => status === "declared-orphan")
+      .map((declaracion) => [declaracion.module, Object.freeze(declaracion)]),
+  ),
+);
 
 /** Recorre `scripts/` y devuelve rutas relativas con separador POSIX. */
 function modulosDeScripts(directorio = raizScripts) {
@@ -237,15 +139,15 @@ test("cada huérfano declarado existe, explica por qué y cita su issue", () => 
   for (const [modulo, entrada] of Object.entries(HUERFANOS_DECLARADOS)) {
     assert.ok(existentes.has(modulo), `HUERFANOS_DECLARADOS nombra scripts/${modulo}, que no existe`);
     assert.ok(
-      typeof entrada.motivo === "string" && entrada.motivo.length > 40,
+      typeof entrada.reason === "string" && entrada.reason.length > 40,
       `El motivo de scripts/${modulo} es demasiado corto para ser una decisión escrita`,
     );
-    assert.equal(
-      typeof entrada.issue,
-      "number",
+    assert.match(
+      entrada.evidence?.url ?? "",
+      /^https:\/\/github\.com\/VaroTv7\/espaciokooplagunak\/issues\/[1-9]\d*$/,
       `scripts/${modulo} no cita issue: sin conversación abierta esto es esconder, no declarar`,
     );
-    assert.equal(typeof entrada.cimiento, "boolean", `scripts/${modulo} no dice si es cimiento o hueco`);
+    assert.equal(typeof entrada.foundation, "boolean", `scripts/${modulo} no dice si es cimiento o hueco`);
   }
 });
 

@@ -24,7 +24,7 @@ jobs:
       - id: filtro
         uses: ./.github/actions/filtro-rutas
         with:
-          rutas: '^(foundry-module/|\.github/workflows/foundry-module\.yml$|\.github/actions/)'
+          rutas: '^(foundry-module/|scripts/check_orphan_modules\.py$|scripts/tests/test_check_orphan_modules\.py$|docs/orphan-declarations\.json$|\.github/workflows/foundry-module\.yml$|\.github/actions/)'
 
   tests:
     name: Tests del módulo Foundry (Node)
@@ -48,6 +48,10 @@ jobs:
           done
       - name: Ejecutar tests del módulo
         run: node --test foundry-module/tests/*.test.mjs
+      - name: Probar el inventario conservador de módulos
+        run: python3 -m unittest discover -s scripts/tests -p 'test_check_orphan_modules.py'
+      - name: Verificar inventario conservador de módulos
+        run: python3 scripts/check_orphan_modules.py --check
       - name: El PNG prerenderizado corresponde al generador
         run: node tools/prerender-piel.mjs --check
 

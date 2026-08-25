@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "declarations": [
+    {
+      "module": "audio-ficheros.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Reproductor de ficheros de audio, al lado de la síntesis de #318. No lo importa nadie todavía porque no hay ningún fichero de audio en el repositorio: traerlo es la decisión de #571, y cablear un reproductor a un catálogo vacío no reproduce nada.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-08-24",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/571"
+      }
+    },
+    {
+      "module": "convocatoria-estancia.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Resuelve a dónde llega la tripulación cuando el GM la convoca a una estancia. El cableado a la ventana de Andar es su propia tarjeta y no debe nacer enredado en la interfaz.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-08-24",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/587"
+      }
+    },
+    {
+      "module": "horizonte-preset.mjs",
+      "status": "declared-orphan",
+      "foundation": false,
+      "reason": "Volcado del matte del horizonte a PNG indexados. No lo importa el módulo en caliente a propósito: lo usan las herramientas de prerender y la prueba que verifica los assets guardados.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-08-24",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/584"
+      }
+    },
+    {
+      "module": "nave-movimiento-sala-prueba.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Banco de pruebas del motor de andar: dos cajas conectadas y deliberadamente fuera del catálogo jugable. No tener importador es la propiedad que se le exige.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-08-24",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/427"
+      }
+    },
+    {
+      "module": "npc-generador.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Motor puro del generador de NPC. Todavía no cuelga de ninguna puerta porque recordar un habitante conocido pertenece a una decisión narrativa fuera de la escena.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-08-24",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/676"
+      }
+    },
+    {
+      "module": "npc-tablas.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Tablas propias del generador de NPC: sílabas, arquetipos, elementos y líneas. Solo las importa npc-generador.mjs, que a su vez todavía no cuelga de ninguna puerta.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-08-24",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/676"
+      }
+    },
+    {
+      "module": "rig-esqueleto.mjs",
+      "status": "declared-orphan",
+      "foundation": false,
+      "reason": "Deformación de malla por huesos, fase 1 de #603. Su consumidor depende de una decisión de arte todavía abierta; cablearlo antes produciría una opción incoherente.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-08-24",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/603"
+      }
+    }
+  ],
+  "artInventoryRationale": {
+    "scope": "Módulos de arte que deben tomar sus colores de la paleta común; paleta.mjs queda fuera por definición porque es donde viven esos colores.",
+    "excluded": "decorado-fondo.mjs y mapa-render.mjs no entran todavía: sus colores son catálogos de contenido (tipos de planeta y nebulosas) y tonos de lienzo. Decidir si eso es paleta compartida o dato de decorado sigue siendo una discusión de diseño registrada en #351, no una mudanza mecánica.",
+    "history": [
+      "retro3d.mjs recibe el color base y solo lo sombrea; retro3d-estrellas.mjs obtiene el azul del cielo desde PIXEL.",
+      "La cantina, la playa y el museo entraron en la guardia al nacer como escenas completas de arte nuevo; cantina-2d.mjs compone incluso sus velos rgba desde CANTINA.",
+      "ficha-nave.mjs reutiliza siluetas y colores; el relleno transparente pertenece al requisito del codificador PNG, no a una paleta propia.",
+      "Los dados y la mesa de póker 3D reutilizan FICHA y PIXEL; los avatares de la cantina toman pelo, piel, ropa y aceros de la paleta.",
+      "seccion-lienzo.mjs declara sus tonos de plano dentro de la paleta común, y filtros-escena.mjs toma de ALERTA el tinte que delega en FXMaster."
+    ]
+  },
+  "artModules": [
+    "laminas-clasicas.mjs",
+    "nave-sprite.mjs",
+    "minijuegos/cartas-pixelart.mjs",
+    "minijuegos/fichas-pixelart.mjs",
+    "ventana-nave.mjs",
+    "iconos-sistema.mjs",
+    "retrato-tripulante.mjs",
+    "retro3d.mjs",
+    "retro3d-estrellas.mjs",
+    "cantina-escena.mjs",
+    "cantina-icono.mjs",
+    "cantina-2d.mjs",
+    "playa-escena.mjs",
+    "museo-escena.mjs",
+    "nave-props.mjs",
+    "ficha-nave.mjs",
+    "minijuegos/dados-3d.mjs",
+    "minijuegos/dados-lienzo.mjs",
+    "minijuegos/poker-3d.mjs",
+    "cantina-avatar.mjs",
+    "cantina-ventana.mjs",
+    "seccion-lienzo.mjs",
+    "filtros-escena.mjs"
+  ]
+}

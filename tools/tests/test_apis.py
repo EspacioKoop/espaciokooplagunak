@@ -248,3 +248,86 @@ class LosClientesNuevosNoPidenSinClave(unittest.TestCase):
         self.assertIn("freesound", apis.__all__)
         self.assertTrue(callable(apis.europeana))
         self.assertTrue(callable(apis.freesound))
+
+
+class NasaYLospecNoNecesitanClavePeroSiPresupuesto(unittest.TestCase):
+    """Los otros dos rescatados. Sin clave, pero con las mismas obligaciones.
+
+    A diferencia de Europeana y Freesound, estas dos APIs son anónimas: no hay
+    clave que proteger. Lo que sí hay que respetar es el ritmo y el tope diario
+    —el tier gratuito es todo el presupuesto que hay— y eso ya lo garantiza
+    `pedir`, así que lo que se prueba aquí es que **pasen por `pedir`** y no se
+    monten su propio HTTP por su cuenta.
+
+    No es una precaución teórica: `avisar.py` llegó en el mismo lote haciendo
+    justo eso, y es exactamente lo que #671 acababa de quitarle a `artic.py`.
+    """
+
+    def setUp(self):
+        from apis import nasa as mod_n, nasa_asset as mod_na
+        from apis import lospec as mod_l, lospec_aleatoria as mod_la
+        self.nasa, self.nasa_asset = mod_n, mod_na
+        self.lospec, self.lospec_aleatoria = mod_l, mod_la
+
+    def test_los_dos_hosts_declaran_su_ritmo(self):
+        # Sin entrada en RITMO no hay tope diario que agotar: se pediría sin
+        # freno hasta que la API corte, que es el fallo que el modulo evita.
+        self.assertIn("images-api.nasa.gov", core.RITMO)
+        self.assertIn("lospec.com", core.RITMO)
+
+    def test_no_hacen_su_propio_HTTP(self):
+        """Todo tiene que salir por `pedir`, que es quien cuenta el gasto."""
+        import glob
+        raiz = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "apis")
+        for nombre in ("nasa.py", "lospec.py"):
+            texto = open(os.path.join(raiz, nombre), encoding="utf-8").read()
+            self.assertNotIn("urlopen", texto, f"{nombre} se salta `pedir`")
+
+    def test_nasa_normaliza_y_DESCARTA_el_item_sin_datos(self):
+        """Un item sin `data` se tira, no se devuelve a medias.
+
+        Es lo correcto y conviene fijarlo: sin `data` no hay ni id ni titulo, o
+        sea que la entrada no sirve para nada y colarla obligaria a cada
+        consumidor a filtrarla otra vez. Mi primera version de esta prueba
+        esperaba que se devolviera; el cliente tenia razon.
+        """
+        respuesta = {"collection": {"items": [
+            {"data": [{"nasa_id": "as11-40-5874", "title": "Aldrin",
+                       "date_created": "1969-07-20", "center": "JSC",
+                       "media_type": "image"}],
+             "links": [{"rel": "preview", "href": "https://img/preview.jpg"}]},
+            {},        # sin `data`: se descarta
+            {"data": []},   # `data` vacia: tambien
+        ]}}
+        with patch("apis.nasa.pedir", return_value=respuesta):
+            r = self.nasa("apollo 11")
+        self.assertEqual(len(r), 1, "los items sin datos no se devuelven")
+        self.assertEqual(r[0]["fuente"], "nasa")
+        self.assertEqual(r[0]["nasa_id"], "as11-40-5874")
+        self.assertEqual(r[0]["preview_url"], "https://img/preview.jpg")
+
+    def test_lospec_devuelve_los_colores_de_la_paleta(self):
+        respuesta = {"name": "Pico-8", "author": "zep",
+                     "colors": ["000000", "1D2B53", "7E2553"]}
+        with patch("apis.lospec.pedir", return_value=respuesta):
+            r = self.lospec("pico-8")
+        self.assertEqual(r["fuente"], "lospec")
+        self.assertEqual(len(r["colores"]), 3)
+
+    def test_una_paleta_sin_colores_da_lista_vacia_y_no_revienta(self):
+        with patch("apis.lospec.pedir", return_value={"name": "x"}):
+            self.assertEqual(self.lospec("x")["colores"], [])
+
+    def test_caida_es_None_en_las_cuatro_funciones(self):
+        with patch("apis.nasa.pedir", return_value=None):
+            self.assertIsNone(self.nasa("x"))
+            self.assertIsNone(self.nasa_asset("x"))
+        with patch("apis.lospec.pedir", return_value=None):
+            self.assertIsNone(self.lospec("x"))
+            self.assertIsNone(self.lospec_aleatoria())
+
+    def test_estan_exportadas_las_cuatro(self):
+        import apis
+        for nombre in ("nasa", "nasa_asset", "lospec", "lospec_aleatoria"):
+            self.assertIn(nombre, apis.__all__)
+            self.assertTrue(callable(getattr(apis, nombre)))

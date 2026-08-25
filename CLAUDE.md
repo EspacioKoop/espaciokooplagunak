@@ -155,21 +155,20 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     quién los ve; nunca cómo se injertan. Un botón nuevo se añade como entrada de un catálogo de
     puerta existente (`scripts/puerta-catalogo.mjs`, y `panel-gm.mjs`/`cantina.mjs` como
     consumidores), no como una herramienta suelta más.
-  - **Alcanzabilidad** — `tests/modulos-alcanzables.test.mjs` (#523) recorre el grafo de imports
-    desde los `esmodules` que declara `module.json` y falla si algún módulo de `scripts/` queda
-    fuera sin estar declarado en su lista `HUERFANOS_DECLARADOS`, con motivo Y número de issue. Un
-    módulo huérfano tiene el MISMO verde que uno cableado —su suite lo importa directamente—, así
-    que sin esta guarda «escrito y probado» se confunde con «alcanzable jugando». Ojo: un
-    comentario que nombre el módulo no cuenta como consumidor; contarlos así es lo que le hizo
-    pasar por alto tres huérfanos al barrido manual de #523. Hay dos categorías y no da igual cuál:
-    `cimiento: true` es lo que se espera que siga sin consumidor (el banco de pruebas del andar,
-    y `catalogo-cosmografico.mjs` con su adaptador `atlas-hyg.mjs` a la espera de #213 — el formato
-    y el importador de datos reales están escritos y probados, pero cablearlos metería en la partida
-    un atlas que no está aprobado); `cimiento: false` es un hueco conocido con su
-    issue abierto, y la entrada es el registro de que se sabe, no un permiso — **no una plaza fija**:
-    #526 y #537 se cablearon y #536 se retiró. La categoría vacía es su estado sano; mientras tenga
-    entradas, son deuda con fecha y no inventario. No enumeres aquí los huecos vivos: esa lista es
-    `HUERFANOS_DECLARADOS` y se desincroniza en cuanto uno se cierra.
+  - **Alcanzabilidad e inventarios** — `scripts/check_orphan_modules.py` (#701) es la única
+    implementación del contrato: recorre el grafo desde los `esmodules` de `module.json`, acredita
+    solo imports literales completos y clasifica cada módulo como `connected`, `declared-orphan` o
+    `unknown`. Ante regex, templates, concatenaciones o sintaxis que el lexer reducido no pueda
+    demostrar, debe preferir `unknown`; esa salida no rompe CI. La fuente declarativa única es
+    [`docs/orphan-declarations.json`](docs/orphan-declarations.json): ahí viven tanto las
+    declaraciones huérfanas —motivo, autoría, fecha, decisión de cimiento y evidencia— como
+    `artModules` y la justificación de su frontera. Los tests Node
+    `modulos-alcanzables.test.mjs` y `paleta.test.mjs` **consumen** ese JSON; no mantengas listas
+    paralelas en ellos ni en esta guía. Los enlaces de evidencia a issues/PRs se verifican por la API
+    de GitHub con timeout y token de solo lectura en CI; un 404 confirmado invalida la declaración y
+    un fallo de red bloquea la verificación en vez de aceptar el enlace en silencio. Para declarar o
+    reclasificar un módulo, edita el JSON y ejecuta
+    `python3 scripts/check_orphan_modules.py --check` más las suites Python y Node del área.
   - **Ventanas** — **Consola caliente del GM** (#276, `docs/CONSOLA_CALIENTE_GM.md`) fusionó las
     cuatro factorías originales (estado de nave y mapa vivo, V1/V2) en una sola ventana con pestañas
     (Estado, Mapa, Encuentros, Previsualización) y UN solo bucle de sondeo y backoff, sustituyendo

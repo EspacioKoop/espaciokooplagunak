@@ -30,6 +30,7 @@ PR: cada área se verifica sola, y por eso se pueden entregar por separado.
 | Escenarios (Lua) | `scripts/**/*.lua` | `find scripts -iname '*.lua' -print0 \| xargs -0 -n1 luac -p` |
 | Puente | `bridge/**` | `cd bridge && pytest` |
 | Herramientas | `tools/**` | `python3 -m pytest tools/tests` |
+| Inventario del módulo | `scripts/check_orphan_modules.py`, `scripts/tests/test_check_orphan_modules.py`, `docs/orphan-declarations.json`, `foundry-module/tests/modulos-alcanzables.test.mjs`, `foundry-module/tests/paleta.test.mjs` | `python3 -m unittest discover -s scripts/tests -p 'test_check_orphan_modules.py'` y `node --test foundry-module/tests/modulos-alcanzables.test.mjs foundry-module/tests/paleta.test.mjs` |
 | Módulo: orquestación | `foundry-module/scripts/main.mjs`, `foundry-module/scripts/lagunak-constantes.mjs`, `foundry-module/scripts/control-escena.mjs`, `foundry-module/scripts/puerta-catalogo.mjs`, `foundry-module/scripts/idioma-modulo.mjs`, `foundry-module/scripts/foco-render.mjs`, `foundry-module/scripts/filtros-escena.mjs`, `foundry-module/scripts/diagnostico-conexion.mjs`, `foundry-module/module.json` | `node --test foundry-module/tests/*.test.mjs` |
 | Módulo: puente y telemetría | `foundry-module/scripts/bridge-*.mjs`, `foundry-module/scripts/telemetria-*.mjs`, `foundry-module/scripts/contactos-*.mjs`, `foundry-module/scripts/sensores-*.mjs`, `foundry-module/scripts/resolver-*.mjs`, `foundry-module/scripts/casco-*.mjs`, `foundry-module/scripts/ship-view.mjs`, `foundry-module/scripts/barras-estado.mjs`, `foundry-module/scripts/base-datos-cientifica.mjs`, `foundry-module/scripts/lamina-contacto.mjs`, `foundry-module/scripts/*-control.mjs`, `foundry-module/scripts/consola-caliente-*.mjs`, `foundry-module/scripts/panel-gm*.mjs` | `node --test foundry-module/tests/*.test.mjs` |
 | Módulo: puestos y autoridad | `foundry-module/scripts/station-*.mjs`, `foundry-module/scripts/requisitos-puesto.mjs`, `foundry-module/scripts/proyeccion-puesto.mjs`, `foundry-module/scripts/asistencia*.mjs`, `foundry-module/scripts/asistencia/**` | `node --test foundry-module/tests/*.test.mjs` |
@@ -38,7 +39,7 @@ PR: cada área se verifica sola, y por eso se pueden entregar por separado.
 | Módulo: arte y avatares | `foundry-module/scripts/paleta.mjs`, `foundry-module/scripts/avatar-*.mjs`, `foundry-module/scripts/retrato-tripulante.mjs`, `foundry-module/scripts/ficha-nave*.mjs`, `foundry-module/scripts/iconos-sistema.mjs`, `foundry-module/scripts/laminas-clasicas.mjs`, `foundry-module/scripts/png-indexado.mjs` | `node --test foundry-module/tests/*.test.mjs` |
 | Módulo: NPC y bestiario | `foundry-module/scripts/npc-*.mjs` | `node --test foundry-module/tests/*.test.mjs` |
 | Módulo: minijuegos | `foundry-module/scripts/minijuegos/**`, `foundry-module/scripts/minijuegos-wiring.mjs` | `node --test foundry-module/tests/*.test.mjs` |
-| Módulo: catálogos con procedencia | `foundry-module/scripts/catalogo-*.mjs`, `foundry-module/scripts/procedencia-*.mjs`, `foundry-module/scripts/museo-piezas.mjs`, `foundry-module/scripts/atlas-hyg.mjs`, `foundry-module/data/**` | `node --test foundry-module/tests/*.test.mjs` |
+| Módulo: catálogos con procedencia | `foundry-module/scripts/catalogo-*.mjs`, `foundry-module/scripts/procedencia-*.mjs`, `foundry-module/scripts/museo-piezas.mjs`, `foundry-module/scripts/atlas-hyg.mjs`, `foundry-module/scripts/importador-atlas.mjs`, `foundry-module/data/**` | `node --test foundry-module/tests/*.test.mjs` |
 | Módulo: contenido externo del GM | `foundry-module/scripts/contenido-externo/**` | `node --test foundry-module/tests/*.test.mjs` |
 | Documentación | `docs/**`, `README.md`, `CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md` | — (revisión humana) |
 
@@ -72,8 +73,9 @@ toca, no reordenes, y si te lo pisan, rebasa — nunca fuerces.**
 | `foundry-module/scripts/main.mjs` | Es donde se declaran las herramientas de la barra | Un botón nuevo va como **entrada de un catálogo** (`puerta-catalogo.mjs`, `panel-gm.mjs`, `cantina.mjs`), no como herramienta suelta |
 | `foundry-module/tests/main-compat.test.mjs` | Fija la lista exacta de herramientas | Si de verdad añades una herramienta, actualiza la lista en el mismo commit |
 | `foundry-module/scripts/paleta.mjs` | Toda escena nueva quiere su grupo de color | Grupo **nuevo al final**; no toques los grupos ajenos ni "de paso" |
-| `foundry-module/tests/paleta.test.mjs` | `MODULOS_DE_ARTE` crece con cada módulo de arte | Añade tu módulo el día que nace, al final de la lista |
-| `foundry-module/tests/modulos-alcanzables.test.mjs` | `HUERFANOS_DECLARADOS` | Solo se toca si tu módulo nace huérfano; con motivo y número de issue |
+| `docs/orphan-declarations.json` | Fuente única de huérfanos declarados, módulos de arte y su justificación | Añade solo tu entrada sin reordenar las ajenas; incluye procedencia completa y evidencia existente. Si es arte, actualiza `artModules` y la justificación cuando cambie la frontera |
+| `foundry-module/tests/paleta.test.mjs` | Consume `artModules` y su justificación desde el JSON | No añadas listas paralelas: normalmente no se toca al incorporar un módulo; cambia la guarda solo si cambia el contrato |
+| `foundry-module/tests/modulos-alcanzables.test.mjs` | Consume los estados derivados por el inventario Python | No declares huérfanos aquí: edita el JSON; toca esta guarda solo si cambia el contrato compartido Node/Python |
 | `foundry-module/scripts/nave-catalogo-andar.mjs` | Toda estancia nueva | Estancia nueva **al final** del catálogo |
 | `README.md` | El roadmap por fases | Marca solo tu línea; no reescribas las de al lado |
 

@@ -48,6 +48,10 @@ import {
 import { registerStationOrders } from "./station-order-wiring.mjs";
 import { registrarRelevoPuestos } from "./station-handover.mjs";
 import { registrarAsistencia } from "./asistencia-wiring.mjs";
+import {
+  registrarConvocatoriaEstancia,
+  convocarYTransmitir,
+} from "./convocatoria-difusion.mjs";
 import { addAsistenciaControl, registrarAsistenciaUI } from "./asistencia-ui.mjs";
 import {
   addContenidoExternoControl,
@@ -440,6 +444,12 @@ Hooks.once("ready", () => {
   // coordinador aunque esté cerrada, para que quien pida ayuda y cierre sin
   // querer no se quede con una reserva viva y ninguna forma de resolverla.
   registrarAsistenciaUI(MODULE_ID);
+  // Convocatoria a una estancia (#587, #689): el GM lleva a la tripulación a la
+  // playa o al museo. La forma de abrir la ventana se PASA —`abrirAndarNave` es
+  // local de este fichero, no exportada— en vez de que el receptor la suponga,
+  // que es lo que dejó el cableado del #675 sin poder funcionar.
+  registrarConvocatoriaEstancia(MODULE_ID, { abrir: abrirAndarNave });
+
   // Sesiones de minijuegos (#308): el GM coordinador recoge las propuestas por
   // updateUser; cualquier cliente escucha las vistas privadas dirigidas a él.
   registrarSesionesMinijuegos(MODULE_ID);
@@ -871,7 +881,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
           title: "LAGUNAK.Controles.AbrirPlaya",
           icon: "fa-solid fa-umbrella-beach",
           button: true,
-          onClick: () => abrirAndarNave("playa"),
+          onClick: () => convocarYTransmitir("playa"),
         },
         {
           // La sala del museo (#598). Solo GM por el mismo motivo que la playa:
@@ -881,7 +891,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
           title: "LAGUNAK.Controles.AbrirMuseo",
           icon: "fa-solid fa-landmark",
           button: true,
-          onClick: () => abrirAndarNave("museo"),
+          onClick: () => convocarYTransmitir("museo"),
         },
       ]
     : [];

@@ -117,7 +117,7 @@ const ETIQUETA_PESTANA = Object.freeze({
   previsualizacion: "Previsualizacion",
 });
 
-function derivarMovimiento(app, centro, tMs) {
+export function derivarMovimiento(app, centro, tMs) {
   const prev = app._centroAnterior;
   const moviendo = Boolean(
     prev && centro && Math.hypot(centro.x - prev.x, centro.y - prev.y) > 0.5,

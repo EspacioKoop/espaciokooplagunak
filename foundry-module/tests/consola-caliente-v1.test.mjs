@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { derivarMovimiento } from "../scripts/consola-caliente-v1.mjs";
 
 // Smoke test de ConsolaCalienteV1 (#276): réplica AISLADA en v11 del smoke
 // test de consola-caliente-v2.test.mjs — misma cobertura de plan de sondeo

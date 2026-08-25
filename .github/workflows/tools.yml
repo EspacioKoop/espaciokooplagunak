@@ -41,7 +41,12 @@ jobs:
           # citadas: una referencia rota la introduce un documento, no una
           # herramienta, así que con el filtro anterior este check no se
           # despertaba nunca en el PR que la rompe.
-          rutas: '^(tools/|\.github/workflows/tools\.yml$|\.github/labeler\.yml$|\.github/actions/|scripts/public_domain_names_scenario_utility\.lua$|docs/DOMINIO_PUBLICO_SCIFI\.md$|src/|resources/locale/|docs/|.*\.md$)'
+          #
+          # `foundry-module/scripts/` entra por el contraste del inventario:
+          # el documento se desvía cuando aparece un script NUEVO, no cuando
+          # se edita el `.md`. Sin esta rama, el check no se despertaría en el
+          # PR que introduce la deriva — que es justo el que hay que parar.
+          rutas: '^(tools/|\.github/workflows/tools\.yml$|\.github/labeler\.yml$|\.github/actions/|scripts/public_domain_names_scenario_utility\.lua$|docs/DOMINIO_PUBLICO_SCIFI\.md$|src/|resources/locale/|docs/|.*\.md$|foundry-module/scripts/)'
 
   tests:
     name: tools/tests (Linux)
@@ -67,6 +72,12 @@ jobs:
         run: python3 tools/check_cpp_locale_coverage.py .
       - name: Paridad e invariantes del catálogo es-ES
         run: python3 tools/validate_es_locale.py .
+      - name: Inventario de scripts contrastado con el árbol
+        # No basta con que el documento cuadre consigo mismo: se contrasta
+        # contra foundry-module/scripts, que es donde nace la deriva.
+        run: >-
+          python3 tools/doc-coherencia.py docs/INVENTARIO-SCRIPTS-FOUNDRY.md
+          --contra foundry-module/scripts --patron '*.mjs,*.js'
       - name: Rutas citadas por la documentación
         # Solo stdlib. Recorre los .md y comprueba que cada ruta que citan
         # existe: una cita rota manda al lector —o al agente— a perseguir

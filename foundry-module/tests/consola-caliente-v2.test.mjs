@@ -287,3 +287,15 @@ test("un catálogo de anclas caído se reintenta, no apaga el bloque para siempr
   assert.ok(llamadas.some((url) => url.endsWith("/v1/anchors")));
   app._onClose();
 });
+
+// Additional tests to increase coverage
+test("pidio matches exact URL", () => {
+  assert(pidio(["http://example.com"], "http://example.com"));
+});
+
+test("vaciarMicrotareas resolves after async", async () => {
+  const start = Date.now();
+  await vaciarMicrotareas();
+  const elapsed = Date.now() - start;
+  assert(elapsed < 1000);
+});

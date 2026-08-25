@@ -612,6 +612,16 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
 - Commits breves, imperativos y con prefijo: `feat(scenario): …`, `fix(network): …`, `docs: …`.
 - El issue es el contrato de alcance; el PR es el registro de implementación y verificación. Antes
   de trabajar, revisa issues/PRs/ramas existentes para no duplicar.
+- **Quién aprueba.** `.github/CODEOWNERS` pone a `@VaroTv7` y `@eGurucharri` como revisores de todo,
+  y `main` exige la aprobación de un code owner. GitHub **no cuenta al autor**, así que un PR abierto
+  por uno solo lo puede aprobar el otro. Tenlo en cuenta al elegir con qué cuenta se abre: el 25-ago-2026
+  había 22 PRs abiertos por `eGurucharri` —todos en verde y mergeables— parados en `REVIEW_REQUIRED`
+  porque el único que podía firmarlos era `@VaroTv7`. Comprobar el estado real:
+  `gh pr view <n> --json mergeStateStatus,reviewDecision`.
+- **Una rama sin PR no es trabajo a salvo, pero tampoco es trabajo perdido.** Antes de rescatar una
+  rama huérfana, ejecuta el criterio de su tarea y compara contra `main`: varias se caen solas porque
+  `main` avanzó por otra vía. Borrar un worktree **no** borra su rama, así que lo confirmado nunca se
+  pierde al limpiar; lo único en riesgo es lo que no está confirmado.
 
 ## Estilo
 
@@ -629,6 +639,15 @@ propio módulo testeable desde Node/pytest sin mockear el framework — el patr�
 
 Actualiza `README.md` (estado/roadmap/características) solo cuando un cambio esté integrado en
 `main` y verificado — nunca marques tareas como hechas por el mero hecho de haber escrito código.
+
+Un objetivo numérico se cierra con **la cifra medida**, no con los tests en verde. Si una tarea pide
+subir la cobertura de un módulo, el criterio es el porcentaje que imprime
+`node --test --experimental-test-coverage` (o `pytest --cov`) **después** del cambio, y hay que
+pegarlo. No es teórico: el 25-ago-2026 aparecieron dos ramas con toda su batería en verde —26 y 39
+tests— que dejaban la cobertura igual (65,17 %) o peor (56,58 % → 53,51 %, por sobrescribir un
+fichero de test existente con otro más corto). Un fichero de test que **encoge** en un diff es la
+señal a mirar:
+`gh pr view <n> --json files --jq '.files[]|select(.path|test("test"))|select(.deletions > .additions)'`.
 
 ## Mantenimiento de la documentación
 

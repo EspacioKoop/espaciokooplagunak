@@ -1,3 +1,6 @@
+# Política local: cada etiqueta usa únicamente reglas `changed-files` con una
+# lista explícita de matchers. No se admiten reglas de rama, grupos `any`/`all`
+# ni opciones globales; esa restricción mantiene la configuración determinista.
 "area:bridge":
   - changed-files:
       - any-glob-to-any-file:

@@ -36,7 +36,7 @@ jobs:
           # las dos mitades de la misma costura, así que tocar cualquiera de las
           # dos tiene que despertar esta auditoría. Sigue siendo un job de Python
           # de segundos; no arrastra la build.
-          rutas: '^(tools/|\.github/workflows/tools\.yml$|\.github/actions/|scripts/public_domain_names_scenario_utility\.lua$|docs/DOMINIO_PUBLICO_SCIFI\.md$|src/|resources/locale/)'
+          rutas: '^(tools/|\.github/workflows/tools\.yml$|\.github/labeler\.yml$|\.github/actions/|scripts/public_domain_names_scenario_utility\.lua$|docs/DOMINIO_PUBLICO_SCIFI\.md$|src/|resources/locale/)'
 
   tests:
     name: tools/tests (Linux)

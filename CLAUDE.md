@@ -614,14 +614,26 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
   de trabajar, revisa issues/PRs/ramas existentes para no duplicar.
 - **Quién aprueba.** `.github/CODEOWNERS` pone a `@VaroTv7` y `@eGurucharri` como revisores de todo,
   y `main` exige la aprobación de un code owner. GitHub **no cuenta al autor**, así que un PR abierto
-  por uno solo lo puede aprobar el otro. Tenlo en cuenta al elegir con qué cuenta se abre: el 25-ago-2026
-  había 22 PRs abiertos por `eGurucharri` —todos en verde y mergeables— parados en `REVIEW_REQUIRED`
-  porque el único que podía firmarlos era `@VaroTv7`. Comprobar el estado real:
-  `gh pr view <n> --json mergeStateStatus,reviewDecision`.
-- **Una rama sin PR no es trabajo a salvo, pero tampoco es trabajo perdido.** Antes de rescatar una
-  rama huérfana, ejecuta el criterio de su tarea y compara contra `main`: varias se caen solas porque
-  `main` avanzó por otra vía. Borrar un worktree **no** borra su rama, así que lo confirmado nunca se
-  pierde al limpiar; lo único en riesgo es lo que no está confirmado.
+  por uno solo lo puede aprobar el otro, y abrir una tanda entera con la misma cuenta deja a esa
+  cuenta sin poder firmar ninguno. Tenlo en cuenta al elegir con qué cuenta se abre; el estado real
+  se ve con `gh pr view <n> --json mergeStateStatus,reviewDecision` — un `CLEAN` con CI en verde
+  puede seguir parado en `REVIEW_REQUIRED`.
+- **Una rama sin PR no es trabajo a salvo, pero tampoco es trabajo perdido.** Borrar un worktree
+  **no** borra su rama: lo confirmado no se pierde al limpiar, y lo único en riesgo es lo que no
+  está confirmado.
+- **Antes de rescatar una rama huérfana, pregunta si su trabajo ya está en `main`.** No basta con
+  que la rama esté limpia y el CI verde: si sale de un worktree anterior a trabajo que después
+  entró por otra vía, el rescate **revierte** ese trabajo — y el CI sale verde porque la rama se
+  lleva por delante también los tests que lo detectarían. Código y suite quedan coherentes entre sí,
+  en el estado antiguo, y ninguna guarda del repositorio ve eso. Se comprueba antes de leer nada más:
+
+  ```bash
+  git log --oneline origin/main -- <los ficheros que toca>   # ¿es reciente lo que hay en main?
+  git diff origin/main...<rama> | grep '^-' | grep -v '^---' # ¿borra código o tests?
+  ```
+
+  Si lo segundo borra lo que lo primero dice que es reciente, es una reversión: ciérrala y abre lo
+  que quede pendiente como tarjeta nueva **contra el estado actual**.
 
 ## Estilo
 
@@ -643,11 +655,16 @@ Actualiza `README.md` (estado/roadmap/características) solo cuando un cambio es
 Un objetivo numérico se cierra con **la cifra medida**, no con los tests en verde. Si una tarea pide
 subir la cobertura de un módulo, el criterio es el porcentaje que imprime
 `node --test --experimental-test-coverage` (o `pytest --cov`) **después** del cambio, y hay que
-pegarlo. No es teórico: el 25-ago-2026 aparecieron dos ramas con toda su batería en verde —26 y 39
-tests— que dejaban la cobertura igual (65,17 %) o peor (56,58 % → 53,51 %, por sobrescribir un
-fichero de test existente con otro más corto). Un fichero de test que **encoge** en un diff es la
-señal a mirar:
-`gh pr view <n> --json files --jq '.files[]|select(.path|test("test"))|select(.deletions > .additions)'`.
+pegarlo en el PR. No es teórico: ya han aparecido ramas con toda su batería en verde —decenas de
+tests— que dejaban la cobertura igual o **peor**, por sobrescribir un fichero de test existente con
+otro más corto. Un fichero de test que **encoge** en un diff es la señal a mirar:
+
+```bash
+gh pr view <n> --json files --jq '.files[]|select(.path|test("test"))|select(.deletions > .additions)'
+```
+
+Y una cifra a medias no cierra el objetivo: si el encargo pide 88 % y la rama llega al 85 %, eso es
+una tarjeta nueva con el número real medido, no un criterio cumplido.
 
 ## Mantenimiento de la documentación
 

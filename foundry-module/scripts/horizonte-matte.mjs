@@ -325,11 +325,6 @@ export function texturaDePng({ ancho, alto, indices, paleta }) {
   return { ancho, alto, indices: runtime, paleta };
 }
 
-/** La textura del matte de la playa, generada. */
-export function texturaHorizonte(opciones) {
-  return texturaDeRejilla(rejillaHorizonte(opciones));
-}
-
 /**
  * La banda de geometría sobre la que se pinta: un cilindro abierto alrededor del
  * observador, en `lados` cuadriláteros.

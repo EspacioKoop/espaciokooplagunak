@@ -127,12 +127,14 @@ test("no se distribuye obra ajena: el módulo no contiene melodía citable", asy
 test("el módulo Foundry no distribuye ficheros de audio ni MIDI", async () => {
   // El juego heredado sí conserva voces y efectos propios bajo `resources/`.
   // La frontera legal de #344 es el módulo distribuible donde vive este arte.
+  // EXCEPCIÓN: data/audio/mar.wav es un asset CC0 con ficha en PROCEDENCIA_ASSETS.md (#571).
   const raiz = fileURLToPath(new URL("../", import.meta.url));
   const encontrados = await buscarActivosAudio(raiz);
+  const esperados = ["data/audio/mar.wav"].map((r) => join(raiz, r));
   assert.deepEqual(
-    encontrados,
-    [],
-    `el arte procedural no puede incorporar grabaciones, MIDI ni otros activos de audio: ${encontrados.join(", ")}`,
+    encontrados.sort(),
+    esperados.sort(),
+    `solo se permite el asset de audio declarado: ${encontrados.join(", ")}`,
   );
 });
 

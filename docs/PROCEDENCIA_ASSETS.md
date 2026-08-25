@@ -17,31 +17,31 @@ hallazgo submarino, y el archivo bajo `CC BY-SA 4.0`. Se descartó por eso.
 
 ## Qué tiene que traer una ficha
 
-| Campo | Por qué |
-|---|---|
-| Obra | Qué representa, y de dónde es |
-| Qué es el fichero | Escaneo, fotogrametría o reconstrucción: no es lo mismo, ni jurídica ni descriptivamente |
-| Autoría | Del **archivo**, no de la obra original |
-| Licencia | Exacta, y dónde consta |
-| Enlace | A la página que declara la licencia, no al fichero |
-| sha256 | Para que cualquiera compruebe que tiene el mismo archivo que se convirtió |
-| Cómo se convirtió | El comando exacto |
+|| Campo | Por qué ||
+||---|---||
+|| Obra | Qué representa, y de dónde es ||
+|| Qué es el fichero | Escaneo, fotogrametría o reconstrucción: no es lo mismo, ni jurídica ni descriptivamente ||
+|| Autoría | Del **archivo**, no de la obra original ||
+|| Licencia | Exacta, y dónde consta ||
+|| Enlace | A la página que declara la licencia, no al fichero ||
+|| sha256 | Para que cualquiera compruebe que tiene el mismo archivo que se convirtió ||
+|| Cómo se convirtió | El comando exacto ||
 
 ---
 
 ## León de Al-Lāt
 
-| | |
-|---|---|
-| **Obra** | León de Al-Lāt (Asad Al-Lāt), del templo de Al-Lāt en Palmira, Siria. Destruido por el ISIL en 2015 |
-| **Qué es el fichero** | **Reconstrucción digital, no un escaneo.** Del proyecto RSSSD (Re-Sculpting Syrian Statues Digitally) para #NEWPALMYRA |
-| **Autoría** | Georges Dahdouh, con optimización de Jim Ellis |
-| **Licencia** | **CC0 1.0** (dedicación al dominio público) |
-| **Verificación** | Wikimedia Commons, plantilla `{{cc-zero}}` con revisión de licencia (`LicenseReview`, usuario `-revi`, 2018-02-22) |
-| **Enlace** | https://commons.wikimedia.org/wiki/File:Asad_Al-Lat.stl |
-| **Fuente original** | http://www.newpalmyra.org/models/asad-al-lat/ (fuera de línea; la revisión de Commons es lo que sostiene la verificación) |
-| **Archivo** | `Asad_Al-Lat.stl`, STL binario, 1 470 284 bytes, 29 404 triángulos |
-| **sha256** | `5748e4d150a370f34328ea768ced85ccafcaae6dd3c3891f2c0e80fb0a7a4ac8` |
+|| | ||
+||---|---||
+|| **Obra** | León de Al-Lāt (Asad Al-Lāt), del templo de Al-Lāt en Palmira, Siria. Destruido por el ISIL en 2015 ||
+|| **Qué es el fichero** | **Reconstrucción digital, no un escaneo.** Del proyecto RSSSD (Re-Sculpting Syrian Statues Digitally) para #NEWPALMYRA ||
+|| **Autoría** | Georges Dahdouh, con optimización de Jim Ellis ||
+|| **Licencia** | **CC0 1.0** (dedicación al dominio público) ||
+|| **Verificación** | Wikimedia Commons, plantilla `{{cc-zero}}` con revisión de licencia (`LicenseReview`, usuario `-revi`, 2018-02-22) ||
+|| **Enlace** | https://commons.wikimedia.org/wiki/File:Asad_Al-Lat.stl ||
+|| **Fuente original** | http://www.newpalmyra.org/models/asad-al-lat/ (fuera de línea; la revisión de Commons es lo que sostiene la verificación) ||
+|| **Archivo** | `Asad_Al-Lat.stl`, STL binario, 1 470 284 bytes, 29 404 triángulos ||
+|| **sha256** | `5748e4d150a370f34328ea768ced85ccafcaae6dd3c3891f2c0e80fb0a7a4ac8` ||
 
 Que sea una **reconstrucción** y no un escaneo importa más allá de la licencia:
 es una interpretación de cómo era la estatua, hecha después de su destrucción. Si
@@ -94,11 +94,11 @@ piezas sueltas.
 vaciado que hay en Copenhague, no el mármol del Louvre. Igual que el León es una
 reconstrucción y no un escaneo: lo honesto es decir qué se está enseñando.
 
-| Pieza | Inventario | Cultura | sha256 del origen |
-|---|---|---|---|
-| Afrodita de Melos (Venus de Milo) | KAS434 | Griega | `96e9c5a8e380c3b932526fc561233dffb3c9dbd0549ed9efc956a47851511020` |
-| Retrato del faraón Amasis II (563–525 a. C.) | KAS576 | Egipcia | `42db40d2d4dc32e410925ce60d74004017a91bcfe20924d486790febdf5e944b` |
-| Loba (Ulvinde) | KAS837 | Romana | `8639d994cd3366e1bc2fcddd21c94a129c59a179c76ca0329d748b9b7db59a32` |
+|| Pieza | Inventario | Cultura | sha256 del origen ||
+||---|---|---|---||
+|| Afrodita de Melos (Venus de Milo) | KAS434 | Griega | `96e9c5a8e380c3b932526fc561233dffb3c9dbd0549ed9efc956a47851511020` ||
+|| Retrato del faraón Amasis II (563–525 a. C.) | KAS576 | Egipcia | `42db40d2d4dc32e410925ce60d74004017a91bcfe20924d486790febdf5e944b` ||
+|| Loba (Ulvinde) | KAS837 | Romana | `8639d994cd3366e1bc2fcddd21c94a129c59a179c76ca0329d748b9b7db59a32` ||
 
 ### El lote
 
@@ -106,22 +106,22 @@ Verificadas una a una contra la plantilla antes de descargar ninguna. La
 herramienta rechazó además una descarga que había traído una página de error en
 vez del STL — la comprobación de tamaño del punto 1 hizo su trabajo.
 
-| Pieza | Inventario | Cultura | sha256 del origen |
-|---|---|---|---|
-| Poseidón (o Zeus) de Artemisión | KAS2100 | griega | `855a92ebe9d5b6133328b0d2bfb427e27c8d11bf8e82ac763fefacff39509179` |
-| Doríforo (el portador de lanza), de Policleto | KAS1242 | griega | `196c3d1848fcb1894e0503316c906fe14dc44cb59e9d20581dc16bb821316470` |
-| Koré con quitón y epíblema | KAS1800 | griega arcaica | `3d430723b9e84d331ebfa5e9239c7dc8b4100f606cd5341d48c437c3b4743ea7` |
-| Heracles Farnesio | KAS701 | griega | `582bf914ba61ef18e99453450fcf62449b903110726d3b9882c8d8052b6576a8` |
-| Laocoonte y sus hijos | KAS385 | helenística | `288aba62cd966aebc67d8b62edc79d6467766c2f794c1c7f354bf3eac2c7d707` |
-| Penélope sentada | KAS202 | griega | `efaa8ba5bb6013417104b03376c6962fcd3b16dea8d1bcaf8b89f17a7b5c9ebe` |
-| Venus Capitolina | KAS493 | romana | `d3adef824abb1b7e7c60d11a800af4795763e236d63cd9c84358be0784463104` |
-| Retrato de Marco Aurelio, emperador (161–180 d. C.) | KAS979 | romana | `17c5d2ee27079dcefddfac74f0ef2e00bc71dc4b526bdc0c6fa9c8825e1a9e31` |
-| Julio César | KAS297 | romana | `3777e48425b4e940a5e2be37ca8289ac91b71d4187f863e104779938a7f7054e` |
-| Princesa de Amarna | KAS2226 | egipcia | `da28f85b79bc1a2628efd9c68791bbcda7e73133b1755a68fab39df43cb1d5c8` |
-| Jabalí sentado (el Porcellino) | KAS2157 | romana | `bfdc040a40272c211bde8b39471ee9ce693bf8d8759d254f1ecfb04b1b995eec` |
-| Caballo de la estatua ecuestre de Marco Aurelio | KAS1133/2 | romana | `a6d4d06a68694aee41ef145b825da7827bb0dce8b0b1ddfe04fe72aefb78153f` |
-| Cabeza del David, de Miguel Ángel | KAS2232 | renacentista | `ba9f6b5e67981f340bae43a5b2b284a35b5f108cc9c6d654e43309e9e08d0e66` |
-| Retrato de Homero | KAS210 | griega | `de9b1ce2813673dde14befe5956089ca3bd3dfc389d90aac65b3699534fb03df` |
+|| Pieza | Inventario | Cultura | sha256 del origen ||
+||---|---|---|---||
+|| Poseidón (o Zeus) de Artemisión | KAS2100 | griega | `855a92ebe9d5b6133328b0d2bfb427e27c8d11bf8e82ac763fefacff39509179` ||
+|| Doríforo (el portador de lanza), de Policleto | KAS1242 | griega | `196c3d1848fcb1894e0503316c906fe14dc44cb59e9d20581dc16bb821316470` ||
+|| Koré con quitón y epíblema | KAS1800 | griega arcaica | `3d430723b9e84d331ebfa5e9239c7dc8b4100f606cd5341d48c437c3b4743ea7` ||
+|| Heracles Farnesio | KAS701 | griega | `582bf914ba61ef18e99453450fcf62449b903110726d3b9882c8d8d8052b6576a8` ||
+|| Laocoonte y sus hijos | KAS385 | helenística | `288aba62cd966aebc67d8b62edc79d6467766c2f794c1c7f354bf3eac2c7d707` ||
+|| Penélope sentada | KAS202 | griega | `efaa8ba5bb6013417104b03376c6962fcd3b16dea8d1bcaf8b89f17a7b5c9ebe` ||
+|| Venus Capitolina | KAS493 | romana | `d3adef824abb1b7e7c60d11a800af4795763e236d63cd9c84358be0784463104` ||
+|| Retrato de Marco Aurelio, emperador (161–180 d. C.) | KAS979 | romana | `17c5d2ee27079dcefddfac74f0ef2e00bc71dc4b526bdc0c6fa9c8825e1a9e31` ||
+|| Julio César | KAS297 | romana | `3777e48425b4e940a5e2be37ca8289ac91b71d4187f863e104779938a7f7054e` ||
+|| Princesa de Amarna | KAS2226 | egipcia | `da28f85b79bc1a2628efd9c68791bbcda7e73133b1755a68fab39df43cb1d5c8` ||
+|| Jabalí sentado (el Porcellino) | KAS2157 | romana | `bfdc040a40272c211bde8b39471ee9ce693bf8d8759d254f1ecfb04b1b995eec` ||
+|| Caballo de la estatua ecuestre de Marco Aurelio | KAS1133/2 | romana | `a6d4d06a68694aee41ef145b825da7827bb0dce8b0b1ddfe04fe72aefb78153f` ||
+|| Cabeza del David, de Miguel Ángel | KAS2232 | renacentista | `ba9f6b5e67981f340bae43a5b2b284a35b5f108cc9c6d654e43309e9e08d0e66` ||
+|| Retrato de Homero | KAS210 | griega | `de9b1ce2813673dde14befe5956089ca3bd3dfc389d90aac65b3699534fb03df` ||
 
 Todas: autoría del escaneo **Statens Museum for Kunst**, fuente **Wikimedia
 Commons**, licencia **CC0 1.0 sobre el escaneo**.
@@ -142,3 +142,27 @@ dice que el nivel elegido no era casualidad de aquella pieza.
 tabla `FICHAS` y **se niega a convertir** lo que no esté en ella. Este documento
 es la versión para humanos, con el porqué; aquella es la que hace imposible
 saltarse el paso.
+
+---
+
+## Ola del mar para la playa
+
+|| | ||
+||---|---||
+|| **Obra** | Ola del mar grabada en una playa, dominio público mediante dedicación CC0. ||
+|| **Qué es el fichero** | Grabación de audio de ola del mar en formato WAV, mono, 48 kHz, 16-bit. ||
+|| **Autoría** | Jasinski (subido a OpenGameArt.org) ||
+|| **Licencia** | **CC0 1.0** (dedicación al dominio público) ||
+|| **Verificación** | Licencia declarada en la página de descarga: CC0 1.0 ||
+|| **Enlace** | https://opengameart.org/content/beach-ocean-waves ||
+|| **Fuente original** | https://opengameart.org/sites/default/files/wave_01_cc0-18363__jasinski__alkaibeach.flac ||
+|| **Archivo** | `mar.wav`, audio WAV, 611 248 bytes (FLAC original convertido) ||
+|| **sha256** | `e36d0ff30d5db1cc3ae0da74f65e61a05c2c5dfcc135e537799fdd9bc21f33a1` ||
+|| **Cómo se convirtió** | 
+```
+ffmpeg -i wave_01.flac -ar 48000 -ac 1 mar.wav
+```
+||
+
+El archivo FLAC original se descargó de OpenGameArt.org bajo licencia CC0 y se
+convertió a WAV mono 48 kHz para su uso en el motor de audio de Foundry VTT.

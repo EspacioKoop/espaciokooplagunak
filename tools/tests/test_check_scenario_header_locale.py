@@ -103,6 +103,15 @@ class NuestroEscenarioTests(unittest.TestCase):
 
     NUESTRO = "scenario_90_lagunak_primera_guardia"
 
+    def setUp(self) -> None:
+        self.temporary = tempfile.TemporaryDirectory(
+            prefix="hermes-verify-scenario-header-locale-mutacion-"
+        )
+        self.root = Path(self.temporary.name)
+
+    def tearDown(self) -> None:
+        self.temporary.cleanup()
+
     def test_los_catalogos_propios_no_se_quedan_atras(self) -> None:
         raiz = Path(__file__).resolve().parents[2]
         resultado = audit(raiz, ("en", "es"))
@@ -116,4 +125,57 @@ class NuestroEscenarioTests(unittest.TestCase):
             {},
             "la cabecera Lua declara claves que los catálogos propios no tienen; "
             "ejecuta tools/check_scenario_header_locale.py para el detalle",
+        )
+
+    def test_quitar_una_clave_propia_hace_fallar_al_guardian(self) -> None:
+        """La mutación negativa, ejecutada de verdad y no solo declarada.
+
+        El test de arriba sale verde tanto si el guardián vigila como si no
+        mira nada: hoy no faltan claves, así que `{}` es el resultado
+        esperado en los dos casos. Lo que demuestra que sirve es que al
+        RETIRAR una clave el guardián la señale.
+
+        Se hace sobre una copia del árbol real —no sobre un escenario de
+        juguete— porque lo que se quiere demostrar es que la puerta protege
+        ESTE escenario y ESTOS catálogos.
+        """
+        raiz = Path(__file__).resolve().parents[2]
+        relativo = f"scripts/{self.NUESTRO}.lua"
+
+        copia = self.root / relativo
+        copia.parent.mkdir(parents=True, exist_ok=True)
+        copia.write_bytes((raiz / relativo).read_bytes())
+
+        for idioma in ("en", "es"):
+            origen = raiz / f"scripts/locale/{self.NUESTRO}.{idioma}.po"
+            destino = self.root / f"scripts/locale/{self.NUESTRO}.{idioma}.po"
+            destino.parent.mkdir(parents=True, exist_ok=True)
+            destino.write_bytes(origen.read_bytes())
+
+        # Sin tocar nada, la copia pasa igual que el árbol real. Si esto
+        # fallara, la mutación de abajo no demostraría nada.
+        intacta = audit(self.root, ("en", "es"))
+        self.assertEqual(intacta["missing_keys"], 0, "la copia del árbol ya venía rota")
+
+        # La mutación: se retira UNA opción del ajuste Modo del catálogo
+        # castellano. Es exactamente el hueco que abrió este PR.
+        # Lleva `msgctxt` porque es una opción del ajuste, no una cadena
+        # suelta: el guardián distingue "Prueba individual" DE Modo de una
+        # cadena igual que apareciera en otro sitio, y esta prueba lo fija.
+        VICTIMA = "Prueba individual"
+        CONTEXTO = "Modo"
+        catalogo_es = self.root / f"scripts/locale/{self.NUESTRO}.es.po"
+        catalogo = polib.pofile(str(catalogo_es))
+        antes = len(catalogo)
+        for entrada in [e for e in catalogo if e.msgid == VICTIMA]:
+            catalogo.remove(entrada)
+        self.assertEqual(len(catalogo), antes - 1, f"{VICTIMA} no estaba en el catálogo")
+        catalogo.save(str(catalogo_es))
+
+        mutado = audit(self.root, ("en", "es"))
+
+        self.assertEqual(mutado["missing_keys"], 1)
+        self.assertEqual(
+            mutado["missing"][f"scripts/locale/{self.NUESTRO}.es.po"],
+            [{"context": CONTEXTO, "msgid": VICTIMA}],
         )

@@ -50,16 +50,26 @@ jobs:
             exit 1
           fi
           COMMITS_BEHIND=$(git rev-list --count "${ANCHORED_SHA}..${MASTER_SHA}")
-          ANCHORED_TS=$(git show -s --format=%ct "$ANCHORED_SHA")
+          # Cuanto hace que estamos desactualizados NO es la edad del commit
+          # anclado: un anclaje de hace un ano sobre un master que no se ha
+          # movido esta perfectamente al dia. Lo que se mide es desde cuando
+          # existe el PRIMER commit que nos falta.
+          if (( COMMITS_BEHIND == 0 )); then
+            DAYS_BEHIND=0
+          else
+            # `tail` y no `head`: con `set -o pipefail`, cerrar la tuberia antes de
+            # tiempo hace fallar el paso por SIGPIPE.
+            OLDEST_MISSING_TS=$(git log --format=%ct "${ANCHORED_SHA}..${MASTER_SHA}" | tail -1)
+            CURRENT_TS=$(date +%s)
+            DAYS_BEHIND=$(((CURRENT_TS - OLDEST_MISSING_TS) / 86400))
+          fi
           printf 'commits_behind=%s\n' "$COMMITS_BEHIND" >> "$GITHUB_OUTPUT"
-          printf 'anchored_ts=%s\n' "$ANCHORED_TS" >> "$GITHUB_OUTPUT"
+          printf 'days_behind=%s\n' "$DAYS_BEHIND" >> "$GITHUB_OUTPUT"
       - name: Check thresholds
         run: |
           set -euo pipefail
           COMMITS_BEHIND=${{ steps.compare.outputs.commits_behind }}
-          ANCHORED_TS=${{ steps.compare.outputs.anchored_ts }}
-          CURRENT_TS=$(date +%s)
-          DAYS_BEHIND=$(((CURRENT_TS - ANCHORED_TS) / 86400))
+          DAYS_BEHIND=${{ steps.compare.outputs.days_behind }}
           MAX_COMMITS_BEHIND=50
           MAX_DAYS_BEHIND=30
           if (( COMMITS_BEHIND > MAX_COMMITS_BEHIND || DAYS_BEHIND > MAX_DAYS_BEHIND )); then

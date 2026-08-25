@@ -39,3 +39,33 @@ msgid ""
 "La Itsaso 1 se ha perdido con toda su tripulacion.\n"
 "La primera guardia termina aqui."
 msgstr ""
+
+#. Scenario setting header
+msgctxt "setting"
+msgid "Modo"
+msgstr "Mode"
+
+#. Scenario setting header
+msgctxt "setting"
+msgid "Elige la experiencia normal o una ayuda opt-in para probar la mision en solitario desde Tactical."
+msgstr "Choose the normal experience or an opt-in aid to test the mission solo from Tactical."
+
+#. Scenario setting option
+msgctxt "Modo"
+msgid "Normal"
+msgstr "Normal"
+
+#. Scenario setting option
+msgctxt "Modo"
+msgid "Partida cooperativa sin controles de QA."
+msgstr "Co-op game without QA controls."
+
+#. Scenario setting option
+msgctxt "Modo"
+msgid "Prueba individual"
+msgstr "Solo test"
+
+#. Scenario setting option
+msgctxt "Modo"
+msgid "Anade controles de estado, restauracion y saltos de prueba en Tactical."
+msgstr "Adds state, restore and test-jump controls on Tactical."

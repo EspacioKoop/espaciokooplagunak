@@ -83,3 +83,37 @@ class ScenarioHeaderLocaleTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class NuestroEscenarioTests(unittest.TestCase):
+    """El escenario propio del fork, contrastado contra el repositorio real.
+
+    Los tests de arriba usan árboles temporales y comprueban la herramienta.
+    Este comprueba el repositorio: que la cabecera Lua de nuestro escenario y
+    sus catálogos no se separen. Nació de un hueco real (25-ago-2026): el
+    bloque `Setting[Modo]` llevaba dos opciones que no estaban en ninguno de
+    los dos catálogos, así que la pantalla de selección mostraba las cadenas
+    en crudo y en inglés se quedaban en castellano.
+
+    Se acota al escenario propio a propósito. Los 47 escenarios heredados de
+    EmptyEpsilon acumulan cientos de claves ausentes en sus catálogos, y por
+    ADR-0007 no los tocamos: exigirlos aquí sería una puerta que no puede
+    ponerse verde.
+    """
+
+    NUESTRO = "scenario_90_lagunak_primera_guardia"
+
+    def test_los_catalogos_propios_no_se_quedan_atras(self) -> None:
+        raiz = Path(__file__).resolve().parents[2]
+        resultado = audit(raiz, ("en", "es"))
+        rezagados = {
+            catalogo: entradas
+            for catalogo, entradas in resultado["missing"].items()
+            if self.NUESTRO in catalogo
+        }
+        self.assertEqual(
+            rezagados,
+            {},
+            "la cabecera Lua declara claves que los catálogos propios no tienen; "
+            "ejecuta tools/check_scenario_header_locale.py para el detalle",
+        )

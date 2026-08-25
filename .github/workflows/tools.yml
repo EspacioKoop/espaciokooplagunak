@@ -46,7 +46,7 @@ jobs:
           # el documento se desvía cuando aparece un script NUEVO, no cuando
           # se edita el `.md`. Sin esta rama, el check no se despertaría en el
           # PR que introduce la deriva — que es justo el que hay que parar.
-          rutas: '^(tools/|\.github/workflows/tools\.yml$|\.github/labeler\.yml$|\.github/actions/|scripts/public_domain_names_scenario_utility\.lua$|docs/DOMINIO_PUBLICO_SCIFI\.md$|src/|resources/locale/|docs/|.*\.md$|foundry-module/scripts/)'
+          rutas: '^(tools/|\.github/workflows/tools\.yml$|\.github/labeler\.yml$|\.github/actions/|scripts/public_domain_names_scenario_utility\.lua$|docs/DOMINIO_PUBLICO_SCIFI\.md$|src/|resources/locale/|docs/|.*\.md$|foundry-module/scripts/|scripts/locale/|scripts/scenario_90_lagunak_primera_guardia\.lua$)'
 
   tests:
     name: tools/tests (Linux)

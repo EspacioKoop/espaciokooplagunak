@@ -1,0 +1,152 @@
+TAP version 13
+# file:///home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/tests/consola-caliente-v1-additional.test.mjs:248
+#   const oldCampo = app.\#campo;
+#                       ^
+# SyntaxError: Private field '\#campo' must be declared in an enclosing class
+#     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+#     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:110:18)
+#     at \#translate (node:internal/modules/esm/loader:559:20)
+#     at afterLoad (node:internal/modules/esm/loader:612:29)
+#     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:617:12)
+#     at \#createModuleJob (node:internal/modules/esm/loader:640:36)
+#     at \#getJobFromResolveResult (node:internal/modules/esm/loader:353:34)
+#     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:321:41)
+#     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:680:25)
+# Node.js v22.23.2
+# Subtest: foundry-module/tests/consola-caliente-v1-additional.test.mjs
+not ok 1 - foundry-module/tests/consola-caliente-v1-additional.test.mjs
+  ---
+  duration_ms: 120.410199
+  type: 'test'
+  location: '/home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/tests/consola-caliente-v1-additional.test.mjs:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: V1: arranca en la pestaña Estado y pide healthz+state+scenario+events (no contacts)
+ok 2 - V1: arranca en la pestaña Estado y pide healthz+state+scenario+events (no contacts)
+  ---
+  duration_ms: 26.729081
+  type: 'test'
+  ...
+# Subtest: V1: cambiar a la pestaña Mapa hace que el siguiente ciclo pida contacts
+ok 3 - V1: cambiar a la pestaña Mapa hace que el siguiente ciclo pida contacts
+  ---
+  duration_ms: 26.529224
+  type: 'test'
+  ...
+# Subtest: V1: un fallo de `contacts` con Mapa activo no toca la pestaña Estado ni la conexión global
+ok 4 - V1: un fallo de `contacts` con Mapa activo no toca la pestaña Estado ni la conexión global
+  ---
+  duration_ms: 13.533709
+  type: 'test'
+  ...
+# Subtest: V1: healthz caído: única señal global de error, ninguna pestaña inventa datos
+ok 5 - V1: healthz caído: única señal global de error, ninguna pestaña inventa datos
+  ---
+  duration_ms: 19.192564
+  type: 'test'
+  ...
+# Subtest: V1: cerrar invalida el sondeo en vuelo: no queda ningún timer vivo
+ok 6 - V1: cerrar invalida el sondeo en vuelo: no queda ningún timer vivo
+  ---
+  duration_ms: 16.50947
+  type: 'test'
+  ...
+# Subtest: V1: pide el catálogo de anclas una sola vez y lo ofrece al GM
+ok 7 - V1: pide el catálogo de anclas una sola vez y lo ofrece al GM
+  ---
+  duration_ms: 28.130484
+  type: 'test'
+  ...
+# Subtest: V1: reposicionar envía el ancla elegida al puente y anuncia el resultado
+ok 8 - V1: reposicionar envía el ancla elegida al puente y anuncia el resultado
+  ---
+  duration_ms: 27.385898
+  type: 'test'
+  ...
+# Subtest: V1: un ancla fuera del catálogo no llega a la red
+ok 9 - V1: un ancla fuera del catálogo no llega a la red
+  ---
+  duration_ms: 13.363975
+  type: 'test'
+  ...
+# Subtest: V1: quien no es GM no reposiciona, ni con el ancla correcta
+ok 10 - V1: quien no es GM no reposiciona, ni con el ancla correcta
+  ---
+  duration_ms: 20.320407
+  type: 'test'
+  ...
+# Subtest: V1: un catálogo de anclas caído se reintenta, no apaga el bloque para siempre
+ok 11 - V1: un catálogo de anclas caído se reintenta, no apaga el bloque para siempre
+  ---
+  duration_ms: 12.027346
+  type: 'test'
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 10
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 468.842669
+# start of coverage report
+# ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# file                            | line % | branch % | funcs % | uncovered lines
+# ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# foundry-module                  |        |          |         | 
+#  scripts                        |        |          |         | 
+#   alarma-cruzada-escena.mjs     |  51.77 |    33.33 |   40.00 | 30-36 69-100 113-141
+#   alarma-cruzada.mjs            |  72.22 |    40.00 |   42.86 | 46-51 53-57 69-71 80-87 101-108
+#   alerta-escena.mjs             |  58.56 |    30.00 |   22.22 | 53-68 71-77 84-91 103-130 156 167-181
+#   alertas-nave.mjs              |  54.17 |    40.00 |   55.56 | 54-65 68-79 83-95 100-102 128-131 135-167
+#   barras-estado.mjs             |  66.33 |    75.00 |   50.00 | 43-47 59-67 73-89 97-98
+#   bitacora-nave.mjs             |  40.63 |   100.00 |    0.00 | 8-9 12-14 17-19 22-32
+#   bridge-client.mjs             |  61.71 |    77.78 |   25.00 | 32-39 41-43 48-53 105-106 115-128 138-139 153-160 168-175 179-183 187-191 195-199 203-207 215-219 230-234 242-246 254-261 270-274 281-285 293-297 301-302 310-311 321-322 330-331 342-349 357-361 372-376 380-387 391-395 402-406 414-418 422-423 431-435 447-451 455-459 463-464 472-476 480-484 488-496 504-509 531-532 539-543 548-549
+#   bridge-token-session.mjs      |  19.30 |    66.67 |   18.75 | 10-11 27-45 48-74 77-81 83-88 90-100 102-104 106-108 110-112 121-141 143-152 154-189 191-228
+#   casco-clases.mjs              |  80.26 |   100.00 |    0.00 | 52-55 63-70 74-76
+#   consola-caliente-poll.mjs     |  97.14 |    81.82 |  100.00 | 93-95
+#   consola-caliente-v1.mjs       |  62.95 |    35.44 |   58.70 | 121-130 135-143 146-147 225-229 288-289 316-317 370 378-381 383-392 426-430 432-438 481-482 538-573 576-608 611-616 623-624 631-646 648-651 681-749 758-759 806-817 855-861 888-898 931-939 943-974 977-996 1009-1038 1041-1058 1061-1084 1087-1089 1092-1110
+#   decorado-fondo.mjs            |  53.60 |    78.95 |   36.36 | 122-125 146-154 172-175 263-264 303-320 323-326 329-336 357-359 364-390 416-418 420-424 426-446 453-474 478-493 498-520 525-541 549-558 562-574 578-593 597-608 614-624 645-695 697-723 739-766 819-828 832-844 847-861 865-874 876-880 884-888
+#   diagnostico-conexion.mjs      |  58.11 |   100.00 |    0.00 | 31-34 48-74
+#   encuentro-control.mjs         |  82.88 |    86.67 |   62.50 | 59-68 75-80 106-108
+#   event-journal.mjs             |  47.40 |    36.36 |   18.75 | 10-12 17-24 41-42 44-45 54-60 69-72 75-82 89-92 95-107 111-116 119-120 122-125 142-145 148-168 170-172
+#   foco-render.mjs               |  70.33 |    25.00 |   50.00 | 18-22 36-42 59-68 82 85-88
+#   iconos-sistema.mjs            |  47.85 |   100.00 |    0.00 | 55-68 76-124 128-142 146-147 159-163
+#   ingenieria-control.mjs        |  87.27 |    69.23 |   36.36 | 67-68 72-73 88-96 104-108 154-156
+#   lagunak-constantes.mjs        | 100.00 |    66.67 |  100.00 | 
+#   lamina-contacto.mjs           |  61.32 |    42.86 |   66.67 | 54-65 78-106
+#   laminas-clasicas.mjs          |  78.09 |    80.00 |   81.82 | 107-123 126-156 244-248 269-275 282-283
+#   maniobra-control.mjs          |  71.74 |    90.91 |   66.67 | 35-48 62-81 88-92
+#   mapa-marco.mjs                | 100.00 |   100.00 |  100.00 | 
+#   mapa-render.mjs               |  17.65 |   100.00 |    0.00 | 38-192 198-238
+#   minijuegos                    |        |          |         | 
+#    aleatorio.mjs                |  77.78 |    55.56 |   42.86 | 22-23 51-55 62 65 73-81
+#   nave-sprite.mjs               |  56.84 |   100.00 |    0.00 | 82-84 88-104 112-126 129-138 147-160 168-190
+#   nivel-alerta.mjs              |  89.43 |    48.00 |   83.33 | 51-52 88-89 97-98 110-114 121-122
+#   paleta.mjs                    |  96.35 |   100.00 |    0.00 | 589-590 596-606 614-618 626-630
+#   pausa-control.mjs             |  92.50 |    75.00 |  100.00 | 37-38 46-49
+#   proyeccion-puesto.mjs         |  56.11 |   100.00 |    0.00 | 51-69 88-101 110-115 125-136 144-151 161-180
+#   reposicion-control.mjs        |  98.94 |    71.43 |  100.00 | 67
+#   requisitos-puesto.mjs         |  54.71 |   100.00 |    0.00 | 62-65 73-89 97-109 119-153 163-170
+#   retrato-tripulante.mjs        |  60.42 |   100.00 |    0.00 | 88-97 107-130 133-140 142-147 162-187 191-192
+#   retro3d-estrellas.mjs         |  53.42 |   100.00 |    0.00 | 45-46 64-80 95-134 137-141 143-146
+#   retro3d-lienzo.mjs            |  36.92 |   100.00 |    0.00 | 29-65 96-98 121-125 128-134 152-222 227-229 238-246 255-266 273-281 297-364 372-393 402-412 426-455
+#   retro3d.mjs                   |  47.24 |    62.50 |   12.90 | 80-81 90-96 110-114 122-150 160-166 180-183 191-198 209-226 236-239 257-269 277-306 319-320 326-361 422-433 441-452 473-506 517-548 569-581 591-596 654-657 659-681 684-686 710-729 745-957 961-968
+#   sensores-lista.mjs            |  43.48 |   100.00 |    0.00 | 22-24 26-29 42-44 50-54 63-99 103-115
+#   ship-view.mjs                 |  68.14 |    37.14 |   44.44 | 1-3 19-24 34-38 43-48 70-112 189 201
+#   station-actions.mjs           |  87.02 |   100.00 |    0.00 | 219-222 228-236 242-262
+#   station-assignment.mjs        |  33.83 |    50.00 |   16.67 | 33-34 39-40 43-68 72-83 86-88 91-133
+#   station-workspaces.mjs        |  75.00 |    22.60 |   53.06 | 60-62 71-81 89 105-108 128-130 142-149 160-162 176-181 193-194 207 217-221 230 242-250 258-264 273 294 307-311 326-330 366-373 375-385 387-392 394-399 401-417 419 427-446 472-498 500-505 507-512 514-519 535-536 592-598 681
+#   tempo-control.mjs             |  36.36 |   100.00 |    0.00 | 5-11
+#   ventana-nave.mjs              |  50.09 |    48.39 |   30.00 | 24-31 78-86 97-127 140-164 178-185 192-196 205-213 229-230 240-277 283-287 294-299 357-408 416-421 432-451 465-476 486-499 504-510 512 527-536 538-539
+#  tests                          |        |          |         | 
+#   consola-caliente-v1.test.mjs  |  95.33 |    95.31 |   80.43 | 74 93-94 227 251-255 274-278
+# ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# all files                       |  56.64 |    46.03 |   43.90 | 
+# ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# end of coverage report

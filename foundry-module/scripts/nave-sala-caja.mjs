@@ -38,7 +38,7 @@ import { ANCHO_TESELA, METROS_POR_TEXEL, texturaMuro } from "./piel-textura.mjs"
 import { piezasPielHoja } from "./nave-piel-puerta.mjs";
 import { piezasPielColumna, piezasPielObjeto } from "./nave-piel-objeto.mjs";
 import { piezasPielSuelo, piezasPielTecho } from "./nave-piel-suelo.mjs";
-import { piezasLuminarias } from "./nave-luminaria.mjs";
+import { estadoDifusor, mallaDifusor, piezasCarcasa } from "./nave-luminaria.mjs";
 import { crearPlanta } from "./nave-movimiento.mjs";
 import { poligonosOtrosJugadores } from "./nave-avatares-render.mjs";
 
@@ -608,11 +608,6 @@ export function crearSalaCaja({
   pielPuertas = true,
   pielObjetos = true,
   pielSuelo = true,
-  // Salud del sistema de la sala e instante, para que la luminaria parpadee
-  // cuando el sistema está dañado (#e8a36cf5). OPCIONALES a propósito: quien no
-  // los pase ve exactamente lo que veía antes, con la luminaria entera.
-  health = null,
-  timeMs = 0,
 }) {
   const muros = [
     { x: -GROSOR_MURO, z: -GROSOR_MURO, ancho: ancho + GROSOR_MURO * 2, profundidad: GROSOR_MURO },
@@ -701,8 +696,18 @@ export function crearSalaCaja({
           ...piezasPielTecho({ ancho, profundidad, altura: ALTURA }),
         ]
       : []),
-    ...piezasLuminarias({ ancho, profundidad, altura: ALTURA, health, timeMs }),
+    // Solo la CARCASA se hornea. El difusor se emite en cada pasada de
+    // `componer` porque su color depende del nivel de alerta y de la avería
+    // (#765), y esas dos lecturas llegan mucho después de construirse la sala.
+    ...piezasCarcasa({ ancho, profundidad, altura: ALTURA }),
   ]);
+
+  /* La geometría del difusor SÍ se funde una sola vez: lo que cambia entre
+   * fotogramas es el campo `color` de la pieza, no un solo vértice. Rehacer la
+   * sala para teñir una lámpara es justo el presupuesto que #551 dejó medido
+   * (871–1055 polígonos, 4,11 ms la peor sala), y por eso esta línea está aquí
+   * arriba y no dentro de `componer`. */
+  const difusor = mallaDifusor({ ancho, profundidad, altura: ALTURA });
 
   const planta = crearPlanta({ ancho, profundidad, obstaculos: [...columnas, ...obstaculosMobiliario] });
   const tieneVentanas = ventanas.length > 0;
@@ -724,6 +729,14 @@ export function crearSalaCaja({
       // decide `nave-ventana-espacio.mjs`: aquí no se inventa relleno.
       sensores = null,
       rumboNave = null,
+      // #765: el nivel de alerta difundido a la mesa y la salud del sistema de
+      // ESTA sala. Las dos son lecturas por fotograma, no de construcción, y las
+      // dos por separado: la alerta tiñe toda la nave, la avería parpadea solo
+      // aquí. `null` en cualquiera de ellas es «no ha llegado el dato», que no
+      // pinta nada — un dato que falta no puede poner la nave en rojo.
+      aviso = null,
+      salud = null,
+      tiempo = 0,
     } = opciones;
     const { camara, dibujarPropio } = resolverCamara({ x, z, y, yaw, modo: modoCamara });
     const yawCamara = -yaw; // ver el comentario de `yaw` en `cantina-escena.mjs`
@@ -752,7 +765,12 @@ export function crearSalaCaja({
       piezasDeVentana({ rect, sala: { ancho, profundidad }, sensores, rumboNave }),
     );
 
-    const partes = [...piezas, ...hojasPuertas, ...vistaVentanas].map(({ malla, color, emisivo, textura, ambiente }) =>
+    // El difusor, con el color de ahora. Apagado no se emite: una cara negra
+    // emisiva cuesta la misma llamada a `componerEscena` para dejar un agujero.
+    const { color: colorDifusor, encendido } = estadoDifusor({ aviso, salud, tiempoMs: tiempo });
+    const luminarias = difusor && encendido ? [{ malla: difusor, color: colorDifusor, emisivo: true }] : [];
+
+    const partes = [...piezas, ...luminarias, ...hojasPuertas, ...vistaVentanas].map(({ malla, color, emisivo, textura, ambiente }) =>
       componerEscena(trasladarMalla(malla, [-camara[0], -camara[1], -camara[2]]), {
         ancho: anchoLienzo,
         alto: altoLienzo,

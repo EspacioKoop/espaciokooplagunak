@@ -59,6 +59,11 @@ export function declararEstancia(definicion) {
     // la playa, lo que hay detrás de la geometría es cielo. `null` deja el que
     // traiga la ventana, que es lo que hacen las trece salas de la nave.
     fondo: definicion.fondo ?? null,
+    // El sistema de EmptyEpsilon que ALOJA esta estancia, o `null` si no aloja
+    // ninguno (#765). No da autoridad ni cambia el andar: es lo que permite a la
+    // ventana saber de qué sistema es la salud que hace parpadear ESTA sala, sin
+    // que ni el motor ni el bucle tengan que conocer el reparto.
+    sistema: definicion.sistema ?? null,
     entrada: Object.freeze({
       x: definicion.entrada?.x ?? definicion.planta.ancho / 2,
       z: definicion.entrada?.z ?? definicion.planta.profundidad / 2,

@@ -97,6 +97,12 @@ export function arrancarAndar(lienzo, opciones = {}) {
     // `nave-ventana-espacio.mjs`.
     sensores = () => null,
     rumboNave = () => null,
+    // #765: el nivel de alerta y la salud del sistema de la sala en la que se
+    // está. Funciones y no valores por el mismo motivo que las de arriba —el
+    // dato cambia con cada telemetría y el bucle solo lo transporta—, y ninguna
+    // de las dos se guarda: qué hacer con un `null` lo decide `nave-luminaria`.
+    aviso = () => null,
+    salud = () => null,
   } = opciones;
 
   if (typeof opciones.componer !== "function") {
@@ -176,6 +182,8 @@ export function arrancarAndar(lienzo, opciones = {}) {
         avatarPropio: avatarPropio(),
         sensores: sensores(),
         rumboNave: rumboNave(),
+        aviso: aviso(),
+        salud: salud(),
         // Reloj de la escena (#587). El bucle YA sabe qué hora es —lo necesita
         // para integrar el movimiento— y hasta ahora se lo guardaba. Sin él una
         // escena solo puede dibujar cosas quietas, y hay ambiente que no se

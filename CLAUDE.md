@@ -426,6 +426,20 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     coste es por cara y una sala son ~800. **Sin focos declarados nada cambia**, y hoy no los declara
     ninguna escena: qué luminarias son foco, con qué caída y cuántas, es arte y quiere ojos delante.
     Nada de sombras: proyectarlas exige resolver visibilidad, que es la deuda abierta de #510.
+    El **nivel de alerta llega al techo** (#765): `tonoLuminaria` estaba escrita desde #555 y no la
+    llamaba nadie, así que andar por la nave en alerta roja se veía igual que en verde. El
+    bloqueante era real —las catorce estancias se construyen UNA vez al importar el catálogo, mucho
+    antes de que exista telemetría—, y se resuelve partiendo la luminaria por su costura natural:
+    `piezasCarcasa` se hornea con la sala, `mallaDifusor` se funde una sola vez, y `componer` emite
+    el difusor en cada pasada con el color que le dé `estadoDifusor({aviso, salud, tiempoMs})`. Lo
+    que cambia entre fotogramas es un campo `color`, no un vértice, y por eso el presupuesto de
+    #551 no se mueve. Dos lecturas independientes y ninguna inventada: la **alerta tiñe** toda la
+    nave (con el tono del BORDE, que es el mismo que usa el tinte de escena, porque se ven a la
+    vez), y la **avería parpadea solo en su sala** —por debajo de `UMBRAL_AVERIA`, porque una
+    alarma que suena siempre está apagada—. `null` en cualquiera de las dos es «no ha llegado el
+    dato» y no pinta nada. El apagón del parpadeo NO se emite (nada de una cara negra emisiva, que
+    cuesta lo mismo para dejar un agujero), y el reparto sale del `sistema` que ya declara
+    `SALAS_PHOBOS`, el mismo que usan el mobiliario, la consola y la sección.
     La **maquinaria de sala** es `scripts/nave-mobiliario-sala.mjs` (#560), y su regla es la misma
     que gobierna todo lo demás en esta nave: **el dato ya existe**. `SALAS_PHOBOS` declara el sistema
     de cada sala, y de ahí sale qué le toca —bancadas, armarios, conductos, cajas de registro— igual

@@ -177,46 +177,86 @@ function fundir(mallas) {
  * @param {{ancho:number, profundidad:number, altura:number}} sala
  * @returns {{malla:object, color:string}[]}
  */
-export function piezasLuminarias({ ancho, profundidad, altura, health = null, timeMs = 0 }) {
-  const puntos = reparto(ancho, profundidad);
+/**
+ * Las luminarias de una sala, carcasa y difusor, con la luz de siempre.
+ *
+ * Dos partes y ni una más: la carcasa que la cuelga y el difusor que se ve
+ * encendido. Llevaron tapas en los extremos y se quitaron al medir: a 3,6 m de
+ * altura son dos rebordes de 8 cm que nadie resuelve, y costaban un tercio de
+ * todas las caras del techo.
+ *
+ * Se orientan a lo LARGO del eje mayor de la sala, como se montan de verdad —una
+ * pantalla cruzada respecto al pasillo se ve de canto desde donde se anda.
+ *
+ * El DIFUSOR es lo único emisivo de la nave: se pinta a intensidad plena, sin
+ * sombreado por normal. Sin eso, una cara que mira hacia abajo cae al suelo
+ * ambiente (0,35) y el ámbar llega al ojo como un marrón sucio — se probó, y las
+ * luminarias parecían apagadas. No alumbra a nadie: lo que alumbra es un foco
+ * declarado por la escena (#556).
+ *
+ * Quien necesite TEÑIRLO por alerta o hacerlo parpadear por avería no usa esto,
+ * sino `piezasCarcasa` + `mallaDifusor` + `estadoDifusor` (#765): el color se
+ * decide por fotograma y la geometría no.
+ *
+ * @param {{ancho:number, profundidad:number, altura:number}} sala
+ * @returns {{malla:object, color:string, emisivo?:boolean}[]}
+ */
+export function piezasLuminarias(sala) {
+  const difusor = mallaDifusor(sala);
+  return [...piezasCarcasa(sala), ...(difusor ? [{ malla: difusor, color: LUZ_CALIDA, emisivo: true }] : [])];
+}
+
+/**
+ * La parte de la luminaria que NO cambia de color nunca: la carcasa que la
+ * cuelga. Metal normal, recibe la luz como cualquier otra pieza de la sala.
+ *
+ * Se expone aparte del difusor porque tienen vidas distintas: esto se funde una
+ * sola vez al construir la sala, y el difusor se vuelve a emitir en cada pasada
+ * con el color que le toque (#765). Fundir la carcasa por fotograma sería
+ * reconstruir geometría para no cambiar nada.
+ *
+ * @returns {{malla:object, color:string}[]}
+ */
+export function piezasCarcasa({ ancho, profundidad, altura }) {
+  const { puntos, medidasCarcasa, yCarcasa } = disposicion({ ancho, profundidad, altura });
   if (puntos.length === 0) return [];
-  const alLargoDeX = ancho >= profundidad;
-  const medidasCarcasa = alLargoDeX ? [LARGO, 0.1, ANCHO] : [ANCHO, 0.1, LARGO];
-  const medidasDifusor = alLargoDeX ? [LARGO - 0.16, ANCHO - 0.08] : [ANCHO - 0.08, LARGO - 0.16];
 
   const costados = [];
   const bajos = [];
-  const difusores = [];
   for (const { x, z } of puntos) {
-    const yCarcasa = altura - CAIDA;
     costados.push(cajaColgada([x, yCarcasa, z], medidasCarcasa, true));
     bajos.push(cajaColgada([x, yCarcasa, z], medidasCarcasa, false));
-    difusores.push(difusorHaciaAbajo([x, yCarcasa - CAIDA_DIFUSOR, z], medidasDifusor));
   }
-
-  // Determinar si el difusor debe parpadear basado en la salud del sistema y el tiempo.
-  let difusoColor = LUZ_CALIDA;
-  let difusoEmisivo = true;
-  if (health !== null) {
-    // Parpadeo con periodo de 1 segundo (500ms encendido, 500ms apagado) cuando hay daño.
-    const parpadeo = Math.floor(timeMs / 500) % 2 === 0;
-    difusoColor = parpadeo ? LUZ_CALIDA : 0x000000; // Negro cuando apagado
-    // Mantener emisivo verdadero para que el color negro se emita como luz negra (apagado).
-    // Si estableciéramos emisivo en falso, el material estaría sombreado por la luz ambiente.
-  }
-
   return [
-    // La carcasa, metal normal: recibe la luz como cualquier otra pieza.
     { malla: fundir(bajos), color: MURAL.sombra },
     { malla: fundir(costados), color: MURAL.medio },
-    // El DIFUSOR es lo único emisivo de la nave: se pinta a intensidad plena,
-    // sin sombreado por normal. Sin eso, una cara que mira hacia abajo cae al
-    // suelo ambiente (0,35) y el ámbar llega al ojo como un marrón sucio — se
-    // probó, y las luminarias parecían apagadas. No alumbra a nadie: el motor no
-    // tiene luces de verdad (#556). Solo se exceptúa de la sombra, que es lo que
-    // hacía la máquina de referencia con las luces y las pantallas.
-    { malla: fundir(difusores), color: difusoColor, emisivo: difusoEmisivo },
   ];
+}
+
+/**
+ * La malla de TODOS los difusores de la sala, fundida en una: la geometría que
+ * se tiñe. `null` si la sala no lleva ninguna luminaria.
+ *
+ * Es una sola malla a propósito, por lo mismo que `chapasDeRejilla` agrupa por
+ * color: `componerEscena` cobra por llamada, y esto se llama por fotograma.
+ */
+export function mallaDifusor({ ancho, profundidad, altura }) {
+  const { puntos, medidasDifusor, yCarcasa } = disposicion({ ancho, profundidad, altura });
+  if (puntos.length === 0) return null;
+  return fundir(
+    puntos.map(({ x, z }) => difusorHaciaAbajo([x, yCarcasa - CAIDA_DIFUSOR, z], medidasDifusor)),
+  );
+}
+
+/** Reparto y medidas, que carcasa y difusor tienen que compartir o se separan. */
+function disposicion({ ancho, profundidad, altura }) {
+  const alLargoDeX = ancho >= profundidad;
+  return {
+    puntos: reparto(ancho, profundidad),
+    medidasCarcasa: alLargoDeX ? [LARGO, 0.1, ANCHO] : [ANCHO, 0.1, LARGO],
+    medidasDifusor: alLargoDeX ? [LARGO - 0.16, ANCHO - 0.08] : [ANCHO - 0.08, LARGO - 0.16],
+    yCarcasa: altura - CAIDA,
+  };
 }
 
 export function focosLuminarias({ ancho, profundidad, altura }) {
@@ -259,4 +299,47 @@ export function focosLuminarias({ ancho, profundidad, altura }) {
 export function tonoLuminaria(aviso) {
   const { nivel } = normalizarAviso(aviso);
   return ALERTA.niveles[nivel]?.borde ?? LUZ_CALIDA;
+}
+
+/**
+ * Umbral por debajo del cual el sistema de una sala se considera averiado.
+ *
+ * Medio sistema roto, no un rasguño: una luminaria que parpadea con el 95% de
+ * salud convierte el parpadeo en el estado normal de la nave, y entonces deja de
+ * decir nada. El parpadeo es una ALARMA, y una alarma que suena siempre está
+ * apagada.
+ */
+export const UMBRAL_AVERIA = 0.5;
+
+/** Medio segundo encendida, medio apagada: el ritmo de un fluorescente que se va. */
+export const PERIODO_PARPADEO = 1000;
+
+/**
+ * Cómo se ve el difusor AHORA MISMO: con qué color y si está encendido.
+ *
+ * Es lo único de la luminaria que cambia entre fotogramas, y por eso vive
+ * separado de la geometría (#765): reconstruir la sala para cambiar un color es
+ * justo el presupuesto que #551 dejó medido.
+ *
+ * Dos lecturas independientes y ninguna inventada:
+ *
+ * - `aviso` tiñe (`tonoLuminaria`). Sin lectura, la luz cálida de siempre.
+ * - `salud` hace parpadear, y SOLO por debajo de `UMBRAL_AVERIA`. `null` es
+ *   «no ha llegado el dato», que no es una avería: una sala sin lectura se
+ *   queda encendida y quieta, igual que una nave sin telemetría no se pinta
+ *   de rojo.
+ *
+ * El apagón del parpadeo se devuelve como `encendido: false` y no como un negro
+ * emisivo: pintar una cara negra a intensidad plena sigue costando una llamada a
+ * `componerEscena` para dejar un agujero, y además tapa lo que hay detrás.
+ *
+ * @param {{aviso?:any, salud?:number|null, tiempoMs?:number}} lectura
+ * @returns {{color:string, encendido:boolean}}
+ */
+export function estadoDifusor({ aviso = null, salud = null, tiempoMs = 0 } = {}) {
+  const color = tonoLuminaria(aviso);
+  const averiada = typeof salud === "number" && Number.isFinite(salud) && salud < UMBRAL_AVERIA;
+  if (!averiada) return { color, encendido: true };
+  const fase = Math.floor((Number.isFinite(tiempoMs) ? tiempoMs : 0) / (PERIODO_PARPADEO / 2));
+  return { color, encendido: fase % 2 === 0 };
 }

@@ -282,6 +282,10 @@ function definirSala(sala, salientes) {
   return {
     planta: caja.planta,
     componer: caja.componer,
+    // De aquí sale de qué sistema es la avería que hace parpadear esta sala
+    // (#765). Es el MISMO dato que ya usan el mobiliario y la consola: no se
+    // inventa un reparto nuevo.
+    sistema: sala.sistema ?? null,
     // Sin puerta de entrada preferente: se aparece en el centro solo en la
     // primera apertura, porque cualquier llegada real trae su `x`/`z`.
     entrada: { x: ancho / 2, z: profundidad / 2, yaw: 0 },

@@ -29,16 +29,16 @@ terceros. El motor consume más de lo que este issue suponía.
 
 ## 2. Qué tiene consumidor hoy, y qué no
 
-|| Categoría | ¿Entra? | Por dónde ||
-||---|---|---|
-|| **Malla 3D** | **Sí** | `tools/convertir-estatua.mjs` (#590): STL → decimado por colapso de aristas → `{vertices, caras}`. UV por `uvsTriplanar` ||
-|| **Textura tileable** | **Sí, y desde #600 con consumidor de primera** | `piel-textura.mjs` tilea la piel del muro; `retro3d-lienzo.mjs` consume `{ancho, alto, indices, paleta}`. La tesela mide `ANCHO_TESELA` 3,2 m a `METROS_POR_TEXEL` 0,025, o sea **128 téxeles de ancho**, y el alto lo clava la altura de sala. Lo que hace falta son **patrones tileables de poca resolución y pocos colores**, no packs 4K ||
-|| **Audio (ambiente y efectos)** | **Sí, desde #571** | `audio-ficheros.mjs`. La música sigue siendo procedural (#318) y no cambia ||
-|| **Pixelart 2D** | **Sí** | `png-indexado.mjs` codifica y descodifica PNG indexado ||
-|| **Texturas PBR** (albedo + normal + rugosidad) | **No** | El motor no tiene modelo de iluminación que las use. Se aprovecharía el albedo y se tiraría el resto: es traer 40 MB para usar 2 ||
-|| **Malla con esqueleto** | **Parcial, desde #603 fase 1** | `rig-esqueleto.mjs` tiene formato de rig, pesos y `deformarMalla`. **No** hay asignación automática de pesos (fase 2) ni retargeting (fase 3), así que un rig ajeno no se puede consumir todavía: entra la malla, el rig se hace a mano ||
-|| **Clips de animación interpolados** | **No** | Fuera de alcance de #603 por decisión, no por falta de tiempo ||
-|| **Fuentes tipográficas** | **No hace falta** | El texto lo pone Foundry ||
+| Categoría | ¿Entra? | Por dónde |
+|---|---|---|
+| **Malla 3D** | **Sí** | `tools/convertir-estatua.mjs` (#590): STL → decimado por colapso de aristas → `{vertices, caras}`. UV por `uvsTriplanar` |
+| **Textura tileable** | **Sí, y desde #600 con consumidor de primera** | `piel-textura.mjs` tilea la piel del muro; `retro3d-lienzo.mjs` consume `{ancho, alto, indices, paleta}`. La tesela mide `ANCHO_TESELA` 3,2 m a `METROS_POR_TEXEL` 0,025, o sea **128 téxeles de ancho**, y el alto lo clava la altura de sala. Lo que hace falta son **patrones tileables de poca resolución y pocos colores**, no packs 4K |
+| **Audio (ambiente y efectos)** | **Sí, desde #571** | `audio-ficheros.mjs`. La música sigue siendo procedural (#318) y no cambia |
+| **Pixelart 2D** | **Sí** | `png-indexado.mjs` codifica y descodifica PNG indexado |
+| **Texturas PBR** (albedo + normal + rugosidad) | **No** | El motor no tiene modelo de iluminación que las use. Se aprovecharía el albedo y se tiraría el resto: es traer 40 MB para usar 2 |
+| **Malla con esqueleto** | **Parcial, desde #603 fase 1** | `rig-esqueleto.mjs` tiene formato de rig, pesos y `deformarMalla`. **No** hay asignación automática de pesos (fase 2) ni retargeting (fase 3), así que un rig ajeno no se puede consumir todavía: entra la malla, el rig se hace a mano |
+| **Clips de animación interpolados** | **No** | Fuera de alcance de #603 por decisión, no por falta de tiempo |
+| **Fuentes tipográficas** | **No hace falta** | El texto lo pone Foundry |
 
 **Regla de oro:** una categoría sin consumidor no se lista aunque el material sea
 excelente. Traer lo que no se puede usar es exactamente cómo un repositorio
@@ -127,13 +127,13 @@ banco de mil efectos.
 
 De #590, que es la única pieza que ha hecho el recorrido completo:
 
-|| Paso | Coste real ||
-||---|---|
-|| Encontrar candidato y **verificar la licencia del archivo** | **Lo caro.** Dos candidatos para una pieza ||
-|| Descarga y comprobación por sha256 | Minutos ||
-|| Conversión y decimado | 1,6 s de máquina; el trabajo fue *escribir* el decimador ||
-|| Ficha de procedencia | Minutos ||
-|| Colocarla para que se lea | **Lo segundo más caro.** El León es un relieve: solo se lee desde un lado, y hubo que probar cuatro orientaciones ||
+| Paso | Coste real |
+|---|---|
+| Encontrar candidato y **verificar la licencia del archivo** | **Lo caro.** Dos candidatos para una pieza |
+| Descarga y comprobación por sha256 | Minutos |
+| Conversión y decimado | 1,6 s de máquina; el trabajo fue *escribir* el decimador |
+| Ficha de procedencia | Minutos |
+| Colocarla para que se lea | **Lo segundo más caro.** El León es un relieve: solo se lee desde un lado, y hubo que probar cuatro orientaciones |
 
 **El cuello es la verificación de licencia, no la conversión.** Cualquier plan
 que suponga lo contrario está mal presupuestado.
@@ -162,14 +162,26 @@ que suponga lo contrario está mal presupuestado.
 
 ## 7. Lo que NO entra: sprite-rips y salidas de IA
 
-**QUÉ:**
-- Sprite-rips: imágenes extraídas de juegos comerciales (por ejemplo, de sitios como The Spriters Resource).
-- Salidas de IA: imágenes generadas por modelos de inteligencia artificial (como DALL-E, Midjourney, Stable Diffusion, etc.).
+Ninguna de las dos entra en el árbol, y por motivos distintos.
 
-**PORQUÉ:**
-- Para los sprite-rips: son obras derivadas de juegos comerciales y, por tanto, su licencia no es compatible con las reglas del proyecto (no son CC0 ni dominio público). Incluso si el juego fuera abandonado, los sprites suelen estar protegidos por derechos de autor y su uso requeriría permiso del titular.
-- Para las salidas de IA: no se consideran arte procedural generado en el cliente (requisito esencial del módulo, ver sección de **Arte procedural** en `CLAUDE.md`). Además, la licencia de las imágenes generadas por IA es a menudo incierta o restrictiva (muchos modelos prohíben el uso comercial o requieren atribución que no se puede garantizar en el contexto de cero binarios y arte procedural). El proyecto también exige cero binarios en el repositorio, y aunque se pudiera convertir la imagen a un formato de texto, dejaría de ser la salida original de la IA y perdería su propósito.
+**Sprite-rips** — imágenes extraídas de un juego comercial (The Spriters
+Resource y equivalentes). Son obra derivada con derechos vivos: que el juego
+esté descatalogado no libera nada, y usarlas exigiría permiso del titular. No
+son CC0 ni dominio público, así que **no pasan la regla de entrada de la
+sección 4**: la licencia se acredita por archivo o no se acredita.
 
-**QUÉ HACER en su lugar:**
-- Para obtener arte 2D, utilice el sistema de pixelart procedural ya existente en el módulo (por ejemplo, `scripts/nave-sprite.mjs` y los minijuegos de pixelart) o cree sus propios sprites siguiendo las reglas de arte procedural.
-- Si necesita imágenes que no puedan generarse proceduralmente, considere crear el asset desde cero (dibujándolo a mano o mediante herramientas de arte digital) y luego seguir el proceso de procedencia y conversión descrito en la sección 6 (ficha de procedencia, licencia CC0 o dominio público, conversión a formato de texto si es aplicable, etc.). En la práctica, el módulo actualmente no consume imágenes 2D externas porque su consumo está limitado a mallas 3D, audio y arte procedural.
+**Salidas de generadores de IA.** Aquí el problema no es solo la licencia
+—incierta o restrictiva según el modelo, y difícil de acreditar por pieza— sino
+que **no son arte procedural**: la regla del módulo es que el arte se genera en
+el cliente a partir de código y semilla (ver *Arte procedural* en `CLAUDE.md`),
+y una imagen generada fuera y guardada es un binario más, con la diferencia de
+que no se puede rehacer ni auditar.
+
+**Qué hacer en su lugar.** Para arte 2D, el módulo ya tiene pixelart procedural
+—`nave-sprite.mjs`, `minijuegos/cartas-pixelart.mjs`, `minijuegos/fichas-pixelart.mjs`—
+y `png-indexado.mjs` para codificarlo. Nota la diferencia con la tabla de la
+sección 2: el pixelart 2D **sí** entra, pero como código que lo dibuja, no como
+fichero de imagen traído de fuera. Si de verdad hace falta algo que no se pueda
+generar, se dibuja a mano y se le hace su ficha de procedencia como a cualquier
+otra pieza (sección 6) — con licencia propia, que es la única que se puede
+acreditar sin dudas.

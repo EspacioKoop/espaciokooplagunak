@@ -96,23 +96,59 @@ function camposQueLeeElConsumidor(fuente) {
  * en silencio: se lista aparte y la prueba avisa, porque una guarda que se cree
  * lo que no puede probar deja de ser una guarda.
  */
-function accionesDeclaradas() {
+/**
+ * Los campos de un literal `{ ... }`, o `null` si alguno no se puede demostrar.
+ *
+ * Se parte por comas de primer nivel y cada trozo tiene que ser una de dos
+ * formas reconocibles: `clave: valor` o la **abreviada** `clave` a secas. La
+ * abreviada es un campo igual que la otra —`{ tipo: "cartela", pieza }` declara
+ * `pieza`— y no verla fue un falso negativo real de la primera versión: el
+ * regex solo miraba `clave:`, así que acreditaba esa acción como si no tuviera
+ * campos y la guarda la dejaba pasar.
+ *
+ * Cualquier otra cosa —`...spread`, una clave calculada, una coma dentro de un
+ * valor— devuelve `null` y la declaración se lista como no demostrable en vez
+ * de acreditarse a medias. Es la regla de `check_orphan_modules.py`: ante lo
+ * que el lexer no pueda probar, no se afirma.
+ */
+function camposDelLiteral(cuerpo) {
+  const campos = [];
+  for (const trozo of cuerpo.split(",")) {
+    const limpio = trozo.trim();
+    if (limpio === "") continue;
+    const conValor = limpio.match(/^([A-Za-z_$][\w$]*)\s*:\s*(.+)$/);
+    if (conValor) {
+      campos.push(conValor[1]);
+      continue;
+    }
+    const abreviada = limpio.match(/^([A-Za-z_$][\w$]*)$/);
+    if (abreviada) {
+      campos.push(abreviada[1]);
+      continue;
+    }
+    return null;
+  }
+  return campos.filter((campo) => campo !== "tipo");
+}
+
+function accionesDeclaradas(fuentes = null) {
   const acreditadas = [];
   const noDemostrables = [];
-  for (const ruta of modulosDeScripts()) {
-    if (ruta === rutaConsumidor) continue;
-    const fuente = readFileSync(ruta, "utf8");
+  const entradas =
+    fuentes ??
+    modulosDeScripts()
+      .filter((ruta) => ruta !== rutaConsumidor)
+      .map((ruta) => [ruta, readFileSync(ruta, "utf8")]);
+  for (const [ruta, fuente] of entradas) {
     for (const linea of fuente.split("\n")) {
       if (!/\baccion:\s*\{/.test(linea)) continue;
       const literal = linea.match(/\baccion:\s*\{([^{}]*)\}/);
       const tipo = literal?.[1].match(/tipo:\s*"([a-z-]+)"/);
-      if (!literal || !tipo) {
+      const campos = literal ? camposDelLiteral(literal[1]) : null;
+      if (!literal || !tipo || campos === null) {
         noDemostrables.push({ ruta, linea: linea.trim() });
         continue;
       }
-      const campos = [...literal[1].matchAll(/([A-Za-z_$][\w$]*)\s*:/g)]
-        .map((m) => m[1])
-        .filter((campo) => campo !== "tipo");
       acreditadas.push({ ruta, tipo: tipo[1], campos });
     }
   }
@@ -171,4 +207,44 @@ test("un tipo sin consumidor no lleva datos: o es inerte a propósito, o está r
     "declarar campos para un tipo que nadie atiende es escribir la mitad de una feature. " +
       'Un tipo inerte SÍ vale —`{ tipo: "pesca" }` de la terraza es deliberado— pero entonces va sin datos',
   );
+});
+
+/* ---- regresiones del extractor (falso negativo encontrado en revisión) ----
+ *
+ * El fixture de abajo es literalmente el que Varo usó para romper la primera
+ * versión: `{ tipo: "cartela", pieza }` con la propiedad abreviada. Pasaba las
+ * cuatro pruebas porque el extractor solo veía `clave:`, así que acreditaba la
+ * acción como si no declarara ningún campo — el caso contrario al que la guarda
+ * existe para cazar.
+ */
+
+test("la propiedad abreviada cuenta como campo, no como su ausencia", () => {
+  const fuente = 'const pieza = "x";\nexport const punto = { accion: { tipo: "cartela", pieza } };';
+  const { acreditadas, noDemostrables } = accionesDeclaradas([["ficticio.mjs", fuente]]);
+  assert.deepEqual(noDemostrables, []);
+  assert.deepEqual(acreditadas, [{ ruta: "ficticio.mjs", tipo: "cartela", campos: ["pieza"] }]);
+});
+
+test("una abreviada con el nombre equivocado la caza la guarda", () => {
+  // La misma forma, pero con el nombre que el consumidor NO lee: es el fallo de
+  // #770 escrito en abreviado, y tiene que salir igual de rojo.
+  const fuente = 'export const punto = { accion: { tipo: "cartela", cartela } };';
+  const { acreditadas } = accionesDeclaradas([["ficticio.mjs", fuente]]);
+  const leidos = consumidor.get("cartela");
+  assert.deepEqual(acreditadas[0].campos, ["cartela"]);
+  assert.equal(leidos.has("cartela"), false, "el consumidor lee accion.pieza, no accion.cartela");
+});
+
+test("lo que el extractor no puede demostrar no se acredita", () => {
+  // Un spread puede meter cualquier campo, y una clave calculada no se sabe cuál
+  // es. Ninguna de las dos se acredita a medias: se listan como no demostrables.
+  const casos = [
+    'export const a = { accion: { tipo: "cartela", ...extra } };',
+    'export const b = { accion: { tipo: "cartela", [clave]: 1 } };',
+  ];
+  for (const fuente of casos) {
+    const { acreditadas, noDemostrables } = accionesDeclaradas([["ficticio.mjs", fuente]]);
+    assert.deepEqual(acreditadas, [], `no debería acreditarse: ${fuente}`);
+    assert.equal(noDemostrables.length, 1, `debería listarse como no demostrable: ${fuente}`);
+  }
 });

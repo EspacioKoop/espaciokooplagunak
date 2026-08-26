@@ -13,6 +13,11 @@ let configuredModuleId = null;
 export function registerStationFeature(moduleId) {
   configuredModuleId = moduleId;
   Hooks.on("updateUser", () => refrescarPuestos());
+  Hooks.on("updateSetting", (scope, key) => {
+    if (scope === configuredModuleId && (key === "requisitosPuesto" || key === "requisitosPuestoMinimo")) {
+      refrescarPuestos();
+    }
+  });
 }
 
 /**

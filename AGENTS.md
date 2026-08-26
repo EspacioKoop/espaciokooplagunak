@@ -34,6 +34,29 @@ Después, lee `README.md`, `CONTRIBUTING.md`, el issue relacionado y la document
 - No presentes código de EmptyEpsilon como creación de Espaciokoop Lagunak.
 - No afirmes que compila, arranca o funciona si no se ha ejecutado la comprobación correspondiente.
 
+## Qué archivo lee cada herramienta
+
+Este archivo (`AGENTS.md`) es **el contrato**, y es común a todas. Cada herramienta busca además un
+archivo con su nombre; todos ellos son punteros de veinte líneas a este y a `CLAUDE.md`, no copias:
+
+| Herramienta | Archivo que lee | Contenido |
+|---|---|---|
+| Cualquier agente | [`AGENTS.md`](AGENTS.md) | El contrato operativo. Manda sobre los demás. |
+| Claude Code | [`CLAUDE.md`](CLAUDE.md) | El conocimiento del repositorio: comandos, arquitectura, estilo. |
+| Gemini CLI | [`GEMINI.md`](GEMINI.md) | Puntero. |
+| Qwen Code | [`QWEN.md`](QWEN.md) | Puntero. |
+| Codex CLI | [`CODEX.md`](CODEX.md) | Puntero. |
+
+El conocimiento del repositorio vive en `CLAUDE.md` por razones históricas —lo escribió y lo
+mantiene Claude Code— pero **no es específico de esa herramienta**: describe el proyecto, no al
+agente. Si añades un archivo para una herramienta nueva, que sea otro puntero y añade su fila aquí.
+**No copies el contenido**: cuatro contratos divergen en silencio, y una regla desincronizada es
+peor que no tenerla porque parece vigente.
+
+Las decisiones ya tomadas están en [`docs/adr/`](docs/adr/README.md), con índice legible por máquina
+en [`docs/adr/index.json`](docs/adr/index.json) y una tabla «si tocas X, lee el ADR N» en
+`CLAUDE.md`. No se rediscuten en un PR: se sustituyen con un ADR nuevo.
+
 ## Coordinación
 
 Antes de trabajar, comprueba issues, pull requests y ramas para evitar duplicados. El issue es el contrato de alcance; el pull request es el registro de implementación y verificación.

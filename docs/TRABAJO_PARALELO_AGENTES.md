@@ -41,7 +41,7 @@ PR: cada área se verifica sola, y por eso se pueden entregar por separado.
 | Módulo: minijuegos | `foundry-module/scripts/minijuegos/**`, `foundry-module/scripts/minijuegos-wiring.mjs` | `node --test foundry-module/tests/*.test.mjs` |
 | Módulo: catálogos con procedencia | `foundry-module/scripts/catalogo-*.mjs`, `foundry-module/scripts/procedencia-*.mjs`, `foundry-module/scripts/museo-piezas.mjs`, `foundry-module/scripts/atlas-hyg.mjs`, `foundry-module/data/**` | `node --test foundry-module/tests/*.test.mjs` |
 | Módulo: contenido externo del GM | `foundry-module/scripts/contenido-externo/**` | `node --test foundry-module/tests/*.test.mjs` |
-| Documentación | `docs/**`, `README.md`, `CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md` | — (revisión humana) |
+| Documentación | `docs/**`, `README.md`, `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`/`QWEN.md`/`CODEX.md`, `CONTRIBUTING.md` | — (revisión humana) |
 
 <!-- /MAPA_AREAS -->
 
@@ -68,7 +68,8 @@ toca, no reordenes, y si te lo pisan, rebasa — nunca fuerces.**
 
 | Archivo | Por qué choca | Regla |
 |---|---|---|
-| `CLAUDE.md` | Todo PR de módulo mete su párrafo en la lista de grupos | Inserta tu bullet **completo** y no toques los vecinos: el conflicto queda en una línea y se resuelve solo |
+| `docs/arquitectura/foundry-module.md` | Todo PR de módulo documenta ahí su grupo | Inserta tu sección **completa** y no toques las vecinas: el conflicto queda en una línea y se resuelve solo |
+| `CLAUDE.md` | Ya **no** debería chocar: la arquitectura del módulo se mudó a `docs/arquitectura/`. Si tu PR de módulo lo toca, pregúntate por qué | Solo entra aquí lo transversal (comandos, flujo git, índice de ADR) |
 | `foundry-module/lang/es.json` y `en.json` | Toda función nueva trae claves | Añade las claves **juntas y al final de su bloque temático**, y las dos lenguas en el mismo commit |
 | `foundry-module/scripts/main.mjs` | Es donde se declaran las herramientas de la barra | Un botón nuevo va como **entrada de un catálogo** (`puerta-catalogo.mjs`, `panel-gm.mjs`, `cantina.mjs`), no como herramienta suelta |
 | `foundry-module/tests/main-compat.test.mjs` | Fija la lista exacta de herramientas | Si de verdad añades una herramienta, actualiza la lista en el mismo commit |

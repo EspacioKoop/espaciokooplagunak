@@ -309,17 +309,4 @@ export function registrarAsistencia(moduleId, { catalogo: propio = null } = {}) 
   escuchas.push(() => Hooks.off("updateUser", alCambiarUsuario));
 }
 
-/**
- * Poda las reservas y propuestas caducadas. NO hace falta llamarla para que las
- * reglas sean correctas —cada paso del motor poda por su cuenta— y por eso no hay
- * aquí ningún temporizador: un reloj que no cambia ningún resultado es un reloj
- * que solo puede dar problemas, y el primero fue dejar colgado al proceso que
- * carga este módulo en las pruebas.
- *
- * Se exporta para la interfaz que pinte «quién está ayudando», que sí necesita
- * poder refrescar la lista sin provocar un cambio de juego.
- */
-export function podarAsistencias() {
-  if (!esCoordinador()) return;
-  sesion = podar(sesion);
-}
+

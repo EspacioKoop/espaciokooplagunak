@@ -17,6 +17,7 @@ async function setup({ isGM = false, modern = false, fetchImpl = null } = {}) {
   const hooks = {};
   const instances = [];
   const settingsReads = [];
+  const settingsWrites = [];
 
   class BaseApplication {
     static get defaultOptions() { return {}; }
@@ -69,6 +70,9 @@ async function setup({ isGM = false, modern = false, fetchImpl = null } = {}) {
         if (key === "bridgeUrl") return "http://bridge.invalid";
         return null;
       },
+      set(_module, key, value) {
+        settingsWrites.push({ key, value });
+      }
     },
   };
   globalThis.fetch = fetchImpl ?? (() => { throw new Error("fetch inesperado"); });
@@ -78,14 +82,14 @@ async function setup({ isGM = false, modern = false, fetchImpl = null } = {}) {
   if (isGM) tokenSession.setBridgeToken("secret-for-test");
   const module = await import(`../scripts/station-workspace-ui.mjs?workspace-ui=${nonce++}`);
   module.registerWorkspaceFeature("espaciokoop-lagunak");
-  return { module, hooks, instances, settingsReads };
+  return { module, hooks, instances, settingsReads, settingsWrites };
 }
 
 // LA GARANTÍA QUE NO CAMBIA con la apertura de telemetría (#331): el cliente de
 // un jugador no lee el token ni habla con el puente. Lo que cambió es que ahora
 // recibe la nave por difusión del GM; lo que NO cambió es que no puede pedirla.
 test("v11: un jugador abre su consola sin leer token ni ejecutar fetch", async () => {
-  const { module, instances, settingsReads } = await setup();
+  const { module, instances, settingsReads, settingsWrites } = await setup();
   const controls = [{ name: "lagunak", tools: [] }];
   module.addWorkspaceControl(controls);
   assert.equal(controls[0].tools[0].name, "lagunak-espacio-puesto");
@@ -102,6 +106,7 @@ test("v11: un jugador abre su consola sin leer token ni ejecutar fetch", async (
   assert.equal(model.hasTelemetry, false, "todavía no ha llegado nada");
   // Lo importante: ni una lectura de ajustes, así que ni token ni URL del puente.
   assert.deepEqual(settingsReads, []);
+  assert.deepEqual(settingsWrites, []);
 });
 
 test("ApplicationV2: el GM recibe estado y contactos y previsualiza puestos", async () => {
@@ -247,7 +252,7 @@ function raizConLaminaDeAtraque() {
   const ordenes = [];
   const ctx = new Proxy(
     { fill: () => ordenes.push("fill") },
-    { get: (obj, prop) => obj[prop] ?? (() => ordenes.push(String(prop))), set: () => true },
+    { get: (obj, prop) => obj[prop] ?? (() => ordenes.push(String(prop))), set: () => true }
   );
   const lienzo = { width: 112, height: 84, getContext: () => ctx };
   return {
@@ -301,9 +306,197 @@ for (const modern of [false, true]) {
   });
 }
 
-test("la base de datos científica se pide una vez, no en cada sondeo (#520)", async () => {
-  // Es contenido de referencia casi inmóvil: repetirlo cada ciclo reenviaría
-  // siempre lo mismo, y además reescribiría el ajuste de mundo entero.
+// NUEVAS PRUEBAS PARA EL TAREA t_97ca3cca
+
+// 1. Guardas post-`await`: respuesta que llega con la ventana ya cerrada
+test("refreshTelemetry: respuesta tardía con ventana cerrada no publica", async () => {
+  let resolveState;
+  let resolveContacts;
+  const fetchImpl = (url) => new Promise((resolve) => {
+    if (url.endsWith("/v1/state")) resolveState = resolve;
+    else if (url.endsWith("/v1/contacts")) resolveContacts = resolve;
+    else if (url.endsWith("/v1/database")) resolve({ ok: true, async json() { return { entries: [], total: 0 }; } });
+  });
+  const { module, instances, settingsWrites } = await setup({ isGM: true, modern: true, fetchImpl });
+  module.openWorkspaceApp();
+  const app = instances[0];
+  const pending = app.refreshTelemetry();
+  // Simular que la ventana se cierra mientras esperamos la respuesta
+  app.closed = true;
+  resolveState({ ok: true, async json() { return { ship: { callsign: "Lagunak", systems: {} } }; } });
+  resolveContacts({ ok: true, async json() { return { contacts: [], total: 0 }; } });
+  assert.equal(await pending, false);
+  // No debe haber escrito en ajustes (no publicó)
+  assert.deepEqual(settingsWrites, []);
+});
+
+// 2. Guardas post-`await`: respuesta que llega cuando quien sondeaba ha dejado de ser GM
+test("refreshTelemetry: respuesta tardía con usuario que dejó de ser GM no publica", async () => {
+  let resolveState;
+  let resolveContacts;
+  const fetchImpl = (url) => new Promise((resolve) => {
+    if (url.endsWith("/v1/state")) resolveState = resolve;
+    else if (url.endsWith("/v1/contacts")) resolveContacts = resolve;
+    else if (url.endsWith("/v1/database")) resolve({ ok: true, async json() { return { entries: [], total: 0 }; } });
+  });
+  const { module, instances, settingsWrites } = await setup({ isGM: true, modern: true, fetchImpl });
+  module.openWorkspaceApp();
+  const app = instances[0];
+  const pending = app.refreshTelemetry();
+  // Simular que el usuario deja de ser GM mientras esperamos la respuesta
+  game.user.isGM = false;
+  resolveState({ ok: true, async json() { return { ship: { callsign: "Lagunak", systems: {} } }; } });
+  resolveContacts({ ok: true, async json() { return { contacts: [], total: 0 }; } });
+  assert.equal(await pending, false);
+  // No debe haber escrito en ajustes (no publicó)
+  assert.deepEqual(settingsWrites, []);
+});
+
+// 3. La base de datos no se espera: una base de datos lenta no retrasa ni impide la publicación de telemetría
+test("refreshTelemetry: base de datos lenta no bloquea publicación de telemetría", async () => {
+  let resolveState;
+  let resolveContacts;
+  let resolveDatabase;
+  const fetchImpl = (url) => new Promise((resolve) => {
+    if (url.endsWith("/v1/state")) resolveState = resolve;
+    else if (url.endsWith("/v1/contacts")) resolveContacts = resolve;
+    else if (url.endsWith("/v1/database")) resolveDatabase = resolve;
+  });
+  const { module, instances, settingsWrites } = await setup({ isGM: true, modern: true, fetchImpl });
+  module.openWorkspaceApp();
+  const app = instances[0];
+  // Iniciar el refresco
+  const pending = app.refreshTelemetry();
+  // No resolver la base de datos aún (simular lentitud)
+  resolveState({ ok: true, async json() { return { ship: { callsign: "Lagunak", systems: {} } }; } });
+  resolveContacts({ ok: true, async json() { return { contacts: [], total: 0 }; } });
+  // La telemetría debería publicarse sin esperar a la base de datos
+  assert.equal(await pending, true);
+  // Debe haber escrito en ajustes (publicó telemetría)
+  assert.equal(settingsWrites.length, 1);
+  assert.equal(settingsWrites[0].key, "telemetriaNave");
+  // Ahora resolver la base de datos (debería cargarla pero no afectar a la telemetría ya publicada)
+  resolveDatabase({ ok: true, async json() { return { entries: [{ id: "Naves", name: "Naves" }], total: 1 }; } });
+  // Esperar un poco para que se procese la base de datos (opcional)
+  await new Promise(resolve => setTimeout(resolve, 0));
+  // Verificar que la base de datos se pidió (el test existente #520 ya verifica que se pide una vez por consola)
+  // Aquí solo verificamos que no bloqueó la telemetría
+});
+
+// 4. `cargarBaseDatos` no repite si ya la tiene (ya cubierto por el test existente #520)
+
+// 5. El crudo entra en `difundirTelemetria` y NO sale: los contactos publicados están degradados por el alcance del radar
+test("refreshTelemetry: los contactos publicados están degradados por el alcance del radar", async () => {
+  const fetchImpl = async (url, options) => {
+    if (url.endsWith("/v1/state")) {
+      return {
+        ok: true,
+        async json() {
+          return {
+            ship: {
+              callsign: "Lagunak",
+              hull: 100,
+              hull_max: 100,
+              energy: 100,
+              energy_max: 100,
+              systems: {},
+              position: { x: 0, y: 0, z: 0 },
+              radar: 100, // 100 km de alcance
+            }
+          };
+        }
+      };
+    } else if (url.endsWith("/v1/contacts")) {
+      return {
+        ok: true,
+        async json() {
+          return {
+            contacts: [
+              { id: "cerca", x: 50, y: 0, z: 0 },   // dentro del radar (50 km)
+              { id: "medio", x: 100, y: 0, z: 0 },   // en el borde (100 km)
+              { id: "lejos", x: 150, y: 0, z: 0 }    // fuera del radar (150 km)
+            ],
+            total: 3,
+            truncated: false
+          };
+        }
+      };
+    } else if (url.endsWith("/v1/database")) {
+      return {
+        ok: true,
+        async json() {
+          return { entries: [], total: 0 };
+        }
+      };
+    }
+    throw new Error(`fetch inesperado: ${url}`);
+  };
+  const { module, instances, settingsWrites } = await setup({ isGM: true, modern: true, fetchImpl });
+  module.openWorkspaceApp();
+  const app = instances[0];
+  await app.refreshTelemetry();
+  // Debe haber escrito en ajustes exactamente una vez
+  assert.equal(settingsWrites.length, 1);
+  assert.equal(settingsWrites[0].key, "telemetriaNave");
+  // Obtener el valor escrito (el sobre de telemetría)
+  const sobre = settingsWrites[0].value;
+  assert.ok(sobre);
+  assert.equal(sobre.ship.callsign, "Lagunak");
+  // Los sensores deberían tener solo los contactos dentro del radio del radar (<= 100 km)
+  // Nota: La función degradarContactos filtra por rango <= radar
+  // Los contactos en exactamente 100 km deberían estar incluidos (<=)
+  const publishedContacts = sobre.sensores.contactos.map(c => c.id);
+  assert.deepEqual(publishedContacts.sort(), ["cerca", "medio"].sort());  // cerca (50) y medio (100) dentro, lejos (150) fuera
+  // Verificar que el contacto "lejos" no apareció
+  assert.equal(publishedContacts.includes("lejos"), false);
+});
+
+// 6. Publicar es escribir un ajuste de mundo y solo lo hace un GM
+test("refreshTelemetry: no GM no publica telemetría", async () => {
+  const { module, instances, settingsWrites } = await setup({ isGM: false });
+  module.openWorkspaceApp();
+  const app = instances[0];
+  // Incluso si forzamos un estado y contactos (que no debería obtener porque no es GM)
+  app.statePayload = { ship: { callsign: "Prueba" } };
+  app.contactsPayload = { contactos: [] };
+  const result = await app.refreshTelemetry();
+  assert.equal(result, false);
+  // No debe haber escrito en ajustes
+  assert.deepEqual(settingsWrites, []);
+});
+
+// 7. Sin sondeo no se inventa lectura: reentrada con app.loading no lanza una segunda petición
+test("refreshTelemetry: mientras carga, llamada adicional no lanza segunda petición", async () => {
+  let fetchCalls = 0;
+  const fetchImpl = async (url) => {
+    fetchCalls += 1;
+    if (url.endsWith("/v1/state")) {
+      return { ok: true, async json() { return { ship: { callsign: "Lagunak", systems: {} } }; } };
+    } else if (url.endsWith("/v1/contacts")) {
+      return { ok: true, async json() { return { contacts: [], total: 0 }; } };
+    } else if (url.endsWith("/v1/database")) {
+      return { ok: true, async json() { return { entries: [], total: 0 }; } };
+    }
+    throw new Error("fetch inesperado");
+  };
+  const { module, instances } = await setup({ isGM: true, fetchImpl });
+  module.openWorkspaceApp();
+  const app = instances[0];
+  // Primera llamada
+  await app.refreshTelemetry();
+  const firstCalls = fetchCalls;
+  // Establecer loading a true para simular que ya hay una petición en curso
+  app.loading = true;
+  // Segunda llamada mientras loading es true
+  const secondResult = await app.refreshTelemetry();
+  // El número de llamadas no debería haber aumentado
+  assert.equal(fetchCalls, firstCalls);
+  // Además, la segunda llamada debería devolver false (no hizo nada)
+  assert.equal(secondResult, false);
+});
+
+// Test existente: la base de datos científica se pide una vez, no en cada sondeo (#520)
+test("la base de datos científica se pide una vez, no en cada sondeo (\#520)", async () => {
   let dbCalls = 0;
   const fetchImpl = async (url) => {
     if (url.endsWith("/v1/database")) dbCalls += 1;

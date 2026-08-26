@@ -401,7 +401,11 @@ test("refreshTelemetry: los contactos publicados están degradados por el alcanc
               energy_max: 100,
               systems: {},
               position: { x: 0, y: 0, z: 0 },
-              radar: 100, // 100 km de alcance
+              // El radar es un OBJETO con los dos alcances, no un número:
+              // `alcancesDe` devuelve null ante medio radar y entonces no se
+              // difunde nada (`sensores: null`), que es lo correcto — sin
+              // alcances no se puede afirmar qué se ve y qué no.
+              radar: { short_range: 100, long_range: 100 },
             }
           };
         }
@@ -412,9 +416,12 @@ test("refreshTelemetry: los contactos publicados están degradados por el alcanc
         async json() {
           return {
             contacts: [
-              { id: "cerca", x: 50, y: 0, z: 0 },   // dentro del radar (50 km)
-              { id: "medio", x: 100, y: 0, z: 0 },   // en el borde (100 km)
-              { id: "lejos", x: 150, y: 0, z: 0 }    // fuera del radar (150 km)
+              // La posición va ANIDADA: `degradarContactos` lee
+              // `contacto.position.x`. Un contacto con la x suelta no tiene
+              // posición legible y se descarta entero, sin aviso.
+              { id: "cerca", position: { x: 50, y: 0, z: 0 } },   // dentro del alcance corto
+              { id: "medio", position: { x: 100, y: 0, z: 0 } },  // justo en el borde
+              { id: "lejos", position: { x: 150, y: 0, z: 0 } }   // más allá del largo: ni se publica ni se cuenta
             ],
             total: 3,
             truncated: false
@@ -435,20 +442,29 @@ test("refreshTelemetry: los contactos publicados están degradados por el alcanc
   module.openWorkspaceApp();
   const app = instances[0];
   await app.refreshTelemetry();
-  // Debe haber escrito en ajustes exactamente una vez
-  assert.equal(settingsWrites.length, 1);
-  assert.equal(settingsWrites[0].key, "telemetriaNave");
-  // Obtener el valor escrito (el sobre de telemetría)
-  const sobre = settingsWrites[0].value;
+  // Se busca la escritura de telemetría por su clave, no por su posición: cuando
+  // la base de datos responde, `cargarBaseDatos` escribe ADEMÁS su propio ajuste
+  // (`baseDatosCientifica`), y son dos claves distintas a propósito — el sobre de
+  // telemetría se reescribe en cada sondeo y la base de datos no.
+  const escrituraTelemetria = settingsWrites.filter((w) => w.key === "telemetriaNave");
+  assert.equal(escrituraTelemetria.length, 1, "la telemetría se publica una sola vez");
+  const sobre = escrituraTelemetria[0].value;
   assert.ok(sobre);
   assert.equal(sobre.ship.callsign, "Lagunak");
   // Los sensores deberían tener solo los contactos dentro del radio del radar (<= 100 km)
   // Nota: La función degradarContactos filtra por rango <= radar
   // Los contactos en exactamente 100 km deberían estar incluidos (<=)
-  const publishedContacts = sobre.sensores.contactos.map(c => c.id);
-  assert.deepEqual(publishedContacts.sort(), ["cerca", "medio"].sort());  // cerca (50) y medio (100) dentro, lejos (150) fuera
-  // Verificar que el contacto "lejos" no apareció
-  assert.equal(publishedContacts.includes("lejos"), false);
+  // Se comprueba por DISTANCIA y no por id: una entrada degradada no lleva id
+  // (#462). La identidad —indicativo y facción— solo aparece con escaneo, y
+  // estos contactos no lo traen, así que salen como ecos anónimos. Afirmar
+  // sobre `c.id` probaría que existe un campo que el diseño niega.
+  const distancias = sobre.sensores.contactos.map((c) => c.distancia).sort((a, b) => a - b);
+  assert.deepEqual(distancias, [50, 100], "entran el de 50 km y el del borde a 100");
+  // El de 150 km no se publica NI se cuenta: un total que incluyera lo invisible
+  // diría «hay tres cosas ahí fuera», que es el dato que ciencia debe ganarse.
+  assert.equal(sobre.sensores.contactos.length, 2);
+  // Y ninguno revela identidad sin escaneo.
+  assert.deepEqual(sobre.sensores.contactos.map((c) => c.callsign), [null, null]);
 });
 
 // 6. Publicar es escribir un ajuste de mundo y solo lo hace un GM

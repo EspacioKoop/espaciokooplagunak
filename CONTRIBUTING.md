@@ -9,6 +9,9 @@ Gracias por colaborar. Este repositorio es un fork de EmptyEpsilon y está pensa
 3. Para cambios no triviales, abre un issue que describa problema, alcance y criterio de aceptación.
 4. No incluyas secretos, datos personales ni archivos generados localmente.
 
+Las decisiones arquitectónicas se registran mediante issues y ADRs; consulta la
+[plantilla y el índice](docs/adr/README.md) antes de abrir una decisión nueva.
+
 ## Flujo de trabajo
 
 ```bash

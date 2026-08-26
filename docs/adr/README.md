@@ -25,6 +25,9 @@ Estados: **Propuesta** · **Aceptada** · **Sustituida por ADR-NNNN** ·
 
 ## Índice
 
+El inventario legible por máquina está en [`index.json`](index.json) y se valida
+con [`index.schema.json`](index.schema.json).
+
 | ADR | Título | Estado |
 |---|---|---|
 | [0001](0001-exec-lua-nunca-expuesto.md) | `/exec.lua` nunca expuesto; el puente es el único cliente | Aceptada |

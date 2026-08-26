@@ -524,6 +524,26 @@ sin tocar ningún fotograma, que es la vía que el proyecto prefiere igualmente.
 
 ## Guía de uso: convertir un elemento DP en guiño
 
+### Mapeo seguro para futuras crónicas (#698)
+
+Mientras #691 siga siendo una propuesta sin implementación, cualquier volumen,
+hazaña o entrada de bitácora que necesite un nombre externo debe elegirlo de una
+fila `✅` de este catálogo. Esta tabla es una guía editorial, no un permiso para
+copiar una obra ni para usar una marca.
+
+| Volumen propuesto | Referencias `✅` disponibles | Uso orientativo |
+|---|---|---|
+| Exploración del umbral | `Nautilus`, `Albatros`, `cavorita`, `Trípode`, `Morlock` | naves, rutas y anomalías de exploración |
+| Guardia de la nave | `Prometeo`, `Némesis`, `Cerbero`, `Yggdrasil`, `Ragnarök`, `Mari`, `Sugaar` | puestos, alertas y acontecimientos de crisis |
+| Profundidades del vacío | `Cthulhu`, `Dagon`, `Miskatonic`, `Rlyeh`, `Kadath`, `Leng` | sectores, estaciones y fenómenos anómalos |
+
+Quedan fuera de esta tabla, aunque aparezcan en propuestas narrativas, `John
+Carter`, `Buck Rogers`, `Doc Savage`, `La Sombra`, `Lensman`, `Arkham Horror`,
+`Call of Cthulhu` y cualquier logotipo o diseño de adaptación moderna: el
+catálogo los clasifica como 📝 o ⛔ por marca, copyright o falta de verificación.
+Una creación propia puede inspirarse en un tropo sin reutilizar el nombre,
+personaje, diseño o presentación protegidos.
+
 | Vector del juego | Cómo aplicarlo | Ejemplo |
 |---|---|---|
 | **Indicativos / nombres de nave** (`scripts/*call_sign*`) | Sembrar un pool de nombres DP por tema. Ver `public_domain_names_scenario_utility.lua` | `Nautilus-7`, `Miskatonic`, `Sugaar`, `Prometeo` |

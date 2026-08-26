@@ -48,6 +48,10 @@ import {
 import { registerStationOrders } from "./station-order-wiring.mjs";
 import { registrarRelevoPuestos } from "./station-handover.mjs";
 import { registrarAsistencia } from "./asistencia-wiring.mjs";
+import {
+  convocarYTransmitir,
+  registrarConvocatoriaEstancia,
+} from "./convocatoria-difusion.mjs";
 import { addAsistenciaControl, registrarAsistenciaUI } from "./asistencia-ui.mjs";
 import {
   addContenidoExternoControl,
@@ -436,6 +440,7 @@ Hooks.once("ready", () => {
   // del relé y no antes: la ayuda se cobra dentro de la orden del titular, así
   // que sin relé no habría dónde cobrarla.
   registrarAsistencia(MODULE_ID);
+  registrarConvocatoriaEstancia(MODULE_ID, { abrir: (estancia) => abrirAndarNave(estancia) });
   // Y su ventana, en TODOS los clientes: escucha las tres respuestas del
   // coordinador aunque esté cerrada, para que quien pida ayuda y cierre sin
   // querer no se quede con una reserva viva y ninguna forma de resolverla.
@@ -796,6 +801,7 @@ Hooks.on("updateUser", (user, changes) => {
   // Mismo relevo para la asistencia: el coordinador es el GM activo, y si cambia
   // sin recargar, el nuevo tiene que quedarse escuchando las peticiones.
   registrarAsistencia(MODULE_ID);
+  registrarConvocatoriaEstancia(MODULE_ID, { abrir: (estancia) => abrirAndarNave(estancia) });
   registrarSesionesMinijuegos(MODULE_ID);
   if (!user.isGM) void revokePrivilegedBridgeAccess();
 });
@@ -881,7 +887,12 @@ Hooks.on("getSceneControlButtons", (controls) => {
           title: "LAGUNAK.Controles.AbrirMuseo",
           icon: "fa-solid fa-landmark",
           button: true,
-          onClick: () => abrirAndarNave("museo"),
+          // CONVOCA, no abre solo (#689). El museo es la estancia cuyo verbo es
+          // ENSEÑAR, y enseñar a nadie no es nada: el GM se lleva a la mesa
+          // consigo. La playa sigue abriéndose sola porque su comentario de
+          // arriba dice por qué —es un banco de pruebas, no contenido—, y esa
+          // decisión no la cambia este cable.
+          onClick: () => convocarYTransmitir("museo"),
         },
       ]
     : [];

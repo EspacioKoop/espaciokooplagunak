@@ -17,6 +17,15 @@ updates:
       interval: "weekly"
     open-pull-requests-limit: 3
 
+  # Y las de tools/, que se quedaron fuera cuando se escribió esto: el puente no
+  # es el único Python del árbol. `tools/requirements-i18n.txt` lo usan las
+  # herramientas de traducción, que corren en CI igual que el resto.
+  - package-ecosystem: "pip"
+    directory: "/tools"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3
+
   - package-ecosystem: "docker"
     directories:
       - "/docker"

@@ -36,7 +36,12 @@ jobs:
           # las dos mitades de la misma costura, así que tocar cualquiera de las
           # dos tiene que despertar esta auditoría. Sigue siendo un job de Python
           # de segundos; no arrastra la build.
-          rutas: '^(tools/|\.github/workflows/tools\.yml$|\.github/actions/|scripts/public_domain_names_scenario_utility\.lua$|docs/DOMINIO_PUBLICO_SCIFI\.md$|src/|resources/locale/)'
+          #
+          # `docs/` y cualquier `.md` entran por el comprobador de rutas
+          # citadas: una referencia rota la introduce un documento, no una
+          # herramienta, así que con el filtro anterior este check no se
+          # despertaba nunca en el PR que la rompe.
+          rutas: '^(tools/|\.github/workflows/tools\.yml$|\.github/labeler\.yml$|\.github/actions/|scripts/public_domain_names_scenario_utility\.lua$|docs/DOMINIO_PUBLICO_SCIFI\.md$|src/|resources/locale/|docs/|.*\.md$)'
 
   tests:
     name: tools/tests (Linux)
@@ -62,6 +67,11 @@ jobs:
         run: python3 tools/check_cpp_locale_coverage.py .
       - name: Paridad e invariantes del catálogo es-ES
         run: python3 tools/validate_es_locale.py .
+      - name: Rutas citadas por la documentación
+        # Solo stdlib. Recorre los .md y comprueba que cada ruta que citan
+        # existe: una cita rota manda al lector —o al agente— a perseguir
+        # fantasmas, y hasta ahora nadie ejecutaba esta herramienta.
+        run: python3 tools/refs-rotas.py
 
   puerta:
     name: Puerta de tools

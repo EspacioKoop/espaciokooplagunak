@@ -155,21 +155,20 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     quién los ve; nunca cómo se injertan. Un botón nuevo se añade como entrada de un catálogo de
     puerta existente (`scripts/puerta-catalogo.mjs`, y `panel-gm.mjs`/`cantina.mjs` como
     consumidores), no como una herramienta suelta más.
-  - **Alcanzabilidad** — `tests/modulos-alcanzables.test.mjs` (#523) recorre el grafo de imports
-    desde los `esmodules` que declara `module.json` y falla si algún módulo de `scripts/` queda
-    fuera sin estar declarado en su lista `HUERFANOS_DECLARADOS`, con motivo Y número de issue. Un
-    módulo huérfano tiene el MISMO verde que uno cableado —su suite lo importa directamente—, así
-    que sin esta guarda «escrito y probado» se confunde con «alcanzable jugando». Ojo: un
-    comentario que nombre el módulo no cuenta como consumidor; contarlos así es lo que le hizo
-    pasar por alto tres huérfanos al barrido manual de #523. Hay dos categorías y no da igual cuál:
-    `cimiento: true` es lo que se espera que siga sin consumidor (el banco de pruebas del andar,
-    y `catalogo-cosmografico.mjs` con su adaptador `atlas-hyg.mjs` a la espera de #213 — el formato
-    y el importador de datos reales están escritos y probados, pero cablearlos metería en la partida
-    un atlas que no está aprobado); `cimiento: false` es un hueco conocido con su
-    issue abierto, y la entrada es el registro de que se sabe, no un permiso — **no una plaza fija**:
-    #526 y #537 se cablearon y #536 se retiró. La categoría vacía es su estado sano; mientras tenga
-    entradas, son deuda con fecha y no inventario. No enumeres aquí los huecos vivos: esa lista es
-    `HUERFANOS_DECLARADOS` y se desincroniza en cuanto uno se cierra.
+  - **Alcanzabilidad e inventarios** — `scripts/check_orphan_modules.py` (#701) es la única
+    implementación del contrato: recorre el grafo desde los `esmodules` de `module.json`, acredita
+    solo imports literales completos y clasifica cada módulo como `connected`, `declared-orphan` o
+    `unknown`. Ante regex, templates, concatenaciones o sintaxis que el lexer reducido no pueda
+    demostrar, debe preferir `unknown`; esa salida no rompe CI. La fuente declarativa única es
+    [`docs/orphan-declarations.json`](docs/orphan-declarations.json): ahí viven tanto las
+    declaraciones huérfanas —motivo, autoría, fecha, decisión de cimiento y evidencia— como
+    `artModules` y la justificación de su frontera. Los tests Node
+    `modulos-alcanzables.test.mjs` y `paleta.test.mjs` **consumen** ese JSON; no mantengas listas
+    paralelas en ellos ni en esta guía. Los enlaces de evidencia a issues/PRs se verifican por la API
+    de GitHub con timeout y token de solo lectura en CI; un 404 confirmado invalida la declaración y
+    un fallo de red bloquea la verificación en vez de aceptar el enlace en silencio. Para declarar o
+    reclasificar un módulo, edita el JSON y ejecuta
+    `python3 scripts/check_orphan_modules.py --check` más las suites Python y Node del área.
   - **Ventanas** — **Consola caliente del GM** (#276, `docs/CONSOLA_CALIENTE_GM.md`) fusionó las
     cuatro factorías originales (estado de nave y mapa vivo, V1/V2) en una sola ventana con pestañas
     (Estado, Mapa, Encuentros, Previsualización) y UN solo bucle de sondeo y backoff, sustituyendo
@@ -266,6 +265,23 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     un botón nuevo en `main.mjs`. La cantina solo pinta y traduce un clic en "abre esa mesa" — la
     autoridad la sigue resolviendo cada mesa por su cuenta al abrirse, nunca la ventana que lleva
     hasta ella.
+  - **Generador de NPC** — `scripts/npc-tablas.mjs` (tablas propias) y
+    `scripts/npc-generador.mjs` (motor puro), #676. Semilla más valor de desafío dan una ficha
+    completa, y la misma semilla da siempre el mismo NPC. Cuatro capas y **una sola importable**:
+    la ficha 5e sale del **SRD 5.1 (CC-BY-4.0)** con sus fórmulas de verdad —modificador,
+    competencia por VD, PG por dado de golpe—, y de Shin Megami Tensei, Persona y Pokémon se toma
+    solo la MECÁNICA (afinidades de seis grados, matriz de efectividad, etapas): ni un nombre.
+    De Argon HUD solo la FORMA del dato (acción/adicional/reacción/movimiento), y ahí no es
+    preferencia: `enhancedcombathud` es GPL-3.0 y este árbol GPL-2.0, que son **incompatibles** —no
+    se puede copiar ni adaptar código suyo—. Las mecánicas no se registran; los nombres y el arte
+    sí, y eso va **codificado**: una prueba recorre cada cadena que el generador puede emitir
+    —tablas y trescientas fichas generadas— y falla si aparece un término de esas obras. No es
+    teórico: pilló que la tabla de sílabas componía *Maranmir* y *Marasai* por llevar «Mar».
+    La matriz de efectividad se **deriva** de lo que cada elemento declara en vez de escribir
+    veintiocho casillas, y un elemento desconocido **falla** en vez de valer ×1, que convertiría una
+    errata en un NPC inmune a nada sin que saltara ninguna alarma. Es cimiento declarado: nadie lo
+    importa todavía porque *recordar* a quién has conocido es del núcleo y no de la escena, el mismo
+    reparto que #598 dejó abierto para el bestiario. Ver [docs/NPC_GENERADOR.md](docs/NPC_GENERADOR.md).
   - **Sección de la nave** — `scripts/seccion-nave.mjs` (planta declarativa y consultas, puro),
     `scripts/seccion-lienzo.mjs` (pintado 2D, sin color propio) y `scripts/seccion-nave-app.mjs`
     (ventana V1/V2), #427. El corte transversal con todas las salas a la vez: es el MAPA, y la
@@ -596,6 +612,28 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
 - Commits breves, imperativos y con prefijo: `feat(scenario): …`, `fix(network): …`, `docs: …`.
 - El issue es el contrato de alcance; el PR es el registro de implementación y verificación. Antes
   de trabajar, revisa issues/PRs/ramas existentes para no duplicar.
+- **Quién aprueba.** `.github/CODEOWNERS` pone a `@VaroTv7` y `@eGurucharri` como revisores de todo,
+  y `main` exige la aprobación de un code owner. GitHub **no cuenta al autor**, así que un PR abierto
+  por uno solo lo puede aprobar el otro, y abrir una tanda entera con la misma cuenta deja a esa
+  cuenta sin poder firmar ninguno. Tenlo en cuenta al elegir con qué cuenta se abre; el estado real
+  se ve con `gh pr view <n> --json mergeStateStatus,reviewDecision` — un `CLEAN` con CI en verde
+  puede seguir parado en `REVIEW_REQUIRED`.
+- **Una rama sin PR no es trabajo a salvo, pero tampoco es trabajo perdido.** Borrar un worktree
+  **no** borra su rama: lo confirmado no se pierde al limpiar, y lo único en riesgo es lo que no
+  está confirmado.
+- **Antes de rescatar una rama huérfana, pregunta si su trabajo ya está en `main`.** No basta con
+  que la rama esté limpia y el CI verde: si sale de un worktree anterior a trabajo que después
+  entró por otra vía, el rescate **revierte** ese trabajo — y el CI sale verde porque la rama se
+  lleva por delante también los tests que lo detectarían. Código y suite quedan coherentes entre sí,
+  en el estado antiguo, y ninguna guarda del repositorio ve eso. Se comprueba antes de leer nada más:
+
+  ```bash
+  git log --oneline origin/main -- <los ficheros que toca>   # ¿es reciente lo que hay en main?
+  git diff origin/main...<rama> | grep '^-' | grep -v '^---' # ¿borra código o tests?
+  ```
+
+  Si lo segundo borra lo que lo primero dice que es reciente, es una reversión: ciérrala y abre lo
+  que quede pendiente como tarjeta nueva **contra el estado actual**.
 
 ## Estilo
 
@@ -613,6 +651,20 @@ propio módulo testeable desde Node/pytest sin mockear el framework — el patr�
 
 Actualiza `README.md` (estado/roadmap/características) solo cuando un cambio esté integrado en
 `main` y verificado — nunca marques tareas como hechas por el mero hecho de haber escrito código.
+
+Un objetivo numérico se cierra con **la cifra medida**, no con los tests en verde. Si una tarea pide
+subir la cobertura de un módulo, el criterio es el porcentaje que imprime
+`node --test --experimental-test-coverage` (o `pytest --cov`) **después** del cambio, y hay que
+pegarlo en el PR. No es teórico: ya han aparecido ramas con toda su batería en verde —decenas de
+tests— que dejaban la cobertura igual o **peor**, por sobrescribir un fichero de test existente con
+otro más corto. Un fichero de test que **encoge** en un diff es la señal a mirar:
+
+```bash
+gh pr view <n> --json files --jq '.files[]|select(.path|test("test"))|select(.deletions > .additions)'
+```
+
+Y una cifra a medias no cierra el objetivo: si el encargo pide 88 % y la rama llega al 85 %, eso es
+una tarjeta nueva con el número real medido, no un criterio cumplido.
 
 ## Mantenimiento de la documentación
 

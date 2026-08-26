@@ -23,6 +23,25 @@ condicionan el trabajo diario:
 - Cada entrega debe resumir: objetivo/issue, archivos cambiados, decisiones, comandos de prueba
   ejecutados con su resultado, comprobaciones pendientes y riesgos.
 
+### Decisiones ya tomadas: no las rediscutas, cítalas
+
+Las reglas duras del proyecto están registradas en [`docs/adr/`](docs/adr/README.md), y este archivo
+las **apunta** en vez de repetirlas. Si vas a proponer algo que choca con una de ellas, la vía es un
+ADR nuevo que la sustituya, no un PR que la ignore. Índice legible por máquina en
+[`docs/adr/index.json`](docs/adr/index.json).
+
+| Si estás tocando… | Léete antes |
+|---|---|
+| El endpoint HTTP heredado, exposición de red | [ADR-0001](docs/adr/0001-exec-lua-nunca-expuesto.md), [ADR-0011](docs/adr/0011-riesgos-de-seguridad-y-defensa-en-profundidad.md) |
+| Qué dato es de quién (Foundry / puente / simulación) | [ADR-0008](docs/adr/0008-standalone-first-autoridad-del-nucleo.md) |
+| Transporte del contrato del puente | [ADR-0003](docs/adr/0003-transporte-polling-http.md) |
+| Código heredado de EmptyEpsilon | [ADR-0007](docs/adr/0007-frontera-upstream.md) |
+| Permisos por puesto, órdenes de puente | [ADR-0009](docs/adr/0009-modelo-permisos-por-puesto-v1.md), [ADR-0010](docs/adr/0010-hackeo-solo-nativo.md) |
+| Una escena, estancia o exterior nuevo | [ADR-0012](docs/adr/0012-que-puede-hacer-una-escena-de-foundry.md) |
+| Material de terceros, catálogos, licencias | [ADR-0013](docs/adr/0013-frontera-de-licencias-y-procedencia.md) |
+| Cualquier superficie que se dibuje | [ADR-0014](docs/adr/0014-doctrina-de-arte-procedural.md) |
+| Copiar al módulo un dato que ya existe en el árbol | [ADR-0015](docs/adr/0015-dato-derivado-se-copia-y-se-compara.md) |
+
 ## Qué es
 
 Espaciokoop Lagunak es un fork comunitario de [EmptyEpsilon](https://github.com/daid/EmptyEpsilon),
@@ -213,37 +232,36 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
   - **Módulos ajenos** — el módulo no declara ninguna dependencia dura. Antes de añadir una, leer
     `docs/ECOSISTEMA_MODULOS_FOUNDRY.md`: recoge la regla de admisión (una dependencia puede degradar
     la presentación y nunca la autoridad), los descartes ya razonados —socketlib, sequencer/JB2A,
-    documentos `Cards`— y por qué FXMaster es la única integración aceptada.
+    documentos `Cards`— y por qué FXMaster es la única integración aceptada. La regla de admisión
+    está registrada en [ADR-0013](docs/adr/0013-frontera-de-licencias-y-procedencia.md).
   - **Telemetría a modelo visual** — `scripts/ship-view.mjs` y `scripts/barras-estado.mjs`
     convierten el estado crudo en porcentajes y niveles de severidad, sin tocar el DOM: las
     plantillas de V1/V2 solo consumen su salida.
-  - **Arte procedural** — generado en el cliente, cero binarios en el repositorio. Los colores viven
-    **solo** en `scripts/paleta.mjs`, con la frontera vivo/registrado y una prueba que falla si otro
-    módulo de arte declara un color propio (#351). Grabado en `scripts/laminas-clasicas.mjs`, cuyo
-    único consumidor es `scripts/mapa-marco.mjs` (#526): el marco del mapa vivo, que va **alrededor**
-    del visor y no encima —el bisel arcade del visor es una decisión de estilo ya tomada—, y que
-    apaga a propósito los tics del limbo y la rosa de los vientos, porque sobre un instrumento que
-    sí se lee serían una escala y una marcación que nadie ha calculado. Esa es la regla general para
-    adornar cualquier superficie con lectura: el ornamento no puede abrir por detrás la lectura
-    falsa que la superficie cierra por delante. Las dos opciones (`tics`, `rosa`) van encendidas por
-    defecto, así que la lámina completa sigue siendo el registro de serie;
-    pixelart en `scripts/nave-sprite.mjs`, `scripts/minijuegos/cartas-pixelart.mjs` y
-    `scripts/minijuegos/fichas-pixelart.mjs` (volumen por planos de color, nunca degradados: el 3D
-    del casco es otro lenguaje); música determinista por semilla en
-    `scripts/musica-procedural.mjs`. El 3D de consola de los 90 vive en `scripts/retro3d*.mjs`
-    (#362): motor puro que devuelve polígonos, pintor de lienzo aparte, y la **época** (PSX o
-    GameCube) como parámetro —rejilla, tonos y niebla— y no como dos módulos. La **visibilidad no
-    es un parámetro de época** (#510): quién tapa a quién es una garantía geométrica del motor y
-    vale igual para las dos consolas, así que fundir varias piezas en una escena se hace con
-    `fundirEscenas(...)` y no con el `flatMap` + `sort` que ocho consumidores copiaban. Ese orden
-    es hoy por centroide de cara y es la deuda viva de #510 —empata entre caras que se tocan, que
-    es el parpadeo que ve QA—; lo ya intentado y descartado (epsilon con orden estable; Newell sin
-    partir caras, que empeora la medida) está escrito en la cabecera de `retro3d.mjs` para no
-    repetirlo por cuarta vez. El arte de ficha de
-    naves narrativas (`scripts/ficha-nave.mjs`, con el codificador PNG puro de
-    `scripts/png-indexado.mjs`) se genera **solo por clic del GM** y escribe el token prototipo:
-    nunca sondea ni sincroniza posición, porque un documento persistente que espeje la simulación
-    se queda mintiendo cuando cae el puente (#354).
+  - **Arte procedural** — generado en el cliente, cero binarios en el repositorio, y los colores
+    **solo** en `scripts/paleta.mjs`, con una prueba que falla si otro módulo de arte declara un color
+    propio (#351). La doctrina completa —incluida la regla de que el ornamento no puede abrir por
+    detrás la lectura falsa que la superficie cierra por delante (#526)— está en
+    [ADR-0014](docs/adr/0014-doctrina-de-arte-procedural.md); esto es solo dónde vive cada cosa.
+    Grabado en `scripts/laminas-clasicas.mjs`, cuyo único consumidor es `scripts/mapa-marco.mjs`
+    (#526): el marco va **alrededor** del visor y no encima, y apaga a propósito los tics del limbo y
+    la rosa de los vientos, que sobre un instrumento que sí se lee serían una escala y una marcación
+    inventadas. Las dos opciones (`tics`, `rosa`) siguen ENCENDIDAS por defecto, así que la lámina
+    completa es el registro de serie para el resto del módulo.
+    Pixelart en `scripts/nave-sprite.mjs`, `scripts/minijuegos/cartas-pixelart.mjs` y
+    `scripts/minijuegos/fichas-pixelart.mjs` (volumen por planos de color, nunca degradados: el 3D del
+    casco es otro lenguaje); música determinista por semilla en `scripts/musica-procedural.mjs`.
+    El 3D de consola de los 90 vive en `scripts/retro3d*.mjs` (#362): motor puro que devuelve
+    polígonos, pintor de lienzo aparte, y la **época** (PSX o GameCube) como parámetro —rejilla, tonos
+    y niebla— y no como dos módulos. La **visibilidad no es un parámetro de época** (#510): quién tapa
+    a quién es una garantía geométrica del motor y vale para las dos consolas, así que fundir piezas
+    en una escena se hace con `fundirEscenas(...)` y no con el `flatMap` + `sort` que ocho consumidores
+    copiaban. Ese orden es hoy por centroide de cara y es la **deuda viva de #510** —empata entre caras
+    que se tocan, que es el parpadeo que ve QA—; lo ya intentado y descartado está escrito en la
+    cabecera de `retro3d.mjs` para no repetirlo por cuarta vez.
+    El arte de ficha de naves narrativas (`scripts/ficha-nave.mjs`, con el codificador PNG puro de
+    `scripts/png-indexado.mjs`) se genera **solo por clic del GM** y escribe el token prototipo: nunca
+    sondea ni sincroniza posición, porque un documento persistente que espeje la simulación se queda
+    mintiendo cuando cae el puente (#354).
   - **Minijuegos** — `scripts/minijuegos/` y su enganche en `scripts/minijuegos-wiring.mjs` (#308).
     La mesa de blackjack (#553) añade una **lectura** aparte de la vista
     (`minijuegos/blackjack-lectura.mjs`): qué pasa ahora, en qué estado va cada asiento y las reglas
@@ -265,23 +283,20 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     un botón nuevo en `main.mjs`. La cantina solo pinta y traduce un clic en "abre esa mesa" — la
     autoridad la sigue resolviendo cada mesa por su cuenta al abrirse, nunca la ventana que lleva
     hasta ella.
-  - **Generador de NPC** — `scripts/npc-tablas.mjs` (tablas propias) y
-    `scripts/npc-generador.mjs` (motor puro), #676. Semilla más valor de desafío dan una ficha
-    completa, y la misma semilla da siempre el mismo NPC. Cuatro capas y **una sola importable**:
-    la ficha 5e sale del **SRD 5.1 (CC-BY-4.0)** con sus fórmulas de verdad —modificador,
-    competencia por VD, PG por dado de golpe—, y de Shin Megami Tensei, Persona y Pokémon se toma
-    solo la MECÁNICA (afinidades de seis grados, matriz de efectividad, etapas): ni un nombre.
-    De Argon HUD solo la FORMA del dato (acción/adicional/reacción/movimiento), y ahí no es
-    preferencia: `enhancedcombathud` es GPL-3.0 y este árbol GPL-2.0, que son **incompatibles** —no
-    se puede copiar ni adaptar código suyo—. Las mecánicas no se registran; los nombres y el arte
-    sí, y eso va **codificado**: una prueba recorre cada cadena que el generador puede emitir
-    —tablas y trescientas fichas generadas— y falla si aparece un término de esas obras. No es
-    teórico: pilló que la tabla de sílabas componía *Maranmir* y *Marasai* por llevar «Mar».
-    La matriz de efectividad se **deriva** de lo que cada elemento declara en vez de escribir
-    veintiocho casillas, y un elemento desconocido **falla** en vez de valer ×1, que convertiría una
-    errata en un NPC inmune a nada sin que saltara ninguna alarma. Es cimiento declarado: nadie lo
-    importa todavía porque *recordar* a quién has conocido es del núcleo y no de la escena, el mismo
-    reparto que #598 dejó abierto para el bestiario. Ver [docs/NPC_GENERADOR.md](docs/NPC_GENERADOR.md).
+  - **Generador de NPC** — `scripts/npc-tablas.mjs` (tablas propias) y `scripts/npc-generador.mjs`
+    (motor puro), #676. Semilla más valor de desafío dan una ficha completa, y la misma semilla da
+    siempre el mismo NPC. Cuatro capas y **una sola importable**: la ficha 5e sale del SRD 5.1, y de
+    Shin Megami Tensei, Persona, Pokémon y Argon HUD se toma solo la mecánica o la forma del dato —la
+    frontera y su porqué, en [ADR-0013](docs/adr/0013-frontera-de-licencias-y-procedencia.md), que es
+    también donde vive la incompatibilidad GPL-3.0/GPL-2.0 con `enhancedcombathud`. La puerta va
+    **codificada**: `npc-tablas.test.mjs` recorre cada cadena que el generador puede emitir —tablas y
+    trescientas fichas generadas— y falla si aparece un término de esas obras.
+    Dos reglas del motor: la matriz de efectividad se **deriva** de lo que cada elemento declara en
+    vez de escribir veintiocho casillas, y un elemento desconocido **falla** en vez de valer ×1, que
+    convertiría una errata en un NPC inmune a nada sin que saltara ninguna alarma.
+    Es **cimiento declarado**: nadie lo importa todavía porque *recordar* a quién has conocido es del
+    núcleo y no de la escena (ADR-0012), el mismo reparto que #598 dejó abierto para el bestiario.
+    Ver [docs/NPC_GENERADOR.md](docs/NPC_GENERADOR.md).
   - **Sección de la nave** — `scripts/seccion-nave.mjs` (planta declarativa y consultas, puro),
     `scripts/seccion-lienzo.mjs` (pintado 2D, sin color propio) y `scripts/seccion-nave-app.mjs`
     (ventana V1/V2), #427. El corte transversal con todas las salas a la vez: es el MAPA, y la
@@ -298,222 +313,125 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     puro), `scripts/nave-estancias.mjs` (contrato de estancia: planta + composición + puertas +
     consolas, y `resolverArranque`) y `scripts/nave-movimiento-lienzo.mjs`/`nave-movimiento-red.mjs`
     (bucle de render y sincronización de otros jugadores, #453/#498), #427.
-    **La planta sale de la nave REAL, no se inventa** (#540): el Phobos M3P declara su interior en
-    `scripts/shiptemplates/frigates.lua` —trece salas sobre una rejilla, nueve con sistema— y esa es
-    la planta que pinta el Control de daños nativo y que el puente publica en `ship.internal.rooms`
-    (#522). `scripts/nave-planta-phobos.mjs` la copia como dato del módulo y deriva de ella la
-    geometría: una única `CELDA` en metros (el mando de escala de toda la nave), puerta entre TODA
-    pareja de salas contiguas calculada del solapamiento real de sus aristas, y punto de llegada
-    separado del rect de vuelta para que nadie rebote entre dos salas. Es **estática** a propósito y
-    no leída del puente: la distribución no cambia durante la partida y leerla por red dejaría la
-    ventana sin geografía cuando no hay puente (standalone-first). El precio —que la copia se
-    desactualice— lo cubre una prueba que la compara con el `.lua`.
-    Esto sustituyó a una geografía inventada (vestíbulo, pasillo del puente y cinco salas de
-    estación idénticas, #508) que producía los cuatro fallos de #539: huecos entre salas, puertas
-    contra las que te golpeabas, solo la cantina alcanzable y una escala por sala. Ninguno puede
-    volver por construcción, y hay prueba de **alcanzabilidad sobre el catálogo real** —no solo sobre
-    `CATALOGO_PRUEBA`—, que es lo que faltaba: el motor tenía sus pruebas y la nave no.
-    La **cantina** es la única sala que no sale de la rejilla (el interior nativo no la tiene) y
-    conserva sus 126 muebles hechos a mano (#423); cuelga del muro libre de `acceso-cantina`. Pero
-    **ya no es un caso especial**: `scripts/cantina-sala.mjs` la construye con la MISMA fábrica y sus
-    muebles entran como `mobiliario`. Era la única que no lo hacía, y de ahí salían los cuatro fallos
-    que el QA repitió tres veces —puerta pintada sobre muro macizo con su disparador desalineado casi
-    un metro, ninguna ventana (no había, literalmente), suelo visible por el que no se podía andar, y
-    los ojos a 3,35 m del suelo porque la cámara se ponía en altura absoluta sobre un suelo en −1,9—.
-    Todos tenían la misma causa: colisión y dibujo salían de dos declaraciones distintas. Retirados
-    con ella `cantina-andar.mjs` y `cantina-planta.mjs`, que solo existían para traducir entre esos
-    dos sistemas. **No la devuelvas a mano**: si una sala necesita algo que la fábrica no da, se
-    amplía la fábrica. Las
+    **La planta sale de la nave REAL, no se inventa** — el porqué y lo que costó aprenderlo están en
+    [ADR-0015](docs/adr/0015-dato-derivado-se-copia-y-se-compara.md). En la práctica: el Phobos M3P
+    declara su interior en `scripts/shiptemplates/frigates.lua` (trece salas sobre una rejilla, nueve
+    con sistema), `scripts/nave-planta-phobos.mjs` lo copia como dato del módulo y **deriva** de ahí
+    la geometría —una única `CELDA` en metros, puerta entre toda pareja de salas contiguas por
+    solapamiento real de aristas, y punto de llegada separado del rect de vuelta—, y
+    `nave-planta-phobos.test.mjs` compara la copia con el `.lua`. Es estática a propósito: leerla del
+    puente dejaría la ventana sin geografía cuando no hay puente (ADR-0008).
+    **Una sola planta para todo el módulo** (#542): `celdasConCantina()` es el plano canónico —las
+    trece salas más la cantina— y de ahí salen la ventana de andar, el minimapa y la sección. La
+    salud de una sala es la de SU sistema, no la de una «región de casco».
+    La **cantina** es la única sala que no sale de la rejilla y conserva sus 126 muebles hechos a mano
+    (#423), colgada del muro libre de `acceso-cantina`, pero **no es un caso especial**:
+    `scripts/cantina-sala.mjs` la construye con la MISMA fábrica y sus muebles entran como
+    `mobiliario`. Era la única que no lo hacía y de ahí salían cuatro fallos que el QA repitió tres
+    veces, todos con la misma causa: colisión y dibujo salían de dos declaraciones distintas. **No la
+    devuelvas a mano**: si una sala necesita algo que la fábrica no da, se amplía la fábrica. Las
     salas de prueba ("a"/"b", `nave-movimiento-sala-prueba.mjs`) NUNCA aparecen en el catálogo real.
-    `scripts/nave-sala-caja.mjs` sigue siendo la fábrica de sala —muros, puertas, columnas,
-    VENTANAS y la PIEL de los muros—, y la ventana se **decide** en vez de escribirse: un muro sin vecino es casco, y el
-    casco ve el espacio. Lo que se ve por ella es **otra vista del espacio real** y no un cielo de
-    adorno (`scripts/nave-ventana-espacio.mjs`, #541): reusa `visor-piloto.mjs` para situar los
-    contactos por marcación, pasándole el rumbo de la nave MÁS el del muro, así que la vista gira con
-    la nave y cada ventana mira a donde le toca. No abre ningún dato nuevo —es la MISMA lectura
-    degradada que ya se difunde a la tripulación— y conserva su disciplina: lo que queda a la espalda
-    no se pinta, un eco sin identidad sale como borrón y no como silueta, y una lectura VACÍA sí se
-    pinta, porque «he mirado y no hay nada» es un dato. Sin telemetría baja una **persiana**, que es
-    distinto de un cielo vacío: una ventana con estrellas quietas afirmaría que no hay nada ahí
-    fuera. Y por eso **no** se traen los skybox de EmptyEpsilon: serían 16 MB de binarios contra la
-    regla de arte del módulo, para enseñar un espacio que no es el de esta partida.
-    La **piel de los muros** es `scripts/nave-mural-pixel.mjs` (#548, reelaborada en #551): pixelart
-    EN EL MUNDO —el motor no mapea texturas y no va a hacerlo—, sobre una rejilla métrica única
-    (`CELDA` = 10 cm, el mando de escala de la piel igual que la `CELDA` de la planta lo es de la
-    geografía), determinista por semilla y encendida de serie en la fábrica; solo las salas de prueba
-    la apagan. Y **nada que se pueda leer**: es la regla de #526 en la superficie que más de cerca se
-    mira —un dial pintado en el muro sería una medida que nadie ha calculado, y quien anda por la
-    nave no tiene cómo saber que ese no cuenta—; lo que hay detrás de una escotilla tampoco se
-    declara, por lo mismo. Tres cosas la hacen funcionar y ninguna es «más rayas»:
-    **rampa y relieve** (seis tonos y bisel, con el sentido atado a la luz del motor: una pieza
-    montada y un hueco recortado lo llevan al revés el uno del otro, y esa es toda la diferencia
-    entre un bulto y un agujero); **jerarquía a dos distancias** (bandas —zócalo, paño de planchas,
-    bastidor de tubos bajo cornisa— que se leen de lejos, y un greeble sorteado dentro de cada
-    plancha —escotilla, rejilla, tendido de cable, placa— que premia acercarse; llenarlo todo por
-    igual es ruido, el fallo contrario al de #548 y no mejor; y hay tres capas de lectura, no dos:
-    bandas, greeble por plancha y menudencias de dos celdas para quien se pega al muro); y el
-    **presupuesto**, que es la CONDICIÓN del detalle y no una optimización suelta: `fundirRectangulos`
-    (mallado codicioso 2D — con relieve, que es vertical, fundir solo por filas deja de servir) más
-    el agrupado POR COLOR de `chapasDeRejilla`, que quitó un 20% del coste sin cambiar un solo
-    polígono, porque `componerEscena` se llamaba una vez por chapa y su peaje fijo se pagaba mil
-    veces. Sin las dos cosas, este dibujo no cabe en un fotograma. La celda bajó de 20 a 10 cm en #551 al caerse su argumento original: «fidelidad al
-    hardware» era la regla equivocada (Neo Geo y SIGNALIS usan más detalle por metro del que la
-    máquina de referencia movía), la buena es el LOOK —paleta corta, sin filtrado, sin degradados—,
-    que se conserva entero. El presupuesto medido (20–86 → 122–327 con #550 → 871–1055 con #551 → 886–1135 con #552 →
-    894–1173 con #555; 0,4 → 1,45 → 4,11 → 4,19 → 4,21 ms la peor sala) está en la cabecera del módulo: es lo que se vuelve a medir antes
-    de subir nada, y si algún día no cabe se recorta la densidad de greebles, nunca la rejilla —media
-    resolución se nota en todo el muro, media plancha sin escotilla no la echa nadie de menos.
-    La **misma rejilla** viste puertas (`scripts/nave-piel-puerta.mjs`) y objetos
-    (`scripts/nave-piel-objeto.mjs`), #550 — y esa es toda la razón de que sean módulos y no copias:
-    si cada superficie eligiera su tamaño de detalle, la sala parecería montada con piezas de tres
-    maquetas. Comparten el primitivo de #548 (`chapaEnCara`/`chapasDeRejilla`, donde vive el tope,
-    porque un tope que solo cumple uno de los tres consumidores no es un tope) y, desde #551, también
-    el VOCABULARIO de dibujo (`crearLienzo`, `panelBiselado`, `hundir`): el sentido del bisel es justo
-    lo que no puede divergir entre superficies, porque dos relieves iluminados al revés en la misma
-    sala se ven a la primera. Ojo con las medidas: en la piel de una puerta van en METROS y se
-    convierten a filas, nunca escritas como índice de fila — al bajar la celda en #551, todo lo que
-    estaba en filas se partió por la mitad en silencio y la franja de aviso se fue a la rodilla. Se
-    separan en lo que
-    de verdad difiere: la hoja de una puerta es ESTRECHA —media hoja de 1,2 m son tres celdas, así
-    que el dibujo se declara fila a fila y ninguna decisión depende de tener anchura—, va por sus dos
-    caras y lleva el ámbar de `AMBAR_SENAL`, que ahí no adorna sino que repite lo que ya dice el marco
-    de esa puerta. Tres reglas propias: **no todo objeto lleva piel** (`MINIMO_LADO`/`MINIMO_ALTO`, o
-    los 126 muebles de la cantina se multiplican por cuatro caras para poner dos píxeles en algo que
-    mide dos píxeles); **la piel es chapa remachada, o sea un MATERIAL**, así que la cantina la apaga
-    para sus muebles —una barra de madera con remaches de casco no es un detalle de más, es un
-    material equivocado— y cualquier mueble puede renunciar a ella con `piel: false` sin sacar a la
-    sala entera del sistema; y **sin semilla**, al revés que el muro: una puerta y un armario son
-    piezas de serie, y sortear sus remaches los convierte en artesanía.
-    **Suelo y techo** son `scripts/nave-piel-suelo.mjs` (#552), y su cabecera explica por qué un
-    plano horizontal NO es un muro girado: la rejilla es 2D de verdad, el presupuesto es otro —el
-    suelo está en cuadro SIEMPRE, así que su dibujo es a propósito más pobre que el de un muro— y
-    sobre todo la luz les llega distinta, hasta el punto de que la losa de suelo se queda casi en su
-    tono crudo y **una junta de suelo no puede ser una sombra**: por debajo de ella no hay dónde ir,
-    tiene que ser una línea un punto más clara, y solo un punto —con más, las juntas longitudinales
-    convergen en perspectiva y el suelo se lee como el carril de una autopista—. Dos reglas propias:
-    **ninguna señal en el suelo** (ni líneas guía ni flechas: es la regla de #526 donde más fácil
-    sería saltársela, porque una marca que parezca indicar por dónde ir afirma algo que nadie ha
-    decidido), y **todo o nada** al pasarse del tope —en un muro recortar quita rasgos anecdóticos y
-    sigue siendo un muro; en un suelo deja media sala con juntas y media lisa, que se lee como un
-    fallo—. La sala mayor (22x22 m) es la que fija el coste, no la media, y por eso se dibujan las
-    juntas y no las planchas: rellenar plancha a plancha son trescientos rectángulos allí.
-    Las **luminarias** son `scripts/nave-luminaria.mjs` (#555). Sustituyen a una lámpara que medía
-    `min(ancho, profundidad) * 0.22` —o sea, 4,84 m de lado en el reactor—: una luminaria es una
-    PIEZA de medida fija que se repite, igual que una plancha mide 1,6 m mida lo que mida el muro, y
-    que un objeto escale con la sala que lo contiene es el error que #540 corrigió en la planta y
-    que había sobrevivido en el techo. Ahora una sala grande tiene MÁS luminarias, no una mayor —que
-    además es lo que la hace leerse grande—. Dos reglas: **una luminaria ilumina, no señala**, así
-    que va en `LUZ_CALIDA` (recogido en `paleta.mjs` al llegar su tercer consumidor) y no en el
-    turquesa de `SECCION.entrable`, que marca lo accionable y no se gasta en adornos; y el difusor es
-    **la única malla EMISIVA del módulo** (`componerEscena({emisivo: true})`, #555): se pinta a
-    intensidad plena sin sombreado por normal, que es lo que hacía la máquina de referencia con
-    luces y pantallas. Sin eso parecía fundida — `intensidadCara` deja un suelo ambiente de 0,35 y
-    la luz viene de arriba, así que toda cara que mire hacia abajo está en el mínimo y el techo es
-    estructuralmente la superficie más oscura de la sala. Es la lección del suelo (#552) en el otro
-    extremo: cada orientación tiene su tramo de rampa. **Emisivo NO es una luz**: el difusor no
-    alumbra a nadie y el muro de enfrente no se aclara por tenerlo delante. Esa frontera sigue
-    intacta ahora que el motor SÍ tiene **luces de punto** (`componerEscena({focos})`, #556): lo que
-    alumbra es un foco declarado por la escena, y `emisivo` sigue diciendo solo cómo se ve la propia
-    luminaria. La luz de punto se evalúa **en el centroide de cada cara** y entra por
-    `intensidadCara` sumada a la direccional de siempre, sin tocar el rasterizador ni el orden por
-    pintor: son las mismas caras con otro tono. Eso no valía la pena cuando un muro era un
-    cuadrilátero grande —una lámpara al lado no daba un charco de luz, sino un muro que cambiaba de
-    tono de golpe—, y lo vale ahora porque la piel pixelart de #548–#552 dejó 742 de 768 caras por
-    debajo del 0,5 % del cuadro. Tres reglas de contrato: se **suman todas las luces y se escalona
-    después** (escalonar por foco haría que dos focos débiles no equivalieran a uno fuerte), se
-    conserva el **suelo ambiente de 0,35** (una cara fuera de todo charco no puede caer a negro), y
-    el presupuesto es de `TOPE_FOCOS` focos por escena, los más cercanos al observador, porque el
-    coste es por cara y una sala son ~800. **Sin focos declarados nada cambia**, y hoy no los declara
-    ninguna escena: qué luminarias son foco, con qué caída y cuántas, es arte y quiere ojos delante.
-    Nada de sombras: proyectarlas exige resolver visibilidad, que es la deuda abierta de #510.
-    La **maquinaria de sala** es `scripts/nave-mobiliario-sala.mjs` (#560), y su regla es la misma
-    que gobierna todo lo demás en esta nave: **el dato ya existe**. `SALAS_PHOBOS` declara el sistema
-    de cada sala, y de ahí sale qué le toca —bancadas, armarios, conductos, cajas de registro— igual
-    que la planta salió del `.lua` (#540) y la consola de tener puesto (#557). Es una tabla por
-    SISTEMA y no por sala: dos salas del mismo sistema traen el mismo material, que es lo correcto en
-    una nave, y lo que las diferencia es dónde cae cada pieza. Lo que **no** decide este módulo es el
-    contenido narrativo —qué cuelga de las paredes, qué se ha dejado la tripulación— que es de quien
-    escribe la campaña. Se mantiene la DENSIDAD y no el número (una pieza cada seis metros de muro,
-    igual que las luminarias mantienen cadencia), todo va pegado al muro para no cortar el paso, y
-    nada se coloca cerca de una PUERTA — los puntos de llegada los declaran las salas vecinas y aquí
-    no se conocen, pero una llegada siempre cae cerca de su puerta, que es el mismo apaño de #557.
+    `scripts/nave-sala-caja.mjs` es la fábrica de sala —muros, puertas, columnas, VENTANAS y la PIEL
+    de los muros—, y la ventana se **decide** en vez de escribirse: un muro sin vecino es casco, y el
+    casco ve el espacio. Lo que se ve por ella es otra vista del espacio real
+    (`scripts/nave-ventana-espacio.mjs`, #541): reusa `visor-piloto.mjs` pasándole el rumbo de la nave
+    MÁS el del muro, así que cada ventana mira a donde le toca. No abre ningún dato nuevo —es la MISMA
+    lectura degradada que ya se difunde— y sin telemetría baja una **persiana**, nunca un cielo de
+    estrellas quietas (el porqué, en [ADR-0014](docs/adr/0014-doctrina-de-arte-procedural.md), que es
+    también el motivo de no traer los skybox de EmptyEpsilon).
+    La **piel** es pixelart EN EL MUNDO —el motor no mapea texturas— sobre una rejilla métrica única
+    (`CELDA` = 10 cm, el mando de escala de la piel): `scripts/nave-mural-pixel.mjs` los muros (#548,
+    #551), `nave-piel-puerta.mjs` y `nave-piel-objeto.mjs` puertas y objetos (#550),
+    `nave-piel-suelo.mjs` suelo y techo (#552). Comparten primitivo (`chapaEnCara`/`chapasDeRejilla`,
+    donde vive el tope) y vocabulario de dibujo (`crearLienzo`, `panelBiselado`, `hundir`): el sentido
+    del bisel es lo que NO puede divergir entre superficies, porque dos relieves iluminados al revés
+    en la misma sala se ven a la primera. **Nada que se pueda leer** en ninguna de ellas —ni diales en
+    el muro, ni señales en el suelo—: es ADR-0014, y la piel es la superficie que más de cerca se
+    mira. Tres trampas medidas, que son las que cuestan tiempo:
+    - **Las medidas de una piel van en METROS**, nunca escritas como índice de fila. Al bajar la celda
+      en #551, todo lo que estaba en filas se partió por la mitad en silencio y la franja de aviso de
+      una puerta se fue a la rodilla.
+    - **No todo objeto lleva piel** (`MINIMO_LADO`/`MINIMO_ALTO`), y la piel es chapa remachada, o sea
+      un MATERIAL: la cantina la apaga para sus muebles y cualquiera puede renunciar con `piel: false`
+      sin sacar a la sala del sistema. El muro va por semilla; puertas y objetos NO, que son piezas de
+      serie.
+    - **El presupuesto es la CONDICIÓN del detalle**, no una optimización suelta: `fundirRectangulos`
+      (mallado codicioso 2D) más el agrupado POR COLOR de `chapasDeRejilla`. La serie medida
+      (894–1173 polígonos, 4,21 ms la peor sala) está en la cabecera del módulo y es lo que se vuelve
+      a medir antes de subir nada. Si no cabe, se recorta densidad de greebles, **nunca** la rejilla.
+    Las **luminarias** (`scripts/nave-luminaria.mjs`, #555) son PIEZAS de medida fija que se repiten:
+    una sala grande tiene MÁS luminarias, no una mayor. Van en `LUZ_CALIDA`, no en el turquesa de
+    `SECCION.entrable` que marca lo accionable. El difusor es la **única malla emisiva del módulo**
+    (`componerEscena({emisivo: true})`), y **emisivo NO es una luz**: no alumbra a nadie. Lo que
+    alumbra es un foco declarado por la escena (`componerEscena({focos})`, #556), evaluado en el
+    centroide de cada cara y sumado a la direccional. Tres reglas de contrato: se **suman todas las
+    luces y se escalona después**, se conserva el **suelo ambiente de 0,35**, y el tope es
+    `TOPE_FOCOS` focos por escena (los más cercanos al observador; el coste es por cara y una sala
+    son ~800). Sin focos declarados nada cambia, y hoy no los declara ninguna escena. **Nada de
+    sombras**: proyectarlas exige resolver visibilidad, que es la deuda abierta de #510.
+    La **maquinaria de sala** (`scripts/nave-mobiliario-sala.mjs`, #560) sale del `sistema` que ya
+    declara `SALAS_PHOBOS` — es ADR-0015 otra vez: el dato ya existe. Tabla por SISTEMA y no por sala.
+    Se mantiene la DENSIDAD y no el número, todo pegado al muro para no cortar el paso, y **nada cerca
+    de una PUERTA** (una llegada siempre cae cerca de su puerta). Lo que este módulo **no** decide es
+    el contenido narrativo: eso es de quien escribe la campaña.
     Un **minimapa** (`scripts/nave-minimapa.mjs` + `nave-minimapa-lienzo.mjs`) dice dónde estás,
-    reusando el pintor de la sección. Va `aria-hidden` porque el rótulo de sala ya da la lectura en
-    texto. **Una sola planta para todo el módulo** (#542): `nave-planta-phobos.celdasConCantina()` es
-    el plano canónico —las trece salas del modelo más la cantina, que cuelga encima de su acceso— y
-    de ahí salen la ventana de andar, el minimapa y la sección. La sección tenía seis salas
-    inventadas (puente, enfermería, bodega…), y con ellas se fueron dos cosas: la traducción a mano
-    `puente → pasarela-proa` que #540 tuvo que poner para que el clic no muriera, y la salud por
-    «regiones de casco», que podía teñir una sala por una avería que no estaba en ella — ahora la
-    salud de una sala es la de SU sistema.
-    El **punto de vista** (primera o tercera persona, tecla `V` — `c` ya es agacharse desde #446) es lógica pura en
-    `scripts/nave-camara.mjs` y no de la fábrica ni del bucle: la regla es la misma para las catorce
-    estancias. En tercera persona el propio cuerpo entra como un avatar más por
-    `poligonosOtrosJugadores`, así que el render de presencia no sabe que uno de ellos eres tú.
-    Cada sala con sistema tiene una CONSOLA (#509) que abre el puesto del sistema que ALOJA —el
-    reactor abre ingeniería— y que desde #557 **se ve**: hasta entonces era solo un rectángulo
-    disparador y se activaba pisando un trozo de suelo vacío (y `detalleConsola`, escrita y probada
-    desde #509, no la llamaba nadie — un *export* huérfano dentro de un módulo cableado, la variante
-    que la guarda de #523 no ve). `scripts/nave-consola.mjs` la construye como mobiliario: cuerpo con
-    piel, tapa, monitor y pantalla. Dos reglas: **se arrima a la pared**, nunca al centro de su zona
-    —el rect es donde te PONES, y un cuerpo sólido ahí bloquearía su propio disparador—, y la zona se
-    elige en el cuarto de sala más lejos de las PUERTAS, porque con la colocación fija de antes caía
-    justo donde se aparece al cruzar desde la sala vecina (lo cazó `nave-planta-phobos.test.mjs`). La
-    pantalla va **encendida y VACÍA** (`emisivo`, #555): un monitor iluminado no afirma nada, uno con
-    un gráfico afirma una lectura que nadie ha calculado — y es la infracción más creíble posible de
-    #526, precisamente porque una consola es el único sitio donde un dato tendría sentido. El dato de
-    verdad está en el espacio de puesto que se abre al llegar. con su zona de pie separada del punto de entrada para que acercarse sea
-    un gesto; `nave-estancias.mjs` la declara con la misma forma que una puerta (`{rect, ...}`,
-    reutilizando `nave-movimiento.puertaTocada`) pero sin `destino`, y `nave-movimiento-lienzo.mjs`
-    solo avisa en el flanco de ENTRADA. `andar-nave-app.mjs` interpreta el aviso llamando a
-    `openWorkspaceApp(puesto)` — el mismo espacio que ya se abre por botón; para quien no es GM ese
-    parámetro no hace nada (#237), así que caminar hasta una consola ajena no da ni enseña más.
-    Sensores y comunicaciones no son sistemas con sala en EmptyEpsilon: se les asigna una pasarela, y
-    esa es la única parte inventada del reparto, aislada en su propia tabla para poder revisarla.
-    Ver a otros tripulantes está partido en tres capas que no se mezclan:
-    `nave-movimiento-red.mjs` es el **protocolo** (muestras discretas confirmadas, interpolación
-    local, nunca extrapola — revisado en #453 y que no se reabre por motivos de render);
-    `scripts/nave-presencia.mjs` es el **estado de presencia**, la única respuesta a «quién está aquí
-    y dónde», deliberadamente sin nada de cómo se dibuja nadie; y `scripts/nave-avatares-render.mjs`
-    es UNA vista de esa presencia, no su forma canónica. El avatar de cada cual (#450) se añade en el
-    borde del render dentro de `andar-nave-app.mjs`, nunca aguas arriba.
-    **La planta es navegable por COMPOSICIÓN, no por casos especiales** (revisión externa en #508):
-    el motor solo sabe recorrer un grafo de espacios conectados y no conoce el nombre de ninguna
-    sala. #540 fue su primera prueba de fuego —se cambió la planta entera y el motor no se tocó—; si
-    para meter una sala hace falta un `if` con su nombre en el motor, el diseño se ha roto. Corolario:
-    `resolverArranque` decide con qué estancia se abre la ventana —lo pedido explícitamente (la
-    sección, #508) manda sobre el checkpoint guardado, y un id que el catálogo no conoce cae al
-    siguiente escalón en vez de dejar a nadie en la nada—, y esa decisión vive en el catálogo porque
-    es sobre el catálogo, no en la ventana que la aplica.
-  - **Catálogos con procedencia, y el museo** — `scripts/procedencia-catalogo.mjs` es la ÚNICA
-    regla de licencia del módulo (#598): qué es una procedencia aceptable, con errores tipados por
-    `code` + `path`. La consumen el atlas (`catalogo-cosmografico.mjs`, #525, que sigue siendo
-    cimiento sin cablear a la espera de #213) y el catálogo de piezas (`catalogo-piezas.mjs`), y esa
-    unificación es el punto: dos validadores de licencia se desincronizan, y una licencia
-    desincronizada no es un fallo de forma. `catalogo-piezas.mjs` es lo que faltaba para unir las dos
-    mitades que #590 y #525 habían dejado sin hablarse — texto con procedencia por un lado, malla con
-    procedencia por otro—: una ficha declara `malla`, y el validador exige que ese ID exista de
-    verdad (el registro se le pasa desde fuera, así que sigue siendo puro). Su campo `naturaleza`
-    (escaneo, escaneo-de-vaciado, fotogrametría, reconstrucción, obra propia) es obligatorio y NO es
-    metadato: es lo que impide que una cartela diga «así era» de una pieza que es una reconstrucción
-    hecha después de que destruyeran el original, o que llame mármol a un vaciado en yeso. El crédito
-    de la cartela se **deriva** de la procedencia y no se escribe al lado, misma regla que el cartel
-    de reglas del blackjack (#553). La **sala del museo** (`scripts/museo-escena.mjs` +
-    `museo-piezas.mjs`, con `MUSEO` en `paleta.mjs`) es su primer consumidor real: tres piezas sobre
-    pedestales, andable, solo-GM, con la entrada por herramienta de la barra de escena y la salida
-    por un punto de interacción — la misma forma que la playa (#587), y por el mismo motivo (el
-    Phobos no tiene un museo, y colgarlo de un mamparo contaría una historia que nadie ha decidido).
-    Por eso está fuera de las invariantes de la nave en `nave-planta-phobos.test.mjs` y del minimapa.
-    Lo que el museo NO hace es la mitad del diseño: **enseña y ya está**. La cartela se pinta al
-    acercarse y se retira al apartarse (`accion: {tipo: "cartela"}` + el flanco de salida
-    `alSalirDeInteraccion` de #598); no marca piezas como vistas, no lleva la cuenta ni deja rastro,
-    porque la regla de `docs/FOUNDRY.md` es que una escena puede enseñar, transportar y ambientar,
-    pero no conceder, contar ni recordar. Un **bestiario** que registre qué ha encontrado la
-    tripulación sí recuerda, y por eso #598 lo deja fuera hasta que el núcleo tenga dónde guardar un
-    avistamiento. Tres piezas y no treinta es la disciplina de #590: lo caro no es convertir malla
-    —las dieciocho ya están en el árbol— sino escribir cada cartela, que es trabajo humano. Y la
-    copia de procedencia no se puede pudrir en silencio: una prueba la compara con las `FICHAS` de
-    `tools/convertir-estatua.mjs`, igual que la planta del Phobos se compara con su `.lua`.
+    reusando el pintor de la sección; va `aria-hidden` porque el rótulo de sala ya lo dice en texto.
+    El **punto de vista** (primera o tercera persona, tecla `V` — `c` ya es agacharse desde #446) es
+    lógica pura en `scripts/nave-camara.mjs`, no de la fábrica ni del bucle. En tercera persona el
+    propio cuerpo entra como un avatar más por `poligonosOtrosJugadores`.
+    Cada sala con sistema tiene una **CONSOLA** (#509) que abre el puesto del sistema que ALOJA y que
+    desde #557 se ve (`scripts/nave-consola.mjs`: cuerpo con piel, tapa, monitor y pantalla) — hasta
+    entonces era solo un rectángulo disparador, y `detalleConsola` llevaba desde #509 escrita y
+    probada sin que la llamara nadie: un *export* huérfano dentro de un módulo cableado, que es la
+    variante que la guarda de #523 NO ve. Dos
+    reglas: **se arrima a la pared**, nunca al centro de su zona —el rect es donde te PONES, y un
+    cuerpo sólido ahí bloquearía su propio disparador—, y la zona va en el cuarto de sala más lejos de
+    las PUERTAS, porque con la colocación fija de antes caía justo donde apareces al cruzar (lo cazó
+    `nave-planta-phobos.test.mjs`). La pantalla va **encendida y VACÍA** (ADR-0014: un monitor
+    iluminado no afirma nada, uno con un gráfico afirma una lectura que nadie ha calculado). Se
+    declara con la misma forma que una puerta (`{rect, ...}`, reutilizando `puertaTocada`) pero sin
+    `destino`, y el lienzo solo avisa en el flanco de ENTRADA; `andar-nave-app.mjs` llama a
+    `openWorkspaceApp(puesto)`, que para quien no es GM no hace nada (#237). Sensores y comunicaciones
+    no son sistemas con sala en EmptyEpsilon: se les asigna una pasarela, y esa es la **única parte
+    inventada** del reparto, aislada en su tabla para poder revisarla.
+    Ver a otros tripulantes está partido en tres capas que no se mezclan: `nave-movimiento-red.mjs` es
+    el **protocolo** (muestras discretas confirmadas, interpolación local, **nunca** extrapola —
+    revisado en #453, no se reabre por motivos de render); `scripts/nave-presencia.mjs` es el **estado
+    de presencia**, sin nada de cómo se dibuja nadie; y `scripts/nave-avatares-render.mjs` es UNA
+    vista de esa presencia, no su forma canónica. El avatar de cada cual (#450) se añade en el borde
+    del render dentro de `andar-nave-app.mjs`, nunca aguas arriba.
+    **La planta es navegable por COMPOSICIÓN, no por casos especiales** (#508): el motor solo recorre
+    un grafo de espacios conectados y no conoce el nombre de ninguna sala. Si para meter una sala hace
+    falta un `if` con su nombre en el motor, el diseño se ha roto. Corolario: `resolverArranque` decide
+    con qué estancia se abre la ventana —lo pedido explícitamente manda sobre el checkpoint guardado, y
+    un id desconocido cae al siguiente escalón en vez de dejar a nadie en la nada—, y vive en el
+    catálogo porque es una decisión sobre el catálogo, no en la ventana que la aplica.
+  - **Catálogos con procedencia, y el museo** — `scripts/procedencia-catalogo.mjs` es la ÚNICA regla
+    de licencia del módulo (#598), con errores tipados por `code` + `path`. La consumen el atlas
+    (`catalogo-cosmografico.mjs`, #525, cimiento sin cablear a la espera de #213) y el catálogo de
+    piezas (`catalogo-piezas.mjs`). El porqué de esa unificación, el campo `naturaleza` y la frontera
+    de qué se puede importar de dónde están en
+    [ADR-0013](docs/adr/0013-frontera-de-licencias-y-procedencia.md).
+    Operativamente: una ficha declara `malla` y el validador exige que ese ID exista de verdad (el
+    registro se le pasa desde fuera, así que sigue siendo puro); `naturaleza` (escaneo,
+    escaneo-de-vaciado, fotogrametría, reconstrucción, obra propia) es **obligatoria**; y el crédito
+    de la cartela se **deriva** de la procedencia, nunca se escribe al lado — misma regla que el
+    cartel del blackjack (#553).
+    La **sala del museo** (`scripts/museo-escena.mjs` + `museo-piezas.mjs`, con `MUSEO` en
+    `paleta.mjs`) es su primer consumidor real: tres piezas sobre pedestales, andable, solo-GM, con
+    entrada por herramienta de la barra de escena y salida por un punto de interacción — la misma
+    forma que la playa (#587) y por el mismo motivo: el Phobos no tiene un museo, y colgarlo de un
+    mamparo contaría una historia que nadie ha decidido. Por eso está fuera de las invariantes de la
+    nave en `nave-planta-phobos.test.mjs` y del minimapa.
+    Lo que el museo NO hace es la mitad del diseño: **enseña y ya está** — la cartela se pinta al
+    acercarse y se retira al apartarse (`accion: {tipo: "cartela"}` + el flanco `alSalirDeInteraccion`
+    de #598), no marca piezas como vistas, no lleva cuenta ni deja rastro. Es
+    [ADR-0012](docs/adr/0012-que-puede-hacer-una-escena-de-foundry.md), que es también por lo que el
+    **bestiario** queda fuera hasta que el núcleo tenga dónde guardar un avistamiento.
+    Tres piezas y no treinta es la disciplina de #590: lo caro no es convertir malla —las dieciocho ya
+    están en el árbol— sino escribir cada cartela, que es trabajo humano. Y la copia de procedencia no
+    se puede pudrir en silencio: una prueba la compara con las `FICHAS` de
+    `tools/convertir-estatua.mjs` (ADR-0015).
   - **Huesos y deformación de malla** — `scripts/rig-esqueleto.mjs` (#603, fase 1). La capa que le
     faltaba al motor para que una malla importada pueda DOBLARSE: jerarquía de huesos con su pose de
     reposo, pesos por vértice (máximo cuatro influencias, normalizados en el binding y no en cada

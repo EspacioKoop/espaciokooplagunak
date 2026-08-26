@@ -1,127 +1,142 @@
 # Scenario name
-msgid "Close the Gaps"
+msgid ""
 msgstr ""
+
+msgid "Close the Gaps"
+msgstr "Close the Gaps"
 
 # Scenario description
 msgid ""
-"Using Nautilus class mine layer, lay mines across the space lanes expected "
-"to be used by invading enemies\n"
+"Using Nautilus class mine layer, lay mines across the space lanes expected to be used by invading enemies\n"
 "\n"
 "Version 1 - Nov2021\n"
 "\n"
 "Mission advice: It's better to hit an asteroid than a mine"
 msgstr ""
+"Using Nautilus class mine layer, lay mines across the space lanes expected to be used by invading enemies\n"
+"\n"
+"Version 1 - Nov2021\n"
+"\n"
+"Mission advice: It's better to hit an asteroid than a mine"
 
 # Scenario setting
 msgctxt "setting"
 msgid "Settings"
-msgstr ""
+msgstr "Settings"
 
 msgctxt "setting"
 msgid "Configures time/goal/the amount of enemies spawned in the scenario."
-msgstr ""
+msgstr "Configures time/goal/the amount of enemies spawned in the scenario."
 
 msgctxt "Settings"
 msgid "Easy"
-msgstr ""
+msgstr "Easy"
 
 msgctxt "Settings"
 msgid "Easy goals and/or enemies"
-msgstr ""
+msgstr "Easy goals and/or enemies"
 
 msgctxt "Settings"
 msgid "Normal"
-msgstr ""
+msgstr "Normal"
 
 msgctxt "Settings"
 msgid "Normal goals and/or enemies."
-msgstr ""
+msgstr "Normal goals and/or enemies."
 
 msgctxt "Settings"
 msgid "Hard"
-msgstr ""
+msgstr "Hard"
 
 msgctxt "Settings"
 msgid "Hard goals and/or enemies"
-msgstr ""
+msgstr "Hard goals and/or enemies"
 
 msgctxt "Settings"
 msgid "Quixotic"
-msgstr ""
+msgstr "Quixotic"
 
 msgctxt "Settings"
 msgid "Practically impossible goals and/or enemies, definitely time consuming"
 msgstr ""
+"Practically impossible goals and/or enemies, definitely time consuming"
 
 msgctxt "Settings"
 msgid "Timed Normal"
-msgstr ""
+msgstr "Timed Normal"
 
 msgctxt "Settings"
 msgid "Complete the mission in less than 30 minutes"
-msgstr ""
+msgstr "Complete the mission in less than 30 minutes"
 
 msgctxt "Settings"
 msgid "Timed Easy"
-msgstr ""
+msgstr "Timed Easy"
 
 msgctxt "Settings"
-msgid "Easy goals and/or enemies, Complete the mission in less than 30 minutes"
+msgid ""
+"Easy goals and/or enemies, Complete the mission in less than 30 minutes"
 msgstr ""
+"Easy goals and/or enemies, Complete the mission in less than 30 minutes"
 
 msgctxt "Settings"
 msgid "Timed Hard"
-msgstr ""
+msgstr "Timed Hard"
 
 msgctxt "Settings"
-msgid "Hard goals and/or enemies, Complete the mission in less than 30 minutes"
+msgid ""
+"Hard goals and/or enemies, Complete the mission in less than 30 minutes"
 msgstr ""
+"Hard goals and/or enemies, Complete the mission in less than 30 minutes"
 
 msgctxt "Settings"
 msgid "Timed Quixotic"
-msgstr ""
+msgstr "Timed Quixotic"
 
 msgctxt "Settings"
 msgid ""
 "Practically impossible goals and/or enemies, Complete the mission in less "
 "than 30 minutes"
 msgstr ""
+"Practically impossible goals and/or enemies, Complete the mission in less "
+"than 30 minutes"
 
 #: scripts/scenario_50_gaps.lua:83 scripts/scenario_50_gaps.lua:294
 msgctxt "buttonGM"
 msgid "Turn On Diagnostic"
-msgstr ""
+msgstr "Turn On Diagnostic"
 
 #: scripts/scenario_50_gaps.lua:86 scripts/scenario_50_gaps.lua:318
 msgctxt "buttonGM"
 msgid "Delay normal to slow"
-msgstr ""
+msgstr "Delay normal to slow"
 
 #: scripts/scenario_50_gaps.lua:288
 msgctxt "buttonGM"
 msgid "Turn Off Diagnostic"
-msgstr ""
+msgstr "Turn Off Diagnostic"
 
 #: scripts/scenario_50_gaps.lua:306
 msgctxt "buttonGM"
 msgid "Delay slow to fast"
-msgstr ""
+msgstr "Delay slow to fast"
 
 #: scripts/scenario_50_gaps.lua:312
 msgctxt "buttonGM"
 msgid "Delay fast to normal"
-msgstr ""
+msgstr "Delay fast to normal"
 
 #: scripts/scenario_50_gaps.lua:479
 msgctxt "scienceDescription-station"
 msgid "Optical Components"
-msgstr ""
+msgstr "Optical Components"
 
 #: scripts/scenario_50_gaps.lua:493
 msgctxt "stationGeneralInfo-comms"
 msgid ""
 "We make and supply optic components for various station and ship systems"
 msgstr ""
+"We make and supply optic components for various station and ship systems"
 
 #: scripts/scenario_50_gaps.lua:494
 msgctxt "stationStory-comms"
@@ -130,18 +145,23 @@ msgid ""
 "several companies including Leica from Switzerland, the lens manufacturer "
 "and the Japanese advanced low carbon electronic and optic company"
 msgstr ""
+"This station continues the businesses from Earth based on the merging of "
+"several companies including Leica from Switzerland, the lens manufacturer "
+"and the Japanese advanced low carbon electronic and optic company"
 
 #: scripts/scenario_50_gaps.lua:501
 msgctxt "scienceDescription-station"
 msgid "Battery and software engineering"
-msgstr ""
+msgstr "Battery and software engineering"
 
 #: scripts/scenario_50_gaps.lua:513
 msgctxt "stationGeneralInfo-comms"
 msgid ""
-"We provide high quality high capacity batteries and specialized software for "
-"all shipboard systems"
+"We provide high quality high capacity batteries and specialized software for"
+" all shipboard systems"
 msgstr ""
+"We provide high quality high capacity batteries and specialized software for"
+" all shipboard systems"
 
 #: scripts/scenario_50_gaps.lua:514
 msgctxt "stationStory-comms"
@@ -150,16 +170,19 @@ msgid ""
 "century movie depicting humanity unknowingly conquered by aliens and kept "
 "docile by software generated illusion"
 msgstr ""
+"The station is named after a fictional software engineer in a late 20th "
+"century movie depicting humanity unknowingly conquered by aliens and kept "
+"docile by software generated illusion"
 
 #: scripts/scenario_50_gaps.lua:521
 msgctxt "scienceDescription-station"
 msgid "Shield and Armor Research"
-msgstr ""
+msgstr "Shield and Armor Research"
 
 #: scripts/scenario_50_gaps.lua:535
 msgctxt "stationGeneralInfo-comms"
 msgid "The finest shield and armor manufacturer in the quadrant"
-msgstr ""
+msgstr "The finest shield and armor manufacturer in the quadrant"
 
 #: scripts/scenario_50_gaps.lua:536
 msgctxt "stationStory-comms"
@@ -167,29 +190,34 @@ msgid ""
 "We named this station for the pioneering spirit of the 22nd century "
 "Starfleet explorer, Captain Jonathan Archer"
 msgstr ""
+"We named this station for the pioneering spirit of the 22nd century "
+"Starfleet explorer, Captain Jonathan Archer"
 
 #: scripts/scenario_50_gaps.lua:543
 msgctxt "scienceDescription-station"
 msgid "Energy and particle beam components"
-msgstr ""
+msgstr "Energy and particle beam components"
 
 #: scripts/scenario_50_gaps.lua:557
 msgctxt "stationGeneralInfo-comms"
 msgid "We fabricate general and specialized components for ship beam systems"
-msgstr ""
+msgstr "We fabricate general and specialized components for ship beam systems"
 
 #: scripts/scenario_50_gaps.lua:558
 msgctxt "stationStory-comms"
 msgid ""
 "This station was named after Archimedes who, according to legend, used a "
-"series of adjustable focal length mirrors to focus sunlight on a Roman naval "
-"fleet invading Syracuse, setting fire to it"
+"series of adjustable focal length mirrors to focus sunlight on a Roman naval"
+" fleet invading Syracuse, setting fire to it"
 msgstr ""
+"This station was named after Archimedes who, according to legend, used a "
+"series of adjustable focal length mirrors to focus sunlight on a Roman naval"
+" fleet invading Syracuse, setting fire to it"
 
 #: scripts/scenario_50_gaps.lua:565
 msgctxt "scienceDescription-station"
 msgid "Warp and Impulse engine manufacturing"
-msgstr ""
+msgstr "Warp and Impulse engine manufacturing"
 
 #: scripts/scenario_50_gaps.lua:577
 msgctxt "stationGeneralInfo-comms"
@@ -197,6 +225,8 @@ msgid ""
 "We manufacture warp, impulse and jump engines for the human navy fleet as "
 "well as other independent clients on a contract basis"
 msgstr ""
+"We manufacture warp, impulse and jump engines for the human navy fleet as "
+"well as other independent clients on a contract basis"
 
 #: scripts/scenario_50_gaps.lua:578
 msgctxt "stationStory-comms"
@@ -206,11 +236,15 @@ msgid ""
 "entire space worthy vessels. In time, it transitioned into specializeing in "
 "propulsion systems."
 msgstr ""
+"The station is named after the late 19th century astronaut as well as the "
+"fictionlized stations that followed. The station initially constructed "
+"entire space worthy vessels. In time, it transitioned into specializeing in "
+"propulsion systems."
 
 #: scripts/scenario_50_gaps.lua:585
 msgctxt "scienceDescription-station"
 msgid "Training and Coordination"
-msgstr ""
+msgstr "Training and Coordination"
 
 #: scripts/scenario_50_gaps.lua:596
 msgctxt "stationGeneralInfo-comms"
@@ -218,21 +252,28 @@ msgid ""
 "We train naval cadets in routine and specialized functions aboard space "
 "vessels and coordinate naval activity throughout the sector"
 msgstr ""
+"We train naval cadets in routine and specialized functions aboard space "
+"vessels and coordinate naval activity throughout the sector"
 
 #: scripts/scenario_50_gaps.lua:597
 msgctxt "stationStory-comms"
 msgid ""
 "The original station builders were fans of the late 20th century scientist "
-"and author Isaac Asimov. The station was initially named Foundation, but was "
-"later changed simply to Asimov. It started off as a stellar observatory, "
+"and author Isaac Asimov. The station was initially named Foundation, but was"
+" later changed simply to Asimov. It started off as a stellar observatory, "
 "then became a supply stop and as it has grown has become an educational and "
 "coordination hub for the region"
 msgstr ""
+"The original station builders were fans of the late 20th century scientist "
+"and author Isaac Asimov. The station was initially named Foundation, but was"
+" later changed simply to Asimov. It started off as a stellar observatory, "
+"then became a supply stop and as it has grown has become an educational and "
+"coordination hub for the region"
 
 #: scripts/scenario_50_gaps.lua:604
 msgctxt "scienceDescription-station"
 msgid "Communication components"
-msgstr ""
+msgstr "Communication components"
 
 #: scripts/scenario_50_gaps.lua:617
 msgctxt "stationGeneralInfo-comms"
@@ -240,6 +281,8 @@ msgid ""
 "We provide a range of communication equipment and software for use aboard "
 "ships"
 msgstr ""
+"We provide a range of communication equipment and software for use aboard "
+"ships"
 
 #: scripts/scenario_50_gaps.lua:618
 msgctxt "stationStory-comms"
@@ -249,57 +292,68 @@ msgid ""
 "singularity. Station personnel often refer to the station as the Broccoli "
 "station"
 msgstr ""
+"The station is named after Reginald Barclay who established the first "
+"transgalactic com link through the creative application of a quantum "
+"singularity. Station personnel often refer to the station as the Broccoli "
+"station"
 
 #: scripts/scenario_50_gaps.lua:625
 msgctxt "scienceDescription-station"
 msgid "Medical research"
-msgstr ""
+msgstr "Medical research"
 
 #: scripts/scenario_50_gaps.lua:628
 msgctxt "stationGeneralInfo-comms"
 msgid "We research and treat exotic medical conditions"
-msgstr ""
+msgstr "We research and treat exotic medical conditions"
 
 #: scripts/scenario_50_gaps.lua:629
 msgctxt "stationStory-comms"
 msgid ""
 "The station is named after the United States national medical research "
-"center based in Bethesda, Maryland on earth which was established in the mid "
-"20th century"
+"center based in Bethesda, Maryland on earth which was established in the mid"
+" 20th century"
 msgstr ""
+"The station is named after the United States national medical research "
+"center based in Bethesda, Maryland on earth which was established in the mid"
+" 20th century"
 
 #: scripts/scenario_50_gaps.lua:636
 msgctxt "scienceDescription-station"
 msgid "Warp drive components"
-msgstr ""
+msgstr "Warp drive components"
 
 #: scripts/scenario_50_gaps.lua:653
 msgctxt "stationGeneralInfo-comms"
 msgid "We provide warp drive engines and components"
-msgstr ""
+msgstr "We provide warp drive engines and components"
 
 #: scripts/scenario_50_gaps.lua:654
 msgctxt "stationStory-comms"
 msgid ""
 "This station is named after Chris Van Den Broeck who did some initial "
-"research into the possibility of warp drive in the late 20th century on Earth"
+"research into the possibility of warp drive in the late 20th century on "
+"Earth"
 msgstr ""
+"This station is named after Chris Van Den Broeck who did some initial "
+"research into the possibility of warp drive in the late 20th century on "
+"Earth"
 
 #: scripts/scenario_50_gaps.lua:661 scripts/scenario_50_gaps.lua:1083
 #: scripts/scenario_50_gaps.lua:1124 scripts/scenario_50_gaps.lua:1791
 msgctxt "scienceDescription-station"
 msgid "Mining station"
-msgstr ""
+msgstr "Mining station"
 
 #: scripts/scenario_50_gaps.lua:677
 msgctxt "scienceDescription-station"
 msgid "Robotic research"
-msgstr ""
+msgstr "Robotic research"
 
 #: scripts/scenario_50_gaps.lua:690
 msgctxt "stationGeneralInfo-comms"
 msgid "We research and provide robotic systems and components"
-msgstr ""
+msgstr "We research and provide robotic systems and components"
 
 #: scripts/scenario_50_gaps.lua:691
 msgctxt "stationStory-comms"
@@ -307,11 +361,13 @@ msgid ""
 "This station is named after Dr. Susan Calvin who pioneered robotic "
 "behavioral research and programming"
 msgstr ""
+"This station is named after Dr. Susan Calvin who pioneered robotic "
+"behavioral research and programming"
 
 #: scripts/scenario_50_gaps.lua:698
 msgctxt "scienceDescription-station"
 msgid "Advanced Material components"
-msgstr ""
+msgstr "Advanced Material components"
 
 #: scripts/scenario_50_gaps.lua:723
 msgctxt "stationGeneralInfo-comms"
@@ -319,6 +375,8 @@ msgid ""
 "We fabricate several different kinds of materials critical to various space "
 "industries like ship building, station construction and mineral extraction"
 msgstr ""
+"We fabricate several different kinds of materials critical to various space "
+"industries like ship building, station construction and mineral extraction"
 
 #: scripts/scenario_50_gaps.lua:724
 msgctxt "stationStory-comms"
@@ -326,18 +384,22 @@ msgid ""
 "We named our station after Dr. Cavor, the physicist that invented a barrier "
 "material for gravity waves - Cavorite"
 msgstr ""
+"We named our station after Dr. Cavor, the physicist that invented a barrier "
+"material for gravity waves - Cavorite"
 
 #: scripts/scenario_50_gaps.lua:731 scripts/scenario_50_gaps.lua:1281
 msgctxt "scienceDescription-station"
 msgid "Trading station"
-msgstr ""
+msgstr "Trading station"
 
 #: scripts/scenario_50_gaps.lua:742
 msgctxt "stationGeneralInfo-comms"
 msgid ""
-"Only the largest market and trading location in twenty sectors. You can find "
-"your heart's desire here"
+"Only the largest market and trading location in twenty sectors. You can find"
+" your heart's desire here"
 msgstr ""
+"Only the largest market and trading location in twenty sectors. You can find"
+" your heart's desire here"
 
 #: scripts/scenario_50_gaps.lua:743
 msgctxt "stationStory-comms"
@@ -345,11 +407,13 @@ msgid ""
 "Modeled after the early 21st century bazaar on Earth in Bangkok, Thailand. "
 "Designed and built with trade and commerce in mind"
 msgstr ""
+"Modeled after the early 21st century bazaar on Earth in Bangkok, Thailand. "
+"Designed and built with trade and commerce in mind"
 
 #: scripts/scenario_50_gaps.lua:750
 msgctxt "scienceDescription-station"
 msgid "Shielded circuitry fabrication"
-msgstr ""
+msgstr "Shielded circuitry fabrication"
 
 #: scripts/scenario_50_gaps.lua:765
 msgctxt "stationGeneralInfo-comms"
@@ -357,24 +421,29 @@ msgid ""
 "We make a large variety of circuits for numerous ship systems shielded from "
 "sensor detection and external control interference"
 msgstr ""
+"We make a large variety of circuits for numerous ship systems shielded from "
+"sensor detection and external control interference"
 
 #: scripts/scenario_50_gaps.lua:766
 msgctxt "stationStory-comms"
 msgid ""
-"Our station is named after the law which quantifies the amount of force with "
-"which stationary electrically charged particals repel or attact each other - "
-"a fundamental principle in the design of our circuits"
+"Our station is named after the law which quantifies the amount of force with"
+" which stationary electrically charged particals repel or attact each other "
+"- a fundamental principle in the design of our circuits"
 msgstr ""
+"Our station is named after the law which quantifies the amount of force with"
+" which stationary electrically charged particals repel or attact each other "
+"- a fundamental principle in the design of our circuits"
 
 #: scripts/scenario_50_gaps.lua:773 scripts/scenario_50_gaps.lua:1566
 msgctxt "scienceDescription-station"
 msgid "Impulse engine components"
-msgstr ""
+msgstr "Impulse engine components"
 
 #: scripts/scenario_50_gaps.lua:788
 msgctxt "stationGeneralInfo-comms"
 msgid "We supply high quality impulse engines and parts for use aboard ships"
-msgstr ""
+msgstr "We supply high quality impulse engines and parts for use aboard ships"
 
 #: scripts/scenario_50_gaps.lua:789
 msgctxt "stationStory-comms"
@@ -382,17 +451,19 @@ msgid ""
 "This station was named after the fictional engineer, Cyrus Smith created by "
 "19th century author Jules Verne"
 msgstr ""
+"This station was named after the fictional engineer, Cyrus Smith created by "
+"19th century author Jules Verne"
 
 #: scripts/scenario_50_gaps.lua:796 scripts/scenario_50_gaps.lua:1300
 #: scripts/scenario_50_gaps.lua:1611
 msgctxt "scienceDescription-station"
 msgid "Android components"
-msgstr ""
+msgstr "Android components"
 
 #: scripts/scenario_50_gaps.lua:809
 msgctxt "stationGeneralInfo-comms"
 msgid "Supplier of android components, programming and service"
-msgstr ""
+msgstr "Supplier of android components, programming and service"
 
 #: scripts/scenario_50_gaps.lua:810
 msgctxt "stationStory-comms"
@@ -400,11 +471,13 @@ msgid ""
 "Named for Richard Deckard who inspired many of the sophisticated safety "
 "security algorithms now required for all androids"
 msgstr ""
+"Named for Richard Deckard who inspired many of the sophisticated safety "
+"security algorithms now required for all androids"
 
 #: scripts/scenario_50_gaps.lua:817
 msgctxt "scienceDescription-station"
 msgid "Repulsor and Tractor Beam Components"
-msgstr ""
+msgstr "Repulsor and Tractor Beam Components"
 
 #: scripts/scenario_50_gaps.lua:832
 msgctxt "stationGeneralInfo-comms"
@@ -412,6 +485,8 @@ msgid ""
 "We can meet all your pushing and pulling needs with specialized equipment "
 "custom made"
 msgstr ""
+"We can meet all your pushing and pulling needs with specialized equipment "
+"custom made"
 
 #: scripts/scenario_50_gaps.lua:833
 msgctxt "stationStory-comms"
@@ -420,11 +495,14 @@ msgid ""
 "Clifford D. Simak as well as from the 19th century developer John Deere who "
 "inspired a company that makes the Earth bound equivalents of our products"
 msgstr ""
+"The station name comes from a short story by the 20th century author "
+"Clifford D. Simak as well as from the 19th century developer John Deere who "
+"inspired a company that makes the Earth bound equivalents of our products"
 
 #: scripts/scenario_50_gaps.lua:840 scripts/scenario_50_gaps.lua:1321
 msgctxt "scienceDescription-station"
 msgid "Transporter components"
-msgstr ""
+msgstr "Transporter components"
 
 #: scripts/scenario_50_gaps.lua:855
 msgctxt "stationGeneralInfo-comms"
@@ -432,6 +510,8 @@ msgid ""
 "We provide transporters used aboard ships as well as the components for "
 "repair and maintenance"
 msgstr ""
+"We provide transporters used aboard ships as well as the components for "
+"repair and maintenance"
 
 #: scripts/scenario_50_gaps.lua:856
 msgctxt "stationStory-comms"
@@ -440,16 +520,19 @@ msgid ""
 "transporter, Dr. Emory Erickson. This station is proud to have received the "
 "endorsement of Admiral Leonard McCoy"
 msgstr ""
+"The station is named after the early 22nd century inventor of the "
+"transporter, Dr. Emory Erickson. This station is proud to have received the "
+"endorsement of Admiral Leonard McCoy"
 
 #: scripts/scenario_50_gaps.lua:863 scripts/scenario_50_gaps.lua:1165
 msgctxt "scienceDescription-station"
 msgid "Autodoc components"
-msgstr ""
+msgstr "Autodoc components"
 
 #: scripts/scenario_50_gaps.lua:877
 msgctxt "stationGeneralInfo-comms"
 msgid "We provide components for automated medical machinery"
-msgstr ""
+msgstr "We provide components for automated medical machinery"
 
 #: scripts/scenario_50_gaps.lua:878
 msgctxt "stationStory-comms"
@@ -457,16 +540,18 @@ msgid ""
 "The station is the evolution of the company that started automated "
 "pharmaceutical dispensing in the early 21st century on Earth in Finland"
 msgstr ""
+"The station is the evolution of the company that started automated "
+"pharmaceutical dispensing in the early 21st century on Earth in Finland"
 
 #: scripts/scenario_50_gaps.lua:885
 msgctxt "scienceDescription-station"
 msgid "Nanotechnology research"
-msgstr ""
+msgstr "Nanotechnology research"
 
 #: scripts/scenario_50_gaps.lua:899
 msgctxt "stationGeneralInfo-comms"
 msgid "We provide nanites and software for a variety of ship-board systems"
-msgstr ""
+msgstr "We provide nanites and software for a variety of ship-board systems"
 
 #: scripts/scenario_50_gaps.lua:900
 msgctxt "stationStory-comms"
@@ -474,17 +559,20 @@ msgid ""
 "This station's name recognizes one of the first scientific researchers into "
 "nanotechnology, physicist Richard Feynman"
 msgstr ""
+"This station's name recognizes one of the first scientific researchers into "
+"nanotechnology, physicist Richard Feynman"
 
 #: scripts/scenario_50_gaps.lua:908 scripts/scenario_50_gaps.lua:1015
 msgctxt "scienceDescription-station"
 msgid "Mining"
-msgstr ""
+msgstr "Mining"
 
 #: scripts/scenario_50_gaps.lua:910
 msgctxt "stationGeneralInfo-comms"
 msgid ""
 "We mine nearby asteroids for precious minerals and process them for sale"
 msgstr ""
+"We mine nearby asteroids for precious minerals and process them for sale"
 
 #: scripts/scenario_50_gaps.lua:911
 msgctxt "stationStory-comms"
@@ -493,11 +581,14 @@ msgid ""
 "The station builders hoped to have a similar amount of minerals found "
 "amongst these asteroids"
 msgstr ""
+"This station's name is inspired by a large gold mine on Earth in Indonesia. "
+"The station builders hoped to have a similar amount of minerals found "
+"amongst these asteroids"
 
 #: scripts/scenario_50_gaps.lua:953
 msgctxt "scienceDescription-station"
 msgid "Observatory and stellar mapping"
-msgstr ""
+msgstr "Observatory and stellar mapping"
 
 #: scripts/scenario_50_gaps.lua:964
 msgctxt "stationGeneralInfo-comms"
@@ -505,16 +596,18 @@ msgid ""
 "We study the cosmos and map stellar phenomena. We also track moving "
 "asteroids. Look out! Just kidding"
 msgstr ""
+"We study the cosmos and map stellar phenomena. We also track moving "
+"asteroids. Look out! Just kidding"
 
 #: scripts/scenario_50_gaps.lua:971 scripts/scenario_50_gaps.lua:1735
 msgctxt "scienceDescription-station"
 msgid "Sensor components"
-msgstr ""
+msgstr "Sensor components"
 
 #: scripts/scenario_50_gaps.lua:983
 msgctxt "stationGeneralInfo-comms"
 msgid "We research and manufacture sensor components and systems"
-msgstr ""
+msgstr "We research and manufacture sensor components and systems"
 
 #: scripts/scenario_50_gaps.lua:984
 msgctxt "stationStory-comms"
@@ -523,33 +616,38 @@ msgid ""
 "electromagnetic sensors in the mid 20th century on Earth in the United "
 "Kingdom to assist blind human mobility"
 msgstr ""
+"The station is named after Tony Heyes the inventor of some of the earliest "
+"electromagnetic sensors in the mid 20th century on Earth in the United "
+"Kingdom to assist blind human mobility"
 
 #: scripts/scenario_50_gaps.lua:991
 msgctxt "scienceDescription-station"
 msgid "Nanite supplier"
-msgstr ""
+msgstr "Nanite supplier"
 
 #: scripts/scenario_50_gaps.lua:1006
 msgctxt "stationGeneralInfo-comms"
 msgid "We provide nanites for various organic and non-organic systems"
-msgstr ""
+msgstr "We provide nanites for various organic and non-organic systems"
 
 #: scripts/scenario_50_gaps.lua:1007
 msgctxt "stationStory-comms"
 msgid ""
-"This station is named after the nanotechnologist Hossam Haick from the early "
-"21st century on Earth in Israel"
+"This station is named after the nanotechnologist Hossam Haick from the early"
+" 21st century on Earth in Israel"
 msgstr ""
+"This station is named after the nanotechnologist Hossam Haick from the early"
+" 21st century on Earth in Israel"
 
 #: scripts/scenario_50_gaps.lua:1019
 msgctxt "stationGeneralInfo-comms"
 msgid "We mine nearby asteroids for precious minerals"
-msgstr ""
+msgstr "We mine nearby asteroids for precious minerals"
 
 #: scripts/scenario_50_gaps.lua:1061
 msgctxt "scienceDescription-station"
 msgid "Xenopsychology training"
-msgstr ""
+msgstr "Xenopsychology training"
 
 #: scripts/scenario_50_gaps.lua:1075
 msgctxt "stationGeneralInfo-comms"
@@ -557,6 +655,8 @@ msgid ""
 "We provide classes and simulation to help train diverse species in how to "
 "relate to each other"
 msgstr ""
+"We provide classes and simulation to help train diverse species in how to "
+"relate to each other"
 
 #: scripts/scenario_50_gaps.lua:1076
 msgctxt "stationStory-comms"
@@ -565,6 +665,9 @@ msgid ""
 "the early 22nd century on Venus, supported by the application of these "
 "principles"
 msgstr ""
+"A continuation of the research initially conducted by Dr. Gennady Komov in "
+"the early 22nd century on Venus, supported by the application of these "
+"principles"
 
 #: scripts/scenario_50_gaps.lua:1178
 msgctxt "stationGeneralInfo-comms"
@@ -573,42 +676,51 @@ msgid ""
 "facilities designed for ships where a doctor cannot be a crew member "
 "(commonly called autodocs)"
 msgstr ""
+"We build and repair and provide components and upgrades for automated "
+"facilities designed for ships where a doctor cannot be a crew member "
+"(commonly called autodocs)"
 
 #: scripts/scenario_50_gaps.lua:1179
 msgctxt "stationStory-comms"
 msgid ""
-"The station is named after Dr. Lipkin who pioneered some of the research and "
-"application around robot assisted surgery in the area of partial nephrectomy "
-"for renal tumors in the early 21st century on Earth"
+"The station is named after Dr. Lipkin who pioneered some of the research and"
+" application around robot assisted surgery in the area of partial "
+"nephrectomy for renal tumors in the early 21st century on Earth"
 msgstr ""
+"The station is named after Dr. Lipkin who pioneered some of the research and"
+" application around robot assisted surgery in the area of partial "
+"nephrectomy for renal tumors in the early 21st century on Earth"
 
 #: scripts/scenario_50_gaps.lua:1186
 msgctxt "scienceDescription-station"
 msgid "Zero gravity sports and entertainment"
-msgstr ""
+msgstr "Zero gravity sports and entertainment"
 
 #: scripts/scenario_50_gaps.lua:1199
 msgctxt "stationGeneralInfo-comms"
 msgid "Come take in a game or two or perhaps see a show"
-msgstr ""
+msgstr "Come take in a game or two or perhaps see a show"
 
 #: scripts/scenario_50_gaps.lua:1200
 msgctxt "stationStory-comms"
 msgid ""
-"Named after Madison Square Gardens from 21st century Earth, this station was "
-"designed to serve similar purposes in space - a venue for sports and "
+"Named after Madison Square Gardens from 21st century Earth, this station was"
+" designed to serve similar purposes in space - a venue for sports and "
 "entertainment"
 msgstr ""
+"Named after Madison Square Gardens from 21st century Earth, this station was"
+" designed to serve similar purposes in space - a venue for sports and "
+"entertainment"
 
 #: scripts/scenario_50_gaps.lua:1207
 msgctxt "scienceDescription-station"
 msgid "Energy beam components"
-msgstr ""
+msgstr "Energy beam components"
 
 #: scripts/scenario_50_gaps.lua:1220
 msgctxt "stationGeneralInfo-comms"
 msgid "We research and manufacture energy beam components and systems"
-msgstr ""
+msgstr "We research and manufacture energy beam components and systems"
 
 #: scripts/scenario_50_gaps.lua:1221
 msgctxt "stationStory-comms"
@@ -616,34 +728,39 @@ msgid ""
 "The station is named after Theodore Maiman who researched and built the "
 "first laser in the mid 20th centuryon Earth"
 msgstr ""
+"The station is named after Theodore Maiman who researched and built the "
+"first laser in the mid 20th centuryon Earth"
 
 #: scripts/scenario_50_gaps.lua:1228
 msgctxt "scienceDescription-station"
 msgid "Energy Beam Components"
-msgstr ""
+msgstr "Energy Beam Components"
 
 #: scripts/scenario_50_gaps.lua:1243
 msgctxt "stationGeneralInfo-comms"
 msgid "We manufacture energy beam components"
-msgstr ""
+msgstr "We manufacture energy beam components"
 
 #: scripts/scenario_50_gaps.lua:1244
 msgctxt "stationStory-comms"
 msgid ""
 "Station named after Guglielmo Marconi an Italian inventor from early 20th "
-"century Earth who, along with Nicolo Tesla, claimed to have invented a death "
-"ray or particle beam weapon"
+"century Earth who, along with Nicolo Tesla, claimed to have invented a death"
+" ray or particle beam weapon"
 msgstr ""
+"Station named after Guglielmo Marconi an Italian inventor from early 20th "
+"century Earth who, along with Nicolo Tesla, claimed to have invented a death"
+" ray or particle beam weapon"
 
 #: scripts/scenario_50_gaps.lua:1251
 msgctxt "scienceDescription-station"
 msgid "Medical Research"
-msgstr ""
+msgstr "Medical Research"
 
 #: scripts/scenario_50_gaps.lua:1254
 msgctxt "stationGeneralInfo-comms"
 msgid "We research exotic diseases and other human medical conditions"
-msgstr ""
+msgstr "We research exotic diseases and other human medical conditions"
 
 #: scripts/scenario_50_gaps.lua:1255
 msgctxt "stationStory-comms"
@@ -651,16 +768,18 @@ msgid ""
 "We continue the medical work started by William Worrall Mayo in the late "
 "19th century on Earth"
 msgstr ""
+"We continue the medical work started by William Worrall Mayo in the late "
+"19th century on Earth"
 
 #: scripts/scenario_50_gaps.lua:1262
 msgctxt "scienceDescription-station"
 msgid "Exobiology research"
-msgstr ""
+msgstr "Exobiology research"
 
 #: scripts/scenario_50_gaps.lua:1273
 msgctxt "stationGeneralInfo-comms"
 msgid "We study recently discovered life forms not native to Earth"
-msgstr ""
+msgstr "We study recently discovered life forms not native to Earth"
 
 #: scripts/scenario_50_gaps.lua:1274
 msgctxt "stationStory-comms"
@@ -668,11 +787,13 @@ msgid ""
 "This station was named after one the early exobiologists from mid 20th "
 "century Earth, Dr. Stanley Miller"
 msgstr ""
+"This station was named after one the early exobiologists from mid 20th "
+"century Earth, Dr. Stanley Miller"
 
 #: scripts/scenario_50_gaps.lua:1292
 msgctxt "stationGeneralInfo-comms"
 msgid "Come to Muddvile for all your trade and commerce needs and desires"
-msgstr ""
+msgstr "Come to Muddvile for all your trade and commerce needs and desires"
 
 #: scripts/scenario_50_gaps.lua:1293
 msgctxt "stationStory-comms"
@@ -681,6 +802,9 @@ msgid ""
 "leftover inventory and extensive connections obtained while he traveled the "
 "stars as a salesman"
 msgstr ""
+"Upon retirement, Harry Mudd started this commercial venture using his "
+"leftover inventory and extensive connections obtained while he traveled the "
+"stars as a salesman"
 
 #: scripts/scenario_50_gaps.lua:1313
 msgctxt "stationGeneralInfo-comms"
@@ -688,6 +812,8 @@ msgid ""
 "We research and manufacture android components and systems. Our design our "
 "androids to maximize their likeness to humans"
 msgstr ""
+"We research and manufacture android components and systems. Our design our "
+"androids to maximize their likeness to humans"
 
 #: scripts/scenario_50_gaps.lua:1314
 msgctxt "stationStory-comms"
@@ -695,6 +821,8 @@ msgid ""
 "The station is named after the ground breaking model of android produced by "
 "the Tyrell corporation"
 msgstr ""
+"The station is named after the ground breaking model of android produced by "
+"the Tyrell corporation"
 
 #: scripts/scenario_50_gaps.lua:1337
 msgctxt "stationGeneralInfo-comms"
@@ -702,6 +830,8 @@ msgid ""
 "We research and fabricate high quality transporters and transporter "
 "components for use aboard ships"
 msgstr ""
+"We research and fabricate high quality transporters and transporter "
+"components for use aboard ships"
 
 #: scripts/scenario_50_gaps.lua:1338
 msgctxt "stationStory-comms"
@@ -709,11 +839,13 @@ msgid ""
 "Miles O'Brien started this business after his experience as a transporter "
 "chief"
 msgstr ""
+"Miles O'Brien started this business after his experience as a transporter "
+"chief"
 
 #: scripts/scenario_50_gaps.lua:1345
 msgctxt "scienceDescription-station"
 msgid "Optical components"
-msgstr ""
+msgstr "Optical components"
 
 #: scripts/scenario_50_gaps.lua:1359
 msgctxt "stationGeneralInfo-comms"
@@ -721,6 +853,8 @@ msgid ""
 "We fabricate optical lenses and related equipment as well as fiber optic "
 "cabling and components"
 msgstr ""
+"We fabricate optical lenses and related equipment as well as fiber optic "
+"cabling and components"
 
 #: scripts/scenario_50_gaps.lua:1360
 msgctxt "stationStory-comms"
@@ -729,43 +863,50 @@ msgid ""
 "21st century. It merged with Infinera, then bought several software "
 "comapnies before branching out into space based industry"
 msgstr ""
+"This station grew out of the Olympus company based on earth in the early "
+"21st century. It merged with Infinera, then bought several software "
+"comapnies before branching out into space based industry"
 
 #: scripts/scenario_50_gaps.lua:1367
 msgctxt "scienceDescription-station"
 msgid "Diplomatic training"
-msgstr ""
+msgstr "Diplomatic training"
 
 #: scripts/scenario_50_gaps.lua:1370
 msgctxt "stationGeneralInfo-comms"
 msgid ""
 "The premeire academy for leadership and diplomacy training in the region"
 msgstr ""
+"The premeire academy for leadership and diplomacy training in the region"
 
 #: scripts/scenario_50_gaps.lua:1371
 msgctxt "stationStory-comms"
 msgid ""
-"Established by the royal family so critical during the political upheaval era"
+"Established by the royal family so critical during the political upheaval "
+"era"
 msgstr ""
+"Established by the royal family so critical during the political upheaval "
+"era"
 
 #: scripts/scenario_50_gaps.lua:1378
 msgctxt "scienceDescription-station"
 msgid "Mining and trade"
-msgstr ""
+msgstr "Mining and trade"
 
 #: scripts/scenario_50_gaps.lua:1422
 msgctxt "scienceDescription-station"
 msgid "Mining and gambling"
-msgstr ""
+msgstr "Mining and gambling"
 
 #: scripts/scenario_50_gaps.lua:1468 scripts/scenario_50_gaps.lua:1512
 msgctxt "scienceDescription-station"
 msgid "Load lifters and components"
-msgstr ""
+msgstr "Load lifters and components"
 
 #: scripts/scenario_50_gaps.lua:1481
 msgctxt "stationGeneralInfo-comms"
 msgid "We provide load lifters and components for various ship systems"
-msgstr ""
+msgstr "We provide load lifters and components for various ship systems"
 
 #: scripts/scenario_50_gaps.lua:1482
 msgctxt "stationStory-comms"
@@ -776,16 +917,21 @@ msgid ""
 "based on his years of experience using load lifters and their relative "
 "cousins, moisture vaporators"
 msgstr ""
+"The station is named after Lars Owen. After his extensive eperience with "
+"tempermental machinery on Tatooine, he used his subject matter expertise to "
+"expand into building and manufacturing the equipment adding innovations "
+"based on his years of experience using load lifters and their relative "
+"cousins, moisture vaporators"
 
 #: scripts/scenario_50_gaps.lua:1489
 msgctxt "scienceDescription-station"
 msgid "Optic components"
-msgstr ""
+msgstr "Optic components"
 
 #: scripts/scenario_50_gaps.lua:1504
 msgctxt "stationGeneralInfo-comms"
 msgid "We provide optic components for various ship systems"
-msgstr ""
+msgstr "We provide optic components for various ship systems"
 
 #: scripts/scenario_50_gaps.lua:1505
 msgctxt "stationStory-comms"
@@ -793,11 +939,13 @@ msgid ""
 "This station is an outgrowth of the Panduit corporation started in the mid "
 "20th century on Earth in the United States"
 msgstr ""
+"This station is an outgrowth of the Panduit corporation started in the mid "
+"20th century on Earth in the United States"
 
 #: scripts/scenario_50_gaps.lua:1527
 msgctxt "stationGeneralInfo-comms"
 msgid "We provide load lifters and components"
-msgstr ""
+msgstr "We provide load lifters and components"
 
 #: scripts/scenario_50_gaps.lua:1528
 msgctxt "stationStory-comms"
@@ -805,16 +953,18 @@ msgid ""
 "The station is named after Ellen Ripley who made creative and effective use "
 "of one of our load lifters when defending her ship"
 msgstr ""
+"The station is named after Ellen Ripley who made creative and effective use "
+"of one of our load lifters when defending her ship"
 
 #: scripts/scenario_50_gaps.lua:1535
 msgctxt "scienceDescription-station"
 msgid "Shield components and research"
-msgstr ""
+msgstr "Shield components and research"
 
 #: scripts/scenario_50_gaps.lua:1550
 msgctxt "stationGeneralInfo-comms"
 msgid "We research and fabricate components for ship shield systems"
-msgstr ""
+msgstr "We research and fabricate components for ship shield systems"
 
 #: scripts/scenario_50_gaps.lua:1551
 msgctxt "stationStory-comms"
@@ -824,16 +974,20 @@ msgid ""
 "research into the feasability of generating an energy shield in the late "
 "20th century"
 msgstr ""
+"This station was named after the national research institution Rutherford "
+"Appleton Laboratory in the United Kingdom which conducted some preliminary "
+"research into the feasability of generating an energy shield in the late "
+"20th century"
 
 #: scripts/scenario_50_gaps.lua:1558 scripts/scenario_50_gaps.lua:1942
 msgctxt "scienceDescription-station"
 msgid "Observatory"
-msgstr ""
+msgstr "Observatory"
 
 #: scripts/scenario_50_gaps.lua:1580
 msgctxt "stationGeneralInfo-comms"
 msgid "We research and manufacture impulse engine components and systems"
-msgstr ""
+msgstr "We research and manufacture impulse engine components and systems"
 
 #: scripts/scenario_50_gaps.lua:1581
 msgctxt "stationStory-comms"
@@ -841,17 +995,20 @@ msgid ""
 "The station is named after Roger Shawyer who built the first prototype "
 "impulse engine in the early 21st century"
 msgstr ""
+"The station is named after Roger Shawyer who built the first prototype "
+"impulse engine in the early 21st century"
 
 #: scripts/scenario_50_gaps.lua:1588
 msgctxt "scienceDescription-station"
 msgid "Repulsor and tractor beam components"
-msgstr ""
+msgstr "Repulsor and tractor beam components"
 
 #: scripts/scenario_50_gaps.lua:1603
 msgctxt "stationGeneralInfo-comms"
 msgid ""
 "We make ship systems designed to push or pull other objects around in space"
 msgstr ""
+"We make ship systems designed to push or pull other objects around in space"
 
 #: scripts/scenario_50_gaps.lua:1604
 msgctxt "stationStory-comms"
@@ -861,11 +1018,15 @@ msgid ""
 "ocean-going vessels on earth as tractor and repulsor beams serve for space-"
 "going vessels today"
 msgstr ""
+"Our station is named Shree after one of many tugboat manufacturers in the "
+"early 21st century on Earth in India. Tugboats serve a similar purpose for "
+"ocean-going vessels on earth as tractor and repulsor beams serve for space-"
+"going vessels today"
 
 #: scripts/scenario_50_gaps.lua:1624
 msgctxt "stationGeneralInfo-comms"
 msgid "We create androids and android components"
-msgstr ""
+msgstr "We create androids and android components"
 
 #: scripts/scenario_50_gaps.lua:1625
 msgctxt "stationStory-comms"
@@ -873,11 +1034,13 @@ msgid ""
 "The station is named after Dr. Noonian Soong, the famous android researcher "
 "and builder"
 msgstr ""
+"The station is named after Dr. Noonian Soong, the famous android researcher "
+"and builder"
 
 #: scripts/scenario_50_gaps.lua:1632
 msgctxt "scienceDescription-station"
 msgid "Logistics coordination"
-msgstr ""
+msgstr "Logistics coordination"
 
 #: scripts/scenario_50_gaps.lua:1635
 msgctxt "stationGeneralInfo-comms"
@@ -885,6 +1048,8 @@ msgid ""
 "We support the stations and ships in the area with planning and "
 "communication services"
 msgstr ""
+"We support the stations and ships in the area with planning and "
+"communication services"
 
 #: scripts/scenario_50_gaps.lua:1636
 msgctxt "stationStory-comms"
@@ -892,11 +1057,13 @@ msgid ""
 "We recognize the influence of Starfleet Captain James Tiberius Kirk in the "
 "23rd century in our station name"
 msgstr ""
+"We recognize the influence of Starfleet Captain James Tiberius Kirk in the "
+"23rd century in our station name"
 
 #: scripts/scenario_50_gaps.lua:1643
 msgctxt "scienceDescription-station"
 msgid "Advanced material components"
-msgstr ""
+msgstr "Advanced material components"
 
 #: scripts/scenario_50_gaps.lua:1668
 msgctxt "stationGeneralInfo-comms"
@@ -904,18 +1071,22 @@ msgid ""
 "We create multiple types of advanced material components. Our most popular "
 "products are our filaments"
 msgstr ""
+"We create multiple types of advanced material components. Our most popular "
+"products are our filaments"
 
 #: scripts/scenario_50_gaps.lua:1669
 msgctxt "stationStory-comms"
 msgid ""
-"We learned several of our critical industrial processes from the Tokra race, "
-"so we honor our fortune by naming the station after them"
+"We learned several of our critical industrial processes from the Tokra race,"
+" so we honor our fortune by naming the station after them"
 msgstr ""
+"We learned several of our critical industrial processes from the Tokra race,"
+" so we honor our fortune by naming the station after them"
 
 #: scripts/scenario_50_gaps.lua:1676
 msgctxt "scienceDescription-station"
 msgid "Shield and armor components and research"
-msgstr ""
+msgstr "Shield and armor components and research"
 
 #: scripts/scenario_50_gaps.lua:1690
 msgctxt "stationGeneralInfo-comms"
@@ -923,6 +1094,8 @@ msgid ""
 "We research and make general and specialized components for ship shield and "
 "ship armor systems"
 msgstr ""
+"We research and make general and specialized components for ship shield and "
+"ship armor systems"
 
 #: scripts/scenario_50_gaps.lua:1691
 msgctxt "stationStory-comms"
@@ -931,11 +1104,14 @@ msgid ""
 "technology, Alexander Toohie back when it was considered impractical to "
 "construct shields due to the physics involved."
 msgstr ""
+"This station was named after one of the earliest researchers in shield "
+"technology, Alexander Toohie back when it was considered impractical to "
+"construct shields due to the physics involved."
 
 #: scripts/scenario_50_gaps.lua:1698 scripts/scenario_50_gaps.lua:1965
 msgctxt "scienceDescription-station"
 msgid "Ship building and maintenance facility"
-msgstr ""
+msgstr "Ship building and maintenance facility"
 
 #: scripts/scenario_50_gaps.lua:1709
 msgctxt "stationGeneralInfo-comms"
@@ -945,11 +1121,15 @@ msgid ""
 "Our design goals seek to make the space faring experience as simple as "
 "possible given the tremendous capabilities of the modern naval vessel"
 msgstr ""
+"We work on all aspects of naval ship building and maintenance. Many of the "
+"naval models are researched, designed and built right here on this station. "
+"Our design goals seek to make the space faring experience as simple as "
+"possible given the tremendous capabilities of the modern naval vessel"
 
 #: scripts/scenario_50_gaps.lua:1716
 msgctxt "scienceDescription-station"
 msgid "Shielded Circuitry Fabrication"
-msgstr ""
+msgstr "Shielded Circuitry Fabrication"
 
 #: scripts/scenario_50_gaps.lua:1727
 msgctxt "stationGeneralInfo-comms"
@@ -957,6 +1137,8 @@ msgid ""
 "We specialize in circuitry shielded from external hacking suitable for ship "
 "systems"
 msgstr ""
+"We specialize in circuitry shielded from external hacking suitable for ship "
+"systems"
 
 #: scripts/scenario_50_gaps.lua:1728
 msgctxt "stationStory-comms"
@@ -964,6 +1146,8 @@ msgid ""
 "We started as an expansion from the lunar based chip manufacturer of Earth "
 "legacy Intel electronic chips"
 msgstr ""
+"We started as an expansion from the lunar based chip manufacturer of Earth "
+"legacy Intel electronic chips"
 
 #: scripts/scenario_50_gaps.lua:1749
 msgctxt "stationGeneralInfo-comms"
@@ -971,6 +1155,8 @@ msgid ""
 "We research and construct components for the most powerful and accurate "
 "sensors used aboard ships along with the software to make them easy to use"
 msgstr ""
+"We research and construct components for the most powerful and accurate "
+"sensors used aboard ships along with the software to make them easy to use"
 
 #: scripts/scenario_50_gaps.lua:1750
 msgctxt "stationStory-comms"
@@ -982,11 +1168,17 @@ msgid ""
 "numerous mergers and acquisitions of several companies including Velodyne "
 "and Quanergy"
 msgstr ""
+"The Veloquan company has its roots in the manufacturing of LIDAR sensors in "
+"the early 21st century on Earth in the United States for autonomous ground-"
+"based vehicles. They expanded research and manufacturing operations to "
+"include various sensors for space vehicles. Veloquan was the result of "
+"numerous mergers and acquisitions of several companies including Velodyne "
+"and Quanergy"
 
 #: scripts/scenario_50_gaps.lua:1757
 msgctxt "scienceDescription-station"
 msgid "Warp engine components"
-msgstr ""
+msgstr "Warp engine components"
 
 #: scripts/scenario_50_gaps.lua:1772
 msgctxt "stationGeneralInfo-comms"
@@ -994,6 +1186,8 @@ msgid ""
 "We specialize in the esoteric components necessary to make warp drives "
 "function properly"
 msgstr ""
+"We specialize in the esoteric components necessary to make warp drives "
+"function properly"
 
 #: scripts/scenario_50_gaps.lua:1773
 msgctxt "stationStory-comms"
@@ -1001,82 +1195,84 @@ msgid ""
 "Zefram Cochrane constructed the first warp drive in human history. We named "
 "our station after him because of the specialized warp systems work we do"
 msgstr ""
+"Zefram Cochrane constructed the first warp drive in human history. We named "
+"our station after him because of the specialized warp systems work we do"
 
 #: scripts/scenario_50_gaps.lua:1782
 msgctxt "scienceDescription-station"
 msgid "Commerce and gambling"
-msgstr ""
+msgstr "Commerce and gambling"
 
 #: scripts/scenario_50_gaps.lua:1784
 msgctxt "stationGeneralInfo-comms"
 msgid "Come play some games and shop. House take does not exceed 4 percent"
-msgstr ""
+msgstr "Come play some games and shop. House take does not exceed 4 percent"
 
 #: scripts/scenario_50_gaps.lua:1832
 msgctxt "scienceDescription-station"
 msgid "Casino and Gambling"
-msgstr ""
+msgstr "Casino and Gambling"
 
 #: scripts/scenario_50_gaps.lua:1839
 msgctxt "scienceDescription-station"
 msgid "Gambling and resupply"
-msgstr ""
+msgstr "Gambling and resupply"
 
 #: scripts/scenario_50_gaps.lua:1841
 msgctxt "stationGeneralInfo-comms"
 msgid "Relax and meet some interesting players"
-msgstr ""
+msgstr "Relax and meet some interesting players"
 
 #: scripts/scenario_50_gaps.lua:1848
 msgctxt "scienceDescription-station"
 msgid "Commerce and recreation"
-msgstr ""
+msgstr "Commerce and recreation"
 
 #: scripts/scenario_50_gaps.lua:1856
 msgctxt "scienceDescription-station"
 msgid "Xenopsychology research"
-msgstr ""
+msgstr "Xenopsychology research"
 
 #: scripts/scenario_50_gaps.lua:1863 scripts/scenario_50_gaps.lua:1878
 #: scripts/scenario_50_gaps.lua:1907 scripts/scenario_50_gaps.lua:1973
 msgctxt "scienceDescription-station"
 msgid "Resupply"
-msgstr ""
+msgstr "Resupply"
 
 #: scripts/scenario_50_gaps.lua:1886
 msgctxt "scienceDescription-station"
 msgid "Textiles and fashion"
-msgstr ""
+msgstr "Textiles and fashion"
 
 #: scripts/scenario_50_gaps.lua:1893
 msgctxt "scienceDescription-station"
 msgid "Stress Psychology Research"
-msgstr ""
+msgstr "Stress Psychology Research"
 
 #: scripts/scenario_50_gaps.lua:1900
 msgctxt "scienceDescription-station"
 msgid "Low gravity research"
-msgstr ""
+msgstr "Low gravity research"
 
 #: scripts/scenario_50_gaps.lua:1910
 msgctxt "stationGeneralInfo-comms"
 msgid "Get your energy here! Grab a drink before you go!"
-msgstr ""
+msgstr "Get your energy here! Grab a drink before you go!"
 
 #: scripts/scenario_50_gaps.lua:1917
 msgctxt "scienceDescription-station"
 msgid "Research Lab and Observatory"
-msgstr ""
+msgstr "Research Lab and Observatory"
 
 #: scripts/scenario_50_gaps.lua:1924
 msgctxt "scienceDescription-station"
 msgid "Biotech research"
-msgstr ""
+msgstr "Biotech research"
 
 #: scripts/scenario_50_gaps.lua:1931
 msgctxt "scienceDescription-station"
 msgid "Routine maintenance and entertainment"
-msgstr ""
+msgstr "Routine maintenance and entertainment"
 
 #: scripts/scenario_50_gaps.lua:1934
 msgctxt "stationGeneralInfo-comms"
@@ -1084,6 +1280,8 @@ msgid ""
 "Stop by for repairs. Take in one of our juggling shows featuring the four-"
 "armed Skandars"
 msgstr ""
+"Stop by for repairs. Take in one of our juggling shows featuring the four-"
+"armed Skandars"
 
 #: scripts/scenario_50_gaps.lua:1935
 msgctxt "stationStory-comms"
@@ -1092,11 +1290,14 @@ msgid ""
 "entertainment and maintenance skills as well as build a community where "
 "Skandars can relax"
 msgstr ""
+"The nomadic Skandars have set up at this station to practice their "
+"entertainment and maintenance skills as well as build a community where "
+"Skandars can relax"
 
 #: scripts/scenario_50_gaps.lua:1949
 msgctxt "scienceDescription-station"
 msgid "Automated weapons systems"
-msgstr ""
+msgstr "Automated weapons systems"
 
 #: scripts/scenario_50_gaps.lua:1951
 msgctxt "stationGeneralInfo-comms"
@@ -1104,16 +1305,18 @@ msgid ""
 "We research and create automated weapons systems to improve ship combat "
 "capability"
 msgstr ""
+"We research and create automated weapons systems to improve ship combat "
+"capability"
 
 #: scripts/scenario_50_gaps.lua:1958
 msgctxt "scienceDescription-station"
 msgid "Biotechnology research"
-msgstr ""
+msgstr "Biotechnology research"
 
 #: scripts/scenario_50_gaps.lua:2232
 msgctxt "station-comms"
 msgid "We are under attack! No time for chatting!"
-msgstr ""
+msgstr "We are under attack! No time for chatting!"
 
 #: scripts/scenario_50_gaps.lua:2245
 msgctxt "station-comms"
@@ -1121,11 +1324,13 @@ msgid ""
 "Good day, officer!\n"
 "What can we do for you today?\n"
 msgstr ""
+"Good day, officer!\n"
+"What can we do for you today?\n"
 
 #: scripts/scenario_50_gaps.lua:2247
 msgctxt "station-comms"
 msgid "Welcome to our lovely station.\n"
-msgstr ""
+msgstr "Welcome to our lovely station.\n"
 
 #: scripts/scenario_50_gaps.lua:2250
 msgctxt "station-comms"
@@ -1133,26 +1338,28 @@ msgid ""
 "Forgive us if we seem a little distracted. We are carefully monitoring the "
 "enemies nearby."
 msgstr ""
+"Forgive us if we seem a little distracted. We are carefully monitoring the "
+"enemies nearby."
 
 #: scripts/scenario_50_gaps.lua:2290
 msgctxt "ammo-comms"
 msgid "I need ordnance restocked"
-msgstr ""
+msgstr "I need ordnance restocked"
 
 #: scripts/scenario_50_gaps.lua:2291
 msgctxt "ammo-comms"
 msgid "What type of ordnance?"
-msgstr ""
+msgstr "What type of ordnance?"
 
 #: scripts/scenario_50_gaps.lua:2295
 msgctxt "ammo-comms"
 msgid "Can you supply us with some nukes? ("
-msgstr ""
+msgstr "Can you supply us with some nukes? ("
 
 #: scripts/scenario_50_gaps.lua:2297
 msgctxt "ammo-comms"
 msgid "We really need some nukes ("
-msgstr ""
+msgstr "We really need some nukes ("
 
 #: scripts/scenario_50_gaps.lua:2299 scripts/scenario_50_gaps.lua:2311
 #: scripts/scenario_50_gaps.lua:2323 scripts/scenario_50_gaps.lua:2342
@@ -1160,67 +1367,67 @@ msgstr ""
 #, lua-format
 msgctxt "ammo-comms"
 msgid "%s%d rep each)"
-msgstr ""
+msgstr "%s%d rep each)"
 
 #: scripts/scenario_50_gaps.lua:2307
 msgctxt "ammo-comms"
 msgid "Please re-stock our EMP missiles. ("
-msgstr ""
+msgstr "Please re-stock our EMP missiles. ("
 
 #: scripts/scenario_50_gaps.lua:2309
 msgctxt "ammo-comms"
 msgid "Got any EMPs? ("
-msgstr ""
+msgstr "Got any EMPs? ("
 
 #: scripts/scenario_50_gaps.lua:2319
 msgctxt "ammo-comms"
 msgid "Do you have spare homing missiles for us? ("
-msgstr ""
+msgstr "Do you have spare homing missiles for us? ("
 
 #: scripts/scenario_50_gaps.lua:2321
 msgctxt "ammo-comms"
 msgid "Do you have extra homing missiles? ("
-msgstr ""
+msgstr "Do you have extra homing missiles? ("
 
 #: scripts/scenario_50_gaps.lua:2332
 msgctxt "ammo-comms"
 msgid "We could use some mines. ("
-msgstr ""
+msgstr "We could use some mines. ("
 
 #: scripts/scenario_50_gaps.lua:2334
 msgctxt "ammo-comms"
 msgid "How about mines? ("
-msgstr ""
+msgstr "How about mines? ("
 
 #: scripts/scenario_50_gaps.lua:2336
 msgctxt "ammo-comms"
 msgid "More mines ("
-msgstr ""
+msgstr "More mines ("
 
 #: scripts/scenario_50_gaps.lua:2338
 msgctxt "ammo-comms"
 msgid "All the mines we can take. ("
-msgstr ""
+msgstr "All the mines we can take. ("
 
 #: scripts/scenario_50_gaps.lua:2340
 msgctxt "ammo-comms"
 msgid "Mines! What else? ("
-msgstr ""
+msgstr "Mines! What else? ("
 
 #: scripts/scenario_50_gaps.lua:2350
 msgctxt "ammo-comms"
 msgid "What about HVLI? ("
-msgstr ""
+msgstr "What about HVLI? ("
 
 #: scripts/scenario_50_gaps.lua:2352
 msgctxt "ammo-comms"
 msgid "Could you provide HVLI? ("
-msgstr ""
+msgstr "Could you provide HVLI? ("
 
 #: scripts/scenario_50_gaps.lua:2363 scripts/scenario_50_gaps.lua:2987
 msgctxt "orders-comms"
 msgid "What are my current orders?"
-msgstr ""
+msgstr "What are my current orders?"
 
 #: scripts/scenario_50_gaps.lua:2367 scripts/scenario_50_gaps.lua:2991
 #, lua-format
@@ -1229,19 +1436,23 @@ msgid ""
 "\n"
 "   %i Minutes remain in game"
 msgstr ""
+"\n"
+"   %i Minutes remain in game"
 
 #: scripts/scenario_50_gaps.lua:2370 scripts/scenario_50_gaps.lua:2994
 msgctxt "minefield-comms"
 msgid "What is a minefield?"
-msgstr ""
+msgstr "What is a minefield?"
 
 #: scripts/scenario_50_gaps.lua:2371 scripts/scenario_50_gaps.lua:2995
 #, lua-format
 msgctxt "minefield-comms"
 msgid ""
-"For the automated sensors on station %s to register a minefield as completed "
-"across a gap, it must meet the following criteria:"
+"For the automated sensors on station %s to register a minefield as completed"
+" across a gap, it must meet the following criteria:"
 msgstr ""
+"For the automated sensors on station %s to register a minefield as completed"
+" across a gap, it must meet the following criteria:"
 
 #: scripts/scenario_50_gaps.lua:2372 scripts/scenario_50_gaps.lua:2996
 msgctxt "minefield-comms"
@@ -1249,6 +1460,8 @@ msgid ""
 "\n"
 "   1. Must contain at least 12 mines: Nautilus class standard load"
 msgstr ""
+"\n"
+"   1. Must contain at least 12 mines: Nautilus class standard load"
 
 #: scripts/scenario_50_gaps.lua:2373 scripts/scenario_50_gaps.lua:2997
 msgctxt "minefield-comms"
@@ -1256,6 +1469,8 @@ msgid ""
 "\n"
 "   2. Must be within a 1.5U radius of sector corner in gap"
 msgstr ""
+"\n"
+"   2. Must be within a 1.5U radius of sector corner in gap"
 
 #: scripts/scenario_50_gaps.lua:2375 scripts/scenario_50_gaps.lua:2999
 msgctxt "minefield-comms"
@@ -1263,6 +1478,8 @@ msgid ""
 "\n"
 "   3. Must be centered: 6 on one side and 6 on the other"
 msgstr ""
+"\n"
+"   3. Must be centered: 6 on one side and 6 on the other"
 
 #: scripts/scenario_50_gaps.lua:2378 scripts/scenario_50_gaps.lua:3002
 msgctxt "minefield-comms"
@@ -1270,11 +1487,13 @@ msgid ""
 "\n"
 "   4. Must be along 20U distance from station line connecting asteroids"
 msgstr ""
+"\n"
+"   4. Must be along 20U distance from station line connecting asteroids"
 
 #: scripts/scenario_50_gaps.lua:2382 scripts/scenario_50_gaps.lua:3006
 msgctxt "minefield-comms"
 msgid "What do the sensors show for the north gap?"
-msgstr ""
+msgstr "What do the sensors show for the north gap?"
 
 #: scripts/scenario_50_gaps.lua:2384 scripts/scenario_50_gaps.lua:2404
 #: scripts/scenario_50_gaps.lua:2424 scripts/scenario_50_gaps.lua:2444
@@ -1283,14 +1502,14 @@ msgstr ""
 #, lua-format
 msgctxt "minefield-comms"
 msgid "Count within radius: %i"
-msgstr ""
+msgstr "Count within radius: %i"
 
 #: scripts/scenario_50_gaps.lua:2386 scripts/scenario_50_gaps.lua:2406
 #: scripts/scenario_50_gaps.lua:3010 scripts/scenario_50_gaps.lua:3030
 #, lua-format
 msgctxt "minefield-comms"
 msgid "Count near middle on the right: %i"
-msgstr ""
+msgstr "Count near middle on the right: %i"
 
 #: scripts/scenario_50_gaps.lua:2387 scripts/scenario_50_gaps.lua:2407
 #: scripts/scenario_50_gaps.lua:3011 scripts/scenario_50_gaps.lua:3031
@@ -1300,6 +1519,8 @@ msgid ""
 "\n"
 "Count near middle on the left: %i"
 msgstr ""
+"\n"
+"Count near middle on the left: %i"
 
 #: scripts/scenario_50_gaps.lua:2388 scripts/scenario_50_gaps.lua:2408
 #: scripts/scenario_50_gaps.lua:3012 scripts/scenario_50_gaps.lua:3032
@@ -1309,6 +1530,8 @@ msgid ""
 "\n"
 "Count near asteroids on the left: %i"
 msgstr ""
+"\n"
+"Count near asteroids on the left: %i"
 
 #: scripts/scenario_50_gaps.lua:2389 scripts/scenario_50_gaps.lua:2409
 #: scripts/scenario_50_gaps.lua:3013 scripts/scenario_50_gaps.lua:3033
@@ -1318,6 +1541,8 @@ msgid ""
 "\n"
 "Count near asteroids on the right: %i"
 msgstr ""
+"\n"
+"Count near asteroids on the right: %i"
 
 #: scripts/scenario_50_gaps.lua:2390 scripts/scenario_50_gaps.lua:2410
 #: scripts/scenario_50_gaps.lua:2430 scripts/scenario_50_gaps.lua:2450
@@ -1329,13 +1554,16 @@ msgid ""
 "\n"
 "You need three in each sensor scan area"
 msgstr ""
+"\n"
+"\n"
+"You need three in each sensor scan area"
 
 #: scripts/scenario_50_gaps.lua:2392 scripts/scenario_50_gaps.lua:2412
 #: scripts/scenario_50_gaps.lua:3016 scripts/scenario_50_gaps.lua:3036
 #, lua-format
 msgctxt "minefield-comms"
 msgid "Count on the right: %i"
-msgstr ""
+msgstr "Count on the right: %i"
 
 #: scripts/scenario_50_gaps.lua:2393 scripts/scenario_50_gaps.lua:2413
 #: scripts/scenario_50_gaps.lua:3017 scripts/scenario_50_gaps.lua:3037
@@ -1345,6 +1573,8 @@ msgid ""
 "\n"
 "Count on the left: %i"
 msgstr ""
+"\n"
+"Count on the left: %i"
 
 #: scripts/scenario_50_gaps.lua:2394 scripts/scenario_50_gaps.lua:2414
 #: scripts/scenario_50_gaps.lua:2434 scripts/scenario_50_gaps.lua:2454
@@ -1356,6 +1586,9 @@ msgid ""
 "\n"
 "You need six in each sensor scan area"
 msgstr ""
+"\n"
+"\n"
+"You need six in each sensor scan area"
 
 #: scripts/scenario_50_gaps.lua:2396 scripts/scenario_50_gaps.lua:2416
 #: scripts/scenario_50_gaps.lua:2436 scripts/scenario_50_gaps.lua:2456
@@ -1367,6 +1600,8 @@ msgid ""
 "\n"
 "Sensors refresh every %i seconds"
 msgstr ""
+"\n"
+"Sensors refresh every %i seconds"
 
 #: scripts/scenario_50_gaps.lua:2398 scripts/scenario_50_gaps.lua:2418
 #: scripts/scenario_50_gaps.lua:2438 scripts/scenario_50_gaps.lua:2458
@@ -1395,24 +1630,24 @@ msgstr ""
 #: scripts/scenario_50_gaps.lua:3474 scripts/scenario_50_gaps.lua:3500
 #: scripts/scenario_50_gaps.lua:3531
 msgid "Back"
-msgstr ""
+msgstr "Back"
 
 #: scripts/scenario_50_gaps.lua:2402 scripts/scenario_50_gaps.lua:3026
 msgctxt "minefield-comms"
 msgid "What do the sensors show for the south gap?"
-msgstr ""
+msgstr "What do the sensors show for the south gap?"
 
 #: scripts/scenario_50_gaps.lua:2422 scripts/scenario_50_gaps.lua:3046
 msgctxt "minefield-comms"
 msgid "What do the sensors show for the east gap?"
-msgstr ""
+msgstr "What do the sensors show for the east gap?"
 
 #: scripts/scenario_50_gaps.lua:2426 scripts/scenario_50_gaps.lua:2446
 #: scripts/scenario_50_gaps.lua:3050 scripts/scenario_50_gaps.lua:3070
 #, lua-format
 msgctxt "minefield-comms"
 msgid "Count near middle below: %i"
-msgstr ""
+msgstr "Count near middle below: %i"
 
 #: scripts/scenario_50_gaps.lua:2427 scripts/scenario_50_gaps.lua:2447
 #: scripts/scenario_50_gaps.lua:3051 scripts/scenario_50_gaps.lua:3071
@@ -1422,6 +1657,8 @@ msgid ""
 "\n"
 "Count near middle above: %i"
 msgstr ""
+"\n"
+"Count near middle above: %i"
 
 #: scripts/scenario_50_gaps.lua:2428 scripts/scenario_50_gaps.lua:2448
 #: scripts/scenario_50_gaps.lua:3052 scripts/scenario_50_gaps.lua:3072
@@ -1431,6 +1668,8 @@ msgid ""
 "\n"
 "Count near asteroids above: %i"
 msgstr ""
+"\n"
+"Count near asteroids above: %i"
 
 #: scripts/scenario_50_gaps.lua:2429 scripts/scenario_50_gaps.lua:2449
 #: scripts/scenario_50_gaps.lua:3053 scripts/scenario_50_gaps.lua:3073
@@ -1440,12 +1679,14 @@ msgid ""
 "\n"
 "Count near asteroids below: %i"
 msgstr ""
+"\n"
+"Count near asteroids below: %i"
 
 #: scripts/scenario_50_gaps.lua:2432 scripts/scenario_50_gaps.lua:2452
 #, lua-format
 msgctxt "minefield-comms"
 msgid "Count below: %i"
-msgstr ""
+msgstr "Count below: %i"
 
 #: scripts/scenario_50_gaps.lua:2433 scripts/scenario_50_gaps.lua:2453
 #, lua-format
@@ -1454,58 +1695,60 @@ msgid ""
 "\n"
 "Count above: %i"
 msgstr ""
+"\n"
+"Count above: %i"
 
 #: scripts/scenario_50_gaps.lua:2442 scripts/scenario_50_gaps.lua:3066
 msgctxt "minefield-comms"
 msgid "What do the sensors show for the west gap?"
-msgstr ""
+msgstr "What do the sensors show for the west gap?"
 
 #: scripts/scenario_50_gaps.lua:2471 scripts/scenario_50_gaps.lua:2487
 #, lua-format
 msgctxt "trade-comms"
 msgid "Recruit repair crew member for %i reputation"
-msgstr ""
+msgstr "Recruit repair crew member for %i reputation"
 
 #: scripts/scenario_50_gaps.lua:2473 scripts/scenario_50_gaps.lua:2489
 #: scripts/scenario_50_gaps.lua:3445
 msgctxt "needRep-comms"
 msgid "Insufficient reputation"
-msgstr ""
+msgstr "Insufficient reputation"
 
 #: scripts/scenario_50_gaps.lua:2476 scripts/scenario_50_gaps.lua:2492
 msgctxt "trade-comms"
 msgid "Repair crew member hired"
-msgstr ""
+msgstr "Repair crew member hired"
 
 #: scripts/scenario_50_gaps.lua:2498
 msgctxt "station-comms"
 msgid "Tell me more about your station"
-msgstr ""
+msgstr "Tell me more about your station"
 
 #: scripts/scenario_50_gaps.lua:2499
 msgctxt "station-comms"
 msgid "What would you like to know?"
-msgstr ""
+msgstr "What would you like to know?"
 
 #: scripts/scenario_50_gaps.lua:2500
 msgctxt "stationGeneralInfo-comms"
 msgid "General information"
-msgstr ""
+msgstr "General information"
 
 #: scripts/scenario_50_gaps.lua:2505
 msgctxt "stationStory-comms"
 msgid "Station history"
-msgstr ""
+msgstr "Station history"
 
 #: scripts/scenario_50_gaps.lua:2513
 msgctxt "gossip-comms"
 msgid "Gossip"
-msgstr ""
+msgstr "Gossip"
 
 #: scripts/scenario_50_gaps.lua:2523
 msgctxt "trade-comms"
 msgid "Buy, sell, trade"
-msgstr ""
+msgstr "Buy, sell, trade"
 
 #: scripts/scenario_50_gaps.lua:2524 scripts/scenario_50_gaps.lua:2917
 #, lua-format
@@ -1514,34 +1757,36 @@ msgid ""
 "Station %s:\n"
 "Goods or components available: quantity, cost in reputation\n"
 msgstr ""
+"Station %s:\n"
+"Goods or components available: quantity, cost in reputation\n"
 
 #: scripts/scenario_50_gaps.lua:2530
 #, lua-format
 msgctxt "trade-comms"
 msgid "     %s: %i, %i\n"
-msgstr ""
+msgstr "     %s: %i, %i\n"
 
 #: scripts/scenario_50_gaps.lua:2533
 msgctxt "trade-comms"
 msgid "Current Cargo:\n"
-msgstr ""
+msgstr "Current Cargo:\n"
 
 #: scripts/scenario_50_gaps.lua:2540
 #, lua-format
 msgctxt "trade-comms"
 msgid "     %s: %i\n"
-msgstr ""
+msgstr "     %s: %i\n"
 
 #: scripts/scenario_50_gaps.lua:2546
 msgctxt "trade-comms"
 msgid "     Empty\n"
-msgstr ""
+msgstr "     Empty\n"
 
 #: scripts/scenario_50_gaps.lua:2549
 #, lua-format
 msgctxt "trade-comms"
 msgid "Available Space: %i, Available Reputation: %i\n"
-msgstr ""
+msgstr "Available Space: %i, Available Reputation: %i\n"
 
 #: scripts/scenario_50_gaps.lua:2557 scripts/scenario_50_gaps.lua:3418
 #: scripts/scenario_50_gaps.lua:3459 scripts/scenario_50_gaps.lua:3485
@@ -1549,13 +1794,13 @@ msgstr ""
 #, lua-format
 msgctxt "trade-comms"
 msgid "Buy one %s for %i reputation"
-msgstr ""
+msgstr "Buy one %s for %i reputation"
 
 #: scripts/scenario_50_gaps.lua:2558
 #, lua-format
 msgctxt "trade-comms"
 msgid "Type: %s, Quantity: %i, Rep: %i"
-msgstr ""
+msgstr "Type: %s, Quantity: %i, Rep: %i"
 
 #: scripts/scenario_50_gaps.lua:2560
 msgctxt "trade-comms"
@@ -1563,6 +1808,8 @@ msgid ""
 "\n"
 "Insufficient cargo space for purchase"
 msgstr ""
+"\n"
+"Insufficient cargo space for purchase"
 
 #: scripts/scenario_50_gaps.lua:2562 scripts/scenario_50_gaps.lua:2567
 msgctxt "needRep-comms"
@@ -1570,6 +1817,8 @@ msgid ""
 "\n"
 "Insufficient reputation for purchase"
 msgstr ""
+"\n"
+"Insufficient reputation for purchase"
 
 #: scripts/scenario_50_gaps.lua:2564 scripts/scenario_50_gaps.lua:2598
 #: scripts/scenario_50_gaps.lua:2630 scripts/scenario_50_gaps.lua:2662
@@ -1578,6 +1827,8 @@ msgid ""
 "\n"
 "Insufficient station inventory"
 msgstr ""
+"\n"
+"Insufficient station inventory"
 
 #: scripts/scenario_50_gaps.lua:2572
 msgctxt "trade-comms"
@@ -1585,19 +1836,21 @@ msgid ""
 "\n"
 "purchased"
 msgstr ""
+"\n"
+"purchased"
 
 #: scripts/scenario_50_gaps.lua:2595
 #, lua-format
 msgctxt "trade-comms"
 msgid "Trade food for %s"
-msgstr ""
+msgstr "Trade food for %s"
 
 #: scripts/scenario_50_gaps.lua:2596 scripts/scenario_50_gaps.lua:2628
 #: scripts/scenario_50_gaps.lua:2660
 #, lua-format
 msgctxt "trade-comms"
 msgid "Type: %s,  Quantity: %i"
-msgstr ""
+msgstr "Type: %s,  Quantity: %i"
 
 #: scripts/scenario_50_gaps.lua:2603 scripts/scenario_50_gaps.lua:2635
 #: scripts/scenario_50_gaps.lua:2667
@@ -1606,23 +1859,25 @@ msgid ""
 "\n"
 "Traded"
 msgstr ""
+"\n"
+"Traded"
 
 #: scripts/scenario_50_gaps.lua:2627 scripts/scenario_50_gaps.lua:3394
 #, lua-format
 msgctxt "trade-comms"
 msgid "Trade luxury for %s"
-msgstr ""
+msgstr "Trade luxury for %s"
 
 #: scripts/scenario_50_gaps.lua:2659
 #, lua-format
 msgctxt "trade-comms"
 msgid "Trade medicine for %s"
-msgstr ""
+msgstr "Trade medicine for %s"
 
 #: scripts/scenario_50_gaps.lua:2689
 msgctxt "trade-comms"
 msgid "Jettison cargo"
-msgstr ""
+msgstr "Jettison cargo"
 
 #: scripts/scenario_50_gaps.lua:2690
 #, lua-format
@@ -1631,17 +1886,19 @@ msgid ""
 "Available space: %i\n"
 "What would you like to jettison?"
 msgstr ""
+"Available space: %i\n"
+"What would you like to jettison?"
 
 #: scripts/scenario_50_gaps.lua:2699
 #, lua-format
 msgctxt "trade-comms"
 msgid "One %s jettisoned"
-msgstr ""
+msgstr "One %s jettisoned"
 
 #: scripts/scenario_50_gaps.lua:2715
 msgctxt "upgradeOrders-comms"
 msgid "Get ship maneuver upgrade"
-msgstr ""
+msgstr "Get ship maneuver upgrade"
 
 #: scripts/scenario_50_gaps.lua:2717 scripts/scenario_50_gaps.lua:2728
 #: scripts/scenario_50_gaps.lua:2736
@@ -1650,6 +1907,8 @@ msgid ""
 "\n"
 "Optional:\n"
 msgstr ""
+"\n"
+"Optional:\n"
 
 #: scripts/scenario_50_gaps.lua:2719
 #, lua-format
@@ -1659,6 +1918,9 @@ msgid ""
 "Optional:\n"
 "Get ship maneuver upgrade from %s for %s"
 msgstr ""
+"\n"
+"Optional:\n"
+"Get ship maneuver upgrade from %s for %s"
 
 #: scripts/scenario_50_gaps.lua:2721
 #, lua-format
@@ -1668,6 +1930,9 @@ msgid ""
 "Optional:\n"
 "Get ship maneuver upgrade from %s in sector %s for %s"
 msgstr ""
+"\n"
+"Optional:\n"
+"Get ship maneuver upgrade from %s in sector %s for %s"
 
 #: scripts/scenario_50_gaps.lua:2723
 #, lua-format
@@ -1678,6 +1943,10 @@ msgid ""
 "Get ship maneuver upgrade from %s in sector %s for %s.\n"
 "    You might find %s at %s"
 msgstr ""
+"\n"
+"Optional:\n"
+"Get ship maneuver upgrade from %s in sector %s for %s.\n"
+"    You might find %s at %s"
 
 #: scripts/scenario_50_gaps.lua:2725
 #, lua-format
@@ -1688,24 +1957,28 @@ msgid ""
 "Get ship maneuver upgrade from %s in sector %s for %s.\n"
 "    You might find %s at %s in sector %s"
 msgstr ""
+"\n"
+"Optional:\n"
+"Get ship maneuver upgrade from %s in sector %s for %s.\n"
+"    You might find %s at %s in sector %s"
 
 #: scripts/scenario_50_gaps.lua:2739
 #, lua-format
 msgctxt "upgradeOrders-comms"
 msgid "Upgrade %s to rotate"
-msgstr ""
+msgstr "Upgrade %s to rotate"
 
 #: scripts/scenario_50_gaps.lua:2743
 #, lua-format
 msgctxt "upgradeOrders-comms"
 msgid "Upgrade %s to auto-rotate by taking %s to %s"
-msgstr ""
+msgstr "Upgrade %s to auto-rotate by taking %s to %s"
 
 #: scripts/scenario_50_gaps.lua:2745
 #, lua-format
 msgctxt "upgradeOrders-comms"
 msgid "Upgrade %s to auto-rotate by taking %s to %s in %s"
-msgstr ""
+msgstr "Upgrade %s to auto-rotate by taking %s to %s in %s"
 
 #: scripts/scenario_50_gaps.lua:2747
 #, lua-format
@@ -1714,6 +1987,8 @@ msgid ""
 "Upgrade %s to auto-rotate by taking %s to %s in %s.\n"
 "    %s may bave %s"
 msgstr ""
+"Upgrade %s to auto-rotate by taking %s to %s in %s.\n"
+"    %s may bave %s"
 
 #: scripts/scenario_50_gaps.lua:2749
 #, lua-format
@@ -1722,23 +1997,25 @@ msgid ""
 "Upgrade %s to auto-rotate by taking %s to %s in %s.\n"
 "    %s in %s may bave %s"
 msgstr ""
+"Upgrade %s to auto-rotate by taking %s to %s in %s.\n"
+"    %s in %s may bave %s"
 
 #: scripts/scenario_50_gaps.lua:2751
 msgctxt "upgradeOrders-comms"
 msgid "Get beam cycle time upgrade"
-msgstr ""
+msgstr "Get beam cycle time upgrade"
 
 #: scripts/scenario_50_gaps.lua:2755
 #, lua-format
 msgctxt "upgradeOrders-comms"
 msgid "Get beam cycle time upgrade from %s for %s"
-msgstr ""
+msgstr "Get beam cycle time upgrade from %s for %s"
 
 #: scripts/scenario_50_gaps.lua:2757
 #, lua-format
 msgctxt "upgradeOrders-comms"
 msgid "Get beam cycle time upgrade from %s in %s for %s"
-msgstr ""
+msgstr "Get beam cycle time upgrade from %s in %s for %s"
 
 #: scripts/scenario_50_gaps.lua:2759
 #, lua-format
@@ -1747,6 +2024,8 @@ msgid ""
 "Get beam cycle time upgrade from %s in %s for %s\n"
 "    You might find %s at %s"
 msgstr ""
+"Get beam cycle time upgrade from %s in %s for %s\n"
+"    You might find %s at %s"
 
 #: scripts/scenario_50_gaps.lua:2761
 #, lua-format
@@ -1755,23 +2034,25 @@ msgid ""
 "Get beam cycle time upgrade from %s in %s for %s\n"
 "    You might find %s at %s in %s"
 msgstr ""
+"Get beam cycle time upgrade from %s in %s for %s\n"
+"    You might find %s at %s in %s"
 
 #: scripts/scenario_50_gaps.lua:2763
 msgctxt "upgradeOrders-comms"
 msgid "Get hull upgrade"
-msgstr ""
+msgstr "Get hull upgrade"
 
 #: scripts/scenario_50_gaps.lua:2767
 #, lua-format
 msgctxt "upgradeOrders-comms"
 msgid "Get %s to upgrade hull for %s"
-msgstr ""
+msgstr "Get %s to upgrade hull for %s"
 
 #: scripts/scenario_50_gaps.lua:2769
 #, lua-format
 msgctxt "upgradeOrders-comms"
 msgid "Get %s in %s to upgrade hull for %s"
-msgstr ""
+msgstr "Get %s in %s to upgrade hull for %s"
 
 #: scripts/scenario_50_gaps.lua:2771
 #, lua-format
@@ -1780,6 +2061,8 @@ msgid ""
 "Get %s in %s to upgrade hull for %s\n"
 "    %s might have %s"
 msgstr ""
+"Get %s in %s to upgrade hull for %s\n"
+"    %s might have %s"
 
 #: scripts/scenario_50_gaps.lua:2773
 #, lua-format
@@ -1788,46 +2071,48 @@ msgid ""
 "Get %s in %s to upgrade hull for %s\n"
 "    %s in %s might have %s"
 msgstr ""
+"Get %s in %s to upgrade hull for %s\n"
+"    %s in %s might have %s"
 
 #: scripts/scenario_50_gaps.lua:2793
 msgctxt "station-comms"
 msgid "You need to stay docked for that action."
-msgstr ""
+msgstr "You need to stay docked for that action."
 
 #: scripts/scenario_50_gaps.lua:2797
 msgctxt "ammo-comms"
 msgid "We do not deal in weapons of mass destruction."
-msgstr ""
+msgstr "We do not deal in weapons of mass destruction."
 
 #: scripts/scenario_50_gaps.lua:2798
 msgctxt "ammo-comms"
 msgid "We do not deal in weapons of mass disruption."
-msgstr ""
+msgstr "We do not deal in weapons of mass disruption."
 
 #: scripts/scenario_50_gaps.lua:2799
 msgctxt "ammo-comms"
 msgid "We do not deal in those weapons."
-msgstr ""
+msgstr "We do not deal in those weapons."
 
 #: scripts/scenario_50_gaps.lua:2806
 msgctxt "ammo-comms"
 msgid "All nukes are charged and primed for destruction."
-msgstr ""
+msgstr "All nukes are charged and primed for destruction."
 
 #: scripts/scenario_50_gaps.lua:2808
 msgctxt "ammo-comms"
 msgid "Sorry, sir, but you are as fully stocked as I can allow."
-msgstr ""
+msgstr "Sorry, sir, but you are as fully stocked as I can allow."
 
 #: scripts/scenario_50_gaps.lua:2813
 msgctxt "needRep-comms"
 msgid "Not enough reputation."
-msgstr ""
+msgstr "Not enough reputation."
 
 #: scripts/scenario_50_gaps.lua:2818
 msgctxt "ammo-comms"
 msgid "You are fully loaded and ready to explode things."
-msgstr ""
+msgstr "You are fully loaded and ready to explode things."
 
 #: scripts/scenario_50_gaps.lua:2820
 msgctxt "ammo-comms"
@@ -1835,6 +2120,8 @@ msgid ""
 "We generously resupplied you with some weapon charges.\n"
 "Put them to good use."
 msgstr ""
+"We generously resupplied you with some weapon charges.\n"
+"Put them to good use."
 
 #: scripts/scenario_50_gaps.lua:2833
 msgctxt "station-comms"
@@ -1842,6 +2129,8 @@ msgid ""
 "Good day, officer.\n"
 "If you need supplies, please dock with us first."
 msgstr ""
+"Good day, officer.\n"
+"If you need supplies, please dock with us first."
 
 #: scripts/scenario_50_gaps.lua:2835
 msgctxt "station-comms"
@@ -1849,29 +2138,32 @@ msgid ""
 "Greetings.\n"
 "If you want to do business, please dock with us first."
 msgstr ""
+"Greetings.\n"
+"If you want to do business, please dock with us first."
 
 #: scripts/scenario_50_gaps.lua:2838
 msgctxt "station-comms"
 msgid ""
 "\n"
-"Be aware that if enemies in the area get much closer, we will be too busy to "
-"conduct business with you."
+"Be aware that if enemies in the area get much closer, we will be too busy to conduct business with you."
 msgstr ""
+"\n"
+"Be aware that if enemies in the area get much closer, we will be too busy to conduct business with you."
 
 #: scripts/scenario_50_gaps.lua:2872
 msgctxt "station-comms"
 msgid "I need information"
-msgstr ""
+msgstr "I need information"
 
 #: scripts/scenario_50_gaps.lua:2873
 msgctxt "station-comms"
 msgid "What kind of information do you need?"
-msgstr ""
+msgstr "What kind of information do you need?"
 
 #: scripts/scenario_50_gaps.lua:2874
 msgctxt "ammo-comms"
 msgid "What ordnance do you have available for restock?"
-msgstr ""
+msgstr "What ordnance do you have available for restock?"
 
 #: scripts/scenario_50_gaps.lua:2879
 msgctxt "ammo-comms"
@@ -1879,6 +2171,8 @@ msgid ""
 "\n"
 "   Nuke"
 msgstr ""
+"\n"
+"   Nuke"
 
 #: scripts/scenario_50_gaps.lua:2883
 msgctxt "ammo-comms"
@@ -1886,6 +2180,8 @@ msgid ""
 "\n"
 "   EMP"
 msgstr ""
+"\n"
+"   EMP"
 
 #: scripts/scenario_50_gaps.lua:2887
 msgctxt "ammo-comms"
@@ -1893,6 +2189,8 @@ msgid ""
 "\n"
 "   Homing"
 msgstr ""
+"\n"
+"   Homing"
 
 #: scripts/scenario_50_gaps.lua:2891
 msgctxt "ammo-comms"
@@ -1900,6 +2198,8 @@ msgid ""
 "\n"
 "   Mine"
 msgstr ""
+"\n"
+"   Mine"
 
 #: scripts/scenario_50_gaps.lua:2895
 msgctxt "ammo-comms"
@@ -1907,65 +2207,67 @@ msgid ""
 "\n"
 "   HVLI"
 msgstr ""
+"\n"
+"   HVLI"
 
 #: scripts/scenario_50_gaps.lua:2898
 msgctxt "ammo-comms"
 msgid "We have no ordnance available for restock"
-msgstr ""
+msgstr "We have no ordnance available for restock"
 
 #: scripts/scenario_50_gaps.lua:2900
 #, lua-format
 msgctxt "ammo-comms"
 msgid "We have the following type of ordnance available for restock:%s"
-msgstr ""
+msgstr "We have the following type of ordnance available for restock:%s"
 
 #: scripts/scenario_50_gaps.lua:2902
 #, lua-format
 msgctxt "ammo-comms"
 msgid "We have the following types of ordnance available for restock:%s"
-msgstr ""
+msgstr "We have the following types of ordnance available for restock:%s"
 
 #: scripts/scenario_50_gaps.lua:2916
 msgctxt "trade-comms"
 msgid "What goods do you have available for sale or trade?"
-msgstr ""
+msgstr "What goods do you have available for sale or trade?"
 
 #: scripts/scenario_50_gaps.lua:2923
 #, lua-format
 msgctxt "trade-comms"
 msgid "   %14s: %2i, %3i\n"
-msgstr ""
+msgstr "   %14s: %2i, %3i\n"
 
 #: scripts/scenario_50_gaps.lua:2930
 msgctxt "helpfullWarning-comms"
 msgid "See any enemies in your area?"
-msgstr ""
+msgstr "See any enemies in your area?"
 
 #: scripts/scenario_50_gaps.lua:2940
 #, lua-format
 msgctxt "helpfullWarning-comms"
 msgid "Yes, we see %i enemies within 30U"
-msgstr ""
+msgstr "Yes, we see %i enemies within 30U"
 
 #: scripts/scenario_50_gaps.lua:2942
 msgctxt "helpfullWarning-comms"
 msgid "Yes, we see one enemy within 30U"
-msgstr ""
+msgstr "Yes, we see one enemy within 30U"
 
 #: scripts/scenario_50_gaps.lua:2946
 msgctxt "helpfullWarning-comms"
 msgid "No enemies within 30U"
-msgstr ""
+msgstr "No enemies within 30U"
 
 #: scripts/scenario_50_gaps.lua:2951
 msgctxt "helpfullWarning-comms"
 msgid "Not really"
-msgstr ""
+msgstr "Not really"
 
 #: scripts/scenario_50_gaps.lua:2956
 msgctxt "trade-comms"
 msgid "Where can I find particular goods?"
-msgstr ""
+msgstr "Where can I find particular goods?"
 
 #: scripts/scenario_50_gaps.lua:2957
 msgctxt "trade-comms"
@@ -1973,6 +2275,8 @@ msgid ""
 "Friendly stations generally have food or medicine or both. Neutral stations "
 "often trade their goods for food, medicine or luxury."
 msgstr ""
+"Friendly stations generally have food or medicine or both. Neutral stations "
+"often trade their goods for food, medicine or luxury."
 
 #: scripts/scenario_50_gaps.lua:2959
 msgctxt "trade-comms"
@@ -1981,11 +2285,14 @@ msgid ""
 "\n"
 "Check back later, someone else may have better knowledge"
 msgstr ""
+" Beyond that, I have no knowledge of specific stations.\n"
+"\n"
+"Check back later, someone else may have better knowledge"
 
 #: scripts/scenario_50_gaps.lua:2965
 msgctxt "trade-comms"
 msgid " Beyond that, I have no knowledge of specific stations"
-msgstr ""
+msgstr " Beyond that, I have no knowledge of specific stations"
 
 #: scripts/scenario_50_gaps.lua:2967
 msgctxt "trade-comms"
@@ -1995,23 +2302,27 @@ msgid ""
 "What goods are you interested in?\n"
 "I've heard about these:"
 msgstr ""
+"\n"
+"\n"
+"What goods are you interested in?\n"
+"I've heard about these:"
 
 #: scripts/scenario_50_gaps.lua:2970
 #, lua-format
 msgctxt "trade-comms"
 msgid "Station %s in sector %s has %s%s"
-msgstr ""
+msgstr "Station %s in sector %s has %s%s"
 
 #: scripts/scenario_50_gaps.lua:2980
 msgctxt "stationGeneralInfo-comms"
 msgid "General station information"
-msgstr ""
+msgstr "General station information"
 
 #: scripts/scenario_50_gaps.lua:3056 scripts/scenario_50_gaps.lua:3076
 #, lua-format
 msgctxt "minefield-comms"
 msgid "Count above: %i"
-msgstr ""
+msgstr "Count above: %i"
 
 #: scripts/scenario_50_gaps.lua:3057 scripts/scenario_50_gaps.lua:3077
 #, lua-format
@@ -2020,201 +2331,203 @@ msgid ""
 "\n"
 "Count below: %i"
 msgstr ""
+"\n"
+"Count below: %i"
 
 #: scripts/scenario_50_gaps.lua:3124
 #, lua-format
 msgctxt "stationAssist-comms"
 msgid "Can you send a supply drop? (%d rep)"
-msgstr ""
+msgstr "Can you send a supply drop? (%d rep)"
 
 #: scripts/scenario_50_gaps.lua:3126
 msgctxt "stationAssist-comms"
 msgid "You need to set a waypoint before you can request backup."
-msgstr ""
+msgstr "You need to set a waypoint before you can request backup."
 
 #: scripts/scenario_50_gaps.lua:3128
 msgctxt "stationAssist-comms"
 msgid "To which waypoint should we deliver your supplies?"
-msgstr ""
+msgstr "To which waypoint should we deliver your supplies?"
 
 #: scripts/scenario_50_gaps.lua:3130 scripts/scenario_50_gaps.lua:3156
 #, lua-format
 msgctxt "stationAssist-comms"
 msgid "WP %d"
-msgstr ""
+msgstr "WP %d"
 
 #: scripts/scenario_50_gaps.lua:3138
 #, lua-format
 msgctxt "stationAssist-comms"
 msgid "We have dispatched a supply ship toward WP %d"
-msgstr ""
+msgstr "We have dispatched a supply ship toward WP %d"
 
 #: scripts/scenario_50_gaps.lua:3140 scripts/scenario_50_gaps.lua:3161
 msgctxt "needRep-comms"
 msgid "Not enough reputation!"
-msgstr ""
+msgstr "Not enough reputation!"
 
 #: scripts/scenario_50_gaps.lua:3150
 #, lua-format
 msgctxt "stationAssist-comms"
 msgid "Please send reinforcements! (%d rep)"
-msgstr ""
+msgstr "Please send reinforcements! (%d rep)"
 
 #: scripts/scenario_50_gaps.lua:3152
 msgctxt "stationAssist-comms"
 msgid "You need to set a waypoint before you can request reinforcements."
-msgstr ""
+msgstr "You need to set a waypoint before you can request reinforcements."
 
 #: scripts/scenario_50_gaps.lua:3154
 msgctxt "stationAssist-comms"
 msgid "To which waypoint should we dispatch the reinforcements?"
-msgstr ""
+msgstr "To which waypoint should we dispatch the reinforcements?"
 
 #: scripts/scenario_50_gaps.lua:3159
 #, lua-format
 msgctxt "stationAssist-comms"
 msgid "We have dispatched %s to assist at WP %d"
-msgstr ""
+msgstr "We have dispatched %s to assist at WP %d"
 
 #: scripts/scenario_50_gaps.lua:3200
 msgctxt "trade-comms"
 msgid " and will trade it for medicine"
-msgstr ""
+msgstr " and will trade it for medicine"
 
 #: scripts/scenario_50_gaps.lua:3205
 msgctxt "trade-comms"
 msgid " or food"
-msgstr ""
+msgstr " or food"
 
 #: scripts/scenario_50_gaps.lua:3207
 msgctxt "trade-comms"
 msgid " and will trade it for food"
-msgstr ""
+msgstr " and will trade it for food"
 
 #: scripts/scenario_50_gaps.lua:3213
 msgctxt "trade-comms"
 msgid " or luxury"
-msgstr ""
+msgstr " or luxury"
 
 #: scripts/scenario_50_gaps.lua:3215
 msgctxt "trade-comms"
 msgid " and will trade it for luxury"
-msgstr ""
+msgstr " and will trade it for luxury"
 
 #: scripts/scenario_50_gaps.lua:3267 scripts/scenario_50_gaps.lua:3440
 msgctxt "shipAssist-comms"
 msgid "What do you want?"
-msgstr ""
+msgstr "What do you want?"
 
 #: scripts/scenario_50_gaps.lua:3269
 msgctxt "shipAssist-comms"
 msgid "Sir, how can we assist?"
-msgstr ""
+msgstr "Sir, how can we assist?"
 
 #: scripts/scenario_50_gaps.lua:3271
 msgctxt "shipAssist-comms"
 msgid "Defend a waypoint"
-msgstr ""
+msgstr "Defend a waypoint"
 
 #: scripts/scenario_50_gaps.lua:3273
 msgctxt "shipAssist-comms"
 msgid "No waypoints set. Please set a waypoint first."
-msgstr ""
+msgstr "No waypoints set. Please set a waypoint first."
 
 #: scripts/scenario_50_gaps.lua:3276
 msgctxt "shipAssist-comms"
 msgid "Which waypoint should we defend?"
-msgstr ""
+msgstr "Which waypoint should we defend?"
 
 #: scripts/scenario_50_gaps.lua:3278
 #, lua-format
 msgctxt "shipAssist-comms"
 msgid "Defend WP %d"
-msgstr ""
+msgstr "Defend WP %d"
 
 #: scripts/scenario_50_gaps.lua:3280
 #, lua-format
 msgctxt "shipAssist-comms"
 msgid "We are heading to assist at WP %d."
-msgstr ""
+msgstr "We are heading to assist at WP %d."
 
 #: scripts/scenario_50_gaps.lua:3287
 msgctxt "shipAssist-comms"
 msgid "Assist me"
-msgstr ""
+msgstr "Assist me"
 
 #: scripts/scenario_50_gaps.lua:3288
 msgctxt "shipAssist-comms"
 msgid "Heading toward you to assist."
-msgstr ""
+msgstr "Heading toward you to assist."
 
 #: scripts/scenario_50_gaps.lua:3293
 msgctxt "shipAssist-comms"
 msgid "Report status"
-msgstr ""
+msgstr "Report status"
 
 #: scripts/scenario_50_gaps.lua:3294
 #, lua-format
 msgctxt "shipAssist-comms"
 msgid "Hull: %d%%\n"
-msgstr ""
+msgstr "Hull: %d%%\n"
 
 #: scripts/scenario_50_gaps.lua:3297
 #, lua-format
 msgctxt "shipAssist-comms"
 msgid "Shield: %d%%\n"
-msgstr ""
+msgstr "Shield: %d%%\n"
 
 #: scripts/scenario_50_gaps.lua:3299
 #, lua-format
 msgctxt "shipAssist-comms"
 msgid "Front Shield: %d%%\n"
-msgstr ""
+msgstr "Front Shield: %d%%\n"
 
 #: scripts/scenario_50_gaps.lua:3300
 #, lua-format
 msgctxt "shipAssist-comms"
 msgid "Rear Shield: %d%%\n"
-msgstr ""
+msgstr "Rear Shield: %d%%\n"
 
 #: scripts/scenario_50_gaps.lua:3303
 #, lua-format
 msgctxt "shipAssist-comms"
 msgid "Shield %s: %d%%\n"
-msgstr ""
+msgstr "Shield %s: %d%%\n"
 
 #: scripts/scenario_50_gaps.lua:3310
 #, lua-format
 msgctxt "shipAssist-comms"
 msgid "%s Missiles: %d/%d\n"
-msgstr ""
+msgstr "%s Missiles: %d/%d\n"
 
 #: scripts/scenario_50_gaps.lua:3319
 #, lua-format
 msgctxt "shipAssist-comms"
 msgid "Dock at %s"
-msgstr ""
+msgstr "Dock at %s"
 
 #: scripts/scenario_50_gaps.lua:3320
 #, lua-format
 msgctxt "shipAssist-comms"
 msgid "Docking at %s."
-msgstr ""
+msgstr "Docking at %s."
 
 #: scripts/scenario_50_gaps.lua:3332
 msgctxt "shipEnemy-comms"
 msgid "We will see to your destruction!"
-msgstr ""
+msgstr "We will see to your destruction!"
 
 #: scripts/scenario_50_gaps.lua:3333
 msgctxt "shipEnemy-comms"
 msgid "Your bloodline will end here!"
-msgstr ""
+msgstr "Your bloodline will end here!"
 
 #: scripts/scenario_50_gaps.lua:3334
 msgctxt "shipEnemy-comms"
 msgid "Your feeble threats are meaningless."
-msgstr ""
+msgstr "Your feeble threats are meaningless."
 
 #: scripts/scenario_50_gaps.lua:3336
 msgctxt "shipEnemy-comms"
@@ -2222,6 +2535,8 @@ msgid ""
 "Ktzzzsss.\n"
 "You will DIEEee weaklingsss!"
 msgstr ""
+"Ktzzzsss.\n"
+"You will DIEEee weaklingsss!"
 
 #: scripts/scenario_50_gaps.lua:3338
 msgctxt "shipEnemy-comms"
@@ -2229,11 +2544,13 @@ msgid ""
 "We wish you no harm, but will harm you if we must.\n"
 "End of transmission."
 msgstr ""
+"We wish you no harm, but will harm you if we must.\n"
+"End of transmission."
 
 #: scripts/scenario_50_gaps.lua:3340
 msgctxt "shipEnemy-comms"
 msgid "Stay out of our way, or your death will amuse us extremely!"
-msgstr ""
+msgstr "Stay out of our way, or your death will amuse us extremely!"
 
 #: scripts/scenario_50_gaps.lua:3342
 msgctxt "shipEnemy-comms"
@@ -2245,109 +2562,117 @@ msgid ""
 ":Do not cross us:\n"
 "Communication halted."
 msgstr ""
+"One zero one.\n"
+"No binary communication detected.\n"
+"Switching to universal speech.\n"
+"Generating appropriate response for target from human language archives.\n"
+":Do not cross us:\n"
+"Communication halted."
 
 #: scripts/scenario_50_gaps.lua:3343
 msgctxt "shipEnemy-comms"
 msgid "EXECUTE: SELFDESTRUCT"
-msgstr ""
+msgstr "EXECUTE: SELFDESTRUCT"
 
 #: scripts/scenario_50_gaps.lua:3344
 msgctxt "shipEnemy-comms"
 msgid "Rogue command received. Targeting source."
-msgstr ""
+msgstr "Rogue command received. Targeting source."
 
 #: scripts/scenario_50_gaps.lua:3345
 msgctxt "shipEnemy-comms"
 msgid "External command ignored."
-msgstr ""
+msgstr "External command ignored."
 
 #: scripts/scenario_50_gaps.lua:3347
 msgctxt "shipEnemy-comms"
 msgid ""
-"The hive suffers no threats. Opposition to any of us is opposition to us "
-"all.\n"
+"The hive suffers no threats. Opposition to any of us is opposition to us all.\n"
 "Stand down or prepare to donate your corpses toward our nutrition."
 msgstr ""
+"The hive suffers no threats. Opposition to any of us is opposition to us all.\n"
+"Stand down or prepare to donate your corpses toward our nutrition."
 
 #: scripts/scenario_50_gaps.lua:3348
 msgctxt "shipEnemy-comms"
 msgid "<Transmit 'The Itsy-Bitsy Spider' on all wavelengths>"
-msgstr ""
+msgstr "<Transmit 'The Itsy-Bitsy Spider' on all wavelengths>"
 
 #: scripts/scenario_50_gaps.lua:3349
 msgctxt "shipEnemy-comms"
 msgid "We do not need permission to pluck apart such an insignificant threat."
 msgstr ""
+"We do not need permission to pluck apart such an insignificant threat."
 
 #: scripts/scenario_50_gaps.lua:3350
 msgctxt "shipEnemy-comms"
 msgid "The hive has greater priorities than exterminating pests."
-msgstr ""
+msgstr "The hive has greater priorities than exterminating pests."
 
 #: scripts/scenario_50_gaps.lua:3352
 msgctxt "shipEnemy-comms"
 msgid "Mind your own business!"
-msgstr ""
+msgstr "Mind your own business!"
 
 #: scripts/scenario_50_gaps.lua:3372
 msgctxt "trade-comms"
 msgid "Yes?"
-msgstr ""
+msgstr "Yes?"
 
 #: scripts/scenario_50_gaps.lua:3374
 msgctxt "trade-comms"
 msgid "Where are you headed?"
-msgstr ""
+msgstr "Where are you headed?"
 
 #: scripts/scenario_50_gaps.lua:3396
 msgctxt "trade-comms"
 msgid "Insufficient inventory on freighter for trade"
-msgstr ""
+msgstr "Insufficient inventory on freighter for trade"
 
 #: scripts/scenario_50_gaps.lua:3401
 msgctxt "trade-comms"
 msgid "Traded"
-msgstr ""
+msgstr "Traded"
 
 #: scripts/scenario_50_gaps.lua:3408
 msgctxt "trade-comms"
 msgid "Insufficient luxury to trade"
-msgstr ""
+msgstr "Insufficient luxury to trade"
 
 #: scripts/scenario_50_gaps.lua:3420 scripts/scenario_50_gaps.lua:3461
 #: scripts/scenario_50_gaps.lua:3487 scripts/scenario_50_gaps.lua:3518
 msgctxt "trade-comms"
 msgid "Insufficient cargo space for purchase"
-msgstr ""
+msgstr "Insufficient cargo space for purchase"
 
 #: scripts/scenario_50_gaps.lua:3422 scripts/scenario_50_gaps.lua:3463
 #: scripts/scenario_50_gaps.lua:3489 scripts/scenario_50_gaps.lua:3520
 msgctxt "trade-comms"
 msgid "Insufficient inventory on freighter"
-msgstr ""
+msgstr "Insufficient inventory on freighter"
 
 #: scripts/scenario_50_gaps.lua:3425 scripts/scenario_50_gaps.lua:3466
 #: scripts/scenario_50_gaps.lua:3492 scripts/scenario_50_gaps.lua:3523
 msgctxt "needRep-comms"
 msgid "Insufficient reputation for purchase"
-msgstr ""
+msgstr "Insufficient reputation for purchase"
 
 #: scripts/scenario_50_gaps.lua:3430 scripts/scenario_50_gaps.lua:3471
 #: scripts/scenario_50_gaps.lua:3497 scripts/scenario_50_gaps.lua:3528
 msgctxt "trade-comms"
 msgid "Purchased"
-msgstr ""
+msgstr "Purchased"
 
 #: scripts/scenario_50_gaps.lua:3443
 #, lua-format
 msgctxt "trade-comms"
 msgid "Where are you headed? (cost: %f reputation)"
-msgstr ""
+msgstr "Where are you headed? (cost: %f reputation)"
 
 #: scripts/scenario_50_gaps.lua:3507
 msgctxt "trade-comms"
 msgid "Why are you bothering me?"
-msgstr ""
+msgstr "Why are you bothering me?"
 
 #: scripts/scenario_50_gaps.lua:3540
 msgctxt "ship-comms"
@@ -2355,6 +2680,8 @@ msgid ""
 "Sorry, we have no time to chat with you.\n"
 "We are on an important mission."
 msgstr ""
+"Sorry, we have no time to chat with you.\n"
+"We are on an important mission."
 
 #: scripts/scenario_50_gaps.lua:3542
 msgctxt "ship-comms"
@@ -2362,16 +2689,18 @@ msgid ""
 "We have nothing for you.\n"
 "Good day."
 msgstr ""
+"We have nothing for you.\n"
+"Good day."
 
 #: scripts/scenario_50_gaps.lua:3862
 msgctxt "repairCrew-msgEngineer"
 msgid "One of your repair crew has perished"
-msgstr ""
+msgstr "One of your repair crew has perished"
 
 #: scripts/scenario_50_gaps.lua:3866
 msgctxt "repairCrew-msgEngineer+"
 msgid "One of your repair crew has perished"
-msgstr ""
+msgstr "One of your repair crew has perished"
 
 #: scripts/scenario_50_gaps.lua:3875
 #, lua-format
@@ -2380,55 +2709,57 @@ msgid ""
 "Since %s is so isolated and so close to enemy territory, we need you to lay "
 "a minefield across each gap in the surrounding asteroids"
 msgstr ""
+"Since %s is so isolated and so close to enemy territory, we need you to lay "
+"a minefield across each gap in the surrounding asteroids"
 
 #: scripts/scenario_50_gaps.lua:3876
 msgctxt "goal-comms"
 msgid "Lay minefield across each gap in surrounding asteroids."
-msgstr ""
+msgstr "Lay minefield across each gap in surrounding asteroids."
 
 #: scripts/scenario_50_gaps.lua:3894
 #, lua-format
 msgctxt "minefieldOrder-shiplog"
 msgid "Congratulations, You've closed the gap at heading 180 from %s"
-msgstr ""
+msgstr "Congratulations, You've closed the gap at heading 180 from %s"
 
 #: scripts/scenario_50_gaps.lua:3895
 msgctxt "minefieldOrders-comms"
 msgid " South gap closed."
-msgstr ""
+msgstr " South gap closed."
 
 #: scripts/scenario_50_gaps.lua:3905
 #, lua-format
 msgctxt "minefieldOrders-shiplog"
 msgid "Congratulations, You've closed the gap at heading 0 from %s"
-msgstr ""
+msgstr "Congratulations, You've closed the gap at heading 0 from %s"
 
 #: scripts/scenario_50_gaps.lua:3906
 msgctxt "minefieldOrders-comms"
 msgid " North gap closed."
-msgstr ""
+msgstr " North gap closed."
 
 #: scripts/scenario_50_gaps.lua:3916
 #, lua-format
 msgctxt "minefieldOrders-shiplog"
 msgid "Congratulations, You've closed the gap at heading 270 from %s"
-msgstr ""
+msgstr "Congratulations, You've closed the gap at heading 270 from %s"
 
 #: scripts/scenario_50_gaps.lua:3917
 msgctxt "minefieldOrders-comms"
 msgid " West gap closed."
-msgstr ""
+msgstr " West gap closed."
 
 #: scripts/scenario_50_gaps.lua:3927
 #, lua-format
 msgctxt "minefieldOrders-shiplog"
 msgid "Congratulations, You've closed the gap at heading 90 from %s"
-msgstr ""
+msgstr "Congratulations, You've closed the gap at heading 90 from %s"
 
 #: scripts/scenario_50_gaps.lua:3928
 msgctxt "minefieldOrders-comms"
 msgid " East gap closed."
-msgstr ""
+msgstr " East gap closed."
 
 #: scripts/scenario_50_gaps.lua:3938
 #, lua-format
@@ -2438,12 +2769,15 @@ msgid ""
 "bases surrounding us while keeping %s alive. You'll find them straight out "
 "from the gaps"
 msgstr ""
+"You've closed the gaps. Now for the Quixotic part: go destroy the enemy "
+"bases surrounding us while keeping %s alive. You'll find them straight out "
+"from the gaps"
 
 #: scripts/scenario_50_gaps.lua:3939
 #, lua-format
 msgctxt "minefieldOrders-comms"
 msgid "Protect %s. Destroy enemy bases straight out from gaps"
-msgstr ""
+msgstr "Protect %s. Destroy enemy bases straight out from gaps"
 
 msgid "Using Nautilus class mine layer, lay mines across the space lanes expected to be used by invading enemies\n\nVersion 2 - Jan2025\n\nMission advice: It's better to hit an asteroid than a mine"
 msgstr ""

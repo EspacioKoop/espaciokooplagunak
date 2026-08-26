@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import * as laminas from "../scripts/laminas-clasicas.mjs";
 import {
   tramaGrabado,
   discoLunar,
@@ -128,6 +129,8 @@ test("los data URI son autosuficientes y sin referencias externas", () => {
   assert.doesNotMatch(svg, /https?:\/\/(?!www\.w3\.org)/);
   assert.doesNotMatch(svg, /<image/);
 });
+
+
 
 test("la paleta es tinta sobre papel, no colores de pantalla", () => {
   assert.equal(typeof TINTA.linea, "string");

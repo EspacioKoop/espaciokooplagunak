@@ -1,0 +1,48 @@
+#
+msgid ""
+msgstr ""
+
+msgid "Allies and Enemies"
+msgstr "Allies and Enemies"
+
+msgid "missions[All|Default]"
+msgstr "missions[All|Default]"
+
+msgid "name"
+msgstr "name"
+
+msgid "setting[Murphy]"
+msgstr "setting[Murphy]"
+
+msgid "murphy[Normal|Default]"
+msgstr "murphy[Normal|Default]"
+
+msgid "missions[One]"
+msgstr "missions[One]"
+
+msgid "enemies[Hard]"
+msgstr "enemies[Hard]"
+
+msgid "setting[Missions]"
+msgstr "setting[Missions]"
+
+msgid "murphy[Easy]"
+msgstr "murphy[Easy]"
+
+msgid "setting[Enemies]"
+msgstr "setting[Enemies]"
+
+msgid "enemies[Easy]"
+msgstr "enemies[Easy]"
+
+msgid "type"
+msgstr "type"
+
+msgid "enemies[Normal|Default]"
+msgstr "enemies[Normal|Default]"
+
+msgid "description"
+msgstr "description"
+
+msgid "murphy[Hard]"
+msgstr "murphy[Hard]"

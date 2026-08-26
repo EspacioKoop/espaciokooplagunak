@@ -1,0 +1,256 @@
+TAP version 13
+# Subtest: V1: arranca en la pestaña Estado y pide healthz+state+scenario+events (no contacts)
+ok 1 - V1: arranca en la pestaña Estado y pide healthz+state+scenario+events (no contacts)
+  ---
+  duration_ms: 11.596075
+  type: 'test'
+  ...
+# Subtest: V1: cambiar a la pestaña Mapa hace que el siguiente ciclo pida contacts
+ok 2 - V1: cambiar a la pestaña Mapa hace que el siguiente ciclo pida contacts
+  ---
+  duration_ms: 7.287192
+  type: 'test'
+  ...
+# Subtest: V1: un fallo de `contacts` con Mapa activo no toca la pestaña Estado ni la conexión global
+ok 3 - V1: un fallo de `contacts` con Mapa activo no toca la pestaña Estado ni la conexión global
+  ---
+  duration_ms: 6.147469
+  type: 'test'
+  ...
+# Subtest: V1: healthz caído: única señal global de error, ninguna pestaña inventa datos
+ok 4 - V1: healthz caído: única señal global de error, ninguna pestaña inventa datos
+  ---
+  duration_ms: 6.198664
+  type: 'test'
+  ...
+# Subtest: V1: cerrar invalida el sondeo en vuelo: no queda ningún timer vivo
+ok 5 - V1: cerrar invalida el sondeo en vuelo: no queda ningún timer vivo
+  ---
+  duration_ms: 6.027988
+  type: 'test'
+  ...
+# Subtest: V1: pide el catálogo de anclas una sola vez y lo ofrece al GM
+ok 6 - V1: pide el catálogo de anclas una sola vez y lo ofrece al GM
+  ---
+  duration_ms: 9.428745
+  type: 'test'
+  ...
+# Subtest: V1: reposicionar envía el ancla elegida al puente y anuncia el resultado
+ok 7 - V1: reposicionar envía el ancla elegida al puente y anuncia el resultado
+  ---
+  duration_ms: 8.208347
+  type: 'test'
+  ...
+# Subtest: V1: un ancla fuera del catálogo no llega a la red
+ok 8 - V1: un ancla fuera del catálogo no llega a la red
+  ---
+  duration_ms: 4.832949
+  type: 'test'
+  ...
+# Subtest: V1: quien no es GM no reposiciona, ni con el ancla correcta
+ok 9 - V1: quien no es GM no reposiciona, ni con el ancla correcta
+  ---
+  duration_ms: 4.171462
+  type: 'test'
+  ...
+# Subtest: V1: un catálogo de anclas caído se reintenta, no apaga el bloque para siempre
+ok 10 - V1: un catálogo de anclas caído se reintenta, no apaga el bloque para siempre
+  ---
+  duration_ms: 4.701809
+  type: 'test'
+  ...
+# Subtest: V1: derivarMovimiento returns correct values when moving
+ok 11 - V1: derivarMovimiento returns correct values when moving
+  ---
+  duration_ms: 0.145816
+  type: 'test'
+  ...
+# Subtest: V1: derivarMovimiento returns correct values when not moving
+ok 12 - V1: derivarMovimiento returns correct values when not moving
+  ---
+  duration_ms: 0.113454
+  type: 'test'
+  ...
+# Subtest: V1: derivarMovimiento handles null centro
+ok 13 - V1: derivarMovimiento handles null centro
+  ---
+  duration_ms: 0.096111
+  type: 'test'
+  ...
+# Subtest: V1: defaultOptions contains expected properties
+not ok 14 - V1: defaultOptions contains expected properties
+  ---
+  duration_ms: 2.25745
+  type: 'test'
+  location: '/home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/tests/consola-caliente-v1.test.mjs:316:1'
+  failureType: 'testCodeFailure'
+  error: 'Class extends value undefined is not a constructor or null'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    crearClaseConsolaCalienteV1 (file:///home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/scripts/consola-caliente-v1.mjs?consola-test=0.9314954337321972:133:45)
+    TestContext.<anonymous> (file:///home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/tests/consola-caliente-v1.test.mjs:320:17)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: V1: title getter returns localized string
+not ok 15 - V1: title getter returns localized string
+  ---
+  duration_ms: 2.608767
+  type: 'test'
+  location: '/home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/tests/consola-caliente-v1.test.mjs:331:1'
+  failureType: 'testCodeFailure'
+  error: 'Class extends value undefined is not a constructor or null'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    crearClaseConsolaCalienteV1 (file:///home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/scripts/consola-caliente-v1.mjs?consola-test=0.7065649343604403:133:45)
+    TestContext.<anonymous> (file:///home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/tests/consola-caliente-v1.test.mjs:335:17)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: V1: regenerarDecorado exists and can be called
+ok 16 - V1: regenerarDecorado exists and can be called
+  ---
+  duration_ms: 7.756971
+  type: 'test'
+  ...
+# Subtest: V1: \#aplicarEstadoTab handles healthz error
+ok 17 - V1: \#aplicarEstadoTab handles healthz error
+  ---
+  duration_ms: 3.794425
+  type: 'test'
+  ...
+# Subtest: V1: \#aplicarEstadoTab handles state error
+not ok 18 - V1: \#aplicarEstadoTab handles state error
+  ---
+  duration_ms: 4.306255
+  type: 'test'
+  location: '/home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/tests/consola-caliente-v1.test.mjs:371:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'No se pudo contactar con el puente en /v1/state'
+    - 'state inaccesible'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'state inaccesible'
+  actual: 'No se pudo contactar con el puente en /v1/state'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/tests/consola-caliente-v1.test.mjs:376:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: V1: \#aplicarEstadoTab early return when state sin-datos (not requested)
+not ok 19 - V1: \#aplicarEstadoTab early return when state sin-datos (not requested)
+  ---
+  duration_ms: 3.612242
+  type: 'test'
+  location: '/home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/tests/consola-caliente-v1.test.mjs:380:1'
+  failureType: 'testCodeFailure'
+  error: 'timers is not defined'
+  code: 'ERR_TEST_FAILURE'
+  name: 'ReferenceError'
+  stack: |-
+    TestContext.<anonymous> (file:///home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/tests/consola-caliente-v1.test.mjs:395:17)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: V1: \#aplicarMapaTab handles mapa error
+not ok 20 - V1: \#aplicarMapaTab handles mapa error
+  ---
+  duration_ms: 5.815047
+  type: 'test'
+  location: '/home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/tests/consola-caliente-v1.test.mjs:406:1'
+  failureType: 'testCodeFailure'
+  error: 'timers is not defined'
+  code: 'ERR_TEST_FAILURE'
+  name: 'ReferenceError'
+  stack: |-
+    TestContext.<anonymous> (file:///home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/tests/consola-caliente-v1.test.mjs:412:17)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: V1: \#aplicarMapaTab early return when sin-datos (not requested)
+not ok 21 - V1: \#aplicarMapaTab early return when sin-datos (not requested)
+  ---
+  duration_ms: 3.921801
+  type: 'test'
+  location: '/home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/tests/consola-caliente-v1.test.mjs:422:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    'ok' !== 'sin-datos'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'sin-datos'
+  actual: 'ok'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/tests/consola-caliente-v1.test.mjs:429:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: V1: \#sondear sets timer after execution
+ok 22 - V1: \#sondear sets timer after execution
+  ---
+  duration_ms: 3.572778
+  type: 'test'
+  ...
+# Subtest: V1: switching to mapa tab triggers contacts request
+not ok 23 - V1: switching to mapa tab triggers contacts request
+  ---
+  duration_ms: 3.637037
+  type: 'test'
+  location: '/home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/tests/consola-caliente-v1.test.mjs:448:1'
+  failureType: 'testCodeFailure'
+  error: 'timers is not defined'
+  code: 'ERR_TEST_FAILURE'
+  name: 'ReferenceError'
+  stack: |-
+    TestContext.<anonymous> (file:///home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/tests/consola-caliente-v1.test.mjs:453:17)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: V1: switching to encuentros tab triggers encounters request (lazy)
+ok 24 - V1: switching to encuentros tab triggers encounters request (lazy)
+  ---
+  duration_ms: 3.881537
+  type: 'test'
+  ...
+# Subtest: V1: accessing getData returns expected structure
+not ok 25 - V1: accessing getData returns expected structure
+  ---
+  duration_ms: 8.348796
+  type: 'test'
+  location: '/home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/tests/consola-caliente-v1.test.mjs:478:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok(data.encontres)
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/tests/consola-caliente-v1.test.mjs:486:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..25
+# tests 25
+# suites 0
+# pass 17
+# fail 8
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 153.010238

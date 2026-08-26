@@ -1,0 +1,298 @@
+TAP version 13
+# Subtest: V1: arranca en la pestaña Estado y pide healthz+state+scenario+events (no contacts)
+ok 1 - V1: arranca en la pestaña Estado y pide healthz+state+scenario+events (no contacts)
+  ---
+  duration_ms: 17.898579
+  type: 'test'
+  ...
+# Subtest: V1: cambiar a la pestaña Mapa hace que el siguiente ciclo pida contacts
+ok 2 - V1: cambiar a la pestaña Mapa hace que el siguiente ciclo pida contacts
+  ---
+  duration_ms: 10.261956
+  type: 'test'
+  ...
+# Subtest: V1: un fallo de `contacts` con Mapa activo no toca la pestaña Estado ni la conexión global
+ok 3 - V1: un fallo de `contacts` con Mapa activo no toca la pestaña Estado ni la conexión global
+  ---
+  duration_ms: 7.763449
+  type: 'test'
+  ...
+# Subtest: V1: healthz caído: única señal global de error, ninguna pestaña inventa datos
+ok 4 - V1: healthz caído: única señal global de error, ninguna pestaña inventa datos
+  ---
+  duration_ms: 9.460161
+  type: 'test'
+  ...
+# Subtest: V1: cerrar invalida el sondeo en vuelo: no queda ningún timer vivo
+ok 5 - V1: cerrar invalida el sondeo en vuelo: no queda ningún timer vivo
+  ---
+  duration_ms: 11.691952
+  type: 'test'
+  ...
+# Subtest: V1: pide el catálogo de anclas una sola vez y lo ofrece al GM
+ok 6 - V1: pide el catálogo de anclas una sola vez y lo ofrece al GM
+  ---
+  duration_ms: 20.120169
+  type: 'test'
+  ...
+# Subtest: V1: reposicionar envía el ancla elegida al puente y anuncia el resultado
+ok 7 - V1: reposicionar envía el ancla elegida al puente y anuncia el resultado
+  ---
+  duration_ms: 8.9022
+  type: 'test'
+  ...
+# Subtest: V1: un ancla fuera del catálogo no llega a la red
+ok 8 - V1: un ancla fuera del catálogo no llega a la red
+  ---
+  duration_ms: 7.873066
+  type: 'test'
+  ...
+# Subtest: V1: quien no es GM no reposiciona, ni con el ancla correcta
+ok 9 - V1: quien no es GM no reposiciona, ni con el ancla correcta
+  ---
+  duration_ms: 7.369443
+  type: 'test'
+  ...
+# Subtest: V1: un catálogo de anclas caído se reintenta, no apaga el bloque para siempre
+ok 10 - V1: un catálogo de anclas caído se reintenta, no apaga el bloque para siempre
+  ---
+  duration_ms: 7.286909
+  type: 'test'
+  ...
+# Subtest: V1: derivarMovimiento returns correct values when moving
+ok 11 - V1: derivarMovimiento returns correct values when moving
+  ---
+  duration_ms: 0.24887
+  type: 'test'
+  ...
+# Subtest: V1: derivarMovimiento returns correct values when not moving
+ok 12 - V1: derivarMovimiento returns correct values when not moving
+  ---
+  duration_ms: 0.172419
+  type: 'test'
+  ...
+# Subtest: V1: derivarMovimiento handles null centro
+ok 13 - V1: derivarMovimiento handles null centro
+  ---
+  duration_ms: 0.159171
+  type: 'test'
+  ...
+# Subtest: V1: defaultOptions contains expected properties
+not ok 14 - V1: defaultOptions contains expected properties
+  ---
+  duration_ms: 3.326894
+  type: 'test'
+  location: '/home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/tests/consola-caliente-v1.test.mjs:316:1'
+  failureType: 'testCodeFailure'
+  error: 'Class extends value undefined is not a constructor or null'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    crearClaseConsolaCalienteV1 (file:///home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/scripts/consola-caliente-v1.mjs?consola-test=0.115726171713874:133:45)
+    TestContext.<anonymous> (file:///home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/tests/consola-caliente-v1.test.mjs:320:17)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: V1: title getter returns localized string
+not ok 15 - V1: title getter returns localized string
+  ---
+  duration_ms: 3.188877
+  type: 'test'
+  location: '/home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/tests/consola-caliente-v1.test.mjs:331:1'
+  failureType: 'testCodeFailure'
+  error: 'Class extends value undefined is not a constructor or null'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    crearClaseConsolaCalienteV1 (file:///home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/scripts/consola-caliente-v1.mjs?consola-test=0.41985071459918033:133:45)
+    TestContext.<anonymous> (file:///home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/tests/consola-caliente-v1.test.mjs:335:17)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: V1: regenerarDecorado exists and can be called
+ok 16 - V1: regenerarDecorado exists and can be called
+  ---
+  duration_ms: 6.674512
+  type: 'test'
+  ...
+# Subtest: V1: \#aplicarEstadoTab handles healthz error
+ok 17 - V1: \#aplicarEstadoTab handles healthz error
+  ---
+  duration_ms: 6.33273
+  type: 'test'
+  ...
+# Subtest: V1: \#aplicarEstadoTab handles state error
+not ok 18 - V1: \#aplicarEstadoTab handles state error
+  ---
+  duration_ms: 6.401041
+  type: 'test'
+  location: '/home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/tests/consola-caliente-v1.test.mjs:371:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'No se pudo contactar con el puente en /v1/state'
+    - 'state inaccesible'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'state inaccesible'
+  actual: 'No se pudo contactar con el puente en /v1/state'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/tests/consola-caliente-v1.test.mjs:376:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: V1: \#aplicarEstadoTab early return when state sin-datos (not requested)
+not ok 19 - V1: \#aplicarEstadoTab early return when state sin-datos (not requested)
+  ---
+  duration_ms: 6.608412
+  type: 'test'
+  location: '/home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/tests/consola-caliente-v1.test.mjs:380:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    'ok' !== 'sin-datos'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'sin-datos'
+  actual: 'ok'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/tests/consola-caliente-v1.test.mjs:402:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: V1: \#aplicarMapaTab handles mapa error
+not ok 20 - V1: \#aplicarMapaTab handles mapa error
+  ---
+  duration_ms: 5.50298
+  type: 'test'
+  location: '/home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/tests/consola-caliente-v1.test.mjs:406:1'
+  failureType: 'testCodeFailure'
+  error: 'timers is not defined'
+  code: 'ERR_TEST_FAILURE'
+  name: 'ReferenceError'
+  stack: |-
+    TestContext.<anonymous> (file:///home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/tests/consola-caliente-v1.test.mjs:412:17)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: V1: \#aplicarMapaTab early return when sin-datos (not requested)
+not ok 21 - V1: \#aplicarMapaTab early return when sin-datos (not requested)
+  ---
+  duration_ms: 7.527689
+  type: 'test'
+  location: '/home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/tests/consola-caliente-v1.test.mjs:422:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    'ok' !== 'sin-datos'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'sin-datos'
+  actual: 'ok'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/tests/consola-caliente-v1.test.mjs:429:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: V1: \#sondear sets timer after execution
+ok 22 - V1: \#sondear sets timer after execution
+  ---
+  duration_ms: 6.271866
+  type: 'test'
+  ...
+# Subtest: V1: switching to mapa tab triggers contacts request
+not ok 23 - V1: switching to mapa tab triggers contacts request
+  ---
+  duration_ms: 5.341894
+  type: 'test'
+  location: '/home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/tests/consola-caliente-v1.test.mjs:448:1'
+  failureType: 'testCodeFailure'
+  error: 'timers is not defined'
+  code: 'ERR_TEST_FAILURE'
+  name: 'ReferenceError'
+  stack: |-
+    TestContext.<anonymous> (file:///home/eloy/test0101/espaciokooplagunak/.worktrees/t_d31d6aec/foundry-module/tests/consola-caliente-v1.test.mjs:453:17)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: V1: switching to encuentros tab triggers encounters request (lazy)
+ok 24 - V1: switching to encuentros tab triggers encounters request (lazy)
+  ---
+  duration_ms: 5.719838
+  type: 'test'
+  ...
+# Subtest: V1: accessing getData returns expected structure
+ok 25 - V1: accessing getData returns expected structure
+  ---
+  duration_ms: 6.311554
+  type: 'test'
+  ...
+1..25
+# tests 25
+# suites 0
+# pass 18
+# fail 7
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 347.002077
+----------------------------|---------|----------|---------|---------|------------------------------
+File                        | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s            
+----------------------------|---------|----------|---------|---------|------------------------------
+All files                   |   62.31 |    55.96 |   35.04 |   62.31 |                              
+ scripts                    |   62.19 |    55.97 |   34.92 |   62.19 |                              
+  alarma-cruzada-escena.mjs |   51.77 |    33.33 |      40 |   51.77 | 30-36,69-100,113-141         
+  alarma-cruzada.mjs        |   72.22 |       40 |   42.85 |   72.22 | ...53-57,69-71,80-87,101-108 
+  alerta-escena.mjs         |   58.56 |       30 |   28.57 |   58.56 | ...84-91,103-130,156,167-181 
+  alertas-nave.mjs          |   54.16 |       40 |   71.42 |   54.16 | ...5,100-102,128-131,135-167 
+  barras-estado.mjs         |   66.32 |       75 |      50 |   66.32 | 43-47,59-67,73-89,97-98      
+  bitacora-nave.mjs         |   40.62 |      100 |       0 |   40.62 | 8-9,12-14,17-19,22-32        
+  bridge-client.mjs         |    61.7 |    77.77 |   25.49 |    61.7 | ...9,531-532,539-543,548-549 
+  bridge-token-session.mjs  |   19.29 |    66.66 |   18.75 |   19.29 | ...1,143-152,154-189,191-228 
+  casco-clases.mjs          |   80.26 |      100 |       0 |   80.26 | 52-55,63-70,74-76            
+  consola-caliente-poll.mjs |     100 |     91.3 |     100 |     100 | 39,80                        
+  consola-caliente-v1.mjs   |   71.13 |       66 |      70 |   71.13 | ...-1084,1087-1089,1092-1110 
+  decorado-fondo.mjs        |    53.6 |    85.71 |      30 |    53.6 | ...1,865-874,876-880,884-888 
+  diagnostico-conexion.mjs  |    58.1 |      100 |       0 |    58.1 | 31-34,48-74                  
+  encuentro-control.mjs     |   82.88 |    86.66 |   66.66 |   82.88 | 59-68,75-80,106-108          
+  event-journal.mjs         |   47.39 |    36.36 |      20 |   47.39 | ...5,142-145,148-168,170-172 
+  foco-render.mjs           |   70.32 |       25 |      50 |   70.32 | 18-22,36-42,59-68,82,85-88   
+  iconos-sistema.mjs        |   47.85 |      100 |       0 |   47.85 | ...4,128-142,146-147,159-163 
+  ingenieria-control.mjs    |   87.27 |    69.23 |   42.85 |   87.27 | ...-73,88-96,104-108,154-156 
+  lagunak-constantes.mjs    |     100 |    66.66 |     100 |     100 | 28                           
+  lamina-contacto.mjs       |   61.32 |    42.85 |   66.66 |   61.32 | 54-65,78-106                 
+  laminas-clasicas.mjs      |   78.09 |       80 |   71.42 |   78.09 | ...6,244-248,269-275,282-283 
+  maniobra-control.mjs      |   71.73 |     90.9 |      50 |   71.73 | 35-48,62-81,88-92            
+  mapa-marco.mjs            |     100 |      100 |     100 |     100 |                              
+  mapa-render.mjs           |   17.64 |      100 |       0 |   17.64 | 38-192,198-238               
+  nave-sprite.mjs           |   56.84 |      100 |       0 |   56.84 | ...6,129-138,147-160,168-190 
+  nivel-alerta.mjs          |   89.43 |       48 |     100 |   89.43 | ...-89,97-98,110-114,121-122 
+  paleta.mjs                |   96.34 |      100 |       0 |   96.34 | ...0,596-606,614-618,626-630 
+  pausa-control.mjs         |    92.5 |       75 |     100 |    92.5 | 37-38,46-49                  
+  proyeccion-puesto.mjs     |   56.11 |      100 |       0 |   56.11 | ...5,125-136,144-151,161-180 
+  reposicion-control.mjs    |   98.93 |    71.42 |     100 |   98.93 | 67                           
+  requisitos-puesto.mjs     |    54.7 |      100 |       0 |    54.7 | ...89,97-109,119-153,163-170 
+  retrato-tripulante.mjs    |   60.41 |      100 |       0 |   60.41 | ...0,142-147,162-187,191-192 
+  retro3d-estrellas.mjs     |   53.42 |      100 |       0 |   53.42 | ...80,95-134,137-141,143-146 
+  retro3d-lienzo.mjs        |   36.92 |      100 |       0 |   36.92 | ...4,372-393,402-412,426-455 
+  retro3d.mjs               |   47.24 |     62.5 |      10 |   47.24 | ...6,710-729,745-957,961-968 
+  sensores-lista.mjs        |   43.47 |      100 |       0 |   43.47 | ...42-44,50-54,63-99,103-115 
+  ship-view.mjs             |   68.13 |    37.14 |   57.14 |   68.13 | ...4-38,43-48,70-112,189,201 
+  station-actions.mjs       |   87.02 |      100 |       0 |   87.02 | 219-222,228-236,242-262      
+  station-assignment.mjs    |   33.83 |       50 |   16.66 |   33.83 | ...,43-68,72-83,86-88,91-133 
+  station-workspaces.mjs    |      75 |     22.6 |   73.52 |      75 | ...4-519,535-536,592-598,681 
+  tempo-control.mjs         |   36.36 |      100 |       0 |   36.36 | 5-11                         
+  ventana-nave.mjs          |   50.09 |    48.38 |   39.13 |   50.09 | ...4-510,512,527-536,538-539 
+ scripts/minijuegos         |   77.77 |    55.55 |   42.85 |   77.77 |                              
+  aleatorio.mjs             |   77.77 |    55.55 |   42.85 |   77.77 | 22-23,51-55,62,65,73-81      
+----------------------------|---------|----------|---------|---------|------------------------------

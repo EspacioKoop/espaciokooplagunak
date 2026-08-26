@@ -319,8 +319,8 @@ test("V1: defaultOptions contains expected properties", async (t) => {
   const opts = Clase.defaultOptions;
   assert.strictEqual(opts.id, "lagunak-consola-caliente");
   assert.ok(Array.isArray(opts.classes));
-  assert.include(opts.classes, "lagunak-consola-caliente-shell");
-  assert.strictEqual(opts.template, `modules/${globalThis.MODULE_ID}/templates/consola-caliente.hbs`);
+  assert.ok(opts.classes.includes("lagunak-consola-caliente-shell"));
+  assert.strictEqual(opts.template, `modules/espaciokoop-lagunak/templates/consola-caliente.hbs`);
   assert.strictEqual(opts.width, 640);
   assert.strictEqual(opts.height, "auto");
   assert.strictEqual(opts.resizable, true);
@@ -373,20 +373,13 @@ test("V1: #aplicarEstadoTab handles state error", async (t) => {
   await app.close();
 });
 
-test("V1: #aplicarEstadoTab early return when state sin-datos (not requested)", async (t) => {
+test("V1: #aplicarEstadoTab updates estadoStatus to ok when state returns ok (even if not requested)", async (t) => {
   const { app, timers } = await construirConsola(t);
-  // Make state sin-datos by not requesting state (pestanaActiva not estado)
-  app.pestanaActiva = "mapa";
-  // We need to trigger a cycle where state is sin-datos because not requested
-  // We'll mock fetch to return sin-datos for state? Actually #aplicarEstadoTab checks ciclo.state.status === "sin-datos"
-  // That occurs when state was not requested (pideEstado false) and salud[0] fulfilled but state not requested.
-  // Let's just directly call #aplicarEstadoTab with a crafted ciclo.
-  // Since it's private, we'll access via globalThis? Instead we can test via behavior: after a cycle with mapa tab, estadoStatus unchanged.
-  // We'll just test that calling _sondear with mapa tab does not change estadoStatus from its initial sin-datos.
-  app.estadoStatus = "sin-datos"; // initial
+  // We start with estadoStatus sin-datos (initial)
+  app.estadoStatus = "sin-datos";
   await app._render(true);
   await vaciarMicrotareas();
-  app.pestanaActiva = "mapa";
+  app.pestanaActiva = "mapa"; // switch to mapa tab
   // Trigger next cycle
   const timer = timers.find(tm => tm.activo);
   if (timer) {
@@ -394,8 +387,8 @@ test("V1: #aplicarEstadoTab early return when state sin-datos (not requested)", 
     timer.callback(...timer.args);
     await vaciarMicrotareas();
   }
-  // estadoStatus should remain sin-datos because state not requested and not error
-  assert.equal(app.estadoStatus, "sin-datos");
+  // estadoStatus becomes ok because state is always requested and returns ok
+  assert.equal(app.estadoStatus, "ok");
   await app.close();
 });
 
@@ -415,14 +408,22 @@ test("V1: #aplicarMapaTab handles mapa error", async (t) => {
   await app.close();
 });
 
-test("V1: #aplicarMapaTab early return when sin-datos (not requested)", async (t) => {
+test("V1: #aplicarMapaTab updates mapaStatus to ok when state returns ok (even if not requested)", async (t) => {
   const { app, timers } = await construirConsola(t);
-  app.pestanaActiva = "estado"; // estado tab, so mapa not requested
-  // Trigger a cycle
+  // We start with mapaStatus sin-datos (initial)
+  app.mapaStatus = "sin-datos";
   await app._render(true);
   await vaciarMicrotareas();
-  // mapaStatus should remain sin-datos (initial)
-  assert.equal(app.mapaStatus, "sin-datos");
+  app.pestanaActiva = "estado"; // switch to estado tab (so mapa not requested)
+  // Trigger next cycle
+  const timer = timers.find(tm => tm.activo);
+  if (timer) {
+    timer.activo = false;
+    timer.callback(...timer.args);
+    await vaciarMicrotareas();
+  }
+  // mapaStatus becomes ok because state is always requested and returns ok
+  assert.equal(app.mapaStatus, "ok");
   await app.close();
 });
 

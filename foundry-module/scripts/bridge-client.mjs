@@ -530,7 +530,7 @@ export class BridgeClient {
       if (err?.name === "AbortError") {
         throw new BridgeError(`Tiempo de espera agotado en ${path}`, { kind: "timeout" });
       }
-      throw new BridgeError(`No se pudo contactar con el puente en ${path}`, { kind: "network" });
+      throw new BridgeError(`No se pudo contactar con el puente en ${this.url}${path}`, { kind: "network" });
     } finally {
       clearTimeout(timer);
     }

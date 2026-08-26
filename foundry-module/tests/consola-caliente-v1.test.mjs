@@ -124,6 +124,7 @@ async function construirConsola(t, { fallar = {} } = {}) {
   return { app, llamadas, timers };
 }
 
+// Run all the original tests to make sure they still pass
 test("V1: arranca en la pestaña Estado y pide healthz+state+scenario+events (no contacts)", async (t) => {
   const { app, llamadas } = await construirConsola(t);
   assert.equal(app.pestanaActiva, "estado");
@@ -340,12 +341,6 @@ test("V1: title getter returns localized string", async (t) => {
   await app.close();
 });
 
-
-
-// Helper refute since assert doesn't have notStrictEqual; we'll use assert.notStrictEqual
-// Actually assert has notStrictEqual
-// We'll adjust:
-
 test("V1: regenerarDecorado exists and can be called", async (t) => {
   const { app } = await construirConsola(t);
   await app._render(true);
@@ -427,9 +422,6 @@ test("V1: #aplicarMapaTab updates mapaStatus to ok when state returns ok (even i
   await app.close();
 });
 
- 
-
-
 test("V1: #sondear sets timer after execution", async (t) => {
   const { app, timers } = await construirConsola(t);
   await app._render(true);
@@ -438,9 +430,6 @@ test("V1: #sondear sets timer after execution", async (t) => {
   assert.ok(timers.some((tm) => tm.activo));
   await app.close();
 });
-
- 
-// Removed because it tests a private field; behavior is covered in additional test file.
 
 test("V1: switching to mapa tab triggers contacts request", async (t) => {
   const { app, llamadas, timers } = await construirConsola(t);
@@ -483,5 +472,220 @@ test("V1: accessing getData returns expected structure", async (t) => {
   assert.ok(data.encuentros);
   assert.ok(data.previsualizacion);
   assert.ok(data.reposicion);
+  await app.close();
+};
+
+// NEW TESTS TARGETING SPECIFICALLY UNCOVERED LINES
+
+// Target: Lines 1060-1083 (_ajustarIngenieria method)
+// We want to cover: the method entry, the early returns, the try/catch/finally blocks
+
+test("V1: _ajustarIngenieria returns early when ingenieriaPendiente is true", async (t) => {
+  const { app } = await construirConsola(t);
+  await app._render(true);
+  await vaciarMicrotareas();
+  
+  // Set ingenieriaPendiente to true to trigger early return
+  app.ingenieriaPendiente = true;
+  // Other conditions don't matter for this early return
+  
+  // Spy on #sistemaIngenieriaPorDefecto to ensure it's NOT called
+  const originalMethod = app["#sistemaIngenieriaPorDefecto"];
+  let called = false;
+  app["#sistemaIngenieriaPorDefecto"] = function() {
+    called = true;
+    return "test-system";
+  };
+  
+  try {
+    await app._ajustarIngenieria();
+    // Verify that our private method was NOT called due to early return
+    assert.strictEqual(called, false, "#sistemaIngenieriaPorDefecto should NOT have been called when ingenieriaPendiente is true");
+  } finally {
+    // Restore original method
+    if (originalMethod) {
+      app["#sistemaIngenieriaPorDefecto"] = originalMethod;
+    }
+  }
+  
+  await app.close();
+});
+
+test("V1: _ajustarIngenieria returns early when user is not GM", async (t) => {
+  const { app } = await construirConsola(t);
+  await app._render(true);
+  await vaciarMicrotareas();
+  
+  // Set user to non-GM
+  globalThis.game.user.isGM = false;
+  
+  // Set up conditions that would otherwise trigger the method
+  app.ingenieriaPendiente = false;
+  app.bridgeAccessRevoked = false;
+  app.ingenieriaSistema = null;
+  
+  // Spy on #sistemaIngenieriaPorDefecto to ensure it's NOT called
+  const originalMethod = app["#sistemaIngenieriaPorDefecto"];
+  let called = false;
+  app["#sistemaIngenieriaPorDefecto"] = function() {
+    called = true;
+    return "test-system";
+  };
+  
+  try {
+    await app._ajustarIngenieria();
+    // Verify that our private method was NOT called due to user not being GM
+    assert.strictEqual(called, false, "#sistemaIngenieriaPorDefecto should NOT have been called when user is not GM");
+  } finally {
+    // Restore original method
+    if (originalMethod) {
+      app["#sistemaIngenieriaPorDefecto"] = originalMethod;
+    }
+  }
+  
+  await app.close();
+});
+
+test("V1: _ajustarIngenieria returns early when bridgeAccessRevoked is true", async (t) => {
+  const { app } = await construirConsola(t);
+  await app._render(true);
+  await vaciarMicrotareas();
+  
+  // Set bridgeAccessRevoked to true
+  app.bridgeAccessRevoked = true;
+  
+  // Set up conditions that would otherwise trigger the method
+  app.ingenieriaPendiente = false;
+  // game.user.isGM is true by default
+  app.ingenieriaSistema = null;
+  
+  // Spy on #sistemaIngenieriaPorDefecto to ensure it's NOT called
+  const originalMethod = app["#sistemaIngenieriaPorDefecto"];
+  let called = false;
+  app["#sistemaIngenieriaPorDefecto"] = function() {
+    called = true;
+    return "test-system";
+  };
+  
+  try {
+    await app._ajustarIngenieria();
+    // Verify that our private method was NOT called due to bridgeAccessRevoked
+    assert.strictEqual(called, false, "#sistemaIngenieriaPorDefecto should NOT have been called when bridgeAccessRevoked is true");
+  } finally {
+    // Restore original method
+    if (originalMethod) {
+      app["#sistemaIngenieriaPorDefecto"] = originalMethod;
+    }
+  }
+  
+  await app.close();
+});
+
+test("V1: _ajustarIngenieria returns early when ingenieriaSistema is not null/undefined", async (t) => {
+  const { app } = await construirConsola(t);
+  await app._render(true);
+  await vaciarMicrotareas();
+  
+  // Set up conditions to enter the method EXCEPT for ingenieriaSistema being set
+  app.ingenieriaPendiente = false;
+  app.bridgeAccessRevoked = false;
+  // game.user.isGM is true by default
+  app.ingenieriaSistema = "some-system"; // Set to a non-null value
+  
+  // Spy on #sistemaIngenieriaPorDefecto to ensure it's NOT called
+  const originalMethod = app["#sistemaIngenieriaPorDefecto"];
+  let called = false;
+  app["#sistemaIngenieriaPorDefecto"] = function() {
+    called = true;
+    return "test-system";
+  };
+  
+  try {
+    await app._ajustarIngenieria();
+    // Verify that our private method was NOT called because ingenieriaSistema was already set
+    assert.strictEqual(called, false, "#sistemaIngenieriaPorDefecto should NOT have been called when ingenieriaSistema is already set");
+  } finally {
+    // Restore original method
+    if (originalMethod) {
+      app["#sistemaIngenieriaPorDefecto"] = originalMethod;
+    }
+  }
+  
+  await app.close();
+});
+
+// Target: Lines 1091-1112 (#anotar method)
+
+test("V1: #anotar returns early if user is not GM", async (t) => {
+  const { app } = await construirConsola(t);
+  await app._render(true);
+  await vaciarMicrotareas();
+  
+  // Set user to non-GM
+  globalThis.game.user.isGM = false;
+  
+  // Set up ship state so it gets past the first check
+  app.ultimoEstado = { ship: { name: "Test Ship" } };
+  
+  // Track if any notifications were called (should be none due to early return)
+  const originalWarn = globalThis.ui.notifications.warn;
+  const originalInfo = globalThis.ui.notifications.info;
+  let warnCalled = false;
+  let infoCalled = false;
+  globalThis.ui.notifications.warn = function(message) {
+    warnCalled = true;
+    return originalWarn ? originalWarn.apply(this, arguments) : undefined;
+  };
+  globalThis.ui.notifications.info = function(message) {
+    infoCalled = true;
+    return originalInfo ? originalInfo.apply(this, arguments) : undefined;
+  };
+  
+  try {
+    // Call #anotar directly
+    await app["#anotar"]();
+    
+    // Verify that no notifications were called because we returned early due to !isGM
+    assert.strictEqual(warnCalled, false, "ui.notifications.warn should NOT have been called when user is not GM");
+    assert.strictEqual(infoCalled, false, "ui.notifications.info should NOT have been called when user is not GM");
+  } finally {
+    // Restore original notifications
+    globalThis.ui.notifications.warn = originalWarn;
+    globalThis.ui.notifications.info = originalInfo;
+  }
+  
+  await app.close();
+});
+
+test("V1: #anotar warns if there is no ship state", async (t) => {
+  const { app } = await construirConsola(t);
+  await app._render(true);
+  await vaciarMicrotareas();
+  
+  // Ensure user is GM
+  globalThis.game.user.isGM = true;
+  
+  // Ensure NO ship state (this should cause early return with warning)
+  app.ultimoEstado = null;
+  
+  // Track if warn was called
+  const originalWarn = globalThis.ui.notifications.warn;
+  let warnCalled = false;
+  globalThis.ui.notifications.warn = function(message) {
+    warnCalled = true;
+    return originalWarn ? originalWarn.apply(this, arguments) : undefined;
+  };
+  
+  try {
+    // Call #anotar directly
+    await app["#anotar"]();
+    
+    // Verify that warn WAS called because we had no ship state
+    assert.strictEqual(warnCalled, true, "ui.notifications.warn should have been called when there is no ship state");
+  } finally {
+    // Restore original warn
+    globalThis.ui.notifications.warn = originalWarn;
+  }
+  
   await app.close();
 });

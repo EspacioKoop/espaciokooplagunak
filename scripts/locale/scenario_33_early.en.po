@@ -3159,3 +3159,33 @@ msgid ""
 "%s\n"
 "   %s in %s"
 msgstr ""
+
+#: scripts/scenario_33_early.lua:37
+msgctxt "Names"
+msgid "Configures whether player ship names are selected at random or are fixed"
+msgstr ""
+
+#: scripts/scenario_33_early.lua:38
+msgctxt "Names"
+msgid "Fixed"
+msgstr ""
+
+#: scripts/scenario_33_early.lua:39
+msgctxt "Names"
+msgid "Player ship names are pre-assigned"
+msgstr ""
+
+#: scripts/scenario_33_early.lua:39
+msgctxt "Names"
+msgid "Player ship names are selected at random from a list"
+msgstr ""
+
+#: scripts/scenario_33_early.lua:39
+msgctxt "Names"
+msgid "Random"
+msgstr ""
+
+#: scripts/scenario_33_early.lua:37
+msgctxt "setting"
+msgid "Names"
+msgstr ""

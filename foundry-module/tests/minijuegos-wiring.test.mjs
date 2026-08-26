@@ -410,3 +410,168 @@ test("el GM que recarga readopta su propia mesa: sin semilla no se reanuda la ma
   // desaparece sin decir por qué se lee como un fallo de la mesa.
   assert.ok(mesa.gm.relevos.length > 0, "el relevo no anunció `lagunakMinijuegoRelevoCoordinador`");
 });
+
+test("el relevo de coordinador tiene red de seguridad: el GM anterior sigue conectado pero deja de ser el activo", async () => {
+  // Caso que NO detecta `userConnected`: el GM anterior sigue en la partida
+  // pero pierde `activeGM`. El módulo lo resuelve en `updateUser` antes de
+  // procesar la propuesta, en vez de descartarla.
+  const mesa = await crearMundo({ jugadores: ["p1", "p2"] });
+  const [p1, p2] = mesa.jugadores;
+
+  // GM abre mesa y reparte
+  mesa.gm.conHooks(() => mesa.gm.wiring.abrirMesa({ id: "mesa-1", nombreJuego: "poker" }));
+  await mesa.proponer(p1, "join");
+  await mesa.proponer(p2, "join");
+  await mesa.proponer(mesa.gm, "start");
+
+  const publicoAntes = mesa.publico();
+  assert.equal(publicoAntes.coordinadorId, "gm");
+  assert.equal(publicoAntes.manoEnCurso, true);
+  const epocaAntes = publicoAntes.epocaCoordinador;
+
+  // Simular que otro GM se convierte en el activeGM (p. ej. el GM original
+  // pierde el estatus pero sigue conectado). En Foundry esto pasa cuando
+  // el GM transfiere el rol sin desconectarse.
+  // Creamos un nuevo cliente GM y hacemos que `activeGM` lo devuelva.
+  const nuevoGm = await mesa.arrancar(mesa.crearCliente("gm2", { isGM: true }), "-gm2");
+  // Sobrescribir el getter activeGM en TODOS los clientes para que devuelva gm2
+  for (const c of mesa.clientes) {
+    const gameOrig = c.game;
+    c.game = {
+      ...gameOrig,
+      get users() {
+        const u = gameOrig.users;
+        return { ...u, get activeGM() { return nuevoGm.userDoc; } };
+      }
+    };
+  }
+
+  // Ahora el GM original ya NO es coordinador, pero sigue conectado.
+  // Una propuesta que llega AHORA debe ser atendida por el nuevo coordinador,
+  // no descartada por "no hay sesión" (el viejo GM no tiene sesión viva).
+  // p1 hace fold
+  const enTurno = mesa.juego()?.turno;
+  const clienteEnTurno = [p1, p2].find((c) => c.id === enTurno);
+  await mesa.proponer(clienteEnTurno, "act", { tipo: "fold" });
+
+  // La mano avanza: la propuesta se procesó, no se perdió
+  const despues = mesa.publico();
+  assert.equal(despues.manoEnCurso, false, "la propuesta tras el relevo se atendió, no se descartó");
+  assert.ok(
+    despues.epocaCoordinador > epocaAntes,
+    "la época subió con el relevo, invalidando sobres del anterior",
+  );
+  // El nuevo GM es quien coordina ahora
+  assert.equal(despues.coordinadorId, "gm2");
+});
+
+test("la semilla del coordinador nunca sale: no aparece en el estado público ni en el sobre que va al cliente", async () => {
+  const mesa = await mesaRepartida();
+  const [p1] = mesa.jugadores;
+
+  // Recopilar todo lo que sale al estado público y a las vistas privadas
+  const publico = mesa.publico();
+  const vistaPrivada = mesa.manoDe(p1);
+
+  // Buscar recursivamente cualquier número que pueda ser la semilla
+  // (la semilla es un entero de 31 bits). Con una baraja de por medio,
+  // una semilla adivinable es un mazo adivinable.
+  // EXCLUIR todos los campos públicos conocidos que son enteros legítimos.
+  const semillaEnPublico = buscarSemillaSecreta(publico);
+  const semillaEnVista = buscarSemillaSecreta(vistaPrivada);
+
+  assert.equal(semillaEnPublico, null, "la semilla filtrada en el estado público");
+  assert.equal(semillaEnVista, null, "la semilla filtrada en la vista privada del jugador");
+
+  // Tampoco debe estar en las claves que solo el coordinador puede tener
+  const clavesProhibidas = ["semilla", "estadoAleatorio", "mazo", "manos"];
+  const rutasSecretas = [];
+  function recorrer(obj, ruta = "") {
+    if (!obj || typeof obj !== "object") return;
+    for (const [k, v] of Object.entries(obj)) {
+      if (clavesProhibidas.includes(k)) rutasSecretas.push(`${ruta}.${k}`);
+      if (Array.isArray(v)) v.forEach((item, i) => recorrer(item, `${ruta}.${k}[${i}]`));
+      else if (v && typeof v === "object") recorrer(v, `${ruta}.${k}`);
+    }
+  }
+  recorrer(publico);
+  assert.deepEqual(rutasSecretas, [], `claves secretas en el público: ${rutasSecretas.join(", ")}`);
+});
+
+function buscarSemillaSecreta(valor, visitados = new WeakSet()) {
+  if (!valor || typeof valor !== "object") return null;
+  if (visitados.has(valor)) return null;
+  visitados.add(valor);
+  // Campos públicos que SON enteros y NO son la semilla
+  // Estos vienen de sesion.motor estado público y juego.vistaPublica
+  const CAMPOS_PUBLICOS_ENTEROS = new Set([
+    // Desde sesion.motor publico
+    "version", "revision", "epocaCoordinador", "contadorAutomaticos",
+    // Desde juego.vistaPublica (poker motor)
+    "botonIndice", "bote", "apuestaActual", "subidaMinima",
+    // Desde jugadores array en juego.vistaPublica
+    "asiento", "stack", "apostadoRonda", "apostadoTotal",
+    // Otros campos comunes
+    "maxJugadores", "minJugadores", "maxEspectadores", "maxCadena",
+    "maxClavesParametros", "maxNonces"
+  ]);
+  if (Array.isArray(valor)) {
+    for (const v of valor) {
+      const encontrada = buscarSemillaSecreta(v, visitados);
+      if (encontrada !== null) return encontrada;
+    }
+    return null;
+  }
+  for (const [k, v] of Object.entries(valor)) {
+    if (typeof v === "number" && Number.isInteger(v) && v >= 0 && v < 2 ** 31) {
+      // Podría ser una semilla, pero NO si es un campo público conocido
+      if (!CAMPOS_PUBLICOS_ENTEROS.has(k)) {
+        return v;
+      }
+    }
+    const encontrada = buscarSemillaSecreta(v, visitados);
+    if (encontrada !== null) return encontrada;
+  }
+  return null;
+}
+
+test("la entrada de mesa es configurable y afecta al juego: las ciegas de mundo determinan la apuesta inicial", async () => {
+  // La entrada (fichas, ciegas) se decide por la mesa vía ajustes de mundo.
+  // Verificamos que cambiar los ajustes de mundo cambia lo que se necesita para pagar.
+  const mesa = await crearMundo({ jugadores: ["p1", "p2"] });
+  const [p1, p2] = mesa.jugadores;
+
+  // Configurar ciegas pequeñas: 5, grandes: 10
+  mesa.ajustes.set("espaciokoop-lagunak.minijuegoFichasIniciales", 200); // Valor alto para no limitar stacks
+  mesa.ajustes.set("espaciokoop-lagunak.minijuegoCiegaPequena", 5);
+  mesa.ajustes.set("espaciokoop-lagunak.minijuegoCiegaGrande", 10);
+
+  mesa.gm.conHooks(() => mesa.gm.wiring.abrirMesa({ id: "mesa-1", nombreJuego: "poker" }));
+  await mesa.proponer(p1, "join");
+  await mesa.proponer(p2, "join");
+  await mesa.proponer(mesa.gm, "start");
+
+  const publico = mesa.publico();
+  assert.equal(publico.manoEnCurso, true, "la mano debería estar en curso");
+  assert.ok(publico.juegoPublico, "debería haber juego público");
+
+  // Después de las ciegas, la apuesta actual debería ser igual a la ciega grande
+  assert.equal(publico.juegoPublico.apuestaActual, 10, "después de las ciegas, la apuesta actual debería ser la ciega grande");
+  assert.equal(publico.juegoPublico.subidaMinima, 10, "la subida mínima debería ser igual a la ciega grande");
+
+  // En heads-up (2 jugadores), el pequeño ciego actúa primero preflop
+  const enTurno = publico.juegoPublico.turno;
+  const jugadorEnTurno = publico.juegoPublico.jugadores.find(j => j.userId === enTurno);
+  assert.ok(jugadorEnTurno, "debería haber un jugador cuyo turno sea");
+
+  // Para pagar, este jugador necesita apostar (apuestaActual - apostadoRonda)
+  // Después de las ciegas en heads-up:
+  // - El jugador con el botón es el pequeño ciego (ha apostado 5, necesita 5 más para llegar a 10)
+  // - El otro jugador es el grande ciego (ha apostado 10, necesita 0 más para llegar a 10)
+  // Como el pequeño ciego actúa primero, necesita pagar la diferencia para igualar
+  const cantidadParaPagar = publico.juegoPublico.apuestaActual - (jugadorEnTurno.apostadoRonda ?? 0);
+  assert.equal(cantidadParaPagar, 5, "el jugador cuyo turno es (pequeño ciego en heads-up) debería necesitar apostar 5 para pagar");
+
+  // Verificar que efectivamente puede pagar (tiene suficientes fichas)
+  assert.ok((jugadorEnTurno.stack ?? 0) >= cantidadParaPagar, "el jugador debería tener suficientes fichas para pagar");
+});

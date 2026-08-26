@@ -41,7 +41,20 @@ jobs:
           # citadas: una referencia rota la introduce un documento, no una
           # herramienta, así que con el filtro anterior este check no se
           # despertaba nunca en el PR que la rompe.
-          rutas: '^(tools/|\.github/workflows/tools\.yml$|\.github/labeler\.yml$|\.github/actions/|scripts/public_domain_names_scenario_utility\.lua$|docs/DOMINIO_PUBLICO_SCIFI\.md$|src/|resources/locale/|docs/|.*\.md$)'
+          #
+          # `scripts/` entra por las DOS auditorías de i18n de escenario, y su
+          # ausencia es como se rompió `main` el 26-ago-2026: el filtro tenía
+          # `resources/locale/` (los catálogos del C++) pero NO
+          # `scripts/locale/` (los de escenario), así que un PR que solo tocaba
+          # catálogos de escenario —que es justo lo que son los lotes de
+          # traducción— no despertaba nunca esta puerta. Los lotes A, B y C
+          # entraron con el job SALTADO, y la rotura solo se hizo visible días
+          # después, en un PR de `tools/` que sí lo despertaba.
+          #
+          # Va `scripts/` entero y no `scripts/locale/`: la clave esperada la
+          # declara el `.lua` del escenario, así que tocar el escenario puede
+          # dejar su catálogo obsoleto igual que tocar el catálogo.
+          rutas: '^(tools/|\.github/workflows/tools\.yml$|\.github/labeler\.yml$|\.github/actions/|scripts/|docs/DOMINIO_PUBLICO_SCIFI\.md$|src/|resources/locale/|docs/|.*\.md$)'
 
   tests:
     name: tools/tests (Linux)

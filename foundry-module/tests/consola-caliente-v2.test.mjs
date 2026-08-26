@@ -1,27 +1,40 @@
-import assert from "node:assert/strict";
-import test from "node:test";
+import assert from \"node:assert/strict\";
+import test from \"node:test\";
 
+//
 // Smoke test de ConsolaCalienteV2 (#276): construye la clase directamente
 // (sin pasar por main.mjs, cuyo cableado de botones de escena ya cubren
 // main-compat.test.mjs para las ventanas sueltas) y ejercita un par de
 // ciclos de sondeo para fijar el plan de peticiones y el aislamiento por
 // pestaña que exige docs/CONSOLA_CALIENTE_GM.md.
-
-function respuesta(json) {
-  return { ok: true, status: 200, async json() { return json; } };
-}
-
+//
 // `llamadas` guarda URLs completas. Comparamos por igualdad exacta en lugar de
 // dejar que la aserción parezca una comprobación por subcadena sobre una URL
 // (patrón que el análisis estático marca como sanitización incompleta).
+//
+function respuesta(json) {
+  return { ok: true, status: 200, async json() { return json; } };
+}
+//
+// `llamadas` guarda URLs completas. Comparamos por igualdad exacta en lugar de
+// dejar que la aserción parezca una comprobación por subcadena sobre una URL
+// (patrón que el análisis estático marca como sanitización incompleta).
+//
 function pidio(llamadas, url) {
   return llamadas.some((llamada) => llamada === url);
 }
-
+//
+// `vaciarMicrotareas` permite que los timers asíncronos disparados por el
+// ApplicationV2 se procesen antes de hacer aserciones.
+//
 async function vaciarMicrotareas() {
   for (let i = 0; i < 24; i += 1) await Promise.resolve();
 }
 
+//
+// Construye una aplicación de ConsolaCalienteV2 en un entorno controlado.
+// Devuelve la instancia, la lista de URLs solicitadas y cualquier timer activo.
+//
 async function construirConsola(t, { fallar = {} } = {}) {
   const originales = {
     foundry: globalThis.foundry,
@@ -49,32 +62,28 @@ async function construirConsola(t, { fallar = {} } = {}) {
   const llamadas = [];
   globalThis.fetch = async (url) => {
     llamadas.push(url);
-    if (url.endsWith("/healthz")) {
-      if (fallar.healthz) throw new TypeError("sin puente");
-      return respuesta({ bridge: "ok" });
+    if (url.endsWith(\"/healthz\")) {
+      if (fallar.healthz) throw new TypeError(\"sin puente\");\n      return respuesta({ bridge: \"ok\" });
     }
-    if (url.endsWith("/v1/state")) {
-      if (fallar.state) throw new TypeError("state inaccesible");
-      return respuesta({ ship: { position: { x: 1, y: 2 }, heading: 10, hull: 90, hull_max: 100 } });
+    if (url.endsWith(\"/v1/state\")) {
+      if (fallar.state) throw new TypeError(\"state inaccesible\");\n      return respuesta({ ship: { position: { x: 1, y: 2 }, heading: 10, hull: 90, hull_max: 100 } });
     }
-    if (url.endsWith("/v1/scenario")) return respuesta({ paused: false });
-    if (url.endsWith("/v1/events")) return respuesta({ events: [] });
-    if (url.endsWith("/v1/contacts")) {
-      if (fallar.contacts) throw new TypeError("contacts inaccesible");
-      return respuesta({ contacts: [] });
+    if (url.endsWith(\"/v1/scenario\")) return respuesta({ paused: false });
+    if (url.endsWith(\"/v1/events\")) return respuesta({ events: [] });
+    if (url.endsWith(\"/v1/contacts\")) {
+      if (fallar.contacts) throw new TypeError(\"contacts inaccesible\");\n      return respuesta({ contacts: [] });
     }
-    if (url.endsWith("/v1/encounters")) return respuesta({ archetypes: ["pirates"], bearings: [] });
+    if (url.endsWith(\"/v1/encounters\")) return respuesta({ archetypes: [\"pirates\"], bearings: [] });
     // #537: catálogo de anclas de reposición, también perezoso y una sola vez.
-    if (url.endsWith("/v1/anchors")) {
-      if (fallar.anchors) throw new TypeError("anchors inaccesible");
-      return respuesta({ anchors: ["lagunak", "argia"] });
+    if (url.endsWith(\"/v1/anchors\")) {
+      if (fallar.anchors) throw new TypeError(\"anchors inaccesible\");\n      return respuesta({ anchors: [\"lagunak\", \"argia\"] });
     }
     throw new Error(`Ruta inesperada: ${url}`);
   };
 
   globalThis.game = {
     user: { isGM: true },
-    settings: { get: (_m, key) => (key === "bridgeUrl" ? "http://bridge.test" : key === "pollSeconds" ? 2 : undefined) },
+    settings: { get: (_m, key) => (key === \"bridgeUrl\" ? \"http://bridge.test\" : key === \"pollSeconds\" ? 2 : undefined) },
     i18n: {
       localize: (key) => key,
       has: () => false,
@@ -96,7 +105,6 @@ async function construirConsola(t, { fallar = {} } = {}) {
         contains: () => false,
       };
     }
-
     render(options) {
       this.renderCalls.push(options);
       this.rendered = true;
@@ -104,12 +112,18 @@ async function construirConsola(t, { fallar = {} } = {}) {
     }
   }
   globalThis.foundry = {
-    applications: { api: { ApplicationV2: BaseAppV2, HandlebarsApplicationMixin: (Base) => Base } },
+    applications: {
+      api: {
+        ApplicationV2: BaseAppV2,
+        HandlebarsApplicationMixin: (Base) => Base,
+      },
+    },
   };
 
-  const tokenSession = await import("../scripts/bridge-token-session.mjs");
+  // Token handling for FoundryBridge
+  const tokenSession = await import(\"../scripts/bridge-token-session.mjs\");
   tokenSession.clearBridgeToken();
-  tokenSession.setBridgeToken("test-token");
+  tokenSession.setBridgeToken(\"test-token\");
 
   const { crearClaseConsolaCalienteV2 } = await import(
     `../scripts/consola-caliente-v2.mjs?consola-test=${Math.random()}`
@@ -118,148 +132,135 @@ async function construirConsola(t, { fallar = {} } = {}) {
   const app = new Clase();
   return { app, llamadas, timers };
 }
-
-test("arranca en la pestaña Estado y pide healthz+state+scenario+events (no contacts)", async (t) => {
+//
+// Tests
+//
+test(\"arranca en la pestaña Estado y pide healthz+state+scenario+events (no contacts)\", async (t) => {
   const { app, llamadas } = await construirConsola(t);
-  assert.equal(app.pestanaActiva, "estado");
+  assert.equal(app.pestanaActiva, \"estado\");
   app._onFirstRender();
   await vaciarMicrotareas();
-  assert.ok(pidio(llamadas, "http://bridge.test/healthz"));
-  assert.ok(pidio(llamadas, "http://bridge.test/v1/state"));
-  assert.ok(pidio(llamadas, "http://bridge.test/v1/scenario"));
-  assert.ok(pidio(llamadas, "http://bridge.test/v1/events"));
-  assert.ok(pidio(llamadas, "http://bridge.test/v1/encounters"), "catálogo perezoso, una vez");
-  assert.equal(pidio(llamadas, "http://bridge.test/v1/contacts"), false, "Mapa oculto: sin contacts");
-  assert.equal(app.conexion, "ok");
-  assert.equal(app.estadoStatus, "ok");
+  assert.ok(pidio(llamadas, \"http://bridge.test/healthz\"));
+  assert.ok(pidio(llamadas, \"http://bridge.test/v1/state\"));
+  assert.ok(pidio(llamadas, \"http://bridge.test/v1/scenario\"));
+  assert.ok(pidio(llamadas, \"http://bridge.test/v1/events\"));
+  assert.ok(pidio(llamadas, \"http://bridge.test/v1/encounters\"), \"catálogo perezoso, una vez\");
+  assert.equal(pidio(llamadas, \"http://bridge.test/v1/contacts\"), false, \"Mapa oculto: sin contacts\");
+  assert.equal(app.conexion, \"ok\");
+  assert.equal(app.estadoStatus, \"ok\");
   app._onClose();
 });
 
-test("cambiar a la pestaña Mapa hace que el siguiente ciclo pida contacts", async (t) => {
+test(\"cambiar a la pestaña Mapa hace que el siguiente ciclo pida contacts\", async (t) => {
   const { app, llamadas, timers } = await construirConsola(t);
   app._onFirstRender();
   await vaciarMicrotareas();
-  app.pestanaActiva = "mapa";
+  app.pestanaActiva = \"mapa\";
   const timer = timers.find((tm) => tm.activo);
   timer.activo = false;
   timer.callback(...timer.args);
   await vaciarMicrotareas();
-  assert.ok(llamadas.filter((u) => u.endsWith("/v1/contacts")).length >= 1);
+  assert.ok(llamadas.filter((u) => u.endsWith(\"/v1/contacts\")).length >= 1);
   app._onClose();
 });
 
-test("un fallo de `contacts` con Mapa activo no toca la pestaña Estado ni la conexión global", async (t) => {
+test(\"un fallo de `contacts` con Mapa activo no toca la pestaña Estado ni la conexión global\", async (t) => {
   const { app, timers } = await construirConsola(t, { fallar: { contacts: true } });
-  app.pestanaActiva = "mapa";
+  app.pestanaActiva = \"mapa\";
   app._onFirstRender();
   await vaciarMicrotareas();
-  assert.equal(app.conexion, "ok");
-  assert.equal(app.mapaStatus, "ok", "state llegó bien: el mapa sigue operativo");
+  assert.equal(app.conexion, \"ok\");
+  assert.equal(app.mapaStatus, \"ok\", \"state llegó bien: el mapa sigue operativo\");
   assert.equal(app.contactosCaidos, true);
-  // `state` es compartido y SIEMPRE se pide (spec: "una vez, compartido por
-  // Estado y Mapa"), así que Estado sigue teniendo nave aunque no sea la
+  // `state` es compartido y SIEMPRE se pide (spec: \"una vez, compartido por
+  // Estado y Mapa\"), así que Estado sigue teniendo nave aunque no sea la
   // pestaña activa; lo que NO se pide fuera de Estado es `scenario`/`events`.
-  assert.equal(app.estadoStatus, "ok");
+  assert.equal(app.estadoStatus, \"ok\");
   assert.equal(app.ultimoEstado?.ship?.hull, 90);
   app._onClose();
 });
 
-test("healthz caído: única señal global de error, ninguna pestaña inventa datos", async (t) => {
+test(\"healthz caído: única señal global de error, ninguna pestaña inventa datos\", async (t) => {
   const { app } = await construirConsola(t, { fallar: { healthz: true } });
   app._onFirstRender();
   await vaciarMicrotareas();
-  assert.equal(app.conexion, "error");
-  assert.equal(app.estadoStatus, "sin-datos");
-  assert.equal(app.mapaStatus, "sin-datos");
+  assert.equal(app.conexion, \"error\");
+  assert.equal(app.estadoStatus, \"sin-datos\");
+  assert.equal(app.mapaStatus, \"sin-datos\");
   app._onClose();
 });
 
-test("cerrar invalida el sondeo en vuelo: no queda ningún timer vivo", async (t) => {
-  const { app, timers } = await construirConsola(t);
+test(\"cerrar invalida el sondeo en vuelo: no queda ningún timer vivo\", async (t) => {
+  const { app, timers } = await construirConsala(t);
   app._onFirstRender();
   await vaciarMicrotareas();
   app._onClose();
   assert.equal(timers.some((tm) => tm.activo), false);
 });
 
-/* ---- Reposición del GM (#176, cableada en #537) ----
-   Réplica AISLADA de los casos de consola-caliente-v1.test.mjs, como el resto de
-   este archivo: mismas garantías sobre el cascarón ApplicationV2. Lo que se
-   prueba es el CABLEADO, no la lógica —`reposicion-control.mjs` ya tiene su
-   suite—, porque lo que #537 destapó es que un módulo puro impecable con
-   pruebas en verde puede no estar enchufado a nada. */
-
-test("pide el catálogo de anclas una sola vez y lo ofrece al GM", async (t) => {
+test(\"pide el catálogo de anclas una sola vez y lo ofrece al GM\", async (t) => {
   const { app, llamadas } = await construirConsola(t);
   app._onFirstRender();
   await vaciarMicrotareas();
-
-  assert.equal(llamadas.filter((url) => url.endsWith("/v1/anchors")).length, 1, "catálogo perezoso, una vez");
+  assert.equal(llamadas.filter((url) => url.endsWith(\"/v1/anchors\")).length, 1, \"catálogo perezoso, una vez\");
   const contexto = await app._prepareContext({});
   assert.equal(contexto.reposicion.disponible, true);
-  assert.deepEqual(contexto.reposicion.anclas.map((a) => a.id), ["lagunak", "argia"]);
+  assert.deepEqual(contexto.reposicion.anclas.map((a) => a.id), [\"lagunak\", \"argia\"]);
   assert.equal(contexto.reposicion.puedeReposicionar, true);
   app._onClose();
 });
 
-test("reposicionar envía el ancla elegida al puente y anuncia el resultado", async (t) => {
+test(\"reposicionar envía el ancla elegida al puente y anuncia el resultado\", async (t) => {
   const { app } = await construirConsola(t);
   app._onFirstRender();
   await vaciarMicrotareas();
-
   const enviados = [];
   const original = globalThis.fetch;
   globalThis.fetch = async (url, opciones) => {
-    if (url.endsWith("/v1/command")) {
+    if (url.endsWith(\"/v1/command\")) {
       enviados.push(JSON.parse(opciones.body));
       return respuesta({ result: { ok: true } });
     }
     return original(url, opciones);
   };
-
-  await app._reposicionar("argia");
-
-  assert.equal(enviados.length, 1, "la orden tiene que llegar al puente");
-  assert.equal(enviados[0].op, "reposition_ship");
-  assert.equal(enviados[0].anchor, "argia");
+  await app._reposicionar(\"argia\");
+  assert.equal(enviados.length, 1, \"la orden tiene que llegar al puente\");
+  assert.equal(enviados[0].op, \"reposition_ship\");
+  assert.equal(enviados[0].anchor, \"argia\");
   assert.equal(app.reposicionFallo, false);
-  assert.equal(app.reposicionAviso, "LAGUNAK.Reposicion.Hecha");
-  assert.equal(app.reposicionPendiente, false, "el pendiente se suelta siempre");
+  assert.equal(app.reposicionAviso, \"LAGUNAK.Reposicion.Hecha\");
+  assert.equal(app.reposicionPendiente, false, \"el pendiente se suelta siempre\");
   app._onClose();
 });
 
-test("un ancla fuera del catálogo no llega a la red", async (t) => {
+test(\"un ancla fuera del catálogo no llega a la red\", async (t) => {
   const { app } = await construirConsola(t);
   app._onFirstRender();
   await vaciarMicrotareas();
-
   const enviados = [];
   const original = globalThis.fetch;
   globalThis.fetch = async (url, opciones) => {
-    if (url.endsWith("/v1/command")) {
+    if (url.endsWith(\"/v1/command\")) {
       enviados.push(url);
       return respuesta({ result: { ok: true } });
     }
     return original(url, opciones);
   };
-
-  await app._reposicionar("orbita-inventada");
-
-  assert.deepEqual(enviados, [], "un ancla fuera de catálogo no puede tocar la red");
+  await app._reposicionar(\"orbita-inventada\");
+  assert.deepEqual(enviados, [], \"un ancla fuera de catálogo no puede tocar la red\");
   assert.equal(app.reposicionFallo, true);
   app._onClose();
 });
 
-test("quien no es GM no reposiciona, ni con el ancla correcta", async (t) => {
+test(\"quien no es GM no reposiciona, ni con el ancla correcta\", async (t) => {
   const { app } = await construirConsola(t);
   app._onFirstRender();
   await vaciarMicrotareas();
   const catalogo = app.catalogoAnclas;
-
   const enviados = [];
   const original = globalThis.fetch;
   globalThis.fetch = async (url, opciones) => {
-    if (url.endsWith("/v1/command")) {
+    if (url.endsWith(\"/v1/command\")) {
       enviados.push(url);
       return respuesta({ result: { ok: true } });
     }
@@ -267,23 +268,75 @@ test("quien no es GM no reposiciona, ni con el ancla correcta", async (t) => {
   };
   globalThis.game.user.isGM = false;
   app.catalogoAnclas = catalogo;
-
-  await app._reposicionar("lagunak");
-
-  assert.deepEqual(enviados, [], "sin GM no hay reposición");
+  await app._reposicionar(\"lagunak\");
+  assert.deepEqual(enviados, [], \"sin GM no hay reposición\");
   app._onClose();
 });
 
-test("un catálogo de anclas caído se reintenta, no apaga el bloque para siempre", async (t) => {
+test(\"un catálogo de anclas caído se reintenta, no apaga el bloque para siempre\", async (t) => {
   const { app, llamadas } = await construirConsola(t, { fallar: { anchors: true } });
   app._onFirstRender();
   await vaciarMicrotareas();
-
-  assert.equal(app.catalogoAnclas, null, "un fallo no debe guardar un catálogo vacío");
+  assert.equal(app.catalogoAnclas, null, \"un fallo no debe guardar un catálogo vacío\");
   const contexto = await app._prepareContext({});
-  assert.equal(contexto.reposicion.disponible, false, "sin catálogo no se ofrece el bloque");
+  assert.equal(contexto.reposicion.disponible, false, \"sin catálogo no se ofrece el bloque\");
   // Y la conexión global no se contagia: /v1/anchors no es healthz ni state.
-  assert.equal(app.conexion, "ok");
-  assert.ok(llamadas.some((url) => url.endsWith("/v1/anchors")));
+  assert.equal(app.conexion, \"ok\");
+  assert.ok(llamadas.some((url) => url.endsWith(\"/v1/anchors\")));
+  app._onClose();
+});
+
+/* ---- Reposición del GM (#176, cableada en #537) ---
+   Réplica AISLADA de los casos de consola-caliente-v1.test.mjs, como el resto de
+   este archivo: mismas garantías sobre el cascarón ApplicationV2. Lo que se
+   prueba es el CABLEADO, no la lógica —`reposicion-control.mjs` ya tiene su
+   suite—, porque lo que #537 destapó es que un módulo puro impecable con
+   pruebas en verde puede no estar enchufado a nada. */
+
+test(\"previsualizacion carga estaciones sin errores\", async (t) => {
+  const { app, llamadas } = await construirConsola(t);
+  // activar pestaña previsualizacion para forzar su carga
+  app.pestanaActiva = \"previsualizacion\";
+  // primera renderización ejecuta el sondeo y prepara el modelo de workspace
+  app._onFirstRender();
+  await vaciarMicrotareas();
+  // La previsualizacion genera llamadas a state y scenario entre otras,
+  // así que comprobamos que al menos healthz se ha llamado.
+  assert.ok(pidio(llamadas, \"http://bridge.test/healthz\"));
+  // También verificamos que el modelo se haya preparado (catalogoEncuentros no debe estar vacío)
+  assert.ok(app.#vistaPrevisualizacion && app.#vistaPrevisualizacion().modelo);
+  app._onClose();
+});
+
+test(\"reposicion exitoso y fallido con categorias distintas\", async (t) => {
+  const { app, llamadas } = await construirConsola(t);
+  // Primer intento: ancla válida (debe tener éxito)
+  const enviadosExitoso = [];
+  const original = globalThis.fetch;
+  globalThis.fetch = async (url, opciones) => {
+    if (url.endsWith(\"/v1/command\")) {
+      enviadosExitoso.push(JSON.parse(opciones.body));
+      return respuesta({ result: { ok: true } });
+    }
+    return original(url, opciones);
+  };
+  await app._reposicionar(\"lagunak\");
+  assert.equal(enviadosExitoso.length, 1);
+  assert.equal(enviadosExitoso[0].op, \"reposition_ship\");
+  // Segundo intento: ancla inventada (debe fallar)
+  const enviadosFallo = [];
+  globalThis.fetch = async (url, opciones) => {
+    if (url.endsWith(\"/v1/command\")) {
+      enviadosFallo.push(JSON.parse(opciones.body));
+      return respuesta({ result: { ok: false, error: \"Ancla inexistente\" } });
+    }
+    return original(url, opciones);
+  };
+  // Restauramos el contador de intentos para volver a disparar el timeout
+  app.reposicionPendiente = true;
+  await app._reposicionar(\"inventada\");
+  assert.equal(enviadosFallo.length, 1);
+  assert.equal(app.reposicionFallo, true);
+  assert.equal(app.reposicionAviso, \"LAGUNAK.Reposicion.Fallo\");
   app._onClose();
 });

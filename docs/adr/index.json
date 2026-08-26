@@ -1,13 +1,92 @@
 [
-  { "id": "ADR-0001", "title": "Nunca exponer exec.lua", "path": "0001-exec-lua-nunca-expuesto.md", "status": "Aceptada" },
-  { "id": "ADR-0002", "title": "Autoridad de datos: Foundry = narrativa, simulación = nave", "path": "0002-autoridad-de-datos-foundry-vs-simulacion.md", "status": "Deprecada" },
-  { "id": "ADR-0003", "title": "Transporte polling HTTP", "path": "0003-transporte-polling-http.md", "status": "Aceptada" },
-  { "id": "ADR-0004", "title": "SeriousProton hermano fijado por SHA", "path": "0004-seriousproton-hermano-fijado-por-sha.md", "status": "Aceptada" },
-  { "id": "ADR-0005", "title": "Cobertura cortada en fase 3", "path": "0005-cobertura-cortada-en-fase-3.md", "status": "Aceptada" },
-  { "id": "ADR-0006", "title": "Vendorizar highlight.js", "path": "0006-vendorizar-highlight-js.md", "status": "Aceptada" },
-  { "id": "ADR-0007", "title": "Frontera upstream", "path": "0007-frontera-upstream.md", "status": "Aceptada" },
-  { "id": "ADR-0008", "title": "Standalone-first: autoridad del núcleo", "path": "0008-standalone-first-autoridad-del-nucleo.md", "status": "Aceptada" },
-  { "id": "ADR-0009", "title": "Modelo de permisos por puesto v1", "path": "0009-modelo-permisos-por-puesto-v1.md", "status": "Aceptada" },
-  { "id": "ADR-0010", "title": "El hackeo se queda solo-nativo", "path": "0010-hackeo-solo-nativo.md", "status": "Aceptada" },
-  { "id": "ADR-0011", "title": "Riesgos de seguridad y defensa en profundidad", "path": "0011-riesgos-de-seguridad-y-defensa-en-profundidad.md", "status": "Propuesta" }
+  {
+    "id": "ADR-0001",
+    "title": "Nunca exponer exec.lua",
+    "path": "0001-exec-lua-nunca-expuesto.md",
+    "status": "Aceptada"
+  },
+  {
+    "id": "ADR-0002",
+    "title": "Autoridad de datos: Foundry = narrativa, simulación = nave",
+    "path": "0002-autoridad-de-datos-foundry-vs-simulacion.md",
+    "status": "Sustituida por ADR-0008"
+  },
+  {
+    "id": "ADR-0003",
+    "title": "Transporte polling HTTP",
+    "path": "0003-transporte-polling-http.md",
+    "status": "Aceptada"
+  },
+  {
+    "id": "ADR-0004",
+    "title": "SeriousProton hermano fijado por SHA",
+    "path": "0004-seriousproton-hermano-fijado-por-sha.md",
+    "status": "Aceptada"
+  },
+  {
+    "id": "ADR-0005",
+    "title": "Cobertura cortada en fase 3",
+    "path": "0005-cobertura-cortada-en-fase-3.md",
+    "status": "Aceptada"
+  },
+  {
+    "id": "ADR-0006",
+    "title": "Vendorizar highlight.js",
+    "path": "0006-vendorizar-highlight-js.md",
+    "status": "Aceptada"
+  },
+  {
+    "id": "ADR-0007",
+    "title": "Frontera upstream",
+    "path": "0007-frontera-upstream.md",
+    "status": "Aceptada"
+  },
+  {
+    "id": "ADR-0008",
+    "title": "Standalone-first: autoridad del núcleo",
+    "path": "0008-standalone-first-autoridad-del-nucleo.md",
+    "status": "Aceptada"
+  },
+  {
+    "id": "ADR-0009",
+    "title": "Modelo de permisos por puesto v1",
+    "path": "0009-modelo-permisos-por-puesto-v1.md",
+    "status": "Aceptada"
+  },
+  {
+    "id": "ADR-0010",
+    "title": "El hackeo se queda solo-nativo",
+    "path": "0010-hackeo-solo-nativo.md",
+    "status": "Aceptada"
+  },
+  {
+    "id": "ADR-0011",
+    "title": "Riesgos de seguridad y defensa en profundidad",
+    "path": "0011-riesgos-de-seguridad-y-defensa-en-profundidad.md",
+    "status": "Propuesta"
+  },
+  {
+    "id": "ADR-0012",
+    "title": "Qué puede hacer una escena de Foundry: enseñar, transportar y ambientar",
+    "path": "0012-que-puede-hacer-una-escena-de-foundry.md",
+    "status": "Aceptada"
+  },
+  {
+    "id": "ADR-0013",
+    "title": "Frontera de licencias: procedencia obligatoria, mecánica sí / nombres no",
+    "path": "0013-frontera-de-licencias-y-procedencia.md",
+    "status": "Aceptada"
+  },
+  {
+    "id": "ADR-0014",
+    "title": "Doctrina de arte: procedural, cero binarios, un solo sitio para el color",
+    "path": "0014-doctrina-de-arte-procedural.md",
+    "status": "Aceptada"
+  },
+  {
+    "id": "ADR-0015",
+    "title": "El dato derivado se copia de su fuente autoritativa y una prueba lo compara",
+    "path": "0015-dato-derivado-se-copia-y-se-compara.md",
+    "status": "Aceptada"
+  }
 ]

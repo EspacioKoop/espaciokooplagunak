@@ -2779,173 +2779,186 @@ msgctxt "minefieldOrders-comms"
 msgid "Protect %s. Destroy enemy bases straight out from gaps"
 msgstr "Protect %s. Destroy enemy bases straight out from gaps"
 
-msgid "Using Nautilus class mine layer, lay mines across the space lanes expected to be used by invading enemies\n\nVersion 2 - Jan2025\n\nMission advice: It's better to hit an asteroid than a mine"
+msgid ""
+"Using Nautilus class mine layer, lay mines across the space lanes expected to be used by invading enemies\n"
+"\n"
+"Version 2 - Jan2025\n"
+"\n"
+"Mission advice: It's better to hit an asteroid than a mine"
 msgstr ""
-
-msgctxt "setting"
-msgid "Enemies"
-msgstr ""
-
-msgctxt "setting"
-msgid "Configures strength and/or number of enemies in this scenario"
-msgstr ""
+"Using Nautilus class mine layer, lay mines across the space lanes expected to be used by invading enemies\n"
+"\n"
+"Version 2 - Jan2025\n"
+"\n"
+"Mission advice: It's better to hit an asteroid than a mine"
 
 msgctxt "Enemies"
 msgid "Easy"
-msgstr ""
-
-msgctxt "Enemies"
-msgid "Fewer or weaker enemies"
-msgstr ""
-
-msgctxt "Enemies"
-msgid "Normal"
-msgstr ""
-
-msgctxt "Enemies"
-msgid "Normal number or strength of enemies"
-msgstr ""
-
-msgctxt "Enemies"
-msgid "Hard"
-msgstr ""
-
-msgctxt "Enemies"
-msgid "More or stronger enemies"
-msgstr ""
+msgstr "Easy"
 
 msgctxt "Enemies"
 msgid "Extreme"
-msgstr ""
+msgstr "Extreme"
 
 msgctxt "Enemies"
-msgid "Much stronger, many more enemies"
-msgstr ""
+msgid "Fewer or weaker enemies"
+msgstr "Fewer or weaker enemies"
 
 msgctxt "Enemies"
-msgid "Quixotic"
-msgstr ""
+msgid "Hard"
+msgstr "Hard"
 
 msgctxt "Enemies"
 msgid "Insanely strong and/or inordinately large numbers of enemies"
-msgstr ""
+msgstr "Insanely strong and/or inordinately large numbers of enemies"
 
-msgctxt "setting"
-msgid "Murphy"
-msgstr ""
+msgctxt "Enemies"
+msgid "More or stronger enemies"
+msgstr "More or stronger enemies"
 
-msgctxt "setting"
-msgid "Configures the perversity of the universe according to Murphy's law"
-msgstr ""
+msgctxt "Enemies"
+msgid "Much stronger, many more enemies"
+msgstr "Much stronger, many more enemies"
+
+msgctxt "Enemies"
+msgid "Normal"
+msgstr "Normal"
+
+msgctxt "Enemies"
+msgid "Normal number or strength of enemies"
+msgstr "Normal number or strength of enemies"
+
+msgctxt "Enemies"
+msgid "Quixotic"
+msgstr "Quixotic"
 
 msgctxt "Murphy"
 msgid "Easy"
-msgstr ""
-
-msgctxt "Murphy"
-msgid "Random factors or puzzle difficulties are easier than normal"
-msgstr ""
-
-msgctxt "Murphy"
-msgid "Normal"
-msgstr ""
-
-msgctxt "Murphy"
-msgid "Random factors or puzzle difficulties are normal"
-msgstr ""
+msgstr "Easy"
 
 msgctxt "Murphy"
 msgid "Hard"
-msgstr ""
+msgstr "Hard"
+
+msgctxt "Murphy"
+msgid "Normal"
+msgstr "Normal"
+
+msgctxt "Murphy"
+msgid "Random factors or puzzle difficulties are easier than normal"
+msgstr "Random factors or puzzle difficulties are easier than normal"
 
 msgctxt "Murphy"
 msgid "Random factors or puzzle difficulties are more challenging than normal"
 msgstr ""
+"Random factors or puzzle difficulties are more challenging than normal"
 
-msgctxt "setting"
-msgid "Timed"
-msgstr ""
-
-msgctxt "setting"
-msgid "Sets whether or not the scenario has a time limit. Default is no time limit"
-msgstr ""
-
-msgctxt "Timed"
-msgid "None"
-msgstr ""
-
-msgctxt "Timed"
-msgid "No time limit"
-msgstr ""
+msgctxt "Murphy"
+msgid "Random factors or puzzle difficulties are normal"
+msgstr "Random factors or puzzle difficulties are normal"
 
 msgctxt "Timed"
 msgid "30"
-msgstr ""
-
-msgctxt "Timed"
-msgid "Scenario ends in 30 minutes"
-msgstr ""
+msgstr "30"
 
 msgctxt "Timed"
 msgid "40"
-msgstr ""
-
-msgctxt "Timed"
-msgid "Scenario ends in 40 minutes"
-msgstr ""
+msgstr "40"
 
 msgctxt "Timed"
 msgid "45"
-msgstr ""
-
-msgctxt "Timed"
-msgid "Scenario ends in 45 minutes"
-msgstr ""
+msgstr "45"
 
 msgctxt "Timed"
 msgid "50"
-msgstr ""
-
-msgctxt "Timed"
-msgid "Scenario ends in 50 minutes"
-msgstr ""
+msgstr "50"
 
 msgctxt "Timed"
 msgid "55"
-msgstr ""
-
-msgctxt "Timed"
-msgid "Scenario ends in 55 minutes"
-msgstr ""
+msgstr "55"
 
 msgctxt "Timed"
 msgid "60"
-msgstr ""
-
-msgctxt "Timed"
-msgid "Scenario ends in 60 minutes"
-msgstr ""
+msgstr "60"
 
 msgctxt "Timed"
 msgid "70"
-msgstr ""
-
-msgctxt "Timed"
-msgid "Scenario ends in 70 minutes"
-msgstr ""
+msgstr "70"
 
 msgctxt "Timed"
 msgid "80"
-msgstr ""
-
-msgctxt "Timed"
-msgid "Scenario ends in 80 minutes"
-msgstr ""
+msgstr "80"
 
 msgctxt "Timed"
 msgid "90"
-msgstr ""
+msgstr "90"
+
+msgctxt "Timed"
+msgid "No time limit"
+msgstr "No time limit"
+
+msgctxt "Timed"
+msgid "None"
+msgstr "None"
+
+msgctxt "Timed"
+msgid "Scenario ends in 30 minutes"
+msgstr "Scenario ends in 30 minutes"
+
+msgctxt "Timed"
+msgid "Scenario ends in 40 minutes"
+msgstr "Scenario ends in 40 minutes"
+
+msgctxt "Timed"
+msgid "Scenario ends in 45 minutes"
+msgstr "Scenario ends in 45 minutes"
+
+msgctxt "Timed"
+msgid "Scenario ends in 50 minutes"
+msgstr "Scenario ends in 50 minutes"
+
+msgctxt "Timed"
+msgid "Scenario ends in 55 minutes"
+msgstr "Scenario ends in 55 minutes"
+
+msgctxt "Timed"
+msgid "Scenario ends in 60 minutes"
+msgstr "Scenario ends in 60 minutes"
+
+msgctxt "Timed"
+msgid "Scenario ends in 70 minutes"
+msgstr "Scenario ends in 70 minutes"
+
+msgctxt "Timed"
+msgid "Scenario ends in 80 minutes"
+msgstr "Scenario ends in 80 minutes"
 
 msgctxt "Timed"
 msgid "Scenario ends in 90 minutes"
+msgstr "Scenario ends in 90 minutes"
+
+msgctxt "setting"
+msgid "Configures strength and/or number of enemies in this scenario"
+msgstr "Configures strength and/or number of enemies in this scenario"
+
+msgctxt "setting"
+msgid "Configures the perversity of the universe according to Murphy's law"
+msgstr "Configures the perversity of the universe according to Murphy's law"
+
+msgctxt "setting"
+msgid "Enemies"
+msgstr "Enemies"
+
+msgctxt "setting"
+msgid "Murphy"
+msgstr "Murphy"
+
+msgctxt "setting"
+msgid ""
+"Sets whether or not the scenario has a time limit. Default is no time limit"
 msgstr ""
+"Sets whether or not the scenario has a time limit. Default is no time limit"
+
+msgctxt "setting"
+msgid "Timed"
+msgstr "Timed"

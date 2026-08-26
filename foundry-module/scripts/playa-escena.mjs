@@ -1097,7 +1097,7 @@ export const INTERACCIONES = declararInteracciones([
     id: "leon-al-lat",
     punto: [ESTATUA.x, ESTATUA.z - 2],
     orientacion: ESTATUA.giro,
-    accion: { tipo: "cartela", cartela: "leon-al-lat" },
+    accion: { tipo: "cartela", pieza: "leon-al-lat" },
   },
 ]);
 

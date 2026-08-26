@@ -48,6 +48,10 @@ import {
 import { registerStationOrders } from "./station-order-wiring.mjs";
 import { registrarRelevoPuestos } from "./station-handover.mjs";
 import { registrarAsistencia } from "./asistencia-wiring.mjs";
+import {
+  convocarYTransmitir,
+  registrarConvocatoriaEstancia,
+} from "./convocatoria-difusion.mjs";
 import { addAsistenciaControl, registrarAsistenciaUI } from "./asistencia-ui.mjs";
 import {
   registrarParlamentoUI,
@@ -442,6 +446,7 @@ Hooks.once("ready", () => {
   // del relé y no antes: la ayuda se cobra dentro de la orden del titular, así
   // que sin relé no habría dónde cobrarla.
   registrarAsistencia(MODULE_ID);
+  registrarConvocatoriaEstancia(MODULE_ID, { abrir: (estancia) => abrirAndarNave(estancia) });
   // Y su ventana, en TODOS los clientes: escucha las tres respuestas del
   // coordinador aunque esté cerrada, para que quien pida ayuda y cierre sin
   // querer no se quede con una reserva viva y ninguna forma de resolverla.
@@ -812,6 +817,7 @@ Hooks.on("updateUser", (user, changes) => {
   // Mismo relevo para la asistencia: el coordinador es el GM activo, y si cambia
   // sin recargar, el nuevo tiene que quedarse escuchando las peticiones.
   registrarAsistencia(MODULE_ID);
+  registrarConvocatoriaEstancia(MODULE_ID, { abrir: (estancia) => abrirAndarNave(estancia) });
   registrarSesionesMinijuegos(MODULE_ID);
   if (!user.isGM) void revokePrivilegedBridgeAccess();
 });
@@ -872,7 +878,11 @@ Hooks.on("getSceneControlButtons", (controls) => {
   // vive en `herramientas-gm-catalogo.mjs` (#611): añadir o tocar una de
   // estas tres herramientas ya no toca este hook.
   const gmTools = isGM
-    ? construirHerramientasGM({ abrirPanelGM, abrirAndarNave })
+    ? construirHerramientasGM({
+        abrirPanelGM,
+        abrirAndarNave,
+        convocarEstancia: (estancia) => convocarYTransmitir(estancia),
+      })
     : [];
 
   // El grupo propio es visible para TODOS: los jugadores ven sus botones de

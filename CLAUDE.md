@@ -504,6 +504,15 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     por un punto de interacción — la misma forma que la playa (#587), y por el mismo motivo (el
     Phobos no tiene un museo, y colgarlo de un mamparo contaría una historia que nadie ha decidido).
     Por eso está fuera de las invariantes de la nave en `nave-planta-phobos.test.mjs` y del minimapa.
+    La **convocatoria** (`scripts/convocatoria-estancia.mjs`, puro, + el cable
+    `scripts/convocatoria-difusion.mjs`, #689) es lo que hace que el museo no sea decorado para
+    una sola persona: el GM pulsa su botón y la mesa entera aparece dentro. Por el socket viaja
+    el **id de la estancia** y nada más — la posición que calcula el módulo puro se queda en el
+    emisor, donde sirve de acreditación de que la entrada es pisable, porque `resolverArranque`
+    ya deja a quien llega en esa misma `entrada`. Y la forma de abrir la ventana se le **pasa**
+    al registrador desde `main.mjs`: `abrirAndarNave` es local de ahí, y suponerla fue el
+    `ReferenceError` que cerró el PR #675. La playa no convoca (su botón sigue abriendo solo):
+    es un banco de pruebas del motor de exteriores, no contenido.
     Lo que el museo NO hace es la mitad del diseño: **enseña y ya está**. La cartela se pinta al
     acercarse y se retira al apartarse (`accion: {tipo: "cartela"}` + el flanco de salida
     `alSalirDeInteraccion` de #598); no marca piezas como vistas, no lleva la cuenta ni deja rastro,

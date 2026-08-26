@@ -58,6 +58,12 @@ jobs:
         run: python3 -m pip install pytest polib==1.2.0 pyyaml==6.0.2
       - name: Ejecutar tests de tools/
         run: python3 -m pytest tools/tests/ -q
+      - name: Restos de herramienta trackeados (#818)
+        # Cobertura, node_modules, `.bak`, `.orig`, `tmp/`... nada de eso es
+        # entregable. Estaba escrito y probado desde #673 y no lo ejecutaba
+        # ninguna puerta: el PR #796 comiteó nueve artefactos y un `.bak` de un
+        # fichero de test sin que saltara nada. Script de stdlib, milisegundos.
+        run: python3 tools/check_restos_herramienta.py
       - name: Trazabilidad de nombres de dominio público (#310)
         run: python3 tools/check_public_domain_names.py
       - name: Cobertura i18n de las cadenas de C++ (#55)

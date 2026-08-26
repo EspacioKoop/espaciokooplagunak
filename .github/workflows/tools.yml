@@ -41,7 +41,15 @@ jobs:
           # citadas: una referencia rota la introduce un documento, no una
           # herramienta, así que con el filtro anterior este check no se
           # despertaba nunca en el PR que la rompe.
-          rutas: '^(tools/|\.github/workflows/tools\.yml$|\.github/labeler\.yml$|\.github/actions/|scripts/public_domain_names_scenario_utility\.lua$|docs/DOMINIO_PUBLICO_SCIFI\.md$|src/|resources/locale/|docs/|.*\.md$)'
+          #
+          # `scripts/locale/` es el mismo agujero, y ya costó un `main` en rojo:
+          # el filtro traía `resources/locale/` (catálogos del C++) pero no los
+          # de los escenarios. #789 cambió `scenario_56_carrierTurret.en.po`,
+          # `tools/tests` SALTÓ, «Puerta de tools» salió en verde por saltar, y
+          # el desfase es/en solo apareció al llegar a `main` — tiñendo de rojo
+          # todos los PRs abiertos, incluidos los de documentación. La guarda
+          # (`tools/validate_es_locale.py`) nunca falló: no llegó a mirar.
+          rutas: '^(tools/|\.github/workflows/tools\.yml$|\.github/labeler\.yml$|\.github/actions/|scripts/public_domain_names_scenario_utility\.lua$|docs/DOMINIO_PUBLICO_SCIFI\.md$|src/|resources/locale/|scripts/locale/|docs/|.*\.md$)'
 
   tests:
     name: tools/tests (Linux)

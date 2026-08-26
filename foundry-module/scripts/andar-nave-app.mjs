@@ -563,11 +563,22 @@ export function crearClaseAndarV2() {
      *  volver a donde se quedó, no al último sitio que pidió la sección. */
     estanciaPedida = null;
 
-    /** Con la ventana ya abierta, ir a esa estancia en caliente. */
+    /**
+     * Con la ventana ya abierta, ir a esa estancia en caliente.
+     *
+     * SE ANOTA COMO PEDIDA AUNQUE EL VIAJE YA SE HAYA HECHO. Quien llama a esto
+     * casi siempre renderiza justo después para traer la ventana al frente, y un
+     * render vuelve a montar el bucle: sin la anotación, esa segunda resolución
+     * cae en el CHECKPOINT guardado y deshace el viaje —pulsar «museo» con la
+     * ventana ya abierta dejaba en la cantina, que es donde se cerró la última
+     * vez (QA 2026-08-26)—. El checkpoint ni siquiera se ha escrito todavía
+     * cuando eso ocurre, porque la muestra va a un flag y eso es asíncrono: se
+     * estaba obedeciendo a la posición de hace un rato. Se consume en el primer
+     * render, como cualquier otra petición.
+     */
     irA(estanciaId) {
-      if (this.mando) return this.mando.irA(estanciaId);
       this.estanciaPedida = estanciaId;
-      return false;
+      return this.mando ? this.mando.irA(estanciaId) : false;
     }
 
     _onRender(context, options) {
@@ -609,9 +620,8 @@ export function crearClaseAndarV1() {
     estanciaPedida = null;
 
     irA(estanciaId) {
-      if (this.mando) return this.mando.irA(estanciaId);
       this.estanciaPedida = estanciaId;
-      return false;
+      return this.mando ? this.mando.irA(estanciaId) : false;
     }
 
     activateListeners(html) {

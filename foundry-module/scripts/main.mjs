@@ -710,12 +710,13 @@ let andarApp = null;
  */
 function abrirAndarNave(estancia = null) {
   if (andarApp?.rendered) {
-    // Ya abierta: no se reinicia el bucle por un cambio de sala, se camina
-    // hasta allí en caliente (la ventana ya tiene su propio `irA`).
+    // Ya abierta: se camina hasta allí en caliente, que la ventana sabe hacerlo
+    // sin reiniciar el bucle. El `render` de después solo la trae al frente.
     if (estancia) andarApp.irA(estancia);
     andarApp.render({ force: true });
     return;
   }
+
   const Clase = foundry.applications?.api?.ApplicationV2 ? crearClaseAndarV2() : crearClaseAndarV1();
   andarApp = new Clase();
   // Antes de renderizar: el arranque del bucle lo consume en el primer render.

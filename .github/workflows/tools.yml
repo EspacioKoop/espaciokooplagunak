@@ -66,7 +66,22 @@ jobs:
         # costura: del código al catálogo.
         run: python3 tools/check_cpp_locale_coverage.py .
       - name: Paridad e invariantes del catálogo es-ES
-        run: python3 tools/validate_es_locale.py .
+        # Con `--base` cada error sale marcado NUEVO o HEREDADO. El código de
+        # salida no cambia —un catálogo roto es un fallo lo rompiera quien lo
+        # rompiera— pero sin esa marca un rojo heredado y uno propio son
+        # indistinguibles, y entonces el rojo deja de significar nada: es como
+        # #789 y #793 se fusionaron con esta puerta ROJA y luego #794, #796 y
+        # #797 arrastraron un rojo que no era suyo.
+        #
+        # Solo en PRs: en un push a `main` la base sería `main`, o sea el propio
+        # commit, y todo saldría HEREDADO — justo la tranquilidad falsa que esto
+        # viene a quitar. Sin `--base` la auditoría es la de siempre.
+        run: |
+          if [ -n "${{ github.base_ref }}" ]; then
+            python3 tools/validate_es_locale.py . --base "origin/${{ github.base_ref }}"
+          else
+            python3 tools/validate_es_locale.py .
+          fi
       - name: Rutas citadas por la documentación
         # Solo stdlib. Recorre los .md y comprueba que cada ruta que citan
         # existe: una cita rota manda al lector —o al agente— a perseguir

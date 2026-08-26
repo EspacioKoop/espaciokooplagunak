@@ -2,7 +2,7 @@
 
 ## Resumen General
 
-**Total de scripts:** 176
+**Total de scripts:** 179
 
 Comando utilizado para el conteo:
 ```bash
@@ -135,7 +135,7 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 - `proveedor-foundry.mjs`
 - `ventana.mjs`
 
-### 7. Escenas y Entornos (17 scripts)
+### 7. Escenas y Entornos (18 scripts)
 - `escena-exteriores.mjs`
 - `escena-primitivas.mjs`
 - `control-escena.mjs`
@@ -153,6 +153,7 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 - `retro3d.mjs`
 - `museo-escena.mjs`
 - `museo-piezas.mjs`
+- `convocatoria-estancia.mjs`
 
 ### 8. Audio y Música (4 scripts)
 - `audio-ficheros.mjs`
@@ -160,13 +161,15 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 - `musica-procedural.mjs`
 - `musica-reproductor.mjs`
 
-### 9. Avatares y Personajes (6 scripts)
+### 9. Avatares y Personajes (8 scripts)
 - `avatar-assignment.mjs`
 - `avatar-preview.mjs`
 - `avatar-sugerencia.mjs`
 - `avatar-ui.mjs`
 - `retrato-tripulante.mjs`
 - `lamina-contacto.mjs`
+- `npc-generador.mjs`
+- `npc-tablas.mjs`
 
 ### 10. Interfaz de Usuario y Paneles (9 scripts)
 - `asistencia-ui.mjs`
@@ -228,7 +231,7 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 
 ## Verificación
 
-**Suma de agrupaciones temáticas:** 40 + 11 + 11 + 27 + 13 + 5 + 17 + 4 + 6 + 9 + 8 + 7 + 3 + 3 + 7 + 2 + 3 = 176
+**Suma de agrupaciones temáticas:** 40 + 11 + 11 + 27 + 13 + 5 + 18 + 4 + 8 + 9 + 8 + 7 + 3 + 3 + 7 + 2 + 3 = 179
 
 La suma coincide con el total de scripts encontrados, confirmando que todos los scripts han sido contabilizados y agrupados correctamente.
 

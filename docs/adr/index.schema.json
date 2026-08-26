@@ -10,8 +10,11 @@
       "title": { "type": "string", "minLength": 1 },
       "path": { "type": "string", "pattern": "^[0-9]{4}-[a-z0-9-]+\\.md$" },
       "status": {
-        "type": "string",
-        "enum": ["Propuesta", "Aceptada", "Deprecada"]
+        "description": "Los cuatro estados de docs/adr/README.md. \"Sustituida por ADR-NNNN\" es un estado, no una nota: el índice tiene que poder expresarlo.",
+        "anyOf": [
+          { "type": "string", "enum": ["Propuesta", "Aceptada", "Deprecada"] },
+          { "type": "string", "pattern": "^Sustituida por ADR-[0-9]{4}$" }
+        ]
       }
     },
     "additionalProperties": false

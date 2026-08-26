@@ -2847,3 +2847,124 @@ msgstr " Ya has destruido a uno de ellos."
 msgctxt "clueOrders-comms"
 msgid "Defend bases in the area (human navy and independent) from enemy attack and destroy three enemy bases."
 msgstr "Defender bases en la zona (nave humana e independiente) de ataque enemigo y destruir tres bases enemigas."
+
+# Claves añadidas en scenario_*.en.po sin su contraparte en español (#789, #793).
+msgctxt "Enemies"
+msgid "Easy"
+msgstr "Fácil"
+
+msgctxt "Enemies"
+msgid "Extreme"
+msgstr "Extremo"
+
+msgctxt "Enemies"
+msgid "Fewer or weaker enemies"
+msgstr "Menores o más débiles enemigos"
+
+msgctxt "Enemies"
+msgid "Hard"
+msgstr "Duro"
+
+msgctxt "Enemies"
+msgid "Insanely strong and/or inordinately large numbers of enemies"
+msgstr "Insanely strong and/or inordinately large numbers of enemigos"
+
+msgctxt "Enemies"
+msgid "More or stronger enemies"
+msgstr "Más enemigos o más fuertes"
+
+msgctxt "Enemies"
+msgid "Much stronger, many more enemies"
+msgstr "Mucho más fuerte, muchos más enemigos"
+
+msgctxt "Enemies"
+msgid "Normal"
+msgstr "Normal"
+
+msgctxt "Enemies"
+msgid "Normal number or strength of enemies"
+msgstr "Número normal o fuerza de enemigos"
+
+msgctxt "Enemies"
+msgid "Quixotic"
+msgstr "Quijote"
+
+msgctxt "Murphy"
+msgid "Easy"
+msgstr "Fácil"
+
+msgctxt "Murphy"
+msgid "Extreme"
+msgstr "Extremo"
+
+msgctxt "Murphy"
+msgid "Hard"
+msgstr "Duro"
+
+msgctxt "Murphy"
+msgid "Normal"
+msgstr "Normal"
+
+msgctxt "Murphy"
+msgid "Random factors are more against you"
+msgstr "Los factores aleatorios son más contra ti"
+
+msgctxt "Murphy"
+msgid "Random factors are more in your favor"
+msgstr "Los factores aleatorios son más a su favor"
+
+msgctxt "Murphy"
+msgid "Random factors are normal"
+msgstr "Los factores aleatorios son normales"
+
+msgctxt "Murphy"
+msgid "Random factors are way more against you"
+msgstr "Los factores aleatorios están mucho más en tu contra"
+
+msgctxt "Murphy"
+msgid "Random factors are way more in your favor"
+msgstr "Los factores aleatorios están mucho más a tu favor"
+
+msgctxt "Murphy"
+msgid "Very Easy"
+msgstr "Muy fácil"
+
+msgctxt "Timed"
+msgid "45"
+msgstr "45"
+
+msgctxt "Timed"
+msgid "No time limit"
+msgstr "No hay límite de tiempo"
+
+msgctxt "Timed"
+msgid "None"
+msgstr "Ninguno"
+
+msgctxt "Timed"
+msgid "Scenario ends in 45 minutes"
+msgstr "Escenario termina en 45 minutos"
+
+msgctxt "setting"
+msgid "Configures strength and/or number of enemies in this scenario"
+msgstr "Configura fuerza y/o número de enemigos en este escenario"
+
+msgctxt "setting"
+msgid "Configures the perversity of the universe according to Murphy's law"
+msgstr "Configura la perversidad del universo según la ley de Murphy"
+
+msgctxt "setting"
+msgid "Enemies"
+msgstr "Enemigos"
+
+msgctxt "setting"
+msgid "Murphy"
+msgstr "Murphy"
+
+msgctxt "setting"
+msgid "Sets whether or not the scenario has a time limit. Default is no time limit"
+msgstr "Establece si el escenario tiene o no límite de tiempo. Por defecto, no lo tiene"
+
+msgctxt "setting"
+msgid "Timed"
+msgstr "Hora"

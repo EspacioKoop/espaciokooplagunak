@@ -161,7 +161,7 @@ msgstr "Hora"
 
 msgctxt "setting"
 msgid "Sets whether or not the scenario has a time limit. Default is no time limit"
-msgstr "Establece si el escenario tiene o no un límite de tiempo. Default no es límite de tiempo"
+msgstr "Establece si el escenario tiene o no límite de tiempo. Por defecto, no lo tiene"
 
 msgctxt "Timed"
 msgid "None"

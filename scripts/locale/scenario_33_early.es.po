@@ -2992,3 +2992,32 @@ msgid ""
 msgstr ""
 "%s\n"
 "   %s en el interior %s"
+
+# Claves añadidas en scenario_*.en.po sin su contraparte en español (#789, #793).
+msgctxt "Names"
+msgid "Configures whether player ship names are selected at random or are fixed"
+msgstr "Configura si los nombres de las naves jugadoras se eligen al azar o son fijos"
+
+msgctxt "Names"
+msgid "Fixed"
+msgstr "Fijos"
+
+msgctxt "Names"
+msgid "Player ship names are pre-assigned"
+msgstr "Los nombres de las naves jugadoras están preasignados"
+
+msgctxt "Names"
+msgid "Player ship names are selected at random from a list"
+msgstr "Los nombres de las naves jugadoras se eligen al azar de una lista"
+
+msgctxt "Names"
+msgid "Random"
+msgstr "Aleatorio"
+
+msgctxt "setting"
+msgid "Names"
+msgstr "Nombres"
+
+msgctxt "setting"
+msgid "Configures whether player ship names are selected at random or are fixed"
+msgstr "Configura si los nombres de las naves jugadoras se eligen al azar o son fijos"

@@ -155,8 +155,6 @@ export function discoLunarSvg(semilla, opciones = {}) {
   );
 }
 
-
-
 // ---- Cartografía (Hevelius) ------------------------------------------------
 
 /**
@@ -279,5 +277,3 @@ function escapar(texto) {
 export function cartografiaDataUri(opciones = {}) {
   return `data:image/svg+xml,${encodeURIComponent(cartografiaSvg(opciones))}`;
 }
-
-

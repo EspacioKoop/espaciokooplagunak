@@ -30,6 +30,7 @@ import { SECCION } from "./paleta.mjs";
 import { cartelaDe, piezaPorId } from "./catalogo-piezas.mjs";
 import { CATALOGO_MUSEO } from "./museo-piezas.mjs";
 import { AJUSTE_TELEMETRIA, aceptarSensores, aceptarTelemetria } from "./telemetria-difusion.mjs";
+import { AJUSTE_NIVEL_ALERTA } from "./alerta-escena.mjs";
 
 const ESTANCIA_INICIAL = "cantina";
 
@@ -381,8 +382,49 @@ function arrancar(raiz, estanciaPedida = null) {
     return game.settings?.get?.(MODULE_ID, AJUSTE_TELEMETRIA) ?? null;
   }
 
+  /**
+   * El nivel de alerta que ya se difunde a toda la mesa (#338), para teñir las
+   * luminarias (#765). Se lee del ajuste en cada fotograma, igual que la
+   * telemetría y por el mismo motivo. Si el ajuste no existe en este mundo,
+   * `null`: la nave se queda con su luz cálida, que es lo correcto —la ausencia
+   * de lectura no es una alerta.
+   */
+  function avisoVigente() {
+    try {
+      return game.settings?.get?.(MODULE_ID, AJUSTE_NIVEL_ALERTA) ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * La salud del sistema que aloja la estancia en la que se está, o `null`.
+   *
+   * Es la misma regla que la sección (#542): la salud de una sala es la de SU
+   * sistema, no la de una región de casco inventada. Una estancia sin sistema
+   * —la cantina, las pasarelas libres, la playa, el museo— no parpadea nunca, y
+   * tampoco parpadea una cuyo sistema no viene en la telemetría: eso es un dato
+   * que falta, no una avería.
+   */
+  function saludDeLaSala() {
+    const sistema = CATALOGO_ANDAR.obtener(estanciaActual)?.sistema ?? null;
+    if (!sistema) return null;
+    const ship = aceptarTelemetria(sobreTelemetria());
+    const sistemas = ship?.systems;
+    if (!sistemas || typeof sistemas !== "object") return null;
+    // Se comparan en minúsculas por lo mismo que hace la sección: el nombre que
+    // declara `SALAS_PHOBOS` viene del `.lua` (`BeamWeapons`) y el del sobre
+    // viene del puente, y nadie garantiza que coincidan en mayúsculas.
+    const buscado = sistema.toLowerCase();
+    const entrada = Object.entries(sistemas).find(([nombre]) => nombre.toLowerCase() === buscado);
+    const leido = entrada?.[1]?.health;
+    return typeof leido === "number" && Number.isFinite(leido) ? leido : null;
+  }
+
   // Rótulo inicial: el resto de llamadas van en los cambios de estancia.
   const mando = arrancarAndar(lienzo, {
+    aviso: () => avisoVigente(),
+    salud: () => saludDeLaSala(),
     sensores: () => aceptarSensores(sobreTelemetria()),
     rumboNave: () => {
       const ship = aceptarTelemetria(sobreTelemetria());

@@ -46,7 +46,16 @@
 //   suelo y techo (#552)         886–1135   4,19 ms
 //   luminarias (#555)            894–1173   4,21 ms
 //   maquinaria de sala (#560)    894–1264   5,09 ms
-//   luminarias (#555)            894–1173   4,21 ms
+//   alerta en la luminaria (#765) sin cambio
+//
+// La fila de #765 no lleva número porque no hay ninguno que anotar, y esa es la
+// medida: teñir el difusor por alerta y apagarlo por avería no mueve el recuento
+// ni un polígono (medido igual, 30–1268 visibles antes y después en las catorce
+// estancias; la sala averiada baja a 1258 porque el difusor apagado no se emite).
+// Tenía que salir así: la geometría del difusor se funde UNA vez al construir la
+// sala y lo único que cambia entre fotogramas es su campo `color`. Si esta fila
+// deja de decir «sin cambio», es que alguien está reconstruyendo la sala para
+// cambiar una lámpara.
 //
 // El salto de #551 es real y hay que vigilarlo. Está pagado a tres bandas: el
 // mallado en rectángulos, el agrupado por color de `chapasDeRejilla` (que quitó

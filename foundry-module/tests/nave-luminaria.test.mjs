@@ -8,7 +8,22 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { ANCHO, CAIDA, CAIDA_DIFUSOR, LARGO, PASO, piezasLuminarias, reparto, focosLuminarias, tonoLuminaria } from "../scripts/nave-luminaria.mjs";
+import {
+  ANCHO,
+  CAIDA,
+  CAIDA_DIFUSOR,
+  LARGO,
+  PASO,
+  PERIODO_PARPADEO,
+  UMBRAL_AVERIA,
+  estadoDifusor,
+  focosLuminarias,
+  mallaDifusor,
+  piezasCarcasa,
+  piezasLuminarias,
+  reparto,
+  tonoLuminaria,
+} from "../scripts/nave-luminaria.mjs";
 import { LUZ_CALIDA, MURAL, SECCION, ALERTA } from "../scripts/paleta.mjs";
 import { ALTURA, crearSalaCaja } from "../scripts/nave-sala-caja.mjs";
 import { componerEscena } from "../scripts/retro3d.mjs";
@@ -216,37 +231,69 @@ test("tonoLuminaria acepta el aviso entero, no solo la cadena", () => {
   assert.equal(tonoLuminaria({ nivel: "roja", motivos: ["casco"] }), ALERTA.niveles.roja.borde);
 });
 
-// NEW TESTS FOR BLINKING LUMINARIA
 
-test("luminaria parpadea cuando hay daño", () => {
-  // Salud dañada (por ejemplo, 0.5)
-  const health = 0.5;
-  // En tiempo 0, debe estar encendida
-  let pieza = piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA, health, timeMs: 0 })[2]; // la pieza emisiva es la tercera
-  assert.equal(pieza.color, LUZ_CALIDA);
-  assert.equal(pieza.emisivo, true);
+// El estado del difusor (#765). Es lo ÚNICO de la luminaria que cambia entre
+// fotogramas, y por eso se prueba aparte de la geometría: si estas dos cosas
+// vuelven a estar juntas, teñir la nave costará reconstruirla.
 
-  // En tiempo 500 ms, debe estar apagada (negro)
-  pieza = piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA, health, timeMs: 500 })[2];
-  assert.equal(pieza.color, 0x000000);
-  assert.equal(pieza.emisivo, true); // sigue siendo emisivo, pero el color es negro
-
-  // En tiempo 1000 ms, debe estar encendida nuevamente
-  pieza = piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA, health, timeMs: 1000 })[2];
-  assert.equal(pieza.color, LUZ_CALIDA);
-  assert.equal(pieza.emisivo, true);
+test("sin lectura de nada, la luz cálida de siempre y encendida", () => {
+  assert.deepEqual(estadoDifusor(), { color: LUZ_CALIDA, encendido: true });
+  assert.deepEqual(estadoDifusor({ aviso: null, salud: null }), { color: LUZ_CALIDA, encendido: true });
 });
 
-test("luminaria no parpadea cuando health es null", () => {
-  const health = null;
-  // En cualquier tiempo, debe estar encendida
-  const pieza1 = piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA, health, timeMs: 0 })[2];
-  const pieza2 = piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA, health, timeMs: 500 })[2];
-  const pieza3 = piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA, health, timeMs: 1000 })[2];
-  assert.equal(pieza1.color, LUZ_CALIDA);
-  assert.equal(pieza2.color, LUZ_CALIDA);
-  assert.equal(pieza3.color, LUZ_CALIDA);
-  assert.equal(pieza1.emisivo, true);
-  assert.equal(pieza2.emisivo, true);
-  assert.equal(pieza3.emisivo, true);
+test("en alerta roja el difusor va en el BORDE de la alerta, no en el texto", () => {
+  const { color, encendido } = estadoDifusor({ aviso: "roja" });
+  assert.equal(color, ALERTA.niveles.roja.borde);
+  assert.notEqual(color, ALERTA.niveles.roja.texto);
+  assert.equal(encendido, true, "la alerta tiñe; no apaga");
+});
+
+test("una sala sin lectura de salud no parpadea, por mucho que pase el tiempo", () => {
+  for (const tiempoMs of [0, 500, 1000, 1500]) {
+    assert.equal(estadoDifusor({ salud: null, tiempoMs }).encendido, true, `t=${tiempoMs}`);
+  }
+});
+
+test("una sala sana tampoco parpadea: la alarma es de avería, no de rasguño", () => {
+  for (const tiempoMs of [0, 500, 1000]) {
+    assert.equal(estadoDifusor({ salud: 1, tiempoMs }).encendido, true);
+    assert.equal(estadoDifusor({ salud: UMBRAL_AVERIA, tiempoMs }).encendido, true);
+  }
+});
+
+test("por debajo del umbral parpadea, medio periodo encendida y medio apagada", () => {
+  const salud = 0.2;
+  const medio = PERIODO_PARPADEO / 2;
+  assert.equal(estadoDifusor({ salud, tiempoMs: 0 }).encendido, true);
+  assert.equal(estadoDifusor({ salud, tiempoMs: medio }).encendido, false);
+  assert.equal(estadoDifusor({ salud, tiempoMs: PERIODO_PARPADEO }).encendido, true);
+  assert.equal(estadoDifusor({ salud, tiempoMs: PERIODO_PARPADEO + medio }).encendido, false);
+});
+
+test("la avería no cambia el color: una sala rota en alerta roja sigue roja", () => {
+  const { color } = estadoDifusor({ aviso: "roja", salud: 0.1, tiempoMs: 0 });
+  assert.equal(color, ALERTA.niveles.roja.borde);
+});
+
+test("carcasa y difusor suman exactamente lo que devolvía la luminaria entera", () => {
+  const sala = { ancho: 8, profundidad: 6, altura: ALTURA };
+  const enteras = piezasLuminarias(sala);
+  const carcasa = piezasCarcasa(sala);
+  const difusor = mallaDifusor(sala);
+
+  assert.equal(carcasa.length, 2, "carcasa: costados y bajos");
+  assert.equal(enteras.length, carcasa.length + 1);
+  assert.equal(
+    enteras.reduce((n, p) => n + p.malla.caras.length, 0),
+    carcasa.reduce((n, p) => n + p.malla.caras.length, 0) + difusor.caras.length,
+    "partir la luminaria en dos no puede costar ni una cara: si cuesta, se está reconstruyendo algo",
+  );
+  const emisiva = enteras.find((pieza) => pieza.emisivo);
+  assert.deepEqual(emisiva.malla, difusor, "la pieza emisiva es exactamente el difusor");
+});
+
+test("una sala sin luminarias no tiene malla de difusor que teñir", () => {
+  // `reparto` siempre devuelve al menos una, así que el `null` protege al
+  // llamante de un caso que hoy no ocurre pero que no debe reventar el render.
+  assert.equal(mallaDifusor({ ancho: 8, profundidad: 6, altura: ALTURA }) === null, false);
 });

@@ -1,15 +1,15 @@
 # Scenario name
+msgid ""
+msgstr ""
+
 msgid "Shoreline"
 msgstr ""
 
 # Scenario description
 msgid ""
-"Waves of increasingly difficult enemies. Warp capable ship is strongly "
-"suggested. At least one required mission and several optional missions. "
-"Missions selected at random unless game master intervenes\n"
+"Waves of increasingly difficult enemies. Warp capable ship is strongly suggested. At least one required mission and several optional missions. Missions selected at random unless game master intervenes\n"
 "\n"
-"Maximum of 8 player ships supported by scenario. More player ships may "
-"experience strange results\n"
+"Maximum of 8 player ships supported by scenario. More player ships may experience strange results\n"
 "\n"
 "Version 2"
 msgstr ""
@@ -99,7 +99,8 @@ msgid ""
 "Defend bases in the area (human navy and independent) from enemy attack."
 msgstr ""
 
-#: scripts/scenario_57_shoreline.lua:910 scripts/scenario_57_shoreline.lua:3758
+#: scripts/scenario_57_shoreline.lua:910
+#: scripts/scenario_57_shoreline.lua:3758
 #: scripts/scenario_57_shoreline.lua:3799
 msgctxt "scienceDescription-station"
 msgid "Ship building and maintenance facility"
@@ -110,44 +111,51 @@ msgctxt "stationGeneralInfo-comms"
 msgid "Human Navy headquarters. Loss of this station would be devastating"
 msgstr ""
 
-#: scripts/scenario_57_shoreline.lua:929 scripts/scenario_57_shoreline.lua:3836
+#: scripts/scenario_57_shoreline.lua:929
+#: scripts/scenario_57_shoreline.lua:3836
 msgctxt "scienceDescription-station"
 msgid "Warp engine components"
 msgstr ""
 
-#: scripts/scenario_57_shoreline.lua:941 scripts/scenario_57_shoreline.lua:3837
+#: scripts/scenario_57_shoreline.lua:941
+#: scripts/scenario_57_shoreline.lua:3837
 msgctxt "stationGeneralInfo-comms"
 msgid ""
 "We specialize in the esoteric components necessary to make warp drives "
 "function properly"
 msgstr ""
 
-#: scripts/scenario_57_shoreline.lua:942 scripts/scenario_57_shoreline.lua:3838
+#: scripts/scenario_57_shoreline.lua:942
+#: scripts/scenario_57_shoreline.lua:3838
 msgctxt "stationStory-comms"
 msgid ""
 "Zefram Cochrane constructed the first warp drive in human history. We named "
 "our station after him because of the specialized warp systems work we do"
 msgstr ""
 
-#: scripts/scenario_57_shoreline.lua:960 scripts/scenario_57_shoreline.lua:2541
+#: scripts/scenario_57_shoreline.lua:960
+#: scripts/scenario_57_shoreline.lua:2541
 msgctxt "scienceDescription-station"
 msgid "Energy Beam Components"
 msgstr ""
 
-#: scripts/scenario_57_shoreline.lua:971 scripts/scenario_57_shoreline.lua:2542
+#: scripts/scenario_57_shoreline.lua:971
+#: scripts/scenario_57_shoreline.lua:2542
 msgctxt "stationGeneralInfo-comms"
 msgid "We manufacture energy beam components"
 msgstr ""
 
-#: scripts/scenario_57_shoreline.lua:972 scripts/scenario_57_shoreline.lua:2543
+#: scripts/scenario_57_shoreline.lua:972
+#: scripts/scenario_57_shoreline.lua:2543
 msgctxt "stationStory-comms"
 msgid ""
 "Station named after Guglielmo Marconi an Italian inventor from early 20th "
-"century Earth who, along with Nicolo Tesla, claimed to have invented a death "
-"ray or particle beam weapon"
+"century Earth who, along with Nicolo Tesla, claimed to have invented a death"
+" ray or particle beam weapon"
 msgstr ""
 
-#: scripts/scenario_57_shoreline.lua:990 scripts/scenario_57_shoreline.lua:2691
+#: scripts/scenario_57_shoreline.lua:990
+#: scripts/scenario_57_shoreline.lua:2691
 #: scripts/scenario_57_shoreline.lua:3355
 msgctxt "scienceDescription-station"
 msgid "Trading station"
@@ -391,9 +399,9 @@ msgstr ""
 #: scripts/scenario_57_shoreline.lua:2807
 msgctxt "stationStory-comms"
 msgid ""
-"The station is named after Dr. Lipkin who pioneered some of the research and "
-"application around robot assisted surgery in the area of partial nephrectomy "
-"for renal tumors in the early 21st century on Earth"
+"The station is named after Dr. Lipkin who pioneered some of the research and"
+" application around robot assisted surgery in the area of partial "
+"nephrectomy for renal tumors in the early 21st century on Earth"
 msgstr ""
 
 #: scripts/scenario_57_shoreline.lua:1409
@@ -463,8 +471,8 @@ msgstr ""
 #: scripts/scenario_57_shoreline.lua:2959
 msgctxt "stationGeneralInfo-comms"
 msgid ""
-"We provide high quality high capacity batteries and specialized software for "
-"all shipboard systems"
+"We provide high quality high capacity batteries and specialized software for"
+" all shipboard systems"
 msgstr ""
 
 #: scripts/scenario_57_shoreline.lua:1508
@@ -625,7 +633,8 @@ msgstr ""
 #: scripts/scenario_57_shoreline.lua:3472
 msgctxt "stationStory-comms"
 msgid ""
-"Established by the royal family so critical during the political upheaval era"
+"Established by the royal family so critical during the political upheaval "
+"era"
 msgstr ""
 
 #: scripts/scenario_57_shoreline.lua:2109
@@ -692,8 +701,8 @@ msgstr ""
 msgctxt "stationStory-comms"
 msgid ""
 "The original station builders were fans of the late 20th century scientist "
-"and author Isaac Asimov. The station was initially named Foundation, but was "
-"later changed simply to Asimov. It started off as a stellar observatory, "
+"and author Isaac Asimov. The station was initially named Foundation, but was"
+" later changed simply to Asimov. It started off as a stellar observatory, "
 "then became a supply stop and as it has grown has become an educational and "
 "coordination hub for the region"
 msgstr ""
@@ -733,7 +742,8 @@ msgstr ""
 msgctxt "stationStory-comms"
 msgid ""
 "This station is named after Chris Van Den Broeck who did some initial "
-"research into the possibility of warp drive in the late 20th century on Earth"
+"research into the possibility of warp drive in the late 20th century on "
+"Earth"
 msgstr ""
 
 #: scripts/scenario_57_shoreline.lua:2355
@@ -751,9 +761,9 @@ msgstr ""
 #: scripts/scenario_57_shoreline.lua:2357
 msgctxt "stationStory-comms"
 msgid ""
-"Our station is named after the law which quantifies the amount of force with "
-"which stationary electrically charged particals repel or attact each other - "
-"a fundamental principle in the design of our circuits"
+"Our station is named after the law which quantifies the amount of force with"
+" which stationary electrically charged particals repel or attact each other "
+"- a fundamental principle in the design of our circuits"
 msgstr ""
 
 #: scripts/scenario_57_shoreline.lua:2396
@@ -782,8 +792,8 @@ msgstr ""
 #: scripts/scenario_57_shoreline.lua:2434
 msgctxt "stationStory-comms"
 msgid ""
-"This station is named after the nanotechnologist Hossam Haick from the early "
-"21st century on Earth in Israel"
+"This station is named after the nanotechnologist Hossam Haick from the early"
+" 21st century on Earth in Israel"
 msgstr ""
 
 #: scripts/scenario_57_shoreline.lua:2472
@@ -857,15 +867,15 @@ msgstr ""
 msgctxt "stationStory-comms"
 msgid ""
 "This station was named after Archimedes who, according to legend, used a "
-"series of adjustable focal length mirrors to focus sunlight on a Roman naval "
-"fleet invading Syracuse, setting fire to it"
+"series of adjustable focal length mirrors to focus sunlight on a Roman naval"
+" fleet invading Syracuse, setting fire to it"
 msgstr ""
 
 #: scripts/scenario_57_shoreline.lua:2692
 msgctxt "stationGeneralInfo-comms"
 msgid ""
-"Only the largest market and trading location in twenty sectors. You can find "
-"your heart's desire here"
+"Only the largest market and trading location in twenty sectors. You can find"
+" your heart's desire here"
 msgstr ""
 
 #: scripts/scenario_57_shoreline.lua:2693
@@ -922,8 +932,8 @@ msgstr ""
 #: scripts/scenario_57_shoreline.lua:2844
 msgctxt "stationStory-comms"
 msgid ""
-"Named after Madison Square Gardens from 21st century Earth, this station was "
-"designed to serve similar purposes in space - a venue for sports and "
+"Named after Madison Square Gardens from 21st century Earth, this station was"
+" designed to serve similar purposes in space - a venue for sports and "
 "entertainment"
 msgstr ""
 
@@ -999,8 +1009,8 @@ msgstr ""
 #: scripts/scenario_57_shoreline.lua:3398
 msgctxt "stationStory-comms"
 msgid ""
-"We named the station after the ground breaking android model produced by the "
-"Tyrell corporation"
+"We named the station after the ground breaking android model produced by the"
+" Tyrell corporation"
 msgstr ""
 
 #: scripts/scenario_57_shoreline.lua:3434
@@ -1027,8 +1037,8 @@ msgctxt "stationStory-comms"
 msgid ""
 "Owens started off in the moisture vaporator business on Tattooine then "
 "branched out into load lifters based on acquisition of proprietary software "
-"and protocols. The station name recognizes the tragic loss of our founder to "
-"Imperial violence"
+"and protocols. The station name recognizes the tragic loss of our founder to"
+" Imperial violence"
 msgstr ""
 
 #: scripts/scenario_57_shoreline.lua:3581
@@ -1066,8 +1076,8 @@ msgstr ""
 #: scripts/scenario_57_shoreline.lua:3657
 msgctxt "stationStory-comms"
 msgid ""
-"Lost the history memory bank. Recovery efforts only brought back the phrase, "
-"'I'll be back'"
+"Lost the history memory bank. Recovery efforts only brought back the phrase,"
+" 'I'll be back'"
 msgstr ""
 
 #: scripts/scenario_57_shoreline.lua:3725
@@ -1085,8 +1095,8 @@ msgstr ""
 #: scripts/scenario_57_shoreline.lua:3727
 msgctxt "stationStory-comms"
 msgid ""
-"We learned several of our critical industrial processes from the Tokra race, "
-"so we honor our fortune by naming the station after them"
+"We learned several of our critical industrial processes from the Tokra race,"
+" so we honor our fortune by naming the station after them"
 msgstr ""
 
 #: scripts/scenario_57_shoreline.lua:3759
@@ -1112,8 +1122,8 @@ msgstr ""
 msgctxt "stationStory-comms"
 msgid ""
 "The station is named after the United States national medical research "
-"center based in Bethesda, Maryland on earth which was established in the mid "
-"20th century"
+"center based in Bethesda, Maryland on earth which was established in the mid"
+" 20th century"
 msgstr ""
 
 #: scripts/scenario_57_shoreline.lua:3994
@@ -1714,8 +1724,8 @@ msgstr ""
 msgctxt "explainGoods-comms"
 msgid ""
 "Different types of cargo or goods may be obtained from stations, freighters "
-"or other sources. They go by one word descriptions such as dilithium, optic, "
-"warp, etc. Certain mission goals may require a particular type or types of "
+"or other sources. They go by one word descriptions such as dilithium, optic,"
+" warp, etc. Certain mission goals may require a particular type or types of "
 "cargo. Each player ship differs in cargo carrying capacity. Goods may be "
 "obtained by spending reputation points or by trading other types of cargo "
 "(typically food, medicine or luxury)"
@@ -1891,8 +1901,7 @@ msgstr ""
 msgctxt "station-comms"
 msgid ""
 "\n"
-"Be aware that if enemies in the area get much closer, we will be too busy to "
-"conduct business with you."
+"Be aware that if enemies in the area get much closer, we will be too busy to conduct business with you."
 msgstr ""
 
 #: scripts/scenario_57_shoreline.lua:7714
@@ -2129,7 +2138,8 @@ msgstr ""
 
 #: scripts/scenario_57_shoreline.lua:8028
 msgctxt "blackHoleresearch-comms"
-msgid "Your science console will have the controls when your ship is in range."
+msgid ""
+"Your science console will have the controls when your ship is in range."
 msgstr ""
 
 #: scripts/scenario_57_shoreline.lua:8029
@@ -2149,8 +2159,8 @@ msgstr ""
 #: scripts/scenario_57_shoreline.lua:8061
 msgctxt "opt2BeamDamResearch-comms"
 msgid ""
-"Thanks. We completed our beam damage research. We transmitted our results to "
-"Vaiken. The next time you dock at Vaiken, you can upgrade your beam weapon "
+"Thanks. We completed our beam damage research. We transmitted our results to"
+" Vaiken. The next time you dock at Vaiken, you can upgrade your beam weapon "
 "damage."
 msgstr ""
 
@@ -2178,8 +2188,9 @@ msgstr ""
 msgctxt "opt4ImpulseResearch-comms"
 msgid ""
 "[Nikhil Morrison] With the goods you provided, I completed the impulse "
-"engine research. I transmitted the research results to Vaiken. The next time "
-"you dock at Vaiken, you can have the speed of your impulse engines improved."
+"engine research. I transmitted the research results to Vaiken. The next time"
+" you dock at Vaiken, you can have the speed of your impulse engines "
+"improved."
 msgstr ""
 
 #: scripts/scenario_57_shoreline.lua:8136
@@ -2191,8 +2202,8 @@ msgstr ""
 #: scripts/scenario_57_shoreline.lua:8141
 msgctxt "opt3SpinResearch-comms"
 msgid ""
-"[Maneuver technician] With the goods you provided, we completed the maneuver "
-"research and transmitted the research results to Vaiken. The next time you "
+"[Maneuver technician] With the goods you provided, we completed the maneuver"
+" research and transmitted the research results to Vaiken. The next time you "
 "dock at Vaiken, you can have your ship's maneuver speed improved."
 msgstr ""
 
@@ -2713,8 +2724,7 @@ msgstr ""
 #: scripts/scenario_57_shoreline.lua:9172
 msgctxt "shipEnemy-comms"
 msgid ""
-"The hive suffers no threats. Opposition to any of us is opposition to us "
-"all.\n"
+"The hive suffers no threats. Opposition to any of us is opposition to us all.\n"
 "Stand down or prepare to donate your corpses toward our nutrition."
 msgstr ""
 
@@ -2839,10 +2849,10 @@ msgstr ""
 #: scripts/scenario_57_shoreline.lua:9922
 msgctxt "Undercut1Orders-shipLog"
 msgid ""
-"[Vaiken] As a naval operative, Charles Undercut discovered information about "
-"enemies in this region. Unfortunately, he was fired for his poor performance "
-"as a maintenance technician by his commanding officer before he could file a "
-"report. We need his information."
+"[Vaiken] As a naval operative, Charles Undercut discovered information about"
+" enemies in this region. Unfortunately, he was fired for his poor "
+"performance as a maintenance technician by his commanding officer before he "
+"could file a report. We need his information."
 msgstr ""
 
 #: scripts/scenario_57_shoreline.lua:9924
@@ -2866,8 +2876,7 @@ msgstr ""
 msgctxt "Undercut1Orders-comms"
 msgid ""
 "\n"
-"Find Charles Undercut last reported at station %s who has information on "
-"enemy activity"
+"Find Charles Undercut last reported at station %s who has information on enemy activity"
 msgstr ""
 
 #: scripts/scenario_57_shoreline.lua:9937
@@ -2875,8 +2884,7 @@ msgstr ""
 msgctxt "Undercut1Orders-comms"
 msgid ""
 "\n"
-"Find Charles Undercut last reported at station %s in sector %s who has "
-"information on enemy activity"
+"Find Charles Undercut last reported at station %s in sector %s who has information on enemy activity"
 msgstr ""
 
 #: scripts/scenario_57_shoreline.lua:9972
@@ -2892,8 +2900,7 @@ msgstr ""
 msgctxt "Undercut1-shipLog"
 msgid ""
 ".\n"
-"Last we heard, that ship was working in the %s sector. He was desperate for "
-"a job."
+"Last we heard, that ship was working in the %s sector. He was desperate for a job."
 msgstr ""
 
 #: scripts/scenario_57_shoreline.lua:10071
@@ -3024,8 +3031,7 @@ msgstr ""
 msgctxt "SporiskyOrders-comms"
 msgid ""
 "\n"
-"Get the spy Annette Sporisky from transport %s and bring her to Vaiken "
-"station for questioning"
+"Get the spy Annette Sporisky from transport %s and bring her to Vaiken station for questioning"
 msgstr ""
 
 #: scripts/scenario_57_shoreline.lua:10329
@@ -3257,8 +3263,7 @@ msgstr ""
 msgctxt "opt5ShieldsOrders-comms"
 msgid ""
 "\n"
-"Optional: Retrieve artifact with quantum biometric characteristics and bring "
-"to station Organa in sector %s"
+"Optional: Retrieve artifact with quantum biometric characteristics and bring to station Organa in sector %s"
 msgstr ""
 
 #: scripts/scenario_57_shoreline.lua:10933
@@ -3267,8 +3272,8 @@ msgctxt "opt5ShieldsOrders-shipLog"
 msgid ""
 "[Station Organa, sector %s] Research scientist Phillip Solo of the royal "
 "research academy finished the theoretical research portion of his "
-"dissertation. He needs an artifact with quantum biometric characteristics to "
-"apply his research. Please retrieve an artifact with quantum biometric "
+"dissertation. He needs an artifact with quantum biometric characteristics to"
+" apply his research. Please retrieve an artifact with quantum biometric "
 "characteristics and bring it to Organa station"
 msgstr ""
 
@@ -3299,8 +3304,8 @@ msgstr ""
 #: scripts/scenario_57_shoreline.lua:11017
 msgctxt "opt5Shields-shipLog"
 msgid ""
-"[Phillip Organa] Thanks for the artifact. I completed my research. Next time "
-"you dock with Vaiken, you can improve your shield effectiveness."
+"[Phillip Organa] Thanks for the artifact. I completed my research. Next time"
+" you dock with Vaiken, you can improve your shield effectiveness."
 msgstr ""
 
 #: scripts/scenario_57_shoreline.lua:11040
@@ -3383,3 +3388,125 @@ msgid ""
 "Defend bases in the area (human navy and independent) from enemy attack and "
 "destroy three enemy bases."
 msgstr ""
+
+msgctxt "Enemies"
+msgid "Easy"
+msgstr "Easy"
+
+msgctxt "Enemies"
+msgid "Extreme"
+msgstr "Extreme"
+
+msgctxt "Enemies"
+msgid "Fewer or weaker enemies"
+msgstr "Fewer or weaker enemies"
+
+msgctxt "Enemies"
+msgid "Hard"
+msgstr "Hard"
+
+msgctxt "Enemies"
+msgid "Insanely strong and/or inordinately large numbers of enemies"
+msgstr "Insanely strong and/or inordinately large numbers of enemies"
+
+msgctxt "Enemies"
+msgid "More or stronger enemies"
+msgstr "More or stronger enemies"
+
+msgctxt "Enemies"
+msgid "Much stronger, many more enemies"
+msgstr "Much stronger, many more enemies"
+
+msgctxt "Enemies"
+msgid "Normal"
+msgstr "Normal"
+
+msgctxt "Enemies"
+msgid "Normal number or strength of enemies"
+msgstr "Normal number or strength of enemies"
+
+msgctxt "Enemies"
+msgid "Quixotic"
+msgstr "Quixotic"
+
+msgctxt "Murphy"
+msgid "Easy"
+msgstr "Easy"
+
+msgctxt "Murphy"
+msgid "Extreme"
+msgstr "Extreme"
+
+msgctxt "Murphy"
+msgid "Hard"
+msgstr "Hard"
+
+msgctxt "Murphy"
+msgid "Normal"
+msgstr "Normal"
+
+msgctxt "Murphy"
+msgid "Random factors are more against you"
+msgstr "Random factors are more against you"
+
+msgctxt "Murphy"
+msgid "Random factors are more in your favor"
+msgstr "Random factors are more in your favor"
+
+msgctxt "Murphy"
+msgid "Random factors are normal"
+msgstr "Random factors are normal"
+
+msgctxt "Murphy"
+msgid "Random factors are way more against you"
+msgstr "Random factors are way more against you"
+
+msgctxt "Murphy"
+msgid "Random factors are way more in your favor"
+msgstr "Random factors are way more in your favor"
+
+msgctxt "Murphy"
+msgid "Very Easy"
+msgstr "Very Easy"
+
+msgctxt "Timed"
+msgid "45"
+msgstr "45"
+
+msgctxt "Timed"
+msgid "No time limit"
+msgstr "No time limit"
+
+msgctxt "Timed"
+msgid "None"
+msgstr "None"
+
+msgctxt "Timed"
+msgid "Scenario ends in 45 minutes"
+msgstr "Scenario ends in 45 minutes"
+
+msgctxt "setting"
+msgid "Configures strength and/or number of enemies in this scenario"
+msgstr "Configures strength and/or number of enemies in this scenario"
+
+msgctxt "setting"
+msgid "Configures the perversity of the universe according to Murphy's law"
+msgstr "Configures the perversity of the universe according to Murphy's law"
+
+msgctxt "setting"
+msgid "Enemies"
+msgstr "Enemies"
+
+msgctxt "setting"
+msgid "Murphy"
+msgstr "Murphy"
+
+msgctxt "setting"
+msgid ""
+"Sets whether or not the scenario has a time limit. Default is no time limit"
+msgstr ""
+"Sets whether or not the scenario has a time limit. Default is no time limit"
+
+msgctxt "setting"
+msgid "Timed"
+msgstr "Timed"

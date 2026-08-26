@@ -104,7 +104,7 @@ test("emisivo NO es una luz: no se contagia a la pieza de al lado", () => {
   // La distinción que hay que sostener. `emisivo` solo exceptúa a ESA malla del
   // sombreado; no alumbra a nadie. Poner luces de verdad es #556 y cambiaría el
   // aspecto de todas las superficies — no puede colarse por aquí.
-  const sala = crearSalaCaja({ ancho: 8, profundidad: 6, muralPixel: false, pielSuelo: false });
+  const sala = crearSalaCaja({ ancho: 8, profundidad: 6, muralPixel: false, pielSuelo: false, aviso: null });
   const escena = sala.componer(4, 0, 3, 0, { ancho: 320, alto: 180, epoca: "psx" });
   const crudos = new Set(Object.values(MURAL));
   for (const poligono of escena.poligonos) {
@@ -132,13 +132,13 @@ test("solo se emiten las caras que pueden verse", () => {
 });
 
 test("no tocan la colisión: se anda por debajo", () => {
-  const con = crearSalaCaja({ ancho: 8, profundidad: 6 });
+  const con = crearSalaCaja({ ancho: 8, profundidad: 6, aviso: null });
   // El centro de la sala, justo debajo de una luminaria, sigue libre.
   assert.equal(con.planta.obstaculos.some((o) => o.x < 4 && o.x + o.ancho > 4), false);
 });
 
 test("la sala las emite y se ven al mirar al techo", () => {
-  const sala = crearSalaCaja({ ancho: 8, profundidad: 6, muralPixel: false, pielSuelo: false });
+  const sala = crearSalaCaja({ ancho: 8, profundidad: 6, muralPixel: false, pielSuelo: false, aviso: null });
   const escena = sala.componer(4, 0, 3, 0, { ancho: 320, alto: 180 });
   assert.ok(escena.poligonos.length > 0);
 });
@@ -249,4 +249,19 @@ test("luminaria no parpadea cuando health es null", () => {
   assert.equal(pieza1.emisivo, true);
   assert.equal(pieza2.emisivo, true);
   assert.equal(pieza3.emisivo, true);
+});
+
+test("piezasLuminarias: con aviso de alerta roja, el difusor tiene el tono de borde de alerta roja", () => {
+  const aviso = { nivel: "roja" };
+  const piezas = piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA, health: null, aviso });
+  const emisiva = piezas.find(p => p.emisivo === true);
+  assert.ok(emisiva, "debe haber una pieza emisiva");
+  assert.equal(emisiva.color, ALERTA.niveles.roja.borde, "el difusor debe tener el tono de borde de alerta roja");
+});
+
+test("piezasLuminarias: sin aviso, el difusor tiene luz calida", () => {
+  const piezas = piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA, health: null, aviso: null });
+  const emisiva = piezas.find(p => p.emisivo === true);
+  assert.ok(emisiva, "debe haber una pieza emisiva");
+  assert.equal(emisiva.color, LUZ_CALIDA, "sin aviso, el difusor debe ser luz calida");
 });

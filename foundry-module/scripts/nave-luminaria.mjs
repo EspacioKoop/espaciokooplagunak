@@ -177,7 +177,7 @@ function fundir(mallas) {
  * @param {{ancho:number, profundidad:number, altura:number}} sala
  * @returns {{malla:object, color:string}[]}
  */
-export function piezasLuminarias({ ancho, profundidad, altura, health = null, timeMs = 0 }) {
+export function piezasLuminarias({ ancho, profundidad, altura, health = null, timeMs = 0, aviso = null }) {
   const puntos = reparto(ancho, profundidad);
   if (puntos.length === 0) return [];
   const alLargoDeX = ancho >= profundidad;
@@ -194,13 +194,15 @@ export function piezasLuminarias({ ancho, profundidad, altura, health = null, ti
     difusores.push(difusorHaciaAbajo([x, yCarcasa - CAIDA_DIFUSOR, z], medidasDifusor));
   }
 
+  // Determinar el color base según el nivel de alerta.
+  const baseColor = tonoLuminaria(aviso);
   // Determinar si el difusor debe parpadear basado en la salud del sistema y el tiempo.
-  let difusoColor = LUZ_CALIDA;
+  let difusoColor = baseColor;
   let difusoEmisivo = true;
   if (health !== null) {
     // Parpadeo con periodo de 1 segundo (500ms encendido, 500ms apagado) cuando hay daño.
     const parpadeo = Math.floor(timeMs / 500) % 2 === 0;
-    difusoColor = parpadeo ? LUZ_CALIDA : 0x000000; // Negro cuando apagado
+    difusoColor = parpadeo ? baseColor : 0x000000; // Negro cuando apagado
     // Mantener emisivo verdadero para que el color negro se emita como luz negra (apagado).
     // Si estableciéramos emisivo en falso, el material estaría sombreado por la luz ambiente.
   }

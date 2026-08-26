@@ -613,6 +613,7 @@ export function crearSalaCaja({
   // los pase ve exactamente lo que veía antes, con la luminaria entera.
   health = null,
   timeMs = 0,
+  aviso = null,
 }) {
   const muros = [
     { x: -GROSOR_MURO, z: -GROSOR_MURO, ancho: ancho + GROSOR_MURO * 2, profundidad: GROSOR_MURO },
@@ -701,7 +702,7 @@ export function crearSalaCaja({
           ...piezasPielTecho({ ancho, profundidad, altura: ALTURA }),
         ]
       : []),
-    ...piezasLuminarias({ ancho, profundidad, altura: ALTURA, health, timeMs }),
+    ...piezasLuminarias({ ancho, profundidad, altura: ALTURA, health, timeMs, aviso }),
   ]);
 
   const planta = crearPlanta({ ancho, profundidad, obstaculos: [...columnas, ...obstaculosMobiliario] });

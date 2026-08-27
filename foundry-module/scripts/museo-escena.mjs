@@ -37,14 +37,17 @@
 // piedra. El dibujo en sí vive en `museo-cuadro.mjs`; aquí solo se decide de
 // qué muro cuelga cada uno y desde dónde se mira.
 //
-// PRESUPUESTO MEDIDO (#836). Los dos lienzos son 48 × 32 celdas cada uno —3.744
-// celdas entre los dos— y salen 19 y 26 CARAS después de `fundirRectangulos`:
-// ese es todo el truco, dibujos de masas grandes sobre una rejilla fina. En la
-// escena compuesta, plantado delante de cada cuadro: 1.079 → 1.095 caras el del
-// oeste, 521 → 543 el del este; desde la entrada, 1.318 → 1.318, porque a esa
-// altura los dos quedan de canto y el motor ya los descarta. En tiempo, 7,87 →
-// 7,57 ms y 9,32 → 9,63 ms: ruido de medida, no coste. Esta es la cifra que hay
-// que volver a tomar antes de colgar el tercero, no los tests en verde.
+// PRESUPUESTO MEDIDO (#836). Los cinco lienzos son 48 × 32 celdas cada uno
+// —9.360 celdas entre todos— y salen 19, 26, 51, 83 y 61 CARAS después de
+// `fundirRectangulos`: ese es todo el truco, dibujos de masas grandes sobre una
+// rejilla fina. En la escena compuesta, al pasar de dos cuadros a cinco: desde
+// el centro de la sala mirando al muro oeste, 1.235 → 1.340 caras (9,43 → 8,53
+// ms); mirando al este, 565 → 642 (4,42 → 4,87 ms); desde la entrada mirando al
+// fondo, 1.531 → 1.531, porque a esa altura los cinco quedan de canto y el motor
+// ya los descarta. Plantado ante un cuadro no se ven más de 60 caras: el lienzo
+// llena el cuadro y todo lo demás cae por recorte. Las diferencias de tiempo son
+// ruido de medida, no coste. Esta es la cifra que hay que volver a tomar antes
+// de colgar el sexto, no los tests en verde.
 //
 // Puro y sin color propio (#351).
 
@@ -235,13 +238,49 @@ export const PIEZAS_COLOCADAS = Object.freeze(CATALOGO_MUSEO.piezas.map(colocarP
 /* ---- colgar un cuadro ------------------------------------------------------ */
 
 /**
- * La z a la que cuelgan los dos cuadros, medida al centro.
+ * El tramo de muro lateral del que se puede colgar, en metros de z.
  *
- * Está en la mitad de la sala que da a la entrada, o sea DELANTE de la fila de
- * pedestales del fondo. No es indiferente: se entra mirando a las esculturas, y
- * un cuadro colgado por detrás de la mirada no lo ve nadie salvo al salir.
+ * Los dos extremos están puestos por un motivo distinto y por eso se declaran
+ * los dos, en vez de sacar uno del otro:
+ *
+ * - `desde` deja libre la esquina de la entrada. Se entra por ahí, y un cuadro
+ *   pegado a la puerta se pasa de largo antes de verlo.
+ * - `hasta` es lo que la fila de pedestales deja libre. Un cuadro colgado
+ *   detrás de una escultura le disputa la lectura a la escultura, y esta sala
+ *   está montada para que gane la piedra: por eso el muro se corta ANTES de
+ *   llegar al fondo y no se llena hasta la esquina.
+ *
+ * Todo esto pasa en la mitad de la sala que da a la entrada, que es donde se
+ * mira: se entra de cara a las esculturas, y un cuadro a la espalda no lo ve
+ * nadie salvo al salir.
  */
-const Z_CUADROS = 3.6;
+const Z_LIBRE = Object.freeze({ desde: 0.8, hasta: 5.6 });
+
+/**
+ * Cuánto se deja entre marco y marco. NO es un margen estético: es lo que hace
+ * que dos cuadros se lean como dos obras y no como un friso. Con menos, la
+ * pareja se mira de una vez; con mucho más, no caben tres en el tramo libre.
+ */
+const HUECO_ENTRE_CUADROS = 0.4;
+
+/**
+ * Las z de los ganchos, repartidas por el tramo libre. SALEN DE LO QUE MIDE LA
+ * SALA, igual que `X_PEDESTALES` (#590): escribirlas a mano dejaría el reparto
+ * mintiendo el día que la sala cambie de tamaño o el cuadro de formato.
+ */
+const Z_CUADROS = Object.freeze(
+  (() => {
+    const tramo = Z_LIBRE.hasta - Z_LIBRE.desde;
+    const paso = ANCHO_TOTAL + HUECO_ENTRE_CUADROS;
+    const cuantos = Math.max(1, Math.floor((tramo - ANCHO_TOTAL) / paso) + 1);
+    const ocupado = ANCHO_TOTAL * cuantos + HUECO_ENTRE_CUADROS * (cuantos - 1);
+    const margen = (tramo - ocupado) / 2;
+    return Array.from(
+      { length: cuantos },
+      (_, i) => Z_LIBRE.desde + margen + ANCHO_TOTAL / 2 + i * paso,
+    );
+  })(),
+);
 
 /** El borde INFERIOR del marco, en metros. Con los 90 cm de alto del cuadro, su
  *  centro cae a 1,60 — la altura a la que se cuelga de verdad, que es la del ojo
@@ -274,43 +313,55 @@ const MUROS_LATERALES = Object.freeze([
 ]);
 
 /**
- * Cuelga un cuadro del muro que le toca.
+ * Cuántos cuadros caben de verdad: los ganchos de un muro por los dos muros.
  *
- * Uno por muro lateral, y no más: pasarse no se apaña en silencio, por el mismo
- * motivo que `obtenerPosicionPedestal` revienta al pasarse de `CAPACIDAD`. Un
- * tercer cuadro no es «otra entrada en la lista», es decidir dónde va — y a esa
- * altura, en un muro de nueve metros, hay sitio de sobra pero ninguna colocación
- * que se caiga sola de la geometría.
+ * Se declara por el mismo motivo que `CAPACIDAD` en los pedestales: es un límite
+ * que hay que saber ANTES de escribir la sexta cartela, no al colgarla.
+ */
+export const GANCHOS = MUROS_LATERALES.length * Z_CUADROS.length;
+
+/**
+ * Cuelga un cuadro del gancho que le toca.
+ *
+ * SE ALTERNA DE MURO EN MURO y no se llena uno antes que el otro: con cinco
+ * cuadros seguidos, llenar primero el oeste dejaría una pared con tres y otra
+ * con dos al fondo, y quien entra vería toda la colección a un lado. Alternando,
+ * la sala está repartida sea cual sea el número de fichas del catálogo.
+ *
+ * Pasarse no se apaña en silencio, igual que `obtenerPosicionPedestal`: dónde va
+ * el cuadro que ya no cabe es una decisión de diseño —otro tramo de muro, otro
+ * formato, otra sala—, no un hueco que aparezca solo.
  *
  * OJO CON EL ESPEJO: los dos muros comparten el sentido de la coordenada `u`
  * (creciente en z), así que el mismo dibujo colgado en los dos saldría en
- * espejo el uno del otro. No se corrige porque no hay nada que corregir con dos
+ * espejo el uno del otro. No se corrige porque no hay nada que corregir con
  * composiciones distintas, pero conviene saberlo antes de colgar la misma dos
  * veces.
  */
 function colgarCuadro(pieza, indice) {
-  if (indice >= MUROS_LATERALES.length) {
+  if (indice >= GANCHOS) {
     throw new RangeError(
-      `El museo tiene ${MUROS_LATERALES.length} muros para colgar y se ha pedido el ${indice + 1}. ` +
+      `El museo tiene ${GANCHOS} ganchos y se ha pedido el ${indice + 1}. ` +
         "Dónde va el siguiente cuadro es una decisión de diseño, no un hueco que aparezca solo.",
     );
   }
-  const muro = MUROS_LATERALES[indice];
-  const u = Z_CUADROS - ANCHO_TOTAL / 2;
+  const muro = MUROS_LATERALES[indice % MUROS_LATERALES.length];
+  const z = Z_CUADROS[Math.floor(indice / MUROS_LATERALES.length)];
+  const u = z - ANCHO_TOTAL / 2;
   return Object.freeze({
     pieza,
     chapas: Object.freeze(
       piezasCuadro({ cara: muro, u, cota: COTA_CUADRO, composicion: pieza.malla }),
     ),
-    centro: Object.freeze([muro.plano, COTA_CUADRO + ALTO_TOTAL / 2, Z_CUADROS]),
+    centro: Object.freeze([muro.plano, COTA_CUADRO + ALTO_TOTAL / 2, z]),
     // Delante del cuadro y mirando al muro. La orientación se declara y no se
     // deduce: un cuadro solo se mira de un lado, al revés que una consola.
-    mirador: Object.freeze([muro.mirador, Z_CUADROS]),
+    mirador: Object.freeze([muro.mirador, z]),
     yaw: muro.yaw,
   });
 }
 
-/** Los dos cuadros ya colgados. */
+/** Los cuadros ya colgados, en el orden del catálogo. */
 export const CUADROS_COLGADOS = Object.freeze(CATALOGO_CUADROS.piezas.map(colgarCuadro));
 
 /* ---- la salida ------------------------------------------------------------- */
@@ -424,4 +475,4 @@ export const PLANTA_MUSEO = SALA.planta;
 export const componerMuseo = SALA.componer;
 // Se exportan para las pruebas: el reparto es la parte que hay que poder
 // interrogar con mas piezas de las que hoy tiene el catalogo.
-export { colocarPieza, colgarCuadro, obtenerPosicionPedestal, MUROS_LATERALES, PEDESTAL };
+export { colocarPieza, colgarCuadro, obtenerPosicionPedestal, MUROS_LATERALES, PEDESTAL, Z_CUADROS };

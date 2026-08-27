@@ -269,7 +269,9 @@ la simulación ni el puente):
 ### Fase 5 — Distribución mantenible
 
 - [ ] Automatizar artefactos reproducibles para plataformas validadas
-      (las imágenes Docker ya se publican en GHCR por tag `v*`; faltan artefactos nativos).
+      (el workflow de publicación en GHCR por tag `v*` está escrito y validado en seco en cada
+      pull request, pero su ruta de publicación no se ha ejecutado nunca: no hay ningún tag `v*` y
+      las imágenes aún no existen en GHCR. Faltan también los artefactos nativos).
 - [ ] Publicar notas de versión que separen cambios propios y de upstream.
 - [ ] Establecer una cadencia segura de sincronización con EmptyEpsilon.
 

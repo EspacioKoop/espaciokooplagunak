@@ -29,6 +29,23 @@
 // `paleta.mjs`). Sin esa separación de valores, tres estatuas de metro y medio
 // se leen como bultos pegados a la pared.
 //
+// LOS CUADROS (#836) SON LA SEGUNDA FORMA DE COLGAR, no un parámetro de la
+// primera: una estatua se apoya en un pedestal y se rodea, un cuadro cuelga de
+// un muro y solo se mira de frente. Van en los muros LATERALES y no en el del
+// fondo, que es el de los pedestales: un cuadro detrás de una escultura le
+// disputa la lectura a la escultura, y esta sala está montada para que gane la
+// piedra. El dibujo en sí vive en `museo-cuadro.mjs`; aquí solo se decide de
+// qué muro cuelga cada uno y desde dónde se mira.
+//
+// PRESUPUESTO MEDIDO (#836). Los dos lienzos son 48 × 32 celdas cada uno —3.744
+// celdas entre los dos— y salen 19 y 26 CARAS después de `fundirRectangulos`:
+// ese es todo el truco, dibujos de masas grandes sobre una rejilla fina. En la
+// escena compuesta, plantado delante de cada cuadro: 1.079 → 1.095 caras el del
+// oeste, 521 → 543 el del este; desde la entrada, 1.318 → 1.318, porque a esa
+// altura los dos quedan de canto y el motor ya los descarta. En tiempo, 7,87 →
+// 7,57 ms y 9,32 → 9,63 ms: ruido de medida, no coste. Esta es la cifra que hay
+// que volver a tomar antes de colgar el tercero, no los tests en verde.
+//
 // Puro y sin color propio (#351).
 
 import { MUSEO } from "./paleta.mjs";
@@ -36,6 +53,8 @@ import { crearSalaCaja } from "./nave-sala-caja.mjs";
 import { declararInteracciones } from "./nave-interaccion.mjs";
 import { CATALOGO_MUSEO, MALLAS_MUSEO } from "./museo-piezas.mjs";
 import { deformarPieza } from "./estatua-rig.mjs";
+import { CATALOGO_CUADROS } from "./museo-cuadros.mjs";
+import { ALTO_TOTAL, ANCHO_TOTAL, piezasCuadro } from "./museo-cuadro.mjs";
 
 /* ---- medidas de la sala ---------------------------------------------------- */
 
@@ -213,6 +232,87 @@ function colocarPieza(pieza, indice) {
 /** Las tres piezas ya colocadas. Se calcula una vez: la sala no cambia. */
 export const PIEZAS_COLOCADAS = Object.freeze(CATALOGO_MUSEO.piezas.map(colocarPieza));
 
+/* ---- colgar un cuadro ------------------------------------------------------ */
+
+/**
+ * La z a la que cuelgan los dos cuadros, medida al centro.
+ *
+ * Está en la mitad de la sala que da a la entrada, o sea DELANTE de la fila de
+ * pedestales del fondo. No es indiferente: se entra mirando a las esculturas, y
+ * un cuadro colgado por detrás de la mirada no lo ve nadie salvo al salir.
+ */
+const Z_CUADROS = 3.6;
+
+/** El borde INFERIOR del marco, en metros. Con los 90 cm de alto del cuadro, su
+ *  centro cae a 1,60 — la altura a la que se cuelga de verdad, que es la del ojo
+ *  de quien mira de pie y no la mitad del muro. */
+const COTA_CUADRO = 1.15;
+
+/** A qué distancia del muro se planta quien mira. Menos que ante una escultura
+ *  (`DISTANCIA_MIRADA`): un cuadro de metro y pico se abarca de cerca, y a metro
+ *  y medio de un muro se está mirando el muro. */
+const DISTANCIA_CUADRO = 1.1;
+
+/**
+ * Los dos muros de los que se puede colgar, en la convención de `chapaEnCara`.
+ *
+ * El interior de la sala va de 0 a `ANCHO` —es lo que ocupa la losa del suelo
+ * que monta `crearSalaCaja`—, así que sus dos caras interiores están en esos dos
+ * planos exactos, mirando hacia dentro. Se declaran aquí y no se deducen del
+ * grosor del muro: ese grosor es un detalle privado de la fábrica de salas, y
+ * copiarlo aquí sería atarse a él.
+ */
+const MUROS_LATERALES = Object.freeze([
+  Object.freeze({ eje: "z", plano: 0, sentido: 1, mirador: DISTANCIA_CUADRO, yaw: -Math.PI / 2 }),
+  Object.freeze({
+    eje: "z",
+    plano: ANCHO,
+    sentido: -1,
+    mirador: ANCHO - DISTANCIA_CUADRO,
+    yaw: Math.PI / 2,
+  }),
+]);
+
+/**
+ * Cuelga un cuadro del muro que le toca.
+ *
+ * Uno por muro lateral, y no más: pasarse no se apaña en silencio, por el mismo
+ * motivo que `obtenerPosicionPedestal` revienta al pasarse de `CAPACIDAD`. Un
+ * tercer cuadro no es «otra entrada en la lista», es decidir dónde va — y a esa
+ * altura, en un muro de nueve metros, hay sitio de sobra pero ninguna colocación
+ * que se caiga sola de la geometría.
+ *
+ * OJO CON EL ESPEJO: los dos muros comparten el sentido de la coordenada `u`
+ * (creciente en z), así que el mismo dibujo colgado en los dos saldría en
+ * espejo el uno del otro. No se corrige porque no hay nada que corregir con dos
+ * composiciones distintas, pero conviene saberlo antes de colgar la misma dos
+ * veces.
+ */
+function colgarCuadro(pieza, indice) {
+  if (indice >= MUROS_LATERALES.length) {
+    throw new RangeError(
+      `El museo tiene ${MUROS_LATERALES.length} muros para colgar y se ha pedido el ${indice + 1}. ` +
+        "Dónde va el siguiente cuadro es una decisión de diseño, no un hueco que aparezca solo.",
+    );
+  }
+  const muro = MUROS_LATERALES[indice];
+  const u = Z_CUADROS - ANCHO_TOTAL / 2;
+  return Object.freeze({
+    pieza,
+    chapas: Object.freeze(
+      piezasCuadro({ cara: muro, u, cota: COTA_CUADRO, composicion: pieza.malla }),
+    ),
+    centro: Object.freeze([muro.plano, COTA_CUADRO + ALTO_TOTAL / 2, Z_CUADROS]),
+    // Delante del cuadro y mirando al muro. La orientación se declara y no se
+    // deduce: un cuadro solo se mira de un lado, al revés que una consola.
+    mirador: Object.freeze([muro.mirador, Z_CUADROS]),
+    yaw: muro.yaw,
+  });
+}
+
+/** Los dos cuadros ya colgados. */
+export const CUADROS_COLGADOS = Object.freeze(CATALOGO_CUADROS.piezas.map(colgarCuadro));
+
 /* ---- la salida ------------------------------------------------------------- */
 
 /**
@@ -262,6 +362,16 @@ function mobiliario() {
     });
   }
   piezas.push({ centro: [...SALIDA.centro], medidas: [...SALIDA.medidas], color: MUSEO.zocalo });
+  // Los cuadros entran como mobiliario con su malla propia, SIN colisión y SIN
+  // piel: el muro del que cuelgan ya frena a quien se acerque —chocarse con un
+  // cuadro es de las cosas que rompen un sitio, igual que chocarse con una
+  // cartela—, y la piel de serie es chapa remachada de casco, que sobre un
+  // lienzo pintado sería el material equivocado (#550).
+  for (const colgado of CUADROS_COLGADOS) {
+    for (const { malla, color } of colgado.chapas) {
+      piezas.push({ malla, color, colision: false, piel: false });
+    }
+  }
   return piezas;
 }
 
@@ -279,6 +389,12 @@ export const INTERACCIONES = declararInteracciones([
     punto: [...colocada.mirador],
     orientacion: 0,
     accion: { tipo: "cartela", pieza: colocada.pieza.id },
+  })),
+  ...CUADROS_COLGADOS.map((colgado) => ({
+    id: `cuadro-${colgado.pieza.id}`,
+    punto: [...colgado.mirador],
+    orientacion: colgado.yaw,
+    accion: { tipo: "cartela", pieza: colgado.pieza.id },
   })),
   {
     id: "salida",
@@ -308,4 +424,4 @@ export const PLANTA_MUSEO = SALA.planta;
 export const componerMuseo = SALA.componer;
 // Se exportan para las pruebas: el reparto es la parte que hay que poder
 // interrogar con mas piezas de las que hoy tiene el catalogo.
-export { colocarPieza, obtenerPosicionPedestal, PEDESTAL };
+export { colocarPieza, colgarCuadro, obtenerPosicionPedestal, MUROS_LATERALES, PEDESTAL };

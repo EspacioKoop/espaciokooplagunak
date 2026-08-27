@@ -504,6 +504,22 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     por un punto de interacción — la misma forma que la playa (#587), y por el mismo motivo (el
     Phobos no tiene un museo, y colgarlo de un mamparo contaría una historia que nadie ha decidido).
     Por eso está fuera de las invariantes de la nave en `nave-planta-phobos.test.mjs` y del minimapa.
+    Los **cuadros** de sus muros laterales (#836) son la SEGUNDA forma de colgar y no un parámetro
+    de la primera: una escultura se apoya en un pedestal y se rodea, un cuadro cuelga de un muro y
+    solo se mira de frente, así que van en catálogo aparte (`museo-cuadros.mjs`) validado por el
+    MISMO `validarCatalogoPiezas`. El dibujo es `scripts/museo-cuadro.mjs`, y su regla es que un
+    cuadro no tiene imagen que pegar —el motor no mapea texturas y no hay binarios—: se pinta con
+    `chapasDeRejilla` como la piel del muro, pero **con celda propia** de 2,5 cm, porque a los
+    10 cm del mural un lienzo de 1,2 × 0,8 m tiene doce por ocho píxeles. Bajar la celda compartida
+    para conseguirlo es justo el fallo de #551. El marco lleva relieve (es un objeto de la sala) y
+    el lienzo **no** (la pintura es plana; biselarla la haría chapa remachada). Nada que se pueda
+    leer como instrumento —ni cartas estelares, ni esquemas, ni diagramas—: es #526 donde más fácil
+    sería saltárselo. Y el presupuesto es la condición y no una optimización posterior: cada
+    composición se comprueba **al importar** contra `TOPE_CUADRO` y revienta si no cabe, porque un
+    cuadro recortado al tope se lee como un fallo (a diferencia de un muro, al que le sobra un
+    greeble y sigue siendo un muro). Las cartelas son `obra-propia` y lo **dicen**, con prueba en
+    los dos idiomas: la misma norma de la casa que obliga al León a decir que es una
+    reconstrucción.
     Lo que el museo NO hace es la mitad del diseño: **enseña y ya está**. La cartela se pinta al
     acercarse y se retira al apartarse (`accion: {tipo: "cartela"}` + el flanco de salida
     `alSalirDeInteraccion` de #598); no marca piezas como vistas, no lleva la cuenta ni deja rastro,

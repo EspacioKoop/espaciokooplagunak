@@ -29,6 +29,7 @@ import { openWorkspaceApp } from "./station-workspace-ui.mjs";
 import { SECCION } from "./paleta.mjs";
 import { cartelaDe, piezaPorId } from "./catalogo-piezas.mjs";
 import { CATALOGO_MUSEO } from "./museo-piezas.mjs";
+import { CATALOGO_CUADROS } from "./museo-cuadros.mjs";
 import { AJUSTE_TELEMETRIA, aceptarSensores, aceptarTelemetria } from "./telemetria-difusion.mjs";
 import { AJUSTE_NIVEL_ALERTA } from "./alerta-escena.mjs";
 
@@ -282,7 +283,13 @@ function arrancar(raiz, estanciaPedida = null) {
   function pintarCartela(piezaId) {
     const nodo = raiz?.querySelector?.("[data-andar-cartela]");
     if (!nodo) return;
-    const pieza = piezaId ? piezaPorId(CATALOGO_MUSEO, piezaId) : null;
+    // Dos catálogos y una sola lectura: las esculturas y los cuadros de la
+    // pared (#836) se colocan distinto en la sala, pero la cartela de un cuadro
+    // se lee exactamente igual que la de una estatua. Un `accion.pieza` es un
+    // id opaco y aquí se resuelve contra los dos.
+    const pieza = piezaId
+      ? piezaPorId(CATALOGO_MUSEO, piezaId) ?? piezaPorId(CATALOGO_CUADROS, piezaId)
+      : null;
     if (!pieza) {
       nodo.hidden = true;
       return;

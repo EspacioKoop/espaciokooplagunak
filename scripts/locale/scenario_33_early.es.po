@@ -2992,3 +2992,37 @@ msgid ""
 msgstr ""
 "%s\n"
 "   %s en el interior %s"
+
+#: scripts/scenario_33_early.lua:37
+msgctxt "Names"
+msgid "Configures whether player ship names are selected at random or are fixed"
+msgstr "Configura si los nombres de las naves de jugadores se eligen al azar o son fijos"
+
+#: scripts/scenario_33_early.lua:38
+msgctxt "Names"
+msgid "Fixed"
+msgstr "Fijos"
+
+#: scripts/scenario_33_early.lua:39
+msgctxt "Names"
+msgid "Player ship names are pre-assigned"
+msgstr "Los nombres de las naves de jugadores vienen preasignados"
+
+#: scripts/scenario_33_early.lua:39
+msgctxt "Names"
+msgid "Player ship names are selected at random from a list"
+msgstr "Los nombres de las naves de jugadores se eligen al azar de una lista"
+
+#: scripts/scenario_33_early.lua:39
+msgctxt "Names"
+msgid "Random"
+msgstr "Aleatorios"
+
+#: scripts/scenario_33_early.lua:37
+msgctxt "setting"
+msgid "Names"
+msgstr "Nombres"
+
+msgctxt "setting"
+msgid "Configures whether player ship names are selected at random or are fixed"
+msgstr "Configura si los nombres de las naves de jugadores se eligen al azar o son fijos"

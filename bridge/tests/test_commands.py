@@ -376,6 +376,19 @@ def test_command_requiere_auth(client, juego):
     assert not juego.llamadas
 
 
+def test_command_rechaza_error_del_juego(client, juego, auth):
+    juego.text = '{"ERROR":"algo falló en el script"}'
+    r = client.post(CMD, headers=auth, json={"op": "set_impulse", "value": 0.5})
+    assert r.status_code == 502
+
+
+def test_command_juego_inalcanzable_devuelve_502(client, juego, auth):
+    import httpx
+    juego.error = httpx.ConnectError("caído")
+    r = client.post(CMD, headers=auth, json={"op": "set_impulse", "value": 0.5})
+    assert r.status_code == 502
+
+
 # --- spawn_encounter: encuentros inyectados por el GM (#117) -------------------
 
 

@@ -1,6 +1,21 @@
 // Importador del atlas: detecta CSV de HYG o JSON de atlas ya hecho,
 // lo convierte cuando toca y lo devuelve VALIDADO por el validador cosmográfico.
 // Puro: ni Foundry, ni DOM, ni red. Entra texto, sale catálogo validado o error tipado.
+//
+// SIGUE SIENDO CIMIENTO, y está declarado como tal en
+// `docs/orphan-declarations.json` junto a los dos módulos que consolida.
+//
+// Esto NO cierra #634. Un importador no es un consumidor: importarlo desde otro
+// módulo al que tampoco llega nadie no lo hace alcanzable, solo alarga la
+// cadena, y los tres saldrían por `unknown` —que no rompe CI— en vez de por
+// `declared-orphan`. Lo que aquí se gana es que el adaptador HYG y el validador
+// cosmográfico dejen de ser dos entradas sueltas con la misma pinta: hay UNA
+// puerta, y la detección de formato y la validación de procedencia y licencia
+// ocurren en el mismo sitio o no ocurren.
+//
+// El consumidor real —la ventana solo-GM que valida y previsualiza un atlas
+// dentro de Foundry— es #816, apilado sobre este cambio. Es ese PR, y no este,
+// el que puede retirar las tres declaraciones.
 
 import { atlasDesdeHyg } from "./atlas-hyg.mjs";
 import { validateCosmography, CosmographyValidationError } from "./catalogo-cosmografico.mjs";

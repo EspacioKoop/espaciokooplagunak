@@ -127,16 +127,46 @@ Lo que **no** se automatiza, porque no se deduce del diff: `enhancement`, `bug`,
 
 ## Cómo reproducir el inventario
 
+Una etiqueta se usa en issues **y** en pull requests, así que el inventario se
+construye UNA sola vez con las dos fuentes y se reutiliza. Es lo que arregla la
+contradicción que tenía esta receta: el recuento de uso combinaba ambos y el
+`comm` de «etiquetas sin uso» comparaba solo contra `gh issue list`, de modo que
+cualquier etiqueta empleada únicamente en PRs aparecía falsamente como huérfana.
+
 ```sh
 gh label list --limit 200 --json name,description,color \
   -q '.[] | [.name, (.description//""), .color] | @tsv' > /tmp/labels.tsv
 
+# UNA sola lista de usos, issues + PRs. Todo lo demás sale de aquí.
 { gh issue list --state all --limit 1000 --json labels -q '.[] | .labels[].name'
   gh pr    list --state all --limit 1000 --json labels -q '.[] | .labels[].name'
-} | sort | uniq -c | sort -rn        # uso real
+} | sort > /tmp/usos.txt
+
+sort -u /tmp/usos.txt > /tmp/usadas.txt
+
+# uso real, por frecuencia
+uniq -c /tmp/usos.txt | sort -rn
 
 # etiquetas definidas que nadie usa
-comm -23 <(cut -f1 /tmp/labels.tsv | sort) \
-         <(cat /tmp/labels.tsv >/dev/null; gh issue list --state all --limit 1000 \
-             --json labels -q '.[] | .labels[].name' | sort -u)
+comm -23 <(cut -f1 /tmp/labels.tsv | sort) /tmp/usadas.txt
 ```
+
+### Comprobar que la receta no vuelve a mentir
+
+La forma de que este error reaparezca es que alguien recorte una de las dos
+fuentes. Se detecta con las etiquetas que existen **solo en PRs**: si la lista
+de «sin uso» contiene alguna de ellas, la receta está rota.
+
+```sh
+gh issue list --state all --limit 1000 --json labels \
+  -q '.[] | .labels[].name' | sort -u > /tmp/solo_issues.txt
+
+# etiquetas que solo aparecen en PRs: la receta NO debe darlas por huérfanas
+comm -23 /tmp/usadas.txt /tmp/solo_issues.txt
+```
+
+Ejecutado el 27-ago-2026 contra este repositorio, ese último comando devuelve
+cuatro etiquetas —`Compatibilidad`, `dependencies`, `docker`, `Fase 0`—, que son
+exactamente las que la receta anterior habría declarado sin uso. El inventario
+correcto deja seis sin uso: `bloqueado`, `duplicate`, `invalid`, `question`,
+`upstream-sync`, `wontfix`.

@@ -24,7 +24,7 @@ class TestFiltroDeLicencia:
         with patch("tools.apis.openverse.pedir") as p:
             p.return_value = {"results": [_item("1", "cc0")]}
             r = openverse_audio("mar")
-        # Se consulta DOS veces (cc0 y publicdomain) pero el mismo `id` se
+        # Se consulta DOS veces (cc0 y pdm) pero el mismo `id` se
         # deduplica, asi que sale UNA vez. Esa dedup es la que evita que un
         # elemento presente en las dos consultas entre por duplicado.
         assert len(r) == 1
@@ -52,6 +52,53 @@ class TestFiltroDeLicencia:
                                           _item("2", "")]}
             assert openverse_audio("mar") == []
 
+    def test_licencia_null_no_revienta_el_cliente(self):
+        """`"license": null` llega de la API y `None.lower()` tiraba un
+        AttributeError que se llevaba por delante la busqueda ENTERA, no solo
+        ese resultado. Descartado en fallo cerrado: sin licencia declarada no
+        se sabe nada del fichero, asi que no pasa."""
+        with patch("tools.apis.openverse.pedir") as p:
+            p.return_value = {"results": [_item("1", None), _item("2", "cc0")]}
+            r = openverse_audio("mar")
+        assert [x["licencia"] for x in r] == ["cc0"]
+
+    def test_licencia_de_otro_tipo_tampoco_revienta(self):
+        """Lo mismo para cualquier cosa que no sea texto: se descarta en vez de
+        romper. `123.lower()` fallaria igual."""
+        with patch("tools.apis.openverse.pedir") as p:
+            p.return_value = {"results": [_item("1", 123), _item("2", ["cc0"])]}
+            assert openverse_audio("mar") == []
+
+
+class TestNombreDeLaLicencia:
+    """La API llama `pdm` al dominio publico, no `publicdomain`.
+
+    Comprobado contra la API real:
+        ?license=publicdomain -> 400 {"license": ["License 'publicdomain'
+                                       does not exist."]}
+        ?license=pdm          -> 200
+    Preguntar por `publicdomain` no daba "cero resultados de dominio publico":
+    daba un error que el cliente se comia en silencio, asi que esa mitad de la
+    busqueda nunca se hacia. El sintoma --solo salen CC0-- es indistinguible de
+    "no hay dominio publico", que es lo que lo hacia invisible.
+    """
+
+    def test_consulta_pdm_y_nunca_publicdomain(self):
+        with patch("tools.apis.openverse.pedir") as p:
+            p.return_value = {"results": []}
+            openverse_audio("mar")
+        pedidas = [c.args[0] for c in p.call_args_list]
+        assert any("license=pdm" in u for u in pedidas), pedidas
+        assert not any("license=publicdomain" in u for u in pedidas), pedidas
+
+    def test_acepta_resultados_marcados_pdm(self):
+        """De nada sirve pedir `pdm` si luego se descarta lo que llega."""
+        with patch("tools.apis.openverse.pedir") as p:
+            p.return_value = {"results": [_item("1", "pdm")]}
+            r = openverse_audio("mar")
+        assert len(r) == 1
+        assert r[0]["licencia"] == "pdm"
+
 
 class TestRobustez:
     def test_respuesta_vacia_no_revienta(self):
@@ -65,7 +112,7 @@ class TestRobustez:
             assert openverse_audio("mar") == []
 
     def test_no_repite_el_mismo_id_entre_las_dos_consultas(self):
-        """Se consulta dos veces (cc0 y publicdomain) y un mismo elemento
+        """Se consulta dos veces (cc0 y pdm) y un mismo elemento
         puede salir en ambas: sin deduplicar, el catalogo tendria duplicados."""
         with patch("tools.apis.openverse.pedir") as p:
             p.return_value = {"results": [_item("mismo", "cc0")]}
@@ -85,3 +132,27 @@ class TestPaginacion:
             r = openverse_audio("mar")
         assert len(r) == 1
         assert p.call_count == 2, "una llamada por licencia, ninguna por pagina"
+
+
+class TestExportsDelPaquete:
+    """Openverse SUMA, no sustituye.
+
+    El PR reemplazo `from .wikidata import wikidata` por el import de
+    Openverse, asi que `from tools.apis import wikidata` dejaba de ser la
+    funcion y pasaba a resolverse al MODULO del mismo nombre: llamarla daba
+    `TypeError: 'module' object is not callable`. Es la forma mas traicionera
+    del fallo, porque el import sigue funcionando y solo revienta al invocar.
+    """
+
+    def test_wikidata_sigue_siendo_invocable(self):
+        from tools.apis import wikidata
+        assert callable(wikidata), "wikidata debe seguir siendo la funcion, no el modulo"
+
+    def test_openverse_tambien_esta_exportado(self):
+        from tools.apis import openverse_audio
+        assert callable(openverse_audio)
+
+    def test_ambos_declarados_en_all(self):
+        import tools.apis as apis
+        assert "wikidata" in apis.__all__
+        assert "openverse_audio" in apis.__all__

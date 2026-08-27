@@ -1,0 +1,31 @@
+{
+  "name": "espaciokooplagunak",
+  "version": "1.0.0",
+  "description": "<p align=\"center\">   <img src=\"docs/assets/banner.svg\" alt=\"Espaciokoop Lagunak — simulación espacial cooperativa por puestos, conectada con Foundry VTT\" width=\"900\"/> </p>",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "node --test foundry-module/tests/*.test.mjs",
+    "test:coverage": "c8 --reporter=lcov --reporter=text node --test foundry-module/tests/*.test.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VaroTv7/espaciokooplagunak.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/VaroTv7/espaciokooplagunak/issues"
+  },
+  "homepage": "https://github.com/VaroTv7/espaciokooplagunak#readme",
+  "devDependencies": {
+    "c8": "^12.0.0"
+  },
+  "dependencies": {
+    "draco3d": "^1.5.7"
+  }
+}

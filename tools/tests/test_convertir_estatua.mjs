@@ -10,7 +10,9 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { leerObj, leerGlb, simplificar, normalizar } from "../../tools/convertir-estatua.mjs";
+import { normalizarGlb } from "../../tools/normalizar-glb.mjs";
 import { componerEscena, MALLA_CAZA } from "../../foundry-module/scripts/retro3d.mjs";
+import draco3d from "draco3d";
 
 const CUBO = `
 # cubo de 1 unidad, centrado en el origen
@@ -230,4 +232,99 @@ test("REGRESIÓN: un GLB convertido renderiza en retro3d sin NaN", () => {
 test("la malla de referencia del módulo sigue renderizando (no se rompió el import)", () => {
   const escena = componerEscena(MALLA_CAZA, { yaw: 0.4 });
   assert.ok(escena.poligonos.length > 0);
+});
+
+// --- Fixture Draco sintético -------------------------------------------------
+// No usamos un binario de NASA: lo generamos con el encoder de draco3d. Así la
+// prueba es determinista, no toca la red y no introduce binarios de origen en el
+// repo (ver PROCEDENCIA_ASSETS.md). El cubo es 8 vértices / 12 triángulos.
+const DT_FLOAT32 = 6;
+async function construirGlbDraco(posiciones, indices) {
+  const encMod = await draco3d.createEncoderModule();
+  const mb = new encMod.MeshBuilder();
+  const mesh = new encMod.Mesh();
+  mb.AddFloatAttributeToMesh(mesh, 0, DT_FLOAT32, 3, Float32Array.from(posiciones.flat()));
+  mb.AddFacesToMesh(mesh, indices.length / 3, Uint32Array.from(indices));
+  const encoder = new encMod.Encoder();
+  encoder.SetEncodingMethod(encMod.MESH_EDGEBREAKER_ENCODING);
+  encoder.SetAttributeQuantization(0, 14);
+  const encodedData = new encMod.DracoInt8Array();
+  const len = encoder.EncodeMeshToDracoBuffer(mesh, encodedData);
+  if (len <= 0) throw new Error("fallo al codificar Draco");
+  const blob = new Uint8Array(len);
+  for (let i = 0; i < len; i += 1) blob[i] = encodedData.GetValue(i);
+  const json = {
+    asset: { version: "2.0" },
+    scene: 0,
+    scenes: [{ nodes: [0] }],
+    nodes: [{ mesh: 0 }],
+    meshes: [{
+      primitives: [{
+        attributes: { POSITION: 0 },
+        extensions: { KHR_draco_mesh_compression: { bufferView: 0, attributes: { POSITION: 0 } } },
+      }],
+    }],
+    accessors: [{ componentType: 5126, count: posiciones.length / 3, type: "VEC3", min: [-1, -1, -1], max: [1, 1, 1] }],
+    bufferViews: [{ buffer: 0, byteOffset: 0, byteLength: blob.length }],
+    buffers: [{ byteLength: blob.length }],
+    extensionsUsed: ["KHR_draco_mesh_compression"],
+  };
+  const jsonStr = JSON.stringify(json);
+  const pad = (s) => s + " ".repeat((4 - (s.length % 4)) % 4);
+  const jb = Buffer.from(pad(jsonStr), "utf8");
+  const bin = Buffer.from(blob);
+  const pad4 = (b) => { const r = b.length % 4; return r ? Buffer.concat([b, Buffer.alloc(4 - r)]) : b; };
+  const jp = pad4(jb);
+  const bp = pad4(bin);
+  const total = 12 + 8 + jp.length + 8 + bp.length;
+  const out = Buffer.alloc(total);
+  out.writeUInt32LE(0x46546c67, 0);
+  out.writeUInt32LE(2, 4);
+  out.writeUInt32LE(total, 8);
+  out.writeUInt32LE(jp.length, 12);
+  out.writeUInt32LE(0x4e4f534a, 16);
+  jp.copy(out, 20);
+  const o2 = 20 + jp.length;
+  out.writeUInt32LE(bp.length, o2);
+  out.writeUInt32LE(0x004e4942, o2 + 4);
+  bp.copy(out, o2 + 8);
+  return new Uint8Array(out);
+}
+
+test("normalizarGlb pasa de largo un GLB ya plano (draco:false, bytes ídem)", async () => {
+  const glb = construirGlb([[0, 0, 0], [1, 0, 0], [0, 1, 0]], [0, 1, 2]);
+  const r = await normalizarGlb(glb);
+  assert.equal(r.draco, false);
+  assert.deepEqual([...r.bytes], [...glb], "bytes sin cambios");
+});
+
+test("normalizarGlb decodifica un GLB Draco compacto → malla 3D (8 vértices, 12 caras)", async () => {
+  const glbDraco = await construirGlbDraco(
+    [[-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1], [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]],
+    [0, 1, 2, 0, 2, 3, 4, 6, 5, 4, 7, 6, 0, 4, 5, 0, 5, 1, 1, 5, 6, 1, 6, 2, 2, 6, 7, 2, 7, 3, 3, 7, 4, 3, 4, 0],
+  );
+  const r = await normalizarGlb(glbDraco);
+  assert.equal(r.draco, true, "marcó que venía comprimido");
+  assert.ok(r.estadisticas.vertices > 0, "estadísticas con vértices");
+  const m = leerGlb(r.bytes);
+  assert.equal(m.vertices.length, 8, "8 vértices tras decodificar");
+  assert.equal(m.caras.length, 12, "12 caras (triangulado)");
+  // La geometría decodificada debe ser finita y los índices válidos.
+  for (const v of m.vertices) {
+    assert.equal(v.length, 3, "vértice es tripleta");
+    for (const c of v) assert.ok(Number.isFinite(c), "coordenada finita");
+  }
+  assert.ok(
+    m.vertices.some((v) => v.some((c) => Math.abs(c) > 0.5)),
+    "geometría no degenerada (hay vértices fuera del origen, no todo ceros)",
+  );
+  for (const f of m.caras) {
+    assert.equal(f.length, 3, "cara triangular");
+    for (const i of f) {
+      assert.ok(Number.isInteger(i) && i >= 0 && i < m.vertices.length, "índice dentro de rango");
+    }
+  }
+  // Y entra en el pipeline de malla sin estallar.
+  const malla = normalizar(simplificar(m, 12), { alto: 2 });
+  assert.ok(Array.isArray(malla.vertices), "sale del pipeline como malla");
 });

@@ -41,6 +41,7 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { normalizarGlb } from "./normalizar-glb.mjs";
 
 /** Lee un STL binario: cabecera de 80 bytes, número de triángulos, y 50 bytes
  *  por triángulo (normal, tres vértices y dos de relleno). */
@@ -828,9 +829,17 @@ async function principal() {
     entrada = leerObj(new TextDecoder("utf8").decode(bytes));
     triangulosEntrada = entrada.caras.length;
   } else if (ext === ".glb") {
-    // GLB ya viene indexado; como el OBJ, no hace falta soldar.
-    entrada = leerGlb(bytes);
+    // NASA 3D Resources publica muchos GLB comprimidos con Draco
+    // (KHR_draco_mesh_compression): la geometría no está como floats en el
+    // buffer, hay que decodificarla antes de que leerGlb la vea. normalizarGlb
+    // decodifica Draco y reempaqueta a un GLB canónico (o deja pasar los ya
+    // planos, sin tocarlos).
+    const { bytes: normalizados, draco } = await normalizarGlb(bytes);
+    entrada = leerGlb(normalizados);
     triangulosEntrada = entrada.caras.length;
+    if (draco) {
+      console.warn("AVISO: el GLB venía comprimido con Draco; se decodificó al vuelo.");
+    }
   } else {
     const triangulos = leerStlBinario(bytes);
     triangulosEntrada = triangulos.length;

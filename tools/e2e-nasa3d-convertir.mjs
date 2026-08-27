@@ -5,12 +5,14 @@
 // (sería flaky en CI). Se ejecuta a mano para cerrar el bucle con un modelo
 // de verdad, sin mocks:
 //
-//   node tools/e2e-nasa3d-convertir.mjs            # Base Station (conforme)
+//   node tools/e2e-nasa3d-convertir.mjs            # Argo (Draco comprimido)
+//   node tools/e2e-nasa3d-convertir.mjs "Base Station"
 //   node tools/e2e-nasa3d-convertir.mjs "1999 RQ36 asteroid"
 //
-// Decide solo modelos CONFORMES a glTF 2.0 (los accessors POSITION traen
-// bufferView). Los no conformes de NASA (Argo, Ares 1, CubeSat…) los rechaza
-// convertir-estatua.mjs con error claro; este script los detecta y avisa.
+// NASA 3D Resources publica muchos modelos COMPRIMIDOS con Draco
+// (KHR_draco_mesh_compression): convertir-estatua.mjs los decodifica sobre la
+// marcha vía normalizar-glb.mjs, así que el bucle cierra también con ellos.
+// Este script usa Argo (Draco) por defecto precisamente para ejercitar esa ruta.
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { writeFile, mkdir, rm } from "node:fs/promises";
@@ -32,7 +34,7 @@ async function urlModelo(id) {
 }
 
 async function main() {
-  const id = process.argv[2] || "Base Station";
+  const id = process.argv[2] || "Argo";
   const url = await urlModelo(id);
   console.log(`modelo: ${id}\nurl:    ${url}`);
 
@@ -59,10 +61,20 @@ async function main() {
     const { componerEscena } = await import(path.join(AQUI, "..", "foundry-module", "scripts", "retro3d.mjs"));
     const mod = await import(destino);
     const malla = Object.values(mod)[0];
-    const escena = componerEscena(malla, { epoca: "gamecube" });
-    const finitos = escena.poligonos.every((p) => p.puntos.every((pt) => Number.isFinite(pt.x) && Number.isFinite(pt.y)));
-    if (!finitos || !escena.poligonos.length) throw new Error("el render no dio polígonos finitos");
-    console.log(`render: ${escena.poligonos.length} polígonos, todos finitos -> LOOP OK`);
+    if (!malla || !malla.vertices || !malla.vertices.length || !malla.caras || !malla.caras.length) {
+      throw new Error("la malla generada está vacía");
+    }
+    // La cámara por defecto no siempre enmarca el modelo; probamos varios ángulos
+    // y exigimos que desde alguno se vea y que todos los polígonos sean finitos.
+    let vistos = 0;
+    for (const yaw of [0, 0.5, 1, 1.5, 2, 2.5, 3]) {
+      const escena = componerEscena(malla, { epoca: "gamecube", yaw });
+      vistos = Math.max(vistos, escena.poligonos.length);
+      const finitos = escena.poligonos.every((p) => p.puntos.every((pt) => Number.isFinite(pt.x) && Number.isFinite(pt.y)));
+      if (!finitos) throw new Error("el render produjo polígonos no finitos");
+    }
+    if (vistos === 0) throw new Error("el render no mostró la malla desde ningún ángulo");
+    console.log(`render: hasta ${vistos} polígonos finitos desde algún ángulo -> LOOP OK`);
   } finally {
     await rm(destino, { force: true });
   }

@@ -264,7 +264,10 @@ function conectar(raiz) {
       // respuesta, la ventana se queda en abierto: no miente sobre la salida.
       const enfoqueId = boton.dataset.parlamentoEnfoque;
       estado.enfoqueId = enfoqueId;
-      Hooks.callAll("lagunakParlamentoSolicitaTirada", { enfoqueId });
+      Hooks.callAll("lagunakParlamentoSolicitaTirada", {
+        enfoqueId,
+        hablanteId: game?.user?.id ?? null,
+      });
       repintar();
     });
   });

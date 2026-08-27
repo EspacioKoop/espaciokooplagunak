@@ -53,6 +53,7 @@ import {
   registrarParlamentoUI,
   addParlamentoControl,
 } from "./parlamento-ventana.mjs";
+import { registrarParlamentoTirada } from "./parlamento-tirada.mjs";
 import {
   addContenidoExternoControl,
   registrarContenidoExterno,
@@ -451,6 +452,9 @@ Hooks.once("ready", () => {
   // adjudica el GM (ADR-0012). Va DESPUÉS de la asistencia, que es la otra
   // superficie que escucha respuestas dirigidas.
   registrarParlamentoUI(MODULE_ID);
+  // El emisor real de la tirada: al pedir un enfoque, lee la ficha del hablante
+  // y tira el d20; la ventana cierra en banda. Sin Foundry no se registra.
+  registrarParlamentoTirada();
   // Sesiones de minijuegos (#308): el GM coordinador recoge las propuestas por
   // updateUser; cualquier cliente escucha las vistas privadas dirigidas a él.
   registrarSesionesMinijuegos(MODULE_ID);

@@ -199,3 +199,42 @@ def test_v1_database_devuelve_lo_que_publica_el_juego(client, juego, auth):
     assert r.json()["entries"][0]["id"] == "Naves"
     # Es consulta pura: no emite ninguna orden ni toca el estado de la nave.
     assert "command" not in juego.ultimo_lua
+
+
+def test_v1_database_rechaza_error_del_juego(client, juego, auth):
+    juego.text = '{"ERROR":"algo falló en el script"}'
+    r = client.get("/v1/database", headers=auth)
+    assert r.status_code == 502
+
+
+def test_v1_database_juego_inalcanzable_devuelve_502(client, juego, auth):
+    import httpx
+    juego.error = httpx.ConnectError("caído")
+    r = client.get("/v1/database", headers=auth)
+    assert r.status_code == 502
+
+
+def test_v1_events_rechaza_error_del_juego(client, juego, auth):
+    juego.text = '{"ERROR":"algo falló en el script"}'
+    r = client.get("/v1/events", headers=auth)
+    assert r.status_code == 502
+
+
+def test_v1_events_juego_inalcanzable_devuelve_502(client, juego, auth):
+    import httpx
+    juego.error = httpx.ConnectError("caído")
+    r = client.get("/v1/events", headers=auth)
+    assert r.status_code == 502
+
+
+def test_v1_scenario_rechaza_error_del_juego(client, juego, auth):
+    juego.text = '{"ERROR":"algo falló en el script"}'
+    r = client.get("/v1/scenario", headers=auth)
+    assert r.status_code == 502
+
+
+def test_v1_scenario_juego_inalcanzable_devuelve_502(client, juego, auth):
+    import httpx
+    juego.error = httpx.ConnectError("caído")
+    r = client.get("/v1/scenario", headers=auth)
+    assert r.status_code == 502

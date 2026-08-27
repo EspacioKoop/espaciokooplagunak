@@ -59,3 +59,10 @@ def test_contacts_rechaza_error_del_juego(client, juego, auth):
     juego.text = '{"ERROR":"algo falló en el script"}'
     r = client.get("/v1/contacts", headers=auth)
     assert r.status_code == 502
+
+
+def test_contacts_juego_inalcanzable_devuelve_502(client, juego, auth):
+    import httpx
+    juego.error = httpx.ConnectError("caído")
+    r = client.get("/v1/contacts", headers=auth)
+    assert r.status_code == 502

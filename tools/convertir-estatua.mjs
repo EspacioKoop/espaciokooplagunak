@@ -124,6 +124,100 @@ export function leerObj(texto) {
   return { vertices, caras };
 }
 
+/**
+ * Lee un GLB (glTF binario, versión 2): cabecera de 12 bytes, un chunk JSON y
+ * un chunk BIN con la geometría.
+ *
+ * Solo GEOMETRÍA (frontera de arte #351): se leen los accesores POSITION y, si
+ * los hay, los índices; normales y UV se ignoran. NASA 3D Resources suelta más
+ * GLB que OBJ, así que este lector es el que de verdad abre el catálogo
+ * `nasa3d.py` hacia la escena retro3d.
+ *
+ * Funciona con el buffer embebido en el chunk BIN (el caso normal de un GLB
+ * descargado) y con buffers como data-URI; un buffer externo (.bin aparte) no
+ * entra porque solo tenemos un fichero. Las caras indexadas y las no indexadas
+ * (triangle soup) se tratan igual que en `leerObj`: triángulos, 0-based.
+ *
+ * @param {Uint8Array} bytes
+ * @returns {{vertices: number[][], caras: number[][]}}
+ */
+export function leerGlb(bytes) {
+  const cabeza = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  if (bytes.byteLength < 12) throw new Error("El GLB es demasiado corto.");
+  if (cabeza.getUint32(0, true) !== 0x46546c67) throw new Error("No es un GLB (la cabecera no dice 'glTF').");
+  const version = cabeza.getUint32(4, true);
+  if (version !== 2) throw new Error(`GLB versión ${version} no soportada (solo 2).`);
+  if (cabeza.getUint32(8, true) !== bytes.byteLength) throw new Error("La longitud del GLB no cuadra con el fichero.");
+
+  let json = null;
+  let bin = null;
+  let offset = 12;
+  while (offset + 8 <= bytes.byteLength) {
+    const largo = cabeza.getUint32(offset, true);
+    const tipo = cabeza.getUint32(offset + 4, true);
+    const datos = bytes.subarray(offset + 8, offset + 8 + largo);
+    if (tipo === 0x4e4f534a) json = JSON.parse(new TextDecoder().decode(datos));
+    else if (tipo === 0x004e4942) bin = datos;
+    offset += 8 + largo;
+  }
+  if (!json) throw new Error("El GLB no trae chunk JSON.");
+
+  // Resuelve cada buffer a sus bytes: embebido en BIN, o data-URI base64.
+  const buffers = (json.buffers || []).map((b) => {
+    if (b.uri && b.uri.startsWith("data:")) {
+      const coma = b.uri.indexOf(",");
+      return Uint8Array.from(atob(b.uri.slice(coma + 1)), (c) => c.charCodeAt(0));
+    }
+    return bin;
+  });
+  const vistaDe = (buf) => new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
+  const accesor = (i) => json.accessors[i];
+  const vistaBuf = (i) => json.bufferViews[i];
+
+  const vertices = [];
+  const caras = [];
+  for (const mesh of json.meshes || []) {
+    for (const prim of mesh.primitives || []) {
+      const posAcc = accesor(prim.attributes.POSITION);
+      if (!posAcc) continue; // Una primitiva sin POSITION no es geometría.
+      const posVista = vistaBuf(posAcc.bufferView);
+      const bufPos = buffers[posVista.buffer];
+      if (!bufPos) continue;
+      const dvPos = vistaDe(bufPos);
+      const base = vertices.length;
+      const inicio = (posVista.byteOffset || 0) + (posAcc.byteOffset || 0);
+      for (let k = 0; k < posAcc.count; k += 1) {
+        const o = inicio + k * 12; // VEC3 float = 12 bytes.
+        vertices.push([dvPos.getFloat32(o, true), dvPos.getFloat32(o + 4, true), dvPos.getFloat32(o + 8, true)]);
+      }
+      if (prim.indices !== undefined) {
+        const idxAcc = accesor(prim.indices);
+        const idxVista = vistaBuf(idxAcc.bufferView);
+        const bufIdx = buffers[idxVista.buffer];
+        if (!bufIdx) continue;
+        const dvIdx = vistaDe(bufIdx);
+        const i0 = (idxVista.byteOffset || 0) + (idxAcc.byteOffset || 0);
+        const ct = idxAcc.componentType;
+        const paso = ct === 5125 ? 4 : ct === 5123 ? 2 : 1;
+        const leer = (k) =>
+          ct === 5125 ? dvIdx.getUint32(i0 + k * paso, true)
+            : ct === 5123 ? dvIdx.getUint16(i0 + k * paso, true)
+              : dvIdx.getUint8(i0 + k * paso);
+        for (let k = 0; k + 2 < idxAcc.count; k += 3) {
+          const a = leer(k), b = leer(k + 1), c = leer(k + 2);
+          if (a !== b && b !== c && a !== c) caras.push([base + a, base + b, base + c]);
+        }
+      } else {
+        // Sin índices: los vértices ya vienen en triángulos seguidos.
+        for (let k = 0; k + 2 < posAcc.count; k += 3) {
+          caras.push([base + k, base + k + 1, base + k + 2]);
+        }
+      }
+    }
+  }
+  return { vertices, caras };
+}
+
 /** La caja que envuelve a todos los puntos. */
 export function envolvente(triangulos) {
   const min = [Infinity, Infinity, Infinity];
@@ -705,6 +799,10 @@ async function principal() {
     // `bytes` es Uint8Array, y su `toString` NO decodifica UTF-8; hay que
     // pasar por TextDecoder para obtener el texto del OBJ.
     entrada = leerObj(new TextDecoder("utf8").decode(bytes));
+    triangulosEntrada = entrada.caras.length;
+  } else if (ext === ".glb") {
+    // GLB ya viene indexado; como el OBJ, no hace falta soldar.
+    entrada = leerGlb(bytes);
     triangulosEntrada = entrada.caras.length;
   } else {
     const triangulos = leerStlBinario(bytes);

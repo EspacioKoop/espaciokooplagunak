@@ -9,7 +9,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { leerObj, simplificar, normalizar } from "../../tools/convertir-estatua.mjs";
+import { leerObj, leerGlb, simplificar, normalizar } from "../../tools/convertir-estatua.mjs";
 import { componerEscena, MALLA_CAZA } from "../../foundry-module/scripts/retro3d.mjs";
 
 const CUBO = `
@@ -101,6 +101,94 @@ test("REGRESIÓN: leerObj decodifica bien un OBJ leído como Uint8Array (no Buff
   const desdeTexto = leerObj(CUBO);
   assert.deepEqual(desdeUint8, desdeTexto);
   assert.equal(desdeUint8.caras.length, 12);
+});
+
+// Construye un GLB mínimo y válido (versión 2) a partir de posiciones e
+// índices, para no depender de un fichero binario externo en la prueba.
+function construirGlb(posiciones, indices) {
+  const f = new Float32Array(posiciones.length * 3);
+  posiciones.forEach((p, i) => {
+    f[i * 3] = p[0];
+    f[i * 3 + 1] = p[1];
+    f[i * 3 + 2] = p[2];
+  });
+  const posBytes = new Uint8Array(f.buffer, f.byteOffset, f.byteLength);
+  const idxBytes = indices ? new Uint8Array(new Uint16Array(indices).buffer) : new Uint8Array(0);
+
+  const binSinPad = posBytes.length + idxBytes.length;
+  const bin = new Uint8Array(binSinPad + ((4 - (binSinPad % 4)) % 4));
+  bin.set(posBytes, 0);
+  bin.set(idxBytes, posBytes.length);
+
+  const json = {
+    buffers: [{ byteLength: bin.length }],
+    bufferViews: [{ buffer: 0, byteOffset: 0, byteLength: posBytes.length, target: 34962 }],
+    accessors: [{ bufferView: 0, componentType: 5126, count: posiciones.length, type: "VEC3", min: [0, 0, 0], max: [1, 1, 1] }],
+    meshes: [{ primitives: [{ attributes: { POSITION: 0 } }] }],
+  };
+  if (indices) {
+    json.bufferViews.push({ buffer: 0, byteOffset: posBytes.length, byteLength: idxBytes.length, target: 34963 });
+    json.accessors.push({ bufferView: 1, componentType: 5123, count: indices.length, type: "SCALAR" });
+    json.meshes[0].primitives[0].indices = 1;
+  }
+  let jsonStr = JSON.stringify(json);
+  jsonStr += " ".repeat((4 - (jsonStr.length % 4)) % 4);
+  const jsonBytes = new TextEncoder().encode(jsonStr);
+
+  const total = 12 + 8 + jsonBytes.length + 8 + bin.length;
+  const out = new Uint8Array(total);
+  const dv = new DataView(out.buffer);
+  dv.setUint32(0, 0x46546c67, true); // 'glTF'
+  dv.setUint32(4, 2, true);
+  dv.setUint32(8, total, true);
+  dv.setUint32(12, jsonBytes.length, true);
+  dv.setUint32(16, 0x4e4f534a, true); // JSON chunk
+  out.set(jsonBytes, 20);
+  const binOff = 20 + jsonBytes.length;
+  dv.setUint32(binOff, bin.length, true);
+  dv.setUint32(binOff + 4, 0x004e4942, true); // BIN chunk
+  out.set(bin, binOff + 8);
+  return out;
+}
+
+test("un GLB indexado da la geometría esperada", () => {
+  const glb = construirGlb([[0, 0, 0], [1, 0, 0], [0, 1, 0]], [0, 1, 2]);
+  const m = leerGlb(glb);
+  assert.deepEqual(m.vertices, [[0, 0, 0], [1, 0, 0], [0, 1, 0]]);
+  assert.deepEqual(m.caras, [[0, 1, 2]]);
+});
+
+test("un GLB sin índices (triangle soup) triangula los vértices seguidos", () => {
+  const glb = construirGlb(
+    [[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 0], [0, 1, 0], [1, 1, 0]],
+    null,
+  );
+  const m = leerGlb(glb);
+  assert.equal(m.caras.length, 2);
+  assert.deepEqual(m.caras, [[0, 1, 2], [3, 4, 5]]);
+});
+
+test("un GLB con magic erróneo lanza", () => {
+  const basura = new Uint8Array([1, 2, 3, 4, 0, 0, 0, 0, 0, 0, 0, 0]);
+  assert.throws(() => leerGlb(basura), /glTF/);
+});
+
+test("REGRESIÓN: un GLB convertido renderiza en retro3d sin NaN", () => {
+  // Tetraedro (3D de verdad, no un quad plano): un polígono plano no se ve
+  // desde la cámara por defecto y el test daría 0 polígonos sin que haya fallo.
+  const glb = construirGlb(
+    [[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]],
+    [0, 1, 2, 0, 2, 3, 0, 3, 1, 1, 3, 2],
+  );
+  const malla = normalizar(simplificar(leerGlb(glb), 12), { alto: 2 });
+  const escena = componerEscena(malla, { epoca: "gamecube" });
+  assert.ok(escena.poligonos.length > 0, "se ve algo");
+  for (const p of escena.poligonos) {
+    for (const pt of p.puntos) {
+      assert.ok(Number.isFinite(pt.x) && Number.isFinite(pt.y), "sin NaN en el lienzo");
+    }
+    assert.match(p.color, /^#[0-9a-f]{6}$/, "color válido");
+  }
 });
 
 test("la malla de referencia del módulo sigue renderizando (no se rompió el import)", () => {

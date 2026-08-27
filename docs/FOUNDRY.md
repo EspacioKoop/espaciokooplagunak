@@ -818,6 +818,41 @@ La primera integración debe demostrar valor sin intentar cubrir toda una campa�
 
 Estas decisiones se resolverán mediante issues antes de fijar una API estable.
 
+### Contrato de accesibilidad para superficies animadas (#694)
+
+Toda superficie animada nueva —incluida la capa lúdica— debe cumplir estas
+cuatro comprobaciones antes de considerarse accesible:
+
+1. `prefers-reduced-motion` neutraliza la animación o muestra directamente el
+   estado final informativo.
+2. Existe una regresión focal sobre el selector o clase concretos de la
+   superficie.
+3. La regresión incluye una mutación negativa: al retirar la neutralización, el
+   test falla. Una aserción que nunca puede fallar no demuestra el contrato.
+4. El test genérico de la hoja se interpreta solo dentro de la garantía que
+   realmente cubre; no sustituye la regresión focal.
+
+El PR que introduzca la superficie debe declarar honestamente qué verificación
+ejecutó y cuál no. Este criterio no exige repetir un smoke completo de Foundry
+cuando solo cambia una regresión Node estrecha, pero sí exige demostrar la ruta
+reducida concreta.
+
+El precedente que no debe perderse es **#227 (hueco) → #300 (test) → #303
+(bloqueo cerrado, no fusionado) → #307 (regresión focal recuperada y fusionada)**.
+La cadena explica por qué una checklist positiva no reemplaza una prueba que
+pueda detectar la regresión.
+
+Las superficies previstas que quedan sujetas a este contrato son:
+
+- notificaciones de crónica;
+- hazañas y recompensas;
+- alerta compartida;
+- aviso diegético de convocatoria;
+- panel de crónica.
+
+Este documento fija el criterio, no implementa esas superficies ni modifica
+`lagunak.css` o los tests existentes.
+
 ### Resuelta: pausa de Foundry y pausa del simulador (issue #125)
 
 - **No se sincronizan automáticamente en ninguna dirección.** La pausa del

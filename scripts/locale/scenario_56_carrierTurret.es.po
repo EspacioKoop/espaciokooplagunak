@@ -1971,3 +1971,280 @@ msgstr ""
 msgctxt "buttonGM"
 msgid "Spawn Enemies"
 msgstr "Enemigos despachados"
+
+msgid ""
+"Three player ships: a carrier and two fighters docked with the carrier. Objective: search out and destroy the designated enemy station. Use the carrier to travel long distances. Fighters have automatic coolant and repair management. Carrier provides energy and hull repair to fighters. The scenario randomizes the terrain and the mini mission order for each run.\n"
+"\n"
+"Version 2 (formerly entitled Carriers and Turrets)\n"
+"\n"
+"USN Discord: https://discord.gg/PntGG3a where you can join a game online. There's usually one every weekend. All experience levels are welcome."
+msgstr ""
+"Tres naves de jugadores: un portanaves y dos cazas atracados en el portanaves. Objetivo: localizar y destruir la estación enemiga designada. Usa el portanaves para recorrer grandes distancias. Los cazas gestionan el refrigerante y las reparaciones de forma automática. El portanaves suministra energía y repara el casco de los cazas. El escenario genera al azar el terreno y el orden de las minimisiones en cada partida.\n"
+"\n"
+"Versión 2 (antes titulada Carriers and Turrets)\n"
+"\n"
+"Discord de USN: https://discord.gg/PntGG3a, donde puedes unirte a una partida en línea. Suele haber una cada fin de semana. Se admite cualquier nivel de experiencia."
+
+msgctxt "Carrier"
+msgid "A carrier type will be selected at random"
+msgstr "Se elegirá al azar un tipo de portanaves"
+
+msgctxt "Carrier"
+msgid "Benedict"
+msgstr "Benedict"
+
+msgctxt "Carrier"
+msgid "Kiriya"
+msgstr "Kiriya"
+
+msgctxt "Carrier"
+msgid "Random"
+msgstr "Aleatorio"
+
+msgctxt "Carrier"
+msgid "Saipan"
+msgstr "Saipan"
+
+msgctxt "Carrier"
+msgid "The carrier deployed will be of type Benedict with a jump drive"
+msgstr "El portanaves desplegado será de tipo Benedict con motor de salto"
+
+msgctxt "Carrier"
+msgid "The carrier deployed will be of type Kiriya with a warp drive"
+msgstr "El portanaves desplegado será de tipo Kiriya con motor de curvatura"
+
+msgctxt "Carrier"
+msgid "The carrier deployed will be of type Saipan with a jump drive"
+msgstr "El portanaves desplegado será de tipo Saipan con motor de salto"
+
+msgctxt "Enemies"
+msgid "Easy"
+msgstr "Fácil"
+
+msgctxt "Enemies"
+msgid "Extreme"
+msgstr "Extremo"
+
+msgctxt "Enemies"
+msgid "Fewer or weaker enemies"
+msgstr "Menos enemigos o más débiles"
+
+msgctxt "Enemies"
+msgid "Hard"
+msgstr "Difícil"
+
+msgctxt "Enemies"
+msgid "Insanely strong and/or inordinately large numbers of enemies"
+msgstr "Enemigos disparatadamente fuertes y/o en cantidades desmedidas"
+
+msgctxt "Enemies"
+msgid "More or stronger enemies"
+msgstr "Más enemigos o más fuertes"
+
+msgctxt "Enemies"
+msgid "Much stronger, many more enemies"
+msgstr "Muchos más enemigos y mucho más fuertes"
+
+msgctxt "Enemies"
+msgid "Normal"
+msgstr "Normal"
+
+msgctxt "Enemies"
+msgid "Normal number or strength of enemies"
+msgstr "Número y fuerza de enemigos normales"
+
+msgctxt "Enemies"
+msgid "Quixotic"
+msgstr "Quijotesco"
+
+msgctxt "Enemies"
+msgid "The least number of or the weakest enemies"
+msgstr "El menor número de enemigos, o los más débiles"
+
+msgctxt "Enemies"
+msgid "Very Easy"
+msgstr "Muy fácil"
+
+msgctxt "Fighter1"
+msgid "Fighter 1 type will be selected at random"
+msgstr "El tipo del caza 1 se elegirá al azar"
+
+msgctxt "Fighter1"
+msgid "Fighter 1 will be of type Foil"
+msgstr "El caza 1 será de tipo Foil"
+
+msgctxt "Fighter1"
+msgid "Fighter 1 will be of type Formax"
+msgstr "El caza 1 será de tipo Formax"
+
+msgctxt "Fighter1"
+msgid "Fighter 1 will be of type Striker"
+msgstr "El caza 1 será de tipo Striker"
+
+msgctxt "Fighter1"
+msgid "Foil"
+msgstr "Foil"
+
+msgctxt "Fighter1"
+msgid "Formax"
+msgstr "Formax"
+
+msgctxt "Fighter1"
+msgid "Random"
+msgstr "Aleatorio"
+
+msgctxt "Fighter1"
+msgid "Striker"
+msgstr "Striker"
+
+msgctxt "Fighter2"
+msgid "Fighter 2 type will be selected at random"
+msgstr "El tipo del caza 2 se elegirá al azar"
+
+msgctxt "Fighter2"
+msgid "Fighter 2 will be of type MP52 Hornet"
+msgstr "El caza 2 será de tipo MP52 Hornet"
+
+msgctxt "Fighter2"
+msgid "Fighter 2 will be of type Red Jacket"
+msgstr "El caza 2 será de tipo Red Jacket"
+
+msgctxt "Fighter2"
+msgid "Fighter 2 will be of type ZX-Lindworm"
+msgstr "El caza 2 será de tipo ZX-Lindworm"
+
+msgctxt "Fighter2"
+msgid "MP52 Hornet"
+msgstr "MP52 Hornet"
+
+msgctxt "Fighter2"
+msgid "Random"
+msgstr "Aleatorio"
+
+msgctxt "Fighter2"
+msgid "Red Jacket"
+msgstr "Red Jacket"
+
+msgctxt "Fighter2"
+msgid "ZX-Lindworm"
+msgstr "ZX-Lindworm"
+
+msgctxt "Murphy"
+msgid "Easy"
+msgstr "Fácil"
+
+msgctxt "Murphy"
+msgid "Hard"
+msgstr "Difícil"
+
+msgctxt "Murphy"
+msgid "Normal"
+msgstr "Normal"
+
+msgctxt "Murphy"
+msgid "Random factors are more against you"
+msgstr "Los factores aleatorios juegan más en tu contra"
+
+msgctxt "Murphy"
+msgid "Random factors are more in your favor"
+msgstr "Los factores aleatorios juegan más a tu favor"
+
+msgctxt "Murphy"
+msgid "Random factors are normal"
+msgstr "Los factores aleatorios son normales"
+
+msgctxt "Murphy"
+msgid "Random factors are very much in your favor"
+msgstr "Los factores aleatorios juegan muy a tu favor"
+
+msgctxt "Murphy"
+msgid "Very Easy"
+msgstr "Muy fácil"
+
+msgctxt "Timed"
+msgid "1"
+msgstr "1"
+
+msgctxt "Timed"
+msgid "30"
+msgstr "30"
+
+msgctxt "Timed"
+msgid "60"
+msgstr "60"
+
+msgctxt "Timed"
+msgid "90"
+msgstr "90"
+
+msgctxt "Timed"
+msgid "Game has a 1 minute time limit (used for testing)"
+msgstr "La partida tiene un límite de 1 minuto (se usa para pruebas)"
+
+msgctxt "Timed"
+msgid "Game has a 30 minute time limit"
+msgstr "La partida tiene un límite de 30 minutos"
+
+msgctxt "Timed"
+msgid "Game has a 60 minute time limit"
+msgstr "La partida tiene un límite de 60 minutos"
+
+msgctxt "Timed"
+msgid "Game has a 90 minute time limit"
+msgstr "La partida tiene un límite de 90 minutos"
+
+msgctxt "Timed"
+msgid "Game has no time limit"
+msgstr "La partida no tiene límite de tiempo"
+
+msgctxt "Timed"
+msgid "None"
+msgstr "Ninguno"
+
+msgctxt "setting"
+msgid "Carrier"
+msgstr "Portanaves"
+
+msgctxt "setting"
+msgid "Configures strength and/or number of enemies in this scenario"
+msgstr "Configura la fuerza y/o el número de enemigos de este escenario"
+
+msgctxt "setting"
+msgid "Configures the carrier deployed as a player ship"
+msgstr "Configura el portanaves que se despliega como nave de jugadores"
+
+msgctxt "setting"
+msgid "Configures the first fighter type deployed as a player ship"
+msgstr "Configura el tipo del primer caza que se despliega como nave de jugadores"
+
+msgctxt "setting"
+msgid "Configures the perversity of the universe according to Murphy's law"
+msgstr "Configura la perversidad del universo según la ley de Murphy"
+
+msgctxt "setting"
+msgid "Configures the second fighter type deployed as a player ship"
+msgstr "Configura el tipo del segundo caza que se despliega como nave de jugadores"
+
+msgctxt "setting"
+msgid "Configures whether or not the scenario has a time limit"
+msgstr "Configura si el escenario tiene límite de tiempo o no"
+
+msgctxt "setting"
+msgid "Enemies"
+msgstr "Enemigos"
+
+msgctxt "setting"
+msgid "Fighter1"
+msgstr "Caza 1"
+
+msgctxt "setting"
+msgid "Fighter2"
+msgstr "Caza 2"
+
+msgctxt "setting"
+msgid "Murphy"
+msgstr "Murphy"
+
+msgctxt "setting"
+msgid "Timed"
+msgstr "Tiempo"

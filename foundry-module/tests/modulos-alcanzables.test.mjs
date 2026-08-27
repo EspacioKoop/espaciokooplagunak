@@ -1,143 +1,26 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import { mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join, relative, resolve } from "node:path";
 import test from "node:test";
-import { readFileSync, readdirSync } from "node:fs";
-import { dirname, join, posix, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-// Guarda de alcanzabilidad (#523).
+// Guarda de alcanzabilidad (#523) delegada en el inventario conservador de #701.
 //
 // Un módulo con suite en verde y sin ningún importador está VIVO en CI y MUERTO
-// en la partida: nadie puede llegar a él jugando. Que las pruebas pasen no dice
-// nada al respecto, porque una prueba importa el módulo directamente y le da
-// exactamente el mismo verde que a uno cableado — así es como #523 encontró
-// cinco módulos huérfanos de golpe, todos ellos escritos, documentados y
-// probados.
-//
-// Esta prueba recorre el grafo de imports desde los puntos de entrada REALES
-// (los `esmodules` que declara `module.json`, no una lista escrita a mano aquí)
-// y falla si algún módulo de `scripts/` queda fuera del alcance sin estar
-// declarado abajo con su motivo.
-//
-// No prohíbe tener cimientos sin consumidor. Prohíbe tenerlos SIN DECIRLO: la
-// opción que #523 descartó explícitamente es «existir sin que nadie sepa que
-// existe».
+// en la partida. El script Python es la única implementación del contrato:
+// `connected` exige un import literal completo, `declared-orphan` exige la
+// decisión registrada y cualquier ambigüedad legítima queda como `unknown`.
 
 const aqui = dirname(fileURLToPath(import.meta.url));
 const raizModulo = resolve(aqui, "..");
-const raizScripts = join(raizModulo, "scripts");
-
-/**
- * Módulos sin importador, cada uno con su motivo Y su issue.
- *
- * El `issue` es obligatorio a propósito. #523 avisó de que el desenlace legítimo
- * de un huérfano puede ser cablearlo, retirarlo o declararlo cimiento, pero que
- * «ninguno es dejarlo como está sin decirlo». Exigir un número de issue impide
- * que esta lista se convierta en el sitio donde se deja lo que no se quiere
- * mirar: para silenciar la guarda hay que haber abierto la conversación.
- *
- * `cimiento: true` significa que se espera que siga sin consumidor por ahora.
- * `cimiento: false` significa que NO debería estar aquí: es un hueco conocido y
- * la entrada es el registro de que se sabe, no un permiso.
- */
-const HUERFANOS_DECLARADOS = Object.freeze({
-  "convocatoria-estancia.mjs": {
-    cimiento: true,
-    issue: 587,
-    motivo:
-      "Resuelve a donde llega la tripulacion cuando el GM la convoca a una " +
-      "estancia. No lo importa nadie TODAVIA porque el cableado a la ventana de " +
-      "Andar es su propia tarjeta: la playa (#587) y el museo (#598) no cuelgan " +
-      "de ninguna puerta de la nave, asi que hoy solo los abre el GM y la " +
-      "tripulacion no los pisa. Se entrega antes el modulo puro para que la " +
-      "decision de quien puede convocar y de donde se aparece viva en un sitio " +
-      "probable sin Foundry delante, en vez de nacer enredada en la interfaz.",
-  },
-  "audio-ficheros.mjs": {
-    cimiento: true,
-    issue: 571,
-    motivo:
-      "Reproductor de ficheros de audio, al lado de la síntesis de #318. No lo " +
-      "importa nadie todavía porque NO HAY NI UN FICHERO DE AUDIO en el " +
-      "repositorio: traerlo es la decisión de #571, y cablear un reproductor a " +
-      "un catálogo vacío no reproduce nada. Existe primero a propósito, porque " +
-      "sin consumidor no tenía sentido ni listar fuentes de audio — que es " +
-      "justo lo que `docs/ASSETS_LIBRES.md` explica en su tabla de categorías.",
-  },
-  "horizonte-preset.mjs": {
-    cimiento: false,
-    issue: 584,
-    motivo:
-      "Volcado del matte del horizonte a PNG indexados. No lo importa el módulo " +
-      "en caliente A PROPÓSITO: lo usan `tools/prerender-horizonte.mjs` para " +
-      "escribir los assets y `horizonte-matte.test.mjs` para verificar que los " +
-      "del árbol corresponden al generador. Cablearlo al arranque significaría " +
-      "codificar tres PNG en cada carga para no mirarlos, que es justo lo " +
-      "contrario de prerenderizar.",
-  },
-  "rig-esqueleto.mjs": {
-    cimiento: false,
-    issue: 603,
-    motivo:
-      "Deformación de malla por huesos, fase 1 de #603. No lo importa nadie " +
-      "todavía porque su consumidor es la fase 4 (bustos, PC/NPC y criaturas con " +
-      "partes importadas) y esa fase depende de una decisión de arte que sigue " +
-      "abierta en el issue: avatares todo-escaneado o todo-estilizado. Cablearlo " +
-      "antes de esa decisión es exactamente cómo sale la opción incoherente del " +
-      "medio, que es la que el issue avisa que sale sola si nadie decide.",
-  },
-  "catalogo-cosmografico.mjs": {
-    cimiento: true,
-    issue: 525,
-    motivo:
-      "Validador del formato de atlas (planos, sistemas, planetas, con procedencia " +
-      "y licencia por entrada). Cimiento de #213, que sigue siendo investigación a " +
-      "validar por Varo y Eloy: cablearlo por iniciativa propia promovería a hecho " +
-      "una decisión que no está tomada.",
-  },
-  "atlas-hyg.mjs": {
-    cimiento: true,
-    issue: 568,
-    motivo:
-      "Adaptador del catálogo estelar HYG al formato de atlas. Cimiento del " +
-      "MISMO issue sin decidir que `catalogo-cosmografico.mjs` (#213): traduce " +
-      "datos al formato, y cablearlo metería en la partida un atlas que Varo y " +
-      "Eloy no han aprobado. Que lo que produce es válido lo comprueba " +
-      "`atlas-hyg.test.mjs` contra el validador, sin necesidad de consumidor.",
-  },
-  "npc-tablas.mjs": {
-    cimiento: true,
-    issue: 676,
-    motivo:
-      "Tablas propias del generador de NPC: silabas, arquetipos, elementos y " +
-      "lineas. Solo lo importa npc-generador.mjs, que a su vez todavia no " +
-      "cuelga de ninguna puerta.",
-  },
-  "npc-generador.mjs": {
-    cimiento: true,
-    issue: 676,
-    motivo:
-      "Motor puro del generador de NPC: semilla mas valor de desafio dan una " +
-      "ficha. No lo importa nadie TODAVIA a proposito. Lo que falta para que " +
-      "se llegue jugando no es cableado sino una decision que no se toma de " +
-      "paso: un habitante al que has conocido es algo que se RECUERDA, y " +
-      "docs/FOUNDRY.md deja recordar fuera de la escena. Es el mismo reparto " +
-      "que #598 dejo abierto para el bestiario. Se entrega antes el motor para " +
-      "que la matematica del SRD y la limpieza de nombres se prueben sin " +
-      "Foundry delante.",
-  },
-  "nave-movimiento-sala-prueba.mjs": {
-    cimiento: true,
-    issue: 427,
-    motivo:
-      "Banco de pruebas del motor de andar: dos cajas conectadas, deliberadamente " +
-      "FUERA de `nave-catalogo-andar.mjs`. No tener importador no es un descuido, " +
-      "es la propiedad que se le exige — el día que se cuele en el catálogo de la " +
-      "nave real, las salas 'a' y 'b' aparecerían en la partida.",
-  },
-});
+const raizRepositorio = resolve(raizModulo, "..");
+const rutaDeclaraciones = join(raizRepositorio, "docs", "orphan-declarations.json");
+const rutaInventario = join(raizRepositorio, "scripts", "check_orphan_modules.py");
 
 /** Recorre `scripts/` y devuelve rutas relativas con separador POSIX. */
-function modulosDeScripts(directorio = raizScripts) {
+function modulosDeScripts(directorio = join(raizModulo, "scripts")) {
   const encontrados = [];
   for (const entrada of readdirSync(directorio, { withFileTypes: true })) {
     const completa = join(directorio, entrada.name);
@@ -146,119 +29,120 @@ function modulosDeScripts(directorio = raizScripts) {
       continue;
     }
     if (entrada.name.endsWith(".mjs")) {
-      encontrados.push(relative(raizScripts, completa).split("\\").join("/"));
+      encontrados.push(relative(join(raizModulo, "scripts"), completa).split("\\").join("/"));
     }
   }
-  return encontrados;
+  return encontrados.sort();
 }
 
-/**
- * Extrae los especificadores relativos que importa un módulo.
- *
- * Deliberadamente léxico y no un parser: cubre `import ... from "x"`,
- * `export ... from "x"` e `import("x")` dinámico, que es todo lo que este
- * módulo usa. Un especificador que no empiece por `.` es de Foundry o de Node y
- * no participa del grafo.
- */
-function importsDe(rutaRelativa) {
-  const fuente = readFileSync(join(raizScripts, rutaRelativa), "utf8");
-  const especificadores = [];
-  const patron = /(?:\bfrom\s*|\bimport\s*\(\s*)["'](\.[^"']+)["']/g;
-  for (const coincidencia of fuente.matchAll(patron)) {
-    especificadores.push(coincidencia[1]);
-  }
-  return especificadores;
-}
-
-/** Resuelve un especificador relativo a ruta relativa a `scripts/`. */
-function resolverEspecificador(desde, especificador) {
-  return posix.normalize(posix.join(posix.dirname(desde), especificador));
-}
-
-/** Puntos de entrada según `module.json`: la verdad la declara el manifiesto. */
-function puntosDeEntrada() {
-  const manifiesto = JSON.parse(readFileSync(join(raizModulo, "module.json"), "utf8"));
-  const declarados = manifiesto.esmodules ?? [];
-  assert.ok(declarados.length > 0, "module.json no declara ningún esmodule: el grafo no tiene raíz");
-  return declarados.map((ruta) => posix.relative("scripts", ruta.split("\\").join("/")));
-}
-
-/** Cierre transitivo de imports desde los puntos de entrada. */
-function alcanzables() {
-  const vistos = new Set();
-  const pendientes = [...puntosDeEntrada()];
-  while (pendientes.length > 0) {
-    const actual = pendientes.pop();
-    if (vistos.has(actual)) continue;
-    vistos.add(actual);
-    for (const especificador of importsDe(actual)) {
-      pendientes.push(resolverEspecificador(actual, especificador));
-    }
-  }
-  return vistos;
-}
-
-test("todo módulo de scripts/ es alcanzable desde el manifiesto, o está declarado", () => {
-  const alcance = alcanzables();
-  const huerfanos = modulosDeScripts().filter((modulo) => !alcance.has(modulo));
-  const noDeclarados = huerfanos.filter((modulo) => !(modulo in HUERFANOS_DECLARADOS));
-
-  assert.deepEqual(
-    noDeclarados,
-    [],
-    "Estos módulos no los importa nadie y no están declarados:\n" +
-      noDeclarados.map((modulo) => `  - scripts/${modulo}`).join("\n") +
-      "\n\nCablea el módulo a un consumidor real, retíralo, o —si hace falta " +
-      "dejarlo— añádelo a HUERFANOS_DECLARADOS en este archivo con su motivo y el " +
-      "issue donde se decide (#523). NO lo enumeres ademas en CLAUDE.md: ese " +
-      "documento dice expresamente que los huecos VIVOS se listan aqui, porque " +
-      "alli se desincronizan en cuanto uno se cierra. Un comentario que nombre " +
-      "el módulo NO cuenta como " +
-      "consumidor: es justo lo que se le escapó al barrido manual de #523.",
+function ejecutarInventario({ root = raizModulo, declarations = rutaDeclaraciones } = {}) {
+  return spawnSync(
+    "python3",
+    [
+      rutaInventario,
+      "--root",
+      root,
+      "--declarations",
+      declarations,
+      "--format",
+      "json",
+      "--check",
+    ],
+    { cwd: raizRepositorio, encoding: "utf8" },
   );
-});
+}
 
-test("la lista de huérfanos declarados no acumula entradas ya cableadas", () => {
-  // Sin esto la lista se convierte en un cementerio: un módulo que se cablea
-  // seguiría exento para siempre, y el siguiente huérfano en ese archivo pasaría
-  // sin que nadie se enterase.
-  const alcance = alcanzables();
-  for (const modulo of Object.keys(HUERFANOS_DECLARADOS)) {
-    assert.equal(
-      alcance.has(modulo),
-      false,
-      `scripts/${modulo} ya tiene importador: quítalo de HUERFANOS_DECLARADOS y de CLAUDE.md.`,
-    );
+let inventarioCanonico;
+function leerInventarioCanonico() {
+  if (inventarioCanonico) return inventarioCanonico;
+  const resultado = ejecutarInventario();
+  assert.equal(
+    resultado.status,
+    0,
+    "El inventario conservador no es válido. Corrige docs/orphan-declarations.json " +
+      `o su consumidor scripts/check_orphan_modules.py:\n${resultado.stderr}`,
+  );
+  try {
+    inventarioCanonico = JSON.parse(resultado.stdout);
+    return inventarioCanonico;
+  } catch (error) {
+    assert.fail(`La salida derivada de docs/orphan-declarations.json no es JSON válido: ${error.message}`);
   }
+}
+
+test("docs/orphan-declarations.json produce exactamente un estado por módulo", () => {
+  const inventario = leerInventarioCanonico();
+  assert.deepEqual(
+    inventario.map(({ module }) => module).sort(),
+    modulosDeScripts(),
+    "docs/orphan-declarations.json debe inventariar todos los módulos de foundry-module/scripts/",
+  );
+  assert.equal(new Set(inventario.map(({ module }) => module)).size, inventario.length);
 });
 
-test("cada huérfano declarado existe, explica por qué y cita su issue", () => {
-  const existentes = new Set(modulosDeScripts());
-  for (const [modulo, entrada] of Object.entries(HUERFANOS_DECLARADOS)) {
-    assert.ok(existentes.has(modulo), `HUERFANOS_DECLARADOS nombra scripts/${modulo}, que no existe`);
+test("cada huérfano declarado conserva decisión, procedencia y evidencia", () => {
+  const inventario = leerInventarioCanonico();
+  const declarados = inventario.filter(({ status }) => status === "declared-orphan");
+  assert.ok(declarados.length > 0, "docs/orphan-declarations.json no conserva ningún huérfano declarado");
+  for (const entrada of declarados) {
     assert.ok(
-      typeof entrada.motivo === "string" && entrada.motivo.length > 40,
-      `El motivo de scripts/${modulo} es demasiado corto para ser una decisión escrita`,
+      typeof entrada.reason === "string" && entrada.reason.length > 40,
+      `docs/orphan-declarations.json: el motivo de scripts/${entrada.module} es demasiado corto`,
     );
     assert.equal(
-      typeof entrada.issue,
-      "number",
-      `scripts/${modulo} no cita issue: sin conversación abierta esto es esconder, no declarar`,
+      typeof entrada.foundation,
+      "boolean",
+      `docs/orphan-declarations.json: scripts/${entrada.module} no decide si es cimiento`,
     );
-    assert.equal(typeof entrada.cimiento, "boolean", `scripts/${modulo} no dice si es cimiento o hueco`);
+    assert.ok(
+      entrada.evidence,
+      `docs/orphan-declarations.json: scripts/${entrada.module} no conserva evidencia`,
+    );
   }
 });
 
-test("el grafo se recorre de verdad: main.mjs y una hoja conocida están dentro", () => {
-  // Si `importsDe` deja de reconocer la sintaxis de import, todo pasaría a ser
-  // huérfano y la prueba de arriba fallaría a lo grande — pero si el patrón se
-  // rompiese al revés (alcance vacío tratado como todo alcanzable), no. Este
-  // caso ancla el otro extremo.
-  const alcance = alcanzables();
-  assert.ok(alcance.has("main.mjs"), "main.mjs debería ser un punto de entrada");
-  assert.ok(alcance.size > 50, `el grafo solo alcanza ${alcance.size} módulos: el recorrido está roto`);
-  assert.ok(
-    alcance.has("station-actions.mjs"),
+test("el grafo conservador alcanza el manifiesto y una hoja contractual", () => {
+  const inventario = new Map(leerInventarioCanonico().map((entrada) => [entrada.module, entrada]));
+  assert.equal(inventario.get("main.mjs")?.status, "connected");
+  assert.equal(
+    inventario.get("station-actions.mjs")?.status,
+    "connected",
     "station-actions.mjs es la matriz de autoridad y tiene que estar cableada",
   );
+  assert.ok(
+    [...inventario.values()].filter(({ status }) => status === "connected").length > 50,
+    "el grafo derivado de docs/orphan-declarations.json parece roto",
+  );
+});
+
+test("la suite Node acepta unknown cuando solo hay registro dinámico ambiguo", () => {
+  const temporal = mkdtempSync(join(tmpdir(), "inventario-node-"));
+  try {
+    const root = join(temporal, "foundry-module");
+    const scripts = join(root, "scripts");
+    const declarations = join(temporal, "docs", "orphan-declarations.json");
+    mkdirSync(scripts, { recursive: true });
+    mkdirSync(dirname(declarations), { recursive: true });
+    writeFileSync(join(root, "module.json"), '{"esmodules":["scripts/main.mjs"]}');
+    writeFileSync(
+      join(scripts, "main.mjs"),
+      'registerModule("./dynamic.mjs", () => globalThis.dynamicFactory);\n',
+    );
+    writeFileSync(join(scripts, "dynamic.mjs"), "export const dynamic = true;\n");
+    writeFileSync(
+      declarations,
+      '{"schemaVersion":1,"declarations":[],"artModules":[]}\n',
+    );
+
+    const resultado = ejecutarInventario({ root, declarations });
+    assert.equal(
+      resultado.status,
+      0,
+      `Un unknown legítimo no debe invalidar docs/orphan-declarations.json: ${resultado.stderr}`,
+    );
+    const inventario = JSON.parse(resultado.stdout);
+    assert.equal(inventario.find(({ module }) => module === "dynamic.mjs")?.status, "unknown");
+  } finally {
+    rmSync(temporal, { recursive: true, force: true });
+  }
 });

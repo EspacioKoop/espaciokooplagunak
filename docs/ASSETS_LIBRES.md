@@ -215,3 +215,31 @@ que suponga lo contrario está mal presupuestado.
    tres maquetas, que es lo que la estética propia existe para evitar.
 5. **Nada sin consumidor.** Si la categoría no está en la tabla del punto 2, no
    entra: primero el consumidor, después el asset.
+
+---
+
+## 7. Lo que NO entra: sprite-rips y salidas de IA
+
+Ninguna de las dos entra en el árbol, y por motivos distintos.
+
+**Sprite-rips** — imágenes extraídas de un juego comercial (The Spriters
+Resource y equivalentes). Son obra derivada con derechos vivos: que el juego
+esté descatalogado no libera nada, y usarlas exigiría permiso del titular. No
+son CC0 ni dominio público, así que **no pasan la regla de entrada de la
+sección 4**: la licencia se acredita por archivo o no se acredita.
+
+**Salidas de generadores de IA.** Aquí el problema no es solo la licencia
+—incierta o restrictiva según el modelo, y difícil de acreditar por pieza— sino
+que **no son arte procedural**: la regla del módulo es que el arte se genera en
+el cliente a partir de código y semilla (ver *Arte procedural* en `CLAUDE.md`),
+y una imagen generada fuera y guardada es un binario más, con la diferencia de
+que no se puede rehacer ni auditar.
+
+**Qué hacer en su lugar.** Para arte 2D, el módulo ya tiene pixelart procedural
+—`nave-sprite.mjs`, `minijuegos/cartas-pixelart.mjs`, `minijuegos/fichas-pixelart.mjs`—
+y `png-indexado.mjs` para codificarlo. Nota la diferencia con la tabla de la
+sección 2: el pixelart 2D **sí** entra, pero como código que lo dibuja, no como
+fichero de imagen traído de fuera. Si de verdad hace falta algo que no se pueda
+generar, se dibuja a mano y se le hace su ficha de procedencia como a cualquier
+otra pieza (sección 6) — con licencia propia, que es la única que se puede
+acreditar sin dudas.

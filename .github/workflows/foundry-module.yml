@@ -12,6 +12,8 @@ on:
 
 permissions:
   contents: read
+  issues: read
+  pull-requests: read
 
 jobs:
   changes:
@@ -24,7 +26,9 @@ jobs:
       - id: filtro
         uses: ./.github/actions/filtro-rutas
         with:
-          rutas: '^(foundry-module/|\.github/workflows/foundry-module\.yml$|\.github/actions/)'
+          # `scripts/` es deliberadamente prefijo: helpers y regresiones futuros
+          # del inventario también deben despertar la puerta, no solo dos nombres.
+          rutas: '^(foundry-module/|scripts/|docs/orphan-declarations\.json$|\.github/workflows/foundry-module\.yml$|\.github/actions/)'
 
   tests:
     name: Tests del módulo Foundry (Node)
@@ -48,6 +52,12 @@ jobs:
           done
       - name: Ejecutar tests del módulo
         run: node --test foundry-module/tests/*.test.mjs
+      - name: Probar el inventario conservador de módulos
+        run: python3 -m unittest discover -s scripts/tests -p 'test_check_orphan_modules.py'
+      - name: Verificar inventario conservador de módulos
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 scripts/check_orphan_modules.py --check --check-github-evidence
       - name: El PNG prerenderizado corresponde al generador
         run: node tools/prerender-piel.mjs --check
 

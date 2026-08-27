@@ -1,0 +1,20 @@
+# Alcance de la medición de cobertura del puente.
+#
+# `--cov=.` desde `bridge/` metía `bridge/tests/**` en el DENOMINADOR: 1612 de
+# 2054 líneas medidas eran los propios tests, contados como «código cubierto»
+# porque un test se ejecuta entero por definición. Con ese alcance, añadir
+# tests SUBE la cifra aunque la cobertura de producción baje, que es
+# exactamente lo contrario de lo que una puerta de cobertura debe premiar.
+#
+# Se recorta con `omit` y no enumerando los módulos productivos a mano: una
+# lista de módulos se queda obsoleta en silencio el día que se añada uno nuevo
+# —y lo haría a la baja, dejándolo sin medir—, mientras que excluir los tests
+# sigue incluyendo automáticamente todo lo que se añada a `bridge/`.
+[run]
+source = .
+omit =
+    tests/*
+    .coveragerc
+
+[report]
+show_missing = True

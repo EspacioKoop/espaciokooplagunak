@@ -55,6 +55,35 @@ jobs:
           case "$TAGS" in
             *:latest*) echo "::error::metadata-action generó latest."; exit 1 ;;
           esac
+      # El dry-run de arriba solo ejerce `type=sha`, así que durante 23 ejecuciones
+      # verdes no miró nunca la configuración con la que se publica de verdad. Este
+      # paso sí: comprueba que el job de publicación sabe etiquetar la versión POR
+      # FECHA de este repositorio. `type=semver` no puede —`2026.08.27` no es semver
+      # por el cero del mes— y solo emite un warning, así que se publicaría sin tag
+      # de versión con el job en verde.
+      - name: El job de publicación etiqueta la versión por fecha
+        run: |
+          set -euo pipefail
+          # Solo lo EJECUTABLE del job de publicación: los comentarios de abajo
+          # nombran type=semver para explicar por qué no se usa, y harían saltar
+          # esta guarda contra sí misma.
+          CONF="$(sed -n '/^  publish:/,$p' .github/workflows/docker-publish.yml | grep -v '^[[:space:]]*#')"
+          if printf '%s' "$CONF" | grep -q 'type=semver'; then
+            echo "::error::El job de publicación usa type=semver, que no casa con la versión AAAA.MM.DD de este repositorio (ver CMakeLists.txt). Usa type=match."
+            exit 1
+          fi
+          PATRON="$(printf '%s' "$CONF" | sed -n 's/.*type=match,pattern=\(.*\),group=.*/\1/p' | head -1)"
+          if [ -z "$PATRON" ]; then
+            echo "::error::El job de publicación no declara ningún type=match del que derivar el tag de versión."
+            exit 1
+          fi
+          # Una versión real del esquema del repositorio tiene que producir tag.
+          EJEMPLO="v2026.08.27"
+          if ! printf '%s' "$EJEMPLO" | grep -Eq "^${PATRON}$"; then
+            echo "::error::El patrón '${PATRON}' no casa con ${EJEMPLO}, así que un release no llevaría tag de versión."
+            exit 1
+          fi
+          echo "OK: ${EJEMPLO} produce tag de versión con el patrón ${PATRON}."
       - uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
           context: bridge
@@ -97,10 +126,17 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository_owner }}/espaciokooplagunak-${{ matrix.image.name }}
           # Sin `latest`: versión del tag git (o `manual` en dispatch) + SHA corto.
+          #
+          # La versión de este repositorio es por FECHA (`AAAA.MM.DD`, calculada en
+          # CMakeLists.txt), y eso NO es semver: `2026.08.27` lleva un cero a la
+          # izquierda en el mes, que semver prohíbe. `type=semver` no avisa con un
+          # error sino con un warning, así que el job salía VERDE publicando la
+          # imagen sin ningún tag de versión — solo `sha-`. Pasó de verdad al cortar
+          # v2026.08.27. Por eso se casa el tag por patrón y no por semver.
           flavor: |
             latest=false
           tags: |
-            type=semver,pattern={{version}}
+            type=match,pattern=v(.*),group=1
             type=raw,value=manual,enable=${{ github.event_name == 'workflow_dispatch' }}
             type=sha
       - uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0

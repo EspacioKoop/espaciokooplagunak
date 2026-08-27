@@ -30,9 +30,9 @@
     },
     {
       "module": "convocatoria-estancia.mjs",
-      "status": "declared-orphan",
+      "status": "connected",
       "foundation": true,
-      "reason": "Resuelve a dónde llega la tripulación cuando el GM la convoca a una estancia. El cableado a la ventana de Andar es su propia tarjeta y no debe nacer enredado en la interfaz.",
+      "reason": "Resuelve a dónde llega la tripulación cuando el GM la convoca a una estancia. Ahora la consume convocatoria-wiring.mjs (#832), cableada a la barra de escena.",
       "declaredBy": "Espaciokoop Lagunak",
       "declaredAt": "2026-08-24",
       "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/587"}

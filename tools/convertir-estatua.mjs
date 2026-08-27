@@ -68,6 +68,62 @@ export function leerStlBinario(bytes) {
   return triangulos;
 }
 
+/**
+ * Lee un OBJ de texto (Wavefront): vértices `v`, caras `f`.
+ *
+ * Solo GEOMETRÍA, como el STL: se ignoran `vt` (textura) y `vn` (normales),
+ * que es la frontera de arte de #351 —el color lo pone la escena—. NASA 3D
+ * Resources y las demás fuentes públicas (Europeana, Art Institute of
+ * Chicago, Wikidata) sueltan OBJ, y hasta ahora el pipeline solo leía STL,
+ * así que esas mallas no llegaban nunca a la escena retro3d.
+ *
+ * Las caras pueden ser polígonos; se triangulan por abanico porque el
+ * decimador QEM trabaja a partir de triángulos. Los índices de OBJ son
+ * 1-based y pueden ser negativos (relativos al final del fichero).
+ *
+ * @param {string} texto
+ * @returns {{vertices: number[][], caras: number[][]}}
+ */
+export function leerObj(texto) {
+  const vertices = [];
+  const caras = [];
+  const lineas = texto.split(/\r?\n/);
+  for (const linea of lineas) {
+    const limpia = linea.trim();
+    if (!limpia || limpia.startsWith("#")) continue;
+    const partes = limpia.split(/\s+/);
+    const tag = partes[0];
+    if (tag === "v") {
+      // `x y z [w]`; el w se ignora (siempre 1 en OBJ geométrico).
+      const x = Number(partes[1]);
+      const y = Number(partes[2]);
+      const z = Number(partes[3]);
+      if (!(Number.isFinite(x) && Number.isFinite(y) && Number.isFinite(z))) continue;
+      vertices.push([x, y, z]);
+    } else if (tag === "f") {
+      // Cada vértice de cara: `v`, `v/vt`, `v/vt/vn` o `v//vn`. Basta el
+      // índice de vértice, que siempre va primero.
+      const idx = [];
+      for (let k = 1; k < partes.length; k += 1) {
+        const token = partes[k].split("/")[0];
+        let n = Number(token);
+        if (!Number.isFinite(n)) continue;
+        // Negativo = relativo al final de la lista de vértices definida hasta aquí.
+        n = n < 0 ? vertices.length + n : n - 1; // OBJ es 1-based.
+        if (n >= 0 && n < vertices.length) idx.push(n);
+      }
+      // Triangular por abanico: un polígono de N vértices da N-2 triángulos.
+      for (let i = 1; i + 1 < idx.length; i += 1) {
+        const t = [idx[0], idx[i], idx[i + 1]];
+        // Una cara degenerada (índices repetidos) no aporta superficie.
+        if (t[0] !== t[1] && t[1] !== t[2] && t[0] !== t[2]) caras.push(t);
+      }
+    }
+    // `vt`, `vn`, `vp`, `g`, `o`, `usemtl`, `mtllib`… se ignoran a propósito.
+  }
+  return { vertices, caras };
+}
+
 /** La caja que envuelve a todos los puntos. */
 export function envolvente(triangulos) {
   const min = [Infinity, Infinity, Infinity];
@@ -619,38 +675,86 @@ async function principal() {
 
   const [ruta, nombre, ...resto] = process.argv.slice(2);
   if (!ruta || !nombre) {
-    console.error("uso: node tools/convertir-estatua.mjs <fichero.stl> <nombre> [--caras N] [--alto M]");
-    process.exit(2);
-  }
-  const opcion = (bandera, porDefecto) => {
-    const i = resto.indexOf(bandera);
-    return i === -1 ? porDefecto : Number(resto[i + 1]);
-  };
-
-  const bytes = new Uint8Array(await readFile(ruta));
-  const sha256 = createHash("sha256").update(bytes).digest("hex");
-  const triangulos = leerStlBinario(bytes);
-  const soldada = soldar(triangulos);
-  const decimada = simplificar(soldada, opcion("--caras", 900));
-  const malla = normalizar(decimada, { alto: opcion("--alto", 2.2) });
-
-  const destino = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "foundry-module", "data", "mallas");
-  await mkdir(destino, { recursive: true });
-  const declarada = FICHAS[nombre];
-  if (!declarada) {
     console.error(
-      `No hay ficha para "${nombre}". Un asset sin procedencia comprobable no entra, ` +
-        "por bueno que sea: añádela a FICHAS y a docs/PROCEDENCIA_ASSETS.md antes de convertir.",
+      "uso: node tools/convertir-estatua.mjs <fichero.stl|.obj> <nombre> " +
+        "[--caras N] [--alto M] [--fuente T] [--licencia L] [--obra O] " +
+        "[--autoria A] [--modelo M]",
     );
     process.exit(2);
   }
-  const ficha = { ...declarada, sha256 };
+  const textoOp = (bandera, porDefecto) => {
+    const i = resto.indexOf(bandera);
+    return i === -1 ? porDefecto : resto[i + 1];
+  };
+  const numeroOp = (bandera, porDefecto) => {
+    const v = textoOp(bandera, null);
+    const n = Number(v);
+    return v === null || !Number.isFinite(n) ? porDefecto : n;
+  };
+
+  const ext = path.extname(ruta).toLowerCase();
+  const bytes = new Uint8Array(await readFile(ruta));
+  const sha256 = createHash("sha256").update(bytes).digest("hex");
+
+  // OBJ ya viene indexado (no hace falta soldar); STL trae una sopa de
+  // triángulos sueltos que hay que soldar primero. Ambos acaban en el mismo
+  // {vertices, caras} que consumen el decimador y la escena retro3d.
+  let entrada;
+  let triangulosEntrada;
+  if (ext === ".obj") {
+    // `bytes` es Uint8Array, y su `toString` NO decodifica UTF-8; hay que
+    // pasar por TextDecoder para obtener el texto del OBJ.
+    entrada = leerObj(new TextDecoder("utf8").decode(bytes));
+    triangulosEntrada = entrada.caras.length;
+  } else {
+    const triangulos = leerStlBinario(bytes);
+    triangulosEntrada = triangulos.length;
+    entrada = soldar(triangulos);
+  }
+
+  const decimada = simplificar(entrada, numeroOp("--caras", 900));
+  const malla = normalizar(decimada, { alto: numeroOp("--alto", 2.2) });
+
+  const destino = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "foundry-module", "data", "mallas");
+  await mkdir(destino, { recursive: true });
+
+  // Procedencia: o bien una ficha fija del catálogo SMK, o bien una malla
+  // externa (NASA 3D Resources, Europeana…) con la procedencia pasada por
+  // CLI. Sin origen comprobable no se convierte, por buena que sea la malla.
+  let ficha = FICHAS[nombre];
+  if (!ficha) {
+    const fuente = textoOp("--fuente", "");
+    if (!fuente) {
+      console.error(
+        `No hay ficha para "${nombre}" y falta --fuente. ` +
+          "Añádela a FICHAS, o pasa --fuente/--licencia/--obra/--autoria/--modelo " +
+          "para mallas externas (NASA 3D Resources, etc.).",
+      );
+      process.exit(2);
+    }
+    const licencia = textoOp("--licencia", null);
+    ficha = {
+      obra: textoOp("--obra", nombre),
+      modelo: textoOp("--modelo", "desconocido — pasa --modelo para dejarlo escrito"),
+      autoria: textoOp("--autoria", "desconocida — pasa --autoria para dejarlo escrito"),
+      fuente,
+      // null = no declarada: no se afirma dominio público (ver nasa3d.py).
+      licencia: licencia === null ? null : licencia,
+    };
+    if (licencia === null) {
+      console.warn(
+        "AVISO: licencia no declarada (null). No se afirma dominio público; " +
+          "verifica las condiciones de uso del origen antes de publicar la malla.",
+      );
+    }
+  }
+  ficha = { ...ficha, sha256 };
   await writeFile(path.join(destino, `${nombre}.mjs`), moduloDeMalla(nombre, malla, ficha), "utf8");
 
   console.log(
-    `${triangulos.length} triángulos -> ${soldada.caras.length} soldadas -> ${malla.caras.length} caras ` +
+    `${triangulosEntrada} triángulos de entrada -> ${malla.caras.length} caras ` +
       `y ${malla.vertices.length} vértices ` +
-      `(${(100 - (malla.caras.length / triangulos.length) * 100).toFixed(1)} % menos)`,
+      `(${(100 - (malla.caras.length / Math.max(1, triangulosEntrada)) * 100).toFixed(1)} % menos)`,
   );
   console.log("sha256 del origen:", sha256);
 

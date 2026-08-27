@@ -178,11 +178,28 @@ export function leerGlb(bytes) {
   const caras = [];
   for (const mesh of json.meshes || []) {
     for (const prim of mesh.primitives || []) {
-      const posAcc = accesor(prim.attributes.POSITION);
+      const posIdx = prim.attributes.POSITION;
+      const posAcc = accesor(posIdx);
       if (!posAcc) continue; // Una primitiva sin POSITION no es geometría.
+      // glTF 2.0 exige `bufferView` en el accessor. NASA 3D Resources exporta
+      // varios modelos SIN él (Argo, Ares 1, CubeSat, Aeronomy…) y, peor aún,
+      // sin la geometría en el fichero. Mejor un error claro que el TypeError
+      // críptico de `buffers[posVista.buffer]` cuando `posVista` es undefined.
+      if (posAcc.bufferView === undefined) {
+        throw new Error(
+          `GLB no conforme a glTF 2.0: el accessor ${posIdx} (POSITION) no tiene bufferView. ` +
+            `NASA 3D Resources exporta algunos modelos así — la geometría no está en el ` +
+            `fichero. Usa un modelo conforme a glTF 2.0 (p. ej. los que traen bufferView).`,
+        );
+      }
       const posVista = vistaBuf(posAcc.bufferView);
       const bufPos = buffers[posVista.buffer];
-      if (!bufPos) continue;
+      if (!bufPos) {
+        throw new Error(
+          `GLB no conforme: el bufferView ${posAcc.bufferView} del accessor ${posIdx} ` +
+            `referencia un buffer que no existe.`,
+        );
+      }
       const dvPos = vistaDe(bufPos);
       const base = vertices.length;
       const inicio = (posVista.byteOffset || 0) + (posAcc.byteOffset || 0);
@@ -192,9 +209,19 @@ export function leerGlb(bytes) {
       }
       if (prim.indices !== undefined) {
         const idxAcc = accesor(prim.indices);
+        if (idxAcc.bufferView === undefined) {
+          throw new Error(
+            `GLB no conforme a glTF 2.0: el accessor ${prim.indices} (índices) no tiene bufferView.`,
+          );
+        }
         const idxVista = vistaBuf(idxAcc.bufferView);
         const bufIdx = buffers[idxVista.buffer];
-        if (!bufIdx) continue;
+        if (!bufIdx) {
+          throw new Error(
+            `GLB no conforme: el bufferView ${idxAcc.bufferView} del accessor ${prim.indices} ` +
+              `referencia un buffer que no existe.`,
+          );
+        }
         const dvIdx = vistaDe(bufIdx);
         const i0 = (idxVista.byteOffset || 0) + (idxAcc.byteOffset || 0);
         const ct = idxAcc.componentType;

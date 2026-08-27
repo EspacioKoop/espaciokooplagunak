@@ -105,7 +105,7 @@ test("REGRESIÓN: leerObj decodifica bien un OBJ leído como Uint8Array (no Buff
 
 // Construye un GLB mínimo y válido (versión 2) a partir de posiciones e
 // índices, para no depender de un fichero binario externo en la prueba.
-function construirGlb(posiciones, indices) {
+function construirGlb(posiciones, indices, sinBufferView = false) {
   const f = new Float32Array(posiciones.length * 3);
   posiciones.forEach((p, i) => {
     f[i * 3] = p[0];
@@ -123,7 +123,7 @@ function construirGlb(posiciones, indices) {
   const json = {
     buffers: [{ byteLength: bin.length }],
     bufferViews: [{ buffer: 0, byteOffset: 0, byteLength: posBytes.length, target: 34962 }],
-    accessors: [{ bufferView: 0, componentType: 5126, count: posiciones.length, type: "VEC3", min: [0, 0, 0], max: [1, 1, 1] }],
+    accessors: [{ ...(sinBufferView ? {} : { bufferView: 0 }), componentType: 5126, count: posiciones.length, type: "VEC3", min: [0, 0, 0], max: [1, 1, 1] }],
     meshes: [{ primitives: [{ attributes: { POSITION: 0 } }] }],
   };
   if (indices) {
@@ -171,6 +171,42 @@ test("un GLB sin índices (triangle soup) triangula los vértices seguidos", () 
 test("un GLB con magic erróneo lanza", () => {
   const basura = new Uint8Array([1, 2, 3, 4, 0, 0, 0, 0, 0, 0, 0, 0]);
   assert.throws(() => leerGlb(basura), /glTF/);
+});
+
+test("REGRESIÓN: un GLB con POSITION sin bufferView lanza error claro (no crash)", () => {
+  // NASA 3D Resources exporta varios modelos (Argo, Ares 1, CubeSat,
+  // Aeronomy of Ice…) con accessors POSITION SIN bufferView y sin la
+  // geometría en el fichero. Antes estallaba con
+  // `Cannot read properties of undefined (reading 'buffer')`; ahora da un
+  // error que dice qué pasa y qué hacer.
+  const glb = construirGlb([[0, 0, 0], [1, 0, 0], [0, 1, 0]], null, true);
+  assert.throws(() => leerGlb(glb), /no conforme|bufferView/);
+});
+
+test("REGRESIÓN: un GLB indexado cuyo accessor de índices falta de bufferView lanza claro", () => {
+  // Variante del caso anterior: el POSITION es conforme pero los índices no.
+  const pos = construirGlb([[0, 0, 0], [1, 0, 0], [0, 1, 0]], [0, 1, 2]);
+  const dv = new DataView(pos.buffer, pos.byteOffset, pos.byteLength);
+  const jsonLen = dv.getUint32(12, true);
+  const json = JSON.parse(new TextDecoder().decode(pos.subarray(20, 20 + jsonLen)));
+  delete json.accessors[1].bufferView; // quita el bufferView de los índices
+  let jsonStr = JSON.stringify(json);
+  jsonStr += " ".repeat((4 - (jsonStr.length % 4)) % 4);
+  const jsonBytes = new TextEncoder().encode(jsonStr);
+  const binLen = dv.getUint32(20 + jsonLen, true);
+  const binOff = 20 + jsonLen;
+  const total = 12 + 8 + jsonBytes.length + 8 + binLen;
+  const out = new Uint8Array(total);
+  const ndv = new DataView(out.buffer);
+  out.set(pos.subarray(0, 20), 0);
+  ndv.setUint32(12, jsonBytes.length, true);
+  out.set(jsonBytes, 20);
+  const nbinOff = 20 + jsonBytes.length;
+  ndv.setUint32(8, total, true);
+  ndv.setUint32(nbinOff, binLen, true);
+  ndv.setUint32(nbinOff + 4, 0x004e4942, true);
+  out.set(pos.subarray(binOff + 8, binOff + 8 + binLen), nbinOff + 8);
+  assert.throws(() => leerGlb(out), /no conforme|bufferView/);
 });
 
 test("REGRESIÓN: un GLB convertido renderiza en retro3d sin NaN", () => {

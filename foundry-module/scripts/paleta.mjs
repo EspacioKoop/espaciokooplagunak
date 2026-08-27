@@ -565,6 +565,18 @@ export const CUADRO = Object.freeze({
   bermellon: "#a33b2a",
   verdin: "#4f7a5e",
   hueso: "#e2dccb", // el claro que hace de luz dentro del cuadro
+  // Los cinco de abajo llegan con los cuadros interpretados de #836 (la ola, el
+  // Fuji, el mar de nubes). No son un capricho de variedad: los tres originales
+  // son PAISAJES, y con los cuatro pigmentos de arriba —dos tierras, un verde y
+  // un hueso— no hay forma de decir «agua», «cielo» ni «niebla» sin mentir de
+  // color. Siguen siendo tonos rotos y no neones, por el mismo motivo que los
+  // otros: sobre el muro oscuro de la sala, un saturado le disputaría la lectura
+  // a la piedra.
+  azulProfundo: "#1f3f6b", // el mar, y las masas de agua en sombra
+  azulPalido: "#8fa9c4", // el cielo; también la niebla lejana
+  espuma: "#f0f3f5", // el blanco de la cresta y de la nieve, más frío que el hueso
+  niebla: "#b9c3c9", // el gris del vapor, entre el cielo y el blanco
+  roca: "#3a3d42", // la piedra oscura y las siluetas a contraluz
 });
 
 /**

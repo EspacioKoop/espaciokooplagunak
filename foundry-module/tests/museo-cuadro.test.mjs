@@ -17,10 +17,12 @@ import {
   rejillaCuadro,
 } from "../scripts/museo-cuadro.mjs";
 import { CATALOGO_CUADROS, MALLAS_CUADROS } from "../scripts/museo-cuadros.mjs";
-import { validarCatalogoPiezas, cartelaDe } from "../scripts/catalogo-piezas.mjs";
+import { NATURALEZAS, validarCatalogoPiezas, cartelaDe } from "../scripts/catalogo-piezas.mjs";
 import {
   ANCHO,
   CUADROS_COLGADOS,
+  GANCHOS,
+  Z_CUADROS,
   INTERACCIONES,
   PIEZAS_COLOCADAS,
   PLANTA_MUSEO,
@@ -37,7 +39,8 @@ test("el catálogo de cuadros pasa el MISMO validador que las esculturas", () =>
   // La unificación es el punto (#598): dos validadores de licencia se
   // desincronizan, y una licencia desincronizada no es un fallo de forma.
   assert.equal(validarCatalogoPiezas(CATALOGO_CUADROS, { mallasDisponibles }), true);
-  assert.equal(CATALOGO_CUADROS.piezas.length, 2, "dos cuadros, uno por muro lateral");
+  assert.equal(CATALOGO_CUADROS.piezas.length, 5, "cinco cuadros en seis ganchos");
+  assert.ok(CATALOGO_CUADROS.piezas.length <= GANCHOS, "hay más cartelas que muro donde colgarlas");
 });
 
 test("cada ficha apunta a una composición que existe de verdad", () => {
@@ -50,10 +53,53 @@ test("LA NORMA DE LA CASA: una cartela de obra generada dice que está generada"
   // El mismo criterio que obliga al León a decir que es una reconstrucción y a
   // la Afrodita a decir que es un vaciado. Si un cuadro pintado por una máquina
   // no lo dijera, la sala estaría enseñando algo sin decir qué es.
-  for (const pieza of CATALOGO_CUADROS.piezas) {
-    assert.equal(pieza.naturaleza, "obra-propia");
+  const generadas = CATALOGO_CUADROS.piezas.filter((p) => p.naturaleza === "obra-propia");
+  assert.equal(generadas.length, 2);
+  for (const pieza of generadas) {
     assert.match(pieza.cartela.es, /GENERAD/);
     assert.match(pieza.cartela.en, /GENERATED/);
+  }
+});
+
+test("LA MISMA NORMA en la otra dirección: un redibujo dice de quién es lo que redibuja", () => {
+  // Un cuadro interpretado es el caso en el que más fácil sería callarse: se
+  // parece a la obra de alguien, no trae ni un byte suyo, y nadie lo notaría.
+  // Por eso `interpretacion` existe como naturaleza y por eso la cartela tiene
+  // que decir las dos cosas — que es un redibujo, y de qué.
+  const interpretadas = CATALOGO_CUADROS.piezas.filter(
+    (p) => p.naturaleza === "interpretacion",
+  );
+  assert.equal(interpretadas.length, 3);
+  assert.ok(NATURALEZAS.includes("interpretacion"));
+  for (const pieza of interpretadas) {
+    assert.match(pieza.cartela.es, /REDIBUJO/);
+    assert.match(pieza.cartela.en, /REDRAWING/);
+    // El autor del original, nombrado en las dos lenguas y también en el título.
+    const autor = pieza.nombre.es.match(/según (.+)\)/)[1];
+    assert.ok(pieza.cartela.es.includes(autor), `${pieza.id}: la cartela no nombra a ${autor}`);
+    assert.ok(pieza.cartela.en.includes(autor), `${pieza.id}: the English label omits ${autor}`);
+    // Y la fuente CC0 es la PÁGINA que declara la licencia, no el fichero: es la
+    // regla dura de `docs/PROCEDENCIA_ASSETS.md` y la que exige `kind: "cc"`.
+    // Ojo, la página de Commons acaba en `.jpg` como acaba en `.stl` la del
+    // León; lo que la distingue de un enlace al archivo es el host, no el
+    // sufijo. Un `upload.wikimedia.org` sería el fichero desnudo, sin licencia
+    // que leer al lado.
+    assert.equal(pieza.provenance.kind, "cc");
+    assert.match(pieza.provenance.source_url, /^https:\/\/commons\.wikimedia\.org\/wiki\//);
+  }
+});
+
+test("NINGÚN cuadro interpretado trae un fichero ajeno al árbol", () => {
+  // La diferencia con las estatuas, y la que hace que estas fichas no lleven
+  // `sha256`: de la fuente sale la composición, no el archivo. Si algún día una
+  // ficha necesitara un hash, es que alguien ha copiado algo y esto ya no es
+  // una interpretación.
+  for (const pieza of CATALOGO_CUADROS.piezas) {
+    assert.deepEqual(
+      Object.keys(pieza.provenance).filter((k) => k === "sha256"),
+      [],
+    );
+    assert.ok(typeof COMPOSICIONES[pieza.malla] === "function", "el dibujo es CÓDIGO, no un dato");
   }
 });
 
@@ -131,7 +177,13 @@ test("EL PRESUPUESTO: cada composición cabe en el tope, y con margen", () => {
   const costes = Object.fromEntries(
     Object.keys(COMPOSICIONES).map((id) => [id, costeCuadro(id)]),
   );
-  assert.deepEqual(costes, { "campo-partido": 19, "escalera-de-verdin": 26 });
+  assert.deepEqual(costes, {
+    "campo-partido": 19,
+    "escalera-de-verdin": 26,
+    "frente-al-mar": 51,
+    "viento-del-sur": 83,
+    "sobre-la-niebla": 61,
+  });
   for (const [id, coste] of Object.entries(costes)) {
     assert.ok(coste <= TOPE_CUADRO, `${id} se pasa del tope`);
   }
@@ -148,15 +200,33 @@ test("fundir es lo que hace que esto quepa: 1.872 celdas caben en decenas de car
 
 /* ---- colgado en la sala ----------------------------------------------------- */
 
-test("los dos cuadros cuelgan de los muros laterales, hacia DENTRO de la sala", () => {
-  assert.equal(CUADROS_COLGADOS.length, 2);
-  const [oeste, este] = CUADROS_COLGADOS;
+test("los cuadros cuelgan de los muros laterales, hacia DENTRO de la sala", () => {
+  assert.equal(CUADROS_COLGADOS.length, 5);
   const xs = (colgado) => colgado.chapas.flatMap(({ malla }) => malla.vertices.map(([x]) => x));
-  assert.ok(xs(oeste).every((x) => x > 0 && x < 0.1), "el cuadro del oeste no está en su muro");
-  assert.ok(
-    xs(este).every((x) => x < ANCHO && x > ANCHO - 0.1),
-    "el cuadro del este no está en su muro",
-  );
+  for (const colgado of CUADROS_COLGADOS) {
+    const enOeste = xs(colgado).every((x) => x > 0 && x < 0.1);
+    const enEste = xs(colgado).every((x) => x < ANCHO && x > ANCHO - 0.1);
+    assert.ok(enOeste || enEste, `${colgado.pieza.id} no está en ningún muro lateral`);
+  }
+});
+
+test("SE ALTERNA de muro en muro: la colección no se amontona a un lado", () => {
+  // Con cinco cuadros seguidos, llenar el oeste antes que el este dejaría a
+  // quien entra viéndolo todo a la izquierda. Alternando, el reparto aguanta
+  // sea cual sea el número de fichas.
+  const muros = CUADROS_COLGADOS.map((colgado) => (colgado.centro[0] === 0 ? "oeste" : "este"));
+  assert.deepEqual(muros, ["oeste", "este", "oeste", "este", "oeste"]);
+  const zs = CUADROS_COLGADOS.map((colgado) => colgado.centro[2]);
+  assert.deepEqual(zs.map((z) => Number(z.toFixed(2))), [1.5, 1.5, 3.2, 3.2, 4.9]);
+});
+
+test("dos cuadros del mismo muro no se tocan: entre marco y marco hay hueco", () => {
+  // Sin esto una pared es un friso y no dos obras. Se mide sobre las z ya
+  // repartidas, que es donde se vería el fallo.
+  const separacion = Z_CUADROS.slice(1).map((z, i) => z - Z_CUADROS[i]);
+  for (const hueco of separacion) {
+    assert.ok(hueco > ANCHO_TOTAL + 0.3, `dos cuadros a ${hueco.toFixed(2)} m se leen como uno`);
+  }
 });
 
 test("cuelga a la altura del ojo, no en la mitad del muro", () => {
@@ -202,11 +272,12 @@ test("ningún cuadro se cuelga detrás de una escultura", () => {
   }
 });
 
-test("colgar más cuadros que muros no se apaña en silencio", () => {
+test("colgar más cuadros que ganchos no se apaña en silencio", () => {
+  assert.equal(GANCHOS, 6, "tres ganchos por muro lateral");
   assert.throws(
-    () => colgarCuadro(CATALOGO_CUADROS.piezas[0], 2),
+    () => colgarCuadro(CATALOGO_CUADROS.piezas[0], GANCHOS),
     /decisión de diseño/,
-    "un tercer cuadro tiene que reventar, no aparecer solo",
+    "el cuadro que ya no cabe tiene que reventar, no aparecer solo",
   );
 });
 
@@ -222,7 +293,7 @@ test("una composición que no existe falla al pedirla, no al pintarla", () => {
 
 test("NADA de lo que añaden los cuadros concede, cuenta ni recuerda", () => {
   const deCuadros = INTERACCIONES.filter((punto) => punto.id.startsWith("cuadro-"));
-  assert.equal(deCuadros.length, 2);
+  assert.equal(deCuadros.length, 5);
   for (const punto of deCuadros) {
     assert.deepEqual(Object.keys(punto.accion).sort(), ["pieza", "tipo"]);
     assert.equal(punto.accion.tipo, "cartela");

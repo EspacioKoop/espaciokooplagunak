@@ -14,7 +14,8 @@ condicionan el trabajo diario:
   empezar: media docena de archivos (este mismo, `lang/*.json`, `main.mjs`, `paleta.mjs` y sus
   guardas) los toca casi cualquier trabajo del módulo, y ahí es donde chocan dos ramas que por lo
   demás no se rozan. Los agentes especializados del proyecto van versionados en
-  [`.claude/agents/`](.claude/agents).
+  [`.claude/agents/`](.claude/agents); los agentes seleccionables desde VS Code viven en
+  [`.github/agents/`](.github/agents).
 - No afirmes que algo compila, arranca o funciona si no has ejecutado la comprobación correspondiente.
 - Nada de `push --force`, `reset --hard`, squash del historial heredado ni reescritura de historial
   sin autorización humana explícita.
@@ -507,7 +508,10 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     Los **cuadros** de sus muros laterales (#836) son la SEGUNDA forma de colgar y no un parámetro
     de la primera: una escultura se apoya en un pedestal y se rodea, un cuadro cuelga de un muro y
     solo se mira de frente, así que van en catálogo aparte (`museo-cuadros.mjs`) validado por el
-    MISMO `validarCatalogoPiezas`. El dibujo es `scripts/museo-cuadro.mjs`, y su regla es que un
+    MISMO `validarCatalogoPiezas`. Los ganchos SALEN DE LO QUE MIDE LA SALA, igual que las columnas
+    de pedestales: un tramo de muro libre (ni en la esquina de la entrada ni detrás de las
+    esculturas) partido por el ancho del cuadro más su hueco, hoy tres por muro, y se ALTERNA de
+    muro en muro para que la colección no se amontone a un lado. Pasarse de ganchos revienta. El dibujo es `scripts/museo-cuadro.mjs`, y su regla es que un
     cuadro no tiene imagen que pegar —el motor no mapea texturas y no hay binarios—: se pinta con
     `chapasDeRejilla` como la piel del muro, pero **con celda propia** de 2,5 cm, porque a los
     10 cm del mural un lienzo de 1,2 × 0,8 m tiene doce por ocho píxeles. Bajar la celda compartida
@@ -517,9 +521,19 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     sería saltárselo. Y el presupuesto es la condición y no una optimización posterior: cada
     composición se comprueba **al importar** contra `TOPE_CUADRO` y revienta si no cabe, porque un
     cuadro recortado al tope se lee como un fallo (a diferencia de un muro, al que le sobra un
-    greeble y sigue siendo un muro). Las cartelas son `obra-propia` y lo **dicen**, con prueba en
-    los dos idiomas: la misma norma de la casa que obliga al León a decir que es una
-    reconstrucción.
+    greeble y sigue siendo un muro). Las dos abstractas son `obra-propia` y lo **dicen**, con prueba
+    en los dos idiomas: la misma norma de la casa que obliga al León a decir que es una
+    reconstrucción. Las otras tres son **redibujos de paisajes de dominio público** a partir de
+    escaneos CC0 (Hokusai ×2, Friedrich), y estrenan el sexto valor de `NATURALEZAS`,
+    `interpretacion`: ninguno de los cinco decía la verdad, porque el fichero es nuestro —no hay ni
+    un byte del escaneo en el árbol, de la fuente sale la COMPOSICIÓN— pero la composición es de
+    otro y está identificada, y llamarla `obra-propia` sería la única forma de que la sala enseñara
+    la obra de alguien sin decirlo. Su cartela nombra la obra y a su autor en los dos idiomas, su
+    procedencia es `kind: "cc"` con la página que declara la licencia (no el fichero) y su ficha
+    está en `docs/PROCEDENCIA_ASSETS.md` SIN `sha256`: el día que una necesite un hash es que
+    alguien ha copiado algo y eso ya no es una interpretación. Se eligen por lo que sobrevive a
+    48 × 32 píxeles —masas, no detalle: un retrato es una mancha—, nunca subiendo la resolución
+    para que quepa una más.
     Lo que el museo NO hace es la mitad del diseño: **enseña y ya está**. La cartela se pinta al
     acercarse y se retira al apartarse (`accion: {tipo: "cartela"}` + el flanco de salida
     `alSalirDeInteraccion` de #598); no marca piezas como vistas, no lleva la cuenta ni deja rastro,

@@ -1,4 +1,4 @@
-// El catálogo de los cuadros del museo (#836): dos fichas y sus dos cartelas.
+// El catálogo de los cuadros del museo (#836): cinco fichas y sus cinco cartelas.
 //
 // POR QUÉ UN CATÁLOGO APARTE Y NO DOS ENTRADAS MÁS EN `museo-piezas.mjs`. No es
 // orden: es que una estatua y un cuadro no se colocan igual. `CATALOGO_MUSEO`
@@ -15,7 +15,7 @@
 // validadores de licencia se desincronizan, y una licencia desincronizada no es
 // un fallo de forma (#598).
 //
-// LA `naturaleza` ES `obra-propia`, Y ESA ES LA DECISIÓN QUE #836 TENÍA QUE
+// LAS DOS PRIMERAS SON `obra-propia`, Y ESA ES LA DECISIÓN QUE #836 TENÍA QUE
 // TOMAR. La otra salida era colgar reproducciones de pintura real, y entonces
 // ninguna de las cinco naturalezas servía: la fotografía de un óleo no es un
 // escaneo, ni una fotogrametría, ni una reconstrucción. Habría hecho falta
@@ -23,6 +23,16 @@
 // módulo, y escribir procedencia real por cuadro. Pintarlos es lo que hace que
 // no haya ninguna licencia ajena que gestionar — y de paso lo que permite decir
 // en la cartela, sin rodeos, que lo que se mira lo generó una máquina.
+//
+// LAS TRES ÚLTIMAS SON OTRA COSA, Y POR ESO NO SON `obra-propia`. Son redibujos
+// de tres paisajes de dominio público a partir de escaneos CC0, y ahí la
+// decisión de arriba deja de valer: la composición no es nuestra y está
+// identificada, así que llamarlas propias sería la única manera de que la sala
+// enseñara la obra de alguien sin decirlo. De ahí el sexto valor de
+// `NATURALEZAS`, `interpretacion`, y de ahí que su procedencia sea `cc` con la
+// página que declara la licencia del escaneo. Lo que NO hay es fichero ajeno en
+// el árbol: de la fuente sale la composición y nada más, así que estas fichas no
+// llevan `sha256` ni comando de conversión — no hay nada que se haya copiado.
 //
 // LA CARTELA DE UN CUADRO GENERADO TIENE QUE DECIR QUE LO ES. Es la misma norma
 // de la casa que obliga al León a decir que es una reconstrucción y a la
@@ -38,7 +48,7 @@ import { COMPOSICIONES } from "./museo-cuadro.mjs";
  *  catálogo: una ficha que apunte a un dibujo que no está no llega a la sala. */
 export const MALLAS_CUADROS = Object.freeze(Object.keys(COMPOSICIONES));
 
-/** La procedencia es la misma para los dos, y es la más corta posible: no hay
+/** La procedencia de las dos generadas, y es la más corta posible: no hay
  *  fuente externa. `original` es el `kind` que `procedencia-catalogo.mjs`
  *  reserva justo para esto, y por eso no lleva `source_url`: no hay ninguna
  *  página que consultar, el dibujo está en el árbol. */
@@ -97,6 +107,90 @@ export const CATALOGO_CUADROS = Object.freeze({
           + " level, a charge or a distance.",
       }),
       provenance: PROCEDENCIA_PROPIA,
+    }),
+    Object.freeze({
+      id: "frente-al-mar",
+      malla: "frente-al-mar",
+      naturaleza: "interpretacion",
+      nombre: Object.freeze({
+        es: "Frente al mar (según Hokusai)",
+        en: "Facing the sea (after Hokusai)",
+      }),
+      cartela: Object.freeze({
+        es: "REDIBUJO, no una reproducción: la gran ola de Kanagawa de Katsushika"
+          + " Hokusai (c. 1830), vuelta a componer píxel a píxel por este módulo a"
+          + " partir de un escaneo de dominio público. Ni un punto del original"
+          + " está aquí; lo que se conserva es la desproporción, que es de lo que"
+          + " trata el grabado: el agua ocupa media tabla y la montaña son seis"
+          + " filas al fondo.",
+        en: "A REDRAWING, not a reproduction: Katsushika Hokusai's great wave off"
+          + " Kanagawa (c. 1830), recomposed pixel by pixel by this module from a"
+          + " public-domain scan. Not one dot of the original is here; what"
+          + " survives is the disproportion the print is about — the water takes"
+          + " half the panel and the mountain is six rows at the back.",
+      }),
+      provenance: Object.freeze({
+        kind: "cc",
+        source: "Escaneo de dominio público del grabado de Katsushika Hokusai, vía Wikimedia Commons",
+        license: "Dominio público (obra de c. 1830); el escaneo, sin derechos reclamados",
+        source_url:
+          "https://commons.wikimedia.org/wiki/File:Tsunami_by_hokusai_19th_century.jpg",
+      }),
+    }),
+    Object.freeze({
+      id: "viento-del-sur",
+      malla: "viento-del-sur",
+      naturaleza: "interpretacion",
+      nombre: Object.freeze({
+        es: "Viento del sur (según Hokusai)",
+        en: "South wind (after Hokusai)",
+      }),
+      cartela: Object.freeze({
+        es: "REDIBUJO del «Viento del sur, cielo despejado» de Katsushika Hokusai"
+          + " (c. 1830), de la misma serie que la ola de enfrente. Se eligió"
+          + " porque a esta resolución no pierde nada: un cono rojo, la nieve"
+          + " arriba, el bosque abajo y tres nubes en banda. El original tampoco"
+          + " tenía mucho más.",
+        en: "A REDRAWING of Katsushika Hokusai's «South Wind, Clear Sky»"
+          + " (c. 1830), from the same series as the wave across the room. It was"
+          + " chosen because it loses nothing at this resolution: a red cone, snow"
+          + " on top, forest below and three banded clouds. The original had"
+          + " little more.",
+      }),
+      provenance: Object.freeze({
+        kind: "cc",
+        source: "Escaneo de dominio público del grabado de Katsushika Hokusai, vía Wikimedia Commons",
+        license: "Dominio público (obra de c. 1830); el escaneo, sin derechos reclamados",
+        source_url:
+          "https://commons.wikimedia.org/wiki/File:Red_Fuji_southern_wind_clear_morning.jpg",
+      }),
+    }),
+    Object.freeze({
+      id: "sobre-la-niebla",
+      malla: "sobre-la-niebla",
+      naturaleza: "interpretacion",
+      nombre: Object.freeze({
+        es: "Sobre la niebla (según Friedrich)",
+        en: "Above the fog (after Friedrich)",
+      }),
+      cartela: Object.freeze({
+        es: "REDIBUJO del «Caminante sobre el mar de nubes» de Caspar David"
+          + " Friedrich (c. 1818), a partir de un escaneo de dominio público. La"
+          + " figura son ocho píxeles de espaldas, y así se queda: a contraluz no"
+          + " hay cara que enseñar, y el cuadro nunca fue el retrato de nadie.",
+        en: "A REDRAWING of Caspar David Friedrich's «Wanderer above the Sea of"
+          + " Fog» (c. 1818), from a public-domain scan. The figure is eight"
+          + " pixels seen from behind, and stays that way: against the light there"
+          + " is no face to show, and the painting was never anyone's portrait.",
+      }),
+      provenance: Object.freeze({
+        kind: "cc",
+        source:
+          "Escaneo de dominio público del óleo de Caspar David Friedrich, vía Wikimedia Commons",
+        license: "Dominio público (obra de c. 1818); el escaneo, sin derechos reclamados",
+        source_url:
+          "https://commons.wikimedia.org/wiki/File:Caspar_David_Friedrich_-_Wanderer_above_the_sea_of_fog.jpg",
+      }),
     }),
   ]),
 });

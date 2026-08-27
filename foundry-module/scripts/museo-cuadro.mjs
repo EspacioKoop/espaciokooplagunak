@@ -133,6 +133,154 @@ function escaleraDeVerdin({ rect, columna }, columnas, filas) {
   }
 }
 
+/* ---- las tres interpretadas (#836, segunda tanda) --------------------------- */
+
+// LAS TRES DE ABAJO NO SON INVENTADAS: son REDIBUJOS de tres paisajes de dominio
+// público, escogidos porque su composición sobrevive a 48 × 32 píxeles. Lo que
+// hace que un cuadro clásico quepa aquí no es que sea famoso, es que se
+// reconozca por MASAS: la ola, el cono rojo y la silueta contra la niebla se
+// leen enteros a esta resolución, y un retrato o un interior se convertirían en
+// una mancha. Qué son exactamente —una interpretación y no una reproducción— lo
+// dice la cartela y lo dice el campo `naturaleza`, que por esto tuvo que
+// estrenar el valor `interpretacion`: el fichero es nuestro y la composición no.
+//
+// NO HAY NINGÚN ESCANEO EN EL ÁRBOL, y esa es la diferencia con las estatuas.
+// De la fuente CC0 sale la composición, no el fichero: se mira el escaneo y se
+// vuelve a dibujar aquí con las mismas cinco decenas de rectángulos que la piel
+// de un muro. Por eso no hay `sha256` que comprobar — no hay archivo que se
+// haya copiado — y por eso la ficha de `docs/PROCEDENCIA_ASSETS.md` de estos
+// tres dice de qué obra vienen y no de qué fichero.
+
+/**
+ * Un triángulo isósceles apoyado en su base, dibujado fila a fila.
+ *
+ * Existe porque las tres composiciones nuevas tienen una montaña, y una montaña
+ * dibujada a mano en cada una acabaría con tres perfiles distintos por descuido.
+ * Devuelve el ancho de cada fila para que quien quiera rematar la cima en otro
+ * color no tenga que recalcularlo.
+ */
+function cono({ linea }, { centro, base, alto, ancho, color, cima, filasCima = 0 }) {
+  for (let i = 0; i < alto; i += 1) {
+    const anchoFila = Math.max(1, Math.round(ancho * (1 - i / alto)));
+    const tono = cima && i >= alto - filasCima ? cima : color;
+    linea(base + i, centro - Math.floor(anchoFila / 2), anchoFila, tono);
+  }
+}
+
+/**
+ * «Frente al mar»: la gran ola por delante, la montaña detrás y muy pequeña.
+ *
+ * Del original se conserva lo único que cabe: la desproporción. La ola ocupa
+ * media tabla y el monte son seis filas al fondo, que es de lo que trata el
+ * grabado. La garra de espuma va en escalones y no en curva porque a esta
+ * escala una curva son tres píxeles sueltos que se leen como suciedad.
+ */
+function frenteAlMar({ rect, linea }, columnas, filas) {
+  rect(0, 0, columnas, filas, CUADRO.azulPalido); // el cielo, hasta arriba
+  rect(0, 0, columnas, Math.round(filas * 0.38), CUADRO.azulProfundo); // el mar
+  // El monte al fondo, pequeño y a la derecha del centro.
+  cono({ linea }, {
+    centro: Math.round(columnas * 0.66),
+    base: Math.round(filas * 0.38),
+    alto: 6,
+    ancho: 13,
+    color: CUADRO.niebla,
+    cima: CUADRO.espuma,
+    filasCima: 2,
+  });
+  // La ola: tramos de agua que suben hacia la izquierda, cada uno rematado en
+  // espuma. Los anchos son múltiplos de cuatro columnas para que `fundirRectangulos`
+  // tenga algo que fundir; en píxel a píxel esto no cabría en el presupuesto.
+  const tramos = [
+    [0, 6, 0.94],
+    [6, 5, 0.78],
+    [11, 5, 0.6],
+    [16, 5, 0.46],
+    [21, 4, 0.34],
+  ];
+  for (const [u0, ancho, altura] of tramos) {
+    const alto = Math.round(filas * altura);
+    rect(0, u0, ancho, alto, CUADRO.azulProfundo);
+    linea(alto - 1, u0, ancho, CUADRO.espuma);
+    linea(alto - 2, u0, ancho, CUADRO.espuma);
+  }
+  // El oleaje corto de la derecha: dos crestas bajas, para que el mar no sea un
+  // rectángulo liso al lado de la ola.
+  linea(Math.round(filas * 0.3), Math.round(columnas * 0.7), 9, CUADRO.espuma);
+  linea(Math.round(filas * 0.22), Math.round(columnas * 0.78), 7, CUADRO.espuma);
+}
+
+/**
+ * «Viento del sur»: el cono rojo con su nieve, el bosque abajo y las nubes en
+ * bandas.
+ *
+ * Es la más simple de las tres a propósito, y la que mejor demuestra por qué la
+ * celda del lienzo tiene que ser suya: a los 10 cm del mural, este cono son
+ * cuatro píxeles y un cambio de color.
+ */
+function vientoDelSur({ rect, linea }, columnas, filas) {
+  rect(0, 0, columnas, filas, CUADRO.azulPalido);
+  cono({ linea }, {
+    centro: Math.round(columnas * 0.44),
+    base: Math.round(filas * 0.2),
+    alto: Math.round(filas * 0.74),
+    ancho: columnas - 4,
+    color: CUADRO.bermellon,
+    cima: CUADRO.espuma,
+    filasCima: 5,
+  });
+  rect(0, 0, columnas, Math.round(filas * 0.2), CUADRO.verdin); // el bosque
+  // Las nubes en banda, arriba y a la derecha. Van por encima del cono porque
+  // en el original pasan por delante de la ladera, no por detrás.
+  linea(filas - 4, Math.round(columnas * 0.6), 15, CUADRO.espuma);
+  linea(filas - 7, Math.round(columnas * 0.68), 11, CUADRO.espuma);
+  linea(filas - 10, Math.round(columnas * 0.74), 8, CUADRO.espuma);
+}
+
+/**
+ * «Sobre la niebla»: una figura de espaldas en lo alto de una peña, y debajo el
+ * mar de nubes con las cumbres asomando.
+ *
+ * La figura se dibuja con el color del FONDO del lienzo y no con un negro
+ * propio: a contraluz no hay detalle que enseñar, y el pigmento más oscuro que
+ * ya existe hace de silueta sin estrenar ninguno. Es la única de las tres con
+ * una persona dentro, y sigue sin ser legible como nada: de espaldas, ocho
+ * píxeles de alto y sin cara.
+ */
+function sobreLaNiebla({ rect, linea }, columnas, filas) {
+  rect(0, 0, columnas, filas, CUADRO.azulPalido); // el cielo alto
+  rect(0, 0, columnas, Math.round(filas * 0.52), CUADRO.niebla); // el mar de nubes
+  // Las cumbres que asoman, a los dos lados y a distinta altura: son la escala
+  // de la niebla, sin ellas el gris es un fondo y no una distancia. Van MÁS
+  // OSCURAS que el vapor y no más claras: una cumbre más clara que la niebla que
+  // la rodea se lee como un roto en la niebla, no como una montaña detrás.
+  cono({ linea }, {
+    centro: Math.round(columnas * 0.16),
+    base: Math.round(filas * 0.5),
+    alto: 5,
+    ancho: 11,
+    color: CUADRO.azulProfundo,
+  });
+  cono({ linea }, {
+    centro: Math.round(columnas * 0.84),
+    base: Math.round(filas * 0.46),
+    alto: 7,
+    ancho: 15,
+    color: CUADRO.azulProfundo,
+  });
+  // La peña, maciza y descentrada, entrando por abajo.
+  const anchoPena = Math.round(columnas * 0.3);
+  const uPena = Math.round(columnas * 0.36);
+  rect(0, uPena, anchoPena, Math.round(filas * 0.3), CUADRO.roca);
+  linea(Math.round(filas * 0.3), uPena + 2, anchoPena - 5, CUADRO.roca);
+  // La figura: piernas, tronco y cabeza, tres franjas y nada más.
+  const uFigura = uPena + Math.round(anchoPena / 2) - 1;
+  const base = Math.round(filas * 0.3) + 1;
+  rect(base, uFigura, 3, 4, CUADRO.fondo);
+  rect(base + 4, uFigura - 1, 5, 3, CUADRO.fondo);
+  rect(base + 7, uFigura, 3, 2, CUADRO.fondo);
+}
+
 /**
  * De ID a dibujo. El mismo papel que `MALLAS_MUSEO` con las estatuas: la ficha
  * del catálogo dice `malla: "campo-partido"` y aquí se resuelve. Un cuadro no
@@ -142,6 +290,9 @@ function escaleraDeVerdin({ rect, columna }, columnas, filas) {
 export const COMPOSICIONES = Object.freeze({
   "campo-partido": campoPartido,
   "escalera-de-verdin": escaleraDeVerdin,
+  "frente-al-mar": frenteAlMar,
+  "viento-del-sur": vientoDelSur,
+  "sobre-la-niebla": sobreLaNiebla,
 });
 
 /**

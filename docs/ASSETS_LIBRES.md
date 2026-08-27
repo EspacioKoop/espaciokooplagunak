@@ -151,7 +151,11 @@ dominio público. Su guía de uso pide conservar crédito institucional y señal
 las modificaciones.
 
 - Política: `https://www.europeana.eu/en/rights/terms-of-use`
-- Guía de dominio público: `https://www.europeana.eu/eu/rights/public-domain-usage-guidelines`
+- Guía de dominio público: `https://www.europeana.eu/en/rights/public-domain-usage-guidelines`
+- Consumidor en este repositorio: `tools/apis/europeana.py` (`europeana(consulta,
+  reusabilidad="open")`), que ya filtra por reusabilidad y devuelve la licencia
+  declarada de cada resultado — el punto de partida de la comprobación, no su
+  sustituto.
 - Criterio de entrada: solo objetos con marca `Public Domain`/`CC0` verificable;
   los metadatos CC0 no conceden por sí solos derechos sobre la imagen, audio o
   modelo.

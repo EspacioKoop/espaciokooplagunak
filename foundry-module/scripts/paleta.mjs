@@ -535,6 +535,39 @@ export const MUSEO = Object.freeze({
 });
 
 /**
+ * Los CUADROS colgados de los muros del museo (#836).
+ *
+ * Van aparte de `MUSEO` y no dentro por dos motivos, y el segundo es el que
+ * manda: `MUSEO` es plano —cada clave, un color— y una prueba de la sala lo
+ * comprueba clave por clave; y sobre todo, un pigmento no es un material de la
+ * sala. `MUSEO.yeso` dice de qué está hecha una pieza; esto es con qué se pintó
+ * otra. Mezclarlos invitaría a pintar un lienzo del color de un pedestal.
+ *
+ * EL MARCO SÍ LLEVA RELIEVE Y EL LIENZO NO, y esa es toda la razón de que haya
+ * tres tonos de marco y ninguno de pigmento. Un marco es un OBJETO de la sala,
+ * así que se ilumina como todo lo demás (luz de arriba, `LUZ` en `retro3d.mjs`)
+ * y necesita su canto claro y su canto en sombra, igual que `panelBiselado`.
+ * La pintura de un lienzo es PLANA: biselarla la convertiría en chapa
+ * remachada, que es el material equivocado — la misma frontera por la que la
+ * cantina apaga la piel de casco en sus muebles de madera (#550).
+ *
+ * Los cinco pigmentos son tierras y no neones a propósito: sobre el muro
+ * oscuro de la sala (`MUSEO.muro`) un color saturado se despegaría tanto que el
+ * cuadro competiría con las esculturas, y la sala está montada para que gane la
+ * piedra. `hueso` es el único claro y hace de luz dentro del lienzo.
+ */
+export const CUADRO = Object.freeze({
+  marco: "#4a3f34", // madera oscura, un paso por encima del muro y no más
+  marcoLuz: "#6b5c4c", // el canto que coge la luz de arriba
+  marcoSombra: "#2f2820", // el que queda debajo; sin él el marco es un plano
+  fondo: "#1d2a33", // el fondo del lienzo: más oscuro que el muro, para hundirlo
+  ocre: "#c08a3e",
+  bermellon: "#a33b2a",
+  verdin: "#4f7a5e",
+  hueso: "#e2dccb", // el claro que hace de luz dentro del cuadro
+});
+
+/**
  * Fichas de la mesa de minijuegos (#308). Pixel, no grabado: la pila se repinta
  * en cuanto alguien apuesta.
  *

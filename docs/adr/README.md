@@ -1,11 +1,32 @@
 # Registro de decisiones de arquitectura (ADR)
 
-Formato [MADR](https://adr.github.io/madr/) simplificado. Cada ADR registra una
-decisión ya tomada y verificada en `main` — este directorio no es un buzón de
-propuestas (para eso están los issues, que actúan como RFC del fork: el issue
-es el contrato de alcance, el PR el registro de implementación).
+Formato [MADR](https://adr.github.io/madr/) simplificado. Los issues actúan como
+RFC y contrato de alcance; el PR conserva el registro de implementación y
+verificación. Un ADR en estado **Propuesta** puede registrar una candidata aún
+abierta, pero solo **Aceptada** identifica una decisión explícita y verificada
+en `main`.
 
-Estados: **Aceptada** · **Sustituida por ADR-XXXX** · **Deprecada**.
+## Proceso y convenciones
+
+1. Abrir un issue con el contexto, las alternativas y la evidencia esperada.
+2. Reservar el entero siguiente al mayor del índice —sin reutilizar huecos— y
+   copiar `0000-template.md` como `NNNN-titulo-corto-en-kebab-case.md`. El
+   número `0000` queda reservado para la plantilla.
+3. Completar el ADR como **Propuesta**, enlazar issue y PR, y someterlo a
+   revisión. Fusionar el documento no lo convierte por sí solo en
+   **Aceptada**: hace falta una decisión humana explícita y evidencia
+   verificable en el mismo PR o en uno anterior.
+4. Una vez **Aceptada**, no reescribir su contexto, decisión ni consecuencias.
+   Si cambia, crear otro ADR y actualizar únicamente el estado y el enlace de
+   sustitución del original.
+
+Estados: **Propuesta** · **Aceptada** · **Sustituida por ADR-NNNN** ·
+**Deprecada**.
+
+## Índice
+
+El inventario legible por máquina está en [`index.json`](index.json) y se valida
+con [`index.schema.json`](index.schema.json).
 
 | ADR | Título | Estado |
 |---|---|---|

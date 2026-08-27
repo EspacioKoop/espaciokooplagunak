@@ -43,9 +43,14 @@ Baseline normativa: [SECURITY.md](../SECURITY.md) (no se duplica aquí).
       `bridge/`, imágenes Docker. **Nunca** dependencias C++ heredadas
       (`.github/dependabot.yml` documenta el porqué).
 - [x] Dependencias Python fijadas por versión exacta (`bridge/requirements*.txt`).
-- [ ] **Protección de rama en `main`** exigiendo los checks existentes
-      (cicd, pytest del puente, foundry-module, guardia-exec-lua). Hoy "todo
-      por PR" es solo convención. *Propietario: Varo (requiere admin).*
+- [x] **Protección de rama en `main`** aplicada y verificada en el
+      [issue #225](https://github.com/VaroTv7/espaciokooplagunak/issues/225):
+      pull request y una aprobación humana obligatorias, aprobación del último
+      cambio por otra persona, conversaciones resueltas, administradores sin
+      bypass y force-push/borrado bloqueados. Los checks requeridos son las cinco
+      puertas estables por área (`build C++/Lua`, `módulo Foundry`, `tools`,
+      `docker y puente`, `imágenes`) más `CodeQL` y `semgrep`; una PR solo de
+      documentación publica los siete y una puerta roja bloquea la integración.
 - [x] **Dependabot alerts** activado y verificado por API
       (`GET /vulnerability-alerts` → 204, Varo, 2026-07-15). Las PR automáticas
       de `dependabot_security_updates` siguen siendo una decisión separada.

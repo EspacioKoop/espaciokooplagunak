@@ -127,3 +127,84 @@ test("#676: npc-generador deja de ser huérfano porque este módulo lo importa",
   // mentira: si alguien borrara el import, este test cae junto con el gate.
   assert.ok(typeof generarNpc === "function");
 });
+
+// --- Ventana ---------------------------------------------------------------
+// La ventana solo pinta lo que `contextoParlamento()` devuelve, y se puede
+// probar sin Foundry declarando `game`/`Hooks`/`ui`/`foundry` como objetos
+// planos (convención del repo: sin librería de mocking).
+const listeners = {};
+globalThis.Hooks = {
+  on: (ev, cb) => { (listeners[ev] ??= []).push(cb); },
+  emit: (ev, carga) => (listeners[ev] ?? []).forEach((cb) => cb(carga)),
+  // `callAll` es el que usa la ventana para pedir la tirada; lo enrutamos al
+  // mismo registro para poder simular la respuesta del GM/sistema.
+  callAll: (ev, carga) => (listeners[ev] ?? []).forEach((cb) => cb(carga)),
+};
+globalThis.game = { i18n: { localize: (k) => k, format: (k) => k }, users: { get: () => null } };
+globalThis.ui = {};
+globalThis.foundry = {};
+
+const {
+  contextoParlamento,
+  registrarParlamentoUI,
+  elegirEnfoque,
+  cerrarParlamento,
+  _reiniciarParaPruebas,
+} = await import("../scripts/parlamento-ventana.mjs");
+
+// Sin registrar la UI, el hook `lagunakAbrirParlamento` no tiene listener.
+registrarParlamentoUI("lagunak");
+
+test("la ventana enseña los enfoques con su CD y probabilidad favorables visibles", () => {
+  _reiniciarParaPruebas();
+  const contacto = { id: "varo-7", callsign: "LV-Varo", faction: "Cooperativa" };
+  // Abrir canal: el hook reconstruye el interlocutor y deja la ventana abierta.
+  Hooks.emit("lagunakAbrirParlamento", { contacto });
+  const ctx = contextoParlamento();
+  assert.equal(ctx.fase, "abierto");
+  assert.equal(ctx.contacto.callsign, "LV-Varo");
+  assert.equal(ctx.opciones.length, ENFOQUES_PARLAMENTO.length);
+  for (const o of ctx.opciones) {
+    // CD y probabilidad favorables son números visibles, no metadatos ocultos.
+    assert.ok(Number.isFinite(o.cd));
+    assert.ok(o.favorable >= 0 && o.favorable <= 100);
+    assert.equal(o.claveNombre, `LAGUNAK.Parlamento.Enfoque.${o.id}`);
+  }
+});
+
+test("ADR-0012: la ventana no recuerda — volver al menú borra el encuentro", () => {
+  _reiniciarParaPruebas();
+  Hooks.emit("lagunakAbrirParlamento", { contacto: { id: "k", callsign: "K" } });
+  const abierto = contextoParlamento();
+  assert.equal(abierto.fase, "abierto");
+  Hooks.emit("lagunakParlamentoResuelve", { enfoqueId: "persuasion", total: 25 });
+  assert.equal(contextoParlamento().fase, "resuelto");
+  // Volver reinicia entero: ningún rastro del contacto anterior. El hook de
+  // abrir con `contacto: null` es un no-op a propósito (no se inventa menú);
+  // quien cierra la ventana es `cerrarParlamento`, que reinicia el estado.
+  cerrarParlamento();
+  const menu = contextoParlamento();
+  assert.equal(menu.fase, "menu");
+  assert.equal(menu.enMenu, true);
+});
+
+test("la resolución cierra en banda y NO escribe estado del encuentro", () => {
+  _reiniciarParaPruebas();
+  Hooks.emit("lagunakAbrirParlamento", { contacto: { id: "k", callsign: "K" } });
+  // Un total alto a favor → éxito; un total bajo → pifia/fallo. La ventana
+  // solo refleja la banda, no la adjudica (el GM lo hace en la mesa).
+  Hooks.emit("lagunakParlamentoResuelve", { enfoqueId: "persuasion", total: 30 });
+  const ok = contextoParlamento();
+  assert.equal(ok.fase, "resuelto");
+  assert.ok([BANDAS.EXITO, BANDAS.CRITICO].includes(ok.banda));
+
+  _reiniciarParaPruebas();
+  Hooks.emit("lagunakAbrirParlamento", { contacto: { id: "k", callsign: "K" } });
+  Hooks.emit("lagunakParlamentoResuelve", { enfoqueId: "engano", total: 1 });
+  const mal = contextoParlamento();
+  assert.equal(mal.fase, "resuelto");
+  assert.ok([BANDAS.PIFIA, BANDAS.FALLO].includes(mal.banda));
+  // Y la función de resolución es la misma del módulo puro: sin bifurco aquí.
+  assert.equal(elegirEnfoque.length, 2);
+});
+

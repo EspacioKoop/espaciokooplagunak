@@ -18,16 +18,16 @@
 // Este archivo tiene lo que Foundry impone: hooks y ventana. Lo que se puede
 // razonar sin Foundry —qué se pinta en cada fase, y que la semilla deriva del
 // contacto y no del User— está en `parlamento.mjs`, es puro y tiene pruebas.
-//
-// ## Por qué el reto se repinta a mano y no re-renderizando
-//
-// Igual que la asistencia: el cursor de un minijuego de destreza se mueve a 60
-// Hz; un `render()` de Foundry por fotograma tira el foco. Aquí el parlamento
-// no tiene minijuego de destreza (la resolución es una tirada de habilidad del
-// dnd5e del hablante), así que la ventana es estática entre gestos: un solo
-// `render()` por cambio de fase basta.
+// `contextoParlamento()` es la frontera: la ventana solo pinta lo que ese
+// objeto devuelve, y se puede testear sin Foundry.
 
-import { interlocutorDelContacto, opcionesVisibles, resolverParlamento, escaparParaDom } from "./parlamento.mjs";
+import {
+  BANDAS,
+  interlocutorDelContacto,
+  opcionesVisibles,
+  resolverParlamento,
+  escaparParaDom,
+} from "./parlamento.mjs";
 import { anadirHerramienta } from "./control-escena.mjs";
 
 let moduloConfigurado = null;
@@ -60,13 +60,26 @@ function reiniciar() {
   });
 }
 
+/** Clave i18n de la banda resultante, para pintar en la fase resuelta. */
+const BANDA_CLAVE = Object.freeze({
+  [BANDAS.PIFIA]: "LAGUNAK.Parlamento.Banda.Pifia",
+  [BANDAS.FALLO]: "LAGUNAK.Parlamento.Banda.Fallo",
+  [BANDAS.EXITO]: "LAGUNAK.Parlamento.Banda.Exito",
+  [BANDAS.CRITICO]: "LAGUNAK.Parlamento.Banda.Critico",
+});
+
 /** Contexto de la ventana. Separado del render para poder probarlo sin Foundry. */
 export function contextoParlamento({ contacto = estado.contacto, ficha = null } = {}) {
   if (estado.fase === "menu" || !contacto) {
     return { fase: "menu", enMenu: true };
   }
   const inter = interlocutorDelContacto(contacto, contacto.desafio ?? 1);
-  const opciones = opcionesVisibles({ ficha });
+  const opciones = opcionesVisibles({ ficha }).map((o) => ({
+    ...o,
+    // Porcentaje de probabilidad favorable para pintar en texto (no solo barra).
+    favorable: Math.round((o.favorable ?? 0) * 100),
+    claveNombre: `LAGUNAK.Parlamento.Enfoque.${o.id}`,
+  }));
   return {
     fase: estado.fase,
     enMenu: estado.fase === "menu",
@@ -84,6 +97,7 @@ export function contextoParlamento({ contacto = estado.contacto, ficha = null } 
     opciones,
     enfoqueId: estado.enfoqueId,
     banda: estado.banda,
+    bandaClave: estado.banda ? BANDA_CLAVE[estado.banda] : null,
   };
 }
 
@@ -94,39 +108,57 @@ export function registrarParlamentoUI(moduleId) {
   // enseña los enfoques con su CD y rango de éxito visibles. El titular del
   // puesto de comunicaciones es quien abre; la autoridad de la orden de canal
   // sigue saliendo por `station-order-relay.mjs` (#237), esta ventana no emite
-  // nada de red por sí misma.
+  // nada de red por sí misma. La ficha del hablante (para el modificador real)
+  // se lee igual que en la asistencia: `game.users.get(id).character.system`.
   Hooks.on("lagunakAbrirParlamento", (carga) => {
     const contacto = carga?.contacto;
     if (!contacto) return;
     const inter = interlocutorDelContacto(contacto, contacto.desafio ?? 1);
+    const ficha = carga?.ficha
+      ?? game?.users?.get(carga?.hablanteId)?.character?.system
+      ?? null;
     Object.assign(estado, {
       fase: "abierto",
       contacto,
       npc: inter.npc,
       semilla: inter.semilla,
-      opciones: opcionesVisibles({ ficha: carga?.ficha ?? null }),
+      opciones: opcionesVisibles({ ficha }),
       enfoqueId: null,
       banda: null,
     });
-    repintar();
+    if (ventana?.rendered) ventana.render({ force: true });
+  });
+
+  // Quien tiene el total de la tirada (el GM o el sistema de comunicaciones,
+  // #237) lo devuelve aquí; la ventana cierra en banda. Sin esto, el botón de
+  // enfoque solo pidió la tirada y la ventana sigue en abierto: no se inventa
+  // una salida.
+  Hooks.on("lagunakParlamentoResuelve", ({ enfoqueId, total } = {}) => {
+    if (estado.fase !== "abierto" || !enfoqueId) return;
+    elegirEnfoque(enfoqueId, Number(total));
   });
 }
 
-/** Abrir la ventana de parlamento. Sin estado que guardar (ADR-0012). */
+/**
+ * Abrir la ventana desde el botón de la barra. Construye una instancia nueva si
+ * la anterior se cerró (misma regla que la asistencia: una ApplicationV2
+ * cerrada no se reutiliza). La ventana arranca en menú; el encuentro real se
+ * abre con el hook `lagunakAbrirParlamento` cuando comunicaciones recibe un
+ * canal.
+ */
 export function abrirParlamento() {
   if (!moduloConfigurado) return;
-  // La ventana se construye bajo demanda; aquí solo se marca el arranque. El
-  // encuentro real se abre con el hook `lagunakAbrirParlamento` cuando
-  // comunicaciones recibe un canal.
+  if (!ventana?.rendered) ventana = new (claseVentana())();
   reiniciar();
   estado.fase = "menu";
-  repintar();
+  if (foundry?.applications?.api?.ApplicationV2) ventana.render({ force: true });
+  else ventana.render(true);
 }
 
 /** Cerrar la ventana de parlamento. Sin estado que guardar (ADR-0012). */
 export function cerrarParlamento() {
   reiniciar();
-  repintar();
+  if (ventana?.rendered) ventana.close();
 }
 
 /**
@@ -140,7 +172,13 @@ export function elegirEnfoque(enfoqueId, total) {
   estado.enfoqueId = enfoqueId;
   estado.banda = resultado.banda;
   estado.fase = "resuelto";
-  repintar();
+  if (ventana?.rendered) ventana.render({ force: true });
+}
+
+/** Solo para pruebas: deja la máquina de estados en el arranque. */
+export function _reiniciarParaPruebas() {
+  reiniciar();
+  ventana = null;
 }
 
 function repintar() {
@@ -148,10 +186,8 @@ function repintar() {
   if (foundry?.applications?.api?.ApplicationV2) ventana.render({ force: true });
 }
 
-// Punto de registro para `main.mjs`: la ventana se enchufa como una herramienta
-// más del grupo propio del módulo, dentro del hook `getSceneControlButtons`
-// (mismo contrato que `addAsistenciaControl`, `addStationControl`, ...). Así no
-// pisa el hook de main ni el stub de `Hooks.on` de los tests.
+// --- Ventana y control -------------------------------------------------------
+
 export function addParlamentoControl(controls) {
   anadirHerramienta(controls, {
     name: "lagunak-parlamento",
@@ -160,4 +196,86 @@ export function addParlamentoControl(controls) {
     button: true,
     onClick: () => abrirParlamento(),
   });
+}
+
+function claseVentana() {
+  return foundry?.applications?.api?.ApplicationV2 ? crearClaseV2() : crearClaseV1();
+}
+
+function crearClaseV2() {
+  const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
+  return class ParlamentoV2 extends HandlebarsApplicationMixin(ApplicationV2) {
+    static DEFAULT_OPTIONS = {
+      id: "lagunak-parlamento",
+      classes: ["lagunak-parlamento"],
+      window: { title: "LAGUNAK.Parlamento.Titulo", icon: "fa-solid fa-comments" },
+      position: { width: 420, height: "auto" },
+    };
+
+    static PARTS = { main: { template: `modules/${moduloConfigurado}/templates/parlamento.hbs` } };
+
+    async _prepareContext() {
+      return contextoParlamento();
+    }
+
+    _onRender(_contextData, _options) {
+      super._onRender?.(_contextData, _options);
+      conectar(this.element);
+    }
+  };
+}
+
+function crearClaseV1() {
+  return class ParlamentoV1 extends Application {
+    static get defaultOptions() {
+      return foundry.utils.mergeObject(super.defaultOptions, {
+        id: "lagunak-parlamento",
+        classes: ["lagunak-parlamento"],
+        template: `modules/${moduloConfigurado}/templates/parlamento.hbs`,
+        width: 420,
+        height: "auto",
+        resizable: true,
+      });
+    }
+
+    get title() {
+      return game.i18n.localize("LAGUNAK.Parlamento.Titulo");
+    }
+
+    getData() {
+      return contextoParlamento();
+    }
+
+    activateListeners(html) {
+      super.activateListeners(html);
+      conectar(html);
+    }
+  };
+}
+
+function conectar(raiz) {
+  const nodo = raizReal(raiz);
+  nodo?.querySelectorAll?.("[data-parlamento-enfoque]").forEach((boton) => {
+    boton.addEventListener("click", () => {
+      // La tirada real la hace el dnd5e del hablante en mesa; la ventana NO la
+      // inventa. Pide la tirada por el canal que el puente de comunicaciones
+      // (#237) ya usa, y quien la tenga (el GM o el sistema) responde con el
+      // total vía `lagunakParlamentoResuelve`, que cierra en banda. Sin
+      // respuesta, la ventana se queda en abierto: no miente sobre la salida.
+      const enfoqueId = boton.dataset.parlamentoEnfoque;
+      estado.enfoqueId = enfoqueId;
+      Hooks.callAll("lagunakParlamentoSolicitaTirada", { enfoqueId });
+      repintar();
+    });
+  });
+  nodo?.querySelector?.("[data-parlamento-volver]")?.addEventListener("click", () => {
+    reiniciar();
+    repintar();
+  });
+}
+
+// `element` es un HTMLElement en ApplicationV2 y un jQuery en la V1 clásica.
+function raizReal(raiz) {
+  if (!raiz) return null;
+  return typeof raiz.querySelector === "function" ? raiz : (raiz[0] ?? null);
 }

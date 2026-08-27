@@ -881,5 +881,6 @@
   "LAGUNAK.Blackjack.Lectura.Regla.Apuesta": "Flat bet of {apuesta} chips per hand. No blinds.",
   "LAGUNAK.Blackjack.Lectura.NoDoblar.YaPediste": "You can no longer double: only the first {cartas} cards may be doubled.",
   "LAGUNAK.Blackjack.Lectura.NoDoblar.SinFichas": "You cannot double: it would take {necesarias} chips and you have {tienes}.",
-  "LAGUNAK.Blackjack.Mesa.Reglas": "House rules"
+  "LAGUNAK.Blackjack.Mesa.Reglas": "House rules",
+  "LAGUNAK.Parlamento.Titulo": "Parley"
 }

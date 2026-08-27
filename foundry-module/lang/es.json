@@ -881,5 +881,6 @@
   "LAGUNAK.Blackjack.Lectura.Regla.Apuesta": "Apuesta fija de {apuesta} fichas por mano. No hay ciegas.",
   "LAGUNAK.Blackjack.Lectura.NoDoblar.YaPediste": "Ya no puedes doblar: solo se doblan las {cartas} cartas de salida.",
   "LAGUNAK.Blackjack.Lectura.NoDoblar.SinFichas": "No puedes doblar: harían falta {necesarias} fichas y tienes {tienes}.",
-  "LAGUNAK.Blackjack.Mesa.Reglas": "Reglas de la casa"
+  "LAGUNAK.Blackjack.Mesa.Reglas": "Reglas de la casa",
+  "LAGUNAK.Parlamento.Titulo": "Parlamento"
 }

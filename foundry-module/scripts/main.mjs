@@ -50,6 +50,10 @@ import { registrarRelevoPuestos } from "./station-handover.mjs";
 import { registrarAsistencia } from "./asistencia-wiring.mjs";
 import { addAsistenciaControl, registrarAsistenciaUI } from "./asistencia-ui.mjs";
 import {
+  registrarParlamentoUI,
+  addParlamentoControl,
+} from "./parlamento-ventana.mjs";
+import {
   addContenidoExternoControl,
   registrarContenidoExterno,
 } from "./contenido-externo/ventana.mjs";
@@ -440,6 +444,13 @@ Hooks.once("ready", () => {
   // coordinador aunque esté cerrada, para que quien pida ayuda y cierre sin
   // querer no se quede con una reserva viva y ninguna forma de resolverla.
   registrarAsistenciaUI(MODULE_ID);
+  // Parlamento de comunicaciones (#810): el PRIMER consumidor real de
+  // npc-generador (#676). La ventana reconstruye el interlocutor por semilla
+  // del contacto (misma ficha en todos los clientes, sin transmitirla) y enseña
+  // los enfoques con su CD y rango de éxito visibles. Sin estado: el fruto lo
+  // adjudica el GM (ADR-0012). Va DESPUÉS de la asistencia, que es la otra
+  // superficie que escucha respuestas dirigidas.
+  registrarParlamentoUI(MODULE_ID);
   // Sesiones de minijuegos (#308): el GM coordinador recoge las propuestas por
   // updateUser; cualquier cliente escucha las vistas privadas dirigidas a él.
   registrarSesionesMinijuegos(MODULE_ID);
@@ -962,6 +973,9 @@ Hooks.on("getSceneControlButtons", (controls) => {
   // Y el de echar una mano, que ve TODA la tripulación: ayudar es cruzar de
   // puesto por definición, y un botón solo-GM no sería cooperación.
   addAsistenciaControl(controls);
+  // Parlamento de comunicaciones (#810): primer consumidor real de
+  // npc-generador (#676). Botón en el grupo propio, como las demás ventanas.
+  addParlamentoControl(controls);
 });
 
 /* Diagnóstico de conexión (issue #183): comprueba /healthz y después

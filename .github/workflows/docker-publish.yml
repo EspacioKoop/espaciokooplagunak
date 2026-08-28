@@ -61,29 +61,104 @@ jobs:
       # FECHA de este repositorio. `type=semver` no puede —`2026.08.27` no es semver
       # por el cero del mes— y solo emite un warning, así que se publicaría sin tag
       # de versión con el job en verde.
+      # La guarda anterior extraía `pattern` y lo probaba con grep, ignorando
+      # `group`. Un `group=99` —que no existe, así que no puede producir tag de
+      # versión— la pasaba en verde, porque `v2026.08.27` casa con `v(.*)`
+      # igual. Es la misma clase de falso verde que este PR viene a impedir.
+      #
+      # Ahora se EJECUTA `metadata-action` con la configuración real del job de
+      # publicación y un tag de ejemplo, y se mira el tag que sale. `context:
+      # git` hace que la action lea el tag del repositorio local en vez del ref
+      # del evento, que en un PR nunca es un tag.
+      - name: Preparar un tag de ejemplo del esquema del repositorio
+        run: git tag -f v2026.08.27
+      - id: meta-publicacion
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          context: git
+          images: ghcr.io/${{ github.repository_owner }}/espaciokooplagunak-server
+          flavor: |
+            latest=false
+          tags: |
+            type=match,pattern=v(.*),group=1
+            type=sha
+      # Control NEGATIVO: la MISMA configuración con un grupo inexistente. Si
+      # esto produjera un tag de versión, la comprobación de arriba no
+      # demostraría nada.
+      - id: meta-grupo-malo
+        continue-on-error: true
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          context: git
+          images: ghcr.io/${{ github.repository_owner }}/espaciokooplagunak-server
+          flavor: |
+            latest=false
+          tags: |
+            type=match,pattern=v(.*),group=99
       - name: El job de publicación etiqueta la versión por fecha
+        env:
+          TAGS: ${{ steps.meta-publicacion.outputs.tags }}
+          TAGS_GRUPO_MALO: ${{ steps.meta-grupo-malo.outputs.tags }}
         run: |
           set -euo pipefail
-          # Solo lo EJECUTABLE del job de publicación: los comentarios de abajo
-          # nombran type=semver para explicar por qué no se usa, y harían saltar
-          # esta guarda contra sí misma.
-          CONF="$(sed -n '/^  publish:/,$p' .github/workflows/docker-publish.yml | grep -v '^[[:space:]]*#')"
-          if printf '%s' "$CONF" | grep -q 'type=semver'; then
-            echo "::error::El job de publicación usa type=semver, que no casa con la versión AAAA.MM.DD de este repositorio (ver CMakeLists.txt). Usa type=match."
-            exit 1
-          fi
-          PATRON="$(printf '%s' "$CONF" | sed -n 's/.*type=match,pattern=\(.*\),group=.*/\1/p' | head -1)"
-          if [ -z "$PATRON" ]; then
+
+          # 1) La configuración probada tiene que ser LA MISMA que publica. Dos
+          #    copias que se puedan separar convierten esta guarda en decorado.
+          conf() {
+            sed -n "/^  $1:/,/^  [a-z-]*:$/p" .github/workflows/docker-publish.yml \
+              | grep -v '^[[:space:]]*#' | sed -n 's/.*\(type=match,pattern=[^ ]*\).*/\1/p' | head -1 || true
+          }
+          CONF_PUBLICA="$(conf publish)"
+          CONF_PROBADA="$(printf '%s' "$(sed -n '/id: meta-publicacion/,/id: meta-grupo-malo/p' \
+            .github/workflows/docker-publish.yml)" \
+            | sed -n 's/.*\(type=match,pattern=[^ ]*\).*/\1/p' | head -1 || true)"
+          if [ -z "$CONF_PUBLICA" ]; then
             echo "::error::El job de publicación no declara ningún type=match del que derivar el tag de versión."
             exit 1
           fi
-          # Una versión real del esquema del repositorio tiene que producir tag.
-          EJEMPLO="v2026.08.27"
-          if ! printf '%s' "$EJEMPLO" | grep -Eq "^${PATRON}$"; then
-            echo "::error::El patrón '${PATRON}' no casa con ${EJEMPLO}, así que un release no llevaría tag de versión."
+          if [ "$CONF_PUBLICA" != "$CONF_PROBADA" ]; then
+            echo "::error::La guarda prueba '${CONF_PROBADA}' pero se publica con '${CONF_PUBLICA}'."
             exit 1
           fi
-          echo "OK: ${EJEMPLO} produce tag de versión con el patrón ${PATRON}."
+
+          # 2) `type=semver` no vale para una versión por fecha: `2026.08.27`
+          #    lleva cero a la izquierda en el mes y semver lo prohíbe, y la
+          #    action solo avisa con un warning.
+          if sed -n '/^  publish:/,$p' .github/workflows/docker-publish.yml \
+             | grep -v '^[[:space:]]*#' | grep -q 'type=semver'; then
+            echo "::error::El job de publicación usa type=semver, que no casa con la versión AAAA.MM.DD (ver CMakeLists.txt). Usa type=match."
+            exit 1
+          fi
+
+          # 3) El tag que la action produce DE VERDAD con esa configuración.
+          echo "Tags producidos: $TAGS"
+          VERSION="$(printf '%s\n' "$TAGS" | sed -n 's#.*espaciokooplagunak-server:\(.*\)#\1#p' \
+            | grep -v '^sha-' | head -1 || true)"
+          if [ -z "$VERSION" ]; then
+            echo "::error::La configuración de publicación no produce ningún tag de versión para v2026.08.27."
+            exit 1
+          fi
+          # Y tiene que ser una versión del ESQUEMA de este repositorio, no un
+          # `v*` cualquiera: aceptar `1.2.3` sería aceptar que el tag de versión
+          # existe sin comprobar que es el que este repositorio genera.
+          if ! printf '%s' "$VERSION" | grep -Eq '^[0-9]{4}\.[0-9]{2}\.[0-9]{2}$'; then
+            echo "::error::El tag de versión producido ('${VERSION}') no tiene el esquema AAAA.MM.DD del repositorio."
+            exit 1
+          fi
+          case "$TAGS" in
+            *:latest*) echo "::error::El job de publicación generaría latest."; exit 1 ;;
+          esac
+
+          # 4) Control negativo: con un grupo inexistente NO puede salir versión.
+          #    Si sale, la comprobación (3) no está midiendo lo que dice medir.
+          MALO="$(printf '%s\n' "${TAGS_GRUPO_MALO:-}" | sed -n 's#.*espaciokooplagunak-server:\(.*\)#\1#p' \
+            | grep -v '^sha-' | head -1 || true)"
+          if [ -n "$MALO" ]; then
+            echo "::error::Con group=99 (inexistente) sale el tag '${MALO}': la guarda no distingue una configuración buena de una rota."
+            exit 1
+          fi
+
+          echo "OK: v2026.08.27 -> ${VERSION}, y group=99 no produce versión."
       - uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
           context: bridge

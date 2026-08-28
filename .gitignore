@@ -78,3 +78,6 @@ sonar-project.properties
 
 # Residuo de las herramientas de auditoria, no es del repositorio
 .datos-auditoria/
+
+# Dependencias Node del pipeline de mallas (package.json en la raiz).
+node_modules/

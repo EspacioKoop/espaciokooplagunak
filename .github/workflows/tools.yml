@@ -66,11 +66,30 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12"
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
       - name: Instalar dependencias de test
         # pyyaml lo usa la guardia de las puertas de CI (#361).
         run: python3 -m pip install pytest polib==1.2.0 pyyaml==6.0.2
-      - name: Ejecutar tests de tools/
+      - name: Ejecutar tests de tools/ (Python)
         run: python3 -m pytest tools/tests/ -q
+      - name: Ejecutar tests de tools/ (Node)
+        # tools/ nombra sus tests Node con prefijo test_*.mjs, no con el sufijo
+        # *.test.mjs del módulo Foundry; por eso el glob del módulo no los
+        # encontraba y la suite quedaba vacía (lo marcó el review de #841). Este
+        # paso los corre en CI, así una rotura de pesos/despiece enrojece la
+        # puerta en vez de pasar verde por omisión.
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(tools/tests/test_*.mjs)
+          if ((${#files[@]} > 0)); then
+            node --test "${files[@]}"
+          else
+            echo "Sin tests Node en tools/tests/; paso omitido."
+          fi
       - name: Trazabilidad de nombres de dominio público (#310)
         run: python3 tools/check_public_domain_names.py
       - name: Cobertura i18n de las cadenas de C++ (#55)

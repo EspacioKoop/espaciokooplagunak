@@ -63,14 +63,16 @@ geometría), #609 (Fase 1, MERGED).
 
 ```bash
 node --test tools/tests/test_pesar-despiezar.mjs   # 6/6 pass
-node --test tools/tests/*.test.mjs                  # 24/24 (con convertir-estatua)
-node --test foundry-module/tests/*.test.mjs          # 2241/2241 (Fase 1 intacta)
+node --test 'tools/tests/test_*.mjs'                # 6/6 (glob de CI: prefijo test_*.mjs)
+node --test foundry-module/tests/*.test.mjs          # 2307/2307 (Fase 1 intacta; cubre convertir-estatua.test.mjs)
 ```
 
-NOTA CI: `tools.yml` solo corre `pytest` (Python) sobre `tools/tests/`; los
-tests node de `tools/` (`test_convertir_estatua.mjs`, este) NO los corre CI —
-es la convención existente desde #837. Se verifican en local. `foundry-module.yml`
-sí corre el glob `foundry-module/tests/*.test.mjs` (cubre la Fase 1).
+NOTA CI: `tools.yml` ya corre también los tests Node de `tools/` (paso
+"Ejecutar tests de tools/ (Node)", glob `tools/tests/test_*.mjs`), así que una
+rotura de `pesar-despiezar.mjs` enrojece la puerta en vez de pasar verde por
+omisión — era el bloqueante del review de #841. `foundry-module.yml` corre
+`foundry-module/tests/*.test.mjs`, que cubre `convertir-estatua.test.mjs` y la
+Fase 1; `convertir-estatua` NO es un test de `tools/`.
 
 ## Qué NO se hizo y por qué
 
@@ -89,8 +91,9 @@ sí corre el glob `foundry-module/tests/*.test.mjs` (cubre la Fase 1).
 
 ## Comprobaciones pendientes / bloqueo
 
-- **Review de este PR** (rama `lagunak/rig-fase2-pesos-auto`). Tests en verde,
-  pero node tools no corre en CI: el reviewer debe ejecutar el comando local.
+- **Review de este PR** (rama `lagunak/rig-fase2-pesos-auto`): cerrado. Los
+  tests Node de `tools/` ya corren en CI (paso añadido a `tools.yml`); el
+  reviewer ve los 6 casos en el check del job Tools, no una suite vacía.
 - **#837 (OBJ/GLB + Draco)** sigue abierto y UNSTABLE en CI ( jobs de matriz
   pendientes); al mergear, la Fase 2 queda como trabajo independiente sobre main.
 - **Fase 2.2 / 2.3**: más huesos (esqueleto completo) para que `extraerRegion`

@@ -179,7 +179,7 @@ test("EL PRESUPUESTO: cada composición cabe en el tope, y con margen", () => {
   );
   assert.deepEqual(costes, {
     "campo-partido": 19,
-    "escalera-de-verdin": 26,
+    "contratiempo-de-verdin": 31,
     "frente-al-mar": 51,
     "viento-del-sur": 83,
     "sobre-la-niebla": 61,
@@ -298,4 +298,50 @@ test("NADA de lo que añaden los cuadros concede, cuenta ni recuerda", () => {
     assert.deepEqual(Object.keys(punto.accion).sort(), ["pieza", "tipo"]);
     assert.equal(punto.accion.tipo, "cartela");
   }
+});
+
+/* ---- la gramática que no puede volver (#838) -------------------------------- */
+
+test("«contratiempo-de-verdin» no puede volver a leerse como un gráfico de barras", () => {
+  // La revisión de #838 rechazó la versión anterior de este cuadro: cuatro
+  // columnas sobre la misma base, de paso constante, altura estrictamente
+  // creciente y un remate claro en el mismo costado de cada una. Eso no es un
+  // fallo de color ni de presupuesto, así que ninguna de las pruebas de arriba
+  // podía verlo. Esta mide la GRAMÁTICA, que es lo que se leía como telemetría:
+  // si vuelve a haber una base común y una serie ordenable, esto falla.
+  const rejilla = rejillaCuadro("contratiempo-de-verdin");
+  const pintura = rejilla
+    .slice(MARCO, rejilla.length - MARCO)
+    .map((fila) => fila.slice(MARCO, fila.length - MARCO));
+  const filas = pintura.length;
+
+  // La fila de abajo del lienzo: cuántas manchas se apoyan en ella. Un gráfico
+  // de barras las apoya TODAS; aquí no debe apoyarse ninguna.
+  const apoyadas = pintura[0].filter((color) => color !== CUADRO.fondo).length;
+  assert.equal(apoyadas, 0, "hay masas apoyadas en una base común: eso es un eje");
+
+  // Altura de pintura por columna. En un gráfico de barras la serie de alturas
+  // por bloque es monótona; aquí ni siquiera puede serlo el perfil columna a
+  // columna en un solo sentido.
+  const alturas = pintura[0].map((_, u) => {
+    let cuenta = 0;
+    for (let v = 0; v < filas; v += 1) if (pintura[v][u] !== CUADRO.fondo) cuenta += 1;
+    return cuenta;
+  });
+  const sube = alturas.some((alto, i) => i > 0 && alto > alturas[i - 1]);
+  const baja = alturas.some((alto, i) => i > 0 && alto < alturas[i - 1]);
+  assert.ok(sube && baja, "el perfil es monótono: se lee como una serie ordenada");
+
+  // Y el hueso es UN acento, no un tic por elemento.
+  const trazos = pintura.flat().filter((color) => color === CUADRO.hueso).length;
+  assert.ok(trazos > 0, "el acento de hueso ha desaparecido del dibujo");
+  const columnasConHueso = new Set();
+  pintura.forEach((fila) => fila.forEach((color, u) => {
+    if (color === CUADRO.hueso) columnasConHueso.add(u);
+  }));
+  assert.equal(
+    trazos,
+    columnasConHueso.size,
+    "el hueso ocupa más de una fila por columna: son remates verticales, o sea ticks",
+  );
 });

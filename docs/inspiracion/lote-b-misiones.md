@@ -55,8 +55,9 @@ no escribe código: declara el contrato y el motor lo materializa.
 
 **3. Qué problema nuestro toca:** es la respuesta más directa a la pregunta del lote. Nuestro
 `scenario_90` escribiría hoy a mano la lógica que Endless Sky delega al formato: el GM declararía
-`origen`, `destino`, `plazo`, `recompensa`, y el motor (puente) decidiría si la misión aparece en
-el tablón de la estación según el estado de campaña. Encaja con el editor de contenido del GM
+`origen`, `destino`, `plazo`, `recompensa`; el **núcleo** autorizaría qué misiones están
+disponibles según el estado de campaña, y el tablón de la estación presentaría esa lista ya
+autorizada. Encaja con el editor de contenido del GM
 (`contenido-externo/`) y con la regla de cadena de la crisis multipuesto
 ([#484](https://github.com/VaroTv7/espaciokooplagunak/issues/484)): una misión puede requerir
 que tres puestos la resuelvan sin que el GM cablee la cadena.
@@ -112,12 +113,13 @@ Lua a medida", porque eso es lo que `scenario_90` ya es y el objetivo del lote e
 **1. Juego y licencia:** Battle for Wesnoth (motor) — GPL-2.0 (verificada); contenido CC-BY-SA,
 apartado.
 
-**2. Qué mecánica resuelve:** **todo** el dato de juego es WML (Westwood/Widget Markup Language):
+**2. Qué mecánica resuelve:** **todo** el dato de juego es WML (*Wesnoth Markup Language*):
 una campaña es `[campaign]` con `id`/`define`/`name`/`difficulties` y `[story]`; una misión jugable
 es `[scenario]` con `[side]`, `[event]`, `[unit]` y `map_data`. Quien no programa puede escribir
-una misión como *datos etiquetados*, y el **editor de campañas** (`wesnoth_editor`) permite crear
-el mapa y colocar terreno/unidades por GUI. La limitación honesta: el editor asume que ya sabes
-WML para la lógica (eventos/objetivos); no borra la barrera de la lógica, solo la del mapa.
+una misión como *datos etiquetados*, y el **editor de mapas/escenarios** (`wesnoth_editor`)
+permite crear el mapa y colocar terreno/unidades por GUI. La limitación honesta: la lógica de campaña sigue
+escribiéndose en WML/Lua fuera del editor (eventos/objetivos); no borra la barrera de la lógica,
+solo la del mapa.
 
 **3. Qué problema nuestro toca:** es el caso de referencia de "el GM declara una misión como dato,
 no como código" llevado a su forma más limpia —un formato declarativo que el motor renderiza—.

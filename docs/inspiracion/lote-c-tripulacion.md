@@ -22,11 +22,15 @@ carga, no solo que falle una acción concreta.
 
 ## Ancla en el código real (por qué esto no es invento)
 
-- `foundry-module/scripts/station-actions.mjs` ya es la **matriz de autoridad por
-  puesto**: contrato cerrado y congelado donde cada puesto solo puede emitir las
-  órdenes que el puente autoriza (`isActionAllowed` / `resolveStationOrder`).
-  «Un puesto ausente aquí no puede emitir ninguna orden operativa.» Eso es, punto
-  por punto, el *job system* de SS13/SS14: tu rol decide qué puedes tocar.
+- `foundry-module/scripts/station-actions.mjs` es la **proyección** de la matriz de
+  autoridad en el adaptador opcional de Foundry: contrato cerrado y congelado donde
+  cada puesto solo ofrece las órdenes que el puente ya autoriza (`isActionAllowed` /
+  `resolveStationOrder`), y donde el puesto se resuelve desde el `User` autenticado y
+  nunca desde la orden (#237). Es la lectura correcta del *job system* de SS13/SS14
+  —tu rol decide qué puedes tocar— pero **no es donde reside la autoridad**: si
+  Foundry desaparece, la matriz que manda sigue siendo la del escenario y el puente,
+  no este fichero. Todo lo que este lote proponga como mecánica tiene que poder
+  ocurrir con ese fichero ausente.
 - `docs/CRISIS_MULTIPUESTO.md` (#484) ya implementa la **cadena de fallo**: cada
   eslabón es precondición dura del siguiente y romper uno hace *imposible*, no
   *peor*, el resultado. Concretamente: Comunicaciones caídas → todo escaneo
@@ -36,10 +40,12 @@ carga, no solo que falle una acción concreta.
   regla de SS13/SS14 llevada a código.
 - La cadena vive en `scripts/lagunak_crisis_scenario_utility.lua` (máquina de
   estados, parlamento, latch de identificación) y lee `/v1/state` vía
-  `bridge/command_models.py`. **Cero núcleo C++** → standalone-first (ADR-0008).
-  El lote C NO propone mover eso al motor; propone extender la cascada al estado
-  de *autoridad* del puesto (el hueco que Lote D ya nombra: Integridad de puesto /
-  Enlace).
+  `bridge/command_models.py`. Es **Lua de escenario**, o sea núcleo jugable: sigue
+  ahí sin Foundry (ADR-0008). Cuidado con leer «cero núcleo C++» como
+  standalone-first: lo que hace standalone a la cadena de #484 no es evitar C++, es
+  que su estado y su decisión viven en Lua. El lote C NO propone mover eso al motor;
+  propone extender la cascada al estado de *autoridad* del puesto (el hueco que Lote
+  D ya nombra: Integridad de puesto / Enlace) **en esa misma residencia**.
 
 ## Space Station 14
 
@@ -52,13 +58,21 @@ carga, no solo que falle una acción concreta.
    sistema. El fallo de un subsistema es material para otro puesto.
 3. **Problema nuestro:** es el referente directo de la premisa del lote. Confirma
    dos cosas que el repo ya tiene y que este lote cierra: (a) la matriz de
-   autoridad = `station-actions.mjs`; (b) la cascada de fallos = #484. Y apunta al
-   hueco: cuando un puesto cae (Integridad de puesto / Enlace del Lote D), su
-   autoridad debe suspenderse y su carga redistribuirse a quien pueda asumirla
-   (capitán/relay), igual que la cadena de #484 lo hace con acciones concretas.
-4. **Coste:** Lua de escenario + puente (lee `/v1/state`). Cero núcleo C++ — la
-   crisis ya vive en `lagunak_crisis_scenario_utility.lua`. ADR-0008,
-   standalone-first.
+   autoridad, cuya proyección visible es `station-actions.mjs`; (b) la cascada de
+   fallos = #484. Y apunta al hueco: cuando un puesto cae (Integridad de puesto /
+   Enlace del Lote D), su autoridad debe suspenderse y su carga redistribuirse a
+   quien pueda asumirla (capitán/relay), igual que la cadena de #484 lo hace con
+   acciones concretas. **Dónde reside eso no es negociable:** el estado «este puesto
+   está suspendido» y la decisión de a quién pasa su carga son del escenario Lua /
+   núcleo, porque afectan a qué órdenes acepta la simulación; el puente lo publica y
+   Foundry lo proyecta —pinta el puesto caído y ofrece el control ya autorizado—,
+   nunca lo decide. Ponerlo en `station-actions.mjs` haría que quitar Foundry
+   devolviera la autoridad a un puesto que la nave da por caído, que es peor que no
+   tener la mecánica.
+4. **Coste:** Lua de escenario (estado y decisión) + puente (publicación) +
+   proyección opcional en el módulo. Cero núcleo C++ porque la crisis ya vive en
+   `lagunak_crisis_scenario_utility.lua`, no porque el estado se vaya a Node.
+   ADR-0008, standalone-first.
 5. **Veredicto:** `adoptar` el principio (fallo = contenido, no derrota; autoridad
    por rol + cascada). Tarjeta: `feat(crisis): al caer un puesto, suspender su
    autoridad y redistribuir su carga a otros puestos (extiende #484 y
@@ -73,12 +87,13 @@ carga, no solo que falle una acción concreta.
    puede hacer X) y eventos de avería (atmosféricos, eléctricos) que se propagan
    entre sistemas y exigen que puestos distintos se hablen para resolverlos. El
    «fail» es cooperativo, no fin de partida.
-3. **Problema nuestro:** el análogo del *job system* es literalmente `STATION_ACTIONS`
-   en `station-actions.mjs` (contrato cerrado: un puesto ausente no emite ninguna
-   orden). SS13 lleva el patrón a la mesa desde hace décadas y confirma que
+3. **Problema nuestro:** el análogo del *job system* se ve en `STATION_ACTIONS`
+   (`station-actions.mjs`, contrato cerrado: un puesto ausente no emite ninguna
+   orden), que es la cara Foundry de lo que el puente autoriza. SS13 lleva el patrón a la mesa desde hace décadas y confirma que
    matriz de autoridad + cascada de fallos es robusto y jugable sin arte nuevo. Es
    el segundo punto de vista del mismo veredicto de SS14.
-4. **Coste:** igual que SS14 (escenario Lua + puente; nada de núcleo C++).
+4. **Coste:** igual que SS14 (estado y decisión en escenario Lua, publicación por
+   puente, proyección opcional en el módulo; nada de núcleo C++).
 5. **Veredicto:** `adoptar` como validación del patrón y del mapeo job-system →
    `STATION_ACTIONS`. Misma tarjeta `feat(crisis)` de SS14; SS13 aporta la
    evidencia de que el patrón escala a decenas de roles sin romper la cadena.
@@ -120,12 +135,16 @@ Dos `adoptar` (SS14 como referente directo, SS13 como validación de mesa del
 patrón) + un `descartado` por no-libre (Barotrauma, usado solo como contraste) +
 cuatro descartes de mecánicas específicas que no caben en standalone-first. El lote
 C adopta el **principio** — fallo = contenido, no derrota; autoridad por rol +
-cascada — no una lista de trabajos. El repo ya lo tiene en #484 y en
-`station-actions.mjs`; SS13/SS14 lo confirman y señalan el hueco que cierra con el
-Lote D: cuando un puesto cae (Integridad de puesto / Enlace), su autoridad se
-suspende y su carga se redistribuye. Todo Lua de escenario + puente, cero núcleo
-C++, frontera #526 respetada (se describe el fallo observable, no se afirma una
-causa interna).
+cascada — no una lista de trabajos. El repo ya lo tiene en #484, y su cara visible
+en `station-actions.mjs`; SS13/SS14 lo confirman y señalan el hueco que cierra con
+el Lote D: cuando un puesto cae (Integridad de puesto / Enlace), su autoridad se
+suspende y su carga se redistribuye. La residencia es la parte dura del veredicto y
+va explícita: **estado y decisión en el escenario Lua**, publicación por el puente,
+y el módulo de Foundry solo como proyección y control autorizado. Si algún día se
+quisiera que la suspensión afectara únicamente a las órdenes que emite el adaptador
+de Foundry, eso sería una **integración opcional** y habría que declararla como tal,
+no una mecánica que resuelve la caída de un puesto. Frontera #526 respetada (se
+describe el fallo observable, no se afirma una causa interna).
 
 > **Pendiente:** el índice final docs/INSPIRACION_JUEGOS_LIBRES.md (citado aquí en
 > prosa a propósito, porque aún no existe) lo escribe quien cierre el último lote.

@@ -338,9 +338,11 @@ cuando es geometría y vale para las dos (#362). El reposo se declara **solo por
 cabeza del hueso), y por eso no hay una sola inversión de matriz en el módulo: la inversa de un
 reposo trasladado es restar el punto. Es la fase 1 y se para ahí: no hay pesos automáticos
 (fase 2), ni retargeting entre esqueletos (fase 3), ni clips. Sigue **sin consumidor y declarado**
-en `HUERFANOS_DECLARADOS`, porque la fase 4 depende de una decisión de arte que #603 deja abierta
-—avatares todo-escaneado o todo-estilizado— y cablearlo antes es exactamente como sale la opción
-incoherente del medio.
+en `HUERFANOS_DECLARADOS` mientras no entre la fase 4. Lo que la bloqueaba era una decisión de
+arte, y **ya está tomada**: «todo escaneado» —PC, NPC, criaturas y estatuas son todos malla
+decimada, con el mismo tratamiento— decidida por Eloy el 2026-08-20 en #603, de las dos salidas
+coherentes que el issue planteaba. Los avatares de caja se rehacen; no hay collage, porque no
+queda caja con la que hacerlo. Lo que no vale es la opción incoherente del medio.
 
 ## Visor del piloto
 

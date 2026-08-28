@@ -56,6 +56,22 @@ jobs:
           # dejar su catálogo obsoleto igual que tocar el catálogo.
           rutas: '^(tools/|\.github/workflows/tools\.yml$|\.github/labeler\.yml$|\.github/actions/|scripts/|docs/DOMINIO_PUBLICO_SCIFI\.md$|src/|resources/locale/|docs/|.*\.md$)'
 
+  restos:
+    name: Restos de herramienta (Linux)
+    # SIN filtro de rutas a propósito: la basura la comete un PR de cualquier
+    # área, y el caso que abrió #818 —nueve artefactos de cobertura y un `.bak`
+    # de un fichero de test en #796— tocaba `foundry-module/`, que este filtro
+    # no cubre. Dentro del job filtrado esta puerta habría salido SALTADA justo
+    # en el PR que la necesitaba. Es stdlib y milisegundos: puede correr siempre.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Restos de herramienta trackeados (#818)
+        run: python3 tools/check_restos_herramienta.py
+
   tests:
     name: tools/tests (Linux)
     needs: changes
@@ -71,12 +87,6 @@ jobs:
         run: python3 -m pip install pytest polib==1.2.0 pyyaml==6.0.2
       - name: Ejecutar tests de tools/
         run: python3 -m pytest tools/tests/ -q
-      - name: Restos de herramienta trackeados (#818)
-        # Cobertura, node_modules, `.bak`, `.orig`, `tmp/`... nada de eso es
-        # entregable. Estaba escrito y probado desde #673 y no lo ejecutaba
-        # ninguna puerta: el PR #796 comiteó nueve artefactos y un `.bak` de un
-        # fichero de test sin que saltara nada. Script de stdlib, milisegundos.
-        run: python3 tools/check_restos_herramienta.py
       - name: Trazabilidad de nombres de dominio público (#310)
         run: python3 tools/check_public_domain_names.py
       - name: Cobertura i18n de las cadenas de C++ (#55)
@@ -110,7 +120,7 @@ jobs:
   puerta:
     name: Puerta de tools
     if: always()
-    needs: [changes, tests]
+    needs: [changes, restos, tests]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4

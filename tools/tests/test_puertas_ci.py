@@ -87,12 +87,21 @@ def test_la_puerta_vigila_todos_los_jobs(nombre):
     )
 
 
+# Jobs que corren SIN filtro de rutas a propósito, con su motivo. La excepción
+# se declara aquí y no se deduce: un job que se sale del filtro por descuido
+# gasta runner en todos los PRs, y uno que entra en el filtro por descuido se
+# salta justo donde hace falta. `tools.yml:restos` vigila basura que comete un
+# PR de cualquier área —el caso de #818 tocaba `foundry-module/`, fuera de este
+# filtro—, y es un script de stdlib de milisegundos.
+SIN_FILTRO = {("tools.yml", "restos")}
+
+
 @pytest.mark.parametrize("nombre", sorted(set(CON_PUERTA) - {"cicd.yml"}))
 def test_los_jobs_filtrados_se_saltan_pero_reportan(nombre):
     """Todo job de área cuelga del filtro; si no, corre siempre y gasta runner."""
     datos, _ = cargar(nombre)
     for jid, trabajo in datos["jobs"].items():
-        if jid in {"puerta", "changes"}:
+        if jid in {"puerta", "changes"} or (nombre, jid) in SIN_FILTRO:
             continue
         assert "needs.changes.outputs.run" in str(trabajo.get("if", "")), (
             f"{nombre}:{jid} no consulta el filtro de rutas"
@@ -138,3 +147,14 @@ def test_el_filtro_despierta_a_quien_puede_romper_la_puerta(nombre, ruta, motivo
         f"{nombre}: un cambio en `{ruta}` no despierta la puerta, y ahí vive "
         f"{motivo}. El check saldría SALTADO, que se lee igual que aprobado."
     )
+def test_la_guarda_de_restos_no_depende_del_filtro():
+    """La otra mitad de la excepción: que siga sin filtro (#818).
+
+    `SIN_FILTRO` solo autoriza que este job se salte el filtro; sin esto, meterlo
+    dentro del filtro después no rompería nada y la guarda volvería a salir
+    SALTADA en los PRs de otras áreas, que es donde se comete la basura.
+    """
+    datos, _ = cargar("tools.yml")
+    restos = datos["jobs"]["restos"]
+    assert "if" not in restos, "la guarda de restos no puede condicionarse"
+    assert "needs" not in restos, "colgarla de `changes` la salta por dependencia"

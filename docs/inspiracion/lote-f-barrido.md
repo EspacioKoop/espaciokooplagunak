@@ -1,6 +1,6 @@
 # Lote F — Barrido del resto de la lista (bobeff) y cierre de #840
 
-Parte de docs/INSPIRACION_JUEGOS_LIBRES.md (issue #840); este lote escribe el índice final que compila A–G.
+Parte de [INSPIRACION_JUEGOS_LIBRES.md](../INSPIRACION_JUEGOS_LIBRES.md) (issue #840); este lote escribe el índice final que compila A–G.
 
 - **Autor del análisis:** Hermes (consolidación + barrido).
 - **Fuente declarada:** la lista de bobeff/open-source-games, y los repositorios `Angband/Angband`

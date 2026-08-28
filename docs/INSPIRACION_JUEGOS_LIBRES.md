@@ -68,10 +68,25 @@ de verdad.
 | 15 | Endless Sky (GPL-3.0) | reputación por facción persistente | núcleo C++ | 5 | sí (núcleo C++, #766/#767) | adoptar | #766, #767 |
 | 16 | FreeOrion (GPL-2.0) | matriz de relaciones entre imperios | núcleo C++ | 4 | sí (núcleo C++, #213/#767) | adoptar | #213, #767 |
 
-(Detalle y descartes en los ficheros de cada lote: lote-a-reputacion-facciones.md,
-lote-b-misiones.md, lote-c-tripulacion.md, lote-d-estados.md, lote-e-narracion.md,
-lote-f-barrido.md, lote-g-otras-fuentes.md — citados en prosa a propósito para no romper
-el gate de CI de rutas.)
+**16 mecánicas de 15 juegos.** Endless Sky ocupa dos filas (10 y 15) porque aporta dos mecánicas
+distintas a costes distintos, y por eso los dos números no coinciden: #840 cuenta *una entrada por
+juego estudiado*, así que la unidad de cobertura es el **juego** y el detalle interno puede traer
+más de una mecánica. Las filas se mantienen separadas para no romper el orden por coste —una es
+`puro/Node + núcleo` y la otra `núcleo C++`—, pero cuentan como un solo juego:
+
+```text
+Endless Sky (GPL-3.0)
+  • misión declarativa + sorteo      → fila 10, puro/Node + núcleo
+  • reputación por facción           → fila 15, núcleo C++
+```
+
+Detalle y descartes en el fichero de cada lote:
+[A](inspiracion/lote-a-reputacion-facciones.md), [B](inspiracion/lote-b-misiones.md),
+[C](inspiracion/lote-c-tripulacion.md), [E](inspiracion/lote-e-narracion.md),
+[F](inspiracion/lote-f-barrido.md), [G](inspiracion/lote-g-otras-fuentes.md) — **enlazados,
+no citados en prosa**: un índice cuyos enlaces son texto plano pasa `tools/refs-rotas.py` diga lo
+que diga, así que citarlos así no protegía nada, solo apagaba el gate. `lote-d-estados.md` no
+aparece porque no está en `main` todavía (#847) — y esa ausencia ahora la vigila el gate.
 
 ---
 
@@ -159,6 +174,10 @@ una matriz, no un vector. Campaña → núcleo C++.
 
 ---
 
+> **No consolidado:** esta sección resume el Lote D, que sigue abierto en #847. Se mantiene aquí
+> para no perder el trabajo, pero no cuenta para la aceptación de #840 ni se prioriza en firme
+> hasta que su PR esté en `main`.
+
 ## Subconjunto reutilizable — cinco estados de **personaje** (de Lote D, #847)
 
 Cinco estados de **personaje** (no de salud de puesto): cada uno es *etiqueta observable +
@@ -217,9 +236,58 @@ Razón de cada uno (detalle en su lote):
 
 ---
 
+## Priorización por riqueza narrativa / coste
+
+El criterio de salida de #840 pide **ordenar** los `adoptar`, y una columna no es un orden: la tabla
+de arriba va por coste porque así se pescan las victorias baratas, y aquí manda qué historia compra
+cada euro. Se lee por bloques; **dentro de un bloque no hay orden**, porque decir cuál de dos
+`riqueza 4 / puro/Node` va primero sería inventar una precisión que la escala no tiene.
+
+**Primero — riqueza alta al coste más bajo (mucha historia, casi gratis):**
+
+1. **Clocks legibles** (FitD) — riqueza 4, `puro/Node`. El progreso deja de ser invisible para toda
+   la mesa con un modelo puro y un pintor de arco. La mejor relación del documento.
+
+**Después — riqueza alta con núcleo de campaña, que es donde el fork no tiene nada todavía:**
+
+2. **Faction Turns** (Worlds Without Number) — riqueza 5, `puro/Node + núcleo`, standalone sí.
+3. **Tripulación/roles + avería en cascada** (Space Station 14) — riqueza 5, `Lua + puente`.
+4. **Reputación por facción** (Endless Sky) — riqueza 5, `núcleo C++`. La más cara de las de
+   riqueza 5, y aun así prioritaria: es literalmente *recordar a quién has conocido* (#213/#767).
+5. **Bestiario que se aprende** (Angband) — riqueza 4, `puro/Node + núcleo`, #767.
+6. **Estados corporales legibles** (Cataclysm: DDA) — riqueza 4, `puro/Node + núcleo`.
+   **Pendiente del Lote D (#847)**: no se prioriza en firme hasta que su lote esté en `main`.
+7. **Job system como validación** (Space Station 13) — riqueza 4, `Lua + puente`. Su valor es la
+   evidencia de mesa de que el patrón de SS14 escala, no una mecánica nueva.
+8. **Matriz de relaciones** (FreeOrion) — riqueza 4, `núcleo C++`. Extiende la reputación de vector
+   a matriz y **no se abre antes que ella**.
+
+**Luego — riqueza media, mejora cómo se cuenta o se resuelve lo que ya pasa:**
+
+9. **Tablas de reacción de actitud** (SRD 5.1) — riqueza 3, `puro/Node`.
+10. **Misión declarativa + sorteo** (Endless Sky) — riqueza 3, `puro/Node + núcleo`.
+11. **Tablón que filtra + plantillas** (Naev) — riqueza 3, `Lua escenario + núcleo`.
+12. **Buffs/debuffs legibles** (Veloren) — riqueza 3, `puro/Node + núcleo`. **Pendiente de #847.**
+
+**Al final — riqueza baja: legibilidad, barato y conviene, pero no cuenta historia por sí solo:**
+
+13. **Verbos sorteados + severidad** (DCSS) — riqueza 2, `puro/Node`.
+14. **Titular de impacto** (Brogue CE) — riqueza 2, `puro/Node`.
+15. **Colapso ×K** (Shattered Pixel Dungeon) — riqueza 2, `puro/Node`.
+16. **Misión como datos + editor** (Wesnoth) — riqueza 2, `puro/Node`, `cimiento`: se escribe y se
+    declara huérfano hasta que el editor del GM lo consuma.
+
+La escala es **ordinal y gruesa a propósito**. No se dividen riqueza y coste para sacar un número:
+un cociente parecería una medida, y esto es un juicio de diseño con dos ejes declarados.
+
+---
+
 ## Aceptación del issue #840
 
-- Entradas completas: **16** (≥8 ✓). Descartes razonados: **13** (≥2 ✓).
+- Mecánicas completas: **16** (≥8 ✓), de **15 juegos** estudiados — Endless Sky aporta dos.
+  Descartes razonados: **13** (≥2 ✓). De esos números, **dos mecánicas y dos descartes son del
+  Lote D**, que sigue abierto (#847): hasta que se mergee, el recuento firme es 14 mecánicas de
+  14 juegos y 11 descartes, que ya cumple los mínimos del issue por sí solo.
 - Cada entrada declara fuente y licencia verificada en su lote (la verificación está en el
   fichero de cada lote, no aquí de memoria). Corrección de esta pasada: Forged in the Dark es
   **CC BY 3.0** (no 4.0, como decía la pasada anterior heredada de #845).
@@ -227,12 +295,14 @@ Razón de cada uno (detalle en su lote):
   columna **Standalone** de la tabla dice la verdad: 7 de 16 adoptar viven hoy solo como script
   del módulo de Foundry (`event-journal.mjs`, `station-actions.mjs`, `npc-generador.mjs` o un
   pintor) y no son standalone-first hasta portar su estado canónico al núcleo.
-- Ordenado por **coste ascendente** y priorizado por **riqueza narrativa / coste** (columna
-  Riqueza 1–5 en la tabla rápida): primero las victorias baratas que más pagan.
+- Ordenado por **coste ascendente** en la tabla y **ordenado** por riqueza narrativa / coste en su
+  propia sección, que es lo que pide el criterio de salida: una columna puntúa, no prioriza.
 - Revalidado contra `main` tras rebasear esta rama: los lotes **A (#849), B (#843), C (#848),
   E (#846), G (#845)** ya están mergeados en `main`; el **Lote D (#847)** está en revisión y su
-  subconjunto de cinco estados (arriba) se consolida en cuanto se mergea. Los ficheros
-  `lote-*.md` quedan enlazados en prosa a propósito (no rompen el gate de rutas).
+  subconjunto de cinco estados (arriba) queda marcado como **no consolidado** hasta que se mergee:
+  se mantiene escrito para no perder el trabajo, pero no cuenta para la aceptación ni se prioriza
+  en firme. Los ficheros `lote-*.md` van **enlazados**, así que el gate de rutas los vigila de
+  verdad.
 - Enlazado desde `README.md` (sección Recursos) y desde `ECOSISTEMA_OPEN_SOURCE.md` (#568): este
   documento estudia *qué mecánica robar*; el de #568 estudia *de qué depender*.
 

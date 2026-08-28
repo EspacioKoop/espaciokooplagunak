@@ -32,6 +32,7 @@
 import { FARAO_AMASIS } from "../data/mallas/farao-amasis.mjs";
 import { LEON_AL_LAT } from "../data/mallas/leon-al-lat.mjs";
 import { VENUS_DE_MILO } from "../data/mallas/venus-de-milo.mjs";
+import { mallaCuadro } from "./nave-cuadro.mjs";
 
 /**
  * De ID de pieza a geometría. Es el vínculo del que hablaba #598: el catálogo de
@@ -43,6 +44,11 @@ export const MALLAS_MUSEO = Object.freeze({
   "venus-de-milo": VENUS_DE_MILO,
   "farao-amasis": FARAO_AMASIS,
   "leon-al-lat": LEON_AL_LAT,
+  // Cuadros (#836): pixelart `obra-propia` generado por el módulo, sin procedencia
+  // externa. Cada uno es su propia malla (marco + plano del lienzo) y entra aquí
+  // como una más, así que el validador del catálogo sigue intacto.
+  "cuadro-1": mallaCuadro(83601),
+  "cuadro-2": mallaCuadro(83602),
 });
 
 /** Dónde consta la licencia del lote del SMK: 186 ficheros bajo la misma
@@ -131,6 +137,56 @@ export const CATALOGO_MUSEO = Object.freeze({
         source: "Georges Dahdouh, optimización de Jim Ellis. NEWPALMYRA / RSSSD",
         license: "CC0 1.0 (revisión de licencia de Commons, 2018-02-22)",
         source_url: "https://commons.wikimedia.org/wiki/File:Asad_Al-Lat.stl",
+      }),
+    }),
+    // Cuadros (#836): obra-propia, pixelart generado por el módulo. Sin procedencia
+    // externa que gestionar (la guarda de procedencia de #598 los salta), y sin
+    // tipo de ficha nuevo: reusan la acción `cartela` de las piezas sobre pedestal.
+    Object.freeze({
+      id: "cuadro-1",
+      malla: "cuadro-1",
+      naturaleza: "obra-propia",
+      nombre: Object.freeze({
+        es: "Paisaje abstracto I (cuadro generado)",
+        en: "Abstract landscape I (generated painting)",
+      }),
+      cartela: Object.freeze({
+        es: "Panel decorativo pintado por el propio módulo, no un escaneo ni una copia"
+          + " de nada: un paisaje abstracto de pixelart a veinte celdas por metro, sobre"
+          + " el muro lateral con el mismo primitivo que la piel de la sala. No enseña"
+          + " nada legible —no es un mapa, no es un diagrama—; está para que el muro no"
+          + " quede desnudo.",
+        en: "Decorative panel painted by the module itself, not a scan or a copy of"
+          + " anything: an abstract pixelart landscape at twenty cells per metre, on the"
+          + " side wall with the same primitive as the room's skin. It teaches nothing"
+          + " readable —not a map, not a diagram—; it is there so the wall is not bare.",
+      }),
+      provenance: Object.freeze({
+        kind: "original",
+        source: "Pixelart generado por el módulo Espaciokoop Lagunak (obra propia, sin fuente externa)",
+        license: "CC0 1.0 (obra propia del módulo)",
+      }),
+    }),
+    Object.freeze({
+      id: "cuadro-2",
+      malla: "cuadro-2",
+      naturaleza: "obra-propia",
+      nombre: Object.freeze({
+        es: "Paisaje abstracto II (cuadro generado)",
+        en: "Abstract landscape II (generated painting)",
+      }),
+      cartela: Object.freeze({
+        es: "Segundo panel del módulo en el muro lateral opuesto. Mismo criterio que el"
+          + " anterior: paisaje abstracto de pixelart, nada que se lea como instrumento."
+          + " La semilla distinta lo hace un cuadro distinto, no una copia del de al lado.",
+        en: "Second module panel on the opposite side wall. Same rule as the previous"
+          + " one: abstract pixelart landscape, nothing that reads as an instrument. A"
+          + " different seed makes it a different painting, not a copy of the other.",
+      }),
+      provenance: Object.freeze({
+        kind: "original",
+        source: "Pixelart generado por el módulo Espaciokoop Lagunak (obra propia, sin fuente externa)",
+        license: "CC0 1.0 (obra propia del módulo)",
       }),
     }),
   ]),

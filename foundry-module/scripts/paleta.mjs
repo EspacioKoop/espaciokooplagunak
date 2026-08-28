@@ -535,6 +535,29 @@ export const MUSEO = Object.freeze({
 });
 
 /**
+ * Cuadros del museo (#836): pixelart `obra-propia` generado por el módulo y
+ * colgado en los muros laterales. Sin procedencia externa que gestionar, así que
+ * los tonos viven aquí y el módulo los importa; por eso `paleta.test.mjs` no los
+ * marca como color propio (paleta.mjs queda fuera del escaneo de literales por
+ * definición).
+ *
+ * No son instrumentos: nada de mapas estelares, diagramas ni cartas de
+ * navegación. Un paisaje abstracto —cielo, suelo, un disco y una montaña— cuyo
+ * contenido no se lee como información, solo como muro que no queda desnudo.
+ * Los tonos se eligen parientes de MUSEO/MURAL para que el cuadro no desentone
+ * del resto de la sala.
+ */
+export const CUADRO = Object.freeze({
+  cielo: "#5b6b86", // gris azulado, pariente de PIXEL.estrella / MURAL.medio
+  cieloAlto: "#6f80a0", // banda superior algo más clara
+  suelo: "#3f3a2e", // tierra apagada, pariente de MURAL.hueco
+  sol: "#e6c97a", // disco cálido, pariente de TINTA.linea / PIXEL.motor
+  montana: "#2c333f", // masa oscura, pariente de MURAL.sombra
+  montanaClaro: "#3c4554", // cara iluminada de la montaña, pariente de MURAL.medio
+  marco: "#2a2622", // bastidor oscuro que enmarca el lienzo
+});
+
+/**
  * Fichas de la mesa de minijuegos (#308). Pixel, no grabado: la pila se repinta
  * en cuanto alguien apuesta.
  *

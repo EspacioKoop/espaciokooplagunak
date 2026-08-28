@@ -20,6 +20,9 @@ test("each piece has non-empty provenance fields and HTTPS source_url", () => {
     assert.ok(pieza.provenance.kind, `${pieza.id} provenance.kind`);
     assert.ok(pieza.provenance.source, `${pieza.id} provenance.source`);
     assert.ok(pieza.provenance.license, `${pieza.id} provenance.license`);
+    // Las piezas `obra-propia` (#836) son pixelart del módulo: no cuelgan de una
+    // fuente externa, y por tanto no tienen source_url que verificar.
+    if (pieza.naturaleza === "obra-propia") continue;
     assert.ok(pieza.provenance.source_url, `${pieza.id} provenance.source_url`);
     assert.match(
       pieza.provenance.source_url,

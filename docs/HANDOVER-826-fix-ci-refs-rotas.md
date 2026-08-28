@@ -19,7 +19,7 @@ diagnóstico (no intuitivo porque el check se comparte con muchos PRs) fue:
 - El `exit code 1` real lo ponía `tools/refs-rotas.py`, no los tests.
 - Causa: `.claude/agents/auditor-de-entregas.md:35` y
   `.claude/skills/triar-entrega-enjambre/SKILL.md:47` citaban
-  `tools/check_po_no_pierde_claves.py`, que **no existe en `main` ni en esta
+  tools/check_po_no_pierde_claves.py, que **no existe en `main` ni en esta
   rama** — solo se introduce en el PR **#794** (aún abierto). Enlace roto
   dentro del propio cambio.
 - El `validate-es` que se veía arriba (`no se pudo leer la base origin/main`)
@@ -31,10 +31,11 @@ de las skills (solo repuntar las dos citas a una herramienta que sí existe).
 ## Archivos cambiados
 
 - `.claude/agents/auditor-de-entregas.md`
-  - Línea 35: `tools/check_po_no_pierde_claves.py` → `tools/validate_es_locale.py`.
+  - Línea 35: tools/check_po_no_pierde_claves.py → `tools/validate_es_locale.py`.
 - `.claude/skills/triar-entrega-enjambre/SKILL.md`
-  - Línea 47 (bloque de código): `python3 tools/check_po_no_pierde_claves.py --base origin/main`
-    → `python3 tools/validate_es_locale.py --base origin/main`.
+  - Línea 47 (bloque de código): el comando original citaba
+    `python3 tools/validate_es_locale.py --base origin/main` (antes apuntaba a
+    tools/check_po_no_pierde_claves.py, que no existe en `main`).
 
 Nada más. 2 ficheros, 2 líneas. Sin cambios en CI, árbol de tests ni otros
 documentos.
@@ -86,7 +87,7 @@ CI tras el push (commit `d10fbb6b`, run `33177991948`):
 
 1. Review/merge de #826 (ahora en verde).
 2. Cuando #794 se fusione, decidir si volver a apuntar las dos citas a
-   `tools/check_po_no_pierde_claves.py` por su semántica más específica de
+   tools/check_po_no_pierde_claves.py por su semántica más específica de
    "no pierde claves" (opcional, no obligatorio).
 3. Prevención: `refs-rotas.py` ya cubre esto, pero un PR puede citar una
    herramienta de OTRO PR aún sin fusionar y pasar el lint local. Valdría un

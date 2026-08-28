@@ -11,8 +11,11 @@
 // verbo de mover el token vive en el área de andar (#427) y es quien debe
 // consumir ese hook —aquí no se pisa. Sin estado, sin conceder, sin recordar.
 //
-// Solo-GM por diseño: `convocar` devuelve `null` si quien llama no es GM, así
-// que un jugador que pulse el botón simplemente se entera de que no puede.
+// Solo-GM por diseño, y el rol se lee del `User` autenticado EN EL MOMENTO DE
+// CONVOCAR, no al construir la barra. Ocultar el botón es presentación; la
+// autorización es lo que pasa al ejecutar (#237). Pasar el literal "GM" a
+// `convocar` convertía su guarda en un adorno: valía una llamada directa desde
+// consola, o simplemente perder el rol con la ventana ya abierta.
 
 import { anadirHerramienta } from "./control-escena.mjs";
 
@@ -32,11 +35,20 @@ export async function estanciasDisponibles() {
 export async function convocarDesdeVentana(idEstancia) {
   if (!moduloConfigurado) return null;
   const { convocar } = await import("./convocatoria-estancia.mjs");
-  const posicion = convocar(idEstancia, "GM");
-  Hooks.callAll("lagunakConvocarResuelve", { id: idEstancia, posicion });
-  if (!posicion && typeof ui !== "undefined" && ui?.notifications) {
-    ui.notifications.info("LAGUNAK.Convocatoria.NoSePuede");
+  // El rol sale del usuario actual, nunca de un literal: es la misma regla que
+  // el relé de puestos (#237), donde la orden tampoco dice quién la manda.
+  const rol = game?.user?.isGM ? "GM" : "JUGADOR";
+  const posicion = convocar(idEstancia, rol);
+  if (!posicion) {
+    // Nada de hook operativo cuando la convocatoria NO procede: quien lo
+    // consuma (el área de andar) no tiene por qué distinguir un `posicion:
+    // null` de una convocatoria de verdad, y un hook emitido es una orden.
+    if (typeof ui !== "undefined" && ui?.notifications) {
+      ui.notifications.info("LAGUNAK.Convocatoria.NoSePuede");
+    }
+    return null;
   }
+  Hooks.callAll("lagunakConvocarResuelve", { id: idEstancia, posicion });
   return posicion;
 }
 
@@ -70,7 +82,10 @@ function crearClaseV2() {
     static PARTS = { main: { template: `modules/${moduloConfigurado}/templates/convocatoria.hbs` } };
 
     async _prepareContext() {
-      return { estancias: estanciasDisponibles() };
+      // `estanciasDisponibles()` es async (importa el catálogo en diferido):
+      // sin `await`, `{{#each estancias}}` recibía una Promise y la ventana
+      // abría vacía.
+      return { estancias: await estanciasDisponibles() };
     }
 
     _onRender(_contextData, _options) {
@@ -100,8 +115,10 @@ function crearClaseV1() {
       };
     }
 
-    getData() {
-      return { estancias: estanciasDisponibles() };
+    async getData() {
+      // Igual que en V2: la lista se resuelve antes de devolver el contexto.
+      // Application (v11) admite un `getData` asíncrono.
+      return { estancias: await estanciasDisponibles() };
     }
 
     activateListeners(html) {

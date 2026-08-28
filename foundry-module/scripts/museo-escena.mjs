@@ -37,17 +37,27 @@
 // piedra. El dibujo en sí vive en `museo-cuadro.mjs`; aquí solo se decide de
 // qué muro cuelga cada uno y desde dónde se mira.
 //
-// PRESUPUESTO MEDIDO (#836). Los cinco lienzos son 48 × 32 celdas cada uno
-// —9.360 celdas entre todos— y salen 19, 26, 51, 83 y 61 CARAS después de
+// PRESUPUESTO MEDIDO (#836, vuelto a tomar en #838). Los cinco lienzos son
+// 96 × 64 celdas cada uno y salen 96, 121, 377, 349 y 328 CARAS después de
 // `fundirRectangulos`: ese es todo el truco, dibujos de masas grandes sobre una
-// rejilla fina. En la escena compuesta, al pasar de dos cuadros a cinco: desde
-// el centro de la sala mirando al muro oeste, 1.235 → 1.340 caras (9,43 → 8,53
-// ms); mirando al este, 565 → 642 (4,42 → 4,87 ms); desde la entrada mirando al
-// fondo, 1.531 → 1.531, porque a esa altura los cinco quedan de canto y el motor
-// ya los descarta. Plantado ante un cuadro no se ven más de 60 caras: el lienzo
-// llena el cuadro y todo lo demás cae por recorte. Las diferencias de tiempo son
-// ruido de medida, no coste. Esta es la cifra que hay que volver a tomar antes
-// de colgar el sexto, no los tests en verde.
+// rejilla fina. Vienen de 19, 31, 51, 83 y 61 — el detalle de la celda de
+// 1,25 cm multiplica por tres, y el relieve por poco más de dos sobre eso,
+// porque el costado solo aparece donde hay escalón y lo que paga es el
+// PERÍMETRO de las masas, no su área.
+//
+// EN PANTALLA NO SE NOTA, y es la medida que importa. Desde el centro de la
+// sala mirando al muro oeste: 1.461 polígonos sin relieve, 1.466 con él;
+// mirando al este, 713 → 720; desde la entrada, 1.399 → 1.399. Cinco polígonos
+// de diferencia con 1.100 caras más en las mallas, porque el costado de una
+// masa es una tira de milímetros que a un paso ya está de canto y cae por
+// recorte. O sea: el relieve se paga al construir la sala, una vez, y no por
+// fotograma. Los tiempos de composición en esta máquina bailan entre 6 y 20 ms
+// según la vista y no discriminan nada a este tamaño; la cifra que vale es el
+// conteo de polígonos, que es determinista.
+//
+// Plantado ante un cuadro no se ven más de un centenar de caras: el lienzo
+// llena la pantalla y todo lo demás cae por recorte. Esta es la cifra que hay
+// que volver a tomar antes de colgar el sexto, no los tests en verde.
 //
 // Puro y sin color propio (#351).
 

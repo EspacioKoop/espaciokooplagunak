@@ -27,22 +27,28 @@ geometría), #609 (Fase 1, MERGED).
 
 - `tools/pesar-despiezar.mjs` (NUEVO)
   - `pesosAutomaticos(malla, rig)`: para cada vértice mide la distancia a cada
-    hueso (su segmento cabeza→padre) y se queda con las `MAX_INFLUENCIAS` (4) más
-    cercanas; peso ∝ 1/distancia, normalizado a suma 1 vía `normalizarPesos` de
-    `rig-esqueleto.mjs`. Reusa el rig de fase 1 (sin duplicar álgebra).
-  - `extraerRegion(malla, pesos, rig, {hueso, threshold=0.5})`: devuelve la sub-
-    malla de vértices con peso ≥ `threshold` para `hueso`; una cara entra si
-    TODOS sus vértices entran (pieza sin aristas colgando). `threshold` inclusivo.
+    hueso (su segmento cabeza→cola, siendo la cola la cabeza de su hijo) y se
+    queda con las `MAX_INFLUENCIAS` (4) más cercanas; peso ∝ 1/distancia², se
+    descartan los residuos por debajo del 5 % del hueso más fuerte y se
+    normaliza a suma 1 vía `normalizarPesos` de `rig-esqueleto.mjs`. Reusa el
+    rig de fase 1 (sin duplicar álgebra).
+  - `extraerRegion(malla, pesos, rig, {hueso, threshold=0.5})`: una cara entra
+    si TODOS sus vértices pesan ≥ `threshold` para `hueso`, y los vértices de la
+    pieza se DERIVAN de las caras retenidas (ni aristas colgando ni vértices
+    huérfanos sin cara). `threshold` inclusivo.
   - Sin dependencias: solo `rig-esqueleto.mjs` (puro, corre en Node y navegador).
-- `tools/tests/test_pesar-despiezar.mjs` (NUEVO) — 6 tests:
+- `tools/tests/test_pesar-despiezar.mjs` (NUEVO) — 7 tests:
   1. `pesosAutomaticos` no deja vértice sin hueso y respeta el tope de 4.
   2. La mano del brazo de prueba queda del antebrazo sin pesos a mano.
   3. **CRITERIO DE SALIDA fase 2:** con pesos automáticos el antebrazo se dobla
-     por el codo (dx de la mano a −x, hombro casi quieto) — prueba que los pesos
-     automáticos son anatómicamente sensatos, no un amasijo.
+     por el codo: la mano va a −x, y con tolerancia 1e−9 el hombro NO se mueve,
+     el codo es el pivote exacto y el antebrazo conserva su longitud — prueba
+     que los pesos automáticos son anatómicamente sensatos, no un amasijo.
   4. `extraerRegion` aísla el antebrazo (mano dentro, hombro fuera) a umbral 0.6.
-  5. `extraerRegion` falla con hueso inexistente.
-  6. Malla real (Venus, 448 v) se pesa y despieza sin NaNs; los pesos son un
+  5. `extraerRegion` no devuelve vértices sin cara (cara a medio umbral → pieza
+     vacía, no un vértice suelto).
+  6. `extraerRegion` falla con hueso inexistente.
+  7. Malla real (Venus, 448 v) se pesa y despieza sin NaNs; los pesos son un
      BLEND (hay pesos intermedios), no un tajo duro.
 
 ## Decisiones relevantes

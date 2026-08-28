@@ -15,6 +15,17 @@ import { MAX_INFLUENCIAS, normalizarPesos } from "../foundry-module/scripts/rig-
 // puede pesar infinito, y además evita dividir por cero.
 const EPSILON = 1e-3;
 
+// La caída es inversa al CUADRADO de la distancia, no a la distancia. Con 1/d
+// un hueso a un metro todavía pesaba una décima de otro a diez centímetros, y
+// eso es lo que arrastraba el hombro al doblar el codo.
+const POTENCIA = 2;
+
+// Y por debajo de esta fracción del hueso más fuerte, la influencia se descarta
+// en vez de atenuarse: un residuo del 2 % no dobla nada, pero SÍ mueve un punto
+// que debería estar quieto, y un hombro que se desplaza siete centímetros no se
+// lee como una atenuación sino como un rig roto.
+const UMBRAL_RELATIVO = 0.05;
+
 /** Distancia del punto `p` al segmento [a, b] (cabeza del padre → cabeza del hueso). */
 function distanciaASegmento(p, a, b) {
   const abx = b[0] - a[0], aby = b[1] - a[1], abz = b[2] - a[2];
@@ -26,20 +37,42 @@ function distanciaASegmento(p, a, b) {
   return Math.hypot(p[0] - cx, p[1] - cy, p[2] - cz);
 }
 
-/** Cabeza del padre de un hueso, o el origen si es raíz. */
-function cabezaDelPadre(rig, i) {
+/**
+ * El SEGMENTO que ocupa un hueso: de su cabeza a su cola.
+ *
+ * La cola es la cabeza de su hijo —el tramo de carne que ese hueso mueve al
+ * girar—. Ponderar por el segmento cabeza-del-padre → cabeza, como se hacía
+ * antes, describe el hueso ANTERIOR: el «brazo» quedaba reducido a un punto en
+ * el origen y el «antebrazo» cubría todo el brazo, así que el hombro salía
+ * medio del antebrazo y se iba con el codo.
+ *
+ * Un hueso sin hijos (la punta de una cadena) no tiene cola declarada: se
+ * prolonga en la misma dirección por la que le llega su padre, tan largo como
+ * ese tramo. Es lo que hace cualquier suite al importar un esqueleto sin colas,
+ * y evita el otro extremo del mismo fallo —un hueso-punto que no pesa sobre la
+ * mano que sostiene—.
+ */
+function segmentoDelHueso(rig, i) {
+  const cabeza = rig.huesos[i].cabeza;
+  const hijo = rig.huesos.find((h) => h.padre === rig.huesos[i].id);
+  if (hijo) return [cabeza, hijo.cabeza];
   const padre = rig.huesos[i].padre;
-  return padre === null ? [0, 0, 0] : rig.huesos[rig.indice.get(padre)].cabeza;
+  const desde = padre === null ? [0, 0, 0] : rig.huesos[rig.indice.get(padre)].cabeza;
+  const dir = [cabeza[0] - desde[0], cabeza[1] - desde[1], cabeza[2] - desde[2]];
+  const largo = Math.hypot(dir[0], dir[1], dir[2]);
+  if (largo === 0) return [cabeza, cabeza];
+  return [cabeza, [cabeza[0] + dir[0], cabeza[1] + dir[1], cabeza[2] + dir[2]]];
 }
 
 /**
  * Pesos de piel por distancia al hueso.
  *
  * Para cada vértice se mide la distancia a cada hueso (su segmento
- * cabeza-padre) y se quedan las `MAX_INFLUENCIAS` más cercanas; el peso es
- * inversamente proporcional a la distancia, normalizado a suma 1. Eso es
- * justo lo que hacen los auto-weights de cualquier suite: el hueso más cercano
- * manda y los de al lado atenúan.
+ * cabeza → cola) y se quedan las `MAX_INFLUENCIAS` más cercanas; el peso es
+ * inverso al cuadrado de la distancia, se descartan los residuos por debajo de
+ * `UMBRAL_RELATIVO` del más fuerte y se normaliza a suma 1. Eso es justo lo que
+ * hacen los auto-weights de cualquier suite: el hueso más cercano manda, los de
+ * al lado atenúan y los lejanos no cuentan.
  *
  * @param {{vertices:number[][]}} malla
  * @param {object} rig de `crearRig`
@@ -47,14 +80,18 @@ function cabezaDelPadre(rig, i) {
  */
 export function pesosAutomaticos(malla, rig) {
   const total = malla.vertices.length;
+  const segmentos = rig.huesos.map((_, i) => segmentoDelHueso(rig, i));
   const crudos = malla.vertices.map((p) => {
-    const distancias = rig.huesos.map((hueso, i) => ({
-      id: hueso.id,
-      d: distanciaASegmento(p, cabezaDelPadre(rig, i), hueso.cabeza),
+    const candidatos = rig.huesos.map((hueso, i) => ({
+      hueso: hueso.id,
+      peso: 1 / (distanciaASegmento(p, segmentos[i][0], segmentos[i][1]) + EPSILON) ** POTENCIA,
     }));
-    distancias.sort((x, y) => x.d - y.d);
-    const mejores = distancias.slice(0, Math.min(MAX_INFLUENCIAS, distancias.length));
-    return mejores.map(({ id, d }) => ({ hueso: id, peso: 1 / (d + EPSILON) }));
+    candidatos.sort((x, y) => y.peso - x.peso);
+    const mejores = candidatos.slice(0, Math.min(MAX_INFLUENCIAS, candidatos.length));
+    const tope = mejores[0].peso;
+    // Siempre queda al menos el más fuerte: `normalizarPesos` exige que ningún
+    // vértice se quede sin hueso.
+    return mejores.filter((c, j) => j === 0 || c.peso >= tope * UMBRAL_RELATIVO);
   });
   return normalizarPesos(rig, crudos, total);
 }
@@ -70,9 +107,13 @@ function pesoDe(influencias, idx) {
 /**
  * Recorta la región dominada por un hueso como malla aparte.
  *
- * Un vértice entra si su peso para `hueso` es ≥ `threshold`; una cara entra si
- * TODOS sus vértices entran (así la pieza no queda con aristas colgando). Sirve
- * para sacar la cabeza de un busto escaneado sin re-escanearla.
+ * Una cara entra si TODOS sus vértices pesan ≥ `threshold` para `hueso`, y los
+ * vértices de la pieza se DERIVAN de las caras que entraron. Al revés —quedarse
+ * los vértices y luego filtrar caras— la pieza se lleva puntos que no pertenecen
+ * a ninguna cara: geometría suelta que no se dibuja, no se puede tocar y en el
+ * caso límite (un solo vértice por encima del umbral) devolvía una «pieza» sin
+ * una sola cara. Sirve para sacar la cabeza de un busto escaneado sin
+ * re-escanearla.
  *
  * @returns {{vertices:number[][], caras:number[][]}}
  */
@@ -81,21 +122,19 @@ export function extraerRegion(malla, pesos, rig, { hueso, threshold = 0.5 }) {
   if (idx === undefined) {
     throw new Error(`extraerRegion: hueso inexistente "${hueso}"`);
   }
-  const mantener = new Set();
-  pesos.forEach((influencias, v) => {
-    if (pesoDe(influencias, idx) >= threshold) mantener.add(v);
-  });
+  const dominado = malla.vertices.map((_, v) => pesoDe(pesos[v], idx) >= threshold);
   const mapa = new Map();
   const vertices = [];
-  for (const v of mantener) {
-    mapa.set(v, vertices.length);
-    vertices.push(malla.vertices[v]);
-  }
   const caras = [];
   for (const cara of malla.caras) {
-    if (cara.every((vi) => mantener.has(vi))) {
-      caras.push(cara.map((vi) => mapa.get(vi)));
-    }
+    if (!cara.every((vi) => dominado[vi])) continue;
+    caras.push(cara.map((vi) => {
+      if (!mapa.has(vi)) {
+        mapa.set(vi, vertices.length);
+        vertices.push(malla.vertices[vi]);
+      }
+      return mapa.get(vi);
+    }));
   }
   return { vertices, caras };
 }

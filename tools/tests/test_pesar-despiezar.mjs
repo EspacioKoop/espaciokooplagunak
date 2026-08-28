@@ -71,6 +71,26 @@ test("CRITERIO fase 2: con pesos automáticos el antebrazo se dobla con gradient
   // hay un gradiente a lo largo del brazo, no un tajo ni un amasijo.
   assert.ok(dxMano < -0.3, `la mano no fue a -x (dx=${dxMano})`);
   assert.ok(Math.abs(dxMano) > Math.abs(dxHombro), "el hombro se mueve más que la mano");
+
+  // «El hombro se mueve MENOS que la mano» no prueba nada: con los pesos
+  // anteriores el hombro se iba 0,7 m y seguía cumpliéndolo. Lo que el PR
+  // afirma es que el hombro está QUIETO, y eso se fija con tolerancia.
+  const TOLERANCIA = 1e-9;
+  assert.ok(
+    Math.hypot(...[0, 1, 2].map((e) => hombro[e] - hombroAntes[e])) < TOLERANCIA,
+    `el hombro se movió (${hombro})`,
+  );
+  // El pivote es el codo: se queda donde estaba.
+  const codoAntes = centro(MALLA.vertices, 4);
+  const codo = centro(doblado.vertices, 4);
+  assert.ok(
+    Math.hypot(...[0, 1, 2].map((e) => codo[e] - codoAntes[e])) < TOLERANCIA,
+    `el codo no es el pivote (${codo})`,
+  );
+  // Y el tramo codo-mano conserva su longitud: girar no es estirar.
+  const largo = Math.hypot(...[0, 1, 2].map((e) => mano[e] - codo[e]));
+  const largoAntes = Math.hypot(...[0, 1, 2].map((e) => manoAntes[e] - codoAntes[e]));
+  assert.ok(Math.abs(largo - largoAntes) < 1e-9, `el antebrazo cambió de largo (${largo})`);
   assert.ok(doblado.vertices.every((v) => v.every(Number.isFinite)), "hay NaNs");
   assert.equal(doblado.caras.length, MALLA.caras.length, "la topología cambió");
 });
@@ -92,6 +112,26 @@ test("extraerRegion aísla el antebrazo como pieza suelta", () => {
   }
   // Caras bien formadas (índices dentro de rango, sin aristas colgando).
   assert.ok(pieza.caras.every((c) => c.every((i) => i >= 0 && i < pieza.vertices.length)));
+});
+
+test("extraerRegion no devuelve vértices sin cara", () => {
+  // Un triángulo con un solo vértice por encima del umbral: antes devolvía
+  // `{vertices: [uno], caras: []}` —una «pieza» de geometría suelta que no se
+  // dibuja ni se toca—. Los vértices se derivan de las caras retenidas.
+  const tri = {
+    vertices: [[0, 0, 0], [5, 0, 0], [5, 5, 0]],
+    caras: [[0, 1, 2]],
+  };
+  const rig = crearRig([{ id: "a", cabeza: [0, 0, 0] }, { id: "b", cabeza: [5, 5, 0] }]);
+  const pesos = pesosAutomaticos(tri, rig);
+  const pieza = extraerRegion(tri, pesos, rig, { hueso: "a", threshold: 0.5 });
+  assert.deepEqual(pieza.caras, [], "una cara a medio umbral no debe entrar");
+  assert.deepEqual(pieza.vertices, [], "quedó un vértice huérfano sin cara");
+
+  // Y con umbral bajo la cara entra entera, con sus tres vértices y ni uno más.
+  const todo = extraerRegion(tri, pesos, rig, { hueso: "a", threshold: 0 });
+  assert.equal(todo.caras.length, 1);
+  assert.equal(todo.vertices.length, 3);
 });
 
 test("extraerRegion falla con un hueso inexistente", () => {

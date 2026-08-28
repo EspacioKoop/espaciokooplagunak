@@ -14,15 +14,22 @@ diseño, no de partidas propias.
 **Licencias (estado de verificación honesto):**
 
 - **SRD 5.1** — **CC-BY-4.0** ✔ (confirmado en `CLAUDE.md` y `npc-generador.mjs`).
-- **Forged in the Dark SRD** — **CC-BY-4.0** (el SRD de Blades in the Dark se publicó bajo
-  licencia CC; por verificar el texto exacto en bladesinthedark.com/forged-dark antes de
-  reusar texto). Una idea no tiene licencia: aquí se estudia la mecánica de *clock*.
-- **Worlds Without Number SRD** — documento libre / abierto (el SRD se publica como tal;
-  la licencia exacta del texto por confirmar en la fuente oficial antes de reusar contenido).
-  La mecánica de *Faction Turns* se estudia como diseño, no se copia texto.
-- **Cairn SRD** / **Mausritter** — ambos se distribuyen como SRD libre (Cairn bajo una
-  licencia de SRD abierta; Mausritter bajo CC-BY-4.0); por verificar el texto exacto.
-  Entran aquí como **descartes**, así que la licencia no bloquea nada.
+- **Forged in the Dark SRD** — **CC BY 3.0 Unported** ✔, **no** CC-BY-4.0. Verificado en la
+  fuente primaria, <https://bladesinthedark.com/licensing>: «The contents of the SRD are
+  available for use under the Creative Commons Attribution (CC-BY) license», enlazando a
+  `creativecommons.org/licenses/by/3.0/` y nombrándola en la atribución «Creative Commons
+  Attribution 3.0 Unported license». La 4.0 era una aproximación y aquí se corrige.
+  Una idea no tiene licencia: lo que se estudia es la mecánica de *clock*.
+- **Worlds Without Number SRD** — **CC0** ✔. Sine Nomine publica el SRD bajo renuncia
+  Creative Commons Zero, que permite copiar, modificar y reusar con fines personales y
+  comerciales a perpetuidad, sin obligación de licenciar lo derivado; lo que **no** cubre
+  es el texto y el material de ambientación del libro que no está en el SRD.
+  Fuente: la ficha del *Worlds Without Number System Reference Document* de Sine Nomine
+  Publishing en DriveThruRPG (producto 473939).
+- **Cairn SRD** / **Mausritter** — entran como **descartes**, así que este documento **no
+  afirma su licencia exacta**: se distribuyen como SRD libre y ahí se queda la afirmación.
+  El día que alguno pase a `adoptar` con reuso de texto, hay que fijarla contra su fuente
+  primaria igual que arriba.
 
 Regla del issue que manda: se lee el juego, no su código; una idea no tiene licencia, un
 fichero sí. Ninguna entrada de este lote trae código, datos ni arte ajenos.
@@ -45,8 +52,9 @@ como evidencia para el Lote E.
 ### 1. Worlds Without Number — Faction Turns (mundo reactivo de campaña)
 
 1. **Juego y licencia:** Worlds Without Number (Kevin Crawford, Sine Nomine). El SRD se
-   publica como documento libre/abierto; licencia exacta del texto por verificar en la
-   fuente oficial. La mecánica se estudia como diseño.
+   publica bajo **CC0** ✔ (ficha del *WWN System Reference Document* en DriveThruRPG,
+   producto 473939); el material de ambientación del libro que no está en el SRD queda
+   fuera. La mecánica se estudia como diseño; no se copia texto.
 2. **Mecánica:** un *Faction Turn* resuelve, con un puñado de estadísticas por facción
    (fuerza, recursos, objetivos) y una tirada, «qué pasó en el mundo mientras los
    jugadores no miraban». Las facciones actúan en paralelo hacia sus metas; el resultado
@@ -57,16 +65,21 @@ como evidencia para el Lote E.
    (Endless Sky) resuelve a nivel de *misión*, pero subido al nivel de *campaña*: el
    árbitro no autoría a mano cada repercusión, las facciones la generan. Toca el núcleo
    (#766 persistencia), no la escena.
-4. **Coste:** puro/Node para el resolvedor de turno de facción (estado + tabla de
-   probabilidad + difusión), viviendo con #766. Cero arte, cero binario.
-5. **Veredicto:** `adoptar`. Tarjeta: `feat(campana): faction-turns — mundo reactivo
-   resuelto por estado y tablas, no por guion`. Emparentado con A (misma consecuencia
+4. **Coste:** **núcleo**, y aquí se corrige la primera pasada. El estado de las facciones
+   entre sesiones es autoridad de campaña (ADR-0008, #766): resolver el turno en Node
+   mientras su estado persistente pertenece al núcleo no es standalone-first, es partir la
+   mecánica por la mitad y dejar la mitad que manda fuera del juego. El resolvedor y el
+   estado van con #766 —en el núcleo o en Lua de escenario—; el puente los publica y el
+   módulo de Foundry solo los **pinta**. Cero arte, cero binario.
+5. **Veredicto:** `adoptar` **con la residencia corregida**, y bloqueado por #766/#213.
+   Tarjeta: `feat(campana): faction-turns — mundo reactivo resuelto por estado y tablas en
+   el núcleo, no por guion ni en el módulo`. Emparentado con A (misma consecuencia
    diferida) y con #767; la diferencia es el alcance (campaña, no misión).
 
 ### 2. Forged in the Dark SRD — Clocks (progreso y posición legibles)
 
-1. **Juego y licencia:** Forged in the Dark (SRD de Blades in the Dark, Evil Hat).
-   **CC-BY-4.0** (por verificar el texto exacto en bladesinthedark.com/forged-dark).
+1. **Juego y licencia:** Forged in the Dark (SRD de Blades in the Dark, John Harper).
+   **CC BY 3.0 Unported** ✔, verificado en <https://bladesinthedark.com/licensing>.
 2. **Mecánica:** un *clock* es un círculo dividido en segmentos que se van rellenando
    conforme avanza una tarea, amenaza o progreso; *position* y *effect* resumen el estado
    de una acción en tres niveles legibles (controlled/risky/desperate, great/standard/poor).
@@ -76,10 +89,15 @@ como evidencia para el Lote E.
    que le falta al museo y a la crisis multipuesto (#484): en vez de un contador opaco,
    la tripulación ve cuánto falta y qué tan precipitado está. Puro estado, dibujable con
    el pintor de lienzo existente.
-4. **Coste:** puro/Node (un clock es un entero + N segmentos) y un pintor de arco; vive en
-   el módulo Foundry, sin tocar C++ ni traer arte.
-5. **Veredicto:** `adoptar`. Tarjeta: `feat(estado): clocks legibles — progreso/amenaza
-   como segmentos de un círculo, sin texto que afirme una lectura` (regla de #526:
+4. **Coste:** el **dibujo** es puro/Node (un clock es un entero + N segmentos) más un
+   pintor de arco, y vive en el módulo Foundry sin tocar C++ ni traer arte. Pero eso es
+   **solo la proyección**: el segmento que avanza es estado de la crisis o de la misión, y
+   ése lo produce y lo guarda quien tenga esa autoridad (Lua de escenario para #484,
+   núcleo para lo que persista entre sesiones). Un clock cuyo contador viviera en el
+   módulo se borraría al quitar Foundry y dejaría la crisis sin su medida.
+5. **Veredicto:** `adoptar` **como proyección**, con el contador en su autoridad nativa.
+   Tarjeta: `feat(estado): clocks legibles — progreso/amenaza como segmentos de un
+   círculo, leyendo un contador que ya es autoritativo fuera del módulo` (regla de #526:
    lo que se pinta es estado confirmado, no una lectura inventada).
 
 ### 3. SRD 5.1 — Tablas de reacción de actitud (continuación de la primera pasada)
@@ -157,9 +175,10 @@ como evidencia para el Lote E.
   instanciarse.
 - El *clock* de FitD necesita decidir qué barras del módulo se vuelven clocks (crisis,
   reparación, misión) — eso es diseño de superficie, no de este lote.
-- Las licencias exactas de WN/FitD/Cairn/Mausritter quedan por confirmar en la fuente
-  oficial antes de reusar texto; la mecánica (idea) ya se estudió y no necesita esa
-  confirmación para el diseño.
+- Las licencias de WN (**CC0**) y FitD (**CC BY 3.0 Unported**) quedan **verificadas**
+  contra su fuente primaria, que es lo que exige el issue. Cairn y Mausritter son
+  descartes y este documento no afirma su licencia exacta: habría que fijarla si alguno
+  pasara a `adoptar` con reuso de texto.
 
 ## Resumen del lote
 
@@ -168,9 +187,13 @@ como evidencia para el Lote E.
 - **3 descartes razonados:** osgameclones (cantera, no entrada), Cairn (sin inventario en
   el puente), Mausritter (cubierto por FitD clocks).
 - **1 cantera/evidencia:** F-Droid / IF como respaldo del Lote E.
-- Todos los adoptar son puro/Node o estado, cero arte, y **jugables si Foundry desaparece**
-  (ADR-0008): viven en el núcleo o en el módulo como estado, no dependen de la proyección
-  VTT. Ninguno toca C++ ni trae binarios.
+- **Dónde vive cada uno** (ADR-0008), que es lo que la primera pasada mezclaba: los
+  *Faction Turns* son **núcleo** —resolvedor y estado con #766—; el *clock* es **estado
+  nativo con proyección Foundry** —el contador en Lua/núcleo, el círculo en el módulo—; las
+  reacciones del SRD 5.1 siguen en `npc-generador.mjs`, que es del módulo y **no** es
+  standalone: hoy es cimiento declarado y sin persistencia. «Node» no equivale a
+  standalone-first, y ninguna entrada se presenta ya como tal por el mero hecho de no tocar
+  C++. Ninguna trae binarios ni arte.
 
 El barrido de osgameclones / LibreGameWiki / F-Droid se hizo de verdad en esta sesión; la
 conclusión es que aportan como cantera y como evidencia de Lote E, pero no entradas que

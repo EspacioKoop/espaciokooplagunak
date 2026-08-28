@@ -505,6 +505,17 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     por un punto de interacción — la misma forma que la playa (#587), y por el mismo motivo (el
     Phobos no tiene un museo, y colgarlo de un mamparo contaría una historia que nadie ha decidido).
     Por eso está fuera de las invariantes de la nave en `nave-planta-phobos.test.mjs` y del minimapa.
+    Y por eso sus **muros tienen piel propia** (`museo-mural.mjs`, #838) en vez de la chapa
+    remachada de serie: es el mismo argumento con el que la sala ya apagaba `pielObjetos` —un
+    pedestal remachado es un material equivocado— aplicado a la superficie que más importa, el
+    fondo contra el que se lee lo colgado. Es una pared de galería —rodapié, paño liso con sus
+    juntas de tablero, riel de cuelgue a 2,10 m, cornisa— y está **vacía a propósito**: el mural de
+    la nave presume de premiar que te acerques, y aquí eso sería un error, porque cada greeble
+    compite con la obra. Que cueste 32 rectángulos por muro largo frente a 504 es la CONSECUENCIA
+    de esa decisión y no su motivo. Se engancha por parámetro (`piezasPielMuro` en
+    `crearSalaCaja`), nunca por un `if` con el nombre de la sala dentro de la fábrica. La celda
+    sigue siendo la de la nave: un cuadro baja a 1,25 cm porque su detalle no cabía, y una pared de
+    galería no quiere más detalle sino menos.
     Los **cuadros** de sus muros laterales (#836) son la SEGUNDA forma de colgar y no un parámetro
     de la primera: una escultura se apoya en un pedestal y se rodea, un cuadro cuelga de un muro y
     solo se mira de frente, así que van en catálogo aparte (`museo-cuadros.mjs`) validado por el

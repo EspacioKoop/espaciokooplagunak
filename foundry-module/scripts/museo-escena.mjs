@@ -59,10 +59,18 @@
 // llena la pantalla y todo lo demás cae por recorte. Esta es la cifra que hay
 // que volver a tomar antes de colgar el sexto, no los tests en verde.
 //
+// Y la SALA entera bajó al ponerle piel de galería (#838, `museo-mural.mjs`):
+// desde el centro mirando al oeste 1.466 -> 996 polígonos, al este 720 -> 272,
+// desde la entrada 1.399 -> 894. Un tramo de muro largo pasa de 504 rectángulos
+// de chapa a 32. No es una optimización: es que una pared de galería está
+// vacía a propósito —lo que tiene que reclamar la mirada es lo colgado— y el
+// presupuesto es la consecuencia de esa decisión, no su motivo.
+//
 // Puro y sin color propio (#351).
 
 import { MUSEO } from "./paleta.mjs";
 import { crearSalaCaja } from "./nave-sala-caja.mjs";
+import { piezasMuroMuseo } from "./museo-mural.mjs";
 import { declararInteracciones } from "./nave-interaccion.mjs";
 import { CATALOGO_MUSEO, MALLAS_MUSEO } from "./museo-piezas.mjs";
 import { deformarPieza } from "./estatua-rig.mjs";
@@ -478,6 +486,13 @@ const SALA = crearSalaCaja({
   // y un pedestal de museo remachado sería un material equivocado, el mismo
   // motivo por el que la cantina la apaga en sus muebles de madera.
   pielObjetos: false,
+  // Y con su propia piel de muro (#838). La de serie es chapa remachada de
+  // casco: sirve para una nave y es el fondo equivocado para una obra colgada,
+  // por lo mismo que un pedestal remachado sería el material equivocado. La de
+  // aquí es una pared de galería —rodapié, paño liso, riel de cuelgue, cornisa—
+  // y está deliberadamente vacía: en un museo lo que tiene que reclamar la
+  // mirada es lo colgado, no la pared.
+  piezasPielMuro: piezasMuroMuseo,
   semillaMural: 20260818,
 });
 

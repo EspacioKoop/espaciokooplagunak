@@ -20,15 +20,31 @@ trabajo. El recorte se guía por dos ejes duros del repo:
    puesto* (cadena de la crisis multipuesto). Un estado que solo existe internamente
    no propaga nada.
 2. **Frontera #526.** El estado describe lo **observable**; no se afirma una lectura
-   interna/moral no observable. Por eso *moral* queda fuera y la sustituye *Enlace*.
+   interna/moral no observable. Por eso *moral* queda fuera.
+
+Y hay un tercer eje que la primera pasada de este documento se saltó, y que es el que
+manda: **un estado de personaje no es la salud operativa de su puesto.** «El enlace de
+comunicaciones está caído» o «este puesto tiene seis órdenes sin confirmar» son
+telemetría del puesto —material del Lote C—, no condiciones de la persona sentada en él.
+Mezclarlas cambia la pregunta del issue por otra. Aquí van separadas: los cinco de la
+tabla son del **personaje**, y la salud de puesto queda en un anexo aparte que dice que no
+compite por esas cinco plazas.
+
+Y un cuarto, heredado de ADR-0008: **un estado que condiciona lo que la nave acepta tiene
+que residir donde reside esa decisión.** Si un estado baja el nivel de una acción o mete
+latencia, esa consecuencia la produce el escenario Lua o el núcleo, y Foundry la
+**representa**. Un modelo de estados que viva en Node y `station-actions.mjs` desaparece
+al quitar Foundry y se lleva por delante el efecto que decía tener. Por eso, abajo, cada
+estado declara **quién lo produce hoy** — y donde no lo produce nadie, se dice, en vez de
+inventarle un efecto.
 
 ## Ancla en el código real (por qué esto no es invento)
 
-- `foundry-module/scripts/station-actions.mjs` ya es la **matriz de autoridad por
-  puesto**: declara qué órdenes puede emitir cada puesto y las despacha al puente.
-  Es el *qué puede hacer* un puesto. Este lote propone la capa complementaria: *en
-  qué estado legible está el puesto*, para que la matriz pueda suspender autoridad
-  cuando el puesto cae.
+- `foundry-module/scripts/station-actions.mjs` es la **proyección** en el módulo de la
+  matriz de autoridad: declara qué órdenes ofrece cada puesto de las que el puente ya
+  autoriza. Es *qué puede hacer* un puesto, y **no es donde reside la autoridad**: si
+  Foundry desaparece, manda el escenario y el puente. Sirve como ancla de que el fork ya
+  piensa por puesto; **no** como sede propuesta para el modelo de estados de este lote.
 - `docs/CRISIS_MULTIPUESTO.md` (#484) define que el fallo de un eslabón cambia el
   resultado para los demás. Los 5 estados de abajo son justo la interfaz legible que
   la cadena necesita para detectar «este puesto acaba de caer».
@@ -48,13 +64,14 @@ trabajo. El recorte se guía por dos ejes duros del repo:
    de 5 para la tripulación del puente. Cruza con #484 (el fallo de un puesto debe
    ser material para otro) y con `station-actions.mjs` (cuando un puesto cae, su
    autoridad se suspende — el estado es el gatillo).
-4. **Coste:** puro/Node (modelo de estado de tripulación) + Lua de escenario para
-   superficie en el HUD del puente. Cero núcleo C++, cero arte (ADR-0008,
-   standalone-first).
+4. **Coste:** **Lua de escenario / núcleo** para el estado canónico y para cualquier
+   efecto sobre lo que la nave acepta; puro/Node solo para derivar el texto legible y
+   pintarlo. Cero núcleo C++ nuevo si el escenario basta, cero arte. Lo que **no** vale es
+   el reparto de la primera pasada (modelo en Node + consumo en `station-actions.mjs`):
+   eso deja el estado fuera del juego cuando no hay VTT (ADR-0008).
 5. **Veredicto:** `adoptar` como catálogo de origen del subconjunto. Tarjeta:
-   `feat(estado-tripulacion): modelo de 5 estados legibles en puro/Node, consumido
-   por station-actions.mjs para suspender autoridad y por la cadena de #484 para
-   propagar`.
+   `feat(estado-tripulacion): cinco estados de personaje con su estado canónico en el
+   escenario, publicados por el puente y representados por el módulo`.
 
 ## Veloren
 
@@ -64,32 +81,54 @@ trabajo. El recorte se guía por dos ejes duros del repo:
    como buffs/debuffs *legibles* (nombre + efecto observable), no como número
    oculto detrás de la UI.
 3. **Problema nuestro:** confirma la regla de oro de este lote — un estado debe ser
-   *legible por quien lo recibe*, no solo existir internamente. Es exactamente la
-   interfaz de #484: Atención/Enfoque y Enlace son estados que otro puesto puede
-   leer y sobre los que decidir.
-4. **Coste:** puro/Node (el estado es datos + texto derivado, igual que
-   `npc-generador.mjs` ya deriva texto de una condición SRD). Cero núcleo.
+   *legible por quien lo recibe*, no solo existir internamente. Aporta además la segunda
+   mitad, que este lote toma prestada del comentario de F sobre Veloren: **las condiciones
+   caducan**. Un estado de personaje con duración y recuperación es un estado; uno
+   permanente es una ficha nueva.
+4. **Coste:** la **representación** es puro/Node (datos + texto derivado, igual que
+   `npc-generador.mjs` deriva texto de una condición SRD); la **condición y su caducidad**
+   son del escenario. Cero núcleo C++ nuevo.
 5. **Veredicto:** `adoptar` como segundo punto de vista (legibilidad sobre
    existencia). Misma tarjeta `feat(estado-tripulacion)`; Veloren aporta la regla
    «si otro puesto no puede leerlo, no es estado, es ruido».
 
-## Síntesis — el subconjunto de cinco estados para un puesto
+## Síntesis — el subconjunto de cinco estados **de personaje**
 
-Cada estado es una **etiqueta observable + un efecto legible**, nunca una lectura
-interna. Se modelan como datos en puro/Node y se consumen en `station-actions.mjs`
-(suspensión de autoridad) y en la cadena #484 (propagación).
+Cada estado es una **etiqueta observable + un efecto legible + quién lo produce**, nunca
+una lectura interna. La cuarta columna es la que faltaba: sin un productor nativo, un
+efecto está inventado aquí, y entonces el estado entra **bloqueado** en vez de entrar
+mintiendo.
 
-| # | Estado | Observable (lo que ve otro puesto) | Efecto legible | Cruce |
-|---|--------|-----------------------------------|----------------|-------|
-| 1 | **Integridad de puesto** | presente / ausente / incapacitado | la matriz suspende su autoridad; relay lo ve caer | #484, `station-actions.mjs` |
-| 2 | **Carga de órdenes** | nº de órdenes sin confirmar en cola | capitán/relay redistribuye; visible como backlog | #484 |
-| 3 | **Fatiga** | decaimiento de rendimiento (no el «cansancio») | sus acciones bajan de nivel / ganan latencia | #526 (describe el decaimiento) |
-| 4 | **Atención / Enfoque** | engagado / distraído / saturado | acciones marcadas; relay puede pedir relevo | #484 |
-| 5 | **Enlace** | enlace al puente/otros puestos arriba/abajo | si cae, sus órdenes no llegan (como Comms en #484) | #484, #526 |
+| # | Estado | Observable (lo que ve otro puesto) | Efecto legible | Quién lo produce hoy |
+|---|--------|-----------------------------------|----------------|----------------------|
+| 1 | **Herida** | atendida / sin atender, tras un impacto | el escenario decide qué le cierra a esa persona | el escenario (el daño ya es de la simulación); la ficha 5e lo representa |
+| 2 | **Exposición** | vacío, atmósfera, radiación en la sala | condición con caducidad y recuperación (Veloren) | el escenario; **bloqueado** mientras el estado de sala no se publique |
+| 3 | **Aturdimiento** | tras impacto o maniobra brusca | condición corta que caduca sola | el escenario (impactos y maniobras ya existen) |
+| 4 | **Fatiga** | decaimiento sostenido a lo largo de la guardia | efecto **por decidir por quien tenga la autoridad**; este lote NO propone latencia ni bajar acciones | **nadie hoy** → entra `bloqueado`, solo como etiqueta legible |
+| 5 | **Atención / Enfoque** | atendiendo / distraído / saturado | lo lee otro puesto y decide (pedir relevo) — **no concede ni quita nada por sí solo** | lo declara la propia persona o el GM; es lectura, no regla |
 
-**Frontera #526 en cada uno:** se describe la condición observable (la cola, el
-decaimiento, el enlace caído), nunca se afirma una lectura interna («está
-desmoralizado», «sufre»). Por eso el estado 5 es *Enlace* y no *Moral*.
+**Frontera #526 en cada uno:** se describe la condición observable, nunca se afirma una
+lectura interna («está desmoralizado», «sufre»). Y los efectos que la primera pasada se
+inventó —latencia, bajar el nivel de una acción, suspender autoridad— **salen de aquí**:
+el primero y el segundo quedan como decisión de quien tenga la autoridad nativa, y el
+tercero es del Lote C y del anexo de abajo, no de un estado de personaje.
+
+## Anexo — salud de puesto (esto **no** son estados de personaje)
+
+Las tres entradas que la primera pasada colaba en la tabla son telemetría del puesto, no
+condiciones de la persona. Se conservan porque son útiles, pero **fuera** de las cinco
+plazas y con su residencia dicha:
+
+| Señal | Observable | Dónde vive |
+|-------|-----------|-----------|
+| **Integridad de puesto** | presente / ausente / incapacitado | estado y decisión en el escenario Lua (es lo que el Lote C propone para suspender autoridad); el módulo lo pinta |
+| **Carga de órdenes** | nº de órdenes sin confirmar en cola | el puente ya sabe qué ha aceptado; el módulo lo muestra |
+| **Enlace** | enlace al puente arriba / abajo | es salud de la conexión, y ya se diagnostica en `diagnostico-conexion.mjs` |
+
+Que estas tres se lean bien es material del **Lote C** (el fallo de un puesto es material
+para otro). Meterlas aquí cambiaba la pregunta de #840 —«estados de personaje»— por
+«salud operativa de puestos», y las dos preguntas merecen respuesta, pero no la misma
+plaza.
 
 ## Descarte razonado (lo que NO entra)
 
@@ -110,10 +149,13 @@ De la red de ~30 estados de CDDA, se descartan estos y por qué:
 
 ## Resumen del lote
 
-Dos `adoptar` (Cataclysm: DDA como taxonomía, Veloren como regla de legibilidad) +
-un subconjunto de **cinco** estados cerrado + cinco descartes razonados. Todo
-puro/Node y Lua de escenario, standalone-first (ADR-0008), frontera #526 respetada
-en cada veredicto.
+Dos `adoptar` (Cataclysm: DDA como taxonomía, Veloren como regla de legibilidad y
+caducidad) + un subconjunto de **cinco estados de personaje** —dos de ellos declarados
+`bloqueado` a falta de autoridad que los produzca— + un anexo de salud de puesto que
+**no** compite por esas plazas + cinco descartes razonados. La residencia va escrita:
+estado canónico y efectos en el escenario Lua o el núcleo, publicación por el puente,
+Node/Foundry como **representación** (ADR-0008). Frontera #526 respetada en cada
+veredicto.
 
 > **Pendiente:** el índice final docs/INSPIRACION_JUEGOS_LIBRES.md (citado aquí en
 > prosa a propósito, porque aún no existe) lo escribe quien cierre el último lote.

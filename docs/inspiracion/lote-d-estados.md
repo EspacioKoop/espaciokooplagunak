@@ -22,6 +22,12 @@ trabajo. El recorte se guía por dos ejes duros del repo:
 2. **Frontera #526.** El estado describe lo **observable**; no se afirma una lectura
    interna/moral no observable. Por eso *moral* queda fuera.
 
+Convención de lectura de este documento: lo que el juego hace es **evidencia**
+(sección *Mecánica* de cada entrada); lo que proponemos para el fork es **propuesta**
+(secciones *Problema nuestro* / *Coste* y la tabla). Ninguna penalización futura se
+fija desde aquí: donde un estado necesita una consecuencia que hoy no produce nadie,
+entra como `bloqueado`, no con una penalización inventada (ver fila 4).
+
 Y hay un tercer eje que la primera pasada de este documento se saltó, y que es el que
 manda: **un estado de personaje no es la salud operativa de su puesto.** «El enlace de
 comunicaciones está caído» o «este puesto tiene seis órdenes sin confirmar» son
@@ -134,8 +140,12 @@ plaza.
 
 De la red de ~30 estados de CDDA, se descartan estos y por qué:
 
-- **Moral** — estado interno/subjetivo; afirmarlo en el puente sería inventar una
-  lectura → viola #526. Sustituido por *Enlace* (lo observable). `descartado`.
+- **Moral** — estado interno/subjetivo; afirmarlo en el puesto sería inventar una
+  lectura → viola #526. En la primera pasada se había propuesto *Enlace* como su
+  sustituto observable, pero *Enlace* ya no es estado de personaje: pasó al anexo de
+  salud de puesto (es telemetría de la conexión, no condición de la persona). Moral,
+  pues, no tiene sustituto entre los cinco y se descarta por su propio motivo.
+  `descartado`.
 - **Dolor / Hambre / Sed / Enfermedad** — estados corporales internos no observables
   desde la conducta del puente en nuestro alcance; modelarlos exigiría simular el
   cuerpo (núcleo C++, fuera de standalone-first). `descartado`.

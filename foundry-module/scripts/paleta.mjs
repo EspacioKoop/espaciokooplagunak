@@ -532,6 +532,14 @@ export const MUSEO = Object.freeze({
   yeso: "#d9d2c4", // el vaciado en yeso: crema, cálido, lo más claro de la sala
   piedra: "#b8ae9c", // la reconstrucción, que no es yeso y no debe parecerlo
   cartel: "#cdb894", // la cartela junto a cada pieza: papel viejo bajo luz cálida
+  // La piel del muro (#838). Cuatro tonos y no más, y todos MUY cerca de `muro`:
+  // una pared de galería es el fondo contra el que se lee la obra, así que su
+  // contraste interno tiene que ser menor que el de cualquier pieza colgada. Si
+  // el muro se lee antes que el cuadro, el muro está mal.
+  pano: "#33373e", // el paño de yeso, un punto por encima del muro que lo sostiene
+  panoJunta: "#2a2d33", // la junta entre paños: una sombra fina, no una línea negra
+  riel: "#4a4e56", // el riel de cuelgue, la única pieza clara y a una sola altura
+  rodapie: "#282b31", // el rodapié, donde se roza la pared al pasar
 });
 
 /**

@@ -10,10 +10,14 @@
 
 ## Reglas que mandan (no son gusto)
 
-- **ADR-0008 (standalone-first):** cero arte nuevo, cero binarios, cero motor nuevo. Lo que se
-  adopte vive como datos/estado/texto derivado, jugable aunque Foundry desaparezca.
+- **ADR-0008 (standalone-first):** cero arte nuevo, cero binarios, cero motor nuevo. El objetivo
+  es que lo adoptado viva como datos/estado/texto derivado, jugable aunque Foundry desaparezca.
+  Los adoptar que hoy solo existen como script del módulo (`event-journal.mjs`,
+  `station-actions.mjs`, `npc-generador.mjs`, un pintor) lo incumplen hasta portar su estado
+  canónico al núcleo — ver columna **Standalone** de la tabla.
 - **Frontera #526:** el texto describe lo *observable*; nunca afirma intención, moral ni una
-  lectura no en el evento. Por eso el estado 5 de tripulación es *Enlace*, no *Moral*.
+  lectura no en el evento. Por eso ningún estado de personaje es *Moral* (interno), y *Enlace*
+  no es estado de personaje sino telemetría de la conexión (anexo de salud de puesto).
 - **Dónde vive la autoridad de campaña (#766 persistencia, #767 bestiario, #213 atlas):** en el
   **núcleo C++** del simulador, no en el módulo de Foundry ni en Lua de escenario. Toda entrada
   que "recuerde" entre sesiones se etiqueta como núcleo.
@@ -25,28 +29,44 @@
 
 Por **coste ascendente** (lo más standalone-first primero): `puro/Node` → `puro/Node + núcleo`
 (autoridad de oferta/persistencia) → `Lua de escenario + puente` → `núcleo C++` (campaña).
-El lector debe poder pescar las victorias baratas sin leer el árbol entero.
+Pero el issue pide priorizar por **riqueza narrativa / coste**, no solo por coste: la columna
+**Riqueza (1–5)** de la tabla rápida puntúa cuánto paga cada mecánica narrativamente, así el
+lector pesca primero las victorias baratas que más valen (p.ej. SS14 tripulación o WN Faction
+Turns: coste medio/alto pero riqueza 5). El árbol de abajo agrupa por coste y, dentro de cada
+banda, lidera lo de mayor riqueza.
 
 ## Tabla rápida
 
-| # | Juego (licencia) | Mecánica robada | Coste | Veredicto | Toca |
-|---|---|---|---|---|---|
-| 1 | DCSS (GPL-2.0+) | verbos sorteados + severidad en diario | puro/Node | adoptar | `event-journal.mjs` |
-| 2 | Brogue CE (AGPL-3.0) | titular de impacto de 1 línea | puro/Node | adoptar | `event-journal.mjs` |
-| 3 | Shattered Pixel Dungeon (GPL-3.0) | colapso ×K de eventos | puro/Node | adoptar | `event-journal.mjs` |
-| 4 | Cataclysm: DDA (CC-BY-SA-3.0) | estados corporales legibles | puro/Node | adoptar | `station-actions.mjs`, #484 |
-| 5 | Veloren (GPL-3.0) | buffs/debuffs legibles | puro/Node | adoptar | `station-actions.mjs` |
-| 6 | Wesnoth (GPL-2.0) | misión como datos + editor | puro/Node | cimiento | `contenido-externo/`, #540 |
-| 7 | SRD 5.1 (CC-BY-4.0) | tablas de reacción de actitud | puro/Node | adoptar | `npc-generador.mjs` |
-| 8 | Forged in the Dark (CC-BY-4.0) | clocks de progreso legibles | puro/Node | adoptar | #213, #484 |
-| 9 | Angband (GPL-2.0) | bestiario que se aprende | puro/Node + núcleo | adoptar | #767 |
-| 10 | Endless Sky (GPL-3.0) | misión declarativa + sorteo | puro/Node + núcleo | adoptar | #766, #484 |
-| 11 | Naev (GPL-3.0 / CC-BY-SA) | tablón filtra + plantillas GM | Lua escenario + núcleo | adoptar | `contenido-externo/`, #766 |
-| 12 | Worlds Without Number (libre) | Faction Turns (mundo reactivo) | puro/Node + núcleo | adoptar | #213, #767 |
-| 13 | Space Station 14 (MIT) | tripulación/roles + avería cascada | Lua escenario + puente | adoptar | #484, `station-actions.mjs` |
-| 14 | Space Station 13 (AGPL-3.0) | job system + cascada (validación) | Lua escenario + puente | adoptar | #484, `station-actions.mjs` |
-| 15 | Endless Sky (GPL-3.0) | reputación por facción persistente | núcleo C++ | adoptar | #766, #767 |
-| 16 | FreeOrion (GPL-2.0) | matriz de relaciones entre imperios | núcleo C++ | adoptar | #213, #767 |
+Ordenada por **coste ascendente** (lo más standalone-first primero) y con una columna
+**Riqueza (1–5)** para que el lector pesque las victorias que más pagan narrativamente sin
+leer el árbol: la prioridad del issue es *menor coste, mayor riqueza*. Escala de riqueza:
+1 = solo prosa/texto; 3 = resuelve una interacción concreta; 5 = reescribe la autoridad de
+campaña o hace que el mundo reaccione sin el jugador.
+
+La columna **Standalone** es honesta: `sí` = funciona aunque Foundry desaparezca (vive en
+núcleo/escenario o es dato); `solo Foundry` = la mecánica adoptada hoy solo existe como script
+del módulo de Foundry (`event-journal.mjs`, `station-actions.mjs`, `npc-generador.mjs` o un
+pintor del módulo) y habría que portar su estado canónico al núcleo para ser standalone-first
+de verdad.
+
+| # | Juego (licencia) | Mecánica robada | Coste | Riqueza (1–5) | Standalone | Veredicto | Toca |
+|---|---|---|---|---|---|---|---|
+| 1 | DCSS (GPL-2.0+) | verbos sorteados + severidad en diario | puro/Node | 2 | solo Foundry (`event-journal.mjs`) | adoptar | `event-journal.mjs` |
+| 2 | Brogue CE (AGPL-3.0) | titular de impacto de 1 línea | puro/Node | 2 | solo Foundry (`event-journal.mjs`) | adoptar | `event-journal.mjs` |
+| 3 | Shattered Pixel Dungeon (GPL-3.0) | colapso ×K de eventos | puro/Node | 2 | solo Foundry (`event-journal.mjs`) | adoptar | `event-journal.mjs` |
+| 4 | Cataclysm: DDA (CC-BY-SA-3.0) | estados corporales legibles | puro/Node + núcleo | 4 | solo Foundry (representación hoy en `station-actions.mjs`; estado canónico propuesto en núcleo) | adoptar | `station-actions.mjs`, #484 |
+| 5 | Veloren (GPL-3.0) | buffs/debuffs legibles | puro/Node + núcleo | 3 | solo Foundry (representación hoy en `station-actions.mjs`; estado canónico propuesto en núcleo) | adoptar | `station-actions.mjs` |
+| 6 | Wesnoth (GPL-2.0) | misión como datos + editor | puro/Node | 2 | sí (datos, cimiento) | cimiento | `contenido-externo/`, #540 |
+| 7 | SRD 5.1 (CC-BY-4.0) | tablas de reacción de actitud | puro/Node | 3 | solo Foundry (`npc-generador.mjs`) | adoptar | `npc-generador.mjs` |
+| 8 | Forged in the Dark (CC BY 3.0) | clocks de progreso legibles | puro/Node | 4 | solo Foundry (pintor de arco en el módulo) | adoptar | #213, #484 |
+| 9 | Angband (GPL-2.0) | bestiario que se aprende | puro/Node + núcleo | 4 | sí (registro persistente en núcleo, #767) | adoptar | #767 |
+| 10 | Endless Sky (GPL-3.0) | misión declarativa + sorteo | puro/Node + núcleo | 3 | sí (autoridad de oferta en núcleo, #766) | adoptar | #766, #484 |
+| 11 | Naev (GPL-3.0 / CC-BY-SA) | tablón filtra + plantillas GM | Lua escenario + núcleo | 3 | sí (escenario + núcleo) | adoptar | `contenido-externo/`, #766 |
+| 12 | Worlds Without Number (libre) | Faction Turns (mundo reactivo) | puro/Node + núcleo | 5 | sí (resuelve en núcleo, #766) | adoptar | #213, #767 |
+| 13 | Space Station 14 (MIT) | tripulación/roles + avería cascada | Lua escenario + puente | 5 | sí (escenario + puente; sin VTT) | adoptar | #484, `station-actions.mjs` |
+| 14 | Space Station 13 (AGPL-3.0) | job system + cascada (validación) | Lua escenario + puente | 4 | sí (escenario + puente; sin VTT) | adoptar | #484, `station-actions.mjs` |
+| 15 | Endless Sky (GPL-3.0) | reputación por facción persistente | núcleo C++ | 5 | sí (núcleo C++, #766/#767) | adoptar | #766, #767 |
+| 16 | FreeOrion (GPL-2.0) | matriz de relaciones entre imperios | núcleo C++ | 4 | sí (núcleo C++, #213/#767) | adoptar | #213, #767 |
 
 (Detalle y descartes en los ficheros de cada lote: lote-a-reputacion-facciones.md,
 lote-b-misiones.md, lote-c-tripulacion.md, lote-d-estados.md, lote-e-narracion.md,
@@ -139,18 +159,25 @@ una matriz, no un vector. Campaña → núcleo C++.
 
 ---
 
-## Subconjunto reutilizable — cinco estados de tripulación (de Lote D)
+## Subconjunto reutilizable — cinco estados de **personaje** (de Lote D, #847)
 
-Cada estado es *etiqueta observable + efecto legible*, nunca lectura interna. Modelo en puro/Node,
-consumido por `station-actions.mjs` (suspensión de autoridad) y la cadena #484 (propagación).
+Cinco estados de **personaje** (no de salud de puesto): cada uno es *etiqueta observable +
+efecto legible + quién lo produce*, nunca lectura interna. El estado canónico y sus efectos
+viven en el escenario Lua o el núcleo; el módulo Foundry solo los **representa** (ADR-0008).
+Los dos que hoy no tienen productor nativo entran `bloqueado` y no inventan penalización.
 
-| # | Estado | Observable | Efecto legible | Cruce |
-|---|--------|-----------|----------------|-------|
-| 1 | Integridad de puesto | presente / ausente / incapacitado | la matriz suspende su autoridad | #484, `station-actions.mjs` |
-| 2 | Carga de órdenes | nº de órdenes sin confirmar | capitán/relay redistribuye (backlog) | #484 |
-| 3 | Fatiga | decaimiento de rendimiento | acciones bajan de nivel / ganan latencia | #526 |
-| 4 | Atención / Enfoque | engagado / distraído / saturado | relay puede pedir relevo | #484 |
-| 5 | Enlace | enlace arriba/abajo caído | sus órdenes no llegan (como Comms en #484) | #484, #526 |
+| # | Estado (personaje) | Observable (lo que ve otro puesto) | Efecto legible | Quién lo produce hoy |
+|---|--------------------|-----------------------------------|----------------|----------------------|
+| 1 | **Herida** | atendida / sin atender, tras un impacto | el escenario decide qué le cierra a esa persona | el escenario (el daño ya es de la simulación) |
+| 2 | **Exposición** | vacío, atmósfera, radiación en la sala | condición con caducidad y recuperación | el escenario; `bloqueado` mientras el estado de sala no se publique |
+| 3 | **Aturdimiento** | tras impacto o maniobra brusca | condición corta que caduca sola | el escenario (impactos y maniobras ya existen) |
+| 4 | **Fatiga** | decaimiento sostenido a lo largo de la guardia | efecto **por decidir por quien tenga la autoridad**; este lote NO propone latencia ni bajar acciones | **nadie hoy** → `bloqueado`, solo como etiqueta legible |
+| 5 | **Atención / Enfoque** | atendiendo / distraído / saturado | lo lee otro puesto y decide (pedir relevo); no concede ni quita nada por sí solo | lo declara la propia persona o el GM; es lectura, no regla |
+
+**Anexo — salud de puesto (no son estados de personaje):** Integridad de puesto (estado y
+decisión en el escenario Lua, #484), Carga de órdenes (lo sabe el puente), y Enlace (telemetría
+de la conexión, ya diagnosticada en `diagnostico-conexion.mjs`). Estas tres se leen bien en el
+**Lote C**; aquí no compiten por las cinco plazas.
 
 (#526 en cada uno: se describe la condición observable, nunca «está desmoralizado».)
 
@@ -172,7 +199,10 @@ Razón de cada uno (detalle en su lote):
   rondas. (Lote C)
 - **Traer el catálogo completo de trabajos de SS13:** el fork ya tiene su matriz cerrada en
   `STATION_ACTIONS`. (Lote C)
-- **Moral (CDDA):** estado interno/subjetivo; afirmarlo violaría #526. Sustituido por *Enlace*. (Lote D)
+- **Moral (CDDA):** estado interno/subjetivo; afirmarlo violaría #526. No tiene sustituto entre
+  los cinco estados de personaje (la primera pasada lo había sustituido por *Enlace*, pero
+  *Enlace* es telemetría de la conexión, no estado de personaje — vive en el anexo de salud de
+  puesto). `descartado` por su propio motivo. (Lote D, #847)
 - **Dolor / Hambre / Sed / Enfermedad, Resistencia/Stamina, Poder biónica, estados de nave (CDDA):**
   internos no observables, redundantes o ya cubiertos por `barras-estado`. (Lote D)
 - **Traer Strings de prosa ajenos (Brogue/SPD):** son de autoría inglesa a mano; copiarlos sería #568.
@@ -190,8 +220,21 @@ Razón de cada uno (detalle en su lote):
 ## Aceptación del issue #840
 
 - Entradas completas: **16** (≥8 ✓). Descartes razonados: **13** (≥2 ✓).
-- Toda entrada declara fuente y licencia verificada en repo; toda adopción respeta ADR-0008
-  (standalone-first) y la frontera #526.
-- Ordenado por coste ascendente (lo más standalone-first primero).
+- Cada entrada declara fuente y licencia verificada en su lote (la verificación está en el
+  fichero de cada lote, no aquí de memoria). Corrección de esta pasada: Forged in the Dark es
+  **CC BY 3.0** (no 4.0, como decía la pasada anterior heredada de #845).
+- Toda adopción respeta la frontera #526 y el objetivo ADR-0008 (standalone-first), pero la
+  columna **Standalone** de la tabla dice la verdad: 7 de 16 adoptar viven hoy solo como script
+  del módulo de Foundry (`event-journal.mjs`, `station-actions.mjs`, `npc-generador.mjs` o un
+  pintor) y no son standalone-first hasta portar su estado canónico al núcleo.
+- Ordenado por **coste ascendente** y priorizado por **riqueza narrativa / coste** (columna
+  Riqueza 1–5 en la tabla rápida): primero las victorias baratas que más pagan.
+- Revalidado contra `main` tras rebasear esta rama: los lotes **A (#849), B (#843), C (#848),
+  E (#846), G (#845)** ya están mergeados en `main`; el **Lote D (#847)** está en revisión y su
+  subconjunto de cinco estados (arriba) se consolida en cuanto se mergea. Los ficheros
+  `lote-*.md` quedan enlazados en prosa a propósito (no rompen el gate de rutas).
 - Enlazado desde `README.md` (sección Recursos) y desde `ECOSISTEMA_OPEN_SOURCE.md` (#568): este
   documento estudia *qué mecánica robar*; el de #568 estudia *de qué depender*.
+
+> **Pendiente para cerrar #840:** mergear el Lote D (#847). Los lotes A/B/C/E/G ya están en
+> `main`; este índice es el que cierra el issue y ya apunta a ellos en prosa.

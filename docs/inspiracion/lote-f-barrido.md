@@ -77,6 +77,9 @@ espaciales, roguelikes, TTRPGs libres) ya están cubiertos por A–E,G. Lo no cu
 lote cierra #840 aportando las dos entradas distintas de arriba y escribiendo el índice final
 `docs/INSPIRACION_JUEGOS_LIBRES.md` que compila A–G (16 entradas, 13 descartes).
 
-> **Pendiente:** el índice ya existe y cierra el issue; solo falta la revisión humana y el merge de
-> los PRs de lotes (A #849, B #843, C #848, D #847, E #846, G #845, F #850) para que los ficheros
-> `lote-*.md` enlazados en prosa dejen de ser referencias a ramas y pasen a estar en `main`.
+> **Pendiente:** los lotes A (#849), B (#843), C (#848), E (#846), G (#845) ya están mergeados en
+> `main`. El Lote D (#847) está en revisión (corrección de frase Moral/Enlace + convención
+> evidencia/propuesta); al mergearlo, este índice —que ya apunta a todos en prosa— cierra #840.
+> Este Lote F (#850) se rebasea sobre `main` y aplica las 4 correcciones de la revisión: orden
+> riqueza/coste, columna **Standalone** honesta, FitD **CC BY 3.0**, y revalidación contra `main`.
+> No se amplían entradas.

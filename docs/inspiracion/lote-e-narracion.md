@@ -31,6 +31,15 @@ de #526). Toca `event-journal.mjs` y `bitacora-nave.mjs`.
   del GM (callsign, posición, rumbo, casco, energía, escudos) con etiquetas
   localizadas. También plantilla fija, también solo hechos.
 
+Nota de residencia (vale para los tres `adoptar` de abajo): el diario de eventos
+vive **dentro del Journal de Foundry**. Es una **proyección** del evento que emite
+el puente, no su forma canónica: si se quita Foundry, la prosa de este lote se va
+con él. Por eso ninguna de las tres adopciones es «standalone-first» — son mejoras
+de una capa **opcional**. Lo que sí es standalone es el evento en sí (lo produce el
+escenario y lo publica el puente); este lote solo mejora cómo se **presenta**, y esa
+frontera es la que ADR-0008 obliga a no confundir. Lo que este lote NO puede hacer
+es que el texto del módulo se convierta en la fuente de verdad de lo ocurrido.
+
 Conclusión del ancla: tenemos *registro de hechos*, no *narración*. El hueco que
 ataque este lote es la **variación de prosa** y la **colapsación de duplicados**,
 sin cruzar nunca la línea de #526 (el texto describe lo observable; no afirma
@@ -54,7 +63,9 @@ intención, moral ni lectura del GM).
    tenemos vía i18n.
 4. **Coste:** puro/Node. Tabla de sinónimos + selección por `scenario_time`/
    magnitudes, dentro del descriptor `pagina` de `event-journal.mjs`. No toca
-   núcleo C++ ni Lua de escenario; el diario sigue siendo standalone-first (ADR-0008).
+   núcleo C++ ni Lua de escenario, pero **tampoco es standalone**: vive en el Journal
+   de Foundry y desaparece con él. Es presentación opcional de un evento que sí es
+   canónico fuera del módulo (ADR-0008).
 5. **Veredicto:** `adoptar`. Tarjeta:
    `feat(bitacora): variación de prosa en el diario de eventos (sinónimos por tipo + severidad) sin tocar núcleo`.
    **Frontera #526:** los sinónimos y la severidad solo describen lo observable
@@ -75,19 +86,21 @@ intención, moral ni lectura del GM).
    inglés de Brogue, sino el patrón: un titular de impacto localizado) elevaría
    la legibilidad del registro del puente sin coste de motor.
 4. **Coste:** puro/Node. Un campo `titular` localizado por descriptor en
-   `event-journal.mjs`; reusa la misma i18n que hoy. Cero binarios, cero núcleo.
+   `event-journal.mjs`; reusa la misma i18n que hoy. Cero binarios, cero núcleo —
+   y, otra vez, **solo proyección Foundry**: el titular adorna la página, no
+   sustituye al evento canónico.
 5. **Veredicto:** `adoptar` (como *principio de formato*, no como Strings a
    importar). Tarjeta:
    `feat(bitacora): titular de impacto de una línea por entrada del diario, localizado`.
    **Frontera #526:** el titular resume el hecho, no lo interpreta; nunca «el
    capitán sostuvo la línea con valor» (eso sería afirmar una lectura no en el evento).
 
-## Shattered Pixel Dunungeon — interpolación de valores y colapso de log
+## Shattered Pixel Dungeon — interpolación de valores y colapso de log
 
 1. **Juego y licencia:** Shattered Pixel Dungeon — **GPL-3.0** (verificada en
    `00-Evan/shattered-pixel-dungeon` → LICENSE.txt, SPDX `GPL-3.0`).
 2. **Mecánica:** el `GLog` produce mensajes cortos construidos por *strings
-   estáticos con valores interpolados* («X hace Y de daño a Z», «recogas W») y
+   estáticos con valores interpolados* («X hace Y de daño a Z», «recoges W») y
    colapsa entradas idénticas contiguas en «(nuevo) ×K». Es el patrón más barato
    de los tres: ni siquiera necesita sinónimos para dejar de sonar a máquina, sino
    *no repetir la misma línea entera* cuando el evento se acumula.
@@ -95,10 +108,18 @@ intención, moral ni lectura del GM).
    eventos distintos con la misma plantilla se leen idénticos. El colapso
    «×K» de SPD (agrupar N llegadas a un mismo puerto en una línea) es exactamente
    la consecuencia diferida que el diario necesita cuando el puente emite a ráfaga.
-4. **Coste:** puro/Node. Extender la deduplicación de `event-journal.mjs` para
-   agrupar por (tipo + destino) y mostrar conteo. Mismo alcance que hoy.
-5. **Veredicto:** `adoptar`. Tarjeta:
-   `feat(bitacora): agrupar eventos iguales contiguos del puente en una línea con conteo`.
+4. **Coste:** puro/Node, pero con una **condición dura que no es opcional**. Hoy
+   `event-journal.mjs` escribe **una página por `eventId`** y usa ese flag para
+   deduplicar entregas al-menos-una-vez: esa correspondencia 1:1 es lo que hace el
+   diario auditable e idempotente. Agrupar dos eventos distintos por
+   `(tipo + destino)` en una sola página `×K` la rompería —al reentregar una ráfaga
+   ya no habría con qué saber qué falta—. Así que el colapso `×K` entra **como
+   agregado visual separado** del registro autoritativo: las páginas por `eventId`
+   siguen existiendo intactas, y la vista agrupada las resume conservando la lista
+   completa de los `eventId` canónicos que agrega. Si una implementación no puede
+   conservar todos los IDs, no se hace.
+5. **Veredicto:** `adoptar` **con esa condición**. Tarjeta:
+   `feat(bitacora): vista agregada ×K de eventos contiguos, sin tocar la página por eventId ni su deduplicación`.
    **Frontera #526:** el conteo es un hecho; no infiere por qué se repiten.
 
 ## Descarte razonado
@@ -111,7 +132,7 @@ intención, moral ni lectura del GM).
 
 ## Lo que el lote E no resuelve
 
-De dónde sale el *contenido* narrativo quando el GM escribe a mano
+De dónde sale el *contenido* narrativo cuando el GM escribe a mano
 (`bitacora-nave.mjs` lo deja en prosa libre del GM). Eso es autoría humana, no
 mecánica que robar; este lote solo ataca la **capa automática** del diario de
 eventos del puente.
@@ -119,10 +140,13 @@ eventos del puente.
 ## Resumen del lote
 
 Tres `adoptar` (DCSS sinónimos+severidad, Brogue principio de titular, SPD
-colapso ×K) + un descarte razonado (no importar Strings ajenos). Sin solapamiento
+colapso ×K, este último condicionado a preservar la página por `eventId` y su
+deduplicación) + un descarte razonado (no importar Strings ajenos). Sin solapamiento
 con B (misiones) ni G (SRD/fuentes): aquí el foco es la *prosa del registro*, no
-la generación de contenido ni las reglas de rol. Todos cumplen ADR-0008
-(puro/Node, standalone-first, cero arte, cero núcleo).
+la generación de contenido ni las reglas de rol. Los tres son **proyección Foundry
+opcional**, no capacidad standalone: cumplen ADR-0008 por no mover autoridad ni
+estado canónico al módulo, no por sobrevivir sin él. En la columna del índice
+final les corresponde `solo proyección Foundry`.
 
 > **Pendiente:** confirmación con fuente de primera mano de la puntuación de
 > severidad de DCSS (learndb la cita; no se leyó el `attack.cc` del repo). Lo

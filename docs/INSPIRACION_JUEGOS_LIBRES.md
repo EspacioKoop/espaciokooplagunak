@@ -67,6 +67,9 @@ de verdad.
 | 14 | Space Station 13 (AGPL-3.0) | job system + cascada (validación) | Lua escenario + puente | 4 | sí (escenario + puente; sin VTT) | adoptar | #484, `station-actions.mjs` |
 | 15 | Endless Sky (GPL-3.0) | reputación por facción persistente | núcleo C++ | 5 | sí (núcleo C++, #766/#767) | adoptar | #766, #767 |
 | 16 | FreeOrion (GPL-2.0) | matriz de relaciones entre imperios | núcleo C++ | 4 | sí (núcleo C++, #213/#767) | adoptar | #213, #767 |
+| 17 | Ironsworn / Starforged (CC BY 4.0) | *Ask the Oracle*: d100 con tabla graduada + prompt oracles (hecho sin GM) | puro/Node | 3 | solo Foundry (`npc-generador.mjs`, `asistencia/`) | adoptar | #766, #767, #213, #526 |
+| 18 | Kenney (CC0) | assets / game kits (placeholders sin riesgo) | — (datos de arte) | 1 | sí (CC0, sin atribución) | adoptar (fuente assets) | #618, #568 |
+| 19 | Beyond the Spozak (CC0) | setting sci-fi en dominio público (nombres/facciones/sistemas) | puro/Node (datos) | 2 | sí (CC0, sin atribución) | adoptar (fuente setting) | #213, #767 |
 
 **16 mecánicas de 15 juegos.** Endless Sky ocupa dos filas (10 y 15) porque aporta dos mecánicas
 distintas a costes distintos, y por eso los dos números no coinciden: #840 cuenta *una entrada por
@@ -284,19 +287,22 @@ un cociente parecería una medida, y esto es un juicio de diseño con dos ejes d
 
 ## Aceptación del issue #840
 
-- Mecánicas completas: **16** (≥8 ✓), de **15 juegos** estudiados — Endless Sky aporta dos.
-  Descartes razonados: **13** (≥2 ✓). De esos números, **dos mecánicas y dos descartes son del
-  Lote D**, que sigue abierto (#847): hasta que se mergee, el recuento firme es 14 mecánicas de
-  14 juegos y 11 descartes, que ya cumple los mínimos del issue por sí solo.
+- Mecánicas completas: **19** (≥8 ✓), de **17 juegos/fuentes** estudiados — Endless Sky aporta
+  dos; Ironsworn, Kenney (CC0) y Beyond the Spozak (CC0) añadidos en esta pasada. Descartes
+  razonados: **13** (≥2 ✓). De esos números, **dos mecánicas y dos descartes son del Lote D**,
+  que sigue abierto (#847): hasta que se mergee, el recuento firme es 17 mecánicas de 15
+  juegos/fuentes y 11 descartes, que ya cumple los mínimos del issue por sí solo.
 - Cada entrada declara fuente y licencia verificada en su lote (la verificación está en el
   fichero de cada lote, no aquí de memoria). Corrección de esta pasada: Forged in the Dark es
   **CC BY 3.0** (no 4.0, como decía la pasada anterior heredada de #845).
 - Toda adopción respeta la frontera #526 y el objetivo ADR-0008 (standalone-first), pero la
-  columna **Standalone** de la tabla dice la verdad: 7 de 16 adoptar viven hoy solo como script
+  columna **Standalone** de la tabla dice la verdad: 7 de 19 adoptar viven hoy solo como script
   del módulo de Foundry (`event-journal.mjs`, `station-actions.mjs`, `npc-generador.mjs` o un
-  pintor) y no son standalone-first hasta portar su estado canónico al núcleo.
-- Ordenado por **coste ascendente** en la tabla y **ordenado** por riqueza narrativa / coste en su
-  propia sección, que es lo que pide el criterio de salida: una columna puntúa, no prioriza.
+  pintor) y no son standalone-first hasta portar su estado canónico al núcleo. Las dos fuentes
+  **CC0** (Kenney assets, Beyond the Spozak setting) son dominio público real y no dependen de
+  Foundry ni de atribución: son standalone por definición de licencia.
+- Ordenado por **coste ascendente** en la tabla y **priorizado** por riqueza narrativa / coste en
+  su propia sección, que es lo que pide el criterio de salida: una columna puntúa, no prioriza.
 - Revalidado contra `main` tras rebasear esta rama: los lotes **A (#849), B (#843), C (#848),
   E (#846), G (#845)** ya están mergeados en `main`; el **Lote D (#847)** está en revisión y su
   subconjunto de cinco estados (arriba) queda marcado como **no consolidado** hasta que se mergee:

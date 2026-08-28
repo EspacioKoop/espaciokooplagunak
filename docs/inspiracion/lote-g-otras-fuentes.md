@@ -153,6 +153,64 @@ como evidencia para el Lote E.
 5. **Veredicto:** `descartado` a favor de la entrada 2 (FitD clocks), que da el mismo
    beneficio de estado-legible-countdown sin el requisito de inventario.
 
+### 7b. Ironsworn / Starforged — *Ask the Oracle* (generación de hecho sin GM)
+
+1. **Fuente y licencia:** *Ironsworn* (Shawn Tomkin, dark fantasy) y *Ironsworn:
+   Starforged* (evolución sci-fi). El SRD / *Reference Guide* se publica bajo
+   **CC BY 4.0** ✔ (verificado en <https://tomkinpress.com/pages/licensing>: «the
+   contents of the Ironsworn System Reference Document (SRD) are available for use
+   under the Creative Commons Attribution 4.0 International (CC BY) license»; lo mismo
+   para la *Starforged Reference Guide*). El texto completo de Starforged es CC
+   BY-NC-SA, pero sus tablas y mecánicas (la *Reference Guide*) son CC BY 4.0. Se
+   estudia el patrón, no se copia el setting.
+2. **Mecánica:** *Ask the Oracle* — un d100 contra una **tabla de probabilidad
+   graduada** (Almost Certain ≥10, Likely ≥26, 50/50, Unlikely ≥76, Small Chance ≥91)
+   para preguntas sí/no, más *prompt oracles* (tablas de tema/acción/ubicación) para
+   revelar detalles del mundo. Un *match* (repetición de dígitos) introduce complicación
+   o giro. La clave: el azar está **calibrado y legible**, no uniforme.
+3. **Problema nuestro:** la «superficie sin consecuencia» del fork (#766 persistencia,
+   #767 bestiario, #213 atlas). Un oráculo da a `npc-generador.mjs` y a `asistencia/`
+   una fuente de **contenido nuevo sin GM ni arte**: «¿hay una facción en este
+   sistema?», «¿qué pasó en este puesto mientras dormías?» (los *faction clocks* de
+   BitD lo consumen). Toca #526: el oráculo **no afirma interpretación**, sortea un
+   hecho registrable.
+4. **Coste:** **puro/Node**. Es una tirada d100 + una tabla de pesos + un diccionario de
+   *prompts* (texto). Cero binario, cero motor. El estado (semilla, historial de
+   tiradas) persiste con #766.
+5. **Veredicto:** `adoptar` como **primitiva de generación sin GM**. Refuerza A, B y E:
+   da a A un «¿cómo reacciona esta facción?» sin DJ, a B material de misión sorteado, a
+   E hechos canónicos para la bitácora. Diferencia con Lote B (Naev/Endless Sky/Wesnoth):
+   B mira generación de *misiones* con GM/editor; el oráculo es generación de *hecho*
+   a pelo, la capa inferior que B da por sentada.
+
+### 7c. Fuentes **CC0** (dominio público real) para el fork standalone-first
+
+El usuario pidió específicamente CC0 — dominio público, sin atribución — la frontera
+más limpia para un fork que ya tumbó una propuesta por riesgo de licencia (#698).
+CC0 de *mecánica* de rol pura es escaso (casi todo SRD libre lleva CC BY / CC BY-SA);
+aquí dos **fuentes CC0 verificables** que tocan problemas abiertos del fork sin
+escribir una línea de regla ajena:
+
+- **Kenney — librería de assets y «game kits» (CC0).** Licencia **CC0 1.0 Universal**
+  ✔ (verificado en <https://kenney.nl>, sección de licencia: «all assets are public
+  domain, free to use, no attribution required»). Aporta tiles, iconos de UI, naves y
+  *game kits* (ej. Space/Infinity) que el módulo usa como placeholders mientras no hay
+  arte propio. Toca #618 (pixelart/referencias) y la regla de
+  `docs/PROCEDENCIA_ASSETS.md` (#568). Cero riesgo de licencia, cero atribución.
+  **Veredicto:** `adoptar` como **fuente de assets CC0**, no como mecánica.
+- **Beyond the Spozak — universo sci-fi CC0 (setting, no reglas).** Licencia **CC0**
+  ✔ verificado como «sprawling public domain (CC0) science fiction universe» en los
+  jams *Forever Open Source* de itch.io (<https://itch.io/jam/forever-open-source-jam> y
+  ediciones 2024/2025). Cantera de **nombres de facciones, sistemas, especies y
+  conflictos** ya en dominio público. Toca #213 (atlas Spelljammer) y #767 (bestiario):
+  un «sistema Spozak» puede entrar en `catalogo-cosmografico.mjs` como entrada de
+  dominio público, igual que el fork ya usa SRD 5.1 en `npc-generador.mjs`. Coste:
+  puro/Node (datos de texto). **Veredicto:** `adoptar` como **fuente de setting CC0**.
+- **Honestidad sobre «mecánica CC0»:** no se fuerza una tercera entrada de *mecánica*
+  CC0 (candidatas como *World of Dungeons* o *Maze Rats* no confirmaron su licencia en
+  fuente primaria en esta pasada). Se dejan como **candidato pendiente de verificación**,
+  no como entrada, para no reincidir en la licencia de memoria que ya corrigió #845.
+
 ### 7. F-Droid / Interactive Fiction — aventura de texto sin arte (evidencia para Lote E)
 
 1. **Fuente y licencia:** F-Droid aloja intérpretes de ficción interactiva (p.ej.
@@ -182,11 +240,15 @@ como evidencia para el Lote E.
 
 ## Resumen del lote
 
-- **3 adoptar:** WN *Faction Turns* (#213/#767, nivel campaña), FitD *Clocks* (#213/#484,
-  progreso legible), SRD 5.1 reacciones (continuación en `npc-generador.mjs`).
+- **5 adoptar:** WN *Faction Turns* (#213/#767, nivel campaña), FitD *Clocks* (#213/#484,
+  progreso legible), SRD 5.1 reacciones (continuación en `npc-generador.mjs`), **Ironsworn
+  *Ask the Oracle* (generación de hecho sin GM, CC BY 4.0)**, y dos fuentes **CC0** — **Kenney**
+  (assets, sin atribución) y **Beyond the Spozak** (setting sci-fi, sin atribución).
 - **3 descartes razonados:** osgameclones (cantera, no entrada), Cairn (sin inventario en
   el puente), Mausritter (cubierto por FitD clocks).
 - **1 cantera/evidencia:** F-Droid / IF como respaldo del Lote E.
+- **1 candidato pendiente de verificación:** mecánicas CC0 puras (*World of Dungeons*,
+  *Maze Rats*) — licencia no confirmada en fuente primaria en esta pasada, no se fuerza.
 - **Dónde vive cada uno** (ADR-0008), que es lo que la primera pasada mezclaba: los
   *Faction Turns* son **núcleo** —resolvedor y estado con #766—; el *clock* es **estado
   nativo con proyección Foundry** —el contador en Lua/núcleo, el círculo en el módulo—; las

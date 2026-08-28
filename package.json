@@ -1,7 +1,7 @@
 {
   "name": "espaciokooplagunak",
   "version": "1.0.0",
-  "description": "<p align=\"center\">   <img src=\"docs/assets/banner.svg\" alt=\"Espaciokoop Lagunak — simulación espacial cooperativa por puestos, conectada con Foundry VTT\" width=\"900\"/> </p>",
+  "description": "Fork comunitario de EmptyEpsilon: simulacion espacial cooperativa por puestos, conectada con Foundry VTT.",
   "main": "index.js",
   "directories": {
     "doc": "docs",

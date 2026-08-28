@@ -73,7 +73,11 @@ jobs:
           if ((${#files[@]} > 0)); then
             node --test "${files[@]}"
           else
-            echo "Sin tests Node en tools/tests/; paso omitido."
+            echo "::error::No se encontro ningun tools/tests/test_*.mjs."
+            echo "Este paso existe para que una rotura del cargador enrojezca la"
+            echo "puerta; un glob vacio la dejaria verde por omision, que es"
+            echo "justo el modo de fallo que viene a cerrar."
+            exit 1
           fi
       - name: Trazabilidad de nombres de dominio público (#310)
         run: python3 tools/check_public_domain_names.py

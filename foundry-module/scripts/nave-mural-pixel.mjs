@@ -664,133 +664,6 @@ export function chapaEnCara({ eje, plano, sentido }, u0, u1, v0, v1, saliente = 
 }
 
 /**
- * Un punto sobre la cara, con su profundidad propia. Es `chapaEnCara` sin fijar
- * el plano: lo que hace falta para un COSTADO, que por definición une dos
- * profundidades distintas y por tanto no es coplanar con la cara.
- */
-function puntoEnCara({ eje, plano, sentido }, u, y, prof) {
-  const p = plano + prof * sentido;
-  return eje === "x" ? [u, y, p] : [p, y, u];
-}
-
-/**
- * Los cuatro vértices de un cuadrilátero, girados si hace falta para que su
- * normal apunte hacia `deseada`.
- *
- * Se ORIENTA por cálculo y no por tabla a propósito. La cabecera de
- * `chapaEnCara` ya avisa de que el par de giros va INVERTIDO entre el eje `x` y
- * el `z`, y ese es el signo que se copia mal; un costado tiene además cuatro
- * orientaciones (arriba, abajo, izquierda, derecha) por cada uno de los cuatro
- * casos de cara, o sea dieciséis sitios donde ponerlo del revés. Aquí no hay
- * ninguno: se mide la normal que sale y se le da la vuelta si mira al otro lado.
- * El coste se paga UNA vez, al construir la sala, y no por fotograma.
- */
-function cuadrilateroOrientado(vertices, deseada) {
-  const [a, b, c] = vertices;
-  const ab = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
-  const ac = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
-  const n = [
-    ab[1] * ac[2] - ab[2] * ac[1],
-    ab[2] * ac[0] - ab[0] * ac[2],
-    ab[0] * ac[1] - ab[1] * ac[0],
-  ];
-  const mira = n[0] * deseada[0] + n[1] * deseada[1] + n[2] * deseada[2];
-  return mira < 0 ? [...vertices].reverse() : vertices;
-}
-
-/**
- * Los COSTADOS de un rectángulo que sobresale más que sus vecinos (#838).
- *
- * Por qué hace falta: una chapa adelantada sin costados no se lee como un
- * bulto. El motor no proyecta sombras y pinta por orden de pintor, así que
- * mover una cara plana hacia delante no cambia NADA de frente — solo se nota
- * moviéndose, por paralaje. Lo que da el relieve es el costado, que tiene otra
- * normal y por tanto otro tono: el de arriba coge la luz y el de abajo se va al
- * ambiente, exactamente igual que el bisel de `panelBiselado` pero con
- * geometría de verdad en vez de dos líneas pintadas.
- *
- * Y por qué se mira al vecino en vez de encajonar cada rectángulo: un costado
- * entre dos masas que están a la MISMA altura queda enterrado —no se ve nunca—
- * y aun así se pintaría cada fotograma. En un cuadro de cinco masas eso es
- * multiplicar por cinco la cuenta de caras para no enseñar ni una. Se recorre
- * la arista celda a celda, se compara con la profundidad del otro lado y solo
- * se levanta pared donde de verdad hay escalón, fundiendo las tiradas seguidas
- * — es el mismo criterio codicioso de `fundirRectangulos`, aplicado al canto.
- *
- * @returns {number[][][]} lista de cuadriláteros, cada uno cuatro vértices.
- */
-function costadosDeRectangulo(cara, { v, u0, ancho, alto }, prof, profundidades, base, celda, profFuera) {
-  const filas = profundidades.length;
-  const columnas = filas > 0 ? profundidades[0].length : 0;
-  const costados = [];
-
-  // Cada arista: por dónde se recorre, qué celda hay al otro lado y hacia dónde
-  // mira el costado que la tapa.
-  const aristas = [
-    { largo: ancho, vecino: (i) => [v + alto, u0 + i], fija: v + alto, horizontal: true, normal: [0, 1, 0] },
-    { largo: ancho, vecino: (i) => [v - 1, u0 + i], fija: v, horizontal: true, normal: [0, -1, 0] },
-    { largo: alto, vecino: (i) => [v + i, u0 + ancho], fija: u0 + ancho, horizontal: false, normal: null },
-    { largo: alto, vecino: (i) => [v + i, u0 - 1], fija: u0, horizontal: false, normal: null },
-  ];
-
-  for (const arista of aristas) {
-    let i = 0;
-    while (i < arista.largo) {
-      const [vv, uu] = arista.vecino(i);
-      const fuera = vv < 0 || vv >= filas || uu < 0 || uu >= columnas;
-      const otra = fuera ? profFuera : profundidades[vv][uu];
-      if (otra >= prof) {
-        i += 1;
-        continue;
-      }
-      // La tirada: hasta donde el escalón siga siendo el mismo.
-      let largo = 1;
-      while (i + largo < arista.largo) {
-        const [sv, su] = arista.vecino(i + largo);
-        const dentro = sv >= 0 && sv < filas && su >= 0 && su < columnas;
-        if ((dentro ? profundidades[sv][su] : profFuera) !== otra) break;
-        largo += 1;
-      }
-
-      const pLo = otra;
-      const pHi = prof;
-      let vertices;
-      let normal;
-      if (arista.horizontal) {
-        const y = base + arista.fija * celda;
-        const a = u0 + i;
-        const b = u0 + i + largo;
-        vertices = [
-          puntoEnCara(cara, a * celda + cara.u0, y, pLo),
-          puntoEnCara(cara, b * celda + cara.u0, y, pLo),
-          puntoEnCara(cara, b * celda + cara.u0, y, pHi),
-          puntoEnCara(cara, a * celda + cara.u0, y, pHi),
-        ];
-        normal = arista.normal;
-      } else {
-        const x = arista.fija * celda + cara.u0;
-        const a = base + (v + i) * celda;
-        const b = base + (v + i + largo) * celda;
-        vertices = [
-          puntoEnCara(cara, x, a, pLo),
-          puntoEnCara(cara, x, b, pLo),
-          puntoEnCara(cara, x, b, pHi),
-          puntoEnCara(cara, x, a, pHi),
-        ];
-        // A lo largo de la cara: hacia donde crece `u` o al revés, según qué
-        // lado del rectángulo sea. Sale del propio eje, sin tabla.
-        const haciaU = cara.eje === "x" ? [1, 0, 0] : [0, 0, 1];
-        const signo = arista.fija === u0 ? -1 : 1;
-        normal = haciaU.map((c) => c * signo);
-      }
-      costados.push(cuadrilateroOrientado(vertices, normal));
-      i += largo;
-    }
-  }
-  return costados;
-}
-
-/**
  * El mural de un tramo de muro, listo para entrar en la lista de piezas de
  * `crearSalaCaja`.
  *
@@ -827,19 +700,17 @@ export function piezasMuralPixel({ rect, sala, altura, semilla = 1 }) {
  *   de una puerta, la cara inferior en un objeto).
  */
 export function chapasDeRejilla(cara, rejilla, opciones = {}) {
-  const { base = 0, celda = CELDA, saliente = SALIENTE, tope = TOPE_PIEZAS, relieve } = opciones;
+  const { base = 0, celda = CELDA, saliente = SALIENTE, tope = TOPE_PIEZAS } = opciones;
 
-  // El relieve es OPCIONAL y por eso no cambia ni un polígono de los tres
-  // consumidores de #548/#550: sin `relieve`, la profundidad de toda celda es
-  // `saliente` y esto es exactamente el código de antes.
-  //
-  // Fuera de la rejilla y en las celdas vacías la profundidad es `saliente`, o
-  // sea el plano de apoyo de la pieza — NO cero. Con cero, el costado exterior
-  // del marco bajaría hasta la cara del muro y se pelearía con ella en el
-  // z-buffer, que es justo lo que `saliente` existe para evitar.
-  const profundidades = relieve
-    ? rejilla.map((fila) => fila.map((color) => (color ? saliente + relieve(color) : saliente)))
-    : null;
+  // NO HAY RELIEVE GEOMÉTRICO, y consta por si alguien vuelve a intentarlo
+  // (#838): esta función tuvo una opción para adelantar cada color unos
+  // milímetros y sacarle los costados, con la idea de dar volumen a la pintura
+  // de un cuadro. Se retiró MEDIDA. Con y sin ella cambiaban entre 0 y 168
+  // píxeles de los 129.600 del fotograma, y ni subiendo el empaste a cinco
+  // centímetros pasaba del 0,3 %: lo que se mira de frente enseña sus costados
+  // de canto, y a esta resolución un canto de milímetros no llega a un píxel.
+  // El volumen que sí se ve aquí es el PINTADO —el bisel de `panelBiselado`—,
+  // y por eso el mural entero se dibuja así.
 
   // Las chapas se agrupan POR COLOR en una sola malla cada una, en vez de
   // devolver una pieza por rectángulo (#551).
@@ -867,26 +738,16 @@ export function chapasDeRejilla(cara, rejilla, opciones = {}) {
     malla.caras.push(vertices.map((_, i) => desde + i));
   };
 
-  for (const pieza of fundirRectangulos(rejilla).slice(0, tope)) {
-    const { v, u0, ancho, alto, color } = pieza;
-    const prof = profundidades ? profundidades[v][u0] : saliente;
+  for (const { v, u0, ancho, alto, color } of fundirRectangulos(rejilla).slice(0, tope)) {
     const quad = chapaEnCara(
       cara,
       cara.u0 + u0 * celda,
       cara.u0 + (u0 + ancho) * celda,
       base + v * celda,
       base + (v + alto) * celda,
-      prof,
+      saliente,
     );
     anadir(color, quad.vertices);
-    // El costado va en el MISMO color que la cara: es el canto de esa misma
-    // masa, no una junta ni una sombra pintada. Lo que lo separa del frente es
-    // la normal, o sea la luz — que es como se distingue un canto de verdad.
-    if (profundidades) {
-      for (const costado of costadosDeRectangulo(cara, pieza, prof, profundidades, base, celda, saliente)) {
-        anadir(color, costado);
-      }
-    }
   }
   return [...porColor].map(([color, malla]) => ({ malla, color }));
 }

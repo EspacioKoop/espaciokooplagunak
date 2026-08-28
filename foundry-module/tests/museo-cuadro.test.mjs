@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { CUADRO } from "../scripts/paleta.mjs";
-import { CELDA, chapasDeRejilla } from "../scripts/nave-mural-pixel.mjs";
+import { CELDA, fundirRectangulos } from "../scripts/nave-mural-pixel.mjs";
 import {
   ALTO_TOTAL,
   ANCHO_TOTAL,
@@ -10,8 +10,6 @@ import {
   COMPOSICIONES,
   LIENZO,
   MARCO,
-  RELIEVE_PIGMENTO,
-  relieveDe,
   SALIENTE_CUADRO,
   TOPE_CUADRO,
   costeCuadro,
@@ -180,11 +178,11 @@ test("EL PRESUPUESTO: cada composición cabe en el tope, y con margen", () => {
     Object.keys(COMPOSICIONES).map((id) => [id, costeCuadro(id)]),
   );
   assert.deepEqual(costes, {
-    "campo-partido": 96,
-    "contratiempo-de-verdin": 121,
-    "frente-al-mar": 377,
-    "viento-del-sur": 349,
-    "sobre-la-niebla": 328,
+    "campo-partido": 48,
+    "contratiempo-de-verdin": 53,
+    "frente-al-mar": 170,
+    "viento-del-sur": 162,
+    "sobre-la-niebla": 149,
   });
   for (const [id, coste] of Object.entries(costes)) {
     assert.ok(coste <= TOPE_CUADRO, `${id} se pasa del tope`);
@@ -348,77 +346,9 @@ test("«contratiempo-de-verdin» no puede volver a leerse como un gráfico de ba
   );
 });
 
-/* ---- el relieve (#838) ------------------------------------------------------ */
 
-test("el relieve tiene TRES alturas más el marco, no una por pigmento", () => {
-  // No es economía de tabla: el costado solo se levanta donde hay escalón, así
-  // que una altura por color pone una pared en cada frontera de color y
-  // multiplica la cuenta de caras para enseñar cantos de un milímetro. La
-  // medida está en la cabecera del módulo (494 contra 364 en el peor lienzo).
-  const alturas = [...new Set(Object.values(RELIEVE_PIGMENTO))].sort((a, b) => a - b);
-  assert.deepEqual(alturas, [0, 0.003, 0.006, 0.012]);
-  assert.equal(relieveDe(CUADRO.marco), 0.012, "el listón va por delante de la pintura");
-  assert.equal(relieveDe(CUADRO.fondo), 0, "el lienzo crudo es la altura cero");
-  assert.equal(relieveDe(CUADRO.azulPalido), 0, "el cielo es aire, no empaste");
-  assert.ok(relieveDe(CUADRO.espuma) > relieveDe(CUADRO.azulMedio), "el empaste va delante del cuerpo");
-});
 
-test("un pigmento sin declarar se queda PLANO en vez de reventar", () => {
-  // Un color nuevo que se olvide en la tabla no puede tumbar la sala entera: se
-  // queda al ras, que es el estado de partida y nunca una mentira sobre el
-  // volumen de la pintura.
-  assert.equal(relieveDe("#123456"), 0);
-});
 
-test("una masa adelantada trae sus costados; una al ras, ninguno", () => {
-  // Es LA razón de que el relieve se vea: el motor no proyecta sombras y pinta
-  // por orden de pintor, así que adelantar una cara sin costados no cambia nada
-  // de frente. Y al revés: entre dos celdas a la misma altura no puede aparecer
-  // un costado, porque quedaría enterrado y se pintaría cada fotograma.
-  const rejilla = [
-    ["fondo", "fondo", "fondo"],
-    ["fondo", "bulto", "fondo"],
-    ["fondo", "fondo", "fondo"],
-  ];
-  const cara = { eje: "z", plano: 0, sentido: 1, u0: 0 };
-  const opciones = { base: 0, celda: 1, saliente: 0.1, tope: 99 };
-  const plano = chapasDeRejilla(cara, rejilla, opciones);
-  const conRelieve = chapasDeRejilla(cara, rejilla, {
-    ...opciones,
-    relieve: (color) => (color === "bulto" ? 0.2 : 0),
-  });
-
-  const caras = (piezas, color) => piezas.find((p) => p.color === color).malla.caras.length;
-  assert.equal(caras(plano, "bulto"), 1, "sin relieve una celda es una cara y nada más");
-  assert.equal(caras(conRelieve, "bulto"), 5, "el bulto trae su frente y sus cuatro costados");
-  assert.equal(
-    caras(conRelieve, "fondo"),
-    caras(plano, "fondo"),
-    "el fondo está al ras del borde y no puede haber ganado ni un costado",
-  );
-
-  // Y el costado va en el color de SU masa: es el canto de esa pintura, no una
-  // junta ni una sombra pintada. Lo que lo distingue del frente es la normal.
-  const bulto = conRelieve.find((p) => p.color === "bulto");
-  const profundidades = new Set(bulto.malla.vertices.map(([x]) => Number(x.toFixed(4))));
-  assert.deepEqual([...profundidades].sort((a, b) => a - b), [0.1, 0.3]);
-});
-
-test("el costado exterior del marco NO baja hasta la cara del muro", () => {
-  // Con la profundidad de fuera de la rejilla en cero, el canto del marco
-  // llegaría al plano del muro y se pelearía con él en el z-buffer, que es
-  // justo lo que `SALIENTE_CUADRO` existe para evitar.
-  const chapas = piezasCuadro({
-    cara: { eje: "z", plano: 0, sentido: 1 },
-    u: 0,
-    cota: 0,
-    composicion: "campo-partido",
-  });
-  // Con `eje: "z"` la PROFUNDIDAD va en la x y el recorrido del muro en la z
-  // (ver `chapaEnCara`): es el cruce que hay que mirar dos veces al escribirlo.
-  const profundidades = chapas.flatMap(({ malla }) => malla.vertices.map(([x]) => x));
-  assert.ok(Math.min(...profundidades) >= SALIENTE_CUADRO - 1e-9, "algo llega al plano del muro");
-});
 
 /* ---- la gramática, también en la ola (#838) --------------------------------- */
 
@@ -445,4 +375,62 @@ test("«frente-al-mar» tiene VOLADIZO: la cresta vuela sobre el agua de delante
   // abajo a propósito: lo que se vigila es que el voladizo EXISTA, no su tamaño
   // exacto, que es una decisión de dibujo y puede moverse.
   assert.ok(voladizo >= 10, `la cresta ya no vuela sobre el vacío (${voladizo} celdas)`);
+});
+
+/* ---- el marco, moldura PINTADA (#838) --------------------------------------- */
+
+test("el marco es una MOLDURA y no un borde de color", () => {
+  // El perfil, de fuera adentro: un canto que sube, el cuerpo del listón y un
+  // rebaje que baja hacia el lienzo. Lo que lo hace moldura es que el rebaje
+  // lleva la luz AL REVÉS que el canto exterior; sin esa inversión el lienzo
+  // parece pegado encima del listón en vez de encajado detrás.
+  const rejilla = rejillaCuadro("campo-partido");
+  const filas = rejilla.length;
+  const columnas = rejilla[0].length;
+  const d = MARCO - 1;
+
+  // Canto exterior: arriba y a la izquierda cogen la luz.
+  assert.equal(rejilla[filas - 1][columnas >> 1], CUADRO.marcoLuz);
+  assert.equal(rejilla[filas >> 1][0], CUADRO.marcoLuz);
+  assert.equal(rejilla[0][columnas >> 1], CUADRO.marcoSombra);
+  assert.equal(rejilla[filas >> 1][columnas - 1], CUADRO.marcoSombra);
+
+  // Rebaje interior: exactamente al revés.
+  assert.equal(rejilla[filas - 1 - d][columnas >> 1], CUADRO.marcoSombra);
+  assert.equal(rejilla[filas >> 1][d], CUADRO.marcoSombra);
+  assert.equal(rejilla[d][columnas >> 1], CUADRO.marcoLuz);
+  assert.equal(rejilla[filas >> 1][columnas - 1 - d], CUADRO.marcoLuz);
+
+  // Y entre los dos, el cuerpo del listón sin tocar.
+  assert.equal(rejilla[filas - 2][columnas >> 1], CUADRO.marco);
+});
+
+test("la moldura CABE porque la celda del lienzo es fina, no por suerte", () => {
+  // Cuatro celdas de listón son 5 cm. A la celda del muro (10 cm) el listón
+  // entero sería media celda y no habría perfil que dibujar: la moldura existe
+  // porque el cuadro tiene celda propia, que es la misma razón por la que el
+  // dibujo tiene detalle.
+  assert.ok(MARCO * CELDA_LIENZO < CELDA, "el listón mide menos que una celda de muro");
+  assert.ok(MARCO >= 3, "con menos de tres celdas no hay canto, cuerpo y rebaje");
+});
+
+test("EL LIENZO SIGUE PLANO: la moldura es cosa del marco", () => {
+  // Es la regla del módulo y no cambia: biselar la pintura la convertiría en
+  // chapa remachada. Dentro del lienzo no puede aparecer ningún tono de marco.
+  for (const id of Object.keys(COMPOSICIONES)) {
+    const rejilla = rejillaCuadro(id);
+    const dentro = rejilla
+      .slice(MARCO, rejilla.length - MARCO)
+      .flatMap((fila) => fila.slice(MARCO, fila.length - MARCO));
+    for (const color of dentro) {
+      assert.ok(![CUADRO.marco, CUADRO.marcoLuz, CUADRO.marcoSombra].includes(color), id);
+    }
+  }
+});
+
+test("la moldura no se come el presupuesto: son ocho tiradas, no un dibujo", () => {
+  // Ocho llamadas de una celda de ancho sobre un marco macizo. Si esto empieza
+  // a crecer es que alguien está dibujando dentro del listón.
+  const conMarco = fundirRectangulos(rejillaCuadro("campo-partido")).length;
+  assert.ok(conMarco < 60, `el marco se está llenando: ${conMarco} rectángulos`);
 });

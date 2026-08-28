@@ -93,24 +93,24 @@ export const MARCO = 4;
  * colgar una más. Si una composición no cabe, se simplifica el dibujo o se
  * quita un cuadro; nunca se sube la celda.
  *
- * Sube de 260 a 400 en #838 con la medida delante, no por costumbre. Caras por
- * lienzo, marco incluido:
+ * Baja de 260 a 200 en #838, y baja porque el dibujo es más caro pero el
+ * relieve se fue. Caras por lienzo, marco incluido:
  *
- *   composición              antes  detalle  + relieve
- *   campo-partido               19       53        116
- *   contratiempo-de-verdin      31       49        123
- *   frente-al-mar               51      163        364
- *   viento-del-sur              83      158        349
- *   sobre-la-niebla             61      145        328
+ *   composición              antes  con detalle  (extruido)
+ *   campo-partido               19           48        116
+ *   contratiempo-de-verdin      31           53        123
+ *   frente-al-mar               51          170        364
+ *   viento-del-sur              83          162        349
+ *   sobre-la-niebla             61          149        328
  *
- * Las dos columnas dicen de dónde viene cada cosa: el detalle de la celda de
- * 1,25 cm multiplica por tres el dibujo, y el relieve lo multiplica por poco
- * más de dos sobre eso —el costado solo aparece donde hay escalón, así que lo
- * que paga es el PERÍMETRO de las masas y no su área—. La ladera del Fuji costó
- * 482 hasta que su cono pasó a peldaños de dos filas: una ladera que cambia de
- * ancho en cada fila es todo silueta.
+ * El detalle de la celda de 1,25 cm multiplica por tres el dibujo, y eso es lo
+ * que se paga. La tercera columna es lo que llegó a costar la extrusión que se
+ * retiró por no verse (ver `marcoMoldura`): más del doble para cambiar un 0,1 %
+ * del fotograma. La ladera del Fuji costó 482 hasta que su cono pasó a peldaños
+ * de dos filas — una ladera que cambia de ancho en cada fila es todo silueta, y
+ * ESO sigue valiendo: lo que se paga en un dibujo es el perímetro.
  */
-export const TOPE_CUADRO = 400;
+export const TOPE_CUADRO = 200;
 
 /** Medidas del lienzo pintado, en metros, sin contar el marco. */
 export const LIENZO = Object.freeze({ ancho: 1.2, alto: 0.8 });
@@ -122,73 +122,6 @@ const FILAS_LIENZO = Math.round(LIENZO.alto / CELDA_LIENZO);
  *  sala necesita saber qué hueco de muro ocupa antes de colgar nada. */
 export const ANCHO_TOTAL = (COLUMNAS_LIENZO + MARCO * 2) * CELDA_LIENZO;
 export const ALTO_TOTAL = (FILAS_LIENZO + MARCO * 2) * CELDA_LIENZO;
-
-/* ---- el relieve ------------------------------------------------------------ */
-
-/**
- * Cuánto sobresale cada pigmento, en metros por encima de `SALIENTE_CUADRO`
- * (#838).
- *
- * ESTO NO ES UN BISEL, y la diferencia importa porque la cabecera de este módulo
- * prohíbe biselar el lienzo. Un bisel es un canto PINTADO —dos líneas, una clara
- * y otra oscura— y es el vocabulario de la chapa remachada: pintarlo sobre una
- * pintura la convierte en un panel de casco, que es el material equivocado. Esto
- * es lo contrario: no se pinta ni una línea de más. Cada masa de color se
- * ADELANTA unos milímetros y el motor le saca sus costados solos
- * (`chapasDeRejilla({relieve})`), así que el volumen sale de la luz sobre una
- * geometría real, igual que en una tabla con la pintura empastada. El marco
- * sigue teniendo su bisel pintado, porque un marco sí es un objeto de la sala.
- *
- * Las cifras son de PINTURA, no de carpintería: entre 2 y 6 mm de empaste sobre
- * el fondo, y el listón del marco 12 mm por delante de todo. Con más, el cuadro
- * deja de ser un cuadro y se convierte en un relieve; se nota enseguida en la
- * silueta al mirarlo de lado.
- *
- * Y son TRES ALTURAS más el marco, no una por pigmento. No es redondeo: el
- * costado solo existe donde hay ESCALÓN, así que dar a cada color su altura
- * propia levanta una pared en cada frontera de color del cuadro y multiplica
- * por dos y medio la cuenta de caras para enseñar cantos de un milímetro que
- * nadie distingue. Medido en el peor lienzo: 494 caras con una altura por
- * pigmento contra 314 con estas tres, y el volumen que se ve es el mismo. Es la
- * misma lección del agrupado por color de #551 —el presupuesto es la condición
- * del detalle— y además es mejor pintura: un cuadro tiene fondo, cuerpo y
- * empaste, no ocho estratos.
- *
- * Lo que NO lleva relieve: `fondo`, el cielo y la niebla de fondo. Son el aire
- * del cuadro y la altura cero contra la que se mide todo lo demás.
- */
-export const RELIEVE_PIGMENTO = Object.freeze({
-  // El listón, por delante de todo.
-  [CUADRO.marco]: 0.012,
-  [CUADRO.marcoLuz]: 0.012,
-  [CUADRO.marcoSombra]: 0.012,
-  // Altura cero: el lienzo crudo y el aire del cuadro (cielo, agua de fondo,
-  // vapor). Contra esto se mide el empaste.
-  [CUADRO.fondo]: 0,
-  [CUADRO.azulPalido]: 0,
-  [CUADRO.niebla]: 0,
-  // Capa media: las masas que están DENTRO del cuadro pero no delante.
-  [CUADRO.nieblaClara]: 0.003,
-  [CUADRO.azulProfundo]: 0.003,
-  [CUADRO.azulMedio]: 0.003,
-  [CUADRO.verdin]: 0.003,
-  [CUADRO.bermellonSombra]: 0.003,
-  [CUADRO.roca]: 0.003,
-  // Capa de delante: el empaste cargado, lo que en una tabla se toca con el
-  // dedo.
-  [CUADRO.ocre]: 0.006,
-  [CUADRO.bermellon]: 0.006,
-  [CUADRO.espuma]: 0.006,
-  [CUADRO.hueso]: 0.006,
-});
-
-/**
- * El relieve de un color, o cero si no está declarado. Un pigmento sin entrada
- * no revienta: se queda plano, que es el estado de partida y nunca una mentira.
- */
-export function relieveDe(color) {
-  return RELIEVE_PIGMENTO[color] ?? 0;
-}
 
 /* ---- las composiciones ----------------------------------------------------- */
 
@@ -670,6 +603,52 @@ export const COMPOSICIONES = Object.freeze({
 });
 
 /**
+ * El MARCO, como moldura pintada (#838).
+ *
+ * POR QUÉ PINTADA Y NO EXTRUIDA. La primera versión de esto sacaba el volumen
+ * con geometría: cada masa adelantada unos milímetros y el motor sacándole los
+ * costados. Está MEDIDO y no se ve — con y sin extrusión cambian entre 0 y 168
+ * píxeles de los 129.600 del fotograma, y ni subiéndola a 5 centímetros pasa
+ * del 0,3 %. La causa es de fondo y no se arregla con más profundidad: un
+ * cuadro colgado se mira DE FRENTE, así que sus costados se ven de canto, y a
+ * 480x270 un canto de milímetros ocupa menos de un píxel. Lo mismo que hace que
+ * el relieve no cueste polígonos en pantalla —caen por recorte— es lo que hace
+ * que no se vea.
+ *
+ * Lo que sí se ve a esta resolución son PÍXELES, y aquí hay de sobra: la celda
+ * del lienzo es 1,25 cm, ocho veces más fina que la del muro, así que un listón
+ * de 5 cm son cuatro celdas y en cuatro celdas cabe un perfil de moldura de
+ * verdad. Esto es la excepción explícita a la regla del módulo: el LIENZO sigue
+ * plano —biselar la pintura la convertiría en chapa remachada— y el marco sí se
+ * bisela, porque un marco es un objeto de la sala y se ilumina como tal.
+ *
+ * EL PERFIL, de fuera adentro: un canto que sube, el cuerpo del listón y un
+ * REBAJE que baja hacia el lienzo. El rebaje lleva la luz AL REVÉS que el canto
+ * exterior —oscuro arriba y a la izquierda, claro abajo y a la derecha— y esa
+ * inversión es toda la diferencia entre un marco y un borde de color: sin ella
+ * el lienzo parece pegado encima del listón en vez de encajado detrás. Es la
+ * regla de `nave-mural-pixel.mjs` («una pieza montada y un hueco recortado
+ * llevan el bisel al revés el uno del otro») aplicada dentro de una sola pieza.
+ */
+function marcoMoldura(lienzo, columnas, filas) {
+  const { linea, columna } = lienzo;
+  // Anillo exterior: el canto que sube. La luz viene de arriba y de la
+  // izquierda, así que arriba e izquierda cogen luz. El orden de las cuatro
+  // llamadas decide las esquinas, y no es indiferente: la última manda.
+  linea(filas - 1, 0, columnas, CUADRO.marcoLuz);
+  columna(0, 0, filas, CUADRO.marcoLuz);
+  linea(0, 0, columnas, CUADRO.marcoSombra);
+  columna(columnas - 1, 0, filas, CUADRO.marcoSombra);
+
+  // Anillo interior: el rebaje contra el lienzo, con la luz invertida.
+  const d = MARCO - 1;
+  linea(filas - 1 - d, d, columnas - d * 2, CUADRO.marcoSombra);
+  columna(d, d, filas - d * 2, CUADRO.marcoSombra);
+  linea(d, d, columnas - d * 2, CUADRO.marcoLuz);
+  columna(columnas - 1 - d, d, filas - d * 2, CUADRO.marcoLuz);
+}
+
+/**
  * La pintura en coordenadas de rejilla, marco incluido. Se expone aparte de la
  * geometría por el mismo motivo que `rejillaMural`: es LA decisión de dibujo, y
  * es lo que se puede leer en un test sin montar una escena.
@@ -684,12 +663,8 @@ export function rejillaCuadro(id) {
   const filas = FILAS_LIENZO + MARCO * 2;
   const lienzo = crearLienzo(columnas, filas);
 
-  // El marco primero, macizo, y encima sus dos cantos. La luz viene de arriba.
   lienzo.rect(0, 0, columnas, filas, CUADRO.marco);
-  lienzo.linea(filas - 1, 0, columnas, CUADRO.marcoLuz);
-  lienzo.columna(0, 0, filas, CUADRO.marcoLuz);
-  lienzo.linea(0, 0, columnas, CUADRO.marcoSombra);
-  lienzo.columna(columnas - 1, 0, filas, CUADRO.marcoSombra);
+  marcoMoldura(lienzo, columnas, filas);
 
   // La pintura se dibuja en su propio lienzo y se estampa dentro del marco. Se
   // hace así, y no pasándole el offset al dibujo, para que ninguna composición
@@ -725,7 +700,6 @@ export function piezasCuadro({ cara, u, cota, composicion }) {
     celda: CELDA_LIENZO,
     saliente: SALIENTE_CUADRO,
     tope: TOPE_CUADRO,
-    relieve: relieveDe,
   });
 }
 

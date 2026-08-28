@@ -594,6 +594,16 @@ export const CUADRO = Object.freeze({
   espuma: "#f0f3f5", // el blanco de la cresta y de la nieve, más frío que el hueso
   niebla: "#b9c3c9", // el gris del vapor, entre el cielo y el blanco
   roca: "#3a3d42", // la piedra oscura y las siluetas a contraluz
+  // Y los tres de abajo, con el detalle de #838. Son TONOS INTERMEDIOS de tres
+  // pigmentos que ya estaban, y solo existen porque la celda del lienzo bajó a
+  // la mitad: a 48 x 32 no había sitio para una transición y un tono más era
+  // ruido; a 96 x 64 una ladera cabe en dos tonos y sin ellos se lee como un
+  // recorte de cartulina. Ojo con la frontera: esto es PINTURA, donde una masa
+  // puede tener luz y sombra, y NO la piel del casco, que sigue siendo de paleta
+  // corta y sin degradados por contrato. Tres tonos no son un degradado.
+  azulMedio: "#2f5f86", // el cuerpo del agua, entre el fondo y el cielo
+  bermellonSombra: "#7a2a1e", // la ladera del cono que no da al sol
+  nieblaClara: "#d2d9dd", // el vapor de arriba, donde la luz lo atraviesa
 });
 
 /**

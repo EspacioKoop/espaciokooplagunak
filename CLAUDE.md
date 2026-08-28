@@ -513,15 +513,37 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     esculturas) partido por el ancho del cuadro más su hueco, hoy tres por muro, y se ALTERNA de
     muro en muro para que la colección no se amontone a un lado. Pasarse de ganchos revienta. El dibujo es `scripts/museo-cuadro.mjs`, y su regla es que un
     cuadro no tiene imagen que pegar —el motor no mapea texturas y no hay binarios—: se pinta con
-    `chapasDeRejilla` como la piel del muro, pero **con celda propia** de 2,5 cm, porque a los
-    10 cm del mural un lienzo de 1,2 × 0,8 m tiene doce por ocho píxeles. Bajar la celda compartida
-    para conseguirlo es justo el fallo de #551. El marco lleva relieve (es un objeto de la sala) y
-    el lienzo **no** (la pintura es plana; biselarla la haría chapa remachada). Nada que se pueda
+    `chapasDeRejilla` como la piel del muro, pero **con celda propia** de 1,25 cm (2,5 hasta #838),
+    porque a los 10 cm del mural un lienzo de 1,2 × 0,8 m tiene doce por ocho píxeles. Bajar la
+    celda compartida para conseguirlo es justo el fallo de #551 — y `MARCO` sube de 2 a 4 celdas a
+    la vez que la celda baja, que es ese mismo fallo en pequeño: lo escrito en filas se parte por
+    la mitad en silencio. El marco lleva su bisel **pintado** (es un objeto de la sala) y el lienzo
+    **no**: biselar la pintura la convertiría en chapa remachada. Lo que sí tiene el lienzo desde
+    #838 es **relieve de verdad** —`RELIEVE_PIGMENTO` + `chapasDeRejilla({relieve})`—, que es lo
+    contrario de un bisel: no se pinta ni una línea de más, cada masa se adelanta unos milímetros
+    y el motor le saca los costados, así que el volumen sale de la luz sobre geometría real, como
+    el empaste de una tabla. Tres alturas y no una por pigmento: el costado solo existe donde hay
+    escalón, así que una altura por color pone una pared en cada frontera y multiplica las caras
+    para enseñar cantos de un milímetro. Y fuera de la rejilla la profundidad es el `saliente`, no
+    cero, o el canto del marco bajaría a pelearse con el muro en el z-buffer. Nada que se pueda
     leer como instrumento —ni cartas estelares, ni esquemas, ni diagramas—: es #526 donde más fácil
-    sería saltárselo. Y el presupuesto es la condición y no una optimización posterior: cada
+    sería saltárselo, y no es teórico: la revisión de #838 bloqueó por un cuadro abstracto que se
+    leía como un gráfico de barras (cuatro columnas sobre la misma base, altura creciente, un
+    remate igual en cada una), y al rehacerlo se vio que la ola de la misma tanda caía en lo mismo
+    con la coartada de ser una ola. Las dos guardas que quedan son de GRAMÁTICA y no de color ni
+    de presupuesto, que es lo que ninguna prueba anterior podía ver: ninguna masa se apoya en la
+    fila de abajo del lienzo —basta una para que el ojo busque el eje— y la cresta de la ola
+    **vuela** sobre el agua que tiene delante, que es lo único que ninguna barra puede hacer. Y el presupuesto es la condición y no una optimización posterior: cada
     composición se comprueba **al importar** contra `TOPE_CUADRO` y revienta si no cabe, porque un
     cuadro recortado al tope se lee como un fallo (a diferencia de un muro, al que le sobra un
-    greeble y sigue siendo un muro). Las dos abstractas son `obra-propia` y lo **dicen**, con prueba
+    greeble y sigue siendo un muro). Ese tope subió a 400 en #838 con la medida delante, y lo que
+    la medida enseña es dónde está el gasto: las mallas pasan de 19–83 caras a 96–377, pero en
+    pantalla la sala pasa de 1.461 a 1.466 polígonos —el costado de una masa está de canto a un
+    paso y cae por recorte—, o sea que el relieve se paga al construir la sala y no por fotograma.
+    Lo que sí se paga es la SILUETA: una ladera que cambia de ancho en cada fila es todo escalón,
+    y de ahí que el cono y el perfil de la ola se muestreen a peldaños (`paso`, `PASO_OLA`) en vez
+    de al píxel — 671 caras costaba la ola dibujada columna a columna, el tope entero de un cuadro
+    para una sola ola. Las dos abstractas son `obra-propia` y lo **dicen**, con prueba
     en los dos idiomas: la misma norma de la casa que obliga al León a decir que es una
     reconstrucción. Las otras tres son **redibujos de paisajes de dominio público** a partir de
     escaneos CC0 (Hokusai ×2, Friedrich), y estrenan el sexto valor de `NATURALEZAS`,
@@ -534,6 +556,23 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     alguien ha copiado algo y eso ya no es una interpretación. Se eligen por lo que sobrevive a
     48 × 32 píxeles —masas, no detalle: un retrato es una mancha—, nunca subiendo la resolución
     para que quepa una más.
+    El museo es además, con la playa, uno de los dos niveles del **campo de pruebas**
+    (`tools/campo-de-pruebas/`, #838): las escenas andables abiertas en un navegador sin levantar
+    ningún mundo, que es donde la regla **standalone-first** se puede COMPROBAR y no solo afirmar.
+    No duplica nada —escenas, piezas, cartelas y motor de andar se importan de
+    `foundry-module/scripts/`, y los niveles salen del propio `CATALOGO_ANDAR`—, porque una copia
+    dejaría de comprobar la sala de verdad el primer día que alguien tocara una de las dos. Lo
+    propio de la herramienta es el teclado, el `<canvas>` y el panel de cartela, que es lo que en
+    Foundry pone la ventana; y la salida de cada escena, que en la partida vuelve a la cantina,
+    aquí encadena con el siguiente nivel y lo DICE en vez de fingir un viaje que no existe. Un
+    tercer nivel es una entrada más de `niveles.mjs`. Se eligieron estas dos porque son las
+    únicas que se entran por herramienta y no cuelgan de ningún mamparo (#587, #598): las trece
+    salas del Phobos ya se visitan andando. Es además donde se mira el arte, porque el relieve de
+    un cuadro es una afirmación visual que ninguna prueba de Node demuestra, y ya ha pagado su
+    coste dos veces: encontró que el bucle no arrancaba sin inyectarle `requestAnimationFrame`
+    —la escena se veía perfecta en una captura y estaba muerta— y que un muro lateral queda
+    SIEMPRE en el suelo ambiente de 0,35 porque la luz del motor no le da, así que los cuadros de
+    ese lado pierden el color, y como #836 alterna de muro en muro es media colección.
     Lo que el museo NO hace es la mitad del diseño: **enseña y ya está**. La cartela se pinta al
     acercarse y se retira al apartarse (`accion: {tipo: "cartela"}` + el flanco de salida
     `alSalirDeInteraccion` de #598); no marca piezas como vistas, no lleva la cuenta ni deja rastro,

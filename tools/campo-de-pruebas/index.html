@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Campo de pruebas — Espaciokoop Lagunak</title>
+<style>
+  :root {
+    --fondo: #16181c;
+    --panel: #23262b;
+    --borde: #383d46;
+    --hueso: #e2dccb;
+    --tenue: #8d939c;
+    --cartel: #cdb894;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; background: var(--fondo); color: var(--hueso);
+    font: 15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+    display: grid; grid-template-rows: auto auto 1fr auto; gap: 12px; padding: 14px;
+  }
+  header { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: baseline; }
+  h1 { font-size: 16px; margin: 0; font-weight: 600; }
+  .teclas { margin: 0; color: var(--tenue); font-size: 13px; }
+  kbd {
+    background: var(--panel); border: 1px solid var(--borde); border-bottom-width: 2px;
+    border-radius: 3px; padding: 1px 5px; font: 12px/1 ui-monospace, monospace; color: var(--hueso);
+  }
+  nav { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  nav button {
+    background: var(--panel); color: var(--hueso); border: 1px solid var(--borde);
+    border-radius: 3px; padding: 5px 12px; font: inherit; font-size: 13.5px; cursor: pointer;
+  }
+  nav button[aria-current="true"] { border-color: var(--cartel); color: var(--cartel); }
+  nav button:focus-visible { outline: 2px solid var(--cartel); outline-offset: 2px; }
+  #rotulo { color: var(--tenue); font-size: 13px; margin: 0 0 0 6px; }
+  main { display: grid; grid-template-columns: 1fr minmax(0, 330px); gap: 12px; min-height: 0; }
+  #lienzo {
+    width: 100%; height: auto; aspect-ratio: 16 / 9; align-self: start; display: block;
+    background: #000; border: 1px solid var(--borde); border-radius: 2px;
+    /* Sin filtrado: es pixelart, y el suavizado del navegador lo convertiría en
+       otra cosa. Misma regla que el look de la consola de los 90. */
+    image-rendering: pixelated;
+  }
+  #cartela {
+    background: var(--panel); border: 1px solid var(--borde); border-radius: 2px;
+    padding: 18px; overflow-y: auto; align-self: start; max-height: 70vh;
+  }
+  #cartela[hidden] { display: none; }
+  #cartela h2 { margin: 0 0 6px; font-size: 19px; font-weight: 600; }
+  .naturaleza {
+    margin: 0 0 14px; font-size: 12px; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--cartel);
+  }
+  .texto { margin: 0 0 14px; }
+  .credito, #cartela a { font-size: 12.5px; color: var(--tenue); word-break: break-word; }
+  .credito { margin: 0 0 6px; }
+  .salida { margin: 0; color: var(--cartel); }
+  footer { color: #6f757e; font-size: 12.5px; margin: 0; }
+  #aviso { color: #d98b7a; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Campo de pruebas</h1>
+    <p class="teclas">
+      <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> andar ·
+      <kbd>Q</kbd><kbd>E</kbd> girar · <kbd>C</kbd> agacharse ·
+      <kbd>espacio</kbd> saltar · <kbd>V</kbd> primera/tercera ·
+      <kbd>Tab</kbd> cambiar de nivel
+    </p>
+  </header>
+
+  <nav id="niveles" aria-label="Niveles"><span id="rotulo"></span></nav>
+
+  <main>
+    <!-- 480x270 y no otro tamaño: es la resolución a la que `componer` dibuja
+         por defecto. Con el lienzo más grande, la escena se pinta en una esquina y
+         el resto queda en negro; con él más pequeño, se recorta. -->
+    <canvas id="lienzo" width="480" height="270"></canvas>
+    <aside id="cartela" hidden></aside>
+  </main>
+
+  <footer>
+    Sin Foundry: las escenas, sus piezas y el motor de andar se importan tal cual de
+    <code>foundry-module/scripts/</code>; los niveles salen de su propio
+    <code>CATALOGO_ANDAR</code>. Acércate a una pieza para leer su cartela.
+    <span id="aviso"></span>
+  </footer>
+
+  <script type="module">
+    import { arrancarCampo } from "./arranque.mjs";
+
+    const lienzo = document.getElementById("lienzo");
+    const panel = document.getElementById("cartela");
+    const rotulo = document.getElementById("rotulo");
+    const barra = document.getElementById("niveles");
+    const aviso = document.getElementById("aviso");
+
+    const parametros = new URLSearchParams(location.search);
+    const idioma = parametros.get("idioma") ?? "es";
+    const lengua = idioma === "en" ? "en" : "es";
+
+    try {
+      const campo = await arrancarCampo({
+        lienzo,
+        panel,
+        rotulo,
+        idioma,
+        nivel: parametros.get("nivel"),
+        mirador: parametros.get("mirador"),
+      });
+
+      // Los botones se DERIVAN del catálogo de niveles, no se escriben aquí:
+      // un nivel nuevo aparece solo, que es la razón de que el catálogo exista.
+      const botones = campo.niveles.map((nivel) => {
+        const boton = document.createElement("button");
+        boton.type = "button";
+        boton.textContent = nivel.nombre[lengua];
+        boton.addEventListener("click", () => {
+          campo.irA(nivel.id);
+          marcar();
+          lienzo.focus();
+        });
+        return { nivel, boton };
+      });
+      const marcar = () => {
+        const actual = campo.nivelActual().id;
+        for (const { nivel, boton } of botones) {
+          boton.setAttribute("aria-current", String(nivel.id === actual));
+        }
+      };
+      barra.prepend(...botones.map(({ boton }) => boton));
+      marcar();
+      // `Tab` también cambia de nivel desde el teclado, así que la barra tiene
+      // que reflejarlo aunque nadie haya pulsado un botón.
+      addEventListener("keyup", marcar);
+    } catch (error) {
+      aviso.textContent = ` — no arrancó: ${error.message}`;
+      console.error(error);
+    }
+  </script>
+</body>
+</html>

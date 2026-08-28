@@ -50,8 +50,24 @@ import { chapasDeRejilla, crearLienzo } from "./nave-mural-pixel.mjs";
 /**
  * El lado de una celda del lienzo, en metros. El mando de escala del cuadro:
  * tocarlo cambia el tamaño del píxel de TODA la pintura y de nada más.
+ *
+ * 1,25 cm desde #838. Fue 2,5 y el argumento era el mismo que sigue valiendo
+ * —un cuadro se mira más de cerca que un muro—, pero se quedó corto: a 2,5 cm
+ * un lienzo son 48 x 32 celdas, y ahí una ladera solo puede ser un color plano
+ * y una ola solo puede ser cuatro escalones. Lo que cambia al bajar no es la
+ * cantidad de cosas, es que las masas admiten DENTRO una segunda lectura —vetas,
+ * espuma partida, una cumbre con dos tonos—, que es la misma jerarquía a dos
+ * distancias que gobierna la piel del muro (#551).
+ *
+ * Y se baja SOLO esta, que es justo lo que #551 enseñó a no hacer al revés: la
+ * celda del mural sigue en 10 cm y un cuadro no arrastra a la nave entera.
+ * Ojo con lo que va EN CELDAS y no en metros: al partir esta constante por la
+ * mitad, todo lo que estuviera escrito como número de filas se queda del tamaño
+ * equivocado en silencio. Por eso `MARCO` sube a la vez, y por eso las
+ * composiciones de abajo derivan cada medida de `filas`/`columnas` en vez de
+ * escribir el índice a mano.
  */
-export const CELDA_LIENZO = 0.025;
+export const CELDA_LIENZO = 0.0125;
 
 /**
  * Cuánto se despega el cuadro del muro. Más que el `SALIENTE` de la piel
@@ -60,17 +76,41 @@ export const CELDA_LIENZO = 0.025;
  */
 export const SALIENTE_CUADRO = 0.035;
 
-/** Grosor del marco, en celdas. Dos son 5 cm: un listón, no una moldura. */
-export const MARCO = 2;
+/**
+ * Grosor del marco, en celdas. Cuatro son 5 cm: un listón, no una moldura.
+ *
+ * Sube de 2 a 4 en #838 EXACTAMENTE porque la celda bajó a la mitad: son los
+ * mismos 5 cm de listón de antes. Dejarlo en 2 habría dado un marco de 2,5 cm
+ * sin que fallara ninguna prueba — es el fallo de #551 repetido, y la razón de
+ * que esto vaya escrito aquí y no en el diario de un PR.
+ */
+export const MARCO = 4;
 
 /**
  * Cuántas chapas puede gastar un cuadro. No sale de una intuición: es el
  * presupuesto que las composiciones de hoy cumplen con holgura (ver la medida en
  * la cabecera de la sala) y el número que hay que volver a medir antes de
- * añadir la tercera. Si una composición no cabe, se simplifica el dibujo o se
+ * colgar una más. Si una composición no cabe, se simplifica el dibujo o se
  * quita un cuadro; nunca se sube la celda.
+ *
+ * Sube de 260 a 400 en #838 con la medida delante, no por costumbre. Caras por
+ * lienzo, marco incluido:
+ *
+ *   composición              antes  detalle  + relieve
+ *   campo-partido               19       53        116
+ *   contratiempo-de-verdin      31       49        123
+ *   frente-al-mar               51      163        364
+ *   viento-del-sur              83      158        349
+ *   sobre-la-niebla             61      145        328
+ *
+ * Las dos columnas dicen de dónde viene cada cosa: el detalle de la celda de
+ * 1,25 cm multiplica por tres el dibujo, y el relieve lo multiplica por poco
+ * más de dos sobre eso —el costado solo aparece donde hay escalón, así que lo
+ * que paga es el PERÍMETRO de las masas y no su área—. La ladera del Fuji costó
+ * 482 hasta que su cono pasó a peldaños de dos filas: una ladera que cambia de
+ * ancho en cada fila es todo silueta.
  */
-export const TOPE_CUADRO = 260;
+export const TOPE_CUADRO = 400;
 
 /** Medidas del lienzo pintado, en metros, sin contar el marco. */
 export const LIENZO = Object.freeze({ ancho: 1.2, alto: 0.8 });
@@ -83,7 +123,119 @@ const FILAS_LIENZO = Math.round(LIENZO.alto / CELDA_LIENZO);
 export const ANCHO_TOTAL = (COLUMNAS_LIENZO + MARCO * 2) * CELDA_LIENZO;
 export const ALTO_TOTAL = (FILAS_LIENZO + MARCO * 2) * CELDA_LIENZO;
 
+/* ---- el relieve ------------------------------------------------------------ */
+
+/**
+ * Cuánto sobresale cada pigmento, en metros por encima de `SALIENTE_CUADRO`
+ * (#838).
+ *
+ * ESTO NO ES UN BISEL, y la diferencia importa porque la cabecera de este módulo
+ * prohíbe biselar el lienzo. Un bisel es un canto PINTADO —dos líneas, una clara
+ * y otra oscura— y es el vocabulario de la chapa remachada: pintarlo sobre una
+ * pintura la convierte en un panel de casco, que es el material equivocado. Esto
+ * es lo contrario: no se pinta ni una línea de más. Cada masa de color se
+ * ADELANTA unos milímetros y el motor le saca sus costados solos
+ * (`chapasDeRejilla({relieve})`), así que el volumen sale de la luz sobre una
+ * geometría real, igual que en una tabla con la pintura empastada. El marco
+ * sigue teniendo su bisel pintado, porque un marco sí es un objeto de la sala.
+ *
+ * Las cifras son de PINTURA, no de carpintería: entre 2 y 6 mm de empaste sobre
+ * el fondo, y el listón del marco 12 mm por delante de todo. Con más, el cuadro
+ * deja de ser un cuadro y se convierte en un relieve; se nota enseguida en la
+ * silueta al mirarlo de lado.
+ *
+ * Y son TRES ALTURAS más el marco, no una por pigmento. No es redondeo: el
+ * costado solo existe donde hay ESCALÓN, así que dar a cada color su altura
+ * propia levanta una pared en cada frontera de color del cuadro y multiplica
+ * por dos y medio la cuenta de caras para enseñar cantos de un milímetro que
+ * nadie distingue. Medido en el peor lienzo: 494 caras con una altura por
+ * pigmento contra 314 con estas tres, y el volumen que se ve es el mismo. Es la
+ * misma lección del agrupado por color de #551 —el presupuesto es la condición
+ * del detalle— y además es mejor pintura: un cuadro tiene fondo, cuerpo y
+ * empaste, no ocho estratos.
+ *
+ * Lo que NO lleva relieve: `fondo`, el cielo y la niebla de fondo. Son el aire
+ * del cuadro y la altura cero contra la que se mide todo lo demás.
+ */
+export const RELIEVE_PIGMENTO = Object.freeze({
+  // El listón, por delante de todo.
+  [CUADRO.marco]: 0.012,
+  [CUADRO.marcoLuz]: 0.012,
+  [CUADRO.marcoSombra]: 0.012,
+  // Altura cero: el lienzo crudo y el aire del cuadro (cielo, agua de fondo,
+  // vapor). Contra esto se mide el empaste.
+  [CUADRO.fondo]: 0,
+  [CUADRO.azulPalido]: 0,
+  [CUADRO.niebla]: 0,
+  // Capa media: las masas que están DENTRO del cuadro pero no delante.
+  [CUADRO.nieblaClara]: 0.003,
+  [CUADRO.azulProfundo]: 0.003,
+  [CUADRO.azulMedio]: 0.003,
+  [CUADRO.verdin]: 0.003,
+  [CUADRO.bermellonSombra]: 0.003,
+  [CUADRO.roca]: 0.003,
+  // Capa de delante: el empaste cargado, lo que en una tabla se toca con el
+  // dedo.
+  [CUADRO.ocre]: 0.006,
+  [CUADRO.bermellon]: 0.006,
+  [CUADRO.espuma]: 0.006,
+  [CUADRO.hueso]: 0.006,
+});
+
+/**
+ * El relieve de un color, o cero si no está declarado. Un pigmento sin entrada
+ * no revienta: se queda plano, que es el estado de partida y nunca una mentira.
+ */
+export function relieveDe(color) {
+  return RELIEVE_PIGMENTO[color] ?? 0;
+}
+
 /* ---- las composiciones ----------------------------------------------------- */
+
+/**
+ * Una veta: una raya de una celda dentro de una masa, con la longitud rota a
+ * propósito para que no parezca una junta.
+ *
+ * Es lo que llegó con la celda de 1,25 cm (#838). A 2,5 una masa solo podía ser
+ * un color plano; con el doble de resolución admite dentro una segunda lectura
+ * que premia acercarse, que es la misma jerarquía de la piel del muro (#551).
+ * Va siempre en un tono que ya está en la composición: una veta de color nuevo
+ * sería un objeto, no una textura.
+ */
+function veta({ linea }, v, u0, largo, color) {
+  linea(v, u0, largo, color);
+}
+
+/**
+ * Un triángulo isósceles apoyado en su base, dibujado fila a fila.
+ *
+ * Existe porque las tres composiciones interpretadas tienen una montaña, y una
+ * montaña dibujada a mano en cada una acabaría con tres perfiles distintos por
+ * descuido. `cima`/`filasCima` rematan la nieve; `sombra`/`ladera` oscurecen el
+ * flanco que no da al sol, que a 1,25 cm ya se puede decir con un tono y a 2,5
+ * no cabía.
+ */
+function cono({ linea }, { centro, base, alto, ancho, color, cima, filasCima = 0, sombra, ladera = 0.42, paso = 1 }) {
+  for (let i = 0; i < alto; i += 1) {
+    // El ancho se calcula por ESCALÓN y no por fila: con `paso` filas por
+    // escalón, la ladera sale en peldaños de esa altura. No es un detalle de
+    // estilo, es el presupuesto (#838): el relieve levanta un costado en cada
+    // cambio de silueta, así que una ladera que cambia de ancho en todas las
+    // filas cuesta el doble que una que cambia cada dos, y a esta resolución
+    // el peldaño de dos filas no se distingue del de una.
+    const escalon = Math.floor(i / paso) * paso;
+    const anchoFila = Math.max(1, Math.round(ancho * (1 - escalon / alto)));
+    const u0 = centro - Math.floor(anchoFila / 2);
+    const tono = cima && i >= alto - filasCima ? cima : color;
+    linea(base + i, u0, anchoFila, tono);
+    // La ladera en sombra: la parte derecha de la fila, y solo mientras el tono
+    // sea el del cuerpo — la nieve de la cima recibe luz por los dos lados.
+    if (sombra && tono === color) {
+      const anchoSombra = Math.round(anchoFila * ladera);
+      if (anchoSombra > 0) linea(base + i, u0 + anchoFila - anchoSombra, anchoSombra, sombra);
+    }
+  }
+}
 
 /**
  * «Campo partido»: dos masas de tierra que no se tocan, separadas por una línea
@@ -92,27 +244,59 @@ export const ALTO_TOTAL = (FILAS_LIENZO + MARCO * 2) * CELDA_LIENZO;
  * Lo que la hace un cuadro y no un patrón es que las masas están DESCENTRADAS:
  * una composición simétrica a esta escala se lee como un botón o como un aviso,
  * y ninguna de las dos cosas es una pintura.
+ *
+ * Con la celda de #838 las dos masas dejaron de ser rectángulos limpios: el
+ * borde de arriba de la baja va MELLADO —dientes de dos y tres celdas, sin
+ * paso fijo— y por dentro llevan vetas. Un canto perfectamente recto a esta
+ * resolución se lee como recortado con tijera, y el empaste lo delata todavía
+ * más ahora que tiene costado.
  */
 function campoPartido({ rect, linea }, columnas, filas) {
   rect(0, 0, columnas, filas, CUADRO.fondo);
+
   // La masa baja, ancha y pesada, apoyada fuera de campo por la izquierda.
-  rect(2, 0, Math.round(columnas * 0.62), Math.round(filas * 0.46), CUADRO.ocre);
+  const anchoBaja = Math.round(columnas * 0.62);
+  const altoBaja = Math.round(filas * 0.46);
+  rect(2, 0, anchoBaja, altoBaja, CUADRO.ocre);
+  // Su borde mellado: dientes de altura irregular, ninguno del mismo ancho que
+  // el anterior. La secuencia está escrita y no sorteada — un cuadro no se
+  // vuelve a tirar en cada pantalla, y aquí no hay semilla que valga.
+  const dientes = [
+    [7, 2], [4, 3], [9, 1], [5, 3], [6, 1], [11, 2], [4, 1], [8, 3], [5, 2], [7, 1], [6, 3], [9, 2],
+  ];
+  let u = 0;
+  for (const [ancho, sube] of dientes) {
+    if (u >= anchoBaja) break;
+    // Siempre sube algo: el borde queda CONTINUO y mellado. Con dientes que se
+    // saltan tramos —como en el primer intento— lo que se ve no es un canto
+    // roto, son bloques sueltos flotando encima de la masa.
+    rect(2 + altoBaja, u, Math.min(ancho, anchoBaja - u), sube, CUADRO.ocre);
+    u += ancho;
+  }
+  // Vetas dentro: dos claras arriba y una oscura abajo, todas cortas y sin
+  // empezar a la misma altura.
+  veta({ linea }, Math.round(altoBaja * 0.72), 5, Math.round(anchoBaja * 0.4), CUADRO.hueso);
+  veta({ linea }, Math.round(altoBaja * 0.55), Math.round(anchoBaja * 0.5), Math.round(anchoBaja * 0.3), CUADRO.hueso);
+  veta({ linea }, Math.round(altoBaja * 0.2), 9, Math.round(anchoBaja * 0.34), CUADRO.bermellon);
+
   // La alta, estrecha, entrando por arriba a la derecha: contrapeso, no espejo.
-  rect(
-    Math.round(filas * 0.38),
-    Math.round(columnas * 0.68),
-    Math.round(columnas * 0.24),
-    filas - Math.round(filas * 0.38),
-    CUADRO.bermellon,
-  );
+  const vAlta = Math.round(filas * 0.38);
+  const uAlta = Math.round(columnas * 0.68);
+  const anchoAlta = Math.round(columnas * 0.24);
+  rect(vAlta, uAlta, anchoAlta, filas - vAlta, CUADRO.bermellon);
+  // Su flanco izquierdo, un punto más oscuro: es la única concesión a la luz, y
+  // va en un tono que ya existe.
+  rect(vAlta, uAlta, 3, filas - vAlta, CUADRO.bermellonSombra);
+  veta({ linea }, filas - Math.round(filas * 0.18), uAlta + 5, anchoAlta - 8, CUADRO.ocre);
+
   // El corte de luz. Una sola celda de alto y sin llegar a los bordes: si
   // cruzara el lienzo entero sería un horizonte, y un horizonte ya es un sitio.
-  linea(Math.round(filas * 0.52), 4, columnas - 12, CUADRO.hueso);
+  linea(Math.round(filas * 0.52), Math.round(columnas * 0.1), Math.round(columnas * 0.42), CUADRO.hueso);
 }
 
 /**
- * «Contratiempo de verdín»: cinco masas que NO comparten base, de anchos y
- * alturas sin orden, dos de ellas cortadas por el borde del lienzo.
+ * «Contratiempo de verdín»: masas que NO comparten base, de anchos y alturas sin
+ * orden, dos de ellas cortadas por el borde del lienzo.
  *
  * Es la que justifica que haya dos cuadros propios y no uno: la otra es masa
  * contra masa, y esta es ritmo. Pero un ritmo REGULAR no es una pintura, es un
@@ -127,30 +311,60 @@ function campoPartido({ rect, linea }, columnas, filas) {
  *   siquiera se apoyan —una cuelga del borde de arriba—, así que no hay eje;
  * - **alturas no monótonas** y anchos desiguales: no se puede ordenar la serie,
  *   que es lo que hace legible un gráfico de barras;
- * - **el hueso, una sola vez y atravesado**: cruza dos masas y el fondo en
+ * - **el hueso, una sola vez y atravesado**: cruza varias masas y el fondo en
  *   horizontal, en vez de rematar cada bloque por igual. Un acento repetido en
  *   el mismo sitio de cada elemento es un tic de escala;
  * - **dos masas cortadas por el borde**: lo que sale del cuadro dice que el
  *   dibujo sigue fuera, y una escala no se sale nunca de su regla.
+ *
+ * Las medidas van en FRACCIÓN del lienzo y no en celdas: así el reparto es el
+ * mismo si la resolución vuelve a cambiar.
  */
 function contratiempoDeVerdin({ rect, linea }, columnas, filas) {
   rect(0, 0, columnas, filas, CUADRO.fondo);
-  // fila, columna, ancho, alto — cortada la primera por la izquierda y la
-  // última por la derecha; la segunda cuelga del borde de arriba.
-  rect(Math.round(filas * 0.28), 0, 9, Math.round(filas * 0.34), CUADRO.verdin);
-  rect(Math.round(filas * 0.56), 12, 6, filas - Math.round(filas * 0.56), CUADRO.ocre);
-  rect(Math.round(filas * 0.09), 21, 11, Math.round(filas * 0.16), CUADRO.verdin);
-  rect(Math.round(filas * 0.37), 26, 5, Math.round(filas * 0.28), CUADRO.ocre);
-  rect(Math.round(filas * 0.19), 38, columnas - 38, Math.round(filas * 0.19), CUADRO.verdin);
+
+  // v, u, ancho, alto — todo en fracción. Cortadas la primera por la izquierda
+  // y la última por la derecha; la segunda cuelga del borde de arriba.
+  const masas = [
+    [0.28, 0.0, 0.17, 0.34, CUADRO.verdin],
+    [0.56, 0.23, 0.12, 0.44, CUADRO.ocre],
+    [0.09, 0.4, 0.21, 0.16, CUADRO.verdin],
+    [0.37, 0.5, 0.1, 0.28, CUADRO.ocre],
+    [0.19, 0.73, 0.27, 0.19, CUADRO.verdin],
+    // Dos más pequeñas, que solo caben desde #838: rompen la cuenta de cinco
+    // —cuatro o cinco elementos todavía se cuentan de un vistazo, y contar es
+    // el primer gesto de leer una escala—.
+    //
+    // Ninguna de las dos toca la fila de abajo, y no es un descuido: la primera
+    // versión de esta tanda sí lo hacía («cortada por el borde de abajo»), y la
+    // guarda de gramática la rechazó con razón. Cortada por el lado es que el
+    // dibujo sigue fuera; apoyada en el suelo del lienzo es una base, y basta
+    // UNA para que el ojo empiece a buscar el eje.
+    [0.06, 0.34, 0.07, 0.11, CUADRO.ocre],
+    [0.72, 0.62, 0.08, 0.1, CUADRO.verdin],
+  ];
+  for (const [fv, fu, fa, fh, color] of masas) {
+    const v = Math.round(filas * fv);
+    const u = Math.round(columnas * fu);
+    const ancho = Math.round(columnas * fa);
+    const alto = Math.round(filas * fh);
+    rect(v, u, ancho, alto, color);
+    // Cada masa se come una esquina: un rectángulo intacto es una ficha, y
+    // siete fichas son un inventario. La esquina cambia de sitio con el índice.
+    const muerde = Math.max(2, Math.round(Math.min(ancho, alto) * 0.3));
+    const arriba = (fu * 10) % 2 < 1;
+    rect(arriba ? v + alto - muerde : v, u + ancho - muerde, muerde, muerde, CUADRO.fondo);
+  }
+
   // El único acento de hueso, en horizontal y cruzando lo que se encuentre.
-  linea(Math.round(filas * 0.62), 3, 22, CUADRO.hueso);
+  linea(Math.round(filas * 0.62), Math.round(columnas * 0.06), Math.round(columnas * 0.44), CUADRO.hueso);
 }
 
 /* ---- las tres interpretadas (#836, segunda tanda) --------------------------- */
 
 // LAS TRES DE ABAJO NO SON INVENTADAS: son REDIBUJOS de tres paisajes de dominio
-// público, escogidos porque su composición sobrevive a 48 × 32 píxeles. Lo que
-// hace que un cuadro clásico quepa aquí no es que sea famoso, es que se
+// público, escogidos porque su composición sobrevive a la resolución del lienzo.
+// Lo que hace que un cuadro clásico quepa aquí no es que sea famoso, es que se
 // reconozca por MASAS: la ola, el cono rojo y la silueta contra la niebla se
 // leen enteros a esta resolución, y un retrato o un interior se convertirían en
 // una mancha. Qué son exactamente —una interpretación y no una reproducción— lo
@@ -159,68 +373,139 @@ function contratiempoDeVerdin({ rect, linea }, columnas, filas) {
 //
 // NO HAY NINGÚN ESCANEO EN EL ÁRBOL, y esa es la diferencia con las estatuas.
 // De la fuente CC0 sale la composición, no el fichero: se mira el escaneo y se
-// vuelve a dibujar aquí con las mismas cinco decenas de rectángulos que la piel
-// de un muro. Por eso no hay `sha256` que comprobar — no hay archivo que se
-// haya copiado — y por eso la ficha de `docs/PROCEDENCIA_ASSETS.md` de estos
-// tres dice de qué obra vienen y no de qué fichero.
-
-/**
- * Un triángulo isósceles apoyado en su base, dibujado fila a fila.
- *
- * Existe porque las tres composiciones nuevas tienen una montaña, y una montaña
- * dibujada a mano en cada una acabaría con tres perfiles distintos por descuido.
- * Devuelve el ancho de cada fila para que quien quiera rematar la cima en otro
- * color no tenga que recalcularlo.
- */
-function cono({ linea }, { centro, base, alto, ancho, color, cima, filasCima = 0 }) {
-  for (let i = 0; i < alto; i += 1) {
-    const anchoFila = Math.max(1, Math.round(ancho * (1 - i / alto)));
-    const tono = cima && i >= alto - filasCima ? cima : color;
-    linea(base + i, centro - Math.floor(anchoFila / 2), anchoFila, tono);
-  }
-}
+// vuelve a dibujar aquí con los mismos rectángulos que la piel de un muro. Por
+// eso no hay `sha256` que comprobar —no hay archivo que se haya copiado— y por
+// eso la ficha de `docs/PROCEDENCIA_ASSETS.md` de estos tres dice de qué obra
+// vienen y no de qué fichero.
+//
+// EL DETALLE DE #838 NO ES «MÁS PARECIDO». Con el doble de resolución cabe
+// decir la ladera en sombra, la espuma partida en garras y la niebla en dos
+// capas; lo que NO cabe, y sigue sin caber, es la cara de nadie ni el trazo del
+// original. Se sube el detalle donde el cuadro se lee por masas, no donde
+// empezaría a reclamar ser una reproducción.
 
 /**
  * «Frente al mar»: la gran ola por delante, la montaña detrás y muy pequeña.
  *
  * Del original se conserva lo único que cabe: la desproporción. La ola ocupa
- * media tabla y el monte son seis filas al fondo, que es de lo que trata el
+ * media tabla y el monte es una cuña al fondo, que es de lo que trata el
  * grabado. La garra de espuma va en escalones y no en curva porque a esta
  * escala una curva son tres píxeles sueltos que se leen como suciedad.
+ *
+ * OJO CON EL PERFIL. La versión de #838 bajaba en escalones de altura
+ * decreciente y llevaba encima marcas horizontales cortas y casi iguales: eso
+ * es la misma gramática de gráfico que hubo que retirar del verdín, con la
+ * excusa de ser una ola. El perfil de aquí NO es monótono —la cresta sube otra
+ * vez antes de romper, que es lo que hace una ola— y las crestas del fondo son
+ * de largos claramente distintos.
  */
 function frenteAlMar({ rect, linea }, columnas, filas) {
   rect(0, 0, columnas, filas, CUADRO.azulPalido); // el cielo, hasta arriba
-  rect(0, 0, columnas, Math.round(filas * 0.38), CUADRO.azulProfundo); // el mar
+  const horizonte = Math.round(filas * 0.34);
+  rect(0, 0, columnas, horizonte, CUADRO.azulMedio); // el mar
+  rect(0, 0, columnas, Math.round(filas * 0.12), CUADRO.azulProfundo); // el primer plano
+
   // El monte al fondo, pequeño y a la derecha del centro.
   cono({ linea }, {
-    centro: Math.round(columnas * 0.66),
-    base: Math.round(filas * 0.38),
-    alto: 6,
-    ancho: 13,
+    centro: Math.round(columnas * 0.72),
+    base: horizonte,
+    alto: Math.round(filas * 0.17),
+    ancho: Math.round(columnas * 0.24),
     color: CUADRO.niebla,
     cima: CUADRO.espuma,
-    filasCima: 2,
+    filasCima: Math.round(filas * 0.05),
   });
-  // La ola: tramos de agua que suben hacia la izquierda, cada uno rematado en
-  // espuma. Los anchos son múltiplos de cuatro columnas para que `fundirRectangulos`
-  // tenga algo que fundir; en píxel a píxel esto no cabría en el presupuesto.
-  const tramos = [
-    [0, 6, 0.94],
-    [6, 5, 0.78],
-    [11, 5, 0.6],
-    [16, 5, 0.46],
-    [21, 4, 0.34],
+
+  // LA OLA, POR SILUETA Y NO POR BLOQUES. La versión anterior apilaba tramos
+  // rectangulares con la cresta plana encima, y eso —columnas de distinta
+  // altura con su remate— es la gramática de gráfico que este cuadro tiene
+  // prohibida, con la coartada de ser una ola. Aquí el perfil se interpola
+  // entre puntos de control, así que el canto es una CURVA escalonada y no una
+  // sucesión de mesetas.
+  //
+  // Y sobre todo: la cresta VUELA por encima del agua que tiene delante. Un
+  // voladizo es lo único que ninguna barra puede hacer —una barra nace en su
+  // base y sube—, así que es lo que decide la lectura de un vistazo. Es además
+  // lo que hace que la ola de Hokusai sea esa ola: la garra que se cierra.
+  const perfil = [
+    [0.0, 0.3], [0.08, 0.46], [0.16, 0.62], [0.24, 0.78], [0.31, 0.88],
+    [0.36, 0.9], [0.42, 0.86], [0.48, 0.72], [0.54, 0.5], [0.62, 0.34],
+    [0.72, 0.26], [0.85, 0.22], [1.0, 0.2],
   ];
-  for (const [u0, ancho, altura] of tramos) {
-    const alto = Math.round(filas * altura);
-    rect(0, u0, ancho, alto, CUADRO.azulProfundo);
-    linea(alto - 1, u0, ancho, CUADRO.espuma);
-    linea(alto - 2, u0, ancho, CUADRO.espuma);
+  const alturaEn = (fu) => {
+    for (let k = 1; k < perfil.length; k += 1) {
+      const [a, ha] = perfil[k - 1];
+      const [b, hb] = perfil[k];
+      if (fu <= b) return ha + ((hb - ha) * (fu - a)) / (b - a);
+    }
+    return perfil[perfil.length - 1][1];
+  };
+
+  // El perfil se muestrea cada `PASO_OLA` columnas y no en todas: dos columnas
+  // vecinas que difieren en una celda son dos rectángulos que `fundirRectangulos`
+  // ya no puede juntar, y una silueta muestreada al píxel cuesta 671 caras —el
+  // tope entero de un cuadro para una sola ola—. Con escalones de tres columnas
+  // la curva se conserva entera y la cuenta baja a un tercio. Es el mismo
+  // arreglo que el `paso` del cono, y la misma regla: el presupuesto es la
+  // condición del dibujo, no un recorte de después.
+  const PASO_OLA = 4;
+  const cresta = [];
+  for (let u = 0; u < columnas; u += 1) {
+    const muestra = Math.floor(u / PASO_OLA) * PASO_OLA;
+    const alto = Math.round(filas * alturaEn(muestra / (columnas - 1)));
+    cresta.push(alto);
+    linea(0, u, 1, CUADRO.azulMedio); // por si la columna quedara vacía
+    for (let v = 0; v < alto; v += 1) linea(v, u, 1, CUADRO.azulMedio);
+    // El seno del agua: el tercio bajo de la masa, más oscuro. Da cuerpo sin
+    // partirla en franjas horizontales, porque su altura sigue a la silueta.
+    for (let v = 0; v < Math.round(alto * 0.34); v += 1) linea(v, u, 1, CUADRO.azulProfundo);
+    // El filo, dos celdas de espuma pegadas al canto.
+    linea(alto - 1, u, 1, CUADRO.espuma);
+    linea(alto - 2, u, 1, CUADRO.espuma);
   }
-  // El oleaje corto de la derecha: dos crestas bajas, para que el mar no sea un
-  // rectángulo liso al lado de la ola.
-  linea(Math.round(filas * 0.3), Math.round(columnas * 0.7), 9, CUADRO.espuma);
-  linea(Math.round(filas * 0.22), Math.round(columnas * 0.78), 7, CUADRO.espuma);
+
+  // La garra: la cresta se desprende del filo en el tramo donde el perfil ya
+  // cae, y avanza HACIA LA DERECHA sobre el vacío, con dedos que cuelgan. Cada
+  // dedo tiene su largo y no hay dos seguidos iguales.
+  const uGarra = Math.round(columnas * 0.36);
+  const largoGarra = Math.round(columnas * 0.26);
+  const dedos = [5, 2, 7, 3, 9, 4, 6, 2, 8, 3, 5, 7, 2, 6];
+  for (let k = 0; k < largoGarra; k += 1) {
+    const u = uGarra + k;
+    if (u >= columnas) break;
+    // El labio, siguiendo la altura de donde NACIÓ la garra y no la del agua de
+    // debajo: por eso vuela.
+    const vLabio = cresta[uGarra] - Math.round(k * 0.55);
+    linea(vLabio, u, 1, CUADRO.espuma);
+    linea(vLabio - 1, u, 1, CUADRO.espuma);
+    // Los dedos van de DOS columnas y cada tres, no de una y cada dos: un dedo
+    // de una celda a esta escala es una mota, y además cada uno es un
+    // rectángulo suyo que no funde con nada.
+    if (k % 3 === 0) {
+      const largo = dedos[(k / 3) % dedos.length];
+      for (let d = 0; d < largo; d += 1) {
+        const v = vLabio - 2 - d;
+        if (v > cresta[u] && u + 1 < columnas) linea(v, u, 2, CUADRO.espuma);
+      }
+    }
+  }
+
+  // El oleaje corto de la derecha, en cuñas y no en rayas: tres crestas que
+  // nacen del agua y se cierran, de largos francamente distintos.
+  const olitas = [
+    [0.62, 0.2, 0.13],
+    [0.78, 0.14, 0.07],
+    [0.7, 0.09, 0.1],
+  ];
+  for (const [fu, fv, fa] of olitas) {
+    const u0 = Math.round(columnas * fu);
+    const v = Math.round(filas * fv);
+    const ancho = Math.round(columnas * fa);
+    for (let k = 0; k < ancho; k += 2) {
+      const alto = 1 + Math.round(Math.sin((k / ancho) * Math.PI) * 2);
+      for (let d = 0; d < alto; d += 1) linea(v + d, u0 + k, 2, CUADRO.espuma);
+    }
+  }
 }
 
 /**
@@ -230,24 +515,64 @@ function frenteAlMar({ rect, linea }, columnas, filas) {
  * Es la más simple de las tres a propósito, y la que mejor demuestra por qué la
  * celda del lienzo tiene que ser suya: a los 10 cm del mural, este cono son
  * cuatro píxeles y un cambio de color.
+ *
+ * Lo que trajo #838: la ladera del este en sombra —el «Fuji rojo» lo es porque
+ * le da el sol de amanecer por un lado y no por el otro—, y la nieve bajando en
+ * LENGUAS por los barrancos en vez de cortada en recto. Una cima con el corte
+ * horizontal es un sombrero; con lenguas es nieve.
  */
 function vientoDelSur({ rect, linea }, columnas, filas) {
   rect(0, 0, columnas, filas, CUADRO.azulPalido);
+
+  const baseCono = Math.round(filas * 0.2);
+  const altoCono = Math.round(filas * 0.74);
+  const centro = Math.round(columnas * 0.44);
   cono({ linea }, {
-    centro: Math.round(columnas * 0.44),
-    base: Math.round(filas * 0.2),
-    alto: Math.round(filas * 0.74),
-    ancho: columnas - 4,
+    centro,
+    base: baseCono,
+    alto: altoCono,
+    ancho: columnas - Math.round(columnas * 0.08),
     color: CUADRO.bermellon,
     cima: CUADRO.espuma,
-    filasCima: 5,
+    filasCima: Math.round(filas * 0.09),
+    sombra: CUADRO.bermellonSombra,
+    paso: 2,
   });
-  rect(0, 0, columnas, Math.round(filas * 0.2), CUADRO.verdin); // el bosque
+
+  // Las lenguas de nieve, colgando del filo de la cima. Largos distintos y
+  // sin paso fijo: la nieve baja por donde hay barranco.
+  const nieve = [-7, -4, -1, 2, 5, 9];
+  const filoNieve = baseCono + altoCono - Math.round(filas * 0.09);
+  nieve.forEach((du, i) => {
+    const largo = 2 + ((i * 3) % 5);
+    for (let k = 0; k < largo; k += 1) linea(filoNieve - k, centro + du, 1, CUADRO.espuma);
+  });
+
+  // El bosque, con el borde de arriba roto: una línea recta ahí sería un zócalo.
+  const altoBosque = Math.round(filas * 0.2);
+  rect(0, 0, columnas, altoBosque, CUADRO.verdin);
+  const copas = [3, 5, 2, 6, 4, 3, 7, 2, 5, 4, 6, 3, 4, 5];
+  let u = 0;
+  for (let i = 0; i < copas.length && u < columnas; i += 1) {
+    const ancho = copas[i];
+    if (i % 2 === 0) rect(altoBosque, u, Math.min(ancho, columnas - u), 1 + (i % 3), CUADRO.verdin);
+    u += ancho;
+  }
+
   // Las nubes en banda, arriba y a la derecha. Van por encima del cono porque
-  // en el original pasan por delante de la ladera, no por detrás.
-  linea(filas - 4, Math.round(columnas * 0.6), 15, CUADRO.espuma);
-  linea(filas - 7, Math.round(columnas * 0.68), 11, CUADRO.espuma);
-  linea(filas - 10, Math.round(columnas * 0.74), 8, CUADRO.espuma);
+  // en el original pasan por delante de la ladera, no por detrás. Cada banda va
+  // PARTIDA en dos tramos desiguales: tres barras enteras y paralelas serían
+  // justo la lectura que este cuadro no puede tener.
+  const bandas = [
+    [0.94, 0.58, 0.18, 0.79, 0.09],
+    [0.88, 0.66, 0.12, 0.81, 0.06],
+    [0.82, 0.72, 0.09, 0.85, 0.04],
+  ];
+  for (const [fv, fu1, fa1, fu2, fa2] of bandas) {
+    const v = Math.round(filas * fv);
+    linea(v, Math.round(columnas * fu1), Math.round(columnas * fa1), CUADRO.espuma);
+    linea(v, Math.round(columnas * fu2), Math.round(columnas * fa2), CUADRO.espuma);
+  }
 }
 
 /**
@@ -257,41 +582,77 @@ function vientoDelSur({ rect, linea }, columnas, filas) {
  * La figura se dibuja con el color del FONDO del lienzo y no con un negro
  * propio: a contraluz no hay detalle que enseñar, y el pigmento más oscuro que
  * ya existe hace de silueta sin estrenar ninguno. Es la única de las tres con
- * una persona dentro, y sigue sin ser legible como nada: de espaldas, ocho
- * píxeles de alto y sin cara.
+ * una persona dentro, y sigue sin ser legible como nada: de espaldas y sin cara.
+ * Con la celda de #838 gana el vuelo del abrigo y el bastón, que es silueta y no
+ * rasgo — sigue sin haber a quién reconocer.
  */
 function sobreLaNiebla({ rect, linea }, columnas, filas) {
   rect(0, 0, columnas, filas, CUADRO.azulPalido); // el cielo alto
-  rect(0, 0, columnas, Math.round(filas * 0.52), CUADRO.niebla); // el mar de nubes
+  // El mar de nubes, ahora en dos capas: el vapor de abajo más denso y el de
+  // arriba atravesado por la luz. Con una sola capa la niebla era un gris.
+  rect(0, 0, columnas, Math.round(filas * 0.52), CUADRO.niebla);
+  rect(Math.round(filas * 0.38), 0, columnas, Math.round(filas * 0.14), CUADRO.nieblaClara);
+  // Los jirones: tiras claras de largos y alturas dispares dentro del vapor.
+  const jirones = [
+    [0.2, 0.05, 0.26],
+    [0.31, 0.4, 0.17],
+    [0.14, 0.62, 0.31],
+    [0.44, 0.24, 0.13],
+    [0.26, 0.78, 0.19],
+  ];
+  for (const [fv, fu, fa] of jirones) {
+    linea(Math.round(filas * fv), Math.round(columnas * fu), Math.round(columnas * fa), CUADRO.nieblaClara);
+  }
+
   // Las cumbres que asoman, a los dos lados y a distinta altura: son la escala
   // de la niebla, sin ellas el gris es un fondo y no una distancia. Van MÁS
   // OSCURAS que el vapor y no más claras: una cumbre más clara que la niebla que
   // la rodea se lee como un roto en la niebla, no como una montaña detrás.
   cono({ linea }, {
-    centro: Math.round(columnas * 0.16),
+    centro: Math.round(columnas * 0.14),
     base: Math.round(filas * 0.5),
-    alto: 5,
-    ancho: 11,
+    alto: Math.round(filas * 0.16),
+    ancho: Math.round(columnas * 0.23),
     color: CUADRO.azulProfundo,
   });
   cono({ linea }, {
     centro: Math.round(columnas * 0.84),
     base: Math.round(filas * 0.46),
-    alto: 7,
-    ancho: 15,
+    alto: Math.round(filas * 0.22),
+    ancho: Math.round(columnas * 0.31),
     color: CUADRO.azulProfundo,
   });
-  // La peña, maciza y descentrada, entrando por abajo.
+  cono({ linea }, {
+    centro: Math.round(columnas * 0.62),
+    base: Math.round(filas * 0.49),
+    alto: Math.round(filas * 0.09),
+    ancho: Math.round(columnas * 0.14),
+    color: CUADRO.azulProfundo,
+  });
+
+  // La peña, maciza y descentrada, entrando por abajo. Con repisas: una roca de
+  // canto liso a esta resolución se lee como un pedestal.
   const anchoPena = Math.round(columnas * 0.3);
   const uPena = Math.round(columnas * 0.36);
-  rect(0, uPena, anchoPena, Math.round(filas * 0.3), CUADRO.roca);
-  linea(Math.round(filas * 0.3), uPena + 2, anchoPena - 5, CUADRO.roca);
-  // La figura: piernas, tronco y cabeza, tres franjas y nada más.
-  const uFigura = uPena + Math.round(anchoPena / 2) - 1;
-  const base = Math.round(filas * 0.3) + 1;
-  rect(base, uFigura, 3, 4, CUADRO.fondo);
-  rect(base + 4, uFigura - 1, 5, 3, CUADRO.fondo);
-  rect(base + 7, uFigura, 3, 2, CUADRO.fondo);
+  const altoPena = Math.round(filas * 0.3);
+  rect(0, uPena, anchoPena, altoPena, CUADRO.roca);
+  linea(altoPena, uPena + 2, anchoPena - 5, CUADRO.roca);
+  linea(altoPena + 1, uPena + 6, Math.round(anchoPena * 0.4), CUADRO.roca);
+  veta({ linea }, Math.round(altoPena * 0.7), uPena + 3, Math.round(anchoPena * 0.55), CUADRO.fondo);
+  veta({ linea }, Math.round(altoPena * 0.38), uPena + 8, Math.round(anchoPena * 0.4), CUADRO.fondo);
+
+  // La figura: piernas, abrigo, hombros y cabeza. Cuatro masas y el bastón.
+  const uFigura = uPena + Math.round(anchoPena / 2) - 2;
+  const base = altoPena + 2;
+  const alto = Math.round(filas * 0.19);
+  rect(base, uFigura + 1, 3, Math.round(alto * 0.32), CUADRO.fondo); // las piernas
+  rect(base + Math.round(alto * 0.3), uFigura, 5, Math.round(alto * 0.34), CUADRO.fondo); // el abrigo
+  rect(base + Math.round(alto * 0.62), uFigura + 1, 4, Math.round(alto * 0.2), CUADRO.fondo); // los hombros
+  rect(base + Math.round(alto * 0.8), uFigura + 2, 2, Math.round(alto * 0.18), CUADRO.fondo); // la cabeza
+  // El bastón, apoyado a su derecha y clavado en la peña.
+  for (let k = 0; k < Math.round(alto * 0.5); k += 1) {
+    linea(base + k, uFigura + 6, 1, CUADRO.fondo);
+  }
 }
 
 /**
@@ -364,6 +725,7 @@ export function piezasCuadro({ cara, u, cota, composicion }) {
     celda: CELDA_LIENZO,
     saliente: SALIENTE_CUADRO,
     tope: TOPE_CUADRO,
+    relieve: relieveDe,
   });
 }
 

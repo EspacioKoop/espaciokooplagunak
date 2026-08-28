@@ -208,3 +208,34 @@ test("la resolución cierra en banda y NO escribe estado del encuentro", () => {
   assert.equal(elegirEnfoque.length, 2);
 });
 
+
+test("el contexto renderiza los modificadores REALES del hablante, no los de nadie", () => {
+  // El fallo de la review: el hook calculaba `estado.opciones` con la ficha del
+  // hablante y `contextoParlamento()` los tiraba a la basura recalculando con
+  // `ficha: null`. Con Persuasión +7 el contexto devolvía modificador 0.
+  _reiniciarParaPruebas();
+  const ficha = {
+    skills: { per: { total: 7 }, dec: { total: 4 }, ins: { total: 6 }, itm: { total: 5 } },
+    abilities: {},
+    tools: {},
+  };
+  Hooks.emit("lagunakAbrirParlamento", { contacto: { id: "k", callsign: "K" }, ficha });
+  const ctx = contextoParlamento();
+  const porId = Object.fromEntries(ctx.opciones.map((o) => [o.id, o]));
+  assert.equal(porId.persuasion.modificador, 7);
+  assert.equal(porId.engano.modificador, 4);
+  assert.equal(porId.perspicacia.modificador, 6);
+  assert.equal(porId.intimidacion.modificador, 5);
+
+  // Y la probabilidad va con ellos: con +7 sobre CD 14 el favorable no puede
+  // ser el de una ficha vacía. Se compara contra el mismo cálculo sin ficha.
+  const sinFicha = opcionesVisibles({ ficha: null }).find((o) => o.id === "persuasion");
+  assert.ok(porId.persuasion.favorable > Math.round(sinFicha.favorable * 100),
+    "con +7 la probabilidad favorable tiene que subir respecto a no tener ficha");
+});
+
+test("sin ficha del hablante el contexto sigue dando modificador 0, no NaN", () => {
+  _reiniciarParaPruebas();
+  Hooks.emit("lagunakAbrirParlamento", { contacto: { id: "k", callsign: "K" } });
+  for (const o of contextoParlamento().opciones) assert.equal(o.modificador, 0);
+});

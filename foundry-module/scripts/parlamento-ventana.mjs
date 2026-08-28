@@ -74,7 +74,13 @@ export function contextoParlamento({ contacto = estado.contacto, ficha = null } 
     return { fase: "menu", enMenu: true };
   }
   const inter = interlocutorDelContacto(contacto, contacto.desafio ?? 1);
-  const opciones = opcionesVisibles({ ficha }).map((o) => ({
+  // Las opciones YA calculadas al abrir el encuentro mandan: el hook leyó la
+  // ficha del hablante y este contexto no la tiene (se renderiza más tarde, y
+  // `ficha` llega null salvo en pruebas). Recalcularlas aquí devolvía siempre
+  // modificador 0 y la probabilidad de alguien sin ficha, que es justo lo que
+  // la ventana promete no hacer: enseñar CD y rango REALES antes de elegir.
+  const base = ficha ? opcionesVisibles({ ficha }) : (estado.opciones ?? opcionesVisibles({ ficha }));
+  const opciones = base.map((o) => ({
     ...o,
     // Porcentaje de probabilidad favorable para pintar en texto (no solo barra).
     favorable: Math.round((o.favorable ?? 0) * 100),

@@ -51,8 +51,8 @@ import { CLASES_ENFOQUE } from "./asistencia/enfoques.mjs";
 export const ENFOQUES_PARLAMENTO = Object.freeze([
   { id: "persuasion", clase: CLASES_ENFOQUE.PRUEBA, cd: 14, habilidad: "skill:per" },
   { id: "engano", clase: CLASES_ENFOQUE.PRUEBA, cd: 15, habilidad: "skill:dec" },
-  { id: "perspicacia", clase: CLASES_ENFOQUE.PRUEBA, cd: 13, habilidad: "skill:inv" },
-  { id: "intimidacion", clase: CLASES_ENFOQUE.PRUEBA, cd: 16, habilidad: "skill:int" },
+  { id: "perspicacia", clase: CLASES_ENFOQUE.PRUEBA, cd: 13, habilidad: "skill:ins" },
+  { id: "intimidacion", clase: CLASES_ENFOQUE.PRUEBA, cd: 16, habilidad: "skill:itm" },
 ]);
 
 /**
@@ -103,8 +103,9 @@ export function interlocutorDelContacto(contacto, desafio = 1) {
  * no hay ficha, el modificador es 0 y el rango se calcula igual, porque el
  * jugador tiene que ver las probabilidades aunque juegue sin sistema de juego.
  *
- * @returns {Array<{id, clase, cd, modificador, via, distribucion, favorable}>}
- *   congelado. `via` es "probabilidad" (los cuatro enfoques del parlamento son
+ * @returns {Array<{id, clase, cd, habilidad, modificador, via, distribucion, favorable}>}
+ *   congelado. `habilidad` es la clave dnd5e del enfoque (fuente única para
+ *   quien tire de verdad). `via` es "probabilidad" (los cuatro enfoques del parlamento son
  *   clase (a)); `distribucion` es el reparto de bandas; `favorable` la
  *   probabilidad de éxito o crítico. La UI pinta esto y nada más: la tirada
  *   sigue siendo real en mesa.
@@ -122,6 +123,10 @@ export function opcionesVisibles({ enfoques = ENFOQUES_PARLAMENTO, ficha = null,
       id: enfoque.id,
       clase: enfoque.clase,
       cd: enfoque.cd,
+      // Se expone la habilidad para que el emisor de la tirada NO tenga que
+      // mantener su propio mapa enfoque→habilidad: dos mapas se desincronizan,
+      // y una habilidad desincronizada tira el dado equivocado en silencio.
+      habilidad: enfoque.habilidad ?? null,
       modificador: mod ?? 0,
       via: rango.via,
       distribucion: rango.distribucion,

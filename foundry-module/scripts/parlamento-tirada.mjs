@@ -12,20 +12,18 @@
 // (ADR-0008): el contenido núcleo (abrir canal) sigue siendo el diálogo nativo de
 // comms y este cableado es textura encima.
 //
-// Habilidades dnd5e 2.3.1 (clave estándar del sistema) para cada enfoque. El
-// modificador lo resuelve `modificadorDeFicha` de `ficha-dnd5e.mjs`; si el
+// La habilidad de cada enfoque NO se declara aquí: viene del propio enfoque
+// (`opcionesVisibles(...).habilidad`, declarado en `parlamento.mjs`). Este
+// módulo llegó a tener su propio mapa y se desincronizó del catálogo en tres de
+// los cuatro enfoques —`prc` (Percepción) por Persuasión, `inv`
+// (Investigación) por Perspicacia y un `int` que ni siquiera es clave de
+// habilidad en dnd5e 2.3.1, así que caía a 0—. La tirada salía con el
+// modificador de otra habilidad y nada lo delataba: el número existe y es
+// plausible. Un solo sitio donde escribir la clave es lo que lo impide.
+// El modificador lo resuelve `modificadorDeFicha` de `ficha-dnd5e.mjs`; si el
 // hablante no tiene esa habilidad, el modificador es 0 (no un número roto).
 import { opcionesVisibles } from "./parlamento.mjs";
 import { modificadorDeFicha } from "./asistencia/ficha-dnd5e.mjs";
-
-// Enfoque del parlamento → habilidad dnd5e (skill:clave). Persuasión/Engaño/
-// Perspicacia/Intimidación son las cuatro sociales estándar.
-const HABILIDAD_POR_ENFOQUE = Object.freeze({
-  persuasion: "skill:prc",
-  engano: "skill:dec",
-  perspicacia: "skill:inv",
-  intimidacion: "skill:int",
-});
 
 /**
  * Total de la tirada del enfoque para un hablante dado. Puro salvo por el dado:
@@ -36,8 +34,7 @@ export function totalParlamento({ enfoqueId, ficha, dado = () => 1 + Math.floor(
   if (!enfoqueId) throw new TypeError("totalParlamento requiere enfoqueId");
   const opcion = opcionesVisibles({ ficha }).find((o) => o.id === enfoqueId);
   if (!opcion) throw new RangeError(`enfoque de parlamento desconocido: ${enfoqueId}`);
-  const habilidad = HABILIDAD_POR_ENFOQUE[enfoqueId];
-  const mod = habilidad ? (modificadorDeFicha(ficha, habilidad) ?? 0) : 0;
+  const mod = opcion.habilidad ? (modificadorDeFicha(ficha, opcion.habilidad) ?? 0) : 0;
   return dado() + mod;
 }
 

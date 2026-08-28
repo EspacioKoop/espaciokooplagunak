@@ -107,6 +107,56 @@ test("REGRESIÓN: leerObj decodifica bien un OBJ leído como Uint8Array (no Buff
 
 // Construye un GLB mínimo y válido (versión 2) a partir de posiciones e
 // índices, para no depender de un fichero binario externo en la prueba.
+// Como construirGlb, pero con índices UINT32 (componentType 5125) y el GLB
+// marcado como Draco: así `normalizarGlb` toma la rama de primitiva PLANA y
+// re-empaqueta los índices, que es donde elegía mal el tipo.
+function construirGlbUint32MarcadoDraco(nVertices, indices) {
+  const f = new Float32Array(nVertices * 3);
+  for (let i = 0; i < nVertices; i += 1) {
+    f[i * 3] = i * 0.001;
+    f[i * 3 + 1] = 0;
+    f[i * 3 + 2] = 0;
+  }
+  const posBytes = new Uint8Array(f.buffer, f.byteOffset, f.byteLength);
+  const idxBytes = new Uint8Array(Uint32Array.from(indices).buffer);
+  const binSinPad = posBytes.length + idxBytes.length;
+  const bin = new Uint8Array(binSinPad + ((4 - (binSinPad % 4)) % 4));
+  bin.set(posBytes, 0);
+  bin.set(idxBytes, posBytes.length);
+
+  const json = {
+    extensionsUsed: ["KHR_draco_mesh_compression"],
+    buffers: [{ byteLength: bin.length }],
+    bufferViews: [
+      { buffer: 0, byteOffset: 0, byteLength: posBytes.length, target: 34962 },
+      { buffer: 0, byteOffset: posBytes.length, byteLength: idxBytes.length, target: 34963 },
+    ],
+    accessors: [
+      { bufferView: 0, componentType: 5126, count: nVertices, type: "VEC3",
+        min: [0, 0, 0], max: [nVertices * 0.001, 0, 0] },
+      { bufferView: 1, componentType: 5125, count: indices.length, type: "SCALAR" },
+    ],
+    meshes: [{ primitives: [{ attributes: { POSITION: 0 }, indices: 1 }] }],
+  };
+  let jsonStr = JSON.stringify(json);
+  jsonStr += " ".repeat((4 - (jsonStr.length % 4)) % 4);
+  const jsonBytes = new TextEncoder().encode(jsonStr);
+  const total = 12 + 8 + jsonBytes.length + 8 + bin.length;
+  const out = new Uint8Array(total);
+  const dv = new DataView(out.buffer);
+  dv.setUint32(0, 0x46546c67, true);
+  dv.setUint32(4, 2, true);
+  dv.setUint32(8, total, true);
+  dv.setUint32(12, jsonBytes.length, true);
+  dv.setUint32(16, 0x4e4f534a, true);
+  out.set(jsonBytes, 20);
+  const o2 = 20 + jsonBytes.length;
+  dv.setUint32(o2, bin.length, true);
+  dv.setUint32(o2 + 4, 0x004e4942, true);
+  out.set(bin, o2 + 8);
+  return out;
+}
+
 function construirGlb(posiciones, indices, sinBufferView = false) {
   const f = new Float32Array(posiciones.length * 3);
   posiciones.forEach((p, i) => {
@@ -328,3 +378,36 @@ test("normalizarGlb decodifica un GLB Draco compacto → malla 3D (8 vértices, 
   const malla = normalizar(simplificar(m, 12), { alto: 2 });
   assert.ok(Array.isArray(malla.vertices), "sale del pipeline como malla");
 });
+
+test("el tipo de índice lo decide el valor MÁXIMO, no cuántos índices hay", async () => {
+  // Pocos índices que apuntan muy alto: `indices.length > 65535` era falso, así
+  // que se declaraba UNSIGNED_SHORT y `[0, 65536, 69999]` se truncaba a
+  // `[0, 0, 4463]` — la malla salía conectando vértices equivocados.
+  const glb = construirGlbUint32MarcadoDraco(70000, [0, 65536, 69999]);
+  const r = await normalizarGlb(glb);
+  const { json } = leerChunksGlbDePrueba(r.bytes);
+  const accIdx = json.accessors[json.meshes[0].primitives[0].indices];
+  assert.equal(accIdx.componentType, 5125, "debe ser UNSIGNED_INT: el máximo pasa de 65535");
+
+  const m = leerGlb(r.bytes);
+  assert.deepEqual(m.caras[0], [0, 65536, 69999], "los índices sobreviven al viaje");
+});
+
+test("con todos los índices por debajo de 65535 se conserva UNSIGNED_SHORT", async () => {
+  // El recorte importa: subir todo a UNSIGNED_INT dobla el tamaño del buffer
+  // de índices de cualquier malla normal.
+  const glb = construirGlbUint32MarcadoDraco(70000, [0, 1, 65535]);
+  const r = await normalizarGlb(glb);
+  const { json } = leerChunksGlbDePrueba(r.bytes);
+  const accIdx = json.accessors[json.meshes[0].primitives[0].indices];
+  assert.equal(accIdx.componentType, 5123, "UNSIGNED_SHORT sigue siendo suficiente");
+  assert.deepEqual(leerGlb(r.bytes).caras[0], [0, 1, 65535]);
+});
+
+/** Lee el chunk JSON de un GLB, para inspeccionar los accessors producidos. */
+function leerChunksGlbDePrueba(bytes) {
+  const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const largoJson = dv.getUint32(12, true);
+  const json = JSON.parse(new TextDecoder().decode(bytes.subarray(20, 20 + largoJson)));
+  return { json };
+}

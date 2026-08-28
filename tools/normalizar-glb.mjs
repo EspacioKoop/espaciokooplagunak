@@ -267,8 +267,16 @@ export async function normalizarGlb(bytes) {
       }
 
       if (indices) {
-        const idxComp = indices.length > 65535 ? 5125 : 5123;
-        const idxArr = idxComp === 5125 ? indices : new Uint16Array(indices);
+        // El tipo lo decide el VALOR MÁXIMO, no cuántos índices hay: una malla
+        // de 70.000 vértices puede tener tres índices, y `[0, 65536, 69999]`
+        // metido en un Uint16Array se convierte en `[0, 0, 4463]` — el modelo
+        // sale conectando vértices equivocados, sin ningún error por el camino.
+        let maxIdx = 0;
+        for (let i = 0; i < indices.length; i += 1) {
+          if (indices[i] > maxIdx) maxIdx = indices[i];
+        }
+        const idxComp = maxIdx > 65535 ? 5125 : 5123;
+        const idxArr = idxComp === 5125 ? new Uint32Array(indices) : new Uint16Array(indices);
         const iBv = empaquetar(buffers, idxArr);
         const iAcc = accessors.push({
           bufferView: bufferViews.length,

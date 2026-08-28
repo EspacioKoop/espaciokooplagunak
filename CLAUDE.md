@@ -529,14 +529,18 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     celda compartida para conseguirlo es justo el fallo de #551 — y `MARCO` sube de 2 a 4 celdas a
     la vez que la celda baja, que es ese mismo fallo en pequeño: lo escrito en filas se parte por
     la mitad en silencio. El marco lleva su bisel **pintado** (es un objeto de la sala) y el lienzo
-    **no**: biselar la pintura la convertiría en chapa remachada. Lo que sí tiene el lienzo desde
-    #838 es **relieve de verdad** —`RELIEVE_PIGMENTO` + `chapasDeRejilla({relieve})`—, que es lo
-    contrario de un bisel: no se pinta ni una línea de más, cada masa se adelanta unos milímetros
-    y el motor le saca los costados, así que el volumen sale de la luz sobre geometría real, como
-    el empaste de una tabla. Tres alturas y no una por pigmento: el costado solo existe donde hay
-    escalón, así que una altura por color pone una pared en cada frontera y multiplica las caras
-    para enseñar cantos de un milímetro. Y fuera de la rejilla la profundidad es el `saliente`, no
-    cero, o el canto del marco bajaría a pelearse con el muro en el z-buffer. Nada que se pueda
+    **no**: biselar la pintura la convertiría en chapa remachada. Desde #838 ese bisel es una
+    **moldura** de tres anillos (`marcoMoldura`) y no una línea: canto que sube fuera, cuerpo del
+    listón, y un rebaje interior con la luz AL REVÉS — sin esa inversión el lienzo parece pegado
+    encima del listón en vez de encajado detrás. Cabe porque la celda del cuadro es ocho veces más
+    fina que la del muro, que es la misma razón por la que el dibujo tiene detalle.
+    **El relieve GEOMÉTRICO se probó y se retiró, medido** (#838): adelantar cada masa de color
+    unos milímetros y sacarle los costados cambiaba entre 0 y 168 píxeles de los 129.600 del
+    fotograma, y ni con cinco centímetros de empaste pasaba del 0,3 %. Un cuadro colgado se mira de
+    frente, así que sus costados se ven de canto y a esta resolución no llegan a un píxel — lo
+    mismo que hacía que no costara polígonos en pantalla es lo que hacía que no se viera. La
+    lección general: en este motor el volumen que se ve de frente es el **pintado**, y la geometría
+    solo paga cuando se mira en sesgo. Nada que se pueda
     leer como instrumento —ni cartas estelares, ni esquemas, ni diagramas—: es #526 donde más fácil
     sería saltárselo, y no es teórico: la revisión de #838 bloqueó por un cuadro abstracto que se
     leía como un gráfico de barras (cuatro columnas sobre la misma base, altura creciente, un

@@ -38,33 +38,31 @@
 // qué muro cuelga cada uno y desde dónde se mira.
 //
 // PRESUPUESTO MEDIDO (#836, vuelto a tomar en #838). Los cinco lienzos son
-// 96 × 64 celdas cada uno y salen 96, 121, 377, 349 y 328 CARAS después de
+// 96 × 64 celdas cada uno y salen 48, 53, 170, 162 y 149 CARAS después de
 // `fundirRectangulos`: ese es todo el truco, dibujos de masas grandes sobre una
 // rejilla fina. Vienen de 19, 31, 51, 83 y 61 — el detalle de la celda de
-// 1,25 cm multiplica por tres, y el relieve por poco más de dos sobre eso,
-// porque el costado solo aparece donde hay escalón y lo que paga es el
-// PERÍMETRO de las masas, no su área.
-//
-// EN PANTALLA NO SE NOTA, y es la medida que importa. Desde el centro de la
-// sala mirando al muro oeste: 1.461 polígonos sin relieve, 1.466 con él;
-// mirando al este, 713 → 720; desde la entrada, 1.399 → 1.399. Cinco polígonos
-// de diferencia con 1.100 caras más en las mallas, porque el costado de una
-// masa es una tira de milímetros que a un paso ya está de canto y cae por
-// recorte. O sea: el relieve se paga al construir la sala, una vez, y no por
-// fotograma. Los tiempos de composición en esta máquina bailan entre 6 y 20 ms
-// según la vista y no discriminan nada a este tamaño; la cifra que vale es el
-// conteo de polígonos, que es determinista.
-//
-// Plantado ante un cuadro no se ven más de un centenar de caras: el lienzo
-// llena la pantalla y todo lo demás cae por recorte. Esta es la cifra que hay
-// que volver a tomar antes de colgar el sexto, no los tests en verde.
+// 1,25 cm multiplica por tres, y lo que se paga en un dibujo es el PERÍMETRO de
+// las masas, no su área.
 //
 // Y la SALA entera bajó al ponerle piel de galería (#838, `museo-mural.mjs`):
-// desde el centro mirando al oeste 1.466 -> 996 polígonos, al este 720 -> 272,
+// desde el centro mirando al oeste 1.466 -> 994 polígonos, al este 720 -> 267,
 // desde la entrada 1.399 -> 894. Un tramo de muro largo pasa de 504 rectángulos
 // de chapa a 32. No es una optimización: es que una pared de galería está
 // vacía a propósito —lo que tiene que reclamar la mirada es lo colgado— y el
 // presupuesto es la consecuencia de esa decisión, no su motivo.
+//
+// LO QUE SE PROBÓ Y SE RETIRÓ, para que no vuelva: relieve GEOMÉTRICO en los
+// cuadros, cada masa de color adelantada unos milímetros con sus costados. Se
+// midió rasterizando la escena con y sin él: cambiaba entre 0 y 168 píxeles de
+// los 129.600 del fotograma, y ni subiendo el empaste a cinco centímetros
+// pasaba del 0,3 %. Lo que se mira de frente enseña sus costados de canto, y a
+// 480x270 un canto de milímetros no llega a un píxel — la misma razón por la
+// que tampoco costaba polígonos en pantalla. El volumen que sí se ve aquí es el
+// PINTADO, y por eso el marco es una moldura dibujada (`marcoMoldura`).
+//
+// Plantado ante un cuadro no se ven más de un centenar de caras: el lienzo
+// llena la pantalla y todo lo demás cae por recorte. Esta es la cifra que hay
+// que volver a tomar antes de colgar el sexto, no los tests en verde.
 //
 // Puro y sin color propio (#351).
 

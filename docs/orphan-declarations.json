@@ -74,12 +74,19 @@
       "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/676"}
     },
     {
-      "module": "rig-esqueleto.mjs",
-      "status": "declared-orphan",
-      "foundation": false,
-      "reason": "Deformación de malla por huesos, fase 1 de #603. Su consumidor depende de una decisión de arte todavía abierta; cablearlo antes produciría una opción incoherente.",
+      "module": "estatua-rig.mjs",
+      "status": "connected",
+      "reason": "Consumidor real de rig-esqueleto en la fase 4 de #603: deforma la malla de una pieza del museo según su rig antes de componerEscena. Lo importa museo-escena.mjs, así que rig-esqueleto deja de estar huérfano.",
       "declaredBy": "Espaciokoop Lagunak",
-      "declaredAt": "2026-08-24",
+      "declaredAt": "2026-08-28",
+      "evidence": {"type": "test", "path": "foundry-module/tests/estatua-rig.test.mjs"}
+    },
+    {
+      "module": "rig-esqueleto.mjs",
+      "status": "connected",
+      "reason": "Deformación de malla por huesos, fase 1 de #603. Su consumidor ya existe: estatua-rig.mjs lo importa y el museo (museo-escena.mjs) dobla las piezas con rig antes de componerEscena. La decisión de arte que bloqueaba el cableado (todo escaneado, #603) está tomada desde 2026-08-20.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-08-28",
       "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/603"}
     }
   ],

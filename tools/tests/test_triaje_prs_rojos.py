@@ -5,8 +5,12 @@ herramienta (runs 32994196808 y 33095418758 del 2026-08-26/27). Un fixture
 inventado probaría el parser contra un formato que GitHub no emite.
 """
 import importlib.util
+import io
+import json
 import os
 import unittest
+from contextlib import redirect_stderr, redirect_stdout
+from unittest import mock
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _spec = importlib.util.spec_from_file_location(
@@ -131,6 +135,81 @@ class Agrupar(unittest.TestCase):
         total = sum(len(g["prs"]) for g in grupos)
         self.assertEqual(total, 4, "ningún PR puede desaparecer del informe")
         self.assertIn("sin causa reconocible en el log", [g["causa"] for g in grupos])
+
+
+class _Proceso:
+    def __init__(self, returncode=0, stdout="", stderr=""):
+        self.returncode = returncode
+        self.stdout = stdout
+        self.stderr = stderr
+
+
+class GhQueFalla(unittest.TestCase):
+    """Un fallo de `gh` no puede parecerse a «no hay PRs en rojo».
+
+    Ignorar el código de salida hacía que autenticación caducada, corte de red,
+    rate limit o falta de permisos devolvieran stdout vacío, que `recoger()`
+    convertía en `[]` y `--recoger` publicaba con éxito.
+    """
+
+    def test_fallo_en_pr_list_aborta_en_vez_de_devolver_vacio(self):
+        with mock.patch.object(triaje.subprocess, "run",
+                               return_value=_Proceso(42, "", "gh: not authenticated")):
+            with self.assertRaises(triaje.ErrorDeGh) as ctx:
+                triaje.recoger()
+        self.assertIn("not authenticated", str(ctx.exception))
+
+    def test_fallo_en_run_view_aborta_aunque_pr_list_funcionara(self):
+        listado = json.dumps([{
+            "number": 803, "title": "un PR",
+            "statusCheckRollup": [{
+                "name": "tools/tests (Linux)", "conclusion": "FAILURE",
+                "detailsUrl": "https://github.com/o/r/actions/runs/12345/job/9"}]}])
+
+        def run(cmd, **kwargs):
+            if cmd[1] == "pr":
+                return _Proceso(0, listado, "")
+            return _Proceso(1, "", "HTTP 403: rate limit exceeded")
+
+        with mock.patch.object(triaje.subprocess, "run", side_effect=run):
+            with self.assertRaises(triaje.ErrorDeGh) as ctx:
+                triaje.recoger()
+        self.assertIn("rate limit", str(ctx.exception))
+
+    def test_recoger_sale_con_codigo_no_cero_y_no_imprime_informe(self):
+        salida, err = io.StringIO(), io.StringIO()
+        with mock.patch.object(triaje.subprocess, "run",
+                               return_value=_Proceso(42, "", "gh: not authenticated")):
+            with mock.patch.object(triaje.sys, "argv", ["triaje", "--recoger"]):
+                with redirect_stdout(salida), redirect_stderr(err):
+                    rc = triaje.main()
+        self.assertNotEqual(rc, 0, "un fallo de recogida no puede salir con 0")
+        self.assertEqual(salida.getvalue(), "",
+                         "sin datos no se emite informe: `[]` se leería como cero PRs en rojo")
+        aviso = err.getvalue().lower()
+        self.assertIn("no he podido consultar github", aviso)
+        self.assertIn("no es", aviso)
+        self.assertIn("cero prs en rojo", aviso.replace("«", "").replace("»", ""))
+
+    def test_recoger_sale_con_cero_cuando_la_consulta_se_completa(self):
+        salida = io.StringIO()
+        with mock.patch.object(triaje.subprocess, "run",
+                               return_value=_Proceso(0, "[]", "")):
+            with mock.patch.object(triaje.sys, "argv", ["triaje", "--recoger"]):
+                with redirect_stdout(salida):
+                    rc = triaje.main()
+        self.assertEqual(rc, 0, "una recogida completa sin PRs rojos es un informe válido")
+        self.assertEqual(json.loads(salida.getvalue()), [])
+
+    def test_el_mensaje_de_error_no_arrastra_un_token(self):
+        fuga = "error: HTTP 401 con ghp_ABCDEFGHIJKLMNOPQRSTUVWXYZ012345"
+        with mock.patch.object(triaje.subprocess, "run",
+                               return_value=_Proceso(1, "", fuga)):
+            with self.assertRaises(triaje.ErrorDeGh) as ctx:
+                triaje.recoger()
+        mensaje = str(ctx.exception)
+        self.assertNotIn("ghp_ABCDEFGHIJKLMNOPQRSTUVWXYZ012345", mensaje)
+        self.assertIn("[redactado]", mensaje)
 
 
 if __name__ == "__main__":

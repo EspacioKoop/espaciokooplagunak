@@ -26,8 +26,12 @@ USO:
     python3 tools/triaje-prs-rojos.py /tmp/rojos.json
     python3 tools/triaje-prs-rojos.py /tmp/rojos.json --json
 
-Sale con 0 siempre: es un informe, no una puerta. Un PR rojo no es un fallo del
-repositorio y no debe teñir de rojo nada más.
+Sale con 0 cuando la recogida se COMPLETÓ y el informe es válido, aunque
+contenga PRs en rojo: un PR rojo no es un fallo del repositorio y no debe teñir
+de rojo nada más. Sale distinto de 0 cuando no ha podido mirar. Esa distinción
+es el producto de la herramienta —«no hay causa» frente a «no he mirado»—, así
+que tragarse un fallo de `gh` y devolver una lista vacía con éxito sería
+mentirle a quien la lee.
 """
 import json
 import re
@@ -133,8 +137,32 @@ def agrupar(entradas):
     return sorted(grupos.values(), key=lambda g: (-len(g["prs"]), g["prs"][0]["numero"]))
 
 
+class ErrorDeGh(RuntimeError):
+    """`gh` no pudo responder: sin autenticación, sin red, rate limit o permisos."""
+
+
+# Un token que se cuele en el stderr de `gh` acabaría en el informe y en el
+# portapapeles de quien lo pegue en un issue.
+_SECRETO = re.compile(r"\b(gh[pousr]_[A-Za-z0-9]{16,}|[A-Fa-f0-9]{40,})\b")
+
+
+def _redactar(texto):
+    return _SECRETO.sub("[redactado]", (texto or "").strip())
+
+
 def _gh(args):
-    return subprocess.run(["gh"] + args, capture_output=True, text=True, check=False).stdout
+    """Ejecuta `gh` y ABORTA si falla, en vez de devolver stdout vacío.
+
+    Ignorar el código de salida convertía cualquier fallo de `gh` en `[]`, y `[]`
+    se lee como «ningún PR en rojo». Es el modo de fallo más caro posible para
+    una herramienta cuyo trabajo es distinguir eso de «no he mirado».
+    """
+    r = subprocess.run(["gh"] + args, capture_output=True, text=True, check=False)
+    if r.returncode != 0:
+        detalle = _redactar(r.stderr) or _redactar(r.stdout) or "sin mensaje"
+        raise ErrorDeGh("`gh %s` falló con código %d: %s"
+                        % (" ".join(args), r.returncode, detalle))
+    return r.stdout
 
 
 def recoger():
@@ -163,7 +191,14 @@ def recoger():
 
 def main():
     if "--recoger" in sys.argv:
-        json.dump(recoger(), sys.stdout, ensure_ascii=False, indent=1)
+        try:
+            entradas = recoger()
+        except ErrorDeGh as e:
+            print("No he podido consultar GitHub: %s" % e, file=sys.stderr)
+            print("El informe NO se ha generado; esto no es «cero PRs en rojo».",
+                  file=sys.stderr)
+            return 3
+        json.dump(entradas, sys.stdout, ensure_ascii=False, indent=1)
         return 0
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     if not args:

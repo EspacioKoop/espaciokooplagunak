@@ -111,26 +111,39 @@ function campoPartido({ rect, linea }, columnas, filas) {
 }
 
 /**
- * «Escalera de verdín»: cuatro bloques que suben de izquierda a derecha, cada
- * uno un poco más corto que el anterior.
+ * «Contratiempo de verdín»: cinco masas que NO comparten base, de anchos y
+ * alturas sin orden, dos de ellas cortadas por el borde del lienzo.
  *
- * Es la que justifica que haya dos cuadros y no uno: la otra es masa contra
- * masa, y esta es ritmo. Con dos variaciones del mismo esquema, la sala tendría
- * dos veces el mismo cuadro con los colores cambiados.
+ * Es la que justifica que haya dos cuadros propios y no uno: la otra es masa
+ * contra masa, y esta es ritmo. Pero un ritmo REGULAR no es una pintura, es un
+ * instrumento: la primera versión de este cuadro (#838) eran cuatro columnas
+ * apoyadas en la misma base, con paso constante, altura estrictamente creciente
+ * y un remate claro en el mismo costado de cada una — o sea, barras con sus
+ * marcas, y se leía como un nivel en menos de un segundo. Que la cartela dijera
+ * «esto no es una medida» era la señal de que sí lo parecía. Lo que rompe esa
+ * gramática y hay que conservar al tocar el dibujo:
+ *
+ * - **ninguna base común**: cada masa arranca a una altura distinta y dos ni
+ *   siquiera se apoyan —una cuelga del borde de arriba—, así que no hay eje;
+ * - **alturas no monótonas** y anchos desiguales: no se puede ordenar la serie,
+ *   que es lo que hace legible un gráfico de barras;
+ * - **el hueso, una sola vez y atravesado**: cruza dos masas y el fondo en
+ *   horizontal, en vez de rematar cada bloque por igual. Un acento repetido en
+ *   el mismo sitio de cada elemento es un tic de escala;
+ * - **dos masas cortadas por el borde**: lo que sale del cuadro dice que el
+ *   dibujo sigue fuera, y una escala no se sale nunca de su regla.
  */
-function escaleraDeVerdin({ rect, columna }, columnas, filas) {
+function contratiempoDeVerdin({ rect, linea }, columnas, filas) {
   rect(0, 0, columnas, filas, CUADRO.fondo);
-  const paso = Math.floor(columnas / 5);
-  const ancho = paso - 2;
-  for (let i = 0; i < 4; i += 1) {
-    const alto = Math.round(filas * (0.34 + i * 0.13));
-    const color = i % 2 === 0 ? CUADRO.verdin : CUADRO.ocre;
-    rect(3, paso * i + 2, ancho, alto, color);
-    // El remate de hueso arriba de cada bloque: es lo que convierte cuatro
-    // rectángulos en cuatro escalones. Sin él, la escalera se lee como una
-    // barra de nivel, que es justo la lectura que #526 prohíbe.
-    columna(paso * i + 2, 3, alto, CUADRO.hueso);
-  }
+  // fila, columna, ancho, alto — cortada la primera por la izquierda y la
+  // última por la derecha; la segunda cuelga del borde de arriba.
+  rect(Math.round(filas * 0.28), 0, 9, Math.round(filas * 0.34), CUADRO.verdin);
+  rect(Math.round(filas * 0.56), 12, 6, filas - Math.round(filas * 0.56), CUADRO.ocre);
+  rect(Math.round(filas * 0.09), 21, 11, Math.round(filas * 0.16), CUADRO.verdin);
+  rect(Math.round(filas * 0.37), 26, 5, Math.round(filas * 0.28), CUADRO.ocre);
+  rect(Math.round(filas * 0.19), 38, columnas - 38, Math.round(filas * 0.19), CUADRO.verdin);
+  // El único acento de hueso, en horizontal y cruzando lo que se encuentre.
+  linea(Math.round(filas * 0.62), 3, 22, CUADRO.hueso);
 }
 
 /* ---- las tres interpretadas (#836, segunda tanda) --------------------------- */
@@ -289,7 +302,7 @@ function sobreLaNiebla({ rect, linea }, columnas, filas) {
  */
 export const COMPOSICIONES = Object.freeze({
   "campo-partido": campoPartido,
-  "escalera-de-verdin": escaleraDeVerdin,
+  "contratiempo-de-verdin": contratiempoDeVerdin,
   "frente-al-mar": frenteAlMar,
   "viento-del-sur": vientoDelSur,
   "sobre-la-niebla": sobreLaNiebla,

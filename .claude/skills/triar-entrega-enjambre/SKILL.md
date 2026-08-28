@@ -44,7 +44,7 @@ for f in $(git diff --name-only origin/main...HEAD | grep 'tests/.*\.test\.mjs$'
 done
 
 # catálogos .po
-python3 tools/check_po_no_pierde_claves.py --base origin/main
+python3 tools/validate_es_locale.py --base origin/main
 ```
 
 Ojo: `grep -c` imprime `0` **y** sale con rc 1, así que un `|| echo 0` añade un segundo

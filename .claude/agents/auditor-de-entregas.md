@@ -32,7 +32,7 @@ sabes que está rota.
    Fallos típicos: escapado sin deshacer (todas las comillas como `\"`), o un parche
    aplicado como texto con `--` y `+` literales dentro del fuente.
 2. **Nada encoge.** Suites fichero a fichero —nunca en total, que puede subir mientras se
-   pierden las pruebas buenas— y `tools/check_po_no_pierde_claves.py` para los catálogos.
+   pierden las pruebas buenas— y `tools/validate_es_locale.py` para los catálogos.
    Cuidado: `grep -c` imprime `0` **y** sale con rc 1, así que un `|| echo 0` mete un
    segundo cero y la comparación revienta en silencio. Usa `| head -1`.
 3. **Sin andamiaje.** Este árbol no tiene ningún script suelto en la raíz: lo que

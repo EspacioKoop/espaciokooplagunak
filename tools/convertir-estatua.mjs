@@ -619,21 +619,66 @@ export function normalizar({ vertices, caras }, { alto = 2.2, ejeArriba = "z" } 
   };
 }
 
+/**
+ * Lista CERRADA para el nombre de la pieza: minúsculas, dígitos y guiones.
+ *
+ * De ese nombre salen DOS cosas peligrosas —la ruta del fichero que se escribe y
+ * el identificador exportado del módulo generado—, así que se valida una vez y
+ * en un sitio. Sin esto, `../../../PR837_ESCAPE` escribía fuera de
+ * `foundry-module/data/mallas`, y cualquier cosa rara acababa en un `export
+ * const` que no compila. Se valida el NOMBRE, no la ruta resultante: comprobar
+ * la ruta después es una segunda red, no la primera.
+ */
+export const NOMBRE_VALIDO = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+export function validarNombre(nombre) {
+  if (typeof nombre !== "string" || nombre.length > 64 || !NOMBRE_VALIDO.test(nombre)) {
+    throw new Error(
+      `nombre de pieza no válido: ${JSON.stringify(nombre)} — ` +
+        "solo minúsculas, dígitos y guiones (p. ej. `leon-al-lat`)",
+    );
+  }
+  return nombre;
+}
+
+/**
+ * Los metadatos entran en un COMENTARIO de línea del módulo generado. Un salto
+ * de línea en `--obra` cierra el comentario y deja el resto como código en un
+ * fichero que después se importa: es inyección de JavaScript por la puerta de
+ * la procedencia. Se RECHAZA en vez de recortar — un dato de procedencia con un
+ * salto de línea dentro está mal en origen, y truncarlo en silencio dejaría una
+ * cartela mutilada afirmando ser la buena.
+ */
+function textoDeComentario(campo, valor) {
+  if (valor === null || valor === undefined) return String(valor);
+  const txt = String(valor);
+  if (/[\r\n\u2028\u2029]/.test(txt)) {
+    throw new Error(`la procedencia "${campo}" no puede contener saltos de línea`);
+  }
+  return txt;
+}
+
 /** El módulo que se escribe en el árbol: texto, revisable en un PR y sin binario. */
 export function moduloDeMalla(nombre, malla, ficha) {
+  validarNombre(nombre);
   const { vertices, caras } = malla;
-  return `// ${ficha.obra} — malla importada (#590).
+  const meta = Object.fromEntries(
+    ["obra", "modelo", "autoria", "fuente", "licencia", "sha256"].map(
+      (k) => [k, textoDeComentario(k, ficha[k])],
+    ),
+  );
+  return `// ${meta.obra} — malla importada (#590).
 //
 // GENERADO, NO ESCRITO A MANO. Sale de \`tools/convertir-estatua.mjs\` a partir
 // del fichero de origen que documenta \`docs/PROCEDENCIA_ASSETS.md\`. Si se edita
 // aquí, la próxima conversión lo pisa.
 //
-//   obra       ${ficha.obra}
-//   modelo     ${ficha.modelo}
-//   autoría    ${ficha.autoria}
-//   fuente     ${ficha.fuente}
-//   licencia   ${ficha.licencia}
-//   sha256     ${ficha.sha256}
+//   obra       ${meta.obra}
+//   modelo     ${meta.modelo}
+//   autoría    ${meta.autoria}
+//   fuente     ${meta.fuente}
+//   licencia   ${meta.licencia}
+//   sha256     ${meta.sha256}
 //
 // Solo GEOMETRÍA: el color lo pone la escena con la paleta del módulo, que es la
 // frontera de arte de #351. La malla no trae ni textura ni material propios.
@@ -800,8 +845,15 @@ async function principal() {
     console.error(
       "uso: node tools/convertir-estatua.mjs <fichero.stl|.obj> <nombre> " +
         "[--caras N] [--alto M] [--fuente T] [--licencia L] [--obra O] " +
-        "[--autoria A] [--modelo M]",
+        "[--autoria A] [--modelo M] [--force]",
     );
+    process.exit(2);
+  }
+  // Antes de leer nada: el nombre decide dónde se escribe.
+  try {
+    validarNombre(nombre);
+  } catch (e) {
+    console.error(e.message);
     process.exit(2);
   }
   const textoOp = (bandera, porDefecto) => {
@@ -883,7 +935,28 @@ async function principal() {
     }
   }
   ficha = { ...ficha, sha256 };
-  await writeFile(path.join(destino, `${nombre}.mjs`), moduloDeMalla(nombre, malla, ficha), "utf8");
+  const salida = path.resolve(destino, `${nombre}.mjs`);
+  // Segunda red, después de `validarNombre`: la ruta resuelta tiene que caer
+  // DENTRO del directorio de mallas. Si algún día el nombre se ensancha, esto
+  // sigue sujetando la garantía de «escribe dentro de su alcance».
+  if (path.dirname(salida) !== path.resolve(destino)) {
+    console.error(`el destino ${salida} cae fuera de ${destino}`);
+    process.exit(2);
+  }
+  // Exclusivo salvo `--force`: pisar una malla ya convertida es una decisión,
+  // no un efecto secundario de repetir un comando.
+  try {
+    await writeFile(salida, moduloDeMalla(nombre, malla, ficha), {
+      encoding: "utf8",
+      flag: resto.includes("--force") ? "w" : "wx",
+    });
+  } catch (e) {
+    if (e && e.code === "EEXIST") {
+      console.error(`${salida} ya existe; pasa --force para sobrescribirlo.`);
+      process.exit(2);
+    }
+    throw e;
+  }
 
   console.log(
     `${triangulosEntrada} triángulos de entrada -> ${malla.caras.length} caras ` +

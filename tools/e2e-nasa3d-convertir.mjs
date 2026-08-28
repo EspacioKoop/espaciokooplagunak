@@ -45,9 +45,16 @@ async function main() {
   await writeFile(tmp, bin);
   console.log(`descargado: ${bin.length} bytes -> ${tmp}`);
 
-  const nombre = "e2e-" + id.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  // Nombre ÚNICO por ejecución: con uno predecible, el `rm` del `finally`
+  // borraba lo que hubiera en ese destino aunque no lo hubiera escrito este
+  // e2e. Y como el convertidor ya crea en exclusiva (sin `--force`), un choque
+  // de nombres falla en vez de pisar nada.
+  const nombre = ("e2e-" + id.toLowerCase() + "-" + process.pid)
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
   const destino = path.join(AQUI, "..", "foundry-module", "data", "mallas", `${nombre}.mjs`);
   await mkdir(path.dirname(destino), { recursive: true });
+  let escrito = false;
   try {
     const { stdout } = await execFileP("node", [
       path.join(AQUI, "convertir-estatua.mjs"), tmp, nombre,
@@ -56,6 +63,7 @@ async function main() {
       "--obra", id, "--autoria", "NASA", "--modelo", `3D Models/${id}`,
       "--caras", "900", "--alto", "2.2",
     ], { cwd: AQUI });
+    escrito = true;
     console.log(stdout.trim());
 
     const { componerEscena } = await import(path.join(AQUI, "..", "foundry-module", "scripts", "retro3d.mjs"));
@@ -76,7 +84,8 @@ async function main() {
     if (vistos === 0) throw new Error("el render no mostró la malla desde ningún ángulo");
     console.log(`render: hasta ${vistos} polígonos finitos desde algún ángulo -> LOOP OK`);
   } finally {
-    await rm(destino, { force: true });
+    // Solo se borra lo que ESTA ejecución escribió.
+    if (escrito) await rm(destino, { force: true });
   }
 }
 

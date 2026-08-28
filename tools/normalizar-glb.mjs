@@ -96,7 +96,7 @@ function leerAccessor(json, bin, idx) {
   return out;
 }
 
-function decodificarDraco(modulo, decoder, blob, prim, json) {
+function decodificarDraco(modulo, decoder, blob, prim) {
   const buffer = new modulo.DecoderBuffer();
   buffer.Init(blob, blob.length);
   const tipo = decoder.GetEncodedGeometryType(buffer);
@@ -110,55 +110,31 @@ function decodificarDraco(modulo, decoder, blob, prim, json) {
   }
   const numP = mesh.num_points();
   const mapeo = prim.extensions["KHR_draco_mesh_compression"].attributes;
-  const accGLB = prim.attributes || {};
 
-  // Draco almacena POSITION/NORMAL como enteros cuantizados; el accessor glTF
-  // trae min/max para deshacer la cuantización. GetAttributeFloatForAllPoints
-  // devuelve 0 en estos casos, así que leemos enteros y des-cuantizamos.
-  const sacarFlotantes = (attr, accGlbAttr) => {
+  // La des-cuantización la hace DRACO, no nosotros. El puente de emscripten
+  // escribe en su propio `DracoFloat32Array`: pasarle un `Float32Array` nativo
+  // no rellena nada, la llamada se daba por fallida y caíamos en una
+  // reconstrucción a mano que repartía UNA escala global entre los tres ejes.
+  // En una malla anisótropa eso deforma: una caja de 100 x 1 x 1 salía como
+  // 200 x 0 x 0 — geometría fiel es justo lo que esta herramienta promete.
+  const sacarFlotantes = (attr) => {
     const comps = attr.num_components();
-    const fa = new Float32Array(numP * comps);
-    if (decoder.GetAttributeFloatForAllPoints(mesh, attr, fa) && fa.some((x) => x !== 0)) {
-      return fa; // atributo flotante (no cuantizado): usar tal cual
+    const dfa = new modulo.DracoFloat32Array();
+    const ok = decoder.GetAttributeFloatForAllPoints(mesh, attr, dfa);
+    if (!ok) {
+      modulo.destroy(dfa);
+      throw new Error("Draco: no se pudo leer un atributo como flotante");
     }
-    const ints = new modulo.DracoInt32Array();
-    decoder.GetAttributeIntForAllPoints(mesh, attr, ints);
-    let denom = 1;
-    for (let i = 0; i < ints.size(); i += 1) denom = Math.max(denom, ints.GetValue(i));
-    const qmin = new Array(comps).fill(Infinity);
-    const qmax = new Array(comps).fill(-Infinity);
-    for (let i = 0; i < numP; i += 1) {
-      for (let c = 0; c < comps; c += 1) {
-        const q = ints.GetValue(i * comps + c);
-        if (q < qmin[c]) qmin[c] = q;
-        if (q > qmax[c]) qmax[c] = q;
-      }
-    }
-    const tieneMM = accGlbAttr && Array.isArray(accGlbAttr.min) && Array.isArray(accGlbAttr.max);
     const arr = new Float32Array(numP * comps);
-    for (let i = 0; i < numP; i += 1) {
-      for (let c = 0; c < comps; c += 1) {
-        const q = ints.GetValue(i * comps + c);
-        const lo = tieneMM ? accGlbAttr.min[c] : -1;
-        const hi = tieneMM ? accGlbAttr.max[c] : 1;
-        const qlo = tieneMM ? 0 : qmin[c];
-        const qhi = tieneMM ? denom : (qmax[c] - qmin[c] || 1);
-        arr[i * comps + c] = hi === lo ? lo : lo + ((q - qlo) / (qhi - qlo)) * (hi - lo);
-      }
-    }
+    for (let i = 0; i < arr.length; i += 1) arr[i] = dfa.GetValue(i);
+    modulo.destroy(dfa);
     return arr;
   };
 
-  const posiciones = sacarFlotantes(
-    decoder.GetAttributeByUniqueId(mesh, mapeo.POSITION),
-    accGLB.POSITION !== undefined ? json.accessors[accGLB.POSITION] : null,
-  );
+  const posiciones = sacarFlotantes(decoder.GetAttributeByUniqueId(mesh, mapeo.POSITION));
   let normales = null;
   if (mapeo.NORMAL !== undefined) {
-    normales = sacarFlotantes(
-      decoder.GetAttributeByUniqueId(mesh, mapeo.NORMAL),
-      accGLB.NORMAL !== undefined ? json.accessors[accGLB.NORMAL] : null,
-    );
+    normales = sacarFlotantes(decoder.GetAttributeByUniqueId(mesh, mapeo.NORMAL));
   }
 
   // Los índices pueden venir como triángulos o como tiras; GetFaceFromMesh
@@ -228,7 +204,7 @@ export async function normalizarGlb(bytes) {
           json.bufferViews[ext.bufferView].byteOffset,
           json.bufferViews[ext.bufferView].byteOffset + json.bufferViews[ext.bufferView].byteLength,
         );
-        ({ posiciones, normales, indices } = decodificarDraco(modulo, decoder, blob, prim, json));
+        ({ posiciones, normales, indices } = decodificarDraco(modulo, decoder, blob, prim));
         primitivasDecodificadas += 1;
       } else {
         // Primitiva plana dentro de un GLB Draco: la leemos tal cual y re-embebemos.

@@ -9,7 +9,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { leerObj, leerGlb, simplificar, normalizar } from "../../tools/convertir-estatua.mjs";
+import { leerObj, leerGlb, simplificar, normalizar, moduloDeMalla, validarNombre } from "../../tools/convertir-estatua.mjs";
 import { normalizarGlb } from "../../tools/normalizar-glb.mjs";
 import { componerEscena, MALLA_CAZA } from "../../foundry-module/scripts/retro3d.mjs";
 import draco3d from "draco3d";
@@ -289,7 +289,7 @@ test("la malla de referencia del módulo sigue renderizando (no se rompió el im
 // prueba es determinista, no toca la red y no introduce binarios de origen en el
 // repo (ver PROCEDENCIA_ASSETS.md). El cubo es 8 vértices / 12 triángulos.
 const DT_FLOAT32 = 6;
-async function construirGlbDraco(posiciones, indices) {
+async function construirGlbDraco(posiciones, indices, mn = [-1, -1, -1], mx = [1, 1, 1]) {
   const encMod = await draco3d.createEncoderModule();
   const mb = new encMod.MeshBuilder();
   const mesh = new encMod.Mesh();
@@ -314,7 +314,7 @@ async function construirGlbDraco(posiciones, indices) {
         extensions: { KHR_draco_mesh_compression: { bufferView: 0, attributes: { POSITION: 0 } } },
       }],
     }],
-    accessors: [{ componentType: 5126, count: posiciones.length / 3, type: "VEC3", min: [-1, -1, -1], max: [1, 1, 1] }],
+    accessors: [{ componentType: 5126, count: posiciones.length / 3, type: "VEC3", min: mn, max: mx }],
     bufferViews: [{ buffer: 0, byteOffset: 0, byteLength: blob.length }],
     buffers: [{ byteLength: blob.length }],
     extensionsUsed: ["KHR_draco_mesh_compression"],
@@ -340,6 +340,76 @@ async function construirGlbDraco(posiciones, indices) {
   bp.copy(out, o2 + 8);
   return new Uint8Array(out);
 }
+
+const MALLA_MINIMA = { vertices: [[0, 0, 0], [1, 0, 0], [0, 1, 0]], caras: [[0, 1, 2]] };
+const FICHA_MINIMA = {
+  obra: "Pieza de prueba", modelo: "m", autoria: "a",
+  fuente: "https://example.org", licencia: "CC0", sha256: "0".repeat(64),
+};
+
+test("validarNombre rechaza lo que saldría del directorio de mallas", () => {
+  // El nombre decide DOS cosas peligrosas: la ruta que se escribe y el
+  // identificador exportado. Se valida el nombre, no la ruta ya construida.
+  for (const malo of [
+    "../../../PR837_ESCAPE", "a/b", "a\\b", "leon-al-lat/../../x",
+    "", "Mayúsculas", "con espacio", "-guion-al-principio", "x".repeat(65),
+  ]) {
+    assert.throws(() => validarNombre(malo), /no válido/, `debería rechazar ${JSON.stringify(malo)}`);
+  }
+  for (const bueno of ["leon-al-lat", "e2e-nasa-1234", "pieza9"]) {
+    assert.equal(validarNombre(bueno), bueno);
+  }
+});
+
+test("moduloDeMalla rechaza un salto de línea en la procedencia (inyección)", () => {
+  // Un `\n` en --obra cerraba el comentario y dejaba el resto como CÓDIGO en un
+  // fichero que después se importa.
+  for (const campo of ["obra", "modelo", "autoria", "fuente", "licencia"]) {
+    const ficha = { ...FICHA_MINIMA, [campo]: "X\nexport const INYECTADO = 1;" };
+    assert.throws(
+      () => moduloDeMalla("pieza", MALLA_MINIMA, ficha),
+      /saltos de línea/,
+      `${campo} debería rechazarse`,
+    );
+  }
+  assert.throws(
+    () => moduloDeMalla("pieza", MALLA_MINIMA, { ...FICHA_MINIMA, obra: "X\u2028y" }),
+    /saltos de línea/,
+    "U+2028 también termina una línea en JavaScript",
+  );
+});
+
+test("moduloDeMalla exige un nombre válido antes de componer el identificador", () => {
+  assert.throws(() => moduloDeMalla("../fuera", MALLA_MINIMA, FICHA_MINIMA), /no válido/);
+  const txt = moduloDeMalla("leon-al-lat", MALLA_MINIMA, FICHA_MINIMA);
+  assert.match(txt, /export const LEON_AL_LAT = Object\.freeze\(/);
+});
+
+test("normalizarGlb conserva la forma de una malla ANISÓTROPA y desplazada", async () => {
+  // Una caja de 100 x 1 x 1 corrida del origen. Con la des-cuantización hecha a
+  // mano —una sola escala global repartida entre los tres ejes— salía como
+  // 200 x 0 x 0: los ejes cortos se aplastaban a nada. Un cubo no lo detecta,
+  // porque ahí la escala global SÍ vale para los tres ejes.
+  const P = [
+    [-50, -0.5, -0.5], [50, -0.5, -0.5], [50, 0.5, -0.5], [-50, 0.5, -0.5],
+    [-50, -0.5, 0.5], [50, -0.5, 0.5], [50, 0.5, 0.5], [-50, 0.5, 0.5],
+  ];
+  const I = [
+    0, 1, 2, 0, 2, 3, 4, 6, 5, 4, 7, 6, 0, 4, 5, 0, 5, 1,
+    1, 5, 6, 1, 6, 2, 2, 6, 7, 2, 7, 3, 3, 7, 4, 3, 4, 0,
+  ];
+  const glb = await construirGlbDraco(P, I, [-50, -0.5, -0.5], [50, 0.5, 0.5]);
+  const m = leerGlb((await normalizarGlb(glb)).bytes);
+  const rango = (c) => {
+    const v = m.vertices.map((p) => p[c]);
+    return Math.max(...v) - Math.min(...v);
+  };
+  // Tolerancia amplia: la cuantización a 14 bits sobre una caja tan alargada
+  // deja un error de milésimas. Lo que se vigila es la PROPORCIÓN, no el bit.
+  assert.ok(Math.abs(rango(0) - 100) < 0.5, `eje largo ${rango(0)} ≈ 100`);
+  assert.ok(Math.abs(rango(1) - 1) < 0.05, `eje corto Y ${rango(1)} ≈ 1`);
+  assert.ok(Math.abs(rango(2) - 1) < 0.05, `eje corto Z ${rango(2)} ≈ 1`);
+});
 
 test("normalizarGlb pasa de largo un GLB ya plano (draco:false, bytes ídem)", async () => {
   const glb = construirGlb([[0, 0, 0], [1, 0, 0], [0, 1, 0]], [0, 1, 2]);

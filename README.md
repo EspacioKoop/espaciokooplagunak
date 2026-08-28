@@ -31,7 +31,7 @@ seguro y módulo Foundry en desarrollo. Las fases 0, 1 y 2 están completadas.
 | Ejecución con Docker | Verificada en local | Servidor headless + puente vía compose ([`docker/README.md`](docker/README.md)) |
 | Integración con Foundry VTT | Vertical en desarrollo | Puente v0 + módulo con estado, destino/ETA y mapa vivo; controles GM de tempo, reposición, ingeniería y maniobra; asignación y **espacios operativos de puesto** (cada tripulante emite las órdenes de su puesto: navegación, ingeniería con energía y refrigerante, armas). Smoke GUI **verificado en v11.302**; falta la fila del host moderno ([`docs/FOUNDRY.md`](docs/FOUNDRY.md), #29) |
 | Cambios jugables propios | Primera iteración disponible | «Lagunak: Primera guardia» (`scenario_90`) |
-| Lanzamientos propios | Automatización lista, sin lanzamiento aún | `docker-publish.yml` publica en GHCR con cada tag `v*`; falta el primer tag tras validar una sesión real |
+| Lanzamientos propios | Primer release publicado, publicación por tag aún sin estrenar | Existe el release/tag `v2026.08.27`. Las imágenes `espaciokooplagunak-server` y `-bridge` están publicadas y son públicas en GHCR, pero se subieron por `workflow_dispatch` y llevan `manual` + SHA corto, no la versión. El disparo por tag `v*` sigue sin ejercitarse y publicaría sin etiqueta de versión hasta que entre el arreglo de #829 |
 
 ## Qué es
 

@@ -1,4 +1,4 @@
-// Integración con Foundry VTT (opt-in ACTIVADA).
+// Integración con Foundry VTT (ACTIVADA).
 //
 // Este archivo es un `esmodule` del módulo (ver module.json), así que Foundry
 // lo carga y ejecuta al arrancar. Se auto-registra en la barra de controles de
@@ -14,11 +14,14 @@
 // appv1), que Foundry conserva por retrocompatibilidad en v13; es la misma ruta
 // aislada que el resto del módulo usa para v11. Si la clase base no existe en
 // el anfitrión, el botón se registra pero al abrir avisa y no rompe nada.
+//
+// Testeable sin Foundry: `registrarVisorSistema3D(hooks)` y la herramienta se
+// exportan, así que un test Node las ejercita con Hooks/juego simulados.
 
 import { anadirHerramienta } from "../../scripts/control-escena.mjs";
 
-const ID_BOTON = "lagunak-visor-3d-sistema";
-const CLAVE_TITULO = "LAGUNAK.Controles.AbrirVisor3DSistema";
+export const ID_BOTON = "lagunak-visor-3d-sistema";
+export const CLAVE_TITULO = "LAGUNAK.Controles.AbrirVisor3DSistema";
 
 const PLANTILLA = `
 <div class="ek3d-sistema">
@@ -91,27 +94,34 @@ function abrirVisor3D() {
   else visorApp.render(true);
 }
 
-// Auto-registro en la barra de escena (grupo propio `lagunak`). `Hooks` existe
-// desde muy pronto en el arranque de Foundry; el check de GM va dentro del
-// handler porque getSceneControlButtons se dispara para los controles del
-// cliente actual —igual que hace main.mjs con `gmTools`—. En Node (tests del
-// módulo) `Hooks` no existe y esto no se ejecuta.
-if (typeof Hooks !== "undefined") {
-  Hooks.on("getSceneControlButtons", (controls) => {
+// Descriptor de la herramienta de escena. Exportado para testearlo en Node sin
+// Foundry: un test simula Hooks/juego y comprueba que se inyecta donde toca.
+export const herramientaVisor3D = {
+  name: ID_BOTON,
+  title: CLAVE_TITULO,
+  icon: "fa-solid fa-satellite",
+  button: true,
+  onClick: () => abrirVisor3D(),
+};
+
+/**
+ * Registra el botón en la barra de escena. Inyectable: recibe el objeto `Hooks`
+ * para que un test lo sustituya por un doble. Solo-GM (el hook de Foundry se
+ * dispara para los controles del cliente actual, igual que `gmTools` en
+ * main.mjs).
+ *
+ * @param {object|null} [hooks] - el `Hooks` de Foundry. Si es nulo, no hace nada
+ *   (p. ej. en Node sin Foundry).
+ */
+export function registrarVisorSistema3D(hooks) {
+  const destino = hooks ?? (typeof Hooks !== "undefined" ? Hooks : null);
+  if (!destino) return;
+  destino.on("getSceneControlButtons", (controls) => {
     if (!game.user?.isGM) return;
-    anadirHerramienta(controls, {
-      name: ID_BOTON,
-      title: CLAVE_TITULO,
-      icon: "fa-solid fa-satellite",
-      button: true,
-      onClick: () => abrirVisor3D(),
-    });
+    anadirHerramienta(controls, herramientaVisor3D);
   });
 }
 
-// Reexportado por si main.mjs (u otro) quiere invocarlo explícitamente; el
-// auto-registro de arriba ya basta en el uso normal.
-export function registrarVisorSistema3D() {
-  if (typeof Hooks === "undefined" || !game?.user?.isGM) return;
-  // El hook ya está registrado arriba al importar; aquí no hay nada más que hacer.
-}
+// Auto-registro al cargar en Foundry (Hooks global presente). En Node no pasa
+// nada, porque `Hooks` no existe.
+registrarVisorSistema3D(typeof Hooks !== "undefined" ? Hooks : null);

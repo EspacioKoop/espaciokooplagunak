@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Visor de sistema planetario 3D — Espaciokoop Lagunak</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: #05070f; color: #cdd6e6; font-family: system-ui, sans-serif; }
+    #visor { position: fixed; inset: 0; }
+    #barra {
+      position: fixed; top: 12px; left: 12px; z-index: 10; display: flex; gap: 8px;
+      background: rgba(10,14,24,0.7); padding: 8px 10px; border-radius: 8px; backdrop-filter: blur(4px);
+    }
+    #barra button {
+      background: #1b2740; color: #cdd6e6; border: 1px solid #2c3c5e; border-radius: 6px;
+      padding: 6px 10px; cursor: pointer; font-size: 13px;
+    }
+    #barra button:hover { background: #243556; }
+    #titulo { align-self: center; margin-left: 6px; opacity: 0.75; font-size: 13px; }
+  </style>
+
+  <!--
+    Three.js se carga desde CDN vía importmap. No hay build ni node_modules.
+    Para abrirlo: esta carpeta necesita servirse por HTTP (los módulos ES no se
+    cargan desde file:// en Chrome). Desde la carpeta del repo:
+        python3 -m http.server 8080
+    y abre http://localhost:8080/foundry-module/standalone/visor-3d-sistema/
+  -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="barra">
+    <button id="pausa">Pausar</button>
+    <button id="orbitas">Orbitas: sí</button>
+    <span id="titulo">Sistema Argia — arrastra para orbitar, rueda para zoom, click en un cuerpo para enfocar</span>
+  </div>
+  <div id="visor"></div>
+
+  <script type="module">
+    import { montarEnElemento } from "./visor.mjs";
+    import { SISTEMA_EJEMPLO } from "./datos.mjs";
+
+    const visor = montarEnElemento("visor", { sistema: SISTEMA_EJEMPLO, velocidad: 1 });
+
+    const btnPausa = document.getElementById("pausa");
+    btnPausa.addEventListener("click", () => {
+      visor.velocidad = visor.velocidad === 0 ? 1 : 0;
+      btnPausa.textContent = visor.velocidad === 0 ? "Reanudar" : "Pausar";
+    });
+
+    const btnOrbitas = document.getElementById("orbitas");
+    btnOrbitas.addEventListener("click", () => {
+      visor.mostrarOrbitas = !visor.mostrarOrbitas;
+      btnOrbitas.textContent = `Orbitas: ${visor.mostrarOrbitas ? "sí" : "no"}`;
+      // Reconstruye para aplicar el cambio de inmediato.
+      visor.cargarSistema(visor.sistema);
+    });
+  </script>
+</body>
+</html>

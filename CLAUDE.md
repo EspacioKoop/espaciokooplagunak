@@ -478,6 +478,23 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     PIERNAS y a nada más, que no es una simplificación de dibujo sino la cuenta exacta: torso y
     cabeza van encima, así que la cabeza baja justo `flexion` y acaba donde acaba la cámara de su
     dueño. Con tope, porque un mediano no tiene medio metro de pierna que encoger.
+    Los **taburetes de la barra de la cantina** eran UNA caja, y era exactamente la misma que la
+    barra (`[0.5, 0.9, 0.5]`): el asiento a la altura del mostrador. Como bulto colaba; en cuanto
+    se pudo uno sentar dejó de colar, porque ponía los ojos diecisiete centímetros más altos que
+    de pie. Ahora son cuatro cajas —asiento, pie, base y **reposapiés**, que es la pieza que dice
+    de un vistazo que el asiento está alto— con la cara del asiento a `ALTURA_TABURETE` = 0,63 m,
+    la MISMA que el taburete del vocabulario común, para que no haya dos taburetes de alturas
+    distintas en la misma nave; contra un mostrador de 0,90 quedan los 0,27 m que hay entre un
+    asiento y la barra a la que te arrimas. Lo que **no** son todavía es asientos, y no por falta
+    de altura: **a la barra no se llega andando**. Medido inundando la sala desde su entrada, solo
+    el 25 % del suelo libre es alcanzable, y es la franja `z` 9,8–11,4 pegada al muro sur — la
+    pared de ventanal de la escena clásica (`mamparoIzq`/`mamparoDer`/`dintel`/`antepecho`, en
+    z 8,85–9,45) cruza la sala de lado a lado sin un hueco y la entrada cae del lado de FUERA, así
+    que la barra, sus taburetes y las dos mesas quedan al otro lado. #579 ya lo había escrito al
+    elegir dónde poner la puerta de la terraza; `tests/cantina-barra-alcanzable.test.mjs` lo
+    convierte en número y **falla el día que se abra ese paso**, que es cuando toca declarar los
+    cuatro asientos. Abrirlo es una decisión de geometría de la cantina —o la pared de ventanal
+    tiene un hueco, o la sala mide lo que mide su interior y no tres metros más—, no un ajuste.
     Cada sala con sistema tiene una CONSOLA (#509) que abre el puesto del sistema que ALOJA —el
     reactor abre ingeniería— y que desde #557 **se ve**: hasta entonces era solo un rectángulo
     disparador y se activaba pisando un trozo de suelo vacío (y `detalleConsola`, escrita y probada

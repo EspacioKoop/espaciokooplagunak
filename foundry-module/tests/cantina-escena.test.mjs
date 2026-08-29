@@ -8,7 +8,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { MUEBLES, caja, componerCantina } from "../scripts/cantina-escena.mjs";
+import { ALTURA_TABURETE, MUEBLES, caja, componerCantina } from "../scripts/cantina-escena.mjs";
 import { PLANOS } from "../scripts/cantina-planos.mjs";
 import { EPOCAS } from "../scripts/retro3d.mjs";
 import { afirmarOrdenPorPintor } from "./ayuda-orden-pintor.mjs";
@@ -200,4 +200,54 @@ test("la tele existe como objeto de la sala, no como capa encima", () => {
   const pantalla = MUEBLES.find((mueble) => mueble.nombre === "telePantalla");
   assert.ok(pantalla, "la tele no está en la sala");
   assert.ok(pantalla.medidas[2] > pantalla.medidas[1], "una tele es más ancha que alta");
+});
+
+/* ---- los taburetes de la barra --------------------------------------------- */
+
+test("un taburete es un taburete: asiento, pie, base y reposapiés", () => {
+  // Era UNA caja, y era exactamente la misma que la barra: `[0.5, 0.9, 0.5]`
+  // centrada en −1.45. Como bulto colaba; al poder sentarse encima dejó de
+  // colar, porque ponía los ojos por encima de estar de pie.
+  const partes = MUEBLES.filter(({ nombre }) => /^taburete0/.test(nombre ?? ""));
+  assert.equal(partes.length, 4);
+  assert.deepEqual(
+    partes.map(({ nombre }) => nombre).sort(),
+    ["taburete0Asiento", "taburete0Base", "taburete0Pie", "taburete0Reposapies"],
+  );
+});
+
+test("el asiento está donde dice ALTURA_TABURETE, y no en una altura escrita aparte", () => {
+  const SUELO = -1.9;
+  const asiento = MUEBLES.find(({ nombre }) => nombre === "taburete0Asiento");
+  const cara = asiento.centro[1] + asiento.medidas[1] / 2;
+  assert.ok(Math.abs(cara - (SUELO + ALTURA_TABURETE)) < 1e-9, `cara del asiento en ${cara}`);
+});
+
+test("un taburete de barra queda por debajo de su barra, y por la distancia correcta", () => {
+  // 0,27 m entre el asiento y el mostrador. La caja de antes daba CERO: el
+  // asiento a la altura exacta de la barra, que es la señal de que nadie lo
+  // había mirado como mueble.
+  const barra = MUEBLES.find(({ nombre }) => nombre === "barra");
+  const caraBarra = barra.centro[1] + barra.medidas[1] / 2;
+  const caraAsiento = -1.9 + ALTURA_TABURETE;
+  const diferencia = caraBarra - caraAsiento;
+  assert.ok(diferencia > 0.2 && diferencia < 0.35, `${diferencia.toFixed(2)} m entre asiento y barra`);
+});
+
+test("el reposapiés va entre la base y el asiento, que es lo que lo hace reposapiés", () => {
+  const alto = (nombre) => {
+    const pieza = MUEBLES.find((p) => p.nombre === nombre);
+    return pieza.centro[1] + pieza.medidas[1] / 2;
+  };
+  assert.ok(alto("taburete0Base") < alto("taburete0Reposapies"));
+  assert.ok(alto("taburete0Reposapies") < alto("taburete0Asiento"));
+});
+
+test("los cuatro taburetes están a la misma altura y repartidos por la barra", () => {
+  const asientos = MUEBLES.filter(({ nombre }) => /^taburete\d+Asiento$/.test(nombre ?? ""));
+  assert.equal(asientos.length, 4);
+  assert.equal(new Set(asientos.map(({ centro }) => centro[1])).size, 1);
+  const xs = asientos.map(({ centro }) => centro[0]).sort((a, b) => a - b);
+  const huecos = xs.slice(1).map((x, i) => x - xs[i]);
+  assert.ok(huecos.every((h) => Math.abs(h - huecos[0]) < 1e-9), "repartidos por igual");
 });

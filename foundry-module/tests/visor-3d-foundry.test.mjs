@@ -5,7 +5,7 @@ import {
   ID_BOTON,
   herramientaVisor3D,
   registrarVisorSistema3D,
-} from "../standalone/visor-3d-sistema/foundry-app.mjs";
+} from "../scripts/visor-3d-sistema-app.mjs";
 import { SISTEMA_EJEMPLO, aplanarSistema } from "../standalone/visor-3d-sistema/datos.mjs";
 
 // --- Tests del registro en la barra de escena, sin Foundry real ---

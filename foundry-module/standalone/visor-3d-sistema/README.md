@@ -13,7 +13,7 @@ vía `importmap`.
   está separada del render y se testea desde Node sin navegador, igual que el
   resto del módulo (`decorado-fondo.mjs`, etc.).
 - El render (`visor.mjs`) es la única pieza que usa Three.js y el navegador.
-- La integración con Foundry (`foundry-app.mjs`) ya está **activa**: el archivo
+- La integración con Foundry (la glu `scripts/visor-3d-sistema-app.mjs`) ya está **activa**: el archivo
   está en `module.json` (esmodules) y se auto-registra como botón solo-GM.
 
 ## Estructura
@@ -24,7 +24,7 @@ vía `importmap`.
 | `datos.mjs` | sistema de ejemplo "Argia" + `aplanarSistema` | ninguna |
 | `visor.mjs` | render Three.js + clase `VisorSistema3D` | `three` (CDN) |
 | `index.html` | arranque standalone (Three por CDN) | navegador |
-| `foundry-app.mjs` | wrapper `Application` para Foundry (opt-in) | Foundry + three |
+| _(glu en `scripts/visor-3d-sistema-app.mjs`)_ | ventana Foundry que embebe `index.html` en iframe | Foundry |
 | `../tests/visor-3d-sistema.test.mjs` | tests Node de la lógica pura | `node:test` |
 
 ## Uso standalone
@@ -53,7 +53,7 @@ verificación humana en un navegador (igual que `mapa-render.mjs`).
 
 ## Integración en Foundry (ACTIVADA)
 
-El archivo `foundry-app.mjs` ya está listado en `esmodules` de `module.json`, así
+El archivo `scripts/visor-3d-sistema-app.mjs` ya está listado en `esmodules` de `module.json`, así
 que Foundry lo carga al arrancar y se auto-registra en la barra de controles de
 escena, dentro del grupo propio `lagunak` (issue #125), como botón solo-GM
 "Visor 3D del sistema" (`fa-solid fa-satellite`). Al pulsarlo se abre una

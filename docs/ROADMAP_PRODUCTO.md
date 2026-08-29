@@ -194,19 +194,21 @@ qué comportamiento adoptar queda trazada en #512, ver
 #482 (alarmas compartidas por dependencia entre sistemas — **mergeado**, PR
 #494: es dependencia entre sistemas, distinta del nivel de alerta de #338 en
 `nivel-alerta.mjs`), #483 (guardias y relevo — **mergeado**, PR #496) y #484
-(crisis que exijan coordinación entre al menos tres puestos — **en revisión**,
-PR abierto: el arquetipo `ambush`, la emboscada de ecos, es el caso concreto del
-criterio de salida de la etapa; qué puesto hace qué y por qué es necesario está
+(crisis que exijan coordinación entre al menos tres puestos — **cerrado**: el
+arquetipo `ambush`, la emboscada de ecos, es el caso concreto del criterio de
+salida de la etapa; qué puesto hace qué y por qué es necesario está
 en [`CRISIS_MULTIPUESTO.md`](CRISIS_MULTIPUESTO.md), y su playtest con personas
 sigue siendo #467). Antes de declarar la etapa completada deben
 quedar todos trazados y satisfechos.
 
-**Estado a 2026-08-08**: de los dos grafos de la etapa, #484 está en revisión y
-con eso no quedaría nada más que se cierre escribiendo código. Los otros dos no
-se pueden cerrar así — #467 (playtest con 3+ personas, que puede usar la crisis
-de #484 como su escenario de prueba) y #512 (decisión de
-producto sobre qué comportamiento adoptar para los puestos sin tripulación, que
-#481 dejó trazada al verificar que hoy no hay automatización nativa alguna).
+**Estado a 2026-08-28**: de los dos grafos de la etapa ya no queda nada que se
+cierre escribiendo código — #484 se cerró, y con él el último frente de #479 que
+dependía de un PR. Los dos que siguen abiertos no se pueden cerrar así: #467
+(playtest con 3+ personas, que puede usar la crisis de #484 como su escenario de
+prueba) y #512 (decisión de producto sobre qué comportamiento adoptar para los
+puestos sin tripulación, que #481 dejó trazada al verificar que hoy no hay
+automatización nativa alguna). La etapa está, por tanto, esperando a una sesión
+con personas y a una decisión, no a más código.
 
 ### Etapa C — Nave persistente y progresión
 
@@ -295,6 +297,79 @@ intervención directa de quienes lo desarrollan.
 - Un render, un endpoint o un editor aislado no cierran una etapa sin su bucle
   jugable.
 
+## Frentes transversales
+
+Las etapas A–G describen qué se juega. Estos cuatro frentes describen bajo qué
+condiciones se entrega, corren **en paralelo a todas** ellas y no son una etapa
+nueva: ninguno añade una capacidad jugable, y ninguno puede usarse para posponer
+la etapa A. Se listan aquí porque hoy consumen trabajo real que el documento no
+representaba, y porque su forma de fallar es silenciosa — una etapa se cierra
+sin cumplirlos y nadie lo nota hasta mucho después.
+
+Regla común: **un frente transversal se verifica por un mecanismo, no por un
+número**. Donde no exista todavía una comprobación automática, este documento lo
+dice en vez de inventar una cifra que nadie mide.
+
+### T1 — Higiene arquitectónica y deuda de entrega
+
+- **Objetivo:** reforzar contratos ya existentes (errores HTTP del puente,
+  idempotencia, validación de esquemas) y recuperar trabajo que se quedó sin
+  llegar a `main`, sin introducir funcionalidad nueva.
+- **Cómo se verifica:** cada PR de este frente es atómico y su suite de área pasa
+  en CI; el trabajo rescatado se comprueba contra el estado actual de `main`
+  antes de reabrirse, según el procedimiento de rescate de
+  [`CONTRIBUTING.md`](../CONTRIBUTING.md) y la regla de ramas huérfanas de
+  [`CLAUDE.md`](../CLAUDE.md).
+- **Trabajo vinculado:** #715 (tanda de quick wins, abierto), #667 (37 tarjetas
+  cerradas cuyo trabajo nunca llegó a un PR, abierto), PR #750 (errores 502 del
+  puente, **mergeado**).
+- **Criterio de salida:** no hay tarjetas cerradas sin PR pendientes de triar, y
+  la deuda táctica deja de aparecer como bloqueo en los frentes de producto.
+
+### T2 — Contratos de calidad transversales
+
+- **Objetivo:** que accesibilidad, seguridad y rendimiento sean invariantes
+  escritos que apliquen a toda superficie nueva, y no criterio de cada PR.
+- **Cómo se verifica:** el contrato de animación accesible está escrito y es
+  exigible (`prefers-reduced-motion`, regresión de foco, mutación negativa); la
+  baseline de accesibilidad del módulo (#227) ya está cerrada y vigilada por su
+  suite. Lo que aún **no** está automatizado es el modelo de amenazas de la capa
+  lúdica.
+- **Trabajo vinculado:** #694 (criterio de animación accesible, abierto) con su
+  PR #747 **mergeado**, #227 (**cerrado**), #700 (modelo de amenazas de la capa
+  lúdica, abierto).
+- **Criterio de salida:** cada contrato de esta lista tiene una puerta de CI que
+  lo comprueba, o una razón escrita de por qué no puede tenerla.
+
+### T3 — Experiencia de desarrollo y contexto para agentes
+
+- **Objetivo:** que el contexto del repositorio sea reproducible para personas y
+  para agentes, y que las convenciones vivan en ficheros versionados
+  ([`AGENTS.md`](../AGENTS.md), [`CLAUDE.md`](../CLAUDE.md),
+  [`docs/TRABAJO_PARALELO_AGENTES.md`](TRABAJO_PARALELO_AGENTES.md)) en vez de
+  en la cabeza de quien lleva más tiempo.
+- **Cómo se verifica:** el contrato operativo está en el árbol y se corrige en el
+  mismo PR que invalida su prosa. No hay métrica de tiempo de incorporación: no
+  se mide, y ponerle un número sería inventarlo.
+- **Trabajo vinculado:** #749 (contexto local del espacio de trabajo,
+  **cerrado**), #705 (roadmap vivo y grafo de arquitectura para agentes,
+  **cerrado**), #717 (auditoría y automatización de labels, abierto).
+- **Criterio de salida:** ningún paso de puesta en marcha depende de instrucciones
+  que solo existan en un hilo de issue.
+
+### T4 — Localización y QA editorial
+
+- **Objetivo:** coherencia terminológica y naturalidad en los idiomas soportados,
+  tanto en el juego nativo como en el módulo.
+- **Cómo se verifica:** el lint de i18n en CI cubre la forma (claves, marcadores);
+  la naturalidad no la cubre ninguna máquina y exige revisión humana, que es
+  exactamente lo que #28 sigue esperando desde julio.
+- **Trabajo vinculado:** #28 (playtest y revisión humana ES-ES, abierto), #698
+  (volúmenes que no superan el filtro de dominio público, abierto), #699
+  (frontera editorial de la capa lúdica, abierto).
+- **Criterio de salida:** #28 se cierra con un playtest humano registrado y sin
+  hallazgos P1 abiertos.
+
 ## El frente paralelo: espacios andables y catálogo de contenido
 
 Hay una cadena de trabajo que no aparece en las etapas de arriba y que ha crecido
@@ -303,6 +378,14 @@ los que se anda dentro de la nave, el kit de escenas de #589 y el catálogo de
 assets con procedencia (#571, #590, #598). Dejarla sin mencionar haría que este
 documento describiera un proyecto que ya no es el que hay.
 
+- **Andar por la nave** (#427): el frente con más actividad reciente. Su tanda de
+  correcciones estructurales está **cerrada** — #539 (era injugable: huecos,
+  puertas contra las que golpearse y una escala por sala), #540 (la planta sale
+  del interior real del Phobos declarado en `frigates.lua`, no de una geografía
+  inventada), #541 (por las ventanas se ve el espacio real de la partida),
+  #542 (la sección enseña esa misma planta) y #577 (sección, andar y cantina son
+  tres puertas a una sola geografía). Lo que queda no es corregir sino decidir
+  qué se recorre.
 - **Línea experimental de `retro3d`** (#603): esqueleto, deformación y
   retargeting para PC, NPC y bestiario, en una línea separada del kit de
   escenas (#589).
@@ -336,14 +419,16 @@ por el bucle de producto y no por el de infraestructura.
 
 ### Dónde está hoy este frente, y su deuda
 
-Medido el 2026-08-20, para que la regla de arriba no se lea como si ya se
-cumpliera:
+Medido el 2026-08-20 y revisado el 2026-08-28, para que la regla de arriba no se
+lea como si ya se cumpliera:
 
 - **La mesa todavía no visita nada de esto.** La playa (#587) y la sala del museo
   (#598) no cuelgan de ninguna puerta de la nave —su lista de puertas está
   vacía—, así que las abre el GM desde la barra de escena y nadie más las pisa.
   Cada pieza que se les añada la ve una sola persona. Es la deuda que hay que
-  pagar antes de meter más contenido, no después.
+  pagar antes de meter más contenido, no después — y sigue sin pagarse: la tanda
+  cerrada de #427 arregló la geografía por la que se anda, no quién entra en
+  estas dos salas.
 - **Hay 18 mallas 3D en el árbol y el museo enseña 3.** Todas con procedencia
   verificada (escaneos de vaciados del *Statens Museum for Kunst*, CC0 1.0). Lo
   que falta no es licencia ni código: es la **cartela** de cada pieza, que es

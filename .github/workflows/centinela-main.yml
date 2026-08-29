@@ -1,0 +1,111 @@
+# Peregrin Took — Guardián de la Ciudadela
+#
+# Vigila que `main` esté verde, y abre un issue cuando no lo está.
+#
+# POR QUÉ EXISTE. El 2026-08-22 se descubrió que `main` llevaba roto desde el
+# día 20: `test_mapa_areas` fallaba porque un fichero nuevo del módulo no tenía
+# área asignada. Dos días y 58 merges con el test en rojo sin que nadie se
+# enterase, porque toda la CI de este repositorio mira los PR y **nadie mira
+# `main`**. Peor: ese test vive en `tools/tests`, así que tumbaba la puerta de
+# CI de cualquier PR que tocara `tools/`, y quien lo sufría no podía distinguir
+# si el fallo era suyo o heredado.
+#
+# Los tres workflows programados que ya había —Trivy, CodeQL, Semgrep— vigilan
+# seguridad, no corrección. Este vigila corrección.
+#
+# NO LLEVA FILTRO DE RUTAS a propósito: la gracia es correr SIEMPRE sobre lo que
+# hay en `main`, tocara lo que tocara el último merge.
+name: Peregrin Took — Guardián de la Ciudadela
+
+on:
+  schedule:
+    # Cada cuatro horas. Suficiente para que un rojo no sobreviva media jornada,
+    # y poco para que no moleste.
+    - cron: "37 */4 * * *"
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: centinela-main
+  cancel-in-progress: false
+
+jobs:
+  vigilar:
+    name: La Ciudadela sigue en pie
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+        with:
+          ref: main
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+
+      - name: Dependencias de tools
+        run: python3 -m pip install pytest polib==1.2.0 pyyaml==6.0.2
+
+      - name: Tests de tools
+        id: tools
+        run: python3 -m pytest tools/tests/ -q
+
+      # `continue-on-error` NO: si tools falla, el resto da igual y el issue
+      # tiene que decir lo primero que se rompió, no una lista de consecuencias.
+      - name: Tests del módulo Foundry
+        id: modulo
+        run: node --test foundry-module/tests/*.test.mjs
+
+      - name: Lua de los escenarios
+        id: lua
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq lua5.3
+          find scripts -iname '*.lua' -print0 | xargs -0 -n1 luac -p
+
+  avisar:
+    name: Dar la voz de alarma
+    needs: vigilar
+    if: failure() && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+
+      # Un issue por rotura, no uno por ejecución: si ya hay uno abierto, se
+      # comenta en él. Cuatro ejecuciones al día durante dos días serían
+      # dieciséis issues idénticos, y eso no es avisar, es ruido.
+      - name: Abrir o actualizar el aviso
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EJECUCION: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          TITULO="main está roto — la Ciudadela ha caído"
+          EXISTE=$(gh issue list --state open --label "main-roto" \
+                   --json number -q '.[0].number' || true)
+          CUERPO=$(printf '%s\n' \
+            "El centinela ha encontrado \`main\` en rojo." \
+            "" \
+            "- Commit: \`$SHA\`" \
+            "- Ejecución: $EJECUCION" \
+            "" \
+            "Mientras esto siga rojo, **cualquier PR que toque la misma área hereda el fallo**," \
+            "y quien lo sufra no puede distinguir si es suyo. Eso ya pasó entre el 20 y el 22 de" \
+            "agosto de 2026: dos días y 58 merges con \`test_mapa_areas\` en rojo." \
+            "" \
+            "Arreglar \`main\` va antes que cualquier otra cosa en la cola.")
+          if [ -n "$EXISTE" ]; then
+            gh issue comment "$EXISTE" --body "$CUERPO"
+          else
+            gh issue create --title "$TITULO" --label "main-roto" --body "$CUERPO"
+          fi

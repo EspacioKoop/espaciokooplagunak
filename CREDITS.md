@@ -18,7 +18,9 @@ La dirección del proyecto es compartida por Varo y Eloy «Gurucharri».
   revisión, pruebas y documentación.
 
 Las contribuciones concretas y su atribución se conservan en el historial Git,
-los issues y los pull requests del repositorio.
+los issues y los pull requests del repositorio. Consulta la
+[política de atribución](docs/ATRIBUCION_CONTRIBUCIONES.md) para distinguir los
+créditos estables de la trazabilidad puntual.
 
 ## Proyecto original
 

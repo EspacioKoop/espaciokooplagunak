@@ -37,8 +37,8 @@ El issue #853 pide 3 módulos + enganche en escena.
 3. Estado efímero (página actual / ángulo / animación) en la VENTANA, no en la escena
    (`docs/FOUNDRY.md`: la escena no recuerda). `prefers-reduced-motion` en el primer vertical.
 4. Enganche en `nave-estancias.mjs` con el patrón de interacción de cartela/consola
-   (`accion`, flank entrada/salida, #509/#598). Campo de pruebas en `tools/campo-de-pruebas/`
-   como #838.
+   (`accion`, flank entrada/salida, #509/#598). Campo de pruebas al mismo nivel que el de los
+   cuadros (#838): directorio de herramientas de pruebas con una escena mínima.
 
 ## Restricciones heredadas (no negociables, de #853 y comentarios)
 

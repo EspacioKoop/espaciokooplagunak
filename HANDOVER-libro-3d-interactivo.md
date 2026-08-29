@@ -20,14 +20,16 @@ Fecha: 2026-08-29. Rama: `feature/libro-3d-interactivo`. Autor del trabajo: agen
 
 ## Lo que QUEDA por hacer (siguiente sesión)
 
-El issue #853 pide 3 módulos + enganche en escena. Solo el primero (geometría) está hecho.
-Faltan, EN ESTE ORDEN (verticales finos, cada uno su PR verde):
+El issue #853 pide 3 módulos + enganche en escena.
+- **Hecho y verificado (vertical 1)**: `foundry-module/scripts/libro-pagina.mjs` — dibujo de
+  la página con `chapasDeRejilla` a CELDA_PAGINA=0.01 (1 cm, más fina que la del cuadro 2,5 cm
+  #836/#838 porque la hoja se mira más de cerca), tope validado al importar (TOPE_PAGINA=60),
+  mancha tipográfica + composición SIN texto legible (#526/#838). Paleta `PAGINA` en
+  `paleta.mjs` (frontera #351, sin color propio). 8 tests verdes; presupuesto real 17 caras /
+  68 vértices. Huérfano + área `escenas y 3D` registrados. Commit `HEAD` (sin push).
+- Solo faltan los verticales 2 y 3:
 
-1. `libro-pagina.mjs` — representación visual de la página vía `chapasDeRejilla` (de
-   `nave-mural-pixel.mjs`), con su propio `CELDA` (mirar #836/#838 para la medida) y un tope
-   validado en import (mirar `TOPE_CUADRO`/`TOPE_OBJETO`). Regla dura #526/#838: mancha
-   tipográfica + composición, SIN texto legible ni datos de partida (nada de mapas, tablas,
-   coordenadas, cartas de navegación).
+1. (HECHO) `libro-pagina.mjs` — ver arriba.
 2. `libro-catalogo.mjs` — obra + autor + procedencia, validado POR `validarCatalogoPiezas`
    (de `procedencia-catalogo.mjs` #598). `naturaleza` debe ser un valor ya existente en
    `NATURALEZAS` de main; el issue sugiere `"interpretacion"` pero HAY QUE confirmarlo contra
@@ -44,8 +46,14 @@ Faltan, EN ESTE ORDEN (verticales finos, cada uno su PR verde):
 - Cero binarios: página dibujada con primitivas (#548/#550); texto = mancha tipográfica.
 - Procedencia obligatoria `naturaleza: "interpretacion"` + ficha en `docs/PROCEDENCIA_ASSETS.md`
   + cartela con obra y autor en es/en.
+  **VERIFICADO 2026-08-29**: `"interpretacion"` NO existe en `NATURALEZAS` de `origin/main`
+  (solo `[escaneo, escaneo-de-vaciado, fotogrametria, reconstruccion, obra-propia]`). Por
+  tanto el vertical 2 (libro-catalogo.mjs) NO puede usarla tal cual: hay que proponer
+  `"interpretacion"` en su propio PR (humano-gated, no lo decide el agente) o usar
+  `"obra-propia"` si el humano lo aprueba. Es un bloqueo de diseño, no de código.
 - Presupuesto es la condición: medir antes de empujar; la medida va en la cabecera del módulo
-  (ver `nave-mural-pixel.mjs`). Ya medido para geometría: 32 v / 24 caras.
+  (ver `nave-mural-pixel.mjs`). Ya medido para geometría: 32 v / 24 caras. Para página
+  (vertical 1): 68 v / 17 caras, a 1 cm de celda.
 - Orden de caras (#510): dos páginas pegadas al lomo (hojaVuelo∈{0,apertura}) quedan coplanares
   con su tapa → parpadeo posible. Documentar, NO reintentar una 4ª vía fallida.
 
@@ -68,3 +76,12 @@ Faltan, EN ESTE ORDEN (verticales finos, cada uno su PR verde):
   `modulos-alcanzables.test.mjs` exige declaración; `test_mapa_areas.py` exige área.
 - Nunca entregar "archivo sin commit": AGENTS.md exige rama + commit; el diff es el entregable.
 - `execute_code` con `command=` (en vez de `code=`) da error en bucle; usar `terminal` para shell.
+- **`"interpretacion"` NO es una naturaleza válida** en `NATURALEZAS` (origin/main). El issue
+  #853 la sugiere, pero si un vertical necesita una naturaleza nueva, hay que proponerla en su
+  propio PR (es decisión de diseño humana, no del agente). Para avanzar sin esperar, el vertical
+  2 podría usar `"obra-propia"` si el humano lo aprueba — consultarlo antes de codificar el
+  catálogo. Confirmado con `git show origin/main:foundry-module/scripts/catalogo-piezas.mjs`.
+- El módulo del cuadro (#836/#838) es `nave-cuadro.mjs`, pero NO está en `main`: vive en el PR
+  #851 (worktree `v-851`). Para copiar su patrón (CELDA_LIENZO, rejilla de paisaje,
+  fusionarMallas) hay que leerlo de ese worktree o de `git show 906d3f7b`. No se asuma que
+  `nave-cuadro.mjs` existe en la rama actual.

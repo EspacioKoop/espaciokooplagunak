@@ -86,6 +86,10 @@ const SILUETA_ANCHO = Object.freeze({ ancha: 1.18, estrecha: 0.88, neutra: 1 });
  * junto a una barra de 0.75: esto la deja mirando por encima de ella. */
 export const ALTO_BASE = 1.72;
 
+/** Cuánto puede encogerse una pierna, en fracción de su largo de pie. Por
+ *  debajo de un cuarto el cuerpo se lee como un torso tirado en el suelo. */
+const MINIMO_PIERNAS = 0.25;
+
 /** Normaliza una descripción venga de donde venga, sin rechazar nada: un avatar
  * mal descrito tiene que aparecer igual, porque no aparecer es peor que
  * aparecer raro. */
@@ -114,7 +118,7 @@ function indiceValido(valor, cuantos) {
  * medidas}`— para que la escena no distinga a una persona de un taburete y no
  * haga falta ni un pintor nuevo ni una rama en `componerCantina`.
  */
-export function piezasAvatar(descripcion, { pies = [0, 0, 0], indice = 0, tiempo = 0 } = {}) {
+export function piezasAvatar(descripcion, { pies = [0, 0, 0], indice = 0, tiempo = 0, flexion = 0 } = {}) {
   const av = normalizarAvatar(descripcion);
   const cuerpo = CUERPO_POR_RAZA[av.raza];
   const escala = ALTO_BASE * cuerpo.alto;
@@ -129,7 +133,20 @@ export function piezasAvatar(descripcion, { pies = [0, 0, 0], indice = 0, tiempo
   // Cuatro cabezas de alto, repartidas: piernas, torso y una cabeza enorme.
   const altoCabeza = escala * 0.26;
   const altoTorso = escala * 0.36;
-  const altoPiernas = escala - altoCabeza - altoTorso;
+  // `flexion` son los metros que el cuerpo BAJA sin despegar los pies del
+  // suelo: agacharse (#446) y sentarse. Se le quitan a las PIERNAS y a nada
+  // más, y eso no es una simplificación de dibujo sino la cuenta exacta —
+  // torso y cabeza se apoyan encima, así que la cabeza baja justo `flexion` y
+  // acaba donde acaba la cámara de quien está agachado o sentado. Sin esto, el
+  // cuerpo se dibujaba entero desde unos pies HUNDIDOS en el suelo, porque
+  // quien pinta recibía el offset de CÁMARA y lo trataba como altura de los
+  // pies (ver `nave-avatares-render.mjs`).
+  //
+  // El tope existe porque hay cuerpos cortos: un mediano agachado 0,5 m no
+  // tiene medio metro de pierna que encoger. Pasado el tope el cuerpo deja de
+  // seguir a la cámara al centímetro, que es mucho mejor que invertirse.
+  const piernasDePie = escala - altoCabeza - altoTorso;
+  const altoPiernas = Math.max(piernasDePie * MINIMO_PIERNAS, piernasDePie - Math.max(0, flexion));
 
   const yPiernas = py + altoPiernas / 2;
   const yTorso = py + altoPiernas + altoTorso / 2;

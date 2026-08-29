@@ -469,6 +469,15 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     que necesita el libro de #853, y sin ese consumidor sería un cimiento huérfano más. Te levantas
     con `F` o **andando**, con cualquier dirección: el modo de fallo de todo estado que captura los
     controles es que quien no sabe salir cree que el programa se ha roto.
+    Sentarse destapó además que `y` —el offset de CÁMARA— se pasaba al render de avatares como
+    ALTURA DE LOS PIES, así que agacharse ya hundía a los demás en el suelo desde #446 y nadie lo
+    había visto. La frontera donde ese dato deja de ser cámara y pasa a ser cuerpo está ahora en
+    `nave-avatares-render.mjs`, y las dos mitades no son la misma cosa: hacia ARRIBA (saltar)
+    despegas del suelo y el cuerpo entero sube; hacia ABAJO (agacharse, sentarse) los pies siguen
+    puestos y lo que se encoge es la persona — `piezasAvatar({flexion})` se lo quita a las
+    PIERNAS y a nada más, que no es una simplificación de dibujo sino la cuenta exacta: torso y
+    cabeza van encima, así que la cabeza baja justo `flexion` y acaba donde acaba la cámara de su
+    dueño. Con tope, porque un mediano no tiene medio metro de pierna que encoger.
     Cada sala con sistema tiene una CONSOLA (#509) que abre el puesto del sistema que ALOJA —el
     reactor abre ingeniería— y que desde #557 **se ve**: hasta entonces era solo un rectángulo
     disparador y se activaba pisando un trozo de suelo vacío (y `detalleConsola`, escrita y probada

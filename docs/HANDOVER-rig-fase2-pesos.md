@@ -68,8 +68,8 @@ geometría), #609 (Fase 1, MERGED).
 ## Comandos de prueba (ejecutados, resultado real)
 
 ```bash
-node --test tools/tests/test_pesar-despiezar.mjs   # 6/6 pass
-node --test 'tools/tests/test_*.mjs'                # 6/6 (glob de CI: prefijo test_*.mjs)
+node --test tools/tests/test_pesar-despiezar.mjs   # 7/7 pass
+node --test 'tools/tests/test_*.mjs'                # 7/7 (glob de CI: prefijo test_*.mjs)
 node --test foundry-module/tests/*.test.mjs          # 2307/2307 (Fase 1 intacta; cubre convertir-estatua.test.mjs)
 ```
 
@@ -125,7 +125,7 @@ Fase 1; `convertir-estatua` NO es un test de `tools/`.
 cd <raíz del repo>
 git fetch origin
 git switch lagunak/rig-fase2-pesos-auto
-node --test tools/tests/test_pesar-despiezar.mjs   # esperado 6/6
+node --test tools/tests/test_pesar-despiezar.mjs   # esperado 7/7
 # usar:
 node -e "import('./tools/pesar-despiezar.mjs').then(m=>console.log(Object.keys(m)))"
 #   pesosAutomaticos, extraerRegion

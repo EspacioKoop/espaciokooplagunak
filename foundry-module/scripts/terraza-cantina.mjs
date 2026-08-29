@@ -41,6 +41,7 @@ import { poligonosOtrosJugadores } from "./nave-avatares-render.mjs";
 import { crearPlanta } from "./nave-movimiento.mjs";
 import { colocarProp } from "./nave-props.mjs";
 import { buscarInteraccion, declararInteracciones } from "./nave-interaccion.mjs";
+import { definicionesDeAsientos } from "./nave-asiento.mjs";
 
 /* ---- la plataforma --------------------------------------------------------- */
 
@@ -138,8 +139,15 @@ const SOPORTE = COLOCADO[MOBILIARIO.findIndex(({ clave }) => clave === "soporte"
  * NO CONCEDE NADA. Su `accion` no la atiende nadie todavía, y eso es lo correcto:
  * el punto existe, la mecánica no. Acercarse a las cañas hoy no hace nada, igual
  * que mirar por una ventana no hace nada.
+ *
+ * LAS SILLAS Y EL TABURETE SÍ (asientos). Salen de `definicionesDeAsientos` sobre
+ * el mismo `COLOCADO`, así que no hay ni una coordenada de asiento escrita aquí:
+ * quien mueva una silla mueve su sitio con ella, exactamente igual que el punto
+ * de pesca sigue al soporte. Y el taburete se sienta sin girarte porque no tiene
+ * frente, lo que se decide en el vocabulario y no en esta escena.
  */
 export const INTERACCIONES = declararInteracciones([
+  ...definicionesDeAsientos(COLOCADO, { id: (indice) => `asiento-${MOBILIARIO[indice].clave}-${indice}` }),
   {
     id: "punto-pesca",
     punto: SOPORTE.ancla.punto,

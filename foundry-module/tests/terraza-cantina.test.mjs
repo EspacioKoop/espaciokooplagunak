@@ -129,7 +129,10 @@ test("hay una posición de pesca DECLARADA y se localiza por nombre", () => {
   const pesca = puntoDePesca();
   assert.ok(pesca, "sin punto declarado, la pesca de mañana traerá sus coordenadas");
   assert.equal(pesca.id, "punto-pesca");
-  assert.equal(INTERACCIONES.length, 1);
+  // Un solo punto de pesca. El resto de puntos de la terraza son asientos, y se
+  // cuentan aparte a propósito: que aparezca un segundo `punto-pesca` sería un
+  // fallo aunque el total cuadrara.
+  assert.equal(INTERACCIONES.filter(({ accion }) => accion?.tipo === "pesca").length, 1);
   assert.ok(Number.isFinite(pesca.orientacion), "sin orientación, hay que deducirla a ojo");
 });
 
@@ -143,10 +146,38 @@ test("el punto de pesca sale del ANCLA del soporte, no de números escritos a ma
   assert.ok(Math.sin(pesca.orientacion) < -0.9, "no se pesca mirando hacia la nave");
 });
 
-test("plantándose ahí, el punto responde; desde la mesa, no", () => {
+test("plantándose ahí, el punto responde; lejos de todo, no", () => {
   const [px, pz] = puntoDePesca().punto;
   assert.equal(interaccionAlAlcance(px, pz, RADIO, INTERACCIONES)?.id, "punto-pesca");
-  assert.equal(interaccionAlAlcance(4.5, 3.2, RADIO, INTERACCIONES), null);
+  // Un rincón vacío entre la puerta y el borde: ni asiento ni soporte cerca.
+  // Antes se probaba desde (4.5, 3.2), que es la mesa — y desde que las sillas
+  // que la rodean SON puntos de interacción, ese sitio ya no está vacío. Lo
+  // correcto es mover la sonda, no ensanchar la afirmación.
+  assert.equal(interaccionAlAlcance(5.7, 7.9, RADIO, INTERACCIONES), null);
+});
+
+test("cada silla y el taburete son un asiento, y sus puntos salen del mueble", () => {
+  // Cinco muebles con asiento en la terraza: cuatro sillas y un taburete.
+  const asientos = INTERACCIONES.filter(({ accion }) => accion?.tipo === "asiento");
+  assert.equal(asientos.length, 5);
+
+  // Ni una coordenada escrita en la escena: el punto de cada asiento coincide
+  // con dónde está declarado el mueble en `MOBILIARIO`. Si alguien mueve una
+  // silla, su sitio se mueve con ella — el mismo requisito que el punto de pesca.
+  const sillas = asientos.filter(({ id }) => id.includes("silla"));
+  assert.equal(sillas.length, 4);
+  for (const silla of sillas) {
+    assert.ok(Number.isFinite(silla.orientacion), "una silla tiene frente: sienta mirando a algo");
+  }
+
+  // El taburete no: sin frente, se sienta uno mirando a donde ya miraba.
+  const taburete = asientos.find(({ id }) => id.includes("taburete"));
+  assert.ok(taburete);
+  assert.equal(taburete.orientacion, null);
+
+  // Y un taburete es más alto que una silla, que es lo único que distingue
+  // dónde acaban los ojos de uno y de otro.
+  assert.ok(taburete.accion.altura > sillas[0].accion.altura);
 });
 
 test("el punto de pesca NO concede nada todavía", () => {

@@ -450,6 +450,25 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     `scripts/nave-camara.mjs` y no de la fábrica ni del bucle: la regla es la misma para las catorce
     estancias. En tercera persona el propio cuerpo entra como un avatar más por
     `poligonosOtrosJugadores`, así que el render de presencia no sabe que uno de ellos eres tú.
+    **Sentarse** (`scripts/nave-asiento.mjs`, tecla `F`) es la primera interacción que cambia dónde
+    ESTÁS en vez de abrir una ventana: hasta ella, los tres tipos de punto del raíl de #582 abrían
+    la consola de un puesto, pintaban una cartela o te llevaban a otra estancia, y la sala seguía
+    igual — la terraza tenía sillas desde #579 y no se podía usar ninguna. Tres reglas. La **altura
+    sale del mueble**: un prop declara `asiento: {centro, orientacion, altura}` en `nave-props.mjs`
+    y de ahí sale dónde acaban los ojos, nunca escrita en la escena — es el fallo que la cantina
+    pagó tres veces (ojos a 3,35 m del suelo), y aquí una silla y un taburete se diferencian en
+    once centímetros que nadie va a recordar. Se devuelve un **offset** y no una altura absoluta,
+    porque el bucle ya maneja `y` como lo que se sube o se baja sobre estar de pie (salto y
+    agachado, #446) y dos clases de `y` es como se cuelan los errores de signo. Y el asiento es
+    **distinto del ancla**: el ancla dice dónde te plantas para usar un prop y mira hacia él;
+    sentarse es ponerse encima y mirar al revés — la misma distinción que ya separaba el punto de
+    pesca del ancla del soporte. `orientacion: null` conserva tu rumbo, que es lo que hace que un
+    taburete no tenga frente. Dos cosas que **no** hace: no te sienta al pasar por delante (abrir
+    una consola te PASA al acercarte; sentarse lo HACES, y una silla que sentara sola haría
+    intransitable la terraza), y no mueve la silla — un mueble con dos poses es otra mecánica, la
+    que necesita el libro de #853, y sin ese consumidor sería un cimiento huérfano más. Te levantas
+    con `F` o **andando**, con cualquier dirección: el modo de fallo de todo estado que captura los
+    controles es que quien no sabe salir cree que el programa se ha roto.
     Cada sala con sistema tiene una CONSOLA (#509) que abre el puesto del sistema que ALOJA —el
     reactor abre ingeniería— y que desde #557 **se ve**: hasta entonces era solo un rectángulo
     disparador y se activaba pisando un trozo de suelo vacío (y `detalleConsola`, escrita y probada

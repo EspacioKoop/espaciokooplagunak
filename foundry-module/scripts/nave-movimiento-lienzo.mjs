@@ -159,6 +159,11 @@ export function arrancarAndar(lienzo, opciones = {}) {
   let yaw = Number.isFinite(opciones.yaw) ? opciones.yaw : 0;
 
   const activas = new Set();
+  // Sentado (asientos, sobre el raíl de #582). Es un estado del BUCLE y no de la
+  // escena: mientras dura, no se integra movimiento —una silla no te lleva a
+  // ningún sitio— pero el giro sigue vivo, porque mirar alrededor es la mitad de
+  // por qué alguien se sienta en una terraza abierta al espacio.
+  let sentado = false;
   let modoCamara = modoCamaraInicial;
   let girando = 0; // -1 izquierda, 0 quieto, +1 derecha
   let vivo = true;
@@ -194,6 +199,20 @@ export function arrancarAndar(lienzo, opciones = {}) {
     anterior = ahoraMs;
 
     if (girando !== 0) yaw += girando * velocidadGiro * dt;
+
+    // Te levantas ANDANDO, y no con la misma tecla con la que te sentaste. Sin
+    // esto, pulsar "adelante" sentado no hace nada y la ventana parece colgada:
+    // el modo de fallo de cualquier estado que capture los controles es que
+    // quien no sabe cómo salir cree que el programa se ha roto. Cualquier
+    // dirección vale —incluidos saltar y agacharse—, porque todas significan lo
+    // mismo aquí: quiero mover el cuerpo.
+    if (sentado && activas.size > 0) sentado = false;
+    if (sentado) {
+      pintarUnaVez();
+      fotograma = pedirFotograma?.(paso) ?? null;
+      return;
+    }
+
     const siguiente = mover({ x, z, y, velocidadY, yaw, activas, dt, planta, velocidad, radio });
     x = siguiente.x;
     z = siguiente.z;
@@ -259,6 +278,33 @@ export function arrancarAndar(lienzo, opciones = {}) {
     camara() {
       return modoCamara;
     },
+    /**
+     * Sienta a quien anda en la pose ya resuelta por `nave-asiento.mjs`.
+     *
+     * Aquí no se calcula nada: el bucle no sabe a qué altura queda un taburete,
+     * igual que no sabe qué es una consola. Recibe `{x, z, yaw, y}` y lo aplica.
+     */
+    sentarse({ x: sx, z: sz, yaw: sYaw, y: sy }) {
+      if (Number.isFinite(sx)) x = sx;
+      if (Number.isFinite(sz)) z = sz;
+      if (Number.isFinite(sYaw)) yaw = sYaw;
+      y = Number.isFinite(sy) ? sy : 0;
+      velocidadY = 0;
+      sentado = true;
+      pintarUnaVez();
+    },
+    /** Levanta, si estaba sentado. Llamarla de pie no hace nada. */
+    levantarse() {
+      if (!sentado) return;
+      sentado = false;
+      y = 0;
+      velocidadY = 0;
+      pintarUnaVez();
+    },
+    /** Si está sentado, para que la ventana pueda rotularlo. */
+    estaSentado() {
+      return sentado;
+    },
     /** Gira mientras se mantenga: -1 izquierda, 0 quieto, 1 derecha. */
     girar(sentido) {
       girando = Math.sign(sentido) || 0;
@@ -313,8 +359,9 @@ export function arrancarAndar(lienzo, opciones = {}) {
       if (Number.isFinite(nx)) x = nx;
       if (Number.isFinite(nz)) z = nz;
       if (Number.isFinite(nYaw)) yaw = nYaw;
-      // Cruzar una puerta siempre aterriza de pie: un salto no sobrevive al
-      // corte de estancia, igual que ninguna otra inercia lo hace.
+      // Cruzar una puerta siempre aterriza de pie: ni un salto ni una silla
+      // sobreviven al corte de estancia, igual que ninguna otra inercia.
+      sentado = false;
       y = 0;
       velocidadY = 0;
       // Sin bucle propio (lienzo de prueba), quien llama necesita ver el

@@ -29,6 +29,7 @@ import { openWorkspaceApp } from "./station-workspace-ui.mjs";
 import { SECCION } from "./paleta.mjs";
 import { cartelaDe, piezaPorId } from "./catalogo-piezas.mjs";
 import { CATALOGO_MUSEO } from "./museo-piezas.mjs";
+import { resolverAsiento } from "./nave-asiento.mjs";
 import { AJUSTE_TELEMETRIA, aceptarSensores, aceptarTelemetria } from "./telemetria-difusion.mjs";
 
 const ESTANCIA_INICIAL = "cantina";
@@ -140,14 +141,14 @@ export const TECLA_GIRO = Object.freeze({ q: -1, e: 1, ArrowLeft: -1, ArrowRight
  * una prueba. `andar-nave-app.test.mjs` compara las tres tablas y falla si un
  * mapa pisa a otro.
  */
-export const TECLAS_ACCION = Object.freeze({ v: "camara", V: "camara" });
+export const TECLAS_ACCION = Object.freeze({ v: "camara", V: "camara", f: "asiento", F: "asiento" });
 
 /**
  * Engancha teclado a un mando de `arrancarAndar`. Vive fuera de las dos
  * clases a propósito, igual que `encenderSala` en `cantina-app.mjs`: es
  * cableado de DOM, no comportamiento de ventana.
  */
-function engancharTeclado(raiz, mando) {
+function engancharTeclado(raiz, mando, acciones = {}) {
   const lienzo = raiz?.querySelector?.(".lagunak-andar-lienzo");
   if (!lienzo) return () => {};
 
@@ -200,6 +201,19 @@ function engancharTeclado(raiz, mando) {
       ev.preventDefault();
       ev.stopPropagation();
       mando.alternarCamara();
+      return;
+    }
+    // Sentarse y levantarse (asientos). `f` y no `e`: `e` ya gira, y una tecla
+    // repetida aquí sería código muerto —`TECLA_DIRECCION` y `TECLA_GIRO` se
+    // consultan antes y hacen `return`—, que es exactamente el fallo que la
+    // cámara tuvo con `c` y que `TECLAS_RESERVADAS` vigila desde entonces.
+    //
+    // En el flanco de PULSACIÓN, como la cámara: es un interruptor, no una
+    // dirección que se mantenga.
+    if (TECLAS_ACCION[ev.key] === "asiento") {
+      ev.preventDefault();
+      ev.stopPropagation();
+      acciones.alternarAsiento?.();
     }
   };
   const onKeyUp = (ev) => {
@@ -381,6 +395,15 @@ function arrancar(raiz, estanciaPedida = null) {
     return game.settings?.get?.(MODULE_ID, AJUSTE_TELEMETRIA) ?? null;
   }
 
+  /**
+   * El asiento que se tiene delante, o `null`.
+   *
+   * Vive en la VENTANA y no en el bucle por la misma razón que el reparto de
+   * interacciones: el bucle no sabe qué es una silla. Y no en el catálogo,
+   * porque no es un dato de la escena sino de este jugador en este instante.
+   */
+  let asientoAlAlcance = null;
+
   // Rótulo inicial: el resto de llamadas van en los cambios de estancia.
   const mando = arrancarAndar(lienzo, {
     sensores: () => aceptarSensores(sobreTelemetria()),
@@ -426,8 +449,16 @@ function arrancar(raiz, estanciaPedida = null) {
     // ignora el `puesto` que se le pasa y abre el propio (#237, ver la
     // cabecera de `station-workspace-ui.mjs`) — caminar hasta una consola
     // ajena no enseña nada que el relé no dejara ver igualmente por botón.
-    alAlcanzarInteraccion: ({ accion }) => {
+    alAlcanzarInteraccion: (interaccion) => {
+      const { accion } = interaccion;
       if (accion?.tipo === "consola") openWorkspaceApp(accion.puesto);
+      // Un asiento NO sienta a nadie al pasar por delante: solo se recuerda cuál
+      // se tiene al alcance, y sentarse es un gesto aparte (`f`). Es la
+      // diferencia entre las dos familias de punto de interacción que había
+      // hasta ahora — abrir una consola o leer una cartela son cosas que te
+      // PASAN al acercarte, y sentarse es algo que HACES. Una silla que te
+      // sentara sola al rozarla haría intransitable la terraza.
+      else if (accion?.tipo === "asiento") asientoAlAlcance = { ...interaccion, altura: accion.altura };
       // La cartela de una pieza de museo (#598). Es LECTURA y nada más: no
       // abre ventana, no marca la pieza como vista y no toca ningún documento.
       // El texto sale del catálogo —que es el dato— y solo el nombre de la
@@ -442,11 +473,18 @@ function arrancar(raiz, estanciaPedida = null) {
       // Y cualquier otro punto retira la cartela anterior: quedarse puesta al
       // pasar a la pieza de al lado sería atribuirle el texto equivocado.
       else pintarCartela(null);
+      // Alejarse de un asiento para acercarse a otra cosa también lo suelta: el
+      // punto activo es UNO (#582), y recordar el anterior sentaría a quien
+      // pulsa `f` delante de una consola en la silla que dejó atrás.
+      if (accion?.tipo !== "asiento") asientoAlAlcance = null;
     },
     // Alejarse la retira (#598). Va por el flanco de SALIDA del bucle y no por
     // un temporizador: una cartela se deja de leer cuando te apartas, no cuando
     // pasan unos segundos.
-    alSalirDeInteraccion: () => pintarCartela(null),
+    alSalirDeInteraccion: () => {
+      pintarCartela(null);
+      asientoAlAlcance = null;
+    },
     // El de la estancia de ARRANQUE, no el de la nave (#587). Sin esto, abrir
     // directamente en un exterior pintaba su cielo con el gris de entre salas y
     // solo se corregía al cambiar de estancia — que en la playa no pasa nunca,
@@ -458,7 +496,34 @@ function arrancar(raiz, estanciaPedida = null) {
     // solo la lista ya resuelta de ese instante.
     otrosJugadores: jugadoresParaRender,
   });
-  const desenganchar = engancharTeclado(raiz, mando);
+  const desenganchar = engancharTeclado(raiz, mando, {
+    /**
+     * `f`: siéntate en lo que tengas delante, o levántate si ya estás sentado.
+     *
+     * Levantarse manda sobre sentarse cuando las dos cosas son posibles —estás
+     * sentado en una silla y tienes otra al alcance—, porque si no la tecla
+     * dejaría de tener forma de salir: te cambiaría de silla para siempre.
+     * Dónde acaban los ojos lo calcula `nave-asiento.mjs` a partir de lo que
+     * mide el mueble; aquí no hay ni una altura escrita.
+     */
+    alternarAsiento: () => {
+      if (mando.estaSentado()) {
+        mando.levantarse();
+        return;
+      }
+      if (!asientoAlAlcance) return;
+      mando.sentarse(
+        resolverAsiento(
+          {
+            punto: asientoAlAlcance.punto,
+            orientacion: asientoAlAlcance.orientacion,
+            altura: asientoAlAlcance.altura,
+          },
+          { yaw: mando.posicion().yaw },
+        ),
+      );
+    },
+  });
 
   // Publicación periódica mientras la ventana está abierta: `debeMuestrear`
   // hace el throttle real (~150ms), este intervalo solo ofrece la

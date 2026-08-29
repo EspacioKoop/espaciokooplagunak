@@ -20,21 +20,14 @@
   </style>
 
   <!--
-    Three.js se carga desde CDN vía importmap. No hay build ni node_modules.
-    Para abrirlo: esta carpeta necesita servirse por HTTP (los módulos ES no se
-    cargan desde file:// en Chrome). Desde la carpeta del repo:
-        python3 -m http.server 8080
-    y abre http://localhost:8080/foundry-module/standalone/visor-3d-sistema/
+  Three.js se carga por CDN (forma +esm de jsDelivr) directamente desde
+  visor.mjs, así que no hay importmap ni build ni node_modules.
+  Para abrirlo: esta carpeta necesita servirse por HTTP (los módulos ES no se
+  cargan desde file:// en Chrome). Desde la carpeta del repo:
+      python3 -m http.server 8080
+  y abre http://localhost:8080/foundry-module/standalone/visor-3d-sistema/
   -->
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-    }
-  }
-  </script>
-</head>
+  </head>
 <body>
   <div id="barra">
     <button id="pausa">Pausar</button>

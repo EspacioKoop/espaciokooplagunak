@@ -5,8 +5,12 @@
 // en la misma página sin colisiones. Three.js se carga vía importmap desde CDN
 // (ver index.html), así que no hay build ni node_modules.
 
-import * as THREE from "three";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+// Three.js por CDN con la forma `+esm` de jsDelivr, que reescribe los
+// `import` internos (p. ej. OrbitControls importa "three") a URLs absolutas.
+// Así funciona tanto en el standalone (sin importmap) como dentro de Foundry,
+// donde no hay importmap de módulo.
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/+esm";
+import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js/+esm";
 import {
   ordenarCuerpos,
   posicionOrbita,

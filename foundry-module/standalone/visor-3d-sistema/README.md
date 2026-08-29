@@ -13,8 +13,8 @@ vía `importmap`.
   está separada del render y se testea desde Node sin navegador, igual que el
   resto del módulo (`decorado-fondo.mjs`, etc.).
 - El render (`visor.mjs`) es la única pieza que usa Three.js y el navegador.
-- La integración con Foundry (`foundry-app.mjs`) es **opt-in**: no está en
-  `module.json`, así que hoy es inerte. Ver abajo cómo activarla.
+- La integración con Foundry (`foundry-app.mjs`) ya está **activa**: el archivo
+  está en `module.json` (esmodules) y se auto-registra como botón solo-GM.
 
 ## Estructura
 
@@ -23,7 +23,7 @@ vía `importmap`.
 | `logica.mjs` | matemática pura (órbitas, escala, pick por rayo) | ninguna |
 | `datos.mjs` | sistema de ejemplo "Argia" + `aplanarSistema` | ninguna |
 | `visor.mjs` | render Three.js + clase `VisorSistema3D` | `three` (CDN) |
-| `index.html` | arranque standalone (importmap) | navegador |
+| `index.html` | arranque standalone (Three por CDN) | navegador |
 | `foundry-app.mjs` | wrapper `Application` para Foundry (opt-in) | Foundry + three |
 | `../tests/visor-3d-sistema.test.mjs` | tests Node de la lógica pura | `node:test` |
 
@@ -51,15 +51,22 @@ monótona, anillos y selección por rayo (incluido ignorar cuerpos detrás de la
 cámara y el desempate determinista). El pintado real sobre WebGL queda en
 verificación humana en un navegador (igual que `mapa-render.mjs`).
 
-## Integración futura en Foundry (opt-in)
+## Integración en Foundry (ACTIVADA)
 
-Cuando se quiera la ventana del GM:
+El archivo `foundry-app.mjs` ya está listado en `esmodules` de `module.json`, así
+que Foundry lo carga al arrancar y se auto-registra en la barra de controles de
+escena, dentro del grupo propio `lagunak` (issue #125), como botón solo-GM
+"Visor 3D del sistema" (`fa-solid fa-satellite`). Al pulsarlo se abre una
+ventana `Application` (v11) con el visor montado; en anfitriones modernos que
+conserven `Application` v1 (v13 por retrocompatibilidad) también funciona, sin
+tocar `main.mjs` ni `control-escena.mjs` salvo para reusar el helper puro
+`anadirHerramienta`.
 
-1. Añade `"standalone/visor-3d-sistema/foundry-app.mjs"` a `esmodules` en
-   `foundry-module/module.json`.
-2. Provee Three.js en el entorno de Foundry (CDN o asset del módulo).
-3. Llama a `registrarVisorSistema3D()` desde `scripts/main.mjs` tras `ready`
-   (o crea el botón en los controles de escena, junto al de estado de la nave).
-
-El wrapper usa `Application` (v11 verificada) y deja comentado el camino
-`ApplicationV2` para anfitriones modernos, sin romper v11.302.
+- Three.js se importa por CDN (forma `+esm` de jsDelivr) dentro de `visor.mjs`,
+  de modo que no hace falta importmap ni build. El import es dinámico y solo
+  ocurre al abrir la ventana, para no romper el arranque si la CDN falla.
+- La clave de título `"LAGUNAK.Controles.AbrirVisor3DSistema"` está en
+  `lang/es.json` y `lang/en.json`.
+- Si la clase base `Application` no existiera en el anfitrión, el botón se
+  registra pero al abrir avisa y no rompe nada (pendiente de la variante
+  `ApplicationV2` real, con su smoke en el issue de versiones modernas).

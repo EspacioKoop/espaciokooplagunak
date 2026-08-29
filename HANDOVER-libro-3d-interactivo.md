@@ -18,7 +18,7 @@ Autor del trabajo: agente (oc/hy3-free).
   68 vértices. Huérfano + área `escenas y 3D` registrados.
 - **PR #856 ABIÉRTO** contra `main`, **CI VERDE** (rc=0, todos los checks pass). Detalle:
   el primer run falló en "Puerta de tools" / "tools/tests (Linux)" por un ENLACE ROTO en este
-  handover: citaba `tools/campo-de-pruebas/` en backticks y el gate refs-rotas lo marcaba roto
+  handover: citaba "tools/campo-de-pruebas/" en backticks y el gate refs-rotas lo marcaba roto
   (ese directorio no existe). Corregido a prosa en commit `73be94ca`; re-run verde. Rama con
   upstream configurado. **No mergeado**: pendiente de review humano (REVIEW_REQUIRED).
   URL: https://github.com/VaroTv7/espaciokooplagunak/pull/856
@@ -34,7 +34,7 @@ El issue #853 pide 3 módulos + enganche en escena.
 2. `libro-catalogo.mjs` — obra + autor + procedencia, validado POR `validarCatalogoPiezas`
    (de `procedencia-catalogo.mjs` #598). `naturaleza` debe ser un valor ya existente en
    `NATURALEZAS` de main.
-   **DECIDIDO (opción A)**: esperar al merge de PR #851 (`docs/museo-cuadros-836`, OPEN y
+   **DECIDIDO (opción A)**: esperar al merge de PR #851 (rama docs/museo-cuadros-836, OPEN y
    MERGEABLE), que ESTRENA `interpretacion` en `NATURALEZAS` (commit `2c39c12f`, #836). El issue
    #853 sugería `interpretacion` y es el valor correcto para un clásico redibujado (composición de
    otro identificada, no `obra-propia`). NO usar `obra-propia` ni `reconstruccion` (mentirían sobre
@@ -89,7 +89,7 @@ El issue #853 pide 3 módulos + enganche en escena.
 - El módulo del cuadro (#836/#838) es `nave-cuadro.mjs`, pero NO está en `main`: vive en el PR
   #851 (worktree `v-851`). Para copiar su patrón leer de ese worktree o de `git show 906d3f7b`.
 - **Gate refs-rotas rompe CI** si un doc cita una ruta inexistente en backticks (le pasó a este
-  mismo handover con `tools/campo-de-pruebas/`). Escribir rutas en prosa. Verificar con
+  mismo handover con "tools/campo-de-pruebas/"). Escribir rutas en prosa. Verificar con
   `python3 tools/refs-rotas.py` antes de empujar.
 - `gh pr checks <n>` con exit-code es el veredicto fiable de CI (0 verde / 8 pending / otro fail);
   los bucles caseros de `statusCheckRollup` pueden fallar por buffering.

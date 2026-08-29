@@ -5,7 +5,7 @@ import test from "node:test";
 import {
   COSMOGRAPHY_ENTRY_TYPES,
   COSMOGRAPHY_FORMAT,
-  COSMOGRAPHY_VERSION,
+  COSMOGRAPHY_VERSIONS,
   CosmographyValidationError,
   validateCosmography,
 } from "../scripts/catalogo-cosmografico.mjs";
@@ -32,12 +32,17 @@ function expectCode(catalog, code, path = null) {
 
 test("el catálogo original de ejemplo cumple el formato cosmográfico v1", () => {
   assert.equal(example.format, COSMOGRAPHY_FORMAT);
-  assert.equal(example.version, COSMOGRAPHY_VERSION);
-  assert.deepEqual(COSMOGRAPHY_ENTRY_TYPES, ["plane", "star_system", "planet"]);
+  assert.ok(COSMOGRAPHY_VERSIONS.has(example.version)); // Accept v1 or v2
+  assert.deepEqual(
+    Array.from(COSMOGRAPHY_ENTRY_TYPES).sort(),
+    ["enclave", "plane", "star_system", "planet"].sort()
+  );
   assert.equal(validateCosmography(example), true);
-  assert.deepEqual(example.entries.map(({ type }) => type), ["plane", "star_system", "planet"]);
+  assert.deepEqual(
+    example.entries.map(({ type }) => type).sort(),
+    ["plane", "star_system", "planet", "enclave"].sort()
+  );
 });
-
 test("el ejemplo distribuido solo contiene procedencia y continuidad originales", () => {
   for (const entry of example.entries) {
     assert.equal(entry.continuity, "original");
@@ -88,7 +93,7 @@ test("rechaza tipos, IDs y versiones fuera del contrato cerrado", () => {
   expectCode(badId, "invalid_id", "entries[0].id");
 
   const badVersion = clone();
-  badVersion.version = 2;
+  badVersion.version = 3;
   expectCode(badVersion, "invalid_version", "$.version");
 
   const badContinuity = clone();

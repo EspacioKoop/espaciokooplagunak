@@ -493,3 +493,45 @@ test("levantarse de pie no hace nada, y cambiar de estancia te levanta", () => {
   assert.equal(mando.posicion().y, 0);
   mando.detener();
 });
+
+test("recomponer cambia la geometría sin volver a disparar el punto que tienes delante", () => {
+  // Es la diferencia con `cambiarEstancia`, y no es de estilo: esa reinicia los
+  // flancos. Reiniciarlos al poner una silla en pose haría que sentarse la
+  // pusiera en pose, y el fotograma siguiente volviera a sentarte, para siempre.
+  let avisos = 0;
+  const interacciones = declararInteracciones([{ id: "silla", punto: [5, 5], accion: { tipo: "asiento" } }]);
+  const mando = arrancarAndar(lienzoFalso(), {
+    componer: () => ({ ancho: 100, alto: 100, poligonos: [] }),
+    planta: PLANTA,
+    interacciones,
+    alAlcanzarInteraccion: () => {
+      avisos += 1;
+    },
+    x: 5,
+    z: 5,
+  });
+  mando.avanzar(16);
+  assert.equal(avisos, 1);
+
+  mando.recomponer({ planta: crearPlanta({ ancho: 20, profundidad: 20 }), componer: () => ({ ancho: 100, alto: 100, poligonos: [] }) });
+  mando.avanzar(16);
+  assert.equal(avisos, 1, "recomponer no puede volver a disparar el punto");
+  mando.detener();
+});
+
+test("el bucle recuerda EN QUÉ te sentaste, para que quien levante lo devuelva a su sitio", () => {
+  const mando = arrancarAndar(lienzoFalso(), {
+    componer: () => ({ ancho: 100, alto: 100, poligonos: [] }),
+    planta: PLANTA,
+  });
+  assert.equal(mando.asientoOcupado(), null);
+  mando.sentarse({ x: 1, z: 1, yaw: 0, y: -0.25 }, "silla-mesa-sur");
+  assert.equal(mando.asientoOcupado(), "silla-mesa-sur");
+  mando.levantarse();
+  assert.equal(mando.asientoOcupado(), null, "al levantarse ya no ocupa nada");
+
+  // Y un asiento sin pose no inventa un id.
+  mando.sentarse({ x: 1, z: 1, yaw: 0, y: -0.25 });
+  assert.equal(mando.asientoOcupado(), null);
+  mando.detener();
+});

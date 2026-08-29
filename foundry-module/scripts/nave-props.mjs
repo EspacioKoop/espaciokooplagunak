@@ -331,8 +331,15 @@ export function mezclarVocabularios(...vocabularios) {
 /** El vocabulario de la NAVE. */
 export const VOCABULARIO = definirVocabulario(DEFINICIONES);
 
-/** Gira `[x, z]` un número entero de cuartos de vuelta alrededor del origen. */
-function girarEnPlanta([x, z], cuartos) {
+/**
+ * Gira `[x, z]` un número entero de cuartos de vuelta alrededor del origen.
+ *
+ * Se exporta porque un prop con POSES (`nave-pose.mjs`) necesita la misma
+ * cuenta para desplazar una pieza en SU propio marco —«medio metro hacia
+ * atrás» tiene que seguir siendo hacia atrás cuando la silla está girada— y
+ * dos copias de esta función es como una silla girada se retira hacia el lado.
+ */
+export function girarEnPlanta([x, z], cuartos) {
   switch (((cuartos % 4) + 4) % 4) {
     case 1:
       return [z, -x];

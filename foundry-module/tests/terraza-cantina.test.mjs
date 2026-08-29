@@ -18,6 +18,10 @@ import {
   PROFUNDIDAD,
   componerTerraza,
   puntoDePesca,
+  ASIENTOS,
+  asientosColocados,
+  componerTerrazaCon,
+  plantaTerraza,
 } from "../scripts/terraza-cantina.mjs";
 import { colisiona, puertaTocada } from "../scripts/nave-movimiento.mjs";
 import { interaccionAlAlcance } from "../scripts/nave-interaccion.mjs";
@@ -196,4 +200,72 @@ test("la terraza no es la pieza que rompe el frame", () => {
   const escena = componerTerraza(ENTRADA.x, 0, ENTRADA.z, ENTRADA.yaw, {});
   assert.ok(escena.poligonos.length < 700, `${escena.poligonos.length} polígonos en pantalla`);
   assert.ok(escena.estrellas.length > 0, "una terraza al espacio sin estrellas no está al espacio");
+});
+
+/* ---- los asientos se retiran al ocuparse ----------------------------------- */
+
+test("los cinco asientos tienen pose, y la terraza sabe recomponerse con ellas", () => {
+  assert.equal(ASIENTOS.length, 5);
+  for (const asiento of ASIENTOS) {
+    assert.deepEqual(asiento.nombres, ["libre", "ocupada"]);
+  }
+});
+
+test("ocupar una silla la retira de la mesa, no hacia un rumbo fijo", () => {
+  // Las cuatro sillas rodean la mesa mirando hacia ella desde lados distintos.
+  // Si el desplazamiento fuera en coordenadas de sala, todas se irían al mismo
+  // sitio y la del oeste acabaría encima de la del norte.
+  const MESA = [3.5, 3.2];
+  const distanciaAlaMesa = (punto) => Math.hypot(punto[0] - MESA[0], punto[1] - MESA[1]);
+
+  for (const { id } of ASIENTOS.filter(({ clave }) => clave === "silla")) {
+    const libre = asientosColocados({}).find((c) => c.id === id);
+    const ocupada = asientosColocados({ [id]: "ocupada" }).find((c) => c.id === id);
+    assert.ok(
+      distanciaAlaMesa(ocupada.asiento.punto) > distanciaAlaMesa(libre.asiento.punto),
+      `${id} no se aleja de la mesa al ocuparse`,
+    );
+  }
+});
+
+test("una silla ocupada estorba donde está, no donde estaba", () => {
+  // Dibujo y colisión salen de la MISMA declaración: es lo que evita los cuatro
+  // fallos que la cantina pagó por tenerlos separados (#540). Se mide en el
+  // canto trasero, que es la franja que la silla ocupa SOLO retirada: los 25 cm
+  // que se corre son menos que su propio fondo, así que las dos huellas se
+  // solapan y el centro no distingue una pose de la otra.
+  const id = "silla-mesa-sur";
+  const canto = (poses) =>
+    Math.max(
+      ...plantaTerraza(poses)
+        // Solo la silla del sur: la barandilla del borde también cae en esta
+        // columna, tres metros más allá, y se llevaría el máximo.
+        .obstaculos.filter((o) => Math.abs(o.x + o.ancho / 2 - 3.5) < 0.3 && o.z > 4 && o.z < 6)
+        .map((o) => o.z + o.profundidad),
+    );
+  assert.ok(Math.abs(canto({ [id]: "ocupada" }) - canto({}) - 0.25) < 1e-9, "la huella no se ha movido");
+
+  // Y ahí de verdad no se puede pasar cuando está ocupada, ni estorba cuando no.
+  const z = canto({}) + 0.12;
+  assert.equal(colisiona(3.5, z, 0.1, plantaTerraza({ [id]: "ocupada" })), true);
+  assert.equal(colisiona(3.5, z, 0.1, plantaTerraza({})), false);
+});
+
+test("el punto de interacción no se mueve con la silla, y sigue alcanzándola", () => {
+  // Se declaran en la pose base a propósito. Los 25 cm que se retira un asiento
+  // caben de sobra en el radio de interacción, así que quien está sentado sigue
+  // teniendo su asiento al alcance para levantarse — que es lo único que hace
+  // falta que siga siendo cierto.
+  const id = "silla-mesa-sur";
+  const ocupada = asientosColocados({ [id]: "ocupada" }).find((c) => c.id === id);
+  const [x, z] = ocupada.asiento.punto;
+  assert.equal(interaccionAlAlcance(x, z, RADIO, INTERACCIONES)?.id, `asiento-${id}`);
+});
+
+test("la terraza se compone igual de bien con una silla ocupada", () => {
+  const conPose = componerTerrazaCon({ "silla-mesa-sur": "ocupada" })(ENTRADA.x, 0, ENTRADA.z, ENTRADA.yaw, {});
+  const libre = componerTerraza(ENTRADA.x, 0, ENTRADA.z, ENTRADA.yaw, {});
+  assert.ok(conPose.poligonos.length > 0);
+  // Mismo número de piezas: una pose mueve el mueble, no lo añade ni lo quita.
+  assert.equal(conPose.poligonos.length, libre.poligonos.length);
 });

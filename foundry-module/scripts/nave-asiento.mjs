@@ -100,19 +100,25 @@ export function resolverAsiento(asiento, { yaw = 0 } = {}) {
  * taburete no tiene.
  */
 export function definicionesDeAsientos(colocados = [], { id = (indice) => `asiento-${indice}` } = {}) {
-  return colocados.flatMap((colocado, indice) =>
-    colocado?.asiento
-      ? [
-          {
-            id: id(indice),
-            punto: colocado.asiento.punto,
-            orientacion: colocado.asiento.orientacion,
-            // `altura` viaja en la acción porque es lo ÚNICO que el punto de
-            // interacción no sabe decir por sí mismo: `punto` y `orientacion` ya
-            // son campos suyos, y la altura es del mueble.
-            accion: { tipo: "asiento", altura: colocado.asiento.altura },
-          },
-        ]
-      : [],
-  );
+  return colocados.flatMap((colocado, indice) => {
+    if (!colocado?.asiento) return [];
+    // Un mueble con pose (`nave-pose.mjs`) ya trae id propio y es el mismo por
+    // el que se le cambia la pose. Reutilizarlo, en vez de numerar otra vez, es
+    // lo que evita que el punto de interacción y el mueble que mueve sean dos
+    // nombres distintos de la misma silla.
+    const suyo = typeof colocado.id === "string" ? colocado.id : id(indice);
+    return [
+      {
+        id: `asiento-${suyo}`,
+        punto: colocado.asiento.punto,
+        orientacion: colocado.asiento.orientacion,
+        // `altura` viaja en la acción porque es lo ÚNICO que el punto de
+        // interacción no sabe decir por sí mismo: `punto` y `orientacion` ya
+        // son campos suyos, y la altura es del mueble. Y `prop` es a quién hay
+        // que cambiarle la pose al sentarse; sin él, sentarse podría mover la
+        // silla de al lado.
+        accion: { tipo: "asiento", altura: colocado.asiento.altura, prop: suyo },
+      },
+    ];
+  });
 }

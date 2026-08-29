@@ -465,10 +465,28 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     pesca del ancla del soporte. `orientacion: null` conserva tu rumbo, que es lo que hace que un
     taburete no tenga frente. Dos cosas que **no** hace: no te sienta al pasar por delante (abrir
     una consola te PASA al acercarte; sentarse lo HACES, y una silla que sentara sola haría
-    intransitable la terraza), y no mueve la silla — un mueble con dos poses es otra mecánica, la
-    que necesita el libro de #853, y sin ese consumidor sería un cimiento huérfano más. Te levantas
-    con `F` o **andando**, con cualquier dirección: el modo de fallo de todo estado que captura los
-    controles es que quien no sabe salir cree que el programa se ha roto.
+    intransitable la terraza). Te levantas con `F` o **andando**, con cualquier dirección: el modo de
+    fallo de todo estado que captura los controles es que quien no sabe salir cree que el programa
+    se ha roto.
+    Y **la silla se retira al ocuparse** (`scripts/nave-pose.mjs`), que es lo que dice desde fuera
+    que ese sitio está cogido. Es la capa que le faltaba al módulo: hasta ella todo lo que había
+    dentro de una estancia era inmóvil —la fábrica congela su mobiliario al construir la sala, y lo
+    único que se recalculaba por fotograma eran las HOJAS de las puertas, cableadas a mano dentro de
+    la fábrica—. Cuatro reglas. **Una pose es una COLOCACIÓN, no una malla**: declara dónde va el
+    prop que ya existe (y, si hace falta, qué prop del vocabulario es), así que no puede
+    desincronizarse del mueble y añadir una pose no añade ni un vértice — lo que no cabe así (una
+    hoja de libro que se dobla, #853) es geometría de verdad y va en su propio módulo. **El
+    desplazamiento es del prop y no de la sala** (`atras`/`lado` en su marco, girados con
+    `girarEnPlanta`): en coordenadas de sala, las cuatro sillas de una mesa se retirarían todas al
+    norte. **El estado no vive en la escena** sino en la ventana, junto al asiento al alcance, y no
+    por comodidad: una escena no RECUERDA (`docs/FOUNDRY.md`), así que al cerrar la ventana la silla
+    vuelve a su sitio igual que tú te levantas. Y **recomponer no es cambiar de estancia**
+    (`mando.recomponer`, que cambia planta y compositor sin tocar los flancos): con
+    `cambiarEstancia` —que sí los reinicia— sentarse pondría la silla en pose y el fotograma
+    siguiente volvería a sentarte, para siempre. La estancia declara `conPoses(poses)` y sus
+    `poseables`, opacos para la ventana igual que la `accion` de un punto: sin eso, la ventana
+    tendría que preguntar «¿es la terraza?» para saber si una silla se mueve, que es el `if` con el
+    nombre de una sala dentro del motor que #508 dejó prohibido.
     Sentarse destapó además que `y` —el offset de CÁMARA— se pasaba al render de avatares como
     ALTURA DE LOS PIES, así que agacharse ya hundía a los demás en el suelo desde #446 y nadie lo
     había visto. La frontera donde ese dato deja de ser cámara y pasa a ser cuerpo está ahora en

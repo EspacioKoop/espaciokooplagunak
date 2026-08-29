@@ -30,6 +30,7 @@ import { SECCION } from "./paleta.mjs";
 import { cartelaDe, piezaPorId } from "./catalogo-piezas.mjs";
 import { CATALOGO_MUSEO } from "./museo-piezas.mjs";
 import { resolverAsiento } from "./nave-asiento.mjs";
+import { ponerPose } from "./nave-pose.mjs";
 import { AJUSTE_TELEMETRIA, aceptarSensores, aceptarTelemetria } from "./telemetria-difusion.mjs";
 
 const ESTANCIA_INICIAL = "cantina";
@@ -404,6 +405,21 @@ function arrancar(raiz, estanciaPedida = null) {
    */
   let asientoAlAlcance = null;
 
+  /**
+   * En qué pose está cada mueble que las tiene, por estancia.
+   *
+   * Vive aquí por la misma razón que `asientoAlAlcance`, y esa razón es una
+   * regla y no una comodidad: una escena no RECUERDA (`docs/FOUNDRY.md`). Que
+   * una silla esté retirada es cierto mientras esta ventana está abierta y con
+   * alguien sentado, y al cerrarla vuelve a su sitio — igual que te levantas.
+   * Guardarlo en la estancia lo convertiría en estado de partida, y entonces la
+   * terraza tendría que decidir qué hacer con una silla que alguien dejó
+   * retirada hace tres sesiones.
+   *
+   * Por estancia y no global: dos salas pueden tener un mueble con el mismo id.
+   */
+  const posesPorEstancia = new Map();
+
   // Rótulo inicial: el resto de llamadas van en los cambios de estancia.
   const mando = arrancarAndar(lienzo, {
     sensores: () => aceptarSensores(sobreTelemetria()),
@@ -458,7 +474,8 @@ function arrancar(raiz, estanciaPedida = null) {
       // hasta ahora — abrir una consola o leer una cartela son cosas que te
       // PASAN al acercarte, y sentarse es algo que HACES. Una silla que te
       // sentara sola al rozarla haría intransitable la terraza.
-      else if (accion?.tipo === "asiento") asientoAlAlcance = { ...interaccion, altura: accion.altura };
+      else if (accion?.tipo === "asiento")
+        asientoAlAlcance = { ...interaccion, altura: accion.altura, prop: accion.prop };
       // La cartela de una pieza de museo (#598). Es LECTURA y nada más: no
       // abre ventana, no marca la pieza como vista y no toca ningún documento.
       // El texto sale del catálogo —que es el dato— y solo el nombre de la
@@ -508,20 +525,25 @@ function arrancar(raiz, estanciaPedida = null) {
      */
     alternarAsiento: () => {
       if (mando.estaSentado()) {
+        const ocupado = mando.asientoOcupado();
         mando.levantarse();
+        // La silla vuelve a su sitio al levantarse. Es la otra mitad de lo que
+        // hace que la pose signifique algo: si se quedara retirada, «retirada»
+        // dejaría de querer decir «aquí hay alguien» a la segunda vez.
+        if (ocupado) recomponerConPose(ocupado, "libre");
         return;
       }
       if (!asientoAlAlcance) return;
-      mando.sentarse(
-        resolverAsiento(
-          {
-            punto: asientoAlAlcance.punto,
-            orientacion: asientoAlAlcance.orientacion,
-            altura: asientoAlAlcance.altura,
-          },
-          { yaw: mando.posicion().yaw },
-        ),
-      );
+      // El mueble se pone en pose ANTES de sentarse, y el sitio sale de dónde
+      // queda ya retirado: sentarse en las coordenadas de la silla libre te
+      // dejaría veinticinco centímetros por delante de ella, de pie en el aire.
+      const colocado = asientoAlAlcance.prop ? recomponerConPose(asientoAlAlcance.prop, "ocupada") : null;
+      const asiento = colocado?.asiento ?? {
+        punto: asientoAlAlcance.punto,
+        orientacion: asientoAlAlcance.orientacion,
+        altura: asientoAlAlcance.altura,
+      };
+      mando.sentarse(resolverAsiento(asiento, { yaw: mando.posicion().yaw }), asientoAlAlcance.prop ?? null);
     },
   });
 
@@ -557,6 +579,28 @@ function arrancar(raiz, estanciaPedida = null) {
    * los dos pasen por aquí es justo lo que evita que el rótulo de sala y la
    * muestra publicada se desincronicen.
    */
+  /**
+   * Pone un mueble en una pose, recompone la estancia y devuelve dónde queda.
+   *
+   * La ventana no sabe qué es una silla: le pide a la estancia cómo queda con
+   * esas poses (`conPoses`, opaco en el catálogo) y le pasa al bucle la planta y
+   * el compositor nuevos. Una estancia sin muebles con pose devuelve `null` y
+   * aquí no pasa nada — que es lo que hacen las catorce menos la terraza.
+   */
+  function recomponerConPose(propId, pose) {
+    const estancia = CATALOGO_ANDAR.obtener(estanciaActual);
+    if (typeof estancia?.conPoses !== "function") return null;
+    const poseables = estancia.poseables ?? null;
+    const anteriores = posesPorEstancia.get(estanciaActual) ?? {};
+    const siguientes = poseables
+      ? ponerPose(poseables, anteriores, propId, pose)
+      : Object.freeze({ ...anteriores, [propId]: pose });
+    posesPorEstancia.set(estanciaActual, siguientes);
+    const recompuesta = estancia.conPoses(siguientes);
+    mando.recomponer(recompuesta);
+    return recompuesta.colocados?.find?.((c) => c.id === propId) ?? null;
+  }
+
   function irAEstancia(estanciaId) {
     const llegada = puntoDeLlegada(CATALOGO_ANDAR, { estancia: estanciaId });
     if (!llegada) return false;

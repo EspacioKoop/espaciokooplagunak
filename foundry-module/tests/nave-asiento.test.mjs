@@ -81,23 +81,38 @@ test("solo los muebles con asiento declaran punto, y el índice no se recoloca",
   const definiciones = definicionesDeAsientos(colocados);
   assert.deepEqual(
     definiciones.map(({ id }) => id),
-    ["asiento-1", "asiento-3"],
+    ["asiento-asiento-1", "asiento-asiento-3"],
   );
   // El índice es el del mueble en la lista original: si se renumerase, meter una
   // barandilla al principio le cambiaría el id a todas las sillas.
+});
+
+test("un mueble con pose presta SU id, en vez de que se le numere otro", () => {
+  // Un asiento con pose (`nave-pose.mjs`) es el mismo mueble por el que se le
+  // cambia la pose. Dos nombres para la misma silla es cómo sentarse acabaría
+  // retirando la de al lado.
+  const colocado = { ...colocarProp("silla", { x: 2, z: 2 }), id: "silla-mesa-sur" };
+  const [definicion] = definicionesDeAsientos([colocado]);
+  assert.equal(definicion.id, "asiento-silla-mesa-sur");
+  assert.equal(definicion.accion.prop, "silla-mesa-sur");
 });
 
 test("el punto responde desde fuera del mueble, que es desde donde se llega", () => {
   const silla = colocarProp("silla", { x: 3, z: 3 });
   const interacciones = declararInteracciones(definicionesDeAsientos([silla]));
   // Delante de la silla, donde uno se planta: hay que poder sentarse.
-  assert.equal(interaccionAlAlcance(3, 3.7, 0.35, interacciones)?.id, "asiento-0");
+  assert.equal(interaccionAlAlcance(3, 3.7, 0.35, interacciones)?.id, "asiento-asiento-0");
   // Y a tres metros no.
   assert.equal(interaccionAlAlcance(3, 6, 0.35, interacciones), null);
 });
 
-test("la acción lleva la altura y nada más: el resto ya lo dice el punto", () => {
+test("la acción lleva la altura y a quién mover, y nada más", () => {
+  // El resto ya lo dice el punto: `punto` y `orientacion` son campos suyos.
   const silla = colocarProp("silla", { x: 3, z: 3 });
   const [definicion] = definicionesDeAsientos([silla]);
-  assert.deepEqual(definicion.accion, { tipo: "asiento", altura: VOCABULARIO.silla.asiento.altura });
+  assert.deepEqual(definicion.accion, {
+    tipo: "asiento",
+    altura: VOCABULARIO.silla.asiento.altura,
+    prop: "asiento-0",
+  });
 });

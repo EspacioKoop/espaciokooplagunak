@@ -164,6 +164,11 @@ export function arrancarAndar(lienzo, opciones = {}) {
   // ningún sitio— pero el giro sigue vivo, porque mirar alrededor es la mitad de
   // por qué alguien se sienta en una terraza abierta al espacio.
   let sentado = false;
+  // En QUÉ está sentado, si el mueble tiene pose (`nave-pose.mjs`). El bucle no
+  // sabe qué es una silla: solo guarda el id que le dieron para poder
+  // devolvérselo a quien levante, que es quien tiene que volver a ponerla en su
+  // sitio. Sin esto, levantarse dejaría la silla retirada para siempre.
+  let asientoOcupado = null;
   let modoCamara = modoCamaraInicial;
   let girando = 0; // -1 izquierda, 0 quieto, +1 derecha
   let vivo = true;
@@ -284,19 +289,37 @@ export function arrancarAndar(lienzo, opciones = {}) {
      * Aquí no se calcula nada: el bucle no sabe a qué altura queda un taburete,
      * igual que no sabe qué es una consola. Recibe `{x, z, yaw, y}` y lo aplica.
      */
-    sentarse({ x: sx, z: sz, yaw: sYaw, y: sy }) {
+    sentarse({ x: sx, z: sz, yaw: sYaw, y: sy }, prop = null) {
       if (Number.isFinite(sx)) x = sx;
       if (Number.isFinite(sz)) z = sz;
       if (Number.isFinite(sYaw)) yaw = sYaw;
       y = Number.isFinite(sy) ? sy : 0;
       velocidadY = 0;
       sentado = true;
+      asientoOcupado = typeof prop === "string" ? prop : null;
+      pintarUnaVez();
+    },
+    /**
+     * Cambia la GEOMETRÍA de la estancia actual sin cambiar de estancia.
+     *
+     * Es lo que necesita un mueble con pose (`nave-pose.mjs`): al retirarse una
+     * silla cambian lo que se pinta y lo que estorba, pero no dónde estás, ni
+     * qué punto de interacción tienes al alcance, ni por qué puerta acabas de
+     * pasar. Va aparte de `cambiarEstancia` justo por eso — esa reinicia los
+     * flancos, y reiniciarlos aquí volvería a disparar el punto que tienes
+     * delante: sentarte pondría la silla en pose y el fotograma siguiente
+     * volvería a sentarte, para siempre.
+     */
+    recomponer({ planta: nuevaPlanta, componer: nuevoComponer } = {}) {
+      if (nuevaPlanta) planta = nuevaPlanta;
+      if (typeof nuevoComponer === "function") componer = nuevoComponer;
       pintarUnaVez();
     },
     /** Levanta, si estaba sentado. Llamarla de pie no hace nada. */
     levantarse() {
       if (!sentado) return;
       sentado = false;
+      asientoOcupado = null;
       y = 0;
       velocidadY = 0;
       pintarUnaVez();
@@ -304,6 +327,11 @@ export function arrancarAndar(lienzo, opciones = {}) {
     /** Si está sentado, para que la ventana pueda rotularlo. */
     estaSentado() {
       return sentado;
+    },
+    /** En qué mueble con pose está sentado, o `null`. Lo necesita quien tenga
+     *  que devolverlo a su sitio al levantarse. */
+    asientoOcupado() {
+      return asientoOcupado;
     },
     /** Gira mientras se mantenga: -1 izquierda, 0 quieto, 1 derecha. */
     girar(sentido) {
@@ -362,6 +390,7 @@ export function arrancarAndar(lienzo, opciones = {}) {
       // Cruzar una puerta siempre aterriza de pie: ni un salto ni una silla
       // sobreviven al corte de estancia, igual que ninguna otra inercia.
       sentado = false;
+      asientoOcupado = null;
       y = 0;
       velocidadY = 0;
       // Sin bucle propio (lienzo de prueba), quien llama necesita ver el

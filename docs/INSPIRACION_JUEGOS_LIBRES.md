@@ -27,7 +27,8 @@
 
 ## Cómo está ordenado
 
-Por **coste ascendente** (lo más standalone-first primero): `puro/Node` → `puro/Node + núcleo`
+Por **coste ascendente** (lo más standalone-first primero): `puro/Node` → `puro/Node + escenario`
+(estado canónico nativo, representación en el módulo) → `puro/Node + núcleo`
 (autoridad de oferta/persistencia) → `Lua de escenario + puente` → `núcleo C++` (campaña).
 Pero el issue pide priorizar por **riqueza narrativa / coste**, no solo por coste: la columna
 **Riqueza (1–5)** de la tabla rápida puntúa cuánto paga cada mecánica narrativamente, así el
@@ -54,22 +55,19 @@ de verdad.
 | 1 | DCSS (GPL-2.0+) | verbos sorteados + severidad en diario | puro/Node | 2 | solo Foundry (`event-journal.mjs`) | adoptar | `event-journal.mjs` |
 | 2 | Brogue CE (AGPL-3.0) | titular de impacto de 1 línea | puro/Node | 2 | solo Foundry (`event-journal.mjs`) | adoptar | `event-journal.mjs` |
 | 3 | Shattered Pixel Dungeon (GPL-3.0) | colapso ×K de eventos | puro/Node | 2 | solo Foundry (`event-journal.mjs`) | adoptar | `event-journal.mjs` |
-| 4 | Cataclysm: DDA (CC-BY-SA-3.0) | estados corporales legibles | puro/Node + núcleo | 4 | solo Foundry (representación hoy en `station-actions.mjs`; estado canónico propuesto en núcleo) | adoptar | `station-actions.mjs`, #484 |
-| 5 | Veloren (GPL-3.0) | buffs/debuffs legibles | puro/Node + núcleo | 3 | solo Foundry (representación hoy en `station-actions.mjs`; estado canónico propuesto en núcleo) | adoptar | `station-actions.mjs` |
+| 4 | Cataclysm: DDA (CC-BY-SA-3.0) | estados corporales legibles | puro/Node + escenario | 4 | sí (estado canónico en escenario/núcleo, #847; el módulo representa) | adoptar | #484, `station-actions.mjs` (proyección) |
+| 5 | Veloren (GPL-3.0) | buffs/debuffs legibles | puro/Node + escenario | 3 | sí (estado canónico en escenario/núcleo, #847; el módulo representa) | adoptar | #484, `station-actions.mjs` (proyección) |
 | 6 | Wesnoth (GPL-2.0) | misión como datos + editor | puro/Node | 2 | sí (datos, cimiento) | cimiento | `contenido-externo/`, #540 |
 | 7 | SRD 5.1 (CC-BY-4.0) | tablas de reacción de actitud | puro/Node | 3 | solo Foundry (`npc-generador.mjs`) | adoptar | `npc-generador.mjs` |
 | 8 | Forged in the Dark (CC BY 3.0) | clocks de progreso legibles | puro/Node | 4 | solo Foundry (pintor de arco en el módulo) | adoptar | #213, #484 |
 | 9 | Angband (GPL-2.0) | bestiario que se aprende | puro/Node + núcleo | 4 | sí (registro persistente en núcleo, #767) | adoptar | #767 |
 | 10 | Endless Sky (GPL-3.0) | misión declarativa + sorteo | puro/Node + núcleo | 3 | sí (autoridad de oferta en núcleo, #766) | adoptar | #766, #484 |
 | 11 | Naev (GPL-3.0 / CC-BY-SA) | tablón filtra + plantillas GM | Lua escenario + núcleo | 3 | sí (escenario + núcleo) | adoptar | `contenido-externo/`, #766 |
-| 12 | Worlds Without Number (libre) | Faction Turns (mundo reactivo) | puro/Node + núcleo | 5 | sí (resuelve en núcleo, #766) | adoptar | #213, #767 |
+| 12 | Worlds Without Number (CC0) | Faction Turns (mundo reactivo) | núcleo | 5 | sí (resolvedor y estado en núcleo, #845/#766) | adoptar | #213, #767 |
 | 13 | Space Station 14 (MIT) | tripulación/roles + avería cascada | Lua escenario + puente | 5 | sí (escenario + puente; sin VTT) | adoptar | #484, `station-actions.mjs` |
 | 14 | Space Station 13 (AGPL-3.0) | job system + cascada (validación) | Lua escenario + puente | 4 | sí (escenario + puente; sin VTT) | adoptar | #484, `station-actions.mjs` |
-| 15 | Endless Sky (GPL-3.0) | reputación por facción persistente | núcleo C++ | 5 | sí (núcleo C++, #766/#767) | adoptar | #766, #767 |
+| 15 | Endless Sky (GPL-3.0) | reputación por facción (sin transitividad, #849) | núcleo C++ | 5 | sí (núcleo C++, #766/#767) | adoptar | #766, #767 |
 | 16 | FreeOrion (GPL-2.0) | matriz de relaciones entre imperios | núcleo C++ | 4 | sí (núcleo C++, #213/#767) | adoptar | #213, #767 |
-| 17 | Ironsworn / Starforged (CC BY 4.0) | *Ask the Oracle*: d100 con tabla graduada + prompt oracles (hecho sin GM) | puro/Node | 3 | solo Foundry (`npc-generador.mjs`, `asistencia/`) | adoptar | #766, #767, #213, #526 |
-| 18 | Kenney (CC0) | assets / game kits (placeholders sin riesgo) | — (datos de arte) | 1 | sí (CC0, sin atribución) | adoptar (fuente assets) | #618, #568 |
-| 19 | Beyond the Spozak (CC0) | setting sci-fi en dominio público (nombres/facciones/sistemas) | puro/Node (datos) | 2 | sí (CC0, sin atribución) | adoptar (fuente setting) | #213, #767 |
 
 **16 mecánicas de 15 juegos.** Endless Sky ocupa dos filas (10 y 15) porque aporta dos mecánicas
 distintas a costes distintos, y por eso los dos números no coinciden: #840 cuenta *una entrada por
@@ -85,17 +83,21 @@ Endless Sky (GPL-3.0)
 
 Detalle y descartes en el fichero de cada lote:
 [A](inspiracion/lote-a-reputacion-facciones.md), [B](inspiracion/lote-b-misiones.md),
-[C](inspiracion/lote-c-tripulacion.md), [E](inspiracion/lote-e-narracion.md),
-[F](inspiracion/lote-f-barrido.md), [G](inspiracion/lote-g-otras-fuentes.md) — **enlazados,
-no citados en prosa**: un índice cuyos enlaces son texto plano pasa `tools/refs-rotas.py` diga lo
-que diga, así que citarlos así no protegía nada, solo apagaba el gate. `lote-d-estados.md` no
-aparece porque no está en `main` todavía (#847) — y esa ausencia ahora la vigila el gate.
+[C](inspiracion/lote-c-tripulacion.md), [D](inspiracion/lote-d-estados.md),
+[E](inspiracion/lote-e-narracion.md), [F](inspiracion/lote-f-barrido.md),
+[G](inspiracion/lote-g-otras-fuentes.md) — **enlazados, no citados en prosa**: un índice cuyos
+enlaces son texto plano pasa `tools/refs-rotas.py` diga lo que diga, así que citarlos así no
+protegía nada, solo apagaba el gate. Los siete están en `main`, y el gate vigila que sigan ahí.
 
 ---
 
 ## Entradas por coste
 
 ### puro/Node — victorias baratas (sin núcleo)
+
+> Las dos entradas de estados (CDDA, Veloren) están aquí por lo que cuesta la **representación**,
+> que es puro/Node. Su estado canónico y sus efectos **no** son de Node: viven en el escenario Lua
+> o el núcleo (#847).
 
 **DCSS — verbos sorteados + severidad (adoptar).** Un mensaje de combate elige un verbo entre
 varios y codifica la magnitud con puntuación (`.`/`!`/`!!`). Nuestro `event-journal.mjs` repite
@@ -106,16 +108,23 @@ suena a máquina, sin núcleo. #526: solo lo observable.
 sabor; una línea de resumen localizada por entrada eleva la legibilidad del diario sin motor.
 #526: resume el hecho, no lo interpreta.
 
-**Shattered Pixel Dungeon — colapso ×K (adoptar).** Agrupa eventos idénticos contiguos en «(nuevo)
-×K». Extiende la deduplicación de `event-journal.mjs` para agrupar por (tipo + destino) cuando el
-puente emite a ráfaga.
+**Shattered Pixel Dungeon — colapso ×K (adoptar, con condición dura).** Agrupa eventos idénticos
+contiguos en «(nuevo) ×K». Entra como **agregado visual separado** del registro autoritativo: la
+página por `eventId` de `event-journal.mjs` y su deduplicación siguen intactas, y la vista agrupada
+las resume conservando la lista completa de los `eventId` que agrega. Agrupar por `(tipo + destino)`
+en una sola página rompería la correspondencia 1:1 que hace el diario auditable e idempotente —al
+reentregar una ráfaga ya no habría con qué saber qué falta—. Si una implementación no puede
+conservar todos los IDs, no se hace (#846).
 
 **Cataclysm: DDA — estados corporales legibles (adoptar).** Red de ~30 estados de los que
-recortamos el subconjunto de 5 para la tripulación (ver abajo). Modelo en puro/Node, consumido por
-`station-actions.mjs` para suspender autoridad y por la cadena #484 para propagar.
+recortamos el subconjunto de 5 para la tripulación (ver abajo). El **estado canónico y sus efectos
+viven en el escenario Lua o el núcleo**; el puente los publica y el módulo los **representa**
+(#847). Un modelo de estados que viviera en Node y `station-actions.mjs` desaparecería al quitar
+Foundry y se llevaría por delante el efecto que dice tener. La cadena #484 propaga.
 
 **Veloren — buffs/debuffs legibles (adoptar).** Confirma la regla de oro: un estado debe ser
-*legible por quien lo recibe*. Si otro puesto no puede leerlo, no es estado, es ruido.
+*legible por quien lo recibe*. Si otro puesto no puede leerlo, no es estado, es ruido. Como en CDDA,
+la **representación** es puro/Node y el estado canónico con su caducidad es del escenario (#847).
 
 **Wesnoth — misión como datos declarativos + editor (cimiento).** Todo el dato de juego es WML;
 quien no programa escribe una misión como datos etiquetados y el editor GUI coloca terreno/unidades.
@@ -151,24 +160,32 @@ el medio de "misión = script Lua a medida" (es lo que `scenario_90` ya es hoy).
 **Worlds Without Number — Faction Turns (adoptar, #213/#767).** Un puñado de estadísticas por
 facción resuelve «qué pasó en el mundo mientras no mirabas»; las facciones actúan en paralelo y el
 resultado se difunde como estado. Es la consecuencia diferida de Lote A subida al nivel de campaña.
-Resolvedor en puro/Node, vive con #766.
+**Resolvedor y estado viven en el núcleo** (#766, ADR-0008): «Node» no equivale a standalone-first,
+y un mundo que reacciona entre sesiones es autoridad de campaña (#845). El módulo solo lo muestra.
 
 ### Lua de escenario + puente — crisis en la sesión
 
 **Space Station 14 — tripulación, roles y avería (adoptar, #484).** El fallo de un puesto es
-material para otro; la autoridad por rol + cascada = literalmente `station-actions.mjs` + #484. Al
-caer un puesto, suspender su autoridad y redistribuir su carga (hueco que cierra Lote D). Todo en
-`lagunak_crisis_scenario_utility.lua` + puente, cero núcleo.
+material para otro. La **autoridad reside en el escenario Lua y el puente**; `station-actions.mjs`
+es su **proyección** en el adaptador opcional de Foundry —declara qué órdenes ofrece cada puesto de
+las que el puente ya autoriza— y no es donde reside la autoridad (#848): si Foundry desaparece,
+manda el escenario. Al caer un puesto, suspender su autoridad y redistribuir su carga (hueco que
+cierra Lote D). Todo en `lagunak_crisis_scenario_utility.lua` + puente, cero núcleo.
 
 **Space Station 13 (tgstation) — job system + cascada (adoptar, #484).** El análogo del job system
-es `STATION_ACTIONS` en `station-actions.mjs`. SS13 aporta la evidencia de mesa de que el patrón
-escala a decenas de roles sin romper la cadena.
+es la matriz de autoridad del escenario, cuya proyección visible es `STATION_ACTIONS` en
+`station-actions.mjs` (#848). SS13 aporta la evidencia de mesa de que el patrón escala a decenas de
+roles sin romper la cadena.
 
 ### núcleo C++ — autoridad de campaña persistente
 
 **Endless Sky — reputación por facción (adoptar, #766/#767).** Escalar por facción que gatea acceso
-(aterrizar, misiones ofrecidas) y tiene efectos transitivos (ayudar a X daña a Y). Autoridad de
-campaña que persiste → núcleo C++, no puente/Lua ni `npc-generador.mjs`. El módulo Foundry solo
+(aterrizar, misiones ofrecidas). Se adopta **qué mueve la relación** —qué actos la suben y la bajan,
+y con qué peso—, **no la transitividad**: la propagación automática (ayudar a X daña a Y) queda
+`descartada` en #849, porque en una mesa con GM la consecuencia aparecería sin que nadie la hubiera
+decidido y le quitaría al GM lo único que este proyecto le reserva entero. En su lugar, la relación
+entre facciones se **declara** en el atlas y se le **avisa** al GM, que decide. Autoridad de campaña
+que persiste → núcleo C++, no puente/Lua ni `npc-generador.mjs`. El módulo Foundry solo
 consulta/muestra el escalar.
 
 **FreeOrion — matriz de relaciones entre imperios (adoptar, #213/#767).** Relación bilateral por
@@ -176,10 +193,6 @@ cada par de imperios (valor + tratados + actitudes de IA). Extiende el escalar d
 una matriz, no un vector. Campaña → núcleo C++.
 
 ---
-
-> **No consolidado:** esta sección resume el Lote D, que sigue abierto en #847. Se mantiene aquí
-> para no perder el trabajo, pero no cuenta para la aceptación de #840 ni se prioriza en firme
-> hasta que su PR esté en `main`.
 
 ## Subconjunto reutilizable — cinco estados de **personaje** (de Lote D, #847)
 
@@ -258,8 +271,9 @@ cada euro. Se lee por bloques; **dentro de un bloque no hay orden**, porque deci
 4. **Reputación por facción** (Endless Sky) — riqueza 5, `núcleo C++`. La más cara de las de
    riqueza 5, y aun así prioritaria: es literalmente *recordar a quién has conocido* (#213/#767).
 5. **Bestiario que se aprende** (Angband) — riqueza 4, `puro/Node + núcleo`, #767.
-6. **Estados corporales legibles** (Cataclysm: DDA) — riqueza 4, `puro/Node + núcleo`.
-   **Pendiente del Lote D (#847)**: no se prioriza en firme hasta que su lote esté en `main`.
+6. **Estados corporales legibles** (Cataclysm: DDA) — riqueza 4, `puro/Node + escenario`.
+   Su estado canónico y sus efectos viven en el escenario Lua o el núcleo (#847); el módulo lo
+   representa.
 7. **Job system como validación** (Space Station 13) — riqueza 4, `Lua + puente`. Su valor es la
    evidencia de mesa de que el patrón de SS14 escala, no una mecánica nueva.
 8. **Matriz de relaciones** (FreeOrion) — riqueza 4, `núcleo C++`. Extiende la reputación de vector
@@ -270,7 +284,8 @@ cada euro. Se lee por bloques; **dentro de un bloque no hay orden**, porque deci
 9. **Tablas de reacción de actitud** (SRD 5.1) — riqueza 3, `puro/Node`.
 10. **Misión declarativa + sorteo** (Endless Sky) — riqueza 3, `puro/Node + núcleo`.
 11. **Tablón que filtra + plantillas** (Naev) — riqueza 3, `Lua escenario + núcleo`.
-12. **Buffs/debuffs legibles** (Veloren) — riqueza 3, `puro/Node + núcleo`. **Pendiente de #847.**
+12. **Buffs/debuffs legibles** (Veloren) — riqueza 3, `puro/Node + escenario`. Estado canónico
+    en escenario/núcleo (#847); el módulo lo representa.
 
 **Al final — riqueza baja: legibilidad, barato y conviene, pero no cuenta historia por sí solo:**
 
@@ -287,30 +302,34 @@ un cociente parecería una medida, y esto es un juicio de diseño con dos ejes d
 
 ## Aceptación del issue #840
 
-- Mecánicas completas: **19** (≥8 ✓), de **17 juegos/fuentes** estudiados — Endless Sky aporta
-  dos; Ironsworn, Kenney (CC0) y Beyond the Spozak (CC0) añadidos en esta pasada. Descartes
-  razonados: **13** (≥2 ✓). De esos números, **dos mecánicas y dos descartes son del Lote D**,
-  que sigue abierto (#847): hasta que se mergee, el recuento firme es 17 mecánicas de 15
-  juegos/fuentes y 11 descartes, que ya cumple los mínimos del issue por sí solo.
+- Mecánicas completas: **16** (≥8 ✓), de **15 juegos** estudiados — Endless Sky aporta dos, por eso
+  los dos números no coinciden. Descartes razonados: **13** (≥2 ✓). El recuento sale de la tabla
+  rápida y de la lista de descartes de este mismo documento; si una de las dos cambia, este número
+  cambia con ella.
+- Este índice **consolida solo los lotes fusionados en `main`** (A #849, B #843, C #848, D #847,
+  E #846, F, G #845) y no reabre ninguna decisión ya cerrada en ellos. En concreto, y porque una
+  pasada anterior de este documento las había contradicho: el colapso ×K de SPD conserva la página
+  por `eventId` y agrupa solo la vista (#846); el estado canónico de los estados de personaje vive
+  en el escenario o el núcleo y el módulo lo representa (#847); `station-actions.mjs` es la
+  **proyección** de la matriz de autoridad, no su sede (#848); la reputación de Endless Sky se
+  adopta **sin transitividad** (#849); y el resolvedor de los *Faction Turns* vive en el núcleo,
+  no en Node (#845).
 - Cada entrada declara fuente y licencia verificada en su lote (la verificación está en el
   fichero de cada lote, no aquí de memoria). Corrección de esta pasada: Forged in the Dark es
   **CC BY 3.0** (no 4.0, como decía la pasada anterior heredada de #845).
 - Toda adopción respeta la frontera #526 y el objetivo ADR-0008 (standalone-first), pero la
-  columna **Standalone** de la tabla dice la verdad: 7 de 19 adoptar viven hoy solo como script
-  del módulo de Foundry (`event-journal.mjs`, `station-actions.mjs`, `npc-generador.mjs` o un
-  pintor) y no son standalone-first hasta portar su estado canónico al núcleo. Las dos fuentes
-  **CC0** (Kenney assets, Beyond the Spozak setting) son dominio público real y no dependen de
-  Foundry ni de atribución: son standalone por definición de licencia.
+  columna **Standalone** de la tabla dice la verdad: **5 de 16** adoptar viven hoy solo como script
+  del módulo de Foundry (`event-journal.mjs`, `npc-generador.mjs` o un pintor de arco) y no son
+  standalone-first hasta portar su estado canónico al núcleo.
 - Ordenado por **coste ascendente** en la tabla y **priorizado** por riqueza narrativa / coste en
   su propia sección, que es lo que pide el criterio de salida: una columna puntúa, no prioriza.
-- Revalidado contra `main` tras rebasear esta rama: los lotes **A (#849), B (#843), C (#848),
-  E (#846), G (#845)** ya están mergeados en `main`; el **Lote D (#847)** está en revisión y su
-  subconjunto de cinco estados (arriba) queda marcado como **no consolidado** hasta que se mergee:
-  se mantiene escrito para no perder el trabajo, pero no cuenta para la aceptación ni se prioriza
-  en firme. Los ficheros `lote-*.md` van **enlazados**, así que el gate de rutas los vigila de
-  verdad.
+- **Alcance:** aquí solo entran *mecánicas de rol* de juegos libres, que es el criterio de #840.
+  Las fuentes de **assets** y de **setting** (Kenney, Beyond the Spozak) no son mecánicas y
+  pertenecen a #568 / #213; ampliar el barrido con fuentes nuevas tampoco es de este cierre. Se
+  tramitan en su alcance propio, no aquí.
+- Los ficheros `lote-*.md` van **enlazados**, no citados en prosa, así que el gate de rutas los
+  vigila de verdad.
 - Enlazado desde `README.md` (sección Recursos) y desde `ECOSISTEMA_OPEN_SOURCE.md` (#568): este
   documento estudia *qué mecánica robar*; el de #568 estudia *de qué depender*.
 
-> **Pendiente para cerrar #840:** mergear el Lote D (#847). Los lotes A/B/C/E/G ya están en
-> `main`; este índice es el que cierra el issue y ya apunta a ellos en prosa.
+Con los siete lotes en `main` y este índice, **#840 queda cerrado**.

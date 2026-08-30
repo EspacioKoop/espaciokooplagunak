@@ -85,9 +85,9 @@ node tools/e2e-nasa3d-convertir.mjs                   # LOOP OK (Argo, GLB Draco
 node tools/e2e-nasa3d-convertir.mjs "CubeSat"        # LOOP OK (otro Draco real)
 ```
 
-Sustituir `npm test`: el `package.json` que define `npm test` **no está
-trackeado**; la CI usa el glob directo. En checkout limpio instalar con
-`npm install` para bajar `draco3d` (necesario para `tools/tests/...` y e2e).
+La CI usa el glob directo de tests Node. En un checkout limpio, `npm ci` instala
+la versión fijada de `draco3d` necesaria para
+`tools/tests/test_convertir_estatua.mjs` y para el e2e.
 
 ## Hallazgo del e2e real (importante)
 
@@ -140,7 +140,8 @@ La "opción 2" del handover previo se ejecutó contra modelos **reales** de NASA
 - Solo toca `tools/`: no afecta C++ (EmptyEpsilon), Lua ni el módulo Foundry, salvo
   el consumo de `componerEscena` (API estable, no modificada).
 - `draco3d` carga un WASM en Node; en CI el glob `foundry-module/tests/*` NO toca
-  `tools/`, así que el WASM solo se carga en `tools/tests/...` (e2e/unit de Draco).
+  `tools/`, así que el WASM solo se carga en
+  `tools/tests/test_convertir_estatua.mjs` (e2e/unit de Draco).
 - GLB parser asume glTF 2.0. Versiones 1.0 no soportadas (NASA usa 2.0).
 
 ## Siguiente paso recomendado

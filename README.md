@@ -31,7 +31,7 @@ seguro y módulo Foundry en desarrollo. Las fases 0, 1 y 2 están completadas.
 | Ejecución con Docker | Verificada en local | Servidor headless + puente vía compose ([`docker/README.md`](docker/README.md)) |
 | Integración con Foundry VTT | Vertical en desarrollo | Puente v0 + módulo con estado, destino/ETA y mapa vivo; controles GM de tempo, reposición, ingeniería y maniobra; asignación y **espacios operativos de puesto** (cada tripulante emite las órdenes de su puesto: navegación, ingeniería con energía y refrigerante, armas). Smoke GUI **verificado en v11.302**; falta la fila del host moderno ([`docs/FOUNDRY.md`](docs/FOUNDRY.md), #29) |
 | Cambios jugables propios | Primera iteración disponible | «Lagunak: Primera guardia» (`scenario_90`) |
-| Lanzamientos propios | Automatización lista, sin lanzamiento aún | `docker-publish.yml` publica en GHCR con cada tag `v*`; falta el primer tag tras validar una sesión real |
+| Lanzamientos propios | Primer release publicado, publicación por tag aún sin estrenar | Existe el release/tag `v2026.08.27`. Las imágenes `espaciokooplagunak-server` y `-bridge` están publicadas y son públicas en GHCR, pero se subieron por `workflow_dispatch` y llevan `manual` + SHA corto, no la versión. El disparo por tag `v*` sigue sin ejercitarse y publicaría sin etiqueta de versión hasta que entre el arreglo de #829 |
 
 ## Qué es
 
@@ -269,7 +269,10 @@ la simulación ni el puente):
 ### Fase 5 — Distribución mantenible
 
 - [ ] Automatizar artefactos reproducibles para plataformas validadas
-      (las imágenes Docker ya se publican en GHCR por tag `v*`; faltan artefactos nativos).
+      (las imágenes Docker se publican en GHCR; su ruta de publicación se ejercitó por primera vez
+      el 2026-08-27 vía `workflow_dispatch`, que las etiqueta `manual` + SHA corto en lugar de con
+      una versión. `espaciokooplagunak-server` y `-bridge` están publicadas y son públicas. Falta
+      estrenar el disparo por tag `v*` y los artefactos nativos).
 - [ ] Publicar notas de versión que separen cambios propios y de upstream.
 - [ ] Establecer una cadencia segura de sincronización con EmptyEpsilon.
 
@@ -367,5 +370,6 @@ Espaciokoop Lagunak no está afiliado ni respaldado oficialmente por el equipo d
 - [Editor integrado de contenido](docs/CONTENT_EDITOR.md)
 - [Puente de integración — contrato v0](bridge/README.md)
 - [Inventario del API HTTP heredado](docs/API_HTTP.md)
+- [Inspiración en juegos libres — mecánicas de rol que robar](docs/INSPIRACION_JUEGOS_LIBRES.md)
 - [Relación y sincronización con upstream](docs/UPSTREAM.md)
 - [Política de versionado y releases](VERSIONING.md)

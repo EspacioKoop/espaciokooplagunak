@@ -370,5 +370,6 @@ Espaciokoop Lagunak no está afiliado ni respaldado oficialmente por el equipo d
 - [Editor integrado de contenido](docs/CONTENT_EDITOR.md)
 - [Puente de integración — contrato v0](bridge/README.md)
 - [Inventario del API HTTP heredado](docs/API_HTTP.md)
+- [Inspiración en juegos libres — mecánicas de rol que robar](docs/INSPIRACION_JUEGOS_LIBRES.md)
 - [Relación y sincronización con upstream](docs/UPSTREAM.md)
 - [Política de versionado y releases](VERSIONING.md)

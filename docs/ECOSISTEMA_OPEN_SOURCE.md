@@ -101,3 +101,7 @@ entrada: fue una buena decisión antes de tener a quién aplicársela.
   cosas de esta lista serían dependencias nuevas para código que ya funciona y está
   probado. El criterio 4 de `ECOSISTEMA_MODULOS_FOUNDRY.md` —copiar el patrón sale más
   barato que heredar el módulo— vale igual aquí.
+
+## Relacionado
+
+- **[INSPIRACION_JUEGOS_LIBRES.md](INSPIRACION_JUEGOS_LIBRES.md) (issue [#840](https://github.com/VaroTv7/espaciokooplagunak/issues/840)):** estudia *qué mecánica de rol robar* de juegos libres, no de qué dependencias traer. Es el complemento de este documento: aquí se decide **de qué depender**; allí se decide **qué idea reutilizar** (sin tocar código ajeno, por la frontera #568).

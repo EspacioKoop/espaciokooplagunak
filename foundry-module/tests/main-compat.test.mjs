@@ -363,6 +363,10 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
     // Echar una mano (#309) la ve TODA la tripulación, GM incluido: ayudar es
     // cruzar de puesto por definición, y un botón solo-GM no sería cooperación.
     "lagunak-asistencia",
+    // Parlamento de comunicaciones (#810): primer consumidor real de
+    // npc-generador (#676). Reconstruye el interlocutor por semilla del contacto
+    // y enseña los enfoques con su CD y rango de éxito visibles. Sin estado.
+    "lagunak-parlamento",
   ]);
   const app = await abrirDesdePanelGM(controls, instances, "consola");
 
@@ -764,6 +768,9 @@ test("un jugador no GM recibe asignación y espacio de puesto, sin controles GM"
     // Y echar una mano: es la mecánica cooperativa, así que el jugador la ve.
     // El diagnóstico de contenido importado NO, que es lo de abajo.
     "lagunak-asistencia",
+    // Parlamento de comunicaciones (#810): visible para toda la tripulación,
+    // como la asistencia.
+    "lagunak-parlamento",
   ]);
   assert.equal(grupo.tools.find(({ name }) => name === "lagunak-contenido-externo"), undefined);
   assert.equal(grupo.tools.find(({ name }) => name === "lagunak-musica"), undefined);

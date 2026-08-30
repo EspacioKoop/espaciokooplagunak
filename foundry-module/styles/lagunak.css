@@ -1421,3 +1421,82 @@
   /* Píxel gordo, como el visor del mapa: el plano se escala sin suavizar. */
   image-rendering: pixelated;
 }
+
+/* Ventana del parlamento de comunicaciones (#810). Reusa la paleta oscura del
+   módulo; botones de enfoque con su CD y probabilidad en claro (no solo barra). */
+.lagunak-parlamento__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem;
+}
+
+.lagunak-parlamento__interlocutor {
+  border-bottom: 1px solid var(--lagunak-borde, #1b263b);
+  padding-bottom: 0.4rem;
+}
+
+.lagunak-parlamento__callsign {
+  font-weight: 600;
+}
+
+.lagunak-parlamento__npc {
+  font-style: italic;
+}
+
+.lagunak-parlamento__npc-meta {
+  opacity: 0.7;
+  font-style: normal;
+  font-size: 0.85em;
+}
+
+.lagunak-parlamento__enfoques {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.lagunak-parlamento__enfoque {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.4rem 0.6rem;
+  cursor: pointer;
+}
+
+.lagunak-parlamento__enfoque-nombre {
+  font-weight: 600;
+  min-width: 7rem;
+}
+
+.lagunak-parlamento__cd,
+.lagunak-parlamento__mod,
+.lagunak-parlamento__favorable {
+  font-size: 0.85em;
+  opacity: 0.85;
+}
+
+.lagunak-parlamento__cierre {
+  font-weight: 600;
+}
+
+.lagunak-parlamento__cierre--pifia { color: #ff6b6b; }
+.lagunak-parlamento__cierre--fallo { color: #ffd166; }
+.lagunak-parlamento__cierre--exito { color: #8ce99a; }
+.lagunak-parlamento__cierre--critico { color: #69db7c; }
+
+.lagunak-parlamento__nota {
+  font-size: 0.85em;
+  opacity: 0.75;
+}
+
+.lagunak-parlamento__volver {
+  align-self: flex-start;
+  cursor: pointer;
+}

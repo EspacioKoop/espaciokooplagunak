@@ -412,6 +412,22 @@ for _, object in ipairs(getObjectsInRadius(x, y, 5000)) do
             reposition_session, reposition_sequence, anchor, scenario_time_tenths,
             anchor, tonumber(scenario_time_tenths) / 10)
     end
+    -- Parlamento de comunicaciones (#810): el escenario emite
+    -- `LAGUNAK_EVT_parlamento_abierto_<id>_<faction>` al abrir canal con un
+    -- contacto. Lo normalizamos a un evento que el puente retransmite a Foundry
+    -- como hook `lagunakAbrirParlamento`, que abre la ventana con el contacto.
+    -- id y faction vienen ya sin espacios (el escenario los codifica con _).
+    local p_id, p_faction = string.match(
+        call_sign,
+        "^LAGUNAK_EVT_parlamento_abierto_(.-)__([%w]+)$")
+    if p_id ~= nil and p_faction ~= nil then
+        events[#events + 1] = string.format(
+            '{"id":"parlamento-abierto-%s","type":"parlamento_abierto",'
+            .. '"scenario":"scenario_90_lagunak_primera_guardia",'
+            .. '"contacto":{"id":"%s","callsign":"%s","faction":"%s"},'
+            .. '"scenario_time":%.1f}',
+            p_id, p_id, p_id:gsub("_", " "), p_faction, getScenarioTime())
+    end
 end
 return '{"events":[' .. table.concat(events, ",") .. ']}'
 """

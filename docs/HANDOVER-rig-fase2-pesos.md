@@ -99,7 +99,7 @@ Fase 1; `convertir-estatua` NO es un test de `tools/`.
 
 - **Review de este PR** (rama `lagunak/rig-fase2-pesos-auto`): cerrado. Los
   tests Node de `tools/` ya corren en CI (paso añadido a `tools.yml`); el
-  reviewer ve los 6 casos en el check del job Tools, no una suite vacía.
+  reviewer ve los 7 casos en el check del job Tools, no una suite vacía.
 - **#837 (OBJ/GLB + Draco)** sigue abierto y UNSTABLE en CI ( jobs de matriz
   pendientes); al mergear, la Fase 2 queda como trabajo independiente sobre main.
 - **Fase 2.2 / 2.3**: más huesos (esqueleto completo) para que `extraerRegion`

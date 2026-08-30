@@ -5,7 +5,8 @@ import sys
 from pathlib import Path
 from urllib.parse import urlparse
 
-REQUIRED = {"id", "name", "license", "source", "version", "contentScope", "allowedUses", "restrictedUses", "vtt", "commercial", "attribution", "adapterAllowed", "risk"}
+REQUIRED = {"id", "name", "license", "source", "version", "contentScope", "allowedUses", "restrictedUses", "vtt", "commercial", "attribution", "adapterAllowed", "risk", "verificationStatus"}
+VERIFICATION_STATUSES = {"verified", "pending"}
 
 def validate(path: Path) -> list[str]:
     data = json.loads(path.read_text(encoding="utf-8"))
@@ -34,6 +35,15 @@ def validate(path: Path) -> list[str]:
                 errors.append(f"systems[{index}] {field} must be non-empty")
         if not str(system.get("contentScope", "")).strip():
             errors.append(f"systems[{index}] contentScope is required")
+        status = system.get("verificationStatus")
+        if status not in VERIFICATION_STATUSES:
+            errors.append(f"systems[{index}] verificationStatus must be verified or pending")
+        if status == "verified":
+            evidence = " ".join(str(system.get(field, "")) for field in (
+                "license", "version", "contentScope", "vtt", "commercial",
+                "attribution", "adapterAllowed"))
+            if "verify" in evidence.lower():
+                errors.append(f"systems[{index}] verified entry still contains a verify placeholder")
     return errors
 
 def main() -> int:

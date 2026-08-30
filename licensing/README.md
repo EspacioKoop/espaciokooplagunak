@@ -18,6 +18,17 @@ python3 tools/validate_license_registry.py
 python3 -m pytest tools/tests/test_validate_license_registry.py -q
 ```
 
+Cada ficha declara `verificationStatus`:
+
+- `verified`: la fuente primaria, versión y alcance indicados se han fijado y no
+  contienen marcadores pendientes;
+- `pending`: sirve como inventario de investigación, pero **no** autoriza una
+  adopción ni puede alimentar una recomendación de integración.
+
+En esta primera entrega solo Year Zero Engine está marcado `verified`. Las demás
+fichas permanecen deliberadamente `pending` hasta fijar su texto primario,
+versión y alcance exactos.
+
 ## Matriz comparativa y decisión provisional
 
 | Sistema | Licencia/fuente | Uso seguro ahora | VTT/comercial | Riesgo |
@@ -34,11 +45,14 @@ python3 -m pytest tools/tests/test_validate_license_registry.py -q
 
 Otros candidatos están en el registro: OpenD6, Open Legend, Ironsworn, Starforged, Dungeon World, Cepheus Engine, BRP, OpenQuest, PbtA y FitD. La inclusión en un índice o ecosistema no equivale a autorización.
 
-### Pilotos recomendados
+### Candidatos de investigación (no aprobados como pilotos)
 
-1. **Cairn**, por la licencia clara del texto y su diseño compacto; solo como adaptador/documentación independiente.
-2. **Year Zero Engine**, por la FTL explícita y su interés para ciencia ficción; requiere respetar el aviso, el alcance SRD y las exclusiones.
-3. **Fate**, para estudiar resolución narrativa; hay que fijar primero la versión y el texto cubierto.
+1. **Year Zero Engine**, ficha verificada: puede evaluarse como adaptador separado,
+   respetando el aviso, el alcance SRD y las exclusiones.
+2. **Cairn**, pendiente: antes de proponer un piloto hay que fijar edición y texto
+   primario cubierto.
+3. **Fate**, pendiente: antes de proponer un piloto hay que fijar versión, opción
+   de licencia y texto exacto cubierto.
 
 ## Fuentes primarias consultadas
 

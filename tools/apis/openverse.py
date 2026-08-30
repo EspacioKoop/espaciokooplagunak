@@ -19,7 +19,7 @@ def openverse_audio(query):
     """
     results = []
     seen_ids = set()
-    for license_val in ('cc0', 'publicdomain'):
+    for license_val in ('cc0', 'pdm'):
         params = urllib.parse.urlencode({
             'q': query,
             'license': license_val
@@ -34,9 +34,9 @@ def openverse_audio(query):
                 continue
             if item_id:
                 seen_ids.add(item_id)
-            licencia = item.get('license', '').lower()
-            # Normalizar: Openverse devuelve 'cc0', 'publicdomain', etc.
-            if licencia in ('cc0', 'publicdomain'):
+            licencia = (item.get('license') or '').lower()
+            # Normalizar: Openverse devuelve 'cc0', 'pdm', etc.
+            if licencia in ('cc0', 'pdm'):
                 results.append({
                     'licencia': licencia,
                     'licencia_version': item.get('license_version', ''),

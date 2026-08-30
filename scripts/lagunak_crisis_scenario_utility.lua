@@ -136,7 +136,7 @@ local function crearContactos(crisis, x, y, angulo)
 
         objeto:setScanState("none")
         objeto:setCommsFunction(function()
-            crisis:abrirParlamento()
+            crisis:abrirParlamento(objeto)
         end)
         table.insert(contactos, objeto)
     end
@@ -183,9 +183,32 @@ end
 --- tres. Los tres responden con la misma voz sintetizada: el jammer del
 --- asaltante retransmite por los tres, y por eso hablar con cualquiera de ellos
 --- sostiene el parlamento.
-function Crisis:abrirParlamento()
+---
+--- Al abrir, emite el evento de escenario `LAGUNAK_EVT_parlamento_abierto` (misma
+--- familia que `LAGUNAK_EVT_encounter_started_*` de scenario_90): es la senal que
+--- el puente retransmite a Foundry como hook `lagunakAbrirParlamento` para abrir
+--- la ventana de parlamento (#810) con el contacto correcto. El contacto viaja
+--- codificado en el callsign del marcador porque el canal Lua→Foundry del repo es
+--- ese: Artifact con callsign `LAGUNAK_EVT_*`.
+function Crisis:abrirParlamento(contacto)
     self.parlamento = true
     self.margenParlamento = LAGUNAK_CRISIS_MARGEN_PARLAMENTO
+    -- Senal hacia Foundry: el bridge la normaliza y la reenvia por socket como
+    -- hook `lagunakAbrirParlamento`. Codificamos id/callsign/faction sin espacios
+    -- ni caracteres raros para que el parseador del puente sea robusto.
+    if contacto and contacto:isValid() then
+        local id = contacto:getCallSign() or "desconocido"
+        local faction = contacto:getFaction() or "neutral"
+        local seguro = function(s)
+            return (s or ""):gsub("[^%w]+", "_")
+        end
+        local marcador = Artifact()
+        marcador:setCallSign(
+            "LAGUNAK_EVT_parlamento_abierto_" .. seguro(id) .. "__" .. seguro(faction))
+        -- El marcador se descarta solo: vive el tiempo de un tick, basta para que
+        -- el puente lo sondee y lo retransmita una vez.
+        marcador:setPosition(self.nave:getPosition())
+    end
     setCommsMessage(_("lagunak-crisis", [[...isis... aqui convoy Itzal, motores parados.
 
 Recibimos vuestra senal. Hay heridos a bordo. No sabemos cual de los tres esta emitiendo la interferencia — no somos nosotros.

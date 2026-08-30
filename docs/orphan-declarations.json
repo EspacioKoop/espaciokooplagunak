@@ -75,21 +75,23 @@
     },
     {
       "module": "npc-generador.mjs",
-      "status": "declared-orphan",
+      "status": "connected",
       "foundation": true,
-      "reason": "Motor puro del generador de NPC. Todavía no cuelga de ninguna puerta porque recordar un habitante conocido pertenece a una decisión narrativa fuera de la escena.",
+      "reason": "Motor puro del generador de NPC. Su primer consumidor real es el parlamento de comunicaciones (#810): siembra el interlocutor por el id del contacto, misma ficha en todos los clientes sin transmitirla. Recordar un habitante conocido sigue fuera de alcance (decisión narrativa de núcleo, #598), pero ya cuelga de una puerta.",
       "declaredBy": "Espaciokoop Lagunak",
       "declaredAt": "2026-08-24",
-      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/676"}
+      "consumedAt": "2026-08-27",
+      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/810"}
     },
     {
       "module": "npc-tablas.mjs",
-      "status": "declared-orphan",
+      "status": "connected",
       "foundation": true,
-      "reason": "Tablas propias del generador de NPC: sílabas, arquetipos, elementos y líneas. Solo las importa npc-generador.mjs, que a su vez todavía no cuelga de ninguna puerta.",
+      "reason": "Tablas propias del generador de NPC: sílabas, arquetipos, elementos y líneas. Las importa npc-generador.mjs, que ahora cuelga del parlamento de comunicaciones (#810) como su primer consumidor real.",
       "declaredBy": "Espaciokoop Lagunak",
       "declaredAt": "2026-08-24",
-      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/676"}
+      "consumedAt": "2026-08-27",
+      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/810"}
     },
     {
       "module": "rig-esqueleto.mjs",

@@ -5,7 +5,7 @@ import test from "node:test";
 import {
   COSMOGRAPHY_ENTRY_TYPES,
   COSMOGRAPHY_FORMAT,
-  COSMOGRAPHY_VERSIONS,
+  COSMOGRAPHY_VERSION,
   CosmographyValidationError,
   validateCosmography,
 } from "../scripts/catalogo-cosmografico.mjs";
@@ -32,15 +32,15 @@ function expectCode(catalog, code, path = null) {
 
 test("el catálogo original de ejemplo cumple el formato cosmográfico v1", () => {
   assert.equal(example.format, COSMOGRAPHY_FORMAT);
-  assert.ok(COSMOGRAPHY_VERSIONS.has(example.version)); // Accept v1 or v2
+  assert.equal(example.version, COSMOGRAPHY_VERSION); // Currently only v1
   assert.deepEqual(
     Array.from(COSMOGRAPHY_ENTRY_TYPES).sort(),
-    ["enclave", "plane", "star_system", "planet"].sort()
+    ["plane", "star_system", "planet"].sort()
   );
   assert.equal(validateCosmography(example), true);
   assert.deepEqual(
     example.entries.map(({ type }) => type).sort(),
-    ["plane", "star_system", "planet", "enclave"].sort()
+    ["plane", "star_system", "planet"].sort()
   );
 });
 test("el ejemplo distribuido solo contiene procedencia y continuidad originales", () => {

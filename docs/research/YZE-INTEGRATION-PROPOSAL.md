@@ -1,82 +1,73 @@
-# 5 Ways to Integrate Year Zero Engine Concepts in Espaciokoop Lagunak (Standalone-First)
+# Ways to Integrate Year Zero Engine Concepts in Espaciokoop Lagunak (Standalone-First)
 
-## Principle Reminder
-Espaciokoop Lagunak core must remain functional without any external dependencies. Integrations must be optional adapters that depend on the core, not vice versa.
+## Bloqueante jurídico/arquitectónico (revisión de @VaroTv7, PR #860)
 
-## Proposed Integration Approaches
+La [Free Tabletop License v1.1](https://freeleaguepublishing.com/wp-content/uploads/2026/03/Year-Zero-Engine-License-Agreement-version-1.1.pdf),
+cláusula 1, autoriza el uso del SRD de YZE en **impreso, PDF o módulo VTT**, y
+**excluye expresamente los videojuegos**. Espaciokoop Lagunak es un videojuego
+(motor SeriousProton/C++), así que ningún adaptador YZE dentro de `src/` o del
+núcleo puede presentarse como amparado por la FTL — no importa cuánto se
+abstraiga o renombre.
 
-### 1. Attribute System Inspiration (Category A: Pure Inspiration)
-**Concept**: Adapt YZE's four-attribute model (Strength, Agility, Wits, Empathy) as inspiration for Espaciokoop's attribute system.
-**Implementation**:
-- Study how YZE balances broad attributes with skills/specialties
-- Create Espaciokoop's own attribute system inspired by the concept but with different names/scales
-- Example: Replace with "Might, Finesse, Insight, Rapport" or similar thematic attributes
-- **Standalone Check**: Core uses only Espaciokoop-defined attributes; no YZE references in core code
+Esto reduce las opciones reales a dos categorías, no a las cinco de la
+propuesta original:
 
-### 2. Push Mechanic as Optional Rule Module (Category C: Optional Adapter)
-**Concept**: Implement YZE's "push" mechanic (re-roll with cost) as an optional rules module.
-**Implementation**:
-- Core: Basic success/failure roll system (attribute + skill vs threshold)
-- Optional Module: "yrze-push-adapter" that adds:
-  - Push action: Re-roll failed dice at cost of 1 stress/damage
-  - Stress tracking system (integrates with existing stress mechanics if present)
-  - Configuration to enable/disable per campaign
-- **Standalone Check**: Core roll system works without module; module imports core but core doesn't import module
+- **(A) Inspiración abstracta**, sin copiar texto ni terminología del SRD: cae
+  fuera del alcance de la FTL (las mecánicas no registradas no son propiedad
+  de nadie) y por tanto **sí** puede vivir en el núcleo del videojuego.
+- **(B) Un eventual módulo Foundry/VTT** que use el SRD de YZE tal cual (con
+  su terminología, sus fórmulas): eso SÍ está cubierto por la cláusula 1, pero
+  solo si vive en la capa de integración con Foundry — nunca en el núcleo del
+  videojuego — y cumple los requisitos de atribución de la licencia.
 
-### 3. Time Measurement System (Category B: Licensed Reference)
-**Concept**: Adapt YZE's time units (Round/Stretch/Shift) with proper attribution.
-**Implementation**:
-- Core: Generic time tracking system (turns, phases, periods)
-- Documentation: Reference YZE as inspiration with proper FTL attribution
-- Optional: Provide YZE-aligned time tracking as separate configuration
-- Attribution Example: "Time measurement concepts inspired by Year Zero Engine (used under Free League Free Tabletop License)"
-- **Standalone Check**: Core time system functions independently; documentation references are for clarity only
+Cualquier propuesta que mezcle ambas categorías en el mismo adaptador, o que
+las meta en `src/`, repite el error que bloqueó esta entrega.
 
-### 4. Camp/Mishap System as Foundry VTT Module (Category C: Optional Adapter)
-**Concept**: Create a Foundry VTT module that adds YZE-style camp mechanics and mishaps.
-**Implementation**:
-- Core: Basic rest/recovery system
-- Foundry Module: "espaciokoop-adapter-yze-camp" that adds:
-  - Camp phase management
-  - Random mishap table (food spoilage, flooding, fire, etc.)
-  - Stress/condition tracking from mishaps
-  - Gear loss/breakage mechanics
-- **Standalone Check**: Core game playable without Foundry or module; module requires both
+## Categoría A — Inspiración abstracta (núcleo, sin licencia YZE)
 
-### 5. Dice Pool System as Alternative Resolution (Category C: Optional Adapter)
-**Concept**: Offer YZE's dice pool system as an optional dice resolution method.
-**Implementation**:
-- Core: Default resolution system (single die, card draw, etc.)
-- Optional Adapter: "yrze-dice-pool" providing:
-  - Dice pool builder (attribute + skill = d6s)
-  - Success counting (rolls of 6)
-  - Push mechanics integration
-  - Configuration to select resolution system per game
-- **Standalone Check**: Core resolution works with default system; adapter provides alternative
+Estas ideas no citan el SRD ni su terminología; son lecciones de diseño que
+Espaciokoop puede reimplementar con su propio vocabulario y balance, igual que
+cualquier otro juego de mesa aporta ideas sin que eso implique una licencia.
 
-## Implementation Guidelines
-1. **Isolation**: All YZE-specific code lives in `src/adapters/yrze-*` or similar
-2. **Dependency Flow**: `core` → `adapter` (never reverse)
-3. **Configuration**: Feature flags to enable/disable adapters
-4. **Attribution**: Proper FTL credit in documentation/UI when used
-5. **Testing**: Adapters tested in isolation; core tested without adapters
-6. **Updates**: Follow FTL version changes (check for new SRD/license versions)
+### 1. Modelo de atributos amplios + especialidades
+**Concepto**: la lección de diseño de YZE (pocos atributos amplios, muchas
+especialidades) sin adoptar sus nombres (Strength/Agility/Wits/Empathy) ni su
+escala 1-5.
+**Comprobación standalone**: el núcleo define sus propios atributos; ninguna
+referencia a YZE en el código.
 
-## Files to Create/Modify
-- `docs/research/YZE-Research.md` (created)
-- `docs/ADAPTERS.md` - Document adapter pattern
-- `src/adapters/yrze-attributes/` - Attribute inspiration implementation
-- `src/adapters/yrze-push/` - Push mechanic module
-- `src/adapters/yrze-time/` - Time measurement reference
-- `src/adapters/yrze-camp-foundry/` - Foundry VTT camp module
-- `src/adapters/yrze-dice/` - Dice pool resolution system
-- `package.json` - Add adapter dependencies as optional
-- `README.md` - Document standalone principle and adapter usage
+### 2. Reintentar con coste como principio de diseño
+**Concepto**: la lección de "arriesgar más para intentarlo otra vez" es un
+patrón genérico de juegos de dados/cartas, no exclusivo de YZE ni parte de su
+SRD. Si Espaciokoop quiere una mecánica de este tipo, se diseña desde cero
+sobre su propio sistema de tiradas, sin nombrarla "push" ni copiar su coste
+exacto en estrés/daño del SRD.
 
-## Verification Checklist
-[ ] Core game runs and is playable without any YZE adapters installed
-[ ] Each adapter can be enabled/disabled independently
-[ ] No YZE imports in core/src/
-[ ] Proper attribution where YZE concepts are used
-[ ] Adapters follow existing Espaciokoop patterns
-[ ] Documentation explains standalone-first approach
+## Categoría B — Módulo Foundry/VTT bajo FTL 1.1 (fuera del núcleo)
+
+Si en el futuro se decide ofrecer contenido derivado del SRD de YZE tal cual
+(terminología, unidades de tiempo Round/Stretch/Shift, tabla de contratiempos
+de campamento, pool de dados d6 con éxitos en 6), eso solo es viable como:
+
+- Un módulo de Foundry VTT, no como código en `src/` del videojuego.
+- Con la nota de no afiliación exigida por la FTL y enlace a la licencia
+  (ver `docs/research/YZE-Research.md`).
+- Dependiendo del núcleo de Espaciokoop, nunca al revés: `adapter → espaciokoop-core`.
+
+Esta categoría es una línea de trabajo futura, condicionada a que exista de
+verdad la integración con Foundry (ver `docs/FOUNDRY.md` y la regla
+standalone-first del proyecto) y a que alguien redacte esa propuesta de forma
+separada, con su propia atribución FTL. Este documento no propone su
+implementación todavía.
+
+## Principios de diseño si se retoma esta línea
+
+1. **Separación de categorías**: nada de código de categoría B en el núcleo
+   del videojuego; nada de terminología literal del SRD en la categoría A.
+2. **Dependencia**: cualquier adaptador depende del núcleo de Espaciokoop
+   (`adapter → espaciokoop-core`), nunca al revés.
+3. **Atribución**: si se usa el SRD (categoría B), la nota de no afiliación y
+   el enlace a la FTL 1.1 son obligatorios en esa integración, no en el
+   videojuego.
+4. **Sin afirmaciones de licencia sobre el videojuego**: el núcleo de
+   Espaciokoop Lagunak no está bajo la FTL y no debe declarar que lo está.

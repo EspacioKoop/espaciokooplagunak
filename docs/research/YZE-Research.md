@@ -25,7 +25,11 @@ The Year Zero Engine (YZE) is a modular tabletop RPG system created by Free Leag
 8. **Gear & Resources**: Tracking, crafting, condition tracking
 
 ## License Analysis (Free Tabletop License v1.1)
-- **Permitted**: Copy, use, modify, translate, distribute YZE SRD in print/PDF/VTT as part of your own game
+
+Fuente: [Year Zero Engine License Agreement, version 1.1](https://freeleaguepublishing.com/wp-content/uploads/2026/03/Year-Zero-Engine-License-Agreement-version-1.1.pdf) (PDF oficial de Free League Publishing).
+
+- **Permitted**: Copy, use, modify, translate, distribute YZE SRD in print, PDF, or VTT module as part of your own game (clause 1)
+- **Explicitly excluded**: clause 1 does **not** cover video games. Espaciokoop Lagunak's core (SeriousProton/C++ engine) is a video game, so it cannot claim FTL coverage — only an eventual Foundry/VTT module could, see `docs/research/YZE-INTEGRATION-PROPOSAL.md`
 - **Prohibited**: 
   - Using other Free League artwork/text/materials not in SRD
   - Using Free League brands/logos (except logo with conditions)
@@ -42,13 +46,21 @@ The Year Zero Engine (YZE) is a modular tabletop RPG system created by Free Leag
 - **Termination**: License terminates automatically if breach terms
 
 ## Compatibility with Espaciokoop Lagunak Standalone-First Principle
-✅ **Can be used as inspiration/reference** (Category A)
-✅ **Can be used as licensed reference** if following FTL terms (Category B)  
-✅ **Can create optional adapter** (Category C) - core never depends on adapter
-⚠️ **External content** (Category D) only if license explicitly permits (FTL covers SRD only, not other game content)
+
+See `docs/research/YZE-INTEGRATION-PROPOSAL.md` for the full breakdown after
+the FTL-1.1 video-game exclusion review (PR #860):
+
+- ✅ **Category A — abstract inspiration** (no SRD text/terminology copied):
+  allowed in the video game core, not covered by or subject to the FTL.
+- ✅ **Category B — Foundry/VTT module using the SRD as-is**: covered by
+  clause 1 of the FTL, but only outside the video game core, as a separate
+  Foundry integration with its own attribution.
+- ❌ **Adapters inside `src/` claiming FTL coverage**: not viable — clause 1
+  explicitly excludes video games, so this path was dropped from the proposal.
 
 ## Risk Assessment: Medium
-- Need to comply with FTL attribution/notice requirements
+- Need to comply with FTL attribution/notice requirements (Category B only)
 - Cannot use Free League IP outside SRD (artwork, specific game settings, logos beyond permitted use)
 - Must not imply endorsement
 - Generative AI use requires disclosure
+- Cannot claim FTL coverage for the video game core (clause 1 excludes video games)

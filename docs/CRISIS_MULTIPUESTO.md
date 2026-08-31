@@ -74,6 +74,27 @@ dentro de la misión, no la misión:
 - `foundry-module/lang/{es,en}.json` — la etiqueta del selector. El módulo no hardcodea arquetipos:
   los lee de `/v1/encounters`, así que no necesitó ni una línea de JavaScript.
 
+## Complicaciones adjudicadas por el GM
+
+Una pifia de asistencia puede convertirse en una consecuencia real sin depender de Foundry. La
+utilidad expone un catálogo cerrado en la consola Lua nativa:
+
+```lua
+lagunakCrisisComplicaciones()
+```
+
+Durante `scenario_90`, el GM aplica una de las opciones a una crisis activa:
+
+```lua
+crisisActivas[1]:aplicarComplicacion("reactor_sobrecalentado")
+crisisActivas[1]:aplicarComplicacion("margen_parlamento_reducido")
+```
+
+La primera añade calor real al reactor, acotado por la simulación. La segunda reduce de cuatro a un
+segundo el margen que conserva el parlamento al cerrarse el canal. Un identificador desconocido o
+una crisis ya terminada se rechazan sin efectos. La elección corresponde al GM: una pifia no dispara
+una consecuencia aleatoria ni concede a Foundry autoridad para mutar la simulación.
+
 ## Lo que esta crisis NO abre
 
 No añade ninguna orden nueva al puente ni a la matriz de autoridad. Las cuatro acciones que la

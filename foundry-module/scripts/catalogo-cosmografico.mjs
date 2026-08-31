@@ -18,6 +18,11 @@
 // Está declarado en `HUERFANOS_DECLARADOS` (`tests/modulos-alcanzables.test.mjs`)
 // con `cimiento: true`, así que la guarda de alcanzabilidad de #523 no se queja
 // de él — pero fallará el día que se cablee y nadie actualice esa lista.
+//
+// `map_ref` (ADR-0012) es un enlace DÉBIL y opcional a un `MapDocument` táctico:
+// solo un ID portable, nunca el documento incrustado. El nodo cosmográfico sigue
+// siendo válido si ese mapa no existe todavía o si se borra después — el atlas
+// no depende de que el mapa exista, y el mapa no carga con la cosmografía.
 
 import {
   ErrorDeCatalogo,
@@ -37,7 +42,7 @@ const MAX_SERIALIZED_BYTES = 1024 * 1024;
 const ENTRY_TYPES = new Set(["plane", "star_system", "planet"]);
 const CONTINUITIES = new Set(["original", "homebrew", "spelljammer-5e", "spelljammer-legacy"]);
 const ENTRY_KEYS = new Set([
-  "id", "type", "parent_id", "name", "summary", "continuity", "provenance",
+  "id", "type", "parent_id", "name", "summary", "continuity", "provenance", "map_ref",
 ]);
 
 export const COSMOGRAPHY_FORMAT = FORMAT;
@@ -84,6 +89,11 @@ function validateEntryShape(entry, index) {
     fail("invalid_continuity", `${path}.continuity`, "continuidad no admitida");
   }
   validateProvenance(entry.provenance, `${path}.provenance`);
+  if (Object.hasOwn(entry, "map_ref")) {
+    if (typeof entry.map_ref !== "string" || !ID_PATTERN.test(entry.map_ref)) {
+      fail("invalid_map_ref", `${path}.map_ref`, "ID de mapa operativo no válido");
+    }
+  }
 }
 
 export function validateCosmography(catalog) {

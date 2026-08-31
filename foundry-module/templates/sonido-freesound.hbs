@@ -1,0 +1,88 @@
+{{! Panel de sonido con Freesound (#604): audicionar es barato, incorporar es
+    otra cosa. No hay ningún botón "usar en la escena" — como mucho, uno de
+    "preparar ficha" que solo escribe un borrador para revisión humana. }}
+<section class="lagunak-sonido-freesound">
+  <div class="form-group">
+    <label for="lagunak-freesound-key">{{localize "LAGUNAK.SonidoFreesound.ClaveEtiqueta"}}</label>
+    <div class="form-fields">
+      <input id="lagunak-freesound-key"
+             name="freesound-key"
+             type="password"
+             value=""
+             autocomplete="new-password"
+             spellcheck="false">
+    </div>
+    <p class="notes">
+      {{#if claveConfigurada}}
+        {{localize "LAGUNAK.SonidoFreesound.ClaveEstadoConfigurada"}}
+      {{else}}
+        {{localize "LAGUNAK.SonidoFreesound.ClaveEstadoVacia"}}
+      {{/if}}
+    </p>
+  </div>
+  <footer class="sheet-footer flexrow">
+    <button type="button" data-action="guardarClave">
+      <i class="fa-solid fa-check" aria-hidden="true"></i> {{localize "LAGUNAK.SonidoFreesound.ClaveGuardar"}}
+    </button>
+    <button type="button" data-action="borrarClave">
+      <i class="fa-solid fa-trash" aria-hidden="true"></i> {{localize "LAGUNAK.SonidoFreesound.ClaveBorrar"}}
+    </button>
+  </footer>
+
+  <hr>
+
+  <div class="form-group">
+    <label for="lagunak-freesound-query">{{localize "LAGUNAK.SonidoFreesound.BuscarEtiqueta"}}</label>
+    <div class="form-fields">
+      <input id="lagunak-freesound-query" name="freesound-query" type="text" value="{{consulta}}">
+    </div>
+  </div>
+  <footer class="sheet-footer flexrow">
+    <button type="button" data-action="buscar" {{#if buscando}}disabled{{/if}}>
+      <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+      {{#if buscando}}
+        {{localize "LAGUNAK.SonidoFreesound.Buscando"}}
+      {{else}}
+        {{localize "LAGUNAK.SonidoFreesound.Buscar"}}
+      {{/if}}
+    </button>
+  </footer>
+
+  {{#if mensaje}}
+    <p class="lagunak-sonido-freesound__aviso" role="status">{{localize mensaje}}</p>
+  {{/if}}
+
+  {{#if resultados.length}}
+    <ul class="lagunak-sonido-freesound__resultados">
+      {{#each resultados}}
+        <li class="lagunak-sonido-freesound__fila">
+          <span class="lagunak-sonido-freesound__titulo">{{title}}</span>
+          <span class="lagunak-sonido-freesound__autor">{{author}}</span>
+          <span class="lagunak-sonido-freesound__duracion">{{duration}}s</span>
+          <span class="lagunak-sonido-freesound__licencia" data-licencia="{{licenseCode}}">
+            {{licenseCode}}
+            {{#if requiereAtribucion}}
+              <small>{{localize "LAGUNAK.SonidoFreesound.RequiereAtribucion"}}</small>
+            {{/if}}
+          </span>
+          <button type="button" data-action="escuchar" data-id="{{id}}">
+            {{#if sonando}}
+              <i class="fa-solid fa-stop" aria-hidden="true"></i> {{localize "LAGUNAK.SonidoFreesound.Parar"}}
+            {{else}}
+              <i class="fa-solid fa-play" aria-hidden="true"></i> {{localize "LAGUNAK.SonidoFreesound.Escuchar"}}
+            {{/if}}
+          </button>
+          <button type="button" data-action="prepararFicha" data-id="{{id}}">
+            <i class="fa-solid fa-file-lines" aria-hidden="true"></i>
+            {{localize "LAGUNAK.SonidoFreesound.PrepararFicha"}}
+          </button>
+          {{#if ficha}}
+            <pre class="lagunak-sonido-freesound__ficha">{{ficha}}</pre>
+          {{/if}}
+        </li>
+      {{/each}}
+    </ul>
+  {{/if}}
+
+  <p class="lagunak-sonido-freesound__nota">{{localize "LAGUNAK.SonidoFreesound.Nota"}}</p>
+</section>

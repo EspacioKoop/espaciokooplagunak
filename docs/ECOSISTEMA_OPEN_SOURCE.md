@@ -91,6 +91,20 @@ los datos. Para un catálogo consultable no es problema; convertirlo en un deriv
 integrado sí arrastra la condición. Por eso el formato del atlas guarda la licencia por
 entrada: fue una buena decisión antes de tener a quién aplicársela.
 
+## Capa 5 — Referencia, generación procedural y catálogos
+
+| Proyecto | Licencia / situación | Veredicto | Por qué |
+|---|---|---|---|
+| [neutraltone/awesome-stock-resources](https://github.com/neutraltone/awesome-stock-resources) | Índice de enlaces; cada fuente tiene su propia licencia | **Inspiración** | Buen punto de partida para ampliar catálogos, pero cada entrada requiere verificación propia antes de usar cualquier asset |
+| [johnjago/awesome-uncopyright](https://github.com/johnjago/awesome-uncopyright) | Curada, dominio público | **Inspiración** | Sirve como ruta a fuentes originales verificadas, no como contenido redistribuible |
+| [0xEssential/cc0-assets](https://github.com/0xEssential/cc0-assets) | CC0 declarado en repo | **Caso a caso** | Verificar licencia del archivo concreto y su sha256; la declaración del repo no acredita cada pieza |
+| [KenneyNL](https://github.com/KenneyNL) | CC0 en la mayoría de packs | **Depender**, si hace falta arte ajeno | Fuente por defecto cuando se necesite arte sin estética propia; no para muros/paleta propia |
+| [sparklinlabs/superpowers-asset-packs](https://github.com/sparklinlabs/superpowers-asset-packs) | CC0 declarado | **Inspiración / Caso a caso** | Packs temáticos valiosos; confirmar licencia por archivo antes de importar |
+| [nothings/stb](https://github.com/nothings/stb) | Public domain | **Inspiración** | Librerías C para imagen/audio/fuente; útil como referencia de API/semillas, no para runtime JS directo |
+| [Azgaar/Fantasy-Map-Generator](https://github.com/Azgaar/Fantasy-Map-Generator) | MIT | **Copiar el patrón** | Generador web de mapas fantásticos. Interesa el algoritmo/UX, no traer la app completa |
+| [rlguy/FantasyMapGenerator](https://github.com/rlguy/FantasyMapGenerator) | MIT | **Copiar el patrón** | Variante académica basada en Martin O'Leary; útil para generación procedural propia de mapas |
+| [marian42/wavefunctioncollapse](https://github.com/marian42/wavefunctioncollapse) | MIT | **Copiar el patrón** | WFC para generación procedural. Referencia directa para interiores/mazmorras en tilesets; no copiar código, sí la idea de restricciones locales |
+
 ## Lo que este documento NO recomienda
 
 - **Cambiar la licencia del repo a GPL-3.0 para poder tomar código de Endless Sky o Naev.**
@@ -101,7 +115,11 @@ entrada: fue una buena decisión antes de tener a quién aplicársela.
   cosas de esta lista serían dependencias nuevas para código que ya funciona y está
   probado. El criterio 4 de `ECOSISTEMA_MODULOS_FOUNDRY.md` —copiar el patrón sale más
   barato que heredar el módulo— vale igual aquí.
+- **Tratar un índice o catálogo como fuente licenciada.** `awesome-stock-resources` y
+  `awesome-uncopyright` son rutas, no autorizaciones. Cada pieza/asset mantiene su propia
+  licencia y requiere ficha de procedencia antes de entrar en el repo.
 
 ## Relacionado
 
 - **[INSPIRACION_JUEGOS_LIBRES.md](INSPIRACION_JUEGOS_LIBRES.md) (issue [#840](https://github.com/VaroTv7/espaciokooplagunak/issues/840)):** estudia *qué mecánica de rol robar* de juegos libres, no de qué dependencias traer. Es el complemento de este documento: aquí se decide **de qué depender**; allí se decide **qué idea reutilizar** (sin tocar código ajeno, por la frontera #568).
+- **[EXTERNAL_TOOLS_RESEARCH_885.md](EXTERNAL_TOOLS_RESEARCH_885.md) (issue [#885](https://github.com/VaroTv7/espaciokooplagunak/issues/885)):** evalúa herramientas externas de mapas, textos y assets para uso como inspiración procedural en Espaciokoop.

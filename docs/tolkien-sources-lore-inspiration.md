@@ -62,3 +62,10 @@ Mapear las fuentes que inspiraron Tolkien y, a través de él, a D&D, hacia opor
 
 ## Siguiente paso recomendado
 Abrir 1 issue por fuente o issue global con 6 subtareas; priorizar Nibelungenlied/Edda por trazabilidad directa a D&D.
+## Fuente adicional: Basque Folklore (Sacred Texts)
+- Fuente: https://www.sacred-texts.com/neu/basque/index.htm
+- Textos: Legends and Popular Tales of the Basque People (Monteiro, 1887) + Basque Legends (Webster, 1879)
+- Temas: seres feéricos/montañeses, gigantes, brujería, Lamia, Tartalo, Mari, cuevas como portales, objetos prestados/robados con maldición
+- Puente D&D/Dragon: criaturas de montaña tipo gigante/troll, objetos malditos, portales de mazmorra en cuevas
+- Oportunidad Espaciokoop: `foundry-module/scripts/npc-*.mjs` con "tipo Tartalo"; `foundry-module/scripts/escena-*.mjs` cueva-portal; `foundry-module/scripts/procedencia-*.mjs` objeto con maldición
+- Acción: abrir issue `docs(basque-lore): mapa de mitos vascos hacia módulos Foundry` con 3 candidatos ejecutables

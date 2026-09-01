@@ -25,6 +25,14 @@ import * as dadosMotor from "./minijuegos/dados-motor.mjs";
 import { decidirJugadaDados } from "./minijuegos/dados-agente.mjs";
 import * as blackjackMotor from "./minijuegos/blackjack-motor.mjs";
 import { resolverTurnosAutomaticos } from "./minijuegos/turnos-automaticos.mjs";
+import {
+  ARRASTRE_FLAG,
+  construirIntentoArrastre,
+  extraerIntentoDeCambio,
+  resolverIntentoArrastre,
+} from "./minijuegos/mesa-arrastre.mjs";
+import { proyectarMesa } from "./minijuegos/mesa-proyeccion.mjs";
+import { aplicarArrastreEnEscena, sincronizarTilesMesa } from "./minijuegos-tiles.mjs";
 
 // Cableado Foundry de las sesiones de minijuegos (#308, paso 3). Capa fina y no
 // testeable en Node (usa globales de Foundry): toda la lógica de autoridad vive
@@ -190,6 +198,18 @@ function esCoordinador() {
   return game.user === game.users?.activeGM;
 }
 
+// Proyección a escena (#458): solo la mesa de póker, y solo cuando hay una
+// mesa que proyectar. `sincronizarTilesMesa` es GM-gated por sí misma; esta
+// función solo decide CUÁNDO llamarla, en los mismos puntos donde ya se
+// publica `AJUSTE_SESION` — sin bucle de sondeo nuevo. Nunca se espera esta
+// promesa: sincronizar el lienzo no debe bloquear la publicación del estado.
+function sincronizarTiles(publico) {
+  if (publico?.juego !== "poker") return;
+  sincronizarTilesMesa(publico.id, publico).catch((err) =>
+    console.error("[lagunak] no se pudo sincronizar la mesa con la escena", err),
+  );
+}
+
 // Relevo real del coordinador. El motor sabe hacer el relevo, pero alguien tiene
 // que detectar que toca hacerlo: si el GM que coordinaba se marcha, `activeGM`
 // pasa a otro cliente cuya `sesionViva` es null, y sin esto descartaría todas
@@ -220,6 +240,10 @@ function asegurarCoordinacion() {
   if (!adopcion) return null;
   sesionViva = adopcion.sesion;
   game.settings.set(moduloConfigurado, AJUSTE_SESION, adopcion.publico);
+  // El relevo readopta la mesa sin la sesión viva anterior: reconciliar aquí
+  // es lo que engancha los Tiles ya presentes en la escena (recuperados por
+  // su propio flag, no de memoria) con la mano cancelada/restaurada.
+  sincronizarTiles(adopcion.publico);
   // La mano cancelada se anuncia para que la UI (paso 4) pueda explicar por qué
   // la mesa volvió al estado previo al reparto.
   Hooks.callAll("lagunakMinijuegoRelevoCoordinador", adopcion.publico);
@@ -294,6 +318,11 @@ export function registrarSesionesMinijuegos(moduleId) {
       // anterior sigue conectado pero dejó de ser el activo), se resuelve antes
       // de procesar la propuesta en vez de descartarla.
       asegurarCoordinacion();
+      // Arrastre a la escena (#458): no pasa por `despacharCambioDeUsuario` ni
+      // por `sesion-motor.aplicar` — las cartas arrastrables ya son públicas
+      // (ver `mesa-proyeccion.mjs`), así que no hay regla de póker que
+      // validar contra el motor, solo vigencia contra la proyección actual.
+      manejarIntentoArrastre({ userDoc, changes, moduleId });
       const resultado = despacharCambioDeUsuario({
         userDoc,
         changes,
@@ -317,7 +346,10 @@ export function registrarSesionesMinijuegos(moduleId) {
         // pueda ofrecerle sentarse o mirar. Al que no está sentado se le manda
         // exactamente la vista pública, que ya es un ajuste de mundo.
         destinatarios: usuariosConectados,
-        publicar: (publico) => game.settings.set(moduleId, AJUSTE_SESION, publico),
+        publicar: (publico) => {
+          game.settings.set(moduleId, AJUSTE_SESION, publico);
+          sincronizarTiles(publico);
+        },
         enviarPrivada: (userId, vista, acciones) =>
           entregarVista(moduleId, userId, vista, acciones),
         // Un rechazo silencioso es indistinguible de un botón roto: se le dice
@@ -376,7 +408,9 @@ function jugarTurnosAutomaticos(moduleId) {
     return;
   }
   sesionViva = sesion;
-  game.settings.set(moduleId, AJUSTE_SESION, vistaPublicaSesion(sesionViva));
+  const publico = vistaPublicaSesion(sesionViva);
+  game.settings.set(moduleId, AJUSTE_SESION, publico);
+  sincronizarTiles(publico);
   repartirVistas(moduleId);
 }
 
@@ -501,7 +535,12 @@ export function abrirMesa({ id, nombreJuego, limites } = {}) {
   // Se publica la VISTA pública, no el estado interno a pelo: la vista añade
   // las acciones de forastero, que son el respaldo de quien no reciba su envío
   // dirigido. Publicando `sesionViva.publico` la mesa nacía sin ellas.
-  game.settings.set(moduloConfigurado, AJUSTE_SESION, vistaPublicaSesion(sesionViva));
+  const publicoInicial = vistaPublicaSesion(sesionViva);
+  game.settings.set(moduloConfigurado, AJUSTE_SESION, publicoInicial);
+  // Una mesa nueva empieza sin comunitarias que proyectar, pero sincronizar
+  // igual limpia cualquier Tile huérfano que hubiera quedado con el mismo id
+  // de mesa de una sesión anterior mal cerrada.
+  sincronizarTiles(publicoInicial);
   repartirVistas(moduloConfigurado);
   return sesionViva.publico;
 }
@@ -549,6 +588,53 @@ export function proponerAccion({ tipo, parametros } = {}) {
 
 function avisarFallo(codigo) {
   Hooks.callAll("lagunakMinijuegoPropuestaRechazada", codigo);
+}
+
+// Lado participante: propone arrastrar una carta ya proyectada a la escena
+// (#458), escribiéndolo en su propio flag como cualquier otra propuesta. No
+// declara identidad ni destino final autoritativo: solo qué carta y a dónde
+// le gustaría llevarla; el coordinador la acota contra la proyección vigente.
+export function proponerArrastre({ cartaId, destino } = {}) {
+  if (!moduloConfigurado) {
+    avisarFallo("sin_modulo");
+    return undefined;
+  }
+  let intento;
+  try {
+    intento = construirIntentoArrastre({ cartaId, destino, nonce: foundry.utils.randomID() });
+  } catch (err) {
+    console.error("[lagunak] no se pudo construir el intento de arrastre", err);
+    avisarFallo("payload_invalido");
+    return undefined;
+  }
+  return Promise.resolve(game.user?.setFlag(moduloConfigurado, ARRASTRE_FLAG, intento)).catch(
+    (err) => {
+      console.error("[lagunak] el flag de arrastre no se pudo escribir", err);
+      avisarFallo("sin_identidad");
+      return undefined;
+    },
+  );
+}
+
+// Lado coordinador: resuelve un intento de arrastre contra la proyección
+// vigente de la mesa activa y, si sigue siendo válido, mueve el Tile. Solo
+// actúa el coordinador (mismo criterio que el resto del cableado) y solo
+// para mesas de póker, que es lo único que `mesa-proyeccion.mjs` sabe leer.
+function manejarIntentoArrastre({ userDoc, changes, moduleId }) {
+  if (!esCoordinador()) return;
+  const intento = extraerIntentoDeCambio({ changes, moduleId, userDoc });
+  if (!intento) return;
+  const publico = sesionViva?.publico;
+  if (!publico || publico.juego !== "poker") return;
+  const proyeccion = proyectarMesa(publico, publico.id);
+  const resuelto = resolverIntentoArrastre({ proyeccion, intento });
+  if (!resuelto.ok) {
+    console.debug(`[lagunak] arrastre de mesa rechazado: ${resuelto.codigo}`);
+    return;
+  }
+  aplicarArrastreEnEscena(publico.id, resuelto).catch((err) =>
+    console.error("[lagunak] no se pudo aplicar el arrastre en la escena", err),
+  );
 }
 
 // Pide al coordinador que reparta las vistas.

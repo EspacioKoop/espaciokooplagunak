@@ -29,7 +29,16 @@
       </p>
       <ul class="lagunak-mesa-comunitarias" aria-label="{{localize "LAGUNAK.Minijuegos.Mesa.Comunitarias"}}">
         {{#each comunitarias}}
-          <li><img src="{{this.imagen}}" alt="{{this.codigo}}" /></li>
+          <li>
+            <img src="{{this.imagen}}" alt="{{this.codigo}}" />
+            {{!-- #458: llevar la carta a la escena como objeto. Solo cartas ya
+                  públicas (comunitarias) tienen este botón — una de mano oculta
+                  nunca lo lleva, porque un objeto de escena es visible a toda
+                  la mesa. --}}
+            <button type="button" class="lagunak-mesa-arrastrar" data-arrastre="comunitaria:{{this.slot}}"
+              title="{{localize "LAGUNAK.Minijuegos.Mesa.LlevarAEscena"}}"
+              aria-label="{{localize "LAGUNAK.Minijuegos.Mesa.LlevarAEscena"}}">🎴</button>
+          </li>
         {{/each}}
         {{#each huecosComunitarios}}
           <li class="lagunak-mesa-hueco" aria-label="{{localize "LAGUNAK.Minijuegos.Mesa.PorSalir"}}"></li>

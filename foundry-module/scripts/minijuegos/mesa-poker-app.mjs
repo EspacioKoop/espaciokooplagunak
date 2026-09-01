@@ -162,9 +162,30 @@ function alPulsar(objetivo, elemento, proponer) {
   proponer({ tipo: "act", parametros: { tipo: deJuego, parametros } });
 }
 
+/* Punto de destino de un arrastre a la escena (#458): junto al token
+ * controlado por quien pulsa, o un punto fijo del centro del lienzo si no
+ * controla ninguno. Es orientativo — el coordinador lo acota contra los
+ * límites reales de la mesa (`mesa-arrastre.resolverIntentoArrastre`) —, así
+ * que no hace falta más precisión que "cerca de mí". */
+function destinoDeArrastre() {
+  const token = canvas?.tokens?.controlled?.[0];
+  if (token) return { x: token.document.x + token.document.width * token.scene.dimensions.size, y: token.document.y };
+  const centro = canvas?.dimensions?.sceneRect;
+  return { x: centro ? centro.x + centro.width / 2 : 0, y: centro ? centro.y + centro.height / 2 : 0 };
+}
+
+/* Traduce un clic en "llevar a la escena" en un intento de arrastre. `sessionId`
+ * es el `id` de la mesa viva (`contexto().id`), que compone el mismo id
+ * estable que calcula `mesa-proyeccion.mjs` para esta carta. */
+function alArrastrar(objetivo, sessionId, proponerArrastre) {
+  const objetivoArrastre = objetivo?.dataset?.arrastre;
+  if (!objetivoArrastre || !sessionId || typeof proponerArrastre !== "function") return;
+  proponerArrastre({ cartaId: `${sessionId}:${objetivoArrastre}`, destino: destinoDeArrastre() });
+}
+
 /* ---- v12+ --------------------------------------------------------------- */
 
-export function crearClaseMesaV2({ proponer, alCerrar = () => {} }) {
+export function crearClaseMesaV2({ proponer, proponerArrastre = () => {}, alCerrar = () => {} }) {
   const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
   return class MesaPokerAppV2 extends HandlebarsApplicationMixin(ApplicationV2) {
@@ -188,6 +209,9 @@ export function crearClaseMesaV2({ proponer, alCerrar = () => {} }) {
       this.element?.querySelectorAll?.("[data-accion]")?.forEach((boton) => {
         boton.addEventListener("click", () => alPulsar(boton, this.element, proponer));
       });
+      this.element?.querySelectorAll?.("[data-arrastre]")?.forEach((boton) => {
+        boton.addEventListener("click", () => alArrastrar(boton, context.id, proponerArrastre));
+      });
       pintarMesa3D(this.element, context);
     }
 
@@ -202,7 +226,7 @@ export function crearClaseMesaV2({ proponer, alCerrar = () => {} }) {
 
 /* ---- v11 ---------------------------------------------------------------- */
 
-export function crearClaseMesaV1({ proponer, alCerrar = () => {} }) {
+export function crearClaseMesaV1({ proponer, proponerArrastre = () => {}, alCerrar = () => {} }) {
   return class MesaPokerAppV1 extends Application {
     static get defaultOptions() {
       return foundry.utils.mergeObject(super.defaultOptions, {
@@ -224,7 +248,11 @@ export function crearClaseMesaV1({ proponer, alCerrar = () => {} }) {
       html.find("[data-accion]").on("click", (ev) => {
         alPulsar(ev.currentTarget, html[0], proponer);
       });
-      pintarMesa3D(html?.[0], contexto());
+      const modelo = contexto();
+      html.find("[data-arrastre]").on("click", (ev) => {
+        alArrastrar(ev.currentTarget, modelo.id, proponerArrastre);
+      });
+      pintarMesa3D(html?.[0], modelo);
     }
 
     // La ruta v11 sí admitiría reutilizar la instancia, pero se descarta igual:

@@ -137,7 +137,14 @@ export function mesaVista(vista, { userId = "", acciones = [] } = {}) {
     botePila: monton(publico?.bote),
     apuestaActual: publico?.apuestaActual ?? null,
     subidaMinima: publico?.subidaMinima ?? null,
-    comunitarias: (publico?.comunitarias ?? []).map(carta),
+    // `slot` es aditivo (#458): identifica la posición de la carta en la fila
+    // de comunitarias, y con el `id` de la mesa es lo que necesita
+    // `mesa-poker-app.mjs` para ofrecer arrastrarla a la escena con el mismo
+    // id estable que calcula `mesa-proyeccion.mjs` (`${id}:comunitaria:${slot}`).
+    comunitarias: (publico?.comunitarias ?? []).map((codigo, slot) => ({
+      ...carta(codigo),
+      slot,
+    })),
     // Los huecos son la diferencia entre «aún no han salido» y «esta mano no
     // llega al river»: sin ellos, el flop y el showdown se ven igual de llenos.
     huecosComunitarios: huecos((publico?.comunitarias ?? []).length),

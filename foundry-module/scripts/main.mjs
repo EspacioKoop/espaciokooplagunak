@@ -63,6 +63,7 @@ import {
   estadoPublicoVigente,
   pedirVista,
   proponerAccion,
+  proponerArrastre,
   registrarAjustesMinijuegos,
   registrarSesionesMinijuegos,
 } from "./minijuegos-wiring.mjs";
@@ -531,7 +532,11 @@ function claseMesa(nombreJuego) {
   if (nombreJuego === "blackjack") {
     return esV2 ? crearClaseMesaBlackjackV2(inyeccion) : crearClaseMesaBlackjackV1(inyeccion);
   }
-  return esV2 ? crearClaseMesaV2(inyeccion) : crearClaseMesaV1(inyeccion);
+  // Solo el póker sabe proyectar cartas a la escena (#458, `mesa-proyeccion.mjs`
+  // está moldeado a su forma); dados y blackjack no reciben esta inyección.
+  return esV2
+    ? crearClaseMesaV2({ ...inyeccion, proponerArrastre })
+    : crearClaseMesaV1({ ...inyeccion, proponerArrastre });
 }
 
 /* Quien cruzó la puerta pidiendo asiento. Es una intención, no un estado de la

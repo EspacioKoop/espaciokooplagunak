@@ -69,3 +69,10 @@ Abrir 1 issue por fuente o issue global con 6 subtareas; priorizar Nibelungenlie
 - Puente D&D/Dragon: criaturas de montaña tipo gigante/troll, objetos malditos, portales de mazmorra en cuevas
 - Oportunidad Espaciokoop: `foundry-module/scripts/npc-*.mjs` con "tipo Tartalo"; `foundry-module/scripts/escena-*.mjs` cueva-portal; `foundry-module/scripts/procedencia-*.mjs` objeto con maldición
 - Acción: abrir issue `docs(basque-lore): mapa de mitos vascos hacia módulos Foundry` con 3 candidatos ejecutables
+## Fuente adicional: Classics (Greek/Roman) — Sacred Texts
+- Fuente: https://www.sacred-texts.com/cla/index.htm
+- Textos clave: Homer (Iliad, Odyssey), Hesiod (Theogony, Works and Days), Orpheus, Sappho, Aesop, Herodotus, Virgil, Ovid, Apollonius, Lucian
+- Temas: monomito/road of trials, viaje de regreso, catábasis, código de hospitalidad, bestiario simbólico, civilizaciones perdidas/tecnología antigua, máquinas/autómatas, metamorfosis, islas raras, profecías, destinos trágicos
+- Puente D&D/Dragon: Odisea como dungeon del camino a casa; Theogony como árbol genealógico de dioses/dragones; autómatas de Vulcano como constructos; viaje al Hades como plano de sombras/mazmorra
+- Oportunidad Espaciokoop: `foundry-module/scripts/escena-*.mjs` con "Odisea espacial" como escena navegación por sectores peligrosos; `foundry-module/scripts/npc-*.mjs` con sirenas/escila-caríbdis como asteroides; `foundry-module/scripts/procedencia-*.mjs` con artefactos tipo "autómata de Hefesto"; `foundry-module/scripts/libro-geometria.mjs` con geometría sagrada clásica
+- Acción: abrir issue `docs(classics-lore): puente Homero/Hesiodo/Ovidio hacia módulos Foundry` con 4 candidatos ejecutables

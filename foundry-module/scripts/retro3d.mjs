@@ -597,15 +597,17 @@ export function factorNiebla(profundidad, { cerca, lejos, niebla }) {
 
 // ---- Orden por pintor ------------------------------------------------------
 //
-// El orden es por el CENTROIDE de profundidad de cada cara, y sigue siéndolo.
-// Es la parte más floja del motor y está documentada como tal en #510: dos
-// caras que se tocan tienen centroides casi iguales, y cuál va antes lo decide
-// el tercer decimal. Medido durante el QA de #508/#509, componiendo la cantina
-// caminable dos veces con 0,002 rad de diferencia de yaw —el temblor de estar
-// de pie quieto—, 13 de 81 polígonos cambiaban de sitio en la lista. Eso es lo
-// que QA describe como «se glitchean las texturas».
+// El orden real que usan `componerEscena` y `fundirEscenas` SIGUE siendo el
+// CENTROIDE, justo debajo. Es la parte más floja del motor y está
+// documentada como tal en #510: dos caras que se tocan tienen centroides casi
+// iguales, y cuál va antes lo decide el tercer decimal. Medido durante el QA
+// de #508/#509, componiendo la cantina caminable dos veces con 0,002 rad de
+// diferencia de yaw —el temblor de estar de pie quieto—, 13 de 81 polígonos
+// cambiaban de sitio en la lista. Eso es lo que QA describe como «se
+// glitchean las texturas».
 //
-// LO QUE YA SE HA PROBADO Y NO VALE, para que no se intente una cuarta vez:
+// LO QUE YA SE HA PROBADO Y NO VALE, para que no se intente una cuarta vez SIN
+// leer el punto 3 completo primero:
 //
 //  1. Un epsilon con orden estable (#510, revertido). Congela el orden de
 //     declaración de las piezas, que es narrativo y no tiene relación con la
@@ -623,11 +625,34 @@ export function factorNiebla(profundidad, { cerca, lejos, niebla }) {
 //     salta por encima de otras que ya estaban resueltas, y sin el corte no hay
 //     forma de deshacer ese conflicto nuevo. Newell es correcto CON el corte;
 //     media implementación de Newell es peor que ninguna.
+//  3. Newell CON partición de caras (#510, `ordenarPorPintorNewell` más abajo,
+//     implementado pero DESCONECTADO de `componerEscena`/`fundirEscenas` a
+//     propósito). Con los tests de plano de Newell más el corte que al
+//     intento 2 le faltaba, la cantina caminable a un yaw fijo (0,4, el mismo
+//     de la medida de arriba) pasa de hasta 8 pares mal ordenados a 0. Pero
+//     medido con el criterio ESTRICTO (rango de profundidad, no empate) sobre
+//     todo el barrido de yaw de esa misma escena, aparecen pares mal
+//     ordenados NUEVOS que el centroide no tenía (4, 6, 6 y 3 según el
+//     ángulo) — una regresión real, no un empate de coma flotante. La causa
+//     encontrada: una vez un candidato se da por resuelto y pasa a la lista
+//     final, ya no se vuelve a comprobar; si un corte POSTERIOR (de otro par,
+//     en otro punto del barrido) produce un fragmento cuyo rango de
+//     profundidad SÍ lo deja enteramente detrás de ese candidato ya cerrado,
+//     el algoritmo no tiene forma de deshacerlo. Es la misma familia de fallo
+//     que el intento 2 —resolver un conflicto puede invalidar una decisión ya
+//     tomada— pero un peldaño más abajo en la cadena, y no se ha encontrado
+//     todavía cómo cerrarlo sin volver a comparar contra TODO lo ya resuelto,
+//     que es el coste que el intento 2 ya había decidido no pagar. Se deja el
+//     código y sus tests (`retro3d-newell.test.mjs`) porque los tests unitarios
+//     por pares SÍ son correctos —cada test ahí pasa— y la primitiva
+//     (`aVaPrimero`, el corte por plano) es reutilizable el día que alguien
+//     cierre el hueco de revalidación; lo que no se hace es fingir que ya está
+//     resuelto conectándolo a producción.
 //
-// Lo que sí queda de ese intento y se usa: `seSolapanEnPantalla`, que es la
-// pregunta «¿comparten estas dos caras un solo píxel?» —la que separa un
-// desorden que se ve de uno que no—, y la geometría de cámara que ahora viaja
-// con cada polígono (`camara`), sin la cual no se puede decidir nada de esto.
+// LO QUE SE QUEDÓ Y SE USA: `seSolapanEnPantalla` —la pregunta «¿comparten
+// estas dos caras un solo píxel?», la que separa un desorden que se ve de uno
+// que no— y la geometría de cámara que viaja con cada polígono (`camara`),
+// sin la cual no se puede decidir nada de esto.
 
 /**
  * ¿Se solapan de verdad los dos polígonos EN PANTALLA? Eje separador sobre las
@@ -683,6 +708,210 @@ function hayEjeSeparador(puntosA, puntosB) {
 /** Orden de pintor de una lista de polígonos: primero lo que va debajo. */
 function ordenarPorPintor(poligonos) {
   return [...poligonos].sort((a, b) => b.profundidad - a.profundidad);
+}
+
+// ---- Newell con corte (#510, cuarto intento) -------------------------------
+//
+// Los dos intentos anteriores están en la cabecera de arriba. Este es el único
+// que quedaba sin probar y el que el propio análisis señala como el correcto:
+// Newell completo, con el paso de PARTIR una cara cuando el conflicto es
+// cíclico. La diferencia con el intento #2 (descartado) es exactamente esa
+// partición — sin ella, adelantar una cara en un ciclo se salta por encima de
+// otras ya resueltas y no hay forma de deshacerlo; con ella, el trozo que de
+// verdad está detrás se separa del que está delante y cada uno se ordena por
+// su cuenta.
+//
+// Tolerancia en unidades de mundo (metros), no en píxeles como
+// `TOLERANCIA_SOLAPE`: existe por el mismo caso de siempre, dos caras que
+// comparten arista o plano —el lomo y el costado de un casco, dos muros en su
+// esquina—, donde la distancia al plano de la otra es cero y sin margen se
+// leerían como si se cruzaran.
+const TOLERANCIA_PLANO = 1e-4;
+
+/**
+ * Plano de una cara en espacio de cámara, orientado para que el observador
+ * (el origen, porque la cámara vive siempre en `[0,0,0]` en este espacio)
+ * quede del lado NO POSITIVO. Así "lado positivo" significa siempre "más
+ * lejos del observador", sea cual sea el sentido de giro con el que se listó
+ * la cara — el propio motor no exige un sentido de giro fijo para esto, solo
+ * lo exige `areaFirmada` en pantalla, que es un espacio distinto.
+ */
+function planoDeCara(vertices) {
+  if (!Array.isArray(vertices) || vertices.length < 3) return null;
+  const normal = normalizar(cruz(resta(vertices[1], vertices[0]), resta(vertices[2], vertices[0])));
+  if (normal[0] === 0 && normal[1] === 0 && normal[2] === 0) return null;
+  const punto0 = vertices[0];
+  const distOrigen = punto(normal, resta([0, 0, 0], punto0));
+  const signo = distOrigen > 0 ? -1 : 1;
+  return { normal: [normal[0] * signo, normal[1] * signo, normal[2] * signo], punto: punto0 };
+}
+
+function distanciaAlPlano(plano, v) {
+  return punto(plano.normal, resta(v, plano.punto));
+}
+
+/** ¿Todos los vértices caen en `lado` (1 = lejos, -1 = cerca) del plano? */
+function todosEnLado(plano, vertices, lado) {
+  return vertices.every((v) => lado * distanciaAlPlano(plano, v) >= -TOLERANCIA_PLANO);
+}
+
+/** Rango [mínimo, máximo] de profundidad de una cara, en espacio de cámara. */
+function extentoZ(vertices) {
+  let minimo = Infinity;
+  let maximo = -Infinity;
+  for (const v of vertices ?? []) {
+    const z = Array.isArray(v) ? v[2] : undefined;
+    if (!Number.isFinite(z)) continue;
+    if (z < minimo) minimo = z;
+    if (z > maximo) maximo = z;
+  }
+  return [minimo, maximo];
+}
+
+/**
+ * ¿Es seguro pintar `a` antes que `b` (o sea, `a` está entero más lejos del
+ * observador que `b`)? Tres tests, cualquiera de los tres basta:
+ *
+ *  0. El rango de profundidad de `a` no se solapa con el de `b` y queda
+ *     enteramente más lejos. Es el test MÁS BARATO y el único que no depende
+ *     de la orientación de ninguna de las dos caras: una cara casi de canto
+ *     —el suelo visto casi al ras, un muro visto desde su borde— tiene un
+ *     plano casi paralelo a la línea de mira, y los dos tests de plano de
+ *     abajo pueden fallar sobre ella aunque sus profundidades no se toquen en
+ *     absoluto. Sin este test, esos pares —justo los que `paresMalOrdenados`
+ *     encuentra por su propio rango de z— se quedaban sin resolver y caían al
+ *     centroide, que es exactamente el defecto que #510 documenta.
+ *  1. Todo `b` cae del lado cercano del plano de `a` → `a` es más lejano que
+ *     su propio plano, y `b` está delante de ese plano.
+ *  2. Todo `a` cae del lado lejano del plano de `b` → `a` queda detrás del
+ *     plano donde vive `b`, así que `a` es más lejano que `b`.
+ *
+ * Si ninguno de los tres resuelve, esta función no sabe decir nada — no
+ * significa que sean iguales, significa que hay que mirar por el otro lado
+ * (`aVaPrimero(b, a)`) o partir una de las dos.
+ */
+function aVaPrimero(a, b) {
+  const [aMin, aMax] = extentoZ(a?.camara);
+  const [bMin, bMax] = extentoZ(b?.camara);
+  if (Number.isFinite(aMin) && Number.isFinite(bMax) && aMin >= bMax - TOLERANCIA_PLANO) return true;
+  const planoA = planoDeCara(a?.camara);
+  if (planoA && todosEnLado(planoA, b?.camara ?? [], -1)) return true;
+  const planoB = planoDeCara(b?.camara);
+  if (planoB && todosEnLado(planoB, a?.camara ?? [], 1)) return true;
+  return false;
+}
+
+/**
+ * Corta una cara (en espacio de cámara) por un plano ajeno, devolviendo el
+ * trozo cercano (lado del observador) y el lejano. Reutiliza
+ * `recortarContraPlano` — el mismo Sutherland-Hodgman genérico que ya usa
+ * `recortarLateral` — así que interpola TODAS las componentes del vértice,
+ * UV incluidas.
+ */
+function dividirCaraPorPlano(vertices, plano) {
+  const cerca = recortarContraPlano(vertices, (v) => -distanciaAlPlano(plano, v));
+  const lejos = recortarContraPlano(vertices, (v) => distanciaAlPlano(plano, v));
+  return { cerca, lejos };
+}
+
+/**
+ * Reconstruye un polígono a partir de un trozo de geometría de cámara ya
+ * cortado: reproyecta con la MISMA proyección con la que se compuso el
+ * original (`proyeccion`, ver `componerEscena`) y recalcula profundidad y
+ * puntos de pantalla. El color, la niebla y la textura se heredan tal cual —
+ * el motor sombrea plano por cara y no por sub-cara, la misma aproximación
+ * que ya hacía sombrear con el centroide de la cara entera.
+ *
+ * Sin `proyeccion` (polígonos de prueba hechos a mano, sin pasar por
+ * `componerEscena`) no hay con qué reproyectar con seguridad: se devuelve
+ * `null` y quien llama trata el corte como si no hubiera podido hacerse.
+ */
+function reconstruirPoligono(original, camaraNueva) {
+  if (!original?.proyeccion || !Array.isArray(camaraNueva) || camaraNueva.length < 3) return null;
+  const puntos = camaraNueva.map((v) => {
+    const p = proyectar(v, original.proyeccion);
+    return v.length > 3 ? { ...p, u: v[3], v: v[4] } : p;
+  });
+  // El corte puede dejar, tras ajustar a rejilla, una cara sin área o mirando
+  // al revés del rasterizador: se descarta en vez de colar un polígono que
+  // `areaFirmada` ya habría rechazado en `componerEscena`.
+  if (areaFirmada(puntos) <= 0) return null;
+  const profundidad = camaraNueva.reduce((suma, v) => suma + v[2], 0) / camaraNueva.length;
+  return { ...original, puntos, camara: camaraNueva, profundidad };
+}
+
+/**
+ * Orden por pintor con los tests de Newell y partición de caras (#510,
+ * intento 3 de la cabecera de arriba). NO ESTÁ CABLEADO a
+ * `componerEscena`/`fundirEscenas` — siguen usando el centroide— y no se
+ * cablee sin cerrar antes el hueco que se documenta ahí: un candidato ya
+ * empujado a la lista final no se vuelve a comprobar, y un corte posterior en
+ * OTRO par puede producir un fragmento que lo deja mal ordenado sin que nada
+ * lo detecte. Medido: 0 pares mal ordenados en la cantina caminable a un yaw
+ * fijo, pero pares NUEVOS (no presentes con el centroide) en otros ángulos
+ * del mismo barrido. Se conserva porque las primitivas de abajo
+ * (`aVaPrimero`, el corte por plano) son correctas por pares —lo prueba
+ * `retro3d-newell.test.mjs`— y reutilizables el día que alguien resuelva la
+ * revalidación; lo que falta es exactamente ese cierre, no volver a escribir
+ * los tests de plano.
+ *
+ * Arranca del orden por centroide de siempre y solo hace geometría de verdad
+ * para los pares que de verdad comparten un píxel (`seSolapanEnPantalla`): la
+ * inmensa mayoría de una escena no se toca aquí.
+ *
+ * Cuando un par en conflicto no se resuelve por ningún test de plano
+ * (conflicto cíclico de verdad, o casi-coplanar dentro de `TOLERANCIA_PLANO`),
+ * se PARTE la cara ajena por el plano de la candidata y se reinsertan los dos
+ * trozos — el paso que le faltaba al intento #2 de la cabecera de arriba.
+ * Cuando ni siquiera se puede partir (geometría de prueba sin `camara` o sin
+ * `proyeccion`, o un corte degenerado), el par se deja tal y como estaba en
+ * el orden por centroide.
+ *
+ * `TOPE_INTENTOS` acota el trabajo: un ciclo real entre muchas caras —o un
+ * error en los tests de arriba— no debe colgar un fotograma. Agotada la cota,
+ * el resto de la lista se pinta en el orden que le quedaba.
+ */
+export function ordenarPorPintorNewell(poligonos) {
+  const lista = ordenarPorPintor(poligonos);
+  const resultado = [];
+  const tope = lista.length * lista.length * 4 + 64;
+  let intentos = 0;
+  while (lista.length > 0 && intentos < tope) {
+    intentos += 1;
+    const candidato = lista.shift();
+    let conflicto = false;
+    for (let i = 0; i < lista.length; i += 1) {
+      const otro = lista[i];
+      if (!seSolapanEnPantalla(candidato, otro)) continue;
+      if (aVaPrimero(candidato, otro)) continue;
+      if (aVaPrimero(otro, candidato)) {
+        // `otro` es el que va más lejos de verdad: se procesa primero que
+        // `candidato`, no al revés — el orden de los dos argumentos de
+        // `unshift` importa, y invertirlo aquí volvía a dejar `candidato`
+        // delante y reproducía el mismo conflicto en la siguiente vuelta.
+        lista.splice(i, 1);
+        lista.unshift(otro, candidato);
+        conflicto = true;
+        break;
+      }
+      const plano = planoDeCara(candidato.camara);
+      const dividido = plano ? dividirCaraPorPlano(otro.camara, plano) : null;
+      const trozoLejos = dividido && reconstruirPoligono(otro, dividido.lejos);
+      const trozoCerca = dividido && reconstruirPoligono(otro, dividido.cerca);
+      if (trozoLejos && trozoCerca) {
+        lista.splice(i, 1, trozoLejos, trozoCerca);
+        lista.unshift(candidato);
+        conflicto = true;
+        break;
+      }
+      // No se pudo partir de verdad (coplanar dentro de tolerancia, o sin
+      // `camara`/`proyeccion`): se acepta el orden del centroide para este
+      // par en vez de colgarse intentando resolver lo irresoluble.
+    }
+    if (!conflicto) resultado.push(candidato);
+  }
+  resultado.push(...lista);
+  return resultado;
 }
 
 /**
@@ -938,6 +1167,12 @@ export function componerEscena(malla, opciones = {}) {
       // conserva la planaridad en `x,y,z`). Va aquí y no en un canal aparte para
       // que sobreviva al `flatMap` con el que los consumidores funden escenas.
       camara: recortada,
+      // La proyección con la que se calcularon `puntos`, para poder REPROYECTAR
+      // un trozo cuando el orden por pintor (#510) tiene que partir esta cara
+      // por el plano de otra: sin esto, un corte no tendría con qué volver a
+      // espacio de pantalla y `ordenarPorPintorNewell` no podría hacer nada
+      // distinto de aceptar el centroide.
+      proyeccion: { ancho, alto, f, rejilla: ajustes.rejilla },
     });
   }
 

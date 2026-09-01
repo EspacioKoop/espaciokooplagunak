@@ -140,6 +140,13 @@ test("deuda conocida: el orden por centroide deja pares mal en escenas cargadas"
   // sigue debiendo, escrita para que se note cuando cambie. Un par «mal» es una
   // cara enteramente detrás de otra, que la tapa en pantalla, y que se pinta
   // después — el defecto que QA ve como texturas que se glitchean.
+  //
+  // `ordenarPorPintorNewell` (ver su cabecera y la de «Orden por pintor» más
+  // arriba en retro3d.mjs) baja esto a 0 para ESTE yaw exacto, pero no está
+  // cableado a producción: medido con el criterio estricto sobre el barrido
+  // completo de yaw de esta misma escena, introduce pares NUEVOS en otros
+  // ángulos que el centroide no tenía. Se queda el centroide aquí hasta que
+  // ese hueco se cierre.
   const caminable = componerCantinaSala(5, 1.6, 6, 0.4, { ancho: 480, alto: 320 });
   assert.ok(
     paresMalOrdenados(caminable.poligonos) <= 8,

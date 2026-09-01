@@ -32,6 +32,7 @@
 import { FARAO_AMASIS } from "../data/mallas/farao-amasis.mjs";
 import { LEON_AL_LAT } from "../data/mallas/leon-al-lat.mjs";
 import { VENUS_DE_MILO } from "../data/mallas/venus-de-milo.mjs";
+import { registrarCatalogoPiezas } from "./catalogo-piezas.mjs";
 
 /**
  * De ID de pieza a geometría. Es el vínculo del que hablaba #598: el catálogo de
@@ -135,3 +136,8 @@ export const CATALOGO_MUSEO = Object.freeze({
     }),
   ]),
 });
+
+// Se registra al cargarse, para que `getPiezaCatalogada` (#598, revisión de
+// Odiseo) pueda resolver estas piezas sin que quien pregunta sepa que viven
+// en el museo.
+registrarCatalogoPiezas(CATALOGO_MUSEO);

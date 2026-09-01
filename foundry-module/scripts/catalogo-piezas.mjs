@@ -132,6 +132,49 @@ export function piezaPorId(catalogo, id) {
 }
 
 /**
+ * EL PUNTO ÚNICO DE RESOLUCIÓN (revisión externa de #598, Odiseo).
+ *
+ * Antes de esto, resolver una pieza obligaba a saber en qué sala vive: el
+ * único consumidor —`andar-nave-app.mjs`— importaba `CATALOGO_MUSEO` de
+ * `museo-piezas.mjs` a mano para poder llamar a `piezaPorId`. Eso ataba la
+ * identidad de la pieza a la sala que hoy la enseña, y una futura
+ * enciclopedia que quisiera la MISMA pieza habría tenido que repetir ese
+ * import. La pieza debe poder responder por sí misma qué es y de dónde
+ * procede sin que quien pregunta sepa en qué catálogo está.
+ *
+ * Cada módulo de contenido (`museo-piezas.mjs`, y mañana el que traiga la
+ * enciclopedia) se registra una vez al cargarse con `registrarCatalogoPiezas`;
+ * `getPiezaCatalogada(id)` resuelve contra todos los registrados. Es un
+ * registro y no una fusión de catálogos: `catálogo cosmográfico` (mundos) y
+ * `catálogo de piezas` (assets) siguen siendo dominios separados, comparten
+ * solo el contrato de procedencia (`procedencia-catalogo.mjs`) — la
+ * distinción que la misma revisión pide mantener.
+ */
+const REGISTRO_PIEZAS = new Map();
+
+/**
+ * Registra las piezas de un catálogo ya validado para que `getPiezaCatalogada`
+ * pueda resolverlas. Un id repetido entre catálogos es un error de quien
+ * registra, no un caso a silenciar: dos piezas con el mismo id son
+ * indistinguibles para cualquier consumidor futuro.
+ */
+export function registrarCatalogoPiezas(catalogo) {
+  for (const pieza of catalogo?.piezas ?? []) {
+    if (REGISTRO_PIEZAS.has(pieza.id) && REGISTRO_PIEZAS.get(pieza.id) !== pieza) {
+      throw new Error(`Pieza duplicada entre catálogos: "${pieza.id}"`);
+    }
+    REGISTRO_PIEZAS.set(pieza.id, pieza);
+  }
+}
+
+/** La pieza de ese id, resuelta entre todos los catálogos registrados, o
+ *  `null`. Es la única función que un consumidor de contenido —sala, ficha,
+ *  futura enciclopedia— necesita conocer para llegar a una pieza. */
+export function getPiezaCatalogada(id) {
+  return REGISTRO_PIEZAS.get(id) ?? null;
+}
+
+/**
  * La cartela lista para pintar, en un idioma.
  *
  * Devuelve la CLAVE de traducción de la naturaleza y no su texto: cómo se dice

@@ -27,8 +27,10 @@ import { presentesEn } from "./nave-presencia.mjs";
 import { avatarDeUsuario } from "./avatar/avatar-assignment.mjs";
 import { openWorkspaceApp } from "./station-workspace-ui.mjs";
 import { SECCION } from "./paleta.mjs";
-import { cartelaDe, piezaPorId } from "./catalogo-piezas.mjs";
-import { CATALOGO_MUSEO } from "./museo-piezas.mjs";
+import { cartelaDe, getPiezaCatalogada } from "./catalogo-piezas.mjs";
+// Registra el catálogo del museo en el punto único de resolución (#598).
+// Este módulo no necesita saber que la pieza vive ahí: solo que existe.
+import "./museo-piezas.mjs";
 import { AJUSTE_TELEMETRIA, aceptarSensores, aceptarTelemetria } from "./telemetria-difusion.mjs";
 import { AJUSTE_NIVEL_ALERTA } from "./alerta-escena.mjs";
 
@@ -282,7 +284,7 @@ function arrancar(raiz, estanciaPedida = null) {
   function pintarCartela(piezaId) {
     const nodo = raiz?.querySelector?.("[data-andar-cartela]");
     if (!nodo) return;
-    const pieza = piezaId ? piezaPorId(CATALOGO_MUSEO, piezaId) : null;
+    const pieza = piezaId ? getPiezaCatalogada(piezaId) : null;
     if (!pieza) {
       nodo.hidden = true;
       return;

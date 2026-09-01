@@ -120,6 +120,11 @@ jobs:
         # existe: una cita rota manda al lector —o al agente— a perseguir
         # fantasmas, y hasta ahora nadie ejecutaba esta herramienta.
         run: python3 tools/refs-rotas.py
+      - name: Restos de herramienta trackeados (#818)
+        # El test `test_el_arbol_actual_esta_limpio` de la suite pytest ya lo
+        # ejercita, pero un paso propio deja el fallo legible en el resumen del
+        # job en vez de enterrado en un `assert mod.main() == 0` generico.
+        run: python3 tools/check_restos_herramienta.py
 
   puerta:
     name: Puerta de tools

@@ -20,15 +20,27 @@ Se ejecuta sin argumentos desde cualquier sitio del arbol. Salida 0 si limpio.
 """
 from __future__ import annotations
 
+import fnmatch
 import pathlib
 import subprocess
 import sys
 
 RAIZ = pathlib.Path(__file__).resolve().parent.parent
 
-# Prefijos que nunca deben estar trackeados, en cualquier nivel del arbol.
-RESTOS = ("node_modules/", ".nyc_output/", "coverage/")
+# Prefijos de directorio que nunca deben estar trackeados, en cualquier nivel
+# del arbol (coinciden con el propio directorio o con lo que cuelgue de el).
+RESTOS = ("node_modules/", ".nyc_output/", "coverage/", "tmp/")
+# Nombres de DIRECTORIO (no de fichero) que tampoco deben aparecer en ningun
+# nivel: a diferencia de RESTOS, admiten glob porque "coverage-out",
+# "coverage-tmp"... son variantes del mismo volcado y no un prefijo fijo.
+DIRECTORIOS_RESTO = ("coverage-*",)
 FICHEROS = ("package-lock.json",)
+# Patrones glob sobre el NOMBRE de fichero (no la ruta): cubren volcados y
+# copias de seguridad sueltas que no viven bajo un directorio fijo.
+PATRONES_NOMBRE = (
+    "*.bak", "*.orig", "*.rej",
+    "coverage.json", "coverage.lcov", "coverage_*.txt", "lcov.info",
+)
 
 
 def trackeados():
@@ -38,10 +50,20 @@ def trackeados():
 
 
 def es_resto(ruta: str) -> bool:
+    nombre = ruta.rsplit("/", 1)[-1]
+    if any(fnmatch.fnmatch(nombre, patron) for patron in PATRONES_NOMBRE):
+        return True
     partes = ruta.split("/")
-    for i, _ in enumerate(partes):
+    for i, segmento in enumerate(partes):
         cola = "/".join(partes[i:])
         if cola.startswith(RESTOS) or cola in FICHEROS:
+            return True
+        # Un DIRECTORIOS_RESTO solo cuenta si `segmento` es de verdad un
+        # directorio (le sigue algo mas de ruta): si no, es el nombre final
+        # de un fichero cualquiera y el glob no debe dispararse por el.
+        if i < len(partes) - 1 and any(
+                fnmatch.fnmatch(segmento, patron)
+                for patron in DIRECTORIOS_RESTO):
             return True
     return False
 

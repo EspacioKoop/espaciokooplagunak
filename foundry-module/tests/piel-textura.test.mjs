@@ -156,3 +156,29 @@ test("la subdivisión sigue muy por debajo del presupuesto de geometría", () =>
   const tex = componer("textura").poligonos.length;
   assert.ok(tex < geo / 2, `de ${geo} a ${tex} se ha comido la rebaja de #584`);
 });
+
+test("un foco cercano aclara unos cuadros del paño más que otros", () => {
+  // Esta es la prueba de fuego de la opción B: si el paño fuera un único
+  // cuadrilátero (opción A), TODOS sus polígonos comparten centroide y un foco
+  // cercano los aclararía exactamente igual — una sola intensidad para todo
+  // el muro. Con la subdivisión, cada cuadro tiene su propio centroide y el
+  // foco tiene que dejar unos más claros que otros.
+  const sala = crearSalaCaja({ ...MEDIDAS, puertas: [], mobiliario: [], pielMuro: "textura" });
+  const x = MEDIDAS.ancho / 2;
+  const z = MEDIDAS.profundidad / 2 - 2;
+  const escena = sala.componer(x, 0, z, 0.35, {
+    ancho: 640,
+    alto: 400,
+    // Pegado a la esquina del muro del fondo que SÍ entra en el campo de
+    // visión de esta cámara (el otro extremo del muro de 22 m queda fuera del
+    // cono de 62°, y un foco ahí no se distinguiría de uno apagado — no
+    // porque la subdivisión no funcione, sino porque nada de ese trozo se
+    // pinta este fotograma).
+    focos: [{ posicion: [MEDIDAS.ancho - 1, 1.8, MEDIDAS.profundidad - 0.3], potencia: 3, alcance: 8 }],
+  });
+  const intensidades = escena.poligonos.filter((p) => p.textura).map((p) => p.intensidad);
+  assert.ok(intensidades.length > 1, "hacen falta varios cuadros para que la prueba diga algo");
+  const min = Math.min(...intensidades);
+  const max = Math.max(...intensidades);
+  assert.ok(max - min > 0.05, `intensidades demasiado uniformes: min=${min} max=${max}`);
+});

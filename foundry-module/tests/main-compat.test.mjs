@@ -339,6 +339,9 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
     // tripulación en la misma barra que su puesto diría que forma parte del juego.
     "lagunak-playa",
     "lagunak-museo",
+    // El plató (#584): banco de pruebas del rig de focos de #556 sobre la
+    // piel texturada del muro, mismo motivo que la playa y el museo.
+    "lagunak-estudio",
     // La cantina (#423) la ven todos: es la capa social, y un minijuego al que
     // solo pudiera entrar el GM no sería un minijuego. Es la única puerta: los
     // dos verticales (#308 póker, #413 dados) entran por ella, no por un botón

@@ -774,9 +774,30 @@ export function crearSalaCaja({
       aviso = null,
       saludSistemas = null,
       tiempo = 0,
+      // Luces de punto declaradas por la escena (#556), en coordenadas del
+      // MUNDO — `[{posicion:[x,y,z], potencia?, alcance?}, ...]`. Sin
+      // declararlas ninguna sala cambia ni un píxel: es la misma condición
+      // que ya documenta `intensidadCara`. Se traducen más abajo al espacio
+      // de cámara, igual que cada malla, porque `luzFija` mide centroide y
+      // foco en el mismo sitio.
+      focos = null,
     } = opciones;
     const { camara, dibujarPropio } = resolverCamara({ x, z, y, yaw, modo: modoCamara });
     const yawCamara = -yaw; // ver el comentario de `yaw` en `cantina-escena.mjs`
+
+    // Los focos viajan con la misma traslación que cada malla: `luzFija` mide
+    // el centroide de una cara en `vertices` tal cual llegan a `componerEscena`
+    // —mundo menos cámara, sin rotar—, así que un foco declarado en el mundo
+    // tiene que sufrir la misma resta o su distancia a la cara no significaría
+    // nada. Sin foco no se calcula nada de esto (mismo camino que antes).
+    const focosCamara = Array.isArray(focos)
+      ? focos
+          .filter((foco) => foco && Array.isArray(foco.posicion))
+          .map((foco) => ({
+            ...foco,
+            posicion: [foco.posicion[0] - camara[0], foco.posicion[1] - camara[1], foco.posicion[2] - camara[2]],
+          }))
+      : null;
 
     // Las hojas de cada puerta se recalculan en cada llamada: su apertura es
     // pura función de la distancia de quien mira a esa puerta (ver la
@@ -832,6 +853,9 @@ export function crearSalaCaja({
         ...(Number.isFinite(ambiente) ? { ambiente } : {}),
         posicion: [0, 0, 0],
         yaw: yawCamara,
+        // Ya trasladados al espacio de cámara arriba; sin foco declarado,
+        // `null` no cambia nada (mismo camino que antes de #556).
+        ...(focosCamara && focosCamara.length > 0 ? { focos: focosCamara } : {}),
         // Recorte de frustum completo (#510): las salas de #508 son
         // contenido nuevo sin cámaras afinadas a ojo que dependan del recorte
         // laxo — activarlo aquí es justo el caso seguro que #510 documenta.

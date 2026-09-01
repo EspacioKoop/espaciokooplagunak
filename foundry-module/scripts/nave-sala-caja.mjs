@@ -460,22 +460,48 @@ function texturaDelMuro(semilla) {
 const SALIENTE_PANO = 0.02;
 
 /**
- * Los paños texturados de un tramo de muro: UNO POR CARA.
+ * Cuántos metros mide, como mucho, un cuadro de la subdivisión de un paño
+ * (#584, opción B).
  *
- * La primera versión ponía un solo cuadrilátero en el eje del tramo y no se veía
- * nada — quedaba enterrado dentro del muro macizo que lo sostiene. Un tramo
- * tiene dos caras y puede separar dos salas, así que se pintan las dos, cada una
- * despegada hacia SU lado y mirando hacia fuera del muro.
+ * UN PAÑO PLANO NO ES UN SOLO POLÍGONO: es una rejilla gruesa que existe SOLO
+ * para que la luz tenga dónde interpolar, no para dibujo — el dibujo ya lo da
+ * el téxel. Es exactamente lo que hacían los juegos de la época que este motor
+ * imita: superficies grandes subdivididas por *vertex/face lighting*, no por
+ * detalle. Sin esto, `intensidadCara` (#556) evalúa el paño entero en UN solo
+ * centroide y el sistema de luces de punto que se acaba de estrenar queda casi
+ * decorativo en la superficie que más ocupa el cuadro.
+ *
+ * EN METROS, NO EN UN NÚMERO FIJO DE CUADROS POR PARED: fijo por pared, la
+ * sala de 22 m del reactor tendría charcos de luz cuatro veces más gruesos que
+ * un camarote — el mismo error de escala que #555 corrigió en las luminarias.
+ * 1,5 m es la medida que se barajó en el hilo del issue: bastante fino para
+ * que un foco cercano se note moverse por el muro, bastante grueso para no
+ * deshacer la rebaja de polígonos que es la mitad del punto de #584.
+ */
+export const SUBDIVISION_PANO_METROS = 1.5;
+
+/**
+ * Los paños texturados de un tramo de muro: UNO POR CARA, subdivididos en una
+ * rejilla gruesa para la luz (#584, opción B).
+ *
+ * La primera versión ponía un solo cuadrilátero por cara y no se veía nada —
+ * quedaba enterrado dentro del muro macizo que lo sostiene; corregido, dejaba
+ * el paño entero con una única intensidad. Un tramo tiene dos caras y puede
+ * separar dos salas, así que se pintan las dos, cada una despegada hacia SU
+ * lado y mirando hacia fuera del muro.
  *
  * La `u` se mide en teselas a lo largo del vano —un tramo de 7 m enseña 2,2
- * repeticiones— y la `v` va de 0 a 1 porque la tesela mide exactamente la altura
- * de la sala. Que esa coincidencia exista es lo que permite que este camino no
- * tenga que decidir ningún tamaño ni enumerar ningún catálogo de vanos.
+ * repeticiones— y la `v` va de 0 a 1 porque la tesela mide exactamente la
+ * altura de la sala. Que esa coincidencia exista es lo que permite que este
+ * camino no tenga que decidir ningún tamaño ni enumerar ningún catálogo de
+ * vanos: cada cuadro de la subdivisión solo recorta su propio tramo de esa
+ * `u`/`v` continua, la tesela sigue sin enterarse de que la pintan en trozos.
  */
 function panosTexturados(rect, altura) {
   const { x, z, ancho: anchoRect, profundidad } = rect;
   const alLargoDeX = anchoRect >= profundidad;
-  const u1 = (alLargoDeX ? anchoRect : profundidad) / ANCHO_TESELA;
+  const largo = alLargoDeX ? anchoRect : profundidad;
+  const u1 = largo / ANCHO_TESELA;
 
   // EL ORDEN DE LOS DOS PUNTOS ES LA NORMAL, y estaba del revés: con el sentido
   // contrario la cara mira hacia DENTRO del muro, el motor la descarta por dar
@@ -491,18 +517,50 @@ function panosTexturados(rect, altura) {
         { a: [x + anchoRect + SALIENTE_PANO, z + profundidad], b: [x + anchoRect + SALIENTE_PANO, z] },
       ];
 
-  return caras.map(({ a, b }) => ({
-    malla: {
-      vertices: [
-        [a[0], 0, a[1]],
-        [b[0], 0, b[1]],
-        [b[0], altura, b[1]],
-        [a[0], altura, a[1]],
-      ],
-      caras: [[0, 1, 2, 3]],
-      uvs: [[[0, 1], [u1, 1], [u1, 0], [0, 0]]],
-    },
-  }));
+  const columnas = Math.max(1, Math.round(largo / SUBDIVISION_PANO_METROS));
+  const filas = Math.max(1, Math.round(altura / SUBDIVISION_PANO_METROS));
+
+  return caras.flatMap(({ a, b }) => {
+    // Interpola linealmente entre `a` y `b` a lo largo del vano, en el plano
+    // horizontal — el mismo `t` sirve para el punto 3D y para la `u` de la
+    // tesela, porque los dos avanzan a ritmo constante con la distancia.
+    const punto = (t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+    const piezas = [];
+    for (let fila = 0; fila < filas; fila += 1) {
+      const v0 = fila / filas;
+      const v1 = (fila + 1) / filas;
+      const y0 = v0 * altura;
+      const y1 = v1 * altura;
+      for (let col = 0; col < columnas; col += 1) {
+        const t0 = col / columnas;
+        const t1 = (col + 1) / columnas;
+        const p0 = punto(t0);
+        const p1 = punto(t1);
+        const u0 = t0 * u1;
+        const uu1 = t1 * u1;
+        piezas.push({
+          malla: {
+            // MISMO ORDEN QUE EL PAÑO SIN SUBDIVIDIR: [a, b, b_arriba, a_arriba].
+            // Invertido, la cara mira hacia dentro del muro y el motor la
+            // descarta por dar la espalda — el cuadro no aparece, sin error en
+            // ningún sitio, que es justo lo que costó encontrar la primera vez.
+            vertices: [
+              [p0[0], y0, p0[1]],
+              [p1[0], y0, p1[1]],
+              [p1[0], y1, p1[1]],
+              [p0[0], y1, p0[1]],
+            ],
+            caras: [[0, 1, 2, 3]],
+            // La `v` de la tesela vale 1 en el suelo y 0 arriba (misma
+            // convención que el paño sin subdividir): cada fila recorta su
+            // propio tramo de esa `v` continua.
+            uvs: [[[u0, 1 - v0], [uu1, 1 - v0], [uu1, 1 - v1], [u0, 1 - v1]]],
+          },
+        });
+      }
+    }
+    return piezas;
+  });
 }
 
 /**
@@ -558,13 +616,17 @@ export function crearSalaCaja({
    *
    * `"geometria"` es lo que hay desde #548: miles de chapas de diez centímetros,
    * cada una cogiendo la luz por su cuenta. `"textura"` pinta el mismo muro con
-   * una tesela de `piel-textura.mjs` sobre un cuadrilátero por paño.
+   * una tesela de `piel-textura.mjs` sobre una rejilla gruesa de cuadros por
+   * paño —`SUBDIVISION_PANO_METROS`, opción B de #584— que existe SOLO para
+   * que las luces de punto de #556 tengan dónde interpolar, no para dibujo.
    *
    * POR QUÉ HAY DOS Y NO UNA. La textura gana en todo lo medible —227 de los 253
-   * polígonos de una sala son la piel, y texturada baja a uno por pared— y en
-   * detalle, porque a dos centímetros y medio por téxel caben los remaches, el
-   * nervado y las juntas finas que en cajas de diez centímetros no caben. Lo que
-   * pierde es el moteado vivo de la luz por chapa: pasa a ser relieve PINTADO.
+   * polígonos de una sala son la piel, y texturada baja a un puñado de cuadros
+   * por pared en vez de cientos— y en detalle, porque a dos centímetros y medio
+   * por téxel caben los remaches, el nervado y las juntas finas que en cajas de
+   * diez centímetros no caben. Lo que pierde es el moteado vivo de la luz por
+   * chapa suelta: pasa a ser relieve PINTADO, con la luz de punto interpolando
+   * solo entre los cuadros de la subdivisión y no cara a cara.
    *
    * Eso cambia el aspecto de las trece salas del Phobos a la vez, así que el
    * cambio de serie es una decisión de arte y se toma aparte. Aquí está el
@@ -618,19 +680,23 @@ export function crearSalaCaja({
           piezasMuralPixel({ rect, sala: { ancho, profundidad }, altura: ALTURA, semilla: semillaMural }),
         )
       : []),
-    // La piel texturada: un cuadrilátero por paño, con la tesela repitiéndose a
-    // lo largo del vano. La `v` va de 0 a 1 clavada porque la tesela mide
-    // exactamente `ALTURA`, y por eso este camino no necesita decidir ningún
-    // tamaño ni enumerar ningún catálogo de vanos.
+    // La piel texturada: una rejilla gruesa de cuadros por paño (#584, opción
+    // B), con la tesela repitiéndose a lo largo del vano y de arriba abajo a
+    // través de la subdivisión. La `v` de la tesela va de 0 a 1 clavada porque
+    // mide exactamente `ALTURA`, y por eso este camino no necesita decidir
+    // ningún tamaño ni enumerar ningún catálogo de vanos: cada cuadro solo
+    // recorta su propio tramo de esa `v` continua.
     ...(muralPixel && pielMuro === "textura"
       ? tramosMuro.flatMap((rect) => panosTexturados(rect, ALTURA)).map((pano) => ({
           ...pano,
           color: colorMuro,
           textura: texturaDelMuro(semillaMural),
-          // Un paño plano recibe una sola intensidad donde las chapas cogían luz
-          // por muchas caras, así que sin esto sale bastante más oscuro que lo
-          // que sustituye. No es un retoque de gusto: es igualar el brillo de
-          // dos maneras distintas de dibujar lo mismo.
+          // Un cuadro de la subdivisión recibe una sola intensidad donde las
+          // chapas cogían luz por muchas caras, así que sin esto sale bastante
+          // más oscuro que lo que sustituye. No es un retoque de gusto: es
+          // igualar el brillo de dos maneras distintas de dibujar lo mismo —
+          // la subdivisión deja que un foco cercano SIGA aclarando un cuadro
+          // más que otro por encima de este suelo.
           ambiente: AMBIENTE_PANO,
         }))
       : []),

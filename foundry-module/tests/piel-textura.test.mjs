@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { ANCHO_TESELA, METROS_POR_TEXEL, teselaMuro, texturaMuro } from "../scripts/piel-textura.mjs";
-import { ALTURA, crearSalaCaja } from "../scripts/nave-sala-caja.mjs";
+import { ALTURA, SUBDIVISION_PANO_METROS, crearSalaCaja } from "../scripts/nave-sala-caja.mjs";
 import { SALAS_PHOBOS, medidasSala } from "../scripts/nave-planta-phobos.mjs";
 import { texturaUtilizable } from "../scripts/retro3d-lienzo.mjs";
 import { MURAL } from "../scripts/paleta.mjs";
@@ -128,4 +128,31 @@ test("la tesela se genera una vez por semilla, no una por sala", () => {
   const a = componer("textura").poligonos.find((p) => p.textura).textura;
   const b = componer("textura").poligonos.find((p) => p.textura).textura;
   assert.equal(a, b, "tiene que ser el MISMO objeto, no una copia igual");
+});
+
+/* ---- subdivisión para la luz (#584, opción B) ------------------------------ */
+
+test("el paño no es un solo cuadro: hay varias alturas de suelo distintas", () => {
+  // Es la propiedad que distingue la opción B de la A: si todo el paño fuera un
+  // único cuadrilátero, todos sus polígonos compartirían el mismo par de alturas
+  // (el suelo y `ALTURA`) y `intensidadCara` (#556) los trataría como una sola
+  // superficie con un único centroide — la luz de punto no tendría dónde
+  // interpolar.
+  const texturados = componer("textura").poligonos.filter((p) => p.textura);
+  const alturasDeSuelo = new Set(
+    texturados.map((p) => Math.min(...p.puntos.map((q) => q.y)).toFixed(3)),
+  );
+  assert.ok(
+    alturasDeSuelo.size >= Math.round(ALTURA / SUBDIVISION_PANO_METROS) - 1,
+    `se esperaban varias filas de subdivisión, hay ${alturasDeSuelo.size}: ${[...alturasDeSuelo]}`,
+  );
+});
+
+test("la subdivisión sigue muy por debajo del presupuesto de geometría", () => {
+  // La rejilla gruesa de la opción B tiene más cuadros que un único paño por
+  // cara, pero el punto de #584 —la rebaja de polígonos— no puede deshacerse
+  // por el camino: sigue siendo un puñado de cuadros, no cientos de chapas.
+  const geo = componer("geometria").poligonos.length;
+  const tex = componer("textura").poligonos.length;
+  assert.ok(tex < geo / 2, `de ${geo} a ${tex} se ha comido la rebaja de #584`);
 });

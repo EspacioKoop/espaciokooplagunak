@@ -88,5 +88,11 @@
     "title": "El dato derivado se copia de su fuente autoritativa y una prueba lo compara",
     "path": "0015-dato-derivado-se-copia-y-se-compara.md",
     "status": "Aceptada"
+  },
+  {
+    "id": "ADR-0017",
+    "title": "Puestos sin tripulación: degradado con aviso, sin automatización",
+    "path": "0017-puestos-vacios-degradado-con-aviso.md",
+    "status": "Aceptada"
   }
 ]

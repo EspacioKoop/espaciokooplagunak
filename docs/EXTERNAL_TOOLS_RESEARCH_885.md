@@ -59,8 +59,41 @@ Eso evitará exactamente los problemas de copyright que hemos encontrado en los 
 
 ---
 
+## Uso propuesto: inspiración para generación procedural
+
+El objetivo no es redistribuir estos recursos, sino usarlos como **semillas** para generadores propios de NPCs, encuentros, backstories, flavor text y catálogos de atmósferas.
+
+### Textos: Gutendex + Project Gutenberg
+Uso permitido: filtrar por `copyright=false` en Gutendex y derivar a `gutenberg.org/ebooks/<id>` para consulta local o generación de prompts. No copiar texto tal cual.
+
+Temas útiles y selección manual recomendada:
+
+| Tema Gutendex | Selección manual sugerida | Uso RPG sugerido |
+| --- | --- | --- |
+| `fairy tales` | *Arabian Nights*, *Undine* | backstories exóticas, motivaciones de NPCs, maldiciones |
+| `adventure` | *Moby Dick*, *The Secret of Chimneys* | viajes, obsesiones, tramas de intriga |
+| `mythology` | mitos griegos/egipcios/nórdicos en PG | linajes divinos, reliquias, profecías |
+| `horror` | *Dracula*, *Frankenstein*, *The Turn of the Screw* | villanos, localizaciones, atmosphere tables |
+| `science fiction` | *The Time Machine*, *The War of the Worlds* | trasfondo scifi, objetos anacrónicos, incursiones alienígenas |
+| medieval/romance | *Ivanhoe*, *Le Morte d'Arthur* | casas nobiliarias, torneos, reliquias |
+
+Regla: solo incluir una semilla en el generador si `gutenberg.org/ebooks/<id>` la marca como public domain en EE.UU.
+
+### Catálogo visual: ShareTextures
+Uso permitido: **diccionario de atmósferas**, no banco de assets redistribuibles.
+
+- Licencia: custom CC0-based, pero prohibe redistribución, hotlinking, embeddings automáticos y uso en plugins/colecciones sin permiso escrito.
+- Forma segura: extraer **nombres de categorías y atmósferas** (ej. `marble`, `plaster`, `lava`, `leather`, `iron`) para armar tablas de encuentros o descripciones de locales: *"la taberna tiene mostrador de mármol y suelo de yeso"*.
+- No descargues ni incluyas las texturas en el repo; cita como fuente de inspiración en `docs/FUENTES_EXTERNAS.md`.
+
+### Public Domain Review
+Uso permitido: **referencia de flavor/atlas**. La curación es valiosa, pero imágenes y textos pueden tener derechos derivados. Usar como índice hacia fuentes originales verificadas, no como contenido redistribuible.
+
+---
+
 ## Criterio de cierre
 
 - [x] 6 herramientas evaluadas con licencia verificada en fuente oficial.
 - [x] 6 propuestas concretas de integración/no integración.
 - [x] Decisión priorizada.
+- [x] Uso como inspiración para generación procedural definido para textos y texturas.

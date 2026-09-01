@@ -118,3 +118,19 @@ Referencia del proceso: `docs/PROCEDENCIA_ASSETS.md`.
 ## Nota de licencia
 
 Este PR es **solo investigación y selección**. No incorpora archivos binarios externos al árbol hasta que `PROCEDENCIA_ASSETS.md` valide cada uno. Reproducimos la regla del repo: **sin ficha, no entra**.
+
+## Créditos / agradecimiento (para cuando se incorpore)
+
+Si algún asset de este lote entra en el árbol, se añadirá una sección en `CREDITS.md` titulada:
+
+```
+## Agradecimientos por assets de dominio público
+
+Agradecemos a los autores de OpenGameArt.org por publicar sus trabajos bajo
+licencias de dominio público o equivalentes. Sus assets se usan bajo los
+términos de dichas licencias y se listan a continuación con su autor y URL:
+
+- <autor> — <asset> — <URL> — <licencia exacta>
+```
+
+Ningún asset se incorpora sin mención expresa en esa sección.

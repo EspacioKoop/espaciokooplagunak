@@ -26,8 +26,12 @@ def test_rechaza_coverage():
     assert mod.es_resto("coverage/lcov.info")
 
 
-def test_rechaza_el_lock_de_npm():
-    assert mod.es_resto("package-lock.json")
+def test_acepta_el_lock_raiz_reproducible():
+    assert not mod.es_resto("package-lock.json")
+
+
+def test_rechaza_un_lock_anidado():
+    assert mod.es_resto("tools/package-lock.json")
 
 
 def test_acepta_un_fichero_normal():

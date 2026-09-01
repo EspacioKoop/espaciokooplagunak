@@ -117,6 +117,33 @@
       "declaredBy": "Espaciokoop Lagunak",
       "declaredAt": "2026-09-02",
       "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/603"}
+    },
+    {
+      "module": "interaccion-3d/resolucion.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Motor de bandas fallo/éxito/crítico/pifia del contrato standalone de interacción con objetos 3D (#868), propio y sin vocabulario de d20 ni de dnd5e.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-09-01",
+      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/868"}
+    },
+    {
+      "module": "interaccion-3d/contrato.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Orquestación objeto → opciones → resolución → efecto de #868. No lo importa ninguna escena andable todavía: el consumidor es el vertical de terminal deteriorado y, después, el adaptador opcional Foundry/dnd5e de #869, que debe traducir ESTE contrato y no al revés.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-09-01",
+      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/868"}
+    },
+    {
+      "module": "interaccion-3d/terminal-deteriorado.mjs",
+      "status": "declared-orphan",
+      "foundation": false,
+      "reason": "Vertical de prueba del contrato de #868 (terminal deteriorado con tres aproximaciones). Demuestra que el contrato se resuelve completo sin Foundry ni dnd5e; colgarlo de una sala concreta es trabajo de escena, fuera del alcance de #868.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-09-01",
+      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/868"}
     }
   ],
   "artInventoryRationale": {

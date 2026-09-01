@@ -9,5 +9,6 @@
   { "id": "ADR-0008", "title": "Standalone-first: autoridad del núcleo", "path": "0008-standalone-first-autoridad-del-nucleo.md", "status": "Aceptada" },
   { "id": "ADR-0009", "title": "Modelo de permisos por puesto v1", "path": "0009-modelo-permisos-por-puesto-v1.md", "status": "Aceptada" },
   { "id": "ADR-0010", "title": "El hackeo se queda solo-nativo", "path": "0010-hackeo-solo-nativo.md", "status": "Aceptada" },
-  { "id": "ADR-0011", "title": "Riesgos de seguridad y defensa en profundidad", "path": "0011-riesgos-de-seguridad-y-defensa-en-profundidad.md", "status": "Propuesta" }
+  { "id": "ADR-0011", "title": "Riesgos de seguridad y defensa en profundidad", "path": "0011-riesgos-de-seguridad-y-defensa-en-profundidad.md", "status": "Propuesta" },
+  { "id": "ADR-0012", "title": "Puestos sin tripulación: degradado con aviso, sin automatización", "path": "0012-puestos-vacios-degradado-con-aviso.md", "status": "Aceptada" }
 ]

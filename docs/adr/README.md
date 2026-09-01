@@ -41,3 +41,4 @@ con [`index.schema.json`](index.schema.json).
 | [0009](0009-modelo-permisos-por-puesto-v1.md) | Modelo de permisos por puesto v1: formaliza sin migrar, no unifica con el motor nativo | Aceptada |
 | [0010](0010-hackeo-solo-nativo.md) | El hackeo se queda solo-nativo: no se expone a Lua ni al puente | Aceptada |
 | [0011](0011-riesgos-de-seguridad-y-defensa-en-profundidad.md) | Riesgos de seguridad del fork y defensa en profundidad | Propuesta |
+| [0012](0012-puestos-vacios-degradado-con-aviso.md) | Puestos sin tripulación: degradado con aviso, sin automatización | Aceptada |

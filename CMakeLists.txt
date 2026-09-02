@@ -778,6 +778,14 @@ if(BUILD_CONTENT_RESOURCE_TESTS)
     target_link_libraries(content_library_store_tests PRIVATE seriousproton)
     add_test(NAME content_library_store COMMAND content_library_store_tests)
 
+    add_executable(checkpoint_state_tests
+        tests/checkpointStateTests.cpp
+        src/content/checkpointState.cpp
+    )
+    target_include_directories(checkpoint_state_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+    target_link_libraries(checkpoint_state_tests PRIVATE seriousproton)
+    add_test(NAME checkpoint_state_codec COMMAND checkpoint_state_tests)
+
     add_executable(map_document_tests
         tests/mapDocumentTests.cpp
         src/content/mapDocument.cpp

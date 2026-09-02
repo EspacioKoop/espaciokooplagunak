@@ -62,3 +62,27 @@ msgid ""
 msgstr ""
 "La Itsaso 1 se ha perdido con toda su tripulación.\n"
 "La primera guardia termina aquí."
+
+msgctxt "Modo"
+msgid "Normal"
+msgstr "Normal"
+
+msgctxt "Modo"
+msgid "Partida cooperativa sin controles de QA."
+msgstr "Partida cooperativa sin controles de QA."
+
+msgctxt "Modo"
+msgid "Prueba individual"
+msgstr "Prueba individual"
+
+msgctxt "Modo"
+msgid "Anade controles de estado, restauracion y saltos de prueba en Tactical."
+msgstr "Añade controles de estado, restauración y saltos de prueba en Tactical."
+
+msgctxt "setting"
+msgid "Modo"
+msgstr "Modo"
+
+msgctxt "setting"
+msgid "Elige la experiencia normal o una ayuda opt-in para probar la mision en solitario desde Tactical."
+msgstr "Elige la experiencia normal o una ayuda opt-in para probar la misión en solitario desde Tactical."

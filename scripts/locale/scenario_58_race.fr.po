@@ -231,171 +231,171 @@ msgctxt "Sound"
 msgid "Start sound will be Pole Position beep"
 msgstr "Le son de départ est un bip de pole position."
 
-#: scripts/scenario_58_race.lua:72
+#: scripts/scenario_58_race.lua:71
 msgctxt "trade-comms"
 msgid "food"
 msgstr "nourriture"
 
-#: scripts/scenario_58_race.lua:73
+#: scripts/scenario_58_race.lua:72
 msgctxt "trade-comms"
 msgid "medicine"
 msgstr "medicaments"
 
-#: scripts/scenario_58_race.lua:74
+#: scripts/scenario_58_race.lua:73
 msgctxt "trade-comms"
 msgid "luxury"
 msgstr "produits de luxe"
 
-#: scripts/scenario_58_race.lua:75
+#: scripts/scenario_58_race.lua:74
 msgctxt "trade-comms"
 msgid "cobalt"
 msgstr "cobalt"
 
-#: scripts/scenario_58_race.lua:76
+#: scripts/scenario_58_race.lua:75
 msgctxt "trade-comms"
 msgid "dilithium"
 msgstr "dilithium"
 
-#: scripts/scenario_58_race.lua:77
+#: scripts/scenario_58_race.lua:76
 msgctxt "trade-comms"
 msgid "gold"
 msgstr "or"
 
-#: scripts/scenario_58_race.lua:78
+#: scripts/scenario_58_race.lua:77
 msgctxt "trade-comms"
 msgid "nickel"
 msgstr "nickel"
 
-#: scripts/scenario_58_race.lua:79
+#: scripts/scenario_58_race.lua:78
 msgctxt "trade-comms"
 msgid "platinum"
 msgstr "platine"
 
-#: scripts/scenario_58_race.lua:80
+#: scripts/scenario_58_race.lua:79
 msgctxt "trade-comms"
 msgid "tritanium"
 msgstr "tritanium"
 
-#: scripts/scenario_58_race.lua:81
+#: scripts/scenario_58_race.lua:80
 msgctxt "trade-comms"
 msgid "autodoc"
 msgstr "autodocs"
 
-#: scripts/scenario_58_race.lua:82
+#: scripts/scenario_58_race.lua:81
 msgctxt "trade-comms"
 msgid "android"
 msgstr "androïdes"
 
-#: scripts/scenario_58_race.lua:83
+#: scripts/scenario_58_race.lua:82
 msgctxt "trade-comms"
 msgid "battery"
 msgstr "batteries"
 
-#: scripts/scenario_58_race.lua:84
+#: scripts/scenario_58_race.lua:83
 msgctxt "trade-comms"
 msgid "beam"
 msgstr "faisceaux"
 
-#: scripts/scenario_58_race.lua:85
+#: scripts/scenario_58_race.lua:84
 msgctxt "trade-comms"
 msgid "circuit"
 msgstr "circuits"
 
-#: scripts/scenario_58_race.lua:86
+#: scripts/scenario_58_race.lua:85
 msgctxt "trade-comms"
 msgid "communication"
 msgstr "communication"
 
-#: scripts/scenario_58_race.lua:87
+#: scripts/scenario_58_race.lua:86
 msgctxt "trade-comms"
 msgid "filament"
 msgstr "filaments"
 
-#: scripts/scenario_58_race.lua:88
+#: scripts/scenario_58_race.lua:87
 msgctxt "trade-comms"
 msgid "impulse"
 msgstr "impulsion"
 
-#: scripts/scenario_58_race.lua:89
+#: scripts/scenario_58_race.lua:88
 msgctxt "trade-comms"
 msgid "lifter"
 msgstr "élévateurs"
 
-#: scripts/scenario_58_race.lua:90
+#: scripts/scenario_58_race.lua:89
 msgctxt "trade-comms"
 msgid "nanites"
 msgstr "nanites"
 
-#: scripts/scenario_58_race.lua:91
+#: scripts/scenario_58_race.lua:90
 msgctxt "trade-comms"
 msgid "optic"
 msgstr "optique"
 
-#: scripts/scenario_58_race.lua:92
+#: scripts/scenario_58_race.lua:91
 msgctxt "trade-comms"
 msgid "repulsor"
 msgstr "répulseurs"
 
-#: scripts/scenario_58_race.lua:93
+#: scripts/scenario_58_race.lua:92
 msgctxt "trade-comms"
 msgid "robotic"
 msgstr "robotique"
 
-#: scripts/scenario_58_race.lua:94
+#: scripts/scenario_58_race.lua:93
 msgctxt "trade-comms"
 msgid "sensor"
 msgstr "capteurs"
 
-#: scripts/scenario_58_race.lua:95
+#: scripts/scenario_58_race.lua:94
 msgctxt "trade-comms"
 msgid "shield"
 msgstr "boucliers"
 
-#: scripts/scenario_58_race.lua:96
+#: scripts/scenario_58_race.lua:95
 msgctxt "trade-comms"
 msgid "software"
 msgstr "logiciels"
 
-#: scripts/scenario_58_race.lua:97
+#: scripts/scenario_58_race.lua:96
 msgctxt "trade-comms"
 msgid "tractor"
 msgstr "tracteurs"
 
-#: scripts/scenario_58_race.lua:98
+#: scripts/scenario_58_race.lua:97
 msgctxt "trade-comms"
 msgid "transporter"
 msgstr "transporteurs"
 
-#: scripts/scenario_58_race.lua:99
+#: scripts/scenario_58_race.lua:98
 msgctxt "trade-comms"
 msgid "warp"
 msgstr "distorsion"
 
-#: scripts/scenario_58_race.lua:560
+#: scripts/scenario_58_race.lua:559
 #, fuzzy
 msgctxt "msgGM"
 msgid " (Kraylor)"
 msgstr " (Kraylors)"
 
-#: scripts/scenario_58_race.lua:562
+#: scripts/scenario_58_race.lua:561
 #, fuzzy
 msgctxt "msgGM"
 msgid " (Ktlitan)"
 msgstr " (Ktlitiens)"
 
-#: scripts/scenario_58_race.lua:564
+#: scripts/scenario_58_race.lua:563
 #, fuzzy, lua-format
 msgctxt "msgGM"
 msgid "%s: %s %s\n"
 msgstr "%s : %s %s\n"
 
-#: scripts/scenario_58_race.lua:571 scripts/scenario_58_race.lua:731
+#: scripts/scenario_58_race.lua:570 scripts/scenario_58_race.lua:730
 #, lua-format
 msgctxt "buttonGM"
 msgid "Version %s"
 msgstr "Version %s"
 
-#: scripts/scenario_58_race.lua:572 scripts/scenario_58_race.lua:732
+#: scripts/scenario_58_race.lua:571 scripts/scenario_58_race.lua:731
 #, lua-format
 msgctxt "msgGM"
 msgid ""
@@ -405,35 +405,35 @@ msgstr ""
 "Version de scénario %s\n"
 "Version LUA %s"
 
-#: scripts/scenario_58_race.lua:576 scripts/scenario_58_race.lua:736
+#: scripts/scenario_58_race.lua:575 scripts/scenario_58_race.lua:735
 msgctxt "buttonGM"
 msgid "Show control codes"
 msgstr "Codes de contrôle"
 
-#: scripts/scenario_58_race.lua:577
+#: scripts/scenario_58_race.lua:576
 msgctxt "buttonGM"
 msgid "Reset control codes"
 msgstr "Reset codes contrôle"
 
-#: scripts/scenario_58_race.lua:578
+#: scripts/scenario_58_race.lua:577
 #, fuzzy, lua-format
 msgctxt "buttonGM"
 msgid "+Start Delay: %i"
 msgstr "+ Délai avant départ : %is"
 
-#: scripts/scenario_58_race.lua:579
+#: scripts/scenario_58_race.lua:578
 #, fuzzy, lua-format
 msgctxt "buttonGM"
 msgid "+Patience: %i"
 msgstr "+ Réussite : %is"
 
-#: scripts/scenario_58_race.lua:581
+#: scripts/scenario_58_race.lua:580
 #, fuzzy
 msgctxt "buttonGM"
 msgid "Random PShip Names"
 msgstr "Noms vaisseaux aléat."
 
-#: scripts/scenario_58_race.lua:582
+#: scripts/scenario_58_race.lua:581
 #, fuzzy
 msgctxt "msgGM"
 msgid ""
@@ -443,48 +443,48 @@ msgstr ""
 "Les noms des vaisseaux joueurs seront sélectionnés au hasard.\n"
 "Les codes de contrôle seront générés aléatoirement."
 
-#: scripts/scenario_58_race.lua:587
+#: scripts/scenario_58_race.lua:586
 #, fuzzy
 msgctxt "buttonGM"
 msgid "+Shoot Back: "
 msgstr "+ Riposte cibles= "
 
-#: scripts/scenario_58_race.lua:589 scripts/scenario_58_race.lua:596
-#: scripts/scenario_58_race.lua:603
+#: scripts/scenario_58_race.lua:588 scripts/scenario_58_race.lua:595
+#: scripts/scenario_58_race.lua:602
 msgctxt "buttonGM"
 msgid "Yes"
 msgstr "Oui"
 
-#: scripts/scenario_58_race.lua:591 scripts/scenario_58_race.lua:598
-#: scripts/scenario_58_race.lua:605
+#: scripts/scenario_58_race.lua:590 scripts/scenario_58_race.lua:597
+#: scripts/scenario_58_race.lua:604
 msgctxt "buttonGM"
 msgid "No"
 msgstr "Non"
 
-#: scripts/scenario_58_race.lua:594
+#: scripts/scenario_58_race.lua:593
 #, fuzzy
 msgctxt "buttonGM"
 msgid "+Chase: "
 msgstr "+ Poursuite : "
 
-#: scripts/scenario_58_race.lua:601
+#: scripts/scenario_58_race.lua:600
 #, fuzzy
 msgctxt "buttonGM"
 msgid "+Hazards: "
 msgstr "+ Dangers : "
 
-#: scripts/scenario_58_race.lua:608
+#: scripts/scenario_58_race.lua:607
 msgctxt "buttonGM"
 msgid "Show Statistics"
 msgstr "Afficher statistiques"
 
-#: scripts/scenario_58_race.lua:609
+#: scripts/scenario_58_race.lua:608
 #, fuzzy
 msgctxt "msgGM"
 msgid "Not much to show since the game is still paused"
 msgstr "Pas grand chose à montrer puisque le jeu est toujours en pause."
 
-#: scripts/scenario_58_race.lua:612
+#: scripts/scenario_58_race.lua:611
 #, fuzzy, lua-format
 msgctxt "msgGM"
 msgid "Total player ships: %i"
@@ -492,107 +492,107 @@ msgstr ""
 "\n"
 "Vaisseaux joueurs inscrits : %i"
 
-#: scripts/scenario_58_race.lua:616
+#: scripts/scenario_58_race.lua:615
 #, lua-format
 msgctxt "msgGM"
 msgid "%2i Name:%s, Type:%s"
 msgstr "   %2i Nom : %s   Type : %s"
 
-#: scripts/scenario_58_race.lua:634
+#: scripts/scenario_58_race.lua:633
 msgctxt "buttonGM"
 msgid "-From Shoot Back"
 msgstr "- Précédent"
 
-#: scripts/scenario_58_race.lua:635
+#: scripts/scenario_58_race.lua:634
 #, fuzzy
 msgctxt "buttonGM"
 msgid "Shoot Back Yes"
 msgstr "Riposte = Oui"
 
-#: scripts/scenario_58_race.lua:637 scripts/scenario_58_race.lua:645
-#: scripts/scenario_58_race.lua:657 scripts/scenario_58_race.lua:665
-#: scripts/scenario_58_race.lua:677 scripts/scenario_58_race.lua:685
+#: scripts/scenario_58_race.lua:636 scripts/scenario_58_race.lua:644
+#: scripts/scenario_58_race.lua:656 scripts/scenario_58_race.lua:664
+#: scripts/scenario_58_race.lua:676 scripts/scenario_58_race.lua:684
 #, fuzzy
 msgctxt "buttonGM"
 msgid "*"
 msgstr "*"
 
-#: scripts/scenario_58_race.lua:643
+#: scripts/scenario_58_race.lua:642
 #, fuzzy
 msgctxt "buttonGM"
 msgid "Shoot Back No"
 msgstr "Riposte = Non"
 
-#: scripts/scenario_58_race.lua:654
+#: scripts/scenario_58_race.lua:653
 msgctxt "buttonGM"
 msgid "-From Chase"
 msgstr "- Précédent"
 
-#: scripts/scenario_58_race.lua:655
+#: scripts/scenario_58_race.lua:654
 #, fuzzy
 msgctxt "buttonGM"
 msgid "Chase Yes"
 msgstr "Poursuite = Oui"
 
-#: scripts/scenario_58_race.lua:663
+#: scripts/scenario_58_race.lua:662
 #, fuzzy
 msgctxt "buttonGM"
 msgid "Chase No"
 msgstr "Poursuite = Non"
 
-#: scripts/scenario_58_race.lua:674
+#: scripts/scenario_58_race.lua:673
 msgctxt "buttonGM"
 msgid "-From Hazards"
 msgstr "- Précédent"
 
-#: scripts/scenario_58_race.lua:675
+#: scripts/scenario_58_race.lua:674
 #, fuzzy
 msgctxt "buttonGM"
 msgid "Hazards Yes"
 msgstr "Dangers = Oui"
 
-#: scripts/scenario_58_race.lua:683
+#: scripts/scenario_58_race.lua:682
 #, fuzzy
 msgctxt "buttonGM"
 msgid "Hazards No"
 msgstr "Dangers = Non"
 
-#: scripts/scenario_58_race.lua:694 scripts/scenario_58_race.lua:712
+#: scripts/scenario_58_race.lua:693 scripts/scenario_58_race.lua:711
 #, fuzzy
 msgctxt "buttonGM"
 msgid "-Main"
 msgstr "- Précédent"
 
-#: scripts/scenario_58_race.lua:696
+#: scripts/scenario_58_race.lua:695
 #, fuzzy, lua-format
 msgctxt "buttonGM"
 msgid "%i Patience + -> %i"
 msgstr "%i Réussite + -> %i"
 
-#: scripts/scenario_58_race.lua:703
+#: scripts/scenario_58_race.lua:702
 #, fuzzy, lua-format
 msgctxt "buttonGM"
 msgid "%i Patience - -> %i"
 msgstr "%i Réussite - -> %i"
 
-#: scripts/scenario_58_race.lua:714
+#: scripts/scenario_58_race.lua:713
 #, fuzzy, lua-format
 msgctxt "buttonGM"
 msgid "%i Delay + -> %i"
 msgstr "Délai : %imn -> %imn"
 
-#: scripts/scenario_58_race.lua:721
+#: scripts/scenario_58_race.lua:720
 #, fuzzy, lua-format
 msgctxt "buttonGM"
 msgid "%i Delay - -> %i"
 msgstr "Délai : %imn -> %imn"
 
-#: scripts/scenario_58_race.lua:737
+#: scripts/scenario_58_race.lua:736
 msgctxt "buttonGM"
 msgid "Show statistics"
 msgstr "Afficher statistiques"
 
-#: scripts/scenario_58_race.lua:739
+#: scripts/scenario_58_race.lua:738
 #, fuzzy
 msgctxt "msgGM"
 msgid ""
@@ -604,31 +604,31 @@ msgstr ""
 "Vaisseau : État     Tours de course     Marqueurs atteints     points de "
 "drone"
 
-#: scripts/scenario_58_race.lua:743
+#: scripts/scenario_58_race.lua:742
 #, fuzzy
 msgctxt "msgGM"
 msgid "alive, "
 msgstr "En course    "
 
-#: scripts/scenario_58_race.lua:745
+#: scripts/scenario_58_race.lua:744
 #, fuzzy
 msgctxt "msgGM"
 msgid "dead, "
 msgstr "éliminé    "
 
-#: scripts/scenario_58_race.lua:748
+#: scripts/scenario_58_race.lua:747
 #, fuzzy
 msgctxt "msgGM"
 msgid ", "
 msgstr ", "
 
-#: scripts/scenario_58_race.lua:755
+#: scripts/scenario_58_race.lua:754
 #, fuzzy, lua-format
 msgctxt "msgGM"
 msgid "%s%i, %i, %i"
 msgstr "%s        %i        %i        %i"
 
-#: scripts/scenario_58_race.lua:759
+#: scripts/scenario_58_race.lua:758
 #, fuzzy, lua-format
 msgctxt "msgGM"
 msgid ""
@@ -641,7 +641,7 @@ msgstr ""
 "Avec %i coureurs, les places finales se voient attribuées les points "
 "suivants :"
 
-#: scripts/scenario_58_race.lua:761
+#: scripts/scenario_58_race.lua:760
 #, lua-format
 msgctxt "msgGM"
 msgid ""
@@ -655,67 +655,67 @@ msgstr ""
 "Avec %i coureurs au départ sur les %i inscrits, les points suivants seront "
 "attribués pour le classement final :"
 
-#: scripts/scenario_58_race.lua:764
+#: scripts/scenario_58_race.lua:763
 #, fuzzy
 msgctxt "msgGM"
 msgid "First"
 msgstr "1er"
 
-#: scripts/scenario_58_race.lua:765
+#: scripts/scenario_58_race.lua:764
 #, fuzzy
 msgctxt "msgGM"
 msgid "Second"
 msgstr "2ème"
 
-#: scripts/scenario_58_race.lua:766
+#: scripts/scenario_58_race.lua:765
 #, fuzzy
 msgctxt "msgGM"
 msgid "Third"
 msgstr "3ème"
 
-#: scripts/scenario_58_race.lua:767
+#: scripts/scenario_58_race.lua:766
 #, fuzzy
 msgctxt "msgGM"
 msgid "Fourth"
 msgstr "4ème"
 
-#: scripts/scenario_58_race.lua:768
+#: scripts/scenario_58_race.lua:767
 #, fuzzy
 msgctxt "msgGM"
 msgid "Fifth"
 msgstr "5ème"
 
-#: scripts/scenario_58_race.lua:769
+#: scripts/scenario_58_race.lua:768
 #, fuzzy
 msgctxt "msgGM"
 msgid "Sixth"
 msgstr "6ème"
 
-#: scripts/scenario_58_race.lua:770
+#: scripts/scenario_58_race.lua:769
 #, fuzzy
 msgctxt "msgGM"
 msgid "Seventh"
 msgstr "7ème"
 
-#: scripts/scenario_58_race.lua:771
+#: scripts/scenario_58_race.lua:770
 #, fuzzy
 msgctxt "msgGM"
 msgid "Eighth"
 msgstr "8ème"
 
-#: scripts/scenario_58_race.lua:772
+#: scripts/scenario_58_race.lua:771
 #, fuzzy
 msgctxt "msgGM"
 msgid "Ninth"
 msgstr "9ème"
 
-#: scripts/scenario_58_race.lua:773
+#: scripts/scenario_58_race.lua:772
 #, fuzzy
 msgctxt "msgGM"
 msgid "Tenth"
 msgstr "10ème"
 
-#: scripts/scenario_58_race.lua:777
+#: scripts/scenario_58_race.lua:776
 #, fuzzy, lua-format
 msgctxt "msgGM"
 msgid ""
@@ -725,13 +725,13 @@ msgstr ""
 "%s\n"
 "  %s : %s"
 
-#: scripts/scenario_58_race.lua:785
+#: scripts/scenario_58_race.lua:784
 #, fuzzy
 msgctxt "buttonGM"
 msgid "Show final results"
 msgstr "Afficher l'arrivée"
 
-#: scripts/scenario_58_race.lua:786
+#: scripts/scenario_58_race.lua:785
 msgctxt "msgGM"
 msgid ""
 "Final results:\n"
@@ -745,63 +745,63 @@ msgstr ""
 "\n"
 "CLASSEMENT LIGNE D'ARRIVÉE :\n"
 
-#: scripts/scenario_58_race.lua:801
+#: scripts/scenario_58_race.lua:800
 #, fuzzy
 msgctxt "scienceDescription-station"
 msgid "Race Timing Facility"
 msgstr "Mise en place du chronométrage des courses"
 
-#: scripts/scenario_58_race.lua:1041 scripts/scenario_58_race.lua:1042
-#: scripts/scenario_58_race.lua:1043 scripts/scenario_58_race.lua:1048
-#: scripts/scenario_58_race.lua:1049 scripts/scenario_58_race.lua:1050
-#: scripts/scenario_58_race.lua:1055 scripts/scenario_58_race.lua:1056
-#: scripts/scenario_58_race.lua:1057 scripts/scenario_58_race.lua:1062
-#: scripts/scenario_58_race.lua:1063 scripts/scenario_58_race.lua:1064
-#: scripts/scenario_58_race.lua:1069 scripts/scenario_58_race.lua:1070
-#: scripts/scenario_58_race.lua:1071 scripts/scenario_58_race.lua:1076
-#: scripts/scenario_58_race.lua:1077 scripts/scenario_58_race.lua:1078
+#: scripts/scenario_58_race.lua:1040 scripts/scenario_58_race.lua:1041
+#: scripts/scenario_58_race.lua:1042 scripts/scenario_58_race.lua:1047
+#: scripts/scenario_58_race.lua:1048 scripts/scenario_58_race.lua:1049
+#: scripts/scenario_58_race.lua:1054 scripts/scenario_58_race.lua:1055
+#: scripts/scenario_58_race.lua:1056 scripts/scenario_58_race.lua:1061
+#: scripts/scenario_58_race.lua:1062 scripts/scenario_58_race.lua:1063
+#: scripts/scenario_58_race.lua:1068 scripts/scenario_58_race.lua:1069
+#: scripts/scenario_58_race.lua:1070 scripts/scenario_58_race.lua:1075
+#: scripts/scenario_58_race.lua:1076 scripts/scenario_58_race.lua:1077
 #, fuzzy
 msgctxt "scienceDescription-artifact"
 msgid "Unusual object"
 msgstr "Objet insolite"
+
+#: scripts/scenario_58_race.lua:1040 scripts/scenario_58_race.lua:1047
+#: scripts/scenario_58_race.lua:1054 scripts/scenario_58_race.lua:1061
+#: scripts/scenario_58_race.lua:1068 scripts/scenario_58_race.lua:1075
+#, fuzzy
+msgctxt "scienceDescription-artifact"
+msgid "Artifact with quantum biometric characteristics"
+msgstr "Artefact aux caractéristiques biométriques quantiques"
 
 #: scripts/scenario_58_race.lua:1041 scripts/scenario_58_race.lua:1048
 #: scripts/scenario_58_race.lua:1055 scripts/scenario_58_race.lua:1062
 #: scripts/scenario_58_race.lua:1069 scripts/scenario_58_race.lua:1076
 #, fuzzy
 msgctxt "scienceDescription-artifact"
-msgid "Artifact with quantum biometric characteristics"
-msgstr "Artefact aux caractéristiques biométriques quantiques"
+msgid "Artifact with embedded chroniton particles"
+msgstr "Artefact avec des particules de chroniton intégrées"
 
 #: scripts/scenario_58_race.lua:1042 scripts/scenario_58_race.lua:1049
 #: scripts/scenario_58_race.lua:1056 scripts/scenario_58_race.lua:1063
 #: scripts/scenario_58_race.lua:1070 scripts/scenario_58_race.lua:1077
 #, fuzzy
 msgctxt "scienceDescription-artifact"
-msgid "Artifact with embedded chroniton particles"
-msgstr "Artefact avec des particules de chroniton intégrées"
-
-#: scripts/scenario_58_race.lua:1043 scripts/scenario_58_race.lua:1050
-#: scripts/scenario_58_race.lua:1057 scripts/scenario_58_race.lua:1064
-#: scripts/scenario_58_race.lua:1071 scripts/scenario_58_race.lua:1078
-#, fuzzy
-msgctxt "scienceDescription-artifact"
 msgid "Artifact bridging two parallel universes"
 msgstr "Artefact reliant deux univers parallèles"
 
-#: scripts/scenario_58_race.lua:1108
+#: scripts/scenario_58_race.lua:1107
 #, fuzzy
 msgctxt "scienceDescription-planet"
 msgid "Lush planet with only mild seasonal variations"
 msgstr "Planète luxuriante avec seulement de légères variations saisonnières"
 
-#: scripts/scenario_58_race.lua:1242
+#: scripts/scenario_58_race.lua:1241
 #, fuzzy
 msgctxt "upgrade-comms"
 msgid "jump drive"
 msgstr "Portée de la téléportation"
 
-#: scripts/scenario_58_race.lua:1242
+#: scripts/scenario_58_race.lua:1241
 #, fuzzy
 msgctxt "upgrade-comms"
 msgid ""
@@ -810,13 +810,13 @@ msgstr ""
 "Avec les composants nanites ou robotique, nous pouvons améliorer la portée "
 "maximale de votre moteur de téléportation."
 
-#: scripts/scenario_58_race.lua:1243
+#: scripts/scenario_58_race.lua:1242
 #, fuzzy
 msgctxt "upgrade-comms"
 msgid "impulse drive"
 msgstr "Vitesse des moteurs à impulsion"
 
-#: scripts/scenario_58_race.lua:1243
+#: scripts/scenario_58_race.lua:1242
 #, fuzzy, lua-format
 msgctxt "upgrade-comms"
 msgid ""
@@ -826,13 +826,13 @@ msgstr ""
 "Nous pouvons augmenter la vitesse de vos moteurs à impulsion de %.2f%% avec "
 "du tritanium ou du dilithium."
 
-#: scripts/scenario_58_race.lua:1244
+#: scripts/scenario_58_race.lua:1243
 #, fuzzy
 msgctxt "upgrade-comms"
 msgid "maneuver"
 msgstr "Vitesse de la manœuvre"
 
-#: scripts/scenario_58_race.lua:1244
+#: scripts/scenario_58_race.lua:1243
 #, fuzzy, lua-format
 msgctxt "upgrade-comms"
 msgid "We can increase the your rotate speed by %.2f percent for %s"
@@ -840,13 +840,13 @@ msgstr ""
 "Nous pouvons augmenter la vitesse de rotation de votre vaisseau de %.2f%% "
 "avec le composant suivant : %s."
 
-#: scripts/scenario_58_race.lua:1245
+#: scripts/scenario_58_race.lua:1244
 #, fuzzy
 msgctxt "upgrade-comms"
 msgid "beam range"
 msgstr "Portée des faisceaux laser"
 
-#: scripts/scenario_58_race.lua:1245
+#: scripts/scenario_58_race.lua:1244
 #, fuzzy, lua-format
 msgctxt "upgrade-comms"
 msgid "We can increase the range of your beam weapons by %.2f percent for %s"
@@ -854,13 +854,13 @@ msgstr ""
 "Nous pouvons augmenter la portée de vos faisceaux laser de %.2f%% avec le "
 "composant suivant : %s."
 
-#: scripts/scenario_58_race.lua:1246
+#: scripts/scenario_58_race.lua:1245
 #, fuzzy
 msgctxt "upgrade-comms"
 msgid "extra missile tube"
 msgstr "Ajout d'1 tube lance-missile"
 
-#: scripts/scenario_58_race.lua:1246
+#: scripts/scenario_58_race.lua:1245
 #, fuzzy, lua-format
 msgctxt "upgrade-comms"
 msgid "We can add a homing missile tube to your ship for %s"
@@ -868,25 +868,25 @@ msgstr ""
 "Nous pouvons ajouter un tube lance-missiles à tête chercheuse (homing) "
 "supplémentaire à votre vaisseau avec du %s."
 
-#: scripts/scenario_58_race.lua:1247
+#: scripts/scenario_58_race.lua:1246
 #, fuzzy
 msgctxt "upgrade-comms"
 msgid "shield"
 msgstr "Puissance des boucliers"
 
-#: scripts/scenario_58_race.lua:1247
+#: scripts/scenario_58_race.lua:1246
 #, fuzzy, lua-format
 msgctxt "upgrade-comms"
 msgid "We can upgrade your shields by %.2f percent for %s"
 msgstr "Nous pouvons améliorer vos boucliers de %.2f%% avec du %s."
 
-#: scripts/scenario_58_race.lua:1248
+#: scripts/scenario_58_race.lua:1247
 #, fuzzy
 msgctxt "upgrade-comms"
 msgid "energy capacity"
 msgstr "Énergie"
 
-#: scripts/scenario_58_race.lua:1248
+#: scripts/scenario_58_race.lua:1247
 #, fuzzy, lua-format
 msgctxt "upgrade-comms"
 msgid "We can upgrade your energy capacity by 25 percent for %s"
@@ -894,14 +894,14 @@ msgstr ""
 "Nous pouvons améliorer votre capacité énergétique de 25%% avec le composant "
 "suivant : %s."
 
-#: scripts/scenario_58_race.lua:1627
+#: scripts/scenario_58_race.lua:1626
 #, fuzzy
 msgctxt "station-comms"
 msgid "We are under attack! No time for chatting!"
 msgstr ""
 "Nous sommes en train de nous faire attaquer ! Pas le temps de discuter !"
 
-#: scripts/scenario_58_race.lua:1639
+#: scripts/scenario_58_race.lua:1638
 #, fuzzy
 msgctxt "station-comms"
 msgid ""
@@ -911,7 +911,7 @@ msgstr ""
 "Bonjour officier !\n"
 "Que pouvons-nous faire pour vous aujourd'hui ?\n"
 
-#: scripts/scenario_58_race.lua:1641
+#: scripts/scenario_58_race.lua:1640
 #, fuzzy
 msgctxt "station-comms"
 msgid "Welcome to our lovely station.\n"
@@ -919,7 +919,7 @@ msgstr ""
 "Bienvenue sur notre charmante petite station.\n"
 "Que pouvons-nous faire pour vous ?\n"
 
-#: scripts/scenario_58_race.lua:1644
+#: scripts/scenario_58_race.lua:1643
 #, fuzzy
 msgctxt "station-comms"
 msgid ""
@@ -929,30 +929,30 @@ msgstr ""
 "Veuillez nous excuser si nous semblons un peu distraits. Nous surveillons "
 "attentivement les ennemis à proximité."
 
-#: scripts/scenario_58_race.lua:1653
+#: scripts/scenario_58_race.lua:1652
 #, fuzzy
 msgctxt "ammo-comms"
 msgid "I need ordnance restocked"
 msgstr "Nous aurions besoin de nous réapprovisionner en munitions"
 
-#: scripts/scenario_58_race.lua:1654
+#: scripts/scenario_58_race.lua:1653
 #, fuzzy
 msgctxt "ammo-comms"
 msgid "What type of ordnance?"
 msgstr "Quel type de munitions ?"
 
-#: scripts/scenario_58_race.lua:1657
+#: scripts/scenario_58_race.lua:1656
 #, fuzzy, lua-format
 msgctxt "ammo-comms"
 msgid "%s (%d rep each)"
 msgstr "%s (%d rép l'unité)"
 
-#: scripts/scenario_58_race.lua:1665 scripts/scenario_58_race.lua:2430
+#: scripts/scenario_58_race.lua:1664 scripts/scenario_58_race.lua:2398
 msgctxt "orders-comms"
 msgid "What are my current orders?"
 msgstr "Quels sont nos ordres en cours ?"
 
-#: scripts/scenario_58_race.lua:1668 scripts/scenario_58_race.lua:2433
+#: scripts/scenario_58_race.lua:1667 scripts/scenario_58_race.lua:2401
 #, fuzzy, lua-format
 msgctxt "orders-comms"
 msgid ""
@@ -962,7 +962,7 @@ msgstr ""
 "\n"
 "    - %i secondes jusqu'au début de la course."
 
-#: scripts/scenario_58_race.lua:1671 scripts/scenario_58_race.lua:2436
+#: scripts/scenario_58_race.lua:1670 scripts/scenario_58_race.lua:2404
 #, fuzzy, lua-format
 msgctxt "orders-comms"
 msgid ""
@@ -972,46 +972,46 @@ msgstr ""
 "\n"
 "Objectif immédiat : marqueur de course %i"
 
-#: scripts/scenario_58_race.lua:1675 scripts/scenario_58_race.lua:1687
-#: scripts/scenario_58_race.lua:1738 scripts/scenario_58_race.lua:2029
-#: scripts/scenario_58_race.lua:2059 scripts/scenario_58_race.lua:2091
-#: scripts/scenario_58_race.lua:2123 scripts/scenario_58_race.lua:2129
-#: scripts/scenario_58_race.lua:2361 scripts/scenario_58_race.lua:2373
-#: scripts/scenario_58_race.lua:2401 scripts/scenario_58_race.lua:2417
-#: scripts/scenario_58_race.lua:2426 scripts/scenario_58_race.lua:2440
-#: scripts/scenario_58_race.lua:2464 scripts/scenario_58_race.lua:2470
-#: scripts/scenario_58_race.lua:2476 scripts/scenario_58_race.lua:2483
-#: scripts/scenario_58_race.lua:2505 scripts/scenario_58_race.lua:2509
-#: scripts/scenario_58_race.lua:2526 scripts/scenario_58_race.lua:2530
-#: scripts/scenario_58_race.lua:2585 scripts/scenario_58_race.lua:2592
-#: scripts/scenario_58_race.lua:2601 scripts/scenario_58_race.lua:2624
-#: scripts/scenario_58_race.lua:2631 scripts/scenario_58_race.lua:2676
-#: scripts/scenario_58_race.lua:2688 scripts/scenario_58_race.lua:2715
-#: scripts/scenario_58_race.lua:2722 scripts/scenario_58_race.lua:2745
-#: scripts/scenario_58_race.lua:2761 scripts/scenario_58_race.lua:2786
-#: scripts/scenario_58_race.lua:2812 scripts/scenario_58_race.lua:2843
+#: scripts/scenario_58_race.lua:1674 scripts/scenario_58_race.lua:1686
+#: scripts/scenario_58_race.lua:1706 scripts/scenario_58_race.lua:1997
+#: scripts/scenario_58_race.lua:2027 scripts/scenario_58_race.lua:2059
+#: scripts/scenario_58_race.lua:2091 scripts/scenario_58_race.lua:2097
+#: scripts/scenario_58_race.lua:2329 scripts/scenario_58_race.lua:2341
+#: scripts/scenario_58_race.lua:2369 scripts/scenario_58_race.lua:2385
+#: scripts/scenario_58_race.lua:2394 scripts/scenario_58_race.lua:2408
+#: scripts/scenario_58_race.lua:2432 scripts/scenario_58_race.lua:2438
+#: scripts/scenario_58_race.lua:2444 scripts/scenario_58_race.lua:2451
+#: scripts/scenario_58_race.lua:2473 scripts/scenario_58_race.lua:2477
+#: scripts/scenario_58_race.lua:2494 scripts/scenario_58_race.lua:2498
+#: scripts/scenario_58_race.lua:2553 scripts/scenario_58_race.lua:2560
+#: scripts/scenario_58_race.lua:2569 scripts/scenario_58_race.lua:2592
+#: scripts/scenario_58_race.lua:2599 scripts/scenario_58_race.lua:2644
+#: scripts/scenario_58_race.lua:2656 scripts/scenario_58_race.lua:2683
+#: scripts/scenario_58_race.lua:2690 scripts/scenario_58_race.lua:2713
+#: scripts/scenario_58_race.lua:2729 scripts/scenario_58_race.lua:2754
+#: scripts/scenario_58_race.lua:2780 scripts/scenario_58_race.lua:2811
 #, fuzzy
 msgid "Back"
 msgstr "Précédent"
 
-#: scripts/scenario_58_race.lua:1678 scripts/scenario_58_race.lua:2392
+#: scripts/scenario_58_race.lua:1677 scripts/scenario_58_race.lua:2360
 msgctxt "upgrade-comms"
 msgid "Do you upgrade spaceships?"
 msgstr "Effectuez-vous des mises à niveau des vaisseaux spatiaux ?"
 
-#: scripts/scenario_58_race.lua:1684 scripts/scenario_58_race.lua:2398
+#: scripts/scenario_58_race.lua:1683 scripts/scenario_58_race.lua:2366
 #, fuzzy
 msgctxt "upgrade-comms"
 msgid "We don't upgrade spaceships"
 msgstr "Navré, nous n'effectuons aucune mise à niveau sur notre station."
 
-#: scripts/scenario_58_race.lua:1689
+#: scripts/scenario_58_race.lua:1688
 #, fuzzy
 msgctxt "cartographyOffice-comms"
 msgid "Visit cartography office"
 msgstr "Consulter le bureau de cartographie"
 
-#: scripts/scenario_58_race.lua:1693
+#: scripts/scenario_58_race.lua:1692
 #, fuzzy
 msgctxt "cartographyOffice-comms"
 msgid ""
@@ -1021,7 +1021,7 @@ msgstr ""
 "...L'employée derrière son bureau vous regarde brièvement, puis se remet à "
 "se limer les ongles."
 
-#: scripts/scenario_58_race.lua:1695
+#: scripts/scenario_58_race.lua:1694
 #, fuzzy
 msgctxt "cartographyOffice-comms"
 msgid ""
@@ -1031,7 +1031,7 @@ msgstr ""
 "...L'employée derrière son bureau vous examine d'un regard intrigué, puis se "
 "remet à toiletter ses tentacules."
 
-#: scripts/scenario_58_race.lua:1697
+#: scripts/scenario_58_race.lua:1696
 #, fuzzy
 msgctxt "cartographyOffice-comms"
 msgid ""
@@ -1041,7 +1041,7 @@ msgstr ""
 "...L'employée derrière son bureau jette un rapide coup d'œil sur vous puis "
 "se remet aussitôt à son passe-temps : se lisser les plumes."
 
-#: scripts/scenario_58_race.lua:1700
+#: scripts/scenario_58_race.lua:1699
 msgctxt "cartographyOffice-comms"
 msgid ""
 "Without looking at you, the clerk tells you that the cartographers are out "
@@ -1058,7 +1058,7 @@ msgstr ""
 "\n"
 "Liste stations : (secteur, station, mise à niveau)"
 
-#: scripts/scenario_58_race.lua:1704
+#: scripts/scenario_58_race.lua:1702
 #, fuzzy, lua-format
 msgctxt "upgrade-comms"
 msgid ""
@@ -1068,62 +1068,13 @@ msgstr ""
 "%s\n"
 " - %s, %s : %s"
 
-#: scripts/scenario_58_race.lua:1708
-#, fuzzy
-msgctxt "cartographyOffice-comms"
-msgid ""
-"Without looking at you, the clerk tells you that the cartographers are out "
-"of the office for the race. They left this list of neutral station locations "
-"in the area and what goods they might sell for any racer that dropped by:"
-msgstr ""
-"\n"
-"...Sans vous regarder, le commis vous annonce que les cartographes sont "
-"absents du bureau le temps de la course et vous tend un papier.\n"
-"\n"
-"[Commis]\n"
-"Tenez. Ils ont laissé cette liste de stations qui fournissent des "
-"améliorations à tout participant qui passerait :\n"
-"\n"
-"Liste stations : (secteur, station, mise à niveau)"
-
-#: scripts/scenario_58_race.lua:1711
-#, fuzzy, lua-format
-msgctxt "cartographyOffice-comms"
-msgid ""
-"%s\n"
-"%s %s"
-msgstr ""
-"%s\n"
-"%s %s"
-
-#: scripts/scenario_58_race.lua:1713 scripts/scenario_58_race.lua:1716
-#: scripts/scenario_58_race.lua:1730
-#, lua-format
-msgctxt "cartographyOffice-comms"
-msgid "%s: none"
-msgstr ""
-
-#: scripts/scenario_58_race.lua:1722
-#, fuzzy, lua-format
-msgctxt "cartographyOffice-comms"
-msgid "%s, %s"
-msgstr "%s, %s"
-
-#: scripts/scenario_58_race.lua:1724
-#, fuzzy, lua-format
-msgctxt "cartographyOffice-comms"
-msgid "%s: %s"
-msgstr ""
-"%s\n"
-"%s : %s"
-
-#: scripts/scenario_58_race.lua:1737
+#: scripts/scenario_58_race.lua:1705
 #, fuzzy, lua-format
 msgctxt "cartographyOffice-comms"
 msgid "%s %s"
 msgstr "%s %s"
 
-#: scripts/scenario_58_race.lua:1750
+#: scripts/scenario_58_race.lua:1718
 #, fuzzy, lua-format
 msgctxt "trade-comms"
 msgid ""
@@ -1133,7 +1084,7 @@ msgstr ""
 "%s\n"
 "     x%s %s : %s rép l'unité."
 
-#: scripts/scenario_58_race.lua:1758
+#: scripts/scenario_58_race.lua:1726
 #, fuzzy, lua-format
 msgctxt "trade-comms"
 msgid ""
@@ -1143,12 +1094,12 @@ msgstr ""
 "%s\n"
 "%s : %s"
 
-#: scripts/scenario_58_race.lua:1763 scripts/scenario_58_race.lua:1976
+#: scripts/scenario_58_race.lua:1731 scripts/scenario_58_race.lua:1944
 msgctxt "trade-comms"
 msgid "Buy, sell, trade"
 msgstr "Acheter, vendre, échanger"
 
-#: scripts/scenario_58_race.lua:1764
+#: scripts/scenario_58_race.lua:1732
 #, lua-format
 msgctxt "trade-comms"
 msgid "Goods or components available for sale here:%s"
@@ -1156,7 +1107,7 @@ msgstr ""
 "Station :\n"
 "- Marchandises à vendre : (quantité, coût en réputation) : %s"
 
-#: scripts/scenario_58_race.lua:1766
+#: scripts/scenario_58_race.lua:1734
 #, fuzzy, lua-format
 msgctxt "trade-comms"
 msgid ""
@@ -1167,7 +1118,7 @@ msgstr ""
 "Notre vaisseau :\n"
 "- Marchandises à bord : (quantité) %s\n"
 
-#: scripts/scenario_58_race.lua:1768
+#: scripts/scenario_58_race.lua:1736
 #, fuzzy, lua-format
 msgctxt "trade-comms"
 msgid ""
@@ -1179,7 +1130,7 @@ msgstr ""
 "- Marchandises à bord :\n"
 "     La soute est vide."
 
-#: scripts/scenario_58_race.lua:1770
+#: scripts/scenario_58_race.lua:1738
 #, lua-format
 msgctxt "trade-comms"
 msgid ""
@@ -1189,19 +1140,19 @@ msgstr ""
 "%s\n"
 "- Espace disponible : %i slots"
 
-#: scripts/scenario_58_race.lua:1776
+#: scripts/scenario_58_race.lua:1744
 #, lua-format
 msgctxt "trade-comms"
 msgid "Buy a %s for %s reputation"
 msgstr "Acheter 1 %s pour %s rép"
 
-#: scripts/scenario_58_race.lua:1778
+#: scripts/scenario_58_race.lua:1746
 #, fuzzy
 msgctxt "trade-comms"
 msgid "You have to be docked to complete the transaction."
 msgstr "Vous devez rester amarré à la station pour terminer cette transaction."
 
-#: scripts/scenario_58_race.lua:1782
+#: scripts/scenario_58_race.lua:1750
 #, fuzzy, lua-format
 msgctxt "trade-comms"
 msgid "Not enough room on %s to purchase %s"
@@ -1209,13 +1160,13 @@ msgstr ""
 "Votre espace de stockage sur %s est insuffisant pour acheter la marchandise "
 "%s."
 
-#: scripts/scenario_58_race.lua:1784
+#: scripts/scenario_58_race.lua:1752
 #, fuzzy, lua-format
 msgctxt "trade-comms"
 msgid "%s ran out of %s."
 msgstr "%s n'a plus de %s."
 
-#: scripts/scenario_58_race.lua:1795
+#: scripts/scenario_58_race.lua:1763
 #, fuzzy, lua-format
 msgctxt "trade-comms"
 msgid "One %s purchased"
@@ -1224,67 +1175,67 @@ msgstr ""
 "\n"
 "1 marchandise achetée."
 
-#: scripts/scenario_58_race.lua:1797
+#: scripts/scenario_58_race.lua:1765
 #, fuzzy
 msgctxt "trade-comms"
 msgid "Insufficient reputation"
 msgstr "Réputation insuffisante."
 
-#: scripts/scenario_58_race.lua:1826
+#: scripts/scenario_58_race.lua:1794
 #, fuzzy, lua-format
 msgctxt "trade-comms"
 msgid "Accept %s for removing asteroid"
 msgstr "Accepter du %s pour supprimer l'astéroïde"
 
-#: scripts/scenario_58_race.lua:1836 scripts/scenario_58_race.lua:1880
+#: scripts/scenario_58_race.lua:1804 scripts/scenario_58_race.lua:1848
 #, fuzzy, lua-format
 msgctxt "trade-comms"
 msgid "One %s obtained"
 msgstr "Un %s obtenu."
 
-#: scripts/scenario_58_race.lua:1845
+#: scripts/scenario_58_race.lua:1813
 #, fuzzy
 msgctxt "trade-comms"
 msgid "Where's the asteroid you want us to remove?"
 msgstr "Où se trouve l'astéroïde que vous voulez que l'on supprime ?"
 
-#: scripts/scenario_58_race.lua:1848
+#: scripts/scenario_58_race.lua:1816
 #, fuzzy, lua-format
 msgctxt "trade-comms"
 msgid "Bearing %.1f, distance %.1fu from %s"
 msgstr "Cap %.1f° et distance %.1fu depuis %s."
 
-#: scripts/scenario_58_race.lua:1906 scripts/scenario_58_race.lua:1939
+#: scripts/scenario_58_race.lua:1874 scripts/scenario_58_race.lua:1907
 #, fuzzy
 msgctxt "trade-comms"
 msgid "Can I get goods without spending reputation?"
 msgstr "Puis-je obtenir des marchandises sans dépenser de réputation ?"
 
-#: scripts/scenario_58_race.lua:1907
+#: scripts/scenario_58_race.lua:1875
 #, fuzzy
 msgctxt "trade-comms"
 msgid "We could give you"
 msgstr "Nous pourrions vous donner"
 
-#: scripts/scenario_58_race.lua:1914
+#: scripts/scenario_58_race.lua:1882
 #, fuzzy, lua-format
 msgctxt "trade-comms"
 msgid "%s, %s"
 msgstr "%s, %s"
 
-#: scripts/scenario_58_race.lua:1917
+#: scripts/scenario_58_race.lua:1885
 #, fuzzy, lua-format
 msgctxt "trade-comms"
 msgid "%s one of these (%s)"
 msgstr "%s l'un d'entre eux (%s)"
 
-#: scripts/scenario_58_race.lua:1919
+#: scripts/scenario_58_race.lua:1887
 #, fuzzy, lua-format
 msgctxt "trade-comms"
 msgid "%s %s"
 msgstr "%s %s"
 
-#: scripts/scenario_58_race.lua:1927
+#: scripts/scenario_58_race.lua:1895
 #, fuzzy, lua-format
 msgctxt "trade-comms"
 msgid ""
@@ -1294,13 +1245,13 @@ msgstr ""
 "%s si vous avez supprimé l'astéroïde (cap %.1f°, distance %.1fu) pour nous. "
 "Il s'est fragmenté et est devenu un danger pour la navigation."
 
-#: scripts/scenario_58_race.lua:1929
+#: scripts/scenario_58_race.lua:1897
 #, fuzzy
 msgctxt "trade-comms"
 msgid "Agree to remove the asteroid"
 msgstr "Accepter de supprimer l'astéroïde"
 
-#: scripts/scenario_58_race.lua:1934
+#: scripts/scenario_58_race.lua:1902
 #, fuzzy
 msgctxt "trade-comms"
 msgid ""
@@ -1310,7 +1261,7 @@ msgstr ""
 "Revenir et demander à acheter la ressource souhaitée après avoir supprimé "
 "l'astéroïde."
 
-#: scripts/scenario_58_race.lua:1940
+#: scripts/scenario_58_race.lua:1908
 #, fuzzy
 msgctxt "trade-comms"
 msgid ""
@@ -1329,7 +1280,7 @@ msgstr ""
 "étaient détruites « accidentellement », cela faciliterait nos activités "
 "futures. Voici les stations ennemies connues :"
 
-#: scripts/scenario_58_race.lua:1943
+#: scripts/scenario_58_race.lua:1911
 #, fuzzy, lua-format
 msgctxt "destroyTrade-comms"
 msgid ""
@@ -1339,13 +1290,13 @@ msgstr ""
 "%s\n"
 "%s %s"
 
-#: scripts/scenario_58_race.lua:1947
+#: scripts/scenario_58_race.lua:1915
 #, fuzzy
 msgctxt "trade-comms"
 msgid "Would you exchange goods if we destroyed a station?"
 msgstr "Échangeriez-vous des marchandises si nous détruisons une station ?"
 
-#: scripts/scenario_58_race.lua:1959
+#: scripts/scenario_58_race.lua:1927
 #, fuzzy, lua-format
 msgctxt "trade-comms"
 msgid ""
@@ -1356,13 +1307,13 @@ msgstr ""
 "détruite. C'est la plus proche et donc celle qui perturbe le plus notre "
 "activité."
 
-#: scripts/scenario_58_race.lua:1960
+#: scripts/scenario_58_race.lua:1928
 #, fuzzy, lua-format
 msgctxt "trade-comms"
 msgid "Agree to destroy station %s"
 msgstr "Accepter de détruire la station %s"
 
-#: scripts/scenario_58_race.lua:1965
+#: scripts/scenario_58_race.lua:1933
 #, fuzzy, lua-format
 msgctxt "trade-comms"
 msgid ""
@@ -1371,7 +1322,7 @@ msgstr ""
 "Revenir et demander à acheter la ressource souhaitée après la suppression de "
 "%s."
 
-#: scripts/scenario_58_race.lua:1977
+#: scripts/scenario_58_race.lua:1945
 #, fuzzy
 msgctxt "trade-comms"
 msgid "Goods or components available here: quantity, cost in reputation\n"
@@ -1379,13 +1330,13 @@ msgstr ""
 "Station :\n"
 "- Marchandises à vendre : (quantité, coût en réputation)\n"
 
-#: scripts/scenario_58_race.lua:1983
+#: scripts/scenario_58_race.lua:1951
 #, fuzzy, lua-format
 msgctxt "trade-comms"
 msgid "     %s: %i, %i\n"
 msgstr "     %s : x%i, %i rép l'unité.\n"
 
-#: scripts/scenario_58_race.lua:1986
+#: scripts/scenario_58_race.lua:1954
 msgctxt "trade-comms"
 msgid "Current Cargo:\n"
 msgstr ""
@@ -1393,33 +1344,33 @@ msgstr ""
 "Notre vaisseau :\n"
 "- Marchandises à bord : (quantité)\n"
 
-#: scripts/scenario_58_race.lua:1993
+#: scripts/scenario_58_race.lua:1961
 #, fuzzy, lua-format
 msgctxt "trade-comms"
 msgid "     %s: %i\n"
 msgstr "     %s : x%i\n"
 
-#: scripts/scenario_58_race.lua:1999
+#: scripts/scenario_58_race.lua:1967
 #, fuzzy
 msgctxt "trade-comms"
 msgid "     Empty\n"
 msgstr "     Vide\n"
 
-#: scripts/scenario_58_race.lua:2002
+#: scripts/scenario_58_race.lua:1970
 #, fuzzy, lua-format
 msgctxt "trade-comms"
 msgid "Available Space: %i, Available Reputation: %i\n"
 msgstr "- Espace disponible : %i slots ; Réputation disponible : %i rép\n"
 
-#: scripts/scenario_58_race.lua:2010 scripts/scenario_58_race.lua:2730
-#: scripts/scenario_58_race.lua:2771 scripts/scenario_58_race.lua:2797
-#: scripts/scenario_58_race.lua:2828
+#: scripts/scenario_58_race.lua:1978 scripts/scenario_58_race.lua:2698
+#: scripts/scenario_58_race.lua:2739 scripts/scenario_58_race.lua:2765
+#: scripts/scenario_58_race.lua:2796
 #, fuzzy, lua-format
 msgctxt "trade-comms"
 msgid "Buy one %s for %i reputation"
 msgstr "Acheter 1 %s pour %i rép"
 
-#: scripts/scenario_58_race.lua:2011
+#: scripts/scenario_58_race.lua:1979
 #, fuzzy, lua-format
 msgctxt "trade-comms"
 msgid "Type: %s, Quantity: %i, Rep: %i"
@@ -1428,7 +1379,7 @@ msgstr ""
 "Quantité disponible : %i\n"
 "Coût : %i rép l'unité."
 
-#: scripts/scenario_58_race.lua:2013
+#: scripts/scenario_58_race.lua:1981
 #, fuzzy
 msgctxt "trade-comms"
 msgid ""
@@ -1439,7 +1390,7 @@ msgstr ""
 "\n"
 "Votre espace de stockage est insuffisant pour acheter."
 
-#: scripts/scenario_58_race.lua:2015 scripts/scenario_58_race.lua:2020
+#: scripts/scenario_58_race.lua:1983 scripts/scenario_58_race.lua:1988
 #, fuzzy
 msgctxt "needRep-comms"
 msgid ""
@@ -1450,8 +1401,8 @@ msgstr ""
 "\n"
 "Réputation insuffisante pour acheter."
 
-#: scripts/scenario_58_race.lua:2017 scripts/scenario_58_race.lua:2051
-#: scripts/scenario_58_race.lua:2083 scripts/scenario_58_race.lua:2115
+#: scripts/scenario_58_race.lua:1985 scripts/scenario_58_race.lua:2019
+#: scripts/scenario_58_race.lua:2051 scripts/scenario_58_race.lua:2083
 #, fuzzy
 msgctxt "trade-comms"
 msgid ""
@@ -1462,7 +1413,7 @@ msgstr ""
 "\n"
 "Stock insuffisant dans la station pour pouvoir en acheter."
 
-#: scripts/scenario_58_race.lua:2025
+#: scripts/scenario_58_race.lua:1993
 #, fuzzy
 msgctxt "trade-comms"
 msgid ""
@@ -1473,14 +1424,14 @@ msgstr ""
 "\n"
 "1 marchandise achetée."
 
-#: scripts/scenario_58_race.lua:2048
+#: scripts/scenario_58_race.lua:2016
 #, fuzzy, lua-format
 msgctxt "trade-comms"
 msgid "Trade food for %s"
 msgstr "Échanger de la nourriture (food) contre %s"
 
-#: scripts/scenario_58_race.lua:2049 scripts/scenario_58_race.lua:2081
-#: scripts/scenario_58_race.lua:2113
+#: scripts/scenario_58_race.lua:2017 scripts/scenario_58_race.lua:2049
+#: scripts/scenario_58_race.lua:2081
 #, fuzzy, lua-format
 msgctxt "trade-comms"
 msgid "Type: %s,  Quantity: %i"
@@ -1488,8 +1439,8 @@ msgstr ""
 "Type de marchandise : %s\n"
 "Quantité disponible : %i"
 
-#: scripts/scenario_58_race.lua:2056 scripts/scenario_58_race.lua:2088
-#: scripts/scenario_58_race.lua:2120
+#: scripts/scenario_58_race.lua:2024 scripts/scenario_58_race.lua:2056
+#: scripts/scenario_58_race.lua:2088
 #, fuzzy
 msgctxt "trade-comms"
 msgid ""
@@ -1500,49 +1451,49 @@ msgstr ""
 "\n"
 "Marchandises échangées."
 
-#: scripts/scenario_58_race.lua:2080 scripts/scenario_58_race.lua:2706
+#: scripts/scenario_58_race.lua:2048 scripts/scenario_58_race.lua:2674
 #, fuzzy, lua-format
 msgctxt "trade-comms"
 msgid "Trade luxury for %s"
 msgstr "Échanger des produits de luxe (luxury) contre %s"
 
-#: scripts/scenario_58_race.lua:2112
+#: scripts/scenario_58_race.lua:2080
 #, fuzzy, lua-format
 msgctxt "trade-comms"
 msgid "Trade medicine for %s"
 msgstr "Échanger des médicaments (medicine) contre %s"
 
-#: scripts/scenario_58_race.lua:2136
+#: scripts/scenario_58_race.lua:2104
 #, fuzzy
 msgctxt "upgrade-comms"
 msgid "Provide nanites for jump drive upgrade"
 msgstr "Fournir des nanites pour la mise à niveau du moteur de téléportation"
 
-#: scripts/scenario_58_race.lua:2138
+#: scripts/scenario_58_race.lua:2106
 #, fuzzy
 msgctxt "upgrade-comms"
 msgid "You already have the upgrade"
 msgstr "Vous avez déjà effectué cette mise à niveau."
 
-#: scripts/scenario_58_race.lua:2147 scripts/scenario_58_race.lua:2164
+#: scripts/scenario_58_race.lua:2115 scripts/scenario_58_race.lua:2132
 #, fuzzy
 msgctxt "upgrade-comms"
 msgid "Your jump drive has been upgraded"
 msgstr "Votre moteur de téléportation a été mis à niveau."
 
-#: scripts/scenario_58_race.lua:2153
+#: scripts/scenario_58_race.lua:2121
 #, fuzzy
 msgctxt "upgrade-comms"
 msgid "Provide robotic for jump drive upgrade"
 msgstr "Fournir 1 robotique pour mettre à niveau le moteur de téléportation"
 
-#: scripts/scenario_58_race.lua:2155
+#: scripts/scenario_58_race.lua:2123
 #, fuzzy
 msgctxt "upgrade-comms"
 msgid "You already have the jump drive upgrade"
 msgstr "Vous avez déjà effectué la mise à niveau du moteur de téléportation."
 
-#: scripts/scenario_58_race.lua:2175
+#: scripts/scenario_58_race.lua:2143
 #, fuzzy, lua-format
 msgctxt "upgrade-comms"
 msgid "Provide dilithium for %f percent impulse engine speed upgrade"
@@ -1550,81 +1501,81 @@ msgstr ""
 "Fournir du dilithium pour augmenter de %f%% la vitesse des moteurs à "
 "impulsion"
 
-#: scripts/scenario_58_race.lua:2177 scripts/scenario_58_race.lua:2190
+#: scripts/scenario_58_race.lua:2145 scripts/scenario_58_race.lua:2158
 #, fuzzy
 msgctxt "upgrade-comms"
 msgid "You already have the impulse drive upgrade"
 msgstr "Vous avez déjà effectué la mise à niveau des moteurs à impulsion."
 
-#: scripts/scenario_58_race.lua:2182 scripts/scenario_58_race.lua:2195
+#: scripts/scenario_58_race.lua:2150 scripts/scenario_58_race.lua:2163
 #, fuzzy
 msgctxt "upgrade-comms"
 msgid "Your impulse engine speed has been upgraded"
 msgstr "La vitesse de vos moteurs à impulsion a été amélioré."
 
-#: scripts/scenario_58_race.lua:2188
+#: scripts/scenario_58_race.lua:2156
 #, fuzzy, lua-format
 msgctxt "upgrade-comms"
 msgid "Provide tritanium for %f percent impulse engine speed upgrade"
 msgstr "Fournir du tritanium pour augmenter la vitesse des moteurs de %f %%"
 
-#: scripts/scenario_58_race.lua:2205
+#: scripts/scenario_58_race.lua:2173
 #, fuzzy, lua-format
 msgctxt "upgrade-comms"
 msgid "Provide %s for %.2f percent maneuver speed upgrade"
 msgstr "Fournir du %s pour augmenter la vitesse de manœuvre de %.2f%%"
 
-#: scripts/scenario_58_race.lua:2207
+#: scripts/scenario_58_race.lua:2175
 #, fuzzy
 msgctxt "upgrade-comms"
 msgid "You already have the maneuver speed upgrade"
 msgstr "Vous avez déjà effectué la mise à niveau de la vitesse de manœuvre."
 
-#: scripts/scenario_58_race.lua:2212
+#: scripts/scenario_58_race.lua:2180
 #, fuzzy
 msgctxt "upgrade-comms"
 msgid "Your spin speed has been upgraded"
 msgstr "Votre vitesse de rotation a été améliorée"
 
-#: scripts/scenario_58_race.lua:2222
+#: scripts/scenario_58_race.lua:2190
 #, fuzzy, lua-format
 msgctxt "upgrade-comms"
 msgid "Provide %s for %.2f percent beam range upgrade"
 msgstr "Fournir du %s pour augmenter la portée du faisceau de %.2f%%"
 
-#: scripts/scenario_58_race.lua:2224
+#: scripts/scenario_58_race.lua:2192
 #, fuzzy
 msgctxt "upgrade-comms"
 msgid "You already have the beam range upgrade"
 msgstr ""
 "Vous avez déjà effectué la mise à niveau de la portée des faisceaux laser."
 
-#: scripts/scenario_58_race.lua:2227
+#: scripts/scenario_58_race.lua:2195
 #, fuzzy
 msgctxt "upgrade-comms"
 msgid "Your ship does not support a beam weapon upgrade"
 msgstr ""
 "Votre vaisseau ne prend pas en charge la mise à niveau des faisceaux laser."
 
-#: scripts/scenario_58_race.lua:2241
+#: scripts/scenario_58_race.lua:2209
 #, fuzzy
 msgctxt "upgrade-comms"
 msgid "Your beam range has been upgraded"
 msgstr "La portée de vos faisceaux laser a été améliorée."
 
-#: scripts/scenario_58_race.lua:2252
+#: scripts/scenario_58_race.lua:2220
 #, fuzzy, lua-format
 msgctxt "upgrade-comms"
 msgid "Provide %s for additional homing missile tube"
 msgstr "Fournir du %s pour ajouter un tube lance-missile à tête chercheuse"
 
-#: scripts/scenario_58_race.lua:2254
+#: scripts/scenario_58_race.lua:2222
 #, fuzzy
 msgctxt "upgrade-comms"
 msgid "You already have the missile tube upgrade"
 msgstr "Vous avez déjà effectué la mise à niveau d'un tube lance-missiles."
 
-#: scripts/scenario_58_race.lua:2264
+#: scripts/scenario_58_race.lua:2232
 #, fuzzy
 msgctxt "upgrade-comms"
 msgid "You now have an additional homing missile tube"
@@ -1632,130 +1583,130 @@ msgstr ""
 "Vous disposez désormais d'un tube lance-missiles à tête chercheuse "
 "supplémentaire."
 
-#: scripts/scenario_58_race.lua:2274
+#: scripts/scenario_58_race.lua:2242
 #, fuzzy, lua-format
 msgctxt "upgrade-comms"
 msgid "Provide %s for 25 percent energy capacity upgrade"
 msgstr "Fournir du %s pour augmenter de 25%% la capacité énergétique"
 
-#: scripts/scenario_58_race.lua:2276
+#: scripts/scenario_58_race.lua:2244
 #, fuzzy
 msgctxt "upgrade-comms"
 msgid "You already have the energy capacity upgrade"
 msgstr "Vous avez déjà effectué la mise à niveau de la capacité en énergie."
 
-#: scripts/scenario_58_race.lua:2281
+#: scripts/scenario_58_race.lua:2249
 #, fuzzy
 msgctxt "upgrade-comms"
 msgid "You now have upgraded energy capacity"
 msgstr "Vous disposez désormais d’une capacité énergétique améliorée."
 
-#: scripts/scenario_58_race.lua:2293
+#: scripts/scenario_58_race.lua:2261
 #, fuzzy, lua-format
 msgctxt "upgrade-comms"
 msgid "Provide %s for %.2f percent shield upgrade"
 msgstr "Fournir du %s pour augmenter la puissance des boucliers de %.2f%%"
 
-#: scripts/scenario_58_race.lua:2295
+#: scripts/scenario_58_race.lua:2263
 #, fuzzy
 msgctxt "upgrade-comms"
 msgid "You already have the shield upgrade"
 msgstr "Vous avez déjà effectué la mise à niveau des boucliers."
 
-#: scripts/scenario_58_race.lua:2300
+#: scripts/scenario_58_race.lua:2268
 #, fuzzy
 msgctxt "upgrade-comms"
 msgid "You now have upgraded shield capacity"
 msgstr "Vous disposez désormais d'une puissance de bouclier améliorée."
 
-#: scripts/scenario_58_race.lua:2305
+#: scripts/scenario_58_race.lua:2273
 #, fuzzy, lua-format
 msgctxt "upgrade-comms"
 msgid "Provide %s for %.2f percent front shield upgrade"
 msgstr ""
 "Fournir du %s pour augmenter la puissance des boucliers avant de %.2f%%"
 
-#: scripts/scenario_58_race.lua:2307
+#: scripts/scenario_58_race.lua:2275
 #, fuzzy
 msgctxt "upgrade-comms"
 msgid "You already have the front shield upgrade"
 msgstr "Vous avez déjà effectué la mise à niveau des boucliers avant."
 
-#: scripts/scenario_58_race.lua:2312
+#: scripts/scenario_58_race.lua:2280
 #, fuzzy
 msgctxt "upgrade-comms"
 msgid "You now have upgraded front shield capacity"
 msgstr "Vous disposez désormais d'une puissance de boucliers avant améliorée."
 
-#: scripts/scenario_58_race.lua:2316
+#: scripts/scenario_58_race.lua:2284
 #, fuzzy, lua-format
 msgctxt "upgrade-comms"
 msgid "Provide %s for %.2f percent rear shield upgrade"
 msgstr ""
 "Fournir du %s pour augmenter la puissance des boucliers arrière de %.2f%%"
 
-#: scripts/scenario_58_race.lua:2318
+#: scripts/scenario_58_race.lua:2286
 #, fuzzy
 msgctxt "upgrade-comms"
 msgid "You already have the rear shield upgrade"
 msgstr "Vous avez déjà effectué la mise à niveau des boucliers arrière."
 
-#: scripts/scenario_58_race.lua:2323
+#: scripts/scenario_58_race.lua:2291
 #, fuzzy
 msgctxt "upgrade-comms"
 msgid "You now have upgraded rear shield capacity"
 msgstr "Vous disposez désormais d'une puissance de bouclier arrière améliorée."
 
-#: scripts/scenario_58_race.lua:2344
+#: scripts/scenario_58_race.lua:2312
 #, fuzzy
 msgctxt "station-comms"
 msgid "You need to stay docked for that action."
 msgstr "Vous devez rester amarré à la station pour cette action."
 
-#: scripts/scenario_58_race.lua:2348
+#: scripts/scenario_58_race.lua:2316
 #, fuzzy
 msgctxt "ammo-comms"
 msgid "We do not deal in weapons of mass destruction."
 msgstr "Nous ne fournissons pas ce type d'arme de destruction massive."
 
-#: scripts/scenario_58_race.lua:2349
+#: scripts/scenario_58_race.lua:2317
 #, fuzzy
 msgctxt "ammo-comms"
 msgid "We do not deal in weapons of mass disruption."
 msgstr "Nous ne fournissons pas ce type d'arme de perturbation massive."
 
-#: scripts/scenario_58_race.lua:2350
+#: scripts/scenario_58_race.lua:2318
 #, fuzzy
 msgctxt "ammo-comms"
 msgid "We do not deal in those weapons."
 msgstr "Nous ne fournissons pas ce type d'arme. Trop dangereux."
 
-#: scripts/scenario_58_race.lua:2357
+#: scripts/scenario_58_race.lua:2325
 #, fuzzy
 msgctxt "ammo-comms"
 msgid "All nukes are charged and primed for destruction."
 msgstr "Toutes les nukes sont chargées et préparées pour la destruction."
 
-#: scripts/scenario_58_race.lua:2359
+#: scripts/scenario_58_race.lua:2327
 #, fuzzy
 msgctxt "ammo-comms"
 msgid "Sorry, sir, but you are as fully stocked as I can allow."
 msgstr ""
 "Désolé, officier, mais vous êtes au maximum de ce que vous pouvez stocker."
 
-#: scripts/scenario_58_race.lua:2364
+#: scripts/scenario_58_race.lua:2332
 #, fuzzy
 msgctxt "needRep-comms"
 msgid "Not enough reputation."
 msgstr "Pas assez de réputation."
 
-#: scripts/scenario_58_race.lua:2369
+#: scripts/scenario_58_race.lua:2337
 #, fuzzy
 msgctxt "ammo-comms"
 msgid "You are fully loaded and ready to explode things."
 msgstr "Vous êtes chargé au max et prêt à tout faire exploser."
 
-#: scripts/scenario_58_race.lua:2371
+#: scripts/scenario_58_race.lua:2339
 #, fuzzy
 msgctxt "ammo-comms"
 msgid ""
@@ -1765,7 +1716,7 @@ msgstr ""
 "Nous vous avons généreusement réapprovisionné en munitions.\n"
 "Faites-en bon usage."
 
-#: scripts/scenario_58_race.lua:2382
+#: scripts/scenario_58_race.lua:2350
 msgctxt "station-comms"
 msgid ""
 "Good day, officer.\n"
@@ -1775,7 +1726,7 @@ msgstr ""
 "Si vous souhaitez vous réapprovisionner, veuillez vous amarrer à notre "
 "station au préalable."
 
-#: scripts/scenario_58_race.lua:2384
+#: scripts/scenario_58_race.lua:2352
 #, fuzzy
 msgctxt "station-comms"
 msgid ""
@@ -1785,7 +1736,7 @@ msgstr ""
 "Salutations.\n"
 "Si vous souhaitez faire affaire, merci de vous amarrer à notre station."
 
-#: scripts/scenario_58_race.lua:2387
+#: scripts/scenario_58_race.lua:2355
 #, fuzzy
 msgctxt "station-comms"
 msgid ""
@@ -1797,35 +1748,35 @@ msgstr ""
 "Sachez que si les ennemis de la zone se rapprochent encore, nous serons trop "
 "occupés pour faire affaire avec vous."
 
-#: scripts/scenario_58_race.lua:2390
+#: scripts/scenario_58_race.lua:2358
 msgctxt "station-comms"
 msgid "I need information"
 msgstr "j'aurai besoin d'informations"
 
-#: scripts/scenario_58_race.lua:2391
+#: scripts/scenario_58_race.lua:2359
 msgctxt "station-comms"
 msgid "What kind of information do you need?"
 msgstr "De quel genre d'informations avez-vous besoin ?"
 
-#: scripts/scenario_58_race.lua:2404
+#: scripts/scenario_58_race.lua:2372
 #, fuzzy
 msgctxt "station-comms"
 msgid "How far am I from the race start point?"
 msgstr "À quelle distance suis-je du point de départ de la course ?"
 
-#: scripts/scenario_58_race.lua:2407
+#: scripts/scenario_58_race.lua:2375
 #, fuzzy
 msgctxt "station-comms"
 msgid "not close enough to qualify for the start of the race"
 msgstr "pas assez proche pour se qualifier pour le départ de la course"
 
-#: scripts/scenario_58_race.lua:2409
+#: scripts/scenario_58_race.lua:2377
 #, fuzzy
 msgctxt "station-comms"
 msgid "close enough to qualify for the start of the race"
 msgstr "suffisamment proche pour se qualifier pour le départ de la course"
 
-#: scripts/scenario_58_race.lua:2413
+#: scripts/scenario_58_race.lua:2381
 #, fuzzy, lua-format
 msgctxt "station-comms"
 msgid "%s, my messaging terminal says you're %.1f unit away, %s."
@@ -1833,7 +1784,7 @@ msgstr ""
 "%s, mon terminal de messagerie indique que vous vous trouvez à %.1f unité, "
 "%s."
 
-#: scripts/scenario_58_race.lua:2415
+#: scripts/scenario_58_race.lua:2383
 #, fuzzy, lua-format
 msgctxt "station-comms"
 msgid "%s, my messaging terminal says you're %.1f units away, %s."
@@ -1841,17 +1792,17 @@ msgstr ""
 "%s, mon terminal de messagerie indique que vous vous trouvez à %.1f unités, "
 "%s."
 
-#: scripts/scenario_58_race.lua:2420
+#: scripts/scenario_58_race.lua:2388
 msgctxt "station-comms"
 msgid "Station docking service status"
 msgstr "État des services d'accueil de la station"
 
-#: scripts/scenario_58_race.lua:2421
+#: scripts/scenario_58_race.lua:2389
 msgctxt "station-comms"
 msgid "Station docking services report:"
 msgstr "État des services d'accueil de la station :\n"
 
-#: scripts/scenario_58_race.lua:2422
+#: scripts/scenario_58_race.lua:2390
 #, fuzzy, lua-format
 msgctxt "station-comms"
 msgid ""
@@ -1861,7 +1812,7 @@ msgstr ""
 "%s\n"
 "- Réapprovisionnement des sondes : %s"
 
-#: scripts/scenario_58_race.lua:2423
+#: scripts/scenario_58_race.lua:2391
 #, fuzzy, lua-format
 msgctxt "station-comms"
 msgid ""
@@ -1871,7 +1822,7 @@ msgstr ""
 "%s\n"
 "- Recharge des réserves d'énergie : %s"
 
-#: scripts/scenario_58_race.lua:2424
+#: scripts/scenario_58_race.lua:2392
 #, fuzzy, lua-format
 msgctxt "station-comms"
 msgid ""
@@ -1881,31 +1832,31 @@ msgstr ""
 "%s\n"
 "- Réparation de la coque : %s"
 
-#: scripts/scenario_58_race.lua:2487
+#: scripts/scenario_58_race.lua:2455
 #, lua-format
 msgctxt "stationAssist-comms"
 msgid "Can you send a supply drop? (%d rep)"
 msgstr "Pouvez-vous nous envoyer une cargaison de ravitaillement ? (%d rép)"
 
-#: scripts/scenario_58_race.lua:2489
+#: scripts/scenario_58_race.lua:2457
 #, fuzzy
 msgctxt "stationAssist-comms"
 msgid "You need to set a waypoint before you can request backup."
 msgstr ""
 "Vous devez définir un marqueur avant de faire une demande de ravitaillement."
 
-#: scripts/scenario_58_race.lua:2491
+#: scripts/scenario_58_race.lua:2459
 msgctxt "stationAssist-comms"
 msgid "To which waypoint should we deliver your supplies?"
 msgstr "À quel marqueur devons-nous envoyer le ravitaillement ?"
 
-#: scripts/scenario_58_race.lua:2493 scripts/scenario_58_race.lua:2519
+#: scripts/scenario_58_race.lua:2461 scripts/scenario_58_race.lua:2487
 #, lua-format
 msgctxt "stationAssist-comms"
 msgid "WP %d"
 msgstr "Marqueur %d"
 
-#: scripts/scenario_58_race.lua:2501
+#: scripts/scenario_58_race.lua:2469
 #, lua-format
 msgctxt "stationAssist-comms"
 msgid "We have dispatched a supply ship toward WP %d"
@@ -1913,29 +1864,29 @@ msgstr ""
 "Nous venons de déployer un vaisseau qui vous déposera la capsule de "
 "ravitaillement au marqueur %d."
 
-#: scripts/scenario_58_race.lua:2503 scripts/scenario_58_race.lua:2524
+#: scripts/scenario_58_race.lua:2471 scripts/scenario_58_race.lua:2492
 msgctxt "needRep-comms"
 msgid "Not enough reputation!"
 msgstr "Pas assez de réputation !"
 
-#: scripts/scenario_58_race.lua:2513
+#: scripts/scenario_58_race.lua:2481
 #, lua-format
 msgctxt "stationAssist-comms"
 msgid "Please send reinforcements! (%d rep)"
 msgstr "Merci de nous envoyer des renforts ! (%d rép)"
 
-#: scripts/scenario_58_race.lua:2515
+#: scripts/scenario_58_race.lua:2483
 #, fuzzy
 msgctxt "stationAssist-comms"
 msgid "You need to set a waypoint before you can request reinforcements."
 msgstr "Vous devez définir un marqueur avant de pouvoir demander des renforts."
 
-#: scripts/scenario_58_race.lua:2517
+#: scripts/scenario_58_race.lua:2485
 msgctxt "stationAssist-comms"
 msgid "To which waypoint should we dispatch the reinforcements?"
 msgstr "À quel marqueur souhaitez-vous recevoir les renforts ?"
 
-#: scripts/scenario_58_race.lua:2522
+#: scripts/scenario_58_race.lua:2490
 #, lua-format
 msgctxt "stationAssist-comms"
 msgid "We have dispatched %s to assist at WP %d"
@@ -1943,25 +1894,25 @@ msgstr ""
 "Nous venons de déployer le vaisseau de combat %s pour vous soutenir au "
 "marqueur %d."
 
-#: scripts/scenario_58_race.lua:2578 scripts/scenario_58_race.lua:2752
+#: scripts/scenario_58_race.lua:2546 scripts/scenario_58_race.lua:2720
 #, fuzzy
 msgctxt "shipAssist-comms"
 msgid "What do you want?"
 msgstr "Que voulez-vous ?"
 
-#: scripts/scenario_58_race.lua:2580
+#: scripts/scenario_58_race.lua:2548
 #, fuzzy
 msgctxt "shipAssist-comms"
 msgid "Sir, how can we assist?"
 msgstr "Monsieur, comment pouvons-nous vous assister ?"
 
-#: scripts/scenario_58_race.lua:2582
+#: scripts/scenario_58_race.lua:2550
 #, fuzzy
 msgctxt "shipAssist-comms"
 msgid "Defend a waypoint"
 msgstr "Défendez un marqueur"
 
-#: scripts/scenario_58_race.lua:2584
+#: scripts/scenario_58_race.lua:2552
 #, fuzzy
 msgctxt "shipAssist-comms"
 msgid "No waypoints set. Please set a waypoint first."
@@ -1969,109 +1920,109 @@ msgstr ""
 "Monsieur, nous ne détectons aucun marqueur. Veuillez commencer par en placer "
 "un."
 
-#: scripts/scenario_58_race.lua:2587
+#: scripts/scenario_58_race.lua:2555
 #, fuzzy
 msgctxt "shipAssist-comms"
 msgid "Which waypoint should we defend?"
 msgstr "Quel marqueur devons-nous défendre ?"
 
-#: scripts/scenario_58_race.lua:2589
+#: scripts/scenario_58_race.lua:2557
 #, fuzzy, lua-format
 msgctxt "shipAssist-comms"
 msgid "Defend WP %d"
 msgstr "Défendez le marqueur %d"
 
-#: scripts/scenario_58_race.lua:2591
+#: scripts/scenario_58_race.lua:2559
 #, fuzzy, lua-format
 msgctxt "shipAssist-comms"
 msgid "We are heading to assist at WP %d."
 msgstr "Nous partons immédiatement défendre le marqueur %d."
 
-#: scripts/scenario_58_race.lua:2598
+#: scripts/scenario_58_race.lua:2566
 #, fuzzy
 msgctxt "shipAssist-comms"
 msgid "Assist me"
 msgstr "Aidez-nous !"
 
-#: scripts/scenario_58_race.lua:2599
+#: scripts/scenario_58_race.lua:2567
 #, fuzzy
 msgctxt "shipAssist-comms"
 msgid "Heading toward you to assist."
 msgstr "Entendu, nous partons immédiatement vous aider."
 
-#: scripts/scenario_58_race.lua:2604
+#: scripts/scenario_58_race.lua:2572
 #, fuzzy
 msgctxt "shipAssist-comms"
 msgid "Report status"
 msgstr "Au rapport"
 
-#: scripts/scenario_58_race.lua:2605
+#: scripts/scenario_58_race.lua:2573
 #, fuzzy, lua-format
 msgctxt "shipAssist-comms"
 msgid "Hull: %d%%\n"
 msgstr "Coque : %d%%\n"
 
-#: scripts/scenario_58_race.lua:2608
+#: scripts/scenario_58_race.lua:2576
 #, fuzzy, lua-format
 msgctxt "shipAssist-comms"
 msgid "%sShield: %d%%\n"
 msgstr "%sBoucliers : %d%%\n"
 
-#: scripts/scenario_58_race.lua:2610
+#: scripts/scenario_58_race.lua:2578
 #, fuzzy, lua-format
 msgctxt "shipAssist-comms"
 msgid "%sFront Shield: %d%%\n"
 msgstr "%sBoucliers avant : %d%%\n"
 
-#: scripts/scenario_58_race.lua:2611
+#: scripts/scenario_58_race.lua:2579
 #, fuzzy, lua-format
 msgctxt "shipAssist-comms"
 msgid "%sRear Shield: %d%%\n"
 msgstr "%sBoucliers arrière : %d%%\n"
 
-#: scripts/scenario_58_race.lua:2614
+#: scripts/scenario_58_race.lua:2582
 #, fuzzy, lua-format
 msgctxt "shipAssist-comms"
 msgid "%sShield %s: %d%%\n"
 msgstr "%sBouclier %s : %d%%\n"
 
-#: scripts/scenario_58_race.lua:2620
+#: scripts/scenario_58_race.lua:2588
 #, fuzzy, lua-format
 msgctxt "shipAssist-comms"
 msgid "%s%s Missiles: %d/%d\n"
 msgstr "%sMissiles %s : %d/%d\n"
 
-#: scripts/scenario_58_race.lua:2628
+#: scripts/scenario_58_race.lua:2596
 #, fuzzy, lua-format
 msgctxt "shipAssist-comms"
 msgid "Dock at %s"
 msgstr "Amarrez-vous à %s"
 
-#: scripts/scenario_58_race.lua:2629
+#: scripts/scenario_58_race.lua:2597
 #, fuzzy, lua-format
 msgctxt "shipAssist-comms"
 msgid "Docking at %s."
 msgstr "En cours d'amarrage à %s."
 
-#: scripts/scenario_58_race.lua:2641
+#: scripts/scenario_58_race.lua:2609
 #, fuzzy
 msgctxt "shipEnemy-comms"
 msgid "We will see to your destruction!"
 msgstr "Nous allons vous anéantir"
 
-#: scripts/scenario_58_race.lua:2642
+#: scripts/scenario_58_race.lua:2610
 #, fuzzy
 msgctxt "shipEnemy-comms"
 msgid "Your bloodline will end here!"
 msgstr "Votre race va s'éteindre ici et maintenant !"
 
-#: scripts/scenario_58_race.lua:2643
+#: scripts/scenario_58_race.lua:2611
 #, fuzzy
 msgctxt "shipEnemy-comms"
 msgid "Your feeble threats are meaningless."
 msgstr "Vos menaces ridicules ne nous impressionnent pas."
 
-#: scripts/scenario_58_race.lua:2645
+#: scripts/scenario_58_race.lua:2613
 #, fuzzy
 msgctxt "shipEnemy-comms"
 msgid ""
@@ -2081,7 +2032,7 @@ msgstr ""
 "...Ktzzzsss...\n"
 "Vous allez mourir faibles créatures insignifiantes !"
 
-#: scripts/scenario_58_race.lua:2647
+#: scripts/scenario_58_race.lua:2615
 #, fuzzy
 msgctxt "shipEnemy-comms"
 msgid ""
@@ -2091,7 +2042,7 @@ msgstr ""
 "Nous ne vous voulons aucun mal, mais nous vous en ferons si nécessaire.\n"
 "Fin de transmission."
 
-#: scripts/scenario_58_race.lua:2649
+#: scripts/scenario_58_race.lua:2617
 #, fuzzy
 msgctxt "shipEnemy-comms"
 msgid "Stay out of our way, or your death will amuse us extremely!"
@@ -2099,7 +2050,7 @@ msgstr ""
 "Restez en dehors de notre chemin, ou votre mort sera une amusante "
 "distraction pour nous !"
 
-#: scripts/scenario_58_race.lua:2651
+#: scripts/scenario_58_race.lua:2619
 #, fuzzy
 msgctxt "shipEnemy-comms"
 msgid ""
@@ -2120,13 +2071,13 @@ msgstr ""
 "\n"
 "Communication interrompue."
 
-#: scripts/scenario_58_race.lua:2652
+#: scripts/scenario_58_race.lua:2620
 #, fuzzy
 msgctxt "shipEnemy-comms"
 msgid "EXECUTE: SELFDESTRUCT"
 msgstr "Executer à distance : AUTODESTRUCTION"
 
-#: scripts/scenario_58_race.lua:2653
+#: scripts/scenario_58_race.lua:2621
 #, fuzzy
 msgctxt "shipEnemy-comms"
 msgid "Rogue command received. Targeting source."
@@ -2134,13 +2085,13 @@ msgstr ""
 "Commande malveillante reçue. Annulée.\n"
 "Nous ciblons immédiatement source."
 
-#: scripts/scenario_58_race.lua:2654
+#: scripts/scenario_58_race.lua:2622
 #, fuzzy
 msgctxt "shipEnemy-comms"
 msgid "External command ignored."
 msgstr "Ordre externe ignoré."
 
-#: scripts/scenario_58_race.lua:2656
+#: scripts/scenario_58_race.lua:2624
 #, fuzzy
 msgctxt "shipEnemy-comms"
 msgid ""
@@ -2152,19 +2103,19 @@ msgstr ""
 "s'opposer à nous tous.\n"
 "Fuyez ou préparez-vous à faire don de vos cadavres pour nos repas."
 
-#: scripts/scenario_58_race.lua:2657
+#: scripts/scenario_58_race.lua:2625
 #, fuzzy
 msgctxt "shipEnemy-comms"
 msgid "<Transmit 'The Itsy-Bitsy Spider' on all wavelengths>"
 msgstr "Diffuser la chanson de Spiderman sur toutes les ondes"
 
-#: scripts/scenario_58_race.lua:2658
+#: scripts/scenario_58_race.lua:2626
 #, fuzzy
 msgctxt "shipEnemy-comms"
 msgid "We do not need permission to pluck apart such an insignificant threat."
 msgstr "Vous osez vous moquer de nous ? En auriez-vous marre de vivre ?"
 
-#: scripts/scenario_58_race.lua:2659
+#: scripts/scenario_58_race.lua:2627
 #, fuzzy
 msgctxt "shipEnemy-comms"
 msgid "The hive has greater priorities than exterminating pests."
@@ -2172,95 +2123,95 @@ msgstr ""
 "Notre peuple a d'autres priorités que l'extermination de parasites tels que "
 "vous."
 
-#: scripts/scenario_58_race.lua:2661
+#: scripts/scenario_58_race.lua:2629
 #, fuzzy
 msgctxt "shipEnemy-comms"
 msgid "Mind your own business!"
 msgstr "Occupez-vous de vos affaires !"
 
-#: scripts/scenario_58_race.lua:2675
+#: scripts/scenario_58_race.lua:2643
 #, fuzzy, lua-format
 msgctxt "shipEnemy-comms"
 msgid "I belong to %s"
 msgstr "J'appartiens à %s"
 
-#: scripts/scenario_58_race.lua:2684
+#: scripts/scenario_58_race.lua:2652
 #, fuzzy
 msgctxt "trade-comms"
 msgid "Yes?"
 msgstr "Oui, c'est pour quoi ?"
 
-#: scripts/scenario_58_race.lua:2686
+#: scripts/scenario_58_race.lua:2654
 #, fuzzy
 msgctxt "trade-comms"
 msgid "Where are you headed?"
 msgstr "Où allez-vous ?"
 
-#: scripts/scenario_58_race.lua:2708
+#: scripts/scenario_58_race.lua:2676
 #, fuzzy
 msgctxt "trade-comms"
 msgid "Insufficient inventory on freighter for trade"
 msgstr "Stock insuffisant sur le cargo pour commercer."
 
-#: scripts/scenario_58_race.lua:2713
+#: scripts/scenario_58_race.lua:2681
 #, fuzzy
 msgctxt "trade-comms"
 msgid "Traded"
 msgstr "Marchandises échangées."
 
-#: scripts/scenario_58_race.lua:2720
+#: scripts/scenario_58_race.lua:2688
 #, fuzzy
 msgctxt "trade-comms"
 msgid "Insufficient luxury to trade"
 msgstr "Stock de produits de luxe insuffisant pour commercer."
 
-#: scripts/scenario_58_race.lua:2732 scripts/scenario_58_race.lua:2773
-#: scripts/scenario_58_race.lua:2799 scripts/scenario_58_race.lua:2830
+#: scripts/scenario_58_race.lua:2700 scripts/scenario_58_race.lua:2741
+#: scripts/scenario_58_race.lua:2767 scripts/scenario_58_race.lua:2798
 #, fuzzy
 msgctxt "trade-comms"
 msgid "Insufficient cargo space for purchase"
 msgstr "Votre espace de stockage est insuffisant pour acheter."
 
-#: scripts/scenario_58_race.lua:2734 scripts/scenario_58_race.lua:2775
-#: scripts/scenario_58_race.lua:2801 scripts/scenario_58_race.lua:2832
+#: scripts/scenario_58_race.lua:2702 scripts/scenario_58_race.lua:2743
+#: scripts/scenario_58_race.lua:2769 scripts/scenario_58_race.lua:2800
 #, fuzzy
 msgctxt "trade-comms"
 msgid "Insufficient inventory on freighter"
 msgstr "Stock insuffisant sur le cargo."
 
-#: scripts/scenario_58_race.lua:2737 scripts/scenario_58_race.lua:2778
-#: scripts/scenario_58_race.lua:2804 scripts/scenario_58_race.lua:2835
+#: scripts/scenario_58_race.lua:2705 scripts/scenario_58_race.lua:2746
+#: scripts/scenario_58_race.lua:2772 scripts/scenario_58_race.lua:2803
 #, fuzzy
 msgctxt "needRep-comms"
 msgid "Insufficient reputation for purchase"
 msgstr "Réputation insuffisante pour acheter."
 
-#: scripts/scenario_58_race.lua:2742 scripts/scenario_58_race.lua:2783
-#: scripts/scenario_58_race.lua:2809 scripts/scenario_58_race.lua:2840
+#: scripts/scenario_58_race.lua:2710 scripts/scenario_58_race.lua:2751
+#: scripts/scenario_58_race.lua:2777 scripts/scenario_58_race.lua:2808
 #, fuzzy
 msgctxt "trade-comms"
 msgid "Purchased"
 msgstr "1 marchandise achetée."
 
-#: scripts/scenario_58_race.lua:2755
+#: scripts/scenario_58_race.lua:2723
 #, fuzzy, lua-format
 msgctxt "trade-comms"
 msgid "Where are you headed? (cost: %f reputation)"
 msgstr "Où allez-vous ? (coût de l'information : %f rép)"
 
-#: scripts/scenario_58_race.lua:2757
+#: scripts/scenario_58_race.lua:2725
 #, fuzzy
 msgctxt "needRep-comms"
 msgid "Insufficient reputation"
 msgstr "Réputation insuffisante."
 
-#: scripts/scenario_58_race.lua:2819
+#: scripts/scenario_58_race.lua:2787
 #, fuzzy
 msgctxt "trade-comms"
 msgid "Why are you bothering me?"
 msgstr "Pourquoi me dérangez-vous ?"
 
-#: scripts/scenario_58_race.lua:2852
+#: scripts/scenario_58_race.lua:2820
 #, fuzzy
 msgctxt "ship-comms"
 msgid ""
@@ -2270,7 +2221,7 @@ msgstr ""
 "Désolé, nous n'avons pas le temps de discuter avec vous.\n"
 "Nous sommes en mission de la plus haute importance."
 
-#: scripts/scenario_58_race.lua:2854
+#: scripts/scenario_58_race.lua:2822
 #, fuzzy
 msgctxt "ship-comms"
 msgid ""
@@ -2280,55 +2231,55 @@ msgstr ""
 "Nous n'avons rien pour vous.\n"
 "Bonne journée."
 
-#: scripts/scenario_58_race.lua:3008
+#: scripts/scenario_58_race.lua:2976
 #, fuzzy
 msgctxt "msgMainscreen"
 msgid "Admiral"
 msgstr "Amiral"
 
-#: scripts/scenario_58_race.lua:3010
+#: scripts/scenario_58_race.lua:2978
 #, fuzzy
 msgctxt "msgMainscreen"
 msgid "Captain"
 msgstr "Capitaine"
 
-#: scripts/scenario_58_race.lua:3012
+#: scripts/scenario_58_race.lua:2980
 #, fuzzy
 msgctxt "msgMainscreen"
 msgid "Commander"
 msgstr "Commandant"
 
-#: scripts/scenario_58_race.lua:3014
+#: scripts/scenario_58_race.lua:2982
 #, fuzzy
 msgctxt "msgMainscreen"
 msgid "Lieutenant"
 msgstr "Lieutenant"
 
-#: scripts/scenario_58_race.lua:3016
+#: scripts/scenario_58_race.lua:2984
 #, fuzzy
 msgctxt "msgMainscreen"
 msgid "Ensign"
 msgstr "Officier"
 
-#: scripts/scenario_58_race.lua:3019
+#: scripts/scenario_58_race.lua:2987
 #, fuzzy
 msgctxt "msgMainscreen"
 msgid "Undefined"
 msgstr "Non défini"
 
-#: scripts/scenario_58_race.lua:3021
+#: scripts/scenario_58_race.lua:2989
 #, fuzzy
 msgctxt "msgMainscreen"
 msgid "Cadet"
 msgstr "Cadet"
 
-#: scripts/scenario_58_race.lua:3029
+#: scripts/scenario_58_race.lua:2997
 #, fuzzy, lua-format
 msgctxt "msgMainscreen"
 msgid "Race completed in %.2f seconds. Time rank: %s"
 msgstr "Course terminée en %.2f secondes. Grade de rapidité : %s"
 
-#: scripts/scenario_58_race.lua:3031 scripts/scenario_58_race.lua:3037
+#: scripts/scenario_58_race.lua:2999 scripts/scenario_58_race.lua:3005
 #, fuzzy, lua-format
 msgctxt "msgMainscreen"
 msgid ""
@@ -2338,7 +2289,7 @@ msgstr ""
 "\n"
 "Drones cibles éliminés : %i"
 
-#: scripts/scenario_58_race.lua:3035
+#: scripts/scenario_58_race.lua:3003
 #, fuzzy
 msgctxt "msgMainscreen"
 msgid ""
@@ -2348,13 +2299,13 @@ msgstr ""
 "Les administrateurs de la course en ont eu assez d'attendre et l'ont "
 "interrompu après 33 minutes. Grade de rapidité : Cadet"
 
-#: scripts/scenario_58_race.lua:3041
+#: scripts/scenario_58_race.lua:3009
 #, fuzzy
 msgctxt "msgMainscreen"
 msgid "Race Results"
 msgstr "- Résultats de la course -"
 
-#: scripts/scenario_58_race.lua:3046
+#: scripts/scenario_58_race.lua:3014
 #, fuzzy, lua-format
 msgctxt "msgMainscreen"
 msgid ""
@@ -2363,7 +2314,7 @@ msgstr ""
 "Les administrateurs de la course en ont eu assez d'attendre et l'ont "
 "interrompu après %.2f secondes."
 
-#: scripts/scenario_58_race.lua:3052
+#: scripts/scenario_58_race.lua:3020
 #, fuzzy
 msgctxt "msgMainscreen"
 msgid ""
@@ -2374,7 +2325,7 @@ msgstr ""
 "\n"
 "    Position. : score     Temps         Position/Drones"
 
-#: scripts/scenario_58_race.lua:3062
+#: scripts/scenario_58_race.lua:3030
 #, lua-format
 msgctxt "msgMainscreen"
 msgid ""
@@ -2384,13 +2335,13 @@ msgstr ""
 "\n"
 "%i. %s : %i points     %.2fs      %i pts/%i pts"
 
-#: scripts/scenario_58_race.lua:3065
+#: scripts/scenario_58_race.lua:3033
 #, fuzzy
 msgctxt "msgMainscreen"
 msgid "Nobody finished the race."
 msgstr "Personne n'a terminé la course."
 
-#: scripts/scenario_58_race.lua:3080
+#: scripts/scenario_58_race.lua:3048
 #, lua-format
 msgctxt "msgMainscreen"
 msgid ""
@@ -2401,7 +2352,7 @@ msgstr ""
 "Grade de rapidité : %s.\n"
 "Points de classement : %i"
 
-#: scripts/scenario_58_race.lua:3082
+#: scripts/scenario_58_race.lua:3050
 #, fuzzy
 msgctxt "msgMainscreen"
 msgid ""
@@ -2411,13 +2362,13 @@ msgstr ""
 "\n"
 "Résultats indéterminés"
 
-#: scripts/scenario_58_race.lua:3126 scripts/scenario_58_race.lua:3139
+#: scripts/scenario_58_race.lua:3094 scripts/scenario_58_race.lua:3107
 #, fuzzy, lua-format
 msgctxt "msgMainscreen"
 msgid "%s Drones shot: %i, Total score: %i. "
 msgstr "%s Tir de drones : %i, Score total : %i."
 
-#: scripts/scenario_58_race.lua:3417
+#: scripts/scenario_58_race.lua:3385
 #, lua-format
 msgctxt "raceOrders-comms"
 msgid ""
@@ -2428,7 +2379,7 @@ msgstr ""
 "\n"
 "    - Longueur du parcours : %f unités."
 
-#: scripts/scenario_58_race.lua:3423
+#: scripts/scenario_58_race.lua:3391
 #, lua-format
 msgctxt "raceOrders-shipLog"
 msgid "Race starts in %i minutes. Be at waypoint 1 on time or forfeit"
@@ -2436,7 +2387,7 @@ msgstr ""
 "La course commence dans %i minutes. Soyez à l'heure au marqueur 1 ou vous "
 "serez déclarés forfait."
 
-#: scripts/scenario_58_race.lua:3425
+#: scripts/scenario_58_race.lua:3393
 #, fuzzy, lua-format
 msgctxt "raceOrders-shipLog"
 msgid "Race starts in %i minute. Be at waypoint 1 on time or forfeit"
@@ -2444,51 +2395,51 @@ msgstr ""
 "ATTENTION La course commence dans %i minute.\n"
 "Soyez à l'heure au marqueur 1 ou déclarez forfait."
 
-#: scripts/scenario_58_race.lua:3427
+#: scripts/scenario_58_race.lua:3395
 #, fuzzy, lua-format
 msgctxt "raceOrders-shipLog"
 msgid "Today's race length: %.1f units"
 msgstr "Longueur du parcours du jour : %.1f unités."
 
-#: scripts/scenario_58_race.lua:3435
+#: scripts/scenario_58_race.lua:3403
 #, fuzzy, lua-format
 msgctxt "race-"
 msgid "Race Start Countdown: %.2f"
 msgstr "- Départ de la course dans %.2f secondes -"
 
-#: scripts/scenario_58_race.lua:3447
+#: scripts/scenario_58_race.lua:3415
 msgctxt "race-shipLog"
 msgid "Ready..."
 msgstr ">> À vos marques..."
 
-#: scripts/scenario_58_race.lua:3451
+#: scripts/scenario_58_race.lua:3419
 msgctxt "race-shipLog"
 msgid "Set..."
 msgstr ">> Prêt..."
 
-#: scripts/scenario_58_race.lua:3490
+#: scripts/scenario_58_race.lua:3458
 #, fuzzy
 msgctxt "raceOrders-comms"
 msgid "Complete race. Win if possible."
 msgstr "Finir la course et gagner si possible."
 
-#: scripts/scenario_58_race.lua:3503
+#: scripts/scenario_58_race.lua:3471
 msgctxt "raceOrders-shipLog"
 msgid "Go!"
 msgstr ">> Partez !"
 
-#: scripts/scenario_58_race.lua:3529
+#: scripts/scenario_58_race.lua:3497
 #, fuzzy, lua-format
 msgctxt "race-"
 msgid "Race Run Time %.2f"
 msgstr "Temps de course : %.2f"
 
-#: scripts/scenario_58_race.lua:3553
+#: scripts/scenario_58_race.lua:3521
 msgctxt "race-shipLog"
 msgid "The race has begun!"
 msgstr ">> La course a commencé !"
 
-#: scripts/scenario_58_race.lua:3558
+#: scripts/scenario_58_race.lua:3526
 #, fuzzy, lua-format
 msgctxt "race-shipLog"
 msgid ""
@@ -2497,7 +2448,7 @@ msgstr ""
 "Avec %i coureurs, nous avons les points suivants attribués pour les places "
 "finales de la course :"
 
-#: scripts/scenario_58_race.lua:3560
+#: scripts/scenario_58_race.lua:3528
 #, lua-format
 msgctxt "race-shipLog"
 msgid ""
@@ -2507,101 +2458,101 @@ msgstr ""
 "Avec %i coureurs au départ sur les %i inscrits, les points suivants seront "
 "attribués pour le classement final :"
 
-#: scripts/scenario_58_race.lua:3567
+#: scripts/scenario_58_race.lua:3535
 msgctxt "race-shipLog"
 msgid "First"
 msgstr ""
 "\n"
 "- 1er"
 
-#: scripts/scenario_58_race.lua:3568
+#: scripts/scenario_58_race.lua:3536
 msgctxt "race-shipLog"
 msgid "Second"
 msgstr ""
 "\n"
 "- 2ème"
 
-#: scripts/scenario_58_race.lua:3569
+#: scripts/scenario_58_race.lua:3537
 msgctxt "race-shipLog"
 msgid "Third"
 msgstr ""
 "\n"
 "- 3ème"
 
-#: scripts/scenario_58_race.lua:3570
+#: scripts/scenario_58_race.lua:3538
 msgctxt "race-shipLog"
 msgid "Fourth"
 msgstr ""
 "\n"
 "- 4ème"
 
-#: scripts/scenario_58_race.lua:3571
+#: scripts/scenario_58_race.lua:3539
 msgctxt "race-shipLog"
 msgid "Fifth"
 msgstr ""
 "\n"
 "- 5ème"
 
-#: scripts/scenario_58_race.lua:3572
+#: scripts/scenario_58_race.lua:3540
 msgctxt "race-shipLog"
 msgid "Sixth"
 msgstr ""
 "\n"
 "- 6ème"
 
-#: scripts/scenario_58_race.lua:3573
+#: scripts/scenario_58_race.lua:3541
 msgctxt "race-shipLog"
 msgid "Seventh"
 msgstr ""
 "\n"
 "- 7ème"
 
-#: scripts/scenario_58_race.lua:3574
+#: scripts/scenario_58_race.lua:3542
 msgctxt "race-shipLog"
 msgid "Eighth"
 msgstr ""
 "\n"
 "- 8ème"
 
-#: scripts/scenario_58_race.lua:3575
+#: scripts/scenario_58_race.lua:3543
 msgctxt "race-shipLog"
 msgid "Ninth"
 msgstr ""
 "\n"
 "- 9ème"
 
-#: scripts/scenario_58_race.lua:3576
+#: scripts/scenario_58_race.lua:3544
 msgctxt "race-shipLog"
 msgid "Tenth"
 msgstr ""
 "\n"
 "- 10ème"
 
-#: scripts/scenario_58_race.lua:3582
+#: scripts/scenario_58_race.lua:3550
 #, fuzzy, lua-format
 msgctxt "race-shipLog"
 msgid "%s, %s:%s"
 msgstr "%s, %s : %s points test 1"
 
-#: scripts/scenario_58_race.lua:3585
+#: scripts/scenario_58_race.lua:3553
 #, fuzzy, lua-format
 msgctxt "race-shipLog"
 msgid "%s:%s"
 msgstr "%s : %s points test2"
 
-#: scripts/scenario_58_race.lua:3594
+#: scripts/scenario_58_race.lua:3562
 #, fuzzy
 msgctxt "race-msgMainscreen"
 msgid "Race aborted. Nobody made it to the starting line"
 msgstr "Course annulée. Personne n'a rejoint la ligne de départ."
 
-#: scripts/scenario_58_race.lua:3622
+#: scripts/scenario_58_race.lua:3590
 #, fuzzy, lua-format
 msgctxt "race-tabHelms&Tactical&Singlepilot"
 msgid "%s in %s"
 msgstr "%s en secteur %s"
 
-#: scripts/scenario_58_race.lua:3643
+#: scripts/scenario_58_race.lua:3611
 #, fuzzy, lua-format
 msgctxt "race-shipLog"
 msgid ""
@@ -2611,7 +2562,7 @@ msgstr ""
 "Marqueur 2 atteint. Allez au marqueur 3. L'étape a duré %f secondes. Vous "
 "avez terminé %i %s."
 
-#: scripts/scenario_58_race.lua:3654
+#: scripts/scenario_58_race.lua:3622
 #, fuzzy, lua-format
 msgctxt "race-shipLog"
 msgid ""
@@ -2621,7 +2572,7 @@ msgstr ""
 "Marqueur 3 atteint. Allez au marqueur 4. L'étape a duré %f secondes. Vous "
 "avez terminé %i %s."
 
-#: scripts/scenario_58_race.lua:3665
+#: scripts/scenario_58_race.lua:3633
 #, fuzzy, lua-format
 msgctxt "race-shipLog"
 msgid ""
@@ -2631,13 +2582,13 @@ msgstr ""
 "Marqueur 4 atteint. Allez au marqueur 1. L'étape a duré %f secondes. Vous "
 "avez terminé %i %s."
 
-#: scripts/scenario_58_race.lua:3673
+#: scripts/scenario_58_race.lua:3641
 #, fuzzy, lua-format
 msgctxt "race-shipLog"
 msgid "Completed race. Race time in seconds: %f"
 msgstr "Course terminée. Durée de la course : %f secondes"
 
-#: scripts/scenario_58_race.lua:3681
+#: scripts/scenario_58_race.lua:3649
 #, fuzzy, lua-format
 msgctxt "race-shipLog"
 msgid ""
@@ -2647,7 +2598,7 @@ msgstr ""
 "Marqueur 1 atteint. Allez au marqueur 2. L'étape a duré %f secondes. Vous "
 "avez terminé %i %s. Le tour a duré %f secondes."
 
-#: scripts/scenario_58_race.lua:3714
+#: scripts/scenario_58_race.lua:3682
 #, fuzzy
 msgctxt "msgMainscreen"
 msgid "Race aborted. Nobody made it to the starting line"

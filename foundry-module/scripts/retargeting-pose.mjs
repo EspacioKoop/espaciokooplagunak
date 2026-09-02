@@ -20,10 +20,11 @@
 // declara en el propio mapeo, no lo detecta este módulo.
 //
 // LO QUE SE DEJA FUERA A PROPÓSITO. Reproducción de clips con interpolación
-// (#603 la deja fuera desde la fase 1) y cualquier ajuste automático del eje de
-// giro por diferencia de orientación entre rigs: si los dos rigs no comparten
-// convención de ejes, el mapeo tiene que decirlo con un `giro` de corrección,
-// no lo adivina el módulo.
+// (#603 la deja fuera desde la fase 1) y cualquier corrección de convención de
+// ejes entre rigs: esta fase exige que origen y destino compartan la misma
+// convención. El mapeo es solo `{idOrigen: idDestino}` — no hay esquema para
+// declarar un giro de corrección; si dos rigs no coinciden en ejes, no se
+// pueden retargetar todavía.
 //
 // Puro: ni Foundry, ni DOM, ni red. Se prueba desde Node.
 

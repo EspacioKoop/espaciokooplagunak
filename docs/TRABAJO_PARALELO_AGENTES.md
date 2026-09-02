@@ -40,7 +40,7 @@ PR: cada área se verifica sola, y por eso se pueden entregar por separado.
 | Módulo: arte y avatares | `foundry-module/scripts/paleta.mjs`, `foundry-module/scripts/avatar/*.mjs`, `foundry-module/scripts/ficha-nave*.mjs`, `foundry-module/scripts/iconos-sistema.mjs`, `foundry-module/scripts/laminas-clasicas.mjs`, `foundry-module/scripts/png-indexado.mjs` | `node --test $(find foundry-module/tests -name '*.test.mjs')` |
 | Módulo: NPC y bestiario | `foundry-module/scripts/npc-*.mjs` | `node --test $(find foundry-module/tests -name '*.test.mjs')` |
 | Módulo: minijuegos | `foundry-module/scripts/minijuegos/**`, `foundry-module/scripts/minijuegos-wiring.mjs` | `node --test $(find foundry-module/tests -name '*.test.mjs')` |
-| Módulo: catálogos con procedencia | `foundry-module/scripts/catalogo-*.mjs`, `foundry-module/scripts/procedencia-*.mjs`, `foundry-module/scripts/museo-piezas.mjs`, `foundry-module/scripts/atlas-hyg.mjs`, `foundry-module/data/**` | `node --test $(find foundry-module/tests -name '*.test.mjs')` |
+| Módulo: catálogos con procedencia | `foundry-module/scripts/catalogo-*.mjs`, `foundry-module/scripts/procedencia-*.mjs`, `foundry-module/scripts/museo-piezas.mjs`, `foundry-module/scripts/atlas-hyg.mjs`, `foundry-module/scripts/importador-atlas.mjs`, `foundry-module/scripts/atlas-importar-ventana.mjs`, `foundry-module/data/**` | `node --test $(find foundry-module/tests -name '*.test.mjs')` |
 | Módulo: contenido externo del GM | `foundry-module/scripts/contenido-externo/**` | `node --test $(find foundry-module/tests -name '*.test.mjs')` |
 | Documentación | `docs/**`, `README.md`, `CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md` | — (revisión humana) |
 

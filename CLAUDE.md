@@ -551,10 +551,11 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     **vuela** sobre el agua que tiene delante, que es lo único que ninguna barra puede hacer. Y el presupuesto es la condición y no una optimización posterior: cada
     composición se comprueba **al importar** contra `TOPE_CUADRO` y revienta si no cabe, porque un
     cuadro recortado al tope se lee como un fallo (a diferencia de un muro, al que le sobra un
-    greeble y sigue siendo un muro). Ese tope subió a 400 en #838 con la medida delante, y lo que
-    la medida enseña es dónde está el gasto: las mallas pasan de 19–83 caras a 96–377, pero en
-    pantalla la sala pasa de 1.461 a 1.466 polígonos —el costado de una masa está de canto a un
-    paso y cae por recorte—, o sea que el relieve se paga al construir la sala y no por fotograma.
+    greeble y sigue siendo un muro). Ese tope subió a 400 en #838 mientras se probaba el relieve
+    geométrico, con la medida delante: las mallas pasaban de 19–83 caras a 96–377, pero en
+    pantalla la sala pasaba de 1.461 a 1.466 polígonos —el costado de una masa está de canto a un
+    paso y cae por recorte—, o sea que el relieve se pagaba al construir la sala y no por
+    fotograma. Al retirarse el relieve geométrico (ver más abajo) volvió a bajar, esta vez a 200.
     Lo que sí se paga es la SILUETA: una ladera que cambia de ancho en cada fila es todo escalón,
     y de ahí que el cono y el perfil de la ola se muestreen a peldaños (`paso`, `PASO_OLA`) en vez
     de al píxel — 671 caras costaba la ola dibujada columna a columna, el tope entero de un cuadro

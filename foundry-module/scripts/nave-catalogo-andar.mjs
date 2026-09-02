@@ -277,6 +277,9 @@ function definirSala(sala, salientes) {
     // Semilla por sala: cada ventana da a un trozo de cielo distinto, y el
     // mismo siempre. Sin esto todas las salas mirarían a las mismas estrellas.
     semillaCielo: 20260808 + sala.celda.x * 31 + sala.celda.y * 7,
+    // La luminaria parpadea por SU sistema (#765), no por uno inventado: la
+    // misma cadena que ya declara `SALAS_PHOBOS` para el puesto y el mobiliario.
+    sistema: sala.sistema ?? null,
   });
 
   return {

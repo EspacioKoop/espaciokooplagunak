@@ -767,6 +767,7 @@
   "LAGUNAK.Minijuegos.Rechazo.mano_terminada": "the hand is already over",
   "LAGUNAK.Minijuegos.Rechazo.parametro_invalido": "that value is not valid for this move",
   "LAGUNAK.Minijuegos.Rechazo.apuesta_no_supera": "you must raise the previous bet",
+  "LAGUNAK.Minijuegos.Rechazo.carta_ya_mostrada": "that card is already shown",
   "LAGUNAK.Minijuegos.Rechazo.ya_en_mesa": "you are already at the table",
   "LAGUNAK.Minijuegos.Rechazo.no_participa": "you are not at the table",
   "LAGUNAK.Minijuegos.Rechazo.sin_semilla": "the deck could not be shuffled",

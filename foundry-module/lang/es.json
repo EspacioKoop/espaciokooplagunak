@@ -767,6 +767,7 @@
   "LAGUNAK.Minijuegos.Rechazo.mano_terminada": "la mano ya ha terminado",
   "LAGUNAK.Minijuegos.Rechazo.parametro_invalido": "ese valor no vale para esta jugada",
   "LAGUNAK.Minijuegos.Rechazo.apuesta_no_supera": "hay que subir la apuesta anterior",
+  "LAGUNAK.Minijuegos.Rechazo.carta_ya_mostrada": "esa carta ya está mostrada",
   "LAGUNAK.Minijuegos.Rechazo.ya_en_mesa": "ya estás en la mesa",
   "LAGUNAK.Minijuegos.Rechazo.no_participa": "no estás en la mesa",
   "LAGUNAK.Minijuegos.Rechazo.sin_semilla": "no se pudo barajar",

@@ -32,6 +32,7 @@ export const ERRORES = Object.freeze({
   ACCION_NO_PERMITIDA: "accion_no_permitida",
   MANO_TERMINADA: "mano_terminada",
   PARAMETRO_INVALIDO: "parametro_invalido",
+  CARTA_YA_MOSTRADA: "carta_ya_mostrada",
 });
 
 // ---- Creación -------------------------------------------------------------
@@ -101,6 +102,11 @@ export function crear(configuracion, semilla) {
     turnoIndice: null,
     mazo,
     manos,
+    // Cartas de mano que su dueño ha mostrado voluntariamente (#458): no es una
+    // acción de turno, es una revelación pública de una carta privada que el
+    // motor sigue siendo el único autorizado a conceder — así una proyección de
+    // escena nunca puede inventarse que una carta es visible.
+    cartasMostradas: {},
     resultado: null,
   };
 
@@ -149,8 +155,20 @@ export function vistaPublica(estado) {
       retirado: j.retirado,
       allIn: j.allIn,
     })),
+    // Códigos reales: mostrar una carta la hace pública para todo el mundo, no
+    // solo para quien la enseña — por eso vive en la vista pública y no en la
+    // privada.
+    cartasMostradas: cartasMostradasPublicas(estado),
     resultado: estado.resultado,
   };
+}
+
+function cartasMostradasPublicas(estado) {
+  const salida = {};
+  for (const [userId, indices] of Object.entries(estado.cartasMostradas)) {
+    salida[userId] = indices.map((indice) => codigo(estado.manos[userId][indice]));
+  }
+  return salida;
 }
 
 export function vistaPrivada(estado, userId) {
@@ -160,14 +178,18 @@ export function vistaPrivada(estado, userId) {
 }
 
 export function accionesPermitidas(estado, userId) {
+  const acciones = [];
+  if (puedeMostrar(estado, userId)) {
+    acciones.push("mostrar");
+  }
   if (haTerminado(estado) || estado.turnoIndice == null) {
-    return [];
+    return acciones;
   }
   const jugador = estado.jugadores[estado.turnoIndice];
   if (jugador.userId !== userId) {
-    return [];
+    return acciones;
   }
-  const acciones = ["fold"];
+  acciones.push("fold");
   if (jugador.apostadoRonda === estado.apuestaActual) {
     acciones.push("check");
   } else if (jugador.stack > 0) {
@@ -178,6 +200,18 @@ export function accionesPermitidas(estado, userId) {
     acciones.push("raise");
   }
   return acciones;
+}
+
+// "mostrar" es voluntaria y no de turno: cualquier jugador con cartas en la
+// mano puede enseñarlas en cualquier momento, no solo el que actúa. Solo se
+// cierra cuando la mano termina (ya no hay una mesa a la que enseñar nada) o
+// cuando el jugador se ha retirado (mostraría una mano que ya no compite).
+function puedeMostrar(estado, userId) {
+  if (haTerminado(estado)) {
+    return false;
+  }
+  const jugador = estado.jugadores.find((j) => j.userId === userId);
+  return Boolean(jugador && !jugador.retirado);
 }
 
 export function haTerminado(estado) {
@@ -195,6 +229,11 @@ export function aplicar(estado, accion) {
     return { ok: false, codigo: ERRORES.MANO_TERMINADA };
   }
   const { actorId, tipo, parametros } = accion ?? {};
+
+  if (tipo === "mostrar") {
+    return aplicarMostrar(estado, actorId, parametros);
+  }
+
   if (estado.turnoIndice == null || estado.jugadores[estado.turnoIndice].userId !== actorId) {
     return { ok: false, codigo: ERRORES.FUERA_DE_TURNO };
   }
@@ -221,6 +260,27 @@ export function aplicar(estado, accion) {
   }
 
   avanzar(siguiente);
+  return { ok: true, estado: siguiente };
+}
+
+// Revelación voluntaria de una carta de mano (#458). No pasa por `clonar` +
+// `avanzar` como las acciones de turno: no consume el turno de nadie ni cierra
+// ronda, así que el estado devuelto conserva el turno que hubiera.
+function aplicarMostrar(estado, actorId, parametros) {
+  if (!puedeMostrar(estado, actorId)) {
+    return { ok: false, codigo: ERRORES.ACCION_NO_PERMITIDA };
+  }
+  const indice = Number(parametros?.indice);
+  const mano = estado.manos[actorId];
+  if (!Number.isInteger(indice) || indice < 0 || indice >= mano.length) {
+    return { ok: false, codigo: ERRORES.PARAMETRO_INVALIDO };
+  }
+  const yaMostradas = estado.cartasMostradas[actorId] ?? [];
+  if (yaMostradas.includes(indice)) {
+    return { ok: false, codigo: ERRORES.CARTA_YA_MOSTRADA };
+  }
+  const siguiente = clonar(estado);
+  siguiente.cartasMostradas[actorId] = [...yaMostradas, indice];
   return { ok: true, estado: siguiente };
 }
 

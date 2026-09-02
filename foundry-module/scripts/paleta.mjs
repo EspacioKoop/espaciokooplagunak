@@ -180,6 +180,10 @@ export const PAGINA = Object.freeze({
   papel: "#0b0f18", // mismo papel envejecido que TINTA.papel
   cabecera: "#c9b48a", // título sugerido, el realce del grabado
   tinta: "#6f6448", // bloques de texto sugerido: sepia apagado, nunca letra
+  // La cubierta del libro 3D (#853, vertical 2). Cuero oscuro y no un negro
+  // puro: tiene que despegarse del MUSEO.muro (#2e3138) sin competir con las
+  // estatuas claras de la misma sala, que son las que deben leerse primero.
+  tapa: "#3a2a1c",
 });
 
 export const CANTINA = Object.freeze({

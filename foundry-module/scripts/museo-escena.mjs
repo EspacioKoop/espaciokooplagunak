@@ -36,6 +36,7 @@ import { crearSalaCaja } from "./nave-sala-caja.mjs";
 import { declararInteracciones } from "./nave-interaccion.mjs";
 import { CATALOGO_MUSEO, MALLAS_MUSEO } from "./museo-piezas.mjs";
 import { deformarPieza } from "./estatua-rig.mjs";
+import { ID_LIBRO_CLASICO } from "./libro-catalogo.mjs";
 
 /* ---- medidas de la sala ---------------------------------------------------- */
 
@@ -149,6 +150,43 @@ const CARTELA = Object.freeze({ ancho: 0.42, alto: 0.3, grosor: 0.05, cota: 0.95
  *  para tener la pieza entera en el campo de visión sin retroceder. */
 const DISTANCIA_MIRADA = 1.5;
 
+/**
+ * El atril del libro interactuable (#853, vertical 2). Posición fija, a mano
+ * —igual que la cartela de cada pieza—, y NO sale de la fórmula de columnas de
+ * `X_PEDESTALES`: es un mueble más, no una cuarta obra de la fila. En el medio
+ * de la sala, entre la entrada (`Z_ENTRADA` = 1,8) y la primera fila de
+ * pedestales (`Z_PEDESTALES` ronda 7), con margen de sobra al muro más cercano
+ * en cualquier dirección — a diferencia de un pedestal, aquí hay que PLANTARSE
+ * al lado, así que el hueco alrededor importa más que en una vitrina.
+ *
+ * `yaw` es la rotación con la que `libro-museo.mjs` planta el libro en la
+ * sala (una rotación de PLANTA, no la convención `front = (sin, cos)` de la
+ * cámara) — es una decisión de composición y no afecta a dónde se activa el
+ * libro, que fija `PUNTO_LIBRO`/`ORIENTACION_LIBRO` de abajo con la misma
+ * convención que ya usa cada `mirador` de pieza.
+ */
+export const ATRIL_LIBRO = Object.freeze({ x: 1.6, z: 3.0, yaw: Math.PI, altura: 0.95 });
+
+/**
+ * Desde dónde se activa el libro, y hacia dónde hay que mirar para verlo:
+ * `front(orientacion) = (sin, cos)`, la misma convención de `nave-camara.mjs`
+ * que ya usan `puntoLibreCerca`/el `mirador` de cada pieza. Se aparta del
+ * atril por el lado de +x —el más despejado, con toda la sala hasta x=12 por
+ * delante— y no por el de la pared de la izquierda, donde 0,9 m dejaría a
+ * quien mira casi pegado al muro.
+ */
+const ORIENTACION_LIBRO = (3 * Math.PI) / 2; // front = (-1, 0): se aparta hacia +x, mira hacia -x
+const PUNTO_LIBRO = Object.freeze([
+  ATRIL_LIBRO.x - DISTANCIA_MIRADA * 0.6 * Math.sin(ORIENTACION_LIBRO),
+  ATRIL_LIBRO.z - DISTANCIA_MIRADA * 0.6 * Math.cos(ORIENTACION_LIBRO),
+]);
+
+/** El bloque que sostiene el atril: ancho y hondo, no tan alto como un
+ *  pedestal de escultura — se lee y se toca, no se admira desde lejos. */
+const ATRIL_LIBRO_MEDIDAS = Object.freeze({ ancho: 0.5, alto: 0.95, profundo: 0.35 });
+
+export const ID_INTERACCION_LIBRO = "libro-clasico";
+
 /* ---- colocar una pieza ----------------------------------------------------- */
 
 /** La caja que ocupa una malla, en sus propias coordenadas. */
@@ -261,6 +299,17 @@ function mobiliario() {
       colision: false,
     });
   }
+  // El bloque del atril del libro (#853): SOLO el mueble estático, para que
+  // bloquee el paso igual que cualquier otro pedestal. El libro en sí —tapas,
+  // hoja, página— no vive aquí: se anima fotograma a fotograma y lo compone
+  // `libro-museo.componerMuseoConLibro` por encima de esta sala, que es
+  // estática por construcción (se calcula una sola vez, ver `PIEZAS_COLOCADAS`
+  // más abajo).
+  piezas.push({
+    centro: [ATRIL_LIBRO.x, ATRIL_LIBRO_MEDIDAS.alto / 2, ATRIL_LIBRO.z],
+    medidas: [ATRIL_LIBRO_MEDIDAS.ancho, ATRIL_LIBRO_MEDIDAS.alto, ATRIL_LIBRO_MEDIDAS.profundo],
+    color: MUSEO.pedestal,
+  });
   piezas.push({ centro: [...SALIDA.centro], medidas: [...SALIDA.medidas], color: MUSEO.zocalo });
   return piezas;
 }
@@ -285,6 +334,18 @@ export const INTERACCIONES = declararInteracciones([
     punto: [SALIDA.centro[0], SALIDA.centro[2] + 0.9],
     orientacion: Math.PI,
     accion: { tipo: "estancia", estancia: "cantina" },
+  },
+  // El libro interactuable (#853, vertical 2). Un solo punto y no uno por
+  // página: `accion.tipo === "libro"` es opaco para el motor de andar, igual
+  // que `"cartela"` — quien lo recibe (`andar-nave-app.mjs`) decide que llegar
+  // aquí abre el libro, o pasa página si ya estaba abierto (la máquina de
+  // estados vive en `libro-estado.mjs`/`libro-sesion.mjs`, no en el catálogo
+  // de interacciones).
+  {
+    id: ID_INTERACCION_LIBRO,
+    punto: [...PUNTO_LIBRO],
+    orientacion: ORIENTACION_LIBRO,
+    accion: { tipo: "libro", pieza: ID_LIBRO_CLASICO },
   },
 ]);
 

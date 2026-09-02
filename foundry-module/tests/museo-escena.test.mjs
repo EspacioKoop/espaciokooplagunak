@@ -124,10 +124,14 @@ test("la salida devuelve a la nave, y es lo único que transporta en toda la sal
 });
 
 test("NADA en la sala concede, cuenta ni recuerda (docs/FOUNDRY.md)", () => {
-  // Las únicas acciones posibles son leer una cartela y salir. Cualquier tipo
-  // nuevo aquí es una decisión de diseño, no un detalle: que falle la prueba.
+  // Las únicas acciones posibles son leer una cartela, salir y abrir el libro
+  // (#853, vertical 2). "libro" se sumó aquí a propósito y no por descuido: es
+  // una decisión de diseño, y por eso la prueba la nombra en vez de limitarse
+  // a no fallar. Sigue sin haber nada que conceda, cuente ni recuerde — el
+  // libro se abre y se pasa, y `libro-sesion.mjs` lo resetea al alejarse, la
+  // misma regla instantánea que ya tenía la cartela.
   const tipos = new Set(INTERACCIONES.map((punto) => punto.accion?.tipo));
-  assert.deepEqual([...tipos].sort(), ["cartela", "estancia"]);
+  assert.deepEqual([...tipos].sort(), ["cartela", "estancia", "libro"]);
 });
 
 test("se entra dentro de la sala, en suelo libre y mirando a las piezas", () => {

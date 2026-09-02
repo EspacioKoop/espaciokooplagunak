@@ -142,3 +142,32 @@ dice que el nivel elegido no era casualidad de aquella pieza.
 tabla `FICHAS` y **se niega a convertir** lo que no esté en ella. Este documento
 es la versión para humanos, con el porqué; aquella es la que hace imposible
 saltarse el paso.
+
+---
+
+## El libro interactuable del museo (#853) — sin ficha, y por qué
+
+No hay entrada de tabla aquí porque no hay **archivo** que fichar: el libro 3D
+del museo (`foundry-module/scripts/libro-catalogo.mjs`) no importa ningún
+escaneo, fotografía ni fichero de terceros. Sus páginas son mancha tipográfica
+generada por `libro-pagina.mjs` (rejilla + `chapasDeRejilla`, la misma
+maquinaria de la piel pixelart del módulo, #526/#838: nunca una letra
+legible), y su geometría sale de `libro-geometria.mjs`. Cero binarios, cero
+licencia de terceros que declarar.
+
+La cartela sí **nombra** una obra clásica real como homenaje narrativo — los
+aguafuertes que Gustave Doré hizo para *La Divina Comedia* (1861), hoy de
+dominio público en todo el mundo—, pero eso es contenido de la cartela, no
+procedencia de un archivo: no se ha copiado, escaneado ni redibujado ni un
+píxel de esa edición. Por eso `provenance.kind` en `libro-catalogo.mjs` es
+`"original"` (obra propia del módulo) y no `"cc"`: la trampa de la primera
+sección de este documento —"que la obra sea de dominio público no implica que
+el archivo lo sea"— corre al revés aquí, y merece decirse igual de claro: que
+la mancha se INSPIRE en una obra de dominio público no la convierte en una
+reproducción de esa obra, así que no hace falta (ni corresponde) una ficha de
+licencia para ella.
+
+Si algún día este libro —o cualquier otro— reproduce de verdad un archivo de
+terceros (una página escaneada, una tipografía con licencia propia), esa
+entrada sí necesita su ficha completa aquí, con el mismo rigor que las de
+arriba.

@@ -29,6 +29,9 @@ import { openWorkspaceApp } from "./station-workspace-ui.mjs";
 import { SECCION } from "./paleta.mjs";
 import { cartelaDe, piezaPorId } from "./catalogo-piezas.mjs";
 import { CATALOGO_MUSEO } from "./museo-piezas.mjs";
+import { CATALOGO_LIBROS, ID_LIBRO_CLASICO } from "./libro-catalogo.mjs";
+import { PAGINAS_LIBRO } from "./libro-museo.mjs";
+import { activarLibro, cerrarLibro } from "./libro-sesion.mjs";
 import { AJUSTE_TELEMETRIA, aceptarSensores, aceptarTelemetria } from "./telemetria-difusion.mjs";
 import { AJUSTE_NIVEL_ALERTA } from "./alerta-escena.mjs";
 
@@ -279,10 +282,10 @@ function arrancar(raiz, estanciaPedida = null) {
    * cartela que interpretara etiquetas sería una superficie de inyección a
    * cambio de nada.
    */
-  function pintarCartela(piezaId) {
+  function pintarCartela(piezaId, catalogo = CATALOGO_MUSEO) {
     const nodo = raiz?.querySelector?.("[data-andar-cartela]");
     if (!nodo) return;
-    const pieza = piezaId ? piezaPorId(CATALOGO_MUSEO, piezaId) : null;
+    const pieza = piezaId ? piezaPorId(catalogo, piezaId) : null;
     if (!pieza) {
       nodo.hidden = true;
       return;
@@ -440,6 +443,20 @@ function arrancar(raiz, estanciaPedida = null) {
       // El texto sale del catálogo —que es el dato— y solo el nombre de la
       // naturaleza sale de i18n, que es interfaz.
       else if (accion?.tipo === "cartela") pintarCartela(accion.pieza);
+      // El libro interactuable (#853, vertical 2). Un solo gesto para las dos
+      // cosas que hace falta poder hacer: la primera llegada lo abre, cada
+      // llegada siguiente pasa página (o lo cierra si ya iba por la última) —
+      // la máquina de estados vive en `libro-estado.mjs`/`libro-sesion.mjs`, y
+      // esta ventana solo dispara el gesto y pinta su cartela con el MISMO
+      // mecanismo que ya usa una pieza de museo, reutilizando `pintarCartela`
+      // con el catálogo de libros en vez del de estatuas.
+      else if (accion?.tipo === "libro") {
+        const reducirMovimiento = Boolean(
+          globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches,
+        );
+        activarLibro({ totalPaginas: PAGINAS_LIBRO, reducirMovimiento, ahoraMs: Date.now() });
+        pintarCartela(accion.pieza ?? ID_LIBRO_CLASICO, CATALOGO_LIBROS);
+      }
       // Un punto que lleva a otra estancia (#587: la cabina de teléfono de la
       // playa devuelve a la nave). Reusa EXACTAMENTE el camino de una puerta en
       // vez de tener su propio salto: cambiar de estancia ya está resuelto, y
@@ -452,8 +469,17 @@ function arrancar(raiz, estanciaPedida = null) {
     },
     // Alejarse la retira (#598). Va por el flanco de SALIDA del bucle y no por
     // un temporizador: una cartela se deja de leer cuando te apartas, no cuando
-    // pasan unos segundos.
-    alSalirDeInteraccion: () => pintarCartela(null),
+    // pasan unos segundos. Y para el libro (#853) además lo CIERRA sin animar
+    // —la misma regla instantánea que ya tenía la cartela—: alejarse de un
+    // libro que nadie mira no debería seguir gastando fotogramas ni recordando
+    // por qué página iba. Llamar a `cerrarLibro()` al salir de CUALQUIER
+    // interacción (no solo la del libro) es barato — resetea un libro que ya
+    // estaba cerrado no hace nada— y así no hace falta que este flanco sepa de
+    // qué interacción se está saliendo.
+    alSalirDeInteraccion: () => {
+      pintarCartela(null);
+      cerrarLibro();
+    },
     // El de la estancia de ARRANQUE, no el de la nave (#587). Sin esto, abrir
     // directamente en un exterior pintaba su cielo con el gris de entre salas y
     // solo se corregía al cambiar de estancia — que en la playa no pasa nunca,

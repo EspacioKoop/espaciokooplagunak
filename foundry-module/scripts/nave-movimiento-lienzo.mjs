@@ -268,6 +268,19 @@ export function arrancarAndar(lienzo, opciones = {}) {
     camara() {
       return modoCamara;
     },
+    /**
+     * El reloj de ESTE bucle (por defecto `performance.now()`, ver `ahora`
+     * en las opciones) — para que quien cablea gestos fuera del bucle (p. ej.
+     * una tecla de interacción en `andar-nave-app.mjs`) use la MISMA fuente
+     * de tiempo que ya recibe `componer(...).tiempo` en cada fotograma, en
+     * vez de un `Date.now()` propio. Mezclar reloj de pared con el monotónico
+     * de este bucle es justo lo que dejaba el libro del museo congelado en
+     * "abriendo" (#914): el tiempo transcurrido salía negativo y se
+     * limitaba a cero.
+     */
+    ahora() {
+      return ahora();
+    },
     /** Gira mientras se mantenga: -1 izquierda, 0 quieto, 1 derecha. */
     girar(sentido) {
       girando = Math.sign(sentido) || 0;

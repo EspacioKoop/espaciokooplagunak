@@ -165,8 +165,12 @@ export function componerMuseoConLibro(x, y, z, yaw, opciones = {}) {
     ancho: anchoLienzo = 480, alto: altoLienzo = 270, epoca, fov = 62, modoCamara, tiempo,
   } = opciones;
 
-  const ahoraMs = Number.isFinite(tiempo) ? tiempo : Date.now();
-  const estado = estadoLibroAhora(ahoraMs);
+  // Sin fallback a `Date.now()`: mezclar el reloj monotónico del bucle
+  // (`opciones.tiempo`, ver cabecera) con el reloj de pared en cualquier
+  // punto de la cadena es justo el bug que congelaba la apertura (revisión
+  // de VaroTv7 en #914) — si `tiempo` no llega finito, `estadoLibroAhora`
+  // debe fallar alto y no disimularlo con otro reloj.
+  const estado = estadoLibroAhora(tiempo);
   if (estado.fase === "cerrado" && !estado.transicion) return base;
 
   const { camara } = resolverCamara({ x, z, y, yaw, modo: modoCamara });

@@ -13,7 +13,7 @@ incorporación concreta para el lote 3D y audio, respetando
 
 2. Low poly space assets  
    URL: https://opengameart.org/content/low-poly-space-assets  
-   Destino: `foundry-module/data/mallas/low-poly-space/`  
+   Destino: foundry-module/data/mallas/low-poly-space/ (ruta a crear)  
    Acción: verificar formato; incluir solo modelos, no texturas derivadas con licencia distinta
 
 3. Harvester spaceship - low poly  

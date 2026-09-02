@@ -1,5 +1,9 @@
 # Fuentes de Tolkien y su puente hacia Espaciokoop / D&D
 
+> Documento de investigación exploratoria, a validar. No hay issue ni decisión de Eloy/Varo
+> asociada todavía: es un mapa de oportunidades, no un plan aprobado (misma naturaleza que
+> `docs/ATLAS_SPELLJAMMER.md`). No promover ninguna acción de aquí a "hecho" sin ese paso.
+
 ## Objetivo
 Mapear las fuentes que inspiraron Tolkien y, a través de él, a D&D, hacia oportunidades concretas de lore, nombres, artefactos y estructuras narrativas para Espaciokoop Lagunak.
 
@@ -13,7 +17,7 @@ Mapear las fuentes que inspiraron Tolkien y, a través de él, a D&D, hacia opor
 ### 2. The Elder (Poetic) Edda / Younger (Prose) Edda (Norse)
 - Temas: "Middle Earth" como plano, Gandalf/Gandálfr, enanos, bosque Mirkwood, anillos, runas, wolven, Yggdrasil-like estructuras
 - Puente D&D: alineamientos, enanos/herreros, magia rúnica, lobos gigantes, Valhalla-like
-- Oportunidad Espaciokoop: `visor-3d-sistema-app.mjs` como Yggdrasil estelar; `foundry-module/scripts/npc-*.mjs` con nombres eddicos; `foundry-module/scripts/mapa-*.mjs` como rutas raúnicas
+- Oportunidad Espaciokoop: `foundry-module/scripts/visor-piloto.mjs` como Yggdrasil estelar; `foundry-module/scripts/npc-*.mjs` con nombres eddicos; `foundry-module/scripts/mapa-*.mjs` como rutas raúnicas
 
 ### 3. The Volsung Saga / The Nibelungenlied / Wagner's Ring
 - Temas: anillo maldito, héroe trágico, espada rota/remodelada, dragón, tesoro nibelungo
@@ -42,12 +46,12 @@ Mapear las fuentes que inspiraron Tolkien y, a través de él, a D&D, hacia opor
 
 ## Acciones concretas para Espaciokoop
 
-1. Nombres: añadir batch de nombres eddicos/fineses en `foundry-module/data/nombres/`
+1. Nombres: añadir batch de nombres eddicos/fineses en foundry-module/data/nombres/ (directorio a crear)
 2. Artefactos: ampliar `foundry-module/scripts/procedencia-*.mjs` con 3 artefactos tipo Ring/Volsung
 3. Escenas: prototipo de "Yggdrasil stellar" en `foundry-module/scripts/visor-piloto*.mjs`
 4. Música/FX: Kalevala como inspiración para FX de cantos en `foundry-module/scripts/audio-*.mjs`
 5. NPCs: bestiario eddico/beowulfiano en `foundry-module/scripts/npc-*.mjs`
-6. Tests: `foundry-module/tests/lore-sources.test.mjs` que verifique que cada fuente tenga al menos un asset/fichero asociado
+6. Tests: foundry-module/tests/lore-sources.test.mjs (a crear) que verifique que cada fuente tenga al menos un asset/fichero asociado
 
 ## Criterios de aceptación
 - [ ] Issue desglosado en 6 unidades mínimas, una por fuente

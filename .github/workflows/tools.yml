@@ -69,7 +69,7 @@ jobs:
       - name: Instalar dependencias de test
         # pyyaml lo usa la guardia de las puertas de CI (#361).
         run: python3 -m pip install pytest polib==1.2.0 pyyaml==6.0.2
-      - name: Ejecutar tests de tools/
+      - name: Ejecutar tests de tools/ (Python)
         run: python3 -m pytest tools/tests/ -q
       - name: Salto de línea final en los ficheros propios
         # Solo stdlib y milisegundos. Estaba escrito y probado y no lo ejecutaba

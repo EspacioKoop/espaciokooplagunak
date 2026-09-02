@@ -8,13 +8,13 @@
 
 import { validEvent } from "./event-journal.mjs";
 
-const TYPES = Object.freeze(["journey", "encounter", "ship"]);
-const VERBS = Object.freeze(["arrived", "started", "repositioned"]);
-const TYPE_VERBS = Object.freeze({
-  journey: "arrived",
-  encounter: "started",
-  ship: "repositioned",
-});
+const TYPE_VERB_PAIRS = Object.freeze([
+  Object.freeze(["journey", "arrived"]),
+  Object.freeze(["encounter", "started"]),
+  Object.freeze(["ship", "repositioned"]),
+]);
+const TYPES = Object.freeze(TYPE_VERB_PAIRS.map(([type]) => type));
+const VERBS = Object.freeze(TYPE_VERB_PAIRS.map(([, verb]) => verb));
 
 export const CHRONICLE_EVENT_SCHEMA_V1 = Object.freeze({
   $schema: "https://json-schema.org/draft/2020-12/schema",
@@ -40,9 +40,9 @@ export const CHRONICLE_EVENT_SCHEMA_V1 = Object.freeze({
       },
     },
   },
-  allOf: TYPES.map((type) => ({
+  allOf: TYPE_VERB_PAIRS.map(([type, verb]) => ({
     if: { properties: { type: { const: type } }, required: ["type"] },
-    then: { properties: { verb: { const: TYPE_VERBS[type] } } },
+    then: { properties: { verb: { const: verb } } },
   })),
 });
 
@@ -54,24 +54,40 @@ function textoAcotado(value, maxLength) {
   return typeof value === "string" && value.length > 0 && value.length <= maxLength;
 }
 
-function soloClaves(object, permitidas) {
-  if (object == null || typeof object !== "object" || Array.isArray(object)) return false;
-  return Object.keys(object).every((key) => permitidas.has(key)) &&
-    [...permitidas].every((key) => Object.hasOwn(object, key));
+function inspeccionarClaves(object, requeridas) {
+  if (object == null || typeof object !== "object" || Array.isArray(object)) return null;
+  return {
+    ausentes: [...requeridas].filter((key) => !Object.hasOwn(object, key)),
+    extras: Object.keys(object).filter((key) => !requeridas.has(key)),
+  };
 }
 
 /** Valida sin Ajv ni globals de Foundry; devuelve errores aptos para tests/log. */
 export function validarChronicleEvent(event) {
   const errors = [];
-  if (!soloClaves(event, ROOT_KEYS)) errors.push("propiedades raíz no permitidas");
+  const raiz = inspeccionarClaves(event, ROOT_KEYS);
+  if (raiz == null) {
+    errors.push("raíz inválida");
+  } else {
+    if (raiz.ausentes.length > 0) errors.push(`faltan campos raíz: ${raiz.ausentes.join(", ")}`);
+    if (raiz.extras.length > 0) errors.push(`propiedades raíz no permitidas: ${raiz.extras.join(", ")}`);
+  }
   if (event?.schemaVersion !== 1) errors.push("schemaVersion debe ser 1");
   if (!ID_PATTERN.test(event?.id ?? "")) errors.push("id no es ChronicleEvent v1");
   if (!TYPES.includes(event?.type)) errors.push("type fuera del catálogo");
   if (!VERBS.includes(event?.verb)) errors.push("verb fuera del catálogo");
-  if (TYPE_VERBS[event?.type] !== event?.verb) errors.push("type/verb incompatibles");
+  if (!TYPE_VERB_PAIRS.some(([type, verb]) => type === event?.type && verb === event?.verb)) {
+    errors.push("type/verb incompatibles");
+  }
   if (!textoAcotado(event?.actor, 128)) errors.push("actor inválido");
   if (!textoAcotado(event?.object, 256)) errors.push("object inválido");
-  if (!soloClaves(event?.context, CONTEXT_KEYS)) errors.push("context inválido");
+  const context = inspeccionarClaves(event?.context, CONTEXT_KEYS);
+  if (context == null) {
+    errors.push("context inválido");
+  } else {
+    if (context.ausentes.length > 0) errors.push(`faltan campos context: ${context.ausentes.join(", ")}`);
+    if (context.extras.length > 0) errors.push(`propiedades context no permitidas: ${context.extras.join(", ")}`);
+  }
   if (!textoAcotado(event?.context?.session, 128)) errors.push("context.session inválido");
   if (!textoAcotado(event?.context?.station, 64)) errors.push("context.station inválido");
   return Object.freeze({ valid: errors.length === 0, errors: Object.freeze(errors) });
@@ -96,12 +112,13 @@ function identidad(event, sourceId) {
 }
 
 /**
- * Construye un evento. `seed` solo deriva la sesión cuando el productor no la
- * proporciona; con igual entrada y semilla, sesión e id son idénticos.
+ * Construye un evento. Cuando existe, `seed` es la fuente autoritativa de la
+ * sesión y de la identidad; `context.session` solo se usa si no hay semilla.
  */
 export function crearChronicleEvent(datos, { seed } = {}) {
-  const session = datos?.context?.session ??
-    (seed == null ? null : `session-v1-${hash64(seed)}`);
+  const session = seed == null
+    ? datos?.context?.session
+    : `session-v1-${hash64(seed)}`;
   const base = {
     schemaVersion: 1,
     id: "",

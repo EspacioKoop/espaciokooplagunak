@@ -63,6 +63,52 @@ test("la semilla distingue sesión e identidad sin usar azar global", () => {
   assert.notEqual(a.id, b.id);
 });
 
+test("la semilla es autoritativa ante una sesión explícita distinta o vacía", () => {
+  const datos = {
+    type: "journey", actor: "bridge", verb: "arrived", object: "Argia",
+    context: { station: "navigation" }, sourceId: llegadaJournal.id,
+  };
+  const canonico = crearChronicleEvent(datos, { seed: "campaign-42" });
+
+  for (const session of [canonico.context.session, "otra-sesion", ""]) {
+    const evento = crearChronicleEvent({
+      ...datos,
+      context: { ...datos.context, session },
+    }, { seed: "campaign-42" });
+    assert.deepEqual(evento, canonico);
+  }
+
+  const semillaVacia = crearChronicleEvent({
+    ...datos,
+    context: { ...datos.context, session: "sesion-explicita" },
+  }, { seed: "" });
+  assert.notEqual(semillaVacia.context.session, "sesion-explicita");
+  assert.deepEqual(semillaVacia, crearChronicleEvent(datos, { seed: "" }));
+});
+
+test("sin semilla la sesión explícita es autoritativa y separa identidades", () => {
+  const datos = {
+    type: "journey", actor: "bridge", verb: "arrived", object: "Argia",
+    context: { station: "navigation" }, sourceId: llegadaJournal.id,
+  };
+  const a = crearChronicleEvent({
+    ...datos, context: { ...datos.context, session: "session-a" },
+  });
+  const b = crearChronicleEvent({
+    ...datos, context: { ...datos.context, session: "session-b" },
+  });
+
+  assert.equal(a.context.session, "session-a");
+  assert.equal(b.context.session, "session-b");
+  assert.notEqual(a.id, b.id);
+  assert.throws(
+    () => crearChronicleEvent({
+      ...datos, context: { ...datos.context, session: "" },
+    }),
+    /context\.session inválido/,
+  );
+});
+
 test("rechaza propiedades extra, catálogos inventados y parejas incompatibles", () => {
   const valido = crearChronicleEvent({
     type: "journey", actor: "bridge", verb: "arrived", object: "Argia",
@@ -85,6 +131,37 @@ function eventoChronicleValido() {
     context: { session: "session-1", station: "navigation" }, sourceId: llegadaJournal.id,
   });
 }
+
+test("schema y validador aceptan exactamente las mismas parejas type/verb", () => {
+  const parejas = CHRONICLE_EVENT_SCHEMA_V1.allOf.map((regla) => [
+    regla.if.properties.type.const,
+    regla.then.properties.verb.const,
+  ]);
+  assert.deepEqual(
+    parejas.map(([type]) => type),
+    CHRONICLE_EVENT_SCHEMA_V1.properties.type.enum,
+  );
+  const verbs = CHRONICLE_EVENT_SCHEMA_V1.properties.verb.enum;
+
+  for (const [type, verbCanonico] of parejas) {
+    for (const verb of verbs) {
+      const evento = { ...eventoChronicleValido(), type, verb };
+      assert.equal(
+        validarChronicleEvent(evento).valid,
+        verb === verbCanonico,
+        `${type}/${verb}`,
+      );
+    }
+  }
+});
+
+test("distingue campos raíz ausentes de propiedades no permitidas", () => {
+  const { context: _context, ...sinContext } = eventoChronicleValido();
+  const errors = validarChronicleEvent(sinContext).errors;
+
+  assert.ok(errors.includes("faltan campos raíz: context"));
+  assert.ok(!errors.includes("propiedades raíz no permitidas"));
+});
 
 test("rechaza un evento raíz heredado", () => {
   const valido = eventoChronicleValido();

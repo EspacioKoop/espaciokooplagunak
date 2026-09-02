@@ -189,6 +189,24 @@ test("EL PRESUPUESTO: cada composición cabe en el tope, y con margen", () => {
   }
 });
 
+test("LA GUARDA mide ANTES del tope: chapasDeRejilla ya recorta, así que costeCuadro no basta", () => {
+  // Revisión de #878: `costeCuadro` pasa por `chapasDeRejilla`, que aplica
+  // `.slice(0, tope)` antes de devolver las chapas — así que su cifra NUNCA
+  // puede superar `TOPE_CUADRO` y una guarda que solo mirara `costeCuadro`
+  // sería inalcanzable. Un tablero de ajedrez no funde ningún par de celdas
+  // vecinas, así que cada celda es su propio rectángulo: 21×21 da 441, muy por
+  // encima de `TOPE_CUADRO` (200).
+  const lado = 21;
+  const rejillaAjedrezada = Array.from({ length: lado }, (_, fila) =>
+    Array.from({ length: lado }, (_, columna) =>
+      (fila + columna) % 2 === 0 ? CUADRO.ocre : CUADRO.bermellon,
+    ),
+  );
+  const sinTope = fundirRectangulos(rejillaAjedrezada).length;
+  assert.equal(sinTope, 441);
+  assert.ok(sinTope > TOPE_CUADRO, "el tablero de prueba debe superar el tope para que la guarda tenga algo que atrapar");
+});
+
 test("fundir es lo que hace que esto quepa: 7.488 celdas caben en decenas de caras", () => {
   const celdas = rejillaCuadro("campo-partido").flat().length;
   assert.equal(celdas, 7488);

@@ -45,7 +45,7 @@
 // Puro: geometría y datos. Sin color propio (#351): todo sale de `CUADRO`.
 
 import { CUADRO } from "./paleta.mjs";
-import { chapasDeRejilla, crearLienzo } from "./nave-mural-pixel.mjs";
+import { chapasDeRejilla, crearLienzo, fundirRectangulos } from "./nave-mural-pixel.mjs";
 
 /**
  * El lado de una celda del lienzo, en metros. El mando de escala del cuadro:
@@ -720,8 +720,14 @@ export function costeCuadro(composicion) {
 // —media pintura se lee como un fallo—, así que revienta aquí y no dentro de la
 // sala: el mismo criterio que el catálogo de asistencia, donde una tarea rota
 // falla al cargar y no en mitad de una crisis.
+//
+// Mide sobre `fundirRectangulos`, ANTES del tope: `piezasCuadro`/`costeCuadro`
+// pasan por `chapasDeRejilla`, que ya aplica `.slice(0, tope)` antes de
+// devolver las chapas, así que su cuenta nunca puede superar `TOPE_CUADRO` — la
+// guarda sería inalcanzable y una composición demasiado grande perdería chapas
+// en silencio en vez de reventar (revisión de #878).
 for (const composicion of Object.keys(COMPOSICIONES)) {
-  const coste = costeCuadro(composicion);
+  const coste = fundirRectangulos(rejillaCuadro(composicion)).length;
   if (coste > TOPE_CUADRO) {
     throw new RangeError(
       `La composición «${composicion}» gasta ${coste} chapas y el tope es ${TOPE_CUADRO}. ` +

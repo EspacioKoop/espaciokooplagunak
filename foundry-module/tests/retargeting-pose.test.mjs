@@ -104,3 +104,18 @@ test("mapeo debe ser un objeto plano", () => {
   assert.throws(() => retargetPose(RIG_VENUS, POSE_ORIGEN, RIG_NPC, ["antebrazo"]), ErrorDeRetargeting);
   assert.throws(() => retargetPose(RIG_VENUS, POSE_ORIGEN, RIG_NPC, null), ErrorDeRetargeting);
 });
+
+test("un hueso llamado __proto__ sobrevive a mapeoPorId, no se pierde en el prototipo", () => {
+  const origen = crearRig([{ id: "__proto__", cabeza: [0, 0, 0] }]);
+  const destino = crearRig([{ id: "__proto__", cabeza: [0, 0, 0] }]);
+  const mapeo = mapeoPorId(origen, destino);
+  assert.deepEqual(Object.keys(mapeo), ["__proto__"]);
+  assert.equal(mapeo.__proto__, "__proto__");
+});
+
+test("un hueso de pose llamado toString, sin mapeo, se ignora en vez de crear una entrada fantasma", () => {
+  const origen = crearRig([{ id: "toString", cabeza: [0, 0, 0] }]);
+  const destino = crearRig([{ id: "antebrazo", cabeza: [0, 0, 0] }]);
+  const poseDestino = retargetPose(origen, { toString: { eje: [0, 0, 1], angulo: 1 } }, destino, {});
+  assert.deepEqual(Object.keys(poseDestino), []);
+});

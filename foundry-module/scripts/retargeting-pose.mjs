@@ -41,6 +41,17 @@ function fallo(code, path, message) {
   throw new ErrorDeRetargeting(code, path, message);
 }
 
+// Un id de hueso es una cadena arbitraria, y "__proto__" o "toString" son
+// ids tan válidos como cualquier otro para `crearRig`. Una asignación
+// `obj[id] = valor` con esos ids no crea una propiedad propia — o muta el
+// prototipo, o el `obj[id]` de lectura devuelve un método heredado en vez de
+// `undefined` cuando no hay mapeo. `defineProperty` fuerza una propiedad de
+// datos propia (nunca dispara el setter de `__proto__`) y `Object.hasOwn`
+// para leer evita que un id heredado se confunda con uno mapeado.
+function asignar(obj, clave, valor) {
+  Object.defineProperty(obj, clave, { value: valor, enumerable: true, writable: true, configurable: true });
+}
+
 /**
  * Aplica una pose de `rigOrigen` a `rigDestino` vía `mapeo`.
  *
@@ -73,9 +84,8 @@ export function retargetPose(rigOrigen, poseOrigen, rigDestino, mapeo) {
 
   const poseDestino = {};
   for (const [idOrigen, giro] of Object.entries(poseOrigen ?? {})) {
-    const idDestino = mapeo[idOrigen];
-    if (idDestino === undefined) continue; // no mapeado: se ignora, no es error.
-    poseDestino[idDestino] = giro;
+    if (!Object.hasOwn(mapeo, idOrigen)) continue; // no mapeado: se ignora, no es error.
+    asignar(poseDestino, mapeo[idOrigen], giro);
   }
   return poseDestino;
 }
@@ -94,7 +104,7 @@ export function retargetPose(rigOrigen, poseOrigen, rigDestino, mapeo) {
 export function mapeoPorId(rigOrigen, rigDestino) {
   const mapeo = {};
   for (const hueso of rigOrigen.huesos) {
-    if (rigDestino.indice.has(hueso.id)) mapeo[hueso.id] = hueso.id;
+    if (rigDestino.indice.has(hueso.id)) asignar(mapeo, hueso.id, hueso.id);
   }
   return mapeo;
 }

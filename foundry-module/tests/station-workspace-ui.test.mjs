@@ -18,6 +18,7 @@ async function setup({ isGM = false, modern = false, fetchImpl = null } = {}) {
   const instances = [];
   const settingsReads = [];
   const settingsWrites = [];
+  const socketEmits = [];
 
   class BaseApplication {
     static get defaultOptions() { return {}; }
@@ -74,6 +75,9 @@ async function setup({ isGM = false, modern = false, fetchImpl = null } = {}) {
         settingsWrites.push({ key, value });
       }
     },
+    socket: {
+      emit(...args) { socketEmits.push(args); },
+    },
   };
   globalThis.fetch = fetchImpl ?? (() => { throw new Error("fetch inesperado"); });
 
@@ -82,7 +86,7 @@ async function setup({ isGM = false, modern = false, fetchImpl = null } = {}) {
   if (isGM) tokenSession.setBridgeToken("secret-for-test");
   const module = await import(`../scripts/station-workspace-ui.mjs?workspace-ui=${nonce++}`);
   module.registerWorkspaceFeature("espaciokoop-lagunak");
-  return { module, hooks, instances, settingsReads, settingsWrites };
+  return { module, hooks, instances, settingsReads, settingsWrites, socketEmits };
 }
 
 // LA GARANTÍA QUE NO CAMBIA con la apertura de telemetría (#331): el cliente de
@@ -243,6 +247,34 @@ test("updateUser sí refresca la consola abierta", async () => {
   hooks.updateUser();
   assert.deepEqual(app.renderCalls, [true, false]);
 });
+
+for (const modern of [false, true]) {
+  const version = modern ? "ApplicationV2" : "v11";
+  test(`${version}: conexión y desconexión actualizan el aviso sin emitir órdenes automáticas`, async () => {
+    const { module, hooks, instances, settingsReads, settingsWrites, socketEmits } = await setup({ modern });
+    module.openWorkspaceApp();
+    const app = instances[0];
+    const model = modern ? await app._prepareContext() : app.getData();
+
+    assert.equal(model.uncrewedStations.some(({ id }) => id === "navigation"), false);
+    game.user.active = false;
+    hooks.userConnected(game.user, false);
+    const disconnected = modern ? await app._prepareContext() : app.getData();
+    assert.equal(disconnected.uncrewedStations.some(({ id }) => id === "navigation"), true);
+
+    game.user.active = true;
+    hooks.userConnected(game.user, true);
+    const reconnected = modern ? await app._prepareContext() : app.getData();
+    assert.equal(reconnected.uncrewedStations.some(({ id }) => id === "navigation"), false);
+    assert.deepEqual(
+      app.renderCalls,
+      modern ? [{ force: true }, { force: true }, { force: true }] : [true, false, false],
+    );
+    assert.deepEqual(settingsReads, []);
+    assert.deepEqual(settingsWrites, []);
+    assert.deepEqual(socketEmits, []);
+  });
+}
 
 // La lámina del objetivo de atraque tiene DOS rutas de ciclo de vida (#391), y
 // las pruebas de la lámina la montan directamente: no ejercitan ninguna de las

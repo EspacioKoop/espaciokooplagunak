@@ -28,6 +28,7 @@ let workspaceApp = null;
 export function registerWorkspaceFeature(moduleId) {
   configuredModuleId = moduleId;
   Hooks.on("updateUser", () => renderWorkspace());
+  Hooks.on("userConnected", () => renderWorkspace());
 
   // Recepción de la telemetría que publica el GM (#331). Llega por el ajuste de
   // mundo, no por socket: `game.socket` no acredita a quien emite y cualquier

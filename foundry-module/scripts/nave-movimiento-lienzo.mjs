@@ -71,6 +71,8 @@ const VELOCIDAD_GIRO = Math.PI * 0.6; // radianes por segundo
  *   pedirFotograma?: (cb: (ms:number) => void) => number,
  *   cancelarFotograma?: (id: number) => void,
  *   otrosJugadores?: () => Array<{x:number, y:number, z:number, avatar?:object}>,
+ *   aviso?: () => *,
+ *   saludSistemas?: () => Record<string, {health?:number}>|null,
  * }} opciones
  */
 export function arrancarAndar(lienzo, opciones = {}) {
@@ -97,6 +99,11 @@ export function arrancarAndar(lienzo, opciones = {}) {
     // `nave-ventana-espacio.mjs`.
     sensores = () => null,
     rumboNave = () => null,
+    // Alerta de la nave y salud por sistema (#765): igual que `sensores`, se
+    // piden frescas en cada fotograma pintado — el bucle solo las transporta,
+    // qué tono le dan a la luminaria lo decide `nave-luminaria.mjs`.
+    aviso = () => null,
+    saludSistemas = () => null,
   } = opciones;
 
   if (typeof opciones.componer !== "function") {
@@ -176,6 +183,8 @@ export function arrancarAndar(lienzo, opciones = {}) {
         avatarPropio: avatarPropio(),
         sensores: sensores(),
         rumboNave: rumboNave(),
+        aviso: aviso(),
+        saludSistemas: saludSistemas(),
         // Reloj de la escena (#587). El bucle YA sabe qué hora es —lo necesita
         // para integrar el movimiento— y hasta ahora se lo guardaba. Sin él una
         // escena solo puede dibujar cosas quietas, y hay ambiente que no se

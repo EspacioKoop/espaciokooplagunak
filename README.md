@@ -157,7 +157,7 @@ El roadmap refleja intención, no promesas. Los cambios se concretarán mediante
 - [x] Validar el modo servidor o sin interfaz de EmptyEpsilon (nativo en PR #3; en contenedor en esta fase).
 - [x] Crear una imagen Docker reproducible y un `compose.yaml` documentado ([`docker/README.md`](docker/README.md)).
 - [x] Mantener la simulación y el puente de integración en servicios separados y una red privada.
-- [x] Inventariar el API HTTP heredado ([`docs/API_HTTP.md`](docs/API_HTTP.md)) y definir un contrato propio y versionado (v0, [`bridge/README.md`](bridge/README.md)).
+- [x] Inventariar el API HTTP heredado ([`docs/seguridad/API_HTTP.md`](docs/seguridad/API_HTTP.md)) y definir un contrato propio y versionado (v0, [`bridge/README.md`](bridge/README.md)).
 - [x] Implementar un puente que solo permita operaciones autorizadas y nunca exponga `/exec.lua` directamente.
 - [x] Añadir autenticación, validación de mensajes, límites y comprobaciones de salud.
 
@@ -369,7 +369,7 @@ Espaciokoop Lagunak no está afiliado ni respaldado oficialmente por el equipo d
 - [Integración con Foundry VTT y gestión de nave](docs/FOUNDRY.md)
 - [Editor integrado de contenido](docs/CONTENT_EDITOR.md)
 - [Puente de integración — contrato v0](bridge/README.md)
-- [Inventario del API HTTP heredado](docs/API_HTTP.md)
+- [Inventario del API HTTP heredado](docs/seguridad/API_HTTP.md)
 - [Inspiración en juegos libres — mecánicas de rol que robar](docs/INSPIRACION_JUEGOS_LIBRES.md)
 - [Relación y sincronización con upstream](docs/UPSTREAM.md)
 - [Política de versionado y releases](VERSIONING.md)

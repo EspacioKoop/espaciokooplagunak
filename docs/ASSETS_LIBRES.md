@@ -33,7 +33,7 @@ terceros. El motor consume más de lo que este issue suponía.
 |---|---|---|
 | **Malla 3D** | **Sí** | `tools/convertir-estatua.mjs` (#590): STL → decimado por colapso de aristas → `{vertices, caras}`. UV por `uvsTriplanar` |
 | **Textura tileable** | **Sí, y desde #600 con consumidor de primera** | `piel-textura.mjs` tilea la piel del muro; `retro3d-lienzo.mjs` consume `{ancho, alto, indices, paleta}`. La tesela mide `ANCHO_TESELA` 3,2 m a `METROS_POR_TEXEL` 0,025, o sea **128 téxeles de ancho**, y el alto lo clava la altura de sala. Lo que hace falta son **patrones tileables de poca resolución y pocos colores**, no packs 4K |
-| **Audio (ambiente y efectos)** | **Sí, desde #571** | `audio-ficheros.mjs`. La música sigue siendo procedural (#318) y no cambia |
+| **Audio (ambiente y efectos)** | **Sí, desde #571** | `arte/audio/audio-ficheros.mjs`. La música sigue siendo procedural (#318) y no cambia |
 | **Pixelart 2D** | **Sí** | `png-indexado.mjs` codifica y descodifica PNG indexado |
 | **Texturas PBR** (albedo + normal + rugosidad) | **No** | El motor no tiene modelo de iluminación que las use. Se aprovecharía el albedo y se tiraría el resto: es traer 40 MB para usar 2 |
 | **Malla con esqueleto** | **Parcial, desde #603 fase 1** | `rig-esqueleto.mjs` tiene formato de rig, pesos y `deformarMalla`. **No** hay asignación automática de pesos (fase 2) ni retargeting (fase 3), así que un rig ajeno no se puede consumir todavía: entra la malla, el rig se hace a mano |
@@ -114,7 +114,7 @@ alto coste de verificación.
 
 ### Audio: Freesound y bancos CC0 — **por verificar**
 
-Ahora tienen consumidor (`audio-ficheros.mjs`), así que por primera vez tiene
+Ahora tienen consumidor (`arte/audio/audio-ficheros.mjs`), así que por primera vez tiene
 sentido mirarlos. Freesound mezcla CC0, CC BY y CC BY-NC en el mismo sitio: hay
 que filtrar por licencia, y su API la expone.
 

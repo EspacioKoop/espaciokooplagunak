@@ -363,6 +363,40 @@ test("los huecos completan las cinco comunitarias, y desaparecen según salen", 
   assert.equal(vista.huecosComunitarios.length, 5, "preflop no ha salido ninguna");
 });
 
+test("mostrar una carta (#458) es un gesto de la carta, no un botón de la lista", () => {
+  const mesa = mesaConDosJugadores();
+  mesa.proponer("p1", "join");
+  mesa.proponer("p2", "join");
+  mesa.proponer("gm", "start");
+
+  const accionesP1 = accionesPermitidas(mesa.sesion, "p1", poker);
+  assert.ok(accionesP1.includes("act:mostrar"));
+
+  const suya = mesaVista(vistaPrivadaSesion(mesa.sesion, "p1", poker), {
+    userId: "p1",
+    acciones: accionesP1,
+  });
+  // No aparece en la lista de botones genéricos...
+  assert.equal(suya.acciones.some((a) => a.tipo === "act:mostrar"), false);
+  // ...pero cada carta de la mano propia lleva su índice y puede mostrarse.
+  assert.deepEqual(suya.tuMano.map((c) => c.indice), [0, 1]);
+  assert.ok(suya.tuMano.every((c) => c.puedeMostrar === true));
+
+  // Tras mostrar la carta 0, esa carta deja de poder mostrarse otra vez.
+  mesa.proponer("p1", "act", { tipo: "mostrar", parametros: { indice: 0 } });
+  const accionesTrasMostrar = accionesPermitidas(mesa.sesion, "p1", poker);
+  const trasMostrar = mesaVista(vistaPrivadaSesion(mesa.sesion, "p1", poker), {
+    userId: "p1",
+    acciones: accionesTrasMostrar,
+  });
+  assert.equal(trasMostrar.tuMano[0].puedeMostrar, false);
+  assert.equal(trasMostrar.tuMano[1].puedeMostrar, true);
+
+  // Y ya es visible para un espectador, boca arriba, como carta oculta ya no.
+  const publica = vistaPublicaSesion(mesa.sesion);
+  assert.deepEqual(publica.juegoPublico.cartasMostradas.p1, [suya.tuMano[0].codigo]);
+});
+
 test("una mesa que no es póker no se queda con huecos de póker de más", () => {
   // El modelo no puede inventar huecos donde ya hay cinco cartas ni números
   // negativos si algún día un juego reparte más.

@@ -193,7 +193,12 @@ async function cargarBaseDatos(app, client) {
   app.cargandoBaseDatos = true;
   try {
     const payload = await client.database();
-    if (app.closed) return;
+    // Se revalida el rol DESPUÉS del await, igual que `refreshTelemetry`: quien
+    // deja de ser GM mientras la consulta viaja no debe publicar al volver. El
+    // servidor rechazaría el `settings.set` de un no-GM, así que esto es defensa
+    // en profundidad (ADR-0011) y no la única barrera — pero sin ello las dos
+    // funciones hermanas se comportaban distinto ante la misma revocación.
+    if (app.closed || !game.user?.isGM) return;
     app.baseDatos = normalizarBaseDatos(payload);
     if (app.baseDatos && configuredModuleId) {
       // Se publica para que la tripulación de sensores la vea: no tienen token

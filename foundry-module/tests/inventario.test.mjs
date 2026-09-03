@@ -23,7 +23,7 @@ import {
 test("un inventario nuevo está vacío, sin límite y con las tres categorías", () => {
   const inv = crearInventario();
   assert.equal(inv.limitePeso, null);
-  for (const categoria of CATEGORIAS) assert.deepEqual(inv.categorias[categoria], []);
+  for (const categoria of CATEGORIAS) assert.deepEqual(inv[categoria], []);
   assert.equal(inv.hotbar.length, TAMANO_HOTBAR);
   assert.ok(inv.hotbar.every((h) => h === null));
   for (const slot of SLOTS_EQUIPO) assert.equal(inv.equipo[slot], null);
@@ -157,6 +157,13 @@ test("marcarClave alterna el flag sin cambiar de categoría, y un id inexistente
 test("un objeto nuevo nace sin marcar como clave por defecto", () => {
   const inv = agregar(crearInventario(), { id: "x" }, "objetos");
   assert.equal(objetoPorId(inv, "x").clave, false);
+});
+
+test("clave se normaliza a booleano aunque quien agrega el objeto pase basura", () => {
+  const inv = agregar(crearInventario(), { id: "x", clave: "no" }, "objetos");
+  assert.strictEqual(objetoPorId(inv, "x").clave, true, "\"no\" es una cadena truthy en JS");
+  const inv2 = agregar(crearInventario(), { id: "y", clave: 0 }, "objetos");
+  assert.strictEqual(objetoPorId(inv2, "y").clave, false);
 });
 
 test("asignarHotbar exige que el objeto ya esté en el inventario, y rechaza índices fuera de rango", () => {

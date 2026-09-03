@@ -51,7 +51,7 @@ export function crearInventario({ limitePeso = null } = {}) {
   const limite = typeof limitePeso === "number" && Number.isFinite(limitePeso) && limitePeso > 0 ? limitePeso : null;
   return Object.freeze({
     limitePeso: limite,
-    categorias: Object.freeze(Object.fromEntries(CATEGORIAS.map((c) => [c, Object.freeze([])]))),
+    ...Object.fromEntries(CATEGORIAS.map((c) => [c, Object.freeze([])])),
     equipo: Object.freeze(Object.fromEntries(SLOTS_EQUIPO.map((s) => [s, null]))),
     hotbar: Object.freeze(new Array(TAMANO_HOTBAR).fill(null)),
   });
@@ -60,7 +60,7 @@ export function crearInventario({ limitePeso = null } = {}) {
 /** El objeto con ese id, en cualquier categoría, o `null`. */
 export function objetoPorId(inventario, objetoId) {
   for (const categoria of CATEGORIAS) {
-    const encontrado = inventario.categorias[categoria].find((o) => o.id === objetoId);
+    const encontrado = inventario[categoria].find((o) => o.id === objetoId);
     if (encontrado) return encontrado;
   }
   return null;
@@ -69,7 +69,7 @@ export function objetoPorId(inventario, objetoId) {
 /** En qué categoría vive un objeto, o `null` si no está en ninguna. */
 function categoriaDe(inventario, objetoId) {
   for (const categoria of CATEGORIAS) {
-    if (inventario.categorias[categoria].some((o) => o.id === objetoId)) return categoria;
+    if (inventario[categoria].some((o) => o.id === objetoId)) return categoria;
   }
   return null;
 }
@@ -82,7 +82,7 @@ function categoriaDe(inventario, objetoId) {
 export function pesoActual(inventario) {
   let total = 0;
   for (const categoria of CATEGORIAS) {
-    for (const objeto of inventario.categorias[categoria]) {
+    for (const objeto of inventario[categoria]) {
       total += Number.isFinite(objeto.peso) ? objeto.peso : 0;
     }
   }
@@ -113,10 +113,7 @@ export function agregar(inventario, objeto, categoria) {
   if (excedePeso(inventario, objeto)) return inventario;
   return Object.freeze({
     ...inventario,
-    categorias: Object.freeze({
-      ...inventario.categorias,
-      [categoria]: Object.freeze([...inventario.categorias[categoria], Object.freeze({ clave: false, ...objeto })]),
-    }),
+    [categoria]: Object.freeze([...inventario[categoria], Object.freeze({ ...objeto, clave: Boolean(objeto.clave) })]),
   });
 }
 
@@ -136,10 +133,7 @@ export function quitar(inventario, objetoId) {
   const hotbarLimpio = inventario.hotbar.map((id) => (id === objetoId ? null : id));
   return Object.freeze({
     ...inventario,
-    categorias: Object.freeze({
-      ...inventario.categorias,
-      [categoria]: Object.freeze(inventario.categorias[categoria].filter((o) => o.id !== objetoId)),
-    }),
+    [categoria]: Object.freeze(inventario[categoria].filter((o) => o.id !== objetoId)),
     equipo: Object.freeze(equipoLimpio),
     hotbar: Object.freeze(hotbarLimpio),
   });
@@ -153,12 +147,9 @@ export function marcarClave(inventario, objetoId, clave) {
   if (!categoria) return inventario;
   return Object.freeze({
     ...inventario,
-    categorias: Object.freeze({
-      ...inventario.categorias,
-      [categoria]: Object.freeze(
-        inventario.categorias[categoria].map((o) => (o.id === objetoId ? Object.freeze({ ...o, clave: Boolean(clave) }) : o)),
-      ),
-    }),
+    [categoria]: Object.freeze(
+      inventario[categoria].map((o) => (o.id === objetoId ? Object.freeze({ ...o, clave: Boolean(clave) }) : o)),
+    ),
   });
 }
 

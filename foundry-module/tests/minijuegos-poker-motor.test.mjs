@@ -108,9 +108,46 @@ test("un showdown reparte todo el bote y conserva las fichas", () => {
 test("acciones permitidas: check solo si nada que igualar; call si hay apuesta", () => {
   const estado = mesa(4);
   // UTG debe igualar la ciega grande: no puede check.
-  assert.deepEqual(accionesPermitidas(estado, "u3").sort(), ["call", "fold", "raise"].sort());
-  // Un jugador que no está de turno no tiene acciones.
-  assert.deepEqual(accionesPermitidas(estado, "u0"), []);
+  assert.deepEqual(
+    accionesPermitidas(estado, "u3").sort(),
+    ["call", "fold", "mostrar", "raise"].sort(),
+  );
+  // Un jugador que no está de turno no tiene acciones DE TURNO, pero sigue
+  // pudiendo enseñar su mano (#458): "mostrar" no consume turno de nadie.
+  assert.deepEqual(accionesPermitidas(estado, "u0"), ["mostrar"]);
+});
+
+test("mostrar una carta (#458) es voluntario, no consume turno y el motor sigue siendo la autoridad", () => {
+  let estado = mesa(4);
+  const propiaU0 = vistaPrivada(estado, "u0").tuMano;
+  const turnoAntes = vistaPublica(estado).turno;
+
+  // u0 no está de turno y aun así puede mostrar una carta.
+  const res = aplicar(estado, { actorId: "u0", tipo: "mostrar", parametros: { indice: 0 } });
+  assert.equal(res.ok, true);
+  estado = res.estado;
+  assert.equal(vistaPublica(estado).turno, turnoAntes); // el turno no se movió.
+  assert.equal(vistaPublica(estado).cartasMostradas.u0[0], propiaU0[0]);
+
+  // Mostrar la misma carta dos veces se rechaza.
+  const repetida = aplicar(estado, { actorId: "u0", tipo: "mostrar", parametros: { indice: 0 } });
+  assert.equal(repetida.ok, false);
+  assert.equal(repetida.codigo, "carta_ya_mostrada");
+
+  // Nadie puede mostrar una carta que no tiene (índice fuera de rango).
+  const fueraDeRango = aplicar(estado, { actorId: "u0", tipo: "mostrar", parametros: { indice: 5 } });
+  assert.equal(fueraDeRango.ok, false);
+
+  // Un jugador retirado ya no puede enseñar nada: su mano ha salido de juego.
+  const retirado = aplicar(estado, { actorId: turnoAntes, tipo: "fold" });
+  assert.equal(retirado.ok, true);
+  const intentoTrasFold = aplicar(retirado.estado, {
+    actorId: turnoAntes,
+    tipo: "mostrar",
+    parametros: { indice: 0 },
+  });
+  assert.equal(intentoTrasFold.ok, false);
+  assert.equal(intentoTrasFold.codigo, "accion_no_permitida");
 });
 
 test("aplicar rechaza acciones fuera de turno y no permitidas", () => {

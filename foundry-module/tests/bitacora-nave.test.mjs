@@ -17,7 +17,7 @@ function createGameMock({ lang = "en", localizeFn = (key) => key } = {}) {
   };
 }
 
-test("escapeHtml: escape & < > \\\" ' to numeric entities", () => {
+test("escapeHtml: escape & < > \\\\\\\" ' to numeric entities", () => {
   assert.equal(escapeHtml("&"), "&#38;");
   assert.equal(escapeHtml("<"), "&#60;");
   assert.equal(escapeHtml(">"), "&#62;");
@@ -34,10 +34,18 @@ test("escapeHtml: text without special characters remains unchanged", () => {
 test("fechaLocal: with lang 'es' uses 'es-ES' locale", () => {
   const gameMock = createGameMock({ lang: "es" });
   global.game = gameMock;
+  let localeUsed;
+  const originalToLocaleString = Date.prototype.toLocaleString;
+  Date.prototype.toLocaleString = function (locale) {
+    localeUsed = locale;
+    return "mocked date string";
+  };
   try {
     const result = fechaLocal();
-    assert.ok(typeof result === "string" && result.length > 0);
+    assert.equal(result, "mocked date string");
+    assert.equal(localeUsed, "es-ES");
   } finally {
+    Date.prototype.toLocaleString = originalToLocaleString;
     delete global.game;
   }
 });
@@ -45,10 +53,18 @@ test("fechaLocal: with lang 'es' uses 'es-ES' locale", () => {
 test("fechaLocal: with lang other than 'es' uses that lang as locale", () => {
   const gameMock = createGameMock({ lang: "fr" });
   global.game = gameMock;
+  let localeUsed;
+  const originalToLocaleString = Date.prototype.toLocaleString;
+  Date.prototype.toLocaleString = function (locale) {
+    localeUsed = locale;
+    return "mocked date string";
+  };
   try {
     const result = fechaLocal();
-    assert.ok(typeof result === "string" && result.length > 0);
+    assert.equal(result, "mocked date string");
+    assert.equal(localeUsed, "fr");
   } finally {
+    Date.prototype.toLocaleString = originalToLocaleString;
     delete global.game;
   }
 });

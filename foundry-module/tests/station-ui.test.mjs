@@ -381,3 +381,36 @@ test("el puesto no da autoridad al elegir (no emite orden al puente)", async () 
   // No warnings expected
   assert.deepEqual(notifications.warn, []);
 });
+
+test("updateSetting con requisitosPuesto del módulo refresca la ventana abierta", async () => {
+  const { module, hooks, instances } = await setup({ modern: false });
+  const controls = [{ name: "lagunak", tools: [] }];
+  module.addStationControl(controls);
+  controls[0].tools[0].onClick();
+
+  const renderCallsBefore = instances[0].renderCalls.length;
+  hooks.updateSetting({ key: "espaciokoop-lagunak.requisitosPuesto" });
+  assert.equal(instances[0].renderCalls.length, renderCallsBefore + 1);
+});
+
+test("updateSetting con requisitosPuestoMinimo del módulo refresca la ventana abierta", async () => {
+  const { module, hooks, instances } = await setup({ modern: false });
+  const controls = [{ name: "lagunak", tools: [] }];
+  module.addStationControl(controls);
+  controls[0].tools[0].onClick();
+
+  const renderCallsBefore = instances[0].renderCalls.length;
+  hooks.updateSetting({ key: "espaciokoop-lagunak.requisitosPuestoMinimo" });
+  assert.equal(instances[0].renderCalls.length, renderCallsBefore + 1);
+});
+
+test("updateSetting de un ajuste ajeno no refresca la ventana", async () => {
+  const { module, hooks, instances } = await setup({ modern: false });
+  const controls = [{ name: "lagunak", tools: [] }];
+  module.addStationControl(controls);
+  controls[0].tools[0].onClick();
+
+  const renderCallsBefore = instances[0].renderCalls.length;
+  hooks.updateSetting({ key: "otro-modulo.requisitosPuesto" });
+  assert.equal(instances[0].renderCalls.length, renderCallsBefore);
+});

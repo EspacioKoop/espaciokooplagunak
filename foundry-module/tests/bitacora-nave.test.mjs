@@ -17,12 +17,12 @@ function createGameMock({ lang = "en", localizeFn = (key) => key } = {}) {
   };
 }
 
-test("escapeHtml: escape & < > \\\\\\\" ' to numeric entities", () => {
+test("escapeHtml: escapa & < > \" ' a entidades numéricas", () => {
   assert.equal(escapeHtml("&"), "&#38;");
   assert.equal(escapeHtml("<"), "&#60;");
   assert.equal(escapeHtml(">"), "&#62;");
   assert.equal(escapeHtml('"'), "&#34;");
-  assert.equal(escapeHtml("'"), "'");
+  assert.equal(escapeHtml("'"), "&#39;");
 });
 
 test("escapeHtml: text without special characters remains unchanged", () => {

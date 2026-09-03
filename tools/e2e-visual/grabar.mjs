@@ -44,7 +44,13 @@ function parsearTeclas(cadena) {
   if (!cadena) return [];
   return cadena.split(",").map((par) => {
     const [tecla, ms] = par.split(":");
-    return { tecla, ms: Number(ms) };
+    const milisegundos = Number(ms);
+    if (!tecla || !(milisegundos > 0)) {
+      throw new Error(
+        `--teclas inválido en "${par}": se esperaba "tecla:ms" con ms > 0 (p. ej. "w:2000")`,
+      );
+    }
+    return { tecla, ms: milisegundos };
   });
 }
 
@@ -105,6 +111,11 @@ async function login() {
 }
 
 async function abrirHerramienta() {
+  // Selectores probados contra v11/v12. `control-escena.mjs` documenta que
+  // v13 cambió la forma de los datos de la barra de escena (arrays -> records
+  // con `order`/`onChange`); si eso también cambió esta marca DOM, `--control`
+  // / `--tool` fallarán con un timeout claro en vez de un fallo silencioso —
+  // no verificado todavía contra un host v13 real.
   if (control) {
     const categoria = page.locator(`li.scene-control[data-control="${control}"]`);
     await categoria.waitFor({ state: "visible", timeout: 10000 });
@@ -125,30 +136,35 @@ async function pulsar(tecla, ms) {
   await page.keyboard.up(tecla);
 }
 
-await irAlMundo();
-await login();
-console.error(`[grabar] dentro de "${world}" como ${usuario}`);
-await abrirHerramienta();
-if (control || tool) console.error(`[grabar] herramienta abierta: control=${control ?? "-"} tool=${tool ?? "-"}`);
+try {
+  await irAlMundo();
+  await login();
+  console.error(`[grabar] dentro de "${world}" como ${usuario}`);
+  await abrirHerramienta();
+  if (control || tool) console.error(`[grabar] herramienta abierta: control=${control ?? "-"} tool=${tool ?? "-"}`);
 
-// Foco de teclado sobre el lienzo, si hay uno visible (andar por la nave,
-// minijuegos 3D...); si no lo hay, las teclas simplemente no llegan a nada,
-// que es un no-op razonable para una herramienta sin lienzo.
-const lienzo = page.locator("canvas").first();
-if (await lienzo.count()) {
-  await lienzo.click({ position: { x: 5, y: 5 } }).catch(() => {});
+  // Foco de teclado sobre el lienzo, si hay uno visible (andar por la nave,
+  // minijuegos 3D...); si no lo hay, las teclas simplemente no llegan a nada,
+  // que es un no-op razonable para una herramienta sin lienzo.
+  const lienzo = page.locator("canvas").first();
+  if (await lienzo.count()) {
+    await lienzo.click({ position: { x: 5, y: 5 } }).catch(() => {});
+  }
+
+  await page.waitForTimeout(1500);
+  for (const { tecla, ms } of teclas) {
+    await pulsar(tecla, ms);
+    await page.waitForTimeout(300);
+  }
+  await page.waitForTimeout(1500);
+} finally {
+  // Sin esto, un fallo a mitad de camino (mundo que no carga, login que no
+  // completa...) deja el Chromium headless y su grabación de Xvfb huérfanos:
+  // en una herramienta pensada para reintentarse mientras se itera una demo,
+  // eso acumula procesos zombis hasta agotar memoria o descriptores.
+  await context.close();
+  await browser.close();
 }
-
-await page.waitForTimeout(1500);
-for (const { tecla, ms } of teclas) {
-  if (!tecla || !(ms > 0)) continue;
-  await pulsar(tecla, ms);
-  await page.waitForTimeout(300);
-}
-await page.waitForTimeout(1500);
-
-await context.close();
-await browser.close();
 console.error(`[grabar] vídeo (.webm) en ${dirVideo}/`);
 console.error(
   `[grabar] para convertir a mp4: ffmpeg -y -i ${dirVideo}/*.webm -c:v libx264 -pix_fmt yuv420p -movflags +faststart ${salida}.mp4`,

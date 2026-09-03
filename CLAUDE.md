@@ -100,7 +100,7 @@ cd bridge && pip install -r requirements-dev.txt && pytest
 
 # Node (node --test): lógica pura del módulo Foundry (sin Foundry real).
 # EN CI: .github/workflows/foundry-module.yml.
-node --test foundry-module/tests/*.test.mjs
+node --test $(find foundry-module/tests -name '*.test.mjs')
 ```
 
 La CI actual: `cicd.yml` ejecuta builds Linux (con el CTest anterior dentro de

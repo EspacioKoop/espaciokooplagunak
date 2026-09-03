@@ -130,7 +130,7 @@
     "minijuegos/fichas-pixelart.mjs",
     "ventana-nave.mjs",
     "iconos-sistema.mjs",
-    "retrato-tripulante.mjs",
+    "avatar/retrato-tripulante.mjs",
     "retro3d.mjs",
     "retro3d-estrellas.mjs",
     "cantina-escena.mjs",

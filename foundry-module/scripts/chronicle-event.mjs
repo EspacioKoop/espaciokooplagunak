@@ -51,7 +51,13 @@ const CONTEXT_KEYS = new Set(["session", "station"]);
 const ID_PATTERN = /^chronicle-v1-[0-9a-f]{16}$/;
 
 function textoAcotado(value, maxLength) {
-  return typeof value === "string" && value.length > 0 && value.length <= maxLength;
+  if (typeof value !== "string") return false;
+  let length = 0;
+  for (const _character of value) {
+    length += 1;
+    if (length > maxLength) return false;
+  }
+  return length > 0;
 }
 
 function inspeccionarClaves(object, requeridas) {

@@ -163,6 +163,21 @@ test("distingue campos raíz ausentes de propiedades no permitidas", () => {
   assert.ok(!errors.includes("propiedades raíz no permitidas"));
 });
 
+test("mide maxLength como JSON Schema en puntos de código Unicode", () => {
+  const valido = eventoChronicleValido();
+  const casos = [
+    [128, (value) => ({ ...valido, actor: value })],
+    [256, (value) => ({ ...valido, object: value })],
+    [128, (value) => ({ ...valido, context: { ...valido.context, session: value } })],
+    [64, (value) => ({ ...valido, context: { ...valido.context, station: value } })],
+  ];
+
+  for (const [maxLength, crearEvento] of casos) {
+    assert.equal(validarChronicleEvent(crearEvento("🚀".repeat(maxLength))).valid, true);
+    assert.equal(validarChronicleEvent(crearEvento("🚀".repeat(maxLength + 1))).valid, false);
+  }
+});
+
 test("rechaza un evento raíz heredado", () => {
   const valido = eventoChronicleValido();
   assert.equal(validarChronicleEvent(Object.create(valido)).valid, false);

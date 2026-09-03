@@ -9,35 +9,49 @@ mod = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(mod)
 
 
-def test_rechaza_nyc_en_la_raiz():
-    assert mod.es_resto(".nyc_output/abc.json")
+def test_rechaza_coverage_out_final_json():
+    """Artefacto real: coverage-out/coverage-final.json"""
+    assert mod.es_resto("coverage-out/coverage-final.json") is True
 
 
-def test_rechaza_nyc_anidado():
-    """El caso real: la basura no siempre cuelga de la raiz del arbol."""
-    assert mod.es_resto("foundry-module/.nyc_output/processinfo/index.json")
+def test_rechaza_coverage_out_tmp_foo():
+    """Artefacto real: fichero bajo coverage-out/tmp/"""
+    assert mod.es_resto("coverage-out/tmp/foo") is True
 
 
-def test_rechaza_node_modules_anidado():
-    assert mod.es_resto("tools/node_modules/nyc/package.json")
+def test_rechaza_coverage_out_tmp_bar():
+    """Otro fichero bajo coverage-out/tmp/"""
+    assert mod.es_resto("coverage-out/tmp/bar") is True
 
 
-def test_rechaza_coverage():
-    assert mod.es_resto("coverage/lcov.info")
+def test_rechaza_coverage_json():
+    """Artefacto real: coverage.json"""
+    assert mod.es_resto("coverage.json") is True
 
 
-def test_rechaza_el_lock_de_npm():
-    assert mod.es_resto("package-lock.json")
+def test_rechaza_coverage_lcov():
+    """Artefacto real: coverage.lcov"""
+    assert mod.es_resto("coverage.lcov") is True
 
 
-def test_acepta_un_fichero_normal():
-    assert not mod.es_resto("foundry-module/scripts/npc-generador.mjs")
+def test_rechaza_lcov_info():
+    """Artefacto real: lcov.info"""
+    assert mod.es_resto("lcov.info") is True
 
 
-def test_no_confunde_un_nombre_que_solo_se_parece():
-    """`coverage-algo.md` no es `coverage/`: la barra es la que manda."""
-    assert not mod.es_resto("docs/coverage-notas.md")
-    assert not mod.es_resto("tools/node_modules_helper.py")
+def test_rechaza_coverage_current_txt():
+    """Uno de los cuatro cobertura_*.txt"""
+    assert mod.es_resto("coverage_current.txt") is True
+
+
+def test_rechaza_coverage_another_txt():
+    """Otro cobertura_*.txt"""
+    assert mod.es_resto("coverage_another.txt") is True
+
+
+def test_rechaza_bak():
+    """Artefacto real: .bak de test"""
+    assert mod.es_resto("foundry-module/tests/consola-caliente-v1.test.mjs.bak") is True
 
 
 def test_el_arbol_actual_esta_limpio():

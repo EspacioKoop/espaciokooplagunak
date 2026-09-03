@@ -45,8 +45,45 @@ import { alternarModo, PRIMERA } from "./nave-camara.mjs";
  */
 export const RADIO_ANDAR = 0.35;
 import { interaccionAlAlcance } from "./nave-interaccion.mjs";
-import { mover, puertaTocada } from "./nave-movimiento.mjs";
+import { distanciaARect, mover, puertaTocada } from "./nave-movimiento.mjs";
 import { pintarEscenaConProfundidad } from "./retro3d-lienzo.mjs";
+
+/**
+ * Alcance del LETRERO de una puerta (#458 QA: «no se entiende a dónde te va a
+ * llevar una puerta»), en metros. Más que el radio de cruce (`RADIO_ANDAR`) y
+ * un poco más que donde la hoja empieza a abrirse (2.4 m en
+ * `nave-sala-caja.DISTANCIA_EMPEZAR_A_ABRIR`, no importado aquí para no atar
+ * este bucle a la fábrica de salas): se lee el destino ANTES de cruzar, no al
+ * mismo tiempo que la hoja ya se está retirando.
+ */
+export const RADIO_LETRERO_PUERTA = 3.2;
+
+/** La puerta más cercana dentro de `radio`, o `null`. Mismo criterio de
+ *  desempate que `interaccionAlAlcance`: la más cercana, y a igual distancia la
+ *  primera de la lista — estable entre fotogramas. */
+function puertaCercana(x, z, radio, puertas) {
+  let mejor = null;
+  let mejorDistancia = Infinity;
+  for (const puerta of puertas ?? []) {
+    const distancia = distanciaARect(x, z, puerta.rect);
+    if (distancia < radio && distancia < mejorDistancia) {
+      mejor = puerta;
+      mejorDistancia = distancia;
+    }
+  }
+  return mejor;
+}
+
+/** Dispara `alEntrar`/`alSalir` solo en el flanco (cambio respecto a `antes`) y
+ *  devuelve el nuevo valor a guardar. Comparte esta forma con el flanco de
+ *  cruce de puerta y el de interacción, extraída aquí para que el letrero no
+ *  repita la misma comprobación por tercera vez dentro de `paso`. */
+function actualizarFlancoPuerta(actual, antes, alEntrar, alSalir) {
+  if (actual === antes) return antes;
+  if (actual) alEntrar?.(actual.destino);
+  else alSalir?.();
+  return actual;
+}
 
 /** Ritmo al que gira la cámara mientras se mantiene "girar-izq"/"girar-der". */
 const VELOCIDAD_GIRO = Math.PI * 0.6; // radianes por segundo
@@ -61,6 +98,8 @@ const VELOCIDAD_GIRO = Math.PI * 0.6; // radianes por segundo
  *   planta: object,
  *   puertas?: Array<{rect:object, destino:object}>,
  *   alTocarPuerta?: (destino:object) => void,
+ *   alAcercarsePuerta?: (destino:object) => void,
+ *   alAlejarsePuerta?: () => void,
  *   interacciones?: Array<object>,
  *   alAlcanzarInteraccion?: (interaccion:object) => void,
  *   alSalirDeInteraccion?: () => void,
@@ -104,6 +143,11 @@ export function arrancarAndar(lienzo, opciones = {}) {
     // qué tono le dan a la luminaria lo decide `nave-luminaria.mjs`.
     aviso = () => null,
     saludSistemas = () => null,
+    // El letrero de destino de una puerta (#458), flanco de entrada/salida
+    // igual que una interacción: se avisa una vez al entrar en el radio y una
+    // vez al salir, nunca en cada fotograma mientras se está dentro.
+    alAcercarsePuerta = null,
+    alAlejarsePuerta = null,
   } = opciones;
 
   if (typeof opciones.componer !== "function") {
@@ -148,6 +192,11 @@ export function arrancarAndar(lienzo, opciones = {}) {
   // hace que cruzar sea un evento discreto, no un nivel que se compruebe
   // sesenta veces por segundo.
   let puertaTocadaAntes = null;
+  // Flanco del LETRERO de puerta (#458), aparte del de cruce: se lee ANTES de
+  // llegar a tocar la puerta, así que necesita su propio estado de «cuál
+  // estaba mostrando ya» — mezclarlo con `puertaTocadaAntes` apagaría el
+  // letrero justo al cruzar, un fotograma antes de que haga falta.
+  let letreroPuertaAntes = null;
   // Ventana de gracia tras cruzar (QA: manteniendo "atrás" pulsado de forma
   // continua se podía cruzar la MISMA puerta en los dos sentidos sin parar —
   // el flanco de entrada evita repetir en el sitio, pero no evita que el
@@ -222,6 +271,18 @@ export function arrancarAndar(lienzo, opciones = {}) {
         puertaTocadaAntes = puerta;
       }
     }
+
+    // El letrero de destino (#458): igual que el cruce, va por flanco, con su
+    // propio estado —su radio es mayor a propósito (se lee ANTES de cruzar)—,
+    // pero la comparación de flanco en sí es idéntica a la de arriba, así que
+    // se extrae para no repetir la complejidad de la comprobación dos veces
+    // dentro de `paso`.
+    letreroPuertaAntes = actualizarFlancoPuerta(
+      puertaCercana(x, z, RADIO_LETRERO_PUERTA, puertas),
+      letreroPuertaAntes,
+      alAcercarsePuerta,
+      alAlejarsePuerta,
+    );
 
     // Los puntos de interacción de la sala (#582): quién está al alcance lo
     // decide `nave-interaccion.mjs` —incluido el desempate cuando hay dos—, y
@@ -313,6 +374,11 @@ export function arrancarAndar(lienzo, opciones = {}) {
       // cartela de una pieza no puede seguir en pantalla en la sala siguiente.
       alSalirDeInteraccion?.();
       puertaTocadaAntes = null;
+      // Y el letrero de la puerta que se acaba de cruzar se retira con ella,
+      // por el mismo motivo que la cartela: no puede seguir puesto hablando de
+      // una puerta que ya ha quedado atrás.
+      if (letreroPuertaAntes) alAlejarsePuerta?.();
+      letreroPuertaAntes = null;
       // Ningún cruce de puerta puede dispararse hasta pasado `GRACIA_PUERTA_MS`:
       // el punto de llegada suele caer cerca de la puerta de vuelta (ver
       // comentario de `bloqueadoPuertaHasta`), y sin esta ventana un "atrás"

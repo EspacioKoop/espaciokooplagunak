@@ -150,6 +150,43 @@ test("una puerta trae MARCO: jambas y dintel, para que se lea como puerta", () =
   assert.ok(calidos.length > 0, "el marco ámbar debería aportar tonos cálidos a la escena");
 });
 
+test("una puerta con `colorMarco` propio tiñe SU marco y no el de las demás (#458)", () => {
+  // #458 QA: «no se entiende a dónde te va a llevar una puerta». Una sala con
+  // dos puertas, una social (colorMarco turquesa) y una normal (ámbar de
+  // serie), tiene que enseñar los dos tonos a la vez y no que el turquesa se
+  // trague al ámbar ni al revés.
+  const TURQUESA = "#4ad9c4";
+  const conDosPuertas = crearSalaCaja({
+    ancho: 11, profundidad: 11,
+    muralPixel: false,
+    puertas: [
+      { rect: { x: 0, z: 4, ancho: 1.2, profundidad: 2.4 }, colorMarco: TURQUESA },
+      { rect: { x: 9.8, z: 4, ancho: 1.2, profundidad: 2.4 } },
+    ],
+  });
+  // Mismo criterio que el test anterior: se mira a cada puerta de frente, una
+  // detrás de otra, porque el recorte de frustum (#510) descarta lo que queda
+  // fuera de vista y una vista centrada no garantiza ver ninguna de las dos.
+  const coloresMirandoA = (yaw) =>
+    conDosPuertas.componer(5.5, 0, 5.5, yaw, { ancho: 320, alto: 180 }).poligonos.map((pieza) => pieza.color);
+
+  const esTurquesa = (color) => {
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+    const r = parseInt(color.slice(1, 3), 16);
+    return g > r * 1.3 && b > r * 1.3;
+  };
+  const esCalido = (color) => {
+    const r = parseInt(color.slice(1, 3), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+    return r > b * 1.5;
+  };
+  // Mirando al muro oeste (yaw -PI/2 mira a -x): la puerta con `colorMarco`.
+  assert.ok(coloresMirandoA(-Math.PI / 2).some(esTurquesa), "la puerta con colorMarco propio se pinta con él");
+  // Mirando al muro este (yaw PI/2 mira a +x): la puerta sin `colorMarco`.
+  assert.ok(coloresMirandoA(Math.PI / 2).some(esCalido), "la puerta sin colorMarco sigue con el ámbar de serie");
+});
+
 test("el detalle de la hoja se DESPLAZA con ella al abrirse", () => {
   // QA 2026-08-08: «no hay pixelart en la puerta». El marco dice dónde está la
   // puerta; el detalle de la hoja dice qué es. Y tiene que salir de los MISMOS

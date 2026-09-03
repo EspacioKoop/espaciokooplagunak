@@ -35,7 +35,7 @@
 
 import { crearSalaCaja } from "./nave-sala-caja.mjs";
 import { MUEBLES, PUERTA_CANTINA_HACIA_VESTIBULO } from "./cantina-escena.mjs";
-import { CANTINA } from "./paleta.mjs";
+import { CANTINA, SECCION } from "./paleta.mjs";
 
 /**
  * Medidas de la sala, tomadas de las caras interiores REALES de los muros que
@@ -174,7 +174,14 @@ export const VENTANAS = Object.freeze([
 const SALA = crearSalaCaja({
   ancho: ANCHO,
   profundidad: PROFUNDIDAD,
-  puertas: [{ rect: PUERTA_SALIDA }, { rect: PUERTA_TERRAZA }],
+  puertas: [
+    { rect: PUERTA_SALIDA },
+    // Turquesa de `SECCION.entrable` (#458 QA: «las puertas de la cantina no
+    // tienen sentido»): esta es la que lleva a un destino OPCIONAL —la terraza,
+    // no el resto de la nave— y ya es el mismo acento con el que la sección
+    // marca «aquí SÍ se puede entrar».
+    { rect: PUERTA_TERRAZA, colorMarco: SECCION.entrable },
+  ],
   ventanas: VENTANAS,
   mobiliario: mobiliario(),
   // Los muros salen de la paleta de la CANTINA, no de la del casco: la sala

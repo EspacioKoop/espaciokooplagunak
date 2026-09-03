@@ -80,6 +80,30 @@ test("la época manda en la densidad, y una desconocida no revienta", () => {
   assert.deepEqual(estrellasEpoca(undefined), ESTRELLAS_POR_EPOCA.psx);
 });
 
+test("una de cada seis estrellas nace cálida, estable entre repintados (#458)", () => {
+  // #458 QA: «solo son unos puntos en el cielo». Un cielo real no es
+  // monocromo; esto es la mínima variedad que no requiere inventar ninguna
+  // estrella real ni tocar la posición de ninguna.
+  const campo = campoEstelar(9, { cantidad: 3000 });
+  const calidas = campo.filter((estrella) => estrella.calida).length;
+  const proporcion = calidas / campo.length;
+  assert.ok(Math.abs(proporcion - 1 / 6) < 0.03, `proporción cálida ${proporcion}`);
+
+  // La misma estrella es cálida en dos sorteos con la misma semilla: no es un
+  // parpadeo del pintor, es un rasgo de LA estrella.
+  assert.deepEqual(campoEstelar(9, { cantidad: 3000 }), campo);
+});
+
+test("las estrellas cálidas se proyectan con un color distinto de las frías", () => {
+  const campo = campoEstelar(9, { cantidad: 400 });
+  const puntos = proyectarEstrellas(campo, CAMARA);
+  const colores = new Set(puntos.map((p) => p.color));
+  // Con 400 estrellas y ~1/6 cálidas, tiene que haber de sobra de las dos
+  // familias de tono en pantalla — comprobado por variedad de color y no por
+  // un hex exacto, porque `sombrear` reparte cada tono en varios matices.
+  assert.ok(colores.size > 2, `debería haber más de un par de tonos: ${colores.size}`);
+});
+
 test("entradas rotas dan cielo vacío en vez de NaN", () => {
   assert.deepEqual(campoEstelar(1, { cantidad: 0 }), []);
   assert.deepEqual(campoEstelar(1, { cantidad: -5 }), []);

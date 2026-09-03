@@ -74,6 +74,13 @@ export function campoEstelar(semilla, { cantidad = RESPALDO_ESTRELLAS.cantidad, 
       // El brillo no baja de un tercio: una estrella casi negra sobre papel
       // negro es una estrella que no está, y aun así cuesta lo mismo pintarla.
       brillo: 0.35 + rng() * 0.65,
+      // Una de cada seis sale CÁLIDA (#458 QA: «solo son unos puntos en el
+      // cielo»). Un cielo real no es monocromo —hay gigantes rojas entre las
+      // blancas—, y esto es lo poco que se puede afirmar sin inventar
+      // ninguna estrella real: variedad de tono, no una posición. Nace aquí
+      // y no se decide en el pintor porque tiene que ser la MISMA estrella
+      // cálida en cada fotograma, no una que cambia de color al repintarse.
+      calida: rng() < (1 / 6),
     });
   }
   return campo;
@@ -127,7 +134,10 @@ export function proyectarEstrellas(campo, opciones = {}) {
       // Solo las más brillantes ganan el píxel extra, y solo donde la época lo
       // permite. Con todas gordas el cielo se vuelve una cortina.
       tam: brillo > 0.75 ? cielo.tamMax : 1,
-      color: sombrear(PIXEL.estrella, brillo),
+      // Cálida sale del mismo crema que ya usa el núcleo de la estela del
+      // motor (`PIXEL.motorNucleo`): ni color nuevo ni degradado, el mismo
+      // acento cálido que el módulo ya reserva para "esto brilla de verdad".
+      color: sombrear(estrella?.calida ? PIXEL.motorNucleo : PIXEL.estrella, brillo),
     });
   }
   return salida;

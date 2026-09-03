@@ -299,7 +299,7 @@ function abrirHuecosEnMuros(muros, huecos, ancho, profundidad) {
   const puertasConBase = [];
 
   for (const hueco of huecos) {
-    const { rect, y0, y1, esVentana } = hueco;
+    const { rect, y0, y1, esVentana, colorMarco } = hueco;
     const tocaNorte = rect.z <= TOLERANCIA_BORDE;
     const tocaSur = rect.z + rect.profundidad >= profundidad - TOLERANCIA_BORDE;
     const tocaOeste = rect.x <= TOLERANCIA_BORDE;
@@ -329,7 +329,10 @@ function abrirHuecosEnMuros(muros, huecos, ancho, profundidad) {
     if (y0 > 0) bandas.push(rectAColumnaEntre(base, 0, y0));
     if (y1 < ALTURA) bandas.push(rectAColumnaEntre(base, y1, ALTURA));
     if (esVentana) marcos.push(...piezasMarcoVentana(base, y0, y1, alongX));
-    else marcosPuerta.push(...piezasMarcoPuerta(base, y0, y1, alongX));
+    // `color: null` y no `colorMarco` directamente: así el llamador (`crearSalaCaja`)
+    // resuelve el color de serie de la sala en un solo sitio en vez de que cada
+    // puerta sin `colorMarco` explícito tenga que repetirlo.
+    else marcosPuerta.push(...piezasMarcoPuerta(base, y0, y1, alongX).map((malla) => ({ malla, color: colorMarco ?? null })));
     // `base` ya trae el hueco resuelto con el grosor REAL del muro que toca
     // (el `rect` de entrada no lo garantiza — sus ejes fuera del ancho de
     // puerta son arbitrarios, ver `nave-vestibulo.PUERTA_*`), así que las
@@ -526,7 +529,7 @@ function panosTexturados(rect, altura) {
  * del techo o que no debe estorbar puede ponerlo a `false`.
  *
  * @param {{ancho:number, profundidad:number, columnas?:Array,
- *   puertas?:Array<{rect:object}>, ventanas?:Array<{rect:object}>,
+ *   puertas?:Array<{rect:object, colorMarco?:string}>, ventanas?:Array<{rect:object}>,
  *   mobiliario?:Array<{centro:number[], medidas:number[], color:string, colision?:boolean}>,
  *   colorMuro?:string, colorColumna?:string, colorMarcoVentana?:string,
  *   semillaCielo?:number, cantidadEstrellas?:number, sistema?:string|null}} medidas
@@ -594,7 +597,9 @@ export function crearSalaCaja({
     { x: ancho, z: 0, ancho: GROSOR_MURO, profundidad },
   ];
   const huecos = [
-    ...puertas.map(({ rect }) => ({ rect, y0: 0, y1: ALTURA_PUERTA, esVentana: false })),
+    // `colorMarco` es por PUERTA (#458 QA: «no se entiende a dónde lleva»): sin
+    // él, `abrirHuecosEnMuros` cae al color de serie de la sala entera.
+    ...puertas.map(({ rect, colorMarco }) => ({ rect, y0: 0, y1: ALTURA_PUERTA, esVentana: false, colorMarco })),
     ...ventanas.map(({ rect }) => ({ rect, y0: ALTURA_ALFEIZAR, y1: ALTURA_DINTEL_VENTANA, esVentana: true })),
   ];
   const { muros: tramosMuro, bandas, marcos, marcosPuerta, puertasConBase } =
@@ -636,8 +641,11 @@ export function crearSalaCaja({
       : []),
     ...marcos.map((malla) => ({ malla, color: colorMarcoVentana })),
     // El marco de puerta lleva su propio color: es lo que la hace reconocible
-    // como paso a otra sala y no como un boquete en el muro.
-    ...marcosPuerta.map((malla) => ({ malla, color: colorMarcoPuerta })),
+    // como paso a otra sala y no como un boquete en el muro. Y, desde #458, ese
+    // color puede variar POR PUERTA (`colorMarco` en la puerta declarada): una
+    // puerta a un destino social (cantina, terraza) se reconoce por el marco
+    // antes de leer el letrero.
+    ...marcosPuerta.map(({ malla, color }) => ({ malla, color: color ?? colorMarcoPuerta })),
     ...bandas.map((malla) => ({ malla, color: colorMuro })),
     ...columnas.map((rect) => ({ malla: rectAColumna(rect, ALTURA), color: colorColumna })),
     ...mobiliario.map(({ centro, medidas, color, emisivo, malla }) => ({

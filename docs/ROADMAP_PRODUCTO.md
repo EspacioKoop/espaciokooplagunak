@@ -109,6 +109,13 @@ Cada etapa tiene un **criterio de salida** técnico y una **métrica de éxito**
 experiencia. La etapa no está terminada hasta cumplir ambos: que las piezas
 técnicas existan no basta.
 
+Las matrices siguientes son una vista derivada de GitHub: se actualizan cuando
+cambia el estado verificable de un criterio, no por cada PR. `IMPLEMENTED`
+acredita que el artefacto existe en `main`, no que el criterio de producto esté
+demostrado. Un issue o PR abierto se cita como pendiente, no como evidencia. Los
+únicos estados admitidos son `PLANNED`, `IN_PROGRESS`, `IMPLEMENTED`,
+`HUMAN_VERIFY`, `DONE` y `BLOCKED`.
+
 ### Etapa A — Cerrar el bucle vertical de fase 3
 
 Una sesión standalone completa: trayecto → incidente → resolución → registro
@@ -128,6 +135,15 @@ el resultado narrativo sin cambiar la autoridad del juego.
 **Métrica de éxito:** un grupo nuevo juega el vertical sin asistencia de quien
 lo desarrolló, siguiendo solo la documentación publicada.
 
+| Criterio | Evidencia | Estado | Pendiente |
+|---|---|---|---|
+| Smoke real multijugador de la integración opcional | [#29](https://github.com/VaroTv7/espaciokooplagunak/issues/29) registra la pasada humana v11.302 y solo un resultado parcial del host moderno | `HUMAN_VERIFY` | Completar en #29 la fila moderna y las comprobaciones humanas restantes |
+| Encuentro normalizado y controlado | PR [#196](https://github.com/VaroTv7/espaciokooplagunak/pull/196), [#200](https://github.com/VaroTv7/espaciokooplagunak/pull/200), [#201](https://github.com/VaroTv7/espaciokooplagunak/pull/201) y [#220](https://github.com/VaroTv7/espaciokooplagunak/pull/220), con pruebas del puente y del módulo | `IMPLEMENTED` | Demostrarlo dentro del bucle standalone completo |
+| Energía y sistemas operables según permisos | PR [#217](https://github.com/VaroTv7/espaciokooplagunak/pull/217) para GM y verticales de puesto [#472](https://github.com/VaroTv7/espaciokooplagunak/pull/472), [#475](https://github.com/VaroTv7/espaciokooplagunak/pull/475), [#476](https://github.com/VaroTv7/espaciokooplagunak/pull/476) y [#487](https://github.com/VaroTv7/espaciokooplagunak/pull/487) | `IMPLEMENTED` | Demostrarlo dentro del bucle standalone completo |
+| Destino y estado de campaña propios, sin autoridad de Foundry | **No existe evidencia integrada**: [#213](https://github.com/VaroTv7/espaciokooplagunak/issues/213)/[#214](https://github.com/VaroTv7/espaciokooplagunak/pull/214) solo cubren catálogo y adaptador opcionales de Foundry | `PLANNED` | Implementar y registrar destino, campaña y persistencia standalone |
+| Control GM acotado y observable | PR [#202](https://github.com/VaroTv7/espaciokooplagunak/pull/202), [#218](https://github.com/VaroTv7/espaciokooplagunak/pull/218) y [#294](https://github.com/VaroTv7/espaciokooplagunak/pull/294), con órdenes cerradas y eventos idempotentes | `IMPLEMENTED` | Demostrarlo dentro del bucle completo |
+| Salida A: bucle de estrella polar sin Foundry y resultado opcional hacia Foundry | **No existe evidencia end-to-end registrada**; el runbook de [#29](FOUNDRY_GUI_SMOKE.md) excluye varios clientes y una sesión completa | `BLOCKED` | Completar la persistencia standalone de [#766](https://github.com/VaroTv7/espaciokooplagunak/issues/766) y después ejecutar el playtest reproducible de [#219](https://github.com/VaroTv7/espaciokooplagunak/issues/219) |
+
 ### Etapa B — Juego cooperativo de tripulación
 
 - permisos y acciones reales por puesto;
@@ -141,6 +157,15 @@ puede cambiar el resultado del encuentro.
 
 **Métrica de éxito:** en un playtest, ningún jugador puede describir su puesto
 como «mirar mientras otro juega».
+
+| Criterio | Evidencia | Estado | Pendiente |
+|---|---|---|---|
+| Permisos y acciones reales por puesto | [Modelo de permisos](PERMISOS_PUESTO.md), PR [#478](https://github.com/VaroTv7/espaciokooplagunak/pull/478) y verticales integrados [#472](https://github.com/VaroTv7/espaciokooplagunak/pull/472), [#475](https://github.com/VaroTv7/espaciokooplagunak/pull/475), [#476](https://github.com/VaroTv7/espaciokooplagunak/pull/476), [#486](https://github.com/VaroTv7/espaciokooplagunak/pull/486) y [#487](https://github.com/VaroTv7/espaciokooplagunak/pull/487) | `IMPLEMENTED` | Validar la agencia percibida en #467 |
+| Alarmas compartidas y dependencias entre sistemas | PR [#494](https://github.com/VaroTv7/espaciokooplagunak/pull/494) y sus pruebas de alarma cruzada | `IMPLEMENTED` | Validar en partida real junto con #467 |
+| Guardias y relevo de puestos | PR [#496](https://github.com/VaroTv7/espaciokooplagunak/pull/496) y sus pruebas de relevo | `IMPLEMENTED` | Validar en partida real junto con #467 |
+| Crisis que exige coordinación entre tres o más funciones | [Diseño causal y límites](CRISIS_MULTIPUESTO.md), issue [#484](https://github.com/VaroTv7/espaciokooplagunak/issues/484) y PR [#546](https://github.com/VaroTv7/espaciokooplagunak/pull/546) | `IMPLEMENTED` | Playtest humano #467; esta implementación no cierra por sí sola la Etapa B |
+| Automatización limitada para puestos vacíos | [#481](VERIFICACION-NAVEGACION-Y-AUTOMATIZACION.md#481--automatización-nativa-de-puestos-sin-tripulación) demuestra que no existe automatización nativa; **no existe evidencia integrada de la política de producto** | `BLOCKED` | Formalizar en `main` la decisión pendiente de [#512](https://github.com/VaroTv7/espaciokooplagunak/issues/512) antes de implementar lo que resulte |
+| Salida B: cada puesto tiene una decisión exclusiva que cambia el encuentro; nadie queda mirando | **No existe documento de playtest**; [#467](https://github.com/VaroTv7/espaciokooplagunak/issues/467) define la validación humana pendiente | `HUMAN_VERIFY` | Ejecutar y registrar el playtest de 3+ personas de #467; hasta entonces la Etapa B no está cerrada |
 
 Desglose de coordinación del vertical de agencia en #459, con subissues
 formales y grafo de dependencias explícito:

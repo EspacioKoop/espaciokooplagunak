@@ -37,7 +37,7 @@ import {
 import { probarConexion } from "./diagnostico-conexion.mjs";
 import { MOTIVOS, planificarFichas } from "./ficha-nave-aplicacion.mjs";
 import { addStationControl, refrescarPuestos, registerStationFeature } from "./station-ui.mjs";
-import { addAvatarControl, registerAvatarFeature } from "./avatar-ui.mjs";
+import { addAvatarControl, registerAvatarFeature } from "./avatar/avatar-ui.mjs";
 import { MINIMO_POR_DEFECTO } from "./requisitos-puesto.mjs";
 import {
   addWorkspaceControl,
@@ -123,8 +123,8 @@ import {
   registrarEscuchaMusica,
   registroEfectivo,
   siguienteOrden,
-} from "./musica-mando.mjs";
-import { crearReproductor } from "./musica-reproductor.mjs";
+} from "./arte/audio/musica-mando.mjs";
+import { crearReproductor } from "./arte/audio/musica-reproductor.mjs";
 import { crearGrupo } from "./control-escena.mjs";
 
 registerStationFeature(MODULE_ID);

@@ -9,13 +9,13 @@
 // el resto del módulo con `prefers-reduced-motion` (#227): la figura se está
 // editando, no ambientando, y una que gira sola estorba.
 
-import { AVATAR, FACCIONES, RETRATO } from "./paleta.mjs";
-import { CLASES, GESTOS, RAZAS, SILUETAS } from "./cantina-avatar.mjs";
+import { AVATAR, FACCIONES, RETRATO } from "../paleta.mjs";
+import { CLASES, GESTOS, RAZAS, SILUETAS } from "../cantina-avatar.mjs";
 import { assignAvatar, avatarDeUsuario, AVATAR_ASSIGNMENT_ERRORS } from "./avatar-assignment.mjs";
 import { componerAvatarPreview } from "./avatar-preview.mjs";
-import { pintarEscena } from "./retro3d-lienzo.mjs";
+import { pintarEscena } from "../retro3d-lienzo.mjs";
 import { sugerirAvatarDesdeActor } from "./avatar-sugerencia.mjs";
-import { anadirHerramienta } from "./control-escena.mjs";
+import { anadirHerramienta } from "../control-escena.mjs";
 
 let avatarApp = null;
 let configuredModuleId = null;

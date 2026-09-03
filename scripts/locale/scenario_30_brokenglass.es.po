@@ -1170,7 +1170,7 @@ msgid ""
 "\n"
 "<The Kraylor Vessel jumps back through the wormhole>"
 msgstr ""
-"Cuidado con la espalda, Hugh Mon! No sabemos lo que estás tramando, pero no nos gusta el aspecto de ello. Mantenga su distancia y tal vez le dejemos en paz.\n"
+"¡Cuidado, Hugh Mon! No sabemos lo que estás tramando, pero no nos gusta el aspecto de ello. Mantenga su distancia y tal vez le dejemos en paz.\n"
 "\n"
 "<The Kraylor Vessel jumps back through the wormhole>"
 

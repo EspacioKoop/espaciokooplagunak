@@ -51,7 +51,10 @@ jobs:
             node --check "$file"
           done
       - name: Ejecutar tests del módulo
-        run: node --test foundry-module/tests/*.test.mjs
+        shell: bash
+        run: |
+          shopt -s globstar
+          node --test foundry-module/tests/**/*.test.mjs
       - name: Probar el inventario conservador de módulos
         run: python3 -m unittest discover -s scripts/tests -p 'test_check_orphan_modules.py'
       - name: Verificar inventario conservador de módulos

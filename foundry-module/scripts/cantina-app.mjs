@@ -11,7 +11,7 @@
 import { MODULE_ID } from "./lagunak-constantes.mjs";
 import { puertasCantina } from "./cantina.mjs";
 import { arrancarCantina } from "./cantina-lienzo.mjs";
-import { avatarDeUsuario } from "./avatar-assignment.mjs";
+import { avatarDeUsuario } from "./avatar/avatar-assignment.mjs";
 
 const PLANTILLA = `modules/${MODULE_ID}/templates/cantina.hbs`;
 

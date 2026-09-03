@@ -124,7 +124,7 @@ msgstr "Quijote"
 
 msgctxt "Enemies"
 msgid "Insanely strong and/or inordinately large numbers of enemies"
-msgstr "Insanely strong and/or inordinately large numbers of enemigos"
+msgstr "Enemigos disparatadamente fuertes y/o en cantidades desmedidas"
 
 # Scenario setting
 msgctxt "setting"

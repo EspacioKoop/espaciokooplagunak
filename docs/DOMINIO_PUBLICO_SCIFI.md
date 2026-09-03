@@ -572,13 +572,19 @@ nombres/logos** como guiño de producto.
 | **Doctor Who, Dan Dare, Perry Rhodan** | Vigentes. ⛔ |
 | Diseño Universal de **Frankenstein/Drácula** (tornillos, capa) | La novela es DP; **ese diseño** es de los estudios. 📝 usa la novela, ⛔ el diseño |
 | Deidades y término «Mythos» de **Derleth** / material de **Chaosium** | Posterior a Lovecraft; no DP. ⛔ |
+| **Doc Savage** (Lester Dent, fallec. 1959) | UE vida+70 hasta **2029**; personaje y cabecera con marca viva de Condé Nast/Advance Magazine Publishers. ⛔ |
+| **La Sombra / The Shadow** (Walter B. Gibson, fallec. 1985) | UE vida+70 hasta **2055**; muy lejos de DP. ⛔ |
+| **Lensman** (E. E. "Doc" Smith, fallec. 1965) | UE vida+70 hasta **2035**; además las novelas de la serie (*Triplanetary*, 1934 en adelante) son posteriores al corte de 1930 en EE. UU. ⛔ |
 
 > **Fuente/verificación (consulta 2026-07-27):** Buck Rogers — DP del texto de Nowlan y disputa de
 > marca del Dille Family Trust ([Forbes, 2018](https://www.forbes.com/sites/legalentertainment/2018/07/27/buck-rogers-ip-and-a-possible-armageddon-2419/)).
 > Burroughs — marcas vivas John Carter®/Barsoom®/Tarzan® de ERB, Inc.
 > ([Wikipedia](https://en.wikipedia.org/wiki/Edgar_Rice_Burroughs,_Inc.)). Flash Gordon (King Features),
 > Universal (*Frankenstein*/*Drácula*) y demás franquicias vigentes: descarte **precautorio** (pendiente
-> pull de registro), tratado en la dirección conservadora.
+> pull de registro), tratado en la dirección conservadora. Doc Savage — fecha de fallecimiento de Dent
+> (LCNAF) y marca viva de la cabecera. La Sombra — fecha de fallecimiento de Gibson (LCNAF). Lensman —
+> fecha de fallecimiento de E. E. Smith (LCNAF) y fecha de publicación de la serie (posterior a 1930).
+> Añadidas en [#698](https://github.com/VaroTv7/espaciokooplagunak/issues/698) al auditar #691.
 
 ---
 

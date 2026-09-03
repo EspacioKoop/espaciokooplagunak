@@ -24,7 +24,7 @@ import { CATALOGO_ANDAR } from "./nave-catalogo-andar.mjs";
 import { puntoDeLlegada, resolverArranque } from "./nave-estancias.mjs";
 import { construirMuestra, debeMuestrear, programarMuestra } from "./nave-movimiento-red.mjs";
 import { presentesEn } from "./nave-presencia.mjs";
-import { avatarDeUsuario } from "./avatar-assignment.mjs";
+import { avatarDeUsuario } from "./avatar/avatar-assignment.mjs";
 import { openWorkspaceApp } from "./station-workspace-ui.mjs";
 import { SECCION } from "./paleta.mjs";
 import { cartelaDe, piezaPorId } from "./catalogo-piezas.mjs";

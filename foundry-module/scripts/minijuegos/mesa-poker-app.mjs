@@ -23,6 +23,81 @@ import { lineasResultado, mesaVista } from "./mesa-vista.mjs";
 import { PREFIJO_AUTOMATICO } from "./sesion-motor.mjs";
 import { componerMesa } from "./poker-3d.mjs";
 import { pintarEscena } from "../retro3d-lienzo.mjs";
+import { intentoDesdeArrastre } from "./carta-intento.mjs";
+
+// Formato del `dataTransfer` de un arrastre de carta propia (#458): un MIME a
+// propósito propio del módulo, para que soltar cualquier otra cosa que use
+// `text/plain` (un enlace, texto seleccionado) nunca se confunda con un
+// intento de mostrar carta.
+const MIME_CARTA = `application/x-${MODULE_ID}-carta-mano`;
+
+/**
+ * Envía la intención de mostrar la carta `indice` de la mano propia. Pasa
+ * SIEMPRE por `intentoDesdeArrastre` (#458): ni el arrastre ni el clic tocan
+ * el motor directamente, solo construyen la misma forma cerrada que
+ * validaría cualquier otro origen del gesto.
+ */
+function mostrarCarta(indice, proponer) {
+  const intento = intentoDesdeArrastre({ tipo: "mostrar", indice });
+  if (!intento) return;
+  proponer({ tipo: "act", parametros: intento });
+}
+
+/**
+ * Cablea el arrastre y el clic/teclado de las cartas de la mano propia hacia
+ * `mostrarCarta`. Fuera de las dos clases hermanas por la misma razón que
+ * `pintarMesa3D`: es DOM, no comportamiento de ventana.
+ *
+ * Dos caminos al mismo intento, a propósito:
+ * - arrastrar una carta hasta el tapete (`[data-zona-mostrar]`) es el gesto
+ *   pensado para esto — enseñar una carta es ponerla físicamente en la mesa;
+ * - pulsar la carta (clic, o Intro/Espacio con el foco encima) hace lo mismo
+ *   sin arrastre, porque un gesto que solo funciona con ratón deja fuera a
+ *   quien navega por teclado o con lector de pantalla.
+ *
+ * Ninguno de los dos concede nada por sí mismo: `mostrarCarta` termina en el
+ * mismo `aplicar` del motor que rechazaría igual una carta ya mostrada, un
+ * índice inválido o una mano retirada — la ventana no puede saltarse esa
+ * autoridad por arrastrar en vez de pulsar un botón.
+ */
+function cablearCartasPropias(raiz, proponer) {
+  const zonaMostrar = raiz?.querySelector?.("[data-zona-mostrar]");
+
+  raiz?.querySelectorAll?.(".lagunak-mesa-carta-propia")?.forEach((carta) => {
+    const indice = Number.parseInt(carta.dataset.indice, 10);
+
+    carta.addEventListener("dragstart", (ev) => {
+      ev.dataTransfer?.setData(MIME_CARTA, String(indice));
+      if (ev.dataTransfer) ev.dataTransfer.effectAllowed = "move";
+    });
+
+    carta.addEventListener("click", () => mostrarCarta(indice, proponer));
+    carta.addEventListener("keydown", (ev) => {
+      if (ev.key !== "Enter" && ev.key !== " ") return;
+      ev.preventDefault();
+      mostrarCarta(indice, proponer);
+    });
+  });
+
+  if (!zonaMostrar) return;
+  const CLASE_ACTIVA = "lagunak-zona-mostrar-activa";
+  zonaMostrar.addEventListener("dragover", (ev) => {
+    if (!ev.dataTransfer?.types?.includes(MIME_CARTA)) return;
+    ev.preventDefault();
+    ev.dataTransfer.dropEffect = "move";
+    zonaMostrar.classList.add(CLASE_ACTIVA);
+  });
+  zonaMostrar.addEventListener("dragleave", () => {
+    zonaMostrar.classList.remove(CLASE_ACTIVA);
+  });
+  zonaMostrar.addEventListener("drop", (ev) => {
+    zonaMostrar.classList.remove(CLASE_ACTIVA);
+    const crudo = ev.dataTransfer?.getData(MIME_CARTA);
+    if (!crudo) return;
+    ev.preventDefault();
+    mostrarCarta(Number.parseInt(crudo, 10), proponer);
+  });
+}
 
 /**
  * Pinta la mesa en 3D dentro de la raíz ya renderizada. Fuera de las dos clases
@@ -188,6 +263,7 @@ export function crearClaseMesaV2({ proponer, alCerrar = () => {} }) {
       this.element?.querySelectorAll?.("[data-accion]")?.forEach((boton) => {
         boton.addEventListener("click", () => alPulsar(boton, this.element, proponer));
       });
+      cablearCartasPropias(this.element, proponer);
       pintarMesa3D(this.element, context);
     }
 
@@ -224,6 +300,7 @@ export function crearClaseMesaV1({ proponer, alCerrar = () => {} }) {
       html.find("[data-accion]").on("click", (ev) => {
         alPulsar(ev.currentTarget, html[0], proponer);
       });
+      cablearCartasPropias(html?.[0], proponer);
       pintarMesa3D(html?.[0], contexto());
     }
 

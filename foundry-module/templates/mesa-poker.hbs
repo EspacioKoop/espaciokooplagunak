@@ -18,7 +18,7 @@
     <canvas class="lagunak-mesa-3d" width="480" height="280"
             role="img" aria-label="{{localize "LAGUNAK.Minijuegos.Mesa.VistaAlt"}}"></canvas>
 
-    <div class="lagunak-mesa-tapete">
+    <div class="lagunak-mesa-tapete" data-zona-mostrar aria-label="{{localize "LAGUNAK.Minijuegos.Mesa.ZonaMostrar"}}">
       <p class="lagunak-mesa-bote">
         {{boteTexto}}
         {{#each botePila}}
@@ -73,7 +73,15 @@
     <h4>{{localize "LAGUNAK.Minijuegos.Mesa.TuMano"}}</h4>
     <ul class="lagunak-mesa-mano">
       {{#each tuMano}}
-        <li><img src="{{this.imagen}}" alt="{{this.codigo}}" /></li>
+        {{#if this.puedeMostrar}}
+          <li class="lagunak-mesa-carta-propia" data-indice="{{this.indice}}"
+              draggable="true" role="button" tabindex="0"
+              aria-label="{{localize "LAGUNAK.Minijuegos.Mesa.MostrarCarta"}}"
+              title="{{localize "LAGUNAK.Minijuegos.Mesa.MostrarCarta"}}"
+            ><img src="{{this.imagen}}" alt="{{this.codigo}}" draggable="false" /></li>
+        {{else}}
+          <li><img src="{{this.imagen}}" alt="{{this.codigo}}" /></li>
+        {{/if}}
       {{/each}}
       {{#each dorsosPropios}}
         <li><img src="{{this.imagen}}" alt="{{localize "LAGUNAK.Minijuegos.Mesa.Dorso"}}" /></li>

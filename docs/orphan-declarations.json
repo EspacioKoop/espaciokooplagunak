@@ -117,6 +117,15 @@
       "declaredBy": "Espaciokoop Lagunak",
       "declaredAt": "2026-09-02",
       "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/603"}
+    },
+    {
+      "module": "inventario.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Reductor puro del inventario por personaje (#963/#964): categorías, equipo, hotbar, peso opcional. Sin consumidor todavía porque el cableado al mundo (#965, coger/soltar con G/H) y la ventana (#966) son issues aparte, deliberadamente separados para no ensanchar este módulo — mismo reparto que ya usa asistencia/sesion.mjs (#309).",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-09-04",
+      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/964"}
     }
   ],
   "artInventoryRationale": {

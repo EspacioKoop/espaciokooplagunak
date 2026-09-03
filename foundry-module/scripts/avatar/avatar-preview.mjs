@@ -12,9 +12,9 @@
 //
 // Frontera de arte (#351): no declara ni un color.
 
-import { componerEscena, fundirEscenas } from "./retro3d.mjs";
-import { caja } from "./cantina-escena.mjs";
-import { piezasAvatar } from "./cantina-avatar.mjs";
+import { componerEscena, fundirEscenas } from "../retro3d.mjs";
+import { caja } from "../cantina-escena.mjs";
+import { piezasAvatar } from "../cantina-avatar.mjs";
 
 /** Sin giro de reposo: aquí no hay que reconocer un objeto al otro lado de la
  * sala, hay que EDITARLO, y una figura que gira sola es una figura difícil de

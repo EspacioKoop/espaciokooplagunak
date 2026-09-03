@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "declarations": [
     {
-      "module": "audio-ficheros.mjs",
+      "module": "arte/audio/audio-ficheros.mjs",
       "status": "declared-orphan",
       "foundation": true,
       "reason": "Reproductor de ficheros de audio, al lado de la síntesis de #318. No lo importa nadie todavía porque no hay ningún fichero de audio en el repositorio: traerlo es la decisión de #571, y cablear un reproductor a un catálogo vacío no reproduce nada.",
@@ -137,7 +137,7 @@
     "minijuegos/fichas-pixelart.mjs",
     "ventana-nave.mjs",
     "iconos-sistema.mjs",
-    "retrato-tripulante.mjs",
+    "avatar/retrato-tripulante.mjs",
     "retro3d.mjs",
     "retro3d-estrellas.mjs",
     "cantina-escena.mjs",

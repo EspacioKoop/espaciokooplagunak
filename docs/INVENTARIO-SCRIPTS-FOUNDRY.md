@@ -155,17 +155,17 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 - `museo-piezas.mjs`
 
 ### 8. Audio y Música (4 scripts)
-- `audio-ficheros.mjs`
-- `musica-mando.mjs`
-- `musica-procedural.mjs`
-- `musica-reproductor.mjs`
+- `arte/audio/audio-ficheros.mjs`
+- `arte/audio/musica-mando.mjs`
+- `arte/audio/musica-procedural.mjs`
+- `arte/audio/musica-reproductor.mjs`
 
 ### 9. Avatares y Personajes (6 scripts)
-- `avatar-assignment.mjs`
-- `avatar-preview.mjs`
-- `avatar-sugerencia.mjs`
-- `avatar-ui.mjs`
-- `retrato-tripulante.mjs`
+- `avatar/avatar-assignment.mjs`
+- `avatar/avatar-preview.mjs`
+- `avatar/avatar-sugerencia.mjs`
+- `avatar/avatar-ui.mjs`
+- `avatar/retrato-tripulante.mjs`
 - `lamina-contacto.mjs`
 
 ### 10. Interfaz de Usuario y Paneles (9 scripts)

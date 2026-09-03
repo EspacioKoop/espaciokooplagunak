@@ -1805,3 +1805,30 @@ msgstr "Waypoint 1 met. Ir al punto 2. Legión tomada %f segundos. %i %s. Lap to
 msgctxt "msgMainscreen"
 msgid "Race aborted. Nobody made it to the starting line"
 msgstr "La raza abortó, nadie llegó a la línea de inicio"
+
+msgid "Race three laps of four waypoints (1 to 2 to 3 to 4 to 1 = 1 lap) in the shortest time. Play for time by yourself, but have more fun with multiple player ships.\n\nPlacement points depend on the number of racers present at the starting point when the race starts. Precise values are given to Relay at that time. Each target drone of yours shot earns one point. Shoot an opponent's drone and they get the point.\n\nBefore the race starts, scope out the course, visit some stations, maybe improve your ship for the race. But, watch your time carefully. If you are not at waypoint 1 at the start of the race, your ship will be destroyed. Your competitors may also try to destroy you despite being your nominal allies, so beware\n\nVersion 2.2"
+msgstr "Completa tres vueltas de cuatro puntos de ruta (1 a 2 a 3 a 4 a 1 = 1 vuelta) en el menor tiempo posible. Juega contrarreloj en solitario, pero es más divertido con varias naves de jugador.\n\nLos puntos de clasificación dependen del número de corredores presentes en el punto de salida cuando arranca la carrera. Los valores exactos se dan a Relay en ese momento. Cada dron objetivo propio destruido suma un punto. Destruir el dron de un rival les da el punto a ellos.\n\nAntes de que empiece la carrera, explora el recorrido, visita algunas estaciones, quizá mejora tu nave para la carrera. Pero vigila el tiempo con cuidado. Si no estás en el punto de ruta 1 al empezar la carrera, tu nave será destruida. Tus competidores también pueden intentar destruirte pese a ser tus aliados nominales, así que ten cuidado\n\nVersión 2.2"
+
+msgctxt "setting"
+msgid "Sound"
+msgstr "Sonido"
+
+msgctxt "setting"
+msgid "Configure the start sound to beep or roar"
+msgstr "Configura el sonido de salida entre pitido o rugido"
+
+msgctxt "Sound"
+msgid "Colossus"
+msgstr "Colossus"
+
+msgctxt "Sound"
+msgid "Start sound will be Colossus roar"
+msgstr "El sonido de salida será el rugido de Colossus"
+
+msgctxt "Sound"
+msgid "Fermi"
+msgstr "Fermi"
+
+msgctxt "Sound"
+msgid "Start sound will be Pole Position beep"
+msgstr "El sonido de salida será el pitido de Pole Position"

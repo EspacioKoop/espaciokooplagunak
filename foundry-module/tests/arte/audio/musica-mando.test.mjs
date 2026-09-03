@@ -12,8 +12,8 @@ import {
   registroEfectivo,
   siguienteOrden,
   descripcionMando,
-} from "../scripts/musica-mando.mjs";
-import { REGISTROS } from "../scripts/musica-procedural.mjs";
+} from "../../../scripts/arte/audio/musica-mando.mjs";
+import { REGISTROS } from "../../../scripts/arte/audio/musica-procedural.mjs";
 
 const MODULO = "espaciokoop-lagunak";
 

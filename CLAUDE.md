@@ -100,7 +100,7 @@ cd bridge && pip install -r requirements-dev.txt && pytest
 
 # Node (node --test): lógica pura del módulo Foundry (sin Foundry real).
 # EN CI: .github/workflows/foundry-module.yml.
-node --test foundry-module/tests/*.test.mjs
+node --test $(find foundry-module/tests -name '*.test.mjs')
 ```
 
 La CI actual: `cicd.yml` ejecuta builds Linux (con el CTest anterior dentro de
@@ -230,7 +230,7 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     pixelart en `scripts/nave-sprite.mjs`, `scripts/minijuegos/cartas-pixelart.mjs` y
     `scripts/minijuegos/fichas-pixelart.mjs` (volumen por planos de color, nunca degradados: el 3D
     del casco es otro lenguaje); música determinista por semilla en
-    `scripts/musica-procedural.mjs`. El 3D de consola de los 90 vive en `scripts/retro3d*.mjs`
+    `scripts/arte/audio/musica-procedural.mjs`. El 3D de consola de los 90 vive en `scripts/retro3d*.mjs`
     (#362): motor puro que devuelve polígonos, pintor de lienzo aparte, y la **época** (PSX o
     GameCube) como parámetro —rejilla, tonos y niebla— y no como dos módulos. La **visibilidad no
     es un parámetro de época** (#510): quién tapa a quién es una garantía geométrica del motor y

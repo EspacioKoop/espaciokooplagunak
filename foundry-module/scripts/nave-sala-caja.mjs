@@ -29,6 +29,7 @@
 // `paleta.mjs` (`SECCION`, ya usada para materiales genéricos de nave).
 
 import { AMBAR_SENAL, SECCION } from "./paleta.mjs";
+import { caja } from "./escena-primitivas.mjs";
 import { componerEscena, fundirEscenas } from "./retro3d.mjs";
 import { resolverCamara } from "./nave-camara.mjs";
 import { campoEstelar, proyectarEstrellas } from "./retro3d-estrellas.mjs";
@@ -41,35 +42,6 @@ import { piezasPielSuelo, piezasPielTecho } from "./nave-piel-suelo.mjs";
 import { piezasLuminarias, mallaDifusorLuminarias, colorDifusorLuminaria } from "./nave-luminaria.mjs";
 import { crearPlanta } from "./nave-movimiento.mjs";
 import { poligonosOtrosJugadores } from "./nave-avatares-render.mjs";
-
-/** Caja alineada a ejes por centro+medidas, caras en sentido antihorario
- *  vistas desde fuera (lo que `componerEscena` necesita para descartar las de
- *  espaldas). */
-function caja([cx, cy, cz], [ancho, alto, fondo]) {
-  const x = ancho / 2;
-  const y = alto / 2;
-  const z = fondo / 2;
-  return {
-    vertices: [
-      [cx - x, cy - y, cz - z],
-      [cx + x, cy - y, cz - z],
-      [cx + x, cy + y, cz - z],
-      [cx - x, cy + y, cz - z],
-      [cx - x, cy - y, cz + z],
-      [cx + x, cy - y, cz + z],
-      [cx + x, cy + y, cz + z],
-      [cx - x, cy + y, cz + z],
-    ],
-    caras: [
-      [0, 3, 2, 1], // frente (−z)
-      [4, 5, 6, 7], // fondo (+z)
-      [0, 4, 7, 3], // izquierda
-      [1, 2, 6, 5], // derecha
-      [3, 7, 6, 2], // techo
-      [0, 1, 5, 4], // suelo
-    ],
-  };
-}
 
 /** A qué altura mira quien anda, de pie. El salto/agachado (#446) suma su
  *  propio offset por encima de esta base. 1.45 y no 1.6 (QA: "el personaje

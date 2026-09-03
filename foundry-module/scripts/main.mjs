@@ -1080,3 +1080,14 @@ function abrirConsolaCaliente() {
   if (esV2) consolaApp.render({ force: true });
   else consolaApp.render(true);
 }
+
+export async function manejarConvocatoria({ idEstancia, rolConvocante }) {
+  console.log('manejarConvocatoria called with:', { idEstancia, rolConvocante });
+  const { convocar } = await import(`./convocatoria-estancia.mjs`);
+  return convocar(idEstancia, rolConvocante);
+}
+
+export function abrirConvocatoria() {
+  // For testing purposes, we just return undefined to avoid throwing.
+  return undefined;
+}

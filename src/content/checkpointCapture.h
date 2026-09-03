@@ -18,3 +18,11 @@
 #include <vector>
 
 std::vector<CheckpointShipSystem> captureShipSystems(sp::ecs::Entity ship);
+
+// Pure normalization of Hull's current/max into the checkpoint's 0.0-1.0
+// health range. Extracted so it can be unit-tested (current==max, current==0,
+// current>max, max==0, non-finite inputs) without constructing a real Hull
+// component: Hull embeds sp::script::Callback members that touch the global
+// Lua registry even off-heap, which segfaults in a test binary without a
+// running script engine (see tests/checkpointCaptureTests.cpp).
+float hullHealthFromCurrentMax(float current, float max);

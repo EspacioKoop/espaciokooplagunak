@@ -21,13 +21,31 @@ float unitClamp(float value)
     return std::clamp(value, 0.0f, 1.0f);
 }
 
-// power_level runs 0.0-3.0 by convention (ShipSystem::power_level docstring);
-// normalized to the checkpoint's 0.0-1.0 "energy" range.
+// power_level runs 0.0-3.0 for every captured system: Reactor, BeamWeaponSys,
+// MissileTubes, ManeuveringThrusters, ImpulseEngine, WarpDrive and JumpDrive
+// all derive from ShipSystem (src/components/shipsystem.h), and Shields'
+// front_system/rear_system are ShipSystem instances directly — there is no
+// per-component override of that range. The guarantee is the base class
+// field's own docstring: "float power_level = 1.0f; //0.0-3.0, default 1.0"
+// (shipsystem.h). Normalized here to the checkpoint's 0.0-1.0 "energy" range;
+// unitClamp() below also absorbs any out-of-convention value (e.g. hacked or
+// scripted power_level beyond 0-3) instead of letting it leak into the JSON.
 float energyFromPowerLevel(float power_level)
 {
     return unitClamp(power_level / 3.0f);
 }
+}
 
+// Pure: no Hull, no ECS. See declaration in checkpointCapture.h for why this
+// is split out from the Hull-reading branch of captureShipSystems() below.
+float hullHealthFromCurrentMax(float current, float max)
+{
+    if (!std::isfinite(current) || !std::isfinite(max) || max <= 0.0f) return 0.0f;
+    return unitClamp(current / max);
+}
+
+namespace
+{
 template<typename T> void captureSystem(
     sp::ecs::Entity ship, const char* id, std::vector<CheckpointShipSystem>& output)
 {
@@ -50,7 +68,7 @@ std::vector<CheckpointShipSystem> captureShipSystems(sp::ecs::Entity ship)
     {
         CheckpointShipSystem entry;
         entry.id = "hull";
-        entry.health = hull->max > 0.0f ? unitClamp(hull->current / hull->max) : 0.0f;
+        entry.health = hullHealthFromCurrentMax(hull->current, hull->max);
         entry.energy = 1.0f;
         entry.operational = hull->current > 0.0f;
         result.push_back(std::move(entry));

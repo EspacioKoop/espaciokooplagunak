@@ -15,7 +15,7 @@ allí.
 El servidor de juego incluye un servidor HTTP heredado
 (`httpserver=<puerto>`) cuyo endpoint `/exec.lua` **ejecuta Lua arbitrario
 sin autenticación**. No es un bug de este fork, es el diseño heredado;
-está inventariado en [`docs/API_HTTP.md`](docs/API_HTTP.md).
+está inventariado en [`docs/seguridad/API_HTTP.md`](docs/seguridad/API_HTTP.md).
 
 Reglas de este proyecto:
 
@@ -28,7 +28,7 @@ Reglas de este proyecto:
    o a Internet se rechaza por defecto.
 
 Actores, activos, fronteras, amenazas y riesgos residuales están inventariados
-en el [`modelo de amenazas del puente`](docs/BRIDGE_THREAT_MODEL.md).
+en el [`modelo de amenazas del puente`](docs/seguridad/BRIDGE_THREAT_MODEL.md).
 
 ## Secretos
 
@@ -39,7 +39,7 @@ en el [`modelo de amenazas del puente`](docs/BRIDGE_THREAT_MODEL.md).
   registra en el issue correspondiente.
 
 La generación, custodia, rotación, revocación y recuperación del Bearer se
-detallan en [`docs/BRIDGE_AUTHENTICATION.md`](docs/BRIDGE_AUTHENTICATION.md).
+detallan en [`docs/seguridad/BRIDGE_AUTHENTICATION.md`](docs/seguridad/BRIDGE_AUTHENTICATION.md).
 
 ## Transporte del puente Foundry
 

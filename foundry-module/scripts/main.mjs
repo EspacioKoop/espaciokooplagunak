@@ -123,8 +123,8 @@ import {
   registrarEscuchaMusica,
   registroEfectivo,
   siguienteOrden,
-} from "./musica-mando.mjs";
-import { crearReproductor } from "./musica-reproductor.mjs";
+} from "./arte/audio/musica-mando.mjs";
+import { crearReproductor } from "./arte/audio/musica-reproductor.mjs";
 import { crearGrupo } from "./control-escena.mjs";
 
 registerStationFeature(MODULE_ID);

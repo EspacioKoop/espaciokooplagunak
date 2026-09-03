@@ -17,8 +17,8 @@
 //
 // Puro: ni Foundry, ni DOM, ni red. Se prueba desde Node.
 
-import { crearAleatorio } from "./minijuegos/aleatorio.mjs";
-import { PIXEL, RETRATO, luminancia } from "./paleta.mjs";
+import { crearAleatorio } from "../minijuegos/aleatorio.mjs";
+import { PIXEL, RETRATO, luminancia } from "../paleta.mjs";
 
 // Rejilla lógica. 12x12 es el mínimo donde un casco con visor se lee a 32 px
 // de alto, que es el tamaño al que se muestra en la fila de tripulación.

@@ -37,7 +37,7 @@ import {
 import { probarConexion } from "./diagnostico-conexion.mjs";
 import { MOTIVOS, planificarFichas } from "./ficha-nave-aplicacion.mjs";
 import { addStationControl, refrescarPuestos, registerStationFeature } from "./station-ui.mjs";
-import { addAvatarControl, registerAvatarFeature } from "./avatar-ui.mjs";
+import { addAvatarControl, registerAvatarFeature } from "./avatar/avatar-ui.mjs";
 import { MINIMO_POR_DEFECTO } from "./requisitos-puesto.mjs";
 import {
   addWorkspaceControl,

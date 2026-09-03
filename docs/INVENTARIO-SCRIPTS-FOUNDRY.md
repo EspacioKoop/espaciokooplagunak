@@ -161,11 +161,11 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 - `arte/audio/musica-reproductor.mjs`
 
 ### 9. Avatares y Personajes (6 scripts)
-- `avatar-assignment.mjs`
-- `avatar-preview.mjs`
-- `avatar-sugerencia.mjs`
-- `avatar-ui.mjs`
-- `retrato-tripulante.mjs`
+- `avatar/avatar-assignment.mjs`
+- `avatar/avatar-preview.mjs`
+- `avatar/avatar-sugerencia.mjs`
+- `avatar/avatar-ui.mjs`
+- `avatar/retrato-tripulante.mjs`
 - `lamina-contacto.mjs`
 
 ### 10. Interfaz de Usuario y Paneles (9 scripts)

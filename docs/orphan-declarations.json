@@ -48,12 +48,12 @@
     },
     {
       "module": "importador-atlas.mjs",
-      "status": "declared-orphan",
-      "foundation": true,
-      "reason": "Une el adaptador HYG y el validador cosmográfico en una sola entrada: detecta el formato, traduce si hace falta y valida procedencia y licencia por entrada antes de devolver nada. Sigue siendo cimiento por el mismo motivo que los dos módulos que consolida —el atlas es una investigación aún sin cerrar (#213)— y por uno propio: un importador no es un consumidor, así que importarlo desde otro módulo al que tampoco llega nadie no lo haría alcanzable, solo alargaría la cadena. El consumidor real es #816.",
+      "status": "connected",
+      "reason": "Une el adaptador HYG y el validador cosmográfico en una sola entrada: detecta el formato, traduce si hace falta y valida procedencia y licencia por entrada antes de devolver nada. Su consumidor real es #816: atlas-importar-ventana.mjs (herramienta solo-GM en la barra de escena) lo importa y main.mjs registra esa ventana.",
       "declaredBy": "Espaciokoop Lagunak",
       "declaredAt": "2026-08-27",
-      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/634"}
+      "consumedAt": "2026-09-03",
+      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/816"}
     },
     {
       "module": "nave-movimiento-sala-prueba.mjs",

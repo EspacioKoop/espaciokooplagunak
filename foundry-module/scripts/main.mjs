@@ -1068,7 +1068,7 @@ function abrirConsolaCaliente() {
  * fichero — es un módulo puro sin efectos de carga, no hay motivo para un
  * import dinámico aquí.
  */
-function abrirConvocatoria() {
+export function abrirConvocatoria() {
   if (!game.user?.isGM) return;
   const { onSubmit } = crearConvocatoriaCallbacks({ convocar });
   const esV2 = Boolean(foundry.applications?.api?.ApplicationV2);

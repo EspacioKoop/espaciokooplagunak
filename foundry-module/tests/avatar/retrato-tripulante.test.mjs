@@ -7,10 +7,10 @@ import {
   retratoTripulante,
   retratoTripulanteSvg,
   retratoTripulanteDataUri,
-} from "../scripts/retrato-tripulante.mjs";
-import { RETRATO, TINTA, contraste } from "../scripts/paleta.mjs";
+} from "../../scripts/avatar/retrato-tripulante.mjs";
+import { RETRATO, TINTA, contraste } from "../../scripts/paleta.mjs";
 
-const raiz = new URL("../", import.meta.url);
+const raiz = new URL("../../", import.meta.url);
 const read = (ruta) => readFileSync(new URL(ruta, raiz), "utf8");
 
 test("el retrato es determinista por semilla: misma cara en todos los clientes", () => {

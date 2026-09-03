@@ -6,7 +6,7 @@
 // `normalizarAvatar()` en `cantina-avatar.mjs` — este módulo no reinventa esa
 // validación, la reutiliza.
 
-import { normalizarAvatar } from "./cantina-avatar.mjs";
+import { normalizarAvatar } from "../cantina-avatar.mjs";
 
 const FLAG_KEY = "avatar";
 

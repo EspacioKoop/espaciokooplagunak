@@ -15,7 +15,7 @@
 // Quien la reproduzca (Web Audio, un sintetizador, un test) es cosa aparte:
 // aquí no se toca ni audio, ni Foundry, ni el reloj, ni Math.random().
 
-import { crearAleatorio } from "./minijuegos/aleatorio.mjs";
+import { crearAleatorio } from "../../minijuegos/aleatorio.mjs";
 
 // Escalas como grados sobre la tónica, en semitonos.
 const MENOR_NATURAL = [0, 2, 3, 5, 7, 8, 10];

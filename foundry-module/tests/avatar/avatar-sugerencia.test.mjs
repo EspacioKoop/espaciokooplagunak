@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { sugerirAvatarDesdeActor } from "../scripts/avatar-sugerencia.mjs";
+import { sugerirAvatarDesdeActor } from "../../scripts/avatar/avatar-sugerencia.mjs";
 
 test("sin actor no hay sugerencia", () => {
   assert.deepEqual(sugerirAvatarDesdeActor(null, {}), {});

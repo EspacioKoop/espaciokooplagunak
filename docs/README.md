@@ -27,8 +27,8 @@
 | [../docker/README.md](../docker/README.md) | Servidor headless + puente con Docker Compose |
 | [UPSTREAM.md](UPSTREAM.md) | Relación con EmptyEpsilon y sincronización con upstream |
 | [BASELINE.md](BASELINE.md) | Baseline de accesibilidad, seguridad, calidad y fiabilidad |
-| [API_HTTP.md](API_HTTP.md) | Inventario del API HTTP heredado del servidor |
-| [BRIDGE_AUTHENTICATION.md](BRIDGE_AUTHENTICATION.md) | Ciclo de vida, rotación y revocación del Bearer |
+| [API_HTTP.md](seguridad/API_HTTP.md) | Inventario del API HTTP heredado del servidor |
+| [BRIDGE_AUTHENTICATION.md](seguridad/BRIDGE_AUTHENTICATION.md) | Ciclo de vida, rotación y revocación del Bearer |
 | [CONTENT_EDITOR.md](CONTENT_EDITOR.md) | Editor de contenido integrado |
 
 ## Integración con Foundry VTT
@@ -61,8 +61,8 @@
 
 | Documento | Qué cubre |
 |---|---|
-| [LOCALIZATION_ES.md](LOCALIZATION_ES.md) | Estado y proceso de la localización es-ES |
-| [i18n-es-style-guide.md](i18n-es-style-guide.md) | Guía editorial para traducir al español |
+| [LOCALIZATION_ES.md](i18n/LOCALIZATION_ES.md) | Estado y proceso de la localización es-ES |
+| [i18n-es-style-guide.md](i18n/i18n-es-style-guide.md) | Guía editorial para traducir al español |
 
 ## Cómo contribuir
 

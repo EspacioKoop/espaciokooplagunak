@@ -62,7 +62,10 @@ jobs:
       # tiene que decir lo primero que se rompió, no una lista de consecuencias.
       - name: Tests del módulo Foundry
         id: modulo
-        run: node --test foundry-module/tests/*.test.mjs
+        shell: bash
+        run: |
+          shopt -s globstar
+          node --test foundry-module/tests/**/*.test.mjs
 
       - name: Lua de los escenarios
         id: lua

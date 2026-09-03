@@ -3,7 +3,7 @@ import test from "node:test";
 
 import { ENTRADAS, entradaPorId, entradasPanelGM } from "../scripts/panel-gm.mjs";
 
-test("el catálogo tiene las seis entradas consolidadas de #448", () => {
+test("el catálogo tiene las siete entradas consolidadas de #448 y #832", () => {
   const entradas = entradasPanelGM();
   assert.deepEqual(entradas.map((e) => e.id), [
     "consola",
@@ -12,6 +12,7 @@ test("el catálogo tiene las seis entradas consolidadas de #448", () => {
     "musica",
     "decorado",
     "ficha",
+    "convocatoria",
   ]);
   for (const entrada of entradas) {
     assert.ok(entrada.tituloClave.startsWith("LAGUNAK."));

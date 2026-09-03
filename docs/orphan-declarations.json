@@ -30,12 +30,13 @@
     },
     {
       "module": "convocatoria-estancia.mjs",
-      "status": "declared-orphan",
+      "status": "connected",
       "foundation": true,
-      "reason": "Resuelve a dónde llega la tripulación cuando el GM la convoca a una estancia. El cableado a la ventana de Andar es su propia tarjeta y no debe nacer enredado en la interfaz.",
+      "reason": "Resuelve a dónde llega la tripulación cuando el GM la convoca a una estancia. Su primer consumidor real es la entrada 'convocatoria' del panel de GM (#832): abre un selector de estancia y rol, y llama a convocar() con lo elegido.",
       "declaredBy": "Espaciokoop Lagunak",
       "declaredAt": "2026-08-24",
-      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/587"}
+      "consumedAt": "2026-09-03",
+      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/832"}
     },
     {
       "module": "horizonte-preset.mjs",

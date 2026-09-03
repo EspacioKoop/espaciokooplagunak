@@ -7,7 +7,7 @@ import {
   MAXIMO_SIMULTANEOS,
   crearReproductorDeFicheros,
   declararSonidos,
-} from "../scripts/audio-ficheros.mjs";
+} from "../../../scripts/arte/audio/audio-ficheros.mjs";
 
 /* ---- dobles ---------------------------------------------------------------- */
 

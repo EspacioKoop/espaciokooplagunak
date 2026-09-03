@@ -30,6 +30,7 @@
 // `BridgeClient`, el error estará aquí.
 
 import { CATALOGO_BASE } from "./asistencia/catalogo.mjs";
+import { esTareaDePropuesta } from "./asistencia/enfoques.mjs";
 import {
   cerrarCrisisMando,
   crearSesion,
@@ -183,7 +184,7 @@ function alCambiarUsuario(userDoc, changes) {
     buscarTarea: (id) => catalogo.buscar(id),
     puedeAsistir: puedeAsistir(peticion?.tareaId),
     puedeOrdenar,
-    esDestinoOrdenMando: (puesto) => catalogo.paraPuesto(puesto).length > 0,
+    esDestinoOrdenMando: (puesto) => catalogo.paraPuesto(puesto).some(esTareaDePropuesta),
     canHandle: esCoordinador,
     opcionesApertura: {
       // Lo que el motor necesita saber de la hoja del asistente y de la mesa. La

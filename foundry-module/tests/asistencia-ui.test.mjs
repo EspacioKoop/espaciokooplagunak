@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { BANDAS } from "../scripts/asistencia/bandas.mjs";
+import { crearCatalogo } from "../scripts/asistencia/catalogo.mjs";
+import { CLASES_ENFOQUE } from "../scripts/asistencia/enfoques.mjs";
 
 // El arnés mínimo que la ventana necesita para existir fuera de Foundry. Se
 // monta ANTES de importar el módulo porque `registrarAsistenciaUI` engancha
@@ -72,6 +74,40 @@ test("capitán y GM ven el mando durante la crisis, pero un puesto ajeno no", ()
   game.user = { id: "gm", isGM: true, getFlag: () => null, setFlag: (_m, _k, v) => flags.push(v) };
   assert.equal(ui.contextoAsistencia().mandoVisible, true);
   assert.equal(ui.contextoAsistencia().puedeOrdenarMando, true);
+});
+
+test("Sensors sigue visible para ayuda normal pero no es destino de una orden de mando", () => {
+  const contexto = ui.contextoAsistencia();
+  assert.ok(
+    contexto.tareas.some((tarea) => tarea.puestoAsistido === "sensors" && tarea.narrativa),
+    "la tarea narrativa de Sensors sigue en el menú normal",
+  );
+  assert.equal(
+    contexto.puestosMando.some((puesto) => puesto.id === "sensors"),
+    false,
+    "una tarea narrativa no convierte el puesto en destino de mando",
+  );
+});
+
+test("un catálogo mixto ofrece mando si el puesto tiene al menos una tarea de propuesta", () => {
+  const catalogo = crearCatalogo([
+    {
+      id: "ingenieria-narrativa",
+      puestoAsistido: "engineering",
+      accionPropuesta: null,
+      enfoques: [{ id: "narrar", clase: CLASES_ENFOQUE.PRUEBA, cd: 12 }],
+    },
+    {
+      id: "ingenieria-mecanica",
+      puestoAsistido: "engineering",
+      accionPropuesta: "set_system_power",
+      enfoques: [{ id: "ajustar", clase: CLASES_ENFOQUE.PRUEBA, cd: 12 }],
+    },
+  ]);
+
+  const contexto = ui.contextoAsistencia({ tareas: catalogo.tareas });
+  assert.deepEqual(contexto.tareas.map((tarea) => tarea.id), ["ingenieria-narrativa", "ingenieria-mecanica"]);
+  assert.deepEqual(contexto.puestosMando.map((puesto) => puesto.id), ["engineering"]);
 });
 
 test("la capitana declara desde la ventana y el acuse libera el gesto sin inventar autoridad", () => {

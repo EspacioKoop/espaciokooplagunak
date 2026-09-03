@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { CATALOGO_BASE, crearCatalogo } from "../scripts/asistencia/catalogo.mjs";
+import { CLASES_ENFOQUE } from "../scripts/asistencia/enfoques.mjs";
+
 // El cableado de la asistencia era la única pieza de #309 sin suite propia: se
 // daba por «capa fina no testeable en Node». Es fina, pero no es trivial —decide
 // quién puede ayudar, a quién se le responde y qué lleva la respuesta— y el
@@ -333,13 +336,13 @@ test("un puesto ajeno no puede suplantar al capitán ni gastar el presupuesto", 
   wiring.cerrarCrisisDeMando();
 });
 
-test("el GM rechaza una orden manipulada hacia un puesto sin destino en el catálogo", () => {
+test("el GM rechaza una orden manipulada hacia Sensors sin gastar ni dejar ventaja", () => {
   game.user = usuarios.gm;
   wiring.iniciarCrisisDeMando();
   pideAyuda(usuarios.capitana, {
     tipo: "orden-mando",
-    puestoAsistido: "communications",
-    nonce: "mando-destino-inventado",
+    puestoAsistido: "sensors",
+    nonce: "mando-sensors-narrativo",
   });
   const respuesta = respuestaA("capitana");
   assert.equal(respuesta.carga.ok, false);
@@ -347,4 +350,62 @@ test("el GM rechaza una orden manipulada hacia un puesto sin destino en el catá
   assert.equal(respuesta.carga.mando.disponibles, 2);
   assert.equal(respuesta.carga.mando.ventajaActiva, null);
   wiring.cerrarCrisisDeMando();
+});
+
+test("el GM comparte el filtro PROPUESTA con un catálogo personalizado mixto", () => {
+  const catalogoMixto = crearCatalogo([
+    {
+      id: "ingenieria-narrativa",
+      puestoAsistido: "engineering",
+      accionPropuesta: null,
+      enfoques: [{ id: "narrar", clase: CLASES_ENFOQUE.PRUEBA, cd: 12 }],
+    },
+    {
+      id: "ingenieria-mecanica",
+      puestoAsistido: "engineering",
+      accionPropuesta: "set_system_power",
+      enfoques: [{ id: "ajustar", clase: CLASES_ENFOQUE.PRUEBA, cd: 12 }],
+    },
+    {
+      id: "sensores-narrativa",
+      puestoAsistido: "sensors",
+      accionPropuesta: null,
+      enfoques: [{ id: "interpretar", clase: CLASES_ENFOQUE.PRUEBA, cd: 12 }],
+    },
+  ]);
+
+  try {
+    wiring.registrarAsistencia(MODULO, { catalogo: catalogoMixto });
+    game.user = usuarios.gm;
+    wiring.iniciarCrisisDeMando();
+
+    pideAyuda(usuarios.capitana, {
+      tipo: "orden-mando",
+      puestoAsistido: "sensors",
+      nonce: "mixto-sensors",
+    });
+    assert.equal(respuestaA("capitana").carga.error, "destino-mando-desconocido");
+    assert.deepEqual(wiring.estadoActualDeMando(), {
+      crisisActiva: true,
+      disponibles: 2,
+      ventajaActiva: null,
+    });
+
+    emitido.length = 0;
+    capturado.length = 0;
+    pideAyuda(usuarios.capitana, {
+      tipo: "orden-mando",
+      puestoAsistido: "engineering",
+      nonce: "mixto-engineering",
+    });
+    assert.equal(respuestaA("capitana").carga.ok, true, "basta una tarea de propuesta en el puesto");
+    assert.deepEqual(wiring.estadoActualDeMando(), {
+      crisisActiva: true,
+      disponibles: 1,
+      ventajaActiva: { puestoAsistido: "engineering" },
+    });
+  } finally {
+    wiring.cerrarCrisisDeMando();
+    wiring.registrarAsistencia(MODULO, { catalogo: CATALOGO_BASE });
+  }
 });

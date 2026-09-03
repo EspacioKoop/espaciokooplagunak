@@ -91,6 +91,18 @@ export function modoDeTarea(tarea) {
 }
 
 /**
+ * ¿Puede una orden de mando mejorar esta tarea?
+ *
+ * Solo se llama con tareas que ya atravesaron `validarTarea`: leer su modo
+ * validado mantiene una única frontera para UI y autoridad GM, sin deducir otra
+ * lista de puestos ni confundir una tarea narrativa visible con una asistencia
+ * que el reductor pueda abrir.
+ */
+export function esTareaDePropuesta(tarea) {
+  return tarea?.modo === MODOS.PROPUESTA;
+}
+
+/**
  * Valida un enfoque contra su clase. Devuelve el enfoque normalizado.
  *
  * `tarea` entra porque la clase (b) SOLO es declarable si la tarea define un

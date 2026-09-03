@@ -82,6 +82,7 @@ import {
   vistaRetoSecuencia,
   vistaTareas,
 } from "./asistencia/vista.mjs";
+import { esTareaDePropuesta } from "./asistencia/enfoques.mjs";
 import { anadirHerramienta } from "./control-escena.mjs";
 
 let moduloConfigurado = null;
@@ -217,7 +218,7 @@ export function contextoAsistencia({ tareas = tareasDisponibles() } = {}) {
   const esGM = Boolean(game.user?.isGM);
   const esCapitan = puestoActual() === "captain";
   const mandoVisible = estado.mando.crisisActiva && (esCapitan || esGM);
-  const puestosMando = [...new Set(tareasVista.map((tarea) => tarea.puestoAsistido))]
+  const puestosMando = [...new Set(tareas.filter(esTareaDePropuesta).map((tarea) => tarea.puestoAsistido))]
     .map((id) => ({ id, claveNombre: `LAGUNAK.Puestos.${id}` }));
   return {
     fase: estado.fase,

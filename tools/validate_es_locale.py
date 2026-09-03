@@ -37,17 +37,6 @@ RESIDUAL_ENGLISH_RE = re.compile(
     r"\b(the|and|of|with|will|spawned|whether)\b"
 )
 
-# scenario_59_border.es.po: los bloques `msgGM` con specs de nave (Hull,
-# Repair Crew, Cargo, motor, velocidades, armas...) están traducidos por
-# sustitución de palabras y varios están corruptos por ello (texto
-# duplicado, términos rotos). Es un problema mucho más grande que #813
-# (retraducir ~20 fichas técnicas completas, no cuatro etiquetas) y tiene
-# su propio seguimiento en #920. Retira esta excepción al cerrar esa tarjeta.
-RESIDUAL_ENGLISH_IGNORE = {
-    ("scenario_59_border.es.po", "msgGM"),
-}
-
-
 def residual_english(text: str) -> list[str]:
     # Los placeholders (`<...>` incluido) se dejan verbatim en inglés a
     # propósito en todo el catálogo (p. ej. "<Transmit 'The Itsy-Bitsy
@@ -111,10 +100,9 @@ def audit(root: Path) -> tuple[list[str], int, int, int]:
                 # cuenta `identical` y es un problema aparte y mucho más
                 # amplio (#821) que la sustitución de palabras que esto
                 # persigue (#813) — no lo dupliques aquí.
-                ignorado = (rel.name, key[0]) in RESIDUAL_ENGLISH_IGNORE
                 residuos = (
                     residual_english(translation)
-                    if translation != original and not ignorado
+                    if translation != original
                     else []
                 )
                 if residuos:

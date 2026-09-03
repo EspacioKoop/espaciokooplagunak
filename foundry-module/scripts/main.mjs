@@ -142,13 +142,14 @@ registrarContenidoExterno(MODULE_ID);
 let consolaApp = null;
 let convocatoriaApp = null;
 
+const AJUSTE_IDIOMA = "idioma";
+
 Hooks.once("init", () => {
   // La baraja de la nave, disponible como preset de cartas de Foundry (#340).
   // Es un regalo a la mesa, no parte del póker: el motor propio sigue siendo el
   // que reparte, con su barajado sembrado y su coordinador único.
   registrarPresetBaraja();
 
-const AJUSTE_IDIOMA = "idioma";
   // Idioma propio del módulo. Ajuste de CLIENTE: en qué idioma lee cada cual no
   // es una decisión de la partida, es suya, y dos personas de la misma mesa
   // pueden leer la misma consola en idiomas distintos sin dejar de ver lo mismo.

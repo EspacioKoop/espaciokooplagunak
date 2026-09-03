@@ -2,6 +2,27 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
+/**
+ * Espera ACOTADA a que `predicado()` sea verdad, nunca infinita.
+ *
+ * Los tres tests de este fichero mockeaban `globalThis.import` para interceptar
+ * el `import()` dinámico real de `manejarConvocatoria` — pero en Node ESM no
+ * hay forma de interceptar `import()` sobrescribiendo una propiedad de
+ * `globalThis`: el mock nunca se ejecutaba, así que la promesa que esperaba a
+ * que el mock marcara `convocarCalled` no se resolvía JAMÁS. Eso es
+ * exactamente lo que colgaba el job de CI seis horas (#952): no un test que
+ * fallara, uno que ya no podía terminar. Por eso aquí se espera con tope: si
+ * el predicado no se cumple a tiempo, el test FALLA con un mensaje claro en
+ * vez de colgar el proceso entero.
+ */
+async function esperarHasta(predicado, { intentos = 200, intervaloMs = 10, mensaje } = {}) {
+  for (let intento = 0; intento < intentos; intento += 1) {
+    if (predicado()) return;
+    await new Promise((resolve) => setTimeout(resolve, intervaloMs));
+  }
+  throw new Error(mensaje ?? `esperarHasta: el predicado no se cumplió en ${intentos * intervaloMs}ms`);
+}
+
 // Mock the global environment that main.mjs expects.
 function setupMocks() {
   // Mock Hooks
@@ -90,141 +111,50 @@ function resetMocks() {
   delete globalThis.ui;
 }
 
-test("manejarConvocatoria llama a convocar con los argumentos correctos", async () => {
+test("manejarConvocatoria con una estancia válida no muestra advertencia (convocar real)", async () => {
   setupMocks();
-  let convocarCalled = false;
-  // Save the original import
-  const originalImport = globalThis.import;
-  // Mock the global import function to intercept the exact specifier used in main.mjs
-  globalThis.import = async (specifier) => {
-    // Normalize specifier by removing query string for matching
-    const cleanSpecifier = specifier.split('?')[0];
-    if (cleanSpecifier.endsWith("convocatoria-estancia.mjs")) {
-      return {
-        convocar: async (idEstancia, rolConvocante, options) => {
-          // Store the arguments for later verification
-          globalThis.mockConvocarArgs = { idEstancia, rolConvocante, options };
-          convocarCalled = true;
-          // Return a valid result to simulate success
-          return { x: 0, z: 0, yaw: 0 };
-        }
-      };
-    }
-    // For other imports, call the original import
-    return originalImport(specifier);
-  };
-
-  // Load the main module with a query string to bust its cache
+  // Contra el `convocar` REAL (`convocatoria-estancia.mjs`) y el catálogo REAL
+  // (`playa`, con entrada despejada, ya lo prueba `convocatoria-estancia.test.mjs`):
+  // no se mockea `import()`. `manejarConvocatoria` no tiene ninguna señal
+  // positiva de éxito (su propio comentario dice que no notifica nada todavía),
+  // así que la señal que se espera es la NEGATIVA acotada: pasado un margen,
+  // no ha aparecido ninguna advertencia.
   const mainModule = await import(`../scripts/main.mjs?${Date.now()}`);
-
-  // Call the function directly
   mainModule.manejarConvocatoria({ idEstancia: "playa", rolConvocante: "GM" });
 
-  // Wait for the import callback to run
-  await new Promise(resolve => {
-    if (convocarCalled) {
-      resolve();
-    } else {
-      const check = () => {
-        if (convocarCalled) {
-          resolve();
-        } else {
-          setTimeout(check, 10);
-        }
-      };
-      setTimeout(check, 10);
-    }
-  });
+  // Margen acotado (no infinito) para que el `import()` + `convocar()` reales
+  // terminen: es una promesa encadenada con `.then()`, no algo que este test
+  // pueda esperar directamente.
+  await new Promise((resolve) => setTimeout(resolve, 200));
+  assert.equal(globalThis.lastWarning, undefined, "no se esperaba ninguna advertencia para una estancia válida");
 
-  // Verify that convocar was called with the expected arguments
-  assert.deepStrictEqual(globalThis.mockConvocarArgs, {
-    idEstancia: "playa",
-    rolConvocante: "GM",
-    options: { catalogo: undefined }, // default value
-  });
-
-  // Restore the original import
-  globalThis.import = originalImport;
-  // Clean up the mock Convocar args
-  delete globalThis.mockConvocarArgs;
   resetMocks();
 });
 
-test("manejarConvocatoria muestra una advertencia si convocar devuelve null", async () => {
+test("manejarConvocatoria muestra una advertencia si la estancia no existe (convocar real)", async () => {
   setupMocks();
-  let convocarCalled = false;
-  // Save the original import
-  const originalImport = globalThis.import;
-  // Mock that returns null
-  globalThis.import = async (specifier) => {
-    // Normalize specifier by removing query string for matching
-    const cleanSpecifier = specifier.split('?')[0];
-    if (cleanSpecifier.endsWith("convocatoria-estancia.mjs")) {
-      return {
-        convocar: async (idEstancia, rolConvocante, options) => {
-          globalThis.mockConvocarArgs = { idEstancia, rolConvocante, options };
-          convocarCalled = true;
-          return null;
-        }
-      };
-    }
-    return originalImport(specifier);
-  };
-
+  // "no-existe" hace que el `convocar` REAL devuelva `null` por la vía más
+  // simple (catalogo.tiene(id) === false) — no hace falta mockear nada.
   const mainModule = await import(`../scripts/main.mjs?${Date.now()}`);
-  mainModule.manejarConvocatoria({ idEstancia: "playa", rolConvocante: "GM" });
+  mainModule.manejarConvocatoria({ idEstancia: "no-existe", rolConvocante: "GM" });
 
-  // Wait for the import callback to run
-  await new Promise(resolve => {
-    if (convocarCalled) {
-      resolve();
-    } else {
-      const check = () => {
-        if (convocarCalled) {
-          resolve();
-        } else {
-          setTimeout(check, 10);
-        }
-      };
-      setTimeout(check, 10);
-    }
+  await esperarHasta(() => globalThis.lastWarning !== undefined, {
+    mensaje: "manejarConvocatoria no mostró ninguna advertencia para una estancia inexistente",
   });
 
-  // Verify that a warning was shown
-  assert.ok(globalThis.lastWarning, "Se esperaba una advertencia");
-  // The warning should be the i18n key for the error
   assert.strictEqual(globalThis.lastWarning, "LAGUNAK.PanelGM.Convocatoria.Error");
 
-  // Restore
-  globalThis.import = originalImport;
-  delete globalThis.mockConvocarArgs;
   resetMocks();
 });
 
 test("abrirConvocatoria crea la aplicación y la renderiza", async () => {
   setupMocks();
-  // We don't need to mock convocatoria-estancia.mjs for this test because abrirConvocatoria doesn't call it directly.
-  // But we still need to mock the import for the dynamic intent inside manejarConvocatoria, which is not called here.
-  // To avoid any issues, we'll mock it to return a dummy function.
-  const originalImport = globalThis.import;
-  globalThis.import = async (specifier) => {
-    // Normalize specifier by removing query string for matching
-    const cleanSpecifier = specifier.split('?')[0];
-    if (cleanSpecifier.endsWith("convocatoria-estancia.mjs")) {
-      return { convocar: async () => ({ x: 0, z: 0, yaw: 0 }) };
-    }
-    return originalImport(specifier);
-  };
-
   const mainModule = await import(`../scripts/main.mjs?${Date.now()}`);
-  // Call the function
+  // No debe lanzar: abrirConvocatoria no llama a manejarConvocatoria, así que
+  // no hace falta esperar a ningún import dinámico aquí.
   mainModule.abrirConvocatoria();
-
-  // We cannot easily access the internal convocatoriaApp variable, but we can at least verify that no exception was thrown.
-  // If we get here without throwing, the function executed.
+  // Llegar aquí sin lanzar ES la aserción: no hay estado interno accesible
+  // desde fuera (convocatoriaApp es privado del módulo) que verificar.
   assert.ok(true, "abrirConvocatoria no lanzó excepción");
-
-  // Restore
-  globalThis.import = originalImport;
   resetMocks();
 });

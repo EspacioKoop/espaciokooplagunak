@@ -171,6 +171,9 @@ test("v12+: enviar el formulario llama al callback con los valores seleccionados
     app.element = {
       querySelector: (selector) => form.querySelector(selector),
     };
+    // _onRender es quien engancha el listener de submit: sin llamarlo,
+    // form.submitListener nunca se asigna y el test revienta antes de probar nada.
+    app._onRender(contextoMock, {});
     // Set values
     inputEstancia.value = "playa";
     inputRol.value = "Jugador";
@@ -194,7 +197,7 @@ test("v11: enviar el formulario llama al callback con los valores seleccionados"
     const contextoMock = { estancias: [{ id: "playa" }, { id: "museo" }], roles: [{ id: "GM" }, { id: "Jugador" }] };
     app.getData = async () => contextoMock;
     // Create a mock html object that mimics jQuery
-    const inputEstancia = { _value: "", val: (v) => { if (v !== undefined) inputEstancia._value = v; return inputEstancia._value; } };
+    const inputEstancia = { _value: "", val: (v) => { if (v !== undefined) inputEstancia._value = v; return inputEstancia._value; }, focus: () => {} };
     const inputRol = { _value: "", val: (v) => { if (v !== undefined) inputRol._value = v; return inputRol._value; } };
     const button = { manejadores: [], on: (evento, manejador) => { if (evento === "click") button.manejadores.push(manejador); } };
     const formMock = {
@@ -218,6 +221,10 @@ test("v11: enviar el formulario llama al callback con los valores seleccionados"
       },
     };
     app.activateListeners(html);
+    // Set values (faltaba: sin esto html.find(...).val() devuelve "" y el
+    // guardián `idEstancia && rolConvocante` del propio código descarta el envío).
+    inputEstancia.val("playa");
+    inputRol.val("Jugador");
     // Trigger submit event
     const event = { preventDefault: () => {} };
     formMock.submitListener(event);
@@ -256,37 +263,46 @@ test("v11: defaultOptions returns minimal options", async () => {
   }
 });
 
-test("v12: _prepareContext returns context con estancias y roles", async () => {
+test("v12: _prepareContext agrupa las estancias por categoría, playa y museo en bancos de pruebas", async () => {
   setupMocks();
   try {
-    // Mockear el import de "./nave-catalogo-andar.mjs"
-    const mockCatalog = {
-      playa: {},
-      museo: {},
-    };
-    // Sobrescribimos el import global para este módulo
-    const originalImport = globalThis.import;
-    globalThis.import = async (modulePath) => {
-      if (modulePath.endsWith("./nave-catalogo-andar.mjs")) {
-        return { CATALOGO_ANDAR: mockCatalog };
-      }
-      return originalImport(modulePath);
-    };
-    // Now import the module after setting up the mock for nave-catalogo-andar.mjs
+    // Contra el catálogo REAL (`categoriasAndar()`, derivado de CATALOGO_ANDAR):
+    // no se mockea `import()`, porque en Node ESM no hay forma de interceptar un
+    // `import()` dinámico sobrescribiendo una propiedad de globalThis — el mock
+    // anterior no interceptaba nada y el test pasaba con el catálogo real sin
+    // que nadie se enterase de que jamás se ejecutaba el mock.
+    const { categoriasAndar } = await import("../scripts/nave-catalogo-andar.mjs");
     const mod = await import("../scripts/convocatoria-app.mjs");
     const Clase = mod.crearClaseConvocatoriaV2({ onSubmit: () => {} });
     const app = new Clase();
     const contexto = await app._prepareContext();
-    assert.deepEqual(contexto.estancias, [
-      { id: "playa" },
-      { id: "museo" },
-    ]);
-    assert.deepEqual(contexto.roles, [
-      { id: "GM" },
-      { id: "Jugador" },
-    ]);
-    // Restaurar el import original
-    globalThis.import = originalImport;
+    assert.deepEqual(contexto.categorias, categoriasAndar());
+    const bancoDePruebas = contexto.categorias.find((c) => c.id === "banco-de-pruebas");
+    assert.ok(bancoDePruebas, "falta la categoría de bancos de pruebas");
+    assert.deepEqual(
+      bancoDePruebas.estancias.map((e) => e.id).sort(),
+      ["museo", "playa"],
+      "playa y museo son los únicos bancos de pruebas GM-only, no salas andables",
+    );
+    const nave = contexto.categorias.find((c) => c.id === "nave");
+    assert.ok(nave, "falta la categoría de la nave");
+    assert.ok(nave.estancias.length > 0, "la nave debería traer sus salas andables");
+    assert.deepEqual(contexto.roles, [{ id: "GM" }]);
+  } finally {
+    resetMocks();
+  }
+});
+
+test("v11: getData agrupa las estancias por categoría igual que v12", async () => {
+  setupMocks();
+  try {
+    const { categoriasAndar } = await import("../scripts/nave-catalogo-andar.mjs");
+    const mod = await import("../scripts/convocatoria-app.mjs");
+    const Clase = mod.crearClaseConvocatoriaV1({ onSubmit: () => {} });
+    const app = new Clase();
+    const contexto = await app.getData();
+    assert.deepEqual(contexto.categorias, categoriasAndar());
+    assert.deepEqual(contexto.roles, [{ id: "GM" }]);
   } finally {
     resetMocks();
   }

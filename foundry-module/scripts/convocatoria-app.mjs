@@ -1,14 +1,22 @@
 /** Convocatoria de estancia para el GM (#832): formulario para elegir estancia y rol.
- * 
+ *
  * Mismo patrón que `consola-caliente-v1.mjs` y `consola-caliente-v2.mjs`: una
  * Application clásica (v11) y ApplicationV2 (v12+) aisladas a propósito.
- * 
+ *
  * La ventana solo recoge los datos y llama al callback de envío.
- * 
+ *
+ * LAS ESTANCIAS VAN AGRUPADAS POR CATEGORÍA (#952), como carpetas: catorce
+ * salas de la nave mezcladas con los dos bancos de pruebas GM-only (playa,
+ * museo) en una sola lista plana no dice nada de qué es cada cosa. El agrupado
+ * lo calcula `categoriasAndar()` (`nave-catalogo-andar.mjs`), derivado del
+ * propio catálogo — este módulo no mantiene su propia lista.
+ *
  * @typedef {Object} ConvocatoriaData
  * @property {string} idEstancia   ID de la estancia elegida (debe existir en CATALOGO_ANDAR).
  * @property {string} rolConvocante Rol de quien convoca (actualmente solo "GM").
  */
+
+import { categoriasAndar } from "./nave-catalogo-andar.mjs";
 
 /**
  * Crea la clase de la aplicación para v12+ (ApplicationV2).
@@ -33,12 +41,10 @@ export function crearClaseConvocatoriaV2({ onSubmit }) {
 
     /** Contexto para la plantilla. */
     async _prepareContext() {
-      // Obtén la lista de estancias del catálogo de andar.
-      const { CATALOGO_ANDAR } = await import("./nave-catalogo-andar.mjs");
-      const estancias = Object.keys(CATALOGO_ANDAR).map(id => ({ id }));
+      const categorias = categoriasAndar();
       // Por ahora, solo el rol GM está permitido.
       const roles = [{ id: "GM" }];
-      return { estancias, roles };
+      return { categorias, roles };
     }
 
     /** Al hacer click en el botón, llamar al callback y cerrar. */
@@ -82,12 +88,10 @@ export function crearClaseConvocatoriaV1({ onSubmit }) {
 
     /** Contexto para la plantilla. */
     async getData() {
-      // Obtén la lista de estancias del catálogo de andar.
-      const { CATALOGO_ANDAR } = await import("./nave-catalogo-andar.mjs");
-      const estancias = Object.keys(CATALOGO_ANDAR).map(id => ({ id }));
+      const categorias = categoriasAndar();
       // Por ahora, solo el rol GM está permitido.
       const roles = [{ id: "GM" }];
-      return { estancias, roles };
+      return { categorias, roles };
     }
 
     /** Al hacer click en el botón, llamar al callback y cerrar. */

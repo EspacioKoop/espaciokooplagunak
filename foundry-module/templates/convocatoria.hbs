@@ -2,8 +2,12 @@
   <div class="form-group">
     <label for="idEstancia">{{i18n "LAGUNAK.PanelGM.Convocatoria.Label.Estancia"}}</label>
     <select id="idEstancia" name="idEstancia" class="form-control">
-      {{#each estancias}}
-        <option value="{{id}}">{{id}}</option>
+      {{#each categorias}}
+        <optgroup label="{{i18n titulo}}">
+          {{#each estancias}}
+            <option value="{{id}}">{{id}}</option>
+          {{/each}}
+        </optgroup>
       {{/each}}
     </select>
   </div>

@@ -12,7 +12,7 @@ import {
   encadenarTramos,
   REGISTROS,
   TIMBRES,
-} from "../scripts/musica-procedural.mjs";
+} from "../../../scripts/arte/audio/musica-procedural.mjs";
 
 const EXTENSIONES_AUDIO = /\.(?:aac|aif|aiff|caf|flac|m4a|mid|midi|mp3|oga|ogg|opus|wav|webm|wma)$/i;
 
@@ -118,7 +118,7 @@ test("no se distribuye obra ajena: el módulo no contiene melodía citable", asy
   // GENEREN, no de que estén escritas en el fuente. Si alguien pega una
   // transcripción, este test debe estorbar.
   const fuente = await import("node:fs/promises").then((fs) =>
-    fs.readFile(new URL("../scripts/musica-procedural.mjs", import.meta.url), "utf8"),
+    fs.readFile(new URL("../../../scripts/arte/audio/musica-procedural.mjs", import.meta.url), "utf8"),
   );
   const listaLargaDeNotas = /\[\s*(?:\d{2,3}\s*,\s*){7,}/;
   assert.doesNotMatch(fuente, listaLargaDeNotas, "parece una transcripción literal");

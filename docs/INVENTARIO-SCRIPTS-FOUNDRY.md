@@ -155,10 +155,10 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 - `museo-piezas.mjs`
 
 ### 8. Audio y Música (4 scripts)
-- `audio-ficheros.mjs`
-- `musica-mando.mjs`
-- `musica-procedural.mjs`
-- `musica-reproductor.mjs`
+- `arte/audio/audio-ficheros.mjs`
+- `arte/audio/musica-mando.mjs`
+- `arte/audio/musica-procedural.mjs`
+- `arte/audio/musica-reproductor.mjs`
 
 ### 9. Avatares y Personajes (6 scripts)
 - `avatar-assignment.mjs`

@@ -32,7 +32,7 @@ msgstr "Enemigos"
 
 msgctxt "setting"
 msgid "Configures the amount/strength of enemies spawned in the scenario."
-msgstr "Configures the amount/strength of enemigos spawned in the scenario."
+msgstr "Configura la cantidad/fuerza de enemigos generados en el escenario."
 
 msgctxt "Enemies"
 msgid "Easy"

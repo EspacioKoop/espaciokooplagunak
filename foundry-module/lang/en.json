@@ -56,6 +56,7 @@
   "LAGUNAK.Asistencia.Mando.AbrirCrisis": "Open command crisis",
   "LAGUNAK.Asistencia.Mando.CerrarCrisis": "Close command crisis",
   "LAGUNAK.Asistencia.Mando.Error.no-puede-ordenar": "Only the captain or GM can declare an order.",
+  "LAGUNAK.Asistencia.Mando.Error.destino-mando-desconocido": "That station cannot receive orders in the current catalogue.",
   "LAGUNAK.Asistencia.Mando.Error.crisis-inactiva": "There is no active command crisis.",
   "LAGUNAK.Asistencia.Mando.Error.ordenes-mando-agotadas": "There are no orders left in this crisis.",
   "LAGUNAK.Asistencia.Mando.Error.orden-mando-pendiente": "An order is already waiting for a station's assist.",

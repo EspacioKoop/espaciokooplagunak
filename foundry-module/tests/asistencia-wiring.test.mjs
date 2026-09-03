@@ -257,6 +257,42 @@ test("el GM abre la crisis y la capitana gasta una orden por su User autenticado
   wiring.cerrarCrisisDeMando();
 });
 
+test("una capitana que reconecta solicita y recibe el snapshot efímero vigente", async () => {
+  game.user = usuarios.gm;
+  wiring.iniciarCrisisDeMando();
+  pideAyuda(usuarios.capitana, {
+    tipo: "orden-mando",
+    puestoAsistido: "engineering",
+    nonce: "mando-antes-de-recargar",
+  });
+  emitido.length = 0;
+  capturado.length = 0;
+  flagsEscritos.length = 0;
+
+  game.user = { ...usuarios.capitana, setFlag: (m, k, v) => flagsEscritos.push({ m, k, v }) };
+  wiring.registrarAsistencia(MODULO);
+  await Promise.resolve();
+  const consulta = flagsEscritos.at(-1)?.v;
+  assert.equal(consulta.tipo, "consulta-mando");
+  assert.ok(consulta.nonce);
+  assert.equal("userId" in consulta, false);
+
+  game.user = usuarios.gm;
+  wiring.registrarAsistencia(MODULO);
+  pideAyuda(usuarios.capitana, consulta);
+  const respuesta = respuestaA("capitana");
+  assert.equal(respuesta.tipo, "asistencia-orden-mando");
+  assert.equal(respuesta.carga.nonce, consulta.nonce);
+  assert.equal(respuesta.carga.ok, true);
+  assert.deepEqual(respuesta.carga.mando, {
+    crisisActiva: true,
+    disponibles: 1,
+    ventajaActiva: { puestoAsistido: "engineering" },
+  });
+  assert.deepEqual(wiring.estadoActualDeMando(), respuesta.carga.mando, "consultar no reabre ni repone la crisis");
+  wiring.cerrarCrisisDeMando();
+});
+
 test("el receptor acepta el estado de mando difundido pero no abre otras respuestas a toda la mesa", () => {
   const recibidosMando = [];
   const recibidosOferta = [];
@@ -294,5 +330,21 @@ test("un puesto ajeno no puede suplantar al capitán ni gastar el presupuesto", 
   assert.equal(respuesta.carga.ok, false);
   assert.equal(respuesta.carga.error, "no-puede-ordenar");
   assert.equal(respuesta.carga.mando.disponibles, 2);
+  wiring.cerrarCrisisDeMando();
+});
+
+test("el GM rechaza una orden manipulada hacia un puesto sin destino en el catálogo", () => {
+  game.user = usuarios.gm;
+  wiring.iniciarCrisisDeMando();
+  pideAyuda(usuarios.capitana, {
+    tipo: "orden-mando",
+    puestoAsistido: "communications",
+    nonce: "mando-destino-inventado",
+  });
+  const respuesta = respuestaA("capitana");
+  assert.equal(respuesta.carga.ok, false);
+  assert.equal(respuesta.carga.error, "destino-mando-desconocido");
+  assert.equal(respuesta.carga.mando.disponibles, 2);
+  assert.equal(respuesta.carga.mando.ventajaActiva, null);
   wiring.cerrarCrisisDeMando();
 });

@@ -56,6 +56,7 @@
   "LAGUNAK.Asistencia.Mando.AbrirCrisis": "Abrir crisis de mando",
   "LAGUNAK.Asistencia.Mando.CerrarCrisis": "Cerrar crisis de mando",
   "LAGUNAK.Asistencia.Mando.Error.no-puede-ordenar": "Solo el capitán o el director pueden declarar una orden.",
+  "LAGUNAK.Asistencia.Mando.Error.destino-mando-desconocido": "Ese puesto no admite órdenes en el catálogo actual.",
   "LAGUNAK.Asistencia.Mando.Error.crisis-inactiva": "No hay una crisis de mando activa.",
   "LAGUNAK.Asistencia.Mando.Error.ordenes-mando-agotadas": "No quedan órdenes en esta crisis.",
   "LAGUNAK.Asistencia.Mando.Error.orden-mando-pendiente": "Ya hay una orden esperando la asistencia de un puesto.",

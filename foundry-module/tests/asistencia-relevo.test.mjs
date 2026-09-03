@@ -22,6 +22,7 @@ import {
   CAMPO_ASISTENCIA,
   RELEVO_AVISOS,
   RELEVO_ERRORES,
+  construirPeticionConsultaMando,
   construirPeticionOrdenMando,
   construirPeticionAsistencia,
   despacharCambioDeAsistencia,
@@ -366,6 +367,7 @@ test("la orden de mando viaja sin identidad y solo capitán o GM pueden declarar
     asistenteId: "piloto",
     peticion: { ...peticion, userId: "capitana", puestoEmisor: "captain" },
     puedeOrdenar: () => false,
+    esDestinoOrdenMando: () => true,
   });
   assert.equal(intruso.ok, false);
   assert.equal(intruso.error, RELEVO_ERRORES.NO_PUEDE_ORDENAR);
@@ -376,10 +378,54 @@ test("la orden de mando viaja sin identidad y solo capitán o GM pueden declarar
     asistenteId: "capitana",
     peticion,
     puedeOrdenar: (id) => id === "capitana",
+    esDestinoOrdenMando: () => true,
   });
   assert.equal(capitana.ok, true);
   assert.equal(estadoMando(capitana.estado).disponibles, 1);
   assert.equal(estadoMando(capitana.estado).ventajaActiva.puestoAsistido, "engineering");
+});
+
+test("el GM rechaza un destino manipulado que no existe en el catálogo", () => {
+  const estado = iniciarCrisisMando(crearSesion());
+  const salida = despacharPeticion({
+    estado,
+    asistenteId: "capitana",
+    peticion: construirPeticionOrdenMando({ puestoAsistido: "communications", nonce: "mando-falso" }),
+    puedeOrdenar: () => true,
+    esDestinoOrdenMando: (puesto) => puesto === "engineering",
+  });
+
+  assert.equal(salida.ok, false);
+  assert.equal(salida.error, RELEVO_ERRORES.DESTINO_MANDO_DESCONOCIDO);
+  assert.equal(salida.estado, estado, "el intento manipulado no toca la sesión");
+  assert.equal(estadoMando(salida.estado).disponibles, 2);
+});
+
+test("consultar el mando devuelve el snapshot sin mutar ni reponer la crisis", () => {
+  const crisis = iniciarCrisisMando(crearSesion(), 1);
+  const gastada = despacharPeticion({
+    estado: crisis,
+    asistenteId: "capitana",
+    peticion: construirPeticionOrdenMando({ puestoAsistido: "engineering", nonce: "mando-1" }),
+    puedeOrdenar: () => true,
+    esDestinoOrdenMando: () => true,
+  });
+  const antes = estadoMando(gastada.estado);
+  const peticion = construirPeticionConsultaMando({ nonce: "consulta-1" });
+
+  assert.deepEqual(peticion, { tipo: "consulta-mando", nonce: "consulta-1" });
+  assert.equal("userId" in peticion, false);
+  const consulta = despacharPeticion({
+    estado: gastada.estado,
+    asistenteId: "capitana",
+    peticion: { ...peticion, userId: "otra-persona" },
+    puedeOrdenar: (id) => id === "capitana",
+  });
+
+  assert.equal(consulta.ok, true);
+  assert.equal(consulta.consultaMando, true);
+  assert.equal(consulta.estado, gastada.estado, "consultar conserva la misma sesión por referencia");
+  assert.deepEqual(estadoMando(consulta.estado), antes, "no repone presupuesto ni borra la ventaja pendiente");
 });
 
 test("el cambio autenticado toma el emisor del User y respeta al GM coordinador", () => {
@@ -392,6 +438,7 @@ test("el cambio autenticado toma el emisor del User y respeta al GM coordinador"
     ...cambioCon(peticion),
     buscarTarea,
     puedeOrdenar: (id) => id === "ayudante-1",
+    esDestinoOrdenMando: () => true,
     canHandle: () => true,
   });
   assert.equal(salida.ok, true);

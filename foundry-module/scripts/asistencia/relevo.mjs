@@ -63,6 +63,8 @@ export const RELEVO_ERRORES = Object.freeze({
   NO_ES_SU_RESERVA: "no-es-su-reserva",
   /** Solo el capitán autenticado o un GM pueden gastar el recurso de mando. */
   NO_PUEDE_ORDENAR: "no-puede-ordenar",
+  /** El puesto no aparece como destino en el catálogo de asistencia activo. */
+  DESTINO_MANDO_DESCONOCIDO: "destino-mando-desconocido",
 });
 
 export const RELEVO_AVISOS = Object.freeze({
@@ -100,6 +102,12 @@ export function construirPeticionOrdenMando({ puestoAsistido, nonce }) {
   return { tipo: "orden-mando", puestoAsistido, nonce };
 }
 
+/** Consulta correlacionada del recurso efímero; no declara identidad ni intención de gasto. */
+export function construirPeticionConsultaMando({ nonce }) {
+  if (!nonce) throw new TypeError("construirPeticionConsultaMando requiere nonce");
+  return { tipo: "consulta-mando", nonce };
+}
+
 /**
  * Saca la petición del diferencial de un `updateUser`.
  *
@@ -112,9 +120,12 @@ export function extraerPeticionDeCambio({ changes, moduleId, userDoc }) {
   if (!tocado || typeof tocado !== "object") return null;
   const peticion = userDoc?.flags?.[moduleId]?.[ASISTENCIA_FLAG] ?? tocado;
   if (!peticion || typeof peticion !== "object") return null;
-  if (!["abrir", "resolver", "orden-mando"].includes(peticion.tipo)) return null;
+  if (!["abrir", "resolver", "orden-mando", "consulta-mando"].includes(peticion.tipo)) return null;
   if (!peticion.nonce) return null;
   if (peticion.tipo === "orden-mando" && !peticion.puestoAsistido) return null;
+  if (peticion.tipo === "consulta-mando") {
+    return { tipo: peticion.tipo, nonce: peticion.nonce };
+  }
   if (peticion.tipo === "orden-mando") {
     return {
       tipo: peticion.tipo,
@@ -150,14 +161,21 @@ export function despacharPeticion({
   buscarTarea,
   puedeAsistir = () => true,
   puedeOrdenar = () => false,
+  esDestinoOrdenMando = () => false,
   ahora = Date.now(),
   opcionesApertura = {},
 }) {
   if (!asistenteId) throw new TypeError("asistencia sin emisor autenticado");
   if (!peticion) return { ok: false, error: SESION_ERRORES.RESERVA_DESCONOCIDA, estado };
-  if (peticion.tipo === "orden-mando") {
+  if (peticion.tipo === "orden-mando" || peticion.tipo === "consulta-mando") {
     if (!puedeOrdenar(asistenteId)) {
       return { ok: false, error: RELEVO_ERRORES.NO_PUEDE_ORDENAR, estado };
+    }
+    if (peticion.tipo === "consulta-mando") {
+      return { ok: true, consultaMando: true, estado };
+    }
+    if (!esDestinoOrdenMando(peticion.puestoAsistido)) {
+      return { ok: false, error: RELEVO_ERRORES.DESTINO_MANDO_DESCONOCIDO, estado };
     }
     return declararOrdenMando({
       estado,
@@ -195,6 +213,7 @@ export function despacharCambioDeAsistencia({
   buscarTarea,
   puedeAsistir,
   puedeOrdenar,
+  esDestinoOrdenMando,
   canHandle = () => true,
   ahora = Date.now(),
   opcionesApertura = {},
@@ -213,6 +232,7 @@ export function despacharCambioDeAsistencia({
       buscarTarea,
       puedeAsistir,
       puedeOrdenar,
+      esDestinoOrdenMando,
       ahora,
       opcionesApertura,
     }),

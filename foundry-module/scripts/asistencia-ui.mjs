@@ -49,6 +49,7 @@ import {
   pedirAsistencia,
   pedirOrdenMando,
   resolverAsistencia,
+  sincronizarEstadoMando,
   tareasParaPuesto,
 } from "./asistencia-wiring.mjs";
 import { STATIONS, normalizeStation } from "./station-assignment.mjs";
@@ -294,7 +295,14 @@ export function ordenarDesdeVentana(puestoAsistido) {
   const contexto = contextoAsistencia();
   if (!puesto || !contexto.puedeOrdenarMando) return null;
   if (!contexto.puestosMando.some((candidato) => candidato.id === puesto)) return null;
-  const nonce = pedirOrdenMando(puesto);
+  const nonce = pedirOrdenMando(puesto, {
+    alFallar: (fallido) => {
+      if (estado.mandoNonce !== fallido) return;
+      estado.mandoNonce = null;
+      estado.mandoError = "desconocido";
+      repintar();
+    },
+  });
   if (!nonce) return null;
   estado.mandoNonce = nonce;
   estado.mandoError = null;
@@ -633,6 +641,7 @@ export function addAsistenciaControl(controls) {
 
 export function abrirAsistencia() {
   if (!moduloConfigurado) return;
+  sincronizarEstadoMando();
   // Una ApplicationV2 cerrada NO se reutiliza (renderizarla otra vez falla en
   // v12+, ver el mismo criterio ya aplicado en main.mjs para la mesa de
   // minijuegos): `ventana ??= ...` bastaba mientras la ventana nunca se

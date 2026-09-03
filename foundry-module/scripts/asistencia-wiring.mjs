@@ -40,6 +40,7 @@ import {
 import {
   ASISTENCIA_FLAG,
   construirPeticionAsistencia,
+  construirPeticionConsultaMando,
   construirPeticionOrdenMando,
   despacharCambioDeAsistencia,
   prepararOrdenAsistida,
@@ -182,6 +183,7 @@ function alCambiarUsuario(userDoc, changes) {
     buscarTarea: (id) => catalogo.buscar(id),
     puedeAsistir: puedeAsistir(peticion?.tareaId),
     puedeOrdenar,
+    esDestinoOrdenMando: (puesto) => catalogo.paraPuesto(puesto).length > 0,
     canHandle: esCoordinador,
     opcionesApertura: {
       // Lo que el motor necesita saber de la hoja del asistente y de la mesa. La
@@ -210,14 +212,14 @@ function alCambiarUsuario(userDoc, changes) {
 
   if (resultado.ordenMandoAplicada) difundirEstadoMando();
 
-  if (resultado.peticion?.tipo === "orden-mando") {
+  if (resultado.peticion?.tipo === "orden-mando" || resultado.peticion?.tipo === "consulta-mando") {
     responder(asistenteId, MENSAJE_ORDEN_MANDO, {
       nonce: resultado.peticion.nonce,
       ok: resultado.ok,
       error: resultado.error ?? null,
       mando: estadoMando(sesion),
     });
-    if (resultado.ok) difundirEstadoMando();
+    if (resultado.ok && resultado.peticion.tipo === "orden-mando") difundirEstadoMando();
     return;
   }
 
@@ -321,11 +323,29 @@ export function resolverAsistencia({ nonce, banda, enfoqueId = null }) {
 }
 
 /** El capitán gasta una orden por el mismo flag autenticado de asistencia. */
-export function pedirOrdenMando(puestoAsistido) {
+export function pedirOrdenMando(puestoAsistido, { alFallar = null } = {}) {
   if (!moduloConfigurado) return null;
   const nonce = foundry.utils.randomID();
   const peticion = construirPeticionOrdenMando({ puestoAsistido, nonce });
-  game.user?.setFlag(moduloConfigurado, ASISTENCIA_FLAG, peticion);
+  try {
+    const escritura = game.user?.setFlag?.(moduloConfigurado, ASISTENCIA_FLAG, peticion);
+    escritura?.catch?.(() => alFallar?.(nonce));
+  } catch {
+    return null;
+  }
+  return nonce;
+}
+
+/** Pide al coordinador la vista vigente sin abrir crisis ni gastar órdenes. */
+export function sincronizarEstadoMando() {
+  if (!moduloConfigurado || game.user?.isGM || puestoDe(game.user?.id) !== "captain") return null;
+  const nonce = foundry.utils.randomID();
+  const peticion = construirPeticionConsultaMando({ nonce });
+  try {
+    game.user?.setFlag?.(moduloConfigurado, ASISTENCIA_FLAG, peticion)?.catch?.(() => {});
+  } catch {
+    return null;
+  }
   return nonce;
 }
 
@@ -378,7 +398,11 @@ export function registrarAsistencia(moduleId, { catalogo: propio = null } = {}) 
   game.socket?.on(canalSocket(moduleId), receptor);
   escuchas.push(() => game.socket?.off?.(canalSocket(moduleId), receptor));
 
-  if (!game.user?.isGM) return;
+  if (!game.user?.isGM) {
+    // Deja que la UI enganche primero su hook en el mismo ciclo de `ready`.
+    queueMicrotask(() => sincronizarEstadoMando());
+    return;
+  }
 
   Hooks.on("updateUser", alCambiarUsuario);
   escuchas.push(() => Hooks.off("updateUser", alCambiarUsuario));

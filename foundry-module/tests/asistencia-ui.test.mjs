@@ -13,12 +13,13 @@ globalThis.Hooks = {
   callAll: (nombre, carga) => hooks.get(nombre)?.(carga),
 };
 const flags = [];
+let siguienteNonce = "nonce-1";
 globalThis.game = {
   user: { id: "yo", isGM: false, setFlag: (_m, _k, v) => flags.push(v) },
   users: { get: () => null, activeGM: null },
   i18n: { localize: (k) => k, format: (k, d) => `${k}:${JSON.stringify(d)}` },
 };
-globalThis.foundry = { utils: { randomID: () => "nonce-1" } };
+globalThis.foundry = { utils: { randomID: () => siguienteNonce } };
 
 const wiring = await import("../scripts/asistencia-wiring.mjs");
 const ui = await import("../scripts/asistencia-ui.mjs");
@@ -29,6 +30,7 @@ ui.registrarAsistenciaUI("mod");
 test.beforeEach(() => {
   ui._reiniciarParaPruebas();
   flags.length = 0;
+  siguienteNonce = "nonce-1";
 });
 
 test("arranca en el menú, con las tareas de TODOS los puestos", () => {
@@ -106,6 +108,55 @@ test("la capitana declara desde la ventana y el acuse libera el gesto sin invent
   assert.equal(contexto.mandoPendiente, false);
   assert.equal(contexto.puedeOrdenarMando, false, "no se acumula una segunda ventaja");
   assert.equal(contexto.mando.ventajaActiva.puestoAsistido, "engineering");
+});
+
+test("un rechazo libera la orden y permite reintentar con un nonce nuevo", () => {
+  game.user = {
+    id: "capitana",
+    isGM: false,
+    getFlag: (_m, clave) => (clave === "station" ? "captain" : null),
+    setFlag: (_m, _k, v) => flags.push(v),
+  };
+  Hooks.callAll("lagunakAsistenciaOrdenMando", {
+    mando: { crisisActiva: true, disponibles: 2, ventajaActiva: null },
+  });
+
+  const primero = ui.ordenarDesdeVentana("engineering");
+  Hooks.callAll("lagunakAsistenciaOrdenMando", {
+    nonce: primero,
+    ok: false,
+    error: "destino-mando-desconocido",
+    mando: { crisisActiva: true, disponibles: 2, ventajaActiva: null },
+  });
+  assert.equal(ui.contextoAsistencia().mandoPendiente, false);
+  assert.equal(
+    ui.contextoAsistencia().mandoErrorClave,
+    "LAGUNAK.Asistencia.Mando.Error.destino-mando-desconocido",
+  );
+
+  siguienteNonce = "nonce-2";
+  const segundo = ui.ordenarDesdeVentana("engineering");
+  assert.equal(segundo, "nonce-2");
+  assert.notEqual(segundo, primero);
+  assert.equal(flags.at(-1).nonce, "nonce-2");
+  assert.equal(ui.contextoAsistencia().mandoPendiente, true);
+});
+
+test("un fallo inmediato de setFlag libera la orden pendiente", async () => {
+  game.user = {
+    id: "capitana",
+    isGM: false,
+    getFlag: (_m, clave) => (clave === "station" ? "captain" : null),
+    setFlag: () => Promise.reject(new Error("sin conexión")),
+  };
+  Hooks.callAll("lagunakAsistenciaOrdenMando", {
+    mando: { crisisActiva: true, disponibles: 2, ventajaActiva: null },
+  });
+
+  ui.ordenarDesdeVentana("engineering");
+  assert.equal(ui.contextoAsistencia().mandoPendiente, true);
+  await Promise.resolve();
+  assert.equal(ui.contextoAsistencia().mandoPendiente, false);
 });
 
 test("el GM abre y cierra la crisis desde la ventana sin persistirla", () => {

@@ -19,6 +19,7 @@ async function setup({ isGM = false, modern = false, fetchImpl = null } = {}) {
   const settingsReads = [];
   const settingsWrites = [];
   const socketEmits = [];
+  const userFlagWrites = [];
 
   class BaseApplication {
     static get defaultOptions() { return {}; }
@@ -42,6 +43,7 @@ async function setup({ isGM = false, modern = false, fetchImpl = null } = {}) {
     isGM,
     station: isGM ? null : "navigation",
   });
+  current.setFlag = async (...args) => { userFlagWrites.push(args); };
   const other = makeUser({ id: "p2", station: "engineering" });
   const users = [current, other];
   users.get = (id) => users.find((entry) => entry.id === id);
@@ -86,7 +88,7 @@ async function setup({ isGM = false, modern = false, fetchImpl = null } = {}) {
   if (isGM) tokenSession.setBridgeToken("secret-for-test");
   const module = await import(`../scripts/station-workspace-ui.mjs?workspace-ui=${nonce++}`);
   module.registerWorkspaceFeature("espaciokoop-lagunak");
-  return { module, hooks, instances, settingsReads, settingsWrites, socketEmits };
+  return { module, hooks, instances, settingsReads, settingsWrites, socketEmits, userFlagWrites };
 }
 
 // LA GARANTÍA QUE NO CAMBIA con la apertura de telemetría (#331): el cliente de
@@ -251,21 +253,30 @@ test("updateUser sí refresca la consola abierta", async () => {
 for (const modern of [false, true]) {
   const version = modern ? "ApplicationV2" : "v11";
   test(`${version}: conexión y desconexión actualizan el aviso sin emitir órdenes automáticas`, async () => {
-    const { module, hooks, instances, settingsReads, settingsWrites, socketEmits } = await setup({ modern });
+    const {
+      module,
+      hooks,
+      instances,
+      settingsReads,
+      settingsWrites,
+      socketEmits,
+      userFlagWrites,
+    } = await setup({ modern });
     module.openWorkspaceApp();
     const app = instances[0];
     const model = modern ? await app._prepareContext() : app.getData();
 
-    assert.equal(model.uncrewedStations.some(({ id }) => id === "navigation"), false);
-    game.user.active = false;
-    hooks.userConnected(game.user, false);
+    assert.equal(model.uncrewedStations.some(({ id }) => id === "engineering"), false);
+    const other = game.users.get("p2");
+    other.active = false;
+    hooks.userConnected(other, false);
     const disconnected = modern ? await app._prepareContext() : app.getData();
-    assert.equal(disconnected.uncrewedStations.some(({ id }) => id === "navigation"), true);
+    assert.equal(disconnected.uncrewedStations.some(({ id }) => id === "engineering"), true);
 
-    game.user.active = true;
-    hooks.userConnected(game.user, true);
+    other.active = true;
+    hooks.userConnected(other, true);
     const reconnected = modern ? await app._prepareContext() : app.getData();
-    assert.equal(reconnected.uncrewedStations.some(({ id }) => id === "navigation"), false);
+    assert.equal(reconnected.uncrewedStations.some(({ id }) => id === "engineering"), false);
     assert.deepEqual(
       app.renderCalls,
       modern ? [{ force: true }, { force: true }, { force: true }] : [true, false, false],
@@ -273,6 +284,7 @@ for (const modern of [false, true]) {
     assert.deepEqual(settingsReads, []);
     assert.deepEqual(settingsWrites, []);
     assert.deepEqual(socketEmits, []);
+    assert.deepEqual(userFlagWrites, []);
   });
 }
 

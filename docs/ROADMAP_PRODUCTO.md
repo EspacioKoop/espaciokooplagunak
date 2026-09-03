@@ -164,7 +164,7 @@ como «mirar mientras otro juega».
 | Alarmas compartidas y dependencias entre sistemas | PR [#494](https://github.com/VaroTv7/espaciokooplagunak/pull/494) y sus pruebas de alarma cruzada | `IMPLEMENTED` | Validar en partida real junto con #467 |
 | Guardias y relevo de puestos | PR [#496](https://github.com/VaroTv7/espaciokooplagunak/pull/496) y sus pruebas de relevo | `IMPLEMENTED` | Validar en partida real junto con #467 |
 | Crisis que exige coordinación entre tres o más funciones | [Diseño causal y límites](CRISIS_MULTIPUESTO.md), issue [#484](https://github.com/VaroTv7/espaciokooplagunak/issues/484) y PR [#546](https://github.com/VaroTv7/espaciokooplagunak/pull/546) | `IMPLEMENTED` | Playtest humano #467; esta implementación no cierra por sí sola la Etapa B |
-| Automatización limitada para puestos vacíos | [#481](VERIFICACION-NAVEGACION-Y-AUTOMATIZACION.md#481--automatización-nativa-de-puestos-sin-tripulación) demuestra que no existe automatización nativa; la [tabla de decisiones](#decisiones-de-producto-acordadas) formaliza la política de #512, sin acreditar que el aviso esté implementado | `PLANNED` | Implementar y probar el aviso para puestos vacíos |
+| Automatización limitada para puestos vacíos | [#481](VERIFICACION-NAVEGACION-Y-AUTOMATIZACION.md#481--automatización-nativa-de-puestos-sin-tripulación) demuestra que no existe automatización nativa; la [tabla de decisiones](#decisiones-de-producto-acordadas) formaliza la política de #512, sin acreditar que el aviso esté implementado | `PLANNED` | Implementar y probar en [#951](https://github.com/VaroTv7/espaciokooplagunak/issues/951) el aviso para puestos vacíos |
 | Salida B: cada puesto tiene una decisión exclusiva que cambia el encuentro; nadie queda mirando | **No existe documento de playtest**; [#467](https://github.com/VaroTv7/espaciokooplagunak/issues/467) define la validación humana pendiente | `HUMAN_VERIFY` | Ejecutar y registrar el playtest de 3+ personas de #467; hasta entonces la Etapa B no está cerrada |
 
 Desglose de coordinación del vertical de agencia en #459, con subissues
@@ -226,12 +226,12 @@ en [`CRISIS_MULTIPUESTO.md`](CRISIS_MULTIPUESTO.md), y su playtest con personas
 sigue siendo #467). Antes de declarar la etapa completada deben
 quedar todos trazados y satisfechos.
 
-**Estado a 2026-08-28**: quedan dos frentes abiertos: #467 (playtest con 3+
+**Estado a 2026-09-03**: quedan dos frentes abiertos: #467 (playtest con 3+
 personas, que puede usar la crisis de #484 como su escenario de prueba y no se
-puede cerrar solo con código) y #512 (implementar y probar el aviso para puestos
-vacíos según la decisión formalizada arriba; #481 verificó que hoy no hay
-automatización nativa alguna). La etapa está, por tanto, esperando a una sesión
-con personas y a esa implementación, no a otra decisión de producto.
+puede cerrar solo con código) y #951 (implementar y probar el aviso para puestos
+vacíos según la decisión de #512 formalizada arriba; #481 verificó que hoy no
+hay automatización nativa alguna). La etapa está, por tanto, esperando a una
+sesión con personas y a esa implementación, no a otra decisión de producto.
 
 ### Etapa C — Nave persistente y progresión
 

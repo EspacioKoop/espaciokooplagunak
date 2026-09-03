@@ -2760,7 +2760,7 @@ msgstr "La lista de instrucciones %s, %s y %s como componentes necesarios"
 #, lua-format
 msgctxt "doomsday-shipLog"
 msgid "Further inspection of Gregory Unruh's plans reveal notes in the margin: %s on %s, %s on %s, %s on %s"
-msgstr "Una inspección adicional de los planes de Gregory Unruh revela notas al margen: %s on %s, %s on %s, %s on %s"
+msgstr "Una inspección adicional de los planes de Gregory Unruh revela notas al margen: %s en %s, %s en %s, %s en %s"
 
 #: scripts/scenario_49_allies.lua:5999
 msgctxt "doomsday-shipLog"

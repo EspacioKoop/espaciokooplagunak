@@ -70,7 +70,7 @@ msgstr "Quijote"
 
 msgctxt "Enemies"
 msgid "Insanely strong and/or inordinately large numbers of enemies"
-msgstr "Insanely strong and/or inordinately large numbers of enemigos"
+msgstr "Enemigos disparatadamente fuertes y/o en cantidades desmedidas"
 
 # Scenario setting
 msgctxt "setting"
@@ -136,7 +136,7 @@ msgstr "Normal"
 
 msgctxt "Ending"
 msgid "Kraylor surrender if < 70% of their original strength, friendly surrender if < 50% of their original strength, either will surrender if < 20% relative strength difference"
-msgstr "Rendición de Kraylor si% of su fuerza original, rendición amistosa si% of su fuerza original, o se rendirá si% rdiferencia de fuerza elativa"
+msgstr "Los Kraylor se rinden si caen por debajo del 70% de su fuerza original, los amistosos se rinden si caen por debajo del 50% de su fuerza original, cualquiera se rendirá si la diferencia de fuerza relativa es menor del 20%"
 
 msgctxt "Ending"
 msgid "Hard"

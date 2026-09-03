@@ -78,6 +78,15 @@ def test_no_rechaza_temp_como_subcadena_de_otro_nombre():
     assert mod.es_resto("temperatura.json") is False
 
 
+def test_rechaza_coverage_final_json_en_raiz():
+    """Artefacto real de #796: coverage-final.json en la raíz, no bajo
+    coverage-out/. La regla de directorios ya aceptaba el prefijo 'coverage'
+    para componentes de ruta, pero la de nombre de fichero solo cubría
+    'coverage_' (guion bajo) y 'coverage.json' exacto — coverage-final.json
+    (guion) se colaba."""
+    assert mod.es_resto("coverage-final.json") is True
+
+
 def test_el_arbol_actual_esta_limpio():
     """Si esto falla, alguien commiteo basura: es el aviso, no el test."""
     assert mod.main() == 0

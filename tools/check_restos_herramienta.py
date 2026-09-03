@@ -50,7 +50,7 @@ def es_resto(ruta: str) -> bool:
         return True
     if last.endswith('.bak') or last.endswith('.orig') or last.endswith('.rej'):
         return True
-    if last.startswith('coverage_'):
+    if last.startswith('coverage_') or last.startswith('coverage-'):
         return True
     if last == 'coverage.json':
         return True

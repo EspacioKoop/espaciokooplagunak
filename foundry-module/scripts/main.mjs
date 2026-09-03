@@ -148,6 +148,7 @@ Hooks.once("init", () => {
   // que reparte, con su barajado sembrado y su coordinador único.
   registrarPresetBaraja();
 
+const AJUSTE_IDIOMA = "idioma";
   // Idioma propio del módulo. Ajuste de CLIENTE: en qué idioma lee cada cual no
   // es una decisión de la partida, es suya, y dos personas de la misma mesa
   // pueden leer la misma consola en idiomas distintos sin dejar de ver lo mismo.
@@ -346,7 +347,6 @@ Hooks.once("init", () => {
   registrarAjusteMusica(MODULE_ID);
 });
 
-const AJUSTE_IDIOMA = "idioma";
 
 /* Aplica el idioma elegido a los textos del módulo, y solo a ellos.
  *
@@ -1087,3 +1087,5 @@ function manejarConvocatoria({ idEstancia, rolConvocante }) {
     ui.notifications?.warn(game.i18n.localize("LAGUNAK.PanelGM.Convocatoria.Error"));
   });
 }
+
+export { abrirConvocatoria, manejarConvocatoria };

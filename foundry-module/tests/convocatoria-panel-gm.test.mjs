@@ -28,16 +28,15 @@ function setupMocks() {
       this.closed = true;
     }
   }
-  class MockHandlebarsApplicationMixin {
-    static apply(Base) {
-      return class extends Base {};
-    }
-  }
+  // Mock HandlebarsApplicationMixin as a function that returns a class
+  globalThis.HandlebarsApplicationMixin = (Base) => {
+    return class extends Base {};
+  };
   globalThis.foundry = {
     applications: {
       api: {
         ApplicationV2: MockApplicationV2,
-        HandlebarsApplicationMixin: MockHandlebarsApplicationMixin,
+        HandlebarsApplicationMixin: globalThis.HandlebarsApplicationMixin,
       },
     },
   };
@@ -74,6 +73,7 @@ function setupMocks() {
       warn: (message) => {
         globalThis.lastWarning = message;
       },
+      info: () => {} // we don't need info for these tests
     },
   };
 }
@@ -81,14 +81,10 @@ function setupMocks() {
 // Helper to reset mocks
 function resetMocks() {
   globalThis.lastWarning = undefined;
-  // Clear the import mock we will set later
-  if (globalThis.__originalImport) {
-    globalThis.import = globalThis.__originalImport;
-    delete globalThis.__originalImport;
-  }
   // Delete the mocked globals to avoid leaking to other tests? We'll just overwrite.
   delete globalThis.Hooks;
   delete globalThis.foundry;
+  delete globalThis.HandlebarsApplicationMixin;
   delete globalThis.Application;
   delete globalThis.game;
   delete globalThis.ui;
@@ -96,28 +92,49 @@ function resetMocks() {
 
 test("manejarConvocatoria llama a convocar con los argumentos correctos", async () => {
   setupMocks();
-  // Mock the dynamic import of convocatoria-estancia.mjs
-  const mockConvocar = async (idEstancia, rolConvocante, options) => {
-    // Store the arguments for later verification
-    globalThis.mockConvocarArgs = { idEstancia, rolConvocante, options };
-    // Return a valid result to simulate success
-    return { x: 0, z: 0, yaw: 0 };
-  };
+  let convocarCalled = false;
   // Save the original import
-  globalThis.__originalImport = globalThis.import;
-  // Override the global import function
-  globalThis.import = async (modulePath) => {
-    if (modulePath.endsWith("convocatoria-estancia.mjs")) {
-      return { convocar: mockConvocar };
+  const originalImport = globalThis.import;
+  // Mock the global import function to intercept the exact specifier used in main.mjs
+  globalThis.import = async (specifier) => {
+    // Normalize specifier by removing query string for matching
+    const cleanSpecifier = specifier.split('?')[0];
+    if (cleanSpecifier.endsWith("convocatoria-estancia.mjs")) {
+      return {
+        convocar: async (idEstancia, rolConvocante, options) => {
+          // Store the arguments for later verification
+          globalThis.mockConvocarArgs = { idEstancia, rolConvocante, options };
+          convocarCalled = true;
+          // Return a valid result to simulate success
+          return { x: 0, z: 0, yaw: 0 };
+        }
+      };
     }
-    return globalThis.__originalImport(modulePath);
+    // For other imports, call the original import
+    return originalImport(specifier);
   };
 
-  // Now load the main module (it will use our mocked import)
-  const mainModule = await import("../scripts/main.mjs");
+  // Load the main module with a query string to bust its cache
+  const mainModule = await import(`../scripts/main.mjs?${Date.now()}`);
 
   // Call the function directly
-  await mainModule.manejarConvocatoria({ idEstancia: "playa", rolConvocante: "GM" });
+  mainModule.manejarConvocatoria({ idEstancia: "playa", rolConvocante: "GM" });
+
+  // Wait for the import callback to run
+  await new Promise(resolve => {
+    if (convocarCalled) {
+      resolve();
+    } else {
+      const check = () => {
+        if (convocarCalled) {
+          resolve();
+        } else {
+          setTimeout(check, 10);
+        }
+      };
+      setTimeout(check, 10);
+    }
+  });
 
   // Verify that convocar was called with the expected arguments
   assert.deepStrictEqual(globalThis.mockConvocarArgs, {
@@ -127,31 +144,51 @@ test("manejarConvocatoria llama a convocar con los argumentos correctos", async 
   });
 
   // Restore the original import
-  globalThis.import = globalThis.__originalImport;
-  delete globalThis.__originalImport;
+  globalThis.import = originalImport;
   // Clean up the mock Convocar args
   delete globalThis.mockConvocarArgs;
+  resetMocks();
 });
 
 test("manejarConvocatoria muestra una advertencia si convocar devuelve null", async () => {
   setupMocks();
+  let convocarCalled = false;
+  // Save the original import
+  const originalImport = globalThis.import;
   // Mock that returns null
-  globalThis.mockConvocarArgs = null;
-  globalThis.__originalImport = globalThis.import;
-  globalThis.import = async (modulePath) => {
-    if (modulePath.endsWith("convocatoria-estancia.mjs")) {
+  globalThis.import = async (specifier) => {
+    // Normalize specifier by removing query string for matching
+    const cleanSpecifier = specifier.split('?')[0];
+    if (cleanSpecifier.endsWith("convocatoria-estancia.mjs")) {
       return {
         convocar: async (idEstancia, rolConvocante, options) => {
           globalThis.mockConvocarArgs = { idEstancia, rolConvocante, options };
+          convocarCalled = true;
           return null;
-        },
+        }
       };
     }
-    return globalThis.__originalImport(modulePath);
+    return originalImport(specifier);
   };
 
-  const mainModule = await import("../scripts/main.mjs");
-  await mainModule.manejarConvocatoria({ idEstancia: "playa", rolConvocante: "GM" });
+  const mainModule = await import(`../scripts/main.mjs?${Date.now()}`);
+  mainModule.manejarConvocatoria({ idEstancia: "playa", rolConvocante: "GM" });
+
+  // Wait for the import callback to run
+  await new Promise(resolve => {
+    if (convocarCalled) {
+      resolve();
+    } else {
+      const check = () => {
+        if (convocarCalled) {
+          resolve();
+        } else {
+          setTimeout(check, 10);
+        }
+      };
+      setTimeout(check, 10);
+    }
+  });
 
   // Verify that a warning was shown
   assert.ok(globalThis.lastWarning, "Se esperaba una advertencia");
@@ -159,25 +196,27 @@ test("manejarConvocatoria muestra una advertencia si convocar devuelve null", as
   assert.strictEqual(globalThis.lastWarning, "LAGUNAK.PanelGM.Convocatoria.Error");
 
   // Restore
-  globalThis.import = globalThis.__originalImport;
-  delete globalThis.__originalImport;
+  globalThis.import = originalImport;
   delete globalThis.mockConvocarArgs;
+  resetMocks();
 });
 
 test("abrirConvocatoria crea la aplicación y la renderiza", async () => {
   setupMocks();
   // We don't need to mock convocatoria-estancia.mjs for this test because abrirConvocatoria doesn't call it directly.
-  // But we still need to mock the import for the dynamic import inside manejarConvocatoria, which is not called here.
+  // But we still need to mock the import for the dynamic intent inside manejarConvocatoria, which is not called here.
   // To avoid any issues, we'll mock it to return a dummy function.
-  globalThis.__originalImport = globalThis.import;
-  globalThis.import = async (modulePath) => {
-    if (modulePath.endsWith("convocatoria-estancia.mjs")) {
+  const originalImport = globalThis.import;
+  globalThis.import = async (specifier) => {
+    // Normalize specifier by removing query string for matching
+    const cleanSpecifier = specifier.split('?')[0];
+    if (cleanSpecifier.endsWith("convocatoria-estancia.mjs")) {
       return { convocar: async () => ({ x: 0, z: 0, yaw: 0 }) };
     }
-    return globalThis.__originalImport(modulePath);
+    return originalImport(specifier);
   };
 
-  const mainModule = await import("../scripts/main.mjs");
+  const mainModule = await import(`../scripts/main.mjs?${Date.now()}`);
   // Call the function
   mainModule.abrirConvocatoria();
 
@@ -186,6 +225,6 @@ test("abrirConvocatoria crea la aplicación y la renderiza", async () => {
   assert.ok(true, "abrirConvocatoria no lanzó excepción");
 
   // Restore
-  globalThis.import = globalThis.__originalImport;
-  delete globalThis.__originalImport;
+  globalThis.import = originalImport;
+  resetMocks();
 });

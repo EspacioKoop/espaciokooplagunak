@@ -37,6 +37,7 @@ import { piezasDeVentana } from "./nave-ventana-espacio.mjs";
 import { piezasMuralPixel } from "./nave-mural-pixel.mjs";
 import { ANCHO_TESELA, METROS_POR_TEXEL, texturaMuro } from "./piel-textura.mjs";
 import { piezasPielHoja } from "./nave-piel-puerta.mjs";
+import { piezasPielHojaTextura } from "./piel-textura-puerta.mjs";
 import { piezasPielColumna, piezasPielObjeto } from "./nave-piel-objeto.mjs";
 import { piezasPielSuelo, piezasPielTecho } from "./nave-piel-suelo.mjs";
 import { piezasLuminarias, mallaDifusorLuminarias, colorDifusorLuminaria } from "./nave-luminaria.mjs";
@@ -569,18 +570,19 @@ export function crearSalaCaja({
    * nervado y las juntas finas que en cajas de diez centímetros no caben. Lo que
    * pierde es el moteado vivo de la luz por chapa: pasa a ser relieve PINTADO.
    *
-   * Eso cambia el aspecto de las trece salas del Phobos a la vez, así que el
-   * cambio de serie es una decisión de arte y se toma aparte. Aquí está el
-   * camino, probado y listo; cambiar este valor por defecto es la línea que lo
-   * enciende.
+   * Eso cambia el aspecto de las trece salas del Phobos a la vez, y la
+   * decisión ya se tomó (#458): DE SERIE desde entonces. `"geometria"` sigue
+   * viva para quien la necesite (comparar, depurar el pintor), pero ya no es
+   * el valor por defecto.
    */
-  pielMuro = "geometria",
+  pielMuro = "textura",
   semillaMural = 20260810,
-  // Piel de puertas y objetos (#550). Van con su propio interruptor y no con el
-  // del mural porque son decisiones separables: una sala puede querer sus muros
-  // desnudos y sus puertas marcadas. Ambas encendidas de serie, y ambas apagadas
-  // en las salas de prueba por el mismo motivo que el mural.
-  pielPuertas = true,
+  // Piel de puertas y objetos (#550, textura por hoja en #458). Van con su
+  // propio interruptor y no con el del mural porque son decisiones separables:
+  // una sala puede querer sus muros desnudos y sus puertas marcadas. Mismos
+  // tres valores que `pielMuro` (`"geometria"`/`"textura"`/`false`), y misma
+  // decisión: `"textura"` de serie, apagada en las salas de prueba.
+  pielPuertas = "textura",
   pielObjetos = true,
   pielSuelo = true,
   // Qué sistema aloja esta sala (#765), o `null` si no aloja ninguno — la misma
@@ -734,9 +736,12 @@ export function crearSalaCaja({
         // abrirse. En rejilla (#550) para que el detalle de la puerta mida lo
         // mismo que el del muro que la rodea; sin piel, la hoja se queda con las
         // bandas lisas de siempre, que siguen siendo mejor que una hoja pelada.
-        ...rects.flatMap((rect) =>
-          pielPuertas ? piezasPielHoja(puerta, rect) : piezasDetalleHoja(puerta, rect),
-        ),
+        ...rects.flatMap((rect) => {
+          if (pielPuertas === "textura") {
+            return piezasPielHojaTextura(puerta, rect, { color: colorMuro, ambiente: AMBIENTE_PANO });
+          }
+          return pielPuertas ? piezasPielHoja(puerta, rect) : piezasDetalleHoja(puerta, rect);
+        }),
       ];
     });
 

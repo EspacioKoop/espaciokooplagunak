@@ -93,12 +93,28 @@ test("el dibujo no puede leerse como una medida", () => {
   for (const fila of rejilla) assert.equal(fila.length, 3);
 });
 
-test("la fábrica viste la hoja de serie y el interruptor la devuelve a las bandas lisas", () => {
+test("la fábrica viste la hoja de serie con TEXTURA (#458: la decisión ya se tomó)", () => {
+  // `pielPuertas: "textura"` es el valor por defecto desde #458 — el mismo
+  // cambio de serie que `pielMuro`. La textura gana en detalle con MENOS
+  // polígonos que las bandas lisas (esa es la razón de ser de una textura), así
+  // que "va vestida" ya no se puede leer en el conteo: se lee en que la escena
+  // trae piezas con `textura`.
   const puertas = [{ rect: { x: 0, z: 4, ancho: 1.2, profundidad: 2.4 } }];
   const vista = (opciones) =>
     crearSalaCaja({ ancho: 11, profundidad: 11, puertas, muralPixel: false, ...opciones })
       // Mirando al muro oeste, que es donde está la puerta.
-      .componer(3, 0, 5.2, -Math.PI / 2, { ancho: 320, alto: 180 }).poligonos.length;
-  assert.ok(vista({}) > vista({ pielPuertas: false }), "sin pedir nada, la puerta va vestida");
-  assert.ok(vista({ pielPuertas: false }) > 0, "apagada, la hoja conserva sus bandas de siempre");
+      .componer(3, 0, 5.2, -Math.PI / 2, { ancho: 320, alto: 180 });
+  const conTextura = vista({}).poligonos;
+  const conBandas = vista({ pielPuertas: false }).poligonos;
+  assert.ok(conTextura.some((p) => p.textura), "sin pedir nada, la hoja llega texturada");
+  assert.equal(conBandas.filter((p) => p.textura).length, 0, "apagada, la hoja no trae textura");
+  assert.ok(conBandas.length > 0, "apagada, la hoja conserva sus bandas de siempre");
+});
+
+test("pedir geometría explícitamente sigue vistiendo la hoja en chapas, sin textura", () => {
+  const puertas = [{ rect: { x: 0, z: 4, ancho: 1.2, profundidad: 2.4 } }];
+  const escena = crearSalaCaja({ ancho: 11, profundidad: 11, puertas, muralPixel: false, pielPuertas: "geometria" })
+    .componer(3, 0, 5.2, -Math.PI / 2, { ancho: 320, alto: 180 });
+  assert.equal(escena.poligonos.filter((p) => p.textura).length, 0);
+  assert.ok(escena.poligonos.length > 0);
 });

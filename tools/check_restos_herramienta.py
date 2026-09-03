@@ -40,7 +40,7 @@ def es_resto(ruta: str) -> bool:
     #   - prefix: starts with 'coverage'
     for i in range(len(partes)-1):  # exclude last component
         comp = partes[i]
-        if comp == 'node_modules' or comp == '.nyc_output' or comp.startswith('coverage'):
+        if comp == 'node_modules' or comp == '.nyc_output' or comp == 'tmp' or comp.startswith('coverage'):
             return True
     # Check the last component for file patterns
     last = partes[-1]
@@ -53,6 +53,8 @@ def es_resto(ruta: str) -> bool:
     if last.startswith('coverage_'):
         return True
     if last == 'coverage.json':
+        return True
+    if '.temp.' in last:
         return True
     return False
 

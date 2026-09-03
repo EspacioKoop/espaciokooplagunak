@@ -54,6 +54,30 @@ def test_rechaza_bak():
     assert mod.es_resto("foundry-module/tests/consola-caliente-v1.test.mjs.bak") is True
 
 
+def test_rechaza_tmp_dir():
+    """Artefacto real de #797: un script del propio agente bajo tmp/"""
+    assert mod.es_resto("tmp/hermes-verify-test.py") is True
+
+
+def test_rechaza_temp_en_nombre():
+    """Fichero *.temp.* en cualquier ruta, no solo bajo tmp/"""
+    assert mod.es_resto("reports/result.temp.json") is True
+
+
+def test_no_rechaza_tmp_como_subcadena_de_otro_nombre():
+    """'tmp' solo cuenta como componente exacto de ruta, no como subcadena:
+    'template/' o 'tmpfiles.mjs' no son restos por casualidad de nombre."""
+    assert mod.es_resto("template/archivo.mjs") is False
+    assert mod.es_resto("tmpfiles.mjs") is False
+
+
+def test_no_rechaza_temp_como_subcadena_de_otro_nombre():
+    """'.temp.' tiene que aparecer literal en el nombre, no basta con
+    contener las letras 'temp' en otro contexto."""
+    assert mod.es_resto("template.mjs") is False
+    assert mod.es_resto("temperatura.json") is False
+
+
 def test_el_arbol_actual_esta_limpio():
     """Si esto falla, alguien commiteo basura: es el aviso, no el test."""
     assert mod.main() == 0

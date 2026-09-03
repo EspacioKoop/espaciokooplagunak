@@ -41,6 +41,88 @@ test("arranca en el menú, con las tareas de TODOS los puestos", () => {
   assert.ok(puestos.size >= 3, "no se filtra por el puesto de quien mira");
 });
 
+test("capitán y GM ven el mando durante la crisis, pero un puesto ajeno no", () => {
+  game.user = {
+    id: "capitana",
+    isGM: false,
+    getFlag: (_m, clave) => (clave === "station" ? "captain" : null),
+    setFlag: (_m, _k, v) => flags.push(v),
+  };
+  Hooks.callAll("lagunakAsistenciaOrdenMando", {
+    mando: { crisisActiva: true, disponibles: 2, ventajaActiva: null },
+  });
+
+  const contexto = ui.contextoAsistencia();
+  assert.equal(contexto.mandoVisible, true);
+  assert.equal(contexto.esCapitan, true);
+  assert.equal(contexto.puedeOrdenarMando, true);
+  assert.equal(contexto.mando.disponibles, 2);
+  assert.ok(contexto.puestosMando.some((puesto) => puesto.id === "engineering"));
+
+  game.user = {
+    id: "piloto",
+    isGM: false,
+    getFlag: (_m, clave) => (clave === "station" ? "navigation" : null),
+    setFlag: (_m, _k, v) => flags.push(v),
+  };
+  assert.equal(ui.contextoAsistencia().mandoVisible, false);
+
+  game.user = { id: "gm", isGM: true, getFlag: () => null, setFlag: (_m, _k, v) => flags.push(v) };
+  assert.equal(ui.contextoAsistencia().mandoVisible, true);
+  assert.equal(ui.contextoAsistencia().puedeOrdenarMando, true);
+});
+
+test("la capitana declara desde la ventana y el acuse libera el gesto sin inventar autoridad", () => {
+  game.user = {
+    id: "capitana",
+    isGM: false,
+    getFlag: (_m, clave) => (clave === "station" ? "captain" : null),
+    setFlag: (_m, _k, v) => flags.push(v),
+  };
+  Hooks.callAll("lagunakAsistenciaOrdenMando", {
+    mando: { crisisActiva: true, disponibles: 2, ventajaActiva: null },
+  });
+
+  const nonce = ui.ordenarDesdeVentana("engineering");
+  assert.equal(nonce, "nonce-1");
+  assert.deepEqual(flags.at(-1), {
+    tipo: "orden-mando",
+    puestoAsistido: "engineering",
+    nonce: "nonce-1",
+  });
+  assert.equal(ui.contextoAsistencia().mandoPendiente, true);
+
+  Hooks.callAll("lagunakAsistenciaOrdenMando", {
+    nonce,
+    ok: true,
+    error: null,
+    mando: {
+      crisisActiva: true,
+      disponibles: 1,
+      ventajaActiva: { nonce, puestoAsistido: "engineering" },
+    },
+  });
+  const contexto = ui.contextoAsistencia();
+  assert.equal(contexto.mandoPendiente, false);
+  assert.equal(contexto.puedeOrdenarMando, false, "no se acumula una segunda ventaja");
+  assert.equal(contexto.mando.ventajaActiva.puestoAsistido, "engineering");
+});
+
+test("el GM abre y cierra la crisis desde la ventana sin persistirla", () => {
+  game.user = { id: "gm", isGM: true, getFlag: () => null, setFlag: (_m, _k, v) => flags.push(v) };
+  game.users.activeGM = game.user;
+
+  const abierta = ui.iniciarCrisisDesdeVentana();
+  assert.equal(abierta.crisisActiva, true);
+  assert.equal(ui.contextoAsistencia().mando.disponibles, 2);
+  assert.equal(ui.contextoAsistencia().mandoVisible, true);
+
+  const cerrada = ui.cerrarCrisisDesdeVentana();
+  assert.deepEqual(cerrada, { crisisActiva: false, disponibles: 0, ventajaActiva: null });
+  assert.equal(ui.contextoAsistencia().mandoVisible, false);
+  game.users.activeGM = null;
+});
+
 test("una oferta con otro nonce se ignora: no se pinta la ayuda de otro", () => {
   // Las respuestas llegan por socket dirigido, pero una carga con nonce ajeno
   // no puede secuestrar la ventana.

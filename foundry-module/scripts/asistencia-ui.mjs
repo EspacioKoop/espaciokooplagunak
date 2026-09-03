@@ -40,14 +40,18 @@
 // (`minijuegoDestreza` en el catálogo), no quien ayuda.
 
 import {
+  cerrarCrisisDeMando,
+  HOOK_ORDEN_MANDO,
   HOOK_OFERTA,
   HOOK_RECHAZO,
   HOOK_RESULTADO,
+  iniciarCrisisDeMando,
   pedirAsistencia,
+  pedirOrdenMando,
   resolverAsistencia,
   tareasParaPuesto,
 } from "./asistencia-wiring.mjs";
-import { STATIONS } from "./station-assignment.mjs";
+import { STATIONS, normalizeStation } from "./station-assignment.mjs";
 import {
   crearReto as crearRetoTemporizacion,
   resolverExpiracion as resolverExpiracionTemporizacion,
@@ -107,6 +111,9 @@ const estado = {
   panel: [],
   ultimoIntentoPuzzle: null,
   enfoqueId: null,
+  mando: Object.freeze({ crisisActiva: false, disponibles: 0, ventajaActiva: null }),
+  mandoNonce: null,
+  mandoError: null,
   bucle: null,
 };
 
@@ -141,6 +148,29 @@ function esDeLaPeticionViva(carga) {
   return Boolean(carga) && estado.nonce !== null && carga.nonce === estado.nonce;
 }
 
+function puestoValido(puesto) {
+  try {
+    return normalizeStation(puesto);
+  } catch {
+    return null;
+  }
+}
+
+function puestoActual() {
+  return puestoValido(game.user?.getFlag?.(moduloConfigurado, "station") ?? null);
+}
+
+function actualizarMando(mando) {
+  if (!mando || typeof mando !== "object") return false;
+  const puestoAsistido = puestoValido(mando.ventajaActiva?.puestoAsistido);
+  estado.mando = Object.freeze({
+    crisisActiva: Boolean(mando.crisisActiva),
+    disponibles: Number.isSafeInteger(mando.disponibles) && mando.disponibles >= 0 ? mando.disponibles : 0,
+    ventajaActiva: puestoAsistido ? Object.freeze({ puestoAsistido }) : null,
+  });
+  return true;
+}
+
 export function registrarAsistenciaUI(moduleId) {
   moduloConfigurado = moduleId;
 
@@ -169,10 +199,25 @@ export function registrarAsistenciaUI(moduleId) {
     detenerBucle();
     repintar();
   });
+
+  Hooks.on(HOOK_ORDEN_MANDO, (carga) => {
+    if (!actualizarMando(carga?.mando)) return;
+    if (estado.mandoNonce !== null && carga?.nonce === estado.mandoNonce) {
+      estado.mandoNonce = null;
+      estado.mandoError = carga.ok ? null : (carga.error ?? "desconocido");
+    }
+    repintar();
+  });
 }
 
 /** Contexto de la ventana. Separado del render para poder probarlo sin Foundry. */
 export function contextoAsistencia({ tareas = tareasDisponibles() } = {}) {
+  const tareasVista = vistaTareas(tareas);
+  const esGM = Boolean(game.user?.isGM);
+  const esCapitan = puestoActual() === "captain";
+  const mandoVisible = estado.mando.crisisActiva && (esCapitan || esGM);
+  const puestosMando = [...new Set(tareasVista.map((tarea) => tarea.puestoAsistido))]
+    .map((id) => ({ id, claveNombre: `LAGUNAK.Puestos.${id}` }));
   return {
     fase: estado.fase,
     enMenu: estado.fase === FASES.MENU,
@@ -188,10 +233,22 @@ export function contextoAsistencia({ tareas = tareasDisponibles() } = {}) {
     retoEsPuzzle: estado.fase === FASES.RETO && estado.tipoReto === "puzzle",
     retoEsTemporizacion: estado.fase === FASES.RETO && estado.tipoReto === "temporizacion",
     cerrada: estado.fase === FASES.CERRADA,
-    tareas: vistaTareas(tareas),
+    tareas: tareasVista,
     oferta: estado.oferta,
     cierre: estado.cierre,
     reto: vistaDelRetoActual(),
+    esGM,
+    esCapitan,
+    mandoVisible,
+    mando: estado.mando,
+    mandoPendiente: estado.mandoNonce !== null,
+    mandoErrorClave: estado.mandoError ? `LAGUNAK.Asistencia.Mando.Error.${estado.mandoError}` : null,
+    mandoVentajaClavePuesto: estado.mando.ventajaActiva
+      ? `LAGUNAK.Puestos.${estado.mando.ventajaActiva.puestoAsistido}`
+      : null,
+    puedeOrdenarMando: mandoVisible && estado.mando.disponibles > 0 &&
+      estado.mando.ventajaActiva === null && estado.mandoNonce === null,
+    puestosMando,
   };
 }
 
@@ -230,6 +287,29 @@ export function pedirDesdeVentana(tareaId) {
   if (!nonce) return;
   Object.assign(estado, { nonce, tareaId, fase: FASES.ESPERANDO, cierre: null });
   repintar();
+}
+
+export function ordenarDesdeVentana(puestoAsistido) {
+  const puesto = puestoValido(puestoAsistido);
+  const contexto = contextoAsistencia();
+  if (!puesto || !contexto.puedeOrdenarMando) return null;
+  if (!contexto.puestosMando.some((candidato) => candidato.id === puesto)) return null;
+  const nonce = pedirOrdenMando(puesto);
+  if (!nonce) return null;
+  estado.mandoNonce = nonce;
+  estado.mandoError = null;
+  repintar();
+  return nonce;
+}
+
+export function iniciarCrisisDesdeVentana() {
+  if (!game.user?.isGM) return null;
+  return iniciarCrisisDeMando();
+}
+
+export function cerrarCrisisDesdeVentana() {
+  if (!game.user?.isGM) return null;
+  return cerrarCrisisDeMando();
 }
 
 /**
@@ -503,6 +583,11 @@ function repintar() {
 
 function conectar(raiz) {
   const nodo = raizReal(raiz);
+  nodo?.querySelector?.("[data-asistencia-crisis-abrir]")?.addEventListener("click", iniciarCrisisDesdeVentana);
+  nodo?.querySelector?.("[data-asistencia-crisis-cerrar]")?.addEventListener("click", cerrarCrisisDesdeVentana);
+  nodo?.querySelectorAll?.("[data-asistencia-mando]").forEach((boton) => {
+    boton.addEventListener("click", () => ordenarDesdeVentana(boton.dataset.asistenciaMando));
+  });
   nodo?.querySelectorAll?.("[data-asistencia-tarea]").forEach((boton) => {
     boton.addEventListener("click", () => pedirDesdeVentana(boton.dataset.asistenciaTarea));
   });
@@ -630,5 +715,10 @@ function crearClaseV1() {
 /** Solo para pruebas: deja la máquina de estados en el arranque. */
 export function _reiniciarParaPruebas() {
   reiniciar();
+  Object.assign(estado, {
+    mando: Object.freeze({ crisisActiva: false, disponibles: 0, ventajaActiva: null }),
+    mandoNonce: null,
+    mandoError: null,
+  });
   ventana = null;
 }

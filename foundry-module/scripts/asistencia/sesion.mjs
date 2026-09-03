@@ -26,7 +26,7 @@
 // sitio. El día que este archivo importe un cliente del puente, el error estará
 // aquí.
 
-import { bandaEsFavorable } from "./bandas.mjs";
+import { BANDAS_ORDENADAS, bandaEsFavorable, subirBanda } from "./bandas.mjs";
 import { MODOS, modoDeTarea, resolucionDisponible, validarTarea } from "./enfoques.mjs";
 import { rangoDeExito } from "./probabilidad.mjs";
 import { modificadorDeFicha } from "./ficha-dnd5e.mjs";
@@ -46,7 +46,27 @@ export const SESION_ERRORES = Object.freeze({
   RESERVA_DESCONOCIDA: "reserva-desconocida",
   /** El nonce ya identifica algo vivo o ya gastado: abrir con él pisaría trabajo ajeno. */
   NONCE_REPETIDO: "nonce-repetido",
+  /** No hay una crisis de mando abierta: fuera de ella no existe el recurso. */
+  CRISIS_INACTIVA: "crisis-inactiva",
+  /** La crisis ya consumió su presupuesto de órdenes de mando. */
+  ORDENES_AGOTADAS: "ordenes-mando-agotadas",
+  /** Una orden espera la próxima asistencia y no se puede acumular otra encima. */
+  ORDEN_MANDO_PENDIENTE: "orden-mando-pendiente",
+  /** El mismo gesto ya gastó una orden en esta crisis. */
+  ORDEN_MANDO_REPETIDA: "orden-mando-repetida",
 });
+
+/** Valor inicial de playtest de #808; vive solo durante una crisis. */
+export const ORDENES_MANDO_POR_CRISIS = 2;
+
+function mandoInactivo() {
+  return Object.freeze({
+    crisisActiva: false,
+    disponibles: 0,
+    ventajaActiva: null,
+    noncesUsados: Object.freeze([]),
+  });
+}
 
 /** Estado inicial. Vacío y congelado; todo lo demás sale de aquí. */
 export function crearSesion() {
@@ -54,7 +74,74 @@ export function crearSesion() {
     reservas: Object.freeze([]),
     propuestas: Object.freeze([]),
     consumidos: Object.freeze([]),
+    mando: mandoInactivo(),
   });
+}
+
+/** Abre una crisis nueva y repone únicamente su recurso efímero de mando. */
+export function iniciarCrisisMando(estado, ordenes = ORDENES_MANDO_POR_CRISIS) {
+  if (estado?.mando?.crisisActiva) return estado;
+  const disponibles = Math.max(0, Math.trunc(Number(ordenes)));
+  if (!Number.isFinite(disponibles)) throw new TypeError("ordenes debe ser un número");
+  return Object.freeze({
+    ...estado,
+    mando: Object.freeze({
+      crisisActiva: true,
+      disponibles,
+      ventajaActiva: null,
+      noncesUsados: Object.freeze([]),
+    }),
+  });
+}
+
+/** Cierra la crisis: las órdenes no gastadas y la ventaja pendiente desaparecen. */
+export function cerrarCrisisMando(estado) {
+  return Object.freeze({ ...estado, mando: mandoInactivo() });
+}
+
+/** Vista pública del recurso, sin exponer los nonces internos de deduplicación. */
+export function estadoMando(estado) {
+  const mando = estado?.mando ?? mandoInactivo();
+  return Object.freeze({
+    crisisActiva: Boolean(mando.crisisActiva),
+    disponibles: mando.disponibles ?? 0,
+    ventajaActiva: mando.ventajaActiva
+      ? Object.freeze({ puestoAsistido: mando.ventajaActiva.puestoAsistido })
+      : null,
+  });
+}
+
+/**
+ * Gasta una orden y la deja dirigida a la próxima asistencia del puesto. Solo
+ * puede haber una pendiente: #808 prohíbe acumular ventajas.
+ */
+export function declararOrdenMando({ estado, puestoAsistido, nonce }) {
+  if (!nonce) throw new TypeError("declararOrdenMando requiere nonce");
+  if (!puestoAsistido) throw new TypeError("declararOrdenMando requiere puestoAsistido");
+  const mando = estado?.mando ?? mandoInactivo();
+  if (!mando.crisisActiva) {
+    return { ok: false, error: SESION_ERRORES.CRISIS_INACTIVA, estado };
+  }
+  if (mando.noncesUsados.includes(nonce)) {
+    return { ok: false, error: SESION_ERRORES.ORDEN_MANDO_REPETIDA, estado };
+  }
+  if (mando.ventajaActiva) {
+    return { ok: false, error: SESION_ERRORES.ORDEN_MANDO_PENDIENTE, estado };
+  }
+  if (mando.disponibles <= 0) {
+    return { ok: false, error: SESION_ERRORES.ORDENES_AGOTADAS, estado };
+  }
+  const ventajaActiva = Object.freeze({ nonce, puestoAsistido });
+  const siguiente = Object.freeze({
+    ...estado,
+    mando: Object.freeze({
+      ...mando,
+      disponibles: mando.disponibles - 1,
+      ventajaActiva,
+      noncesUsados: Object.freeze([...mando.noncesUsados, nonce]),
+    }),
+  });
+  return { ok: true, ventajaActiva, estado: siguiente };
 }
 
 function vivos(lista, ahora) {
@@ -203,19 +290,41 @@ export function resolver({ estado, nonce, banda, ahora = Date.now() }) {
   if (!reserva) {
     return { ok: false, error: SESION_ERRORES.RESERVA_DESCONOCIDA, estado: podado };
   }
+  const ventaja = podado.mando?.ventajaActiva;
+  const ordenMandoAplicada = Boolean(
+    ventaja &&
+    ventaja.puestoAsistido === reserva.puestoAsistido &&
+    BANDAS_ORDENADAS.includes(banda),
+  );
+  // La ventaja y la reserva se consumen en la MISMA transición. Un segundo
+  // `resolver` no encuentra reserva ni ventaja y no puede aplicar dos veces la
+  // misma orden aunque repita exactamente el mismo evento.
+  const conMandoConsumido = ordenMandoAplicada
+    ? Object.freeze({
+        ...podado,
+        mando: Object.freeze({ ...podado.mando, ventajaActiva: null }),
+      })
+    : podado;
+  const bandaResuelta = ordenMandoAplicada ? subirBanda(banda) : banda;
   const sinReserva = Object.freeze({
-    ...podado,
-    reservas: Object.freeze(podado.reservas.filter((r) => r.nonce !== nonce)),
+    ...conMandoConsumido,
+    reservas: Object.freeze(conMandoConsumido.reservas.filter((r) => r.nonce !== nonce)),
   });
 
-  if (!bandaEsFavorable(banda)) {
-    return { ok: false, error: SESION_ERRORES.BANDA_SIN_FRUTO, banda, estado: sinReserva };
+  if (!bandaEsFavorable(bandaResuelta)) {
+    return {
+      ok: false,
+      error: SESION_ERRORES.BANDA_SIN_FRUTO,
+      banda: bandaResuelta,
+      ordenMandoAplicada,
+      estado: sinReserva,
+    };
   }
   const creada = crearPropuesta({
     tareaId: reserva.tareaId,
     puestoAsistido: reserva.puestoAsistido,
     accion: reserva.accion,
-    banda,
+    banda: bandaResuelta,
     asistenteId: reserva.asistenteId,
     // El nonce de la reserva se reutiliza como el de la propuesta: es el mismo
     // acto de ayuda de principio a fin, y así el registro de quién apoyó a quién
@@ -228,6 +337,7 @@ export function resolver({ estado, nonce, banda, ahora = Date.now() }) {
   return {
     ok: true,
     propuesta: creada.propuesta,
+    ordenMandoAplicada,
     estado: Object.freeze({
       ...sinReserva,
       propuestas: Object.freeze([...sinReserva.propuestas, creada.propuesta]),

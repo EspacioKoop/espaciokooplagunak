@@ -28,6 +28,17 @@ export const BANDAS_ORDENADAS = Object.freeze([
   BANDAS.CRITICO,
 ]);
 
+/**
+ * Mejora una banda un único escalón. Las órdenes de mando (#808) actúan aquí,
+ * antes de que exista propuesta, y nunca pueden crear una quinta banda ni
+ * superar el crítico.
+ */
+export function subirBanda(banda) {
+  const indice = BANDAS_ORDENADAS.indexOf(banda);
+  if (indice < 0) throw new TypeError("banda desconocida");
+  return BANDAS_ORDENADAS[Math.min(indice + 1, BANDAS_ORDENADAS.length - 1)];
+}
+
 /** Umbral de margen que separa éxito de éxito crítico (y fallo de pifia). */
 export const MARGEN_CRITICO = 5;
 

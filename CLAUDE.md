@@ -241,8 +241,10 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     jerarquía, un prop es una postura fija sobre un punto ya resuelto, y solo sabe recibir un punto
     en el mundo — no un cuerpo — para poder colgarse igual de la cantina sentada
     (`piezasAvatar`) que de quien anda por la nave (`scripts/nave-avatares-render.mjs`, que ya
-    reutiliza el mismo cuerpo). El primer y único consumidor real sigue siendo el cigarro (#439);
-    #897 deja abierto un catálogo cerrado (`PROPS`) para sumar más sin tocar quien los coloca. El 3D de consola de los 90 vive en `scripts/retro3d*.mjs`
+    reutiliza el mismo cuerpo). Tres consumidores migrados: el cigarro y la jarra (#439, colgados de
+    `boca`/`manoDerecha`) y el distintivo de clase —arma o símbolo al hombro (#423)—, colgado de
+    `hombro` con color y medidas propios de cada clase. `PROPS` sigue siendo un catálogo cerrado
+    para sumar props sin tocar quien los coloca. El 3D de consola de los 90 vive en `scripts/retro3d*.mjs`
     (#362): motor puro que devuelve polígonos, pintor de lienzo aparte, y la **época** (PSX o
     GameCube) como parámetro —rejilla, tonos y niebla— y no como dos módulos. La **visibilidad no
     es un parámetro de época** (#510): quién tapa a quién es una garantía geométrica del motor y

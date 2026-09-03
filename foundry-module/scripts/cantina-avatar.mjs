@@ -268,14 +268,10 @@ function manosDelGesto(gesto, { px, pz, yTorso, altoTorso, yCabeza, ancho, piel,
  * a esta resolución dos cajas más ya son una mancha.
  */
 function distintivoDeClase(clase, { px, py, pz, ancho, altoTorso, prefijo }) {
-  const alHombro = (color, medidas) => [
-    {
-      nombre: `${prefijo}Distintivo`,
-      color,
-      centro: [px + 0.34 * ancho, py + altoTorso * 0.35, pz - 0.16],
-      medidas,
-    },
-  ];
+  // `py` aquí es `yTorso` (así lo pasa piezasAvatar): el mismo punto que
+  // declara el anclaje `hombro` de avatar-anclas.mjs para este cuerpo.
+  const alHombro = (color, medidas) =>
+    piezasProp("distintivo", [px + 0.34 * ancho, py + altoTorso * 0.35, pz - 0.16], { prefijo, color, medidas });
   switch (clase) {
     // Armas al hombro: la silueta de un mandoble asomando por encima es
     // exactamente cómo se reconocía a un personaje en aquellos juegos.

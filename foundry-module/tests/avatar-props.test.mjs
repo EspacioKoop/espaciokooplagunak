@@ -41,3 +41,11 @@ test("la brasa cae exactamente en el punto de anclaje, el cigarro un poco retira
   const cigarro = piezas.find((p) => p.nombre.endsWith("Cigarro"));
   assert.notDeepEqual(cigarro.centro, [1, 2, 3]);
 });
+
+test("el distintivo lleva el color y las medidas que le pasa quien lo cuelga", () => {
+  const piezas = piezasProp("distintivo", [1, 2, 3], { prefijo: "p", color: "#abcdef", medidas: [0.1, 0.2, 0.3] });
+  assert.equal(piezas.length, 1);
+  assert.equal(piezas[0].color, "#abcdef");
+  assert.deepEqual(piezas[0].medidas, [0.1, 0.2, 0.3]);
+  assert.deepEqual(piezas[0].centro, [1, 2, 3]);
+});

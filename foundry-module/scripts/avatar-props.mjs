@@ -25,7 +25,7 @@ import { intensidadCalada } from "./cantina-avatar.mjs";
 
 /** El catálogo cerrado de props que este sistema sabe colgar. Un prop nuevo
  * es una entrada más aquí, nunca una rama nueva en quien lo consume. */
-export const PROPS = Object.freeze(["cigarro", "jarra"]);
+export const PROPS = Object.freeze(["cigarro", "jarra", "distintivo"]);
 
 const DEFINICIONES = Object.freeze({
   // Cuelga de `boca` (#439): el cigarro en sí queda un poco retirado del
@@ -49,6 +49,14 @@ const DEFINICIONES = Object.freeze({
     const [x, y, z] = punto;
     return [{ nombre: `${prefijo}Jarra`, color: AVATAR.jarra, centro: [x, y, z], medidas: [0.18, 0.24, 0.18] }];
   },
+  // Cuelga de `hombro`: una única pieza, no un equipo completo — lo que se
+  // busca es reconocer a alguien al otro lado de la sala, no inventariar su
+  // mochila. `color` y `medidas` los decide quien llama (#423: cada clase
+  // lleva algo distinto), este prop solo sabe dónde ponerlo.
+  distintivo(punto, { prefijo, color, medidas }) {
+    const [x, y, z] = punto;
+    return [{ nombre: `${prefijo}Distintivo`, color, centro: [x, y, z], medidas }];
+  },
 });
 
 /**
@@ -59,14 +67,18 @@ const DEFINICIONES = Object.freeze({
  *   tirar la sala entera.
  * @param {[number, number, number]} punto el anclaje, en el mismo espacio de
  *   mundo que las piezas del cuerpo (ver `avatar-anclas.mjs`).
- * @param {{prefijo?: string, tiempo?: number, indice?: number}} opciones
+ * @param {{prefijo?: string, tiempo?: number, indice?: number, color?: string,
+ *   medidas?: [number, number, number]}} opciones
  *   `prefijo` nombra las piezas igual que hace `piezasAvatar` (`avatar0…`);
- *   `tiempo`/`indice` solo los usa `cigarro`, para la calada (#439).
+ *   `tiempo`/`indice` solo los usa `cigarro`, para la calada (#439);
+ *   `color`/`medidas` solo los usa `distintivo`, que no trae los suyos
+ *   propios porque cambian por clase (#423).
  * @returns {Array<object>} mismo contrato `{nombre, color, centro, medidas}`
  *   que el resto de piezas de la escena.
  */
-export function piezasProp(nombreProp, punto, { prefijo = "prop", tiempo = 0, indice = 0 } = {}) {
+export function piezasProp(nombreProp, punto, opciones = {}) {
   const definicion = DEFINICIONES[nombreProp];
   if (!definicion || !Array.isArray(punto) || punto.length !== 3) return [];
-  return definicion(punto, { prefijo, tiempo, indice }).map((pieza) => Object.freeze(pieza));
+  const { prefijo = "prop", tiempo = 0, indice = 0 } = opciones;
+  return definicion(punto, { ...opciones, prefijo, tiempo, indice }).map((pieza) => Object.freeze(pieza));
 }

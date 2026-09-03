@@ -44,6 +44,11 @@ test('every "ir" action has a real destination id', () => {
           idsSet.has(accion.destino),
           `En plano ${plano.id}, acción "ir" tiene destino ${accion.destino} que no es un id real`
         );
+        assert.notStrictEqual(
+          accion.destino,
+          plano.id,
+          `En plano ${plano.id}, acción "ir" es un bucle a sí mismo`
+        );
       }
     }
   }

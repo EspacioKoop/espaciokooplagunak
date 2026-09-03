@@ -230,7 +230,19 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     pixelart en `scripts/nave-sprite.mjs`, `scripts/minijuegos/cartas-pixelart.mjs` y
     `scripts/minijuegos/fichas-pixelart.mjs` (volumen por planos de color, nunca degradados: el 3D
     del casco es otro lenguaje); música determinista por semilla en
-    `scripts/arte/audio/musica-procedural.mjs`. El 3D de consola de los 90 vive en `scripts/retro3d*.mjs`
+    `scripts/arte/audio/musica-procedural.mjs`. Los **avatares de cajas** (`scripts/cantina-avatar.mjs`,
+    #423) son estilo FF7 original a propósito —proporción de cuatro cabezas, manos exageradas,
+    ni ojos ni boca— porque a esta resolución una figura estilizada se lee y una realista se
+    deshace; el gesto vive en las manos, nunca en una cara que no existe. Sus **puntos de anclaje**
+    (`scripts/avatar-anclas.mjs`, #897) y el **adjuntador genérico de props**
+    (`scripts/avatar-props.mjs`) extrajeron a un único sitio la cuenta de dónde cae una mano o la
+    punta de un cigarro, que antes se copiaba a mano en cada gesto — sin eso, la brasa del cigarro y
+    su humo (#439) habrían sido la tercera copia de la misma fórmula. No es un rig: sin huesos ni
+    jerarquía, un prop es una postura fija sobre un punto ya resuelto, y solo sabe recibir un punto
+    en el mundo — no un cuerpo — para poder colgarse igual de la cantina sentada
+    (`piezasAvatar`) que de quien anda por la nave (`scripts/nave-avatares-render.mjs`, que ya
+    reutiliza el mismo cuerpo). El primer y único consumidor real sigue siendo el cigarro (#439);
+    #897 deja abierto un catálogo cerrado (`PROPS`) para sumar más sin tocar quien los coloca. El 3D de consola de los 90 vive en `scripts/retro3d*.mjs`
     (#362): motor puro que devuelve polígonos, pintor de lienzo aparte, y la **época** (PSX o
     GameCube) como parámetro —rejilla, tonos y niebla— y no como dos módulos. La **visibilidad no
     es un parámetro de época** (#510): quién tapa a quién es una garantía geométrica del motor y

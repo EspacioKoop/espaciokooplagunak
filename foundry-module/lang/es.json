@@ -124,6 +124,11 @@
   "LAGUNAK.PanelGM.Entrada.Musica": "Cambiar la música de a bordo",
   "LAGUNAK.PanelGM.Entrada.Decorado": "Nuevo decorado aleatorio del mapa vivo",
   "LAGUNAK.PanelGM.Entrada.Ficha": "Generar arte de ficha para las naves seleccionadas",
+  "LAGUNAK.PanelGM.Entrada.Parlamento": "Parlamento",
+  "LAGUNAK.PanelGM.Entrada.ParlamentoSelector": "Selector de encuentros del parlamento",
+  "LAGUNAK.SelectorParlamento.Titulo": "Selector de encuentros del parlamento",
+  "LAGUNAK.SelectorParlamento.Intro": "Elige un encuentro para abrir un parlamento con su interlocutor.",
+  "LAGUNAK.SelectorParlamento.Entradas": "Encuentros disponibles",
   "LAGUNAK.Ficha.SinSeleccion": "Selecciona en el lienzo los tokens de las naves a las que quieras dar arte de ficha.",
   "LAGUNAK.Ficha.Hecha": "Arte de ficha aplicado al token prototipo de {total} nave(s).",
   "LAGUNAK.Ficha.Fallo": "No se pudo guardar el arte de ficha. Revisa la consola.",
@@ -902,5 +907,7 @@
   "LAGUNAK.Parlamento.Enfoque.persuasion": "Persuasión",
   "LAGUNAK.Parlamento.Enfoque.engano": "Engaño",
   "LAGUNAK.Parlamento.Enfoque.perspicacia": "Perspicacia",
-  "LAGUNAK.Parlamento.Enfoque.intimidacion": "Intimidación"
+  "LAGUNAK.Parlamento.Enfoque.intimidacion": "Intimidación",
+  "LAGUNAK.SelectorParlamento.Intro": "Seleccione un encuentro para abrir una audiencia:",
+  "LAGUNAK.SelectorParlamento.Entradas": "Encuentros disponibles"
 }

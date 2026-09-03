@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { crearReproductor } from "../scripts/musica-reproductor.mjs";
+import { crearReproductor } from "../../../scripts/arte/audio/musica-reproductor.mjs";
 
 /**
  * Doble de Web Audio: registra lo que se programó sin sintetizar nada. Permite

@@ -3,6 +3,34 @@
 // - Caso base para Foundry 2D y para port a C++ en escenas 3D.
 // - PURO: sin Foundry, DOM, red, reloj ni Math.random().
 // - Testeable desde Node.
+//
+// Unidad de la rejilla: 1 celda = 5 pies (GRID_UNIT_FT), la casilla estándar
+// de mapa táctico D&D 5e. `obstaculosDesdeCajas` asume que las coordenadas
+// de las cajas que recibe YA vienen en esa unidad -- convertir desde metros u
+// otra unidad de escena es responsabilidad de quien llama, no de este core.
+
+/** Pies que representa un lado de celda. Ver la nota de unidad arriba. */
+export const GRID_UNIT_FT = 5;
+
+/**
+ * `Object.freeze` en un `Set` no impide `.add()`/`.delete()` -- solo congela
+ * las propiedades del objeto `Set`, no su estado interno. Esta envoltura es
+ * lo que de verdad impide mutar la colección de obstáculos que expone un
+ * grid, para que el contrato de "core puro" no se pueda romper por fuera.
+ */
+function congelarConjunto(set) {
+  return new Proxy(set, {
+    get(objetivo, propiedad, receptor) {
+      if (propiedad === "add" || propiedad === "delete" || propiedad === "clear") {
+        return () => {
+          throw new TypeError("obstaculos del grid es inmutable: crea un grid nuevo con crearGrid()");
+        };
+      }
+      const valor = Reflect.get(objetivo, propiedad, objetivo);
+      return typeof valor === "function" ? valor.bind(objetivo) : valor;
+    },
+  });
+}
 
 /**
  * Crea un grid rectángulo.
@@ -20,7 +48,7 @@ export function crearGrid(anchoCeldas, altoCeldas, obstaculos = new Set()) {
     if (typeof entrada === "string") set.add(entrada);
     else if (entrada && typeof entrada.x === "number" && typeof entrada.y === "number") set.add(`${entrada.x},${entrada.y}`);
   }
-  return Object.freeze({ anchoCeldas, altoCeldas, obstaculos: Object.freeze(set) });
+  return Object.freeze({ anchoCeldas, altoCeldas, obstaculos: congelarConjunto(set) });
 }
 
 /** ¿Celda dentro de límites? */
@@ -121,24 +149,40 @@ export function astar(grid, inicio, fin) {
 
 /**
  * Suaviza un camino A* eliminando puntos intermedios innecesarios.
- * No elimina inicio ni fin. No salta sobre obstáculos diagonales: solo
- * aplica la prueba directa entre dos nodos del camino original.
+ * No elimina inicio ni fin.
+ *
+ * Algoritmo del "punto más lejano visible": desde cada nodo retenido, busca
+ * el nodo MÁS LEJANO del camino original al que exista línea directa
+ * (`caminoDirecto`) y salta directamente a él. A diferencia de un barrido
+ * incremental que solo compara pares consecutivos, esto garantiza que TODO
+ * segmento del resultado -- incluido el último, hacia el destino -- ha sido
+ * validado por `caminoDirecto`: no puede colarse un tramo final sin probar.
  */
 export function suavizarCamino(grid, camino) {
   if (!camino || camino.length <= 2) return camino;
   const resultado = [camino[0]];
-  for (let i = 1; i < camino.length; i++) {
-    const anterior = resultado[resultado.length - 1];
-    const actual = camino[i];
-    if (!caminoDirecto(grid, anterior, actual)) {
-      resultado.push(camino[i - 1]);
+  let i = 0;
+  while (i < camino.length - 1) {
+    let j = camino.length - 1;
+    while (j > i + 1 && !caminoDirecto(grid, camino[i], camino[j])) {
+      j -= 1;
     }
+    resultado.push(camino[j]);
+    i = j;
   }
-  resultado.push(camino[camino.length - 1]);
   return resultado;
 }
 
-/** ¿Hay línea de celdas libres entre `a` y `b`? */
+/**
+ * ¿Hay línea de celdas libres entre `a` y `b`?
+ *
+ * No permite CORTAR ESQUINA: en cada paso diagonal (cuando el trazado de
+ * Bresenham avanza en x e y a la vez), si las DOS celdas ortogonales que
+ * forman esa esquina están bloqueadas, el paso se considera bloqueado aunque
+ * Bresenham nunca "pise" esas celdas -- de lo contrario un camino podría
+ * atravesar el punto exacto donde se tocan dos obstáculos en diagonal, algo
+ * que ninguna sala física permitiría.
+ */
 export function caminoDirecto(grid, a, b) {
   const dx = Math.abs(b.x - a.x);
   const dy = Math.abs(b.y - a.y);
@@ -151,15 +195,34 @@ export function caminoDirecto(grid, a, b) {
     if (x === b.x && y === b.y) return true;
     if (bloqueada(grid, x, y) && !(x === a.x && y === a.y)) return false;
     const e2 = 2 * err;
-    if (e2 > -dy) { err -= dy; x += sx; }
-    if (e2 < dx) { err += dx; y += sy; }
+    const avanzaX = e2 > -dy;
+    const avanzaY = e2 < dx;
+    const xAntes = x;
+    const yAntes = y;
+    if (avanzaX) { err -= dy; x += sx; }
+    if (avanzaY) { err += dx; y += sy; }
+    if (avanzaX && avanzaY) {
+      const esquinaA = bloqueada(grid, x, yAntes);
+      const esquinaB = bloqueada(grid, xAntes, y);
+      if (esquinaA && esquinaB) return false;
+    }
   }
 }
 
 /**
  * Marca obstáculos a partir de cajas alineadas a ejes.
+ *
+ * Las coordenadas de cada caja ya deben venir en celdas de grid (ver
+ * `GRID_UNIT_FT`), no en metros ni en la unidad nativa de la escena --
+ * convertir es responsabilidad de quien llama.
+ *
+ * Una caja parcialmente fuera del grid se RECORTA a la parte que cae dentro
+ * (`dentro()` descarta cada celda fuera de rango una por una); no se
+ * descarta la caja entera ni se rechaza la llamada. Es la política correcta
+ * para geometría de escena que puede extenderse más allá del área jugable.
+ *
  * @param {{anchoCeldas:number, altoCeldas:number, obstaculos:Set<string>}} grid
- * @param {{x:number, z:number, ancho:number, profundidad:number}[]} cajas
+ * @param {{x:number, z:number, ancho:number, profundidad:number}[]} cajas - en celdas de GRID_UNIT_FT
  * @returns {Set<string>}
  */
 export function obstaculosDesdeCajas(grid, cajas = []) {

@@ -3,13 +3,13 @@
 Estado del servidor HTTP embebido que EmptyEpsilon activa con la preferencia
 `httpserver=<puerto>`. Este inventario cumple el punto de la Fase 2 del
 roadmap («inventariar el API HTTP heredado») y fundamenta el diseño del
-puente ([`bridge/`](../bridge/), [`FOUNDRY.md`](FOUNDRY.md)).
+puente ([`bridge/`](../../bridge/), [`FOUNDRY.md`](../FOUNDRY.md)).
 
 Código fuente: `src/httpScriptAccess.cpp` (clase `EEHttpServer`, servidor de
 `sp::io::http::Server` de SeriousProton). Inventario por inspección de código
 (2026-07-12); el comportamiento de los tres endpoints está además confirmado
 en vivo contra un servidor headless local — véase la sección «Seguridad
-obligatoria» de [`FOUNDRY.md`](FOUNDRY.md) (PR #9).
+obligatoria» de [`FOUNDRY.md`](../FOUNDRY.md) (PR #9).
 
 ## Endpoints
 
@@ -40,7 +40,7 @@ obligatoria» de [`FOUNDRY.md`](FOUNDRY.md) (PR #9).
    (`docker/compose.yaml` no mapea el puerto 8080 al host).
 2. Todo acceso externo pasa por el puente, que solo admite operaciones de
    una lista blanca tipada y nunca reenvía Lua del cliente
-   ([`bridge/README.md`](../bridge/README.md)).
+   ([`bridge/README.md`](../../bridge/README.md)).
 3. `/get.lua` y `/set.lua` no se usan como base: están vacíos en upstream y,
    aunque se completaran, su diseño (funciones Lua en la query string) sigue
    siendo ejecución remota de código con otra sintaxis.

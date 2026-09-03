@@ -103,7 +103,7 @@ Evita reformateos masivos mezclados con cambios funcionales.
 
 ## Localización es-ES
 
-Toda traducción automática requiere revisión humana y contextual. Usa la [guía editorial de localización es-ES](docs/i18n-es-style-guide.md) para terminología, registro, placeholders y validación de catálogos.
+Toda traducción automática requiere revisión humana y contextual. Usa la [guía editorial de localización es-ES](docs/i18n/i18n-es-style-guide.md) para terminología, registro, placeholders y validación de catálogos.
 
 ## Commits
 

@@ -11,7 +11,7 @@
 // Puro: recibe un actor (o `null`) y el borrador actual, devuelve solo los
 // campos que cambian. Ni Foundry, ni DOM.
 
-import { CLASES, RAZAS } from "./cantina-avatar.mjs";
+import { CLASES, RAZAS } from "../cantina-avatar.mjs";
 
 /** Identificador de clase dnd5e (inglés, en minúsculas) → clave del SRD que
  * usa el avatar. Las doce coinciden 1 a 1 con las del SRD 5.1. */

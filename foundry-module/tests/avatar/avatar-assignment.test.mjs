@@ -6,7 +6,7 @@ import {
   assignAvatar,
   avatarDeUsuario,
   canAssignAvatar,
-} from "../scripts/avatar-assignment.mjs";
+} from "../../scripts/avatar/avatar-assignment.mjs";
 
 const MODULE_ID = "lagunak";
 

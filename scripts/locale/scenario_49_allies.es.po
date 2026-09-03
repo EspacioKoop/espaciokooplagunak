@@ -2760,7 +2760,7 @@ msgstr "La lista de instrucciones %s, %s y %s como componentes necesarios"
 #, lua-format
 msgctxt "doomsday-shipLog"
 msgid "Further inspection of Gregory Unruh's plans reveal notes in the margin: %s on %s, %s on %s, %s on %s"
-msgstr "Una inspección adicional de los planes de Gregory Unruh revela notas al margen: %s on %s, %s on %s, %s on %s"
+msgstr "Una inspección adicional de los planes de Gregory Unruh revela notas al margen: %s en %s, %s en %s, %s en %s"
 
 #: scripts/scenario_49_allies.lua:5999
 msgctxt "doomsday-shipLog"
@@ -2988,3 +2988,97 @@ msgstr "Nivel ganado: %s"
 msgctxt "msgMainscreen"
 msgid "Rank after military reductions due to ignominious defeat: %s"
 msgstr "Arranca después de las reducciones militares debido a la derrota ignominiosa: %s"
+
+#: Missing from scenario header
+msgid "The Arlenians are your allies. The Kraylors and Exuari are your enemies and will try to prevent you from completing your missions. Duration: approximately 30 minutes\n\nVersion 2 - Nov2024\n\nUSN Discord: https://discord.gg/PntGG3a where you can join a game online. There's one nearly every weekend. All experience levels are welcome."
+msgstr "Los arlenianos son tus aliados. Los kraylors y exuari son tus enemigos y tratarán de impedir que completes tus misiones. Duración: aproximadamente 30 minutos\n\nVersión 2 - Nov2024\n\nDiscord de la USN: https://discord.gg/PntGG3a donde puedes unirte a una partida en línea. Hay una casi todos los fines de semana. Todos los niveles de experiencia son bienvenidos."
+
+#: Missing from scenario header
+msgctxt "Enemies"
+msgid "Easier set of enemies"
+msgstr "Conjunto de enemigos más fácil"
+
+#: Missing from scenario header
+msgctxt "Enemies"
+msgid "Hard set of enemies"
+msgstr "Conjunto de enemigos más difícil"
+
+#: Missing from scenario header
+msgctxt "Enemies"
+msgid "Normal set of enemies"
+msgstr "Conjunto de enemigos normal"
+
+#: Missing from scenario header
+msgctxt "Missions"
+msgid "All"
+msgstr "Todos"
+
+#: Missing from scenario header
+msgctxt "Missions"
+msgid "Missions are conducted in random order"
+msgstr "Las misiones se llevan a cabo en orden aleatorio"
+
+#: Missing from scenario header
+msgctxt "Missions"
+msgid "One"
+msgstr "Uno"
+
+#: Missing from scenario header
+msgctxt "Missions"
+msgid "One mission is is selected at random (shorter duration)"
+msgstr "Una misión se selecciona al azar (duración más corta)"
+
+#: Missing from scenario header
+msgctxt "Murphy"
+msgid "Easy"
+msgstr "Fácil"
+
+#: Missing from scenario header
+msgctxt "Murphy"
+msgid "Hard"
+msgstr "Difícil"
+
+#: Missing from scenario header
+msgctxt "Murphy"
+msgid "Murphy generally smiles on you"
+msgstr "Murphy generalmente sonríe para ti"
+
+#: Missing from scenario header
+msgctxt "Murphy"
+msgid "Murphy is in particularly strong form today"
+msgstr "Murphy está en particularmente fuerte forma hoy"
+
+#: Missing from scenario header
+msgctxt "Murphy"
+msgid "Normal"
+msgstr "Normal"
+
+#: Missing from scenario header
+msgctxt "Murphy"
+msgid "The normal distribution of the odds against you"
+msgstr "La distribución normal de las probabilidades en tu contra"
+
+#: Missing from scenario header
+msgctxt "setting"
+msgid "Configures how the odds are stacked against you - Murphy's law."
+msgstr "Configura cómo se apilan las probabilidades en tu contra - la ley de Murphy."
+
+#: Missing from scenario header
+msgctxt "setting"
+msgid "Configures the strength and/or number of enemy forces"
+msgstr "Configura la fuerza y/o el número de fuerzas enemigas"
+
+#: Missing from scenario header
+msgctxt "setting"
+msgid "Missions"
+msgstr "Misiones"
+
+#: Missing from scenario header
+msgctxt "setting"
+msgid "Murphy"
+msgstr "Murphy"
+
+#: Missing from scenario header
+msgctxt "setting"
+msgid "Configures the way missions work"
+msgstr "Configura cómo funcionan las misiones"

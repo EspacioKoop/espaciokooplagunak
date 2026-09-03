@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { componerAvatarPreview } from "../scripts/avatar-preview.mjs";
-import { afirmarOrdenPorPintor } from "./ayuda-orden-pintor.mjs";
+import { componerAvatarPreview } from "../../scripts/avatar/avatar-preview.mjs";
+import { afirmarOrdenPorPintor } from "../ayuda-orden-pintor.mjs";
 
 test("compone una escena con polígonos ordenados por profundidad", () => {
   const escena = componerAvatarPreview({ raza: "humano", clase: "guerrero", gesto: "saludo" });

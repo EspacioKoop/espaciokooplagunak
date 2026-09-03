@@ -9,7 +9,7 @@ un servicio apto para Internet.
 
 El activo de mayor riesgo es el endpoint heredado `/exec.lua`: ejecuta Lua
 arbitrario sin autenticación. La decisión vinculante es
-[ADR-0001](adr/0001-exec-lua-nunca-expuesto.md): el puerto 8080 permanece en la
+[ADR-0001](../adr/0001-exec-lua-nunca-expuesto.md): el puerto 8080 permanece en la
 red interna de Compose y el puente es su único cliente.
 
 ## Flujo de datos y fronteras
@@ -43,9 +43,9 @@ flowchart LR
    y queda fuera de este modelo salvo cuando una acción del puente modifica el
    mismo estado autoritativo de la nave.
 
-Fuentes de arquitectura: [`ARQUITECTURA.md`](ARQUITECTURA.md),
-[`FOUNDRY.md`](FOUNDRY.md) y
-[`docker/compose.yaml`](../docker/compose.yaml).
+Fuentes de arquitectura: [`ARQUITECTURA.md`](../ARQUITECTURA.md),
+[`FOUNDRY.md`](../FOUNDRY.md) y
+[`docker/compose.yaml`](../../docker/compose.yaml).
 
 ## Activos
 
@@ -144,7 +144,7 @@ Una contribución requiere revisión de seguridad específica si:
 - cambia CORS, rate limit, timeouts, límites de tamaño o tratamiento de errores;
 - añade reintentos de órdenes mutables sin idempotencia;
 - modifica la autoridad de datos definida en
-  [ADR-0002](adr/0002-autoridad-de-datos-foundry-vs-simulacion.md).
+  [ADR-0002](../adr/0002-autoridad-de-datos-foundry-vs-simulacion.md).
 
 Ante cualquiera de esos cambios deben actualizarse este modelo, las pruebas
 adversariales aplicables y la documentación de despliegue. Una prueba verde no

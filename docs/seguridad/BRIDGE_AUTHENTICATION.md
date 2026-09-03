@@ -114,5 +114,5 @@ público requiere una arquitectura de credenciales distinta; no debe ampliar la
 exposición del puente actual.
 
 Véanse también el [modelo de amenazas](BRIDGE_THREAT_MODEL.md), la
-[configuración Docker](../docker/README.md) y la [política de
-seguridad](../SECURITY.md).
+[configuración Docker](../../docker/README.md) y la [política de
+seguridad](../../SECURITY.md).

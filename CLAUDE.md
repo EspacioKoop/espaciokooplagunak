@@ -32,7 +32,7 @@ escenarios/lógica de misión en Lua.
 
 Este archivo recoge solo **hechos duraderos**. El roadmap por fases (0–5) y qué característica está
 integrada viven en el `README.md`; el estado operativo (qué hay en vuelo, bloqueos, traspasos) se
-sigue en el issue de coordinación [#14](https://github.com/VaroTv7/espaciokooplagunak/issues/14) y en
+sigue en el issue de coordinación [#14](https://github.com/EspacioKoop/espaciokooplagunak/issues/14) y en
 los issues/PRs abiertos — no lo dupliques aquí: si un dato necesita actualizarse cada semana, no
 pertenece a este archivo.
 
@@ -615,7 +615,7 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
 
 ## Flujo git
 
-- `origin` = `VaroTv7/espaciokooplagunak`; `upstream` = `daid/EmptyEpsilon`. Nunca apuntes `upstream`
+- `origin` = `EspacioKoop/espaciokooplagunak`; `upstream` = `daid/EmptyEpsilon`. Nunca apuntes `upstream`
   a otro sitio ni incluyas tokens en URLs de remotos.
 - Ramas desde `main`: `feature/`, `fix/`, `docs/`, `test/`, `chore/`, `upstream/`. Todo llega a
   `main` por pull request.

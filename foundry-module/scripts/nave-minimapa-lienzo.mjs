@@ -8,7 +8,7 @@
 // Separado del modelo por la misma regla que el resto del módulo: `nave-minimapa`
 // decide qué salas hay y cuál es la tuya, y esto solo lo pone en píxeles.
 
-import { cajaEnPixeles, medidas } from "./seccion-lienzo.mjs";
+import { cajaEnPixeles, medidas } from "./seccion-nave/seccion-lienzo.mjs";
 import { SECCION } from "./paleta.mjs";
 
 /** Cuánto se separa una sala de la siguiente, para que se vean los tabiques. */

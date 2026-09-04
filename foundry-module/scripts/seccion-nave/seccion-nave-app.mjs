@@ -13,7 +13,7 @@
  * `ApplicationV2` en v12+, sin código compartido entre ellas a propósito.
  */
 
-import { MODULE_ID } from "./lagunak-constantes.mjs";
+import { MODULE_ID } from "../lagunak-constantes.mjs";
 import {
   componerSeccion,
   salaEnCelda,

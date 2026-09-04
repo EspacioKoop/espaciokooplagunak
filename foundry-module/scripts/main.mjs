@@ -77,9 +77,9 @@ import { crearClaseCantinaV1, crearClaseCantinaV2 } from "./cantina-app.mjs";
 import { puertaPorId } from "./cantina.mjs";
 import { crearClasePanelGMV1, crearClasePanelGMV2 } from "./panel-gm-app.mjs";
 import { construirHerramientasGM } from "./herramientas-gm-catalogo.mjs";
-import { crearClaseSeccionV1, crearClaseSeccionV2 } from "./seccion-nave-app.mjs";
+import { crearClaseSeccionV1, crearClaseSeccionV2 } from "./seccion-nave/seccion-nave-app.mjs";
 import { crearClaseAndarV1, crearClaseAndarV2 } from "./andar-nave-app.mjs";
-import { salaDePuesto } from "./seccion-nave.mjs";
+import { salaDePuesto } from "./seccion-nave/seccion-nave.mjs";
 import { registrarPreset as registrarPresetBaraja } from "./minijuegos/baraja-preset.mjs";
 import {
   crearClaseMesaDadosV1,

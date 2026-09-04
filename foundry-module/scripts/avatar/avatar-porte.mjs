@@ -15,21 +15,22 @@
  * rama por tipo de objeto: esa ausencia es la prueba de que el contrato está en
  * el sitio correcto.
  *
- * DE MOMENTO SOLO CAJAS. Las piezas de un avatar viajan como
- * `{nombre, color, centro, medidas}` y sus cuatro consumidores las convierten en
- * malla con `caja`/`cajaGirada`. Un objeto de malla libre —la espada de 107
- * caras de la sonda de #976— no cabe por ese contrato sin ensancharlo en los
- * cuatro sitios, y eso es una decisión aparte que no se cuela dentro de esta.
+ * NO SOLO CAJAS. Una pieza puede traer `malla` en vez de `medidas`, y
+ * `mallaDePieza` (en `escena-primitivas.mjs`) resuelve las dos por igual. Hacía
+ * falta para la espada: su hoja es un prisma de cuatro lados que se estrecha
+ * hasta la punta, y aproximarla con ortoedros la deja acabada en cuadrado, sin
+ * punta y sin filo. Una pieza sin `malla` sigue siendo exactamente lo que era.
  *
  * Frontera de arte (#351): ni un color propio, todos de `paleta.mjs`.
  * Puro: ni Foundry, ni DOM, ni red, ni reloj.
  */
 
+import { prisma } from "../escena-primitivas.mjs";
 import { AVATAR } from "../paleta.mjs";
 import { sombrear } from "../retro3d.mjs";
 
 /** El catálogo cerrado. Un objeto nuevo es una entrada más, nunca una rama. */
-export const PORTE = Object.freeze(["jarra", "linterna", "tablilla"]);
+export const PORTE = Object.freeze(["espada", "jarra", "linterna", "tablilla"]);
 
 /**
  * Cada entrada declara `agarre` y `piezas`, las dos en coordenadas del OBJETO
@@ -37,6 +38,35 @@ export const PORTE = Object.freeze(["jarra", "linterna", "tablilla"]);
  * una mano.
  */
 const DEFINICIONES = Object.freeze({
+  // La espada. Su hoja es un prisma de CUATRO lados girado 45°: esa sección en
+  // rombo es lo que le da filo y arista central, y con las caras planas de este
+  // motor el filo se lee como un cambio de tono. Con cajas se acabaría en
+  // cuadrado, que es un listón y no un arma.
+  espada: Object.freeze({
+    // Se coge por el mango: el puño queda entre la guarda y el pomo.
+    agarre: Object.freeze([0, -0.165, 0]),
+    piezas: () => {
+      const rombo = { lados: 4, giro: Math.PI / 4 };
+      const acero = AVATAR.acero;
+      const claro = sombrear(acero, 1.18);
+      const hueco = sombrear(acero, 0.55);
+      const cuero = AVATAR.madera;
+      const malla = (m, color, sufijo) => ({ sufijo, color, centro: [0, 0, 0], malla: m });
+      return [
+        malla(prisma([0, 0, 0], { ...rombo, radioAbajo: 0.05, radioArriba: 0.048, alto: 0.09, tapaAbajo: true }), acero, "EspadaRicasso"),
+        malla(prisma([0, 0.09, 0], { ...rombo, radioAbajo: 0.048, radioArriba: 0.034, alto: 0.73 }), claro, "EspadaHoja"),
+        malla(prisma([0, 0.82, 0], { ...rombo, radioAbajo: 0.034, radioArriba: 0.004, alto: 0.18 }), claro, "EspadaPunta"),
+        ...[1, -1].map((lado, i) => malla(
+          prisma([lado * 0.026, 0.09, lado * 0.026], { ...rombo, radioAbajo: 0.016, radioArriba: 0.01, alto: 0.69 }),
+          hueco, `EspadaVaceo${i}`)),
+        { sufijo: "EspadaGavilan", color: claro, centro: [0, -0.025, 0], medidas: [0.143, 0.055, 0.06] },
+        { sufijo: "EspadaRemateDer", color: claro, centro: [0.143, -0.025, 0], medidas: [0.045, 0.06, 0.06] },
+        { sufijo: "EspadaRemateIzq", color: claro, centro: [-0.143, -0.025, 0], medidas: [0.045, 0.06, 0.06] },
+        malla(prisma([0, -0.275, 0], { radioAbajo: 0.021, radioArriba: 0.025, alto: 0.22, lados: 8, tapaAbajo: true }), cuero, "EspadaPuno"),
+        malla(prisma([0, -0.325, 0], { radioAbajo: 0.024, radioArriba: 0.05, alto: 0.05, lados: 8, tapaAbajo: true }), acero, "EspadaPomo"),
+      ];
+    },
+  }),
   // La jarra de la cantina. Se coge por el asa, que no está en su eje: el
   // agarre va desplazado en x, y solo con eso ya cuelga bien.
   jarra: Object.freeze({

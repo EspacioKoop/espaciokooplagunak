@@ -125,8 +125,33 @@ test("el catálogo es cerrado y todas sus entradas se pueden colgar", () => {
     for (const pieza of piezas) {
       assert.equal(typeof pieza.color, "string");
       assert.equal(pieza.centro.length, 3);
-      assert.equal(pieza.medidas.length, 3);
       assert.ok(pieza.centro.every(Number.isFinite), `centro no finito en ${pieza.nombre}`);
+      // Una pieza es caja O malla, nunca ninguna de las dos: si no trae medidas
+      // ni malla, no hay nada que dibujar y el fallo aparecería en pantalla.
+      const esCaja = Array.isArray(pieza.medidas) && pieza.medidas.length === 3;
+      const esMalla = pieza.malla && Array.isArray(pieza.malla.vertices) && Array.isArray(pieza.malla.caras);
+      assert.ok(esCaja || esMalla, `${pieza.nombre} no es ni caja ni malla`);
+      if (esMalla) {
+        assert.ok(pieza.malla.vertices.length >= 3, `malla vacía en ${pieza.nombre}`);
+        for (const v of pieza.malla.vertices) {
+          assert.ok(v.every(Number.isFinite), `vértice no finito en ${pieza.nombre}`);
+        }
+      }
     }
   }
+});
+
+test("una pieza de malla se traslada al anclaje igual que una caja", () => {
+  const espada = sostener("espada", [1, 2, 3]);
+  const hoja = espada.find((p) => p.nombre.endsWith("EspadaHoja"));
+  assert.ok(hoja.malla, "la hoja es malla, no caja: con un ortoedro no hay punta");
+  // El agarre de la espada es [0, -0.165, 0], así que su origen acaba 0,165 m
+  // por encima de la mano y el puño cae en el mango.
+  assert.deepEqual(hoja.centro, [1, 2 + 0.165, 3]);
+});
+
+test("la espada convive con las cajas en el mismo catálogo", () => {
+  const conMalla = sostener("espada", [0, 1, 0]).some((p) => p.malla);
+  const conCaja = sostener("jarra", [0, 1, 0]).every((p) => !p.malla && p.medidas);
+  assert.ok(conMalla && conCaja, "el catálogo admite las dos formas sin ramificar en quien cuelga");
 });

@@ -214,7 +214,7 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     `docs/ECOSISTEMA_MODULOS_FOUNDRY.md`: recoge la regla de admisión (una dependencia puede degradar
     la presentación y nunca la autoridad), los descartes ya razonados —socketlib, sequencer/JB2A,
     documentos `Cards`— y por qué FXMaster es la única integración aceptada.
-  - **Telemetría a modelo visual** — `scripts/ship-view.mjs` y `scripts/barras-estado.mjs`
+  - **Telemetría a modelo visual** — `scripts/ship-view/ship-view.mjs` y `scripts/ship-view/barras-estado.mjs`
     convierten el estado crudo en porcentajes y niveles de severidad, sin tocar el DOM: las
     plantillas de V1/V2 solo consumen su salida.
   - **Arte procedural** — generado en el cliente, cero binarios en el repositorio. Los colores viven

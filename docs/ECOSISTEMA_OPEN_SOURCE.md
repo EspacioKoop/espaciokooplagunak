@@ -78,7 +78,26 @@ funcionando.
 **estorba** si rompe esa frontera. El sitio natural de los assets externos es lo que no
 tiene estética propia — sonido de interfaz—, no los muros de la nave.
 
-## Capa 4 — Datos (donde más hay que ganar)
+## Capa 4 — Puente (Python)
+
+`bridge/` ya depende de `fastapi`, `uvicorn` y `httpx` — MIT/BSD, sin fricción con
+GPL-2.0 y ya declarados en `requirements.txt`. Lo que sigue no es esa capa (eso no
+es investigación, ya está resuelto); es qué más del ecosistema Python encajaría en
+lo que el puente todavía hace a mano.
+
+| Proyecto | Licencia | Veredicto | Por qué |
+|---|---|---|---|
+| [slowapi](https://github.com/laurentS/slowapi) | MIT | **Descartar** | Limitador de frecuencia para FastAPI. `rate_limit.py` es un *token bucket* de 29 líneas, sin dependencias, ajustado a «una mesa de juego» — el criterio 4 de `ECOSISTEMA_MODULOS_FOUNDRY.md` (copiar el patrón sale más barato que heredar el módulo) ya se cumplió antes de que este documento existiera |
+| [PyJWT](https://github.com/jpadilla/pyjwt) / [python-jose](https://github.com/mpdavis/python-jose) | MIT | **Inspiración**, no hace falta hoy | El puente autentica hoy con un token opaco de sesión (`bridge-token-session.mjs` en el lado Foundry, solo en memoria del GM). Si algún día el contrato v0 necesita tokens firmados con expiración verificable en vez de un secreto compartido, aquí está el patrón; traerlo ahora sería una dependencia para un problema que no tenemos |
+| [pydantic-settings](https://github.com/pydantic/pydantic-settings) | MIT | **Copiar el patrón** | `pydantic` ya llega transitivamente con FastAPI. La configuración del puente hoy es variables de entorno leídas a mano en `app.py`; si crece, el patrón de `pydantic-settings` (modelo tipado desde env) es más barato de escribir a mano con lo que ya está instalado que de añadir como dependencia nueva |
+| [websockets](https://github.com/python-websockets/websockets) | BSD-3-Clause | **Inspiración** | El contrato v0 del puente es HTTP request/response, no push. Si `bridge/` necesita alguna vez empujar eventos al módulo Foundry en vez de que este haga *polling* (como hace hoy la consola caliente, `consola-caliente-poll.mjs`), aquí está la implementación de referencia — pero eso es una decisión de arquitectura del contrato v0, no algo que este catálogo autorice |
+
+**Lo que de verdad sale de aquí:** la capa Python es la que menos hueco tiene para
+candidatos nuevos, precisamente porque `bridge/` ya es pequeño y ya usa las tres
+piezas permisivas que necesitaba. El patrón se repite: nada de esta capa se declara
+solo porque exista.
+
+## Capa 5 — Datos (donde más hay que ganar)
 
 | Fuente | Licencia | Veredicto | Por qué |
 |---|---|---|---|

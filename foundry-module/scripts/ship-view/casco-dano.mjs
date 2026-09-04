@@ -2,8 +2,8 @@
 // (#419). Este módulo es puro: declara dónde vive cada sistema y compone las
 // caras mediante el motor 3D existente, sin tocar Canvas ni Foundry.
 
-import { componerEscena, fundirEscenas } from "./retro3d.mjs";
-import { FACCIONES, PIXEL, SISTEMA } from "./paleta.mjs";
+import { componerEscena, fundirEscenas } from "../retro3d.mjs";
+import { FACCIONES, PIXEL, SISTEMA } from "../paleta.mjs";
 
 /**
  * Regiones de la topología del casco de serie, por índice de cara de

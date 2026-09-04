@@ -4,7 +4,9 @@ import test from "node:test";
 import {
   NATURALEZAS,
   cartelaDe,
+  getPiezaCatalogada,
   piezaPorId,
+  registrarCatalogoPiezas,
   validarCatalogoPiezas,
 } from "../scripts/catalogo-piezas.mjs";
 import { CosmographyValidationError } from "../scripts/catalogo-cosmografico.mjs";
@@ -136,4 +138,37 @@ test("buscar una pieza que no está responde null, no revienta", () => {
   assert.equal(piezaPorId(catalogo, "pieza-uno").id, "pieza-uno");
   assert.equal(piezaPorId(catalogo, "no-existe"), null);
   assert.equal(piezaPorId(null, "pieza-uno"), null);
+});
+
+/** Como `catalogoValido()`, pero con un id que ningún otro test de este
+ *  fichero usa: el registro es un Map a nivel de módulo y persiste entre
+ *  tests, así que reusar "pieza-uno" aquí colisionaría con otro test. */
+function catalogoConId(id) {
+  const catalogo = catalogoValido();
+  catalogo.piezas[0].id = id;
+  catalogo.piezas[0].malla = id;
+  return catalogo;
+}
+
+test("getPiezaCatalogada resuelve una pieza registrada sin conocer su catálogo (#598)", () => {
+  const catalogo = catalogoConId("registro-uno");
+  registrarCatalogoPiezas(catalogo);
+  assert.equal(getPiezaCatalogada("registro-uno"), catalogo.piezas[0]);
+  assert.equal(getPiezaCatalogada("no-existe-en-ningun-catalogo"), null);
+});
+
+test("registrar el mismo catálogo dos veces no revienta (misma pieza, no duplicado)", () => {
+  const catalogo = catalogoConId("registro-dos");
+  registrarCatalogoPiezas(catalogo);
+  // Segunda vez: es el MISMO objeto de catálogo, así que sus piezas son el
+  // mismo objeto por identidad y no cuentan como duplicado entre catálogos.
+  registrarCatalogoPiezas(catalogo);
+  assert.equal(getPiezaCatalogada("registro-dos"), catalogo.piezas[0]);
+});
+
+test("dos catálogos distintos con el mismo id de pieza es un error, no un silencio", () => {
+  const uno = catalogoConId("registro-tres");
+  const otro = catalogoConId("registro-tres");
+  registrarCatalogoPiezas(uno);
+  assert.throws(() => registrarCatalogoPiezas(otro), /Pieza duplicada/);
 });

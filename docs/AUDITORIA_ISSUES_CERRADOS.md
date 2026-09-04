@@ -1,13 +1,13 @@
 # Auditoría de issues cerrados y trabajo recuperable
 
-Este documento entrega la parte documental de [#617](https://github.com/VaroTv7/espaciokooplagunak/issues/617).
+Este documento entrega la parte documental de [#617](https://github.com/EspacioKoop/espaciokooplagunak/issues/617).
 La auditoría no decide qué trabajo debe retomarse: conserva evidencia y deja las
 opciones a una decisión humana.
 
 ## Método reproducible
 
 La herramienta [`tools/auditar_area.py`](../tools/auditar_area.py), entregada en
-[#624](https://github.com/VaroTv7/espaciokooplagunak/pull/624), sigue esta cadena:
+[#624](https://github.com/EspacioKoop/espaciokooplagunak/pull/624), sigue esta cadena:
 
 ```text
 issue cerrado → PR mergeado que lo referencia → ficheros modificados

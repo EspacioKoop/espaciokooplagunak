@@ -6,9 +6,9 @@ import {
   cascoDeClase,
   claveDeClase,
   mallaDeClase,
-} from "../scripts/casco-clases.mjs";
-import { CASCO_POR_DEFECTO } from "../scripts/retro3d.mjs";
-import { desmontarLamina, montarLaminaContacto } from "../scripts/lamina-contacto.mjs";
+} from "../../scripts/ship-view/casco-clases.mjs";
+import { CASCO_POR_DEFECTO } from "../../scripts/retro3d.mjs";
+import { desmontarLamina, montarLaminaContacto } from "../../scripts/lamina-contacto.mjs";
 
 test("una clase desconocida dibuja el casco de serie, no un hueco", () => {
   // El catálogo del juego crece sin avisar a este módulo, así que la clase que

@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Ubicación canónica
+
+El trabajo activo vive exclusivamente en [`EspacioKoop/espaciokooplagunak`](https://github.com/EspacioKoop/espaciokooplagunak). Usa esa organización en GitHub, API, issues, pull requests y remotos. `VaroTv7/espaciokooplagunak` queda solo como redirección histórica y no es un destino válido para trabajo nuevo.
+
 ## Lectura obligatoria
 
 Este repositorio ya define un contrato operativo para agentes de IA en [`AGENTS.md`](AGENTS.md) —
@@ -32,7 +36,7 @@ escenarios/lógica de misión en Lua.
 
 Este archivo recoge solo **hechos duraderos**. El roadmap por fases (0–5) y qué característica está
 integrada viven en el `README.md`; el estado operativo (qué hay en vuelo, bloqueos, traspasos) se
-sigue en el issue de coordinación [#14](https://github.com/VaroTv7/espaciokooplagunak/issues/14) y en
+sigue en el issue de coordinación [#14](https://github.com/EspacioKoop/espaciokooplagunak/issues/14) y en
 los issues/PRs abiertos — no lo dupliques aquí: si un dato necesita actualizarse cada semana, no
 pertenece a este archivo.
 
@@ -214,7 +218,7 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     `docs/ECOSISTEMA_MODULOS_FOUNDRY.md`: recoge la regla de admisión (una dependencia puede degradar
     la presentación y nunca la autoridad), los descartes ya razonados —socketlib, sequencer/JB2A,
     documentos `Cards`— y por qué FXMaster es la única integración aceptada.
-  - **Telemetría a modelo visual** — `scripts/ship-view.mjs` y `scripts/barras-estado.mjs`
+  - **Telemetría a modelo visual** — `scripts/ship-view/ship-view.mjs` y `scripts/ship-view/barras-estado.mjs`
     convierten el estado crudo en porcentajes y niveles de severidad, sin tocar el DOM: las
     plantillas de V1/V2 solo consumen su salida.
   - **Arte procedural** — generado en el cliente, cero binarios en el repositorio. Los colores viven
@@ -629,7 +633,7 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
 
 ## Flujo git
 
-- `origin` = `VaroTv7/espaciokooplagunak`; `upstream` = `daid/EmptyEpsilon`. Nunca apuntes `upstream`
+- `origin` = `EspacioKoop/espaciokooplagunak`; `upstream` = `daid/EmptyEpsilon`. Nunca apuntes `upstream`
   a otro sitio ni incluyas tokens en URLs de remotos.
 - Ramas desde `main`: `feature/`, `fix/`, `docs/`, `test/`, `chore/`, `upstream/`. Todo llega a
   `main` por pull request.

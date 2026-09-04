@@ -75,6 +75,53 @@ export function caja([cx, cy, cz], [ancho, alto, fondo], { metrosPorTextura = ME
 
 
 /**
+ * Una caja girada sobre su eje vertical, por su centro, sus medidas y su rumbo.
+ *
+ * POR QUÉ HACE FALTA. `caja` está alineada con los ejes, que es lo correcto para
+ * un armario atornillado a un mamparo: los muebles de una nave no están
+ * torcidos. Pero una PERSONA sí gira, y hasta que existió esto no había forma de
+ * dibujar a nadie mirando a donde va — la limitación que `nave-avatares-render.mjs`
+ * declaró y aparcó, porque girar exigía «rotar la malla entera por vértice antes
+ * de proyectarla».
+ *
+ * Resulta que rotar por vértice es esto: ocho puntos y dos multiplicaciones cada
+ * uno. Lo caro nunca fue la rotación, era no tener dónde ponerla.
+ *
+ * MISMO CONVENIO QUE EL MOVIMIENTO. `yaw = 0` mira a +z y el avance es
+ * `(sen yaw, cos yaw)` en (x, z), igual que `moverXZ` en `nave-movimiento.mjs`.
+ * Así el rumbo que viaja por la red se puede pasar aquí tal cual, sin invertir
+ * ningún signo — y un signo invertido en un giro es de los errores que se ven
+ * pero no se leen.
+ *
+ * LAS UV NO GIRAN. Se calculan igual que en `caja`, porque cada cara sigue
+ * midiendo lo que medía: girar una pieza no cambia el tamaño de su grano, que es
+ * lo que `METROS_POR_TEXTURA` protege. Girar también las UV haría que el mismo
+ * tablón enseñara distinta densidad de veta según hacia dónde mire.
+ */
+export function cajaGirada([cx, cy, cz], [ancho, alto, fondo], yaw = 0, { metrosPorTextura = METROS_POR_TEXTURA } = {}) {
+  const plana = caja([0, 0, 0], [ancho, alto, fondo], { metrosPorTextura });
+  if (!Number.isFinite(yaw) || yaw === 0) {
+    return {
+      ...plana,
+      vertices: plana.vertices.map(([x, y, z]) => [x + cx, y + cy, z + cz]),
+    };
+  }
+  const sen = Math.sin(yaw);
+  const cos = Math.cos(yaw);
+  return {
+    ...plana,
+    // Giro sobre el centro de la propia caja y DESPUÉS traslación: al revés
+    // sería una caja orbitando el origen de la sala, que es el mismo error que
+    // `cantina-escena.mjs` documenta para la cámara.
+    vertices: plana.vertices.map(([x, y, z]) => [
+      cx + x * cos + z * sen,
+      cy + y,
+      cz - x * sen + z * cos,
+    ]),
+  };
+}
+
+/**
  * Las UV de una caja, una por cara y medidas en metros.
  *
  * Cada cara toma como ejes de la textura sus dos dimensiones REALES, no un

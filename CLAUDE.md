@@ -562,10 +562,17 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     de un hueso»: un catálogo de puntos escritos a mano sería una segunda forma de decir lo mismo, que
     es de donde salió el problema. Tres consecuencias que no son extras: un ancla trae **orientación**
     (la dirección de su padre a él), un **gesto es una pose parcial** sobre el reposo y no una lista
-    de posiciones absolutas —«quieto» es la pose vacía—, y el **rumbo es un giro del hueso raíz**. Ojo
-    con esto último: el rig sitúa bien los puntos con `yaw`, pero `caja` es axis-aligned, así que
-    girar el CUERPO sigue pendiente de rotar vértices — la limitación que `nave-avatares-render.mjs`
-    declara sigue en pie, sólo que ahora le falta la mitad. La frontera con `cantina-avatar.mjs` es
+    de posiciones absolutas —«quieto» es la pose vacía—, y el **rumbo es un giro del hueso raíz**. Y el rumbo
+    **ya se aplica** (#897): `escena-primitivas.cajaGirada` rota los ocho vértices sobre el centro de
+    la caja, así que el cuerpo de cada jugador mira a donde va. Eso cierra la limitación que
+    `nave-avatares-render.mjs` declaraba y aparcaba —«girar exigiría rotar la malla entera por
+    vértice»—, que resultó costar dos multiplicaciones por vértice: lo que faltaba no era el cálculo
+    sino dónde ponerlo. El dato tampoco era nuevo: `yaw` viaja en la muestra de red desde #453,
+    `nave-movimiento-red.mjs` lo interpola con cuidado de ángulos y llegaba hasta el render dentro de
+    cada jugador, que lo descartaba en la última línea. Mismo convenio en toda la cadena —`yaw = 0`
+    mira a +z, avance `(sen yaw, cos yaw)`, igual que `moverXZ`—, así que no se invierte ningún signo.
+    Los avatares SENTADOS de la cantina siguen sin girar y ahí sigue estando bien: están colocados de
+    cara a la barra a propósito (`SITIOS`). La frontera con `cantina-avatar.mjs` es
     estricta y evita el ciclo: allí se sabe QUIÉN es alguien (raza, silueta, las tablas del SRD) y se
     entregan MEDIDAS (`medidasDeAvatar`); el rig no conoce ni una raza.
   - **Visor del piloto** — `scripts/visor-piloto.mjs` (geometría pura) y

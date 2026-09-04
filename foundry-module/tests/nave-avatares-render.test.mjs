@@ -102,3 +102,74 @@ test("el yaw de la cámara se traslada a la proyección de los avatares, igual q
   assert.ok(sinGirar.length > 0);
   assert.deepEqual(girado180, []);
 });
+
+/* ---- el cuerpo gira con el rumbo (#897) ------------------------------------ */
+
+/** Los polígonos de un jugador, con la cámara donde la pone la nave. */
+function pintar(jugador) {
+  return poligonosOtrosJugadores([jugador], {
+    camara: [0, 1.45, 0],
+    yaw: 0,
+    ancho: 320,
+    alto: 240,
+    epoca: "psx",
+    fov: 70,
+  });
+}
+
+const QUIEN = Object.freeze({ x: 0, y: 0, z: 2.6, avatar: { clase: "guerrero", gesto: "saludo" } });
+
+test("sin rumbo declarado se dibuja lo mismo que se dibujaba antes", () => {
+  // La garantía de no-regresión: un jugador que no publique `yaw` —o que
+  // publique basura— sale exactamente como salía cuando este módulo lo
+  // ignoraba. Nadie desaparece por un dato que falte.
+  const referencia = JSON.stringify(pintar({ ...QUIEN, yaw: 0 }));
+  for (const yaw of [undefined, null, Number.NaN, "norte"]) {
+    assert.equal(JSON.stringify(pintar({ ...QUIEN, yaw })), referencia, `cambió con yaw=${JSON.stringify(yaw)}`);
+  }
+});
+
+test("el cuerpo gira: media vuelta no se dibuja igual que de frente", () => {
+  // Ésta es la prueba que habría fallado durante todo el tiempo que `yaw` viajó
+  // por la red y se descartó en la última línea de este módulo.
+  const frente = JSON.stringify(pintar({ ...QUIEN, yaw: 0 }));
+  for (const yaw of [Math.PI / 2, Math.PI, -Math.PI / 2]) {
+    assert.notEqual(JSON.stringify(pintar({ ...QUIEN, yaw })), frente, `no giró con yaw=${yaw}`);
+  }
+});
+
+test("lo que se lleva en la cara cambia de lado al darse la vuelta", () => {
+  // Lo que hace que el giro sea un giro y no un temblor: el cigarro va DELANTE
+  // del cuerpo, así que al girar cambia de lado en profundidad.
+  //
+  // Ojo al convenio, que es contraintuitivo la primera vez: `yaw = 0` mira a
+  // +z, y la cámara está en el origen mirando también a +z. O sea que un
+  // avatar sin rumbo está DE ESPALDAS a quien lo mira, y es a media vuelta
+  // cuando te da la cara. Por eso lo cercano se acerca con `yaw = π`.
+  const fumador = { ...QUIEN, avatar: { clase: "monje", gesto: "fumar" } };
+  const masCerca = (yaw) => Math.min(...pintar({ ...fumador, yaw }).map((p) => p.profundidad));
+  const masLejos = (yaw) => Math.max(...pintar({ ...fumador, yaw }).map((p) => p.profundidad));
+  assert.ok(
+    masCerca(Math.PI) < masCerca(0),
+    `de cara no se acercó nada (${masCerca(0)} → ${masCerca(Math.PI)})`,
+  );
+  assert.ok(
+    masLejos(Math.PI) < masLejos(0),
+    `de cara no se retiró nada (${masLejos(0)} → ${masLejos(Math.PI)})`,
+  );
+});
+
+test("cada quien gira por su cuenta", () => {
+  // Dos personas en el mismo sitio con rumbos distintos no pueden salir igual:
+  // si el giro se leyera de una variable compartida —el yaw de la cámara, por
+  // ejemplo— aquí saldrían idénticas.
+  const a = poligonosOtrosJugadores(
+    [{ ...QUIEN, yaw: 0 }, { ...QUIEN, x: 1, yaw: Math.PI / 2 }],
+    { camara: [0, 1.45, 0], yaw: 0, ancho: 320, alto: 240, epoca: "psx", fov: 70 },
+  );
+  const b = poligonosOtrosJugadores(
+    [{ ...QUIEN, yaw: 0 }, { ...QUIEN, x: 1, yaw: 0 }],
+    { camara: [0, 1.45, 0], yaw: 0, ancho: 320, alto: 240, epoca: "psx", fov: 70 },
+  );
+  assert.notEqual(JSON.stringify(a), JSON.stringify(b), "el segundo jugador no usó su propio rumbo");
+});

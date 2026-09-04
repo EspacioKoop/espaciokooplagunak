@@ -134,7 +134,7 @@ export function medidasDeAvatar(descripcion, pies = [0, 0, 0]) {
  * medidas}`— para que la escena no distinga a una persona de un taburete y no
  * haga falta ni un pintor nuevo ni una rama en `componerCantina`.
  */
-export function piezasAvatar(descripcion, { pies = [0, 0, 0], indice = 0, tiempo = 0 } = {}) {
+export function piezasAvatar(descripcion, { pies = [0, 0, 0], indice = 0, tiempo = 0, yaw = 0 } = {}) {
   const av = normalizarAvatar(descripcion);
   const medidas = medidasDeAvatar(av, pies);
 
@@ -150,8 +150,8 @@ export function piezasAvatar(descripcion, { pies = [0, 0, 0], indice = 0, tiempo
   // rig —dónde llevas las manos—, no una lista de posiciones absolutas.
   const d = dimensionesCuerpo(medidas);
   const pose = poseDelGesto(av.gesto, d);
-  const p = puntosAvatar(medidas, { pose });
-  const anclas = anclasAvatar(medidas, { pose });
+  const p = puntosAvatar(medidas, { pose, yaw });
+  const anclas = anclasAvatar(medidas, { pose, yaw });
   const { ancho, altoCabeza, altoTorso, altoPiernas } = d;
 
   return [
@@ -162,7 +162,7 @@ export function piezasAvatar(descripcion, { pies = [0, 0, 0], indice = 0, tiempo
     {
       nombre: `${prefijo}Pelo`,
       color: pelo,
-      centro: [p.cabeza[0], p.cabeza[1] + altoCabeza * 0.42, p.cabeza[2] - 0.02],
+      centro: sobreCuerpo(p.cabeza, [0, altoCabeza * 0.42, -0.02], yaw),
       medidas: [0.42 * ancho, altoCabeza * 0.34, 0.4],
     },
     // Manos como guantes, a los lados y grandes: es la firma de aquel estilo y
@@ -171,10 +171,10 @@ export function piezasAvatar(descripcion, { pies = [0, 0, 0], indice = 0, tiempo
     { nombre: `${prefijo}ManoDer`, color: piel, centro: p.manoDer, medidas: [0.16, 0.16, 0.16] },
     { nombre: `${prefijo}ManoIzq`, color: piel, centro: p.manoIzq, medidas: [0.16, 0.16, 0.16] },
     // Lo que llevan las manos, colgado de su anclaje y no recalculado aquí.
-    ...atrezoDelGesto(av.gesto, { anclas, altoTorso, prefijo, indice, tiempo }),
+    ...atrezoDelGesto(av.gesto, { anclas, altoTorso, prefijo, indice, tiempo, yaw }),
     // Y lo que lleva encima, que es lo que dice la clase de un vistazo.
     ...distintivoDeClase(av.clase, { anclas, altoTorso, prefijo }),
-  ].map((pieza) => Object.freeze(pieza));
+  ].map((pieza) => Object.freeze({ ...pieza, giro: yaw }));
 }
 
 /**
@@ -237,6 +237,19 @@ export function intensidadCalada(tiempoMs = 0, offset = 0) {
 }
 
 /**
+ * Un punto pegado al cuerpo: su base más un desplazamiento que gira CON la
+ * persona. Un cigarro diez centímetros «por detrás de la punta» tiene que
+ * quedarse detrás de la punta también cuando alguien se da la vuelta; sumar el
+ * desplazamiento en ejes de mundo lo dejaría cruzándole la cara.
+ */
+function sobreCuerpo([x, y, z], [dx, dy, dz], yaw = 0) {
+  if (!Number.isFinite(yaw) || yaw === 0) return [x + dx, y + dy, z + dz];
+  const sen = Math.sin(yaw);
+  const cos = Math.cos(yaw);
+  return [x + dx * cos + dz * sen, y + dy, z - dx * sen + dz * cos];
+}
+
+/**
  * Qué lleva encima el gesto, colgado de un ANCLAJE y no recalculado.
  *
  * Cada pieza es su anclaje más un desplazamiento pequeño y declarado: el cigarro
@@ -249,8 +262,8 @@ export function intensidadCalada(tiempoMs = 0, offset = 0) {
  * A esta resolución no hace falta modelar el humo del cigarro porque la sala ya
  * tiene humo, y quien fuma lo alimenta (ver `ANCLAS_AIRE` en `cantina-escena.mjs`).
  */
-function atrezoDelGesto(gesto, { anclas, altoTorso, prefijo, indice = 0, tiempo = 0 }) {
-  const sobre = ({ punto }, [dx, dy, dz]) => [punto[0] + dx, punto[1] + dy, punto[2] + dz];
+function atrezoDelGesto(gesto, { anclas, altoTorso, prefijo, indice = 0, tiempo = 0, yaw = 0 }) {
+  const sobre = ({ punto }, desplazamiento) => sobreCuerpo(punto, desplazamiento, yaw);
   switch (gesto) {
     case "brindis":
       return [{

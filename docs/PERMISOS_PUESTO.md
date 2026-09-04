@@ -1,8 +1,8 @@
 # Modelo de permisos por puesto v1
 
-Diseño del issue [#461](https://github.com/VaroTv7/espaciokooplagunak/issues/461)
+Diseño del issue [#461](https://github.com/EspacioKoop/espaciokooplagunak/issues/461)
 (B1 de la [Etapa B](../README.md), coordinada en
-[#459](https://github.com/VaroTv7/espaciokooplagunak/issues/459)). Este
+[#459](https://github.com/EspacioKoop/espaciokooplagunak/issues/459)). Este
 documento **formaliza en un solo sitio** lo que hoy ya rige en el módulo
 Foundry — qué ve y qué puede ordenar cada puesto de tripulación, y cómo se
 resuelve esa identidad — y explica su relación con el modelo de puestos del

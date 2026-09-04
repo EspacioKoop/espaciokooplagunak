@@ -7,7 +7,7 @@
   [Preguntas resueltas](#preguntas-resueltas)). La dirección de arte del RFC
   (marcos como refuerzo estructural, pulso `lagunak-pulse` de acento único) está
   aplicada en `foundry-module/styles/lagunak-consola.css`.
-- Issue: [#276](https://github.com/VaroTv7/espaciokooplagunak/issues/276) (el RFC, con la visión y la
+- Issue: [#276](https://github.com/EspacioKoop/espaciokooplagunak/issues/276) (el RFC, con la visión y la
   dirección de arte). Aquí está solo el **cómo**.
 - Fase: **3**. Se ejecutó (PR #455, 2026-08-04) antes de que la última casilla
   de salida de Fase 3 (sesión completa en mesa, ver README) estuviera marcada

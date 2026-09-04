@@ -6,7 +6,7 @@ import {
   localizeSystemName,
   prepareRoute,
   prepareSystemRows,
-} from "../scripts/ship-view.mjs";
+} from "../../scripts/ship-view/ship-view.mjs";
 
 const i18n = {
   localize: (key) => key,

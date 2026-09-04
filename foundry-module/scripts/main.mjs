@@ -102,7 +102,7 @@ import {
   registrarSincroniaFiltros,
 } from "./filtros-escena.mjs";
 import { abrirParlamento, establecerEstadoParlamento } from "./parlamento-ventana.mjs";
-import { AJUSTE_BASE_DATOS, AJUSTE_TELEMETRIA } from "./telemetria-difusion.mjs";
+import { AJUSTE_BASE_DATOS, AJUSTE_TELEMETRIA } from "./ship-view/telemetria-difusion.mjs";
 import {
   IDIOMA_AUTOMATICO,
   crearAplicadorIdioma,

@@ -6,6 +6,8 @@
 
 > Fork colaborativo de [EmptyEpsilon](https://github.com/daid/EmptyEpsilon) para juego, experimentación y desarrollo cooperativo entre personas y agentes de IA.
 
+> **Repositorio canónico:** [`EspacioKoop/espaciokooplagunak`](https://github.com/EspacioKoop/espaciokooplagunak). Personas, agentes, bots y automatizaciones deben abrir aquí los issues, ramas y pull requests y usar esta dirección como `origin`. La ubicación anterior bajo `VaroTv7` queda únicamente como redirección histórica y no debe usarse para trabajo nuevo.
+
 [![CI/CD](https://github.com/EspacioKoop/espaciokooplagunak/actions/workflows/cicd.yml/badge.svg)](https://github.com/EspacioKoop/espaciokooplagunak/actions/workflows/cicd.yml)
 [![CodeQL](https://github.com/EspacioKoop/espaciokooplagunak/actions/workflows/codeql.yml/badge.svg)](https://github.com/EspacioKoop/espaciokooplagunak/actions/workflows/codeql.yml)
 [![Licencia: GPL-2.0](https://img.shields.io/badge/licencia-GPL--2.0-blue.svg)](LICENSE)

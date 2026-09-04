@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Ubicación canónica
+
+El trabajo activo vive exclusivamente en [`EspacioKoop/espaciokooplagunak`](https://github.com/EspacioKoop/espaciokooplagunak). Usa esa organización en GitHub, API, issues, pull requests y remotos. `VaroTv7/espaciokooplagunak` queda solo como redirección histórica y no es un destino válido para trabajo nuevo.
+
 ## Lectura obligatoria
 
 Este repositorio ya define un contrato operativo para agentes de IA en [`AGENTS.md`](AGENTS.md) —

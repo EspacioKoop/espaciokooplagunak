@@ -35,6 +35,7 @@ import { MUSEO } from "./paleta.mjs";
 import { crearSalaCaja } from "./nave-sala-caja.mjs";
 import { declararInteracciones } from "./nave-interaccion.mjs";
 import { CATALOGO_MUSEO, MALLAS_MUSEO } from "./museo-piezas.mjs";
+import { colocarCuadro, ALTO_LIENZO } from "./nave-cuadro.mjs";
 import { deformarPieza } from "./estatua-rig.mjs";
 
 /* ---- medidas de la sala ---------------------------------------------------- */
@@ -211,7 +212,11 @@ function colocarPieza(pieza, indice) {
 }
 
 /** Las tres piezas ya colocadas. Se calcula una vez: la sala no cambia. */
-export const PIEZAS_COLOCADAS = Object.freeze(CATALOGO_MUSEO.piezas.map(colocarPieza));
+// Solo las piezas que van sobre pedestal pasan por `colocarPieza`. Los cuadros
+// (#836) son `obra-propia` y cuelgan del muro (segunda forma de colocar), así que
+// no se reparten en pedestal.
+const PIEZAS_DE_PEDESTAL = CATALOGO_MUSEO.piezas.filter((p) => p.naturaleza !== "obra-propia");
+export const PIEZAS_COLOCADAS = Object.freeze(PIEZAS_DE_PEDESTAL.map(colocarPieza));
 
 /* ---- la salida ------------------------------------------------------------- */
 
@@ -261,6 +266,24 @@ function mobiliario() {
       colision: false,
     });
   }
+  // Cuadros en los muros laterales (#836): la segunda forma de colocar. No van
+  // sobre pedestal, cuelgan del muro, así que su zona de mirar mira al muro y no
+  // al fondo. Se pintan con `colocarCuadro`, que reusa `chapasDeRejilla` sobre
+  // la cara interior del muro lateral, con su propia celda de 2,5 cm. `colision:
+  // false`: chocarse con un cuadro es tan raro como con una cartela.
+  const centroAlturaCuadro = 1.5;
+  const baseCuadro = centroAlturaCuadro - ALTO_LIENZO / 2;
+  const zCentroCuadro = PROFUNDIDAD / 2;
+  const caraIzquierda = { eje: "z", plano: 0, sentido: 1, u0: 0, largo: PROFUNDIDAD };
+  const caraDerecha = { eje: "z", plano: ANCHO, sentido: -1, u0: 0, largo: PROFUNDIDAD };
+  for (const cuadro of [
+    { semilla: 83601, cara: caraIzquierda },
+    { semilla: 83602, cara: caraDerecha },
+  ]) {
+    for (const pieza of colocarCuadro(cuadro.semilla, cuadro.cara, zCentroCuadro, baseCuadro)) {
+      piezas.push({ malla: pieza.malla, color: pieza.color, colision: false });
+    }
+  }
   piezas.push({ centro: [...SALIDA.centro], medidas: [...SALIDA.medidas], color: MUSEO.zocalo });
   return piezas;
 }
@@ -280,6 +303,20 @@ export const INTERACCIONES = declararInteracciones([
     orientacion: 0,
     accion: { tipo: "cartela", pieza: colocada.pieza.id },
   })),
+  // Cuadros en los muros laterales (#836): misma acción `cartela` que las piezas
+  // sobre pedestal, reusada. El mirador mira al muro, no al fondo de la sala.
+  {
+    id: "cuadro-1",
+    punto: [1.5, PROFUNDIDAD / 2],
+    orientacion: -Math.PI / 2,
+    accion: { tipo: "cartela", pieza: "cuadro-1" },
+  },
+  {
+    id: "cuadro-2",
+    punto: [ANCHO - 1.5, PROFUNDIDAD / 2],
+    orientacion: Math.PI / 2,
+    accion: { tipo: "cartela", pieza: "cuadro-2" },
+  },
   {
     id: "salida",
     punto: [SALIDA.centro[0], SALIDA.centro[2] + 0.9],

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { MUSEO } from "../scripts/paleta.mjs";
+import { MUSEO, CUADRO } from "../scripts/paleta.mjs";
 import * as MUSEO_INTERNO from "../scripts/museo-escena.mjs";
 import { validarCatalogoPiezas } from "../scripts/catalogo-piezas.mjs";
 import { CATALOGO_MUSEO, MALLAS_MUSEO } from "../scripts/museo-piezas.mjs";
@@ -14,6 +14,7 @@ import {
   componerMuseo,
   colocarPieza,
 } from "../scripts/museo-escena.mjs";
+import { CELDA_LIENZO, rejillaCuadro } from "../scripts/nave-cuadro.mjs";
 import { FICHAS } from "../../tools/convertir-estatua.mjs";
 import { colisiona } from "../scripts/nave-movimiento.mjs";
 import { interaccionAlAlcance } from "../scripts/nave-interaccion.mjs";
@@ -61,14 +62,47 @@ test("el catálogo del museo es válido y todas sus fichas apuntan a una malla q
     validarCatalogoPiezas(CATALOGO_MUSEO, { mallasDisponibles: new Set(Object.keys(MALLAS_MUSEO)) }),
     true,
   );
-  assert.equal(CATALOGO_MUSEO.piezas.length, 3, "tres piezas, la disciplina de #590");
+  assert.equal(CATALOGO_MUSEO.piezas.length, 5, "tres vaciados (#590) + dos cuadros obra-propia (#836)");
   for (const pieza of CATALOGO_MUSEO.piezas) {
     assert.ok(MALLAS_MUSEO[pieza.malla]?.vertices?.length, `${pieza.malla} sin geometría`);
   }
 });
 
+test("los dos cuadros cuelgan de los muros laterales y su cartela aparece y se retira", () => {
+  for (const id of ["cuadro-1", "cuadro-2"]) {
+    const punto = INTERACCIONES.find((p) => p.id === id);
+    assert.ok(punto, `${id} no tiene punto de interacción`);
+    assert.equal(punto.accion.tipo, "cartela");
+    assert.equal(punto.accion.pieza, id);
+    const [x, z] = punto.punto;
+    assert.equal(colisiona(x, z, 0.35, PLANTA_MUSEO), false, `no se alcanza el mirador de ${id}`);
+    // La cartela resuelve contra el catálogo como cualquier pieza.
+    const pieza = CATALOGO_MUSEO.piezas.find((p) => p.id === id);
+    assert.ok(pieza?.cartela?.es, `${id} sin cartela en el catálogo`);
+    assert.equal(pieza.naturaleza, "obra-propia");
+  }
+});
+
+test("la celda del lienzo manda la escala del cuadro y no se inventa ningún color", () => {
+  assert.equal(CELDA_LIENZO, 0.025, "veinte celdas por metro, declarada en un solo sitio");
+  const rejilla = rejillaCuadro(83601);
+  // 1,2 x 0,8 m a 2,5 cm de celda = 48 x 32 celdas.
+  assert.equal(rejilla.length, 32);
+  assert.equal(rejilla[0].length, 48);
+  // Todo color del cuadro sale de la paleta común, nunca de un literal propio.
+  const tonos = new Set(Object.values(CUADRO));
+  for (const fila of rejilla) {
+    for (const celda of fila) {
+      assert.ok(celda === null || tonos.has(celda), `color fuera de la paleta: ${celda}`);
+    }
+  }
+});
+
 test("LA GUARDA DE PROCEDENCIA: lo que declara el museo no se separa de la ficha del conversor", () => {
   for (const pieza of CATALOGO_MUSEO.piezas) {
+    // Los cuadros (#836) son `obra-propia`: pixelart del módulo, sin ficha en el
+    // conversor de estatuas que esta guarda comprueba. Se saltan, no se comparan.
+    if (pieza.naturaleza === "obra-propia") continue;
     const ficha = FICHAS[pieza.malla];
     assert.ok(ficha, `${pieza.malla} no tiene ficha en tools/convertir-estatua.mjs`);
     // El campo que de verdad puede mentir en una cartela es QUÉ ES EL FICHERO.

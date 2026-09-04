@@ -154,6 +154,7 @@
     "cantina-2d.mjs",
     "playa-escena.mjs",
     "museo-escena.mjs",
+    "nave-cuadro.mjs",
     "nave-props.mjs",
     "ficha-nave.mjs",
     "minijuegos/dados-3d.mjs",

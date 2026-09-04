@@ -23,7 +23,7 @@ del proyecto.
 
 Foundry VTT **v11.302 está verificado** (issue #7). Las versiones modernas solo
 se añadirán a `compatibility.verified` después de ejecutar y registrar su smoke
-real en el issue [#29](https://github.com/VaroTv7/espaciokooplagunak/issues/29).
+real en el issue [#29](https://github.com/EspacioKoop/espaciokooplagunak/issues/29).
 Solo importa la versión del **anfitrión** que hospeda la partida: los jugadores
 se conectan por navegador y no ejecutan el servidor, aunque el módulo se carga
 también en sus clientes web.
@@ -169,6 +169,14 @@ Cada consola incluye una lista de guardia específica y el estado de la
 tripulación. Un jugador abre directamente su puesto asignado; si aún no tiene
 uno, la ventana le lleva al selector. El GM puede previsualizar las seis
 consolas y actualizar manualmente telemetría de `/v1/state` y `/v1/contacts`.
+
+La consola avisa de los puestos no atendidos (#951). La lista se calcula en
+[`station-assignment.mjs`](scripts/station-assignment.mjs) exclusivamente desde
+usuarios jugadores conectados y su flag de asignación efectivo; una orden nunca
+cuenta como ocupación. Los cambios de conexión o asignación repintan el aviso de
+forma determinista. Conforme a la decisión #512, el aviso no emite órdenes, no
+reasigna puestos ni transfiere autoridad: la simulación conserva el último valor
+ordenado.
 
 La frontera es deliberada: los jugadores **no leen URL/token, no consultan el
 puente y no reciben telemetría omnisciente**. Sus consolas muestran asignación,

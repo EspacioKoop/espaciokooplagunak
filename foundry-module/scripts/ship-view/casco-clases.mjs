@@ -18,7 +18,7 @@
 //
 // Puro: ni Foundry, ni DOM, ni red.
 
-import { CASCO_POR_DEFECTO, mallaDesdeCasco } from "./retro3d.mjs";
+import { CASCO_POR_DEFECTO, mallaDesdeCasco } from "../retro3d.mjs";
 
 /**
  * Clase de nave → proporciones. Se describen en palabras porque los números

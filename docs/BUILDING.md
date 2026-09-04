@@ -44,7 +44,7 @@ Desde el directorio padre de ambos repositorios:
 
 ```bash
 git clone https://github.com/daid/SeriousProton.git
-git clone https://github.com/VaroTv7/espaciokooplagunak.git
+git clone https://github.com/EspacioKoop/espaciokooplagunak.git
 ```
 
 Estructura esperada:

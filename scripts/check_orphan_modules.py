@@ -17,8 +17,13 @@ from pathlib import Path, PurePosixPath
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
+REPO_CANONICO = "EspacioKoop/espaciokooplagunak"
+# El repositorio se trasladó de VaroTv7 a la organización EspacioKoop (#989).
+# El slug antiguo se sigue aceptando: GitHub lo redirige y la evidencia ya
+# escrita en docs/orphan-declarations.json apunta a él.
 EVIDENCE_URL_RE = re.compile(
-    r"https://github\.com/VaroTv7/espaciokooplagunak/(?P<kind>issues|pull)/(?P<number>[1-9]\d*)$"
+    r"https://github\.com/(?:EspacioKoop|VaroTv7)/espaciokooplagunak/"
+    r"(?P<kind>issues|pull)/(?P<number>[1-9]\d*)$"
 )
 DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}$")
 GITHUB_API_TIMEOUT = 5.0
@@ -348,7 +353,7 @@ def _request_github_evidence(
         raise ValueError(f"URL de evidencia GitHub inválida: {url}")
     resource = "issues" if match.group("kind") == "issues" else "pulls"
     api_url = (
-        "https://api.github.com/repos/VaroTv7/espaciokooplagunak/"
+        f"https://api.github.com/repos/{REPO_CANONICO}/"
         f"{resource}/{match.group('number')}"
     )
     headers = {

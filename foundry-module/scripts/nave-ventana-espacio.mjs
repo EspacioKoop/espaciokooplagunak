@@ -27,7 +27,7 @@
 //
 // Puro: geometría y datos. Ni Foundry, ni DOM, ni red.
 
-import { piezaDeContacto, situarContacto } from "./visor-piloto.mjs";
+import { piezaDeContacto, situarContacto } from "./visor-piloto/visor-piloto.mjs";
 import { SECCION } from "./paleta.mjs";
 
 /**

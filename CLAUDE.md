@@ -328,7 +328,7 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     `scripts/nave-sala-caja.mjs` sigue siendo la fábrica de sala —muros, puertas, columnas,
     VENTANAS y la PIEL de los muros—, y la ventana se **decide** en vez de escribirse: un muro sin vecino es casco, y el
     casco ve el espacio. Lo que se ve por ella es **otra vista del espacio real** y no un cielo de
-    adorno (`scripts/nave-ventana-espacio.mjs`, #541): reusa `visor-piloto.mjs` para situar los
+    adorno (`scripts/nave-ventana-espacio.mjs`, #541): reusa `visor-piloto/visor-piloto.mjs` para situar los
     contactos por marcación, pasándole el rumbo de la nave MÁS el del muro, así que la vista gira con
     la nave y cada ventana mira a donde le toca. No abre ningún dato nuevo —es la MISMA lectura
     degradada que ya se difunde a la tripulación— y conserva su disciplina: lo que queda a la espalda
@@ -542,8 +542,8 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     sigue `declared-orphan` en `docs/orphan-declarations.json`; `retargeting-pose.mjs` nace igual de
     huérfano porque su consumidor (dar `rig`+pose a una pieza real del catálogo, o un PC/NPC) es
     contenido, no motor. Sigue fuera de alcance la reproducción de clips con interpolación.
-  - **Visor del piloto** — `scripts/visor-piloto.mjs` (geometría pura) y
-    `scripts/visor-piloto-lienzo.mjs` (el <canvas>), #362. Lo que la nave tiene delante, en PSX,
+  - **Visor del piloto** — `scripts/visor-piloto/visor-piloto.mjs` (geometría pura) y
+    `scripts/visor-piloto/visor-piloto-lienzo.mjs` (el <canvas>), #362. Lo que la nave tiene delante, en PSX,
     en la consola de pilotaje. Es la primera superficie 3D del módulo que **informa** en vez de
     ambientar, y de ahí sus tres reglas: la distancia y la marcación siguen en **texto** —el
     visor es refuerzo y va `aria-hidden`, y pilotaje arma la lista de contactos desde la misma

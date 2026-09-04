@@ -47,8 +47,8 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 - `maniobra-control.mjs`
 - `reposicion-control.mjs`
 - `ship-view/ship-view.mjs`
-- `visor-piloto-lienzo.mjs`
-- `visor-piloto.mjs`
+- `visor-piloto/visor-piloto-lienzo.mjs`
+- `visor-piloto/visor-piloto.mjs`
 - `bitacora-nave.mjs`
 - `nivel-alerta.mjs`
 - `alarma-cruzada-escena.mjs`

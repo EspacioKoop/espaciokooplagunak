@@ -14,7 +14,7 @@
 // Toca el <canvas> y nada más: la geometría entera vive en `visor-piloto.mjs`,
 // que es puro y por eso se puede probar sin navegador.
 
-import { pintarEscena } from "./retro3d-lienzo.mjs";
+import { pintarEscena } from "../retro3d-lienzo.mjs";
 import { componerVisorPiloto } from "./visor-piloto.mjs";
 
 /** La ranura del visor. Se nombra una vez porque montarlo y buscarlo tienen que

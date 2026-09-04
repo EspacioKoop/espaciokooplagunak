@@ -18,7 +18,7 @@
  */
 
 import { BridgeError } from "./bridge-client.mjs";
-import { prepareSystemRows } from "./ship-view.mjs";
+import { prepareSystemRows } from "./ship-view/ship-view.mjs";
 
 /**
  * Identificadores cerrados de sistema que el puente acepta en

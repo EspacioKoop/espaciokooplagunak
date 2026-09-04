@@ -36,6 +36,7 @@ import { crearSalaCaja } from "./nave-sala-caja.mjs";
 import { declararInteracciones } from "./nave-interaccion.mjs";
 import { CATALOGO_MUSEO, MALLAS_MUSEO } from "./museo-piezas.mjs";
 import { colocarCuadro, ALTO_LIENZO } from "./nave-cuadro.mjs";
+import { deformarPieza } from "./estatua-rig.mjs";
 
 /* ---- medidas de la sala ---------------------------------------------------- */
 
@@ -176,7 +177,13 @@ function limitesDe(malla) {
  * @param {number} indice puesto que ocupa en la fila.
  */
 function colocarPieza(pieza, indice) {
-  const malla = MALLAS_MUSEO[pieza.malla];
+  // Fase 4 de #603: una pieza puede declarar un `rig` y se dobla según él antes
+  // de colocarla. Sin `rig` la malla entra igual que siempre, así que el aspecto
+  // actual del museo no cambia: solo se habilita la pose donde se declare.
+  let malla = MALLAS_MUSEO[pieza.malla];
+  if (pieza.rig) {
+    malla = deformarPieza(malla, pieza.rig);
+  }
   const { x, z } = obtenerPosicionPedestal(indice);
   const cota = PEDESTAL.alto + CORONILLA.alto;
   const limites = limitesDe(malla);

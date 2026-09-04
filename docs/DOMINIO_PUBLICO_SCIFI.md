@@ -1,9 +1,9 @@
 # Guiños de dominio público — imaginario scifi/pulp (catálogo con trazabilidad de evidencia)
 
-> **Issue de origen:** [#310](https://github.com/VaroTv7/espaciokooplagunak/issues/310) · Fase 4 (experiencia/contenido).
+> **Issue de origen:** [#310](https://github.com/EspacioKoop/espaciokooplagunak/issues/310) · Fase 4 (experiencia/contenido).
 > **Qué es este documento:** un catálogo **curado** de elementos del imaginario
 > scifi/pulp en **dominio público (DP)**, para que escenarios (`scripts/`), arte del módulo
-> (`foundry-module/`) y minijuegos ([#308](https://github.com/VaroTv7/espaciokooplagunak/issues/308))
+> (`foundry-module/`) y minijuegos ([#308](https://github.com/EspacioKoop/espaciokooplagunak/issues/308))
 > tiren de una fuente segura al meter **guiños** de ambientación **sin coste de licencia**.
 > **Qué NO es:** una autorización para copiar. Habilita referenciar **con criterio**; no introduce
 > referencias por sí mismo.
@@ -102,7 +102,7 @@ De ahí la **frontera dura**, que es la condición del ✅ y no una recomendaci�
 **Gate pendiente antes de cualquier lanzamiento público o de tienda:** si el módulo llega a
 distribuirse fuera del círculo privado, cada nombre ✅ **consumido** debe pasar una búsqueda de marca
 real (TESS/USPTO y EUIPO) en las clases 9, 28 y 41, y lo que colisione baja a 📝 o se retira del pool.
-Ese gate se rastrea en [#310](https://github.com/VaroTv7/espaciokooplagunak/issues/310); esta versión
+Ese gate se rastrea en [#310](https://github.com/EspacioKoop/espaciokooplagunak/issues/310); esta versión
 no lo da por cumplido.
 
 Las marcas **sí verificadas** en esta versión (con registro o caso citable) son las que fuerzan los
@@ -203,8 +203,8 @@ están en DP, pero **hay que verificar la pieza concreta**.
 > Vía segura del proyecto: **arte propio Neo Geo** inspirado en el tropo, no reproducción.
 
 > **Vía recomendada para el arte del proyecto:** no reproducir láminas, sino **pintar arte propio
-> Neo Geo** *inspirado* en esos tropos (coherente con [#215](https://github.com/VaroTv7/espaciokooplagunak/issues/215)
-> y con el «arte propio» exigido en [#308](https://github.com/VaroTv7/espaciokooplagunak/issues/308)).
+> Neo Geo** *inspirado* en esos tropos (coherente con [#215](https://github.com/EspacioKoop/espaciokooplagunak/issues/215)
+> y con el «arte propio» exigido en [#308](https://github.com/EspacioKoop/espaciokooplagunak/issues/308)).
 > El estilo y los tropos no se pueden registrar; una ilustración concreta sí.
 
 ### 4.1 Protocolo de verificación de una lámina
@@ -548,8 +548,8 @@ personaje, diseño o presentación protegidos.
 |---|---|---|
 | **Indicativos / nombres de nave** (`scripts/*call_sign*`) | Sembrar un pool de nombres DP por tema. Ver `public_domain_names_scenario_utility.lua` | `Nautilus-7`, `Miskatonic`, `Sugaar`, `Prometeo` |
 | **Nombres de contacto / estaciones** en escenarios | Estaciones y PNJ con topónimos DP | Estación **Innsmouth**, puesto **Yggdrasil** |
-| **Cartas/temática del minijuego** [#308](https://github.com/VaroTv7/espaciokooplagunak/issues/308) | Palos/figuras con guiño pulp **de arte propio** | Un mazo «bug-eyed monsters» pintado en Neo Geo |
-| **Decorado del mapa** [#215](https://github.com/VaroTv7/espaciokooplagunak/issues/215) | Nombrar cuerpos y sectores con mitología/DP | Sector **Aqueronte**, luna **Ilargi** |
+| **Cartas/temática del minijuego** [#308](https://github.com/EspacioKoop/espaciokooplagunak/issues/308) | Palos/figuras con guiño pulp **de arte propio** | Un mazo «bug-eyed monsters» pintado en Neo Geo |
+| **Decorado del mapa** [#215](https://github.com/EspacioKoop/espaciokooplagunak/issues/215) | Nombrar cuerpos y sectores con mitología/DP | Sector **Aqueronte**, luna **Ilargi** |
 | **Diario/lore del GM** (Foundry) | Citar tropos y textos **realmente DP** (Verne, Wells, Lovecraft) | Epígrafe de *La guerra de los mundos* |
 
 **Criterio anti-plagio:** un *guiño* evoca; un *plagio* copia. Toma el **nombre-idea** o el **tropo**,
@@ -572,13 +572,19 @@ nombres/logos** como guiño de producto.
 | **Doctor Who, Dan Dare, Perry Rhodan** | Vigentes. ⛔ |
 | Diseño Universal de **Frankenstein/Drácula** (tornillos, capa) | La novela es DP; **ese diseño** es de los estudios. 📝 usa la novela, ⛔ el diseño |
 | Deidades y término «Mythos» de **Derleth** / material de **Chaosium** | Posterior a Lovecraft; no DP. ⛔ |
+| **Doc Savage** (Lester Dent, fallec. 1959) | UE vida+70 hasta **2029**; personaje y cabecera con marca viva de Condé Nast/Advance Magazine Publishers. ⛔ |
+| **La Sombra / The Shadow** (Walter B. Gibson, fallec. 1985) | UE vida+70 hasta **2055**; muy lejos de DP. ⛔ |
+| **Lensman** (E. E. "Doc" Smith, fallec. 1965) | UE vida+70 hasta **2035**; además las novelas de la serie (*Triplanetary*, 1934 en adelante) son posteriores al corte de 1930 en EE. UU. ⛔ |
 
 > **Fuente/verificación (consulta 2026-07-27):** Buck Rogers — DP del texto de Nowlan y disputa de
 > marca del Dille Family Trust ([Forbes, 2018](https://www.forbes.com/sites/legalentertainment/2018/07/27/buck-rogers-ip-and-a-possible-armageddon-2419/)).
 > Burroughs — marcas vivas John Carter®/Barsoom®/Tarzan® de ERB, Inc.
 > ([Wikipedia](https://en.wikipedia.org/wiki/Edgar_Rice_Burroughs,_Inc.)). Flash Gordon (King Features),
 > Universal (*Frankenstein*/*Drácula*) y demás franquicias vigentes: descarte **precautorio** (pendiente
-> pull de registro), tratado en la dirección conservadora.
+> pull de registro), tratado en la dirección conservadora. Doc Savage — fecha de fallecimiento de Dent
+> (LCNAF) y marca viva de la cabecera. La Sombra — fecha de fallecimiento de Gibson (LCNAF). Lensman —
+> fecha de fallecimiento de E. E. Smith (LCNAF) y fecha de publicación de la serie (posterior a 1930).
+> Añadidas en [#698](https://github.com/EspacioKoop/espaciokooplagunak/issues/698) al auditar #691.
 
 ---
 

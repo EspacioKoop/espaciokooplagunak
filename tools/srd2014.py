@@ -26,7 +26,7 @@ import urllib.request
 CACHE_FILE = os.path.join(
     os.environ.get('LAGUNAK_CACHE') or tempfile.gettempdir(),
     'lagunak-srd2014-cache.json')
-USER_AGENT = 'EspaciokoopLagunak/1.0 (https://github.com/VaroTv7/espaciokooplagunak)'
+USER_AGENT = 'EspaciokoopLagunak/1.0 (https://github.com/EspacioKoop/espaciokooplagunak)'
 API_BASE = 'https://www.dnd5eapi.co'
 
 def pedir_a_srd(ruta):

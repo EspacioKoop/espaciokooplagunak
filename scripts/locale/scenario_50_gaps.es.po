@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
-"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"Report-Msgid-Bugs-To: https://github.com/EspacioKoop/espaciokooplagunak/issues\n"
 "PO-Revision-Date: 2026-07-12 00:00+0200\n"
 "Last-Translator: Espaciokoop Lagunak contributors\n"
 "Language-Team: Espaciokoop Lagunak\n"
@@ -2279,3 +2279,174 @@ msgstr "Has cerrado las brechas, ahora por la parte Quijotática: destruya las b
 msgctxt "minefieldOrders-comms"
 msgid "Protect %s. Destroy enemy bases straight out from gaps"
 msgstr "Proteger %s. Destruir bases enemigas directamente de las lagunas"
+
+msgid "Using Nautilus class mine layer, lay mines across the space lanes expected to be used by invading enemies\n\nVersion 2 - Jan2025\n\nMission advice: It's better to hit an asteroid than a mine"
+msgstr "Usando el minador de clase Nautilus, coloca minas en las rutas espaciales que se espera que usen los enemigos invasores\n\nVersión 2 - Ene2025\n\nConsejo de misión: es mejor golpear un asteroide que una mina"
+
+msgctxt "setting"
+msgid "Enemies"
+msgstr "Enemigos"
+
+msgctxt "setting"
+msgid "Configures strength and/or number of enemies in this scenario"
+msgstr "Configura fuerza y/o número de enemigos en este escenario"
+
+msgctxt "Enemies"
+msgid "Easy"
+msgstr "Fácil"
+
+msgctxt "Enemies"
+msgid "Fewer or weaker enemies"
+msgstr "Menos enemigos o más débiles"
+
+msgctxt "Enemies"
+msgid "Normal"
+msgstr "Normal"
+
+msgctxt "Enemies"
+msgid "Normal number or strength of enemies"
+msgstr "Número o fuerza normal de enemigos"
+
+msgctxt "Enemies"
+msgid "Hard"
+msgstr "Difícil"
+
+msgctxt "Enemies"
+msgid "More or stronger enemies"
+msgstr "Más enemigos o más fuertes"
+
+msgctxt "Enemies"
+msgid "Extreme"
+msgstr "Extremo"
+
+msgctxt "Enemies"
+msgid "Much stronger, many more enemies"
+msgstr "Mucho más fuertes, muchos más enemigos"
+
+msgctxt "Enemies"
+msgid "Quixotic"
+msgstr "Quijotesco"
+
+msgctxt "Enemies"
+msgid "Insanely strong and/or inordinately large numbers of enemies"
+msgstr "Enemigos increíblemente fuertes y/o en cantidades desmesuradas"
+
+msgctxt "setting"
+msgid "Murphy"
+msgstr "Murphy"
+
+msgctxt "setting"
+msgid "Configures the perversity of the universe according to Murphy's law"
+msgstr "Configura la perversidad del universo según la ley de Murphy"
+
+msgctxt "Murphy"
+msgid "Easy"
+msgstr "Fácil"
+
+msgctxt "Murphy"
+msgid "Random factors or puzzle difficulties are easier than normal"
+msgstr "Los factores aleatorios o la dificultad de los rompecabezas son más fáciles de lo normal"
+
+msgctxt "Murphy"
+msgid "Normal"
+msgstr "Normal"
+
+msgctxt "Murphy"
+msgid "Random factors or puzzle difficulties are normal"
+msgstr "Los factores aleatorios o la dificultad de los rompecabezas son normales"
+
+msgctxt "Murphy"
+msgid "Hard"
+msgstr "Difícil"
+
+msgctxt "Murphy"
+msgid "Random factors or puzzle difficulties are more challenging than normal"
+msgstr "Los factores aleatorios o la dificultad de los rompecabezas son más difíciles de lo normal"
+
+msgctxt "setting"
+msgid "Timed"
+msgstr "Tiempo"
+
+msgctxt "setting"
+msgid "Sets whether or not the scenario has a time limit. Default is no time limit"
+msgstr "Establece si el escenario tiene o no un límite de tiempo. Por defecto no hay límite"
+
+msgctxt "Timed"
+msgid "None"
+msgstr "Ninguno"
+
+msgctxt "Timed"
+msgid "No time limit"
+msgstr "Sin límite de tiempo"
+
+msgctxt "Timed"
+msgid "30"
+msgstr "30"
+
+msgctxt "Timed"
+msgid "Scenario ends in 30 minutes"
+msgstr "El escenario termina en 30 minutos"
+
+msgctxt "Timed"
+msgid "40"
+msgstr "40"
+
+msgctxt "Timed"
+msgid "Scenario ends in 40 minutes"
+msgstr "El escenario termina en 40 minutos"
+
+msgctxt "Timed"
+msgid "45"
+msgstr "45"
+
+msgctxt "Timed"
+msgid "Scenario ends in 45 minutes"
+msgstr "El escenario termina en 45 minutos"
+
+msgctxt "Timed"
+msgid "50"
+msgstr "50"
+
+msgctxt "Timed"
+msgid "Scenario ends in 50 minutes"
+msgstr "El escenario termina en 50 minutos"
+
+msgctxt "Timed"
+msgid "55"
+msgstr "55"
+
+msgctxt "Timed"
+msgid "Scenario ends in 55 minutes"
+msgstr "El escenario termina en 55 minutos"
+
+msgctxt "Timed"
+msgid "60"
+msgstr "60"
+
+msgctxt "Timed"
+msgid "Scenario ends in 60 minutes"
+msgstr "El escenario termina en 60 minutos"
+
+msgctxt "Timed"
+msgid "70"
+msgstr "70"
+
+msgctxt "Timed"
+msgid "Scenario ends in 70 minutes"
+msgstr "El escenario termina en 70 minutos"
+
+msgctxt "Timed"
+msgid "80"
+msgstr "80"
+
+msgctxt "Timed"
+msgid "Scenario ends in 80 minutes"
+msgstr "El escenario termina en 80 minutos"
+
+msgctxt "Timed"
+msgid "90"
+msgstr "90"
+
+msgctxt "Timed"
+msgid "Scenario ends in 90 minutes"
+msgstr "El escenario termina en 90 minutos"

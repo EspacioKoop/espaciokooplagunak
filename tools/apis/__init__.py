@@ -43,10 +43,11 @@ from .freesound import freesound
 from .nasa import nasa, nasa_asset
 from .lospec import lospec, lospec_aleatoria
 from .wikidata import wikidata
+from .openverse import openverse_audio
 
 __all__ = [
     'pedir', 'ULTIMO_MOTIVO',
     'met', 'rijks', 'aic', 'europeana', 'freesound',
     'nasa', 'nasa_asset', 'lospec', 'lospec_aleatoria',
-    'wikidata'
+    'wikidata', 'openverse_audio'
 ]

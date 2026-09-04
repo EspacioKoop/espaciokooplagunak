@@ -40,7 +40,7 @@ Ejemplos de comportamiento inaceptable:
 Los casos de comportamiento abusivo, acosador o inaceptable pueden comunicarse
 a los mantenedores del fork. Si el asunto es sensible, **no publiques los
 detalles en un issue público**: usa el canal privado del repositorio en
-[Security → Report a vulnerability](https://github.com/VaroTv7/espaciokooplagunak/security/advisories/new)
+[Security → Report a vulnerability](https://github.com/EspacioKoop/espaciokooplagunak/security/advisories/new)
 (está habilitado y solo lo leen los mantenedores; sirve también para asuntos
 de conducta, indícalo en el título) o abre un issue diciendo únicamente que
 quieres tratar un asunto sensible, sin detalles, y un mantenedor coordinará

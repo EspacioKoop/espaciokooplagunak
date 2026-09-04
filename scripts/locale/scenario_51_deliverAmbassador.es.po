@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
-"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"Report-Msgid-Bugs-To: https://github.com/EspacioKoop/espaciokooplagunak/issues\n"
 "PO-Revision-Date: 2026-07-12 00:00+0200\n"
 "Last-Translator: Espaciokoop Lagunak contributors\n"
 "Language-Team: Espaciokoop Lagunak\n"
@@ -25,7 +25,7 @@ msgid ""
 "Player ship: Template model: Flavia P. Falcon. Suggest turning music volume to 10% and sound volume to 100% on server so the speaking audio can be heard. Designed for 5 or 6 bridge officers\n"
 "Duration: 30 - 90 minutes. Medium difficulty (adjustable)\n"
 "Version 5"
-msgstr "El descontento en Goltin 7 requiere las habilidades del embajador Gremus. Su misión: transportar al embajador donde sea necesario. Usted puede encontrar resistencia. Usted no está volando un destructor con armas. Usted está en un carguero de transporte con armas atornilladas en como un post-pensamiento. Estas armas son apuntadas detrás de usted para disuadir a cualquier pirata desguar. Usted no será necesariamente capaz de destruir a cualquier enemigo que pueda intentar impedir que usted cumpla su misión, usted puede tener que evadir. La armada quiere que usted tenga éxito, así que ha instalado su barco con unidad de urdimbre y un único tubo de armas de artillería diversa que incluye la capacidad nuclear. Si usted se pierde o olvida sus órdenes, consulte con estaciones para información. Sugerir volumen de música giratoria a 10% and volumen de sonido a 100% on servidor para que se pueda escuchar el audio que habla. Diseñado para 5 o 6 oficiales de puente Duración: 30 - 90 minutos. Dificultad media (ajustable) Versión 5"
+msgstr "El descontento en Goltin 7 requiere las habilidades del embajador Gremus. Su misión: transportar al embajador donde sea necesario. Puede encontrar resistencia.\n\nNo está volando un destructor cargado de armas. Está en un carguero de transporte con armas atornilladas como ocurrencia tardía. Estas armas apuntan hacia atrás para disuadir a piratas merodeadores. No necesariamente podrá limitarse a destruir a cualquier enemigo que intente impedirle cumplir su misión: puede tener que evadir. La armada quiere que tenga éxito, así que ha equipado su nave con motor de curvatura y un único tubo de armas de artillería diversa que incluye capacidad nuclear. Si se pierde u olvida sus órdenes, consulte con las estaciones para obtener información.\n\nNave de jugador: Modelo de plantilla: Flavia P. Falcon. Se sugiere ajustar el volumen de música al 10% y el volumen de sonido al 100% en el servidor, para que se pueda escuchar el audio hablado. Diseñado para 5 o 6 oficiales de puente\nDuración: 30 - 90 minutos. Dificultad media (ajustable)\nVersión 5"
 
 # Scenario setting
 msgctxt "setting"
@@ -503,7 +503,7 @@ msgstr "Órdenes actuales: Esperar al embajador Gremus para completar el negocio
 #: scripts/scenario_51_deliverAmbassador.lua:974
 msgctxt "orders-comms"
 msgid "Current Orders: Dock with Ningling to get ambassador Gremus. "
-msgstr "Órdenes actuales: Dock with Ningling to get Ambassador Gremus. "
+msgstr "Órdenes actuales: Atraque con Ningling para recoger al Embajador Gremus. "
 
 #: scripts/scenario_51_deliverAmbassador.lua:976
 msgctxt "orders-comms"

@@ -118,15 +118,20 @@ export function agregar(inventario, objeto, categoria) {
 }
 
 /**
- * Quita el objeto `objetoId` de su categoría, y limpia cualquier slot de
+ * Quita el objeto `objetoId` de `categoria`, y limpia cualquier slot de
  * equipo y hueco de hotbar que apuntara a él — la razón de ser de que equipo
  * y hotbar sean referencias y no copias: soltar un objeto no puede dejar una
  * mano fantasma o un hueco de acceso rápido que ya no lleva a ningún sitio.
- * Un id que no está en ningún lado deja el inventario igual.
+ *
+ * La `categoria` la DECLARA quien llama (contrato de #964) y NO se autodetecta:
+ * autodetectar convierte «suelta la poción de la mochila» en «suelta lo que se
+ * llame así, esté donde esté», que es la misma clase de error que un id
+ * colgante. Una categoría desconocida —o una que no es la del objeto— deja el
+ * inventario igual, igual que un id que no está en ningún lado.
  */
-export function quitar(inventario, objetoId) {
-  const categoria = categoriaDe(inventario, objetoId);
-  if (!categoria) return inventario;
+export function quitar(inventario, objetoId, categoria) {
+  if (!CATEGORIAS.includes(categoria)) return inventario;
+  if (!inventario[categoria].some((o) => o.id === objetoId)) return inventario;
   const equipoLimpio = Object.fromEntries(
     SLOTS_EQUIPO.map((slot) => [slot, inventario.equipo[slot] === objetoId ? null : inventario.equipo[slot]]),
   );

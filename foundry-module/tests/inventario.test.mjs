@@ -75,10 +75,10 @@ test("un id no puede estar en dos categorías a la vez", () => {
 test("quitar libera el id y no revienta si no existe", () => {
   let inv = crearInventario();
   inv = agregar(inv, { id: "a" }, "objetos");
-  inv = quitar(inv, "a");
+  inv = quitar(inv, "a", "objetos");
   assert.equal(objetoPorId(inv, "a"), null);
   const antes = inv;
-  assert.equal(quitar(inv, "no-existe"), antes);
+  assert.equal(quitar(inv, "no-existe", "objetos"), antes);
 });
 
 test("soltar un objeto limpia el slot de equipo que apuntaba a él (#964: sin puntero colgante)", () => {
@@ -86,7 +86,7 @@ test("soltar un objeto limpia el slot de equipo que apuntaba a él (#964: sin pu
   inv = agregar(inv, { id: "espada" }, "armas");
   inv = equipar(inv, "espada", "manoDerecha");
   assert.equal(equipadoEn(inv, "manoDerecha").id, "espada");
-  inv = quitar(inv, "espada");
+  inv = quitar(inv, "espada", "armas");
   assert.equal(inv.equipo.manoDerecha, null);
   assert.equal(equipadoEn(inv, "manoDerecha"), null);
 });
@@ -95,7 +95,7 @@ test("soltar un objeto también limpia el hueco de hotbar que apuntaba a él", (
   let inv = crearInventario();
   inv = agregar(inv, { id: "pocion" }, "curacion");
   inv = asignarHotbar(inv, 0, "pocion");
-  inv = quitar(inv, "pocion");
+  inv = quitar(inv, "pocion", "curacion");
   assert.equal(inv.hotbar[0], null);
 });
 
@@ -189,4 +189,28 @@ test("pesoActual no cuenta el equipo ni el hotbar aparte — son referencias al 
 test("un objeto sin peso declarado cuenta como 0, no revienta la suma", () => {
   const inv = agregar(crearInventario({ limitePeso: 5 }), { id: "pluma" }, "objetos");
   assert.equal(pesoActual(inv), 0);
+});
+
+test("quitar exige la categoría del contrato de #964: la que no es deja el inventario igual", () => {
+  let inv = crearInventario();
+  inv = agregar(inv, { id: "mapa" }, "objetos");
+  const antes = inv;
+  // El objeto existe, pero no en la categoría declarada: transición sin cambios.
+  assert.equal(quitar(inv, "mapa", "armas"), antes);
+  // Categoría que no existe: tampoco puede borrar por autodetección.
+  assert.equal(quitar(inv, "mapa", "categoria-inexistente"), antes);
+  assert.equal(quitar(inv, "mapa", undefined), antes);
+  // Y con la categoría correcta sí sale.
+  assert.equal(objetoPorId(quitar(inv, "mapa", "objetos"), "mapa"), null);
+});
+
+test("quitar con la categoría equivocada no limpia equipo ni hotbar", () => {
+  let inv = crearInventario();
+  inv = agregar(inv, { id: "espada" }, "armas");
+  inv = equipar(inv, "espada", "manoDerecha");
+  inv = asignarHotbar(inv, 1, "espada");
+  const fallido = quitar(inv, "espada", "curacion");
+  assert.equal(fallido, inv);
+  assert.equal(fallido.equipo.manoDerecha, "espada");
+  assert.equal(fallido.hotbar[1], "espada");
 });

@@ -124,6 +124,11 @@
   "LAGUNAK.PanelGM.Entrada.Musica": "Change onboard music",
   "LAGUNAK.PanelGM.Entrada.Decorado": "New random live map background",
   "LAGUNAK.PanelGM.Entrada.Ficha": "Generate token art for the selected ships",
+  "LAGUNAK.PanelGM.Entrada.Parlamento": "Parlamento",
+  "LAGUNAK.PanelGM.Entrada.ParlamentoSelector": "Selector de encuentros del parlamento",
+  "LAGUNAK.SelectorParlamento.Titulo": "Selector de encuentros del parlamento",
+  "LAGUNAK.SelectorParlamento.Intro": "Elige un encuentro para abrir un parlamento con su interlocutor.",
+  "LAGUNAK.SelectorParlamento.Entradas": "Encuentros disponibles",
   "LAGUNAK.Ficha.SinSeleccion": "Select on the canvas the tokens of the ships you want token art for.",
   "LAGUNAK.Ficha.Hecha": "Token art applied to the prototype token of {total} ship(s).",
   "LAGUNAK.Ficha.Fallo": "The token art could not be saved. Check the console.",
@@ -904,5 +909,7 @@
   "LAGUNAK.Parlamento.Enfoque.persuasion": "Persuasion",
   "LAGUNAK.Parlamento.Enfoque.engano": "Deception",
   "LAGUNAK.Parlamento.Enfoque.perspicacia": "Insight",
-  "LAGUNAK.Parlamento.Enfoque.intimidacion": "Intimidation"
+  "LAGUNAK.Parlamento.Enfoque.intimidacion": "Intimidation",
+  "LAGUNAK.SelectorParlamento.Intro": "Select an encounter to open a parley:",
+  "LAGUNAK.SelectorParlamento.Entradas": "Available encounters"
 }

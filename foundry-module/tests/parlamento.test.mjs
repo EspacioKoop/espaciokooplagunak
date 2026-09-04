@@ -142,7 +142,16 @@ globalThis.Hooks = {
 };
 globalThis.game = { i18n: { localize: (k) => k, format: (k) => k }, users: { get: () => null } };
 globalThis.ui = {};
-globalThis.foundry = {};
+globalThis.foundry = { utils: { mergeObject: (base, extra) => ({ ...base, ...extra }) } };
+// abrirParlamento() construye una ventana V1 (foundry.applications.api.ApplicationV2
+// no está definido aquí) cada vez que dispara el hook lagunakAbrirParlamento —
+// necesita una base Application mínima, mismo patrón que las demás suites que
+// mockean la clásica de v11 (p.ej. convocatoria-panel-gm.test.mjs).
+globalThis.Application = class {
+  static get defaultOptions() { return {}; }
+  render() { this.rendered = true; }
+  close() { this.rendered = false; }
+};
 
 const {
   contextoParlamento,

@@ -1,0 +1,14 @@
+<div class="lagunak-parlamento-selector-cuerpo">
+  <p class="lagunak-parlamento-selector-intro">{{localize "LAGUNAK.SelectorParlamento.Intro"}}</p>
+  <ul class="lagunak-parlamento-selector-lista" aria-label="{{localize "LAGUNAK.SelectorParlamento.Entradas"}}">
+    {{#each encuentros}}
+    <li class="lagunak-parlamento-selector-fila">
+      <button type="button" class="lagunak-parlamento-selector-entrada" data-encuentro="{{this.id}}">
+        {{this.tono}}
+        <br>
+        <small class="lagunak-parlamento-selector-tono">{{this.tono}}</small>
+      </button>
+    </li>
+    {{/each}}
+  </ul>
+</div>

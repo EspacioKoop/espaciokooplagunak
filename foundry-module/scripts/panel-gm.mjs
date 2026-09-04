@@ -55,6 +55,11 @@ const catalogo = crearCatalogoPuertas([
     tituloClave: "LAGUNAK.PanelGM.Entrada.Ficha",
     icono: "fa-solid fa-image-portrait",
   }),
+  Object.freeze({
+    id: "convocatoria",
+    tituloClave: "LAGUNAK.PanelGM.Entrada.Convocatoria",
+    icono: "fa-solid fa-user-group",
+  }),
 ]);
 
 export const ENTRADAS = catalogo.congelado;

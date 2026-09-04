@@ -1308,3 +1308,32 @@ test("cerrar una ventana que ya no es la vigente no deja huérfana a la nueva", 
   assert.equal(segunda.renderCalls.length, 1, "la vigente sigue viva");
   await segunda.close();
 });
+
+// Convocatoria de estancia (#832): abre un selector de destino/rol y llama a
+// convocar() con lo elegido. Reusa el patrón de instancia perezosa de la
+// consola caliente.
+test("GM abre la convocatoria de estancia desde el panel", async () => {
+  const { hooks, instances } = await loadModule();
+  const controls = [];
+
+  hooks.getSceneControlButtons(controls);
+  const convocatoria = await abrirDesdePanelGM(controls, instances, "convocatoria");
+
+  assert.ok(convocatoria, "un GM debe poder abrir la convocatoria");
+  assert.deepEqual(convocatoria.renderCalls, [true]);
+});
+
+test("un jugador sin isGM no puede abrir la convocatoria (ni la app se construye)", async () => {
+  const { hooks, instances } = await loadModule({ isGM: false });
+  const controls = [];
+
+  hooks.getSceneControlButtons(controls);
+  // Sin isGM, el propio botón del panel de GM no aparece en absoluto — la
+  // comprobación real es que forzar la acción (como si alguien llamara al
+  // handler directamente, saltándose la interfaz) tampoco construye nada:
+  // `abrirConvocatoria` corta en el primer `if (!game.user?.isGM) return;`.
+  const antes = instances.length;
+  const modulo = await import("../scripts/main.mjs");
+  modulo.abrirConvocatoria();
+  assert.equal(instances.length, antes, "no se creó ninguna instancia de ventana sin ser GM");
+});

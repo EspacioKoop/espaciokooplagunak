@@ -36,6 +36,9 @@ import {
 } from "./bridge-token-session.mjs";
 import { probarConexion } from "./diagnostico-conexion.mjs";
 import { MOTIVOS, planificarFichas } from "./ficha-nave-aplicacion.mjs";
+import { convocar } from "./convocatoria-estancia.mjs";
+import { crearClaseConvocatoriaV1, crearClaseConvocatoriaV2 } from "./convocatoria-app.mjs";
+import { crearConvocatoriaCallbacks } from "./convocatoria-wiring.mjs";
 import { addStationControl, refrescarPuestos, registerStationFeature } from "./station-ui.mjs";
 import { addAvatarControl, registerAvatarFeature } from "./avatar/avatar-ui.mjs";
 import { MINIMO_POR_DEFECTO } from "./requisitos-puesto.mjs";
@@ -139,6 +142,7 @@ registrarContenidoExterno(MODULE_ID);
 // v11) o V2 (ApplicationV2, v12+) según lo que ofrezca el anfitrión — las
 // antiguas ventanas sueltas de estado de nave y mapa vivo ya no existen.
 let consolaApp = null;
+let convocatoriaApp = null;
 
 Hooks.once("init", () => {
   // La baraja de la nave, disponible como preset de cartas de Foundry (#340).
@@ -640,6 +644,7 @@ const ACCIONES_PANEL_GM = {
   musica: () => ciclarMusica(),
   decorado: () => regenerarDecoradoAleatorio(),
   ficha: () => aplicarFichaNave(),
+  convocatoria: () => abrirConvocatoria(),
 };
 
 function abrirPanelGM() {
@@ -1053,4 +1058,23 @@ function abrirConsolaCaliente() {
   }
   if (esV2) consolaApp.render({ force: true });
   else consolaApp.render(true);
+}
+
+/**
+ * Abre la ventana de convocatoria de estancia (#832). Solo GM. Misma
+ * disciplina que `abrirConsolaCaliente`: instancia perezosa, se elige la
+ * clase según lo que ofrezca el anfitrión (ApplicationV2 en v12+, Application
+ * clásica en v11). `convocar` se importa de forma estática arriba del
+ * fichero — es un módulo puro sin efectos de carga, no hay motivo para un
+ * import dinámico aquí.
+ */
+export function abrirConvocatoria() {
+  if (!game.user?.isGM) return;
+  const { onSubmit } = crearConvocatoriaCallbacks({ convocar });
+  const esV2 = Boolean(foundry.applications?.api?.ApplicationV2);
+  if (!convocatoriaApp) {
+    convocatoriaApp = new (esV2 ? crearClaseConvocatoriaV2({ onSubmit }) : crearClaseConvocatoriaV1({ onSubmit }))();
+  }
+  if (esV2) convocatoriaApp.render({ force: true });
+  else convocatoriaApp.render(true);
 }

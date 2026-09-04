@@ -10,8 +10,8 @@ import {
   generarNpc,
   modificador,
   repartirAcciones,
-} from "../scripts/npc-generador.mjs";
-import { ARQUETIPOS, ELEMENTOS, LINEAS, NATURALEZAS } from "../scripts/npc-tablas.mjs";
+} from "../../scripts/npc-generador/npc-generador.mjs";
+import { ARQUETIPOS, ELEMENTOS, LINEAS, NATURALEZAS } from "../../scripts/npc-generador/npc-tablas.mjs";
 
 test("modificador sigue la fórmula del SRD", () => {
   // floor((valor - 10) / 2), incluido el lado negativo, que es donde una

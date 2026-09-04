@@ -142,3 +142,25 @@ dice que el nivel elegido no era casualidad de aquella pieza.
 tabla `FICHAS` y **se niega a convertir** lo que no esté en ella. Este documento
 es la versión para humanos, con el porqué; aquella es la que hace imposible
 saltarse el paso.
+
+---
+
+## The Open Window — Saki (semilla procedural para #853)
+
+Obra muy corta de dominio público usada como semilla visual para el libro 3D
+interactuable de issue #853. No se redistribuye texto ni imagen escaneada: las
+páginas del libro se pintan proceduralmente como mancha tipográfica/atmosférica.
+
+|| Obra | *The Open Window*, cuento de Saki (H. H. Munro). |
+|---|---|
+|| **Qué es el fichero** | No se incluye archivo del libro. Solo se usa título, ambientación y estructura como seed para generación procedural de páginas en rejilla. |
+|| **Autoría original** | Saki (H. H. Munro), fallecido en 1916. |
+|| **Licencia** | Public domain en EE. UU. |
+|| **Verificación** | Project Gutenberg, ID 11639, `copyright: false`. |
+|| **Enlace** | https://www.gutenberg.org/ebooks/11639 |
+|| **Archivo en repo** | No aplica; no se distribuye contenido del libro. |
+|| **sha256** | No aplica. |
+|| **Cómo se genera** | Páginas pintadas con `scripts/libro-pagina.mjs` usando `chapasDeRejilla`, sin texto legible ni binarios. |
+
+**Nota:** Si en el futuro se incluyera una cubierta o interior escaneado, haría
+falta una segunda ficha para ese archivo concreto con su propia licencia y sha256.

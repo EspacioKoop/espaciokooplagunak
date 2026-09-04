@@ -9,6 +9,7 @@ function manejadores() {
     llamadas,
     abrirPanelGM: () => llamadas.push(["panel-gm"]),
     abrirAndarNave: (estancia) => llamadas.push(["andar-nave", estancia]),
+    convocarEstancia: (estancia) => llamadas.push(["convocar", estancia]),
   };
 }
 
@@ -33,15 +34,18 @@ test("lagunak-panel-gm llama a abrirPanelGM()", () => {
   assert.deepEqual(m.llamadas, [["panel-gm"]]);
 });
 
-test("lagunak-playa y lagunak-museo llaman a abrirAndarNave con su estancia", () => {
+test("lagunak-playa llama a abrirAndarNave con su estancia", () => {
   const m = manejadores();
   const herramientas = construirHerramientasGM(m);
   herramientas.find((h) => h.name === "lagunak-playa").onClick();
+  assert.deepEqual(m.llamadas, [["andar-nave", "playa"]]);
+});
+
+test("lagunak-museo convoca a la mesa en vez de abrir solo", () => {
+  const m = manejadores();
+  const herramientas = construirHerramientasGM(m);
   herramientas.find((h) => h.name === "lagunak-museo").onClick();
-  assert.deepEqual(m.llamadas, [
-    ["andar-nave", "playa"],
-    ["andar-nave", "museo"],
-  ]);
+  assert.deepEqual(m.llamadas, [["convocar", "museo"]]);
 });
 
 test("no reusa el mismo manejador entre dos llamadas al catálogo", () => {
@@ -50,6 +54,6 @@ test("no reusa el mismo manejador entre dos llamadas al catálogo", () => {
   construirHerramientasGM(primero)
     .find((h) => h.name === "lagunak-museo")
     .onClick();
-  assert.deepEqual(primero.llamadas, [["andar-nave", "museo"]]);
+  assert.deepEqual(primero.llamadas, [["convocar", "museo"]]);
   assert.deepEqual(segundo.llamadas, []);
 });

@@ -15,7 +15,8 @@
     "verified": "11.302"
   },
   "esmodules": [
-    "scripts/main.mjs"
+    "scripts/main.mjs",
+    "scripts/visor-3d-sistema-app.mjs"
   ],
   "styles": [
     "styles/lagunak.css",

@@ -18,6 +18,44 @@ import { FICHAS } from "../../tools/convertir-estatua.mjs";
 import { colisiona } from "../scripts/nave-movimiento.mjs";
 import { interaccionAlAlcance } from "../scripts/nave-interaccion.mjs";
 
+test("una pieza real del museo con rig atraviesa colocarPieza y sale deformada (#603 fase 4)", () => {
+  // Ninguna pieza del catálogo declara rig todavía (nada real que doblar), así
+  // que la única forma de probar el camino completo
+  // CATALOGO_MUSEO -> museo-escena -> estatua-rig -> componerEscena
+  // es una pieza sintética con la MISMA malla real (venus-de-milo) y un rig
+  // trivial: un solo hueso raíz que carga el 100% del peso de cada vértice.
+  const malla = MALLAS_MUSEO["venus-de-milo"];
+  const rig = [{ id: "raiz", cabeza: [0, 0, 0] }];
+  const pesos = malla.vertices.map(() => [{ hueso: "raiz", peso: 1 }]);
+
+  const piezaSinRig = { ...CATALOGO_MUSEO.piezas[0], malla: "venus-de-milo" };
+  const piezaConRig = {
+    ...piezaSinRig,
+    rig: { rig, pesos, pose: { raiz: { eje: [0, 0, 1], angulo: Math.PI / 4 } } },
+  };
+
+  const sinRig = colocarPieza(piezaSinRig, 0);
+  const conRig = colocarPieza(piezaConRig, 0);
+
+  // Mismo número de vértices y misma topología: deformar no puede tocar la
+  // malla en sí, solo su pose.
+  assert.equal(conRig.malla.vertices.length, sinRig.malla.vertices.length);
+  assert.deepEqual(conRig.malla.caras, sinRig.malla.caras);
+
+  // Con un giro de verdad en el hueso raíz, al menos un vértice tiene que
+  // haberse movido respecto a la pieza sin rig — si no, colocarPieza no llegó
+  // a llamar a deformarPieza de verdad, o la llamó con una pose vacía.
+  const algunoSeMovio = conRig.malla.vertices.some((v, i) => {
+    const original = sinRig.malla.vertices[i];
+    return v.some((coord, eje) => Math.abs(coord - original[eje]) > 1e-6);
+  });
+  assert.ok(algunoSeMovio, "la pieza con rig salió idéntica a la pieza sin rig");
+  assert.ok(
+    conRig.malla.vertices.every((v) => v.every(Number.isFinite)),
+    "la pieza deformada tiene coordenadas no finitas",
+  );
+});
+
 test("el catálogo del museo es válido y todas sus fichas apuntan a una malla que existe", () => {
   assert.equal(
     validarCatalogoPiezas(CATALOGO_MUSEO, { mallasDisponibles: new Set(Object.keys(MALLAS_MUSEO)) }),

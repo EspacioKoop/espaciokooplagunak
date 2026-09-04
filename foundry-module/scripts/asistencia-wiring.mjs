@@ -38,7 +38,7 @@ import {
   prepararOrdenAsistida,
 } from "./asistencia/relevo.mjs";
 import { normalizeStation } from "./station-assignment.mjs";
-import { AJUSTE_TELEMETRIA } from "./telemetria-difusion.mjs";
+import { AJUSTE_TELEMETRIA } from "./ship-view/telemetria-difusion.mjs";
 
 /** Mensajes de vuelta. El GM habla; el asistente escucha. */
 const MENSAJE_OFERTA = "asistencia-oferta";

@@ -14,7 +14,7 @@
  * (`anotarAlertas`) se ejercita con un `game` mockeado, como el resto del módulo.
  */
 
-import { localizeSystemName } from "./ship-view.mjs";
+import { localizeSystemName } from "./ship-view/ship-view.mjs";
 
 const MODULE_ID = "espaciokoop-lagunak";
 

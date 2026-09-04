@@ -44,8 +44,8 @@ import {
   ENTRADA as ENTRADA_MUSEO,
   INTERACCIONES as INTERACCIONES_MUSEO,
   PLANTA_MUSEO,
-  componerMuseo,
 } from "./museo-escena.mjs";
+import { componerMuseoConLibro } from "./libro-museo.mjs";
 import { MUSEO, PLAYA } from "./paleta.mjs";
 import {
   ANCHO_PUERTA,
@@ -392,7 +392,11 @@ export const CATALOGO_ANDAR = crearCatalogoEstancias({
   // la barra de escena. Se vuelve por la salida, su punto de interacción.
   museo: {
     planta: PLANTA_MUSEO,
-    componer: componerMuseo,
+    // #853 (vertical 2): la sala sigue siendo la misma (`PLANTA_MUSEO` no
+    // cambia, el libro no bloquea nada que el atril ya no bloquee), pero lo
+    // que se pinta ahora es la sala MÁS el libro animado, fundidos por
+    // `libro-museo.mjs` en cada fotograma.
+    componer: componerMuseoConLibro,
     entrada: ENTRADA_MUSEO,
     interacciones: INTERACCIONES_MUSEO,
     // Interior cerrado y sin ventanas: lo que asome por un hueco es más sala sin

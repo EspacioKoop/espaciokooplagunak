@@ -47,24 +47,6 @@
       "evidence": {"type": "issue", "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/584"}
     },
     {
-      "module": "libro-geometria.mjs",
-      "status": "declared-orphan",
-      "foundation": true,
-      "reason": "Geometría pura del libro 3D interactuable (#853): malla por ángulo de apertura y hoja en vuelo, igual que rig-esqueleto.mjs (#603). No lo importa nadie todavía porque el consumidor (libro-catalogo.mjs + escena andable) es el siguiente vertical del mismo issue y no debe nacer acoplado a la ventana ni duplicar validación de procedencia.",
-      "declaredBy": "Espaciokoop Lagunak",
-      "declaredAt": "2026-08-29",
-      "evidence": {"type": "issue", "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/853"}
-    },
-    {
-      "module": "libro-pagina.mjs",
-      "status": "declared-orphan",
-      "foundation": true,
-      "reason": "Dibujo de la página del libro 3D interactuable (#853, vertical 1): mancha tipográfica y composición con chapasDeRejilla a su propia celda, sin texto legible (#526/#838). No lo importa nadie todavía porque el consumidor (libro-catalogo.mjs + escena andable) es el siguiente vertical del mismo issue; la hoja que gira (libro-geometria.mjs) ya provee la cara sobre la que se coloca.",
-      "declaredBy": "Espaciokoop Lagunak",
-      "declaredAt": "2026-08-29",
-      "evidence": {"type": "issue", "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/853"}
-    },
-    {
       "module": "nave-movimiento-sala-prueba.mjs",
       "status": "declared-orphan",
       "foundation": true,

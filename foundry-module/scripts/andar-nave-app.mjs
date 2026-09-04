@@ -29,6 +29,9 @@ import { openWorkspaceApp } from "./station-workspace-ui.mjs";
 import { SECCION } from "./paleta.mjs";
 import { cartelaDe, piezaPorId } from "./catalogo-piezas.mjs";
 import { CATALOGO_MUSEO } from "./museo-piezas.mjs";
+import { CATALOGO_LIBROS, ID_LIBRO_CLASICO } from "./libro-catalogo.mjs";
+import { PAGINAS_LIBRO } from "./libro-museo.mjs";
+import { activarLibro, cerrarLibro } from "./libro-sesion.mjs";
 import { AJUSTE_TELEMETRIA, aceptarSensores, aceptarTelemetria } from "./ship-view/telemetria-difusion.mjs";
 import { AJUSTE_NIVEL_ALERTA } from "./alerta-escena.mjs";
 
@@ -141,14 +144,29 @@ export const TECLA_GIRO = Object.freeze({ q: -1, e: 1, ArrowLeft: -1, ArrowRight
  * una prueba. `andar-nave-app.test.mjs` compara las tres tablas y falla si un
  * mapa pisa a otro.
  */
-export const TECLAS_ACCION = Object.freeze({ v: "camara", V: "camara" });
+export const TECLAS_ACCION = Object.freeze({
+  v: "camara",
+  V: "camara",
+  // El gesto repetible del libro (#914): `f` de "usar/interactuar", la
+  // misma tecla que la convención habitual de este género. En el flanco de
+  // PULSACIÓN, igual que `camara` — mantenerla pulsada no debe pasar página
+  // sesenta veces por segundo.
+  f: "interactuar",
+  F: "interactuar",
+});
 
 /**
  * Engancha teclado a un mando de `arrancarAndar`. Vive fuera de las dos
  * clases a propósito, igual que `encenderSala` en `cantina-app.mjs`: es
  * cableado de DOM, no comportamiento de ventana.
+ *
+ * `alInteractuar` es opcional (#914): el gesto repetible del libro del
+ * museo (pasar página / cerrar en la última sin tener que salir y volver a
+ * entrar en el punto de interacción, que el motor solo avisa por el flanco
+ * de ENTRADA). Sin callback, la tecla no hace nada — mismo contrato que
+ * `alTocarPuerta`/`alAlcanzarInteraccion` en `arrancarAndar`.
  */
-function engancharTeclado(raiz, mando) {
+function engancharTeclado(raiz, mando, alInteractuar = null) {
   const lienzo = raiz?.querySelector?.(".lagunak-andar-lienzo");
   if (!lienzo) return () => {};
 
@@ -201,6 +219,12 @@ function engancharTeclado(raiz, mando) {
       ev.preventDefault();
       ev.stopPropagation();
       mando.alternarCamara();
+      return;
+    }
+    if (TECLAS_ACCION[ev.key] === "interactuar") {
+      ev.preventDefault();
+      ev.stopPropagation();
+      alInteractuar?.();
     }
   };
   const onKeyUp = (ev) => {
@@ -279,10 +303,10 @@ function arrancar(raiz, estanciaPedida = null) {
    * cartela que interpretara etiquetas sería una superficie de inyección a
    * cambio de nada.
    */
-  function pintarCartela(piezaId) {
+  function pintarCartela(piezaId, catalogo = CATALOGO_MUSEO) {
     const nodo = raiz?.querySelector?.("[data-andar-cartela]");
     if (!nodo) return;
-    const pieza = piezaId ? piezaPorId(CATALOGO_MUSEO, piezaId) : null;
+    const pieza = piezaId ? piezaPorId(catalogo, piezaId) : null;
     if (!pieza) {
       nodo.hidden = true;
       return;
@@ -302,6 +326,40 @@ function arrancar(raiz, estanciaPedida = null) {
     escribir("[data-cartela-texto]", cartela.texto);
     escribir("[data-cartela-credito]", cartela.credito);
     nodo.hidden = false;
+  }
+
+  // El id de la pieza del libro que está al alcance AHORA MISMO, o `null`
+  // (#914, follow-up al review de VaroTv7). El motor solo avisa en el
+  // FLANCO de entrada (`alAlcanzarInteraccion`): la primera llegada abre el
+  // libro, pero sin guardar esto en algún sitio no había forma de repetir
+  // el gesto sin salir y volver a entrar — y salir ya cierra el libro de
+  // golpe (`alSalirDeInteraccion`), así que esa vuelta siempre reabría en
+  // la página 0. El callback cableado a la tecla F (ver `engancharTeclado`
+  // más abajo) lee esta variable para repetir el MISMO gesto mientras se
+  // sigue de pie ante el libro, sin depender de un segundo flanco que el
+  // motor no dispara.
+  let libroAlAlcance = null;
+
+  /**
+   * El gesto del libro (#853, vertical 2): un solo camino para abrir,
+   * pasar página y cerrar en la última — la máquina de estados en
+   * `libro-estado.mjs`/`libro-sesion.mjs` ya decide cuál de las tres toca
+   * según la fase en la que esté. Se llama desde el flanco de entrada
+   * (`alAlcanzarInteraccion`) Y desde la tecla repetible (F, más abajo) con
+   * el mismo `piezaId` guardado en `libroAlAlcance`.
+   *
+   * `mando.ahora()` y NUNCA `Date.now()` (#914): `arrancarAndar` evalúa la
+   * transición del libro con el reloj MONOTÓNICO que ya usa para pintar cada
+   * fotograma (`opciones.tiempo` en `libro-museo.mjs`); mezclar ese reloj con
+   * el de pared es justo el bug que dejaba la apertura congelada en 0 — el
+   * tiempo transcurrido salía negativo y se limitaba a cero.
+   */
+  function gestoLibro(piezaId) {
+    const reducirMovimiento = Boolean(
+      globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches,
+    );
+    activarLibro({ totalPaginas: PAGINAS_LIBRO, reducirMovimiento, ahoraMs: mando.ahora() });
+    pintarCartela(piezaId, CATALOGO_LIBROS);
   }
 
   let ultimoSelloEnviado = null;
@@ -433,13 +491,24 @@ function arrancar(raiz, estanciaPedida = null) {
     // ignora el `puesto` que se le pasa y abre el propio (#237, ver la
     // cabecera de `station-workspace-ui.mjs`) — caminar hasta una consola
     // ajena no enseña nada que el relé no dejara ver igualmente por botón.
-    alAlcanzarInteraccion: ({ accion }) => {
+    alAlcanzarInteraccion: (interaccion) => {
+      const { accion } = interaccion;
       if (accion?.tipo === "consola") openWorkspaceApp(accion.puesto);
       // La cartela de una pieza de museo (#598). Es LECTURA y nada más: no
       // abre ventana, no marca la pieza como vista y no toca ningún documento.
       // El texto sale del catálogo —que es el dato— y solo el nombre de la
       // naturaleza sale de i18n, que es interfaz.
       else if (accion?.tipo === "cartela") pintarCartela(accion.pieza);
+      // El libro interactuable (#853, vertical 2). La primera llegada lo
+      // abre; mientras se está de pie ante él, la tecla de interactuar
+      // (`gestoLibro`, más abajo) repite el MISMO gesto para pasar página o
+      // cerrarlo en la última — el flanco de entrada del motor solo dispara
+      // una vez por acercamiento, así que aquí solo se recuerda QUÉ libro es
+      // y se dispara la primera apertura.
+      else if (accion?.tipo === "libro") {
+        libroAlAlcance = accion.pieza ?? ID_LIBRO_CLASICO;
+        gestoLibro(libroAlAlcance);
+      }
       // Un punto que lleva a otra estancia (#587: la cabina de teléfono de la
       // playa devuelve a la nave). Reusa EXACTAMENTE el camino de una puerta en
       // vez de tener su propio salto: cambiar de estancia ya está resuelto, y
@@ -452,8 +521,18 @@ function arrancar(raiz, estanciaPedida = null) {
     },
     // Alejarse la retira (#598). Va por el flanco de SALIDA del bucle y no por
     // un temporizador: una cartela se deja de leer cuando te apartas, no cuando
-    // pasan unos segundos.
-    alSalirDeInteraccion: () => pintarCartela(null),
+    // pasan unos segundos. Y para el libro (#853) además lo CIERRA sin animar
+    // —la misma regla instantánea que ya tenía la cartela—: alejarse de un
+    // libro que nadie mira no debería seguir gastando fotogramas ni recordando
+    // por qué página iba. Llamar a `cerrarLibro()` al salir de CUALQUIER
+    // interacción (no solo la del libro) es barato — resetea un libro que ya
+    // estaba cerrado no hace nada— y así no hace falta que este flanco sepa de
+    // qué interacción se está saliendo.
+    alSalirDeInteraccion: () => {
+      pintarCartela(null);
+      cerrarLibro();
+      libroAlAlcance = null;
+    },
     // El de la estancia de ARRANQUE, no el de la nave (#587). Sin esto, abrir
     // directamente en un exterior pintaba su cielo con el gris de entre salas y
     // solo se corregía al cambiar de estancia — que en la playa no pasa nunca,
@@ -465,7 +544,13 @@ function arrancar(raiz, estanciaPedida = null) {
     // solo la lista ya resuelta de ese instante.
     otrosJugadores: jugadoresParaRender,
   });
-  const desenganchar = engancharTeclado(raiz, mando);
+  // Repite el gesto del libro SOLO si hay uno al alcance ahora mismo
+  // (`libroAlAlcance`, ver su cabecera más arriba): sin esto, pulsar F en
+  // mitad del vestíbulo dispararía el mismo `activarLibro` que un libro que
+  // no se está tocando.
+  const desenganchar = engancharTeclado(raiz, mando, () => {
+    if (libroAlAlcance) gestoLibro(libroAlAlcance);
+  });
 
   // Publicación periódica mientras la ventana está abierta: `debeMuestrear`
   // hace el throttle real (~150ms), este intervalo solo ofrece la

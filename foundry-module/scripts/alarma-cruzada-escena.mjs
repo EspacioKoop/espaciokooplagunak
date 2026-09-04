@@ -15,7 +15,7 @@ import {
   datosAlarmaCruzada,
   textoAlarmaCruzada,
 } from "./alarma-cruzada.mjs";
-import { localizeSystemName } from "./ship-view.mjs";
+import { localizeSystemName } from "./ship-view/ship-view.mjs";
 
 export const AJUSTE_ALARMA_CRUZADA = "alarmaCruzadaReactorEscudos";
 const CLASE_BASE = "lagunak-alarma-cruzada";

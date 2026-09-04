@@ -107,9 +107,11 @@
                 <canvas data-lagunak-visor-piloto width="192" height="108"></canvas>
               </div>
               <div class="lagunak-workspace__nav-display">
-                <div class="lagunak-workspace__radar" role="img" aria-label="{{navigationAriaLabel}}" style="--lagunak-heading: {{navigationHeading}}deg">
+                <div class="lagunak-workspace__radar" role="img" aria-label="{{navigationAriaLabel}}"{{#if navigationHeadingKnown}} style="--lagunak-heading: {{navigationHeading}}deg"{{/if}}>
                   <span class="lagunak-workspace__radar-ring" aria-hidden="true"></span>
-                  <span class="lagunak-workspace__heading-line" aria-hidden="true"></span>
+                  {{#if navigationHeadingKnown}}
+                    <span class="lagunak-workspace__heading-line" aria-hidden="true"></span>
+                  {{/if}}
                   <i class="fa-solid fa-shuttle-space" aria-hidden="true"></i>
                 </div>
                 <div class="lagunak-workspace__route-copy">

@@ -170,6 +170,14 @@ tripulación. Un jugador abre directamente su puesto asignado; si aún no tiene
 uno, la ventana le lleva al selector. El GM puede previsualizar las seis
 consolas y actualizar manualmente telemetría de `/v1/state` y `/v1/contacts`.
 
+La consola avisa de los puestos no atendidos (#951). La lista se calcula en
+[`station-assignment.mjs`](scripts/station-assignment.mjs) exclusivamente desde
+usuarios jugadores conectados y su flag de asignación efectivo; una orden nunca
+cuenta como ocupación. Los cambios de conexión o asignación repintan el aviso de
+forma determinista. Conforme a la decisión #512, el aviso no emite órdenes, no
+reasigna puestos ni transfiere autoridad: la simulación conserva el último valor
+ordenado.
+
 La frontera es deliberada: los jugadores **no leen URL/token, no consultan el
 puente y no reciben telemetría omnisciente**. Sus consolas muestran asignación,
 tripulación y procedimientos locales. La previsualización GM es solo lectura;

@@ -47,13 +47,13 @@ import {
   prepararVistaReposicion,
   reposicionarNave,
 } from "./reposicion-control.mjs";
-import { firmaEstadoNaveVisible, prepareRoute, prepareSystemRows } from "./ship-view.mjs";
+import { firmaEstadoNaveVisible, prepareRoute, prepareSystemRows } from "./ship-view/ship-view.mjs";
 import {
   barraRecurso,
   barrasSistema,
   aplicarBarraDom,
   textoPorcentaje,
-} from "./barras-estado.mjs";
+} from "./ship-view/barras-estado.mjs";
 import { estadoIcono, iconoSistemaDataUri, aplicarIconoDom } from "./iconos-sistema.mjs";
 import { setSimulationPaused } from "./tempo-control.mjs";
 import { contenidoEstadoBitacora, fechaLocal } from "./bitacora-nave.mjs";

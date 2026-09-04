@@ -39,7 +39,7 @@ import { ANCHO_TESELA, METROS_POR_TEXEL, texturaMuro } from "./piel-textura.mjs"
 import { piezasPielHoja } from "./nave-piel-puerta.mjs";
 import { piezasPielColumna, piezasPielObjeto } from "./nave-piel-objeto.mjs";
 import { piezasPielSuelo, piezasPielTecho } from "./nave-piel-suelo.mjs";
-import { piezasLuminarias, mallaDifusorLuminarias, colorDifusorLuminaria, focosLuminarias, mallaConoLuminarias, ALFA_CONO } from "./nave-luminaria.mjs";
+import { piezasLuminarias, mallaDifusorLuminarias, colorDifusorLuminaria, focosLuminarias, capasConoLuminarias, motasLuminarias, fundirCercanas, ALFA_MOTAS } from "./nave-luminaria.mjs";
 import { crearPlanta } from "./nave-movimiento.mjs";
 import { poligonosOtrosJugadores } from "./nave-avatares-render.mjs";
 
@@ -680,10 +680,14 @@ export function crearSalaCaja({
   // `componer`, cada fotograma, sin rehacer un solo vértice — es la condición
   // que #551 dejó puesta al medir el presupuesto de la sala.
   const difusorLuminarias = mallaDifusorLuminarias({ ancho, profundidad, altura: ALTURA });
-  // El haz visible de cada luminaria (#556). Geometría fija de la sala, como el
-  // difusor: lo único que cambia por fotograma es su color, que sigue al de la
-  // luminaria que lo emite.
-  const conoLuminarias = mallaConoLuminarias({ ancho, profundidad, altura: ALTURA });
+  // El haz visible de cada luminaria (#556), en capas concéntricas: el motor no
+  // tiene alfa por vértice, así que el borde se difumina solapando capas de baja
+  // opacidad — el núcleo acumula, el borde se queda con la de fuera. Geometría
+  // fija de la sala, como el difusor: lo único que cambia por fotograma es el
+  // color, que sigue al de la luminaria que lo emite.
+  const capasCono = capasConoLuminarias({ ancho, profundidad, altura: ALTURA });
+  // Y el polvo suspendido en lo alto del haz, donde la luz rasante lo encendería.
+  const motasPorLuminaria = motasLuminarias({ ancho, profundidad, altura: ALTURA });
 
   const planta = crearPlanta({ ancho, profundidad, obstaculos: [...columnas, ...obstaculosMobiliario] });
   const tieneVentanas = ventanas.length > 0;
@@ -767,11 +771,32 @@ export function crearSalaCaja({
     // parpadea por avería, su haz parpadea con ella— y emisivo, porque un haz
     // sombreado por su normal tendría un lado oscuro, y la luz no tiene lados.
     // Apagado no se dibuja: un haz negro traslúcido es una mancha de suciedad.
-    const cono = conoLuminarias && tonoDifusor.color !== 0x000000
-      ? [{ malla: conoLuminarias, color: tonoDifusor.color, emisivo: true, alpha: ALFA_CONO }]
+    // Apagado no se dibuja ni el haz ni el polvo: un haz negro traslúcido es una
+    // mancha de suciedad, y un polvo que brilla sin lámpara que lo ilumine es
+    // una afirmación que nadie ha hecho.
+    const encendida = tonoDifusor.color !== 0x000000;
+    //
+    // Y sólo las luminarias que se tienen cerca: el reactor tiene 36 y desde
+    // cualquier punto se ven unas pocas. Es la misma regla que el motor aplica a
+    // los focos, y sin ella el haz pasa a ser un tercio de los polígonos de una
+    // sala ya texturada — lo cazó la prueba de #584.
+    const cerca = [x, z];
+    const haz = encendida
+      ? capasCono
+          .map(({ porLuminaria, alpha }) => ({
+            malla: fundirCercanas(porLuminaria, cerca),
+            color: tonoDifusor.color,
+            emisivo: true,
+            alpha,
+          }))
+          .filter(({ malla }) => malla)
+      : [];
+    const mallaMotas = encendida ? fundirCercanas(motasPorLuminaria, cerca) : null;
+    const motas = mallaMotas
+      ? [{ malla: mallaMotas, color: tonoDifusor.color, emisivo: true, alpha: ALFA_MOTAS }]
       : [];
 
-    const partes = [...piezas, ...difusor, ...cono, ...hojasPuertas, ...vistaVentanas].map(({ malla, color, emisivo, textura, ambiente, alpha }) =>
+    const partes = [...piezas, ...difusor, ...haz, ...motas, ...hojasPuertas, ...vistaVentanas].map(({ malla, color, emisivo, textura, ambiente, alpha }) =>
       componerEscena(trasladarMalla(malla, [-camara[0], -camara[1], -camara[2]]), {
         ancho: anchoLienzo,
         alto: altoLienzo,

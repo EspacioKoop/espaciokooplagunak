@@ -424,15 +424,23 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     sala iluminada al revés no se lee como un fallo de luz, se lee como que las lámparas no son
     lámparas—. Hay prueba que lo exige. El precio de ese tope es que el charco en el suelo apenas
     gana 0,046, así que **el sombreado por foco casi no se lee**: lo que hace visible que una
-    luminaria emite es el **haz** (`mallaConoLuminarias`), ocho caras traslúcidas por lámpara, del
-    mismo color que su difusor y apagándose con él. Para eso el motor estrenó **alfa por polígono**,
-    que vive en `retro3d-lienzo.mjs` porque es cómo se PINTA y no cómo se compone; sin `alpha`
-    declarado no se toca `globalAlpha` y ninguna escena existente cambia. El haz **no llega al
-    suelo** a propósito: uno que termina en el suelo dibuja un borde duro donde nada lo produce, y
-    eso lo convierte en un objeto. Cuesta: el reactor pasa de 21,9 a 30,8 ms por fotograma (+41 %),
-    de los que 3,2 son los focos y el resto el haz —36 luminarias por 9 caras, aunque sólo 92 se
-    vean—; el recorte pendiente es hacer con los conos lo que el motor ya hace con los focos,
-    quedarse con los más cercanos al observador. La luz de punto se evalúa **en el centroide de cada cara** y entra por
+    luminaria emite es el **haz** (`capasConoLuminarias`) más el **polvo** en suspensión
+    (`motasLuminarias`), del mismo color que su difusor y apagándose con él. Para eso el motor
+    estrenó **alfa por polígono**, que vive en `retro3d-lienzo.mjs` porque es cómo se PINTA y no cómo
+    se compone; sin `alpha` declarado no se toca `globalAlpha` y ninguna escena existente cambia.
+    El borde del haz se difumina **por CAPAS concéntricas** y no por degradado: el motor pinta cada
+    cara de un color plano, así que no hay degradado dentro de una cara y el gradiente se hace
+    solapando tres conos de α 0,055 —el eje acumula ~16 %, el borde se queda en 5 %—. Llega al suelo
+    y se queda 2 cm por encima (compartir plano con la losa es un parpadeo), y el charco mide 3,4 m
+    con las luminarias cada 4, así que **dos charcos vecinos no se solapan**: si lo hicieran, el
+    suelo quedaría iluminado por igual y el haz dejaría de señalar dónde está cada luz. El polvo va
+    **sólo en lo alto**, cerca del difusor, y es determinista por la posición de su luminaria —
+    repartido por todo el cono sería niebla, y sorteado por fotograma sería un error de render.
+    El **recorte a las cuatro luminarias más cercanas** (`fundirCercanas`, `TOPE_HACES`) es la misma
+    regla que el motor aplica a los focos y no es opcional: sin él el reactor pasaba de 21,9 a
+    30,8 ms (+41 %) y —esto lo cazó una prueba de #584, no una medida— el haz se convertía en un
+    tercio de los polígonos de una sala ya texturada. Con el recorte son 25,3 ms (+16 %), y de eso
+    casi todo son los focos: el haz y el polvo salen ya casi gratis. La luz de punto se evalúa **en el centroide de cada cara** y entra por
     `intensidadCara` sumada a la direccional de siempre, sin tocar el rasterizador ni el orden por
     pintor: son las mismas caras con otro tono. Eso no valía la pena cuando un muro era un
     cuadrilátero grande —una lámpara al lado no daba un charco de luz, sino un muro que cambiaba de

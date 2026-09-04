@@ -12,7 +12,8 @@ import {
   ANCHO, CAIDA, CAIDA_DIFUSOR, LARGO, PASO,
   piezasLuminarias, mallaDifusorLuminarias, colorDifusorLuminaria,
   reparto, focosLuminarias, tonoLuminaria, POTENCIA_FOCO, ALCANCE_FOCO,
-  mallaConoLuminarias, ALFA_CONO, CAIDA_CONO, APERTURA_CONO,
+  capasConoLuminarias, motasLuminarias, fundirCercanas,
+  ALFA_CONO, ALFA_MOTAS, APERTURA_CONO, CAPAS_CONO, TOPE_HACES, MOTAS_POR_LUMINARIA,
 } from "../scripts/nave-luminaria.mjs";
 import { LUZ_CALIDA, MURAL, SECCION, ALERTA } from "../scripts/paleta.mjs";
 import { ALTURA, crearSalaCaja } from "../scripts/nave-sala-caja.mjs";
@@ -345,54 +346,124 @@ test("bajo la lámpara siempre hay más luz que entre dos lámparas", () => {
 
 /* ---- el haz visible (#556) -------------------------------------------------- */
 
-test("hay un haz por luminaria y no le sale ni un NaN", () => {
-  // El primer intento tenía NaN en x y z porque leía `difusor[2]` de una medida
-  // que sólo trae DOS componentes (es una placa, no una caja). La escena salía
-  // con cero polígonos, que en un motor que descarta caras degeneradas es un
-  // fallo perfectamente silencioso.
-  const sala = { ancho: 12, profundidad: 8, altura: ALTURA };
-  const malla = mallaConoLuminarias(sala);
-  assert.ok(malla, "no se generó el haz");
-  assert.ok(malla.vertices.every((v) => v.length === 3 && v.every(Number.isFinite)), "hay NaN en el haz");
-  const conos = reparto(sala.ancho, sala.profundidad).length;
-  // Ocho costados más una tapa por luminaria.
-  assert.equal(malla.caras.length, conos * 9);
+const SALA = Object.freeze({ ancho: 12, profundidad: 8, altura: ALTURA });
+
+test("el haz sale en capas concéntricas, de dentro a fuera", () => {
+  // El motor pinta cada cara de un color plano con una opacidad: no hay
+  // degradado DENTRO de una cara. El borde se difumina solapando capas, así que
+  // que haya más de una no es un detalle de implementación, es el mecanismo.
+  const capas = capasConoLuminarias(SALA);
+  assert.equal(capas.length, CAPAS_CONO);
+  assert.ok(CAPAS_CONO > 1, "con una sola capa no hay borde difuminado que valga");
+  const radio = ({ malla }) => {
+    const xs = malla.vertices.map((v) => v[0]);
+    return Math.max(...xs) - Math.min(...xs);
+  };
+  for (let i = 1; i < capas.length; i += 1) {
+    assert.ok(
+      radio(capas[i].porLuminaria[0]) > radio(capas[i - 1].porLuminaria[0]),
+      "las capas no van de dentro a fuera",
+    );
+  }
+  for (const capa of capas) assert.equal(capa.alpha, ALFA_CONO);
 });
 
-test("el haz se abre hacia abajo y se corta antes del suelo", () => {
-  // Un haz que llega al suelo dibuja un borde duro donde no hay nada que lo
-  // produzca, y deja de leerse como luz para leerse como un objeto colgando.
-  const sala = { ancho: 8, profundidad: 8, altura: ALTURA };
-  const malla = mallaConoLuminarias(sala);
+test("la opacidad acumulada del núcleo sigue siendo un velo", () => {
+  // Lo que se ve en el eje del haz es lo que dejan pasar las tres capas. Si eso
+  // se acercara a opaco, el haz volvería a tapar el suelo que dice iluminar.
+  const nucleo = 1 - (1 - ALFA_CONO) ** CAPAS_CONO;
+  assert.ok(nucleo > 0.05, `el haz no se vería (${nucleo.toFixed(3)})`);
+  assert.ok(nucleo < 0.35, `el haz taparía lo que ilumina (${nucleo.toFixed(3)})`);
+  assert.ok(ALFA_CONO < ALFA_MOTAS, "una mota tiene que ser más sólida que el haz que la contiene");
+});
+
+test("el haz llega al suelo y se abre por el camino", () => {
+  const [, , fuera] = capasConoLuminarias(SALA);
+  const { malla } = fuera.porLuminaria[0];
+  assert.ok(malla.vertices.every((v) => v.every(Number.isFinite)), "hay NaN en el haz");
   const alturas = malla.vertices.map((v) => v[1]);
-  const arriba = Math.max(...alturas);
   const abajo = Math.min(...alturas);
-  assert.ok(abajo > 0.2, `el haz llega al suelo (y=${abajo})`);
-  assert.ok(Math.abs((arriba - abajo) - CAIDA_CONO) < 1e-9, "no cae lo que dice caer");
-  // Y se ABRE: el radio de abajo es mayor que el de arriba.
+  const arriba = Math.max(...alturas);
+  // Al suelo, pero no EN el suelo: compartir plano con la losa es un parpadeo.
+  assert.ok(abajo > 0, "el haz atraviesa el suelo");
+  assert.ok(abajo < 0.1, `el haz no llega al suelo (y=${abajo})`);
+  assert.ok(Math.abs(arriba - (ALTURA - CAIDA - CAIDA_DIFUSOR)) < 1e-9, "no nace en el difusor");
   const radio = (y) => {
     const xs = malla.vertices.filter((v) => Math.abs(v[1] - y) < 1e-9).map((v) => v[0]);
     return (Math.max(...xs) - Math.min(...xs)) / 2;
   };
   assert.ok(radio(abajo) > radio(arriba), "el haz no se abre hacia abajo");
-});
-
-test("el haz es traslúcido, o sería una pieza de plástico", () => {
-  assert.ok(ALFA_CONO > 0, "un haz invisible no es un haz");
-  assert.ok(ALFA_CONO < 0.5, `alfa ${ALFA_CONO}: taparía lo que dice iluminar`);
   assert.ok(APERTURA_CONO > 0, "un haz que no se abre es un tubo");
 });
 
-test("una sala compone su haz con alfa, y sin él nadie lo tiene", () => {
-  // La otra mitad: que el alfa llegue de verdad al polígono. El motor no tenía
-  // transparencia antes de #556, así que sin declararla ningún polígono la trae
-  // y ninguna escena existente cambia.
-  const malla = mallaConoLuminarias({ ancho: 8, profundidad: 8, altura: ALTURA });
-  const opciones = { ancho: 200, alto: 200, epoca: "psx", fov: 62, color: 0xffcc88, emisivo: true, posicion: [-4, -2, 4] };
-  const conAlfa = componerEscena(malla, { ...opciones, alpha: ALFA_CONO }).poligonos;
-  const sinAlfa = componerEscena(malla, opciones).poligonos;
-  assert.ok(conAlfa.length > 0, "el haz no se compuso");
-  assert.equal(conAlfa.length, sinAlfa.length, "declarar alfa no puede cambiar la geometría");
-  assert.ok(conAlfa.every((p) => p.alpha === ALFA_CONO), "algún polígono del haz perdió su alfa");
-  assert.ok(sinAlfa.every((p) => !("alpha" in p)), "un polígono trae alfa sin haberla pedido");
+test("los charcos de dos luminarias vecinas no se solapan", () => {
+  // Si el charco pasara del paso entre lámparas, el suelo quedaría iluminado
+  // por igual y el haz dejaría de señalar dónde está cada luz.
+  const [, , fuera] = capasConoLuminarias(SALA);
+  const { malla } = fuera.porLuminaria[0];
+  const suelo = malla.vertices.filter((v) => v[1] < 0.1).map((v) => v[0]);
+  const diametro = Math.max(...suelo) - Math.min(...suelo);
+  assert.ok(diametro < PASO, `charco de ${diametro.toFixed(2)} m con paso de ${PASO} m`);
+});
+
+test("el polvo cae DENTRO del haz y sólo en lo alto", () => {
+  // Una mota fuera del cono se ve flotando al lado de la luz, no dentro de ella.
+  const grupos = motasLuminarias(SALA);
+  assert.equal(grupos.length, reparto(SALA.ancho, SALA.profundidad).length);
+  const [, , fuera] = capasConoLuminarias(SALA);
+  const yDifusor = ALTURA - CAIDA - CAIDA_DIFUSOR;
+  for (let i = 0; i < grupos.length; i += 1) {
+    const { centro, malla } = grupos[i];
+    assert.equal(malla.caras.length, MOTAS_POR_LUMINARIA * 6, "una mota no es un cubo");
+    assert.ok(malla.vertices.every((v) => v.every(Number.isFinite)), "hay NaN en el polvo");
+    const alturas = malla.vertices.map((v) => v[1]);
+    assert.ok(Math.max(...alturas) <= yDifusor + 0.05, "hay polvo por encima de la lámpara");
+    assert.ok(Math.min(...alturas) > yDifusor - 1.2, "el polvo baja demasiado: es lo alto del haz");
+    // Y dentro del radio que el cono tiene A ESA ALTURA.
+    for (const [vx, vy, vz] of malla.vertices) {
+      const rHaz = radioDelHaz(fuera.porLuminaria[i], vy);
+      const d = Math.hypot(vx - centro[0], vz - centro[1]);
+      assert.ok(d <= rHaz + 0.05, `mota fuera del haz (d=${d.toFixed(2)}, r=${rHaz.toFixed(2)})`);
+    }
+  }
+});
+
+/** El radio del tronco de cono a una altura dada, por interpolación entre sus
+ *  dos anillos: el haz es recto, así que basta con eso. */
+function radioDelHaz({ centro, malla }, y) {
+  const alturas = malla.vertices.map((v) => v[1]);
+  const arriba = Math.max(...alturas);
+  const abajo = Math.min(...alturas);
+  const anillo = (yAnillo) => {
+    const puntos = malla.vertices.filter((v) => Math.abs(v[1] - yAnillo) < 1e-9);
+    return Math.max(...puntos.map((v) => Math.hypot(v[0] - centro[0], v[2] - centro[1])));
+  };
+  const t = (arriba - y) / (arriba - abajo);
+  return anillo(arriba) + (anillo(abajo) - anillo(arriba)) * Math.min(1, Math.max(0, t));
+}
+
+test("el polvo es el mismo en cada carga: no parpadea", () => {
+  // Sin determinismo las motas saltarían de sitio en cada fotograma, que se lee
+  // como un error de render y no como polvo.
+  const a = motasLuminarias(SALA);
+  const b = motasLuminarias(SALA);
+  assert.deepEqual(a[0].malla.vertices, b[0].malla.vertices);
+});
+
+test("sólo se pintan las luminarias que se tienen cerca", () => {
+  // El recorte que exige la prueba de #584: sin él, el haz de las 36 luminarias
+  // del reactor pasa a ser un tercio de los polígonos de una sala ya texturada.
+  const grande = { ancho: 22, profundidad: 22, altura: ALTURA };
+  const [, , fuera] = capasConoLuminarias(grande);
+  assert.ok(fuera.porLuminaria.length > TOPE_HACES, "esta sala no sirve para probar el recorte");
+  const cerca = fundirCercanas(fuera.porLuminaria, [11, 4]);
+  const todas = fundirCercanas(fuera.porLuminaria, [11, 4], fuera.porLuminaria.length);
+  assert.equal(cerca.caras.length, todas.caras.length * TOPE_HACES / fuera.porLuminaria.length);
+  // Y son de verdad las MÁS CERCANAS, no las primeras de la lista.
+  const lejos = fundirCercanas(fuera.porLuminaria, [1, 21]);
+  assert.notDeepEqual(cerca.vertices, lejos.vertices, "el recorte no mira dónde estás");
+});
+
+test("una sala sin luminarias no trae ni haz ni polvo", () => {
+  assert.equal(fundirCercanas([], [0, 0]), null);
 });

@@ -66,6 +66,11 @@ export function poligonosOtrosJugadores(jugadores, { camara, yaw, ancho, alto, e
       // Mismo convenio que `moverXZ`: 0 mira a +z. Sin rumbo declarado se queda
       // en 0, que es exactamente lo que se dibujaba antes.
       yaw: Number.isFinite(jugador?.yaw) ? jugador.yaw : 0,
+      // Lo que lleva en las manos viaja con la PERSONA, no con la descripción
+      // de su avatar: el pelo y la ropa son quién eres, y una linterna es lo
+      // que has cogido hace un minuto. Sin porte declarado no se dibuja nada
+      // más, así que ninguna sala existente cambia.
+      porte: jugador?.porte,
     }),
   );
 

@@ -155,3 +155,25 @@ test("la espada convive con las cajas en el mismo catálogo", () => {
   const conCaja = sostener("jarra", [0, 1, 0]).every((p) => !p.malla && p.medidas);
   assert.ok(conMalla && conCaja, "el catálogo admite las dos formas sin ramificar en quien cuelga");
 });
+
+test("el hombro enseña lo que NO llevas en la mano", () => {
+  const nombresDe = (porte) =>
+    piezasAvatar({ clase: "guerrero", gesto: "hombros" }, { pies: [0, 0, 0], porte })
+      .map((p) => p.nombre);
+
+  // Sin nada en las manos, la espada del guerrero sigue a la espalda.
+  assert.ok(nombresDe({}).some((n) => n.endsWith("Distintivo")));
+
+  // Con la espada empuñada, la espalda va vacía: si no, lleva dos.
+  assert.ok(!nombresDe({ manoDerecha: "espada" }).some((n) => n.endsWith("Distintivo")));
+
+  // Pero llevar una linterna no envaina la espada: sigue guardada donde estaba.
+  assert.ok(nombresDe({ manoDerecha: "linterna" }).some((n) => n.endsWith("Distintivo")));
+});
+
+test("el símbolo del clérigo no se retira por llevar algo: no compite con nada", () => {
+  const conLinterna = piezasAvatar({ clase: "clerigo" }, {
+    pies: [0, 0, 0], porte: { manoDerecha: "linterna" },
+  }).map((p) => p.nombre);
+  assert.ok(conLinterna.some((n) => n.endsWith("Distintivo")));
+});

@@ -23,7 +23,7 @@ import { AVATAR, FACCIONES, PIXEL, RETRATO } from "./paleta.mjs";
 import { caja } from "./cantina-escena.mjs";
 import { ANCLAS, anclasAvatar, dimensionesCuerpo, puntosAvatar } from "./avatar/avatar-rig.mjs";
 import { normalizarPorte, sostener } from "./avatar/avatar-porte.mjs";
-import { mezclar } from "./retro3d.mjs";
+import { mezclar, sombrear } from "./retro3d.mjs";
 
 /**
  * Clases del SRD 5.1 (CC-BY-4.0). Se nombran por su clave y la traducción vive
@@ -180,7 +180,7 @@ export function piezasAvatar(descripcion, { pies = [0, 0, 0], indice = 0, tiempo
     ...piezasDelPorte(porte, { anclas, prefijo, yaw }),
     ...atrezoDelGesto(av.gesto, { anclas, altoTorso, prefijo, indice, tiempo, yaw, porte: llevado }),
     // Y lo que lleva encima, que es lo que dice la clase de un vistazo.
-    ...distintivoDeClase(av.clase, { anclas, altoTorso, prefijo }),
+    ...distintivoDeClase(av.clase, { anclas, altoTorso, prefijo, porte: llevado }),
   ].map((pieza) => Object.freeze({ ...pieza, giro: yaw }));
 }
 
@@ -331,7 +331,34 @@ function atrezoDelGesto(gesto, { anclas, altoTorso, prefijo, indice = 0, tiempo 
  * Va colgado del anclaje `hombro`, que es un hueso: no hay aquí ni una cuenta
  * de proporción de cuerpo.
  */
-function distintivoDeClase(clase, { anclas, altoTorso, prefijo }) {
+/**
+ * Qué objeto del catálogo de porte es el distintivo de cada clase.
+ *
+ * El hombro pasa a enseñar LO QUE NO LLEVAS EN LA MANO: si el guerrero empuña
+ * su espada, la espalda va vacía; si empuña una linterna, la espada sigue ahí
+ * colgada, que es donde estaba. Antes el distintivo salía siempre y un guerrero
+ * armado acababa con dos espadas.
+ *
+ * Solo se listan las clases cuyo distintivo es un objeto que se puede empuñar.
+ * El símbolo sagrado del clérigo no entra: no es con lo que pega, así que no
+ * compite con nada — y retirarlo por llevar una linterna sería borrar quién es
+ * esa persona por haber cogido un trasto.
+ */
+const ARMA_DE_CLASE = Object.freeze({
+  guerrero: "espada",
+  paladin: "espada",
+  barbaro: "espada",
+  picaro: "espada",
+  explorador: "espada",
+});
+
+function distintivoDeClase(clase, { anclas, altoTorso, prefijo, porte = {} }) {
+  // El hombro enseña lo GUARDADO. Se retira solo si esa misma arma está en una
+  // mano: llevar una linterna no envaina la espada.
+  const arma = ARMA_DE_CLASE[clase];
+  const enLaMano = porte?.manoDerecha === arma || porte?.manoIzquierda === arma;
+  if (arma && enLaMano) return [];
+
   const alHombro = (color, medidas) => [
     { nombre: `${prefijo}Distintivo`, color, centro: anclas.hombro.punto, medidas },
   ];

@@ -95,7 +95,7 @@ no es la fuente del atlas, la campaña ni la persistencia.
 | Jugadores objetivo | 1–10; banda ideal 3–6. El mínimo jugable es 1 con puestos asistidos |
 | Alcance de la integración Foundry | Solo la capa de rol de la mesa; nunca requisito del juego |
 | Base de reglas de rol | SRD 5.1 (5e 2014) bajo **CC BY 4.0**, con atribución — no «fair use»; nada de reglas 2024 |
-| Comportamiento de puestos vacíos | Política acordada en [#512](https://github.com/EspacioKoop/espaciokooplagunak/issues/512): sin IA autónoma; conservar el último valor y avisar de que el puesto está vacío |
+| Comportamiento de puestos vacíos | Política acordada en [#512](https://github.com/EspacioKoop/espaciokooplagunak/issues/512) y formalizada en [ADR-0012](adr/0012-puestos-vacios-degradado-con-aviso.md): sin IA autónoma; conservar el último valor y avisar de que el puesto está vacío |
 | Divergencia de upstream | Permitida cuando aporte mejora tangible, siguiendo [UPSTREAM.md](UPSTREAM.md) y con su propio ADR |
 
 Pendientes de acordar entre Varo y Eloy: límite inicial de expediciones
@@ -211,10 +211,12 @@ operacional — **satisfecho**, ver
 [`VERIFICACION-NAVEGACION-Y-AUTOMATIZACION.md`](VERIFICACION-NAVEGACION-Y-AUTOMATIZACION.md)
 y [`SESION-NAVEGACION-OPERACIONAL.md`](SESION-NAVEGACION-OPERACIONAL.md):
 `set_target_heading`/`set_impulse`/`set_warp` ya son una decisión exclusiva
-del puesto que cambia el resultado de un encuentro), #481 (automatización de
-puestos vacíos — **verificado: no existe automatización nativa**, sistema sin
-tripulación queda congelado en su último valor; la decisión de diseño sobre
-qué comportamiento adoptar queda trazada en #512, ver
+del puesto que cambia el resultado de un encuentro), #481/#512 (automatización
+de puestos vacíos — **decidido**: degradado con aviso, sin automatización ni
+suplencia, registrado en
+[ADR-0012](adr/0012-puestos-vacios-degradado-con-aviso.md); #481 verificó que
+no existe automatización nativa —sistema sin tripulación queda congelado en su
+último valor— y #512 formalizó qué comportamiento adoptar sobre esa base; ver
 [`VERIFICACION-NAVEGACION-Y-AUTOMATIZACION.md`](VERIFICACION-NAVEGACION-Y-AUTOMATIZACION.md)),
 #482 (alarmas compartidas por dependencia entre sistemas — **mergeado**, PR
 #494: es dependencia entre sistemas, distinta del nivel de alerta de #338 en

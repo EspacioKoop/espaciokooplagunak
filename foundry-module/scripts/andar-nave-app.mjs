@@ -24,12 +24,13 @@ import { CATALOGO_ANDAR } from "./nave-catalogo-andar.mjs";
 import { puntoDeLlegada, resolverArranque } from "./nave-estancias.mjs";
 import { construirMuestra, debeMuestrear, programarMuestra } from "./nave-movimiento-red.mjs";
 import { presentesEn } from "./nave-presencia.mjs";
-import { avatarDeUsuario } from "./avatar-assignment.mjs";
+import { avatarDeUsuario } from "./avatar/avatar-assignment.mjs";
 import { openWorkspaceApp } from "./station-workspace-ui.mjs";
 import { SECCION } from "./paleta.mjs";
 import { cartelaDe, piezaPorId } from "./catalogo-piezas.mjs";
 import { CATALOGO_MUSEO } from "./museo-piezas.mjs";
-import { AJUSTE_TELEMETRIA, aceptarSensores, aceptarTelemetria } from "./telemetria-difusion.mjs";
+import { AJUSTE_TELEMETRIA, aceptarSensores, aceptarTelemetria } from "./ship-view/telemetria-difusion.mjs";
+import { AJUSTE_NIVEL_ALERTA } from "./alerta-escena.mjs";
 
 const ESTANCIA_INICIAL = "cantina";
 
@@ -388,6 +389,12 @@ function arrancar(raiz, estanciaPedida = null) {
       const ship = aceptarTelemetria(sobreTelemetria());
       return typeof ship?.heading === "number" ? ship.heading : null;
     },
+    // La luminaria se tiñe por alerta y parpadea por sistema dañado (#765): la
+    // MISMA alerta que ya se difunde a toda la mesa (`alerta-escena.mjs`) y la
+    // MISMA telemetría que ya llega por el puente — no se abre ningún dato
+    // nuevo, solo se conecta lo que ya circulaba.
+    aviso: () => game.settings?.get?.(MODULE_ID, AJUSTE_NIVEL_ALERTA) ?? null,
+    saludSistemas: () => aceptarTelemetria(sobreTelemetria())?.systems ?? null,
     componer: inicial.componer,
     planta: inicial.planta,
     puertas: inicial.puertas,

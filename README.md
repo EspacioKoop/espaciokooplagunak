@@ -6,8 +6,10 @@
 
 > Fork colaborativo de [EmptyEpsilon](https://github.com/daid/EmptyEpsilon) para juego, experimentación y desarrollo cooperativo entre personas y agentes de IA.
 
-[![CI/CD](https://github.com/VaroTv7/espaciokooplagunak/actions/workflows/cicd.yml/badge.svg)](https://github.com/VaroTv7/espaciokooplagunak/actions/workflows/cicd.yml)
-[![CodeQL](https://github.com/VaroTv7/espaciokooplagunak/actions/workflows/codeql.yml/badge.svg)](https://github.com/VaroTv7/espaciokooplagunak/actions/workflows/codeql.yml)
+> **Repositorio canónico:** [`EspacioKoop/espaciokooplagunak`](https://github.com/EspacioKoop/espaciokooplagunak). Personas, agentes, bots y automatizaciones deben abrir aquí los issues, ramas y pull requests y usar esta dirección como `origin`. La ubicación anterior bajo `VaroTv7` queda únicamente como redirección histórica y no debe usarse para trabajo nuevo.
+
+[![CI/CD](https://github.com/EspacioKoop/espaciokooplagunak/actions/workflows/cicd.yml/badge.svg)](https://github.com/EspacioKoop/espaciokooplagunak/actions/workflows/cicd.yml)
+[![CodeQL](https://github.com/EspacioKoop/espaciokooplagunak/actions/workflows/codeql.yml/badge.svg)](https://github.com/EspacioKoop/espaciokooplagunak/actions/workflows/codeql.yml)
 [![Licencia: GPL-2.0](https://img.shields.io/badge/licencia-GPL--2.0-blue.svg)](LICENSE)
 [![Base upstream](https://img.shields.io/badge/upstream-EmptyEpsilon-informational.svg)](https://github.com/daid/EmptyEpsilon)
 [![Docker](https://img.shields.io/badge/docker-servidor%20%2B%20puente-2496ed.svg?logo=docker&logoColor=white)](docker/README.md)
@@ -26,11 +28,12 @@ seguro y módulo Foundry en desarrollo. Las fases 0, 1 y 2 están completadas.
 | Historial y atribución de EmptyEpsilon | Hecho | `main` parte de `upstream/master` sin reescribir historial |
 | Licencia GPL-2.0 | Conservada | Véase [`LICENSE`](LICENSE) |
 | Normas de colaboración | Hecho | [`CONTRIBUTING.md`](CONTRIBUTING.md) y [`AGENTS.md`](AGENTS.md) |
+| Decisiones arquitectónicas | Documentadas | [`docs/adr/README.md`](docs/adr/README.md) e índice [`JSON`](docs/adr/index.json) |
 | Compilación reproducible | Verificada en Linux | Nativa ([`docs/BUILDING.md`](docs/BUILDING.md)) y en imagen Docker (SeriousProton fijado por commit) |
 | Ejecución con Docker | Verificada en local | Servidor headless + puente vía compose ([`docker/README.md`](docker/README.md)) |
 | Integración con Foundry VTT | Vertical en desarrollo | Puente v0 + módulo con estado, destino/ETA y mapa vivo; controles GM de tempo, reposición, ingeniería y maniobra; asignación y **espacios operativos de puesto** (cada tripulante emite las órdenes de su puesto: navegación, ingeniería con energía y refrigerante, armas). Smoke GUI **verificado en v11.302**; falta la fila del host moderno ([`docs/FOUNDRY.md`](docs/FOUNDRY.md), #29) |
 | Cambios jugables propios | Primera iteración disponible | «Lagunak: Primera guardia» (`scenario_90`) |
-| Lanzamientos propios | Automatización lista, sin lanzamiento aún | `docker-publish.yml` publica en GHCR con cada tag `v*`; falta el primer tag tras validar una sesión real |
+| Lanzamientos propios | Primer release publicado, publicación por tag aún sin estrenar | Existe el release/tag `v2026.08.27`. Las imágenes `espaciokooplagunak-server` y `-bridge` están publicadas y son públicas en GHCR, pero se subieron por `workflow_dispatch` y llevan `manual` + SHA corto, no la versión. El disparo por tag `v*` sigue sin ejercitarse y publicaría sin etiqueta de versión hasta que entre el arreglo de #829 |
 
 ## Qué es
 
@@ -156,7 +159,7 @@ El roadmap refleja intención, no promesas. Los cambios se concretarán mediante
 - [x] Validar el modo servidor o sin interfaz de EmptyEpsilon (nativo en PR #3; en contenedor en esta fase).
 - [x] Crear una imagen Docker reproducible y un `compose.yaml` documentado ([`docker/README.md`](docker/README.md)).
 - [x] Mantener la simulación y el puente de integración en servicios separados y una red privada.
-- [x] Inventariar el API HTTP heredado ([`docs/API_HTTP.md`](docs/API_HTTP.md)) y definir un contrato propio y versionado (v0, [`bridge/README.md`](bridge/README.md)).
+- [x] Inventariar el API HTTP heredado ([`docs/seguridad/API_HTTP.md`](docs/seguridad/API_HTTP.md)) y definir un contrato propio y versionado (v0, [`bridge/README.md`](bridge/README.md)).
 - [x] Implementar un puente que solo permita operaciones autorizadas y nunca exponga `/exec.lua` directamente.
 - [x] Añadir autenticación, validación de mensajes, límites y comprobaciones de salud.
 
@@ -268,7 +271,10 @@ la simulación ni el puente):
 ### Fase 5 — Distribución mantenible
 
 - [ ] Automatizar artefactos reproducibles para plataformas validadas
-      (las imágenes Docker ya se publican en GHCR por tag `v*`; faltan artefactos nativos).
+      (las imágenes Docker se publican en GHCR; su ruta de publicación se ejercitó por primera vez
+      el 2026-08-27 vía `workflow_dispatch`, que las etiqueta `manual` + SHA corto en lugar de con
+      una versión. `espaciokooplagunak-server` y `-bridge` están publicadas y son públicas. Falta
+      estrenar el disparo por tag `v*` y los artefactos nativos).
 - [ ] Publicar notas de versión que separen cambios propios y de upstream.
 - [ ] Establecer una cadencia segura de sincronización con EmptyEpsilon.
 
@@ -365,6 +371,7 @@ Espaciokoop Lagunak no está afiliado ni respaldado oficialmente por el equipo d
 - [Integración con Foundry VTT y gestión de nave](docs/FOUNDRY.md)
 - [Editor integrado de contenido](docs/CONTENT_EDITOR.md)
 - [Puente de integración — contrato v0](bridge/README.md)
-- [Inventario del API HTTP heredado](docs/API_HTTP.md)
+- [Inventario del API HTTP heredado](docs/seguridad/API_HTTP.md)
+- [Inspiración en juegos libres — mecánicas de rol que robar](docs/INSPIRACION_JUEGOS_LIBRES.md)
 - [Relación y sincronización con upstream](docs/UPSTREAM.md)
 - [Política de versionado y releases](VERSIONING.md)

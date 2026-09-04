@@ -11,6 +11,21 @@ Espaciokoop Lagunak es un fork independiente de [EmptyEpsilon](https://github.co
 | Web y wiki enlazadas de EmptyEpsilon | Proyecto original |
 | `README.md`, `CONTRIBUTING.md`, `AGENTS.md`, `docs/` del fork | Espaciokoop Lagunak, salvo indicación contraria |
 | Nuevos escenarios y cambios propios | Contribuidores de Espaciokoop Lagunak |
+| `netboot/` | EmptyEpsilon; el fork no lo mantiene, no lo ejecuta y no lo modifica |
+
+### `netboot/`: heredado y sin mantener
+
+`netboot/` (arranque por red PXE) son tres ficheros que vienen enteros de
+EmptyEpsilon. Su último commit es de 2022 y **ningún contribuidor de este fork
+lo ha tocado nunca**: todos sus autores son de upstream. No entra en CI ni en
+CMake, está en `.dockerignore`, y `tools/check_final_newline.py` ya lo exime
+explícitamente como territorio de upstream.
+
+Su antigüedad **no es motivo para retirarlo ni reescribirlo**. Por ADR-0007, un
+arreglo en código heredado se propone primero a EmptyEpsilon; moverlo o
+sustituirlo por documentación propia crearía una divergencia permanente nueva
+donde hoy no hay ninguna. El análisis completo, con las premisas verificadas,
+está en [#721](https://github.com/EspacioKoop/espaciokooplagunak/issues/721).
 
 No se renombra masivamente el proyecto original dentro del código: cualquier cambio de identidad debe preservar los créditos y distinguir con claridad producto derivado y upstream.
 
@@ -19,7 +34,7 @@ No se renombra masivamente el proyecto original dentro del código: cualquier ca
 Configuración esperada:
 
 ```text
-origin   https://github.com/VaroTv7/espaciokooplagunak.git
+origin   https://github.com/EspacioKoop/espaciokooplagunak.git
 upstream https://github.com/daid/EmptyEpsilon.git
 ```
 
@@ -88,4 +103,4 @@ Cambios nuestros sobre archivos heredados que **no** dependen de este fork y con
 
 | Archivo | Qué hace | Origen | Estado |
 |---|---|---|---|
-| `CMakeLists.txt` (bloque `WITH_DISCORD`) + `cmake/DiscordGameSdk.cmake` | Comprueba la descarga y la extracción del SDK de Discord y aborta la configuración con un diagnóstico correcto. Antes, un archivo roto dejaba configurar y el build moría seis minutos después por una cabecera ausente, señalando al culpable equivocado. El propio módulo dice que conviene ofrecerlo aguas arriba; esta fila es lo que impide que ese «conviene» se pierda. **Incluye la versión fijada del SDK (`3.2.1`) con SHA-256 esperado en vez de `latest`**: con `latest`, Discord puede cambiar la cabecera bajo los pies entre dos builds del mismo commit. | [#400](https://github.com/VaroTv7/espaciokooplagunak/issues/400) | sin enviar |
+| `CMakeLists.txt` (bloque `WITH_DISCORD`) + `cmake/DiscordGameSdk.cmake` | Comprueba la descarga y la extracción del SDK de Discord y aborta la configuración con un diagnóstico correcto. Antes, un archivo roto dejaba configurar y el build moría seis minutos después por una cabecera ausente, señalando al culpable equivocado. El propio módulo dice que conviene ofrecerlo aguas arriba; esta fila es lo que impide que ese «conviene» se pierda. **Incluye la versión fijada del SDK (`3.2.1`) con SHA-256 esperado en vez de `latest`**: con `latest`, Discord puede cambiar la cabecera bajo los pies entre dos builds del mismo commit. | [#400](https://github.com/EspacioKoop/espaciokooplagunak/issues/400) | sin enviar |

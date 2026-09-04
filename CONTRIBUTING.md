@@ -2,12 +2,17 @@
 
 Gracias por colaborar. Este repositorio es un fork de EmptyEpsilon y está pensado para trabajo coordinado entre personas y agentes de IA.
 
+> **Dónde se trabaja:** el repositorio canónico es [`EspacioKoop/espaciokooplagunak`](https://github.com/EspacioKoop/espaciokooplagunak). Abre allí issues y pull requests y usa `https://github.com/EspacioKoop/espaciokooplagunak.git` como `origin`. La ubicación anterior bajo `VaroTv7` es solo una redirección histórica.
+
 ## Antes de empezar
 
 1. Lee el [`README.md`](README.md), esta guía y, si eres un agente, [`AGENTS.md`](AGENTS.md).
 2. Comprueba si ya existe un issue o pull request para el mismo objetivo.
 3. Para cambios no triviales, abre un issue que describa problema, alcance y criterio de aceptación.
 4. No incluyas secretos, datos personales ni archivos generados localmente.
+
+Las decisiones arquitectónicas se registran mediante issues y ADRs; consulta la
+[plantilla y el índice](docs/adr/README.md) antes de abrir una decisión nueva.
 
 ## Flujo de trabajo
 
@@ -100,7 +105,7 @@ Evita reformateos masivos mezclados con cambios funcionales.
 
 ## Localización es-ES
 
-Toda traducción automática requiere revisión humana y contextual. Usa la [guía editorial de localización es-ES](docs/i18n-es-style-guide.md) para terminología, registro, placeholders y validación de catálogos.
+Toda traducción automática requiere revisión humana y contextual. Usa la [guía editorial de localización es-ES](docs/i18n/i18n-es-style-guide.md) para terminología, registro, placeholders y validación de catálogos.
 
 ## Commits
 

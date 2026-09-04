@@ -36,7 +36,25 @@ jobs:
           # las dos mitades de la misma costura, así que tocar cualquiera de las
           # dos tiene que despertar esta auditoría. Sigue siendo un job de Python
           # de segundos; no arrastra la build.
-          rutas: '^(tools/|\.github/workflows/tools\.yml$|\.github/labeler\.yml$|\.github/actions/|scripts/public_domain_names_scenario_utility\.lua$|docs/DOMINIO_PUBLICO_SCIFI\.md$|src/|resources/locale/)'
+          #
+          # `docs/` y cualquier `.md` entran por el comprobador de rutas
+          # citadas: una referencia rota la introduce un documento, no una
+          # herramienta, así que con el filtro anterior este check no se
+          # despertaba nunca en el PR que la rompe.
+          #
+          # `scripts/` entra por las DOS auditorías de i18n de escenario, y su
+          # ausencia es como se rompió `main` el 26-ago-2026: el filtro tenía
+          # `resources/locale/` (los catálogos del C++) pero NO
+          # `scripts/locale/` (los de escenario), así que un PR que solo tocaba
+          # catálogos de escenario —que es justo lo que son los lotes de
+          # traducción— no despertaba nunca esta puerta. Los lotes A, B y C
+          # entraron con el job SALTADO, y la rotura solo se hizo visible días
+          # después, en un PR de `tools/` que sí lo despertaba.
+          #
+          # Va `scripts/` entero y no `scripts/locale/`: la clave esperada la
+          # declara el `.lua` del escenario, así que tocar el escenario puede
+          # dejar su catálogo obsoleto igual que tocar el catálogo.
+          rutas: '^(tools/|\.github/workflows/tools\.yml$|\.github/labeler\.yml$|\.github/actions/|scripts/|docs/DOMINIO_PUBLICO_SCIFI\.md$|src/|resources/locale/|docs/|.*\.md$)'
 
   tests:
     name: tools/tests (Linux)
@@ -51,8 +69,28 @@ jobs:
       - name: Instalar dependencias de test
         # pyyaml lo usa la guardia de las puertas de CI (#361).
         run: python3 -m pip install pytest polib==1.2.0 pyyaml==6.0.2
-      - name: Ejecutar tests de tools/
+      - name: Ejecutar tests de tools/ (Python)
         run: python3 -m pytest tools/tests/ -q
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+      - name: Ejecutar tests de tools/ (Node)
+        # tools/ nombra sus tests Node con prefijo `test_*.mjs`, no con el
+        # sufijo `*.test.mjs` del modulo Foundry; por eso el glob del modulo no
+        # los encontraba y la suite salia vacia (lo marco el review de #841).
+        # Un glob vacio ENROJECE la puerta en vez de omitirla: una suite que no
+        # se encuentra es indistinguible de una suite que no existe, y ese es
+        # justo el falso verde que este PR viene a cerrar.
+        shell: bash
+        run: |
+          shopt -s nullglob
+          files=(tools/tests/test_*.mjs)
+          if [ ${#files[@]} -gt 0 ]; then
+            node --test "${files[@]}"
+          else
+            echo "::error::No se encontro ningun tools/tests/test_*.mjs."
+            exit 1
+          fi
       - name: Trazabilidad de nombres de dominio público (#310)
         run: python3 tools/check_public_domain_names.py
       - name: Cobertura i18n de las cadenas de C++ (#55)
@@ -61,7 +99,27 @@ jobs:
         # costura: del código al catálogo.
         run: python3 tools/check_cpp_locale_coverage.py .
       - name: Paridad e invariantes del catálogo es-ES
-        run: python3 tools/validate_es_locale.py .
+        # Con `--base` cada error sale marcado NUEVO o HEREDADO. El código de
+        # salida no cambia —un catálogo roto es un fallo lo rompiera quien lo
+        # rompiera— pero sin esa marca un rojo heredado y uno propio son
+        # indistinguibles, y entonces el rojo deja de significar nada: es como
+        # #789 y #793 se fusionaron con esta puerta ROJA y luego #794, #796 y
+        # #797 arrastraron un rojo que no era suyo.
+        #
+        # Solo en PRs: en un push a `main` la base sería `main`, o sea el propio
+        # commit, y todo saldría HEREDADO — justo la tranquilidad falsa que esto
+        # viene a quitar. Sin `--base` la auditoría es la de siempre.
+        run: |
+          if [ -n "${{ github.base_ref }}" ]; then
+            python3 tools/validate_es_locale.py . --base "origin/${{ github.base_ref }}"
+          else
+            python3 tools/validate_es_locale.py .
+          fi
+      - name: Rutas citadas por la documentación
+        # Solo stdlib. Recorre los .md y comprueba que cada ruta que citan
+        # existe: una cita rota manda al lector —o al agente— a perseguir
+        # fantasmas, y hasta ahora nadie ejecutaba esta herramienta.
+        run: python3 tools/refs-rotas.py
 
   puerta:
     name: Puerta de tools

@@ -165,6 +165,23 @@ export const LUZ_CALIDA = "#ffd79a";
  */
 export const LUZ_FOSFORO = "#2f7f8f";
 
+/**
+ * Página del libro 3D interactuable (#853). Todos los tonos son PARIENTES del
+ * papel y la tinta del grabado impreso (`TINTA`), porque una página de cerca es
+ * eso: papel envejecido y tinta sepia, no un panel de nave. Sin acentos vivos:
+ * la mancha tipográfica no afirma lectura (#526), y un libro es adorno, no un
+ * instrumento.
+ *
+ * `cabecera` y `tinta` se separan del `papel` por el mismo margen que exige el
+ * `paleta.test.mjs` para los naipes: la mancha tiene que recortarse sobre el
+ * papel, no fundirse con él.
+ */
+export const PAGINA = Object.freeze({
+  papel: "#0b0f18", // mismo papel envejecido que TINTA.papel
+  cabecera: "#c9b48a", // título sugerido, el realce del grabado
+  tinta: "#6f6448", // bloques de texto sugerido: sepia apagado, nunca letra
+});
+
 export const CANTINA = Object.freeze({
   mamparo: "#2b3038", // gris azulado de nave: el fondo no compite con nada
   suelo: "#1d2128", // más oscuro que el mamparo: la sala tiene arriba y abajo

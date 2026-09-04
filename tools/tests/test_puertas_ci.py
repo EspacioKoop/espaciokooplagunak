@@ -97,3 +97,44 @@ def test_los_jobs_filtrados_se_saltan_pero_reportan(nombre):
         assert "needs.changes.outputs.run" in str(trabajo.get("if", "")), (
             f"{nombre}:{jid} no consulta el filtro de rutas"
         )
+
+
+# Cada auditoría de área y la ruta que la puede romper. Un filtro que no
+# despierta la puerta en el PR que introduce el fallo es peor que no tener
+# auditoría: deja el check en verde por SALTADO, que se lee igual que aprobado.
+COBERTURA_DEL_FILTRO = [
+    ("tools.yml", "scripts/locale/scenario_50_gaps.es.po",
+     "paridad es-ES de los catálogos de escenario"),
+    ("tools.yml", "scripts/scenario_90_lagunak_primera_guardia.lua",
+     "claves de cabecera que declara el propio escenario"),
+    ("tools.yml", "resources/locale/main.en.po",
+     "cobertura i18n de las cadenas de C++"),
+    ("tools.yml", "tools/validate_es_locale.py", "las propias herramientas"),
+    ("tools.yml", "docs/BASELINE.md", "rutas citadas por la documentación"),
+]
+
+
+@pytest.mark.parametrize("nombre,ruta,motivo", COBERTURA_DEL_FILTRO)
+def test_el_filtro_despierta_a_quien_puede_romper_la_puerta(nombre, ruta, motivo):
+    """El fallo del 26-ago-2026, y por qué esta prueba existe.
+
+    El filtro de `tools.yml` tenía `resources/locale/` (los catálogos del C++)
+    pero no `scripts/locale/` (los de escenario). Los lotes de traducción tocan
+    exactamente eso y nada más, así que entraron con el job SALTADO y dejaron
+    `main` con tres catálogos descuadrados. La rotura no se vio hasta días
+    después, en un PR de `tools/` que sí despertaba la puerta — y ahí parecía
+    culpa suya.
+    """
+    import re
+
+    datos, _ = cargar(nombre)
+    filtro = None
+    for job in datos["jobs"].values():
+        for paso in job.get("steps", []):
+            if "filtro-rutas" in str(paso.get("uses", "")):
+                filtro = paso["with"]["rutas"]
+    assert filtro, f"{nombre} no declara un filtro de rutas"
+    assert re.match(filtro, ruta), (
+        f"{nombre}: un cambio en `{ruta}` no despierta la puerta, y ahí vive "
+        f"{motivo}. El check saldría SALTADO, que se lee igual que aprobado."
+    )

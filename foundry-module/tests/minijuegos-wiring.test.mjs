@@ -167,6 +167,10 @@ async function crearMundo({ jugadores = ["p1", "p2"] } = {}) {
 
   const gm = crearCliente("gm", { isGM: true });
   const mesa = { gm, ajustes, clientes, crearCliente, arrancar };
+  // Dispara el hook `updateUser` a pelo, sin pasar por una propuesta: es la
+  // única forma de probar que el relevo lo provoca el HOOK y no el camino de
+  // la propuesta, que también lo acabaría arreglando y taparía un cableado roto.
+  mesa.emitirUpdateUser = (userDoc, changes = {}) => difundirUpdateUser(userDoc, changes);
   mesa.jugadores = jugadores.map((id) => crearCliente(id));
 
   for (const c of [gm, ...mesa.jugadores]) await arrancar(c);
@@ -446,42 +450,95 @@ test("el relevo de coordinador tiene red de seguridad: el GM anterior sigue cone
     };
   }
 
-  // Ahora el GM original ya NO es coordinador, pero sigue conectado.
-  // Una propuesta que llega AHORA debe ser atendida por el nuevo coordinador,
-  // no descartada por "no hay sesión" (el viejo GM no tiene sesión viva).
-  // p1 hace fold
-  const enTurno = mesa.juego()?.turno;
-  const clienteEnTurno = [p1, p2].find((c) => c.id === enTurno);
-  await mesa.proponer(clienteEnTurno, "act", { tipo: "fold" });
+  // El relevo lo tiene que provocar el HOOK, no la propuesta. Se dispara
+  // `updateUser` a pelo, con un cambio que no tiene nada que ver con la mesa:
+  // si el cableado de `Hooks.on("updateUser", ...)` estuviera roto, esto no
+  // haría nada y la comprobación de aquí abajo fallaría. Con la propuesta por
+  // delante no se distinguía un hook bien cableado de uno que no existe,
+  // porque el camino de la propuesta también acaba llamando a
+  // `asegurarCoordinacion()`.
+  mesa.emitirUpdateUser(nuevoGm.userDoc, { name: "gm2 renombrado" });
 
-  // La mano avanza: la propuesta se procesó, no se perdió
+  const trasElHook = mesa.publico();
+  assert.equal(
+    trasElHook.coordinadorId,
+    "gm2",
+    "el relevo lo provoca el hook updateUser, no la propuesta que venga después",
+  );
+  assert.ok(
+    trasElHook.epocaCoordinador > epocaAntes,
+    "el hook sube la época al relevar, invalidando los sobres del coordinador anterior",
+  );
+
+  // El relevo cancela la mano en vuelo, y eso es lo honesto: la semilla, el
+  // mazo y las manos vivían en la memoria del GM anterior, así que el nuevo
+  // coordinador no puede continuarla sin inventarse las cartas.
+  assert.equal(trasElHook.manoEnCurso, false, "la mano en vuelo no sobrevive al relevo");
+
+  // Y ahora lo que de verdad importa: una propuesta que llega DESPUÉS del
+  // relevo la atiende el coordinador nuevo, en vez de descartarse por "no hay
+  // sesión" —que era el fallo con red de seguridad que cubre esta prueba—.
+  await mesa.proponer(nuevoGm, "start");
+
   const despues = mesa.publico();
-  assert.equal(despues.manoEnCurso, false, "la propuesta tras el relevo se atendió, no se descartó");
+  assert.equal(despues.manoEnCurso, true, "la propuesta tras el relevo se atendió, no se descartó");
+  assert.equal(despues.coordinadorId, "gm2", "y la atendió el coordinador nuevo");
   assert.ok(
     despues.epocaCoordinador > epocaAntes,
     "la época subió con el relevo, invalidando sobres del anterior",
   );
-  // El nuevo GM es quien coordina ahora
-  assert.equal(despues.coordinadorId, "gm2");
 });
 
 test("la semilla del coordinador nunca sale: no aparece en el estado público ni en el sobre que va al cliente", async () => {
-  const mesa = await mesaRepartida();
+  // La semilla se toma del CSPRNG del entorno (`crypto.getRandomValues`), así
+  // que se fija a un valor conocido y se busca ESE número. Antes se buscaba
+  // "cualquier entero de 31 bits que no esté en una lista de campos
+  // permitidos", y esa lista es el problema: un campo público nuevo y legítimo
+  // la rompe con un falso positivo, y una clave secreta que alguien añada a la
+  // lista deja pasar la fuga en silencio. Comprobar el valor real no tiene
+  // ninguno de los dos modos de fallo.
+  const SEMILLA_FIJA = 1234567;
+  // `globalThis.crypto` en Node solo tiene getter, así que se sustituye con
+  // defineProperty y se restaura el descriptor original.
+  const descriptorCrypto = Object.getOwnPropertyDescriptor(globalThis, "crypto");
+  let vecesPedida = 0;
+  Object.defineProperty(globalThis, "crypto", {
+    configurable: true,
+    value: {
+      getRandomValues: (buffer) => {
+        vecesPedida += 1;
+        buffer[0] = SEMILLA_FIJA;
+        return buffer;
+      },
+    },
+  });
+
+  let mesa;
+  try {
+    mesa = await mesaRepartida();
+  } finally {
+    Object.defineProperty(globalThis, "crypto", descriptorCrypto);
+  }
   const [p1] = mesa.jugadores;
 
-  // Recopilar todo lo que sale al estado público y a las vistas privadas
+  // Sin esto la prueba sería hueca: si el motor dejara de pedir la semilla al
+  // CSPRNG, se buscaría un número que no está en ninguna parte y pasaría sola.
+  assert.ok(vecesPedida > 0, "la semilla tiene que salir del CSPRNG que se ha fijado");
+
   const publico = mesa.publico();
   const vistaPrivada = mesa.manoDe(p1);
 
-  // Buscar recursivamente cualquier número que pueda ser la semilla
-  // (la semilla es un entero de 31 bits). Con una baraja de por medio,
-  // una semilla adivinable es un mazo adivinable.
-  // EXCLUIR todos los campos públicos conocidos que son enteros legítimos.
-  const semillaEnPublico = buscarSemillaSecreta(publico);
-  const semillaEnVista = buscarSemillaSecreta(vistaPrivada);
-
-  assert.equal(semillaEnPublico, null, "la semilla filtrada en el estado público");
-  assert.equal(semillaEnVista, null, "la semilla filtrada en la vista privada del jugador");
+  // Con una baraja de por medio, una semilla adivinable es un mazo adivinable.
+  assert.deepEqual(
+    rutasConValor(publico, SEMILLA_FIJA),
+    [],
+    "la semilla filtrada en el estado público",
+  );
+  assert.deepEqual(
+    rutasConValor(vistaPrivada, SEMILLA_FIJA),
+    [],
+    "la semilla filtrada en la vista privada del jugador",
+  );
 
   // Tampoco debe estar en las claves que solo el coordinador puede tener
   const clavesProhibidas = ["semilla", "estadoAleatorio", "mazo", "manos"];
@@ -498,41 +555,18 @@ test("la semilla del coordinador nunca sale: no aparece en el estado público ni
   assert.deepEqual(rutasSecretas, [], `claves secretas en el público: ${rutasSecretas.join(", ")}`);
 });
 
-function buscarSemillaSecreta(valor, visitados = new WeakSet()) {
-  if (!valor || typeof valor !== "object") return null;
-  if (visitados.has(valor)) return null;
+// Dónde aparece un valor exacto dentro de una estructura, con su ruta: un
+// fallo tiene que decir POR DÓNDE se escapó, no solo que se escapó.
+function rutasConValor(valor, buscado, ruta = "", visitados = new WeakSet()) {
+  if (valor === buscado) return [ruta || "(raíz)"];
+  if (!valor || typeof valor !== "object") return [];
+  if (visitados.has(valor)) return [];
   visitados.add(valor);
-  // Campos públicos que SON enteros y NO son la semilla
-  // Estos vienen de sesion.motor estado público y juego.vistaPublica
-  const CAMPOS_PUBLICOS_ENTEROS = new Set([
-    // Desde sesion.motor publico
-    "version", "revision", "epocaCoordinador", "contadorAutomaticos",
-    // Desde juego.vistaPublica (poker motor)
-    "botonIndice", "bote", "apuestaActual", "subidaMinima",
-    // Desde jugadores array en juego.vistaPublica
-    "asiento", "stack", "apostadoRonda", "apostadoTotal",
-    // Otros campos comunes
-    "maxJugadores", "minJugadores", "maxEspectadores", "maxCadena",
-    "maxClavesParametros", "maxNonces"
-  ]);
-  if (Array.isArray(valor)) {
-    for (const v of valor) {
-      const encontrada = buscarSemillaSecreta(v, visitados);
-      if (encontrada !== null) return encontrada;
-    }
-    return null;
-  }
+  const encontradas = [];
   for (const [k, v] of Object.entries(valor)) {
-    if (typeof v === "number" && Number.isInteger(v) && v >= 0 && v < 2 ** 31) {
-      // Podría ser una semilla, pero NO si es un campo público conocido
-      if (!CAMPOS_PUBLICOS_ENTEROS.has(k)) {
-        return v;
-      }
-    }
-    const encontrada = buscarSemillaSecreta(v, visitados);
-    if (encontrada !== null) return encontrada;
+    encontradas.push(...rutasConValor(v, buscado, `${ruta}.${k}`, visitados));
   }
-  return null;
+  return encontradas;
 }
 
 test("la entrada de mesa es configurable y afecta al juego: las ciegas de mundo determinan la apuesta inicial", async () => {

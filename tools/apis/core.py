@@ -17,7 +17,7 @@ import urllib.request
 CACHE = os.path.join(
     os.environ.get("LAGUNAK_CACHE") or tempfile.gettempdir(),
     "lagunak-apis.sqlite")
-UA = {"User-Agent": "lagunak-verificador/1.0 (+https://github.com/VaroTv7/espaciokooplagunak)"}
+UA = {"User-Agent": "lagunak-verificador/1.0 (+https://github.com/EspacioKoop/espaciokooplagunak)"}
 
 # Segundos entre peticiones al mismo host, y tope de peticiones por día.
 #

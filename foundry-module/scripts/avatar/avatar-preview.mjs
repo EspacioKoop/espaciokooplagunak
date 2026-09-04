@@ -13,7 +13,7 @@
 // Frontera de arte (#351): no declara ni un color.
 
 import { componerEscena, fundirEscenas } from "../retro3d.mjs";
-import { caja } from "../cantina-escena.mjs";
+import { mallaDePieza } from "../escena-primitivas.mjs";
 import { piezasAvatar } from "../cantina-avatar.mjs";
 
 /** Sin giro de reposo: aquí no hay que reconocer un objeto al otro lado de la
@@ -28,7 +28,7 @@ export function componerAvatarPreview(descripcion, opciones = {}) {
   const piezas = piezasAvatar(descripcion, { pies: [0, -0.95, 0] });
 
   const partes = piezas.map((pieza) =>
-    componerEscena(desplazar(caja([0, 0, 0], pieza.medidas), pieza.centro), {
+    componerEscena(mallaDePieza(pieza), {
       ancho,
       alto,
       epoca,

@@ -22,6 +22,7 @@
 import { AVATAR, FACCIONES, PIXEL, RETRATO } from "./paleta.mjs";
 import { caja } from "./cantina-escena.mjs";
 import { ANCLAS, anclasAvatar, dimensionesCuerpo, puntosAvatar } from "./avatar/avatar-rig.mjs";
+import { normalizarPorte, sostener } from "./avatar/avatar-porte.mjs";
 import { mezclar } from "./retro3d.mjs";
 
 /**
@@ -134,7 +135,7 @@ export function medidasDeAvatar(descripcion, pies = [0, 0, 0]) {
  * medidas}`— para que la escena no distinga a una persona de un taburete y no
  * haga falta ni un pintor nuevo ni una rama en `componerCantina`.
  */
-export function piezasAvatar(descripcion, { pies = [0, 0, 0], indice = 0, tiempo = 0, yaw = 0 } = {}) {
+export function piezasAvatar(descripcion, { pies = [0, 0, 0], indice = 0, tiempo = 0, yaw = 0, porte = {} } = {}) {
   const av = normalizarAvatar(descripcion);
   const medidas = medidasDeAvatar(av, pies);
 
@@ -153,6 +154,7 @@ export function piezasAvatar(descripcion, { pies = [0, 0, 0], indice = 0, tiempo
   const p = puntosAvatar(medidas, { pose, yaw });
   const anclas = anclasAvatar(medidas, { pose, yaw });
   const { ancho, altoCabeza, altoTorso, altoPiernas } = d;
+  const llevado = normalizarPorte(porte);
 
   return [
     { nombre: `${prefijo}Pierna`, color: piel, centro: p.piernas, medidas: [0.3 * ancho, altoPiernas, 0.26] },
@@ -171,7 +173,12 @@ export function piezasAvatar(descripcion, { pies = [0, 0, 0], indice = 0, tiempo
     { nombre: `${prefijo}ManoDer`, color: piel, centro: p.manoDer, medidas: [0.16, 0.16, 0.16] },
     { nombre: `${prefijo}ManoIzq`, color: piel, centro: p.manoIzq, medidas: [0.16, 0.16, 0.16] },
     // Lo que llevan las manos, colgado de su anclaje y no recalculado aquí.
-    ...atrezoDelGesto(av.gesto, { anclas, altoTorso, prefijo, indice, tiempo, yaw }),
+    // Lo que se LLEVA va antes que lo que sale del gesto, y gana: llevar algo
+    // es un dato de la persona (#897), no una consecuencia de lo que esté
+    // haciendo. Sin porte declarado no cambia nada, así que la jarra sigue
+    // saliendo con «brindis» y el cigarro con «fumar» exactamente como antes.
+    ...piezasDelPorte(porte, { anclas, prefijo, yaw }),
+    ...atrezoDelGesto(av.gesto, { anclas, altoTorso, prefijo, indice, tiempo, yaw, porte: llevado }),
     // Y lo que lleva encima, que es lo que dice la clase de un vistazo.
     ...distintivoDeClase(av.clase, { anclas, altoTorso, prefijo }),
   ].map((pieza) => Object.freeze({ ...pieza, giro: yaw }));
@@ -262,8 +269,24 @@ function sobreCuerpo([x, y, z], [dx, dy, dz], yaw = 0) {
  * A esta resolución no hace falta modelar el humo del cigarro porque la sala ya
  * tiene humo, y quien fuma lo alimenta (ver `ANCLAS_AIRE` en `cantina-escena.mjs`).
  */
-function atrezoDelGesto(gesto, { anclas, altoTorso, prefijo, indice = 0, tiempo = 0, yaw = 0 }) {
+/**
+ * Lo que se lleva en cada mano, colgado de su anclaje. Cada mano por separado,
+ * porque son dos anclajes independientes: llevar algo en las dos no es una
+ * función distinta, es llamar dos veces a la misma.
+ */
+function piezasDelPorte(porte, { anclas, prefijo, yaw }) {
+  const llevado = normalizarPorte(porte);
+  return [
+    ...sostener(llevado.manoDerecha, anclas.manoDerecha.punto, { prefijo: `${prefijo}Der`, yaw }),
+    ...sostener(llevado.manoIzquierda, anclas.manoIzquierda.punto, { prefijo: `${prefijo}Izq`, yaw }),
+  ];
+}
+
+function atrezoDelGesto(gesto, { anclas, altoTorso, prefijo, indice = 0, tiempo = 0, yaw = 0, porte = {} }) {
   const sobre = ({ punto }, desplazamiento) => sobreCuerpo(punto, desplazamiento, yaw);
+  // Una mano ocupada no saca además la jarra del gesto: se brinda CON lo que
+  // se lleve. El cigarro no entra aquí porque cuelga de la boca, no de la mano.
+  if (porte.manoDerecha && gesto === "brindis") return [];
   switch (gesto) {
     case "brindis":
       return [{

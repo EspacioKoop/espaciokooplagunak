@@ -30,7 +30,7 @@
  * Puro: ni Foundry, ni DOM, ni red, ni reloj.
  */
 
-import { cajaGirada } from "./escena-primitivas.mjs";
+import { mallaDePieza } from "./escena-primitivas.mjs";
 import { piezasAvatar } from "./cantina-avatar.mjs";
 import { componerEscena } from "./retro3d.mjs";
 
@@ -71,7 +71,7 @@ export function poligonosOtrosJugadores(jugadores, { camara, yaw, ancho, alto, e
 
   return piezas
     .map((pieza) =>
-      componerEscena(cajaGirada(pieza.centro, pieza.medidas, pieza.giro), {
+      componerEscena(mallaDePieza(pieza, { giro: pieza.giro }), {
         ancho,
         alto,
         epoca,

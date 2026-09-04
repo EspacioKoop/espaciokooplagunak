@@ -379,3 +379,40 @@ export function uvsTriplanar({ vertices, caras }, metrosPorTextura = METROS_POR_
     return cara.map((i) => [vertices[i][a] / metrosPorTextura, vertices[i][b] / metrosPorTextura]);
   });
 }
+
+/**
+ * La malla de una pieza de avatar, sea caja o no.
+ *
+ * Las piezas de un avatar viajan como `{color, centro, medidas}` y sus cuatro
+ * consumidores las convertían en geometría con `caja`/`cajaGirada`. Eso deja
+ * fuera cualquier objeto que no sea un ortoedro: una espada con punta, un
+ * báculo torneado, cualquier cosa con `prisma`. Aceptar aquí una `malla` ya
+ * hecha —en coordenadas del objeto, con su centro en el origen— abre esa puerta
+ * sin tocar ni una pieza de las que ya existen: sin `malla`, esto es
+ * exactamente `cajaGirada` y no cambia nada.
+ *
+ * El orden importa y es el mismo que en `cajaGirada`: se gira sobre el propio
+ * centro de la pieza y DESPUÉS se traslada. Al revés sería un objeto orbitando
+ * el origen de la sala.
+ *
+ * @param {{centro:number[], medidas?:number[], malla?:{vertices:number[][], caras:number[][]}}} pieza
+ * @param {[number,number,number]} desplazamiento se resta al centro (la cámara,
+ *   donde el consumidor trabaja en coordenadas de mundo).
+ */
+export function mallaDePieza(pieza, { desplazamiento = [0, 0, 0], giro = 0 } = {}) {
+  const [dx, dy, dz] = desplazamiento;
+  const [cx, cy, cz] = pieza.centro;
+  const centro = [cx - dx, cy - dy, cz - dz];
+  if (!pieza.malla) return cajaGirada(centro, pieza.medidas, giro ?? pieza.giro ?? 0);
+
+  const yaw = Number.isFinite(giro) ? giro : 0;
+  const sen = Math.sin(yaw);
+  const cos = Math.cos(yaw);
+  return {
+    ...pieza.malla,
+    vertices: pieza.malla.vertices.map(([x, y, z]) =>
+      yaw === 0
+        ? [x + centro[0], y + centro[1], z + centro[2]]
+        : [centro[0] + x * cos + z * sen, centro[1] + y, centro[2] - x * sen + z * cos]),
+  };
+}

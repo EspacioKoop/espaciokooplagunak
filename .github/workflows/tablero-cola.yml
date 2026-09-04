@@ -27,7 +27,7 @@ jobs:
     # rojo en cada PR de quien no lo tenga configurado.
     if: github.repository == 'EspacioKoop/espaciokooplagunak'
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v5.0.1
       - name: Sincronizar el tablero
         env:
           GH_TOKEN: ${{ secrets.TABLERO_PROJECT_TOKEN }}

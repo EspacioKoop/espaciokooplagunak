@@ -55,6 +55,17 @@ const catalogo = crearCatalogoPuertas([
     tituloClave: "LAGUNAK.PanelGM.Entrada.Ficha",
     icono: "fa-solid fa-image-portrait",
   }),
+  // Convocar a la tripulación a una estancia suelta (#832). Entra por AQUÍ y no
+  // como botón nuevo en la barra de escena por la misma regla que las demás:
+  // una acción de GM más es una entrada más de este catálogo. Y una sola
+  // entrada, no una por destino — a qué sitios se puede convocar lo deriva
+  // `destinosConvocables` del catálogo de estancias, así que enumerarlos aquí
+  // sería el segundo sitio donde mantener esa lista.
+  Object.freeze({
+    id: "convocatoria",
+    tituloClave: "LAGUNAK.PanelGM.Entrada.Convocatoria",
+    icono: "fa-solid fa-bullhorn",
+  }),
 ]);
 
 export const ENTRADAS = catalogo.congelado;

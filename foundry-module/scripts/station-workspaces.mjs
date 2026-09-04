@@ -1,7 +1,7 @@
 import { STATIONS, normalizeStation, uncrewedStations } from "./station-assignment.mjs";
 import { isActionAllowed } from "./station-actions.mjs";
 import { SISTEMAS_INGENIERIA, NIVELES_POTENCIA, NIVELES_REFRIGERANTE } from "./ingenieria-control.mjs";
-import { prepareDocking, prepareSystemRows } from "./ship-view.mjs";
+import { prepareDocking, prepareSystemRows } from "./ship-view/ship-view.mjs";
 import { filasCrudas, filasDegradadas } from "./sensores-lista.mjs";
 import { retratoTripulanteDataUri } from "./avatar/retrato-tripulante.mjs";
 

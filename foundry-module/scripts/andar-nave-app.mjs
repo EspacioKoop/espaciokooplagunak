@@ -32,7 +32,7 @@ import { CATALOGO_MUSEO } from "./museo-piezas.mjs";
 import { CATALOGO_LIBROS, ID_LIBRO_CLASICO } from "./libro-catalogo.mjs";
 import { PAGINAS_LIBRO } from "./libro-museo.mjs";
 import { activarLibro, cerrarLibro } from "./libro-sesion.mjs";
-import { AJUSTE_TELEMETRIA, aceptarSensores, aceptarTelemetria } from "./telemetria-difusion.mjs";
+import { AJUSTE_TELEMETRIA, aceptarSensores, aceptarTelemetria } from "./ship-view/telemetria-difusion.mjs";
 import { AJUSTE_NIVEL_ALERTA } from "./alerta-escena.mjs";
 
 const ESTANCIA_INICIAL = "cantina";

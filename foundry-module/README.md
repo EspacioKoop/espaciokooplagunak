@@ -23,7 +23,7 @@ del proyecto.
 
 Foundry VTT **v11.302 está verificado** (issue #7). Las versiones modernas solo
 se añadirán a `compatibility.verified` después de ejecutar y registrar su smoke
-real en el issue [#29](https://github.com/VaroTv7/espaciokooplagunak/issues/29).
+real en el issue [#29](https://github.com/EspacioKoop/espaciokooplagunak/issues/29).
 Solo importa la versión del **anfitrión** que hospeda la partida: los jugadores
 se conectan por navegador y no ejecutan el servidor, aunque el módulo se carga
 también en sus clientes web.

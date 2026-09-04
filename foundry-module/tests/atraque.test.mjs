@@ -8,7 +8,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { prepareDocking } from "../scripts/ship-view.mjs";
+import { prepareDocking } from "../scripts/ship-view/ship-view.mjs";
 
 const i18n = {
   localize: (clave) => clave,

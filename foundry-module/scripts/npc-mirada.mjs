@@ -28,6 +28,9 @@ function longitud(vector) {
 
 function normalizar(vector, nombre) {
   const magnitud = longitud(vector);
+  if (!Number.isFinite(magnitud)) {
+    throw new TypeError(`mirada: la magnitud de ${nombre} debe ser finita`);
+  }
   if (magnitud <= EPSILON) {
     throw new TypeError(`mirada: ${nombre} no puede ser el vector cero`);
   }
@@ -71,7 +74,11 @@ export function calcularVectorMirada({
   }
 
   const desplazamiento = objetivo.map((valor, indice) => valor - personaje[indice]);
+  exigirVector3(desplazamiento, "desplazamiento");
   const distancia = longitud(desplazamiento);
+  if (!Number.isFinite(distancia)) {
+    throw new TypeError("mirada: la distancia al objetivo debe ser finita");
+  }
   if (distancia <= EPSILON) return [...VECTOR_CERO];
 
   const eje = normalizar(frente, "frente");
@@ -91,7 +98,9 @@ export function calcularVectorMirada({
   }
 
   const magnitud = Math.min(distancia, alcance);
-  return acotada.map((componente) => componente * magnitud);
+  const resultado = acotada.map((componente) => componente * magnitud);
+  exigirVector3(resultado, "resultado");
+  return resultado;
 }
 
 const elegir = (nombre) => (contexto) => contexto[nombre];

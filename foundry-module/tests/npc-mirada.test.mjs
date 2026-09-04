@@ -69,6 +69,37 @@ test("personaje y objetivo coincidentes producen mirada neutra", () => {
   }), [0, 0, 0]);
 });
 
+test("una resta desbordada entre coordenadas finitas se rechaza", () => {
+  assert.throws(() => calcularVectorMirada({
+    personaje: [Number.MAX_VALUE, 0, 0],
+    objetivo: [-Number.MAX_VALUE, 0, 0],
+  }), { name: "TypeError" });
+});
+
+test("una distancia desbordada entre coordenadas finitas se rechaza", () => {
+  assert.throws(() => calcularVectorMirada({
+    personaje: [0, 0, 0],
+    objetivo: [Number.MAX_VALUE, Number.MAX_VALUE, 0],
+  }), { name: "TypeError" });
+});
+
+test("una magnitud frontal desbordada se rechaza", () => {
+  assert.throws(() => calcularVectorMirada({
+    personaje: [0, 0, 0],
+    objetivo: [0, 0, 1],
+    frente: [Number.MAX_VALUE, Number.MAX_VALUE, 0],
+  }), { name: "TypeError" });
+});
+
+test("una mirada extrema válida solo contiene componentes finitos", () => {
+  const mirada = calcularVectorMirada({
+    personaje: [Number.MAX_VALUE, 0, 0],
+    objetivo: [0, 0, 0],
+    alcance: Number.MAX_VALUE,
+  });
+  assert.ok(mirada.every(Number.isFinite));
+});
+
 test("las seis políticas están declaradas por nombre", () => {
   assert.deepEqual(Object.keys(POLITICAS_MIRADA).sort(), [
     "alarma",

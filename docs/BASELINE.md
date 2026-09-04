@@ -44,7 +44,7 @@ Baseline normativa: [SECURITY.md](../SECURITY.md) (no se duplica aquí).
       (`.github/dependabot.yml` documenta el porqué).
 - [x] Dependencias Python fijadas por versión exacta (`bridge/requirements*.txt`).
 - [x] **Protección de rama en `main`** aplicada y verificada en el
-      [issue #225](https://github.com/VaroTv7/espaciokooplagunak/issues/225):
+      [issue #225](https://github.com/EspacioKoop/espaciokooplagunak/issues/225):
       pull request y una aprobación humana obligatorias, aprobación del último
       cambio por otra persona, conversaciones resueltas, administradores sin
       bypass y force-push/borrado bloqueados. Los checks requeridos son las cinco

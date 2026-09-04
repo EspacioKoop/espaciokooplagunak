@@ -18,7 +18,7 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 EVIDENCE_URL_RE = re.compile(
-    r"https://github\.com/VaroTv7/espaciokooplagunak/(?P<kind>issues|pull)/(?P<number>[1-9]\d*)$"
+    r"https://github\.com/EspacioKoop/espaciokooplagunak/(?P<kind>issues|pull)/(?P<number>[1-9]\d*)$"
 )
 DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}$")
 GITHUB_API_TIMEOUT = 5.0
@@ -348,7 +348,7 @@ def _request_github_evidence(
         raise ValueError(f"URL de evidencia GitHub inválida: {url}")
     resource = "issues" if match.group("kind") == "issues" else "pulls"
     api_url = (
-        "https://api.github.com/repos/VaroTv7/espaciokooplagunak/"
+        "https://api.github.com/repos/EspacioKoop/espaciokooplagunak/"
         f"{resource}/{match.group('number')}"
     )
     headers = {

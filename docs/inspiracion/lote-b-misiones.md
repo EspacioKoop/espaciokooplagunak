@@ -32,8 +32,8 @@ coinciden en una idea: **la misión es datos, y el motor es quien la ofrece y la
 
 La frontera que el fork ya decidió importa aquí igual que en el Lote A (ver corrección de
 eGurucharri a A en #840): `docs/FOUNDRY.md` dice que una escena **no concede, no cuenta ni
-recuerda**, y ADR-0008 pone la autoridad de campaña en el núcleo ([#766](https://github.com/VaroTv7/espaciokooplagunak/issues/766)
-persistencia, [#767](https://github.com/VaroTv7/espaciokooplagunak/issues/767) bestiario). Por
+recuerda**, y ADR-0008 pone la autoridad de campaña en el núcleo ([#766](https://github.com/EspacioKoop/espaciokooplagunak/issues/766)
+persistencia, [#767](https://github.com/EspacioKoop/espaciokooplagunak/issues/767) bestiario). Por
 tanto, en cada entrada separo lo que es **datos/plantilla/presentación** (barato: puro/Node o
 Lua de escenario) de lo que es **autoridad de oferta** (recordar qué misiones están disponibles
 según estado persistente → núcleo, bloqueado por #766).
@@ -59,18 +59,18 @@ no escribe código: declara el contrato y el motor lo materializa.
 disponibles según el estado de campaña, y el tablón de la estación presentaría esa lista ya
 autorizada. Encaja con el editor de contenido del GM
 (`contenido-externo/`) y con la regla de cadena de la crisis multipuesto
-([#484](https://github.com/VaroTv7/espaciokooplagunak/issues/484)): una misión puede requerir
+([#484](https://github.com/EspacioKoop/espaciokooplagunak/issues/484)): una misión puede requerir
 que tres puestos la resuelvan sin que el GM cablee la cadena.
 
 **4. Coste:** **puro/Node** para el modelo de misión (datos + rangos + plantillas de texto) y la
 presentación en el tablón. **Núcleo** para la *autoridad de oferta*: decidir qué misiones están
 disponibles según reputación, misiones completadas o bestiario es *recordar y conceder acceso*,
-y ADR-0008 lo reserva al núcleo. Vive con [#766](https://github.com/VaroTv7/espaciokooplagunak/issues/766);
+y ADR-0008 lo reserva al núcleo. Vive con [#766](https://github.com/EspacioKoop/espaciokooplagunak/issues/766);
 el puente solo proyecta la lista que el núcleo autoriza. El `<multiplicador>` de `deadline` y el
 sorteo de cantidades son Node y no tocan núcleo.
 
 **5. Veredicto:** **`adoptar`**, bloqueado por
-[#766](https://github.com/VaroTv7/espaciokooplagunak/issues/766) para la autoridad de oferta.
+[#766](https://github.com/EspacioKoop/espaciokooplagunak/issues/766) para la autoridad de oferta.
 Tarjeta: un formato declarativo de misión (`mission`) que el editor del GM consume, con
 `availability`/`deadline`/`repeat`/`blocked`, y un motor de oferta en núcleo que lo filtra por
 estado de campaña. Sin dónde guardar el estado, esto es un tablón que se borra al reiniciar.
@@ -102,7 +102,7 @@ disponibles es campaña). La cabecera XML de declaración de disparo es Node/Lua
 decisión de si el disparo procede, núcleo.
 
 **5. Veredicto:** **`adoptar`** el *tablón con filtro por condiciones + plantillas para el GM*,
-bloqueado por [#766](https://github.com/VaroTv7/espaciokooplagunak/issues/766). **Se descarta
+bloqueado por [#766](https://github.com/EspacioKoop/espaciokooplagunak/issues/766). **Se descarta
 explícitamente** la otra mitad de Naev (ver descarte 2): no copiamos el modelo de "misión = script
 Lua a medida", porque eso es lo que `scenario_90` ya es y el objetivo del lote es lo contrario.
 
@@ -126,7 +126,7 @@ no como código" llevado a su forma más limpia —un formato declarativo que el
 Aplica al editor de contenido del GM (`contenido-externo/`): un `scenario` nuestro podría ser un
 bloque declarativo (`[scenario]`-equivalente) que el editor del GM rellena, en vez del Lua manual
 de `scenario_90`. La parte de "mapa/nave por GUI" es análoga a nuestro `andar-nave-app.mjs`
-(planta que sale del `shipTemplate` real, [#540](https://github.com/VaroTv7/espaciokooplagunak/issues/540)).
+(planta que sale del `shipTemplate` real, [#540](https://github.com/EspacioKoop/espaciokooplagunak/issues/540)).
 
 **4. Coste:** **puro/Node** para el formato declarativo de escenario y su validación; el editor
 GUI es herramienta del GM, no del puente en partida. **Núcleo** solo si la misión declarada
@@ -136,7 +136,7 @@ en Lua de escenario, no en núcleo.
 **5. Veredicto:** **`cimiento`** — se escribe el esqueleto del formato declarativo de escenario
 (declaración de objetivos, lados, eventos, mapa) y se declara huérfano hasta que el editor del GM
 lo consuma, igual que el esqueleto de estados de
-[#603](https://github.com/VaroTv7/espaciokooplagunak/issues/603). No es `adoptar` completo porque
+[#603](https://github.com/EspacioKoop/espaciokooplagunak/issues/603). No es `adoptar` completo porque
 la lógica de eventos aún exige Lua; el hueso es el formato, no el motor de eventos.
 
 ---
@@ -148,7 +148,7 @@ precios que dependen de dónde estás»).
 
 **2. Por qué no:** resuelven *equilibrio de precios*, no *generación de misión*. Para que «el
 precio dependa de dónde estás» hace falta una simulación de economía persistente (oferta/demanda
-por sistema) que es territorio de núcleo ([#766](https://github.com/VaroTv7/espaciokooplagunak/issues/766))
+por sistema) que es territorio de núcleo ([#766](https://github.com/EspacioKoop/espaciokooplagunak/issues/766))
 y aporta coste de equilibrio, no «trabajo que aparece solo». No toca el editor del GM ni
 `scenario_90`, y el issue ya sospechaba `cimiento` o descarte para ellos.
 
@@ -180,7 +180,7 @@ como patrón de autoría principal.
   clasifica contenido ajeno (#332), no authoring de misiones; hacer que consume un bloque
   `mission`/`[scenario]` es trabajo aparte y previo.
 - **La autoridad de oferta necesita dónde recordar.** Las tres entradas dependen de
-  [#766](https://github.com/VaroTv7/espaciokooplagunak/issues/766) (persistencia) para filtrar
+  [#766](https://github.com/EspacioKoop/espaciokooplagunak/issues/766) (persistencia) para filtrar
   por estado de campaña; sin él, el tablón miente al reiniciar.
 - **De dónde salen las misiones base.** Al igual que el Lote A necesitaba el catálogo de
   facciones (#213), este lote necesita un catálogo de *plantillas de misión* con procedencia,
@@ -191,7 +191,7 @@ como patrón de autoría principal.
 Tres `adoptar`/`cimiento` que son **un solo patrón visto por tres lados** —formato declarativo
 (Endless Sky/Wesnoth) + tablón que filtra por condiciones y plantillas (Naev)—, dos descartes
 razonados (Pioneer/Oolite; script-Lua por misión), y un bloqueo declarado común:
-[#766](https://github.com/VaroTv7/espaciokooplagunak/issues/766) (autoridad de oferta). Fichero:
+[#766](https://github.com/EspacioKoop/espaciokooplagunak/issues/766) (autoridad de oferta). Fichero:
 `docs/inspiracion/lote-b-misiones.md`.
 
 **Vivos y sin tocar (al cierre de este lote): G.** Los lotes A, C, D, E, F quedaron aceptados en

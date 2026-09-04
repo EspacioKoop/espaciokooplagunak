@@ -1323,7 +1323,7 @@ def set_metadata(po: polib.POFile) -> None:
         "Language-Team": "Espaciokoop Lagunak",
         "PO-Revision-Date": "2026-07-12 00:00+0200",
         "Last-Translator": "Espaciokoop Lagunak contributors",
-        "Report-Msgid-Bugs-To": "https://github.com/VaroTv7/espaciokooplagunak/issues",
+        "Report-Msgid-Bugs-To": "https://github.com/EspacioKoop/espaciokooplagunak/issues",
         "MIME-Version": "1.0",
         "Content-Type": "text/plain; charset=UTF-8",
         "Content-Transfer-Encoding": "8bit",

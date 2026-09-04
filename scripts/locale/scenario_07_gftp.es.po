@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
-"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"Report-Msgid-Bugs-To: https://github.com/EspacioKoop/espaciokooplagunak/issues\n"
 "PO-Revision-Date: 2026-07-12 00:00+0200\n"
 "Last-Translator: Espaciokoop Lagunak contributors\n"
 "Language-Team: Espaciokoop Lagunak\n"
@@ -297,7 +297,7 @@ msgid ""
 "CEASE CURRENT OPERATIONS AND PROCEED IMMEDIATELY TO SECTOR E2 -STOP-\n"
 "\n"
 "URGENCY AND DISCRETION ARE KEY -STOP-"
-msgstr "Recibirás una comunicación taquionada de la Armada Humana, cuanticada: KTLITAN ATTACK ES UNA DISTRACCIÓN -STOP-STAKHANOV NO ES EL TRUE TARGET -STOP- CEASE CURRENTOPERACIONES Y PROCEDIDO MENTE IMMEDIATELY TO SECTOR E2 -STOP- URGENCY AND DISCRETION ARE KTRETION"
+msgstr "Recibe una comunicación taquiónica de la Armada Humana, autenticada y cifrada cuánticamente: EL ATAQUE KTLITAN ES UNA DISTRACCIÓN -STOP- STAKHANOV NO ES EL OBJETIVO REAL -STOP- CESE LAS OPERACIONES ACTUALES Y PROCEDA INMEDIATAMENTE AL SECTOR E2 -STOP- LA URGENCIA Y LA DISCRECIÓN SON CLAVE -STOP-"
 
 #: scripts/scenario_07_gftp.lua:307
 msgctxt "incCall"

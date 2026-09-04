@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
-"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"Report-Msgid-Bugs-To: https://github.com/EspacioKoop/espaciokooplagunak/issues\n"
 "PO-Revision-Date: 2026-07-12 00:00+0200\n"
 "Last-Translator: Espaciokoop Lagunak contributors\n"
 "Language-Team: Espaciokoop Lagunak\n"
@@ -131,7 +131,7 @@ msgstr "Quijote"
 
 msgctxt "Enemies"
 msgid "Insanely strong and/or inordinately large numbers of enemies"
-msgstr "Insanely strong and/or inordinately large numbers of enemigos"
+msgstr "Enemigos disparatadamente fuertes y/o en cantidades desmedidas"
 
 # Scenario setting
 msgctxt "setting"
@@ -1060,7 +1060,7 @@ msgstr "%s-#%i/%i"
 #, lua-format
 msgctxt "callsign-drone"
 msgid "%s-%i of %i"
-msgstr "%s-%i of of %i"
+msgstr "%s-%i de %i"
 
 #: scripts/scenario_60_captureFlag.lua:2152 scripts/scenario_60_captureFlag.lua:6417
 #, lua-format

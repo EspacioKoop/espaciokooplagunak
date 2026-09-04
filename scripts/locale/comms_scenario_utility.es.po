@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
-"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"Report-Msgid-Bugs-To: https://github.com/EspacioKoop/espaciokooplagunak/issues\n"
 "PO-Revision-Date: 2026-07-12 00:00+0200\n"
 "Last-Translator: Espaciokoop Lagunak contributors\n"
 "Language-Team: Espaciokoop Lagunak\n"
@@ -3337,7 +3337,7 @@ msgstr "Ah, la nave estelar %s Nos da su presencia. Qué pintoresco. Bienvenido 
 #, lua-format
 msgctxt "station-comms"
 msgid "Welcome, spacefaring communicator. I hope %s's visit won't disrupt %s's delicate equilibrium too much."
-msgstr "Bienvenido, comunicador espacial. %s's visit will not disrupt %sEs delicado equilibrio demasiado."
+msgstr "Bienvenido, comunicador espacial. Espero que la visita de %s no perturbe demasiado el delicado equilibrio de %s."
 
 #: scripts/comms_scenario_utility.lua:3559
 #, lua-format
@@ -4779,7 +4779,7 @@ msgstr "La carga para %s ha sido cargado %s."
 #, lua-format
 msgctxt "station-comms"
 msgid "%s's cargo has been loaded from %s to %s."
-msgstr "%s's cargo has been loaded from %s a %s."
+msgstr "La carga de %s ha sido cargada de %s a %s."
 
 #: scripts/comms_scenario_utility.lua:4801
 #, lua-format

@@ -93,4 +93,4 @@ Un elemento o una naturaleza desconocidos **fallan** en vez de valer 1: devolver
 1 por lo desconocido convertiría una errata en un NPC inmune a nada, sin que
 saltara ninguna alarma.
 
-[#598]: https://github.com/VaroTv7/espaciokooplagunak/issues/598
+[#598]: https://github.com/EspacioKoop/espaciokooplagunak/issues/598

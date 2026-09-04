@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
-"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"Report-Msgid-Bugs-To: https://github.com/EspacioKoop/espaciokooplagunak/issues\n"
 "PO-Revision-Date: 2026-07-12 00:00+0200\n"
 "Last-Translator: Espaciokoop Lagunak contributors\n"
 "Language-Team: Espaciokoop Lagunak\n"
@@ -1524,7 +1524,7 @@ msgstr "disminución de la aceleración del impulso hacia adelante en 1/6"
 #: scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:1089 scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:1621
 msgctxt "upgrade-comms"
 msgid "increase combat maneuver strafe by 25% and boost by ~14%"
-msgstr "aumento de la fuerza de maniobra de combate por 25% and boost by ~14%"
+msgstr "aumento de la fuerza de maniobra de combate en 25% y del impulso lateral en ~14%"
 
 #: scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:1090
 msgctxt "downgrade-comms"
@@ -1554,7 +1554,7 @@ msgstr "disminución de la velocidad máxima de avance en 1/18 y revertir en un 
 #: scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:1121 scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:1653
 msgctxt "upgrade-comms"
 msgid "increase max impulse forward by ~6% and reverse by ~11%"
-msgstr "aumentar el impulso máximo hacia adelante por ~6% and reverse by ~11%"
+msgstr "aumentar el impulso máximo hacia adelante en ~6% y en reversa en ~11%"
 
 #: scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:1141 scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:1673 scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:2660 scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:3128 scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:3605 scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:4064 scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:4464 scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:4909 scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:5319 scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:5766 scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:6157 scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:6937 scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:7856 scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:8219
 msgctxt "downgrade-comms"
@@ -1959,7 +1959,7 @@ msgstr "reducción del impulso de aceleración hacia adelante por 1/6"
 #: scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:1614
 msgctxt "downgrade-comms"
 msgid "reduced combat maneuver strafe by 20% and boost by 1/8"
-msgstr "reducción de la fuerza de maniobra de combate en 20% and boost by 1/8"
+msgstr "reducción de la fuerza de maniobra de combate en 20% y del impulso lateral en 1/8"
 
 #: scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:1622
 msgctxt "downgrade-comms"
@@ -1979,7 +1979,7 @@ msgstr "reducción de la fuerza de maniobra de combate por 1/6"
 #: scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:1646
 msgctxt "downgrade-comms"
 msgid "reduced max impulse forward speed by ~6% and reverse by 10%"
-msgstr "velocidad máxima de avance de impulso reducido en ~6% and reversa un 10%"
+msgstr "velocidad máxima de avance de impulso reducida en ~6% y en reversa en 10%"
 
 #: scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:1732 scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:3162 scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:3624 scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:4083 scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:4513 scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:4933 scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:5343
 msgctxt "downgrade-comms"
@@ -2304,7 +2304,7 @@ msgstr "reducción de impulso max inverso por 1/6 y aceleración inversa por 25%
 #: scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:2141 scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:2627
 msgctxt "upgrade-comms"
 msgid "increase max reverse impulse by 20% and reverse acceleration by 1/3"
-msgstr "aumentar el máximo impulso reverso por 20% and aceleración inversa por 1/3"
+msgstr "aumentar el máximo impulso reverso en 20% y la aceleración inversa en 1/3"
 
 #: scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:2142 scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:2628 scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:7819
 msgctxt "downgrade-comms"
@@ -2884,7 +2884,7 @@ msgstr "reducción de la capacidad de los homólogos y las minas"
 #: scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:3314
 msgctxt "upgrade-comms"
 msgid "more homing and mine missiles"
-msgstr "más homing and mine missiles"
+msgstr "más homing y misiles mineros"
 
 #: scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:3407 scripts/player_ship_upgrade_downgrade_path_scenario_utility.lua:6421
 msgctxt "downgrade-comms"

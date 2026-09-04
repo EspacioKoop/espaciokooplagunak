@@ -69,8 +69,28 @@ jobs:
       - name: Instalar dependencias de test
         # pyyaml lo usa la guardia de las puertas de CI (#361).
         run: python3 -m pip install pytest polib==1.2.0 pyyaml==6.0.2
-      - name: Ejecutar tests de tools/
+      - name: Ejecutar tests de tools/ (Python)
         run: python3 -m pytest tools/tests/ -q
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+      - name: Ejecutar tests de tools/ (Node)
+        # tools/ nombra sus tests Node con prefijo `test_*.mjs`, no con el
+        # sufijo `*.test.mjs` del modulo Foundry; por eso el glob del modulo no
+        # los encontraba y la suite salia vacia (lo marco el review de #841).
+        # Un glob vacio ENROJECE la puerta en vez de omitirla: una suite que no
+        # se encuentra es indistinguible de una suite que no existe, y ese es
+        # justo el falso verde que este PR viene a cerrar.
+        shell: bash
+        run: |
+          shopt -s nullglob
+          files=(tools/tests/test_*.mjs)
+          if [ ${#files[@]} -gt 0 ]; then
+            node --test "${files[@]}"
+          else
+            echo "::error::No se encontro ningun tools/tests/test_*.mjs."
+            exit 1
+          fi
       - name: Trazabilidad de nombres de dominio público (#310)
         run: python3 tools/check_public_domain_names.py
       - name: Cobertura i18n de las cadenas de C++ (#55)

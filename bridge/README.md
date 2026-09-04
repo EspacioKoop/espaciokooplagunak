@@ -7,7 +7,7 @@ heredado `/exec.lua` (que ejecuta Lua arbitrario): todo el Lua vive en
 validados y acotados. **Nunca se reenvía Lua recibido por la red.**
 
 Diseño completo: [`docs/FOUNDRY.md`](../docs/FOUNDRY.md) · Inventario del API
-heredado: [`docs/API_HTTP.md`](../docs/API_HTTP.md).
+heredado: [`docs/seguridad/API_HTTP.md`](../docs/seguridad/API_HTTP.md).
 
 ## Decisiones de arquitectura
 
@@ -29,7 +29,7 @@ de las decisiones que delimitan este puente:
 
 Estas garantías describen el **contrato implementado y comprobable** del puente,
 no una certificación OWASP ASVS ni una promesa de que pueda publicarse en
-Internet. El [modelo de amenazas](../docs/BRIDGE_THREAT_MODEL.md) documenta los
+Internet. El [modelo de amenazas](../docs/seguridad/BRIDGE_THREAT_MODEL.md) documenta los
 actores, riesgos residuales y cambios que requieren revisión adversarial.
 
 | Garantía | Control vigente | Límite explícito |

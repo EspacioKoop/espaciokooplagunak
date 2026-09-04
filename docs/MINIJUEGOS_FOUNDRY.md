@@ -1,7 +1,7 @@
 # Contrato de minijuegos sociales en Foundry
 
 - Estado: **diseño previo a implementación**
-- Issue: [#308](https://github.com/VaroTv7/espaciokooplagunak/issues/308)
+- Issue: [#308](https://github.com/EspacioKoop/espaciokooplagunak/issues/308)
 - Primer vertical previsto: **póker de la sala común**
 
 Este documento fija el corte común que debe existir antes de construir el primer

@@ -324,13 +324,24 @@ export const ALCANCE_FOCO = 3.9;
  * opacidad se acumula; en el borde sólo queda la de fuera. El resultado es un
  * degradado escalonado, que es exactamente el lenguaje del resto del módulo.
  *
- * `ALFA_CONO` es por CAPA, no del haz entero: con tres capas el núcleo llega a
- * ~1−(1−α)³ y el borde se queda en α. Por eso este número es mucho más bajo que
- * el de una sola capa opaca.
+ * `ALFA_CONO` es por CAPA, no del haz entero: con `CAPAS_CONO` capas el núcleo
+ * llega a ~1−(1−α)^n y el borde se queda en α. Por eso este número es mucho más
+ * bajo que el de una sola capa opaca.
+ *
+ * CUÁNTAS CAPAS ES LA FINURA DEL DEGRADADO, no su forma. Con alfa igual en todas
+ * la opacidad acumulada crece casi linealmente del borde al eje, que es la forma
+ * que se quiere; lo que cambia al añadir capas es el tamaño del ESCALÓN entre
+ * una y otra, que es lo único que se ve como banda. Medido, del borde al núcleo:
+ *
+ *     3 capas α 0,055  →  borde 0,055   núcleo 0,156   escalón 0,051
+ *     6 capas α 0,016  →  borde 0,016   núcleo 0,092   escalón 0,015
+ *
+ * O sea: seis capas a 0,016 pesan la mitad que tres a 0,055 y el escalón se
+ * queda en un tercio. Más capas cuestan caras, y por eso no son doce.
  */
 export const APERTURA_CONO = 0.34;
-export const ALFA_CONO = 0.055;
-export const CAPAS_CONO = 3;
+export const ALFA_CONO = 0.016;
+export const CAPAS_CONO = 6;
 
 /** Cuántos lados tiene el haz. Seis y no ocho: son tres capas, así que cada
  *  lado se paga tres veces, y a esta resolución no se distingue un hexágono
@@ -447,14 +458,24 @@ function troncoDeCono([xa, ya, za], radioArriba, [xb, yb, zb], radioAbajo) {
 
 /** Cuántas motas por luminaria, su tamaño, y en qué tramo del haz viven. */
 export const MOTAS_POR_LUMINARIA = 5;
-const LADO_MOTA = 0.035;
+const LADO_MOTA = 0.075;
 /** Sólo en lo alto del haz, cerca del foco: es donde la luz rasante las
  *  encendería de verdad. Repartidas por todo el cono serían niebla, y la nave
  *  no tiene niebla dentro. */
 const TRAMO_MOTAS = 0.9;
-/** Bastante más sólidas que el haz: una mota que se transparenta no se ve. Es
- *  lo único del haz que se lee como un objeto, y debe serlo — son partículas. */
-export const ALFA_MOTAS = 0.5;
+/**
+ * CASI OPACAS, y ésta es la corrección de QA (Eloy: «no he visto las motas»).
+ *
+ * Iban a 0,5 y medían 3,5 cm, o sea unos 12 px² en pantalla, DEL MISMO COLOR que
+ * el haz en el que flotan. Dos cosas a la vez: demasiado pequeñas y sin
+ * contraste contra su propio fondo. Una mota de polvo iluminada no es un velo:
+ * es un punto brillante y sólido, y con el haz al 9 % en su eje sólo se lee si
+ * la mota está muy por encima de eso.
+ *
+ * Sigue sin ser 1 del todo para que se note que está dentro de la luz y no
+ * pegada al cristal de la pantalla.
+ */
+export const ALFA_MOTAS = 0.9;
 
 /**
  * Un ruido determinista en [0, 1) a partir de tres enteros/reales.

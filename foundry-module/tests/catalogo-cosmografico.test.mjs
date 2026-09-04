@@ -104,7 +104,7 @@ test("rechaza explícitamente una versión desconocida", () => {
   expectCode(unsupportedVersion, "invalid_version", "$.version");
 });
 
-test("v1 conserva semántica en round-trip y admite campos opcionales aditivos", () => {
+test("v1 conserva semántica en round-trip con source_url opcional", () => {
   const catalog = clone();
   catalog.entries[0].provenance.source_url = "https://example.invalid/mar-de-argia";
 

@@ -41,10 +41,11 @@ La versión es mayor y entera: no existe negociación ni conversión implícita.
 Dentro de v1 solo son compatibles hacia atrás los cambios aditivos que
 mantienen válidos todos los documentos v1 anteriores, por ejemplo añadir un
 campo opcional. El validador nuevo debe aceptar tanto el documento anterior
-sin ese campo como el documento enriquecido. Como el esquema detecta claves
-desconocidas para descubrir erratas y datos ejecutables, un productor no debe
-emitir el campo nuevo hasta que sus consumidores hayan actualizado el
-validador.
+sin ese campo como el documento enriquecido. Esta política guía futuras
+ampliaciones compatibles de v1; el esquema actual sigue siendo estricto y
+detecta claves desconocidas para descubrir erratas y datos ejecutables. Un
+productor no debe emitir el campo nuevo hasta que sus consumidores hayan
+actualizado el validador.
 
 Requieren una nueva versión mayor los cambios que:
 
@@ -62,6 +63,6 @@ mismo validador mediante una ruta explícita; no se crea un validador paralelo.
 
 Un documento v1 válido debe conservar su semántica tras `JSON.stringify`
 seguido de `JSON.parse`: vuelve a validar, mantiene la versión 1 y conserva sus
-datos. Las pruebas del catálogo cubren el ejemplo base, un
-campo opcional aditivo, el round-trip y el rechazo explícito de versiones
-ausentes o desconocidas.
+datos. Las pruebas del catálogo cubren el ejemplo base, el round-trip con el
+`source_url` opcional ya permitido y el rechazo explícito de versiones ausentes
+o desconocidas.

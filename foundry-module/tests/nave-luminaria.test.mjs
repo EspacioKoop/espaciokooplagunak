@@ -11,7 +11,8 @@ import assert from "node:assert/strict";
 import {
   ANCHO, CAIDA, CAIDA_DIFUSOR, LARGO, PASO,
   piezasLuminarias, mallaDifusorLuminarias, colorDifusorLuminaria,
-  reparto, focosLuminarias, tonoLuminaria,
+  reparto, focosLuminarias, tonoLuminaria, POTENCIA_FOCO, ALCANCE_FOCO,
+  mallaConoLuminarias, ALFA_CONO, CAIDA_CONO, APERTURA_CONO,
 } from "../scripts/nave-luminaria.mjs";
 import { LUZ_CALIDA, MURAL, SECCION, ALERTA } from "../scripts/paleta.mjs";
 import { ALTURA, crearSalaCaja } from "../scripts/nave-sala-caja.mjs";
@@ -271,4 +272,127 @@ test("colorDifusorLuminaria: sin lectura de estado, comportamiento de siempre (l
   const estado = colorDifusorLuminaria();
   assert.equal(estado.color, LUZ_CALIDA);
   assert.equal(estado.emisivo, true);
+});
+
+/* ---- las luminarias alumbran de verdad (#556) ------------------------------- */
+
+test("cada luminaria declara un foco, y con potencia y alcance", () => {
+  // Antes devolvía sólo `posicion`, así que el motor le ponía sus valores por
+  // defecto: potencia 1, que satura toda cara bajo una lámpara y deja la sala
+  // plana y blanca.
+  const sala = { ancho: 12, profundidad: 18, altura: ALTURA };
+  const focos = focosLuminarias(sala);
+  assert.equal(focos.length, reparto(sala.ancho, sala.profundidad).length);
+  for (const foco of focos) {
+    assert.equal(foco.posicion.length, 3);
+    assert.ok(foco.posicion.every(Number.isFinite), "posición con NaN");
+    assert.equal(foco.potencia, POTENCIA_FOCO);
+    assert.equal(foco.alcance, ALCANCE_FOCO);
+  }
+});
+
+test("el foco alumbra desde donde se ve la luz, no desde el techo", () => {
+  // Si el foco se pusiera en la carcasa y no en el difusor, la luz saldría de
+  // dentro de la propia luminaria y la primera cara que iluminaría sería ella
+  // misma.
+  const sala = { ancho: 12, profundidad: 12, altura: ALTURA };
+  const [foco] = focosLuminarias(sala);
+  assert.ok(Math.abs(foco.posicion[1] - (ALTURA - CAIDA - CAIDA_DIFUSOR)) < 1e-9);
+  assert.ok(foco.posicion[1] < ALTURA, "el foco está por encima del techo");
+});
+
+test("el alcance no llega al paso entre luminarias", () => {
+  // La regla que separa «charcos de luz» de «la sala uniformemente más clara»:
+  // si el alcance iguala o supera el paso, todos los charcos se solapan y es
+  // como no haber puesto focos. Es la razón de que estas cifras sean las que
+  // son, y por eso está escrita como prueba y no sólo en un comentario.
+  assert.ok(ALCANCE_FOCO < PASO, `alcance ${ALCANCE_FOCO} ≥ paso ${PASO}`);
+});
+
+test("la potencia deja sitio para que el escalonado se vea", () => {
+  // `intensidadCara` tiene suelo 0,35 y techo 1. Una potencia que por sí sola
+  // cubra ese margen satura, y saturado no hay tonos que escalonar.
+  assert.ok(POTENCIA_FOCO > 0, "sin potencia no hay foco");
+  assert.ok(POTENCIA_FOCO < 1 - 0.35, `potencia ${POTENCIA_FOCO} satura el margen de intensidadCara`);
+});
+
+test("una potencia y un alcance a medida mandan sobre los de serie", () => {
+  // Son cifras de ARTE: tienen que poder tocarse desde fuera para probarlas
+  // sobre la sala sin editar el módulo.
+  const [foco] = focosLuminarias({ ancho: 8, profundidad: 8, altura: ALTURA, potencia: 0.2, alcance: 3 });
+  assert.equal(foco.potencia, 0.2);
+  assert.equal(foco.alcance, 3);
+});
+
+test("bajo la lámpara siempre hay más luz que entre dos lámparas", () => {
+  // La propiedad que fija el techo del alcance, y la que se rompe sola si
+  // alguien lo sube «para que se vea más». Un punto del suelo a medio camino
+  // entre dos luminarias recibe la aportación de LAS DOS; el que está debajo de
+  // una, la de una sola. Pasado cierto alcance, el de en medio gana y la sala
+  // queda iluminada al revés.
+  const alturaDifusor = ALTURA - CAIDA - CAIDA_DIFUSOR;
+  const suelo = (distancia, cuantas) => {
+    const aporte = distancia >= ALCANCE_FOCO ? 0 : POTENCIA_FOCO * (1 - distancia / ALCANCE_FOCO);
+    return aporte * cuantas;
+  };
+  const bajoLaLampara = suelo(alturaDifusor, 1);
+  const entreDos = suelo(Math.hypot(alturaDifusor, PASO / 2), 2);
+  assert.ok(
+    bajoLaLampara > entreDos,
+    `iluminación invertida: bajo la lámpara ${bajoLaLampara.toFixed(3)}, entre dos ${entreDos.toFixed(3)}`,
+  );
+});
+
+/* ---- el haz visible (#556) -------------------------------------------------- */
+
+test("hay un haz por luminaria y no le sale ni un NaN", () => {
+  // El primer intento tenía NaN en x y z porque leía `difusor[2]` de una medida
+  // que sólo trae DOS componentes (es una placa, no una caja). La escena salía
+  // con cero polígonos, que en un motor que descarta caras degeneradas es un
+  // fallo perfectamente silencioso.
+  const sala = { ancho: 12, profundidad: 8, altura: ALTURA };
+  const malla = mallaConoLuminarias(sala);
+  assert.ok(malla, "no se generó el haz");
+  assert.ok(malla.vertices.every((v) => v.length === 3 && v.every(Number.isFinite)), "hay NaN en el haz");
+  const conos = reparto(sala.ancho, sala.profundidad).length;
+  // Ocho costados más una tapa por luminaria.
+  assert.equal(malla.caras.length, conos * 9);
+});
+
+test("el haz se abre hacia abajo y se corta antes del suelo", () => {
+  // Un haz que llega al suelo dibuja un borde duro donde no hay nada que lo
+  // produzca, y deja de leerse como luz para leerse como un objeto colgando.
+  const sala = { ancho: 8, profundidad: 8, altura: ALTURA };
+  const malla = mallaConoLuminarias(sala);
+  const alturas = malla.vertices.map((v) => v[1]);
+  const arriba = Math.max(...alturas);
+  const abajo = Math.min(...alturas);
+  assert.ok(abajo > 0.2, `el haz llega al suelo (y=${abajo})`);
+  assert.ok(Math.abs((arriba - abajo) - CAIDA_CONO) < 1e-9, "no cae lo que dice caer");
+  // Y se ABRE: el radio de abajo es mayor que el de arriba.
+  const radio = (y) => {
+    const xs = malla.vertices.filter((v) => Math.abs(v[1] - y) < 1e-9).map((v) => v[0]);
+    return (Math.max(...xs) - Math.min(...xs)) / 2;
+  };
+  assert.ok(radio(abajo) > radio(arriba), "el haz no se abre hacia abajo");
+});
+
+test("el haz es traslúcido, o sería una pieza de plástico", () => {
+  assert.ok(ALFA_CONO > 0, "un haz invisible no es un haz");
+  assert.ok(ALFA_CONO < 0.5, `alfa ${ALFA_CONO}: taparía lo que dice iluminar`);
+  assert.ok(APERTURA_CONO > 0, "un haz que no se abre es un tubo");
+});
+
+test("una sala compone su haz con alfa, y sin él nadie lo tiene", () => {
+  // La otra mitad: que el alfa llegue de verdad al polígono. El motor no tenía
+  // transparencia antes de #556, así que sin declararla ningún polígono la trae
+  // y ninguna escena existente cambia.
+  const malla = mallaConoLuminarias({ ancho: 8, profundidad: 8, altura: ALTURA });
+  const opciones = { ancho: 200, alto: 200, epoca: "psx", fov: 62, color: 0xffcc88, emisivo: true, posicion: [-4, -2, 4] };
+  const conAlfa = componerEscena(malla, { ...opciones, alpha: ALFA_CONO }).poligonos;
+  const sinAlfa = componerEscena(malla, opciones).poligonos;
+  assert.ok(conAlfa.length > 0, "el haz no se compuso");
+  assert.equal(conAlfa.length, sinAlfa.length, "declarar alfa no puede cambiar la geometría");
+  assert.ok(conAlfa.every((p) => p.alpha === ALFA_CONO), "algún polígono del haz perdió su alfa");
+  assert.ok(sinAlfa.every((p) => !("alpha" in p)), "un polígono trae alfa sin haberla pedido");
 });

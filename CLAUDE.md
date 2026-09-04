@@ -414,7 +414,25 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     alumbra a nadie y el muro de enfrente no se aclara por tenerlo delante. Esa frontera sigue
     intacta ahora que el motor SÍ tiene **luces de punto** (`componerEscena({focos})`, #556): lo que
     alumbra es un foco declarado por la escena, y `emisivo` sigue diciendo solo cómo se ve la propia
-    luminaria. La luz de punto se evalúa **en el centroide de cada cara** y entra por
+    luminaria. **Y ya los declara alguien**: `nave-sala-caja.mjs` pasa los de `focosLuminarias`,
+    trasladados por la cámara COMO LA MALLA —con `luzFija` las normales salen de los vértices sin
+    girar, así que un foco en coordenadas de sala pone el charco en otra parte y encima se mueve al
+    andar—. El alcance está **topado por debajo del paso** entre luminarias (4 m) y no por gusto:
+    el difusor cuelga a 3,5 m del suelo, así que el punto de en medio entre dos lámparas está a
+    4,03 m de CADA UNA y el de debajo a 3,5 m de UNA; en cuanto el alcance da para que las dos
+    lleguen al de en medio, ese punto recibe dos aportaciones y sale más claro que el de debajo —una
+    sala iluminada al revés no se lee como un fallo de luz, se lee como que las lámparas no son
+    lámparas—. Hay prueba que lo exige. El precio de ese tope es que el charco en el suelo apenas
+    gana 0,046, así que **el sombreado por foco casi no se lee**: lo que hace visible que una
+    luminaria emite es el **haz** (`mallaConoLuminarias`), ocho caras traslúcidas por lámpara, del
+    mismo color que su difusor y apagándose con él. Para eso el motor estrenó **alfa por polígono**,
+    que vive en `retro3d-lienzo.mjs` porque es cómo se PINTA y no cómo se compone; sin `alpha`
+    declarado no se toca `globalAlpha` y ninguna escena existente cambia. El haz **no llega al
+    suelo** a propósito: uno que termina en el suelo dibuja un borde duro donde nada lo produce, y
+    eso lo convierte en un objeto. Cuesta: el reactor pasa de 21,9 a 30,8 ms por fotograma (+41 %),
+    de los que 3,2 son los focos y el resto el haz —36 luminarias por 9 caras, aunque sólo 92 se
+    vean—; el recorte pendiente es hacer con los conos lo que el motor ya hace con los focos,
+    quedarse con los más cercanos al observador. La luz de punto se evalúa **en el centroide de cada cara** y entra por
     `intensidadCara` sumada a la direccional de siempre, sin tocar el rasterizador ni el orden por
     pintor: son las mismas caras con otro tono. Eso no valía la pena cuando un muro era un
     cuadrilátero grande —una lámpara al lado no daba un charco de luz, sino un muro que cambiaba de

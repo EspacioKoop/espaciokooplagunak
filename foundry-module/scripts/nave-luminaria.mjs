@@ -256,18 +256,141 @@ export function colorDifusorLuminaria({ aviso = null, health = null, timeMs = 0 
   return { color: encendido ? colorBase : 0x000000, emisivo: true };
 }
 
-export function focosLuminarias({ ancho, profundidad, altura }) {
+/**
+ * Cuánto suma una luminaria a la cara que tiene debajo, y hasta dónde llega.
+ *
+ * NO SON CIFRAS FÍSICAS y no hay que buscarles unidades. `POTENCIA` se suma al
+ * término direccional dentro de `intensidadCara`, donde el suelo ambiente es
+ * 0,35 y el techo es 1: con 1 —el valor por defecto del motor— toda cara bajo
+ * una lámpara se va al tope y la sala se queda plana y blanca, que es el
+ * resultado contrario al que se busca.
+ *
+ * EL ALCANCE TIENE UN TECHO DURO Y NO ES ESTÉTICO. Las luminarias van cada
+ * `PASO` = 4 m y el difusor cuelga a unos 3,5 m del suelo, así que un punto del
+ * suelo a medio camino entre dos lámparas está a 4,03 m de CADA UNA, mientras
+ * que el punto justo debajo de una está a 3,5 m de UNA sola. Con la caída lineal
+ * de `contribucionFoco`, en cuanto el alcance crece lo suficiente para que las
+ * dos lleguen al punto de en medio, ese punto recibe DOS aportaciones y acaba
+ * más claro que el que está bajo la lámpara. Medido, con potencia 0,45:
+ *
+ *     alcance 3,9  →  bajo la lámpara 0,046   entre lámparas 0,000
+ *     alcance 4,5  →  bajo la lámpara 0,100   entre lámparas 0,094
+ *     alcance 5,0  →  bajo la lámpara 0,135   entre lámparas 0,174  ← invertido
+ *     alcance 6,0  →  bajo la lámpara 0,188   entre lámparas 0,295  ← invertido
+ *
+ * Una sala iluminada al revés —oscura bajo las lámparas y clara entre ellas— no
+ * se lee como un fallo de iluminación: se lee como que las lámparas no son
+ * lámparas. Por eso `ALCANCE_FOCO` se queda por debajo de `PASO`, y hay una
+ * prueba que lo exige en vez de confiar en este comentario.
+ *
+ * El precio de ese techo es que el charco en el SUELO es pequeño: a 3,9 m de
+ * alcance, el punto bajo la lámpara sólo gana 0,046. Donde esto se lee de verdad
+ * es en los MUROS, que están mucho más cerca de la luminaria que el suelo. Que
+ * las luminarias se vean emitiendo es trabajo del cono de luz, no del sombreado.
+ *
+ * Estas dos cifras son ARTE y están para tocarlas mirando la sala.
+ */
+export const POTENCIA_FOCO = 0.45;
+export const ALCANCE_FOCO = 3.9;
+
+/**
+ * Las luces de punto de las luminarias de una sala (#556).
+ *
+ * Devuelve un foco por luminaria, en el MISMO espacio de sala que
+ * `piezasLuminarias` y `mallaDifusorLuminarias` — quien componga la escena es
+ * responsable de trasladarlos igual que traslada la malla, porque
+ * `intensidadCara` exige que focos y normales vivan en el mismo espacio.
+ *
+ * OJO A LA DIFERENCIA CON `emisivo`. El difusor es emisivo desde #555: eso dice
+ * cómo se ve la propia luminaria, a intensidad plena y sin sombrear. Esto otro
+ * dice cómo modifica a las DEMÁS caras. Son cosas distintas y por eso conviven:
+ * hasta ahora la luminaria se veía encendida y no alumbraba nada.
+ *
+ * El motor se queda con los `TOPE_FOCOS` más cercanos al observador, así que
+ * declarar los de una sala grande no cuesta por cara lo que cuesta declararlos.
+ */
+/**
+ * Cuánto se abre el haz al bajar, y hasta dónde se ve.
+ *
+ * `APERTURA` es cuánto crece el semiancho del cono por metro de caída: 0,45
+ * abre unos 24°, que es un downlight de techo y no un foco de teatro. `CAIDA_CONO`
+ * es lo que baja antes de cortarse, y NO llega al suelo a propósito: un haz que
+ * termina en el suelo dibuja un borde duro donde no hay nada que lo produzca, y
+ * eso convierte la luz en un objeto. Cortado en el aire se lee como polvo
+ * iluminado que se acaba.
+ *
+ * `ALFA_CONO` es lo que lo hace luz y no una pieza colgando. Con 1 sería un cono
+ * de plástico tapando el suelo que dice iluminar.
+ */
+export const APERTURA_CONO = 0.45;
+export const CAIDA_CONO = 2.2;
+export const ALFA_CONO = 0.16;
+
+/** Cuántos lados tiene el haz. Ocho: a esta resolución un cono de más lados no
+ *  se distingue y son caras que se pagan una vez por luminaria y sala. */
+const LADOS_CONO = 8;
+
+/**
+ * El haz de luz de una luminaria: un tronco de cono que baja del difusor.
+ *
+ * POR QUÉ HACE FALTA, si ya hay luces de punto. Porque en esta nave el sombreado
+ * por foco casi no se lee en el suelo: con las luminarias cada `PASO` = 4 m y el
+ * difusor a 3,5 m, el alcance está topado por debajo de 4 (ver `ALCANCE_FOCO`) y
+ * el punto bajo la lámpara sólo gana 0,046 de intensidad. El sombreado dice que
+ * hay luz; el haz es lo que hace que se VEA que la luminaria la está emitiendo.
+ *
+ * Es geometría barata y honesta, no volumétrico: ocho caras traslúcidas que se
+ * pintan con el resto y se ordenan con el resto. Nada de acumulación por rayo.
+ *
+ * Sale en el MISMO espacio de sala que `piezasLuminarias`, igual que todo lo
+ * demás de este módulo.
+ */
+export function mallaConoLuminarias({ ancho, profundidad, altura, apertura = APERTURA_CONO, caida = CAIDA_CONO }) {
+  const puntos = reparto(ancho, profundidad);
+  if (puntos.length === 0) return null;
+  const { difusor: medidasDifusor } = medidas(ancho, profundidad);
+  const yArriba = altura - CAIDA - CAIDA_DIFUSOR;
+  const yAbajo = yArriba - caida;
+  // Arranca del tamaño del propio difusor, no de un punto: un haz que nace en un
+  // vértice sale de un sitio donde no hay lámpara, y se ve. `difusor` viene en
+  // DOS medidas (largo y ancho del panel), no en tres: es una placa, no una caja.
+  const rArriba = Math.max(medidasDifusor[0], medidasDifusor[1]) / 2;
+  const rAbajo = rArriba + apertura * caida;
+
+  return fundir(puntos.map(({ x, z }) => {
+    const vertices = [];
+    for (let i = 0; i < LADOS_CONO; i += 1) {
+      const a = (i / LADOS_CONO) * Math.PI * 2;
+      vertices.push([x + Math.cos(a) * rArriba, yArriba, z + Math.sin(a) * rArriba]);
+    }
+    for (let i = 0; i < LADOS_CONO; i += 1) {
+      const a = (i / LADOS_CONO) * Math.PI * 2;
+      vertices.push([x + Math.cos(a) * rAbajo, yAbajo, z + Math.sin(a) * rAbajo]);
+    }
+    const caras = [];
+    for (let i = 0; i < LADOS_CONO; i += 1) {
+      const j = (i + 1) % LADOS_CONO;
+      caras.push([i, j, LADOS_CONO + j, LADOS_CONO + i]);
+    }
+    // Se tapa por abajo para que el haz no se vea hueco al pasar por debajo,
+    // que es justo donde más se mira.
+    caras.push(Array.from({ length: LADOS_CONO }, (_, i) => LADOS_CONO + i).reverse());
+    return { vertices, caras };
+  }));
+}
+
+export function focosLuminarias({ ancho, profundidad, altura, potencia = POTENCIA_FOCO, alcance = ALCANCE_FOCO }) {
   const puntos = reparto(ancho, profundidad);
   if (puntos.length === 0) return [];
   const yCarcasa = altura - CAIDA;
   // A la altura exacta del difusor: el foco alumbra desde donde se ve la luz.
   const yFoco = yCarcasa - CAIDA_DIFUSOR;
 
-  const focos = [];
-  for (const { x, z } of puntos) {
-    focos.push({ posicion: [x, yFoco, z] });
-  }
-  return focos;
+  return puntos.map(({ x, z }) => Object.freeze({
+    posicion: Object.freeze([x, yFoco, z]),
+    potencia,
+    alcance,
+  }));
 }
 
 /**

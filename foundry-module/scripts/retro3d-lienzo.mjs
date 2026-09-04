@@ -47,6 +47,17 @@ export function pintarEscena(ctx, escena, { fondo = null } = {}) {
   for (const poligono of poligonos) {
     const puntos = poligono?.puntos;
     if (!Array.isArray(puntos) || puntos.length < 3) continue;
+    // Alfa por polígono (#556). El motor no lo tenía y casi nada lo necesita: una
+    // caja opaca es opaca. Lo pide el CONO de luz de una luminaria, que si fuera
+    // opaco taparía el suelo que dice estar iluminando — un haz que oculta lo que
+    // alumbra no se lee como luz, se lee como un objeto colgando.
+    //
+    // Va aquí y no en `componerEscena` porque es cómo se PINTA, no cómo se
+    // compone. Sin `alpha` declarado no se toca `globalAlpha`, así que ni una
+    // escena existente cambia.
+    const alfa = Number.isFinite(poligono.alpha) ? Math.max(0, Math.min(1, poligono.alpha)) : 1;
+    if (alfa === 0) continue;
+    ctx.globalAlpha = alfa;
     ctx.beginPath();
     ctx.moveTo(puntos[0].x, puntos[0].y);
     for (let i = 1; i < puntos.length; i += 1) ctx.lineTo(puntos[i].x, puntos[i].y);
@@ -61,6 +72,7 @@ export function pintarEscena(ctx, escena, { fondo = null } = {}) {
     ctx.lineWidth = 1;
     ctx.stroke();
   }
+  ctx.globalAlpha = 1;
   return poligonos.length;
 }
 

@@ -21,7 +21,8 @@
 
 import { AVATAR, FACCIONES, PIXEL, RETRATO } from "./paleta.mjs";
 import { caja } from "./cantina-escena.mjs";
-import { mezclar } from "./retro3d.mjs";
+import { anclasAvatar } from "./avatar-anclas.mjs";
+import { piezasProp } from "./avatar-props.mjs";
 
 /**
  * Clases del SRD 5.1 (CC-BY-4.0). Se nombran por su clave y la traducción vive
@@ -109,31 +110,55 @@ function indiceValido(valor, cuantos) {
 }
 
 /**
- * Las piezas de un avatar, ya colocadas alrededor de `[x, y, z]` (los pies).
- * Devuelve la misma forma que los muebles de la sala —`{nombre, color, centro,
- * medidas}`— para que la escena no distinga a una persona de un taburete y no
- * haga falta ni un pintor nuevo ni una rama en `componerCantina`.
+ * La geometría del cuerpo de un avatar, sin ninguna pieza todavía: escala,
+ * anchura y las tres alturas de referencia (piernas/torso/cabeza). Antes se
+ * calculaba por separado en `piezasAvatar` y en `anclasHumoDeLaGente` —dos
+ * copias de la misma fórmula que un día iban a divergir— y ahora también lo
+ * necesitan los anclajes de `avatar-anclas.mjs`, así que es la tercera razón
+ * para que exista un solo sitio.
  */
-export function piezasAvatar(descripcion, { pies = [0, 0, 0], indice = 0, tiempo = 0 } = {}) {
+export function dimensionesCuerpo(descripcion, pies = [0, 0, 0]) {
   const av = normalizarAvatar(descripcion);
   const cuerpo = CUERPO_POR_RAZA[av.raza];
   const escala = ALTO_BASE * cuerpo.alto;
   const ancho = cuerpo.ancho * SILUETA_ANCHO[av.silueta];
   const [px, py, pz] = pies;
 
-  const piel = RETRATO.cascos[av.piel];
-  const pelo = AVATAR.pelos[av.pelo];
-  const ropa = FACCIONES[av.ropa];
-  const prefijo = `avatar${indice}`;
-
   // Cuatro cabezas de alto, repartidas: piernas, torso y una cabeza enorme.
   const altoCabeza = escala * 0.26;
   const altoTorso = escala * 0.36;
   const altoPiernas = escala - altoCabeza - altoTorso;
 
-  const yPiernas = py + altoPiernas / 2;
-  const yTorso = py + altoPiernas + altoTorso / 2;
-  const yCabeza = py + altoPiernas + altoTorso + altoCabeza / 2;
+  return {
+    av,
+    escala,
+    ancho,
+    px,
+    py,
+    pz,
+    altoCabeza,
+    altoTorso,
+    altoPiernas,
+    yPiernas: py + altoPiernas / 2,
+    yTorso: py + altoPiernas + altoTorso / 2,
+    yCabeza: py + altoPiernas + altoTorso + altoCabeza / 2,
+  };
+}
+
+/**
+ * Las piezas de un avatar, ya colocadas alrededor de `[x, y, z]` (los pies).
+ * Devuelve la misma forma que los muebles de la sala —`{nombre, color, centro,
+ * medidas}`— para que la escena no distinga a una persona de un taburete y no
+ * haga falta ni un pintor nuevo ni una rama en `componerCantina`.
+ */
+export function piezasAvatar(descripcion, { pies = [0, 0, 0], indice = 0, tiempo = 0 } = {}) {
+  const { av, px, pz, altoTorso, yPiernas, yTorso, yCabeza, altoCabeza, altoPiernas, ancho } =
+    dimensionesCuerpo(descripcion, pies);
+
+  const piel = RETRATO.cascos[av.piel];
+  const pelo = AVATAR.pelos[av.pelo];
+  const ropa = FACCIONES[av.ropa];
+  const prefijo = `avatar${indice}`;
 
   return [
     { nombre: `${prefijo}Pierna`, color: piel, centro: [px, yPiernas, pz], medidas: [0.3 * ancho, altoPiernas, 0.26] },
@@ -209,12 +234,7 @@ function manosDelGesto(gesto, { px, pz, yTorso, altoTorso, yCabeza, ancho, piel,
       return [
         mano("Izq", [-0.3, reposo, 0.06]),
         mano("Der", [0.34, yTorso + altoTorso * 0.35, 0.24]),
-        {
-          nombre: `${prefijo}Jarra`,
-          color: AVATAR.jarra,
-          centro: [px + 0.34 * ancho, yTorso + altoTorso * 0.55, pz + 0.24],
-          medidas: [0.18, 0.24, 0.18],
-        },
+        ...piezasProp("jarra", [px + 0.34 * ancho, yTorso + altoTorso * 0.55, pz + 0.24], { prefijo }),
       ];
     // Fumar: la mano junto a la cara y el cigarro asomando. La brasa es un píxel
     // y es lo único claro de la silueta, que es exactamente cómo se ve a alguien
@@ -224,22 +244,10 @@ function manosDelGesto(gesto, { px, pz, yTorso, altoTorso, yCabeza, ancho, piel,
       // siguiente (#439): cada avatar tira en un momento distinto —de ahí el
       // desfase por `indice`— porque una sala entera dando la calada a la vez
       // se lee como un parpadeo de escenario, no como gente fumando.
-      const calada = intensidadCalada(tiempo, indice);
       return [
         mano("Izq", [-0.3, reposo, 0.06]),
         mano("Der", [0.26, yCabeza - 0.12, 0.22]),
-        {
-          nombre: `${prefijo}Cigarro`,
-          color: AVATAR.cigarro,
-          centro: [px + 0.26 * ancho, yCabeza - 0.06, pz + 0.3],
-          medidas: [0.05, 0.05, 0.18],
-        },
-        {
-          nombre: `${prefijo}Brasa`,
-          color: mezclar(AVATAR.brasa, AVATAR.brasaCalada, calada),
-          centro: puntaDelCigarro({ px, pz, yCabeza, ancho }),
-          medidas: [0.06, 0.06, 0.06],
-        },
+        ...piezasProp("cigarro", puntaDelCigarro({ px, pz, yCabeza, ancho }), { prefijo, tiempo, indice }),
       ];
     }
     // Hombros: las dos manos abiertas hacia fuera y arriba. «Yo qué sé».
@@ -260,14 +268,10 @@ function manosDelGesto(gesto, { px, pz, yTorso, altoTorso, yCabeza, ancho, piel,
  * a esta resolución dos cajas más ya son una mancha.
  */
 function distintivoDeClase(clase, { px, py, pz, ancho, altoTorso, prefijo }) {
-  const alHombro = (color, medidas) => [
-    {
-      nombre: `${prefijo}Distintivo`,
-      color,
-      centro: [px + 0.34 * ancho, py + altoTorso * 0.35, pz - 0.16],
-      medidas,
-    },
-  ];
+  // `py` aquí es `yTorso` (así lo pasa piezasAvatar): el mismo punto que
+  // declara el anclaje `hombro` de avatar-anclas.mjs para este cuerpo.
+  const alHombro = (color, medidas) =>
+    piezasProp("distintivo", [px + 0.34 * ancho, py + altoTorso * 0.35, pz - 0.16], { prefijo, color, medidas });
   switch (clase) {
     // Armas al hombro: la silueta de un mandoble asomando por encima es
     // exactamente cómo se reconocía a un personaje en aquellos juegos.
@@ -356,17 +360,9 @@ export function piezasDeLaGente(gente = [], { omitirId = null, tiempo = 0 } = {}
 export function anclasHumoDeLaGente(gente = [], { omitirId = null } = {}) {
   const anclas = [];
   for (const { persona, pies, indice } of gentePorSitio(gente, { omitirId })) {
-    const av = normalizarAvatar(persona);
+    const { av } = dimensionesCuerpo(persona, pies);
     if (av.gesto !== "fumar") continue;
-    const cuerpo = CUERPO_POR_RAZA[av.raza];
-    const escala = ALTO_BASE * cuerpo.alto;
-    const ancho = cuerpo.ancho * SILUETA_ANCHO[av.silueta];
-    const altoCabeza = escala * 0.26;
-    const altoTorso = escala * 0.36;
-    const altoPiernas = escala - altoCabeza - altoTorso;
-    const [px, py, pz] = pies;
-    const yCabeza = py + altoPiernas + altoTorso + altoCabeza / 2;
-    const [hx, hy, hz] = puntaDelCigarro({ px, pz, yCabeza, ancho });
+    const [hx, hy, hz] = anclasAvatar(persona, { pies }).boca;
     anclas.push(
       Object.freeze({ punto: [hx, hy, hz], tipo: "humo", largo: 1.4, indice }),
     );

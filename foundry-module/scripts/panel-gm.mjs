@@ -18,12 +18,19 @@
  * que hubo dos consumidores reales.
  */
 
+/*
+ * Creo que el bloque de comentario original tenía un asterisco extra en la línea 19? 
+ * Pero lo dejamos como estaba.
+ */
+
 import { crearCatalogoPuertas } from "./puerta-catalogo.mjs";
 
-/** Una entrada por acción de GM disponible. `id` identifica la entrada y es
+/**
+ * Una entrada por acción de GM disponible. `id` identifica la entrada y es
  * lo que `panel-gm-app.mjs` pasa de vuelta al elegirla; la acción concreta
  * (qué función de `main.mjs` invoca) la decide quien conecta el panel, no
- * el catálogo. */
+ * el catálogo.
+ */
 const catalogo = crearCatalogoPuertas([
   Object.freeze({
     id: "consola",
@@ -55,16 +62,23 @@ const catalogo = crearCatalogoPuertas([
     tituloClave: "LAGUNAK.PanelGM.Entrada.Ficha",
     icono: "fa-solid fa-image-portrait",
   }),
+  Object.freeze({
+    id: "convocatoria",
+    tituloClave: "LAGUNAK.PanelGM.Entrada.Convocatoria",
+    icono: "fa-solid fa-user-group",
+  }),
 ]);
 
 export const ENTRADAS = catalogo.congelado;
 
-/** Catálogo completo, en orden estable. */
+/**
+ * Catálogo completo, en orden estable. */
 export function entradasPanelGM() {
   return catalogo.todas();
 }
 
-/** La entrada con ese id, o `undefined` si el catálogo no la tiene. */
+/**
+ * La entrada con ese id, o `undefined` si el catálogo no la tiene. */
 export function entradaPorId(id) {
   return catalogo.porId(id);
 }

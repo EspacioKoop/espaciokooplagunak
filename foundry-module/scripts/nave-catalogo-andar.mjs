@@ -402,3 +402,38 @@ export const CATALOGO_ANDAR = crearCatalogoEstancias({
     puertas: [],
   },
 });
+
+/**
+ * Ids que NO salen de la rejilla de la nave (`SALAS_PHOBOS`): bancos de
+ * pruebas solo-GM que se entran por herramienta de la barra de escena, no
+ * andando (#587 playa, #598 museo). Se declaran aquí y no en una lista
+ * aparte de `categoriasAndar`, para que añadir uno nuevo no obligue a
+ * mantener dos sitios sincronizados.
+ */
+const IDS_FUERA_DE_LA_NAVE = Object.freeze(["playa", "museo"]);
+
+/**
+ * Agrupa el catálogo por categoría, para presentarlo como carpetas en una UI
+ * (#952) en vez de una lista plana de catorce salas y dos bancos de pruebas
+ * mezclados. DERIVADO de `CATALOGO_ANDAR.ids`, nunca escrito a mano: una
+ * categoría que se escribiera aparte se desincronizaría el día que entrara
+ * una sala nueva, que es justo el bug que esto evita.
+ *
+ * Dos categorías hoy, y la lista está pensada para crecer: añadir una
+ * tercera es una entrada más de este array, no un cambio de forma.
+ *
+ * @returns {{id: string, titulo: string, estancias: {id: string}[]}[]}
+ */
+export function categoriasAndar() {
+  const todas = CATALOGO_ANDAR.ids;
+  const fueraDeLaNave = todas.filter((id) => IDS_FUERA_DE_LA_NAVE.includes(id));
+  const enLaNave = todas.filter((id) => !IDS_FUERA_DE_LA_NAVE.includes(id));
+  return [
+    { id: "nave", titulo: "LAGUNAK.PanelGM.Convocatoria.Categoria.Nave", estancias: enLaNave.map((id) => ({ id })) },
+    {
+      id: "banco-de-pruebas",
+      titulo: "LAGUNAK.PanelGM.Convocatoria.Categoria.BancoDePruebas",
+      estancias: fueraDeLaNave.map((id) => ({ id })),
+    },
+  ];
+}

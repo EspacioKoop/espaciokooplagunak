@@ -31,7 +31,7 @@ import { cartelaDe, getPiezaCatalogada } from "./catalogo-piezas.mjs";
 // Registra el catálogo del museo en el punto único de resolución (#598).
 // Este módulo no necesita saber que la pieza vive ahí: solo que existe.
 import "./museo-piezas.mjs";
-import { AJUSTE_TELEMETRIA, aceptarSensores, aceptarTelemetria } from "./telemetria-difusion.mjs";
+import { AJUSTE_TELEMETRIA, aceptarSensores, aceptarTelemetria } from "./ship-view/telemetria-difusion.mjs";
 import { AJUSTE_NIVEL_ALERTA } from "./alerta-escena.mjs";
 
 const ESTANCIA_INICIAL = "cantina";

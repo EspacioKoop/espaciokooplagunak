@@ -1,4 +1,4 @@
 polib==1.2.0
-ctranslate2==4.8.1
+ctranslate2==4.8.2
 sentencepiece==0.2.2
 deep-translator==1.11.4

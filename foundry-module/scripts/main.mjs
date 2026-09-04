@@ -77,6 +77,12 @@ import { crearClaseCantinaV1, crearClaseCantinaV2 } from "./cantina-app.mjs";
 import { puertaPorId } from "./cantina.mjs";
 import { crearClasePanelGMV1, crearClasePanelGMV2 } from "./panel-gm-app.mjs";
 import { construirHerramientasGM } from "./herramientas-gm-catalogo.mjs";
+import {
+  publicarConvocatoria,
+  registrarAjusteConvocatoria,
+  registrarEscuchaConvocatoria,
+} from "./convocatoria-escena.mjs";
+import { crearClaseConvocatoriaV1, crearClaseConvocatoriaV2 } from "./convocatoria-app.mjs";
 import { crearClaseSeccionV1, crearClaseSeccionV2 } from "./seccion-nave-app.mjs";
 import { crearClaseAndarV1, crearClaseAndarV2 } from "./andar-nave-app.mjs";
 import { salaDePuesto } from "./seccion-nave.mjs";
@@ -207,6 +213,12 @@ Hooks.once("init", () => {
   // de arriba —ver cabecera de `alarma-cruzada.mjs`—, ajuste de MUNDO por el
   // mismo motivo: solo el GM calcula, todos leen.
   registrarAjusteAlarmaCruzada(MODULE_ID);
+
+  // Convocatoria vigente (#832). Ajuste de MUNDO por un motivo distinto del de
+  // arriba: aquí no es que solo el GM tenga el dato, es que solo él puede
+  // ESCRIBIRLO — Foundry rechaza la escritura a los demás, y eso es lo que hace
+  // que una convocatoria no se pueda falsificar desde un cliente cualquiera.
+  registrarAjusteConvocatoria(MODULE_ID);
 
   // Tinte de escena delegado en FXMaster (ver `filtros-escena.mjs` y
   // docs/ECOSISTEMA_MODULOS_FOUNDRY.md). APAGADO por defecto y no por timidez:
@@ -411,6 +423,13 @@ Hooks.once("ready", () => {
   // tiene que encontrar su color ya publicado.
   aplicarVariablesAlerta();
   registrarEscuchaAlerta(MODULE_ID);
+  // Convocatoria a una estancia suelta (#832): la escucha la registran TODOS,
+  // porque a quien se convoca es a la tripulación. Solo se atiende la llamada
+  // que llega estando conectado; el ajuste no se aplica al cargar, y eso es
+  // deliberado (ver la cabecera de `convocatoria-escena.mjs`).
+  registrarEscuchaConvocatoria(MODULE_ID, {
+    alConvocar: ({ estancia }) => abrirAndarNave(estancia),
+  });
   // Alarma cruzada reactor/escudos (#482): solo ingeniería y armas la ven, con
   // la variante causa/efecto que les toca. El puesto se resuelve del flag del
   // propio usuario en cada repintado, para seguir el relevo sin recargar.
@@ -640,6 +659,7 @@ const ACCIONES_PANEL_GM = {
   musica: () => ciclarMusica(),
   decorado: () => regenerarDecoradoAleatorio(),
   ficha: () => aplicarFichaNave(),
+  convocatoria: () => abrirConvocatoria(),
 };
 
 function abrirPanelGM() {
@@ -647,6 +667,27 @@ function abrirPanelGM() {
   const Clase = foundry.applications?.api?.ApplicationV2
     ? crearClasePanelGMV2({ alSeleccionar: (id) => ACCIONES_PANEL_GM[id]?.() })
     : crearClasePanelGMV1({ alSeleccionar: (id) => ACCIONES_PANEL_GM[id]?.() });
+  const app = new Clase();
+  if (foundry.applications?.api?.ApplicationV2) app.render({ force: true });
+  else app.render(true);
+}
+
+/* Convocatoria (#832): el GM elige la estancia y la mesa entera va a ella.
+ *
+ * Aquí solo está la puerta. Quién puede convocar y dónde se aterriza lo decide
+ * `convocar` (puro, #587), a dónde se puede convocar lo deriva del catálogo
+ * `destinosConvocables`, y el viaje del aviso a los demás clientes es el ajuste
+ * de mundo de `convocatoria-escena.mjs`.
+ *
+ * El GM también se va con ellos: la escucha está registrada en todos los
+ * clientes, el suyo incluido. Convocar a la playa y quedarse en el puente sería
+ * la única forma de convocar a un sitio sin verlo. */
+function abrirConvocatoria() {
+  if (!game.user?.isGM) return;
+  const alElegir = (estancia) => void publicarConvocatoria({ moduleId: MODULE_ID, idEstancia: estancia });
+  const Clase = foundry.applications?.api?.ApplicationV2
+    ? crearClaseConvocatoriaV2({ alElegir })
+    : crearClaseConvocatoriaV1({ alElegir });
   const app = new Clase();
   if (foundry.applications?.api?.ApplicationV2) app.render({ force: true });
   else app.render(true);

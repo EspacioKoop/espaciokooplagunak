@@ -485,6 +485,19 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     el motor solo sabe recorrer un grafo de espacios conectados y no conoce el nombre de ninguna
     sala. #540 fue su primera prueba de fuego —se cambió la planta entera y el motor no se tocó—; si
     para meter una sala hace falta un `if` con su nombre en el motor, el diseño se ha roto. Corolario:
+    La **convocatoria** (#832) es el disparador de esa geografía para las estancias
+    que no cuelgan de ningún mamparo —la playa y el museo—: `convocatoria-estancia.mjs`
+    resuelve dónde aterriza la tripulación, `convocatoria-escena.mjs` lo difunde y
+    `convocatoria-app.mjs` es la ventana, que entra como una entrada más del catálogo
+    del panel de GM y no como botón nuevo. Dos reglas: viaja por **ajuste de mundo y no
+    por socket** —`game.socket` no acredita a quien emite, así que una llamada por ahí
+    sería falsificable, mientras que un ajuste de mundo solo lo escribe el GM porque
+    Foundry rechaza al resto—, y **no se aplica al cargar**, al revés que el nivel de
+    alerta: una alerta es un estado sostenido que quien entra tarde debe ver, una
+    convocatoria es un momento, y aplicarla al conectarse arrastraría a la playa a quien
+    llega dos horas después. A dónde se puede convocar se **deriva** del catálogo (las
+    estancias sin puertas) en vez de escribirse al lado: convocar a la cantina le quitaría
+    el paseo a la tripulación sin dar nada a cambio.
     `resolverArranque` decide con qué estancia se abre la ventana —lo pedido explícitamente (la
     sección, #508) manda sobre el checkpoint guardado, y un id que el catálogo no conoce cae al
     siguiente escalón en vez de dejar a nadie en la nada—, y esa decisión vive en el catálogo porque

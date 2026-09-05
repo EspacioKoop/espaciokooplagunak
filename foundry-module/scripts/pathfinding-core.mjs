@@ -184,6 +184,8 @@ export function suavizarCamino(grid, camino) {
  * que ninguna sala física permitiría.
  */
 export function caminoDirecto(grid, a, b) {
+  if (!dentro(grid, a.x, a.y) || !dentro(grid, b.x, b.y)) return false;
+  if (bloqueada(grid, b.x, b.y)) return false;
   const dx = Math.abs(b.x - a.x);
   const dy = Math.abs(b.y - a.y);
   const sx = a.x < b.x ? 1 : -1;
@@ -230,8 +232,8 @@ export function obstaculosDesdeCajas(grid, cajas = []) {
   for (const caja of cajas) {
     const x0 = Math.floor(caja.x);
     const z0 = Math.floor(caja.z);
-    const x1 = Math.floor(caja.x + caja.ancho);
-    const z1 = Math.floor(caja.z + caja.profundidad);
+    const x1 = Math.ceil(caja.x + caja.ancho);
+    const z1 = Math.ceil(caja.z + caja.profundidad);
     for (let cx = x0; cx < x1; cx++) {
       for (let cz = z0; cz < z1; cz++) {
         if (dentro(grid, cx, cz)) out.add(`${cx},${cz}`);

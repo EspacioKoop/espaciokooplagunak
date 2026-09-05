@@ -148,6 +148,23 @@ test("caminoDirecto sí permite la diagonal si solo una esquina está bloqueada"
   assert.equal(caminoDirecto(grid, { x: 0, y: 0 }, { x: 1, y: 1 }), true);
 });
 
+test("caminoDirecto rechaza un destino bloqueado aunque el trazado hasta él esté libre", () => {
+  const grid = crearGrid(3, 1, [{ x: 2, y: 0 }]);
+  assert.equal(caminoDirecto(grid, { x: 0, y: 0 }, { x: 2, y: 0 }), false);
+});
+
+test("caminoDirecto rechaza extremos fuera de los límites del grid", () => {
+  const grid = crearGrid(3, 3);
+  assert.equal(caminoDirecto(grid, { x: 0, y: 0 }, { x: 3, y: 0 }), false);
+  assert.equal(caminoDirecto(grid, { x: -1, y: 0 }, { x: 1, y: 1 }), false);
+});
+
+test("obstaculosDesdeCajas cubre por techo también el borde final, no solo el inicial", () => {
+  const grid = crearGrid(3, 3);
+  const obstaculos = obstaculosDesdeCajas(grid, [{ x: -0.2, z: 0, ancho: 0.4, profundidad: 1 }]);
+  assert.ok(obstaculos.has("0,0"), "la celda con solape parcial en ambos bordes debe quedar ocupada");
+});
+
 test("suavizarCamino: todo segmento del resultado tiene línea directa real, incluido el último", () => {
   const grid = crearGrid(6, 6, [
     { x: 2, y: 1 },

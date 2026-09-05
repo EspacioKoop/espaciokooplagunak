@@ -47,12 +47,10 @@ que hay, e ignora las tres defensas que ya existen.
 
 ### R2 — Fuga de secretos al repositorio público
 
-**Severidad: alta, y parcialmente descubierta.** Hay un hook local, y un hook
-local se salta con `git push --no-verify`. La protección que no se puede
-esquivar —secret scanning y push protection del lado del servidor— sigue
-**desactivada**, como el propio `SECURITY.md` §1 reconoce. Es la única acción de
-este ADR que no puede tomar quien contribuye: la tiene que activar quien
-administra el repositorio.
+**Severidad: alta.** Hay un hook local, y un hook local se salta con
+`git push --no-verify`. La capa que no depende del cliente es secret scanning y
+push protection del lado del servidor. Su estado y el procedimiento operativo
+se mantienen en [`SECURITY.md`](../../SECURITY.md), la fuente canónica.
 
 ### R3 — Transporte sin cifrar en el puente
 
@@ -76,7 +74,7 @@ compilación en el contenedor final.
 
 | ID | Acción | De quién |
 |----|--------|----------|
-| A1 | Activar secret scanning y push protection en *Settings → Code security* | administración del repositorio |
+| A1 | Mantener secret scanning y push protection | administración |
 | A2 | Documentar que el puente no se expone sin túnel, VPN o proxy con TLS | quien contribuya |
 | A3 | Que CI falle ante CVE CRITICAL/HIGH sin excepción documentada | quien contribuya |
 | A4 | Proceso de revisión del SHA anclado de SeriousProton | quien contribuya |

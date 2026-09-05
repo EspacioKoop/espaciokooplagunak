@@ -121,6 +121,64 @@ que filtrar por licencia, y su API la expone.
 **Lo que hace falta es poco y corto**: mar, viento, una puerta, una alarma. No un
 banco de mil efectos.
 
+### Nuevas fuentes contrastadas para investigación — **verificadas como políticas, no como assets**
+
+Estas fuentes son útiles para buscar referencias visuales, mapas, documentación o
+material de ambientación, pero la verificación de la política del proveedor no
+autoriza a importar una pieza concreta sin revisar su ficha y su consumidor.
+
+#### Library of Congress — Free to Use and Reuse
+
+La biblioteca mantiene conjuntos seleccionados de imágenes y otros materiales
+que considera de dominio público, sin restricciones conocidas o autorizados para
+uso público. Su guía de derechos insiste en consultar la declaración de derechos
+del propio ítem: una colección o una búsqueda no convierte automáticamente cada
+resultado en dominio público.
+
+- Portal: `https://www.loc.gov/free-to-use/`
+- Criterio de entrada: la ficha debe indicar `Public domain`, `No known copyright`
+  o una autorización equivalente; conservar autor, institución, URL y declaración
+  de derechos.
+- Uso en este proyecto: referencia visual, mapas y documentación histórica;
+  ningún fichero entra al repositorio sin ficha de procedencia y consumidor.
+
+#### Europeana — objetos con derechos explícitos y metadatos CC0
+
+Europeana publica sus metadatos bajo CC0, pero los objetos digitales mostrados
+conservan los derechos que aparecen en la insignia de cada proveedor. Si falta
+la información de derechos, se debe acudir al sitio del proveedor y no asumir
+dominio público. Su guía de uso pide conservar crédito institucional y señalar
+las modificaciones.
+
+- Política: `https://www.europeana.eu/en/rights/terms-of-use`
+- Guía de dominio público: `https://www.europeana.eu/en/rights/public-domain-usage-guidelines`
+- Consumidor en este repositorio: `tools/apis/europeana.py` (`europeana(consulta,
+  reusabilidad="open")`), que ya filtra por reusabilidad y devuelve la licencia
+  declarada de cada resultado — el punto de partida de la comprobación, no su
+  sustituto.
+- Criterio de entrada: solo objetos con marca `Public Domain`/`CC0` verificable;
+  los metadatos CC0 no conceden por sí solos derechos sobre la imagen, audio o
+  modelo.
+- Uso en este proyecto: catálogo y referencias de patrimonio; los metadatos
+  pueden alimentar investigación, no assets binarios sin verificación adicional.
+
+#### NOAA — imágenes y datos del gobierno estadounidense
+
+NOAA declara que la mayoría de su contenido es de dominio público salvo indicación
+contraria, pero exige comprobar el crédito o pie de cada pieza, no sugerir
+respaldo oficial y no presentar una modificación como material oficial. Sus
+vídeos pueden incluir metraje de terceros y requieren revisión caso a caso.
+
+- Política: `https://oceanservice.noaa.gov/about/faq.html`
+- Criterio de entrada: conservar el crédito NOAA, comprobar excepciones y
+  descartar cualquier pieza con material de terceros no despejado.
+- Uso en este proyecto: cielos, océanos, mapas y referencias científicas; no se
+  importa nada por la mera procedencia institucional.
+
+**Regla común:** estas tres fuentes quedan verificadas como políticas de acceso,
+no como una lista de assets aprobados. La ficha del archivo concreto, su licencia,
+su hash y su consumidor siguen siendo obligatorios.
+
 ---
 
 ## 5. El precio de entrada, medido

@@ -167,6 +167,10 @@ async function crearMundo({ jugadores = ["p1", "p2"] } = {}) {
 
   const gm = crearCliente("gm", { isGM: true });
   const mesa = { gm, ajustes, clientes, crearCliente, arrancar };
+  // Dispara el hook `updateUser` a pelo, sin pasar por una propuesta: es la
+  // única forma de probar que el relevo lo provoca el HOOK y no el camino de
+  // la propuesta, que también lo acabaría arreglando y taparía un cableado roto.
+  mesa.emitirUpdateUser = (userDoc, changes = {}) => difundirUpdateUser(userDoc, changes);
   mesa.jugadores = jugadores.map((id) => crearCliente(id));
 
   for (const c of [gm, ...mesa.jugadores]) await arrancar(c);
@@ -409,4 +413,199 @@ test("el GM que recarga readopta su propia mesa: sin semilla no se reanuda la ma
   // El relevo se anuncia para que la UI pueda explicarlo: una mano que
   // desaparece sin decir por qué se lee como un fallo de la mesa.
   assert.ok(mesa.gm.relevos.length > 0, "el relevo no anunció `lagunakMinijuegoRelevoCoordinador`");
+});
+
+test("el relevo de coordinador tiene red de seguridad: el GM anterior sigue conectado pero deja de ser el activo", async () => {
+  // Caso que NO detecta `userConnected`: el GM anterior sigue en la partida
+  // pero pierde `activeGM`. El módulo lo resuelve en `updateUser` antes de
+  // procesar la propuesta, en vez de descartarla.
+  const mesa = await crearMundo({ jugadores: ["p1", "p2"] });
+  const [p1, p2] = mesa.jugadores;
+
+  // GM abre mesa y reparte
+  mesa.gm.conHooks(() => mesa.gm.wiring.abrirMesa({ id: "mesa-1", nombreJuego: "poker" }));
+  await mesa.proponer(p1, "join");
+  await mesa.proponer(p2, "join");
+  await mesa.proponer(mesa.gm, "start");
+
+  const publicoAntes = mesa.publico();
+  assert.equal(publicoAntes.coordinadorId, "gm");
+  assert.equal(publicoAntes.manoEnCurso, true);
+  const epocaAntes = publicoAntes.epocaCoordinador;
+
+  // Simular que otro GM se convierte en el activeGM (p. ej. el GM original
+  // pierde el estatus pero sigue conectado). En Foundry esto pasa cuando
+  // el GM transfiere el rol sin desconectarse.
+  // Creamos un nuevo cliente GM y hacemos que `activeGM` lo devuelva.
+  const nuevoGm = await mesa.arrancar(mesa.crearCliente("gm2", { isGM: true }), "-gm2");
+  // Sobrescribir el getter activeGM en TODOS los clientes para que devuelva gm2
+  for (const c of mesa.clientes) {
+    const gameOrig = c.game;
+    c.game = {
+      ...gameOrig,
+      get users() {
+        const u = gameOrig.users;
+        return { ...u, get activeGM() { return nuevoGm.userDoc; } };
+      }
+    };
+  }
+
+  // El relevo lo tiene que provocar el HOOK, no la propuesta. Se dispara
+  // `updateUser` a pelo, con un cambio que no tiene nada que ver con la mesa:
+  // si el cableado de `Hooks.on("updateUser", ...)` estuviera roto, esto no
+  // haría nada y la comprobación de aquí abajo fallaría. Con la propuesta por
+  // delante no se distinguía un hook bien cableado de uno que no existe,
+  // porque el camino de la propuesta también acaba llamando a
+  // `asegurarCoordinacion()`.
+  mesa.emitirUpdateUser(nuevoGm.userDoc, { name: "gm2 renombrado" });
+
+  const trasElHook = mesa.publico();
+  assert.equal(
+    trasElHook.coordinadorId,
+    "gm2",
+    "el relevo lo provoca el hook updateUser, no la propuesta que venga después",
+  );
+  assert.ok(
+    trasElHook.epocaCoordinador > epocaAntes,
+    "el hook sube la época al relevar, invalidando los sobres del coordinador anterior",
+  );
+
+  // El relevo cancela la mano en vuelo, y eso es lo honesto: la semilla, el
+  // mazo y las manos vivían en la memoria del GM anterior, así que el nuevo
+  // coordinador no puede continuarla sin inventarse las cartas.
+  assert.equal(trasElHook.manoEnCurso, false, "la mano en vuelo no sobrevive al relevo");
+
+  // Y ahora lo que de verdad importa: una propuesta que llega DESPUÉS del
+  // relevo la atiende el coordinador nuevo, en vez de descartarse por "no hay
+  // sesión" —que era el fallo con red de seguridad que cubre esta prueba—.
+  await mesa.proponer(nuevoGm, "start");
+
+  const despues = mesa.publico();
+  assert.equal(despues.manoEnCurso, true, "la propuesta tras el relevo se atendió, no se descartó");
+  assert.equal(despues.coordinadorId, "gm2", "y la atendió el coordinador nuevo");
+  assert.ok(
+    despues.epocaCoordinador > epocaAntes,
+    "la época subió con el relevo, invalidando sobres del anterior",
+  );
+});
+
+test("la semilla del coordinador nunca sale: no aparece en el estado público ni en el sobre que va al cliente", async () => {
+  // La semilla se toma del CSPRNG del entorno (`crypto.getRandomValues`), así
+  // que se fija a un valor conocido y se busca ESE número. Antes se buscaba
+  // "cualquier entero de 31 bits que no esté en una lista de campos
+  // permitidos", y esa lista es el problema: un campo público nuevo y legítimo
+  // la rompe con un falso positivo, y una clave secreta que alguien añada a la
+  // lista deja pasar la fuga en silencio. Comprobar el valor real no tiene
+  // ninguno de los dos modos de fallo.
+  const SEMILLA_FIJA = 1234567;
+  // `globalThis.crypto` en Node solo tiene getter, así que se sustituye con
+  // defineProperty y se restaura el descriptor original.
+  const descriptorCrypto = Object.getOwnPropertyDescriptor(globalThis, "crypto");
+  let vecesPedida = 0;
+  Object.defineProperty(globalThis, "crypto", {
+    configurable: true,
+    value: {
+      getRandomValues: (buffer) => {
+        vecesPedida += 1;
+        buffer[0] = SEMILLA_FIJA;
+        return buffer;
+      },
+    },
+  });
+
+  let mesa;
+  try {
+    mesa = await mesaRepartida();
+  } finally {
+    Object.defineProperty(globalThis, "crypto", descriptorCrypto);
+  }
+  const [p1] = mesa.jugadores;
+
+  // Sin esto la prueba sería hueca: si el motor dejara de pedir la semilla al
+  // CSPRNG, se buscaría un número que no está en ninguna parte y pasaría sola.
+  assert.ok(vecesPedida > 0, "la semilla tiene que salir del CSPRNG que se ha fijado");
+
+  const publico = mesa.publico();
+  const vistaPrivada = mesa.manoDe(p1);
+
+  // Con una baraja de por medio, una semilla adivinable es un mazo adivinable.
+  assert.deepEqual(
+    rutasConValor(publico, SEMILLA_FIJA),
+    [],
+    "la semilla filtrada en el estado público",
+  );
+  assert.deepEqual(
+    rutasConValor(vistaPrivada, SEMILLA_FIJA),
+    [],
+    "la semilla filtrada en la vista privada del jugador",
+  );
+
+  // Tampoco debe estar en las claves que solo el coordinador puede tener
+  const clavesProhibidas = ["semilla", "estadoAleatorio", "mazo", "manos"];
+  const rutasSecretas = [];
+  function recorrer(obj, ruta = "") {
+    if (!obj || typeof obj !== "object") return;
+    for (const [k, v] of Object.entries(obj)) {
+      if (clavesProhibidas.includes(k)) rutasSecretas.push(`${ruta}.${k}`);
+      if (Array.isArray(v)) v.forEach((item, i) => recorrer(item, `${ruta}.${k}[${i}]`));
+      else if (v && typeof v === "object") recorrer(v, `${ruta}.${k}`);
+    }
+  }
+  recorrer(publico);
+  assert.deepEqual(rutasSecretas, [], `claves secretas en el público: ${rutasSecretas.join(", ")}`);
+});
+
+// Dónde aparece un valor exacto dentro de una estructura, con su ruta: un
+// fallo tiene que decir POR DÓNDE se escapó, no solo que se escapó.
+function rutasConValor(valor, buscado, ruta = "", visitados = new WeakSet()) {
+  if (valor === buscado) return [ruta || "(raíz)"];
+  if (!valor || typeof valor !== "object") return [];
+  if (visitados.has(valor)) return [];
+  visitados.add(valor);
+  const encontradas = [];
+  for (const [k, v] of Object.entries(valor)) {
+    encontradas.push(...rutasConValor(v, buscado, `${ruta}.${k}`, visitados));
+  }
+  return encontradas;
+}
+
+test("la entrada de mesa es configurable y afecta al juego: las ciegas de mundo determinan la apuesta inicial", async () => {
+  // La entrada (fichas, ciegas) se decide por la mesa vía ajustes de mundo.
+  // Verificamos que cambiar los ajustes de mundo cambia lo que se necesita para pagar.
+  const mesa = await crearMundo({ jugadores: ["p1", "p2"] });
+  const [p1, p2] = mesa.jugadores;
+
+  // Configurar ciegas pequeñas: 5, grandes: 10
+  mesa.ajustes.set("espaciokoop-lagunak.minijuegoFichasIniciales", 200); // Valor alto para no limitar stacks
+  mesa.ajustes.set("espaciokoop-lagunak.minijuegoCiegaPequena", 5);
+  mesa.ajustes.set("espaciokoop-lagunak.minijuegoCiegaGrande", 10);
+
+  mesa.gm.conHooks(() => mesa.gm.wiring.abrirMesa({ id: "mesa-1", nombreJuego: "poker" }));
+  await mesa.proponer(p1, "join");
+  await mesa.proponer(p2, "join");
+  await mesa.proponer(mesa.gm, "start");
+
+  const publico = mesa.publico();
+  assert.equal(publico.manoEnCurso, true, "la mano debería estar en curso");
+  assert.ok(publico.juegoPublico, "debería haber juego público");
+
+  // Después de las ciegas, la apuesta actual debería ser igual a la ciega grande
+  assert.equal(publico.juegoPublico.apuestaActual, 10, "después de las ciegas, la apuesta actual debería ser la ciega grande");
+  assert.equal(publico.juegoPublico.subidaMinima, 10, "la subida mínima debería ser igual a la ciega grande");
+
+  // En heads-up (2 jugadores), el pequeño ciego actúa primero preflop
+  const enTurno = publico.juegoPublico.turno;
+  const jugadorEnTurno = publico.juegoPublico.jugadores.find(j => j.userId === enTurno);
+  assert.ok(jugadorEnTurno, "debería haber un jugador cuyo turno sea");
+
+  // Para pagar, este jugador necesita apostar (apuestaActual - apostadoRonda)
+  // Después de las ciegas en heads-up:
+  // - El jugador con el botón es el pequeño ciego (ha apostado 5, necesita 5 más para llegar a 10)
+  // - El otro jugador es el grande ciego (ha apostado 10, necesita 0 más para llegar a 10)
+  // Como el pequeño ciego actúa primero, necesita pagar la diferencia para igualar
+  const cantidadParaPagar = publico.juegoPublico.apuestaActual - (jugadorEnTurno.apostadoRonda ?? 0);
+  assert.equal(cantidadParaPagar, 5, "el jugador cuyo turno es (pequeño ciego en heads-up) debería necesitar apostar 5 para pagar");
+
+  // Verificar que efectivamente puede pagar (tiene suficientes fichas)
+  assert.ok((jugadorEnTurno.stack ?? 0) >= cantidadParaPagar, "el jugador debería tener suficientes fichas para pagar");
 });

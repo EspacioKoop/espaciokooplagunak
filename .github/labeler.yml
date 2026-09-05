@@ -21,7 +21,7 @@
 "area:escenarios":
   - changed-files:
       - any-glob-to-any-file:
-          - "scripts/scenario_90_lagunak_primera_guardia.lua"
+          - "scripts/**/*.lua"
 
 documentation:
   - changed-files:
@@ -50,3 +50,20 @@ javascript:
           - '**/*.test.js'
           - '**/*.test.mjs'
           - '**/*.spec.ts'
+
+"area:juego":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "src/**"
+
+cpp:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.cpp'
+          - '**/*.h'
+          - '**/*.hpp'
+
+lua:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.lua'

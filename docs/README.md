@@ -69,3 +69,7 @@
 Las normas de colaboración están en [CONTRIBUTING.md](../CONTRIBUTING.md), la
 guía para agentes de IA en [AGENTS.md](../AGENTS.md) y el código de conducta en
 [CODE_OF_CONDUCT.md](../CODE_OF_CONDUCT.md).
+
+| Documento | Para qué sirve |
+| --- | --- |
+| [ETIQUETAS.md](ETIQUETAS.md) | Inventario medido de las etiquetas del repositorio, qué se etiqueta solo y qué no (#717) |

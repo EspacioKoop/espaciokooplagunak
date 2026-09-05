@@ -41,6 +41,7 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { normalizarGlb } from "./normalizar-glb.mjs";
 
 /** Lee un STL binario: cabecera de 80 bytes, número de triángulos, y 50 bytes
  *  por triángulo (normal, tres vértices y dos de relleno). */
@@ -66,6 +67,183 @@ export function leerStlBinario(bytes) {
     triangulos.push([punto(0), punto(1), punto(2)]);
   }
   return triangulos;
+}
+
+/**
+ * Lee un OBJ de texto (Wavefront): vértices `v`, caras `f`.
+ *
+ * Solo GEOMETRÍA, como el STL: se ignoran `vt` (textura) y `vn` (normales),
+ * que es la frontera de arte de #351 —el color lo pone la escena—. NASA 3D
+ * Resources y las demás fuentes públicas (Europeana, Art Institute of
+ * Chicago, Wikidata) sueltan OBJ, y hasta ahora el pipeline solo leía STL,
+ * así que esas mallas no llegaban nunca a la escena retro3d.
+ *
+ * Las caras pueden ser polígonos; se triangulan por abanico porque el
+ * decimador QEM trabaja a partir de triángulos. Los índices de OBJ son
+ * 1-based y pueden ser negativos (relativos al final del fichero).
+ *
+ * @param {string} texto
+ * @returns {{vertices: number[][], caras: number[][]}}
+ */
+export function leerObj(texto) {
+  const vertices = [];
+  const caras = [];
+  const lineas = texto.split(/\r?\n/);
+  for (const linea of lineas) {
+    const limpia = linea.trim();
+    if (!limpia || limpia.startsWith("#")) continue;
+    const partes = limpia.split(/\s+/);
+    const tag = partes[0];
+    if (tag === "v") {
+      // `x y z [w]`; el w se ignora (siempre 1 en OBJ geométrico).
+      const x = Number(partes[1]);
+      const y = Number(partes[2]);
+      const z = Number(partes[3]);
+      if (!(Number.isFinite(x) && Number.isFinite(y) && Number.isFinite(z))) continue;
+      vertices.push([x, y, z]);
+    } else if (tag === "f") {
+      // Cada vértice de cara: `v`, `v/vt`, `v/vt/vn` o `v//vn`. Basta el
+      // índice de vértice, que siempre va primero.
+      const idx = [];
+      for (let k = 1; k < partes.length; k += 1) {
+        const token = partes[k].split("/")[0];
+        let n = Number(token);
+        if (!Number.isFinite(n)) continue;
+        // Negativo = relativo al final de la lista de vértices definida hasta aquí.
+        n = n < 0 ? vertices.length + n : n - 1; // OBJ es 1-based.
+        if (n >= 0 && n < vertices.length) idx.push(n);
+      }
+      // Triangular por abanico: un polígono de N vértices da N-2 triángulos.
+      for (let i = 1; i + 1 < idx.length; i += 1) {
+        const t = [idx[0], idx[i], idx[i + 1]];
+        // Una cara degenerada (índices repetidos) no aporta superficie.
+        if (t[0] !== t[1] && t[1] !== t[2] && t[0] !== t[2]) caras.push(t);
+      }
+    }
+    // `vt`, `vn`, `vp`, `g`, `o`, `usemtl`, `mtllib`… se ignoran a propósito.
+  }
+  return { vertices, caras };
+}
+
+/**
+ * Lee un GLB (glTF binario, versión 2): cabecera de 12 bytes, un chunk JSON y
+ * un chunk BIN con la geometría.
+ *
+ * Solo GEOMETRÍA (frontera de arte #351): se leen los accesores POSITION y, si
+ * los hay, los índices; normales y UV se ignoran. NASA 3D Resources suelta más
+ * GLB que OBJ, así que este lector es el que de verdad abre el catálogo
+ * `nasa3d.py` hacia la escena retro3d.
+ *
+ * Funciona con el buffer embebido en el chunk BIN (el caso normal de un GLB
+ * descargado) y con buffers como data-URI; un buffer externo (.bin aparte) no
+ * entra porque solo tenemos un fichero. Las caras indexadas y las no indexadas
+ * (triangle soup) se tratan igual que en `leerObj`: triángulos, 0-based.
+ *
+ * @param {Uint8Array} bytes
+ * @returns {{vertices: number[][], caras: number[][]}}
+ */
+export function leerGlb(bytes) {
+  const cabeza = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  if (bytes.byteLength < 12) throw new Error("El GLB es demasiado corto.");
+  if (cabeza.getUint32(0, true) !== 0x46546c67) throw new Error("No es un GLB (la cabecera no dice 'glTF').");
+  const version = cabeza.getUint32(4, true);
+  if (version !== 2) throw new Error(`GLB versión ${version} no soportada (solo 2).`);
+  if (cabeza.getUint32(8, true) !== bytes.byteLength) throw new Error("La longitud del GLB no cuadra con el fichero.");
+
+  let json = null;
+  let bin = null;
+  let offset = 12;
+  while (offset + 8 <= bytes.byteLength) {
+    const largo = cabeza.getUint32(offset, true);
+    const tipo = cabeza.getUint32(offset + 4, true);
+    const datos = bytes.subarray(offset + 8, offset + 8 + largo);
+    if (tipo === 0x4e4f534a) json = JSON.parse(new TextDecoder().decode(datos));
+    else if (tipo === 0x004e4942) bin = datos;
+    offset += 8 + largo;
+  }
+  if (!json) throw new Error("El GLB no trae chunk JSON.");
+
+  // Resuelve cada buffer a sus bytes: embebido en BIN, o data-URI base64.
+  const buffers = (json.buffers || []).map((b) => {
+    if (b.uri && b.uri.startsWith("data:")) {
+      const coma = b.uri.indexOf(",");
+      return Uint8Array.from(atob(b.uri.slice(coma + 1)), (c) => c.charCodeAt(0));
+    }
+    return bin;
+  });
+  const vistaDe = (buf) => new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
+  const accesor = (i) => json.accessors[i];
+  const vistaBuf = (i) => json.bufferViews[i];
+
+  const vertices = [];
+  const caras = [];
+  for (const mesh of json.meshes || []) {
+    for (const prim of mesh.primitives || []) {
+      const posIdx = prim.attributes.POSITION;
+      const posAcc = accesor(posIdx);
+      if (!posAcc) continue; // Una primitiva sin POSITION no es geometría.
+      // glTF 2.0 exige `bufferView` en el accessor. NASA 3D Resources exporta
+      // varios modelos SIN él (Argo, Ares 1, CubeSat, Aeronomy…) y, peor aún,
+      // sin la geometría en el fichero. Mejor un error claro que el TypeError
+      // críptico de `buffers[posVista.buffer]` cuando `posVista` es undefined.
+      if (posAcc.bufferView === undefined) {
+        throw new Error(
+          `GLB no conforme a glTF 2.0: el accessor ${posIdx} (POSITION) no tiene bufferView. ` +
+            `NASA 3D Resources exporta algunos modelos así — la geometría no está en el ` +
+            `fichero. Usa un modelo conforme a glTF 2.0 (p. ej. los que traen bufferView).`,
+        );
+      }
+      const posVista = vistaBuf(posAcc.bufferView);
+      const bufPos = buffers[posVista.buffer];
+      if (!bufPos) {
+        throw new Error(
+          `GLB no conforme: el bufferView ${posAcc.bufferView} del accessor ${posIdx} ` +
+            `referencia un buffer que no existe.`,
+        );
+      }
+      const dvPos = vistaDe(bufPos);
+      const base = vertices.length;
+      const inicio = (posVista.byteOffset || 0) + (posAcc.byteOffset || 0);
+      for (let k = 0; k < posAcc.count; k += 1) {
+        const o = inicio + k * 12; // VEC3 float = 12 bytes.
+        vertices.push([dvPos.getFloat32(o, true), dvPos.getFloat32(o + 4, true), dvPos.getFloat32(o + 8, true)]);
+      }
+      if (prim.indices !== undefined) {
+        const idxAcc = accesor(prim.indices);
+        if (idxAcc.bufferView === undefined) {
+          throw new Error(
+            `GLB no conforme a glTF 2.0: el accessor ${prim.indices} (índices) no tiene bufferView.`,
+          );
+        }
+        const idxVista = vistaBuf(idxAcc.bufferView);
+        const bufIdx = buffers[idxVista.buffer];
+        if (!bufIdx) {
+          throw new Error(
+            `GLB no conforme: el bufferView ${idxAcc.bufferView} del accessor ${prim.indices} ` +
+              `referencia un buffer que no existe.`,
+          );
+        }
+        const dvIdx = vistaDe(bufIdx);
+        const i0 = (idxVista.byteOffset || 0) + (idxAcc.byteOffset || 0);
+        const ct = idxAcc.componentType;
+        const paso = ct === 5125 ? 4 : ct === 5123 ? 2 : 1;
+        const leer = (k) =>
+          ct === 5125 ? dvIdx.getUint32(i0 + k * paso, true)
+            : ct === 5123 ? dvIdx.getUint16(i0 + k * paso, true)
+              : dvIdx.getUint8(i0 + k * paso);
+        for (let k = 0; k + 2 < idxAcc.count; k += 3) {
+          const a = leer(k), b = leer(k + 1), c = leer(k + 2);
+          if (a !== b && b !== c && a !== c) caras.push([base + a, base + b, base + c]);
+        }
+      } else {
+        // Sin índices: los vértices ya vienen en triángulos seguidos.
+        for (let k = 0; k + 2 < posAcc.count; k += 3) {
+          caras.push([base + k, base + k + 1, base + k + 2]);
+        }
+      }
+    }
+  }
+  return { vertices, caras };
 }
 
 /** La caja que envuelve a todos los puntos. */
@@ -441,21 +619,66 @@ export function normalizar({ vertices, caras }, { alto = 2.2, ejeArriba = "z" } 
   };
 }
 
+/**
+ * Lista CERRADA para el nombre de la pieza: minúsculas, dígitos y guiones.
+ *
+ * De ese nombre salen DOS cosas peligrosas —la ruta del fichero que se escribe y
+ * el identificador exportado del módulo generado—, así que se valida una vez y
+ * en un sitio. Sin esto, `../../../PR837_ESCAPE` escribía fuera de
+ * `foundry-module/data/mallas`, y cualquier cosa rara acababa en un `export
+ * const` que no compila. Se valida el NOMBRE, no la ruta resultante: comprobar
+ * la ruta después es una segunda red, no la primera.
+ */
+export const NOMBRE_VALIDO = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+export function validarNombre(nombre) {
+  if (typeof nombre !== "string" || nombre.length > 64 || !NOMBRE_VALIDO.test(nombre)) {
+    throw new Error(
+      `nombre de pieza no válido: ${JSON.stringify(nombre)} — ` +
+        "solo minúsculas, dígitos y guiones (p. ej. `leon-al-lat`)",
+    );
+  }
+  return nombre;
+}
+
+/**
+ * Los metadatos entran en un COMENTARIO de línea del módulo generado. Un salto
+ * de línea en `--obra` cierra el comentario y deja el resto como código en un
+ * fichero que después se importa: es inyección de JavaScript por la puerta de
+ * la procedencia. Se RECHAZA en vez de recortar — un dato de procedencia con un
+ * salto de línea dentro está mal en origen, y truncarlo en silencio dejaría una
+ * cartela mutilada afirmando ser la buena.
+ */
+function textoDeComentario(campo, valor) {
+  if (valor === null || valor === undefined) return String(valor);
+  const txt = String(valor);
+  if (/[\r\n\u2028\u2029]/.test(txt)) {
+    throw new Error(`la procedencia "${campo}" no puede contener saltos de línea`);
+  }
+  return txt;
+}
+
 /** El módulo que se escribe en el árbol: texto, revisable en un PR y sin binario. */
 export function moduloDeMalla(nombre, malla, ficha) {
+  validarNombre(nombre);
   const { vertices, caras } = malla;
-  return `// ${ficha.obra} — malla importada (#590).
+  const meta = Object.fromEntries(
+    ["obra", "modelo", "autoria", "fuente", "licencia", "sha256"].map(
+      (k) => [k, textoDeComentario(k, ficha[k])],
+    ),
+  );
+  return `// ${meta.obra} — malla importada (#590).
 //
 // GENERADO, NO ESCRITO A MANO. Sale de \`tools/convertir-estatua.mjs\` a partir
 // del fichero de origen que documenta \`docs/PROCEDENCIA_ASSETS.md\`. Si se edita
 // aquí, la próxima conversión lo pisa.
 //
-//   obra       ${ficha.obra}
-//   modelo     ${ficha.modelo}
-//   autoría    ${ficha.autoria}
-//   fuente     ${ficha.fuente}
-//   licencia   ${ficha.licencia}
-//   sha256     ${ficha.sha256}
+//   obra       ${meta.obra}
+//   modelo     ${meta.modelo}
+//   autoría    ${meta.autoria}
+//   fuente     ${meta.fuente}
+//   licencia   ${meta.licencia}
+//   sha256     ${meta.sha256}
 //
 // Solo GEOMETRÍA: el color lo pone la escena con la paleta del módulo, que es la
 // frontera de arte de #351. La malla no trae ni textura ni material propios.
@@ -619,38 +842,126 @@ async function principal() {
 
   const [ruta, nombre, ...resto] = process.argv.slice(2);
   if (!ruta || !nombre) {
-    console.error("uso: node tools/convertir-estatua.mjs <fichero.stl> <nombre> [--caras N] [--alto M]");
-    process.exit(2);
-  }
-  const opcion = (bandera, porDefecto) => {
-    const i = resto.indexOf(bandera);
-    return i === -1 ? porDefecto : Number(resto[i + 1]);
-  };
-
-  const bytes = new Uint8Array(await readFile(ruta));
-  const sha256 = createHash("sha256").update(bytes).digest("hex");
-  const triangulos = leerStlBinario(bytes);
-  const soldada = soldar(triangulos);
-  const decimada = simplificar(soldada, opcion("--caras", 900));
-  const malla = normalizar(decimada, { alto: opcion("--alto", 2.2) });
-
-  const destino = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "foundry-module", "data", "mallas");
-  await mkdir(destino, { recursive: true });
-  const declarada = FICHAS[nombre];
-  if (!declarada) {
     console.error(
-      `No hay ficha para "${nombre}". Un asset sin procedencia comprobable no entra, ` +
-        "por bueno que sea: añádela a FICHAS y a docs/PROCEDENCIA_ASSETS.md antes de convertir.",
+      "uso: node tools/convertir-estatua.mjs <fichero.stl|.obj> <nombre> " +
+        "[--caras N] [--alto M] [--fuente T] [--licencia L] [--obra O] " +
+        "[--autoria A] [--modelo M] [--force]",
     );
     process.exit(2);
   }
-  const ficha = { ...declarada, sha256 };
-  await writeFile(path.join(destino, `${nombre}.mjs`), moduloDeMalla(nombre, malla, ficha), "utf8");
+  // Antes de leer nada: el nombre decide dónde se escribe.
+  try {
+    validarNombre(nombre);
+  } catch (e) {
+    console.error(e.message);
+    process.exit(2);
+  }
+  const textoOp = (bandera, porDefecto) => {
+    const i = resto.indexOf(bandera);
+    return i === -1 ? porDefecto : resto[i + 1];
+  };
+  const numeroOp = (bandera, porDefecto) => {
+    const v = textoOp(bandera, null);
+    const n = Number(v);
+    return v === null || !Number.isFinite(n) ? porDefecto : n;
+  };
+
+  const ext = path.extname(ruta).toLowerCase();
+  const bytes = new Uint8Array(await readFile(ruta));
+  const sha256 = createHash("sha256").update(bytes).digest("hex");
+
+  // OBJ ya viene indexado (no hace falta soldar); STL trae una sopa de
+  // triángulos sueltos que hay que soldar primero. Ambos acaban en el mismo
+  // {vertices, caras} que consumen el decimador y la escena retro3d.
+  let entrada;
+  let triangulosEntrada;
+  if (ext === ".obj") {
+    // `bytes` es Uint8Array, y su `toString` NO decodifica UTF-8; hay que
+    // pasar por TextDecoder para obtener el texto del OBJ.
+    entrada = leerObj(new TextDecoder("utf8").decode(bytes));
+    triangulosEntrada = entrada.caras.length;
+  } else if (ext === ".glb") {
+    // NASA 3D Resources publica muchos GLB comprimidos con Draco
+    // (KHR_draco_mesh_compression): la geometría no está como floats en el
+    // buffer, hay que decodificarla antes de que leerGlb la vea. normalizarGlb
+    // decodifica Draco y reempaqueta a un GLB canónico (o deja pasar los ya
+    // planos, sin tocarlos).
+    const { bytes: normalizados, draco } = await normalizarGlb(bytes);
+    entrada = leerGlb(normalizados);
+    triangulosEntrada = entrada.caras.length;
+    if (draco) {
+      console.warn("AVISO: el GLB venía comprimido con Draco; se decodificó al vuelo.");
+    }
+  } else {
+    const triangulos = leerStlBinario(bytes);
+    triangulosEntrada = triangulos.length;
+    entrada = soldar(triangulos);
+  }
+
+  const decimada = simplificar(entrada, numeroOp("--caras", 900));
+  const malla = normalizar(decimada, { alto: numeroOp("--alto", 2.2) });
+
+  const destino = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "foundry-module", "data", "mallas");
+  await mkdir(destino, { recursive: true });
+
+  // Procedencia: o bien una ficha fija del catálogo SMK, o bien una malla
+  // externa (NASA 3D Resources, Europeana…) con la procedencia pasada por
+  // CLI. Sin origen comprobable no se convierte, por buena que sea la malla.
+  let ficha = FICHAS[nombre];
+  if (!ficha) {
+    const fuente = textoOp("--fuente", "");
+    if (!fuente) {
+      console.error(
+        `No hay ficha para "${nombre}" y falta --fuente. ` +
+          "Añádela a FICHAS, o pasa --fuente/--licencia/--obra/--autoria/--modelo " +
+          "para mallas externas (NASA 3D Resources, etc.).",
+      );
+      process.exit(2);
+    }
+    const licencia = textoOp("--licencia", null);
+    ficha = {
+      obra: textoOp("--obra", nombre),
+      modelo: textoOp("--modelo", "desconocido — pasa --modelo para dejarlo escrito"),
+      autoria: textoOp("--autoria", "desconocida — pasa --autoria para dejarlo escrito"),
+      fuente,
+      // null = no declarada: no se afirma dominio público (ver nasa3d.py).
+      licencia: licencia === null ? null : licencia,
+    };
+    if (licencia === null) {
+      console.warn(
+        "AVISO: licencia no declarada (null). No se afirma dominio público; " +
+          "verifica las condiciones de uso del origen antes de publicar la malla.",
+      );
+    }
+  }
+  ficha = { ...ficha, sha256 };
+  const salida = path.resolve(destino, `${nombre}.mjs`);
+  // Segunda red, después de `validarNombre`: la ruta resuelta tiene que caer
+  // DENTRO del directorio de mallas. Si algún día el nombre se ensancha, esto
+  // sigue sujetando la garantía de «escribe dentro de su alcance».
+  if (path.dirname(salida) !== path.resolve(destino)) {
+    console.error(`el destino ${salida} cae fuera de ${destino}`);
+    process.exit(2);
+  }
+  // Exclusivo salvo `--force`: pisar una malla ya convertida es una decisión,
+  // no un efecto secundario de repetir un comando.
+  try {
+    await writeFile(salida, moduloDeMalla(nombre, malla, ficha), {
+      encoding: "utf8",
+      flag: resto.includes("--force") ? "w" : "wx",
+    });
+  } catch (e) {
+    if (e && e.code === "EEXIST") {
+      console.error(`${salida} ya existe; pasa --force para sobrescribirlo.`);
+      process.exit(2);
+    }
+    throw e;
+  }
 
   console.log(
-    `${triangulos.length} triángulos -> ${soldada.caras.length} soldadas -> ${malla.caras.length} caras ` +
+    `${triangulosEntrada} triángulos de entrada -> ${malla.caras.length} caras ` +
       `y ${malla.vertices.length} vértices ` +
-      `(${(100 - (malla.caras.length / triangulos.length) * 100).toFixed(1)} % menos)`,
+      `(${(100 - (malla.caras.length / Math.max(1, triangulosEntrada)) * 100).toFixed(1)} % menos)`,
   );
   console.log("sha256 del origen:", sha256);
 

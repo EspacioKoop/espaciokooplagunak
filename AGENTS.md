@@ -48,7 +48,7 @@ Un issue lleva **milestone solo si bloquea el criterio de salida de esa fase**, 
 
 Si hay cambios locales ajenos o instrucciones contradictorias, detente y solicita decisión humana. Si el cambio puede dividirse, evita editar los mismos archivos que otro colaborador.
 
-Para repartir trabajo entre varios agentes —qué áreas pueden ir en paralelo, qué archivos son puntos de colisión conocidos y cómo se parte un issue en unidades entregables— la guía es [`docs/TRABAJO_PARALELO_AGENTES.md`](docs/TRABAJO_PARALELO_AGENTES.md). Los agentes especializados del proyecto están versionados en [`.claude/agents/`](.claude/agents): úsalos en vez de improvisar uno.
+Para repartir trabajo entre varios agentes —qué áreas pueden ir en paralelo, qué archivos son puntos de colisión conocidos y cómo se parte un issue en unidades entregables— la guía es [`docs/TRABAJO_PARALELO_AGENTES.md`](docs/TRABAJO_PARALELO_AGENTES.md). Los agentes especializados del proyecto están versionados en [`.claude/agents/`](.claude/agents); los agentes seleccionables desde VS Code están en [`.github/agents/`](.github/agents). Usa el agente existente que corresponda en vez de improvisar uno. Los procedimientos repetidos (triaje de entregas, encargos al enjambre, revisiones, telemetría, etiquetado) están como skills en [`.claude/skills/`](.claude/skills).
 
 ## Entrega requerida
 

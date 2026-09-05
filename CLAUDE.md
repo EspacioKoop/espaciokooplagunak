@@ -18,7 +18,10 @@ condicionan el trabajo diario:
   empezar: media docena de archivos (este mismo, `lang/*.json`, `main.mjs`, `paleta.mjs` y sus
   guardas) los toca casi cualquier trabajo del módulo, y ahí es donde chocan dos ramas que por lo
   demás no se rozan. Los agentes especializados del proyecto van versionados en
-  [`.claude/agents/`](.claude/agents).
+  [`.claude/agents/`](.claude/agents); los agentes seleccionables desde VS Code viven en
+  [`.github/agents/`](.github/agents). Los procedimientos que se repiten —triar una entrega del
+  enjambre, escribir un encargo, atender una revisión, medir la telemetría, etiquetar— van como
+  skills en [`.claude/skills/`](.claude/skills): úsalas en vez de reinventar el procedimiento.
 - No afirmes que algo compila, arranca o funciona si no has ejecutado la comprobación correspondiente.
 - Nada de `push --force`, `reset --hard`, squash del historial heredado ni reescritura de historial
   sin autorización humana explícita.

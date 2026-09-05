@@ -78,7 +78,7 @@ test("impone la jerarquía plano, sistema estelar y planeta", () => {
   expectCode(planetUnderPlane, "invalid_hierarchy", "entries[2].parent_id");
 });
 
-test("rechaza tipos, IDs y versiones fuera del contrato cerrado", () => {
+test("rechaza tipos e IDs fuera del contrato cerrado", () => {
   const badType = clone();
   badType.entries[0].type = "portal";
   expectCode(badType, "invalid_type", "entries[0].type");
@@ -87,13 +87,32 @@ test("rechaza tipos, IDs y versiones fuera del contrato cerrado", () => {
   badId.entries[0].id = "Plano Oficial";
   expectCode(badId, "invalid_id", "entries[0].id");
 
-  const badVersion = clone();
-  badVersion.version = 2;
-  expectCode(badVersion, "invalid_version", "$.version");
-
   const badContinuity = clone();
   badContinuity.entries[0].continuity = "canon-supuesto";
   expectCode(badContinuity, "invalid_continuity", "entries[0].continuity");
+});
+
+test("rechaza explícitamente una versión ausente", () => {
+  const missingVersion = clone();
+  delete missingVersion.version;
+  expectCode(missingVersion, "missing_version", "$.version");
+});
+
+test("rechaza explícitamente una versión desconocida", () => {
+  const unsupportedVersion = clone();
+  unsupportedVersion.version = 2;
+  expectCode(unsupportedVersion, "invalid_version", "$.version");
+});
+
+test("v1 conserva semántica en round-trip con source_url opcional", () => {
+  const catalog = clone();
+  catalog.entries[0].provenance.source_url = "https://example.invalid/mar-de-argia";
+
+  const roundTripped = JSON.parse(JSON.stringify(catalog));
+
+  assert.equal(validateCosmography(roundTripped), true);
+  assert.deepEqual(roundTripped, catalog);
+  assert.equal(roundTripped.version, COSMOGRAPHY_VERSION);
 });
 
 test("rechaza campos desconocidos y payloads ejecutables", () => {

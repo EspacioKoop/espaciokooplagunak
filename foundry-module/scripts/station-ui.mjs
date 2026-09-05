@@ -13,6 +13,15 @@ let configuredModuleId = null;
 export function registerStationFeature(moduleId) {
   configuredModuleId = moduleId;
   Hooks.on("updateUser", () => refrescarPuestos());
+  Hooks.on("updateSetting", (ajuste) => {
+    const key = ajuste?.key;
+    if (
+      key === `${configuredModuleId}.requisitosPuesto` ||
+      key === `${configuredModuleId}.requisitosPuestoMinimo`
+    ) {
+      refrescarPuestos();
+    }
+  });
 }
 
 /**

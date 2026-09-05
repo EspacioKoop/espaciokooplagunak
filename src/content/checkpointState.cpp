@@ -162,7 +162,7 @@ CheckpointError parseCheckpointState(const std::string& input, CheckpointState& 
     if (format_it == document.end() || !format_it->is_string()
         || format_it->get<std::string>() != CHECKPOINT_FORMAT_ID
         || version_it == document.end() || !version_it->is_number_integer()
-        || version_it->get<int>() != CHECKPOINT_SCHEMA_VERSION)
+        || *version_it != CHECKPOINT_SCHEMA_VERSION)
         return CheckpointError::UnsupportedFormatOrVersion;
 
     const auto& simulation = document["simulation"];

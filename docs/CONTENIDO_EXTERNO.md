@@ -4,7 +4,7 @@
   (`foundry-module/scripts/contenido-externo/`, suites `foundry-module/tests/contenido-externo-*.test.mjs`).
   Nada del módulo lee aún este adaptador: la capa existe y es probable en Node, pero
   ninguna funcionalidad depende de ella. Engancharla es trabajo de #308, #309 y #213.
-- Issue: [#332](https://github.com/VaroTv7/espaciokooplagunak/issues/332)
+- Issue: [#332](https://github.com/EspacioKoop/espaciokooplagunak/issues/332)
 - Patrón heredado de: [MINIJUEGOS_ASISTENCIA.md](MINIJUEGOS_ASISTENCIA.md)
   §«dnd5e es enriquecimiento, no dependencia dura».
 
@@ -92,7 +92,7 @@ scripts/contenido-externo/
 
 ## Qué queda por hacer
 
-- Consumidores de juego: minijuegos de combate ([#308](https://github.com/VaroTv7/espaciokooplagunak/issues/308)),
-  atlas Spelljammer ([#213](https://github.com/VaroTv7/espaciokooplagunak/issues/213)).
+- Consumidores de juego: minijuegos de combate ([#308](https://github.com/EspacioKoop/espaciokooplagunak/issues/308)),
+  atlas Spelljammer ([#213](https://github.com/EspacioKoop/espaciokooplagunak/issues/213)).
 - Verificación de los campos de plutonium contra un mundo real, y ampliación de la lista blanca
   con lo comprobado.

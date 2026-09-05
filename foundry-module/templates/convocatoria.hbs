@@ -1,0 +1,11 @@
+<section class="lagunak-convocar__panel">
+  <h2>{{localize "LAGUNAK.Convocatoria.Titulo"}}</h2>
+  <p class="lagunak-convocar__ayuda">{{localize "LAGUNAK.Convocatoria.Elige"}}</p>
+  <ul class="lagunak-convocar__lista">
+    {{#each estancias}}
+      <li>
+        <button type="button" data-convocar="{{this.id}}">{{this.nombre}}</button>
+      </li>
+    {{/each}}
+  </ul>
+</section>

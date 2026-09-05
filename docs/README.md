@@ -56,6 +56,7 @@
 |---|---|
 | [ATLAS_SPELLJAMMER.md](ATLAS_SPELLJAMMER.md) | Investigación del atlas jerárquico de campaña y matriz de procedencia/licencia (#213) |
 | [DOMINIO_PUBLICO_SCIFI.md](DOMINIO_PUBLICO_SCIFI.md) | Catálogo verificado de guiños scifi/pulp en dominio público (copyright vs. marca) (#310) |
+| [CAULDRON_VTT_RESEARCH_884.md](CAULDRON_VTT_RESEARCH_884.md) | Recursos de Cauldron VTT y ecosistema físico 3D standalone con análisis de licencias (#884) |
 
 ## Localización
 

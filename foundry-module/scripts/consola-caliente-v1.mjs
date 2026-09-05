@@ -65,6 +65,7 @@ import { dibujarFrame } from "./mapa-render.mjs";
 import { estiloMarcoMapa } from "./mapa-marco.mjs";
 import { calcularIntervaloMs, resolverCicloConsola, siguienteFallosSeguidos } from "./consola-caliente-poll.mjs";
 import { buildWorkspaceModel, WORKSPACE_STATIONS } from "./station-workspaces.mjs";
+import { abrirAsistencia } from "./asistencia-ui.mjs";
 import {
   colorFaccion,
   componerFrame,
@@ -694,6 +695,7 @@ export function crearClaseConsolaCalienteV1() {
         this._emitirManiobra("shields", event.currentTarget?.dataset?.value === "true"));
       html.find('[data-action="reposicionar"]').on("click", () =>
         this._reposicionar(String(html.find('[data-field="reposicion-ancla"]').val() ?? "")));
+      html.find('[data-action="abrirMando"]').on("click", () => abrirAsistencia());
 
       html.find("[data-consola-tab]").on("click", (event) => {
         const id = event.currentTarget?.dataset?.consolaTab;

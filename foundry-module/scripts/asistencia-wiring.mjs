@@ -30,10 +30,19 @@
 // `BridgeClient`, el error estará aquí.
 
 import { CATALOGO_BASE } from "./asistencia/catalogo.mjs";
-import { crearSesion, podar } from "./asistencia/sesion.mjs";
+import { esTareaDePropuesta } from "./asistencia/enfoques.mjs";
+import {
+  cerrarCrisisMando,
+  crearSesion,
+  estadoMando,
+  iniciarCrisisMando,
+  podar,
+} from "./asistencia/sesion.mjs";
 import {
   ASISTENCIA_FLAG,
   construirPeticionAsistencia,
+  construirPeticionConsultaMando,
+  construirPeticionOrdenMando,
   despacharCambioDeAsistencia,
   prepararOrdenAsistida,
 } from "./asistencia/relevo.mjs";
@@ -44,11 +53,13 @@ import { AJUSTE_TELEMETRIA } from "./ship-view/telemetria-difusion.mjs";
 const MENSAJE_OFERTA = "asistencia-oferta";
 const MENSAJE_RESULTADO = "asistencia-resultado";
 const MENSAJE_RECHAZO = "asistencia-rechazo";
+const MENSAJE_ORDEN_MANDO = "asistencia-orden-mando";
 
 /** Hooks locales con los que la interfaz (rebanada siguiente) se enterará. */
 export const HOOK_OFERTA = "lagunakAsistenciaOferta";
 export const HOOK_RESULTADO = "lagunakAsistenciaResultado";
 export const HOOK_RECHAZO = "lagunakAsistenciaRechazo";
+export const HOOK_ORDEN_MANDO = "lagunakAsistenciaOrdenMando";
 
 function canalSocket(moduleId) {
   return `module.${moduleId}`;
@@ -89,6 +100,7 @@ const HOOK_DE_MENSAJE = Object.freeze({
   [MENSAJE_OFERTA]: HOOK_OFERTA,
   [MENSAJE_RESULTADO]: HOOK_RESULTADO,
   [MENSAJE_RECHAZO]: HOOK_RECHAZO,
+  [MENSAJE_ORDEN_MANDO]: HOOK_ORDEN_MANDO,
 });
 
 function responder(destinatarioId, tipo, carga) {
@@ -106,6 +118,21 @@ function responder(destinatarioId, tipo, carga) {
     return;
   }
   game.socket.emit(canalSocket(moduloConfigurado), { tipo, destinatarioId, carga });
+}
+
+/**
+ * Publica solo la vista efímera del recurso. Las ofertas y resultados continúan
+ * siendo dirigidos; `destinatarioId: null` queda reservado para este estado de
+ * mesa que capitán y GM deben ver a la vez.
+ */
+function difundirEstadoMando() {
+  const carga = { mando: estadoMando(sesion) };
+  Hooks.callAll(HOOK_ORDEN_MANDO, carga);
+  game.socket?.emit(canalSocket(moduloConfigurado), {
+    tipo: MENSAJE_ORDEN_MANDO,
+    destinatarioId: null,
+    carga,
+  });
 }
 
 /**
@@ -138,6 +165,12 @@ function puedeAsistir(tareaId) {
   };
 }
 
+/** Autoridad real: sale del User que Foundry dejó escribir, nunca del sobre. */
+function puedeOrdenar(asistenteId) {
+  const usuario = game.users?.get(asistenteId);
+  return Boolean(usuario?.isGM || puestoDe(asistenteId) === "captain");
+}
+
 // --- Lado GM coordinador -----------------------------------------------------
 
 function alCambiarUsuario(userDoc, changes) {
@@ -150,6 +183,8 @@ function alCambiarUsuario(userDoc, changes) {
     moduleId: moduloConfigurado,
     buscarTarea: (id) => catalogo.buscar(id),
     puedeAsistir: puedeAsistir(peticion?.tareaId),
+    puedeOrdenar,
+    esDestinoOrdenMando: (puesto) => catalogo.paraPuesto(puesto).some(esTareaDePropuesta),
     canHandle: esCoordinador,
     opcionesApertura: {
       // Lo que el motor necesita saber de la hoja del asistente y de la mesa. La
@@ -175,6 +210,19 @@ function alCambiarUsuario(userDoc, changes) {
   // El estado avanza pase lo que pase: un rechazo devuelve la sesión podada, y
   // quedarse con la anterior resucitaría reservas ya caducadas.
   sesion = resultado.estado ?? sesion;
+
+  if (resultado.ordenMandoAplicada) difundirEstadoMando();
+
+  if (resultado.peticion?.tipo === "orden-mando" || resultado.peticion?.tipo === "consulta-mando") {
+    responder(asistenteId, MENSAJE_ORDEN_MANDO, {
+      nonce: resultado.peticion.nonce,
+      ok: resultado.ok,
+      error: resultado.error ?? null,
+      mando: estadoMando(sesion),
+    });
+    if (resultado.ok && resultado.peticion.tipo === "orden-mando") difundirEstadoMando();
+    return;
+  }
 
   if (!resultado.ok) {
     // El nonce viaja en las TRES respuestas, no solo en la oferta: sin él, quien
@@ -275,6 +323,53 @@ export function resolverAsistencia({ nonce, banda, enfoqueId = null }) {
   game.user?.setFlag(moduloConfigurado, ASISTENCIA_FLAG, peticion);
 }
 
+/** El capitán gasta una orden por el mismo flag autenticado de asistencia. */
+export function pedirOrdenMando(puestoAsistido, { alFallar = null } = {}) {
+  if (!moduloConfigurado) return null;
+  const nonce = foundry.utils.randomID();
+  const peticion = construirPeticionOrdenMando({ puestoAsistido, nonce });
+  try {
+    const escritura = game.user?.setFlag?.(moduloConfigurado, ASISTENCIA_FLAG, peticion);
+    escritura?.catch?.(() => alFallar?.(nonce));
+  } catch {
+    return null;
+  }
+  return nonce;
+}
+
+/** Pide al coordinador la vista vigente sin abrir crisis ni gastar órdenes. */
+export function sincronizarEstadoMando() {
+  if (!moduloConfigurado || game.user?.isGM || puestoDe(game.user?.id) !== "captain") return null;
+  const nonce = foundry.utils.randomID();
+  const peticion = construirPeticionConsultaMando({ nonce });
+  try {
+    game.user?.setFlag?.(moduloConfigurado, ASISTENCIA_FLAG, peticion)?.catch?.(() => {});
+  } catch {
+    return null;
+  }
+  return nonce;
+}
+
+/** Ciclo de vida efímero, controlado exclusivamente por el GM coordinador. */
+export function iniciarCrisisDeMando() {
+  if (!game.user?.isGM || !esCoordinador()) return null;
+  sesion = iniciarCrisisMando(sesion);
+  difundirEstadoMando();
+  return estadoMando(sesion);
+}
+
+export function cerrarCrisisDeMando() {
+  if (!game.user?.isGM || !esCoordinador()) return null;
+  sesion = cerrarCrisisMando(sesion);
+  difundirEstadoMando();
+  return estadoMando(sesion);
+}
+
+/** Lectura pública para superficies del GM; no expone nonces de deduplicación. */
+export function estadoActualDeMando() {
+  return estadoMando(sesion);
+}
+
 /** Las tareas con las que hoy se puede ayudar a un puesto. */
 export function tareasParaPuesto(puesto) {
   return catalogo.paraPuesto(puesto);
@@ -296,14 +391,19 @@ export function registrarAsistencia(moduleId, { catalogo: propio = null } = {}) 
     // Dirigido: un mensaje para otro no se pinta aquí. No es una defensa —quien
     // manda estos mensajes es el GM— sino el filtro del reparto, porque
     // `socket.emit` va a todo el mundo y no a un destinatario.
-    if (mensaje?.destinatarioId !== game.user?.id) return;
+    const esDifusionMando = mensaje?.destinatarioId === null && mensaje?.tipo === MENSAJE_ORDEN_MANDO;
+    if (!esDifusionMando && mensaje?.destinatarioId !== game.user?.id) return;
     const hook = HOOK_DE_MENSAJE[mensaje.tipo];
     if (hook) Hooks.callAll(hook, mensaje.carga);
   };
   game.socket?.on(canalSocket(moduleId), receptor);
   escuchas.push(() => game.socket?.off?.(canalSocket(moduleId), receptor));
 
-  if (!game.user?.isGM) return;
+  if (!game.user?.isGM) {
+    // Deja que la UI enganche primero su hook en el mismo ciclo de `ready`.
+    queueMicrotask(() => sincronizarEstadoMando());
+    return;
+  }
 
   Hooks.on("updateUser", alCambiarUsuario);
   escuchas.push(() => Hooks.off("updateUser", alCambiarUsuario));

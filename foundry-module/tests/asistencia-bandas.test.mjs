@@ -10,6 +10,7 @@ import {
   bandaEsFavorable,
   margenContraObjetivo,
   margenContraSalvacion,
+  subirBanda,
 } from "../scripts/asistencia/bandas.mjs";
 
 test("el margen de una prueba es cuánto se pasa el ayudante de la CD", () => {
@@ -78,4 +79,12 @@ test("solo éxito y crítico dan fruto", () => {
   assert.equal(bandaEsFavorable(BANDAS.CRITICO), true);
   assert.equal(bandaEsFavorable(BANDAS.FALLO), false);
   assert.equal(bandaEsFavorable(BANDAS.PIFIA), false);
+});
+
+test("una orden de mando sube exactamente una banda y no rebasa crítico", () => {
+  assert.equal(subirBanda(BANDAS.PIFIA), BANDAS.FALLO);
+  assert.equal(subirBanda(BANDAS.FALLO), BANDAS.EXITO);
+  assert.equal(subirBanda(BANDAS.EXITO), BANDAS.CRITICO);
+  assert.equal(subirBanda(BANDAS.CRITICO), BANDAS.CRITICO);
+  assert.throws(() => subirBanda("inventada"), TypeError);
 });

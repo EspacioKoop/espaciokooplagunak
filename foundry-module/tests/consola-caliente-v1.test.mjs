@@ -111,6 +111,8 @@ async function construirConsola(t, { fallar = {} } = {}) {
       this.rendered = true;
     }
 
+    activateListeners() {}
+
     async close() {
       this.rendered = false;
     }
@@ -295,5 +297,25 @@ test("V1: un catálogo de anclas caído se reintenta, no apaga el bloque para si
   // Y la conexión global no se contagia: /v1/anchors no es healthz ni state.
   assert.equal(app.conexion, "ok");
   assert.ok(llamadas.some((url) => url.endsWith("/v1/anchors")));
+  await app.close();
+});
+
+test("V1: la consola conecta el acceso al mando", async (t) => {
+  const { app } = await construirConsola(t);
+  let accesoMando = null;
+  const html = {
+    find(selector) {
+      return {
+        on(_evento, callback) {
+          if (selector === '[data-action="abrirMando"]') accesoMando = callback;
+          return this;
+        },
+        val() { return null; },
+      };
+    },
+  };
+
+  app.activateListeners(html);
+  assert.equal(typeof accesoMando, "function");
   await app.close();
 });

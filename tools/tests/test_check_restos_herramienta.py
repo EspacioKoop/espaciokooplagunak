@@ -34,6 +34,16 @@ def test_acepta_un_fichero_normal():
     assert not mod.es_resto("foundry-module/scripts/npc-generador.mjs")
 
 
+def test_acepta_la_excepcion_declarada_de_e2e_visual():
+    """`tools/e2e-visual/` es un paquete npm real, el gemelo del `.gitignore`."""
+    assert not mod.es_resto("tools/e2e-visual/package-lock.json")
+
+
+def test_no_generaliza_la_excepcion_a_otras_rutas():
+    """La excepcion es exacta: otro lockfile en otro sitio sigue siendo resto."""
+    assert mod.es_resto("tools/otra-carpeta/package-lock.json")
+
+
 def test_no_confunde_un_nombre_que_solo_se_parece():
     """`coverage-algo.md` no es `coverage/`: la barra es la que manda."""
     assert not mod.es_resto("docs/coverage-notas.md")

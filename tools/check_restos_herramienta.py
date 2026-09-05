@@ -30,6 +30,13 @@ RAIZ = pathlib.Path(__file__).resolve().parent.parent
 RESTOS = ("node_modules/", ".nyc_output/", "coverage/")
 FICHEROS = ("package-lock.json",)
 
+# Excepciones declaradas: paquetes npm que SI son el entregable, no un resto
+# de paso -- el gemelo de esta lista es la excepcion homonima en `.gitignore`.
+# Una ruta aqui es exacta (no un prefijo) y solo cubre el lockfile de un
+# paquete con su propio `package.json` intencional, nunca una via generica
+# para colar restos futuros.
+EXCEPCIONES = ("tools/e2e-visual/package-lock.json",)
+
 
 def trackeados():
     salida = subprocess.run(["git", "ls-files"], cwd=RAIZ, check=True,
@@ -38,6 +45,8 @@ def trackeados():
 
 
 def es_resto(ruta: str) -> bool:
+    if ruta in EXCEPCIONES:
+        return False
     partes = ruta.split("/")
     for i, _ in enumerate(partes):
         cola = "/".join(partes[i:])

@@ -61,6 +61,25 @@ test("la proporción es la del estilo: cabeza enorme, no figura realista", () =>
   assert.ok(cabeza.medidas[1] / ALTO_BASE > 0.2, "la cabeza es demasiado pequeña para el estilo");
 });
 
+test("la gramática PSX usa mallas octogonales y volúmenes estrechados", () => {
+  const piezas = piezasAvatar({ raza: "humano", clase: "guerrero" }, { pies: [0, 0, 0] });
+  for (const pieza of piezas) {
+    assert.ok(pieza.malla, `${pieza.nombre} no tiene malla propia`);
+    assert.equal(pieza.malla.vertices.length, 16, `${pieza.nombre} no tiene dos anillos de ocho vértices`);
+    assert.ok(pieza.malla.caras.length >= 9, `${pieza.nombre} no está cerrado`);
+  }
+  const torso = piezas.find((pieza) => pieza.nombre.endsWith("Torso"));
+  const radio = (anillo) => Math.hypot(torso.malla.vertices[anillo][0], torso.malla.vertices[anillo][2]);
+  assert.notEqual(radio(0), radio(8), "el torso conserva lados paralelos");
+});
+
+test("la raza rompe la silueta además de cambiar proporciones", () => {
+  const nombres = (raza) => piezasAvatar({ raza }, { pies: [0, 0, 0] }).map((pieza) => pieza.nombre);
+  assert.ok(nombres("enano").some((nombre) => nombre.endsWith("Barba")));
+  assert.ok(nombres("elfo").some((nombre) => nombre.endsWith("OrejaIzq")));
+  assert.ok(nombres("mediano").some((nombre) => nombre.endsWith("CabezaGrande")));
+});
+
 test("la raza cambia estatura y anchura, y nada más", () => {
   const alto = (raza) => {
     const piezas = piezasAvatar({ raza }, { pies: [0, 0, 0] });

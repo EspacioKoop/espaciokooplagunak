@@ -286,8 +286,8 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     errata en un NPC inmune a nada sin que saltara ninguna alarma. Es cimiento declarado: nadie lo
     importa todavía porque *recordar* a quién has conocido es del núcleo y no de la escena, el mismo
     reparto que #598 dejó abierto para el bestiario. Ver [docs/NPC_GENERADOR.md](docs/NPC_GENERADOR.md).
-  - **Sección de la nave** — `scripts/seccion-nave.mjs` (planta declarativa y consultas, puro),
-    `scripts/seccion-lienzo.mjs` (pintado 2D, sin color propio) y `scripts/seccion-nave-app.mjs`
+  - **Sección de la nave** — `scripts/seccion-nave/seccion-nave.mjs` (planta declarativa y consultas, puro),
+    `scripts/seccion-nave/seccion-lienzo.mjs` (pintado 2D, sin color propio) y `scripts/seccion-nave/seccion-nave-app.mjs`
     (ventana V1/V2), #427. El corte transversal con todas las salas a la vez: es el MAPA, y la
     cantina es ESTAR dentro. Pulsar una sala abre la vista que ya existe — la sección no estrena
     ninguna: la cantina abre su ventana propia (#423) y el puente e ingeniería se entran ANDANDO

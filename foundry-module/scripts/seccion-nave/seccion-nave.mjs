@@ -19,7 +19,7 @@
  * Puro: ni Foundry, ni DOM, ni red, ni color.
  */
 
-import { ID_CANTINA, celdasConCantina, rejillaDelPlano } from "./nave-planta-phobos.mjs";
+import { ID_CANTINA, celdasConCantina, rejillaDelPlano } from "../nave-planta-phobos.mjs";
 
 /**
  * Rejilla de la sección, en celdas. Las salas se colocan sobre ella y el lienzo

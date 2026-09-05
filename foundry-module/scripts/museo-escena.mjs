@@ -401,8 +401,21 @@ function colocarPieza(pieza, indice) {
   const { x, z } = obtenerPosicionPedestal(indice);
   const cota = PEDESTAL.alto + CORONILLA.alto;
   const limites = limitesDe(malla);
+  // `tools/convertir-estatua.mjs` no fija ningún "frente" al convertir: cada
+  // malla queda mirando hacia donde apuntaba en su escaneo, y nada garantiza
+  // que coincida con el lado por el que se la mira en esta sala (el mirador
+  // SIEMPRE está al lado de la entrada, `z` más pequeño — es el único lado con
+  // suelo libre). `girada180` es el escape para las piezas donde no coincide:
+  // gira 180° alrededor de su propio eje vertical, ANTES de trasladar. Es
+  // seguro para el reparto de filas (`Z_DE_CADA_FILA` lee `MALLAS_MUSEO`
+  // directamente, sin pasar por aquí) porque una pieza centrada en planta
+  // (`tools/convertir-estatua.mjs`) tiene el mismo cuadro delimitador antes y
+  // después de un giro de 180°: lo único que cambia es qué lado mira a quién.
+  const girar = pieza.girada180 === true;
   const trasladada = Object.freeze({
-    vertices: malla.vertices.map(([vx, vy, vz]) => [x + vx, cota + vy, z + vz]),
+    vertices: malla.vertices.map(([vx, vy, vz]) =>
+      girar ? [x - vx, cota + vy, z - vz] : [x + vx, cota + vy, z + vz],
+    ),
     caras: malla.caras,
   });
   return Object.freeze({

@@ -70,7 +70,15 @@ export const NATURALEZAS = Object.freeze([
 ]);
 const NATURALEZAS_VALIDAS = new Set(NATURALEZAS);
 
-const CLAVES_PIEZA = new Set(["id", "nombre", "cartela", "naturaleza", "malla", "provenance"]);
+const CLAVES_PIEZA = new Set([
+  "id",
+  "nombre",
+  "cartela",
+  "naturaleza",
+  "malla",
+  "provenance",
+  "girada180",
+]);
 const CLAVES_PIEZA_OBLIGATORIAS = new Set(["id", "nombre", "cartela", "naturaleza", "malla", "provenance"]);
 
 export const FORMATO_PIEZAS = FORMATO;
@@ -100,6 +108,14 @@ function validarPieza(pieza, indice, mallasDisponibles) {
   // museo, y se descubre montándola. Aquí se descubre validando.
   if (mallasDisponibles && !mallasDisponibles.has(pieza.malla)) {
     fallo("missing_reference", `${path}.malla`, "la malla referenciada no existe");
+  }
+  // Opcional: la malla no llega con ningún "frente" fijado por
+  // `tools/convertir-estatua.mjs`, así que una pieza puede necesitar mirar al
+  // lado contrario de como quedó su escaneo (ver `colocarPieza`,
+  // `museo-escena.mjs`). Ausente equivale a `false`, así que el catálogo de
+  // hoy no cambia de forma con solo declararlo en el esquema.
+  if (Object.hasOwn(pieza, "girada180") && typeof pieza.girada180 !== "boolean") {
+    fallo("invalid_type", `${path}.girada180`, "debe ser boolean si se declara");
   }
   validarProcedencia(pieza.provenance, `${path}.provenance`);
 }

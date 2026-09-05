@@ -33,7 +33,7 @@ versión y alcance exactos.
 
 | Sistema | Licencia/fuente | Uso seguro ahora | VTT/comercial | Riesgo |
 |---|---|---|---|---|
-| Year Zero Engine | FTL 1.0, Free League | adaptador separado; solo YZE SRD | VTT y comercial sujetos a FTL | medio |
+| Year Zero Engine | FTL 1.1, Free League | adaptador separado en el core (no videojuego); solo YZE SRD | VTT/PDF/impreso sujetos a FTL; **videojuego no permitido** | medio |
 | Cairn | CC BY-SA 4.0, sitio oficial | inspiración o texto expresamente cubierto | permitido por CC con BY-SA | bajo |
 | Fate | CC BY/OGL según texto | revisar la versión del SRD | depende del texto y marca | bajo/medio |
 | Blades/FitD | fuente y sistema concretos | inspiración; revisar términos | no asumir permisos | medio/alto |
@@ -47,8 +47,11 @@ Otros candidatos están en el registro: OpenD6, Open Legend, Ironsworn, Starforg
 
 ### Candidatos de investigación (no aprobados como pilotos)
 
-1. **Year Zero Engine**, ficha verificada: puede evaluarse como adaptador separado,
-   respetando el aviso, el alcance SRD y las exclusiones.
+1. **Year Zero Engine**, ficha verificada (FTL 1.1): puede evaluarse como adaptador
+   separado en el core, respetando el aviso, el alcance SRD y las exclusiones —
+   la cláusula 1 de la FTL 1.1 limita el uso al SRD en impreso/PDF/VTT y excluye
+   explícitamente los videojuegos, así que no cubre por sí sola una adopción en
+   el propio juego.
 2. **Cairn**, pendiente: antes de proponer un piloto hay que fijar edición y texto
    primario cubierto.
 3. **Fate**, pendiente: antes de proponer un piloto hay que fijar versión, opción
@@ -56,7 +59,7 @@ Otros candidatos están en el registro: OpenD6, Open Legend, Ironsworn, Starforg
 
 ## Fuentes primarias consultadas
 
-- [Free League: Open Game Licenses](https://freeleaguepublishing.com/community-content/free-tabletop-licenses/) y [FTL 1.0 (PDF)](https://freeleaguepublishing.com/wp-content/uploads/2023/11/Year-Zero-Engine-License-Agreement.pdf).
+- [Free League: Open Game Licenses](https://freeleaguepublishing.com/community-content/free-tabletop-licenses/) y [FTL 1.1 (PDF)](https://freeleaguepublishing.com/wp-content/uploads/2026/03/Year-Zero-Engine-License-Agreement-version-1.1.pdf).
 - [Cairn](https://cairnrpg.com/), que declara CC BY-SA 4.0 para el texto.
 - [Fate SRD](https://fate-srd.com/) y [guía oficial de licencias de Evil Hat](https://evilhat.com/wp-content/uploads/2022/03/Fate-Version-Guide-Spheres-Differences-Licensing-Selections-2021.pdf).
 - [Blades licensing](https://bladesinthedark.com/licensing) y [SRD](https://bladesinthedark.com/browse-srd).

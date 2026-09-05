@@ -29,13 +29,51 @@
 // `paleta.mjs`). Sin esa separación de valores, tres estatuas de metro y medio
 // se leen como bultos pegados a la pared.
 //
+// LOS CUADROS (#836) SON LA SEGUNDA FORMA DE COLGAR, no un parámetro de la
+// primera: una estatua se apoya en un pedestal y se rodea, un cuadro cuelga de
+// un muro y solo se mira de frente. Van en los muros LATERALES y no en el del
+// fondo, que es el de los pedestales: un cuadro detrás de una escultura le
+// disputa la lectura a la escultura, y esta sala está montada para que gane la
+// piedra. El dibujo en sí vive en `museo-cuadro.mjs`; aquí solo se decide de
+// qué muro cuelga cada uno y desde dónde se mira.
+//
+// PRESUPUESTO MEDIDO (#836, vuelto a tomar en #838). Los cinco lienzos son
+// 96 × 64 celdas cada uno y salen 48, 53, 170, 162 y 149 CARAS después de
+// `fundirRectangulos`: ese es todo el truco, dibujos de masas grandes sobre una
+// rejilla fina. Vienen de 19, 31, 51, 83 y 61 — el detalle de la celda de
+// 1,25 cm multiplica por tres, y lo que se paga en un dibujo es el PERÍMETRO de
+// las masas, no su área.
+//
+// Y la SALA entera bajó al ponerle piel de galería (#838, `museo-mural.mjs`):
+// desde el centro mirando al oeste 1.466 -> 994 polígonos, al este 720 -> 267,
+// desde la entrada 1.399 -> 894. Un tramo de muro largo pasa de 504 rectángulos
+// de chapa a 32. No es una optimización: es que una pared de galería está
+// vacía a propósito —lo que tiene que reclamar la mirada es lo colgado— y el
+// presupuesto es la consecuencia de esa decisión, no su motivo.
+//
+// LO QUE SE PROBÓ Y SE RETIRÓ, para que no vuelva: relieve GEOMÉTRICO en los
+// cuadros, cada masa de color adelantada unos milímetros con sus costados. Se
+// midió rasterizando la escena con y sin él: cambiaba entre 0 y 168 píxeles de
+// los 129.600 del fotograma, y ni subiendo el empaste a cinco centímetros
+// pasaba del 0,3 %. Lo que se mira de frente enseña sus costados de canto, y a
+// 480x270 un canto de milímetros no llega a un píxel — la misma razón por la
+// que tampoco costaba polígonos en pantalla. El volumen que sí se ve aquí es el
+// PINTADO, y por eso el marco es una moldura dibujada (`marcoMoldura`).
+//
+// Plantado ante un cuadro no se ven más de un centenar de caras: el lienzo
+// llena la pantalla y todo lo demás cae por recorte. Esta es la cifra que hay
+// que volver a tomar antes de colgar el sexto, no los tests en verde.
+//
 // Puro y sin color propio (#351).
 
 import { MUSEO } from "./paleta.mjs";
 import { crearSalaCaja } from "./nave-sala-caja.mjs";
+import { piezasMuroMuseo } from "./museo-mural.mjs";
 import { declararInteracciones } from "./nave-interaccion.mjs";
 import { CATALOGO_MUSEO, MALLAS_MUSEO } from "./museo-piezas.mjs";
 import { deformarPieza } from "./estatua-rig.mjs";
+import { CATALOGO_CUADROS } from "./museo-cuadros.mjs";
+import { ALTO_TOTAL, ANCHO_TOTAL, piezasCuadro } from "./museo-cuadro.mjs";
 
 /* ---- medidas de la sala ---------------------------------------------------- */
 
@@ -44,13 +82,17 @@ import { deformarPieza } from "./estatua-rig.mjs";
  * tres piezas, más superficie no da amplitud, da vacío — y andar diez segundos
  * entre estatua y estatua es lo que convierte un museo en un pasillo.
  */
-// La sala creció de 9x7 a 12x9 (#590) y de ahí a 12x10 (#757): con 18 mallas de
-// vaciados en el árbol y tres pedestales cabiendo, el museo era el cuello de
-// botella de su propio catálogo. Los 10 de fondo no son estética: 9 daban un
-// pasillo entre filas de 10 cm pisables, y las filas se separan ahora según lo
-// que de verdad ocupan las piezas que llevan encima. No son números redondos:
-// salen de la aritmética de abajo.
-export const ANCHO = 12.0;
+// La sala creció de 9x7 a 12x9 (#590), de ahí a 12x10 (#757) y a 15x10 al
+// fusionar #757 con los cuadros de #836/#838: con las columnas de pedestales
+// repartidas por `ANCHO` (#590), las dos columnas de los extremos quedaban a
+// 0,575 m de los muros laterales — justo donde #836 cuelga los cuadros. Un
+// cuadro pegado al muro y una escultura a 0,575 m de ese mismo muro caen a
+// menos de 1,5 m el uno del otro sea cual sea el z que se elija, y su propio
+// mirador —a 1,1 m del muro— caía encima del pedestal: no era un límite mal
+// puesto, es que no había SITIO. Ensanchar a 15 (`MARGEN_MURO_PEDESTAL` más
+// abajo, 2,1 m) es lo que abre ese sitio sin tocar ninguna de las dos cuentas
+// que ya dependían del ancho — ni las 18 mallas de vaciados, ni las columnas.
+export const ANCHO = 15.0;
 export const PROFUNDIDAD = 10.0;
 
 /** La fila del fondo, a dos metros del muro: lo justo para rodear una pieza. */
@@ -108,19 +150,36 @@ const FILAS_QUE_CABEN = Math.max(
  * pieza más: el ancho crecía y los tres pedestales seguían donde estaban. Ahora
  * se reparten centradas, tantas como quepan guardando `PASO_ENTRE_FILAS`.
  */
+/**
+ * Cuánto se deja entre una columna de pedestales y el muro lateral.
+ *
+ * NO es `PEDESTAL.lado / 2` (pegar la columna al muro salvo por medio
+ * pedestal): un cuadro de #836 cuelga justo en ese muro, y la prueba de
+ * "ningún cuadro se cuelga detrás de una escultura" exige más de 1,5 m entre
+ * el centro del cuadro (en el propio muro, `dx = 0`) y el de la escultura más
+ * cercana. Con solo `dx = 0,575` esa distancia depende de acertar un `dz`
+ * enorme, y la fila delantera —la que #757 acerca a la entrada para dejar
+ * sitio a piezas hondas como el caballo ecuestre— no lo tiene. Fijar el
+ * margen en la propia distancia mínima (1,6, con un pelín de holgura sobre
+ * 1,5) hace que la columna quede fuera de alcance sea cual sea el `dz`.
+ */
+const MARGEN_MURO_PEDESTAL = 2.1;
 const X_PEDESTALES = Object.freeze(
   (() => {
-    const util = ANCHO - PEDESTAL.lado;
-    const columnas = Math.max(1, Math.floor(util / PASO_ENTRE_FILAS) + 1);
+    const offset = Math.max(PEDESTAL.lado / 2, MARGEN_MURO_PEDESTAL);
+    const disponible = ANCHO - 2 * offset;
+    const columnas = Math.max(1, Math.floor(disponible / PASO_ENTRE_FILAS) + 1);
     if (columnas === 1) return [ANCHO / 2];
-    const separacion = util / (columnas - 1);
-    return Array.from({ length: columnas }, (_, i) => PEDESTAL.lado / 2 + i * separacion);
+    const separacion = disponible / (columnas - 1);
+    return Array.from({ length: columnas }, (_, i) => offset + i * separacion);
   })(),
 );
 
 /**
- * Cuántas piezas caben de verdad. Con 12x9 m son **18**, que son exactamente las
- * mallas de vaciados que hay hoy en `foundry-module/data/mallas/`.
+ * Cuántas piezas caben de verdad. Con 15x10 m siguen siendo **18**, que son
+ * exactamente las mallas de vaciados que hay hoy en `foundry-module/data/mallas/`
+ * — el ancho creció para dejar sitio a los cuadros de #836/#838, no para meter
+ * una columna más.
  *
  * Se declara porque es un límite que hay que saber ANTES de ampliar el catálogo,
  * y porque ahora depende de las medidas de la sala: tocar `ANCHO` o
@@ -342,8 +401,21 @@ function colocarPieza(pieza, indice) {
   const { x, z } = obtenerPosicionPedestal(indice);
   const cota = PEDESTAL.alto + CORONILLA.alto;
   const limites = limitesDe(malla);
+  // `tools/convertir-estatua.mjs` no fija ningún "frente" al convertir: cada
+  // malla queda mirando hacia donde apuntaba en su escaneo, y nada garantiza
+  // que coincida con el lado por el que se la mira en esta sala (el mirador
+  // SIEMPRE está al lado de la entrada, `z` más pequeño — es el único lado con
+  // suelo libre). `girada180` es el escape para las piezas donde no coincide:
+  // gira 180° alrededor de su propio eje vertical, ANTES de trasladar. Es
+  // seguro para el reparto de filas (`Z_DE_CADA_FILA` lee `MALLAS_MUSEO`
+  // directamente, sin pasar por aquí) porque una pieza centrada en planta
+  // (`tools/convertir-estatua.mjs`) tiene el mismo cuadro delimitador antes y
+  // después de un giro de 180°: lo único que cambia es qué lado mira a quién.
+  const girar = pieza.girada180 === true;
   const trasladada = Object.freeze({
-    vertices: malla.vertices.map(([vx, vy, vz]) => [x + vx, cota + vy, z + vz]),
+    vertices: malla.vertices.map(([vx, vy, vz]) =>
+      girar ? [x - vx, cota + vy, z - vz] : [x + vx, cota + vy, z + vz],
+    ),
     caras: malla.caras,
   });
   return Object.freeze({
@@ -370,6 +442,135 @@ function colocarPieza(pieza, indice) {
 export const PIEZAS_COLOCADAS = Object.freeze(
   CATALOGO_MUSEO.piezas.map((pieza, orden) => colocarPieza(pieza, PUESTO_EN_LA_REJILLA[orden])),
 );
+
+/* ---- colgar un cuadro ------------------------------------------------------ */
+
+/**
+ * El tramo de muro lateral del que se puede colgar, en metros de z.
+ *
+ * Los dos extremos están puestos por un motivo distinto y por eso se declaran
+ * los dos, en vez de sacar uno del otro:
+ *
+ * - `desde` deja libre la esquina de la entrada. Se entra por ahí, y un cuadro
+ *   pegado a la puerta se pasa de largo antes de verlo.
+ * - `hasta` es lo que la fila de pedestales deja libre. Un cuadro colgado
+ *   detrás de una escultura le disputa la lectura a la escultura, y esta sala
+ *   está montada para que gane la piedra: por eso el muro se corta ANTES de
+ *   llegar al fondo y no se llena hasta la esquina.
+ *
+ * Todo esto pasa en la mitad de la sala que da a la entrada, que es donde se
+ * mira: se entra de cara a las esculturas, y un cuadro a la espalda no lo ve
+ * nadie salvo al salir.
+ */
+const Z_LIBRE = Object.freeze({ desde: 0.8, hasta: 5.6 });
+
+/**
+ * Cuánto se deja entre marco y marco. NO es un margen estético: es lo que hace
+ * que dos cuadros se lean como dos obras y no como un friso. Con menos, la
+ * pareja se mira de una vez; con mucho más, no caben tres en el tramo libre.
+ */
+const HUECO_ENTRE_CUADROS = 0.4;
+
+/**
+ * Las z de los ganchos, repartidas por el tramo libre. SALEN DE LO QUE MIDE LA
+ * SALA, igual que `X_PEDESTALES` (#590): escribirlas a mano dejaría el reparto
+ * mintiendo el día que la sala cambie de tamaño o el cuadro de formato.
+ */
+const Z_CUADROS = Object.freeze(
+  (() => {
+    const tramo = Z_LIBRE.hasta - Z_LIBRE.desde;
+    const paso = ANCHO_TOTAL + HUECO_ENTRE_CUADROS;
+    const cuantos = Math.max(1, Math.floor((tramo - ANCHO_TOTAL) / paso) + 1);
+    const ocupado = ANCHO_TOTAL * cuantos + HUECO_ENTRE_CUADROS * (cuantos - 1);
+    const margen = (tramo - ocupado) / 2;
+    return Array.from(
+      { length: cuantos },
+      (_, i) => Z_LIBRE.desde + margen + ANCHO_TOTAL / 2 + i * paso,
+    );
+  })(),
+);
+
+/** El borde INFERIOR del marco, en metros. Con los 90 cm de alto del cuadro, su
+ *  centro cae a 1,60 — la altura a la que se cuelga de verdad, que es la del ojo
+ *  de quien mira de pie y no la mitad del muro. */
+const COTA_CUADRO = 1.15;
+
+/** A qué distancia del muro se planta quien mira. Menos que ante una escultura
+ *  (`DISTANCIA_MIRADA`): un cuadro de metro y pico se abarca de cerca, y a metro
+ *  y medio de un muro se está mirando el muro. */
+const DISTANCIA_CUADRO = 1.1;
+
+/**
+ * Los dos muros de los que se puede colgar, en la convención de `chapaEnCara`.
+ *
+ * El interior de la sala va de 0 a `ANCHO` —es lo que ocupa la losa del suelo
+ * que monta `crearSalaCaja`—, así que sus dos caras interiores están en esos dos
+ * planos exactos, mirando hacia dentro. Se declaran aquí y no se deducen del
+ * grosor del muro: ese grosor es un detalle privado de la fábrica de salas, y
+ * copiarlo aquí sería atarse a él.
+ */
+const MUROS_LATERALES = Object.freeze([
+  Object.freeze({ eje: "z", plano: 0, sentido: 1, mirador: DISTANCIA_CUADRO, yaw: -Math.PI / 2 }),
+  Object.freeze({
+    eje: "z",
+    plano: ANCHO,
+    sentido: -1,
+    mirador: ANCHO - DISTANCIA_CUADRO,
+    yaw: Math.PI / 2,
+  }),
+]);
+
+/**
+ * Cuántos cuadros caben de verdad: los ganchos de un muro por los dos muros.
+ *
+ * Se declara por el mismo motivo que `CAPACIDAD` en los pedestales: es un límite
+ * que hay que saber ANTES de escribir la sexta cartela, no al colgarla.
+ */
+export const GANCHOS = MUROS_LATERALES.length * Z_CUADROS.length;
+
+/**
+ * Cuelga un cuadro del gancho que le toca.
+ *
+ * SE ALTERNA DE MURO EN MURO y no se llena uno antes que el otro: con cinco
+ * cuadros seguidos, llenar primero el oeste dejaría una pared con tres y otra
+ * con dos al fondo, y quien entra vería toda la colección a un lado. Alternando,
+ * la sala está repartida sea cual sea el número de fichas del catálogo.
+ *
+ * Pasarse no se apaña en silencio, igual que `obtenerPosicionPedestal`: dónde va
+ * el cuadro que ya no cabe es una decisión de diseño —otro tramo de muro, otro
+ * formato, otra sala—, no un hueco que aparezca solo.
+ *
+ * OJO CON EL ESPEJO: los dos muros comparten el sentido de la coordenada `u`
+ * (creciente en z), así que el mismo dibujo colgado en los dos saldría en
+ * espejo el uno del otro. No se corrige porque no hay nada que corregir con
+ * composiciones distintas, pero conviene saberlo antes de colgar la misma dos
+ * veces.
+ */
+function colgarCuadro(pieza, indice) {
+  if (indice >= GANCHOS) {
+    throw new RangeError(
+      `El museo tiene ${GANCHOS} ganchos y se ha pedido el ${indice + 1}. ` +
+        "Dónde va el siguiente cuadro es una decisión de diseño, no un hueco que aparezca solo.",
+    );
+  }
+  const muro = MUROS_LATERALES[indice % MUROS_LATERALES.length];
+  const z = Z_CUADROS[Math.floor(indice / MUROS_LATERALES.length)];
+  const u = z - ANCHO_TOTAL / 2;
+  return Object.freeze({
+    pieza,
+    chapas: Object.freeze(
+      piezasCuadro({ cara: muro, u, cota: COTA_CUADRO, composicion: pieza.malla }),
+    ),
+    centro: Object.freeze([muro.plano, COTA_CUADRO + ALTO_TOTAL / 2, z]),
+    // Delante del cuadro y mirando al muro. La orientación se declara y no se
+    // deduce: un cuadro solo se mira de un lado, al revés que una consola.
+    mirador: Object.freeze([muro.mirador, z]),
+    yaw: muro.yaw,
+  });
+}
+
+/** Los cuadros ya colgados, en el orden del catálogo. */
+export const CUADROS_COLGADOS = Object.freeze(CATALOGO_CUADROS.piezas.map(colgarCuadro));
 
 /* ---- la salida ------------------------------------------------------------- */
 
@@ -420,6 +621,16 @@ function mobiliario() {
     });
   }
   piezas.push({ centro: [...SALIDA.centro], medidas: [...SALIDA.medidas], color: MUSEO.zocalo });
+  // Los cuadros entran como mobiliario con su malla propia, SIN colisión y SIN
+  // piel: el muro del que cuelgan ya frena a quien se acerque —chocarse con un
+  // cuadro es de las cosas que rompen un sitio, igual que chocarse con una
+  // cartela—, y la piel de serie es chapa remachada de casco, que sobre un
+  // lienzo pintado sería el material equivocado (#550).
+  for (const colgado of CUADROS_COLGADOS) {
+    for (const { malla, color } of colgado.chapas) {
+      piezas.push({ malla, color, colision: false, piel: false });
+    }
+  }
   return piezas;
 }
 
@@ -437,6 +648,12 @@ export const INTERACCIONES = declararInteracciones([
     punto: [...colocada.mirador],
     orientacion: 0,
     accion: { tipo: "cartela", pieza: colocada.pieza.id },
+  })),
+  ...CUADROS_COLGADOS.map((colgado) => ({
+    id: `cuadro-${colgado.pieza.id}`,
+    punto: [...colgado.mirador],
+    orientacion: colgado.yaw,
+    accion: { tipo: "cartela", pieza: colgado.pieza.id },
   })),
   {
     id: "salida",
@@ -459,6 +676,13 @@ const SALA = crearSalaCaja({
   // y un pedestal de museo remachado sería un material equivocado, el mismo
   // motivo por el que la cantina la apaga en sus muebles de madera.
   pielObjetos: false,
+  // Y con su propia piel de muro (#838). La de serie es chapa remachada de
+  // casco: sirve para una nave y es el fondo equivocado para una obra colgada,
+  // por lo mismo que un pedestal remachado sería el material equivocado. La de
+  // aquí es una pared de galería —rodapié, paño liso, riel de cuelgue, cornisa—
+  // y está deliberadamente vacía: en un museo lo que tiene que reclamar la
+  // mirada es lo colgado, no la pared.
+  piezasPielMuro: piezasMuroMuseo,
   semillaMural: 20260818,
 });
 
@@ -466,4 +690,4 @@ export const PLANTA_MUSEO = SALA.planta;
 export const componerMuseo = SALA.componer;
 // Se exportan para las pruebas: el reparto es la parte que hay que poder
 // interrogar con mas piezas de las que hoy tiene el catalogo.
-export { colocarPieza, obtenerPosicionPedestal, PEDESTAL };
+export { colocarPieza, colgarCuadro, obtenerPosicionPedestal, MUROS_LATERALES, PEDESTAL, Z_CUADROS };

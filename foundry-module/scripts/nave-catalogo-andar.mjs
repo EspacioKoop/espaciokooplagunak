@@ -46,7 +46,13 @@ import {
   PLANTA_MUSEO,
   componerMuseo,
 } from "./museo-escena.mjs";
-import { MUSEO, PLAYA } from "./paleta.mjs";
+import {
+  ENTRADA as ENTRADA_PASILLO,
+  INTERACCIONES as INTERACCIONES_PASILLO,
+  PLANTA_PASILLO,
+  componerPasillo,
+} from "./pasillo-recuerdos-escena.mjs";
+import { MUSEO, PASILLO, PLAYA } from "./paleta.mjs";
 import {
   ANCHO_PUERTA,
   GROSOR_PUERTA,
@@ -399,6 +405,16 @@ export const CATALOGO_ANDAR = crearCatalogoEstancias({
     // pintar, no el vacío. Su propio gris, y no el de mamparo, para que el borde
     // de la sala no se lea como casco de nave.
     fondo: MUSEO.zocalo,
+    puertas: [],
+  },
+  // El pasillo de los recuerdos. Como el museo y la playa: NO cuelga de
+  // ninguna puerta de la nave y se entra por herramienta.
+  "pasillo-recuerdos": {
+    planta: PLANTA_PASILLO,
+    componer: componerPasillo,
+    entrada: ENTRADA_PASILLO,
+    interacciones: INTERACCIONES_PASILLO,
+    fondo: PASILLO.marmol,
     puertas: [],
   },
 });

@@ -572,6 +572,23 @@ export function crearSalaCaja({
    * enciende.
    */
   pielMuro = "geometria",
+  /**
+   * QUIÉN dibuja la piel del muro (#838).
+   *
+   * Va aparte de `pielMuro`, que decide CÓMO se pinta (chapas o tesela): esto
+   * decide QUÉ se pinta. De serie, chapa de casco — lo correcto en las trece
+   * salas del Phobos. El museo pasa la suya (`museo-mural.mjs`), porque una
+   * pared de galería no es un mamparo y una obra colgada sobre remaches es un
+   * material equivocado, el mismo motivo por el que esa sala ya apagaba la
+   * piel de sus objetos (#550).
+   *
+   * Es un PARÁMETRO y no un `if` con el nombre de la sala, que es la regla que
+   * gobierna toda esta fábrica: si para meter una sala hace falta nombrarla
+   * aquí dentro, el diseño se ha roto. La firma es la de `piezasMuralPixel`
+   * —`({rect, sala, altura, semilla}) => piezas`— y quien la sustituye la
+   * cumple entera, semilla incluida aunque no la use.
+   */
+  piezasPielMuro = piezasMuralPixel,
   semillaMural = 20260810,
   // Piel de puertas y objetos (#550). Van con su propio interruptor y no con el
   // del mural porque son decisiones separables: una sala puede querer sus muros
@@ -615,7 +632,7 @@ export function crearSalaCaja({
     // demás: es parte de la pared, no mobiliario colgado de ella.
     ...(muralPixel && pielMuro === "geometria"
       ? tramosMuro.flatMap((rect) =>
-          piezasMuralPixel({ rect, sala: { ancho, profundidad }, altura: ALTURA, semilla: semillaMural }),
+          piezasPielMuro({ rect, sala: { ancho, profundidad }, altura: ALTURA, semilla: semillaMural }),
         )
       : []),
     // La piel texturada: un cuadrilátero por paño, con la tesela repitiéndose a

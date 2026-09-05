@@ -710,6 +710,16 @@ export function piezasMuralPixel({ rect, sala, altura, semilla = 1 }) {
 export function chapasDeRejilla(cara, rejilla, opciones = {}) {
   const { base = 0, celda = CELDA, saliente = SALIENTE, tope = TOPE_PIEZAS } = opciones;
 
+  // NO HAY RELIEVE GEOMÉTRICO, y consta por si alguien vuelve a intentarlo
+  // (#838): esta función tuvo una opción para adelantar cada color unos
+  // milímetros y sacarle los costados, con la idea de dar volumen a la pintura
+  // de un cuadro. Se retiró MEDIDA. Con y sin ella cambiaban entre 0 y 168
+  // píxeles de los 129.600 del fotograma, y ni subiendo el empaste a cinco
+  // centímetros pasaba del 0,3 %: lo que se mira de frente enseña sus costados
+  // de canto, y a esta resolución un canto de milímetros no llega a un píxel.
+  // El volumen que sí se ve aquí es el PINTADO —el bisel de `panelBiselado`—,
+  // y por eso el mural entero se dibuja así.
+
   // Las chapas se agrupan POR COLOR en una sola malla cada una, en vez de
   // devolver una pieza por rectángulo (#551).
   //
@@ -725,6 +735,17 @@ export function chapasDeRejilla(cara, rejilla, opciones = {}) {
   // color de material: una malla con muchas caras sueltas es exactamente lo que
   // `componerEscena` ya sabe recorrer.
   const porColor = new Map();
+  const anadir = (color, vertices) => {
+    let malla = porColor.get(color);
+    if (!malla) {
+      malla = { vertices: [], caras: [] };
+      porColor.set(color, malla);
+    }
+    const desde = malla.vertices.length;
+    malla.vertices.push(...vertices);
+    malla.caras.push(vertices.map((_, i) => desde + i));
+  };
+
   for (const { v, u0, ancho, alto, color } of fundirRectangulos(rejilla).slice(0, tope)) {
     const quad = chapaEnCara(
       cara,
@@ -734,14 +755,7 @@ export function chapasDeRejilla(cara, rejilla, opciones = {}) {
       base + (v + alto) * celda,
       saliente,
     );
-    let malla = porColor.get(color);
-    if (!malla) {
-      malla = { vertices: [], caras: [] };
-      porColor.set(color, malla);
-    }
-    const desde = malla.vertices.length;
-    malla.vertices.push(...quad.vertices);
-    malla.caras.push(quad.caras[0].map((i) => desde + i));
+    anadir(color, quad.vertices);
   }
   return [...porColor].map(([color, malla]) => ({ malla, color }));
 }

@@ -18,7 +18,8 @@ condicionan el trabajo diario:
   empezar: media docena de archivos (este mismo, `lang/*.json`, `main.mjs`, `paleta.mjs` y sus
   guardas) los toca casi cualquier trabajo del módulo, y ahí es donde chocan dos ramas que por lo
   demás no se rozan. Los agentes especializados del proyecto van versionados en
-  [`.claude/agents/`](.claude/agents).
+  [`.claude/agents/`](.claude/agents); los agentes seleccionables desde VS Code viven en
+  [`.github/agents/`](.github/agents).
 - No afirmes que algo compila, arranca o funciona si no has ejecutado la comprobación correspondiente.
 - Nada de `push --force`, `reset --hard`, squash del historial heredado ni reescritura de historial
   sin autorización humana explícita.
@@ -508,6 +509,90 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     por un punto de interacción — la misma forma que la playa (#587), y por el mismo motivo (el
     Phobos no tiene un museo, y colgarlo de un mamparo contaría una historia que nadie ha decidido).
     Por eso está fuera de las invariantes de la nave en `nave-planta-phobos.test.mjs` y del minimapa.
+    Y por eso sus **muros tienen piel propia** (`museo-mural.mjs`, #838) en vez de la chapa
+    remachada de serie: es el mismo argumento con el que la sala ya apagaba `pielObjetos` —un
+    pedestal remachado es un material equivocado— aplicado a la superficie que más importa, el
+    fondo contra el que se lee lo colgado. Es una pared de galería —rodapié, paño liso con sus
+    juntas de tablero, riel de cuelgue a 2,10 m, cornisa— y está **vacía a propósito**: el mural de
+    la nave presume de premiar que te acerques, y aquí eso sería un error, porque cada greeble
+    compite con la obra. Que cueste 32 rectángulos por muro largo frente a 504 es la CONSECUENCIA
+    de esa decisión y no su motivo. Se engancha por parámetro (`piezasPielMuro` en
+    `crearSalaCaja`), nunca por un `if` con el nombre de la sala dentro de la fábrica. La celda
+    sigue siendo la de la nave: un cuadro baja a 1,25 cm porque su detalle no cabía, y una pared de
+    galería no quiere más detalle sino menos.
+    Los **cuadros** de sus muros laterales (#836) son la SEGUNDA forma de colgar y no un parámetro
+    de la primera: una escultura se apoya en un pedestal y se rodea, un cuadro cuelga de un muro y
+    solo se mira de frente, así que van en catálogo aparte (`museo-cuadros.mjs`) validado por el
+    MISMO `validarCatalogoPiezas`. Los ganchos SALEN DE LO QUE MIDE LA SALA, igual que las columnas
+    de pedestales: un tramo de muro libre (ni en la esquina de la entrada ni detrás de las
+    esculturas) partido por el ancho del cuadro más su hueco, hoy tres por muro, y se ALTERNA de
+    muro en muro para que la colección no se amontone a un lado. Pasarse de ganchos revienta. El dibujo es `scripts/museo-cuadro.mjs`, y su regla es que un
+    cuadro no tiene imagen que pegar —el motor no mapea texturas y no hay binarios—: se pinta con
+    `chapasDeRejilla` como la piel del muro, pero **con celda propia** de 1,25 cm (2,5 hasta #838),
+    porque a los 10 cm del mural un lienzo de 1,2 × 0,8 m tiene doce por ocho píxeles. Bajar la
+    celda compartida para conseguirlo es justo el fallo de #551 — y `MARCO` sube de 2 a 4 celdas a
+    la vez que la celda baja, que es ese mismo fallo en pequeño: lo escrito en filas se parte por
+    la mitad en silencio. El marco lleva su bisel **pintado** (es un objeto de la sala) y el lienzo
+    **no**: biselar la pintura la convertiría en chapa remachada. Desde #838 ese bisel es una
+    **moldura** de tres anillos (`marcoMoldura`) y no una línea: canto que sube fuera, cuerpo del
+    listón, y un rebaje interior con la luz AL REVÉS — sin esa inversión el lienzo parece pegado
+    encima del listón en vez de encajado detrás. Cabe porque la celda del cuadro es ocho veces más
+    fina que la del muro, que es la misma razón por la que el dibujo tiene detalle.
+    **El relieve GEOMÉTRICO se probó y se retiró, medido** (#838): adelantar cada masa de color
+    unos milímetros y sacarle los costados cambiaba entre 0 y 168 píxeles de los 129.600 del
+    fotograma, y ni con cinco centímetros de empaste pasaba del 0,3 %. Un cuadro colgado se mira de
+    frente, así que sus costados se ven de canto y a esta resolución no llegan a un píxel — lo
+    mismo que hacía que no costara polígonos en pantalla es lo que hacía que no se viera. La
+    lección general: en este motor el volumen que se ve de frente es el **pintado**, y la geometría
+    solo paga cuando se mira en sesgo. Nada que se pueda
+    leer como instrumento —ni cartas estelares, ni esquemas, ni diagramas—: es #526 donde más fácil
+    sería saltárselo, y no es teórico: la revisión de #838 bloqueó por un cuadro abstracto que se
+    leía como un gráfico de barras (cuatro columnas sobre la misma base, altura creciente, un
+    remate igual en cada una), y al rehacerlo se vio que la ola de la misma tanda caía en lo mismo
+    con la coartada de ser una ola. Las dos guardas que quedan son de GRAMÁTICA y no de color ni
+    de presupuesto, que es lo que ninguna prueba anterior podía ver: ninguna masa se apoya en la
+    fila de abajo del lienzo —basta una para que el ojo busque el eje— y la cresta de la ola
+    **vuela** sobre el agua que tiene delante, que es lo único que ninguna barra puede hacer. Y el presupuesto es la condición y no una optimización posterior: cada
+    composición se comprueba **al importar** contra `TOPE_CUADRO` y revienta si no cabe, porque un
+    cuadro recortado al tope se lee como un fallo (a diferencia de un muro, al que le sobra un
+    greeble y sigue siendo un muro). Ese tope subió a 400 en #838 mientras se probaba el relieve
+    geométrico, con la medida delante: las mallas pasaban de 19–83 caras a 96–377, pero en
+    pantalla la sala pasaba de 1.461 a 1.466 polígonos —el costado de una masa está de canto a un
+    paso y cae por recorte—, o sea que el relieve se pagaba al construir la sala y no por
+    fotograma. Al retirarse el relieve geométrico (ver más abajo) volvió a bajar, esta vez a 200.
+    Lo que sí se paga es la SILUETA: una ladera que cambia de ancho en cada fila es todo escalón,
+    y de ahí que el cono y el perfil de la ola se muestreen a peldaños (`paso`, `PASO_OLA`) en vez
+    de al píxel — 671 caras costaba la ola dibujada columna a columna, el tope entero de un cuadro
+    para una sola ola. Las dos abstractas son `obra-propia` y lo **dicen**, con prueba
+    en los dos idiomas: la misma norma de la casa que obliga al León a decir que es una
+    reconstrucción. Las otras tres son **redibujos de paisajes de dominio público** a partir de
+    escaneos CC0 (Hokusai ×2, Friedrich), y estrenan el sexto valor de `NATURALEZAS`,
+    `interpretacion`: ninguno de los cinco decía la verdad, porque el fichero es nuestro —no hay ni
+    un byte del escaneo en el árbol, de la fuente sale la COMPOSICIÓN— pero la composición es de
+    otro y está identificada, y llamarla `obra-propia` sería la única forma de que la sala enseñara
+    la obra de alguien sin decirlo. Su cartela nombra la obra y a su autor en los dos idiomas, su
+    procedencia es `kind: "cc"` con la página que declara la licencia (no el fichero) y su ficha
+    está en `docs/PROCEDENCIA_ASSETS.md` SIN `sha256`: el día que una necesite un hash es que
+    alguien ha copiado algo y eso ya no es una interpretación. Se eligen por lo que sobrevive a
+    48 × 32 píxeles —masas, no detalle: un retrato es una mancha—, nunca subiendo la resolución
+    para que quepa una más.
+    El museo es además, con la playa, uno de los dos niveles del **campo de pruebas**
+    (`tools/campo-de-pruebas/`, #838): las escenas andables abiertas en un navegador sin levantar
+    ningún mundo, que es donde la regla **standalone-first** se puede COMPROBAR y no solo afirmar.
+    No duplica nada —escenas, piezas, cartelas y motor de andar se importan de
+    `foundry-module/scripts/`, y los niveles salen del propio `CATALOGO_ANDAR`—, porque una copia
+    dejaría de comprobar la sala de verdad el primer día que alguien tocara una de las dos. Lo
+    propio de la herramienta es el teclado, el `<canvas>` y el panel de cartela, que es lo que en
+    Foundry pone la ventana; y la salida de cada escena, que en la partida vuelve a la cantina,
+    aquí encadena con el siguiente nivel y lo DICE en vez de fingir un viaje que no existe. Un
+    tercer nivel es una entrada más de `niveles.mjs`. Se eligieron estas dos porque son las
+    únicas que se entran por herramienta y no cuelgan de ningún mamparo (#587, #598): las trece
+    salas del Phobos ya se visitan andando. Es además donde se mira el arte, porque el relieve de
+    un cuadro es una afirmación visual que ninguna prueba de Node demuestra, y ya ha pagado su
+    coste dos veces: encontró que el bucle no arrancaba sin inyectarle `requestAnimationFrame`
+    —la escena se veía perfecta en una captura y estaba muerta— y que un muro lateral queda
+    SIEMPRE en el suelo ambiente de 0,35 porque la luz del motor no le da, así que los cuadros de
+    ese lado pierden el color, y como #836 alterna de muro en muro es media colección.
     Lo que el museo NO hace es la mitad del diseño: **enseña y ya está**. La cartela se pinta al
     acercarse y se retira al apartarse (`accion: {tipo: "cartela"}` + el flanco de salida
     `alSalirDeInteraccion` de #598); no marca piezas como vistas, no lleva la cuenta ni deja rastro,

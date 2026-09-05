@@ -152,10 +152,18 @@ function chapaHorizontal(y, sentido, x0, x1, z0, z1) {
   return { vertices, caras: [[0, 1, 2, 3]] };
 }
 
-/** Traduce una rejilla horizontal a piezas, agrupando por color en una malla
- *  cada una — por lo mismo que `chapasDeRejilla` (el peaje de `componerEscena`
- *  se paga por llamada, no por polígono). */
-function piezasHorizontales(rejilla, { y, sentido, tope = TOPE_HORIZONTAL }) {
+/**
+ * Traduce una rejilla horizontal a piezas, agrupando por color en una malla
+ * cada una — por lo mismo que `chapasDeRejilla` (el peaje de `componerEscena`
+ * se paga por llamada, no por polígono).
+ *
+ * Exportado (a diferencia de `chapaHorizontal`, que sigue privado): es el
+ * primitivo de "rejilla de color → piezas sobre un plano horizontal", y una
+ * escena que quiera OTRO dibujo de suelo —mármol, una alfombra— no tiene que
+ * reescribirlo, solo traer su propia función de rejilla. La misma razón por la
+ * que `chapasDeRejilla` es público para los muros.
+ */
+export function piezasHorizontales(rejilla, { y, sentido, tope = TOPE_HORIZONTAL }) {
   const rectangulos = fundirRectangulos(rejilla);
   // Todo o nada: media sala con juntas y media lisa se lee como un fallo, no
   // como menos detalle. Si un día una sala no cabe, se sube el lado de la

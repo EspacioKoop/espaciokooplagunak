@@ -549,6 +549,101 @@ export const MUSEO = Object.freeze({
   yeso: "#d9d2c4", // el vaciado en yeso: crema, cálido, lo más claro de la sala
   piedra: "#b8ae9c", // la reconstrucción, que no es yeso y no debe parecerlo
   cartel: "#cdb894", // la cartela junto a cada pieza: papel viejo bajo luz cálida
+  // La piel del muro (#838). Cinco tonos y no más, y todos MUY cerca de `muro`:
+  // una pared de galería es el fondo contra el que se lee la obra, así que su
+  // contraste interno tiene que ser menor que el de cualquier pieza colgada. Si
+  // el muro se lee antes que el cuadro, el muro está mal.
+  pano: "#33373e", // el paño de yeso, un punto por encima del muro que lo sostiene
+  panoJunta: "#2a2d33", // la junta entre paños: una sombra fina, no una línea negra
+  riel: "#4a4e56", // el riel de cuelgue, la única pieza clara y a una sola altura
+  rodapie: "#282b31", // el rodapié, donde se roza la pared al pasar
+  // El friso y su cornisa (boiserie, ver `museo-mural.mjs`) suben más carpintería
+  // por debajo y por encima del paño, pero NO son el riel de cuelgue: ese es el
+  // único punto de la sala donde una prueba confía en que "hay un tono claro
+  // aquí" significa "aquí cuelga un cuadro". Prestarle `riel` a la moldura del
+  // friso rompería esa lectura la primera vez que alguien contara filas del
+  // color equivocado, así que la luz de moldura tiene su propio tono.
+  molduraLuz: "#43474e", // la luz que coge el canto de un panel embutido o de la cornisa
+});
+
+/**
+ * El pasillo de los recuerdos (tercer nivel del campo de pruebas): un mármol
+ * blanco que se pierde en niebla y una alfombra negra por el centro, con
+ * estatuas propias —la Guardiana y sus centinelas— alternando con piezas
+ * reaprovechadas del museo (memorias de otros mundos que ella conserva).
+ *
+ * NUEVE tonos, no más: el mármol claro es la superficie que más cuadro ocupa
+ * (paredes, suelo, techo), así que su contraste interno tiene que quedar por
+ * debajo del negro de la alfombra o el pasillo deja de leerse como un pasillo
+ * y pasa a leerse como una pared. Los grises de la Guardiana son fríos y
+ * apagados a propósito: es de luto, no de piedra — mezclarla con `MUSEO.piedra`
+ * confundiría "reconstrucción arqueológica" con "personaje de esta ficción".
+ */
+export const PASILLO = Object.freeze({
+  marmol: "#e4e1da", // el paño claro: mármol, no yeso — más frío que MUSEO.yeso
+  marmolJunta: "#c9c5ba", // la junta entre losas, un paso por debajo y no una sombra dura
+  marmolVeta: "#d3cfc4", // la veta del mármol: apenas un tono, nunca una línea que se cuente
+  zocalo: "#b9b4a7", // el rodapié y el marco de las columnas, más oscuro que el paño
+  alfombra: "#0c0b10", // la alfombra: negro de verdad, el único tono oscuro del suelo
+  alfombraOrla: "#1c1a22", // el filo de la alfombra, un paso por encima del negro
+  cuervo: "#3a2e33", // el motivo bordado: visible sobre el negro, nunca un color que grite
+  guardiana: "#4b4d54", // la tela de la Guardiana: gris frío, de luto, no piedra
+  guardianaSombra: "#2e2f34", // el pliegue en sombra de su tela
+});
+
+/**
+ * Los CUADROS colgados de los muros del museo (#836).
+ *
+ * Van aparte de `MUSEO` y no dentro por dos motivos, y el segundo es el que
+ * manda: `MUSEO` es plano —cada clave, un color— y una prueba de la sala lo
+ * comprueba clave por clave; y sobre todo, un pigmento no es un material de la
+ * sala. `MUSEO.yeso` dice de qué está hecha una pieza; esto es con qué se pintó
+ * otra. Mezclarlos invitaría a pintar un lienzo del color de un pedestal.
+ *
+ * EL MARCO SÍ LLEVA RELIEVE Y EL LIENZO NO, y esa es toda la razón de que haya
+ * tres tonos de marco y ninguno de pigmento. Un marco es un OBJETO de la sala,
+ * así que se ilumina como todo lo demás (luz de arriba, `LUZ` en `retro3d.mjs`)
+ * y necesita su canto claro y su canto en sombra, igual que `panelBiselado`.
+ * La pintura de un lienzo es PLANA: biselarla la convertiría en chapa
+ * remachada, que es el material equivocado — la misma frontera por la que la
+ * cantina apaga la piel de casco en sus muebles de madera (#550).
+ *
+ * Los cinco pigmentos son tierras y no neones a propósito: sobre el muro
+ * oscuro de la sala (`MUSEO.muro`) un color saturado se despegaría tanto que el
+ * cuadro competiría con las esculturas, y la sala está montada para que gane la
+ * piedra. `hueso` es el único claro y hace de luz dentro del lienzo.
+ */
+export const CUADRO = Object.freeze({
+  marco: "#4a3f34", // madera oscura, un paso por encima del muro y no más
+  marcoLuz: "#6b5c4c", // el canto que coge la luz de arriba
+  marcoSombra: "#2f2820", // el que queda debajo; sin él el marco es un plano
+  fondo: "#1d2a33", // el fondo del lienzo: más oscuro que el muro, para hundirlo
+  ocre: "#c08a3e",
+  bermellon: "#a33b2a",
+  verdin: "#4f7a5e",
+  hueso: "#e2dccb", // el claro que hace de luz dentro del cuadro
+  // Los cinco de abajo llegan con los cuadros interpretados de #836 (la ola, el
+  // Fuji, el mar de nubes). No son un capricho de variedad: los tres originales
+  // son PAISAJES, y con los cuatro pigmentos de arriba —dos tierras, un verde y
+  // un hueso— no hay forma de decir «agua», «cielo» ni «niebla» sin mentir de
+  // color. Siguen siendo tonos rotos y no neones, por el mismo motivo que los
+  // otros: sobre el muro oscuro de la sala, un saturado le disputaría la lectura
+  // a la piedra.
+  azulProfundo: "#1f3f6b", // el mar, y las masas de agua en sombra
+  azulPalido: "#8fa9c4", // el cielo; también la niebla lejana
+  espuma: "#f0f3f5", // el blanco de la cresta y de la nieve, más frío que el hueso
+  niebla: "#b9c3c9", // el gris del vapor, entre el cielo y el blanco
+  roca: "#3a3d42", // la piedra oscura y las siluetas a contraluz
+  // Y los tres de abajo, con el detalle de #838. Son TONOS INTERMEDIOS de tres
+  // pigmentos que ya estaban, y solo existen porque la celda del lienzo bajó a
+  // la mitad: a 48 x 32 no había sitio para una transición y un tono más era
+  // ruido; a 96 x 64 una ladera cabe en dos tonos y sin ellos se lee como un
+  // recorte de cartulina. Ojo con la frontera: esto es PINTURA, donde una masa
+  // puede tener luz y sombra, y NO la piel del casco, que sigue siendo de paleta
+  // corta y sin degradados por contrato. Tres tonos no son un degradado.
+  azulMedio: "#2f5f86", // el cuerpo del agua, entre el fondo y el cielo
+  bermellonSombra: "#7a2a1e", // la ladera del cono que no da al sol
+  nieblaClara: "#d2d9dd", // el vapor de arriba, donde la luz lo atraviesa
 });
 
 /**

@@ -82,13 +82,17 @@ import { ALTO_TOTAL, ANCHO_TOTAL, piezasCuadro } from "./museo-cuadro.mjs";
  * tres piezas, más superficie no da amplitud, da vacío — y andar diez segundos
  * entre estatua y estatua es lo que convierte un museo en un pasillo.
  */
-// La sala creció de 9x7 a 12x9 (#590) y de ahí a 12x10 (#757): con 18 mallas de
-// vaciados en el árbol y tres pedestales cabiendo, el museo era el cuello de
-// botella de su propio catálogo. Los 10 de fondo no son estética: 9 daban un
-// pasillo entre filas de 10 cm pisables, y las filas se separan ahora según lo
-// que de verdad ocupan las piezas que llevan encima. No son números redondos:
-// salen de la aritmética de abajo.
-export const ANCHO = 12.0;
+// La sala creció de 9x7 a 12x9 (#590), de ahí a 12x10 (#757) y a 15x10 al
+// fusionar #757 con los cuadros de #836/#838: con las columnas de pedestales
+// repartidas por `ANCHO` (#590), las dos columnas de los extremos quedaban a
+// 0,575 m de los muros laterales — justo donde #836 cuelga los cuadros. Un
+// cuadro pegado al muro y una escultura a 0,575 m de ese mismo muro caen a
+// menos de 1,5 m el uno del otro sea cual sea el z que se elija, y su propio
+// mirador —a 1,1 m del muro— caía encima del pedestal: no era un límite mal
+// puesto, es que no había SITIO. Ensanchar a 15 (`MARGEN_MURO_PEDESTAL` más
+// abajo, 2,1 m) es lo que abre ese sitio sin tocar ninguna de las dos cuentas
+// que ya dependían del ancho — ni las 18 mallas de vaciados, ni las columnas.
+export const ANCHO = 15.0;
 export const PROFUNDIDAD = 10.0;
 
 /** La fila del fondo, a dos metros del muro: lo justo para rodear una pieza. */
@@ -146,19 +150,36 @@ const FILAS_QUE_CABEN = Math.max(
  * pieza más: el ancho crecía y los tres pedestales seguían donde estaban. Ahora
  * se reparten centradas, tantas como quepan guardando `PASO_ENTRE_FILAS`.
  */
+/**
+ * Cuánto se deja entre una columna de pedestales y el muro lateral.
+ *
+ * NO es `PEDESTAL.lado / 2` (pegar la columna al muro salvo por medio
+ * pedestal): un cuadro de #836 cuelga justo en ese muro, y la prueba de
+ * "ningún cuadro se cuelga detrás de una escultura" exige más de 1,5 m entre
+ * el centro del cuadro (en el propio muro, `dx = 0`) y el de la escultura más
+ * cercana. Con solo `dx = 0,575` esa distancia depende de acertar un `dz`
+ * enorme, y la fila delantera —la que #757 acerca a la entrada para dejar
+ * sitio a piezas hondas como el caballo ecuestre— no lo tiene. Fijar el
+ * margen en la propia distancia mínima (1,6, con un pelín de holgura sobre
+ * 1,5) hace que la columna quede fuera de alcance sea cual sea el `dz`.
+ */
+const MARGEN_MURO_PEDESTAL = 2.1;
 const X_PEDESTALES = Object.freeze(
   (() => {
-    const util = ANCHO - PEDESTAL.lado;
-    const columnas = Math.max(1, Math.floor(util / PASO_ENTRE_FILAS) + 1);
+    const offset = Math.max(PEDESTAL.lado / 2, MARGEN_MURO_PEDESTAL);
+    const disponible = ANCHO - 2 * offset;
+    const columnas = Math.max(1, Math.floor(disponible / PASO_ENTRE_FILAS) + 1);
     if (columnas === 1) return [ANCHO / 2];
-    const separacion = util / (columnas - 1);
-    return Array.from({ length: columnas }, (_, i) => PEDESTAL.lado / 2 + i * separacion);
+    const separacion = disponible / (columnas - 1);
+    return Array.from({ length: columnas }, (_, i) => offset + i * separacion);
   })(),
 );
 
 /**
- * Cuántas piezas caben de verdad. Con 12x9 m son **18**, que son exactamente las
- * mallas de vaciados que hay hoy en `foundry-module/data/mallas/`.
+ * Cuántas piezas caben de verdad. Con 15x10 m siguen siendo **18**, que son
+ * exactamente las mallas de vaciados que hay hoy en `foundry-module/data/mallas/`
+ * — el ancho creció para dejar sitio a los cuadros de #836/#838, no para meter
+ * una columna más.
  *
  * Se declara porque es un límite que hay que saber ANTES de ampliar el catálogo,
  * y porque ahora depende de las medidas de la sala: tocar `ANCHO` o

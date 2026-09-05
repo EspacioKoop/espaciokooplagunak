@@ -41,3 +41,7 @@ con [`index.schema.json`](index.schema.json).
 | [0009](0009-modelo-permisos-por-puesto-v1.md) | Modelo de permisos por puesto v1: formaliza sin migrar, no unifica con el motor nativo | Aceptada |
 | [0010](0010-hackeo-solo-nativo.md) | El hackeo se queda solo-nativo: no se expone a Lua ni al puente | Aceptada |
 | [0011](0011-riesgos-de-seguridad-y-defensa-en-profundidad.md) | Riesgos de seguridad del fork y defensa en profundidad | Propuesta |
+| [0012](0012-que-puede-hacer-una-escena-de-foundry.md) | Qué puede hacer una escena de Foundry: enseñar, transportar y ambientar; nunca conceder, contar ni recordar | Aceptada |
+| [0013](0013-frontera-de-licencias-y-procedencia.md) | Frontera de licencias: procedencia obligatoria, mecánica sí / nombres no, y GPL-3.0 fuera de este árbol | Aceptada |
+| [0014](0014-doctrina-de-arte-procedural.md) | Doctrina de arte: procedural en cliente, cero binarios, un solo sitio para el color | Aceptada |
+| [0015](0015-dato-derivado-se-copia-y-se-compara.md) | El dato derivado se copia de su fuente autoritativa, y una prueba lo compara con ella | Aceptada |

@@ -508,6 +508,19 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     por un punto de interacción — la misma forma que la playa (#587), y por el mismo motivo (el
     Phobos no tiene un museo, y colgarlo de un mamparo contaría una historia que nadie ha decidido).
     Por eso está fuera de las invariantes de la nave en `nave-planta-phobos.test.mjs` y del minimapa.
+    Lo mismo aplica al **plató de pruebas** (`scripts/estudio-escena.mjs`, con `ESTUDIO` en
+    `paleta.mjs`, #584): solo-GM, sin puerta en la nave, salida por su único punto de interacción. Su
+    razón de ser es otra: es la primera escena del módulo que declara `focos` (luces de punto de
+    #556) y sirve de banco de pruebas visual para la piel del muro TEXTURADA
+    (`scripts/piel-textura.mjs` + `pielMuro: "textura"` en `crearSalaCaja`, opción B de #584) — la
+    única de las salas donde ese camino está encendido de serie, porque encenderlo en las trece del
+    Phobos es una decisión de arte aparte que todavía no se ha tomado. La piel texturada sustituye los
+    cientos de chapas de 10 cm de un muro (#548) por un puñado de cuadros de ~1,5 m
+    (`SUBDIVISION_PANO_METROS` en `nave-sala-caja.mjs`): la rejilla no es para dibujo —eso lo da el
+    téxel, cuatro veces más fino que la caja que sustituye— sino SOLO para que `intensidadCara` (#556)
+    tenga varios centroides donde interpolar una luz de punto; un solo cuadrilátero por cara (la
+    opción A que se descartó) dejaría el muro entero a una intensidad, y las luces de #556 casi
+    decorativas en la superficie que más ocupa el cuadro.
     Lo que el museo NO hace es la mitad del diseño: **enseña y ya está**. La cartela se pinta al
     acercarse y se retira al apartarse (`accion: {tipo: "cartela"}` + el flanco de salida
     `alSalirDeInteraccion` de #598); no marca piezas como vistas, no lleva la cuenta ni deja rastro,

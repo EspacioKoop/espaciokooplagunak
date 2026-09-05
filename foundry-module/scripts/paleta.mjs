@@ -552,6 +552,23 @@ export const MUSEO = Object.freeze({
 });
 
 /**
+ * El plató del estudio (#584, banco de pruebas de la opción B): una sala de
+ * fondo NEUTRO y oscuro a propósito, porque lo que hay que ver aquí es cómo
+ * cae la luz de los focos sobre el paño texturado del muro, y un color de
+ * fondo con carácter propio competiría con eso.
+ */
+export const ESTUDIO = Object.freeze({
+  muro: "#26282d", // gris casi neutro, un pelo más oscuro que el del museo
+  suelo: "#1c1e22", // el tablero del plató: oscuro, para que no rebote luz sola
+  atril: "#3a3d43", // la silla y el trípode: metal apagado, ni protagoniza ni desaparece
+  atrilCanto: "#54575f", // su filo, un paso más claro: lo justo para leer el volumen
+  claqueta: "#17181b", // el cuerpo de la claqueta: casi negro, como el atrezo de verdad
+  claquetaFranja: "#e8e2d2", // sus franjas: el único blanco hueso de la sala
+  pieFoco: "#2a2c30", // el pie de cada lámpara: silueta, no protagonista
+  pantallaFoco: "#c7c2b3", // la pantalla del foco: lo único emisivo de la sala
+});
+
+/**
  * Fichas de la mesa de minijuegos (#308). Pixel, no grabado: la pila se repinta
  * en cuanto alguien apuesta.
  *

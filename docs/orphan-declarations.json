@@ -136,7 +136,8 @@
       "La cantina, la playa y el museo entraron en la guardia al nacer como escenas completas de arte nuevo; cantina-2d.mjs compone incluso sus velos rgba desde CANTINA.",
       "ficha-nave.mjs reutiliza siluetas y colores; el relleno transparente pertenece al requisito del codificador PNG, no a una paleta propia.",
       "Los dados y la mesa de póker 3D reutilizan FICHA y PIXEL; los avatares de la cantina toman pelo, piel, ropa y aceros de la paleta.",
-      "seccion-lienzo.mjs declara sus tonos de plano dentro de la paleta común, y filtros-escena.mjs toma de ALERTA el tinte que delega en FXMaster."
+      "seccion-lienzo.mjs declara sus tonos de plano dentro de la paleta común, y filtros-escena.mjs toma de ALERTA el tinte que delega en FXMaster.",
+      "estudio-escena.mjs (#584) nació como banco de pruebas del rig de focos de #556 sobre la piel texturada del muro y toma sus colores de ESTUDIO, como el museo y la playa antes que ella."
     ]
   },
   "artModules": [
@@ -154,6 +155,7 @@
     "cantina-2d.mjs",
     "playa-escena.mjs",
     "museo-escena.mjs",
+    "estudio-escena.mjs",
     "nave-props.mjs",
     "ficha-nave.mjs",
     "minijuegos/dados-3d.mjs",

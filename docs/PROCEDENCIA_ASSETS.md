@@ -142,3 +142,36 @@ dice que el nivel elegido no era casualidad de aquella pieza.
 tabla `FICHAS` y **se niega a convertir** lo que no esté en ella. Este documento
 es la versión para humanos, con el porqué; aquella es la que hace imposible
 saltarse el paso.
+
+---
+
+## Assets 2D (tokens) — #891
+
+Mismo formato de ficha que arriba, mismo candado. `tools/convertir-token.mjs`
+es el equivalente 2D de `tools/convertir-estatua.mjs`: reescala a 128×128 por
+vecino más próximo, cuantiza a color indexado y se niega a convertir cualquier
+`<nombre>` que no esté en su tabla `FICHAS`. A diferencia de una estatua, un
+token conserva **su propia paleta** — la frontera de arte de #351 gobierna las
+superficies procedurales del módulo, no una ilustración importada con su color
+ya decidido por su autor.
+
+Esta sección está vacía a propósito (#891-A/#891-B: el pipeline se entrega
+antes que el primer lote). Verificar la licencia de un pack concreto en su
+página exacta —no basta con que el issue diga "confirmado"— es el paso que
+convierte en real la primera fila de esta tabla; hasta entonces no hay ninguna
+ficha que documentar.
+
+| Pieza | Autoría | Licencia | Enlace | sha256 |
+|---|---|---|---|---|
+| _(ninguna todavía)_ | | | | |
+
+**Conversión (cuando llegue la primera ficha):**
+
+```
+node tools/convertir-token.mjs origen.png <id-declarado-en-FICHAS>
+```
+
+El PNG de origen **no entra en el repositorio**, igual que los STL de la
+sección anterior: se descarga aparte, se verifica su licencia y su sha256, y lo
+que se versiona es `foundry-module/data/tokens/<id>.mjs` — texto, revisable en
+un PR como cualquier otro cambio.

@@ -51,6 +51,14 @@ Baseline normativa: [SECURITY.md](../SECURITY.md) (no se duplica aquí).
       puertas estables por área (`build C++/Lua`, `módulo Foundry`, `tools`,
       `docker y puente`, `imágenes`) más `CodeQL` y `semgrep`; una PR solo de
       documentación publica los siete y una puerta roja bloquea la integración.
+- [x] **Secret scanning** y **push protection** activados y verificados por API
+      (issue #662, 2026-09-04, tras ganar administración con el traslado a la
+      organización `EspacioKoop`): `secret_scanning` y
+      `secret_scanning_push_protection` en `enabled`, cero alertas al activar.
+      Es la capa que un hook local no puede sustituir, porque `git push
+      --no-verify` desactiva el hook y no el servidor. Quedan **fuera**
+      `non_provider_patterns` y `validity_checks`: el PATCH las devuelve
+      `disabled` sin error, presumiblemente por plan.
 - [x] **Dependabot alerts** activado y verificado por API
       (`GET /vulnerability-alerts` → 204, Varo, 2026-07-15). Las PR automáticas
       de `dependabot_security_updates` siguen siendo una decisión separada.

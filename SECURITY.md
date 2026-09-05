@@ -66,20 +66,31 @@ contenido de un fichero de configuración en un informe.
 
 Defensa en capas, de fuera hacia dentro:
 
-### 1. Protección en el servidor — pendiente de activar
+### 1. Protección en el servidor — activa
 
-**Secret scanning** y **push protection** de GitHub están **desactivados** en
-este repositorio, y son gratuitos en repositorios públicos. Es la única capa que
-un agente no puede saltarse: un hook local lo desactiva cualquiera, incluido el
-propio agente.
-
-Lo activa una persona con permiso de administración en
-*Settings → Code security → Secret protection*:
+**Secret scanning** y **push protection** de GitHub están **activados** en este
+repositorio (2026-09-04, #662). Es la única capa que un agente no puede
+saltarse: un hook local lo desactiva cualquiera —incluido el propio agente— con
+`git push --no-verify`, y esta actúa en el servidor.
 
 - **Secret scanning**: detecta credenciales ya publicadas y avisa.
 - **Push protection**: rechaza el push **antes** de que la credencial llegue al
   historial. Es la que de verdad evita el incidente; una vez algo entra en el
   historial de un repositorio público hay que darlo por comprometido y rotarlo.
+
+Se comprueba con:
+
+```bash
+gh api repos/EspacioKoop/espaciokooplagunak \
+  -q '.security_and_analysis.secret_scanning.status,
+      .security_and_analysis.secret_scanning_push_protection.status'
+```
+
+Las dos líneas dicen `enabled`. Quedan **desactivadas** dos opciones
+accesorias que el plan actual no deja encender —`non_provider_patterns`
+(patrones genéricos, no de proveedor conocido) y `validity_checks` (comprobar
+si la credencial detectada sigue viva)—: no cambian la defensa principal, pero
+tampoco están, así que no las des por hechas.
 
 ### 2. Hook local
 

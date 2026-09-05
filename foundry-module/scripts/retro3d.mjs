@@ -779,6 +779,11 @@ export function componerEscena(malla, opciones = {}) {
   // apagarse con la distancia como todo lo demás, o el pasillo pierde la
   // profundidad que la niebla le da.
   const emisivo = opciones.emisivo === true;
+  // Transparencia de la malla entera (#556), que viaja en cada polígono hasta el
+  // pintor. No es una decisión de composición —aquí no se mezcla nada— sino un
+  // dato que `pintarEscena` necesita; ausente, los polígonos salen sin `alpha` y
+  // el pintor no toca `globalAlpha`.
+  const alpha = Number.isFinite(opciones.alpha) ? Math.max(0, Math.min(1, opciones.alpha)) : null;
   // EL SOL DE LA ESCENA (#587), opcional. Sin él manda `LUZ`, la direccional de
   // interior con la que están calibradas las trece salas del Phobos: ninguna
   // escena existente cambia ni un píxel. Va en el MISMO espacio que las normales
@@ -922,6 +927,7 @@ export function componerEscena(malla, opciones = {}) {
     poligonos.push({
       puntos,
       color: niebla > 0 ? mezclar(sombreado, fondo, niebla) : sombreado,
+      ...(alpha === null ? {} : { alpha }),
       profundidad,
       niebla,
       // La textura viaja con el polígono, no con la escena: dos mallas fundidas

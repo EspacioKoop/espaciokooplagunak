@@ -256,18 +256,298 @@ export function colorDifusorLuminaria({ aviso = null, health = null, timeMs = 0 
   return { color: encendido ? colorBase : 0x000000, emisivo: true };
 }
 
-export function focosLuminarias({ ancho, profundidad, altura }) {
+/**
+ * Cuánto suma una luminaria a la cara que tiene debajo, y hasta dónde llega.
+ *
+ * NO SON CIFRAS FÍSICAS y no hay que buscarles unidades. `POTENCIA` se suma al
+ * término direccional dentro de `intensidadCara`, donde el suelo ambiente es
+ * 0,35 y el techo es 1: con 1 —el valor por defecto del motor— toda cara bajo
+ * una lámpara se va al tope y la sala se queda plana y blanca, que es el
+ * resultado contrario al que se busca.
+ *
+ * EL ALCANCE TIENE UN TECHO DURO Y NO ES ESTÉTICO. Las luminarias van cada
+ * `PASO` = 4 m y el difusor cuelga a unos 3,5 m del suelo, así que un punto del
+ * suelo a medio camino entre dos lámparas está a 4,03 m de CADA UNA, mientras
+ * que el punto justo debajo de una está a 3,5 m de UNA sola. Con la caída lineal
+ * de `contribucionFoco`, en cuanto el alcance crece lo suficiente para que las
+ * dos lleguen al punto de en medio, ese punto recibe DOS aportaciones y acaba
+ * más claro que el que está bajo la lámpara. Medido, con potencia 0,45:
+ *
+ *     alcance 3,9  →  bajo la lámpara 0,046   entre lámparas 0,000
+ *     alcance 4,5  →  bajo la lámpara 0,100   entre lámparas 0,094
+ *     alcance 5,0  →  bajo la lámpara 0,135   entre lámparas 0,174  ← invertido
+ *     alcance 6,0  →  bajo la lámpara 0,188   entre lámparas 0,295  ← invertido
+ *
+ * Una sala iluminada al revés —oscura bajo las lámparas y clara entre ellas— no
+ * se lee como un fallo de iluminación: se lee como que las lámparas no son
+ * lámparas. Por eso `ALCANCE_FOCO` se queda por debajo de `PASO`, y hay una
+ * prueba que lo exige en vez de confiar en este comentario.
+ *
+ * El precio de ese techo es que el charco en el SUELO es pequeño: a 3,9 m de
+ * alcance, el punto bajo la lámpara sólo gana 0,046. Donde esto se lee de verdad
+ * es en los MUROS, que están mucho más cerca de la luminaria que el suelo. Que
+ * las luminarias se vean emitiendo es trabajo del cono de luz, no del sombreado.
+ *
+ * Estas dos cifras son ARTE y están para tocarlas mirando la sala.
+ */
+export const POTENCIA_FOCO = 0.45;
+export const ALCANCE_FOCO = 3.9;
+
+/**
+ * Las luces de punto de las luminarias de una sala (#556).
+ *
+ * Devuelve un foco por luminaria, en el MISMO espacio de sala que
+ * `piezasLuminarias` y `mallaDifusorLuminarias` — quien componga la escena es
+ * responsable de trasladarlos igual que traslada la malla, porque
+ * `intensidadCara` exige que focos y normales vivan en el mismo espacio.
+ *
+ * OJO A LA DIFERENCIA CON `emisivo`. El difusor es emisivo desde #555: eso dice
+ * cómo se ve la propia luminaria, a intensidad plena y sin sombrear. Esto otro
+ * dice cómo modifica a las DEMÁS caras. Son cosas distintas y por eso conviven:
+ * hasta ahora la luminaria se veía encendida y no alumbraba nada.
+ *
+ * El motor se queda con los `TOPE_FOCOS` más cercanos al observador, así que
+ * declarar los de una sala grande no cuesta por cara lo que cuesta declararlos.
+ */
+/**
+ * El haz: cuánto se abre, cuánto pesa y de cuántas capas está hecho.
+ *
+ * LLEGA AL SUELO. Cortarlo en el aire evitaba dibujar un borde duro donde nada
+ * lo produce, pero con el haz difuminado y a baja opacidad ese problema no
+ * existe: lo que se ve es cómo se apaga, no dónde acaba. Y un haz que muere a
+ * media altura deja el suelo sin decir nada, que era peor.
+ *
+ * BORDES DIFUMINADOS SIN ALFA POR VÉRTICE. El motor pinta cada cara de un color
+ * plano con una opacidad, así que no hay degradado dentro de una cara. Se hace
+ * como se hacía cuando tampoco lo había: CAPAS concéntricas, cada una más ancha
+ * y con la misma opacidad baja. Donde se solapan todas —el eje del haz— la
+ * opacidad se acumula; en el borde sólo queda la de fuera. El resultado es un
+ * degradado escalonado, que es exactamente el lenguaje del resto del módulo.
+ *
+ * `ALFA_CONO` es por CAPA, no del haz entero: con `CAPAS_CONO` capas el núcleo
+ * llega a ~1−(1−α)^n y el borde se queda en α. Por eso este número es mucho más
+ * bajo que el de una sola capa opaca.
+ *
+ * CUÁNTAS CAPAS ES LA FINURA DEL DEGRADADO, no su forma. Con alfa igual en todas
+ * la opacidad acumulada crece casi linealmente del borde al eje, que es la forma
+ * que se quiere; lo que cambia al añadir capas es el tamaño del ESCALÓN entre
+ * una y otra, que es lo único que se ve como banda. Medido, del borde al núcleo:
+ *
+ *     3 capas α 0,055  →  borde 0,055   núcleo 0,156   escalón 0,051
+ *     6 capas α 0,016  →  borde 0,016   núcleo 0,092   escalón 0,015
+ *
+ * O sea: seis capas a 0,016 pesan la mitad que tres a 0,055 y el escalón se
+ * queda en un tercio. Más capas cuestan caras, y por eso no son doce.
+ */
+export const APERTURA_CONO = 0.34;
+export const ALFA_CONO = 0.016;
+export const CAPAS_CONO = 6;
+
+/** Cuántos lados tiene el haz. Seis y no ocho: son tres capas, así que cada
+ *  lado se paga tres veces, y a esta resolución no se distingue un hexágono
+ *  difuminado de un octógono difuminado. */
+const LADOS_CONO = 6;
+
+/** Lo que el haz se queda por encima del suelo. Sólo lo justo para no pelearse
+ *  con la losa por el mismo plano, que es un parpadeo, no un borde. */
+const POSO_CONO = 0.02;
+
+/**
+ * El haz de luz de una luminaria, en capas concéntricas de dentro a fuera.
+ *
+ * POR QUÉ HACE FALTA, si ya hay luces de punto. Porque en esta nave el sombreado
+ * por foco casi no se lee en el suelo: con las luminarias cada `PASO` = 4 m y el
+ * difusor a 3,5 m, el alcance está topado por debajo de 4 (ver `ALCANCE_FOCO`) y
+ * el punto bajo la lámpara sólo gana 0,046 de intensidad. El sombreado dice que
+ * hay luz; el haz es lo que hace que se VEA que la luminaria la está emitiendo.
+ *
+ * Es geometría barata y honesta, no volumétrico: unas cuantas caras traslúcidas
+ * que se pintan con el resto y se ordenan con el resto. Nada de acumulación por
+ * rayo.
+ *
+ * Sale en el MISMO espacio de sala que `piezasLuminarias`.
+ *
+ * @returns {Array<{alpha:number, porLuminaria:Array<{centro:number[], malla:object}>}>}
+ *   una entrada por capa, de la interior a la exterior. Vacío si la sala no
+ *   tiene luminarias.
+ */
+export function capasConoLuminarias({ ancho, profundidad, altura, apertura = APERTURA_CONO, capas = CAPAS_CONO }) {
+  const puntos = reparto(ancho, profundidad);
+  if (puntos.length === 0) return [];
+  const { difusor: medidasDifusor } = medidas(ancho, profundidad);
+  const yArriba = altura - CAIDA - CAIDA_DIFUSOR;
+  const yAbajo = POSO_CONO;
+  const caida = yArriba - yAbajo;
+  if (caida <= 0) return [];
+  // Arranca del tamaño del propio difusor, no de un punto: un haz que nace en un
+  // vértice sale de un sitio donde no hay lámpara, y se ve. `difusor` viene en
+  // DOS medidas (largo y ancho del panel), no en tres: es una placa, no una caja.
+  const rArriba = Math.max(medidasDifusor[0], medidasDifusor[1]) / 2;
+  const rAbajo = rArriba + apertura * caida;
+
+  const salida = [];
+  for (let capa = 1; capa <= capas; capa += 1) {
+    // De dentro a fuera. La capa exterior es el haz completo; las de dentro son
+    // fracciones de su radio, y la de arriba se estrecha igual para que todas
+    // salgan de la lámpara y no de un anillo alrededor.
+    const escala = capa / capas;
+    salida.push({
+      alpha: ALFA_CONO,
+      // Por luminaria y NO fundido: quien componga elige cuáles pinta (ver
+      // `fundirCercanas`). Fundirlo aquí obligaría a pagar las 36 luminarias de
+      // una sala grande para ver las tres que se tienen delante.
+      porLuminaria: puntos.map(({ x, z }) => ({
+        centro: [x, z],
+        malla: troncoDeCono([x, yArriba, z], rArriba * escala, [x, yAbajo, z], rAbajo * escala),
+      })),
+    });
+  }
+  return salida;
+}
+
+/**
+ * Cuántas luminarias aportan haz o polvo a la vez.
+ *
+ * Es la misma regla que el motor ya aplica a los focos con `TOPE_FOCOS`, y por
+ * el mismo motivo: el reactor tiene 36 luminarias y desde cualquier punto se
+ * ven unas pocas. Sin este recorte, la prueba de #584 —que exige que texturar
+ * quite la mayor parte de la geometría de una sala— deja de pasar, porque el
+ * haz pasa a ser un tercio de los polígonos de una sala ya optimizada.
+ */
+export const TOPE_HACES = 4;
+
+/**
+ * Funde sólo las `cuantas` luminarias más cercanas a un punto del suelo.
+ *
+ * El recorte es por DISTANCIA EN PLANTA y no en 3D: todas las luminarias están
+ * a la misma altura, así que la componente vertical es una constante que sólo
+ * gastaría una raíz por lámpara.
+ */
+export function fundirCercanas(porLuminaria, [x, z] = [0, 0], cuantas = TOPE_HACES) {
+  if (!Array.isArray(porLuminaria) || porLuminaria.length === 0) return null;
+  const elegidas = porLuminaria
+    .map((entrada) => ({ entrada, d: (entrada.centro[0] - x) ** 2 + (entrada.centro[1] - z) ** 2 }))
+    .sort((a, b) => a.d - b.d)
+    .slice(0, Math.max(1, cuantas))
+    .map(({ entrada }) => entrada.malla);
+  return fundir(elegidas);
+}
+
+/** Un tronco de cono vertical, tapado por abajo: la tapa es el charco de luz en
+ *  el suelo, y sin ella el haz se ve hueco justo desde donde más se mira. */
+function troncoDeCono([xa, ya, za], radioArriba, [xb, yb, zb], radioAbajo) {
+  const vertices = [];
+  for (let i = 0; i < LADOS_CONO; i += 1) {
+    const a = (i / LADOS_CONO) * Math.PI * 2;
+    vertices.push([xa + Math.cos(a) * radioArriba, ya, za + Math.sin(a) * radioArriba]);
+  }
+  for (let i = 0; i < LADOS_CONO; i += 1) {
+    const a = (i / LADOS_CONO) * Math.PI * 2;
+    vertices.push([xb + Math.cos(a) * radioAbajo, yb, zb + Math.sin(a) * radioAbajo]);
+  }
+  const caras = [];
+  for (let i = 0; i < LADOS_CONO; i += 1) {
+    const j = (i + 1) % LADOS_CONO;
+    caras.push([i, j, LADOS_CONO + j, LADOS_CONO + i]);
+  }
+  caras.push(Array.from({ length: LADOS_CONO }, (_, i) => LADOS_CONO + i).reverse());
+  return { vertices, caras };
+}
+
+/* ---- las motas de polvo ---------------------------------------------------- */
+
+/** Cuántas motas por luminaria, su tamaño, y en qué tramo del haz viven. */
+export const MOTAS_POR_LUMINARIA = 5;
+const LADO_MOTA = 0.075;
+/** Sólo en lo alto del haz, cerca del foco: es donde la luz rasante las
+ *  encendería de verdad. Repartidas por todo el cono serían niebla, y la nave
+ *  no tiene niebla dentro. */
+const TRAMO_MOTAS = 0.9;
+/**
+ * CASI OPACAS, y ésta es la corrección de QA (Eloy: «no he visto las motas»).
+ *
+ * Iban a 0,5 y medían 3,5 cm, o sea unos 12 px² en pantalla, DEL MISMO COLOR que
+ * el haz en el que flotan. Dos cosas a la vez: demasiado pequeñas y sin
+ * contraste contra su propio fondo. Una mota de polvo iluminada no es un velo:
+ * es un punto brillante y sólido, y con el haz al 9 % en su eje sólo se lee si
+ * la mota está muy por encima de eso.
+ *
+ * Sigue sin ser 1 del todo para que se note que está dentro de la luz y no
+ * pegada al cristal de la pantalla.
+ */
+export const ALFA_MOTAS = 0.9;
+
+/**
+ * Un ruido determinista en [0, 1) a partir de tres enteros/reales.
+ *
+ * Determinista Y SIN SEMILLA DE RELOJ a propósito: las motas de una sala tienen
+ * que caer siempre en el mismo sitio, o parpadearían de fotograma en fotograma
+ * como un error de render. Es la misma regla que la piel del muro (#548), sólo
+ * que aquí la semilla es la propia posición de la luminaria.
+ */
+function ruido(a, b, c) {
+  const n = Math.sin(a * 12.9898 + b * 78.233 + c * 37.719) * 43758.5453;
+  return n - Math.floor(n);
+}
+
+/**
+ * Las motas de polvo suspendidas en lo alto de cada haz.
+ *
+ * Cubos diminutos, no puntos: el motor pinta polígonos y no tiene primitiva de
+ * punto, y a esta resolución un cubo de 3,5 cm ES un punto.
+ *
+ * No se mueven. Animarlas exigiría un bucle por fotograma para algo que ocupa
+ * cuatro píxeles, y la nave ya decidió que su ambiente no se anima solo.
+ */
+export function motasLuminarias({ ancho, profundidad, altura, cuantas = MOTAS_POR_LUMINARIA, apertura = APERTURA_CONO }) {
+  const puntos = reparto(ancho, profundidad);
+  if (puntos.length === 0 || cuantas <= 0) return [];
+  const { difusor: medidasDifusor } = medidas(ancho, profundidad);
+  const yArriba = altura - CAIDA - CAIDA_DIFUSOR;
+  const rArriba = Math.max(medidasDifusor[0], medidasDifusor[1]) / 2;
+
+  return puntos.map(({ x, z }) => {
+    const cubos = [];
+    for (let i = 0; i < cuantas; i += 1) {
+      // La altura primero, porque el radio del haz depende de ella: una mota
+      // fuera del cono se vería flotando al lado de la luz, no dentro.
+      const caida = ruido(x, z, i) * TRAMO_MOTAS;
+      const radio = (rArriba + apertura * caida) * Math.sqrt(ruido(z, i, x));
+      const angulo = ruido(i, x, z) * Math.PI * 2;
+      cubos.push(cajaCentrada(
+        [x + Math.cos(angulo) * radio, yArriba - caida, z + Math.sin(angulo) * radio],
+        LADO_MOTA,
+      ));
+    }
+    return { centro: [x, z], malla: fundir(cubos) };
+  });
+}
+
+/** Un cubo por su centro. No se reusa `caja` de `escena-primitivas` para no
+ *  arrastrar sus UV: una mota de tres centímetros no tiene textura que mapear. */
+function cajaCentrada([cx, cy, cz], lado) {
+  const h = lado / 2;
+  return {
+    vertices: [
+      [cx - h, cy - h, cz - h], [cx + h, cy - h, cz - h], [cx + h, cy + h, cz - h], [cx - h, cy + h, cz - h],
+      [cx - h, cy - h, cz + h], [cx + h, cy - h, cz + h], [cx + h, cy + h, cz + h], [cx - h, cy + h, cz + h],
+    ],
+    caras: [[0, 3, 2, 1], [4, 5, 6, 7], [0, 4, 7, 3], [1, 2, 6, 5], [3, 7, 6, 2], [0, 1, 5, 4]],
+  };
+}
+
+export function focosLuminarias({ ancho, profundidad, altura, potencia = POTENCIA_FOCO, alcance = ALCANCE_FOCO }) {
   const puntos = reparto(ancho, profundidad);
   if (puntos.length === 0) return [];
   const yCarcasa = altura - CAIDA;
   // A la altura exacta del difusor: el foco alumbra desde donde se ve la luz.
   const yFoco = yCarcasa - CAIDA_DIFUSOR;
 
-  const focos = [];
-  for (const { x, z } of puntos) {
-    focos.push({ posicion: [x, yFoco, z] });
-  }
-  return focos;
+  return puntos.map(({ x, z }) => Object.freeze({
+    posicion: Object.freeze([x, yFoco, z]),
+    potencia,
+    alcance,
+  }));
 }
 
 /**

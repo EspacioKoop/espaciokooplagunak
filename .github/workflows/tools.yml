@@ -63,6 +63,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+        with:
+          # La guarda de catálogos compara con la rama base, así que necesita
+          # historia. Con el clon superficial por defecto `origin/main` no
+          # existe y la guarda sale por 2 en vez de comprobar nada.
+          fetch-depth: 0
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12"
@@ -115,6 +120,12 @@ jobs:
           else
             python3 tools/validate_es_locale.py .
           fi
+      - name: Ningún catálogo .po pierde claves
+        # `check_scenario_header_locale.py` solo mira las claves de CABECERA, así
+        # que su criterio se puede cumplir borrando las otras cientos. Pasó tres
+        # veces el 26-ago-2026 (un catálogo de 660 claves quedó en 66) y el diff
+        # de un `.po` reescrito no lo delata: parece reflujo de líneas largas.
+        run: python3 tools/check_po_no_pierde_claves.py --base origin/${{ github.base_ref || 'main' }}
       - name: Rutas citadas por la documentación
         # Solo stdlib. Recorre los .md y comprueba que cada ruta que citan
         # existe: una cita rota manda al lector —o al agente— a perseguir

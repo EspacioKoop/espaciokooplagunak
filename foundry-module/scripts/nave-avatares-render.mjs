@@ -25,7 +25,6 @@
  * Puro: ni Foundry, ni DOM, ni red, ni reloj.
  */
 
-import { caja } from "./cantina-escena.mjs";
 import { piezasAvatar } from "./cantina-avatar.mjs";
 import { componerEscena } from "./retro3d.mjs";
 
@@ -63,7 +62,7 @@ export function poligonosOtrosJugadores(jugadores, { camara, yaw, ancho, alto, e
 
   return piezas
     .map((pieza) =>
-      componerEscena(caja(pieza.centro, pieza.medidas), {
+      componerEscena(desplazar(pieza.malla, pieza.centro), {
         ancho,
         alto,
         epoca,
@@ -80,4 +79,11 @@ export function poligonosOtrosJugadores(jugadores, { camara, yaw, ancho, alto, e
       }),
     )
     .flatMap((parte) => parte.poligonos);
+}
+
+function desplazar(malla, [dx, dy, dz]) {
+  return {
+    vertices: malla.vertices.map(([x, y, z]) => [x + dx, y + dy, z + dz]),
+    caras: malla.caras,
+  };
 }

@@ -546,10 +546,12 @@ export function componerCantina(opciones = {}) {
     // posición de la cámara se resta aquí, en coordenadas de mundo:
     // v' = R(yaw)·(v − cámara). Pasarla como `posicion` la aplicaría después de
     // girar, que es una cámara orbitando un punto en vez de andando por la sala.
-    componerEscena(caja(
-      [mueble.centro[0] - camX, mueble.centro[1] - camY, mueble.centro[2] - camZ],
-      mueble.medidas,
-    ), {
+    componerEscena(mueble.malla
+      ? desplazar(mueble.malla, [mueble.centro[0] - camX, mueble.centro[1] - camY, mueble.centro[2] - camZ])
+      : caja(
+        [mueble.centro[0] - camX, mueble.centro[1] - camY, mueble.centro[2] - camZ],
+        mueble.medidas,
+      ), {
       ancho,
       alto,
       epoca,
@@ -708,5 +710,12 @@ export function componerCantina(opciones = {}) {
     plano: encuadre.id,
     opciones: opcionesVisibles,
     aire,
+  };
+}
+
+function desplazar(malla, [dx, dy, dz]) {
+  return {
+    vertices: malla.vertices.map(([x, y, z]) => [x + dx, y + dy, z + dz]),
+    caras: malla.caras,
   };
 }

@@ -60,6 +60,10 @@ import {
   registrarContenidoExterno,
 } from "./contenido-externo/ventana.mjs";
 import {
+  abrirSonidoFreesound,
+  registrarSonidoFreesound,
+} from "./sonido-freesound/ventana.mjs";
+import {
   abrirMesa,
   estadoPublicoVigente,
   pedirVista,
@@ -134,6 +138,7 @@ registerAvatarFeature(MODULE_ID);
 registerWorkspaceFeature(MODULE_ID);
 registerBridgeTokenFeature(MODULE_ID);
 registrarContenidoExterno(MODULE_ID);
+registrarSonidoFreesound(MODULE_ID);
 
 // Consola caliente del GM (#276): fusión de estado+mapa+encuentros+
 // previsualización con un solo bucle. Una sola ventana, V1 (Application,
@@ -644,6 +649,7 @@ const ACCIONES_PANEL_GM = {
   musica: () => ciclarMusica(),
   decorado: () => regenerarDecoradoAleatorio(),
   ficha: () => aplicarFichaNave(),
+  sonido: () => abrirSonidoFreesound(),
 };
 
 function abrirPanelGM() {

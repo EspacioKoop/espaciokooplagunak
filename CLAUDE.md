@@ -603,6 +603,27 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     de la revisión de 2024— se migró a `edicion.mjs`, pero **después** de la lista blanca: aplicado
     antes rechazaba XGE, que es de 2014. No lo reintroduzcas: si buscas un adaptador de plutonium, es
     esto.
+  - **Sonido con Freesound** — `scripts/sonido-freesound/` (#604): buscar, filtrar por licencia libre
+    y ESCUCHAR sin salir de la mesa, con la misma frontera que ya trazó el issue —**audicionar un
+    preview remoto no incorpora nada**; traer un sonido al repositorio sigue pasando por
+    `docs/ASSETS_LIBRES.md` con su ficha de procedencia y sha256, igual que una malla (#590)—. Por eso
+    no hay ningún botón "usar en la escena": como mucho, "preparar ficha"
+    (`adaptador.borradorProcedencia`) escribe un borrador para revisión humana, nunca toca `assets/`.
+    Cuatro capas puras más la ventana: `filtro-licencia.mjs` clasifica la URL de licencia que devuelve
+    la API y **falla cerrado** —CC0 y CC-BY se muestran, CC-BY-NC y cualquier URL irreconocible se
+    descartan, la misma disciplina que `contenido-externo/edicion.mjs`—; `proveedor-freesound.mjs` es
+    el cliente HTTP (`/apiv2/search/`, NO el `/search/text/` deprecado desde noviembre de 2025), con
+    `fetch` inyectado como `bridge-client.mjs`; `adaptador.mjs` (el SoundSearchAdapter que pidió la
+    revisión) normaliza al contrato `{id, title, author, duration, license, previewUrl, sourceUrl}` y
+    vuelve a comprobar la licencia en el cliente aunque la API la filtre en servidor, porque «licencia
+    del sonido» y «términos de uso de la API» son cosas distintas; y `session.mjs` guarda la clave de
+    API solo en memoria y solo para el GM, calcado de `bridge-token-session.mjs` (#183) pero sin su
+    migración legada, que aquí no existe. **No usa `audio-ficheros.mjs`** (#571) a propósito: ese
+    reproductor exige una ficha de procedencia con sha256, que solo se puede calcular sobre un
+    fichero ya descargado, así que audicionar un preview usa un `<audio>` normal del navegador y
+    `audio-ficheros.mjs` sigue esperando a su consumidor real — el mezclador de ambientes de una
+    entrega futura, sobre sonidos ya incorporados. Entra por el catálogo del panel de GM
+    (`panel-gm.mjs`, entrada `sonido`) y no como botón suelto de la barra de escena.
 - `resources/` y `packs/` — assets heredados de upstream.
 - La versión se calcula por fecha (`AAAA.MM.DD`) en `CMakeLists.txt` salvo override explícito.
 - `docs/` — documentación propia del fork: [`BUILDING.md`](docs/BUILDING.md),

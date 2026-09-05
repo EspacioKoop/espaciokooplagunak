@@ -1250,6 +1250,81 @@
   opacity: 0.7;
 }
 
+/* Panel de sonido con Freesound (#604). Cada fila es la unidad de audición:
+ * nombre, autor, licencia visible y los dos botones que la frontera del
+ * issue permite (escuchar, preparar ficha) — nunca uno de "usar en escena". */
+.lagunak-sonido-freesound {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 4px;
+}
+
+.lagunak-sonido-freesound__aviso {
+  margin: 0;
+  padding: 6px 8px;
+  border-left: 3px solid rgba(var(--lagunak-alerta-amarilla-borde-rgb), 0.8);
+  background: rgba(var(--lagunak-alerta-fondo-aviso-rgb), 0.35);
+  font-size: 12px;
+}
+
+.lagunak-sonido-freesound__resultados {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lagunak-sonido-freesound__fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.lagunak-sonido-freesound__titulo {
+  flex: 1 1 auto;
+  min-width: 12ch;
+  font-weight: 700;
+}
+
+.lagunak-sonido-freesound__autor {
+  opacity: 0.75;
+  font-size: 12px;
+}
+
+.lagunak-sonido-freesound__duracion {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.75;
+  font-size: 12px;
+}
+
+/* La licencia va SIEMPRE visible en la fila, nunca escondida en un detalle
+ * (issue #604): es lo que decide si el resultado se puede tocar. */
+.lagunak-sonido-freesound__licencia {
+  padding: 1px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.lagunak-sonido-freesound__ficha {
+  flex-basis: 100%;
+  margin: 4px 0 0;
+  padding: 6px 8px;
+  background: rgba(0, 0, 0, 0.25);
+  font-size: 11px;
+  white-space: pre-wrap;
+}
+
+.lagunak-sonido-freesound__nota {
+  margin: 0;
+  font-size: 11px;
+  opacity: 0.7;
+}
+
 /*
  * Ventana del asistente (#309). Una fase visible cada vez: la ayuda es un gesto
  * corto, y enseñar las cuatro a la vez la convertiría en un formulario.

@@ -75,6 +75,53 @@ export function caja([cx, cy, cz], [ancho, alto, fondo], { metrosPorTextura = ME
 
 
 /**
+ * Una caja girada sobre su eje vertical, por su centro, sus medidas y su rumbo.
+ *
+ * POR QUÉ HACE FALTA. `caja` está alineada con los ejes, que es lo correcto para
+ * un armario atornillado a un mamparo: los muebles de una nave no están
+ * torcidos. Pero una PERSONA sí gira, y hasta que existió esto no había forma de
+ * dibujar a nadie mirando a donde va — la limitación que `nave-avatares-render.mjs`
+ * declaró y aparcó, porque girar exigía «rotar la malla entera por vértice antes
+ * de proyectarla».
+ *
+ * Resulta que rotar por vértice es esto: ocho puntos y dos multiplicaciones cada
+ * uno. Lo caro nunca fue la rotación, era no tener dónde ponerla.
+ *
+ * MISMO CONVENIO QUE EL MOVIMIENTO. `yaw = 0` mira a +z y el avance es
+ * `(sen yaw, cos yaw)` en (x, z), igual que `moverXZ` en `nave-movimiento.mjs`.
+ * Así el rumbo que viaja por la red se puede pasar aquí tal cual, sin invertir
+ * ningún signo — y un signo invertido en un giro es de los errores que se ven
+ * pero no se leen.
+ *
+ * LAS UV NO GIRAN. Se calculan igual que en `caja`, porque cada cara sigue
+ * midiendo lo que medía: girar una pieza no cambia el tamaño de su grano, que es
+ * lo que `METROS_POR_TEXTURA` protege. Girar también las UV haría que el mismo
+ * tablón enseñara distinta densidad de veta según hacia dónde mire.
+ */
+export function cajaGirada([cx, cy, cz], [ancho, alto, fondo], yaw = 0, { metrosPorTextura = METROS_POR_TEXTURA } = {}) {
+  const plana = caja([0, 0, 0], [ancho, alto, fondo], { metrosPorTextura });
+  if (!Number.isFinite(yaw) || yaw === 0) {
+    return {
+      ...plana,
+      vertices: plana.vertices.map(([x, y, z]) => [x + cx, y + cy, z + cz]),
+    };
+  }
+  const sen = Math.sin(yaw);
+  const cos = Math.cos(yaw);
+  return {
+    ...plana,
+    // Giro sobre el centro de la propia caja y DESPUÉS traslación: al revés
+    // sería una caja orbitando el origen de la sala, que es el mismo error que
+    // `cantina-escena.mjs` documenta para la cámara.
+    vertices: plana.vertices.map(([x, y, z]) => [
+      cx + x * cos + z * sen,
+      cy + y,
+      cz - x * sen + z * cos,
+    ]),
+  };
+}
+
+/**
  * Las UV de una caja, una por cara y medidas en metros.
  *
  * Cada cara toma como ejes de la textura sus dos dimensiones REALES, no un
@@ -331,4 +378,41 @@ export function uvsTriplanar({ vertices, caras }, metrosPorTextura = METROS_POR_
     const [a, b] = eje === 0 ? [2, 1] : eje === 1 ? [0, 2] : [0, 1];
     return cara.map((i) => [vertices[i][a] / metrosPorTextura, vertices[i][b] / metrosPorTextura]);
   });
+}
+
+/**
+ * La malla de una pieza de avatar, sea caja o no.
+ *
+ * Las piezas de un avatar viajan como `{color, centro, medidas}` y sus cuatro
+ * consumidores las convertían en geometría con `caja`/`cajaGirada`. Eso deja
+ * fuera cualquier objeto que no sea un ortoedro: una espada con punta, un
+ * báculo torneado, cualquier cosa con `prisma`. Aceptar aquí una `malla` ya
+ * hecha —en coordenadas del objeto, con su centro en el origen— abre esa puerta
+ * sin tocar ni una pieza de las que ya existen: sin `malla`, esto es
+ * exactamente `cajaGirada` y no cambia nada.
+ *
+ * El orden importa y es el mismo que en `cajaGirada`: se gira sobre el propio
+ * centro de la pieza y DESPUÉS se traslada. Al revés sería un objeto orbitando
+ * el origen de la sala.
+ *
+ * @param {{centro:number[], medidas?:number[], malla?:{vertices:number[][], caras:number[][]}}} pieza
+ * @param {[number,number,number]} desplazamiento se resta al centro (la cámara,
+ *   donde el consumidor trabaja en coordenadas de mundo).
+ */
+export function mallaDePieza(pieza, { desplazamiento = [0, 0, 0], giro = 0 } = {}) {
+  const [dx, dy, dz] = desplazamiento;
+  const [cx, cy, cz] = pieza.centro;
+  const centro = [cx - dx, cy - dy, cz - dz];
+  if (!pieza.malla) return cajaGirada(centro, pieza.medidas, giro ?? pieza.giro ?? 0);
+
+  const yaw = Number.isFinite(giro) ? giro : 0;
+  const sen = Math.sin(yaw);
+  const cos = Math.cos(yaw);
+  return {
+    ...pieza.malla,
+    vertices: pieza.malla.vertices.map(([x, y, z]) =>
+      yaw === 0
+        ? [x + centro[0], y + centro[1], z + centro[2]]
+        : [centro[0] + x * cos + z * sen, centro[1] + y, centro[2] - x * sen + z * cos]),
+  };
 }

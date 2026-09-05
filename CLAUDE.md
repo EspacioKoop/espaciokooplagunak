@@ -541,11 +541,44 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     donde no toca, y eso lo declara quien escribe el mapeo, no lo detecta el módulo.
     La **decisión de arte que bloqueaba la fase 4** ya se tomó (Eloy, 2026-08-20, en #603): avatares
     **todo escaneado** — PC, NPC, criaturas y estatuas son malla decimada con el mismo tratamiento, no
-    cajas. El primer consumidor real (`estatua-rig.mjs`, museo) se cableó en el PR #844 y su
-    cherry-pick limpio es el PR #882. Hasta que uno de los dos entre en `main`, `rig-esqueleto.mjs`
-    sigue `declared-orphan` en `docs/orphan-declarations.json`; `retargeting-pose.mjs` nace igual de
-    huérfano porque su consumidor (dar `rig`+pose a una pieza real del catálogo, o un PC/NPC) es
-    contenido, no motor. Sigue fuera de alcance la reproducción de clips con interpolación.
+    cajas. El primer consumidor real (`estatua-rig.mjs`, museo) entró por el PR #882, así que
+    `rig-esqueleto.mjs` ya no es huérfano; `retargeting-pose.mjs` sigue siéndolo porque su consumidor
+    (dar `rig`+pose a una pieza real del catálogo, o un PC/NPC) es contenido, no motor. Sigue fuera de
+    alcance la reproducción de clips con interpolación.
+    **Lo que la fase 4 midió**, y que hasta entonces nadie había comprobado: las tres fases se
+    probaban sobre el MISMO brazo sintético de doce vértices, y ninguna pieza del museo declara `rig`,
+    así que la rama que lo usa no se ejecutaba nunca. Sobre la Venus (448 vértices decimados, cadena
+    de cuatro huesos) la deformación aguanta —reposo idéntico a 4,4e-16, sin NaN, topología intacta y
+    la peor cara conserva el 56 % de su área a 20°—, y de paso salió el fallo que arregló el umbral de
+    `tools/pesar-despiezar.mjs`: ajustado a 0,05 contra aquel brazo, dejaba a un vértice del PIE con
+    un 7 % de influencia del pecho, así que los pies resbalaban 6 cm al inclinarlo 45°. Con 0,10 la
+    deriva es cero exacta y la pose se entrega mejor. **El museo no es el sitio de estrenar esto**:
+    una pieza escaneada exhibida en una postura que el original no tiene afirma «así era» de una
+    forma que la cartela no puede desmentir, que es contra lo que #598 puso el campo `naturaleza`, así
+    que el primer consumidor VISIBLE debe ser una figura que no pretenda ser un artefacto.
+    El **rig del avatar** (`scripts/avatar/avatar-rig.mjs`, #897) es ese camino empezando por donde no
+    cuesta: los avatares siguen siendo las cajas de #423 y el rig se usa solo para SITUAR, no para
+    deformar. Existía porque la cuenta de «dónde cae la mano» estaba escrita tres veces en
+    `cantina-avatar.mjs` (`manosDelGesto`, `distintivoDeClase`, `puntaDelCigarro` — que ya nació de
+    rescatar la copia que el humo y la brasa tenían por separado, #439), y el siguiente prop era la
+    cuarta. Se usa el rig de #603 y no un contrato de anclajes aparte porque **la jerarquía ya estaba
+    en el cuerpo** y `posicionesDeHuesos` dice en su propia documentación que sirve para «colgar cosas
+    de un hueso»: un catálogo de puntos escritos a mano sería una segunda forma de decir lo mismo, que
+    es de donde salió el problema. Tres consecuencias que no son extras: un ancla trae **orientación**
+    (la dirección de su padre a él), un **gesto es una pose parcial** sobre el reposo y no una lista
+    de posiciones absolutas —«quieto» es la pose vacía—, y el **rumbo es un giro del hueso raíz**. Y el rumbo
+    **ya se aplica** (#897): `escena-primitivas.cajaGirada` rota los ocho vértices sobre el centro de
+    la caja, así que el cuerpo de cada jugador mira a donde va. Eso cierra la limitación que
+    `nave-avatares-render.mjs` declaraba y aparcaba —«girar exigiría rotar la malla entera por
+    vértice»—, que resultó costar dos multiplicaciones por vértice: lo que faltaba no era el cálculo
+    sino dónde ponerlo. El dato tampoco era nuevo: `yaw` viaja en la muestra de red desde #453,
+    `nave-movimiento-red.mjs` lo interpola con cuidado de ángulos y llegaba hasta el render dentro de
+    cada jugador, que lo descartaba en la última línea. Mismo convenio en toda la cadena —`yaw = 0`
+    mira a +z, avance `(sen yaw, cos yaw)`, igual que `moverXZ`—, así que no se invierte ningún signo.
+    Los avatares SENTADOS de la cantina siguen sin girar y ahí sigue estando bien: están colocados de
+    cara a la barra a propósito (`SITIOS`). La frontera con `cantina-avatar.mjs` es
+    estricta y evita el ciclo: allí se sabe QUIÉN es alguien (raza, silueta, las tablas del SRD) y se
+    entregan MEDIDAS (`medidasDeAvatar`); el rig no conoce ni una raza.
   - **Visor del piloto** — `scripts/visor-piloto.mjs` (geometría pura) y
     `scripts/visor-piloto-lienzo.mjs` (el <canvas>), #362. Lo que la nave tiene delante, en PSX,
     en la consola de pilotaje. Es la primera superficie 3D del módulo que **informa** en vez de

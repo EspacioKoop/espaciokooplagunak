@@ -50,6 +50,39 @@ Si hay cambios locales ajenos o instrucciones contradictorias, detente y solicit
 
 Para repartir trabajo entre varios agentes —qué áreas pueden ir en paralelo, qué archivos son puntos de colisión conocidos y cómo se parte un issue en unidades entregables— la guía es [`docs/TRABAJO_PARALELO_AGENTES.md`](docs/TRABAJO_PARALELO_AGENTES.md). Los agentes especializados del proyecto están versionados en [`.claude/agents/`](.claude/agents): úsalos en vez de improvisar uno.
 
+## Qué comprobar según lo que toques
+
+`tools/` tiene **veintitrés** herramientas de verificación. Seis las ejecuta CI; el
+resto están escritas, probadas y **no las encuentra nadie** — y una guarda que nadie
+ejecuta no protege de nada. La lista corta, por área:
+
+| Si tocas… | Ejecuta | Qué caza |
+|---|---|---|
+| Cualquier cosa | `python3 tools/check_restos_herramienta.py` | Cobertura, `node_modules`, `.bak`, `tmp/` trackeados |
+| Cualquier `.md` | `python3 tools/refs-rotas.py .` | Rutas citadas que ya no existen |
+| Un documento de inventario | `python3 tools/doc-coherencia.py DOC.md --contra DIR --patron '*.mjs'` | Que la lista no se haya desincronizado del disco |
+| `scripts/locale/**` o `resources/locale/**` | `python3 tools/validate_es_locale.py .` | Paridad es/en, placeholders, `msgstr` vacío |
+| Un escenario Lua | `python3 tools/check_scenario_header_locale.py` | Cabecera del escenario sin su clave en el catálogo |
+| `src/**` (cadenas nuevas) | `python3 tools/check_cpp_locale_coverage.py .` | Cadena en pantalla sin entrada de catálogo |
+| `foundry-module/**` | `node --test foundry-module/tests/*.test.mjs` | La suite del módulo |
+| Un módulo nuevo del módulo | `python3 scripts/check_orphan_modules.py --check` | Módulos que no alcanza nadie |
+| `bridge/**` | `cd bridge && python3 -m pytest -q` | El puente, con el juego mockeado |
+| `.github/workflows/**` | `python3 -m pytest tools/tests/ -q` | Fijado por SHA y forma de las puertas |
+
+Dos avisos que valen más que la tabla:
+
+- **Un check SALTADO no es un check aprobado.** Las puertas de CI filtran por rutas, y
+  una puerta que no se despierta informa en verde. Antes de fiarte de un tick, mira el
+  filtro: `.github/workflows/*.yml` → `rutas:`. En agosto de 2026 esto dejó `main` en
+  rojo durante horas, porque el filtro de i18n no incluía `scripts/locale/`.
+- **Un objetivo numérico se cierra con la cifra medida**, no con los tests en verde. Si
+  la tarea pide subir cobertura, el criterio es lo que imprime
+  `node --test --experimental-test-coverage` **después** del cambio, y va pegado en el PR.
+
+Si añades una herramienta de verificación, añádela a esta tabla y a `tools.yml`. Si no
+puede ser puerta todavía porque el árbol no la pasa, dilo en su issue en vez de dejarla
+suelta: eso es deuda anotada, no una herramienta.
+
 ## Entrega requerida
 
 Cada contribución debe resumir:

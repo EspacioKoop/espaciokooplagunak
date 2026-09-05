@@ -15,6 +15,26 @@
 #
 # NO LLEVA FILTRO DE RUTAS a propósito: la gracia es correr SIEMPRE sobre lo que
 # hay en `main`, tocara lo que tocara el último merge.
+#
+# CORRE LAS PUERTAS ENTERAS, no la suite de cada área. Esta es la lección del
+# 2026-08-27, y es que el centinela volvió a ser ciego a lo mismo que lo hizo
+# nacer. Corría `pytest tools/tests/` y `node --test`, que son el PRIMERO de los
+# seis pasos de `tools.yml` y UNO de los cinco de `foundry-module.yml`. Los otros
+# nueve pasos no son tests: son guardas de script —paridad de catálogos, nombres
+# de dominio público, rutas citadas, inventario de huérfanos, PNG prerenderizado—
+# y en este repositorio son la mitad del valor de una puerta.
+#
+# El fallo no es teórico. Con `main` en `9deca817`, `validate_es_locale.py` lleva
+# días devolviendo 1 (tres catálogos descuadrados) y este centinela dio `success`
+# tres veces seguidas: 26-ago 18:21, 27-ago 00:02 y 27-ago 10:27. Mientras tanto
+# seis PR abiertos heredaban el rojo y sus autores no podían distinguir si era
+# suyo — exactamente el daño que la nota de arriba describe, con otro script.
+#
+# La regla, por si vuelve a crecer una puerta: cuando `tools.yml` o
+# `foundry-module.yml` ganen un paso, este centinela gana el mismo paso. Se
+# replican a mano y no se reutilizan porque aquellos llevan filtro de rutas y
+# este no puede llevarlo; el precio de la copia es que hay que acordarse, y por
+# eso queda escrito aquí.
 name: Peregrin Took — Guardián de la Ciudadela
 
 on:
@@ -54,18 +74,69 @@ jobs:
       - name: Dependencias de tools
         run: python3 -m pip install pytest polib==1.2.0 pyyaml==6.0.2
 
+      # Los pasos de abajo son LOS MISMOS que corren `tools.yml` y
+      # `foundry-module.yml`, en su mismo orden. Ver la nota de arriba sobre por
+      # qué se replican en vez de reutilizarse.
       - name: Tests de tools
         id: tools
         run: python3 -m pytest tools/tests/ -q
 
       # `continue-on-error` NO: si tools falla, el resto da igual y el issue
       # tiene que decir lo primero que se rompió, no una lista de consecuencias.
+      - name: Trazabilidad de nombres de dominio público (#310)
+        id: dominio_publico
+        run: python3 tools/check_public_domain_names.py
+
+      - name: Cobertura i18n de las cadenas de C++ (#55)
+        id: cobertura_i18n
+        run: python3 tools/check_cpp_locale_coverage.py .
+
+      - name: Paridad e invariantes del catálogo es-ES
+        id: paridad_es
+        run: python3 tools/validate_es_locale.py .
+
+      - name: Rutas citadas por la documentación
+        id: refs
+        run: python3 tools/refs-rotas.py
+
+      - name: Comprobar sintaxis JavaScript
+        id: sintaxis
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s globstar nullglob
+          files=(foundry-module/scripts/**/*.mjs foundry-module/tests/**/*.mjs)
+          ((${#files[@]} > 0))
+          for file in "${files[@]}"; do
+            node --check "$file"
+          done
+
       - name: Tests del módulo Foundry
         id: modulo
         shell: bash
         run: |
           shopt -s globstar
           node --test foundry-module/tests/**/*.test.mjs
+
+      - name: Probar el inventario conservador de módulos
+        id: inventario_tests
+        run: python3 -m unittest discover -s scripts/tests -p 'test_check_orphan_modules.py'
+
+      # SIN `--check-github-evidence`, al contrario que `foundry-module.yml`. Esa
+      # comprobación sale a la API de GitHub y, por diseño, un fallo de red la
+      # bloquea en vez de aceptar el enlace en silencio. Eso es lo correcto en la
+      # puerta de un PR, que se ejecuta cuando alguien declara un huérfano nuevo;
+      # aquí no. Este centinela corre cada cuatro horas sin que nadie haya tocado
+      # nada, y un corte de red abriría un issue diciendo que `main` está roto
+      # cuando no lo está. Una alarma que grita en falso es una alarma que se
+      # deja de mirar, y entonces vuelve a pasar lo del 20 al 22 de agosto.
+      - name: Verificar inventario conservador de módulos
+        id: inventario
+        run: python3 scripts/check_orphan_modules.py --check
+
+      - name: El PNG prerenderizado corresponde al generador
+        id: prerender
+        run: node tools/prerender-piel.mjs --check
 
       - name: Lua de los escenarios
         id: lua

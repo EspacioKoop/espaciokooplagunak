@@ -904,5 +904,8 @@
   "LAGUNAK.Parlamento.Enfoque.persuasion": "Persuasión",
   "LAGUNAK.Parlamento.Enfoque.engano": "Engaño",
   "LAGUNAK.Parlamento.Enfoque.perspicacia": "Perspicacia",
-  "LAGUNAK.Parlamento.Enfoque.intimidacion": "Intimidación"
+  "LAGUNAK.Parlamento.Enfoque.intimidacion": "Intimidación",
+  "LAGUNAK.Convocatoria.Titulo": "Convocar a estancia",
+  "LAGUNAK.Convocatoria.Elige": "Elige a dónde llevar a la tripulación.",
+  "LAGUNAK.Convocatoria.NoSePuede": "No se puede convocar ahí: solo el GM y estancias válidas."
 }

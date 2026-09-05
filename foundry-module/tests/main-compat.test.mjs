@@ -367,6 +367,8 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
     // npc-generador (#676). Reconstruye el interlocutor por semilla del contacto
     // y enseña los enfoques con su CD y rango de éxito visibles. Sin estado.
     "lagunak-parlamento",
+    // Convocar a estancia (#832) solo la ve el GM: `convocar` exige rol GM.
+    "lagunak-convocar",
   ]);
   const app = await abrirDesdePanelGM(controls, instances, "consola");
 

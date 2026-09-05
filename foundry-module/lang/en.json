@@ -904,5 +904,8 @@
   "LAGUNAK.Parlamento.Enfoque.persuasion": "Persuasion",
   "LAGUNAK.Parlamento.Enfoque.engano": "Deception",
   "LAGUNAK.Parlamento.Enfoque.perspicacia": "Insight",
-  "LAGUNAK.Parlamento.Enfoque.intimidacion": "Intimidation"
+  "LAGUNAK.Parlamento.Enfoque.intimidacion": "Intimidation",
+  "LAGUNAK.Convocatoria.Titulo": "Summon to room",
+  "LAGUNAK.Convocatoria.Elige": "Choose where to bring the crew.",
+  "LAGUNAK.Convocatoria.NoSePuede": "Cannot summon there: GM only, and only valid rooms."
 }

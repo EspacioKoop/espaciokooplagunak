@@ -9,6 +9,7 @@ generación de Lua— sin necesitar un EmptyEpsilon en marcha.
 from __future__ import annotations
 
 import sys
+from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -40,13 +41,6 @@ class JuegoFalso:
         return self.llamadas[-1]
 
 
-class _RespuestaFalsa:
-    def __init__(self, status_code: int, text: str) -> None:
-        self.status_code = status_code
-        self.text = text
-        self.content = text.encode("utf-8")
-
-
 @pytest.fixture
 def juego(monkeypatch: pytest.MonkeyPatch) -> JuegoFalso:
     """Sustituye httpx.AsyncClient dentro del puente por un doble."""
@@ -62,11 +56,17 @@ def juego(monkeypatch: pytest.MonkeyPatch) -> JuegoFalso:
         async def __aexit__(self, *args) -> bool:
             return False
 
-        async def post(self, url: str, content: str | None = None):
+        @asynccontextmanager
+        async def stream(self, method: str, url: str, content: str | None = None):
+            assert method == "POST"
             estado.llamadas.append(content or "")
             if estado.error is not None:
                 raise estado.error
-            return _RespuestaFalsa(estado.status_code, estado.text)
+            response = httpx.Response(estado.status_code, text=estado.text)
+            try:
+                yield response
+            finally:
+                await response.aclose()
 
     monkeypatch.setattr(bridge.httpx, "AsyncClient", _ClienteFalso)
     return estado

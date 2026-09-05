@@ -30,6 +30,7 @@ import { SECCION } from "./paleta.mjs";
 import { cartelaDe, piezaPorId } from "./catalogo-piezas.mjs";
 import { CATALOGO_MUSEO } from "./museo-piezas.mjs";
 import { CATALOGO_CUADROS } from "./museo-cuadros.mjs";
+import { CATALOGO_PASILLO } from "./pasillo-recuerdos-piezas.mjs";
 import { AJUSTE_TELEMETRIA, aceptarSensores, aceptarTelemetria } from "./ship-view/telemetria-difusion.mjs";
 import { AJUSTE_NIVEL_ALERTA } from "./alerta-escena.mjs";
 
@@ -283,12 +284,14 @@ function arrancar(raiz, estanciaPedida = null) {
   function pintarCartela(piezaId) {
     const nodo = raiz?.querySelector?.("[data-andar-cartela]");
     if (!nodo) return;
-    // Dos catálogos y una sola lectura: las esculturas y los cuadros de la
-    // pared (#836) se colocan distinto en la sala, pero la cartela de un cuadro
-    // se lee exactamente igual que la de una estatua. Un `accion.pieza` es un
-    // id opaco y aquí se resuelve contra los dos.
+    // Tres catálogos y una sola lectura: las esculturas, los cuadros de la
+    // pared (#836) y las piezas del pasillo de los recuerdos se colocan
+    // distinto en su sala, pero la cartela se lee igual en los tres. Un
+    // `accion.pieza` es un id opaco y aquí se resuelve contra los tres.
     const pieza = piezaId
-      ? piezaPorId(CATALOGO_MUSEO, piezaId) ?? piezaPorId(CATALOGO_CUADROS, piezaId)
+      ? piezaPorId(CATALOGO_MUSEO, piezaId)
+        ?? piezaPorId(CATALOGO_CUADROS, piezaId)
+        ?? piezaPorId(CATALOGO_PASILLO, piezaId)
       : null;
     if (!pieza) {
       nodo.hidden = true;

@@ -48,6 +48,16 @@ export const NIVELES = Object.freeze([
       en: "Exterior with a horizon. The fog that closes it and what the wind moves.",
     },
   }),
+  Object.freeze({
+    id: "pasillo-recuerdos",
+    nombre: { es: "Pasillo de los recuerdos", en: "Corridor of memories" },
+    mira: {
+      es: "Un pasillo muy largo. Que la niebla se coma el fondo antes de que tú"
+        + " te canses de andar.",
+      en: "A very long corridor. That the fog swallows the far end before you"
+        + " get tired of walking.",
+    },
+  }),
 ]);
 
 /**

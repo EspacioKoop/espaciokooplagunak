@@ -42,8 +42,11 @@ const raiz = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
  * La sala del museo (#598) está fuera por lo mismo y con más motivo: el Phobos
  * no tiene un museo. Se entra por herramienta y se sale por su propio punto de
  * interacción, igual que la playa se sale por la cabina de teléfono.
+ *
+ * El pasillo de los recuerdos es la misma excepción por la misma razón: no
+ * cuelga de ningún mamparo del Phobos y se entra por herramienta.
  */
-const FUERA_DE_LA_NAVE = new Set(["playa", "museo"]);
+const FUERA_DE_LA_NAVE = new Set(["playa", "museo", "pasillo-recuerdos"]);
 
 function todasLasEstancias() {
   const pares = CATALOGO_ANDAR.ids

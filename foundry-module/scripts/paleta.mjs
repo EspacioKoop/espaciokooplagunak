@@ -567,6 +567,31 @@ export const MUSEO = Object.freeze({
 });
 
 /**
+ * El pasillo de los recuerdos (tercer nivel del campo de pruebas): un mármol
+ * blanco que se pierde en niebla y una alfombra negra por el centro, con
+ * estatuas propias —la Guardiana y sus centinelas— alternando con piezas
+ * reaprovechadas del museo (memorias de otros mundos que ella conserva).
+ *
+ * NUEVE tonos, no más: el mármol claro es la superficie que más cuadro ocupa
+ * (paredes, suelo, techo), así que su contraste interno tiene que quedar por
+ * debajo del negro de la alfombra o el pasillo deja de leerse como un pasillo
+ * y pasa a leerse como una pared. Los grises de la Guardiana son fríos y
+ * apagados a propósito: es de luto, no de piedra — mezclarla con `MUSEO.piedra`
+ * confundiría "reconstrucción arqueológica" con "personaje de esta ficción".
+ */
+export const PASILLO = Object.freeze({
+  marmol: "#e4e1da", // el paño claro: mármol, no yeso — más frío que MUSEO.yeso
+  marmolJunta: "#c9c5ba", // la junta entre losas, un paso por debajo y no una sombra dura
+  marmolVeta: "#d3cfc4", // la veta del mármol: apenas un tono, nunca una línea que se cuente
+  zocalo: "#b9b4a7", // el rodapié y el marco de las columnas, más oscuro que el paño
+  alfombra: "#0c0b10", // la alfombra: negro de verdad, el único tono oscuro del suelo
+  alfombraOrla: "#1c1a22", // el filo de la alfombra, un paso por encima del negro
+  cuervo: "#3a2e33", // el motivo bordado: visible sobre el negro, nunca un color que grite
+  guardiana: "#4b4d54", // la tela de la Guardiana: gris frío, de luto, no piedra
+  guardianaSombra: "#2e2f34", // el pliegue en sombra de su tela
+});
+
+/**
  * Los CUADROS colgados de los muros del museo (#836).
  *
  * Van aparte de `MUSEO` y no dentro por dos motivos, y el segundo es el que

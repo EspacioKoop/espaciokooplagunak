@@ -13,7 +13,7 @@ La pregunta del lote: cómo recuerda el juego «con quién te llevas bien o mal�
 
 ## Dónde estamos hoy (ancla real, leída del repo)
 
-- `foundry-module/scripts/npc-generador.mjs` genera NPCs deterministas a partir de semilla; es Node/foundry-module y **no guarda estado de campaña entre sesiones**.
+- `foundry-module/scripts/npc-generador/npc-generador.mjs` genera NPCs deterministas a partir de semilla; es Node/foundry-module y **no guarda estado de campaña entre sesiones**.
 - #767 (Registro de Avistamientos y Bestiario Local) y #766 (persistencia) sitúan la autoridad de campaña —progreso, atlas, misiones, consecuencias— en el **núcleo del simulador (C++)**, no en el módulo de Foundry. ADR-0008 lo fija: standalone-first significa que el juego es jugable y guarda progreso sin el VTT.
 - Conclusión del ancla: hoy no tenemos un escalar de «relación con la facción X» que persista y condicione ofertas/acciones. Ese es el hueco. Y, por diseño del fork, ese hueco se cierra en núcleo, no en puente/Lua ni en `npc-generador.mjs`.
 

@@ -74,7 +74,7 @@
       "evidence": {"type": "issue", "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/427"}
     },
     {
-      "module": "npc-generador.mjs",
+      "module": "npc-generador/npc-generador.mjs",
       "status": "connected",
       "foundation": true,
       "reason": "Motor puro del generador de NPC. Su primer consumidor real es el parlamento de comunicaciones (#810): siembra el interlocutor por el id del contacto, misma ficha en todos los clientes sin transmitirla. Recordar un habitante conocido sigue fuera de alcance (decisión narrativa de núcleo, #598), pero ya cuelga de una puerta.",
@@ -93,10 +93,10 @@
       "evidence": {"type": "issue", "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/975"}
     },
     {
-      "module": "npc-tablas.mjs",
+      "module": "npc-generador/npc-tablas.mjs",
       "status": "connected",
       "foundation": true,
-      "reason": "Tablas propias del generador de NPC: sílabas, arquetipos, elementos y líneas. Las importa npc-generador.mjs, que ahora cuelga del parlamento de comunicaciones (#810) como su primer consumidor real.",
+      "reason": "Tablas propias del generador de NPC: sílabas, arquetipos, elementos y líneas. Las importa npc-generador/npc-generador.mjs, que ahora cuelga del parlamento de comunicaciones (#810) como su primer consumidor real.",
       "declaredBy": "Espaciokoop Lagunak",
       "declaredAt": "2026-08-24",
       "consumedAt": "2026-08-27",

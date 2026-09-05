@@ -35,7 +35,7 @@ entera igual. Eso es interoperar por el dato, no derivar del código.
 ### Y va codificado, no comentado
 
 Un párrafo como el anterior dura hasta que alguien amplíe las tablas un martes
-por la tarde. `foundry-module/tests/npc-tablas.test.mjs` recorre **cada cadena
+por la tarde. `foundry-module/tests/npc-generador/npc-tablas.test.mjs` recorre **cada cadena
 que el generador puede emitir** —tablas y trescientas fichas generadas— y falla
 si aparece un término de esas obras.
 
@@ -49,8 +49,8 @@ puerta mira los nombres **generados** y no solo las tablas.
 | Pieza | Módulo | Estado |
 |---|---|---|
 | Aleatoriedad determinista sembrada | `minijuegos/aleatorio.mjs` | se reutiliza **sin tocar** |
-| Tablas propias: sílabas, arquetipos, elementos, líneas | `npc-tablas.mjs` | nuevo |
-| Motor: ficha, afinidades, efectividad, reparto | `npc-generador.mjs` | nuevo |
+| Tablas propias: sílabas, arquetipos, elementos, líneas | `npc-generador/npc-tablas.mjs` | nuevo |
+| Motor: ficha, afinidades, efectividad, reparto | `npc-generador/npc-generador.mjs` | nuevo |
 | Habitante pintado en la sala, conversación, memoria | — | **no entra todavía**, a propósito |
 
 Ambos módulos son **puros**: ni Foundry, ni DOM, ni red, ni `Math.random()` —hay

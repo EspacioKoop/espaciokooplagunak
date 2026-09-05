@@ -20,8 +20,8 @@ import {
   LINEAS,
   NATURALEZAS,
   SILABAS,
-} from "../scripts/npc-tablas.mjs";
-import { generarNpc } from "../scripts/npc-generador.mjs";
+} from "../../scripts/npc-generador/npc-tablas.mjs";
+import { generarNpc } from "../../scripts/npc-generador/npc-generador.mjs";
 
 test("cada elemento se resuelve contra un tipo de daño real del SRD", () => {
   for (const elemento of ELEMENTOS) {

@@ -54,7 +54,7 @@ inventarle un efecto.
 - `docs/CRISIS_MULTIPUESTO.md` (#484) define que el fallo de un eslabón cambia el
   resultado para los demás. Los 5 estados de abajo son justo la interfaz legible que
   la cadena necesita para detectar «este puesto acaba de caer».
-- `foundry-module/scripts/npc-generador.mjs` ya deriva texto de un modelo de
+- `foundry-module/scripts/npc-generador/npc-generador.mjs` ya deriva texto de un modelo de
   condición SRD; los estados del puente se enchufan en esa misma derivación de texto
   (describir lo observable, no afirmar lo interno — #526).
 

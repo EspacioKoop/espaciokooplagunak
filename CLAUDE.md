@@ -269,8 +269,8 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     un botón nuevo en `main.mjs`. La cantina solo pinta y traduce un clic en "abre esa mesa" — la
     autoridad la sigue resolviendo cada mesa por su cuenta al abrirse, nunca la ventana que lleva
     hasta ella.
-  - **Generador de NPC** — `scripts/npc-tablas.mjs` (tablas propias) y
-    `scripts/npc-generador.mjs` (motor puro), #676. Semilla más valor de desafío dan una ficha
+  - **Generador de NPC** — `scripts/npc-generador/npc-tablas.mjs` (tablas propias) y
+    `scripts/npc-generador/npc-generador.mjs` (motor puro), #676. Semilla más valor de desafío dan una ficha
     completa, y la misma semilla da siempre el mismo NPC. Cuatro capas y **una sola importable**:
     la ficha 5e sale del **SRD 5.1 (CC-BY-4.0)** con sus fórmulas de verdad —modificador,
     competencia por VD, PG por dado de golpe—, y de Shin Megami Tensei, Persona y Pokémon se toma

@@ -1,0 +1,39 @@
+name: Tablero de la cola de entrega
+
+# El tablero refleja el estado REAL de cada PR, y ese estado cambia sin que
+# nadie toque el PR: un CI que termina, un merge a main que crea un conflicto,
+# una revisión que caduca porque llegó un commit de arreglo. Por eso se
+# reconstruye por reloj y ante cada evento, en vez de fiarse de los workflows
+# integrados de Projects, que solo saben de abierto/cerrado/fusionado.
+on:
+  schedule:
+    - cron: "17 */3 * * *"
+  pull_request_target:
+    types: [opened, reopened, synchronize, closed, ready_for_review]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tablero-cola
+  cancel-in-progress: true
+
+jobs:
+  sincronizar:
+    runs-on: ubuntu-latest
+    # Sin el secreto no hay nada que hacer: GITHUB_TOKEN no puede escribir en
+    # un proyecto de organización. Se salta en silencio en vez de fallar en
+    # rojo en cada PR de quien no lo tenga configurado.
+    if: github.repository == 'EspacioKoop/espaciokooplagunak'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v5.0.1
+      - name: Sincronizar el tablero
+        env:
+          GH_TOKEN: ${{ secrets.TABLERO_PROJECT_TOKEN }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::warning::Falta el secreto TABLERO_PROJECT_TOKEN; no se sincroniza."
+            exit 0
+          fi
+          python3 tools/sync_tablero_cola.py

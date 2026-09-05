@@ -40,17 +40,19 @@ function parsearArgs(argv) {
   return args;
 }
 
+const PAR_TECLA_MS = /^([^:]+):(\d+)$/;
+
 function parsearTeclas(cadena) {
   if (!cadena) return [];
   return cadena.split(",").map((par) => {
-    const [tecla, ms] = par.split(":");
-    const milisegundos = Number(ms);
-    if (!tecla || !(milisegundos > 0)) {
+    const m = PAR_TECLA_MS.exec(par);
+    const milisegundos = m ? Number(m[2]) : NaN;
+    if (!m || !(milisegundos > 0)) {
       throw new Error(
         `--teclas inválido en "${par}": se esperaba "tecla:ms" con ms > 0 (p. ej. "w:2000")`,
       );
     }
-    return { tecla, ms: milisegundos };
+    return { tecla: m[1], ms: milisegundos };
   });
 }
 
@@ -69,12 +71,9 @@ if (!world) {
 }
 
 const dirVideo = `${salida}-video`;
-const browser = await chromium.launch({ headless: false });
-const context = await browser.newContext({
-  viewport: { width: 1280, height: 800 },
-  recordVideo: { dir: dirVideo, size: { width: 1280, height: 800 } },
-});
-const page = await context.newPage();
+let browser = null;
+let context = null;
+let page = null;
 
 async function irAlMundo() {
   // El setup de Foundry no permite pedir directamente /join/<mundo>: hay que
@@ -137,6 +136,13 @@ async function pulsar(tecla, ms) {
 }
 
 try {
+  browser = await chromium.launch({ headless: false });
+  context = await browser.newContext({
+    viewport: { width: 1280, height: 800 },
+    recordVideo: { dir: dirVideo, size: { width: 1280, height: 800 } },
+  });
+  page = await context.newPage();
+
   await irAlMundo();
   await login();
   console.error(`[grabar] dentro de "${world}" como ${usuario}`);
@@ -162,8 +168,8 @@ try {
   // completa...) deja el Chromium headless y su grabación de Xvfb huérfanos:
   // en una herramienta pensada para reintentarse mientras se itera una demo,
   // eso acumula procesos zombis hasta agotar memoria o descriptores.
-  await context.close();
-  await browser.close();
+  if (context) await context.close();
+  if (browser) await browser.close();
 }
 console.error(`[grabar] vídeo (.webm) en ${dirVideo}/`);
 console.error(

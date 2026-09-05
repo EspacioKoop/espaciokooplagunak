@@ -96,6 +96,11 @@ jobs:
             echo "::error::No se encontro ningun tools/tests/test_*.mjs."
             exit 1
           fi
+      - name: Salto de línea final en los ficheros propios
+        # Solo stdlib y milisegundos. Estaba escrito y probado y no lo ejecutaba
+        # nadie: la higiene que no se comprueba se pierde en el primer PR con
+        # prisa, y luego cada diff arrastra una línea de ruido que no es suya.
+        run: python3 tools/check_final_newline.py
       - name: Trazabilidad de nombres de dominio público (#310)
         run: python3 tools/check_public_domain_names.py
       - name: Cobertura i18n de las cadenas de C++ (#55)

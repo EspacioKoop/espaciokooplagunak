@@ -69,8 +69,9 @@ bridge/.venv/
 # Artefactos locales de distribución
 /dist/
 
-# Configuración local de análisis SonarQube
-sonar-project.properties
+# La configuración de Sonar pasó a ser del repositorio, no local: la usa el
+# workflow `sonarcloud.yml`, y las exclusiones (qué es nuestro y qué es de
+# upstream) son una decisión compartida, no una preferencia de cada máquina.
 .evidencia-tinte/
 
 # Worktrees de tareas de agentes automáticos (ver SECURITY.md)

@@ -518,34 +518,36 @@ export class BridgeClient {
 
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.timeoutMs);
-    let response;
+    // fetch resuelve al recibir las cabeceras: el cuerpo puede seguir llegando
+    // indefinidamente. El mismo plazo debe cubrir también response.json() para
+    // que diagnóstico, sondeo y órdenes no queden pendientes para siempre.
+    let leyendoCuerpo = false;
     try {
-      response = await this.fetchImpl(`${this.url}${path}`, {
+      const response = await this.fetchImpl(`${this.url}${path}`, {
         method,
         headers,
         body,
         signal: controller.signal,
       });
+      if (!response.ok) {
+        throw new BridgeError(`El puente respondió ${response.status} en ${path}`, {
+          kind: "http",
+          status: response.status,
+        });
+      }
+      leyendoCuerpo = true;
+      return await response.json();
     } catch (err) {
-      if (err?.name === "AbortError") {
+      if (err instanceof BridgeError) throw err;
+      if (controller.signal.aborted || err?.name === "AbortError") {
         throw new BridgeError(`Tiempo de espera agotado en ${path}`, { kind: "timeout" });
+      }
+      if (leyendoCuerpo) {
+        throw new BridgeError(`Respuesta no válida del puente en ${path}`, { kind: "parse" });
       }
       throw new BridgeError(`No se pudo contactar con el puente en ${path}`, { kind: "network" });
     } finally {
       clearTimeout(timer);
-    }
-
-    if (!response.ok) {
-      throw new BridgeError(`El puente respondió ${response.status} en ${path}`, {
-        kind: "http",
-        status: response.status,
-      });
-    }
-
-    try {
-      return await response.json();
-    } catch {
-      throw new BridgeError(`Respuesta no válida del puente en ${path}`, { kind: "parse" });
     }
   }
 }

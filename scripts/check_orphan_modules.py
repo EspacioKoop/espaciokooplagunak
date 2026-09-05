@@ -449,6 +449,59 @@ def _validate_evidence(
     raise ValueError(f"falta evidencia enlazada en {module}")
 
 
+# Cuántas declaraciones pueden compartir la MISMA evidencia. Dos módulos de una
+# misma función citando su issue común es correcto y pasa hoy (`npc-generador` y
+# `npc-tablas`, ambos #676). Una decena citando el mismo enlace no es una función
+# grande: es un enlace copiado.
+MAX_DECLARACIONES_POR_EVIDENCIA = 3
+
+
+def _validate_provenance_is_distinctive(declarations: dict[str, dict]) -> None:
+    """La procedencia no puede autocertificarse rellenando los campos.
+
+    La verificación de evidencia comprueba que el enlace RESUELVA, no que venga
+    a cuento, y esa es exactamente la rendija por la que se cuela el relleno.
+    Medido el 27-ago-2026 en una entrega del enjambre: 34 declaraciones de
+    claves de idioma con UN solo motivo —«Clave de idioma no utilizada en el
+    código de scripts ni plantillas», que es la DEFINICIÓN de huérfana y no una
+    razón— y UNA sola evidencia para las 34, el issue #571, que es el de los
+    ficheros de audio y no pinta nada. Las 34 pasaban la verificación de enlaces
+    porque el #571 existe.
+
+    De ahí las dos reglas. Un motivo que vale para dos módulos no explica
+    ninguno: el campo existe para decir por qué ESTE módulo todavía no cuelga de
+    nadie, y eso es distinto en cada caso. Y una evidencia repetida más allá de
+    un puñado deja de señalar la decisión y pasa a ser el hueco que rellenó
+    quien no tenía ninguna.
+    """
+    por_motivo: dict[str, list[str]] = {}
+    for module, entry in declarations.items():
+        clave = " ".join(entry["reason"].split()).casefold()
+        por_motivo.setdefault(clave, []).append(module)
+    for modulos in por_motivo.values():
+        if len(modulos) > 1:
+            raise ValueError(
+                "motivo de declaración repetido en "
+                f"{sorted(modulos)}: un motivo que vale para varios módulos no "
+                "explica ninguno; di por qué ESTE módulo no cuelga de nadie"
+            )
+
+    por_evidencia: dict[str, list[str]] = {}
+    for module, entry in declarations.items():
+        clave = json.dumps(entry.get("evidence"), sort_keys=True)
+        por_evidencia.setdefault(clave, []).append(module)
+    for clave, modulos in por_evidencia.items():
+        if len(modulos) > MAX_DECLARACIONES_POR_EVIDENCIA:
+            enlace = json.loads(clave)
+            senal = enlace.get("url") or enlace.get("path") or clave
+            raise ValueError(
+                f"la misma evidencia respalda {len(modulos)} declaraciones "
+                f"({senal}): más de {MAX_DECLARACIONES_POR_EVIDENCIA} es un "
+                "enlace copiado, no una decisión compartida — "
+                f"{sorted(modulos)}"
+            )
+
+
 def load_declarations(
     path: Path,
     repository_root: Path,
@@ -501,6 +554,8 @@ def load_declarations(
         if module in declarations:
             raise ValueError(f"declaración duplicada: {module}")
         declarations[module] = entry
+
+    _validate_provenance_is_distinctive(declarations)
 
     raw_art_modules = data.get("artModules")
     if not isinstance(raw_art_modules, list) or not all(

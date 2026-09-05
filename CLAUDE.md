@@ -170,7 +170,14 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     `modulos-alcanzables.test.mjs` y `paleta.test.mjs` **consumen** ese JSON; no mantengas listas
     paralelas en ellos ni en esta guía. Los enlaces de evidencia a issues/PRs se verifican por la API
     de GitHub con timeout y token de solo lectura en CI; un 404 confirmado invalida la declaración y
-    un fallo de red bloquea la verificación en vez de aceptar el enlace en silencio. Para declarar o
+    un fallo de red bloquea la verificación en vez de aceptar el enlace en silencio. Pero esa
+    verificación mira si el enlace **resuelve**, no si viene a cuento, y por esa rendija se coló
+    relleno: 34 declaraciones con un único motivo —la definición de huérfana, no una razón— y una
+    única evidencia para las 34, un issue de otro asunto que existe y por eso pasaba. De ahí dos
+    reglas **entre** declaraciones: ningún motivo puede repetirse (uno que vale para dos módulos no
+    explica ninguno) y una misma evidencia no respalda más de
+    `MAX_DECLARACIONES_POR_EVIDENCIA` (3) — dos módulos de una función citando su issue común es
+    correcto, una decena es un enlace copiado. Para declarar o
     reclasificar un módulo, edita el JSON y ejecuta
     `python3 scripts/check_orphan_modules.py --check` más las suites Python y Node del área.
   - **Ventanas** — **Consola caliente del GM** (#276, `docs/CONSOLA_CALIENTE_GM.md`) fusionó las

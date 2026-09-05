@@ -74,9 +74,13 @@ export async function openBridgeTokenApp() {
 }
 
 export async function revokeBridgeTokenAccess() {
+  // When revoking, clear the secret and mark the current app
+  // instance as revoked so that subsequent saves from this app are
+  // no-ops. This implements behavior 1 and 2 from the task.
   clearBridgeToken();
   const app = tokenApp;
   if (!app) return;
+  app.bridgeAccessRevoked = true;
   await closeTokenAppSafely(app);
 }
 

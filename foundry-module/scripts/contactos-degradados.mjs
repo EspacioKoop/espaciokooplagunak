@@ -49,6 +49,8 @@ const REJILLA = Object.freeze({
 });
 
 function numero(valor) {
+  // Ausencia y tipos coercibles no son posiciones medidas (ni alcances).
+  if (typeof valor !== "number" && (typeof valor !== "string" || valor.trim() === "")) return null;
   const n = Number(valor);
   return Number.isFinite(n) ? n : null;
 }

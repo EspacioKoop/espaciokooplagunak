@@ -20,9 +20,11 @@ import {
   VIENTO,
   VOCABULARIO_PLAYA,
   componerPlaya,
+  ESTATUA,
 } from "../scripts/playa-escena.mjs";
 import { colisiona } from "../scripts/nave-movimiento.mjs";
 import { interaccionAlAlcance } from "../scripts/nave-interaccion.mjs";
+import { CATALOGO_MUSEO } from "../scripts/museo-piezas.mjs";
 import { CATALOGO_ANDAR } from "../scripts/nave-catalogo-andar.mjs";
 import { PLAYA } from "../scripts/paleta.mjs";
 
@@ -269,8 +271,9 @@ test("el reloj no se sale de su propia esfera", () => {
 /* ---- la cabina como salida (#582) ----------------------------------------- */
 
 test("la cabina es el punto de interacción, y su ancla la declara el prop", () => {
-  assert.equal(INTERACCIONES.length, 1);
-  const [cabina] = INTERACCIONES;
+  assert.equal(INTERACCIONES.length, 2);
+  const [cabina] = INTERACCIONES.filter((i) => i.id === "cabina-telefono");
+  assert.ok(cabina, "la cabina debería estar en las interacciones");
   assert.equal(cabina.id, "cabina-telefono");
   assert.deepEqual(cabina.accion, { tipo: "estancia", estancia: "cantina" });
   assert.ok(Number.isFinite(cabina.orientacion), "el prop declara hacia dónde se mira, no se deduce a ojo");
@@ -296,10 +299,63 @@ test("la playa es una estancia del catálogo, con cielo por fondo y sin puertas"
   assert.ok(playa, "no se podría abrir desde la herramienta de GM");
   assert.deepEqual(playa.puertas, [], "no cuelga de ningún mamparo de la nave");
   assert.equal(playa.fondo, PLAYA.cielo);
-  assert.equal(playa.interacciones.length, 1);
+  assert.equal(playa.interacciones.length, 2);
 });
 
 test("la escena cabe en su planta declarada", () => {
   assert.equal(PLANTA_PLAYA.ancho, ANCHO);
   assert.equal(PLANTA_PLAYA.profundidad, PROFUNDIDAD);
+});
+
+/* ---- el león de Al-Lāt ---------------------------------------------------- */
+
+test("el león tiene un punto de interacción", () => {
+  const leon = INTERACCIONES.find((i) => i.id === "leon-al-lat");
+  assert.ok(leon, "el león debería tener un punto de interacción");
+  assert.equal(leon.id, "leon-al-lat");
+  assert.ok(Number.isFinite(leon.punto[0]) && Number.isFinite(leon.punto[1]), "el punto debe tener coordenadas válidas");
+});
+
+test("el punto de interacción del león no colisiona con la estatua", () => {
+  const leon = INTERACCIONES.find((i) => i.id === "leon-al-lat");
+  assert.ok(leon, "el león debería tener un punto de interacción");
+  const [x, z] = leon.punto;
+  assert.equal(colisiona(x, z, RADIO, PLANTA_PLAYA), false, "el punto de interacción del león está dentro de la estatua");
+});
+
+test("desde el punto del león se alcanza SU interacción, con el radio real del motor", () => {
+  // Antes esto comparaba la distancia contra un `< 3` inventado, que no es
+  // ninguna garantía: el motor decide con `RADIO_INTERACCION`, y un punto puede
+  // quedar a 2,9 m —dentro del `< 3`— y aun así fuera de alcance. Se comprueba
+  // contra el mismo alcance que usa el juego, que es lo único que significa
+  // «se puede leer la cartela desde aquí».
+  const leon = INTERACCIONES.find((i) => i.id === "leon-al-lat");
+  assert.ok(leon, "el león debería tener un punto de interacción");
+  const [x, z] = leon.punto;
+  assert.equal(
+    interaccionAlAlcance(x, z, RADIO, INTERACCIONES)?.id,
+    "leon-al-lat",
+    "desde su propio punto debe alcanzarse la interacción del león y no otra",
+  );
+});
+
+test("LA REGRESIÓN DE #770: la acción emite `pieza`, que es el campo que se lee", () => {
+  // El PR nació declarando `{ tipo: "cartela", cartela: "leon-al-lat" }` mientras
+  // `andar-nave-app.mjs` lee `accion.pieza`. Con `undefined`, `pintarCartela`
+  // oculta el nodo SIN error: la cartela no se veía y nada lo decía. Un campo mal
+  // llamado no falla, enmudece — por eso hace falta fijar la forma exacta.
+  const leon = INTERACCIONES.find((i) => i.id === "leon-al-lat");
+  assert.deepEqual(leon.accion, { tipo: "cartela", pieza: "leon-al-lat" });
+});
+
+test("la pieza que nombra la acción existe de verdad en el catálogo del museo", () => {
+  // La otra mitad: emitir `pieza` con un id que no existe vuelve a dejar la
+  // cartela muda, y el fallo se vería igual. La acción y el catálogo tienen que
+  // seguir cuadrando aunque el museo se reordene.
+  const leon = INTERACCIONES.find((i) => i.id === "leon-al-lat");
+  const ids = CATALOGO_MUSEO.piezas.map((p) => p.id);
+  assert.ok(
+    ids.includes(leon.accion.pieza),
+    `la acción nombra «${leon.accion.pieza}», que no está en el catálogo del museo`,
+  );
 });

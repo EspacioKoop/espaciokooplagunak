@@ -25,7 +25,7 @@ de salida de Etapa B (`docs/ROADMAP_PRODUCTO.md`):
   duplicado de otra estación.
 - **Feedback dedicado** — `proyeccion-puesto.mjs` proyecta rumbo y vector solo para
   `navigation`, y el visor del piloto (#362,
-  [`visor-piloto.mjs`](../foundry-module/scripts/visor-piloto.mjs)) da lectura 3D propia
+  [`visor-piloto.mjs`](../foundry-module/scripts/visor-piloto/visor-piloto.mjs)) da lectura 3D propia
   del puesto.
 - **Estado en el puente** — `/v1/state` publica `destination`/`distance_to_destination`/
   `eta_seconds` (`bridge/lua_templates.py`); es telemetría de lectura, no la decisión en

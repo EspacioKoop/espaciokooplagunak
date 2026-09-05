@@ -8,7 +8,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { SELECTOR, pintarVisorPiloto } from "../scripts/visor-piloto-lienzo.mjs";
+import { SELECTOR, pintarVisorPiloto } from "../../scripts/visor-piloto/visor-piloto-lienzo.mjs";
 
 /** Contexto 2D de mentira que apunta lo que le piden. */
 function ctxFalso() {

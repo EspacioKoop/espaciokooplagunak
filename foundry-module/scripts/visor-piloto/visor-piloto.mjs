@@ -34,10 +34,10 @@
 //
 // Frontera de arte (#351): no declara ni un color. Todos entran de `paleta.mjs`.
 
-import { PIXEL } from "./paleta.mjs";
-import { componerEscena, fundirEscenas, mallaDesdeCasco, CASCO_POR_DEFECTO } from "./retro3d.mjs";
-import { campoEstelar, proyectarEstrellas } from "./retro3d-estrellas.mjs";
-import { colorFaccion } from "./ventana-nave.mjs";
+import { PIXEL } from "../paleta.mjs";
+import { componerEscena, fundirEscenas, mallaDesdeCasco, CASCO_POR_DEFECTO } from "../retro3d.mjs";
+import { campoEstelar, proyectarEstrellas } from "../retro3d-estrellas.mjs";
+import { colorFaccion } from "../ventana-nave.mjs";
 
 /** Campo de visión del visor, en grados. Ancho como una luna delantera: lo que
  * importa aquí es cuánto sector cabe, no componer un cuadro. */

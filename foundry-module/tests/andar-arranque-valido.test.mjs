@@ -45,9 +45,14 @@ test("hay puntos DENTRO de la cantina que la bloquean: el peligro es real", () =
   //
   // (Ojo: `(1.5, 4)`, la entrada aún más antigua, HOY no colisiona. Se probó y se
   // descartó como caso: una prueba montada sobre ese punto habría pasado sin
-  // cubrir nada.)
+  // cubrir nada. `(3, 5)` era el segundo caso histórico y se le unió al hacer
+  // taburetes de verdad: rozaba la esquina de la caja de 0,5 m que hacía de
+  // taburete, y un taburete con pie y base ocupa 0,42 — la diferencia son cinco
+  // centímetros y bastan. No es que el peligro haya desaparecido, es que ese
+  // punto concreto ya no lo corre; el caso se sustituye por uno sobre la barra,
+  // que es un mueble que no va a adelgazar.)
   const cantina = CATALOGO_ANDAR.obtener("cantina");
-  for (const punto of [{ x: 2.4, z: 8.6 }, { x: 3, z: 5 }]) {
+  for (const punto of [{ x: 2.4, z: 8.6 }, { x: 5, z: 6.5 }]) {
     const dentro = punto.x > 0 && punto.z > 0
       && punto.x < cantina.planta.ancho && punto.z < cantina.planta.profundidad;
     assert.ok(dentro, `${JSON.stringify(punto)} debería caer dentro de la sala`);

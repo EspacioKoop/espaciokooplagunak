@@ -171,6 +171,33 @@ export const VENTANAS = Object.freeze([
   { rect: { x: 6.9, z: PROFUNDIDAD - 0.4, ancho: ANCHO_VENTANAL, profundidad: 0.4 } },
 ]);
 
+/*
+ * LOS TABURETES DE LA BARRA NO SON ASIENTOS TODAVÍA, y no por no tener altura:
+ * desde #560 la tienen, declarada en `cantina-escena.mjs`. Es que NO SE LLEGA a
+ * ellos andando.
+ *
+ * Medido inundando la sala desde su entrada con el radio real de quien anda:
+ * de 6.217 celdas libres solo 1.581 son alcanzables — el 25% —, y la zona
+ * alcanzable es la franja `z` 9,8–11,4 a lo largo del muro sur. La barra
+ * (z 5,95–7,15), sus taburetes (z 4,45) y las dos mesas quedan al OTRO LADO de
+ * la pared de ventanal que la escena clásica declara como su fondo
+ * (`mamparoIzq`/`mamparoDer`/`dintel`/`antepecho`, en z 8,85–9,45): una pared
+ * maciza de lado a lado, sin hueco, con el antepecho a 1,00 m de alto.
+ *
+ * O sea que la cantina por la que se anda hoy es la franja de FUERA de la
+ * cantina. No es un descubrimiento: #579 ya lo dejó escrito al elegir dónde va
+ * la puerta de la terraza («inundando la sala desde su entrada, lo andable es
+ * una franja a lo largo del muro sur»), solo que ahí era un dato para colocar
+ * una puerta y aquí es lo que impide sentarse en la barra.
+ *
+ * Declarar los puntos de asiento igualmente sería declarar cuatro puntos a los
+ * que nadie puede acercarse — el fallo que la prueba de alcanzabilidad existe
+ * para cazar (#423, #540). Así que aquí no van hasta que la barra se pueda
+ * pisar, y eso es una decisión de geometría de la cantina: o la pared de
+ * ventanal tiene un hueco por el que se pasa, o la sala mide lo que mide su
+ * interior y no tres metros más.
+ */
+
 const SALA = crearSalaCaja({
   ancho: ANCHO,
   profundidad: PROFUNDIDAD,

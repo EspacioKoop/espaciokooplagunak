@@ -709,7 +709,7 @@
   "LAGUNAK.AndarNave.Titulo": "Walk the ship (prototype)",
   "LAGUNAK.AndarNave.AvisoPrototipo": "Ship walkthrough (#427/#540): the deck plan is the Phobos M3P's REAL interior — the thirteen rooms its model declares, nine of them holding a system — plus the cantina, which the native interior does not have. Hull rooms have a window to space. Walk up to a room's console to open the station for its system (#509).",
   "LAGUNAK.AndarNave.VistaAlt": "First-person view of the walkable ship: every room connects to its neighbours through doors in the shared walls, and each room's console opens the station for the system it houses.",
-  "LAGUNAK.AndarNave.Controles": "WASD or up/down arrows to move, Q/E or left/right arrows to turn, space to jump, C to crouch, V to switch between first and third person.",
+  "LAGUNAK.AndarNave.Controles": "WASD or up/down arrows to move, Q/E or left/right arrows to turn, space to jump, C to crouch, V to switch between first and third person, F to sit on whatever is in front of you (or stand up).",
   "LAGUNAK.Seccion.Titulo": "Inside the ship",
   "LAGUNAK.Seccion.Intro": "A cutaway of the ship, every room at once. Click a room to step into it.",
   "LAGUNAK.Seccion.PlanoAlt": "Cross-section of the ship: six rooms inside the hull, tinted by the damage of their region. The same information is listed below.",

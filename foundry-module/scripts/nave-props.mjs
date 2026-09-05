@@ -101,6 +101,16 @@ const DEFINICIONES = {
       { medidas: [0.05, 0.42, 0.05], centro: [0.17, 0.21, 0.17], lados: 6, punta: 0.8 },
     ],
     ancla: { centro: [0, 0.7], orientacion: Math.PI },
+    // Dónde se sienta uno, y mirando a dónde (#582 + asientos). Va SEPARADO del
+    // ancla y no es un ajuste de ella: el ancla dice dónde te PLANTAS para usar
+    // el prop y mira hacia él; sentarse es ponerse ENCIMA y mirar al revés. Los
+    // dos gestos ocurren en el mismo mueble, que es la misma distinción que ya
+    // separaba el punto de pesca del ancla del soporte en la terraza (#579).
+    //
+    // `altura` es la cara de arriba del asiento (0,45 + medio canto), y de ahí
+    // sale la altura de los ojos — nunca escrita a mano en la escena, que es
+    // como la cantina acabó con los ojos a 3,35 m del suelo.
+    asiento: { centro: [0, 0], orientacion: 0, altura: 0.48 },
   },
 
   /**
@@ -116,6 +126,10 @@ const DEFINICIONES = {
       { medidas: [0.34, 0.04, 0.34], centro: [0, 0.02, 0], lados: 10 },
     ],
     ancla: null,
+    // Sin lado: se sienta uno desde donde llegue y mirando a donde ya miraba.
+    // `orientacion: null` es eso dicho como dato, y no un olvido — un taburete
+    // que te girase a un rumbo fijo al sentarte sería un taburete con frente.
+    asiento: { centro: [0, 0], orientacion: null, altura: 0.63 },
   },
 
   /**
@@ -258,6 +272,17 @@ export function definirVocabulario(definiciones) {
           // Va en el prop y no en la escena: una caña no es un muro en ningún
           // sitio, no solo en la terraza.
           colision: prop.colision !== false,
+          // Un prop en el que se puede sentar alguien (`altura` en metros sobre
+          // el suelo de la sala). Sin él, el prop no es un asiento: no hay
+          // "altura por defecto" que valga, porque una altura inventada pone los
+          // ojos donde no van.
+          asiento: prop.asiento
+            ? Object.freeze({
+                centro: Object.freeze([...prop.asiento.centro]),
+                orientacion: prop.asiento.orientacion ?? null,
+                altura: prop.asiento.altura,
+              })
+            : null,
           ancla: prop.ancla
             ? Object.freeze({
                 centro: Object.freeze([...prop.ancla.centro]),
@@ -306,8 +331,15 @@ export function mezclarVocabularios(...vocabularios) {
 /** El vocabulario de la NAVE. */
 export const VOCABULARIO = definirVocabulario(DEFINICIONES);
 
-/** Gira `[x, z]` un número entero de cuartos de vuelta alrededor del origen. */
-function girarEnPlanta([x, z], cuartos) {
+/**
+ * Gira `[x, z]` un número entero de cuartos de vuelta alrededor del origen.
+ *
+ * Se exporta porque un prop con POSES (`nave-pose.mjs`) necesita la misma
+ * cuenta para desplazar una pieza en SU propio marco —«medio metro hacia
+ * atrás» tiene que seguir siendo hacia atrás cuando la silla está girada— y
+ * dos copias de esta función es como una silla girada se retira hacia el lado.
+ */
+export function girarEnPlanta([x, z], cuartos) {
   switch (((cuartos % 4) + 4) % 4) {
     case 1:
       return [z, -x];
@@ -326,9 +358,9 @@ function girarEnPlanta([x, z], cuartos) {
  *
  * @returns {{piezas:Array<{nombre:string, centro:number[], medidas:number[], color:string}>,
  *            ancla:{punto:number[], orientacion:number}|null}}
- *   `piezas` tiene la forma `mobiliario` que acepta `crearSalaCaja`; `ancla`, si
- *   el prop la declara, ya está en coordenadas de la sala y lista para
- *   convertirse en un punto de interacción (#582).
+ *   `piezas` tiene la forma `mobiliario` que acepta `crearSalaCaja`; `ancla` y
+ *   `asiento`, si el prop los declara, ya están en coordenadas de la sala y
+ *   listos para convertirse en puntos de interacción (#582).
  */
 export function colocarProp(clave, { x, z, cuartos = 0, nombre = clave, vocabulario = VOCABULARIO } = {}) {
   const prop = vocabulario[clave];
@@ -399,5 +431,20 @@ export function colocarProp(clave, { x, z, cuartos = 0, nombre = clave, vocabula
       })()
     : null;
 
-  return { piezas, ancla };
+  const asiento = prop.asiento
+    ? (() => {
+        const [sx, sz] = girarEnPlanta(prop.asiento.centro, cuartos);
+        return {
+          punto: [x + sx, z + sz],
+          // `null` sobrevive al giro: girar "ninguna orientación" sigue siendo
+          // ninguna. Sumarle el giro la convertiría en un rumbo concreto y un
+          // taburete girado te sentaría mirando a la pared.
+          orientacion:
+            prop.asiento.orientacion === null ? null : prop.asiento.orientacion + cuartos * CUARTO,
+          altura: prop.asiento.altura,
+        };
+      })()
+    : null;
+
+  return { piezas, ancla, asiento };
 }

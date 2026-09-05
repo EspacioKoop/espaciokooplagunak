@@ -59,6 +59,16 @@ function fila(cuantas, hacer) {
   return Array.from({ length: cuantas }, (_, i) => Object.freeze(hacer(i)));
 }
 
+/**
+ * Altura de la cara del asiento de un taburete de barra, sobre el suelo de la
+ * cantina (que en coordenadas nativas está en −1,9).
+ *
+ * Exportada porque quien quiera sentar a alguien ahí —o declarar el punto de
+ * interacción— la necesita, y deducirla sumando medias medidas de cuatro cajas
+ * es cómo se acaba con dos alturas distintas para el mismo mueble.
+ */
+export const ALTURA_TABURETE = 0.63;
+
 /** Los tres tonos de botella, alternados. Una fila del mismo color es un peine
  * y no una barra surtida; tres tonos bastan para que parezca contada. */
 const TONOS_BOTELLA = [CANTINA.botellaVerde, CANTINA.botellaAmbar, CANTINA.botellaAzul];
@@ -233,12 +243,56 @@ export const MUEBLES = Object.freeze([
   // --- Quien se sienta ------------------------------------------------------
   // Taburetes de metal frente a la barra: frío contra la madera, y dan la
   // escala de la sala mejor que ningún otro mueble.
-  ...fila(4, (i) => ({
-    nombre: `taburete${i}`,
-    color: CANTINA.taburete,
-    centro: [-2.4 + i * 1.6, -1.45, 2.1],
-    medidas: [0.5, 0.9, 0.5],
-  })),
+  //
+  // CUATRO CAJAS Y NO UNA, y no por detalle. La versión anterior era literalmente
+  // la misma caja que la barra —`centro.y = -1.45`, `medidas = [0.5, 0.9, 0.5]`—,
+  // o sea el asiento a la altura del mostrador. Como bulto colaba; en cuanto se
+  // pudo uno SENTAR dejó de colar, porque sentarse ahí ponía los ojos diecisiete
+  // centímetros más altos que de pie. Un taburete no es un cubo: es un asiento
+  // con su pie, su base y su reposapiés, y las cuatro piezas son lo que hace que
+  // se lea como taburete y no como una columna.
+  //
+  // ALTURA 0,63 m hasta la cara del asiento, la MISMA que el taburete del
+  // vocabulario común (`nave-props.mjs`), para que no haya dos taburetes de
+  // alturas distintas en la misma nave. Contra un mostrador de 0,90 deja los
+  // 0,27 m de diferencia que hay entre un asiento y la barra a la que te arrimas
+  // — que era el otro síntoma de la caja de antes: 0,90 contra 0,90, o sea
+  // sentarse a la altura del mostrador.
+  //
+  // Y EL REPOSAPIÉS NO ES UN ADORNO. Es la pieza que dice de un vistazo que el
+  // asiento está alto, y sin ella un taburete bajo y uno de barra se dibujan
+  // igual. Es la misma regla que las patas de la silla del vocabulario: el
+  // mínimo con el que la cosa se lee como lo que es.
+  ...fila(4, (i) => {
+    const x = -2.4 + i * 1.6;
+    const suelo = -1.9;
+    return [
+      Object.freeze({
+        nombre: `taburete${i}Base`,
+        color: CANTINA.taburete,
+        centro: [x, suelo + 0.025, 2.1],
+        medidas: [0.38, 0.05, 0.38],
+      }),
+      Object.freeze({
+        nombre: `taburete${i}Pie`,
+        color: CANTINA.taburete,
+        centro: [x, suelo + 0.33, 2.1],
+        medidas: [0.09, 0.61, 0.09],
+      }),
+      Object.freeze({
+        nombre: `taburete${i}Reposapies`,
+        color: CANTINA.taburete,
+        centro: [x, suelo + 0.22, 2.1],
+        medidas: [0.34, 0.04, 0.34],
+      }),
+      Object.freeze({
+        nombre: `taburete${i}Asiento`,
+        color: CANTINA.taburete,
+        centro: [x, suelo + ALTURA_TABURETE - 0.035, 2.1],
+        medidas: [0.42, 0.07, 0.42],
+      }),
+    ];
+  }).flat(),
   // Dos mesas al fondo, descentradas: el local sigue existiendo lejos de la
   // barra, que es lo que separa una cantina de un mostrador.
   Object.freeze({ nombre: "mesaIzq", color: CANTINA.mesa, centro: [-3.4, -1.2, 5.2], medidas: [1.6, 0.2, 1.6] }),

@@ -41,6 +41,8 @@ import { poligonosOtrosJugadores } from "./nave-avatares-render.mjs";
 import { crearPlanta } from "./nave-movimiento.mjs";
 import { colocarProp } from "./nave-props.mjs";
 import { buscarInteraccion, declararInteracciones } from "./nave-interaccion.mjs";
+import { definicionesDeAsientos } from "./nave-asiento.mjs";
+import { colocarPoseables, declararPoseables } from "./nave-pose.mjs";
 
 /* ---- la plataforma --------------------------------------------------------- */
 
@@ -97,13 +99,10 @@ const MOBILIARIO = Object.freeze([
   { clave: "barandilla", x: 1.3, z: PROFUNDIDAD - 0.12 },
   { clave: "barandilla", x: 3.7, z: PROFUNDIDAD - 0.12 },
 
-  // La mesa, con sus sillas alrededor. No en el centro: contra el muro se pasa
-  // por delante, y al borde estorbaría justo donde se sale a mirar.
+  // La mesa. Sus cuatro sillas NO están aquí: tienen pose y viven en
+  // `ASIENTOS` — sentarse las retira, que es lo que dice desde fuera que ese
+  // sitio está cogido.
   { clave: "mesa", x: 3.5, z: 3.2 },
-  { clave: "silla", x: 3.5, z: 4.5, cuartos: 2 },
-  { clave: "silla", x: 3.5, z: 1.9 },
-  { clave: "silla", x: 2.2, z: 3.2, cuartos: 1 },
-  { clave: "silla", x: 4.8, z: 3.2, cuartos: 3 },
 
   // El soporte de cañas, junto al borde y mirando al vacío. Su ANCLA es el punto
   // de pesca — ver `INTERACCIONES`.
@@ -113,16 +112,51 @@ const MOBILIARIO = Object.freeze([
   // lo que dice que son de la casa y no de nadie (#579).
   { clave: "cana", x: 1.35, z: 6.35, cuartos: 3 },
   { clave: "cana", x: 1.35, z: 6.85, cuartos: 3 },
-
-  // Un taburete suelto junto a la barandilla: el sitio de quien sale a fumar
-  // (#439) y no a sentarse a la mesa. Un mueble desemparejado dice más que dos
-  // iguales.
-  { clave: "taburete", x: 1.4, z: 2.4 },
 ]);
 
 const COLOCADO = MOBILIARIO.map(({ clave, x, z, cuartos = 0 }, indice) =>
   colocarProp(clave, { x, z, cuartos, nombre: `${clave}-${indice}` }),
 );
+
+/**
+ * Cuánto se retira un asiento al ocuparse, en metros.
+ *
+ * 0,25 m: lo que se corre una silla hacia atrás quien se sienta en ella, no lo
+ * que se aparta quien la quita de en medio. Es una señal, no una mudanza — con
+ * medio metro la silla deja de pertenecer a la mesa, y lo que tiene que decir es
+ * «aquí hay alguien», no «aquí sobraba una silla».
+ */
+const RETIRADA = 0.25;
+
+/**
+ * Los asientos de la terraza, con pose (#583 + poses).
+ *
+ * Van APARTE de `MOBILIARIO` porque no son lo mismo: el resto de la terraza está
+ * donde está, y estos cinco tienen dos sitios. Sus poses no declaran geometría,
+ * solo desplazamiento en el marco del propio mueble, así que la silla de la
+ * izquierda de la mesa se retira hacia su espalda y no hacia el norte.
+ *
+ * El taburete también se retira, aunque no tenga mesa de la que apartarse: quien
+ * se sienta en un taburete lo mueve igual, y darle pose solo a las sillas
+ * obligaría a mirar el mueble para saber si se acciona.
+ */
+export const ASIENTOS = declararPoseables(
+  [
+    { id: "silla-mesa-sur", clave: "silla", x: 3.5, z: 4.5, cuartos: 2 },
+    { id: "silla-mesa-norte", clave: "silla", x: 3.5, z: 1.9 },
+    { id: "silla-mesa-oeste", clave: "silla", x: 2.2, z: 3.2, cuartos: 1 },
+    { id: "silla-mesa-este", clave: "silla", x: 4.8, z: 3.2, cuartos: 3 },
+    // Un taburete suelto junto a la barandilla: el sitio de quien sale a fumar
+    // (#439) y no a sentarse a la mesa. Un mueble desemparejado dice más que dos
+    // iguales.
+    { id: "taburete-borde", clave: "taburete", x: 1.4, z: 2.4 },
+  ].map((asiento) => ({ ...asiento, poses: { libre: {}, ocupada: { atras: RETIRADA } } })),
+);
+
+/** Los cinco asientos colocados según el estado de poses que se le pase. */
+export function asientosColocados(poses = {}) {
+  return colocarPoseables(ASIENTOS, poses);
+}
 
 /** El soporte de cañas, que es la pieza que declara dónde se pesca. */
 const SOPORTE = COLOCADO[MOBILIARIO.findIndex(({ clave }) => clave === "soporte")];
@@ -138,8 +172,20 @@ const SOPORTE = COLOCADO[MOBILIARIO.findIndex(({ clave }) => clave === "soporte"
  * NO CONCEDE NADA. Su `accion` no la atiende nadie todavía, y eso es lo correcto:
  * el punto existe, la mecánica no. Acercarse a las cañas hoy no hace nada, igual
  * que mirar por una ventana no hace nada.
+ *
+ * LAS SILLAS Y EL TABURETE SÍ (asientos). Salen de `definicionesDeAsientos`
+ * sobre los propios `ASIENTOS`, así que no hay ni una coordenada de asiento
+ * escrita aquí: quien mueva una silla mueve su sitio con ella, exactamente igual
+ * que el punto de pesca sigue al soporte. Y el taburete se sienta sin girarte
+ * porque no tiene frente, lo que se decide en el vocabulario y no en esta escena.
+ *
+ * Se declaran en la pose BASE y no se mueven con ella. Los 25 cm que se retira
+ * un asiento al ocuparse caben de sobra en el radio de interacción (1,2 m), así
+ * que quien está sentado sigue teniendo su propio asiento al alcance para
+ * levantarse — que es lo único que hace falta que siga siendo cierto.
  */
 export const INTERACCIONES = declararInteracciones([
+  ...definicionesDeAsientos(asientosColocados()),
   {
     id: "punto-pesca",
     punto: SOPORTE.ancla.punto,
@@ -215,11 +261,22 @@ function muroDeLaCantina() {
   ];
 }
 
-const PIEZAS = Object.freeze([
+/** Lo que no se mueve nunca: la plataforma, el muro y el mobiliario sin pose. */
+const PIEZAS_FIJAS = Object.freeze([
   ...tarima(),
   ...muroDeLaCantina(),
   ...COLOCADO.flatMap(({ piezas }) => piezas).map(({ malla, color }) => ({ malla, color })),
 ]);
+
+/** Todas las piezas de la terraza con los asientos en las poses que se le pasen. */
+function piezasDe(poses) {
+  return [
+    ...PIEZAS_FIJAS,
+    ...asientosColocados(poses)
+      .flatMap(({ piezas }) => piezas)
+      .map(({ malla, color }) => ({ malla, color })),
+  ];
+}
 
 /**
  * La colisión. El suelo entero es andable menos lo que ocupan los muebles, y el
@@ -230,10 +287,9 @@ const PIEZAS = Object.freeze([
  * el límite de la planta, no el mueble — y así una barandilla es lo que parece,
  * un aviso, y no una pared invisible con adorno.
  */
-export const PLANTA_TERRAZA = crearPlanta({
-  ancho: ANCHO,
-  profundidad: PROFUNDIDAD,
-  obstaculos: COLOCADO.flatMap(({ piezas }) =>
+/** Lo que de un mueble estorba de verdad al andar: ver el comentario de arriba. */
+function obstaculosDe(colocados) {
+  return colocados.flatMap(({ piezas }) =>
     piezas
       // Lo que va por encima de la cintura no estorba al andar, lo que no llega
       // al tobillo se pisa, y lo que el propio prop declara que no estorba —una
@@ -250,20 +306,62 @@ export const PLANTA_TERRAZA = crearPlanta({
         ancho: medidas[0],
         profundidad: medidas[2],
       })),
-  ),
-});
+  );
+}
+
+/**
+ * La planta de colisión con los asientos en las poses que se le pasen.
+ *
+ * Es una FUNCIÓN y no una constante porque una silla retirada ocupa otro sitio,
+ * y una planta congelada dejaría a quien pasa chocándose con donde estaba la
+ * silla hace un momento — el mismo desajuste entre dibujo y colisión que produjo
+ * los cuatro fallos de la cantina (#540).
+ */
+export function plantaTerraza(poses = {}) {
+  return crearPlanta({
+    ancho: ANCHO,
+    profundidad: PROFUNDIDAD,
+    obstaculos: [...obstaculosDe(COLOCADO), ...obstaculosDe(asientosColocados(poses))],
+  });
+}
+
+/** La planta con todos los asientos libres, que es como se abre la terraza. */
+export const PLANTA_TERRAZA = plantaTerraza();
+
+/** Las piezas con todos los asientos libres, calculadas una vez. */
+const PIEZAS_LIBRES = Object.freeze(piezasDe({}));
 
 /** El cielo de la terraza: el espacio de verdad, no un techo. */
 const CIELO = campoEstelar(20260817, { cantidad: 140, radio: 70 });
 
 /**
- * Compone la terraza. Misma firma que cualquier estancia.
- *
  * Sin niebla y sin alcance corto: aquí lo que hay al fondo es el vacío, y el
  * vacío no se destiñe. Lo que cierra la escena es el campo de estrellas, que se
  * pinta detrás de todo.
  */
+/**
+ * El compositor de la terraza con los asientos en unas poses dadas.
+ *
+ * Devuelve una FUNCIÓN con la firma de siempre, en vez de añadirle un parámetro
+ * a `componerTerraza`: el bucle de andar llama a `componer(x, y, z, yaw, ...)` y
+ * no sabe —ni tiene por qué— que aquí hay muebles que se mueven. Quien cambia
+ * una pose pide un compositor nuevo y se lo da al bucle, igual que se le da uno
+ * al cambiar de estancia.
+ */
+export function componerTerrazaCon(poses = {}) {
+  const piezas = piezasDe(poses);
+  return (x, y, z, yaw, opciones = {}) => componerConPiezas(piezas, x, y, z, yaw, opciones);
+}
+
+/**
+ * Compone la terraza con todos los asientos libres. Misma firma que cualquier
+ * estancia, y es la que consume el catálogo al abrirla.
+ */
 export function componerTerraza(x, y, z, yaw, opciones = {}) {
+  return componerConPiezas(PIEZAS_LIBRES, x, y, z, yaw, opciones);
+}
+
+function componerConPiezas(PIEZAS, x, y, z, yaw, opciones = {}) {
   const {
     ancho: anchoLienzo = 480,
     alto: altoLienzo = 270,

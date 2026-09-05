@@ -709,7 +709,7 @@
   "LAGUNAK.AndarNave.Titulo": "Andar por la nave (prototipo)",
   "LAGUNAK.AndarNave.AvisoPrototipo": "Recorrido de la nave (#427/#540): la planta es la REAL del Phobos M3P —trece salas del interior que declara su modelo, nueve de ellas con sistema— más la cantina, que la nave nativa no tiene. Las salas del casco tienen ventana al espacio. Acércate a la consola de una sala para abrir el puesto de su sistema (#509).",
   "LAGUNAK.AndarNave.VistaAlt": "Vista en primera persona de la nave recorrible: desde cualquier sala se llega a las demás cruzando las puertas que comparten los muros, y la consola de cada sala abre el puesto del sistema que aloja.",
-  "LAGUNAK.AndarNave.Controles": "WASD o flechas arriba/abajo para moverte, Q/E o flechas izquierda/derecha para girar, espacio para saltar, C para agacharte, V para cambiar entre primera y tercera persona.",
+  "LAGUNAK.AndarNave.Controles": "WASD o flechas arriba/abajo para moverte, Q/E o flechas izquierda/derecha para girar, espacio para saltar, C para agacharte, V para cambiar entre primera y tercera persona, F para sentarte en lo que tengas delante (o levantarte).",
   "LAGUNAK.Seccion.Titulo": "La nave por dentro",
   "LAGUNAK.Seccion.Intro": "El corte de la nave, con todas las salas a la vez. Pulsa una sala para entrar en ella.",
   "LAGUNAK.Seccion.PlanoAlt": "Corte transversal de la nave: seis salas dentro del casco, teñidas según el daño de su región. La misma información está debajo en forma de lista.",

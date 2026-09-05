@@ -108,11 +108,17 @@ test("captura del presupuesto de polígonos por escena conocida", () => {
     mesaDados: componerCantina({ plano: "mesaDados" }).poligonos.length,
     ventanal: componerCantina({ plano: "ventanal" }).poligonos.length,
   };
+  // Los cuatro taburetes de barra pasaron de una caja a cuatro (asiento, pie,
+  // base y reposapiés) al hacerlos taburetes de verdad: doce cajas más en la
+  // sala, +24 polígonos en el plano de entrada, que es el único que los ve
+  // enteros. `barra` y `mesaDados` BAJAN uno cada uno, y eso no es ruido: un
+  // taburete de pie fino tapa menos que una columna de medio metro, así que el
+  // fundido de caras coplanares al que llegaban recorta distinto.
   assert.deepEqual(conteos, {
-    entrada: 169,
-    barra: 77,
+    entrada: 193,
+    barra: 76,
     mesaPoker: 121,
-    mesaDados: 85,
+    mesaDados: 84,
     ventanal: 18,
   });
 

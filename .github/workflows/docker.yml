@@ -89,7 +89,7 @@ jobs:
         run: python3 -m pip install -r bridge/requirements-dev.txt
       - name: Ejecutar pytest
         working-directory: bridge
-        run: python3 -m pytest
+        run: python3 -m pytest --cov=. --cov-report=term-missing --cov-fail-under=75
 
   bridge:
     name: Imagen del puente

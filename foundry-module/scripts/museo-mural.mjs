@@ -8,33 +8,49 @@
 // otro material. El argumento vale MÁS en los muros, porque un muro es la
 // superficie contra la que se lee todo lo que cuelga de él.
 //
-// UNA PARED DE GALERÍA ES DELIBERADAMENTE POBRE, y esa es toda la idea. El
-// mural de la nave presume de tres capas de lectura y de premiar que te
-// acerques; aquí eso sería un error de diseño, no una virtud: cada greeble
-// compite con la obra que tiene delante. Una sala de exposición se hace al
-// revés — se quita hasta que solo queda la arquitectura, y lo único que reclama
-// la mirada es lo colgado. De ahí que esto sea, medido, unas seis veces más
-// barato que la piel de casco: no está simplificado por presupuesto, está
-// vacío a propósito y el presupuesto es la consecuencia.
+// UNA PARED DE GALERÍA ES DELIBERADAMENTE POBRE, pero pobre no es lo mismo que
+// desnuda. El mural de la nave presume de tres capas de lectura y de premiar
+// que te acerques; aquí eso sería un error de diseño, no una virtud: un
+// greeble sorteado —una escotilla, un cable— compite con la obra que tiene
+// delante. Pero una boiserie de galería real SÍ tiene zócalo alto y paneles
+// embutidos, y ninguno de los dos compite con nada: son ARQUITECTURA, no
+// decoración añadida, y se leen antes de fijarse en cualquier cuadro concreto
+// exactamente igual que un rodapié o una cornisa ya se leían así. La regla
+// que de verdad importa no es "cuanto menos, mejor" — es la de #526 aplicada
+// aquí: NADA más pequeño que un tablero entero de 2,4 m, para que no haya una
+// mancha suelta que se lea como parte de la exposición. Un panel embutido
+// cumple esa regla porque ocupa el tablero ENTERO de ancho; un greeble de la
+// nave no la cumpliría aquí ni ensanchado.
 //
-// LO QUE HAY, DE ABAJO ARRIBA. Cuatro piezas de arquitectura y ni una más:
+// LO QUE HAY, DE ABAJO ARRIBA. Cinco piezas de arquitectura y ni una más:
 //
 //   - **rodapié**: donde se roza la pared al pasar. Es lo que impide que el
 //     muro toque el suelo a pelo, el mismo papel que `zocalo` juega en el color
 //     de la sala.
-//   - **paño de yeso**: liso. Su única interrupción son las juntas verticales
-//     entre paños, de UNA celda y un punto más oscuras — sombra, no línea
-//     negra: una junta marcada convierte la pared en una rejilla.
+//   - **friso** (boiserie): el mismo tono que el rodapié, pero subido a la
+//     altura de un zócalo de galería de verdad —90 cm, no 20—. Con un panel
+//     EMBUTIDO por tablero: una sombra arriba, una luz abajo, ancho de tablero
+//     completo. Es la diferencia entre un mamparo pintado y una pared
+//     trabajada, y no le disputa nada a un cuadro porque un cuadro no cuelga
+//     ahí — cuelga del riel, medio metro por encima.
+//   - **paño de yeso**: liso por encima del friso. Su única interrupción son
+//     las juntas verticales entre paños, de UNA celda y un punto más oscuras —
+//     sombra, no línea negra: una junta marcada convierte la pared en una
+//     rejilla.
 //   - **riel de cuelgue**: la única pieza clara, a una sola altura en toda la
 //     sala. No es adorno, es la explicación de por qué los cuadros cuelgan
 //     donde cuelgan — un museo tiene riel, y sin él la altura de un cuadro es
 //     una decisión sin causa visible.
-//   - **cornisa**: dos celdas arriba, que cierran el paño contra el techo.
+//   - **cornisa**: tres celdas arriba, con una banda de luz a media altura en
+//     vez de un bloque plano — el mismo perfil de moldura que un rodapié de
+//     verdad, solo que puesto boca abajo contra el techo.
 //
-// LO QUE NO HAY: remaches, escotillas, rejillas, cables, tuberías, manchas
-// sorteadas. Y NADA QUE SE PUEDA LEER, igual que en la nave (#526): aquí sería
-// todavía peor, porque en una galería cualquier marca sobre la pared se lee
-// como parte de la exposición.
+// LO QUE SIGUE SIN HABER: remaches, escotillas, rejillas, cables, tuberías,
+// manchas sorteadas. Y NADA QUE SE PUEDA LEER COMO MOTIVO SUELTO, igual que en
+// la nave (#526): aquí sería todavía peor, porque en una galería cualquier
+// marca sobre la pared se lee como parte de la exposición — por eso el panel
+// del friso no es más pequeño que su tablero, y por eso sigue sin haber ni una
+// sola pieza sorteada.
 //
 // LA CELDA ES LA DE LA NAVE (`CELDA`, 10 cm) Y NO UNA PROPIA. Es la excepción
 // que confirma la regla del cuadro: un lienzo baja a 1,25 cm porque es lo que
@@ -71,8 +87,20 @@ const RIEL_ALTO = 2;
  *  hace que la pared se lea como construida y no como pintada. */
 const JUNTA_CADA = 24;
 
-/** Cuántas celdas ocupa la cornisa. */
-const CORNISA_ALTO = 2;
+/** Cuántas celdas ocupa la cornisa. Tres, no dos: la de en medio es la banda de
+ *  luz que le da perfil de moldura en vez de bloque plano. */
+const CORNISA_ALTO = 3;
+
+/** Alto del friso (boiserie), en celdas. 90 cm: el zócalo de una galería de
+ *  verdad, no los 20 cm de un rodapié. Es el MISMO tono que el rodapié —es la
+ *  misma pieza de carpintería, solo que más alta— así que subir este número no
+ *  añade un color nuevo, solo más pared trabajada por debajo del riel. */
+const FRISO_ALTO = 9;
+
+/** El margen vertical que deja el panel embutido dentro del friso, arriba y
+ *  abajo. Ni pegado al rodapié ni pegado al final del friso: un panel que toca
+ *  sus dos bordes no se lee como embutido, se lee como el friso entero teñido. */
+const PANEL_MARGEN_V = 2;
 
 /**
  * La pared de galería en coordenadas de rejilla.
@@ -91,14 +119,38 @@ export function rejillaMuroMuseo(columnas, filas) {
   // El paño, entero. Todo lo demás se dibuja encima.
   rect(0, 0, columnas, filas, MUSEO.pano);
 
-  // Las juntas entre tableros. Se saltan la primera columna a propósito: una
+  // Las juntas entre tableros, de suelo a cornisa: el friso se tabica igual
+  // que el paño de encima, porque son la misma carpintería en dos alturas y no
+  // dos materiales distintos. Se saltan la primera columna a propósito: una
   // junta pegada a la esquina parece un fallo de encaje, no una junta.
   for (let u = JUNTA_CADA; u < columnas - 1; u += JUNTA_CADA) {
     columna(u, RODAPIE_ALTO, filas - RODAPIE_ALTO - CORNISA_ALTO, MUSEO.panoJunta);
   }
 
+  // El friso (boiserie): el tono del rodapié, subido a la altura de un zócalo
+  // de galería. Se dibuja ANTES que el rodapié y sus juntas, para que el
+  // rodapié y su sombra queden por encima sin que un panel se los coma.
+  if (FRISO_ALTO > RODAPIE_ALTO) {
+    rect(RODAPIE_ALTO, 0, columnas, FRISO_ALTO - RODAPIE_ALTO, MUSEO.rodapie);
+  }
+
+  // El panel embutido de cada tablero del friso: sombra arriba, luz abajo,
+  // ANCHO DE TABLERO COMPLETO — nunca más estrecho, o dejaría de cumplir la
+  // regla de #526 de no tener nada más pequeño que un tablero. Se salta el
+  // último tramo si queda más corto que un tablero entero, por el mismo
+  // motivo: un panel recortado se leería como una mancha suelta.
+  const altoPanel = FRISO_ALTO - RODAPIE_ALTO - 2 * PANEL_MARGEN_V;
+  if (altoPanel > 0) {
+    for (let u = 0; u + JUNTA_CADA <= columnas; u += JUNTA_CADA) {
+      const vArriba = RODAPIE_ALTO + PANEL_MARGEN_V;
+      linea(vArriba + altoPanel - 1, u, JUNTA_CADA, MUSEO.panoJunta);
+      linea(vArriba, u, JUNTA_CADA, MUSEO.molduraLuz);
+    }
+  }
+
   // El rodapié, y su sombra justo encima: sin esa línea el rodapié es un cambio
-  // de color y no un listón que sobresale.
+  // de color y no un listón que sobresale. Va DESPUÉS del friso y sus paneles
+  // porque es el listón más bajo de todos y tiene que quedar por delante.
   rect(0, 0, columnas, RODAPIE_ALTO, MUSEO.rodapie);
   linea(RODAPIE_ALTO, 0, columnas, MUSEO.panoJunta);
 
@@ -114,8 +166,11 @@ export function rejillaMuroMuseo(columnas, filas) {
     linea(vRiel - 1, 0, columnas, MUSEO.panoJunta);
   }
 
-  // La cornisa: el paño no muere contra el techo, se remata.
+  // La cornisa: el paño no muere contra el techo, se remata con perfil de
+  // moldura — una banda de luz a media altura, no un bloque plano — y su
+  // sombra por debajo, igual que el riel.
   rect(filas - CORNISA_ALTO, 0, columnas, CORNISA_ALTO, MUSEO.rodapie);
+  if (CORNISA_ALTO >= 3) linea(filas - CORNISA_ALTO + 1, 0, columnas, MUSEO.molduraLuz);
   linea(filas - CORNISA_ALTO - 1, 0, columnas, MUSEO.panoJunta);
 
   return lienzo.rejilla;

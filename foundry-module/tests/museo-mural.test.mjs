@@ -13,7 +13,13 @@ test("la pared de galería no usa ni un tono que no sea suyo", () => {
   // Frontera de arte (#351): un módulo de arte no declara color propio. Y
   // además no puede colarse aquí ningún tono de otra superficie: el muro es el
   // fondo de la sala y comparte paleta con ella o deja de ser la misma sala.
-  const permitidos = new Set([MUSEO.pano, MUSEO.panoJunta, MUSEO.riel, MUSEO.rodapie]);
+  const permitidos = new Set([
+    MUSEO.pano,
+    MUSEO.panoJunta,
+    MUSEO.riel,
+    MUSEO.rodapie,
+    MUSEO.molduraLuz,
+  ]);
   for (const fila of rejillaMuroMuseo(COLUMNAS, FILAS)) {
     for (const color of fila) assert.ok(permitidos.has(color), `tono ajeno: ${color}`);
   }
@@ -29,10 +35,14 @@ test("ESTÁ VACÍA A PROPÓSITO: cuesta un orden de magnitud menos que la de cas
   // No es una optimización, es la idea: en una galería lo que tiene que
   // reclamar la mirada es lo colgado, y cada greeble compite con la obra. El
   // presupuesto es la CONSECUENCIA de eso, y esta prueba lo fija para que nadie
-  // «mejore» la pared rellenándola.
+  // «mejore» la pared rellenándola con algo más pequeño que un tablero — el
+  // friso y sus paneles embutidos SÍ suben la cuenta (de 32 a 39, boiserie de
+  // #838→siguiente), porque son arquitectura y no relleno, pero cada pieza
+  // nueva sigue siendo un tablero entero o una banda de lado a lado: la prueba
+  // de más abajo, "NADA que se pueda leer", es la que de verdad vigila eso.
   const galeria = fundirRectangulos(rejillaMuroMuseo(COLUMNAS, FILAS)).length;
   const casco = fundirRectangulos(rejillaMural(COLUMNAS, FILAS, 20260818)).length;
-  assert.equal(galeria, 32);
+  assert.equal(galeria, 39);
   assert.ok(
     galeria * 8 < casco,
     `la pared de galería se está llenando: ${galeria} rectángulos contra los ${casco} del casco`,

@@ -14,6 +14,9 @@
 [![Base upstream](https://img.shields.io/badge/upstream-EmptyEpsilon-informational.svg)](https://github.com/daid/EmptyEpsilon)
 [![Docker](https://img.shields.io/badge/docker-servidor%20%2B%20puente-2496ed.svg?logo=docker&logoColor=white)](docker/README.md)
 [![Foundry VTT](https://img.shields.io/badge/foundry%20vtt-integraci%C3%B3n%20en%20curso-ff6400.svg)](docs/FOUNDRY.md)
+[![Dependency Graph](https://github.com/EspacioKoop/espaciokooplagunak/actions/workflows/dependabot/update-graph/badge.svg?branch=main)](https://github.com/EspacioKoop/espaciokooplagunak/actions/workflows/dependabot/update-graph)
+[![Dependabot Updates](https://github.com/EspacioKoop/espaciokooplagunak/actions/workflows/dependabot/dependabot-updates/badge.svg?branch=main)](https://github.com/EspacioKoop/espaciokooplagunak/actions/workflows/dependabot/dependabot-updates)
+
 
 ## Estado del proyecto
 

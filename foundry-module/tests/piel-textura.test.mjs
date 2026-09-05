@@ -91,14 +91,20 @@ function componer(pielMuro) {
   });
 }
 
-test("de serie NO cambia nada: la piel sigue siendo de geometría", () => {
-  // Cambiar el aspecto de las trece salas del Phobos a la vez es una decisión de
-  // arte, y se toma aparte. Este PR trae el camino, no el cambio.
+test("de serie el muro va texturado (#458: la decisión de arte ya se tomó)", () => {
+  // Cambia el aspecto de las trece salas del Phobos a la vez, y ya no es una
+  // decisión aparte: `pielMuro: "textura"` es el valor por defecto desde #458.
+  // `"geometria"` sigue disponible como opción explícita para quien la pida.
   const sala = crearSalaCaja({ ...MEDIDAS, puertas: [], mobiliario: [] });
   const escena = sala.componer(MEDIDAS.ancho / 2, 0, MEDIDAS.profundidad / 2 - 2, 0.35, {
     ancho: 640,
     alto: 400,
   });
+  assert.ok(escena.poligonos.some((p) => p.textura), "el muro tiene que llegar texturado sin pedir nada");
+});
+
+test("pedir geometría explícitamente sigue funcionando: sin texturas", () => {
+  const escena = componer("geometria");
   assert.equal(escena.poligonos.filter((p) => p.textura).length, 0);
 });
 

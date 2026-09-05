@@ -13,8 +13,17 @@
     <canvas class="lagunak-andar-minimapa" width="108" height="96"
             aria-hidden="true" data-andar-minimapa></canvas>
   </div>
-  <canvas class="lagunak-andar-lienzo" width="480" height="270"
-          role="img" aria-label="{{localize "LAGUNAK.AndarNave.VistaAlt"}}"></canvas>
+  <div class="lagunak-andar-nave-visor">
+    <canvas class="lagunak-andar-lienzo" width="480" height="270"
+            role="img" aria-label="{{localize "LAGUNAK.AndarNave.VistaAlt"}}"></canvas>
+    {{!-- A dónde lleva la puerta que se tiene delante (#458 QA: «no se
+          entiende a dónde te va a llevar una puerta»). Sobre el propio visor,
+          arriba —el letrero de un dintel, no un panel de ayuda— y oculto
+          salvo cerca de una puerta: región `status` por el mismo motivo que
+          el rótulo de sala. --}}
+    <p class="lagunak-andar-letrero-puerta" role="status" aria-live="polite"
+       data-andar-letrero-puerta hidden></p>
+  </div>
   {{!-- La cartela de una pieza de museo (#598). Vacía y oculta salvo cuando se
         está delante de algo que la tiene: es una superficie de LECTURA, no un
         panel de estado, y no recuerda lo que ya se ha visto. Región `status`

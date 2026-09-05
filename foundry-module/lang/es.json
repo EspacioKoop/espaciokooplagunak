@@ -842,6 +842,7 @@
   "LAGUNAK.Controles.AbrirDados": "Abrir la mesa de dados",
   "LAGUNAK.MapaVivo.ContactosCaidos": "No llegan contactos: la lectura de la nave propia sigue siendo válida, pero el mapa no puede pintar lo que hay alrededor.",
   "LAGUNAK.AndarNave.EstasEn": "Estás en: {sala}",
+  "LAGUNAK.AndarNave.LlevaA": "→ {sala}",
   "LAGUNAK.AndarNave.Sala.maniobra": "Maniobra",
   "LAGUNAK.AndarNave.Sala.armas-haz": "Cañones de haz",
   "LAGUNAK.AndarNave.Sala.pasarela-proa": "Pasarela de proa",

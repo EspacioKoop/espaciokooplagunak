@@ -842,6 +842,7 @@
   "LAGUNAK.Controles.AbrirDados": "Open the dice table",
   "LAGUNAK.MapaVivo.ContactosCaidos": "Contacts are unavailable: own-ship readings are still valid, but the map cannot draw what is around it.",
   "LAGUNAK.AndarNave.EstasEn": "You are in: {sala}",
+  "LAGUNAK.AndarNave.LlevaA": "→ {sala}",
   "LAGUNAK.AndarNave.Sala.maniobra": "Maneuvering",
   "LAGUNAK.AndarNave.Sala.armas-haz": "Beam weapons",
   "LAGUNAK.AndarNave.Sala.pasarela-proa": "Forward walkway",

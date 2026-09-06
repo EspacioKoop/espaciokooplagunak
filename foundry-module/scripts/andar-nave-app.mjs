@@ -32,6 +32,7 @@ import { CATALOGO_MUSEO } from "./museo-piezas.mjs";
 import { resolverAsiento } from "./nave-asiento.mjs";
 import { ponerPose } from "./nave-pose.mjs";
 import { resolverInvestigacion } from "./libro-srd-investigacion.mjs";
+import { rollD20 } from "./dado-util.mjs";
 import { AJUSTE_TELEMETRIA, aceptarSensores, aceptarTelemetria } from "./ship-view/telemetria-difusion.mjs";
 import { AJUSTE_NIVEL_ALERTA } from "./alerta-escena.mjs";
 
@@ -352,7 +353,7 @@ function arrancar(raiz, estanciaPedida = null) {
     const resultado = panel.querySelector?.("[data-investigacion-resultado]");
     panel.querySelectorAll?.("[data-investigacion-habilidad]").forEach((boton) => {
       boton.onclick = () => {
-        const tirada = 1 + Math.floor(Math.random() * 20);
+        const tirada = rollD20();
         const prueba = resolverInvestigacion({ habilidad: boton.dataset.investigacionHabilidad, dc: 12, tiradas: [tirada] });
         if (resultado) resultado.textContent = `${prueba.exito ? "Éxito" : "Fallo"}: ${prueba.habilidad} ${prueba.total}/${prueba.dc}`;
       };

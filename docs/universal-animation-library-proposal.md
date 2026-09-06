@@ -18,7 +18,28 @@ Additionally, [Universal Animation Library 2](https://quaternius.com/packs/unive
 4. **Documentation**: Update any relevant documentation to note the animation sources and license.
 5. **Attribution**: Although CC0 does not require attribution, we may credit Quaternius in the game's credits or documentation.
 
-## License
+
+
+## Manual Download Instructions
+Since the automated download requires a session-specific key from itch.io, please follow these steps to manually obtain the asset:
+
+1. Visit the asset page for Universal Animation Library: https://quaternius.itch.io/universal-animation-library
+2. Visit the asset page for Universal Animation Library 2: https://quaternius.com/packs/universalanimationlibrary2.html
+3. Click "Download Now" on each page and enter a fair price (can be $0 for the free versions).
+4. After the download starts, save the ZIP files to your local machine.
+5. Extract the ZIP files.
+6. Copy the extracted contents (should be GLB/OBJ/FBX animation files and possibly .blend source files) into:
+   `<repo_root>/resources/animations/universal-animation-library/`
+   `<repo_root>/resources/animations/universal-animation-library-2/`
+   (or combine them into a single directory if preferred).
+7. Ensure the directory structure is organized as you see fit (e.g., by animation type).
+
+## Verification
+After placing the files, you can verify by checking for common file extensions:
+```bash
+find resources/animations -type f \( -name "*.glb" -o -name "*.gltf" -o -name "*.fbx" -o -name "*.blend" \)
+```
+\n## License
 - Creative Commons Zero v1.0 Universal (CC0)
 - Free for personal, educational, and commercial projects.
 - No attribution required (but appreciated).

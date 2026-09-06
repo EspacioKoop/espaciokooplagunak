@@ -50,7 +50,7 @@ import { componerEscena } from "./retro3d.mjs";
  *   `componerEscena(...).poligonos` — listos para fundir con los de la sala
  *   y reordenar juntos por profundidad.
  */
-export function poligonosOtrosJugadores(jugadores, { camara, yaw, ancho, alto, epoca, fov }) {
+export function poligonosOtrosJugadores(jugadores, { camara, yaw, ancho, alto, epoca, fov, alpha = 1 }) {
   if (!Array.isArray(jugadores) || jugadores.length === 0) return [];
   const [camX, camY, camZ] = camara;
 
@@ -77,7 +77,9 @@ export function poligonosOtrosJugadores(jugadores, { camara, yaw, ancho, alto, e
         // los planos fijos de la cantina; sin esto, la caja resultante se infla
         // a miles de píxeles y tapa la pantalla.
         recorteLateral: true,
-      }),
+              // Apply alpha if provided
+        ...(Number.isFinite(alpha) ? { alpha } : {}),
+}),
     )
     .flatMap((parte) => parte.poligonos);
 }

@@ -378,7 +378,8 @@ test("la opacidad acumulada del núcleo sigue siendo un velo", () => {
 });
 
 test("el haz llega al suelo y se abre por el camino", () => {
-  const [, , fuera] = capasConoLuminarias(SALA);
+  const capas = capasConoLuminarias(SALA);
+  const fuera = capas[capas.length - 1];
   const { malla } = fuera.porLuminaria[0];
   assert.ok(malla.vertices.every((v) => v.every(Number.isFinite)), "hay NaN en el haz");
   const alturas = malla.vertices.map((v) => v[1]);
@@ -399,7 +400,8 @@ test("el haz llega al suelo y se abre por el camino", () => {
 test("los charcos de dos luminarias vecinas no se solapan", () => {
   // Si el charco pasara del paso entre lámparas, el suelo quedaría iluminado
   // por igual y el haz dejaría de señalar dónde está cada luz.
-  const [, , fuera] = capasConoLuminarias(SALA);
+  const capas = capasConoLuminarias(SALA);
+  const fuera = capas[capas.length - 1];
   const { malla } = fuera.porLuminaria[0];
   const suelo = malla.vertices.filter((v) => v[1] < 0.1).map((v) => v[0]);
   const diametro = Math.max(...suelo) - Math.min(...suelo);
@@ -410,7 +412,8 @@ test("el polvo cae DENTRO del haz y sólo en lo alto", () => {
   // Una mota fuera del cono se ve flotando al lado de la luz, no dentro de ella.
   const grupos = motasLuminarias(SALA);
   assert.equal(grupos.length, reparto(SALA.ancho, SALA.profundidad).length);
-  const [, , fuera] = capasConoLuminarias(SALA);
+  const capas = capasConoLuminarias(SALA);
+  const fuera = capas[capas.length - 1];
   const yDifusor = ALTURA - CAIDA - CAIDA_DIFUSOR;
   for (let i = 0; i < grupos.length; i += 1) {
     const { centro, malla } = grupos[i];

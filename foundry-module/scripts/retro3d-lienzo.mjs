@@ -161,7 +161,7 @@ export function muestrearTextura(textura, u, v) {
  *    divide por el `1/z` que ya se calcula para el z-buffer. Coste: una división
  *    por píxel, que es justo lo que aquella máquina sí podía pagar.
  */
-function rasterizarTriangulo(pixeles, profundidades, ancho, alto, p0, p1, p2, r, g, b, tex) {
+function rasterizarTriangulo(pixeles, profundidades, ancho, alto, p0, p1, p2, r, g, b, tex, alpha = 1) {
   const area = areaConSigno2(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y);
   if (area === 0) return; // degenerado: los tres puntos en línea, sin superficie que pintar
 
@@ -217,7 +217,7 @@ function rasterizarTriangulo(pixeles, profundidades, ancho, alto, p0, p1, p2, r,
           pixeles[o] = rgb[0] * tex.intensidad;
           pixeles[o + 1] = rgb[1] * tex.intensidad;
           pixeles[o + 2] = rgb[2] * tex.intensidad;
-          pixeles[o + 3] = 255;
+          pixeles[o + 3] = Math.round(255 * alpha);
           continue;
         }
         // Índice fuera de paleta: se cae al color plano de la cara en vez de
@@ -228,7 +228,7 @@ function rasterizarTriangulo(pixeles, profundidades, ancho, alto, p0, p1, p2, r,
       pixeles[o] = r;
       pixeles[o + 1] = g;
       pixeles[o + 2] = b;
-      pixeles[o + 3] = 255;
+      pixeles[o + 3] = Math.round(255 * alpha);
     }
   }
 }
@@ -337,7 +337,7 @@ export function pintarEscenaConProfundidad(ctx, escena, { fondo = null } = {}) {
         pixeles[o] = r;
         pixeles[o + 1] = g;
         pixeles[o + 2] = b;
-        pixeles[o + 3] = 255;
+        pixeles[o + 3] = Math.round(255 * alpha);
       }
     }
   }
@@ -365,7 +365,8 @@ export function pintarEscenaConProfundidad(ctx, escena, { fondo = null } = {}) {
           }
         : null;
     paraCadaTrianguloDelAbanico(puntos, (p0, p1, p2) => {
-      rasterizarTriangulo(pixeles, profundidades, ancho, alto, p0, p1, p2, r, g, b, tex);
+        const alpha = Number.isFinite(poligono.alpha) ? Math.max(0, Math.min(1, poligono.alpha)) : 1;
+      rasterizarTriangulo(pixeles, profundidades, ancho, alto, p0, p1, p2, r, g, b, tex, alpha);
     });
   }
 

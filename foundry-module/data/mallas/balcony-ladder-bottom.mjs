@@ -7,7 +7,7 @@
 //   autoría    Kenney.nl
 //   fuente     https://kenney.nl/assets/retro-urban-kit
 //   licencia   CC0 1.0
-//   sha256     TODO
+//   sha256     266b04ffb06c53a17988f858646d1fd1072258050ac3d9ba653004a769cc37d1
 //
 // Solo GEOMETRÍA: el color lo pone la escena con la paleta del módulo, que es la
 // frontera de arte de #351. La malla no trae ni textura ni material propios.

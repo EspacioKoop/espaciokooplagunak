@@ -105,7 +105,7 @@ export const INTERACCIONES = declararInteracciones([
     id: "libro-abrir",
     punto: [ANCHO / 2, PROFUNDIDAD / 2], // centro del libro
     orientacion: 0,
-    accion: { tipo: "libro-toggle", estado: "cerrado" }, // opaco para el motor de andar
+    accion: { tipo: "libro-toggle" }, // opaco para el motor de andar
   },
   {
     id: "salida",

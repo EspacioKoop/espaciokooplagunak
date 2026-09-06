@@ -3,13 +3,16 @@
 ## Asset Pack Overview
 The [Universal Animation Library](https://quaternius.itch.io/universal-animation-library) by Quaternius is a collection of 120+ animations for a universal humanoid rig, compatible with Unreal Engine, Godot, and Unity. Animations cover locomotion (8 directions), combat, emotes, and more. The pack is released under the Creative Commons Zero v1.0 Universal (CC0) license, free for personal, educational, and commercial use.
 
+Additionally, [Universal Animation Library 2](https://quaternius.com/packs/universalanimationlibrary2.html) provides 130+ animations focusing on melee and armed combos, parkour movement, farming, fishing, zombie locomotion, and more. It also uses the same universal humanoid rig and is compatible with the same engines, released under CC0.
+
 ## Potential Use in Espaciokoop Lagunak
 - Provide idle, movement, and combat animations for 3D character models in the game.
 - Enhance visual fidelity of avatars or NPCs in 3D scenes (if applicable).
 - Animations are ready for retargeting to custom rigs.
+- The second library adds specialized animations for varied gameplay mechanics.
 
 ## Integration Plan
-1. **Directory Structure**: Place the GLB/GLTF animation files under `resources/animations/universal-animation-library/`.
+1. **Directory Structure**: Place the GLB/GLTF animation files under `resources/animations/universal-animation-library/` and `resources/animations/universal-animation-library-2/` (or a combined folder).
 2. **File Formats**: Use the provided GLB files (with root motion disabled) for broader compatibility.
 3. **Source Files**: Optionally include the source `.blend` files for modification (requires payment for the Source version).
 4. **Documentation**: Update any relevant documentation to note the animation sources and license.
@@ -21,11 +24,12 @@ The [Universal Animation Library](https://quaternius.itch.io/universal-animation
 - No attribution required (but appreciated).
 
 ## Next Steps
-- Download the asset pack (Standard version is free; Name your own price).
+- Download the asset packs (Standard versions are free; Name your own price).
 - Extract and organize the animation files.
 - Test integration with existing 3D models or rigs in the game.
 - Update any animation systems or scripts to utilize the new animations.
 
 ## References
-- Asset Page: https://quaternius.itch.io/universal-animation-library
+- Asset Page 1: https://quaternius.itch.io/universal-animation-library
+- Asset Page 2: https://quaternius.com/packs/universalanimationlibrary2.html
 - License: https://creativecommons.org/publicdomain/zero/1.0/

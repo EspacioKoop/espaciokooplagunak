@@ -13,11 +13,21 @@ import {
   PLANTA_MUSEO,
   componerMuseo,
   colocarPieza,
+  LIBRO_MUSEO,
+  marcadorLibroMuseo,
 } from "../scripts/museo-escena.mjs";
 import { CELDA_LIENZO, rejillaCuadro } from "../scripts/nave-cuadro.mjs";
 import { FICHAS } from "../../tools/convertir-estatua.mjs";
 import { colisiona } from "../scripts/nave-movimiento.mjs";
 import { interaccionAlAlcance } from "../scripts/nave-interaccion.mjs";
+
+test("el museo expone un libro 3D como interacción SRD efímera", () => {
+  const libro = INTERACCIONES.find((interaccion) => interaccion.id === "libro-srd-museo");
+  assert.deepEqual(libro.accion, LIBRO_MUSEO.accion);
+  const marcador = marcadorLibroMuseo({ habilidad: "arcana", dc: 12, total: 14, exito: true });
+  assert.equal(marcador.estado, "exito");
+  assert.deepEqual(marcador.posicion, [LIBRO_MUSEO.centro[0], LIBRO_MUSEO.centro[1] + 0.2, LIBRO_MUSEO.centro[2]]);
+});
 
 test("una pieza real del museo con rig atraviesa colocarPieza y sale deformada (#603 fase 4)", () => {
   // Ninguna pieza del catálogo declara rig todavía (nada real que doblar), así
@@ -165,10 +175,10 @@ test("la salida devuelve a la nave, y es lo único que transporta en toda la sal
 });
 
 test("NADA en la sala concede, cuenta ni recuerda (docs/FOUNDRY.md)", () => {
-  // Las únicas acciones posibles son leer una cartela y salir. Cualquier tipo
-  // nuevo aquí es una decisión de diseño, no un detalle: que falle la prueba.
+  // Leer, investigar de forma efímera y salir son acciones de visita; ninguna
+  // concede, cuenta ni recuerda progreso de campaña.
   const tipos = new Set(INTERACCIONES.map((punto) => punto.accion?.tipo));
-  assert.deepEqual([...tipos].sort(), ["cartela", "estancia"]);
+  assert.deepEqual([...tipos].sort(), ["cartela", "estancia", "investigar-libro"]);
 });
 
 test("se entra dentro de la sala, en suelo libre y mirando a las piezas", () => {

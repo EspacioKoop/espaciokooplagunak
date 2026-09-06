@@ -37,6 +37,21 @@ import { declararInteracciones } from "./nave-interaccion.mjs";
 import { CATALOGO_MUSEO, MALLAS_MUSEO } from "./museo-piezas.mjs";
 import { colocarCuadro, ALTO_LIENZO } from "./nave-cuadro.mjs";
 import { deformarPieza } from "./estatua-rig.mjs";
+import { libroGeometria } from "./libro-geometria.mjs";
+import { marcadorInvestigacion } from "./libro-srd-investigacion.mjs";
+
+/** Primer consumidor 3D del adaptador SRD: un libro abierto, sin persistencia. */
+export const LIBRO_MUSEO = Object.freeze({
+  centro: Object.freeze([1.25, 0.82, 1.45]),
+  accion: Object.freeze({ tipo: "investigar-libro", habilidades: ["investigacion", "historia", "arcana"] }),
+});
+
+function trasladarMalla(malla, [dx, dy, dz]) {
+  return {
+    ...malla,
+    vertices: malla.vertices.map(([x, y, z]) => [x + dx, y + dy, z + dz]),
+  };
+}
 
 /* ---- medidas de la sala ---------------------------------------------------- */
 
@@ -400,6 +415,13 @@ export const ENTRADA = Object.freeze({ x: ANCHO / 2, z: Z_ENTRADA, yaw: 0 });
 
 function mobiliario() {
   const piezas = [];
+  piezas.push({
+    malla: trasladarMalla(libroGeometria(Math.PI / 2, Math.PI / 4), LIBRO_MUSEO.centro),
+    centro: [...LIBRO_MUSEO.centro],
+    medidas: [0.4, 0.3, 0.2],
+    color: MUSEO.piedra,
+    colision: false,
+  });
   for (const colocada of PIEZAS_COLOCADAS) {
     const [x, , z] = colocada.centro;
     piezas.push({
@@ -459,6 +481,12 @@ function mobiliario() {
  * ficha; nadie más necesita saber qué es un museo.
  */
 export const INTERACCIONES = declararInteracciones([
+  {
+    id: "libro-srd-museo",
+    punto: [LIBRO_MUSEO.centro[0], LIBRO_MUSEO.centro[2] + 0.45],
+    orientacion: 0,
+    accion: LIBRO_MUSEO.accion,
+  },
   ...PIEZAS_COLOCADAS.map((colocada) => ({
     id: `pieza-${colocada.pieza.id}`,
     punto: [...colocada.mirador],
@@ -494,6 +522,11 @@ export const INTERACCIONES = declararInteracciones([
     accion: { tipo: "estancia", estancia: "cantina" },
   },
 ]);
+
+/** Proyección efímera del resultado junto al libro; el núcleo no lo recuerda. */
+export function marcadorLibroMuseo(resultado) {
+  return marcadorInvestigacion(resultado, [LIBRO_MUSEO.centro[0], LIBRO_MUSEO.centro[1] + 0.2, LIBRO_MUSEO.centro[2]]);
+}
 
 const SALA = crearSalaCaja({
   ancho: ANCHO,

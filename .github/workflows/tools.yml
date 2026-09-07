@@ -79,6 +79,15 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: "22"
+      - name: Instalar draco3d para normalizar-glb.mjs
+        # normalizar-glb.mjs decodifica mallas comprimidas con draco3d (WASM).
+        # tools/ no es un proyecto npm (ver .gitignore: package.json y
+        # package-lock.json están excluidos a propósito, igual que en
+        # foundry-module/) así que se instala sin manifiesto ni lockfile en
+        # vez de añadir uno solo para esta única dependencia; sin este paso
+        # el `node --test` de abajo falla con ERR_MODULE_NOT_FOUND.
+        working-directory: tools
+        run: npm install draco3d@1.5.7 --no-save
       - name: Ejecutar tests de tools/ (Node)
         # tools/ nombra sus tests Node con prefijo `test_*.mjs`, no con el
         # sufijo `*.test.mjs` del modulo Foundry; por eso el glob del modulo no

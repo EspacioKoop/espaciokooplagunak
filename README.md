@@ -14,6 +14,29 @@
 [![Base upstream](https://img.shields.io/badge/upstream-EmptyEpsilon-informational.svg)](https://github.com/daid/EmptyEpsilon)
 [![Docker](https://img.shields.io/badge/docker-servidor%20%2B%20puente-2496ed.svg?logo=docker&logoColor=white)](docker/README.md)
 [![Foundry VTT](https://img.shields.io/badge/foundry%20vtt-integraci%C3%B3n%20en%20curso-ff6400.svg)](docs/FOUNDRY.md)
+[![Dependency Graph](https://github.com/EspacioKoop/espaciokooplagunak/actions/workflows/dependabot/update-graph/badge.svg?branch=main)](https://github.com/EspacioKoop/espaciokooplagunak/actions/workflows/dependabot/update-graph)
+[![Dependabot Updates](https://github.com/EspacioKoop/espaciokooplagunak/actions/workflows/dependabot/dependabot-updates/badge.svg?branch=main)](https://github.com/EspacioKoop/espaciokooplagunak/actions/workflows/dependabot/dependabot-updates)
+
+
+## Norma platino de colaboración
+
+**Terminar antes de empezar más.** Norma compartida de Varo y Gurucharri,
+de lectura obligatoria para personas, agentes y bots al iniciar cada tarea.
+
+- **Primero la cola existente:** resolver bloqueantes, revisar e integrar entregas
+  listas y cerrar duplicados antes de abrir nuevos frentes. Si existe un bloqueo
+  real, dejarlo documentado y avanzar en trabajo independiente; las urgencias no esperan.
+- **Review proporcional al riesgo:** los cambios ordinarios, acotados, reversibles
+  y probados pueden integrarse por PR sin esperar una aprobación ajena, también
+  en contribuciones propias. Los cambios de riesgo requieren revisión independiente.
+- **Sin saltarse controles:** se mantienen los checks obligatorios, la resolución
+  de conversaciones y las protecciones del historial, también para administradores.
+  Los defectos bloqueantes y las pruebas de aceptación pendientes no se ignoran.
+- **Cierre honesto:** un issue se completa cuando cumple su aceptación; integrar
+  código no equivale a desplegarlo ni a haber realizado un playtest humano.
+
+➡️ **[Leer la norma platino completa](docs/NORMA_PLATINO_COLABORACION.md)**
+— fuente de referencia para el alcance, las excepciones y la política de integración.
 
 ## Estado del proyecto
 
@@ -27,7 +50,7 @@ seguro y módulo Foundry en desarrollo. Las fases 0, 1 y 2 están completadas.
 |---|---|---|
 | Historial y atribución de EmptyEpsilon | Hecho | `main` parte de `upstream/master` sin reescribir historial |
 | Licencia GPL-2.0 | Conservada | Véase [`LICENSE`](LICENSE) |
-| Normas de colaboración | Hecho | [`CONTRIBUTING.md`](CONTRIBUTING.md) y [`AGENTS.md`](AGENTS.md) |
+| Normas de colaboración | Hecho | [Norma platino](docs/NORMA_PLATINO_COLABORACION.md), [`CONTRIBUTING.md`](CONTRIBUTING.md) y [`AGENTS.md`](AGENTS.md) |
 | Decisiones arquitectónicas | Documentadas | [`docs/adr/README.md`](docs/adr/README.md) e índice [`JSON`](docs/adr/index.json) |
 | Compilación reproducible | Verificada en Linux | Nativa ([`docs/BUILDING.md`](docs/BUILDING.md)) y en imagen Docker (SeriousProton fijado por commit) |
 | Ejecución con Docker | Verificada en local | Servidor headless + puente vía compose ([`docker/README.md`](docker/README.md)) |

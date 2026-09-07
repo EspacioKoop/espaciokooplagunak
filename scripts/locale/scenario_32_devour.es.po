@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
-"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"Report-Msgid-Bugs-To: https://github.com/EspacioKoop/espaciokooplagunak/issues\n"
 "PO-Revision-Date: 2026-07-12 00:00+0200\n"
 "Last-Translator: Espaciokoop Lagunak contributors\n"
 "Language-Team: Espaciokoop Lagunak\n"
@@ -25,7 +25,7 @@ msgid ""
 "Version 1.0.2\n"
 "\n"
 "USN Discord: https://discord.gg/PntGG3a where you can join a game online. There's one every weekend. All experience levels are welcome."
-msgstr "Stop the Planet Devourer before all the planetas are gone Escrito para los juegos de EE el 4 de mayo de 2023 = \"Que la cuarta esté contigo\" Versión 1.0.2 USN Discord: https://discord.gg/PntG3a donde puedes unirte a un juego en línea. Hay uno cada fin de semana. Todos los niveles de experiencia son bienvenidos."
+msgstr "Detén al Devorador de Planetas antes de que todos los planetas desaparezcan. Escrito para los juegos de EE el 4 de mayo de 2023 = \"Que la cuarta esté contigo\" Versión 1.0.2 USN Discord: https://discord.gg/PntG3a donde puedes unirte a un juego en línea. Hay uno cada fin de semana. Todos los niveles de experiencia son bienvenidos."
 
 # Scenario setting
 msgctxt "setting"
@@ -74,7 +74,7 @@ msgstr "Quijote"
 
 msgctxt "Enemies"
 msgid "Insanely strong and/or inordinately large numbers of enemies"
-msgstr "Insanely strong and/or inordinately large numbers of enemigos"
+msgstr "Enemigos disparatadamente fuertes y/o en cantidades desmedidas"
 
 # Scenario setting
 msgctxt "setting"

@@ -16,6 +16,18 @@
       </div>
     </header>
 
+    {{#if hasUncrewedStations}}
+      <section class="lagunak-workspace__uncrewed" role="status" aria-live="polite" aria-atomic="true">
+        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+        <div>
+          <strong>{{localize "LAGUNAK.Espacios.PuestosNoAtendidos"}}</strong>
+          <p>{{localize "LAGUNAK.Espacios.PuestosNoAtendidosDetalle"}}</p>
+          <ul>
+            {{#each uncrewedStations}}<li>{{label}}</li>{{/each}}
+          </ul>
+        </div>
+      </section>
+    {{/if}}
 
     <div class="lagunak-workspace__connection lagunak-workspace__connection--{{connection}}" role="status" aria-live="polite">
       <span class="lagunak-workspace__pulse" aria-hidden="true"></span>
@@ -95,9 +107,11 @@
                 <canvas data-lagunak-visor-piloto width="192" height="108"></canvas>
               </div>
               <div class="lagunak-workspace__nav-display">
-                <div class="lagunak-workspace__radar" role="img" aria-label="{{navigationAriaLabel}}" style="--lagunak-heading: {{navigationHeading}}deg">
+                <div class="lagunak-workspace__radar" role="img" aria-label="{{navigationAriaLabel}}"{{#if navigationHeadingKnown}} style="--lagunak-heading: {{navigationHeading}}deg"{{/if}}>
                   <span class="lagunak-workspace__radar-ring" aria-hidden="true"></span>
-                  <span class="lagunak-workspace__heading-line" aria-hidden="true"></span>
+                  {{#if navigationHeadingKnown}}
+                    <span class="lagunak-workspace__heading-line" aria-hidden="true"></span>
+                  {{/if}}
                   <i class="fa-solid fa-shuttle-space" aria-hidden="true"></i>
                 </div>
                 <div class="lagunak-workspace__route-copy">
@@ -345,6 +359,9 @@
             <input id="lagunak-orden-codigo" name="destruct-code" type="number" min="0" step="1" inputmode="numeric" />
             <button type="button" data-workspace-action="orden-autodestruccion-confirmar">{{localize "LAGUNAK.Espacios.Orden.CodigoConfirmar"}}</button>
             <small>{{localize "LAGUNAK.Espacios.Orden.CodigoAyuda"}}</small>
+          </form>
+        {{/if}}
+
         {{#if canOrderWaypoints}}
           <form class="lagunak-workspace__orden" data-workspace-order="waypoints">
             <span class="lagunak-workspace__orden-label">{{localize "LAGUNAK.Espacios.Orden.WaypointLabel"}}</span>
@@ -400,6 +417,8 @@
             <button type="button" data-workspace-action="orden-alerta-roja">{{localize "LAGUNAK.Espacios.Orden.Alerta.red"}}</button>
             <small>{{localize "LAGUNAK.Espacios.Orden.AlertaAyuda"}}</small>
           </form>
+        {{/if}}
+
         {{#if hayEnlaceSonda}}
           <section class="lagunak-workspace__orden" data-workspace-order="probe-view">
             <span class="lagunak-workspace__orden-label">{{localize "LAGUNAK.Espacios.Sensores.VistaSondaLabel"}}</span>

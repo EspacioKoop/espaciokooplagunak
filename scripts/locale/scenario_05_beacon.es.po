@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
-"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"Report-Msgid-Bugs-To: https://github.com/EspacioKoop/espaciokooplagunak/issues\n"
 "PO-Revision-Date: 2026-07-12 00:00+0200\n"
 "Last-Translator: Espaciokoop Lagunak contributors\n"
 "Language-Team: Espaciokoop Lagunak\n"
@@ -23,7 +23,7 @@ msgid ""
 "Near the far outpost of Orion-5, Exuari attacks are increasing. A diplomat went missing, and your first mission is to recover him.\n"
 "\n"
 "This scenario is limited to one player ship: the Atlantis Epsilon. Estimated duration: 1 hour"
-msgstr "El escenario Beacon of Light, basado en el tutorial de https://daid.github.io/EmptyEpsilon/#tabs=4. Cerca del puesto de avanzada de Orion-5, los ataques Exuari están aumentando. Un diplomático desapareció, y su primera misión es recuperarlo. Este escenario está limitado a un barco de jugador: el Epsilon Atlantis. Duración estimada: 1 hora"
+msgstr "El escenario Faro de Luz, basado en el tutorial de https://daid.github.io/EmptyEpsilon/#tabs=4. Cerca del puesto de avanzada de Orion-5, los ataques Exuari están aumentando. Un diplomático desapareció, y su primera misión es recuperarlo. Este escenario está limitado a un barco de jugador: el Epsilon Atlantis. Duración estimada: 1 hora"
 
 #: scripts/scenario_05_beacon.lua:69
 msgctxt "goal-incCall"

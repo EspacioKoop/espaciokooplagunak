@@ -170,7 +170,14 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     `modulos-alcanzables.test.mjs` y `paleta.test.mjs` **consumen** ese JSON; no mantengas listas
     paralelas en ellos ni en esta guía. Los enlaces de evidencia a issues/PRs se verifican por la API
     de GitHub con timeout y token de solo lectura en CI; un 404 confirmado invalida la declaración y
-    un fallo de red bloquea la verificación en vez de aceptar el enlace en silencio. Para declarar o
+    un fallo de red bloquea la verificación en vez de aceptar el enlace en silencio. Pero esa
+    verificación mira si el enlace **resuelve**, no si viene a cuento, y por esa rendija se coló
+    relleno: 34 declaraciones con un único motivo —la definición de huérfana, no una razón— y una
+    única evidencia para las 34, un issue de otro asunto que existe y por eso pasaba. De ahí dos
+    reglas **entre** declaraciones: ningún motivo puede repetirse (uno que vale para dos módulos no
+    explica ninguno) y una misma evidencia no respalda más de
+    `MAX_DECLARACIONES_POR_EVIDENCIA` (3) — dos módulos de una función citando su issue común es
+    correcto, una decena es un enlace copiado. Para declarar o
     reclasificar un módulo, edita el JSON y ejecuta
     `python3 scripts/check_orphan_modules.py --check` más las suites Python y Node del área.
   - **Ventanas** — **Consola caliente del GM** (#276, `docs/CONSOLA_CALIENTE_GM.md`) fusionó las
@@ -269,8 +276,8 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     un botón nuevo en `main.mjs`. La cantina solo pinta y traduce un clic en "abre esa mesa" — la
     autoridad la sigue resolviendo cada mesa por su cuenta al abrirse, nunca la ventana que lleva
     hasta ella.
-  - **Generador de NPC** — `scripts/npc-tablas.mjs` (tablas propias) y
-    `scripts/npc-generador.mjs` (motor puro), #676. Semilla más valor de desafío dan una ficha
+  - **Generador de NPC** — `scripts/npc-generador/npc-tablas.mjs` (tablas propias) y
+    `scripts/npc-generador/npc-generador.mjs` (motor puro), #676. Semilla más valor de desafío dan una ficha
     completa, y la misma semilla da siempre el mismo NPC. Cuatro capas y **una sola importable**:
     la ficha 5e sale del **SRD 5.1 (CC-BY-4.0)** con sus fórmulas de verdad —modificador,
     competencia por VD, PG por dado de golpe—, y de Shin Megami Tensei, Persona y Pokémon se toma
@@ -454,6 +461,69 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     `scripts/nave-camara.mjs` y no de la fábrica ni del bucle: la regla es la misma para las catorce
     estancias. En tercera persona el propio cuerpo entra como un avatar más por
     `poligonosOtrosJugadores`, así que el render de presencia no sabe que uno de ellos eres tú.
+    **Sentarse** (`scripts/nave-asiento.mjs`, tecla `F`) es la primera interacción que cambia dónde
+    ESTÁS en vez de abrir una ventana: hasta ella, los tres tipos de punto del raíl de #582 abrían
+    la consola de un puesto, pintaban una cartela o te llevaban a otra estancia, y la sala seguía
+    igual — la terraza tenía sillas desde #579 y no se podía usar ninguna. Tres reglas. La **altura
+    sale del mueble**: un prop declara `asiento: {centro, orientacion, altura}` en `nave-props.mjs`
+    y de ahí sale dónde acaban los ojos, nunca escrita en la escena — es el fallo que la cantina
+    pagó tres veces (ojos a 3,35 m del suelo), y aquí una silla y un taburete se diferencian en
+    once centímetros que nadie va a recordar. Se devuelve un **offset** y no una altura absoluta,
+    porque el bucle ya maneja `y` como lo que se sube o se baja sobre estar de pie (salto y
+    agachado, #446) y dos clases de `y` es como se cuelan los errores de signo. Y el asiento es
+    **distinto del ancla**: el ancla dice dónde te plantas para usar un prop y mira hacia él;
+    sentarse es ponerse encima y mirar al revés — la misma distinción que ya separaba el punto de
+    pesca del ancla del soporte. `orientacion: null` conserva tu rumbo, que es lo que hace que un
+    taburete no tenga frente. Dos cosas que **no** hace: no te sienta al pasar por delante (abrir
+    una consola te PASA al acercarte; sentarse lo HACES, y una silla que sentara sola haría
+    intransitable la terraza). Te levantas con `F` o **andando**, con cualquier dirección: el modo de
+    fallo de todo estado que captura los controles es que quien no sabe salir cree que el programa
+    se ha roto.
+    Y **la silla se retira al ocuparse** (`scripts/nave-pose.mjs`), que es lo que dice desde fuera
+    que ese sitio está cogido. Es la capa que le faltaba al módulo: hasta ella todo lo que había
+    dentro de una estancia era inmóvil —la fábrica congela su mobiliario al construir la sala, y lo
+    único que se recalculaba por fotograma eran las HOJAS de las puertas, cableadas a mano dentro de
+    la fábrica—. Cuatro reglas. **Una pose es una COLOCACIÓN, no una malla**: declara dónde va el
+    prop que ya existe (y, si hace falta, qué prop del vocabulario es), así que no puede
+    desincronizarse del mueble y añadir una pose no añade ni un vértice — lo que no cabe así (una
+    hoja de libro que se dobla, #853) es geometría de verdad y va en su propio módulo. **El
+    desplazamiento es del prop y no de la sala** (`atras`/`lado` en su marco, girados con
+    `girarEnPlanta`): en coordenadas de sala, las cuatro sillas de una mesa se retirarían todas al
+    norte. **El estado no vive en la escena** sino en la ventana, junto al asiento al alcance, y no
+    por comodidad: una escena no RECUERDA (`docs/FOUNDRY.md`), así que al cerrar la ventana la silla
+    vuelve a su sitio igual que tú te levantas. Y **recomponer no es cambiar de estancia**
+    (`mando.recomponer`, que cambia planta y compositor sin tocar los flancos): con
+    `cambiarEstancia` —que sí los reinicia— sentarse pondría la silla en pose y el fotograma
+    siguiente volvería a sentarte, para siempre. La estancia declara `conPoses(poses)` y sus
+    `poseables`, opacos para la ventana igual que la `accion` de un punto: sin eso, la ventana
+    tendría que preguntar «¿es la terraza?» para saber si una silla se mueve, que es el `if` con el
+    nombre de una sala dentro del motor que #508 dejó prohibido.
+    Sentarse destapó además que `y` —el offset de CÁMARA— se pasaba al render de avatares como
+    ALTURA DE LOS PIES, así que agacharse ya hundía a los demás en el suelo desde #446 y nadie lo
+    había visto. La frontera donde ese dato deja de ser cámara y pasa a ser cuerpo está ahora en
+    `nave-avatares-render.mjs`, y las dos mitades no son la misma cosa: hacia ARRIBA (saltar)
+    despegas del suelo y el cuerpo entero sube; hacia ABAJO (agacharse, sentarse) los pies siguen
+    puestos y lo que se encoge es la persona — `piezasAvatar({flexion})` se lo quita a las
+    PIERNAS y a nada más, que no es una simplificación de dibujo sino la cuenta exacta: torso y
+    cabeza van encima, así que la cabeza baja justo `flexion` y acaba donde acaba la cámara de su
+    dueño. Con tope, porque un mediano no tiene medio metro de pierna que encoger.
+    Los **taburetes de la barra de la cantina** eran UNA caja, y era exactamente la misma que la
+    barra (`[0.5, 0.9, 0.5]`): el asiento a la altura del mostrador. Como bulto colaba; en cuanto
+    se pudo uno sentar dejó de colar, porque ponía los ojos diecisiete centímetros más altos que
+    de pie. Ahora son cuatro cajas —asiento, pie, base y **reposapiés**, que es la pieza que dice
+    de un vistazo que el asiento está alto— con la cara del asiento a `ALTURA_TABURETE` = 0,63 m,
+    la MISMA que el taburete del vocabulario común, para que no haya dos taburetes de alturas
+    distintas en la misma nave; contra un mostrador de 0,90 quedan los 0,27 m que hay entre un
+    asiento y la barra a la que te arrimas. Lo que **no** son todavía es asientos, y no por falta
+    de altura: **a la barra no se llega andando**. Medido inundando la sala desde su entrada, solo
+    el 25 % del suelo libre es alcanzable, y es la franja `z` 9,8–11,4 pegada al muro sur — la
+    pared de ventanal de la escena clásica (`mamparoIzq`/`mamparoDer`/`dintel`/`antepecho`, en
+    z 8,85–9,45) cruza la sala de lado a lado sin un hueco y la entrada cae del lado de FUERA, así
+    que la barra, sus taburetes y las dos mesas quedan al otro lado. #579 ya lo había escrito al
+    elegir dónde poner la puerta de la terraza; `tests/cantina-barra-alcanzable.test.mjs` lo
+    convierte en número y **falla el día que se abra ese paso**, que es cuando toca declarar los
+    cuatro asientos. Abrirlo es una decisión de geometría de la cantina —o la pared de ventanal
+    tiene un hueco, o la sala mide lo que mide su interior y no tres metros más—, no un ajuste.
     Cada sala con sistema tiene una CONSOLA (#509) que abre el puesto del sistema que ALOJA —el
     reactor abre ingeniería— y que desde #557 **se ve**: hasta entonces era solo un rectángulo
     disparador y se activaba pisando un trozo de suelo vacío (y `detalleConsola`, escrita y probada
@@ -623,6 +693,10 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
 
 ## Flujo git
 
+**Lectura obligatoria al empezar:** [norma platino de colaboración](docs/NORMA_PLATINO_COLABORACION.md).
+Primero terminar la cola; revisión ajena por riesgo, no por rutina.
+
+
 - `origin` = `EspacioKoop/espaciokooplagunak`; `upstream` = `daid/EmptyEpsilon`. Nunca apuntes `upstream`
   a otro sitio ni incluyas tokens en URLs de remotos.
 - Ramas desde `main`: `feature/`, `fix/`, `docs/`, `test/`, `chore/`, `upstream/`. Todo llega a
@@ -633,12 +707,17 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
 - Commits breves, imperativos y con prefijo: `feat(scenario): …`, `fix(network): …`, `docs: …`.
 - El issue es el contrato de alcance; el PR es el registro de implementación y verificación. Antes
   de trabajar, revisa issues/PRs/ramas existentes para no duplicar.
-- **Quién aprueba.** `.github/CODEOWNERS` pone a `@VaroTv7` y `@eGurucharri` como revisores de todo,
-  y `main` exige la aprobación de un code owner. GitHub **no cuenta al autor**, así que un PR abierto
-  por uno solo lo puede aprobar el otro, y abrir una tanda entera con la misma cuenta deja a esa
-  cuenta sin poder firmar ninguno. Tenlo en cuenta al elegir con qué cuenta se abre; el estado real
-  se ve con `gh pr view <n> --json mergeStateStatus,reviewDecision` — un `CLEAN` con CI en verde
-  puede seguir parado en `REVIEW_REQUIRED`.
+- **Revisión proporcional.** La [norma platino](docs/NORMA_PLATINO_COLABORACION.md)
+  permite integrar cambios ordinarios probados sin esperar aprobación ajena: mínimo de
+  aprobaciones 0 y sin aprobación obligatoria del último push. Se mantienen PR, siete checks,
+  conversaciones resueltas y protecciones también para administradores. Los cambios de riesgo
+  requieren revisión independiente; los bloqueantes conocidos no se ignoran. No autoaprobar
+  un PR ni usar bypass: comprobar el estado vivo, el SHA y las reviews antes de integrar.
+- **Guardias de estado.** Comprobar `baseRefName`, SHA y checks vivos: un `CLEAN`
+  no demuestra por sí solo que la base sea `main` ni que se cumpla la aceptación.
+- **Re-review de bloqueantes.** Un `CHANGES_REQUESTED` puede seguir vigente tras
+  otro push. Comparar el commit revisado y el head; verificar los arreglos contra
+  los hallazgos originales. Un SHA distinto no demuestra que el defecto esté corregido.
 - **Una rama sin PR no es trabajo a salvo, pero tampoco es trabajo perdido.** Borrar un worktree
   **no** borra su rama: lo confirmado no se pierde al limpiar, y lo único en riesgo es lo que no
   está confirmado.

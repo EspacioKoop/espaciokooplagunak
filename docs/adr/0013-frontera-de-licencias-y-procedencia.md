@@ -100,7 +100,7 @@ Guardas en CI (`.github/workflows/foundry-module.yml`):
 
 - `foundry-module/tests/procedencia-catalogo.test.mjs` — forma de los errores
   (`code`/`path`), `PATRON_ID`, claves exactas.
-- `foundry-module/tests/npc-tablas.test.mjs` — «ninguna cadena emitida contiene
+- `foundry-module/tests/npc-generador/npc-tablas.test.mjs` — «ninguna cadena emitida contiene
   un término de las obras de referencia», que recorre tablas **y trescientas
   fichas generadas** contra la lista `PROHIBIDOS`; y la contraguarda «los tipos
   de daño del SRD sí pueden aparecer: es la capa importable».

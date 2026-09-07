@@ -1,0 +1,151 @@
+// Contrato mínimo versionado para una escena render-agnóstica.
+//
+// Guarda la división entre estado autoritativo, presentación y recursos; nunca
+// incluye permisos ni decisiones de render dentro del dato de escena.
+
+export const SCENE_CONTRACT_VERSION = "1.0.0";
+
+const VALID_PROJECTIONS = Object.freeze(["perspective", "orthographic"]);
+
+const emptyScene = Object.freeze({
+  version: SCENE_CONTRACT_VERSION,
+  revision: 0,
+  state: { authoritative: false, entities: [] },
+  presentation: {
+    camera: {
+      position: { x: 0, y: 0, z: 0 },
+      projection: "perspective",
+    },
+    entities: [],
+  },
+  resources: [],
+});
+
+function cloneValue(value) {
+  if (value === null || value === undefined) return value;
+  if (Array.isArray(value)) return value.map((entry) => cloneValue(entry));
+  if (typeof value === "object") return Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, cloneValue(entry)]));
+  return value;
+}
+
+function asNumber(value, fallback = 0) {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  return fallback;
+}
+
+function normalizeVector3(value) {
+  const src = value && typeof value === "object" ? value : {};
+  return {
+    x: asNumber(src.x, 0),
+    y: asNumber(src.y, 0),
+    z: asNumber(src.z, 0),
+  };
+}
+
+function normalizeCamera(value) {
+  const src = value && typeof value === "object" ? value : {};
+  return {
+    position: normalizeVector3(src.position),
+    projection: VALID_PROJECTIONS.includes(src.projection) ? src.projection : "perspective",
+  };
+}
+
+function normalizeEntityPresentation(value) {
+  const src = value && typeof value === "object" ? value : {};
+  const transform = src.transform && typeof src.transform === "object" ? src.transform : {};
+  const position = normalizeVector3(transform.position);
+  const rotation = normalizeVector3(transform.rotation);
+  const scale = normalizeVector3(transform.scale);
+  return {
+    id: typeof src.id === "string" ? src.id : null,
+    kind: typeof src.kind === "string" ? src.kind : "mesh",
+    material: src.material && typeof src.material === "object" ? { ...src.material } : null,
+    transform: { position, rotation, scale },
+    interaction: src.interaction && typeof src.interaction === "object" ? { ...src.interaction } : null,
+    visibility: src.visibility && typeof src.visibility === "object" ? { ...src.visibility } : { render: true },
+  };
+}
+
+function normalizeResource(value) {
+  const src = value && typeof value === "object" ? value : {};
+  return {
+    id: typeof src.id === "string" ? src.id : null,
+    type: typeof src.type === "string" ? src.type : "generic",
+    url: typeof src.url === "string" ? src.url : "",
+  };
+}
+
+export function normalizarEscena(input = {}) {
+  const source = cloneValue(input ?? {});
+  const version = source.version === SCENE_CONTRACT_VERSION ? SCENE_CONTRACT_VERSION : SCENE_CONTRACT_VERSION;
+  const revision = Number.isInteger(source.revision) && source.revision >= 0 ? source.revision : 0;
+  const state = source.state && typeof source.state === "object" ? source.state : { authoritative: false, entities: [] };
+  const presentation = source.presentation && typeof source.presentation === "object" ? source.presentation : { camera: { position: { x: 0, y: 0, z: 0 }, projection: "perspective" }, entities: [] };
+
+  const normalized = {
+    version,
+    revision,
+    state: {
+      authoritative: Boolean(state.authoritative),
+      entities: Array.isArray(state.entities) ? state.entities.map((entity) => ({ ...entity })) : [],
+    },
+    presentation: {
+      camera: normalizeCamera(presentation.camera),
+      entities: Array.isArray(presentation.entities)
+        ? presentation.entities.map((entity) => normalizeEntityPresentation(entity))
+        : [],
+    },
+    resources: Array.isArray(source.resources) ? source.resources.map((resource) => normalizeResource(resource)) : [],
+  };
+
+  if (source.selection && typeof source.selection === "object") {
+    normalized.selection = {
+      id: typeof source.selection.id === "string" ? source.selection.id : null,
+      source: typeof source.selection.source === "string" ? source.selection.source : "client",
+    };
+  }
+
+  return normalized;
+}
+
+export function validarEscena(escena) {
+  const normalized = normalizarEscena(escena);
+  const errors = [];
+
+  if (normalized.version !== SCENE_CONTRACT_VERSION) {
+    errors.push("version: contrato no soportado");
+  }
+  if (!Number.isInteger(normalized.revision) || normalized.revision < 0) {
+    errors.push("revision: debe ser un entero no negativo");
+  }
+  if (typeof normalized.state.authoritative !== "boolean") {
+    errors.push("state.authoritative: debe ser booleano");
+  }
+  if (!normalized.presentation || !normalized.presentation.camera) {
+    errors.push("presentation.camera: faltan datos de cámara");
+  }
+  if (!VALID_PROJECTIONS.includes(normalized.presentation.camera.projection)) {
+    errors.push("presentation.camera.projection: proyección no soportada");
+  }
+
+  for (const entity of normalized.presentation.entities) {
+    if (!entity || typeof entity.id !== "string" || entity.id.trim() === "") {
+      errors.push("presentation.entities: id no válido");
+      break;
+    }
+  }
+
+  for (const resource of normalized.resources) {
+    if (!resource || typeof resource.id !== "string" || resource.id.trim() === "") {
+      errors.push("resources: id no válido");
+      break;
+    }
+  }
+
+  return { ok: errors.length === 0, errors };
+}
+
+export function serializarEscena(escena) {
+  const normalized = normalizarEscena(escena);
+  return JSON.stringify(normalized, null, 2);
+}

@@ -29,3 +29,9 @@ test("el ciclo no muta la vista recibida", () => {
   assert.equal(siguienteVista(view), "libre");
   assert.equal(view, "tercera");
 });
+
+test("atajoVista rechaza claves heredadas del prototipo (prototype pollution)", () => {
+  assert.equal(atajoVista("constructor"), null);
+  assert.equal(atajoVista("__proto__"), null);
+  assert.equal(atajoVista("toString"), null);
+});

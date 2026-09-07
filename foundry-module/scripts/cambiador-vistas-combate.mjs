@@ -20,5 +20,6 @@ export function siguienteVista(view) {
 
 export function atajoVista(key) {
   if (typeof key !== "string") return null;
-  return ATAJOS[key.toLowerCase()] ?? null;
+  const lower = key.toLowerCase();
+  return Object.hasOwn(ATAJOS, lower) ? ATAJOS[lower] : null;
 }

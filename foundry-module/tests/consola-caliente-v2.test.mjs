@@ -287,3 +287,9 @@ test("un catálogo de anclas caído se reintenta, no apaga el bloque para siempr
   assert.ok(llamadas.some((url) => url.endsWith("/v1/anchors")));
   app._onClose();
 });
+
+test("V2: la consola declara el acceso al mando en su mapa de acciones", async (t) => {
+  const { app } = await construirConsola(t);
+  assert.equal(typeof app.constructor.DEFAULT_OPTIONS.actions.abrirMando, "function");
+  app._onClose();
+});

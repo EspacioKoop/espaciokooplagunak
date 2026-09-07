@@ -1,10 +1,10 @@
 # Inspiración en juegos libres — mecánicas de rol que robar barato
 
-> **Issue de origen:** [#840](https://github.com/VaroTv7/espaciokooplagunak/issues/840).
+> **Issue de origen:** [#840](https://github.com/EspacioKoop/espaciokooplagunak/issues/840).
 > **Qué es:** un catálogo de *mecánicas de rol* ya jugadas por alguien, de las que podemos
 > robar la idea barato para el fork standalone-first. Una entrada por juego estudiado.
 > **Qué NO es:** una declaración de dependencias ni de código ajeno. Eso es
-> [ECOSISTEMA_OPEN_SOURCE.md](ECOSISTEMA_OPEN_SOURCE.md) (issue [#568](https://github.com/VaroTv7/espaciokooplagunak/issues/568)),
+> [ECOSISTEMA_OPEN_SOURCE.md](ECOSISTEMA_OPEN_SOURCE.md) (issue [#568](https://github.com/EspacioKoop/espaciokooplagunak/issues/568)),
 > que cataloga *de qué depender/copiar*. Aquí se lee el juego, no su código: una idea no
 > tiene licencia, un fichero sí.
 

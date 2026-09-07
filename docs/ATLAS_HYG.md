@@ -1,7 +1,7 @@
 # Atlas desde HYG: el cielo real en el formato de #213
 
-> **Issues:** [#568](https://github.com/VaroTv7/espaciokooplagunak/issues/568) (de dónde sale) ·
-> [#213](https://github.com/VaroTv7/espaciokooplagunak/issues/213) (dónde se decide si se usa).
+> **Issues:** [#568](https://github.com/EspacioKoop/espaciokooplagunak/issues/568) (de dónde sale) ·
+> [#213](https://github.com/EspacioKoop/espaciokooplagunak/issues/213) (dónde se decide si se usa).
 > **Estado:** adaptador escrito y probado, **sin cablear a nada**. Igual que
 > `catalogo-cosmografico.mjs`, es un cimiento a la espera de que #213 se decida.
 

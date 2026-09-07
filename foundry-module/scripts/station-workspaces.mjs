@@ -113,16 +113,14 @@ function finite(value, fallback = 0) {
 }
 
 /**
- * Rumbo para el casco 3D, o `null` si no hay lectura.
+ * Lectura numérica, o `null` si está ausente o no es un número finito.
  *
  * `Number.isFinite(Number(x))` NO vale aquí: `Number(null)` y `Number("")` son
- * cero, así que la ausencia de dato se convertía en «rumbo norte» y el casco se
- * pintaba como si fuera una lectura buena. Ausencia no es cero — esa es la
- * regla que sostiene todo el visor— y por eso se comprueba el tipo antes que el
- * valor. Se admite una cadena numérica porque el puente puede entregarla, pero
- * la vacía no lo es.
+ * cero, así que la ausencia de dato se convertía en una lectura real. Ausencia
+ * no es cero y por eso se comprueba el tipo antes que el valor. Se admite una
+ * cadena numérica porque el puente puede entregarla, pero la vacía no lo es.
  */
-function rumboDeLectura(valor) {
+function numeroDeLectura(valor) {
   if (typeof valor === "number") return Number.isFinite(valor) ? valor : null;
   if (typeof valor === "string" && valor.trim() !== "") {
     const n = Number(valor);
@@ -140,7 +138,7 @@ function textoDeAutodestruccion(selfDestruct, i18n) {
     return localize(i18n, "LAGUNAK.Espacios.Orden.AutodestruccionSinLectura");
   }
   if (!selfDestruct.active) return localize(i18n, "LAGUNAK.Espacios.Orden.AutodestruccionDesarmada");
-  const countdown = Number(selfDestruct.countdown);
+  const countdown = numeroDeLectura(selfDestruct.countdown);
   if (!Number.isFinite(countdown)) {
     return localize(i18n, "LAGUNAK.Espacios.Orden.AutodestruccionArmada");
   }
@@ -167,11 +165,11 @@ function textoDeAlerta(valor, i18n) {
  * caídos mientras dura. Ese aviso es el dato que hace de esto una decisión.
  */
 function textoDeFrecuencia(calibracion, i18n) {
-  const frecuencia = Number(calibracion?.frequency);
+  const frecuencia = numeroDeLectura(calibracion?.frequency);
   if (!Number.isFinite(frecuencia)) {
     return localize(i18n, "LAGUNAK.Espacios.Orden.FrecuenciaSinLectura");
   }
-  const retardo = Number(calibracion?.calibration_delay);
+  const retardo = numeroDeLectura(calibracion?.calibration_delay);
   if (Number.isFinite(retardo) && retardo > 0) {
     return format(i18n, "LAGUNAK.Espacios.Orden.FrecuenciaCalibrando", {
       frecuencia,
@@ -199,8 +197,8 @@ function sinCodigosDeAutodestruccion(ship) {
  * número de sondas suelto no dice si son muchas o pocas.
  */
 function textoDeSondas(probes, i18n) {
-  const stock = Number(probes?.stock);
-  const max = Number(probes?.max);
+  const stock = numeroDeLectura(probes?.stock);
+  const max = numeroDeLectura(probes?.max);
   if (!Number.isFinite(stock) || !Number.isFinite(max)) {
     return localize(i18n, "LAGUNAK.Espacios.Orden.SondasSinLectura");
   }
@@ -282,32 +280,38 @@ function integer(value) {
 
 /**
  * Fracción 0..1 de la telemetría a porcentaje entero, conservando la ausencia
- * (#519). A diferencia de `percent`, que devuelve 0 ante lo que no sabe leer,
- * aquí `null` significa "no hay lectura" y 0 significa "la hay, y está a cero".
+ * (#519). `null` significa "no hay lectura" y 0 significa "la hay, y está
+ * a cero"; `percent` conserva la misma distinción al usar un máximo conocido.
  * Para la carga de maniobra esa diferencia es la que separa «no puedes
  * maniobrar» de «no sé si puedes» — y solo la primera es una afirmación que el
  * puesto puede permitirse hacer.
  */
 function porcentajeDeLectura(valor) {
-  const n = rumboDeLectura(valor);
+  const n = numeroDeLectura(valor);
   if (n === null) return null;
   return Math.max(0, Math.min(100, Math.round(n * 100)));
 }
 
 function percent(value, maximum) {
-  const max = finite(maximum);
-  if (max <= 0) return 0;
-  return Math.max(0, Math.min(100, Math.round((finite(value) / max) * 100)));
+  const max = numeroDeLectura(maximum);
+  const n = numeroDeLectura(value);
+  if (max === null || max <= 0 || n === null) return null;
+  return Math.max(0, Math.min(100, Math.round((n / max) * 100)));
 }
 
 function ratioLabel(value, maximum) {
-  return `${integer(value)} / ${integer(maximum)}`;
+  return `${lecturaEntera(value)} / ${lecturaEntera(maximum)}`;
+}
+
+function lecturaEntera(value) {
+  const n = numeroDeLectura(value);
+  return n === null ? SIN_DATO : String(Math.round(n));
 }
 
 function velocity(ship) {
-  const x = finite(ship?.velocity?.x);
-  const y = finite(ship?.velocity?.y);
-  return Math.round(Math.hypot(x, y));
+  const x = numeroDeLectura(ship?.velocity?.x);
+  const y = numeroDeLectura(ship?.velocity?.y);
+  return x === null || y === null ? SIN_DATO : Math.round(Math.hypot(x, y));
 }
 
 function metric(i18n, key, value, tone = "normal", progress = null) {
@@ -358,23 +362,23 @@ function metricsFor(station, ship, contactsPayload, i18n, crewCount = 0) {
         atraque.estado
           ? metric(i18n, "Atraque", atraque.etiqueta, "good")
           : metric(i18n, "Nave", String(ship?.callsign ?? "—")),
-        metric(i18n, "Casco", ratioLabel(ship?.hull, ship?.hull_max), hull < 35 ? "danger" : "normal", hull),
-        metric(i18n, "Energia", ratioLabel(ship?.energy, ship?.energy_max), energy < 25 ? "danger" : "normal", energy),
+        metric(i18n, "Casco", ratioLabel(ship?.hull, ship?.hull_max), hull !== null && hull < 35 ? "danger" : "normal", hull),
+        metric(i18n, "Energia", ratioLabel(ship?.energy, ship?.energy_max), energy !== null && energy < 25 ? "danger" : "normal", energy),
         metric(i18n, "Escudos", localize(i18n, ship?.shields_active ? "LAGUNAK.Espacios.Activos" : "LAGUNAK.Espacios.Inactivos"), ship?.shields_active ? "good" : "warning"),
       ];
     case "navigation":
       return [
-        metric(i18n, "Rumbo", `${integer(ship?.heading)}°`),
+        metric(i18n, "Rumbo", `${lecturaEntera(ship?.heading)}°`),
         metric(i18n, "Velocidad", format(i18n, "LAGUNAK.Espacios.Valor.Velocidad", { value: velocity(ship) })),
-        metric(i18n, "Posicion", `${integer(ship?.position?.x)}, ${integer(ship?.position?.y)}`),
+        metric(i18n, "Posicion", `${lecturaEntera(ship?.position?.x)}, ${lecturaEntera(ship?.position?.y)}`),
         ...(atraque.estado
           ? [metric(i18n, "Atraque", atraque.etiqueta, "good")]
           : [metric(i18n, "Destino", String(ship?.destination?.name ?? "—"))]),
       ];
     case "engineering":
       return [
-        metric(i18n, "Energia", ratioLabel(ship?.energy, ship?.energy_max), energy < 25 ? "danger" : "normal", energy),
-        metric(i18n, "Casco", `${hull}%`, hull < 35 ? "danger" : "normal", hull),
+        metric(i18n, "Energia", ratioLabel(ship?.energy, ship?.energy_max), energy !== null && energy < 25 ? "danger" : "normal", energy),
+        metric(i18n, "Casco", hull === null ? SIN_DATO : `${hull}%`, hull !== null && hull < 35 ? "danger" : "normal", hull),
         metric(i18n, "Sistemas", String(systems.length)),
         metric(
           i18n,
@@ -591,6 +595,7 @@ export function buildWorkspaceModel({
   // dos llamadas con criterios distintos, la consola podría dibujar un atraque
   // que su propia matriz de métricas no menciona.
   const atraque = prepareDocking(ship, i18n);
+  const rumbo = numeroDeLectura(ship?.heading);
 
   if (!definition) {
     return {
@@ -767,12 +772,15 @@ export function buildWorkspaceModel({
     canOrderCommsClose: !isGM && isActionAllowed(normalized, "close_comm"),
     canOrderCommsReply: !isGM && isActionAllowed(normalized, "send_comm_reply"),
     canOrderCommsMessage: !isGM && isActionAllowed(normalized, "send_comm_message"),
-    navigationHeading: integer(ship?.heading),
+    navigationHeading: rumbo,
+    navigationHeadingKnown: rumbo !== null,
     // Casco propio en 3D (#362). `null` cuando no hay lectura, que NO es lo
     // mismo que rumbo cero: el visor se queda quieto y apagado en vez de
     // enseñar una nave girando que no se corresponde con nada.
-    cascoRumbo: rumboDeLectura(ship?.heading),
-    navigationAriaLabel: format(i18n, "LAGUNAK.Espacios.RumboAccesible", { heading: integer(ship?.heading) }),
+    cascoRumbo: rumbo,
+    navigationAriaLabel: rumbo === null
+      ? `${localize(i18n, "LAGUNAK.Espacios.Metrica.Rumbo")}: ${localize(i18n, "LAGUNAK.Espacios.Sensores.SinLectura")}`
+      : format(i18n, "LAGUNAK.Espacios.RumboAccesible", { heading: Math.round(rumbo) }),
     isGM: Boolean(isGM),
     hasTelemetry: Boolean(ship),
     connection,

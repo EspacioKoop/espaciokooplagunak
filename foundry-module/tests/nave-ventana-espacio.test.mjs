@@ -120,7 +120,7 @@ test("la forma de `sensores` es la que publica el puente DE VERDAD, no una inven
   //
   // Así que aquí el sobre no se escribe a mano: lo construye el mismo código que
   // lo construye en producción.
-  const { sobreTelemetria } = await import("../scripts/telemetria-difusion.mjs");
+  const { sobreTelemetria } = await import("../scripts/ship-view/telemetria-difusion.mjs");
   const sobre = sobreTelemetria(
     { ship: { position: { x: 0, y: 0 }, heading: 0, radar: { short_range: 5000, long_range: 30000 } } },
     1,

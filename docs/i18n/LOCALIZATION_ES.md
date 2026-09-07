@@ -53,7 +53,7 @@ filtro de rutas de ese workflow incluye `src/` y `resources/locale/`).
 Es una comprobación distinta de `validate_es_locale.py`, y las dos hacen falta:
 aquel compara en-US contra es-ES, así que **no puede ver** una cadena que no
 llegó a ninguno de los dos catálogos —los dos coinciden en no tenerla—. Eso fue
-[#55](https://github.com/VaroTv7/espaciokooplagunak/issues/55): 22 `msgid` nuevos
+[#55](https://github.com/EspacioKoop/espaciokooplagunak/issues/55): 22 `msgid` nuevos
 del editor de naves sin ninguna entrada, CI en verde y el editor saliendo medio
 en inglés en una partida en español. Uno mira código→catálogo; el otro,
 catálogo→catálogo.

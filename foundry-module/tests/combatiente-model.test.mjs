@@ -89,14 +89,52 @@ test("normalizarCombatiente acepta estados combinados y deja valores desconocido
   assert.equal(result.alineacion, "neutral");
   assert.equal(result.overlays.herido, true);
   assert.equal(result.overlays.concentracionRota, false);
-  assert.equal(result.overlays.ventaja, false);
-  assert.equal(result.overlays.muerto, false);
+  // Un valor desconocido (ni true ni false) se conserva como null/ausente,
+  // distinto de un false explícito.
+  assert.equal(result.overlays.ventaja, null);
+  assert.equal(result.overlays.muerto, null);
 
   const invalid = normalizarCombatiente({ id: "npc-4", alineacion: "desconocida", base: { nombre: "X" } });
   assert.equal(invalid.alineacion, null);
   assert.equal(invalid.nombre, "X");
   assert.deepEqual(ALINEACIONES, ["aliado", "enemigo", "neutral"]);
   assert.deepEqual(OVERLAYS, ["herido", "ventaja", "concentracionRota", "muerto"]);
+});
+
+test("un overlay null o desconocido se conserva como null, distinto de false explícito", () => {
+  const result = normalizarCombatiente({
+    id: "a",
+    overlays: { herido: null, ventaja: "unknown" },
+  });
+
+  assert.equal(result.overlays.herido, null);
+  assert.equal(result.overlays.ventaja, null);
+  // Las claves ausentes de la entrada siguen usando el default false.
+  assert.equal(result.overlays.concentracionRota, false);
+  assert.equal(result.overlays.muerto, false);
+
+  for (const overlay of OVERLAYS) {
+    assert.equal(
+      normalizarCombatiente({ id: "x", overlays: { [overlay]: true } }).overlays[overlay],
+      true,
+    );
+    assert.equal(
+      normalizarCombatiente({ id: "x", overlays: { [overlay]: false } }).overlays[overlay],
+      false,
+    );
+    assert.equal(
+      normalizarCombatiente({ id: "x", overlays: { [overlay]: "unknown" } }).overlays[overlay],
+      null,
+    );
+  }
+});
+
+test("aplicarOverlays actualiza solo las claves aportadas y conserva las demás", () => {
+  const combatiente = { id: "a", overlays: { herido: true } };
+  const result = aplicarOverlays(combatiente, { ventaja: true });
+
+  assert.equal(result.overlays.herido, true, "herido no debe borrarse al aplicar otra capa");
+  assert.equal(result.overlays.ventaja, true);
 });
 
 test("serializarCombatiente produce una copia segura para JSON y maneja entrada incompleta", () => {

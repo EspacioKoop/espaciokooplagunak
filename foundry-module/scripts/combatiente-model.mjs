@@ -23,24 +23,26 @@ function cloneValue(value) {
   return value;
 }
 
-function normalizarBooleano(valor, defecto = false) {
-  if (valor === true) return true;
-  if (valor === false) return false;
-  return defecto;
-}
-
 function normalizarAlineacion(valor) {
   if (ALINEACIONES.includes(valor)) return valor;
   return null;
 }
 
-function normalizarOverlays(valor) {
-  const base = { ...OVERLAY_DEFAULTS };
+// El contrato de #1030 distingue tres estados por overlay: true, false, y
+// "desconocido" (null/ausente) — un valor desconocido NO es lo mismo que un
+// false explícito. Una clave que ni siquiera aparece en `valor` conserva la
+// base que se le pase (los defaults al normalizar desde cero, o los
+// overlays ya vigentes al aplicar una capa parcial); una clave presente con
+// cualquier cosa que no sea `true`/`false` se marca `null`.
+function normalizarOverlays(valor, base = OVERLAY_DEFAULTS) {
   const raw = valor && typeof valor === "object" ? valor : {};
+  const resultado = { ...base };
   for (const overlay of OVERLAYS) {
-    base[overlay] = normalizarBooleano(raw[overlay], false);
+    if (!Object.hasOwn(raw, overlay)) continue;
+    const entrada = raw[overlay];
+    resultado[overlay] = entrada === true ? true : entrada === false ? false : null;
   }
-  return base;
+  return resultado;
 }
 
 export function normalizarCombatiente(input = {}) {
@@ -65,10 +67,11 @@ export function aplicarOverlays(input = {}, overlaysHttp = {}) {
   const base = normalizarCombatiente(input);
   return {
     ...base,
-    overlays: {
-      ...base.overlays,
-      ...normalizarOverlays(overlaysHttp),
-    },
+    // Solo las claves aportadas por overlaysHttp se actualizan; el resto
+    // conserva el valor de `base.overlays` intacto (antes se normalizaban
+    // TODAS las claves ausentes a false antes del spread, machacando
+    // cualquier overlay ya activo que la capa parcial no mencionara).
+    overlays: normalizarOverlays(overlaysHttp, base.overlays),
   };
 }
 

@@ -8,6 +8,13 @@ El único repositorio de trabajo es [`EspacioKoop/espaciokooplagunak`](https://g
 
 La ubicación anterior `VaroTv7/espaciokooplagunak` es solo una redirección histórica. No la uses como identificador canónico, remoto, destino de API ni base de enlaces nuevos. Si el remoto no apunta a la organización `EspacioKoop`, detente y corrígelo antes de trabajar.
 
+## Lectura obligatoria: norma platino
+
+Al inicio de cada tarea, lee [la norma platino de colaboración](docs/NORMA_PLATINO_COLABORACION.md):
+terminar la cola antes de abrir frentes nuevos y revisión proporcional al riesgo,
+sin espera obligatoria de una review ajena para cambios ordinarios probados.
+Esta norma es obligatoria para todas las personas, agentes y bots del repositorio.
+
 ## Prioridades
 
 1. Proteger historial, licencia, atribución y trabajo ajeno.

@@ -7,6 +7,12 @@ pisen. El contrato de conducta está en [`AGENTS.md`](../AGENTS.md) y el flujo d
 No es teoría. Los puntos de colisión de más abajo son los que ya han chocado de verdad, y cada uno
 trae la regla que lo desactiva.
 
+## Antes de repartir trabajo nuevo
+
+Leer la [norma platino de colaboración](NORMA_PLATINO_COLABORACION.md). Primero
+desbloquear, revisar e integrar entregas pendientes; después abrir frentes nuevos.
+La paralelización no justifica multiplicar PR sin terminar los anteriores.
+
 ## La regla de oro
 
 > Un issue, una rama, un PR, un área. Si dos unidades de trabajo tienen que editar el mismo archivo,

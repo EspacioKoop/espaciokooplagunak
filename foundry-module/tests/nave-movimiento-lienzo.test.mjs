@@ -423,3 +423,115 @@ test("cambiarEstancia sustituye planta, render y posición sin reiniciar el bucl
 
   mando.detener();
 });
+
+/* ---- sentado (asientos) ---------------------------------------------------- */
+
+test("sentarse pone la pose recibida y deja de andar", () => {
+  let ultima = null;
+  const mando = arrancarAndar(lienzoFalso(), {
+    componer: (x, y, z, yaw) => {
+      ultima = { x, y, z, yaw };
+      return { ancho: 100, alto: 100, poligonos: [] };
+    },
+    planta: PLANTA,
+    x: 5,
+    z: 5,
+  });
+
+  mando.sentarse({ x: 8, z: 9, yaw: Math.PI, y: -0.25 });
+  assert.equal(mando.estaSentado(), true);
+  assert.deepEqual(ultima, { x: 8, y: -0.25, z: 9, yaw: Math.PI });
+
+  // El bucle no integra movimiento mientras dure: quieto es quieto.
+  mando.avanzar(500);
+  assert.deepEqual(mando.posicion(), { x: 8, z: 9, y: -0.25, yaw: Math.PI });
+  mando.detener();
+});
+
+test("cualquier dirección te levanta: la tecla de sentarse no es la única salida", () => {
+  const mando = arrancarAndar(lienzoFalso(), {
+    componer: () => ({ ancho: 100, alto: 100, poligonos: [] }),
+    planta: PLANTA,
+    x: 5,
+    z: 5,
+  });
+  mando.sentarse({ x: 5, z: 5, yaw: 0, y: -0.25 });
+  mando.pulsar("adelante");
+  mando.avanzar(200);
+  assert.equal(mando.estaSentado(), false);
+  assert.equal(mando.posicion().y, 0, "levantarse deja la cámara a la altura de estar de pie");
+  assert.notEqual(mando.posicion().z, 5, "y el paso que te levantó también te mueve");
+  mando.detener();
+});
+
+test("sentado se puede seguir girando: mirar alrededor es media razón de sentarse", () => {
+  const mando = arrancarAndar(lienzoFalso(), {
+    componer: () => ({ ancho: 100, alto: 100, poligonos: [] }),
+    planta: PLANTA,
+    x: 5,
+    z: 5,
+  });
+  mando.sentarse({ x: 5, z: 5, yaw: 0, y: -0.25 });
+  mando.girar(1);
+  mando.avanzar(300);
+  assert.ok(mando.posicion().yaw > 0);
+  assert.equal(mando.estaSentado(), true, "girar no te levanta: no mueve el cuerpo de sitio");
+  mando.detener();
+});
+
+test("levantarse de pie no hace nada, y cambiar de estancia te levanta", () => {
+  const mando = arrancarAndar(lienzoFalso(), {
+    componer: () => ({ ancho: 100, alto: 100, poligonos: [] }),
+    planta: PLANTA,
+  });
+  mando.levantarse();
+  assert.equal(mando.estaSentado(), false);
+
+  mando.sentarse({ x: 3, z: 3, yaw: 0, y: -0.25 });
+  mando.cambiarEstancia({ planta: PLANTA, x: 1, z: 1, yaw: 0, interacciones: declararInteracciones([]) });
+  assert.equal(mando.estaSentado(), false, "una silla no sobrevive al corte de estancia");
+  assert.equal(mando.posicion().y, 0);
+  mando.detener();
+});
+
+test("recomponer cambia la geometría sin volver a disparar el punto que tienes delante", () => {
+  // Es la diferencia con `cambiarEstancia`, y no es de estilo: esa reinicia los
+  // flancos. Reiniciarlos al poner una silla en pose haría que sentarse la
+  // pusiera en pose, y el fotograma siguiente volviera a sentarte, para siempre.
+  let avisos = 0;
+  const interacciones = declararInteracciones([{ id: "silla", punto: [5, 5], accion: { tipo: "asiento" } }]);
+  const mando = arrancarAndar(lienzoFalso(), {
+    componer: () => ({ ancho: 100, alto: 100, poligonos: [] }),
+    planta: PLANTA,
+    interacciones,
+    alAlcanzarInteraccion: () => {
+      avisos += 1;
+    },
+    x: 5,
+    z: 5,
+  });
+  mando.avanzar(16);
+  assert.equal(avisos, 1);
+
+  mando.recomponer({ planta: crearPlanta({ ancho: 20, profundidad: 20 }), componer: () => ({ ancho: 100, alto: 100, poligonos: [] }) });
+  mando.avanzar(16);
+  assert.equal(avisos, 1, "recomponer no puede volver a disparar el punto");
+  mando.detener();
+});
+
+test("el bucle recuerda EN QUÉ te sentaste, para que quien levante lo devuelva a su sitio", () => {
+  const mando = arrancarAndar(lienzoFalso(), {
+    componer: () => ({ ancho: 100, alto: 100, poligonos: [] }),
+    planta: PLANTA,
+  });
+  assert.equal(mando.asientoOcupado(), null);
+  mando.sentarse({ x: 1, z: 1, yaw: 0, y: -0.25 }, "silla-mesa-sur");
+  assert.equal(mando.asientoOcupado(), "silla-mesa-sur");
+  mando.levantarse();
+  assert.equal(mando.asientoOcupado(), null, "al levantarse ya no ocupa nada");
+
+  // Y un asiento sin pose no inventa un id.
+  mando.sentarse({ x: 1, z: 1, yaw: 0, y: -0.25 });
+  assert.equal(mando.asientoOcupado(), null);
+  mando.detener();
+});

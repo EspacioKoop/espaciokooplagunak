@@ -359,6 +359,9 @@
             <input id="lagunak-orden-codigo" name="destruct-code" type="number" min="0" step="1" inputmode="numeric" />
             <button type="button" data-workspace-action="orden-autodestruccion-confirmar">{{localize "LAGUNAK.Espacios.Orden.CodigoConfirmar"}}</button>
             <small>{{localize "LAGUNAK.Espacios.Orden.CodigoAyuda"}}</small>
+          </form>
+        {{/if}}
+
         {{#if canOrderWaypoints}}
           <form class="lagunak-workspace__orden" data-workspace-order="waypoints">
             <span class="lagunak-workspace__orden-label">{{localize "LAGUNAK.Espacios.Orden.WaypointLabel"}}</span>
@@ -414,6 +417,8 @@
             <button type="button" data-workspace-action="orden-alerta-roja">{{localize "LAGUNAK.Espacios.Orden.Alerta.red"}}</button>
             <small>{{localize "LAGUNAK.Espacios.Orden.AlertaAyuda"}}</small>
           </form>
+        {{/if}}
+
         {{#if hayEnlaceSonda}}
           <section class="lagunak-workspace__orden" data-workspace-order="probe-view">
             <span class="lagunak-workspace__orden-label">{{localize "LAGUNAK.Espacios.Sensores.VistaSondaLabel"}}</span>

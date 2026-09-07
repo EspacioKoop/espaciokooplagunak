@@ -37,7 +37,7 @@ import {
 import { probarConexion } from "./diagnostico-conexion.mjs";
 import { MOTIVOS, planificarFichas } from "./ficha-nave-aplicacion.mjs";
 import { addStationControl, refrescarPuestos, registerStationFeature } from "./station-ui.mjs";
-import { addAvatarControl, registerAvatarFeature } from "./avatar-ui.mjs";
+import { addAvatarControl, registerAvatarFeature } from "./avatar/avatar-ui.mjs";
 import { MINIMO_POR_DEFECTO } from "./requisitos-puesto.mjs";
 import {
   addWorkspaceControl,
@@ -49,6 +49,7 @@ import { registerStationOrders } from "./station-order-wiring.mjs";
 import { registrarRelevoPuestos } from "./station-handover.mjs";
 import { registrarAsistencia } from "./asistencia-wiring.mjs";
 import { addAsistenciaControl, registrarAsistenciaUI } from "./asistencia-ui.mjs";
+import { addConvocarControl, registrarConvocatoriaUI } from "./convocatoria-wiring.mjs";
 import {
   registrarParlamentoUI,
   addParlamentoControl,
@@ -76,6 +77,7 @@ import { sesionAgotada } from "./minijuegos/sesion-motor.mjs";
 import { crearClaseCantinaV1, crearClaseCantinaV2 } from "./cantina-app.mjs";
 import { puertaPorId } from "./cantina.mjs";
 import { crearClasePanelGMV1, crearClasePanelGMV2 } from "./panel-gm-app.mjs";
+import { construirHerramientasGM } from "./herramientas-gm-catalogo.mjs";
 import { crearClaseSeccionV1, crearClaseSeccionV2 } from "./seccion-nave-app.mjs";
 import { crearClaseAndarV1, crearClaseAndarV2 } from "./andar-nave-app.mjs";
 import { salaDePuesto } from "./seccion-nave.mjs";
@@ -99,7 +101,7 @@ import {
   OPCIONES_GRANO,
   registrarSincroniaFiltros,
 } from "./filtros-escena.mjs";
-import { AJUSTE_BASE_DATOS, AJUSTE_TELEMETRIA } from "./telemetria-difusion.mjs";
+import { AJUSTE_BASE_DATOS, AJUSTE_TELEMETRIA } from "./ship-view/telemetria-difusion.mjs";
 import {
   IDIOMA_AUTOMATICO,
   crearAplicadorIdioma,
@@ -123,8 +125,8 @@ import {
   registrarEscuchaMusica,
   registroEfectivo,
   siguienteOrden,
-} from "./musica-mando.mjs";
-import { crearReproductor } from "./musica-reproductor.mjs";
+} from "./arte/audio/musica-mando.mjs";
+import { crearReproductor } from "./arte/audio/musica-reproductor.mjs";
 import { crearGrupo } from "./control-escena.mjs";
 
 registerStationFeature(MODULE_ID);
@@ -455,6 +457,9 @@ Hooks.once("ready", () => {
   // El emisor real de la tirada: al pedir un enfoque, lee la ficha del hablante
   // y tira el d20; la ventana cierra en banda. Sin Foundry no se registra.
   registrarParlamentoTirada();
+  // Convocar a una estancia desde la barra (#832): primer consumidor real de
+  // `convocatoria-estancia.mjs`, que hasta ahora era una conexión muerta.
+  registrarConvocatoriaUI(MODULE_ID);
   // Sesiones de minijuegos (#308): el GM coordinador recoge las propuestas por
   // updateUser; cualquier cliente escucha las vistas privadas dirigidas a él.
   registrarSesionesMinijuegos(MODULE_ID);
@@ -866,39 +871,12 @@ Hooks.on("getSceneControlButtons", (controls) => {
   // propias. Los botones de puesto (asignación y consola de puesto) los
   // añaden addStationControl y addWorkspaceControl para TODOS los usuarios,
   // más abajo.
+  //
+  // La tabla en sí (nombre, título, icono y por qué cada una es solo-GM)
+  // vive en `herramientas-gm-catalogo.mjs` (#611): añadir o tocar una de
+  // estas tres herramientas ya no toca este hook.
   const gmTools = isGM
-    ? [
-        {
-          name: "lagunak-panel-gm",
-          title: "LAGUNAK.Controles.AbrirPanelGM",
-          icon: "fa-solid fa-shuttle-space",
-          button: true,
-          onClick: () => abrirPanelGM(),
-        },
-        {
-          // La playa de pruebas (#587). SOLO GM, y no por privilegio de
-          // información —una playa no revela nada de la partida— sino porque no
-          // es contenido: es un banco de pruebas del motor de exteriores, y
-          // ofrecérselo a la tripulación en la misma barra que su puesto sería
-          // decir que forma parte del juego. Se vuelve a la nave por la cabina
-          // de teléfono, que es su único punto de interacción.
-          name: "lagunak-playa",
-          title: "LAGUNAK.Controles.AbrirPlaya",
-          icon: "fa-solid fa-umbrella-beach",
-          button: true,
-          onClick: () => abrirAndarNave("playa"),
-        },
-        {
-          // La sala del museo (#598). Solo GM por el mismo motivo que la playa:
-          // no es contenido de campaña, es un sitio que ENSEÑA piezas con su
-          // procedencia. No concede nada y no recuerda la visita.
-          name: "lagunak-museo",
-          title: "LAGUNAK.Controles.AbrirMuseo",
-          icon: "fa-solid fa-landmark",
-          button: true,
-          onClick: () => abrirAndarNave("museo"),
-        },
-      ]
+    ? construirHerramientasGM({ abrirPanelGM, abrirAndarNave })
     : [];
 
   // El grupo propio es visible para TODOS: los jugadores ven sus botones de
@@ -980,6 +958,8 @@ Hooks.on("getSceneControlButtons", (controls) => {
   // Parlamento de comunicaciones (#810): primer consumidor real de
   // npc-generador (#676). Botón en el grupo propio, como las demás ventanas.
   addParlamentoControl(controls);
+  // Convocar a una estancia (#832): solo-GM por la lógica de `convocar`.
+  addConvocarControl(controls);
 });
 
 /* Diagnóstico de conexión (issue #183): comprueba /healthz y después

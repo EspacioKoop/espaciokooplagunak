@@ -680,6 +680,30 @@
   border: 1px solid #1b263b;
 }
 
+/* Carta propia que todavía se puede mostrar (#458): arrastrable y clicable.
+ * El realce es sutil a propósito — no es un botón de acción, es una carta que
+ * responde a que la toques. */
+.lagunak-mesa-carta-propia {
+  cursor: grab;
+  border-radius: 4px;
+}
+
+.lagunak-mesa-carta-propia:hover,
+.lagunak-mesa-carta-propia:focus-visible {
+  outline: 2px solid #00e5ff;
+  outline-offset: 2px;
+}
+
+.lagunak-mesa-carta-propia:active {
+  cursor: grabbing;
+}
+
+/* El tapete acepta soltar una carta encima: el realce solo aparece mientras
+ * dura el arrastre, para no dejar un borde permanente en una mesa quieta. */
+.lagunak-mesa-tapete.lagunak-zona-mostrar-activa {
+  box-shadow: inset 0 0 0 1px #00e5ff, 0 0 0 2px #00e5ff;
+}
+
 /* En una ventana estrecha manda que quepan: se bajan las dos un escalón antes
  * de que el tapete empiece a recortar cartas. */
 @media (max-width: 560px) {
@@ -1235,6 +1259,50 @@
   flex-direction: column;
   gap: 10px;
   padding: 8px 4px;
+}
+
+.lagunak-asistencia__crisis {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.lagunak-asistencia__mando {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 3px;
+}
+
+.lagunak-asistencia__mando h3,
+.lagunak-asistencia__saldo,
+.lagunak-asistencia__mando-activo,
+.lagunak-asistencia__mando-error {
+  margin: 0;
+}
+
+.lagunak-asistencia__saldo {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.lagunak-asistencia__puestos-mando {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lagunak-asistencia__puestos-mando button {
+  width: 100%;
+}
+
+.lagunak-asistencia__mando-error {
+  color: rgb(var(--lagunak-alerta-roja-texto-rgb));
+  font-size: 12px;
 }
 
 .lagunak-asistencia__intro,

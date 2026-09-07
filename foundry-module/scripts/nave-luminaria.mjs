@@ -163,60 +163,97 @@ function fundir(mallas) {
   return malla;
 }
 
+/** Medidas compartidas por la carcasa y el difusor, orientadas a lo LARGO del
+ *  eje mayor de la sala — una pantalla cruzada respecto al pasillo se ve de
+ *  canto desde donde se anda. */
+function medidas(ancho, profundidad) {
+  const alLargoDeX = ancho >= profundidad;
+  return {
+    carcasa: alLargoDeX ? [LARGO, 0.1, ANCHO] : [ANCHO, 0.1, LARGO],
+    difusor: alLargoDeX ? [LARGO - 0.16, ANCHO - 0.08] : [ANCHO - 0.08, LARGO - 0.16],
+  };
+}
+
 /**
  * Las luminarias de una sala, listas para la lista de piezas de `crearSalaCaja`.
  *
- * Dos partes y ni una más: la carcasa que la cuelga y el difusor que se ve
- * encendido. Llevaron tapas en los extremos y se quitaron al medir: a 3,6 m de
- * altura son dos rebordes de 8 cm que nadie resuelve, y costaban un tercio de
- * todas las caras del techo.
+ * Solo la carcasa: metal normal, sin color propio ni parpadeo — recibe la luz
+ * como cualquier otra pieza. El difusor NO está aquí (ver `mallaDifusorLuminarias`
+ * y `colorDifusorLuminaria`): esta lista se congela una sola vez, en la
+ * construcción de la sala (#765), y el difusor necesita repintarse cada
+ * fotograma según la alerta y la salud del sistema — lo que #765 encontró
+ * horneado aquí no podía funcionar, porque para cuando llega la telemetría la
+ * sala ya está hecha.
  *
- * Se orientan a lo LARGO del eje mayor de la sala, como se montan de verdad —una
- * pantalla cruzada respecto al pasillo se ve de canto desde donde se anda.
+ * Llevó tapas en los extremos y se quitaron al medir: a 3,6 m de altura son
+ * dos rebordes de 8 cm que nadie resuelve, y costaban un tercio de todas las
+ * caras del techo.
  *
  * @param {{ancho:number, profundidad:number, altura:number}} sala
  * @returns {{malla:object, color:string}[]}
  */
-export function piezasLuminarias({ ancho, profundidad, altura, health = null, timeMs = 0 }) {
+export function piezasLuminarias({ ancho, profundidad, altura }) {
   const puntos = reparto(ancho, profundidad);
   if (puntos.length === 0) return [];
-  const alLargoDeX = ancho >= profundidad;
-  const medidasCarcasa = alLargoDeX ? [LARGO, 0.1, ANCHO] : [ANCHO, 0.1, LARGO];
-  const medidasDifusor = alLargoDeX ? [LARGO - 0.16, ANCHO - 0.08] : [ANCHO - 0.08, LARGO - 0.16];
+  const { carcasa: medidasCarcasa } = medidas(ancho, profundidad);
 
   const costados = [];
   const bajos = [];
-  const difusores = [];
   for (const { x, z } of puntos) {
     const yCarcasa = altura - CAIDA;
     costados.push(cajaColgada([x, yCarcasa, z], medidasCarcasa, true));
     bajos.push(cajaColgada([x, yCarcasa, z], medidasCarcasa, false));
-    difusores.push(difusorHaciaAbajo([x, yCarcasa - CAIDA_DIFUSOR, z], medidasDifusor));
-  }
-
-  // Determinar si el difusor debe parpadear basado en la salud del sistema y el tiempo.
-  let difusoColor = LUZ_CALIDA;
-  let difusoEmisivo = true;
-  if (health !== null) {
-    // Parpadeo con periodo de 1 segundo (500ms encendido, 500ms apagado) cuando hay daño.
-    const parpadeo = Math.floor(timeMs / 500) % 2 === 0;
-    difusoColor = parpadeo ? LUZ_CALIDA : 0x000000; // Negro cuando apagado
-    // Mantener emisivo verdadero para que el color negro se emita como luz negra (apagado).
-    // Si estableciéramos emisivo en falso, el material estaría sombreado por la luz ambiente.
   }
 
   return [
-    // La carcasa, metal normal: recibe la luz como cualquier otra pieza.
     { malla: fundir(bajos), color: MURAL.sombra },
     { malla: fundir(costados), color: MURAL.medio },
-    // El DIFUSOR es lo único emisivo de la nave: se pinta a intensidad plena,
-    // sin sombreado por normal. Sin eso, una cara que mira hacia abajo cae al
-    // suelo ambiente (0,35) y el ámbar llega al ojo como un marrón sucio — se
-    // probó, y las luminarias parecían apagadas. No alumbra a nadie: el motor no
-    // tiene luces de verdad (#556). Solo se exceptúa de la sombra, que es lo que
-    // hacía la máquina de referencia con las luces y las pantallas.
-    { malla: fundir(difusores), color: difusoColor, emisivo: difusoEmisivo },
   ];
+}
+
+/**
+ * La malla fundida de todos los difusores de una sala — SOLO geometría, sin
+ * color. Se calcula una vez en la construcción (igual que `piezasLuminarias`)
+ * y se reutiliza en cada `componer(...)`: lo que cambia por fotograma es el
+ * color que le da `colorDifusorLuminaria`, nunca el vértice.
+ *
+ * @param {{ancho:number, profundidad:number, altura:number}} sala
+ * @returns {object|null} malla fundida, o `null` si la sala no tiene luminarias.
+ */
+export function mallaDifusorLuminarias({ ancho, profundidad, altura }) {
+  const puntos = reparto(ancho, profundidad);
+  if (puntos.length === 0) return null;
+  const { difusor: medidasDifusor } = medidas(ancho, profundidad);
+  const yCarcasa = altura - CAIDA;
+  const difusores = puntos.map(({ x, z }) => difusorHaciaAbajo([x, yCarcasa - CAIDA_DIFUSOR, z], medidasDifusor));
+  return fundir(difusores);
+}
+
+/**
+ * El color del difusor para este fotograma: la alerta de la nave, más un
+ * parpadeo cuando el sistema que aloja la sala está dañado.
+ *
+ * `aviso` decide el tono base vía `tonoLuminaria` (verde/sin lectura = luz
+ * cálida de siempre). `health` es la fracción [0,1] del sistema de la sala —
+ * `null` cuando la sala no aloja sistema o no hay telemetría, y entonces no
+ * hay parpadeo posible: un dato que no ha llegado no puede afirmar avería.
+ * Por debajo de salud plena (1) se considera dañado y el difusor alterna
+ * entre el tono base y apagado cada 500 ms — la misma cadencia que ya median
+ * los tests de #765.
+ *
+ * El DIFUSOR es lo único emisivo de la nave (#555): se pinta a intensidad
+ * plena, sin sombreado por normal. Apagado se emite en negro por el mismo
+ * motivo — sombrearlo dejaría un marrón sucio en vez de un difusor apagado.
+ *
+ * @param {{aviso?:*, health?:number|null, timeMs?:number}} estado
+ * @returns {{color:string, emisivo:true}}
+ */
+export function colorDifusorLuminaria({ aviso = null, health = null, timeMs = 0 } = {}) {
+  const colorBase = tonoLuminaria(aviso);
+  const dañado = typeof health === "number" && Number.isFinite(health) && health < 1;
+  if (!dañado) return { color: colorBase, emisivo: true };
+  const encendido = Math.floor(timeMs / 500) % 2 === 0;
+  return { color: encendido ? colorBase : 0x000000, emisivo: true };
 }
 
 export function focosLuminarias({ ancho, profundidad, altura }) {

@@ -23,7 +23,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { retratoTripulanteDataUri } from "../foundry-module/scripts/retrato-tripulante.mjs";
+import { retratoTripulanteDataUri } from "../foundry-module/scripts/avatar/retrato-tripulante.mjs";
 import { readFileSync } from "node:fs";
 
 const raiz = resolve(dirname(fileURLToPath(import.meta.url)), "..");

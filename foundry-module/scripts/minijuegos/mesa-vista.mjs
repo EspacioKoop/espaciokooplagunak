@@ -44,13 +44,42 @@ const ETIQUETAS = Object.freeze({
   "act:check": "LAGUNAK.Minijuegos.Accion.Pasar",
   "act:call": "LAGUNAK.Minijuegos.Accion.Igualar",
   "act:raise": "LAGUNAK.Minijuegos.Accion.Subir",
+  // "mostrar" no tiene botón propio (#458): se dispara arrastrando o pulsando
+  // una carta de la mano propia, nunca de una lista de acciones genérica — la
+  // carta que se enseña es parte del gesto, no un parámetro aparte que haya
+  // que teclear. La etiqueta que sigue existe solo para que
+  // `accionesVisibles` no la descarte por desconocida al filtrar la lista que
+  // llega del motor; `mesaVista` nunca la deja llegar a `acciones`.
+  "act:mostrar": "LAGUNAK.Minijuegos.Accion.Mostrar",
 });
+
+// Acciones de juego que se disparan desde una carta (arrastre o clic), no
+// desde la lista de botones de `.lagunak-mesa-acciones`. Se excluyen ahí para
+// no duplicar el gesto como botón Y como carta arrastrable.
+const ACCIONES_DE_CARTA = Object.freeze(["act:mostrar"]);
 
 // Solo `raise` necesita que la persona diga cuánto. El resto son de un clic.
 const CON_IMPORTE = Object.freeze(["act:raise"]);
 
 function carta(codigo) {
   return { codigo, imagen: cartaDataUri(codigo) };
+}
+
+/**
+ * Carta de la mano propia con lo que hace falta para poder arrastrarla:
+ * `indice` (lo que identifica la carta para el motor, ver `carta-intento.mjs`)
+ * y `puedeMostrar` (ya se ha mostrado, o el motor ya no lo permite ahora
+ * mismo — mano terminada, retirado). Sin `puedeMostrar` la carta se pinta
+ * igual, pero no arrastrable ni clicable: un dedo de más en la interfaz no
+ * puede colar una jugada que el motor rechazaría de todos modos, pero si no
+ * se puede no hace falta ni intentarlo.
+ */
+function cartaPropia(codigo, indice, codigosMostrados, puedeMostrarEnGeneral) {
+  return {
+    ...carta(codigo),
+    indice,
+    puedeMostrar: puedeMostrarEnGeneral && !codigosMostrados.has(codigo),
+  };
 }
 
 /** Dorso: lo que se pinta donde hay una carta que NO se tiene derecho a ver. */
@@ -107,7 +136,22 @@ export function mesaVista(vista, { userId = "", acciones = [] } = {}) {
   // La mano propia solo existe si ha llegado la vista privada. Un jugador
   // sentado antes del reparto, o un espectador, ven dorsos: es la verdad, y es
   // además lo que se ve en una mesa real.
-  const tuMano = Array.isArray(privado?.tuMano) ? privado.tuMano.map(carta) : null;
+  const puedeMostrarEnGeneral = (Array.isArray(acciones) ? acciones : []).includes(
+    "act:mostrar",
+  );
+  const tuMano = Array.isArray(privado?.tuMano)
+    ? (() => {
+        // `cartasMostradas` viaja como CÓDIGOS ("As"), no como índices — es la
+        // vista pública, y el índice en la mano de otro no es asunto de nadie
+        // más. Para saber qué índice propio ya está mostrado, se compara por
+        // código contra la propia mano: dos cartas iguales en una mano de dos
+        // no pueden darse (52 cartas, sin repetición).
+        const codigosMostrados = new Set(publico?.cartasMostradas?.[userId] ?? []);
+        return privado.tuMano.map((codigo, indice) =>
+          cartaPropia(codigo, indice, codigosMostrados, puedeMostrarEnGeneral),
+        );
+      })()
+    : null;
 
   const turno = publico?.turno ?? null;
   const manoPorAsiento = new Map(
@@ -225,7 +269,10 @@ export function lineasResultado(resultado) {
 /** Acciones con etiqueta, sin las que este módulo no sepa nombrar. */
 export function accionesVisibles(acciones) {
   return (Array.isArray(acciones) ? acciones : [])
-    .filter((tipo) => typeof tipo === "string" && ETIQUETAS[tipo])
+    .filter(
+      (tipo) =>
+        typeof tipo === "string" && ETIQUETAS[tipo] && !ACCIONES_DE_CARTA.includes(tipo),
+    )
     .map((tipo) => ({
       tipo,
       etiqueta: ETIQUETAS[tipo],

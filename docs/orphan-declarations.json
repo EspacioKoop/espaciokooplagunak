@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "declarations": [
     {
-      "module": "audio-ficheros.mjs",
+      "module": "arte/audio/audio-ficheros.mjs",
       "status": "declared-orphan",
       "foundation": true,
       "reason": "Reproductor de ficheros de audio, al lado de la síntesis de #318. No lo importa nadie todavía porque no hay ningún fichero de audio en el repositorio: traerlo es la decisión de #571, y cablear un reproductor a un catálogo vacío no reproduce nada.",
       "declaredBy": "Espaciokoop Lagunak",
       "declaredAt": "2026-08-24",
-      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/571"}
+      "evidence": {"type": "issue", "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/571"}
     },
     {
       "module": "atlas-hyg.mjs",
@@ -17,7 +17,7 @@
       "reason": "Adaptador del catálogo estelar HYG al formato de atlas. Es cimiento del mismo atlas aún no aprobado: traduce datos al formato, y cablearlo metería en la partida una decisión pendiente.",
       "declaredBy": "Espaciokoop Lagunak",
       "declaredAt": "2026-08-24",
-      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/568"}
+      "evidence": {"type": "issue", "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/568"}
     },
     {
       "module": "catalogo-cosmografico.mjs",
@@ -26,16 +26,16 @@
       "reason": "Validador del formato de atlas con procedencia y licencia por entrada. Es cimiento de una investigación todavía pendiente; cablearlo por iniciativa propia promovería a hecho una decisión no tomada.",
       "declaredBy": "Espaciokoop Lagunak",
       "declaredAt": "2026-08-24",
-      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/525"}
+      "evidence": {"type": "issue", "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/525"}
     },
     {
       "module": "convocatoria-estancia.mjs",
-      "status": "declared-orphan",
+      "status": "connected",
       "foundation": true,
-      "reason": "Resuelve a dónde llega la tripulación cuando el GM la convoca a una estancia. El cableado a la ventana de Andar es su propia tarjeta y no debe nacer enredado en la interfaz.",
+      "reason": "Resuelve a dónde llega la tripulación cuando el GM la convoca a una estancia. Ahora la consume convocatoria-wiring.mjs (#832), cableada a la barra de escena.",
       "declaredBy": "Espaciokoop Lagunak",
       "declaredAt": "2026-08-24",
-      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/587"}
+      "evidence": {"type": "issue", "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/587"}
     },
     {
       "module": "horizonte-preset.mjs",
@@ -44,7 +44,7 @@
       "reason": "Volcado del matte del horizonte a PNG indexados. No lo importa el módulo en caliente a propósito: lo usan las herramientas de prerender y la prueba que verifica los assets guardados.",
       "declaredBy": "Espaciokoop Lagunak",
       "declaredAt": "2026-08-24",
-      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/584"}
+      "evidence": {"type": "issue", "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/584"}
     },
     {
       "module": "libro-geometria.mjs",
@@ -53,7 +53,7 @@
       "reason": "Geometría pura del libro 3D interactuable (#853): malla por ángulo de apertura y hoja en vuelo, igual que rig-esqueleto.mjs (#603). No lo importa nadie todavía porque el consumidor (libro-catalogo.mjs + escena andable) es el siguiente vertical del mismo issue y no debe nacer acoplado a la ventana ni duplicar validación de procedencia.",
       "declaredBy": "Espaciokoop Lagunak",
       "declaredAt": "2026-08-29",
-      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/853"}
+      "evidence": {"type": "issue", "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/853"}
     },
     {
       "module": "libro-pagina.mjs",
@@ -62,7 +62,7 @@
       "reason": "Dibujo de la página del libro 3D interactuable (#853, vertical 1): mancha tipográfica y composición con chapasDeRejilla a su propia celda, sin texto legible (#526/#838). No lo importa nadie todavía porque el consumidor (libro-catalogo.mjs + escena andable) es el siguiente vertical del mismo issue; la hoja que gira (libro-geometria.mjs) ya provee la cara sobre la que se coloca.",
       "declaredBy": "Espaciokoop Lagunak",
       "declaredAt": "2026-08-29",
-      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/853"}
+      "evidence": {"type": "issue", "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/853"}
     },
     {
       "module": "nave-movimiento-sala-prueba.mjs",
@@ -71,7 +71,7 @@
       "reason": "Banco de pruebas del motor de andar: dos cajas conectadas y deliberadamente fuera del catálogo jugable. No tener importador es la propiedad que se le exige.",
       "declaredBy": "Espaciokoop Lagunak",
       "declaredAt": "2026-08-24",
-      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/427"}
+      "evidence": {"type": "issue", "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/427"}
     },
     {
       "module": "npc-generador.mjs",
@@ -81,7 +81,16 @@
       "declaredBy": "Espaciokoop Lagunak",
       "declaredAt": "2026-08-24",
       "consumedAt": "2026-08-27",
-      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/810"}
+      "evidence": {"type": "issue", "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/810"}
+    },
+    {
+      "module": "npc-mirada.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Cimiento puro de quién mira a qué (#975, parte 1): limita el vector al cono y resuelve políticas declarativas con precedencia de alarma. No tiene consumidor en caliente a propósito hasta que la geometría facial de #974 esté integrada; cablearlo aquí mezclaría política y dibujo.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-09-04",
+      "evidence": {"type": "issue", "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/975"}
     },
     {
       "module": "npc-tablas.mjs",
@@ -91,16 +100,32 @@
       "declaredBy": "Espaciokoop Lagunak",
       "declaredAt": "2026-08-24",
       "consumedAt": "2026-08-27",
-      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/810"}
+      "evidence": {"type": "issue", "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/810"}
+    },
+    {
+      "module": "estatua-rig.mjs",
+      "status": "connected",
+      "reason": "Consumidor real de rig-esqueleto en la fase 4 de #603: deforma la malla de una pieza del museo según su rig antes de componerEscena. Lo importa museo-escena.mjs, así que rig-esqueleto deja de estar huérfano.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-08-28",
+      "evidence": {"type": "test", "path": "foundry-module/tests/estatua-rig.test.mjs"}
     },
     {
       "module": "rig-esqueleto.mjs",
+      "status": "connected",
+      "reason": "Deformación de malla por huesos, fase 1 de #603. Su consumidor ya existe: estatua-rig.mjs lo importa y el museo (museo-escena.mjs) dobla las piezas con rig antes de componerEscena. La decisión de arte que bloqueaba el cableado (todo escaneado, #603) está tomada desde 2026-08-20.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-08-28",
+      "evidence": {"type": "issue", "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/603"}
+    },
+    {
+      "module": "retargeting-pose.mjs",
       "status": "declared-orphan",
       "foundation": false,
-      "reason": "Deformación de malla por huesos, fase 1 de #603. Su consumidor depende de una decisión de arte todavía abierta; cablearlo antes produciría una opción incoherente.",
+      "reason": "Retargeting de poses entre esqueletos, fase 3 de #603: traslada una pose {eje, angulo} de un rig a otro por mapeo de ids, sin recalcular geometría porque el formato de pose ya es independiente de proporciones. Sin consumidor todavía: hace falta un rig+pose declarados sobre una pieza real del catálogo (fase 4/contenido) antes de que algo la importe.",
       "declaredBy": "Espaciokoop Lagunak",
-      "declaredAt": "2026-08-24",
-      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/603"}
+      "declaredAt": "2026-09-02",
+      "evidence": {"type": "issue", "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/603"}
     }
   ],
   "artInventoryRationale": {
@@ -121,7 +146,7 @@
     "minijuegos/fichas-pixelart.mjs",
     "ventana-nave.mjs",
     "iconos-sistema.mjs",
-    "retrato-tripulante.mjs",
+    "avatar/retrato-tripulante.mjs",
     "retro3d.mjs",
     "retro3d-estrellas.mjs",
     "cantina-escena.mjs",

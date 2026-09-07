@@ -28,6 +28,22 @@ PLACEHOLDER_RE = re.compile(
     r"(\{[^{}\n]+\}|%(?:\d+\$)?[-+#0]*\d*(?:\.\d+)?[diuoxXfFeEgGaAcspq%]|<[^<>\n]+>|__[^_\n]+__)"
 )
 
+# Palabras funcionales inglesas que no son palabras españolas: si aparecen en
+# minúscula dentro de un msgstr es que la traducción es por sustitución de
+# palabras (#813), no una traducción real. Van en minúscula y con límite de
+# palabra a propósito: una traducción de verdad no las usa así, y un nombre
+# propio capitalizado (Red Jacket, MP52 Hornet, Nautilus) nunca las toca.
+RESIDUAL_ENGLISH_RE = re.compile(
+    r"\b(the|and|of|with|will|spawned|whether)\b"
+)
+
+def residual_english(text: str) -> list[str]:
+    # Los placeholders (`<...>` incluido) se dejan verbatim en inglés a
+    # propósito en todo el catálogo (p. ej. "<Transmit 'The Itsy-Bitsy
+    # Spider' on all wavelengths>"): no son texto traducible.
+    sin_placeholders = PLACEHOLDER_RE.sub(" ", text)
+    return sorted(set(RESIDUAL_ENGLISH_RE.findall(sin_placeholders)))
+
 
 def placeholders(text: str) -> Counter[str]:
     return Counter(PLACEHOLDER_RE.findall(text))
@@ -80,6 +96,17 @@ def audit(root: Path) -> tuple[list[str], int, int, int]:
                     errors.append(f"placeholder mismatch: {rel}: {format_original!r}")
                 if ending_newlines(original) != ending_newlines(translation):
                     errors.append(f"trailing newline mismatch: {rel}: {original!r}")
+                # Un msgstr idéntico al original no está traducido; ya lo
+                # cuenta `identical` y es un problema aparte y mucho más
+                # amplio (#821) que la sustitución de palabras que esto
+                # persigue (#813) — no lo dupliques aquí.
+                residuos = (
+                    residual_english(translation)
+                    if translation != original
+                    else []
+                )
+                if residuos:
+                    errors.append(f"residual english {residuos}: {rel}: {key!r}")
                 if original == translation:
                     identical += 1
     return errors, len(sources), translated_entries, identical

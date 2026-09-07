@@ -46,7 +46,15 @@
 //   suelo y techo (#552)         886–1135   4,19 ms
 //   luminarias (#555)            894–1173   4,21 ms
 //   maquinaria de sala (#560)    894–1264   5,09 ms
-//   luminarias (#555)            894–1173   4,21 ms
+//   luminaria por alerta (#765)  363–1268   ~5 ms
+//
+// El salto de #765 (cablear el difusor a la alerta y a la salud del sistema)
+// es CERO: se remidió sobre el mismo catálogo, antes y después del cambio, y
+// el rango de polígonos no se movió ni un vértice — es la condición que el
+// propio issue #765 puso: si el tinte cuesta polígonos, es que se está
+// reconstruyendo algo. La geometría del difusor se funde una sola vez, en la
+// construcción de la sala (`mallaDifusorLuminarias`, en `nave-luminaria.mjs`);
+// lo único que cambia por fotograma es su `color`, vía `colorDifusorLuminaria`.
 //
 // El salto de #551 es real y hay que vigilarlo. Está pagado a tres bandas: el
 // mallado en rectángulos, el agrupado por color de `chapasDeRejilla` (que quitó

@@ -44,38 +44,36 @@ debe declarar su correspondencia con v1 — nunca un primer validador aún por
 escribir. La sección [«Modelo propuesto»](#modelo-propuesto-para-el-núcleo-standalone-evolución-sobre-v1)
 mapea explícitamente ambos.
 
-## Guardia legal (vinculante para todo el corte)
+## Guardia legal y categorías de entrada
 
-- **No** extraer PDFs, D&D Beyond ni libros oficiales.
-- **No** copiar descripciones, estadísticas, tablas, mapas ni ilustraciones
-  protegidas al repositorio público.
-- Los nombres propios de mundos/planos de Spelljammer publicados por WotC/TSR
-  son **contenido protegido**: se tratan como *dato privado de campaña* que cada
-  mesa introduce desde material que posee, nunca versionado en este repo.
-- Si una fuente oficial no es redistribuible, se implementa **solo el esquema y
-  el adaptador**; los datos los aporta la mesa.
-- Cualquier ejemplo versionado en el repo es **original** (mundos inventados
-  para el fork) o proviene de fuentes CC/SRD con procedencia declarada.
-- No se declaran equivalentes 5e y 2e como idénticos sin fuente verificable.
+Esta es una política conservadora del repositorio, no asesoramiento jurídico:
 
-## Matriz de procedencia/licencia
+- **No** descargar, extraer ni automatizar la lectura de PDFs, D&D Beyond o
+  libros oficiales para construir el atlas.
+- **No** copiar descripciones, estadísticas, tablas, mapas, ilustraciones ni
+  otros datos expresivos de fuentes cerradas al repositorio público.
+- Una ficha comercial, un índice público o una compra acreditan la edición y el
+  localizador; **no** conceden por sí solos permiso de redistribución.
+- Solo se versiona material cuyo permiso cubra **esa entrada concreta**. «Está
+  en el SRD» exige localizarlo dentro del SRD: que una mecánica sea de D&D o que
+  una web sea accesible no basta.
+- No se declaran equivalentes entre 5e y legado. Dos entradas de distinta
+  continuidad pueden relacionarse solo como referencias separadas y con
+  evidencia para cada una.
 
-Clasifica **de dónde** puede venir cada capa de datos y qué puede versionarse.
-Cada entrada real del atlas de una mesa heredará una de estas filas.
+| Categoría | Condición para entrar en el catálogo público | Destino si no la cumple |
+|---|---|---|
+| `cc` / SRD | El dato exacto está cubierto por una licencia identificada; se conserva fuente, versión, URL, atribución y cambios | No se importa |
+| Oficial sin licencia abierta identificada | Ninguna entrada de atlas se transcribe; solo se versionan esquema, adaptador y referencia bibliográfica | La mesa introduce localmente los datos desde su copia legítima |
+| Original del fork | Autoría declarada y licencia compatible con el repositorio | No se publica hasta aclarar autoría/licencia |
+| Aportado por una mesa | Privado por defecto; solo pasa a público mediante contribución expresa de su autor con licencia compatible | Mundo Foundry o export privado, `provenance.kind: "user_supplied"` |
+| Obra de fans o de terceros | Licencia/autorización individual verificable; la política de fans de WotC no sustituye el permiso del autor | No se importa ni se presenta como canon |
 
-| Clase de contenido | Procedencia / licencia | Redistribución en este repo | Evidencia exigida |
-|---|---|---|---|
-| Esquema JSON, IDs de campo, validador | Original del fork (este repo) | **Sí**, versionado | Código y tests en el PR |
-| Ejemplos de sistemas/mundos **inventados** | Creación original para el fork | **Sí**, versionado como fixtures | Autoría propia en el PR |
-| Datos SRD 5.1 / material CC-BY compatible | SRD (OGL/CC-BY 4.0 según edición) | **Sí**, con atributo de licencia por entrada | Localizador verificable (URL/ISBN) + nota de licencia |
-| Mundos/planos oficiales de Spelljammer (nombres, lore, mapas, stats) | WotC / TSR, protegido | **No**. Solo esquema; dato lo aporta la mesa | La mesa declara poseer el material |
-| Homebrew de una mesa | La mesa | **No** en el repo público; queda en el mundo Foundry / export privado | Marca `provenance.kind: "user_supplied"` por entrada; el archivo privado se mantiene explícitamente fuera del catálogo público del repo |
-| Contenido de fans bajo *Fan Content Policy* WotC | Fan, no comercial, no oficial | **No** por defecto; caso a caso, nunca como canon | Enlace a política + declaración de la mesa |
-
-**Regla de separación:** el catálogo redistribuible (esquema + ejemplos
-originales/SRD) vive en el repo; los datos de una campaña concreta (incluidos
-todos los nombres canónicos de Spelljammer) viven en el mundo de Foundry de esa
-mesa o en un export privado que la mesa custodia. El repo nunca mezcla ambos.
+**Separación operativa:** el repositorio distribuye el contrato y únicamente
+entradas originales o licenciadas. El contenido oficial cerrado y el contenido
+privado de cada mesa no se convierten en fixtures, compendios ni catálogos del
+proyecto. D&D Beyond puede ser un localizador consultado por una persona, nunca
+una fuente que el importador raspe.
 
 ## Opciones de arquitectura evaluadas
 
@@ -276,34 +274,47 @@ Yunque Roto, Forja Errante, Puerto Ceniza): no reproducen mundos oficiales.
 - Round-trip JSON estable (import→export→import) con las capas nuevas.
 - Datos privados de campaña excluidos del export del catálogo público.
 
-## Matriz de trazabilidad por fuente (entregable #213)
+## Matriz de procedencia y continuidad por fuente (#907)
 
-Esta es la matriz que exige #213: **una fila por fuente concreta**, con título,
-editor, URL pública cuando exista, alcance, procedencia/licencia, redistribución
-en este repo y localizador verificable. No copia ni parafrasea contenido
-protegido: registra la *procedencia*, no los datos. Donde no hay URL pública o el
-dato lo aporta la mesa, el hueco se declara de forma explícita.
+Verificada el **2026-09-03** contra páginas públicas primarias. Las URLs de
+D&D Beyond que muestran índices pueden requerir cuenta o compra para abrir el
+contenido: aquí se usan solo como evidencia bibliográfica. Los títulos y
+localizadores de esta tabla identifican fuentes; no son un catálogo de datos
+extraído de ellas.
 
-| Fuente (título) | Editor | URL pública | Alcance | Procedencia / licencia | ¿Redistribuible aquí? | Localizador verificable |
+| Fuente, editor y continuidad | Alcance para el atlas | Base jurídica / licencia | Se puede versionar | No se puede versionar | Evidencia / localizador verificable | Acción permitida |
 |---|---|---|---|---|---|---|
-| *Spelljammer: AD&D Adventures in Space* (boxed set) | TSR, 1989 | — (obra impresa, sin publicación pública gratuita) | Planos, esferas de cristal, phlogiston, mundos y naves 2e | Protegido (copyright TSR/WotC) | **No** — solo esquema; datos aportados por la mesa | Código de producto TSR 1049 |
-| *Spelljammer: Adventures in Space* | Wizards of the Coast, 2022 | [dnd.wizards.com](https://dnd.wizards.com/products/spelljammer) (ficha comercial, no el contenido) | Wildspace, Astral Sea, mundos y criaturas 5e | Protegido (copyright WotC); disponible en D&D Beyond, no redistribuible | **No** — solo esquema; datos aportados por la mesa | ISBN-13 978-0-7869-6787-4 |
-| System Reference Document 5.1 (SRD 5.1) | Wizards of the Coast, 2023 | [dndbeyond.com/srd](https://www.dndbeyond.com/srd) · PDF: [media.wizards.com/2023/downloads/dnd/SRD_CC_v5.1.pdf](https://media.wizards.com/2023/downloads/dnd/SRD_CC_v5.1.pdf) | Reglas y contenido genérico SRD; **no incluye material propio de Spelljammer** | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | **Sí**, con atributo por entrada — pero su cobertura espacial es marginal | Sección/número de página del SRD citada por entrada |
-| Fan Content Policy de WotC | Wizards of the Coast | [company.wizards.com/…/fancontentpolicy](https://company.wizards.com/en/legal/fancontentpolicy) | Marco para contenido de fans no comercial | Política, no licencia de contenido | **No** por defecto; caso a caso, nunca como canon | URL de la política + declaración de la mesa |
-| Ejemplos originales del fork | Espaciokoop Lagunak | [`foundry-module/data/cosmografia.example.json`](../foundry-module/data/cosmografia.example.json) | Mundos inventados de prueba (Mar de Argia, Sistema Laguna, Auzolan) | Original, `GPL-2.0-only` | **Sí**, versionado como fixtures | El propio archivo en el repo |
+| *System Reference Document 5.1*, Wizards of the Coast — **5e (reglas 2014)** | Reglas y vocabulario genéricos; no aporta un inventario Spelljammer | [SRD oficial](https://www.dndbeyond.com/srd), **CC BY 4.0**; condiciones en la [licencia](https://creativecommons.org/licenses/by/4.0/) | Solo material localizado dentro de SRD 5.1, con atribución, enlace, versión e indicación de cambios | Contenido de otros libros por el mero hecho de usar reglas 5e; ninguna entrada Spelljammer sin localizador SRD | Página oficial, bloque «System Reference Document v5.1» y su preámbulo CC | Reutilizar únicamente contenido SRD comprobado; para el atlas, preferir datos originales |
+| *System Reference Document 5.2.1*, Wizards of the Coast — **5.5e / reglas 2024; continuidad separada** | Reglas genéricas 2024; no aporta un inventario Spelljammer | [SRD oficial](https://www.dndbeyond.com/srd), **CC BY 4.0** | Material exacto de 5.2.1 con su atribución propia, solo en un corte que declare reglas 2024 | Mezclarlo silenciosamente con el adaptador 2014 o usarlo para justificar material ausente del SRD | Página oficial, bloque «System Reference Document v5.2.1» y fecha de versión | Mantener fuera del corte 2014 actual; evaluar en una continuidad futura explícita |
+| *Astral Adventurer’s Guide*, dentro de *Spelljammer: Adventures in Space*, Wizards of the Coast, 2022 — **5e** | Mar Astral/Plano Astral, Wildspace, tránsito entre sistemas y Roca de Bral | Contenido oficial sin licencia abierta identificada; la [ficha oficial](https://marketplace.dndbeyond.com/TTRPG/spelljammer-adventures-in-space) es comercial y la [licencia digital](https://www.dndbeyond.com/terms-conditions) es personal, no exclusiva y no transferible | Referencia bibliográfica, nuestra clasificación y esquema/adaptador original | Texto, mapas, tablas, arte, estadísticas, rutas o entradas del atlas transcritas; tampoco el mapa de Bral | [Índice oficial](https://www.dndbeyond.com/sources/dnd/sais/aag): «Ch. 2: Astral Adventuring» y «Ch. 3: The Rock of Bral» | Solo esquema/adaptador; cada mesa carga sus datos 5e localmente y registra capítulo/página |
+| *Light of Xaryxis*, dentro de *Spelljammer: Adventures in Space*, Wizards of the Coast, 2022 — **5e** | Roca de Bral, Doomspace, Xaryxispace y los trayectos narrativos de la aventura | Misma obra oficial cerrada y mismas condiciones de D&D Beyond que la fila anterior | Referencia bibliográfica, continuidad y campos vacíos del adaptador | Nombres subordinados, cuerpos, distancias, rutas, tablas, trama, texto, mapas, estadísticas o arte convertidos en datos públicos | [Índice oficial](https://www.dndbeyond.com/sources/dnd/sais/lox): parte 3 / capítulo 7 («Wildspace System: Doomspace») y parte 4 / capítulo 10 («Wildspace System: Xaryxispace») | Solo esquema/adaptador; la mesa introduce su copia y conserva el localizador exacto en privado |
+| *Spelljammer: Adventures in Space* (boxed set), TSR, 1989 — **AD&D 2e / legado** | Cosmografía base del legado: Wildspace, esferas, phlogiston, sistemas y rutas | Contenido oficial sin licencia abierta identificada; la [ficha oficial de tienda](https://www.dmsguild.com/en/product/17263/spelljammer-adventures-in-space-2e) no es una licencia de redistribución | Referencia bibliográfica, etiqueta `spelljammer-legacy` y esquema original | Texto, mapas, tablas, estadísticas, arte o datos cosmográficos transcritos | DMsGuild product `17263`; código de producto **TSR 1049** | Solo adaptador de legado vacío; datos aportados por cada mesa |
+| *SJR2 Realmspace*, TSR, 1991 — **AD&D 2e / legado** | Realmspace: sistema, cuerpos, enclaves y relaciones internas | Contenido oficial sin licencia abierta identificada en su ficha | Referencia bibliográfica y continuidad | Inventario, nombres subordinados, descripciones, coordenadas, rutas, mapas, tablas, estadísticas o arte como catálogo público | [Ficha oficial](https://www.dmsguild.com/en/product/17259/sjr2-realmspace-2e), product `17259`, código **SJR2** | Crear entradas `user_supplied` solo en la campaña privada de la mesa |
+| *SJR6 Greyspace*, TSR, 1992 — **AD&D 2e / legado** | Greyspace: sistema, cuerpos, enclaves y relaciones internas | Contenido oficial sin licencia abierta identificada en su ficha | Referencia bibliográfica y continuidad | Los mismos datos expresivos y estructurados cerrados de la fila anterior | [Ficha oficial](https://www.dmsguild.com/en/product/17251/sjr6-greyspace-2e), product `17251`, código **SJR6** | Crear entradas `user_supplied` privadas; no inferir equivalencias con 5e |
+| *SJR7 Krynnspace*, TSR, 1993 — **AD&D 2e / legado** | Krynnspace: sistema, cuerpos, enclaves y relaciones internas | Contenido oficial sin licencia abierta identificada en su ficha | Referencia bibliográfica y continuidad | Los mismos datos expresivos y estructurados cerrados de la fila anterior | [Ficha oficial](https://www.dmsguild.com/en/product/17254/sjr7-krynnspace-2e), product `17254`, código **SJR7** | Crear entradas `user_supplied` privadas; no inferir equivalencias con 5e |
+| *SJR5 Rock of Bral*, TSR, 1992 — **AD&D 2e / legado** | Roca de Bral como enclave; versión de legado independiente de la 5e | Contenido oficial sin licencia abierta identificada en su ficha | Referencia bibliográfica y continuidad separada | Plano, mapa, localizaciones, habitantes, texto, tablas, estadísticas o arte | [Ficha oficial](https://www.dmsguild.com/en/product/17264/sjr5-rock-of-bral-2e), product `17264`, código **SJR5** | Entrada privada distinta de la 5e; nunca fusionarlas por nombre |
+| `cosmografia.example.json`, Espaciokoop Lagunak — **original** | Fixture `plane → star_system → planet` inventado para probar el contrato v1 | Aportación original bajo `GPL-2.0-only` | Archivo completo, metadatos de procedencia y derivados compatibles | Atribuirlo a WotC, TSR o una mesa externa | [Archivo y revisión Git](../foundry-module/data/cosmografia.example.json) | Mantenerlo como único catálogo de ejemplo distribuido mientras no entre otra fuente autorizada |
+| Contenido creado por **cada mesa** — `homebrew`, no canónico | Cualquier plano, sistema, cuerpo, enclave o ruta creado para su campaña | Copyright de sus autores; no hay permiso público implícito | Nada por defecto. Solo una contribución expresa del autor, con licencia compatible y sin material ajeno incrustado | Export privado, datos personales o mezcla con contenido oficial/ajeno sin autorización | Declaración de autoría y licencia en el PR; si es privado, `provenance.kind: "user_supplied"` y localizador interno de la mesa | Guardar localmente; publicar únicamente tras revisión de autoría y licencia |
+| Contenido de fans o de terceros — continuidad declarada por su autor | Posible ampliación externa del atlas | [Fan Content Policy de WotC](https://company.wizards.com/en/legal/fancontentpolicy): permiso condicionado para fan content, **no** licencia abierta general ni permiso para republicar obra ajena; además prohíbe usar IP de Wizards en otros juegos | Solo metadatos bibliográficos; contenido únicamente con licencia/autorización individual compatible | Copiar una wiki, suplemento o atlas de fans porque sea gratis, público o cite la política | URL de la obra, autor, licencia exacta y autorización verificable por entrada | Rechazar por defecto; revisar caso a caso sin presentarlo como canon |
 
-**Huecos declarados explícitamente** (no se rellenan con datos inventados como si
-fueran canon):
+### Decisión de importación
 
-- **Mapeo verificado 2e↔5e:** no existe fuente redistribuible que lo fije; se deja
-  como hueco, nunca se afirma equivalencia sin cita.
-- **Porción del SRD 5.1 realmente aplicable a un atlas espacial:** el SRD 5.1 es
-  contenido genérico y **no** incluye Wildspace/esferas de cristal; su aporte al
-  atlas es marginal y está pendiente de auditar entrada por entrada.
-- **Unidad de escala/ruta canónica:** sin fuente redistribuible; se deja
-  `mesa-definida`.
-- **URL pública del contenido 2e/5e:** no existe de forma legal y gratuita; las
-  fichas enlazadas son comerciales, no el contenido.
+1. `cc`: el revisor comprueba que el dato exacto está dentro de la obra
+   licenciada y registra versión, localizador, atribución y cambios.
+2. `original`: el PR identifica a su autor y confirma que no deriva de una
+   entrada oficial cerrada.
+3. `user_supplied`: nunca pasa al catálogo público; el importador solo lo lee
+   desde el mundo o export privado de la mesa.
+4. Cualquier otra procedencia, licencia ambigua o contradicción **falla
+   cerrada**: no se importa.
+
+La matriz no autoriza por sí misma ninguna entrada. Si cambia una fuente, sus
+términos o el alcance del SRD, se vuelve a verificar la fila antes de publicar
+datos nuevos.
+
+**Huecos explícitos:** no hay mapeo redistribuible 2e↔5e, escala canónica común
+ni catálogo Spelljammer dentro de SRD 5.1/5.2.1. Se mantienen las continuidades
+separadas y las unidades/rutas como datos definidos por la mesa.
 
 ## Preguntas abiertas a acordar en el issue
 

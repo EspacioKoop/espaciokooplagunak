@@ -88,11 +88,5 @@
     "title": "El dato derivado se copia de su fuente autoritativa y una prueba lo compara",
     "path": "0015-dato-derivado-se-copia-y-se-compara.md",
     "status": "Aceptada"
-  },
-  {
-    "id": "ADR-0016",
-    "title": "Seguridad de la capa lúdica",
-    "path": "0016-seguridad-capa-ludica.md",
-    "status": "Propuesta"
   }
 ]

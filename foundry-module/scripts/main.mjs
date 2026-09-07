@@ -49,6 +49,7 @@ import { registerStationOrders } from "./station-order-wiring.mjs";
 import { registrarRelevoPuestos } from "./station-handover.mjs";
 import { registrarAsistencia } from "./asistencia-wiring.mjs";
 import { addAsistenciaControl, registrarAsistenciaUI } from "./asistencia-ui.mjs";
+import { addConvocarControl, registrarConvocatoriaUI } from "./convocatoria-wiring.mjs";
 import {
   registrarParlamentoUI,
   addParlamentoControl,
@@ -456,6 +457,9 @@ Hooks.once("ready", () => {
   // El emisor real de la tirada: al pedir un enfoque, lee la ficha del hablante
   // y tira el d20; la ventana cierra en banda. Sin Foundry no se registra.
   registrarParlamentoTirada();
+  // Convocar a una estancia desde la barra (#832): primer consumidor real de
+  // `convocatoria-estancia.mjs`, que hasta ahora era una conexión muerta.
+  registrarConvocatoriaUI(MODULE_ID);
   // Sesiones de minijuegos (#308): el GM coordinador recoge las propuestas por
   // updateUser; cualquier cliente escucha las vistas privadas dirigidas a él.
   registrarSesionesMinijuegos(MODULE_ID);
@@ -954,6 +958,8 @@ Hooks.on("getSceneControlButtons", (controls) => {
   // Parlamento de comunicaciones (#810): primer consumidor real de
   // npc-generador (#676). Botón en el grupo propio, como las demás ventanas.
   addParlamentoControl(controls);
+  // Convocar a una estancia (#832): solo-GM por la lógica de `convocar`.
+  addConvocarControl(controls);
 });
 
 /* Diagnóstico de conexión (issue #183): comprueba /healthz y después

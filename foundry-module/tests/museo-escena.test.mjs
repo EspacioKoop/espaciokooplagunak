@@ -61,7 +61,7 @@ test("el catálogo del museo es válido y todas sus fichas apuntan a una malla q
     validarCatalogoPiezas(CATALOGO_MUSEO, { mallasDisponibles: new Set(Object.keys(MALLAS_MUSEO)) }),
     true,
   );
-  assert.equal(CATALOGO_MUSEO.piezas.length, 3, "tres piezas, la disciplina de #590");
+  assert.equal(CATALOGO_MUSEO.piezas.length, 18, "dieciocho piezas, la capacidad de la sala");
   for (const pieza of CATALOGO_MUSEO.piezas) {
     assert.ok(MALLAS_MUSEO[pieza.malla]?.vertices?.length, `${pieza.malla} sin geometría`);
   }
@@ -109,7 +109,12 @@ test("cada pieza se apoya en su pedestal y ninguna se atraviesa andando", () => 
 test("desde el mirador de cada pieza se alcanza SU punto, y solo el suyo", () => {
   for (const colocada of PIEZAS_COLOCADAS) {
     const [x, z] = colocada.mirador;
-    assert.equal(colisiona(x, z, 0.35, PLANTA_MUSEO), false, "no se puede llegar al mirador");
+    // ESTA GARANTÍA NO SE QUITA (#757). `interaccionAlAlcance` responde
+    // igual desde dentro de un obstáculo, así que sin comprobar antes que el
+    // mirador es PISABLE la prueba da falso verde: la cartela «se alcanza»
+    // desde un punto donde nadie puede ponerse. Con 18 piezas fallaba en 12.
+    assert.equal(colisiona(x, z, 0.35, PLANTA_MUSEO), false,
+      `no se puede llegar al mirador de ${colocada.pieza.id}`);
     const alcanzada = interaccionAlAlcance(x, z, 0.35, INTERACCIONES);
     assert.equal(alcanzada?.accion?.tipo, "cartela");
     assert.equal(alcanzada?.accion?.pieza, colocada.pieza.id);
@@ -240,4 +245,60 @@ test("caben todas las mallas de vaciados que hay en el arbol", () => {
     MUSEO_INTERNO.CAPACIDAD >= 18,
     `hay 18 mallas y la sala admite ${MUSEO_INTERNO.CAPACIDAD}`,
   );
+});
+
+test("el mirador de una pieza queda libre también de la propia pieza, no solo del pedestal", () => {
+  // El caballo ecuestre mide 2,64 m de fondo sobre una base de 1,15: vuela más
+  // de un metro por delante y por detrás. Las mallas no se reescalan en la
+  // escena a propósito, así que la sala tiene que contar con ellas. Sin esto,
+  // quien mirase el caballo quedaba dentro del caballo.
+  const hondas = PIEZAS_COLOCADAS.filter((c) => c.medidas[2] > 1.15);
+  assert.ok(hondas.length > 0, "el catálogo debe tener alguna pieza más honda que su pedestal");
+  for (const colocada of hondas) {
+    const [x, z] = colocada.mirador;
+    assert.equal(colisiona(x, z, 0.35, PLANTA_MUSEO), false, `${colocada.pieza.id}`);
+  }
+});
+
+test("las piezas más hondas van a la fila de delante, que es la única con suelo libre delante", () => {
+  // Regla, no excepción con un nombre dentro. Lo que hay delante de cualquier
+  // otra fila es el pedestal de la siguiente.
+  const porZ = [...PIEZAS_COLOCADAS].sort((a, b) => a.centro[2] - b.centro[2]);
+  const filaDelantera = porZ.filter((c) => Math.abs(c.centro[2] - porZ[0].centro[2]) < 0.01);
+  const masHonda = [...PIEZAS_COLOCADAS].sort((a, b) => b.medidas[2] - a.medidas[2])[0];
+  assert.ok(
+    filaDelantera.some((c) => c.pieza.id === masHonda.pieza.id),
+    `${masHonda.pieza.id} es la más honda y debería ir en la fila de delante`,
+  );
+});
+
+test("las 18 piezas se alcanzan ANDANDO desde la entrada, no solo por tener el mirador libre", () => {
+  // Un mirador pisable puede seguir estando en una bolsa cerrada por pedestales.
+  // Esto es lo que de verdad significa «la escena es jugable»: inundación por
+  // la rejilla desde ENTRADA, con el mismo radio de cuerpo y el mismo
+  // `colisiona` que usa el motor.
+  const paso = 0.05;
+  const clave = (x, z) => `${Math.round(x / paso)},${Math.round(z / paso)}`;
+  const inicio = [ENTRADA.x, ENTRADA.z];
+  assert.equal(colisiona(inicio[0], inicio[1], 0.35, PLANTA_MUSEO), false, "la entrada es pisable");
+
+  const vistos = new Set([clave(...inicio)]);
+  const cola = [inicio];
+  while (cola.length) {
+    const [cx, cz] = cola.pop();
+    for (const [dx, dz] of [[paso, 0], [-paso, 0], [0, paso], [0, -paso]]) {
+      const nx = cx + dx;
+      const nz = cz + dz;
+      const k = clave(nx, nz);
+      if (vistos.has(k)) continue;
+      if (colisiona(nx, nz, 0.35, PLANTA_MUSEO)) continue;
+      vistos.add(k);
+      cola.push([nx, nz]);
+    }
+  }
+
+  const inalcanzables = PIEZAS_COLOCADAS
+    .filter((c) => !vistos.has(clave(c.mirador[0], c.mirador[1])))
+    .map((c) => c.pieza.id);
+  assert.deepEqual(inalcanzables, [], "hay piezas a las que no se puede llegar andando");
 });

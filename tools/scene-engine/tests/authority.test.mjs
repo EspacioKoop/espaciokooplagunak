@@ -7,10 +7,18 @@ import {
   saveAuthority,
 } from "../authority.mjs";
 
+// These tests exercise state flow, not the read/authority boundary itself
+// (that boundary is covered separately below), so reads stay open to both
+// clients and only the `set-door` command stays GM-only.
+function authorizeOpenReads(clientId, command) {
+  if (command.type === "read") return true;
+  return clientId === "gm" && command.type === "set-door";
+}
+
 function buildAuthority() {
   return createAuthority({
     initialState: { door: "closed", revisionNote: "initial" },
-    authorize: (clientId, command) => clientId === "gm" && command.type === "set-door",
+    authorize: authorizeOpenReads,
     reduce: (state, command) => ({
       ...state,
       door: command.value,
@@ -53,7 +61,7 @@ test("save and restore preserve state and revision for reconnection", () => {
 
   const saved = saveAuthority(authority);
   const restored = restoreAuthority(saved, {
-    authorize: (clientId, command) => clientId === "gm" && command.type === "set-door",
+    authorize: authorizeOpenReads,
     reduce: (state, command) => ({
       ...state,
       door: command.value,
@@ -63,4 +71,52 @@ test("save and restore preserve state and revision for reconnection", () => {
 
   assert.deepEqual(restored.snapshot(), authority.snapshot());
   assert.deepEqual(restored.connect("player", 1), authority.snapshot());
+});
+
+test("a field an unauthorized client cannot read never reaches it, in connect, reconnection or dispatch", () => {
+  const authority = createAuthority({
+    initialState: { public: "door", gmSecret: "hidden encounter" },
+    // Denies every read: nothing at all should leak to "player".
+    authorize: () => false,
+    reduce: (state, command) => ({ ...state, public: command.value }),
+  });
+
+  const playerConnect = authority.connect("player");
+  assert.equal(Object.hasOwn(playerConnect.state, "gmSecret"), false);
+  assert.deepEqual(JSON.stringify(playerConnect.state), JSON.stringify({}));
+
+  // Reconnection (a client with a stale/known revision) goes through the
+  // exact same projection — no separate, unfiltered path.
+  const playerReconnect = authority.connect("player", 0);
+  assert.equal(Object.hasOwn(playerReconnect.state, "gmSecret"), false);
+
+  // A dispatch is rejected for this client (authorize denies everything),
+  // but even the rejection path must never have handed out the secret.
+  assert.throws(() => authority.dispatch("player", { type: "set-public", value: "open" }));
+  assert.equal(JSON.stringify(authority.snapshot().state).includes("hidden encounter"), true);
+});
+
+test("field-level authorize lets an authorized client see a field a denied client cannot", () => {
+  const authority = createAuthority({
+    initialState: { public: "door", gmSecret: "hidden encounter" },
+    authorize: (clientId, command) => {
+      if (command.type === "read") return clientId === "gm" || command.field === "public";
+      return clientId === "gm";
+    },
+    reduce: (state, command) => ({ ...state, ...command.payload }),
+  });
+
+  const gmView = authority.connect("gm");
+  assert.equal(gmView.state.gmSecret, "hidden encounter");
+  assert.equal(gmView.state.public, "door");
+
+  const playerView = authority.connect("player");
+  assert.equal(playerView.state.public, "door");
+  assert.equal(Object.hasOwn(playerView.state, "gmSecret"), false);
+
+  // Dispatch by the GM also returns a projection scoped to the GM, and
+  // still never lets an unrelated player projection see the secret.
+  const afterDispatch = authority.dispatch("gm", { type: "set", payload: { public: "open" } });
+  assert.equal(afterDispatch.state.gmSecret, "hidden encounter");
+  assert.equal(Object.hasOwn(authority.connect("player").state, "gmSecret"), false);
 });

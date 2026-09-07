@@ -21,14 +21,33 @@ export function createAuthority({ initialState, initialRevision = 0, authorize, 
   let state = clone(initialState);
   let revision = initialRevision;
 
+  // `snapshot()` (no args) is the INTERNAL, complete, authoritative view —
+  // it must never be handed to a client directly. Anything that leaves the
+  // authority for a specific client goes through `projection(clientId)`,
+  // which asks `authorize` per top-level field before including it. This is
+  // what was missing: connect() used to return the raw snapshot regardless
+  // of clientId, so a field like `gmSecret` reached every client that ever
+  // connected or reconnected, no matter what `authorize` said.
   const snapshot = () => ({ revision, state: clone(state) });
+
+  function projection(clientId) {
+    const full = snapshot();
+    const visible = {};
+    for (const [field, value] of Object.entries(full.state)) {
+      const allowed = authorize(clientId, { type: "read", field }, full);
+      if (allowed) visible[field] = clone(value);
+    }
+    return { revision: full.revision, state: visible };
+  }
 
   return {
     snapshot,
 
     connect(clientId, knownRevision = null) {
-      // A client with a stale revision receives the complete authoritative state.
-      return snapshot({ clientId, knownRevision });
+      // A client with a stale revision receives the complete authoritative
+      // state it is entitled to see — never more, regardless of knownRevision.
+      void knownRevision;
+      return projection(clientId);
     },
 
     dispatch(clientId, command) {
@@ -40,7 +59,7 @@ export function createAuthority({ initialState, initialRevision = 0, authorize, 
       }
       state = clone(nextState);
       revision += 1;
-      return snapshot();
+      return projection(clientId);
     },
   };
 }

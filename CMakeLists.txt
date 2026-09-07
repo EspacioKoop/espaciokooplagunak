@@ -278,6 +278,8 @@ set(MAIN_SOURCES
     src/screens/extra/databaseScreen.cpp
     src/screens/extra/commsScreen.cpp
     src/screens/extra/shipLogScreen.cpp
+    src/content/campaignCheckpoint.cpp
+    src/content/campaignCheckpoint.h
     src/content/campaignGraph.cpp
     src/content/campaignGraph.h
     src/content/contentLibraryStore.cpp
@@ -765,6 +767,15 @@ if(BUILD_CONTENT_RESOURCE_TESTS)
         "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>")
     target_link_libraries(campaign_graph_tests PRIVATE seriousproton)
     add_test(NAME campaign_graph COMMAND campaign_graph_tests)
+
+    add_executable(campaign_checkpoint_tests
+        tests/campaignCheckpointTests.cpp
+        src/content/campaignCheckpoint.cpp
+    )
+    target_include_directories(campaign_checkpoint_tests PRIVATE
+        "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>")
+    target_link_libraries(campaign_checkpoint_tests PRIVATE seriousproton)
+    add_test(NAME campaign_checkpoint_codec COMMAND campaign_checkpoint_tests)
 
     add_executable(content_library_store_tests
         tests/contentLibraryStoreTests.cpp

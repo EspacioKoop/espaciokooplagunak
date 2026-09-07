@@ -7,8 +7,12 @@ import {
   SESION_ERRORES,
   abrir,
   asistenciasDe,
+  cerrarCrisisMando,
   consumir,
   crearSesion,
+  declararOrdenMando,
+  estadoMando,
+  iniciarCrisisMando,
   podar,
   resolver,
 } from "../scripts/asistencia/sesion.mjs";
@@ -409,4 +413,145 @@ test("asistenciasDe cuenta lo vivo de un puesto y nada del vecino", () => {
   assert.equal(enCurso.propuestas.length, 0);
   assert.deepEqual(asistenciasDe(abierta.estado, "weapons", T0).reservas, []);
   assert.deepEqual(asistenciasDe(abierta.estado, "engineering", T0 + VIGENCIA + 1).reservas, []);
+});
+
+test("las órdenes de mando nacen con la crisis, son dos y mueren al cerrarla", () => {
+  const vacia = crearSesion();
+  assert.deepEqual(estadoMando(vacia), {
+    crisisActiva: false,
+    disponibles: 0,
+    ventajaActiva: null,
+  });
+
+  const abierta = iniciarCrisisMando(vacia);
+  assert.deepEqual(estadoMando(abierta), {
+    crisisActiva: true,
+    disponibles: 2,
+    ventajaActiva: null,
+  });
+
+  const declarada = declararOrdenMando({
+    estado: abierta,
+    puestoAsistido: "engineering",
+    nonce: "mando-1",
+  });
+  assert.equal(declarada.ok, true);
+  assert.deepEqual(estadoMando(declarada.estado), {
+    crisisActiva: true,
+    disponibles: 1,
+    ventajaActiva: { puestoAsistido: "engineering" },
+  });
+
+  const cerrada = cerrarCrisisMando(declarada.estado);
+  assert.deepEqual(estadoMando(cerrada), {
+    crisisActiva: false,
+    disponibles: 0,
+    ventajaActiva: null,
+  });
+});
+
+test("la orden mejora y consume atómicamente solo la próxima asistencia del puesto elegido", () => {
+  const crisis = iniciarCrisisMando(crearSesion());
+  const mandada = declararOrdenMando({
+    estado: crisis,
+    puestoAsistido: "navigation",
+    nonce: "mando-1",
+  });
+
+  const ingenieria = abrirUno(mandada.estado, { nonce: "ayuda-ingenieria" });
+  const falloAjeno = resolver({
+    estado: ingenieria.estado,
+    nonce: "ayuda-ingenieria",
+    banda: BANDAS.FALLO,
+    ahora: T0,
+  });
+  assert.equal(falloAjeno.ok, false, "una orden para navegación no mejora ingeniería");
+  assert.equal(estadoMando(falloAjeno.estado).ventajaActiva?.puestoAsistido, "navigation");
+
+  const tareaNavegacion = {
+    ...TAREA,
+    id: "bordar-maniobra",
+    puestoAsistido: "navigation",
+    accionPropuesta: "set_impulse",
+  };
+  const navegacion = abrir({
+    estado: falloAjeno.estado,
+    tarea: tareaNavegacion,
+    asistenteId: "ayudante-2",
+    nonce: "ayuda-navegacion",
+    ahora: T0,
+  });
+  const mejorada = resolver({
+    estado: navegacion.estado,
+    nonce: "ayuda-navegacion",
+    banda: BANDAS.FALLO,
+    ahora: T0,
+  });
+  assert.equal(mejorada.ok, true, "fallo sube a éxito y produce propuesta");
+  assert.equal(mejorada.propuesta.banda, BANDAS.EXITO);
+  assert.deepEqual(estadoMando(mejorada.estado), {
+    crisisActiva: true,
+    disponibles: 1,
+    ventajaActiva: null,
+  });
+
+  const repetida = resolver({
+    estado: mejorada.estado,
+    nonce: "ayuda-navegacion",
+    banda: BANDAS.FALLO,
+    ahora: T0,
+  });
+  assert.equal(repetida.ok, false);
+  assert.equal(repetida.error, SESION_ERRORES.RESERVA_DESCONOCIDA);
+  assert.equal(estadoMando(repetida.estado).ventajaActiva, null, "el reintento no resucita la orden");
+});
+
+test("una crisis no admite acumulación, repetición ni gasto por encima del presupuesto", () => {
+  const crisis = iniciarCrisisMando(crearSesion(), 1);
+  const primera = declararOrdenMando({
+    estado: crisis,
+    puestoAsistido: "engineering",
+    nonce: "mando-1",
+  });
+
+  const repetida = declararOrdenMando({
+    estado: primera.estado,
+    puestoAsistido: "engineering",
+    nonce: "mando-1",
+  });
+  assert.equal(repetida.error, SESION_ERRORES.ORDEN_MANDO_REPETIDA);
+  assert.equal(repetida.estado, primera.estado, "repetir el evento no vuelve a cobrar");
+
+  const acumulada = declararOrdenMando({
+    estado: primera.estado,
+    puestoAsistido: "navigation",
+    nonce: "mando-2",
+  });
+  assert.equal(acumulada.error, SESION_ERRORES.ORDEN_MANDO_PENDIENTE);
+
+  const abierta = abrirUno(primera.estado);
+  const consumida = resolver({ estado: abierta.estado, nonce: "n1", banda: BANDAS.EXITO, ahora: T0 });
+  const agotada = declararOrdenMando({
+    estado: consumida.estado,
+    puestoAsistido: "engineering",
+    nonce: "mando-2",
+  });
+  assert.equal(agotada.error, SESION_ERRORES.ORDENES_AGOTADAS);
+  assert.equal(estadoMando(agotada.estado).disponibles, 0);
+});
+
+test("repetir la apertura no repone órdenes durante la misma crisis", () => {
+  const abierta = iniciarCrisisMando(crearSesion(), 1);
+  const declarada = declararOrdenMando({
+    estado: abierta,
+    puestoAsistido: "engineering",
+    nonce: "mando-idempotente",
+  });
+  const repetida = iniciarCrisisMando(declarada.estado, 99);
+  assert.equal(repetida, declarada.estado);
+  assert.deepEqual(estadoMando(repetida), {
+    crisisActiva: true,
+    disponibles: 0,
+    ventajaActiva: { puestoAsistido: "engineering" },
+  });
 });

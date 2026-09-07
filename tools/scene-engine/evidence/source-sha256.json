@@ -1,0 +1,12 @@
+{
+  "tools/scene-engine/capture.mjs": "16a6fc52792bd29db273acfa04439cd0b6ee67f78617e1620d8334f50d8172c4",
+  "tools/scene-engine/content.mjs": "9d17866ecfc3ee979bb4548cd052cc6407fe708e691f9291a1b666ffa5463c71",
+  "tools/scene-engine/contract.mjs": "c76abe8288f8986df927ebde77085473f53d50375642ffefe8705ec462928908",
+  "tools/scene-engine/gpu.mjs": "2103b1d5a6403ea6798ae3fda70cceec3e9c1a69dc036c2fdb504a9e8e856282",
+  "tools/scene-engine/index.html": "9cc6ec98f673327b753ffa49127c04b3ac1fcb2d55eec53f843a60c27104f791",
+  "tools/scene-engine/package.json": "ab7dea3defb4cb6931f12aee7531582aac3a4eb5a9b730891f9128c9366d2c26",
+  "tools/scene-engine/raster-checks.mjs": "10b4553aa028d62f6376d0e34adbb844028492dbbd45c28dc79181e87260fe4f",
+  "tools/scene-engine/serve.mjs": "de2aded4d16d7a24071ab1fe6e7063e957e6ad7f216486e9b0c9cf2d67566f86",
+  "tools/scene-engine/software.mjs": "f11e393d721fb393cf2e44fcfd300368597a1a91e625a6a42f844a112ed8af8e",
+  "tools/scene-engine/viewer.mjs": "41b972854785691224b014d10605689c4b1e5b40679c8bbebca255e3f167dfc2"
+}

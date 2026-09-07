@@ -50,6 +50,18 @@ PR: cada área se verifica sola, y por eso se pueden entregar por separado.
 de verdad y que **ningún módulo de `foundry-module/scripts/` queda fuera de todas las áreas**. Un
 módulo nuevo sin área es un módulo que nadie sabe quién puede tocar.
 
+El índice operativo machine-readable de [`docs/INDICE_OPERATIVO.json`](INDICE_OPERATIVO.json)
+añade a cada área una tarea típica, un agente recomendado, su comando de verificación y los
+límites mínimos de autoridad, secretos y red. Se valida con:
+
+```bash
+python3 tools/validar_indice_operativo.py
+```
+
+El JSON no sustituye este mapa: reutiliza sus nombres de área como fuente única de rutas y añade
+solo el contexto que necesitan las personas y los agentes para tomar una tarea pequeña sin abrir
+una frontera de seguridad por accidente.
+
 Lo que NO exige es que un módulo esté en una sola área: hay piezas que legítimamente son dos cosas
 —el museo es escena y es catálogo con procedencia— y forzar una partición limpia obligaría a mentir
 sobre eso. El área es a quién avisar, no una propiedad exclusiva.

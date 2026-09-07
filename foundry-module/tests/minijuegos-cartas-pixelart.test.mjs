@@ -35,6 +35,14 @@ test("las figuras y el diez, que son la mitad de los rangos, también se dibujan
   }
 });
 
+test("la silueta de la carta conserva esquinas transparentes y escalonadas", () => {
+  const svg = cartaSvg("As");
+
+  assert.match(svg, new RegExp(`M2 0H${ANCHO - 2}`));
+  assert.match(svg, new RegExp(`M2 1H${ANCHO - 2}`));
+  assert.doesNotMatch(svg, /<rect x="0" y="0"/);
+});
+
 test("un código desconocido falla cerrado", () => {
   // Incluye el par valor+palo en crudo ("14s", "10s"): no es el código estable
   // de la baraja y no debe dibujarse "por si acaso".

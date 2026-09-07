@@ -191,12 +191,14 @@ function svg(rects, fondo) {
   const cuerpo = rects
     .map((r) => `<rect x="${r.x}" y="${r.y}" width="1" height="1" fill="${r.color}"/>`)
     .join("");
+  const exterior = `M2 0H${ANCHO - 2}V1H${ANCHO - 1}V${ALTO - 1}H${ANCHO - 2}V${ALTO}H2V${ALTO - 1}H1V1H2Z`;
+  const interior = `M2 1H${ANCHO - 2}V2H${ANCHO - 1}V${ALTO - 2}H${ANCHO - 2}V${ALTO - 1}H2V${ALTO - 2}H1V2H2Z`;
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${ANCHO} ${ALTO}" ` +
     `shape-rendering="crispEdges" role="img">` +
     // Marco de 1px con esquinas recortadas (recorte pixel de 2px).
-    `<rect x="0" y="0" width="${ANCHO}" height="${ALTO}" fill="${PALETA.borde}"/>` +
-    `<rect x="1" y="1" width="${ANCHO - 2}" height="${ALTO - 2}" fill="${fondo}"/>` +
+    `<path d="${exterior}" fill="${PALETA.borde}"/>` +
+    `<path d="${interior}" fill="${fondo}"/>` +
     cuerpo +
     `</svg>`
   );

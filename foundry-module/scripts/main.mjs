@@ -50,6 +50,7 @@ import { registrarRelevoPuestos } from "./station-handover.mjs";
 import { registrarAsistencia } from "./asistencia-wiring.mjs";
 import {
   convocarYTransmitir,
+  registrarAjusteConvocatoria,
   registrarConvocatoriaEstancia,
 } from "./convocatoria-difusion.mjs";
 import { addAsistenciaControl, registrarAsistenciaUI } from "./asistencia-ui.mjs";
@@ -211,6 +212,12 @@ Hooks.once("init", () => {
   // de arriba —ver cabecera de `alarma-cruzada.mjs`—, ajuste de MUNDO por el
   // mismo motivo: solo el GM calcula, todos leen.
   registrarAjusteAlarmaCruzada(MODULE_ID);
+
+  // Convocatoria a una estancia (#689/#876): ajuste de MUNDO por el mismo
+  // motivo que el nivel de alerta — solo quien tiene permiso de modificar
+  // ajustes del juego (el GM) consigue escribirlo, y eso es lo que impide a
+  // un jugador falsificar la convocatoria emitiendo el mensaje él mismo.
+  registrarAjusteConvocatoria(MODULE_ID);
 
   // Tinte de escena delegado en FXMaster (ver `filtros-escena.mjs` y
   // docs/ECOSISTEMA_MODULOS_FOUNDRY.md). APAGADO por defecto y no por timidez:

@@ -218,6 +218,7 @@ export const CATALOGO_MUSEO = Object.freeze({
         source: "Pixelart generado por el módulo Espaciokoop Lagunak (obra propia, sin fuente externa)",
         license: "CC0 1.0 (obra propia del módulo)",
       }),
+    }),
     Object.freeze({
       id: "caballo-marco-aurelio",
       malla: "caballo-marco-aurelio",

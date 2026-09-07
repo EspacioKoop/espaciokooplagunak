@@ -10,7 +10,7 @@ import {
   iconoSistemaDataUri,
   iconoSistemaSvg,
 } from "../scripts/iconos-sistema.mjs";
-import { barrasSistema } from "../scripts/barras-estado.mjs";
+import { barrasSistema } from "../scripts/ship-view/barras-estado.mjs";
 import { SISTEMA, contraste } from "../scripts/paleta.mjs";
 
 test("sin lectura NO es ninguno de los otros tres estados", () => {

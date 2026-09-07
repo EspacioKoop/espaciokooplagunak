@@ -16,7 +16,7 @@ import {
   pintarTripulacion,
 } from "../scripts/seccion-lienzo.mjs";
 import { componerSeccion, salaPorId } from "../scripts/seccion-nave.mjs";
-import { COLOR_REGION } from "../scripts/casco-dano.mjs";
+import { COLOR_REGION } from "../scripts/ship-view/casco-dano.mjs";
 import { SECCION } from "../scripts/paleta.mjs";
 
 const MEDIDAS = { ancho: 720, alto: 360 };

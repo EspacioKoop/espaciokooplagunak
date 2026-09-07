@@ -75,6 +75,15 @@
       "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/810"}
     },
     {
+      "module": "npc-mirada.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Cimiento puro de quién mira a qué (#975, parte 1): limita el vector al cono y resuelve políticas declarativas con precedencia de alarma. No tiene consumidor en caliente a propósito hasta que la geometría facial de #974 esté integrada; cablearlo aquí mezclaría política y dibujo.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-09-04",
+      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/975"}
+    },
+    {
       "module": "npc-tablas.mjs",
       "status": "connected",
       "foundation": true,

@@ -21,3 +21,4 @@ La licencia del repositorio solo responde por el codigo que cubre. Para aceptar 
 - Stendhal, README y licencia del software: https://github.com/arianne/stendhal
 - Dungeon Crawl Stone Soup, README, licencia GPLv2+ y descripcion de sus tiles: https://github.com/crawl/crawl
 - Naev, README del espejo y enlace al proyecto activo: https://github.com/naev/naev
+\n

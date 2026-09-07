@@ -1261,6 +1261,50 @@
   padding: 8px 4px;
 }
 
+.lagunak-asistencia__crisis {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.lagunak-asistencia__mando {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 3px;
+}
+
+.lagunak-asistencia__mando h3,
+.lagunak-asistencia__saldo,
+.lagunak-asistencia__mando-activo,
+.lagunak-asistencia__mando-error {
+  margin: 0;
+}
+
+.lagunak-asistencia__saldo {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.lagunak-asistencia__puestos-mando {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lagunak-asistencia__puestos-mando button {
+  width: 100%;
+}
+
+.lagunak-asistencia__mando-error {
+  color: rgb(var(--lagunak-alerta-roja-texto-rgb));
+  font-size: 12px;
+}
+
 .lagunak-asistencia__intro,
 .lagunak-asistencia__espera {
   margin: 0;

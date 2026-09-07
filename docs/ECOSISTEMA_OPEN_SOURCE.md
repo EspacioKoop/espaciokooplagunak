@@ -1,6 +1,6 @@
 # Ecosistema open source y fuentes de dominio público: qué se puede aprovechar
 
-> **Issue de origen:** [#568](https://github.com/VaroTv7/espaciokooplagunak/issues/568).
+> **Issue de origen:** [#568](https://github.com/EspacioKoop/espaciokooplagunak/issues/568).
 > **Qué es:** un catálogo de proyectos libres y fuentes de dominio público que pueden
 > ahorrarnos trabajo, **a cualquier nivel de la pila**, con el veredicto de qué se puede
 > hacer con cada uno y por qué.
@@ -48,7 +48,7 @@ Los cuatro veredictos que se usan abajo:
 
 | Proyecto | Licencia | Veredicto | Por qué |
 |---|---|---|---|
-| [Space Nerds In Space](https://github.com/smcameron/space-nerds-in-space) | GPL-2.0 **o posterior** | **Copiar el patrón**, y es el único del que además se PODRÍA copiar código | El único simulador de puente cuya licencia es compatible con la nuestra. Comparte problema y género con EE: puestos, API Lua de misiones, universo grande con tránsito entre instancias. Su modelo de «warp gates» entre sistemas es material directo para el atlas de [#213](https://github.com/VaroTv7/espaciokooplagunak/issues/213) |
+| [Space Nerds In Space](https://github.com/smcameron/space-nerds-in-space) | GPL-2.0 **o posterior** | **Copiar el patrón**, y es el único del que además se PODRÍA copiar código | El único simulador de puente cuya licencia es compatible con la nuestra. Comparte problema y género con EE: puestos, API Lua de misiones, universo grande con tránsito entre instancias. Su modelo de «warp gates» entre sistemas es material directo para el atlas de [#213](https://github.com/EspacioKoop/espaciokooplagunak/issues/213) |
 | [Oolite](https://github.com/OoliteProject/oolite) | Código GPL-2.0-or-later; **recursos CC BY-NC-SA** | **Copiar el patrón** (solo código) | Compatible en código. Sus **assets no entran**: el `NC` los inhabilita para un proyecto GPL |
 | [Endless Sky](https://github.com/endless-sky/endless-sky) | GPL-3.0 | **Inspiración** | Incompatible en un solo sentido. Su arte sí es aprovechable por separado (dominio público y CC permisivas), pero el código no |
 | [Naev](https://github.com/naev/naev) | GPL-3.0 | **Inspiración** | Igual que el anterior |
@@ -63,7 +63,7 @@ funcionando.
 | Proyecto | Licencia | Veredicto | Por qué |
 |---|---|---|---|
 | [Jumper](https://github.com/Yonaba/Jumper) | MIT | **Copiar el patrón** | Búsqueda de caminos en rejilla, Lua puro y sin dependencias. La navegación por la nave ya es de rejilla (`nave-movimiento.mjs`), pero eso es JS: aquí el encaje sería la IA de escenarios, no el módulo |
-| [behaviourtreelua2e](https://github.com/MaxYari/behaviourtreelua2e) | Revisar | **Inspiración** | Árboles de comportamiento en Lua. Antes de traer nada: las crisis multipuesto ([#484](https://github.com/VaroTv7/espaciokooplagunak/issues/484)) se resolvieron con máquinas de estado a mano y funcionan; un árbol de comportamiento es la respuesta a un problema que todavía no tenemos |
+| [behaviourtreelua2e](https://github.com/MaxYari/behaviourtreelua2e) | Revisar | **Inspiración** | Árboles de comportamiento en Lua. Antes de traer nada: las crisis multipuesto ([#484](https://github.com/EspacioKoop/espaciokooplagunak/issues/484)) se resolvieron con máquinas de estado a mano y funcionan; un árbol de comportamiento es la respuesta a un problema que todavía no tenemos |
 
 ## Capa 3 — Arte y audio
 
@@ -103,7 +103,7 @@ solo porque exista.
 |---|---|---|---|
 | [HYG / AT-HYG](https://codeberg.org/astronexus/athyg) | CC BY-SA-4.0 | **Depender** — el mejor candidato del documento | Catálogo estelar real (Hipparcos, Yale, Gliese, Tycho-2, Gaia DR3) **con los nombres propios oficiales de la IAU**. `catalogo-cosmografico.mjs` ya exige procedencia y licencia POR ENTRADA: HYG encaja en ese formato sin tocarlo. Es la diferencia entre un atlas de sistemas inventados y uno donde el cielo es el de verdad |
 | [NASA Image and Video Library](https://images.nasa.gov) | Generalmente sin copyright en EE. UU., con excepciones de terceros | **Caso a caso**, con la misma cautela de marca | Fondos y referencia visual. Mismo criterio que 3D Resources: la excepción de terceros se comprueba en la entrada concreta, no se presume del conjunto |
-| [Open MCT](https://github.com/nasa/openmct) | Apache-2.0 | **Inspiración**, y nada más | Marco web de control de misión de la NASA: telemetría en vivo, paneles componibles. Es exactamente nuestro problema en la consola del GM ([#276](https://github.com/VaroTv7/espaciokooplagunak/issues/276))… y **su licencia no entra en un GPL-2.0**. Se mira cómo resuelven la composición de paneles y se escribe lo nuestro |
+| [Open MCT](https://github.com/nasa/openmct) | Apache-2.0 | **Inspiración**, y nada más | Marco web de control de misión de la NASA: telemetría en vivo, paneles componibles. Es exactamente nuestro problema en la consola del GM ([#276](https://github.com/EspacioKoop/espaciokooplagunak/issues/276))… y **su licencia no entra en un GPL-2.0**. Se mira cómo resuelven la composición de paneles y se escribe lo nuestro |
 
 **El aviso de CC BY-SA:** obliga a atribuir **y** a compartir igual las obras derivadas de
 los datos. Para un catálogo consultable no es problema; convertirlo en un derivado
@@ -123,4 +123,4 @@ entrada: fue una buena decisión antes de tener a quién aplicársela.
 
 ## Relacionado
 
-- **[INSPIRACION_JUEGOS_LIBRES.md](INSPIRACION_JUEGOS_LIBRES.md) (issue [#840](https://github.com/VaroTv7/espaciokooplagunak/issues/840)):** estudia *qué mecánica de rol robar* de juegos libres, no de qué dependencias traer. Es el complemento de este documento: aquí se decide **de qué depender**; allí se decide **qué idea reutilizar** (sin tocar código ajeno, por la frontera #568).
+- **[INSPIRACION_JUEGOS_LIBRES.md](INSPIRACION_JUEGOS_LIBRES.md) (issue [#840](https://github.com/EspacioKoop/espaciokooplagunak/issues/840)):** estudia *qué mecánica de rol robar* de juegos libres, no de qué dependencias traer. Es el complemento de este documento: aquí se decide **de qué depender**; allí se decide **qué idea reutilizar** (sin tocar código ajeno, por la frontera #568).

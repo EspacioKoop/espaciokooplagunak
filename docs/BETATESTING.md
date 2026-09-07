@@ -107,7 +107,7 @@ tareas entre puestos funcionó o se pisaron.
 ## Cómo reportar después
 
 Cada hallazgo, un issue en
-[GitHub](https://github.com/VaroTv7/espaciokooplagunak/issues) (el GM puede
+[GitHub](https://github.com/EspacioKoop/espaciokooplagunak/issues) (el GM puede
 abrirlos en nombre de testers sin cuenta). Incluye:
 
 - commit probado y versión de Foundry;

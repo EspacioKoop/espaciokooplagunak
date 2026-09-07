@@ -3391,3 +3391,97 @@ msgstr ""
 msgctxt "msgMainscreen"
 msgid "Rank after military reductions due to ignominious defeat: %s"
 msgstr ""
+
+#: Missing from scenario header
+msgid "The Arlenians are your allies. The Kraylors and Exuari are your enemies and will try to prevent you from completing your missions. Duration: approximately 30 minutes\n\nVersion 2 - Nov2024\n\nUSN Discord: https://discord.gg/PntGG3a where you can join a game online. There's one nearly every weekend. All experience levels are welcome."
+msgstr ""
+
+#: Missing from scenario header
+msgctxt "Enemies"
+msgid "Easier set of enemies"
+msgstr ""
+
+#: Missing from scenario header
+msgctxt "Enemies"
+msgid "Hard set of enemies"
+msgstr ""
+
+#: Missing from scenario header
+msgctxt "Enemies"
+msgid "Normal set of enemies"
+msgstr ""
+
+#: Missing from scenario header
+msgctxt "Missions"
+msgid "All"
+msgstr ""
+
+#: Missing from scenario header
+msgctxt "Missions"
+msgid "Missions are conducted in random order"
+msgstr ""
+
+#: Missing from scenario header
+msgctxt "Missions"
+msgid "One"
+msgstr ""
+
+#: Missing from scenario header
+msgctxt "Missions"
+msgid "One mission is is selected at random (shorter duration)"
+msgstr ""
+
+#: Missing from scenario header
+msgctxt "Murphy"
+msgid "Easy"
+msgstr ""
+
+#: Missing from scenario header
+msgctxt "Murphy"
+msgid "Hard"
+msgstr ""
+
+#: Missing from scenario header
+msgctxt "Murphy"
+msgid "Murphy generally smiles on you"
+msgstr ""
+
+#: Missing from scenario header
+msgctxt "Murphy"
+msgid "Murphy is in particularly strong form today"
+msgstr ""
+
+#: Missing from scenario header
+msgctxt "Murphy"
+msgid "Normal"
+msgstr ""
+
+#: Missing from scenario header
+msgctxt "Murphy"
+msgid "The normal distribution of the odds against you"
+msgstr ""
+
+#: Missing from scenario header
+msgctxt "setting"
+msgid "Configures how the odds are stacked against you - Murphy's law."
+msgstr ""
+
+#: Missing from scenario header
+msgctxt "setting"
+msgid "Configures the strength and/or number of enemy forces"
+msgstr ""
+
+#: Missing from scenario header
+msgctxt "setting"
+msgid "Missions"
+msgstr ""
+
+#: Missing from scenario header
+msgctxt "setting"
+msgid "Murphy"
+msgstr ""
+
+#: Missing from scenario header
+msgctxt "setting"
+msgid "Configures the way missions work"
+msgstr ""

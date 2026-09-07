@@ -1,0 +1,8 @@
+{
+  "name": "e2e-visual",
+  "private": true,
+  "description": "Herramientas de QA visual (capturas/vídeo) para espaciokoop lagunak. No es una dependencia del módulo Foundry: vive aparte a propósito (ver CLAUDE.md, 'el módulo no declara ninguna dependencia dura').",
+  "devDependencies": {
+    "playwright": "^1.47.0"
+  }
+}

@@ -36,6 +36,7 @@ Closes #
 
 ## Checklist
 
+- [ ] Esta PR pertenece a `EspacioKoop/espaciokooplagunak`; no depende de la ubicación histórica bajo `VaroTv7`.
 - [ ] El cambio tiene un objetivo único y alcance claro.
 - [ ] He revisado el diff completo.
 - [ ] No contiene secretos, datos personales, builds ni configuración local.

@@ -531,8 +531,8 @@ toda la mesa oye lo mismo sin sincronizar nada.
   delegar en el GM.
 - Un registro desconocido en el ajuste **falla cerrado** y vuelve al automático.
 
-Módulos: `musica-procedural.mjs` (qué notas), `musica-mando.mjs` (quién decide),
-`musica-reproductor.mjs` (cómo suena).
+Módulos: `arte/audio/musica-procedural.mjs` (qué notas), `arte/audio/musica-mando.mjs` (quién decide),
+`arte/audio/musica-reproductor.mjs` (cómo suena).
 
 ### Daño de sistema dibujado, no solo coloreado (#353)
 

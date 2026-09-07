@@ -49,13 +49,13 @@ import {
   prepararVistaReposicion,
   reposicionarNave,
 } from "./reposicion-control.mjs";
-import { firmaEstadoNaveVisible, prepareRoute, prepareSystemRows } from "./ship-view.mjs";
+import { firmaEstadoNaveVisible, prepareRoute, prepareSystemRows } from "./ship-view/ship-view.mjs";
 import {
   barraRecurso,
   barrasSistema,
   aplicarBarraDom,
   textoPorcentaje,
-} from "./barras-estado.mjs";
+} from "./ship-view/barras-estado.mjs";
 import { estadoIcono, iconoSistemaDataUri, aplicarIconoDom } from "./iconos-sistema.mjs";
 import { setSimulationPaused } from "./tempo-control.mjs";
 import { contenidoEstadoBitacora, fechaLocal } from "./bitacora-nave.mjs";
@@ -67,6 +67,7 @@ import { dibujarFrame } from "./mapa-render.mjs";
 import { estiloMarcoMapa } from "./mapa-marco.mjs";
 import { calcularIntervaloMs, resolverCicloConsola, siguienteFallosSeguidos } from "./consola-caliente-poll.mjs";
 import { buildWorkspaceModel, WORKSPACE_STATIONS } from "./station-workspaces.mjs";
+import { abrirAsistencia } from "./asistencia-ui.mjs";
 import {
   colorFaccion,
   componerFrame,
@@ -154,6 +155,7 @@ export function crearClaseConsolaCalienteV2() {
         ordenarRumbo: ConsolaCalienteApp.onOrdenarRumbo,
         ordenarEscudos: ConsolaCalienteApp.onOrdenarEscudos,
         reposicionar: ConsolaCalienteApp.onReposicionar,
+        abrirMando: ConsolaCalienteApp.onAbrirMando,
       },
     };
 
@@ -1066,6 +1068,10 @@ export function crearClaseConsolaCalienteV2() {
     static async onReposicionar() {
       const select = this.element?.querySelector?.('[data-field="reposicion-ancla"]');
       return this._reposicionar(String(select?.value ?? ""));
+    }
+
+    static onAbrirMando() {
+      return abrirAsistencia();
     }
 
     static async onOrdenarImpulso(_event, target) {

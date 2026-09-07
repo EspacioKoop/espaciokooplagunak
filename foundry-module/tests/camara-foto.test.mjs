@@ -5,6 +5,7 @@ import {
   crearCamaraFoto,
   orbitarCamaraFoto,
   moverCamaraFoto,
+  zoomCamaraFoto,
   controlesCamaraFoto,
 } from "../scripts/camara-foto.mjs";
 
@@ -42,4 +43,28 @@ test("orbitarCamaraFoto limita el pitch para evitar voltear la cámara", () => {
   assert.ok(orbited.orbita.pitch < Math.PI / 2);
   assert.ok(orbited.orbita.pitch > -Math.PI / 2);
   assert.equal(crearCamaraFoto().orbita.yaw, 0);
+});
+
+test("zoomCamaraFoto solo cambia el zoom al GM y lo acota", () => {
+  const jugador = crearCamaraFoto({ esGM: false, zoom: 2 });
+  assert.deepEqual(zoomCamaraFoto(jugador, 1), jugador);
+
+  const gm = crearCamaraFoto({ esGM: true, zoom: 1 });
+  const acercado = zoomCamaraFoto(gm, 5);
+  assert.ok(acercado.zoom <= 4);
+
+  const alejado = zoomCamaraFoto(gm, -5);
+  assert.ok(alejado.zoom >= 0.25);
+});
+
+test("zoom -> mover -> orbitar no pierde el zoom por el camino", () => {
+  let camara = crearCamaraFoto({ esGM: true });
+  camara = zoomCamaraFoto(camara, 1);
+  assert.equal(camara.zoom, 2);
+
+  camara = moverCamaraFoto(camara, { x: 1 });
+  assert.equal(camara.zoom, 2, "moverCamaraFoto no debe resetear el zoom");
+
+  camara = orbitarCamaraFoto(camara, { yaw: 1 });
+  assert.equal(camara.zoom, 2, "orbitarCamaraFoto no debe resetear el zoom");
 });

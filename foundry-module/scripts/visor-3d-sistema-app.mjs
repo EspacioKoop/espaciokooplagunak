@@ -48,8 +48,16 @@ function abrirVisor3D() {
         });
       }
 
-      async render(force, opciones) {
-        await super.render(force, opciones);
+      // `render()` de Application (V1) clásica devuelve la instancia de
+      // inmediato y programa el render real de forma asíncrona/diferida: el
+      // DOM (`.window-content`) NO existe todavía cuando `render()` resuelve
+      // su promesa, así que montar contenido ahí dentro tras un
+      // `await super.render()` no tiene garantía ninguna (terminaba con cero
+      // iframes en la reapertura). `_render(force, options)` es el hook
+      // interno que Foundry llama DESPUÉS de haber insertado el HTML en el
+      // DOM — mismo patrón que consola-caliente-v1.mjs.
+      async _render(force, options) {
+        await super._render(force, options);
         const content = this.element?.[0]?.querySelector?.(".window-content");
         if (!content || content.dataset.ek3d) return;
         content.dataset.ek3d = "1";
@@ -70,8 +78,10 @@ function abrirVisor3D() {
       }
     })();
   }
-  if (globalThis.foundry?.applications?.api?.ApplicationV2) visorApp.render({ force: true });
-  else visorApp.render(true);
+  // Esta instancia siempre es Application V1 clásica (`Base`), aunque el
+  // anfitrión tenga ApplicationV2 disponible en global para OTRAS ventanas:
+  // `render()` de V1 toma un booleano, no un objeto de opciones.
+  visorApp.render(true);
 }
 
 // Descriptor de la herramienta de escena. Exportado para testearlo en Node sin

@@ -619,6 +619,10 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
 
 ## Flujo git
 
+**Lectura obligatoria al empezar:** [norma platino de colaboración](docs/NORMA_PLATINO_COLABORACION.md).
+Primero terminar la cola; revisión ajena por riesgo, no por rutina.
+
+
 - `origin` = `EspacioKoop/espaciokooplagunak`; `upstream` = `daid/EmptyEpsilon`. Nunca apuntes `upstream`
   a otro sitio ni incluyas tokens en URLs de remotos.
 - Ramas desde `main`: `feature/`, `fix/`, `docs/`, `test/`, `chore/`, `upstream/`. Todo llega a
@@ -629,12 +633,12 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
 - Commits breves, imperativos y con prefijo: `feat(scenario): …`, `fix(network): …`, `docs: …`.
 - El issue es el contrato de alcance; el PR es el registro de implementación y verificación. Antes
   de trabajar, revisa issues/PRs/ramas existentes para no duplicar.
-- **Quién aprueba.** `.github/CODEOWNERS` pone a `@VaroTv7` y `@eGurucharri` como revisores de todo,
-  y `main` exige la aprobación de un code owner. GitHub **no cuenta al autor**, así que un PR abierto
-  por uno solo lo puede aprobar el otro, y abrir una tanda entera con la misma cuenta deja a esa
-  cuenta sin poder firmar ninguno. Tenlo en cuenta al elegir con qué cuenta se abre; el estado real
-  se ve con `gh pr view <n> --json mergeStateStatus,reviewDecision` — un `CLEAN` con CI en verde
-  puede seguir parado en `REVIEW_REQUIRED`.
+- **Revisión proporcional.** La [norma platino](docs/NORMA_PLATINO_COLABORACION.md)
+  permite integrar cambios ordinarios probados sin esperar aprobación ajena: mínimo de
+  aprobaciones 0 y sin aprobación obligatoria del último push. Se mantienen PR, siete checks,
+  conversaciones resueltas y protecciones también para administradores. Los cambios de riesgo
+  requieren revisión independiente; los bloqueantes conocidos no se ignoran. No autoaprobar
+  un PR ni usar bypass: comprobar el estado vivo, el SHA y las reviews antes de integrar.
 - **Una rama sin PR no es trabajo a salvo, pero tampoco es trabajo perdido.** Borrar un worktree
   **no** borra su rama: lo confirmado no se pierde al limpiar, y lo único en riesgo es lo que no
   está confirmado.

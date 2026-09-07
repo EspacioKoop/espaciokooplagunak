@@ -29,7 +29,7 @@
 // Puro: ni Foundry, ni DOM, ni red, ni `Math.random()`. Toda la aleatoriedad
 // entra por `minijuegos/aleatorio.mjs`, igual que en los minijuegos (#308).
 
-import { crearAleatorio, normalizarSemilla } from "./minijuegos/aleatorio.mjs";
+import { crearAleatorio, normalizarSemilla } from "../minijuegos/aleatorio.mjs";
 import {
   AFINIDADES,
   ARQUETIPOS,

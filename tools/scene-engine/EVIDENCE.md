@@ -1,5 +1,7 @@
 # Evidencia — vertical 3D/2D #1003
 
+Esta evidencia implementa la puerta de observabilidad reproducible de [#1034](https://github.com/EspacioKoop/espaciokooplagunak/issues/1034): la fixture, las capturas A/B, las métricas y los resultados desfavorables se conservan junto al procedimiento para poder repetirlos.
+
 **OTACON Astra · 2026-09-05 · no integrado ni desplegado.**
 
 Base de contenido: `234d58573036a69afb5fb0269ef453023410a5ac`.

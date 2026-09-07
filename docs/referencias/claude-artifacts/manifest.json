@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "recorded_on": "2026-09-06",
+  "source_platform": "Claude artifacts",
+  "tracking_issue": "https://github.com/EspacioKoop/espaciokooplagunak/issues/1039",
+  "submitted_reference_count": 11,
+  "unique_artifact_count": 10,
+  "submitted_urls_in_order": [
+    "https://claude.ai/code/artifact/368f25e2-b8dd-4b08-b98b-737893382455",
+    "https://claude.ai/code/artifact/9a78b189-93a9-4280-985d-869c028a8742",
+    "https://claude.ai/code/artifact/4aa48576-bef8-4d20-b9cb-1e1cde410c16",
+    "https://claude.ai/code/artifact/4aa48576-bef8-4d20-b9cb-1e1cde410c16",
+    "https://claude.ai/code/artifact/19920f00-807b-41cc-a991-07edce9594a3",
+    "https://claude.ai/code/artifact/d50ed22e-bf54-455e-b16e-b944cc5dbdee",
+    "https://claude.ai/code/artifact/94caf8e4-85cd-4c64-955a-0f88edb730d5",
+    "https://claude.ai/code/artifact/b1ca927b-bfb7-4307-8ec1-00e83290e92a",
+    "https://claude.ai/code/artifact/5ff27ef2-4587-4a11-99ee-5f7d721bab27",
+    "https://claude.ai/code/artifact/a53c0e8c-6d82-4e84-8cb3-ed5d6b6b39d6",
+    "https://claude.ai/code/artifact/37d76856-7688-4914-936f-bb15eecd0b4c"
+  ],
+  "artifacts": [
+    {
+      "id": "368f25e2-b8dd-4b08-b98b-737893382455",
+      "url": "https://claude.ai/code/artifact/368f25e2-b8dd-4b08-b98b-737893382455",
+      "occurrences": 1,
+      "title": "Piel de Puerta",
+      "reference_preserved": true,
+      "full_artifact_archived": false,
+      "status": "text_only",
+      "local_text": "piel-de-puerta-texto.md",
+      "retrieval_note": "Texto recuperado por extractor; imagen embebida y código no recuperados."
+    },
+    {
+      "id": "9a78b189-93a9-4280-985d-869c028a8742",
+      "url": "https://claude.ai/code/artifact/9a78b189-93a9-4280-985d-869c028a8742",
+      "occurrences": 1,
+      "title": null,
+      "reference_preserved": true,
+      "full_artifact_archived": false,
+      "status": "content_not_recovered",
+      "local_text": null,
+      "retrieval_note": "Extracción fallida; consulta directa HTTP 200 con solo contenedor Claude, sin contenido del artefacto."
+    },
+    {
+      "id": "4aa48576-bef8-4d20-b9cb-1e1cde410c16",
+      "url": "https://claude.ai/code/artifact/4aa48576-bef8-4d20-b9cb-1e1cde410c16",
+      "occurrences": 2,
+      "title": null,
+      "reference_preserved": true,
+      "full_artifact_archived": false,
+      "status": "content_not_recovered",
+      "local_text": null,
+      "retrieval_note": "Extracción fallida; consulta directa HTTP 200 con solo contenedor Claude, sin contenido del artefacto."
+    },
+    {
+      "id": "19920f00-807b-41cc-a991-07edce9594a3",
+      "url": "https://claude.ai/code/artifact/19920f00-807b-41cc-a991-07edce9594a3",
+      "occurrences": 1,
+      "title": null,
+      "reference_preserved": true,
+      "full_artifact_archived": false,
+      "status": "content_not_recovered",
+      "local_text": null,
+      "retrieval_note": "Extracción fallida; consulta directa HTTP 200 con solo contenedor Claude, sin contenido del artefacto."
+    },
+    {
+      "id": "d50ed22e-bf54-455e-b16e-b944cc5dbdee",
+      "url": "https://claude.ai/code/artifact/d50ed22e-bf54-455e-b16e-b944cc5dbdee",
+      "occurrences": 1,
+      "title": null,
+      "reference_preserved": true,
+      "full_artifact_archived": false,
+      "status": "content_not_recovered",
+      "local_text": null,
+      "retrieval_note": "Extracción fallida; consulta directa HTTP 200 con solo contenedor Claude, sin contenido del artefacto."
+    },
+    {
+      "id": "94caf8e4-85cd-4c64-955a-0f88edb730d5",
+      "url": "https://claude.ai/code/artifact/94caf8e4-85cd-4c64-955a-0f88edb730d5",
+      "occurrences": 1,
+      "title": null,
+      "reference_preserved": true,
+      "full_artifact_archived": false,
+      "status": "content_not_recovered",
+      "local_text": null,
+      "retrieval_note": "Extracción fallida; consulta directa HTTP 200 con solo contenedor Claude, sin contenido del artefacto."
+    },
+    {
+      "id": "b1ca927b-bfb7-4307-8ec1-00e83290e92a",
+      "url": "https://claude.ai/code/artifact/b1ca927b-bfb7-4307-8ec1-00e83290e92a",
+      "occurrences": 1,
+      "title": null,
+      "reference_preserved": true,
+      "full_artifact_archived": false,
+      "status": "content_not_recovered",
+      "local_text": null,
+      "retrieval_note": "Extracción fallida; consulta directa HTTP 200 con solo contenedor Claude, sin contenido del artefacto."
+    },
+    {
+      "id": "5ff27ef2-4587-4a11-99ee-5f7d721bab27",
+      "url": "https://claude.ai/code/artifact/5ff27ef2-4587-4a11-99ee-5f7d721bab27",
+      "occurrences": 1,
+      "title": null,
+      "reference_preserved": true,
+      "full_artifact_archived": false,
+      "status": "content_not_recovered",
+      "local_text": null,
+      "retrieval_note": "Extractor: Page not found; consulta directa: solo contenedor Claude. No permite concluir que esté borrado."
+    },
+    {
+      "id": "a53c0e8c-6d82-4e84-8cb3-ed5d6b6b39d6",
+      "url": "https://claude.ai/code/artifact/a53c0e8c-6d82-4e84-8cb3-ed5d6b6b39d6",
+      "occurrences": 1,
+      "title": null,
+      "reference_preserved": true,
+      "full_artifact_archived": false,
+      "status": "content_not_recovered",
+      "local_text": null,
+      "retrieval_note": "Extracción fallida; consulta directa HTTP 200 con solo contenedor Claude, sin contenido del artefacto."
+    },
+    {
+      "id": "37d76856-7688-4914-936f-bb15eecd0b4c",
+      "url": "https://claude.ai/code/artifact/37d76856-7688-4914-936f-bb15eecd0b4c",
+      "occurrences": 1,
+      "title": null,
+      "reference_preserved": true,
+      "full_artifact_archived": false,
+      "status": "content_not_recovered",
+      "local_text": null,
+      "retrieval_note": "Extracción fallida; consulta directa HTTP 200 con solo contenedor Claude, sin contenido del artefacto."
+    }
+  ]
+}

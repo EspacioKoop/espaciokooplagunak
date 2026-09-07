@@ -33,6 +33,10 @@ import {
   PUERTA_CANTINA,
   PLANTA_TERRAZA,
   componerTerraza,
+  componerTerrazaCon,
+  plantaTerraza,
+  asientosColocados,
+  ASIENTOS as ASIENTOS_TERRAZA,
 } from "./terraza-cantina.mjs";
 import {
   ENTRADA as ENTRADA_PLAYA,
@@ -352,6 +356,17 @@ export const CATALOGO_ANDAR = crearCatalogoEstancias({
   terraza: {
     planta: PLANTA_TERRAZA,
     componer: componerTerraza,
+    // Sus cinco asientos se retiran al ocuparse (`nave-pose.mjs`). La estancia
+    // declara CÓMO queda con otras poses; quién las cambia y cuándo es de la
+    // ventana, que es la que sabe quién se acaba de sentar.
+    conPoses: (poses) => ({
+      planta: plantaTerraza(poses),
+      componer: componerTerrazaCon(poses),
+      // Dónde queda cada asiento ya en su pose: quien se sienta necesita el
+      // sitio NUEVO, no el de la silla sin retirar.
+      colocados: asientosColocados(poses),
+    }),
+    poseables: ASIENTOS_TERRAZA,
     entrada: ENTRADA_TERRAZA,
     interacciones: INTERACCIONES_TERRAZA,
     // Al aire libre y con la nave detrás: el fondo es el vacío, no el mamparo de

@@ -12,9 +12,9 @@ rama de una tarea de cobertura llevaba **cinco ficheros de `.nyc_output/`
 commiteados**. El ignore no los vio porque para git ya no eran ficheros nuevos.
 
 QUE MIRA. Solo lo que nunca es un entregable en este arbol: la salida de las
-herramientas de cobertura y las dependencias de npm. El modulo se prueba con
-`node --test` a secas, sin dependencias, asi que `node_modules/` aqui no es una
-decision de empaquetado discutible: es basura de paso.
+herramientas de cobertura, `node_modules/` y locks npm anidados. El lock raiz es
+un entregable deliberado desde que el pipeline de mallas usa el decoder Draco:
+fija la dependencia que instala `npm ci` sin versionar sus binarios descargados.
 
 Se ejecuta sin argumentos desde cualquier sitio del arbol. Salida 0 si limpio.
 """
@@ -28,7 +28,6 @@ RAIZ = pathlib.Path(__file__).resolve().parent.parent
 
 # Prefijos que nunca deben estar trackeados, en cualquier nivel del arbol.
 RESTOS = ("node_modules/", ".nyc_output/", "coverage/")
-FICHEROS = ("package-lock.json",)
 
 # Excepciones declaradas: paquetes npm que SI son el entregable, no un resto
 # de paso -- el gemelo de esta lista es la excepcion homonima en `.gitignore`.
@@ -50,7 +49,9 @@ def es_resto(ruta: str) -> bool:
     partes = ruta.split("/")
     for i, _ in enumerate(partes):
         cola = "/".join(partes[i:])
-        if cola.startswith(RESTOS) or cola in FICHEROS:
+        if cola == "package-lock.json":
+            return i > 0
+        if cola.startswith(RESTOS):
             return True
     return False
 

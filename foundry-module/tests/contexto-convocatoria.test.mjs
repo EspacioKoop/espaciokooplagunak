@@ -22,3 +22,9 @@ test("el catálogo es inmutable y rechaza destinos desconocidos", () => {
   assert.throws(() => contextoConvocatoria("playa-real"), /destino/i);
   assert.deepEqual(destinosConvocables(), ["playa", "museo"]);
 });
+
+test("rechaza claves heredadas del prototipo (prototype pollution)", () => {
+  assert.throws(() => contextoConvocatoria("constructor"), /destino/i);
+  assert.throws(() => contextoConvocatoria("__proto__"), /destino/i);
+  assert.throws(() => contextoConvocatoria("toString"), /destino/i);
+});

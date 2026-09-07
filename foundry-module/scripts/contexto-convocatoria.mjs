@@ -22,7 +22,9 @@ export function destinosConvocables() {
 }
 
 export function contextoConvocatoria(destino) {
-  const context = CONTEXTOS_CONVOCATORIA[destino];
+  const context = Object.hasOwn(CONTEXTOS_CONVOCATORIA, destino)
+    ? CONTEXTOS_CONVOCATORIA[destino]
+    : null;
   if (!context) throw new RangeError(`destino de convocatoria desconocido: ${destino}`);
   return context;
 }

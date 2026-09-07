@@ -29,6 +29,15 @@
       "evidence": {"type": "issue", "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/525"}
     },
     {
+      "module": "chronicle-event.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Contrato canónico puro de #866. Solo lo consumen sus pruebas hasta que hazañas, crónica o métricas tengan tarjetas propias; conectarlo ahora inventaría un consumidor funcional expresamente fuera de alcance.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-09-02",
+      "evidence": {"type": "issue", "url": "https://github.com/VaroTv7/espaciokooplagunak/issues/866"}
+    },
+    {
       "module": "convocatoria-estancia.mjs",
       "status": "connected",
       "foundation": true,

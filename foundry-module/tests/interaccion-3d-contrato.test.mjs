@@ -88,6 +88,37 @@ test("una banda sin efecto declarado resuelve a null, no a un efecto inventado",
   assert.equal(resultado.efecto, null);
 });
 
+test("los efectos declarados son copias congeladas en profundidad, no la referencia original", () => {
+  const efectoOriginal = { tipo: "reparado", detalle: { piezas: 2 } };
+  const objeto = declararObjetoInteractivo({
+    id: "objeto-mutable",
+    aproximaciones: [{ id: "unica", dificultad: 0.8 }],
+    efectosPorBanda: { [BANDAS.CRITICO]: efectoOriginal },
+  });
+
+  // Identidad distinta del contenedor y del efecto individual.
+  assert.notEqual(objeto.efectosPorBanda[BANDAS.CRITICO], efectoOriginal);
+  assert.ok(Object.isFrozen(objeto.efectosPorBanda[BANDAS.CRITICO]));
+  assert.ok(Object.isFrozen(objeto.efectosPorBanda[BANDAS.CRITICO].detalle));
+
+  // Mutar la fuente original después de declarar no debe cambiar nada ya
+  // declarado ni ningún resultado que se resuelva después.
+  efectoOriginal.tipo = "mutado";
+  efectoOriginal.detalle.piezas = 999;
+  assert.equal(objeto.efectosPorBanda[BANDAS.CRITICO].tipo, "reparado");
+  assert.equal(objeto.efectosPorBanda[BANDAS.CRITICO].detalle.piezas, 2);
+
+  const resultado = resolverInteraccion({ objeto, aproximacionId: "unica", tirada: 0.05 });
+  assert.deepEqual(resultado.efecto, { tipo: "reparado", detalle: { piezas: 2 } });
+
+  // Mutar el efecto ya declarado (si no estuviera congelado en profundidad)
+  // no debe poder alterar un resultado ya resuelto.
+  assert.throws(() => {
+    objeto.efectosPorBanda[BANDAS.CRITICO].detalle.piezas = 0;
+  }, TypeError);
+  assert.equal(resultado.efecto.detalle.piezas, 2);
+});
+
 test("resolverInteraccion rechaza una aproximación que el objeto no declara", () => {
   const objeto = objetoDePrueba();
   assert.throws(

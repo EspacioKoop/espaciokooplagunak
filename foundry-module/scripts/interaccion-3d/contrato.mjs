@@ -15,6 +15,28 @@
 
 import { BANDAS, resolverAproximacion } from "./resolucion.mjs";
 
+// Un efecto es opaco pero se declara una vez y se resuelve muchas: si solo
+// se congela el contenedor (`efectosPorBanda`) y no cada efecto, quien
+// llamó a declararObjetoInteractivo sigue teniendo una referencia mutable
+// al mismo objeto que después viaja congelado desde resolverInteraccion —
+// mutar la fuente original después de declarar (o después de resolver)
+// cambiaba un resultado que ya se había entregado como definitivo.
+function clonarProfundo(valor) {
+  if (valor === null || typeof valor !== "object") return valor;
+  if (Array.isArray(valor)) return valor.map((entrada) => clonarProfundo(entrada));
+  return Object.fromEntries(Object.entries(valor).map(([clave, entrada]) => [clave, clonarProfundo(entrada)]));
+}
+
+function congelarProfundo(valor) {
+  if (valor === null || typeof valor !== "object" || Object.isFrozen(valor)) return valor;
+  if (Array.isArray(valor)) {
+    valor.forEach(congelarProfundo);
+  } else {
+    for (const clave of Object.keys(valor)) congelarProfundo(valor[clave]);
+  }
+  return Object.freeze(valor);
+}
+
 /**
  * Declara una aproximación: una de las formas contextuales de intentar la
  * interacción («recablear con cuidado», «forzar el panel»...).
@@ -69,7 +91,10 @@ export function declararObjetoInteractivo({ id, aproximaciones = [], efectosPorB
   return Object.freeze({
     id,
     aproximaciones: Object.freeze(lista),
-    efectosPorBanda: Object.freeze({ ...efectosPorBanda }),
+    // Copia defensiva Y congelada en profundidad: ni una mutación posterior
+    // de `efectosPorBanda` en quien llamó, ni una del objeto ya declarado,
+    // puede alcanzar los efectos que este objeto interactivo va a producir.
+    efectosPorBanda: congelarProfundo(clonarProfundo(efectosPorBanda)),
   });
 }
 

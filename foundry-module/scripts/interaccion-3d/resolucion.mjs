@@ -50,6 +50,18 @@ function validarUnidad(nombre, valor) {
   return numero;
 }
 
+// Tolerancia para comparar los umbrales de banda: dos representaciones en
+// coma flotante del mismo valor matemático (p.ej. la tirada literal 0.9
+// frente a 0.6 + 0.3) no deben caer en bandas distintas por el error de
+// redondeo binario de IEEE 754.
+const EPSILON = 1e-9;
+function menorOIgual(a, b) {
+  return a - b <= EPSILON;
+}
+function mayorOIgual(a, b) {
+  return a - b >= -EPSILON;
+}
+
 /**
  * Resuelve una aproximación: dada su `dificultad` (probabilidad de serie de
  * bastar) y una `tirada` ya generada por quien llama, devuelve la banda y el
@@ -61,11 +73,16 @@ export function resolverAproximacion({ dificultad, tirada }) {
   const margen = d - t;
 
   let banda;
-  if (margen >= d * FRACCION_CRITICO && margen > 0) {
+  // Crítico: la tirada en sí (no el margen) cae en el tercio más bajo del
+  // rango [0, dificultad] — la condición anterior comparaba el margen
+  // contra `dificultad * FRACCION_CRITICO`, lo que equivale a "tirada <=
+  // dificultad * (1 - FRACCION_CRITICO)" y marcaba como crítico el 70% de
+  // los éxitos en vez del tercio que documenta FRACCION_CRITICO.
+  if (menorOIgual(t, d * FRACCION_CRITICO)) {
     banda = BANDAS.CRITICO;
-  } else if (margen >= 0) {
+  } else if (mayorOIgual(margen, 0)) {
     banda = BANDAS.EXITO;
-  } else if (margen >= -MARGEN_PIFIA) {
+  } else if (mayorOIgual(margen, -MARGEN_PIFIA)) {
     banda = BANDAS.FALLO;
   } else {
     banda = BANDAS.PIFIA;

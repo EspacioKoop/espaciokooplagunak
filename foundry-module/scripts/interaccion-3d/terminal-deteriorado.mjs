@@ -29,3 +29,36 @@ export const TERMINAL_DETERIORADO = declararObjetoInteractivo({
     // nada observable en la sala, y eso también es un resultado legítimo.
   },
 });
+
+/** Estados observables en los que puede quedar el terminal tras un intento. */
+export const ESTADOS_TERMINAL = Object.freeze({
+  ORIGINAL: "deteriorado",
+  REPARADO: "reparado",
+  PARCIAL: "reparado-parcial",
+  EMPEORADO: "empeorado",
+});
+
+const ESTADO_POR_TIPO_EFECTO = Object.freeze({
+  reparado: ESTADOS_TERMINAL.REPARADO,
+  "reparado-parcial": ESTADOS_TERMINAL.PARCIAL,
+  empeorado: ESTADOS_TERMINAL.EMPEORADO,
+});
+
+/**
+ * El último tramo del contrato de #868: efecto opaco → estado observable de
+ * sala. `resolverInteraccion` (contrato.mjs) deja el efecto sin interpretar
+ * a propósito — es este consumidor, y no el motor, quien decide qué
+ * significa "reparado" para el terminal concreto de esta sala.
+ *
+ * Puro: recibe el estado de la sala y el resultado ya resuelto, y devuelve
+ * el siguiente estado sin mutar el que recibió. Un resultado sin efecto
+ * (banda `fallo`) deja el terminal exactamente como estaba — "no cambia
+ * nada observable" es la respuesta correcta, no una omisión.
+ */
+export function aplicarResultadoTerminal(estadoSala = {}, resultado) {
+  const efecto = resultado?.efecto ?? null;
+  if (!efecto) return { ...estadoSala, terminal: estadoSala.terminal ?? ESTADOS_TERMINAL.ORIGINAL };
+
+  const siguienteEstado = ESTADO_POR_TIPO_EFECTO[efecto.tipo] ?? estadoSala.terminal ?? ESTADOS_TERMINAL.ORIGINAL;
+  return { ...estadoSala, terminal: siguienteEstado };
+}

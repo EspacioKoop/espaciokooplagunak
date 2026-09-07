@@ -24,12 +24,20 @@ export const CODIGOS = Object.freeze({
   DESCONOCIDA: "desconocida",
 });
 
-// Reconocidas por el segmento de la URL de creativecommons.org. Freesound
-// enlaza siempre a esa forma; otra URL no se interpreta, se descarta.
-const PATRONES = [
-  { patron: /\/publicdomain\/zero\//i, codigo: CODIGOS.CC0 },
-  { patron: /\/licenses\/by-nc\//i, codigo: CODIGOS.CC_BY_NC },
-  { patron: /\/licenses\/by\//i, codigo: CODIGOS.CC_BY },
+// Reconocidas por la RUTA de una URL cuyo host es exactamente
+// creativecommons.org, servida por https. Antes esto era una búsqueda de
+// subcadena sobre la URL entera (`/licenses\/by\//i.test(url)`), así que
+// "https://example.invalid/licenses/by/4.0/" clasificaba como CC-BY aunque
+// el dominio no fuera de Creative Commons — un fail-closed que en realidad
+// no cerraba nada, porque bastaba con imitar el trozo de ruta. El host y el
+// protocolo se comprueban con el parser real `URL`, no con más regex sobre
+// la cadena completa.
+const HOST_CREATIVE_COMMONS = "creativecommons.org";
+
+const PATRONES_RUTA = [
+  { patron: /^\/publicdomain\/zero\/[0-9.]+\/?$/i, codigo: CODIGOS.CC0 },
+  { patron: /^\/licenses\/by-nc\/[0-9.]+\/?$/i, codigo: CODIGOS.CC_BY_NC },
+  { patron: /^\/licenses\/by\/[0-9.]+\/?$/i, codigo: CODIGOS.CC_BY },
 ];
 
 /**
@@ -38,13 +46,8 @@ const PATRONES = [
  * @returns {{codigo: string, mostrable: boolean, requiereAtribucion: boolean}}
  */
 export function clasificarLicencia(licenciaCruda) {
-  const url = typeof licenciaCruda === "string" ? licenciaCruda.trim() : "";
-  if (!url) {
-    return Object.freeze({ codigo: CODIGOS.DESCONOCIDA, mostrable: false, requiereAtribucion: false });
-  }
-
-  const encontrada = PATRONES.find(({ patron }) => patron.test(url));
-  const codigo = encontrada?.codigo ?? CODIGOS.DESCONOCIDA;
+  const cruda = typeof licenciaCruda === "string" ? licenciaCruda.trim() : "";
+  const codigo = codigoDeUrl(cruda);
 
   return Object.freeze({
     codigo,
@@ -53,4 +56,25 @@ export function clasificarLicencia(licenciaCruda) {
     mostrable: codigo === CODIGOS.CC0 || codigo === CODIGOS.CC_BY,
     requiereAtribucion: codigo === CODIGOS.CC_BY,
   });
+}
+
+function codigoDeUrl(cruda) {
+  if (!cruda) return CODIGOS.DESCONOCIDA;
+
+  let url;
+  try {
+    url = new URL(cruda);
+  } catch {
+    return CODIGOS.DESCONOCIDA;
+  }
+
+  // Freesound sigue devolviendo algunas licencias con "http:" (no "https:"),
+  // así que el protocolo se acepta en cualquiera de los dos — lo que importa
+  // de verdad es el HOST exacto, que es donde estaba el agujero real.
+  if ((url.protocol !== "https:" && url.protocol !== "http:") || url.hostname !== HOST_CREATIVE_COMMONS) {
+    return CODIGOS.DESCONOCIDA;
+  }
+
+  const encontrada = PATRONES_RUTA.find(({ patron }) => patron.test(url.pathname));
+  return encontrada?.codigo ?? CODIGOS.DESCONOCIDA;
 }

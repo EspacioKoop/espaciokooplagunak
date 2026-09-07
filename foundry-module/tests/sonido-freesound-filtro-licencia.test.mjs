@@ -42,3 +42,43 @@ test("by-nc no cuela como by por coincidencia parcial de prefijo", () => {
   assert.notEqual(r.codigo, CODIGOS.CC_BY);
   assert.equal(r.mostrable, false);
 });
+
+test("un host ajeno con la misma ruta de licencia se rechaza (fail-closed real)", () => {
+  // El clasificador original solo comprobaba la subcadena de RUTA en la URL
+  // entera: un host cualquiera con "/licenses/by/4.0/" en su path clasificaba
+  // como CC-BY aunque el dominio no fuera creativecommons.org.
+  const r = clasificarLicencia("https://example.invalid/licenses/by/4.0/");
+  assert.equal(r.codigo, CODIGOS.DESCONOCIDA);
+  assert.equal(r.mostrable, false);
+});
+
+test("un subdominio o dominio parecido a creativecommons.org se rechaza", () => {
+  for (const url of [
+    "https://creativecommons.org.evil.example/licenses/by/4.0/",
+    "https://not-creativecommons.org/licenses/by/4.0/",
+    "https://sub.creativecommons.org/licenses/by/4.0/",
+    "https://creativecommons.org.attacker.com/licenses/by/4.0/",
+  ]) {
+    const r = clasificarLicencia(url);
+    assert.equal(r.codigo, CODIGOS.DESCONOCIDA, `debe rechazar: ${url}`);
+    assert.equal(r.mostrable, false);
+  }
+});
+
+test("una ruta ambigua o desconocida en el host correcto también falla cerrado", () => {
+  for (const url of [
+    "https://creativecommons.org/licenses/",
+    "https://creativecommons.org/licenses/by",
+    "https://creativecommons.org/licenses/by/4.0/legalcode/extra",
+    "https://creativecommons.org/otra-cosa/",
+  ]) {
+    const r = clasificarLicencia(url);
+    assert.equal(r.codigo, CODIGOS.DESCONOCIDA, `debe rechazar: ${url}`);
+  }
+});
+
+test("una URL sin sintaxis válida no lanza y falla cerrado", () => {
+  const r = clasificarLicencia("no-es-una-url");
+  assert.equal(r.codigo, CODIGOS.DESCONOCIDA);
+  assert.equal(r.mostrable, false);
+});

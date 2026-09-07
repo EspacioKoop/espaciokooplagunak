@@ -18,7 +18,7 @@ from check_orphan_modules import (  # noqa: E402
     _request_github_evidence,
 )
 
-ISSUE_URL = "https://github.com/VaroTv7/espaciokooplagunak/issues/701"
+ISSUE_URL = "https://github.com/EspacioKoop/espaciokooplagunak/issues/701"
 LOCAL_EVIDENCE = {"type": "test", "path": "module/tests/evidence.test.mjs"}
 
 
@@ -370,7 +370,7 @@ class OrphanModuleInventoryTests(unittest.TestCase):
         request = captured["request"]
         self.assertEqual(
             request.full_url,
-            "https://api.github.com/repos/VaroTv7/espaciokooplagunak/issues/701",
+            "https://api.github.com/repos/EspacioKoop/espaciokooplagunak/issues/701",
         )
         self.assertEqual(request.get_header("Authorization"), "Bearer token-de-prueba")
         self.assertEqual(request.get_header("Accept"), "application/vnd.github+json")
@@ -384,7 +384,7 @@ class OrphanModuleInventoryTests(unittest.TestCase):
             return FakeResponse()
 
         _request_github_evidence(
-            "https://github.com/VaroTv7/espaciokooplagunak/pull/742",
+            "https://github.com/EspacioKoop/espaciokooplagunak/pull/742",
             token="  ",
             opener=opener,
         )
@@ -392,7 +392,7 @@ class OrphanModuleInventoryTests(unittest.TestCase):
         request = captured["request"]
         self.assertEqual(
             request.full_url,
-            "https://api.github.com/repos/VaroTv7/espaciokooplagunak/pulls/742",
+            "https://api.github.com/repos/EspacioKoop/espaciokooplagunak/pulls/742",
         )
         self.assertIsNone(request.get_header("Authorization"))
 
@@ -444,7 +444,7 @@ class OrphanModuleInventoryTests(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, "declarada como issue.*PR"):
             _request_github_evidence(
-                "https://github.com/VaroTv7/espaciokooplagunak/issues/742",
+                "https://github.com/EspacioKoop/espaciokooplagunak/issues/742",
                 opener=opener,
             )
 

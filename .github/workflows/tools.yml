@@ -79,14 +79,39 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+        with:
+          # La guarda de catálogos compara con la rama base, así que necesita
+          # historia. Con el clon superficial por defecto `origin/main` no
+          # existe y la guarda sale por 2 en vez de comprobar nada.
+          fetch-depth: 0
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12"
       - name: Instalar dependencias de test
         # pyyaml lo usa la guardia de las puertas de CI (#361).
         run: python3 -m pip install pytest polib==1.2.0 pyyaml==6.0.2
-      - name: Ejecutar tests de tools/
+      - name: Ejecutar tests de tools/ (Python)
         run: python3 -m pytest tools/tests/ -q
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+      - name: Ejecutar tests de tools/ (Node)
+        # tools/ nombra sus tests Node con prefijo `test_*.mjs`, no con el
+        # sufijo `*.test.mjs` del modulo Foundry; por eso el glob del modulo no
+        # los encontraba y la suite salia vacia (lo marco el review de #841).
+        # Un glob vacio ENROJECE la puerta en vez de omitirla: una suite que no
+        # se encuentra es indistinguible de una suite que no existe, y ese es
+        # justo el falso verde que este PR viene a cerrar.
+        shell: bash
+        run: |
+          shopt -s nullglob
+          files=(tools/tests/test_*.mjs)
+          if [ ${#files[@]} -gt 0 ]; then
+            node --test "${files[@]}"
+          else
+            echo "::error::No se encontro ningun tools/tests/test_*.mjs."
+            exit 1
+          fi
       - name: Trazabilidad de nombres de dominio público (#310)
         run: python3 tools/check_public_domain_names.py
       - name: Cobertura i18n de las cadenas de C++ (#55)
@@ -111,6 +136,12 @@ jobs:
           else
             python3 tools/validate_es_locale.py .
           fi
+      - name: Ningún catálogo .po pierde claves
+        # `check_scenario_header_locale.py` solo mira las claves de CABECERA, así
+        # que su criterio se puede cumplir borrando las otras cientos. Pasó tres
+        # veces el 26-ago-2026 (un catálogo de 660 claves quedó en 66) y el diff
+        # de un `.po` reescrito no lo delata: parece reflujo de líneas largas.
+        run: python3 tools/check_po_no_pierde_claves.py --base origin/${{ github.base_ref || 'main' }}
       - name: Rutas citadas por la documentación
         # Solo stdlib. Recorre los .md y comprueba que cada ruta que citan
         # existe: una cita rota manda al lector —o al agente— a perseguir

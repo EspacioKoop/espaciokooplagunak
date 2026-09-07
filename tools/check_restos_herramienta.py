@@ -63,6 +63,13 @@ EXT_DE_MAQUINA = (".json", ".lcov", ".info", ".xml", ".txt", ".html", ".lst")
 # sufijos ni los prefijos.
 INFIJOS = (".temp.",)
 
+# Excepciones declaradas: paquetes npm que SI son el entregable, no un resto
+# de paso -- el gemelo de esta lista es la excepcion homonima en `.gitignore`.
+# Una ruta aqui es exacta (no un prefijo) y solo cubre el lockfile de un
+# paquete con su propio `package.json` intencional, nunca una via generica
+# para colar restos futuros.
+EXCEPCIONES = ("tools/e2e-visual/package-lock.json",)
+
 
 def trackeados():
     salida = subprocess.run(["git", "ls-files"], cwd=RAIZ, check=True,
@@ -78,6 +85,8 @@ def es_resto(ruta: str) -> bool:
         return True
     if any(i in nombre for i in INFIJOS):
         return True
+    if ruta in EXCEPCIONES:
+        return False
     partes = ruta.split("/")
     for i, _ in enumerate(partes):
         cola = "/".join(partes[i:])

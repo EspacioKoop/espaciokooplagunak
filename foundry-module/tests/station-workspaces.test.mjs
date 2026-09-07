@@ -91,6 +91,35 @@ test("el jugador abre su puesto y el GM puede previsualizar cualquier consola", 
   );
 });
 
+test("el modelo publica los puestos no atendidos con etiquetas localizadas", () => {
+  const model = buildWorkspaceModel({
+    station: "captain",
+    isGM: false,
+    users: [
+      user({ id: "p1", station: "captain", active: true }),
+      user({ id: "p2", station: "engineering", active: false }),
+    ],
+    moduleId: MODULE_ID,
+    i18n: i18nEs,
+  });
+
+  assert.equal(model.hasUncrewedStations, true);
+  assert.equal(model.uncrewedStations.some(({ id }) => id === "captain"), false);
+  assert.deepEqual(
+    model.uncrewedStations.find(({ id }) => id === "engineering"),
+    { id: "engineering", label: "Ingeniería" },
+  );
+});
+
+test("el aviso de puestos no atendidos es visible y accesible", async () => {
+  const template = await readFile(new URL("../templates/espacio-puesto.hbs", import.meta.url), "utf8");
+
+  assert.match(template, /{{#if hasUncrewedStations}}/);
+  assert.match(template, /lagunak-workspace__uncrewed" role="status"/);
+  assert.match(template, /aria-live="polite"/);
+  assert.match(template, /LAGUNAK\.Espacios\.PuestosNoAtendidos/);
+});
+
 test("un jugador SÍ ve la telemetría de su nave, pero NO los contactos (#331)", () => {
   // Cambio de doctrina deliberado. Antes esta prueba exigía lo contrario, y ese
   // «lo contrario» era la razón de que las consolas salieran vacías: `metricsFor`
@@ -454,7 +483,7 @@ test("comunicaciones usa la tripulación local sin consultar el puente", () => {
   assert.equal(model.metrics[1].label, "LAGUNAK.Espacios.Metrica.Tripulacion");
 });
 
-test("los valores de estilo derivados del puente quedan reducidos a números", () => {
+test("los valores de estilo derivados del puente no aceptan CSS ni fingen rumbo norte", () => {
   const model = buildWorkspaceModel({
     station: "navigation",
     isGM: true,
@@ -464,7 +493,9 @@ test("los valores de estilo derivados del puente quedan reducidos a números", (
     statePayload: { ship: { ...statePayload.ship, heading: "90deg; color:red" } },
     connection: "ok",
   });
-  assert.equal(model.navigationHeading, 0);
+  assert.equal(model.navigationHeading, null);
+  assert.equal(model.navigationHeadingKnown, false);
+  assert.equal(model.navigationAriaLabel, "LAGUNAK.Espacios.Metrica.Rumbo: LAGUNAK.Espacios.Sensores.SinLectura");
 });
 
 test("un usuario sin puesto obtiene una pantalla de asignación, no capitán", () => {

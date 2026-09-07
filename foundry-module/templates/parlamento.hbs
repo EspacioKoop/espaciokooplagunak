@@ -1,0 +1,48 @@
+<section class="lagunak-parlamento__panel">
+  {{#if enMenu}}
+    <p class="lagunak-parlamento__nota">{{localize "LAGUNAK.Parlamento.Intro"}}</p>
+  {{/if}}
+
+  {{#if abierto}}
+    <div class="lagunak-parlamento__interlocutor">
+      <span class="lagunak-parlamento__callsign">{{contacto.callsign}}</span>
+      <span class="lagunak-parlamento__faction"> ({{contacto.faction}})</span>
+      {{#with npc}}
+        <div class="lagunak-parlamento__npc">
+          {{nombre}}
+          <span class="lagunak-parlamento__npc-meta">
+            — {{arquetipo}} · {{localize "LAGUNAK.Parlamento.Desafio"}} {{desafio}}
+          </span>
+        </div>
+      {{/with}}
+    </div>
+
+    <p class="lagunak-parlamento__nota">{{localize "LAGUNAK.Parlamento.EligeEnfoque"}}</p>
+    <ul class="lagunak-parlamento__enfoques">
+      {{#each opciones}}
+        <li>
+          <button
+            type="button"
+            class="lagunak-parlamento__enfoque"
+            data-parlamento-enfoque="{{id}}">
+            <span class="lagunak-parlamento__enfoque-nombre">{{localize claveNombre}}</span>
+            <span class="lagunak-parlamento__cd">CD {{cd}}</span>
+            <span class="lagunak-parlamento__mod">Mod {{modificador}}</span>
+            <span class="lagunak-parlamento__favorable">{{localize "LAGUNAK.Parlamento.Favorable"}} {{favorable}}%</span>
+          </button>
+        </li>
+      {{/each}}
+    </ul>
+
+    <p class="lagunak-parlamento__nota">{{localize "LAGUNAK.Parlamento.SinEstado"}}</p>
+  {{/if}}
+
+  {{#if resuelto}}
+    <div class="lagunak-parlamento__cierre lagunak-parlamento__cierre--{{banda}}">
+      {{localize "LAGUNAK.Parlamento.Banda.Titulo"}} {{localize bandaClave}}
+    </div>
+    <button type="button" class="lagunak-parlamento__volver" data-parlamento-volver="1">
+      {{localize "LAGUNAK.Parlamento.Volver"}}
+    </button>
+  {{/if}}
+</section>

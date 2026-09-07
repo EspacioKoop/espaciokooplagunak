@@ -35,7 +35,11 @@ export function crearClaseConvocatoriaV2({ onSubmit }) {
     async _prepareContext() {
       // Obtén la lista de estancias del catálogo de andar.
       const { CATALOGO_ANDAR } = await import("./nave-catalogo-andar.mjs");
-      const estancias = Object.keys(CATALOGO_ANDAR).map(id => ({ id }));
+      // CATALOGO_ANDAR es el objeto que devuelve crearCatalogoEstancias:
+      // {tiene, obtener, ids}. Object.keys(CATALOGO_ANDAR) enumeraba esos
+      // TRES métodos del catálogo, no los ids de estancia reales. `ids` ya
+      // es la lista de ids que hace falta.
+      const estancias = CATALOGO_ANDAR.ids.map(id => ({ id }));
       // Por ahora, solo el rol GM está permitido.
       const roles = [{ id: "GM" }];
       return { estancias, roles };
@@ -84,7 +88,11 @@ export function crearClaseConvocatoriaV1({ onSubmit }) {
     async getData() {
       // Obtén la lista de estancias del catálogo de andar.
       const { CATALOGO_ANDAR } = await import("./nave-catalogo-andar.mjs");
-      const estancias = Object.keys(CATALOGO_ANDAR).map(id => ({ id }));
+      // CATALOGO_ANDAR es el objeto que devuelve crearCatalogoEstancias:
+      // {tiene, obtener, ids}. Object.keys(CATALOGO_ANDAR) enumeraba esos
+      // TRES métodos del catálogo, no los ids de estancia reales. `ids` ya
+      // es la lista de ids que hace falta.
+      const estancias = CATALOGO_ANDAR.ids.map(id => ({ id }));
       // Por ahora, solo el rol GM está permitido.
       const roles = [{ id: "GM" }];
       return { estancias, roles };

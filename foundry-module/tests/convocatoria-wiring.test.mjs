@@ -34,3 +34,14 @@ test("no invoca convocar() antes de que se envíe el formulario", () => {
   crearConvocatoriaCallbacks({ convocar: () => { invocado = true; } });
   assert.equal(invocado, false, "crear los callbacks no debe disparar convocar() por su cuenta");
 });
+
+test("onSubmit entrega al consumidor el resultado de convocar(), no lo descarta", () => {
+  const resultadoEsperado = { idEstancia: "playa", convocados: ["user-1", "user-2"] };
+  const { onSubmit } = crearConvocatoriaCallbacks({
+    convocar: () => resultadoEsperado,
+  });
+
+  const resultado = onSubmit({ idEstancia: "playa", rolConvocante: "GM" });
+
+  assert.equal(resultado, resultadoEsperado);
+});

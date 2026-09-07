@@ -7,8 +7,9 @@
  */
 export function crearConvocatoriaCallbacks({ convocar }) {
   return {
-    onSubmit: (data) => {
-      convocar(data.idEstancia, data.rolConvocante);
-    },
+    // El resultado de convocar() (a quién se convocó, con qué estancia) se
+    // entrega al consumidor en vez de descartarse: antes onSubmit ignoraba
+    // por completo lo que convocar() devolvía.
+    onSubmit: (data) => convocar(data.idEstancia, data.rolConvocante),
   };
 }

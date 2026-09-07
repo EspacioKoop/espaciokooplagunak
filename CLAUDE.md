@@ -629,12 +629,24 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
 - Commits breves, imperativos y con prefijo: `feat(scenario): …`, `fix(network): …`, `docs: …`.
 - El issue es el contrato de alcance; el PR es el registro de implementación y verificación. Antes
   de trabajar, revisa issues/PRs/ramas existentes para no duplicar.
-- **Quién aprueba.** `.github/CODEOWNERS` pone a `@VaroTv7` y `@eGurucharri` como revisores de todo,
-  y `main` exige la aprobación de un code owner. GitHub **no cuenta al autor**, así que un PR abierto
-  por uno solo lo puede aprobar el otro, y abrir una tanda entera con la misma cuenta deja a esa
-  cuenta sin poder firmar ninguno. Tenlo en cuenta al elegir con qué cuenta se abre; el estado real
-  se ve con `gh pr view <n> --json mergeStateStatus,reviewDecision` — un `CLEAN` con CI en verde
-  puede seguir parado en `REVIEW_REQUIRED`.
+- **Qué exige `main`.** La protección de rama pide **una aprobación** y **siete checks en verde**
+  (`Puerta de build C++/Lua`, `Puerta del módulo Foundry`, `Puerta de tools`, `Puerta de docker y
+  puente`, `Puerta de imágenes`, `CodeQL`, `semgrep`), más resolución de conversaciones. Además
+  `enforce_admins` está **activo**: tener administración del repositorio no salta nada de esto, y
+  `require_last_push_approval` tira la aprobación si el autor empuja después de recibirla.
+  `.github/CODEOWNERS` sigue nombrando a `@VaroTv7` y `@eGurucharri`, pero la aprobación **de code
+  owner ya no es obligatoria**: vale la de cualquiera con permiso de escritura.
+- **Quién puede firmar.** GitHub **no cuenta al autor**, y esa es la restricción que de verdad
+  atasca: un PR abierto por una cuenta solo lo puede aprobar la otra, así que una tanda entera
+  abierta con la misma cuenta se queda esperando a la otra persona entera. Tenlo en cuenta al
+  elegir con qué cuenta se abre. El estado real se ve con
+  `gh pr view <n> --json mergeStateStatus,reviewDecision`, y hay dos lecturas engañosas: un `CLEAN`
+  con CI verde puede seguir parado en `REVIEW_REQUIRED`, y un `CLEAN` puede significar
+  simplemente que la rama **no apunta a `main`** (comprueba `baseRefName`).
+- **Un `CHANGES_REQUESTED` caduca sin avisar.** GitHub lo mantiene aunque el commit revisado ya no
+  sea `HEAD`. Antes de tratarlo como trabajo pendiente, compara el `commit_id` de la revisión con
+  el `HEAD` de la rama; si hay commits de arreglo posteriores, lo que falta es una re-revisión, no
+  código. En el barrido del 2026-09-04, 19 de 36 estaban en ese estado.
 - **Una rama sin PR no es trabajo a salvo, pero tampoco es trabajo perdido.** Borrar un worktree
   **no** borra su rama: lo confirmado no se pierde al limpiar, y lo único en riesgo es lo que no
   está confirmado.

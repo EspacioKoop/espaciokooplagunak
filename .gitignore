@@ -95,6 +95,11 @@ lagunak-apis.sqlite
 .nyc_output/
 coverage/
 
+# Artefactos de cobertura de pytest-cov.
+.coverage
+*.coverage
+htmlcov/
+
 # Y lo que deja el `npm install` que instala ese nyc. El arbol no es un proyecto
 # npm —el modulo se prueba con `node --test` a secas, sin dependencias— asi que
 # estos tres ficheros son siempre restos de una herramienta de paso, nunca algo
@@ -107,3 +112,11 @@ coverage/
 node_modules/
 package.json
 package-lock.json
+
+# Excepción deliberada: `tools/e2e-visual/` SÍ es un proyecto npm de verdad
+# (Playwright para grabar demos de QA visual sobre Foundry real, #458) y sus
+# `package.json`/`package-lock.json` son el propio entregable, no restos de
+# paso — por eso viven fuera de `foundry-module/`, que sigue sin declarar
+# ninguna dependencia. Su `node_modules/` sigue ignorado por la regla de arriba.
+!tools/e2e-visual/package.json
+!tools/e2e-visual/package-lock.json

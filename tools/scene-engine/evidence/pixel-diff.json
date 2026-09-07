@@ -1,0 +1,52 @@
+{
+  "entrance": {
+    "changedScenePixels": 332,
+    "scenePixels": 44800,
+    "bbox": [
+      29,
+      28,
+      313,
+      136
+    ]
+  },
+  "bar": {
+    "changedScenePixels": 110,
+    "scenePixels": 44800,
+    "bbox": [
+      0,
+      0,
+      310,
+      137
+    ]
+  },
+  "side": {
+    "changedScenePixels": 80,
+    "scenePixels": 44800,
+    "bbox": [
+      18,
+      10,
+      244,
+      139
+    ]
+  },
+  "camera-entrance-to-bar": {
+    "changedScenePixels": 39743,
+    "scenePixels": 44800,
+    "bbox": [
+      0,
+      0,
+      320,
+      140
+    ]
+  },
+  "camera-entrance-to-side": {
+    "changedScenePixels": 37782,
+    "scenePixels": 44800,
+    "bbox": [
+      0,
+      0,
+      320,
+      140
+    ]
+  }
+}

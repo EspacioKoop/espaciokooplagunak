@@ -1,6 +1,6 @@
 # Smoke GUI del módulo Foundry VTT
 
-Este runbook prepara la verificación manual del issue [#29](https://github.com/VaroTv7/espaciokooplagunak/issues/29). Debe ejecutarse una vez en **Foundry VTT v11.302 con dnd5e 2.3.1** y otra en el entorno moderno de Varo/OTACON, que usa la versión estable más reciente disponible de Foundry y debe registrar su versión exacta en cada pasada.
+Este runbook prepara la verificación manual del issue [#29](https://github.com/EspacioKoop/espaciokooplagunak/issues/29). Debe ejecutarse una vez en **Foundry VTT v11.302 con dnd5e 2.3.1** y otra en el entorno moderno de Varo/OTACON, que usa la versión estable más reciente disponible de Foundry y debe registrar su versión exacta en cada pasada.
 
 La prueba requiere una licencia y una sesión GM reales; no se ejecuta en CI. No marques una casilla ni aumentes `compatibility.verified` sin haber ejercitado esa versión del anfitrión.
 

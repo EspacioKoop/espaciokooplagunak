@@ -316,3 +316,74 @@ test("setSystemCoolant rechaza sistema/nivel inválidos antes de tocar red (#301
   await assert.rejects(client.setSystemCoolant("impulse", "5"), BridgeError);
   assert.equal(calls, 0);
 });
+
+// OTACON Astra: el plazo incluye el cuerpo, no solo las cabeceras.
+// HTTP real en loopback con salida de seguridad acotada, sin bridge/Foundry.
+async function conPuenteLento(ejecutar) {
+  const { createServer } = await import("node:http");
+  const temporizadores = new Set();
+  const peticiones = [];
+  let lento = true;
+  const servidor = createServer((req, res) => {
+    peticiones.push({ method: req.method, path: req.url, authenticated: Boolean(req.headers.authorization) });
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.write('{"ok":');
+    const id = setTimeout(() => {
+      temporizadores.delete(id);
+      res.end("true}");
+    }, lento ? 1000 : 0);
+    temporizadores.add(id);
+  });
+  await new Promise((resolve) => servidor.listen(0, "127.0.0.1", resolve));
+  try {
+    await ejecutar({
+      url: `http://127.0.0.1:${servidor.address().port}`,
+      peticiones,
+      recuperar: () => { lento = false; },
+    });
+  } finally {
+    for (const id of temporizadores) clearTimeout(id);
+    servidor.closeAllConnections();
+    await new Promise((resolve) => servidor.close(resolve));
+  }
+}
+
+for (const metodo of ["state", "setPause"]) {
+  test(`${metodo}: aborta cuerpo incompleto y permite la siguiente petición sin reintentar`, async () => {
+    await conPuenteLento(async ({ url, peticiones, recuperar }) => {
+      const client = new BridgeClient({ url, token: "fixture-token", timeoutMs: 400 });
+      const llamar = () => metodo === "state" ? client.state() : client.setPause(true);
+      await assert.rejects(llamar(), (error) => {
+        assert.equal(error instanceof BridgeError, true);
+        assert.equal(error.kind, "timeout");
+        assert.equal(error.message.includes("fixture-token"), false);
+        assert.equal(error.message.includes(url), false);
+        return true;
+      });
+      assert.equal(peticiones.length, 1, "una orden ambigua no se reintenta automáticamente");
+      recuperar();
+      assert.deepEqual(await llamar(), { ok: true });
+      assert.equal(peticiones.length, 2);
+    });
+  });
+}
+
+test("diagnóstico real sale de healthz con cuerpo bloqueado sin enviar Bearer", async () => {
+  const { probarConexion } = await import("../scripts/diagnostico-conexion.mjs");
+  await conPuenteLento(async ({ url, peticiones }) => {
+    const resultado = await probarConexion({ url, token: "fixture-token", timeoutMs: 400 });
+    assert.equal(resultado.codigo, "inaccesible");
+    assert.deepEqual(peticiones, [{ method: "GET", path: "/healthz", authenticated: false }]);
+  });
+});
+
+test("conserva clasificación HTTP, JSON inválido y fallo de transporte", async () => {
+  for (const [fetchImpl, kind, status] of [
+    [async () => response({}, { ok: false, status: 403 }), "http", 403],
+    [async () => ({ ok: true, json: async () => { throw new SyntaxError("fixture"); } }), "parse", 0],
+    [async () => { throw new TypeError("fixture"); }, "network", 0],
+  ]) {
+    const client = new BridgeClient({ url: "http://bridge.test", fetchImpl });
+    await assert.rejects(client.healthz(), (error) => error.kind === kind && error.status === status);
+  }
+});

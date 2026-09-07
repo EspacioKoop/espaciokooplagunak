@@ -112,15 +112,24 @@ export function afinarMedida(medida, modificador, cd) {
  * lectura. El llamador decide si muestra indicativo/facción según el nuevo
  * estado.
  *
- * @param {object} contacto entrada tal cual salió de `degradarContactos`
+ * @param {object} contacto entrada tal cual salió de `degradarContactos`.
+ *   Si trae `distanciaReal`/`rumboReal` (la medida sin redondear que
+ *   `degradarContactos` conserva para este uso), afinar recalcula desde ahí
+ *   en vez de desde `distancia`/`rumboDeg` ya redondeados — afinar la
+ *   rejilla gruesa componía su propio error con el de la rejilla fina, y el
+ *   margen declarado tras afinar podía ser menor que el error real
+ *   (distancia real 1499 → degradado "1000 ±1000" → afinado "1000 ±100",
+ *   con un error real de 499 fuera del margen anunciado).
  * @param {number} modificador del ayudante
  * @param {number} cd dificultad
  * @returns {{contacto: object, cambio: boolean}}
  */
 export function afinarContacto(contacto, modificador, cd) {
+  const distanciaReal = contacto?.distanciaReal;
+  const rumboReal = contacto?.rumboReal;
   const medicion = {
-    distancia: Number(contacto?.distancia ?? 0),
-    rumbo: Number(contacto?.rumboDeg ?? 0),
+    distancia: Number(distanciaReal ?? contacto?.distancia ?? 0),
+    rumbo: Number(rumboReal ?? contacto?.rumboDeg ?? 0),
     precisionDistancia: Number(contacto?.precision ?? 0),
     precisionRumbo: Number(contacto?.rumboPrecision ?? 0),
     estado: String(contacto?.estado ?? contacto?.banda ?? ESTADO_LECTURA.ECO),
@@ -134,6 +143,10 @@ export function afinarContacto(contacto, modificador, cd) {
       precision: medida.precisionDistancia,
       rumboPrecision: medida.precisionRumbo,
       banda: medida.estado,
+      // `estado` y `banda` tienen que ser SIEMPRE la misma lectura: dejar el
+      // `estado` de entrada (de antes de afinar) sin actualizar producía un
+      // contacto con banda:"candidato" pero estado:"eco" al mismo tiempo.
+      estado: medida.estado,
     },
     cambio,
   };

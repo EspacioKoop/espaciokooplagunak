@@ -33,12 +33,12 @@ function asNumber(value, fallback = 0) {
   return fallback;
 }
 
-function normalizeVector3(value) {
+function normalizeVector3(value, fallback = 0) {
   const src = value && typeof value === "object" ? value : {};
   return {
-    x: asNumber(src.x, 0),
-    y: asNumber(src.y, 0),
-    z: asNumber(src.z, 0),
+    x: asNumber(src.x, fallback),
+    y: asNumber(src.y, fallback),
+    z: asNumber(src.z, fallback),
   };
 }
 
@@ -53,9 +53,12 @@ function normalizeCamera(value) {
 function normalizeEntityPresentation(value) {
   const src = value && typeof value === "object" ? value : {};
   const transform = src.transform && typeof src.transform === "object" ? src.transform : {};
-  const position = normalizeVector3(transform.position);
-  const rotation = normalizeVector3(transform.rotation);
-  const scale = normalizeVector3(transform.scale);
+  const position = normalizeVector3(transform.position, 0);
+  const rotation = normalizeVector3(transform.rotation, 0);
+  // Una escala ausente significa "tamaño natural" (1), no "colapsada a un
+  // punto" (0): compartía el mismo default 0 que posición/rotación, que es
+  // correcto para ellas pero borra la entidad visualmente para la escala.
+  const scale = normalizeVector3(transform.scale, 1);
   return {
     id: typeof src.id === "string" ? src.id : null,
     kind: typeof src.kind === "string" ? src.kind : "mesh",
@@ -63,6 +66,11 @@ function normalizeEntityPresentation(value) {
     transform: { position, rotation, scale },
     interaction: src.interaction && typeof src.interaction === "object" ? { ...src.interaction } : null,
     visibility: src.visibility && typeof src.visibility === "object" ? { ...src.visibility } : { render: true },
+    // Una entidad de presentación puede colgar de otra (jerarquía) y puede
+    // apuntar a un recurso del array `resources`; ambos campos se
+    // descartaban en la normalización sin que ningún test lo notara.
+    parentId: typeof src.parentId === "string" ? src.parentId : null,
+    resourceId: typeof src.resourceId === "string" ? src.resourceId : null,
   };
 }
 
@@ -109,24 +117,35 @@ export function normalizarEscena(input = {}) {
 }
 
 export function validarEscena(escena) {
-  const normalized = normalizarEscena(escena);
+  // La validación mira la entrada CRUDA, antes de que normalizarEscena
+  // aplique ningún default: normalizar primero y validar el resultado hacía
+  // inalcanzable cualquier rama de error, porque normalizarEscena sustituye
+  // todo valor inválido por uno válido (version siempre se fuerza a la
+  // versión soportada, revision negativa cae a 0, authoritative se
+  // convierte a booleano con Boolean(), projection desconocida cae a
+  // "perspective"...).
+  const source = cloneValue(escena && typeof escena === "object" ? escena : {});
   const errors = [];
 
-  if (normalized.version !== SCENE_CONTRACT_VERSION) {
+  if (source.version !== SCENE_CONTRACT_VERSION) {
     errors.push("version: contrato no soportado");
   }
-  if (!Number.isInteger(normalized.revision) || normalized.revision < 0) {
+  if (!Number.isInteger(source.revision) || source.revision < 0) {
     errors.push("revision: debe ser un entero no negativo");
   }
-  if (typeof normalized.state.authoritative !== "boolean") {
+  const rawState = source.state && typeof source.state === "object" ? source.state : {};
+  if (typeof rawState.authoritative !== "boolean") {
     errors.push("state.authoritative: debe ser booleano");
   }
-  if (!normalized.presentation || !normalized.presentation.camera) {
+  const rawPresentation = source.presentation && typeof source.presentation === "object" ? source.presentation : null;
+  const rawCamera = rawPresentation && typeof rawPresentation.camera === "object" ? rawPresentation.camera : null;
+  if (!rawCamera) {
     errors.push("presentation.camera: faltan datos de cámara");
-  }
-  if (!VALID_PROJECTIONS.includes(normalized.presentation.camera.projection)) {
+  } else if (!VALID_PROJECTIONS.includes(rawCamera.projection)) {
     errors.push("presentation.camera.projection: proyección no soportada");
   }
+
+  const normalized = normalizarEscena(escena);
 
   for (const entity of normalized.presentation.entities) {
     if (!entity || typeof entity.id !== "string" || entity.id.trim() === "") {

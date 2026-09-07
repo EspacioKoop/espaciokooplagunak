@@ -1,15 +1,19 @@
-export const COLORES_TARJETA = Object.freeze({
-  aliado: Object.freeze({ marco: "#3fc1b0", fondo: "#123c4a", retrato: "#8bd8c7" }),
-  enemigo: Object.freeze({ marco: "#d95d5d", fondo: "#4a1f2a", retrato: "#ed9b7a" }),
-  neutral: Object.freeze({ marco: "#b7a56b", fondo: "#373b43", retrato: "#d8c79b" }),
-  shiny: Object.freeze({ marco: "#f2c14e" }),
-  overlays: Object.freeze({
-    herido: "#e66a4e",
-    "concentracion-rota": "#8b73c7",
-    ventaja: "#62c370",
-    muerto: "#22252b",
-  }),
-});
+import { TARJETA_COMBATIENTE } from "./paleta.mjs";
+
+export const COLORES_TARJETA = TARJETA_COMBATIENTE;
+
+// El contrato de campaña para "shiny" (progresion-campana.mjs) admite un
+// booleano simple o un objeto {tier, accent} donde tier "plain" significa
+// "sin insignia" — no basta con la veracidad de JS (una cadena "false" o un
+// objeto {tier:"plain"} son ambos truthy). Se normaliza una sola vez y ese
+// valor único se usa tanto para pintar el marco como para describir capas.
+function shinyActivo(shiny) {
+  if (shiny === true) return true;
+  if (shiny && typeof shiny === "object" && Object.hasOwn(shiny, "tier")) {
+    return shiny.tier !== "plain";
+  }
+  return false;
+}
 
 const ALINEACIONES = new Set(["aliado", "enemigo", "neutral"]);
 const OVERLAYS = new Set(Object.keys(COLORES_TARJETA.overlays));
@@ -34,7 +38,8 @@ export function renderizarTarjetaCombatiente(combatiente = {}) {
   const overlays = Array.isArray(combatiente.overlays)
     ? [...new Set(combatiente.overlays.filter((overlay) => OVERLAYS.has(overlay)))]
     : [];
-  const frame = combatiente.shiny ? COLORES_TARJETA.shiny.marco : palette.marco;
+  const shiny = shinyActivo(combatiente.shiny);
+  const frame = shiny ? COLORES_TARJETA.shiny.marco : palette.marco;
   const pixels = Array(WIDTH * HEIGHT).fill(palette.fondo);
 
   paintRect(pixels, 0, 0, WIDTH, HEIGHT, frame);
@@ -53,7 +58,7 @@ export function renderizarTarjetaCombatiente(combatiente = {}) {
     alineacion,
     pixels,
     layers: {
-      shiny: combatiente.shiny === true,
+      shiny,
       overlays,
     },
   };

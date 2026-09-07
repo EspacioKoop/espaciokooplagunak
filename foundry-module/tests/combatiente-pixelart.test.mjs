@@ -51,3 +51,31 @@ test("valores desconocidos caen a una tarjeta neutral y no rompen el render", ()
   assert.deepEqual(image.layers.overlays, []);
   assert.equal(image.pixels[0], COLORES_TARJETA.neutral.marco);
 });
+
+test("shiny se normaliza una sola vez según el contrato de campaña", () => {
+  const plano = renderizarTarjetaCombatiente({ alineacion: "aliado", shiny: false });
+  assert.equal(plano.layers.shiny, false);
+  assert.equal(plano.pixels[0], COLORES_TARJETA.aliado.marco);
+
+  const cadenaFalsa = renderizarTarjetaCombatiente({ alineacion: "aliado", shiny: "false" });
+  assert.equal(cadenaFalsa.layers.shiny, false);
+  assert.equal(cadenaFalsa.pixels[0], COLORES_TARJETA.aliado.marco);
+
+  const tierPlain = renderizarTarjetaCombatiente({
+    alineacion: "aliado",
+    shiny: { tier: "plain" },
+  });
+  assert.equal(tierPlain.layers.shiny, false);
+  assert.equal(tierPlain.pixels[0], COLORES_TARJETA.aliado.marco);
+
+  const tierGold = renderizarTarjetaCombatiente({
+    alineacion: "aliado",
+    shiny: { tier: "gold" },
+  });
+  assert.equal(tierGold.layers.shiny, true);
+  assert.equal(tierGold.pixels[0], COLORES_TARJETA.shiny.marco);
+
+  const activo = renderizarTarjetaCombatiente({ alineacion: "aliado", shiny: true });
+  assert.equal(activo.layers.shiny, true);
+  assert.equal(activo.pixels[0], COLORES_TARJETA.shiny.marco);
+});

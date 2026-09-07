@@ -16,6 +16,18 @@
       </div>
     </header>
 
+    {{#if hasUncrewedStations}}
+      <section class="lagunak-workspace__uncrewed" role="status" aria-live="polite" aria-atomic="true">
+        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+        <div>
+          <strong>{{localize "LAGUNAK.Espacios.PuestosNoAtendidos"}}</strong>
+          <p>{{localize "LAGUNAK.Espacios.PuestosNoAtendidosDetalle"}}</p>
+          <ul>
+            {{#each uncrewedStations}}<li>{{label}}</li>{{/each}}
+          </ul>
+        </div>
+      </section>
+    {{/if}}
 
     <div class="lagunak-workspace__connection lagunak-workspace__connection--{{connection}}" role="status" aria-live="polite">
       <span class="lagunak-workspace__pulse" aria-hidden="true"></span>

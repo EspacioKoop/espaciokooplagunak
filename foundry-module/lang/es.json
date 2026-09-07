@@ -360,6 +360,8 @@
   "LAGUNAK.Espacios.PuestoActivo": "Consola operativa",
   "LAGUNAK.Espacios.TripulacionActiva": "Tripulación activa",
   "LAGUNAK.Espacios.EnLinea": "en línea",
+  "LAGUNAK.Espacios.PuestosNoAtendidos": "Puestos no atendidos",
+  "LAGUNAK.Espacios.PuestosNoAtendidosDetalle": "La nave conserva el último valor ordenado. No se ejecutan órdenes automáticas.",
   "LAGUNAK.Espacios.Previsualizar": "Previsualizar puesto",
   "LAGUNAK.Espacios.TelemetriaOk": "Telemetría de la nave actualizada",
   "LAGUNAK.Espacios.TelemetriaCargando": "Sincronizando telemetría…",

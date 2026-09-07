@@ -11,7 +11,7 @@ import {
   textoPorcentaje,
   SIN_DATO,
   UMBRALES,
-} from "../scripts/barras-estado.mjs";
+} from "../../scripts/ship-view/barras-estado.mjs";
 
 test("el porcentaje se acota y redondea; sin máximo no hay barra", () => {
   assert.equal(porcentajeBarra(50, 200), 25);
@@ -123,7 +123,7 @@ test("un sistema sin lectura llega a la barra como ausencia, no como cero", asyn
   // La normalización intermedia colapsaba null a 0 con `Number(x) || 0`, así
   // que un sistema del que no sabemos nada se presentaba como destruido, frío
   // y sin potencia. Este es el caso que ninguna prueba de unidad detectaba.
-  const { prepareSystemRows } = await import("../scripts/ship-view.mjs");
+  const { prepareSystemRows } = await import("../../scripts/ship-view/ship-view.mjs");
 
   const [fila] = prepareSystemRows({ systems: { warp: { health: null } } }, null);
   assert.equal(fila.health, null);
@@ -139,7 +139,7 @@ test("un sistema sin lectura llega a la barra como ausencia, no como cero", asyn
 });
 
 test("un cero REAL sigue siendo información y se distingue de la ausencia", async () => {
-  const { prepareSystemRows } = await import("../scripts/ship-view.mjs");
+  const { prepareSystemRows } = await import("../../scripts/ship-view/ship-view.mjs");
 
   const [destruido] = prepareSystemRows({ systems: { warp: { health: 0, heat: 0, power: 0 } } }, null);
   assert.equal(destruido.health, 0);
@@ -150,13 +150,13 @@ test("un cero REAL sigue siendo información y se distingue de la ausencia", asy
 });
 
 test("un ship sin systems no produce filas ni barras fantasma", async () => {
-  const { prepareSystemRows } = await import("../scripts/ship-view.mjs");
+  const { prepareSystemRows } = await import("../../scripts/ship-view/ship-view.mjs");
   assert.deepEqual(prepareSystemRows({}, null), []);
   assert.deepEqual(prepareSystemRows(null, null), []);
 });
 
 test("una lectura corrupta se trata como ausencia, no como cero", async () => {
-  const { prepareSystemRows } = await import("../scripts/ship-view.mjs");
+  const { prepareSystemRows } = await import("../../scripts/ship-view/ship-view.mjs");
   const [fila] = prepareSystemRows({ systems: { warp: { health: "roto" } } }, null);
   assert.equal(fila.health, null);
   assert.equal(barrasSistema(fila).salud, null);

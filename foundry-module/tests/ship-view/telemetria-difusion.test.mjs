@@ -9,7 +9,7 @@ import {
   difundirTelemetria,
   esMasReciente,
   sobreTelemetria,
-} from "../scripts/telemetria-difusion.mjs";
+} from "../../scripts/ship-view/telemetria-difusion.mjs";
 
 const estado = {
   ship: { callsign: "Itsaso 1", hull: 80, hull_max: 100, heading: 214 },

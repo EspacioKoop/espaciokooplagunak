@@ -2,6 +2,8 @@
 
 Gracias por colaborar. Este repositorio es un fork de EmptyEpsilon y está pensado para trabajo coordinado entre personas y agentes de IA.
 
+> **Dónde se trabaja:** el repositorio canónico es [`EspacioKoop/espaciokooplagunak`](https://github.com/EspacioKoop/espaciokooplagunak). Abre allí issues y pull requests y usa `https://github.com/EspacioKoop/espaciokooplagunak.git` como `origin`. La ubicación anterior bajo `VaroTv7` es solo una redirección histórica.
+
 ## Antes de empezar
 
 1. Lee el [`README.md`](README.md), esta guía y, si eres un agente, [`AGENTS.md`](AGENTS.md).

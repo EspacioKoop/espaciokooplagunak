@@ -1,7 +1,7 @@
-import { STATIONS, normalizeStation } from "./station-assignment.mjs";
+import { STATIONS, normalizeStation, uncrewedStations } from "./station-assignment.mjs";
 import { isActionAllowed } from "./station-actions.mjs";
 import { SISTEMAS_INGENIERIA, NIVELES_POTENCIA, NIVELES_REFRIGERANTE } from "./ingenieria-control.mjs";
-import { prepareDocking, prepareSystemRows } from "./ship-view.mjs";
+import { prepareDocking, prepareSystemRows } from "./ship-view/ship-view.mjs";
 import { filasCrudas, filasDegradadas } from "./sensores-lista.mjs";
 import { retratoTripulanteDataUri } from "./avatar/retrato-tripulante.mjs";
 
@@ -583,6 +583,10 @@ export function buildWorkspaceModel({
     ? contactsPayload
     : (sensores ? { contacts: sensores.contactos, degradado: true } : null);
   const crew = crewRows(users, moduleId, i18n);
+  const uncrewed = uncrewedStations(users, moduleId).map((id) => ({
+    id,
+    label: localize(i18n, `LAGUNAK.Puestos.${id}`),
+  }));
   // La misma lectura que usa `metricsFor`: si el texto y la lámina salieran de
   // dos llamadas con criterios distintos, la consola podría dibujar un atraque
   // que su propia matriz de métricas no menciona.
@@ -594,6 +598,8 @@ export function buildWorkspaceModel({
       isGM: Boolean(isGM),
       connection,
       crew,
+      hasUncrewedStations: uncrewed.length > 0,
+      uncrewedStations: uncrewed,
     };
   }
 
@@ -792,6 +798,10 @@ export function buildWorkspaceModel({
     crew,
     crewCount: crew.length,
     activeCrew: crew.filter((member) => member.active).length,
+    // Aviso puro de ocupación (#951): leer usuarios y flags no emite órdenes,
+    // no reasigna autoridad y no altera el último estado de la simulación.
+    hasUncrewedStations: uncrewed.length > 0,
+    uncrewedStations: uncrewed,
     tasks: definition.tasks.map((task, index) => ({
       number: index + 1,
       label: localize(i18n, `LAGUNAK.Espacios.${normalized}.Tarea.${task}`),

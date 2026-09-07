@@ -2,6 +2,12 @@
 
 Este archivo define el contrato operativo para cualquier agente que trabaje en Espaciokoop Lagunak.
 
+## Repositorio canónico obligatorio
+
+El único repositorio de trabajo es [`EspacioKoop/espaciokooplagunak`](https://github.com/EspacioKoop/espaciokooplagunak). Todo agente, bot o automatización debe usarlo para consultar issues y PR, crear ramas y publicar cambios. `origin` debe apuntar a `https://github.com/EspacioKoop/espaciokooplagunak.git`.
+
+La ubicación anterior `VaroTv7/espaciokooplagunak` es solo una redirección histórica. No la uses como identificador canónico, remoto, destino de API ni base de enlaces nuevos. Si el remoto no apunta a la organización `EspacioKoop`, detente y corrígelo antes de trabajar.
+
 ## Prioridades
 
 1. Proteger historial, licencia, atribución y trabajo ajeno.
@@ -61,6 +67,7 @@ Actualiza `README.md` solo cuando cambien el estado real, las características o
 ## Upstream
 
 - `origin` corresponde a Espaciokoop Lagunak.
+- El destino exacto de `origin` es `https://github.com/EspacioKoop/espaciokooplagunak.git`.
 - `upstream` corresponde a EmptyEpsilon.
 - Las actualizaciones de upstream se preparan en ramas `upstream/<fecha-o-version>`.
 - No mezcles una sincronización upstream con funcionalidades propias.

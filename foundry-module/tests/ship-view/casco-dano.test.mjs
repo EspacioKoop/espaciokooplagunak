@@ -7,8 +7,8 @@ import {
   colorParaSalud,
   componerCascoPorDano,
   saludPorRegion,
-} from "../scripts/casco-dano.mjs";
-import { CASCO_POR_DEFECTO, mallaDesdeCasco } from "../scripts/retro3d.mjs";
+} from "../../scripts/ship-view/casco-dano.mjs";
+import { CASCO_POR_DEFECTO, mallaDesdeCasco } from "../../scripts/retro3d.mjs";
 
 test("el mapa de serie cubre cada cara una vez", () => {
   const caras = Object.values(CARAS_CASCO_SERIE).flat().sort((a, b) => a - b);

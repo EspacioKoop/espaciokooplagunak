@@ -60,3 +60,13 @@ test("serializarProgresion conserva solo el contrato persistente", () => {
   assert.equal(parsed.shiny.tier, "gold");
   assert.equal(parsed.estadoCombate, undefined);
 });
+
+test("rechaza hitos heredados del prototipo (prototype pollution)", () => {
+  const progression = normalizarProgresion({ id: "hero-1", hitos: ["constructor"] });
+  assert.equal(progression.nivel, 0);
+  assert.deepEqual(progression.hitos, []);
+  assert.equal(Number.isNaN(progression.nivel), false);
+
+  assert.throws(() => aplicarHito({ id: "hero-1" }, "__proto__"), TypeError);
+  assert.throws(() => aplicarHito({ id: "hero-1" }, "constructor"), TypeError);
+});

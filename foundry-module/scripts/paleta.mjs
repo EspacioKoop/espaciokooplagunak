@@ -579,6 +579,19 @@ export const MUSEO = Object.freeze({
  * mide todo lo anterior: una comprobación de contraste contra un valor que vive
  * en otro archivo no es una comprobación.
  */
+/**
+ * Insignias de progresión de campaña (#1016): un acento por nivel de hito
+ * alcanzado. Único sitio que declara estos hexadecimales (ADR-0014);
+ * `progresion-campana.mjs` los consume por nivel en vez de mantener su
+ * propia tabla.
+ */
+export const PROGRESION = Object.freeze({
+  plain: "#8a918f",
+  bronze: "#d28b45",
+  silver: "#c4ccd1",
+  gold: "#f2c14e",
+});
+
 export const FICHA = Object.freeze({
   tapete: "#0f3d2a", // fieltro de la mesa
   canto: CREMA, // cuñas y cara de la ficha: el mismo crema del resto del arte

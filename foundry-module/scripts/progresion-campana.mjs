@@ -1,8 +1,10 @@
+import { PROGRESION } from "./paleta.mjs";
+
 const SHINY_BY_LEVEL = Object.freeze({
-  0: Object.freeze({ tier: "plain", accent: "#8a918f" }),
-  1: Object.freeze({ tier: "bronze", accent: "#d28b45" }),
-  2: Object.freeze({ tier: "silver", accent: "#c4ccd1" }),
-  3: Object.freeze({ tier: "gold", accent: "#f2c14e" }),
+  0: Object.freeze({ tier: "plain", accent: PROGRESION.plain }),
+  1: Object.freeze({ tier: "bronze", accent: PROGRESION.bronze }),
+  2: Object.freeze({ tier: "silver", accent: PROGRESION.silver }),
+  3: Object.freeze({ tier: "gold", accent: PROGRESION.gold }),
 });
 
 export const HITOS = Object.freeze({
@@ -24,7 +26,10 @@ function normalizeId(value) {
 }
 
 function deriveLevel(hitos) {
-  return hitos.reduce((level, hito) => Math.max(level, HITOS[hito].nivel), 0);
+  return hitos.reduce(
+    (level, hito) => Math.max(level, Object.hasOwn(HITOS, hito) ? HITOS[hito].nivel : 0),
+    0,
+  );
 }
 
 function deriveShiny(nivel) {
@@ -34,7 +39,11 @@ function deriveShiny(nivel) {
 export function normalizarProgresion(input = {}) {
   const source = input ?? {};
   const hitos = Array.isArray(source.hitos)
-    ? [...new Set(source.hitos.filter((hito) => typeof hito === "string" && HITOS[hito]))]
+    ? [
+        ...new Set(
+          source.hitos.filter((hito) => typeof hito === "string" && Object.hasOwn(HITOS, hito)),
+        ),
+      ]
     : [];
   const nivel = deriveLevel(hitos);
 
@@ -47,7 +56,7 @@ export function normalizarProgresion(input = {}) {
 }
 
 export function aplicarHito(progresion, hito) {
-  if (!HITOS[hito]) throw new TypeError(`unknown campaign milestone: ${hito}`);
+  if (!Object.hasOwn(HITOS, hito)) throw new TypeError(`unknown campaign milestone: ${hito}`);
   const current = normalizarProgresion(progresion);
   if (current.hitos.includes(hito)) return current;
   return normalizarProgresion({

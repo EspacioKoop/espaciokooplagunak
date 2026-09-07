@@ -50,8 +50,9 @@ S = " AND combo_step_id IS NOT NULL AND COALESCE(model,'') NOT LIKE '%connection
 ## Recetas verificadas
 
 ```python
+import os
 import sqlite3
-c = sqlite3.connect("file:/home/eloy/.omniroute/storage.sqlite?mode=ro", uri=True)
+c = sqlite3.connect("file:" + os.path.expanduser("~/.omniroute/storage.sqlite") + "?mode=ro", uri=True)
 S = " AND combo_step_id IS NOT NULL AND COALESCE(model,'') NOT LIKE '%connection-test%'"
 
 # Tasa real por proveedor

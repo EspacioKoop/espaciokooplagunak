@@ -88,7 +88,7 @@ def vivos_en_main(rutas):
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("etiqueta")
-    p.add_argument("--repo", default="VaroTv7/espaciokooplagunak")
+    p.add_argument("--repo", default="EspacioKoop/espaciokooplagunak")
     p.add_argument("--limite", type=int, default=200)
     a = p.parse_args()
 

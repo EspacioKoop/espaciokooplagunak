@@ -13,12 +13,12 @@ import {
   aceptarTelemetria,
   difundirTelemetria,
   esMasReciente,
-} from "./telemetria-difusion.mjs";
+} from "./ship-view/telemetria-difusion.mjs";
 import { pintarEscena, pintarNave } from "./retro3d-lienzo.mjs";
 import { desmontarLamina, montarLaminaContacto } from "./lamina-contacto.mjs";
 import { pintarVisorPiloto } from "./visor-piloto-lienzo.mjs";
 import { CASCO_POR_DEFECTO, mallaDesdeCasco } from "./retro3d.mjs";
-import { componerCascoPorDano } from "./casco-dano.mjs";
+import { componerCascoPorDano } from "./ship-view/casco-dano.mjs";
 import { PIXEL } from "./paleta.mjs";
 import { anadirHerramienta } from "./control-escena.mjs";
 

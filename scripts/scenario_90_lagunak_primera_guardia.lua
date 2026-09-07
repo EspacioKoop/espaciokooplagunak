@@ -9,7 +9,7 @@
 -- @script scenario_90_lagunak_primera_guardia
 --
 -- Escenario propio del fork Espaciokoop Lagunak
--- (https://github.com/VaroTv7/espaciokooplagunak). El contenido heredado de
+-- (https://github.com/EspacioKoop/espaciokooplagunak). El contenido heredado de
 -- EmptyEpsilon y sus creditos no se modifican; este archivo es nuevo.
 
 require("utils.lua")

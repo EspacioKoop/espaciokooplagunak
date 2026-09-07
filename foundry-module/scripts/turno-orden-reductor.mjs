@@ -156,18 +156,14 @@ export function reducir(state, action) {
         initiative,
       });
       const sorted = ordenarPorIniciativa(updated);
-      // Find new index of this combatant after re-sort
-      const newIdx = indicePorId(sorted, id);
-      // Adjust currentIndex if the reordering affects turn order
-      let adjustedIndex = frozen.currentIndex;
-      if (frozen.currentIndex !== newIdx) {
-        // Find where the previously current combatant moved to
-        const currentId = frozen.combatants[frozen.currentIndex]?.id;
-        if (currentId) {
-          const movedIdx = indicePorId(sorted, currentId);
-          if (movedIdx >= 0) adjustedIndex = movedIdx;
-        }
-      }
+      // El turno activo se recalcula siempre a partir del ID que tenía el
+      // turno ANTES de reordenar, nunca por posición de índice: si el índice
+      // antiguo del activo coincide por casualidad con el nuevo índice del
+      // combatiente que se acaba de reordenar (aunque sean combatientes
+      // distintos), comparar índices le robaba el turno activo al que de
+      // verdad lo tenía.
+      const currentId = frozen.combatants[frozen.currentIndex]?.id;
+      const adjustedIndex = currentId ? indicePorId(sorted, currentId) : frozen.currentIndex;
       return Object.freeze({
         ...frozen,
         combatants: Object.freeze(sorted),

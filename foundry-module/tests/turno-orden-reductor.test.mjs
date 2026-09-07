@@ -128,6 +128,31 @@ export function testTurnOrderReducer() {
   assert.equal(state.combatants[0].inspiration, true);
   assert.equal(state.combatants[0].exhaustion, 6);
 
+  // Regression: SET_INITIATIVE on ANOTHER combatant (not the active one) must
+  // never steal the active turn, even when the old index of the active
+  // combatant coincides with the new index of the reordered one.
+  // A=20 (active, index 0), B=10 (index 1). Setting B's initiative to 30
+  // puts B at index 0 too — comparing indices instead of IDs used to make
+  // the reducer think "nothing changed" and leave currentIndex=0, which then
+  // pointed at B instead of A.
+  let stolen = reducir(crearEstado(), {
+    type: 'ADD_COMBATANT',
+    payload: { id: 'A', name: 'A', initiativeMod: 20, ally: true },
+  });
+  stolen = reducir(stolen, {
+    type: 'ADD_COMBATANT',
+    payload: { id: 'B', name: 'B', initiativeMod: 10, ally: true },
+  });
+  stolen = reducir(stolen, { type: 'SET_INITIATIVE', payload: { id: 'A', initiative: 20 } });
+  stolen = reducir(stolen, { type: 'SET_ACTIVE', payload: { active: true } });
+  assert.equal(select.combatantActual(stolen).id, 'A');
+  stolen = reducir(stolen, { type: 'SET_INITIATIVE', payload: { id: 'B', initiative: 30 } });
+  assert.equal(
+    select.combatantActual(stolen).id,
+    'A',
+    'SET_INITIATIVE sobre otro combatiente no debe robar el turno activo',
+  );
+
   console.log('All tests passed');
 }
 

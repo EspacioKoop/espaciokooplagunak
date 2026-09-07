@@ -67,14 +67,20 @@ export function anadirCombatiente(state, combatiente) {
 export function retirarCombatiente(state, id) {
   const current = copiar(state);
   if (typeof id !== "string" || !current.orden.includes(id)) return current;
-  const removedIndex = current.orden.indexOf(id);
-  const remaining = current.combatientes.filter((combatiente) => combatiente.id !== id);
-  const nextActive = id === current.activo
-    ? current.orden[(removedIndex + 1) % current.orden.length] === id
-      ? current.orden[(removedIndex + 2) % current.orden.length]
-      : current.orden[(removedIndex + 1) % current.orden.length]
-    : current.activo;
-  return reconstruir(current, remaining, remaining.some((combatiente) => combatiente.id === nextActive) ? nextActive : remaining[0]?.id ?? null);
+  const wasActive = id === current.activo;
+  // Dar de baja al combatiente activo usa la MISMA transición circular que
+  // NEXT_TURN (avanzarTurno), incluyendo el avance de ronda al dar la vuelta
+  // — antes esto se recalculaba a mano con aritmética de índices y nunca
+  // tocaba `ronda`, así que volver al primero de la lista tras la última baja
+  // no contaba como una vuelta completa.
+  const advanced = wasActive ? avanzarTurno(current) : current;
+  const remaining = advanced.combatientes.filter((combatiente) => combatiente.id !== id);
+  const nextActive = wasActive ? advanced.activo : current.activo;
+  return reconstruir(
+    { ...advanced, ronda: advanced.ronda },
+    remaining,
+    remaining.some((combatiente) => combatiente.id === nextActive) ? nextActive : remaining[0]?.id ?? null,
+  );
 }
 
 export function estadoTurnos(state) {

@@ -7,6 +7,12 @@ pisen. El contrato de conducta está en [`AGENTS.md`](../AGENTS.md) y el flujo d
 No es teoría. Los puntos de colisión de más abajo son los que ya han chocado de verdad, y cada uno
 trae la regla que lo desactiva.
 
+## Antes de repartir trabajo nuevo
+
+Leer la [norma platino de colaboración](NORMA_PLATINO_COLABORACION.md). Primero
+desbloquear, revisar e integrar entregas pendientes; después abrir frentes nuevos.
+La paralelización no justifica multiplicar PR sin terminar los anteriores.
+
 ## La regla de oro
 
 > Un issue, una rama, un PR, un área. Si dos unidades de trabajo tienen que editar el mismo archivo,
@@ -49,6 +55,18 @@ PR: cada área se verifica sola, y por eso se pueden entregar por separado.
 `tools/tests/test_mapa_areas.py` comprueba que este mapa no se pudra: que toda ruta declarada existe
 de verdad y que **ningún módulo de `foundry-module/scripts/` queda fuera de todas las áreas**. Un
 módulo nuevo sin área es un módulo que nadie sabe quién puede tocar.
+
+El índice operativo machine-readable de [`docs/INDICE_OPERATIVO.json`](INDICE_OPERATIVO.json)
+añade a cada área una tarea típica, un agente recomendado, su comando de verificación y los
+límites mínimos de autoridad, secretos y red. Se valida con:
+
+```bash
+python3 tools/validar_indice_operativo.py
+```
+
+El JSON no sustituye este mapa: reutiliza sus nombres de área como fuente única de rutas y añade
+solo el contexto que necesitan las personas y los agentes para tomar una tarea pequeña sin abrir
+una frontera de seguridad por accidente.
 
 Lo que NO exige es que un módulo esté en una sola área: hay piezas que legítimamente son dos cosas
 —el museo es escena y es catálogo con procedencia— y forzar una partición limpia obligaría a mentir

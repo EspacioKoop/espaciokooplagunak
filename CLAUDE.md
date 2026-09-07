@@ -170,7 +170,14 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     `modulos-alcanzables.test.mjs` y `paleta.test.mjs` **consumen** ese JSON; no mantengas listas
     paralelas en ellos ni en esta guía. Los enlaces de evidencia a issues/PRs se verifican por la API
     de GitHub con timeout y token de solo lectura en CI; un 404 confirmado invalida la declaración y
-    un fallo de red bloquea la verificación en vez de aceptar el enlace en silencio. Para declarar o
+    un fallo de red bloquea la verificación en vez de aceptar el enlace en silencio. Pero esa
+    verificación mira si el enlace **resuelve**, no si viene a cuento, y por esa rendija se coló
+    relleno: 34 declaraciones con un único motivo —la definición de huérfana, no una razón— y una
+    única evidencia para las 34, un issue de otro asunto que existe y por eso pasaba. De ahí dos
+    reglas **entre** declaraciones: ningún motivo puede repetirse (uno que vale para dos módulos no
+    explica ninguno) y una misma evidencia no respalda más de
+    `MAX_DECLARACIONES_POR_EVIDENCIA` (3) — dos módulos de una función citando su issue común es
+    correcto, una decena es un enlace copiado. Para declarar o
     reclasificar un módulo, edita el JSON y ejecuta
     `python3 scripts/check_orphan_modules.py --check` más las suites Python y Node del área.
   - **Ventanas** — **Consola caliente del GM** (#276, `docs/CONSOLA_CALIENTE_GM.md`) fusionó las
@@ -682,6 +689,10 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
 
 ## Flujo git
 
+**Lectura obligatoria al empezar:** [norma platino de colaboración](docs/NORMA_PLATINO_COLABORACION.md).
+Primero terminar la cola; revisión ajena por riesgo, no por rutina.
+
+
 - `origin` = `EspacioKoop/espaciokooplagunak`; `upstream` = `daid/EmptyEpsilon`. Nunca apuntes `upstream`
   a otro sitio ni incluyas tokens en URLs de remotos.
 - Ramas desde `main`: `feature/`, `fix/`, `docs/`, `test/`, `chore/`, `upstream/`. Todo llega a
@@ -692,24 +703,17 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
 - Commits breves, imperativos y con prefijo: `feat(scenario): …`, `fix(network): …`, `docs: …`.
 - El issue es el contrato de alcance; el PR es el registro de implementación y verificación. Antes
   de trabajar, revisa issues/PRs/ramas existentes para no duplicar.
-- **Qué exige `main`.** La protección de rama pide **una aprobación** y **siete checks en verde**
-  (`Puerta de build C++/Lua`, `Puerta del módulo Foundry`, `Puerta de tools`, `Puerta de docker y
-  puente`, `Puerta de imágenes`, `CodeQL`, `semgrep`), más resolución de conversaciones. Además
-  `enforce_admins` está **activo**: tener administración del repositorio no salta nada de esto, y
-  `require_last_push_approval` tira la aprobación si el autor empuja después de recibirla.
-  `.github/CODEOWNERS` sigue nombrando a `@VaroTv7` y `@eGurucharri`, pero la aprobación **de code
-  owner ya no es obligatoria**: vale la de cualquiera con permiso de escritura.
-- **Quién puede firmar.** GitHub **no cuenta al autor**, y esa es la restricción que de verdad
-  atasca: un PR abierto por una cuenta solo lo puede aprobar la otra, así que una tanda entera
-  abierta con la misma cuenta se queda esperando a la otra persona entera. Tenlo en cuenta al
-  elegir con qué cuenta se abre. El estado real se ve con
-  `gh pr view <n> --json mergeStateStatus,reviewDecision`, y hay dos lecturas engañosas: un `CLEAN`
-  con CI verde puede seguir parado en `REVIEW_REQUIRED`, y un `CLEAN` puede significar
-  simplemente que la rama **no apunta a `main`** (comprueba `baseRefName`).
-- **Un `CHANGES_REQUESTED` caduca sin avisar.** GitHub lo mantiene aunque el commit revisado ya no
-  sea `HEAD`. Antes de tratarlo como trabajo pendiente, compara el `commit_id` de la revisión con
-  el `HEAD` de la rama; si hay commits de arreglo posteriores, lo que falta es una re-revisión, no
-  código. En el barrido del 2026-09-04, 19 de 36 estaban en ese estado.
+- **Revisión proporcional.** La [norma platino](docs/NORMA_PLATINO_COLABORACION.md)
+  permite integrar cambios ordinarios probados sin esperar aprobación ajena: mínimo de
+  aprobaciones 0 y sin aprobación obligatoria del último push. Se mantienen PR, siete checks,
+  conversaciones resueltas y protecciones también para administradores. Los cambios de riesgo
+  requieren revisión independiente; los bloqueantes conocidos no se ignoran. No autoaprobar
+  un PR ni usar bypass: comprobar el estado vivo, el SHA y las reviews antes de integrar.
+- **Guardias de estado.** Comprobar `baseRefName`, SHA y checks vivos: un `CLEAN`
+  no demuestra por sí solo que la base sea `main` ni que se cumpla la aceptación.
+- **Re-review de bloqueantes.** Un `CHANGES_REQUESTED` puede seguir vigente tras
+  otro push. Comparar el commit revisado y el head; verificar los arreglos contra
+  los hallazgos originales. Un SHA distinto no demuestra que el defecto esté corregido.
 - **Una rama sin PR no es trabajo a salvo, pero tampoco es trabajo perdido.** Borrar un worktree
   **no** borra su rama: lo confirmado no se pierde al limpiar, y lo único en riesgo es lo que no
   está confirmado.

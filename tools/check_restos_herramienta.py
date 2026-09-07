@@ -12,9 +12,9 @@ rama de una tarea de cobertura llevaba **cinco ficheros de `.nyc_output/`
 commiteados**. El ignore no los vio porque para git ya no eran ficheros nuevos.
 
 QUE MIRA. Solo lo que nunca es un entregable en este arbol: la salida de las
-herramientas de cobertura y las dependencias de npm. El modulo se prueba con
-`node --test` a secas, sin dependencias, asi que `node_modules/` aqui no es una
-decision de empaquetado discutible: es basura de paso.
+herramientas de cobertura, `node_modules/` y locks npm anidados. El lock raiz es
+un entregable deliberado desde que el pipeline de mallas usa el decoder Draco:
+fija la dependencia que instala `npm ci` sin versionar sus binarios descargados.
 
 POR QUE SE AMPLIO (#818). La lista original eran tres prefijos de directorio, y
 por eso decia «ok» sobre una rama que llevaba NUEVE artefactos: `coverage-out/`
@@ -90,7 +90,9 @@ def es_resto(ruta: str) -> bool:
     partes = ruta.split("/")
     for i, _ in enumerate(partes):
         cola = "/".join(partes[i:])
-        if cola.startswith(RESTOS) or cola in FICHEROS:
+        if cola == "package-lock.json":
+            return i > 0
+        if cola.startswith(RESTOS):
             return True
     return False
 

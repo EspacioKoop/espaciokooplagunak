@@ -1,7 +1,7 @@
 # Crisis multipuesto: la emboscada de ecos
 
-Issue [#484](https://github.com/VaroTv7/espaciokooplagunak/issues/484), frente 5 de la Etapa B
-(coordinación en [#479](https://github.com/VaroTv7/espaciokooplagunak/issues/479)).
+Issue [#484](https://github.com/EspacioKoop/espaciokooplagunak/issues/484), frente 5 de la Etapa B
+(coordinación en [#479](https://github.com/EspacioKoop/espaciokooplagunak/issues/479)).
 
 Este documento es el criterio de aceptación del issue puesto por escrito: **qué puesto hace qué y
 por qué es necesario, no solo deseable**.
@@ -109,6 +109,6 @@ abrir un solo campo nuevo hacia el puente es el resultado que interesa conservar
 Suites del puente (pytest) y del módulo (Node) en verde en local. Sintaxis Lua verificada con
 `luac -p` sobre todo `scripts/` (0 fallos) — en local con Lua 5.5, mientras que el job `LuaTest` de
 CI usa 5.3: es esa segunda pasada la que vale como registro. **Falta el playtest
-con personas**, que es [#467](https://github.com/VaroTv7/espaciokooplagunak/issues/467) y puede usar
+con personas**, que es [#467](https://github.com/EspacioKoop/espaciokooplagunak/issues/467) y puede usar
 esta crisis como su escenario de prueba: hasta entonces, la cadena está demostrada en el código y no
 en la mesa.

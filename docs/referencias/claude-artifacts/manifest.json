@@ -14,7 +14,6 @@
       "occurrences": 1,
       "title": "Piel de Puerta",
       "tema": "Piel pixelart de media hoja de puerta corredera a 2,5 cm/téxel",
-      "issue_relacionado": 458,
       "reference_preserved": true,
       "full_artifact_archived": true,
       "status": "archived",
@@ -22,7 +21,10 @@
       "local_text": "piel-de-puerta-texto.md",
       "sha256": "4199fd5c9dec19fb48fe6f10870e9c5a26f1406269b58cfad6f99b9eaa44f611",
       "bytes": 122935,
-      "fidelidad": "completa (incluye la imagen PNG embebida en base64)"
+      "fidelidad": "completa (incluye la imagen PNG embebida en base64)",
+      "issues_relacionados": [
+        550
+      ]
     },
     {
       "id": "9a78b189-93a9-4280-985d-869c028a8742",
@@ -30,14 +32,16 @@
       "occurrences": 1,
       "title": "Muro: geometría o textura",
       "tema": "Comparativa rejillaMural() vs teselaMuro(): 263 polígonos frente a 7, y qué le pasa a la luz de #556",
-      "issue_relacionado": 584,
       "reference_preserved": true,
       "full_artifact_archived": true,
       "status": "archived_partial",
       "local_html": "html/9a78b189-93a9-4280-985d-869c028a8742.html",
       "sha256": "8a46258f6951581dcfbd40f14c174fe1189fd7319eb63182f52d4d33d9d94fa6",
       "bytes": 7759,
-      "fidelidad": "parcial: texto, CSS y datos íntegros; las DOS imágenes PNG comparativas embebidas en base64 no se conservaron en esta copia. El artefacto original en la URL sigue siendo la fuente de esas imágenes."
+      "fidelidad": "parcial: texto, CSS y datos íntegros; las DOS imágenes PNG comparativas embebidas en base64 no se conservaron en esta copia. El artefacto original en la URL sigue siendo la fuente de esas imágenes.",
+      "issues_relacionados": [
+        584
+      ]
     },
     {
       "id": "4aa48576-bef8-4d20-b9cb-1e1cde410c16",
@@ -45,14 +49,16 @@
       "occurrences": 2,
       "title": "Mirada Viva",
       "tema": "Cuatro políticas de seguimiento ocular sobre la cara de rasgos hundidos; expresión solo por cejas",
-      "issue_relacionado": 974,
       "reference_preserved": true,
       "full_artifact_archived": true,
       "status": "archived",
       "local_html": "html/4aa48576-bef8-4d20-b9cb-1e1cde410c16.html",
       "sha256": "cd310ccb43239df6e156a5810d6177aaea1467b1f5e161e67cd275e15335765c",
       "bytes": 22712,
-      "fidelidad": "completa (todo el dibujo es canvas por código; no hay binarios embebidos)"
+      "fidelidad": "completa (todo el dibujo es canvas por código; no hay binarios embebidos)",
+      "issues_relacionados": [
+        975
+      ]
     },
     {
       "id": "19920f00-807b-41cc-a991-07edce9594a3",
@@ -60,14 +66,19 @@
       "occurrences": 1,
       "title": "Mochila del Phobos",
       "tema": "Tres maquetas de inventario (consola de combate / panel táctico / registro de carga) con las mismas teclas y datos",
-      "issue_relacionado": 897,
       "reference_preserved": true,
       "full_artifact_archived": true,
       "status": "archived",
       "local_html": "html/19920f00-807b-41cc-a991-07edce9594a3.html",
       "sha256": "a3071abef7f00ab719de9347b932858ce6f046deb3e2bc347cd981391e36a395",
       "bytes": 38154,
-      "fidelidad": "completa"
+      "fidelidad": "completa",
+      "issues_relacionados": [
+        963,
+        964,
+        965,
+        966
+      ]
     },
     {
       "id": "d50ed22e-bf54-455e-b16e-b944cc5dbdee",
@@ -75,14 +86,16 @@
       "occurrences": 1,
       "title": "Arena de Combate",
       "tema": "Campo de pruebas empaquetado: escenas, piezas y motor de andar del módulo, sin Foundry",
-      "issue_relacionado": null,
       "reference_preserved": true,
       "full_artifact_archived": true,
       "status": "archived",
       "local_html": "html/d50ed22e-bf54-455e-b16e-b944cc5dbdee.html",
       "sha256": "b7191c89fb242aaf16c16973dc27b876318540bacb86b82d80b3c6d3b5c53d4b",
       "bytes": 1388438,
-      "fidelidad": "completa (copia empaquetada en un solo fichero, con los módulos del juego incrustados)"
+      "fidelidad": "completa (copia empaquetada en un solo fichero, con los módulos del juego incrustados)",
+      "issues_relacionados": [
+        976
+      ]
     },
     {
       "id": "94caf8e4-85cd-4c64-955a-0f88edb730d5",
@@ -90,14 +103,16 @@
       "occurrences": 1,
       "title": "Caras y Peinados PSX",
       "tema": "Seis maneras de tener cara sin textura, expresión por cejas, y peinados como casquete+flequillo+añadido",
-      "issue_relacionado": 973,
       "reference_preserved": true,
       "full_artifact_archived": true,
       "status": "archived",
       "local_html": "html/94caf8e4-85cd-4c64-955a-0f88edb730d5.html",
       "sha256": "023f79e82e9fc88cfc1a69dc0bddc6291bc8763cf6330172bbefbc6d5b71bd2f",
       "bytes": 22034,
-      "fidelidad": "completa"
+      "fidelidad": "completa",
+      "issues_relacionados": [
+        1086
+      ]
     },
     {
       "id": "b1ca927b-bfb7-4307-8ec1-00e83290e92a",
@@ -105,14 +120,17 @@
       "occurrences": 1,
       "title": "Salir del Cubo",
       "tema": "Cinco direcciones de silueta para el avatar y triaje de licencia de cinco fuentes de assets",
-      "issue_relacionado": 603,
       "reference_preserved": true,
       "full_artifact_archived": true,
       "status": "archived",
       "local_html": "html/b1ca927b-bfb7-4307-8ec1-00e83290e92a.html",
       "sha256": "51a15499797835b2d257ac0de2b941aa68972c506274e436764695b8008af7fc",
       "bytes": 21556,
-      "fidelidad": "completa"
+      "fidelidad": "completa",
+      "issues_relacionados": [
+        973,
+        603
+      ]
     },
     {
       "id": "5ff27ef2-4587-4a11-99ee-5f7d721bab27",
@@ -120,14 +138,16 @@
       "occurrences": 1,
       "title": "A Qué Miran los NPC",
       "tema": "Siete políticas de mirada de NPC ante los mismos eventos, con contagio de mirada y evitación",
-      "issue_relacionado": 974,
       "reference_preserved": true,
       "full_artifact_archived": true,
       "status": "archived",
       "local_html": "html/5ff27ef2-4587-4a11-99ee-5f7d721bab27.html",
       "sha256": "33ba49f36ecbfd6bea1c8c03f883e7917485c573ac95fba7c291052a93d81529",
       "bytes": 19918,
-      "fidelidad": "completa"
+      "fidelidad": "completa",
+      "issues_relacionados": [
+        975
+      ]
     },
     {
       "id": "a53c0e8c-6d82-4e84-8cb3-ed5d6b6b39d6",
@@ -135,14 +155,16 @@
       "occurrences": 1,
       "title": "El haz de las luminarias",
       "tema": "Renders SVG del motor real con luces de punto, haz visible y polvo en suspensión",
-      "issue_relacionado": 556,
       "reference_preserved": true,
       "full_artifact_archived": true,
       "status": "archived",
       "local_html": "html/a53c0e8c-6d82-4e84-8cb3-ed5d6b6b39d6.html",
       "sha256": "eef804dfdf07a2b8a4dfa88d8603260a7b53630050264d2b3ea7c2b2b2ccd898",
       "bytes": 413341,
-      "fidelidad": "completa (los renders son SVG inline, polígono a polígono, salidos del motor)"
+      "fidelidad": "completa (los renders son SVG inline, polígono a polígono, salidos del motor)",
+      "issues_relacionados": [
+        556
+      ]
     },
     {
       "id": "37d76856-7688-4914-936f-bb15eecd0b4c",
@@ -150,14 +172,17 @@
       "occurrences": 1,
       "title": "Gramática PSX del Avatar",
       "tema": "Cinco razas y doce clases con la gramática de troncos de pirámide; la clase rompe el perfil, no la cara",
-      "issue_relacionado": 973,
       "reference_preserved": true,
       "full_artifact_archived": true,
       "status": "archived",
       "local_html": "html/37d76856-7688-4914-936f-bb15eecd0b4c.html",
       "sha256": "e7592e75485e24e121d70c25319125969259e534b6b246f731e9a8046f963dc1",
       "bytes": 25318,
-      "fidelidad": "completa"
+      "fidelidad": "completa",
+      "issues_relacionados": [
+        974
+      ]
     }
-  ]
+  ],
+  "issue_mapping_note": "Los numeros de issue citados DENTRO de algunos artefactos no coinciden con los issues reales (p.ej. la cabecera de «Piel de Puerta» dice #458, que en realidad es otro tema; su issue real es #550). Este mapeo se verifico contra los issues vivos el 2026-09-08 y manda sobre lo que diga la cabecera del artefacto. «Caras y Peinados PSX» no tenia issue: se abrio uno nuevo para el."
 }

@@ -37,9 +37,18 @@ export function normalizarTarjeta(entrada = {}) {
   const agotamiento = Number.isInteger(entrada.agotamiento)
     ? Math.max(0, Math.min(6, entrada.agotamiento))
     : 0;
+  // La normalización tiene que ser idempotente: si `entrada` ya es una
+  // tarjeta normalizada (p.ej. la que produce combinarTarjetas al fusionar
+  // una capa parcial), concentracion/inspiracion ya no existen como
+  // booleanos sueltos — solo sobreviven dentro de `badges`. Sin este
+  // respaldo, volver a normalizar una tarjeta ya normalizada perdía ambos
+  // badges.
+  const badgesPrevios = Array.isArray(entrada.badges) ? entrada.badges : [];
+  const concentracion = entrada.concentracion === true || badgesPrevios.includes("concentracion");
+  const inspiracion = entrada.inspiracion === true || badgesPrevios.includes("inspiracion");
   const badges = [
-    entrada.concentracion === true ? "concentracion" : null,
-    entrada.inspiracion === true ? "inspiracion" : null,
+    concentracion ? "concentracion" : null,
+    inspiracion ? "inspiracion" : null,
     agotamiento > 0 ? "agotamiento" : null,
   ].filter(Boolean);
   return Object.freeze({
@@ -49,6 +58,8 @@ export function normalizarTarjeta(entrada = {}) {
     clase,
     bando,
     shiny,
+    concentracion,
+    inspiracion,
     estados: Object.freeze(estado),
     badges: Object.freeze(badges),
     agotamiento,
@@ -107,7 +118,14 @@ export function tarjetasDesdeEstadoTurno(estado) {
     estados: combatiente.statuses,
     inspiracion: combatiente.inspiration,
     agotamiento: combatiente.exhaustion,
-    bando: combatiente.ally ? "aliado" : "enemigo",
+    // El campo bando explícito (p.ej. "neutral") tiene prioridad: `ally` es
+    // solo el fallback binario cuando no hay bando declarado, no una fuente
+    // de verdad que lo pise.
+    bando: typeof combatiente.bando === "string"
+      ? combatiente.bando
+      : combatiente.ally
+        ? "aliado"
+        : "enemigo",
   })), { activoId: actual?.id ?? null, siguienteId: siguiente?.id ?? null });
 }
 

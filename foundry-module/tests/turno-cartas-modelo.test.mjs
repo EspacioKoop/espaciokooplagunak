@@ -86,3 +86,27 @@ test("proyecta el estado del reducer sin convertirlo en otra fuente de verdad", 
   assert.equal(cartas[1].clase, "guerrero");
   assert.equal(cartas[1].agotamiento, 2);
 });
+
+test("tarjetasDesdeEstadoTurno conserva el bando explícito en vez de asumir ally", () => {
+  const cartas = tarjetasDesdeEstadoTurno({
+    active: false,
+    currentIndex: 0,
+    combatants: [{ id: "a", name: "Testigo", initiative: 5, bando: "neutral" }],
+  });
+  assert.equal(cartas[0].bando, "neutral");
+});
+
+test("combinarTarjetas es idempotente y conserva concentracion/inspiracion al combinar", () => {
+  const base = normalizarTarjeta({ id: "a", nombre: "Alda", concentracion: true, inspiracion: true });
+  assert.deepEqual(base.badges, ["concentracion", "inspiracion"]);
+
+  // Ida y vuelta: renormalizar una tarjeta ya normalizada no debe perder nada.
+  const reNormalizada = normalizarTarjeta(base);
+  assert.deepEqual(reNormalizada.badges, ["concentracion", "inspiracion"]);
+
+  // Actualización parcial: combinar con una capa que solo trae estados no
+  // debe borrar los badges que ya estaban activos.
+  const combinada = combinarTarjetas(base, { estados: ["herido"] });
+  assert.deepEqual(combinada.estados, ["herido"]);
+  assert.deepEqual(combinada.badges, ["concentracion", "inspiracion"]);
+});

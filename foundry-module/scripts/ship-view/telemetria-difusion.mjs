@@ -31,7 +31,7 @@
 // Puro salvo el emisor: recibe `emitir` y `alRecibir` desde fuera, así que se
 // prueba en Node sin Foundry.
 
-import { degradarContactos } from "./contactos-degradados.mjs";
+import { degradarContactos } from "../contactos-degradados.mjs";
 
 export const TIPO_TELEMETRIA = "lagunak:telemetria-nave";
 

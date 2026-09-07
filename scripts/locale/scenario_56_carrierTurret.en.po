@@ -1,15 +1,15 @@
 # Scenario name
+msgid ""
+msgstr ""
+
 msgid "Carrier and Fighters"
 msgstr ""
 
 # Scenario description
 msgid ""
-"Three player ships: a carrier and two smaller ships docked with the carrier. "
-"Objective: search out and find the enemy. Use the carrier to travel long "
-"distances.\n"
+"Three player ships: a carrier and two smaller ships docked with the carrier. Objective: search out and find the enemy. Use the carrier to travel long distances.\n"
 "\n"
-"Carrier and several player ships with turrets available for use by the "
-"players made available with this scenario script and the associated files."
+"Carrier and several player ships with turrets available for use by the players made available with this scenario script and the associated files."
 msgstr ""
 
 # Scenario setting
@@ -137,8 +137,8 @@ msgstr ""
 #: scripts/scenario_56_carrierTurret.lua:1134
 msgctxt "stationGeneralInfo-comms"
 msgid ""
-"We provide high quality high capacity batteries and specialized software for "
-"all shipboard systems"
+"We provide high quality high capacity batteries and specialized software for"
+" all shipboard systems"
 msgstr ""
 
 #: scripts/scenario_56_carrierTurret.lua:1135
@@ -180,8 +180,8 @@ msgstr ""
 msgctxt "stationStory-comms"
 msgid ""
 "This station was named after Archimedes who, according to legend, used a "
-"series of adjustable focal length mirrors to focus sunlight on a Roman naval "
-"fleet invading Syracuse, setting fire to it"
+"series of adjustable focal length mirrors to focus sunlight on a Roman naval"
+" fleet invading Syracuse, setting fire to it"
 msgstr ""
 
 #: scripts/scenario_56_carrierTurret.lua:1186
@@ -221,8 +221,8 @@ msgstr ""
 msgctxt "stationStory-comms"
 msgid ""
 "The original station builders were fans of the late 20th century scientist "
-"and author Isaac Asimov. The station was initially named Foundation, but was "
-"later changed simply to Asimov. It started off as a stellar observatory, "
+"and author Isaac Asimov. The station was initially named Foundation, but was"
+" later changed simply to Asimov. It started off as a stellar observatory, "
 "then became a supply stop and as it has grown has become an educational and "
 "coordination hub for the region"
 msgstr ""
@@ -262,8 +262,8 @@ msgstr ""
 msgctxt "stationStory-comms"
 msgid ""
 "The station is named after the United States national medical research "
-"center based in Bethesda, Maryland on earth which was established in the mid "
-"20th century"
+"center based in Bethesda, Maryland on earth which was established in the mid"
+" 20th century"
 msgstr ""
 
 #: scripts/scenario_56_carrierTurret.lua:1257
@@ -280,7 +280,8 @@ msgstr ""
 msgctxt "stationStory-comms"
 msgid ""
 "This station is named after Chris Van Den Broeck who did some initial "
-"research into the possibility of warp drive in the late 20th century on Earth"
+"research into the possibility of warp drive in the late 20th century on "
+"Earth"
 msgstr ""
 
 #: scripts/scenario_56_carrierTurret.lua:1282
@@ -336,8 +337,8 @@ msgstr ""
 #: scripts/scenario_56_carrierTurret.lua:1363
 msgctxt "stationGeneralInfo-comms"
 msgid ""
-"Only the largest market and trading location in twenty sectors. You can find "
-"your heart's desire here"
+"Only the largest market and trading location in twenty sectors. You can find"
+" your heart's desire here"
 msgstr ""
 
 #: scripts/scenario_56_carrierTurret.lua:1364
@@ -362,9 +363,9 @@ msgstr ""
 #: scripts/scenario_56_carrierTurret.lua:1387
 msgctxt "stationStory-comms"
 msgid ""
-"Our station is named after the law which quantifies the amount of force with "
-"which stationary electrically charged particals repel or attact each other - "
-"a fundamental principle in the design of our circuits"
+"Our station is named after the law which quantifies the amount of force with"
+" which stationary electrically charged particals repel or attact each other "
+"- a fundamental principle in the design of our circuits"
 msgstr ""
 
 #: scripts/scenario_56_carrierTurret.lua:1394
@@ -544,8 +545,8 @@ msgstr ""
 #: scripts/scenario_56_carrierTurret.lua:1628
 msgctxt "stationStory-comms"
 msgid ""
-"This station is named after the nanotechnologist Hossam Haick from the early "
-"21st century on Earth in Israel"
+"This station is named after the nanotechnologist Hossam Haick from the early"
+" 21st century on Earth in Israel"
 msgstr ""
 
 #: scripts/scenario_56_carrierTurret.lua:1640
@@ -584,9 +585,9 @@ msgstr ""
 #: scripts/scenario_56_carrierTurret.lua:1800
 msgctxt "stationStory-comms"
 msgid ""
-"The station is named after Dr. Lipkin who pioneered some of the research and "
-"application around robot assisted surgery in the area of partial nephrectomy "
-"for renal tumors in the early 21st century on Earth"
+"The station is named after Dr. Lipkin who pioneered some of the research and"
+" application around robot assisted surgery in the area of partial "
+"nephrectomy for renal tumors in the early 21st century on Earth"
 msgstr ""
 
 #: scripts/scenario_56_carrierTurret.lua:1807
@@ -602,8 +603,8 @@ msgstr ""
 #: scripts/scenario_56_carrierTurret.lua:1821
 msgctxt "stationStory-comms"
 msgid ""
-"Named after Madison Square Gardens from 21st century Earth, this station was "
-"designed to serve similar purposes in space - a venue for sports and "
+"Named after Madison Square Gardens from 21st century Earth, this station was"
+" designed to serve similar purposes in space - a venue for sports and "
 "entertainment"
 msgstr ""
 
@@ -638,8 +639,8 @@ msgstr ""
 msgctxt "stationStory-comms"
 msgid ""
 "Station named after Guglielmo Marconi an Italian inventor from early 20th "
-"century Earth who, along with Nicolo Tesla, claimed to have invented a death "
-"ray or particle beam weapon"
+"century Earth who, along with Nicolo Tesla, claimed to have invented a death"
+" ray or particle beam weapon"
 msgstr ""
 
 #: scripts/scenario_56_carrierTurret.lua:1872
@@ -751,7 +752,8 @@ msgstr ""
 #: scripts/scenario_56_carrierTurret.lua:1992
 msgctxt "stationStory-comms"
 msgid ""
-"Established by the royal family so critical during the political upheaval era"
+"Established by the royal family so critical during the political upheaval "
+"era"
 msgstr ""
 
 #: scripts/scenario_56_carrierTurret.lua:1999
@@ -917,8 +919,8 @@ msgstr ""
 #: scripts/scenario_56_carrierTurret.lua:2290
 msgctxt "stationStory-comms"
 msgid ""
-"We learned several of our critical industrial processes from the Tokra race, "
-"so we honor our fortune by naming the station after them"
+"We learned several of our critical industrial processes from the Tokra race,"
+" so we honor our fortune by naming the station after them"
 msgstr ""
 
 #: scripts/scenario_56_carrierTurret.lua:2297
@@ -1498,8 +1500,7 @@ msgstr ""
 msgctxt "station-comms"
 msgid ""
 "\n"
-"Be aware that if enemies in the area get much closer, we will be too busy to "
-"conduct business with you."
+"Be aware that if enemies in the area get much closer, we will be too busy to conduct business with you."
 msgstr ""
 
 #: scripts/scenario_56_carrierTurret.lua:3479
@@ -1886,8 +1887,7 @@ msgstr ""
 #: scripts/scenario_56_carrierTurret.lua:4090
 msgctxt "shipEnemy-comms"
 msgid ""
-"The hive suffers no threats. Opposition to any of us is opposition to us "
-"all.\n"
+"The hive suffers no threats. Opposition to any of us is opposition to us all.\n"
 "Stand down or prepare to donate your corpses toward our nutrition."
 msgstr ""
 
@@ -2129,9 +2129,7 @@ msgstr ""
 msgctxt "-msgWeapons"
 msgid ""
 "Tractor equipment installed.\n"
-"When %s is in range of the disabled ship, %s, You can engage the tractor "
-"system via the (Tractor On) button. This system works with %s's on board "
-"systems to draw and maneuver %s to %s until it is docked"
+"When %s is in range of the disabled ship, %s, You can engage the tractor system via the (Tractor On) button. This system works with %s's on board systems to draw and maneuver %s to %s until it is docked"
 msgstr ""
 
 #: scripts/scenario_56_carrierTurret.lua:5412
@@ -2139,9 +2137,7 @@ msgstr ""
 msgctxt "-msgTactical"
 msgid ""
 "Tractor equipment installed.\n"
-"When %s is in range of the disabled ship, %s, You can engage the tractor "
-"system via the (Tractor On) button. This system works with %s's on board "
-"systems to draw and maneuver %s to %s until it is docked"
+"When %s is in range of the disabled ship, %s, You can engage the tractor system via the (Tractor On) button. This system works with %s's on board systems to draw and maneuver %s to %s until it is docked"
 msgstr ""
 
 #: scripts/scenario_56_carrierTurret.lua:5447
@@ -2266,3 +2262,280 @@ msgstr ""
 msgctxt "buttonGM"
 msgid "Spawn Enemies"
 msgstr ""
+
+msgid ""
+"Three player ships: a carrier and two fighters docked with the carrier. Objective: search out and destroy the designated enemy station. Use the carrier to travel long distances. Fighters have automatic coolant and repair management. Carrier provides energy and hull repair to fighters. The scenario randomizes the terrain and the mini mission order for each run.\n"
+"\n"
+"Version 2 (formerly entitled Carriers and Turrets)\n"
+"\n"
+"USN Discord: https://discord.gg/PntGG3a where you can join a game online. There's usually one every weekend. All experience levels are welcome."
+msgstr ""
+"Three player ships: a carrier and two fighters docked with the carrier. Objective: search out and destroy the designated enemy station. Use the carrier to travel long distances. Fighters have automatic coolant and repair management. Carrier provides energy and hull repair to fighters. The scenario randomizes the terrain and the mini mission order for each run.\n"
+"\n"
+"Version 2 (formerly entitled Carriers and Turrets)\n"
+"\n"
+"USN Discord: https://discord.gg/PntGG3a where you can join a game online. There's usually one every weekend. All experience levels are welcome."
+
+msgctxt "Carrier"
+msgid "A carrier type will be selected at random"
+msgstr "A carrier type will be selected at random"
+
+msgctxt "Carrier"
+msgid "Benedict"
+msgstr "Benedict"
+
+msgctxt "Carrier"
+msgid "Kiriya"
+msgstr "Kiriya"
+
+msgctxt "Carrier"
+msgid "Random"
+msgstr "Random"
+
+msgctxt "Carrier"
+msgid "Saipan"
+msgstr "Saipan"
+
+msgctxt "Carrier"
+msgid "The carrier deployed will be of type Benedict with a jump drive"
+msgstr "The carrier deployed will be of type Benedict with a jump drive"
+
+msgctxt "Carrier"
+msgid "The carrier deployed will be of type Kiriya with a warp drive"
+msgstr "The carrier deployed will be of type Kiriya with a warp drive"
+
+msgctxt "Carrier"
+msgid "The carrier deployed will be of type Saipan with a jump drive"
+msgstr "The carrier deployed will be of type Saipan with a jump drive"
+
+msgctxt "Enemies"
+msgid "Easy"
+msgstr "Easy"
+
+msgctxt "Enemies"
+msgid "Extreme"
+msgstr "Extreme"
+
+msgctxt "Enemies"
+msgid "Fewer or weaker enemies"
+msgstr "Fewer or weaker enemies"
+
+msgctxt "Enemies"
+msgid "Hard"
+msgstr "Hard"
+
+msgctxt "Enemies"
+msgid "Insanely strong and/or inordinately large numbers of enemies"
+msgstr "Insanely strong and/or inordinately large numbers of enemies"
+
+msgctxt "Enemies"
+msgid "More or stronger enemies"
+msgstr "More or stronger enemies"
+
+msgctxt "Enemies"
+msgid "Much stronger, many more enemies"
+msgstr "Much stronger, many more enemies"
+
+msgctxt "Enemies"
+msgid "Normal"
+msgstr "Normal"
+
+msgctxt "Enemies"
+msgid "Normal number or strength of enemies"
+msgstr "Normal number or strength of enemies"
+
+msgctxt "Enemies"
+msgid "Quixotic"
+msgstr "Quixotic"
+
+msgctxt "Enemies"
+msgid "The least number of or the weakest enemies"
+msgstr "The least number of or the weakest enemies"
+
+msgctxt "Enemies"
+msgid "Very Easy"
+msgstr "Very Easy"
+
+msgctxt "Fighter1"
+msgid "Fighter 1 type will be selected at random"
+msgstr "Fighter 1 type will be selected at random"
+
+msgctxt "Fighter1"
+msgid "Fighter 1 will be of type Foil"
+msgstr "Fighter 1 will be of type Foil"
+
+msgctxt "Fighter1"
+msgid "Fighter 1 will be of type Formax"
+msgstr "Fighter 1 will be of type Formax"
+
+msgctxt "Fighter1"
+msgid "Fighter 1 will be of type Striker"
+msgstr "Fighter 1 will be of type Striker"
+
+msgctxt "Fighter1"
+msgid "Foil"
+msgstr "Foil"
+
+msgctxt "Fighter1"
+msgid "Formax"
+msgstr "Formax"
+
+msgctxt "Fighter1"
+msgid "Random"
+msgstr "Random"
+
+msgctxt "Fighter1"
+msgid "Striker"
+msgstr "Striker"
+
+msgctxt "Fighter2"
+msgid "Fighter 2 type will be selected at random"
+msgstr "Fighter 2 type will be selected at random"
+
+msgctxt "Fighter2"
+msgid "Fighter 2 will be of type MP52 Hornet"
+msgstr "Fighter 2 will be of type MP52 Hornet"
+
+msgctxt "Fighter2"
+msgid "Fighter 2 will be of type Red Jacket"
+msgstr "Fighter 2 will be of type Red Jacket"
+
+msgctxt "Fighter2"
+msgid "Fighter 2 will be of type ZX-Lindworm"
+msgstr "Fighter 2 will be of type ZX-Lindworm"
+
+msgctxt "Fighter2"
+msgid "MP52 Hornet"
+msgstr "MP52 Hornet"
+
+msgctxt "Fighter2"
+msgid "Random"
+msgstr "Random"
+
+msgctxt "Fighter2"
+msgid "Red Jacket"
+msgstr "Red Jacket"
+
+msgctxt "Fighter2"
+msgid "ZX-Lindworm"
+msgstr "ZX-Lindworm"
+
+msgctxt "Murphy"
+msgid "Easy"
+msgstr "Easy"
+
+msgctxt "Murphy"
+msgid "Hard"
+msgstr "Hard"
+
+msgctxt "Murphy"
+msgid "Normal"
+msgstr "Normal"
+
+msgctxt "Murphy"
+msgid "Random factors are more against you"
+msgstr "Random factors are more against you"
+
+msgctxt "Murphy"
+msgid "Random factors are more in your favor"
+msgstr "Random factors are more in your favor"
+
+msgctxt "Murphy"
+msgid "Random factors are normal"
+msgstr "Random factors are normal"
+
+msgctxt "Murphy"
+msgid "Random factors are very much in your favor"
+msgstr "Random factors are very much in your favor"
+
+msgctxt "Murphy"
+msgid "Very Easy"
+msgstr "Very Easy"
+
+msgctxt "Timed"
+msgid "1"
+msgstr "1"
+
+msgctxt "Timed"
+msgid "30"
+msgstr "30"
+
+msgctxt "Timed"
+msgid "60"
+msgstr "60"
+
+msgctxt "Timed"
+msgid "90"
+msgstr "90"
+
+msgctxt "Timed"
+msgid "Game has a 1 minute time limit (used for testing)"
+msgstr "Game has a 1 minute time limit (used for testing)"
+
+msgctxt "Timed"
+msgid "Game has a 30 minute time limit"
+msgstr "Game has a 30 minute time limit"
+
+msgctxt "Timed"
+msgid "Game has a 60 minute time limit"
+msgstr "Game has a 60 minute time limit"
+
+msgctxt "Timed"
+msgid "Game has a 90 minute time limit"
+msgstr "Game has a 90 minute time limit"
+
+msgctxt "Timed"
+msgid "Game has no time limit"
+msgstr "Game has no time limit"
+
+msgctxt "Timed"
+msgid "None"
+msgstr "None"
+
+msgctxt "setting"
+msgid "Carrier"
+msgstr "Carrier"
+
+msgctxt "setting"
+msgid "Configures strength and/or number of enemies in this scenario"
+msgstr "Configures strength and/or number of enemies in this scenario"
+
+msgctxt "setting"
+msgid "Configures the carrier deployed as a player ship"
+msgstr "Configures the carrier deployed as a player ship"
+
+msgctxt "setting"
+msgid "Configures the first fighter type deployed as a player ship"
+msgstr "Configures the first fighter type deployed as a player ship"
+
+msgctxt "setting"
+msgid "Configures the perversity of the universe according to Murphy's law"
+msgstr "Configures the perversity of the universe according to Murphy's law"
+
+msgctxt "setting"
+msgid "Configures the second fighter type deployed as a player ship"
+msgstr "Configures the second fighter type deployed as a player ship"
+
+msgctxt "setting"
+msgid "Configures whether or not the scenario has a time limit"
+msgstr "Configures whether or not the scenario has a time limit"
+
+msgctxt "setting"
+msgid "Enemies"
+msgstr "Enemies"
+
+msgctxt "setting"
+msgid "Fighter1"
+msgstr "Fighter1"
+
+msgctxt "setting"
+msgid "Fighter2"
+msgstr "Fighter2"
+
+msgctxt "setting"
+msgid "Murphy"
+msgstr "Murphy"
+
+msgctxt "setting"
+msgid "Timed"
+msgstr "Timed"

@@ -29,6 +29,7 @@
 // `paleta.mjs` (`SECCION`, ya usada para materiales genéricos de nave).
 
 import { AMBAR_SENAL, SECCION } from "./paleta.mjs";
+import { caja } from "./escena-primitivas.mjs";
 import { componerEscena, fundirEscenas } from "./retro3d.mjs";
 import { resolverCamara } from "./nave-camara.mjs";
 import { campoEstelar, proyectarEstrellas } from "./retro3d-estrellas.mjs";
@@ -38,38 +39,9 @@ import { ANCHO_TESELA, METROS_POR_TEXEL, texturaMuro } from "./piel-textura.mjs"
 import { piezasPielHoja } from "./nave-piel-puerta.mjs";
 import { piezasPielColumna, piezasPielObjeto } from "./nave-piel-objeto.mjs";
 import { piezasPielSuelo, piezasPielTecho } from "./nave-piel-suelo.mjs";
-import { piezasLuminarias } from "./nave-luminaria.mjs";
+import { piezasLuminarias, mallaDifusorLuminarias, colorDifusorLuminaria } from "./nave-luminaria.mjs";
 import { crearPlanta } from "./nave-movimiento.mjs";
 import { poligonosOtrosJugadores } from "./nave-avatares-render.mjs";
-
-/** Caja alineada a ejes por centro+medidas, caras en sentido antihorario
- *  vistas desde fuera (lo que `componerEscena` necesita para descartar las de
- *  espaldas). */
-function caja([cx, cy, cz], [ancho, alto, fondo]) {
-  const x = ancho / 2;
-  const y = alto / 2;
-  const z = fondo / 2;
-  return {
-    vertices: [
-      [cx - x, cy - y, cz - z],
-      [cx + x, cy - y, cz - z],
-      [cx + x, cy + y, cz - z],
-      [cx - x, cy + y, cz - z],
-      [cx - x, cy - y, cz + z],
-      [cx + x, cy - y, cz + z],
-      [cx + x, cy + y, cz + z],
-      [cx - x, cy + y, cz + z],
-    ],
-    caras: [
-      [0, 3, 2, 1], // frente (−z)
-      [4, 5, 6, 7], // fondo (+z)
-      [0, 4, 7, 3], // izquierda
-      [1, 2, 6, 5], // derecha
-      [3, 7, 6, 2], // techo
-      [0, 1, 5, 4], // suelo
-    ],
-  };
-}
 
 /** A qué altura mira quien anda, de pie. El salto/agachado (#446) suma su
  *  propio offset por encima de esta base. 1.45 y no 1.6 (QA: "el personaje
@@ -557,7 +529,7 @@ function panosTexturados(rect, altura) {
  *   puertas?:Array<{rect:object}>, ventanas?:Array<{rect:object}>,
  *   mobiliario?:Array<{centro:number[], medidas:number[], color:string, colision?:boolean}>,
  *   colorMuro?:string, colorColumna?:string, colorMarcoVentana?:string,
- *   semillaCielo?:number, cantidadEstrellas?:number}} medidas
+ *   semillaCielo?:number, cantidadEstrellas?:number, sistema?:string|null}} medidas
  */
 export function crearSalaCaja({
   ancho,
@@ -608,11 +580,12 @@ export function crearSalaCaja({
   pielPuertas = true,
   pielObjetos = true,
   pielSuelo = true,
-  // Salud del sistema de la sala e instante, para que la luminaria parpadee
-  // cuando el sistema está dañado (#e8a36cf5). OPCIONALES a propósito: quien no
-  // los pase ve exactamente lo que veía antes, con la luminaria entera.
-  health = null,
-  timeMs = 0,
+  // Qué sistema aloja esta sala (#765), o `null` si no aloja ninguno — la misma
+  // cadena que declara `SALAS_PHOBOS` (p.ej. `"Reactor"`). Solo sirve para que
+  // `componer` sepa qué entrada de `saludSistemas` mirar cada fotograma: el
+  // difusor de la luminaria no puede parpadear por un sistema que la sala no
+  // aloja.
+  sistema = null,
 }) {
   const muros = [
     { x: -GROSOR_MURO, z: -GROSOR_MURO, ancho: ancho + GROSOR_MURO * 2, profundidad: GROSOR_MURO },
@@ -701,8 +674,12 @@ export function crearSalaCaja({
           ...piezasPielTecho({ ancho, profundidad, altura: ALTURA }),
         ]
       : []),
-    ...piezasLuminarias({ ancho, profundidad, altura: ALTURA, health, timeMs }),
+    ...piezasLuminarias({ ancho, profundidad, altura: ALTURA }),
   ]);
+  // Geometría del difusor fundida UNA vez (#765): su color se decide en
+  // `componer`, cada fotograma, sin rehacer un solo vértice — es la condición
+  // que #551 dejó puesta al medir el presupuesto de la sala.
+  const difusorLuminarias = mallaDifusorLuminarias({ ancho, profundidad, altura: ALTURA });
 
   const planta = crearPlanta({ ancho, profundidad, obstaculos: [...columnas, ...obstaculosMobiliario] });
   const tieneVentanas = ventanas.length > 0;
@@ -724,6 +701,13 @@ export function crearSalaCaja({
       // decide `nave-ventana-espacio.mjs`: aquí no se inventa relleno.
       sensores = null,
       rumboNave = null,
+      // Alerta de la nave y salud por sistema (#765), difundidas a toda la
+      // mesa por `alerta-escena.mjs`/`telemetria-difusion.mjs`. `tiempo` ya
+      // llegaba (#587, para el ambiente) y aquí además marca la cadencia del
+      // parpadeo — el mismo reloj que el resto de la escena.
+      aviso = null,
+      saludSistemas = null,
+      tiempo = 0,
     } = opciones;
     const { camara, dibujarPropio } = resolverCamara({ x, z, y, yaw, modo: modoCamara });
     const yawCamara = -yaw; // ver el comentario de `yaw` en `cantina-escena.mjs`
@@ -752,7 +736,19 @@ export function crearSalaCaja({
       piezasDeVentana({ rect, sala: { ancho, profundidad }, sensores, rumboNave }),
     );
 
-    const partes = [...piezas, ...hojasPuertas, ...vistaVentanas].map(({ malla, color, emisivo, textura, ambiente }) =>
+    // El color del difusor se decide AQUÍ, cada fotograma — la geometría ya
+    // está fundida en `difusorLuminarias` desde la construcción de la sala
+    // (#765). Sin `sistema` (la sala no aloja ninguno) no hay salud que mirar
+    // y el difusor solo responde a la alerta general.
+    const salud = sistema ? Number(saludSistemas?.[sistema.toLowerCase()]?.health) : null;
+    const difusor = difusorLuminarias
+      ? [{
+          malla: difusorLuminarias,
+          ...colorDifusorLuminaria({ aviso, health: Number.isFinite(salud) ? salud : null, timeMs: tiempo }),
+        }]
+      : [];
+
+    const partes = [...piezas, ...difusor, ...hojasPuertas, ...vistaVentanas].map(({ malla, color, emisivo, textura, ambiente }) =>
       componerEscena(trasladarMalla(malla, [-camara[0], -camara[1], -camara[2]]), {
         ancho: anchoLienzo,
         alto: altoLienzo,

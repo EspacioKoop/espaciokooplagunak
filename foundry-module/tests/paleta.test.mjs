@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
@@ -8,68 +9,23 @@ import { PALETA } from "../scripts/minijuegos/cartas-pixelart.mjs";
 import { DENOMINACIONES } from "../scripts/minijuegos/fichas-pixelart.mjs";
 import { COLOR_JUGADOR, COLOR_NEUTRO, PALETA_FACCIONES } from "../scripts/ventana-nave.mjs";
 
-// Módulos de arte que deben tomar sus colores de la paleta común. `paleta.mjs`
-// queda fuera por definición: es donde viven.
-//
-// `decorado-fondo.mjs` y `mapa-render.mjs` NO están todavía: sus colores son
-// catálogos de contenido (tipos de planeta, nebulosas) y tonos de lienzo, y
-// decidir si eso es paleta compartida o dato de decorado es una discusión de
-// diseño, no una mudanza mecánica. Queda anotado en #351 para no perderlo.
-const MODULOS_DE_ARTE = [
-  "../scripts/laminas-clasicas.mjs",
-  "../scripts/nave-sprite.mjs",
-  "../scripts/minijuegos/cartas-pixelart.mjs",
-  "../scripts/minijuegos/fichas-pixelart.mjs",
-  "../scripts/ventana-nave.mjs",
-  "../scripts/iconos-sistema.mjs",
-  "../scripts/retrato-tripulante.mjs",
-  // El 3D retro (#362) tampoco declara color propio: recibe el base y solo lo
-  // sombrea. Entra en la guardia desde el primer día para que la nave nueva no
-  // pueda colar su verde cuando ya nadie recuerde la regla.
-  "../scripts/retro3d.mjs",
-  // Y el fondo estelar (#384) tampoco: el azul del cielo sale de `PIXEL`, donde
-  // se ve al lado del crema de la nave propia y se puede decidir que no compitan.
-  "../scripts/retro3d-estrellas.mjs",
-  // La cantina (#423) es una sala entera de arte nuevo: mamparo, barra, lámpara
-  // y los objetos que giran en cada puerta. Entra en la guardia el mismo día que
-  // nace, que es cuando aún no cuesta nada.
-  "../scripts/cantina-escena.mjs",
-  "../scripts/cantina-icono.mjs",
-  // Y la capa 2D que va encima: un velo ES un color, aunque venga con alfa, así
-  // que sus `rgba(...)` se componen desde `CANTINA` en vez de escribirse.
-  "../scripts/cantina-2d.mjs",
-  // Y la playa (#587), que es una escena entera de arte nuevo —arena, mar,
-  // cielo, cabina— y el primer exterior: entra en la guardia el mismo día que
-  // nace, que es cuando aún no cuesta nada.
-  "../scripts/playa-escena.mjs",
-  // Y la sala del museo (#598), que es otra escena entera de arte nuevo: muro,
-  // pedestal, yeso y cartela. Mismo trato que la playa, y el mismo día.
-  "../scripts/museo-escena.mjs",
-  "../scripts/nave-props.mjs",
-  // La ficha de nave (#354) reusa las siluetas y sus colores tal cual: lo único
-  // que podría haber declarado es el relleno del hueco transparente, y ese vive
-  // en el codificador PNG porque es un requisito del formato, no un color.
-  "../scripts/ficha-nave.mjs",
-  // El dado en 3D retro (#413) reusa el motor de #362 y hereda su regla: el
-  // hueso del cuerpo y la tinta de los puntos entran desde `PIXEL`, para que se
-  // decidan al lado del resto del arte y no en un módulo de minijuego.
-  "../scripts/minijuegos/dados-3d.mjs",
-  "../scripts/minijuegos/dados-lienzo.mjs",
-  // La mesa de póker en 3D (#308 sobre #362): fieltro, cartas y fichas salen de
-  // `FICHA` y `PIXEL`, igual que el dado.
-  "../scripts/minijuegos/poker-3d.mjs",
-  // Y los avatares de la cantina: pelo, piel, ropa y aceros, todos de paleta.
-  "../scripts/cantina-avatar.mjs",
-  "../scripts/cantina-ventana.mjs",
-  // La sección de la nave (#427) es un plano, no una sala, y por eso estrena
-  // tonos propios en vez de reusar los de la cantina — pero los estrena EN la
-  // paleta, donde se ven al lado de los de todos los demás.
-  "../scripts/seccion-lienzo.mjs",
-  // El tinte de escena delegado en FXMaster: el color del nivel de alerta sale
-  // de `ALERTA`, no del módulo ajeno ni de un literal aquí. Es lo que impide que
-  // integrar a un tercero se convierta en una puerta trasera a la paleta.
-  "../scripts/filtros-escena.mjs",
-];
+// La lista y su justificación viven juntas en el inventario machine-readable de #701.
+const inventarioModulos = JSON.parse(
+  readFileSync(new URL("../../docs/orphan-declarations.json", import.meta.url), "utf8"),
+);
+const MODULOS_DE_ARTE = inventarioModulos.artModules.map((modulo) => `../scripts/${modulo}`);
+
+test("el inventario conserva el alcance y las excepciones razonadas de la paleta", () => {
+  const rationale = inventarioModulos.artInventoryRationale;
+  assert.match(rationale?.scope ?? "", /paleta\.mjs/);
+  assert.match(rationale?.excluded ?? "", /decorado-fondo\.mjs/);
+  assert.match(rationale?.excluded ?? "", /mapa-render\.mjs/);
+  assert.match(rationale?.excluded ?? "", /#351/);
+  assert.ok(
+    Array.isArray(rationale?.history) && rationale.history.length >= 5,
+    "docs/orphan-declarations.json debe conservar la procedencia de artModules",
+  );
+});
 
 test("los colores no cambian al mudarse: mismo valor que antes en cada módulo", () => {
   // Esta es la garantía de que la refactorización es invisible en pantalla.

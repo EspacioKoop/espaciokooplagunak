@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
-"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"Report-Msgid-Bugs-To: https://github.com/EspacioKoop/espaciokooplagunak/issues\n"
 "PO-Revision-Date: 2026-07-12 00:00+0200\n"
 "Last-Translator: Espaciokoop Lagunak contributors\n"
 "Language-Team: Espaciokoop Lagunak\n"
@@ -2847,3 +2847,123 @@ msgstr " Ya has destruido a uno de ellos."
 msgctxt "clueOrders-comms"
 msgid "Defend bases in the area (human navy and independent) from enemy attack and destroy three enemy bases."
 msgstr "Defender bases en la zona (nave humana e independiente) de ataque enemigo y destruir tres bases enemigas."
+
+msgctxt "Enemies"
+msgid "Easy"
+msgstr "Fácil"
+
+msgctxt "Enemies"
+msgid "Extreme"
+msgstr "Extremo"
+
+msgctxt "Enemies"
+msgid "Fewer or weaker enemies"
+msgstr "Menos enemigos o más débiles"
+
+msgctxt "Enemies"
+msgid "Hard"
+msgstr "Difícil"
+
+msgctxt "Enemies"
+msgid "Insanely strong and/or inordinately large numbers of enemies"
+msgstr "Enemigos disparatadamente fuertes y/o en cantidades desmedidas"
+
+msgctxt "Enemies"
+msgid "More or stronger enemies"
+msgstr "Más enemigos o más fuertes"
+
+msgctxt "Enemies"
+msgid "Much stronger, many more enemies"
+msgstr "Muchos más enemigos y mucho más fuertes"
+
+msgctxt "Enemies"
+msgid "Normal"
+msgstr "Normal"
+
+msgctxt "Enemies"
+msgid "Normal number or strength of enemies"
+msgstr "Número y fuerza de enemigos normales"
+
+msgctxt "Enemies"
+msgid "Quixotic"
+msgstr "Quijotesco"
+
+msgctxt "Murphy"
+msgid "Easy"
+msgstr "Fácil"
+
+msgctxt "Murphy"
+msgid "Extreme"
+msgstr "Extremo"
+
+msgctxt "Murphy"
+msgid "Hard"
+msgstr "Difícil"
+
+msgctxt "Murphy"
+msgid "Normal"
+msgstr "Normal"
+
+msgctxt "Murphy"
+msgid "Random factors are more against you"
+msgstr "Los factores aleatorios juegan más en tu contra"
+
+msgctxt "Murphy"
+msgid "Random factors are more in your favor"
+msgstr "Los factores aleatorios juegan más a tu favor"
+
+msgctxt "Murphy"
+msgid "Random factors are normal"
+msgstr "Los factores aleatorios son normales"
+
+msgctxt "Murphy"
+msgid "Random factors are way more against you"
+msgstr "Los factores aleatorios juegan mucho más en tu contra"
+
+msgctxt "Murphy"
+msgid "Random factors are way more in your favor"
+msgstr "Los factores aleatorios juegan mucho más a tu favor"
+
+msgctxt "Murphy"
+msgid "Very Easy"
+msgstr "Muy fácil"
+
+msgctxt "Timed"
+msgid "45"
+msgstr "45"
+
+msgctxt "Timed"
+msgid "No time limit"
+msgstr "Sin límite de tiempo"
+
+msgctxt "Timed"
+msgid "None"
+msgstr "Ninguno"
+
+msgctxt "Timed"
+msgid "Scenario ends in 45 minutes"
+msgstr "El escenario termina en 45 minutos"
+
+msgctxt "setting"
+msgid "Configures strength and/or number of enemies in this scenario"
+msgstr "Configura la fuerza y/o el número de enemigos de este escenario"
+
+msgctxt "setting"
+msgid "Configures the perversity of the universe according to Murphy's law"
+msgstr "Configura la perversidad del universo según la ley de Murphy"
+
+msgctxt "setting"
+msgid "Enemies"
+msgstr "Enemigos"
+
+msgctxt "setting"
+msgid "Murphy"
+msgstr "Murphy"
+
+msgctxt "setting"
+msgid "Sets whether or not the scenario has a time limit. Default is no time limit"
+msgstr "Determina si el escenario tiene límite de tiempo o no. Por defecto, sin límite de tiempo"
+
+msgctxt "setting"
+msgid "Timed"
+msgstr "Tiempo"

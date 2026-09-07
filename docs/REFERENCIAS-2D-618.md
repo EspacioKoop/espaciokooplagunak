@@ -86,6 +86,39 @@ Las opciones están pensadas para estudio; no se copian los cuadros directamente
 ## Cómo usar este documento
 Cada sección representa una opción de referencia válida para el estudio de pixelart. El artista y el diseñador pueden elegir una o más referencias y extraer de ellas los aspectos indicados (paleta, composición, luz, textura, encuadre) para aplicar en los sprites y fondos del juego. No se debe copiar la obra directamente; solo se debe tomar inspiración en los aspectos formales y técnicos.
 
+---
+
+## Consolidación: de referencia a opción aplicable
+
+Las revisiones de #618 pidieron cerrar la cadena `asset real del repo → problema
+observable → propiedad a mejorar → referencia → opción pixelart → procedencia`,
+en vez de dejar el documento como una lista de obras interesantes sin destino.
+Las cuatro filas siguientes hacen esa cadena explícita para cada referencia ya
+verificada arriba. Son **opciones**, no una recomendación única: la decisión
+estética sigue siendo de quien haga el arte, y ninguna fila implica un cambio
+de código por sí sola.
+
+| Asset real | Problema observable | Propiedad a mejorar | Referencia | Opción pixelart propuesta | Procedencia |
+|---|---|---|---|---|---|
+| `foundry-module/scripts/nave-piel-suelo.mjs` | El suelo va deliberadamente pobre (planchas grandes, apenas relieve, "registro suelto") porque está siempre en cuadro y su presupuesto es el más ajustado del módulo. | Diferenciar material por **valor**, no por polígono extra — el suelo no puede permitirse más geometría. | §3 *Man Handing a Letter…* (de Hooch): "baldosa, ladrillo, madera, tela y papel resueltos por diferencia de valor más que de detalle". | Escalonar el tono base de la plancha (no su relieve) para insinuar zonas de desgaste o material distinto sin añadir una sola junta ni polígono nuevo — coherente con la regla de #552 de que un plano horizontal no admite el mismo presupuesto que un muro. | Referencia de estudio; ningún archivo derivado. Si se implementa, la procedencia va en el propio módulo (comentario de cabecera), no en `PROCEDENCIA_ASSETS.md` — no hay asset externo copiado. |
+| `foundry-module/scripts/nave-mural-pixel.mjs` (bandas zócalo / paño / bastidor) | La jerarquía a tres distancias ya separa lejos/cerca/muy cerca, pero cada banda usa el mismo tratamiento de contraste; dos salas distintas pueden leerse con la misma "temperatura" de luz. | Modelar volumen con **luz difusa y sombras suaves entre bandas**, en vez de solo bisel duro por plancha. | §1 *The Milkmaid* (Vermeer): "luz incidente desde la izquierda que modela volúmenes con sombras suaves... reflejos sutiles". | Para salas concretas (p. ej. las de sistema "cálido" frente a las de sistema "frío" en `SALAS_PHOBOS`), variar el paso de la rampa de seis tonos entre zócalo y bastidor para sugerir temperatura de luz ambiental distinta, sin tocar `LUZ` de `retro3d.mjs` (que sigue siendo la única fuente direccional real). | Referencia de estudio; ningún archivo derivado. |
+| `foundry-module/scripts/nave-props.mjs` | La regla del módulo es "un prop son varias cajas, no una", con la lectura como único requisito — pero la lectura a distancia (silueta) no tiene hoy un criterio explícito más allá de "inequívoco". | Silueta legible en **espacio negativo**, con el mínimo de elementos que sigan identificando la forma. | §2 *The Great Wave* (Hokusai): "uso del espacio negativo (cielo) para dar movimiento" con muy pocos elementos (ola, barcas, Fuji). | Al diseñar un prop nuevo del catálogo compartido, validar su silueta recortándola a negro sobre el fondo de la sala antes de añadir greebles — si no se lee ahí, más detalle no lo va a arreglar. Criterio de revisión, no una pieza nueva. | Referencia de estudio; ningún archivo derivado. |
+| `foundry-module/scripts/nave-piel-puerta.mjs` (franja `AMBAR_SENAL`) | La franja de aviso es una banda plana de color de señal; funciona como marca pero no como composición — es un rectángulo, no un encuadre. | Usar una **diagonal de alto contraste** para dirigir la mirada hacia el punto de interacción de la puerta, sin convertirla en un instrumento que "diga" algo (regla de #526: nada de lecturas inventadas). | §2 *The Great Wave*: "diagonal dinámica que atraviesa la impresión". | Sustituir (como opción, no decisión) la franja horizontal por un chevron/diagonal en `AMBAR_SENAL` sobre la hoja de la puerta — sigue siendo señal de casco (aviso de puerta), nunca un dato de estado que nadie ha calculado. | Referencia de estudio; ningún archivo derivado. |
+
+Ninguna fila requiere abrir `PROCEDENCIA_ASSETS.md`: las cuatro son **referencias
+de estudio** (paleta, luz, composición) y no generan malla, textura ni imagen
+derivada de la obra — la distinción que pedía la revisión de Odiseo en este
+mismo issue. Si en el futuro una de estas opciones se lleva a código y esa
+implementación reutiliza un dato concreto de la obra (no solo su lenguaje
+formal), esa pieza sí entra en `PROCEDENCIA_ASSETS.md`/`ASSETS_LIBRES.md` con su
+propia trazabilidad.
+
+No se formaliza aquí un `PixelArt StyleSpec` (paleta/luz/materiales como YAML):
+las cuatro filas de arriba son la base mínima de 3-5 recetas visuales que las
+revisiones pidieron extraer y probar sobre assets reales antes de fijar
+parámetros arbitrarios como "16 colores" o "3 pasos de sombra". Formalizar el
+StyleSpec es trabajo de seguimiento, no parte del cierre de este issue.
+
 --- 
 *Origen: tarea de kanban t_2c4c343c. Atribución falsa (un número de inventario del Rijksmuseum que era de Rembrandt, no de De Hooch) corregida a mano el 2026-08-20 en t_a78ea2ed;
 el worker había firmado esa ficha como verificada sin serlo. Las cuatro fichas que quedan pasan el verificador

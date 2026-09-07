@@ -15,7 +15,7 @@ allí.
 El servidor de juego incluye un servidor HTTP heredado
 (`httpserver=<puerto>`) cuyo endpoint `/exec.lua` **ejecuta Lua arbitrario
 sin autenticación**. No es un bug de este fork, es el diseño heredado;
-está inventariado en [`docs/API_HTTP.md`](docs/API_HTTP.md).
+está inventariado en [`docs/seguridad/API_HTTP.md`](docs/seguridad/API_HTTP.md).
 
 Reglas de este proyecto:
 
@@ -28,7 +28,7 @@ Reglas de este proyecto:
    o a Internet se rechaza por defecto.
 
 Actores, activos, fronteras, amenazas y riesgos residuales están inventariados
-en el [`modelo de amenazas del puente`](docs/BRIDGE_THREAT_MODEL.md).
+en el [`modelo de amenazas del puente`](docs/seguridad/BRIDGE_THREAT_MODEL.md).
 
 ## Secretos
 
@@ -39,7 +39,7 @@ en el [`modelo de amenazas del puente`](docs/BRIDGE_THREAT_MODEL.md).
   registra en el issue correspondiente.
 
 La generación, custodia, rotación, revocación y recuperación del Bearer se
-detallan en [`docs/BRIDGE_AUTHENTICATION.md`](docs/BRIDGE_AUTHENTICATION.md).
+detallan en [`docs/seguridad/BRIDGE_AUTHENTICATION.md`](docs/seguridad/BRIDGE_AUTHENTICATION.md).
 
 ## Transporte del puente Foundry
 
@@ -66,20 +66,36 @@ contenido de un fichero de configuración en un informe.
 
 Defensa en capas, de fuera hacia dentro:
 
-### 1. Protección en el servidor — pendiente de activar
+### 1. Protección en el servidor
 
-**Secret scanning** y **push protection** de GitHub están **desactivados** en
-este repositorio, y son gratuitos en repositorios públicos. Es la única capa que
-un agente no puede saltarse: un hook local lo desactiva cualquiera, incluido el
-propio agente.
+**Secret scanning** y **push protection** de GitHub están activados en este
+repositorio. Push protection se aplica al repositorio, no como regla de una rama:
+rechaza secretos reconocidos antes de que lleguen al historial remoto. Secret
+scanning avisa de credenciales que ya se hayan publicado o se detecten después.
 
-Lo activa una persona con permiso de administración en
-*Settings → Code security → Secret protection*:
+Procedimiento operativo:
 
-- **Secret scanning**: detecta credenciales ya publicadas y avisa.
-- **Push protection**: rechaza el push **antes** de que la credencial llegue al
-  historial. Es la que de verdad evita el incidente; una vez algo entra en el
-  historial de un repositorio público hay que darlo por comprometido y rotarlo.
+1. Si push protection bloquea un push, no lo eludas: retira el secreto de los
+   ficheros y commits que se iban a publicar y vuelve a intentarlo. Si era una
+   credencial real, revócala o rótala aunque el push no llegara al remoto.
+2. Ante una alerta de secret scanning, revoca o rota primero la credencial en su
+   proveedor y sustituye cualquier referencia legítima por configuración local.
+3. Resuelve la alerta en *Security → Secret scanning* solo después de verificar
+   la revocación. Para un falso positivo o valor de prueba, documenta el motivo
+   en la propia alerta; no copies allí el valor completo.
+4. Si el secreto llegó al historial, considéralo comprometido y comunica el
+   incidente por el canal privado indicado al principio de este documento.
+
+Una persona con permiso de administración puede comprobar ambas protecciones
+sin registrar alertas ni credenciales:
+
+```bash
+gh api repos/VaroTv7/espaciokooplagunak \
+  -q '.security_and_analysis.secret_scanning.status,
+      .security_and_analysis.secret_scanning_push_protection.status'
+```
+
+Las dos líneas deben ser `enabled`.
 
 ### 2. Hook local
 

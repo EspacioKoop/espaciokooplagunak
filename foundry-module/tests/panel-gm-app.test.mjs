@@ -6,6 +6,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { crearClasePanelGMV1, crearClasePanelGMV2 } from "../scripts/panel-gm-app.mjs";
+import { entradasPanelGM } from "../scripts/panel-gm.mjs";
 
 /** Botón de mentira: registra los focos y los clics que recibe. */
 function botonFalso(id) {
@@ -129,4 +130,32 @@ test("sin DOM, renderizar no revienta: no hay nada que enfocar", () => {
   const app = new Clase();
 
   assert.doesNotThrow(() => app._onRender({}, {}));
+});
+
+// Test defaultOptions minimal properties for v11 class
+test("v11: defaultOptions returns minimal options", () => {
+  prepararEntorno({ moderno: false });
+  const Clase = crearClasePanelGMV1({ alSeleccionar: () => {} });
+  const opts = Clase.defaultOptions;
+  assert.equal(opts.id, "lagunak-panel-gm");
+  assert.deepEqual(opts.classes, ["lagunak-panel-gm"]);
+  assert.equal(opts.title, game.i18n.localize("LAGUNAK.PanelGM.Titulo"));
+  assert.equal(opts.width, 420);
+  assert.equal(opts.height, "auto");
+});
+
+// Verify that _prepareContext returns same context as generic contexto
+test("v12: _prepareContext returns context same as generic", async () => {
+  prepararEntorno({ moderno: true });
+  const Clase = crearClasePanelGMV2({ alSeleccionar: () => {} });
+  const instancia = new Clase();
+  const ctxActual = await instancia._prepareContext();
+  const ctxEsperado = {
+    entradas: entradasPanelGM().map((entrada) => ({
+      id: entrada.id,
+      icono: entrada.icono,
+      titulo: game.i18n.localize(entrada.tituloClave),
+    })),
+  };
+  assert.deepEqual(ctxActual, ctxEsperado);
 });

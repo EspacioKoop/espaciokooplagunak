@@ -84,7 +84,7 @@ git for-each-ref --format='%(refname:short)' refs/heads/ refs/remotes/origin/ \
 
 **Medida que lo arreglaría:**
 - Dividir `CLAUDE.md` en ficheros por tema (convenciones de agentes, hooks de seguridad, convención de find, etc.) y mantener un índice.
-- Dividir `docs/FOUNDRY.md` en ficheros por subdominio (arquitectura, scripts, tests, i18n, estilos, plantillas) bajo `docs/foundry/`.
+- Dividir `docs/FOUNDRY.md` en ficheros por subdominio (arquitectura, scripts, tests, i18n, estilos, plantillas) bajo un directorio *docs/foundry/* que aún no existe.
 - Dividir `lagunak.css` en hojas de estilo por feature/dominio y un índice que las importe.
 - Dividir los `.po` por feature (o migrar a JSON por feature y compilar a `.po` en CI).
 

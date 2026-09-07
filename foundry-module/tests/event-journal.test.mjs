@@ -230,6 +230,52 @@ test("un descriptor nuevo se anota sin tocar el bucle de escritura", async () =>
 test("los tres tipos conocidos están registrados", () => {
   assert.deepEqual(
     [...DESCRIPTORES.keys()].sort(),
-    ["arrival", "encounter_started", "ship_repositioned"],
+    ["arrival", "encounter_started", "parlamento_abierto", "ship_repositioned"],
   );
+});
+
+// ---- Parlamento de comunicaciones (#810) -----------------------------------
+
+test("parlamento_abierto es efímero: emite el hook y no escribe diario, incluso sin GM", async () => {
+  // El descriptor de parlamento emite `lagunakAbrirParlamento`; lo capturamos.
+  const abiertos = [];
+  globalThis.Hooks = {
+    callAll: (ev, carga) => { if (ev === "lagunakAbrirParlamento") abiertos.push(carga); },
+  };
+  const context = harness();
+  context.game.user.isGM = false; // El titular de comms no es el GM.
+  context.game.user.id = "u-comms";
+  const evento = {
+    id: "parlamento-abierto-Itzal_1",
+    type: "parlamento_abierto",
+    scenario: "scenario_90_lagunak_primera_guardia",
+    contacto: { id: "Itzal_1", callsign: "Itzal 1", faction: "Independent" },
+    scenario_time: 12.0,
+  };
+  const resultado = await processBridgeEvents({ ...context, payload: { events: [evento] } });
+  // Devuelve 1 (el efímero contó) y NO crea página de diario.
+  assert.equal(resultado, 1);
+  assert.equal(context.created.length, 0);
+  assert.equal(abiertos.length, 1);
+  assert.equal(abiertos[0].contacto.callsign, "Itzal 1");
+  assert.equal(abiertos[0].hablanteId, "u-comms");
+});
+
+test("parlamento_abierto malformado no emite hook ni escribe diario", async () => {
+  const abiertos = [];
+  globalThis.Hooks = {
+    callAll: (ev, carga) => { if (ev === "lagunakAbrirParlamento") abiertos.push(carga); },
+  };
+  const context = harness();
+  const malos = [
+    { ...{ id: "parlamento-abierto-x", type: "parlamento_abierto", scenario: "lagunak_crisis", contacto: { id: "x", callsign: "x", faction: "y" }, scenario_time: 1 }, contacto: { id: "", callsign: "x", faction: "y" } },
+    { ...{ id: "parlamento-abierto-x", type: "parlamento_abierto", scenario: "lagunak_crisis", contacto: { id: "x", callsign: "x", faction: "y" }, scenario_time: 1 }, contacto: null },
+    { ...{ id: "parlamento-abierto-x", type: "parlamento_abierto", scenario: "lagunak_crisis", contacto: { id: "x", callsign: "x", faction: "y" }, scenario_time: 1 }, contacto: { id: "x".repeat(65), callsign: "x", faction: "y" } },
+  ];
+  for (const evento of malos) {
+    const c = harness();
+    assert.equal(await processBridgeEvents({ ...c, payload: { events: [evento] } }), 0);
+    assert.equal(c.created.length, 0);
+  }
+  assert.equal(abiertos.length, 0);
 });

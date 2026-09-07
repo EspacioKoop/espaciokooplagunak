@@ -108,6 +108,32 @@ registrarDescriptor({
   },
 });
 
+// Parlamento de comunicaciones (#810): el escenario emite `parlamento_abierto`
+// al abrir canal con un contacto. NO es histórico (es un encuentro efímero de la
+// mesa), así que no va al diario: `ephemeral` hace que `processBridgeEvents`
+// emita el hook `lagunakAbrirParlamento` (que abre la ventana) y pase de la
+// página. El contacto viaja ya validado desde el puente.
+registrarDescriptor({
+  tipo: "parlamento_abierto",
+  ephemeral: true,
+  validar: (event) => {
+    const c = event?.contacto;
+    return (
+      c != null &&
+      typeof c.id === "string" && c.id.length > 0 && c.id.length <= 64 &&
+      typeof c.callsign === "string" && c.callsign.length <= 64 &&
+      typeof c.faction === "string" && c.faction.length <= 32
+    );
+  },
+  pagina: (event, game) => {
+    Hooks.callAll("lagunakAbrirParlamento", {
+      contacto: event.contacto,
+      hablanteId: game?.user?.id ?? null,
+    });
+    return null;
+  },
+});
+
 function descriptorDe(event) {
   if (!formaComun(event)) return null;
   const descriptor = DESCRIPTORES.get(event?.type);
@@ -136,9 +162,20 @@ export async function processBridgeEvents({
   sigueVigente = () => true,
 }) {
   const puedeEscribir = () => Boolean(game.user?.isGM) && Boolean(sigueVigente());
-  if (!puedeEscribir()) return 0;
   const events = Array.isArray(payload?.events) ? payload.events.filter(validEvent) : [];
   if (events.length === 0) return 0;
+
+  // Los eventos efímeros (p. ej. parlamento_abierto, #810) disparan su efecto de
+  // mesa en CUALQUIER cliente que sondee /v1/events, no solo el GM: abrir la
+  // ventana de parlamento es para quien sostiene el canal, no para el director.
+  // Los de diario siguen exigiendo GM (escriben en el Journal del mundo).
+  const { efimeros, deDiario } = particionEventos(events);
+  for (const event of efimeros) {
+    const descriptor = descriptorDe(event);
+    if (descriptor?.ephemeral) descriptor.pagina(event, game);
+  }
+  if (!puedeEscribir()) return efimeros.length;
+  if (deDiario.length === 0) return efimeros.length;
 
   const journalName = game.i18n.localize("LAGUNAK.Diario.Nombre");
   const journal =
@@ -147,7 +184,7 @@ export async function processBridgeEvents({
   if (!puedeEscribir()) return 0;
   let created = 0;
 
-  for (const event of events) {
+  for (const event of deDiario) {
     const pages = Array.from(journal.pages ?? []);
     if (pages.some((page) => page.getFlag?.(MODULE_ID, "eventId") === event.id)) {
       continue;
@@ -169,5 +206,15 @@ export async function processBridgeEvents({
   if (created > 0 && puedeEscribir()) {
     ui.notifications.info(game.i18n.localize("LAGUNAK.Eventos.Anotados"));
   }
-  return created;
+  return created + efimeros.length;
+}
+
+/** Separa eventos efímeros (efecto de mesa, cualquier cliente) de los de diario (GM). */
+function particionEventos(events) {
+  const efimeros = [];
+  const deDiario = [];
+  for (const event of events) {
+    (descriptorDe(event)?.ephemeral ? efimeros : deDiario).push(event);
+  }
+  return { efimeros, deDiario };
 }

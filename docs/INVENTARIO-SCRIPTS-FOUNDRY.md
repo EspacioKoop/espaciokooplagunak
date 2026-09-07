@@ -46,7 +46,7 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 - `ficha-nave.mjs`
 - `maniobra-control.mjs`
 - `reposicion-control.mjs`
-- `ship-view.mjs`
+- `ship-view/ship-view.mjs`
 - `visor-piloto-lienzo.mjs`
 - `visor-piloto.mjs`
 - `bitacora-nave.mjs`
@@ -155,17 +155,17 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 - `museo-piezas.mjs`
 
 ### 8. Audio y Música (4 scripts)
-- `audio-ficheros.mjs`
-- `musica-mando.mjs`
-- `musica-procedural.mjs`
-- `musica-reproductor.mjs`
+- `arte/audio/audio-ficheros.mjs`
+- `arte/audio/musica-mando.mjs`
+- `arte/audio/musica-procedural.mjs`
+- `arte/audio/musica-reproductor.mjs`
 
 ### 9. Avatares y Personajes (6 scripts)
-- `avatar-assignment.mjs`
-- `avatar-preview.mjs`
-- `avatar-sugerencia.mjs`
-- `avatar-ui.mjs`
-- `retrato-tripulante.mjs`
+- `avatar/avatar-assignment.mjs`
+- `avatar/avatar-preview.mjs`
+- `avatar/avatar-sugerencia.mjs`
+- `avatar/avatar-ui.mjs`
+- `avatar/retrato-tripulante.mjs`
 - `lamina-contacto.mjs`
 
 ### 10. Interfaz de Usuario y Paneles (9 scripts)
@@ -180,11 +180,11 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 - `laminas-clasicas.mjs`
 
 ### 11. Ingeniería y Sistemas (8 scripts)
-- `casco-clases.mjs`
-- `casco-dano.mjs`
+- `ship-view/casco-clases.mjs`
+- `ship-view/casco-dano.mjs`
 - `ingenieria-control.mjs`
 - `sensores-lista.mjs`
-- `telemetria-difusion.mjs`
+- `ship-view/telemetria-difusion.mjs`
 - `tempo-control.mjs`
 - `resolver-objetivo-sensores.mjs`
 - `resolver-posicion-relay.mjs`
@@ -209,7 +209,7 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 - `diagnostico-conexion.mjs`
 
 ### 15. Renderizado y Gráficos (7 scripts)
-- `barras-estado.mjs`
+- `ship-view/barras-estado.mjs`
 - `foco-render.mjs`
 - `mapa-marco.mjs`
 - `mapa-render.mjs`

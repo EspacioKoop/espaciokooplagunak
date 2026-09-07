@@ -1,0 +1,79 @@
+name: Check SeriousProton anchor
+on:
+  schedule:
+    - cron: '0 0 * * 1'   # every Monday at 00:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-anchor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Extract and validate anchored SHA
+        id: extract
+        run: |
+          set -euo pipefail
+          DOCKER_SHA=$(grep '^ARG SERIOUS_PROTON_REF=' docker/Dockerfile | cut -d'=' -f2 | tr -d '[:space:]' || true)
+          BUILD_LINE=$(grep '^SERIOUS_PROTON_REF=' docker/build.sh || true)
+          if [[ ! "$DOCKER_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::docker/Dockerfile no contiene un SERIOUS_PROTON_REF completo"
+            exit 1
+          fi
+          if [[ "$BUILD_LINE" =~ ^SERIOUS_PROTON_REF=\"\$\{SERIOUS_PROTON_REF:-([0-9a-f]{40})\}\"$ ]]; then
+            BUILD_SHA=${BASH_REMATCH[1]}
+          else
+            echo "::error::docker/build.sh no contiene un SERIOUS_PROTON_REF completo"
+            exit 1
+          fi
+          if [[ "$DOCKER_SHA" != "$BUILD_SHA" ]]; then
+            echo "::error::Los anclajes de docker/Dockerfile y docker/build.sh no coinciden"
+            exit 1
+          fi
+          printf 'anchored_sha=%s\n' "$DOCKER_SHA" >> "$GITHUB_OUTPUT"
+      - name: Compare with SeriousProton master
+        id: compare
+        run: |
+          set -euo pipefail
+          ANCHORED_SHA=${{ steps.extract.outputs.anchored_sha }}
+          mkdir SeriousProton
+          cd SeriousProton
+          git init -q
+          git remote add origin https://github.com/daid/SeriousProton.git
+          git fetch --no-tags --filter=blob:none origin master:refs/remotes/origin/master
+          git fetch --no-tags --filter=blob:none origin "$ANCHORED_SHA"
+          MASTER_SHA=$(git rev-parse refs/remotes/origin/master)
+          if ! git merge-base --is-ancestor "$ANCHORED_SHA" "$MASTER_SHA"; then
+            echo "::error::El anclaje ya no es ancestro de master"
+            exit 1
+          fi
+          COMMITS_BEHIND=$(git rev-list --count "${ANCHORED_SHA}..${MASTER_SHA}")
+          # Cuanto hace que estamos desactualizados NO es la edad del commit
+          # anclado: un anclaje de hace un ano sobre un master que no se ha
+          # movido esta perfectamente al dia. Lo que se mide es desde cuando
+          # existe el PRIMER commit que nos falta.
+          if (( COMMITS_BEHIND == 0 )); then
+            DAYS_BEHIND=0
+          else
+            # `tail` y no `head`: con `set -o pipefail`, cerrar la tuberia antes de
+            # tiempo hace fallar el paso por SIGPIPE.
+            OLDEST_MISSING_TS=$(git log --format=%ct "${ANCHORED_SHA}..${MASTER_SHA}" | tail -1)
+            CURRENT_TS=$(date +%s)
+            DAYS_BEHIND=$(((CURRENT_TS - OLDEST_MISSING_TS) / 86400))
+          fi
+          printf 'commits_behind=%s\n' "$COMMITS_BEHIND" >> "$GITHUB_OUTPUT"
+          printf 'days_behind=%s\n' "$DAYS_BEHIND" >> "$GITHUB_OUTPUT"
+      - name: Check thresholds
+        run: |
+          set -euo pipefail
+          COMMITS_BEHIND=${{ steps.compare.outputs.commits_behind }}
+          DAYS_BEHIND=${{ steps.compare.outputs.days_behind }}
+          MAX_COMMITS_BEHIND=50
+          MAX_DAYS_BEHIND=30
+          if (( COMMITS_BEHIND > MAX_COMMITS_BEHIND || DAYS_BEHIND > MAX_DAYS_BEHIND )); then
+            echo "::error::SeriousProton anchor is outdated: $COMMITS_BEHIND commits behind (max $MAX_COMMITS_BEHIND) and $DAYS_BEHIND days behind (max $MAX_DAYS_BEHIND)."
+            exit 1
+          fi
+          echo "SeriousProton anchor is up to date: $COMMITS_BEHIND commits behind, $DAYS_BEHIND days behind."

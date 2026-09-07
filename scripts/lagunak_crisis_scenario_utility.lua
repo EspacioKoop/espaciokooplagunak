@@ -67,10 +67,90 @@ LAGUNAK_CRISIS_MARGEN_PARLAMENTO = 4.0
 -- Distancia de aparicion del grupo, en unidades de mundo.
 LAGUNAK_CRISIS_DISTANCIA = 14000
 
+-- Complicaciones de la crisis (#807). Son nombres cerrados y efectos del
+-- simulador, no parámetros libres: el GM elige una consecuencia después de una
+-- pifia, pero no puede inyectar Lua ni describir una mutación arbitraria.
+--
+-- Viven aquí y no en Foundry para que la misma adjudicación sea jugable desde la
+-- consola Lua nativa. Foundry podrá ofrecer otra superficie en una v2, pero no
+-- será la autoridad ni una dependencia de esta mecánica (ADR-0008).
+local function crisisActiva(crisis)
+    if type(crisis) ~= "table" or crisis.desenlace ~= nil then return false end
+    local nave = crisis.nave
+    if nave == nil then return false end
+    local ok, valida = pcall(function() return nave:isValid() end)
+    return ok and valida == true
+end
+
+local LAGUNAK_CRISIS_COMPLICACIONES = {
+    reactor_sobrecalentado = {
+        nombre = "El reactor acumula calor",
+        aplicar = function(crisis)
+            local nave = crisis.nave
+            local okLectura, calor = pcall(function()
+                return nave:getSystemHeat("reactor")
+            end)
+            if not okLectura or type(calor) ~= "number" then return false end
+            local nuevo = math.min(1.0, math.max(0.0, calor) + 0.25)
+            local okEscritura = pcall(function()
+                nave:setSystemHeat("reactor", nuevo)
+            end)
+            if not okEscritura then return false end
+            if type(globalMessage) == "function" then
+                globalMessage(_("lagunak-crisis", "Complicacion: el reactor acumula calor. Ingenieria debe compensarlo."))
+            end
+            return true
+        end,
+    },
+    margen_parlamento_reducido = {
+        nombre = "La interferencia acorta el margen del parlamento",
+        aplicar = function(crisis)
+            local actual = tonumber(crisis.margenParlamentoMaximo)
+                or LAGUNAK_CRISIS_MARGEN_PARLAMENTO
+            crisis.margenParlamentoMaximo = math.min(actual, 1.0)
+            crisis.margenParlamento = math.min(
+                tonumber(crisis.margenParlamento) or 0.0,
+                crisis.margenParlamentoMaximo
+            )
+            if type(globalMessage) == "function" then
+                globalMessage(_("lagunak-crisis", "Complicacion: la interferencia deja solo un segundo de margen al parlamento."))
+            end
+            return true
+        end,
+    },
+}
+
+--- Catálogo público para la consola Lua. Devuelve copias sin las funciones de
+--- implementación: el GM puede listar y elegir, no sustituir el efecto.
+function lagunakCrisisComplicaciones()
+    local catalogo = {}
+    for _, id in ipairs({ "reactor_sobrecalentado", "margen_parlamento_reducido" }) do
+        table.insert(catalogo, {
+            id = id,
+            nombre = LAGUNAK_CRISIS_COMPLICACIONES[id].nombre,
+        })
+    end
+    return catalogo
+end
+
+--- Despacho cerrado. Un identificador desconocido, una crisis terminada o una
+--- nave ausente se rechazan sin tocar la simulación.
+function lagunakCrisisAplicarComplicacion(crisis, id)
+    if not crisisActiva(crisis) or type(id) ~= "string" then return false end
+    local complicacion = LAGUNAK_CRISIS_COMPLICACIONES[id]
+    if complicacion == nil then return false end
+    return complicacion.aplicar(crisis) == true
+end
+
 local DESVIOS_RUMBO = { ahead = 0, starboard = 90, astern = 180, port = 270 }
 
 local Crisis = {}
 Crisis.__index = Crisis
+
+--- Atajo de la instancia usada por los escenarios y por la consola nativa.
+function Crisis:aplicarComplicacion(id)
+    return lagunakCrisisAplicarComplicacion(self, id)
+end
 
 --- Baraja en el sitio (Fisher-Yates). Que el asaltante no sea siempre el mismo
 --- indice importa: si no, la segunda partida se resuelve de memoria.
@@ -136,7 +216,7 @@ local function crearContactos(crisis, x, y, angulo)
 
         objeto:setScanState("none")
         objeto:setCommsFunction(function()
-            crisis:abrirParlamento()
+            crisis:abrirParlamento(objeto)
         end)
         table.insert(contactos, objeto)
     end
@@ -158,6 +238,7 @@ function lagunakCrisisEmboscada(nave, rumbo)
         -- fotograma de "escaneado" que bastaria para identificar sin hablar.
         identificado = false,
         parlamento = false,
+        margenParlamentoMaximo = LAGUNAK_CRISIS_MARGEN_PARLAMENTO,
         margenParlamento = 0.0,
         senuelosPerdidos = 0,
         avisoIdentificado = false,
@@ -183,9 +264,32 @@ end
 --- tres. Los tres responden con la misma voz sintetizada: el jammer del
 --- asaltante retransmite por los tres, y por eso hablar con cualquiera de ellos
 --- sostiene el parlamento.
-function Crisis:abrirParlamento()
+---
+--- Al abrir, emite el evento de escenario `LAGUNAK_EVT_parlamento_abierto` (misma
+--- familia que `LAGUNAK_EVT_encounter_started_*` de scenario_90): es la senal que
+--- el puente retransmite a Foundry como hook `lagunakAbrirParlamento` para abrir
+--- la ventana de parlamento (#810) con el contacto correcto. El contacto viaja
+--- codificado en el callsign del marcador porque el canal Lua→Foundry del repo es
+--- ese: Artifact con callsign `LAGUNAK_EVT_*`.
+function Crisis:abrirParlamento(contacto)
     self.parlamento = true
-    self.margenParlamento = LAGUNAK_CRISIS_MARGEN_PARLAMENTO
+    self.margenParlamento = self.margenParlamentoMaximo
+    -- Senal hacia Foundry: el bridge la normaliza y la reenvia por socket como
+    -- hook `lagunakAbrirParlamento`. Codificamos id/callsign/faction sin espacios
+    -- ni caracteres raros para que el parseador del puente sea robusto.
+    if contacto and contacto:isValid() then
+        local id = contacto:getCallSign() or "desconocido"
+        local faction = contacto:getFaction() or "neutral"
+        local seguro = function(s)
+            return (s or ""):gsub("[^%w]+", "_")
+        end
+        local marcador = Artifact()
+        marcador:setCallSign(
+            "LAGUNAK_EVT_parlamento_abierto_" .. seguro(id) .. "__" .. seguro(faction))
+        -- El marcador se descarta solo: vive el tiempo de un tick, basta para que
+        -- el puente lo sondee y lo retransmita una vez.
+        marcador:setPosition(self.nave:getPosition())
+    end
     setCommsMessage(_("lagunak-crisis", [[...isis... aqui convoy Itzal, motores parados.
 
 Recibimos vuestra senal. Hay heridos a bordo. No sabemos cual de los tres esta emitiendo la interferencia — no somos nosotros.
@@ -219,7 +323,7 @@ end
 function Crisis:parlamentoActivo(delta)
     if self.nave:isValid() and self.nave:isCommsChatOpen() then
         if self.parlamento then
-            self.margenParlamento = LAGUNAK_CRISIS_MARGEN_PARLAMENTO
+            self.margenParlamento = self.margenParlamentoMaximo
             return true
         end
         return false
@@ -317,6 +421,8 @@ function Crisis:estado()
         identificado = self.identificado,
         descubierto = self.descubierto,
         parlamento = self.parlamento,
+        margenParlamento = self.margenParlamento,
+        margenParlamentoMaximo = self.margenParlamentoMaximo,
         senuelosPerdidos = self.senuelosPerdidos,
         desenlace = self.desenlace,
         asaltante = (self.asaltante ~= nil and self.asaltante:isValid())

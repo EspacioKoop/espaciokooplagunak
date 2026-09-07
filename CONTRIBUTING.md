@@ -2,12 +2,24 @@
 
 Gracias por colaborar. Este repositorio es un fork de EmptyEpsilon y está pensado para trabajo coordinado entre personas y agentes de IA.
 
+> **Dónde se trabaja:** el repositorio canónico es [`EspacioKoop/espaciokooplagunak`](https://github.com/EspacioKoop/espaciokooplagunak). Abre allí issues y pull requests y usa `https://github.com/EspacioKoop/espaciokooplagunak.git` como `origin`. La ubicación anterior bajo `VaroTv7` es solo una redirección histórica.
+
+## Norma platino de colaboración
+
+La [norma platino](docs/NORMA_PLATINO_COLABORACION.md) es lectura obligatoria:
+terminar antes de empezar más; revisión proporcional, sin esperar una firma ajena
+para cada cambio ordinario probado. Se mantienen los controles técnicos y la
+revisión independiente para cambios de riesgo.
+
 ## Antes de empezar
 
 1. Lee el [`README.md`](README.md), esta guía y, si eres un agente, [`AGENTS.md`](AGENTS.md).
 2. Comprueba si ya existe un issue o pull request para el mismo objetivo.
 3. Para cambios no triviales, abre un issue que describa problema, alcance y criterio de aceptación.
 4. No incluyas secretos, datos personales ni archivos generados localmente.
+
+Las decisiones arquitectónicas se registran mediante issues y ADRs; consulta la
+[plantilla y el índice](docs/adr/README.md) antes de abrir una decisión nueva.
 
 ## Flujo de trabajo
 
@@ -27,6 +39,26 @@ Prefijos recomendados:
 - `upstream/`: integración controlada desde EmptyEpsilon.
 
 Tras el bootstrap inicial, todo cambio debe llegar a `main` mediante pull request. No uses `push --force` sobre ramas compartidas.
+
+### Protección de `main`
+
+La protección activa de `main` exige:
+
+- pull request obligatorio, con cero aprobaciones externas mínimas y sin exigir
+  aprobación ajena del último push; revisión adicional según el riesgo definido
+  en la norma platino;
+- todas las conversaciones de revisión resueltas;
+- `Puerta de build C++/Lua`, `Puerta del módulo Foundry`, `Puerta de tools`,
+  `Puerta de docker y puente`, `Puerta de imágenes`, `CodeQL` y `semgrep` en
+  estado aceptado por GitHub;
+- la misma política para administradores, sin force-push ni borrado de la rama.
+
+No se exige actualizar la rama con `main` antes de integrar (`strict: false`). Si
+una incidencia de infraestructura obliga a modificar temporalmente la regla, el
+propietario debe dejar constancia en el issue afectado, limitar el cambio a la
+recuperación, restaurar la política inmediatamente y volver a verificarla por
+API. Al cambiar los workflows principales, revisa que estos siete nombres sigan
+correspondiendo a checks reales que se publican en toda pull request.
 
 Si hay varias personas o agentes trabajando a la vez, [`docs/TRABAJO_PARALELO_AGENTES.md`](docs/TRABAJO_PARALELO_AGENTES.md) dice qué áreas pueden ir en paralelo, qué archivos son puntos de colisión conocidos y cómo se parte un issue en unidades que se puedan entregar por separado.
 
@@ -64,7 +96,8 @@ Un cambio está terminado cuando:
 - no introduce secretos ni artefactos locales;
 - actualiza documentación y roadmap cuando modifica comportamiento o estado;
 - conserva licencia, atribuciones y compatibilidad razonable con upstream;
-- ha sido revisado antes de integrarse en `main`.
+- ha sido revisado por su constructor y, cuando el riesgo lo exige, por otra
+  persona o agente independiente, antes de integrarse en `main`.
 
 ## Estilo
 
@@ -82,7 +115,7 @@ Evita reformateos masivos mezclados con cambios funcionales.
 
 ## Localización es-ES
 
-Toda traducción automática requiere revisión humana y contextual. Usa la [guía editorial de localización es-ES](docs/i18n-es-style-guide.md) para terminología, registro, placeholders y validación de catálogos.
+Toda traducción automática requiere revisión humana y contextual. Usa la [guía editorial de localización es-ES](docs/i18n/i18n-es-style-guide.md) para terminología, registro, placeholders y validación de catálogos.
 
 ## Commits
 

@@ -59,7 +59,7 @@ def traer_arbol(sin_cache=False, timeout=30):
                 return json.load(f)
     pet = urllib.request.Request(ARBOL, headers={
         "Accept": "application/vnd.github+json",
-        "User-Agent": "lagunak-catalogo/1.0 (+https://github.com/VaroTv7/espaciokooplagunak)",
+        "User-Agent": "lagunak-catalogo/1.0 (+https://github.com/EspacioKoop/espaciokooplagunak)",
     })
     with urllib.request.urlopen(pet, timeout=timeout) as r:
         datos = json.loads(r.read().decode("utf-8"))

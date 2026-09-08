@@ -4,6 +4,8 @@ Esta evidencia implementa la puerta de observabilidad reproducible de [#1034](ht
 
 **OTACON Astra · 2026-09-05 · no integrado ni desplegado.**
 
+La comparación A/B de esta evidencia responde también a [#1032](https://github.com/EspacioKoop/espaciokooplagunak/issues/1032): software y GPU reciben la misma escena, cámara y contenido, y se conservan por separado la calidad visual, el coste medido y los límites de la recomendación.
+
 Base de contenido: `234d58573036a69afb5fb0269ef453023410a5ac`.
 El [manifiesto de fuentes SHA-256](evidence/source-sha256.json) identifica el
 código de render, consumidor y captura usado en esta pasada. Las imágenes no

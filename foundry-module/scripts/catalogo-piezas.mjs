@@ -45,10 +45,20 @@ const MAX_BYTES_SERIALIZADO = 512 * 1024;
 /**
  * Qué es el FICHERO, que no es lo mismo que qué es la obra.
  *
- * Los cuatro valores salen de lo que ya hay en `docs/PROCEDENCIA_ASSETS.md`, no
- * de imaginar categorías: hay escaneos de vaciados en yeso (todo el lote del
- * SMK), hay una reconstrucción digital (el León de Al-Lāt) y quedan abiertas la
+ * Los valores salen de lo que ya hay en `docs/PROCEDENCIA_ASSETS.md`, no de
+ * imaginar categorías: hay escaneos de vaciados en yeso (todo el lote del SMK),
+ * hay una reconstrucción digital (el León de Al-Lāt) y quedan abiertas la
  * fotogrametría de un original y la obra propia del módulo.
+ *
+ * `interpretacion` es el sexto y llegó con los cuadros clásicos de #836, que es
+ * el primer caso en que ninguno de los cinco decía la verdad. Un redibujo en
+ * pixelart de un paisaje de dominio público no es un escaneo —no hay fichero
+ * ajeno—, pero tampoco es `obra-propia`: la composición es de otro y está
+ * identificada. Etiquetarlo como propio habría sido la única forma de que la
+ * sala enseñara la obra de alguien sin decirlo, que es exactamente lo que este
+ * campo existe para impedir. Ojo con lo que NO es: una reproducción fotográfica
+ * de un cuadro seguiría sin caber aquí, porque eso sí trae un fichero ajeno con
+ * su propia licencia.
  */
 export const NATURALEZAS = Object.freeze([
   "escaneo",
@@ -56,10 +66,19 @@ export const NATURALEZAS = Object.freeze([
   "fotogrametria",
   "reconstruccion",
   "obra-propia",
+  "interpretacion",
 ]);
 const NATURALEZAS_VALIDAS = new Set(NATURALEZAS);
 
-const CLAVES_PIEZA = new Set(["id", "nombre", "cartela", "naturaleza", "malla", "provenance"]);
+const CLAVES_PIEZA = new Set([
+  "id",
+  "nombre",
+  "cartela",
+  "naturaleza",
+  "malla",
+  "provenance",
+  "girada180",
+]);
 const CLAVES_PIEZA_OBLIGATORIAS = new Set(["id", "nombre", "cartela", "naturaleza", "malla", "provenance"]);
 
 export const FORMATO_PIEZAS = FORMATO;
@@ -89,6 +108,14 @@ function validarPieza(pieza, indice, mallasDisponibles) {
   // museo, y se descubre montándola. Aquí se descubre validando.
   if (mallasDisponibles && !mallasDisponibles.has(pieza.malla)) {
     fallo("missing_reference", `${path}.malla`, "la malla referenciada no existe");
+  }
+  // Opcional: la malla no llega con ningún "frente" fijado por
+  // `tools/convertir-estatua.mjs`, así que una pieza puede necesitar mirar al
+  // lado contrario de como quedó su escaneo (ver `colocarPieza`,
+  // `museo-escena.mjs`). Ausente equivale a `false`, así que el catálogo de
+  // hoy no cambia de forma con solo declararlo en el esquema.
+  if (Object.hasOwn(pieza, "girada180") && typeof pieza.girada180 !== "boolean") {
+    fallo("invalid_type", `${path}.girada180`, "debe ser boolean si se declara");
   }
   validarProcedencia(pieza.provenance, `${path}.provenance`);
 }

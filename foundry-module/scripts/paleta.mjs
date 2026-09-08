@@ -385,6 +385,82 @@ export const RETRATO = Object.freeze({
 });
 
 /**
+ * Retrato de combatiente para la carta de turnos (#1018). Es OTRA cosa que
+ * `RETRATO`: aquel codifica presencia de tripulación en 12x12 y por eso dibuja
+ * cascos y no caras —a esa rejilla una cara sale caricatura—; éste tiene 80x64
+ * para una carta que se mira de cerca, así que sí hay piel, pelo y ropa.
+ *
+ * RAMPAS DE CUATRO TONOS, NO DEGRADADOS. Cada material trae luz, base, sombra y
+ * profundo, y el dibujo elige el escalón por orientación respecto a una luz fija
+ * arriba-izquierda. Es la regla de `nave-sprite.mjs` (volumen por planos de
+ * color) llevada a una rejilla más fina: el detalle vive en la resolución, no en
+ * inventar tonos intermedios, que es como el pixelart se convierte en un JPEG
+ * pequeño.
+ *
+ * El contorno es un solo tono para todo el retrato, y es lo que separa la figura
+ * del fondo: sin él la silueta se lee como bloques apilados por muy buena que
+ * sea la rampa.
+ */
+export const COMBATIENTE = Object.freeze({
+  contorno: "#160f1e",
+  fondo: Object.freeze({ lejos: "#191428", cerca: "#2f2949" }),
+  // Tres tonos de piel por raza. La variedad es de tono, no de rasgo: los
+  // rasgos los pone la geometría del generador, que es donde de verdad se
+  // distinguen un enano y un elfo.
+  piel: Object.freeze({
+    humano: Object.freeze([
+      Object.freeze({ luz: "#f0c49a", base: "#d9a074", sombra: "#a9744e", prof: "#7a4f32" }),
+      Object.freeze({ luz: "#dcab80", base: "#bd8a5e", sombra: "#8f6440", prof: "#63432a" }),
+      Object.freeze({ luz: "#ab7852", base: "#8a5a3c", sombra: "#63402a", prof: "#42291b" }),
+    ]),
+    elfo: Object.freeze([
+      Object.freeze({ luz: "#f7e8d2", base: "#e2cfb4", sombra: "#b39a7d", prof: "#846e58" }),
+      Object.freeze({ luz: "#f0e2cd", base: "#d8c4a6", sombra: "#a88f73", prof: "#786351" }),
+      Object.freeze({ luz: "#e6dcc8", base: "#ccbba0", sombra: "#9c8770", prof: "#6f5d4c" }),
+    ]),
+    enano: Object.freeze([
+      Object.freeze({ luz: "#e8b485", base: "#cf9463", sombra: "#9e6a41", prof: "#72472a" }),
+      Object.freeze({ luz: "#dca878", base: "#c08556", sombra: "#8f5c37", prof: "#653d24" }),
+      Object.freeze({ luz: "#cf9a6c", base: "#b0764c", sombra: "#824f30", prof: "#5a3520" }),
+    ]),
+  }),
+  pelo: Object.freeze({
+    humano: Object.freeze([
+      Object.freeze({ luz: "#6b4a2c", base: "#4a3320", sombra: "#2c1e12" }),
+      Object.freeze({ luz: "#d9b467", base: "#a8853f", sombra: "#6b5326" }),
+      Object.freeze({ luz: "#3a2c2a", base: "#241b1a", sombra: "#140e0e" }),
+    ]),
+    elfo: Object.freeze([
+      Object.freeze({ luz: "#f4f2e8", base: "#cdcdc0", sombra: "#95958a" }),
+      Object.freeze({ luz: "#f2e4b4", base: "#c4ad76", sombra: "#87744a" }),
+      Object.freeze({ luz: "#c8d4dc", base: "#98a6b2", sombra: "#68737e" }),
+    ]),
+    enano: Object.freeze([
+      Object.freeze({ luz: "#c4602a", base: "#9a441a", sombra: "#68290c" }),
+      Object.freeze({ luz: "#d2c9bd", base: "#a39a8f", sombra: "#6d665d" }),
+      Object.freeze({ luz: "#a06a3a", base: "#7a4a22", sombra: "#4e2d12" }),
+    ]),
+  }),
+  // Ropa por clase. El metal trae su propio escalón claro porque un yelmo sin
+  // brillo no se lee como metal, se lee como piedra.
+  ropa: Object.freeze({
+    guerrero: Object.freeze({
+      luz: "#a9b3c4", base: "#7a8394", sombra: "#4c5464",
+      metal: "#aeb9ca", metalLuz: "#dde5f2", metalSom: "#5b6474",
+    }),
+    mago: Object.freeze({
+      luz: "#6b5fb5", base: "#493e8c", sombra: "#2a2360",
+      metal: "#d8c86a", metalLuz: "#f2e6a8", metalSom: "#93832f",
+    }),
+    picaro: Object.freeze({
+      luz: "#8f6a45", base: "#6b4a2f", sombra: "#3d2a1a",
+      metal: "#9aa07a", metalLuz: "#c3c79e", metalSom: "#5f6448",
+    }),
+  }),
+  ojo: Object.freeze({ blanco: "#f2f0ea", iris: "#2c2440", brillo: "#8fa8d8" }),
+});
+
+/**
  * Iconos de daño por sistema (#353). El estado se dibuja con forma —grietas,
  * píxeles apagados, contorno discontinuo—, así que estos colores acompañan a
  * la forma en vez de sustituirla: quien no distinga los tonos sigue leyendo el
@@ -549,30 +625,103 @@ export const MUSEO = Object.freeze({
   yeso: "#d9d2c4", // el vaciado en yeso: crema, cálido, lo más claro de la sala
   piedra: "#b8ae9c", // la reconstrucción, que no es yeso y no debe parecerlo
   cartel: "#cdb894", // la cartela junto a cada pieza: papel viejo bajo luz cálida
+  // La piel del muro (#838). Cinco tonos y no más, y todos MUY cerca de `muro`:
+  // una pared de galería es el fondo contra el que se lee la obra, así que su
+  // contraste interno tiene que ser menor que el de cualquier pieza colgada. Si
+  // el muro se lee antes que el cuadro, el muro está mal.
+  pano: "#33373e", // el paño de yeso, un punto por encima del muro que lo sostiene
+  panoJunta: "#2a2d33", // la junta entre paños: una sombra fina, no una línea negra
+  riel: "#4a4e56", // el riel de cuelgue, la única pieza clara y a una sola altura
+  rodapie: "#282b31", // el rodapié, donde se roza la pared al pasar
+  // El friso y su cornisa (boiserie, ver `museo-mural.mjs`) suben más carpintería
+  // por debajo y por encima del paño, pero NO son el riel de cuelgue: ese es el
+  // único punto de la sala donde una prueba confía en que "hay un tono claro
+  // aquí" significa "aquí cuelga un cuadro". Prestarle `riel` a la moldura del
+  // friso rompería esa lectura la primera vez que alguien contara filas del
+  // color equivocado, así que la luz de moldura tiene su propio tono.
+  molduraLuz: "#43474e", // la luz que coge el canto de un panel embutido o de la cornisa
 });
 
 /**
- * Cuadros del museo (#836): pixelart `obra-propia` generado por el módulo y
- * colgado en los muros laterales. Sin procedencia externa que gestionar, así que
- * los tonos viven aquí y el módulo los importa; por eso `paleta.test.mjs` no los
- * marca como color propio (paleta.mjs queda fuera del escaneo de literales por
- * definición).
+ * El pasillo de los recuerdos (tercer nivel del campo de pruebas): un mármol
+ * blanco que se pierde en niebla y una alfombra negra por el centro, con
+ * estatuas propias —la Guardiana y sus centinelas— alternando con piezas
+ * reaprovechadas del museo (memorias de otros mundos que ella conserva).
  *
- * No son instrumentos: nada de mapas estelares, diagramas ni cartas de
- * navegación. Un paisaje abstracto —cielo, suelo, un disco y una montaña— cuyo
- * contenido no se lee como información, solo como muro que no queda desnudo.
- * Los tonos se eligen parientes de MUSEO/MURAL para que el cuadro no desentone
- * del resto de la sala.
+ * NUEVE tonos, no más: el mármol claro es la superficie que más cuadro ocupa
+ * (paredes, suelo, techo), así que su contraste interno tiene que quedar por
+ * debajo del negro de la alfombra o el pasillo deja de leerse como un pasillo
+ * y pasa a leerse como una pared. Los grises de la Guardiana son fríos y
+ * apagados a propósito: es de luto, no de piedra — mezclarla con `MUSEO.piedra`
+ * confundiría "reconstrucción arqueológica" con "personaje de esta ficción".
+ */
+export const PASILLO = Object.freeze({
+  marmol: "#e4e1da", // el paño claro: mármol, no yeso — más frío que MUSEO.yeso
+  marmolJunta: "#c9c5ba", // la junta entre losas, un paso por debajo y no una sombra dura
+  marmolVeta: "#d3cfc4", // la veta del mármol: apenas un tono, nunca una línea que se cuente
+  zocalo: "#b9b4a7", // el rodapié y el marco de las columnas, más oscuro que el paño
+  alfombra: "#0c0b10", // la alfombra: negro de verdad, el único tono oscuro del suelo
+  alfombraOrla: "#1c1a22", // el filo de la alfombra, un paso por encima del negro
+  cuervo: "#3a2e33", // el motivo bordado: visible sobre el negro, nunca un color que grite
+  guardiana: "#4b4d54", // la tela de la Guardiana: gris frío, de luto, no piedra
+  guardianaSombra: "#2e2f34", // el pliegue en sombra de su tela
+});
+
+/**
+ * Los CUADROS colgados de los muros del museo (#836).
+ *
+ * Van aparte de `MUSEO` y no dentro por dos motivos, y el segundo es el que
+ * manda: `MUSEO` es plano —cada clave, un color— y una prueba de la sala lo
+ * comprueba clave por clave; y sobre todo, un pigmento no es un material de la
+ * sala. `MUSEO.yeso` dice de qué está hecha una pieza; esto es con qué se pintó
+ * otra. Mezclarlos invitaría a pintar un lienzo del color de un pedestal.
+ *
+ * EL MARCO SÍ LLEVA RELIEVE Y EL LIENZO NO, y esa es toda la razón de que haya
+ * tres tonos de marco y ninguno de pigmento. Un marco es un OBJETO de la sala,
+ * así que se ilumina como todo lo demás (luz de arriba, `LUZ` en `retro3d.mjs`)
+ * y necesita su canto claro y su canto en sombra, igual que `panelBiselado`.
+ * La pintura de un lienzo es PLANA: biselarla la convertiría en chapa
+ * remachada, que es el material equivocado — la misma frontera por la que la
+ * cantina apaga la piel de casco en sus muebles de madera (#550).
+ *
+ * Los cinco pigmentos son tierras y no neones a propósito: sobre el muro
+ * oscuro de la sala (`MUSEO.muro`) un color saturado se despegaría tanto que el
+ * cuadro competiría con las esculturas, y la sala está montada para que gane la
+ * piedra. `hueso` es el único claro y hace de luz dentro del lienzo.
  */
 export const CUADRO = Object.freeze({
-  cielo: "#5b6b86", // gris azulado, pariente de PIXEL.estrella / MURAL.medio
-  cieloAlto: "#6f80a0", // banda superior algo más clara
-  suelo: "#3f3a2e", // tierra apagada, pariente de MURAL.hueco
-  sol: "#e6c97a", // disco cálido, pariente de TINTA.linea / PIXEL.motor
-  montana: "#2c333f", // masa oscura, pariente de MURAL.sombra
-  montanaClaro: "#3c4554", // cara iluminada de la montaña, pariente de MURAL.medio
-  marco: "#2a2622", // bastidor oscuro que enmarca el lienzo
+  marco: "#4a3f34", // madera oscura, un paso por encima del muro y no más
+  marcoLuz: "#6b5c4c", // el canto que coge la luz de arriba
+  marcoSombra: "#2f2820", // el que queda debajo; sin él el marco es un plano
+  fondo: "#1d2a33", // el fondo del lienzo: más oscuro que el muro, para hundirlo
+  ocre: "#c08a3e",
+  bermellon: "#a33b2a",
+  verdin: "#4f7a5e",
+  hueso: "#e2dccb", // el claro que hace de luz dentro del cuadro
+  // Los cinco de abajo llegan con los cuadros interpretados de #836 (la ola, el
+  // Fuji, el mar de nubes). No son un capricho de variedad: los tres originales
+  // son PAISAJES, y con los cuatro pigmentos de arriba —dos tierras, un verde y
+  // un hueso— no hay forma de decir «agua», «cielo» ni «niebla» sin mentir de
+  // color. Siguen siendo tonos rotos y no neones, por el mismo motivo que los
+  // otros: sobre el muro oscuro de la sala, un saturado le disputaría la lectura
+  // a la piedra.
+  azulProfundo: "#1f3f6b", // el mar, y las masas de agua en sombra
+  azulPalido: "#8fa9c4", // el cielo; también la niebla lejana
+  espuma: "#f0f3f5", // el blanco de la cresta y de la nieve, más frío que el hueso
+  niebla: "#b9c3c9", // el gris del vapor, entre el cielo y el blanco
+  roca: "#3a3d42", // la piedra oscura y las siluetas a contraluz
+  // Y los tres de abajo, con el detalle de #838. Son TONOS INTERMEDIOS de tres
+  // pigmentos que ya estaban, y solo existen porque la celda del lienzo bajó a
+  // la mitad: a 48 x 32 no había sitio para una transición y un tono más era
+  // ruido; a 96 x 64 una ladera cabe en dos tonos y sin ellos se lee como un
+  // recorte de cartulina. Ojo con la frontera: esto es PINTURA, donde una masa
+  // puede tener luz y sombra, y NO la piel del casco, que sigue siendo de paleta
+  // corta y sin degradados por contrato. Tres tonos no son un degradado.
+  azulMedio: "#2f5f86", // el cuerpo del agua, entre el fondo y el cielo
+  bermellonSombra: "#7a2a1e", // la ladera del cono que no da al sol
+  nieblaClara: "#d2d9dd", // el vapor de arriba, donde la luz lo atraviesa
 });
+
 
 /**
  * Fichas de la mesa de minijuegos (#308). Pixel, no grabado: la pila se repinta
@@ -589,19 +738,25 @@ export const CUADRO = Object.freeze({
  * en otro archivo no es una comprobación.
  */
 /**
- * Fichas de la mesa de minijuegos (#308). Pixel, no grabado: la pila se repinta
- * en cuanto alguien apuesta.
- *
- * El valor de una ficha NO viaja solo en su color —eso lo hace el número de
- * cuñas del canto, que se cuenta sin distinguir tonos—, así que estos colores
- * acompañan a la forma igual que en `SISTEMA`. Lo que sí tiene que cumplirse es
- * que la ficha se despegue del tapete y del disco claro de su cara, y eso lo
- * vigila `paleta.test.mjs`.
- *
- * `tapete` está aquí, y no solo en el CSS, porque es el fondo contra el que se
- * mide todo lo anterior: una comprobación de contraste contra un valor que vive
- * en otro archivo no es una comprobación.
+ * Tarjetas de combatiente en pixelart (#1018): un juego marco/fondo/retrato
+ * por alineación, un marco "shiny" para insignias de campaña, y los tonos de
+ * los badges de estado. Único sitio que declara estos hexadecimales
+ * (ADR-0014); `combatiente-pixelart.mjs` los consume en vez de mantener su
+ * propia tabla.
  */
+export const TARJETA_COMBATIENTE = Object.freeze({
+  aliado: Object.freeze({ marco: "#3fc1b0", fondo: "#123c4a", retrato: "#8bd8c7" }),
+  enemigo: Object.freeze({ marco: "#d95d5d", fondo: "#4a1f2a", retrato: "#ed9b7a" }),
+  neutral: Object.freeze({ marco: "#b7a56b", fondo: "#373b43", retrato: "#d8c79b" }),
+  shiny: Object.freeze({ marco: "#f2c14e" }),
+  overlays: Object.freeze({
+    herido: "#e66a4e",
+    "concentracion-rota": "#8b73c7",
+    ventaja: "#62c370",
+    muerto: "#22252b",
+  }),
+});
+
 export const FICHA = Object.freeze({
   tapete: "#0f3d2a", // fieltro de la mesa
   canto: CREMA, // cuñas y cara de la ficha: el mismo crema del resto del arte

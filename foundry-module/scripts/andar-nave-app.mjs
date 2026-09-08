@@ -28,9 +28,13 @@ import { avatarDeUsuario } from "./avatar/avatar-assignment.mjs";
 import { openWorkspaceApp } from "./station-workspace-ui.mjs";
 import { SECCION } from "./paleta.mjs";
 import { cartelaDe, getPiezaCatalogada } from "./catalogo-piezas.mjs";
-// Registra el catálogo del museo en el punto único de resolución (#598).
-// Este módulo no necesita saber que la pieza vive ahí: solo que existe.
+// Registran su catálogo en el punto único de resolución (#598). Este módulo no
+// necesita saber en cuál de ellos vive una pieza: solo que existe. Los tres son
+// las esculturas del museo, los cuadros de la pared (#836) y el pasillo de los
+// recuerdos.
 import "./museo-piezas.mjs";
+import "./museo-cuadros.mjs";
+import "./pasillo-recuerdos-piezas.mjs";
 import { resolverAsiento } from "./nave-asiento.mjs";
 import { ponerPose } from "./nave-pose.mjs";
 import { AJUSTE_TELEMETRIA, aceptarSensores, aceptarTelemetria } from "./ship-view/telemetria-difusion.mjs";
@@ -321,6 +325,10 @@ function arrancar(raiz, estanciaPedida = null) {
   function pintarCartela(piezaId) {
     const nodo = raiz?.querySelector?.("[data-andar-cartela]");
     if (!nodo) return;
+    // Tres catálogos y una sola lectura: las esculturas, los cuadros de la
+    // pared (#836) y las piezas del pasillo de los recuerdos se colocan
+    // distinto en su sala, pero la cartela se lee igual en los tres. Un
+    // `accion.pieza` es un id opaco y el registro lo resuelve contra todos.
     const pieza = piezaId ? getPiezaCatalogada(piezaId) : null;
     if (!pieza) {
       nodo.hidden = true;

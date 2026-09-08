@@ -39,7 +39,11 @@ RAIZ = pathlib.Path(__file__).resolve().parent.parent
 
 # Prefijos que nunca deben estar trackeados, en cualquier nivel del arbol.
 RESTOS = ("node_modules/", ".nyc_output/", "coverage/", "coverage-out/", "tmp/")
-FICHEROS = ("package-lock.json", "lcov.info")
+
+# Ficheros exactos que son resto a cualquier profundidad, sin excepcion posible
+# -- al reves que `package-lock.json`, que en la raiz SI es un entregable
+# legitimo y por eso su comprobacion vive aparte, en el bucle de abajo.
+FICHEROS = ("lcov.info",)
 
 # Sufijos que nunca son entregable. `.bak`/`.orig`/`.rej` son restos de edicion y
 # de merge; `.lcov` es cobertura. Se comparan sobre el nombre del fichero, no
@@ -84,6 +88,8 @@ def es_resto(ruta: str) -> bool:
     if nombre.startswith(PREFIJOS_NOMBRE) and nombre.endswith(EXT_DE_MAQUINA):
         return True
     if any(i in nombre for i in INFIJOS):
+        return True
+    if nombre in FICHEROS:
         return True
     if ruta in EXCEPCIONES:
         return False

@@ -45,26 +45,33 @@ export const RESALTE_HOJA = 0.03;
 // Un índice de fila no dice a qué altura está; un metro sí.
 const fila = (metros) => Math.round(metros / CELDA);
 
+/**
+ * Alturas del dibujo, EN METROS — compartidas con `piel-textura-puerta.mjs`
+ * (#458): la textura pinta la MISMA hoja a más resolución, no otra hoja. Con
+ * dos copias de estos números, subir el aviso un centímetro en una superficie
+ * y no en la otra sería el mismo desalineado que #551 ya sufrió por escribir
+ * una altura como índice de fila en vez de en metros.
+ */
 /** Altura de la mano: donde se marca una esclusa de verdad, y donde la marca
  *  sigue a la vista aunque haya alguien plantado delante. */
-const AVISO_DESDE = 1.05;
+export const AVISO_DESDE = 1.05;
 // 20 cm de franja y no 40: a cuatro filas la alternancia deja de leerse como una
 // banda de peligro y empieza a leerse como una dentadura (se vio en la vista
 // previa). Una franja de aviso es una LÍNEA, y lo que la hace visible es el
 // contraste, no el grosor.
-const AVISO_HASTA = 1.25;
+export const AVISO_HASTA = 1.25;
 /** El zócalo de la hoja: la parte que se lleva las patadas y los carros. */
-const ZOCALO = 0.4;
+export const ZOCALO = 0.4;
 /** Refuerzos horizontales, para que la hoja tenga estructura y no sea un
  *  rectángulo con una pegatina en medio. */
-const REFUERZOS = Object.freeze([0.7, 2.3]);
+export const REFUERZOS = Object.freeze([0.7, 2.3]);
 /** El registro de inspección: un hueco con lamas, entre el aviso y el dintel. */
-const REGISTRO_DESDE = 1.7;
-const REGISTRO_HASTA = 2.2;
+export const REGISTRO_DESDE = 1.7;
+export const REGISTRO_HASTA = 2.2;
 /** Su gemelo liso por debajo de la franja, para que la hoja no tenga todo el
  *  peso arriba. */
-const PANEL_BAJO_DESDE = 0.55;
-const PANEL_BAJO_HASTA = 0.95;
+export const PANEL_BAJO_DESDE = 0.55;
+export const PANEL_BAJO_HASTA = 0.95;
 
 /**
  * El dibujo de media hoja, en celdas. `[fila][columna]`, fila 0 la del suelo.

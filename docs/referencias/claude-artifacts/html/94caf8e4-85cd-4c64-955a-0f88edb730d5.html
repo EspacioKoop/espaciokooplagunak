@@ -1,0 +1,415 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style></head><body>
+<title>Caras y Peinados PSX</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#10141a; --panel:#1b222b; --panel-2:#212a34; --line:#2d3946; --line-bright:#425364;
+    --text:#e7ecef; --text-dim:#8fa0ac; --text-faint:#5d6c78;
+    --amber:#e0a33a; --teal:#3ecfc4; --danger:#c8665a;
+    --shadow-dark:#080a0d; --shadow-light:#2c3745;
+    font-size:15px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg); color:var(--text); margin:0; padding:28px 20px 70px;
+    font-family:'IBM Plex Sans', system-ui, sans-serif;
+    background-image:
+      radial-gradient(circle at 12% 6%, rgba(62,207,196,0.05), transparent 42%),
+      radial-gradient(circle at 88% 94%, rgba(224,163,58,0.05), transparent 45%);
+  }
+  .wrap{max-width:1240px;margin:0 auto;}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);}
+  h1{font-family:'Press Start 2P', monospace;font-size:19px;line-height:1.55;margin:10px 0 10px;text-wrap:balance;}
+  .page-head p{color:var(--text-dim);max-width:78ch;line-height:1.65;margin:0 0 8px;font-size:14px;}
+  code{background:var(--panel-2);padding:1px 5px;border:1px solid var(--line);font-size:12.5px;font-family:'IBM Plex Mono',monospace;}
+
+  .seccion{font-family:'Press Start 2P';font-size:12px;color:var(--amber);margin:42px 0 6px;}
+  .seccion-nota{font-family:'IBM Plex Mono';font-size:12px;color:var(--text-faint);max-width:88ch;line-height:1.65;margin-bottom:18px;}
+
+  .rejilla{display:grid;gap:14px;}
+  .r5{grid-template-columns:repeat(5,1fr);}
+  .r6{grid-template-columns:repeat(6,1fr);}
+  .r4{grid-template-columns:repeat(4,1fr);}
+  @media (max-width:1060px){.r5,.r6{grid-template-columns:repeat(3,1fr);}.r4{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:620px){.r5,.r6,.r4{grid-template-columns:repeat(2,1fr);}}
+
+  .celda{
+    background:var(--panel);border:1px solid var(--line);padding:12px 10px 14px;
+    display:flex;flex-direction:column;gap:8px;align-items:center;
+    box-shadow: inset 1px 1px 0 var(--shadow-light), inset -1px -1px 0 var(--shadow-dark);
+  }
+  .celda.recomendada{border-color:var(--teal);}
+  .celda .etiqueta{font-family:'IBM Plex Mono';font-size:9px;color:var(--teal);letter-spacing:.06em;}
+  .celda .nombre{font-family:'Press Start 2P';font-size:8.5px;text-align:center;line-height:1.6;}
+  .celda .desc{font-family:'IBM Plex Sans';font-size:11.5px;color:var(--text-dim);line-height:1.5;text-align:center;}
+  .celda .coste{font-family:'IBM Plex Mono';font-size:9.5px;color:var(--text-faint);text-align:center;padding-top:6px;border-top:1px solid var(--line);width:100%;}
+  canvas{image-rendering:pixelated;background:#0c1015;border:1px solid var(--line);}
+
+  .nota-final{border-left:3px solid var(--amber);background:var(--panel);padding:16px 18px;margin-top:40px;font-size:13.5px;color:var(--text-dim);line-height:1.7;}
+  .nota-final b{color:var(--amber);}
+</style>
+
+<div class="wrap">
+  <div class="page-head">
+    <div class="eyebrow">sobre la cabeza estrechada de #973 · sin textura (fase posterior)</div>
+    <h1>CARAS Y PEINADOS</h1>
+    <p>Todo esto va sobre la cabeza PSX ya aprobada —cráneo ancho que se afila a la barbilla, con sus planos
+      de luz y sombra— y <strong>sin usar textura</strong>, porque esa fase se pospuso. Es la restricción
+      interesante: la cara tiene que salir de <strong>geometría y sombreado</strong>, que es exactamente como
+      se resolvía en la época.</p>
+  </div>
+
+  <div class="seccion">01 · Seis maneras de tener cara</div>
+  <div class="seccion-nota">
+    Ordenadas de menos a más piezas. La misma cabeza en las seis: lo único que cambia es cómo se resuelven
+    los rasgos.
+  </div>
+  <div class="rejilla r6" id="caras"></div>
+
+  <div class="seccion">02 · La expresión, sobre la opción recomendada</div>
+  <div class="seccion-nota">
+    Con rasgos hundidos, la expresión es <b>mover dos cuñas</b> (las cejas) y <b>una cuña</b> (la boca). No hay
+    interpolación ni rig: es una tabla `EXPRESIONES` hermana de `GESTOS`, exactamente el mismo patrón que ya
+    intercambia posturas de manos en `cantina-avatar.mjs`.
+  </div>
+  <div class="rejilla r5" id="expresiones"></div>
+
+  <div class="seccion">03 · Peinados — un catálogo combinable, no doce mallas sueltas</div>
+  <div class="seccion-nota">
+    Cada peinado es <b>casquete + flequillo + añadido</b>. Tres piezas pequeñas combinables dan muchas más
+    siluetas que doce peinados escritos a mano, y es el mismo principio que ya usa el catálogo de props: una
+    entrada más, no una rama más.
+  </div>
+  <div class="rejilla r6" id="peinados"></div>
+
+  <div class="seccion">04 · Barba y vello facial — el mismo sistema</div>
+  <div class="seccion-nota">
+    Aparte del peinado, porque se combinan libremente y porque la barba del enano ya existía como rasgo de
+    raza en #973. Aquí se generaliza a cualquier personaje.
+  </div>
+  <div class="rejilla r4" id="barbas"></div>
+
+  <div class="nota-final">
+    <b>Mi recomendación.</b> Cara <b>02 (rasgos hundidos)</b>: es la única que funciona igual de bien en una
+    sala oscura y a contraluz, porque la sombra la calcula el motor y no está pintada. Peinado: el sistema
+    combinable de la sección 03 — no cuesta más que escribir doce peinados y da muchos más. Y una advertencia
+    de la época: <b>a esta resolución la boca casi nunca ayuda</b>; casi todo el gesto vive en las cejas, que
+    es donde conviene gastar las piezas.
+  </div>
+</div>
+
+<script>
+// ===================== la cabeza PSX, en grande =====================
+const W=200, H=240;
+const CX=W/2;
+const yCoronilla=42, cab=132;
+const yMenton=yCoronilla+cab;
+const wCraneo=52, wMandi=30;
+
+const P={
+  piel:"#c99a72", pielL:"#e0b287", pielXL:"#efc79c", pielS:"#a3785a", pielXS:"#7a5842", pielHueco:"#4a3629",
+  pelo:"#3a2c22", peloL:"#4e3b2e", peloS:"#281e17",
+  peloRubio:"#a8834a", peloRubioL:"#c9a468", peloRubioS:"#7a5c31",
+  peloGris:"#8b8f92", peloGrisL:"#aeb2b5",
+  ojo:"#181310", ojoBlanco:"#d8cdc0",
+  visor:"#1d2b33",
+  acento:"#e0a33a",
+};
+
+function poly(ctx,pts,c){ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);
+  for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);ctx.closePath();ctx.fillStyle=c;ctx.fill();}
+function lienzo(id){const cv=document.getElementById(id);const ctx=cv.getContext("2d");
+  ctx.imageSmoothingEnabled=false;ctx.fillStyle="#0c1015";ctx.fillRect(0,0,W,H);return ctx;}
+
+// puntos clave de la cabeza (los usan todas las opciones)
+const K={
+  craneoIzq:[CX-wCraneo, yCoronilla+cab*0.30],
+  craneoTopIzq:[CX-wCraneo*0.62, yCoronilla+2],
+  craneoTopDer:[CX+wCraneo*0.62, yCoronilla+2],
+  craneoDer:[CX+wCraneo, yCoronilla+cab*0.30],
+  pomuloIzq:[CX-wCraneo*0.94, yCoronilla+cab*0.56],
+  pomuloDer:[CX+wCraneo*0.94, yCoronilla+cab*0.56],
+  mandiIzq:[CX-wMandi, yMenton-cab*0.14],
+  mandiDer:[CX+wMandi, yMenton-cab*0.14],
+  menton:[CX, yMenton],
+  yCejas: yCoronilla+cab*0.44,
+  yOjos:  yCoronilla+cab*0.53,
+  yNariz: yCoronilla+cab*0.68,
+  yBoca:  yCoronilla+cab*0.80,
+};
+
+function cuello(ctx){
+  poly(ctx,[[CX-16,yMenton-14],[CX+16,yMenton-14],[CX+20,H-6],[CX-20,H-6]],P.pielXS);
+  poly(ctx,[[CX-16,yMenton-14],[CX-4,yMenton-14],[CX-6,H-6],[CX-20,H-6]],P.pielS);
+}
+
+// cráneo con facetas: frente, sienes, pómulos, mandíbula
+function craneo(ctx){
+  const {craneoIzq:ci,craneoTopIzq:cti,craneoTopDer:ctd,craneoDer:cd,
+         pomuloIzq:pi,pomuloDer:pd,mandiIzq:mi,mandiDer:md,menton:me}=K;
+  // masa principal
+  poly(ctx,[ci,cti,ctd,cd,pd,md,me,mi,pi],P.piel);
+  // frente (plano superior, algo más claro)
+  poly(ctx,[ci,cti,ctd,cd,[cd[0]-6,K.yCejas],[CX,K.yCejas-4],[ci[0]+6,K.yCejas]],P.pielL);
+  // sien / lado izquierdo iluminado
+  poly(ctx,[ci,[ci[0]+6,K.yCejas],[pi[0]+8,pi[1]],pi],P.pielXL);
+  // lado derecho en sombra
+  poly(ctx,[cd,[cd[0]-6,K.yCejas],[pd[0]-8,pd[1]],pd],P.pielS);
+  // mandíbula derecha, más oscura todavía
+  poly(ctx,[pd,md,me,[CX+6,K.yBoca+10]],P.pielXS);
+  // plano del pómulo izquierdo (brillo)
+  poly(ctx,[[pi[0]+8,pi[1]],[CX-10,K.yNariz],[CX-14,K.yBoca+4],[mi[0]+2,mi[1]-4]],P.pielL);
+}
+
+// ===================== opciones de cara =====================
+function cejas(ctx,y0,dy,color){
+  poly(ctx,[[CX-26,y0+dy],[CX-8,y0-2+dy*0.4],[CX-8,y0+4+dy*0.4],[CX-26,y0+7+dy]],color);
+  poly(ctx,[[CX+8,y0-2+dy*0.4],[CX+26,y0+dy],[CX+26,y0+7+dy],[CX+8,y0+4+dy*0.4]],color);
+}
+function bocaTrazo(ctx,y,curva,color){
+  poly(ctx,[[CX-11,y+curva],[CX,y-curva*0.5],[CX+11,y+curva],[CX+11,y+curva+3],[CX,y-curva*0.5+3],[CX-11,y+curva+3]],color);
+}
+function nariz(ctx){
+  // dos planos: puente iluminado, ala en sombra
+  poly(ctx,[[CX-2,K.yOjos+2],[CX+3,K.yOjos+2],[CX+6,K.yNariz+4],[CX-4,K.yNariz+4]],P.pielL);
+  poly(ctx,[[CX+3,K.yOjos+2],[CX+7,K.yNariz-4],[CX+6,K.yNariz+4]],P.pielXS);
+  poly(ctx,[[CX-4,K.yNariz+4],[CX+6,K.yNariz+4],[CX+4,K.yNariz+7],[CX-3,K.yNariz+7]],P.pielXS);
+}
+
+const CARAS=[
+  {
+    n:"01", nombre:"SOLO FACETAS", coste:"0 piezas nuevas",
+    desc:"Ni un polígono más: la cuenca del ojo y el pómulo son facetas del propio cráneo, algo más oscuras. Sobrio de verdad.",
+    pintar(ctx){
+      craneo(ctx);
+      // cuencas como facetas oscuras, sin ojo dentro
+      poly(ctx,[[CX-27,K.yCejas+4],[CX-7,K.yCejas+7],[CX-9,K.yOjos+9],[CX-26,K.yOjos+6]],P.pielS);
+      poly(ctx,[[CX+7,K.yCejas+7],[CX+27,K.yCejas+4],[CX+26,K.yOjos+6],[CX+9,K.yOjos+9]],P.pielXS);
+      nariz(ctx);
+      poly(ctx,[[CX-12,K.yBoca],[CX+12,K.yBoca-1],[CX+12,K.yBoca+2],[CX-12,K.yBoca+3]],P.pielS);
+    }
+  },
+  {
+    n:"02", nombre:"RASGOS HUNDIDOS", coste:"~6 caras", recomendada:true,
+    desc:"Cuenca hundida de verdad: el borde superior queda en sombra dura y el ojo, casi negro dentro. La luz del motor hace el trabajo.",
+    pintar(ctx){
+      craneo(ctx);
+      const ojoHundido=(s)=>{
+        const x0=CX+s*9, x1=CX+s*27;
+        const a=Math.min(x0,x1), b=Math.max(x0,x1);
+        poly(ctx,[[a,K.yCejas+5],[b,K.yCejas+3],[b,K.yOjos+10],[a,K.yOjos+11]],P.pielHueco);
+        poly(ctx,[[a,K.yCejas+5],[b,K.yCejas+3],[b,K.yCejas+8],[a,K.yCejas+10]],"#33251b");
+        poly(ctx,[[a+3,K.yOjos-1],[b-3,K.yOjos-3],[b-3,K.yOjos+6],[a+3,K.yOjos+7]],P.ojo);
+      };
+      ojoHundido(-1); ojoHundido(1);
+      cejas(ctx,K.yCejas-6,0,P.pelo);
+      nariz(ctx);
+      bocaTrazo(ctx,K.yBoca,0,P.pielXS);
+    }
+  },
+  {
+    n:"03", nombre:"HUECOS NEGROS", coste:"~4 caras",
+    desc:"Sin globo ocular: dos vacíos oscuros bajo el arco superciliar. Inquietante, nunca parece barato, y a distancia se lee perfecto.",
+    pintar(ctx){
+      craneo(ctx);
+      // arco superciliar como cuña saliente
+      poly(ctx,[[CX-28,K.yCejas-2],[CX+28,K.yCejas-4],[CX+26,K.yCejas+6],[CX-26,K.yCejas+8]],P.pielL);
+      poly(ctx,[[CX-28,K.yCejas+4],[CX+28,K.yCejas+2],[CX+26,K.yCejas+7],[CX-26,K.yCejas+9]],P.pielXS);
+      poly(ctx,[[CX-26,K.yCejas+8],[CX-8,K.yCejas+10],[CX-10,K.yOjos+10],[CX-25,K.yOjos+8]],"#120e0b");
+      poly(ctx,[[CX+8,K.yCejas+10],[CX+26,K.yCejas+8],[CX+25,K.yOjos+8],[CX+10,K.yOjos+10]],"#120e0b");
+      nariz(ctx);
+      bocaTrazo(ctx,K.yBoca,0,P.pielXS);
+    }
+  },
+  {
+    n:"04", nombre:"OJO CLARO", coste:"~8 caras",
+    desc:"Con esclerótica visible: mirada dirigida, legible de cerca. Es lo que permite que alguien te mire a ti y no al vacío.",
+    pintar(ctx){
+      craneo(ctx);
+      const ojo=(s)=>{
+        const a=CX+s*9, b=CX+s*27;
+        const x0=Math.min(a,b), x1=Math.max(a,b);
+        poly(ctx,[[x0,K.yCejas+6],[x1,K.yCejas+4],[x1,K.yOjos+9],[x0,K.yOjos+10]],P.pielHueco);
+        poly(ctx,[[x0+2,K.yCejas+9],[x1-2,K.yCejas+7],[x1-2,K.yOjos+6],[x0+2,K.yOjos+7]],P.ojoBlanco);
+        const px=(x0+x1)/2 + s*2;
+        poly(ctx,[[px-3.5,K.yCejas+9],[px+3.5,K.yCejas+8],[px+3.5,K.yOjos+6],[px-3.5,K.yOjos+7]],P.ojo);
+      };
+      ojo(-1); ojo(1);
+      cejas(ctx,K.yCejas-7,0,P.pelo);
+      nariz(ctx);
+      bocaTrazo(ctx,K.yBoca,0,P.pielXS);
+    }
+  },
+  {
+    n:"05", nombre:"MEDIA CARA", coste:"~5 caras",
+    desc:"Solo cejas, nariz y boca; los ojos quedan en la sombra del arco. El observador completa el resto — es el truco de FF7, pero adulto.",
+    pintar(ctx){
+      craneo(ctx);
+      poly(ctx,[[CX-27,K.yCejas+4],[CX+27,K.yCejas+2],[CX+25,K.yOjos+8],[CX-25,K.yOjos+9]],P.pielS);
+      cejas(ctx,K.yCejas-6,0,P.pelo);
+      nariz(ctx);
+      bocaTrazo(ctx,K.yBoca,0,P.pielXS);
+    }
+  },
+  {
+    n:"06", nombre:"CON VISOR", coste:"~4 caras",
+    desc:"Para tripulación con casco o NPC anónimo: una banda oscura sustituye los ojos, con un reflejo diagonal. La cara sigue existiendo debajo.",
+    pintar(ctx){
+      craneo(ctx);
+      poly(ctx,[[CX-30,K.yCejas],[CX+30,K.yCejas-3],[CX+28,K.yOjos+9],[CX-28,K.yOjos+11]],P.visor);
+      poly(ctx,[[CX-28,K.yCejas+3],[CX-8,K.yCejas+1],[CX-16,K.yOjos+9],[CX-27,K.yOjos+10]],"rgba(120,200,220,0.22)");
+      poly(ctx,[[CX-30,K.yCejas],[CX+30,K.yCejas-3],[CX+30,K.yCejas+3],[CX-30,K.yCejas+6]],P.acento);
+      nariz(ctx);
+      bocaTrazo(ctx,K.yBoca,0,P.pielXS);
+    }
+  },
+];
+
+// ===================== expresiones (sobre la opción 02) =====================
+function caraHundida(ctx,{cejaDy=0,cejaAng=0,boca=0,ojoCerrado=false}={}){
+  craneo(ctx);
+  const ojoHundido=(s)=>{
+    const a=CX+s*9,b=CX+s*27;
+    const x0=Math.min(a,b),x1=Math.max(a,b);
+    poly(ctx,[[x0,K.yCejas+5],[x1,K.yCejas+3],[x1,K.yOjos+10],[x0,K.yOjos+11]],P.pielHueco);
+    poly(ctx,[[x0,K.yCejas+5],[x1,K.yCejas+3],[x1,K.yCejas+8],[x0,K.yCejas+10]],"#33251b");
+    if(!ojoCerrado) poly(ctx,[[x0+3,K.yOjos-1],[x1-3,K.yOjos-3],[x1-3,K.yOjos+6],[x0+3,K.yOjos+7]],P.ojo);
+    else poly(ctx,[[x0+3,K.yOjos+3],[x1-3,K.yOjos+1],[x1-3,K.yOjos+4],[x0+3,K.yOjos+6]],P.pielXS);
+  };
+  ojoHundido(-1); ojoHundido(1);
+  // cejas con inclinación variable = casi toda la expresión
+  poly(ctx,[[CX-26,K.yCejas-6+cejaDy+cejaAng],[CX-8,K.yCejas-8+cejaDy-cejaAng],
+            [CX-8,K.yCejas-2+cejaDy-cejaAng],[CX-26,K.yCejas+1+cejaDy+cejaAng]],P.pelo);
+  poly(ctx,[[CX+8,K.yCejas-8+cejaDy-cejaAng],[CX+26,K.yCejas-6+cejaDy+cejaAng],
+            [CX+26,K.yCejas+1+cejaDy+cejaAng],[CX+8,K.yCejas-2+cejaDy-cejaAng]],P.pelo);
+  nariz(ctx);
+  bocaTrazo(ctx,K.yBoca,boca,P.pielXS);
+}
+const EXPRESIONES=[
+  {n:"neutral",  nombre:"NEUTRAL",  p:{}},
+  {n:"tenso",    nombre:"TENSO",    p:{cejaDy:3,cejaAng:-5,boca:-2}},
+  {n:"alerta",   nombre:"ALERTA",   p:{cejaDy:-6,cejaAng:2}},
+  {n:"dolorido", nombre:"DOLORIDO", p:{cejaDy:2,cejaAng:5,boca:3,ojoCerrado:true}},
+  {n:"cansado",  nombre:"CANSADO",  p:{cejaDy:4,cejaAng:3,boca:2}},
+];
+
+// ===================== peinados =====================
+// casquete (forma sobre el cráneo) + flequillo + añadido
+function casquete(ctx,color,colorL,alto){
+  const {craneoIzq:ci,craneoTopIzq:cti,craneoTopDer:ctd,craneoDer:cd}=K;
+  const t=alto||0;
+  poly(ctx,[[ci[0]-2,ci[1]+6],[cti[0],cti[1]-t],[ctd[0],ctd[1]-t],[cd[0]+2,cd[1]+6],
+            [cd[0]-2,cd[1]+2],[CX,ci[1]+10],[ci[0]+2,cd[1]+2]],color);
+  poly(ctx,[[ci[0]-2,ci[1]+6],[cti[0],cti[1]-t],[CX-6,cti[1]-t],[CX-12,ci[1]+9],[ci[0]+2,cd[1]+2]],colorL);
+}
+function flequilloRecto(ctx,color){
+  poly(ctx,[[CX-wCraneo+2,K.yCejas-16],[CX+wCraneo-2,K.yCejas-18],
+            [CX+wCraneo-6,K.yCejas-8],[CX-wCraneo+6,K.yCejas-6]],color);
+}
+function flequilloLateral(ctx,color){
+  poly(ctx,[[CX-wCraneo+2,K.yCejas-20],[CX+wCraneo-4,K.yCejas-20],
+            [CX+wCraneo-10,K.yCejas-4],[CX-wCraneo+8,K.yCejas-14]],color);
+}
+function flequilloPico(ctx,color){
+  poly(ctx,[[CX-wCraneo+4,K.yCejas-20],[CX,K.yCejas-6],[CX+wCraneo-4,K.yCejas-20],
+            [CX+wCraneo-8,K.yCejas-12],[CX,K.yCejas-16],[CX-wCraneo+8,K.yCejas-12]],color);
+}
+function melena(ctx,color,colorS,largo){
+  const y=yMenton+largo;
+  poly(ctx,[[CX-wCraneo-2,yCoronilla+cab*0.26],[CX-wCraneo+8,yCoronilla+cab*0.5],
+            [CX-wMandi-14,y],[CX-wCraneo-8,y-6]],color);
+  poly(ctx,[[CX+wCraneo-8,yCoronilla+cab*0.5],[CX+wCraneo+2,yCoronilla+cab*0.26],
+            [CX+wCraneo+8,y-6],[CX+wMandi+14,y]],colorS);
+}
+function coleta(ctx,color){
+  poly(ctx,[[CX+wCraneo-6,yCoronilla+cab*0.20],[CX+wCraneo+14,yCoronilla+cab*0.30],
+            [CX+wCraneo+20,yCoronilla+cab*0.86],[CX+wCraneo+4,yCoronilla+cab*0.66]],color);
+}
+function mono(ctx,color,colorL){
+  poly(ctx,[[CX-16,yCoronilla-2],[CX+16,yCoronilla-2],[CX+12,yCoronilla-22],[CX-12,yCoronilla-22]],color);
+  poly(ctx,[[CX-16,yCoronilla-2],[CX-2,yCoronilla-2],[CX-4,yCoronilla-22],[CX-12,yCoronilla-22]],colorL);
+}
+function cresta(ctx,color,colorL){
+  poly(ctx,[[CX-9,yCoronilla+8],[CX+9,yCoronilla+8],[CX+6,yCoronilla-26],[CX-6,yCoronilla-24]],color);
+  poly(ctx,[[CX-9,yCoronilla+8],[CX-1,yCoronilla+8],[CX-2,yCoronilla-25],[CX-6,yCoronilla-24]],colorL);
+}
+function rizado(ctx,color,colorL){
+  // masa irregular por facetas, no una tapa lisa
+  const pts=[[CX-wCraneo-6,yCoronilla+cab*0.34],[CX-wCraneo+2,yCoronilla-8],[CX-16,yCoronilla-16],
+             [CX+6,yCoronilla-20],[CX+wCraneo-4,yCoronilla-6],[CX+wCraneo+6,yCoronilla+cab*0.30],
+             [CX+wCraneo-4,yCoronilla+cab*0.24],[CX+18,yCoronilla+cab*0.12],[CX-10,yCoronilla+cab*0.16],
+             [CX-wCraneo+4,yCoronilla+cab*0.22]];
+  poly(ctx,pts,color);
+  poly(ctx,[[CX-wCraneo-6,yCoronilla+cab*0.34],[CX-wCraneo+2,yCoronilla-8],[CX-16,yCoronilla-16],
+            [CX-12,yCoronilla+cab*0.10],[CX-wCraneo+4,yCoronilla+cab*0.22]],colorL);
+}
+
+const PEINADOS=[
+  {nombre:"RAPADO", desc:"casquete al ras", pintar(ctx){caraHundida(ctx);casquete(ctx,P.peloS,P.pelo,-4);}},
+  {nombre:"CORTO", desc:"casquete + flequillo recto", pintar(ctx){caraHundida(ctx);casquete(ctx,P.pelo,P.peloL,2);flequilloRecto(ctx,P.pelo);}},
+  {nombre:"LADEADO", desc:"casquete + flequillo lateral", pintar(ctx){caraHundida(ctx);casquete(ctx,P.pelo,P.peloL,3);flequilloLateral(ctx,P.peloL);}},
+  {nombre:"EN PICO", desc:"casquete + flequillo en pico", pintar(ctx){caraHundida(ctx);casquete(ctx,P.peloRubio,P.peloRubioL,3);flequilloPico(ctx,P.peloRubio);}},
+  {nombre:"MEDIA MELENA", desc:"+ añadido corto", pintar(ctx){caraHundida(ctx);melena(ctx,P.pelo,P.peloS,-30);casquete(ctx,P.pelo,P.peloL,3);flequilloRecto(ctx,P.pelo);}},
+  {nombre:"MELENA LARGA", desc:"+ añadido largo", pintar(ctx){caraHundida(ctx);melena(ctx,P.peloRubio,P.peloRubioS,26);casquete(ctx,P.peloRubio,P.peloRubioL,3);flequilloLateral(ctx,P.peloRubioL);}},
+  {nombre:"COLETA", desc:"+ añadido trasero", pintar(ctx){caraHundida(ctx);coleta(ctx,P.peloS);casquete(ctx,P.pelo,P.peloL,2);flequilloRecto(ctx,P.pelo);}},
+  {nombre:"MOÑO", desc:"+ añadido superior", pintar(ctx){caraHundida(ctx);casquete(ctx,P.pelo,P.peloL,1);mono(ctx,P.pelo,P.peloL);}},
+  {nombre:"CRESTA", desc:"casquete al ras + cresta", pintar(ctx){caraHundida(ctx);casquete(ctx,P.peloS,P.pelo,-4);cresta(ctx,P.pelo,P.peloL);}},
+  {nombre:"RIZADO", desc:"masa por facetas irregulares", pintar(ctx){caraHundida(ctx);rizado(ctx,P.pelo,P.peloL);}},
+  {nombre:"CANOSO", desc:"mismo sistema, otro color", pintar(ctx){caraHundida(ctx);casquete(ctx,P.peloGris,P.peloGrisL,2);flequilloLateral(ctx,P.peloGrisL);}},
+  {nombre:"CALVO", desc:"sin pieza — el cráneo hace el trabajo", pintar(ctx){caraHundida(ctx);}},
+];
+
+const BARBAS=[
+  {nombre:"AFEITADO", desc:"nada", pintar(ctx){caraHundida(ctx);casquete(ctx,P.pelo,P.peloL,2);flequilloRecto(ctx,P.pelo);}},
+  {nombre:"PERILLA", desc:"una cuña bajo el labio", pintar(ctx){
+    caraHundida(ctx);casquete(ctx,P.pelo,P.peloL,2);flequilloRecto(ctx,P.pelo);
+    poly(ctx,[[CX-9,K.yBoca+7],[CX+9,K.yBoca+6],[CX+6,yMenton-2],[CX-6,yMenton-1]],P.pelo);}},
+  {nombre:"BARBA CORTA", desc:"sigue la mandíbula", pintar(ctx){
+    caraHundida(ctx);casquete(ctx,P.pelo,P.peloL,2);flequilloRecto(ctx,P.pelo);
+    poly(ctx,[[CX-wMandi-6,K.yNariz+2],[CX-14,K.yBoca+2],[CX+14,K.yBoca+1],[CX+wMandi+6,K.yNariz],
+              [CX+wMandi-2,yMenton-4],[CX,yMenton+4],[CX-wMandi+2,yMenton-4]],P.pelo);}},
+  {nombre:"BARBA LARGA", desc:"cuña ancha, la del enano de #973", pintar(ctx){
+    caraHundida(ctx);casquete(ctx,P.peloGris,P.peloGrisL,2);flequilloRecto(ctx,P.peloGris);
+    poly(ctx,[[CX-wMandi-8,K.yNariz],[CX-14,K.yBoca],[CX+14,K.yBoca-1],[CX+wMandi+8,K.yNariz-2],
+              [CX+wMandi+2,yMenton+16],[CX,yMenton+30],[CX-wMandi-2,yMenton+16]],P.peloGris);
+    poly(ctx,[[CX-wMandi-8,K.yNariz],[CX-14,K.yBoca],[CX-10,yMenton+18],[CX-wMandi-2,yMenton+16]],P.peloGrisL);}},
+];
+
+// ===================== montaje =====================
+function montar(id, items, prefijo){
+  const cont=document.getElementById(id);
+  cont.innerHTML=items.map((it,i)=>`
+    <div class="celda ${it.recomendada?'recomendada':''}">
+      ${it.recomendada?'<div class="etiqueta">RECOMENDADA</div>':''}
+      <div class="nombre">${it.n?it.n+' · ':''}${it.nombre}</div>
+      <canvas id="${prefijo}${i}" width="${W}" height="${H}"></canvas>
+      <div class="desc">${it.desc||''}</div>
+      ${it.coste?`<div class="coste">${it.coste}</div>`:''}
+    </div>`).join("");
+  items.forEach((it,i)=>{
+    const ctx=lienzo(`${prefijo}${i}`);
+    cuello(ctx);
+    it.pintar(ctx);
+  });
+}
+
+montar("caras",CARAS,"ca");
+montar("peinados",PEINADOS,"pe");
+montar("barbas",BARBAS,"ba");
+
+// expresiones
+const contExp=document.getElementById("expresiones");
+contExp.innerHTML=EXPRESIONES.map((e,i)=>`
+  <div class="celda">
+    <div class="nombre">${e.nombre}</div>
+    <canvas id="ex${i}" width="${W}" height="${H}"></canvas>
+    <div class="desc">cejas + boca</div>
+  </div>`).join("");
+EXPRESIONES.forEach((e,i)=>{
+  const ctx=lienzo(`ex${i}`); cuello(ctx); caraHundida(ctx,e.p);
+  casquete(ctx,P.pelo,P.peloL,2); flequilloRecto(ctx,P.pelo);
+});
+</script>
+
+</body></html>

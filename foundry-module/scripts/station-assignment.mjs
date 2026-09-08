@@ -87,6 +87,27 @@ export function visibleCrew(users, actor) {
   return actor?.isGM ? players : players.filter((user) => user.id === actor?.id);
 }
 
+/**
+ * Puestos que no tienen ningún jugador real conectado con esa asignación.
+ *
+ * La ocupación se deriva siempre del documento User de Foundry: una orden no
+ * puede declarar quién ocupa un puesto ni mantenerlo atendido después de una
+ * desconexión. Los flags desconocidos se ignoran como asignaciones inválidas.
+ */
+export function uncrewedStations(users, moduleId) {
+  const crewed = new Set();
+  for (const user of Array.from(users ?? [])) {
+    if (user?.isGM || !user?.active) continue;
+    try {
+      const station = normalizeStation(user.getFlag?.(moduleId, FLAG_KEY) ?? null);
+      if (station) crewed.add(station);
+    } catch {
+      // Un flag obsoleto o manipulado no corresponde a ningún puesto efectivo.
+    }
+  }
+  return STATIONS.filter((station) => !crewed.has(station));
+}
+
 export function stationRows({ users, actor, moduleId, i18n, requisitos, caracteristicasDe }) {
   return visibleCrew(users, actor).map((user) => {
     const current = user.getFlag(moduleId, FLAG_KEY) ?? "";

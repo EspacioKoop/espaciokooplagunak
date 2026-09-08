@@ -142,3 +142,30 @@ dice que el nivel elegido no era casualidad de aquella pieza.
 tabla `FICHAS` y **se niega a convertir** lo que no esté en ella. Este documento
 es la versión para humanos, con el porqué; aquella es la que hace imposible
 saltarse el paso.
+
+---
+
+## Escalera de balcón — Kenney Retro Urban Kit
+
+| | |
+|---|---|
+| **Obra** | "Balcony ladder bottom", pieza del pack *Retro Urban Kit* |
+| **Qué es el fichero** | **Modelo 3D modelado a mano por un tercero** (`modelo-cc` en `catalogo-muebles.mjs`), no un escaneo ni una reconstrucción de un objeto físico |
+| **Autoría** | Kenney (kenney.nl) |
+| **Licencia** | CC0 1.0 |
+| **Enlace** | https://kenney.nl/assets/retro-urban-kit |
+| **Archivo** | glTF (formato original del pack; no vive en el repositorio) |
+| **sha256** | `266b04ffb06c53a17988f858646d1fd1072258050ac3d9ba653004a769cc37d1` (declarado en la cabecera de `foundry-module/data/mallas/balcony-ladder-bottom.mjs`; sin el glTF de origen en el árbol, esta ficha no puede volver a comprobarlo de forma independiente) |
+
+**Conversión: hueco conocido, no resuelto por esta ficha.** A diferencia de las
+estatuas de arriba, este asset llegó como glTF y `tools/convertir-estatua.mjs`
+**solo lee STL** (`leerStlBinario`); no hay ningún convertidor de glTF genérico
+en el árbol que pueda haber producido este fichero. El comentario original en
+la cabecera de la malla ("GENERATED FROM gltf via custom script") no nombra
+ese script porque no se conservó, y por tanto **no es reproducible tal cual**:
+nadie puede volver a correr el paso que produjo estos vértices ni verificar el
+sha256 contra el glTF de origen sin descargar de nuevo el pack de Kenney y
+escribir un convertidor glTF desde cero. Se deja constancia aquí en vez de
+inventar un comando que nunca se ejecutó — la corrección pendiente es escribir
+un convertidor glTF genérico y volver a generar la malla con la ficha
+registrada, igual que exige `convertir-estatua.mjs` para STL.

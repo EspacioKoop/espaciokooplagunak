@@ -18,13 +18,22 @@ const VERSION = 1;
 const MAX_MUEBLES = 500;
 const MAX_BYTES_SERIALIZADO = 512 * 1024;
 
-/** Naturaleza del fichero (qué es el archivo, no la obra). */
+/**
+ * Naturaleza del fichero (qué es el archivo, no la obra). Los primeros cinco
+ * valores son los mismos de `catalogo-piezas.mjs` (#598: la naturaleza no es
+ * metadato, es lo que impide llamar "obra propia" a algo que no lo es).
+ * `modelo-cc` se añade aquí porque el mobiliario, a diferencia de las piezas
+ * de museo, puede venir de un pack de assets modelado a mano por un tercero y
+ * publicado en abierto — no es un escaneo, no es una reconstrucción de una
+ * obra física, y desde luego no es autoría de este módulo.
+ */
 const NATURALEZAS = Object.freeze([
   "escaneo",
   "escaneo-de-vaciado",
   "fotogrametria",
   "reconstruccion",
   "obra-propia",
+  "modelo-cc",
 ]);
 const NATURALEZAS_VALIDAS = new Set(NATURALEZAS);
 
@@ -115,7 +124,7 @@ export const CATALOGO_MUEBLES = Object.freeze({
         es: "Escalera de baldosa para acceder a un balcon urbano, estilo bajo polígono.",
         en: "Low-poly brick balcony ladder for urban access."
       }),
-      naturaleza: "obra-propia",
+      naturaleza: "modelo-cc",
       malla: "balcony-ladder-bottom",
       provenance: Object.freeze({
         kind: "cc",

@@ -1,4 +1,4 @@
-# ADR-0012 — Atlas cosmográfico: nodo mínimo y referencia débil a `MapDocument`
+# ADR-0017 — Atlas cosmográfico: nodo mínimo y referencia débil a `MapDocument`
 
 - Estado: Aceptada
 - Fecha: 2026-09-01

@@ -39,34 +39,29 @@ Referencia del proceso: `docs/PROCEDENCIA_ASSETS.md`.
    - Licencia: CC0 1.0  
    - Uso propuesto: `foundry-module` escenas andables/camarotes
 
-## Lote B — 3D / bajo polos / escenas (6 ítems)
+## Lote B — 3D / bajo polos / escenas (5 ítems)
 
-1. **Space Ship 3D&2D**  
-   - URL: https://opengameart.org/content/space-ship-3d2d  
-   - Licencia: CC0 1.0  
-   - Uso propuesto: mallas en `resources/mesh/ship`
-
-2. **Low poly space assets**  
+1. **Low poly space assets**  
    - URL: https://opengameart.org/content/low-poly-space-assets  
    - Licencia: CC0 1.0  
    - Uso propuesto: asteroides y planetas para `foundry-module`
 
-3. **Harvester spaceship - low poly**  
+2. **Harvester spaceship - low poly**  
    - URL: https://opengameart.org/content/harvester-spaceship-low-poly  
    - Licencia: CC0 1.0  
    - Uso propuesto: nave enemiga en mapa 3D
 
-4. **MCU-43 Gryphon Mech**  
+3. **MCU-43 Gryphon Mech**  
    - URL: https://opengameart.org/content/mcu-43-gryphon-mech  
    - Licencia: CC0 1.0  
    - Uso propuesto: criatura/nave híbrida en hangar
 
-5. **Space Ship Construction Kit**  
+4. **Space Ship Construction Kit**  
    - URL: https://opengameart.org/content/space-ship-construction-kit  
    - Licencia: CC0 1.0  
    - Uso propuesto: construcción modular de naves en `resources/mesh/ship`
 
-6. **Space Ship & Mech Construction Kit 2**  
+5. **Space Ship & Mech Construction Kit 2**  
    - URL: https://opengameart.org/content/space-ship-mech-construction-kit-2  
    - Licencia: CC0 1.0  
    - Uso propuesto: variantes mecánicas para hangar
@@ -107,6 +102,13 @@ Referencia del proceso: `docs/PROCEDENCIA_ASSETS.md`.
    - Licencia: CC0 1.0  
    - Uso propuesto: `resources/audio/scenario`  
    - Formato: MP3
+
+## Descartados por licencia (revisión de OTACON Astra en #873)
+
+- **Space Ship 3D&2D** — https://opengameart.org/content/space-ship-3d2d — declara **CC-BY 3.0**
+  (autor "little killy", fichero `ship-animated.blend`), no CC0. No cumple el criterio de este
+  lote; si se quiere en algún momento, entra por una ficha aparte con atribución explícita en
+  `CREDITS.md`, no en la sección de agradecimientos por dominio público.
 
 ## Próximos pasos
 

@@ -62,7 +62,9 @@ test("el catálogo del museo es válido y todas sus fichas apuntan a una malla q
     validarCatalogoPiezas(CATALOGO_MUSEO, { mallasDisponibles: new Set(Object.keys(MALLAS_MUSEO)) }),
     true,
   );
-  assert.equal(CATALOGO_MUSEO.piezas.length, 18, "dieciocho piezas, la capacidad de la sala");
+  const piezasDePedestal = CATALOGO_MUSEO.piezas.filter((p) => p.naturaleza !== "obra-propia");
+  assert.equal(piezasDePedestal.length, 18, "dieciocho piezas sobre pedestal, la capacidad de la sala");
+  assert.equal(CATALOGO_MUSEO.piezas.length, 20, "más los dos cuadros de muro (#836), que no ocupan pedestal");
   for (const pieza of CATALOGO_MUSEO.piezas) {
     assert.ok(MALLAS_MUSEO[pieza.malla]?.vertices?.length, `${pieza.malla} sin geometría`);
   }
@@ -251,9 +253,12 @@ test("pasarse de la capacidad falla a gritos, no amontona", () => {
 });
 
 test("el catalogo del museo no supera lo que cabe en la sala", () => {
+  // Solo cuenta lo que ocupa pedestal: las `obra-propia` (#836) cuelgan del
+  // muro y no compiten por el mismo hueco.
+  const piezasDePedestal = CATALOGO_MUSEO.piezas.filter((p) => p.naturaleza !== "obra-propia");
   assert.ok(
-    CATALOGO_MUSEO.piezas.length <= MUSEO_INTERNO.CAPACIDAD,
-    `el catalogo trae ${CATALOGO_MUSEO.piezas.length} piezas y la sala admite ${MUSEO_INTERNO.CAPACIDAD}`,
+    piezasDePedestal.length <= MUSEO_INTERNO.CAPACIDAD,
+    `el catalogo trae ${piezasDePedestal.length} piezas de pedestal y la sala admite ${MUSEO_INTERNO.CAPACIDAD}`,
   );
 });
 

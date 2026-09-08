@@ -168,17 +168,23 @@ export const CAPACIDAD = X_PEDESTALES.length * FILAS_QUE_CABEN;
  * filas desde el fondo), así que ordenar por fondo ASCENDENTE y repartir en ese
  * orden deja lo más hondo al final, que es delante.
  */
+// Las piezas `obra-propia` (#836) cuelgan del muro lateral (`colocarCuadro`,
+// segunda forma de colocar) y no ocupan pedestal: repartirlas también en la
+// rejilla las contaba dos veces y desbordaba `CAPACIDAD` con solo 18 huecos
+// para 20 piezas del catálogo.
+const PIEZAS_DE_PEDESTAL = CATALOGO_MUSEO.piezas.filter((p) => p.naturaleza !== "obra-propia");
+
 const PUESTO_EN_LA_REJILLA = (() => {
   const fondoDe = (pieza) => {
     const zs = MALLAS_MUSEO[pieza.malla].vertices.map(([, , z]) => z);
     return Math.max(...zs) - Math.min(...zs);
   };
-  const porFondo = CATALOGO_MUSEO.piezas
+  const porFondo = PIEZAS_DE_PEDESTAL
     .map((pieza, orden) => ({ orden, fondo: fondoDe(pieza) }))
     // El desempate por `orden` mantiene el reparto ESTABLE: dos piezas del mismo
     // fondo no pueden intercambiarse de sitio entre ejecuciones.
     .sort((a, b) => a.fondo - b.fondo || a.orden - b.orden);
-  const puestos = new Array(CATALOGO_MUSEO.piezas.length);
+  const puestos = new Array(PIEZAS_DE_PEDESTAL.length);
   porFondo.forEach(({ orden }, indice) => {
     puestos[orden] = indice;
   });
@@ -198,14 +204,14 @@ function distanciaDeFila(medioFondo) {
 
 const Z_DE_CADA_FILA = (() => {
   const columnas = X_PEDESTALES.length;
-  const total = CATALOGO_MUSEO.piezas.length;
+  const total = PIEZAS_DE_PEDESTAL.length;
 
   // El medio fondo de la pieza más honda de cada fila. `filaDesdeElFondo` es el
   // índice tal y como lo usa `obtenerPosicionPedestal` (0 = fondo).
   const medioFondoPorFila = [];
   for (let i = 0; i < total; i += 1) {
     const fila = Math.floor(PUESTO_EN_LA_REJILLA[i] / columnas);
-    const zs = MALLAS_MUSEO[CATALOGO_MUSEO.piezas[i].malla].vertices.map(([, , z]) => z);
+    const zs = MALLAS_MUSEO[PIEZAS_DE_PEDESTAL[i].malla].vertices.map(([, , z]) => z);
     const medio = (Math.max(...zs) - Math.min(...zs)) / 2;
     medioFondoPorFila[fila] = Math.max(medioFondoPorFila[fila] ?? 0, medio);
   }
@@ -367,9 +373,11 @@ function colocarPieza(pieza, indice) {
   });
 }
 
-/** Las piezas ya colocadas. Se calcula una vez: la sala no cambia. */
+/** Las piezas en pedestal ya colocadas. Se calcula una vez: la sala no cambia.
+ *  No incluye las `obra-propia`: esas cuelgan del muro (`colocarCuadro`, más
+ *  abajo), no de un pedestal. */
 export const PIEZAS_COLOCADAS = Object.freeze(
-  CATALOGO_MUSEO.piezas.map((pieza, orden) => colocarPieza(pieza, PUESTO_EN_LA_REJILLA[orden])),
+  PIEZAS_DE_PEDESTAL.map((pieza, orden) => colocarPieza(pieza, PUESTO_EN_LA_REJILLA[orden])),
 );
 
 /* ---- la salida ------------------------------------------------------------- */
@@ -459,15 +467,23 @@ export const INTERACCIONES = declararInteracciones([
   })),
   // Cuadros en los muros laterales (#836): misma acción `cartela` que las piezas
   // sobre pedestal, reusada. El mirador mira al muro, no al fondo de la sala.
+  //
+  // 1,5 m de margen bastaba mientras la sala tuvo 12 piezas; con las 18 de
+  // #757 el caballo ecuestre —2,64 m de fondo, el más hondo del catálogo—
+  // quedó con su pedestal pegado al muro lateral, y su malla real se asoma
+  // 0,58 m más allá del pedestal hacia la entrada. A 1,5 m el mirador de
+  // cuadro-2 quedaba a 0,345 m del borde de esa malla, dentro del radio de
+  // colisión (0,35 m). 1,8 m deja margen de sobra sin acercarse al pasillo
+  // central.
   {
     id: "cuadro-1",
-    punto: [1.5, PROFUNDIDAD / 2],
+    punto: [1.8, PROFUNDIDAD / 2],
     orientacion: -Math.PI / 2,
     accion: { tipo: "cartela", pieza: "cuadro-1" },
   },
   {
     id: "cuadro-2",
-    punto: [ANCHO - 1.5, PROFUNDIDAD / 2],
+    punto: [ANCHO - 1.8, PROFUNDIDAD / 2],
     orientacion: Math.PI / 2,
     accion: { tipo: "cartela", pieza: "cuadro-2" },
   },

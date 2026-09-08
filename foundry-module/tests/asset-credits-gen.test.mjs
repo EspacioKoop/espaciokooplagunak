@@ -7,7 +7,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { generarCreditos } from "../../tools/asset-credits-gen.mjs";
+import { FUENTES, generarCreditos, recolectar } from "../../tools/asset-credits-gen.mjs";
+import { CATALOGO_MUSEO } from "../scripts/museo-piezas.mjs";
 import { validarCatalogoPiezas } from "../scripts/catalogo-piezas.mjs";
 import { validarCatalogoTokens } from "../scripts/catalogo-tokens.mjs";
 
@@ -80,4 +81,34 @@ test("el markdown es determinista: la misma entrada produce el mismo texto", () 
 
 test("cabecera de aviso: no editar a mano", () => {
   assert.match(generarCreditos({}), /No editar a mano/);
+});
+
+/* ---- las fuentes reales ----------------------------------------------------
+   Lo que hacía inútil a `--check`: con las listas escritas a mano en el script,
+   comparaba un markdown vacío contra otro vacío y pasaba pase lo que pase. */
+
+test("las fuentes declaradas incluyen el catálogo del museo", () => {
+  const { piezas } = recolectar();
+  assert.equal(piezas.length, CATALOGO_MUSEO.piezas.length);
+  assert.deepEqual(
+    piezas.map((pieza) => pieza.id),
+    CATALOGO_MUSEO.piezas.map((pieza) => pieza.id),
+  );
+});
+
+test("recolectar valida cada catálogo: uno inválido revienta aquí, no en la mesa", () => {
+  assert.throws(() => recolectar({ piezas: [{ catalogo: { formato: "otro", version: 1, piezas: [] } }] }));
+});
+
+test("el markdown de las fuentes reales acredita cada pieza con su licencia", () => {
+  const markdown = generarCreditos(recolectar());
+  for (const pieza of CATALOGO_MUSEO.piezas) {
+    assert.ok(markdown.includes(pieza.nombre.es), `falta ${pieza.id}`);
+    assert.ok(markdown.includes(pieza.provenance.license), `falta la licencia de ${pieza.id}`);
+  }
+});
+
+test("no hay catálogos de tokens todavía, y eso se declara en FUENTES y no en el markdown", () => {
+  assert.deepEqual(FUENTES.tokens, []);
+  assert.deepEqual(recolectar().tokens, []);
 });

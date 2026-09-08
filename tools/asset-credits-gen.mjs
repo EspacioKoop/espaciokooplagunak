@@ -21,8 +21,9 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-import { cartelaDe } from "../foundry-module/scripts/catalogo-piezas.mjs";
-import { creditoDe } from "../foundry-module/scripts/catalogo-tokens.mjs";
+import { cartelaDe, validarCatalogoPiezas } from "../foundry-module/scripts/catalogo-piezas.mjs";
+import { creditoDe, validarCatalogoTokens } from "../foundry-module/scripts/catalogo-tokens.mjs";
+import { CATALOGO_MUSEO, MALLAS_MUSEO } from "../foundry-module/scripts/museo-piezas.mjs";
 
 const RAIZ = fileURLToPath(new URL("..", import.meta.url));
 export const RUTA_SALIDA = path.join(RAIZ, "foundry-module", "assets", "medieval", "ASSET_CREDITS.md");
@@ -46,6 +47,47 @@ function lineaToken(token) {
  *   validadas por `validarCatalogoPiezas`/`validarCatalogoTokens` — este
  *   generador no vuelve a validar licencias, solo las vuelca.
  */
+/**
+ * LOS CATÁLOGOS REALES DEL MÓDULO, EN UN SOLO SITIO.
+ *
+ * Es lo que hace que `--check` sirva de algo: recorriendo esta lista, un
+ * catálogo editado sin regenerar `ASSET_CREDITS.md` falla en CI. Con las listas
+ * escritas a mano en `principal()` —como estaban— el modo `--check` comparaba
+ * un markdown vacío contra otro markdown vacío y pasaba siempre, incluidas las
+ * tres piezas del museo que ya llevaban procedencia desde #598.
+ *
+ * No hay todavía ningún catálogo de TOKENS en el árbol (#891-A/#891-B: el
+ * pipeline se entrega antes que el primer lote), así que su lista está vacía —
+ * y el día que haya uno se añade aquí, no en el markdown.
+ */
+export const FUENTES = Object.freeze({
+  piezas: Object.freeze([
+    Object.freeze({ catalogo: CATALOGO_MUSEO, mallasDisponibles: new Set(Object.keys(MALLAS_MUSEO)) }),
+  ]),
+  tokens: Object.freeze([]),
+});
+
+/**
+ * Valida cada catálogo declarado y devuelve sus entradas ya aplanadas.
+ *
+ * Se valida AQUÍ y no en `generarCreditos` para que el generador siga siendo
+ * puro: recolectar es lo que toca catálogos concretos del módulo; componer
+ * markdown vale para cualquier entrada.
+ */
+export function recolectar(fuentes = FUENTES) {
+  const piezas = [];
+  for (const { catalogo, mallasDisponibles = null } of fuentes.piezas ?? []) {
+    validarCatalogoPiezas(catalogo, { mallasDisponibles });
+    piezas.push(...catalogo.piezas);
+  }
+  const tokens = [];
+  for (const { catalogo, datosDisponibles = null } of fuentes.tokens ?? []) {
+    validarCatalogoTokens(catalogo, { datosDisponibles });
+    tokens.push(...catalogo.tokens);
+  }
+  return { piezas, tokens };
+}
+
 export function generarCreditos({ piezas = [], tokens = [] } = {}) {
   const secciones = [
     "<!-- Generado por tools/asset-credits-gen.mjs. No editar a mano: la próxima",
@@ -69,11 +111,7 @@ export function generarCreditos({ piezas = [], tokens = [] } = {}) {
 async function principal() {
   const checkMode = process.argv.includes("--check");
 
-  // Sin catálogo de piezas/tokens real cableado todavía (#891-A/#891-B: el
-  // pipeline se entrega antes que el primer lote, ver docs/PROCEDENCIA_ASSETS.md
-  // y #891-C), el markdown generado documenta que el catálogo está vacío en vez
-  // de mentir con datos de ejemplo.
-  const markdown = generarCreditos({ piezas: [], tokens: [] });
+  const markdown = generarCreditos(recolectar());
 
   if (checkMode) {
     let existente;

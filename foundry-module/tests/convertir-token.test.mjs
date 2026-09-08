@@ -39,6 +39,97 @@ test("rechaza lo que no sea un PNG", () => {
   assert.throws(() => decodificarPngIndexadoOTrueColor(new Uint8Array([1, 2, 3])), /firma/);
 });
 
+/* Un PNG bien formado del que partir para estropearlo de una manera cada vez.
+   Estropear uno real es lo único que prueba de verdad las guardas: un buffer
+   inventado a mano falla por la firma antes de llegar a ninguna de ellas. */
+function pngDePrueba() {
+  return codificarPngIndexado({
+    ancho: 4,
+    alto: 2,
+    indices: Uint8Array.from([1, 2, 3, 0, 1, 1, 1, 1]),
+    paleta: ["#ff0000", "#00ff00", "#0000ff"],
+  });
+}
+
+/** Posición del primer chunk del tipo pedido (tras los 8 bytes de la firma). */
+function posicionDeChunk(png, tipo) {
+  let pos = 8;
+  while (pos + 8 <= png.length) {
+    const largo = ((png[pos] << 24) | (png[pos + 1] << 16) | (png[pos + 2] << 8) | png[pos + 3]) >>> 0;
+    const nombre = String.fromCharCode(...png.subarray(pos + 4, pos + 8));
+    if (nombre === tipo) return { pos, largo };
+    pos += 12 + largo;
+  }
+  throw new Error(`chunk ${tipo} no encontrado en el PNG de prueba`);
+}
+
+test("un PNG truncado se rechaza en vez de seguir con un chunk a medias", () => {
+  const png = pngDePrueba();
+  assert.throws(() => decodificarPngIndexadoOTrueColor(png.subarray(0, png.length - 20)), /truncado/);
+});
+
+test("un PNG sin IEND se rechaza aunque todos sus chunks quepan", () => {
+  const png = pngDePrueba();
+  const { pos } = posicionDeChunk(png, "IEND");
+  assert.throws(() => decodificarPngIndexadoOTrueColor(png.subarray(0, pos)), /IEND/);
+});
+
+test("un chunk que declara un largo imposible no reserva por su palabra", () => {
+  const png = Uint8Array.from(pngDePrueba());
+  const { pos } = posicionDeChunk(png, "IHDR");
+  png[pos] = 0xff;
+  png[pos + 1] = 0xff;
+  png[pos + 2] = 0xff;
+  png[pos + 3] = 0xff;
+  assert.throws(() => decodificarPngIndexadoOTrueColor(png), /largo imposible/);
+});
+
+test("dimensiones nulas se rechazan: no hay token de 0 px", () => {
+  const png = Uint8Array.from(pngDePrueba());
+  const { pos } = posicionDeChunk(png, "IHDR");
+  png.set([0, 0, 0, 0], pos + 8); // ancho = 0
+  assert.throws(() => decodificarPngIndexadoOTrueColor(png), /nulas/);
+});
+
+test("una imagen mayor que el tope declarado se rechaza", () => {
+  const png = Uint8Array.from(pngDePrueba());
+  const { pos } = posicionDeChunk(png, "IHDR");
+  png.set([0, 1, 0, 0], pos + 8); // ancho = 65536
+  assert.throws(() => decodificarPngIndexadoOTrueColor(png), /lado máximo/);
+});
+
+test("si los datos de imagen no cuadran con las dimensiones, se rechaza", () => {
+  const png = Uint8Array.from(pngDePrueba());
+  const { pos } = posicionDeChunk(png, "IHDR");
+  png.set([0, 0, 0, 9], pos + 8); // ancho = 9, pero los IDAT son de 4
+  assert.throws(() => decodificarPngIndexadoOTrueColor(png), /incompleto/);
+});
+
+test("un índice fuera de la PLTE se rechaza en vez de inventar un negro", () => {
+  const png = Uint8Array.from(pngDePrueba());
+  const { pos, largo } = posicionDeChunk(png, "PLTE");
+  // Recorta la paleta declarada a un solo color dejando el resto de bytes
+  // como relleno: los índices 2 y 3 de la imagen quedan fuera.
+  png[pos + 3] = 3;
+  const sobra = largo - 3;
+  const recortado = Uint8Array.from([
+    ...png.subarray(0, pos + 8 + 3),
+    ...png.subarray(pos + 8 + 3 + sobra),
+  ]);
+  assert.throws(() => decodificarPngIndexadoOTrueColor(recortado), /fuera de una PLTE/);
+});
+
+test("una PLTE de tamaño no múltiplo de 3 se rechaza", () => {
+  const png = Uint8Array.from(pngDePrueba());
+  const { pos, largo } = posicionDeChunk(png, "PLTE");
+  png[pos + 3] = largo - 1;
+  const recortado = Uint8Array.from([
+    ...png.subarray(0, pos + 8 + largo - 1),
+    ...png.subarray(pos + 8 + largo),
+  ]);
+  assert.throws(() => decodificarPngIndexadoOTrueColor(recortado), /PLTE de PNG con tamaño inválido/);
+});
+
 /* ---- reescalado por vecino más próximo ------------------------------------- */
 
 test("reescalarVecinoMasProximo no inventa colores intermedios", () => {

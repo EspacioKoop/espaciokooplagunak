@@ -11,8 +11,8 @@
  * Frontera de arte (#351): no declara ni un color.
  */
 
-import { SECCION, canales } from "./paleta.mjs";
-import { COLOR_REGION, colorParaSalud } from "./ship-view/casco-dano.mjs";
+import { SECCION, canales } from "../paleta.mjs";
+import { COLOR_REGION, colorParaSalud } from "../ship-view/casco-dano.mjs";
 
 /** Grosor del casco alrededor del corte, en píxeles de búfer. */
 const CASCO = 6;

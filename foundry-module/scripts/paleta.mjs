@@ -385,6 +385,82 @@ export const RETRATO = Object.freeze({
 });
 
 /**
+ * Retrato de combatiente para la carta de turnos (#1018). Es OTRA cosa que
+ * `RETRATO`: aquel codifica presencia de tripulación en 12x12 y por eso dibuja
+ * cascos y no caras —a esa rejilla una cara sale caricatura—; éste tiene 80x64
+ * para una carta que se mira de cerca, así que sí hay piel, pelo y ropa.
+ *
+ * RAMPAS DE CUATRO TONOS, NO DEGRADADOS. Cada material trae luz, base, sombra y
+ * profundo, y el dibujo elige el escalón por orientación respecto a una luz fija
+ * arriba-izquierda. Es la regla de `nave-sprite.mjs` (volumen por planos de
+ * color) llevada a una rejilla más fina: el detalle vive en la resolución, no en
+ * inventar tonos intermedios, que es como el pixelart se convierte en un JPEG
+ * pequeño.
+ *
+ * El contorno es un solo tono para todo el retrato, y es lo que separa la figura
+ * del fondo: sin él la silueta se lee como bloques apilados por muy buena que
+ * sea la rampa.
+ */
+export const COMBATIENTE = Object.freeze({
+  contorno: "#160f1e",
+  fondo: Object.freeze({ lejos: "#191428", cerca: "#2f2949" }),
+  // Tres tonos de piel por raza. La variedad es de tono, no de rasgo: los
+  // rasgos los pone la geometría del generador, que es donde de verdad se
+  // distinguen un enano y un elfo.
+  piel: Object.freeze({
+    humano: Object.freeze([
+      Object.freeze({ luz: "#f0c49a", base: "#d9a074", sombra: "#a9744e", prof: "#7a4f32" }),
+      Object.freeze({ luz: "#dcab80", base: "#bd8a5e", sombra: "#8f6440", prof: "#63432a" }),
+      Object.freeze({ luz: "#ab7852", base: "#8a5a3c", sombra: "#63402a", prof: "#42291b" }),
+    ]),
+    elfo: Object.freeze([
+      Object.freeze({ luz: "#f7e8d2", base: "#e2cfb4", sombra: "#b39a7d", prof: "#846e58" }),
+      Object.freeze({ luz: "#f0e2cd", base: "#d8c4a6", sombra: "#a88f73", prof: "#786351" }),
+      Object.freeze({ luz: "#e6dcc8", base: "#ccbba0", sombra: "#9c8770", prof: "#6f5d4c" }),
+    ]),
+    enano: Object.freeze([
+      Object.freeze({ luz: "#e8b485", base: "#cf9463", sombra: "#9e6a41", prof: "#72472a" }),
+      Object.freeze({ luz: "#dca878", base: "#c08556", sombra: "#8f5c37", prof: "#653d24" }),
+      Object.freeze({ luz: "#cf9a6c", base: "#b0764c", sombra: "#824f30", prof: "#5a3520" }),
+    ]),
+  }),
+  pelo: Object.freeze({
+    humano: Object.freeze([
+      Object.freeze({ luz: "#6b4a2c", base: "#4a3320", sombra: "#2c1e12" }),
+      Object.freeze({ luz: "#d9b467", base: "#a8853f", sombra: "#6b5326" }),
+      Object.freeze({ luz: "#3a2c2a", base: "#241b1a", sombra: "#140e0e" }),
+    ]),
+    elfo: Object.freeze([
+      Object.freeze({ luz: "#f4f2e8", base: "#cdcdc0", sombra: "#95958a" }),
+      Object.freeze({ luz: "#f2e4b4", base: "#c4ad76", sombra: "#87744a" }),
+      Object.freeze({ luz: "#c8d4dc", base: "#98a6b2", sombra: "#68737e" }),
+    ]),
+    enano: Object.freeze([
+      Object.freeze({ luz: "#c4602a", base: "#9a441a", sombra: "#68290c" }),
+      Object.freeze({ luz: "#d2c9bd", base: "#a39a8f", sombra: "#6d665d" }),
+      Object.freeze({ luz: "#a06a3a", base: "#7a4a22", sombra: "#4e2d12" }),
+    ]),
+  }),
+  // Ropa por clase. El metal trae su propio escalón claro porque un yelmo sin
+  // brillo no se lee como metal, se lee como piedra.
+  ropa: Object.freeze({
+    guerrero: Object.freeze({
+      luz: "#a9b3c4", base: "#7a8394", sombra: "#4c5464",
+      metal: "#aeb9ca", metalLuz: "#dde5f2", metalSom: "#5b6474",
+    }),
+    mago: Object.freeze({
+      luz: "#6b5fb5", base: "#493e8c", sombra: "#2a2360",
+      metal: "#d8c86a", metalLuz: "#f2e6a8", metalSom: "#93832f",
+    }),
+    picaro: Object.freeze({
+      luz: "#8f6a45", base: "#6b4a2f", sombra: "#3d2a1a",
+      metal: "#9aa07a", metalLuz: "#c3c79e", metalSom: "#5f6448",
+    }),
+  }),
+  ojo: Object.freeze({ blanco: "#f2f0ea", iris: "#2c2440", brillo: "#8fa8d8" }),
+});
+
+/**
  * Iconos de daño por sistema (#353). El estado se dibuja con forma —grietas,
  * píxeles apagados, contorno discontinuo—, así que estos colores acompañan a
  * la forma en vez de sustituirla: quien no distinga los tonos sigue leyendo el
@@ -646,6 +722,7 @@ export const CUADRO = Object.freeze({
   nieblaClara: "#d2d9dd", // el vapor de arriba, donde la luz lo atraviesa
 });
 
+
 /**
  * Fichas de la mesa de minijuegos (#308). Pixel, no grabado: la pila se repinta
  * en cuanto alguien apuesta.
@@ -661,19 +738,25 @@ export const CUADRO = Object.freeze({
  * en otro archivo no es una comprobación.
  */
 /**
- * Fichas de la mesa de minijuegos (#308). Pixel, no grabado: la pila se repinta
- * en cuanto alguien apuesta.
- *
- * El valor de una ficha NO viaja solo en su color —eso lo hace el número de
- * cuñas del canto, que se cuenta sin distinguir tonos—, así que estos colores
- * acompañan a la forma igual que en `SISTEMA`. Lo que sí tiene que cumplirse es
- * que la ficha se despegue del tapete y del disco claro de su cara, y eso lo
- * vigila `paleta.test.mjs`.
- *
- * `tapete` está aquí, y no solo en el CSS, porque es el fondo contra el que se
- * mide todo lo anterior: una comprobación de contraste contra un valor que vive
- * en otro archivo no es una comprobación.
+ * Tarjetas de combatiente en pixelart (#1018): un juego marco/fondo/retrato
+ * por alineación, un marco "shiny" para insignias de campaña, y los tonos de
+ * los badges de estado. Único sitio que declara estos hexadecimales
+ * (ADR-0014); `combatiente-pixelart.mjs` los consume en vez de mantener su
+ * propia tabla.
  */
+export const TARJETA_COMBATIENTE = Object.freeze({
+  aliado: Object.freeze({ marco: "#3fc1b0", fondo: "#123c4a", retrato: "#8bd8c7" }),
+  enemigo: Object.freeze({ marco: "#d95d5d", fondo: "#4a1f2a", retrato: "#ed9b7a" }),
+  neutral: Object.freeze({ marco: "#b7a56b", fondo: "#373b43", retrato: "#d8c79b" }),
+  shiny: Object.freeze({ marco: "#f2c14e" }),
+  overlays: Object.freeze({
+    herido: "#e66a4e",
+    "concentracion-rota": "#8b73c7",
+    ventaja: "#62c370",
+    muerto: "#22252b",
+  }),
+});
+
 export const FICHA = Object.freeze({
   tapete: "#0f3d2a", // fieltro de la mesa
   canto: CREMA, // cuñas y cara de la ficha: el mismo crema del resto del arte

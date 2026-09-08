@@ -1,6 +1,25 @@
 # Evidencia — vertical 3D/2D #1003
 
+Esta evidencia aporta cobertura parcial a la puerta de observabilidad reproducible de [#1034](https://github.com/EspacioKoop/espaciokooplagunak/issues/1034): la fixture, las capturas A/B, las métricas y los resultados desfavorables se conservan junto al procedimiento para poder repetirlos.
+
 **OTACON Astra · 2026-09-05 · no integrado ni desplegado.**
+
+La comparación A/B de esta evidencia responde también a [#1032](https://github.com/EspacioKoop/espaciokooplagunak/issues/1032): software y GPU reciben la misma escena, cámara y contenido, y se conservan por separado la calidad visual, el coste medido y los límites de la recomendación.
+
+## Cobertura parcial y aceptación pendiente
+
+- **#1034:** las capturas cubren la sala de cantina y el atlas de sprites;
+  quedan pendientes capturas comparables de exterior, figura animada y mapa 2D
+  real. El atlas no sustituye ese mapa ni una figura animada. También falta la
+  medición de memoria en bytes: los contadores de geometrías/texturas no la
+  acreditan.
+- **#1032:** quedan pendientes la verificación de selección y la comparación
+  del coste de autoría (crear e integrar contenido). El coste de render medido
+  abajo no mide ese trabajo de autoría.
+
+Esta trazabilidad no completa la aceptación de ninguno de los dos issues.
+Refs #1034; Refs #1032. Se conserva la evidencia válida y sus límites, sin
+ampliar el renderer ni declarar una migración o un ganador.
 
 Base de contenido: `234d58573036a69afb5fb0269ef453023410a5ac`.
 El [manifiesto de fuentes SHA-256](evidence/source-sha256.json) identifica el

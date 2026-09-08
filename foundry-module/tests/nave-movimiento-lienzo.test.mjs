@@ -343,6 +343,93 @@ test("sin alTocarPuerta, tocar una puerta no hace nada (no revienta)", () => {
   mando.detener();
 });
 
+test("alAcercarsePuerta se dispara antes de tocar la puerta, con su destino (#458)", () => {
+  // La puerta de #173 empieza en (4,8)-(6,9); a z=6 el círculo está a 2 m del
+  // rectángulo, dentro de `RADIO_LETRERO_PUERTA` (3.2) pero lejos de tocarla.
+  const puertas = [{ rect: { x: 4, z: 8, ancho: 2, profundidad: 1 }, destino: { estancia: "b" } }];
+  const letreros = [];
+  const cruces = [];
+  const mando = arrancarAndar(lienzoFalso(), {
+    componer: () => ({ ancho: 100, alto: 100, poligonos: [] }),
+    planta: crearPlanta({ ancho: 10, profundidad: 10 }),
+    puertas,
+    alAcercarsePuerta: (destino) => letreros.push(destino.estancia),
+    alTocarPuerta: (destino) => cruces.push(destino.estancia),
+    x: 5,
+    z: 6,
+    yaw: 0,
+  });
+  mando.avanzar(16);
+  assert.deepEqual(letreros, ["b"], "el letrero avisa antes de cruzar");
+  assert.deepEqual(cruces, [], "y todavía no ha cruzado");
+
+  // Quedarse en el radio no repite el aviso: es un flanco, no un nivel.
+  mando.avanzar(16);
+  assert.deepEqual(letreros, ["b"]);
+  mando.detener();
+});
+
+test("alAlejarsePuerta avisa al salir del radio del letrero, y solo entonces (#458)", () => {
+  const puertas = [{ rect: { x: 4, z: 8, ancho: 2, profundidad: 1 }, destino: { estancia: "b" } }];
+  const eventos = [];
+  const mando = arrancarAndar(lienzoFalso(), {
+    componer: () => ({ ancho: 100, alto: 100, poligonos: [] }),
+    planta: crearPlanta({ ancho: 10, profundidad: 10 }),
+    puertas,
+    alAcercarsePuerta: (destino) => eventos.push(`entra:${destino.estancia}`),
+    alAlejarsePuerta: () => eventos.push("sale"),
+    x: 5,
+    z: 6, // a 2 m, dentro del radio del letrero
+    yaw: Math.PI, // mirando hacia -z: "adelante" se aleja de la puerta
+  });
+  mando.avanzar(16);
+  assert.deepEqual(eventos, ["entra:b"]);
+
+  mando.pulsar("adelante");
+  mando.avanzar(2000); // se aleja bastante más allá de RADIO_LETRERO_PUERTA
+  assert.deepEqual(eventos, ["entra:b", "sale"]);
+  mando.detener();
+});
+
+test("cambiarEstancia retira el letrero de la puerta que se acaba de cruzar (#458)", () => {
+  const eventos = [];
+  const mando = arrancarAndar(lienzoFalso(), {
+    componer: () => ({ ancho: 100, alto: 100, poligonos: [] }),
+    planta: crearPlanta({ ancho: 10, profundidad: 10 }),
+    puertas: [{ rect: { x: 4, z: 8, ancho: 2, profundidad: 1 }, destino: { estancia: "b" } }],
+    alAcercarsePuerta: (destino) => eventos.push(`entra:${destino.estancia}`),
+    alAlejarsePuerta: () => eventos.push("sale"),
+    x: 5,
+    z: 8.3, // ya dentro del radio (y del rectángulo) desde el arranque
+    yaw: 0,
+  });
+  mando.avanzar(16);
+  assert.deepEqual(eventos, ["entra:b"]);
+
+  mando.cambiarEstancia({
+    planta: crearPlanta({ ancho: 10, profundidad: 10 }),
+    puertas: [],
+    x: 1,
+    z: 1,
+    yaw: 0,
+  });
+  assert.deepEqual(eventos, ["entra:b", "sale"], "cambiar de sala retira el letrero como la cartela");
+  mando.detener();
+});
+
+test("sin alAcercarsePuerta ni alAlejarsePuerta, andar cerca de una puerta no hace nada (no revienta)", () => {
+  const mando = arrancarAndar(lienzoFalso(), {
+    componer: () => ({ ancho: 100, alto: 100, poligonos: [] }),
+    planta: crearPlanta({ ancho: 10, profundidad: 10 }),
+    puertas: [{ rect: { x: 4, z: 8, ancho: 2, profundidad: 1 }, destino: {} }],
+    x: 5,
+    z: 6,
+    yaw: 0,
+  });
+  mando.avanzar(16);
+  mando.detener();
+});
+
 test("mantener \"atrás\" pulsado tras cruzar no dispara la puerta de vuelta en bucle (QA)", () => {
   // El punto de llegada de la sala B cae A PROPÓSITO justo sobre la puerta
   // de vuelta a A —el caso real que reportó el vaivén—: sin la ventana de

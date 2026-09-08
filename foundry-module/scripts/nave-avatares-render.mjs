@@ -15,6 +15,11 @@
  * sus propios muebles: colocar, proyectar, devolver polígonos para que la
  * sala los funda con los suyos y reordene junto con el resto.
  *
+ * ALTURA: ver el reparto de `y` en el cuerpo de la función. Es la frontera
+ * donde el offset de cámara deja de ser cámara y pasa a ser cuerpo, y estaba
+ * mal desde el principio — lo hizo visible sentarse, pero agacharse ya hundía
+ * a la gente en el suelo.
+ *
  * EL CUERPO SÍ GIRA con el rumbo de cada jugador (#897). Durante mucho tiempo
  * no lo hacía, y la explicación era que «girar exigiría rotar la malla entera
  * por vértice antes de proyectarla»: cierto, y resultó costar ocho vértices y
@@ -59,15 +64,27 @@ export function poligonosOtrosJugadores(jugadores, { camara, yaw, ancho, alto, e
   if (!Array.isArray(jugadores) || jugadores.length === 0) return [];
   const [camX, camY, camZ] = camara;
 
-  const piezas = jugadores.flatMap((jugador, indice) =>
-    piezasAvatar(jugador?.avatar ?? {}, {
-      pies: [jugador.x - camX, jugador.y - camY, jugador.z - camZ],
+  const piezas = jugadores.flatMap((jugador, indice) => {
+    // `y` es el offset de CÁMARA, no la altura de los pies (`nave-movimiento.mover`:
+    // 0 de pie, >0 saltando, <0 agachado o sentado). Tratarlo como altura de los
+    // pies —que es lo que se hacía— hunde en el suelo a quien se agacha, y con
+    // los asientos hunde también a quien se sienta: se veía un cuerpo entero de
+    // pie, con los tobillos por debajo de la tarima.
+    //
+    // Las dos mitades del offset no son la misma cosa y por eso se separan
+    // aquí, que es la frontera donde el dato deja de ser cámara y pasa a ser
+    // cuerpo: hacia ARRIBA despegas del suelo y el cuerpo entero sube; hacia
+    // ABAJO los pies siguen puestos y lo que se encoge es la persona.
+    const y = Number.isFinite(jugador.y) ? jugador.y : 0;
+    return piezasAvatar(jugador?.avatar ?? {}, {
+      pies: [jugador.x - camX, Math.max(0, y) - camY, jugador.z - camZ],
+      flexion: Math.max(0, -y),
       indice,
       // Mismo convenio que `moverXZ`: 0 mira a +z. Sin rumbo declarado se queda
       // en 0, que es exactamente lo que se dibujaba antes.
       yaw: Number.isFinite(jugador?.yaw) ? jugador.yaw : 0,
-    }),
-  );
+    });
+  });
 
   return piezas
     .map((pieza) =>
@@ -89,3 +106,4 @@ export function poligonosOtrosJugadores(jugadores, { camara, yaw, ancho, alto, e
     )
     .flatMap((parte) => parte.poligonos);
 }
+

@@ -483,7 +483,7 @@ test("comunicaciones usa la tripulación local sin consultar el puente", () => {
   assert.equal(model.metrics[1].label, "LAGUNAK.Espacios.Metrica.Tripulacion");
 });
 
-test("los valores de estilo derivados del puente quedan reducidos a números", () => {
+test("los valores de estilo derivados del puente no aceptan CSS ni fingen rumbo norte", () => {
   const model = buildWorkspaceModel({
     station: "navigation",
     isGM: true,
@@ -493,7 +493,9 @@ test("los valores de estilo derivados del puente quedan reducidos a números", (
     statePayload: { ship: { ...statePayload.ship, heading: "90deg; color:red" } },
     connection: "ok",
   });
-  assert.equal(model.navigationHeading, 0);
+  assert.equal(model.navigationHeading, null);
+  assert.equal(model.navigationHeadingKnown, false);
+  assert.equal(model.navigationAriaLabel, "LAGUNAK.Espacios.Metrica.Rumbo: LAGUNAK.Espacios.Sensores.SinLectura");
 });
 
 test("un usuario sin puesto obtiene una pantalla de asignación, no capitán", () => {

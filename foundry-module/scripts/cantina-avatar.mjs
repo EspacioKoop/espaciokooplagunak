@@ -21,6 +21,7 @@
 
 import { AVATAR, FACCIONES, PIXEL, RETRATO } from "./paleta.mjs";
 import { caja } from "./cantina-escena.mjs";
+import { prisma } from "./escena-primitivas.mjs";
 import { ANCLAS, anclasAvatar, dimensionesCuerpo, puntosAvatar } from "./avatar/avatar-rig.mjs";
 import { normalizarPorte, sostener } from "./avatar/avatar-porte.mjs";
 import { mezclar } from "./retro3d.mjs";
@@ -84,6 +85,35 @@ const CUERPO_POR_RAZA = Object.freeze({
 
 const SILUETA_ANCHO = Object.freeze({ ancha: 1.18, estrecha: 0.88, neutra: 1 });
 
+/**
+ * El volumen de una pieza del avatar: un prisma de ocho lados en vez de una
+ * caja (#1027). Ancho y fondo se declaran por separado y `prisma` usa un radio
+ * circular, así que se escala en X después — conservar ambos evita que la
+ * dimensión menor aplaste la silueta racial en el render.
+ */
+function volumenAvatar([ancho, alto, fondo], { radioAbajo = 0.46, radioArriba = 0.54 } = {}) {
+  const radioX = ancho / 2;
+  const radioZ = fondo / 2;
+  const malla = prisma([0, -alto / 2, 0], {
+    radioAbajo: radioZ * radioAbajo,
+    radioArriba: radioZ * radioArriba,
+    alto,
+    lados: 8,
+    tapaAbajo: true,
+  });
+  const escalaX = radioZ === 0 ? 1 : radioX / radioZ;
+  return {
+    ...malla,
+    vertices: malla.vertices.map(([x, y, z]) => [x * escalaX, y, z]),
+  };
+}
+
+/** Una pieza del avatar con su volumen ya montado. `centro` sale del rig
+ *  (`avatar/avatar-rig.mjs`), nunca de una cuenta de proporción escrita aquí. */
+function piezaAvatar(nombre, color, centro, medidas, opciones) {
+  return { nombre, color, centro, medidas, malla: volumenAvatar(medidas, opciones) };
+}
+
 /** Alto total del avatar en unidades de sala, antes de la raza. Una persona
  * junto a una barra de 0.75: esto la deja mirando por encima de ella. */
 export const ALTO_BASE = 1.72;
@@ -135,7 +165,7 @@ export function medidasDeAvatar(descripcion, pies = [0, 0, 0]) {
  * medidas}`— para que la escena no distinga a una persona de un taburete y no
  * haga falta ni un pintor nuevo ni una rama en `componerCantina`.
  */
-export function piezasAvatar(descripcion, { pies = [0, 0, 0], indice = 0, tiempo = 0, yaw = 0, porte = {} } = {}) {
+export function piezasAvatar(descripcion, { pies = [0, 0, 0], indice = 0, tiempo = 0, yaw = 0, porte = {}, flexion = 0 } = {}) {
   const av = normalizarAvatar(descripcion);
   const medidas = medidasDeAvatar(av, pies);
 
@@ -149,29 +179,26 @@ export function piezasAvatar(descripcion, { pies = [0, 0, 0], indice = 0, tiempo
   // cuelgan el cigarro o la jarra ya no pueden separarse, porque son la misma
   // jerarquía resuelta una sola vez. El gesto es una POSE parcial sobre ese
   // rig —dónde llevas las manos—, no una lista de posiciones absolutas.
-  const d = dimensionesCuerpo(medidas);
+  const d = dimensionesCuerpo(medidas, { flexion });
   const pose = poseDelGesto(av.gesto, d);
-  const p = puntosAvatar(medidas, { pose, yaw });
-  const anclas = anclasAvatar(medidas, { pose, yaw });
+  const p = puntosAvatar(medidas, { pose, yaw, flexion });
+  const anclas = anclasAvatar(medidas, { pose, yaw, flexion });
   const { ancho, altoCabeza, altoTorso, altoPiernas } = d;
   const llevado = normalizarPorte(porte);
 
   return [
-    { nombre: `${prefijo}Pierna`, color: piel, centro: p.piernas, medidas: [0.3 * ancho, altoPiernas, 0.26] },
-    { nombre: `${prefijo}Torso`, color: ropa, centro: p.torso, medidas: [0.46 * ancho, altoTorso, 0.3] },
-    { nombre: `${prefijo}Cabeza`, color: piel, centro: p.cabeza, medidas: [0.38 * ancho, altoCabeza, 0.36] },
+    piezaAvatar(`${prefijo}Pierna`, piel, p.piernas, [0.3 * ancho, altoPiernas, 0.26], { radioAbajo: 0.62, radioArriba: 0.46 }),
+    piezaAvatar(`${prefijo}Torso`, ropa, p.torso, [0.46 * ancho, altoTorso, 0.3], { radioAbajo: 0.58, radioArriba: 0.42 }),
+    piezaAvatar(`${prefijo}Cabeza`, piel, p.cabeza, [0.38 * ancho, altoCabeza, 0.36], { radioAbajo: 0.5, radioArriba: 0.7 }),
     // El pelo es una tapa, no una peluca: a esta resolución basta para leerse.
-    {
-      nombre: `${prefijo}Pelo`,
-      color: pelo,
-      centro: sobreCuerpo(p.cabeza, [0, altoCabeza * 0.42, -0.02], yaw),
-      medidas: [0.42 * ancho, altoCabeza * 0.34, 0.4],
-    },
+    piezaAvatar(`${prefijo}Pelo`, pelo, sobreCuerpo(p.cabeza, [0, altoCabeza * 0.42, -0.02], yaw),
+      [0.42 * ancho, altoCabeza * 0.34, 0.4], { radioAbajo: 0.7, radioArriba: 0.45 }),
+    ...rasgoDeRaza(av.raza, { p, altoCabeza, ancho, piel, prefijo, yaw }),
     // Manos como guantes, a los lados y grandes: es la firma de aquel estilo y
     // además es lo único que deja ver a distancia qué está haciendo alguien.
     // Por eso el gesto vive en las manos y no en la cara.
-    { nombre: `${prefijo}ManoDer`, color: piel, centro: p.manoDer, medidas: [0.16, 0.16, 0.16] },
-    { nombre: `${prefijo}ManoIzq`, color: piel, centro: p.manoIzq, medidas: [0.16, 0.16, 0.16] },
+    piezaAvatar(`${prefijo}ManoDer`, piel, p.manoDer, [0.16, 0.16, 0.16], { radioAbajo: 0.75, radioArriba: 0.5 }),
+    piezaAvatar(`${prefijo}ManoIzq`, piel, p.manoIzq, [0.16, 0.16, 0.16], { radioAbajo: 0.75, radioArriba: 0.5 }),
     // Lo que llevan las manos, colgado de su anclaje y no recalculado aquí.
     // Lo que se LLEVA va antes que lo que sale del gesto, y gana: llevar algo
     // es un dato de la persona (#897), no una consecuencia de lo que esté
@@ -289,12 +316,8 @@ function atrezoDelGesto(gesto, { anclas, altoTorso, prefijo, indice = 0, tiempo 
   if (porte.manoDerecha && gesto === "brindis") return [];
   switch (gesto) {
     case "brindis":
-      return [{
-        nombre: `${prefijo}Jarra`,
-        color: AVATAR.jarra,
-        centro: sobre(anclas.manoDerecha, [0, altoTorso * 0.2, 0]),
-        medidas: [0.18, 0.24, 0.18],
-      }];
+      return [piezaAvatar(`${prefijo}Jarra`, AVATAR.jarra, sobre(anclas.manoDerecha, [0, altoTorso * 0.2, 0]),
+        [0.18, 0.24, 0.18], { radioAbajo: 0.65, radioArriba: 0.8 })];
     case "fumar": {
       // La brasa sube de brillo en la calada y se apaga entre una y la
       // siguiente (#439): cada avatar tira en un momento distinto —de ahí el
@@ -302,25 +325,41 @@ function atrezoDelGesto(gesto, { anclas, altoTorso, prefijo, indice = 0, tiempo 
       // se lee como un parpadeo de escenario, no como gente fumando.
       const calada = intensidadCalada(tiempo, indice);
       return [
-        {
-          nombre: `${prefijo}Cigarro`,
-          color: AVATAR.cigarro,
-          centro: sobre(anclas.boca, [0, 0, -0.1]),
-          medidas: [0.05, 0.05, 0.18],
-        },
+        piezaAvatar(`${prefijo}Cigarro`, AVATAR.cigarro, sobre(anclas.boca, [0, 0, -0.1]),
+          [0.05, 0.05, 0.18], { radioAbajo: 0.8, radioArriba: 0.55 }),
         // La brasa va EN el anclaje: es la punta, y es lo único claro de la
         // silueta de alguien fumando en la penumbra.
-        {
-          nombre: `${prefijo}Brasa`,
-          color: mezclar(AVATAR.brasa, AVATAR.brasaCalada, calada),
-          centro: sobre(anclas.boca, [0, 0, 0]),
-          medidas: [0.06, 0.06, 0.06],
-        },
+        piezaAvatar(`${prefijo}Brasa`, mezclar(AVATAR.brasa, AVATAR.brasaCalada, calada), sobre(anclas.boca, [0, 0, 0]),
+          [0.06, 0.06, 0.06], { radioAbajo: 0.8, radioArriba: 0.45 }),
       ];
     }
     default:
       return [];
   }
+}
+
+/**
+ * El rasgo que hace reconocible a una raza de un vistazo (#1027): una pieza y
+ * no un retrato. Cuelga del punto de la CABEZA que da el rig y gira con el
+ * cuerpo (`sobreCuerpo`), así que no repite ni una cuenta de proporción — que
+ * es la regla de #897 y el motivo de que este módulo ya no las tenga.
+ */
+function rasgoDeRaza(raza, { p, altoCabeza, ancho, piel, prefijo, yaw = 0 }) {
+  const enLaCabeza = (nombre, desplazamiento, medidas, opciones) =>
+    piezaAvatar(`${prefijo}${nombre}`, piel, sobreCuerpo(p.cabeza, desplazamiento, yaw), medidas, opciones);
+  if (raza === "enano") {
+    return [enLaCabeza("Barba", [0, -altoCabeza * 0.22, 0.17], [0.24 * ancho, altoCabeza * 0.5, 0.2], { radioAbajo: 0.15, radioArriba: 0.75 })];
+  }
+  if (raza === "elfo") {
+    return [
+      enLaCabeza("OrejaIzq", [-0.25 * ancho, altoCabeza * 0.06, 0], [0.2 * ancho, altoCabeza * 0.16, 0.1], { radioAbajo: 0.8, radioArriba: 0.05 }),
+      enLaCabeza("OrejaDer", [0.25 * ancho, altoCabeza * 0.06, 0], [0.2 * ancho, altoCabeza * 0.16, 0.1], { radioAbajo: 0.8, radioArriba: 0.05 }),
+    ];
+  }
+  if (raza === "mediano") {
+    return [enLaCabeza("CabezaGrande", [0, altoCabeza * 0.08, 0], [0.42 * ancho, altoCabeza * 0.25, 0.4], { radioAbajo: 0.65, radioArriba: 0.85 })];
+  }
+  return [];
 }
 
 /**
@@ -332,8 +371,8 @@ function atrezoDelGesto(gesto, { anclas, altoTorso, prefijo, indice = 0, tiempo 
  * de proporción de cuerpo.
  */
 function distintivoDeClase(clase, { anclas, altoTorso, prefijo }) {
-  const alHombro = (color, medidas) => [
-    { nombre: `${prefijo}Distintivo`, color, centro: anclas.hombro.punto, medidas },
+  const alHombro = (color, medidas, opciones) => [
+    piezaAvatar(`${prefijo}Distintivo`, color, anclas.hombro.punto, medidas, opciones),
   ];
   switch (clase) {
     // Armas al hombro: la silueta de un mandoble asomando por encima es
@@ -341,20 +380,20 @@ function distintivoDeClase(clase, { anclas, altoTorso, prefijo }) {
     case "guerrero":
     case "paladin":
     case "barbaro":
-      return alHombro(AVATAR.acero, [0.09, altoTorso * 1.5, 0.09]);
+      return alHombro(AVATAR.acero, [0.18, altoTorso * 1.5, 0.18], { radioAbajo: 0.7, radioArriba: 0.35 });
     case "picaro":
     case "explorador":
-      return alHombro(AVATAR.acero, [0.07, altoTorso * 0.9, 0.07]);
+      return alHombro(AVATAR.acero, [0.14, altoTorso * 0.9, 0.14], { radioAbajo: 0.7, radioArriba: 0.35 });
     // Báculos y varas, más largos y de madera.
     case "mago":
     case "hechicero":
     case "brujo":
     case "druida":
-      return alHombro(AVATAR.madera, [0.08, altoTorso * 1.8, 0.08]);
+      return alHombro(AVATAR.madera, [0.16, altoTorso * 1.8, 0.16], { radioAbajo: 0.7, radioArriba: 0.35 });
     case "clerigo":
-      return alHombro(AVATAR.simbolo, [0.16, 0.22, 0.06]);
+      return alHombro(AVATAR.simbolo, [0.16, 0.22, 0.06], { radioAbajo: 0.7, radioArriba: 0.35 });
     case "bardo":
-      return alHombro(AVATAR.madera, [0.28, altoTorso * 0.7, 0.1]);
+      return alHombro(AVATAR.madera, [0.28, altoTorso * 0.7, 0.1], { radioAbajo: 0.7, radioArriba: 0.35 });
     // El monje no lleva nada, y eso también es un distintivo.
     default:
       return [];

@@ -1,0 +1,55 @@
+name: SonarCloud
+
+# INFORMATIVO, no puerta. Se añade en verde y sin bloquear a nadie: ya hay siete
+# checks obligatorios, y meter un octavo en rojo con la cola de PRs llena los
+# bloquearía todos a la vez. Cuando la deuda que reporte esté a cero, entonces
+# se decide si pasa a obligatorio — esa es una decisión aparte, no un efecto
+# secundario de este PR.
+#
+# Se solapa con CodeQL y semgrep en seguridad, y eso está asumido: lo que aporta
+# de nuevo es mantenibilidad y duplicación, que hoy no mide nadie.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analisis:
+    name: Análisis de SonarCloud
+    runs-on: ubuntu-latest
+    # Sin el secreto no hay nada que analizar. Se salta en silencio en vez de
+    # fallar en rojo en cada PR de quien no lo tenga configurado — misma regla
+    # que el tablero de la cola.
+    if: github.repository == 'EspacioKoop/espaciokooplagunak'
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Sonar necesita el historial completo para atribuir cada issue a su
+          # commit y calcular «código nuevo»; con el clon superficial de serie
+          # marcaría como nuevo todo el árbol heredado de EmptyEpsilon.
+          fetch-depth: 0
+
+      - name: Comprobar que hay token
+        id: token
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          if [ -z "$SONAR_TOKEN" ]; then
+            echo "::warning::Falta el secreto SONAR_TOKEN; no se analiza."
+            echo "hay=no" >> "$GITHUB_OUTPUT"
+          else
+            echo "hay=si" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Analizar
+        if: steps.token.outputs.hay == 'si'
+        uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f # v8.2.1
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

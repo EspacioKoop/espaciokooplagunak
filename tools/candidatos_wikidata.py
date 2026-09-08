@@ -18,7 +18,7 @@ from .apis import core
 from .apis.wikidata import wikidata
 
 CACHE_FILE = os.path.join(os.path.dirname(__file__), '.wikidata_sculptures.json')
-USER_AGENT = 'EspaciokoopLagunak/1.0 (https://github.com/VaroTv7/espaciokooplagunak)'
+USER_AGENT = 'EspaciokoopLagunak/1.0 (https://github.com/EspacioKoop/espaciokooplagunak)'
 
 SPARQL_QUERY = """SELECT ?item ?itemLabel ?itemDescription ?image ?inception ?collection ?collectionLabel
 WHERE

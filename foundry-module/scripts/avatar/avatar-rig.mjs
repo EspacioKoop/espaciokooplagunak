@@ -58,16 +58,29 @@ export function proporciones(escala) {
   });
 }
 
+/** Cuánto puede encogerse una pierna, en fracción de su largo de pie. Por
+ *  debajo de un cuarto el cuerpo se lee como un torso tirado en el suelo. */
+const MINIMO_PIERNAS = 0.25;
+
 /**
  * Las cotas del cuerpo alrededor de sus pies. Es la cuenta que `piezasAvatar`
  * hacía en línea, sacada aquí para que el rig y el dibujo salgan del MISMO
  * sitio: si divergen, las manos dejan de estar donde están las cajas.
  *
+ * `flexion` son los metros que el cuerpo BAJA sin despegar los pies del suelo:
+ * agacharse (#446) y sentarse. Se le quitan a las PIERNAS y a nada más, y eso
+ * no es una simplificación de dibujo sino la cuenta exacta — torso y cabeza se
+ * apoyan encima, así que la cabeza baja justo `flexion` y acaba donde acaba la
+ * cámara de quien está agachado o sentado. El tope existe porque hay cuerpos
+ * cortos: un mediano agachado 0,5 m no tiene medio metro de pierna que encoger.
+ *
  * @param {{escala:number, ancho:number, pies:number[]}} medidas
+ * @param {{flexion?:number}} [opciones]
  */
-export function dimensionesCuerpo({ escala, ancho, pies = [0, 0, 0] }) {
+export function dimensionesCuerpo({ escala, ancho, pies = [0, 0, 0] }, { flexion = 0 } = {}) {
   const [px, py, pz] = pies;
-  const { altoCabeza, altoTorso, altoPiernas } = proporciones(escala);
+  const { altoCabeza, altoTorso, altoPiernas: altoPiernasDePie } = proporciones(escala);
+  const altoPiernas = Math.max(altoPiernasDePie * MINIMO_PIERNAS, altoPiernasDePie - Math.max(0, flexion));
   const yTorso = py + altoPiernas + altoTorso / 2;
   return Object.freeze({
     px,
@@ -94,8 +107,8 @@ export function dimensionesCuerpo({ escala, ancho, pies = [0, 0, 0] }) {
  * mano derecha, ahí»— y no una lista completa de dónde va cada parte. Una pose
  * parcial no envejece cuando el cuerpo cambia; una lista completa sí.
  */
-export function huesosAvatar(medidas) {
-  const d = dimensionesCuerpo(medidas);
+export function huesosAvatar(medidas, { flexion = 0 } = {}) {
+  const d = dimensionesCuerpo(medidas, { flexion });
   const { px, py, pz, ancho, yPiernas, yTorso, yCabeza, altoTorso, yReposo } = d;
   return Object.freeze([
     // La raíz va en los PIES y no en la cadera: es el punto que la sala conoce
@@ -120,8 +133,8 @@ export function huesosAvatar(medidas) {
 }
 
 /** El rig ya montado, listo para posar. */
-export function rigAvatar(medidas) {
-  return crearRig(huesosAvatar(medidas));
+export function rigAvatar(medidas, { flexion = 0 } = {}) {
+  return crearRig(huesosAvatar(medidas, { flexion }));
 }
 
 /**
@@ -154,12 +167,13 @@ function direccion(a, b) {
  * lado, y al girar la persona se queda mirando a donde miraba antes.
  *
  * @param {{escala:number, ancho:number, pies:number[]}} medidas
- * @param {{pose?:object, yaw?:number}} [opciones] `pose` es la del rig (#603),
- *   parcial; `yaw` gira el cuerpo entero sobre sus pies, en radianes.
+ * @param {{pose?:object, yaw?:number, flexion?:number}} [opciones] `pose` es la
+ *   del rig (#603), parcial; `yaw` gira el cuerpo entero sobre sus pies, en
+ *   radianes; `flexion` lo agacha o lo sienta (#446).
  * @returns {Object<string, {punto:number[], orientacion:number[]|null}>}
  */
-export function anclasAvatar(medidas, { pose = {}, yaw = 0 } = {}) {
-  const rig = rigAvatar(medidas);
+export function anclasAvatar(medidas, { pose = {}, yaw = 0, flexion = 0 } = {}) {
+  const rig = rigAvatar(medidas, { flexion });
   const posadas = posicionesDeHuesos(rig, poseConRumbo(pose, yaw));
   const porId = new Map(posadas.map(({ id, punto }) => [id, punto]));
   const padreDe = new Map(rig.huesos.map((h) => [h.id, h.padre]));
@@ -201,8 +215,8 @@ export function poseConRumbo(pose = {}, yaw = 0) {
  * caja. Se lo damos del mismo rig, para que las cajas y los anclajes no puedan
  * separarse — que es justo el fallo que este módulo existe para impedir.
  */
-export function puntosAvatar(medidas, { pose = {}, yaw = 0 } = {}) {
-  const rig = rigAvatar(medidas);
+export function puntosAvatar(medidas, { pose = {}, yaw = 0, flexion = 0 } = {}) {
+  const rig = rigAvatar(medidas, { flexion });
   const posadas = posicionesDeHuesos(rig, poseConRumbo(pose, yaw));
   const salida = {};
   for (const { id, punto } of posadas) salida[id] = Object.freeze([...punto]);

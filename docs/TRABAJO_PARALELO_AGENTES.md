@@ -7,6 +7,12 @@ pisen. El contrato de conducta está en [`AGENTS.md`](../AGENTS.md) y el flujo d
 No es teoría. Los puntos de colisión de más abajo son los que ya han chocado de verdad, y cada uno
 trae la regla que lo desactiva.
 
+## Antes de repartir trabajo nuevo
+
+Leer la [norma platino de colaboración](NORMA_PLATINO_COLABORACION.md). Primero
+desbloquear, revisar e integrar entregas pendientes; después abrir frentes nuevos.
+La paralelización no justifica multiplicar PR sin terminar los anteriores.
+
 ## La regla de oro
 
 > Un issue, una rama, un PR, un área. Si dos unidades de trabajo tienen que editar el mismo archivo,
@@ -31,17 +37,17 @@ PR: cada área se verifica sola, y por eso se pueden entregar por separado.
 | Puente | `bridge/**` | `cd bridge && pytest` |
 | Herramientas | `tools/**` | `python3 -m pytest tools/tests` |
 | Inventario del módulo | `scripts/check_orphan_modules.py`, `scripts/tests/test_check_orphan_modules.py`, `docs/orphan-declarations.json`, `foundry-module/tests/modulos-alcanzables.test.mjs`, `foundry-module/tests/paleta.test.mjs` | `python3 -m unittest discover -s scripts/tests -p 'test_check_orphan_modules.py'` y `node --test foundry-module/tests/modulos-alcanzables.test.mjs foundry-module/tests/paleta.test.mjs` |
-| Módulo: orquestación | `foundry-module/scripts/main.mjs`, `foundry-module/scripts/lagunak-constantes.mjs`, `foundry-module/scripts/control-escena.mjs`, `foundry-module/scripts/puerta-catalogo.mjs`, `foundry-module/scripts/idioma-modulo.mjs`, `foundry-module/scripts/foco-render.mjs`, `foundry-module/scripts/filtros-escena.mjs`, `foundry-module/scripts/diagnostico-conexion.mjs`, `foundry-module/scripts/herramientas-gm-catalogo.mjs`, `foundry-module/module.json` | `node --test $(find foundry-module/tests -name '*.test.mjs')` |
+| Módulo: orquestación | `foundry-module/scripts/main.mjs`, `foundry-module/scripts/lagunak-constantes.mjs`, `foundry-module/scripts/control-escena.mjs`, `foundry-module/scripts/puerta-catalogo.mjs`, `foundry-module/scripts/idioma-modulo.mjs`, `foundry-module/scripts/foco-render.mjs`, `foundry-module/scripts/filtros-escena.mjs`, `foundry-module/scripts/diagnostico-conexion.mjs`, `foundry-module/scripts/herramientas-gm-catalogo.mjs`, `foundry-module/scripts/herramientas-publicas-catalogo.mjs`, `foundry-module/module.json` | `node --test $(find foundry-module/tests -name '*.test.mjs')` |
 | Módulo: puente y telemetría | `foundry-module/scripts/bridge-*.mjs`, `foundry-module/scripts/ship-view/*.mjs`, `foundry-module/scripts/contactos-*.mjs`, `foundry-module/scripts/sensores-*.mjs`, `foundry-module/scripts/resolver-*.mjs`, `foundry-module/scripts/base-datos-cientifica.mjs`, `foundry-module/scripts/lamina-contacto.mjs`, `foundry-module/scripts/*-control.mjs`, `foundry-module/scripts/consola-caliente-*.mjs`, `foundry-module/scripts/panel-gm*.mjs` | `node --test $(find foundry-module/tests -name '*.test.mjs')` |
 | Módulo: puestos y autoridad | `foundry-module/scripts/station-*.mjs`, `foundry-module/scripts/requisitos-puesto.mjs`, `foundry-module/scripts/proyeccion-puesto.mjs`, `foundry-module/scripts/asistencia*.mjs`, `foundry-module/scripts/asistencia/**` | `node --test $(find foundry-module/tests -name '*.test.mjs')` |
-| Módulo: eventos y ambiente | `foundry-module/scripts/alarma-*.mjs`, `foundry-module/scripts/alerta*.mjs`, `foundry-module/scripts/nivel-alerta.mjs`, `foundry-module/scripts/alertas-nave.mjs`, `foundry-module/scripts/bitacora-nave.mjs`, `foundry-module/scripts/event-journal.mjs`, `foundry-module/scripts/arte/audio/*.mjs` | `node --test $(find foundry-module/tests -name '*.test.mjs')` |
+| Módulo: eventos y ambiente | `foundry-module/scripts/alarma-*.mjs`, `foundry-module/scripts/alerta*.mjs`, `foundry-module/scripts/nivel-alerta.mjs`, `foundry-module/scripts/alertas-nave.mjs`, `foundry-module/scripts/bitacora-nave.mjs`, `foundry-module/scripts/event-journal.mjs`, `foundry-module/scripts/chronicle-event.mjs`, `foundry-module/scripts/arte/audio/*.mjs` | `node --test $(find foundry-module/tests -name '*.test.mjs')` |
 | Módulo: parlamento (comunicaciones TTRPG) | `foundry-module/scripts/parlamento.mjs`, `foundry-module/scripts/catalogo-encuentros.mjs`, `foundry-module/scripts/parlamento-ventana.mjs`, `foundry-module/scripts/parlamento-tirada.mjs` | `node --test foundry-module/tests/parlamento.test.mjs foundry-module/tests/parlamento-tirada.test.mjs` |
-| Módulo: escenas y 3D | `foundry-module/scripts/nave-*.mjs`, `foundry-module/scripts/retro3d*.mjs`, `foundry-module/scripts/escena-*.mjs`, `foundry-module/scripts/props-*.mjs`, `foundry-module/scripts/piel-textura.mjs`, `foundry-module/scripts/playa-escena.mjs`, `foundry-module/scripts/museo-escena.mjs`, `foundry-module/scripts/cantina*.mjs`, `foundry-module/scripts/terraza-cantina.mjs`, `foundry-module/scripts/seccion-*.mjs`, `foundry-module/scripts/horizonte-*.mjs`, `foundry-module/scripts/visor-piloto*.mjs`, `foundry-module/scripts/mapa-*.mjs`, `foundry-module/scripts/decorado-fondo.mjs`, `foundry-module/scripts/ventana-nave.mjs`, `foundry-module/scripts/andar-nave-app.mjs`, `foundry-module/scripts/rig-esqueleto.mjs`, `foundry-module/scripts/estatua-rig.mjs`, `foundry-module/scripts/retargeting-pose.mjs`, `foundry-module/scripts/libro-geometria.mjs`, `foundry-module/scripts/libro-pagina.mjs`, `foundry-module/scripts/convocatoria-estancia.mjs`, `foundry-module/scripts/convocatoria-wiring.mjs`, `foundry-module/scripts/pathfinding-core.mjs` | `node --test $(find foundry-module/tests -name '*.test.mjs')` |
-| Módulo: combate e iniciativa | `foundry-module/scripts/turno-cartas-modelo.mjs` | `node --test $(find foundry-module/tests -name '*.test.mjs')` |
+| Módulo: escenas y 3D | `foundry-module/scripts/nave-*.mjs`, `foundry-module/scripts/retro3d*.mjs`, `foundry-module/scripts/escena-*.mjs`, `foundry-module/scripts/props-*.mjs`, `foundry-module/scripts/piel-textura.mjs`, `foundry-module/scripts/piel-textura-puerta.mjs`, `foundry-module/scripts/playa-escena.mjs`, `foundry-module/scripts/museo-escena.mjs`, `foundry-module/scripts/cantina*.mjs`, `foundry-module/scripts/terraza-cantina.mjs`, `foundry-module/scripts/seccion-nave/*.mjs`, `foundry-module/scripts/horizonte-*.mjs`, `foundry-module/scripts/visor-piloto*.mjs`, `foundry-module/scripts/mapa-*.mjs`, `foundry-module/scripts/decorado-fondo.mjs`, `foundry-module/scripts/ventana-nave.mjs`, `foundry-module/scripts/andar-nave-app.mjs`, `foundry-module/scripts/rig-esqueleto.mjs`, `foundry-module/scripts/estatua-rig.mjs`, `foundry-module/scripts/retargeting-pose.mjs`, `foundry-module/scripts/libro-geometria.mjs`, `foundry-module/scripts/libro-pagina.mjs`, `foundry-module/scripts/convocatoria-estancia.mjs`, `foundry-module/scripts/convocatoria-wiring.mjs`, `foundry-module/scripts/pathfinding-core.mjs` | `node --test $(find foundry-module/tests -name '*.test.mjs')` |
+| Módulo: combate | `foundry-module/scripts/turno-orden-*.mjs`, `foundry-module/scripts/turno-cartas-modelo.mjs` | `node --test $(find foundry-module/tests -name '*.test.mjs')` |
 | Módulo: arte y avatares | `foundry-module/scripts/paleta.mjs`, `foundry-module/scripts/avatar/*.mjs`, `foundry-module/scripts/ficha-nave*.mjs`, `foundry-module/scripts/iconos-sistema.mjs`, `foundry-module/scripts/laminas-clasicas.mjs`, `foundry-module/scripts/png-indexado.mjs` | `node --test $(find foundry-module/tests -name '*.test.mjs')` |
-| Módulo: NPC y bestiario | `foundry-module/scripts/npc-*.mjs` | `node --test $(find foundry-module/tests -name '*.test.mjs')` |
+| Módulo: NPC y bestiario | `foundry-module/scripts/npc-*.mjs`, `foundry-module/scripts/npc-generador/*.mjs` | `node --test $(find foundry-module/tests -name '*.test.mjs')` |
 | Módulo: minijuegos | `foundry-module/scripts/minijuegos/**`, `foundry-module/scripts/minijuegos-wiring.mjs` | `node --test $(find foundry-module/tests -name '*.test.mjs')` |
-| Módulo: catálogos con procedencia | `foundry-module/scripts/catalogo-*.mjs`, `foundry-module/scripts/procedencia-*.mjs`, `foundry-module/scripts/museo-piezas.mjs`, `foundry-module/scripts/atlas-hyg.mjs`, `foundry-module/data/**` | `node --test $(find foundry-module/tests -name '*.test.mjs')` |
+| Módulo: catálogos con procedencia | `foundry-module/scripts/catalogo-*.mjs`, `foundry-module/scripts/procedencia-*.mjs`, `foundry-module/scripts/museo-piezas.mjs`, `foundry-module/scripts/atlas-hyg.mjs`, `foundry-module/scripts/atlas-standalone.mjs`, `foundry-module/data/**` | `node --test $(find foundry-module/tests -name '*.test.mjs')` |
 | Módulo: contenido externo del GM | `foundry-module/scripts/contenido-externo/**` | `node --test $(find foundry-module/tests -name '*.test.mjs')` |
 | Documentación | `docs/**`, `README.md`, `CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md` | — (revisión humana) |
 
@@ -50,6 +56,18 @@ PR: cada área se verifica sola, y por eso se pueden entregar por separado.
 `tools/tests/test_mapa_areas.py` comprueba que este mapa no se pudra: que toda ruta declarada existe
 de verdad y que **ningún módulo de `foundry-module/scripts/` queda fuera de todas las áreas**. Un
 módulo nuevo sin área es un módulo que nadie sabe quién puede tocar.
+
+El índice operativo machine-readable de [`docs/INDICE_OPERATIVO.json`](INDICE_OPERATIVO.json)
+añade a cada área una tarea típica, un agente recomendado, su comando de verificación y los
+límites mínimos de autoridad, secretos y red. Se valida con:
+
+```bash
+python3 tools/validar_indice_operativo.py
+```
+
+El JSON no sustituye este mapa: reutiliza sus nombres de área como fuente única de rutas y añade
+solo el contexto que necesitan las personas y los agentes para tomar una tarea pequeña sin abrir
+una frontera de seguridad por accidente.
 
 Lo que NO exige es que un módulo esté en una sola área: hay piezas que legítimamente son dos cosas
 —el museo es escena y es catálogo con procedencia— y forzar una partición limpia obligaría a mentir

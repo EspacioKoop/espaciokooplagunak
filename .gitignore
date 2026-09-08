@@ -69,8 +69,9 @@ bridge/.venv/
 # Artefactos locales de distribución
 /dist/
 
-# Configuración local de análisis SonarQube
-sonar-project.properties
+# La configuración de Sonar pasó a ser del repositorio, no local: la usa el
+# workflow `sonarcloud.yml`, y las exclusiones (qué es nuestro y qué es de
+# upstream) son una decisión compartida, no una preferencia de cada máquina.
 .evidencia-tinte/
 
 # Worktrees de tareas de agentes automáticos (ver SECURITY.md)
@@ -94,6 +95,23 @@ lagunak-apis.sqlite
 # en un PR de seguridad.
 .nyc_output/
 coverage/
+# La familia entera, no solo el directorio: el tooling inventa un nombre nuevo
+# cada vez y en el PR #796 entraron `coverage-out/`, `coverage.json`,
+# `coverage.lcov`, `lcov.info` y cuatro volcados `coverage_*.txt` (#818).
+coverage-out/
+coverage.*
+coverage-*.json
+coverage_*.txt
+*.lcov
+lcov.info
+
+# Restos de edicion y de merge. El `.bak` importa mas de lo que parece: delata
+# que se reescribio un fichero en vez de editarlo, y cuando el fichero es una
+# suite de tests eso vale puntos de cobertura (#818).
+*.bak
+*.orig
+*.rej
+*.temp.*
 
 # Artefactos de cobertura de pytest-cov.
 .coverage

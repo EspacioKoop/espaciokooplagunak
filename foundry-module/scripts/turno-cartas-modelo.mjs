@@ -27,11 +27,32 @@ function texto(valor, fallback) {
 }
 
 export function normalizarTarjeta(entrada = {}) {
+  // Lo que no se reconoce se descarta, pero DEJANDO CONSTANCIA. La alternativa
+  // que se valoró —conservar el valor desconocido, como hacía el modelo rival
+  // de #1056 con `null`— encaja en una forma de objeto de booleanos, no en un
+  // array de estados: arrastrar una cadena desconocida dentro de `estados` la
+  // pasearía hasta el render, que tendría que decidir qué icono dibuja para
+  // algo que nadie ha definido. Así que se descarta, que es la disciplina de
+  // `contenido-externo/` (fallar cerrado), y se anota en `descartes` con su
+  // campo, que es lo que impide que el descarte sea silencioso. Un estado
+  // desconocido no se convierte en `false` ni inventa un bando: desaparece de
+  // la lectura y aparece en el recuento.
+  const descartes = [];
+  const anota = (campo, valor) => {
+    if (valor !== undefined && valor !== null && valor !== "") descartes.push({ campo, valor: String(valor) });
+  };
   const raza = opcion(entrada.raza, RAZAS, "humano");
+  if (raza !== entrada.raza) anota("raza", entrada.raza);
   const clase = opcion(entrada.clase, CLASES, "guerrero");
+  if (clase !== entrada.clase) anota("clase", entrada.clase);
   const bando = opcion(entrada.bando, BANDOS, "neutral");
+  if (bando !== entrada.bando) anota("bando", entrada.bando);
   const estado = Array.isArray(entrada.estados)
-    ? entrada.estados.filter((valor, indice, valores) => ESTADOS.includes(valor) && valores.indexOf(valor) === indice)
+    ? entrada.estados.filter((valor, indice, valores) => {
+      const conocido = ESTADOS.includes(valor);
+      if (!conocido) anota("estados", valor);
+      return conocido && valores.indexOf(valor) === indice;
+    })
     : [];
   const shiny = entrada.shiny === true;
   const agotamiento = Number.isInteger(entrada.agotamiento)
@@ -63,6 +84,7 @@ export function normalizarTarjeta(entrada = {}) {
     estados: Object.freeze(estado),
     badges: Object.freeze(badges),
     agotamiento,
+    descartes: Object.freeze(descartes.map((d) => Object.freeze(d))),
     visual: Object.freeze({
       paleta: PALETAS[raza],
       iconoClase: ICONOS_CLASE[clase],
@@ -131,6 +153,21 @@ export function tarjetasDesdeEstadoTurno(estado) {
 
 function escapar(valor) {
   return String(valor).replace(/[&<>\"]/g, (caracter) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[caracter]));
+}
+
+/**
+ * Copia plana y segura para JSON. La tarjeta normalizada ya es serializable
+ * —solo lleva cadenas, números, booleanos y arrays—, pero sale congelada y con
+ * objetos anidados compartidos: `PALETAS[raza]` es la MISMA referencia en todas
+ * las tarjetas de esa raza. Quien la mande por red o la guarde quiere una copia
+ * suya, no un puñado de referencias a las constantes del módulo, y quiere poder
+ * comprobar que lo que sale es exactamente lo que entra.
+ *
+ * Rescatado del modelo rival de #1056, que cubría este criterio de #1030 y aquí
+ * faltaba.
+ */
+export function serializarTarjeta(entrada) {
+  return JSON.parse(JSON.stringify(normalizarTarjeta(entrada)));
 }
 
 // Boceto visual deliberadamente pequeño: sirve para comparar variantes sin

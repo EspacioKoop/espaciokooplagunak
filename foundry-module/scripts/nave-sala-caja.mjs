@@ -37,6 +37,7 @@ import { piezasDeVentana } from "./nave-ventana-espacio.mjs";
 import { piezasMuralPixel } from "./nave-mural-pixel.mjs";
 import { ANCHO_TESELA, METROS_POR_TEXEL, texturaMuro } from "./piel-textura.mjs";
 import { piezasPielHoja } from "./nave-piel-puerta.mjs";
+import { piezasPielHojaTextura } from "./piel-textura-puerta.mjs";
 import { piezasPielColumna, piezasPielObjeto } from "./nave-piel-objeto.mjs";
 import { piezasPielSuelo, piezasPielTecho } from "./nave-piel-suelo.mjs";
 import { piezasLuminarias, mallaDifusorLuminarias, colorDifusorLuminaria } from "./nave-luminaria.mjs";
@@ -299,7 +300,7 @@ function abrirHuecosEnMuros(muros, huecos, ancho, profundidad) {
   const puertasConBase = [];
 
   for (const hueco of huecos) {
-    const { rect, y0, y1, esVentana } = hueco;
+    const { rect, y0, y1, esVentana, colorMarco } = hueco;
     const tocaNorte = rect.z <= TOLERANCIA_BORDE;
     const tocaSur = rect.z + rect.profundidad >= profundidad - TOLERANCIA_BORDE;
     const tocaOeste = rect.x <= TOLERANCIA_BORDE;
@@ -329,7 +330,10 @@ function abrirHuecosEnMuros(muros, huecos, ancho, profundidad) {
     if (y0 > 0) bandas.push(rectAColumnaEntre(base, 0, y0));
     if (y1 < ALTURA) bandas.push(rectAColumnaEntre(base, y1, ALTURA));
     if (esVentana) marcos.push(...piezasMarcoVentana(base, y0, y1, alongX));
-    else marcosPuerta.push(...piezasMarcoPuerta(base, y0, y1, alongX));
+    // `color: null` y no `colorMarco` directamente: así el llamador (`crearSalaCaja`)
+    // resuelve el color de serie de la sala en un solo sitio en vez de que cada
+    // puerta sin `colorMarco` explícito tenga que repetirlo.
+    else marcosPuerta.push(...piezasMarcoPuerta(base, y0, y1, alongX).map((malla) => ({ malla, color: colorMarco ?? null })));
     // `base` ya trae el hueco resuelto con el grosor REAL del muro que toca
     // (el `rect` de entrada no lo garantiza — sus ejes fuera del ancho de
     // puerta son arbitrarios, ver `nave-vestibulo.PUERTA_*`), así que las
@@ -526,7 +530,7 @@ function panosTexturados(rect, altura) {
  * del techo o que no debe estorbar puede ponerlo a `false`.
  *
  * @param {{ancho:number, profundidad:number, columnas?:Array,
- *   puertas?:Array<{rect:object}>, ventanas?:Array<{rect:object}>,
+ *   puertas?:Array<{rect:object, colorMarco?:string}>, ventanas?:Array<{rect:object}>,
  *   mobiliario?:Array<{centro:number[], medidas:number[], color:string, colision?:boolean}>,
  *   colorMuro?:string, colorColumna?:string, colorMarcoVentana?:string,
  *   semillaCielo?:number, cantidadEstrellas?:number, sistema?:string|null}} medidas
@@ -566,18 +570,19 @@ export function crearSalaCaja({
    * nervado y las juntas finas que en cajas de diez centímetros no caben. Lo que
    * pierde es el moteado vivo de la luz por chapa: pasa a ser relieve PINTADO.
    *
-   * Eso cambia el aspecto de las trece salas del Phobos a la vez, así que el
-   * cambio de serie es una decisión de arte y se toma aparte. Aquí está el
-   * camino, probado y listo; cambiar este valor por defecto es la línea que lo
-   * enciende.
+   * Eso cambia el aspecto de las trece salas del Phobos a la vez, y la
+   * decisión ya se tomó (#458): DE SERIE desde entonces. `"geometria"` sigue
+   * viva para quien la necesite (comparar, depurar el pintor), pero ya no es
+   * el valor por defecto.
    */
-  pielMuro = "geometria",
+  pielMuro = "textura",
   semillaMural = 20260810,
-  // Piel de puertas y objetos (#550). Van con su propio interruptor y no con el
-  // del mural porque son decisiones separables: una sala puede querer sus muros
-  // desnudos y sus puertas marcadas. Ambas encendidas de serie, y ambas apagadas
-  // en las salas de prueba por el mismo motivo que el mural.
-  pielPuertas = true,
+  // Piel de puertas y objetos (#550, textura por hoja en #458). Van con su
+  // propio interruptor y no con el del mural porque son decisiones separables:
+  // una sala puede querer sus muros desnudos y sus puertas marcadas. Mismos
+  // tres valores que `pielMuro` (`"geometria"`/`"textura"`/`false`), y misma
+  // decisión: `"textura"` de serie, apagada en las salas de prueba.
+  pielPuertas = "textura",
   pielObjetos = true,
   pielSuelo = true,
   // Qué sistema aloja esta sala (#765), o `null` si no aloja ninguno — la misma
@@ -594,7 +599,9 @@ export function crearSalaCaja({
     { x: ancho, z: 0, ancho: GROSOR_MURO, profundidad },
   ];
   const huecos = [
-    ...puertas.map(({ rect }) => ({ rect, y0: 0, y1: ALTURA_PUERTA, esVentana: false })),
+    // `colorMarco` es por PUERTA (#458 QA: «no se entiende a dónde lleva»): sin
+    // él, `abrirHuecosEnMuros` cae al color de serie de la sala entera.
+    ...puertas.map(({ rect, colorMarco }) => ({ rect, y0: 0, y1: ALTURA_PUERTA, esVentana: false, colorMarco })),
     ...ventanas.map(({ rect }) => ({ rect, y0: ALTURA_ALFEIZAR, y1: ALTURA_DINTEL_VENTANA, esVentana: true })),
   ];
   const { muros: tramosMuro, bandas, marcos, marcosPuerta, puertasConBase } =
@@ -636,8 +643,11 @@ export function crearSalaCaja({
       : []),
     ...marcos.map((malla) => ({ malla, color: colorMarcoVentana })),
     // El marco de puerta lleva su propio color: es lo que la hace reconocible
-    // como paso a otra sala y no como un boquete en el muro.
-    ...marcosPuerta.map((malla) => ({ malla, color: colorMarcoPuerta })),
+    // como paso a otra sala y no como un boquete en el muro. Y, desde #458, ese
+    // color puede variar POR PUERTA (`colorMarco` en la puerta declarada): una
+    // puerta a un destino social (cantina, terraza) se reconoce por el marco
+    // antes de leer el letrero.
+    ...marcosPuerta.map(({ malla, color }) => ({ malla, color: color ?? colorMarcoPuerta })),
     ...bandas.map((malla) => ({ malla, color: colorMuro })),
     ...columnas.map((rect) => ({ malla: rectAColumna(rect, ALTURA), color: colorColumna })),
     ...mobiliario.map(({ centro, medidas, color, emisivo, malla }) => ({
@@ -726,9 +736,12 @@ export function crearSalaCaja({
         // abrirse. En rejilla (#550) para que el detalle de la puerta mida lo
         // mismo que el del muro que la rodea; sin piel, la hoja se queda con las
         // bandas lisas de siempre, que siguen siendo mejor que una hoja pelada.
-        ...rects.flatMap((rect) =>
-          pielPuertas ? piezasPielHoja(puerta, rect) : piezasDetalleHoja(puerta, rect),
-        ),
+        ...rects.flatMap((rect) => {
+          if (pielPuertas === "textura") {
+            return piezasPielHojaTextura(puerta, rect, { color: colorMuro, ambiente: AMBIENTE_PANO });
+          }
+          return pielPuertas ? piezasPielHoja(puerta, rect) : piezasDetalleHoja(puerta, rect);
+        }),
       ];
     });
 

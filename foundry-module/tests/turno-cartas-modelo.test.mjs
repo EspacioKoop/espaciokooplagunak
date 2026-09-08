@@ -1,6 +1,14 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { combinarTarjetas, galeriaDePrueba, normalizarTarjeta, tarjetaSvg, tarjetasDeIniciativa, tarjetasDesdeEstadoTurno } from "../scripts/turno-cartas-modelo.mjs";
+import {
+  combinarTarjetas,
+  galeriaDePrueba,
+  normalizarTarjeta,
+  serializarTarjeta,
+  tarjetaSvg,
+  tarjetasDeIniciativa,
+  tarjetasDesdeEstadoTurno,
+} from "../scripts/turno-cartas-modelo.mjs";
 
 test("combina raza, clase, bando y estado en capas visuales", () => {
   const carta = normalizarTarjeta({ id: "a", nombre: "Alda", raza: "elfo", clase: "mago", bando: "aliado", shiny: true, estados: ["ventaja", "concentracion"] });
@@ -109,4 +117,40 @@ test("combinarTarjetas es idempotente y conserva concentracion/inspiracion al co
   const combinada = combinarTarjetas(base, { estados: ["herido"] });
   assert.deepEqual(combinada.estados, ["herido"]);
   assert.deepEqual(combinada.badges, ["concentracion", "inspiracion"]);
+});
+
+test("un valor desconocido se descarta con constancia, no se convierte en false ni inventa bando", () => {
+  // Criterio explícito de #1030. La forma de dejarlo constar es la de
+  // `contenido-externo/`: fallar cerrado y anotar el descarte, en vez de
+  // arrastrar hasta el render una cadena que nadie ha definido.
+  const tarjeta = normalizarTarjeta({
+    id: "x",
+    raza: "orco",
+    bando: "hostil",
+    estados: ["herido", "petrificado"],
+  });
+  assert.equal(tarjeta.raza, "humano", "cae al valor por defecto, no a null");
+  assert.equal(tarjeta.bando, "neutral", "no inventa una alineación");
+  assert.deepEqual([...tarjeta.estados], ["herido"], "el estado desconocido no llega a la lectura");
+  assert.deepEqual(
+    tarjeta.descartes.map((d) => `${d.campo}=${d.valor}`).sort(),
+    ["bando=hostil", "estados=petrificado", "raza=orco"],
+    "pero queda constancia de los tres, con su campo",
+  );
+});
+
+test("una tarjeta completa no deja descartes", () => {
+  const tarjeta = normalizarTarjeta({ id: "y", raza: "elfo", clase: "mago", bando: "aliado", estados: ["ventaja"] });
+  assert.deepEqual([...tarjeta.descartes], []);
+});
+
+test("serializarTarjeta produce una copia propia, sin compartir las constantes del módulo", () => {
+  const entrada = { id: "z", raza: "enano", clase: "picaro", bando: "enemigo", estados: ["herido"], agotamiento: 3 };
+  const plana = serializarTarjeta(entrada);
+  const normal = normalizarTarjeta(entrada);
+
+  assert.deepEqual(plana, JSON.parse(JSON.stringify(normal)), "mismo contenido que la normalizada");
+  assert.notEqual(plana.visual.paleta, normal.visual.paleta, "la paleta es una copia, no la referencia compartida");
+  assert.ok(!Object.isFrozen(plana), "la copia es manipulable por quien la recibe");
+  assert.equal(JSON.parse(JSON.stringify(plana)).id, "z", "sobrevive una ida y vuelta por JSON");
 });

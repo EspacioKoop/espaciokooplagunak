@@ -78,9 +78,10 @@ import { crearClaseCantinaV1, crearClaseCantinaV2 } from "./cantina-app.mjs";
 import { puertaPorId } from "./cantina.mjs";
 import { crearClasePanelGMV1, crearClasePanelGMV2 } from "./panel-gm-app.mjs";
 import { construirHerramientasGM } from "./herramientas-gm-catalogo.mjs";
-import { crearClaseSeccionV1, crearClaseSeccionV2 } from "./seccion-nave-app.mjs";
+import { crearClaseSeccionV1, crearClaseSeccionV2 } from "./seccion-nave/seccion-nave-app.mjs";
+import { construirHerramientasPublicas } from "./herramientas-publicas-catalogo.mjs";
 import { crearClaseAndarV1, crearClaseAndarV2 } from "./andar-nave-app.mjs";
-import { salaDePuesto } from "./seccion-nave.mjs";
+import { salaDePuesto } from "./seccion-nave/seccion-nave.mjs";
 import { registrarPreset as registrarPresetBaraja } from "./minijuegos/baraja-preset.mjs";
 import {
   crearClaseMesaDadosV1,
@@ -890,52 +891,12 @@ Hooks.on("getSceneControlButtons", (controls) => {
   // botón lo ven todos, a diferencia del mando, que es solo del GM.
   const tools = [
     ...gmTools,
-    {
-      // La cantina la ve todo el mundo: es la capa social, y un minijuego al
-      // que solo pudiera entrar el GM no sería un minijuego (#423). Sustituye
-      // al botón de mesa suelto por una única puerta; de ahí para dentro
-      // decide el catálogo de `cantina.mjs`, no un botón nuevo por mesa. El GM
-      // sigue siendo quien CREA la mesa elegida si no hay ninguna abierta; a
-      // un jugador la puerta le lleva a la mesa puesta, o al aviso de que
-      // todavía no hay ninguna.
-      name: "lagunak-cantina",
-      title: "LAGUNAK.Controles.AbrirCantina",
-      icon: "fa-solid fa-mug-saucer",
-      button: true,
-      // Los dos verticales entran por AQUÍ. #413 nació con su propio botón de
-      // escena porque entonces la alternativa era un menú dentro de la mesa de
-      // póker, que habría hecho de los dados un modo del otro juego. La cantina
-      // resuelve lo mismo sin gastar barra: elegir a qué se juega sigue siendo
-      // lo primero que se decide, solo que en una sala y no en un control.
-      onClick: () => abrirCantina(),
-    },
-    {
-      // La sección la ve toda la mesa por la misma razón que la cantina: saber
-      // qué forma tiene la nave en la que vives no es información privilegiada
-      // (#427). La lectura de daño sí lo es, y por eso a quien no tiene puente
-      // el plano le sale sin lectura en vez de mentirle.
-      name: "lagunak-seccion",
-      title: "LAGUNAK.Controles.AbrirSeccion",
-      icon: "fa-solid fa-diagram-project",
-      button: true,
-      onClick: () => abrirSeccionNave(),
-    },
-    {
-      // Prototipo técnico de #427, visible a toda la mesa: no toca autoridad
-      // ni datos privados, es un banco de pruebas del motor de movimiento.
-      name: "lagunak-andar-nave",
-      title: "LAGUNAK.Controles.AbrirAndarNave",
-      icon: "fa-solid fa-person-walking",
-      button: true,
-      onClick: () => abrirAndarNave(),
-    },
-    {
-      name: "lagunak-musica-audio",
-      title: "LAGUNAK.Controles.AudioMusica",
-      icon: "fa-solid fa-headphones",
-      button: true,
-      onClick: () => alternarAudioLocal(),
-    },
+    ...construirHerramientasPublicas({
+      abrirCantina,
+      abrirSeccionNave,
+      abrirAndarNave,
+      alternarAudioLocal,
+    }),
   ];
 
   crearGrupo(controls, {

@@ -4,34 +4,35 @@ Este documento complementa `opengameart-cc0-research.md` con la ruta de
 incorporación concreta para el lote 3D y audio, respetando
 `docs/PROCEDENCIA_ASSETS.md`.
 
-## Lote 3D priorizado (6 ítems)
+## Lote 3D priorizado (5 ítems)
 
-1. Space Ship 3D&2D  
-   URL: https://opengameart.org/content/space-ship-3d2d  
-   Destino: `resources/mesh/ship/oga-3d2d/`  
-   Acción: descargar assets originales, registrar ficha en `PROCEDENCIA_ASSETS.md`, convertir con herramienta existente si procede
+Space Ship 3D&2D (https://opengameart.org/content/space-ship-3d2d) queda
+fuera de este lote CC0: la página declara CC-BY 3.0 (autor little killy,
+fichero `ship-animated.blend`), no CC0. Si se quiere incorporar, necesita
+su propia ficha con atribución y condiciones en `PROCEDENCIA_ASSETS.md`,
+revisada aparte de este lote.
 
-2. Low poly space assets  
+1. Low poly space assets  
    URL: https://opengameart.org/content/low-poly-space-assets  
    Destino: foundry-module/data/mallas/low-poly-space/ (ruta a crear)  
    Acción: verificar formato; incluir solo modelos, no texturas derivadas con licencia distinta
 
-3. Harvester spaceship - low poly  
+2. Harvester spaceship - low poly  
    URL: https://opengameart.org/content/harvester-spaceship-low-poly  
    Destino: `resources/mesh/ship/oga-harvester/`  
    Acción: descargar, fichar, convertir
 
-4. MCU-43 Gryphon Mech  
+3. MCU-43 Gryphon Mech  
    URL: https://opengameart.org/content/mcu-43-gryphon-mech  
    Destino: `resources/mesh/various/oga-gryphon/`  
    Acción: descargar, fichar
 
-5. Space Ship Construction Kit  
+4. Space Ship Construction Kit  
    URL: https://opengameart.org/content/space-ship-construction-kit  
    Destino: `resources/mesh/ship/oga-construction-kit/`  
    Acción: descargar, fichar, documentar partes reutilizables
 
-6. Space Ship & Mech Construction Kit 2  
+5. Space Ship & Mech Construction Kit 2  
    URL: https://opengameart.org/content/space-ship-mech-construction-kit-2  
    Destino: `resources/mesh/various/oga-mech-kit2/`  
    Acción: descargar, fichar

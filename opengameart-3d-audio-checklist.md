@@ -12,61 +12,61 @@ fichero `ship-animated.blend`), no CC0. Si se quiere incorporar, necesita
 su propia ficha con atribución y condiciones en `PROCEDENCIA_ASSETS.md`,
 revisada aparte de este lote.
 
-1. Low poly space assets  
-   URL: https://opengameart.org/content/low-poly-space-assets  
-   Destino: foundry-module/data/mallas/low-poly-space/ (ruta a crear)  
+1. Low poly space assets\
+   URL: https://opengameart.org/content/low-poly-space-assets\
+   Destino: foundry-module/data/mallas/low-poly-space/ (ruta a crear)\
    Acción: verificar formato; incluir solo modelos, no texturas derivadas con licencia distinta
 
-2. Harvester spaceship - low poly  
-   URL: https://opengameart.org/content/harvester-spaceship-low-poly  
-   Destino: `resources/mesh/ship/oga-harvester/`  
+2. Harvester spaceship - low poly\
+   URL: https://opengameart.org/content/harvester-spaceship-low-poly\
+   Destino: `resources/mesh/ship/oga-harvester/`\
    Acción: descargar, fichar, convertir
 
-3. MCU-43 Gryphon Mech  
-   URL: https://opengameart.org/content/mcu-43-gryphon-mech  
-   Destino: `resources/mesh/various/oga-gryphon/`  
+3. MCU-43 Gryphon Mech\
+   URL: https://opengameart.org/content/mcu-43-gryphon-mech\
+   Destino: `resources/mesh/various/oga-gryphon/`\
    Acción: descargar, fichar
 
-4. Space Ship Construction Kit  
-   URL: https://opengameart.org/content/space-ship-construction-kit  
-   Destino: `resources/mesh/ship/oga-construction-kit/`  
+4. Space Ship Construction Kit\
+   URL: https://opengameart.org/content/space-ship-construction-kit\
+   Destino: `resources/mesh/ship/oga-construction-kit/`\
    Acción: descargar, fichar, documentar partes reutilizables
 
-5. Space Ship & Mech Construction Kit 2  
-   URL: https://opengameart.org/content/space-ship-mech-construction-kit-2  
-   Destino: `resources/mesh/various/oga-mech-kit2/`  
+5. Space Ship & Mech Construction Kit 2\
+   URL: https://opengameart.org/content/space-ship-mech-construction-kit-2\
+   Destino: `resources/mesh/various/oga-mech-kit2/`\
    Acción: descargar, fichar
 
 ## Lote audio priorizado (6 ítems)
 
-1. Sci-fi SFX  
-   URL: https://opengameart.org/content/sci-fi-sfx  
-   Destino: `resources/sfx/oga/sci-fi-sfx/`  
+1. Sci-fi SFX\
+   URL: https://opengameart.org/content/sci-fi-sfx\
+   Destino: `resources/sfx/oga/sci-fi-sfx/`\
    Acción: copiar `.mp3` y `.wav`, registrar ficha con sha256
 
-2. IgnisForge Free SFX Sampler  
-   URL: https://opengameart.org/content/ignisforge-free-sfx-sampler-43-synthesized-retro-sound-effects  
-   Destino: `resources/sfx/oga/ignisforge/`  
+2. IgnisForge Free SFX Sampler\
+   URL: https://opengameart.org/content/ignisforge-free-sfx-sampler-43-synthesized-retro-sound-effects\
+   Destino: `resources/sfx/oga/ignisforge/`\
    Acción: descargar lote, fichar
 
-3. Blue Moon Beach  
-   URL: https://opengameart.org/content/blue-moon-beach  
-   Destino: `resources/audio/scenario/oga/blue-moon-beach/`  
+3. Blue Moon Beach\
+   URL: https://opengameart.org/content/blue-moon-beach\
+   Destino: `resources/audio/scenario/oga/blue-moon-beach/`\
    Acción: descargar OGG, fichar
 
-4. Memoria Fragmentada  
-   URL: https://opengameart.org/content/memoria-fragmentada  
-   Destino: `resources/audio/scenario/oga/memoria-fragmentada/`  
+4. Memoria Fragmentada\
+   URL: https://opengameart.org/content/memoria-fragmentada\
+   Destino: `resources/audio/scenario/oga/memoria-fragmentada/`\
    Acción: descargar MP3, fichar
 
-5. 80 CC0 creature SFX  
-   URL: https://opengameart.org/content/80-cc0-creature-sfx  
-   Destino: `resources/sfx/oga/creature-sfx/`  
+5. 80 CC0 creature SFX\
+   URL: https://opengameart.org/content/80-cc0-creature-sfx\
+   Destino: `resources/sfx/oga/creature-sfx/`\
    Acción: descargar, revisar créditos automáticos de OGA
 
-6. 50 CC0 Sci-Fi SFX  
-   URL: https://opengameart.org/content/50-cc0-sci-fi-sfx  
-   Destino: `resources/sfx/oga/50-sci-fi-sfx/`  
+6. 50 CC0 Sci-Fi SFX\
+   URL: https://opengameart.org/content/50-cc0-sci-fi-sfx\
+   Destino: `resources/sfx/oga/50-sci-fi-sfx/`\
    Acción: descargar, fichar
 
 ## Reglas de incorporación

@@ -36,7 +36,7 @@ export function crearClaseConvocatoriaV2({ onSubmit }) {
 
     /** @returns {string} Plantilla Handlebars. */
     static get template() {
-      return `modules/lagunak/templates/convocatoria.hbs`;
+      return `modules/lagunak/templates/convocatoria-app.hbs`;
     }
 
     /** Contexto para la plantilla. */
@@ -80,7 +80,7 @@ export function crearClaseConvocatoriaV1({ onSubmit }) {
         id: "lagunak-convocatoria",
         classes: ["lagunak-convocatoria"],
         title: game.i18n.localize("LAGUNAK.PanelGM.Entrada.Convocatoria"),
-        template: "modules/lagunak/templates/convocatoria.hbs",
+        template: "modules/lagunak/templates/convocatoria-app.hbs",
         width: 300,
         height: "auto",
       });

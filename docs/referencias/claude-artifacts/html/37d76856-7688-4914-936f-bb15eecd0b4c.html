@@ -1,0 +1,440 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style></head><body>
+<title>Gramática PSX del Avatar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#10141a; --panel:#1b222b; --panel-2:#212a34; --line:#2d3946; --line-bright:#425364;
+    --text:#e7ecef; --text-dim:#8fa0ac; --text-faint:#5d6c78;
+    --amber:#e0a33a; --teal:#3ecfc4; --danger:#c8665a;
+    --shadow-dark:#080a0d; --shadow-light:#2c3745;
+    font-size:15px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg); color:var(--text); margin:0; padding:28px 20px 70px;
+    font-family:'IBM Plex Sans', system-ui, sans-serif;
+    background-image:
+      radial-gradient(circle at 12% 6%, rgba(62,207,196,0.05), transparent 42%),
+      radial-gradient(circle at 88% 94%, rgba(224,163,58,0.05), transparent 45%);
+  }
+  .wrap{max-width:1220px;margin:0 auto;}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);}
+  h1{font-family:'Press Start 2P', monospace;font-size:19px;line-height:1.55;margin:10px 0 10px;text-wrap:balance;}
+  .page-head p{color:var(--text-dim);max-width:76ch;line-height:1.65;margin:0 0 8px;font-size:14px;}
+  code{background:var(--panel-2);padding:1px 5px;border:1px solid var(--line);font-size:12.5px;font-family:'IBM Plex Mono',monospace;}
+
+  .seccion{font-family:'Press Start 2P';font-size:11px;color:var(--amber);margin:40px 0 6px;}
+  .seccion-nota{font-family:'IBM Plex Mono';font-size:12px;color:var(--text-faint);max-width:88ch;line-height:1.65;margin-bottom:18px;}
+
+  .fila{display:grid;gap:12px;}
+  .fila-5{grid-template-columns:repeat(5,1fr);}
+  .fila-6{grid-template-columns:repeat(6,1fr);}
+  .fila-4{grid-template-columns:repeat(4,1fr);}
+  @media (max-width:1000px){.fila-5,.fila-6{grid-template-columns:repeat(3,1fr);}.fila-4{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:620px){.fila-5,.fila-6,.fila-4{grid-template-columns:repeat(2,1fr);}}
+
+  .celda{
+    background:var(--panel);border:1px solid var(--line);padding:12px 10px 14px;
+    display:flex;flex-direction:column;gap:8px;align-items:center;
+    box-shadow: inset 1px 1px 0 var(--shadow-light), inset -1px -1px 0 var(--shadow-dark);
+  }
+  .celda .nombre{font-family:'Press Start 2P';font-size:8.5px;text-align:center;line-height:1.6;color:var(--text);}
+  .celda .rasgo{font-family:'IBM Plex Mono';font-size:9.5px;color:var(--text-faint);text-align:center;line-height:1.5;}
+  canvas{image-rendering:pixelated;background:#0c1015;border:1px solid var(--line);}
+
+  .reglas{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:8px;}
+  @media (max-width:860px){.reglas{grid-template-columns:1fr;}}
+  .regla{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--teal);padding:14px 16px;}
+  .regla h4{font-family:'Press Start 2P';font-size:9.5px;margin:0 0 8px;color:var(--teal);line-height:1.6;}
+  .regla p{font-size:12.5px;color:var(--text-dim);line-height:1.6;margin:0;}
+
+  .destacado{
+    border-left:3px solid var(--amber);background:var(--panel);padding:14px 16px;margin:24px 0 0;
+    font-size:13.5px;color:var(--text-dim);line-height:1.65;
+  }
+  .destacado b{color:var(--amber);}
+</style>
+
+<div class="wrap">
+  <div class="page-head">
+    <div class="eyebrow">retro3d.mjs · época PSX · sobre cantina-avatar.mjs</div>
+    <h1>GRAMÁTICA PSX DEL AVATAR</h1>
+    <p>Construido sobre la dirección elegida: <strong>nada alineado a los ejes</strong>. Las mismas cinco razas
+      y doce clases que ya declara <code>cantina-avatar.mjs</code>, pero con la gramática que hacía que un
+      modelo de PlayStation no pareciera un muñeco de bloques. Cada figura de aquí es el mismo presupuesto de
+      polígonos que una caja — cambia dónde caen los vértices.</p>
+  </div>
+
+  <div class="seccion">01 · Las cinco razas — la proporción es la silueta</div>
+  <div class="seccion-nota">
+    <code>CUERPO_POR_RAZA</code> ya define alto y ancho por raza, y esa tabla se conserva tal cual. Lo que se
+    añade es que el estrechamiento reparte esa proporción de otra forma: un enano no es un humano encogido,
+    es un tronco ancho sobre piernas cortas y gruesas; un elfo no es un humano estirado, es un estrechamiento
+    más largo y una mandíbula más afilada.
+  </div>
+  <div class="fila fila-5" id="razas"></div>
+
+  <div class="seccion">02 · Las doce clases — la silueta rompe el contorno</div>
+  <div class="seccion-nota">
+    Aquí está la ventaja real de salir de la caja: una túnica acampanada, una capucha en punta o una hombrera
+    en cuña <b>cambian el perfil exterior</b> de la figura. Con prismas eso era imposible sin apilar cajas;
+    con trapecios sale del mismo polígono que ya dibuja el torso. Todas sobre cuerpo humano, para comparar
+    solo la clase.
+  </div>
+  <div class="fila fila-6" id="clases"></div>
+
+  <div class="seccion">03 · Raza × clase — se componen, no se pisan</div>
+  <div class="seccion-nota">
+    La raza decide la proporción; la clase decide el contorno. Son dos capas independientes, igual que hoy
+    <code>CUERPO_POR_RAZA</code> y <code>distintivoDeClase</code> ya son independientes.
+  </div>
+  <div class="fila fila-4" id="combos"></div>
+
+  <div class="seccion">04 · Las tres reglas que lo mantienen PSX y no cubo</div>
+  <div class="reglas">
+    <div class="regla">
+      <h4>NINGÚN<br>ÁNGULO RECTO</h4>
+      <p>Todo volumen es un tronco de pirámide: más ancho arriba que abajo, o al revés. En cuanto un miembro
+        tiene lados paralelos y verticales, la figura vuelve a leerse como bloque. Es la regla que más barata
+        sale y más se nota.</p>
+    </div>
+    <div class="regla">
+      <h4>DOS PLANOS<br>POR VOLUMEN</h4>
+      <p>Cada pieza lleva una banda clara al lado de la luz y otra oscura al opuesto — no un color plano.
+        Es el mismo <code>intensidadCara</code> que ya sombrea la nave; aquí solo hay que dar a los vértices
+        una normal que no sea perpendicular a la cámara.</p>
+    </div>
+    <div class="regla">
+      <h4>LA CLASE<br>ROMPE EL PERFIL</h4>
+      <p>Un distintivo que solo se ve de frente no identifica a nadie a veinte metros. Lo que identifica es el
+        contorno: falda acampanada, capucha en punta, hombrera en cuña. Se lee incluso a contraluz, que es la
+        prueba de fuego de una silueta.</p>
+    </div>
+  </div>
+
+  <div class="destacado">
+    <b>Lo que esto NO cambia.</b> La tabla <code>CUERPO_POR_RAZA</code>, la lista <code>CLASES</code>, los
+    <code>GESTOS</code> y el reparto de familias de <code>distintivoDeClase</code> siguen siendo los mismos —
+    esto sustituye <em>cómo se dibuja cada pieza</em>, no qué piezas hay ni quién decide cuáles. Y sigue sin
+    haber rig: son posturas, como hoy.
+  </div>
+</div>
+
+<script>
+  // ============ paleta ============
+  const P = {
+    piel:"#c99a72", pielL:"#e2b389", pielS:"#8a6448",
+    pelo:"#3a2f28", peloL:"#4d3f35",
+    ropa:"#4a5a6b", ropaL:"#65788c", ropaS:"#2f3b47",
+    acero:"#9aa5b1", aceroL:"#c3ccd4", aceroS:"#5c6873",
+    madera:"#7a5230", maderaL:"#a06f43",
+    tunica:"#5b4a7a", tunicaL:"#7a659e", tunicaS:"#3b2f52",
+    verde:"#5c7a4a", verdeL:"#7d9e66", verdeS:"#3c5230",
+    simbolo:"#e8d9a0", tela:"#b8ac97", telaS:"#8a806e",
+    cuero:"#6b5136", cueroL:"#8d6d4a",
+  };
+
+  function poly(ctx, pts, color) {
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+    ctx.closePath(); ctx.fillStyle = color; ctx.fill();
+  }
+  function nuevoLienzo(id, w, h) {
+    const cv = document.getElementById(id);
+    const ctx = cv.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+    ctx.fillStyle = "#0c1015"; ctx.fillRect(0, 0, w, h);
+    return ctx;
+  }
+
+  // ============ razas: la misma tabla que CUERPO_POR_RAZA, más rasgos de silueta ============
+  const RAZAS = {
+    humano:  { alto:1.00, ancho:1.00, cabeza:1.00, rasgo:"referencia" },
+    enano:   { alto:0.78, ancho:1.25, cabeza:1.14, barba:true, rasgo:"tronco ancho, pierna corta y gruesa" },
+    elfo:    { alto:1.06, ancho:0.90, cabeza:0.94, orejas:true, rasgo:"estrechamiento largo, mandíbula afilada" },
+    mediano: { alto:0.68, ancho:0.96, cabeza:1.22, rasgo:"cabeza grande, formas más redondeadas" },
+    otra:    { alto:1.00, ancho:1.00, cabeza:1.00, rasgo:"cuerpo genérico" },
+  };
+
+  // ============ el cuerpo PSX ============
+  // Todo trapecio. Ningún lado vertical paralelo. Dos planos de tono por volumen.
+  function cuerpoPSX(ctx, cx, suelo, r, colores) {
+    const H = 168 * r.alto;          // altura total en px
+    const W = r.ancho;
+    const cab = 34 * r.cabeza;       // alto de cabeza
+
+    const yPies   = suelo;
+    const yRodilla= suelo - H * 0.24;
+    const yCadera = suelo - H * 0.44;
+    const yPecho  = suelo - H * 0.62;
+    const yHombro = suelo - H * 0.70;
+    const yCuello = suelo - H * 0.74;
+    const yMenton = yCuello - cab * 0.22;
+    const yOjos   = yCuello - cab * 0.55;
+    const yCoronilla = yCuello - cab;
+
+    const anchoCadera = 20 * W;
+    const anchoHombro = 29 * W;
+    const anchoCintura= 17 * W;
+
+    // ---- piernas: muslo ancho -> tobillo estrecho, ligeramente abiertas ----
+    const pl = colores.pierna, plS = colores.piernaS;
+    // izquierda
+    poly(ctx, [[cx-anchoCadera,yCadera],[cx-3,yCadera],[cx-5,yRodilla],[cx-anchoCadera*0.62,yRodilla]], pl);
+    poly(ctx, [[cx-anchoCadera*0.62,yRodilla],[cx-5,yRodilla],[cx-7,yPies],[cx-anchoCadera*0.5,yPies]], plS);
+    // derecha
+    poly(ctx, [[cx+3,yCadera],[cx+anchoCadera,yCadera],[cx+anchoCadera*0.62,yRodilla],[cx+5,yRodilla]], plS);
+    poly(ctx, [[cx+5,yRodilla],[cx+anchoCadera*0.62,yRodilla],[cx+anchoCadera*0.5,yPies],[cx+7,yPies]], plS);
+
+    // ---- torso: hombros anchos -> cintura estrecha -> cadera ----
+    const t = colores.torso, tL = colores.torsoL, tS = colores.torsoS;
+    poly(ctx, [[cx-anchoHombro,yHombro+4],[cx-anchoHombro*0.72,yCuello+2],[cx+anchoHombro*0.72,yCuello+2],
+               [cx+anchoHombro,yHombro+4],[cx+anchoCintura,yPecho+14],[cx+anchoCadera,yCadera],
+               [cx-anchoCadera,yCadera],[cx-anchoCintura,yPecho+14]], t);
+    // banda de luz (izq) y sombra (der)
+    poly(ctx, [[cx-anchoHombro,yHombro+4],[cx-anchoHombro*0.72,yCuello+2],[cx-anchoHombro*0.3,yCuello+2],
+               [cx-anchoCintura*0.55,yPecho+14],[cx-anchoCadera*0.7,yCadera],[cx-anchoCadera,yCadera],
+               [cx-anchoCintura,yPecho+14]], tL);
+    poly(ctx, [[cx+anchoHombro*0.45,yCuello+2],[cx+anchoHombro*0.72,yCuello+2],[cx+anchoHombro,yHombro+4],
+               [cx+anchoCintura,yPecho+14],[cx+anchoCadera,yCadera],[cx+anchoCadera*0.55,yCadera]], tS);
+
+    // ---- brazos: hombro -> muñeca, en diagonal hacia fuera ----
+    const b = colores.brazo, bS = colores.brazoS;
+    poly(ctx, [[cx-anchoHombro,yHombro+3],[cx-anchoHombro*0.68,yHombro+6],[cx-anchoHombro*0.80,yCadera+6],
+               [cx-anchoHombro-6,yCadera+2]], b);
+    poly(ctx, [[cx+anchoHombro*0.68,yHombro+6],[cx+anchoHombro,yHombro+3],[cx+anchoHombro+6,yCadera+2],
+               [cx+anchoHombro*0.80,yCadera+6]], bS);
+    // manos (cuñas, no cubos)
+    poly(ctx, [[cx-anchoHombro-6,yCadera+2],[cx-anchoHombro*0.80,yCadera+6],[cx-anchoHombro*0.86,yCadera+15],
+               [cx-anchoHombro-4,yCadera+12]], P.pielS);
+    poly(ctx, [[cx+anchoHombro*0.80,yCadera+6],[cx+anchoHombro+6,yCadera+2],[cx+anchoHombro+4,yCadera+12],
+               [cx+anchoHombro*0.86,yCadera+15]], P.pielS);
+
+    // ---- cuello ----
+    poly(ctx, [[cx-6*W,yCuello-4],[cx+6*W,yCuello-4],[cx+8*W,yCuello+4],[cx-8*W,yCuello+4]], P.pielS);
+
+    // ---- cabeza: cráneo ancho -> mandíbula afilada ----
+    const anchoCraneo = 15 * W * r.cabeza;
+    const anchoMandi  = (r.orejas ? 8.5 : 10.5) * W * r.cabeza;
+    poly(ctx, [[cx-anchoCraneo,yCoronilla+cab*0.28],[cx-anchoCraneo*0.72,yCoronilla],
+               [cx+anchoCraneo*0.72,yCoronilla],[cx+anchoCraneo,yCoronilla+cab*0.28],
+               [cx+anchoMandi,yMenton-cab*0.10],[cx,yMenton+2],[cx-anchoMandi,yMenton-cab*0.10]], P.piel);
+    // plano iluminado (izq) y en sombra (der)
+    poly(ctx, [[cx-anchoCraneo,yCoronilla+cab*0.28],[cx-anchoCraneo*0.72,yCoronilla],[cx-anchoCraneo*0.25,yCoronilla],
+               [cx-anchoMandi*0.4,yMenton],[cx-anchoMandi,yMenton-cab*0.10]], P.pielL);
+    poly(ctx, [[cx+anchoCraneo*0.35,yCoronilla],[cx+anchoCraneo*0.72,yCoronilla],[cx+anchoCraneo,yCoronilla+cab*0.28],
+               [cx+anchoMandi,yMenton-cab*0.10],[cx+anchoMandi*0.45,yMenton*1.0]], P.pielS);
+
+    // ---- orejas de elfo: cuñas largas hacia arriba/atrás ----
+    if (r.orejas) {
+      poly(ctx, [[cx-anchoCraneo+1,yOjos-3],[cx-anchoCraneo-9,yOjos-13],[cx-anchoCraneo+2,yOjos+6]], P.pielL);
+      poly(ctx, [[cx+anchoCraneo-1,yOjos-3],[cx+anchoCraneo+9,yOjos-13],[cx+anchoCraneo-2,yOjos+6]], P.pielS);
+    }
+
+    // ---- pelo: sigue el cráneo, con pico, no una tapa ----
+    poly(ctx, [[cx-anchoCraneo,yCoronilla+cab*0.30],[cx-anchoCraneo*0.72,yCoronilla-1],
+               [cx+anchoCraneo*0.72,yCoronilla-1],[cx+anchoCraneo,yCoronilla+cab*0.30],
+               [cx+anchoCraneo*0.7,yCoronilla+cab*0.24],[cx,yCoronilla+cab*0.36],
+               [cx-anchoCraneo*0.7,yCoronilla+cab*0.24]], colores.pelo || P.pelo);
+
+    // ---- barba de enano: cuña ancha que cae del mentón ----
+    if (r.barba) {
+      poly(ctx, [[cx-anchoMandi,yOjos+5],[cx+anchoMandi,yOjos+5],[cx+anchoMandi*0.8,yMenton+9],
+                 [cx,yMenton+15],[cx-anchoMandi*0.8,yMenton+9]], colores.pelo || P.pelo);
+    }
+
+    // ---- ojos: dos cuñas oscuras en diagonal (nunca cuadrados) ----
+    const oy = yOjos;
+    const ox = anchoCraneo * 0.46;
+    poly(ctx, [[cx-ox-3,oy-1],[cx-ox+4,oy+1],[cx-ox+4,oy+4],[cx-ox-3,oy+3]], "#1e1712");
+    poly(ctx, [[cx+ox-4,oy+1],[cx+ox+3,oy-1],[cx+ox+3,oy+3],[cx+ox-4,oy+4]], "#1e1712");
+
+    return { cx, suelo, H, W, yCadera, yPecho, yHombro, yCuello, yCoronilla, yMenton, yOjos, cab,
+             anchoHombro, anchoCadera, anchoCraneo };
+  }
+
+  // ============ silueta por clase: lo que rompe el contorno ============
+  const CLASES = {
+    guerrero:  { nombre:"Guerrero",   rasgo:"hombreras en cuña",         familia:"acero" },
+    paladin:   { nombre:"Paladín",    rasgo:"hombreras + capa larga",    familia:"acero" },
+    barbaro:   { nombre:"Bárbaro",    rasgo:"torso ancho, pieles",       familia:"acero" },
+    picaro:    { nombre:"Pícaro",     rasgo:"capucha en punta",          familia:"sigilo" },
+    explorador:{ nombre:"Explorador", rasgo:"capucha + capa corta",      familia:"sigilo" },
+    mago:      { nombre:"Mago",       rasgo:"túnica acampanada + cónico",familia:"arcano" },
+    hechicero: { nombre:"Hechicero",  rasgo:"túnica, melena larga",      familia:"arcano" },
+    brujo:     { nombre:"Brujo",      rasgo:"capucha grande caída",      familia:"arcano" },
+    druida:    { nombre:"Druida",     rasgo:"túnica irregular, hombros de follaje", familia:"arcano" },
+    clerigo:   { nombre:"Clérigo",    rasgo:"túnica recta + aureola",    familia:"fe" },
+    bardo:     { nombre:"Bardo",      rasgo:"capa asimétrica + ala ancha",familia:"arte" },
+    monje:     { nombre:"Monje",      rasgo:"banda cruzada, pierna suelta",familia:"disciplina" },
+  };
+
+  function coloresDe(clase) {
+    const base = { torso:P.ropa, torsoL:P.ropaL, torsoS:P.ropaS, pierna:P.ropaS, piernaS:"#242e38",
+                   brazo:P.piel, brazoS:P.pielS, pelo:P.pelo };
+    switch (clase) {
+      case "guerrero": case "paladin":
+        return {...base, torso:P.acero, torsoL:P.aceroL, torsoS:P.aceroS};
+      case "barbaro":
+        return {...base, torso:P.piel, torsoL:P.pielL, torsoS:P.pielS, pierna:P.cuero, piernaS:"#4a3826", pelo:"#5a3a20"};
+      case "picaro": case "explorador":
+        return {...base, torso:P.verde, torsoL:P.verdeL, torsoS:P.verdeS, pierna:P.cuero, piernaS:"#4a3826"};
+      case "mago": case "hechicero": case "brujo":
+        return {...base, torso:P.tunica, torsoL:P.tunicaL, torsoS:P.tunicaS, pierna:P.tunicaS, piernaS:"#2a2140"};
+      case "druida":
+        return {...base, torso:P.verde, torsoL:P.verdeL, torsoS:P.verdeS, pierna:P.verdeS, piernaS:"#2c3d22", pelo:"#4a3a22"};
+      case "clerigo":
+        return {...base, torso:"#d8cba8", torsoL:"#efe4c6", torsoS:"#a2977a", pierna:"#a2977a", piernaS:"#7d7460"};
+      case "bardo":
+        return {...base, torso:"#8a4a5c", torsoL:"#ac6a7c", torsoS:"#5e2f3d", pierna:P.cuero, piernaS:"#4a3826"};
+      case "monje":
+        return {...base, torso:P.tela, torsoL:"#d4c9b4", torsoS:P.telaS, pierna:P.tela, piernaS:P.telaS};
+      default: return base;
+    }
+  }
+
+  // extras dibujados DESPUÉS del cuerpo (rompen el contorno)
+  function siluetaClase(ctx, m, clase) {
+    const { cx, suelo, yHombro, yCuello, yCadera, yCoronilla, yOjos, cab, anchoHombro, anchoCraneo, W } = m;
+
+    const hombrera = (color, colorL) => {
+      poly(ctx, [[cx-anchoHombro-7,yHombro+2],[cx-anchoHombro*0.55,yCuello-1],[cx-anchoHombro*0.5,yHombro+12],
+                 [cx-anchoHombro-5,yHombro+15]], color);
+      poly(ctx, [[cx-anchoHombro-7,yHombro+2],[cx-anchoHombro*0.55,yCuello-1],[cx-anchoHombro*0.75,yHombro+5]], colorL);
+      poly(ctx, [[cx+anchoHombro*0.55,yCuello-1],[cx+anchoHombro+7,yHombro+2],[cx+anchoHombro+5,yHombro+15],
+                 [cx+anchoHombro*0.5,yHombro+12]], color);
+    };
+    const tunicaAcampanada = (color, colorL, colorS) => {
+      poly(ctx, [[cx-14*W,yCadera-16],[cx+14*W,yCadera-16],[cx+30*W,suelo-2],[cx-30*W,suelo-2]], color);
+      poly(ctx, [[cx-14*W,yCadera-16],[cx-3*W,yCadera-16],[cx-12*W,suelo-2],[cx-30*W,suelo-2]], colorL);
+      poly(ctx, [[cx+7*W,yCadera-16],[cx+14*W,yCadera-16],[cx+30*W,suelo-2],[cx+16*W,suelo-2]], colorS);
+    };
+    const capucha = (color, colorS, grande) => {
+      const f = grande ? 1.5 : 1.1;
+      poly(ctx, [[cx-anchoCraneo*1.18,yOjos+2],[cx-anchoCraneo*0.5,yCoronilla-cab*0.34*f],
+                 [cx+anchoCraneo*0.5,yCoronilla-cab*0.34*f],[cx+anchoCraneo*1.18,yOjos+2],
+                 [cx+anchoCraneo*0.95,yOjos-1],[cx,yOjos-cab*0.06],[cx-anchoCraneo*0.95,yOjos-1]], color);
+      poly(ctx, [[cx+anchoCraneo*0.1,yCoronilla-cab*0.30*f],[cx+anchoCraneo*0.5,yCoronilla-cab*0.34*f],
+                 [cx+anchoCraneo*1.18,yOjos+2],[cx+anchoCraneo*0.6,yOjos]], colorS);
+    };
+    const capa = (color, colorS, larga) => {
+      const yFin = larga ? suelo - 6 : yCadera + 14;
+      poly(ctx, [[cx-anchoHombro*0.95,yHombro+2],[cx+anchoHombro*0.95,yHombro+2],
+                 [cx+anchoHombro*1.25,yFin],[cx-anchoHombro*1.25,yFin]], color);
+      poly(ctx, [[cx+anchoHombro*0.2,yHombro+2],[cx+anchoHombro*0.95,yHombro+2],
+                 [cx+anchoHombro*1.25,yFin],[cx+anchoHombro*0.45,yFin]], colorS);
+    };
+
+    switch (clase) {
+      case "guerrero": hombrera(P.aceroS, P.aceroL); break;
+      case "paladin": capa("#8a2f3a","#5e1f28",true); hombrera(P.aceroS, P.aceroL); break;
+      case "barbaro":
+        poly(ctx,[[cx-anchoHombro-9,yHombro+1],[cx-anchoHombro*0.4,yCuello],[cx-anchoHombro*0.45,yHombro+18],
+                  [cx-anchoHombro-7,yHombro+20]], "#6b4a2c");
+        poly(ctx,[[cx+anchoHombro*0.4,yCuello],[cx+anchoHombro+9,yHombro+1],[cx+anchoHombro+7,yHombro+20],
+                  [cx+anchoHombro*0.45,yHombro+18]], "#573a22");
+        break;
+      case "picaro": capucha(P.verdeS,"#2b3a22",false); break;
+      case "explorador": capa(P.verdeS,"#2b3a22",false); capucha(P.verde,P.verdeS,false); break;
+      case "mago":
+        tunicaAcampanada(P.tunica,P.tunicaL,P.tunicaS);
+        // sombrero cónico: ala + punta, ambos trapecios
+        poly(ctx,[[cx-anchoCraneo*1.5,yCoronilla+cab*0.10],[cx+anchoCraneo*1.5,yCoronilla+cab*0.10],
+                  [cx+anchoCraneo*1.2,yCoronilla-cab*0.04],[cx-anchoCraneo*1.2,yCoronilla-cab*0.04]], P.tunicaS);
+        poly(ctx,[[cx-anchoCraneo*0.85,yCoronilla-cab*0.02],[cx+anchoCraneo*0.85,yCoronilla-cab*0.02],
+                  [cx+3,yCoronilla-cab*0.95],[cx-6,yCoronilla-cab*0.92]], P.tunica);
+        poly(ctx,[[cx-anchoCraneo*0.85,yCoronilla-cab*0.02],[cx-anchoCraneo*0.2,yCoronilla-cab*0.02],
+                  [cx-6,yCoronilla-cab*0.92]], P.tunicaL);
+        break;
+      case "hechicero":
+        tunicaAcampanada(P.tunica,P.tunicaL,P.tunicaS);
+        // melena larga: dos cuñas cayendo por los lados
+        poly(ctx,[[cx-anchoCraneo,yCoronilla+cab*0.2],[cx-anchoCraneo*0.55,yCoronilla+cab*0.1],
+                  [cx-anchoCraneo*0.75,yHombro+10],[cx-anchoCraneo*1.25,yHombro+4]], "#2a2118");
+        poly(ctx,[[cx+anchoCraneo*0.55,yCoronilla+cab*0.1],[cx+anchoCraneo,yCoronilla+cab*0.2],
+                  [cx+anchoCraneo*1.25,yHombro+4],[cx+anchoCraneo*0.75,yHombro+10]], "#1f1811");
+        break;
+      case "brujo": tunicaAcampanada(P.tunicaS,P.tunica,"#2a2140"); capucha(P.tunicaS,"#241c38",true); break;
+      case "druida":
+        tunicaAcampanada(P.verdeS,P.verde,"#2c3d22");
+        poly(ctx,[[cx-anchoHombro-8,yHombro+4],[cx-anchoHombro*0.4,yCuello+1],[cx-anchoHombro*0.7,yHombro+16]], "#4a6b38");
+        poly(ctx,[[cx+anchoHombro*0.4,yCuello+1],[cx+anchoHombro+8,yHombro+4],[cx+anchoHombro*0.7,yHombro+16]], "#3a5628");
+        break;
+      case "clerigo":
+        tunicaAcampanada("#d8cba8","#efe4c6","#a2977a");
+        // aureola: elipse fina por encima, no un anillo cuadrado
+        ctx.strokeStyle = P.simbolo; ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.ellipse(cx, yCoronilla - cab*0.30, anchoCraneo*0.95, 4, 0, 0, Math.PI*2); ctx.stroke();
+        break;
+      case "bardo":
+        // capa asimétrica: solo un hombro
+        poly(ctx,[[cx-anchoHombro*0.9,yHombro+1],[cx+anchoHombro*0.3,yHombro+4],
+                  [cx+anchoHombro*0.55,yCadera+16],[cx-anchoHombro*1.2,yCadera+8]], "#5e2f3d");
+        // sombrero de ala ancha + pluma
+        poly(ctx,[[cx-anchoCraneo*1.55,yCoronilla+cab*0.12],[cx+anchoCraneo*1.55,yCoronilla+cab*0.12],
+                  [cx+anchoCraneo*1.1,yCoronilla-cab*0.02],[cx-anchoCraneo*1.1,yCoronilla-cab*0.02]], "#5e2f3d");
+        poly(ctx,[[cx-anchoCraneo*0.8,yCoronilla],[cx+anchoCraneo*0.8,yCoronilla],
+                  [cx+anchoCraneo*0.6,yCoronilla-cab*0.38],[cx-anchoCraneo*0.6,yCoronilla-cab*0.38]], "#8a4a5c");
+        poly(ctx,[[cx+anchoCraneo*0.7,yCoronilla-cab*0.30],[cx+anchoCraneo*1.9,yCoronilla-cab*0.85],
+                  [cx+anchoCraneo*1.5,yCoronilla-cab*0.30]], P.simbolo);
+        break;
+      case "monje":
+        // banda cruzada al pecho (cuña diagonal) — rompe la simetría del torso
+        poly(ctx,[[cx-anchoHombro*0.85,yCuello+4],[cx-anchoHombro*0.45,yCuello+2],
+                  [cx+anchoHombro*0.62,yCadera-2],[cx+anchoHombro*0.3,yCadera+2]], "#8a4a30");
+        break;
+    }
+  }
+
+  // ============ pintado de las secciones ============
+  function pintarFigura(idCanvas, { raza="humano", clase=null } = {}) {
+    const w = 150, h = 210;
+    const ctx = nuevoLienzo(idCanvas, w, h);
+    const r = RAZAS[raza];
+    const col = coloresDe(clase);
+    const m = cuerpoPSX(ctx, w/2, h - 12, r, col);
+    if (clase) siluetaClase(ctx, m, clase);
+    // línea de suelo, para que se compare la altura entre razas
+    ctx.fillStyle = "rgba(255,255,255,0.07)"; ctx.fillRect(10, h-11, w-20, 1);
+  }
+
+  // 01 razas
+  const cRazas = document.getElementById("razas");
+  cRazas.innerHTML = Object.keys(RAZAS).map((k) => `
+    <div class="celda">
+      <div class="nombre">${k.toUpperCase()}</div>
+      <canvas id="r_${k}" width="150" height="210"></canvas>
+      <div class="rasgo">${RAZAS[k].rasgo}</div>
+    </div>`).join("");
+  Object.keys(RAZAS).forEach((k) => pintarFigura(`r_${k}`, { raza: k }));
+
+  // 02 clases
+  const cClases = document.getElementById("clases");
+  cClases.innerHTML = Object.keys(CLASES).map((k) => `
+    <div class="celda">
+      <div class="nombre">${CLASES[k].nombre}</div>
+      <canvas id="c_${k}" width="150" height="210"></canvas>
+      <div class="rasgo">${CLASES[k].rasgo}</div>
+    </div>`).join("");
+  Object.keys(CLASES).forEach((k) => pintarFigura(`c_${k}`, { raza: "humano", clase: k }));
+
+  // 03 combinaciones
+  const COMBOS = [
+    { raza:"enano",   clase:"guerrero",  txt:"Enano guerrero — hombrera sobre tronco ancho" },
+    { raza:"elfo",    clase:"mago",      txt:"Elfo mago — túnica sobre estrechamiento largo" },
+    { raza:"mediano", clase:"picaro",    txt:"Mediano pícaro — capucha sobre cabeza grande" },
+    { raza:"enano",   clase:"clerigo",   txt:"Enano clérigo — aureola y barba conviven" },
+  ];
+  const cCombos = document.getElementById("combos");
+  cCombos.innerHTML = COMBOS.map((c, i) => `
+    <div class="celda">
+      <div class="nombre">${c.raza.toUpperCase()}<br>${CLASES[c.clase].nombre.toUpperCase()}</div>
+      <canvas id="k_${i}" width="150" height="210"></canvas>
+      <div class="rasgo">${c.txt}</div>
+    </div>`).join("");
+  COMBOS.forEach((c, i) => pintarFigura(`k_${i}`, { raza: c.raza, clase: c.clase }));
+</script>
+
+</body></html>

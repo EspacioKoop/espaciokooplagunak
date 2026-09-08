@@ -7,7 +7,7 @@
   "authors": [
     {
       "name": "Espaciokoop Lagunak",
-      "url": "https://github.com/VaroTv7/espaciokooplagunak"
+      "url": "https://github.com/EspacioKoop/espaciokooplagunak"
     }
   ],
   "compatibility": {
@@ -36,8 +36,8 @@
       "path": "lang/en.json"
     }
   ],
-  "url": "https://github.com/VaroTv7/espaciokooplagunak",
-  "readme": "https://github.com/VaroTv7/espaciokooplagunak/blob/main/foundry-module/README.md",
-  "bugs": "https://github.com/VaroTv7/espaciokooplagunak/issues",
+  "url": "https://github.com/EspacioKoop/espaciokooplagunak",
+  "readme": "https://github.com/EspacioKoop/espaciokooplagunak/blob/main/foundry-module/README.md",
+  "bugs": "https://github.com/EspacioKoop/espaciokooplagunak/issues",
   "license": "GPL-2.0"
 }

@@ -139,6 +139,30 @@
 .lagunak-workspace__crew-counter span { color: var(--lagunak-muted); }
 .lagunak-workspace__crew-counter small { grid-column: 1 / -1; font-size: 9px; }
 
+.lagunak-workspace__uncrewed {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 22px;
+  color: #ffd166;
+  border-bottom: 1px solid rgba(255, 209, 102, 0.35);
+  background: rgba(255, 209, 102, 0.08);
+}
+
+.lagunak-workspace__uncrewed > i { margin-top: 2px; }
+.lagunak-workspace__uncrewed strong { letter-spacing: 0.06em; text-transform: uppercase; }
+.lagunak-workspace__uncrewed p { margin: 2px 0 6px; color: var(--lagunak-text); }
+.lagunak-workspace__uncrewed ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lagunak-workspace__uncrewed li::before { content: "· "; }
+
 .lagunak-workspace__tabs {
   display: flex;
   gap: 2px;

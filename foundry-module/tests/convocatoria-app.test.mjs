@@ -255,7 +255,7 @@ test("v11: defaultOptions returns minimal options", async () => {
     assert.equal(opts.id, "lagunak-convocatoria");
     assert.deepEqual(opts.classes, ["lagunak-convocatoria"]);
     assert.equal(opts.title, game.i18n.localize("LAGUNAK.PanelGM.Entrada.Convocatoria"));
-    assert.equal(opts.template, "modules/lagunak/templates/convocatoria.hbs");
+    assert.equal(opts.template, "modules/lagunak/templates/convocatoria-app.hbs");
     assert.equal(opts.width, 300);
     assert.equal(opts.height, "auto");
   } finally {

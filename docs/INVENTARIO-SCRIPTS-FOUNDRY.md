@@ -46,7 +46,7 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 - `ficha-nave.mjs`
 - `maniobra-control.mjs`
 - `reposicion-control.mjs`
-- `ship-view.mjs`
+- `ship-view/ship-view.mjs`
 - `visor-piloto-lienzo.mjs`
 - `visor-piloto.mjs`
 - `bitacora-nave.mjs`
@@ -54,9 +54,9 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 - `alarma-cruzada-escena.mjs`
 - `alarma-cruzada.mjs`
 - `alertas-nave.mjs`
-- `seccion-nave-app.mjs`
-- `seccion-nave.mjs`
-- `seccion-lienzo.mjs`
+- `seccion-nave/seccion-nave-app.mjs`
+- `seccion-nave/seccion-nave.mjs`
+- `seccion-nave/seccion-lienzo.mjs`
 
 ### 2. Estaciones y Puertos Espaciales (11 scripts)
 - `station-actions.mjs`
@@ -180,11 +180,11 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 - `laminas-clasicas.mjs`
 
 ### 11. Ingeniería y Sistemas (8 scripts)
-- `casco-clases.mjs`
-- `casco-dano.mjs`
+- `ship-view/casco-clases.mjs`
+- `ship-view/casco-dano.mjs`
 - `ingenieria-control.mjs`
 - `sensores-lista.mjs`
-- `telemetria-difusion.mjs`
+- `ship-view/telemetria-difusion.mjs`
 - `tempo-control.mjs`
 - `resolver-objetivo-sensores.mjs`
 - `resolver-posicion-relay.mjs`
@@ -209,7 +209,7 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 - `diagnostico-conexion.mjs`
 
 ### 15. Renderizado y Gráficos (7 scripts)
-- `barras-estado.mjs`
+- `ship-view/barras-estado.mjs`
 - `foco-render.mjs`
 - `mapa-marco.mjs`
 - `mapa-render.mjs`

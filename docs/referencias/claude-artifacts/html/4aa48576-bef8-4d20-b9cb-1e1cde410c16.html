@@ -1,0 +1,464 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style></head><body>
+<title>Mirada Viva</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#10141a; --panel:#1b222b; --panel-2:#212a34; --line:#2d3946; --line-bright:#425364;
+    --text:#e7ecef; --text-dim:#8fa0ac; --text-faint:#5d6c78;
+    --amber:#e0a33a; --teal:#3ecfc4; --danger:#c8665a;
+    --shadow-dark:#080a0d; --shadow-light:#2c3745;
+    font-size:15px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg); color:var(--text); margin:0; padding:28px 20px 70px;
+    font-family:'IBM Plex Sans', system-ui, sans-serif;
+    background-image:
+      radial-gradient(circle at 12% 6%, rgba(62,207,196,0.05), transparent 42%),
+      radial-gradient(circle at 88% 94%, rgba(224,163,58,0.05), transparent 45%);
+  }
+  .wrap{max-width:1180px;margin:0 auto;}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);}
+  h1{font-family:'Press Start 2P', monospace;font-size:19px;line-height:1.55;margin:10px 0 10px;text-wrap:balance;}
+  .page-head p{color:var(--text-dim);max-width:78ch;line-height:1.65;margin:0 0 8px;font-size:14px;}
+  code{background:var(--panel-2);padding:1px 5px;border:1px solid var(--line);font-size:12.5px;font-family:'IBM Plex Mono',monospace;}
+
+  .instruccion{
+    border-left:3px solid var(--teal);background:var(--panel);padding:14px 16px;margin:24px 0 22px;
+    font-size:14px;color:var(--text);line-height:1.65;
+  }
+  .instruccion b{color:var(--teal);}
+
+  .fila{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  @media (max-width:1050px){.fila{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:600px){.fila{grid-template-columns:1fr;}}
+  .celda{
+    background:var(--panel);border:1px solid var(--line);padding:14px 12px 16px;
+    display:flex;flex-direction:column;gap:10px;align-items:center;
+    box-shadow: inset 1px 1px 0 var(--shadow-light), inset -1px -1px 0 var(--shadow-dark);
+  }
+  .celda.recomendada{border-color:var(--teal);}
+  .celda .etiqueta{font-family:'IBM Plex Mono';font-size:9px;color:var(--teal);letter-spacing:.06em;}
+  .celda .nombre{font-family:'Press Start 2P';font-size:9.5px;text-align:center;line-height:1.6;}
+  .celda .desc{font-family:'IBM Plex Sans';font-size:12.5px;color:var(--text-dim);line-height:1.55;text-align:center;}
+  canvas{image-rendering:pixelated;background:#0c1015;border:1px solid var(--line);cursor:crosshair;}
+
+  .controles{
+    display:flex;gap:18px;flex-wrap:wrap;align-items:center;justify-content:center;
+    background:var(--panel);border:1px solid var(--line);padding:14px 18px;margin-top:22px;
+  }
+  .ctl{display:flex;align-items:center;gap:9px;font-family:'IBM Plex Mono';font-size:11px;color:var(--text-dim);}
+  .switch{width:34px;height:18px;border:1px solid var(--line-bright);position:relative;cursor:pointer;background:var(--panel-2);flex:none;}
+  .switch::after{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;background:var(--text-faint);transition:transform .15s, background .15s;}
+  .switch.is-on{border-color:var(--teal);}
+  .switch.is-on::after{transform:translateX(15px);background:var(--teal);}
+  input[type=range]{width:120px;accent-color:var(--teal);}
+  .btn-expr{
+    font-family:'IBM Plex Mono';font-size:10.5px;padding:5px 10px;margin-right:5px;cursor:pointer;
+    background:var(--panel-2);border:1px solid var(--line);color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em;
+  }
+  .btn-expr:hover{border-color:var(--line-bright);}
+  .btn-expr.activo{border-color:var(--amber);color:var(--amber);}
+
+  .seccion{font-family:'Press Start 2P';font-size:11px;color:var(--amber);margin:42px 0 6px;}
+  .seccion-nota{font-family:'IBM Plex Mono';font-size:12px;color:var(--text-faint);max-width:88ch;line-height:1.65;margin-bottom:16px;}
+  .puntos{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+  @media (max-width:800px){.puntos{grid-template-columns:1fr;}}
+  .punto{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--amber);padding:14px 16px;}
+  .punto h4{font-family:'Press Start 2P';font-size:9.5px;margin:0 0 8px;color:var(--amber);line-height:1.6;}
+  .punto p{font-size:12.5px;color:var(--text-dim);line-height:1.6;margin:0;}
+</style>
+
+<div class="wrap">
+  <div class="page-head">
+    <div class="eyebrow">cara 02 · rasgos hundidos · #973 / #974</div>
+    <h1>MIRADA VIVA</h1>
+    <p>La cara elegida, con los ojos siguiendo al puntero. Cuatro reglas de seguimiento distintas alimentadas
+      por <strong>la misma posición de ratón</strong> — así la diferencia entre ellas es solo el
+      comportamiento. Y las cejas, abajo, como único vehículo de la expresión.</p>
+  </div>
+
+  <div class="instruccion">
+    <b>Mueve el ratón por la página</b> (o arrastra el dedo). Las cuatro miran al mismo sitio a la vez. Fíjate
+    en cuál te resulta «viva» y cuál mecánica — y luego cambia de expresión abajo: <b>solo se mueven las
+    cejas</b>, y aun así cambia entero quién es esa persona.
+  </div>
+
+  <div class="fila" id="fila"></div>
+
+  <div class="controles">
+    <div class="ctl"><div class="switch is-on" id="swParpadeo"></div><span>Parpadeo</span></div>
+    <div class="ctl"><div class="switch is-on" id="swMicro"></div><span>Microdesvíos (sacadas)</span></div>
+    <div class="ctl"><span>Alcance</span><input type="range" id="rgAlcance" min="20" max="140" value="100"></div>
+    <div class="ctl"><span>Rapidez</span><input type="range" id="rgVel" min="5" max="100" value="35"></div>
+  </div>
+
+  <div class="controles" style="margin-top:10px;">
+    <span style="font-family:'IBM Plex Mono';font-size:11px;color:var(--text-faint);">EXPRESIÓN (solo cejas):</span>
+    <div class="ctl" id="expresionBotones"></div>
+  </div>
+
+
+  <div class="seccion">Cinco maneras de implementarlo en el motor</div>
+  <div class="seccion-nota">
+    Lo de arriba es el COMPORTAMIENTO. Esto es la fontanería: cinco formas distintas de que la pupila acabe
+    donde toca, ordenadas de menos a más maquinaria. La elección cambia el coste por fotograma y lo que pasa
+    cuando la cabeza gira respecto a la cámara.
+  </div>
+  <div class="puntos">
+    <div class="punto">
+      <h4>A · VÉRTICES<br>RECALCULADOS</h4>
+      <p>La pupila es parte de la malla de la cabeza, y sus cuatro vértices se recalculan cada fotograma desde
+        el vector de mirada. <b>Cero piezas nuevas</b> y encaja con lo que el módulo ya hace: reconstruir las
+        piezas del avatar en cada render. Contra: recompones la cabeza entera para mover ocho números.</p>
+    </div>
+    <div class="punto">
+      <h4>B · PIEZA SUELTA<br>DELANTE DEL HUECO</h4>
+      <p>La pupila es una malla propia, minúscula, colocada un pelo por delante del fondo de la cuenca; se
+        mueve en el mundo dentro de los topes del hueco y el orden por pintor la resuelve sola. La cabeza no
+        se toca. <b>Es la que menos recalcula</b>, y encaja con cómo <code>avatar-props.mjs</code> ya cuelga
+        cosas de un anclaje: la cuenca es un anclaje más.</p>
+    </div>
+    <div class="punto">
+      <h4>C · PROYECCIÓN<br>SOBRE ESFERA</h4>
+      <p>Se trata la mirada como dirección 3D y se proyecta la pupila sobre el plano de la cuenca. Es la
+        única que da <b>paralaje correcta</b> cuando la cabeza gira respecto a la cámara: de perfil, el ojo
+        se ve donde debe. Cuesta algo de trigonometría por ojo y por fotograma — nada grave, pero es la más
+        «motor» de las cinco.</p>
+    </div>
+    <div class="punto">
+      <h4>D · NUEVE MIRADAS<br>PRECALCULADAS</h4>
+      <p>Es la opción 04 de arriba. Se guardan nueve posiciones (centro más ocho direcciones) y se elige la
+        más cercana: no hay interpolación, hay <b>salto</b>. Baratísimo, period-correct, y el salto no es un
+        defecto — se parece bastante a una sacada real. Si el resto del arte va a ser PSX, esta es la que
+        <b>no desentona</b>.</p>
+    </div>
+    <div class="punto">
+      <h4>E · UV DESPLAZADA<br>(fase de textura)</h4>
+      <p>Cuando llegue la textura: el ojo es un cuadrilátero texturado y mirar es <b>desplazar sus UV</b>.
+        Coste nulo en geometría y permite ojo con esclerótica, iris y brillo sin una sola cara más. Depende
+        de la fase de textura, que está pospuesta — pero conviene no cerrarle la puerta al decidir A-D.</p>
+    </div>
+    <div class="punto">
+      <h4>DÓNDE VIVE<br>LA DECISIÓN</h4>
+      <p>En los cuatro primeros casos, <b>quién mira a qué</b> es un módulo puro aparte —recibe posición del
+        objetivo y devuelve un vector acotado— y el dibujo solo lo consume. Esa frontera es lo que permite
+        cambiar de A a D sin tocar el comportamiento, o probar los cuatro con las mismas pruebas.</p>
+    </div>
+  </div>
+
+  <div class="seccion">Lo que hay que decidir, y no es el código</div>
+  <div class="seccion-nota">
+    Seguir al ratón es la prueba; en el juego el ratón no existe como objetivo. Estas son las decisiones
+    reales que esta maqueta deja ver.
+  </div>
+  <div class="puntos">
+    <div class="punto">
+      <h4>¿A QUÉ MIRA<br>DE VERDAD?</h4>
+      <p>El ratón es solo el banco de pruebas. En la nave el objetivo es <b>un punto del mundo</b>: quien
+        habla, la consola que se está usando, la puerta que acaba de abrirse, el jugador más cercano. Mismo
+        código, otra entrada — y elegir bien esa entrada es lo que hace que un NPC parezca consciente.</p>
+    </div>
+    <div class="punto">
+      <h4>EL LÍMITE<br>ES EL PERSONAJE</h4>
+      <p>Un ojo que gira sin tope hacia atrás da miedo, y no del bueno. El recorrido va acotado, y cuando el
+        objetivo se sale del cono, la cabeza tiene que acompañar o la mirada se rinde y vuelve al frente.
+        Eso es lo que separa «mira» de «vigila».</p>
+    </div>
+    <div class="punto">
+      <h4>LOS OJOS VAN<br>ANTES QUE LA CABEZA</h4>
+      <p>En una persona real el ojo llega primero y la cabeza le sigue unos milisegundos después. Es la
+        diferencia entre la opción 2 y la 3, y es casi todo el efecto de «está vivo» — cuesta un
+        amortiguador, nada más.</p>
+    </div>
+    <div class="punto">
+      <h4>NO MIRAR<br>TAMBIÉN INFORMA</h4>
+      <p>Que un NPC <b>no</b> te devuelva la mirada dice tanto como que sí. Con este sistema, apartar la vista
+        es un estado más —y gratis—: rehuir, mirar al suelo, fijarse en otra cosa mientras hablas. Ahí hay
+        interpretación de personaje, no solo un efecto.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const W=240, H=280, CX=W/2;
+const yCoronilla=48, cab=150;
+const yMenton=yCoronilla+cab;
+const wCraneo=58, wMandi=34;
+const K={
+  yCejas: yCoronilla+cab*0.44,
+  yOjos:  yCoronilla+cab*0.53,
+  yNariz: yCoronilla+cab*0.68,
+  yBoca:  yCoronilla+cab*0.80,
+};
+const P={
+  piel:"#c99a72", pielL:"#e0b287", pielXL:"#efc79c", pielS:"#a3785a", pielXS:"#7a5842",
+  hueco:"#4a3629", huecoTop:"#33251b", ojo:"#181310", brillo:"#e8dccb",
+  pelo:"#3a2c22", peloL:"#4e3b2e",
+};
+function poly(ctx,pts,c){ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);
+  for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);ctx.closePath();ctx.fillStyle=c;ctx.fill();}
+
+// ---- la cabeza, con yaw (giro) y mirada como parámetros ----
+function dibujarCabeza(ctx,{yaw=0, mirada={x:0,y:0}, parpadeo=0, ceja={dy:0,ang:0,asim:0}}={}){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle="#0c1015"; ctx.fillRect(0,0,W,H);
+
+  const d = yaw*16;                    // desplazamiento facial por giro
+  const c = CX + d*0.35;               // centro del cráneo se mueve menos que los rasgos
+  const compIzq = 1 - yaw*0.28;        // el lado que se aleja se comprime
+  const compDer = 1 + yaw*0.28;
+
+  // cuello
+  poly(ctx,[[CX-18+d*0.15,yMenton-16],[CX+18+d*0.15,yMenton-16],[CX+22,H-6],[CX-22,H-6]],P.pielXS);
+  poly(ctx,[[CX-18+d*0.15,yMenton-16],[CX-6+d*0.15,yMenton-16],[CX-8,H-6],[CX-22,H-6]],P.pielS);
+
+  const ci=[c-wCraneo*compIzq, yCoronilla+cab*0.30];
+  const cti=[c-wCraneo*0.62*compIzq, yCoronilla+2];
+  const ctd=[c+wCraneo*0.62*compDer, yCoronilla+2];
+  const cd=[c+wCraneo*compDer, yCoronilla+cab*0.30];
+  const pi=[c-wCraneo*0.94*compIzq, yCoronilla+cab*0.56];
+  const pd=[c+wCraneo*0.94*compDer, yCoronilla+cab*0.56];
+  const mi=[c-wMandi*compIzq, yMenton-cab*0.14];
+  const md=[c+wMandi*compDer, yMenton-cab*0.14];
+  const me=[c+d*0.5, yMenton];
+
+  // masa y facetas
+  poly(ctx,[ci,cti,ctd,cd,pd,md,me,mi,pi],P.piel);
+  poly(ctx,[ci,cti,ctd,cd,[cd[0]-7,K.yCejas],[c,K.yCejas-5],[ci[0]+7,K.yCejas]],P.pielL);
+  poly(ctx,[ci,[ci[0]+7,K.yCejas],[pi[0]+9,pi[1]],pi],P.pielXL);
+  poly(ctx,[cd,[cd[0]-7,K.yCejas],[pd[0]-9,pd[1]],pd],P.pielS);
+  poly(ctx,[pd,md,me,[c+7,K.yBoca+11]],P.pielXS);
+  poly(ctx,[[pi[0]+9,pi[1]],[c-11,K.yNariz],[c-16,K.yBoca+5],[mi[0]+2,mi[1]-4]],P.pielL);
+
+  // ---- cuencas hundidas + pupila que sigue la mirada ----
+  const ojo=(s)=>{
+    const dentro = s<0 ? compIzq : compDer;
+    const a=c+s*10*dentro, b=c+s*30*dentro;
+    const x0=Math.min(a,b), x1=Math.max(a,b);
+    const yTop=K.yCejas+5, yBot=K.yOjos+12;
+    // hueco
+    poly(ctx,[[x0,yTop],[x1,yTop-2],[x1,yBot-1],[x0,yBot]],P.hueco);
+    // borde superior en sombra dura: lo que dice "esto está hundido"
+    poly(ctx,[[x0,yTop],[x1,yTop-2],[x1,yTop+4],[x0,yTop+6]],P.huecoTop);
+
+    // pupila: se mueve DENTRO del hueco, con tope
+    const anchoUtil=(x1-x0)-11, altoUtil=(yBot-yTop)-9;
+    const px=(x0+x1)/2 + mirada.x*anchoUtil*0.5;
+    const py=(yTop+yBot)/2 + 1 + mirada.y*altoUtil*0.5;
+    const ph=6.5*(1-parpadeo);
+    if(ph>0.6){
+      poly(ctx,[[px-4.2,py-ph],[px+4.2,py-ph-0.6],[px+4.2,py+ph-0.6],[px-4.2,py+ph]],P.ojo);
+      // chispa: una sola faceta clara, arriba y al lado contrario de la mirada
+      if(ph>3.4) poly(ctx,[[px-2.6,py-ph+1],[px-0.6,py-ph+0.6],[px-0.8,py-ph+2.6],[px-2.8,py-ph+3]],P.brillo);
+    }
+    // párpado: baja desde arriba
+    if(parpadeo>0.02){
+      const yp=yTop + (yBot-yTop)*Math.min(1,parpadeo*1.05);
+      poly(ctx,[[x0,yTop],[x1,yTop-2],[x1,yp-2],[x0,yp]],P.pielS);
+      poly(ctx,[[x0,yp-2],[x1,yp-4],[x1,yp],[x0,yp+2]],P.pielXS);
+    }
+  };
+  ojo(-1); ojo(1);
+
+  // ---- cejas: aquí vive casi toda la expresión ----
+  // `dy` sube/baja las dos; `ang` inclina el extremo INTERNO (hacia la nariz),
+  // que es el que dice enfado (abajo) o pena (arriba); `asim` desnivela una
+  // respecto a la otra, que es la ceja levantada de la incredulidad.
+  const cdy=ceja.dy||0, cang=ceja.ang||0, casim=ceja.asim||0;
+  // izquierda: extremo externo en x=c-29, interno en x=c-9
+  poly(ctx,[[c-29*compIzq, K.yCejas-7+cdy-casim],
+            [c-9,          K.yCejas-9+cdy+cang-casim],
+            [c-9,          K.yCejas-3+cdy+cang-casim],
+            [c-29*compIzq, K.yCejas+cdy-casim]],P.pelo);
+  // derecha
+  poly(ctx,[[c+9,          K.yCejas-9+cdy+cang+casim],
+            [c+29*compDer, K.yCejas-7+cdy+casim],
+            [c+29*compDer, K.yCejas+cdy+casim],
+            [c+9,          K.yCejas-3+cdy+cang+casim]],P.pelo);
+
+  // nariz (se desplaza con el giro más que el cráneo)
+  const nx=c+d*0.55;
+  poly(ctx,[[nx-2,K.yOjos+3],[nx+4,K.yOjos+3],[nx+7,K.yNariz+5],[nx-5,K.yNariz+5]],P.pielL);
+  poly(ctx,[[nx+4,K.yOjos+3],[nx+8,K.yNariz-4],[nx+7,K.yNariz+5]],P.pielXS);
+  poly(ctx,[[nx-5,K.yNariz+5],[nx+7,K.yNariz+5],[nx+5,K.yNariz+9],[nx-4,K.yNariz+9]],P.pielXS);
+
+  // boca
+  const bx=c+d*0.5;
+  poly(ctx,[[bx-13,K.yBoca],[bx+13,K.yBoca-1],[bx+13,K.yBoca+3],[bx-13,K.yBoca+4]],P.pielXS);
+
+  // pelo: casquete + flequillo, siguiendo el cráneo girado
+  poly(ctx,[[ci[0]-2,ci[1]+6],[cti[0],cti[1]-2],[ctd[0],ctd[1]-2],[cd[0]+2,cd[1]+6],
+            [cd[0]-2,cd[1]+2],[c,ci[1]+10],[ci[0]+2,cd[1]+2]],P.pelo);
+  poly(ctx,[[ci[0]-2,ci[1]+6],[cti[0],cti[1]-2],[c-7,cti[1]-2],[c-13,ci[1]+9],[ci[0]+2,cd[1]+2]],P.peloL);
+  poly(ctx,[[ci[0]+2,K.yCejas-18],[cd[0]-2,K.yCejas-20],[cd[0]-7,K.yCejas-9],[ci[0]+7,K.yCejas-7]],P.pelo);
+}
+
+// ---- las tres reglas de seguimiento ----
+const MODOS=[
+  {
+    id:"pupila", nombre:"01 · SOLO PUPILA",
+    desc:"La cabeza no se mueve; solo la pupila dentro del hueco. Es lo mínimo, y ya cambia mucho.",
+    est:{mx:0,my:0,yaw:0},
+    actualizar(e,obj,vel){
+      const k=vel;
+      e.mx += (obj.x-e.mx)*k; e.my += (obj.y-e.my)*k; e.yaw=0;
+    },
+  },
+  {
+    id:"parpado", nombre:"02 · PUPILA + PÁRPADO",
+    desc:"La pupila sigue, y el párpado acompaña: al mirar abajo entorna, al mirar arriba se abre. Más humano.",
+    est:{mx:0,my:0,yaw:0,lid:0},
+    actualizar(e,obj,vel){
+      const k=vel;
+      e.mx += (obj.x-e.mx)*k; e.my += (obj.y-e.my)*k; e.yaw=0;
+      e.lid = Math.max(0, e.my*0.34);
+    },
+  },
+  {
+    id:"cabeza", nombre:"03 · OJOS, LUEGO CABEZA",
+    desc:"El ojo llega primero y la cabeza le sigue con retardo, como una persona de verdad. Es el que parece consciente.",
+    recomendado:true,
+    est:{mx:0,my:0,yaw:0,lid:0},
+    actualizar(e,obj,vel){
+      const k=vel;
+      e.mx += (obj.x-e.mx)*k;
+      e.my += (obj.y-e.my)*k;
+      // la cabeza persigue al ojo, más lenta: ese retardo es todo el efecto
+      e.yaw += (obj.x - e.yaw)*k*0.32;
+      // y cuando la cabeza llega, el ojo se recentra un poco (mirada compartida)
+      e.mx -= e.yaw*0.30*k*4;
+      e.lid = Math.max(0, e.my*0.30);
+    },
+  },
+  {
+    id:"discreta", nombre:"04 · MIRADA DISCRETA",
+    desc:"Nueve posiciones fijas y salto entre ellas, sin interpolar. Es lo que hacía la época — y el salto se parece a una sacada real.",
+    est:{mx:0,my:0,yaw:0,lid:0},
+    actualizar(e,obj){
+      // se cuantiza a -1, 0, +1 en cada eje: nueve miradas posibles
+      const paso=(v)=> v<-0.28 ? -1 : (v>0.28 ? 1 : 0);
+      e.mx=paso(obj.x)*0.85; e.my=paso(obj.y)*0.75; e.yaw=0;
+      e.lid=Math.max(0, e.my*0.3);
+    },
+  },
+];
+
+// ---- expresiones por ceja ----
+const EXPRESIONES={
+  neutral:  {dy:0,  ang:0,  asim:0},
+  tenso:    {dy:3,  ang:-6, asim:0},
+  alerta:   {dy:-6, ang:1,  asim:0},
+  dolorido: {dy:2,  ang:6,  asim:0},
+  cansado:  {dy:4,  ang:3,  asim:0},
+  receloso: {dy:0,  ang:-2, asim:5},
+};
+let expresionActual="neutral";
+let cejaSuave={dy:0,ang:0,asim:0};
+
+// ---- montaje ----
+const fila=document.getElementById("fila");
+fila.innerHTML=MODOS.map((m,i)=>`
+  <div class="celda ${m.recomendado?'recomendada':''}">
+    ${m.recomendado?'<div class="etiqueta">RECOMENDADO</div>':''}
+    <div class="nombre">${m.nombre}</div>
+    <canvas id="cv${i}" width="${W}" height="${H}"></canvas>
+    <div class="desc">${m.desc}</div>
+  </div>`).join("");
+
+const ctxs=MODOS.map((m,i)=>document.getElementById(`cv${i}`).getContext("2d"));
+ctxs.forEach(c=>c.imageSmoothingEnabled=false);
+
+// objetivo global, en [-1,1] respecto a cada lienzo
+let raton={x:window.innerWidth/2, y:window.innerHeight*0.4}, hayRaton=false;
+window.addEventListener("pointermove",(ev)=>{ raton={x:ev.clientX,y:ev.clientY}; hayRaton=true; });
+window.addEventListener("pointerleave",()=>{ hayRaton=false; });
+
+const swParpadeo=document.getElementById("swParpadeo");
+const swMicro=document.getElementById("swMicro");
+const rgAlcance=document.getElementById("rgAlcance");
+const rgVel=document.getElementById("rgVel");
+[swParpadeo,swMicro].forEach(sw=>sw.addEventListener("click",()=>sw.classList.toggle("is-on")));
+
+// botones de expresión
+const contExpr=document.getElementById("expresionBotones");
+contExpr.innerHTML=Object.keys(EXPRESIONES).map((k,i)=>
+  `<button class="btn-expr ${i===0?'activo':''}" data-expr="${k}">${k}</button>`).join("");
+contExpr.addEventListener("click",(ev)=>{
+  const b=ev.target.closest("button[data-expr]"); if(!b) return;
+  expresionActual=b.dataset.expr;
+  contExpr.querySelectorAll("button").forEach(x=>x.classList.toggle("activo",x===b));
+});
+
+const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// parpadeo: ráfagas breves con pausa larga, no un seno
+let tParpadeo=0, proximoParpadeo=1800, faseParpadeo=-1;
+// microdesvíos: la mirada nunca está perfectamente quieta
+let tMicro=0, micro={x:0,y:0}, microDestino={x:0,y:0};
+
+let anterior=performance.now();
+function bucle(ahora){
+  const dt=Math.min(64, ahora-anterior); anterior=ahora;
+
+  // parpadeo compartido por las tres, para comparar en igualdad
+  let parpadeo=0;
+  if(swParpadeo.classList.contains("is-on") && !reduce){
+    tParpadeo+=dt;
+    if(faseParpadeo<0 && tParpadeo>proximoParpadeo){ faseParpadeo=0; }
+    if(faseParpadeo>=0){
+      faseParpadeo+=dt;
+      const dur=150;
+      parpadeo = faseParpadeo<dur/2 ? faseParpadeo/(dur/2) : 1-(faseParpadeo-dur/2)/(dur/2);
+      parpadeo=Math.max(0,Math.min(1,parpadeo));
+      if(faseParpadeo>dur){ faseParpadeo=-1; tParpadeo=0; proximoParpadeo=1600+Math.random()*3200; }
+    }
+  }
+
+  // microdesvíos (sacadas): saltitos pequeños, no deriva suave
+  if(swMicro.classList.contains("is-on") && !reduce){
+    tMicro+=dt;
+    if(tMicro>420+Math.random()*900){
+      microDestino={x:(Math.random()-0.5)*0.20, y:(Math.random()-0.5)*0.14};
+      tMicro=0;
+    }
+    micro.x += (microDestino.x-micro.x)*0.25;
+    micro.y += (microDestino.y-micro.y)*0.25;
+  } else { micro={x:0,y:0}; }
+
+  // la ceja llega suave a su destino: un cambio instantáneo se lee como un tic
+  const destinoCeja=EXPRESIONES[expresionActual];
+  const kc = reduce ? 1 : 0.16;
+  cejaSuave.dy   += (destinoCeja.dy   - cejaSuave.dy)*kc;
+  cejaSuave.ang  += (destinoCeja.ang  - cejaSuave.ang)*kc;
+  cejaSuave.asim += (destinoCeja.asim - cejaSuave.asim)*kc;
+
+  const alcance = Number(rgAlcance.value)/100;
+  const vel = reduce ? 1 : Number(rgVel.value)/100*0.35;
+
+  MODOS.forEach((m,i)=>{
+    const cv=ctxs[i].canvas, r=cv.getBoundingClientRect();
+    // posición del ratón relativa al centro de ESTE lienzo, normalizada y acotada
+    let ox=0, oy=0;
+    if(hayRaton){
+      ox=(raton.x-(r.left+r.width/2))/(r.width*1.6);
+      oy=(raton.y-(r.top+r.height*0.42))/(r.height*1.1);
+    }
+    const tope=(v)=>Math.max(-1,Math.min(1,v));
+    const obj={ x:tope(ox*alcance+micro.x), y:tope(oy*alcance+micro.y) };
+    m.actualizar(m.est,obj,vel);
+    dibujarCabeza(ctxs[i],{
+      yaw: m.est.yaw||0,
+      mirada:{x:m.est.mx, y:m.est.my},
+      parpadeo: Math.max(parpadeo, m.est.lid||0),
+      ceja: cejaSuave,
+    });
+  });
+
+  requestAnimationFrame(bucle);
+}
+requestAnimationFrame(bucle);
+</script>
+
+</body></html>

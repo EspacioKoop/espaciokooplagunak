@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
-"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"Report-Msgid-Bugs-To: https://github.com/EspacioKoop/espaciokooplagunak/issues\n"
 "PO-Revision-Date: 2026-07-12 00:00+0200\n"
 "Last-Translator: Espaciokoop Lagunak contributors\n"
 "Language-Team: Espaciokoop Lagunak\n"
@@ -2839,13 +2839,13 @@ msgstr "%s El protocolo de docking también requiere calibración de escudo. Esc
 #, lua-format
 msgctxt "msgRelay"
 msgid "To contact station %s for the docking protocol, click %s then click the Open Comms button in the upper left of your console. Once communications are open, click the Check with docking port authority button to determine the docking protocol. Report the protocol to your crew."
-msgstr "Para la estación de contacto %s para el protocolo de docking, haga clic %s luego haga clic en el botón Comms Abierto en la parte superior izquierda de su consola. Una vez que las comunicaciones estén abiertas, haga clic en el botón Check with docking port authority para determinar el protocolo de docking."
+msgstr "Para contactar con la estación %s para el protocolo de atraque, haga clic en %s y luego haga clic en el botón Abrir Comms en la parte superior izquierda de su consola. Una vez que las comunicaciones estén abiertas, haga clic en el botón Comprobar con autoridad portuaria de muelle para determinar el protocolo de atraque. Informe del protocolo a su tripulación."
 
 #: scripts/scenario_33_early.lua:5550
 #, lua-format
 msgctxt "msgOperations"
 msgid "To contact station %s for the docking protocol, click %s then click the Open Comms button along the bottom edge of your console to the right. Once communications are open, click the Check with docking port authority button to determine the docking protocol. Report the protocol to your crew."
-msgstr "Para la estación de contacto %s para el protocolo de docking, haga clic %s luego haga clic en el botón Comms Abierto a lo largo del borde inferior de su consola a la derecha. Una vez que las comunicaciones estén abiertas, haga clic en el botón Check with docking port authority para determinar el protocolo de docking."
+msgstr "Para contactar con la estación %s para el protocolo de atraque, haga clic en %s y luego haga clic en el botón Abrir Comms a lo largo del borde inferior de su consola, a la derecha. Una vez que las comunicaciones estén abiertas, haga clic en el botón Comprobar con autoridad portuaria de muelle para determinar el protocolo de atraque. Informe del protocolo a su tripulación."
 
 #: scripts/scenario_33_early.lua:5557
 msgctxt "msgHelms"
@@ -2932,7 +2932,7 @@ msgstr "Contacte con el carguero Arleniano angustiado, luego escanee el carguero
 #: scripts/scenario_33_early.lua:5645
 msgctxt "msgHelms"
 msgid "Use warp to approach but not intersect the planets and moons in motion. Intersetion will damage and quickly destroy your ship. Use guidance from Relay/Science/Operations for good approach vectors. Warn Engineering when you use warp, especially anything above warp one."
-msgstr "Use warp to approach but not intersect the planets and moons in motion. Intersetion dañará y destruirá rápidamente su barco. Utilice la guía de Relay/Science/Operations para los vectores de buena aproximación."
+msgstr "Use warp para aproximarse sin intersectar los planetas y lunas en movimiento. La intersección dañará y destruirá rápidamente su nave. Utilice la guía de Relay/Science/Operations para los vectores de buena aproximación. Avise a Ingeniería cuando use warp, especialmente por encima de warp uno."
 
 #: scripts/scenario_33_early.lua:5649
 msgctxt "msgWeapons"

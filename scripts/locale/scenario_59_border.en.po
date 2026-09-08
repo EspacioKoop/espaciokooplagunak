@@ -6255,3 +6255,35 @@ msgstr ""
 msgctxt "-tabEngineer&Engineer+"
 msgid "%s %i:%.2i"
 msgstr ""
+
+msgctxt "Timed"
+msgid "60"
+msgstr ""
+
+msgctxt "Timed"
+msgid "Scenario ends in 60 minutes"
+msgstr ""
+
+msgctxt "Timed"
+msgid "70"
+msgstr ""
+
+msgctxt "Timed"
+msgid "Scenario ends in 70 minutes"
+msgstr ""
+
+msgctxt "Timed"
+msgid "80"
+msgstr ""
+
+msgctxt "Timed"
+msgid "Scenario ends in 80 minutes"
+msgstr ""
+
+msgctxt "Timed"
+msgid "90"
+msgstr ""
+
+msgctxt "Timed"
+msgid "Scenario ends in 90 minutes"
+msgstr ""

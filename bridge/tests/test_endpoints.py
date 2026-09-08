@@ -238,3 +238,9 @@ def test_v1_scenario_juego_inalcanzable_devuelve_502(client, juego, auth):
     juego.error = httpx.ConnectError("caído")
     r = client.get("/v1/scenario", headers=auth)
     assert r.status_code == 502
+    # Un 502 con el detalle equivocado filtraría al cliente el mensaje interno
+    # de httpx; el puente tiene que dar SIEMPRE el suyo (#713).
+    assert r.json() == {"detail": "El servidor de juego no responde"}
+    # Y llamar una sola vez: un reintento silencioso ante un juego caído
+    # convertiría un fallo en dos, y aquí no hay política de reintento.
+    assert len(juego.llamadas) == 1

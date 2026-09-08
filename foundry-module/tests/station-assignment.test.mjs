@@ -8,6 +8,7 @@ import {
   canAssignStation,
   normalizeStation,
   stationRows,
+  uncrewedStations,
   visibleCrew,
 } from "../scripts/station-assignment.mjs";
 
@@ -89,4 +90,30 @@ test("el jugador solo ve su fila y el GM ve toda la tripulación, conectada o no
   assert.equal(rows[0].stations.find((entry) => entry.value === "engineering").selected, true);
   assert.equal(rows[1].active, false);
   assert.equal(rows.every((entry) => entry.canEdit), true);
+});
+
+test("ocupado a vacío: desconectar al usuario activo vuelve a marcar su puesto", () => {
+  const navigation = user({ id: "p1", station: "navigation", active: true });
+
+  assert.equal(uncrewedStations([navigation], "lagunak").includes("navigation"), false);
+  navigation.active = false;
+  assert.equal(uncrewedStations([navigation], "lagunak").includes("navigation"), true);
+});
+
+test("vacío a ocupado: conectar a un usuario con asignación efectiva retira el aviso", () => {
+  const engineering = user({ id: "p1", station: "engineering", active: false });
+
+  assert.equal(uncrewedStations([engineering], "lagunak").includes("engineering"), true);
+  engineering.active = true;
+  assert.equal(uncrewedStations([engineering], "lagunak").includes("engineering"), false);
+});
+
+test("solo usuarios reales activos y asignaciones canónicas atienden puestos", () => {
+  const gm = user({ id: "gm", isGM: true, station: "captain" });
+  const disconnected = user({ id: "p1", active: false, station: "weapons" });
+  const invalid = user({ id: "p2" });
+  invalid.flags.station = "pilot";
+
+  const uncrewed = uncrewedStations([gm, disconnected, invalid], "lagunak");
+  assert.deepEqual(uncrewed, STATIONS);
 });

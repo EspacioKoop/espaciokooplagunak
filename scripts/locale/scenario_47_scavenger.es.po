@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
-"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"Report-Msgid-Bugs-To: https://github.com/EspacioKoop/espaciokooplagunak/issues\n"
 "PO-Revision-Date: 2026-07-12 00:00+0200\n"
 "Last-Translator: Espaciokoop Lagunak contributors\n"
 "Language-Team: Espaciokoop Lagunak\n"
@@ -1663,7 +1663,7 @@ msgid ""
 "Posted on the station electronic request board:\n"
 "\n"
 "Request services of vessel in the area to scan asteroids in search of asteroid with particular characteristics. Substantial reward. No formal contract available. For further details, contact Jenny McGuire"
-msgstr "Posted on the station electronic request board: Solicita servicios de embarcación en el área para escanear asteroides en busca de asteroides con características particulares. Recompensa sustancial. No hay contrato formal disponible. Para más detalles, contacte a Jenny McGuire"
+msgstr "Publicado en el tablón electrónico de solicitudes de la estación: Solicita servicios de embarcación en el área para escanear asteroides en busca de asteroides con características particulares. Recompensa sustancial. No hay contrato formal disponible. Para más detalles, contacte a Jenny McGuire"
 
 #: scripts/scenario_47_scavenger.lua:2361 scripts/scenario_47_scavenger.lua:2806 scripts/scenario_47_scavenger.lua:2924
 msgctxt "Jenny-comms"

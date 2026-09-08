@@ -29,6 +29,7 @@
 // `paleta.mjs` (`SECCION`, ya usada para materiales genéricos de nave).
 
 import { AMBAR_SENAL, SECCION } from "./paleta.mjs";
+import { caja } from "./escena-primitivas.mjs";
 import { componerEscena, fundirEscenas } from "./retro3d.mjs";
 import { resolverCamara } from "./nave-camara.mjs";
 import { campoEstelar, proyectarEstrellas } from "./retro3d-estrellas.mjs";
@@ -36,40 +37,12 @@ import { piezasDeVentana } from "./nave-ventana-espacio.mjs";
 import { piezasMuralPixel } from "./nave-mural-pixel.mjs";
 import { ANCHO_TESELA, METROS_POR_TEXEL, texturaMuro } from "./piel-textura.mjs";
 import { piezasPielHoja } from "./nave-piel-puerta.mjs";
+import { piezasPielHojaTextura } from "./piel-textura-puerta.mjs";
 import { piezasPielColumna, piezasPielObjeto } from "./nave-piel-objeto.mjs";
 import { piezasPielSuelo, piezasPielTecho } from "./nave-piel-suelo.mjs";
-import { piezasLuminarias } from "./nave-luminaria.mjs";
+import { piezasLuminarias, mallaDifusorLuminarias, colorDifusorLuminaria } from "./nave-luminaria.mjs";
 import { crearPlanta } from "./nave-movimiento.mjs";
 import { poligonosOtrosJugadores } from "./nave-avatares-render.mjs";
-
-/** Caja alineada a ejes por centro+medidas, caras en sentido antihorario
- *  vistas desde fuera (lo que `componerEscena` necesita para descartar las de
- *  espaldas). */
-function caja([cx, cy, cz], [ancho, alto, fondo]) {
-  const x = ancho / 2;
-  const y = alto / 2;
-  const z = fondo / 2;
-  return {
-    vertices: [
-      [cx - x, cy - y, cz - z],
-      [cx + x, cy - y, cz - z],
-      [cx + x, cy + y, cz - z],
-      [cx - x, cy + y, cz - z],
-      [cx - x, cy - y, cz + z],
-      [cx + x, cy - y, cz + z],
-      [cx + x, cy + y, cz + z],
-      [cx - x, cy + y, cz + z],
-    ],
-    caras: [
-      [0, 3, 2, 1], // frente (−z)
-      [4, 5, 6, 7], // fondo (+z)
-      [0, 4, 7, 3], // izquierda
-      [1, 2, 6, 5], // derecha
-      [3, 7, 6, 2], // techo
-      [0, 1, 5, 4], // suelo
-    ],
-  };
-}
 
 /** A qué altura mira quien anda, de pie. El salto/agachado (#446) suma su
  *  propio offset por encima de esta base. 1.45 y no 1.6 (QA: "el personaje
@@ -327,7 +300,7 @@ function abrirHuecosEnMuros(muros, huecos, ancho, profundidad) {
   const puertasConBase = [];
 
   for (const hueco of huecos) {
-    const { rect, y0, y1, esVentana } = hueco;
+    const { rect, y0, y1, esVentana, colorMarco } = hueco;
     const tocaNorte = rect.z <= TOLERANCIA_BORDE;
     const tocaSur = rect.z + rect.profundidad >= profundidad - TOLERANCIA_BORDE;
     const tocaOeste = rect.x <= TOLERANCIA_BORDE;
@@ -357,7 +330,10 @@ function abrirHuecosEnMuros(muros, huecos, ancho, profundidad) {
     if (y0 > 0) bandas.push(rectAColumnaEntre(base, 0, y0));
     if (y1 < ALTURA) bandas.push(rectAColumnaEntre(base, y1, ALTURA));
     if (esVentana) marcos.push(...piezasMarcoVentana(base, y0, y1, alongX));
-    else marcosPuerta.push(...piezasMarcoPuerta(base, y0, y1, alongX));
+    // `color: null` y no `colorMarco` directamente: así el llamador (`crearSalaCaja`)
+    // resuelve el color de serie de la sala en un solo sitio en vez de que cada
+    // puerta sin `colorMarco` explícito tenga que repetirlo.
+    else marcosPuerta.push(...piezasMarcoPuerta(base, y0, y1, alongX).map((malla) => ({ malla, color: colorMarco ?? null })));
     // `base` ya trae el hueco resuelto con el grosor REAL del muro que toca
     // (el `rect` de entrada no lo garantiza — sus ejes fuera del ancho de
     // puerta son arbitrarios, ver `nave-vestibulo.PUERTA_*`), así que las
@@ -554,10 +530,10 @@ function panosTexturados(rect, altura) {
  * del techo o que no debe estorbar puede ponerlo a `false`.
  *
  * @param {{ancho:number, profundidad:number, columnas?:Array,
- *   puertas?:Array<{rect:object}>, ventanas?:Array<{rect:object}>,
+ *   puertas?:Array<{rect:object, colorMarco?:string}>, ventanas?:Array<{rect:object}>,
  *   mobiliario?:Array<{centro:number[], medidas:number[], color:string, colision?:boolean}>,
  *   colorMuro?:string, colorColumna?:string, colorMarcoVentana?:string,
- *   semillaCielo?:number, cantidadEstrellas?:number}} medidas
+ *   semillaCielo?:number, cantidadEstrellas?:number, sistema?:string|null}} medidas
  */
 export function crearSalaCaja({
   ancho,
@@ -594,25 +570,27 @@ export function crearSalaCaja({
    * nervado y las juntas finas que en cajas de diez centímetros no caben. Lo que
    * pierde es el moteado vivo de la luz por chapa: pasa a ser relieve PINTADO.
    *
-   * Eso cambia el aspecto de las trece salas del Phobos a la vez, así que el
-   * cambio de serie es una decisión de arte y se toma aparte. Aquí está el
-   * camino, probado y listo; cambiar este valor por defecto es la línea que lo
-   * enciende.
+   * Eso cambia el aspecto de las trece salas del Phobos a la vez, y la
+   * decisión ya se tomó (#458): DE SERIE desde entonces. `"geometria"` sigue
+   * viva para quien la necesite (comparar, depurar el pintor), pero ya no es
+   * el valor por defecto.
    */
-  pielMuro = "geometria",
+  pielMuro = "textura",
   semillaMural = 20260810,
-  // Piel de puertas y objetos (#550). Van con su propio interruptor y no con el
-  // del mural porque son decisiones separables: una sala puede querer sus muros
-  // desnudos y sus puertas marcadas. Ambas encendidas de serie, y ambas apagadas
-  // en las salas de prueba por el mismo motivo que el mural.
-  pielPuertas = true,
+  // Piel de puertas y objetos (#550, textura por hoja en #458). Van con su
+  // propio interruptor y no con el del mural porque son decisiones separables:
+  // una sala puede querer sus muros desnudos y sus puertas marcadas. Mismos
+  // tres valores que `pielMuro` (`"geometria"`/`"textura"`/`false`), y misma
+  // decisión: `"textura"` de serie, apagada en las salas de prueba.
+  pielPuertas = "textura",
   pielObjetos = true,
   pielSuelo = true,
-  // Salud del sistema de la sala e instante, para que la luminaria parpadee
-  // cuando el sistema está dañado (#e8a36cf5). OPCIONALES a propósito: quien no
-  // los pase ve exactamente lo que veía antes, con la luminaria entera.
-  health = null,
-  timeMs = 0,
+  // Qué sistema aloja esta sala (#765), o `null` si no aloja ninguno — la misma
+  // cadena que declara `SALAS_PHOBOS` (p.ej. `"Reactor"`). Solo sirve para que
+  // `componer` sepa qué entrada de `saludSistemas` mirar cada fotograma: el
+  // difusor de la luminaria no puede parpadear por un sistema que la sala no
+  // aloja.
+  sistema = null,
 }) {
   const muros = [
     { x: -GROSOR_MURO, z: -GROSOR_MURO, ancho: ancho + GROSOR_MURO * 2, profundidad: GROSOR_MURO },
@@ -621,7 +599,9 @@ export function crearSalaCaja({
     { x: ancho, z: 0, ancho: GROSOR_MURO, profundidad },
   ];
   const huecos = [
-    ...puertas.map(({ rect }) => ({ rect, y0: 0, y1: ALTURA_PUERTA, esVentana: false })),
+    // `colorMarco` es por PUERTA (#458 QA: «no se entiende a dónde lleva»): sin
+    // él, `abrirHuecosEnMuros` cae al color de serie de la sala entera.
+    ...puertas.map(({ rect, colorMarco }) => ({ rect, y0: 0, y1: ALTURA_PUERTA, esVentana: false, colorMarco })),
     ...ventanas.map(({ rect }) => ({ rect, y0: ALTURA_ALFEIZAR, y1: ALTURA_DINTEL_VENTANA, esVentana: true })),
   ];
   const { muros: tramosMuro, bandas, marcos, marcosPuerta, puertasConBase } =
@@ -663,8 +643,11 @@ export function crearSalaCaja({
       : []),
     ...marcos.map((malla) => ({ malla, color: colorMarcoVentana })),
     // El marco de puerta lleva su propio color: es lo que la hace reconocible
-    // como paso a otra sala y no como un boquete en el muro.
-    ...marcosPuerta.map((malla) => ({ malla, color: colorMarcoPuerta })),
+    // como paso a otra sala y no como un boquete en el muro. Y, desde #458, ese
+    // color puede variar POR PUERTA (`colorMarco` en la puerta declarada): una
+    // puerta a un destino social (cantina, terraza) se reconoce por el marco
+    // antes de leer el letrero.
+    ...marcosPuerta.map(({ malla, color }) => ({ malla, color: color ?? colorMarcoPuerta })),
     ...bandas.map((malla) => ({ malla, color: colorMuro })),
     ...columnas.map((rect) => ({ malla: rectAColumna(rect, ALTURA), color: colorColumna })),
     ...mobiliario.map(({ centro, medidas, color, emisivo, malla }) => ({
@@ -701,8 +684,12 @@ export function crearSalaCaja({
           ...piezasPielTecho({ ancho, profundidad, altura: ALTURA }),
         ]
       : []),
-    ...piezasLuminarias({ ancho, profundidad, altura: ALTURA, health, timeMs }),
+    ...piezasLuminarias({ ancho, profundidad, altura: ALTURA }),
   ]);
+  // Geometría del difusor fundida UNA vez (#765): su color se decide en
+  // `componer`, cada fotograma, sin rehacer un solo vértice — es la condición
+  // que #551 dejó puesta al medir el presupuesto de la sala.
+  const difusorLuminarias = mallaDifusorLuminarias({ ancho, profundidad, altura: ALTURA });
 
   const planta = crearPlanta({ ancho, profundidad, obstaculos: [...columnas, ...obstaculosMobiliario] });
   const tieneVentanas = ventanas.length > 0;
@@ -724,6 +711,13 @@ export function crearSalaCaja({
       // decide `nave-ventana-espacio.mjs`: aquí no se inventa relleno.
       sensores = null,
       rumboNave = null,
+      // Alerta de la nave y salud por sistema (#765), difundidas a toda la
+      // mesa por `alerta-escena.mjs`/`telemetria-difusion.mjs`. `tiempo` ya
+      // llegaba (#587, para el ambiente) y aquí además marca la cadencia del
+      // parpadeo — el mismo reloj que el resto de la escena.
+      aviso = null,
+      saludSistemas = null,
+      tiempo = 0,
     } = opciones;
     const { camara, dibujarPropio } = resolverCamara({ x, z, y, yaw, modo: modoCamara });
     const yawCamara = -yaw; // ver el comentario de `yaw` en `cantina-escena.mjs`
@@ -742,9 +736,12 @@ export function crearSalaCaja({
         // abrirse. En rejilla (#550) para que el detalle de la puerta mida lo
         // mismo que el del muro que la rodea; sin piel, la hoja se queda con las
         // bandas lisas de siempre, que siguen siendo mejor que una hoja pelada.
-        ...rects.flatMap((rect) =>
-          pielPuertas ? piezasPielHoja(puerta, rect) : piezasDetalleHoja(puerta, rect),
-        ),
+        ...rects.flatMap((rect) => {
+          if (pielPuertas === "textura") {
+            return piezasPielHojaTextura(puerta, rect, { color: colorMuro, ambiente: AMBIENTE_PANO });
+          }
+          return pielPuertas ? piezasPielHoja(puerta, rect) : piezasDetalleHoja(puerta, rect);
+        }),
       ];
     });
 
@@ -752,7 +749,19 @@ export function crearSalaCaja({
       piezasDeVentana({ rect, sala: { ancho, profundidad }, sensores, rumboNave }),
     );
 
-    const partes = [...piezas, ...hojasPuertas, ...vistaVentanas].map(({ malla, color, emisivo, textura, ambiente }) =>
+    // El color del difusor se decide AQUÍ, cada fotograma — la geometría ya
+    // está fundida en `difusorLuminarias` desde la construcción de la sala
+    // (#765). Sin `sistema` (la sala no aloja ninguno) no hay salud que mirar
+    // y el difusor solo responde a la alerta general.
+    const salud = sistema ? Number(saludSistemas?.[sistema.toLowerCase()]?.health) : null;
+    const difusor = difusorLuminarias
+      ? [{
+          malla: difusorLuminarias,
+          ...colorDifusorLuminaria({ aviso, health: Number.isFinite(salud) ? salud : null, timeMs: tiempo }),
+        }]
+      : [];
+
+    const partes = [...piezas, ...difusor, ...hojasPuertas, ...vistaVentanas].map(({ malla, color, emisivo, textura, ambiente }) =>
       componerEscena(trasladarMalla(malla, [-camara[0], -camara[1], -camara[2]]), {
         ancho: anchoLienzo,
         alto: altoLienzo,

@@ -36,7 +36,7 @@
 // propio generador determinista; la semilla del contacto de aquí.
 
 import { crearAleatorio, normalizarSemilla } from "./minijuegos/aleatorio.mjs";
-import { generarNpc } from "./npc-generador.mjs";
+import { generarNpc } from "./npc-generador/npc-generador.mjs";
 import {
   BANDAS,
   BANDAS_ORDENADAS,

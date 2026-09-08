@@ -1,0 +1,389 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style></head><body>
+<title>A Qué Miran los NPC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#10141a; --panel:#1b222b; --panel-2:#212a34; --line:#2d3946; --line-bright:#425364;
+    --text:#e7ecef; --text-dim:#8fa0ac; --text-faint:#5d6c78;
+    --amber:#e0a33a; --teal:#3ecfc4; --danger:#c8665a; --violeta:#8b7fd6;
+    --shadow-dark:#080a0d; --shadow-light:#2c3745;
+    font-size:15px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg); color:var(--text); margin:0; padding:28px 20px 70px;
+    font-family:'IBM Plex Sans', system-ui, sans-serif;
+    background-image:
+      radial-gradient(circle at 12% 6%, rgba(62,207,196,0.05), transparent 42%),
+      radial-gradient(circle at 88% 94%, rgba(224,163,58,0.05), transparent 45%);
+  }
+  .wrap{max-width:1240px;margin:0 auto;}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);}
+  h1{font-family:'Press Start 2P', monospace;font-size:19px;line-height:1.55;margin:10px 0 10px;text-wrap:balance;}
+  .page-head p{color:var(--text-dim);max-width:80ch;line-height:1.65;margin:0 0 8px;font-size:14px;}
+  code{background:var(--panel-2);padding:1px 5px;border:1px solid var(--line);font-size:12.5px;font-family:'IBM Plex Mono',monospace;}
+
+  .instruccion{
+    border-left:3px solid var(--teal);background:var(--panel);padding:14px 16px;margin:22px 0 18px;
+    font-size:14px;color:var(--text);line-height:1.65;
+  }
+  .instruccion b{color:var(--teal);}
+
+  .sala-wrap{background:var(--panel);border:1px solid var(--line);padding:12px;margin-bottom:14px;}
+  #sala{display:block;width:100%;height:auto;image-rendering:pixelated;background:#0b0e13;cursor:crosshair;}
+
+  .eventos{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center;
+    background:var(--panel);border:1px solid var(--line);padding:12px 16px;margin-bottom:26px;}
+  .eventos span{font-family:'IBM Plex Mono';font-size:11px;color:var(--text-faint);}
+  .btn{
+    font-family:'IBM Plex Mono';font-size:11px;padding:7px 13px;cursor:pointer;
+    background:var(--panel-2);border:1px solid var(--line);color:var(--text-dim);
+    text-transform:uppercase;letter-spacing:.04em;
+  }
+  .btn:hover{border-color:var(--line-bright);color:var(--text);}
+  .btn.hablar{border-color:var(--teal);color:var(--teal);}
+  .btn.puerta{border-color:var(--amber);color:var(--amber);}
+  .btn.alarma{border-color:var(--danger);color:var(--danger);}
+
+  .rejilla{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  @media (max-width:1060px){.rejilla{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:600px){.rejilla{grid-template-columns:1fr;}}
+  .celda{
+    background:var(--panel);border:1px solid var(--line);padding:12px 10px 14px;
+    display:flex;flex-direction:column;gap:8px;align-items:center;
+    box-shadow: inset 1px 1px 0 var(--shadow-light), inset -1px -1px 0 var(--shadow-dark);
+  }
+  .celda.destacada{border-color:var(--teal);}
+  .celda .idx{font-family:'IBM Plex Mono';font-size:9px;color:var(--text-faint);letter-spacing:.08em;}
+  .celda .nombre{font-family:'Press Start 2P';font-size:8.5px;text-align:center;line-height:1.6;}
+  .celda .mirando{font-family:'IBM Plex Mono';font-size:9.5px;color:var(--teal);text-align:center;min-height:13px;}
+  .celda .desc{font-family:'IBM Plex Sans';font-size:12px;color:var(--text-dim);line-height:1.5;text-align:center;}
+  .celda .juicio{font-family:'IBM Plex Mono';font-size:10px;line-height:1.5;padding-top:7px;border-top:1px solid var(--line);width:100%;text-align:center;}
+  .bien{color:var(--teal);} .mal{color:var(--danger);}
+  canvas.cara{image-rendering:pixelated;background:#0c1015;border:1px solid var(--line);}
+
+  .seccion{font-family:'Press Start 2P';font-size:11px;color:var(--amber);margin:44px 0 6px;}
+  .seccion-nota{font-family:'IBM Plex Mono';font-size:12px;color:var(--text-faint);max-width:88ch;line-height:1.65;margin-bottom:16px;}
+  .cierre{border-left:3px solid var(--amber);background:var(--panel);padding:16px 18px;font-size:13.5px;color:var(--text-dim);line-height:1.7;}
+  .cierre b{color:var(--amber);}
+  .cierre ul{margin:10px 0 0;padding-left:20px;}
+  .cierre li{margin-bottom:8px;}
+</style>
+
+<div class="wrap">
+  <div class="page-head">
+    <div class="eyebrow">seguimiento 02 · alcance y rapidez medios · #974</div>
+    <h1>A QUÉ MIRAN LOS NPC</h1>
+    <p>Siete tripulantes en la misma sala, con <strong>los mismos eventos</strong> y siete políticas de mirada
+      distintas. Para los PC ya está resuelto —la mirada acompaña al centro de la vista al andar— así que
+      esto es solo sobre los NPC, que es donde de verdad se decide si la nave parece habitada o embrujada.</p>
+  </div>
+
+  <div class="instruccion">
+    <b>Mueve el ratón por la sala</b> de abajo: eres el punto turquesa. Dispara eventos con los botones y
+    observa quién reacciona y quién no.
+  </div>
+
+  <div class="sala-wrap"><canvas id="sala" width="1100" height="300"></canvas></div>
+
+  <div class="eventos">
+    <span>EVENTOS:</span>
+    <button class="btn hablar" id="evHablar">Alguien habla</button>
+    <button class="btn puerta" id="evPuerta">Se abre la puerta</button>
+    <button class="btn alarma" id="evAlarma">Alarma</button>
+    <span id="estado" style="margin-left:10px;"></span>
+  </div>
+
+  <div class="rejilla" id="rejilla"></div>
+
+  <div class="seccion">Lo que se aprende mirándolos a la vez</div>
+  <div class="seccion-nota">
+    Todos reciben los mismos eventos. Las diferencias no son de código: son de qué clase de nave quieres.
+  </div>
+  <div class="cierre">
+    <ul>
+      <li><b>«Al jugador más cercano» es la trampa.</b> Es la primera que se implementa siempre y la que peor
+        envejece: seis tripulantes girando la cabeza a la vez hacia ti convierte una sala en una secta. Sirve
+        para uno, nunca para todos.</li>
+      <li><b>«A su tarea» es la que hace que la nave parezca un sitio de trabajo.</b> Un NPC que NO te mira
+        porque está ocupado comunica más que seis que sí. Debería ser la política por defecto de casi todo el
+        mundo.</li>
+      <li><b>El contagio de mirada es el truco caro-barato.</b> Que uno mire a algo y los demás le sigan un
+        instante después es de lo más humano que existe, y sale gratis: cada NPC solo mira a dónde mira su
+        vecino. Es lo que hace que una sala reaccione <i>como grupo</i> sin escribir ninguna coreografía.</li>
+      <li><b>Apartar la vista es contenido.</b> El que rehúye tu mirada no es un fallo del sistema: es
+        caracterización, y es el mismo código con el signo cambiado.</li>
+      <li><b>La mezcla real</b>: casi todos en «su tarea», uno o dos en «ronda de interés», el contagio activo
+        para todos, y «al jugador» reservado para quien de verdad te está esperando. La alarma lo anula todo
+        y manda a todos a su consola — que es justo cuando dejar de mirarte tiene sentido.</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+// ============================ escena ============================
+const SALA={w:1100,h:300};
+const POI={
+  consola:{x:180,y:70,  etq:"consola"},
+  puerta: {x:1030,y:150,etq:"puerta"},
+  mesa:   {x:560,y:250, etq:"mesa"},
+  panel:  {x:850,y:62,  etq:"panel"},
+  techo:  {x:550,y:20,  etq:"alarma"},
+};
+let jugador={x:550,y:170}, hayRaton=false;
+
+const NPCS=[
+  { id:0, nombre:"AL JUGADOR\nMÁS CERCANO", pos:{x:120,y:160}, mira:0,
+    desc:"Gira siempre hacia ti, estés donde estés.",
+    juicio:{t:"✗ una secta si son varios",c:"mal"},
+    objetivo:(e)=>({p:jugador, etq:"a ti"}) },
+
+  { id:1, nombre:"A QUIEN\nHABLA", pos:{x:280,y:210}, mira:0,
+    desc:"Mira a quien está hablando; si nadie habla, a su tarea.",
+    juicio:{t:"✓ social, muy legible",c:"bien"},
+    objetivo:(e)=> e.hablante!==null
+      ? {p:NPCS[e.hablante].pos, etq:"al que habla"}
+      : {p:POI.consola, etq:"su consola", bajo:true} },
+
+  { id:2, nombre:"A SU\nTAREA", pos:{x:430,y:120}, mira:0,
+    desc:"Está trabajando. No te mira. Solo la alarma le saca de ahí.",
+    juicio:{t:"✓ la nave parece un trabajo",c:"bien"},
+    objetivo:(e)=> e.alarma>0
+      ? {p:POI.techo, etq:"la alarma", alto:true}
+      : {p:POI.panel, etq:"su panel", bajo:true} },
+
+  { id:3, nombre:"AL MOVIMIENTO\nRECIENTE", pos:{x:600,y:150}, mira:0,
+    desc:"Reacciona a lo que se acaba de mover: una puerta, alguien entrando.",
+    juicio:{t:"✓ la sala se entera",c:"bien"},
+    objetivo:(e)=> e.puerta>0
+      ? {p:POI.puerta, etq:"la puerta"}
+      : (dist(jugador,NPCS[3].pos)<170 ? {p:jugador,etq:"te ha notado"} : {p:POI.mesa,etq:"la mesa",bajo:true}) },
+
+  { id:4, nombre:"RONDA DE\nINTERÉS", pos:{x:740,y:215}, mira:0,
+    desc:"Pasea la vista entre puntos, con pausas. Nadie mira fijo a la nada.",
+    juicio:{t:"✓ nadie parece apagado",c:"bien"},
+    objetivo:(e)=>{ const l=[POI.consola,POI.mesa,POI.puerta,POI.panel];
+      return {p:l[e.rondaIdx%l.length], etq:l[e.rondaIdx%l.length].etq}; } },
+
+  { id:5, nombre:"CONTAGIO\nDE MIRADA", pos:{x:880,y:120}, mira:0, destacada:true,
+    desc:"Mira a donde mira su vecino, medio segundo después. Puro instinto social.",
+    juicio:{t:"✓ el más humano de todos",c:"bien"},
+    objetivo:(e)=> ({p:e.objetivoVecino||POI.mesa, etq:"donde mira el 04"}) },
+
+  { id:6, nombre:"TE EVITA", pos:{x:1000,y:225}, mira:0,
+    desc:"Aparta la vista cuando te acercas. No es un fallo: es un personaje.",
+    juicio:{t:"✓ caracterización gratis",c:"bien"},
+    objetivo:(e)=>{
+      const cerca=dist(jugador,NPCS[6].pos)<220;
+      return cerca ? {p:{x:NPCS[6].pos.x-260,y:NPCS[6].pos.y+90}, etq:"al suelo, lejos", bajo:true}
+                   : {p:jugador, etq:"de reojo"}; } },
+];
+function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y);}
+
+// estado de eventos
+const E={hablante:null, puerta:0, alarma:0, rondaIdx:0, objetivoVecino:null};
+let tRonda=0, tHablante=0;
+
+// ============================ dibujo de la sala ============================
+const salaCv=document.getElementById("sala"), sctx=salaCv.getContext("2d");
+sctx.imageSmoothingEnabled=false;
+
+function pintarSala(){
+  sctx.fillStyle="#0b0e13"; sctx.fillRect(0,0,SALA.w,SALA.h);
+  // rejilla de suelo
+  sctx.strokeStyle="rgba(255,255,255,0.045)"; sctx.lineWidth=1;
+  for(let x=0;x<SALA.w;x+=50){sctx.beginPath();sctx.moveTo(x,0);sctx.lineTo(x,SALA.h);sctx.stroke();}
+  for(let y=0;y<SALA.h;y+=50){sctx.beginPath();sctx.moveTo(0,y);sctx.lineTo(SALA.w,y);sctx.stroke();}
+  // puntos de interés
+  const poi=(p,color,etq,activo)=>{
+    sctx.fillStyle=activo?color:"rgba(140,150,160,0.35)";
+    sctx.fillRect(p.x-9,p.y-9,18,18);
+    sctx.fillStyle=activo?color:"#5d6c78";
+    sctx.font="10px 'IBM Plex Mono', monospace"; sctx.textAlign="center";
+    sctx.fillText(etq,p.x,p.y-14);
+  };
+  poi(POI.consola,"#8fa0ac","consola",false);
+  poi(POI.panel,"#8fa0ac","panel",false);
+  poi(POI.mesa,"#8fa0ac","mesa",false);
+  poi(POI.puerta,"#e0a33a","puerta",E.puerta>0);
+  poi(POI.techo,"#c8665a","alarma",E.alarma>0);
+
+  // NPCs y su línea de mirada
+  NPCS.forEach((n,i)=>{
+    const obj=n._objActual;
+    if(obj){
+      sctx.strokeStyle= n.destacada ? "rgba(62,207,196,0.5)" : "rgba(224,163,58,0.28)";
+      sctx.lineWidth= n.destacada?2:1.4;
+      sctx.beginPath(); sctx.moveTo(n.pos.x,n.pos.y); sctx.lineTo(obj.x,obj.y); sctx.stroke();
+    }
+    const hablando = E.hablante===i;
+    sctx.fillStyle= hablando ? "#3ecfc4" : (n.destacada?"#8b7fd6":"#c99a72");
+    sctx.beginPath(); sctx.arc(n.pos.x,n.pos.y,11,0,Math.PI*2); sctx.fill();
+    sctx.fillStyle="#0b0e13"; sctx.font="bold 10px 'IBM Plex Mono', monospace"; sctx.textAlign="center";
+    sctx.fillText(String(i).padStart(2,"0"),n.pos.x,n.pos.y+3.5);
+    if(hablando){
+      sctx.strokeStyle="#3ecfc4"; sctx.lineWidth=1.5;
+      sctx.beginPath(); sctx.arc(n.pos.x,n.pos.y,17+Math.sin(performance.now()/180)*3,0,Math.PI*2); sctx.stroke();
+    }
+  });
+
+  // jugador
+  sctx.fillStyle="#3ecfc4";
+  sctx.beginPath(); sctx.arc(jugador.x,jugador.y,9,0,Math.PI*2); sctx.fill();
+  sctx.strokeStyle="rgba(62,207,196,0.45)"; sctx.lineWidth=1.5;
+  sctx.beginPath(); sctx.arc(jugador.x,jugador.y,15,0,Math.PI*2); sctx.stroke();
+  sctx.fillStyle="#3ecfc4"; sctx.font="10px 'IBM Plex Mono', monospace";
+  sctx.fillText("TÚ",jugador.x,jugador.y-20);
+}
+
+// ============================ la cara (seguimiento 02) ============================
+const W=170,H=200,CX=W/2;
+const yCoronilla=32, cab=108, yMenton=yCoronilla+cab;
+const wCraneo=42, wMandi=25;
+const K={yCejas:yCoronilla+cab*0.44, yOjos:yCoronilla+cab*0.53, yNariz:yCoronilla+cab*0.68, yBoca:yCoronilla+cab*0.80};
+const P={piel:"#c99a72",pielL:"#e0b287",pielXL:"#efc79c",pielS:"#a3785a",pielXS:"#7a5842",
+  hueco:"#4a3629",huecoTop:"#33251b",ojo:"#181310",brillo:"#e8dccb",pelo:"#3a2c22",peloL:"#4e3b2e"};
+function poly(ctx,pts,c){ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);
+  for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);ctx.closePath();ctx.fillStyle=c;ctx.fill();}
+
+function cara(ctx,{mirada,parpadeo=0,ceja={dy:0,ang:0}}){
+  ctx.fillStyle="#0c1015"; ctx.fillRect(0,0,W,H);
+  const c=CX;
+  poly(ctx,[[c-14,yMenton-12],[c+14,yMenton-12],[c+17,H-4],[c-17,H-4]],P.pielXS);
+  const ci=[c-wCraneo,yCoronilla+cab*0.30], cti=[c-wCraneo*0.62,yCoronilla+2],
+        ctd=[c+wCraneo*0.62,yCoronilla+2], cd=[c+wCraneo,yCoronilla+cab*0.30],
+        pi=[c-wCraneo*0.94,yCoronilla+cab*0.56], pd=[c+wCraneo*0.94,yCoronilla+cab*0.56],
+        mi=[c-wMandi,yMenton-cab*0.14], md=[c+wMandi,yMenton-cab*0.14], me=[c,yMenton];
+  poly(ctx,[ci,cti,ctd,cd,pd,md,me,mi,pi],P.piel);
+  poly(ctx,[ci,cti,ctd,cd,[cd[0]-5,K.yCejas],[c,K.yCejas-4],[ci[0]+5,K.yCejas]],P.pielL);
+  poly(ctx,[ci,[ci[0]+5,K.yCejas],[pi[0]+7,pi[1]],pi],P.pielXL);
+  poly(ctx,[cd,[cd[0]-5,K.yCejas],[pd[0]-7,pd[1]],pd],P.pielS);
+  poly(ctx,[pd,md,me,[c+5,K.yBoca+8]],P.pielXS);
+  const ojo=(s)=>{
+    const a=c+s*8,b=c+s*23, x0=Math.min(a,b),x1=Math.max(a,b);
+    const yTop=K.yCejas+4, yBot=K.yOjos+9;
+    poly(ctx,[[x0,yTop],[x1,yTop-2],[x1,yBot-1],[x0,yBot]],P.hueco);
+    poly(ctx,[[x0,yTop],[x1,yTop-2],[x1,yTop+3],[x0,yTop+5]],P.huecoTop);
+    const au=(x1-x0)-9, al=(yBot-yTop)-7;
+    const px=(x0+x1)/2+mirada.x*au*0.5, py=(yTop+yBot)/2+1+mirada.y*al*0.5;
+    const ph=5*(1-parpadeo);
+    if(ph>0.5){
+      poly(ctx,[[px-3.2,py-ph],[px+3.2,py-ph-0.5],[px+3.2,py+ph-0.5],[px-3.2,py+ph]],P.ojo);
+      if(ph>2.6) poly(ctx,[[px-2,py-ph+0.8],[px-0.5,py-ph+0.5],[px-0.6,py-ph+2],[px-2.1,py-ph+2.3]],P.brillo);
+    }
+    if(parpadeo>0.02){
+      const yp=yTop+(yBot-yTop)*Math.min(1,parpadeo*1.05);
+      poly(ctx,[[x0,yTop],[x1,yTop-2],[x1,yp-2],[x0,yp]],P.pielS);
+      poly(ctx,[[x0,yp-2],[x1,yp-4],[x1,yp],[x0,yp+2]],P.pielXS);
+    }
+  };
+  ojo(-1); ojo(1);
+  const cdy=ceja.dy||0,cang=ceja.ang||0;
+  poly(ctx,[[c-23,K.yCejas-6+cdy],[c-7,K.yCejas-8+cdy+cang],[c-7,K.yCejas-3+cdy+cang],[c-23,K.yCejas+cdy]],P.pelo);
+  poly(ctx,[[c+7,K.yCejas-8+cdy+cang],[c+23,K.yCejas-6+cdy],[c+23,K.yCejas+cdy],[c+7,K.yCejas-3+cdy+cang]],P.pelo);
+  poly(ctx,[[c-2,K.yOjos+2],[c+3,K.yOjos+2],[c+5,K.yNariz+4],[c-4,K.yNariz+4]],P.pielL);
+  poly(ctx,[[c-4,K.yNariz+4],[c+5,K.yNariz+4],[c+4,K.yNariz+7],[c-3,K.yNariz+7]],P.pielXS);
+  poly(ctx,[[c-10,K.yBoca],[c+10,K.yBoca-1],[c+10,K.yBoca+2],[c-10,K.yBoca+3]],P.pielXS);
+  poly(ctx,[[ci[0]-2,ci[1]+5],[cti[0],cti[1]-2],[ctd[0],ctd[1]-2],[cd[0]+2,cd[1]+5],
+            [cd[0]-2,cd[1]+2],[c,ci[1]+8],[ci[0]+2,cd[1]+2]],P.pelo);
+  poly(ctx,[[ci[0]+2,K.yCejas-15],[cd[0]-2,K.yCejas-16],[cd[0]-6,K.yCejas-8],[ci[0]+6,K.yCejas-6]],P.pelo);
+}
+
+// ============================ montaje ============================
+const rejilla=document.getElementById("rejilla");
+rejilla.innerHTML=NPCS.map((n,i)=>`
+  <div class="celda ${n.destacada?'destacada':''}">
+    <div class="idx">${String(i).padStart(2,"0")}</div>
+    <div class="nombre">${n.nombre.replace(/\n/g,"<br>")}</div>
+    <canvas class="cara" id="cara${i}" width="${W}" height="${H}"></canvas>
+    <div class="mirando" id="mira${i}"></div>
+    <div class="desc">${n.desc}</div>
+    <div class="juicio ${n.juicio.c}">${n.juicio.t}</div>
+  </div>`).join("");
+const caraCtx=NPCS.map((n,i)=>document.getElementById(`cara${i}`).getContext("2d"));
+caraCtx.forEach(c=>c.imageSmoothingEnabled=false);
+const etqMira=NPCS.map((n,i)=>document.getElementById(`mira${i}`));
+
+// ratón sobre la sala
+salaCv.addEventListener("pointermove",(ev)=>{
+  const r=salaCv.getBoundingClientRect();
+  jugador={x:(ev.clientX-r.left)*(SALA.w/r.width), y:(ev.clientY-r.top)*(SALA.h/r.height)};
+  hayRaton=true;
+});
+
+document.getElementById("evHablar").addEventListener("click",()=>{
+  const cand=[0,1,2,4,5,6]; E.hablante=cand[Math.floor(Math.random()*cand.length)]; tHablante=0;
+});
+document.getElementById("evPuerta").addEventListener("click",()=>{ E.puerta=2600; });
+document.getElementById("evAlarma").addEventListener("click",()=>{ E.alarma=4200; });
+
+const reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const estados=NPCS.map(()=>({mx:0,my:0,lid:0}));
+let tParpadeo=0, proximo=1800, fase=-1, tContagio=0, objVecinoBuffer=[];
+let anterior=performance.now();
+
+function bucle(ahora){
+  const dt=Math.min(64,ahora-anterior); anterior=ahora;
+
+  // caducidad de eventos
+  if(E.puerta>0) E.puerta-=dt;
+  if(E.alarma>0) E.alarma-=dt;
+  if(E.hablante!==null){ tHablante+=dt; if(tHablante>3200){E.hablante=null;} }
+
+  // ronda de interés
+  tRonda+=dt; if(tRonda>1900){ E.rondaIdx++; tRonda=0; }
+
+  // parpadeo compartido
+  let parpadeo=0;
+  if(!reduce){
+    tParpadeo+=dt;
+    if(fase<0 && tParpadeo>proximo) fase=0;
+    if(fase>=0){
+      fase+=dt; const dur=150;
+      parpadeo=fase<dur/2 ? fase/(dur/2) : 1-(fase-dur/2)/(dur/2);
+      parpadeo=Math.max(0,Math.min(1,parpadeo));
+      if(fase>dur){fase=-1;tParpadeo=0;proximo=1600+Math.random()*3000;}
+    }
+  }
+
+  // el contagio mira a donde miraba el 04 hace ~500 ms
+  const obj4=NPCS[4]._objActual;
+  objVecinoBuffer.push({t:ahora,p:obj4?{...obj4}:null});
+  while(objVecinoBuffer.length && ahora-objVecinoBuffer[0].t>520) E.objetivoVecino=objVecinoBuffer.shift().p;
+
+  NPCS.forEach((n,i)=>{
+    const r=n.objetivo(E);
+    n._objActual=r.p;
+    // vector de mirada: ángulo hacia el objetivo, acotado al cono del personaje
+    const dx=r.p.x-n.pos.x, dy=r.p.y-n.pos.y;
+    const ang=Math.atan2(dx, Math.max(40,Math.abs(dy))*Math.sign(dy||1));
+    let mx=Math.max(-1,Math.min(1, dx/300));
+    let my=r.bajo?0.55 : r.alto?-0.7 : Math.max(-1,Math.min(1,(dy)/420));
+    // ALCANCE MEDIO (0,7) y RAPIDEZ MEDIA — lo elegido
+    mx*=0.7; my*=0.7;
+    const k=reduce?1:0.14;
+    const e=estados[i];
+    e.mx+=(mx-e.mx)*k; e.my+=(my-e.my)*k;
+    e.lid=Math.max(0,e.my*0.34);   // párpado acompaña: seguimiento 02
+    // ceja: la alarma tensa a todo el mundo
+    const ceja = E.alarma>0 ? {dy:-5,ang:1} : {dy:0,ang:0};
+    cara(caraCtx[i],{mirada:{x:e.mx,y:e.my},parpadeo:Math.max(parpadeo,e.lid),ceja});
+    etqMira[i].textContent = "→ " + r.etq;
+  });
+
+  pintarSala();
+  const est=document.getElementById("estado");
+  const partes=[];
+  if(E.hablante!==null) partes.push(`habla el ${String(E.hablante).padStart(2,"0")}`);
+  if(E.puerta>0) partes.push("puerta abierta");
+  if(E.alarma>0) partes.push("ALARMA");
+  est.textContent = partes.length?("· "+partes.join(" · ")):"· sala en calma";
+  est.style.color = E.alarma>0 ? "#c8665a" : "#5d6c78";
+
+  requestAnimationFrame(bucle);
+}
+requestAnimationFrame(bucle);
+</script>
+
+</body></html>

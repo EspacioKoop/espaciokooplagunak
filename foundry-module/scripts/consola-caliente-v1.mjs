@@ -47,13 +47,13 @@ import {
   prepararVistaReposicion,
   reposicionarNave,
 } from "./reposicion-control.mjs";
-import { firmaEstadoNaveVisible, prepareRoute, prepareSystemRows } from "./ship-view.mjs";
+import { firmaEstadoNaveVisible, prepareRoute, prepareSystemRows } from "./ship-view/ship-view.mjs";
 import {
   barraRecurso,
   barrasSistema,
   aplicarBarraDom,
   textoPorcentaje,
-} from "./barras-estado.mjs";
+} from "./ship-view/barras-estado.mjs";
 import { estadoIcono, iconoSistemaDataUri, aplicarIconoDom } from "./iconos-sistema.mjs";
 import { setSimulationPaused } from "./tempo-control.mjs";
 import { contenidoEstadoBitacora, fechaLocal } from "./bitacora-nave.mjs";
@@ -65,6 +65,7 @@ import { dibujarFrame } from "./mapa-render.mjs";
 import { estiloMarcoMapa } from "./mapa-marco.mjs";
 import { calcularIntervaloMs, resolverCicloConsola, siguienteFallosSeguidos } from "./consola-caliente-poll.mjs";
 import { buildWorkspaceModel, WORKSPACE_STATIONS } from "./station-workspaces.mjs";
+import { abrirAsistencia } from "./asistencia-ui.mjs";
 import {
   colorFaccion,
   componerFrame,
@@ -694,6 +695,7 @@ export function crearClaseConsolaCalienteV1() {
         this._emitirManiobra("shields", event.currentTarget?.dataset?.value === "true"));
       html.find('[data-action="reposicionar"]').on("click", () =>
         this._reposicionar(String(html.find('[data-field="reposicion-ancla"]').val() ?? "")));
+      html.find('[data-action="abrirMando"]').on("click", () => abrirAsistencia());
 
       html.find("[data-consola-tab]").on("click", (event) => {
         const id = event.currentTarget?.dataset?.consolaTab;

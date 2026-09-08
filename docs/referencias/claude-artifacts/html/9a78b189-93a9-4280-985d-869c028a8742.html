@@ -1,0 +1,250 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style></head><body>
+<title>Muro: geometría o textura</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&family=JetBrains+Mono:wght@400;600;700&display=swap">
+<style>
+:root{
+  --tinta:#e7ebf0;
+  --tinta-sombra:#8c96a4;
+  --fondo:#12161d;
+  --panel:#1a1f28;
+  --linea:#2a3140;
+  --ambar:#ffb703;
+  --metal-claro:#657386;
+  --metal-brillo:#8492a3;
+  --mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+  --sans: 'Manrope', system-ui, sans-serif;
+}
+:root[data-theme="light"]{
+  --tinta:#1b2129;
+  --tinta-sombra:#586274;
+  --fondo:#f3f1ea;
+  --panel:#ffffff;
+  --linea:#dcd8cd;
+  --ambar:#b3670a;
+  --metal-claro:#4a5462;
+  --metal-brillo:#333b46;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --tinta:#1b2129;
+    --tinta-sombra:#586274;
+    --fondo:#f3f1ea;
+    --panel:#ffffff;
+    --linea:#dcd8cd;
+    --ambar:#b3670a;
+    --metal-claro:#4a5462;
+    --metal-brillo:#333b46;
+  }
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  background:var(--fondo);
+  color:var(--tinta);
+  font-family:var(--sans);
+  padding:clamp(24px,4vw,64px);
+  line-height:1.55;
+}
+main{max-width:980px;margin:0 auto;}
+.eyebrow{
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--ambar);
+  margin:0 0 10px;
+}
+h1{
+  font-family:var(--sans);
+  font-weight:800;
+  font-size:clamp(28px,4vw,40px);
+  margin:0 0 6px;
+  text-wrap:balance;
+  letter-spacing:-0.01em;
+}
+.sub{
+  color:var(--tinta-sombra);
+  max-width:62ch;
+  margin:0 0 40px;
+  font-size:15px;
+}
+.sub code{font-family:var(--mono);font-size:13px;background:var(--panel);border:1px solid var(--linea);padding:1px 5px;border-radius:4px;}
+
+.comparativa{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+  margin-bottom:28px;
+}
+@media (max-width:720px){ .comparativa{grid-template-columns:1fr;} }
+
+.panel{
+  background:var(--panel);
+  border:1px solid var(--linea);
+  border-radius:10px;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+.panel header{
+  padding:14px 18px 12px;
+  border-bottom:1px solid var(--linea);
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:12px;
+}
+.panel h2{
+  font-family:var(--mono);
+  font-size:14px;
+  margin:0;
+  font-weight:600;
+  letter-spacing:.02em;
+}
+.panel .tag{
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--tinta-sombra);
+  white-space:nowrap;
+}
+.lienzo{
+  background:repeating-conic-gradient(var(--linea) 0% 25%, transparent 0% 50%) 0 0/16px 16px;
+  padding:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:180px;
+}
+.lienzo img{
+  width:100%;
+  height:auto;
+  image-rendering:pixelated;
+  display:block;
+  border-radius:2px;
+}
+.stats{
+  padding:12px 18px 16px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px 16px;
+  font-family:var(--mono);
+  font-size:12.5px;
+}
+.stats dt{color:var(--tinta-sombra);}
+.stats dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;}
+.stats .destaca{color:var(--ambar);font-weight:700;}
+
+.nota{
+  background:var(--panel);
+  border:1px solid var(--linea);
+  border-left:3px solid var(--ambar);
+  border-radius:6px;
+  padding:16px 20px;
+  font-size:14.5px;
+  color:var(--tinta);
+  margin-bottom:28px;
+}
+.nota strong{color:var(--ambar);}
+
+h3{
+  font-size:13px;
+  font-family:var(--mono);
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:var(--tinta-sombra);
+  margin:0 0 10px;
+  padding-top:8px;
+  border-top:1px solid var(--linea);
+}
+ul.opciones{list-style:none;margin:0 0 32px;padding:0;display:grid;gap:10px;}
+ul.opciones li{
+  font-size:14px;
+  padding-left:18px;
+  position:relative;
+  color:var(--tinta);
+}
+ul.opciones li::before{
+  content:"";
+  position:absolute;
+  left:0;top:8px;
+  width:6px;height:6px;
+  background:var(--metal-brillo);
+  border-radius:1px;
+}
+ul.opciones b{font-weight:700;}
+ul.opciones .veredicto::before{background:var(--ambar);}
+ul.opciones .veredicto b{color:var(--ambar);}
+
+footer{
+  font-family:var(--mono);
+  font-size:11.5px;
+  color:var(--tinta-sombra);
+  border-top:1px solid var(--linea);
+  padding-top:16px;
+  margin-top:8px;
+}
+</style>
+
+<div class="encabezado" style="max-width:640px;text-align:center;">
+</div>
+
+<main>
+  <p class="eyebrow">Issue #584 · decisión de arte pendiente</p>
+  <h1>El mismo muro, dos formas de dibujarlo</h1>
+  <p class="sub">
+    Salida real de <code>rejillaMural()</code> (geometría, hoy de serie) y de
+    <code>teselaMuro()</code> (textura tileada, <code>piel-textura.mjs</code>) sobre
+    un tramo de 8&nbsp;m &times; 3,8&nbsp;m, misma semilla. Sin escalado ni retoque —
+    un píxel de la imagen es una celda de la rejilla.
+  </p>
+
+  <div class="comparativa">
+    <div class="panel">
+      <header>
+        <h2>Geometría</h2>
+        <span class="tag">10&nbsp;cm / celda</span>
+      </header>
+      <div class="lienzo"><img src="NOTA-ARCHIVO: imagen base64 omitida en esta copia; ver artefacto original citado en el manifiesto." alt="Muro dibujado por geometría: cajas de 10cm, relieve calculado por cara" /></div>
+      <dl class="stats">
+        <dt>Resolución de rejilla</dt><dd>80 × 38</dd>
+        <dt>Polígonos (sala 8×6 medida)</dt><dd class="destaca">263</dd>
+        <dt>Relieve</dt><dd>por cara, moteado vivo</dd>
+        <dt>Luz de #556</dt><dd class="destaca">resolución completa</dd>
+      </dl>
+    </div>
+
+    <div class="panel">
+      <header>
+        <h2>Textura</h2>
+        <span class="tag">2,5&nbsp;cm / téxel</span>
+      </header>
+      <div class="lienzo"><img src="NOTA-ARCHIVO: imagen base64 omitida en esta copia; ver artefacto original citado en el manifiesto." alt="Muro como textura tileada: tesela repetida, relieve pintado" /></div>
+      <dl class="stats">
+        <dt>Resolución de rejilla</dt><dd>320 × 152</dd>
+        <dt>Polígonos (sala 8×6 medida)</dt><dd class="destaca">7</dd>
+        <dt>Relieve</dt><dd>pintado, una intensidad por muro</dd>
+        <dt>Luz de #556</dt><dd class="destaca">casi decorativa</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="nota">
+    <strong>Lo que no se ve en esta comparación:</strong> a este tamaño de imagen el detalle
+    extra de la textura (2,5&nbsp;cm/téxel frente a 10&nbsp;cm/celda) apenas se nota porque
+    ambos caminos ya rondan el límite de lo que un ojo distingue en pantalla. Donde sí se
+    nota es de cerca, andando — y sobre todo en el coste: 263 polígonos dibujados en cada
+    fotograma frente a 7.
+  </div>
+
+  <h3>La pregunta abierta del issue</h3>
+  <ul class="opciones">
+    <li><b>Opción A — textura de serie:</b> 263→7 polígonos, pero el relieve pasa a estar pintado y las luces de punto de #556 quedan casi decorativas en los muros.</li>
+    <li><b>Opción B — textura + subdivisión por luz:</b> el paño se parte en una rejilla gruesa (≈1,5&nbsp;m por cuadrilátero) solo para que la luz interpole; conserva el ahorro y el gradiente de #556.</li>
+    <li><b>Opción C — híbrido por clase de superficie:</b> muros y suelo texturados, puertas/objetos/greebles en geometría — pero devuelve dos lenguajes a la misma sala.</li>
+    <li class="veredicto"><b>Recomendada en el hilo: Opción B.</b> Es la única que no deshace el trabajo de #556 para pagar el de #584.</li>
+  </ul>
+
+  <footer>rejillaMural() y teselaMuro() · semilla 42 · foundry-module/scripts/{nave-mural-pixel,piel-textura}.mjs</footer>
+</main>
+
+</body></html>

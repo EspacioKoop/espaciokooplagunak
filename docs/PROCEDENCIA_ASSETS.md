@@ -142,3 +142,80 @@ dice que el nivel elegido no era casualidad de aquella pieza.
 tabla `FICHAS` y **se niega a convertir** lo que no esté en ella. Este documento
 es la versión para humanos, con el porqué; aquella es la que hace imposible
 saltarse el paso.
+
+---
+
+## Packs CC0 3D — animación y mobiliario retro (#1052)
+
+Seis packs completos, no piezas sueltas convertidas a malla de texto como las
+de arriba: entran como los binarios originales (GLB/FBX/OBJ/BLEND) bajo
+`resources/animations/` y `resources/models/`, sin pasar por
+`convertir-estatua.mjs`. Es una excepción deliberada al patrón de "solo texto
+convertido" que sigue el resto de este documento — decisión de Eloy,
+2026-09-08 — y por eso cada ficha aquí verifica contra el **árbol git**
+(`git rev-parse HEAD:<ruta>`) en vez de un sha256 de fichero: no hay un binario
+único de origen que hashear, hay un directorio completo tal y como lo empaquetó
+cada autor.
+
+**El PR original atribuía tres de estos seis packs a Kenney.** Es falso: el
+`Readme.txt`/`READ ME.txt` de cada pack, ya presente en el propio commit,
+nombra a otro autor. Las fichas de abajo citan la fuente primaria, no la
+etiqueta que traía el PR.
+
+### Universal Animation Library (1 y 2)
+
+| | |
+|---|---|
+| **Qué es** | Librería de animaciones humanoides (120+ y 130+ clips respectivamente), con y sin root motion |
+| **Autoría** | Quaternius |
+| **Licencia** | CC0 1.0 Universal — declarada en `License.txt` dentro de cada pack |
+| **Enlace** | https://quaternius.com |
+| **Verificación** | `git rev-parse HEAD:resources/animations/universal-animation-library` → `5e8f3495` (9 archivos) · `HEAD:resources/animations/universal-animation-library-2` → `b35c79d6` (13 archivos) |
+
+### Medieval Village MegaKit — edición Standard (gratuita, parcial)
+
+| | |
+|---|---|
+| **Qué es** | Kit modular de aldea medieval. **Solo la edición Standard/gratuita**, que su propio `License_Standard.txt` dice que "only contains a portion of the models" — las ediciones PRO/SOURCE (300+ piezas) no están incluidas y no hay que anunciarlas como entregadas |
+| **Autoría** | Quaternius |
+| **Licencia** | CC0 1.0 Universal — declarada en `License_Standard.txt` |
+| **Enlace** | https://quaternius.com |
+| **Verificación** | `git rev-parse HEAD:resources/models/medieval-village-megakit` → `9c44e2ed` (760 archivos) |
+
+### Classic64 Asset Library
+
+| | |
+|---|---|
+| **Qué es** | Biblioteca de props de estética N64/PS1-PS2. **No es de Kenney.** |
+| **Autoría** | Craig Snedeker (craigsnedeker.itch.io). Con dos sub-atribuciones que el propio pack declara: las texturas y modelos de `Nature/` son de rubberduck (OpenGameArt, *Free Vegetation Asset Pack*) y de yughues (OpenGameArt, CC0); los de `Rocks/` son de rubberduck (OpenGameArt, *More Handpainted Rocks*) |
+| **Licencia** | CC0 — declarada en `Readme.txt` ("anyone can use the files, for personal or commercial projects") |
+| **Enlace** | https://craigsnedeker.itch.io/classic64-asset-library |
+| **Versión** | El `Readme.txt` incluido en el árbol dice **0.2**; la versión publicada actualmente en itch.io es la 0.6 (2022-08-02). Si se actualiza el pack, corregir esta ficha |
+| **Verificación** | `git rev-parse HEAD:resources/models/classic-64-asset-pack` → `b9ead6e7` (872 archivos) |
+
+### Ultimate Retro PSX Tree Pack
+
+| | |
+|---|---|
+| **Qué es** | Árboles de estética retro PSX. **No es de Kenney.** No trae fichero de licencia propio dentro del pack (el directorio `resources/models/ultimate-retro-tree-pack/` no tiene `Read Me`) |
+| **Autoría** | Elegant Crow (elegantcrow.itch.io) |
+| **Licencia** | CC0 — declarada en la página de origen, no en un fichero del pack |
+| **Enlace** | https://elegantcrow.itch.io/ultimate-retro-psx-tree-pack |
+| **Origen de las imágenes** | La página del autor declara explícitamente que "All images come from sites like Pixabay and Pexels" — no son fotografías propias de Elegant Crow |
+| **Verificación** | `git rev-parse HEAD:resources/models/ultimate-retro-tree-pack` → `fba13de4` (600 archivos) |
+
+### Retro Nature Pack
+
+| | |
+|---|---|
+| **Qué es** | Vegetación de estética retro (arbustos, variantes de invierno). **No es de Kenney.** |
+| **Autoría** | Elegant Crow (mismo autor que el pack anterior) |
+| **Licencia** | CC0 — el `READ ME.txt` del pack no repite el texto de licencia, solo enlaces de contacto/donación; la licencia consta en la página de origen |
+| **Enlace** | https://elegantcrow.itch.io/ (buscar Retro Nature Pack en su catálogo) |
+| **Verificación** | `git rev-parse HEAD:resources/models/retro-nature-pack` → `fe0c89cb` (182 archivos) |
+
+**Lo que falta, a propósito no resuelto aquí:** ninguno de estos seis packs
+tiene todavía un consumidor real en el módulo (ni catálogo, ni carga desde
+`tools/scene-engine`, ni referencia desde `foundry-module/`). Entran como
+material curado y correctamente atribuido; conectar cada pieza a una escena es
+trabajo aparte.

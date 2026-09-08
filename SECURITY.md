@@ -66,36 +66,31 @@ contenido de un fichero de configuración en un informe.
 
 Defensa en capas, de fuera hacia dentro:
 
-### 1. Protección en el servidor
+### 1. Protección en el servidor — activa
 
-**Secret scanning** y **push protection** de GitHub están activados en este
-repositorio. Push protection se aplica al repositorio, no como regla de una rama:
-rechaza secretos reconocidos antes de que lleguen al historial remoto. Secret
-scanning avisa de credenciales que ya se hayan publicado o se detecten después.
+**Secret scanning** y **push protection** de GitHub están **activados** en este
+repositorio (2026-09-04, #662). Es la única capa que un agente no puede
+saltarse: un hook local lo desactiva cualquiera —incluido el propio agente— con
+`git push --no-verify`, y esta actúa en el servidor.
 
-Procedimiento operativo:
+- **Secret scanning**: detecta credenciales ya publicadas y avisa.
+- **Push protection**: rechaza el push **antes** de que la credencial llegue al
+  historial. Es la que de verdad evita el incidente; una vez algo entra en el
+  historial de un repositorio público hay que darlo por comprometido y rotarlo.
 
-1. Si push protection bloquea un push, no lo eludas: retira el secreto de los
-   ficheros y commits que se iban a publicar y vuelve a intentarlo. Si era una
-   credencial real, revócala o rótala aunque el push no llegara al remoto.
-2. Ante una alerta de secret scanning, revoca o rota primero la credencial en su
-   proveedor y sustituye cualquier referencia legítima por configuración local.
-3. Resuelve la alerta en *Security → Secret scanning* solo después de verificar
-   la revocación. Para un falso positivo o valor de prueba, documenta el motivo
-   en la propia alerta; no copies allí el valor completo.
-4. Si el secreto llegó al historial, considéralo comprometido y comunica el
-   incidente por el canal privado indicado al principio de este documento.
-
-Una persona con permiso de administración puede comprobar ambas protecciones
-sin registrar alertas ni credenciales:
+Se comprueba con:
 
 ```bash
-gh api repos/VaroTv7/espaciokooplagunak \
+gh api repos/EspacioKoop/espaciokooplagunak \
   -q '.security_and_analysis.secret_scanning.status,
       .security_and_analysis.secret_scanning_push_protection.status'
 ```
 
-Las dos líneas deben ser `enabled`.
+Las dos líneas dicen `enabled`. Quedan **desactivadas** dos opciones
+accesorias que el plan actual no deja encender —`non_provider_patterns`
+(patrones genéricos, no de proveedor conocido) y `validity_checks` (comprobar
+si la credencial detectada sigue viva)—: no cambian la defensa principal, pero
+tampoco están, así que no las des por hechas.
 
 ### 2. Hook local
 

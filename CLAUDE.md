@@ -293,8 +293,8 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     errata en un NPC inmune a nada sin que saltara ninguna alarma. Es cimiento declarado: nadie lo
     importa todavía porque *recordar* a quién has conocido es del núcleo y no de la escena, el mismo
     reparto que #598 dejó abierto para el bestiario. Ver [docs/NPC_GENERADOR.md](docs/NPC_GENERADOR.md).
-  - **Sección de la nave** — `scripts/seccion-nave.mjs` (planta declarativa y consultas, puro),
-    `scripts/seccion-lienzo.mjs` (pintado 2D, sin color propio) y `scripts/seccion-nave-app.mjs`
+  - **Sección de la nave** — `scripts/seccion-nave/seccion-nave.mjs` (planta declarativa y consultas, puro),
+    `scripts/seccion-nave/seccion-lienzo.mjs` (pintado 2D, sin color propio) y `scripts/seccion-nave/seccion-nave-app.mjs`
     (ventana V1/V2), #427. El corte transversal con todas las salas a la vez: es el MAPA, y la
     cantina es ESTAR dentro. Pulsar una sala abre la vista que ya existe — la sección no estrena
     ninguna: la cantina abre su ventana propia (#423) y el puente e ingeniería se entran ANDANDO
@@ -573,11 +573,15 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     hecha después de que destruyeran el original, o que llame mármol a un vaciado en yeso. El crédito
     de la cartela se **deriva** de la procedencia y no se escribe al lado, misma regla que el cartel
     de reglas del blackjack (#553). La **sala del museo** (`scripts/museo-escena.mjs` +
-    `museo-piezas.mjs`, con `MUSEO` en `paleta.mjs`) es su primer consumidor real: tres piezas sobre
-    pedestales, andable, solo-GM, con la entrada por herramienta de la barra de escena y la salida
-    por un punto de interacción — la misma forma que la playa (#587), y por el mismo motivo (el
-    Phobos no tiene un museo, y colgarlo de un mamparo contaría una historia que nadie ha decidido).
-    Por eso está fuera de las invariantes de la nave en `nave-planta-phobos.test.mjs` y del minimapa.
+    `museo-piezas.mjs`, con `MUSEO` en `paleta.mjs`) es su primer consumidor real: tres vaciados
+    sobre pedestales, andable, solo-GM, con la entrada por herramienta de la barra de escena y la
+    salida por un punto de interacción — la misma forma que la playa (#587), y por el mismo motivo
+    (el Phobos no tiene un museo, y colgarlo de un mamparo contaría una historia que nadie ha
+    decidido). Los **cuadros** (#836) son la segunda forma de colocar: pixelart `obra-propia`
+    generado por el módulo que cuelga de los muros laterales con la misma primitiva que la piel de
+    la sala (`chapasDeRejilla` sobre la cara interior del muro), a su propia celda de 2,5 cm —el
+    mando de escala, declarado una sola vez en `nave-cuadro.mjs`—, y reusa la acción de cartela de
+    #598; la cartela dice qué enseña exactamente y no marca la pieza como vista. Por eso está fuera de las invariantes de la nave en `nave-planta-phobos.test.mjs` y del minimapa.
     Lo que el museo NO hace es la mitad del diseño: **enseña y ya está**. La cartela se pinta al
     acercarse y se retira al apartarse (`accion: {tipo: "cartela"}` + el flanco de salida
     `alSalirDeInteraccion` de #598); no marca piezas como vistas, no lleva la cuenta ni deja rastro,

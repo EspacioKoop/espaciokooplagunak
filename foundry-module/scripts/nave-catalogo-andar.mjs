@@ -21,7 +21,7 @@
 
 import { crearCatalogoEstancias } from "./nave-estancias.mjs";
 import { declararInteracciones } from "./nave-interaccion.mjs";
-import { SECCION } from "./paleta.mjs";
+import { MUSEO, PLAYA, SECCION } from "./paleta.mjs";
 import { puntoLibreCerca } from "./nave-movimiento.mjs";
 import { crearSalaCaja } from "./nave-sala-caja.mjs";
 import { piezasConsola } from "./nave-consola.mjs";
@@ -33,6 +33,10 @@ import {
   PUERTA_CANTINA,
   PLANTA_TERRAZA,
   componerTerraza,
+  componerTerrazaCon,
+  plantaTerraza,
+  asientosColocados,
+  ASIENTOS as ASIENTOS_TERRAZA,
 } from "./terraza-cantina.mjs";
 import {
   ENTRADA as ENTRADA_PLAYA,
@@ -46,7 +50,6 @@ import {
   PLANTA_MUSEO,
   componerMuseo,
 } from "./museo-escena.mjs";
-import { MUSEO, PLAYA } from "./paleta.mjs";
 import {
   ANCHO_PUERTA,
   GROSOR_PUERTA,
@@ -225,6 +228,19 @@ function conexionesPorSala() {
   return mapa;
 }
 
+/**
+ * Destinos OPCIONALES de la nave (#458 QA: «no se entiende a dónde te va a
+ * llevar una puerta»): social o de ocio, no un paso más del recorrido de
+ * trabajo. Su puerta se tiñe con `SECCION.entrable` —el mismo turquesa con el
+ * que la sección ya marca «aquí SÍ se puede entrar»— para que se reconozca sin
+ * leer el letrero.
+ */
+const DESTINOS_SOCIALES = new Set(["cantina", "terraza", "museo"]);
+
+function colorMarcoPara(destino) {
+  return DESTINOS_SOCIALES.has(destino?.estancia) ? SECCION.entrable : undefined;
+}
+
 function definirSala(sala, salientes) {
   const { ancho, profundidad } = medidasSala(sala);
   const puertas = salientes.map((conexion) => ({
@@ -268,7 +284,7 @@ function definirSala(sala, salientes) {
         receta: sala.id === "camarotes" ? ["registro", "litera", "taquilla"] : undefined,
       }),
     ],
-    puertas: puertas.map(({ rect }) => ({ rect })),
+    puertas: puertas.map(({ rect, destino }) => ({ rect, colorMarco: colorMarcoPara(destino) })),
     ventanas: ventanasAlExterior(sala, salientes),
     // Mismo motivo que en la cantina: el marco de serie es `SECCION.entrable`,
     // un turquesa de señalización de la sección que sobre un muro entero se lee
@@ -352,6 +368,17 @@ export const CATALOGO_ANDAR = crearCatalogoEstancias({
   terraza: {
     planta: PLANTA_TERRAZA,
     componer: componerTerraza,
+    // Sus cinco asientos se retiran al ocuparse (`nave-pose.mjs`). La estancia
+    // declara CÓMO queda con otras poses; quién las cambia y cuándo es de la
+    // ventana, que es la que sabe quién se acaba de sentar.
+    conPoses: (poses) => ({
+      planta: plantaTerraza(poses),
+      componer: componerTerrazaCon(poses),
+      // Dónde queda cada asiento ya en su pose: quien se sienta necesita el
+      // sitio NUEVO, no el de la silla sin retirar.
+      colocados: asientosColocados(poses),
+    }),
+    poseables: ASIENTOS_TERRAZA,
     entrada: ENTRADA_TERRAZA,
     interacciones: INTERACCIONES_TERRAZA,
     // Al aire libre y con la nave detrás: el fondo es el vacío, no el mamparo de

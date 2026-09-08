@@ -121,13 +121,21 @@ async def _run_lua(lua: str) -> Any:
     """
     try:
         async with httpx.AsyncClient(timeout=EXEC_TIMEOUT_SECONDS) as client:
-            response = await client.post(f"{EE_URL}/exec.lua", content=lua)
+            async with client.stream("POST", f"{EE_URL}/exec.lua", content=lua) as response:
+                if response.status_code != 200:
+                    raise HTTPException(502, "Respuesta inválida del servidor de juego")
+                body = bytearray()
+                async for chunk in response.aiter_bytes():
+                    if len(body) + len(chunk) > MAX_GAME_RESPONSE_BYTES:
+                        raise HTTPException(502, "Respuesta inválida del servidor de juego")
+                    body.extend(chunk)
+                # Preserve HTTPX's existing charset handling, but only after
+                # accepting a bounded body. The stream closes on every exit.
+                text = bytes(body).decode(response.encoding or "utf-8", errors="replace")
     except httpx.HTTPError:
         raise HTTPException(502, "El servidor de juego no responde")
-    if response.status_code != 200 or len(response.content) > MAX_GAME_RESPONSE_BYTES:
-        raise HTTPException(502, "Respuesta inválida del servidor de juego")
     try:
-        payload = json.loads(response.text)
+        payload = json.loads(text)
     except json.JSONDecodeError:
         raise HTTPException(502, "El servidor de juego devolvió JSON inválido")
     if isinstance(payload, dict) and "ERROR" in payload:

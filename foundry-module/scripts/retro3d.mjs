@@ -647,7 +647,12 @@ export function factorNiebla(profundidad, { cerca, lejos, niebla }) {
 //     por pares SÍ son correctos —cada test ahí pasa— y la primitiva
 //     (`aVaPrimero`, el corte por plano) es reutilizable el día que alguien
 //     cierre el hueco de revalidación; lo que no se hace es fingir que ya está
-//     resuelto conectándolo a producción.
+//     resuelto conectándolo a producción. La regresión de arriba (4, 6, 6 y 3
+//     pares nuevos) está fijada como fixture end-to-end sobre la escena real
+//     en `retro3d-fundir.test.mjs` (#900) — no solo descrita aquí en prosa:
+//     si algún día baja a 0 en los cuatro ángulos sin que nadie haya tocado
+//     este algoritmo, esa prueba lo señala como la condición para revisar si
+//     ya se puede cablear Newell a producción.
 //
 // LO QUE SE QUEDÓ Y SE USA: `seSolapanEnPantalla` —la pregunta «¿comparten
 // estas dos caras un solo píxel?», la que separa un desorden que se ve de uno

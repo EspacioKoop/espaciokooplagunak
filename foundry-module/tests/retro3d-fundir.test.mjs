@@ -8,6 +8,7 @@ import {
   componerEscena,
   fundirEscenas,
   seSolapanEnPantalla,
+  ordenarPorPintorNewell,
   MALLA_CAZA,
 } from "../scripts/retro3d.mjs";
 import { componerCantina } from "../scripts/cantina-escena.mjs";
@@ -157,5 +158,60 @@ test("deuda conocida: el orden por centroide deja pares mal en escenas cargadas"
   assert.ok(
     paresMalOrdenados(caminable.poligonos) <= 8,
     "la deuda de orden de la cantina caminable ha crecido",
+  );
+});
+
+test("fixture end-to-end: `ordenarPorPintorNewell` regresiona sobre la escena real de #510, no solo en pares sintéticos", () => {
+  // Cierra el hueco que señaló la review de OTACON Astra en #900: hasta este
+  // test, la única cobertura de `ordenarPorPintorNewell` eran fixtures
+  // sintéticas por pares (`retro3d-newell.test.mjs`) y el único caso de
+  // producción medía el centroide, no Newell. Este test ata el detector a la
+  // escena REAL de #510 (la cantina caminable) en vez de dejarlo como
+  // primitiva aislada.
+  //
+  // Los cuatro ángulos son los intermedios del barrido de yaw que ya vigila
+  // el tope de polígonos más arriba en este archivo (0, π/4, π/2, ... 7π/4):
+  // se toman los que NO están alineados con los muros de la sala (π/4, 3π/4,
+  // 5π/4, 7π/4). Los alineados (0, π/2, π, 3π/2) caen en geometría casi
+  // degenerada — mirar exactamente a lo largo de un muro deja centenas de
+  // caras de canto, donde tanto el centroide como Newell empatan en cientos
+  // de pares mal ordenados por motivos ajenos a esta regresión — y añaden
+  // ~10s de coste de `ordenarPorPintorNewell` (es O(n²) con corte) sin
+  // aportar señal distinta. Los cuatro que quedan son exactamente donde el
+  // commit original midió "4, 6, 6 y 3 pares nuevos según el ángulo".
+  //
+  // `REGRESION_MEDIDA` es una CAPTURA de hoy, no un objetivo: existe para
+  // que un cambio en `ordenarPorPintorNewell` o en la geometría de la
+  // cantina se note aquí, sea para mejor o para peor. Si el hueco de
+  // revalidación de la cabecera de `retro3d.mjs` (intento #3) se cierra
+  // algún día, esta captura debería bajar a 0 en los cuatro ángulos — es la
+  // señal de que ya se puede considerar cablear Newell a
+  // `componerEscena`/`fundirEscenas`.
+  const YAWS_NO_ALINEADOS = [Math.PI / 4, (3 * Math.PI) / 4, (5 * Math.PI) / 4, (7 * Math.PI) / 4];
+
+  const medido = YAWS_NO_ALINEADOS.map((yaw) => {
+    const escena = componerCantinaSala(5, 1.6, 6, yaw, { ancho: 480, alto: 320 });
+    return {
+      centroide: paresMalOrdenados(escena.poligonos),
+      newell: paresMalOrdenados(ordenarPorPintorNewell(escena.poligonos)),
+    };
+  });
+
+  const REGRESION_MEDIDA = [4, 6, 6, 3];
+  assert.deepEqual(
+    medido.map((m) => m.newell),
+    REGRESION_MEDIDA,
+    "el conteo de pares mal ordenados de ordenarPorPintorNewell en estos cuatro ángulos de la cantina cambió: comprueba si es la regresión ya documentada u otra distinta antes de actualizar este número",
+  );
+
+  // La afirmación central del PR #900: en los cuatro ángulos medidos,
+  // Newell SIEMPRE empeora al centroide (que da 0 en los cuatro). Si esto
+  // deja de ser cierto sin que nadie haya tocado el algoritmo, la geometría
+  // de la cantina cambió de forma que invalida la medida — no una señal de
+  // que el hueco se cerró.
+  const empeoraEnLosCuatro = medido.every((m) => m.newell > m.centroide);
+  assert.ok(
+    empeoraEnLosCuatro,
+    "ordenarPorPintorNewell ya no introduce regresiones nuevas frente al centroide en alguno de estos cuatro ángulos: si esto es intencional (el hueco de revalidación se cerró), actualiza la cabecera de retro3d.mjs y valora cablearlo a producción",
   );
 });

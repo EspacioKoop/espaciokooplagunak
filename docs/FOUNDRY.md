@@ -582,7 +582,7 @@ Reglas que hereda y no puede romper:
   nave en la que vives no es información privilegiada. La lectura de daño sí lo
   es, y por eso a quien no la tiene el plano le sale sin lectura, no falseado.
 
-La planta se declara **a mano** (`scripts/seccion-nave.mjs`): derivarla de la
+La planta se declara **a mano** (`scripts/seccion-nave/seccion-nave.mjs`): derivarla de la
 plantilla del simulador es más bonito y mucho más caro, y además la plantilla
 habla de cascos y sistemas, no de salas. Una sección tolera ser esquemática —esa
 es su virtud— así que el primer mapa se dibuja y ya se verá si #55 lo permite

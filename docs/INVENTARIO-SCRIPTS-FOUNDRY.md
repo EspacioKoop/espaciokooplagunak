@@ -54,9 +54,9 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 - `alarma-cruzada-escena.mjs`
 - `alarma-cruzada.mjs`
 - `alertas-nave.mjs`
-- `seccion-nave-app.mjs`
-- `seccion-nave.mjs`
-- `seccion-lienzo.mjs`
+- `seccion-nave/seccion-nave-app.mjs`
+- `seccion-nave/seccion-nave.mjs`
+- `seccion-nave/seccion-lienzo.mjs`
 
 ### 2. Estaciones y Puertos Espaciales (11 scripts)
 - `station-actions.mjs`

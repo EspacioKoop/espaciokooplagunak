@@ -46,8 +46,14 @@ export const AJUSTE_TELEMETRIA = "telemetriaNave";
 export const AJUSTE_BASE_DATOS = "baseDatosCientifica";
 
 /** Redondeo de lo que se publica. Ver la cabecera: sin esto se escribe siempre. */
-function redondear(valor) {
+function numero(valor) {
+  if (typeof valor !== "number" && (typeof valor !== "string" || valor.trim() === "")) return null;
   const n = Number(valor);
+  return Number.isFinite(n) ? n : null;
+}
+
+function redondear(valor) {
+  const n = numero(valor);
   return Number.isFinite(n) ? Math.round(n * 10) / 10 : null;
 }
 
@@ -126,7 +132,7 @@ function recortarInterior(interior) {
   const rooms = Array.isArray(interior.rooms) ? interior.rooms : null;
   if (rooms === null) return null;
   const salas = rooms
-    .filter((sala) => ["x", "y", "w", "h"].every((k) => Number.isFinite(Number(sala?.[k]))))
+    .filter((sala) => ["x", "y", "w", "h"].every((k) => Number.isFinite(numero(sala?.[k]))))
     .map((sala) => ({
       x: Math.round(Number(sala.x)),
       y: Math.round(Number(sala.y)),
@@ -139,11 +145,11 @@ function recortarInterior(interior) {
   return {
     rooms: salas,
     crews: crews
-      .filter((eq) => Number.isFinite(Number(eq?.position?.x)) && Number.isFinite(Number(eq?.position?.y)))
+      .filter((eq) => Number.isFinite(numero(eq?.position?.x)) && Number.isFinite(numero(eq?.position?.y)))
       .map((eq) => ({
         position: { x: Math.round(Number(eq.position.x)), y: Math.round(Number(eq.position.y)) },
         target:
-          Number.isFinite(Number(eq?.target?.x)) && Number.isFinite(Number(eq?.target?.y))
+          Number.isFinite(numero(eq?.target?.x)) && Number.isFinite(numero(eq?.target?.y))
             ? { x: Math.round(Number(eq.target.x)), y: Math.round(Number(eq.target.y)) }
             : null,
       })),
@@ -163,7 +169,7 @@ function recortarAutodestruccion(autodestruccion) {
 /** Frecuencia actual y lo que le queda de recalibrado. */
 function recortarCalibracion(calibracion) {
   if (!calibracion || typeof calibracion !== "object") return null;
-  const frecuencia = Number(calibracion.frequency);
+  const frecuencia = numero(calibracion.frequency);
   if (!Number.isFinite(frecuencia)) return null;
   return {
     frequency: Math.round(frecuencia),
@@ -178,7 +184,7 @@ function recortarCalibracion(calibracion) {
  */
 function recortarManiobra(maniobra) {
   if (!maniobra || typeof maniobra !== "object") return null;
-  const carga = Number(maniobra.charge);
+  const carga = numero(maniobra.charge);
   if (!Number.isFinite(carga)) return null;
   return { charge: Math.round(carga * 1000) / 1000 };
 }
@@ -192,8 +198,8 @@ function recortarNivelAlerta(nivel) {
 /** Sondas restantes y máximo. `0` es una lectura legítima —se han gastado— y se
  * distingue de la ausencia de lanzador. */
 function recortarSondas(probes) {
-  const stock = Number(probes?.stock);
-  const max = Number(probes?.max);
+  const stock = numero(probes?.stock);
+  const max = numero(probes?.max);
   if (!Number.isFinite(stock) || !Number.isFinite(max)) return null;
   return { stock: Math.round(stock), max: Math.round(max) };
 }
@@ -269,7 +275,8 @@ export function difundirTelemetria({
   // contactos entran en la comparación porque un contacto que se acerca cambia
   // de banda sin que la nave propia se mueva, y eso sí hay que repartirlo.
   if (!hayCambio(sobre.ship, anterior?.ship)
-      && !hayCambio(sobre.sensores, anterior?.sensores)) return null;
+      && !hayCambio(sobre.sensores, anterior?.sensores)
+      && !hayCambio(sobre.sensoresSonda, anterior?.sensoresSonda)) return null;
   publicar(sobre);
   return sobre;
 }

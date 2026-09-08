@@ -48,3 +48,13 @@ test("la cámara tiene tecla, y en mayúscula y minúscula", () => {
   assert.equal(TECLAS_ACCION.v, "camara");
   assert.equal(TECLAS_ACCION.V, "camara");
 });
+
+test("sentarse tiene tecla, también en las dos cajas, y no pisa a ninguna otra", () => {
+  assert.equal(TECLAS_ACCION.f, "asiento");
+  assert.equal(TECLAS_ACCION.F, "asiento");
+  // `e` habría sido la tecla obvia y es la de girar a la derecha: ahí esta rama
+  // sería código MUERTO, porque `TECLA_GIRO` se consulta antes y hace `return`.
+  // Es el mismo choque que dejó la cámara sin funcionar atada a `c`.
+  assert.equal(TECLA_GIRO.e, 1);
+  assert.equal(TECLAS_ACCION.e, undefined);
+});

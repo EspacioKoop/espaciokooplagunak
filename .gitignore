@@ -95,6 +95,23 @@ lagunak-apis.sqlite
 # en un PR de seguridad.
 .nyc_output/
 coverage/
+# La familia entera, no solo el directorio: el tooling inventa un nombre nuevo
+# cada vez y en el PR #796 entraron `coverage-out/`, `coverage.json`,
+# `coverage.lcov`, `lcov.info` y cuatro volcados `coverage_*.txt` (#818).
+coverage-out/
+coverage.*
+coverage-*.json
+coverage_*.txt
+*.lcov
+lcov.info
+
+# Restos de edicion y de merge. El `.bak` importa mas de lo que parece: delata
+# que se reescribio un fichero en vez de editarlo, y cuando el fichero es una
+# suite de tests eso vale puntos de cobertura (#818).
+*.bak
+*.orig
+*.rej
+*.temp.*
 
 # Artefactos de cobertura de pytest-cov.
 .coverage
@@ -121,3 +138,14 @@ package-lock.json
 # ninguna dependencia. Su `node_modules/` sigue ignorado por la regla de arriba.
 !tools/e2e-visual/package.json
 !tools/e2e-visual/package-lock.json
+
+# Excepción deliberada: `tools/package.json` declara `draco3d`, que
+# `tools/normalizar-glb.mjs` importa. Sus consumidores están repartidos entre
+# TRES jobs (`tools.yml`, `foundry-module.yml` y `centinela-main.yml`), y hasta
+# #1084 cada uno lo instalaba a mano con `npm install --no-save`: el tercero
+# nunca recibió el recado y tiñó `main` de rojo con un ERR_MODULE_NOT_FOUND que
+# parecía un fallo de los tests del museo. Una dependencia declarada en un solo
+# sitio es justo lo que impide que la próxima puerta nazca sin ella. Su
+# `node_modules/` sigue ignorado por la regla de arriba.
+!tools/package.json
+!tools/package-lock.json

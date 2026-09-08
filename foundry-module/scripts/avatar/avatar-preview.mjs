@@ -2,9 +2,9 @@
 //
 // Reutiliza el mismo motor y las mismas piezas que ya pintan a la gente en la
 // cantina —`piezasAvatar` en `cantina-avatar.mjs`— y el mismo patrón que
-// `componerIcono` en `cantina-icono.mjs`: cada pieza es una caja con su color
-// y su centro, y la escena final es la unión de sus polígonos ordenados por
-// profundidad. Ni un rasterizador nuevo, ni una malla nueva.
+// `componerIcono` en `cantina-icono.mjs`: cada pieza aporta una malla con su
+// color y su centro, y la escena final es la unión de sus polígonos ordenados
+// por profundidad. Ni un rasterizador nuevo ni una cámara nueva.
 //
 // Puro: ni Foundry, ni DOM, ni reloj. Recibe una descripción y unas medidas de
 // lienzo y devuelve polígonos; quien los pinta vive fuera (`retro3d-lienzo.mjs`,
@@ -13,7 +13,6 @@
 // Frontera de arte (#351): no declara ni un color.
 
 import { componerEscena, fundirEscenas } from "../retro3d.mjs";
-import { caja } from "../cantina-escena.mjs";
 import { piezasAvatar } from "../cantina-avatar.mjs";
 
 /** Sin giro de reposo: aquí no hay que reconocer un objeto al otro lado de la
@@ -28,7 +27,7 @@ export function componerAvatarPreview(descripcion, opciones = {}) {
   const piezas = piezasAvatar(descripcion, { pies: [0, -0.95, 0] });
 
   const partes = piezas.map((pieza) =>
-    componerEscena(desplazar(caja([0, 0, 0], pieza.medidas), pieza.centro), {
+    componerEscena(desplazar(pieza.malla, pieza.centro), {
       ancho,
       alto,
       epoca,

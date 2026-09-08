@@ -123,3 +123,73 @@ test("toda plantilla empieza por markup, no por texto: `$(html)` de v11 lo exige
     );
   }
 });
+
+// Bloques de Handlebars (QA 2026-08-26). Distinto agujero, mismo modo de fallo:
+// `espacio-puesto.hbs` llevaba DOS `{{#if}}` sin cerrar —los de la orden de
+// código de autodestrucción y la de condición de alerta— y la consola de puesto
+// no abría: «Parse error on line 548 ... got 'EOF'». Toda la suite en verde, y
+// el error solo en la consola del navegador de quien juega.
+//
+// La guarda anterior contaba comentarios de bloque; esta cuenta bloques de
+// verdad, que es la otra mitad del mismo descuido. Se comprueba el NOMBRE al
+// cerrar y no solo el número: dos errores que se compensan —un `{{/if}}` de más
+// y un `{{/each}}` de menos— cuadrarían la cuenta y seguirían sin compilar.
+
+/** Los bloques abiertos que quedan al final, con el nombre que no cuadró. */
+function bloquesSinCerrar(fuenteCruda) {
+  // Los comentarios se vacían ANTES de contar, conservando sus saltos de línea
+  // para no desplazar los números que se van a leer: `consola-caliente.hbs`
+  // menciona `{{#each tabs}}` dentro de un comentario, y eso no abre nada.
+  const vaciar = (texto) => texto.replace(/[^\n]/g, "");
+  const fuente = fuenteCruda
+    .replace(/\{\{!--[\s\S]*?--\}\}/g, vaciar)
+    .replace(/\{\{![^}]*\}\}/g, vaciar);
+  const pila = [];
+  const problemas = [];
+  let linea = 1;
+  const patron = /\{\{([#/])\s*([\w.[\]-]+)|\n/g;
+  for (const encaje of fuente.matchAll(patron)) {
+    if (encaje[0] === "\n") {
+      linea += 1;
+      continue;
+    }
+    if (encaje[1] === "#") pila.push({ linea, nombre: encaje[2] });
+    else {
+      const abierto = pila.pop();
+      if (!abierto) problemas.push(`${linea}: {{/${encaje[2]}}} sin nada que cerrar`);
+      else if (abierto.nombre !== encaje[2]) {
+        problemas.push(`${linea}: {{/${encaje[2]}}} cierra un {{#${abierto.nombre}}} de la linea ${abierto.linea}`);
+      }
+    }
+  }
+  for (const abierto of pila) problemas.push(`${abierto.linea}: {{#${abierto.nombre}}} nunca se cierra`);
+  return problemas;
+}
+
+test("todo bloque de Handlebars se abre y se cierra con su propio nombre", () => {
+  for (const nombre of plantillas()) {
+    const fuente = readFileSync(join(raizPlantillas, nombre), "utf8");
+    assert.deepEqual(
+      bloquesSinCerrar(fuente),
+      [],
+      `templates/${nombre}: un bloque descuadrado no compila, y la ventana no abre.`,
+    );
+  }
+});
+
+test("el detector encuentra los dos casos que se le escaparon a la guarda anterior", () => {
+  // El de verdad: un `<form>` cuyo `{{/if}}` se perdio al pegar el bloque
+  // siguiente justo detras.
+  assert.deepEqual(bloquesSinCerrar("<div>\n{{#if a}}\n<form></form>\n{{#if b}}\n<p></p>\n{{/if}}\n</div>"), [
+    "2: {{#if}} nunca se cierra",
+  ]);
+  // El que la cuenta a secas no ve: dos errores que se compensan.
+  assert.deepEqual(bloquesSinCerrar("{{#each x}}{{#if y}}{{/each}}{{/if}}"), [
+    "1: {{/each}} cierra un {{#if}} de la linea 1",
+    "1: {{/if}} cierra un {{#each}} de la linea 1",
+  ]);
+  assert.deepEqual(bloquesSinCerrar("{{#if a}}{{else}}{{/if}}{{#each b}}{{/each}}"), []);
+  // Y lo que motivó el arreglo del detector: un comentario que MENCIONA un
+  // bloque no abre ninguno.
+  assert.deepEqual(bloquesSinCerrar("{{!-- ojo con {{#each tabs}} --}}\n<div></div>"), []);
+});

@@ -5,7 +5,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const IDIOMA = JSON.parse(
-  readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "lang", "es.json"), "utf8"),
+  readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "..", "lang", "es.json"), "utf8"),
 );
 
 import {
@@ -18,8 +18,8 @@ import {
   salasSeccion,
   sistemasDeSala,
   tripulacionPorSala,
-} from "../scripts/seccion-nave.mjs";
-import { CATALOGO_ANDAR } from "../scripts/nave-catalogo-andar.mjs";
+} from "../../scripts/seccion-nave/seccion-nave.mjs";
+import { CATALOGO_ANDAR } from "../../scripts/nave-catalogo-andar.mjs";
 
 test("la planta cabe dentro de la rejilla y ninguna sala pisa a otra", () => {
   // Una sección con salas solapadas no es un plano, es un error de dibujo que

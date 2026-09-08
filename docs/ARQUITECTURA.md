@@ -17,7 +17,7 @@ Los diagramas existen en dos formatos equivalentes:
 
 Para la autoridad de cada dominio de datos y la visión de juego, ver
 [`docs/FOUNDRY.md`](FOUNDRY.md). Para la superficie HTTP exacta,
-[`docs/API_HTTP.md`](API_HTTP.md).
+[`docs/seguridad/API_HTTP.md`](seguridad/API_HTTP.md).
 
 ## Nivel 1 — Contexto del sistema
 
@@ -97,7 +97,7 @@ y endpoints con visibilidad impuesta en el servidor; ocultar controles en la UI
 no será suficiente.
 
 El inventario completo de actores, controles y riesgos residuales está en el
-[modelo de amenazas del puente](BRIDGE_THREAT_MODEL.md).
+[modelo de amenazas del puente](seguridad/BRIDGE_THREAT_MODEL.md).
 
 ## Nivel 3 — Componentes
 

@@ -91,9 +91,14 @@ export function validateCosmography(catalog) {
   if (serializedSize(catalog) > MAX_SERIALIZED_BYTES) {
     fail("too_large", "$", "el catálogo supera 1 MiB serializado");
   }
-  exactKeys(catalog, new Set(["format", "version", "entries"]), new Set(["format", "version", "entries"]), "$" );
+  exactKeys(catalog, new Set(["format", "version", "entries"]), new Set(["format", "entries"]), "$" );
+  if (!Object.hasOwn(catalog, "version")) {
+    fail("missing_version", "$.version", "versión obligatoria ausente");
+  }
   if (catalog.format !== FORMAT) fail("invalid_format", "$.format", "formato desconocido");
-  if (catalog.version !== VERSION) fail("invalid_version", "$.version", "versión no compatible");
+  if (catalog.version !== VERSION) {
+    fail("invalid_version", "$.version", "versión no compatible");
+  }
   if (!Array.isArray(catalog.entries)) fail("invalid_entries", "$.entries", "debe ser una lista");
   if (catalog.entries.length > MAX_ENTRIES) fail("too_many_entries", "$.entries", "demasiadas entradas");
 

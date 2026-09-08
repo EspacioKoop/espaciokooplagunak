@@ -189,3 +189,63 @@ test("sigueVigente se respeta: una autorización caducada no escribe", async () 
   assert.equal(creado, false);
   assert.deepEqual(ui.avisos, []);
 });
+
+// ---- Casos de borde de derivarRelevo -------------------------------------
+//
+// `undefined` y `null` NO significan lo mismo aquí, y esa es la razón de que
+// estos tres casos existan: `estacionAnterior: undefined` es «no sabemos qué
+// puesto tenía» (el mapa de puestos previos aún no lo había visto), mientras
+// que `null` es «sabemos que no tenía ninguno». Confundirlos anotaría en la
+// bitácora un relevo que nadie hizo, al arrancar la partida.
+
+test("estacionNueva undefined se trata como null: dejar el puesto sí es un relevo", () => {
+  assert.deepEqual(
+    derivarRelevo({ userId: "u1", estacionAnterior: "navigation", estacionNueva: undefined }),
+    { userId: "u1", estacionAnterior: "navigation", estacionNueva: null },
+  );
+});
+
+test("estacionAnterior undefined nunca es relevo: no se sabía qué tenía, no que no tuviera", () => {
+  assert.equal(derivarRelevo({ userId: "u1", estacionAnterior: undefined, estacionNueva: null }), null);
+});
+
+test("de ningún puesto a ningún puesto no hay nada que anotar", () => {
+  assert.equal(derivarRelevo({ userId: "u1", estacionAnterior: null, estacionNueva: null }), null);
+});
+
+// ---- El nombre que entra en la bitácora se escapa ------------------------
+//
+// La página va al diario, que la mesa entera lee renderizada. Tanto el nombre
+// de quien releva como los identificadores de puesto se escapan: el primero
+// porque lo escribe una persona, y el segundo porque un puesto de un módulo de
+// terceros no tiene por qué traer un id inocente.
+
+test("el nombre de quien releva se escapa antes de entrar en la bitácora", async () => {
+  const game = gameFalso({ nombreUsuario: "Jon & <script>" });
+  const JournalEntry = journalEntryFalso();
+  const ui = uiFalso();
+  const creado = await anotarRelevo({
+    relevo: { userId: "u1", estacionAnterior: "navigation", estacionNueva: "weapons" },
+    nonce: "esc", sello: 100, game, JournalEntry, ui,
+  });
+  assert.equal(creado, true);
+  const journal = await JournalEntry.create();
+  const titulo = journal.pages[0].name;
+  assert.ok(!titulo.includes("<script"), "no queda ninguna etiqueta interpretable");
+  assert.ok(titulo.includes("&#38;") && titulo.includes("&#60;"));
+});
+
+test("los identificadores de puesto también se escapan", async () => {
+  const game = gameFalso();
+  const JournalEntry = journalEntryFalso();
+  const ui = uiFalso();
+  const creado = await anotarRelevo({
+    relevo: { userId: "u1", estacionAnterior: "<>&", estacionNueva: "\"'" },
+    nonce: "esc2", sello: 100, game, JournalEntry, ui,
+  });
+  assert.equal(creado, true);
+  const titulo = (await JournalEntry.create()).pages[0].name;
+  for (const entidad of ["&#60;", "&#62;", "&#38;", "&#34;", "&#39;"]) {
+    assert.ok(titulo.includes(entidad), `falta ${entidad} en ${titulo}`);
+  }
+});

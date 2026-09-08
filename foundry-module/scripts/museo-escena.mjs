@@ -523,9 +523,24 @@ export const INTERACCIONES = declararInteracciones([
   },
 ]);
 
-/** Proyección efímera del resultado junto al libro; el núcleo no lo recuerda. */
+/**
+ * Proyección efímera del resultado junto al libro; el núcleo no lo recuerda.
+ *
+ * `+0.45` en Y, no `+0.2`: la interacción dispara solo por proximidad
+ * (`interaccionAlAlcance`, sin comprobar hacia dónde mira quien la alcanza),
+ * así que quien resuelve la tirada está a poco más de un radio de
+ * interacción (`RADIO_INTERACCION` = 1,2 m) del libro. A esa distancia y con
+ * `recorteLateral: true`, un marcador a solo 0,2 m por encima del libro
+ * (y = 1,02, casi a la altura de la mesa) cae fuera del cono vertical de la
+ * cámara — la mitad vertical visible a ~0,45 m de profundidad es de apenas
+ * 0,27 m, y la caída desde la altura de ojos (1,45 m) hasta 1,02 m es de
+ * 0,43 m: por debajo del corte, invisible. A +0,45 (y ≈ 1,27) el marcador
+ * queda dentro de ese cono para las orientaciones con las que de verdad se
+ * llega a leerlo (medido: visible con `recorteLateral` activo mirando hacia
+ * el libro desde el punto de interacción declarado en `INTERACCIONES`).
+ */
 export function marcadorLibroMuseo(resultado) {
-  return marcadorInvestigacion(resultado, [LIBRO_MUSEO.centro[0], LIBRO_MUSEO.centro[1] + 0.2, LIBRO_MUSEO.centro[2]]);
+  return marcadorInvestigacion(resultado, [LIBRO_MUSEO.centro[0], LIBRO_MUSEO.centro[1] + 0.45, LIBRO_MUSEO.centro[2]]);
 }
 
 const SALA = crearSalaCaja({

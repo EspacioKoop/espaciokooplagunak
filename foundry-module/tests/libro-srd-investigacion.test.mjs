@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   HABILIDADES_INVESTIGACION,
+  PROCEDENCIA_SRD,
   marcadorInvestigacion,
   resolverInvestigacion,
 } from "../scripts/libro-srd-investigacion.mjs";
@@ -15,7 +16,18 @@ test("una investigación devuelve éxito y procedencia SRD", () => {
   const resultado = resolverInvestigacion({ habilidad: "arcana", dc: 13, modificador: 4, tiradas: [9] });
   assert.equal(resultado.total, 13);
   assert.equal(resultado.exito, true);
-  assert.match(resultado.procedencia, /^SRD 5\.1/);
+  assert.equal(resultado.procedencia, PROCEDENCIA_SRD);
+});
+
+test("la ficha de procedencia SRD trae autor, fuente y licencia verificables (#1038)", () => {
+  // Atiende el bloqueo de OTACON Astra en #1038: "completar la ficha SRD con
+  // autor/fuente/enlace CC-BY". Mismo formato {kind, source, license,
+  // source_url} que procedencia-catalogo.mjs (ADR-0013).
+  assert.equal(PROCEDENCIA_SRD.kind, "cc");
+  assert.match(PROCEDENCIA_SRD.source, /Wizards of the Coast/);
+  assert.match(PROCEDENCIA_SRD.source, /Systems Reference Document 5\.1/);
+  assert.equal(PROCEDENCIA_SRD.license, "CC-BY-4.0");
+  assert.match(PROCEDENCIA_SRD.source_url, /^https:\/\//);
 });
 
 test("ventaja usa la mejor de dos tiradas y el fallo sigue siendo visible", () => {

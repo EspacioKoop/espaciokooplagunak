@@ -263,7 +263,7 @@ test("v11: defaultOptions returns minimal options", async () => {
   }
 });
 
-test("v12: _prepareContext agrupa las estancias por categoría, playa y museo en bancos de pruebas", async () => {
+test("v12: _prepareContext agrupa las estancias por categoría, playa/museo/libro en bancos de pruebas", async () => {
   setupMocks();
   try {
     // Contra el catálogo REAL (`categoriasAndar()`, derivado de CATALOGO_ANDAR):
@@ -281,8 +281,8 @@ test("v12: _prepareContext agrupa las estancias por categoría, playa y museo en
     assert.ok(bancoDePruebas, "falta la categoría de bancos de pruebas");
     assert.deepEqual(
       bancoDePruebas.estancias.map((e) => e.id).sort(),
-      ["museo", "playa"],
-      "playa y museo son los únicos bancos de pruebas GM-only, no salas andables",
+      ["libro", "museo", "playa"],
+      "playa, museo y libro son los únicos bancos de pruebas GM-only, no salas andables",
     );
     const nave = contexto.categorias.find((c) => c.id === "nave");
     assert.ok(nave, "falta la categoría de la nave");

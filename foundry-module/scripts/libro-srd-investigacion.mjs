@@ -7,7 +7,24 @@
 import { prisma } from "./escena-primitivas.mjs";
 
 export const HABILIDADES_INVESTIGACION = Object.freeze(["investigacion", "historia", "arcana"]);
-export const PROCEDENCIA_SRD = "SRD 5.1 (D&D 5e, 2014) — CC-BY-4.0";
+
+/**
+ * Ficha de procedencia de lo que este módulo SÍ toma del SRD 5.1: la mecánica
+ * de tiradas de habilidad (d20 + modificador contra una CD) — no texto ni
+ * tablas literales, que es justo lo que la cabecera de arriba dice que no se
+ * importa. Mismo formato `{kind, source, license, source_url}` que
+ * `procedencia-catalogo.mjs` usa para el resto del árbol (ADR-0013), aunque
+ * este módulo no pase por su validador porque no es una malla del catálogo.
+ */
+export const PROCEDENCIA_SRD = Object.freeze({
+  kind: "cc",
+  source: "Wizards of the Coast — Systems Reference Document 5.1 (D&D 5e, 2014)",
+  license: "CC-BY-4.0",
+  source_url: "https://www.dndbeyond.com/resources/1781-systems-reference-document-srd",
+});
+
+/** Texto legible de una línea, para UI/cartelas: mismo dato que `PROCEDENCIA_SRD`. */
+export const PROCEDENCIA_SRD_TEXTO = `${PROCEDENCIA_SRD.source} — ${PROCEDENCIA_SRD.license}`;
 
 const COLORES_RESULTADO = Object.freeze({
   exito: "#8bd450",

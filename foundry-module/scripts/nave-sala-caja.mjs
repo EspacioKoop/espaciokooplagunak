@@ -718,6 +718,13 @@ export function crearSalaCaja({
       aviso = null,
       saludSistemas = null,
       tiempo = 0,
+      // Marcador efímero de una interacción puntual (#1037: el resultado de
+      // investigar el libro SRD). NO se guarda en `piezas` —congeladas una
+      // vez, en la construcción de la sala— porque solo existe mientras dure
+      // la interacción: quien lo pinta (`andar-nave-app.mjs`) lo pone a
+      // `null` al salir de la interacción, y aquí desaparece del siguiente
+      // fotograma sin que la sala necesite saber qué lo generó.
+      marcador = null,
     } = opciones;
     const { camara, dibujarPropio } = resolverCamara({ x, z, y, yaw, modo: modoCamara });
     const yawCamara = -yaw; // ver el comentario de `yaw` en `cantina-escena.mjs`
@@ -761,7 +768,13 @@ export function crearSalaCaja({
         }]
       : [];
 
-    const partes = [...piezas, ...difusor, ...hojasPuertas, ...vistaVentanas].map(({ malla, color, emisivo, textura, ambiente }) =>
+    // El marcador emite (`emisivo: true`) por el mismo motivo que el difusor de
+    // una luminaria: es una señal, no una superficie que reciba sombreado por
+    // normal — si se apagara, se leería como un bulto más y no como el
+    // resultado de una tirada.
+    const marcadorPieza = marcador ? [{ malla: marcador.malla, color: marcador.color, emisivo: true }] : [];
+
+    const partes = [...piezas, ...difusor, ...hojasPuertas, ...vistaVentanas, ...marcadorPieza].map(({ malla, color, emisivo, textura, ambiente }) =>
       componerEscena(trasladarMalla(malla, [-camara[0], -camara[1], -camara[2]]), {
         ancho: anchoLienzo,
         alto: altoLienzo,

@@ -31,7 +31,8 @@ import { cartelaDe, piezaPorId } from "./catalogo-piezas.mjs";
 import { CATALOGO_MUSEO } from "./museo-piezas.mjs";
 import { resolverAsiento } from "./nave-asiento.mjs";
 import { ponerPose } from "./nave-pose.mjs";
-import { resolverInvestigacion } from "./libro-srd-investigacion.mjs";
+import { resolverInvestigacion, PROCEDENCIA_SRD_TEXTO } from "./libro-srd-investigacion.mjs";
+import { marcadorLibroMuseo } from "./museo-escena.mjs";
 import { rollD20 } from "./dado-util.mjs";
 import { AJUSTE_TELEMETRIA, aceptarSensores, aceptarTelemetria } from "./ship-view/telemetria-difusion.mjs";
 import { AJUSTE_NIVEL_ALERTA } from "./alerta-escena.mjs";
@@ -273,6 +274,11 @@ function arrancar(raiz, estanciaPedida = null) {
   // posición, pero nunca supo que existen "estancias" con nombre — ese
   // conocimiento es de este archivo y del catálogo, no del bucle.
   let estanciaActual = arranque.estancia;
+  // Marcador efímero del resultado de investigar el libro SRD (#1037): no se
+  // persiste en ningún documento, solo vive mientras dura la interacción — se
+  // pone al resolver una tirada y se retira en `alSalirDeInteraccion`, igual
+  // que la cartela.
+  let marcadorInvestigacionActual = null;
 
   /**
    * Rotula en qué sala estás (QA: «no sé en qué sala estoy»).
@@ -350,12 +356,28 @@ function arrancar(raiz, estanciaPedida = null) {
     const cartela = raiz?.querySelector?.("[data-andar-cartela]");
     if (cartela && visible) cartela.hidden = false;
     if (!visible) return;
+    // Atribución obligatoria (ADR-0013): la mecánica que resuelve la tirada
+    // viene del SRD 5.1, y su crédito se muestra en cuanto se abre el panel,
+    // no solo tras resolver — es la misma disciplina que la cartela de una
+    // pieza del museo.
+    const credito = raiz?.querySelector?.("[data-cartela-credito]");
+    if (credito) credito.textContent = PROCEDENCIA_SRD_TEXTO;
     const resultado = panel.querySelector?.("[data-investigacion-resultado]");
     panel.querySelectorAll?.("[data-investigacion-habilidad]").forEach((boton) => {
       boton.onclick = () => {
         const tirada = rollD20();
         const prueba = resolverInvestigacion({ habilidad: boton.dataset.investigacionHabilidad, dc: 12, tiradas: [tirada] });
-        if (resultado) resultado.textContent = `${prueba.exito ? "Éxito" : "Fallo"}: ${prueba.habilidad} ${prueba.total}/${prueba.dc}`;
+        if (resultado) {
+          const claveEstado = prueba.exito ? "LAGUNAK.AndarNave.Investigacion.Exito" : "LAGUNAK.AndarNave.Investigacion.Fallo";
+          const claveHabilidad = `LAGUNAK.AndarNave.Investigacion.${prueba.habilidad.charAt(0).toUpperCase()}${prueba.habilidad.slice(1)}`;
+          const estado = game.i18n?.localize?.(claveEstado) ?? (prueba.exito ? "Éxito" : "Fallo");
+          const habilidad = game.i18n?.localize?.(claveHabilidad) ?? prueba.habilidad;
+          resultado.textContent = `${estado}: ${habilidad} ${prueba.total}/${prueba.dc}`;
+        }
+        // Marcador efímero (#1037): solo tiene sentido en el museo, donde
+        // vive `LIBRO_MUSEO` — la sala de pruebas standalone (`libro-escena.mjs`)
+        // usa otro tipo de acción (`libro-toggle`) y nunca llega aquí.
+        if (estanciaActual === "museo") marcadorInvestigacionActual = marcadorLibroMuseo(prueba);
       };
     });
   }
@@ -475,6 +497,9 @@ function arrancar(raiz, estanciaPedida = null) {
     // nuevo, solo se conecta lo que ya circulaba.
     aviso: () => game.settings?.get?.(MODULE_ID, AJUSTE_NIVEL_ALERTA) ?? null,
     saludSistemas: () => aceptarTelemetria(sobreTelemetria())?.systems ?? null,
+    // El resultado de investigar el libro SRD (#1037): efímero, se pide
+    // fresco en cada fotograma y se retira solo en `alSalirDeInteraccion`.
+    marcador: () => marcadorInvestigacionActual,
     componer: inicial.componer,
     planta: inicial.planta,
     puertas: inicial.puertas,
@@ -556,6 +581,10 @@ function arrancar(raiz, estanciaPedida = null) {
       pintarCartela(null);
       asientoAlAlcance = null;
       pintarInvestigacion(false);
+      // El marcador es de la interacción, no de la sala: se retira al
+      // apartarse igual que la cartela, no cuando pasa un tiempo ni cuando
+      // se cambia de estancia por otra vía.
+      marcadorInvestigacionActual = null;
     },
     // El de la estancia de ARRANQUE, no el de la nave (#587). Sin esto, abrir
     // directamente en un exterior pintaba su cielo con el gris de entre salas y

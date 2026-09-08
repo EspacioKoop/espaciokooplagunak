@@ -206,6 +206,7 @@
     ]
   },
   "artModules": [
+    "combatiente-pixelart.mjs",
     "laminas-clasicas.mjs",
     "nave-sprite.mjs",
     "minijuegos/cartas-pixelart.mjs",

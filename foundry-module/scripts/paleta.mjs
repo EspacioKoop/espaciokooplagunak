@@ -678,6 +678,26 @@ export const CUADRO = Object.freeze({
  * mide todo lo anterior: una comprobación de contraste contra un valor que vive
  * en otro archivo no es una comprobación.
  */
+/**
+ * Tarjetas de combatiente en pixelart (#1018): un juego marco/fondo/retrato
+ * por alineación, un marco "shiny" para insignias de campaña, y los tonos de
+ * los badges de estado. Único sitio que declara estos hexadecimales
+ * (ADR-0014); `combatiente-pixelart.mjs` los consume en vez de mantener su
+ * propia tabla.
+ */
+export const TARJETA_COMBATIENTE = Object.freeze({
+  aliado: Object.freeze({ marco: "#3fc1b0", fondo: "#123c4a", retrato: "#8bd8c7" }),
+  enemigo: Object.freeze({ marco: "#d95d5d", fondo: "#4a1f2a", retrato: "#ed9b7a" }),
+  neutral: Object.freeze({ marco: "#b7a56b", fondo: "#373b43", retrato: "#d8c79b" }),
+  shiny: Object.freeze({ marco: "#f2c14e" }),
+  overlays: Object.freeze({
+    herido: "#e66a4e",
+    "concentracion-rota": "#8b73c7",
+    ventaja: "#62c370",
+    muerto: "#22252b",
+  }),
+});
+
 export const FICHA = Object.freeze({
   tapete: "#0f3d2a", // fieltro de la mesa
   canto: CREMA, // cuñas y cara de la ficha: el mismo crema del resto del arte

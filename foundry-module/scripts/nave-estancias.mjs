@@ -38,6 +38,8 @@
  *   puertas?: Array<{rect:object, destino:{estancia:string, x?:number, z?:number, yaw?:number}}>,
  *   interacciones?: Array<object>,
  *   fondo?: string|null,
+ *   conPoses?: (poses:object) => {planta:object, componer:Function, colocados?:Array},
+ *   poseables?: Array<object>,
  *   entrada?: {x:number, z:number, yaw?:number},
  * }} definicion
  */
@@ -59,6 +61,25 @@ export function declararEstancia(definicion) {
     // la playa, lo que hay detrás de la geometría es cielo. `null` deja el que
     // traiga la ventana, que es lo que hacen las trece salas de la nave.
     fondo: definicion.fondo ?? null,
+    /**
+     * Cómo queda esta estancia con sus muebles con pose en otras poses
+     * (`nave-pose.mjs`), o `null` si no tiene ninguno.
+     *
+     * Es OPACO aquí, igual que la `accion` de un punto de interacción: el
+     * catálogo declara que la estancia sabe recomponerse y quién le pasa qué
+     * poses es cosa de arriba. Sin esto, la ventana de andar tendría que
+     * preguntar «¿es la terraza?» para saber si una silla se retira, que es
+     * exactamente el `if` con el nombre de una sala dentro del motor que #508
+     * dejó prohibido.
+     *
+     * Devuelve `{planta, componer}`, que es lo que acepta `recomponer` del
+     * bucle: ni puertas ni interacciones, porque una pose no las cambia.
+     */
+    conPoses: typeof definicion.conPoses === "function" ? definicion.conPoses : null,
+    /** Los muebles con pose de esta estancia, ya declarados por
+     *  `declararPoseables`. Van con `conPoses` y no dentro de ella porque quien
+     *  cambia una pose necesita saber qué poses EXISTEN antes de pedir una. */
+    poseables: Object.freeze([...(definicion.poseables ?? [])]),
     entrada: Object.freeze({
       x: definicion.entrada?.x ?? definicion.planta.ancho / 2,
       z: definicion.entrada?.z ?? definicion.planta.profundidad / 2,

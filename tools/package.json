@@ -1,0 +1,8 @@
+{
+  "name": "lagunak-tools",
+  "private": true,
+  "description": "Dependencias de las herramientas Node de tools/. Existe para que draco3d se declare UNA vez: normalizar-glb.mjs lo importa, y sus consumidores están repartidos entre tres workflows (tools.yml, foundry-module.yml y centinela-main.yml). Instalarlo a mano en cada job dejó al centinela sin él y tiñó main de rojo (#1084).",
+  "dependencies": {
+    "draco3d": "1.5.7"
+  }
+}

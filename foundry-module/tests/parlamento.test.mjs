@@ -11,7 +11,7 @@ import {
   resolverParlamento,
   semillaDeContacto,
 } from "../scripts/parlamento.mjs";
-import { generarNpc } from "../scripts/npc-generador.mjs";
+import { generarNpc } from "../scripts/npc-generador/npc-generador.mjs";
 import { CATALOGO_ENCUENTROS_BASE } from "../scripts/catalogo-encuentros.mjs";
 
 test("mismo contacto + mismo desafío → misma ficha en todos los clientes", () => {

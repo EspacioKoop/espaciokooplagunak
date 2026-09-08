@@ -31,7 +31,10 @@ def test_acepta_el_lock_raiz_reproducible():
 
 
 def test_rechaza_un_lock_anidado():
-    assert mod.es_resto("tools/package-lock.json")
+    # Cualquier lock anidado sigue siendo un resto: lo que la regla persigue es
+    # el `npm install` de paso, no una ruta concreta. `tools/package-lock.json`
+    # ya no sirve de ejemplo porque desde #1084 es un paquete declarado.
+    assert mod.es_resto("scripts/package-lock.json")
 
 
 def test_acepta_un_fichero_normal():
@@ -41,6 +44,15 @@ def test_acepta_un_fichero_normal():
 def test_acepta_la_excepcion_declarada_de_e2e_visual():
     """`tools/e2e-visual/` es un paquete npm real, el gemelo del `.gitignore`."""
     assert not mod.es_resto("tools/e2e-visual/package-lock.json")
+
+
+def test_acepta_la_excepcion_declarada_de_tools():
+    """`tools/package.json` declara draco3d una vez para los tres jobs (#1084).
+
+    Antes lo instalaba cada workflow por su cuenta con `npm install --no-save`,
+    y el que no lo hacia -- el centinela de `main` -- salia rojo.
+    """
+    assert not mod.es_resto("tools/package-lock.json")
 
 
 def test_no_generaliza_la_excepcion_a_otras_rutas():

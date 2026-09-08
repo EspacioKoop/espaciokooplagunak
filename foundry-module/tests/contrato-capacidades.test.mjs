@@ -6,26 +6,17 @@ import {
   validarManifiesto,
   validarManifiestos,
 } from "../scripts/contrato-capacidades.mjs";
-
-const atlas = {
-  module: "atlas",
-  standalone: true,
-  produces: ["discovery.recorded"],
-  consumes: ["station.action.completed"],
-  capabilities: ["record_discovery", "query_discovery"],
-};
-const chronicle = {
-  module: "chronicle",
-  standalone: true,
-  produces: ["chronicle.entry.created"],
-  consumes: ["discovery.recorded"],
-  capabilities: ["record_entry"],
-};
+import { atlas, chronicle, foundryBridge, manifiestosPiloto } from "../scripts/manifiestos-piloto.mjs";
 
 test("valida manifiestos piloto con eventos y capacidades declarativas", () => {
   assert.equal(validarManifiesto(atlas), true);
-  assert.equal(validarManifiestos([atlas, chronicle]), true);
-  assert.deepEqual(consumidoresDeEvento([atlas, chronicle], "discovery.recorded"), ["chronicle"]);
+  assert.equal(validarManifiestos(manifiestosPiloto), true);
+  assert.deepEqual(consumidoresDeEvento(manifiestosPiloto, "discovery.recorded"), ["chronicle"]);
+  assert.deepEqual(consumidoresDeEvento(manifiestosPiloto, "chronicle.entry.created"), ["foundry-bridge"]);
+});
+
+test("un módulo integrado (standalone: false) puede declarar dependencias opcionales sin required", () => {
+  assert.equal(validarManifiesto(foundryBridge), true);
 });
 
 test("detecta una dependencia obligatoria incompatible con standalone", () => {

@@ -41,7 +41,7 @@ After placing the files, you can verify by checking for common file extensions:
 ```bash
 find resources/models/medieval-village-megakit -type f \( -name "*.glb" -o -name "*.gltf" -o -name "*.fbx" -o -name "*.obj" \)
 ```
-\n## License
+## License
 - Creative Commons Zero v1.0 Universal (CC0)
 - Free for personal, educational, and commercial projects.
 - No attribution required (but appreciated).

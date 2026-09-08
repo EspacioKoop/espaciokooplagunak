@@ -26,7 +26,9 @@ def declaration(module, status="declared-orphan", **overrides):
     entry = {
         "module": module,
         "status": status,
-        "reason": "Declaración de prueba con procedencia suficiente.",
+        # El motivo lleva el nombre del módulo porque ahora los motivos deben
+        # ser distintivos: uno que vale para dos módulos no explica ninguno.
+        "reason": f"Declaración de prueba con procedencia suficiente para {module}.",
         "declaredBy": "test",
         "declaredAt": "2026-08-24",
         "evidence": LOCAL_EVIDENCE,
@@ -498,6 +500,73 @@ class OrphanModuleInventoryTests(unittest.TestCase):
             )
             result = run(root, declarations_path, "--check")
             self.assertEqual(result.returncode, 0, result.stderr)
+
+
+
+class ProvenanceIsDistinctiveTest(unittest.TestCase):
+    """La procedencia no puede autocertificarse rellenando los campos.
+
+    La verificación de evidencia mira si el enlace RESUELVE, no si viene a
+    cuento, y por esa rendija se coló una entrega real el 27-ago-2026: 34
+    declaraciones de claves de idioma con un solo motivo —«Clave de idioma no
+    utilizada…», que es la definición de huérfana— y una sola evidencia para las
+    34, el issue #571, que es el de los ficheros de audio. Las 34 pasaban la
+    verificación de enlaces, porque el #571 existe.
+    """
+
+    def _validar(self, entradas):
+        inventory_checker._validate_provenance_is_distinctive(
+            {e["module"]: e for e in entradas}
+        )
+
+    def test_dos_modulos_no_pueden_compartir_motivo(self):
+        entradas = [declaration("a.mjs"), declaration("b.mjs", reason="Igual.")]
+        entradas[0]["reason"] = "Igual."
+        with self.assertRaises(ValueError) as ctx:
+            self._validar(entradas)
+        self.assertIn("motivo de declaración repetido", str(ctx.exception))
+        self.assertIn("a.mjs", str(ctx.exception))
+
+    def test_el_motivo_se_compara_sin_mayusculas_ni_espacios_de_sobra(self):
+        """Cambiar el envoltorio no convierte un motivo copiado en uno propio."""
+        entradas = [declaration("a.mjs"), declaration("b.mjs")]
+        entradas[0]["reason"] = "Cimiento sin consumidor."
+        entradas[1]["reason"] = "  CIMIENTO   sin\n consumidor.  "
+        with self.assertRaises(ValueError):
+            self._validar(entradas)
+
+    def test_motivos_distintos_pasan(self):
+        self._validar([declaration("a.mjs"), declaration("b.mjs")])
+
+    def test_una_evidencia_compartida_por_pocos_modulos_es_legitima(self):
+        """`npc-generador` y `npc-tablas` citan ambos el #676, y está bien:
+        son dos módulos de una misma función."""
+        entradas = [declaration(f"m{i}.mjs") for i in range(
+            inventory_checker.MAX_DECLARACIONES_POR_EVIDENCIA)]
+        self._validar(entradas)
+
+    def test_la_misma_evidencia_repetida_de_mas_se_rechaza(self):
+        entradas = [declaration(f"m{i}.mjs") for i in range(
+            inventory_checker.MAX_DECLARACIONES_POR_EVIDENCIA + 1)]
+        with self.assertRaises(ValueError) as ctx:
+            self._validar(entradas)
+        self.assertIn("enlace copiado", str(ctx.exception))
+
+    def test_el_caso_real_de_las_34_claves_se_rechaza(self):
+        entradas = [
+            declaration(f"m{i}.mjs",
+                        reason="Clave de idioma no utilizada en el código de scripts ni plantillas.")
+            for i in range(34)
+        ]
+        with self.assertRaises(ValueError):
+            self._validar(entradas)
+
+    def test_el_inventario_real_del_repositorio_pasa(self):
+        """La guarda no puede nacer rompiendo `main`."""
+        raiz = Path(__file__).parents[2]
+        datos = json.loads(
+            (raiz / "docs" / "orphan-declarations.json").read_text(encoding="utf-8"))
+        self._validar(datos["declarations"])
 
 
 if __name__ == "__main__":

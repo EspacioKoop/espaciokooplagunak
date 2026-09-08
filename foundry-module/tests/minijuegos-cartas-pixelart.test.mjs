@@ -35,12 +35,73 @@ test("las figuras y el diez, que son la mitad de los rangos, también se dibujan
   }
 });
 
+// Ray-casting sobre un polígono rectilíneo extraído del atributo `d` de un
+// <path> con solo M/H/V/Z (nuestros contornos no usan curvas). Sirve para
+// comprobar, como haría un rasterizador real, si el CENTRO de un píxel cae
+// dentro del contorno exterior o del interior — que es lo único que importa
+// para saber si ese píxel es borde o fondo.
+function puntosDePath(d) {
+  const tokens = d.match(/[MHVZ][^MHVZ]*/g) ?? [];
+  const puntos = [];
+  let x = 0;
+  let y = 0;
+  for (const token of tokens) {
+    const comando = token[0];
+    const numeros = token
+      .slice(1)
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .map(Number);
+    if (comando === "M") [x, y] = numeros;
+    else if (comando === "H") x = numeros[0];
+    else if (comando === "V") y = numeros[0];
+    else continue;
+    puntos.push([x, y]);
+  }
+  return puntos;
+}
+
+function contienePunto(puntos, px, py) {
+  let dentro = false;
+  for (let i = 0, j = puntos.length - 1; i < puntos.length; j = i++) {
+    const [xi, yi] = puntos[i];
+    const [xj, yj] = puntos[j];
+    if (yi > py !== yj > py && px < ((xj - xi) * (py - yi)) / (yj - yi) + xi) dentro = !dentro;
+  }
+  return dentro;
+}
+
+function esPixelDeBorde(svg, x, y) {
+  const [, dExterior] = svg.match(/<path d="([^"]+)"[^>]*\/>/);
+  const [, , dInterior] = svg.match(/<path d="([^"]+)"[^>]*\/><path d="([^"]+)"/);
+  const cx = x + 0.5;
+  const cy = y + 0.5;
+  const exterior = puntosDePath(dExterior);
+  const interior = puntosDePath(dInterior);
+  return contienePunto(exterior, cx, cy) && !contienePunto(interior, cx, cy);
+}
+
 test("la silueta de la carta conserva esquinas transparentes y escalonadas", () => {
   const svg = cartaSvg("As");
 
   assert.match(svg, new RegExp(`M2 0H${ANCHO - 2}`));
-  assert.match(svg, new RegExp(`M2 1H${ANCHO - 2}`));
+  assert.match(svg, new RegExp(`M3 1H${ANCHO - 3}`));
   assert.doesNotMatch(svg, /<rect x="0" y="0"/);
+});
+
+test("el marco tiene 1px de separación también en los laterales, no solo arriba/abajo", () => {
+  // Repro exacto de la review: (1, 21) es el centro vertical del lateral
+  // izquierdo. Antes el interior solo desplazaba el eje Y, así que en los
+  // laterales exterior e interior compartían la misma x y ese píxel salía
+  // como fondo en vez de borde.
+  for (const svg of [cartaSvg("As"), dorsoSvg()]) {
+    assert.equal(esPixelDeBorde(svg, 1, 21), true, "el lateral izquierdo debe ser borde a media altura");
+    assert.equal(esPixelDeBorde(svg, ANCHO - 2, 21), true, "el lateral derecho debe ser borde a media altura");
+    // Y un píxel más adentro ya es el interior/fondo, no borde: la separación
+    // es de exactamente 1px, no un marco más grueso de lo pensado.
+    assert.equal(esPixelDeBorde(svg, 2, 21), false, "un píxel dentro del lateral izquierdo ya es fondo");
+  }
 });
 
 test("un código desconocido falla cerrado", () => {

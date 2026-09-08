@@ -187,12 +187,31 @@ function rectsDeDorso() {
 
 // ---- SVG ------------------------------------------------------------------
 
+// Contorno de esquinas recortadas a `inset` píxeles del borde del lienzo:
+// inset=0 traza el marco exterior (pegado al lienzo) e inset=1 el interior,
+// un píxel hacia dentro en las CUATRO direcciones. Antes el interior solo
+// desplazaba el eje Y (arriba/abajo sí abrían separación, los laterales no:
+// ambos contornos compartían la misma x en los lados y el marco desaparecía
+// ahí), por eso esto es una función de un solo parámetro y no dos strings
+// mantenidos a mano.
+function contornoCarta(inset) {
+  const x0 = 2 + inset;
+  const x1 = ANCHO - 2 - inset;
+  const xa = 1 + inset;
+  const xb = ANCHO - 1 - inset;
+  const y0 = inset;
+  const y1 = ALTO - inset;
+  const ya = 1 + inset;
+  const yb = ALTO - 1 - inset;
+  return `M${x0} ${y0}H${x1}V${ya}H${xb}V${yb}H${x1}V${y1}H${x0}V${yb}H${xa}V${ya}H${x0}Z`;
+}
+
 function svg(rects, fondo) {
   const cuerpo = rects
     .map((r) => `<rect x="${r.x}" y="${r.y}" width="1" height="1" fill="${r.color}"/>`)
     .join("");
-  const exterior = `M2 0H${ANCHO - 2}V1H${ANCHO - 1}V${ALTO - 1}H${ANCHO - 2}V${ALTO}H2V${ALTO - 1}H1V1H2Z`;
-  const interior = `M2 1H${ANCHO - 2}V2H${ANCHO - 1}V${ALTO - 2}H${ANCHO - 2}V${ALTO - 1}H2V${ALTO - 2}H1V2H2Z`;
+  const exterior = contornoCarta(0);
+  const interior = contornoCarta(1);
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${ANCHO} ${ALTO}" ` +
     `shape-rendering="crispEdges" role="img">` +

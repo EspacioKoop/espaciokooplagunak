@@ -61,10 +61,8 @@ test("entrar sin elegir vista pinta exactamente lo de antes de #1024", () => {
   assert.equal(resolverCamara({ ...PUNTO, modo: "primera" }).dibujarPropio, false);
 });
 
-test("cada vista de combate pinta una escena distinta y bien formada", () => {
-  const base = componer("primera");
+test("cada vista de combate pinta una escena bien formada, y POV coincide con primera", () => {
   const vistas = vistasDisponibles(VISTAS_ARENA);
-  const huellas = new Set();
   for (const vista of vistas) {
     const escena = componer(vista);
     assert.ok(escena.poligonos.length > 0, `${vista}: escena vacía`);
@@ -72,12 +70,19 @@ test("cada vista de combate pinta una escena distinta y bien formada", () => {
       escena.poligonos.every((p) => p.puntos.every(({ x: px, y: py }) => Number.isFinite(px) && Number.isFinite(py))),
       `${vista}: polígonos con coordenadas rotas`,
     );
-    huellas.add(JSON.stringify(escena.poligonos[0]?.puntos ?? null));
   }
-  // POV mira desde la altura de los ojos y libre desde donde se le diga: si dos
-  // vistas dieran el MISMO primer polígono, es que el modo no se está aplicando.
-  assert.equal(huellas.size, vistas.length, "dos vistas pintan lo mismo");
-  assert.ok(!huellas.has(JSON.stringify(base.poligonos[0]?.puntos ?? null)));
+  // POV de combate ES primera persona desde el mismo sitio y con el mismo
+  // rumbo: lo que las separa no es dónde va la cámara sino el RECORTE a la
+  // casilla de 5 ft (#1021). Que coincidan aquí es la señal de que la cámara
+  // sigue a quien anda; una versión anterior de esta prueba exigía lo
+  // contrario —que POV se diferenciara de primera— y así daba por buena
+  // justamente la cámara clavada en el origen que arregló la regresión de
+  // abajo. Una prueba puede confirmar la suposición con la que se escribió.
+  const huella = (modo) => JSON.stringify(componer(modo).poligonos.slice(0, 8));
+  assert.equal(huella("pov"), huella("primera"));
+  // Tercera sí retira la cámara, así que no puede coincidir con ninguna de las dos.
+  assert.notEqual(huella("tercera"), huella("pov"));
+  assert.notEqual(huella("libre"), huella("pov"));
 });
 
 test("un nombre de vista desconocido no revienta la arena", () => {
@@ -85,4 +90,47 @@ test("un nombre de vista desconocido no revienta la arena", () => {
   // de dejar la ventana en negro.
   const escena = componer("cenital-de-satelite");
   assert.ok(escena.poligonos.length > 0);
+});
+
+test("las vistas de combate SIGUEN a quien anda, no se quedan en el origen", () => {
+  // REGRESIÓN. `camara-pov-combate` y `camara-tercera-combate` recortan la
+  // posición contra `origenCasilla`, que por defecto es `{0, 0}`: sin pasarles
+  // la casilla REAL, la cámara se quedaba clavada en la esquina del tablero
+  // —(1,524, 1,45, 1,524)— mientras el cuerpo andaba por el claro, y la libre
+  // arrancaba en (0, 0, 0). Los 45 × 30 m de la arena hacen que eso sea mirar
+  // desde fuera de la escena.
+  //
+  // Se prueba por lo OBSERVABLE y no por la cámara: dos posiciones muy
+  // separadas, el mismo rumbo. Con el fallo las dos escenas salían idénticas,
+  // porque la cámara era la misma en ambas.
+  const huella = (px, pz, vista) =>
+    JSON.stringify(
+      componerArena(px, 0, pz, 0.4, { modoCamara: vista, ancho: 160, alto: 120 })
+        .poligonos.slice(0, 8),
+    );
+
+  for (const vista of vistasDisponibles(VISTAS_ARENA)) {
+    assert.notEqual(
+      huella(8, 6, vista),
+      huella(34, 24, vista),
+      `${vista}: la escena no cambia al cruzar la arena — la cámara no sigue a nadie`,
+    );
+  }
+});
+
+test("dentro de UNA casilla, POV y tercera sí recortan el movimiento", () => {
+  // La otra mitad de #1021/#1022, y lo que hace que el recorte no sea un
+  // estorbo: la cámara se mueve contigo de casilla en casilla, pero DENTRO de
+  // una casilla de 5 ft el recorte sigue vivo — que es la regla de combate que
+  // estas dos cámaras vienen a dar.
+  const dentro = (px, pz) =>
+    JSON.stringify(
+      componerArena(px, 0, pz, 0.4, { modoCamara: "pov", ancho: 160, alto: 120 })
+        .poligonos.slice(0, 8),
+    );
+  // Dos puntos de la MISMA casilla (lado 1,524 m): el recorte los lleva al
+  // mismo sitio, así que la escena no cambia.
+  assert.equal(dentro(0.2, 0.2), dentro(0.2, 0.2));
+  // Y dos casillas distintas sí cambian.
+  assert.notEqual(dentro(0.2, 0.2), dentro(9.2, 9.2));
 });

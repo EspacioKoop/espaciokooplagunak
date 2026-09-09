@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { MUSEO } from "../scripts/paleta.mjs";
+import { MUSEO, CUADRO } from "../scripts/paleta.mjs";
 import * as MUSEO_INTERNO from "../scripts/museo-escena.mjs";
 import { validarCatalogoPiezas } from "../scripts/catalogo-piezas.mjs";
 import { CATALOGO_MUSEO, MALLAS_MUSEO } from "../scripts/museo-piezas.mjs";
@@ -61,7 +61,9 @@ test("el catálogo del museo es válido y todas sus fichas apuntan a una malla q
     validarCatalogoPiezas(CATALOGO_MUSEO, { mallasDisponibles: new Set(Object.keys(MALLAS_MUSEO)) }),
     true,
   );
-  assert.equal(CATALOGO_MUSEO.piezas.length, 18, "dieciocho piezas, la capacidad de la sala");
+  const piezasDePedestal = CATALOGO_MUSEO.piezas.filter((p) => p.naturaleza !== "obra-propia");
+  assert.equal(piezasDePedestal.length, 18, "dieciocho piezas sobre pedestal, la capacidad de la sala");
+  assert.equal(CATALOGO_MUSEO.piezas.length, 18, "los cuadros de muro (#836) viven en su propio catálogo, museo-cuadros.mjs");
   for (const pieza of CATALOGO_MUSEO.piezas) {
     assert.ok(MALLAS_MUSEO[pieza.malla]?.vertices?.length, `${pieza.malla} sin geometría`);
   }
@@ -69,6 +71,9 @@ test("el catálogo del museo es válido y todas sus fichas apuntan a una malla q
 
 test("LA GUARDA DE PROCEDENCIA: lo que declara el museo no se separa de la ficha del conversor", () => {
   for (const pieza of CATALOGO_MUSEO.piezas) {
+    // Los cuadros (#836) son `obra-propia`: pixelart del módulo, sin ficha en el
+    // conversor de estatuas que esta guarda comprueba. Se saltan, no se comparan.
+    if (pieza.naturaleza === "obra-propia") continue;
     const ficha = FICHAS[pieza.malla];
     assert.ok(ficha, `${pieza.malla} no tiene ficha en tools/convertir-estatua.mjs`);
     // El campo que de verdad puede mentir en una cartela es QUÉ ES EL FICHERO.
@@ -217,9 +222,12 @@ test("pasarse de la capacidad falla a gritos, no amontona", () => {
 });
 
 test("el catalogo del museo no supera lo que cabe en la sala", () => {
+  // Solo cuenta lo que ocupa pedestal: las `obra-propia` (#836) cuelgan del
+  // muro y no compiten por el mismo hueco.
+  const piezasDePedestal = CATALOGO_MUSEO.piezas.filter((p) => p.naturaleza !== "obra-propia");
   assert.ok(
-    CATALOGO_MUSEO.piezas.length <= MUSEO_INTERNO.CAPACIDAD,
-    `el catalogo trae ${CATALOGO_MUSEO.piezas.length} piezas y la sala admite ${MUSEO_INTERNO.CAPACIDAD}`,
+    piezasDePedestal.length <= MUSEO_INTERNO.CAPACIDAD,
+    `el catalogo trae ${piezasDePedestal.length} piezas de pedestal y la sala admite ${MUSEO_INTERNO.CAPACIDAD}`,
   );
 });
 

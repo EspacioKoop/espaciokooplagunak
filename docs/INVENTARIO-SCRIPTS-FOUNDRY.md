@@ -47,16 +47,16 @@ find foundry-module/scripts -name '*.mjs' -o -name '*.js' | wc -l
 - `maniobra-control.mjs`
 - `reposicion-control.mjs`
 - `ship-view/ship-view.mjs`
-- `visor-piloto-lienzo.mjs`
-- `visor-piloto.mjs`
+- `visor-piloto/visor-piloto-lienzo.mjs`
+- `visor-piloto/visor-piloto.mjs`
 - `bitacora-nave.mjs`
 - `nivel-alerta.mjs`
 - `alarma-cruzada-escena.mjs`
 - `alarma-cruzada.mjs`
 - `alertas-nave.mjs`
-- `seccion-nave-app.mjs`
-- `seccion-nave.mjs`
-- `seccion-lienzo.mjs`
+- `seccion-nave/seccion-nave-app.mjs`
+- `seccion-nave/seccion-nave.mjs`
+- `seccion-nave/seccion-lienzo.mjs`
 
 ### 2. Estaciones y Puertos Espaciales (11 scripts)
 - `station-actions.mjs`

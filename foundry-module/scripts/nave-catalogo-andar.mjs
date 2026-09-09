@@ -51,6 +51,14 @@ import {
   componerMuseo,
 } from "./museo-escena.mjs";
 import {
+  PLANTA_ARENA,
+  ENTRADA as ENTRADA_ARENA,
+  INTERACCIONES as INTERACCIONES_ARENA,
+  componerArena,
+  cierreDe,
+  CIERRE_POR_DEFECTO,
+} from "./arena-combate-escena.mjs";
+import {
   ENTRADA as ENTRADA_PASILLO,
   INTERACCIONES as INTERACCIONES_PASILLO,
   PLANTA_PASILLO,
@@ -434,6 +442,21 @@ export const CATALOGO_ANDAR = crearCatalogoEstancias({
     fondo: MUSEO.zocalo,
     puertas: [],
   },
+  // La arena de combate (#1013). Como la playa y el museo: NO cuelga de ninguna
+  // puerta de la nave —el Phobos no lleva un campo de batalla dentro— y se entra
+  // por herramienta. Treinta por veinte casillas de cinco pies, enteras
+  // jugables: lo que se comprueba aquí es que el borde CIERRA y que cruzarla se
+  // siente como una distancia.
+  arena: {
+    planta: PLANTA_ARENA,
+    componer: componerArena,
+    entrada: ENTRADA_ARENA,
+    interacciones: INTERACCIONES_ARENA,
+    // Exterior: detrás de la geometría hay cielo, y el cierre declara cuál —una
+    // mazmorra se funde hacia su propia piedra, no hacia un cielo azul.
+    fondo: cierreDe(CIERRE_POR_DEFECTO).cielo,
+    puertas: [],
+  },
   // El pasillo de los recuerdos. Como el museo y la playa: NO cuelga de
   // ninguna puerta de la nave y se entra por herramienta.
   "pasillo-recuerdos": {
@@ -453,7 +476,7 @@ export const CATALOGO_ANDAR = crearCatalogoEstancias({
  * aparte de `categoriasAndar`, para que añadir uno nuevo no obligue a
  * mantener dos sitios sincronizados.
  */
-const IDS_FUERA_DE_LA_NAVE = Object.freeze(["playa", "museo"]);
+const IDS_FUERA_DE_LA_NAVE = Object.freeze(["playa", "museo", "arena"]);
 
 /**
  * Agrupa el catálogo por categoría, para presentarlo como carpetas en una UI

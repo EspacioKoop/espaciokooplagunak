@@ -40,6 +40,7 @@
 
 import { LUZ_CALIDA, MURAL, ALERTA } from "./paleta.mjs";
 import { normalizarAviso } from "./alerta-escena.mjs";
+import { caja } from "./escena-primitivas.mjs";
 
 /**
  * Medidas de una luminaria, en metros. Fijas, que es todo el punto.
@@ -254,6 +255,99 @@ export function colorDifusorLuminaria({ aviso = null, health = null, timeMs = 0 
   if (!dañado) return { color: colorBase, emisivo: true };
   const encendido = Math.floor(timeMs / 500) % 2 === 0;
   return { color: encendido ? colorBase : 0x000000, emisivo: true };
+}
+
+/**
+ * El HAZ visible y el polvo en suspensión (#556, "El haz de las luminarias").
+ *
+ * Medido con el motor real, no imaginado: tres capas de cono concéntricas de
+ * opacidad 0,055 cada una —donde se solapan las tres, en el eje, se acumula un
+ * 16%; en el borde del charco queda solo un 5%—, porque el motor pinta cada
+ * cara de un color plano y este es cómo se fingía un degradado cuando tampoco
+ * existía uno de verdad: capas. El alfa sale del propio polígono —un color
+ * `rgba(...)` con `emisivo:true`— y el pintor lo compone solo, porque ya
+ * dibuja de lejos a cerca; no hace falta tocar el motor para esto.
+ *
+ * SOLO LAS LUMINARIAS MÁS CERCANAS A LA CÁMARA, nunca todas las de la sala:
+ * pintar las 36 del reactor de golpe costaba un +41% medido, y el motor de
+ * FOCOS ya resuelve exactamente este mismo problema (`TOPE_FOCOS`) — aquí se
+ * aplica la misma regla a la geometría del haz, con el mismo tope.
+ */
+const RADIOS_HAZ = [0.6, 1.15, 1.7]; // m — el charco mide 3,4 m de diámetro
+const OPACIDAD_CAPA_HAZ = 0.055;
+const LADOS_HAZ = 10;
+const SEPARACION_SUELO_HAZ = 0.02; // no comparte plano con la losa: eso es un parpadeo
+const MOTAS_POR_LUMINARIA = 5;
+const LADO_MOTA = 0.035;
+export const TOPE_LUMINARIAS_CON_HAZ = 4;
+
+function conoDeHaz([x, yApice, z], radioBase, ySuelo) {
+  const vertices = [[x, yApice, z]];
+  for (let i = 0; i < LADOS_HAZ; i += 1) {
+    const ang = (i / LADOS_HAZ) * Math.PI * 2;
+    vertices.push([x + Math.cos(ang) * radioBase, ySuelo, z + Math.sin(ang) * radioBase]);
+  }
+  const caras = [];
+  for (let i = 0; i < LADOS_HAZ; i += 1) {
+    const j = (i + 1) % LADOS_HAZ;
+    caras.push([0, 1 + i, 1 + j]);
+  }
+  return { vertices, caras };
+}
+
+/** Un azar determinista por posición: la misma luminaria da siempre las
+ *  mismas motas — sin esto saltarían de sitio en cada fotograma. */
+function azarDe(x, z) {
+  let semilla = (Math.round(x * 1000) * 7919 + Math.round(z * 1000) * 104729) >>> 0;
+  return () => {
+    semilla = (semilla + 0x6d2b79f5) >>> 0;
+    let t = Math.imul(semilla ^ (semilla >>> 15), 1 | semilla);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function motasDeLuminaria([x, yFoco, z]) {
+  const azar = azarDe(x, z);
+  const piezas = [];
+  for (let i = 0; i < MOTAS_POR_LUMINARIA; i += 1) {
+    const ang = azar() * Math.PI * 2;
+    const radio = azar() * 0.45;
+    const y = yFoco - azar() * 0.14; // cerca del difusor: es ahí donde la luz rasante lo enciende
+    piezas.push({
+      malla: caja([x + Math.cos(ang) * radio, y, z + Math.sin(ang) * radio], [LADO_MOTA, LADO_MOTA, LADO_MOTA]),
+      color: "rgba(255, 219, 168, 0.55)",
+      emisivo: true,
+    });
+  }
+  return piezas;
+}
+
+/**
+ * El haz y el polvo de las luminarias más cercanas a `[camX,,camZ]` — nunca
+ * todas las de la sala. `focos` ya trae la posición exacta de cada difusor
+ * (`focosLuminarias`), así que esto solo ordena por distancia, se queda con
+ * las `tope` primeras y dibuja.
+ */
+export function piezasHazLuminarias({ ancho, profundidad, altura }, [camX, , camZ], tope = TOPE_LUMINARIAS_CON_HAZ) {
+  const focos = focosLuminarias({ ancho, profundidad, altura });
+  if (focos.length === 0) return [];
+  const cercanas = [...focos]
+    .sort((a, b) => {
+      const da = (a.posicion[0]-camX)**2 + (a.posicion[2]-camZ)**2;
+      const db = (b.posicion[0]-camX)**2 + (b.posicion[2]-camZ)**2;
+      return da - db;
+    })
+    .slice(0, Math.max(0, tope));
+
+  const piezas = [];
+  for (const { posicion } of cercanas) {
+    for (const radio of RADIOS_HAZ) {
+      piezas.push({ malla: conoDeHaz(posicion, radio, SEPARACION_SUELO_HAZ), color: `rgba(255, 215, 150, ${OPACIDAD_CAPA_HAZ})`, emisivo: true });
+    }
+    piezas.push(...motasDeLuminaria(posicion));
+  }
+  return piezas;
 }
 
 export function focosLuminarias({ ancho, profundidad, altura }) {

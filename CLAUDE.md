@@ -604,6 +604,21 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     `crearSalaCaja`), nunca por un `if` con el nombre de la sala dentro de la fábrica. La celda
     sigue siendo la de la nave: un cuadro baja a 1,25 cm porque su detalle no cabía, y una pared de
     galería no quiere más detalle sino menos.
+    La **arena de combate** (`scripts/arena-combate-escena.mjs` + `combate-rejilla.mjs`, #1013)
+    es el tercer sitio con esa misma forma —solo-GM, se entra por herramienta y se sale por un
+    punto de interacción, fuera de las invariantes de la nave y del minimapa— y por el motivo
+    llevado al extremo: 30 × 20 casillas de cinco pies son 45,7 × 30,5 m, y eso no cabe dentro de
+    una fragata. Lo que viene a comprobar es si un combate en rejilla se puede **jugar andando por
+    dentro** y no solo desde arriba: un tablero se ve de un vistazo, cruzarlo a pie tarda, y esa
+    diferencia es justo lo que ninguna vista cenital enseña — por eso la medida es el contenido y
+    no un parámetro. El borde **se declara** en vez de disimularse: el cierre es un dato
+    (`arboleda`, `mazmorra`) y no un muro invisible, porque un límite por el que no se pasa tiene
+    que ser algo que el sitio ya tendría. La rejilla vive aparte y en CASILLAS
+    (`combate-rejilla.mjs`: alcance, línea, ocupación); la escena hace la única traducción a metros
+    que hace falta, en un solo sitio. El presupuesto medido está en la cabecera del módulo, y su
+    reparto es la lección: el claro cuesta ~2100 polígonos igual con 4 cuerpos que con 32, y cada
+    cuerpo añade unos 16 — la población no es el gasto, así que si algún día hay que recortar se
+    recorta arboleda, no combatientes.
     Los **cuadros** de sus muros laterales (#836) son la SEGUNDA forma de colgar y no un parámetro
     de la primera: una escultura se apoya en un pedestal y se rodea, un cuadro cuelga de un muro y
     solo se mira de frente, así que van en catálogo aparte (`museo-cuadros.mjs`) validado por el

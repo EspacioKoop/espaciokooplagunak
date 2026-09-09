@@ -275,10 +275,10 @@ El PNG de origen **no entra en el repositorio**, igual que los STL de la
 sección anterior: se descarga aparte, se verifica su licencia y su sha256, y lo
 que se versiona es `foundry-module/data/tokens/<id>.mjs` — texto, revisable en
 un PR como cualquier otro cambio.
-## Packs CC0 3D — animación y mobiliario retro (#1052)
+## Packs 3D propuestos — licencias por componente pendientes (#1052)
 
-Seis packs completos, no piezas sueltas convertidas a malla de texto como las
-de arriba: entran como los binarios originales (GLB/FBX/OBJ/BLEND) bajo
+Seis directorios propuestos, no piezas sueltas convertidas a malla de texto como las
+de arriba: contienen archivos de los packs (GLB/FBX/BLEND, entre otros) bajo
 `resources/animations/` y `resources/models/`, sin pasar por
 `convertir-estatua.mjs`. Es una excepción deliberada al patrón de "solo texto
 convertido" que sigue el resto de este documento — decisión de Eloy,
@@ -317,10 +317,10 @@ etiqueta que traía el PR.
 | | |
 |---|---|
 | **Qué es** | Biblioteca de props de estética N64/PS1-PS2. **No es de Kenney.** |
-| **Autoría** | Craig Snedeker (craigsnedeker.itch.io). Con dos sub-atribuciones que el propio pack declara: las texturas y modelos de `Nature/` son de rubberduck (OpenGameArt, *Free Vegetation Asset Pack*) y de yughues (OpenGameArt, CC0); los de `Rocks/` son de rubberduck (OpenGameArt, *More Handpainted Rocks*) |
-| **Licencia** | CC0 — declarada en `Readme.txt` ("anyone can use the files, for personal or commercial projects") |
+| **Autoría** | Craig Snedeker (craigsnedeker.itch.io). Los avisos internos atribuyen a rubberduck las texturas de árboles, sapling y tronco modificados de *Free Vegetation Asset Pack*, y las rocas pintadas modificadas de *More Handpainted Rocks*; a Yughues, varias texturas de hierba y arbusto. No atribuyen la totalidad de `Nature/` o `Rocks/` a un único tercero |
+| **Licencia** | CC0 — declarada en `Readme.txt`, con enlace a Creative Commons. La petición de no vender directamente la biblioteca es una preferencia del autor, no una restricción añadida: el propio aviso dice "I can't stop you under the CC0 licence" |
 | **Enlace** | https://craigsnedeker.itch.io/classic64-asset-library |
-| **Versión** | El `Readme.txt` incluido en el árbol dice **0.2**; la versión publicada actualmente en itch.io es la 0.6 (2022-08-02). Si se actualiza el pack, corregir esta ficha |
+| **Versión** | El `Readme.txt` dice **0.2**, pero el mismo árbol contiene `Changelog v0.6.txt` y archivos de sus ampliaciones. No identificar el conjunto como una copia íntegra de 0.2 ni acreditar una versión solo con ese encabezado. La página ofrece 0.6 (2022-08-02) |
 | **Verificación** | `git rev-parse HEAD:resources/models/classic-64-asset-pack` → `b9ead6e7` (872 archivos) |
 
 ### Ultimate Retro PSX Tree Pack
@@ -329,7 +329,7 @@ etiqueta que traía el PR.
 |---|---|
 | **Qué es** | Árboles de estética retro PSX. **No es de Kenney.** No trae fichero de licencia propio dentro del pack (el directorio `resources/models/ultimate-retro-tree-pack/` no tiene `Read Me`) |
 | **Autoría** | Elegant Crow (elegantcrow.itch.io) |
-| **Licencia** | CC0 — declarada en la página de origen, no en un fichero del pack |
+| **Licencia** | La página declara CC0 para el pack, pero también declara imágenes de terceros. La concesión del autor no acredita los derechos de esas imágenes: **redistribución del conjunto pendiente** |
 | **Enlace** | https://elegantcrow.itch.io/ultimate-retro-psx-tree-pack |
 | **Origen de las imágenes** | La página del autor declara explícitamente que "All images come from sites like Pixabay and Pexels" — no son fotografías propias de Elegant Crow |
 | **Verificación** | `git rev-parse HEAD:resources/models/ultimate-retro-tree-pack` → `fba13de4` (600 archivos) |
@@ -340,12 +340,68 @@ etiqueta que traía el PR.
 |---|---|
 | **Qué es** | Vegetación de estética retro (arbustos, variantes de invierno). **No es de Kenney.** |
 | **Autoría** | Elegant Crow (mismo autor que el pack anterior) |
-| **Licencia** | CC0 — el `READ ME.txt` del pack no repite el texto de licencia, solo enlaces de contacto/donación; la licencia consta en la página de origen |
-| **Enlace** | https://elegantcrow.itch.io/ (buscar Retro Nature Pack en su catálogo) |
+| **Licencia** | **CC0 para los modelos**, según la página del autor; texturas de AmbientCG e imágenes de Pixabay, con derechos separados. El `READ ME.txt` solo contiene contacto/donación, no una licencia |
+| **Enlace** | https://elegantcrow.itch.io/retro-psx-nature-pack |
 | **Verificación** | `git rev-parse HEAD:resources/models/retro-nature-pack` → `fe0c89cb` (182 archivos) |
 
-**Lo que falta, a propósito no resuelto aquí:** ninguno de estos seis packs
-tiene todavía un consumidor real en el módulo (ni catálogo, ni carga desde
-`tools/scene-engine`, ni referencia desde `foundry-module/`). Entran como
-material curado y correctamente atribuido; conectar cada pieza a una escena es
-trabajo aparte.
+### Evidencia de licencia por componente y bloqueo de redistribución
+
+Fuentes públicas contrastadas con los seis árboles indicados arriba:
+
+- **Nature, geometría de Elegant Crow:** la fuente dice literalmente
+  «The models on this pack are under CC0 License». Dice por separado
+  «Textures come from AmbientCG.com» e «Images come from Pixabay».
+  Los 40 GLB presentes no declaran imágenes en su JSON. Un lector acotado de
+  FBX binario recorrió también los 40 FBX sin encontrar propiedades `Content`
+  con datos; sí hay referencias a archivos. Son comprobaciones del contenedor,
+  no una licencia CC0 para los PNG separados ni una prueba de carga/renderizado.
+- **AmbientCG:** su [aviso de licencia](https://docs.ambientcg.com/license/)
+  declara CC0 1.0 para los archivos descargables y renders de previsualización,
+  y permite «include the raw files in your project». Por tanto, el problema no
+  es una prohibición de distribuir texturas AmbientCG: falta identificar cuáles
+  de los 101 PNG de Nature proceden de allí y cuáles de Pixabay, con sus fuentes.
+- **Pixabay:** su [resumen oficial](https://pixabay.com/service/license-summary/)
+  prohíbe «sell or distribute Content (either in digital or physical form) on a
+  Standalone basis». Sus [términos](https://pixabay.com/service/terms/), secciones
+  4 y 5, distinguen contenido CC0 y Content License. No se ha identificado la
+  ficha ni la licencia aplicable a cada imagen de estos packs; no se presume ni
+  CC0 histórico ni una infracción demostrada para todas las imágenes.
+- **Pexels:** sus [términos](https://www.pexels.com/terms-of-service/), secciones
+  4 y 5, también distinguen CC0 y Pexels License. La segunda prohíbe vender o
+  distribuir contenido «on a Standalone basis»; un filtro, cambio de colores,
+  redimensionado o recorte por sí solos siguen siendo uso Standalone. Su
+  [explicación oficial](https://help.pexels.com/hc/en-us/articles/900005880463-What-are-the-Terms-and-Conditions)
+  confirma esa restricción. No basta con llamar «textura retro» a la imagen.
+- **Tree, contenedores:** hay 240 PNG separados y 120 GLB; **cada GLB contiene
+  una imagen incrustada**. De esas imágenes, 119 coinciden byte a byte por
+  SHA-256 con PNG del inventario; una no coincide. Quitar solo PNG no eliminaría
+  las imágenes de terceros del conjunto. Los 120 FBX también contienen
+  propiedades `Content` con datos incrustados: tampoco son una alternativa
+  acreditada como geometría sola. No se ha autorizado ni realizado una retirada.
+- **Classic64, contribuciones:** [Free Vegetation Asset Pack](https://opengameart.org/content/free-vegetation-asset-pack)
+  y [More Handpainted Rocks](https://opengameart.org/content/more-handpainted-rocks)
+  identifican a rubberduck y CC0; el primero declara texturas propias. El aviso
+  interno de Nature atribuye hierbas y arbustos a Yughues bajo CC0, sin fichas
+  individuales. Se localizaron fichas CC0 de Yughues para
+  [Grass Pack 01](https://opengameart.org/content/grass-pack-01),
+  [02](https://opengameart.org/content/grass-pack-02),
+  [03](https://opengameart.org/content/grass-pack-03) y
+  [Bushes](https://opengameart.org/content/bushes), pero no se afirma que cada
+  archivo modificado del pack corresponda a esas fuentes sin un mapeo.
+  `Changelog v0.6.txt` registra 18 texturas retiradas en 0.4 por falta de licencia
+  de distribución: ninguno de esos nombres exactos aparece como archivo en este
+  árbol. Esa comprobación no cubre copias renombradas o imágenes empaquetadas en
+  BLEND y no convierte el encabezado antiguo 0.2 en una garantía de versión.
+
+[CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/legalcode.en) opera
+sobre los derechos del otorgante; su sección 4 no despeja derechos de terceros.
+Conservar los avisos originales y la autoría no sustituye las concesiones que
+faltan. Para desbloquear la redistribución completa se necesita un mapa
+archivo → imagen original/autor → licencia aplicable y prueba de permiso para
+esta distribución, o una sustitución/reducción de alcance autorizada. **Ningún
+pack ni dato se ha retirado por esta revisión documental.**
+
+**Límite de entrega:** estos directorios siguen siendo material propuesto, no
+un conjunto globalmente acreditado como CC0 ni una integración jugable. Resolver
+la licencia no crea un consumidor; conectar cada pieza a una escena es trabajo
+aparte.

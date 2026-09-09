@@ -21,7 +21,7 @@
 
 import { FICHA, PIXEL } from "../paleta.mjs";
 import { componerEscena, fundirEscenas } from "../retro3d.mjs";
-import { caja, disco } from "../escena-primitivas.mjs";
+import { caja, disco } from "../exteriores/escena-primitivas.mjs";
 import { campoEstelar, proyectarEstrellas } from "../retro3d-estrellas.mjs";
 
 /**

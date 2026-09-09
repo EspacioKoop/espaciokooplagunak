@@ -41,8 +41,8 @@
 // Puro y sin color propio (#351): los colores salen de `PLAYA` en `paleta.mjs`,
 // y el dibujo se genera aquí — no es arte de terceros (#571).
 
-import { PLAYA } from "./paleta.mjs";
-import { rngSemilla } from "./ventana-nave.mjs";
+import { PLAYA } from "../paleta.mjs";
+import { rngSemilla } from "../ventana-nave.mjs";
 
 /** La medida de la banda, en téxeles. Ancha y baja: es un horizonte. */
 /**

@@ -19,8 +19,8 @@
 //
 // Puro y sin color propio (#351): los colores salen de `PLAYA` en `paleta.mjs`.
 
-import { BOSQUE, PLAYA, PUERTO } from "./paleta.mjs";
-import { definirVocabulario } from "./nave-props.mjs";
+import { BOSQUE, PLAYA, PUERTO } from "../paleta.mjs";
+import { definirVocabulario } from "../nave-props.mjs";
 
 /**
  * EL LITORAL: lo que hay en una costa sin que nadie lo ponga.

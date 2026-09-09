@@ -21,7 +21,7 @@
 // puede regenerar es una deuda; uno que se regenera con un comando y se verifica
 // en CI, no.
 
-import { codificarPngIndexado } from "./png-indexado.mjs";
+import { codificarPngIndexado } from "../png-indexado.mjs";
 import { CAPAS, pngDeTextura, texturaDeRejilla, rejillaHorizonte } from "./horizonte-matte.mjs";
 
 /** Cómo se llama el PNG de una capa. */

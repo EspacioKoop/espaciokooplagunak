@@ -85,18 +85,18 @@
 // `paleta.mjs`.
 
 import { BOSQUE, FACCIONES, MUSEO, PLAYA } from "./paleta.mjs";
-import { caja, losa } from "./escena-primitivas.mjs";
+import { caja, losa } from "./exteriores/escena-primitivas.mjs";
 import { componerEscena, fundirEscenas, mezclar } from "./retro3d.mjs";
 import { ALTURA_OJOS, resolverCamara } from "./nave-camara.mjs";
 import { resolverVistaCombate, vistasDisponibles } from "./cambiador-vistas-combate.mjs";
 import { poligonosOtrosJugadores } from "./nave-avatares-render.mjs";
 import { crearPlanta } from "./nave-movimiento.mjs";
 import { colocarProp, mezclarVocabularios } from "./nave-props.mjs";
-import { VARIANTES_ARBOL, VOCABULARIO_BOSQUE, VOCABULARIO_COSTA } from "./props-exteriores.mjs";
+import { VARIANTES_ARBOL, VOCABULARIO_BOSQUE, VOCABULARIO_COSTA } from "./exteriores/props-exteriores.mjs";
 import { declararInteracciones } from "./nave-interaccion.mjs";
-import { ciclo, declararSol, franja, huellaDe } from "./escena-exteriores.mjs";
+import { ciclo, declararSol, franja, huellaDe } from "./exteriores/escena-exteriores.mjs";
 import { rngSemilla } from "./ventana-nave.mjs";
-import { piezasHorizonte, texturasHorizonte } from "./horizonte-matte.mjs";
+import { piezasHorizonte, texturasHorizonte } from "./exteriores/horizonte-matte.mjs";
 import { GRID_UNIT_FT } from "./pathfinding-core.mjs";
 import { claveCasilla } from "./combate-rejilla.mjs";
 import { DORIFORO } from "../data/mallas/doriforo.mjs";

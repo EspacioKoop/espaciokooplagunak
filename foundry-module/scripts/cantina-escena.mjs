@@ -31,7 +31,7 @@ import { campoEstelar, proyectarEstrellas } from "./retro3d-estrellas.mjs";
 import { cuerpoMayor, cuerposPorLaVentana } from "./cantina-ventana.mjs";
 import { anclasHumoDeLaGente, piezasDeLaGente } from "./cantina-avatar.mjs";
 import { PLANO_INICIAL, planoPorId } from "./cantina-planos.mjs";
-import { caja, mallaDePieza } from "./escena-primitivas.mjs";
+import { caja, mallaDePieza } from "./exteriores/escena-primitivas.mjs";
 
 // `caja` vive ahora en `escena-primitivas.mjs` (#589). Estaba copiada aquí, en
 // el póker y en el blackjack, y la playa la importaba DE ESTE MÓDULO — un

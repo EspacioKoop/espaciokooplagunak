@@ -13,7 +13,7 @@
 // Frontera de arte (#351): no declara ni un color.
 
 import { componerEscena, fundirEscenas } from "../retro3d.mjs";
-import { mallaDePieza } from "../escena-primitivas.mjs";
+import { mallaDePieza } from "../exteriores/escena-primitivas.mjs";
 import { piezasAvatar } from "../cantina-avatar.mjs";
 
 /** Sin giro de reposo: aquí no hay que reconocer un objeto al otro lado de la

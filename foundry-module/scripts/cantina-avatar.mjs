@@ -21,7 +21,7 @@
 
 import { AVATAR, FACCIONES, PIXEL, RETRATO } from "./paleta.mjs";
 import { caja } from "./cantina-escena.mjs";
-import { prisma } from "./escena-primitivas.mjs";
+import { prisma } from "./exteriores/escena-primitivas.mjs";
 import { ANCLAS, anclasAvatar, dimensionesCuerpo, puntosAvatar } from "./avatar/avatar-rig.mjs";
 import { normalizarPorte, sostener } from "./avatar/avatar-porte.mjs";
 import { mezclar } from "./retro3d.mjs";

@@ -57,23 +57,23 @@
 //
 // Puro y sin color propio (#351): los colores salen de `PLAYA` en `paleta.mjs`.
 
-import { PLAYA } from "./paleta.mjs";
+import { PLAYA } from "../paleta.mjs";
 import { anillo, caja, esfera, losa, rampa } from "./escena-primitivas.mjs";
-import { componerEscena, fundirEscenas, mezclar } from "./retro3d.mjs";
-import { resolverCamara } from "./nave-camara.mjs";
-import { poligonosOtrosJugadores } from "./nave-avatares-render.mjs";
-import { crearPlanta } from "./nave-movimiento.mjs";
-import { rngSemilla } from "./ventana-nave.mjs";
-import { colocarProp, mezclarVocabularios } from "./nave-props.mjs";
+import { componerEscena, fundirEscenas, mezclar } from "../retro3d.mjs";
+import { resolverCamara } from "../nave-camara.mjs";
+import { poligonosOtrosJugadores } from "../nave-avatares-render.mjs";
+import { crearPlanta } from "../nave-movimiento.mjs";
+import { rngSemilla } from "../ventana-nave.mjs";
+import { colocarProp, mezclarVocabularios } from "../nave-props.mjs";
 import {
   VOCABULARIO_COSTA,
   VOCABULARIO_MARITIMO,
   VOCABULARIO_URBANO,
 } from "./props-exteriores.mjs";
-import { declararInteracciones } from "./nave-interaccion.mjs";
+import { declararInteracciones } from "../nave-interaccion.mjs";
 import { ciclo, declararSol, franja, huellaDe } from "./escena-exteriores.mjs";
 import { piezasHorizonte, texturasHorizonte } from "./horizonte-matte.mjs";
-import { LEON_AL_LAT } from "../data/mallas/leon-al-lat.mjs";
+import { LEON_AL_LAT } from "../../data/mallas/leon-al-lat.mjs";
 import { uvsTriplanar } from "./escena-primitivas.mjs";
 import { metrosPorTextura, texturaMaterial } from "./props-materiales.mjs";
 

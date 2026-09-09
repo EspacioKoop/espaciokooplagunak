@@ -4,7 +4,7 @@
 
 1. `discoLunarDataUri` en `foundry-module/scripts/laminas-clasicas.mjs`
 2. `podarAsistencias` en `foundry-module/scripts/asistencia-wiring.mjs`
-3. `texturaHorizonte` en `foundry-module/scripts/horizonte-matte.mjs`
+3. `texturaHorizonte` en `foundry-module/scripts/exteriores/horizonte-matte.mjs`
 
 ## Resultado del análisis
 
@@ -34,7 +34,7 @@ y su prueba; no antes.
   `discoLunarDataUri`.
 - `foundry-module/scripts/asistencia-wiring.mjs`: retirada
   `podarAsistencias` y su importación huérfana.
-- `foundry-module/scripts/horizonte-matte.mjs`: retirada
+- `foundry-module/scripts/exteriores/horizonte-matte.mjs`: retirada
   `texturaHorizonte`.
 
 ## Verificación

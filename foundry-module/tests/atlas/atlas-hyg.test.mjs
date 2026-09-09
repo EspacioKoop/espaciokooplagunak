@@ -7,8 +7,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { atlasDesdeHyg, idDesdeNombre, partirLineaCsv } from "../scripts/atlas-hyg.mjs";
-import { validateCosmography } from "../scripts/catalogo-cosmografico.mjs";
+import { atlasDesdeHyg, idDesdeNombre, partirLineaCsv } from "../../scripts/atlas/atlas-hyg.mjs";
+import { validateCosmography } from "../../scripts/catalogo-cosmografico.mjs";
 
 /** Un CSV mínimo con la forma real de HYG: cabecera por nombre y filas sueltas
  * sin nombre propio, que son la inmensa mayoría del catálogo. */

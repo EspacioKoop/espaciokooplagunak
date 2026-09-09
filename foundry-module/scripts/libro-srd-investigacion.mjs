@@ -4,7 +4,7 @@
 // Foundry, no guarda lecturas y no contiene texto de ninguna obra externa.
 // El consumidor de escena puede pintar `marcadorInvestigacion` junto al libro.
 
-import { prisma } from "./escena-primitivas.mjs";
+import { prisma } from "./exteriores/escena-primitivas.mjs";
 import { INVESTIGACION_SRD } from "./paleta.mjs";
 
 export const HABILIDADES_INVESTIGACION = Object.freeze(["investigacion", "historia", "arcana"]);

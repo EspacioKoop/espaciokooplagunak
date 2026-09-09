@@ -6,10 +6,10 @@ import {
   cargarAtlasStandalone,
   consultarEntrada,
   consultarHijos,
-} from "../scripts/atlas-standalone.mjs";
+} from "../../scripts/atlas/atlas-standalone.mjs";
 
 const source = await readFile(
-  new URL("../data/cosmografia.example.json", import.meta.url),
+  new URL("../../data/cosmografia.example.json", import.meta.url),
   "utf8",
 );
 

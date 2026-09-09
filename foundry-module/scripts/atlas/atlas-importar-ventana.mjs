@@ -1,5 +1,5 @@
 import { importarAtlas } from "./importador-atlas.mjs";
-import { anadirHerramienta } from "./control-escena.mjs";
+import { anadirHerramienta } from "../control-escena.mjs";
 
 let moduloConfigurado = null;
 

@@ -9,8 +9,8 @@ import {
   franja,
   huellaDe,
   sombraDeCaja,
-} from "../scripts/escena-exteriores.mjs";
-import { SOL, LARGO_SOMBRA, RUMBO_SOMBRA } from "../scripts/playa-escena.mjs";
+} from "../../scripts/exteriores/escena-exteriores.mjs";
+import { SOL, LARGO_SOMBRA, RUMBO_SOMBRA } from "../../scripts/exteriores/playa-escena.mjs";
 
 /* ---- el sol y lo que cuelga de él ----------------------------------------- */
 

@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { importarAtlas } from "../scripts/importador-atlas.mjs";
+import { importarAtlas } from "../scripts/atlas/importador-atlas.mjs";
 import { validateCosmography } from "../scripts/catalogo-cosmografico.mjs";
 const cli = fileURLToPath(new URL("../../tools/importar-atlas.mjs", import.meta.url));
 const csv = "id,hip,proper,ra,dec,dist,mag,absmag,spect,ci\n0,,Sol,0,0,0,-26.7,4.85,G2V,0.656\n";

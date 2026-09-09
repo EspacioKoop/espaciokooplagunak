@@ -6,7 +6,7 @@ import {
   hijosDe,
   migasDe,
   normalizarBaseDatos,
-} from "../scripts/base-datos-cientifica.mjs";
+} from "../../scripts/atlas/base-datos-cientifica.mjs";
 
 const PAYLOAD = {
   entries: [

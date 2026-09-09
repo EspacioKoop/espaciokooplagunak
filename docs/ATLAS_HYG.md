@@ -7,12 +7,12 @@
 
 ## Qué es
 
-`foundry-module/scripts/atlas-hyg.mjs` convierte el CSV del catálogo estelar **HYG**
+`foundry-module/scripts/atlas/atlas-hyg.mjs` convierte el CSV del catálogo estelar **HYG**
 —Hipparcos, Yale, Gliese, Tycho-2 y Gaia DR3, con los nombres propios oficiales de la
 IAU— en un catálogo con el formato que define `catalogo-cosmografico.mjs`.
 
 ```js
-import { atlasDesdeHyg } from "./scripts/atlas-hyg.mjs";
+import { atlasDesdeHyg } from "./scripts/atlas/atlas-hyg.mjs";
 
 const atlas = atlasDesdeHyg(csvComoTexto);           // todas las que tengan nombre
 const cortito = atlasDesdeHyg(csvComoTexto, { maximo: 100 }); // las 100 más brillantes

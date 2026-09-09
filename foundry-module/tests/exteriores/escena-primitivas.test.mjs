@@ -9,7 +9,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { cajaGirada, anillo, caja, disco, esfera, losa, prisma, rampa, trasladar } from "../scripts/escena-primitivas.mjs";
+import { cajaGirada, anillo, caja, disco, esfera, losa, prisma, rampa, trasladar } from "../../scripts/exteriores/escena-primitivas.mjs";
 
 /** Normal de una cara por el método del área firmada (Newell), ya unitaria. */
 function normalDe(malla, indice) {

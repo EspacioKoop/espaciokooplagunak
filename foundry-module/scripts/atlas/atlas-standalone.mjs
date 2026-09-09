@@ -1,4 +1,4 @@
-import { validateCosmography } from "./catalogo-cosmografico.mjs";
+import { validateCosmography } from "../catalogo-cosmografico.mjs";
 
 export function cargarAtlasStandalone(source) {
   const catalog = typeof source === "string" ? JSON.parse(source) : structuredClone(source);

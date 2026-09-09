@@ -6,7 +6,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { METROS_POR_TEXTURA, uvsTriplanar } from "../scripts/escena-primitivas.mjs";
+import { METROS_POR_TEXTURA, uvsTriplanar } from "../scripts/exteriores/escena-primitivas.mjs";
 import { LEON_AL_LAT } from "../data/mallas/leon-al-lat.mjs";
 import { VENUS_DE_MILO } from "../data/mallas/venus-de-milo.mjs";
 import { FARAO_AMASIS } from "../data/mallas/farao-amasis.mjs";
@@ -156,7 +156,7 @@ test("la escala va en metros, como en la caja y el prisma", () => {
 /* ---- plantada en la playa -------------------------------------------------- */
 
 test("la ruina llega al cuadro, y texturada", async () => {
-  const { componerPlaya } = await import("../scripts/playa-escena.mjs");
+  const { componerPlaya } = await import("../scripts/exteriores/playa-escena.mjs");
   const escena = componerPlaya(9.5, 0, 30.5, -0.85, { tiempo: 0 });
   // La malla del León tiene cientos de caras y ninguna otra pieza de la escena
   // se le acerca: si aparece un bloque grande de polígonos texturados por esa
@@ -167,7 +167,7 @@ test("la ruina llega al cuadro, y texturada", async () => {
 
 test("no se puede atravesar: es piedra maciza", async () => {
   // Cruzarla andando desmentiría de golpe todo lo que la ruina cuenta.
-  const { PLANTA_PLAYA } = await import("../scripts/playa-escena.mjs");
+  const { PLANTA_PLAYA } = await import("../scripts/exteriores/playa-escena.mjs");
   const tapa = PLANTA_PLAYA.obstaculos.some(
     (r) => r.x < 5.5 && r.x + r.ancho > 3.5 && r.z < 34 && r.z + r.profundidad > 32,
   );

@@ -3,14 +3,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { VOCABULARIO, colocarProp, mezclarVocabularios } from "../scripts/nave-props.mjs";
+import { VOCABULARIO, colocarProp, mezclarVocabularios } from "../../scripts/nave-props.mjs";
 import {
   VOCABULARIO_BOSQUE,
   VOCABULARIO_COSTA,
   VOCABULARIO_MARITIMO,
   VOCABULARIO_URBANO,
-} from "../scripts/props-exteriores.mjs";
-import { VOCABULARIO_PLAYA } from "../scripts/playa-escena.mjs";
+} from "../../scripts/exteriores/props-exteriores.mjs";
+import { VOCABULARIO_PLAYA } from "../../scripts/exteriores/playa-escena.mjs";
 
 /* ---- la mezcla ------------------------------------------------------------- */
 

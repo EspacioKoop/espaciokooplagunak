@@ -35,7 +35,7 @@
  * Puro: ni Foundry, ni DOM, ni red, ni reloj.
  */
 
-import { mallaDePieza } from "./escena-primitivas.mjs";
+import { mallaDePieza } from "./exteriores/escena-primitivas.mjs";
 import { piezasAvatar } from "./cantina-avatar.mjs";
 import { componerEscena } from "./retro3d.mjs";
 

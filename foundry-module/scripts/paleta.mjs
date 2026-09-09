@@ -757,6 +757,23 @@ export const TARJETA_COMBATIENTE = Object.freeze({
   }),
 });
 
+/**
+ * Insignias de progresión de campaña (#1016): un acento por nivel de hito
+ * alcanzado. Único sitio que declara estos hexadecimales (ADR-0014);
+ * `progresion-campana.mjs` los consume por nivel en vez de mantener su
+ * propia tabla.
+ *
+ * El oro NO se reescribe: el nivel máximo de progresión y el marco `shiny` de
+ * la tarjeta de combatiente son la misma insignia vista desde dos sitios, y
+ * dos literales idénticos en este mismo archivo es como se desincronizan.
+ */
+export const PROGRESION = Object.freeze({
+  plain: "#8a918f",
+  bronze: "#d28b45",
+  silver: "#c4ccd1",
+  gold: TARJETA_COMBATIENTE.shiny.marco,
+});
+
 export const FICHA = Object.freeze({
   tapete: "#0f3d2a", // fieltro de la mesa
   canto: CREMA, // cuñas y cara de la ficha: el mismo crema del resto del arte

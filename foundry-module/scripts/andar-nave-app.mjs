@@ -555,6 +555,12 @@ function arrancar(raiz, estanciaPedida = null) {
     // ajena no enseña nada que el relé no dejara ver igualmente por botón.
     alAlcanzarInteraccion: (interaccion) => {
       const { accion } = interaccion;
+      // El bucle pasa directamente de una interacción a otra, sin emitir
+      // salida intermedia. La cartela vecina también termina la lectura SRD.
+      if (accion?.tipo !== "investigar-libro") {
+        pintarInvestigacion(false);
+        marcadorInvestigacionActual = null;
+      }
       if (accion?.tipo === "consola") openWorkspaceApp(accion.puesto);
       // Un asiento NO sienta a nadie al pasar por delante: solo se recuerda cuál
       // se tiene al alcance, y sentarse es un gesto aparte (`f`). Es la

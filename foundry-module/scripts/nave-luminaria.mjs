@@ -512,7 +512,13 @@ export function motasLuminarias({ ancho, profundidad, altura, cuantas = MOTAS_PO
       // La altura primero, porque el radio del haz depende de ella: una mota
       // fuera del cono se vería flotando al lado de la luz, no dentro.
       const caida = ruido(x, z, i) * TRAMO_MOTAS;
-      const radio = (rArriba + apertura * caida) * Math.sqrt(ruido(z, i, x));
+      // Una mota es un CUBO, no un punto: se sitúa por su centro, pero quien
+      // tiene que caber es su vértice más desfavorable. Se mide el haz en la
+      // cara ALTA del cubo (donde el cono es más estrecho) y se descuenta la
+      // media diagonal horizontal; si no, la esquina de arriba asoma fuera.
+      const medioLado = LADO_MOTA / 2;
+      const rCabe = Math.max(0, rArriba + apertura * (caida - medioLado) - medioLado * Math.SQRT2);
+      const radio = rCabe * Math.sqrt(ruido(z, i, x));
       const angulo = ruido(i, x, z) * Math.PI * 2;
       cubos.push(cajaCentrada(
         [x + Math.cos(angulo) * radio, yArriba - caida, z + Math.sin(angulo) * radio],

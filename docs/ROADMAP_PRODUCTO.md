@@ -1,7 +1,7 @@
 # Roadmap de producto — sucesor espiritual cooperativo
 
 Versión versionada y revisable de la dirección de producto acordada en el issue
-[#219](https://github.com/VaroTv7/espaciokooplagunak/issues/219). El issue sigue
+[#219](https://github.com/EspacioKoop/espaciokooplagunak/issues/219). El issue sigue
 siendo el hilo de discusión; este documento es el estado acordado.
 
 **Espaciokoop Lagunak** evoluciona, por etapas jugables, hacia un juego
@@ -95,7 +95,7 @@ no es la fuente del atlas, la campaña ni la persistencia.
 | Jugadores objetivo | 1–10; banda ideal 3–6. El mínimo jugable es 1 con puestos asistidos |
 | Alcance de la integración Foundry | Solo la capa de rol de la mesa; nunca requisito del juego |
 | Base de reglas de rol | SRD 5.1 (5e 2014) bajo **CC BY 4.0**, con atribución — no «fair use»; nada de reglas 2024 |
-| Comportamiento de puestos vacíos | Política acordada en [#512](https://github.com/VaroTv7/espaciokooplagunak/issues/512): sin IA autónoma; conservar el último valor y avisar de que el puesto está vacío |
+| Comportamiento de puestos vacíos | Política acordada en [#512](https://github.com/EspacioKoop/espaciokooplagunak/issues/512): sin IA autónoma; conservar el último valor y avisar de que el puesto está vacío |
 | Divergencia de upstream | Permitida cuando aporte mejora tangible, siguiendo [UPSTREAM.md](UPSTREAM.md) y con su propio ADR |
 
 Pendientes de acordar entre Varo y Eloy: límite inicial de expediciones
@@ -137,12 +137,12 @@ lo desarrolló, siguiendo solo la documentación publicada.
 
 | Criterio | Evidencia | Estado | Pendiente |
 |---|---|---|---|
-| Smoke real multijugador de la integración opcional | **No existe evidencia multijugador registrada**; [#29](https://github.com/VaroTv7/espaciokooplagunak/issues/29) es solo un smoke GUI con GM y no valida varios clientes ni una sesión multijugador completa | `BLOCKED` | Ejecutar y registrar una validación multijugador específica con clientes conectados |
-| Encuentro normalizado y controlado | PR [#196](https://github.com/VaroTv7/espaciokooplagunak/pull/196), [#200](https://github.com/VaroTv7/espaciokooplagunak/pull/200), [#201](https://github.com/VaroTv7/espaciokooplagunak/pull/201) y [#220](https://github.com/VaroTv7/espaciokooplagunak/pull/220), con pruebas del puente y del módulo | `IMPLEMENTED` | Demostrarlo dentro del bucle standalone completo |
-| Energía y sistemas operables según permisos | PR [#217](https://github.com/VaroTv7/espaciokooplagunak/pull/217) para GM y verticales de puesto [#472](https://github.com/VaroTv7/espaciokooplagunak/pull/472), [#475](https://github.com/VaroTv7/espaciokooplagunak/pull/475), [#476](https://github.com/VaroTv7/espaciokooplagunak/pull/476) y [#487](https://github.com/VaroTv7/espaciokooplagunak/pull/487) | `IMPLEMENTED` | Demostrarlo dentro del bucle standalone completo |
-| Destino y estado de campaña propios, sin autoridad de Foundry | **No existe evidencia integrada**: [#213](https://github.com/VaroTv7/espaciokooplagunak/issues/213)/[#214](https://github.com/VaroTv7/espaciokooplagunak/pull/214) solo cubren catálogo y adaptador opcionales de Foundry | `PLANNED` | Implementar y registrar destino, campaña y persistencia standalone |
-| Control GM acotado y observable | PR [#202](https://github.com/VaroTv7/espaciokooplagunak/pull/202), [#218](https://github.com/VaroTv7/espaciokooplagunak/pull/218) y [#294](https://github.com/VaroTv7/espaciokooplagunak/pull/294), con órdenes cerradas y eventos idempotentes | `IMPLEMENTED` | Demostrarlo dentro del bucle completo |
-| Salida A: bucle de estrella polar sin Foundry y resultado opcional hacia Foundry | **No existe evidencia end-to-end registrada**; el runbook de [#29](FOUNDRY_GUI_SMOKE.md) excluye varios clientes y una sesión completa | `BLOCKED` | Completar la persistencia standalone de [#766](https://github.com/VaroTv7/espaciokooplagunak/issues/766) y después ejecutar el playtest reproducible de [#219](https://github.com/VaroTv7/espaciokooplagunak/issues/219) |
+| Smoke real multijugador de la integración opcional | **No existe evidencia multijugador registrada**; [#29](https://github.com/EspacioKoop/espaciokooplagunak/issues/29) es solo un smoke GUI con GM y no valida varios clientes ni una sesión multijugador completa | `BLOCKED` | Ejecutar y registrar una validación multijugador específica con clientes conectados |
+| Encuentro normalizado y controlado | PR [#196](https://github.com/EspacioKoop/espaciokooplagunak/pull/196), [#200](https://github.com/EspacioKoop/espaciokooplagunak/pull/200), [#201](https://github.com/EspacioKoop/espaciokooplagunak/pull/201) y [#220](https://github.com/EspacioKoop/espaciokooplagunak/pull/220), con pruebas del puente y del módulo | `IMPLEMENTED` | Demostrarlo dentro del bucle standalone completo |
+| Energía y sistemas operables según permisos | PR [#217](https://github.com/EspacioKoop/espaciokooplagunak/pull/217) para GM y verticales de puesto [#472](https://github.com/EspacioKoop/espaciokooplagunak/pull/472), [#475](https://github.com/EspacioKoop/espaciokooplagunak/pull/475), [#476](https://github.com/EspacioKoop/espaciokooplagunak/pull/476) y [#487](https://github.com/EspacioKoop/espaciokooplagunak/pull/487) | `IMPLEMENTED` | Demostrarlo dentro del bucle standalone completo |
+| Destino y estado de campaña propios, sin autoridad de Foundry | **No existe evidencia integrada**: [#213](https://github.com/EspacioKoop/espaciokooplagunak/issues/213)/[#214](https://github.com/EspacioKoop/espaciokooplagunak/pull/214) solo cubren catálogo y adaptador opcionales de Foundry | `PLANNED` | Implementar y registrar destino, campaña y persistencia standalone |
+| Control GM acotado y observable | PR [#202](https://github.com/EspacioKoop/espaciokooplagunak/pull/202), [#218](https://github.com/EspacioKoop/espaciokooplagunak/pull/218) y [#294](https://github.com/EspacioKoop/espaciokooplagunak/pull/294), con órdenes cerradas y eventos idempotentes | `IMPLEMENTED` | Demostrarlo dentro del bucle completo |
+| Salida A: bucle de estrella polar sin Foundry y resultado opcional hacia Foundry | **No existe evidencia end-to-end registrada**; el runbook de [#29](FOUNDRY_GUI_SMOKE.md) excluye varios clientes y una sesión completa | `BLOCKED` | Completar la persistencia standalone de [#766](https://github.com/EspacioKoop/espaciokooplagunak/issues/766) y después ejecutar el playtest reproducible de [#219](https://github.com/EspacioKoop/espaciokooplagunak/issues/219) |
 
 ### Etapa B — Juego cooperativo de tripulación
 
@@ -160,12 +160,12 @@ como «mirar mientras otro juega».
 
 | Criterio | Evidencia | Estado | Pendiente |
 |---|---|---|---|
-| Permisos y acciones reales por puesto | [Modelo de permisos](PERMISOS_PUESTO.md), PR [#478](https://github.com/VaroTv7/espaciokooplagunak/pull/478) y verticales integrados [#472](https://github.com/VaroTv7/espaciokooplagunak/pull/472), [#475](https://github.com/VaroTv7/espaciokooplagunak/pull/475), [#476](https://github.com/VaroTv7/espaciokooplagunak/pull/476), [#486](https://github.com/VaroTv7/espaciokooplagunak/pull/486) y [#487](https://github.com/VaroTv7/espaciokooplagunak/pull/487) | `IMPLEMENTED` | Validar la agencia percibida en #467 |
-| Alarmas compartidas y dependencias entre sistemas | PR [#494](https://github.com/VaroTv7/espaciokooplagunak/pull/494) y sus pruebas de alarma cruzada | `IMPLEMENTED` | Validar en partida real junto con #467 |
-| Guardias y relevo de puestos | PR [#496](https://github.com/VaroTv7/espaciokooplagunak/pull/496) y sus pruebas de relevo | `IMPLEMENTED` | Validar en partida real junto con #467 |
-| Crisis que exige coordinación entre tres o más funciones | [Diseño causal y límites](CRISIS_MULTIPUESTO.md), issue [#484](https://github.com/VaroTv7/espaciokooplagunak/issues/484) y PR [#546](https://github.com/VaroTv7/espaciokooplagunak/pull/546) | `IMPLEMENTED` | Playtest humano #467; esta implementación no cierra por sí sola la Etapa B |
-| Automatización limitada para puestos vacíos | [#481](VERIFICACION-NAVEGACION-Y-AUTOMATIZACION.md#481--automatización-nativa-de-puestos-sin-tripulación) demuestra que no existe automatización nativa; la [tabla de decisiones](#decisiones-de-producto-acordadas) formaliza la política de #512, sin acreditar que el aviso esté implementado | `PLANNED` | Implementar y probar en [#951](https://github.com/VaroTv7/espaciokooplagunak/issues/951) el aviso para puestos vacíos |
-| Salida B: cada puesto tiene una decisión exclusiva que cambia el encuentro; nadie queda mirando | **No existe documento de playtest**; [#467](https://github.com/VaroTv7/espaciokooplagunak/issues/467) define la validación humana pendiente | `HUMAN_VERIFY` | Ejecutar y registrar el playtest de 3+ personas de #467; hasta entonces la Etapa B no está cerrada |
+| Permisos y acciones reales por puesto | [Modelo de permisos](PERMISOS_PUESTO.md), PR [#478](https://github.com/EspacioKoop/espaciokooplagunak/pull/478) y verticales integrados [#472](https://github.com/EspacioKoop/espaciokooplagunak/pull/472), [#475](https://github.com/EspacioKoop/espaciokooplagunak/pull/475), [#476](https://github.com/EspacioKoop/espaciokooplagunak/pull/476), [#486](https://github.com/EspacioKoop/espaciokooplagunak/pull/486) y [#487](https://github.com/EspacioKoop/espaciokooplagunak/pull/487) | `IMPLEMENTED` | Validar la agencia percibida en #467 |
+| Alarmas compartidas y dependencias entre sistemas | PR [#494](https://github.com/EspacioKoop/espaciokooplagunak/pull/494) y sus pruebas de alarma cruzada | `IMPLEMENTED` | Validar en partida real junto con #467 |
+| Guardias y relevo de puestos | PR [#496](https://github.com/EspacioKoop/espaciokooplagunak/pull/496) y sus pruebas de relevo | `IMPLEMENTED` | Validar en partida real junto con #467 |
+| Crisis que exige coordinación entre tres o más funciones | [Diseño causal y límites](CRISIS_MULTIPUESTO.md), issue [#484](https://github.com/EspacioKoop/espaciokooplagunak/issues/484) y PR [#546](https://github.com/EspacioKoop/espaciokooplagunak/pull/546) | `IMPLEMENTED` | Playtest humano #467; esta implementación no cierra por sí sola la Etapa B |
+| Automatización limitada para puestos vacíos | [#481](VERIFICACION-NAVEGACION-Y-AUTOMATIZACION.md#481--automatización-nativa-de-puestos-sin-tripulación) demuestra que no existe automatización nativa; la [tabla de decisiones](#decisiones-de-producto-acordadas) formaliza la política de #512, sin acreditar que el aviso esté implementado | `PLANNED` | Implementar y probar en [#951](https://github.com/EspacioKoop/espaciokooplagunak/issues/951) el aviso para puestos vacíos |
+| Salida B: cada puesto tiene una decisión exclusiva que cambia el encuentro; nadie queda mirando | **No existe documento de playtest**; [#467](https://github.com/EspacioKoop/espaciokooplagunak/issues/467) define la validación humana pendiente | `HUMAN_VERIFY` | Ejecutar y registrar el playtest de 3+ personas de #467; hasta entonces la Etapa B no está cerrada |
 
 Desglose de coordinación del vertical de agencia en #459, con subissues
 formales y grafo de dependencias explícito:

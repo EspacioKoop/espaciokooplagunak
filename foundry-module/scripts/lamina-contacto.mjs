@@ -27,7 +27,7 @@
 // que sobrevive a los remontajes, así que es la clave correcta.
 
 import { girarNave } from "./retro3d-lienzo.mjs";
-import { mallaDeClase } from "./casco-clases.mjs";
+import { mallaDeClase } from "./ship-view/casco-clases.mjs";
 
 const bucles = new WeakMap();
 

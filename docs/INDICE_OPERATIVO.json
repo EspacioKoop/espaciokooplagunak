@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "sourceOfPaths": "docs/TRABAJO_PARALELO_AGENTES.md",
+  "areas": [
+    {
+      "id": "simulacion-cpp",
+      "mapArea": "Simulación (C++)",
+      "task": "Cambiar una pieza del motor sin ampliar la divergencia upstream",
+      "agent": "conservador-upstream",
+      "verification": "cmake --build build --parallel && ctest --test-dir build -R content",
+      "security": { "authority": "La simulación es autoritativa para el estado de la nave.", "secrets": "No registrar credenciales ni datos de partida.", "network": "No abrir rutas nuevas hacia la ejecución Lua heredada." }
+    },
+    {
+      "id": "escenarios-lua",
+      "mapArea": "Escenarios (Lua)",
+      "task": "Añadir o ajustar una misión Lua con alcance cerrado",
+      "agent": "solid-snake-qa",
+      "verification": "find scripts -iname '*.lua' -print0 | xargs -0 -n1 luac -p",
+      "security": { "authority": "El escenario controla reglas de misión, no la campaña persistente.", "secrets": "No incluir tokens, claves ni datos personales en scripts.", "network": "No aceptar Lua arbitrario recibido por red." }
+    },
+    {
+      "id": "puente",
+      "mapArea": "Puente",
+      "task": "Modificar una lectura u orden del contrato v0",
+      "agent": "centinela-puente",
+      "verification": "cd bridge && pytest",
+      "security": { "authority": "El puente traduce; la simulación conserva la autoridad operativa.", "secrets": "Bearer solo en memoria y nunca en logs, Journal o sockets.", "network": "El puente es el único cliente de /exec.lua y ese puerto no se publica." }
+    },
+    {
+      "id": "herramientas",
+      "mapArea": "Herramientas",
+      "task": "Añadir una herramienta de mantenimiento con entrada y salida verificables",
+      "agent": "Explore",
+      "verification": "python3 -m pytest tools/tests -q",
+      "security": { "authority": "Las herramientas no cambian autoridad de campaña ni simulación.", "secrets": "No imprimir secretos ni persistir credenciales.", "network": "No introducir descargas o conexiones sin contrato explícito." }
+    },
+    {
+      "id": "inventario-modulo",
+      "mapArea": "Inventario del módulo",
+      "task": "Conectar o declarar un módulo manteniendo el grafo alcanzable",
+      "agent": "Explore",
+      "verification": "python3 scripts/check_orphan_modules.py --check",
+      "security": { "authority": "Un módulo nuevo debe declarar qué superficie controla.", "secrets": "El inventario no contiene secretos ni valores de configuración.", "network": "Una importación no autoriza acceso a red por sí misma." }
+    },
+    {
+      "id": "foundry-orquestacion",
+      "mapArea": "Módulo: orquestación",
+      "task": "Añadir una puerta o hook sin duplicar la adaptación de versiones",
+      "agent": "inspector-autoridad-foundry",
+      "verification": "node --test foundry-module/tests/*.test.mjs",
+      "security": { "authority": "La barra decide visibilidad; cada superficie resuelve su autoridad.", "secrets": "Los ajustes de cliente no deben convertirse en secretos de mundo.", "network": "La orquestación no debe crear rutas directas al servidor heredado." }
+    },
+    {
+      "id": "foundry-puente-telemetria",
+      "mapArea": "Módulo: puente y telemetría",
+      "task": "Añadir telemetría o una orden con degradación y límites explícitos",
+      "agent": "centinela-puente",
+      "verification": "node --test foundry-module/tests/*.test.mjs",
+      "security": { "authority": "La telemetría se proyecta y las órdenes pasan por la lista blanca.", "secrets": "El cliente jugador nunca recibe el Bearer ni el sondeo omnisciente GM.", "network": "No usar /exec.lua desde el navegador ni añadir reintentos mutables sin idempotencia." }
+    },
+    {
+      "id": "foundry-autoridad",
+      "mapArea": "Módulo: puestos y autoridad",
+      "task": "Cambiar permisos, relevo o asistencia sin abrir un camino de autoridad",
+      "agent": "inspector-autoridad-foundry",
+      "verification": "node --test foundry-module/tests/*.test.mjs",
+      "security": { "authority": "El puesto se resuelve desde el User autenticado, nunca desde la orden.", "secrets": "No transportar identidad o tokens dentro de órdenes serializadas.", "network": "Toda mutación externa pasa por el relé y el contrato versionado." }
+    },
+    {
+      "id": "foundry-eventos",
+      "mapArea": "Módulo: eventos y ambiente",
+      "task": "Añadir un evento o alarma sin duplicar consecuencias",
+      "agent": "inspector-autoridad-foundry",
+      "verification": "node --test foundry-module/tests/*.test.mjs",
+      "security": { "authority": "Una escena puede enseñar y ambientar, no conceder ni recordar por sí sola.", "secrets": "Filtrar telemetría antes de difundirla a toda la mesa.", "network": "Los eventos externos deben tener identidad y validación." }
+    },
+    {
+      "id": "foundry-escenas-3d",
+      "mapArea": "Módulo: escenas y 3D",
+      "task": "Añadir una escena navegable sin inventar lecturas ni duplicar geografía",
+      "agent": "kojima-game-design",
+      "verification": "node --test foundry-module/tests/*.test.mjs",
+      "security": { "authority": "La escena es una proyección; la simulación sigue siendo verdad.", "secrets": "No mostrar datos de sensores no difundidos al cliente.", "network": "El render no necesita acceso directo al puente." }
+    },
+    {
+      "id": "foundry-arte",
+      "mapArea": "Módulo: arte y avatares",
+      "task": "Añadir arte procedural o con procedencia trazable",
+      "agent": "conservador-upstream",
+      "verification": "node --test foundry-module/tests/*.test.mjs",
+      "security": { "authority": "El arte no decide estado ni permisos.", "secrets": "No incrustar información de partida en assets o retratos.", "network": "No depender de CDNs o recursos remotos sin revisión." }
+    },
+    {
+      "id": "foundry-npc",
+      "mapArea": "Módulo: NPC y bestiario",
+      "task": "Extender generación determinista sin introducir contenido no permitido",
+      "agent": "conservador-upstream",
+      "verification": "node --test foundry-module/tests/*.test.mjs",
+      "security": { "authority": "Generar una ficha no registra descubrimientos ni consecuencias.", "secrets": "No copiar material privado de una campaña al repositorio.", "network": "No consultar servicios externos durante la generación." }
+    },
+    {
+      "id": "foundry-minijuegos",
+      "mapArea": "Módulo: minijuegos",
+      "task": "Añadir un juego como motor aislado con catálogo por nombre",
+      "agent": "inspector-autoridad-foundry",
+      "verification": "node --test foundry-module/tests/*.test.mjs",
+      "security": { "authority": "El minijuego no concede recursos ni cambia campaña sin autoridad del núcleo.", "secrets": "La sesión viva del coordinador no se persiste como dato de partida.", "network": "No emitir órdenes del puente desde el motor del minijuego." }
+    },
+    {
+      "id": "foundry-catalogos",
+      "mapArea": "Módulo: catálogos con procedencia",
+      "task": "Añadir datos declarativos con procedencia, licencia y límites",
+      "agent": "conservador-upstream",
+      "verification": "node --test foundry-module/tests/*.test.mjs",
+      "security": { "authority": "El catálogo describe contenido, no sustituye al núcleo de campaña.", "secrets": "No versionar exports privados ni credenciales en procedencia.", "network": "Las fuentes remotas deben ser HTTPS y no se consultan durante el juego." }
+    },
+    {
+      "id": "foundry-contenido-externo",
+      "mapArea": "Módulo: contenido externo del GM",
+      "task": "Leer contenido importado fallando cerrado y sin dependencia dura",
+      "agent": "centinela-puente",
+      "verification": "node --test foundry-module/tests/*.test.mjs",
+      "security": { "authority": "El contenido externo solo informa; no concede ni recuerda.", "secrets": "No copiar contenido privado ni credenciales al módulo.", "network": "Detectar proveedores opcionales sin abrir conexiones nuevas desde jugadores." }
+    }
+  ]
+}

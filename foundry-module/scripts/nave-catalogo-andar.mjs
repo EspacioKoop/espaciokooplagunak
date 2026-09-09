@@ -21,7 +21,7 @@
 
 import { crearCatalogoEstancias } from "./nave-estancias.mjs";
 import { declararInteracciones } from "./nave-interaccion.mjs";
-import { SECCION } from "./paleta.mjs";
+import { MUSEO, PASILLO, PLAYA, SECCION } from "./paleta.mjs";
 import { puntoLibreCerca } from "./nave-movimiento.mjs";
 import { crearSalaCaja } from "./nave-sala-caja.mjs";
 import { piezasConsola } from "./nave-consola.mjs";
@@ -33,6 +33,10 @@ import {
   PUERTA_CANTINA,
   PLANTA_TERRAZA,
   componerTerraza,
+  componerTerrazaCon,
+  plantaTerraza,
+  asientosColocados,
+  ASIENTOS as ASIENTOS_TERRAZA,
 } from "./terraza-cantina.mjs";
 import {
   ENTRADA as ENTRADA_PLAYA,
@@ -46,7 +50,12 @@ import {
   PLANTA_MUSEO,
   componerMuseo,
 } from "./museo-escena.mjs";
-import { MUSEO, PLAYA } from "./paleta.mjs";
+import {
+  ENTRADA as ENTRADA_PASILLO,
+  INTERACCIONES as INTERACCIONES_PASILLO,
+  PLANTA_PASILLO,
+  componerPasillo,
+} from "./pasillo-recuerdos-escena.mjs";
 import {
   ANCHO_PUERTA,
   GROSOR_PUERTA,
@@ -225,6 +234,19 @@ function conexionesPorSala() {
   return mapa;
 }
 
+/**
+ * Destinos OPCIONALES de la nave (#458 QA: «no se entiende a dónde te va a
+ * llevar una puerta»): social o de ocio, no un paso más del recorrido de
+ * trabajo. Su puerta se tiñe con `SECCION.entrable` —el mismo turquesa con el
+ * que la sección ya marca «aquí SÍ se puede entrar»— para que se reconozca sin
+ * leer el letrero.
+ */
+const DESTINOS_SOCIALES = new Set(["cantina", "terraza", "museo"]);
+
+function colorMarcoPara(destino) {
+  return DESTINOS_SOCIALES.has(destino?.estancia) ? SECCION.entrable : undefined;
+}
+
 function definirSala(sala, salientes) {
   const { ancho, profundidad } = medidasSala(sala);
   const puertas = salientes.map((conexion) => ({
@@ -268,7 +290,7 @@ function definirSala(sala, salientes) {
         receta: sala.id === "camarotes" ? ["registro", "litera", "taquilla"] : undefined,
       }),
     ],
-    puertas: puertas.map(({ rect }) => ({ rect })),
+    puertas: puertas.map(({ rect, destino }) => ({ rect, colorMarco: colorMarcoPara(destino) })),
     ventanas: ventanasAlExterior(sala, salientes),
     // Mismo motivo que en la cantina: el marco de serie es `SECCION.entrable`,
     // un turquesa de señalización de la sección que sobre un muro entero se lee
@@ -352,6 +374,17 @@ export const CATALOGO_ANDAR = crearCatalogoEstancias({
   terraza: {
     planta: PLANTA_TERRAZA,
     componer: componerTerraza,
+    // Sus cinco asientos se retiran al ocuparse (`nave-pose.mjs`). La estancia
+    // declara CÓMO queda con otras poses; quién las cambia y cuándo es de la
+    // ventana, que es la que sabe quién se acaba de sentar.
+    conPoses: (poses) => ({
+      planta: plantaTerraza(poses),
+      componer: componerTerrazaCon(poses),
+      // Dónde queda cada asiento ya en su pose: quien se sienta necesita el
+      // sitio NUEVO, no el de la silla sin retirar.
+      colocados: asientosColocados(poses),
+    }),
+    poseables: ASIENTOS_TERRAZA,
     entrada: ENTRADA_TERRAZA,
     interacciones: INTERACCIONES_TERRAZA,
     // Al aire libre y con la nave detrás: el fondo es el vacío, no el mamparo de
@@ -401,4 +434,49 @@ export const CATALOGO_ANDAR = crearCatalogoEstancias({
     fondo: MUSEO.zocalo,
     puertas: [],
   },
+  // El pasillo de los recuerdos. Como el museo y la playa: NO cuelga de
+  // ninguna puerta de la nave y se entra por herramienta.
+  "pasillo-recuerdos": {
+    planta: PLANTA_PASILLO,
+    componer: componerPasillo,
+    entrada: ENTRADA_PASILLO,
+    interacciones: INTERACCIONES_PASILLO,
+    fondo: PASILLO.marmol,
+    puertas: [],
+  },
 });
+
+/**
+ * Ids que NO salen de la rejilla de la nave (`SALAS_PHOBOS`): bancos de
+ * pruebas solo-GM que se entran por herramienta de la barra de escena, no
+ * andando (#587 playa, #598 museo). Se declaran aquí y no en una lista
+ * aparte de `categoriasAndar`, para que añadir uno nuevo no obligue a
+ * mantener dos sitios sincronizados.
+ */
+const IDS_FUERA_DE_LA_NAVE = Object.freeze(["playa", "museo"]);
+
+/**
+ * Agrupa el catálogo por categoría, para presentarlo como carpetas en una UI
+ * (#952) en vez de una lista plana de catorce salas y dos bancos de pruebas
+ * mezclados. DERIVADO de `CATALOGO_ANDAR.ids`, nunca escrito a mano: una
+ * categoría que se escribiera aparte se desincronizaría el día que entrara
+ * una sala nueva, que es justo el bug que esto evita.
+ *
+ * Dos categorías hoy, y la lista está pensada para crecer: añadir una
+ * tercera es una entrada más de este array, no un cambio de forma.
+ *
+ * @returns {{id: string, titulo: string, estancias: {id: string}[]}[]}
+ */
+export function categoriasAndar() {
+  const todas = CATALOGO_ANDAR.ids;
+  const fueraDeLaNave = todas.filter((id) => IDS_FUERA_DE_LA_NAVE.includes(id));
+  const enLaNave = todas.filter((id) => !IDS_FUERA_DE_LA_NAVE.includes(id));
+  return [
+    { id: "nave", titulo: "LAGUNAK.PanelGM.Convocatoria.Categoria.Nave", estancias: enLaNave.map((id) => ({ id })) },
+    {
+      id: "banco-de-pruebas",
+      titulo: "LAGUNAK.PanelGM.Convocatoria.Categoria.BancoDePruebas",
+      estancias: fueraDeLaNave.map((id) => ({ id })),
+    },
+  ];
+}

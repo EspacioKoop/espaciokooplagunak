@@ -590,6 +590,48 @@ class ModulosNuevosTest(unittest.TestCase):
             self.RESULTADOS, nuevos, fuentes or {}, set(art)
         )
 
+    def test_la_paleta_no_se_acusa_a_si_misma(self):
+        """`paleta.mjs` es DONDE viven los colores (#351) y no está en
+        `artModules` —esa lista dice quién los CONSUME—, así que la guarda la
+        veía como un módulo cualquiera con ciento cincuenta colores propios y
+        la denunciaba por ser la fuente de la regla que aplica."""
+        resultados = [{"module": inventory_checker.MODULO_PALETA,
+                       "status": "connected"}]
+        errores = inventory_checker.revisar_modulos_nuevos(
+            resultados,
+            [inventory_checker.MODULO_PALETA],
+            {inventory_checker.MODULO_PALETA: 'export const T = "#ff8c1e";\n'},
+            set(),
+        )
+        self.assertEqual(errores, [])
+
+    def test_la_exencion_de_la_paleta_no_alcanza_a_otro_modulo(self):
+        """Es una excepción para UN fichero, no un agujero por nombre: otro
+        módulo con color propio sigue cayendo."""
+        resultados = [{"module": "casi-paleta.mjs", "status": "connected"}]
+        errores = inventory_checker.revisar_modulos_nuevos(
+            resultados,
+            ["casi-paleta.mjs"],
+            {"casi-paleta.mjs": 'export const T = "#ff8c1e";\n'},
+            set(),
+        )
+        self.assertEqual(len(errores), 1)
+        self.assertIn("#ff8c1e", errores[0])
+
+    def test_la_paleta_huerfana_seguiria_fallando_por_estarlo(self):
+        """La exención es SOLO de color. Si la paleta quedara sin consumidor,
+        eso sigue siendo un defecto y debe seguir informándose."""
+        resultados = [{"module": inventory_checker.MODULO_PALETA,
+                       "status": "unknown"}]
+        errores = inventory_checker.revisar_modulos_nuevos(
+            resultados,
+            [inventory_checker.MODULO_PALETA],
+            {inventory_checker.MODULO_PALETA: 'export const T = "#ff8c1e";\n'},
+            set(),
+        )
+        self.assertEqual(len(errores), 1)
+        self.assertIn("sin consumidor", errores[0])
+
     def test_un_modulo_nuevo_ya_conectado_no_molesta(self):
         self.assertEqual(self._revisar(["conectado.mjs"]), [])
 

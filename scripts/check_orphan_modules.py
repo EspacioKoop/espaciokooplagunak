@@ -664,6 +664,14 @@ COLOR_LITERAL_RE = re.compile(
 )
 
 
+# La paleta es DONDE viven los colores (#351), así que su color propio no es una
+# infracción sino su contenido. No está en `artModules` —esa lista dice quién los
+# CONSUME, y por eso `paleta.test.mjs` la recorre como fuente y no como sospechosa—,
+# de modo que sin esta excepción la guarda acusaría a la regla de incumplirse a sí
+# misma en cuanto alguien reintrodujera el fichero.
+MODULO_PALETA = "paleta.mjs"
+
+
 def sin_comentarios(fuente: str) -> str:
     """Quita comentarios de bloque y de línea, como hace paleta.test.mjs."""
     sin_bloque = re.sub(r"/\*[\s\S]*?\*/", "", fuente)
@@ -765,7 +773,7 @@ def revisar_modulos_nuevos(
                 "motivo y su evidencia propios."
             )
         fuente = fuentes.get(modulo)
-        if fuente is None or modulo in art_modules:
+        if fuente is None or modulo in art_modules or modulo == MODULO_PALETA:
             continue
         literales = COLOR_LITERAL_RE.findall(sin_comentarios(fuente))
         if literales:

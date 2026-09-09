@@ -8,11 +8,8 @@ export const BANDOS = Object.freeze(["aliado", "enemigo", "neutral"]);
 export const ESTADOS = Object.freeze(["herido", "ventaja", "concentracion", "muerto"]);
 export const BADGES = Object.freeze(["concentracion", "inspiracion", "agotamiento"]);
 
-const PALETAS = Object.freeze({
-  humano: Object.freeze({ marco: "#c9b48a", acento: "#f0e4c4" }),
-  elfo: Object.freeze({ marco: "#8fa3d9", acento: "#d8f3dc" }),
-  enano: Object.freeze({ marco: "#c8a24a", acento: "#ffe8a3" }),
-});
+import { CARTA_COMBATIENTE } from "./paleta.mjs";
+const PALETAS = CARTA_COMBATIENTE;
 
 const ICONOS_CLASE = Object.freeze({ guerrero: "espada", mago: "runa", picaro: "daga" });
 const ICONOS_ESTADO = Object.freeze({ herido: "cruz", ventaja: "estrella", concentracion: "ojo", muerto: "calavera" });
@@ -65,8 +62,10 @@ export function normalizarTarjeta(entrada = {}) {
   // respaldo, volver a normalizar una tarjeta ya normalizada perdía ambos
   // badges.
   const badgesPrevios = Array.isArray(entrada.badges) ? entrada.badges : [];
-  const concentracion = entrada.concentracion === true || badgesPrevios.includes("concentracion");
-  const inspiracion = entrada.inspiracion === true || badgesPrevios.includes("inspiracion");
+  const concentracion = typeof entrada.concentracion === "boolean"
+    ? entrada.concentracion : badgesPrevios.includes("concentracion");
+  const inspiracion = typeof entrada.inspiracion === "boolean"
+    ? entrada.inspiracion : badgesPrevios.includes("inspiracion");
   const badges = [
     concentracion ? "concentracion" : null,
     inspiracion ? "inspiracion" : null,
@@ -177,6 +176,6 @@ export function tarjetaSvg(entrada) {
   const paleta = carta.visual.paleta;
   const brillo = carta.shiny ? `<path d="M8 8h104v144H8z" fill="none" stroke="${paleta.acento}" stroke-width="3" stroke-dasharray="4 3"/>` : "";
   const insignias = [...carta.visual.iconoEstados, ...carta.visual.iconoBadges].map((icono, indice) => `<text x="${14 + indice * 20}" y="142" font-size="9">${escapar(icono)}</text>`).join("");
-  const agotamiento = carta.agotamiento > 0 ? `<text x="106" y="151" text-anchor="end" fill="#ff8f9d" font-size="8">E${carta.agotamiento}/6</text>` : "";
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 160" role="img" aria-label="${escapar(carta.nombre)}"><rect width="120" height="160" rx="8" fill="#141b33"/><rect x="5" y="5" width="110" height="150" rx="6" fill="${paleta.marco}"/><rect x="10" y="10" width="100" height="112" rx="4" fill="#0b0f18"/><text x="60" y="38" text-anchor="middle" fill="${paleta.acento}" font-size="25">${escapar(carta.visual.iconoClase)}</text><text x="60" y="78" text-anchor="middle" fill="#f4e8c8" font-size="11">${escapar(carta.raza)}</text><text x="60" y="94" text-anchor="middle" fill="#f4e8c8" font-size="11">${escapar(carta.clase)}</text><text x="60" y="112" text-anchor="middle" fill="#8fa3d9" font-size="9">${escapar(carta.bando)}</text><text x="14" y="142" fill="#f4e8c8">${insignias}</text>${agotamiento}${brillo}</svg>`;
+  const agotamiento = carta.agotamiento > 0 ? `<text x="106" y="151" text-anchor="end" fill="${CARTA_COMBATIENTE.agotamiento}" font-size="8">E${carta.agotamiento}/6</text>` : "";
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 160" role="img" aria-label="${escapar(carta.nombre)}"><rect width="120" height="160" rx="8" fill="${CARTA_COMBATIENTE.fondo}"/><rect x="5" y="5" width="110" height="150" rx="6" fill="${paleta.marco}"/><rect x="10" y="10" width="100" height="112" rx="4" fill="${CARTA_COMBATIENTE.interior}"/><text x="60" y="38" text-anchor="middle" fill="${paleta.acento}" font-size="25">${escapar(carta.visual.iconoClase)}</text><text x="60" y="78" text-anchor="middle" fill="${CARTA_COMBATIENTE.texto}" font-size="11">${escapar(carta.raza)}</text><text x="60" y="94" text-anchor="middle" fill="${CARTA_COMBATIENTE.texto}" font-size="11">${escapar(carta.clase)}</text><text x="60" y="112" text-anchor="middle" fill="${CARTA_COMBATIENTE.bando}" font-size="9">${escapar(carta.bando)}</text><text x="14" y="142" fill="${CARTA_COMBATIENTE.texto}">${insignias}</text>${agotamiento}${brillo}</svg>`;
 }

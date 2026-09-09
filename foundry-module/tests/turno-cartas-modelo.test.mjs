@@ -35,6 +35,17 @@ test("combinarTarjetas conserva la evolución y sustituye solo el overlay", () =
   assert.notEqual(carta, base);
 });
 
+test("una actualización explícita puede retirar badges sin perder campaña", () => {
+  const base = normalizarTarjeta({ id: "a", shiny: true, concentracion: true, inspiracion: true });
+  const carta = combinarTarjetas(base, { concentracion: false, inspiracion: false });
+  assert.equal(carta.concentracion, false);
+  assert.equal(carta.inspiracion, false);
+  assert.deepEqual(carta.badges, []);
+  assert.equal(carta.shiny, true);
+  assert.equal(base.concentracion, true);
+  assert.deepEqual(normalizarTarjeta(carta), carta);
+});
+
 test("la galería cubre las nueve combinaciones de raza y clase", () => {
   const galeria = galeriaDePrueba();
   assert.equal(galeria.length, 9);

@@ -763,7 +763,12 @@ export const INTERACCIONES = declararInteracciones([
   })),
   {
     id: "salida",
-    punto: [SALIDA.centro[0], SALIDA.centro[2] + 0.9],
+    // Alcance junto a la cara del torno, no alrededor del punto de llegada.
+    // El radio genérico (1,2 m) con el ancla antigua a z=1,6 incluía la
+    // ENTRADA (z=1,8): el primer paso del motor devolvía a la cantina sin
+    // pulsar ninguna tecla. Acercarse al torno sigue activando la salida.
+    punto: [SALIDA.centro[0], SALIDA.centro[2] + SALIDA.medidas[2] / 2],
+    radio: 0.35,
     orientacion: Math.PI,
     accion: { tipo: "estancia", estancia: "cantina" },
   },

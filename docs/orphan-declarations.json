@@ -204,6 +204,30 @@
         "type": "issue",
         "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/603"
       }
+    },
+    {
+      "module": "turno-orden-reductor.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Motor de turnos puro de #1012 con iniciativa e identidad activa. Pendiente de consumidor de barra de combate standalone; no depende del Combat de Foundry.",
+      "declaredBy": "VaroTv7",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/1012"
+      }
+    },
+    {
+      "module": "turno-orden-baraja.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Generador SVG preliminar de la baraja de turnos de #1012; probado sin UI y pendiente de barra jugable y aceptación artística. No sustituye la progresión persistente de #1016.",
+      "declaredBy": "VaroTv7",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/1012"
+      }
     }
   ],
   "artInventoryRationale": {
@@ -248,6 +272,7 @@
     "avatar/retrato-combatiente.mjs",
     "pasillo-guardiana.mjs",
     "pasillo-recuerdos-suelo.mjs",
-    "pasillo-recuerdos-escena.mjs"
+    "pasillo-recuerdos-escena.mjs",
+    "turno-orden-baraja.mjs"
   ]
 }

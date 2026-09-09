@@ -124,23 +124,14 @@ export function reducir(state, action) {
       const updated = [...frozen.combatants];
       updated.splice(idx, 1);
       const sorted = ordenarPorIniciativa(updated);
-      // Adjust currentIndex if removed before or at current
-      let newIndex = frozen.currentIndex;
-      if (idx < frozen.currentIndex) {
-        newIndex -= 1;
-      } else if (idx === frozen.currentIndex) {
-        // If we removed the current combatant, next turn should be the same index (which now holds the next combatant)
-        // unless we are at the end, then wrap to 0.
-        if (newIndex >= sorted.length) {
-          newIndex = 0;
-        }
-        // else keep newIndex (which is idx, now pointing to next combatant)
-      }
-      // Clamp
-      if (newIndex < 0) newIndex = 0;
-      if (newIndex >= sorted.length) newIndex = 0;
+      // La baja del activo usa exactamente la transición circular de NEXT_TURN.
+      // Primero avanzamos en la lista original, luego conservamos esa identidad.
+      const advanced = idx === frozen.currentIndex && frozen.active
+        ? reducir(frozen, { type: 'NEXT_TURN' }) : frozen;
+      const currentId = advanced.combatants[advanced.currentIndex]?.id;
+      const newIndex = Math.max(0, indicePorId(sorted, currentId));
       return Object.freeze({
-        ...frozen,
+        ...advanced,
         combatants: Object.freeze(sorted),
         currentIndex: newIndex,
       });

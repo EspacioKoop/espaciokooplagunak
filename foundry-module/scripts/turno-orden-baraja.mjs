@@ -9,7 +9,7 @@ export const ANCHO = 60;
 export const ALTO = 80;
 
 // Los colores de la baraja son los de la paleta común del arte de rejilla (#351); aquí solo se les da el nombre con el que los usa la carta.
-import { PIXEL } from "./paleta.mjs";
+import { PIXEL, TURNO_CARTAS } from "./paleta.mjs";
 export const PALETA = Object.freeze({
   fondo: PIXEL.cara, // pergamino claro: máximo contraste con ambas tintas
   borde: PIXEL.borde, // marco tinta sepia oscura
@@ -17,9 +17,9 @@ export const PALETA = Object.freeze({
   destacado: PIXEL.rojo, // resalto para turno actual
   // iconos de estado de combate
   herido: PIXEL.rojo,
-  ventaja: "#ffff00", // amarillo (no en paleta, lo definimos aqui)
-  concentracion: "#ff00ff", // magenta
-  muerto: "#808080" // gris
+  ventaja: TURNO_CARTAS.ventaja,
+  concentracion: TURNO_CARTAS.concentracion,
+  muerto: TURNO_CARTAS.muerto
 });
 
 // ---- Tipografía pixel 5x7 para números y letras necesarias ----
@@ -249,9 +249,9 @@ export function generarCartaCombate(combatant, datosCampania = new Map(), estado
   const escapar = (valor) => String(valor).replace(/[&<>\"]/g, (caracter) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[caracter]));
   const decoracion = [
     `<title>${escapar(titulo)}</title>`,
-    combatant.shiny ? `<rect x="2" y="2" width="${ANCHO - 4}" height="${ALTO - 4}" fill="none" stroke="#c8a24a" stroke-width="2" stroke-dasharray="3 2"/>` : '',
-    combatant.inspiration ? `<circle cx="${ANCHO - 7}" cy="7" r="3" fill="#ffb703"/>` : '',
-    niveles ? `<rect x="5" y="${ALTO - 5}" width="${niveles * 5}" height="2" fill="#d1495b"/>` : '',
+    combatant.shiny ? `<rect x="2" y="2" width="${ANCHO - 4}" height="${ALTO - 4}" fill="none" stroke="${PIXEL.dorsoMotivo}" stroke-width="2" stroke-dasharray="3 2"/>` : '',
+    combatant.inspiration ? `<circle cx="${ANCHO - 7}" cy="7" r="3" fill="${PIXEL.motor}"/>` : '',
+    niveles ? `<rect x="5" y="${ALTO - 5}" width="${niveles * 5}" height="2" fill="${TURNO_CARTAS.agotamiento}"/>` : '',
   ].join('');
   return svg(rects, PALETA.fondo).replace('</svg>', `${decoracion}</svg>`);
 }

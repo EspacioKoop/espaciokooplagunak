@@ -32,6 +32,15 @@
  */
 
 /** Lenguajes disponibles, para que un consumidor pueda declarar el suyo. */
+// Colores conservados del prototipo de turnos (#1012), centralizados sin
+// certificar su aceptación artística ni cambiar el resultado SVG.
+export const TURNO_CARTAS = Object.freeze({
+  ventaja: "#ffff00",
+  concentracion: "#ff00ff",
+  muerto: "#808080",
+  agotamiento: "#d1495b",
+});
+
 export const LENGUAJES = Object.freeze(["grabado", "pixel"]);
 
 /**

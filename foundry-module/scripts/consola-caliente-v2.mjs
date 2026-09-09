@@ -67,6 +67,7 @@ import { dibujarFrame } from "./mapa-render.mjs";
 import { estiloMarcoMapa } from "./mapa-marco.mjs";
 import { calcularIntervaloMs, resolverCicloConsola, siguienteFallosSeguidos } from "./consola-caliente-poll.mjs";
 import { buildWorkspaceModel, WORKSPACE_STATIONS } from "./station-workspaces.mjs";
+import { abrirAsistencia } from "./asistencia-ui.mjs";
 import {
   colorFaccion,
   componerFrame,
@@ -154,6 +155,7 @@ export function crearClaseConsolaCalienteV2() {
         ordenarRumbo: ConsolaCalienteApp.onOrdenarRumbo,
         ordenarEscudos: ConsolaCalienteApp.onOrdenarEscudos,
         reposicionar: ConsolaCalienteApp.onReposicionar,
+        abrirMando: ConsolaCalienteApp.onAbrirMando,
       },
     };
 
@@ -1066,6 +1068,10 @@ export function crearClaseConsolaCalienteV2() {
     static async onReposicionar() {
       const select = this.element?.querySelector?.('[data-field="reposicion-ancla"]');
       return this._reposicionar(String(select?.value ?? ""));
+    }
+
+    static onAbrirMando() {
+      return abrirAsistencia();
     }
 
     static async onOrdenarImpulso(_event, target) {

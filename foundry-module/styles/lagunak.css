@@ -526,13 +526,47 @@
   gap: 8px;
 }
 
-.lagunak-andar-lienzo {
+.lagunak-andar-nave-visor {
+  position: relative;
   width: 960px;
   max-width: 100%;
+}
+
+.lagunak-andar-lienzo {
+  display: block;
+  width: 100%;
   height: 540px;
   image-rendering: pixelated;
   border: 1px solid var(--lagunak-line, #4d5a68);
   background: #000;
+}
+
+/* El letrero de destino de una puerta (#458 QA: «no se entiende a dónde te va
+   a llevar una puerta»). Banda superpuesta arriba del visor —el dintel de
+   Fallout, no un tooltip flotante—: fondo oscuro y ámbar, el mismo lenguaje
+   que ya usa `.lagunak-andar-nave-sala` para "esto es un letrero de la nave",
+   y no un color nuevo. */
+.lagunak-andar-letrero-puerta {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 4px 14px;
+  border: 1px solid #ffd166;
+  background: rgba(10, 12, 15, 0.85);
+  color: #ffd166;
+  font-family: "Roboto Condensed", "Arial Narrow", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.lagunak-andar-letrero-puerta[hidden] {
+  display: none;
 }
 
 /* ---- Mesa de minijuegos (#308) -------------------------------------------
@@ -1334,6 +1368,50 @@
   flex-direction: column;
   gap: 10px;
   padding: 8px 4px;
+}
+
+.lagunak-asistencia__crisis {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.lagunak-asistencia__mando {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 3px;
+}
+
+.lagunak-asistencia__mando h3,
+.lagunak-asistencia__saldo,
+.lagunak-asistencia__mando-activo,
+.lagunak-asistencia__mando-error {
+  margin: 0;
+}
+
+.lagunak-asistencia__saldo {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.lagunak-asistencia__puestos-mando {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lagunak-asistencia__puestos-mando button {
+  width: 100%;
+}
+
+.lagunak-asistencia__mando-error {
+  color: rgb(var(--lagunak-alerta-roja-texto-rgb));
+  font-size: 12px;
 }
 
 .lagunak-asistencia__intro,

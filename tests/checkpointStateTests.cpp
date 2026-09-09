@@ -75,6 +75,32 @@ int main()
             == CheckpointError::UnsupportedFormatOrVersion,
         "future schema version is rejected, not silently accepted");
 
+    // OTACON Astra: compare the schema before any narrowing conversion.
+    // Large signed/unsigned integers must not wrap back to the current version.
+    const char* invalid_versions[] = {
+        "4294967297", "8589934593", "-4294967295", "-8589934591",
+        "9223372036854775807", "18446744073709551615",
+        "-9223372036854775808", "0", "-1", "2", "1.0", "1e0",
+        "true", "null", "\"1\"", "[]", "{}",
+    };
+    for (const auto* version : invalid_versions)
+    {
+        auto document = nlohmann::json::parse(serialized);
+        document["version"] = nlohmann::json::parse(version);
+        auto unchanged = complex;
+        expect(parseCheckpointState(document.dump(), unchanged)
+                == CheckpointError::UnsupportedFormatOrVersion,
+            "unsupported version is rejected without integer narrowing");
+        expect(unchanged == complex, "rejected version preserves output state");
+    }
+    for (const int indent : {-1, 2})
+    {
+        CheckpointState compatible;
+        expect(parseCheckpointState(serializeCheckpointState(complex, indent), compatible)
+                == CheckpointError::None && compatible == complex,
+            "current schema retains compact and pretty save compatibility");
+    }
+
     nlohmann::json wrong_format = nlohmann::json::parse(serialized);
     wrong_format["format"] = "some-other-format";
     expect(parseCheckpointState(wrong_format.dump(), ignored)

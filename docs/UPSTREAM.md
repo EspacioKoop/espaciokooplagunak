@@ -83,6 +83,14 @@ sigue vigente tras los cambios que upstream haya hecho en esa área:
   stubs `/get.lua`/`/set.lua`. No requiere cambiarse solo por antigüedad; confirma que la
   mitigación (httpserver apagado por defecto + gate de CI `guardia-exec-lua`) sigue cubriendo
   el comportamiento real tras el merge. Ver CLAUDE.md y [`SECURITY.md`](../SECURITY.md) (issue #272).
+- `scripts/shiptemplates/frigates.lua` — el interior del Phobos M3P (trece salas sobre una
+  rejilla) es la **fuente autoritativa** de la planta que el módulo Foundry copia en
+  `foundry-module/scripts/nave-planta-phobos.mjs`, según [ADR-0015](adr/0015-dato-derivado-se-copia-y-se-compara.md).
+  Si upstream cambia ese interior, `foundry-module/tests/nave-planta-phobos.test.mjs` **fallará
+  durante el sync**, con el mensaje «la copia de `SALAS_PHOBOS` ya no coincide con
+  `scripts/shiptemplates/frigates.lua`». Eso es un **fallo esperado y no una regresión del
+  fork**: es la guarda haciendo su trabajo. Se resuelve actualizando la copia del módulo en el
+  mismo PR de sync, nunca relajando ni saltando la prueba.
 
 ## Reglas
 

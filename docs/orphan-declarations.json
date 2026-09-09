@@ -2,6 +2,18 @@
   "schemaVersion": 1,
   "declarations": [
     {
+      "module": "catalogo-tokens.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Contrato de tokens 2D del pipeline #891-A/B, consumido por tools/convertir-token.mjs y tools/asset-credits-gen.mjs, no por el módulo en caliente. El primer lote de imágenes con licencia verificada y su consumidor corresponden a #891-C: conectar un catálogo vacío aquí no entregaría los tokens ni fondos pendientes.",
+      "declaredBy": "OTACON Astra",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/891"
+      }
+    },
+    {
       "module": "arte/audio/audio-ficheros.mjs",
       "status": "declared-orphan",
       "foundation": true,
@@ -11,18 +23,6 @@
       "evidence": {
         "type": "issue",
         "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/571"
-      }
-    },
-    {
-      "module": "atlas-hyg.mjs",
-      "status": "declared-orphan",
-      "foundation": true,
-      "reason": "Adaptador del catálogo estelar HYG al formato de atlas. Es cimiento del mismo atlas aún no aprobado: traduce datos al formato, y cablearlo metería en la partida una decisión pendiente.",
-      "declaredBy": "Espaciokoop Lagunak",
-      "declaredAt": "2026-08-24",
-      "evidence": {
-        "type": "issue",
-        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/568"
       }
     },
     {
@@ -38,15 +38,15 @@
       }
     },
     {
-      "module": "catalogo-cosmografico.mjs",
+      "module": "camara-tactica.mjs",
       "status": "declared-orphan",
       "foundation": true,
-      "reason": "Validador del formato de atlas con procedencia y licencia por entrada. Es cimiento de una investigación todavía pendiente; cablearlo por iniciativa propia promovería a hecho una decisión no tomada.",
+      "reason": "Modelo puro de cámara cenital ortográfica con cuadrícula opcional. Nadie lo importa todavía porque el adaptador que lleva este estado a retro3d.mjs es la otra mitad de #1020: cablearlo sin él proyectaría en perspectiva un estado que declara ser ortográfico, que es peor que no tener cámara táctica.",
       "declaredBy": "Espaciokoop Lagunak",
-      "declaredAt": "2026-08-24",
+      "declaredAt": "2026-09-09",
       "evidence": {
         "type": "issue",
-        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/525"
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/1020"
       }
     },
     {
@@ -118,6 +118,18 @@
       "evidence": {
         "type": "issue",
         "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/853"
+      }
+    },
+    {
+      "module": "map-ref-resolver.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Resolutor puro de `map_ref` a MapDocument, con ausente y desconocido tratados como el mismo no-mapa. El productor #870 ya está integrado y la regresión recorre JSON del atlas, validateCosmography y resolver. Sigue siendo una base sin consumidor de interfaz; no acredita carga de biblioteca C++ ni smoke jugable.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/906"
       }
     },
     {
@@ -194,6 +206,186 @@
       }
     },
     {
+      "module": "camara-pov-combate.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Modelo POV métrico consumido por el catálogo puro; falta el adaptador de cámara a una superficie jugable.",
+      "declaredBy": "OTACON Astra",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/1021"
+      }
+    },
+    {
+      "module": "camara-tercera-combate.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Modelo de tercera persona consumido por el catálogo puro; falta adaptar retiro y cuerpo al renderer de combate.",
+      "declaredBy": "OTACON Astra",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/1022"
+      }
+    },
+    {
+      "module": "camara-foto.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Modelo de cámara libre y zoom consumido por el catálogo puro; captura y controles de la superficie siguen pendientes.",
+      "declaredBy": "OTACON Astra",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/1023"
+      }
+    },
+    {
+      "module": "cambiador-vistas-combate.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Catálogo que despacha las cuatro cámaras bajo una forma común, sin consumidor UI/puerta ni adaptador de render todavía.",
+      "declaredBy": "OTACON Astra",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/1024"
+      }
+    },
+    {
+      "module": "escena-contrato.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Contrato versionado de escena render-agnóstica (#1033): separa estado autoritativo, presentación y recursos para que el mismo dato de escena valga con backend software o GPU. Sin consumidor todavía a propósito: el primero es la integración standalone de #1035, y cablearlo antes ataría el contrato al único render que hoy existe, que es lo que #1003 quiere evitar.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/1033"
+      }
+    },
+    {
+      "module": "interaccion-3d/resolucion.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Motor de bandas fallo/éxito/crítico/pifia del contrato standalone de interacción con objetos 3D (#868), propio y sin vocabulario de d20 ni de dnd5e.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-09-01",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/868"
+      }
+    },
+    {
+      "module": "interaccion-3d/contrato.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Orquestación objeto → opciones → resolución → efecto de #868. No lo importa ninguna escena andable todavía: el consumidor es el vertical de terminal deteriorado y, después, el adaptador opcional Foundry/dnd5e de #869, que debe traducir ESTE contrato y no al revés.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-09-01",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/868"
+      }
+    },
+    {
+      "module": "interaccion-3d/terminal-deteriorado.mjs",
+      "status": "declared-orphan",
+      "foundation": false,
+      "reason": "Vertical de prueba del contrato de #868 (terminal deteriorado con tres aproximaciones). Demuestra que el contrato se resuelve completo sin Foundry ni dnd5e; colgarlo de una sala concreta es trabajo de escena, fuera del alcance de #868.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-09-01",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/868"
+      }
+    },
+    {
+      "module": "progresion-campana.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Capa de progresión persistente de campaña (#1016): deriva nivel e insignia shiny de los hitos alcanzados. Sin consumidor porque lo que le falta no es una superficie sino DÓNDE guardar el hito — recordar qué ha hecho la tripulación es del núcleo y no de la escena (ADR-0012), el mismo reparto que dejó fuera el bestiario de #598.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/1016"
+      }
+    },
+    {
+      "module": "inventario.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Reductor puro del inventario por personaje (#963/#964): categorías, equipo, hotbar, peso opcional. Sin consumidor todavía porque el cableado al mundo (#965, coger/soltar con G/H) y la ventana (#966) son issues aparte, deliberadamente separados para no ensanchar este módulo — mismo reparto que ya usa asistencia/sesion.mjs (#309).",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-09-04",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/964"
+      }
+    },
+    {
+      "module": "turno-orden-reductor.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Motor de turnos puro de #1012 con iniciativa e identidad activa. Pendiente de consumidor de barra de combate standalone; no depende del Combat de Foundry.",
+      "declaredBy": "VaroTv7",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/1012"
+      }
+    },
+    {
+      "module": "turno-orden-baraja.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Generador SVG preliminar de la baraja de turnos de #1012; probado sin UI y pendiente de barra jugable y aceptación artística. No sustituye la progresión persistente de #1016.",
+      "declaredBy": "VaroTv7",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/1012"
+      }
+    },
+    {
+      "module": "turno-cartas-modelo.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Modelo puro y serializable de tarjetas de #1030, consumido por la galería de diseño en tools pero todavía no por el módulo en caliente. El contrato excluye expresamente DOM/Foundry: la futura barra de iniciativa consumirá esta proyección del reducer de #1029 sin convertirse en otra fuente de verdad.",
+      "declaredBy": "OTACON Astra",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/1030"
+      }
+    },
+    {
+      "module": "contexto-convocatoria.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Catálogo narrativo de qué SIGNIFICA convocar a cada destino (playa = descanso, museo = briefing), entregado en #1077 como preparación parcial de #693. La convocatoria ya cableada resuelve el DESTINO desde CATALOGO_ANDAR y no necesita este dato: lo consumirá el cold open, que es la parte de #693 que aún no existe. Se declara en vez de cablearse para no abrir una segunda lista de destinos convocables junto a la del catálogo de andar.",
+      "declaredBy": "eGurucharri",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/693"
+      }
+    },
+    {
+      "module": "catalogo-muebles.mjs",
+      "status": "declared-orphan",
+      "foundation": false,
+      "reason": "Catálogo piloto de la escalera Kenney de #1049: conserva ficha y validación del asset reproducible, pero aún no hay selección, colocación ni escena que consuma muebles. No se conecta con un import vacío ni se presenta como integración visual; falta un consumidor jugable con aceptación propia.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "pr",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/pull/1049"
+      }
+    },
+    {
       "module": "armas-catalogo.mjs",
       "status": "declared-orphan",
       "foundation": true,
@@ -248,6 +440,8 @@
     "avatar/retrato-combatiente.mjs",
     "pasillo-guardiana.mjs",
     "pasillo-recuerdos-suelo.mjs",
-    "pasillo-recuerdos-escena.mjs"
+    "pasillo-recuerdos-escena.mjs",
+    "turno-orden-baraja.mjs",
+    "turno-cartas-modelo.mjs"
   ]
 }

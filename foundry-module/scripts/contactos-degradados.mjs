@@ -154,6 +154,15 @@ function entrada(contacto, distancia, rumbo, banda) {
     // ellos, un número fino sobre una lectura gruesa sería mentir.
     precision: rejilla.distancia,
     rumboPrecision: rejilla.rumbo,
+    // Medida SIN redondear, solo para volver a afinar en el lado del GM
+    // (contactos-afinado.mjs) antes de difundir de nuevo: afinar a partir de
+    // `distancia`/`rumboDeg` ya redondeados componía el error de la primera
+    // rejilla con el de la segunda, y el margen que se anunciaba después de
+    // afinar podía ser menor que el error real. Estos dos campos son de uso
+    // interno del GM — no son para enseñar en pantalla ni para difundir más
+    // allá del propio afinado.
+    distanciaReal: distancia,
+    rumboReal: rumbo,
   };
 }
 

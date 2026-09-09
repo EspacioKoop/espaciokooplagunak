@@ -6,7 +6,7 @@ Registro JSON: https://github.com/toxsam/open-source-3D-assets
 ## Resumen ejecutivo
 
 - 18 colecciones en el registro, 991+ assets listados, CC0 Polygonal Mind en su mayoría
-- Candidatos priorizados por área objetivo del módulo Foundry: `escenas y 3D`, `catálogos con procedencia`, `museo-escena`, `andar-nave-app`, `visor-piloto*.mjs`
+- Candidatos priorizados por área objetivo del módulo Foundry: `escenas y 3D`, `catálogos con procedencia`, `museo-escena`, `andar-nave-app`, `visor-piloto/*.mjs`
 - Formato de integración preferente: GLB via three.js/GLTFLoader; no se requiere descarga binaria en repo si se referencia por URL permanente
 - Riesgo principal: dependencia externa en hosting GitHub raw; mitigación: mirrors en ArDrive/IPFS documentados en el registry
 

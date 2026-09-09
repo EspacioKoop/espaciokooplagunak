@@ -21,7 +21,7 @@
 
 import { crearCatalogoEstancias } from "./nave-estancias.mjs";
 import { declararInteracciones } from "./nave-interaccion.mjs";
-import { MUSEO, PASILLO, PLAYA, SECCION } from "./paleta.mjs";
+import { ESTUDIO, MUSEO, PASILLO, PLAYA, SECCION } from "./paleta.mjs";
 import { puntoLibreCerca } from "./nave-movimiento.mjs";
 import { crearSalaCaja } from "./nave-sala-caja.mjs";
 import { piezasConsola } from "./nave-consola.mjs";
@@ -64,6 +64,12 @@ import {
   PLANTA_PASILLO,
   componerPasillo,
 } from "./pasillo-recuerdos-escena.mjs";
+import {
+  ENTRADA as ENTRADA_ESTUDIO,
+  INTERACCIONES as INTERACCIONES_ESTUDIO,
+  PLANTA_ESTUDIO,
+  componerEstudio,
+} from "./estudio-escena.mjs";
 import {
   ANCHO_PUERTA,
   GROSOR_PUERTA,
@@ -465,6 +471,19 @@ export const CATALOGO_ANDAR = crearCatalogoEstancias({
     entrada: ENTRADA_PASILLO,
     interacciones: INTERACCIONES_PASILLO,
     fondo: PASILLO.marmol,
+    puertas: [],
+  },
+  // El plató de pruebas (#584, opción B). Como el museo y la playa: NO cuelga
+  // de ninguna puerta de la nave y se entra por la herramienta solo-GM de la
+  // barra de escena. Es el único sitio del módulo con la piel del muro
+  // texturada de serie y focos declarados — ver la cabecera de
+  // `estudio-escena.mjs`.
+  estudio: {
+    planta: PLANTA_ESTUDIO,
+    componer: componerEstudio,
+    entrada: ENTRADA_ESTUDIO,
+    interacciones: INTERACCIONES_ESTUDIO,
+    fondo: ESTUDIO.suelo,
     puertas: [],
   },
 });

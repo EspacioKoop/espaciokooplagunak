@@ -59,5 +59,15 @@ export function construirHerramientasGM({ abrirPanelGM, abrirAndarNave, convocar
       button: true,
       onClick: () => convocarEstancia("museo"),
     },
+    {
+      // El plató de pruebas (#584). Solo GM: es un banco de pruebas del rig
+      // de focos de #556 sobre la piel texturada del muro, no contenido de
+      // campaña.
+      name: "lagunak-estudio",
+      title: "LAGUNAK.Controles.AbrirEstudio",
+      icon: "fa-solid fa-clapperboard",
+      button: true,
+      onClick: () => abrirAndarNave("estudio"),
+    },
   ];
 }

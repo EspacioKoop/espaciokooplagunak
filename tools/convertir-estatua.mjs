@@ -826,6 +826,16 @@ export const FICHAS = Object.freeze({
     fuente: "Wikimedia Commons, colección SMK",
     licencia: "CC0 1.0 sobre el escaneo; la obra, dominio público (Licensed-PD-Art)",
   },
+  // Receta exacta sin normalización: tools/convertir-glb-geometria.mjs.
+  // Esta tabla conserva el inventario de fichas, no sustituye esa receta.
+  // Fuente GLB y licencia offline: docs/PROCEDENCIA_ASSETS.md.
+  "balcony-ladder-bottom": {
+    obra: "Escalera de balcón — \"Balcony ladder bottom\", Retro Urban Kit",
+    modelo: "modelo 3D modelado a mano por un tercero, no un escaneo ni una reconstrucción",
+    autoria: "Kenney (kenney.nl)",
+    fuente: "https://kenney.nl/assets/retro-urban-kit",
+    licencia: "CC0 1.0",
+  },
 });
 
 // ---- ejecución -------------------------------------------------------------

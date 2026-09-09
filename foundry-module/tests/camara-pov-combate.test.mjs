@@ -45,3 +45,19 @@ test("resolverCamaraPov conserva yaw y altura de ojos de la cámara de nave", ()
     dibujarPropio: false,
   });
 });
+
+test("casilla desplazada y negativa limita relativo al origen sin teletransporte", () => {
+  for (const origen of [{ x: 4.572, z: 6.096 }, { x: -8, z: -12 }]) {
+    const interior = { x: origen.x + 0.4, z: origen.z + 0.7 };
+    assert.deepEqual(limitarMovimientoCasilla(interior, origen), interior);
+    assert.deepEqual(limitarMovimientoCasilla({ x: origen.x - 2, z: origen.z + 5 }, origen),
+      { x: origen.x, z: origen.z + CASILLA_COMBATE_METROS });
+  }
+});
+
+test("mover y resolver POV conservan la casilla no originaria", () => {
+  const origenCasilla = { x: 4.572, z: 6.096 };
+  const posicion = { x: 5, z: 7 };
+  assert.deepEqual(moverEnCasilla(posicion, { x: 0.1, z: -0.1 }, origenCasilla), { x: 5.1, z: 6.9 });
+  assert.deepEqual(resolverCamaraPov({ ...posicion, yaw: 0, origenCasilla }).camara, [5, 1.45, 7]);
+});

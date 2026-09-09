@@ -36,3 +36,19 @@ test("la cámara sigue la posición limitada (en metros, no en pies) y el yaw", 
   assert.ok(view.camara[0] < CASILLA_COMBATE_METROS);
   assert.ok(Math.abs(view.camara[2]) < 1e-9);
 });
+
+test("casilla desplazada y negativa limita relativo al origen sin teletransporte", () => {
+  for (const origen of [{ x: 4.572, z: 6.096 }, { x: -8, z: -12 }]) {
+    const interior = { x: origen.x + 0.4, z: origen.z + 0.7 };
+    assert.deepEqual(limitarPosicionCombate(interior, origen), interior);
+    assert.deepEqual(limitarPosicionCombate({ x: origen.x - 2, z: origen.z + 5 }, origen),
+      { x: origen.x, z: origen.z + CASILLA_COMBATE_METROS });
+  }
+});
+
+test("tercera aplica retiro al cuerpo en la casilla no originaria", () => {
+  const origenCasilla = { x: 4.572, z: 6.096 };
+  const vista = resolverCamaraTerceraCombate({ x: 5, z: 7, yaw: 0, origenCasilla });
+  assert.deepEqual(vista.posicion, { x: 5, z: 7 });
+  assert.deepEqual(vista.camara, [5, 2, 7 - 2.2]);
+});

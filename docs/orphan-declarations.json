@@ -216,6 +216,54 @@
         "type": "issue",
         "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/603"
       }
+    },
+    {
+      "module": "camara-pov-combate.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Modelo POV métrico consumido por el catálogo puro; falta el adaptador de cámara a una superficie jugable.",
+      "declaredBy": "OTACON Astra",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/1021"
+      }
+    },
+    {
+      "module": "camara-tercera-combate.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Modelo de tercera persona consumido por el catálogo puro; falta adaptar retiro y cuerpo al renderer de combate.",
+      "declaredBy": "OTACON Astra",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/1022"
+      }
+    },
+    {
+      "module": "camara-foto.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Modelo de cámara libre y zoom consumido por el catálogo puro; captura y controles de la superficie siguen pendientes.",
+      "declaredBy": "OTACON Astra",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/1023"
+      }
+    },
+    {
+      "module": "cambiador-vistas-combate.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Catálogo que despacha las cuatro cámaras bajo una forma común, sin consumidor UI/puerta ni adaptador de render todavía.",
+      "declaredBy": "OTACON Astra",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/1024"
+      }
     }
   ],
   "artInventoryRationale": {

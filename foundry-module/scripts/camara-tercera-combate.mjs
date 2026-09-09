@@ -16,15 +16,18 @@ function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
-export function limitarPosicionCombate(position = {}) {
+// Origen explícito de la casilla en metros, no la posición global del mapa.
+export function limitarPosicionCombate(position = {}, origenCasilla = {}) {
+  const ox = finite(origenCasilla.x);
+  const oz = finite(origenCasilla.z);
   return {
-    x: clamp(finite(position.x), 0, CASILLA_COMBATE_METROS),
-    z: clamp(finite(position.z), 0, CASILLA_COMBATE_METROS),
+    x: clamp(finite(position.x, ox), ox, ox + CASILLA_COMBATE_METROS),
+    z: clamp(finite(position.z, oz), oz, oz + CASILLA_COMBATE_METROS),
   };
 }
 
-export function resolverCamaraTerceraCombate({ x, z, yaw, y = 0 }) {
-  const posicion = limitarPosicionCombate({ x, z });
+export function resolverCamaraTerceraCombate({ x, z, yaw, y = 0, origenCasilla = {} } = {}) {
+  const posicion = limitarPosicionCombate({ x, z }, origenCasilla);
   return {
     posicion,
     ...resolverCamara({ ...posicion, yaw: finite(yaw), y: finite(y), modo: TERCERA }),

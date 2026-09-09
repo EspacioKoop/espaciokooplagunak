@@ -256,7 +256,7 @@ test("colorDifusorLuminaria: dañado (health < 1), parpadea a 500ms", () => {
 
   // En tiempo 500 ms, apagada (negro), pero sigue emisiva.
   estado = colorDifusorLuminaria({ aviso: null, health, timeMs: 500 });
-  assert.equal(estado.color, 0x000000);
+  assert.equal(estado.color, "#000000");
   assert.equal(estado.emisivo, true);
 
   // En tiempo 1000 ms, encendida de nuevo.
@@ -465,6 +465,25 @@ test("sólo se pintan las luminarias que se tienen cerca", () => {
   // Y son de verdad las MÁS CERCANAS, no las primeras de la lista.
   const lejos = fundirCercanas(fuera.porLuminaria, [1, 21]);
   assert.notDeepEqual(cerca.vertices, lejos.vertices, "el recorte no mira dónde estás");
+});
+
+test("avería: difusor, haz, polvo y luz recibida se apagan y vuelven juntos", () => {
+  const sala = crearSalaCaja({ ancho: 6, profundidad: 6, sistema: "reactor", muralPixel: false, pielSuelo: false });
+  const frame = tiempo => sala.componer(3, 0, 1, 0, {
+    ancho: 160, alto: 90, tiempo, saludSistemas: { reactor: { health: 0.5 } },
+  });
+  const on = frame(0), off = frame(500), back = frame(1000);
+  assert.deepEqual(back, on, "el siguiente pulso recupera toda la escena");
+  assert.ok(on.poligonos.some(p => p.alpha > 0 && p.alpha < 1));
+  assert.ok(off.poligonos.every(p => p.alpha == null), "ni haz ni polvo apagados");
+  // Comparar geometría compartida, excluyendo el difusor emisivo: probar sólo
+  // su negro no detectaba que los muros seguían recibiendo luz de punto.
+  const walls = escena => new Map(escena.poligonos
+    .filter(p => p.alpha == null && p.color !== LUZ_CALIDA && p.color !== "#000000")
+    .map(p => [JSON.stringify(p.puntos), p.color]));
+  const lit = walls(on), dark = walls(off);
+  assert.ok([...lit].some(([key, color]) => dark.has(key) && dark.get(key) !== color),
+    "las caras receptoras siguen iluminadas durante el pulso apagado");
 });
 
 test("una sala sin luminarias no trae ni haz ni polvo", () => {

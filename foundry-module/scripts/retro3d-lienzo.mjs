@@ -172,6 +172,14 @@ function rasterizarTriangulo(pixeles, profundidades, ancho, alto, p0, p1, p2, r,
   if (minX > maxX || minY > maxY) return; // el triángulo cae fuera del lienzo
 
   const invArea = 1 / area;
+  // Top-left ownership for translucent shared edges: a fan diagonal must not
+  // receive source-over twice. Keep opaque coverage unchanged (#510).
+  const ownsEdge = (a, b) => {
+    const dy = (b.y - a.y) * Math.sign(area);
+    const dx = (b.x - a.x) * Math.sign(area);
+    return dy < 0 || (dy === 0 && dx > 0);
+  };
+  const edge0 = ownsEdge(p1, p2), edge1 = ownsEdge(p2, p0), edge2 = ownsEdge(p0, p1);
   // z<=0 no debería llegar aquí (recortarCercano ya lo impide), pero un 1/z
   // de un z basura no puede colar un NaN al búfer de profundidad compartido.
   const invZ0 = p0.z > 0 ? 1 / p0.z : 0;
@@ -188,11 +196,14 @@ function rasterizarTriangulo(pixeles, profundidades, ancho, alto, p0, p1, p2, r,
       const w1 = areaConSigno2(p2.x, p2.y, p0.x, p0.y, px, py) * invArea;
       const w2 = 1 - w0 - w1;
       if (w0 < 0 || w1 < 0 || w2 < 0) continue;
+      if (alpha < 1 && ((w0 === 0 && !edge0) || (w1 === 0 && !edge1) || (w2 === 0 && !edge2))) continue;
 
       const invZ = w0 * invZ0 + w1 * invZ1 + w2 * invZ2;
       const indice = y * ancho + x;
       if (invZ <= profundidades[indice]) continue; // algo más cerca ya está ahí
-      profundidades[indice] = invZ;
+      // Transparent fragments test against opaque geometry, never occlude the
+      // layers behind them. They are composited far-to-near below.
+      if (alpha === 1) profundidades[indice] = invZ;
       const o = indice * 4;
 
       if (tex) {
@@ -214,10 +225,7 @@ function rasterizarTriangulo(pixeles, profundidades, ancho, alto, p0, p1, p2, r,
         if (rgb) {
           // Téxel POR intensidad de la cara: el sombreado no se puede
           // premultiplicar en un color único cuando cada téxel es distinto.
-          pixeles[o] = rgb[0] * tex.intensidad;
-          pixeles[o + 1] = rgb[1] * tex.intensidad;
-          pixeles[o + 2] = rgb[2] * tex.intensidad;
-          pixeles[o + 3] = Math.round(255 * alpha);
+          mezclarPixel(pixeles, o, rgb[0] * tex.intensidad, rgb[1] * tex.intensidad, rgb[2] * tex.intensidad, alpha);
           continue;
         }
         // Índice fuera de paleta: se cae al color plano de la cara en vez de
@@ -225,13 +233,22 @@ function rasterizarTriangulo(pixeles, profundidades, ancho, alto, p0, p1, p2, r,
         // fallo de geometría y manda a buscar el error donde no está.
       }
 
-      pixeles[o] = r;
-      pixeles[o + 1] = g;
-      pixeles[o + 2] = b;
-      pixeles[o + 3] = Math.round(255 * alpha);
+      mezclarPixel(pixeles, o, r, g, b, alpha);
     }
   }
 }
+
+// The depth framebuffer starts opaque (background/sky), so source-over keeps
+// alpha 255. putImageData replaces pixels; it does NOT perform Canvas blending.
+function mezclarPixel(pixeles, o, r, g, b, alpha) {
+  const resto = 1 - alpha;
+  pixeles[o] = r * alpha + pixeles[o] * resto;
+  pixeles[o + 1] = g * alpha + pixeles[o + 1] * resto;
+  pixeles[o + 2] = b * alpha + pixeles[o + 2] * resto;
+  pixeles[o + 3] = 255;
+}
+
+const alphaDe = poligono => Number.isFinite(poligono?.alpha) ? Math.max(0, Math.min(1, poligono.alpha)) : 1;
 
 /** Abanico desde el primer vértice: válido para cualquier polígono CONVEXO,
  *  que es todo lo que compone `retro3d.mjs` (caras de cajas, siempre
@@ -346,7 +363,20 @@ export function pintarEscenaConProfundidad(ctx, escena, { fondo = null } = {}) {
   // por volcado en vez de por polígono: es la misma para toda la escena.
   const afin = escena.epoca !== "gamecube";
 
+  // Opaque pass first, then source-over far-to-near, without mutating callers.
+  // As in the painter, intersecting translucent faces cannot be globally
+  // ordered by their centroid; this is not order-independent transparency.
+  const opacos = [], transparentes = [];
   for (const poligono of poligonos) {
+    const alpha = alphaDe(poligono);
+    if (alpha === 0) continue;
+    if (alpha === 1) opacos.push(poligono);
+    else if (Array.isArray(poligono?.puntos) && poligono.puntos.length >= 3) {
+      transparentes.push({ poligono, z: poligono.puntos.reduce((s, p) => s + p.z, 0) / poligono.puntos.length });
+    }
+  }
+  transparentes.sort((a, b) => b.z - a.z);
+  for (const poligono of [...opacos, ...transparentes.map(p => p.poligono)]) {
     const puntos = poligono?.puntos;
     if (!Array.isArray(puntos) || puntos.length < 3) continue;
     const [r, g, b] = rgbDe(poligono.color);
@@ -365,7 +395,7 @@ export function pintarEscenaConProfundidad(ctx, escena, { fondo = null } = {}) {
           }
         : null;
     paraCadaTrianguloDelAbanico(puntos, (p0, p1, p2) => {
-        const alpha = Number.isFinite(poligono.alpha) ? Math.max(0, Math.min(1, poligono.alpha)) : 1;
+      const alpha = alphaDe(poligono);
       rasterizarTriangulo(pixeles, profundidades, ancho, alto, p0, p1, p2, r, g, b, tex, alpha);
     });
   }

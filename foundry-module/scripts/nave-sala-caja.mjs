@@ -792,10 +792,11 @@ export function crearSalaCaja({
     // son los de la malla ya trasladada. Un foco en coordenadas de sala mientras
     // la geometría va en coordenadas de cámara pone el charco de luz en otra
     // parte de la sala, y encima se mueve al andar.
-    const focos = focosLuminarias({ ancho, profundidad, altura: ALTURA }).map((foco) => ({
+    const encendida = tonoDifusor.color !== "#000000";
+    const focos = encendida ? focosLuminarias({ ancho, profundidad, altura: ALTURA }).map((foco) => ({
       ...foco,
       posicion: [foco.posicion[0] - camara[0], foco.posicion[1] - camara[1], foco.posicion[2] - camara[2]],
-    }));
+    })) : [];
 
     // El haz va del MISMO color que el difusor que lo emite —si la luminaria
     // parpadea por avería, su haz parpadea con ella— y emisivo, porque un haz
@@ -804,7 +805,6 @@ export function crearSalaCaja({
     // Apagado no se dibuja ni el haz ni el polvo: un haz negro traslúcido es una
     // mancha de suciedad, y un polvo que brilla sin lámpara que lo ilumine es
     // una afirmación que nadie ha hecho.
-    const encendida = tonoDifusor.color !== 0x000000;
     //
     // Y sólo las luminarias que se tienen cerca: el reactor tiene 36 y desde
     // cualquier punto se ven unas pocas. Es la misma regla que el motor aplica a

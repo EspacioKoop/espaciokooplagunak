@@ -253,7 +253,7 @@ export function colorDifusorLuminaria({ aviso = null, health = null, timeMs = 0 
   const dañado = typeof health === "number" && Number.isFinite(health) && health < 1;
   if (!dañado) return { color: colorBase, emisivo: true };
   const encendido = Math.floor(timeMs / 500) % 2 === 0;
-  return { color: encendido ? colorBase : 0x000000, emisivo: true };
+  return { color: encendido ? colorBase : "#000000", emisivo: true };
 }
 
 /**

@@ -585,19 +585,18 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     es sobre el catálogo, no en la ventana que la aplica.
     La **convocatoria** (#832) es el disparador de esa geografía para las estancias
     que no cuelgan de ningún mamparo —la playa y el museo—: `convocatoria-estancia.mjs`
-    resuelve dónde aterriza la tripulación, `convocatoria-escena.mjs` lo difunde y
+    resuelve dónde aterriza la tripulación, `convocatoria-difusion.mjs` lo difunde y
     `convocatoria-app.mjs` es la ventana, que entra como una entrada más del
     catálogo del panel de GM y no como botón nuevo. Dos reglas: viaja por **ajuste de mundo y no
     por socket** —`game.socket` no acredita a quien emite, así que una llamada por ahí
-    sería falsificable, mientras que un ajuste de mundo solo lo escribe el GM porque
-    Foundry rechaza al resto—, y **no se aplica al cargar**, al revés que el nivel de
+    sería falsificable, mientras que Foundry exige el permiso `SETTINGS_MODIFY`
+    para persistir el ajuste de mundo; el emisor cooperativo comprueba además el rol GM—,
+    y **no se aplica al cargar**, al revés que el nivel de
     alerta: una alerta es un estado sostenido que quien entra tarde debe ver, una
     convocatoria es un momento, y aplicarla al conectarse arrastraría a la playa a quien
-    llega dos horas después. `destinosConvocables` deriva del catálogo qué estancias
-    tiene sentido convocar —las que no cuelgan de ningún mamparo, porque convocar a la
-    cantina le quita el paseo a la tripulación sin dar nada a cambio—, pero **todavía no
-    lo consume la ventana**, que sigue listando el catálogo entero: acotarla es trabajo
-    pendiente de #832 y no una regla ya en vigor.
+    llega dos horas después. La ventana sigue listando el catálogo entero: limitar
+    los destinos a estancias que no cuelgan de ningún mamparo es trabajo pendiente
+    de #832, no una regla ya en vigor.
   - **Catálogos con procedencia, y el museo** — `scripts/procedencia-catalogo.mjs` es la ÚNICA
     regla de licencia del módulo (#598): qué es una procedencia aceptable, con errores tipados por
     `code` + `path`. La consumen el atlas (`catalogo-cosmografico.mjs`, #525, que sigue siendo

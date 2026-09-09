@@ -1311,3 +1311,36 @@ test("cerrar una ventana que ya no es la vigente no deja huérfana a la nueva", 
   assert.equal(segunda.renderCalls.length, 1, "la vigente sigue viva");
   await segunda.close();
 });
+
+for (const modern of [false, true]) {
+  test(`${modern ? "V2" : "V1"}: convocatoria confirmada abre, navega en caliente y reabre con instancia nueva`, async () => {
+    const { hooks, instances, fetchCalls } = await loadModule({ modern, isGM: false });
+    await arrancarReady(hooks);
+    const setting = { key: "espaciokoop-lagunak.convocatoria-estancia", value: { estancia: "museo" } };
+    // El arnés no renderiza Canvas ni simula servidor: verifica el callback
+    // real inyectado desde main y el despacho público de Application V1/V2.
+    hooks.createSetting(setting);
+    const primera = instances.at(-1);
+    assert.equal(primera.estanciaPedida, "museo");
+    assert.deepEqual(primera.renderCalls, [modern ? { force: true } : true]);
+    let paradas = 0;
+    const viajes = [];
+    primera.mando = { irA: e => viajes.push(e), detener: () => { paradas++; } };
+    hooks.createSetting(setting);
+    assert.equal(instances.at(-1), primera);
+    assert.deepEqual(viajes, ["museo"]);
+    assert.equal(primera.estanciaPedida, "museo");
+    assert.deepEqual(primera.renderCalls.at(-1), modern ? { force: true } : true);
+    if (modern) primera._onClose({});
+    await primera.close();
+    assert.equal(paradas, 1);
+    assert.equal(primera.mando, null);
+    hooks.createSetting(setting);
+    const segunda = instances.at(-1);
+    assert.notEqual(segunda, primera);
+    assert.equal(segunda.estanciaPedida, "museo");
+    assert.deepEqual(segunda.renderCalls, [modern ? { force: true } : true]);
+    assert.deepEqual(fetchCalls, [], "la convocatoria no usa el puente ni requiere token del jugador");
+    await segunda.close();
+  });
+}

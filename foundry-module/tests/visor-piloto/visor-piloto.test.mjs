@@ -9,8 +9,8 @@ import {
   piezaDeContacto,
   profundidadDe,
   situarContacto,
-} from "../scripts/visor-piloto.mjs";
-import { PIXEL } from "../scripts/paleta.mjs";
+} from "../../scripts/visor-piloto/visor-piloto.mjs";
+import { PIXEL } from "../../scripts/paleta.mjs";
 
 const ALCANCE = { corto: 5000, largo: 30000 };
 

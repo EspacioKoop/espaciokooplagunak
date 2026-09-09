@@ -46,3 +46,4 @@ con [`index.schema.json`](index.schema.json).
 | [0014](0014-doctrina-de-arte-procedural.md) | Doctrina de arte: procedural en cliente, cero binarios, un solo sitio para el color | Aceptada |
 | [0015](0015-dato-derivado-se-copia-y-se-compara.md) | El dato derivado se copia de su fuente autoritativa, y una prueba lo compara con ella | Aceptada |
 | [0017](0017-puestos-vacios-degradado-con-aviso.md) | Puestos sin tripulación: degradado con aviso, sin automatización | Aceptada |
+| [0018](0018-atlas-cosmografico-nodo-y-referencia-a-mapa.md) | Atlas cosmográfico: nodo mínimo y referencia débil a `MapDocument` | Propuesta |

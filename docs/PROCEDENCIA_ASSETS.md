@@ -179,6 +179,102 @@ retrato o un interior se convierten en una mancha. La resolución no se sube par
 que quepa una cuarta —esa es la celda del lienzo, y bajarla o subirla es mover el
 mando de escala de todos los cuadros a la vez—.
 
+## Escalera de balcón — Kenney Retro Urban Kit
+
+| | |
+|---|---|
+| **Obra** | "Balcony ladder bottom", pieza del pack *Retro Urban Kit* |
+| **Qué es el fichero** | **Modelo 3D modelado a mano por un tercero** (`modelo-cc` en `catalogo-muebles.mjs`), no un escaneo ni una reconstrucción de un objeto físico |
+| **Autoría** | Kenney (kenney.nl) |
+| **Licencia** | CC0 1.0 |
+| **Enlace** | https://kenney.nl/assets/retro-urban-kit |
+| **Archivo** | `Models/GLB format/balcony-ladder-bottom.glb`, GLB 2, 4196 bytes, del ZIP oficial Retro Urban Kit 2.0 |
+| **sha256** | `266b04ffb06c53a17988f858646d1fd1072258050ac3d9ba653004a769cc37d1`, comprobado contra la fuente recuperada |
+
+**Fuente y licencia recuperadas.** El [ZIP oficial de Kenney](https://kenney.nl/media/pages/assets/retro-urban-kit/8314d4db22-1738147509/kenney_retro-urban-kit.zip)
+contiene el archivo exacto y su aviso CC0. Se conserva solo esa pequeña fuente en
+[`tools/sources/kenney-retro-urban-kit/balcony-ladder-bottom.glb`](../tools/sources/kenney-retro-urban-kit/balcony-ladder-bottom.glb),
+con el [aviso del distribuidor](../tools/sources/kenney-retro-urban-kit/License.txt)
+y [contrato de extracción](../tools/sources/kenney-retro-urban-kit/README.md).
+No se versionan el ZIP completo ni sus texturas.
+
+**Conversión reproducible verificada, sin sustituir la geometría.** El script
+histórico no se recuperó: se añadió una receta nueva que demuestra igualdad
+exacta con los 48 vértices y 28 caras publicados, incluidos orden y ceros con
+signo. No hay soldadura, decimado, cambio de ejes ni normalización:
+
+```bash
+node tools/convertir-glb-geometria.mjs > foundry-module/data/mallas/balcony-ladder-bottom.mjs
+node --test foundry-module/tests/convertir-glb-geometria.test.mjs
+```
+
+La afirmación anterior «convertir-estatua solo lee STL» quedó obsoleta: el árbol
+actual también tiene una ruta GLB/NASA. Esta receta es independiente y no carga
+Draco ni aplica el pipeline de estatuas. Su lector es genérico **dentro de un
+subconjunto cerrado**, no un importador glTF completo: GLB 2 con JSON y BIN,
+una escena/nodo/malla/primitiva, transformación identidad y triángulos indexados.
+Rechaza las estructuras geométricas no soportadas. Materiales, normales, UV y
+texturas se descartan; ninguna URI se abre. Solo devuelve `vertices` y `caras`.
+El color de una futura escena seguirá perteneciendo a la paleta de #351.
+
+**Límite de entrega:** malla y catálogo preparados, no integración visual.
+`catalogo-muebles.mjs` no tiene consumidor de runtime y está declarado como
+`declared-orphan`, no como cimiento aprobado, en
+[`docs/orphan-declarations.json`](orphan-declarations.json). Faltan selección,
+colocación, escena y aceptación visual; los tests Node no equivalen a un smoke
+Foundry. No se amplía la compatibilidad declarada ni se cierra una integración
+jugable por registrar esta procedencia.
+
+## The Open Window — Saki (semilla procedural para #853)
+
+Propuesta de obra de dominio público como semilla visual para el libro 3D
+interactuable de issue #853. No se redistribuye texto ni imagen escaneada: las
+páginas del libro se pintan proceduralmente como mancha tipográfica/atmosférica.
+
+| Obra | *The Open Window*, cuento de Saki (H. H. Munro). |
+|---|---|
+| **Qué es el fichero** | No se incluye archivo del libro. Solo se usa título, ambientación y estructura como seed para generación procedural de páginas en rejilla. |
+| **Autoría original** | Saki (H. H. Munro), fallecido en 1916. |
+| **Licencia** | Public domain en EE. UU. |
+| **Verificación** | Project Gutenberg, colección *Beasts and Super-Beasts*, ID 269: autor Saki, contenido incluye *The Open Window*, estado «Public domain in the USA». El ID 11639 citado antes corresponde a *Figures of Earth* de Cabell y no acredita este cuento. |
+| **Enlace** | https://www.gutenberg.org/ebooks/269 |
+| **Archivo en repo** | No aplica; no se distribuye contenido del libro. |
+| **sha256** | No aplica. |
+| **Cómo se genera** | Páginas pintadas con `scripts/libro-pagina.mjs` usando `chapasDeRejilla`, sin texto legible ni binarios. |
+
+**Nota:** Si en el futuro se incluyera una cubierta o interior escaneado, haría
+falta una segunda ficha para ese archivo concreto con su propia licencia y sha256.
+
+## Assets 2D (tokens) — #891
+
+Mismo formato de ficha que arriba, mismo candado. `tools/convertir-token.mjs`
+es el equivalente 2D de `tools/convertir-estatua.mjs`: reescala a 128×128 por
+vecino más próximo, cuantiza a color indexado y se niega a convertir cualquier
+`<nombre>` que no esté en su tabla `FICHAS`. A diferencia de una estatua, un
+token conserva **su propia paleta** — la frontera de arte de #351 gobierna las
+superficies procedurales del módulo, no una ilustración importada con su color
+ya decidido por su autor.
+
+Esta sección está vacía a propósito (#891-A/#891-B: el pipeline se entrega
+antes que el primer lote). Verificar la licencia de un pack concreto en su
+página exacta —no basta con que el issue diga "confirmado"— es el paso que
+convierte en real la primera fila de esta tabla; hasta entonces no hay ninguna
+ficha que documentar.
+
+| Pieza | Autoría | Licencia | Enlace | sha256 |
+|---|---|---|---|---|
+| _(ninguna todavía)_ | | | | |
+
+**Conversión (cuando llegue la primera ficha):**
+
+```
+node tools/convertir-token.mjs origen.png <id-declarado-en-FICHAS>
+```
+
+El PNG de origen **no entra en el repositorio**, igual que los STL de la
+sección anterior: se descarga aparte, se verifica su licencia y su sha256, y lo
+que se versiona es `foundry-module/data/tokens/<id>.mjs` — texto, revisable en
+un PR como cualquier otro cambio.
 ---
 
 ## El libro interactuable del museo (#853) — sin ficha, y por qué

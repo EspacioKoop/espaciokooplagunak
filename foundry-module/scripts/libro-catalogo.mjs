@@ -36,7 +36,7 @@
 // Puro: datos y una sola llamada de validación al importar. Ni Foundry, ni
 // DOM, ni red.
 
-import { validarCatalogoPiezas } from "./catalogo-piezas.mjs";
+import { validarCatalogoPiezas, registrarCatalogoPiezas } from "./catalogo-piezas.mjs";
 
 /** El único ID de "malla" que declara este catálogo. `libro-museo.mjs` lo
  *  resuelve a geometría PROCEDURAL, nunca a un fichero — pero el validador
@@ -89,3 +89,7 @@ export const CATALOGO_LIBROS = Object.freeze({
 // una ficha rota no debería llegar a montarse en la escena, debería tumbar la
 // carga del módulo con un error que diga exactamente qué campo falla.
 validarCatalogoPiezas(CATALOGO_LIBROS, { mallasDisponibles: MALLAS_LIBRO });
+
+// Se registra en el punto único de resolución (#598), igual que esculturas,
+// cuadros y pasillo: quien pinta una cartela pide la pieza por su id.
+registrarCatalogoPiezas(CATALOGO_LIBROS);

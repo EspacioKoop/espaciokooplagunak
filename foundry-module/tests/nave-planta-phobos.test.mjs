@@ -50,8 +50,10 @@ const raiz = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
  * argumento llevado al extremo: un claro de cuarenta y cinco metros no cabe
  * dentro de una fragata. Colgarla de un mamparo contaría que el Phobos lleva
  * un campo de batalla a bordo, que es una historia que nadie ha decidido.
+ * El plató (#584) está fuera por el mismo motivo: es un banco de pruebas del
+ * rig de focos de #556, no una sala de la nave.
  */
-const FUERA_DE_LA_NAVE = new Set(["playa", "museo", "pasillo-recuerdos", "arena"]);
+const FUERA_DE_LA_NAVE = new Set(["playa", "museo", "pasillo-recuerdos", "arena", "estudio"]);
 
 function todasLasEstancias() {
   const pares = CATALOGO_ANDAR.ids

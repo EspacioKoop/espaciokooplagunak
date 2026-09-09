@@ -62,10 +62,11 @@ decisión priorizada no cambia, pero la tabla de arriba usa la redacción correg
 
 ### The Thieves Guild / DunGen → descartar como integración
 
-- No hay adaptador posible sin violar términos (Thieves Guild prohíbe explícitamente copiar/adaptar
-  su software y scrapear el servicio; DunGen limita el uso a personal/no comercial). El valor que
-  aportarían (loot proceduralmente generado, mapas por IA) se puede perseguir con una implementación
-  propia si se decide que hace falta, pero como tarjeta nueva y no como port de estas herramientas.
+- No se propone adaptador ni reutilización sin licencia verificable: los términos de The Thieves
+  Guild no pudieron contrastarse directamente y DunGen limita el uso a personal/no comercial.
+  El descarte de The Thieves Guild es conservador, no una prohibición jurídica acreditada por
+  snippets. El valor que aportarían (loot proceduralmente generado, mapas por IA) se puede perseguir
+  con una implementación propia si se decide que hace falta, no copiando estas herramientas.
 
 ### Laterpress → cómo se cita en docs
 
@@ -85,17 +86,16 @@ decisión priorizada no cambia, pero la tabla de arriba usa la redacción correg
 4. **Laterpress** — proceso de trabajo (ir siempre a Gutenberg/Standard Ebooks), no requiere código.
 5. **DunGen** y **The Thieves Guild** — descartados como integración; no se abre trabajo derivado.
 
-Criterio de cierre del issue #885 cumplido: seis herramientas evaluadas con licencia verificada en
-fuente oficial, seis propuestas concretas, decisión priorizada.
+Cobertura documental: seis herramientas evaluadas, cinco verificadas en fuente oficial y una
+no verificable directamente (The Thieves Guild), descartada de forma conservadora; seis
+propuestas concretas y decisión priorizada. No se presenta esa excepción como una sexta licencia
+verificada ni se certifica aquí el criterio literal de cierre de #885.
 
 ## Coordinación con PR #887
 
-El PR #887 (`docs/EXTERNAL_TOOLS_RESEARCH_885.md`) investiga las mismas seis herramientas para el
-mismo issue y también declara `Closes #885`. Solo uno de los dos debe cerrarlo. Diferencias
-observadas al escribir esta corrección: #887 está en conflicto con `main` (`mergeStateStatus:
-DIRTY`) y su matriz no enlaza las fuentes oficiales de licencia fila por fila (criterio explícito
-del issue), mientras que esta PR sí lo hace tras la corrección de arriba. #887 además toca ficheros
-fuera del alcance de #885 (`ECOSISTEMA_OPEN_SOURCE.md`, `PROCEDENCIA_ASSETS.md`,
-`gutendex_seeds.py`, `sharetextures_categories.py`) que pueden tener valor propio independiente de
-esta investigación. Decisión de cuál PR se queda con el `Closes #885` pendiente de quien mantiene
-ambos repositorios de trabajo.
+El PR #887 propone `docs/EXTERNAL_TOOLS_RESEARCH_885.md` sobre las mismas seis herramientas,
+pero también aporta `ECOSISTEMA_OPEN_SOURCE.md`, `PROCEDENCIA_ASSETS.md`, `gutendex_seeds.py`
+y `sharetextures_categories.py`. Ese trabajo adicional no queda sustituido por esta tabla:
+se conserva en #887 con sus pruebas y hallazgos pendientes. Este documento se integra como
+investigación con la excepción de licencia indicada, no como un cierre automático de #885.
+El estado vivo y los conflictos de ambos PR se consultan en GitHub, no se fijan en este documento.

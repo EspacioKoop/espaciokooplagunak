@@ -43,12 +43,15 @@ const raiz = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
  * no tiene un museo. Se entra por herramienta y se sale por su propio punto de
  * interacción, igual que la playa se sale por la cabina de teléfono.
  *
+ * El pasillo de los recuerdos es la misma excepción por la misma razón: no
+ * cuelga de ningún mamparo del Phobos y se entra por herramienta.
+ *
  * El banco de pruebas del libro interactuable (#853/#1037) está fuera por el
  * mismo motivo: es una sala de 2x2 m para probar la geometría y la
  * interacción del libro sin el resto del museo alrededor, no un sitio al que
  * se llegue andando desde la cantina.
  */
-const FUERA_DE_LA_NAVE = new Set(["playa", "museo", "libro"]);
+const FUERA_DE_LA_NAVE = new Set(["playa", "museo", "pasillo-recuerdos", "libro"]);
 
 function todasLasEstancias() {
   const pares = CATALOGO_ANDAR.ids

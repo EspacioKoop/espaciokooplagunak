@@ -21,7 +21,7 @@
 
 import { crearCatalogoEstancias } from "./nave-estancias.mjs";
 import { declararInteracciones } from "./nave-interaccion.mjs";
-import { MUSEO, PLAYA, SECCION } from "./paleta.mjs";
+import { MUSEO, PASILLO, PLAYA, SECCION } from "./paleta.mjs";
 import { puntoLibreCerca } from "./nave-movimiento.mjs";
 import { crearSalaCaja } from "./nave-sala-caja.mjs";
 import { piezasConsola } from "./nave-consola.mjs";
@@ -51,6 +51,12 @@ import {
   componerMuseo,
 } from "./museo-escena.mjs";
 import { PLANTA_LIBRO, componerLibro, ENTRADA, INTERACCIONES } from "./libro-escena.mjs";
+import {
+  ENTRADA as ENTRADA_PASILLO,
+  INTERACCIONES as INTERACCIONES_PASILLO,
+  PLANTA_PASILLO,
+  componerPasillo,
+} from "./pasillo-recuerdos-escena.mjs";
 import {
   ANCHO_PUERTA,
   GROSOR_PUERTA,
@@ -427,6 +433,16 @@ export const CATALOGO_ANDAR = crearCatalogoEstancias({
     // pintar, no el vacío. Su propio gris, y no el de mamparo, para que el borde
     // de la sala no se lea como casco de nave.
     fondo: MUSEO.zocalo,
+    puertas: [],
+  },
+  // El pasillo de los recuerdos. Como el museo y la playa: NO cuelga de
+  // ninguna puerta de la nave y se entra por herramienta.
+  "pasillo-recuerdos": {
+    planta: PLANTA_PASILLO,
+    componer: componerPasillo,
+    entrada: ENTRADA_PASILLO,
+    interacciones: INTERACCIONES_PASILLO,
+    fondo: PASILLO.marmol,
     puertas: [],
   },
   // La estancia del libro interactuable (#853): banco de pruebas solo-GM del

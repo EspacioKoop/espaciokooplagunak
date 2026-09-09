@@ -12,7 +12,7 @@ Additionally, [Universal Animation Library 2](https://quaternius.com/packs/unive
 - The second library adds specialized animations for varied gameplay mechanics.
 
 ## Integration Plan
-1. **Directory Structure**: Place the GLB/GLTF animation files under `resources/animations/universal-animation-library/` and `resources/animations/universal-animation-library-2/` (or a combined folder).
+1. **Directory Structure**: Place the GLB/GLTF animation files under `resources/animations/universal-animation-library/` and `resources/animations/universal-animation-library-2/`. Keep the two libraries in separate directories for verification.
 2. **File Formats**: Use the provided GLB files (with root motion disabled) for broader compatibility.
 3. **Source Files**: Optionally include the source `.blend` files for modification (requires payment for the Source version).
 4. **Documentation**: Update any relevant documentation to note the animation sources and license.
@@ -31,15 +31,26 @@ Since the automated download requires a session-specific key from itch.io, pleas
 6. Copy the extracted contents (should be GLB/OBJ/FBX animation files and possibly .blend source files) into:
    `<repo_root>/resources/animations/universal-animation-library/`
    `<repo_root>/resources/animations/universal-animation-library-2/`
-   (or combine them into a single directory if preferred).
-7. Ensure the directory structure is organized as you see fit (e.g., by animation type).
+   Keep both directories; do not combine the libraries into a single directory.
+7. Within each library, organize the files as you see fit (e.g., by animation type).
 
 ## Verification
-After placing the files, you can verify by checking for common file extensions:
+From the repository root, run:
 ```bash
-find resources/animations -type f \( -name "*.glb" -o -name "*.gltf" -o -name "*.fbx" -o -name "*.blend" \)
+python3 scripts/check_animation_assets.py
+python3 -m unittest discover -s scripts/tests -p 'test_check_animation_assets.py' -v
 ```
-\n## License
+The asset check exits with 0 only when **both** library directories exist and
+**each** contains at least one `.glb`, `.gltf`, `.fbx`, or `.blend` file
+(case-insensitive, searched recursively). Missing or empty libraries fail with
+exit code 1. This is a presence/extension check only: it does not validate binary
+contents, animation counts, rig compatibility, licensing, or runtime integration.
+The regression tests use temporary placeholder files, not actual assets.
+These tests can be run locally; the current tools workflow does not collect
+`scripts/tests/`. This proposal does not add assets or a game consumer; the
+separate pack delivery is tracked in #1052.
+
+## License
 - Creative Commons Zero v1.0 Universal (CC0)
 - Free for personal, educational, and commercial projects.
 - No attribution required (but appreciated).

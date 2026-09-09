@@ -121,6 +121,18 @@
       }
     },
     {
+      "module": "map-ref-resolver.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Resolutor débil de `map_ref` a MapDocument, con ausente y desconocido tratados como el mismo no-mapa. Nadie lo importa todavía porque el productor del campo es #870 y `validateCosmography` aún rechaza `map_ref` como campo no permitido: cablearlo antes daría un consumidor que solo funciona saltándose la carga del atlas.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/906"
+      }
+    },
+    {
       "module": "nave-movimiento-sala-prueba.mjs",
       "status": "declared-orphan",
       "foundation": true,

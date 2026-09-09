@@ -29,6 +29,8 @@ import { openWorkspaceApp } from "./station-workspace-ui.mjs";
 import { SECCION } from "./paleta.mjs";
 import { cartelaDe, piezaPorId } from "./catalogo-piezas.mjs";
 import { CATALOGO_MUSEO } from "./museo-piezas.mjs";
+import { CATALOGO_CUADROS } from "./museo-cuadros.mjs";
+import { CATALOGO_PASILLO } from "./pasillo-recuerdos-piezas.mjs";
 import { resolverAsiento } from "./nave-asiento.mjs";
 import { ponerPose } from "./nave-pose.mjs";
 import { AJUSTE_TELEMETRIA, aceptarSensores, aceptarTelemetria } from "./ship-view/telemetria-difusion.mjs";
@@ -288,6 +290,28 @@ function arrancar(raiz, estanciaPedida = null) {
     nodo.textContent = game.i18n?.format?.("LAGUNAK.AndarNave.EstasEn", { sala: nombre }) ?? nombre;
   }
   /**
+   * Pinta —o retira— el letrero de a dónde lleva la puerta que se tiene
+   * delante (#458 QA: «no se entiende a dónde te va a llevar una puerta»).
+   *
+   * MISMO PATRÓN QUE `pintarCartela`: región `status`, `textContent` y nunca
+   * HTML, y se retira al apartarse. El nombre sale de la MISMA clave i18n que
+   * ya rotula la sala (`rotularSala`) — es el nombre de la sala destino, no un
+   * texto nuevo que mantener sincronizado con dos.
+   */
+  function pintarLetreroPuerta(destino) {
+    const nodo = raiz?.querySelector?.("[data-andar-letrero-puerta]");
+    if (!nodo) return;
+    if (!destino?.estancia) {
+      nodo.hidden = true;
+      return;
+    }
+    const clave = ["LAGUNAK", "AndarNave", "Sala", destino.estancia].join(".");
+    const nombre = game.i18n?.has?.(clave) ? game.i18n.localize(clave) : destino.estancia;
+    nodo.textContent = game.i18n?.format?.("LAGUNAK.AndarNave.LlevaA", { sala: nombre }) ?? nombre;
+    nodo.hidden = false;
+  }
+
+  /**
    * Pinta —o retira— la cartela de la pieza que se tiene delante (#598).
    *
    * `textContent` y nunca HTML: el texto viene de un catálogo de datos, y una
@@ -297,7 +321,15 @@ function arrancar(raiz, estanciaPedida = null) {
   function pintarCartela(piezaId) {
     const nodo = raiz?.querySelector?.("[data-andar-cartela]");
     if (!nodo) return;
-    const pieza = piezaId ? piezaPorId(CATALOGO_MUSEO, piezaId) : null;
+    // Tres catálogos y una sola lectura: las esculturas, los cuadros de la
+    // pared (#836) y las piezas del pasillo de los recuerdos se colocan
+    // distinto en su sala, pero la cartela se lee igual en los tres. Un
+    // `accion.pieza` es un id opaco y aquí se resuelve contra los tres.
+    const pieza = piezaId
+      ? piezaPorId(CATALOGO_MUSEO, piezaId)
+        ?? piezaPorId(CATALOGO_CUADROS, piezaId)
+        ?? piezaPorId(CATALOGO_PASILLO, piezaId)
+      : null;
     if (!pieza) {
       nodo.hidden = true;
       return;
@@ -460,6 +492,11 @@ function arrancar(raiz, estanciaPedida = null) {
       // para saber que alguien cambió de sala.
       ultimoSelloEnviado = publicarPosicion(estanciaActual, mando, ultimoSelloEnviado, true);
     },
+    // El letrero de destino (#458): se lee ANTES de cruzar, así que va por su
+    // propio flanco de acercarse/alejarse y no por `alTocarPuerta` — para
+    // cuando se cruza, el letrero ya lleva un rato puesto.
+    alAcercarsePuerta: (destino) => pintarLetreroPuerta(destino),
+    alAlejarsePuerta: () => pintarLetreroPuerta(null),
     // Qué significa cada punto de interacción se decide AQUÍ y no en el bucle
     // (#582): el lienzo transporta la `accion` declarada por el catálogo y esta
     // ventana la traduce a lo que Foundry sabe hacer. Un tipo nuevo —el punto de

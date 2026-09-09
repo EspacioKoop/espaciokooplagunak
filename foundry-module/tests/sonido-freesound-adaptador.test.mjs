@@ -9,7 +9,7 @@ function bruto(overrides = {}) {
     username: "algún-autor",
     duration: 12.5,
     license: "http://creativecommons.org/publicdomain/zero/1.0/",
-    previews: { "preview-hq-mp3": "https://cdn.example/hq.mp3", "preview-lq-mp3": "https://cdn.example/lq.mp3" },
+    previews: { "preview-hq-mp3": "https://cdn.freesound.org/previews/101/101_1-hq.mp3", "preview-lq-mp3": "https://cdn.freesound.org/previews/101/101_1-lq.mp3" },
     url: "https://freesound.org/people/x/sounds/101/",
     ...overrides,
   };
@@ -27,7 +27,7 @@ test("normaliza un resultado CC0 utilizable al contrato del adaptador", async ()
   assert.equal(r.author, "algún-autor");
   assert.equal(r.duration, 12.5);
   assert.equal(r.license.codigo, "CC0");
-  assert.equal(r.previewUrl, "https://cdn.example/hq.mp3");
+  assert.equal(r.previewUrl, "https://cdn.freesound.org/previews/101/101_1-hq.mp3");
   assert.equal(r.sourceUrl, "https://freesound.org/people/x/sounds/101/");
 });
 
@@ -61,12 +61,12 @@ test("usa el preview de baja calidad si falta el de alta", async () => {
   const proveedor = {
     buscar: async () => ({
       total: 1,
-      resultados: [bruto({ previews: { "preview-lq-mp3": "https://cdn.example/lq.mp3" } })],
+      resultados: [bruto({ previews: { "preview-lq-mp3": "https://cdn.freesound.org/previews/101/101_1-lq.mp3" } })],
     }),
   };
   const adaptador = crearAdaptadorBusquedaSonido({ proveedor });
   const { resultados } = await adaptador.buscar("lluvia");
-  assert.equal(resultados[0].previewUrl, "https://cdn.example/lq.mp3");
+  assert.equal(resultados[0].previewUrl, "https://cdn.freesound.org/previews/101/101_1-lq.mp3");
 });
 
 test("un proveedor que lanza se convierte en { resultados: [], error } sin propagar la excepción", async () => {
@@ -94,4 +94,57 @@ test("el borrador de procedencia nunca incluye un sha256 calculado, solo el pend
   assert.match(ficha, /^source_id: 101$/m);
   assert.match(ficha, /^license: CC0$/m);
   assert.match(ficha, /^sha256: PENDIENTE/m);
+});
+
+test("un preview alojado en un host ajeno se descarta como si no existiera", async () => {
+  // El adaptador VISITA esta URL (`new Audio(...)`), así que vale la misma
+  // disciplina que la licencia: lo que no se pueda afirmar, fuera. Sin esto,
+  // la respuesta de la API decidía a qué máquina pide el navegador.
+  const proveedor = {
+    buscar: async () => ({
+      total: 1,
+      resultados: [bruto({ previews: { "preview-hq-mp3": "https://cdn.example/hq.mp3" } })],
+    }),
+  };
+  const { resultados } = await crearAdaptadorBusquedaSonido({ proveedor }).buscar("x");
+  assert.deepEqual(resultados, []);
+});
+
+test("un host que solo TERMINA en freesound.org no cuela", async () => {
+  // `evilfreesound.org` pasa un `endsWith` a secas y no pasa el sufijo de
+  // punto. Es el mismo agujero que el filtro de licencia ya cerró en su lado.
+  const proveedor = {
+    buscar: async () => ({
+      total: 1,
+      resultados: [bruto({ url: "https://evilfreesound.org/people/x/sounds/101/" })],
+    }),
+  };
+  const { resultados } = await crearAdaptadorBusquedaSonido({ proveedor }).buscar("x");
+  assert.deepEqual(resultados, []);
+});
+
+test("un subdominio real de freesound.org sí vale", async () => {
+  const proveedor = {
+    buscar: async () => ({
+      total: 1,
+      resultados: [bruto({
+        previews: { "preview-hq-mp3": "https://cdn.freesound.org/previews/9/9_1-hq.mp3" },
+      })],
+    }),
+  };
+  const { resultados } = await crearAdaptadorBusquedaSonido({ proveedor }).buscar("x");
+  assert.equal(resultados.length, 1);
+});
+
+test("un preview en http:// se descarta: estas dos URLs se visitan", async () => {
+  const proveedor = {
+    buscar: async () => ({
+      total: 1,
+      resultados: [bruto({
+        previews: { "preview-hq-mp3": "http://cdn.freesound.org/previews/9/9_1-hq.mp3" },
+      })],
+    }),
+  };
+  const { resultados } = await crearAdaptadorBusquedaSonido({ proveedor }).buscar("x");
+  assert.deepEqual(resultados, []);
 });

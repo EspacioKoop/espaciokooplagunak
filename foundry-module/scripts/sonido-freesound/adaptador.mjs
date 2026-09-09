@@ -15,14 +15,30 @@
 // `contenido-externo/adaptador.mjs`) y no toca Foundry ni DOM.
 
 import { clasificarLicencia } from "./filtro-licencia.mjs";
+import { urlConHost } from "./url-host.mjs";
+
+// Los previews de Freesound se sirven desde `cdn.freesound.org` y la ficha de
+// origen desde `freesound.org`; el sufijo de punto cubre los dos y cualquier
+// otro subdominio suyo, y nada más. HTTPS obligatorio: al revés que la URL de
+// LICENCIA —que `filtro-licencia.mjs` acepta en http porque la API todavía las
+// devuelve así, y que solo se lee—, estas dos se VISITAN.
+const HOSTS_FREESOUND = Object.freeze(["freesound.org"]);
 
 function texto(valor) {
   return typeof valor === "string" ? valor.trim() : "";
 }
 
+/** Una URL que este módulo va a pedir de verdad, o cadena vacía. El
+ *  descarte es silencioso a propósito: `normalizar` ya trata la ausencia de
+ *  preview como «no hay nada que escuchar» y deja el resultado fuera, que es
+ *  el mismo fail-closed que aplica la licencia. */
+function urlVisitable(cruda) {
+  return urlConHost(cruda, HOSTS_FREESOUND)?.toString() ?? "";
+}
+
 function urlPreview(previews) {
   if (!previews || typeof previews !== "object") return "";
-  return texto(previews["preview-hq-mp3"]) || texto(previews["preview-lq-mp3"]) || "";
+  return urlVisitable(previews["preview-hq-mp3"]) || urlVisitable(previews["preview-lq-mp3"]) || "";
 }
 
 /** Normaliza un resultado crudo de la API al contrato del adaptador, o
@@ -33,7 +49,7 @@ function normalizar(bruto) {
   if (!licencia.mostrable) return null;
 
   const previewUrl = urlPreview(bruto?.previews);
-  const sourceUrl = texto(bruto?.url);
+  const sourceUrl = urlVisitable(bruto?.url);
   const id = bruto?.id;
   if (!previewUrl || !sourceUrl || !Number.isFinite(id)) return null;
 

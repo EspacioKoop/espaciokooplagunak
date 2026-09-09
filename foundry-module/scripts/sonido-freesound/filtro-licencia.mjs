@@ -15,6 +15,8 @@
 //
 // Puro: sin red, sin Foundry.
 
+import { urlConHost } from "./url-host.mjs";
+
 /** Los únicos códigos que este módulo declara. Ampliar la lista es una
  *  decisión, no un efecto secundario de una regex más permisiva. */
 export const CODIGOS = Object.freeze({
@@ -61,17 +63,19 @@ export function clasificarLicencia(licenciaCruda) {
 function codigoDeUrl(cruda) {
   if (!cruda) return CODIGOS.DESCONOCIDA;
 
-  let url;
-  try {
-    url = new URL(cruda);
-  } catch {
-    return CODIGOS.DESCONOCIDA;
-  }
-
   // Freesound sigue devolviendo algunas licencias con "http:" (no "https:"),
   // así que el protocolo se acepta en cualquiera de los dos — lo que importa
-  // de verdad es el HOST exacto, que es donde estaba el agujero real.
-  if ((url.protocol !== "https:" && url.protocol !== "http:") || url.hostname !== HOST_CREATIVE_COMMONS) {
+  // de verdad es el HOST, que es donde estaba el agujero real. La comprobación
+  // vive en `url-host.mjs` y la comparte con el adaptador: tenerla dos veces
+  // es como una de las dos se queda atrás.
+  //
+  // Ojo: aquí el host se exige EXACTO y no por sufijo. `creativecommons.org`
+  // no delega licencias en subdominios, así que aceptar `x.creativecommons.org`
+  // solo ampliaría la superficie sin cubrir ningún caso real.
+  const url = urlConHost(cruda, [HOST_CREATIVE_COMMONS], {
+    protocolos: ["https:", "http:"],
+  });
+  if (!url || url.hostname.toLowerCase() !== HOST_CREATIVE_COMMONS) {
     return CODIGOS.DESCONOCIDA;
   }
 

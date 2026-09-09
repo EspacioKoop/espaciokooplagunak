@@ -8,7 +8,7 @@ import test from "node:test";
 
 import { pintarMinimapa } from "../scripts/nave-minimapa-lienzo.mjs";
 import { SECCION } from "../scripts/paleta.mjs";
-import { medidas, cajaEnPixeles } from "../scripts/seccion-lienzo.mjs";
+import { medidas, cajaEnPixeles } from "../scripts/seccion-nave/seccion-lienzo.mjs";
 
 /** Contexto 2D de mentira que registra llamadas y estilos. */
 function ctxFalso() {

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { poligonosOtrosJugadores } from "../scripts/nave-avatares-render.mjs";
+import { piezasAvatar } from "../scripts/cantina-avatar.mjs";
 
 const OPCIONES_BASE = { camara: [0, 1.6, 0], yaw: 0, ancho: 480, alto: 270, fov: 62 };
 
@@ -101,4 +102,129 @@ test("el yaw de la cámara se traslada a la proyección de los avatares, igual q
   // queda detrás: sin polígonos, mismo criterio que el resto de la geometría.
   assert.ok(sinGirar.length > 0);
   assert.deepEqual(girado180, []);
+});
+
+/* ---- el cuerpo gira con el rumbo (#897) ------------------------------------ */
+
+/** Los polígonos de un jugador, con la cámara donde la pone la nave. */
+function pintar(jugador) {
+  return poligonosOtrosJugadores([jugador], {
+    camara: [0, 1.45, 0],
+    yaw: 0,
+    ancho: 320,
+    alto: 240,
+    epoca: "psx",
+    fov: 70,
+  });
+}
+
+const QUIEN = Object.freeze({ x: 0, y: 0, z: 2.6, avatar: { clase: "guerrero", gesto: "saludo" } });
+
+test("sin rumbo declarado se dibuja lo mismo que se dibujaba antes", () => {
+  // La garantía de no-regresión: un jugador que no publique `yaw` —o que
+  // publique basura— sale exactamente como salía cuando este módulo lo
+  // ignoraba. Nadie desaparece por un dato que falte.
+  const referencia = JSON.stringify(pintar({ ...QUIEN, yaw: 0 }));
+  for (const yaw of [undefined, null, Number.NaN, "norte"]) {
+    assert.equal(JSON.stringify(pintar({ ...QUIEN, yaw })), referencia, `cambió con yaw=${JSON.stringify(yaw)}`);
+  }
+});
+
+test("el cuerpo gira: media vuelta no se dibuja igual que de frente", () => {
+  // Ésta es la prueba que habría fallado durante todo el tiempo que `yaw` viajó
+  // por la red y se descartó en la última línea de este módulo.
+  const frente = JSON.stringify(pintar({ ...QUIEN, yaw: 0 }));
+  for (const yaw of [Math.PI / 2, Math.PI, -Math.PI / 2]) {
+    assert.notEqual(JSON.stringify(pintar({ ...QUIEN, yaw })), frente, `no giró con yaw=${yaw}`);
+  }
+});
+
+test("lo que se lleva en la cara cambia de lado al darse la vuelta", () => {
+  // Lo que hace que el giro sea un giro y no un temblor: el cigarro va DELANTE
+  // del cuerpo, así que al girar cambia de lado en profundidad.
+  //
+  // Ojo al convenio, que es contraintuitivo la primera vez: `yaw = 0` mira a
+  // +z, y la cámara está en el origen mirando también a +z. O sea que un
+  // avatar sin rumbo está DE ESPALDAS a quien lo mira, y es a media vuelta
+  // cuando te da la cara. Por eso lo cercano se acerca con `yaw = π`.
+  const fumador = { ...QUIEN, avatar: { clase: "monje", gesto: "fumar" } };
+  const masCerca = (yaw) => Math.min(...pintar({ ...fumador, yaw }).map((p) => p.profundidad));
+  const masLejos = (yaw) => Math.max(...pintar({ ...fumador, yaw }).map((p) => p.profundidad));
+  assert.ok(
+    masCerca(Math.PI) < masCerca(0),
+    `de cara no se acercó nada (${masCerca(0)} → ${masCerca(Math.PI)})`,
+  );
+  assert.ok(
+    masLejos(Math.PI) < masLejos(0),
+    `de cara no se retiró nada (${masLejos(0)} → ${masLejos(Math.PI)})`,
+  );
+});
+
+test("cada quien gira por su cuenta", () => {
+  // Dos personas en el mismo sitio con rumbos distintos no pueden salir igual:
+  // si el giro se leyera de una variable compartida —el yaw de la cámara, por
+  // ejemplo— aquí saldrían idénticas.
+  const a = poligonosOtrosJugadores(
+    [{ ...QUIEN, yaw: 0 }, { ...QUIEN, x: 1, yaw: Math.PI / 2 }],
+    { camara: [0, 1.45, 0], yaw: 0, ancho: 320, alto: 240, epoca: "psx", fov: 70 },
+  );
+  const b = poligonosOtrosJugadores(
+    [{ ...QUIEN, yaw: 0 }, { ...QUIEN, x: 1, yaw: 0 }],
+    { camara: [0, 1.45, 0], yaw: 0, ancho: 320, alto: 240, epoca: "psx", fov: 70 },
+  );
+  assert.notEqual(JSON.stringify(a), JSON.stringify(b), "el segundo jugador no usó su propio rumbo");
+});
+
+/* ---- altura: el offset de cámara no es la altura de los pies --------------- */
+
+test("quien se agacha o se sienta NO se hunde en el suelo", () => {
+  // El fallo que hacía visible sentarse, y que agacharse ya tenía: `y` es el
+  // offset de CÁMARA (negativo agachado o sentado) y se pasaba como altura de
+  // los pies, así que el cuerpo entero bajaba y los tobillos quedaban por
+  // debajo del suelo.
+  const camara = [0, 1.45, -4];
+  const comun = { camara, yaw: 0, ancho: 200, alto: 120 };
+  const dePie = poligonosOtrosJugadores([{ x: 0, y: 0, z: 0 }], comun);
+  const sentado = poligonosOtrosJugadores([{ x: 0, y: -0.25, z: 0 }], comun);
+  assert.ok(dePie.length > 0 && sentado.length > 0);
+
+  // Mismo suelo bajo los pies en las dos posturas: lo que cambia es la cabeza.
+  const alturasDePie = piezasAvatar({}, { pies: [0, 0, 0] }).map((p) => p.centro[1] - p.medidas[1] / 2);
+  const alturasSentado = piezasAvatar({}, { pies: [0, 0, 0], flexion: 0.25 }).map(
+    (p) => p.centro[1] - p.medidas[1] / 2,
+  );
+  assert.equal(Math.min(...alturasDePie), Math.min(...alturasSentado), "los pies no se mueven");
+});
+
+test("encogerse baja la cabeza EXACTAMENTE lo que baja la cámara", () => {
+  // La cuenta que hace que el avatar y la cámara de su dueño coincidan: lo que
+  // se le quita a las piernas es lo que baja todo lo que va encima.
+  const cabeza = (flexion) => {
+    const pieza = piezasAvatar({}, { pies: [0, 0, 0], flexion }).find(({ nombre }) =>
+      nombre.endsWith("Cabeza"),
+    );
+    return pieza.centro[1];
+  };
+  assert.ok(Math.abs(cabeza(0) - cabeza(0.25) - 0.25) < 1e-12);
+  assert.ok(Math.abs(cabeza(0) - cabeza(0.4) - 0.4) < 1e-12);
+  // Y en cuanto se llega al tope deja de seguirla, que es lo que el tope hace.
+  assert.ok(cabeza(0) - cabeza(0.6) < 0.6);
+});
+
+test("un cuerpo corto no se invierte al agacharse del todo", () => {
+  // Un mediano no tiene medio metro de pierna que encoger. Pasado el tope el
+  // cuerpo deja de seguir a la cámara al centímetro, que es lo correcto: lo
+  // otro es una pierna de largo negativo.
+  const piernas = piezasAvatar({ raza: "mediano" }, { pies: [0, 0, 0], flexion: 0.9 }).find(
+    ({ nombre }) => nombre.endsWith("Pierna"),
+  );
+  assert.ok(piernas.medidas[1] > 0, "una pierna nunca mide menos que nada");
+});
+
+test("saltar sí despega los pies: hacia arriba el cuerpo entero sube", () => {
+  const comun = { camara: [0, 1.45, -4], yaw: 0, ancho: 200, alto: 120 };
+  const suelo = (y) =>
+    Math.max(...poligonosOtrosJugadores([{ x: 0, y, z: 0 }], comun).flatMap((p) => p.puntos.map(({ y: py }) => py)));
+  // Más arriba en el mundo es más ARRIBA en pantalla, o sea menor `py`.
+  assert.ok(suelo(0.8) < suelo(0), "saltando el cuerpo entero tiene que subir");
 });

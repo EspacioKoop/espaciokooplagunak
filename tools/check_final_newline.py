@@ -15,6 +15,13 @@ upstream por un carácter, y `docs/UPSTREAM.md` es explícito en que eso se evit
 El 2026-08-22 había 40 ficheros sin salto final y exactamente la mitad eran de
 upstream — la mitad que no se toca.
 
+Tampoco toca `docs/referencias/`, por el mismo motivo con otro dueño: ahí viven
+copias BYTE A BYTE de material externo, con su sha256 en un manifiesto. Añadir
+un salto final a una de esas copias no es un arreglo de estilo, es invalidar la
+prueba de que la copia es fiel — y ya pasó: el commit f0bfa3fb «arregló» tres
+ficheros de `claude-artifacts/` y dejó tres checksums mintiendo en el manifiesto
+sin que ninguna puerta lo viera (issue #1039).
+
 Se ejecuta sin argumentos desde la raíz. Salida 0 si todo termina bien.
 """
 from __future__ import annotations
@@ -26,6 +33,8 @@ import sys
 RAIZ = pathlib.Path(__file__).resolve().parent.parent
 
 AREAS = ("foundry-module/", "docs/", "tools/", "bridge/", ".github/")
+# Copias fieles de material externo: su contenido lo fija un checksum, no esta guarda.
+EXCLUIDAS = ("docs/referencias/",)
 EXT = (".mjs", ".js", ".py", ".md", ".json", ".yml", ".yaml",
        ".txt", ".sh", ".css", ".html", ".hbs")
 
@@ -39,6 +48,8 @@ def nuestros():
     salida = subprocess.run(["git", "ls-files"], cwd=RAIZ, check=True,
                             capture_output=True, text=True)
     for ruta in salida.stdout.splitlines():
+        if ruta.startswith(EXCLUIDAS):
+            continue
         if ruta.startswith(AREAS) and ruta.endswith(EXT):
             yield ruta
 

@@ -638,6 +638,82 @@ def inventory(
     return results
 
 
+COLOR_LITERAL_RE = re.compile(
+    r"""["'`]\#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})["'`]|\b(?:rgba?|hsla?)\(\s*\d"""
+)
+
+# La paleta es DONDE viven los colores (#351), así que es el único módulo cuyo
+# color propio no es una infracción sino su contenido. No entra en artModules
+# —esa lista dice quién los CONSUME— y sin esta excepción la guarda acusaría a
+# la regla de incumplirse a sí misma.
+MODULO_PALETA = "paleta.mjs"
+
+
+def sin_comentarios(fuente: str) -> str:
+    """Quita comentarios de bloque y de línea, como hace paleta.test.mjs."""
+    sin_bloque = re.sub(r"/\*[\s\S]*?\*/", "", fuente)
+    return re.sub(r"^\s*//.*$", "", sin_bloque, flags=re.MULTILINE)
+
+
+def modulos_nuevos(paths: list[str], root: Path) -> list[str]:
+    """Traduce rutas del repositorio a claves de módulo bajo `<root>/scripts/`."""
+    prefijo = PurePosixPath(root.as_posix()) / "scripts"
+    claves = []
+    for path in paths:
+        limpio = path.strip()
+        if not limpio or not limpio.endswith(".mjs"):
+            continue
+        candidato = PurePosixPath(limpio)
+        try:
+            claves.append(candidato.relative_to(prefijo).as_posix())
+        except ValueError:
+            continue
+    return sorted(set(claves))
+
+
+def revisar_modulos_nuevos(
+    results: list[dict],
+    nuevos: list[str],
+    fuentes: dict[str, str],
+    art_modules: set[str],
+) -> list[str]:
+    """Errores de un PR que ESTRENA módulos, sobre el delta y no sobre el estado.
+
+    `unknown` no rompe CI a propósito (#701): ante sintaxis que el lexer
+    reducido no puede demostrar, el inventario prefiere no saber antes que
+    acusar en falso, y los `unknown` heredados no bloquean a nadie. Pero eso
+    vale para lo que YA está en el árbol: un módulo que ESTRENA este PR y sale
+    `unknown` es otra cosa — nadie lo importa todavía y quien lo escribe es
+    quien sabe si eso es un cimiento deliberado o un cable que se olvidó. Sin
+    esta comprobación entra en silencio, que es como la reposición de #537
+    estuvo cuatro semanas escrita sin ninguna superficie.
+    """
+    estados = {result["module"]: result["status"] for result in results}
+    errores = []
+    for modulo in nuevos:
+        estado = estados.get(modulo)
+        if estado is None:
+            continue
+        if estado == "unknown":
+            errores.append(
+                f"{modulo}: módulo nuevo sin consumidor y sin declarar. "
+                "Cablealo, o declaralo en docs/orphan-declarations.json con su "
+                "motivo y su evidencia propios."
+            )
+        fuente = fuentes.get(modulo)
+        if fuente is None or modulo in art_modules or modulo == MODULO_PALETA:
+            continue
+        literales = COLOR_LITERAL_RE.findall(sin_comentarios(fuente))
+        if literales:
+            errores.append(
+                f"{modulo}: módulo nuevo con color propio ({', '.join(sorted(set(literales)))}) "
+                "fuera de artModules. Los colores viven solo en paleta.mjs (#351); "
+                "si de verdad es un módulo de arte, entra en artModules y la guarda "
+                "de paleta.test.mjs empieza a recorrerlo."
+            )
+    return errores
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path("foundry-module"))
@@ -649,6 +725,15 @@ def main() -> int:
         "--check",
         action="store_true",
         help="valida el inventario en modo CI (la validación también protege la salida normal)",
+    )
+    parser.add_argument(
+        "--nuevos",
+        type=Path,
+        help=(
+            "fichero con las rutas que este cambio ESTRENA (una por línea, tal "
+            "y como las da `git diff --name-only --diff-filter=A`): exige que "
+            "cada módulo nuevo quede conectado o declarado"
+        ),
     )
     parser.add_argument(
         "--check-github-evidence",
@@ -665,6 +750,32 @@ def main() -> int:
     except (OSError, KeyError, TypeError, ValueError, json.JSONDecodeError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 2
+    if args.nuevos is not None:
+        try:
+            lineas = args.nuevos.read_text(encoding="utf-8").splitlines()
+        except OSError as error:
+            print(f"error: {error}", file=sys.stderr)
+            return 2
+        nuevos = modulos_nuevos(lineas, args.root)
+        fuentes = {}
+        for modulo in nuevos:
+            ruta = args.root / "scripts" / modulo
+            try:
+                fuentes[modulo] = ruta.read_text(encoding="utf-8")
+            except OSError:
+                continue
+        art_modules = {
+            result["module"]
+            for result in results
+            if "art" in result.get("inventories", ())
+        }
+        errores = revisar_modulos_nuevos(results, nuevos, fuentes, art_modules)
+        if errores:
+            print("módulos nuevos sin declarar:", file=sys.stderr)
+            for error in errores:
+                print(f"  - {error}", file=sys.stderr)
+            return 1
+
     if args.format == "json":
         print(json.dumps(results, ensure_ascii=False, indent=2))
     else:

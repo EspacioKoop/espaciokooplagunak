@@ -569,5 +569,260 @@ class ProvenanceIsDistinctiveTest(unittest.TestCase):
         self._validar(datos["declarations"])
 
 
+class ModulosNuevosTest(unittest.TestCase):
+    """La guarda del DELTA: un módulo que estrena un PR no puede entrar mudo.
+
+    `unknown` no rompe CI para lo que ya está en el árbol (#701) — ante
+    sintaxis que el lexer no puede demostrar, el inventario prefiere no saber
+    antes que acusar en falso. Pero eso es una regla sobre lo HEREDADO: un
+    módulo recién escrito y sin consumidor es la reposición de #537 otra vez,
+    y quien lo escribe es el único que sabe si es cimiento o cable olvidado.
+    """
+
+    def test_traduce_rutas_del_repositorio_a_claves_de_modulo(self):
+        claves = inventory_checker.modulos_nuevos(
+            [
+                "foundry-module/scripts/nueva.mjs",
+                "foundry-module/scripts/minijuegos/otra.mjs",
+            ],
+            Path("foundry-module"),
+        )
+        self.assertEqual(claves, ["minijuegos/otra.mjs", "nueva.mjs"])
+
+    def test_descarta_lo_que_no_es_un_modulo_del_arbol(self):
+        """Un diff trae de todo: docs, tests, ficheros de otra carpeta y
+        líneas en blanco. Nada de eso es un módulo que estrenar."""
+        claves = inventory_checker.modulos_nuevos(
+            [
+                "",
+                "   ",
+                "docs/algo.md",
+                "src/content/cosa.cpp",
+                "foundry-module/tests/nueva.test.mjs",
+                "foundry-module/scripts/buena.mjs",
+            ],
+            Path("foundry-module"),
+        )
+        self.assertEqual(claves, ["buena.mjs"])
+
+    def test_ruta_con_espacios_alrededor_se_acepta(self):
+        claves = inventory_checker.modulos_nuevos(
+            ["  foundry-module/scripts/buena.mjs  "], Path("foundry-module"))
+        self.assertEqual(claves, ["buena.mjs"])
+
+    def _revisar(self, results, nuevos, fuentes, art_modules=frozenset()):
+        return inventory_checker.revisar_modulos_nuevos(
+            results, nuevos, fuentes, set(art_modules))
+
+    def test_un_modulo_nuevo_unknown_es_error(self):
+        errores = self._revisar(
+            [{"module": "nueva.mjs", "status": "unknown"}],
+            ["nueva.mjs"],
+            {"nueva.mjs": "export const x = 1;\n"},
+        )
+        self.assertEqual(len(errores), 1)
+        self.assertIn("sin consumidor y sin declarar", errores[0])
+
+    def test_un_modulo_nuevo_conectado_pasa(self):
+        self.assertEqual(
+            self._revisar(
+                [{"module": "nueva.mjs", "status": "connected"}],
+                ["nueva.mjs"],
+                {"nueva.mjs": "export const x = 1;\n"},
+            ),
+            [],
+        )
+
+    def test_un_modulo_nuevo_declarado_huerfano_pasa(self):
+        """Declararlo es la salida legítima: cimiento con motivo y evidencia."""
+        self.assertEqual(
+            self._revisar(
+                [{"module": "nueva.mjs", "status": "declared-orphan"}],
+                ["nueva.mjs"],
+                {"nueva.mjs": "export const x = 1;\n"},
+            ),
+            [],
+        )
+
+    def test_un_unknown_heredado_no_bloquea_a_nadie(self):
+        """La regla es sobre el delta: el `unknown` que ya estaba sigue sin
+        romper CI, que es la decisión de #701 y no se toca aquí."""
+        self.assertEqual(
+            self._revisar(
+                [
+                    {"module": "vieja.mjs", "status": "unknown"},
+                    {"module": "nueva.mjs", "status": "connected"},
+                ],
+                ["nueva.mjs"],
+                {"nueva.mjs": "export const x = 1;\n"},
+            ),
+            [],
+        )
+
+    def test_un_modulo_nuevo_con_color_propio_es_error(self):
+        errores = self._revisar(
+            [{"module": "nueva.mjs", "status": "connected"}],
+            ["nueva.mjs"],
+            {"nueva.mjs": 'export const FONDO = "#ff8c1e";\n'},
+        )
+        self.assertEqual(len(errores), 1)
+        self.assertIn("#ff8c1e", errores[0])
+        self.assertIn("paleta.mjs", errores[0])
+
+    def test_rgba_tambien_cuenta_como_color_propio(self):
+        errores = self._revisar(
+            [{"module": "nueva.mjs", "status": "connected"}],
+            ["nueva.mjs"],
+            {"nueva.mjs": "ctx.fillStyle = rgba(12, 4, 9, 0.5);\n"},
+        )
+        self.assertEqual(len(errores), 1)
+
+    def test_un_color_en_comentario_no_acusa(self):
+        """Misma limpieza que hace paleta.test.mjs: un color citado en prosa
+        explicando de dónde sale un tono no es un color declarado."""
+        fuente = (
+            "// el ámbar de señal es #ff8c1e y vive en paleta.mjs\n"
+            "/* histórico: antes era #ffb703 */\n"
+            "import { AMBAR_SENAL } from './paleta.mjs';\n"
+        )
+        self.assertEqual(
+            self._revisar(
+                [{"module": "nueva.mjs", "status": "connected"}],
+                ["nueva.mjs"],
+                {"nueva.mjs": fuente},
+            ),
+            [],
+        )
+
+    def test_un_modulo_de_arte_puede_declarar_color(self):
+        """artModules es la frontera ya razonada de #351: dentro de ella el
+        color propio es el contenido, y quien lo vigila es paleta.test.mjs."""
+        self.assertEqual(
+            self._revisar(
+                [{"module": "nueva.mjs", "status": "connected"}],
+                ["nueva.mjs"],
+                {"nueva.mjs": 'export const P = "#ff8c1e";\n'},
+                art_modules={"nueva.mjs"},
+            ),
+            [],
+        )
+
+    def test_la_paleta_no_se_acusa_a_si_misma(self):
+        """`paleta.mjs` es DONDE viven los colores y no está en artModules
+        —esa lista dice quién los consume—. Sin la excepción, la guarda
+        acusaría a la regla de incumplirse a sí misma."""
+        self.assertEqual(
+            self._revisar(
+                [{"module": inventory_checker.MODULO_PALETA, "status": "connected"}],
+                [inventory_checker.MODULO_PALETA],
+                {inventory_checker.MODULO_PALETA: 'export const T = "#ff8c1e";\n'},
+            ),
+            [],
+        )
+
+    def test_un_modulo_nuevo_sin_fuente_legible_no_revienta(self):
+        """Si el fichero no se pudo leer, el estado sigue comprobándose y la
+        parte de color se calla: no saber no es acusar."""
+        self.assertEqual(
+            self._revisar(
+                [{"module": "nueva.mjs", "status": "connected"}],
+                ["nueva.mjs"],
+                {},
+            ),
+            [],
+        )
+
+    def test_un_modulo_que_el_inventario_no_conoce_se_ignora(self):
+        self.assertEqual(self._revisar([], ["fantasma.mjs"], {}), [])
+
+    def test_los_dos_defectos_se_informan_juntos(self):
+        """Un módulo puede estar huérfano Y traer color propio: arreglar uno
+        y volver a descubrir el otro en la siguiente vuelta de CI es el
+        desperdicio que esta guarda existe para evitar."""
+        errores = self._revisar(
+            [{"module": "nueva.mjs", "status": "unknown"}],
+            ["nueva.mjs"],
+            {"nueva.mjs": 'export const F = "#ff8c1e";\n'},
+        )
+        self.assertEqual(len(errores), 2)
+
+
+class ModulosNuevosCliTest(unittest.TestCase):
+    """La guarda tiene que fallar de verdad en la línea de órdenes: es como
+    la ejecuta CI, y un `revisar_modulos_nuevos` correcto con un `main` que
+    no lo llama sería el mismo fallo que la guarda persigue."""
+
+    def _correr(self, rutas):
+        with tempfile.NamedTemporaryFile(
+                "w", suffix=".txt", delete=False, encoding="utf-8") as fh:
+            fh.write("\n".join(rutas))
+            nombre = fh.name
+        try:
+            return subprocess.run(
+                [sys.executable, str(SCRIPT), "--nuevos", nombre],
+                cwd=str(SCRIPT.parents[1]),
+                capture_output=True,
+                text=True,
+            )
+        finally:
+            os.unlink(nombre)
+
+    def test_sin_modulos_nuevos_no_falla(self):
+        self.assertEqual(self._correr([]).returncode, 0)
+
+    def test_un_fichero_de_nuevos_inexistente_da_error_de_uso(self):
+        proceso = subprocess.run(
+            [sys.executable, str(SCRIPT), "--nuevos", "no-existe-jamas.txt"],
+            cwd=str(SCRIPT.parents[1]), capture_output=True, text=True)
+        self.assertEqual(proceso.returncode, 2)
+
+    def test_la_guarda_del_delta_es_mas_estricta_que_el_arbol_heredado(self):
+        """Declarar nuevo TODO lo que ya está en `main` SÍ enciende la guarda,
+        y eso es correcto, no un fallo: el árbol arrastra casos consentidos
+        —`unknown` heredados que #701 decidió no romper, y los módulos de arte
+        que `paleta.test.mjs` dejó fuera de `artModules` por su propio motivo—.
+        La guarda del delta no los indulta porque no los mira: solo mira lo que
+        un PR estrena. Este test fija esa asimetría para que nadie la lea como
+        una regresión y afloje la guarda para «arreglarla».
+
+        Lo que sí se exige es que no haya FALSOS positivos: todo módulo que la
+        guarda nombre debe ser o bien `unknown`, o bien portador real de un
+        color propio. Un módulo conectado y sin color no puede salir acusado.
+        """
+        raiz = SCRIPT.parents[1]
+        modulos = sorted(
+            str(ruta.relative_to(raiz))
+            for ruta in (raiz / "foundry-module" / "scripts").rglob("*.mjs")
+        )
+        proceso = self._correr(modulos)
+        self.assertEqual(proceso.returncode, 1, proceso.stdout)
+
+        estados = {
+            fila["module"]: fila["status"]
+            for fila in inventory_checker.inventory(
+                root=raiz / "foundry-module",
+                declaration_path=raiz / "docs" / "orphan-declarations.json",
+            )
+        }
+        acusados = [
+            linea.split(":", 1)[0].strip(" -")
+            for linea in proceso.stderr.splitlines()
+            if linea.startswith("  - ")
+        ]
+        self.assertTrue(acusados)
+        for modulo in acusados:
+            self.assertIn(modulo, estados, f"{modulo} no existe en el inventario")
+            fuente = (raiz / "foundry-module" / "scripts" / modulo).read_text(
+                encoding="utf-8")
+            motivo_valido = (
+                estados[modulo] == "unknown"
+                or inventory_checker.COLOR_LITERAL_RE.search(
+                    inventory_checker.sin_comentarios(fuente))
+            )
+            self.assertTrue(
+                motivo_valido,
+                f"{modulo} acusado sin ser unknown ni declarar color: falso positivo")
+
+
 if __name__ == "__main__":
     unittest.main()

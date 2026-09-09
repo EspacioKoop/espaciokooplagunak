@@ -37,6 +37,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+        with:
+          # El historial completo es lo que permite calcular qué módulos
+          # ESTRENA este PR (`--nuevos`); con el clon superficial por defecto
+          # no hay base contra la que comparar.
+          fetch-depth: 0
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: "22"
@@ -63,6 +68,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: python3 scripts/check_orphan_modules.py --check --check-github-evidence
+      - name: Los módulos que estrena este PR quedan conectados o declarados
+        # Solo en PR: el delta es contra la base, y en un push a `main` no hay
+        # tal cosa. Un `unknown` heredado no rompe CI (#701) y aquí se respeta
+        # —la comprobación mira únicamente lo que este cambio AÑADE—, pero un
+        # módulo recién escrito sin consumidor no entra en silencio: es como la
+        # reposición de #537 estuvo cuatro semanas sin ninguna superficie.
+        if: github.event_name == 'pull_request'
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only --diff-filter=A "$BASE_SHA"...HEAD > nuevos.txt
+          echo "Ficheros añadidos por este PR:"
+          cat nuevos.txt
+          python3 scripts/check_orphan_modules.py --nuevos nuevos.txt > /dev/null
       - name: El PNG prerenderizado corresponde al generador
         run: node tools/prerender-piel.mjs --check
 

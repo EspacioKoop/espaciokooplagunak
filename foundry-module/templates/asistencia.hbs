@@ -2,6 +2,37 @@
     gesto corto, y enseñar las cuatro a la vez la haría parecer un formulario. }}
 <section class="lagunak-asistencia__panel">
 
+  {{#if esGM}}
+    <div class="lagunak-asistencia__crisis">
+      {{#if mando.crisisActiva}}
+        <button type="button" data-asistencia-crisis-cerrar>{{localize "LAGUNAK.Asistencia.Mando.CerrarCrisis"}}</button>
+      {{else}}
+        <button type="button" data-asistencia-crisis-abrir>{{localize "LAGUNAK.Asistencia.Mando.AbrirCrisis"}}</button>
+      {{/if}}
+    </div>
+  {{/if}}
+
+  {{#if mandoVisible}}
+    <section class="lagunak-asistencia__mando" aria-label="{{localize "LAGUNAK.Asistencia.Mando.Titulo"}}">
+      <h3>{{localize "LAGUNAK.Asistencia.Mando.Titulo"}}</h3>
+      <p class="lagunak-asistencia__saldo" role="status">{{localize "LAGUNAK.Asistencia.Mando.Saldo"}}: {{mando.disponibles}}</p>
+      {{#if mando.ventajaActiva}}
+        <p class="lagunak-asistencia__mando-activo" role="status">
+          {{localize "LAGUNAK.Asistencia.Mando.VentajaActiva"}} {{localize mandoVentajaClavePuesto}}
+        </p>
+      {{else}}
+        <p class="lagunak-asistencia__intro">{{localize "LAGUNAK.Asistencia.Mando.Intro"}}</p>
+        <ul class="lagunak-asistencia__puestos-mando">
+          {{#each puestosMando}}
+            <li><button type="button" data-asistencia-mando="{{id}}" {{#unless ../puedeOrdenarMando}}disabled{{/unless}}>{{localize claveNombre}}</button></li>
+          {{/each}}
+        </ul>
+      {{/if}}
+      {{#if mandoPendiente}}<p class="lagunak-asistencia__espera" role="status">{{localize "LAGUNAK.Asistencia.Mando.Pendiente"}}</p>{{/if}}
+      {{#if mandoErrorClave}}<p class="lagunak-asistencia__mando-error" role="alert">{{localize mandoErrorClave}}</p>{{/if}}
+    </section>
+  {{/if}}
+
   {{#if enMenu}}
     <p class="lagunak-asistencia__intro">{{localize "LAGUNAK.Asistencia.Intro"}}</p>
     <ul class="lagunak-asistencia__tareas">

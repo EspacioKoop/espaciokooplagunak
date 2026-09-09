@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
-"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"Report-Msgid-Bugs-To: https://github.com/EspacioKoop/espaciokooplagunak/issues\n"
 "PO-Revision-Date: 2026-07-12 00:00+0200\n"
 "Last-Translator: Espaciokoop Lagunak contributors\n"
 "Language-Team: Espaciokoop Lagunak\n"
@@ -77,7 +77,7 @@ msgstr "Quijote"
 
 msgctxt "Enemies"
 msgid "Insanely strong and/or inordinately large numbers of enemies"
-msgstr "Insanely strong and/or inordinately large numbers of enemigos"
+msgstr "Enemigos disparatadamente fuertes y/o en cantidades desmedidas"
 
 # Scenario setting
 msgctxt "setting"
@@ -419,7 +419,7 @@ msgstr "Fin con Odin"
 #: scripts/scenario_29_surf.lua:762
 msgctxt "shipLog"
 msgid "We picked up an anomalous chroniton particle reading nearby. Encoded within the anomalous reading is a designated point along the timeline in the future. We are still working on the decoding rest of the information, but initial efforts hint at some major military action being taken by the Ghosts. We have placed countdown timers on some of your consoles indicating when this event is supposed to occur."
-msgstr "Recogimos una anomalous chroniton partícula lectura cercana. Encoded within the anomalous reading is a designated point along the timeline in the future. Todavía estamos trabajando en el decodificador de la información, pero los esfuerzos iniciales sugieren que algunas de las principales acciones militares que están tomando los Fantasmas. Hemos colocado temporizadores de cuenta atrás en algunas de sus consolas indicando cuándo se supone que este evento ocurra."
+msgstr "Recogimos cerca una lectura anómala de partículas de croniton. Codificado dentro de esa lectura anómala hay un punto designado a lo largo de la línea temporal en el futuro. Todavía estamos trabajando en decodificar el resto de la información, pero los esfuerzos iniciales sugieren que los Fantasmas están preparando una acción militar de gran envergadura. Hemos colocado temporizadores de cuenta atrás en algunas de sus consolas indicando cuándo se supone que este evento ocurra."
 
 #: scripts/scenario_29_surf.lua:766
 msgctxt "msgGM"

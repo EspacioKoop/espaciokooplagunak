@@ -30,7 +30,7 @@
 
 import { AMBAR_SENAL, SECCION } from "./paleta.mjs";
 import { caja } from "./escena-primitivas.mjs";
-import { componerEscena, fundirEscenas } from "./retro3d.mjs";
+import { componerEscena, fundirEscenas, focosCercanos, TOPE_FOCOS } from "./retro3d.mjs";
 import { resolverCamara } from "./nave-camara.mjs";
 import { campoEstelar, proyectarEstrellas } from "./retro3d-estrellas.mjs";
 import { piezasDeVentana } from "./nave-ventana-espacio.mjs";
@@ -40,7 +40,7 @@ import { piezasPielHoja } from "./nave-piel-puerta.mjs";
 import { piezasPielHojaTextura } from "./piel-textura-puerta.mjs";
 import { piezasPielColumna, piezasPielObjeto } from "./nave-piel-objeto.mjs";
 import { piezasPielSuelo, piezasPielTecho } from "./nave-piel-suelo.mjs";
-import { piezasLuminarias, mallaDifusorLuminarias, colorDifusorLuminaria } from "./nave-luminaria.mjs";
+import { piezasLuminarias, mallaDifusorLuminarias, colorDifusorLuminaria, focosLuminarias, capasConoLuminarias, motasLuminarias, fundirCercanas, ALFA_MOTAS } from "./nave-luminaria.mjs";
 import { crearPlanta } from "./nave-movimiento.mjs";
 import { poligonosOtrosJugadores } from "./nave-avatares-render.mjs";
 
@@ -773,6 +773,14 @@ export function crearSalaCaja({
   // `componer`, cada fotograma, sin rehacer un solo vértice — es la condición
   // que #551 dejó puesta al medir el presupuesto de la sala.
   const difusorLuminarias = mallaDifusorLuminarias({ ancho, profundidad, altura: ALTURA });
+  // El haz visible de cada luminaria (#556), en capas concéntricas: el motor no
+  // tiene alfa por vértice, así que el borde se difumina solapando capas de baja
+  // opacidad — el núcleo acumula, el borde se queda con la de fuera. Geometría
+  // fija de la sala, como el difusor: lo único que cambia por fotograma es el
+  // color, que sigue al de la luminaria que lo emite.
+  const capasCono = capasConoLuminarias({ ancho, profundidad, altura: ALTURA });
+  // Y el polvo suspendido en lo alto del haz, donde la luz rasante lo encendería.
+  const motasPorLuminaria = motasLuminarias({ ancho, profundidad, altura: ALTURA });
 
   const planta = crearPlanta({ ancho, profundidad, obstaculos: [...columnas, ...obstaculosMobiliario] });
   const tieneVentanas = ventanas.length > 0;
@@ -865,12 +873,72 @@ export function crearSalaCaja({
     // (#765). Sin `sistema` (la sala no aloja ninguno) no hay salud que mirar
     // y el difusor solo responde a la alerta general.
     const salud = sistema ? Number(saludSistemas?.[sistema.toLowerCase()]?.health) : null;
-    const difusor = difusorLuminarias
-      ? [{
-          malla: difusorLuminarias,
-          ...colorDifusorLuminaria({ aviso, health: Number.isFinite(salud) ? salud : null, timeMs: tiempo }),
-        }]
+    const tonoDifusor = colorDifusorLuminaria({ aviso, health: Number.isFinite(salud) ? salud : null, timeMs: tiempo });
+    const difusor = difusorLuminarias ? [{ malla: difusorLuminarias, ...tonoDifusor }] : [];
+
+    // Las luces de punto de las luminarias (#556). El motor las tenía desde que
+    // se escribió y ninguna escena declaraba una sola: la luminaria se veía
+    // encendida —el difusor es emisivo (#555)— y no alumbraba nada, así que el
+    // muro de debajo estaba igual que el del fondo.
+    //
+    // Van trasladadas por la cámara COMO LA MALLA, y esto es lo único delicado:
+    // con `luzFija` el motor toma las normales de los vértices sin girar, que
+    // son los de la malla ya trasladada. Un foco en coordenadas de sala mientras
+    // la geometría va en coordenadas de cámara pone el charco de luz en otra
+    // parte de la sala, y encima se mueve al andar.
+    const encendida = tonoDifusor.color !== "#000000";
+    // Las luminarias de la sala, como focos, en espacio de cámara. OJO AL
+    // NOMBRE: el parámetro `focos` de arriba son los que declara la ESCENA
+    // (#556). Son dos fuentes distintas y se SUMAN abajo.
+    const focosLuminariasCamara = encendida ? focosLuminarias({ ancho, profundidad, altura: ALTURA }).map((foco) => ({
+      ...foco,
+      posicion: [foco.posicion[0] - camara[0], foco.posicion[1] - camara[1], foco.posicion[2] - camara[2]],
+    })) : [];
+
+    // El haz va del MISMO color que el difusor que lo emite —si la luminaria
+    // parpadea por avería, su haz parpadea con ella— y emisivo, porque un haz
+    // sombreado por su normal tendría un lado oscuro, y la luz no tiene lados.
+    // Apagado no se dibuja ni el haz ni el polvo: un haz negro traslúcido es una
+    // mancha de suciedad, y un polvo que brilla sin lámpara que lo ilumine es
+    // una afirmación que nadie ha hecho.
+    //
+    // Y sólo las luminarias que se tienen cerca: el reactor tiene 36 y desde
+    // cualquier punto se ven unas pocas. Es la misma regla que el motor aplica a
+    // los focos, y sin ella el haz pasa a ser un tercio de los polígonos de una
+    // sala ya texturada — lo cazó la prueba de #584.
+    const cerca = [x, z];
+    const haz = encendida
+      ? capasCono
+          .map(({ porLuminaria, alpha }) => ({
+            malla: fundirCercanas(porLuminaria, cerca),
+            color: tonoDifusor.color,
+            emisivo: true,
+            alpha,
+          }))
+          .filter(({ malla }) => malla)
       : [];
+    const mallaMotas = encendida ? fundirCercanas(motasPorLuminaria, cerca) : null;
+    const motas = mallaMotas
+      ? [{ malla: mallaMotas, color: tonoDifusor.color, emisivo: true, alpha: ALFA_MOTAS }]
+      : [];
+
+    // LOS DE LA ESCENA PRIMERO, y no es un detalle de orden: el motor se queda
+    // con los `TOPE_FOCOS` más CERCANOS, y una sala tiene hasta 36 luminarias
+    // repartidas cada 4 m, así que siempre hay cuatro más cerca que cualquier
+    // foco que declare la escena. Medido en el reactor (22x22): las cuatro
+    // elegidas eran luminarias a 2,5 y 4,3 m, y el foco declarado —potencia 3,
+    // a 12 m— se caía de la lista. O sea, encender las luminarias sin esta
+    // reserva deja `focos` (#556) sin efecto en TODA sala iluminada, que es
+    // peor que no tenerlo: la escena declara una luz y no pasa nada.
+    //
+    // Se recorta aquí y no en el motor porque es aquí donde se sabe cuál es
+    // cuál: para `componerEscena` son todos focos iguales.
+    const deLaEscena = (focosCamara ?? []).slice(0, TOPE_FOCOS);
+    const hueco = Math.max(0, TOPE_FOCOS - deLaEscena.length);
+    const focosEfectivos = [
+      ...deLaEscena,
+      ...focosCercanos(focosLuminariasCamara, [0, 0, 0], hueco),
+    ];
 
     // El marcador emite (`emisivo: true`) por el mismo motivo que el difusor de
     // una luminaria: es una señal, no una superficie que reciba sombreado por
@@ -878,7 +946,7 @@ export function crearSalaCaja({
     // resultado de una tirada.
     const marcadorPieza = marcador ? [{ malla: marcador.malla, color: marcador.color, emisivo: true }] : [];
 
-    const partes = [...piezas, ...difusor, ...hojasPuertas, ...vistaVentanas, ...marcadorPieza].map(({ malla, color, emisivo, textura, ambiente }) =>
+    const partes = [...piezas, ...difusor, ...haz, ...motas, ...hojasPuertas, ...vistaVentanas, ...marcadorPieza].map(({ malla, color, emisivo, textura, ambiente, alpha }) =>
       componerEscena(trasladarMalla(malla, [-camara[0], -camara[1], -camara[2]]), {
         ancho: anchoLienzo,
         alto: altoLienzo,
@@ -887,6 +955,8 @@ export function crearSalaCaja({
         color,
         // Solo lo que de verdad emite: hoy, el difusor de una luminaria (#555).
         emisivo: emisivo === true,
+        // Traslúcido sólo si la pieza lo pide (#556): hoy, el haz de la luminaria.
+        ...(Number.isFinite(alpha) ? { alpha } : {}),
         // La textura de ESTA pieza, si la trae (#584). El motor admite una por
         // llamada y funde después, así que una sala con paños texturados y
         // mobiliario liso no necesita ni atlas ni cambio de motor.
@@ -896,9 +966,12 @@ export function crearSalaCaja({
         ...(Number.isFinite(ambiente) ? { ambiente } : {}),
         posicion: [0, 0, 0],
         yaw: yawCamara,
-        // Ya trasladados al espacio de cámara arriba; sin foco declarado,
-        // `null` no cambia nada (mismo camino que antes de #556).
-        ...(focosCamara && focosCamara.length > 0 ? { focos: focosCamara } : {}),
+        // Los de la escena (#556) MÁS los de las luminarias de la sala: una
+        // luminaria encendida ILUMINA, no solo se ve encendida. El motor se
+        // recorte ya está hecho arriba, con la escena reservada primero.
+        // Apagadas (avería, alerta) no aportan: `focosLuminariasCamara` va
+        // vacío y la sala vuelve a la direccional sola.
+        ...(focosEfectivos.length > 0 ? { focos: focosEfectivos } : {}),
         // Recorte de frustum completo (#510): las salas de #508 son
         // contenido nuevo sin cámaras afinadas a ojo que dependan del recorte
         // laxo — activarlo aquí es justo el caso seguro que #510 documenta.

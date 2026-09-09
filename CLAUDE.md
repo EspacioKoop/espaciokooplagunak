@@ -692,6 +692,20 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     —la escena se veía perfecta en una captura y estaba muerta— y que un muro lateral queda
     SIEMPRE en el suelo ambiente de 0,35 porque la luz del motor no le da, así que los cuadros de
     ese lado pierden el color, y como #836 alterna de muro en muro es media colección.
+    La
+    **convocatoria** (`scripts/convocatoria-estancia.mjs`, puro, + el cable
+    `scripts/convocatoria-difusion.mjs`, #689) es lo que hace que el museo no sea decorado para
+    una sola persona: el GM pulsa su botón y la mesa entera aparece dentro. Por el canal viaja
+    el **id de la estancia** y nada más — la posición que calcula el módulo puro se queda en el
+    emisor, donde sirve de acreditación de que la entrada es pisable, porque `resolverArranque`
+    ya deja a quien llega en esa misma `entrada`. Y la forma de abrir la ventana se le **pasa**
+    al registrador desde `main.mjs`: `abrirAndarNave` es local de ahí, y suponerla fue el
+    `ReferenceError` que cerró el PR #675. La playa no convoca (su botón sigue abriendo solo):
+    es un banco de pruebas del motor de exteriores, no contenido. La convocatoria viaja por un
+    **ajuste de mundo** (`scope: "world"`), no un socket crudo (#876): Foundry solo deja escribir
+    un ajuste de mundo a quien tiene permiso de modificar ajustes del juego (el GM), comprobado
+    por el servidor al escribir — la primera versión escuchaba el socket compartido sin acreditar
+    al emisor, y un jugador podía emitir el payload directamente.
     Lo que el museo NO hace es la mitad del diseño: **enseña y ya está**. La cartela se pinta al
     acercarse y se retira al apartarse (`accion: {tipo: "cartela"}` + el flanco de salida
     `alSalirDeInteraccion` de #598); no marca piezas como vistas, no lleva la cuenta ni deja rastro,

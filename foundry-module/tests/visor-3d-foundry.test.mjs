@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import vm from "node:vm";
 
 import {
   ID_BOTON,
@@ -206,4 +207,52 @@ test("aplanarSistema con sistema sin lunas no añade nada extra", () => {
     ],
   };
   assert.equal(aplanarSistema(sistema).length, 2);
+});
+
+// --- Regresión: la forma REAL en que Foundry v11 publica `Application` ---
+//
+// Verificado a mano contra Foundry 11.302 el 2026-09-09: el botón se
+// registraba, y al pulsarlo la consola escupía «Application no disponible en
+// este anfitrión». La causa es que el módulo leía `globalThis.Application`, y
+// en v11 `Application` se declara con `class Application {...}` dentro de un
+// script clásico: eso crea un binding en el ámbito LÉXICO global, que NO es
+// una propiedad de `globalThis`. El identificador desnudo resuelve; la lectura
+// por `globalThis` da `undefined` en un anfitrión perfectamente sano.
+//
+// Los tests de arriba no podían cazarlo porque hacen `globalThis.Application =
+// ...`, que es justo la forma equivocada: reproducían el error del módulo en
+// vez del contrato del anfitrión, así que lo confirmaban en lugar de
+// detectarlo. `vm.runInThisContext` sí reproduce la forma de v11 — deja el
+// binding léxico y `globalThis.Application` en `undefined`.
+test("abre con un `Application` léxico que NO está en globalThis (forma de Foundry v11)", async (t) => {
+  const originales = {
+    Application: globalThis.Application,
+    game: globalThis.game,
+    document: globalThis.document,
+    foundry: globalThis.foundry,
+  };
+  t.after(() => Object.assign(globalThis, originales));
+
+  // Que no quede rastro de la forma equivocada: si el módulo leyera de
+  // `globalThis`, aquí encontraría `undefined` y avisaría sin abrir nada.
+  delete globalThis.Application;
+
+  const contenidos = [];
+  const ApplicationV11 = crearApplicationV1Diferida(contenidos);
+  // El binding léxico global, como lo deja un `class ...` de foundry.js.
+  globalThis.__ApplicationV11 = ApplicationV11;
+  vm.runInThisContext("const Application = globalThis.__ApplicationV11;");
+  delete globalThis.__ApplicationV11;
+
+  assert.equal(globalThis.Application, undefined, "la premisa del test: no está en globalThis");
+
+  globalThis.game = { user: { isGM: true } };
+  globalThis.document = { createElement: (tag) => ({ tagName: tag, style: {} }) };
+
+  const mod = await import(`../scripts/visor-3d-sistema-app.mjs?visor-v11=${Math.random()}`);
+  mod.herramientaVisor3D.onClick();
+  await vaciarMicrotareas();
+
+  assert.equal(contenidos.length, 1, "el visor abre con el Application léxico de v11");
+  assert.equal(contenidos[0].hijos[0].tagName, "iframe");
 });

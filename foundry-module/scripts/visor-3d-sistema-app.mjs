@@ -15,8 +15,9 @@
 // módulo lo exigiría como consumidor inexistente. El render Three.js queda
 // totalmente aislado en la carpeta standalone, que sigue siendo autocontenida.
 //
-// Compatibilidad v11–v13: usa la clase `Application` clásica (global de appv1),
-// que Foundry conserva por retrocompatibilidad en v13; es la misma ruta aislada
+// Compatibilidad v11–v13: usa la clase `Application` clásica, que Foundry
+// conserva por retrocompatibilidad en v13. Se resuelve por identificador y no
+// por `globalThis` (ver `claseApplicationDelAnfitrion`); es la misma ruta aislada
 // que el resto del módulo usa para v11. Si la clase base no existe en el
 // anfitrión, el botón se registra pero al abrir avisa y no rompe nada.
 //
@@ -30,9 +31,36 @@ export const CLAVE_TITULO = "LAGUNAK.Controles.AbrirVisor3DSistema";
 
 let visorApp = null;
 
+// Resuelve la clase base `Application` (v1 clásica) TAL Y COMO LA PUBLICA EL
+// ANFITRIÓN. No se lee de `globalThis`: en Foundry v11 `Application` se declara
+// con `class Application {...}` en un script clásico, y una declaración de clase
+// crea un binding en el ámbito LÉXICO global — no una propiedad de `globalThis`.
+// O sea que `globalThis.Application` es `undefined` en un v11 perfectamente sano,
+// mientras el identificador desnudo resuelve sin problema. Ese era el fallo:
+// el botón se registraba, y al pulsarlo avisaba de que no había anfitrión válido.
+//
+// Es también el motivo de que los dobles no lo cazaran: un test que hace
+// `globalThis.Application = ...` reproduce la forma equivocada, no la del
+// anfitrión, así que confirmaba el error en vez de detectarlo. El resto del
+// módulo (`consola-caliente-v1.mjs`, `cantina-app.mjs`, `seccion-nave-app.mjs`)
+// siempre usó el identificador desnudo; esta era la única excepción.
+//
+// Se conserva la lectura de `globalThis` como SEGUNDO intento, no como el
+// primero: un anfitrión futuro podría exponerla ahí, y un test puede inyectarla.
+function claseApplicationDelAnfitrion() {
+  try {
+    // `typeof` sobre un identificador no declarado no lanza; la referencia sí,
+    // de ahí el try además de la comprobación.
+    if (typeof Application !== "undefined") return Application;
+  } catch {
+    /* sin binding léxico: caemos a globalThis */
+  }
+  return globalThis.Application;
+}
+
 function abrirVisor3D() {
   if (!game.user?.isGM) return;
-  const Base = globalThis.Application;
+  const Base = claseApplicationDelAnfitrion();
   if (!Base) {
     console.warn("[lagunak] Visor 3D: Application no disponible en este anfitrión");
     return;

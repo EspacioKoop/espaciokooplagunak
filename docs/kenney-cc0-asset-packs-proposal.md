@@ -73,3 +73,10 @@ texturas e imágenes procede de su página oficial enlazada arriba.
 Esta verificación acredita autores, naturaleza del contenido y declaraciones de
 licencia de la propuesta; **no** es una auditoría de todos los archivos de #1052.
 No se añaden binarios, dependencias, excepciones de licencia ni cambios runtime.
+
+## Alcance del candidato acotado de #1052
+
+Ninguno de los tres packs descritos aquí se incluye en el candidato acotado.
+Solo se conservan tres packs de Quaternius; Classic64 también queda apartado
+hasta verificar el mapeo exacto de sus componentes. Véase
+[PROCEDENCIA_ASSETS.md](PROCEDENCIA_ASSETS.md). No hay consumidor jugable.

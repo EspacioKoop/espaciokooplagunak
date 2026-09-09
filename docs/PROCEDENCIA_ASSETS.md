@@ -275,3 +275,54 @@ El PNG de origen **no entra en el repositorio**, igual que los STL de la
 sección anterior: se descarga aparte, se verifica su licencia y su sha256, y lo
 que se versiona es `foundry-module/data/tokens/<id>.mjs` — texto, revisable en
 un PR como cualquier otro cambio.
+
+
+## Packs Quaternius — candidato acotado de #1052
+
+Solo se incorporan Universal Animation Library 1, Universal Animation Library 2
+ y Medieval Village MegaKit **Standard/gratuito**. Se conservan binarios y avisos
+originales sin conversión. Son recursos preparados, sin consumidor jugable;
+no se declara integración visual ni se cierra una aceptación de escena.
+
+| Pack y directorio | Autor | Licencia conservada | Archivos | Árbol Git |
+|---|---|---|---:|---|
+| [resources/animations/universal-animation-library](https://quaternius.com/packs/universalanimationlibrary.html) | Quaternius | CC0 1.0, `License.txt` | 9 | `5e8f349535d6b9755701d902c21b3f4b71ddcda3` |
+| [resources/animations/universal-animation-library-2](https://quaternius.com/packs/universalanimationlibrary2.html) | Quaternius | CC0 1.0, `License.txt` | 13 | `b35c79d6e0d4595b4fb8ac0dce8ccf9c31fef8e0` |
+| [resources/models/medieval-village-megakit](https://quaternius.com/packs/medievalvillagemegakit.html) | Quaternius | CC0 1.0, `License_Standard.txt` | 760 | `9c44e2ed4b01b91b5ef1aba0c38527e7cec1d885` |
+
+Las páginas oficiales enlazadas y los avisos incluidos declaran CC0 1.0.
+La edición medieval Standard contiene solo una parte del MegaKit: no se anuncian
+las 300+ piezas de PRO/SOURCE como entregadas. El inventario por archivo, tamaño,
+blob Git y SHA-256 está en [assets-1052-inventory.json](assets-1052-inventory.json).
+
+### Material apartado, no acreditado para esta entrega
+
+Classic64 (Craig Snedeker) y Retro Nature / Ultimate Retro PSX Tree Pack
+(Elegant Crow) **no forman parte del árbol de este candidato**. Se conserva la
+propuesta documental, no sus binarios. No se declara una infracción universal:
+falta evidencia concreta de redistribución para todos sus componentes.
+
+- [Classic64](https://craigsnedeker.itch.io/classic64-asset-library): el aviso
+  general CC0 y las subatribuciones a rubberduck/Yughues no resuelven el mapeo
+  exacto de archivos modificados, imágenes empaquetadas y versión del conjunto.
+  La ausencia de nombres retirados en el changelog no demuestra ausencia de copias.
+- [Nature](https://elegantcrow.itch.io/retro-psx-nature-pack): el autor separa
+  modelos CC0, texturas AmbientCG e imágenes Pixabay; falta el mapa por imagen.
+- [Tree](https://elegantcrow.itch.io/ultimate-retro-psx-tree-pack): imágenes de
+  Pixabay/Pexels; retirar solo PNG deja imágenes incrustadas en GLB y FBX.
+
+[AmbientCG](https://docs.ambientcg.com/license/) autoriza sus archivos CC0;
+[Pixabay](https://pixabay.com/service/terms/) y
+[Pexels](https://www.pexels.com/terms-of-service/) distinguen CC0 y licencias con
+límites de distribución standalone. No se presume qué régimen corresponde a
+cada imagen. [CC0, sección 4](https://creativecommons.org/publicdomain/zero/1.0/legalcode.en)
+no concede derechos de terceros que el otorgante no posee.
+
+### Historial y alcance
+
+Este candidato parte de main y copia únicamente los tres árboles acreditados.
+No incorpora por ascendencia los commits de #1052 que publicaron los otros
+packs. El PR original conserva su historial: borrar archivos del árbol final
+no elimina sus blobs históricos. No se reescribe ni fuerza ninguna rama.
+La preservación del material original no constituye una licencia ni permiso
+para redistribuirlo. Retomarlo exige procedencia verificable o sustitución.

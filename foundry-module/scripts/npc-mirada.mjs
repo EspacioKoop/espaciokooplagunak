@@ -4,6 +4,18 @@
 // vector 3D acotado. No dibuja ojos, párpados ni cabeza; tampoco conoce Foundry,
 // DOM, rig, reloj o estado global. Los consumidores aportarán instantáneas ya
 // resueltas (incluido el objetivo de contagio con el retraso que decidan).
+//
+// POR QUÉ SIGUE SIN CONSUMIDOR, y no es que se haya olvidado. Lo que falta no es
+// código sino una decisión de ARTE que sigue abierta en #1086: si la cara del
+// avatar necesita el ojo claro de su opción 04 para que una pupila se LEA, o si
+// basta la 02 de solo facetas. Hasta que eso se decida, quien dibujara la mirada
+// tendría que inventarse la cuenca — y una cuenca inventada es arte que nadie ha
+// aprobado, en la superficie que #973 y #974 están decidiendo ahora mismo.
+//
+// El dato temporal tampoco está aquí a propósito: el retraso de medio segundo del
+// contagio y las pausas de la ronda de interés son de quien tenga reloj. Este
+// módulo recibe `objetivoContagio` y `pasoInteres` ya resueltos, y por eso se
+// puede probar entero sin simular el paso del tiempo.
 
 const VECTOR_CERO = Object.freeze([0, 0, 0]);
 const FRENTE_PREDETERMINADO = Object.freeze([0, 0, 1]);

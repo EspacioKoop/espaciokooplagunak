@@ -150,9 +150,9 @@
       "module": "npc-mirada.mjs",
       "status": "declared-orphan",
       "foundation": true,
-      "reason": "Cimiento puro de quién mira a qué (#975, parte 1): limita el vector al cono y resuelve políticas declarativas con precedencia de alarma. No tiene consumidor en caliente a propósito hasta que la geometría facial de #974 esté integrada; cablearlo aquí mezclaría política y dibujo.",
+      "reason": "Cimiento puro de quien mira a que (#975, parte 1): limita el vector al cono y resuelve politicas declarativas con precedencia de alarma. Sin consumidor a proposito porque el dibujo de la mirada depende de una decision de ARTE que sigue abierta en #1086 —si la cara necesita el ojo claro de la opcion 04 para que una pupila se lea, o basta la 02 de solo facetas—, no de codigo: hasta que eso se decida, cualquier consumidor tendria que inventarse la cuenca. La declaracion anterior culpaba a #974, que es la geometria del CUERPO y no la de la cara.",
       "declaredBy": "Espaciokoop Lagunak",
-      "declaredAt": "2026-09-04",
+      "declaredAt": "2026-09-10",
       "evidence": {
         "type": "issue",
         "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/975"

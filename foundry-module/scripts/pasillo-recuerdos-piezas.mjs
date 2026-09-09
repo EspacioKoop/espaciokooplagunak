@@ -15,6 +15,8 @@
 // GENERADA por `pasillo-guardiana.mjs`, no a un escaneo: no hay ningún archivo
 // que buscar en `data/mallas/`.
 
+import { registrarCatalogoPiezas } from "./catalogo-piezas.mjs";
+
 const PROCEDENCIA_PROPIA = Object.freeze({
   kind: "original",
   source: "Espaciokoop Lagunak: silueta generada por scripts/pasillo-guardiana.mjs",
@@ -69,3 +71,7 @@ export const CATALOGO_PASILLO = Object.freeze({
     }),
   ]),
 });
+
+// Se registra en el punto único de resolución (#598), igual que las esculturas:
+// quien pinta una cartela pide la pieza por su id y no sabe de qué sala es.
+registrarCatalogoPiezas(CATALOGO_PASILLO);

@@ -44,6 +44,15 @@ export const CARTA_COMBATIENTE = Object.freeze({
 });
 
 /** Lenguajes disponibles, para que un consumidor pueda declarar el suyo. */
+// Colores conservados del prototipo de turnos (#1012), centralizados sin
+// certificar su aceptación artística ni cambiar el resultado SVG.
+export const TURNO_CARTAS = Object.freeze({
+  ventaja: "#ffff00",
+  concentracion: "#ff00ff",
+  muerto: "#808080",
+  agotamiento: "#d1495b",
+});
+
 export const LENGUAJES = Object.freeze(["grabado", "pixel"]);
 
 /**
@@ -767,6 +776,23 @@ export const TARJETA_COMBATIENTE = Object.freeze({
     ventaja: "#62c370",
     muerto: "#22252b",
   }),
+});
+
+/**
+ * Insignias de progresión de campaña (#1016): un acento por nivel de hito
+ * alcanzado. Único sitio que declara estos hexadecimales (ADR-0014);
+ * `progresion-campana.mjs` los consume por nivel en vez de mantener su
+ * propia tabla.
+ *
+ * El oro NO se reescribe: el nivel máximo de progresión y el marco `shiny` de
+ * la tarjeta de combatiente son la misma insignia vista desde dos sitios, y
+ * dos literales idénticos en este mismo archivo es como se desincronizan.
+ */
+export const PROGRESION = Object.freeze({
+  plain: "#8a918f",
+  bronze: "#d28b45",
+  silver: "#c4ccd1",
+  gold: TARJETA_COMBATIENTE.shiny.marco,
 });
 
 export const FICHA = Object.freeze({

@@ -1,12 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { MUSEO } from "../scripts/paleta.mjs";
+import { MUSEO, CUADRO } from "../scripts/paleta.mjs";
 import * as MUSEO_INTERNO from "../scripts/museo-escena.mjs";
 import { validarCatalogoPiezas } from "../scripts/catalogo-piezas.mjs";
 import { CATALOGO_MUSEO, MALLAS_MUSEO } from "../scripts/museo-piezas.mjs";
 import {
   ANCHO,
+  ATRIL_LIBRO,
   ENTRADA,
   INTERACCIONES,
   PIEZAS_COLOCADAS,
@@ -61,7 +62,9 @@ test("el catálogo del museo es válido y todas sus fichas apuntan a una malla q
     validarCatalogoPiezas(CATALOGO_MUSEO, { mallasDisponibles: new Set(Object.keys(MALLAS_MUSEO)) }),
     true,
   );
-  assert.equal(CATALOGO_MUSEO.piezas.length, 3, "tres piezas, la disciplina de #590");
+  const piezasDePedestal = CATALOGO_MUSEO.piezas.filter((p) => p.naturaleza !== "obra-propia");
+  assert.equal(piezasDePedestal.length, 18, "dieciocho piezas sobre pedestal, la capacidad de la sala");
+  assert.equal(CATALOGO_MUSEO.piezas.length, 18, "los cuadros de muro (#836) viven en su propio catálogo, museo-cuadros.mjs");
   for (const pieza of CATALOGO_MUSEO.piezas) {
     assert.ok(MALLAS_MUSEO[pieza.malla]?.vertices?.length, `${pieza.malla} sin geometría`);
   }
@@ -69,6 +72,9 @@ test("el catálogo del museo es válido y todas sus fichas apuntan a una malla q
 
 test("LA GUARDA DE PROCEDENCIA: lo que declara el museo no se separa de la ficha del conversor", () => {
   for (const pieza of CATALOGO_MUSEO.piezas) {
+    // Los cuadros (#836) son `obra-propia`: pixelart del módulo, sin ficha en el
+    // conversor de estatuas que esta guarda comprueba. Se saltan, no se comparan.
+    if (pieza.naturaleza === "obra-propia") continue;
     const ficha = FICHAS[pieza.malla];
     assert.ok(ficha, `${pieza.malla} no tiene ficha en tools/convertir-estatua.mjs`);
     // El campo que de verdad puede mentir en una cartela es QUÉ ES EL FICHERO.
@@ -109,7 +115,12 @@ test("cada pieza se apoya en su pedestal y ninguna se atraviesa andando", () => 
 test("desde el mirador de cada pieza se alcanza SU punto, y solo el suyo", () => {
   for (const colocada of PIEZAS_COLOCADAS) {
     const [x, z] = colocada.mirador;
-    assert.equal(colisiona(x, z, 0.35, PLANTA_MUSEO), false, "no se puede llegar al mirador");
+    // ESTA GARANTÍA NO SE QUITA (#757). `interaccionAlAlcance` responde
+    // igual desde dentro de un obstáculo, así que sin comprobar antes que el
+    // mirador es PISABLE la prueba da falso verde: la cartela «se alcanza»
+    // desde un punto donde nadie puede ponerse. Con 18 piezas fallaba en 12.
+    assert.equal(colisiona(x, z, 0.35, PLANTA_MUSEO), false,
+      `no se puede llegar al mirador de ${colocada.pieza.id}`);
     const alcanzada = interaccionAlAlcance(x, z, 0.35, INTERACCIONES);
     assert.equal(alcanzada?.accion?.tipo, "cartela");
     assert.equal(alcanzada?.accion?.pieza, colocada.pieza.id);
@@ -216,9 +227,12 @@ test("pasarse de la capacidad falla a gritos, no amontona", () => {
 });
 
 test("el catalogo del museo no supera lo que cabe en la sala", () => {
+  // Solo cuenta lo que ocupa pedestal: las `obra-propia` (#836) cuelgan del
+  // muro y no compiten por el mismo hueco.
+  const piezasDePedestal = CATALOGO_MUSEO.piezas.filter((p) => p.naturaleza !== "obra-propia");
   assert.ok(
-    CATALOGO_MUSEO.piezas.length <= MUSEO_INTERNO.CAPACIDAD,
-    `el catalogo trae ${CATALOGO_MUSEO.piezas.length} piezas y la sala admite ${MUSEO_INTERNO.CAPACIDAD}`,
+    piezasDePedestal.length <= MUSEO_INTERNO.CAPACIDAD,
+    `el catalogo trae ${piezasDePedestal.length} piezas de pedestal y la sala admite ${MUSEO_INTERNO.CAPACIDAD}`,
   );
 });
 
@@ -244,4 +258,104 @@ test("caben todas las mallas de vaciados que hay en el arbol", () => {
     MUSEO_INTERNO.CAPACIDAD >= 18,
     `hay 18 mallas y la sala admite ${MUSEO_INTERNO.CAPACIDAD}`,
   );
+});
+
+test("el mirador de una pieza queda libre también de la propia pieza, no solo del pedestal", () => {
+  // El caballo ecuestre mide 2,64 m de fondo sobre una base de 1,15: vuela más
+  // de un metro por delante y por detrás. Las mallas no se reescalan en la
+  // escena a propósito, así que la sala tiene que contar con ellas. Sin esto,
+  // quien mirase el caballo quedaba dentro del caballo.
+  const hondas = PIEZAS_COLOCADAS.filter((c) => c.medidas[2] > 1.15);
+  assert.ok(hondas.length > 0, "el catálogo debe tener alguna pieza más honda que su pedestal");
+  for (const colocada of hondas) {
+    const [x, z] = colocada.mirador;
+    assert.equal(colisiona(x, z, 0.35, PLANTA_MUSEO), false, `${colocada.pieza.id}`);
+  }
+});
+
+test("las piezas más hondas van a la fila de delante, que es la única con suelo libre delante", () => {
+  // Regla, no excepción con un nombre dentro. Lo que hay delante de cualquier
+  // otra fila es el pedestal de la siguiente.
+  const porZ = [...PIEZAS_COLOCADAS].sort((a, b) => a.centro[2] - b.centro[2]);
+  const filaDelantera = porZ.filter((c) => Math.abs(c.centro[2] - porZ[0].centro[2]) < 0.01);
+  const masHonda = [...PIEZAS_COLOCADAS].sort((a, b) => b.medidas[2] - a.medidas[2])[0];
+  assert.ok(
+    filaDelantera.some((c) => c.pieza.id === masHonda.pieza.id),
+    `${masHonda.pieza.id} es la más honda y debería ir en la fila de delante`,
+  );
+});
+
+test("las 18 piezas se alcanzan ANDANDO desde la entrada, no solo por tener el mirador libre", () => {
+  // Un mirador pisable puede seguir estando en una bolsa cerrada por pedestales.
+  // Esto es lo que de verdad significa «la escena es jugable»: inundación por
+  // la rejilla desde ENTRADA, con el mismo radio de cuerpo y el mismo
+  // `colisiona` que usa el motor.
+  const paso = 0.05;
+  const clave = (x, z) => `${Math.round(x / paso)},${Math.round(z / paso)}`;
+  const inicio = [ENTRADA.x, ENTRADA.z];
+  assert.equal(colisiona(inicio[0], inicio[1], 0.35, PLANTA_MUSEO), false, "la entrada es pisable");
+
+  const vistos = new Set([clave(...inicio)]);
+  const cola = [inicio];
+  while (cola.length) {
+    const [cx, cz] = cola.pop();
+    for (const [dx, dz] of [[paso, 0], [-paso, 0], [0, paso], [0, -paso]]) {
+      const nx = cx + dx;
+      const nz = cz + dz;
+      const k = clave(nx, nz);
+      if (vistos.has(k)) continue;
+      if (colisiona(nx, nz, 0.35, PLANTA_MUSEO)) continue;
+      vistos.add(k);
+      cola.push([nx, nz]);
+    }
+  }
+
+  const inalcanzables = PIEZAS_COLOCADAS
+    .filter((c) => !vistos.has(clave(c.mirador[0], c.mirador[1])))
+    .map((c) => c.pieza.id);
+  assert.deepEqual(inalcanzables, [], "hay piezas a las que no se puede llegar andando");
+});
+
+test("el atril del libro conserva las tres holguras que su cabecera afirma (#853)", () => {
+  // La cabecera de `ATRIL_LIBRO` justifica su posición con tres distancias
+  // medidas. Esta prueba existe porque esas cifras YA caducaron una vez: el
+  // atril se colocó contra una sala de 12 x 9 y #836/#838 la dejaron en 15 x 10
+  // con cuadros en los muros laterales, así que el sitio "en el lado despejado"
+  // pasó a estar encima del mirador de un cuadro sin que fallara nada. Cambiar
+  // ANCHO, PROFUNDIDAD o el reparto de pedestales tiene que romper aquí, no en
+  // el QA.
+  const puntoLibro = INTERACCIONES.find((i) => i.accion?.tipo === "libro")?.punto;
+  assert.ok(puntoLibro, "no hay punto de interacción del libro");
+  const dist = (ax, az, bx, bz) => Math.hypot(ax - bx, az - bz);
+
+  // 1. Lejos de la entrada: ni tapona el paso ni cae en la recta entrada -> fondo.
+  assert.ok(
+    dist(puntoLibro[0], puntoLibro[1], ENTRADA.x, ENTRADA.z) >= 3.0,
+    "el atril se ha acercado a la entrada y tapona por donde se entra",
+  );
+
+  // 2. Lejos de cualquier OTRO punto de interacción. Es el que más importa: dos
+  //    puntos a menos de un metro se disparan a la vez, y quien va a leer una
+  //    cartela abriría el libro sin querer.
+  const otros = INTERACCIONES.filter((i) => i.accion?.tipo !== "libro");
+  for (const otro of otros) {
+    assert.ok(
+      dist(puntoLibro[0], puntoLibro[1], otro.punto[0], otro.punto[1]) >= 1.5,
+      `el punto del libro se solapa con la interacción "${otro.id}"`,
+    );
+  }
+
+  // 3. Lejos del muro izquierdo, que es donde cuelgan los cuadros (#836): sus
+  //    miradores quedan entre el muro y el atril, y el atril no puede comerse
+  //    ese pasillo.
+  assert.ok(ATRIL_LIBRO.x >= 2.0, "el atril invade el pasillo de los cuadros del muro izquierdo");
+
+  // Y el bloque del atril no puede solaparse con ningún pedestal.
+  const medioAtril = 0.5 / 2 + 1.15 / 2;
+  for (const colocada of PIEZAS_COLOCADAS) {
+    const solapa =
+      Math.abs(colocada.centro[0] - ATRIL_LIBRO.x) < medioAtril &&
+      Math.abs(colocada.centro[2] - ATRIL_LIBRO.z) < medioAtril;
+    assert.ok(!solapa, `el atril se solapa con el pedestal de "${colocada.pieza.id}"`);
+  }
 });

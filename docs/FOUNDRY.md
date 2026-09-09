@@ -647,8 +647,8 @@ PSX y no GameCube, que es lo que el propio #362 propuso para ella: esto se ve de
 reojo desde una cabina mientras se pilota. Lo que se mira fijo —la lámina de
 reconocimiento— es lo que se ganó los dieciséis tonos.
 
-Módulos: `visor-piloto.mjs` (colocación y mallas, puro) y
-`visor-piloto-lienzo.mjs` (el `<canvas>` y nada más). Reutilizan `retro3d.mjs`
+Módulos: `visor-piloto/visor-piloto.mjs` (colocación y mallas, puro) y
+`visor-piloto/visor-piloto-lienzo.mjs` (el `<canvas>` y nada más). Reutilizan `retro3d.mjs`
 sin tocarlo, como ya hicieron la lámina, los dados y la cantina.
 
 ### Frontera de estilo: vivo frente a registrado

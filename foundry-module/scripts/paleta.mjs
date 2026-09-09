@@ -32,6 +32,15 @@
  */
 
 /** Lenguajes disponibles, para que un consumidor pueda declarar el suyo. */
+// Colores conservados del prototipo de turnos (#1012), centralizados sin
+// certificar su aceptación artística ni cambiar el resultado SVG.
+export const TURNO_CARTAS = Object.freeze({
+  ventaja: "#ffff00",
+  concentracion: "#ff00ff",
+  muerto: "#808080",
+  agotamiento: "#d1495b",
+});
+
 export const LENGUAJES = Object.freeze(["grabado", "pixel"]);
 
 /**
@@ -757,6 +766,23 @@ export const TARJETA_COMBATIENTE = Object.freeze({
   }),
 });
 
+/**
+ * Insignias de progresión de campaña (#1016): un acento por nivel de hito
+ * alcanzado. Único sitio que declara estos hexadecimales (ADR-0014);
+ * `progresion-campana.mjs` los consume por nivel en vez de mantener su
+ * propia tabla.
+ *
+ * El oro NO se reescribe: el nivel máximo de progresión y el marco `shiny` de
+ * la tarjeta de combatiente son la misma insignia vista desde dos sitios, y
+ * dos literales idénticos en este mismo archivo es como se desincronizan.
+ */
+export const PROGRESION = Object.freeze({
+  plain: "#8a918f",
+  bronze: "#d28b45",
+  silver: "#c4ccd1",
+  gold: TARJETA_COMBATIENTE.shiny.marco,
+});
+
 export const FICHA = Object.freeze({
   tapete: "#0f3d2a", // fieltro de la mesa
   canto: CREMA, // cuñas y cara de la ficha: el mismo crema del resto del arte
@@ -823,3 +849,25 @@ export function contraste(a, b) {
   if (la === null || lb === null) return null;
   return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
 }
+
+export const BOSQUE = Object.freeze({
+  tronco: "#5b4632", // corteza en sombra, que es como se ve un tronco casi siempre
+  troncoSol: "#7a6046", // la banda del tronco a la que sí llega la luz
+  follaje: "#3f5f39", // la copa, verde apagado: ni esmeralda ni oliva
+  follajeSol: "#5d7f47", // lo alto de la copa, donde da el sol
+  follajeSombra: "#2b4229", // lo de debajo y lo del fondo de la arboleda
+  hojarasca: "#6b5a3c", // el suelo bajo los árboles, tierra con hoja caída
+  // Los DOS tonos del suelo de un claro. Muy juntos a propósito: alternarlos por
+  // casilla da escala —se ve cuánto es un paso sin que nadie lo diga— y con dos
+  // colores separados el suelo dejaría de ser suelo para leerse como una
+  // alfombra de rayas. Es el mismo criterio que la junta de suelo de #552, que
+  // tiene que ser una línea un punto más clara y solo un punto.
+  suelo: "#4e5c34", // hierba pisada de claro
+  sueloClaro: "#57663a", // la franja de al lado, apenas un punto por encima
+  // El terreno de más allá de la linde. Más apagado y más frío que el claro: es
+  // el mismo bosque visto a través de aire, que es lo que hace la perspectiva
+  // aérea antes incluso de que entre la niebla del motor.
+  lejania: "#46543a",
+  seco: "#8a7b52", // ramas muertas y helecho pasado: rompe el verde continuo
+  tocon: "#6a563d", // el corte de un tronco caído, más claro que su corteza
+});

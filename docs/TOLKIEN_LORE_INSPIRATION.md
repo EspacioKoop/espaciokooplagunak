@@ -17,7 +17,7 @@ Mapear las fuentes que inspiraron Tolkien y, a través de él, a D&D, hacia opor
 ### 2. The Poetic Edda / Prose Edda (Norse)
 - Temas: "Middle Earth" como plano, Gandalf/Gandálfr, enanos, bosque Mirkwood, anillos, runas, wolven, Yggdrasil-like estructuras
 - Puente D&D: alineamientos, enanos/herreros, magia rúnica, lobos gigantes, Valhalla-like
-- Oportunidad Espaciokoop: `foundry-module/scripts/visor-piloto.mjs` como Yggdrasil estelar; `foundry-module/scripts/npc-*.mjs` con nombres eddicos; `foundry-module/scripts/mapa-*.mjs` como rutas rúnicas
+- Oportunidad Espaciokoop: `foundry-module/scripts/visor-piloto/visor-piloto.mjs` como Yggdrasil estelar; `foundry-module/scripts/npc-*.mjs` con nombres eddicos; `foundry-module/scripts/mapa-*.mjs` como rutas rúnicas
 
 ### 3. The Volsung Saga / The Nibelungenlied / Wagner's Ring
 - Temas: anillo maldito, héroe trágico, espada rota/remodelada, dragón, tesoro nibelungo
@@ -48,7 +48,7 @@ Mapear las fuentes que inspiraron Tolkien y, a través de él, a D&D, hacia opor
 
 1. Nombres: añadir batch de nombres eddicos/fineses en foundry-module/data/nombres/ (directorio a crear)
 2. Artefactos: ampliar `foundry-module/scripts/procedencia-*.mjs` con 3 artefactos tipo Ring/Volsung
-3. Escenas: prototipo de "Yggdrasil stellar" en `foundry-module/scripts/visor-piloto*.mjs`
+3. Escenas: prototipo de "Yggdrasil stellar" en `foundry-module/scripts/visor-piloto/*.mjs`
 4. Música/FX: Kalevala como inspiración para FX de cantos en `foundry-module/scripts/audio-*.mjs`
 5. NPCs: bestiario eddico/beowulfiano en `foundry-module/scripts/npc-*.mjs`
 6. Tests: foundry-module/tests/lore-sources.test.mjs (a crear) que verifique que cada fuente tenga al menos un asset/fichero asociado

@@ -3011,7 +3011,7 @@ msgstr "Conjunto de enemigos normal"
 #: Missing from scenario header
 msgctxt "Missions"
 msgid "All"
-msgstr "Todos"
+msgstr "Todas"
 
 #: Missing from scenario header
 msgctxt "Missions"
@@ -3021,7 +3021,7 @@ msgstr "Las misiones se llevan a cabo en orden aleatorio"
 #: Missing from scenario header
 msgctxt "Missions"
 msgid "One"
-msgstr "Uno"
+msgstr "Una"
 
 #: Missing from scenario header
 msgctxt "Missions"
@@ -3041,12 +3041,12 @@ msgstr "Difícil"
 #: Missing from scenario header
 msgctxt "Murphy"
 msgid "Murphy generally smiles on you"
-msgstr "Murphy generalmente sonríe para ti"
+msgstr "Murphy suele estar de tu parte"
 
 #: Missing from scenario header
 msgctxt "Murphy"
 msgid "Murphy is in particularly strong form today"
-msgstr "Murphy está en particularmente fuerte forma hoy"
+msgstr "Hoy Murphy está especialmente activo"
 
 #: Missing from scenario header
 msgctxt "Murphy"
@@ -3061,7 +3061,7 @@ msgstr "La distribución normal de las probabilidades en tu contra"
 #: Missing from scenario header
 msgctxt "setting"
 msgid "Configures how the odds are stacked against you - Murphy's law."
-msgstr "Configura cómo se apilan las probabilidades en tu contra - la ley de Murphy."
+msgstr "Configura hasta qué punto la ley de Murphy juega en tu contra"
 
 #: Missing from scenario header
 msgctxt "setting"

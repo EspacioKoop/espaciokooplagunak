@@ -1,0 +1,400 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style></head><body>
+<title>Salir del Cubo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#10141a; --panel:#1b222b; --panel-2:#212a34; --line:#2d3946; --line-bright:#425364;
+    --text:#e7ecef; --text-dim:#8fa0ac; --text-faint:#5d6c78;
+    --amber:#e0a33a; --teal:#3ecfc4; --danger:#c8665a;
+    --shadow-dark:#080a0d; --shadow-light:#2c3745;
+    font-size:15px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg); color:var(--text); margin:0; padding:28px 20px 70px;
+    font-family:'IBM Plex Sans', system-ui, sans-serif;
+    background-image:
+      radial-gradient(circle at 12% 6%, rgba(62,207,196,0.05), transparent 42%),
+      radial-gradient(circle at 88% 94%, rgba(224,163,58,0.05), transparent 45%);
+  }
+  .wrap{max-width:1220px;margin:0 auto;}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);}
+  h1{font-family:'Press Start 2P', monospace;font-size:19px;line-height:1.55;margin:10px 0 10px;text-wrap:balance;}
+  .page-head p{color:var(--text-dim);max-width:74ch;line-height:1.65;margin:0 0 8px;font-size:14px;}
+  code{background:var(--panel-2);padding:1px 5px;border:1px solid var(--line);font-size:12.5px;font-family:'IBM Plex Mono',monospace;}
+
+  .decision{
+    border-left:3px solid var(--amber);background:var(--panel);padding:14px 16px;margin:22px 0 6px;
+    font-size:13.5px;color:var(--text-dim);line-height:1.6;
+  }
+  .decision b{color:var(--amber);}
+
+  .seccion{font-family:'Press Start 2P';font-size:11px;color:var(--amber);margin:38px 0 6px;}
+  .seccion-nota{font-family:'IBM Plex Mono';font-size:12px;color:var(--text-faint);max-width:84ch;line-height:1.65;margin-bottom:16px;}
+
+  .fila-comparativa{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;}
+  @media (max-width:1000px){.fila-comparativa{grid-template-columns:repeat(3,1fr);}}
+  @media (max-width:620px){.fila-comparativa{grid-template-columns:repeat(2,1fr);}}
+
+  .op{
+    background:var(--panel);border:1px solid var(--line);padding:14px 12px 16px;
+    display:flex;flex-direction:column;gap:10px;align-items:center;
+    box-shadow: inset 1px 1px 0 var(--shadow-light), inset -1px -1px 0 var(--shadow-dark);
+  }
+  .op.rechazada{border-color:var(--danger);opacity:.9;}
+  .op h3{font-family:'Press Start 2P';font-size:9px;margin:0;text-align:center;line-height:1.6;color:var(--text);}
+  .op.rechazada h3{color:var(--danger);}
+  .op .ref{font-family:'IBM Plex Mono';font-size:9.5px;color:var(--text-faint);text-align:center;line-height:1.5;}
+  canvas{image-rendering:pixelated;background:#0c1015;border:1px solid var(--line);}
+  .op p{font-size:12px;color:var(--text-dim);line-height:1.55;margin:0;}
+  .op .veredicto{font-family:'IBM Plex Mono';font-size:10px;line-height:1.5;padding-top:8px;border-top:1px solid var(--line);width:100%;}
+  .si{color:var(--teal);} .no{color:var(--danger);}
+
+  .frames{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .frame-label{font-family:'IBM Plex Mono';font-size:9px;color:var(--text-faint);text-align:center;margin-top:3px;}
+
+  table.fuentes{width:100%;border-collapse:collapse;font-family:'IBM Plex Mono';font-size:11.5px;margin-top:6px;}
+  table.fuentes th{
+    text-align:left;color:var(--text-faint);font-weight:500;text-transform:uppercase;letter-spacing:.05em;
+    font-size:10px;padding:9px 12px;border-bottom:1px solid var(--line);
+  }
+  table.fuentes td{padding:10px 12px;border-bottom:1px solid var(--line);color:var(--text-dim);vertical-align:top;}
+  table.fuentes td.fuente{color:var(--text);white-space:nowrap;}
+  .badge{font-size:9.5px;padding:2px 7px;border:1px solid currentColor;display:inline-block;white-space:nowrap;}
+  .b-si{color:var(--teal);} .b-no{color:var(--danger);} .b-quiza{color:var(--amber);}
+</style>
+
+<div class="wrap">
+  <div class="page-head">
+    <div class="eyebrow">retro3d.mjs · #603 fase 4 · convertir-estatua.mjs</div>
+    <h1>SALIR DEL CUBO</h1>
+    <p>El problema no era la textura. Una figura hecha de prismas alineados a los ejes, con proporciones
+      uniformes y caras planas, se lee como Minecraft/Roblox <em>lleve la textura que lleve</em> — porque lo
+      que delata al bloque es la <strong>silueta</strong>, no su superficie. Estas cinco direcciones atacan la
+      silueta.</p>
+  </div>
+
+  <div class="decision">
+    <b>Esto ya lo decidiste.</b> <code>CLAUDE.md:539</code> registra (Eloy, 2026-08-20, en #603):
+    «avatares <b>todo escaneado</b> — PC, NPC, criaturas y estatuas son malla decimada con el mismo
+    tratamiento, <b>no cajas</b>». Los muñecos de cajas son el estilo heredado de la cantina (#423), no el
+    destino. Y desde el PR #882 (mergeado ayer) el rig ya tiene consumidor real, así que la tubería
+    <code>malla → decimado → pesos → deformación</code> está entera.
+  </div>
+
+  <div class="seccion">Cinco siluetas, lado a lado</div>
+  <div class="seccion-nota">
+    Todas dibujadas con el mismo presupuesto de color y sin filtrado, para que la comparación sea de FORMA y
+    no de acabado. La primera es lo que hay hoy, marcada en rojo como referencia de lo que no queremos.
+  </div>
+
+  <div class="fila-comparativa">
+    <div class="op rechazada">
+      <h3>0 · CAJAS<br>(hoy)</h3>
+      <div class="ref">cantina-avatar.mjs</div>
+      <canvas id="c0" width="150" height="210"></canvas>
+      <p>Prismas alineados, proporción uniforme, todo ángulo recto. Es exactamente la gramática de Minecraft
+        y Roblox, y por eso se lee así aunque le pongas cota de malla encima.</p>
+      <div class="veredicto"><span class="no">✗ Silueta de bloque</span></div>
+    </div>
+
+    <div class="op">
+      <h3>1 · PSX<br>ESTRECHADO</h3>
+      <div class="ref">FF7 batalla · MGS1 · Silent Hill</div>
+      <canvas id="c1" width="150" height="210"></canvas>
+      <p>La misma cantidad de polígonos, pero <b>nada alineado a los ejes</b>: cada miembro es un tronco de
+        pirámide que se estrecha, los hombros caen en diagonal, el cráneo se afila hacia la barbilla. Es lo
+        que hacía que un modelo de PSX no pareciera un muñeco de Lego.</p>
+      <div class="veredicto"><span class="si">✓ Barato, propio, sin dependencias</span></div>
+    </div>
+
+    <div class="op">
+      <h3>2 · MALLA<br>DECIMADA</h3>
+      <div class="ref">#603 · la decisión ya tomada</div>
+      <canvas id="c2" width="150" height="210"></canvas>
+      <p>Malla real (escaneo o modelo CC0) pasada por <code>convertir-estatua.mjs</code> hasta ~400 caras.
+        Triangulación irregular = silueta orgánica imposible de confundir con un bloque. Ya hay tubería
+        completa: decimado, pesos automáticos y deformación por huesos.</p>
+      <div class="veredicto"><span class="si">✓ Lo ya decidido</span> · <span class="no">necesita fuente de malla humanoide</span></div>
+    </div>
+
+    <div class="op">
+      <h3>3 · SPRITE<br>BILLBOARD</h3>
+      <div class="ref">Doom · Blood · Hexen</div>
+      <canvas id="c3" width="150" height="210"></canvas>
+      <p>Pixelart 2D siempre de cara a la cámara, dentro del mundo 3D. Cero problema de silueta poligonal, y
+        cambiar expresión o pose es <b>cambiar de fotograma</b> — que es literalmente lo que pediste. El
+        repo ya genera pixelart procedural y lo codifica en PNG indexado.</p>
+      <div class="veredicto"><span class="si">✓ Expresión/pose triviales</span> · <span class="no">no gira en 3D</span></div>
+    </div>
+
+    <div class="op">
+      <h3>4 · SILUETA<br>PLANA</h3>
+      <div class="ref">Another World · Flashback</div>
+      <canvas id="c4" width="150" height="210"></canvas>
+      <p>Polígonos planos de un solo tono, sin textura ni sombreado, con silueta muy angular y contrastada.
+        Elegante, baratísimo y absolutamente imposible de confundir con voxels — pero es un salto estético
+        grande respecto a todo lo demás del módulo.</p>
+      <div class="veredicto"><span class="si">✓ Distintivo</span> · <span class="no">choca con el resto del arte</span></div>
+    </div>
+  </div>
+
+  <div class="seccion">Expresión y pose, en la que mejor lo resuelve</div>
+  <div class="seccion-nota">
+    La dirección 3 (sprite) responde de golpe a «que puedan cambiar fácilmente de expresión y de pose»:
+    es una tabla de fotogramas, exactamente el mismo patrón que ya usa <code>GESTOS</code> en
+    <code>cantina-avatar.mjs</code>, pero aplicado a la imagen entera en vez de a la posición de las manos.
+  </div>
+  <div class="frames" id="frames"></div>
+
+  <div class="seccion">Las cinco fuentes que pasaste</div>
+  <div class="seccion-nota">
+    Comprobadas ahora. La columna que importa no es «¿tiene cosas bonitas?» sino «¿la licencia se puede
+    acreditar por archivo, y hay consumidor en el motor?» — las dos reglas de <code>docs/ASSETS_LIBRES.md</code>.
+  </div>
+  <table class="fuentes">
+    <thead>
+      <tr><th>Fuente</th><th>Licencia</th><th>Qué tiene</th><th>¿Sirve para avatares?</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="fuente">Poly Haven</td>
+        <td><span class="badge b-si">CC0 confirmado</span></td>
+        <td>521 modelos, HDRIs y texturas. API pública con metadatos por pieza.</td>
+        <td>Modelos son <b>props y estatuas</b> (bustos de mármol, estatuas góticas) — ni un humanoide completo. Sus <b>bustos</b> sí valen como cabeza/NPC estático vía #603.</td>
+      </tr>
+      <tr>
+        <td class="fuente">ambientCG</td>
+        <td><span class="badge b-si">CC0 (declarado en web)</span></td>
+        <td>Materiales PBR tileables, sobre todo superficies (suelo, metal, tela).</td>
+        <td>No da geometría. Pero su <b>albedo</b> tileable sí tiene consumidor real: <code>piel-textura.mjs</code>. Es la mejor fuente de las cinco para la piel de muros/armaduras.</td>
+      </tr>
+      <tr>
+        <td class="fuente">itch.io (tag 3D gratis)</td>
+        <td><span class="badge b-quiza">Varía por paquete</span></td>
+        <td>Cientos de packs, muchos con humanoides low-poly de verdad.</td>
+        <td>Es la <b>única</b> de las cinco con personajes completos. Pero «gratis» ≠ CC0: hay que verificar pack por pack, sin campo consultable. Alto valor, alto coste de verificación.</td>
+      </tr>
+      <tr>
+        <td class="fuente">gameassets.joshmoody.org</td>
+        <td><span class="badge b-quiza">Por verificar</span></td>
+        <td>Colección personal; no expone API ni ficha de licencia por pieza.</td>
+        <td>Requiere revisión manual. Sin campo de licencia consultable, no escala.</td>
+      </tr>
+      <tr>
+        <td class="fuente">freestylized</td>
+        <td><span class="badge b-quiza">Free ≠ CC0</span></td>
+        <td>Texturas estilizadas (no PBR fotográfico), buen encaje estético con el módulo.</td>
+        <td>No da geometría, pero su estilo <b>pintado a mano</b> encaja mucho mejor con la paleta del módulo que ambientCG. Verificar términos antes de nada.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="seccion">Mi recomendación</div>
+  <div class="seccion-nota">
+    <b>Dirección 1 (PSX estrechado) como base propia, dirección 2 (malla decimada) como destino.</b>
+    La 1 se puede escribir hoy mismo sin depender de ninguna licencia ajena y ya rompe el look de bloque; la
+    2 es lo que ya decidiste en #603 y lo que da NPCs de verdad, pero está esperando una fuente de malla
+    humanoide que ninguna de las cinco resuelve limpiamente todavía (itch.io es la única con personajes, y
+    exige verificar pack por pack). La 3 la guardaría para NPCs de fondo y multitudes, donde el sprite es
+    más barato y la pose cambia sola.
+  </div>
+</div>
+
+<script>
+  // ---------------- utilidades de dibujo ----------------
+  function poly(ctx, pts, color) {
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+  }
+  function limpiar(id) {
+    const cv = document.getElementById(id);
+    const ctx = cv.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+    ctx.fillStyle = "#0c1015";
+    ctx.fillRect(0, 0, cv.width, cv.height);
+    return ctx;
+  }
+
+  const PIEL = "#c99a72", PIEL_S = "#8a6448", PIEL_L = "#e2b389";
+  const ROPA = "#4a5a6b", ROPA_S = "#2f3b47", ROPA_L = "#65788c";
+  const PELO = "#3a2f28", ACERO = "#9aa5b1";
+
+  // ---------------- 0. CAJAS (lo de hoy) ----------------
+  (function cajas() {
+    const ctx = limpiar("c0");
+    const cx = 75;
+    // piernas
+    ctx.fillStyle = ROPA_S; ctx.fillRect(cx - 20, 130, 17, 60);
+    ctx.fillStyle = ROPA_S; ctx.fillRect(cx + 3, 130, 17, 60);
+    // torso
+    ctx.fillStyle = ROPA; ctx.fillRect(cx - 26, 78, 52, 52);
+    // brazos
+    ctx.fillStyle = PIEL; ctx.fillRect(cx - 40, 80, 13, 46);
+    ctx.fillStyle = PIEL; ctx.fillRect(cx + 27, 80, 13, 46);
+    // cabeza
+    ctx.fillStyle = PIEL; ctx.fillRect(cx - 22, 28, 44, 50);
+    // pelo (tapa)
+    ctx.fillStyle = PELO; ctx.fillRect(cx - 23, 24, 46, 13);
+    // ojos planos, estilo skin de bloque
+    ctx.fillStyle = "#1a1410"; ctx.fillRect(cx - 14, 50, 8, 8); ctx.fillRect(cx + 6, 50, 8, 8);
+  })();
+
+  // ---------------- 1. PSX ESTRECHADO ----------------
+  (function psx() {
+    const ctx = limpiar("c1");
+    const cx = 75;
+    // pierna izq (tronco de pirámide: ancho arriba, estrecho en el tobillo)
+    poly(ctx, [[cx-19,132],[cx-5,132],[cx-8,190],[cx-17,190]], ROPA_S);
+    poly(ctx, [[cx-19,132],[cx-14,132],[cx-15,190],[cx-17,190]], "#242e38");
+    // pierna der
+    poly(ctx, [[cx+5,132],[cx+19,132],[cx+17,190],[cx+8,190]], ROPA_S);
+    poly(ctx, [[cx+14,132],[cx+19,132],[cx+17,190],[cx+15,190]], "#242e38");
+    // torso: hombros anchos, cintura estrecha, hombros caídos en diagonal
+    poly(ctx, [[cx-27,84],[cx-20,74],[cx+20,74],[cx+27,84],[cx+19,132],[cx-19,132]], ROPA);
+    // banda de luz por el lado izquierdo (volumen)
+    poly(ctx, [[cx-27,84],[cx-20,74],[cx-11,74],[cx-15,132],[cx-19,132]], ROPA_L);
+    // banda de sombra por el derecho
+    poly(ctx, [[cx+13,74],[cx+20,74],[cx+27,84],[cx+19,132],[cx+13,132]], ROPA_S);
+    // brazos: estrechan hacia la muñeca y salen en diagonal
+    poly(ctx, [[cx-27,84],[cx-19,82],[cx-24,128],[cx-33,126]], PIEL);
+    poly(ctx, [[cx-33,126],[cx-24,128],[cx-25,136],[cx-33,134]], PIEL_S);
+    poly(ctx, [[cx+19,82],[cx+27,84],[cx+33,126],[cx+24,128]], PIEL_S);
+    // cuello
+    poly(ctx, [[cx-7,68],[cx+7,68],[cx+6,76],[cx-6,76]], PIEL_S);
+    // cabeza: cráneo ancho arriba, se afila a la barbilla (hexágono irregular)
+    poly(ctx, [[cx-17,36],[cx-13,26],[cx+13,26],[cx+17,36],[cx+12,60],[cx-12,60]], PIEL);
+    // plano lateral izquierdo iluminado
+    poly(ctx, [[cx-17,36],[cx-13,26],[cx-6,26],[cx-8,60],[cx-12,60]], PIEL_L);
+    // plano derecho en sombra
+    poly(ctx, [[cx+8,26],[cx+13,26],[cx+17,36],[cx+12,60],[cx+8,60]], PIEL_S);
+    // barbilla afilada
+    poly(ctx, [[cx-12,60],[cx+12,60],[cx+6,68],[cx-6,68]], PIEL_S);
+    // pelo siguiendo el cráneo, no una tapa recta
+    poly(ctx, [[cx-17,36],[cx-13,26],[cx+13,26],[cx+17,36],[cx+14,33],[cx-14,33]], PELO);
+    // ojos: hundidos, con ceja en diagonal
+    poly(ctx, [[cx-12,42],[cx-4,44],[cx-4,48],[cx-12,46]], "#1e1712");
+    poly(ctx, [[cx+4,44],[cx+12,42],[cx+12,46],[cx+4,48]], "#1e1712");
+  })();
+
+  // ---------------- 2. MALLA DECIMADA ----------------
+  (function decimada() {
+    const ctx = limpiar("c2");
+    const cx = 75;
+    // Silueta orgánica aproximada por triángulos irregulares, con tono variando
+    // por cara (como haría el sombreado plano sobre una malla escaneada).
+    const tonos = ["#b98d68","#c99a72","#a67c5c","#d8a87e","#8f6a4e","#e0b287"];
+    const tri = [
+      // cabeza (irregular, no simétrica: eso es lo que da el look de escaneo)
+      [[cx-14,34],[cx+2,24],[cx+15,37]], [[cx-14,34],[cx+15,37],[cx+11,56]],
+      [[cx-14,34],[cx+11,56],[cx-11,54]], [[cx-11,54],[cx+11,56],[cx+4,66]],
+      [[cx-11,54],[cx+4,66],[cx-6,66]],
+      // cuello + hombros irregulares
+      [[cx-6,66],[cx+4,66],[cx+9,78]], [[cx-6,66],[cx+9,78],[cx-10,78]],
+      [[cx-10,78],[cx+9,78],[cx+26,88]], [[cx-10,78],[cx+26,88],[cx-25,90]],
+      // torso
+      [[cx-25,90],[cx+26,88],[cx+21,116]], [[cx-25,90],[cx+21,116],[cx-22,118]],
+      [[cx-22,118],[cx+21,116],[cx+17,134]], [[cx-22,118],[cx+17,134],[cx-18,134]],
+      // brazos
+      [[cx-25,90],[cx-22,118],[cx-33,124]], [[cx-25,90],[cx-33,124],[cx-31,96]],
+      [[cx+26,88],[cx+34,98],[cx+32,126]], [[cx+26,88],[cx+32,126],[cx+21,116]],
+      // piernas
+      [[cx-18,134],[cx-2,134],[cx-5,188]], [[cx-18,134],[cx-5,188],[cx-16,186]],
+      [[cx+2,134],[cx+17,134],[cx+16,186]], [[cx+2,134],[cx+16,186],[cx+5,188]],
+    ];
+    tri.forEach((t, i) => poly(ctx, t, tonos[i % tonos.length]));
+    // aristas tenues: se ve que es malla, no bloque
+    ctx.strokeStyle = "rgba(0,0,0,0.18)"; ctx.lineWidth = 1;
+    tri.forEach((t) => {
+      ctx.beginPath(); ctx.moveTo(t[0][0], t[0][1]);
+      ctx.lineTo(t[1][0], t[1][1]); ctx.lineTo(t[2][0], t[2][1]); ctx.closePath(); ctx.stroke();
+    });
+  })();
+
+  // ---------------- 3. SPRITE BILLBOARD ----------------
+  // Sprite pixelart 20x30, dibujado por celdas. '.'=vacío
+  const PAL = { p: PIEL, s: PIEL_S, r: ROPA, R: ROPA_S, h: PELO, o: "#1a1410", a: ACERO, l: PIEL_L };
+  function sprite(base, expresion) {
+    // base 20 ancho x 30 alto
+    const g = Array.from({ length: 30 }, () => Array(20).fill("."));
+    const set = (y, x0, x1, c) => { for (let x = x0; x <= x1; x++) g[y][x] = c; };
+    // pelo
+    set(1, 7, 12, "h"); set(2, 6, 13, "h"); set(3, 6, 13, "h");
+    // cara
+    set(4, 6, 13, "p"); set(5, 6, 13, "p"); set(6, 6, 13, "p");
+    set(7, 7, 12, "p"); set(8, 8, 11, "s");
+    g[4][6] = "s"; g[4][13] = "s"; g[5][6] = "l"; g[6][13] = "s";
+    // ojos según expresión
+    if (expresion === "neutral") { g[5][8] = "o"; g[5][11] = "o"; g[7][9] = "s"; g[7][10] = "s"; }
+    if (expresion === "alerta") { g[5][8] = "o"; g[5][11] = "o"; g[4][8] = "o"; g[4][11] = "o"; g[7][9] = "o"; g[7][10] = "o"; }
+    if (expresion === "herido") { g[5][8] = "s"; g[5][11] = "s"; g[6][8] = "o"; g[6][11] = "o"; g[7][9] = "o"; g[7][10] = "o"; g[3][12] = "o"; }
+    // torso
+    set(9, 5, 14, "r"); set(10, 4, 15, "r"); set(11, 4, 15, "r");
+    set(12, 4, 15, "r"); set(13, 5, 14, "r"); set(14, 5, 14, "R");
+    for (let y = 9; y <= 14; y++) { g[y][5] = "r"; g[y][14] = "R"; }
+    // brazos según pose
+    if (base === "quieto") { for (let y = 10; y <= 15; y++) { g[y][3] = "p"; g[y][16] = "p"; } }
+    if (base === "saludo") { for (let y = 10; y <= 15; y++) g[y][3] = "p"; for (let y = 5; y <= 10; y++) g[y][16] = "p"; g[4][16] = "l"; }
+    if (base === "arma") { for (let y = 10; y <= 15; y++) g[y][3] = "p"; for (let y = 9; y <= 13; y++) g[y][16] = "p"; for (let y = 3; y <= 9; y++) g[y][17] = "a"; }
+    // piernas
+    set(16, 6, 8, "R"); set(16, 11, 13, "R");
+    for (let y = 17; y <= 23; y++) { set(y, 6, 8, "R"); set(y, 11, 13, "R"); }
+    set(24, 5, 8, "h"); set(24, 11, 14, "h");
+    return g;
+  }
+  function pintarSprite(ctx, g, ox, oy, px) {
+    for (let y = 0; y < g.length; y++) for (let x = 0; x < g[y].length; x++) {
+      const c = g[y][x];
+      if (c === ".") continue;
+      ctx.fillStyle = PAL[c];
+      ctx.fillRect(ox + x * px, oy + y * px, px, px);
+    }
+  }
+  (function spriteGrande() {
+    const ctx = limpiar("c3");
+    pintarSprite(ctx, sprite("quieto", "neutral"), 15, 15, 6);
+  })();
+
+  // tira de fotogramas: pose x expresión
+  (function tiraFrames() {
+    const cont = document.getElementById("frames");
+    const combos = [
+      ["quieto", "neutral", "quieto · neutral"],
+      ["saludo", "neutral", "saludo · neutral"],
+      ["quieto", "alerta", "quieto · alerta"],
+      ["arma", "alerta", "arma en mano · alerta"],
+      ["quieto", "herido", "quieto · herido"],
+      ["arma", "herido", "arma en mano · herido"],
+    ];
+    cont.innerHTML = combos.map((c, i) => `
+      <div>
+        <canvas id="f${i}" width="100" height="150"></canvas>
+        <div class="frame-label">${c[2]}</div>
+      </div>`).join("");
+    combos.forEach((c, i) => {
+      const ctx = limpiar(`f${i}`);
+      pintarSprite(ctx, sprite(c[0], c[1]), 10, 10, 4);
+    });
+  })();
+
+  // ---------------- 4. SILUETA PLANA ----------------
+  (function planaVector() {
+    const ctx = limpiar("c4");
+    const cx = 75;
+    const T1 = "#e7ecef", T2 = "#5d6c78";
+    // cuerpo entero como silueta angular de un solo tono
+    poly(ctx, [[cx-13,28],[cx+12,24],[cx+16,44],[cx+8,64],[cx+24,80],[cx+30,124],[cx+20,128],
+               [cx+15,98],[cx+17,134],[cx+19,188],[cx+7,188],[cx+2,138],[cx-6,188],[cx-18,188],
+               [cx-17,130],[cx-16,96],[cx-22,128],[cx-32,124],[cx-25,80],[cx-9,63],[cx-16,44]], T1);
+    // un segundo tono para el lado en sombra: dos planos, nada más
+    poly(ctx, [[cx+8,64],[cx+24,80],[cx+30,124],[cx+20,128],[cx+15,98],[cx+17,134],[cx+19,188],[cx+7,188],[cx+2,138]], T2);
+    poly(ctx, [[cx+12,24],[cx+16,44],[cx+8,64],[cx+1,58],[cx+2,30]], T2);
+  })();
+</script>
+
+</body></html>

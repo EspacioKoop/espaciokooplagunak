@@ -48,6 +48,11 @@ import {
 import { registerStationOrders } from "./station-order-wiring.mjs";
 import { registrarRelevoPuestos } from "./station-handover.mjs";
 import { registrarAsistencia } from "./asistencia-wiring.mjs";
+import {
+  convocarYTransmitir,
+  registrarAjusteConvocatoria,
+  registrarConvocatoriaEstancia,
+} from "./convocatoria-difusion.mjs";
 import { addAsistenciaControl, registrarAsistenciaUI } from "./asistencia-ui.mjs";
 import { crearClaseConvocatoriaV1, crearClaseConvocatoriaV2 } from "./convocatoria-app.mjs";
 import { addConvocarControl, registrarConvocatoriaUI } from "./convocatoria-wiring.mjs";
@@ -213,6 +218,12 @@ Hooks.once("init", () => {
   // de arriba —ver cabecera de `alarma-cruzada.mjs`—, ajuste de MUNDO por el
   // mismo motivo: solo el GM calcula, todos leen.
   registrarAjusteAlarmaCruzada(MODULE_ID);
+
+  // Convocatoria a una estancia (#689/#876): ajuste de MUNDO por el mismo
+  // motivo que el nivel de alerta — solo quien tiene permiso de modificar
+  // ajustes del juego (el GM) consigue escribirlo, y eso es lo que impide a
+  // un jugador falsificar la convocatoria emitiendo el mensaje él mismo.
+  registrarAjusteConvocatoria(MODULE_ID);
 
   // Tinte de escena delegado en FXMaster (ver `filtros-escena.mjs` y
   // docs/ECOSISTEMA_MODULOS_FOUNDRY.md). APAGADO por defecto y no por timidez:
@@ -447,6 +458,7 @@ Hooks.once("ready", () => {
   // del relé y no antes: la ayuda se cobra dentro de la orden del titular, así
   // que sin relé no habría dónde cobrarla.
   registrarAsistencia(MODULE_ID);
+  registrarConvocatoriaEstancia(MODULE_ID, { abrir: (estancia) => abrirAndarNave(estancia) });
   // Y su ventana, en TODOS los clientes: escucha las tres respuestas del
   // coordinador aunque esté cerrada, para que quien pida ayuda y cierre sin
   // querer no se quede con una reserva viva y ninguna forma de resolverla.
@@ -729,14 +741,16 @@ let andarApp = null;
  *   quedó, que es el comportamiento del botón de los controles de escena.
  */
 function abrirAndarNave(estancia = null) {
+  const moderna = Boolean(foundry.applications?.api?.ApplicationV2);
   if (andarApp?.rendered) {
-    // Ya abierta: no se reinicia el bucle por un cambio de sala, se camina
-    // hasta allí en caliente (la ventana ya tiene su propio `irA`).
+    // Ya abierta: se camina hasta allí en caliente, que la ventana sabe hacerlo
+    // sin reiniciar el bucle. El `render` de después solo la trae al frente.
     if (estancia) andarApp.irA(estancia);
-    andarApp.render({ force: true });
+    andarApp.render(moderna ? { force: true } : true);
     return;
   }
-  const Clase = foundry.applications?.api?.ApplicationV2 ? crearClaseAndarV2() : crearClaseAndarV1();
+
+  const Clase = moderna ? crearClaseAndarV2() : crearClaseAndarV1();
   andarApp = new Clase();
   // Antes de renderizar: el arranque del bucle lo consume en el primer render.
   andarApp.estanciaPedida = estancia;
@@ -821,6 +835,7 @@ Hooks.on("updateUser", (user, changes) => {
   // Mismo relevo para la asistencia: el coordinador es el GM activo, y si cambia
   // sin recargar, el nuevo tiene que quedarse escuchando las peticiones.
   registrarAsistencia(MODULE_ID);
+  registrarConvocatoriaEstancia(MODULE_ID, { abrir: (estancia) => abrirAndarNave(estancia) });
   registrarSesionesMinijuegos(MODULE_ID);
   if (!user.isGM) void revokePrivilegedBridgeAccess();
 });
@@ -881,7 +896,11 @@ Hooks.on("getSceneControlButtons", (controls) => {
   // vive en `herramientas-gm-catalogo.mjs` (#611): añadir o tocar una de
   // estas tres herramientas ya no toca este hook.
   const gmTools = isGM
-    ? construirHerramientasGM({ abrirPanelGM, abrirAndarNave })
+    ? construirHerramientasGM({
+        abrirPanelGM,
+        abrirAndarNave,
+        convocarEstancia: (estancia) => convocarYTransmitir(estancia),
+      })
     : [];
 
   // El grupo propio es visible para TODOS: los jugadores ven sus botones de

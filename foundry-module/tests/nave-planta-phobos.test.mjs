@@ -45,8 +45,13 @@ const raiz = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
  *
  * El pasillo de los recuerdos es la misma excepción por la misma razón: no
  * cuelga de ningún mamparo del Phobos y se entra por herramienta.
+ *
+ * La arena de combate (#1013) cierra la lista por ahora, y por el mismo
+ * argumento llevado al extremo: un claro de cuarenta y cinco metros no cabe
+ * dentro de una fragata. Colgarla de un mamparo contaría que el Phobos lleva
+ * un campo de batalla a bordo, que es una historia que nadie ha decidido.
  */
-const FUERA_DE_LA_NAVE = new Set(["playa", "museo", "pasillo-recuerdos"]);
+const FUERA_DE_LA_NAVE = new Set(["playa", "museo", "pasillo-recuerdos", "arena"]);
 
 function todasLasEstancias() {
   const pares = CATALOGO_ANDAR.ids

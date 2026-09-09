@@ -56,6 +56,8 @@
 |---|---|
 | [ATLAS_SPELLJAMMER.md](ATLAS_SPELLJAMMER.md) | Investigación del atlas jerárquico de campaña y matriz de procedencia/licencia (#213) |
 | [DOMINIO_PUBLICO_SCIFI.md](DOMINIO_PUBLICO_SCIFI.md) | Catálogo verificado de guiños scifi/pulp en dominio público (copyright vs. marca) (#310) |
+| [INSPIRACION_JUEGOS_LIBRES.md](INSPIRACION_JUEGOS_LIBRES.md) | Catálogo de mecánicas de rol jugadas en proyectos libres (#840) |
+| [research-rpg-open-cc0-licensing.md](research-rpg-open-cc0-licensing.md) | Sistemas de RPG abiertos, licencias y repositorios CC0 para integración standalone (#886) |
 
 ## Localización
 

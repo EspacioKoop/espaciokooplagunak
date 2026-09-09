@@ -1,5 +1,5 @@
 // Catálogo de MUEBLES: entradas que apuntan a mallas con procedencia.
-// 
+//
 // Puro: ni Foundry, ni DOM, ni red. Se prueba desde Node.
 
 import {
@@ -107,7 +107,7 @@ export function mueblePorId(catalogo, id) {
   return catalogo?.muebles?.find((mueble) => mueble.id === id) ?? null;
 }
 
-/** 
+/**
  * Catálogo de muebles de ejemplo (por ahora solo el balcon de ladrillo).
  */
 export const CATALOGO_MUEBLES = Object.freeze({

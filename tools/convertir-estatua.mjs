@@ -826,10 +826,9 @@ export const FICHAS = Object.freeze({
     fuente: "Wikimedia Commons, colección SMK",
     licencia: "CC0 1.0 sobre el escaneo; la obra, dominio público (Licensed-PD-Art)",
   },
-  // No convertida por ESTA herramienta (llegó como glTF; esto solo lee STL) —
-  // la entrada existe para que "toda malla del árbol tiene ficha" siga siendo
-  // cierto sin excepciones. Detalle completo, incluida la reproducibilidad
-  // pendiente, en docs/PROCEDENCIA_ASSETS.md.
+  // Receta exacta sin normalización: tools/convertir-glb-geometria.mjs.
+  // Esta tabla conserva el inventario de fichas, no sustituye esa receta.
+  // Fuente GLB y licencia offline: docs/PROCEDENCIA_ASSETS.md.
   "balcony-ladder-bottom": {
     obra: "Escalera de balcón — \"Balcony ladder bottom\", Retro Urban Kit",
     modelo: "modelo 3D modelado a mano por un tercero, no un escaneo ni una reconstrucción",

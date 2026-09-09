@@ -188,21 +188,43 @@ mando de escala de todos los cuadros a la vez—.
 | **Autoría** | Kenney (kenney.nl) |
 | **Licencia** | CC0 1.0 |
 | **Enlace** | https://kenney.nl/assets/retro-urban-kit |
-| **Archivo** | glTF (formato original del pack; no vive en el repositorio) |
-| **sha256** | `266b04ffb06c53a17988f858646d1fd1072258050ac3d9ba653004a769cc37d1` (declarado en la cabecera de `foundry-module/data/mallas/balcony-ladder-bottom.mjs`; sin el glTF de origen en el árbol, esta ficha no puede volver a comprobarlo de forma independiente) |
+| **Archivo** | `Models/GLB format/balcony-ladder-bottom.glb`, GLB 2, 4196 bytes, del ZIP oficial Retro Urban Kit 2.0 |
+| **sha256** | `266b04ffb06c53a17988f858646d1fd1072258050ac3d9ba653004a769cc37d1`, comprobado contra la fuente recuperada |
 
-**Conversión: hueco conocido, no resuelto por esta ficha.** A diferencia de las
-estatuas de arriba, este asset llegó como glTF y `tools/convertir-estatua.mjs`
-**solo lee STL** (`leerStlBinario`); no hay ningún convertidor de glTF genérico
-en el árbol que pueda haber producido este fichero. El comentario original en
-la cabecera de la malla ("GENERATED FROM gltf via custom script") no nombra
-ese script porque no se conservó, y por tanto **no es reproducible tal cual**:
-nadie puede volver a correr el paso que produjo estos vértices ni verificar el
-sha256 contra el glTF de origen sin descargar de nuevo el pack de Kenney y
-escribir un convertidor glTF desde cero. Se deja constancia aquí en vez de
-inventar un comando que nunca se ejecutó — la corrección pendiente es escribir
-un convertidor glTF genérico y volver a generar la malla con la ficha
-registrada, igual que exige `convertir-estatua.mjs` para STL.
+**Fuente y licencia recuperadas.** El [ZIP oficial de Kenney](https://kenney.nl/media/pages/assets/retro-urban-kit/8314d4db22-1738147509/kenney_retro-urban-kit.zip)
+contiene el archivo exacto y su aviso CC0. Se conserva solo esa pequeña fuente en
+[`tools/sources/kenney-retro-urban-kit/balcony-ladder-bottom.glb`](../tools/sources/kenney-retro-urban-kit/balcony-ladder-bottom.glb),
+con el [aviso del distribuidor](../tools/sources/kenney-retro-urban-kit/License.txt)
+y [contrato de extracción](../tools/sources/kenney-retro-urban-kit/README.md).
+No se versionan el ZIP completo ni sus texturas.
+
+**Conversión reproducible verificada, sin sustituir la geometría.** El script
+histórico no se recuperó: se añadió una receta nueva que demuestra igualdad
+exacta con los 48 vértices y 28 caras publicados, incluidos orden y ceros con
+signo. No hay soldadura, decimado, cambio de ejes ni normalización:
+
+```bash
+node tools/convertir-glb-geometria.mjs > foundry-module/data/mallas/balcony-ladder-bottom.mjs
+node --test foundry-module/tests/convertir-glb-geometria.test.mjs
+```
+
+La afirmación anterior «convertir-estatua solo lee STL» quedó obsoleta: el árbol
+actual también tiene una ruta GLB/NASA. Esta receta es independiente y no carga
+Draco ni aplica el pipeline de estatuas. Su lector es genérico **dentro de un
+subconjunto cerrado**, no un importador glTF completo: GLB 2 con JSON y BIN,
+una escena/nodo/malla/primitiva, transformación identidad y triángulos indexados.
+Rechaza las estructuras geométricas no soportadas. Materiales, normales, UV y
+texturas se descartan; ninguna URI se abre. Solo devuelve `vertices` y `caras`.
+El color de una futura escena seguirá perteneciendo a la paleta de #351.
+
+**Límite de entrega:** malla y catálogo preparados, no integración visual.
+`catalogo-muebles.mjs` no tiene consumidor de runtime y está declarado como
+`declared-orphan`, no como cimiento aprobado, en
+[`docs/orphan-declarations.json`](orphan-declarations.json). Faltan selección,
+colocación, escena y aceptación visual; los tests Node no equivalen a un smoke
+Foundry. No se amplía la compatibilidad declarada ni se cierra una integración
+jugable por registrar esta procedencia.
+
 ## The Open Window — Saki (semilla procedural para #853)
 
 Propuesta de obra de dominio público como semilla visual para el libro 3D

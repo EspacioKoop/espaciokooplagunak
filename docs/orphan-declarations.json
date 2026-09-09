@@ -2,6 +2,18 @@
   "schemaVersion": 1,
   "declarations": [
     {
+      "module": "catalogo-muebles.mjs",
+      "status": "declared-orphan",
+      "foundation": false,
+      "reason": "Catálogo piloto de la escalera Kenney de #1049: conserva ficha y validación del asset reproducible, pero aún no hay selección, colocación ni escena que consuma muebles. No se conecta con un import vacío ni se presenta como integración visual; falta un consumidor jugable con aceptación propia.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "pr",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/pull/1049"
+      }
+    },
+    {
       "module": "arte/audio/audio-ficheros.mjs",
       "status": "declared-orphan",
       "foundation": true,

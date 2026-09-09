@@ -87,7 +87,7 @@
 import { BOSQUE, FACCIONES, MUSEO, PLAYA } from "./paleta.mjs";
 import { caja, losa } from "./escena-primitivas.mjs";
 import { componerEscena, fundirEscenas, mezclar } from "./retro3d.mjs";
-import { resolverCamara } from "./nave-camara.mjs";
+import { ALTURA_OJOS, resolverCamara } from "./nave-camara.mjs";
 import { resolverVistaCombate, vistasDisponibles } from "./cambiador-vistas-combate.mjs";
 import { poligonosOtrosJugadores } from "./nave-avatares-render.mjs";
 import { crearPlanta } from "./nave-movimiento.mjs";
@@ -815,8 +815,18 @@ export function componerArena(x, y, z, yaw, opciones = {}) {
   // que antes de #1024 — ni un píxel cambia hasta que alguien pulsa un número.
   const vistas = vistasDisponibles(VISTAS_ARENA);
   const esVistaDeCombate = vistas.includes(modoCamara);
+  // La CASILLA en la que estás, en metros. Sin ella, POV y tercera recortan
+  // contra la casilla del ORIGEN de la arena —`origenCasilla` vale `{0,0}` por
+  // defecto— y la cámara se queda clavada en la esquina del tablero mientras el
+  // cuerpo anda por el claro. Las dos cámaras están escritas para razonar
+  // dentro de UNA casilla de 5 ft (#1021, #1022) y el dato de cuál es solo lo
+  // tiene la escena, que es la que sabe dónde empieza la rejilla.
+  const origenCasilla = {
+    x: Math.floor(x / LADO_CASILLA) * LADO_CASILLA,
+    z: Math.floor(z / LADO_CASILLA) * LADO_CASILLA,
+  };
   const vista = esVistaDeCombate
-    ? resolverVistaCombate(modoCamara, { x, z, y, yaw }, vistas)
+    ? resolverVistaCombate(modoCamara, { x, z, y, yaw, origenCasilla, posicion: { x, y: ALTURA_OJOS, z } }, vistas)
     : resolverCamara({ x, z, y, yaw, modo: modoCamara });
   const { camara, dibujarPropio } = vista;
   const yawCamara = -(esVistaDeCombate ? vista.yaw : yaw);

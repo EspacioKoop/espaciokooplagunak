@@ -24,7 +24,20 @@ const POTENCIA = 2;
 // en vez de atenuarse: un residuo del 2 % no dobla nada, pero SÍ mueve un punto
 // que debería estar quieto, y un hombro que se desplaza siete centímetros no se
 // lee como una atenuación sino como un rig roto.
-const UMBRAL_RELATIVO = 0.05;
+//
+// SUBIDO DE 0,05 A 0,10 AL MEDIRLO SOBRE UNA MALLA DE VERDAD (#603, fase 4).
+// El 0,05 se ajustó contra el brazo sintético de la fase 1 —dos tramos, dos
+// huesos, dos unidades de largo— y ahí no se notaba. Sobre la Venus de Milo
+// (448 vértices, 2 m, cadena de cuatro huesos) dejaba pasar exactamente el
+// fallo que este comentario dice evitar: un vértice del PIE, a 1,4 m del
+// pecho, conservaba un 7 % de su influencia, así que al inclinar el pecho 45°
+// los pies se iban 6 cm de lado. Una estatua sobre un pedestal cuyos pies
+// resbalan no se lee como una atenuación; se lee como que la estatua flota.
+// Con 0,10 la deriva del pie es CERO exacta y la pose se entrega mejor —la
+// coronilla se va 0,421 m en vez de 0,398, porque el giro deja de repartirse
+// por donde no toca—, y siguen mezclando 384 de los 448 vértices, así que no
+// es un tajo: el degradado se conserva donde importa.
+const UMBRAL_RELATIVO = 0.10;
 
 /** Distancia del punto `p` al segmento [a, b] (cabeza del padre → cabeza del hueso). */
 function distanciaASegmento(p, a, b) {

@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Espaciokoop Lagunak / EmptyEpsilon\n"
-"Report-Msgid-Bugs-To: https://github.com/VaroTv7/espaciokooplagunak/issues\n"
+"Report-Msgid-Bugs-To: https://github.com/EspacioKoop/espaciokooplagunak/issues\n"
 "PO-Revision-Date: 2026-07-12 00:00+0200\n"
 "Last-Translator: Espaciokoop Lagunak contributors\n"
 "Language-Team: Espaciokoop Lagunak\n"
@@ -172,7 +172,7 @@ msgid ""
 "Welcome home, Atlantis-1.\n"
 "\n"
 "Dock with Supply-6 to recharge and restock, then report to Shipyard-Gamma for your mission report."
-msgstr "Bienvenido a casa, Atlantis-1. Dock with Supply-6 para recargar y restaurar, luego informe a Shipyard-Gamma para su informe de misión."
+msgstr "Bienvenido a casa, Atlantis-1. Atraque con Supply-6 para recargar y reabastecerse, luego informe a Shipyard-Gamma para su informe de misión."
 
 #: scripts/scenario_08_atlantis.lua:551
 msgctxt "station-incCall"

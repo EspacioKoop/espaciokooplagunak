@@ -968,6 +968,8 @@ const TEXTURAS_MATTE = texturasHorizonte();
  */
 const ESTATUA = Object.freeze({ x: 4.6, z: 33, hundida: 0.62, giro: 4.71 });
 
+export { ESTATUA };
+
 const MALLA_ESTATUA = (() => {
   const cos = Math.cos(ESTATUA.giro);
   const sen = Math.sin(ESTATUA.giro);
@@ -1090,6 +1092,12 @@ export const INTERACCIONES = declararInteracciones([
     punto: CABINA_COLOCADA.ancla.punto,
     orientacion: CABINA_COLOCADA.ancla.orientacion,
     accion: { tipo: "estancia", estancia: "cantina" },
+  },
+  {
+    id: "leon-al-lat",
+    punto: [ESTATUA.x, ESTATUA.z - 2],
+    orientacion: ESTATUA.giro,
+    accion: { tipo: "cartela", pieza: "leon-al-lat" },
   },
 ]);
 

@@ -27,8 +27,8 @@
 | [../docker/README.md](../docker/README.md) | Servidor headless + puente con Docker Compose |
 | [UPSTREAM.md](UPSTREAM.md) | Relación con EmptyEpsilon y sincronización con upstream |
 | [BASELINE.md](BASELINE.md) | Baseline de accesibilidad, seguridad, calidad y fiabilidad |
-| [API_HTTP.md](API_HTTP.md) | Inventario del API HTTP heredado del servidor |
-| [BRIDGE_AUTHENTICATION.md](BRIDGE_AUTHENTICATION.md) | Ciclo de vida, rotación y revocación del Bearer |
+| [API_HTTP.md](seguridad/API_HTTP.md) | Inventario del API HTTP heredado del servidor |
+| [BRIDGE_AUTHENTICATION.md](seguridad/BRIDGE_AUTHENTICATION.md) | Ciclo de vida, rotación y revocación del Bearer |
 | [CONTENT_EDITOR.md](CONTENT_EDITOR.md) | Editor de contenido integrado |
 
 ## Integración con Foundry VTT
@@ -56,17 +56,23 @@
 |---|---|
 | [ATLAS_SPELLJAMMER.md](ATLAS_SPELLJAMMER.md) | Investigación del atlas jerárquico de campaña y matriz de procedencia/licencia (#213) |
 | [DOMINIO_PUBLICO_SCIFI.md](DOMINIO_PUBLICO_SCIFI.md) | Catálogo verificado de guiños scifi/pulp en dominio público (copyright vs. marca) (#310) |
+| [INSPIRACION_JUEGOS_LIBRES.md](INSPIRACION_JUEGOS_LIBRES.md) | Catálogo de mecánicas de rol jugadas en proyectos libres (#840) |
+| [research-rpg-open-cc0-licensing.md](research-rpg-open-cc0-licensing.md) | Sistemas de RPG abiertos, licencias y repositorios CC0 para integración standalone (#886) |
 | [CAULDRON_VTT_RESEARCH_884.md](CAULDRON_VTT_RESEARCH_884.md) | Recursos de Cauldron VTT y ecosistema físico 3D standalone con análisis de licencias (#884) |
 
 ## Localización
 
 | Documento | Qué cubre |
 |---|---|
-| [LOCALIZATION_ES.md](LOCALIZATION_ES.md) | Estado y proceso de la localización es-ES |
-| [i18n-es-style-guide.md](i18n-es-style-guide.md) | Guía editorial para traducir al español |
+| [LOCALIZATION_ES.md](i18n/LOCALIZATION_ES.md) | Estado y proceso de la localización es-ES |
+| [i18n-es-style-guide.md](i18n/i18n-es-style-guide.md) | Guía editorial para traducir al español |
 
 ## Cómo contribuir
 
 Las normas de colaboración están en [CONTRIBUTING.md](../CONTRIBUTING.md), la
 guía para agentes de IA en [AGENTS.md](../AGENTS.md) y el código de conducta en
 [CODE_OF_CONDUCT.md](../CODE_OF_CONDUCT.md).
+
+| Documento | Para qué sirve |
+| --- | --- |
+| [ETIQUETAS.md](ETIQUETAS.md) | Inventario medido de las etiquetas del repositorio, qué se etiqueta solo y qué no (#717) |

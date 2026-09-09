@@ -8,7 +8,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { ANCHO, CAIDA, CAIDA_DIFUSOR, LARGO, PASO, piezasLuminarias, reparto, focosLuminarias, tonoLuminaria } from "../scripts/nave-luminaria.mjs";
+import {
+  ANCHO, CAIDA, CAIDA_DIFUSOR, LARGO, PASO,
+  piezasLuminarias, mallaDifusorLuminarias, colorDifusorLuminaria,
+  reparto, focosLuminarias, tonoLuminaria,
+} from "../scripts/nave-luminaria.mjs";
 import { LUZ_CALIDA, MURAL, SECCION, ALERTA } from "../scripts/paleta.mjs";
 import { ALTURA, crearSalaCaja } from "../scripts/nave-sala-caja.mjs";
 import { componerEscena } from "../scripts/retro3d.mjs";
@@ -62,17 +66,23 @@ test("cuelgan del techo y no lo atraviesan", () => {
   }
 });
 
-test("el difusor es lo ÚNICO emisivo, y mira hacia abajo", () => {
+test("la carcasa no lleva emisivo: solo el difusor se pinta encendido", () => {
+  // #765 separó el difusor de `piezasLuminarias` para poder repintarlo cada
+  // fotograma sin rehacer la carcasa. La carcasa (bajos + costados) no debe
+  // llevar `emisivo` — si lo llevara, toda la luminaria sería una caja de luz.
+  const piezas = piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA });
+  assert.equal(piezas.length, 2, "solo bajos y costados: el difusor vive aparte");
+  assert.ok(piezas.every((p) => p.emisivo !== true), "la carcasa no es emisiva");
+});
+
+test("el difusor mira hacia abajo, y su geometría no depende del estado", () => {
   // En este motor toda cara que mira hacia abajo está en el suelo de luz
   // ambiente (0,35): sin `emisivo`, un difusor ámbar llega al ojo como un marrón
-  // sucio y la luminaria parece fundida. Y solo el difusor: una carcasa emisiva
-  // sería una caja de luz, no una lámpara.
-  const piezas = piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA });
-  const emisivas = piezas.filter((p) => p.emisivo === true);
-  assert.equal(emisivas.length, 1, "una sola pieza emisiva por luminaria");
-  assert.equal(emisivas[0].color, LUZ_CALIDA);
-  for (const cara of emisivas[0].malla.caras) {
-    const ys = cara.map((i) => emisivas[0].malla.vertices[i][1]);
+  // sucio y la luminaria parece fundida.
+  const malla = mallaDifusorLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA });
+  assert.ok(malla, "hay difusor con puntos de reparto");
+  for (const cara of malla.caras) {
+    const ys = cara.map((i) => malla.vertices[i][1]);
     assert.ok(Math.max(...ys) - Math.min(...ys) < 1e-9, "una cara horizontal, mirando abajo");
   }
 });
@@ -118,7 +128,7 @@ test("la luz NO usa el acento de señalización", () => {
   // la única señal que tiene para encontrar lo accionable.
   const colores = piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA }).map((p) => p.color);
   assert.ok(!colores.includes(SECCION.entrable), "el turquesa no es una luz");
-  const permitidos = new Set([...Object.values(MURAL), LUZ_CALIDA]);
+  const permitidos = new Set(Object.values(MURAL));
   for (const color of colores) assert.ok(permitidos.has(color), `${color} fuera de paleta (#351)`);
 });
 
@@ -127,7 +137,9 @@ test("solo se emiten las caras que pueden verse", () => {
   // no se ve nunca, pero costaría transformarse y proyectarse igual. En el
   // reactor son 36 luminarias, así que la diferencia no es teórica.
   const reactor = piezasLuminarias({ ancho: 22, profundidad: 22, altura: ALTURA });
-  const porLuminaria = caras(reactor) / reparto(22, 22).length;
+  const difusor = mallaDifusorLuminarias({ ancho: 22, profundidad: 22, altura: ALTURA });
+  const totalCaras = caras(reactor) + difusor.caras.length;
+  const porLuminaria = totalCaras / reparto(22, 22).length;
   assert.ok(porLuminaria <= 6, `${porLuminaria} caras por luminaria: sobra algo que no se ve`);
 });
 
@@ -165,10 +177,10 @@ test("focosLuminarias devuelve un foco por difusor en la misma x/z", () => {
 // comentario pidiendo «la misma y» no conseguia.
 test("el foco cuelga exactamente del difusor que se ve encendido", () => {
   const sala = { ancho: 8, profundidad: 6, altura: ALTURA };
-  const emisiva = piezasLuminarias(sala).find((pieza) => pieza.emisivo);
-  assert.ok(emisiva, "tiene que haber una pieza emisiva: el difusor");
+  const malla = mallaDifusorLuminarias(sala);
+  assert.ok(malla, "tiene que haber malla de difusor");
 
-  const alturasDifusor = new Set(emisiva.malla.vertices.map((v) => v[1]));
+  const alturasDifusor = new Set(malla.vertices.map((v) => v[1]));
   assert.equal(alturasDifusor.size, 1, "el difusor es plano: una sola y");
   const yDifusor = [...alturasDifusor][0];
 
@@ -216,37 +228,47 @@ test("tonoLuminaria acepta el aviso entero, no solo la cadena", () => {
   assert.equal(tonoLuminaria({ nivel: "roja", motivos: ["casco"] }), ALERTA.niveles.roja.borde);
 });
 
-// NEW TESTS FOR BLINKING LUMINARIA
+// Tests for colorDifusorLuminaria(estado) (#765)
 
-test("luminaria parpadea cuando hay daño", () => {
-  // Salud dañada (por ejemplo, 0.5)
-  const health = 0.5;
-  // En tiempo 0, debe estar encendida
-  let pieza = piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA, health, timeMs: 0 })[2]; // la pieza emisiva es la tercera
-  assert.equal(pieza.color, LUZ_CALIDA);
-  assert.equal(pieza.emisivo, true);
-
-  // En tiempo 500 ms, debe estar apagada (negro)
-  pieza = piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA, health, timeMs: 500 })[2];
-  assert.equal(pieza.color, 0x000000);
-  assert.equal(pieza.emisivo, true); // sigue siendo emisivo, pero el color es negro
-
-  // En tiempo 1000 ms, debe estar encendida nuevamente
-  pieza = piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA, health, timeMs: 1000 })[2];
-  assert.equal(pieza.color, LUZ_CALIDA);
-  assert.equal(pieza.emisivo, true);
+test("colorDifusorLuminaria: sin salud, se queda con el tono de la alerta y no parpadea", () => {
+  for (const timeMs of [0, 500, 1000]) {
+    const { color, emisivo } = colorDifusorLuminaria({ aviso: "roja", health: null, timeMs });
+    assert.equal(color, ALERTA.niveles.roja.borde, `timeMs=${timeMs} no debe parpadear`);
+    assert.equal(emisivo, true);
+  }
 });
 
-test("luminaria no parpadea cuando health es null", () => {
-  const health = null;
-  // En cualquier tiempo, debe estar encendida
-  const pieza1 = piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA, health, timeMs: 0 })[2];
-  const pieza2 = piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA, health, timeMs: 500 })[2];
-  const pieza3 = piezasLuminarias({ ancho: 8, profundidad: 6, altura: ALTURA, health, timeMs: 1000 })[2];
-  assert.equal(pieza1.color, LUZ_CALIDA);
-  assert.equal(pieza2.color, LUZ_CALIDA);
-  assert.equal(pieza3.color, LUZ_CALIDA);
-  assert.equal(pieza1.emisivo, true);
-  assert.equal(pieza2.emisivo, true);
-  assert.equal(pieza3.emisivo, true);
+test("colorDifusorLuminaria: con salud plena (1), tampoco parpadea", () => {
+  for (const timeMs of [0, 500, 1000]) {
+    const { color } = colorDifusorLuminaria({ aviso: null, health: 1, timeMs });
+    assert.equal(color, LUZ_CALIDA, `timeMs=${timeMs} salud plena, sin parpadeo`);
+  }
+});
+
+test("colorDifusorLuminaria: dañado (health < 1), parpadea a 500ms", () => {
+  const health = 0.5;
+  // En tiempo 0, encendida con el tono base.
+  let estado = colorDifusorLuminaria({ aviso: null, health, timeMs: 0 });
+  assert.equal(estado.color, LUZ_CALIDA);
+  assert.equal(estado.emisivo, true);
+
+  // En tiempo 500 ms, apagada (negro), pero sigue emisiva.
+  estado = colorDifusorLuminaria({ aviso: null, health, timeMs: 500 });
+  assert.equal(estado.color, 0x000000);
+  assert.equal(estado.emisivo, true);
+
+  // En tiempo 1000 ms, encendida de nuevo.
+  estado = colorDifusorLuminaria({ aviso: null, health, timeMs: 1000 });
+  assert.equal(estado.color, LUZ_CALIDA);
+});
+
+test("colorDifusorLuminaria: dañado y en alerta, el parpadeo usa el tono de la alerta", () => {
+  const estado = colorDifusorLuminaria({ aviso: "roja", health: 0.2, timeMs: 0 });
+  assert.equal(estado.color, ALERTA.niveles.roja.borde, "encendido: el tono de la alerta, no el cálido de siempre");
+});
+
+test("colorDifusorLuminaria: sin lectura de estado, comportamiento de siempre (luz cálida fija)", () => {
+  const estado = colorDifusorLuminaria();
+  assert.equal(estado.color, LUZ_CALIDA);
+  assert.equal(estado.emisivo, true);
 });

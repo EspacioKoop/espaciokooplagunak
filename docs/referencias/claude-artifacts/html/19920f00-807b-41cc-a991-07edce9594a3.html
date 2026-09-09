@@ -1,0 +1,825 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style></head><body>
+<title>Mochila del Phobos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#10141a;
+    --bg-raised:#171d25;
+    --panel:#1b222b;
+    --panel-2:#212a34;
+    --line:#2d3946;
+    --line-bright:#425364;
+    --text:#e7ecef;
+    --text-dim:#8fa0ac;
+    --text-faint:#5d6c78;
+    --amber:#e0a33a;
+    --amber-dim:#8a6a2e;
+    --teal:#3ecfc4;
+    --teal-dim:#1f6a63;
+    --danger:#c8665a;
+    --danger-dim:#7a3f38;
+    --shadow-dark:#080a0d;
+    --shadow-light:#2c3745;
+    font-size:15px;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'IBM Plex Sans', system-ui, sans-serif;
+    margin:0;
+    padding:28px 20px 60px;
+    background-image:
+      radial-gradient(circle at 15% 8%, rgba(62,207,196,0.05), transparent 40%),
+      radial-gradient(circle at 85% 92%, rgba(224,163,58,0.05), transparent 45%);
+  }
+
+  .wrap{max-width:1180px;margin:0 auto;}
+
+  /* ---------- page head ---------- */
+  .page-head{margin-bottom:22px;}
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--teal);
+  }
+  h1{
+    font-family:'Press Start 2P', monospace;
+    font-size:20px;
+    line-height:1.5;
+    margin:10px 0 8px;
+    text-wrap:balance;
+    color:var(--text);
+    letter-spacing:.02em;
+  }
+  .page-head p{
+    color:var(--text-dim);
+    max-width:62ch;
+    line-height:1.6;
+    margin:0;
+    font-size:14px;
+  }
+
+  /* ---------- option switcher ---------- */
+  .switcher{
+    display:flex;
+    gap:10px;
+    margin:26px 0 22px;
+    flex-wrap:wrap;
+  }
+  .switcher button{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:.03em;
+    color:var(--text-dim);
+    background:var(--panel);
+    border:1px solid var(--line);
+    padding:10px 16px;
+    cursor:pointer;
+    text-align:left;
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+    min-width:210px;
+    transition:border-color .12s, color .12s, background .12s;
+  }
+  .switcher button strong{
+    font-family:'Press Start 2P', monospace;
+    font-size:10px;
+    color:var(--text);
+    letter-spacing:.02em;
+  }
+  .switcher button:hover{border-color:var(--line-bright);}
+  .switcher button.is-active{
+    background:var(--panel-2);
+    border-color:var(--teal);
+    color:var(--teal);
+  }
+  .switcher button.is-active strong{color:var(--teal);}
+
+  .option{display:none;}
+  .option.is-active{display:block;}
+
+  .option-note{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--text-faint);
+    margin:0 0 16px;
+    padding-left:12px;
+    border-left:2px solid var(--line);
+  }
+
+  /* ---------- shared bits ---------- */
+  .pixel-panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    box-shadow: inset 1px 1px 0 var(--shadow-light), inset -1px -1px 0 var(--shadow-dark);
+  }
+  .tag{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    padding:2px 6px;
+    border:1px solid currentColor;
+    display:inline-block;
+  }
+  .stat-row{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-dim);}
+  .stat-row b{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums;}
+  .arrow-up{color:var(--teal);}
+  .arrow-down{color:var(--danger);}
+  .star-btn{
+    background:none;border:none;cursor:pointer;font-size:15px;line-height:1;
+    color:var(--text-faint); padding:2px;
+  }
+  .star-btn.is-marked{color:var(--amber);}
+
+  .weight-toggle{
+    display:flex;align-items:center;gap:10px;
+    font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);
+  }
+  .switch{
+    width:34px;height:18px;border:1px solid var(--line-bright);position:relative;cursor:pointer;background:var(--bg-raised);
+    flex:none;
+  }
+  .switch::after{
+    content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;background:var(--text-faint);
+    transition:transform .15s, background .15s;
+  }
+  .switch.is-on{border-color:var(--teal);}
+  .switch.is-on::after{transform:translateX(15px);background:var(--teal);}
+
+  .weight-bar-wrap{margin-top:8px;}
+  .weight-bar-track{height:6px;background:var(--bg-raised);border:1px solid var(--line);}
+  .weight-bar-fill{height:100%;background:var(--amber);width:0%;transition:width .2s;}
+  .weight-bar-label{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-faint);margin-top:4px;}
+  .weight-hidden .weight-bar-wrap,.weight-hidden .weight-bar-label{display:none;}
+  .weight-hidden .weight-unlimited{display:block;}
+  .weight-unlimited{display:none;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-faint);margin-top:6px;}
+
+  .keys-legend{
+    display:flex;gap:18px;flex-wrap:wrap;
+    font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-faint);
+    margin-top:26px;padding-top:14px;border-top:1px solid var(--line);
+  }
+  .keys-legend kbd{
+    background:var(--panel-2);border:1px solid var(--line-bright);color:var(--text);
+    padding:1px 6px;font-family:'IBM Plex Mono',monospace;font-size:11px;
+  }
+
+  /* =====================================================================
+     OPTION A — Consola de combate (Champions of Norrath: doll + grid grande)
+  ===================================================================== */
+  .mockA{display:grid;grid-template-columns:220px 1fr 260px;gap:14px;}
+  .mockA .doll{padding:16px;}
+  .doll-title{font-family:'Press Start 2P';font-size:10px;color:var(--teal);margin:0 0 14px;}
+  .doll-figure{
+    width:100%;aspect-ratio:3/4;background:var(--bg-raised);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;position:relative;margin-bottom:14px;
+  }
+  .doll-silhouette{width:46%;height:70%;background:
+      linear-gradient(var(--line-bright),var(--line-bright)) center 8% / 40% 22% no-repeat,
+      linear-gradient(var(--line-bright),var(--line-bright)) center 34% / 60% 40% no-repeat,
+      linear-gradient(var(--line-bright),var(--line-bright)) center 78% / 46% 40% no-repeat;
+    opacity:.55;
+  }
+  .doll-slot{
+    position:absolute;width:34px;height:34px;border:1px dashed var(--line-bright);
+    display:flex;align-items:center;justify-content:center;font-size:15px;
+    background:var(--panel-2);
+  }
+  .doll-slot.filled{border-style:solid;border-color:var(--amber);}
+  .slot-mano{right:14%;top:38%;}
+  .slot-traje{left:50%;top:36%;transform:translateX(-50%);}
+  .slot-insignia{left:20%;top:16%;}
+  .doll-caption{font-family:'IBM Plex Mono';font-size:10px;color:var(--text-faint);text-align:center;}
+
+  .mockA .catbar{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+  .catbtn{
+    font-family:'Press Start 2P';font-size:9px;padding:9px 10px;background:var(--bg-raised);
+    border:1px solid var(--line);color:var(--text-dim);cursor:pointer;letter-spacing:.02em;
+  }
+  .catbtn.is-active{border-color:var(--amber);color:var(--amber);background:var(--panel-2);}
+
+  .grid-items{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+  .grid-tile{
+    aspect-ratio:1/1;background:var(--bg-raised);border:1px solid var(--line);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+    cursor:pointer;position:relative;padding:6px;
+  }
+  .grid-tile:hover, .grid-tile.is-selected{border-color:var(--teal);}
+  .grid-tile .icon{font-size:22px;}
+  .grid-tile .qty{
+    position:absolute;bottom:3px;right:5px;font-family:'IBM Plex Mono';font-size:10px;color:var(--text-dim);
+  }
+  .grid-tile .name{font-family:'IBM Plex Mono';font-size:9px;color:var(--text-faint);text-align:center;line-height:1.2;}
+  .grid-tile .star{position:absolute;top:2px;left:3px;font-size:10px;}
+
+  .detail-panel{padding:16px;display:flex;flex-direction:column;gap:12px;}
+  .detail-name{font-family:'Press Start 2P';font-size:11px;color:var(--text);line-height:1.6;}
+  .detail-desc{font-size:12.5px;color:var(--text-dim);line-height:1.55;}
+  .detail-stats{display:flex;flex-direction:column;gap:6px;padding-top:10px;border-top:1px solid var(--line);}
+  .action-row{display:flex;gap:8px;margin-top:auto;}
+  .action-btn{
+    flex:1;font-family:'IBM Plex Mono';font-size:11px;padding:9px;text-align:center;cursor:pointer;
+    background:var(--panel-2);border:1px solid var(--line-bright);color:var(--text);
+  }
+  .action-btn.primary{border-color:var(--teal);color:var(--teal);}
+  .action-btn.danger{border-color:var(--danger-dim);color:var(--danger);}
+
+  /* =====================================================================
+     OPTION B — Panel táctico (Persona-esque diagonals, adaptado a la paleta)
+  ===================================================================== */
+  .mockB{position:relative;padding:0;overflow:hidden;}
+  .mockB-head{
+    background:var(--panel-2);
+    padding:14px 22px;
+    display:flex;justify-content:space-between;align-items:center;
+    clip-path:polygon(0 0,100% 0,100% 100%,3% 100%);
+    border-bottom:1px solid var(--amber-dim);
+  }
+  .mockB-head h3{font-family:'Press Start 2P';font-size:11px;margin:0;color:var(--amber);}
+  .mockB-head .weight-toggle{color:var(--text-dim);}
+  .mockB-body{display:grid;grid-template-columns:170px 1fr 280px;min-height:380px;}
+  .mockB-cats{
+    background:var(--bg-raised);border-right:1px solid var(--line);padding:18px 0;
+    display:flex;flex-direction:column;
+  }
+  .mockB-cat{
+    font-family:'Press Start 2P';font-size:9px;color:var(--text-faint);
+    padding:13px 18px;cursor:pointer;position:relative;letter-spacing:.02em;
+    border-left:3px solid transparent;
+  }
+  .mockB-cat.is-active{color:var(--amber);border-left-color:var(--amber);background:var(--panel);}
+  .mockB-cat .count{display:block;font-family:'IBM Plex Mono';font-size:9px;color:var(--text-faint);margin-top:4px;}
+
+  .mockB-list{padding:16px 18px;display:flex;flex-direction:column;gap:6px;}
+  .row-item{
+    display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--bg-raised);
+    border:1px solid var(--line);cursor:pointer;clip-path:polygon(0 0,100% 0,100% 100%,1.5% 100%);
+  }
+  .row-item:hover,.row-item.is-selected{border-color:var(--teal);}
+  .row-item .icon{font-size:18px;width:24px;text-align:center;}
+  .row-item .name{font-family:'IBM Plex Mono';font-size:12px;color:var(--text);flex:1;}
+  .row-item .qty{font-family:'IBM Plex Mono';font-size:11px;color:var(--text-faint);}
+
+  .mockB-detail{padding:20px;border-left:1px solid var(--line);display:flex;flex-direction:column;gap:14px;}
+  .compare-line{display:flex;justify-content:space-between;align-items:baseline;font-family:'IBM Plex Mono';font-size:12px;color:var(--text-dim);}
+  .compare-line .delta{font-size:11px;}
+
+  /* =====================================================================
+     OPTION C — Registro de carga (lista densa, tipo OpenMW)
+  ===================================================================== */
+  .mockC{padding:0;}
+  .mockC-toolbar{
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;
+    padding:12px 16px;border-bottom:1px solid var(--line);background:var(--bg-raised);
+  }
+  .search{
+    font-family:'IBM Plex Mono';font-size:12px;background:var(--panel);border:1px solid var(--line);
+    color:var(--text);padding:6px 10px;width:180px;
+  }
+  .search::placeholder{color:var(--text-faint);}
+  .mockC-cats{display:flex;gap:4px;}
+  .mockC-cats button{
+    font-family:'IBM Plex Mono';font-size:11px;padding:6px 10px;background:var(--panel);
+    border:1px solid var(--line);color:var(--text-dim);cursor:pointer;
+  }
+  .mockC-cats button.is-active{border-color:var(--teal);color:var(--teal);}
+
+  table.ledger{width:100%;border-collapse:collapse;font-family:'IBM Plex Mono';font-size:12px;}
+  table.ledger th{
+    text-align:left;color:var(--text-faint);font-weight:500;text-transform:uppercase;letter-spacing:.05em;
+    font-size:10px;padding:10px 14px;border-bottom:1px solid var(--line);
+  }
+  table.ledger td{padding:9px 14px;border-bottom:1px solid var(--line);color:var(--text-dim);}
+  table.ledger tr:hover td{background:var(--bg-raised);}
+  table.ledger td.name-cell{color:var(--text);display:flex;align-items:center;gap:8px;}
+  table.ledger td.num{font-variant-numeric:tabular-nums;text-align:right;}
+  .pin-star{cursor:pointer;}
+  .mockC-footer{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-top:1px solid var(--line);}
+
+  @media (max-width:860px){
+    .mockA,.mockB-body{grid-template-columns:1fr;}
+  }
+
+  /* ---------- sort/filter toolbar (shared) ---------- */
+  .toolbar-mini{
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+    margin-bottom:10px;font-family:'IBM Plex Mono',monospace;font-size:11px;
+  }
+  .toolbar-mini label{color:var(--text-faint);}
+  .toolbar-mini select{
+    background:var(--bg-raised);border:1px solid var(--line);color:var(--text);
+    font-family:'IBM Plex Mono',monospace;font-size:11px;padding:4px 6px;
+  }
+  .filter-chip{
+    background:var(--bg-raised);border:1px solid var(--line);color:var(--text-dim);
+    font-family:'IBM Plex Mono',monospace;font-size:10px;padding:4px 9px;cursor:pointer;
+  }
+  .filter-chip.is-active{border-color:var(--amber);color:var(--amber);}
+
+  /* ---------- drag-to-clave dropzone ---------- */
+  .dropzone-clave{
+    border:1px dashed var(--line-bright);padding:8px 10px;
+    font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-faint);
+    display:flex;align-items:center;gap:6px;transition:border-color .12s,color .12s,background .12s;
+  }
+  .dropzone-clave.is-over{border-color:var(--amber);color:var(--amber);background:var(--panel-2);}
+  .dropzone-clave .star-big{font-size:13px;}
+  [draggable="true"]{cursor:grab;}
+  [draggable="true"]:active{cursor:grabbing;}
+
+  /* ---------- hotbar (Option A, Crimson Desert-style quick slots) ---------- */
+  .hotbar{display:flex;gap:6px;margin-top:14px;}
+  .hotbar-slot{
+    width:36px;height:36px;background:var(--bg-raised);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;font-size:16px;position:relative;flex:none;
+  }
+  .hotbar-slot .kbd-mini{
+    position:absolute;bottom:-1px;right:-1px;font-family:'IBM Plex Mono';font-size:8px;
+    background:var(--panel-2);border:1px solid var(--line-bright);color:var(--text-faint);padding:0 2px;
+  }
+  .hotbar-label{font-family:'IBM Plex Mono';font-size:9px;color:var(--text-faint);margin-top:5px;}
+</style>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="eyebrow">Foundry · andar por la nave · #897 / #868</div>
+    <h1>MOCHILA DEL PHOBOS</h1>
+    <p>Tres maquetas de la misma mochila — mismas categorías, mismos datos, mismo par de teclas
+      (<kbd>G</kbd> coger/soltar, <kbd>H</kbd> mano ↔ mochila) — para comparar layout antes de tocar código.
+      Nada de esto es funcional de verdad: es la superficie que se construiría.</p>
+  </div>
+
+  <div class="switcher" id="switcher">
+    <button class="is-active" data-target="optA"><strong>OPCIÓN A</strong>Consola de combate</button>
+    <button data-target="optB"><strong>OPCIÓN B</strong>Panel táctico</button>
+    <button data-target="optC"><strong>OPCIÓN C</strong>Registro de carga</button>
+  </div>
+
+  <!-- ============================= OPTION A ============================= -->
+  <section class="option is-active" id="optA">
+    <p class="option-note">Inspiración: Champions of Norrath (PS2) para el muñeco de equipo y el grid de iconos
+      grandes; Crimson Desert para la franja de acceso rápido — un objeto usable en combate se arrastra a un hueco
+      del 1 al 4 y queda a una tecla, sin abrir la mochila en mitad de una pelea.</p>
+
+    <div class="mockA">
+      <div class="pixel-panel doll">
+        <div class="doll-title">EQUIPO</div>
+        <div class="doll-figure">
+          <div class="doll-silhouette"></div>
+          <div class="doll-slot slot-insignia" title="Insignia">🎖</div>
+          <div class="doll-slot slot-traje filled" title="Traje">🥼</div>
+          <div class="doll-slot slot-mano filled" title="Mano derecha">🔪</div>
+        </div>
+        <div class="doll-caption">Mano: Machete de mantenimiento<br>Traje: Overol de faena</div>
+
+        <div class="hotbar-label">ACCESO RÁPIDO (arrastra un objeto)</div>
+        <div class="hotbar" data-hotbar="A">
+          <div class="hotbar-slot" data-slot="0"><span class="kbd-mini">1</span></div>
+          <div class="hotbar-slot" data-slot="1"><span class="kbd-mini">2</span></div>
+          <div class="hotbar-slot" data-slot="2"><span class="kbd-mini">3</span></div>
+          <div class="hotbar-slot" data-slot="3"><span class="kbd-mini">4</span></div>
+        </div>
+
+        <div class="dropzone-clave" data-dropzone="A" style="margin-top:14px;">
+          <span class="star-big">★</span> Arrastra aquí para marcar como clave
+        </div>
+
+        <div class="weight-toggle" style="margin-top:14px;">
+          <div class="switch is-on" data-weight-toggle="A"></div>
+          <span>Límite de carga</span>
+        </div>
+        <div class="weight-bar-wrap">
+          <div class="weight-bar-track"><div class="weight-bar-fill" style="width:64%"></div></div>
+          <div class="weight-bar-label">51,2 / 80 kg</div>
+        </div>
+        <div class="weight-unlimited">Sin límite — carga lo que puedas llevar.</div>
+      </div>
+
+      <div class="pixel-panel" style="padding:16px;">
+        <div class="catbar" data-cats="A">
+          <button class="catbtn is-active" data-cat="armas">ARMAS</button>
+          <button class="catbtn" data-cat="curacion">CURACIÓN</button>
+          <button class="catbtn" data-cat="objetos">OBJETOS</button>
+        </div>
+        <div class="toolbar-mini">
+          <label>Orden</label>
+          <select data-sort="A">
+            <option value="defecto">Por defecto</option>
+            <option value="nombre">Nombre</option>
+            <option value="peso">Peso</option>
+            <option value="potencia">Potencia</option>
+          </select>
+          <button class="filter-chip is-active" data-filter="A" data-filter-value="todos">Todos</button>
+          <button class="filter-chip" data-filter="A" data-filter-value="clave">★ Clave</button>
+          <button class="filter-chip" data-filter="A" data-filter-value="equipable">Equipable</button>
+        </div>
+        <div class="grid-items" data-list="A">
+          <!-- filled by JS -->
+        </div>
+      </div>
+
+      <div class="pixel-panel detail-panel" data-detail="A">
+        <!-- filled by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================= OPTION B ============================= -->
+  <section class="option" id="optB">
+    <p class="option-note">Inspiración: Persona 5 (paneles diagonales, flechas de comparación) adaptado a la paleta
+      del puente — sin rojo de firma ajena, con el ámbar y el turquesa que ya usa el resto del módulo. Categorías
+      verticales, lista compacta con nombre visible, panel de detalle siempre a la vista.</p>
+
+    <div class="pixel-panel mockB">
+      <div class="mockB-head">
+        <h3>&gt; INVENTARIO — TRIPULANTE</h3>
+        <div class="weight-toggle">
+          <div class="switch is-on" data-weight-toggle="B"></div>
+          <span>Límite de carga</span>
+        </div>
+      </div>
+      <div class="mockB-body">
+        <div class="mockB-cats" data-cats="B">
+          <div class="mockB-cat is-active" data-cat="armas">ARMAS<span class="count">4</span></div>
+          <div class="mockB-cat" data-cat="curacion">CURACIÓN<span class="count">3</span></div>
+          <div class="mockB-cat" data-cat="objetos">OBJETOS<span class="count">5</span></div>
+          <div style="margin-top:auto;padding:14px 16px;">
+            <div class="dropzone-clave" data-dropzone="B"><span class="star-big">★</span> Clave</div>
+          </div>
+        </div>
+        <div>
+          <div class="toolbar-mini" style="padding:14px 18px 0;">
+            <label>Orden</label>
+            <select data-sort="B">
+              <option value="defecto">Por defecto</option>
+              <option value="nombre">Nombre</option>
+              <option value="peso">Peso</option>
+              <option value="potencia">Potencia</option>
+            </select>
+            <button class="filter-chip is-active" data-filter="B" data-filter-value="todos">Todos</button>
+            <button class="filter-chip" data-filter="B" data-filter-value="clave">★ Clave</button>
+            <button class="filter-chip" data-filter="B" data-filter-value="equipable">Equipable</button>
+          </div>
+          <div class="mockB-list" data-list="B"></div>
+        </div>
+        <div class="mockB-detail" data-detail="B"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================= OPTION C ============================= -->
+  <section class="option" id="optC">
+    <p class="option-note">Inspiración: listas de RPG clásico (tipo OpenMW/Morrowind) al estilo hoja de cálculo —
+      máxima densidad de información, orden por columna, objetos clave fijados arriba con estrella. Para quien
+      quiere gestionar la mochila rápido y sin adorno.</p>
+
+    <div class="pixel-panel mockC">
+      <div class="mockC-toolbar">
+        <input class="search" type="text" placeholder="Buscar objeto…" disabled>
+        <div class="mockC-cats" data-cats="C">
+          <button class="is-active" data-cat="todos">TODOS</button>
+          <button data-cat="armas">ARMAS</button>
+          <button data-cat="curacion">CURACIÓN</button>
+          <button data-cat="objetos">OBJETOS</button>
+        </div>
+        <div class="toolbar-mini" style="margin:0;">
+          <label>Orden</label>
+          <select data-sort="C">
+            <option value="defecto">Por defecto</option>
+            <option value="nombre">Nombre</option>
+            <option value="peso">Peso</option>
+            <option value="potencia">Potencia</option>
+          </select>
+          <button class="filter-chip is-active" data-filter="C" data-filter-value="todos">Todos</button>
+          <button class="filter-chip" data-filter="C" data-filter-value="clave">★ Clave</button>
+          <button class="filter-chip" data-filter="C" data-filter-value="equipable">Equipable</button>
+        </div>
+        <div class="weight-toggle">
+          <div class="switch is-on" data-weight-toggle="C"></div>
+          <span>Límite de carga</span>
+        </div>
+      </div>
+      <table class="ledger">
+        <thead>
+          <tr><th></th><th>Nombre</th><th>Tipo</th><th class="num">Peso</th><th class="num">Potencia</th></tr>
+        </thead>
+        <tbody data-list="C"></tbody>
+      </table>
+      <div class="mockC-footer">
+        <div class="weight-bar-wrap" style="flex:1;max-width:320px;">
+          <div class="weight-bar-track"><div class="weight-bar-fill" style="width:64%"></div></div>
+          <div class="weight-bar-label">51,2 / 80 kg</div>
+        </div>
+        <div class="weight-unlimited">Sin límite — carga lo que puedas llevar.</div>
+        <div class="dropzone-clave" data-dropzone="C"><span class="star-big">★</span> Arrastra una fila aquí para marcarla como clave</div>
+        <span style="font-family:'IBM Plex Mono';font-size:11px;color:var(--text-faint);">12 objetos</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="keys-legend">
+    <span><kbd>G</kbd> coger del suelo / soltar donde estés</span>
+    <span><kbd>H</kbd> mano ↔ mochila</span>
+    <span>★ marca un objeto como clave (no se puede soltar por accidente)</span>
+    <span>Interruptor "Límite de carga": así se ve la mochila con el peso opcional activado o desactivado</span>
+  </div>
+
+</div>
+
+<script>
+  const ITEMS = {
+    armas: [
+      { icon:"🔪", name:"Machete de mantenimiento", desc:"Improvisado, del taller de reparaciones. Corto y fiable.", peso:1.2, potencia:0.28, afinidad:"Guerrero · Bárbaro", equipped:true },
+      { icon:"🗡", name:"Mandoble de faena", desc:"Reforjado de una viga de casco. Pesado, poca finura.", peso:4.6, potencia:0.61, afinidad:"Guerrero · Paladín" },
+      { icon:"🔫", name:"Pistola de descargas Mk.I", desc:"Alcance corto, recarga lenta. Aturde antes que perfora.", peso:1.8, potencia:0.42, afinidad:"Pícaro · Explorador" },
+      { icon:"🪄", name:"Bastón conductor", desc:"Canaliza la red eléctrica de la nave en un impulso dirigido.", peso:1.1, potencia:0.55, afinidad:"Mago · Hechicero" },
+    ],
+    curacion: [
+      { icon:"💉", name:"Botiquín de emergencia", desc:"Sella heridas abiertas. Un uso.", peso:0.6, cantidad:2 },
+      { icon:"🧪", name:"Estimulante de combate", desc:"Sube el pulso, baja el dolor. Efecto breve.", peso:0.3, cantidad:1 },
+      { icon:"🫧", name:"Ampolla de oxígeno", desc:"Media hora de aire limpio en zona sin presurizar.", peso:0.4, cantidad:3 },
+    ],
+    objetos: [
+      { icon:"🔦", name:"Linterna de casco", desc:"Se engancha al casco del traje. Autonomía: 6 horas.", peso:0.3 },
+      { icon:"🧰", name:"Herramientas de reparación", desc:"Kit básico. Sirve para casi cualquier avería menor.", peso:2.1 },
+      { icon:"🔌", name:"Cable de datos", desc:"Empalme universal para terminales de la nave.", peso:0.1 },
+      { icon:"🗝", name:"Llave magnética — Ala de Ingeniería", desc:"Abre el acceso restringido tras el reactor.", peso:0.05, clave:true },
+      { icon:"📓", name:"Registro cifrado del capitán", desc:"Sin descifrar todavía. Alguien lo querrá leer.", peso:0.2, clave:true },
+    ],
+  };
+
+  // id estable por objeto: lo que viaja en el drag-and-drop y lo que
+  // identifica una fila entre re-renders (orden/filtro no deben perder el
+  // rastro de qué es qué).
+  let _uid = 0;
+  for (const cat of Object.values(ITEMS)) for (const it of cat) it._id = `it${_uid++}`;
+  function buscarPorId(id){
+    for (const cat of Object.values(ITEMS)) { const it = cat.find((x) => x._id === id); if (it) return it; }
+    return null;
+  }
+
+  function itemLine(it){
+    const bits = [];
+    if (it.cantidad) bits.push(`×${it.cantidad}`);
+    if (typeof it.peso === "number") bits.push(`${it.peso} kg`);
+    if (typeof it.potencia === "number") bits.push(`potencia ${it.potencia.toFixed(2)}`);
+    return bits.join(" · ");
+  }
+
+  // Estado de orden/filtro por opción — cada maqueta recuerda el suyo.
+  const listState = {
+    A: { sort: "defecto", filter: "todos" },
+    B: { sort: "defecto", filter: "todos" },
+    C: { sort: "defecto", filter: "todos" },
+  };
+
+  function aplicarOrdenYFiltro(lista, estado){
+    let r = lista.slice();
+    if (estado.filter === "clave") r = r.filter((it) => it.clave);
+    if (estado.filter === "equipable") r = r.filter((it) => typeof it.potencia === "number");
+    if (estado.sort === "nombre") r.sort((a, b) => a.name.localeCompare(b.name, "es"));
+    if (estado.sort === "peso") r.sort((a, b) => (a.peso ?? 0) - (b.peso ?? 0));
+    if (estado.sort === "potencia") r.sort((a, b) => (b.potencia ?? -1) - (a.potencia ?? -1));
+    // "Por defecto": objetos clave siempre arriba, el resto en el orden del catálogo.
+    if (estado.sort === "defecto") r.sort((a, b) => (b.clave ? 1 : 0) - (a.clave ? 1 : 0));
+    return r;
+  }
+
+  function wireToolbarMini(letra, onChange){
+    const sel = document.querySelector(`[data-sort="${letra}"]`);
+    if (sel) sel.addEventListener("change", () => { listState[letra].sort = sel.value; onChange(); });
+    document.querySelectorAll(`[data-filter="${letra}"]`).forEach((btn) => {
+      btn.addEventListener("click", () => {
+        listState[letra].filter = btn.dataset.filterValue;
+        document.querySelectorAll(`[data-filter="${letra}"]`).forEach((b) => b.classList.toggle("is-active", b === btn));
+        onChange();
+      });
+    });
+  }
+
+  // Arrastrar un objeto hasta una zona "★ Clave" lo marca como objeto clave —
+  // no hace falta abrir su detalle ni encontrar un botón: uno de los pedidos
+  // fue justo "que se puedan arrastrar objetos a favoritos/clave".
+  function wireDropzone(letra, onDropped){
+    const zona = document.querySelector(`[data-dropzone="${letra}"]`);
+    if (!zona) return;
+    zona.addEventListener("dragover", (ev) => { ev.preventDefault(); zona.classList.add("is-over"); });
+    zona.addEventListener("dragleave", () => zona.classList.remove("is-over"));
+    zona.addEventListener("drop", (ev) => {
+      ev.preventDefault();
+      zona.classList.remove("is-over");
+      const id = ev.dataTransfer.getData("text/plain");
+      const it = buscarPorId(id);
+      if (!it) return;
+      it.clave = true;
+      onDropped(it);
+    });
+  }
+
+  function wireDraggable(el, it){
+    el.draggable = true;
+    el.addEventListener("dragstart", (ev) => {
+      ev.dataTransfer.setData("text/plain", it._id);
+      ev.dataTransfer.effectAllowed = "copy";
+    });
+  }
+
+  // ---------- top switcher ----------
+  const switcher = document.getElementById("switcher");
+  switcher.addEventListener("click", (ev) => {
+    const btn = ev.target.closest("button[data-target]");
+    if (!btn) return;
+    for (const b of switcher.querySelectorAll("button")) b.classList.toggle("is-active", b === btn);
+    for (const sec of document.querySelectorAll(".option")) sec.classList.toggle("is-active", sec.id === btn.dataset.target);
+  });
+
+  // ---------- weight toggles ----------
+  for (const sw of document.querySelectorAll("[data-weight-toggle]")) {
+    sw.addEventListener("click", () => {
+      sw.classList.toggle("is-on");
+      const panel = sw.closest("section, .pixel-panel");
+      panel.classList.toggle("weight-hidden", !sw.classList.contains("is-on"));
+    });
+  }
+
+  // ---------- OPTION A: grid + detail ----------
+  let catActualA = "armas";
+  function renderA(cat){
+    if (cat) catActualA = cat;
+    const list = document.querySelector('[data-list="A"]');
+    const items = aplicarOrdenYFiltro(ITEMS[catActualA], listState.A);
+    list.innerHTML = "";
+    if (items.length === 0) {
+      list.innerHTML = `<div style="grid-column:1/-1;font-family:'IBM Plex Mono';font-size:11px;color:var(--text-faint);padding:20px 0;">Ningún objeto cumple el filtro.</div>`;
+      document.querySelector('[data-detail="A"]').innerHTML = "";
+      return;
+    }
+    items.forEach((it, i) => {
+      const tile = document.createElement("div");
+      tile.className = "grid-tile" + (i === 0 ? " is-selected" : "");
+      tile.innerHTML = `
+        ${it.clave ? '<span class="star">★</span>' : ''}
+        <span class="icon">${it.icon}</span>
+        <span class="name">${it.name}</span>
+        ${it.cantidad ? `<span class="qty">×${it.cantidad}</span>` : ""}
+      `;
+      tile.addEventListener("click", () => {
+        list.querySelectorAll(".grid-tile").forEach((t) => t.classList.remove("is-selected"));
+        tile.classList.add("is-selected");
+        renderDetailA(it);
+      });
+      wireDraggable(tile, it);
+      list.appendChild(tile);
+    });
+    renderDetailA(items[0]);
+  }
+  function renderDetailA(it){
+    const detail = document.querySelector('[data-detail="A"]');
+    detail.innerHTML = `
+      <div>
+        <div class="detail-name">${it.name}</div>
+        <div class="detail-desc">${it.desc}</div>
+      </div>
+      <div class="detail-stats">
+        ${typeof it.peso === "number" ? `<div class="stat-row"><span>Peso</span><b>${it.peso} kg</b></div>` : ""}
+        ${typeof it.potencia === "number" ? `<div class="stat-row"><span>Potencia</span><b>${it.potencia.toFixed(2)} <span class="arrow-up">↑</span></b></div>` : ""}
+        ${it.afinidad ? `<div class="stat-row"><span>Afinidad</span><b>${it.afinidad}</b></div>` : ""}
+        ${it.cantidad ? `<div class="stat-row"><span>Cantidad</span><b>×${it.cantidad}</b></div>` : ""}
+      </div>
+      <div class="action-row">
+        <div class="action-btn primary">Equipar / usar</div>
+        <div class="action-btn danger">Soltar</div>
+      </div>
+    `;
+  }
+  document.querySelector('[data-cats="A"]').addEventListener("click", (ev) => {
+    const btn = ev.target.closest("button[data-cat]");
+    if (!btn) return;
+    document.querySelectorAll('[data-cats="A"] .catbtn').forEach((b) => b.classList.toggle("is-active", b === btn));
+    renderA(btn.dataset.cat);
+  });
+  wireToolbarMini("A", () => renderA());
+  wireDropzone("A", () => renderA());
+  // Franja de acceso rápido (Crimson Desert): arrastrar un objeto a un hueco
+  // del 1-4 lo deja a una tecla, sin necesidad de abrir la mochila.
+  document.querySelectorAll('[data-hotbar="A"] .hotbar-slot').forEach((slot) => {
+    slot.addEventListener("dragover", (ev) => { ev.preventDefault(); slot.style.borderColor = "var(--teal)"; });
+    slot.addEventListener("dragleave", () => { slot.style.borderColor = ""; });
+    slot.addEventListener("drop", (ev) => {
+      ev.preventDefault();
+      slot.style.borderColor = "";
+      const it = buscarPorId(ev.dataTransfer.getData("text/plain"));
+      if (!it) return;
+      slot.innerHTML = `${it.icon}<span class="kbd-mini">${slot.dataset.slot === "3" ? "4" : Number(slot.dataset.slot) + 1}</span>`;
+      slot.title = it.name;
+    });
+  });
+  renderA("armas");
+
+  // ---------- OPTION B: list + detail ----------
+  let catActualB = "armas";
+  function renderB(cat){
+    if (cat) catActualB = cat;
+    const list = document.querySelector('[data-list="B"]');
+    const items = aplicarOrdenYFiltro(ITEMS[catActualB], listState.B);
+    list.innerHTML = "";
+    if (items.length === 0) {
+      list.innerHTML = `<div style="font-family:'IBM Plex Mono';font-size:11px;color:var(--text-faint);padding:10px 0;">Ningún objeto cumple el filtro.</div>`;
+      document.querySelector('[data-detail="B"]').innerHTML = "";
+      return;
+    }
+    items.forEach((it, i) => {
+      const row = document.createElement("div");
+      row.className = "row-item" + (i === 0 ? " is-selected" : "");
+      row.innerHTML = `
+        <span class="icon">${it.icon}</span>
+        <span class="name">${it.name}${it.clave ? ' <span style="color:var(--amber)">★</span>' : ''}</span>
+        <span class="qty">${itemLine(it)}</span>
+      `;
+      row.addEventListener("click", () => {
+        list.querySelectorAll(".row-item").forEach((r) => r.classList.remove("is-selected"));
+        row.classList.add("is-selected");
+        renderDetailB(it);
+      });
+      wireDraggable(row, it);
+      list.appendChild(row);
+    });
+    renderDetailB(items[0]);
+  }
+  function renderDetailB(it){
+    const detail = document.querySelector('[data-detail="B"]');
+    const equipada = ITEMS.armas.find((a) => a.equipped);
+    detail.innerHTML = `
+      <div class="detail-name" style="color:var(--amber);font-family:'Press Start 2P';font-size:11px;line-height:1.6;">${it.name}</div>
+      <div class="detail-desc">${it.desc}</div>
+      <div class="detail-stats">
+        ${typeof it.peso === "number" ? `<div class="compare-line"><span>Peso</span><b>${it.peso} kg</b></div>` : ""}
+        ${typeof it.potencia === "number" ? `
+          <div class="compare-line">
+            <span>Potencia vs. equipada</span>
+            <span>${it.potencia.toFixed(2)} <span class="delta ${it.potencia >= equipada.potencia ? 'arrow-up' : 'arrow-down'}">${it.potencia >= equipada.potencia ? '▲ mejora' : '▼ peor'}</span></span>
+          </div>` : ""}
+        ${it.afinidad ? `<div class="compare-line"><span>Afinidad</span><span>${it.afinidad}</span></div>` : ""}
+      </div>
+      <div class="action-row">
+        <div class="action-btn primary">Equipar / usar</div>
+        <div class="action-btn danger">Soltar</div>
+      </div>
+    `;
+  }
+  document.querySelector('[data-cats="B"]').addEventListener("click", (ev) => {
+    const btn = ev.target.closest(".mockB-cat");
+    if (!btn) return;
+    document.querySelectorAll('[data-cats="B"] .mockB-cat').forEach((b) => b.classList.toggle("is-active", b === btn));
+    renderB(btn.dataset.cat);
+  });
+  wireToolbarMini("B", () => renderB());
+  wireDropzone("B", () => renderB());
+  renderB("armas");
+
+  // ---------- OPTION C: ledger table ----------
+  let catActualC = "todos";
+  function renderC(cat){
+    if (cat) catActualC = cat;
+    const body = document.querySelector('[data-list="C"]');
+    body.innerHTML = "";
+    const todas = catActualC === "todos" ? [...ITEMS.armas, ...ITEMS.curacion, ...ITEMS.objetos] : ITEMS[catActualC];
+    const items = aplicarOrdenYFiltro(todas, listState.C);
+    const tipoDe = (it) => (ITEMS.armas.includes(it) ? "Arma" : ITEMS.curacion.includes(it) ? "Curación" : "Objeto");
+    if (items.length === 0) {
+      body.innerHTML = `<tr><td colspan="5" style="color:var(--text-faint);padding:16px 14px;">Ningún objeto cumple el filtro.</td></tr>`;
+      return;
+    }
+    for (const it of items) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><span class="pin-star" style="color:${it.clave ? "var(--amber)" : "var(--text-faint)"}">★</span></td>
+        <td class="name-cell"><span>${it.icon}</span>${it.name}${it.cantidad ? ` ×${it.cantidad}` : ""}</td>
+        <td>${tipoDe(it)}</td>
+        <td class="num">${it.peso} kg</td>
+        <td class="num">${typeof it.potencia === "number" ? it.potencia.toFixed(2) : "—"}</td>
+      `;
+      wireDraggable(tr, it);
+      body.appendChild(tr);
+    }
+  }
+  document.querySelector('[data-cats="C"]').addEventListener("click", (ev) => {
+    const btn = ev.target.closest("button[data-cat]");
+    if (!btn) return;
+    document.querySelectorAll('[data-cats="C"] button').forEach((b) => b.classList.toggle("is-active", b === btn));
+    renderC(btn.dataset.cat);
+  });
+  wireToolbarMini("C", () => renderC());
+  wireDropzone("C", () => renderC());
+  renderC("todos");
+</script>
+
+</body></html>

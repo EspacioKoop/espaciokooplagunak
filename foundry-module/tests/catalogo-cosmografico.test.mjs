@@ -188,6 +188,21 @@ test("limita el número de entradas y el tamaño serializado", () => {
   expectCode(tooLarge, "too_large", "$");
 });
 
+test("map_ref es una referencia débil y opcional a un mapa operativo", () => {
+  const withMapRef = clone();
+  withMapRef.entries[2].map_ref = "mapa-auzolan";
+  assert.equal(validateCosmography(withMapRef), true);
+
+  const badMapRef = clone();
+  badMapRef.entries[2].map_ref = "Mapa Operativo";
+  expectCode(badMapRef, "invalid_map_ref", "entries[2].map_ref");
+
+  const withoutMapRef = clone();
+  delete withoutMapRef.entries[2].map_ref;
+  assert.equal(Object.hasOwn(withoutMapRef.entries[2], "map_ref"), false);
+  assert.equal(validateCosmography(withoutMapRef), true);
+});
+
 test("rechaza raíces no serializables o que no sean objetos simples", () => {
   expectCode(null, "invalid_object", "$");
   expectCode([], "invalid_object", "$");

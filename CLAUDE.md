@@ -746,9 +746,10 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     `paleta.mjs`, #584): solo-GM, sin puerta en la nave, salida por su único punto de interacción. Su
     razón de ser es otra: es la primera escena del módulo que declara `focos` (luces de punto de
     #556) y sirve de banco de pruebas visual para la piel del muro TEXTURADA
-    (`scripts/piel-textura.mjs` + `pielMuro: "textura"` en `crearSalaCaja`, opción B de #584) — la
-    única de las salas donde ese camino está encendido de serie, porque encenderlo en las trece del
-    Phobos es una decisión de arte aparte que todavía no se ha tomado. La piel texturada sustituye los
+    (`scripts/piel-textura.mjs` + `pielMuro: "textura"` en `crearSalaCaja`, opción B de #584). Ese
+    camino es hoy el de TODAS las salas —#930 invirtió el defecto a `"textura"`—, así que la
+    subdivisión no es un experimento aislado: lo que el plató aporta es un sitio donde mirarla con
+    un rig de focos delante. La piel texturada sustituye los
     cientos de chapas de 10 cm de un muro (#548) por un puñado de cuadros de ~1,5 m
     (`SUBDIVISION_PANO_METROS` en `nave-sala-caja.mjs`): la rejilla no es para dibujo —eso lo da el
     téxel, cuatro veces más fino que la caja que sustituye— sino SOLO para que `intensidadCara` (#556)

@@ -961,5 +961,10 @@
   "LAGUNAK.Parlamento.Enfoque.intimidacion": "Intimidación",
   "LAGUNAK.Convocatoria.Titulo": "Convocar a estancia",
   "LAGUNAK.Convocatoria.Elige": "Elige a dónde llevar a la tripulación.",
-  "LAGUNAK.Convocatoria.NoSePuede": "No se puede convocar ahí: solo el GM y estancias válidas."
+  "LAGUNAK.Convocatoria.NoSePuede": "No se puede convocar ahí: solo el GM y estancias válidas.",
+  "LAGUNAK.PanelGM.Entrada.Parlamento": "Parlamento",
+  "LAGUNAK.PanelGM.Entrada.ParlamentoSelector": "Selector de encuentros del parlamento",
+  "LAGUNAK.SelectorParlamento.Titulo": "Selector de encuentros del parlamento",
+  "LAGUNAK.SelectorParlamento.Intro": "Seleccione un encuentro para abrir una audiencia:",
+  "LAGUNAK.SelectorParlamento.Entradas": "Encuentros disponibles"
 }

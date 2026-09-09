@@ -90,6 +90,7 @@ import { crearClasePanelGMV1, crearClasePanelGMV2 } from "./panel-gm-app.mjs";
 import { construirHerramientasGM } from "./herramientas-gm-catalogo.mjs";
 import { crearClaseSeccionV1, crearClaseSeccionV2 } from "./seccion-nave/seccion-nave-app.mjs";
 import { construirHerramientasPublicas } from "./herramientas-publicas-catalogo.mjs";
+import { crearClaseParlamentoSelectorV1, crearClaseParlamentoSelectorV2 } from "./parlamento-selector-app.mjs";
 import { crearClaseAndarV1, crearClaseAndarV2 } from "./andar-nave-app.mjs";
 import { salaDePuesto } from "./seccion-nave/seccion-nave.mjs";
 import { registrarPreset as registrarPresetBaraja } from "./minijuegos/baraja-preset.mjs";
@@ -112,6 +113,7 @@ import {
   OPCIONES_GRANO,
   registrarSincroniaFiltros,
 } from "./filtros-escena.mjs";
+import { abrirParlamento, establecerEstadoParlamento } from "./parlamento-ventana.mjs";
 import { AJUSTE_BASE_DATOS, AJUSTE_TELEMETRIA } from "./ship-view/telemetria-difusion.mjs";
 import {
   IDIOMA_AUTOMATICO,
@@ -672,6 +674,20 @@ const ACCIONES_PANEL_GM = {
   ficha: () => aplicarFichaNave(),
   convocatoria: () => abrirConvocatoria(),
   sonido: () => abrirSonidoFreesound(),
+  "parlamento-selector": () => {
+    const Clase = foundry.applications?.api?.ApplicationV2
+      ? crearClaseParlamentoSelectorV2({ alSeleccionarEncuentro: (encuentro) => {
+          abrirParlamento();
+          establecerEstadoParlamento(encuentro, encuentro.desafio ?? 1, null);
+        } })
+      : crearClaseParlamentoSelectorV1({ alSeleccionarEncuentro: (encuentro) => {
+          abrirParlamento();
+          establecerEstadoParlamento(encuentro, encuentro.desafio ?? 1, null);
+        } });
+    const app = new Clase();
+    if (foundry.applications?.api?.ApplicationV2) app.render({ force: true });
+    else app.render(true);
+  },
 };
 
 function abrirPanelGM() {

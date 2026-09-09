@@ -961,5 +961,10 @@
   "LAGUNAK.Parlamento.Enfoque.intimidacion": "Intimidation",
   "LAGUNAK.Convocatoria.Titulo": "Summon to room",
   "LAGUNAK.Convocatoria.Elige": "Choose where to bring the crew.",
-  "LAGUNAK.Convocatoria.NoSePuede": "Cannot summon there: GM only, and only valid rooms."
+  "LAGUNAK.Convocatoria.NoSePuede": "Cannot summon there: GM only, and only valid rooms.",
+  "LAGUNAK.PanelGM.Entrada.Parlamento": "Parlamento",
+  "LAGUNAK.PanelGM.Entrada.ParlamentoSelector": "Selector de encuentros del parlamento",
+  "LAGUNAK.SelectorParlamento.Titulo": "Selector de encuentros del parlamento",
+  "LAGUNAK.SelectorParlamento.Intro": "Select an encounter to open a parley:",
+  "LAGUNAK.SelectorParlamento.Entradas": "Available encounters"
 }

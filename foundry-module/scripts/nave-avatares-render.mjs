@@ -60,7 +60,7 @@ import { componerEscena } from "./retro3d.mjs";
  *   `componerEscena(...).poligonos` — listos para fundir con los de la sala
  *   y reordenar juntos por profundidad.
  */
-export function poligonosOtrosJugadores(jugadores, { camara, yaw, ancho, alto, epoca, fov, alpha = 1 }) {
+export function poligonosOtrosJugadores(jugadores, { camara, yaw, pitch = 0, ancho, alto, epoca, fov, alpha = 1 }) {
   if (!Array.isArray(jugadores) || jugadores.length === 0) return [];
   const [camX, camY, camZ] = camara;
 
@@ -96,6 +96,11 @@ export function poligonosOtrosJugadores(jugadores, { camara, yaw, ancho, alto, e
         color: pieza.color,
         posicion: [0, 0, 0],
         yaw,
+        // La inclinación de la cámara, si la superficie la usa (#1024: la vista
+        // libre de la arena). Por defecto 0, que es la cámara a ras de la nave:
+        // sin esto, una cámara inclinada dejaría los cuerpos derechos sobre un
+        // mundo torcido, que es peor que no poder inclinarla.
+        pitch,
         // Recorte de frustum completo (#510): un avatar visto de cerca —cruzarse
         // con otro jugador en un pasillo estrecho— dispara el mismo vértice
         // fuera de cuadro que ya se arregló para la geometría de la sala y para

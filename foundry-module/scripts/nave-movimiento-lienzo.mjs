@@ -356,6 +356,27 @@ export function arrancarAndar(lienzo, opciones = {}) {
       pintarUnaVez();
       return modoCamara;
     },
+    /**
+     * Pone un punto de vista CONCRETO y devuelve el resultante (#1024).
+     *
+     * Va aparte de `alternarCamara` y no la sustituye porque son dos gestos
+     * distintos: en la nave hay dos modos y se alternan con una tecla; en la
+     * arena hay cuatro vistas y se eligen por su número. El bucle sigue sin
+     * saber qué es una vista —solo la TRANSPORTA a `componer`, igual que el
+     * modo de siempre—: qué significa cada nombre lo deciden
+     * `nave-camara.mjs` y `cambiador-vistas-combate.mjs`, y si el modo pedido
+     * no le suena a quien compone, es allí donde cae a su respaldo. Un valor
+     * que no sea cadena se ignora en vez de dejar el bucle sin cámara.
+     *
+     * Repinta al instante, por el mismo motivo que `alternarCamara`: sin rAF
+     * el cambio no se vería hasta que alguien se moviera.
+     */
+    fijarCamara(modo) {
+      if (typeof modo !== "string" || modo === modoCamara) return modoCamara;
+      modoCamara = modo;
+      pintarUnaVez();
+      return modoCamara;
+    },
     /** Qué punto de vista está activo, para rotularlo fuera. */
     camara() {
       return modoCamara;

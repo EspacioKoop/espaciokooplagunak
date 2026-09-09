@@ -80,6 +80,22 @@ export function declararEstancia(definicion) {
      *  `declararPoseables`. Van con `conPoses` y no dentro de ella porque quien
      *  cambia una pose necesita saber qué poses EXISTEN antes de pedir una. */
     poseables: Object.freeze([...(definicion.poseables ?? [])]),
+    /**
+     * Qué vistas de cámara de combate ofrece esta estancia (#1024), o `null`.
+     *
+     * OPACO aquí, como `poseables` y como la `accion` de un punto: lo que se
+     * declara son las CAPACIDADES DE PROYECCIÓN de su compositor —hoy solo
+     * `{ortografica}`— y quién las interpreta es
+     * `cambiador-vistas-combate.mjs`. El motor de andar no sabe qué es una
+     * arena, igual que no sabe qué es una cantina; sin esto, la ventana
+     * tendría que preguntar «¿es la arena?» para decidir si los números del
+     * teclado hacen algo, que es el `if` con el nombre de una sala dentro del
+     * motor que #508 dejó prohibido.
+     *
+     * `null` en las catorce estancias restantes, que es lo que hace que las
+     * teclas 1-4 no hagan nada mientras andas por la nave.
+     */
+    vistasCombate: definicion.vistasCombate ?? null,
     entrada: Object.freeze({
       x: definicion.entrada?.x ?? definicion.planta.ancho / 2,
       z: definicion.entrada?.z ?? definicion.planta.profundidad / 2,

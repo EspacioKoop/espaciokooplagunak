@@ -695,6 +695,22 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     reparto es la lección: el claro cuesta ~2100 polígonos igual con 4 cuerpos que con 32, y cada
     cuerpo añade unos 16 — la población no es el gasto, así que si algún día hay que recortar se
     recorta arboleda, no combatientes.
+    Sus **cuatro vistas de cámara** (`scripts/cambiador-vistas-combate.mjs` sobre
+    `camara-{tactica,pov-combate,tercera-combate,foto}.mjs`, #1024 y #1020–#1023) son estado de
+    PRESENTACIÓN y nada más: entran números —metros, radianes, `yaw` 0 hacia +z— y sale dónde va la
+    cámara. No reciben entidades ni permisos, así que cambiar de vista no puede revelar lo que la
+    capa de visibilidad oculta ni tocar un turno; hay prueba de esa frontera, no solo un comentario.
+    Se eligen con las teclas 1–4 dentro de la ventana de andar, así que no estrenan superficie en
+    `main.mjs` (disciplina #448), y **la estancia declara cuáles ofrece** (`vistasCombate` en
+    `nave-estancias.mjs`, opaco como `poseables`): la arena es la única, y por eso los números no
+    hacen nada en las catorce salas restantes sin que el motor pregunte por el nombre de ninguna
+    (#508). Lo que se declara son **capacidades del renderer y no permisos**: `retro3d.mjs` no sabe
+    proyectar en ortográfico todavía —la otra mitad de #1020—, así que la vista **táctica no se
+    ofrece** en vez de salir en perspectiva; una cenital en perspectiva haría las casillas del fondo
+    más pequeñas que las de delante, o sea una rejilla de 5 ft que miente sobre la única medida que
+    existe para dar. El día que llegue el adaptador, la arena pasa `{ortografica: true}` y la vista
+    aparece sin tocar el conmutador. Entrar sin elegir sigue usando la cámara de andar
+    (`nave-camara.mjs`), así que ni un polígono cambia hasta que alguien pulsa un número.
     Los **cuadros** de sus muros laterales (#836) son la SEGUNDA forma de colgar y no un parámetro
     de la primera: una escultura se apoya en un pedestal y se rodea, un cuadro cuelga de un muro y
     solo se mira de frente, así que van en catálogo aparte (`museo-cuadros.mjs`) validado por el

@@ -622,3 +622,47 @@ test("el bucle recuerda EN QUÉ te sentaste, para que quien levante lo devuelva 
   assert.equal(mando.asientoOcupado(), null);
   mando.detener();
 });
+
+test("fijarCamara pone un modo concreto, lo transporta a componer y repinta", () => {
+  // El bucle no sabe qué es una vista de combate: la TRANSPORTA, igual que el
+  // modo de andar de siempre. Esta prueba fija justo eso — que lo que se pide
+  // llega tal cual a quien compone, sin que el bucle lo interprete.
+  const modos = [];
+  const mando = arrancarAndar(lienzoFalso(), {
+    componer: (x, y, z, yaw, opciones = {}) => {
+      modos.push(opciones.modoCamara);
+      return { ancho: 100, alto: 100, poligonos: [] };
+    },
+    planta: PLANTA,
+  });
+  assert.equal(modos.at(-1), "primera");
+
+  assert.equal(mando.fijarCamara("libre"), "libre");
+  assert.equal(modos.at(-1), "libre", "tiene que repintar en el acto, sin esperar a rAF");
+  assert.equal(mando.camara(), "libre");
+
+  // Repetir el mismo modo no repinta: no ha cambiado nada que ver.
+  const pintados = modos.length;
+  assert.equal(mando.fijarCamara("libre"), "libre");
+  assert.equal(modos.length, pintados);
+
+  // Lo que no sea una cadena se ignora en vez de dejar el bucle sin cámara.
+  assert.equal(mando.fijarCamara(undefined), "libre");
+  assert.equal(mando.fijarCamara(3), "libre");
+  assert.equal(modos.length, pintados);
+});
+
+test("fijarCamara y alternarCamara conviven sin pisarse", () => {
+  // Son dos gestos distintos sobre el mismo estado: la tecla V de la nave y los
+  // números de la arena. Alternar después de fijar tiene que partir de lo
+  // fijado, no de un modo guardado aparte.
+  const mando = arrancarAndar(lienzoFalso(), {
+    componer: () => ({ ancho: 100, alto: 100, poligonos: [] }),
+    planta: PLANTA,
+  });
+  mando.fijarCamara("tercera");
+  assert.equal(mando.alternarCamara(), "primera");
+  mando.fijarCamara("pov");
+  // `alternarModo` solo conoce dos modos: desde cualquier otro cae a tercera.
+  assert.equal(mando.alternarCamara(), "tercera");
+});

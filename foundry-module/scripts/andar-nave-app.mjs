@@ -21,6 +21,7 @@ import { colisiona } from "./nave-movimiento.mjs";
 import { estaEnElPlano, modeloMinimapa } from "./nave-minimapa.mjs";
 import { pintarMinimapa } from "./nave-minimapa-lienzo.mjs";
 import { CATALOGO_ANDAR } from "./nave-catalogo-andar.mjs";
+import { atajoVista, normalizarVista, vistasDisponibles } from "./cambiador-vistas-combate.mjs";
 import { puntoDeLlegada, resolverArranque } from "./nave-estancias.mjs";
 import { construirMuestra, debeMuestrear, programarMuestra } from "./nave-movimiento-red.mjs";
 import { presentesEn } from "./nave-presencia.mjs";
@@ -156,6 +157,21 @@ export const TECLA_GIRO = Object.freeze({ q: -1, e: 1, ArrowLeft: -1, ArrowRight
  * una prueba. `andar-nave-app.test.mjs` compara las tres tablas y falla si un
  * mapa pisa a otro.
  */
+/**
+ * Las cuatro vistas de cámara de combate (#1024), por su número.
+ *
+ * Tabla propia y no una entrada más de `TECLAS_ACCION` porque no son un gesto
+ * sino una ELECCIÓN entre cuatro: con una acción por vista habría cuatro ramas
+ * repetidas en `onKeyDown` diciendo lo mismo. Los números no chocan con nada
+ * —las direcciones son WASD/flechas, el giro `q`/`e`, y las acciones `v` y `f`—
+ * y `andar-nave-teclas.test.mjs` compara ya las CUATRO tablas, así que un choque
+ * futuro falla en la suite en vez de quedarse como código muerto.
+ *
+ * Qué nombre lleva cada número lo decide `cambiador-vistas-combate.mjs`, no
+ * esta tabla: aquí solo se declara QUÉ teclas miramos.
+ */
+export const TECLAS_VISTA = Object.freeze(["1", "2", "3", "4"]);
+
 export const TECLAS_ACCION = Object.freeze({
   v: "camara",
   V: "camara",
@@ -184,7 +200,9 @@ export const TECLAS_ACCION = Object.freeze({
  * pasar página del libro del museo. Quién responde lo resuelve el llamante
  * contra lo que haya al alcance, no esta función, que solo traduce la tecla.
  * Sin callback la tecla no hace nada, mismo contrato que
- * `alTocarPuerta`/`alAlcanzarInteraccion` en `arrancarAndar`.
+ * `alTocarPuerta`/`alAlcanzarInteraccion` en `arrancarAndar`. Lo mismo vale
+ * para `acciones.alElegirVista` (#1024, teclas 1-4): sin él, los números no
+ * hacen nada, que es lo correcto en las trece estancias de la nave.
  */
 function engancharTeclado(raiz, mando, acciones = {}) {
   const lienzo = raiz?.querySelector?.(".lagunak-andar-lienzo");
@@ -240,6 +258,23 @@ function engancharTeclado(raiz, mando, acciones = {}) {
       ev.stopPropagation();
       mando.alternarCamara();
       return;
+    }
+    // Las cuatro vistas de combate (#1024), por su número. En el flanco de
+    // PULSACIÓN como la cámara y el usar: es una elección, no una dirección.
+    //
+    // El teclado solo TRADUCE la tecla a un nombre de vista y se la pasa a
+    // quien cablea, igual que hace con "usar": si la estancia de turno no
+    // ofrece vistas de combate —trece de las catorce no lo hacen— no hay
+    // callback y la tecla no hace nada. Decidirlo aquí obligaría a esta
+    // función a saber en qué sala estás, que es justo lo que no sabe.
+    if (TECLAS_VISTA.includes(ev.key)) {
+      const vista = atajoVista(ev.key);
+      if (vista && acciones.alElegirVista) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        acciones.alElegirVista(vista);
+        return;
+      }
     }
     // "Usar" lo que tengas delante: sentarse/levantarse en una silla (#846),
     // pasar página del libro del museo (#853). `f` y no `e`: `e` ya gira, y una
@@ -752,6 +787,29 @@ function arrancar(raiz, estanciaPedida = null) {
         altura: asientoAlAlcance.altura,
       };
       mando.sentarse(resolverAsiento(asiento, { yaw: mando.posicion().yaw }), asientoAlAlcance.prop ?? null);
+    },
+    /**
+     * `1`-`4`: elige vista de cámara de combate (#1024).
+     *
+     * Se resuelve AQUÍ y no en el teclado por lo mismo que `alUsar`: quien
+     * sabe en qué estancia estás es quien lleva la cuenta de la estancia. Una
+     * estancia declara sus vistas con `vistasCombate` (hoy solo la arena) y el
+     * resto ni siquiera recibe este callback, así que en la nave los números
+     * siguen sin hacer nada.
+     *
+     * La lista se pide FRESCA en cada pulsación en vez de guardarse al abrir:
+     * `irA`/`cambiarEstancia` cambian de sala sin reiniciar la ventana, y una
+     * lista congelada al arrancar seguiría ofreciendo las vistas de la sala
+     * anterior. Y `normalizarVista` contra esa lista es lo que impide que la
+     * tecla `1` ponga una táctica que este motor todavía no sabe proyectar:
+     * cae a la primera disponible en vez de pintar una cenital en perspectiva
+     * (ver la cabecera de `cambiador-vistas-combate.mjs`).
+     */
+    alElegirVista: (vista) => {
+      const estancia = CATALOGO_ANDAR.obtener(estanciaActual);
+      const capacidades = estancia?.vistasCombate;
+      if (!capacidades) return;
+      mando.fijarCamara(normalizarVista(vista, vistasDisponibles(capacidades)));
     },
   });
 

@@ -60,6 +60,7 @@ import {
   componerArena,
   cierreDe,
   CIERRE_POR_DEFECTO,
+  VISTAS_ARENA,
 } from "./arena-combate-escena.mjs";
 import {
   ENTRADA as ENTRADA_PASILLO,
@@ -469,6 +470,16 @@ export const CATALOGO_ANDAR = crearCatalogoEstancias({
     // mazmorra se funde hacia su propia piedra, no hacia un cielo azul.
     fondo: cierreDe(CIERRE_POR_DEFECTO).cielo,
     puertas: [],
+    // Las cuatro vistas de cámara de combate (#1024). Es la ÚNICA estancia que
+    // las declara, y por eso se declara aquí y no se pregunta por el nombre de
+    // la sala en la ventana: el motor de andar no sabe qué es una arena, igual
+    // que no sabe qué es una cantina (#508).
+    //
+    // Lo que se declara son CAPACIDADES DEL RENDERER, no permisos: `retro3d.mjs`
+    // no tiene proyección ortográfica todavía —la otra mitad de #1020—, así que
+    // la vista táctica no se ofrece aún. El día que llegue el adaptador, esto
+    // pasa a `{ ortografica: true }` y la vista aparece sin tocar nada más.
+    vistasCombate: VISTAS_ARENA,
   },
   // El pasillo de los recuerdos. Como el museo y la playa: NO cuelga de
   // ninguna puerta de la nave y se entra por herramienta.

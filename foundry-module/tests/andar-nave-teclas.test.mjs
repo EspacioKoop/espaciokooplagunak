@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { TECLAS_ACCION, TECLA_DIRECCION, TECLA_GIRO } from "../scripts/andar-nave-app.mjs";
+import {
+  TECLAS_ACCION,
+  TECLAS_VISTA,
+  TECLA_DIRECCION,
+  TECLA_GIRO,
+} from "../scripts/andar-nave-app.mjs";
+import { atajoVista } from "../scripts/cambiador-vistas-combate.mjs";
 
 // Guarda del reparto de teclas de la ventana de andar.
 //
@@ -15,6 +21,10 @@ const TABLAS = [
   ["dirección", TECLA_DIRECCION],
   ["giro", TECLA_GIRO],
   ["acción", TECLAS_ACCION],
+  // Las cuatro vistas de combate (#1024) entran en la MISMA guarda: son una
+  // tabla más que `onKeyDown` consulta en orden, así que un número que algún
+  // día fuera también dirección dejaría una de las dos ramas muerta.
+  ["vista", Object.fromEntries(TECLAS_VISTA.map((t) => [t, "vista"]))],
 ];
 
 test("ninguna tecla aparece en dos tablas: la segunda sería código muerto", () => {
@@ -61,4 +71,20 @@ test("usar tiene tecla, también en las dos cajas, y no pisa a ninguna otra", ()
   // Es el mismo choque que dejó la cámara sin funcionar atada a `c`.
   assert.equal(TECLA_GIRO.e, 1);
   assert.equal(TECLAS_ACCION.e, undefined);
+});
+
+test("los números eligen vista de combate y no pisan a nadie", () => {
+  // La tabla del teclado y la del conmutador tienen que decir lo mismo: si una
+  // declarara una tecla que la otra no traduce, el número se comería el evento
+  // (`preventDefault` + `stopPropagation`) para no hacer nada.
+  assert.deepEqual(TECLAS_VISTA, ["1", "2", "3", "4"]);
+  assert.deepEqual(
+    TECLAS_VISTA.map(atajoVista),
+    ["tactica", "pov", "tercera", "libre"],
+  );
+  for (const tecla of TECLAS_VISTA) {
+    assert.equal(TECLA_DIRECCION[tecla], undefined);
+    assert.equal(TECLA_GIRO[tecla], undefined);
+    assert.equal(TECLAS_ACCION[tecla], undefined);
+  }
 });

@@ -7,6 +7,7 @@ import {
   atajoVista,
   siguienteVista,
   normalizarVista,
+  vistasDisponibles,
 } from "../scripts/cambiador-vistas-combate.mjs";
 
 test("normalizarVista y siguienteVista usan el ciclo táctico completo", () => {
@@ -65,5 +66,56 @@ test("las cuatro vistas despachan módulos reales y devuelven la misma forma", (
 test("nombres ajenos caen al catálogo táctico sin acceder a prototipos", () => {
   for (const nombre of ["constructor", "__proto__", null, "ausente"]) {
     assert.deepEqual(resolverVistaCombate(nombre), resolverVistaCombate("tactica"));
+  }
+});
+
+test("una superficie sin proyección ortográfica no ofrece la vista táctica", () => {
+  // No es una preferencia de arte: `retro3d.mjs` proyecta en perspectiva, así
+  // que una cenital suya haría las casillas del fondo más pequeñas que las de
+  // delante — una rejilla de 5 ft que miente sobre la medida que existe para
+  // dar. Mientras falte el adaptador de #1020, la vista no se ofrece.
+  assert.deepEqual(vistasDisponibles({ ortografica: false }), ["pov", "tercera", "libre"]);
+  assert.deepEqual(vistasDisponibles(), ["pov", "tercera", "libre"]);
+  assert.deepEqual(vistasDisponibles({ ortografica: true }), VISTAS_COMBATE);
+});
+
+test("pedir una vista que la superficie no puede pintar cae a una que sí", () => {
+  const disponibles = vistasDisponibles({ ortografica: false });
+  assert.equal(normalizarVista("tactica", disponibles), "pov");
+  assert.equal(normalizarVista("inexistente", disponibles), "pov");
+  assert.equal(normalizarVista("libre", disponibles), "libre");
+  // Y el ciclo se salta la que falta en vez de detenerse en ella.
+  assert.equal(siguienteVista("libre", disponibles), "pov");
+  assert.equal(siguienteVista("pov", disponibles), "tercera");
+});
+
+test("resolver una vista no exige entidades, permisos ni estado de combate", () => {
+  // La regla de seguridad del issue, como prueba y no como comentario: la
+  // cámara es presentación. Se resuelve con números y nada más, así que no hay
+  // por dónde colar «lo que el GM ve» — si algún día esto necesitara una
+  // entidad, la frontera se habría roto y esta prueba dejaría de compilar.
+  for (const modo of VISTAS_COMBATE) {
+    const vista = resolverVistaCombate(modo, { x: 3, z: 4, y: 0, yaw: 1 });
+    assert.equal(vista.modo, modo);
+    assert.ok(vista.camara.every(Number.isFinite), `${modo}: cámara no finita`);
+    assert.ok(Object.isFrozen(vista), `${modo}: la vista tiene que ser inmutable`);
+    // Ni una llave que hable de quién mira o de qué existe.
+    for (const clave of Object.keys(vista)) {
+      assert.ok(
+        !/actor|entidad|token|permiso|oculto|visible|esGM/i.test(clave),
+        `${modo}: "${clave}" mezcla autoridad con presentación`,
+      );
+    }
+  }
+});
+
+test("una entrada con números rotos da una cámara finita igualmente", () => {
+  // Lo mismo que hace `componerEscena` en su borde: lo que entra mal se
+  // sustituye, no sigue hacia dentro. Una cámara en NaN es geometría con la
+  // forma correcta y los números rotos, que el pintor acepta sin rechistar.
+  for (const modo of VISTAS_COMBATE) {
+    const vista = resolverVistaCombate(modo, { x: NaN, z: undefined, yaw: "norte" });
+    assert.ok(vista.camara.every(Number.isFinite), `${modo}: cámara no finita`);
+    assert.ok(Number.isFinite(vista.yaw) && Number.isFinite(vista.pitch), `${modo}: ángulos rotos`);
   }
 });

@@ -19,7 +19,7 @@
 //
 // Puro y sin color propio (#351): los colores salen de `PLAYA` en `paleta.mjs`.
 
-import { PLAYA, PUERTO } from "./paleta.mjs";
+import { BOSQUE, PLAYA, PUERTO } from "./paleta.mjs";
 import { definirVocabulario } from "./nave-props.mjs";
 
 /**
@@ -412,6 +412,192 @@ export const VOCABULARIO_URBANO = definirVocabulario({
       { medidas: [0.82, 0.55, 0.74], centro: [0.06, 0.9, -0.05] },
       { medidas: [0.87, 0.05, 0.79], centro: [0.06, 0.92, -0.05], color: PUERTO.cajaFleje },
       { medidas: [0.6, 0.42, 0.66], centro: [-0.12, 1.38, 0.08] },
+    ],
+    ancla: null,
+  },
+});
+
+/**
+ * EL BOSQUE: lo que cierra un claro por los cuatro lados.
+ *
+ * POR QUÉ ES UN AMBIENTE Y NO TRES ÁRBOLES SUELTOS EN LA COSTA. Un litoral y
+ * una arboleda no comparten casi nada —el matojo de duna no crece bajo un pino,
+ * y un árbol de cuatro metros no pinta en una playa abierta—, así que meterlos
+ * juntos repetiría el error que #589 deshizo al partir «el vocabulario de la
+ * playa» en tres.
+ *
+ * Y SIRVE PARA UN TRABAJO CONCRETO: cerrar el borde de un exterior. Un claro de
+ * combate tiene un límite por el que no se pasa, y ese límite tiene que ser algo
+ * que el sitio ya tendría. Con árbol, tocón y helecho se hace una linde que se
+ * densifica hacia fuera; con una nube pintada, no.
+ */
+/** Las tres iteraciones de árbol normal, para repartirlas por rotación en vez
+ *  de plantar siempre la misma clave. */
+export const VARIANTES_ARBOL = Object.freeze(["arbol", "arbol-b", "arbol-c"]);
+
+export const VOCABULARIO_BOSQUE = definirVocabulario({
+
+  /**
+   * Árbol: tronco y tres copas que se estrechan hacia arriba.
+   *
+   * TRES COPAS Y NO UNA. Una sola copa cónica es una seta, y a esta distancia se
+   * lee como un objeto de atrezo; tres discos superpuestos con distinto tono
+   * —sol arriba, sombra abajo— se leen como masa vegetal. Es el mismo argumento
+   * de la roca de tres bloques y de la pila de cajas descuadrada.
+   *
+   * El tronco lleva `punta` menor que 1 porque un tronco se estrecha: uno recto
+   * es un poste, y el bosque entero se lee como una valla.
+   */
+  arbol: {
+    color: BOSQUE.tronco,
+    material: "veta",
+    // Más alto que la versión de #757 (5,2 m de copa, no 4,35) y con dos ramas
+    // que asoman del tronco antes de la copa: sin ellas la transición de
+    // tronco recto a fronda esférica es demasiado limpia para un árbol de
+    // verdad, que siempre tiene algo rompiendo esa línea.
+    partes: [
+      { medidas: [0.42, 2.9, 0.42], centro: [0, 1.45, 0], lados: 8, eje: "y", punta: 0.6 },
+      // La banda de tronco que coge luz, un poco más arriba y a un lado: sin
+      // ella el tronco es una silueta plana contra la copa.
+      { medidas: [0.2, 1.7, 0.2], centro: [0.14, 1.1, 0.12], lados: 6, eje: "y", punta: 0.68, color: BOSQUE.troncoSol },
+      // Dos ramas bajas, cada una con su propio penacho: es lo que rompe la
+      // silueta de "palo con una bola encima" antes de llegar a la copa.
+      { medidas: [0.11, 0.85, 0.11], centro: [0.5, 2.15, 0.1], lados: 5, eje: "x", punta: 0.4 },
+      { medidas: [0.85, 0.6, 0.85], centro: [0.82, 2.5, 0.16], lados: 6, eje: "y", punta: 0.6, color: BOSQUE.follajeSombra },
+      { medidas: [0.1, 0.7, 0.1], centro: [-0.45, 2.35, -0.22], lados: 5, eje: "x", punta: 0.4 },
+      { medidas: [0.72, 0.5, 0.72], centro: [-0.72, 2.65, -0.34], lados: 6, eje: "y", punta: 0.6, color: BOSQUE.follaje },
+      { medidas: [2.6, 1.2, 2.6], centro: [0, 3.1, 0], lados: 8, eje: "y", punta: 0.7, color: BOSQUE.follajeSombra },
+      { medidas: [2.2, 1.1, 2.2], centro: [0, 3.9, 0], lados: 8, eje: "y", punta: 0.58, color: BOSQUE.follaje },
+      { medidas: [1.5, 1.0, 1.5], centro: [0, 4.65, 0], lados: 8, eje: "y", punta: 0.24, color: BOSQUE.follajeSol },
+    ],
+    ancla: null,
+  },
+
+  /**
+   * Dos iteraciones simples de `arbol`, para que una arboleda no se vea como el
+   * mismo árbol clonado doscientas veces. La diferencia es la que un árbol de
+   * verdad tiene con otro de su misma especie: una rama de menos, la copa un
+   * punto más alta o más ancha — no una silueta distinta.
+   */
+  "arbol-b": {
+    color: BOSQUE.tronco,
+    material: "veta",
+    partes: [
+      { medidas: [0.42, 2.9, 0.42], centro: [0, 1.45, 0], lados: 8, eje: "y", punta: 0.6 },
+      { medidas: [0.2, 1.7, 0.2], centro: [0.14, 1.1, 0.12], lados: 6, eje: "y", punta: 0.68, color: BOSQUE.troncoSol },
+      // Solo la rama derecha, y algo más arriba que en `arbol`.
+      { medidas: [0.11, 0.9, 0.11], centro: [0.48, 2.45, -0.14], lados: 5, eje: "x", punta: 0.4 },
+      { medidas: [0.9, 0.62, 0.9], centro: [0.8, 2.82, -0.22], lados: 6, eje: "y", punta: 0.6, color: BOSQUE.follajeSombra },
+      { medidas: [2.35, 1.15, 2.35], centro: [0, 3.3, 0], lados: 8, eje: "y", punta: 0.7, color: BOSQUE.follajeSombra },
+      { medidas: [1.95, 1.05, 1.95], centro: [0, 4.05, 0], lados: 8, eje: "y", punta: 0.56, color: BOSQUE.follaje },
+      { medidas: [1.3, 0.95, 1.3], centro: [0, 4.75, 0], lados: 8, eje: "y", punta: 0.24, color: BOSQUE.follajeSol },
+    ],
+    ancla: null,
+  },
+  "arbol-c": {
+    color: BOSQUE.tronco,
+    material: "veta",
+    partes: [
+      { medidas: [0.42, 2.7, 0.42], centro: [0, 1.35, 0], lados: 8, eje: "y", punta: 0.6 },
+      { medidas: [0.2, 1.6, 0.2], centro: [0.14, 1.05, 0.12], lados: 6, eje: "y", punta: 0.68, color: BOSQUE.troncoSol },
+      // Solo la rama izquierda, y la copa un pelo más ancha y más baja que en
+      // `arbol`: un árbol viejo que ha crecido más a lo ancho que a lo alto.
+      { medidas: [0.1, 0.65, 0.1], centro: [-0.42, 2.05, -0.2], lados: 5, eje: "x", punta: 0.4 },
+      { medidas: [0.68, 0.48, 0.68], centro: [-0.68, 2.32, -0.32], lados: 6, eje: "y", punta: 0.6, color: BOSQUE.follaje },
+      { medidas: [2.85, 1.1, 2.85], centro: [0, 2.9, 0], lados: 8, eje: "y", punta: 0.72, color: BOSQUE.follajeSombra },
+      { medidas: [2.35, 1.0, 2.35], centro: [0, 3.65, 0], lados: 8, eje: "y", punta: 0.6, color: BOSQUE.follaje },
+      { medidas: [1.5, 0.85, 1.5], centro: [0, 4.35, 0], lados: 8, eje: "y", punta: 0.26, color: BOSQUE.follajeSol },
+    ],
+    ancla: null,
+  },
+
+  /**
+   * Árbol GRANDE: el veterano del claro, con la copa ancha de verdad.
+   *
+   * No es el árbol normal escalado — escalar un tronco de 0,42 m a lo bestia lo
+   * deja pareciendo un poste de teléfono. Este tiene su propia proporción:
+   * tronco más grueso en relación a su altura, copa mucho más ancha (4,6 m de
+   * diámetro, para que ocupe de verdad el par de casillas que se le da como
+   * obstáculo) y tres ramas en vez de dos.
+   */
+  "arbol-grande": {
+    color: BOSQUE.tronco,
+    material: "veta",
+    partes: [
+      { medidas: [0.7, 3.6, 0.7], centro: [0, 1.8, 0], lados: 8, eje: "y", punta: 0.66 },
+      { medidas: [0.3, 2.1, 0.3], centro: [0.2, 1.4, 0.16], lados: 6, eje: "y", punta: 0.72, color: BOSQUE.troncoSol },
+      { medidas: [0.16, 1.15, 0.16], centro: [0.75, 2.75, 0.15], lados: 5, eje: "x", punta: 0.42 },
+      { medidas: [1.15, 0.8, 1.15], centro: [1.25, 3.25, 0.24], lados: 6, eje: "y", punta: 0.6, color: BOSQUE.follajeSombra },
+      { medidas: [0.15, 1.0, 0.15], centro: [-0.68, 2.9, -0.3], lados: 5, eje: "x", punta: 0.42 },
+      { medidas: [1.0, 0.7, 1.0], centro: [-1.05, 3.35, -0.46], lados: 6, eje: "y", punta: 0.6, color: BOSQUE.follaje },
+      { medidas: [0.14, 0.9, 0.14], centro: [-0.1, 2.7, 0.62], lados: 5, eje: "z", punta: 0.42 },
+      { medidas: [0.9, 0.65, 0.9], centro: [-0.16, 3.15, 1.0], lados: 6, eje: "y", punta: 0.6, color: BOSQUE.follajeSombra },
+      { medidas: [4.2, 1.7, 4.2], centro: [0, 4.05, 0], lados: 10, eje: "y", punta: 0.7, color: BOSQUE.follajeSombra },
+      { medidas: [3.5, 1.5, 3.5], centro: [0, 5.15, 0], lados: 10, eje: "y", punta: 0.56, color: BOSQUE.follaje },
+      { medidas: [2.3, 1.3, 2.3], centro: [0, 6.1, 0], lados: 8, eje: "y", punta: 0.22, color: BOSQUE.follajeSol },
+    ],
+    ancla: null,
+  },
+
+  /**
+   * Árbol LEJANO: el mismo árbol con la mitad de caras, para el fondo.
+   *
+   * No es un árbol distinto ni un árbol más pequeño — es el mismo, dibujado con
+   * menos. A veinte metros no se distingue la banda de tronco iluminada ni los
+   * tres pisos de copa: lo que llega es una silueta y un tono. Mantener ahí el
+   * árbol completo cuesta 43 caras por pieza para no enseñar ninguna de ellas.
+   *
+   * Cinco lados en vez de ocho y dos pisos de copa en vez de tres: sigue
+   * leyéndose redondo contra el cielo, que es todo lo que tiene que hacer.
+   *
+   * La regla de cuándo usar cuál es de quien coloca, no de aquí: la linde que
+   * cierra el paso lleva el árbol entero porque se mira de cerca; los anillos
+   * de fondo llevan este.
+   */
+  "arbol-lejano": {
+    color: BOSQUE.tronco,
+    material: "veta",
+    partes: [
+      { medidas: [0.42, 2.3, 0.42], centro: [0, 1.15, 0], lados: 5, eje: "y", punta: 0.62 },
+      { medidas: [2.5, 1.5, 2.5], centro: [0, 2.5, 0], lados: 5, eje: "y", punta: 0.7, color: BOSQUE.follajeSombra },
+      { medidas: [1.8, 1.3, 1.8], centro: [0, 3.5, 0], lados: 5, eje: "y", punta: 0.3, color: BOSQUE.follaje },
+    ],
+    ancla: null,
+  },
+
+  /**
+   * Tocón: el corte de un árbol caído, con una raíz asomando.
+   *
+   * Lo que hace que una arboleda no parezca plantada ayer. Y en el suelo cumple
+   * lo que el matojo cumple en la duna: rompe el plano con algo bajo, para que
+   * la escala del claro se lea sin tener que mirar un árbol entero.
+   */
+  tocon: {
+    color: BOSQUE.tronco,
+    material: "veta",
+    partes: [
+      { medidas: [0.7, 0.5, 0.7], centro: [0, 0.25, 0], lados: 8, eje: "y", punta: 0.92 },
+      { medidas: [0.6, 0.07, 0.6], centro: [0, 0.5, 0], lados: 8, eje: "y", punta: 0.95, color: BOSQUE.tocon },
+      { medidas: [0.7, 0.16, 0.16], centro: [0.42, 0.1, 0.14], lados: 6, eje: "x", punta: 0.5 },
+    ],
+    ancla: null,
+  },
+
+  /**
+   * Helecho: tres frondas abiertas y una seca.
+   *
+   * El sotobosque, que es lo que separa un bosque de un parque: sin nada entre
+   * los troncos se ve el suelo hasta el fondo y la linde deja de cerrar. La
+   * fronda seca está por lo mismo que el matojo seco de la duna — un verde
+   * continuo se lee como césped artificial.
+   */
+  helecho: {
+    color: BOSQUE.follaje,
+    partes: [
+      { medidas: [0.1, 0.44, 0.1], centro: [0, 0.22, 0], lados: 6, eje: "y", punta: 0.5 },
+      { medidas: [0.52, 0.1, 0.14], centro: [0.22, 0.46, 0], lados: 6, eje: "x", punta: 0.3 },
+      { medidas: [0.46, 0.1, 0.13], centro: [-0.2, 0.4, 0.14], lados: 6, eje: "x", punta: 0.3, color: BOSQUE.follajeSombra },
+      { medidas: [0.4, 0.09, 0.12], centro: [0.06, 0.34, -0.18], lados: 6, eje: "x", punta: 0.3, color: BOSQUE.seco },
     ],
     ancla: null,
   },

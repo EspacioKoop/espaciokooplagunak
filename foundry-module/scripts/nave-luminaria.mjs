@@ -12,11 +12,18 @@
 // una más grande — que además es lo que hace que se lea grande.
 //
 // EL PRESUPUESTO DEL HAZ, que es lo que se vuelve a medir antes de subir nada.
-// El cono y el polvo añaden 32 polígonos por sala —fijos: no dependen del
-// tamaño, porque solo las `TOPE_HACES` luminarias más cercanas los llevan— y
-// cuestan un 47% más de tiempo de composición. Medido sobre las trece salas del
-// Phobos, peor caso `maniobra` (22x11 m): 94 polígonos y 6,13 ms antes, 126 y
-// 9,03 ms ahora. Es coste de HAZ y no de piel: descontados esos 32, los dos
+// El cono y el polvo añaden polígonos FIJOS por sala —no dependen del tamaño,
+// porque solo las `TOPE_HACES` luminarias más cercanas los llevan— y cuestan
+// tiempo de composición. Medido sobre las trece salas del Phobos, peor caso
+// `maniobra` (22x11 m): 94 polígonos y 6,13 ms antes del haz, 126 y 9,03 ms
+// con él.
+//
+// Repartir el polvo por el haz (aceptación visual de #556) subió las motas de
+// 5 a 10 por luminaria y bajó su lado de 7,5 a 5 cm. Medido de nuevo en sala
+// cuadrada, barriendo 48 rumbos con calentamiento previo — reactor 22x22:
+// 162–217 polígonos y 4,69 ms antes, 175–230 y 5,04 ms ahora (+7%). Cabe.
+//
+// Es coste de HAZ y no de piel: descontados los traslúcidos, los dos
 // modos de `pielMuro` dan exactamente los mismos números que antes de que el
 // haz existiera, y `piel-textura.test.mjs` lo comprueba descontándolos.
 //
@@ -471,12 +478,35 @@ function troncoDeCono([xa, ya, za], radioArriba, [xb, yb, zb], radioAbajo) {
 /* ---- las motas de polvo ---------------------------------------------------- */
 
 /** Cuántas motas por luminaria, su tamaño, y en qué tramo del haz viven. */
-export const MOTAS_POR_LUMINARIA = 5;
-const LADO_MOTA = 0.075;
-/** Sólo en lo alto del haz, cerca del foco: es donde la luz rasante las
- *  encendería de verdad. Repartidas por todo el cono serían niebla, y la nave
- *  no tiene niebla dentro. */
-const TRAMO_MOTAS = 0.9;
+export const MOTAS_POR_LUMINARIA = 10;
+const LADO_MOTA = 0.05;
+/**
+ * POR TODO EL HAZ, no sólo en lo alto — y esto es la aceptación visual de #556.
+ *
+ * Iban en el 0,9 m más alto del cono, que a la altura de ojos (1,45) quedan por
+ * encima de la cabeza y pegadas a la lámpara: cinco manchas ámbar de 7,5 cm al
+ * 90 % de opacidad, apiñadas donde el cono es MÁS ESTRECHO. No se leen como
+ * polvo suspendido sino como algo que cuelga del difusor, y el haz por debajo
+ * queda vacío justo donde se mira.
+ *
+ * La corrección no es quitarles contraste —eso ya se probó y volvía al «no he
+ * visto las motas» de QA—: es REPARTIRLAS por el volumen entero, que es lo que
+ * hace que un haz se lea como aire iluminado. Más motas y más pequeñas ocupan
+ * el mismo presupuesto y cuentan lo que tienen que contar.
+ *
+ * Se declara como FRACCIÓN del haz y no en metros: la altura de la sala manda
+ * sobre el largo del cono, y una constante en metros se desalinearía en silencio
+ * el día que `ALTURA` cambie — que es exactamente lo que le pasó a la franja de
+ * aviso de una puerta al bajar la celda en #551.
+ *
+ * Y no el haz ENTERO: los dos tercios de arriba (0,65), que bajan hasta un
+ * palmo por debajo de la altura de ojos. Repartidas hasta el suelo se leían
+ * como migas pegadas al muro, y por un motivo que no es de gusto: abajo el
+ * cono se ha abierto tanto que su velo ya no se ve, así que una mota al 90 %
+ * allí no está DENTRO de nada — flota sobre la pared. Una mota de polvo se ve
+ * porque la ilumina el haz; donde el haz no se lee, la mota miente.
+ */
+const FRACCION_MOTAS = 0.65;
 /**
  * CASI OPACAS, y ésta es la corrección de QA (Eloy: «no he visto las motas»).
  *
@@ -505,7 +535,7 @@ function ruido(a, b, c) {
 }
 
 /**
- * Las motas de polvo suspendidas en lo alto de cada haz.
+ * Las motas de polvo suspendidas en el haz de cada luminaria.
  *
  * Cubos diminutos, no puntos: el motor pinta polígonos y no tiene primitiva de
  * punto, y a esta resolución un cubo de 3,5 cm ES un punto.
@@ -525,7 +555,15 @@ export function motasLuminarias({ ancho, profundidad, altura, cuantas = MOTAS_PO
     for (let i = 0; i < cuantas; i += 1) {
       // La altura primero, porque el radio del haz depende de ella: una mota
       // fuera del cono se vería flotando al lado de la luz, no dentro.
-      const caida = ruido(x, z, i) * TRAMO_MOTAS;
+      // ESTRATIFICADO, no diez tiradas sueltas: cada mota toma su propia banda
+      // del haz y se sacude dentro de ella. Con muestras independientes, diez
+      // valores de un ruido determinista se apiñan por pura suerte —medido: en
+      // una sala la más baja se quedaba en y=1,69, o sea por encima de la
+      // cabeza otra vez, que es el defecto que esto viene a corregir—. Un
+      // reparto por bandas no puede tener ese día malo, y sigue siendo
+      // determinista.
+      const banda = (i + ruido(x, z, i)) / cuantas;
+      const caida = banda * (yArriba * FRACCION_MOTAS);
       // Una mota es un CUBO, no un punto: se sitúa por su centro, pero quien
       // tiene que caber es su vértice más desfavorable. Se mide el haz en la
       // cara ALTA del cubo (donde el cono es más estrecho) y se descuenta la

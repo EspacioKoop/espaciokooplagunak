@@ -128,11 +128,15 @@ test("texturar quita la mayor parte de la geometría de una sala", () => {
   // SE DESCUENTA EL HAZ. Desde que las luminarias dibujan su cono y su polvo,
   // la escena tiene un suelo fijo de polígonos que NINGÚN modo de piel quita
   // —van con la lámpara, no con el muro— y que se cuela igual en los dos
-  // lados de la división. Medido en la primera sala del Phobos: 32 polígonos
-  // en ambos modos, que sobre 94 de la piel texturada son un tercio. Contarlos
-  // hacía que la rebaja pareciera empeorar de 0,228 a 0,283 sin que la piel
-  // hubiera cambiado ni un polígono: descontados, los dos modos dan
-  // exactamente los mismos 413 y 94 que antes de que existiera el haz.
+  // lados de la división. Contarlos hacía que la rebaja pareciera empeorar de
+  // 0,228 a 0,283 sin que la piel hubiera cambiado ni un polígono: descontados,
+  // los dos modos dan exactamente los mismos 413 y 94 que antes de que
+  // existiera el haz.
+  //
+  // El descuento se DERIVA de `alpha` y no se escribe como número, que es lo
+  // que hace que siga valiendo: al repartir el polvo por el haz (aceptación
+  // visual de #556) las motas pasaron de 5 a 10 por luminaria y la cuenta fija
+  // cambió sola, sin tocar esta prueba.
   //
   // Se distinguen por `alpha`: el haz y las motas son lo único traslúcido de
   // una sala. Si algún día lo es algo más, este filtro deja de valer y hay que

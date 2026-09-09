@@ -16,7 +16,7 @@ import {
   ALFA_CONO, ALFA_MOTAS, APERTURA_CONO, CAPAS_CONO, TOPE_HACES, MOTAS_POR_LUMINARIA,
 } from "../scripts/nave-luminaria.mjs";
 import { LUZ_CALIDA, MURAL, SECCION, ALERTA } from "../scripts/paleta.mjs";
-import { ALTURA, crearSalaCaja } from "../scripts/nave-sala-caja.mjs";
+import { ALTURA, ALTURA_OJOS, crearSalaCaja } from "../scripts/nave-sala-caja.mjs";
 import { componerEscena } from "../scripts/retro3d.mjs";
 
 const caras = (piezas) => piezas.reduce((n, p) => n + p.malla.caras.length, 0);
@@ -408,7 +408,7 @@ test("los charcos de dos luminarias vecinas no se solapan", () => {
   assert.ok(diametro < PASO, `charco de ${diametro.toFixed(2)} m con paso de ${PASO} m`);
 });
 
-test("el polvo cae DENTRO del haz y sólo en lo alto", () => {
+test("el polvo cae DENTRO del haz y lo recorre entero sin tocar el suelo", () => {
   // Una mota fuera del cono se ve flotando al lado de la luz, no dentro de ella.
   const grupos = motasLuminarias(SALA);
   assert.equal(grupos.length, reparto(SALA.ancho, SALA.profundidad).length);
@@ -421,7 +421,20 @@ test("el polvo cae DENTRO del haz y sólo en lo alto", () => {
     assert.ok(malla.vertices.every((v) => v.every(Number.isFinite)), "hay NaN en el polvo");
     const alturas = malla.vertices.map((v) => v[1]);
     assert.ok(Math.max(...alturas) <= yDifusor + 0.05, "hay polvo por encima de la lámpara");
-    assert.ok(Math.min(...alturas) > yDifusor - 1.2, "el polvo baja demasiado: es lo alto del haz");
+    // Ni posado en la losa: polvo en suspensión, no suciedad de suelo.
+    assert.ok(Math.min(...alturas) > 0.1, "hay polvo en el suelo");
+    // Y REPARTIDO por el haz, que es la aceptación visual de #556: apiñado en
+    // lo alto (era el 0,9 m más alto) se lee como algo que cuelga del difusor,
+    // no como aire iluminado — y deja vacío justo el tramo que se mira a la
+    // altura de los ojos.
+    assert.ok(
+      Math.min(...alturas) < ALTURA_OJOS,
+      `el polvo no baja a la altura de ojos (mínimo y=${Math.min(...alturas).toFixed(2)})`,
+    );
+    assert.ok(
+      Math.max(...alturas) - Math.min(...alturas) > yDifusor / 2,
+      "el polvo no recorre el haz: se apiña en un tramo",
+    );
     // Y dentro del radio que el cono tiene A ESA ALTURA.
     for (const [vx, vy, vz] of malla.vertices) {
       const rHaz = radioDelHaz(fuera.porLuminaria[i], vy);
@@ -457,7 +470,12 @@ test("sólo se pintan las luminarias que se tienen cerca", () => {
   // El recorte que exige la prueba de #584: sin él, el haz de las 36 luminarias
   // del reactor pasa a ser un tercio de los polígonos de una sala ya texturada.
   const grande = { ancho: 22, profundidad: 22, altura: ALTURA };
-  const [, , fuera] = capasConoLuminarias(grande);
+  // La ÚLTIMA capa, no la tercera: `const [, , fuera]` era el descuido que la
+  // review de #987 cazó en las otras tres pruebas — con `CAPAS_CONO` distinto
+  // de 3 el destructurado elige una capa interior y la prueba deja de medir
+  // lo que dice medir, sin ponerse roja.
+  const capas = capasConoLuminarias(grande);
+  const fuera = capas[capas.length - 1];
   assert.ok(fuera.porLuminaria.length > TOPE_HACES, "esta sala no sirve para probar el recorte");
   const cerca = fundirCercanas(fuera.porLuminaria, [11, 4]);
   const todas = fundirCercanas(fuera.porLuminaria, [11, 4], fuera.porLuminaria.length);

@@ -38,6 +38,18 @@
       }
     },
     {
+      "module": "camara-tactica.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Modelo puro de cámara cenital ortográfica con cuadrícula opcional. Nadie lo importa todavía porque el adaptador que lleva este estado a retro3d.mjs es la otra mitad de #1020: cablearlo sin él proyectaría en perspectiva un estado que declara ser ortográfico, que es peor que no tener cámara táctica.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/1020"
+      }
+    },
+    {
       "module": "catalogo-cosmografico.mjs",
       "status": "declared-orphan",
       "foundation": true,
@@ -121,6 +133,18 @@
       }
     },
     {
+      "module": "map-ref-resolver.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Resolutor puro de `map_ref` a MapDocument, con ausente y desconocido tratados como el mismo no-mapa. El productor #870 ya está integrado y la regresión recorre JSON del atlas, validateCosmography y resolver. Sigue siendo una base sin consumidor de interfaz; no acredita carga de biblioteca C++ ni smoke jugable.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/906"
+      }
+    },
+    {
       "module": "nave-movimiento-sala-prueba.mjs",
       "status": "declared-orphan",
       "foundation": true,
@@ -191,6 +215,102 @@
       "evidence": {
         "type": "issue",
         "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/603"
+      }
+    },
+    {
+      "module": "camara-pov-combate.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Modelo POV métrico consumido por el catálogo puro; falta el adaptador de cámara a una superficie jugable.",
+      "declaredBy": "OTACON Astra",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/1021"
+      }
+    },
+    {
+      "module": "camara-tercera-combate.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Modelo de tercera persona consumido por el catálogo puro; falta adaptar retiro y cuerpo al renderer de combate.",
+      "declaredBy": "OTACON Astra",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/1022"
+      }
+    },
+    {
+      "module": "camara-foto.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Modelo de cámara libre y zoom consumido por el catálogo puro; captura y controles de la superficie siguen pendientes.",
+      "declaredBy": "OTACON Astra",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/1023"
+      }
+    },
+    {
+      "module": "cambiador-vistas-combate.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Catálogo que despacha las cuatro cámaras bajo una forma común, sin consumidor UI/puerta ni adaptador de render todavía.",
+      "declaredBy": "OTACON Astra",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/1024"
+      }
+    },
+    {
+      "module": "escena-contrato.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Contrato versionado de escena render-agnóstica (#1033): separa estado autoritativo, presentación y recursos para que el mismo dato de escena valga con backend software o GPU. Sin consumidor todavía a propósito: el primero es la integración standalone de #1035, y cablearlo antes ataría el contrato al único render que hoy existe, que es lo que #1003 quiere evitar.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/1033"
+      }
+    },
+    {
+      "module": "interaccion-3d/resolucion.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Motor de bandas fallo/éxito/crítico/pifia del contrato standalone de interacción con objetos 3D (#868), propio y sin vocabulario de d20 ni de dnd5e.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-09-01",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/868"
+      }
+    },
+    {
+      "module": "interaccion-3d/contrato.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Orquestación objeto → opciones → resolución → efecto de #868. No lo importa ninguna escena andable todavía: el consumidor es el vertical de terminal deteriorado y, después, el adaptador opcional Foundry/dnd5e de #869, que debe traducir ESTE contrato y no al revés.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-09-01",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/868"
+      }
+    },
+    {
+      "module": "interaccion-3d/terminal-deteriorado.mjs",
+      "status": "declared-orphan",
+      "foundation": false,
+      "reason": "Vertical de prueba del contrato de #868 (terminal deteriorado con tres aproximaciones). Demuestra que el contrato se resuelve completo sin Foundry ni dnd5e; colgarlo de una sala concreta es trabajo de escena, fuera del alcance de #868.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-09-01",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/868"
       }
     }
   ],

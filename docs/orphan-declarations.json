@@ -14,18 +14,6 @@
       }
     },
     {
-      "module": "atlas-hyg.mjs",
-      "status": "declared-orphan",
-      "foundation": true,
-      "reason": "Adaptador del catálogo estelar HYG al formato de atlas. Es cimiento del mismo atlas aún no aprobado: traduce datos al formato, y cablearlo metería en la partida una decisión pendiente.",
-      "declaredBy": "Espaciokoop Lagunak",
-      "declaredAt": "2026-08-24",
-      "evidence": {
-        "type": "issue",
-        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/568"
-      }
-    },
-    {
       "module": "avatar/retrato-combatiente.mjs",
       "status": "declared-orphan",
       "foundation": true,
@@ -47,18 +35,6 @@
       "evidence": {
         "type": "issue",
         "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/1020"
-      }
-    },
-    {
-      "module": "catalogo-cosmografico.mjs",
-      "status": "declared-orphan",
-      "foundation": true,
-      "reason": "Validador del formato de atlas con procedencia y licencia por entrada. Es cimiento de una investigación todavía pendiente; cablearlo por iniciativa propia promovería a hecho una decisión no tomada.",
-      "declaredBy": "Espaciokoop Lagunak",
-      "declaredAt": "2026-08-24",
-      "evidence": {
-        "type": "issue",
-        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/525"
       }
     },
     {
@@ -311,6 +287,30 @@
       "evidence": {
         "type": "issue",
         "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/868"
+      }
+    },
+    {
+      "module": "progresion-campana.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Capa de progresión persistente de campaña (#1016): deriva nivel e insignia shiny de los hitos alcanzados. Sin consumidor porque lo que le falta no es una superficie sino DÓNDE guardar el hito — recordar qué ha hecho la tripulación es del núcleo y no de la escena (ADR-0012), el mismo reparto que dejó fuera el bestiario de #598.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/1016"
+      }
+    },
+    {
+      "module": "inventario.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Reductor puro del inventario por personaje (#963/#964): categorías, equipo, hotbar, peso opcional. Sin consumidor todavía porque el cableado al mundo (#965, coger/soltar con G/H) y la ventana (#966) son issues aparte, deliberadamente separados para no ensanchar este módulo — mismo reparto que ya usa asistencia/sesion.mjs (#309).",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-09-04",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/964"
       }
     },
     {

@@ -119,20 +119,11 @@ export function registrarParlamentoUI(moduleId) {
   Hooks.on("lagunakAbrirParlamento", (carga) => {
     const contacto = carga?.contacto;
     if (!contacto) return;
-    const inter = interlocutorDelContacto(contacto, contacto.desafio ?? 1);
     const ficha = carga?.ficha
       ?? game?.users?.get(carga?.hablanteId)?.character?.system
       ?? null;
-    Object.assign(estado, {
-      fase: "abierto",
-      contacto,
-      npc: inter.npc,
-      semilla: inter.semilla,
-      opciones: opcionesVisibles({ ficha }),
-      enfoqueId: null,
-      banda: null,
-    });
-    if (ventana?.rendered) ventana.render({ force: true });
+    abrirParlamento();
+    establecerEstadoParlamento(contacto, contacto.desafio ?? 1, ficha);
   });
 
   // Quien tiene el total de la tirada (el GM o el sistema de comunicaciones,
@@ -159,6 +150,31 @@ export function abrirParlamento() {
   estado.fase = "menu";
   if (foundry?.applications?.api?.ApplicationV2) ventana.render({ force: true });
   else ventana.render(true);
+}
+
+/**
+ * Establece el estado de la ventana de parlamento para un contacto dado.
+ * Asume que la ventana ya está abierta (llamar a `abrirParlamento` primero si es necesario).
+ * @param {{id?: string, callsign?: string, faction?: string}} contacto
+ * @param {number} [dificultad=1]
+ * @param {object|null} ficha
+ */
+export function establecerEstadoParlamento(contacto, dificultad = 1, ficha = null) {
+  const estable = contacto?.id ?? contacto?.callsign;
+  if (estable === undefined || estable === null || estable === "") {
+    throw new TypeError("establecerEstadoParlamento: el contacto no tiene id ni callsign estables");
+  }
+  const inter = interlocutorDelContacto(contacto, dificultad);
+  Object.assign(estado, {
+    fase: "abierto",
+    contacto,
+    npc: inter.npc,
+    semilla: inter.semilla,
+    opciones: opcionesVisibles({ ficha }),
+    enfoqueId: null,
+    banda: null,
+  });
+  if (ventana?.rendered) ventana.render({ force: true });
 }
 
 /** Cerrar la ventana de parlamento. Sin estado que guardar (ADR-0012). */

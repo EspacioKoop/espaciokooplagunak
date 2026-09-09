@@ -57,11 +57,6 @@ import { addAsistenciaControl, registrarAsistenciaUI } from "./asistencia-ui.mjs
 import { crearClaseConvocatoriaV1, crearClaseConvocatoriaV2 } from "./convocatoria-app.mjs";
 import { addConvocarControl, registrarConvocatoriaUI } from "./convocatoria-wiring.mjs";
 import {
-  publicarConvocatoria,
-  registrarAjusteConvocatoria,
-  registrarEscuchaConvocatoria,
-} from "./convocatoria-escena.mjs";
-import {
   registrarParlamentoUI,
   addParlamentoControl,
 } from "./parlamento-ventana.mjs";
@@ -223,10 +218,6 @@ Hooks.once("init", () => {
   // de arriba —ver cabecera de `alarma-cruzada.mjs`—, ajuste de MUNDO por el
   // mismo motivo: solo el GM calcula, todos leen.
   registrarAjusteAlarmaCruzada(MODULE_ID);
-  // La convocatoria viaja por ajuste de mundo y no por socket (#832): el
-  // socket no acredita a quien emite, y un ajuste de mundo solo lo escribe el
-  // GM porque Foundry rechaza la escritura al resto.
-  registrarAjusteConvocatoria(MODULE_ID);
 
   // Convocatoria a una estancia (#689/#876): ajuste de MUNDO por el mismo
   // motivo que el nivel de alerta — solo quien tiene permiso de modificar
@@ -485,14 +476,6 @@ Hooks.once("ready", () => {
   // Convocar a una estancia desde la barra (#832): primer consumidor real de
   // `convocatoria-estancia.mjs`, que hasta ahora era una conexión muerta.
   registrarConvocatoriaUI(MODULE_ID);
-  // ...y la difusión a la mesa, que es lo que le faltaba: hasta aquí convocar
-  // solo abría la estancia en el cliente del propio GM. NO se aplica el ajuste
-  // vigente al conectarse, al revés que la alerta: una alerta es un estado
-  // sostenido y una convocatoria es un momento, así que aplicarla al cargar
-  // arrastraría a la playa a quien entra dos horas después.
-  registrarEscuchaConvocatoria(MODULE_ID, {
-    alConvocar: (destino) => abrirAndarNave(destino.estancia),
-  });
   // Sesiones de minijuegos (#308): el GM coordinador recoge las propuestas por
   // updateUser; cualquier cliente escucha las vistas privadas dirigidas a él.
   registrarSesionesMinijuegos(MODULE_ID);
@@ -1075,25 +1058,16 @@ function abrirConvocatoria() {
 
 /** Maneja el envío del formulario de convocatoria. */
 function manejarConvocatoria({ idEstancia, rolConvocante }) {
-  // `publicarConvocatoria` llama a `convocar` por dentro con el mismo rol, así
-  // que la guarda de #237 sigue siendo la única y no se duplica aquí. Devuelve
-  // null exactamente cuando `convocar` lo devolvía: no es GM, la estancia no
-  // existe, o su entrada está bloqueada.
-  return publicarConvocatoria({ moduleId: MODULE_ID, idEstancia, rol: rolConvocante })
-    .then((publicado) => {
-      if (!publicado) {
-        ui.notifications?.warn(game.i18n.localize("LAGUNAK.PanelGM.Convocatoria.Error"));
-      }
-      return publicado;
-    })
-    .catch((err) => {
-      // Un fallo al ESCRIBIR el ajuste tiene que avisar: si se descarta, la
-      // ventana se cierra como si la tripulación hubiera sido convocada y
-      // nadie se mueve.
-      console.error("No se pudo publicar la convocatoria:", err);
+  // Un único transporte para barra y panel: #876 valida el rol actual,
+  // espera al permiso del host y recibe createSetting/updateSetting.
+  if (rolConvocante !== "GM") return Promise.resolve(null);
+  return convocarYTransmitir(idEstancia).then((publicado) => {
+    if (!publicado) {
       ui.notifications?.warn(game.i18n.localize("LAGUNAK.PanelGM.Convocatoria.Error"));
       return null;
-    });
+    }
+    return { estancia: idEstancia };
+  });
 }
 
 export { abrirConvocatoria, manejarConvocatoria };

@@ -1,60 +1,75 @@
-# CC0 Asset Packs Integration Proposal
+# Propuesta de packs 3D de Craig Snedeker y Elegant Crow
 
-**Corrección (2026-09-08):** este documento atribuía los tres packs a Kenney.
-Es incorrecto — ninguno de los tres es de Kenney.nl. Verificado contra el
-`Readme.txt`/`READ ME.txt` que trae cada pack y contra las páginas de origen:
+Este documento corrige la atribución original a Kenney: ninguno de estos tres
+packs es de Kenney.nl. Se conserva el nombre histórico del archivo para no
+romper referencias; el contenido y las fuentes identifican a sus autores reales.
 
-- Classic 64 Asset Pack — **Craig Snedeker** (craigsnedeker.itch.io)
-- Ultimate Retro Tree Pack — **Elegant Crow** (elegantcrow.itch.io)
-- Retro Nature Pack — **Elegant Crow**
+Es una **propuesta documental**, no una importación de assets ni una excepción
+aprobada a la doctrina de arte del proyecto. La importación propuesta se sigue
+en [#1052](https://github.com/EspacioKoop/espaciokooplagunak/pull/1052), que no debe
+confundirse con una integración en `main` o con un consumidor jugable.
 
-Los tres, además de la corrección de contenido: son modelos 3D (FBX/OBJ/glTF/BLEND),
-no tiles 2D — la descripción de "64x64 pixel art tiles" y "PNG tilesets" de
-más abajo describe el estilo visual de Kenney, no lo que estos packs contienen
-de verdad. Ver la ficha completa en `docs/PROCEDENCIA_ASSETS.md`, sección
-"Packs CC0 3D — animación y mobiliario retro (#1052)", donde ya están
-integrados.
+## 1. Classic64 Asset Library
 
-## Asset Pack Details
+- **Autor:** Craig Snedeker.
+- **Fuente:** https://craigsnedeker.itch.io/classic64-asset-library
+- **Licencia anunciada:** CC0 para la biblioteca, confirmada en la página del autor
+  y en el aviso del pack examinado.
+- **Contenido:** modelos y texturas de estética N64/PS1-PS2, creados con Blender;
+  no un tileset de Kenney de 64×64 píxeles. La exportación a FBX/OBJ u otros
+  formatos es un paso de conversión, no una afirmación de formatos ya importados.
+- **Versionado:** el `Readme.txt` examinado en #1052 declara versión 0.2; la web
+  ofrece revisiones posteriores. No se atribuyen las cifras del catálogo actual
+  a ese archivo antiguo.
+- **Procedencia interna:** `Nature/` y `Rocks/` remiten a rubberduck y yughues en
+  OpenGameArt. Esas fuentes y los archivos concretos deben conservarse y verificarse
+  en la ficha de incorporación; la autoría principal no las sustituye.
 
-### 1. Classic64 Asset Library
-- Source: https://craigsnedeker.itch.io/classic64-asset-library
-- Author: Craig Snedeker
-- License: CC0 1.0 Universal (public domain)
-- Contents: 3D props (Blender/FBX/OBJ) de estética N64/PS1-PS2. Con
-  sub-atribuciones internas a rubberduck y yughues (OpenGameArt) para las
-  texturas de `Nature/` y `Rocks/`.
+## 2. Ultimate Retro PSX Tree Pack
 
-### 2. Ultimate Retro PSX Tree Pack
-- Source: https://elegantcrow.itch.io/ultimate-retro-psx-tree-pack
-- Author: Elegant Crow
-- License: CC0
-- Contents: árboles 3D (FBX) de estética retro PSX. Las imágenes de las texturas
-  proceden de Pixabay/Pexels, según declara el propio autor.
+- **Autor:** Elegant Crow.
+- **Fuente:** https://elegantcrow.itch.io/ultimate-retro-psx-tree-pack
+- **Licencia anunciada:** CC0 para el pack, según la página oficial.
+- **Contenido:** árboles 3D de baja complejidad, principalmente planos texturados,
+  con malla independiente de tronco para colisiones. No son tiles 2D de Kenney.
+- **Límite de procedencia:** el autor indica que las imágenes proceden de Pixabay
+  y Pexels. La declaración CC0 del pack no sustituye la comprobación de las imágenes
+  de terceros concretas antes de redistribuirlas.
 
-### 3. Retro Nature Pack
-- Source: elegantcrow.itch.io (mismo autor que el anterior)
-- Author: Elegant Crow
-- License: CC0
-- Contents: vegetación 3D (FBX) de estética retro.
+## 3. Retro PSX Nature Pack
 
-## Integration Plan
+- **Autor:** Elegant Crow.
+- **Fuente:** https://elegantcrow.itch.io/retro-psx-nature-pack
+- **Licencia anunciada:** la página declara CC0 **para los modelos**.
+- **Contenido:** árboles, arbustos y hierba 3D con variantes estacionales.
+- **Límite de procedencia:** la fuente distingue texturas de AmbientCG e imágenes
+  de Pixabay. No se extiende automáticamente la licencia de los modelos a cada
+  textura o imagen; se verifica cada componente antes de incorporarlo.
 
-Ya integrados en #1052 bajo `resources/models/`, como los binarios originales
-del pack (no convertidos a malla de texto — excepción documentada en
-`docs/PROCEDENCIA_ASSETS.md`):
-- `resources/models/classic-64-asset-pack/`
-- `resources/models/ultimate-retro-tree-pack/`
-- `resources/models/retro-nature-pack/`
+## Plan de integración, todavía propuesto
 
-## License Compliance
+1. Seleccionar archivos concretos y comprobar su licencia y procedencia, incluidas
+   las fuentes internas de terceros; registrar versión, URL y hash en
+   `docs/PROCEDENCIA_ASSETS.md` y las atribuciones correspondientes.
+2. Resolver la compatibilidad con la doctrina de arte vigente antes de incorporar
+   binarios. Esta propuesta no concede una excepción a esa doctrina.
+3. Documentar la conversión reproducible al formato elegido y el presupuesto
+   geométrico/texturas. Una conversión no se acredita con un hash inventado.
+4. Conectar un consumidor real y probarlo visualmente antes de describirlo como
+   integrado o jugable. La presencia de archivos en otra rama no cumple ese paso.
 
-Los tres packs son CC0. La atribución no es obligatoria por licencia, pero
-este documento la registra igualmente porque es lo que permite verificar la
-procedencia después — la regla de `docs/PROCEDENCIA_ASSETS.md` (#590).
+La malla `balcony-simple-straight.mjs` de la propuesta inicial se retiró en #1053:
+no tenía conversión verificable y contenía JavaScript incompleto. Este documento
+no la restaura ni presenta una malla sustitutiva como validada.
 
-## Verification
+## Verificación y límites de este estudio
 
-Confirmado por lectura directa de los ficheros `Readme.txt`/`READ ME.txt`
-incluidos en cada pack (ya presentes en el árbol desde #1052) y contrastado
-contra las páginas de origen citadas arriba.
+Se han leído las tres páginas individuales de los autores. Para Classic64 se
+ha contrastado además el aviso del pack y sus subatribuciones en el SHA
+`c726cde04063b6d74c15ac59e3b307ad41839f94` de #1052. El README de Retro Nature
+identifica a Elegant Crow, pero la separación de derechos entre modelos,
+texturas e imágenes procede de su página oficial enlazada arriba.
+
+Esta verificación acredita autores, naturaleza del contenido y declaraciones de
+licencia de la propuesta; **no** es una auditoría de todos los archivos de #1052.
+No se añaden binarios, dependencias, excepciones de licencia ni cambios runtime.

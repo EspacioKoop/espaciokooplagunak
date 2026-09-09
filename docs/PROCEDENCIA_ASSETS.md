@@ -275,10 +275,10 @@ El PNG de origen **no entra en el repositorio**, igual que los STL de la
 sección anterior: se descarga aparte, se verifica su licencia y su sha256, y lo
 que se versiona es `foundry-module/data/tokens/<id>.mjs` — texto, revisable en
 un PR como cualquier otro cambio.
-## Packs 3D propuestos — licencias por componente pendientes (#1052)
+## Packs 3D de terceros — cuatro packs acreditados (#1052)
 
-Seis directorios propuestos, no piezas sueltas convertidas a malla de texto como las
-de arriba: contienen archivos de los packs (GLB/FBX/BLEND, entre otros) bajo
+Cuatro directorios, no piezas sueltas convertidas a malla de texto como las de
+arriba: contienen archivos de los packs (GLB/FBX/BLEND, entre otros) bajo
 `resources/animations/` y `resources/models/`, sin pasar por
 `convertir-estatua.mjs`. Es una excepción deliberada al patrón de "solo texto
 convertido" que sigue el resto de este documento — decisión de Eloy,
@@ -287,10 +287,33 @@ convertido" que sigue el resto de este documento — decisión de Eloy,
 único de origen que hashear, hay un directorio completo tal y como lo empaquetó
 cada autor.
 
-**El PR original atribuía tres de estos seis packs a Kenney.** Es falso: el
+**Son material de relleno, no arte definitivo** — decisión de Eloy, 2026-09-09.
+Entran para que las escenas tengan con qué poblarse mientras se produce el arte
+propio, y la intención declarada es sustituirlos. Eso no rebaja el listón de
+licencia: un *placeholder* se distribuye igual que cualquier otro archivo, y
+por eso cada uno trae su ficha completa aquí abajo. Lo que sí implica es que
+ninguna decisión de diseño debe apoyarse en que estas piezas concretas sigan
+estando.
+
+**El PR original atribuía tres de estos packs a Kenney.** Es falso: el
 `Readme.txt`/`READ ME.txt` de cada pack, ya presente en el propio commit,
 nombra a otro autor. Las fichas de abajo citan la fuente primaria, no la
 etiqueta que traía el PR.
+
+**Los dos packs de Elegant Crow no entraron, y por qué importa.** El
+*Ultimate Retro PSX Tree Pack* y el *Retro Nature Pack* venían en la propuesta
+original y se retiraron antes de integrar: su autor declara que las imágenes
+proceden de Pixabay y Pexels, y ambas plataformas prohíben expresamente
+distribuir su contenido *«on a Standalone basis»*. La concesión CC0 de un autor
+cubre sus propios derechos —[CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/legalcode.en),
+sección 4— y no los de terceros. No se resolvía quitando los PNG sueltos: en el
+Tree Pack **cada uno de los 120 GLB lleva su imagen incrustada**, y 119
+coinciden byte a byte por SHA-256 con los PNG del inventario, así que retirar el
+inventario habría dejado las mismas imágenes dentro de los contenedores. Los 120
+FBX también traen propiedades `Content` con datos. Para traerlos hace falta un
+mapa archivo → imagen original → autor → licencia, o una sustitución de esas
+imágenes; hasta entonces no se distribuyen, porque el historial de git es
+permanente y una retirada posterior no borra lo publicado.
 
 ### Universal Animation Library (1 y 2)
 
@@ -323,30 +346,12 @@ etiqueta que traía el PR.
 | **Versión** | El `Readme.txt` dice **0.2**, pero el mismo árbol contiene `Changelog v0.6.txt` y archivos de sus ampliaciones. No identificar el conjunto como una copia íntegra de 0.2 ni acreditar una versión solo con ese encabezado. La página ofrece 0.6 (2022-08-02) |
 | **Verificación** | `git rev-parse HEAD:resources/models/classic-64-asset-pack` → `b9ead6e7` (872 archivos) |
 
-### Ultimate Retro PSX Tree Pack
+### Evidencia de licencia por componente
 
-| | |
-|---|---|
-| **Qué es** | Árboles de estética retro PSX. **No es de Kenney.** No trae fichero de licencia propio dentro del pack (el directorio `resources/models/ultimate-retro-tree-pack/` no tiene `Read Me`) |
-| **Autoría** | Elegant Crow (elegantcrow.itch.io) |
-| **Licencia** | La página declara CC0 para el pack, pero también declara imágenes de terceros. La concesión del autor no acredita los derechos de esas imágenes: **redistribución del conjunto pendiente** |
-| **Enlace** | https://elegantcrow.itch.io/ultimate-retro-psx-tree-pack |
-| **Origen de las imágenes** | La página del autor declara explícitamente que "All images come from sites like Pixabay and Pexels" — no son fotografías propias de Elegant Crow |
-| **Verificación** | `git rev-parse HEAD:resources/models/ultimate-retro-tree-pack` → `fba13de4` (600 archivos) |
-
-### Retro Nature Pack
-
-| | |
-|---|---|
-| **Qué es** | Vegetación de estética retro (arbustos, variantes de invierno). **No es de Kenney.** |
-| **Autoría** | Elegant Crow (mismo autor que el pack anterior) |
-| **Licencia** | **CC0 para los modelos**, según la página del autor; texturas de AmbientCG e imágenes de Pixabay, con derechos separados. El `READ ME.txt` solo contiene contacto/donación, no una licencia |
-| **Enlace** | https://elegantcrow.itch.io/retro-psx-nature-pack |
-| **Verificación** | `git rev-parse HEAD:resources/models/retro-nature-pack` → `fe0c89cb` (182 archivos) |
-
-### Evidencia de licencia por componente y bloqueo de redistribución
-
-Fuentes públicas contrastadas con los seis árboles indicados arriba:
+Fuentes públicas contrastadas con los árboles examinados. Se conserva también la
+evidencia de los dos packs de Elegant Crow que **no** entraron: es exactamente el
+trabajo que no hay que repetir el día que alguien los retome, y borrarla haría
+que la próxima propuesta empezara de cero.
 
 - **Nature, geometría de Elegant Crow:** la fuente dice literalmente
   «The models on this pack are under CC0 License». Dice por separado
@@ -398,10 +403,12 @@ sobre los derechos del otorgante; su sección 4 no despeja derechos de terceros.
 Conservar los avisos originales y la autoría no sustituye las concesiones que
 faltan. Para desbloquear la redistribución completa se necesita un mapa
 archivo → imagen original/autor → licencia aplicable y prueba de permiso para
-esta distribución, o una sustitución/reducción de alcance autorizada. **Ningún
-pack ni dato se ha retirado por esta revisión documental.**
+esta distribución, o una sustitución de esas imágenes. Esa es la vía por la que
+podrían entrar los dos packs de Elegant Crow; hasta entonces se quedan fuera.
 
-**Límite de entrega:** estos directorios siguen siendo material propuesto, no
-un conjunto globalmente acreditado como CC0 ni una integración jugable. Resolver
-la licencia no crea un consumidor; conectar cada pieza a una escena es trabajo
-aparte.
+**Límite de entrega:** los cuatro directorios acreditados están en el árbol, no
+integrados. Resolver la licencia no crea un consumidor: conectar cada pieza a una
+escena, un catálogo o una sala es trabajo aparte, y ninguna superficie del módulo
+los importa todavía. Se aplica además la frontera de arte de #351 — de un modelo
+importado se toma la geometría, y el color lo pone la escena con la paleta del
+módulo.

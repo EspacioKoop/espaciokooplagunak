@@ -21,7 +21,7 @@
 
 import { crearCatalogoEstancias } from "./nave-estancias.mjs";
 import { declararInteracciones } from "./nave-interaccion.mjs";
-import { MUSEO, PLAYA, SECCION } from "./paleta.mjs";
+import { MUSEO, PASILLO, PLAYA, SECCION } from "./paleta.mjs";
 import { puntoLibreCerca } from "./nave-movimiento.mjs";
 import { crearSalaCaja } from "./nave-sala-caja.mjs";
 import { piezasConsola } from "./nave-consola.mjs";
@@ -50,6 +50,20 @@ import {
   PLANTA_MUSEO,
   componerMuseo,
 } from "./museo-escena.mjs";
+import {
+  PLANTA_ARENA,
+  ENTRADA as ENTRADA_ARENA,
+  INTERACCIONES as INTERACCIONES_ARENA,
+  componerArena,
+  cierreDe,
+  CIERRE_POR_DEFECTO,
+} from "./arena-combate-escena.mjs";
+import {
+  ENTRADA as ENTRADA_PASILLO,
+  INTERACCIONES as INTERACCIONES_PASILLO,
+  PLANTA_PASILLO,
+  componerPasillo,
+} from "./pasillo-recuerdos-escena.mjs";
 import {
   ANCHO_PUERTA,
   GROSOR_PUERTA,
@@ -428,4 +442,64 @@ export const CATALOGO_ANDAR = crearCatalogoEstancias({
     fondo: MUSEO.zocalo,
     puertas: [],
   },
+  // La arena de combate (#1013). Como la playa y el museo: NO cuelga de ninguna
+  // puerta de la nave —el Phobos no lleva un campo de batalla dentro— y se entra
+  // por herramienta. Treinta por veinte casillas de cinco pies, enteras
+  // jugables: lo que se comprueba aquí es que el borde CIERRA y que cruzarla se
+  // siente como una distancia.
+  arena: {
+    planta: PLANTA_ARENA,
+    componer: componerArena,
+    entrada: ENTRADA_ARENA,
+    interacciones: INTERACCIONES_ARENA,
+    // Exterior: detrás de la geometría hay cielo, y el cierre declara cuál —una
+    // mazmorra se funde hacia su propia piedra, no hacia un cielo azul.
+    fondo: cierreDe(CIERRE_POR_DEFECTO).cielo,
+    puertas: [],
+  },
+  // El pasillo de los recuerdos. Como el museo y la playa: NO cuelga de
+  // ninguna puerta de la nave y se entra por herramienta.
+  "pasillo-recuerdos": {
+    planta: PLANTA_PASILLO,
+    componer: componerPasillo,
+    entrada: ENTRADA_PASILLO,
+    interacciones: INTERACCIONES_PASILLO,
+    fondo: PASILLO.marmol,
+    puertas: [],
+  },
 });
+
+/**
+ * Ids que NO salen de la rejilla de la nave (`SALAS_PHOBOS`): bancos de
+ * pruebas solo-GM que se entran por herramienta de la barra de escena, no
+ * andando (#587 playa, #598 museo). Se declaran aquí y no en una lista
+ * aparte de `categoriasAndar`, para que añadir uno nuevo no obligue a
+ * mantener dos sitios sincronizados.
+ */
+const IDS_FUERA_DE_LA_NAVE = Object.freeze(["playa", "museo", "arena"]);
+
+/**
+ * Agrupa el catálogo por categoría, para presentarlo como carpetas en una UI
+ * (#952) en vez de una lista plana de catorce salas y dos bancos de pruebas
+ * mezclados. DERIVADO de `CATALOGO_ANDAR.ids`, nunca escrito a mano: una
+ * categoría que se escribiera aparte se desincronizaría el día que entrara
+ * una sala nueva, que es justo el bug que esto evita.
+ *
+ * Dos categorías hoy, y la lista está pensada para crecer: añadir una
+ * tercera es una entrada más de este array, no un cambio de forma.
+ *
+ * @returns {{id: string, titulo: string, estancias: {id: string}[]}[]}
+ */
+export function categoriasAndar() {
+  const todas = CATALOGO_ANDAR.ids;
+  const fueraDeLaNave = todas.filter((id) => IDS_FUERA_DE_LA_NAVE.includes(id));
+  const enLaNave = todas.filter((id) => !IDS_FUERA_DE_LA_NAVE.includes(id));
+  return [
+    { id: "nave", titulo: "LAGUNAK.PanelGM.Convocatoria.Categoria.Nave", estancias: enLaNave.map((id) => ({ id })) },
+    {
+      id: "banco-de-pruebas",
+      titulo: "LAGUNAK.PanelGM.Convocatoria.Categoria.BancoDePruebas",
+      estancias: fueraDeLaNave.map((id) => ({ id })),
+    },
+  ];
+}

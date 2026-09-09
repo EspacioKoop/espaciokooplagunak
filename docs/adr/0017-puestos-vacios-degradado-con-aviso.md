@@ -90,6 +90,11 @@ cálculo desde el `User` autenticado — no abierto todavía a fecha de este ADR
 `docs/ROADMAP_PRODUCTO.md` enlaza esta decisión desde el frente #481/#512 de
 la Etapa B.
 
+Seguimiento posterior al ADR: el trabajo de implementación quedó registrado en
+[#951](https://github.com/EspacioKoop/espaciokooplagunak/issues/951).
+Este registro formaliza la decisión; no certifica por sí solo la implementación
+ni el playtest de la Etapa B.
+
 ## Criterios de revisión
 
 Esta decisión deja de ser válida si el playtest de #467 (u otro con

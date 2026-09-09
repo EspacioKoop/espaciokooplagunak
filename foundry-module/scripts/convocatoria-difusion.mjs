@@ -82,6 +82,7 @@ export function registrarAjusteConvocatoria(moduleId, ajustes = game.settings) {
 
 let moduloConfigurado = null;
 let abrirEstancia = null;
+let secuencia = 0;
 const escuchas = [];
 
 /**
@@ -115,51 +116,63 @@ export function registrarConvocatoriaEstancia(moduleId, { abrir, hooks = globalT
     // `updateSetting` se dispara para TODOS los ajustes del mundo; filtra por
     // el propio (namespace del módulo + nombre del ajuste) antes de mirar
     // nada más.
-    const namespace = setting?.namespace ?? setting?.module;
-    if (namespace !== moduleId || setting?.key !== AJUSTE_CONVOCATORIA) return;
+    // El hook recibe un documento Setting, no la configuración de register:
+    // su key ya contiene el namespace (mismo patrón que alerta-escena).
+    if (setting?.key !== `${moduleId}.${AJUSTE_CONVOCATORIA}`) return;
+    // Los hosts modernos también tienen ajustes de usuario. Una clave igual
+    // en ese ámbito NO acredita la autoridad de un ajuste de mundo.
+    if (setting.user != null) return;
     const valor = setting?.value;
     const idEstancia = valor?.estancia;
     // Autoridad ya verificada por Foundry al ACEPTAR la escritura del
-    // ajuste (scope "world" = solo GM); aquí solo queda comprobar que el
+    // ajuste de mundo (permiso SETTINGS_MODIFY); aquí queda comprobar que el
     // dato en sí tiene sentido antes de abrir nada.
     if (!estanciaValida(idEstancia, catalogo)) return;
     abrirEstancia(idEstancia);
   };
-  hooks?.on("updateSetting", receptor);
-  escuchas.push(() => hooks?.off?.("updateSetting", receptor));
+  // La primera escritura crea el documento; las siguientes lo actualizan.
+  for (const evento of ["createSetting", "updateSetting"]) {
+    hooks?.on(evento, receptor);
+    escuchas.push(() => hooks?.off?.(evento, receptor));
+  }
 }
 
 /**
  * Convoca a la mesa a una estancia y lo difunde. Solo el GM convoca; el módulo
  * puro es quien lo dice, y aquí solo se le pasa el rol. La difusión en sí
  * (escribir el ajuste de mundo) es una segunda barrera: aunque alguien
- * lograra ejecutar esta función sin ser GM, Foundry rechaza la escritura del
- * ajuste igualmente.
+ * el guard cliente no es autoridad de servidor: Foundry comprueba el permiso
+ * SETTINGS_MODIFY al persistir el ajuste de mundo.
  *
- * Quien convoca también abre la suya, pero no con una llamada aparte: escribir
- * el ajuste de mundo dispara `updateSetting` en TODOS los clientes, incluido
- * el propio del GM, así que el mismo receptor de `registrarConvocatoriaEstancia`
- * es quien abre su ventana igual que la de cualquier otro — un GM que manda a
- * todo el mundo a la playa y se queda en el puente es el fallo más aburrido
- * posible, y aquí no puede pasar porque no hay dos caminos distintos.
+ * Quien convoca también abre la suya, pero no con una llamada aparte:
+ * Foundry difunde la creación/actualización a todos los clientes conectados.
+ * La apertura depende de ese documento confirmado, nunca de una escritura
+ * solicitada que aún podría fallar. No se reproduce una convocatoria vieja
+ * al entrar o recargar: es un evento para la mesa conectada, no un destino
+ * permanente.
  *
  * @param {string} idEstancia
  * @param {{ajustes?:object}} [opciones] inyectable para test sin Foundry.
- * @returns {boolean} si se convocó de verdad.
+ * @returns {Promise<boolean>} si Foundry confirmó la escritura, no el render.
  */
-export function convocarYTransmitir(idEstancia, { ajustes = game.settings } = {}) {
+export async function convocarYTransmitir(idEstancia, { ajustes = game.settings } = {}) {
   if (!moduloConfigurado || !abrirEstancia) return false;
   if (!game.user?.isGM) return false;
   const posicion = convocar(idEstancia, "GM");
   // `posicion` no viaja: es la acreditación de que la entrada es pisable.
   if (!posicion) return false;
 
-  ajustes.set(moduloConfigurado, AJUSTE_CONVOCATORIA, {
-    estancia: idEstancia,
-    // Nonce para que dos convocatorias seguidas a la MISMA estancia sigan
-    // disparando `updateSetting` (Foundry no notifica si el valor no
-    // cambia).
-    nonce: Date.now(),
-  });
-  return true;
+  try {
+    await ajustes.set(moduloConfigurado, AJUSTE_CONVOCATORIA, {
+      estancia: idEstancia,
+      // Incluye secuencia local: dos clics en el mismo milisegundo también
+      // cambian el valor y Foundry no descarta la segunda escritura.
+      nonce: `${Date.now()}:${++secuencia}`,
+    });
+    return true;
+  } catch {
+    // Permiso revocado, desconexión o fallo de persistencia: no abrir por
+    // optimismo, no afirmar éxito ni dejar una promesa rechazada sin manejar.
+    return false;
+  }
 }

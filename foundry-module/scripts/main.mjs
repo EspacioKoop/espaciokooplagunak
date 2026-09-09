@@ -741,15 +741,16 @@ let andarApp = null;
  *   quedó, que es el comportamiento del botón de los controles de escena.
  */
 function abrirAndarNave(estancia = null) {
+  const moderna = Boolean(foundry.applications?.api?.ApplicationV2);
   if (andarApp?.rendered) {
     // Ya abierta: se camina hasta allí en caliente, que la ventana sabe hacerlo
     // sin reiniciar el bucle. El `render` de después solo la trae al frente.
     if (estancia) andarApp.irA(estancia);
-    andarApp.render({ force: true });
+    andarApp.render(moderna ? { force: true } : true);
     return;
   }
 
-  const Clase = foundry.applications?.api?.ApplicationV2 ? crearClaseAndarV2() : crearClaseAndarV1();
+  const Clase = moderna ? crearClaseAndarV2() : crearClaseAndarV1();
   andarApp = new Clase();
   // Antes de renderizar: el arranque del bucle lo consume en el primer render.
   andarApp.estanciaPedida = estancia;

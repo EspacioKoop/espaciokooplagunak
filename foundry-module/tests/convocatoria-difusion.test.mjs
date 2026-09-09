@@ -1,159 +1,204 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-// El cable de la convocatoria (#689, endurecido en #876 tras una revisión de
-// seguridad). El receptor original aceptaba CUALQUIER mensaje de un socket
-// compartido sin comprobar que el emisor fuera GM ni que la estancia
-// existiera en el catálogo: un jugador podía emitir el payload de
-// convocatoria directamente (sin pasar por `convocarYTransmitir`, que solo
-// protege a quien coopera) y abrir tanto salas reales como inventadas.
-//
-// El arreglo cambia el canal de un socket crudo a un AJUSTE DE MUNDO
-// (`scope: "world"`): Foundry solo deja escribir un ajuste de mundo a quien
-// tiene permiso de modificar ajustes del juego (el GM), y lo comprueba el
-// SERVIDOR al escribir, no este módulo al leer. El doble de `game.settings`
-// de abajo simula justo esa autoridad: `set()` lanza si quien la invoca no es
-// GM, tal y como lo haría Foundry real, así que un cliente sin autoridad ni
-// siquiera consigue que el ajuste cambie — el hook `updateSetting` nunca
-// llega a dispararse con un valor suyo.
-
+// Pruebas del adaptador, NO un servidor Foundry simulado como evidencia real.
+// El documento recibido sigue SettingData: key compuesta, value ya tipado,
+// user ausente (v11) o null (mundo moderno). register no crea el documento:
+// la primera escritura produce createSetting; las siguientes, updateSetting.
+// Contrato público: https://foundryvtt.com/api/v13/interfaces/foundry.documents.types.SettingData.html
 let usuario = { id: "gm", isGM: true };
+let permisoEscritura = true;
 let valorAjuste = null;
 const escuchasHooks = new Map();
+const escuchasSocket = new Map();
+const configuraciones = [];
 
+function disparar(nombre, setting) {
+  for (const fn of escuchasHooks.get(nombre) ?? []) fn(setting);
+}
+function documento(valor, extra = {}) {
+  return { key: `prueba.${AJUSTE}`, value: valor, user: null, ...extra };
+}
 const ajustesFoundry = {
-  registrado: false,
-  register(_moduleId, _key, _opciones) {
-    this.registrado = true;
-  },
-  set(_moduleId, _key, valor) {
-    // Simula la comprobación de permisos que hace el SERVIDOR de Foundry
-    // para un ajuste `scope: "world"`: solo el GM puede escribirlo. Esto no
-    // es una comprobación de este módulo — es lo que hace que la
-    // "autoridad verificable" no dependa de nada que el módulo declare.
-    if (!usuario.isGM) throw new Error("solo el GM puede modificar ajustes del mundo");
+  register(moduleId, key, opciones) { configuraciones.push({ moduleId, key, ...opciones }); },
+  async set(moduleId, key, valor) {
+    // Permiso independiente del guard cliente: puede fallar aunque isGM sea
+    // true en ese cliente. El test no acredita por sí solo permisos del host.
+    if (!permisoEscritura) throw new Error("escritura denegada");
+    const primera = valorAjuste === null;
+    if (JSON.stringify(valorAjuste) === JSON.stringify(valor)) return valor;
     valorAjuste = valor;
-    // Foundry dispara `updateSetting` para TODOS los clientes conectados,
-    // incluido el que escribió. El doble hace lo mismo.
-    dispararUpdateSetting({ namespace: "prueba", key: AJUSTE, value: valor });
-    return Promise.resolve();
+    disparar(primera ? "createSetting" : "updateSetting", {
+      key: `${moduleId}.${key}`, value: valor, user: null,
+    });
+    return valor;
   },
 };
-
 const hooksFoundry = {
   on(nombre, fn) {
     if (!escuchasHooks.has(nombre)) escuchasHooks.set(nombre, new Set());
     escuchasHooks.get(nombre).add(fn);
   },
-  off(nombre, fn) {
-    escuchasHooks.get(nombre)?.delete(fn);
-  },
+  off(nombre, fn) { escuchasHooks.get(nombre)?.delete(fn); },
 };
-
-function dispararUpdateSetting(setting) {
-  for (const fn of escuchasHooks.get("updateSetting") ?? []) fn(setting);
-}
-
 globalThis.game = {
-  get user() {
-    return usuario;
-  },
+  get user() { return usuario; },
   settings: ajustesFoundry,
+  socket: {
+    on(nombre, fn) { escuchasSocket.set(nombre, fn); },
+    off(nombre) { escuchasSocket.delete(nombre); },
+  },
 };
 globalThis.Hooks = hooksFoundry;
-
 const {
   AJUSTE_CONVOCATORIA: AJUSTE,
   convocarYTransmitir,
   registrarAjusteConvocatoria,
   registrarConvocatoriaEstancia,
 } = await import("../scripts/convocatoria-difusion.mjs");
-
 registrarAjusteConvocatoria("prueba", ajustesFoundry);
 
 function arnes({ isGM = true } = {}) {
   escuchasHooks.clear();
+  escuchasSocket.clear();
   valorAjuste = null;
-  usuario = { id: "gm", isGM };
+  permisoEscritura = isGM;
+  usuario = { id: isGM ? "gm" : "jugador", isGM };
   const aperturas = [];
-  registrarConvocatoriaEstancia("prueba", { abrir: (estancia) => aperturas.push(estancia), hooks: hooksFoundry });
+  registrarConvocatoriaEstancia("prueba", { abrir: e => aperturas.push(e), hooks: hooksFoundry });
   return aperturas;
 }
 
-/** Simula el hook disparándose directamente con un valor arbitrario, como si
- * llegara de otro cliente — sin pasar por `ajustesFoundry.set` ni por su
- * comprobación de GM. Es justo el escenario que un socket crudo permitía y
- * que este test demuestra que ya no basta para abrir nada. */
-function llegaValorArbitrario(valor) {
-  dispararUpdateSetting({ namespace: "prueba", key: AJUSTE, value: valor });
-}
+test("el ajuste se registra una vez, oculto y de mundo", () => {
+  registrarAjusteConvocatoria("prueba", ajustesFoundry);
+  assert.equal(configuraciones.length, 1);
+  assert.equal(configuraciones[0].scope, "world");
+  assert.equal(configuraciones[0].config, false);
+  assert.equal(configuraciones[0].type, Object);
+  assert.equal(configuraciones[0].default, null);
+});
 
-test("registrar sin una función de apertura falla al registrar, no al llegar el mensaje", () => {
+test("registrar sin una función de apertura falla al registrar", () => {
   assert.throws(() => registrarConvocatoriaEstancia("prueba", { hooks: hooksFoundry }), TypeError);
 });
 
-test("el ajuste que cambia abre la estancia convocada", () => {
-  const aperturas = arnes();
-  llegaValorArbitrario({ estancia: "museo" });
-  assert.deepEqual(aperturas, ["museo"]);
-});
+for (const evento of ["createSetting", "updateSetting"]) {
+  for (const moderno of [false, true]) {
+    test(`${evento}: documento ${moderno ? "moderno" : "v11"} abre museo en cliente jugador`, () => {
+      const aperturas = arnes({ isGM: false });
+      const setting = documento({ estancia: "museo" });
+      if (!moderno) delete setting.user;
+      disparar(evento, setting);
+      assert.deepEqual(aperturas, ["museo"]);
+    });
+  }
+  test(`${evento}: rechaza clave/namespace incorrecto, user scope y estancia inválida`, () => {
+    const aperturas = arnes();
+    for (const setting of [
+      documento({ estancia: "museo" }, { key: `otro.${AJUSTE}` }),
+      documento({ estancia: "museo" }, { key: "prueba.otro-ajuste" }),
+      { namespace: "prueba", key: AJUSTE, value: { estancia: "museo" } },
+      documento({ estancia: "museo" }, { user: "jugador" }),
+      documento({ estancia: "not-a-real-room" }),
+      documento({ estancia: "" }), documento({ estancia: 42 }),
+      documento({}), documento(null), null,
+    ]) disparar(evento, setting);
+    assert.deepEqual(aperturas, []);
+  });
+  test(`${evento}: volver a registrar retira la escucha anterior`, () => {
+    const primeras = arnes();
+    const segundas = [];
+    registrarConvocatoriaEstancia("prueba", { abrir: e => segundas.push(e), hooks: hooksFoundry });
+    disparar(evento, documento({ estancia: "museo" }));
+    assert.equal(escuchasHooks.get(evento).size, 1);
+    assert.deepEqual(primeras, []);
+    assert.deepEqual(segundas, ["museo"]);
+  });
+}
 
-test("un ajuste de otro nombre, o sin estancia, no abre nada", () => {
+test("primera escritura del GM crea el ajuste y abre también su ventana", async () => {
   const aperturas = arnes();
-  dispararUpdateSetting({ namespace: "prueba", key: "otro-ajuste", value: { estancia: "museo" } });
-  llegaValorArbitrario({});
-  llegaValorArbitrario({ estancia: "" });
-  llegaValorArbitrario(null);
-  assert.deepEqual(aperturas, []);
-});
-
-test("volver a registrar no deja dos escuchas: la estancia se abre una sola vez", () => {
-  const primeras = arnes();
-  const segundas = [];
-  registrarConvocatoriaEstancia("prueba", { abrir: (e) => segundas.push(e), hooks: hooksFoundry });
-  llegaValorArbitrario({ estancia: "museo" });
-  assert.deepEqual(primeras, []);
-  assert.deepEqual(segundas, ["museo"]);
-});
-
-test("el GM convoca: escribe el ajuste de mundo (no un socket) y abre también la suya", () => {
-  const aperturas = arnes();
-  assert.equal(convocarYTransmitir("museo", { ajustes: ajustesFoundry }), true);
+  assert.equal(await convocarYTransmitir("museo", { ajustes: ajustesFoundry }), true);
   assert.equal(valorAjuste.estancia, "museo");
   assert.deepEqual(aperturas, ["museo"]);
 });
 
-test("quien no es GM no convoca ni consigue escribir el ajuste", () => {
+test("dos convocatorias a museo en el mismo milisegundo se reciben ambas", async (t) => {
+  const aperturas = arnes();
+  t.mock.method(Date, "now", () => 1000);
+  assert.equal(await convocarYTransmitir("museo"), true);
+  const primera = valorAjuste.nonce;
+  assert.equal(await convocarYTransmitir("museo"), true);
+  assert.notEqual(valorAjuste.nonce, primera);
+  assert.deepEqual(aperturas, ["museo", "museo"]);
+});
+
+test("no se reabre una convocatoria histórica al registrar el receptor", () => {
+  arnes();
+  valorAjuste = { estancia: "museo", nonce: 1 };
+  const aperturas = [];
+  registrarConvocatoriaEstancia("prueba", { abrir: e => aperturas.push(e) });
+  assert.deepEqual(aperturas, []);
+});
+
+test("jugador no escribe por el emisor cooperativo ni por el doble de escritura autorizada", async () => {
   const aperturas = arnes({ isGM: false });
-  assert.equal(convocarYTransmitir("museo", { ajustes: ajustesFoundry }), false);
+  assert.equal(await convocarYTransmitir("museo"), false);
+  await assert.rejects(ajustesFoundry.set("prueba", AJUSTE, { estancia: "museo" }));
   assert.equal(valorAjuste, null);
   assert.deepEqual(aperturas, []);
 });
 
-test("una estancia que el catálogo no conoce no se difunde desde convocarYTransmitir", () => {
+test("el ataque original por socket no tiene receptor", () => {
+  const aperturas = arnes({ isGM: false });
+  for (const estancia of ["museo", "not-a-real-room"]) {
+    for (const listener of escuchasSocket.values()) listener({ tipo: "convocatoria-estancia", estancia });
+  }
+  assert.equal(escuchasSocket.size, 0);
+  assert.deepEqual(aperturas, []);
+});
+
+test("una estancia inexistente no se escribe", async () => {
   const aperturas = arnes();
-  assert.equal(convocarYTransmitir("sala-de-maquinas-imaginaria", { ajustes: ajustesFoundry }), false);
+  assert.equal(await convocarYTransmitir("sala-de-maquinas-imaginaria"), false);
   assert.equal(valorAjuste, null);
   assert.deepEqual(aperturas, []);
 });
 
-// --- Regresión de seguridad (#876): el RECEPTOR, no solo el emisor ---
-
-test("un cliente sin autoridad GM verificable no consigue abrir NINGUNA ventana", () => {
-  // Un jugador (isGM: false) que intentase escribir el ajuste directamente
-  // se encuentra con el mismo rechazo que impondría el servidor de Foundry:
-  // `set()` lanza y el hook nunca se dispara con su valor.
-  const aperturas = arnes({ isGM: false });
-  assert.throws(() => ajustesFoundry.set("prueba", AJUSTE, { estancia: "museo" }));
+test("rechazo asíncrono de escritura, aunque el cliente sea GM: false y ninguna apertura", async () => {
+  const aperturas = arnes();
+  permisoEscritura = false;
+  assert.equal(await convocarYTransmitir("museo"), false);
+  assert.equal(valorAjuste, null);
   assert.deepEqual(aperturas, []);
 });
 
-test("una estancia inexistente en el valor del ajuste se rechaza, aunque el ajuste SÍ cambie", () => {
-  // Incluso si el hook llega a dispararse (un dato corrupto, una versión
-  // vieja del módulo, cualquier fuente que ya no sea el propio emisor
-  // cooperativo), el receptor vuelve a validar contra el catálogo real antes
-  // de abrir nada.
+test("escritura en vuelo no afirma éxito ni abre antes de confirmación", async () => {
   const aperturas = arnes();
-  llegaValorArbitrario({ estancia: "not-a-real-room" });
+  let resolver;
+  let finalizada = false;
+  const pendiente = convocarYTransmitir("museo", {
+    ajustes: { set: () => new Promise(resolve => { resolver = resolve; }) },
+  }).then(resultado => { finalizada = true; return resultado; });
+  await Promise.resolve();
+  assert.equal(finalizada, false);
+  assert.deepEqual(aperturas, []);
+  resolver();
+  assert.equal(await pendiente, true);
+  // Confirmar la escritura no simula el render ni sustituye al documento.
+  assert.deepEqual(aperturas, []);
+});
+
+test("rechazo diferido y fallo síncrono se absorben sin apertura optimista", async () => {
+  const aperturas = arnes();
+  let rechazar;
+  const pendiente = convocarYTransmitir("museo", {
+    ajustes: { set: () => new Promise((_resolve, reject) => { rechazar = reject; }) },
+  });
+  rechazar(new Error("fallo de persistencia"));
+  assert.equal(await pendiente, false);
+  assert.equal(await convocarYTransmitir("museo", {
+    ajustes: { set() { throw new Error("fallo síncrono"); } },
+  }), false);
   assert.deepEqual(aperturas, []);
 });
